@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 10/10/2026 04:13:11 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 10/10/2026 04:22:05 */
 
 
 
@@ -45,6 +45,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
 // 01_Principal.gs
 // Punto de entrada: solo las funciones que ejecutas manualmente desde el editor.
 // Orden: 1) subidas, 2) descargas, 3) mantenimiento.
+// Comentario de prueba para obtener el archivo modificado desde Github
 // =============================================================================
 // ------------------------------------------------------------------
 // DESCARGA (zip + txt + gs + md, siempre los 4 a la vez)
@@ -195,6 +196,7 @@ function probarConexionGithub() {
 function eliminarTodosLosArchivosDeBase() {
   _eliminarTodosLosArchivosDeProyecto('Base');
 }
+
 
 // --- ARCHIVO: 02_Backstage.gs ---
 // =============================================================================
