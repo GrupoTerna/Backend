@@ -42,14 +42,14 @@ Ninguno.
 | `_ghJson_` | función | 08_GitHub.gs | 81 |  |
 | `_ghReq_` | función | 08_GitHub.gs | 51 |  |
 | `_ghRespuesta_` | función | 08_GitHub.gs | 70 |  |
-| `_githubCommitArchivos_` | función | 08_GitHub.gs | 250 |  |
+| `_githubCommitArchivos_` | función | 08_GitHub.gs | 256 |  |
 | `_githubGenerarIndice_` | función | 08_GitHub.gs | 144 |  |
 | `_githubGenerarLeeme_` | función | 08_GitHub.gs | 213 |  |
-| `_githubProbar_` | función | 08_GitHub.gs | 504 |  |
+| `_githubProbar_` | función | 08_GitHub.gs | 533 |  |
 | `_githubRevisarSecretos_` | función | 08_GitHub.gs | 120 |  |
-| `_githubSincronizar_` | función | 08_GitHub.gs | 304 |  |
+| `_githubSincronizar_` | función | 08_GitHub.gs | 325 |  |
 | `_githubToken_` | función | 08_GitHub.gs | 46 |  |
-| `_githubTraerAProyectoApps_` | función | 08_GitHub.gs | 372 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
+| `_githubTraerAProyectoApps_` | función | 08_GitHub.gs | 401 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
 | `_leerPeriodo_` | función | 06_Limpieza_Duplicados_JSON.gs | 462 |  |
 | `_limpiarCarpeta_` | función | 06_Limpieza_Duplicados_JSON.gs | 109 |  |
 | `_mig_borrarEstado_` | función | 05_Migrador_Formato.gs | 377 |  |

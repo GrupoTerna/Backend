@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 10/10/2026 04:07:43 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 10/10/2026 04:13:11 */
 
 
 
@@ -2379,6 +2379,12 @@ function _githubGenerarLeeme_(nombreBase, nArchivos) {
 /**
  * entradas: [{path, content}]. Reemplaza por completo prefijoCarpeta (borra lo
  * que ya no existe) y, opcionalmente, rutas de formatos antiguos.
+ *
+ * SIN CAMBIOS = SIN COMMIT: si lo que se iba a escribir es idéntico a lo que ya hay en GitHub,
+ * NO crea el commit y devuelve { commit: null, sinCambios: true }. Como el consolidado
+ * (respaldo/<Nombre>.gs) trae en su primera línea la fecha de generación, que cambia en cada
+ * ejecución, se compara sin esa línea; si es lo único distinto, se conserva el archivo remoto.
+ * Quien llama debe informar el caso en el log (ver _githubSincronizar_).
  */
 function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje) {
   var ref = _ghJson_(_ghReq_('get', '/git/ref/heads/' + GITHUB_BRANCH_));
@@ -2386,6 +2392,18 @@ function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje
   var commit = _ghJson_(_ghReq_('get', '/git/commits/' + commitSha));
   var treeBaseSha = commit.tree.sha;
   var arbol = _ghJson_(_ghReq_('get', '/git/trees/' + treeBaseSha + '?recursive=1'));
+
+  // El consolidado trae la fecha de generación en su primera línea: si es lo único que cambió,
+  // se reutiliza el contenido que ya está en GitHub para que no cuente como cambio.
+  var reFechaConsolidado = /\/\* CÓDIGO CONSOLIDADO GENERADO EL [^*]*\*\//;
+  entradas.forEach(function(e) {
+    if (!/\/respaldo\/[^\/]+\.gs$/.test(e.path)) return;
+    var nodo = (arbol.tree || []).filter(function(n) { return n.type === 'blob' && n.path === e.path; })[0];
+    if (!nodo) return;
+    var rq = _ghReq_('get', '/git/blobs/' + nodo.sha, null, 'application/vnd.github.raw+json');
+    var viejo = _ghRespuesta_(UrlFetchApp.fetchAll([rq])[0], rq).getContentText('UTF-8');
+    if (viejo.replace(reFechaConsolidado, '') === e.content.replace(reFechaConsolidado, '')) e.content = viejo;
+  });
 
   // Un blob por archivo, en lotes paralelos. Si el contenido no cambió,
   // GitHub devuelve el mismo SHA y ese archivo no figura en el commit.
@@ -2423,6 +2441,9 @@ function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje
   }
 
   var arbolNuevo  = _ghJson_(_ghReq_('post', '/git/trees', { base_tree: treeBaseSha, tree: items }));
+  if (arbolNuevo.sha === treeBaseSha) {
+    return { commit: null, sinCambios: true, archivos: entradas.length, borrados: [] };
+  }
   var commitNuevo = _ghJson_(_ghReq_('post', '/git/commits',
                       { message: mensaje, tree: arbolNuevo.sha, parents: [commitSha] }));
   _ghJson_(_ghReq_('patch', '/git/refs/heads/' + GITHUB_BRANCH_, { sha: commitNuevo.sha }));
@@ -2468,6 +2489,14 @@ function _githubSincronizar_(nombreBase) {
       entradas, nombreBase + '/src/', antiguos,
       'Descarga ' + nombreBase + ' - ' + fecha + ' (Lima) - ' + archivos.length + ' archivos'
     );
+
+    if (res.sinCambios) {
+      var detalleSin = 'Sin cambios: GitHub ya estaba igual a ' + nombreBase + ' (' + res.archivos +
+                       ' archivos revisados). No se creó commit.';
+      console.log('[GitHub] ' + detalleSin);
+      _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, detalleSin, []);
+      return { ok: true, commit: null, sinCambios: true, borrados: [] };
+    }
 
     var detalle = 'Commit ' + res.commit.substring(0, 7) + ' en ' + GITHUB_OWNER_ + '/' + GITHUB_REPO_ +
                   ' (' + res.archivos + ' archivos escritos, ' + res.borrados.length + ' borrados' +
