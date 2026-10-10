@@ -2,6 +2,7 @@
 // 01_Principal.gs
 // Punto de entrada: solo las funciones que ejecutas manualmente desde el editor.
 // Orden: 1) subidas, 2) descargas, 3) mantenimiento.
+// Comentario de prueba para obtener el archivo modificado desde Github
 // =============================================================================
 // ------------------------------------------------------------------
 // DESCARGA (zip + txt + gs + md, siempre los 4 a la vez)
@@ -115,6 +116,23 @@ function subirGeneradorDesdeMd() {
   var reporte = _subirArchivosAProyecto('Generador', 'md');
   _githubSincronizar_('Generador');
   return reporte;
+}
+
+/**
+ * Sube Generador/src/ de GitHub: deja el proyecto de Apps Script del propio Generador
+ * EXACTAMENTE igual (lo que no esté en GitHub se elimina del proyecto).
+ * Antes guarda en Drive "Generador_antes_de_GitHub.zip" (uno solo, se reemplaza) y al terminar
+ * regenera Generador.zip/.gs/.txt/.md y el consolidado/índice de GitHub.
+ * Se detiene si src/ parece incompleta o si no trae la función de bajada.
+ * [→ Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse]
+ */
+function subirGeneradorDesdeGithub() {
+  return _githubTraerAProyectoApps_('Generador', false);
+}
+
+/** Igual que subirGeneradorDesdeGithub(), pero sin las salvaguardas de src/ incompleta ni de función de bajada. */
+function subirGeneradorDesdeGithubForzado() {
+  return _githubTraerAProyectoApps_('Generador', true);
 }
 
 
