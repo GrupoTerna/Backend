@@ -1,0 +1,95 @@
+name: Generador - Validación
+
+# Solo valida; nunca hace commits (el Generador ya escribe en este repo
+# y un workflow que commitee crearía bucles).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Generador/**"
+      - ".github/workflows/generador-ci.yml"
+  pull_request:
+    paths:
+      - "Generador/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generador-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sintaxis de cada .gs
+        run: |
+          fallos=0
+          for f in Generador/src/*.gs; do
+            tmp="$(mktemp --suffix=.js)"
+            cp "$f" "$tmp"
+            if node --check "$tmp"; then
+              echo "OK   $f"
+            else
+              echo "::error file=$f::Error de sintaxis"
+              fallos=1
+            fi
+            rm -f "$tmp"
+          done
+          exit $fallos
+
+      - name: appsscript.json válido
+        run: |
+          node -e '
+            const j = JSON.parse(require("fs").readFileSync("Generador/src/appsscript.json","utf8"));
+            if (j.runtimeVersion !== "V8") throw new Error("runtimeVersion debe ser V8");
+            if (!j.timeZone) throw new Error("Falta timeZone");
+            console.log("appsscript.json OK (" + j.timeZone + ")");
+          '
+
+      - name: Funciones repetidas entre archivos
+        run: |
+          node -e '
+            const fs = require("fs");
+            const dir = "Generador/src/";
+            const vistos = {};
+            for (const f of fs.readdirSync(dir).filter(n => n.endsWith(".gs"))) {
+              const txt = fs.readFileSync(dir + f, "utf8");
+              for (const m of txt.matchAll(/^function\s+([A-Za-z0-9_$]+)\s*\(/gm)) {
+                (vistos[m[1]] = vistos[m[1]] || []).push(f);
+              }
+            }
+            const rep = Object.entries(vistos).filter(([, a]) => a.length > 1);
+            for (const [n, a] of rep) console.log("::error::Función repetida " + n + " en " + a.join(", "));
+            if (rep.length) process.exit(1);
+            console.log("Sin funciones repetidas (" + Object.keys(vistos).length + " nombres).");
+          '
+
+      - name: Buscar secretos en el código
+        run: |
+          if grep -rEn --include='*.gs' --include='*.json' --include='*.md' \
+              -e 'ghp_[A-Za-z0-9]{36}' \
+              -e 'github_pat_[A-Za-z0-9_]{50,}' \
+              -e 'AIza[0-9A-Za-z_-]{35}' \
+              -e 'eyJ[A-Za-z0-9_-]{20,}\.eyJ[A-Za-z0-9_-]{20,}' \
+              Generador/; then
+            echo "::error::Posible token o clave en el repositorio"
+            exit 1
+          fi
+          echo "Sin secretos detectados."
+
+      - name: Estructura esperada del Generador
+        run: |
+          for p in Generador/src Generador/LEEME_IA.md Generador/INDICE_FUNCIONES.md Generador/respaldo/Generador.gs; do
+            test -e "$p" || { echo "::error::Falta $p"; exit 1; }
+          done
+          echo "Estructura OK."
