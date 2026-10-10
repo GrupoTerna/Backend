@@ -1,7 +1,7 @@
 # Índice de funciones — Generador
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Generador/src/`. Total: 107 nombres en 8 archivos .gs.
+Código real: `Generador/src/`. Total: 115 nombres en 9 archivos .gs.
 
 ## Por archivo
 
@@ -13,6 +13,7 @@ Código real: `Generador/src/`. Total: 107 nombres en 8 archivos .gs.
 - **06_Limpieza_Duplicados_JSON.gs** (9 funciones): limpiarDuplicadosJSON, _limpiarCarpeta_, _analizarCarpetaJSON_, _anclaMasCercana_, _temporadaDeFecha_, _primerLunesDia_, _quitarTagExistente_, _leerPeriodo_, _primeraMencionNumerica_
 - **07_Cache_Periodos_JSON.gs** (3 funciones): _cache_cargar_, _cache_guardar_, reiniciarCachePeriodosJSON
 - **08_GitHub.gs** (14 funciones): _githubToken_, _ghReq_, _ghRespuesta_, _ghJson_, _scriptIdDeProyecto_, _extDeTipo_, _archivosDelProyecto_, _githubRevisarSecretos_, _githubGenerarIndice_, _githubGenerarLeeme_, _githubCommitArchivos_, _githubSincronizar_, _githubTraerAProyectoApps_, _githubProbar_
+- **09_ReadmeGenerador.gs** (4 funciones): _readmeFuncionesManuales_, _readmeGrupo_, _readmeAplicarBloque_, _actualizarReadmeGenerador_
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
@@ -22,6 +23,7 @@ Ninguno.
 
 | Nombre | Tipo | Archivo | Línea | Ref. contexto |
 |---|---|---|---|---|
+| `_actualizarReadmeGenerador_` | función | 09_ReadmeGenerador.gs | 133 |  |
 | `_analizarCarpetaJSON_` | función | 06_Limpieza_Duplicados_JSON.gs | 231 |  |
 | `_anclaMasCercana_` | función | 06_Limpieza_Duplicados_JSON.gs | 364 |  |
 | `_archivosDeCarpetaClan_` | función | 04_Organizador_JSON.gs | 202 |  |
@@ -43,7 +45,7 @@ Ninguno.
 | `_githubCommitArchivos_` | función | 08_GitHub.gs | 249 |  |
 | `_githubGenerarIndice_` | función | 08_GitHub.gs | 143 |  |
 | `_githubGenerarLeeme_` | función | 08_GitHub.gs | 212 |  |
-| `_githubProbar_` | función | 08_GitHub.gs | 478 |  |
+| `_githubProbar_` | función | 08_GitHub.gs | 487 |  |
 | `_githubRevisarSecretos_` | función | 08_GitHub.gs | 119 |  |
 | `_githubSincronizar_` | función | 08_GitHub.gs | 303 |  |
 | `_githubToken_` | función | 08_GitHub.gs | 45 |  |
@@ -72,6 +74,9 @@ Ninguno.
 | `_primeraMencionNumerica_` | función | 06_Limpieza_Duplicados_JSON.gs | 485 |  |
 | `_primerLunesDia_` | función | 06_Limpieza_Duplicados_JSON.gs | 434 |  |
 | `_quitarTagExistente_` | función | 06_Limpieza_Duplicados_JSON.gs | 448 |  |
+| `_readmeAplicarBloque_` | función | 09_ReadmeGenerador.gs | 71 |  |
+| `_readmeFuncionesManuales_` | función | 09_ReadmeGenerador.gs | 28 |  |
+| `_readmeGrupo_` | función | 09_ReadmeGenerador.gs | 55 |  |
 | `_registrarLogGenerador` | función | 02_Backstage.gs | 112 |  |
 | `_scriptIdDeProyecto_` | función | 08_GitHub.gs | 89 |  |
 | `_subirArchivosAProyecto` | función | 02_Backstage.gs | 381 |  |
@@ -117,6 +122,10 @@ Ninguno.
 | `organizarArchivosJSON` | función | 04_Organizador_JSON.gs | 70 |  |
 | `PAREO_TOLERANCIA_MS_` | global | 06_Limpieza_Duplicados_JSON.gs | 355 |  |
 | `probarConexionGithub` | función | 01_Principal.gs | 126 |  |
+| `README_GENERADOR_NOMBRE_` | global | 09_ReadmeGenerador.gs | 19 |  |
+| `README_LINEA_INICIO_` | global | 09_ReadmeGenerador.gs | 22 |  |
+| `README_MARCA_FIN_` | global | 09_ReadmeGenerador.gs | 21 |  |
+| `README_MARCA_INICIO_` | global | 09_ReadmeGenerador.gs | 20 |  |
 | `reiniciarCachePeriodosJSON` | función | 07_Cache_Periodos_JSON.gs | 77 |  |
 | `subirBaseDesdeGithub` | función | 01_Principal.gs | 65 |  |
 | `subirBaseDesdeGithubForzado` | función | 01_Principal.gs | 70 |  |

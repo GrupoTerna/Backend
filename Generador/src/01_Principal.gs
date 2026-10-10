@@ -58,7 +58,7 @@ function subirBaseDesdeMd() {
 /**
  * Sube Base/src/ de GitHub: deja el proyecto de Apps Script de "Base"
  * EXACTAMENTE igual (lo que no esté en GitHub se elimina del proyecto).
- * Antes guarda en Drive "Base_antes_de_GitHub <fecha>.zip" y al terminar
+ * Antes guarda en Drive "Base_antes_de_GitHub.zip" (uno solo, se reemplaza) y al terminar
  * regenera Base.zip/.gs/.txt/.md y el consolidado/índice de GitHub.
  * Se detiene si src/ parece incompleta (menos de la mitad de los .gs).
  */

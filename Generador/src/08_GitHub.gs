@@ -360,7 +360,7 @@ function _githubSincronizar_(nombreBase) {
  * Deja el proyecto de Apps Script de "Base" exactamente igual a Base/src/ de
  * GitHub. Un solo PUT reemplaza TODO el contenido, así que lo que no esté en
  * GitHub desaparece del proyecto y nunca queda un momento "vacío".
- * Antes hace un respaldo en Drive: "Base_antes_de_GitHub <fecha>.zip".
+ * Antes hace un respaldo en Drive: "Base_antes_de_GitHub.zip" (uno solo, se reemplaza).
  * Solo admite 'Base' (nunca el propio Generador).
  */
 function _githubTraerAProyectoApps_(nombreBase, forzar) {
@@ -372,12 +372,21 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
   var scriptId = _scriptIdDeProyecto_('Base');
   var actuales = _archivosDelProyecto_('Base');
 
-  // 1. Respaldo previo en Drive (con fecha, para que no lo pise el siguiente regenerado).
+  // 1. Respaldo previo en Drive: UN solo archivo, "Base_antes_de_GitHub.zip", que se
+  //    reemplaza en cada ejecución (la fecha queda en su descripción). Se crea la copia
+  //    nueva primero y solo después se mandan a la papelera las anteriores.
   _descargarProyectoAArchivos('Base');
   var carpeta = _carpetaDeRespaldos_('Base');
+  var nombreRespaldo = 'Base_antes_de_GitHub.zip';
+  var sello = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm:ss');
   var zips = carpeta.getFilesByName('Base.zip');
-  var sello = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH.mm');
-  if (zips.hasNext()) zips.next().makeCopy('Base_antes_de_GitHub ' + sello + '.zip', carpeta);
+  if (zips.hasNext()) {
+    var copia = zips.next().makeCopy(nombreRespaldo + '.tmp', carpeta);
+    var anteriores = carpeta.getFilesByName(nombreRespaldo);
+    while (anteriores.hasNext()) anteriores.next().setTrashed(true);
+    copia.setName(nombreRespaldo);
+    copia.setDescription('Estado de Base justo antes de traer GitHub: ' + sello + ' (Lima)');
+  }
 
   // 2. Leer Base/src/ de GitHub.
   var arbol = _ghJson_(_ghReq_('get', '/git/trees/' + GITHUB_BRANCH_ + '?recursive=1'));
@@ -454,7 +463,7 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
   console.log('Agregados (' + agregados.length + '): ' + (agregados.join(', ') || 'ninguno'));
   console.log('Eliminados (' + eliminados.length + '): ' + (eliminados.join(', ') || 'ninguno'));
   console.log('Sin cambios: ' + iguales);
-  console.log('Respaldo previo en Drive: Base_antes_de_GitHub ' + sello + '.zip');
+  console.log('Respaldo previo en Drive: ' + nombreRespaldo + ' (' + sello + ')');
 
   _registrarLogGenerador(
     '_githubTraerAProyectoApps_() / Base',
