@@ -2,6 +2,7 @@
 // 01_Principal.gs
 // Punto de entrada: solo las funciones que ejecutas manualmente desde el editor.
 // Orden: 1) subidas, 2) descargas, 3) mantenimiento.
+// Comentario de prueba para obtener el archivo modificado desde Github
 // =============================================================================
 // ------------------------------------------------------------------
 // DESCARGA (zip + txt + gs + md, siempre los 4 a la vez)
