@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 09/10/2026 22:17:17 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 09/10/2026 22:41:22 */
 
 
 
@@ -98,6 +98,22 @@ function subirBaseDesdeMd() {
   return reporte;
 }
 
+/**
+ * Sube Base/src/ de GitHub: deja el proyecto de Apps Script de "Base"
+ * EXACTAMENTE igual (lo que no esté en GitHub se elimina del proyecto).
+ * Antes guarda en Drive "Base_antes_de_GitHub <fecha>.zip" y al terminar
+ * regenera Base.zip/.gs/.txt/.md y el consolidado/índice de GitHub.
+ * Se detiene si src/ parece incompleta (menos de la mitad de los .gs).
+ */
+function subirBaseDesdeGithub() {
+  return _githubTraerAProyectoApps_('Base', false);
+}
+
+/** Igual que subirBaseDesdeGithub(), pero sin la salvaguarda de "src/ incompleta". */
+function subirBaseDesdeGithubForzado() {
+  return _githubTraerAProyectoApps_('Base', true);
+}
+
 // ------------------------------------------------------------------
 // DESCARGA (zip + txt + gs + md, siempre los 4 a la vez)
 // ------------------------------------------------------------------
@@ -146,33 +162,13 @@ function subirGeneradorDesdeMd() {
 
 
 // ------------------------------------------------------------------
-// GITHUB (repo GrupoTerna/Backend)
+// MANTENIMIENTO (uso ocasional / peligroso)
 // ------------------------------------------------------------------
-
-/**
- * Trae Base/src/ de GitHub y deja el proyecto de Apps Script de "Base"
- * EXACTAMENTE igual (lo que no esté en GitHub se elimina del proyecto).
- * Antes crea en Drive el respaldo "Base_antes_de_GitHub <fecha>.zip" y al
- * terminar regenera Base.zip/.gs/.txt/.md y el consolidado/índice de GitHub.
- * Se detiene si src/ parece incompleta (menos de la mitad de los .gs).
- */
-function subirBaseDesdeGithub() {
-  return _githubTraerAProyectoApps_('Base', false);
-}
-
-/** Igual que subirBaseDesdeGithub(), pero sin la salvaguarda de "src/ incompleta". */
-function subirBaseDesdeGithubForzado() {
-  return _githubTraerAProyectoApps_('Base', true);
-}
 
 /** Comprueba GITHUB_TOKEN, acceso al repo, permiso de escritura y rama. */
 function probarConexionGithub() {
   return _githubProbar_();
 }
-
-// ------------------------------------------------------------------
-// MANTENIMIENTO (uso ocasional / peligroso)
-// ------------------------------------------------------------------
 
 /**
  * PELIGRO: borra TODOS los archivos de código del proyecto de Apps Script

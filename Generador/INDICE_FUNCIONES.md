@@ -5,7 +5,7 @@ Código real: `Generador/src/`. Total: 107 nombres en 8 archivos .gs.
 
 ## Por archivo
 
-- **01_Principal.gs** (14 funciones): descargarBase, subirBaseDesdeZip, subirBaseDesdeTxt, subirBaseDesdeGs, subirBaseDesdeMd, descargarGenerador, subirGeneradorDesdeZip, subirGeneradorDesdeTxt, subirGeneradorDesdeGs, subirGeneradorDesdeMd, subirBaseDesdeGithub, subirBaseDesdeGithubForzado, probarConexionGithub, eliminarTodosLosArchivosDeBase
+- **01_Principal.gs** (14 funciones): descargarBase, subirBaseDesdeZip, subirBaseDesdeTxt, subirBaseDesdeGs, subirBaseDesdeMd, subirBaseDesdeGithub, subirBaseDesdeGithubForzado, descargarGenerador, subirGeneradorDesdeZip, subirGeneradorDesdeTxt, subirGeneradorDesdeGs, subirGeneradorDesdeMd, probarConexionGithub, eliminarTodosLosArchivosDeBase
 - **02_Backstage.gs** (15 funciones): _carpetaDeRespaldos_, _conAviso_, _registrarLogGenerador, obtenerSpreadsheetPorNombreEnCarpeta_, consolidarCodigoDesdeZip, _extraerArchivosDeTexto, _generarMarkdownLegible_, _extraerArchivosDeMarkdown_, nombreBaseDesdeArchivo_, _descargarProyectoAArchivos, _subirArchivosAProyecto, actualizarScriptDeHoja, _eliminarTodosLosArchivosDeProyecto, obtenerArchivosProyecto_, crearProyectoVinculado_
 - **03_RoyaleAPI_Torneos.gs** (2 funciones): obtenerJSON_viaProxy, tryAlternativeProxy
 - **04_Organizador_JSON.gs** (6 funciones): organizarArchivosJSON, _organizarJSON_procesarRaiz_, _carpetaHijaOCrear_, _archivosDeCarpetaClan_, _organizarJSON_tiempoAgotado_, _organizarJSON_borrarTriggersPendientes_
@@ -89,8 +89,8 @@ Ninguno.
 | `CREAR_O_ACTUALIZAR_HOJA_SISTEMA` | global | 02_Backstage.gs | 15 |  |
 | `crearProyectoVinculado_` | función | 02_Backstage.gs | 616 |  |
 | `descargarBase` | función | 01_Principal.gs | 14 |  |
-| `descargarGenerador` | función | 01_Principal.gs | 64 |  |
-| `eliminarTodosLosArchivosDeBase` | función | 01_Principal.gs | 139 |  |
+| `descargarGenerador` | función | 01_Principal.gs | 80 |  |
+| `eliminarTodosLosArchivosDeBase` | función | 01_Principal.gs | 135 |  |
 | `GITHUB_BORRAR_FORMATOS_ANTIGUOS_` | global | 08_GitHub.gs | 23 |  |
 | `GITHUB_BRANCH_` | global | 08_GitHub.gs | 19 |  |
 | `GITHUB_OWNER_` | global | 08_GitHub.gs | 17 |  |
@@ -118,14 +118,14 @@ Ninguno.
 | `PAREO_TOLERANCIA_MS_` | global | 06_Limpieza_Duplicados_JSON.gs | 355 |  |
 | `probarConexionGithub` | función | 01_Principal.gs | 126 |  |
 | `reiniciarCachePeriodosJSON` | función | 07_Cache_Periodos_JSON.gs | 77 |  |
-| `subirBaseDesdeGithub` | función | 01_Principal.gs | 116 |  |
-| `subirBaseDesdeGithubForzado` | función | 01_Principal.gs | 121 |  |
+| `subirBaseDesdeGithub` | función | 01_Principal.gs | 65 |  |
+| `subirBaseDesdeGithubForzado` | función | 01_Principal.gs | 70 |  |
 | `subirBaseDesdeGs` | función | 01_Principal.gs | 45 |  |
 | `subirBaseDesdeMd` | función | 01_Principal.gs | 52 |  |
 | `subirBaseDesdeTxt` | función | 01_Principal.gs | 38 |  |
 | `subirBaseDesdeZip` | función | 01_Principal.gs | 31 |  |
-| `subirGeneradorDesdeGs` | función | 01_Principal.gs | 91 |  |
-| `subirGeneradorDesdeMd` | función | 01_Principal.gs | 98 |  |
-| `subirGeneradorDesdeTxt` | función | 01_Principal.gs | 84 |  |
-| `subirGeneradorDesdeZip` | función | 01_Principal.gs | 77 |  |
+| `subirGeneradorDesdeGs` | función | 01_Principal.gs | 107 |  |
+| `subirGeneradorDesdeMd` | función | 01_Principal.gs | 114 |  |
+| `subirGeneradorDesdeTxt` | función | 01_Principal.gs | 100 |  |
+| `subirGeneradorDesdeZip` | función | 01_Principal.gs | 93 |  |
 | `tryAlternativeProxy` | función | 03_RoyaleAPI_Torneos.gs | 22 |  |
