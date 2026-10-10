@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 09/10/2026 22:52:00 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 10/10/2026 04:06:40 */
 
 
 
@@ -158,6 +158,23 @@ function subirGeneradorDesdeMd() {
   var reporte = _subirArchivosAProyecto('Generador', 'md');
   _githubSincronizar_('Generador');
   return reporte;
+}
+
+/**
+ * Sube Generador/src/ de GitHub: deja el proyecto de Apps Script del propio Generador
+ * EXACTAMENTE igual (lo que no esté en GitHub se elimina del proyecto).
+ * Antes guarda en Drive "Generador_antes_de_GitHub.zip" (uno solo, se reemplaza) y al terminar
+ * regenera Generador.zip/.gs/.txt/.md y el consolidado/índice de GitHub.
+ * Se detiene si src/ parece incompleta o si no trae la función de bajada.
+ * [→ Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse]
+ */
+function subirGeneradorDesdeGithub() {
+  return _githubTraerAProyectoApps_('Generador', false);
+}
+
+/** Igual que subirGeneradorDesdeGithub(), pero sin las salvaguardas de src/ incompleta ni de función de bajada. */
+function subirGeneradorDesdeGithubForzado() {
+  return _githubTraerAProyectoApps_('Generador', true);
 }
 
 
@@ -2121,8 +2138,9 @@ function reiniciarCachePeriodosJSON() {
 //  - _githubSincronizar_(nombre): sube a GitHub, en UN solo commit, los .gs
 //    sueltos (Base/src/ o Generador/src/), el consolidado de respaldo
 //    (respaldo/<nombre>.gs), INDICE_FUNCIONES.md y LEEME_IA.md.
-//  - _githubTraerAProyectoApps_('Base'): lee Base/src/ de GitHub y deja el
-//    proyecto de Apps Script de Base EXACTAMENTE igual (reemplazo atómico).
+//  - _githubTraerAProyectoApps_(nombre): lee <Nombre>/src/ de GitHub y deja el
+//    proyecto de Apps Script de Base (o del propio Generador) EXACTAMENTE igual
+//    (reemplazo atómico).
 //
 // TOKEN: nunca va en el código. Se guarda en Configuración del proyecto →
 // Propiedades del script → GITHUB_TOKEN (fine-grained, solo el repo Backend,
@@ -2473,41 +2491,46 @@ function _githubSincronizar_(nombreBase) {
 // -----------------------------------------------------------------------------
 
 /**
- * Deja el proyecto de Apps Script de "Base" exactamente igual a Base/src/ de
- * GitHub. Un solo PUT reemplaza TODO el contenido, así que lo que no esté en
- * GitHub desaparece del proyecto y nunca queda un momento "vacío".
- * Antes hace un respaldo en Drive: "Base_antes_de_GitHub.zip" (uno solo, se reemplaza).
- * Solo admite 'Base' (nunca el propio Generador).
+ * Deja el proyecto de Apps Script de "Base" o del propio "Generador" exactamente
+ * igual a <Nombre>/src/ de GitHub. Un solo PUT reemplaza TODO el contenido, así
+ * que lo que no esté en GitHub desaparece del proyecto y nunca queda un momento "vacío".
+ * Antes hace un respaldo en Drive: "<Nombre>_antes_de_GitHub.zip" (uno solo, se reemplaza).
+ *
+ * CASO 'Generador' (se reemplaza a sí mismo): además de la salvaguarda de "src/ incompleta",
+ * si no es forzado se detiene cuando src/ no trae esta misma función de bajada, porque el
+ * Generador quedaría sin poder volver a traer GitHub. Si GitHub trae un error de sintaxis, el
+ * Generador puede quedar sin correr: se repara pegando a mano desde el respaldo de Drive.
+ * [→ Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse]
  */
 function _githubTraerAProyectoApps_(nombreBase, forzar) {
-  if (nombreBase !== 'Base') {
-    throw 'Por seguridad, solo se puede traer desde GitHub el proyecto "Base" (nunca el propio Generador).';
+  if (nombreBase !== 'Base' && nombreBase !== 'Generador') {
+    throw 'Nombre de proyecto no válido para traer desde GitHub: ' + nombreBase;
   }
   if (!_githubToken_()) throw 'Falta la propiedad GITHUB_TOKEN en las propiedades del script.';
 
-  var scriptId = _scriptIdDeProyecto_('Base');
-  var actuales = _archivosDelProyecto_('Base');
+  var scriptId = _scriptIdDeProyecto_(nombreBase);
+  var actuales = _archivosDelProyecto_(nombreBase);
 
   // 1. Respaldo previo en Drive: UN solo archivo, "Base_antes_de_GitHub.zip", que se
   //    reemplaza en cada ejecución (la fecha queda en su descripción). Se crea la copia
   //    nueva primero y solo después se mandan a la papelera las anteriores.
-  _descargarProyectoAArchivos('Base');
-  var carpeta = _carpetaDeRespaldos_('Base');
-  var nombreRespaldo = 'Base_antes_de_GitHub.zip';
+  _descargarProyectoAArchivos(nombreBase);
+  var carpeta = _carpetaDeRespaldos_(nombreBase);
+  var nombreRespaldo = nombreBase + '_antes_de_GitHub.zip';
   var sello = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm:ss');
-  var zips = carpeta.getFilesByName('Base.zip');
+  var zips = carpeta.getFilesByName(nombreBase + '.zip');
   if (zips.hasNext()) {
     var copia = zips.next().makeCopy(nombreRespaldo + '.tmp', carpeta);
     var anteriores = carpeta.getFilesByName(nombreRespaldo);
     while (anteriores.hasNext()) anteriores.next().setTrashed(true);
     copia.setName(nombreRespaldo);
-    copia.setDescription('Estado de Base justo antes de traer GitHub: ' + sello + ' (Lima)');
+    copia.setDescription('Estado de ' + nombreBase + ' justo antes de traer GitHub: ' + sello + ' (Lima)');
   }
 
-  // 2. Leer Base/src/ de GitHub.
+  // 2. Leer <Nombre>/src/ de GitHub.
   var arbol = _ghJson_(_ghReq_('get', '/git/trees/' + GITHUB_BRANCH_ + '?recursive=1'));
   if (arbol.truncated) throw 'El árbol de GitHub vino truncado; no es seguro continuar.';
-  var prefijo = 'Base/src/';
+  var prefijo = nombreBase + '/src/';
   var nodos = (arbol.tree || []).filter(function(n) {
     return n.type === 'blob' && n.path.indexOf(prefijo) === 0;
   });
@@ -2541,6 +2564,17 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
     });
   }
 
+  // 3b. Solo para el Generador: no autoreemplazarse con una src/ que no pueda volver a traer GitHub.
+  if (nombreBase === 'Generador' && !forzar) {
+    var traeBajada = nuevos.some(function(f) {
+      return f.type === 'SERVER_JS' && f.source.indexOf('function _githubTraerAProyectoApps_') !== -1;
+    });
+    if (!traeBajada) {
+      throw 'Generador/src/ de GitHub no trae _githubTraerAProyectoApps_(): el Generador quedaría sin poder ' +
+            'volver a traer GitHub. No se tocó nada. Si es intencional, corre subirGeneradorDesdeGithubForzado().';
+    }
+  }
+
   // 4. Salvaguarda contra una carpeta src/ incompleta.
   var gsNuevos   = nuevos.filter(function(f) { return f.type === 'SERVER_JS'; }).length;
   var gsActuales = actuales.filter(function(f) { return f.type === 'SERVER_JS'; }).length;
@@ -2558,7 +2592,7 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
     muteHttpExceptions: true
   });
   if (resp.getResponseCode() !== 200) {
-    throw 'Error al actualizar el proyecto de Base (' + resp.getResponseCode() + '): ' + resp.getContentText();
+    throw 'Error al actualizar el proyecto de ' + nombreBase + ' (' + resp.getResponseCode() + '): ' + resp.getContentText();
   }
 
   // 6. Reporte.
@@ -2574,7 +2608,7 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
   });
   var eliminados = actuales.map(function(a) { return a.name; }).filter(function(n) { return !despues[n]; });
 
-  console.log('--- Base desde GitHub ---');
+  console.log('--- ' + nombreBase + ' desde GitHub ---');
   console.log('Modificados (' + modificados.length + '): ' + (modificados.join(', ') || 'ninguno'));
   console.log('Agregados (' + agregados.length + '): ' + (agregados.join(', ') || 'ninguno'));
   console.log('Eliminados (' + eliminados.length + '): ' + (eliminados.join(', ') || 'ninguno'));
@@ -2582,15 +2616,15 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
   console.log('Respaldo previo en Drive: ' + nombreRespaldo + ' (' + sello + ')');
 
   _registrarLogGenerador(
-    '_githubTraerAProyectoApps_() / Base',
-    'Proyecto de Base reemplazado con Base/src/ de GitHub. Modificados: ' + modificados.length +
+    '_githubTraerAProyectoApps_() / ' + nombreBase,
+    'Proyecto de ' + nombreBase + ' reemplazado con ' + nombreBase + '/src/ de GitHub. Modificados: ' + modificados.length +
     ' | Agregados: ' + agregados.length + ' | Eliminados: ' + eliminados.length + ' | Sin cambios: ' + iguales,
     []
   );
 
   // 7. Regenerar respaldos de Drive y dejar GitHub al día (consolidado + índice).
-  _descargarProyectoAArchivos('Base');
-  _githubSincronizar_('Base');
+  _descargarProyectoAArchivos(nombreBase);
+  _githubSincronizar_(nombreBase);
 
   return { modificados: modificados, agregados: agregados, eliminados: eliminados, sinCambios: iguales };
 }
