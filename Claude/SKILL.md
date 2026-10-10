@@ -1,6 +1,6 @@
 ---
 name: md
-description: "Lectura de Base.md (backend Apps Script), Web-main.zip (frontend JS del repo GrupoTerna/Web), Tampermonkey.md (script de Tampermonkey) y Generador.md (proyecto que genera/sincroniza Base)"
+description: "Lectura de Base.md (backend Apps Script), Web-main.zip (frontend JS del repo GrupoTerna/Web), Tampermonkey.md (script de Tampermonkey) y Generador.md (proyecto que genera/sincroniza Base). Desde el 10-oct-2026 el código vive en tres repos de GitHub (Backend, Web, Script) y los cambios se suben directo a GitHub (ver sección 0)"
 ---
 
 # Skill: `md` — lectura, corrección y consolidados de fases de proyectos en .md/.zip
@@ -8,6 +8,53 @@ description: "Lectura de Base.md (backend Apps Script), Web-main.zip (frontend J
 ## Idioma
 
 Responder siempre en **español de Perú**. Evitar modismos, léxico o entonación de español de Argentina u otras variantes regionales.
+
+---
+
+# 0. Repositorios, entrega por GitHub y reglas nuevas (actualizado el 10-oct-2026; tiene precedencia sobre lo que contradiga más abajo)
+
+> **Esta sección REEMPLAZA, en lo que se refiere a la forma de entregar los archivos:** el último párrafo de «Objetivo», la «Regla adicional» de la sección 6 (la frase «cada uno como archivo individual descargable»), la sección 7 completa, los pasos 10 y 11 de la sección 10, la sección 15, la regla 5 de las reglas de trabajo y las líneas de «archivo descargable» de la regla de oro (17). **Corrección explícita (regla 9):** hasta el 10-oct-2026 esta skill decía que todo archivo modificado debía entregarse como archivo descargable; la usuaria cambió el flujo y esa instrucción ya no rige. **Sigue vigente todo lo demás** (archivo completo, sin parches, nombre exacto, solo los archivos realmente modificados, sin comillas inversas en los `.gs`, español de Perú).
+
+## 0.1 Los tres repositorios (GitHub, `GrupoTerna`)
+
+- **`GrupoTerna/Backend`** (público). Carpetas: `Base/` y `Generador/` (cada una con `src/` = los `.gs` individuales, que son **lo único que Claude edita**; y `respaldo/`, `INDICE_FUNCIONES.md`, `LEEME_IA.md` = archivos **generados por Apps Script** al descargar, que **Claude nunca edita**); `Tampermonkey/Tampermonkey.md`; `Claude/SKILL.md` (copia de esta skill); `Consolidados de cambios/` (consolidados de fases); `Contexto_Base_Web.md` (contexto unificado del sistema); `Datos descargados/` (subcarpetas con archivos de Drive o logs que la usuaria sube para contrastarlos con el código).
+- **`GrupoTerna/Web`** (público): el frontend, publicado en GitHub Pages. Tiene su propio `CHANGELOG.md`.
+- **`GrupoTerna/Script`** (privado): **exclusivo de Render**; contiene solo `package.json` y `server.js`. **No se usa**, salvo que (1) haya que modificar algo relacionado con Render, (2) haya que modificar necesariamente uno de esos dos archivos o (3) falte agregar un archivo al repo para Render. Claude **no lo toca por iniciativa propia**, y **avisa antes de subir** porque un push puede redesplegar el servidor. No tiene README todavía.
+- Cada repo se adjunta a la sesión por separado y **con permiso de escritura** para poder subir; sin eso solo se puede leer. El repo `Backend` figura a veces como `backend`: GitHub redirige.
+
+## 0.2 Entrega: se sube directo a GitHub
+
+- Para modificar o crear un archivo de los repos, Claude lo edita en el clon del repo y **lo sube directamente a `main`**, en commits pequeños y con mensaje claro. Antes de subir trae lo remoto (`fetch` y `rebase`), porque el Generador también empuja a `main`.
+- **No genera el archivo para descargar ni usa la herramienta de enviar archivos, a menos que la usuaria lo pida expresamente.** Si ya se envió un archivo una vez y la aplicación vuelve a mostrar su tarjeta, no es porque Claude lo haya enviado de nuevo: no debe afirmar de dónde viene la tarjeta si no lo sabe.
+- **Al terminar cada tanda da la lista de archivos modificados o creados** (ruta, estado «modificado» o «creado» y commit), y si subió cambios a un repo que la usuaria tiene en GitHub Desktop, añade «Pendiente de pull en GitHub Desktop: <repo> (commit xxxxxxx)». Claude no ve el equipo de la usuaria; solo sabe lo que él subió.
+- Si no se puede subir (por permiso o por error), lo dice y pregunta; no sustituye la subida por un archivo descargable sin avisar.
+- Los repos `Backend` y `Web` son **públicos**: nunca se escriben tokens, claves ni datos personales en el código ni en los documentos.
+
+## 0.3 Cómo se sincronizan Apps Script y GitHub (verificado en `Generador/src/01_Principal.gs` y `08_GitHub.gs`; evita pisar cambios)
+
+- **Apps Script → GitHub:** `descargarBase()` y las funciones `subirBase…` desde zip, txt, gs o md terminan escribiendo en un solo commit todo `Base/src/`, `respaldo/`, `INDICE_FUNCIONES.md` y `LEEME_IA.md`; `descargarGenerador()` hace lo mismo con `Generador/`. Si detecta posibles secretos en el código, bloquea la subida.
+- **GitHub → Apps Script, solo para `Base`:** `subirBaseDesdeGithub()` (y `subirBaseDesdeGithubForzado()`, sin la salvaguarda de «src/ incompleta») deja el proyecto de Apps Script **exactamente igual a `Base/src/`; lo que no esté en GitHub se elimina del proyecto.** Antes guarda en Drive `Base_antes_de_GitHub.zip`. **Para `Generador` todavía no existe esa bajada:** lo que Claude edite en `Generador/src/` lo debe pasar la usuaria a Apps Script a mano.
+- **Riesgo que Claude debe prevenir:** si Claude sube un cambio a `Base/src/` y, antes de correr `subirBaseDesdeGithub()`, la usuaria corre `descargarBase()` u otra función `subirBase…`, **el estado viejo de Apps Script se escribe encima del cambio en GitHub**. Por eso, **cada vez que Claude cambie algo en `Base/src/`, debe recordar al final de la tanda: «corre `subirBaseDesdeGithub()` antes de cualquier descarga»**. Con `Generador/src/`, debe recordar que el cambio hay que pasarlo a mano.
+
+## 0.4 El archivo de contexto: `Contexto_Base_Web.md`
+
+- Es **el archivo unificado que concentra toda la lógica de funcionamiento del sistema**: backend, frontend y Tampermonkey. Va ahí **el funcionamiento** y **la información que sirva para tomar decisiones futuras y prevenir errores**; también **las decisiones sobre fallos**: cuando una decisión salió mal y se tomó otra para corregirla, pero por defecto se sugeriría la primera, se deja escrito **por qué no se debe hacer, que ya se probó y no funcionó**, y la evidencia, para evitar decisiones equivocadas o que no corresponden con la evidencia.
+- **No va ahí** el estado, los pendientes ni el historial de cambios: eso se queda en el consolidado de fases o en el `CHANGELOG.md`.
+- Los `.gs`, `.html` y demás quedan con código y, a lo más, una línea corta que remite al contexto (por ejemplo `[→ Contexto_Base_Web.md §Bxxx]`). Así no se pierde nada cuando se suben solo archivos específicos.
+- Cuando se contraste un pendiente contra el código, **el registro de la contrastación queda en `Contexto_Base_Web.md`** (qué se verificó, contra qué archivo y versión, en qué fecha y qué se encontró), y en el consolidado se marca lo ya hecho.
+- **Pendiente:** falta migrar al contexto lo de funcionamiento que aún está en los archivos del frontend y en el `CHANGELOG.md` del repo `Web`. El `CHANGELOG.md` **conserva el historial de cambios, más sencillo**; solo sale de él el funcionamiento y lo que sirva para decidir y prevenir errores.
+
+## 0.5 Consolidados de fases y carpeta `Datos descargados`
+
+- **Todo consolidado de fases se guarda en `Consolidados de cambios/` del repo `Backend`** y se actualiza ahí, no se entrega para descargar.
+- **`Datos descargados/`** tiene subcarpetas con archivos de Drive o logs que la usuaria sube para que Claude contraste los JSON, CSV u otros archivos (la evidencia) contra el código. **Regla urgente:** si en un archivo de esa carpeta Claude **ve teléfonos o celulares**, lo trata como urgente: **avisa de inmediato que se quite el archivo del repo, o pide autorización para eliminarlo**, y no copia ese contenido. El repo es público.
+
+## 0.6 Pendientes de definir sobre esta skill (regla 2 y 3)
+
+- **Qué lugar ocupan `Base.md`, `Web-main.zip`, `Tampermonkey.md` y `Generador.md` frente a los repos.** Provisional, **no confirmado por la usuaria**: la fuente del código actual es el repo; si la usuaria sube alguno de esos archivos, se lee como instantánea y, si difiere del repo, se avisa antes de editar.
+- **README en cada repo** (`Web`, `Backend`, `Script`): por redactar.
+- **Piezas del Generador por programar** (de a una por tanda): (1) aviso de pull pendiente: antes de escribir en GitHub compara el último commit del repo con el que él mismo trajo y **bloquea**, con variante forzada; (2) `subirGeneradorDesdeGithub()` y `subirGeneradorDesdeGithubForzado()`; (3) `Indice_Base.md` e `Indice_Generador.md`, que **se reemplazan** en cada descarga o subida (también en Drive, en las carpetas de Base y Generador, reemplazando el mismo archivo para conservar las versiones) y traen una tabla: **N.º automático, nombre del archivo y estado** (permanece igual, modificado, creado o eliminado; «modificado» es solo para los que no se crearon ni eliminaron en esa tanda). Cuando existan, actualizar 0.3.
+- **Contrastar los pendientes del consolidado contra el código** y migrar el contexto del frontend y del `CHANGELOG.md` de `Web`: pendientes, de a bloques chicos.
 
 ## Objetivo
 
@@ -22,7 +69,7 @@ Este proyecto tiene un ecosistema de fuentes de código recurrentes que el usuar
 3. **`Tampermonkey.md`** — el **script de Tampermonkey**. Tampermonkey no permite subir archivos, así que el usuario usa `.md` únicamente como formato de conveniencia para poder descargar y compartir el código. Esto **no lo convierte en texto libre ni en algo ignorable**: es el código real del script.
 4. **`Generador.md`** (o `.gs`/`.zip`/`.txt`) — es el **proyecto Apps Script que genera y sincroniza `Base`**. No es parte del backend de `Base` en sí, sino la herramienta que lo produce. Ver sección "El Generador" más abajo para el detalle de qué es y cuándo se necesita.
 
-La skill debe trabajar sobre el contenido real de estos archivos y devolver **únicamente los archivos puntuales que hayan sido modificados**, listos para descargar — nunca carpetas, zips ni el consolidado completo.
+La skill debe trabajar sobre el contenido real de estos archivos y modificar **únicamente los archivos puntuales que haga falta**, nunca carpetas, zips ni el consolidado completo. **Corrección (10-oct-2026, ver sección 0):** esos archivos ya no se devuelven «listos para descargar»; se suben directo a GitHub y se da la lista de archivos tocados.
 
 ## El Generador
 
@@ -53,6 +100,7 @@ Además de las cuatro fuentes anteriores, el usuario suele generar y subir conso
 - No deben tratarse como una fuente permanente del ecosistema (a diferencia de `Base`, `Web-main`, `Tampermonkey` y `Generador`, que sí son recurrentes y estables).
 - Mientras estén vigentes en la conversación, se leen igual que cualquier `.md` (ver "Archivos md adicionales" más abajo): nunca se asume su contenido a partir del portapapeles.
 - Si el usuario indica que un consolidado de fases ya fue aplicado o que ya no es necesario, dejar de usarlo como referencia para nuevas modificaciones.
+- **Dónde viven (10-oct-2026):** todo consolidado de fases se guarda en la carpeta `Consolidados de cambios/` del repo `Backend` y se actualiza ahí (ver sección 0.5); no se entrega para descargar.
 
 ### Compactación cuando el consolidado crece demasiado
 
@@ -86,7 +134,7 @@ Antes de responder, si el usuario adjuntó un archivo y también escribió/pegó
 
 ## Regla fundamental
 
-**Si `Base.md`, `Web-main.zip`, `Tampermonkey.md` o `Generador.md` están disponibles, el código actual se obtiene de esos archivos, no del texto pegado en el chat.**
+**Si `Base.md`, `Web-main.zip`, `Tampermonkey.md` o `Generador.md` están disponibles, el código actual se obtiene de esos archivos, no del texto pegado en el chat.** *(Desde el 10-oct-2026 el código también está en los repos de GitHub, ver sección 0.1; qué manda cuando difieren un archivo subido y el repo está pendiente de confirmar, ver sección 0.6.)*
 
 **Nunca ignorar `Base.md`, `Tampermonkey.md` o `Generador.md` por el hecho de tener extensión `.md`.** Los tres son consolidados de código real (backend Apps Script, script de Tampermonkey, y el proyecto Generador respectivamente), no notas ni documentación libre. Si el propio archivo indica que es un consolidado de archivos `.gs` o el código de un script, se trata como tal.
 
@@ -245,13 +293,15 @@ Sin importar cuántos archivos contenga `Base.md` o `Web-main.zip`, **nunca** en
 - el archivo `Base.md` completo reescrito;
 - todos los archivos del proyecto cuando solo algunos fueron modificados.
 
-Entregar **exclusivamente** los archivos puntuales que hayan sido efectivamente editados, cada uno como archivo individual descargable, salvo que el usuario pida explícitamente el proyecto completo.
+Modificar y subir **exclusivamente** los archivos puntuales que hayan sido efectivamente editados, salvo que el usuario pida explícitamente el proyecto completo. **Corrección (10-oct-2026):** antes decía «cada uno como archivo individual descargable»; ahora se suben a GitHub (sección 0.2) y solo se entregan para descargar si el usuario lo pide expresamente.
 
 ---
 
 # 7. Archivos modificados: siempre como archivos reales
 
-Todo archivo `.gs` modificado debe entregarse como **archivo real descargable y abrible**.
+> **REEMPLAZADA el 10-oct-2026 en lo que se refiere a la entrega (ver sección 0.2):** los archivos modificados se **suben directo a GitHub**; solo se entregan como archivo descargable **si el usuario lo pide expresamente**. Lo que sigue se conserva solo para ese caso, y porque **nunca** se entrega un archivo modificado únicamente como bloque de código en el chat.
+
+Cuando el usuario pida el archivo para descargar, todo archivo `.gs` modificado debe entregarse como **archivo real descargable y abrible**.
 
 Nunca entregar un archivo modificado únicamente como bloque de código dentro del chat.
 
@@ -267,9 +317,9 @@ Esto es especialmente importante para archivos largos.
 
 ## Regla absoluta
 
-**Archivo modificado = archivo descargable.**
+**Archivo modificado = archivo real (subido a GitHub; descargable solo si se pide), nunca un bloque de código en el chat.**
 
-No sustituir el archivo descargable por un bloque de código Markdown.
+No sustituir el archivo por un bloque de código Markdown.
 
 ---
 
@@ -392,15 +442,15 @@ Comprobar:
 - nombre exacto del archivo;
 - **ausencia total de comillas inversas, etiquetas de lenguaje o restos de formato Markdown/HTML dentro del `.gs`** (ver sección 8bis).
 
-## Paso 10 — Crear archivos descargables
+## Paso 10 — Modificar los archivos en el repo
 
-Generar físicamente solo los archivos individuales modificados (`.gs`, `.js`, `.md`, etc., según corresponda).
+**Corrección (10-oct-2026, ver sección 0.2):** antes este paso decía «crear archivos descargables». Ahora se editan físicamente solo los archivos individuales modificados (`.gs`, `.js`, `.md`, etc., según corresponda) en el clon del repo.
 
 Cada archivo debe conservar exactamente su nombre original. Nunca generar un `.zip` ni una carpeta con el proyecto completo.
 
-## Paso 11 — Entregar
+## Paso 11 — Subir a GitHub y avisar
 
-Entregar únicamente los archivos puntuales que hayan sido modificados, salvo que el usuario solicite explícitamente todos los archivos o el proyecto completo.
+Subir directo a `main` únicamente los archivos puntuales que hayan sido modificados, salvo que el usuario solicite explícitamente todos los archivos o el proyecto completo. Después dar **la lista de archivos modificados o creados** con su commit, y los recordatorios de la sección 0.3 (por ejemplo correr `subirBaseDesdeGithub()` antes de cualquier descarga). **No se entrega el archivo para descargar salvo pedido expreso.**
 
 ---
 
@@ -468,7 +518,7 @@ Si realmente se necesita un archivo nuevo:
 
 # 15. Resultado final esperado
 
-El usuario debe recibir los archivos corregidos directamente como archivos descargables, uno por uno, nunca como carpeta o zip.
+**Corrección (10-oct-2026, ver sección 0.2):** antes esta sección decía que el usuario debía recibir los archivos corregidos como archivos descargables. Ahora los archivos corregidos **se suben a GitHub, uno por uno** (nunca como carpeta o zip) y el usuario recibe la lista de archivos tocados; solo se entregan para descargar si los pide. Los ejemplos de abajo sirven para saber **qué archivos** se tocan y con qué nombre.
 
 Ejemplo (backend, desde `Base.md`):
 
@@ -495,7 +545,7 @@ No entregar:
 - `Web-main_fixed.zip`
 - `Web-main.zip` completo cuando solo se modificaron uno o dos archivos
 
-No entregar los archivos como bloques de código en el chat.
+No entregar los archivos como bloques de código en el chat. Tampoco se entregan para descargar si el usuario no lo pidió.
 
 ---
 # 16. Cambios incrementales y continuidad entre sesiones
@@ -505,7 +555,7 @@ Los cambios se entregan en tandas chicas e incrementales, para evitar que la ses
 No debe perderse información entre una conversación y la siguiente:
 
 - Como el trabajo avanza entre sesiones y el chat se borra antes de empezar una nueva, se busca no perder el contexto de una conversación a otra. Nada se debe perder de un chat a otro.
-- Si el usuario explica el comportamiento de algo o da alguna confirmación, eso se documenta de inmediato en el lugar que corresponda según dónde sea relevante la información: el plan de fases vigente, `Base.md` o `Web-main`. No debe quedar solo dicho en el chat.
+- Si el usuario explica el comportamiento de algo o da alguna confirmación, eso se documenta de inmediato en el lugar que corresponda según dónde sea relevante la información: el plan de fases vigente, `Base.md`, `Web-main` o, si es funcionamiento del sistema o una decisión que sirva para prevenir errores, `Contexto_Base_Web.md` (ver sección 0.4). No debe quedar solo dicho en el chat.
 
 ## Referencias en el changelog: archivo + función, no solo el número
 
@@ -531,7 +581,7 @@ Cuando el usuario pida generar un consolidado de fases, se le agregan estas regl
 > 2. **No asumir, no omitir, no descartar nada.** Ante cualquier duda, se pregunta. Si el usuario no responde algo, se vuelve a preguntar, y si hace falta se generan más preguntas y se explica de forma más detallada la pregunta.
 > 3. **Ninguna advertencia o sugerencia se queda solo en el chat.** El usuario no programa y puede no entender el detalle técnico, así que toda alerta, advertencia o sugerencia se guarda directo en este consolidado (o en el `.gs` correspondiente, ver punto 5) marcada como **"pendiente de definir o contestar"**, junto con el contexto de los datos o confirmaciones que el usuario ya haya dado sobre ese tema, para poder tomar la decisión cuando corresponda.
 > 4. **Cambios chicos e incrementales.** Nunca abarcar de más en una sola tanda.
-> 5. **Nunca se entregan parches.** Cada archivo modificado se entrega **completo y listo para descargar**, con su nombre exacto, y se entrega **solo el archivo o los archivos que realmente se hayan modificado** en esa tanda — nunca el proyecto completo, nunca una carpeta ni un zip.
+> 5. **Nunca se entregan parches.** Cada archivo modificado queda **completo**, con su nombre exacto, y se sube **directo a GitHub** (no se entrega para descargar salvo pedido expreso; se da la lista de archivos modificados o creados con su commit). Se toca **solo el archivo o los archivos que realmente se hayan modificado** en esa tanda — nunca el proyecto completo, nunca una carpeta ni un zip. *(Corrección del 10-oct-2026, regla 9: antes decía «completo y listo para descargar».)*
 > 6. **Cada fase debe poder completarse dentro de una sola sesión gratuita de Claude.** Si una fase resulta demasiado grande al empezarla, se debe avisar y partirla en sub-fases en vez de forzarla en una sola sesión.
 > 7. **Indicar en cada fase qué archivos `.gs` (o qué otra fuente) hay que subir**, y si es para **ver información** o para **editar**.
 > 8. **Ningún cambio se hace "a ciegas".** Cada fase debe cerrar con una verificación revisable (diff visual, prueba funcional, comparación antes/después, etc.) antes de pasar a la siguiente, e indicar explícitamente qué se pudo verificar y qué quedó sin probar (por ejemplo, "no se probó en navegador real" o "no se pudo probar en Apps Script real").
@@ -554,7 +604,7 @@ Las reglas 1 a 11 de arriba no son exclusivas de los consolidados de fases que s
 - Los cambios a esta skill también se entregan chicos e incrementales, nunca todo de una vez.
 - No se asume ni se omite nada sobre cómo debe quedar una regla; ante la duda, se pregunta.
 - Toda decisión, aclaración o confirmación que el usuario dé sobre el comportamiento de la skill se documenta directamente en este archivo, no solo en el chat.
-- Al modificar esta skill nunca se entrega un parche ni un fragmento: se entrega el `SKILL.md` completo y actualizado, listo para reemplazar al anterior.
+- Al modificar esta skill nunca se entrega un parche ni un fragmento: se actualiza el `SKILL.md` completo y se sube a `Claude/SKILL.md` del repo `Backend`. **Corrección (10-oct-2026):** la skill que usa la aplicación es la instalada, así que la usuaria debe volver a instalarla desde ese archivo; Claude solo entrega el archivo para descargar si ella lo pide.
 - No se pierde contexto entre sesiones: si algo queda pendiente de definir sobre el comportamiento de la skill, debe quedar anotado en este mismo archivo, no solo mencionado y olvidado.
 - Ningún cambio a esta skill se hace a ciegas: antes de entregar el `SKILL.md` modificado, se revisa que la regla nueva o corregida no contradiga ni duplique otra ya existente en el archivo.
 - Si una regla anterior de esta skill resultaba incompleta o equivocada, el cambio se marca como corrección explícita (no se reescribe en silencio como si siempre hubiera dicho eso).
@@ -570,7 +620,7 @@ Las reglas 1 a 11 de arriba no son exclusivas de los consolidados de fases que s
 
 **Archivo modificado = archivo completo.**
 
-**Archivo modificado = archivo descargable individual.**
+**Archivo modificado = archivo individual subido a GitHub** (descargable solo si el usuario lo pide expresamente; ver sección 0.2).
 
 **Nunca entregar un parche como sustituto del archivo completo.**
 
