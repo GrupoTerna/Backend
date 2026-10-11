@@ -927,7 +927,7 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 - **Corrección según la regla 9:** la prioridad anterior (Perfil > Log > Analytics) venía de la «Sección 3 del consolidado» y contradecía la regla de aplicación de la sección de Tampermonkey (el Log manda en las semanas que cubre, el perfil solo en semanas anteriores y con condiciones).
 
 **Pendiente de definir o contestar (regla 3).**
-- **Un registro por semana, no por clan.** `_fusionarRegistroEnArrayHistorialGuerra()` identifica el registro por temporada interna y semana, sin el clan. Si un jugador estuvo en dos clanes la misma semana, un Log del clan Y reemplaza al del clan X (misma prioridad) y se pierde el otro. Es justo la situación que describe la usuaria. No se cambió; hay que decidir si el historial debe guardar un registro por clan y semana.
+- **[RESUELTO el 11-oct-2026, ver §PF040; la frase «un Log del clan Y reemplaza al del clan X» describía el código y la usuaria la corrigió: en RoyaleAPI no son excluyentes y deben coexistir]** **Un registro por semana, no por clan.** `_fusionarRegistroEnArrayHistorialGuerra()` identificaba el registro por temporada interna y semana, sin el clan. Si un jugador estuvo en dos clanes la misma semana, un Log del clan Y reemplaza al del clan X (misma prioridad) y se pierde el otro. Es justo la situación que describe la usuaria. No se cambió; hay que decidir si el historial debe guardar un registro por clan y semana.
 - **Sin probar en Apps Script real**, y sin revisar qué cambia en la hoja `Alertas_HistorialGuerra` ni en lo que consume el frontend cuando un Log reemplace a un `perfil` ya guardado.
 
 
@@ -1005,6 +1005,30 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 
 **Qué no cambia.** «Cartas por nivel» de la colección (`coleccion-nivel-pie-wrap`) usa el mismo componente y mantiene su diseño. **Sin probar en navegador real** (las medidas son cálculo, no una captura); falta comprobar que las 4 gráficas se vean a la misma altura en escritorio y que la tarjeta de Victorias no quede demasiado alta con las pastillas.
 
+
+### PF040 — Historial de guerra por jugador: un registro por clan y semana (Log y Analytics coexisten), pedido y hechos de la usuaria, 11-oct-2026
+
+**Corrección según la regla 9.** En la tanda anterior (§PF032) dije que, si un jugador estuvo en dos clanes la misma semana, «el Log de un clan reemplaza al del otro». Eso describía **nuestro código**, no RoyaleAPI, y la usuaria lo corrigió: en RoyaleAPI el Log y el Analytics se consultan **por clan** (cada clan muestra solo lo que el jugador hizo en ese clan; si hizo un ataque en cada uno de 16 clanes, cada Log muestra un ataque). Por eso los registros de clanes distintos **no son excluyentes: deben coexistir**. El código sí los trataba como excluyentes.
+
+**Qué pasaba (verificado leyendo el código).** La identidad del registro era `tag + temporadaInterna + semana`, sin el clan, en el JSON individual (`_fusionarRegistroEnArrayHistorialGuerra()`) y en el CSV grupal (`_actualizarFilaHistorialGuerraGrupalImpl()`). Un Log del clan Y de la misma semana encontraba el registro del clan X, tenía igual prioridad y lo reemplazaba: se perdía el ataque hecho en X. Tampermonkey **ya enviaba** el clan en cada registro de Log y Analytics (`clan: clanNombreLog` / `clanNombreAnalytics`, desde la v3.0 una fila por jugador, semana y clan), así que **no hizo falta cambiar el script**: el dato llegaba y el backend lo descartaba por la clave.
+
+**Qué se cambió (`20_HistorialGuerraJugador.gs`).**
+- **Clave nueva:** `tag + temporadaInterna + semana + clan` para las fuentes que son por clan (`log`, `analytics`, `riverrace`). El clan se compara normalizado (`_claveClanHistorialGuerra()`: sin el sufijo « aaaa-mm-dd» que ya se limpiaba al mostrar, sin espacios sobrantes, sin distinguir mayúsculas).
+- **Búsqueda única** `_buscarIndiceHistorialGuerra(registros, nuevo)`, usada por el JSON individual y por el CSV grupal para que nunca queden en desacuerdo:
+  - Un registro **por clan** (`log`/`analytics`/`riverrace`) busca el de **su mismo clan**. Si lo hay, decide `_debeReemplazarRegistroHistorialGuerra()` como siempre (Log > Analytics; el `riverrace` abierto sigue su regla). Si no lo hay pero existe un `perfil` de esa semana, ocupa su lugar (el perfil es el menos fiable). Si no hay ninguno, **se agrega** y convive con los de otros clanes.
+  - Un registro de **`perfil`** (que solo guarda un clan por semana y puede atribuir mal) se compara con el mejor registro por clan de esa semana: si existe uno de Log o Analytics, el perfil **no lo pisa y no se agrega**; si no, se guarda o reemplaza al perfil anterior.
+- **Alertas** (`_registrarAlertaHistorialGuerra()`): el aviso «ya hay una Pendiente idéntica» ahora también compara el clan, para que dos clanes distintos de la misma semana no se tapen entre sí.
+- **Orden al mostrar** (`_webHistorialGuerraJugador()`): temporada y semana como antes y, dentro de la misma semana, por nombre de clan.
+- **`perfil.html` no se tocó.** La tabla del historial ya filtra por temporada y semana y pinta **todas** las filas que calcen, con la columna Clan; una semana con dos clanes sale como dos filas. No se verificó en navegador.
+
+**Probado (en node, ejecutando las funciones reales del archivo con stubs de Apps Script; 14 casos):** Log del clan A y del clan B de la misma semana coexisten; un reenvío del mismo clan reemplaza solo al suyo; Analytics no pisa a Log del mismo clan y Analytics de otro clan coexiste; un perfil no pisa ni se agrega si hay Log o Analytics; un Log reemplaza a un perfil guardado y un Log de otro clan convive con él; un perfil reemplaza a otro perfil; semanas distintas no se mezclan; el clan se normaliza (sufijo de fecha y mayúsculas); un `riverrace` abierto del clan A coexiste con un Log del clan B y el Log del clan A lo cierra con alerta; la búsqueda por clan sobre filas del CSV.
+
+**Qué no hace este cambio.**
+- **No migra ni repara nada.** Los registros que se perdieron antes (un Log de un clan pisado por el de otro) **no se recuperan solos**: hay que volver a correr Tampermonkey para las semanas afectadas. Los registros guardados con clan siguen válidos y no se duplican, porque el clan viene en el mismo formato.
+- **Si el mismo clan viene con nombres distintos** (por ejemplo por un cambio de nombre del clan) se guardan como clanes distintos. La comparación es por nombre, no por tag de clan, porque el registro del historial no guarda el tag. Guardar el tag del clan en el registro sería un cambio mayor y no se hizo.
+- **El nombre del archivo JSON** del jugador sigue usando «el clan actual» (el del último registro procesado). Con varios clanes puede renombrarse en cada registro; no pierde datos, pero se dejó como estaba.
+- **Un perfil frente a un `riverrace` abierto** (caso raro: el perfil no cubre la semana en curso) conserva la regla anterior con el mejor registro de esa semana; con dos clanes abiertos a la vez no se probó.
+- **Sin probar en Apps Script real.** No se probó la lectura/escritura en Drive ni el CSV completo; solo la lógica de búsqueda y fusión.
 
 ## 00_Main.gs — resumen rápido
 
@@ -32747,7 +32771,8 @@ _actualizarFilaHistorialGuerraGrupal(tag, nombre, registroNuevo)
 Equivalente grupal de _fusionarRegistroEnArrayHistorialGuerra() +
 _guardarRegistroHistorialGuerraIndividual(), pero sobre el CSV en vez del
 JSON: carga el CSV completo (o arranca uno nuevo con solo encabezados si
-todavía no existe), busca la fila de este tag+temporadaInterna+semana,
+todavía no existe), busca la fila de este tag+temporadaInterna+semana+clan
+(desde el 11-oct-2026; antes sin clan, ver §PF040),
 aplica la MISMA decisión de prioridad de fuente que el JSON individual
 (_debeReemplazarRegistroHistorialGuerra(), reusada tal cual para que
 JSON y CSV nunca queden en desacuerdo sobre qué fuente ganó), y vuelve a
@@ -32941,8 +32966,9 @@ de ahí el `|| ''` defensivo.
 ```text
 _fusionarRegistroEnArrayHistorialGuerra(registros, nuevo, tag, nombre)
 Busca en `registros` (array de la Sección 5) el que corresponda a la
-misma Temporada|Semana que `nuevo` (comparando `temporadaInterna` +
-`semana`), aplica _debeReemplazarRegistroHistorialGuerra() y devuelve el
+misma Temporada|Semana|Clan que `nuevo` (comparando `temporadaInterna` +
+`semana` + clan, vía _buscarIndiceHistorialGuerra(); antes sin clan, ver
+§PF040), aplica _debeReemplazarRegistroHistorialGuerra() y devuelve el
 array actualizado (mutado in-place, se devuelve por comodidad del
 llamador). No toca filas de otras semanas.
 
@@ -33109,7 +33135,7 @@ riverrace provisional que se está reemplazando (única situación que hoy
 genera alerta, ver _debeReemplazarRegistroHistorialGuerra()).
 
 Evita duplicar la fila si ya hay una "Pendiente" para el mismo
-Tag|TemporadaInterna|Semana — pasa siempre que se llame dos veces para el
+Tag|TemporadaInterna|Semana|Clan (el clan se agregó el 11-oct-2026, §PF040) — pasa siempre que se llame dos veces para el
 mismo registro (una desde el JSON individual, otra desde el CSV grupal,
 ambas con el mismo `nuevo`), así que esto es lo que evita terminar con
 dos filas idénticas por una sola discrepancia real. Si la fila anterior
