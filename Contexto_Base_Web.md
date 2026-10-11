@@ -63473,6 +63473,14 @@ En la hoja Guerra, `GC.FAME` y `GC.BARCOS` guardan el **acumulado de toda la sem
 - **Corrección.** Si no hay ningún dato diario y la semana ya está en día de guerra (`esDiaGuerraIdx(ctx.periodIndex)`), se rellenan con 0 los días desde el jueves hasta hoy (`periodIndex % 7 - 3`); los días futuros quedan `null` (el frontend los pinta «—»). Lunes a miércoles no se rellena.
 - **Límite.** No distingue si la cuenta aún no estaba en el clan un día concreto: sigue valiendo la regla del 11-oct (§37B262B) de que un día sin fila de una cuenta que SÍ tiene otras filas queda `null`. Sin probar en Apps Script real.
 
+#### 37B262E — La semana en curso de un ingreso sale de Guerra (hoja o CSV), no de «Nuevos» (11-oct-2026)
+
+- **Decisión de la usuaria.** Un miembro nuevo sigue siendo miembro: sus datos de guerra de la semana en curso se obtienen igual que los del resto (perfil y tablas), no de la hoja «Nuevos» de Tampermonkey.
+- **Qué usan los demás.** `_webPerfilJugador()` lee `Backup_Guerra.csv` + hoja Guerra (`_leerFilasGuerraDeTag_()`); las tablas de `guerra.html` salen de Control, que lee Guerra con el CSV de respaldo. Todas filtran por temporada + semana en curso y toman `GC.ATAQUES_HOY` (día) y `GC.FAME`/`GC.BARCOS` (acumulados, pasados a día con `_diarioDesdeAcumuladoGuerra_()`).
+- **Cambio en `_construirIngresosRecientesUnificado()`.** (1) La lectura de Guerra cae a `Backup_Guerra.csv` (`_obtenerFilasConFallbackCSV()`) si la hoja no trae filas de la temporada actual. (2) `guerraSemanaDias` sale solo de `guerraDiasPorTag`; ya no se lee la «semana actual» J/V/S/D de «Nuevos» (`semanaActualDiasData` se quitó). (3) Sin ninguna fila en Guerra, se rellena con ceros hasta hoy (§37B262D).
+- **Sigue en «Nuevos».** Solo el historial semanal de las gráficas (`historialSemanal`, bloques por fecha), con Control_2 de respaldo. Falta decidir si eso también debe salir de Guerra/CSV.
+- **Qué se descartó.** Priorizar «Nuevos» y usar Guerra solo de respaldo (como estaba el 11-oct por la mañana): daba cuadrículas distintas a las del perfil para la misma persona. Sin probar en Apps Script real.
+
 #### 37B262 — líneas 6984-7007 (comentario)
 
 ```text
