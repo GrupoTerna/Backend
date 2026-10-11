@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 11/10/2026 15:49:04 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 11/10/2026 17:03:00 */
 
 
 
@@ -18662,6 +18662,15 @@ function updateGuerraSheet() {
             ', periodIndex ' + ctxClan.periodIndex + ', periodType ' + ctxClan.periodType +
             '. API: decksUsedToday=' + ataqHoy + ', decksUsed=' + ataqSem + ', fame=' + fame + '.');
         }
+        // PROTECCION DE FAMA (11-oct-2026, caso domingo 04-oct T5 S4) [→ Contexto_Base_Web.md §PF031]
+        // La fama no baja a 0 dentro de un mismo periodIndex. Si la API la devuelve en 0 y la fila ya tenia fama > 0,
+        // es un reinicio de la API, no un dato: se conserva la de la hoja. Es mas estrecho que un ratchet general
+        // (§17B048 quito ese ratchet a proposito): solo bloquea el 0 y deja pasar cualquier otro valor.
+        if (fame === 0 && fameEx > 0) {
+          Logger.log('[Guerra][PROTECCION FAMA] la API devolvio fame=0 pero la fila ya tenia ' + fameEx + ': ' + tag + ' (' + nombreActual + ') en ' + clanNombre +
+            ', periodIndex ' + ctxClan.periodIndex + '. API: decksUsed=' + ataqSem + ', decksUsedToday=' + ataqHoy + '. Se conserva la fama de la hoja.');
+          fame = fameEx;
+        }
         if (ataqHoy !== ataqHoyEx) { existing[GC.ATAQUES_HOY - 1] = ataqHoy; huboCambiosExistentes = true; }
         if (ataqSem !== ataqSemEx) { existing[GC.ATAQUES_SEM - 1] = ataqSem; huboCambiosExistentes = true; }
         if (fame    !== fameEx)    { existing[GC.FAME - 1]        = fame;    huboCambiosExistentes = true; }
@@ -21099,7 +21108,7 @@ function _crearLectorDiaJSONGuerra_(t0) {
         var mapa = {}, parts = (obj.clan && obj.clan.participants) ? obj.clan.participants : [];
         for (var i = 0; i < parts.length; i++) {
           var tg = String(parts[i].tag || '').trim().toUpperCase();
-          if (tg) mapa[tg] = { d: Number(parts[i].decksUsed) || 0, t: Number(parts[i].decksUsedToday) || 0 };
+          if (tg) mapa[tg] = { d: Number(parts[i].decksUsed) || 0, t: Number(parts[i].decksUsedToday) || 0, f: Number(parts[i].fame) || 0 };
         }
         jsons[kj] = { periodIndex: Number(obj.periodIndex), sectionIndex: (obj.sectionIndex === undefined || obj.sectionIndex === null) ? null : Number(obj.sectionIndex),
           periodType: obj.periodType ? String(obj.periodType) : '', mapa: mapa };
@@ -21137,7 +21146,7 @@ function _crearLectorDiaJSONGuerra_(t0) {
       }
       var p = elegido.j.mapa[String(tag).trim().toUpperCase()];
       if (!p) return { estado: 'ausente' };
-      return { estado: 'ok', d: p.d, t: p.t, hora: elegido.reg.hora,
+      return { estado: 'ok', d: p.d, t: p.t, f: p.f, hora: elegido.reg.hora,
         nota: elegido.pn !== pedido ? 'archivo nombrado P.I-' + elegido.pn + ' pero su contenido dice P.I-' + pedido : '' };
     }
   };
@@ -21239,6 +21248,158 @@ function _repararAtaquesHoyGuerraDesdeJSON_(aplicar) {
       (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que reparar.') +
       (lector.agotado() ? ' SE ACABO EL TIEMPO: volver a correr para seguir con las semanas pendientes.' : '') +
       (aplicar ? '' : ' (No se escribio nada; correr repararAtaquesHoyGuerraDesdeJSONAplicar() para aplicar.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// ==============================================================================
+// REPARACION UNICA DE LA FAMA DEL DOMINGO DESDE LOS JSON (11-oct-2026) [→ Contexto_Base_Web.md §PF031]
+// Caso: domingo 04-oct-2026 (T5 S4, periodIndex 27, coliseo). El reinicio de la API del lunes 05-oct dejo
+// Fame = 0 en filas que si tenian ataques. Se repone SOLO la columna Fame (y Origen) desde la ultima captura
+// currentriverrace de ese periodIndex, y solo cuando los mazos del JSON coinciden con AtaquesSemana de la fila.
+// Primero correr ...Informe() (no escribe en la hoja ni en el CSV), revisar el CSV del informe en Drive y luego ...Aplicar().
+// ==============================================================================
+var REPARAR_FAMA_DOMINGO_TEMPORADA = 5;
+var REPARAR_FAMA_DOMINGO_PERIODINDEX = 27;
+
+function repararFamaDomingoDesdeJSONInforme() { _repararFamaDomingoDesdeJSON_(false); }
+function repararFamaDomingoDesdeJSONAplicar() { _repararFamaDomingoDesdeJSON_(true); }
+
+/**
+ * _calcularReparacionFamaDomingo_(filas, temporada, periodIdx, leerDia) [→ Contexto_Base_Web.md §PF031]
+ * Funcion pura (sin Drive ni hoja): recibe las filas y el lector de dias, devuelve { cambios, sinResolver }.
+ * Candidatas: filas de esa temporada y periodIndex con Fame = 0 y AtaquesSemana > 0 (con AtaquesSemana = 0 el 0 es real).
+ * Se repone la fama solo si el JSON trae fama > 0, sus mazos (decksUsed) igualan AtaquesSemana de la fila y la fama
+ * no queda por debajo de la del sabado de la misma hoja. Cualquier otro caso queda SIN RESOLVER y no se toca.
+ */
+function _calcularReparacionFamaDomingo_(filas, temporada, periodIdx, leerDia) {
+  var cambios = [], sinResolver = [], famaSabado = {};
+  filas.forEach(function (f) {
+    if (Number(f[GC.TEMPORADA - 1]) !== temporada || Number(f[GC.PERIOD_IDX - 1]) !== periodIdx - 1) return;
+    var k = String(f[GC.TAG - 1] || '').trim().toUpperCase() + '|' + String(f[GC.CLAN - 1] || '');
+    famaSabado[k] = Number(f[GC.FAME - 1]) || 0;
+  });
+  filas.forEach(function (f, i) {
+    if (Number(f[GC.TEMPORADA - 1]) !== temporada || Number(f[GC.PERIOD_IDX - 1]) !== periodIdx) return;
+    var fameAnt = Number(f[GC.FAME - 1]) || 0;
+    var sRaw = f[GC.ATAQUES_SEM - 1];
+    var ataqSem = (sRaw === '' || sRaw === null || sRaw === undefined) ? 0 : Number(sRaw);
+    if (fameAnt > 0 || !(ataqSem > 0)) return;
+    var tag = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+    var clan = String(f[GC.CLAN - 1] || '');
+    var r = leerDia(clan, temporada, periodIdx, tag) || { estado: 'sin_json' };
+    if (r.estado !== 'ok') {
+      var motivo = 'no hay JSON del domingo para este clan';
+      if (r.estado === 'ausente') motivo = 'el jugador no aparece en el JSON del domingo';
+      else if (r.estado === 'indice_distinto') motivo = 'ningun JSON trae ese periodIndex en su contenido' + (r.motivo ? ' (' + r.motivo + ')' : '');
+      else if (r.estado === 'incoherente') motivo = 'JSON incoherente: ' + (r.motivo || 'datos de otro periodo');
+      else if (r.estado === 'tiempo') motivo = 'sin procesar: se acabo el tiempo (volver a correr)';
+      sinResolver.push({ idx: i, motivo: motivo });
+      return;
+    }
+    if (!(r.f > 0)) { sinResolver.push({ idx: i, motivo: 'el JSON (' + r.hora + ') trae fama 0 para este jugador' }); return; }
+    if (Number(r.d) !== ataqSem) {
+      sinResolver.push({ idx: i, motivo: 'los mazos del JSON (' + r.d + ') no coinciden con AtaquesSemana de la fila (' + ataqSem + '): la fama del JSON puede estar desfasada' });
+      return;
+    }
+    var sab = famaSabado[tag + '|' + clan];
+    if (sab !== undefined && r.f < sab) {
+      sinResolver.push({ idx: i, motivo: 'la fama del JSON (' + r.f + ') es menor que la del sabado en la hoja (' + sab + ')' });
+      return;
+    }
+    cambios.push({ idx: i, fameAnt: fameAnt, fameNueva: r.f, ataqSem: ataqSem, sabado: sab,
+      detalle: 'Fama tomada del JSON de ' + r.hora + ' (mazos ' + r.d + ' = AtaquesSemana)' +
+        (sab === undefined ? '. Sin fila del sabado para contrastar' : '. Fama del sabado en la hoja: ' + sab + ', medallas del domingo: ' + (r.f - sab)) });
+  });
+  return { cambios: cambios, sinResolver: sinResolver };
+}
+
+function _repararFamaDomingoDesdeJSON_(aplicar) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[ReparoFamaDomingo] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var t0 = Date.now();
+    var ss = _getSs();
+    var temp = REPARAR_FAMA_DOMINGO_TEMPORADA, pIdx = REPARAR_FAMA_DOMINGO_PERIODINDEX;
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var informe = [['Fuente', 'Tipo', 'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'PeriodIndex', 'Fame anterior', 'Fame nueva', 'AtaquesSemana', 'Fame sabado', 'Detalle', 'Origen anterior']];
+    var lector = _crearLectorDiaJSONGuerra_(t0);
+    var resumen = { csvCambios: 0, csvSinResolver: 0, hojaCambios: 0, hojaSinResolver: 0 };
+
+    var agregarAlInforme = function (fuente, filas, res) {
+      res.cambios.forEach(function (c) {
+        var f = filas[c.idx];
+        informe.push([fuente, 'Cambio', f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], c.fameAnt, c.fameNueva, c.ataqSem, (c.sabado === undefined ? '' : c.sabado), c.detalle, f[GC.ORIGEN - 1]]);
+      });
+      res.sinResolver.forEach(function (s) {
+        var f = filas[s.idx];
+        informe.push([fuente, 'SIN RESOLVER', f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], f[GC.FAME - 1], '', f[GC.ATAQUES_SEM - 1], '', s.motivo, f[GC.ORIGEN - 1]]);
+      });
+    };
+
+    // --- Backup_Guerra.csv (todas las temporadas) ---
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    var encabezadoCsv = null, filasCsv = null, resCsv = null;
+    if (csvText) {
+      var parsed = _parseCSV(csvText);
+      if (parsed && parsed.length > 1) {
+        encabezadoCsv = parsed[0];
+        filasCsv = parsed.slice(1);
+        for (var a = 0; a < filasCsv.length; a++) { while (filasCsv[a].length < GUERRA_TOTAL_COLS) filasCsv[a].push(''); }
+        resCsv = _calcularReparacionFamaDomingo_(filasCsv, temp, pIdx, lector.leer);
+        agregarAlInforme('Backup_Guerra.csv', filasCsv, resCsv);
+        resumen.csvCambios = resCsv.cambios.length; resumen.csvSinResolver = resCsv.sinResolver.length;
+      }
+    }
+
+    // --- Hoja Guerra (temporada vigente; puede no tener la temporada 5) ---
+    var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+    var datosHoja = null, resHoja = null;
+    if (sh && sh.getLastRow() >= 2) {
+      datosHoja = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+      resHoja = _calcularReparacionFamaDomingo_(datosHoja, temp, pIdx, lector.leer);
+      agregarAlInforme('Hoja Guerra', datosHoja, resHoja);
+      resumen.hojaCambios = resHoja.cambios.length; resumen.hojaSinResolver = resHoja.sinResolver.length;
+    }
+
+    var nombreInforme = 'Reparacion_FamaDomingo_T' + temp + '_PI' + pIdx + ' ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+
+    if (aplicar && (resumen.csvCambios > 0 || resumen.hojaCambios > 0)) {
+      // Respaldo previo del CSV completo, ANTES de escribir nada.
+      if (csvText) _saveCSVToDrive('Backup_Guerra ANTES de reparar FamaDomingo ' + marca + '.csv', csvText);
+
+      if (resCsv && resCsv.cambios.length) {
+        resCsv.cambios.forEach(function (c) {
+          var fila = filasCsv[c.idx];
+          fila[GC.FAME - 1] = String(c.fameNueva);
+          var og = String(fila[GC.ORIGEN - 1] || '').trim();
+          if (og === '' || og === 'Original') fila[GC.ORIGEN - 1] = 'Corregido';
+        });
+        _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezadoCsv].concat(filasCsv)));
+      }
+      if (resHoja && resHoja.cambios.length) {
+        // Solo Fame y Origen: no se reescribe el resto de columnas.
+        var colFame = datosHoja.map(function (r) { return [r[GC.FAME - 1]]; });
+        var colOrigen = datosHoja.map(function (r) { return [r[GC.ORIGEN - 1]]; });
+        resHoja.cambios.forEach(function (c) {
+          colFame[c.idx][0] = c.fameNueva;
+          var og = String(colOrigen[c.idx][0] || '').trim();
+          if (og === '' || og === 'Original') colOrigen[c.idx][0] = 'Corregido';
+        });
+        sh.getRange(2, GC.FAME, colFame.length, 1).setValues(colFame);
+        sh.getRange(2, GC.ORIGEN, colOrigen.length, 1).setValues(colOrigen);
+        _syncGuerraCSV(sh); // propaga la hoja al CSV, igual que repararAtaquesHoyGuerraDesdeJSONAplicar()
+      }
+    }
+
+    Logger.log('[ReparoFamaDomingo] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' T' + temp + ' periodIndex ' + pIdx + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). ' +
+      'Backup_Guerra.csv: ' + resumen.csvCambios + ' fila(s) a cambiar, ' + resumen.csvSinResolver + ' sin resolver. ' +
+      'Hoja Guerra: ' + resumen.hojaCambios + ' fila(s) a cambiar, ' + resumen.hojaSinResolver + ' sin resolver. ' +
+      (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que reparar.') +
+      (lector.agotado() ? ' SE ACABO EL TIEMPO: volver a correr para seguir con las filas pendientes.' : '') +
+      (aplicar ? '' : ' (No se escribio nada; correr repararFamaDomingoDesdeJSONAplicar() para aplicar.)'));
   } finally {
     lock.releaseLock();
   }
