@@ -955,6 +955,17 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 **Comportamiento sin dato.** Un día sin puesto (aún no se juega, o `rank` en 0) se pinta «—», nunca un puesto inventado. «de N» solo se agrega si se conoce la carrera de esta semana (puesto en vivo cargado y semana vigente). Sin probar en navegador real; sí en jsdom (en vivo, viernes sin datos, viernes con datos, vuelta a hoy).
 
 
+### PF035 — `perfil.html`: orden de las 4 minigráficas y marcas del eje Y en las de dispersión (pedido de la usuaria, 11-oct-2026)
+
+**Qué se decidió.** En `#mMiniGraficosWrap` (`renderExtendido()`) los dos donuts (Victorias y derrotas, Donaciones) van **a la izquierda** y las dos de dispersión (Ataques y barcos por día, Medallas de guerra por día) a la derecha. La nota de «última guerra terminada» sigue ocupando la primera fila completa.
+
+**Eje Y de `_dispersionMiniHtml()`.** Muestra marcas con rótulo y una línea de referencia por marca. Regla: marcas **siempre enteras** (Clash no tiene puntos ni ataques fraccionarios). Con máximo de datos 3 o menos: paso 1 y 3 tramos (0, 1, 2, 3). Con más: 4 tramos y paso redondo (1, 2, 3, 4, 5, 6 u 8, por potencia de 10) que cubra el máximo, por ejemplo 0, 3, 6, 9, 12 para un máximo de 10. Así siempre hay al menos 4 marcas. `max` pasó a ser el tope de la escala (no el dato mayor); los puntos, las líneas y las marcas usan el mismo valor. El margen izquierdo se calcula con el rótulo más largo, para que `1,600` o `3,200` no se corten.
+
+**Qué se descartó y por qué (no repetir).** Marcas al 25, 50 y 75 % del máximo (lo que había): con valores enteros pequeños daban 2.5 o 7.5, que no existen como dato. Tampoco se usó una escala fija de 5 marcas sin redondear por el mismo motivo.
+
+**Alcance.** Los donuts no tienen eje. Si Ataques o Medallas traen un solo día, el eje igual se muestra. Comprobado con la función extraída y valores de 1 a 3,000; **sin probar en navegador real** (falta ver el ancho de los rótulos en celular).
+
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
