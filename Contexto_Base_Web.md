@@ -981,6 +981,13 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 **Probado.** `test/perfil-tope-grafica.test.js` (10 pruebas, extrae las funciones del `perfil.html` real): sin tope no hay línea; con tope hay línea y rótulo; el eje incluye el tope; igual al tope no es anomalía; los huecos no cuentan; solo jueves a domingo; aviso en plural y singular; sin excesos; tooltip y etiqueta; Ranking y Barcos no cambian. **Sin probar en navegador real** (falta ver el rótulo del tope cuando hay puntos pegados a la línea, sobre todo en Ataques, donde el tope coincide con la marca más alta).
 
 
+### PF037 — `perfil.html`: los botones de «Ciclo de cofres» y «Batallas más recientes» usan el formato de pastilla de la web (pedido de la usuaria, 11-oct-2026)
+
+**Qué se decidió.** Los cuatro botones (`#mVerCicloCofresBtn`, `#mForzarCofresBtn`, `#mVerBatallasRecientesBtn`, `#mForzarBatallasBtn`) dejan de ser `.btn` / `.btn-primary` (el violeta lleno y el blanco, que desentonaban) y van dentro de un contenedor `.ext-links`, el mismo de la fila de acciones del perfil (RoyaleAPI, CWStats, Ver torneos). El estilo sale de la regla `.ext-links a, .ext-links button` de `perfil.html`: texto morado en monoespaciado de 12 px, borde tenue, esquina chica y brillo morado al pasar el mouse. Los dos botones de cada panel quedan iguales entre sí (antes el principal tenía más peso que «Forzar descarga»); el espacio entre ellos lo da el `gap` del contenedor, no un margen en línea.
+
+**Qué no cambia.** Los ids, los eventos de clic y `verCicloCofres()` / `verBatallasRecientes()`. «Forzar descarga» sigue oculto (`display:none` en línea) hasta que `renderMiembro()` lo muestre a quien tiene panel de permisos. El JS no usa las clases `btn`, por eso el cambio fue solo de HTML. **Sin probar en navegador real.**
+
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
