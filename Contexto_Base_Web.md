@@ -404,6 +404,14 @@ Salieron con el consolidado, por ser estado y no funcionamiento: el objetivo de 
 
 **Lo que sigue pendiente (no se hizo en esta tanda):** el README de la raíz de `Backend`, el documento aparte con las reglas de los consolidados y el traslado del contexto del `CHANGELOG.md` a este archivo.
 
+### PF022 — `PLAYERS_API_ENABLED` se queda en `'partial'` o `false` (decisión de la usuaria) y bug comprobado en `_corregirCampoDiarioConDistribucion()` (11-oct-2026)
+
+**`PLAYERS_API_ENABLED` no pasará a `true` (decisión de la usuaria, 11-oct-2026).** Hoy vale `'partial'` (`01_Config_Global.gs`, línea 426). Ella lo cambia a voluntad cuando quiere actualizar los datos de todos los jugadores a la vez. **Motivo:** esa descarga demora mucho, las tandas fallan por exceso de tiempo y **no se reprograman tras la falla**; quedan jugadores con fallas, filas vacías o datos truncos, y alguien tiene que estar revisando para correr la continuación a mano. **No proponer pasarlo a `true`** ni preguntar «cuándo» (pregunta 21 del consolidado): queda a criterio de la usuaria entre `'partial'` y `false`. Reprogramar las tandas fallidas automáticamente sería otra decisión distinta, y no hay ninguna registrada.
+
+**Bug comprobado: `_corregirCampoDiarioConDistribucion()` puede dejar un día en −1 (pregunta 55).** Está en `18_CorreccionGuerra.gs`, línea 3220 del repo del 11-oct-2026. **Causa:** el bloque final «Sobrante». Cuando hay que bajar el total, el reparto solo reduce cada día hasta su piso. Si ningún día tiene margen sobre su piso, la diferencia que queda (negativa) se suma al día más reciente **sin comprobar el piso ni el cero**. **Reproducción aislada (Node, sin Apps Script):** jueves con valor 3 y piso 3, viernes con valor 0 y piso 0, total pedido 2 y tope diario 4 → el resultado es `[3, -1]`. **Qué no se probó:** si el caso aparece con datos reales en las tres llamadas (`18_CorreccionGuerra.gs`, líneas 833, 2478 y 2505), y cuántos pisos reales hay en esa situación. **No se corrigió:** la decisión es de la usuaria (si se corrige, editar `Base/src/` y correr `subirBaseDesdeGithub()` antes de cualquier descarga). La hermana `_corregirCampoAcumuladoConDistribucion()` no se revisó.
+
+**Funciones de la lista de manuales que ya no existen (verificado contra `Base/src/` el 11-oct-2026).** `limpiarDuplicadosCacheClanes()` se borró el 27-sep-2026 y `migrarAdministradoresAEstructuraReducida()` se eliminó el 07-oct-2026 (`47B007`). Si una sesión futura las ve citadas en el consolidado, no las busca ni las recrea: se descartaron.
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
