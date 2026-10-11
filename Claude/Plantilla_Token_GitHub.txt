@@ -1,0 +1,56 @@
+PLANTILLA PARA DAR ACCESO DE ESCRITURA A CLAUDE (GitHub, repos de GrupoTerna)
+==============================================================================
+Sirve cuando Claude no puede añadir repositorios por sí mismo en el chat, o los ve
+sin permiso de escritura. Como los chats se borran, el token se guarda de forma
+TEMPORAL en un archivo .txt en tu equipo, se adjunta al chat y se revoca al terminar.
+
+REGLAS DEL TOKEN
+- NUNCA se sube a un repositorio (Backend y Web son públicos). Esta plantilla trae
+  solo marcadores; el token real va únicamente en tu copia local.
+- Que sea de vida corta (por ejemplo, 7 días) y de permisos mínimos.
+- Al terminar la tanda de trabajo: borra tu .txt y revoca el token en GitHub.
+
+1) CREAR EL TOKEN (fine-grained)
+   GitHub > tu foto > Settings > Developer settings > Personal access tokens >
+   Fine-grained tokens > Generate new token.
+   - Token name:            claude-terna (con la fecha, para reconocerlo)
+   - Expiration:            7 días (o lo mínimo que alcance para la tanda)
+   - Resource owner:        GrupoTerna
+                            (si la organización pide aprobación, un owner debe aprobarlo)
+   - Repository access:     Only select repositories > Backend y Web
+                            (Script solo si hace falta tocar Render; es privado)
+   - Repository permissions: Contents = Read and write
+                            (Metadata = Read-only se añade solo; no des más permisos)
+   Generate token y copia el valor ahora: GitHub lo muestra una sola vez.
+
+2) ARMAR TU ARCHIVO Claude.txt (copia este bloque y pega tu token)
+------------------------------------------------------------------------------
+El token habilita los repositorios indicados. Son públicos, pero el token les
+habilita la escritura en GitHub.
+
+* Añadir el repositorio Backend:
+https://github.com/GrupoTerna/Backend/tree/main
+
+* Añadir el repositorio Web:
+https://github.com/GrupoTerna/Web/tree/main
+
+* (Solo si hace falta, y avisando antes de subir) Repositorio Script, privado,
+  exclusivo de Render:
+https://github.com/GrupoTerna/Script/tree/main
+
+Token:
+PEGAR_AQUI_EL_TOKEN
+------------------------------------------------------------------------------
+
+3) USARLO
+   Adjunta Claude.txt al chat e invoca la skill /md. Claude lee el token del
+   archivo, clona los repositorios, comprueba que tiene permiso de escritura y sube
+   a main en commits pequeños. No debe repetir el token en el chat, en los
+   documentos ni en los mensajes de commit.
+
+4) AL TERMINAR
+   - Borra Claude.txt de tu equipo.
+   - Revoca el token: GitHub > Settings > Developer settings > Fine-grained tokens >
+     el token > Delete (o Revoke).
+   - Si el token llegó a escribirse en un chat o en un repositorio, revócalo
+     de inmediato.
