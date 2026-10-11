@@ -931,6 +931,19 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 - **Sin probar en Apps Script real**, y sin revisar qué cambia en la hoja `Alertas_HistorialGuerra` ni en lo que consume el frontend cuando un Log reemplace a un `perfil` ya guardado.
 
 
+### PF033 — `perfil.html`, sección «Competitivo»: Camino de Leyendas (escalones) y Camino de Trofeos (copas) son fuentes distintas (decisión de la usuaria, 11-oct-2026)
+
+**Qué trae cada fuente (JSON de Supercell de `#2GG8PJ8GC`, 11-oct-2026, `Datos descargados/JSON`).**
+- **Camino de Leyendas** = `best/current/lastPathOfLegendSeasonResult` = `{leagueNumber, trophies, rank}`. Son escalones: Liga 7 (mejor), 1 (actual) y 2 (anterior); `trophies` en 0 y `rank` nulo (no se pintan). No traen id ni fecha de temporada.
+- **Camino de Trofeos** = `leagueStatistics` (`currentSeason`, `previousSeason{id}`, `bestSeason{id}`, cada una con `trophies` y `bestTrophies`) + `legacyTrophyRoadHighScore`. Son copas: actual 13,270 (mejor 5,677), anterior `2026-09` 5,620 (mejor 5,783), mejor `2021-08` 5,658, ladder histórico 5,783. El código lo rotulaba «Ligas», y de ahí venía la confusión con Leyendas.
+
+**Qué se decidió.** Dos subsecciones bajo el eyebrow «Competitivo»: «Camino de Leyendas» (solo Liga N) y «Camino de Trofeos» (copas, incluido «Mejor ladder histórico», que antes estaba en Leyendas). `renderCaminoLeyendas()`. La fecha de las filas «actual» y «anterior» se deduce de `leagueStatistics.previousSeason.id` (la actual = el mes siguiente; si no hay id, no se inventa fecha).
+
+**Qué se descartó y por qué (no repetir).** Una sola tabla con columnas «Liga / Copas / Mejor / Fecha» (propuesta inicial de la usuaria): en la fila «Mejor temporada» unía Liga 7 (Leyendas) con 5,658 y «agosto, 2021» (Trofeos). La API no dice cuándo se alcanzó la Liga 7, así que esa fecha no se puede atribuir a esa liga. En actual y anterior sí coinciden (mismo mes), en «mejor» no.
+
+**Dato por verificar.** En `leagueStatistics.currentSeason`, `trophies` (13,270) coincide con las copas actuales del perfil, pero `bestTrophies` (5,677) es menor; parecen escalas distintas dentro del mismo objeto. Las copas máximas reales son `bestTrophies` del perfil (13,322). Se muestra tal cual lo manda la API; no se corrigió ni se interpretó. Sin probar en navegador real.
+
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
