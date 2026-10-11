@@ -20,14 +20,14 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 - **`GrupoTerna/Backend`** (público). Carpetas: `Base/` y `Generador/` (cada una con `src/` = los `.gs` individuales, que son **lo único que Claude edita**; y `respaldo/`, `INDICE_FUNCIONES.md`, `LEEME_IA.md` = archivos **generados por Apps Script** al descargar, que **Claude nunca edita**); `Tampermonkey/Tampermonkey.md`; `Claude/SKILL.md` (copia de esta skill); `Consolidados de cambios/` (consolidados de fases); `Contexto_Base_Web.md` (contexto unificado del sistema); `Datos descargados/` (subcarpetas con archivos de Drive o logs que la usuaria sube para contrastarlos con el código).
 - **`GrupoTerna/Web`** (público): el frontend, publicado en GitHub Pages. Tiene su propio `CHANGELOG.md`.
 - **`GrupoTerna/Script`** (privado): **exclusivo de Render**; contiene solo `package.json` y `server.js`. **No se usa**, salvo que (1) haya que modificar algo relacionado con Render, (2) haya que modificar necesariamente uno de esos dos archivos o (3) falte agregar un archivo al repo para Render. Claude **no lo toca por iniciativa propia**, y **avisa antes de subir** porque un push puede redesplegar el servidor. No tiene README todavía.
-- Cada repo se adjunta a la sesión por separado y **con permiso de escritura** para poder subir; sin eso solo se puede leer. El repo `Backend` figura a veces como `backend`: GitHub redirige.
+- Cada repo se adjunta a la sesión por separado y **con permiso de escritura** para poder subir; sin eso solo se puede leer (si falta, ver 0.7). El repo `Backend` figura a veces como `backend`: GitHub redirige.
 
 ## 0.2 Entrega: se sube directo a GitHub
 
 - Para modificar o crear un archivo de los repos, Claude lo edita en el clon del repo y **lo sube directamente a `main`**, en commits pequeños y con mensaje claro. Antes de subir trae lo remoto (`fetch` y `rebase`), porque el Generador también empuja a `main`.
 - **No genera el archivo para descargar ni usa la herramienta de enviar archivos, a menos que la usuaria lo pida expresamente.** Si ya se envió un archivo una vez y la aplicación vuelve a mostrar su tarjeta, no es porque Claude lo haya enviado de nuevo: no debe afirmar de dónde viene la tarjeta si no lo sabe.
 - **Al terminar cada tanda da la lista de archivos modificados o creados** (ruta, estado «modificado» o «creado» y commit), y si subió cambios a un repo que la usuaria tiene en GitHub Desktop, añade «Pendiente de pull en GitHub Desktop: <repo> (commit xxxxxxx)». Claude no ve el equipo de la usuaria; solo sabe lo que él subió.
-- Si no se puede subir (por permiso o por error), lo dice y pregunta; no sustituye la subida por un archivo descargable sin avisar.
+- Si no se puede subir (por permiso o por error), lo dice y pregunta; no sustituye la subida por un archivo descargable sin avisar. Si el motivo es que la sesión no tiene permiso de escritura, ver 0.7.
 - Los repos `Backend` y `Web` son **públicos**: nunca se escriben tokens, claves ni datos personales en el código ni en los documentos.
 
 ## 0.3 Cómo se sincronizan Apps Script y GitHub (verificado en `Generador/src/01_Principal.gs` y `08_GitHub.gs`; evita pisar cambios)
@@ -42,7 +42,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 - **No va ahí** el estado, los pendientes ni el historial de cambios: eso se queda en el consolidado de fases o en el `CHANGELOG.md`.
 - Los `.gs`, `.html` y demás quedan con código y, a lo más, una línea corta que remite al contexto (por ejemplo `[→ Contexto_Base_Web.md §Bxxx]`). Así no se pierde nada cuando se suben solo archivos específicos.
 - Cuando se contraste un pendiente contra el código, **el registro de la contrastación queda en `Contexto_Base_Web.md`** (qué se verificó, contra qué archivo y versión, en qué fecha y qué se encontró), y en el consolidado se marca lo ya hecho.
-- **Pendiente:** falta migrar al contexto lo de funcionamiento que aún está en los archivos del frontend y en el `CHANGELOG.md` del repo `Web`. El `CHANGELOG.md` **conserva el historial de cambios, más sencillo**; solo sale de él el funcionamiento y lo que sirva para decidir y prevenir errores.
+- **En curso (desde el 11-oct-2026, por tandas, de lo más reciente a lo más antiguo; `PF025` en adelante):** se migra al contexto lo de funcionamiento que aún está en los archivos del frontend y en el `CHANGELOG.md` del repo `Web`. Primero se mueve y después se recorta. El `CHANGELOG.md` **conserva el historial de cambios como checklist corto, ordenado por fecha**; solo sale de él el funcionamiento y lo que sirva para decidir y prevenir errores. **Dónde se registra cada cambio nuevo** (código por repo, funcionamiento al contexto, historial al `CHANGELOG.md`): `Consolidados de cambios/Reglas_Consolidados.md`, sección 6.
 
 ## 0.5 Consolidados de fases y carpeta `Datos descargados`
 
@@ -55,6 +55,12 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 - **README en cada repo** (`Web`, `Backend`, `Script`): por redactar.
 - **Piezas del Generador por programar** (de a una por tanda): (1) aviso de pull pendiente: antes de escribir en GitHub compara el último commit del repo con el que él mismo trajo y **bloquea**, con variante forzada; (2) `subirGeneradorDesdeGithub()` y `subirGeneradorDesdeGithubForzado()`; (3) `Indice_Base.md` e `Indice_Generador.md`, que **se reemplazan** en cada descarga o subida (también en Drive, en las carpetas de Base y Generador, reemplazando el mismo archivo para conservar las versiones) y traen una tabla: **N.º automático, nombre del archivo y estado** (permanece igual, modificado, creado o eliminado; «modificado» es solo para los que no se crearon ni eliminaron en esa tanda). Cuando existan, actualizar 0.3.
 - **Contrastar los pendientes del consolidado contra el código** y migrar el contexto del frontend y del `CHANGELOG.md` de `Web`: pendientes, de a bloques chicos.
+
+## 0.7 Si la sesión no puede escribir en GitHub: sugerir un token fine-grained (definido el 11-oct-2026)
+
+- Cuando Claude **no tiene el comando de añadir repositorios**, o los repos llegan **sin permiso de escritura**, lo dice y **sugiere generar un token fine-grained** (permisos mínimos, vida corta) en lugar de seguir sin poder subir. Como la usuaria suele borrar los chats, el token se guarda **temporalmente** en un `.txt`, se adjunta al chat y se borra y revoca al terminar.
+- La plantilla con los pasos y el bloque de repositorios está en **`Claude/Plantilla_Token_GitHub.txt`** del repo `Backend` (público; solo trae marcadores, nunca un token). Claude la lee de `https://raw.githubusercontent.com/GrupoTerna/Backend/main/Claude/Plantilla_Token_GitHub.txt` y **se la entrega a la usuaria para descargar**; esta es una excepción a 0.2 porque es lo que ella necesita para poder seguir. Si Claude no logra leerla, le dice a la usuaria que la descargue de GitHub. No se copia aquí su contenido, para que viva en un solo lugar.
+- **El token nunca se sube a un repo ni se escribe en commits, documentos o respuestas** (los repos son públicos). Claude lo lee del archivo adjunto sin mostrarlo; la usuaria lo borra y lo revoca después.
 
 ## Objetivo
 
@@ -550,6 +556,8 @@ La regla (indicar el nombre exacto del archivo y la función o bloque editado en
 ## Reglas de los consolidados: un solo archivo
 
 Las reglas de trabajo de los consolidados (ciclo de vida, reglas 1 a 12, nota de autoinvocación, compactación y referencias en los historiales) **no están en esta skill**. Están en **`Consolidados de cambios/Reglas_Consolidados.md`** del repo `Backend`: léelas ahí antes de crear, leer o editar un consolidado, y no las copies aquí ni dentro de un consolidado. Una regla propia de un consolidado concreto va en ese consolidado.
+
+**Dónde se registra cada cambio nuevo** (código del frontend a `Web`, de Apps Script y Tampermonkey a `Backend`, funcionamiento al contexto, historial al `CHANGELOG.md`) y el formato del `CHANGELOG.md`: sección 6 del mismo archivo. **Al terminar de aplicar un consolidado, Claude informa y pregunta si se borra** (sección 1); no lo borra sin un sí explícito.
 
 Esas mismas reglas rigen al editar esta skill. Regla propia de la skill: cuando se modifica, se actualiza el `SKILL.md` completo y se sube a `Claude/SKILL.md` del repo `Backend`; la skill que usa la aplicación es la instalada, así que la usuaria debe volver a instalarla desde ese archivo (Claude solo entrega el archivo para descargar si ella lo pide, o si la cuenta no puede escribir en GitHub).
 
