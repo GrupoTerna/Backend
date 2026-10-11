@@ -499,7 +499,7 @@ function _rdocADMiles(n) {
 function _rdocADTablaRango(body, trofeos, ataques) {
   var filas = [
     [''].concat(_CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION),
-    ['Trofeos', _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos)],
+    ['Medallas', _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos)],
     ['Ataques', String(ataques), String(ataques), String(ataques), String(ataques)]
   ];
   return _rdocTablaConEncabezadoNegrita(body, filas);
@@ -560,17 +560,17 @@ function _construirContenidoDocAscensosDescensos(body) {
   // 1. Miembro
   _rdocParrafoTexto(body, '1.     Miembro', true);
   _rdocParrafoTexto(body, 'Condición para permanecer en el clan', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
   _rdocADTablaRango(body, 2000, 16);
   _rdocADBloqueFuncion(body, ['Donar y participar en guerras.']);
 
   // 2. Veterano
   _rdocParrafoTexto(body, '2.     Veterano', true);
   _rdocParrafoTexto(body, 'Requisito para ascender a este rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
   _rdocADTablaRango(body, 2500, 16);
   _rdocParrafoTexto(body, 'Condición para conservar el rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
   _rdocADTablaRango(body, 2000, 16);
   _rdocADBloqueFuncion(body, [
     'Donar y participar en guerras.',
@@ -584,10 +584,10 @@ function _construirContenidoDocAscensosDescensos(body) {
   // 3.1. Tipo A: Colíder de juego
   _rdocParrafoTexto(body, '3.1.   Tipo A: Colíder de juego', true);
   _rdocParrafoTexto(body, 'Requisito para ascender a este rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
   _rdocADTablaRango(body, 3000, 16);
   _rdocParrafoTexto(body, 'Condición para conservar el rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
   _rdocADTablaRango(body, 2600, 16);
   _rdocADBloqueFuncion(body, [
     'Donar y participar en guerras.',
@@ -600,10 +600,10 @@ function _construirContenidoDocAscensosDescensos(body) {
   _rdocParrafoTexto(body, '3.2.   Tipo B: Colíder colaborador', true);
   _rdocParrafoTexto(body, 'Los Colíderes colaboradores son elegidos por el líder por su compromiso con el clan.', false);
   _rdocParrafoTexto(body, 'Requisito para ascender a este rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el mínimo promedio de trofeos de guerra requerido durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el mínimo promedio de medallas de guerra requerido durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
   _rdocADTablaRango(body, 3000, 16);
   _rdocParrafoTexto(body, 'Condición para conservar el rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece. Sin embargo, tiene prioridad de no descender por medallas.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece. Sin embargo, tiene prioridad de no descender por medallas.', false);
   _rdocADTablaRango(body, 2600, 16);
   _rdocADBloqueFuncion(body, [
     'Donar y participar en guerras.',
@@ -677,7 +677,7 @@ function _llenarTablaRequisitos(tabla, reqPorClan, campoQty) {
   for (var f = tabla.getNumRows() - 1; f >= 1; f--) {
     var fila = tabla.getRow(f);
     var etiqueta = fila.getCell(0).getText().trim().toLowerCase();
-    var esTrofeos = (etiqueta.indexOf('trofeo') !== -1);
+    var esTrofeos = (etiqueta.indexOf('trofeo') !== -1 || etiqueta.indexOf('medalla') !== -1); // 11-oct-2026: la fila se llama «Medallas» (antes «Trofeos»); se reconocen ambos para no romper Docs ya creados
     var esAtaques = (etiqueta.indexOf('ataque') !== -1);
     if (!esTrofeos && !esAtaques) continue; // fila que no reconocemos: se deja intacta
 

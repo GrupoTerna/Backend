@@ -274,7 +274,7 @@ function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, log
 
   if (resumen.ordenClanesMinT.length > 0) {
     insertAt = _insertarBloquePorClan(body, insertAt,
-      'Alcanzar el mínimo de trofeos en guerra durante la semana actual (' + nombreMes + '):',
+      'Alcanzar el mínimo de medallas en guerra durante la semana actual (' + nombreMes + '):',
       resumen.ordenClanesMinT, resumen.minTPorClan,
       function (qty) { return String(qty); });
   }

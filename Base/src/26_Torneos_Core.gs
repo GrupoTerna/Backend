@@ -599,7 +599,7 @@ function _detalleRequisitoCR(tipoPropuesta, rolKey, reqMinCR, reqAtaques, reqBar
   }
   if (reqMinCR.activo) {
     var okPuntaje = _fameCumpleRequisito(promedios, reqMinCR.qty); // sumatoria, 28-sep-2026
-    partes.push((okPuntaje ? 'cumple' : 'no cumple') + ' puntaje (' + _round1(promedios.fameProm) + '/' + reqMinCR.qty + ')');
+    partes.push((okPuntaje ? 'cumple' : 'no cumple') + ' medallas (' + _round1(promedios.fameProm) + '/' + reqMinCR.qty + ')');
   }
   if (reqBarcos.activo) {
     var okBarcos = _barcosCumplenRequisito(promedios, reqBarcos.qty); // sumatoria, 29-sep-2026
