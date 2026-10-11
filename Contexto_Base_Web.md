@@ -65432,7 +65432,15 @@ se degrada a "sin caché", nunca rompe el endpoint.
 
 **Qué se cambió y qué no.** Solo los textos visibles. Los nombres internos (`puntaje`, `fame`, `minTrofeosGuerra`, `reqTrofGuerra`, `GC.FAME`, los encabezados de las hojas) se dejaron igual para no romper la sincronización con Apps Script y las hojas. Los umbrales de Cambio de Rango y de Torneos («Min CR», `minTrofeosGuerra`) se comparan con el fame (`fameSemana`), por eso en pantalla pasan a «Medallas». **Trampa al renombrar:** en `perfil.html`, `renderMetricaSemanal()` busca la unidad de la gráfica por el *título del eje* (`unidades[opts.tituloEje]`); si se cambia el título hay que cambiar también la clave.
 
-**Valores guardados que no se renombraron a propósito:** las opciones «No alcanzó el mínimo de trofeos de guerra» y «Premio se reparte proporcional al puntaje» (`admin.html`) son texto que se guarda en las hojas; cambiarlas dejaría registros viejos con otro texto. Pendiente de definir por la usuaria.
+**Corrección (regla 9, misma fecha, segunda tanda):** arriba se dijo que solo se cambiaban «textos visibles» y que dos opciones guardadas quedaban sin cambiar. La usuaria pidió cambiarlas y barrer el resto de la web. Se cambiaron: «No alcanzó el mínimo de medallas de guerra» y «Premio se reparte proporcional a las medallas» (`admin.html`); el backend no las compara por texto (verificado con `grep`), pero los registros ya guardados conservan el texto viejo.
+
+**Regla de vocabulario aplicada en toda la web (11-oct-2026):**
+- **Fame del jugador o del clan en la carrera de guerra → «Medallas».** Incluye «Puntaje», «Fame», «Fama del día» y el «Trofeos de guerra» que en realidad era fame: los mínimos de Cambio de Rango y de Torneos, las columnas de los Docs de «No calificados», el mínimo semanal del bot y la fila «Medallas» del Doc de Ascensos/Descensos.
+- **Trofeos que gana el clan al cerrar la semana → «Trofeos de guerra».** Log de Guerra (`guerra.html`), «Posiciones finales» (`admin.html`), la gráfica de clanes de `directorio.html` y los datos del clan en `30_Mensajes.gs` y el bot. En la hoja Clan, `CC.TROFEOS` sale de `info.clanWarTrophies` de la API, es decir, trofeos de guerra del clan.
+- **Se dejan como «trofeos» (son otra cosa):** «Mín. trofeos» de la tarjeta de clan (requisito de copas para entrar, `CC.REQUERIMIENTO`), «Camino de Trofeos» y «Trofeos de Camino de leyendas» (ladder del juego).
+- **No se tocaron:** encabezados de hojas (`Puntaje`, `Fame`, `Trofeos`), notas de celdas, mensajes de `Logger.log` y nombres internos. Las columnas se buscan por nombre de encabezado; renombrarlos rompería la lectura.
+- **Trampa en `_llenarTablaRequisitos()` (`25_Doc_AscensosDescensos.gs`):** reconoce la fila del Doc por el texto de su primera celda (`'trofeo'`). Como el rótulo pasó a «Medallas», ahora acepta ambos (`'trofeo'` o `'medalla'`) para no romper Docs ya creados con la fila «Trofeos».
+- **Sin probar:** que los Docs de Drive ya creados se actualicen bien con la fila «Trofeos» antigua y con la nueva «Medallas».
 
 **Pendiente de definir (detectado, sin cambiar):** `admin.html` rotula «Trofeos guerra» (`#mVGuerra`) un valor que es `j.vGuerra`, es decir, **victorias de guerra**, no fame ni trofeos (ver AVISO 9, 37B056). Falta decidir el rótulo correcto.
 
