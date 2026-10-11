@@ -4129,7 +4129,8 @@ function _getParticipacionHoyGuerra(ctx) {
       ? entradaTag.clanes[clanNombreDir]
       : 0;
 
-    var infoCuenta = { tag: String(filaDir[DC.TAG - 1] || ''), nombre: String(filaDir[DC.NOMBRE - 1] || '') };
+    // FIX (11-oct-2026, pedido usuaria): cada cuenta lleva sus ataques usados hoy en ESTE clan (ataquesHoy); guerra.html lo lee en pendientesHoy(). [→ Contexto_Base_Web.md §PF030]
+    var infoCuenta = { tag: String(filaDir[DC.TAG - 1] || ''), nombre: String(filaDir[DC.NOMBRE - 1] || ''), ataquesHoy: Number(ataqHoyEnEsteClan) || 0 };
     if (ataqHoyEnEsteClan > 0) {
       porClan[clanNombreDir].reservadas.push(infoCuenta);
     } else {
