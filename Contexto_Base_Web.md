@@ -968,6 +968,19 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 **Alcance.** Los donuts no tienen eje. Si Ataques o Medallas traen un solo día, el eje igual se muestra. Comprobado con la función extraída y valores de 1 a 3,000; **sin probar en navegador real** (falta ver el ancho de los rótulos en celular).
 
 
+### PF036 — `perfil.html`: tope de 4 ataques y de 900 medallas por día en las gráficas grandes; lo que lo supera es una anomalía (pedido de la usuaria, 11-oct-2026)
+
+**Qué se decidió.** En «Ataques por semana» el tope es **4** y en «Medallas por semana» es **900** (constantes `TOPE_ATAQUES_DIA` y `TOPE_MEDALLAS_DIA`; «Barcos por semana» y «Ranking en el clan» no tienen tope). Las gráficas dibujan un punto por día de guerra (jueves a domingo), así que el tope es **por día**, no por semana: la usuaria lo definió como el máximo esperable. Todo valor real **mayor** que el tope es una anomalía; igual al tope no lo es.
+
+**Cómo se ve.** `perfilLineChartSvg()` (opción `tope`): línea punteada dorada con el rótulo «Tope: N» a la derecha (el dorado la distingue de los tramos punteados grises de «sin dato»); la escala del eje Y siempre llega al tope, aunque los datos sean menores; los puntos por encima salen **rojos y algo más grandes** (`.serie-pt-anomalia`), con el aviso «Supera el tope de N» en el tooltip y en la etiqueta para lectores de pantalla. `pintarGraficaPerfil()`: una fila nueva en la leyenda y, bajo la gráfica, un resumen con las fechas y los valores («⚠ 5 días superan el tope de 900 medallas: 17/07 (1,552), …»; si hay más de 10, se listan los 10 más recientes y se dice cuántos más antiguos hay). Sin excesos, dice que ningún día supera el tope. Las fechas del resumen son las mismas que se dibujan: ambos usan `filtrarDiasGuerraPerfil()`.
+
+**Qué no cuenta como anomalía (a propósito).** Un punto sin dato (`real:false`, el relleno en 0 de los huecos) nunca se marca. Tampoco las medallas en 0 con ataques hechos (`real:false`, ver el FIX del 11-oct en `renderMetricaSemanal()`).
+
+**Lo que la usuaria debe saber al leer una anomalía.** Los valores diarios de ataques y medallas se **calculan** restando el acumulado del registro anterior (`_valoresDiariosDesdeAcumulado()`); si el historial perdió un registro intermedio, el siguiente puede salir con el doble y marcarse como anomalía sin serlo. Cuando una anomalía sea de un día con registros faltantes, no es un dato real del jugador. No se verificó contra el historial real de ningún jugador cuántas anomalías aparecen hoy: en la captura de `#2GG8PJ8GC` se ven valores sobre 900 (alrededor de 1,200 y 1,550), que ahora saldrán marcados.
+
+**Probado.** `test/perfil-tope-grafica.test.js` (10 pruebas, extrae las funciones del `perfil.html` real): sin tope no hay línea; con tope hay línea y rótulo; el eje incluye el tope; igual al tope no es anomalía; los huecos no cuentan; solo jueves a domingo; aviso en plural y singular; sin excesos; tooltip y etiqueta; Ranking y Barcos no cambian. **Sin probar en navegador real** (falta ver el rótulo del tope cuando hay puntos pegados a la línea, sobre todo en Ataques, donde el tope coincide con la marca más alta).
+
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
