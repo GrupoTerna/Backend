@@ -3413,6 +3413,20 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
       };
     }
 
+    // FIX (11-oct-2026, pedido usuario — "Love--Adri ha estado toda la semana sin atacar, debería tener los ceros"): una cuenta sin NINGUNA fila de guerra esta semana (ni en "Nuevos" ni en la hoja Guerra) quedaba con guerraSemanaDias = null y la tarjeta no dibujaba la cuadrícula, mientras otra con filas en 0 sí mostraba ceros. Un miembro actual sin registro no atacó: se rellenan con 0 los días de guerra ya llegados (jueves hasta hoy) y los futuros quedan null ("—"). Fuera de día de guerra (lunes a miércoles) no se rellena. [→ Contexto_Base_Web.md §37B262D]
+    var sinNingunDatoDiario = !guerraSemanaDiasFila ||
+      !['ataques', 'puntaje', 'barcos'].some(function (k) { return guerraSemanaDiasFila[k].some(function (v) { return v !== null; }); });
+    if (sinNingunDatoDiario && esDiaGuerraIdx(ctx.periodIndex)) {
+      var offsetHoyIR = (ctx.periodIndex % 7) - 3; // 0=jueves … 3=domingo
+      var cerosIR = [0, 1, 2, 3].map(function (d) { return d <= offsetHoyIR ? 0 : null; });
+      guerraSemanaDiasFila = {
+        dias:     DIAS_GUERRA_NUEVOS,
+        ataques:  cerosIR.slice(),
+        puntaje:  cerosIR.slice(),
+        barcos:   cerosIR.slice()
+      };
+    }
+
     // Sin nada de "Nuevos" (todavía no escaneado por Tampermonkey, o sin bloques con fecha usable): se cae al respaldo de Control_2 si hay algo ahí. El candidato NUNCA desaparece por esto — sigue viniendo de Directorio (Paso 1), solo… [→ Contexto_Base_Web.md §37B270]
     if (!historialFila.length && historialPorTag[tagLimpio]) {
       historialFila = historialPorTag[tagLimpio];

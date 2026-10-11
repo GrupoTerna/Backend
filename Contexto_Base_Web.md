@@ -63466,6 +63466,13 @@ En la hoja Guerra, `GC.FAME` y `GC.BARCOS` guardan el **acumulado de toda la sem
 - **Efecto en `perfil.html`.** `puntajeAcumulado` (suma de los días) vuelve a ser el acumulado real; antes sumaba acumulados y se inflaba.
 - **No se tocó.** La fila de «Nuevos» (Tampermonkey) ya trae valores diarios, y «Valores diarios» de `guerra.html` sale de Control, que ya hace la resta. Sin probar en Apps Script real.
 
+#### 37B262D — Cuadrícula diaria vacía en un ingreso sin ninguna fila de guerra (11-oct-2026)
+
+- **Síntoma.** En «Ingresos recientes» una cuenta (Love--Adri, sin atacar en toda la semana) salía sin la cuadrícula J/V/S/D, mientras otra (Novato 750) mostraba ceros.
+- **Causa.** `_construirIngresosRecientesUnificado()` arma `guerraSemanaDias` desde «Nuevos» y, si falta, desde la hoja Guerra (`guerraDiasPorTag`). Una cuenta sin fila en ninguna de las dos quedaba en `null`, y `desgloseDiasHtml()` (`directorio.html`) no dibuja nada con `null`. Los «0 0 0» de «Semana actual» salen de un valor por defecto (`guerraSemana`), que no tiene nada que ver con la cuadrícula.
+- **Corrección.** Si no hay ningún dato diario y la semana ya está en día de guerra (`esDiaGuerraIdx(ctx.periodIndex)`), se rellenan con 0 los días desde el jueves hasta hoy (`periodIndex % 7 - 3`); los días futuros quedan `null` (el frontend los pinta «—»). Lunes a miércoles no se rellena.
+- **Límite.** No distingue si la cuenta aún no estaba en el clan un día concreto: sigue valiendo la regla del 11-oct (§37B262B) de que un día sin fila de una cuenta que SÍ tiene otras filas queda `null`. Sin probar en Apps Script real.
+
 #### 37B262 — líneas 6984-7007 (comentario)
 
 ```text
