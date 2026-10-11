@@ -963,6 +963,8 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 
 **Qué se descartó y por qué (no repetir).** Marcas al 25, 50 y 75 % del máximo (lo que había): con valores enteros pequeños daban 2.5 o 7.5, que no existen como dato. Tampoco se usó una escala fija de 5 marcas sin redondear por el mismo motivo.
 
+**Orden dentro de las tarjetas de pastel (ajuste del mismo día).** La leyenda (Victorias/Derrotas, Hechas/Recibidas) va arriba y el donut abajo, como la leyenda de chips va sobre el SVG en las de dispersión. Se hizo solo con CSS (`#mMiniGraficosWrap .mini-pie-cuerpo{flex-direction:column-reverse; flex-wrap:nowrap}`): `_pastelMiniHtml()` no cambió, para no afectar «Cartas por nivel» (`coleccion-nivel-pie-wrap`), que usa el mismo componente y mantiene donut a la izquierda y leyenda a la derecha. Los chips «Ratio V/D» y «Racha» siguen debajo. Sin probar en navegador real.
+
 **Alcance.** Los donuts no tienen eje. Si Ataques o Medallas traen un solo día, el eje igual se muestra. Comprobado con la función extraída y valores de 1 a 3,000; **sin probar en navegador real** (falta ver el ancho de los rótulos en celular).
 
 
