@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 10/10/2026 04:04:48 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 11/10/2026 06:31:55 */
 
 
 
@@ -21998,7 +21998,8 @@ function _getParticipacionHoyGuerra(ctx) {
       ? entradaTag.clanes[clanNombreDir]
       : 0;
 
-    var infoCuenta = { tag: String(filaDir[DC.TAG - 1] || ''), nombre: String(filaDir[DC.NOMBRE - 1] || '') };
+    // FIX (11-oct-2026, pedido usuaria): cada cuenta lleva sus ataques usados hoy en ESTE clan (ataquesHoy); guerra.html lo lee en pendientesHoy(). [→ Contexto_Base_Web.md §PF030]
+    var infoCuenta = { tag: String(filaDir[DC.TAG - 1] || ''), nombre: String(filaDir[DC.NOMBRE - 1] || ''), ataquesHoy: Number(ataqHoyEnEsteClan) || 0 };
     if (ataqHoyEnEsteClan > 0) {
       porClan[clanNombreDir].reservadas.push(infoCuenta);
     } else {
@@ -30733,7 +30734,7 @@ function _rdocADMiles(n) {
 function _rdocADTablaRango(body, trofeos, ataques) {
   var filas = [
     [''].concat(_CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION),
-    ['Trofeos', _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos)],
+    ['Medallas', _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos)],
     ['Ataques', String(ataques), String(ataques), String(ataques), String(ataques)]
   ];
   return _rdocTablaConEncabezadoNegrita(body, filas);
@@ -30794,17 +30795,17 @@ function _construirContenidoDocAscensosDescensos(body) {
   // 1. Miembro
   _rdocParrafoTexto(body, '1.     Miembro', true);
   _rdocParrafoTexto(body, 'Condición para permanecer en el clan', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
   _rdocADTablaRango(body, 2000, 16);
   _rdocADBloqueFuncion(body, ['Donar y participar en guerras.']);
 
   // 2. Veterano
   _rdocParrafoTexto(body, '2.     Veterano', true);
   _rdocParrafoTexto(body, 'Requisito para ascender a este rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
   _rdocADTablaRango(body, 2500, 16);
   _rdocParrafoTexto(body, 'Condición para conservar el rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
   _rdocADTablaRango(body, 2000, 16);
   _rdocADBloqueFuncion(body, [
     'Donar y participar en guerras.',
@@ -30818,10 +30819,10 @@ function _construirContenidoDocAscensosDescensos(body) {
   // 3.1. Tipo A: Colíder de juego
   _rdocParrafoTexto(body, '3.1.   Tipo A: Colíder de juego', true);
   _rdocParrafoTexto(body, 'Requisito para ascender a este rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
   _rdocADTablaRango(body, 3000, 16);
   _rdocParrafoTexto(body, 'Condición para conservar el rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
   _rdocADTablaRango(body, 2600, 16);
   _rdocADBloqueFuncion(body, [
     'Donar y participar en guerras.',
@@ -30834,10 +30835,10 @@ function _construirContenidoDocAscensosDescensos(body) {
   _rdocParrafoTexto(body, '3.2.   Tipo B: Colíder colaborador', true);
   _rdocParrafoTexto(body, 'Los Colíderes colaboradores son elegidos por el líder por su compromiso con el clan.', false);
   _rdocParrafoTexto(body, 'Requisito para ascender a este rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el mínimo promedio de trofeos de guerra requerido durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el mínimo promedio de medallas de guerra requerido durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
   _rdocADTablaRango(body, 3000, 16);
   _rdocParrafoTexto(body, 'Condición para conservar el rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de trofeos de guerra y ataques durante la temporada actual, según el clan al que pertenece. Sin embargo, tiene prioridad de no descender por medallas.', false);
+  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece. Sin embargo, tiene prioridad de no descender por medallas.', false);
   _rdocADTablaRango(body, 2600, 16);
   _rdocADBloqueFuncion(body, [
     'Donar y participar en guerras.',
@@ -30911,7 +30912,7 @@ function _llenarTablaRequisitos(tabla, reqPorClan, campoQty) {
   for (var f = tabla.getNumRows() - 1; f >= 1; f--) {
     var fila = tabla.getRow(f);
     var etiqueta = fila.getCell(0).getText().trim().toLowerCase();
-    var esTrofeos = (etiqueta.indexOf('trofeo') !== -1);
+    var esTrofeos = (etiqueta.indexOf('trofeo') !== -1 || etiqueta.indexOf('medalla') !== -1); // 11-oct-2026: la fila se llama «Medallas» (antes «Trofeos»); se reconocen ambos para no romper Docs ya creados
     var esAtaques = (etiqueta.indexOf('ataque') !== -1);
     if (!esTrofeos && !esAtaques) continue; // fila que no reconocemos: se deja intacta
 
@@ -31540,7 +31541,7 @@ function _detalleRequisitoCR(tipoPropuesta, rolKey, reqMinCR, reqAtaques, reqBar
   }
   if (reqMinCR.activo) {
     var okPuntaje = _fameCumpleRequisito(promedios, reqMinCR.qty); // sumatoria, 28-sep-2026
-    partes.push((okPuntaje ? 'cumple' : 'no cumple') + ' puntaje (' + _round1(promedios.fameProm) + '/' + reqMinCR.qty + ')');
+    partes.push((okPuntaje ? 'cumple' : 'no cumple') + ' medallas (' + _round1(promedios.fameProm) + '/' + reqMinCR.qty + ')');
   }
   if (reqBarcos.activo) {
     var okBarcos = _barcosCumplenRequisito(promedios, reqBarcos.qty); // sumatoria, 29-sep-2026
@@ -35888,7 +35889,7 @@ function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, log
 
   if (resumen.ordenClanesMinT.length > 0) {
     insertAt = _insertarBloquePorClan(body, insertAt,
-      'Alcanzar el mínimo de trofeos en guerra durante la semana actual (' + nombreMes + '):',
+      'Alcanzar el mínimo de medallas en guerra durante la semana actual (' + nombreMes + '):',
       resumen.ordenClanesMinT, resumen.minTPorClan,
       function (qty) { return String(qty); });
   }
@@ -36658,7 +36659,7 @@ function _rdocBloqueClanValor(body, sufijoValor) {
  * _rdocBloqueRequisitosSorteo(body) [→ Contexto_Base_Web.md §28B038]
  */
 function _rdocBloqueRequisitosSorteo(body) {
-  _rdocParrafoTexto(body, '●      Alcanzar el mínimo de trofeos en guerra durante la semana actual (agosto):', false);
+  _rdocParrafoTexto(body, '●      Alcanzar el mínimo de medallas en guerra durante la semana actual (agosto):', false);
   _rdocBloqueClanValor(body, '2400');
   _rdocParrafoTexto(body, '●      Solo participan miembros del clan que jueguen sus guerras completas (ataques semanales mínimos por clan):', false);
   _rdocBloqueClanValor(body, '16 ataques semanales');
@@ -36672,7 +36673,7 @@ function _rdocBloqueRequisitosSorteo(body) {
  * _rdocBloqueRequisitosTorneo(body) [→ Contexto_Base_Web.md §28B039]
  */
 function _rdocBloqueRequisitosTorneo(body) {
-  _rdocParrafoTexto(body, 'Alcanzar el mínimo de trofeos en guerra durante la semana actual (agosto):', false);
+  _rdocParrafoTexto(body, 'Alcanzar el mínimo de medallas en guerra durante la semana actual (agosto):', false);
   _rdocBloqueClanValor(body, '2400');
   _rdocParrafoTexto(body, 'Solo participan miembros del clan que jueguen sus guerras completas (ataques semanales mínimos por clan):', false);
   _rdocBloqueClanValor(body, '16 ataques semanales');
@@ -36830,7 +36831,7 @@ function _construirContenidoDocGanadoresTorneo(body) {
   _rdocParrafoRuns(body, [[' ', false], ['Participantes del torneo:', true]], DocumentApp.HorizontalAlignment.JUSTIFY);
   body.appendParagraph('');
   _rdocTablaConEncabezadoNegrita(body, [
-    ['N°', 'Nombre', 'Victorias', 'Clan', 'Trofeos de guerra', 'Ataques semanales', 'Resultado'],
+    ['N°', 'Nombre', 'Victorias', 'Clan', 'Medallas de guerra', 'Ataques semanales', 'Resultado'],
     ['1', 'Nombre1', '', 'Clan1', '3000', '16', 'Califica'],
     ['2', 'Nombre2', '', '', '', '', 'Califica'],
     ['3', 'Nombre3', '', '', '', '', 'Califica'],
@@ -37714,7 +37715,7 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
     requisitos.push('  ' + clanesOrden[rai] + ': ' + (ataquesReqClan > 0 ? 'mínimo ' + ataquesReqClan : 'no exigido') + '.');
   }
   for (var ri = 0; ri < clanesOrden.length; ri++) {
-    requisitos.push('Trofeos de guerra acumulados (temporada ' + temporadaMostrar + ') — ' +
+    requisitos.push('Medallas de guerra acumuladas (temporada ' + temporadaMostrar + ') — ' +
       clanesOrden[ri] + ': mínimo ' + minTPorNombreClan[clanesOrden[ri]] + '.');
   }
   if (reqBarcos.activo) {
@@ -37723,7 +37724,7 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
   }
 
   // --- Recorrido del padrón ---
-  var filas = [['Nombre', 'Clan', 'Ataques semana', 'Trofeos de guerra', 'Barcos (prom.)', 'Motivo por el que no califica']];
+  var filas = [['Nombre', 'Clan', 'Ataques semana', 'Medallas de guerra', 'Barcos (prom.)', 'Motivo por el que no califica']];
   var totalEvaluados = 0, totalNoCalificados = 0;
 
   for (var i = 0; i < dirData.length; i++) {
@@ -37753,7 +37754,7 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
         (infoAtaques.exentos > 0 ? ' (' + ataquesMinClan + ' menos ' + infoAtaques.exentos + ' por día opcional)' : '') + '.');
     }
     if (trofeos < minTPorNombreClan[clan]) {
-      motivos.push('Trofeos de guerra: ' + _ncFmtNum(trofeos) + ' (se piden ' + minTPorNombreClan[clan] + ').');
+      motivos.push('Medallas de guerra: ' + _ncFmtNum(trofeos) + ' (se piden ' + minTPorNombreClan[clan] + ').');
     }
     if (reqBarcos.activo && barcosProm > reqBarcos.qty) {
       motivos.push('Barcos: ' + _ncFmtNum(barcosProm) + ' de promedio semanal (el tope es ' + reqBarcos.qty + ').');
@@ -37826,7 +37827,7 @@ function actualizarDocNoCalificadosSorteo(ctxParam) {
   ordenClanes.forEach(function (c) {
     var req = reqPorClan[c];
     var partes = [];
-    if (req.minT.activo)    partes.push('Trofeos de guerra (promedio semanal): mínimo ' + req.minT.qty);
+    if (req.minT.activo)    partes.push('Medallas de guerra (promedio semanal): mínimo ' + req.minT.qty);
     if (req.ataques.activo) partes.push('Ataques (promedio semanal): mínimo ' + req.ataques.qty);
     if (req.torneos.activo) partes.push('Torneos jugados en las semanas evaluadas: mínimo ' + req.torneos.qty);
     if (req.barcos.activo)  partes.push('Barcos (promedio semanal): máximo ' + req.barcos.qty + ' (tope, superarlo descalifica)');
@@ -37840,7 +37841,7 @@ function actualizarDocNoCalificadosSorteo(ctxParam) {
   }
 
   var dataDir = _leerDirectorioFisicoComoDC(ss);
-  var filas = [['Nombre', 'Clan', 'Trofeos (prom.)', 'Ataques (prom.)', 'Torneos', 'Barcos (prom.)', 'Motivo por el que no califica']];
+  var filas = [['Nombre', 'Clan', 'Medallas (prom.)', 'Ataques (prom.)', 'Torneos', 'Barcos (prom.)', 'Motivo por el que no califica']];
   var totalEvaluados = 0, totalNoCalificados = 0;
 
   for (var i = 0; i < dataDir.length; i++) {
@@ -37860,7 +37861,7 @@ function actualizarDocNoCalificadosSorteo(ctxParam) {
 
     var motivos = [];
     if (req.minT.activo && trofeos < req.minT.qty) {
-      motivos.push('Trofeos de guerra: ' + _ncFmtNum(trofeos) + ' de promedio (se piden ' + req.minT.qty + ').');
+      motivos.push('Medallas de guerra: ' + _ncFmtNum(trofeos) + ' de promedio (se piden ' + req.minT.qty + ').');
     }
     // 19-sep-2026: SUMATORIA (no promedio), igual que _webSorteoCalificados() (37_Web_API.gs).
     if (req.ataques.activo && !_ataquesCumplenRequisito(semanalPorTag[tag], req.ataques.qty)) {
@@ -38002,7 +38003,7 @@ function actualizarDocCambioRango(idAscenso, idDescenso) {
         'ASCENSO ' + _ncTextoRequisito(b.minCR[rol], b.ataques[rol]) + ' | ' +
         'DESCENSO ' + (bd ? _ncTextoRequisito(bd.minCR[rol], bd.ataques[rol]) : 'sin fila de Descenso para este clan') + '.');
     });
-    requisitos.push(b.clan + ' — Min_G (umbral de expulsión, sobre Fame promedio): ' +
+    requisitos.push(b.clan + ' — Min_G (umbral de expulsión, sobre medallas promedio): ' +
       (minGPorNombreClan[b.clan] !== undefined ? minGPorNombreClan[b.clan] : CFG.MIN_G_DEFAULT) + '.');
   });
   requisitos.push('Descenso: solo cuentan las semanas completas de cada jugador (con fila el primer día de ' +
@@ -38015,7 +38016,7 @@ function actualizarDocCambioRango(idAscenso, idDescenso) {
 
   // --- Recorrido del padrón (mismo criterio que _calcularPropuestasCambioRango) ---
   var dataDir = _leerDirectorioFisicoComoDC(ss);
-  var filas = [['Nombre', 'Clan', 'Rango actual', 'Fame (prom.)', 'Ataques (prom.)', 'Veredicto', 'Detalle']];
+  var filas = [['Nombre', 'Clan', 'Rango actual', 'Medallas (prom.)', 'Ataques (prom.)', 'Veredicto', 'Detalle']];
   var conteo = {};
   var totalEvaluados = 0;
 
@@ -38158,7 +38159,7 @@ function _ncVeredictoCambioRango(rolKey, bloqueAsc, bloqueDesc, promAsc, promDes
   if (fame < minGClan) {
     return {
       veredicto: NC_VEREDICTO.EXPULSION,
-      detalle: 'Fame promedio ' + _ncFmtNum(fame) + ', por debajo de Min_G (' + minGClan + ')' +
+      detalle: 'Medallas promedio ' + _ncFmtNum(fame) + ', por debajo de Min_G (' + minGClan + ')' +
         (bloqueDesc && promDesc
           ? '. Descenso: ' + _ncTextoRequisitoVsReal(bloqueDesc.minCR[rolKey], bloqueDesc.ataques[rolKey], promDesc) + '.'
           : '.')
@@ -38170,7 +38171,7 @@ function _ncVeredictoCambioRango(rolKey, bloqueAsc, bloqueDesc, promAsc, promDes
       (bloqueDesc && promDesc
         ? ' — ' + _ncTextoRequisitoVsReal(bloqueDesc.minCR[rolKey], bloqueDesc.ataques[rolKey], promDesc)
         : '') +
-      '. Fame promedio ' + _ncFmtNum(fame) + ', alcanza Min_G (' + minGClan + '), así que no corresponde expulsión.'
+      '. Medallas promedio ' + _ncFmtNum(fame) + ', alcanza Min_G (' + minGClan + '), así que no corresponde expulsión.'
   };
 }
 
@@ -38237,7 +38238,7 @@ function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, tex
  */
 function _ncTextoRequisito(reqMinCR, reqAtaques) {
   var partes = [];
-  partes.push('Fame ' + (reqMinCR && reqMinCR.activo ? '>= ' + reqMinCR.qty : 'no exigido'));
+  partes.push('Medallas ' + (reqMinCR && reqMinCR.activo ? '>= ' + reqMinCR.qty : 'no exigido'));
   partes.push('Ataques ' + (reqAtaques && reqAtaques.activo ? '>= ' + reqAtaques.qty : 'no exigido'));
   return partes.join(', ');
 }
@@ -38248,7 +38249,7 @@ function _ncTextoRequisito(reqMinCR, reqAtaques) {
 function _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) {
   var partes = [];
   if (reqMinCR && reqMinCR.activo) {
-    partes.push('Fame ' + _ncFmtNum(promedios.fameProm) + ' (se pide ' + reqMinCR.qty + ')');
+    partes.push('Medallas ' + _ncFmtNum(promedios.fameProm) + ' (se pide ' + reqMinCR.qty + ')');
   }
   if (reqAtaques && reqAtaques.activo) {
     // 19-sep-2026: aviso de exoneración por domingo opcional, mismo criterio y [→ Contexto_Base_Web.md §29B025]
@@ -38844,7 +38845,7 @@ function _formatearInfoClan(info) {
   lineas.push('Líder: '   + (info.lider          || ''));
   lineas.push('Miembros: '+ _fmt(info.miembros));
   lineas.push('Min_G: '   + _fmt(info.minG));
-  lineas.push('Trofeos: ' + _fmt(info.trofeos));
+  lineas.push('Trofeos de guerra: ' + _fmt(info.trofeos));
   lineas.push('Liga: '    + (info.liga           || ''));
   lineas.push('Requerimiento: ' + _fmt(info.requerimiento));
   lineas.push('Copas: '   + _fmt(info.copas));
@@ -44950,6 +44951,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
 
   // Ataques/Puntaje/Barcos de la SEMANA ACTUAL por Tag (hoja Guerra) ---- Independiente de Tampermonkey: viene de la API de Supercell vía runGuerra()/runGuerraRapido() (17_GuerraSheet.gs). FASE 10 (09-sep-2026, pedido usuario… [→ Contexto_Base_Web.md §37B262]
   var guerraSemanaPorTag = {};
+  var guerraDiasPorTag = {}; // 11-oct-2026: { Tag: { offsetDia(0-3): {ataques, puntaje, barcos} } } de la semana en curso, respaldo del desglose diario cuando el Tag no tiene fila en "Nuevos"
   var fechaMasRecientePorSemana = {}; // numSemana -> Date más reciente vista
   // 19-sep-2026 (pedido del usuario -- webGuerraEnVivo lento): si el caller ya leyó la hoja Guerra en esta misma ejecución (dataGuerraPrefetch), se reusa esa lectura en vez de volver a leer 9000+ filas. Solo lectura: este bloque… [→ Contexto_Base_Web.md §37B263]
   var dataGuerra = dataGuerraPrefetch || null;
@@ -44968,6 +44970,22 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
           if (!fechaMasRecientePorSemana[numSemanaG] || fechaFilaG > fechaMasRecientePorSemana[numSemanaG]) {
             fechaMasRecientePorSemana[numSemanaG] = fechaFilaG;
           }
+        }
+      }
+
+      // FIX (11-oct-2026, pedido usuario — "YAHIR tiene ataques pero su cuadrícula aparece vacía"): el desglose diario J/V/S/D solo salía de la hoja "Nuevos" (Tampermonkey); un ingreso sin fila ahí (caso YAHIR, ingresó el sábado) quedaba con guerraSemanaDias = null aunque la hoja Guerra sí tenía sus ataques. Se guardan acá, por Tag, los valores de CADA día de guerra de la semana en curso, para usarlos de respaldo más abajo. Mismo criterio que _webPerfilJugador() (GC.ATAQUES_HOY / GC.FAME / GC.BARCOS por día). [→ Contexto_Base_Web.md §37B262B]
+      var pIdxDiaG = Number(dataGuerra[g][GC.PERIOD_IDX - 1]) || 0;
+      if (String(dataGuerra[g][GC.TEMPORADA - 1]) === String(ctx.temporada) &&
+          ((Number(dataGuerra[g][GC.SEMANA - 1]) || 1) - 1) === ctx.sectionIndex &&
+          esDiaGuerraIdx(pIdxDiaG)) {
+        var tagDiaG = cleanTag(dataGuerra[g][GC.TAG - 1]);
+        if (tagDiaG) {
+          if (!guerraDiasPorTag[tagDiaG]) guerraDiasPorTag[tagDiaG] = {};
+          guerraDiasPorTag[tagDiaG][(pIdxDiaG % 7) - 3] = {
+            ataques: Number(dataGuerra[g][GC.ATAQUES_HOY - 1]) || 0,
+            puntaje: Number(dataGuerra[g][GC.FAME        - 1]) || 0,
+            barcos:  Number(dataGuerra[g][GC.BARCOS      - 1]) || 0
+          };
         }
       }
 
@@ -45075,6 +45093,19 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
         ataques:  [0, 1, 2, 3].map(function (d) { return _diaValorONull(filaSemanaActualDias[OFFSEM.ATA + d]); }),
         puntaje:  [0, 1, 2, 3].map(function (d) { return _diaValorONull(filaSemanaActualDias[OFFSEM.PUN + d]); }),
         barcos:   [0, 1, 2, 3].map(function (d) { return _diaValorONull(filaSemanaActualDias[OFFSEM.BAR + d]); })
+      };
+    }
+
+    // FIX (11-oct-2026): sin fila en "Nuevos" (o con la fila sin ningún dato diario) el desglose diario se arma desde la hoja Guerra (guerraDiasPorTag); un día sin fila del jugador queda null (el frontend lo pinta "—", no 0). [→ Contexto_Base_Web.md §37B262B]
+    var diasGuerraRespaldo = guerraDiasPorTag[tagLimpio];
+    var sinDesgloseNuevos = !guerraSemanaDiasFila ||
+      !['ataques', 'puntaje', 'barcos'].some(function (k) { return guerraSemanaDiasFila[k].some(function (v) { return v !== null; }); });
+    if (sinDesgloseNuevos && diasGuerraRespaldo) {
+      guerraSemanaDiasFila = {
+        dias:     DIAS_GUERRA_NUEVOS,
+        ataques:  [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].ataques : null; }),
+        puntaje:  [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].puntaje : null; }),
+        barcos:   [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].barcos : null; })
       };
     }
 
@@ -49347,7 +49378,7 @@ function _generarDashboardHtml() {
           '<div class="card-titulo">' + e(clanNombre) + '</div>' +
           '<div class="card-fila"><span>Atacaron hoy</span><b>' + g.atacaron + ' / ' + g.totalHoy + '</b></div>' +
           '<div class="card-fila"><span>Ataques usados</span><b>' + g.ataques + '</b></div>' +
-          '<div class="card-fila"><span>Fama del día</span><b>' + g.fame.toLocaleString('es-PE') + '</b></div>' +
+          '<div class="card-fila"><span>Medallas del día</span><b>' + g.fame.toLocaleString('es-PE') + '</b></div>' +
           (barcosHtml ? '<div class="card-fila">' + barcosHtml + '</div>' : '') +
         '</div>';
     });
@@ -52571,7 +52602,7 @@ function _respuestaInfoClanPorTag(clanTag) {
       // Min_G ya no vive en la hoja Clan (FASE 27, 11/08/2026) — se lee de
       // CR_Lista (par de Descenso vigente) vía _getMinGClanMaps()
       // (10_ClanSheet.gs).
-      lineas.push('Mínimo de trofeos de guerra semanales: ' + minG);
+      lineas.push('Mínimo de medallas de guerra semanales: ' + minG);
       lineas.push('Trofeos de guerra: ' + (filaClan[CC.TROFEOS - 1] || ''));
 
       // Liga y trofeos
