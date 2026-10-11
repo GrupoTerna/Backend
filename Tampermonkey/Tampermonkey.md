@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Familia Terna - Corrección de Guerra + Miembros Nuevos + Verificar Semana (RoyaleAPI)
 // @namespace    familia-terna-correccion-guerra
-// @version      3.0
-// @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag.
+// @version      3.1
+// @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041]
 // @author       Familia Terna
 // @match        https://royaleapi.com/*
 // @icon         https://royaleapi.com/favicon.ico
@@ -423,8 +423,9 @@
     }
   }
 
-  function _postBackend(accion, tokenId, cuerpo, prefijoError, prefijoRed, callback) {
+  function _postBackend(accion, tokenId, cuerpo, prefijoError, prefijoRed, callback, opciones) {
     var reintento401 = false;
+    var timeoutMs = (opciones && opciones.timeoutMs) || 0; // PF041: 0 = sin tope (como antes)
     function enviar() {
       var url = WEBAPP_URL + '?accion=' + accion + '&token=' + encodeURIComponent(leerToken(tokenId));
       GM_xmlhttpRequest({
@@ -432,6 +433,12 @@
         url: url,
         data: cuerpo,
         headers: { 'Content-Type': 'application/json' },
+        timeout: timeoutMs || undefined,
+        ontimeout: function () {
+          var msgT = prefijoRed + 'el backend no respondió en ' + Math.round(timeoutMs / 1000) + ' s (puede estar lento; el envío pudo haberse procesado igual).';
+          _registrarResultadoEnvio(msgT, null, tokenId);
+          callback(msgT, null);
+        },
         onload: function (res) {
           _interpretarRespuesta(res, tokenId, prefijoError, function (err, data) {
             if (data && data.code === 401 && !reintento401) {
@@ -488,6 +495,7 @@
   // Apps Script no respondía, el panel se quedaba en «Cargando…» para
   // siempre. Un Web App lento puede tardar 10-30 s; 90 s ya es "no responde".
   var LISTA_TIMEOUT_MS = 90000;
+  var RACE_ENVIO_TIMEOUT_MS = 120000;   // PF041: tope del envío final de Verificar semana en curso (sin tope el panel se quedaba mudo)
 
   // FIX (21-sep-2026): envíos al backend (ver _postBackend()).
   var REINTENTO_401_MS = 3000;          // espera antes de repetir UNA vez un envío rechazado con 401
@@ -826,8 +834,9 @@
   // bloque de tokens al inicio) y la respuesta se lee con
   // _interpretarRespuesta(), que reconoce el 401 y el HTML.
   // =========================================================================
-  function pedirListaJugadores(callback) {
-    var url = WEBAPP_URL + '?accion=listaCorreccionGuerra&token=' + encodeURIComponent(leerToken('cg'));
+  function pedirListaJugadores(callback, soloClanes) {
+    // PF041: soloClanes=true -> el backend omite Directorio y cobertura (Verificar semana en curso no los usa). [→ Contexto_Base_Web.md §PF041]
+    var url = WEBAPP_URL + '?accion=listaCorreccionGuerra' + (soloClanes ? '&modo=clanes' : '') + '&token=' + encodeURIComponent(leerToken('cg'));
     GM_xmlhttpRequest({
       method: 'GET',
       url: url,
@@ -856,10 +865,12 @@
    * por lo tanto vuelve a mostrar el mensaje, si tiene que reintentar tras
    * pedir un token nuevo).
    */
-  function pedirListaJugadoresConCargando(prefijo, titulo) {
+  function pedirListaJugadoresConCargando(prefijo, titulo, soloClanes) {
     return function (callback) {
-      mostrarCargando(prefijo, titulo, 'Cargando lista de jugadores y clanes (puede tardar hasta un minuto)...');
-      pedirListaJugadores(callback);
+      mostrarCargando(prefijo, titulo, soloClanes
+        ? 'Cargando lista de clanes...'
+        : 'Cargando lista de jugadores y clanes (puede tardar hasta un minuto)...');
+      pedirListaJugadores(callback, soloClanes);
     };
   }
 
@@ -1103,7 +1114,8 @@
   // =========================================================================
   function enviarVerificacionRace(participantes, callback) {
     _postBackend('verificarSemanaActual', 'race', JSON.stringify({ participantes: participantes }),
-      'Respuesta inválida del backend al verificar semana en curso', 'Error de red verificando semana en curso: ', callback);
+      'Respuesta inválida del backend al verificar semana en curso', 'Error de red verificando semana en curso: ', callback,
+      { timeoutMs: RACE_ENVIO_TIMEOUT_MS });
   }
 
   // =========================================================================
@@ -3286,7 +3298,7 @@
           pintarPanel();
           return;
         }
-        conReintentoPorToken('cg', pedirListaJugadoresConCargando('race', 'Verificar Semana en Curso'), function (err, data) {
+        conReintentoPorToken('cg', pedirListaJugadoresConCargando('race', 'Verificar Semana en Curso', true), function (err, data) {
           if (err || !data || !data.ok) {
             alert('No se pudo obtener la lista de clanes: ' + (err || (data && data.error) || 'respuesta vacía'));
             pintarPanel();
