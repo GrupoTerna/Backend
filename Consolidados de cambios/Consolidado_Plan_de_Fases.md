@@ -31,86 +31,13 @@ falta, tal como indica la skill para este tipo de archivo.
 
 > *(Añadido el 8-oct-2026.)* Hay un solo juego de reglas para los dos planes: el de la sección 0 original (reglas 1 a 12), que el plan de CSS ya citaba («regla 9», «regla 11»). El plan de CSS no traía reglas propias distintas; sí traía una segunda copia de la nota de autoinvocación, que se conserva a continuación.
 
-#### 0. Reglas de trabajo de este plan (van también para cada fase futura)
+#### 0. Reglas de trabajo
 
-Estas reglas aplican a **todas** las fases de este plan, no solo a la
-primera. Las reglas 1 a 7 fueron dictadas explícitamente por el usuario; las
-reglas 8 a 10 son generales (se agregaron después, tomadas de prácticas que
-ya se venían siguiendo de forma consistente en este mismo plan, incluida la
-convención de `AVISOS ABIERTOS`); la regla 11 es específica de este
-proyecto, no una regla general de la skill:
+> **Las reglas de trabajo están en `Consolidados de cambios/Reglas_Consolidados.md`** (repo `Backend`). Se movieron allí el 11-oct-2026 para que haya una sola copia y no se desfase al editar una de dos. Aquí quedan solo las reglas propias de este consolidado. Las reglas 1 a 12 que estaban en esta sección (incluida la modificación del 10-oct-2026 de la regla 5, ver C9) están ahora en ese archivo, con su misma numeración.
 
-1. **Invocar siempre `/md`** al empezar cualquier sesión de este proyecto,
-   sin excepción. Como respaldo por si el usuario olvida escribirlo en el
-   chat, este documento trae la nota de autoinvocación al inicio.
-2. **No asumir, no omitir, no descartar nada.** Ante cualquier duda, se
-   pregunta. Si el usuario no responde algo, se vuelve a preguntar, y si
-   hace falta se generan más preguntas y se explica de forma más detallada
-   la pregunta.
-3. **Ninguna advertencia o sugerencia se queda solo en el chat.** El usuario
-   no programa y puede no entender el detalle técnico, así que toda alerta,
-   advertencia o sugerencia se guarda directo en este consolidado (o en el
-   `.gs` correspondiente, ver punto 5) marcada como **"pendiente de definir
-   o contestar"**, junto con el contexto de los datos o confirmaciones que
-   el usuario ya haya dado sobre ese tema, para poder tomar la decisión
-   cuando corresponda.
-4. **Cambios chicos e incrementales.** Nunca abarcar de más en una sola
-   tanda.
-5. **Nunca se entregan parches.** Cada archivo modificado se entrega
-   **completo y listo para descargar**, con su nombre exacto, y se entrega
-   **solo el archivo o los archivos que realmente se hayan modificado** en
-   esa tanda — nunca el proyecto completo, nunca una carpeta ni un zip.
-   > **Modificada el 10-oct-2026 (parte 91, regla 11):** en lo que se refiere a **la entrega**, esta regla queda **reemplazada por C9** (índice 3.1.1): los archivos se **suben directo a GitHub** y **no se entregan para descargar salvo pedido expreso**; en su lugar se da la lista de archivos modificados o creados. **Sigue vigente** lo demás: archivo completo (no parches), nombre exacto, solo los archivos realmente modificados. La skill `/md` todavía dice lo contrario (ver C9, parte 91).
-6. **Cada fase debe poder completarse dentro de una sola sesión gratuita de
-   Claude.** Si una fase resulta demasiado grande al empezarla, se debe
-   avisar y partirla en sub-fases en vez de forzarla en una sola sesión.
-7. **Indicar en cada fase qué archivos `.gs` (o qué otra fuente) hay que
-   subir**, y si es para **ver información** o para **editar**.
-8. **Ningún cambio se hace "a ciegas".** Cada fase debe cerrar con una
-   verificación revisable (diff visual, prueba funcional, comparación
-   antes/después, etc.) antes de pasar a la siguiente, e indicar
-   explícitamente qué se pudo verificar y qué quedó sin probar (por
-   ejemplo, "no se probó en navegador real" o "no se pudo probar en Apps
-   Script real").
-9. **Los errores de sesiones anteriores se marcan como corrección, nunca se
-   sobrescriben en silencio.** Si un diagnóstico, una cifra o una
-   recomendación de una sesión anterior resulta incorrecta, la entrada
-   nueva empieza señalándolo explícitamente (por ejemplo, "Corrección a lo
-   dicho antes: ..."), para que el usuario pueda seguir el cambio de
-   criterio sin tener que comparar versiones a mano.
-10. **Las advertencias que deban vivir en el código (no solo en este
-    consolidado) van en un bloque `AVISOS ABIERTOS` / `VERIFICACIONES
-    ABIERTAS`** dentro del `.gs` correspondiente, siguiendo el mismo
-    formato que el proyecto ya usa como referencia (`17_GuerraSheet.gs` y,
-    desde esta sesión, también `09_Cards_Mazos.gs`).
-11. **En este proyecto, ese bloque `AVISOS ABIERTOS` ya existe en dos
-    archivos:** `09_Cards_Mazos.gs` y `17_GuerraSheet.gs`. Este último ya lo
-    traía desde el 21-sep-2026; a `09_Cards_Mazos.gs` se le agregó por
-    primera vez en esta sesión (ver sección 5 más abajo para el detalle de
-    qué se agregó en cada uno). Cualquier advertencia nueva de este plan
-    que deba guardarse en el código, en vez de solo en este consolidado, se
-    guarda dentro del bloque `AVISOS ABIERTOS` del archivo `.gs` que
-    corresponda al tema — normalmente el 9 o el 17, salvo que el tema
-    pertenezca claramente a otro archivo.
-12. **(Nueva, 23-sep-2026, dictada explícitamente por el usuario) Ningún
-    detalle mencionado en el chat sobre el plan, `Base.md` o `Web-main.zip`
-    se queda solo en la conversación.** Todo dato, decisión, corrección o
-    aclaración que el usuario mencione sobre cualquiera de los tres se
-    guarda por escrito, no solo se responde en el chat. El destino se
-    decide según a qué afecte, no por defecto en un solo lugar:
-    - Si afecta a una fase, pregunta o al estado de este plan → se guarda
-      en este mismo consolidado (la fase, la sección de preguntas, o el
-      historial de cambios).
-    - Si afecta directamente a la lógica o al comportamiento del backend →
-      se guarda en el bloque `AVISOS ABIERTOS`/`VERIFICACIONES ABIERTAS`
-      del `.gs` correspondiente (regla 10).
-    - Si afecta al frontend → se documenta en el archivo del repo
-      `GrupoTerna/Web` que corresponda (o en su `CHANGELOG.md`) cuando se
-      llegue a esa fase, o en este consolidado mientras tanto si
-      `Web-main.zip` no está disponible en la sesión.
-    - Un mismo detalle puede necesitar guardarse en más de un lugar (por
-      ejemplo, una corrección de alcance que afecta a la vez una fase y un
-      `AVISO` del código) — no es una elección excluyente.
+**Reglas propias de este consolidado:**
+
+- **P1 (antes numerada «11» en esta sección; no confundir con la regla 11 general, la de las secciones que reemplazan a otras).** En este proyecto, el bloque `AVISOS ABIERTOS` ya existe en dos archivos: `09_Cards_Mazos.gs` [hoy `31_Cards_Mazos.gs`] y `17_GuerraSheet.gs`. Este último ya lo traía desde el 21-sep-2026; a `09_Cards_Mazos.gs` se le agregó por primera vez en la sesión en que se escribió esta regla. Cualquier advertencia nueva de este plan que deba guardarse en el código, en vez de solo en este consolidado, se guarda dentro del bloque `AVISOS ABIERTOS` del `.gs` que corresponda al tema, normalmente el 9 (hoy 31) o el 17, salvo que el tema pertenezca claramente a otro archivo.
 
 ---
 
