@@ -13,7 +13,7 @@ Repositorio del backend del sistema de Grupo Terna (Apps Script sobre Google She
 | `Tampermonkey/Tampermonkey.md` | Respaldo del userscript de Tampermonkey. | El código real no vive aquí: se pega en el editor de la extensión. Este `.md` lo actualiza la usuaria a mano y puede estar desfasado. Lo que se edite aquí no llega al navegador. |
 | `Consolidados de cambios/` | Los consolidados de cambios por aplicar. Puede haber varios, de distintas sesiones o IA. | Solo cambios por aplicar; se borran al aplicarse. El funcionamiento del sistema no va aquí: va a `Contexto_Base_Web.md`. Las reglas de todos los consolidados están en `Consolidados de cambios/Reglas_Consolidados.md`. |
 | `Datos descargados/` | Evidencia que se baja del sistema: JSON de la API, CSV de Drive, exportaciones de Sheets a PDF, etc. Hoy solo tiene la subcarpeta `JSON/`. | Se usa para contrastar contra el código. El repo es público: no subir teléfonos ni otros datos personales. |
-| `Claude/` | Skills y cualquier archivo que se cargue a Claude u otras IA (hoy, `SKILL.md`). | No se instala sola: hay que subirla a mano a Claude. |
+| `Claude/` | Skills y cualquier archivo que se cargue a Claude u otras IA: `SKILL.md` y `Plantilla_Token_GitHub.txt` (pasos y bloque de repositorios para dar acceso de escritura con un token temporal; solo marcadores, nunca un token real). | La skill no se instala sola: hay que subirla a mano a Claude. |
 | `.github/workflows/` | Validación automática del Generador (`generador-ci.yml`). Solo valida; nunca hace commits. | No tocar sin motivo. |
 | `Contexto_Base_Web.md` | Contexto y decisiones del sistema. | Se consulta para cualquier duda y se actualiza con lo que se compruebe o se descarte. |
 
@@ -38,7 +38,7 @@ El repo y Apps Script no se sincronizan solos en los dos sentidos. Apps Script e
 git clone https://github.com/GrupoTerna/Backend.git
 ```
 
-El repo es público: se puede clonar sin credenciales. Para subir cambios hace falta un acceso con permiso de escritura; sin él, solo se puede leer.
+El repo es público: se puede clonar sin credenciales. Para subir cambios hace falta un acceso con permiso de escritura; sin él, solo se puede leer. Si la sesión de Claude no puede añadir repos, se usa un token fine-grained temporal: ver `Claude/Plantilla_Token_GitHub.txt`. **Nunca se sube un token a este repo.**
 
 ## Otros repositorios
 

@@ -430,9 +430,9 @@ Salieron con el consolidado, por ser estado y no funcionamiento: el objetivo de 
 
 **Decisión de la usuaria (11-oct-2026).** Las reglas de los consolidados valen para **cualquier IA**, no solo para Claude, y deben vivir en **un solo lugar**: si estuvieran copiadas en la skill y en cada consolidado, al editar un archivo el otro quedaría desfasado (ya había pasado: la regla 11 del consolidado y la de la skill eran distintas, y la skill tenía la regla 5 ya corregida, y el consolidado conservaba el texto viejo con una nota aparte). Ese lugar es **`Consolidados de cambios/Reglas_Consolidados.md`**. La skill (`Claude/SKILL.md`) y el consolidado solo traen una línea que dice dónde leerlas. Una regla propia de un consolidado concreto va en ese consolidado, con nombre `P1`, `P2`… para no chocar con la numeración general.
 
-**Los consolidados son temporales y se borran en cuanto se terminan de aplicar** (por eso lo que explica cómo funciona el sistema va a este archivo). **Antes de borrar uno**, el funcionamiento y las decisiones, con su motivo, se pasan aquí. **Pendiente de definir:** quién lo borra y cuándo se considera terminado; mientras tanto, una IA no borra un consolidado sin confirmación explícita.
+**Los consolidados son temporales y se borran en cuanto se terminan de aplicar** (por eso lo que explica cómo funciona el sistema va a este archivo). **Antes de borrar uno**, el funcionamiento y las decisiones, con su motivo, se pasan aquí. **Pendiente de definir:** quién lo borra y cuándo se considera terminado; mientras tanto, una IA no borra un consolidado sin confirmación explícita. **Resuelto el 11-oct-2026: ver `PF026`.**
 
-**Pendiente de confirmar por la usuaria:** (1) la regla 12 (destino de lo que se menciona en el chat) todavía nombra el `CHANGELOG.md` de `Web` como destino del funcionamiento del frontend; hay que actualizarla para que apunte a este archivo; (2) el formato del `CHANGELOG.md` de `Web` (la usuaria cree que debe quedar como una lista de lo hecho, después de mover aquí lo que explica el sistema; no está confirmado, y hoy pesa unos 494 KB con 52 entradas largas).
+**(Resuelto el 11-oct-2026: ver `PF026`.) Pendiente de confirmar por la usuaria:** (1) la regla 12 (destino de lo que se menciona en el chat) todavía nombra el `CHANGELOG.md` de `Web` como destino del funcionamiento del frontend; hay que actualizarla para que apunte a este archivo; (2) el formato del `CHANGELOG.md` de `Web` (la usuaria cree que debe quedar como una lista de lo hecho, después de mover aquí lo que explica el sistema; no está confirmado, y hoy pesa unos 494 KB con 52 entradas largas).
 
 
 ### PF025 — Frontend: JSON estático como último recurso, «tres momentos» de actualización y aviso «Datos guardados» (09-oct-2026; pasado desde el `CHANGELOG.md` de `Web`, tanda 1)
@@ -478,6 +478,21 @@ Salieron con el consolidado, por ser estado y no funcionamiento: el objetivo de 
 **Sin JSON hoy (dependen 100 % de Apps Script):** `webPronosticoGuerra`, `webGuerraPuestosDia` (este con respaldo local), `webGuerraLog`, `webCompararJugadores`, `webHistorialGuerraComparador`, `webIngresosRecientes`, `webPerfil`, `webTorneosJugador`. `webCofresJugador` y `webBattlelogJugador` van en vivo a Supercell y no se publicarían. Publicar cualquiera de los otros requiere cambios en el bot. Las cargas que salen de un JSON estático **no guardan nada en el respaldo local** (`_backupLocalGuardar()` solo se llama dentro de `apiGet()`).
 
 **`sw.js`:** `CACHE_NAME` subió de `terna-static-v17` a `v25` en esta serie; solo importa cuando cambia un archivo de `CORE_ASSETS` (`api.js`, `util.js`, `clan-card.js`, `index.html`, `guerra.html`, `directorio.html`, `comunidad.html` y `torneos.html` están ahí; `clan.html` y `perfil.html` no, y la navegación va red primero).
+
+
+### PF026 — Cómo se registran los cambios nuevos, borrado de consolidados y token temporal (decisiones de la usuaria, 11-oct-2026)
+
+**Contexto.** Hasta aquí se había decidido qué hacer con lo ya hecho (mover el funcionamiento al contexto y recortar el `CHANGELOG.md` de `Web`). La usuaria señaló que faltaba indicar a la IA **cómo registrar los cambios nuevos** sin que tenga que adivinar.
+
+**Decisiones.**
+- **Dónde va cada cosa** (tabla en `Reglas_Consolidados.md`, sección 6): código del frontend al repo `Web`; Apps Script de `Base` y del `Generador` y Tampermonkey al repo `Backend`; archivos de Render al repo `Script` (solo si hace falta, avisando antes); funcionamiento, decisiones y lo probado o descartado a este archivo; historial del frontend al `CHANGELOG.md` de `Web`; pendientes al consolidado (o a «Abiertos» del `CHANGELOG.md`).
+- **El `CHANGELOG.md` de `Web` es un checklist ordenado por fecha, no por archivo.** Motivo: un cambio puede tocar varios archivos; por archivo habría que repetir la entrada o elegir un archivo «principal», y las copias se desfasarían. La búsqueda por archivo o función se resuelve con el buscador o con `git log -- archivo`, porque cada viñeta nombra el archivo y la función exactos. Una viñeta por cambio, con título corto, versión de `sw.js` si aplica, archivos y funciones, una línea de qué cambió y el enlace `§PFxxx`. Sin funcionamiento, decisiones ni pruebas; los pendientes van en «Abiertos».
+- **Borrar un consolidado:** al terminar de aplicar sus cambios la IA **informa y pregunta si se borra**, aunque la usuaria suele responder que sí; sin un sí explícito no lo borra. Resuelve el pendiente de PF024 sobre quién borra y cuándo se considera terminado (terminado = cada punto aplicado o descartado por la usuaria).
+- **Token temporal cuando la sesión no puede escribir:** Claude sugiere un token fine-grained de permisos mínimos y vida corta (Contents: Read and write, solo los repos necesarios). Como los chats se borran, se guarda temporalmente en un `.txt` que se adjunta y luego se borra y se revoca. La plantilla vive en `Claude/Plantilla_Token_GitHub.txt` (solo marcadores) y la skill solo indica cuándo sugerirla (sección 0.7): así el texto queda en un único lugar. Se descartó copiar la plantilla dentro de la skill, por el riesgo de desfase entre las dos copias.
+
+**Resuelto de PF024:** la regla 12 ya no nombra el `CHANGELOG.md` como destino del funcionamiento (ahora apunta a este archivo); el formato del `CHANGELOG.md` quedó confirmado; y el borrado de consolidados quedó definido.
+
+**Sigue pendiente (por definir por la usuaria):** si el repo `Backend` necesita un `CHANGELOG.md` propio. Hoy su historial es git (mensajes de commit), los `AVISOS ABIERTOS` del `.gs` y este archivo.
 
 
 ## 00_Main.gs — resumen rápido
