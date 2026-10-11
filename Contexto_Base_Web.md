@@ -87,6 +87,7 @@ El detalle de la Tanda 3 (reparto sin `ClanTag`, rama con `ClanTag`, suma entre 
 **Decisión de base (29-sep-2026, pedido de la usuaria):** la corrección con RoyaleAPI se hace **en el Tampermonkey**, no con un importador de texto pegado en Apps Script (la alternativa que se había ofrecido). Además se consulta igualmente el perfil del jugador y se evalúa si en alguna semana los valores no coinciden, para revisar esos casos a mano. Complementa el flujo de la cabecera de `18_CorreccionGuerra.gs` (método rápido con *War Analytics* de los 4 clanes y método de respaldo perfil por perfil).
 
 **Qué muestra cada fuente (hechos dados por la usuaria, no verificados en RoyaleAPI):**
+- *(11-oct-2026: la usuaria amplió estos hechos —Log y Analytics solo traen valores semanales, y el único valor del día en RoyaleAPI son los ataques de la guerra en curso—; ver §PF032.)*
 - La pestaña **Log** se consulta por clan y muestra, por semana, a los participantes de ese clan. Su límite es que cubre pocas semanas (el 29-sep, hasta la 134-3, que es T3 semana 3 propia). *Analytics* tiene el mismo límite. Por jugador trae ataques acumulados de la semana, barcos y fame acumulado, en ese orden.
 - El **perfil del jugador** tiene un historial mucho más largo, pero muestra **un solo clan por semana**. No se sabe si muestra el primero o el último, ni si atribuye todos los ataques a ese clan (un jugador podría hacer 16 ataques en 16 clanes y el perfil mostraría uno).
 
@@ -906,6 +907,28 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 - **Viernes 09-oct y 11-oct de Chistris:** los ceros son reales. Los JSON dan `decksUsedToday = 0` y el acumulado no cambia (fama 600 y 1200). No es un fallo. El 11-oct estaba abierto en la última captura (13:02).
 - Si el Drive tiene una captura posterior de ceros del periodIndex 27 (lunes 05-oct, 4:48 a 5:08), el lector la elegiría como la última y esas filas quedarían «SIN RESOLVER» (no se sobrescribe nada). No se pudo comprobar qué capturas hay en Drive.
 - **Sin probar en Apps Script real:** la lectura de la carpeta de cada clan en Drive, `_syncGuerraCSV()` tras escribir la hoja y el reflejo en el perfil web (que puede tardar por la caché; falta confirmar qué función republica el perfil).
+
+
+### PF032 — Qué muestra cada fuente de RoyaleAPI (diario o semanal, un clan o varios) y cambio de prioridad a Log > Analytics > Perfil (hechos de la usuaria, 11-oct-2026)
+
+**Hechos dados por la usuaria el 11-oct-2026 (no verificados contra RoyaleAPI desde el código; amplían lo ya anotado en la sección de Tampermonkey).**
+- **Log (`/war/log`) y Analytics (`/war/analytics`) son por clan.** Si dicen que un jugador hizo 3 ataques en el clan X, esos 3 ataques fueron en el clan X. Por eso tienen más peso. Sus desventajas: cubren menos semanas que el perfil y solo traen **valores semanales**, no diarios.
+- **El historial del perfil del jugador guarda un solo clan por semana.** Un jugador puede haber hecho un ataque en cada uno de 16 clanes y el perfil mostraría 16 ataques con el nombre de un solo clan. Es engañoso: el total semanal puede estar bien, pero la atribución al clan no es fiable.
+- **El único valor «del día» que muestra RoyaleAPI son los ataques de la guerra en curso**, lo mismo que la API de Supercell manda como `decksUsedToday`. **Todo lo demás es acumulado semanal.** Para una temporada o semana cerrada (que no es la semana actual) el valor es siempre un acumulado semanal y nunca un valor diario.
+
+**Consecuencias para el código (regla de trabajo).**
+- Un valor de RoyaleAPI de una semana cerrada **nunca se escribe como valor de un día** (`AtaquesHoy`, ni la fama de un día concreto). Solo es un total semanal. Si hay que repartirlo por días, el reparto es una **estimación**, no un dato. Eso es lo que hace `_corregirCampoDiarioConDistribucion()` (`18_CorreccionGuerra.gs`, empieza por el domingo, máximo 4 por día). No se auditó en esta tanda cada punto donde se usa.
+- Los **valores diarios reales** vienen de las capturas de `currentriverrace` de Drive (`decksUsedToday` y los acumulados día a día). Por eso la reparación de la fama del domingo 04-oct (§PF031) usa esas capturas y no RoyaleAPI.
+- **Uso de contraste:** la fama semanal final del jugador en el Log de su clan debería igualar la fama del domingo ya reparada (por ejemplo, 2350 para Chistris, `#2GG8PJ8GC`, T5 S4). Sirve para verificar la reparación con una fuente independiente. No se hizo todavía.
+
+**Cambio de código: prioridad de fuentes del historial por jugador.** En `20_HistorialGuerraJugador.gs`, `FUENTE_PRIORIDAD_HISTORIAL_GUERRA` pasa de `riverrace 0 < analytics 1 < log 2 < perfil 3` (**Perfil > Log > Analytics**) a `riverrace 0 < perfil 1 < analytics 2 < log 3` (**Log > Analytics > Perfil**). Motivo: el perfil puede atribuir a un solo clan ataques hechos en varios; el Log y Analytics, no. Se mantiene Log por encima de Analytics, como estaba. La función `_debeReemplazarRegistroHistorialGuerra()` no cambió: una fuente de igual o mayor prioridad reemplaza a la guardada y una de menor no la pisa; el `riverrace` abierto sigue su regla aparte.
+- **Probado (en node, solo la lógica de la función):** Log y Analytics reemplazan a Perfil; Perfil no reemplaza a Log ni a Analytics; Analytics no reemplaza a Log; Log sí reemplaza a Analytics.
+- **Qué no hace este cambio:** no migra nada. Los registros que ya están guardados como `perfil` se quedan hasta que llegue un Log o un Analytics de esa misma semana, y entonces los reemplaza. Un `perfil` que llegue después de un Log ya no lo pisa.
+- **Corrección según la regla 9:** la prioridad anterior (Perfil > Log > Analytics) venía de la «Sección 3 del consolidado» y contradecía la regla de aplicación de la sección de Tampermonkey (el Log manda en las semanas que cubre, el perfil solo en semanas anteriores y con condiciones).
+
+**Pendiente de definir o contestar (regla 3).**
+- **Un registro por semana, no por clan.** `_fusionarRegistroEnArrayHistorialGuerra()` identifica el registro por temporada interna y semana, sin el clan. Si un jugador estuvo en dos clanes la misma semana, un Log del clan Y reemplaza al del clan X (misma prioridad) y se pierde el otro. Es justo la situación que describe la usuaria. No se cambió; hay que decidir si el historial debe guardar un registro por clan y semana.
+- **Sin probar en Apps Script real**, y sin revisar qué cambia en la hoja `Alertas_HistorialGuerra` ni en lo que consume el frontend cuando un Log reemplace a un `perfil` ya guardado.
 
 
 ## 00_Main.gs — resumen rápido
@@ -32278,7 +32301,7 @@ Histórico de guerra por jugador (RoyaleAPI vía Tampermonkey), CSV consolidado 
 | ID | Líneas orig. | Ubicación | Resumen |
 |---|---|---|---|
 | 20B001 | 8-48 | `Cabecera del archivo` | (ORDEN DE EJECUCIÓN: 24 — Histórico de Guerra |
-| 20B002 | 50-56 | `Cabecera del archivo` | PRIORIDAD DE FUENTES (Sección 3 del consolidado): Perfil > Log > Analytics. |
+| 20B002 | 50-56 | `Cabecera del archivo` | PRIORIDAD DE FUENTES (Sección 3 del consolidado): Perfil > Log > Analytics. **Cambiada el 11-oct-2026 a Log > Analytics > Perfil (§PF032).** |
 | 20B003 | 64-87 | `FUENTE_PRIORIDAD_HISTORIAL_GUERRA` | HOJA DE ALERTAS (Sección 8 P3 del consolidado) — una fila por discrepancia |
 | 20B004 | 108-116 | `AHG_TOTAL_COLS` | FASE 2 (04-sep-2026, pedido del usuario, punto 1 del documento de |
 | 20B005 | 123-138 | `HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS` | CSV GRUPAL (carpeta DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL, Sección 6 del |
@@ -32389,6 +32412,8 @@ River Race es un caso aparte: solo existe mientras la semana está en
 curso (registro con cerrada:false) y siempre queda por debajo de
 cualquier fuente "cerrada" — en cuanto llega un dato de perfil/log/
 analytics para esa misma semana, ese dato manda.
+ESTADO POSTERIOR (11-oct-2026, correccion segun la regla 9): la prioridad de arriba ya no rige. Ahora es Log > Analytics > Perfil
+(el perfil puede atribuir a un solo clan ataques hechos en varios). Motivo y pendientes: §PF032.
 ---------------------------------------------------------------------------
 ```
 
