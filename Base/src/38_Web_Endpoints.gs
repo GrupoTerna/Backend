@@ -156,7 +156,7 @@ function doGet(e) {
     }
     try {
       return ContentService
-        .createTextOutput(JSON.stringify(_obtenerListaCorreccionGuerra()))
+        .createTextOutput(JSON.stringify(_obtenerListaCorreccionGuerra({ soloClanes: e.parameter.modo === 'clanes' }))) // PF041: modo=clanes lo usa Verificar semana en curso [→ Contexto_Base_Web.md §PF041]
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       Logger.log('[Web] Error interno: ' + err.toString());

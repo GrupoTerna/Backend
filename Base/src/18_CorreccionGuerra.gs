@@ -3126,36 +3126,42 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
 /**
  * _obtenerListaCorreccionGuerra() [→ Contexto_Base_Web.md §18B106]
  */
-function _obtenerListaCorreccionGuerra() {
+function _obtenerListaCorreccionGuerra(opciones) {
+  // PF041: opciones.soloClanes (Verificar semana en curso) omite Directorio y cobertura. [→ Contexto_Base_Web.md §PF041]
+  var soloClanes = !!(opciones && opciones.soloClanes);
+  var tInicio = Date.now();
   var ss = _getSs();
-  // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §18B107]
-  var shDirCorr = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  var dirData;
-  if (shDirCorr && shDirCorr.getLastRow() >= 2) {
-    dirData = _leerDirectorioFisicoComoDC(ss);
-  } else {
-    var lecturaDirCorr = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
-    dirData = (lecturaDirCorr.origen === 'csv') ? lecturaDirCorr.filas : [];
-  }
-
   var jugadores = [];
-  for (var i = 0; i < dirData.length; i++) {
-    var r = dirData[i];
-    if (String(r[DC.ESTADO - 1]) !== 'Activo') continue;
-    var tag = String(r[DC.CLAN_TAG - 1] || '').trim();
-    if (CFG.TERNA_TAGS.indexOf(tag) < 0) continue;
+  if (!soloClanes) {
+    // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §18B107]
+    var shDirCorr = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+    var dirData;
+    if (shDirCorr && shDirCorr.getLastRow() >= 2) {
+      dirData = _leerDirectorioFisicoComoDC(ss);
+    } else {
+      var lecturaDirCorr = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
+      dirData = (lecturaDirCorr.origen === 'csv') ? lecturaDirCorr.filas : [];
+    }
 
-    var tagJugador = String(r[DC.TAG - 1] || '').trim();
-    if (!tagJugador) continue;
+    for (var i = 0; i < dirData.length; i++) {
+      var r = dirData[i];
+      if (String(r[DC.ESTADO - 1]) !== 'Activo') continue;
+      var tag = String(r[DC.CLAN_TAG - 1] || '').trim();
+      if (CFG.TERNA_TAGS.indexOf(tag) < 0) continue;
 
-    // FIX (23-ago-2026, pedido usuario): antes se priorizaba Nom_Multi [→ Contexto_Base_Web.md §18B108]
-    jugadores.push({
-      tag: tagJugador,
-      nombre: String(r[DC.NOMBRE - 1] || r[DC.NOM_MULTI - 1] || ''),
-      clan: String(r[DC.CLAN - 1] || ''),
-      royaleApiUrl: 'https://royaleapi.com/player/' + tagJugador.replace('#', '') + '/'
-    });
+      var tagJugador = String(r[DC.TAG - 1] || '').trim();
+      if (!tagJugador) continue;
+
+      // FIX (23-ago-2026, pedido usuario): antes se priorizaba Nom_Multi [→ Contexto_Base_Web.md §18B108]
+      jugadores.push({
+        tag: tagJugador,
+        nombre: String(r[DC.NOMBRE - 1] || r[DC.NOM_MULTI - 1] || ''),
+        clan: String(r[DC.CLAN - 1] || ''),
+        royaleApiUrl: 'https://royaleapi.com/player/' + tagJugador.replace('#', '') + '/'
+      });
+    }
   }
+  var tDirectorio = Date.now();
 
   // PUNTO 2 (Consolidado_HistorialGuerra_Jugador.md, Sección 2.4/3.1): River [→ Contexto_Base_Web.md §18B109]
   var ctxActual = _getCtx();
@@ -3166,6 +3172,11 @@ function _obtenerListaCorreccionGuerra() {
     semanaRiverRaceActual = ctxActual.sectionIndex + 1;
   }
 
+  var coberturaPorTag = soloClanes ? {} : _construirCoberturaPorTag();
+  Logger.log('[CorreccionGuerra][Lista] modo=' + (soloClanes ? 'clanes' : 'completo') +
+             ' · directorio ' + (tDirectorio - tInicio) + ' ms · cobertura ' + (Date.now() - tDirectorio) + ' ms · ' +
+             jugadores.length + ' jugador(es) · total ' + (Date.now() - tInicio) + ' ms');
+
   return {
     ok: true,
     temporadaOffsetRoyaleApi: _getTemporadaOffsetRoyaleApi(),
@@ -3175,7 +3186,7 @@ function _obtenerListaCorreccionGuerra() {
     clanTagsTerna: CFG.TERNA_TAGS,
     jugadores: jugadores,
     // FASE 10 (Consolidado_Cambios_Pendientes_Guerra.md, punto 3.1, pregunta [→ Contexto_Base_Web.md §18B110]
-    coberturaPorTag: _construirCoberturaPorTag()
+    coberturaPorTag: coberturaPorTag
   };
 }
 
