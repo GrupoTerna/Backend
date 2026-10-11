@@ -201,15 +201,16 @@ function _actualizarFilaHistorialGuerraGrupalImpl(tag, nombre, registroNuevo) {
     if (!filas.length) filas = [HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS.slice()];
 
     var tagStr = String(tag).trim();
-    var idxExistente = -1;
+    // PF040: la clave incluye el clan; mismas reglas que el JSON individual. [→ Contexto_Base_Web.md §PF040]
+    var regsTag = [], filaDeRegsTag = [];
     for (var i = 1; i < filas.length; i++) { // fila 0 = encabezados
-      if (filas[i][0] === tagStr &&
-          Number(filas[i][2]) === Number(registroNuevo.temporadaInterna) &&
-          Number(filas[i][4]) === Number(registroNuevo.semana)) {
-        idxExistente = i;
-        break;
+      if (filas[i][0] === tagStr) {
+        regsTag.push(_filaHistorialGuerraGrupalARegistro(filas[i]));
+        filaDeRegsTag.push(i);
       }
     }
+    var posExistente = _buscarIndiceHistorialGuerra(regsTag, registroNuevo);
+    var idxExistente = (posExistente >= 0) ? filaDeRegsTag[posExistente] : -1;
 
     var existenteObj = (idxExistente >= 0) ? _filaHistorialGuerraGrupalARegistro(filas[idxExistente]) : null;
     var decision = _debeReemplazarRegistroHistorialGuerra(existenteObj, registroNuevo);
@@ -384,6 +385,41 @@ function _debeReemplazarRegistroHistorialGuerra(existente, nuevo) {
   return { reemplazar: false, alerta: false }; // fuente de menor prioridad no pisa
 }
 
+// CLAVE POR CLAN (11-oct-2026, pedido usuaria): Log y Analytics son por clan, así que un jugador puede tener varios registros la misma semana (uno por clan) y deben coexistir. [→ Contexto_Base_Web.md §PF040]
+/**
+ * _claveClanHistorialGuerra(clan) [→ Contexto_Base_Web.md §PF040]
+ */
+function _claveClanHistorialGuerra(clan) {
+  return String(clan || '').replace(/\s+\d{4}-\d{2}-\d{2}\s*$/, '').trim().toLowerCase();
+}
+
+/**
+ * _buscarIndiceHistorialGuerra(registros, nuevo) [→ Contexto_Base_Web.md §PF040]
+ */
+function _buscarIndiceHistorialGuerra(registros, nuevo) {
+  var nuevoEsPerfil = String(nuevo.fuente || '').toLowerCase() === 'perfil';
+  var clanNuevo = _claveClanHistorialGuerra(nuevo.clan);
+  var idxMismoClan = -1, idxPerfil = -1, idxMejorNoPerfil = -1, prioMejor = -2;
+
+  for (var i = 0; i < registros.length; i++) {
+    var r = registros[i];
+    if (Number(r.temporadaInterna) !== Number(nuevo.temporadaInterna) ||
+        Number(r.semana) !== Number(nuevo.semana)) continue;
+
+    var esPerfil = String(r.fuente || '').toLowerCase() === 'perfil';
+    if (esPerfil) {
+      if (idxPerfil < 0) idxPerfil = i;
+      continue;
+    }
+    if (_claveClanHistorialGuerra(r.clan) === clanNuevo && idxMismoClan < 0) idxMismoClan = i;
+    var prio = _prioridadFuenteHistorialGuerra(r.fuente);
+    if (prio > prioMejor) { prioMejor = prio; idxMejorNoPerfil = i; }
+  }
+
+  if (nuevoEsPerfil) return (idxMejorNoPerfil >= 0) ? idxMejorNoPerfil : idxPerfil;
+  return (idxMismoClan >= 0) ? idxMismoClan : idxPerfil;
+}
+
 /**
  * _filaHistorialGuerraGrupalARegistro(fila) [→ Contexto_Base_Web.md §20B026]
  */
@@ -408,14 +444,8 @@ function _filaHistorialGuerraGrupalARegistro(fila) {
  * _fusionarRegistroEnArrayHistorialGuerra(registros, nuevo, tag, nombre) [→ Contexto_Base_Web.md §20B028]
  */
 function _fusionarRegistroEnArrayHistorialGuerra(registros, nuevo, tag, nombre) {
-  var idxExistente = -1;
-  for (var i = 0; i < registros.length; i++) {
-    if (registros[i].temporadaInterna === nuevo.temporadaInterna &&
-        registros[i].semana === nuevo.semana) {
-      idxExistente = i;
-      break;
-    }
-  }
+  // PF040: la clave incluye el clan; registros de clanes distintos de la misma semana coexisten. [→ Contexto_Base_Web.md §PF040]
+  var idxExistente = _buscarIndiceHistorialGuerra(registros, nuevo);
 
   var existente = (idxExistente >= 0) ? registros[idxExistente] : null;
   var decision = _debeReemplazarRegistroHistorialGuerra(existente, nuevo);
@@ -562,6 +592,7 @@ function _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo) {
       if (filas[i][AHG.TAG - 1] === tagStr &&
           Number(filas[i][AHG.TEMPORADA_INTERNA - 1]) === Number(nuevo.temporadaInterna) &&
           Number(filas[i][AHG.SEMANA - 1]) === Number(nuevo.semana) &&
+          _claveClanHistorialGuerra(filas[i][AHG.CLAN - 1]) === _claveClanHistorialGuerra(nuevo.clan) &&
           filas[i][AHG.ESTADO - 1] === 'Pendiente') {
         return; // ya hay una alerta pendiente idéntica, no duplicar
       }
@@ -680,7 +711,8 @@ function _webHistorialGuerraJugador(token, tagBuscado, limite) {
     .slice()
     .sort(function (a, b) {
       if (a.temporadaInterna !== b.temporadaInterna) return b.temporadaInterna - a.temporadaInterna;
-      return b.semana - a.semana;
+      if (a.semana !== b.semana) return b.semana - a.semana;
+      return String(a.clan || '').localeCompare(String(b.clan || '')); // PF040: varios clanes en la misma semana
     })
     .map(function (r) {
       var fechaObj = mapaFechas[r.temporadaInterna + '|' + r.semana] || null;
