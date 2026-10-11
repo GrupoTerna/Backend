@@ -63449,6 +63449,14 @@ dato puntual en Directorio.
 
 ### Ubicación: `_webIngresosRecientesCalcular`
 
+#### 37B263B — el perfil lee el CSV (todas las temporadas) y la hoja Guerra (11-oct-2026)
+
+La hoja Guerra solo guarda la **temporada actual**; `Backup_Guerra.csv` es el histórico de **todas** las temporadas. `_webPerfilJugador()` usaba `_obtenerFilasConFallbackCSV()`, que lee la hoja y solo cae al CSV si Sheets falla. Con Sheets sano, `historialRanking` (que alimenta las gráficas de Ranking, Ataques, Medallas y Barcos de `perfil.html`) arrancaba casi vacío en los primeros días de cada temporada; con Sheets caído sí traía mucho.
+
+- **Cambio.** Nueva `_leerFilasGuerraDeTag_(ss, tag)` (en `37_Web_API.gs`): lee el CSV y la hoja, deja solo las filas de ese Tag y las une por la clave `temporada|periodIndex|Tag|clan`; si la misma clave está en las dos, gana la hoja (más fresca). Misma idea que `_webHistorialGuerraComparador()`. Si una fuente falla o no existe, sigue con la otra. Las fechas del CSV (texto) se pasan a `Date` con `_parseSpanishDate()` para que `historialRanking.semana` salga igual que antes.
+- **Efecto.** Las gráficas del perfil traen todo el histórico disponible. El frontend ya ordena por fecha real, así que no cambió. Costo: una lectura del CSV de Drive por perfil (igual que el comparador).
+- **No cambia** lo de la semana en curso (`ataquesSemana`, `fameSemana`, `guerraSemanaDias`): siguen saliendo de la hoja, que pisa al CSV. Sin probar en Apps Script real.
+
 #### 37B262B / 37B262C — Fame y barcos de la hoja Guerra son ACUMULADOS (11-oct-2026)
 
 En la hoja Guerra, `GC.FAME` y `GC.BARCOS` guardan el **acumulado de toda la semana** hasta ese día; solo `GC.ATAQUES_HOY` es del día (y `GC.ATAQUES_SEM` el acumulado). Está dicho en `38_Web_Endpoints.gs` («son acumulados de TODA la semana») y en `22_ControlCalendario.gs` («Barcos del día = acumulado de hoy - acumulado de ayer»).
