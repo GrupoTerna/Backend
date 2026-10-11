@@ -412,6 +412,18 @@ Salieron con el consolidado, por ser estado y no funcionamiento: el objetivo de 
 
 **Funciones de la lista de manuales que ya no existen (verificado contra `Base/src/` el 11-oct-2026).** `limpiarDuplicadosCacheClanes()` se borró el 27-sep-2026 y `migrarAdministradoresAEstructuraReducida()` se eliminó el 07-oct-2026 (`47B007`). Si una sesión futura las ve citadas en el consolidado, no las busca ni las recrea: se descartaron.
 
+### PF023 — Comprobaciones del 11-oct-2026 contra el repo y los JSON: preguntas 18, 51 y 52
+
+**Pregunta 52, verificación (a) (JSON de `currentriverrace` en `Datos descargados/JSON/`, 16 archivos).** El tag del nombre coincide con el contenido en los 16: `S-NN` = `sectionIndex` + 1 y `P.I-NN` = `periodIndex`. El código que arma el prefijo es `_buildPrefijoTSP_()` (`09_API_ClashRoyale.gs`, línea ≈ 2626): `'T-' + temporada`, `'S-' + (sectionIndex + 1)` y `'P.I-' + periodIndex`, con `periodIndex` pasado por `_normalizarPeriodIndex_()`. Ocho archivos son del 1-oct en adelante (fecha del arreglo): todos de las 12:16 o 12:17, ninguno en la ventana de 04:00 a 04:59, **por eso la verificación (b) sigue sin datos**: hace falta un JSON posterior al arreglo y dentro de esa ventana. **Observación, no conclusión:** hay dos archivos anteriores al arreglo dentro de esa ventana (07-09 04.47 y 28-09 04.01) y sus nombres también coinciden con el contenido, así que esos dos no sirven para probar que el arreglo cambió algo. No se comprobó que el Generador no cree estos JSON más allá de lo que dice `09B011`.
+
+**Pregunta 18 (JSON con `periodIndex` 34, coliseo, 07-09 04.47).** Es el único con ese `periodIndex` en el repo. `clan.fame` = 119 500 y hay 119 participantes; 63 tienen `fame` 0 y `decksUsed` 0; la suma de `fame` de los 119 da exactamente 119 500. **Los datos cuadran: este archivo no muestra síntoma de 1(b).** Por qué hay 119 participantes en un clan es hipótesis sin comprobar (PF020 anota que no se sabe si la lista del domingo incluye a quienes ya dejaron el clan). Si la pregunta nació de otro archivo, esto no lo cubre. La respuesta («normal o síntoma») sigue siendo de la usuaria.
+
+**Pregunta 51 (siembra de `Backup_Battlelogs.csv`): estado del código al 11-oct-2026.**
+- **Existe** `sembrarBattlelogsDesdeCarpeta()` y su versión de prueba `sembrarBattlelogsDesdeCarpetaPrueba()` (`06_Battlelogs_Siembra.gs`). Lleva candado (`LockService.getScriptLock()`, 5 s) y guarda el progreso para continuar (`_blsGuardarProgreso_()`).
+- **Hoja `Battlelogs`** (`07_Battlelogs_Hoja.gs`): candado de 15 s y columna «Hora Lima» (`BLH_AGREGAR_HORA_LIMA = true`, solo en la hoja, no en el CSV). `runSyncCSV` la refresca (`00_Main.gs`, ≈ línea 419).
+- **No encontré** ninguna llamada a la siembra en `00_Main.gs` ni entradas de siembra o Battlelogs en `43_Menu_Dinamico.gs`. Por tanto la siembra **es manual y no está atada a `runAll`** ni a una descarga masiva. La búsqueda fue por nombre; no leí el menú entero.
+- **Lo que sigue sin saberse:** si la usuaria ya corrió la siembra y si quiere que se ejecute antes de cada descarga masiva (la propuesta de la pregunta). La pregunta sigue sin respuesta.
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
