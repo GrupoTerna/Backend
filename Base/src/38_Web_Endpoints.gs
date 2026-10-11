@@ -2897,7 +2897,7 @@ function _generarDashboardHtml() {
           '<div class="card-titulo">' + e(clanNombre) + '</div>' +
           '<div class="card-fila"><span>Atacaron hoy</span><b>' + g.atacaron + ' / ' + g.totalHoy + '</b></div>' +
           '<div class="card-fila"><span>Ataques usados</span><b>' + g.ataques + '</b></div>' +
-          '<div class="card-fila"><span>Fama del día</span><b>' + g.fame.toLocaleString('es-PE') + '</b></div>' +
+          '<div class="card-fila"><span>Medallas del día</span><b>' + g.fame.toLocaleString('es-PE') + '</b></div>' +
           (barcosHtml ? '<div class="card-fila">' + barcosHtml + '</div>' : '') +
         '</div>';
     });

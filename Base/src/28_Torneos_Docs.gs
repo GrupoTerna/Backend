@@ -439,7 +439,7 @@ function _rdocBloqueClanValor(body, sufijoValor) {
  * _rdocBloqueRequisitosSorteo(body) [→ Contexto_Base_Web.md §28B038]
  */
 function _rdocBloqueRequisitosSorteo(body) {
-  _rdocParrafoTexto(body, '●      Alcanzar el mínimo de trofeos en guerra durante la semana actual (agosto):', false);
+  _rdocParrafoTexto(body, '●      Alcanzar el mínimo de medallas en guerra durante la semana actual (agosto):', false);
   _rdocBloqueClanValor(body, '2400');
   _rdocParrafoTexto(body, '●      Solo participan miembros del clan que jueguen sus guerras completas (ataques semanales mínimos por clan):', false);
   _rdocBloqueClanValor(body, '16 ataques semanales');
@@ -453,7 +453,7 @@ function _rdocBloqueRequisitosSorteo(body) {
  * _rdocBloqueRequisitosTorneo(body) [→ Contexto_Base_Web.md §28B039]
  */
 function _rdocBloqueRequisitosTorneo(body) {
-  _rdocParrafoTexto(body, 'Alcanzar el mínimo de trofeos en guerra durante la semana actual (agosto):', false);
+  _rdocParrafoTexto(body, 'Alcanzar el mínimo de medallas en guerra durante la semana actual (agosto):', false);
   _rdocBloqueClanValor(body, '2400');
   _rdocParrafoTexto(body, 'Solo participan miembros del clan que jueguen sus guerras completas (ataques semanales mínimos por clan):', false);
   _rdocBloqueClanValor(body, '16 ataques semanales');
@@ -611,7 +611,7 @@ function _construirContenidoDocGanadoresTorneo(body) {
   _rdocParrafoRuns(body, [[' ', false], ['Participantes del torneo:', true]], DocumentApp.HorizontalAlignment.JUSTIFY);
   body.appendParagraph('');
   _rdocTablaConEncabezadoNegrita(body, [
-    ['N°', 'Nombre', 'Victorias', 'Clan', 'Trofeos de guerra', 'Ataques semanales', 'Resultado'],
+    ['N°', 'Nombre', 'Victorias', 'Clan', 'Medallas de guerra', 'Ataques semanales', 'Resultado'],
     ['1', 'Nombre1', '', 'Clan1', '3000', '16', 'Califica'],
     ['2', 'Nombre2', '', '', '', '', 'Califica'],
     ['3', 'Nombre3', '', '', '', '', 'Califica'],

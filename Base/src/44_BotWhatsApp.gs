@@ -1432,7 +1432,7 @@ function _respuestaInfoClanPorTag(clanTag) {
       // Min_G ya no vive en la hoja Clan (FASE 27, 11/08/2026) — se lee de
       // CR_Lista (par de Descenso vigente) vía _getMinGClanMaps()
       // (10_ClanSheet.gs).
-      lineas.push('Mínimo de trofeos de guerra semanales: ' + minG);
+      lineas.push('Mínimo de medallas de guerra semanales: ' + minG);
       lineas.push('Trofeos de guerra: ' + (filaClan[CC.TROFEOS - 1] || ''));
 
       // Liga y trofeos

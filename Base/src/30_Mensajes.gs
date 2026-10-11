@@ -525,7 +525,7 @@ function _formatearInfoClan(info) {
   lineas.push('Líder: '   + (info.lider          || ''));
   lineas.push('Miembros: '+ _fmt(info.miembros));
   lineas.push('Min_G: '   + _fmt(info.minG));
-  lineas.push('Trofeos: ' + _fmt(info.trofeos));
+  lineas.push('Trofeos de guerra: ' + _fmt(info.trofeos));
   lineas.push('Liga: '    + (info.liga           || ''));
   lineas.push('Requerimiento: ' + _fmt(info.requerimiento));
   lineas.push('Copas: '   + _fmt(info.copas));
