@@ -65422,3 +65422,21 @@ si falta cualquier trozo se devuelve null (nunca datos a medias).
 Defensivas como _webCacheado(): cualquier fallo (cuota, trozo expirado, gzip)
 se degrada a "sin caché", nunca rompe el endpoint.
 ```
+
+### PF029 — Medallas y Trofeos: dos cosas distintas, y de dónde sale la cuadrícula diaria de un ingreso (decisión de la usuaria, 11-oct-2026)
+
+**Vocabulario (corrección explícita, regla 9).** Hasta el 11-oct-2026 la web llamaba «Puntaje» (y en algunos sitios «Trofeos de guerra») al *fame* del jugador. La usuaria aclaró que se estaba confundiendo:
+- **Medallas = fame:** lo que gana el jugador en la guerra. Es `GC.FAME` en la hoja Guerra y `puntaje` en los JSON y en el código.
+- **Trofeos = los del clan al cerrar cada semana:** suben o bajan según el puesto obtenido. **No** son la acumulación del fame. Es la columna «Trofeos» del Log de Guerra (`guerra.html`), que ya estaba bien.
+- No tocar: «Camino de Trofeos» (ladder del juego, `perfil.html`) y los trofeos del clan en «Posiciones finales» (`admin.html`); esos sí son trofeos.
+
+**Qué se cambió y qué no.** Solo los textos visibles. Los nombres internos (`puntaje`, `fame`, `minTrofeosGuerra`, `reqTrofGuerra`, `GC.FAME`, los encabezados de las hojas) se dejaron igual para no romper la sincronización con Apps Script y las hojas. Los umbrales de Cambio de Rango y de Torneos («Min CR», `minTrofeosGuerra`) se comparan con el fame (`fameSemana`), por eso en pantalla pasan a «Medallas». **Trampa al renombrar:** en `perfil.html`, `renderMetricaSemanal()` busca la unidad de la gráfica por el *título del eje* (`unidades[opts.tituloEje]`); si se cambia el título hay que cambiar también la clave.
+
+**Valores guardados que no se renombraron a propósito:** las opciones «No alcanzó el mínimo de trofeos de guerra» y «Premio se reparte proporcional al puntaje» (`admin.html`) son texto que se guarda en las hojas; cambiarlas dejaría registros viejos con otro texto. Pendiente de definir por la usuaria.
+
+**Pendiente de definir (detectado, sin cambiar):** `admin.html` rotula «Trofeos guerra» (`#mVGuerra`) un valor que es `j.vGuerra`, es decir, **victorias de guerra**, no fame ni trofeos (ver AVISO 9, 37B056). Falta decidir el rótulo correcto.
+
+**Cuadrícula diaria J/V/S/D de «Ingresos recientes» (caso YAHIR, 11-oct-2026).** Síntoma: la tarjeta mostraba 8 ataques, 1,000 de fame y 8 barcos de la semana, pero no la cuadrícula. Causa (verificada leyendo el código; no se probó con datos reales): `guerraSemanaDias` solo se armaba desde la hoja «Nuevos» (Tampermonkey) en `_construirIngresosRecientesUnificado()` (`37_Web_API.gs`). Un ingreso sin fila ahí quedaba con `null` y `desgloseDiasHtml()` (`directorio.html`) no dibuja nada cuando falta. Los totales de la semana sí salían porque vienen de otra fuente, la hoja Guerra (`guerraSemanaPorTag`). YAHIR ingresó el 10-oct (sábado), de ahí que no tuviera fila en «Nuevos».
+- **Qué se hizo:** en el mismo bucle sobre Guerra se guarda `guerraDiasPorTag[tag][offsetDia]` con `ATAQUES_HOY`, `FAME` y `BARCOS` de cada día de guerra de la semana en curso (mismo criterio que `_webPerfilJugador()`). Si el candidato no tiene fila en «Nuevos», o la tiene sin ningún dato diario, la cuadrícula sale de ahí. Un día sin fila del jugador queda `null` y se pinta «—», no 0.
+- **Prioridad:** si «Nuevos» sí trae datos diarios, se usan esos (no cambia lo anterior).
+- **Sin probar:** que en Apps Script real YAHIR muestre J «—», V «—», S con sus 8 ataques. Hay que correr `subirBaseDesdeGithub()` y recargar la sección.
