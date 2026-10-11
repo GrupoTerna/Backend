@@ -63449,6 +63449,15 @@ dato puntual en Directorio.
 
 ### Ubicación: `_webIngresosRecientesCalcular`
 
+#### 37B262B / 37B262C — Fame y barcos de la hoja Guerra son ACUMULADOS (11-oct-2026)
+
+En la hoja Guerra, `GC.FAME` y `GC.BARCOS` guardan el **acumulado de toda la semana** hasta ese día; solo `GC.ATAQUES_HOY` es del día (y `GC.ATAQUES_SEM` el acumulado). Está dicho en `38_Web_Endpoints.gs` («son acumulados de TODA la semana») y en `22_ControlCalendario.gs` («Barcos del día = acumulado de hoy - acumulado de ayer»).
+
+- **Qué falló.** El respaldo `guerraDiasPorTag` (11-oct, desglose J/V/S/D de un ingreso sin fila en «Nuevos», caso YAHIR) y `guerraSemanaDiasVals` de `_webPerfilJugador()` (23-sep) copiaban ese acumulado como si fuera del día. Resultado: YAHIR salía con 500, 1,000 y 1,000 medallas (y 4, 8, 8 barcos), imposible porque el máximo diario es 900. El comentario del 23-sep decía lo contrario («ya son el valor ganado ESE día»); estaba mal.
+- **Corrección.** `_diarioDesdeAcumuladoGuerra_(porOffset)` (en `37_Web_API.gs`, antes de `_webPerfilJugador()`) pasa puntaje y barcos a valor del día: acumulado de hoy menos el del último día anterior con fila (sin día anterior, el primer valor tal cual; nunca menos de 0). Se llama una sola vez por jugador en ambos sitios. YAHIR queda 500, 500, 0 y barcos 4, 4, 0.
+- **Efecto en `perfil.html`.** `puntajeAcumulado` (suma de los días) vuelve a ser el acumulado real; antes sumaba acumulados y se inflaba.
+- **No se tocó.** La fila de «Nuevos» (Tampermonkey) ya trae valores diarios, y «Valores diarios» de `guerra.html` sale de Control, que ya hace la resta. Sin probar en Apps Script real.
+
 #### 37B262 — líneas 6984-7007 (comentario)
 
 ```text
