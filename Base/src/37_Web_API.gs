@@ -3216,7 +3216,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
 
   // ---- PASO 2 (enriquecimiento opcional): hoja "Nuevos" (Tampermonkey) ----
   var nuevosPorTag = {};
-  var fechasGridNuevos = null, gridNuevosData = null, semanaActualDiasData = null, numBloquesReal = 0;
+  var fechasGridNuevos = null, gridNuevosData = null, numBloquesReal = 0;
   var shNuevos = ss.getSheetByName(CFG.SHEETS.NUEVOS);
   if (shNuevos && shNuevos.getLastRow() >= NUEVOS_FILA_DATOS_INICIO) {
     var numFilasN = shNuevos.getLastRow() - NUEVOS_FILA_DATOS_INICIO + 1;
@@ -3229,7 +3229,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
     var anchoGridNuevos = numBloquesReal * GRID_BLOQUE_ANCHO_NUEVOS;
     fechasGridNuevos = shNuevos.getRange(NUEVOS_FILA_FECHAS, COL_INICIO_GRID_NUEVOS, 1, anchoGridNuevos).getValues()[0];
     gridNuevosData = shNuevos.getRange(NUEVOS_FILA_DATOS_INICIO, COL_INICIO_GRID_NUEVOS, numFilasN, anchoGridNuevos).getValues();
-    semanaActualDiasData = shNuevos.getRange(NUEVOS_FILA_DATOS_INICIO, COL_INICIO_SEMANA_ACTUAL_NUEVOS, numFilasN, SEMANA_ACTUAL_ANCHO_NUEVOS).getValues();
+    // 11-oct-2026: ya no se lee la "semana actual" J/V/S/D de "Nuevos" (semanaActualDiasData); el desglose diario de la semana en curso sale SOLO de Guerra (hoja o Backup_Guerra.csv), igual que perfil y tablas. [→ Contexto_Base_Web.md §37B262E]
 
     for (var n = 0; n < dataNuevos.length; n++) {
       var tagN = cleanTag(String(dataNuevos[n][NC.TAG - 1] || ''));
@@ -3260,6 +3260,16 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
     var shGuerra = ss.getSheetByName(CFG.SHEETS.GUERRA);
     if (shGuerra && shGuerra.getLastRow() >= 2) {
       dataGuerra = shGuerra.getRange(2, 1, shGuerra.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+    }
+  }
+  // 11-oct-2026 (pedido usuario — "los miembros nuevos siguen siendo miembros: sus datos de guerra se obtienen igual que el resto"): si la hoja Guerra no está disponible o no trae filas de la temporada actual, se leen las de Backup_Guerra.csv (mismo respaldo que usan el perfil y las tablas). [→ Contexto_Base_Web.md §37B262E]
+  var hojaTieneTemporadaIR = !!dataGuerra && dataGuerra.some(function (fG) { return String(fG[GC.TEMPORADA - 1] || '') === String(ctx.temporada); });
+  if (!hojaTieneTemporadaIR) {
+    try {
+      var lecturaCsvIR = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.GUERRA, 'Backup_Guerra.csv', GUERRA_TOTAL_COLS);
+      if (lecturaCsvIR && lecturaCsvIR.filas && lecturaCsvIR.filas.length) dataGuerra = lecturaCsvIR.filas;
+    } catch (eCsvIR) {
+      Logger.log('[IngresosRecientes] no se pudo leer el respaldo de Guerra: ' + eCsvIR.message);
     }
   }
   if (dataGuerra) {
@@ -3390,21 +3400,11 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
         });
       }
       if (historialFila.length) fuenteHistorial = 'nuevos';
-
-      var filaSemanaActualDias = semanaActualDiasData[idxNuevos];
-      guerraSemanaDiasFila = {
-        dias:     DIAS_GUERRA_NUEVOS,
-        ataques:  [0, 1, 2, 3].map(function (d) { return _diaValorONull(filaSemanaActualDias[OFFSEM.ATA + d]); }),
-        puntaje:  [0, 1, 2, 3].map(function (d) { return _diaValorONull(filaSemanaActualDias[OFFSEM.PUN + d]); }),
-        barcos:   [0, 1, 2, 3].map(function (d) { return _diaValorONull(filaSemanaActualDias[OFFSEM.BAR + d]); })
-      };
     }
 
-    // FIX (11-oct-2026): sin fila en "Nuevos" (o con la fila sin ningún dato diario) el desglose diario se arma desde la hoja Guerra (guerraDiasPorTag); un día sin fila del jugador queda null (el frontend lo pinta "—", no 0). [→ Contexto_Base_Web.md §37B262B]
+    // CAMBIO (11-oct-2026, pedido usuario): el desglose diario de la semana en curso sale SIEMPRE de Guerra (hoja o CSV, guerraDiasPorTag), como el perfil y las tablas; "Nuevos" ya no lo aporta (sigue dando solo el historial semanal de arriba). Un día sin fila del jugador queda null (el frontend lo pinta "—", no 0). [→ Contexto_Base_Web.md §37B262E]
     var diasGuerraRespaldo = guerraDiasPorTag[tagLimpio];
-    var sinDesgloseNuevos = !guerraSemanaDiasFila ||
-      !['ataques', 'puntaje', 'barcos'].some(function (k) { return guerraSemanaDiasFila[k].some(function (v) { return v !== null; }); });
-    if (sinDesgloseNuevos && diasGuerraRespaldo) {
+    if (diasGuerraRespaldo) {
       guerraSemanaDiasFila = {
         dias:     DIAS_GUERRA_NUEVOS,
         ataques:  [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].ataques : null; }),
