@@ -866,6 +866,48 @@ Eran los otros 15 comentarios del `<script>` de `guerra.html` (los primeros 15 e
 - *Estado posterior:* las columnas son Temporada · Semana · Puesto · Barcos · Trofeos. Se añadió el puesto estimado (`rankEstimado`, «~#» y `NOTA_PUESTO_ESTIMADO`) y el caso Coliseo (`coliseo`: los barcos no avanzan y la columna va en «—»). El bloque no lo mencionaba.
 
 
+### PF031 — Fama en 0 en los domingos de coliseo: qué se verificó, protección en `updateGuerraSheet` y reparación del 04-oct desde los JSON (11-oct-2026)
+
+**Síntoma.** El perfil de Chistris (`#2GG8PJ8GC`) mostraba el domingo 04-oct (T5 S4, periodIndex 27, coliseo) 4 ataques y 0 medallas.
+
+**Correcciones a lo dicho antes (regla 9).**
+- Se descartó «el 0 es un hueco sin dato» y «desfase de zona horaria»: era una suposición de la primera respuesta del chat. El 0 está guardado en la hoja Guerra y en `Backup_Guerra.csv`; la gráfica de `perfil.html` solo resta acumulados (`_valoresDiariosDesdeAcumulado`) y no inventa el valor.
+- Se descartó «la captura final del domingo quedó incompleta» para el 04-oct: el JSON de las 12:16 sí trae fama y sus mazos coinciden con `AtaquesSemana`.
+- Las cifras de otros domingos que dio la sesión anterior (96 de 117, 51 de 167, 80 de 131) no coinciden con el conteo de esta tanda; el conteo correcto está en la tabla de abajo.
+
+**Evidencia (verificada el 11-oct-2026 sobre `Datos descargados/CSV/Backup_Guerra.csv`, filas con Día = D agrupadas por temporada, semana y periodIndex).**
+
+| Domingo | Filas con fama 0 | De ellas, con AtaquesSemana > 0 |
+|---|---|---|
+| 05/07 (T2 S5) | 97 de 119 | 0 |
+| 02/08 (T3 S4) | 53 de 171 | 1 |
+| 30/08 (T4 S4) | 81 de 133 | 12 |
+| 04/10 (T5 S4) | 109 de 119 | 91 |
+
+Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con 12 ataques y fama 1800; domingo 04/10 con 16 ataques y fama 0, con Origen «Corregido». El JSON de las 12:16 del 04/10 le da 16 mazos y fama 2350.
+
+**Causa probable (hipótesis, no confirmada).** El reinicio de la API del lunes 05-oct, de 4:48 a 5:08 (Lima), descrito en §17B042, pisó la fama a 0. Los ataques de esas filas se repararon después (por eso Origen «Corregido») y la fama no, porque ninguna rutina la repone. No se pudo confirmar la hora en que se pisó: la columna Origen no dice qué columna se corrigió.
+
+**Qué se cambió (código en `Base/src/17_GuerraSheet.gs`).**
+1. `updateGuerraSheet()`, rama «FILA EXISTENTE»: si la API devuelve `fame = 0` y la fila ya tenía fama mayor que 0 en ese mismo periodIndex, se conserva la fama de la hoja y se deja el aviso `[Guerra][PROTECCION FAMA]` en el log.
+2. `repararFamaDomingoDesdeJSONInforme()` y `repararFamaDomingoDesdeJSONAplicar()` (con `_repararFamaDomingoDesdeJSON_()` y la función pura `_calcularReparacionFamaDomingo_()`), de un solo uso, parametrizadas con `REPARAR_FAMA_DOMINGO_TEMPORADA = 5` y `REPARAR_FAMA_DOMINGO_PERIODINDEX = 27`.
+3. `_crearLectorDiaJSONGuerra_()` ahora devuelve también la fama (`f`) además de `d` y `t`. El cambio es aditivo: las rutinas que ya lo usan no se ven afectadas.
+
+**Decisión: la protección bloquea solo el 0 y no es un ratchet general.** Se propuso «que la fama de una fila existente no baje dentro del mismo periodo». Se implementó solo para la caída a 0 porque es el único caso observado y porque §17B048 documenta que el ratchet se quitó a propósito: con el ID por periodIndex ya no hace falta, y así se autocorrige un valor alto erróneo. No afecta al caso V9 (ataques fantasma con fama 0 real), porque ahí la fila nunca tuvo fama mayor que 0. **Si aparece una caída a un valor distinto de 0, esta decisión hay que reabrirla.**
+
+**Reparación: criterio.** Solo se repone la columna Fame (y Origen pasa a «Corregido» si era vacío u «Original»), en `Backup_Guerra.csv` y en la hoja Guerra. Candidata: fila de esa temporada y periodIndex con Fame 0 y AtaquesSemana mayor que 0. Se aplica solo si el JSON trae fama mayor que 0, sus mazos (`decksUsed`) igualan `AtaquesSemana` de la fila y la fama no queda por debajo de la del sábado. Cualquier otro caso queda «SIN RESOLVER» y no se toca. Antes de escribir se guarda `Backup_Guerra ANTES de reparar FamaDomingo <fecha>.csv` y el informe en Drive.
+
+**Probado (en node, con el CSV y los JSON reales del repo; no en Apps Script).** 91 cambios y 0 sin resolver. Chistris pasa de 0 a 2350 (sábado 1800, o sea 550 medallas el domingo). Las medallas del domingo salen entre 0 y 900; 2 filas no tienen fila de sábado para contrastar. Las otras 18 filas con fama 0 y AtaquesSemana 0 no se tocan: 13 tienen 0 mazos y 0 fama en el JSON y 5 no aparecen en él.
+
+**Cómo correrlo.** 1) `subirBaseDesdeGithub()`. 2) `repararFamaDomingoDesdeJSONInforme()` y revisar el CSV del informe en Drive. 3) `repararFamaDomingoDesdeJSONAplicar()`.
+
+**Pendiente de definir o contestar (regla 3).**
+- **5/07, 2/08 y 30/08:** no hay JSON en el repo. En el 5/07 las filas con fama 0 tampoco tienen ataques (0 de 97), así que no es el mismo patrón que el 04/10 y esta rutina no lo repara. Habría que usar el método del Log de RoyaleAPI. La afirmación de la sesión anterior «los 0 de 5/07 y 30/08 son esto mismo» **no está verificada**.
+- **Viernes 09-oct y 11-oct de Chistris:** los ceros son reales. Los JSON dan `decksUsedToday = 0` y el acumulado no cambia (fama 600 y 1200). No es un fallo. El 11-oct estaba abierto en la última captura (13:02).
+- Si el Drive tiene una captura posterior de ceros del periodIndex 27 (lunes 05-oct, 4:48 a 5:08), el lector la elegiría como la última y esas filas quedarían «SIN RESOLVER» (no se sobrescribe nada). No se pudo comprobar qué capturas hay en Drive.
+- **Sin probar en Apps Script real:** la lectura de la carpeta de cada clan en Drive, `_syncGuerraCSV()` tras escribir la hoja y el reflejo en el perfil web (que puede tardar por la caché; falta confirmar qué función republica el perfil).
+
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
@@ -25710,6 +25752,9 @@ PROTECCION (05-oct-2026): contador DIARIO reiniciado con el semanal y la fame vi
 ataques no desaparecieron. Condicion: AtaquesHoy baja a 0, hay fame, y ni AtaquesSemana ni Fame bajaron. Un
 ataque fantasma (V9) tiene fame 0 y no entra aqui. AtaquesHoy se conserva; si hay fila del dia anterior,
 se recalcula como AtaquesSemana - acumulado del dia anterior (0..4) y se toma el mayor.
+ESTADO POSTERIOR (11-oct-2026, corrección según la regla 9): la afirmacion de que esta rama sobrescribe sin proteccion ya no es del todo cierta.
+Desde esa fecha, si la API devuelve fame = 0 y la fila ya tenia fame mayor que 0 en el mismo periodIndex, se conserva la de la hoja
+(solo el caso 0; no es un ratchet general). Motivo y evidencia: §PF031.
 ```
 
 #### 17B049 — líneas 2510-2514 (comentario)
