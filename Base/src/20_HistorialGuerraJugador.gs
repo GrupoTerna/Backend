@@ -7,12 +7,12 @@
 
 // (ORDEN DE EJECUCIÓN: 24 — Histórico de Guerra [→ Contexto_Base_Web.md §20B001]
 
-// PRIORIDAD DE FUENTES (Sección 3 del consolidado): Perfil > Log > Analytics. [→ Contexto_Base_Web.md §20B002]
+// PRIORIDAD DE FUENTES (cambiada el 11-oct-2026, antes Perfil > Log > Analytics): Log > Analytics > Perfil. [→ Contexto_Base_Web.md §20B002, §PF032]
 var FUENTE_PRIORIDAD_HISTORIAL_GUERRA = {
   'riverrace': 0,
-  'analytics': 1,
-  'log':       2,
-  'perfil':    3
+  'perfil':    1,
+  'analytics': 2,
+  'log':       3
 };
 
 // HOJA DE ALERTAS (Sección 8 P3 del consolidado) — una fila por discrepancia [→ Contexto_Base_Web.md §20B003]
