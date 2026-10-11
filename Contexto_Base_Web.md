@@ -988,6 +988,13 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 **Qué no cambia.** Los ids, los eventos de clic y `verCicloCofres()` / `verBatallasRecientes()`. «Forzar descarga» sigue oculto (`display:none` en línea) hasta que `renderMiembro()` lo muestre a quien tiene panel de permisos. El JS no usa las clases `btn`, por eso el cambio fue solo de HTML. **Sin probar en navegador real.**
 
 
+### PF038 — `perfil.html`: orden de las secciones del perfil y de dónde sale la pastilla «Camino de Leyendas · N» (pedido y pregunta de la usuaria, 11-oct-2026)
+
+**Orden de las cards del perfil (decisión de la usuaria).** Mazo actual, Carta favorita, Colección completa de cartas (con Cartas de torre dentro), **Evolución** (Ranking, Ataques, Medallas y Barcos en un solo recuadro), Insignias, Competitivo (`#mLeyendasCard`), Logros, Progreso de eventos y modos, Ciclo de cofres y Batallas más recientes. Historial de la ubicación de Evolución: estaba antes de la Colección; el 23-sep-2026 se movió al final; el 11-oct-2026 la usuaria pidió que vaya justo después de la Colección. Se movió el bloque HTML sin tocar contenido ni ids (`renderMetricaSemanal()` y las demás funciones buscan por id, no dependen del orden en el DOM).
+
+**La pastilla «🏔️ Camino de Leyendas · 1» no es la racha.** Se arma en `renderExtendido()` (`const camino`) con `ext.caminoLeyendas`: `liga`, `trofeos` y `rango`, y solo se muestran los que no vienen vacíos. El backend la llena en `37_Web_API.gs` con la temporada **actual** de Camino de Leyendas (`clNuevo.actual.leagueNumber`, `trophies`, `rank`; hay otra ruta que lee las columnas `CL_LIGA`, `CL_TROFEOS` y `CL_RANGO` de la hoja). Para `#2GG8PJ8GC` el «1» es la Liga 1 (la temporada actual, como en §PF033); los puntos en 0 y el rango vacío se omiten. La **racha** es otra pastilla («RACHA 2», bajo «Victorias y derrotas»), que sale de `ext.racha`. **Pendiente de definir por la usuaria:** esa pastilla repite lo que ya dice la sección «Competitivo» (Camino de Leyendas, actual); si se quiere, se puede quitar o rotular «Liga 1».
+
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
