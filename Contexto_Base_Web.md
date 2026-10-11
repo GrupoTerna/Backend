@@ -1030,6 +1030,26 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 - **Un perfil frente a un `riverrace` abierto** (caso raro: el perfil no cubre la semana en curso) conserva la regla anterior con el mejor registro de esa semana; con dos clanes abiertos a la vez no se probó.
 - **Sin probar en Apps Script real.** No se probó la lectura/escritura en Drive ni el CSV completo; solo la lógica de búsqueda y fusión.
 
+### PF041 — Verificar semana en curso no recibía respuesta del backend: lista liviana (`modo=clanes`) y tope de tiempo en el envío (pedido de la usuaria, 11-oct-2026)
+
+**Lo que reportó la usuaria.** En «Verificar semana en curso» Tampermonkey no recibe nada del backend; en los otros botones sí recibe, pero tarda bastante.
+
+**Qué se verificó en el código (sin poder ejecutar Apps Script ni ver el log del panel).**
+- Este botón pide la lista con `accion=listaCorreccionGuerra` (token de Corrección de Guerra), el mismo endpoint de Corrección de Guerra. Ese endpoint, en `_obtenerListaCorreccionGuerra()` (`18_CorreccionGuerra.gs`), lee el Directorio, arma la lista completa de jugadores y calcula `coberturaPorTag` recorriendo **todo** `Backup_Guerra.csv` (la copia del repo tiene 15 305 filas y 1,8 MB; la de Drive puede ser mayor). Es lo más pesado del pedido.
+- Verificar semana en curso **no usa nada de eso**: de la lista solo necesita `clanesTerna` y `clanTagsTerna` (qué 4 páginas `/war/race` visitar). Los jugadores solo le servían para rellenar el campo `nombre` de cada fila, y el backend (`_procesarVerificacionRiverRace()`, `19_CorreccionRiverRace.gs`) ignora ese campo y trabaja solo con el tag. Nuevos, en cambio, ya devuelve `coberturaPorTag: {}` desde su propio endpoint (`14_Nuevos_RoyaleAPI.gs`).
+- El envío final (`verificarSemanaActual`, POST) se hacía con `_postBackend()` **sin tope de tiempo**: si el backend tardaba o nunca contestaba, el panel se quedaba en «Enviando N jugador(es)…» sin ningún aviso. Eso encaja con «no recibe nada».
+
+**Qué se cambió.**
+- **Backend.** `listaCorreccionGuerra` acepta `modo=clanes` (`38_Web_Endpoints.gs`). `_obtenerListaCorreccionGuerra(opciones)` con `opciones.soloClanes` no lee el Directorio ni recorre el CSV: devuelve `jugadores: []`, `coberturaPorTag: {}` y el resto igual (clanes, offset, temporada y semana actuales). Sin el parámetro todo funciona como antes, de modo que Corrección de Guerra y cualquier script viejo no cambian. La función además registra en el log de Apps Script cuánto tardó el Directorio y la cobertura (`[CorreccionGuerra][Lista] modo=… · directorio X ms · cobertura Y ms`).
+- **Tampermonkey v3.1.** `iniciarProcesoRace()` pide la lista con `modo=clanes` y muestra «Cargando lista de clanes…». `_postBackend()` acepta un tope opcional (`opciones.timeoutMs`); el envío de Race usa `RACE_ENVIO_TIMEOUT_MS` (120 s) y, si se agota, el panel lo dice y recuerda que el envío pudo haberse procesado (el backend deduplica por temporada, semana, tag y día, así que repetir no duplica). Los demás envíos siguen sin tope.
+- **Probado (en node):** la función de lista en modo liviano no llama al Directorio ni a la cobertura y devuelve clanes y semana; el modo completo da lo mismo que antes; sintaxis de los `.gs` y del userscript.
+
+**Qué no se sabe y por qué no se afirma la causa.**
+- **No se confirmó la causa real.** Si el problema era la lista pesada, el tope del envío o algo del lado de Apps Script (por ejemplo `_fetchClanesBasico()`, que llama a la API de Supercell, o el estado de la guerra del día), no se puede saber sin el log del panel y el registro de ejecuciones de Apps Script. El panel debería mostrar hasta qué línea llegó («Lista obtenida…», «Clan 1/4…», «Enviando…»).
+- `_procesarVerificacionRiverRace()` responde `ok:false` («Hoy no es día de guerra», «periodIndex sospechoso», «Sin contexto…») fuera de jueves a domingo o si la API de Supercell llega rara; esos casos el panel los registra con ⚠, no quedan mudos.
+- **Lentitud de los otros botones:** Corrección de Guerra sigue pidiendo la lista completa. Con los tiempos que ahora quedan en el log se podrá ver si el cuello es el Directorio o la cobertura; **no se optimizó todavía** (no hay medición real, solo la inferencia del tamaño del CSV).
+- **Sin probar en Apps Script real ni en el navegador.**
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
