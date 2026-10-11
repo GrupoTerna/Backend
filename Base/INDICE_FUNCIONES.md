@@ -1557,7 +1557,7 @@ Ninguno.
 | `FAME_PVP_PIERDE` | global | 18_CorreccionGuerra.gs | 24 |  |
 | `fixGuerraYControl` | función | 48_Herramientas_Debug.gs | 54 |  |
 | `forzarRosterFrescoAhora` | función | 00_Main.gs | 561 | Contexto_Base_Web.md §B088 |
-| `FUENTE_PRIORIDAD_HISTORIAL_GUERRA` | global | 20_HistorialGuerraJugador.gs | 11 | Contexto_Base_Web.md §20B002 |
+| `FUENTE_PRIORIDAD_HISTORIAL_GUERRA` | global | 20_HistorialGuerraJugador.gs | 11 | Contexto_Base_Web.md §20B002, §PF032 |
 | `FUENTES_CONTENIDO` | global | 44_BotWhatsApp.gs | 45 | Contexto_Base_Web.md §44B007 |
 | `GC` | global | 17_GuerraSheet.gs | 19 | Contexto_Base_Web.md §17B006 |
 | `generarBackupGuerraSemanalCSV` | función | 23_Control2_GuerraSemanal.gs | 244 | Contexto_Base_Web.md §23B017 |
