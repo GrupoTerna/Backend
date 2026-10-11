@@ -380,6 +380,30 @@ Salieron con el consolidado, por ser estado y no funcionamiento: el objetivo de 
 - **Ataques en día de entrenamiento (lunes 5-oct, T6 P0, 12:16):** `decksUsedToday` > 0 con `decksUsed` y `fame` en 0 en 4 jugadores de Terna (suma 10) y 8 de Terna™2 (suma 21); todos estaban también en la lista de T5 S4. La hipótesis «resto del domingo que no se reinició» **no se sostiene como copia exacta**: solo 5 de los 12 coinciden con su `decksUsedToday` del domingo a las 12:16 y 3 tienen menos (4 → 2, 4 → 3, 4 → 1), imposible si fuera el cierre del domingo, que no puede ser menor que el valor de las 12:16. Además, el 05-oct 18:25 se vieron cifras mayores (13 y 32, ver más arriba), lo que apunta a actividad que crece durante el día. Sigue sin saberse si son combates de práctica; la fuente es la API tal cual.
 - **Listas de participantes en la transición.** En T5 S4 el domingo Terna listaba 123 participantes y Terna™2 144; en T6 P0 son 36 y 25, y todos ya estaban en la lista del domingo (35 de 36 en Terna, 25 de 25 en Terna™2). No se sabe si la lista del domingo incluye a quienes ya dejaron el clan; no se comprobó contra Directorio.
 
+### PF021 — Estructura del repositorio `Backend`: qué es cada carpeta y cómo se usa (explicado por la usuaria el 11-oct-2026)
+
+**Fuente.** Lo de cada carpeta lo dijo la usuaria el 11-oct-2026. Lo marcado «observado» lo vio Claude en el clon de ese día y no lo confirmó la usuaria. Este bloque documenta; no cambia código ni crea archivos nuevos. En la raíz **no hay README** (observado): solo `Base/LEEME_IA.md` y `Generador/LEEME_IA.md`, que genera el Generador. El README de la raíz sigue pendiente (C10.5 del consolidado).
+
+**Este archivo (`Contexto_Base_Web.md`) es la referencia para cualquier duda sobre cómo funciona el sistema.** Es el archivo unificado del funcionamiento (backend, frontend y Tampermonkey). Regla de la usuaria: si ocurre algo y una hipótesis **se comprueba o se descarta**, se escribe aquí, con su motivo, para no repetir el error. Si se descartó una opción, se anota que se probó o por qué no se debe hacer, para que una sesión futura no la proponga otra vez como si fuera nueva. (Es la regla C7 del consolidado.) Pesa unos 3,4 MB: se busca con `grep` o con la búsqueda del repo, no se lee entero.
+
+| Carpeta o archivo | Qué contiene | Cómo tratarlo |
+|---|---|---|
+| `Base/` | Los `.gs` del backend de Apps Script (`Base/src/`, un archivo por cada archivo de Apps Script) y su consolidado en un solo archivo (`respaldo/Base.gs`). | Leer solo `src/`. `respaldo/`, `INDICE_FUNCIONES.md` y `LEEME_IA.md` los escribe el Generador al descargar o subir: no se editan a mano. `respaldo/Base.gs` repite `src/`, es larguísimo y no se lee. |
+| `Generador/` | Los archivos del Generador, que también son de Apps Script. | Igual que `Base/`: se edita `Generador/src/`, y `respaldo/`, `INDICE_FUNCIONES.md` y `LEEME_IA.md` los genera el propio Generador. |
+| `Tampermonkey/Tampermonkey.md` | **Respaldo manual** del userscript. | Ver el párrafo de abajo. |
+| `Consolidados de cambios/` | Todos los consolidados, y solo los que tratan de **cambios por aplicar**. | Ver el párrafo de abajo. |
+| `Datos descargados/` | Evidencia que la usuaria baja de su sistema: una exportación de una hoja de Sheets (Base) a PDF, un CSV descargado de Drive, un JSON, etc. | Se contrasta contra el código. Observado el 11-oct-2026: solo existe la subcarpeta `JSON/`. Si un archivo trae teléfonos o celulares, aplica la regla C13 del consolidado: avisar de inmediato y no copiar su contenido, porque el repo es público. |
+| `Claude/` | Las skills que la usuaria cree y cualquier cosa que haya que cargar a Claude o a otras IA. Hoy tiene `SKILL.md`. | La copia del repo no se instala sola: la usuaria la sube a Claude a mano. |
+| `Contexto_Base_Web.md` | Este archivo. | Se consulta para cualquier duda de funcionamiento y se actualiza con lo comprobado o descartado. |
+
+**Tampermonkey: el código real no vive en el repo.** El userscript se pega directamente en el editor de la extensión Tampermonkey del navegador. El `.md` de GitHub lo pega la usuaria **a mano** como respaldo; la página no genera ningún descargable en ese formato y **no hay sincronización** en ningún sentido. Consecuencias: (1) si se edita en el editor de Tampermonkey, el `.md` queda desactualizado hasta que ella lo vuelva a pegar; (2) lo que se edite en el `.md` no llega al navegador, hay que instalarlo aparte; (3) ella intenta mantener el `.md` con la versión más reciente, pero no hay garantía, así que ante una diferencia con lo que ella describe se pregunta cuál es la vigente.
+
+**Consolidados de cambios.** A veces la usuaria le pide a una IA cualquiera su opinión para mejorar la web, para tener distintos puntos de vista, y cada IA entrega su propio consolidado de los cambios sugeridos en esa sesión. Por eso la carpeta puede tener varios consolidados de distinto origen. Todos van en `Consolidados de cambios/`. Decisión de la usuaria: las **reglas generales que deben cumplir todos los consolidados** irán en un **documento aparte**, a partir de las reglas del consolidado actual (`Consolidado_Plan_de_Fases.md`) y de las que menciona la skill. **Pendiente: ese documento no existe todavía.**
+
+**`CHANGELOG.md` del repo `Web`.** Todavía tiene información de contexto y funcionamiento que hay que pasar a este archivo. Pendiente (C4 y C5 del consolidado).
+
+**Lo que sigue pendiente (no se hizo en esta tanda):** el README de la raíz de `Backend`, el documento aparte con las reglas de los consolidados y el traslado del contexto del `CHANGELOG.md` a este archivo.
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
