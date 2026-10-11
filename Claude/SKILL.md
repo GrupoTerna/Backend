@@ -13,7 +13,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 
 # 0. Repositorios, entrega por GitHub y reglas nuevas (actualizado el 10-oct-2026; tiene precedencia sobre lo que contradiga más abajo)
 
-> **Esta sección REEMPLAZA, en lo que se refiere a la forma de entregar los archivos:** el último párrafo de «Objetivo», la «Regla adicional» de la sección 6 (la frase «cada uno como archivo individual descargable»), la sección 7 completa, los pasos 10 y 11 de la sección 10, la sección 15, la regla 5 de las reglas de trabajo y las líneas de «archivo descargable» de la regla de oro (17). **Corrección explícita (regla 9):** hasta el 10-oct-2026 esta skill decía que todo archivo modificado debía entregarse como archivo descargable; la usuaria cambió el flujo y esa instrucción ya no rige. **Sigue vigente todo lo demás** (archivo completo, sin parches, nombre exacto, solo los archivos realmente modificados, sin comillas inversas en los `.gs`, español de Perú).
+> **Esta sección REEMPLAZA, en lo que se refiere a la forma de entregar los archivos:** el último párrafo de «Objetivo», la «Regla adicional» de la sección 6 (la frase «cada uno como archivo individual descargable»), la sección 7 completa, los pasos 10 y 11 de la sección 10, la sección 15, la regla 5 de las reglas de trabajo (hoy en `Consolidados de cambios/Reglas_Consolidados.md`) y las líneas de «archivo descargable» de la regla de oro (17). **Corrección explícita (regla 9):** hasta el 10-oct-2026 esta skill decía que todo archivo modificado debía entregarse como archivo descargable; la usuaria cambió el flujo y esa instrucción ya no rige. **Sigue vigente todo lo demás** (archivo completo, sin parches, nombre exacto, solo los archivos realmente modificados, sin comillas inversas en los `.gs`, español de Perú).
 
 ## 0.1 Los tres repositorios (GitHub, `GrupoTerna`)
 
@@ -46,7 +46,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 
 ## 0.5 Consolidados de fases y carpeta `Datos descargados`
 
-- **Todo consolidado de fases se guarda en `Consolidados de cambios/` del repo `Backend`** y se actualiza ahí, no se entrega para descargar.
+- **Todo consolidado de fases se guarda en `Consolidados de cambios/` del repo `Backend`** y se actualiza ahí, no se entrega para descargar. **Sus reglas están en `Consolidados de cambios/Reglas_Consolidados.md`: léelas ahí.**
 - **`Datos descargados/`** tiene subcarpetas con archivos de Drive o logs que la usuaria sube para que Claude contraste los JSON, CSV u otros archivos (la evidencia) contra el código. **Regla urgente:** si en un archivo de esa carpeta Claude **ve teléfonos o celulares**, lo trata como urgente: **avisa de inmediato que se quite el archivo del repo, o pide autorización para eliminarlo**, y no copia ese contenido. El repo es público.
 
 ## 0.6 Pendientes de definir sobre esta skill (regla 2 y 3)
@@ -96,21 +96,7 @@ Puntos clave a tener en cuenta:
 
 Además de las cuatro fuentes anteriores, el usuario suele generar y subir consolidados de cambios por fases (por ejemplo `Consolidado_Cambios_Pendientes_Guerra.md` u otros nombres similares que agrupan un plan de trabajo en varias fases o puntos).
 
-- Estos consolidados de fases son **temporales por naturaleza**: se usan mientras se van aplicando los cambios que describen, y se descartan en cuanto esos cambios quedan aplicados.
-- No deben tratarse como una fuente permanente del ecosistema (a diferencia de `Base`, `Web-main`, `Tampermonkey` y `Generador`, que sí son recurrentes y estables).
-- Mientras estén vigentes en la conversación, se leen igual que cualquier `.md` (ver "Archivos md adicionales" más abajo): nunca se asume su contenido a partir del portapapeles.
-- Si el usuario indica que un consolidado de fases ya fue aplicado o que ya no es necesario, dejar de usarlo como referencia para nuevas modificaciones.
-- **Dónde viven (10-oct-2026):** todo consolidado de fases se guarda en la carpeta `Consolidados de cambios/` del repo `Backend` y se actualiza ahí (ver sección 0.5); no se entrega para descargar.
-
-### Compactación cuando el consolidado crece demasiado
-
-Un consolidado de fases acumula, sesión tras sesión, capas de correcciones sobre correcciones (ver regla 9) y de reemplazos entre secciones (ver regla 11). Esto lo hace cada vez más largo y cada vez más caro de leer completo solo para saber qué sigue vigente hoy.
-
-- Cuando el consolidado supere aproximadamente 500-600 líneas, o cuando el usuario lo pida explícitamente ("compacta el plan", "resume el consolidado", etc.), ofrecer o generar una versión **compactada**.
-- La versión compactada conserva, por cada fase o punto, únicamente su **estado vigente** (ya incorporadas las correcciones y reemplazos aplicables) junto con la **fecha de la última verificación**. No debe hacer falta leer el historial para saber qué es cierto hoy.
-- El historial de correcciones y reemplazos no se descarta: se mueve a una sección aparte al final, tipo `## Historial de correcciones` (changelog), donde queda la trazabilidad completa (qué decía antes, qué lo corrigió o reemplazó, y cuándo) sin estorbar la lectura del estado actual.
-- La nota de autoinvocación (ver "El consolidado debe poder invocar la skill por sí solo", sección 16) se conserva igual en la versión compactada.
-- Compactar es una reorganización, no una reescritura de contenido: no se cambia el significado de ningún punto ni se descarta información al compactar, solo se reordena entre "estado vigente" e "historial".
+Las reglas de los consolidados (que son temporales y se borran al aplicarse, cómo se compactan, qué referencias llevan, la nota de autoinvocación y las reglas de trabajo 1 a 12) están en **`Consolidados de cambios/Reglas_Consolidados.md`** del repo `Backend`. Búscalas ahí. Todo consolidado se guarda en esa carpeta (sección 0.5) y se lee del archivo, nunca del texto pegado en el chat; no es una fuente permanente del ecosistema.
 
 ---
 
@@ -559,55 +545,14 @@ No debe perderse información entre una conversación y la siguiente:
 
 ## Referencias en el changelog: archivo + función, no solo el número
 
-Como los archivos `.gs` pueden reordenarse o reagruparse como proyecto completo (ver sección 2bis), un número de archivo por sí solo no es una referencia confiable en el tiempo: el archivo que hoy es `17_GuerraSheet.gs` puede tener otro número después de un reordenamiento, aunque su contenido y su función no hayan cambiado.
+La regla (indicar el nombre exacto del archivo y la función o bloque editado en toda entrada de historial) está en `Consolidados de cambios/Reglas_Consolidados.md`, sección 5.
 
-Por eso, toda entrada de changelog o historial que documente un cambio — ya sea el bloque `AVISOS ABIERTOS`/`VERIFICACIONES ABIERTAS` dentro de un `.gs`, la sección "Historial de cambios" de un consolidado de fases, o la sección "Historial de correcciones" que deja la compactación (ver "Consolidados de fases de un plan: uso temporal") — debe indicar, como mínimo:
+## Reglas de los consolidados: un solo archivo
 
-- el **nombre exacto del archivo** en el momento de la edición;
-- la **función o bloque específico** que se editó dentro de ese archivo (no solo "se modificó el archivo");
-- un **contexto breve** de qué cambió y por qué (una o dos líneas alcanza; no hace falta repetir la fase completa si ya está documentada en otro lado del mismo consolidado).
+Las reglas de trabajo de los consolidados (ciclo de vida, reglas 1 a 12, nota de autoinvocación, compactación y referencias en los historiales) **no están en esta skill**. Están en **`Consolidados de cambios/Reglas_Consolidados.md`** del repo `Backend`: léelas ahí antes de crear, leer o editar un consolidado, y no las copies aquí ni dentro de un consolidado. Una regla propia de un consolidado concreto va en ese consolidado.
 
-Esto permite que, si el proyecto se reordena más adelante, alguien pueda seguir ubicando el cambio por la función y el contexto aunque el número del archivo ya no coincida con el que aparece en el changelog.
+Esas mismas reglas rigen al editar esta skill. Regla propia de la skill: cuando se modifica, se actualiza el `SKILL.md` completo y se sube a `Claude/SKILL.md` del repo `Backend`; la skill que usa la aplicación es la instalada, así que la usuaria debe volver a instalarla desde ese archivo (Claude solo entrega el archivo para descargar si ella lo pide, o si la cuenta no puede escribir en GitHub).
 
-## Reglas de trabajo del plan, incluidas en cada consolidado de fases
-
-Cuando el usuario pida generar un consolidado de fases, se le agregan estas reglas, tal como están escritas a continuación bajo el título "Reglas de trabajo de este plan". Las reglas 1 a 7 fueron dictadas explícitamente por el usuario; las reglas 8 a 11 se extrajeron de prácticas que el usuario ya venía siguiendo de forma consistente en consolidados de fases anteriores (aunque nunca las había escrito como regla explícita), así que se incorporan también como reglas fijas del plan:
-
-> ### Reglas de trabajo de este plan (van también para cada fase futura)
->
-> Estas reglas aplican a **todas** las fases de este plan, no solo a la primera:
->
-> 1. **Invocar siempre `/md`** al empezar cualquier sesión de este proyecto, sin excepción. Como respaldo por si el usuario olvida escribir `/md` en el chat, el propio consolidado trae una nota de autoinvocación al inicio (ver "El consolidado debe poder invocar la skill por sí solo", más abajo).
-> 2. **No asumir, no omitir, no descartar nada.** Ante cualquier duda, se pregunta. Si el usuario no responde algo, se vuelve a preguntar, y si hace falta se generan más preguntas y se explica de forma más detallada la pregunta.
-> 3. **Ninguna advertencia o sugerencia se queda solo en el chat.** El usuario no programa y puede no entender el detalle técnico, así que toda alerta, advertencia o sugerencia se guarda directo en este consolidado (o en el `.gs` correspondiente, ver punto 5) marcada como **"pendiente de definir o contestar"**, junto con el contexto de los datos o confirmaciones que el usuario ya haya dado sobre ese tema, para poder tomar la decisión cuando corresponda.
-> 4. **Cambios chicos e incrementales.** Nunca abarcar de más en una sola tanda.
-> 5. **Nunca se entregan parches.** Cada archivo modificado queda **completo**, con su nombre exacto, y se sube **directo a GitHub** (no se entrega para descargar salvo pedido expreso; se da la lista de archivos modificados o creados con su commit). Se toca **solo el archivo o los archivos que realmente se hayan modificado** en esa tanda — nunca el proyecto completo, nunca una carpeta ni un zip. *(Corrección del 10-oct-2026, regla 9: antes decía «completo y listo para descargar».)*
-> 6. **Cada fase debe poder completarse dentro de una sola sesión gratuita de Claude.** Si una fase resulta demasiado grande al empezarla, se debe avisar y partirla en sub-fases en vez de forzarla en una sola sesión.
-> 7. **Indicar en cada fase qué archivos `.gs` (o qué otra fuente) hay que subir**, y si es para **ver información** o para **editar**.
-> 8. **Ningún cambio se hace "a ciegas".** Cada fase debe cerrar con una verificación revisable (diff visual, prueba funcional, comparación antes/después, etc.) antes de pasar a la siguiente, e indicar explícitamente qué se pudo verificar y qué quedó sin probar (por ejemplo, "no se probó en navegador real" o "no se pudo probar en Apps Script real").
-> 9. **Los errores de sesiones anteriores se marcan como corrección, nunca se sobrescriben en silencio.** Si un diagnóstico, una cifra o una recomendación de una sesión anterior resulta incorrecta, la entrada nueva empieza señalándolo explícitamente (por ejemplo, "Corrección a lo dicho antes: ..."), para que el usuario pueda seguir el cambio de criterio sin tener que comparar versiones a mano.
-> 10. **Las advertencias que deban vivir en el código (no solo en este consolidado) van en un bloque `AVISOS ABIERTOS` / `VERIFICACIONES ABIERTAS`** dentro del `.gs` correspondiente, siguiendo el mismo formato que el proyecto ya usa como referencia.
-> 11. **Toda sección que reemplace o tenga precedencia sobre una sección o punto anterior debe decirlo en su primera línea**, indicando exactamente qué secciones o puntos reemplaza y cuáles no toca (por ejemplo, "Esta sección reemplaza el punto 6 de la sección 5; el resto de la sección 5 sigue vigente"). Esto es distinto de la regla 9 (correcciones a diagnósticos o cifras erróneas): la regla 11 aplica cuando una sección queda obsoleta por datos o decisiones más nuevas, no porque la anterior estuviera mal.
-
-## El consolidado debe poder invocar la skill por sí solo
-
-El usuario puede olvidar escribir `/md` en el chat al subir un consolidado de fases. Para que la regla 1 no dependa de la memoria del usuario, **todo consolidado de fases que esta skill genere o edite debe llevar, en sus primerísimas líneas, antes de cualquier otro contenido**, una nota de autoinvocación como esta:
-
-> **Nota para Claude:** este documento pertenece al proyecto de la skill `/md`. Si esta skill no fue invocada explícitamente en el chat, invócala de todas formas al leer este documento y aplica todas sus reglas (`Base.md`/`Web-main.zip`/`Tampermonkey.md`/`Generador.md` como fuente real y no como texto libre, nunca parches, archivos completos con su nombre exacto, cambios chicos e incrementales, etc.) — esto sirve como respaldo por si el usuario olvidó escribir `/md` en el mensaje.
-
-Esta nota va siempre, en todo consolidado de fases nuevo o reescrito, sin que el usuario tenga que pedirla cada vez.
-
-## Estas mismas reglas también rigen para esta skill
-
-Las reglas 1 a 11 de arriba no son exclusivas de los consolidados de fases que se generan para `Base`, `Web-main`, `Tampermonkey` o `Generador`: aplican igual cuando lo que se modifica es esta propia skill (`SKILL.md` de `md`), porque también es un archivo que evoluciona entre sesiones. En concreto:
-
-- Los cambios a esta skill también se entregan chicos e incrementales, nunca todo de una vez.
-- No se asume ni se omite nada sobre cómo debe quedar una regla; ante la duda, se pregunta.
-- Toda decisión, aclaración o confirmación que el usuario dé sobre el comportamiento de la skill se documenta directamente en este archivo, no solo en el chat.
-- Al modificar esta skill nunca se entrega un parche ni un fragmento: se actualiza el `SKILL.md` completo y se sube a `Claude/SKILL.md` del repo `Backend`. **Corrección (10-oct-2026):** la skill que usa la aplicación es la instalada, así que la usuaria debe volver a instalarla desde ese archivo; Claude solo entrega el archivo para descargar si ella lo pide.
-- No se pierde contexto entre sesiones: si algo queda pendiente de definir sobre el comportamiento de la skill, debe quedar anotado en este mismo archivo, no solo mencionado y olvidado.
-- Ningún cambio a esta skill se hace a ciegas: antes de entregar el `SKILL.md` modificado, se revisa que la regla nueva o corregida no contradiga ni duplique otra ya existente en el archivo.
-- Si una regla anterior de esta skill resultaba incompleta o equivocada, el cambio se marca como corrección explícita (no se reescribe en silencio como si siempre hubiera dicho eso).
 # 17. Regla de oro
 
 **`Base.md` = código actual del backend (Apps Script). `Web-main.zip` = código actual del frontend (JS, repo GrupoTerna/Web). `Tampermonkey.md` = código actual del script de Tampermonkey. `Generador.md` = código actual del proyecto que genera y sincroniza `Base`.**
