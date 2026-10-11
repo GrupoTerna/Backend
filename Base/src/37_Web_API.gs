@@ -1410,6 +1410,20 @@ function _webMazoActualDesdeCards2(tag) {
   return { cartas: cartas, elixirPromedio: elixirPromedio };
 }
 
+// _diarioDesdeAcumuladoGuerra_(porOffset) — 11-oct-2026 (pedido usuario: "las medallas se muestran en valores diarios, no acumulados; a YAHIR se le pone 1000 dos días y es imposible porque el máximo es 900"). En la hoja Guerra, GC.FAME y GC.BARCOS son ACUMULADOS de toda la semana (ver 38_Web_Endpoints.gs, "GC.FAME/GC.BARCOS son acumulados de TODA la semana", y 22_ControlCalendario.gs, "Barcos del día = acumulado de hoy - acumulado de ayer"); solo GC.ATAQUES_HOY es del día. Recibe { offsetDia(0-3): {ataques, puntaje, barcos} } con puntaje/barcos acumulados y los deja en el valor GANADO ESE DÍA (acumulado de hoy - acumulado del último día anterior con fila; sin día anterior, el primer valor tal cual). Nunca baja de 0 y, si el acumulado retrocede por una corrección, el mayor visto sigue de base. Mutar el mismo objeto: llamarla UNA sola vez por jugador/semana. [→ Contexto_Base_Web.md §37B262C]
+function _diarioDesdeAcumuladoGuerra_(porOffset) {
+  var base = null;
+  [0, 1, 2, 3].forEach(function (d) {
+    var v = porOffset && porOffset[d];
+    if (!v) return;
+    var acumP = Number(v.puntaje) || 0, acumB = Number(v.barcos) || 0;
+    v.puntaje = base ? Math.max(0, acumP - base.puntaje) : acumP;
+    v.barcos  = base ? Math.max(0, acumB - base.barcos)  : acumB;
+    base = { puntaje: base ? Math.max(base.puntaje, acumP) : acumP, barcos: base ? Math.max(base.barcos, acumB) : acumB };
+  });
+  return porOffset;
+}
+
 // _webPerfilJugador(tagBuscado, opciones): perfil público de un jugador: identidad + stats de guerra de la semana actual + progreso vs requisitos de ascenso/descenso de su clan + extendido (FASE 1.5, ver _webPerfilExtendido()); NO incluye celular ni datos de contacto (exclusivo del endpoint CONTACTOS_TOKEN). FASE 10 (06-sep-2026): incluye mazoActual (mazo real equipado, distinto de las Sugerencias de mazo ext.deck/ext.deck2). FIX 09-sep-2026: un Tag sin fila en Directorio se delega a _webPerfilJugadorSinRegistro() (perfil público de Supercell) en vez de devolver error (los comentarios de admin.html y _webAdminBuscarMiembroSugerencias() ya lo daban por hecho). FIX 23-sep-2026: jugador.guerraSemanaDias = {dias:string[4], ataques, puntaje, puntajeAcumulado, barcos (arrays de 4 con number|null)} | null, desglose diario J/V/S/D de la semana en curso (guerraSemana trae solo el acumulado). CAMBIO 28-sep-2026 (Fase 5b tanda A/A2): 2.º parámetro opcional opciones = {esAdmin}; sin esAdmin una cuenta de la hoja Inactivos o con Estado 'Inactivo' en Directorio responde como un Tag sin registro ('Sin registro con nosotros'); con esAdmin:true sale con estado 'Inactivo'. @param tagBuscado, opciones; @returns {{ok, error?, jugador?}} [→ Contexto_Base_Web.md §37B117]
 function _webPerfilJugador(tagBuscado, opciones) {
   var hallazgo = _webBuscarFilaDirectorioPorTagConOrigen(tagBuscado);
@@ -1438,7 +1452,7 @@ function _webPerfilJugador(tagBuscado, opciones) {
   var ataquesSemana = 0, fameSemana = 0, barcosSemana = 0;
   var historialRanking = [];
   var diasGuerraSemana = {}; // 19-sep-2026: { offsetDia(0-3): {pIdx, clan} } de la semana en curso, para los exentos
-  // FIX 23-sep-2026 (perfil.html, minigráficos "Ataques de la semana" y "Fame de la semana", eje X J/V/S/D): { offsetDia(0-3): {ataques, puntaje, barcos} } de la semana en curso, valor de CADA día suelto (no el acumulado ataquesSemana/fameSemana/barcosSemana); 'ataques' sale de GC.ATAQUES_HOY (GC.ATAQUES_SEM es acumulado); 'puntaje' (Fame) y 'barcos' de GC.FAME/GC.BARCOS, que fila por fila ya son el valor ganado ESE día (confirmado en guerra.html "Valores diarios", "Sem 1 Puntaje trae 500 400 700 600", y en _webHistorialGuerraComparador()); mismo filtro "esta semana" (ctx.temporada + ctx.sectionIndex) que diasGuerraSemana, por lo que el dato se ve congelado de lunes a miércoles hasta que empiece la guerra del jueves y ctx.sectionIndex avance. [→ Contexto_Base_Web.md §37B121]
+  // FIX 23-sep-2026 (perfil.html, minigráficos "Ataques de la semana" y "Fame de la semana", eje X J/V/S/D): { offsetDia(0-3): {ataques, puntaje, barcos} } de la semana en curso, valor de CADA día suelto (no el acumulado ataquesSemana/fameSemana/barcosSemana); 'ataques' sale de GC.ATAQUES_HOY (GC.ATAQUES_SEM es acumulado); 'puntaje' (Fame) y 'barcos' de GC.FAME/GC.BARCOS; CORREGIDO 11-oct-2026: esas dos columnas son ACUMULADAS de la semana (no del día), se convierten con _diarioDesdeAcumuladoGuerra_() (antes se decía que eran del día; ver guerra.html "Valores diarios", "Sem 1 Puntaje trae 500 400 700 600", y en _webHistorialGuerraComparador()); mismo filtro "esta semana" (ctx.temporada + ctx.sectionIndex) que diasGuerraSemana, por lo que el dato se ve congelado de lunes a miércoles hasta que empiece la guerra del jueves y ctx.sectionIndex avance. [→ Contexto_Base_Web.md §37B121]
   var guerraSemanaDiasVals = {};
   var ss = _getSs();
   var tz = Session.getScriptTimeZone() || 'America/Lima';
@@ -1507,6 +1521,7 @@ function _webPerfilJugador(tagBuscado, opciones) {
   var DIAS_GUERRA_PERFIL = ['Jueves', 'Viernes', 'Sábado', 'Domingo'];
   var guerraSemanaDias = null;
   if (Object.keys(guerraSemanaDiasVals).length) {
+    _diarioDesdeAcumuladoGuerra_(guerraSemanaDiasVals); // 11-oct-2026: Fame y barcos de la hoja Guerra son acumulados; acá se pasan a valor de cada día (puntajeAcumulado, abajo, vuelve a ser la suma real)
     var acumFamePerfil = 0, huboFamePerfil = false;
     var puntajeAcumuladoPerfil = [0, 1, 2, 3].map(function (d) {
       var vDia = guerraSemanaDiasVals[d];
@@ -3239,6 +3254,9 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
       };
     }
   }
+
+  // 11-oct-2026: Fame y barcos de la hoja Guerra son acumulados de la semana; se pasan UNA vez, por Tag, a valor de cada día (YAHIR mostraba 1,000 dos días, imposible: el máximo diario es 900).
+  for (var tagAcumIR in guerraDiasPorTag) _diarioDesdeAcumuladoGuerra_(guerraDiasPorTag[tagAcumIR]);
 
   if (tDash) _dashTiempoMarca_(tDash, 'ingresos.guerra');
 
