@@ -1410,6 +1410,52 @@ function _webMazoActualDesdeCards2(tag) {
   return { cartas: cartas, elixirPromedio: elixirPromedio };
 }
 
+// _leerFilasGuerraDeTag_(ss, tagLimpio) — 11-oct-2026 (pedido usuario: "las gráficas de perfil solo traen la temporada actual y los primeros días casi no traen nada; cuando Sheets no estaba disponible sí traía bastante"). La hoja Guerra solo guarda la temporada actual; Backup_Guerra.csv es el histórico de TODAS las temporadas. _webPerfilJugador() leía la hoja y solo usaba el CSV si Sheets fallaba, así que con Sheets sano el historial arrancaba de cero cada temporada. Ahora se leen las dos fuentes (mismo criterio que _webHistorialGuerraComparador(): CSV primero y la hoja, más fresca, pisa lo repetido) y se devuelven, en formato de fila de la hoja (GUERRA_TOTAL_COLS), solo las filas de ese Tag. Clave de fila: temporada|periodIndex|Tag|clan. Si una fuente falla o no existe se sigue con la otra. [→ Contexto_Base_Web.md §37B263B]
+function _leerFilasGuerraDeTag_(ss, tagLimpio) {
+  var porClave = {}, orden = [], nCsv = 0, nHoja = 0, origen = [];
+  function _agregar(f, esHoja) {
+    if (cleanTag(f[GC.TAG - 1]) !== tagLimpio) return;
+    var fila = f.slice(0, GUERRA_TOTAL_COLS);
+    while (fila.length < GUERRA_TOTAL_COLS) fila.push('');
+    if (!(fila[GC.FECHA - 1] instanceof Date)) {
+      var fechaObj = _parseSpanishDate(fila[GC.FECHA - 1]);
+      if (fechaObj instanceof Date && !isNaN(fechaObj.getTime())) fila[GC.FECHA - 1] = fechaObj;
+    }
+    var clave = String(fila[GC.TEMPORADA - 1]) + '|' + (Number(fila[GC.PERIOD_IDX - 1]) || 0) + '|' + tagLimpio + '|' + String(fila[GC.CLAN - 1] || '');
+    if (!porClave.hasOwnProperty(clave)) orden.push(clave);
+    porClave[clave] = fila;
+    if (esHoja) nHoja++; else nCsv++;
+  }
+
+  // 1) Backup_Guerra.csv: histórico de todas las temporadas.
+  try {
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (csvText) {
+      var parsed = _parseCSV(csvText);
+      if (parsed && parsed.length > 1) {
+        for (var i = 1; i < parsed.length; i++) _agregar(parsed[i], false);
+      }
+    }
+  } catch (eCsv) {
+    Logger.log('[PerfilGuerra] no se pudo leer Backup_Guerra.csv: ' + eCsv);
+  }
+
+  // 2) Hoja Guerra: temporada actual, más fresca que el CSV (pisa la misma clave).
+  try {
+    var sh = ss ? ss.getSheetByName(CFG.SHEETS.GUERRA) : null;
+    if (sh && sh.getLastRow() >= 2) {
+      var datos = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+      for (var g = 0; g < datos.length; g++) _agregar(datos[g], true);
+    }
+  } catch (eHoja) {
+    Logger.log('[PerfilGuerra] no se pudo leer la hoja Guerra, se sigue con el CSV: ' + eHoja);
+  }
+
+  if (nCsv) origen.push('csv');
+  if (nHoja) origen.push('sheet');
+  return { filas: orden.map(function (k) { return porClave[k]; }), origen: origen.join('+') || 'vacio' };
+}
+
 // _diarioDesdeAcumuladoGuerra_(porOffset) — 11-oct-2026 (pedido usuario: "las medallas se muestran en valores diarios, no acumulados; a YAHIR se le pone 1000 dos días y es imposible porque el máximo es 900"). En la hoja Guerra, GC.FAME y GC.BARCOS son ACUMULADOS de toda la semana (ver 38_Web_Endpoints.gs, "GC.FAME/GC.BARCOS son acumulados de TODA la semana", y 22_ControlCalendario.gs, "Barcos del día = acumulado de hoy - acumulado de ayer"); solo GC.ATAQUES_HOY es del día. Recibe { offsetDia(0-3): {ataques, puntaje, barcos} } con puntaje/barcos acumulados y los deja en el valor GANADO ESE DÍA (acumulado de hoy - acumulado del último día anterior con fila; sin día anterior, el primer valor tal cual). Nunca baja de 0 y, si el acumulado retrocede por una corrección, el mayor visto sigue de base. Mutar el mismo objeto: llamarla UNA sola vez por jugador/semana. [→ Contexto_Base_Web.md §37B262C]
 function _diarioDesdeAcumuladoGuerra_(porOffset) {
   var base = null;
@@ -1456,7 +1502,7 @@ function _webPerfilJugador(tagBuscado, opciones) {
   var guerraSemanaDiasVals = {};
   var ss = _getSs();
   var tz = Session.getScriptTimeZone() || 'America/Lima';
-  var lecturaGuerraPerfil = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.GUERRA, 'Backup_Guerra.csv', GUERRA_TOTAL_COLS);
+  var lecturaGuerraPerfil = _leerFilasGuerraDeTag_(ss, cleanTag(tag)); // 11-oct-2026: CSV (todas las temporadas) + hoja viva (temporada actual); antes solo la hoja
   var dataGuerra = lecturaGuerraPerfil.filas;
   if (dataGuerra.length) {
     for (var i = 0; i < dataGuerra.length; i++) {
