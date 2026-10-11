@@ -398,11 +398,11 @@ Salieron con el consolidado, por ser estado y no funcionamiento: el objetivo de 
 
 **Tampermonkey: el código real no vive en el repo.** El userscript se pega directamente en el editor de la extensión Tampermonkey del navegador. El `.md` de GitHub lo pega la usuaria **a mano** como respaldo; la página no genera ningún descargable en ese formato y **no hay sincronización** en ningún sentido. Consecuencias: (1) si se edita en el editor de Tampermonkey, el `.md` queda desactualizado hasta que ella lo vuelva a pegar; (2) lo que se edite en el `.md` no llega al navegador, hay que instalarlo aparte; (3) ella intenta mantener el `.md` con la versión más reciente, pero no hay garantía, así que ante una diferencia con lo que ella describe se pregunta cuál es la vigente.
 
-**Consolidados de cambios.** A veces la usuaria le pide a una IA cualquiera su opinión para mejorar la web, para tener distintos puntos de vista, y cada IA entrega su propio consolidado de los cambios sugeridos en esa sesión. Por eso la carpeta puede tener varios consolidados de distinto origen. Todos van en `Consolidados de cambios/`. Decisión de la usuaria: las **reglas generales que deben cumplir todos los consolidados** irán en un **documento aparte**, a partir de las reglas del consolidado actual (`Consolidado_Plan_de_Fases.md`) y de las que menciona la skill. **Pendiente: ese documento no existe todavía.**
+**Consolidados de cambios.** A veces la usuaria le pide a una IA cualquiera su opinión para mejorar la web, para tener distintos puntos de vista, y cada IA entrega su propio consolidado de los cambios sugeridos en esa sesión. Por eso la carpeta puede tener varios consolidados de distinto origen. Todos van en `Consolidados de cambios/`. Decisión de la usuaria: las **reglas generales que deben cumplir todos los consolidados** irán en un **documento aparte**, a partir de las reglas del consolidado actual (`Consolidado_Plan_de_Fases.md`) y de las que menciona la skill. **Hecho el 11-oct-2026: es `Consolidados de cambios/Reglas_Consolidados.md`** (ver §PF024).
 
 **`CHANGELOG.md` del repo `Web`.** Todavía tiene información de contexto y funcionamiento que hay que pasar a este archivo. Pendiente (C4 y C5 del consolidado).
 
-**Lo que sigue pendiente (no se hizo en esta tanda):** el README de la raíz de `Backend`, el documento aparte con las reglas de los consolidados y el traslado del contexto del `CHANGELOG.md` a este archivo.
+**Lo que sigue pendiente (no se hizo en esta tanda):** el traslado del contexto del `CHANGELOG.md` de `Web` a este archivo. (El README de la raíz de `Backend` y el documento de reglas de los consolidados ya se hicieron el 11-oct-2026.)
 
 ### PF022 — `PLAYERS_API_ENABLED` se queda en `'partial'` o `false` (decisión de la usuaria) y bug comprobado en `_corregirCampoDiarioConDistribucion()` (11-oct-2026)
 
@@ -423,6 +423,15 @@ Salieron con el consolidado, por ser estado y no funcionamiento: el objetivo de 
 - **Hoja `Battlelogs`** (`07_Battlelogs_Hoja.gs`): candado de 15 s y columna «Hora Lima» (`BLH_AGREGAR_HORA_LIMA = true`, solo en la hoja, no en el CSV). `runSyncCSV` la refresca (`00_Main.gs`, ≈ línea 419).
 - **No encontré** ninguna llamada a la siembra en `00_Main.gs` ni entradas de siembra o Battlelogs en `43_Menu_Dinamico.gs`. Por tanto la siembra **es manual y no está atada a `runAll`** ni a una descarga masiva. La búsqueda fue por nombre; no leí el menú entero.
 - **Lo que sigue sin saberse:** si la usuaria ya corrió la siembra y si quiere que se ejecute antes de cada descarga masiva (la propuesta de la pregunta). La pregunta sigue sin respuesta.
+
+### PF024 — Reglas de los consolidados: un solo archivo, y los consolidados se borran al aplicarse (11-oct-2026)
+
+**Decisión de la usuaria (11-oct-2026).** Las reglas de los consolidados valen para **cualquier IA**, no solo para Claude, y deben vivir en **un solo lugar**: si estuvieran copiadas en la skill y en cada consolidado, al editar un archivo el otro quedaría desfasado (ya había pasado: la regla 11 del consolidado y la de la skill eran distintas, y la skill tenía la regla 5 ya corregida, y el consolidado conservaba el texto viejo con una nota aparte). Ese lugar es **`Consolidados de cambios/Reglas_Consolidados.md`**. La skill (`Claude/SKILL.md`) y el consolidado solo traen una línea que dice dónde leerlas. Una regla propia de un consolidado concreto va en ese consolidado, con nombre `P1`, `P2`… para no chocar con la numeración general.
+
+**Los consolidados son temporales y se borran en cuanto se terminan de aplicar** (por eso lo que explica cómo funciona el sistema va a este archivo). **Antes de borrar uno**, el funcionamiento y las decisiones, con su motivo, se pasan aquí. **Pendiente de definir:** quién lo borra y cuándo se considera terminado; mientras tanto, una IA no borra un consolidado sin confirmación explícita.
+
+**Pendiente de confirmar por la usuaria:** (1) la regla 12 (destino de lo que se menciona en el chat) todavía nombra el `CHANGELOG.md` de `Web` como destino del funcionamiento del frontend; hay que actualizarla para que apunte a este archivo; (2) el formato del `CHANGELOG.md` de `Web` (la usuaria cree que debe quedar como una lista de lo hecho, después de mover aquí lo que explica el sistema; no está confirmado, y hoy pesa unos 494 KB con 52 entradas largas).
+
 
 ## 00_Main.gs — resumen rápido
 
