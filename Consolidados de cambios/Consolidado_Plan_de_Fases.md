@@ -263,7 +263,7 @@ y el nivel de certeza con el que se identificó el pendiente.
 
 ## 2.4 Cambio de estructura de `Base.md` y nuevo archivo `Contexto_Base_Web.md` (añadido el 8-oct-2026)
 
-> **Nota del 10-oct-2026 (parte 87):** la usuaria indicó que **el archivo 37 ya se terminó de migrar** al contexto; los textos de esta sección que dicen «falta completar el archivo 37» son de antes de eso. Está por verificar y marcar en la contrastación (ver **C1** en el índice 3.1.1).
+> **Nota del 10-oct-2026 (parte 87):** la usuaria indicó que **el archivo 37 ya se terminó de migrar** al contexto; los textos de esta sección que dicen «falta completar el archivo 37» son de antes de eso. **Verificado el 11-oct-2026:** la cabecera de `Contexto_Base_Web.md` dice «37 completo (partes 1 a 7; bloques 37B001 a 37B364)» y en el cuerpo existen los 364 bloques `37B001` a `37B364` (conteo de identificadores distintos). Los textos de más abajo que dicen «37 parcial» o «falta completar» quedan **superados**.
 
 > **Información dada por la usuaria el 8-oct-2026 (parte 64):** `Base.md` se reordenó y reorganizó; **ya no acumula el contexto**: hay un archivo nuevo, `Contexto_Base_Web.md`, dedicado al contexto. Se subieron ambos (`Base.md` generado el 07/10/2026 22:58:42, hora de Lima, y `Contexto_Base_Web.md`).
 
@@ -271,7 +271,7 @@ y el nivel de certeza con el que se identificó el pendiente.
 
 **Qué se ve en los dos archivos (leído el 8-oct-2026; solo cabeceras e índices, no el contenido completo):**
 - **`Contexto_Base_Web.md`** (≈ 2,9 MB, ≈ 58 400 líneas): según su propia cabecera, reúne «contexto, historial de decisiones, fixes, notas de fases y correcciones» sacados de los comentarios largos de los `.gs`, «para dejar los `.gs` casi como código puro». Cada archivo tiene un «resumen rápido», un «Índice de bloques movidos» y un «Detalle (texto original, sin cambios)». En cada `.gs` queda una línea corta con la síntesis y la referencia `[→ Contexto_Base_Web.md §Bxxx]`.
-- **Avance de ese traslado, según su cabecera:** procesados 00 a 32 y 33, 34, 35, 36, 39 a 49; 38 completo; **37 parcial** (partes 1 y 2, hasta la línea original 2022); **pendiente de procesar el resto de `37_Web_API.gs`** (desde `_webDatosDriveJugador`, línea original 2023).
+- **[Superado, verificado el 11-oct-2026: el 37 está completo; ver la nota del 10-oct más arriba.]** **Avance de ese traslado, según su cabecera:** procesados 00 a 32 y 33, 34, 35, 36, 39 a 49; 38 completo; **37 parcial** (partes 1 y 2, hasta la línea original 2022); **pendiente de procesar el resto de `37_Web_API.gs`** (desde `_webDatosDriveJugador`, línea original 2023).
 - **`Base.md`** ahora tiene **50 archivos `.gs` (00 a 49)**; el consolidado hablaba de 47 (00 a 46). Los números cambiaron: es un **reordenamiento por temática del proyecto completo** (el caso descrito en la sección 2bis de la skill `/md`). Los bloques `AVISOS ABIERTOS` (22) y `VERIFICACIONES ABIERTAS` (8) siguen apareciendo en los `.gs`, pero según la usuaria con una línea de síntesis, y su explicación completa está en `Contexto_Base_Web.md`.
 
 **Equivalencia de nombres de archivo (anterior → nuevo), archivos nuevos y ámbito global:** movidos a `[→ Contexto_Base_Web.md §PF019]`.
@@ -284,7 +284,7 @@ y el nivel de certeza con el que se identificó el pendiente.
 - **`Base.zip` más reciente que el `Base.md` leído (captura de pantalla de la usuaria, 8-oct-2026, parte 66).** El listado del zip muestra, todos con fecha 08-oct-26 2:24 PM: `00_LEEME_ANTES_DE_SUBIR.txt`, los `.gs` de `00_Main.gs` a `53_Publicar_Torneos.gs` (es decir **54 archivos**, no 50), `appsscript.json` y `Script consolidado.gs`. **Archivos que no estaban en el `Base.md` leído (generado 07/10/2026 22:58):** `50_Publicar_Guerra.gs`, `51_Publicar_Roster.gs`, `52_Publicar_Home.gs` y `53_Publicar_Torneos.gs`. No se vio su contenido (solo el listado), así que no se sabe qué hacen ni qué archivos anteriores absorbieron. **Corrección a lo dicho antes (regla 9):** en la parte 65 se dijo que los números 50, 51 y 52 eran transitorios (archivos movidos para eliminar); en el zip actual esos números están ocupados por archivos vigentes (`Publicar_*`), así que ya no se pueden usar como señal de «archivo eliminado». Los tamaños que muestra el zip (por ejemplo `37_Web_API.gs` ≈ 436 KB) no se contrastaron con nada. **Pendiente:** subir el `Base.md`/`Base.zip` actualizado y su `Contexto_Base_Web.md` para releerlos y completar la equivalencia de nombres.
 - **Las referencias de este documento a «aviso A5», «línea ≈ 7360 de `34_Web_API.gs`», etc.** apuntan a la numeración de líneas y a los nombres anteriores y a comentarios que pudieron moverse a `Contexto_Base_Web.md`. No se contrastaron contra el `Base.md` nuevo; antes de editar un `.gs` hay que releerlo.
 - **El estado de los pendientes de este documento no se contrastó contra el `Base.md` nuevo** (ni contra `Contexto_Base_Web.md`): lo que aquí figura abierto puede haber cambiado en el código.
-- **El resto de `37_Web_API.gs`** (desde `_webDatosDriveJugador`) sigue sin trasladarse a `Contexto_Base_Web.md`; la usuaria confirmó (parte 65) que **falta completar el archivo 37**. Mientras tanto ese archivo conserva comentarios largos en el código.
+- **[Superado, verificado el 11-oct-2026: el 37 está completo.]** **El resto de `37_Web_API.gs`** (desde `_webDatosDriveJugador`) sigue sin trasladarse a `Contexto_Base_Web.md`; la usuaria confirmó (parte 65) que **falta completar el archivo 37**. Mientras tanto ese archivo conserva comentarios largos en el código.
 
 # PARTE 3 — Backend (Apps Script, `Base.md`)
 
@@ -303,7 +303,7 @@ y el nivel de certeza con el que se identificó el pendiente.
 | 17 | Fase 5 | parcial | Reenvío de los 4 JSON: llegaron 2 (players y currentriverrace); players confirmó 5(b) al 100%; falta saber si hay que reenviar los otros 2 |
 | 18 | Fase 1 | abierta | currentriverrace: 119 participantes con fame/ataques en 0 pese a fame de clan 119500 (colosseum, periodIndex 34); ¿normal o síntoma de 1(b)? En espera |
 | 20 | Fase 4/14 | abierta | Cambio de ataques semanales quedó en función compartida (afecta Torneos y Sorteos): ¿se deja así o conservan el cálculo anterior? |
-| 21 | Fase 5 | abierta | PLAYERS_API_ENABLED en partial (battlelog y cofres no se bajan en runAll): ¿cuándo pasarlo a true? |
+| 21 | Fase 5 | resuelta (11-oct-2026) | PLAYERS_API_ENABLED se queda en `'partial'` o `false` a criterio de la usuaria; no pasa a `true` (las tandas largas fallan por tiempo y no se reprograman). Motivo en `Contexto_Base_Web.md` §PF022 |
 | 26 | Fase 14 | parcial | Deducir Fecha_ing vacía: orden Directorio>Historial>Guerra confirmado, Fecha_lim resuelta, F2 programada luego; riesgos sin verificar (ver 30) |
 | 27 | Fase 14 | parcial | Historial_I/S perdió Fechas: arreglo de _updateHistorial() y protegerFechas en 30_Backup_CSV.gs hechos; quedan Directorio/Guerra/Inactivos y borrado intencional |
 | 28 | Fase 14 | parcial | Presencia real por semanas de guerra: puntos 1-3 y 4 respondidos, punto 5 resuelto 4-oct (A acotada a ceros); falta análisis exhaustivo posterior |
@@ -793,7 +793,7 @@ prioridad hasta que el usuario lo confirme (ver pregunta 15).
 | `06_Migraciones.gs` | `migrarQuitarCatDispClanesAdminDeDirectorio()` | Migración puntual de Directorio (categoría/disponibilidad de admins). |
 | `06_Migraciones.gs` | `migrarLinksQuitarJugador()` | Migración puntual de enlaces de jugador. |
 | `06_Migraciones.gs` | `migrarDirectorioColumnaPrestamo()` | Migración de la columna Préstamo en Directorio. |
-| `06_Migraciones.gs` | `migrarAdministradoresAEstructuraReducida()` | Migración de la estructura de Administradores. |
+| ~~`06_Migraciones.gs`~~ | ~~`migrarAdministradoresAEstructuraReducida()`~~ | **Eliminada el 07-oct-2026** (`47B007` de `Contexto_Base_Web.md`; verificado el 11-oct-2026: no existe en `Base/src/`). |
 | `06_Migraciones.gs` | `migrarControlColumnasExtra()` | Migración de columnas extra en Control. |
 | `06_Migraciones.gs` | `migrarControlColumnaAscenso()` | Migración de la columna Ascenso en Control. |
 | `06_Migraciones.gs` | `migrarControlQuitarJugador()` | Migración puntual para quitar un jugador de Control. |
