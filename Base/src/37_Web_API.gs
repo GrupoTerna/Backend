@@ -3191,6 +3191,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
 
   // Ataques/Puntaje/Barcos de la SEMANA ACTUAL por Tag (hoja Guerra) ---- Independiente de Tampermonkey: viene de la API de Supercell vía runGuerra()/runGuerraRapido() (17_GuerraSheet.gs). FASE 10 (09-sep-2026, pedido usuario… [→ Contexto_Base_Web.md §37B262]
   var guerraSemanaPorTag = {};
+  var guerraDiasPorTag = {}; // 11-oct-2026: { Tag: { offsetDia(0-3): {ataques, puntaje, barcos} } } de la semana en curso, respaldo del desglose diario cuando el Tag no tiene fila en "Nuevos"
   var fechaMasRecientePorSemana = {}; // numSemana -> Date más reciente vista
   // 19-sep-2026 (pedido del usuario -- webGuerraEnVivo lento): si el caller ya leyó la hoja Guerra en esta misma ejecución (dataGuerraPrefetch), se reusa esa lectura en vez de volver a leer 9000+ filas. Solo lectura: este bloque… [→ Contexto_Base_Web.md §37B263]
   var dataGuerra = dataGuerraPrefetch || null;
@@ -3209,6 +3210,22 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
           if (!fechaMasRecientePorSemana[numSemanaG] || fechaFilaG > fechaMasRecientePorSemana[numSemanaG]) {
             fechaMasRecientePorSemana[numSemanaG] = fechaFilaG;
           }
+        }
+      }
+
+      // FIX (11-oct-2026, pedido usuario — "YAHIR tiene ataques pero su cuadrícula aparece vacía"): el desglose diario J/V/S/D solo salía de la hoja "Nuevos" (Tampermonkey); un ingreso sin fila ahí (caso YAHIR, ingresó el sábado) quedaba con guerraSemanaDias = null aunque la hoja Guerra sí tenía sus ataques. Se guardan acá, por Tag, los valores de CADA día de guerra de la semana en curso, para usarlos de respaldo más abajo. Mismo criterio que _webPerfilJugador() (GC.ATAQUES_HOY / GC.FAME / GC.BARCOS por día). [→ Contexto_Base_Web.md §37B262B]
+      var pIdxDiaG = Number(dataGuerra[g][GC.PERIOD_IDX - 1]) || 0;
+      if (String(dataGuerra[g][GC.TEMPORADA - 1]) === String(ctx.temporada) &&
+          ((Number(dataGuerra[g][GC.SEMANA - 1]) || 1) - 1) === ctx.sectionIndex &&
+          esDiaGuerraIdx(pIdxDiaG)) {
+        var tagDiaG = cleanTag(dataGuerra[g][GC.TAG - 1]);
+        if (tagDiaG) {
+          if (!guerraDiasPorTag[tagDiaG]) guerraDiasPorTag[tagDiaG] = {};
+          guerraDiasPorTag[tagDiaG][(pIdxDiaG % 7) - 3] = {
+            ataques: Number(dataGuerra[g][GC.ATAQUES_HOY - 1]) || 0,
+            puntaje: Number(dataGuerra[g][GC.FAME        - 1]) || 0,
+            barcos:  Number(dataGuerra[g][GC.BARCOS      - 1]) || 0
+          };
         }
       }
 
@@ -3316,6 +3333,19 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
         ataques:  [0, 1, 2, 3].map(function (d) { return _diaValorONull(filaSemanaActualDias[OFFSEM.ATA + d]); }),
         puntaje:  [0, 1, 2, 3].map(function (d) { return _diaValorONull(filaSemanaActualDias[OFFSEM.PUN + d]); }),
         barcos:   [0, 1, 2, 3].map(function (d) { return _diaValorONull(filaSemanaActualDias[OFFSEM.BAR + d]); })
+      };
+    }
+
+    // FIX (11-oct-2026): sin fila en "Nuevos" (o con la fila sin ningún dato diario) el desglose diario se arma desde la hoja Guerra (guerraDiasPorTag); un día sin fila del jugador queda null (el frontend lo pinta "—", no 0). [→ Contexto_Base_Web.md §37B262B]
+    var diasGuerraRespaldo = guerraDiasPorTag[tagLimpio];
+    var sinDesgloseNuevos = !guerraSemanaDiasFila ||
+      !['ataques', 'puntaje', 'barcos'].some(function (k) { return guerraSemanaDiasFila[k].some(function (v) { return v !== null; }); });
+    if (sinDesgloseNuevos && diasGuerraRespaldo) {
+      guerraSemanaDiasFila = {
+        dias:     DIAS_GUERRA_NUEVOS,
+        ataques:  [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].ataques : null; }),
+        puntaje:  [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].puntaje : null; }),
+        barcos:   [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].barcos : null; })
       };
     }
 
