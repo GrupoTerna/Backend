@@ -1335,6 +1335,21 @@ Todos miden menos de 24 px de alto, pero 11 de 12 cumplen por la excepción de e
 
 **Sin probar en navegador real** con un perfil completo; falta comprobar a ojo que el espaciado entre tarjetas sea el mismo y que ninguna quede pegada a otra.
 
+### PF053 — `perfil.html`: «Competitivo» pasa de tablas de texto a tarjetas gráficas (pedido del usuario, 12-oct-2026)
+
+**Qué se pidió.** «Competitivo podría verse de una forma más gráfica; me parece muy serio el texto, algo como las minigráficas sería más atractivo.» Mismos datos que en §PF033; solo cambia cómo se pintan. `renderCaminoLeyendas(j)` ya no arma dos `<table class="panel-stats">` sino dos tarjetas `.mini-pie` (mismo vidrio, borde y brillo que las minigráficas) dentro de `.leyendas-grid` (2 columnas 1.2fr/1fr; 1 columna bajo 900 px o si solo hay una de las dos).
+
+**Camino de Leyendas = un anillo por temporada**, de izquierda a derecha: anterior, actual, mejor (la mejor al final y en dorado). El arco es `leagueNumber / MAX_LIGA`, con el número de liga en el centro. Debajo: etiqueta, mes de la temporada (solo actual y anterior, deducido de `leagueStatistics` como antes) y, **solo si llegan**, trofeos y rango (`Rango #N`). Con los datos reales de las últimas capturas (Liga 7 mejor, 1 actual, 2 anterior, `trophies` en 0 y `rank` nulo; ver §PF033) solo se ven el anillo, la etiqueta y la fecha: el 0 y el nulo no se pintan para no mostrar un «0 🏆» engañoso.
+
+**Camino de Trofeos = una barra por registro** (temporada anterior, actual, mejor temporada y mejor ladder histórico), todas a la **misma escala**: la mayor cifra de la tarjeta (incluidos los máximos por temporada y el ladder histórico) es la barra llena. La marca vertical blanca es `bestTrophies` de esa temporada (el máximo alcanzado dentro de ella) y solo sale si es mayor que los trofeos de cierre; la cifra también va en texto («máx. N») para que no dependa del color ni de la posición.
+
+**Supuesto sin verificar: `MAX_LIGA = 10`.** La escala del anillo asume que el Camino de Leyendas tiene 10 ligas. En los datos del repositorio solo aparecen las ligas 1, 2 y 7, así que no hay evidencia propia del tope; si la API trajera un `leagueNumber` mayor, la escala sube sola (`Math.max(10, …)`). Si el tope real fuera otro, cambiar esa constante y el texto «de 1 a N» de la nota.
+
+**Accesibilidad.** Cada anillo es `role="img"` con `aria-label` («Temporada actual: Liga 1 de 10»); las barras son decorativas (`aria-hidden`) porque la cifra está en texto al lado. Colores: dorado, morado y morado claro de la paleta; no se midió el contraste con axe (ver §PF049 para cómo medir).
+
+**Limpieza.** Se borró `_polTxt()` (solo la usaba esta función). Las reglas CSS `.leyendas-bloque` y `.leyendas-subcat` quedaron sin uso en el HTML y siguen en la hoja de estilos; se pueden quitar en otra tanda. **Sin probar:** en navegador real con un perfil completo (solo maqueta con Playwright usando la función real y dos juegos de datos, a 1300 y 420 px) ni la suite de `npm test` (falta `jsdom` en la sesión).
+
+
 
 
 ## 00_Main.gs — resumen rápido
