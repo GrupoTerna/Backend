@@ -1379,11 +1379,17 @@ El cuadrito pasa de «162,523 / 4,581,293» a «162,523»: `renderExtendido()` p
 
 **Archivos.** Cintas de 1000 px de ancho (10 a 18 KB), recortadas **solo del arte interior** (x 12–1195, y 32–298 del PNG de 1324×330): la primera versión (720 px, con el marco y la muesca de la cinta del Fan Kit) dejaba un hueco a la derecha del recuadro y se descartó y emotes de 200 px (~8 KB), en WebP. Los PNG originales no se usan en la web (los `Banner_*` pesan 5 MB y las poses de 4096 px hasta 10 MB); siguen en el repo.
 
+**Caché (12-oct-2026).** Tras recortar las cintas el usuario seguía viendo la versión vieja (con la muesca): `sw.js` responde primero con la copia guardada (la actualiza en segundo plano) y GitHub Pages añade `max-age=600`. **No basta con reemplazar el archivo con el mismo nombre**; por eso los archivos pasaron a `cinta-*-2.webp`. Si se vuelve a cambiar una imagen ya publicada, cambiar también su nombre (o subir `CACHE_NAME` en `sw.js`).
+
 **Pendiente.** Sin probar en navegador real (legibilidad del título sobre la cinta, en pantalla angosta y con el tema claro si existiera). Las cintas restantes (`ClashParadeBG`, `BombingJumpBG`, etc.) y los demás emotes quedan disponibles para otras tarjetas.
 
 ### PF057 — `perfil.html`: «Competitivo» debajo de las minigráficas (pedido del usuario, 12-oct-2026)
 
 La tarjeta `#mLeyendasCard` (Competitivo: Camino de Leyendas y Camino de Trofeos, ver §PF053) pasa a ir justo después de la tarjeta de cabecera, que termina con las minigráficas (`#mMiniGraficosWrap`: Ataques y barcos por día, Fama por día, Victorias y derrotas, Donaciones), antes de Evolución. Antes iba después de «Batallas más recientes». Solo se movió HTML; esto **modifica el orden de §PF052**, cuya lista queda así: cabecera, requisitos, cuadritos y minigráficas, **Competitivo**, Evolución, Mazo actual, Carta favorita, Batallas más recientes, Ciclo de cofres, Colección completa y Cartas de torre, Insignias, Logros, Progreso de eventos y modos.
+
+### PF058 — `perfil.html`: nombre del jugador en dorado brillante (pedido del usuario, 12-oct-2026)
+
+`#mNombre` (el `<h1>` de la cabecera) lleva degradado dorado vertical (`#fff3b8` → `#ffd84d` → `#f3a922`) con `background-clip:text`, un leve `drop-shadow` dorado y peso 800. Los emojis del nombre conservan sus colores. **Sin probar** en navegador real ni con nombres muy largos o con caracteres CJK.
 
 
 
