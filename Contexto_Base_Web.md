@@ -1068,6 +1068,19 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 - **Corrección de Guerra y los demás botones pueden seguir lentos por otras causas** (la visita de cada perfil en RoyaleAPI desde Tampermonkey, la API de Supercell). Los tiempos de `[CorreccionGuerra][Lista]` en el log de Apps Script dirán cuánto de la espera era esta lista.
 - **Sin probar en Apps Script real ni en el navegador.**
 
+### PF043 — Lista de Nuevos: Directorio sin Players/Links (pedido de la usuaria, 12-oct-2026)
+
+**Contexto.** Tras PF042 la usuaria preguntó si afectaba a la lista de Nuevos. No: el endpoint `listaNuevosRoyaleAPI` no usa `_obtenerListaCorreccionGuerra()` ni `_construirCoberturaPorTag()` (devuelve su propia `coberturaPorTag: {}`). Se pidió aligerarla de la misma forma.
+
+**Qué se cambió (`Base/src/14_Nuevos_RoyaleAPI.gs`, `_obtenerListaCandidatosNuevos()`).** Igual que PF042: lee solo el rango físico del Directorio (`DIR_SHEET_COLS`) con los índices de `IC`, en vez de `_leerDirectorioFisicoComoDC()` (que leía Players y Links y armaba filas de 60 columnas). Los ocho campos que usa la lista (`ESTADO`, `CLAN_TAG`, `RANGO`, `ADMIN`, `TAG`, `NOM_MULTI`, `NOMBRE`, `CLAN`) salen de la hoja Directorio: `RANGO` y los de identidad no los pisa `_reconstruirFilaDCDesdeFisico()`, y `ESTADO` y `ADMIN` no existen en `PC` ni en `LC`. Sobre `ADMIN`: esa función lo vacía si no es Sí/No/vacío, pero un valor así nunca vale `'Sí'`, así que el filtro `=== 'Sí'` da lo mismo con el valor crudo. La rama de respaldo (`Backup_Directorio.csv`) sigue con el layout `DC`.
+
+**Probado (en node).** Con las funciones reales `_reconstruirFilaDCDesdeFisico()` y `_esSiNoOVacio()` y las tablas `IC`/`PC`/`LC`/`DC` leídas de los `.gs`, y un Directorio sintético (inactivo, otro clan, colíder, administrador con `Sí`, `' Sí '`, `No` y valor basura, tag vacío, tag con espacios, sin nombre, ya en Nuevos, con participación establecida) más Players y Links con basura en los campos de identidad: la salida es **idéntica** a la versión anterior. Sintaxis válida.
+
+**Qué no se hizo y por qué.**
+- **`_construirMapaSemanalPorTagDesdeSupercell()` sigue igual.** Vuelve a cargar y agrupar `Backup_Guerra.csv` completo en cada llamada. Es candidato a caché, pero su resultado serializado mide unos 204 KB con el CSV real (3 124 grupos), más que el tope de 100 KB por valor de CacheService, así que necesitaría partirse en trozos o guardar menos campos. Cambio mayor; **pendiente de definir**.
+- `_obtenerTagsEnHojaNuevos()` no se revisó.
+- **Sin probar en Apps Script real ni en el navegador.**
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
