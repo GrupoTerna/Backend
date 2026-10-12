@@ -1341,6 +1341,7 @@ function _leerBloquesFechaNuevos(sh) {
  * _obtenerListaCandidatosNuevos() [→ Contexto_Base_Web.md §14B081]
  */
 function _obtenerListaCandidatosNuevos() {
+  var tIni = Date.now(); // PF043: tiempos en el log para ver dónde se va la espera [→ Contexto_Base_Web.md §PF043]
   var ss = _getSs();
   // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §14B082]
   var shDirNuevos = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
@@ -1355,13 +1356,16 @@ function _obtenerListaCandidatosNuevos() {
     dirData = (lecturaDirNuevos.origen === 'csv') ? lecturaDirNuevos.filas : [];
     ix = { estado: DC.ESTADO - 1, clanTag: DC.CLAN_TAG - 1, rango: DC.RANGO - 1, admin: DC.ADMIN - 1, tag: DC.TAG - 1, nomMulti: DC.NOM_MULTI - 1, nombre: DC.NOMBRE - 1, clan: DC.CLAN - 1 };
   }
+  var tDir = Date.now();
   var candidatos = [];
 
   // FIX (06-ago-2026): cada candidato ahora informa si YA está siendo [→ Contexto_Base_Web.md §14B083]
   var tagsEnNuevos = _obtenerTagsEnHojaNuevos(ss);
+  var tTags = Date.now();
 
   // FIX (29-ago-2026): mapa semanal por Tag construido SOLO desde [→ Contexto_Base_Web.md §14B084]
   var mapaSemanalPorTag = _construirMapaSemanalPorTagDesdeSupercell();
+  var tMapa = Date.now();
 
   // FIX (16-sep-2026): contexto vigente (temporada + semana en curso), para [→ Contexto_Base_Web.md §14B085]
   var ctx = _getCtx();
@@ -1393,6 +1397,8 @@ function _obtenerListaCandidatosNuevos() {
       yaEnNuevos: tagsEnNuevos.hasOwnProperty(tag.toUpperCase())
     });
   }
+
+  Logger.log('[Nuevos][Lista] ' + candidatos.length + ' candidato(s) · directorio ' + (tDir - tIni) + ' ms · hoja Nuevos ' + (tTags - tDir) + ' ms · mapa semanal ' + (tMapa - tTags) + ' ms · filtrado ' + (Date.now() - tMapa) + ' ms · total ' + (Date.now() - tIni) + ' ms');
 
   return {
     ok: true,
