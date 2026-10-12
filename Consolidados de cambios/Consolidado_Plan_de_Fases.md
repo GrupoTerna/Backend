@@ -1022,8 +1022,8 @@ Plan de refactor CSS — Web-main
 
 **B. Pendientes del plan de refactor CSS** (texto completo en 4.3 y 4.4; lo más reciente manda):
 
-- **P-1 (tuyo):** la tecla Escape no cierra el menú móvil abierto; ¿se agrega? Sin respuesta (tanda 5 → sigue en tandas 8 y 9).
-- **P-4 (tuyo):** a dónde debe ir el foco tras un veto exitoso (`perfil.html`) y tras «Marcar visto» (`admin.html`). Sin respuesta.
+- **P-1, resuelto el 11-oct-2026 (corrección, regla 9: aquí figuraba sin respuesta):** Escape cierra el menú móvil y devuelve el foco al botón ☰ (`sw.js` v27, `marcarNavActiva()` en `assets/js/ui/effects.js`); desde el 12-oct tiene prueba automática. `[→ Contexto_Base_Web.md §PF018 y §PF049]`
+- **P-4, resuelto el 06-oct-2026 (corrección, regla 9: aquí figuraba sin respuesta):** tras un veto exitoso el foco va al mensaje «Miembro vetado.» (`perfil.html`) y tras «Marcar visto» a la insignia de la misma fila (`admin.html`); el 12-oct se corrigió un robo de foco en «Marcar visto» y se añadieron pruebas. `[→ Contexto_Base_Web.md §PF049]`
 - **Sin medir:** recorrido completo del selector de Modificar torneo/sorteo (wizard) y Resolución con la cuenta solo en la lista completa cerrada (tanda 9).
 - **Sin probar con datos reales ni en Apps Script:** Noticias de la semana, celdas vacías y congelado de `guerra.html`, defensas de `perfil.html` (tanda 9).
 - **Mejoras de `guerra.html` aceptadas y sin hacer:** insignia de rango, marca de «meta cruzada», mini historial y comparador por jugador, top de la semana, filtro «solo con 0», fila de totales y exportar (tanda 9).
