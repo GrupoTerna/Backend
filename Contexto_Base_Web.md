@@ -1391,6 +1391,12 @@ La tarjeta `#mLeyendasCard` (Competitivo: Camino de Leyendas y Camino de Trofeos
 
 `#mNombre` (el `<h1>` de la cabecera) lleva degradado dorado vertical (`#fff3b8` → `#ffd84d` → `#f3a922`) con `background-clip:text`, un leve `drop-shadow` dorado y peso 800. Los emojis del nombre conservan sus colores. **Sin probar** en navegador real ni con nombres muy largos o con caracteres CJK.
 
+### PF059 — `perfil.html`: «Estado · Rango (Tag)» e insignia de guerra junto al escudo (pedido del usuario, 12-oct-2026)
+
+**Línea bajo el nombre.** `mSub` (primera línea) pasa de «#9LCJ2JQ08 · Veterano · Activo» a «Activo · Veterano (#9LCJ2JQ08)» (`renderMiembro()`). La segunda línea (clan y su tag) no cambia.
+
+**Insignia de victorias de guerra.** `#mInsigniaGuerraWrap` va a la derecha de `#mClanIconoWrap` (el escudo). `renderMiembro()` busca en `rawClash.badges` la insignia con `name === 'ClanWarWins'` y pinta su ícono (`iconUrls.large` o `medium`, que cambia según el nivel de la insignia) con la misma regla de alto que el escudo (`height:100%`, máximo 90 px, mínimo 48 px). El tooltip y el `alt` traen el nombre, el nivel («Nv. 7/8») y el progreso. Se oculta sola si el jugador no tiene esa insignia (solo salen las desbloqueadas) o si la imagen falla. Es la misma insignia que alimenta el ícono de «V. Guerra» (§PF055). **Sin probar** en navegador real, ni su alto en pantallas angostas.
+
 
 
 
