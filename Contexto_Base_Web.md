@@ -3894,6 +3894,7 @@ Los IDs de bloque de este archivo llevan el prefijo `01` (ej. `01B001`).
 | 01B155 | 2786-2800 | `_obtenerMapaPorTagConFallbackCSV` | _numDesdeCeldaCSV_(v) |
 | 01B156 | 2813-2815 | `_scriptToken` | Corta temprano y con mensaje claro: sin literal de respaldo, un |
 | 01B157 | 2822-2841 | `_scriptToken` | guardarTokensEnScriptProperties() |
+| 01B158 | (12-oct-2026) | `_csvSubcarpetaDe_` | Subcarpetas de la carpeta CSV: mapa archivo → subcarpeta y búsqueda |
 
 ---
 
@@ -6622,6 +6623,42 @@ si cambia, TODOS los admins con hash guardado dejan de poder iniciar sesión
 pueden rotar cuando quieras editando su Property (y avisando a quien los
 use); DASHBOARD_TOKEN, por ejemplo, solo lo usan los administradores del
 dashboard.
+```
+
+#### 01B158 — 12-oct-2026 (funcionamiento, subcarpetas de la carpeta CSV)
+
+```text
+Archivos: 01_Config_Global.gs (_csvSubcarpetaDe_, _getCsvSubcarpeta_,
+_csvBuscarArchivo_, CSV_MOVER_A_SUBCARPETA), 05_Backup_CSV.gs
+(_loadCSVFromDrive, _saveCSVToDrive, _logTampermonkeyADrive) y
+11_DirectorioSheet.gs (_getCsvDirMap).
+
+Funcionamiento: la carpeta CSV tiene las subcarpetas Background, Hojas,
+Informes y Tampermonkey. _csvSubcarpetaDe_(nombre) devuelve la subcarpeta
+asignada a cada CSV (Informes: "Backup_Guerra ANTES de reparar*", Reparacion_*,
+Limpieza_Coliseo_*, Revision_Guerra*, Diagnostico_*; Tampermonkey: Correcciones_*,
+Log_Tampermonkey_* y Backup_Guerra_Semanal.csv, que Apps Script arma con datos
+traídos por Tampermonkey; Background y Hojas: listas explícitas). Un nombre sin
+asignar se queda en la raíz de CSV (hoy: Backup_Battlelogs, ProgresoEventos,
+PerfilWeb, Logros y Logros_2, pendientes de que la usuaria decida su carpeta).
+Todo el código lee y escribe CSV solo con _loadCSVFromDrive/_saveCSVToDrive,
+que buscan el archivo en este orden: subcarpeta asignada, raíz, demás
+subcarpetas. Si existe en cualquier sitio NO se crea otra copia; si se guarda
+fuera de su subcarpeta se mueve a ella (CSV_MOVER_A_SUBCARPETA). Los nombres
+nuevos solo se crean (junto con su subcarpeta) cuando no existen en ninguna.
+
+Por qué no se debe mover un CSV de carpeta sin esta lógica (evidencia
+12-oct-2026): con la versión anterior, que solo buscaba en la raíz, al mover
+a mano Backup_Guerra, Backup_Guerra_Semanal, Correcciones_Guerra y
+Log_Tampermonkey_CorreccionGuerra a subcarpetas, _saveCSVToDrive creó copias
+nuevas pequeñas en la raíz (108 KB, 31 KB, 1.6 KB y 203 B) y el sistema pasó a
+leer esas copias en lugar de los originales (1.8 MB, 380 KB, 429 KB y 66 KB).
+Si aparece una copia duplicada en la raíz, la que se usa es la de la subcarpeta
+asignada; la copia pequeña debe borrarla la usuaria.
+
+Fuera de este mecanismo: HistorialGuerra_Grupal.csv vive en la carpeta "Grupal"
+(DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL), no en CSV, así que no se mueve a Informes
+por este cambio. Los JSON (ClanSystem_Backup_*, progresos) usan otras carpetas.
 ```
 
 

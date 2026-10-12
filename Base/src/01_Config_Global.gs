@@ -1158,6 +1158,62 @@ function _getCsvFolder() {
   }
 }
 
+// SUBCARPETAS DE LA CARPETA CSV (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §01B158]
+// Cada CSV tiene una subcarpeta asignada. Un nombre sin asignar se queda en la raíz de CSV.
+// Si CSV_MOVER_A_SUBCARPETA es true, al guardar un archivo encontrado fuera de su subcarpeta se mueve a ella.
+var CSV_MOVER_A_SUBCARPETA = true;
+var CSV_SUBCARPETAS_ = ['Background', 'Hojas', 'Informes', 'Tampermonkey'];
+var _CSV_SUBCARPETAS_MEM_ = {};
+
+function _csvSubcarpetaDe_(filename) {
+  var n = String(filename || '');
+  // Informes: respaldos previos a reparar, reparaciones, limpiezas, revisiones y diagnósticos.
+  if (/^Backup_Guerra ANTES de reparar/.test(n) || /^Reparacion_/.test(n) || /^Limpieza_Coliseo_/.test(n) ||
+      /^Revision_Guerra/.test(n) || /^Diagnostico_/.test(n) || /^HistorialGuerra_Grupal/.test(n)) return 'Informes';
+  // Tampermonkey: lo que se arma con datos traídos de RoyaleAPI por Tampermonkey.
+  if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv') return 'Tampermonkey';
+  var background = ['Backup_Cards.csv', 'Backup_Cards_2.csv', 'Backup_Cards_3.csv', 'Backup_Modo.csv', 'Backup_Arena.csv',
+    'Backup_Insignias.csv', 'Backup_Insignias_2.csv', 'Backup_Cofres.csv', 'Backup_Locations.csv',
+    'Backup_Seasons.csv', 'Backup_CaminoLeyendas.csv'];
+  if (background.indexOf(n) >= 0) return 'Background';
+  var hojas = ['Backup_Guerra.csv', 'Backup_Guerra_Logs.csv', 'Backup_Directorio.csv', 'Backup_Inactivos.csv',
+    'Backup_Clan.csv', 'Backup_Players.csv', 'Backup_Administradores.csv', 'Backup_Vetados.csv', 'Backup_Nuevos.csv',
+    'Backup_Pendientes.csv', 'Backup_Extra.csv', 'Backup_Mensajes.csv', 'Backup_Comentarios.csv',
+    'Backup_Calendario_2.csv', 'Backup_T_Lista.csv', 'Backup_T_Asistencia.csv', 'Backup_T_Resoluciones.csv',
+    'Backup_S_Lista.csv', 'Backup_S_Asistencia.csv', 'Backup_CR_Lista.csv', 'Backup_Historial_A-D.csv',
+    'Backup_Historial_I-S.csv', 'Backup_Grupo_Verificado.csv', 'Backup_Alertas_HistorialGuerra.csv',
+    'Alertas_HistorialGuerra.csv', 'Backup_Conflictos.csv'];
+  if (hojas.indexOf(n) >= 0) return 'Hojas';
+  return ''; // sin asignar: raíz de CSV (p. ej. Backup_Battlelogs, ProgresoEventos, PerfilWeb, Logros)
+}
+
+function _getCsvSubcarpeta_(nombre, crear) {
+  if (!nombre) return _getCsvFolder();
+  if (_CSV_SUBCARPETAS_MEM_[nombre]) return _CSV_SUBCARPETAS_MEM_[nombre];
+  var it = _getCsvFolder().getFoldersByName(nombre);
+  var carpeta = it.hasNext() ? it.next() : (crear ? _getCsvFolder().createFolder(nombre) : null);
+  if (carpeta) _CSV_SUBCARPETAS_MEM_[nombre] = carpeta;
+  return carpeta;
+}
+
+// Busca un CSV: primero en su subcarpeta, luego en la raíz y al final en las demás subcarpetas.
+// Devuelve { file, carpetaNombre } ('' = raíz) o null si no existe.
+function _csvBuscarArchivo_(filename) {
+  var asignada = _csvSubcarpetaDe_(filename);
+  var orden = [asignada];
+  if (asignada !== '') orden.push('');
+  for (var i = 0; i < CSV_SUBCARPETAS_.length; i++) {
+    if (orden.indexOf(CSV_SUBCARPETAS_[i]) < 0) orden.push(CSV_SUBCARPETAS_[i]);
+  }
+  for (var j = 0; j < orden.length; j++) {
+    var carpeta = _getCsvSubcarpeta_(orden[j], false);
+    if (!carpeta) continue;
+    var files = carpeta.getFilesByName(filename);
+    if (files.hasNext()) return { file: files.next(), carpetaNombre: orden[j] };
+  }
+  return null;
+}
+
 function _getSs() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   if (ss !== null) return ss;
