@@ -1050,6 +1050,24 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 - **Lentitud de los otros botones:** Corrección de Guerra sigue pidiendo la lista completa. Con los tiempos que ahora quedan en el log se podrá ver si el cuello es el Directorio o la cobertura; **no se optimizó todavía** (no hay medición real, solo la inferencia del tamaño del CSV).
 - **Sin probar en Apps Script real ni en el navegador.**
 
+### PF042 — Lista de Corrección de Guerra más liviana: Directorio sin Players/Links y caché de la cobertura (pedido de la usuaria, 12-oct-2026)
+
+**Corrección a lo dicho en PF041:** allí se dejó escrito que la lista completa «no se optimizó todavía». La usuaria pidió optimizarla y se hizo en este cambio. La causa de la lentitud sigue **sin medirse** (no hay log real); se actuó sobre el trabajo que se comprobó en el código que es evitable sin cambiar lo que devuelve.
+
+**Qué se cambió (`Base/src/18_CorreccionGuerra.gs`, `_obtenerListaCorreccionGuerra()` y `_construirCoberturaPorTag()`; `Base/src/05_Backup_CSV.gs`, `_csvCacheBorrar_()`).**
+- **Directorio.** Antes la lista llamaba a `_leerDirectorioFisicoComoDC()`, que lee Directorio, **Players y Links** completos y arma, para **todos** los registros (activos o no, de cualquier clan), una fila de 60 columnas. Ahora lee solo el rango físico del Directorio (`DIR_SHEET_COLS`) y usa los índices de `IC`. Se puede porque los seis campos que usa la lista (`ESTADO`, `CLAN_TAG`, `TAG`, `NOMBRE`, `NOM_MULTI`, `CLAN`) salen de la hoja Directorio: `_reconstruirFilaDCDesdeFisico()` no los pisa con Players/Links (los de identidad se saltan y `ESTADO` no existe en `PC` ni en `LC`). La rama de respaldo (Directorio vacío → `Backup_Directorio.csv`) sigue con el layout `DC`, por eso se arma un mapa de índices según la fuente.
+- **Cobertura.** `_construirCoberturaPorTag()` guarda su resultado en CacheService (`COBGUERRA_v1`, 600 s como el CSV; con los datos reales son unos 14 KB y 339 tags, cabe en un solo valor). Se invalida en `_csvCacheBorrar_('Backup_Guerra.csv')`, que `_saveCSVToDrive()` llama en cada guardado (todos los escritores de `Backup_Guerra.csv` del proyecto pasan por ahí). Si el caché falla o está dañado, se recalcula desde el CSV como antes.
+- **No cambia** lo que devuelve el endpoint: mismos jugadores, mismo orden, mismos campos y misma `coberturaPorTag`. `modo=clanes` (PF041) no se toca.
+
+**Probado (en node, con mocks).** Con un Directorio sintético (activos, inactivos, otro clan, sin tag, tag con espacios, nombre numérico) y el `Backup_Guerra.csv` real de `Datos descargados/CSV` (15 305 filas): la salida del modo completo es **idéntica** a la de la versión anterior; la segunda llamada no vuelve a cargar el CSV; tras invalidar recalcula; con el caché dañado recalcula; sintaxis de los dos `.gs` válida.
+
+**Qué no se hizo y por qué.**
+- **No se cachea la lista de jugadores.** Cambia cuando se edita el Directorio y un caché daría una lista desfasada; no hay una invalidación confiable como la del CSV.
+- **No se tocó `_parseCSV()`.** En node parsea el CSV real en unos 100 ms; en Apps Script puede ser más lento, pero no hay medición y lo usa todo el sistema.
+- **La primera llamada tras un guardado del CSV sigue costando igual** (carga y recorrido del CSV); solo mejoran las siguientes dentro de 10 min.
+- **Corrección de Guerra y los demás botones pueden seguir lentos por otras causas** (la visita de cada perfil en RoyaleAPI desde Tampermonkey, la API de Supercell). Los tiempos de `[CorreccionGuerra][Lista]` en el log de Apps Script dirán cuánto de la espera era esta lista.
+- **Sin probar en Apps Script real ni en el navegador.**
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
