@@ -850,7 +850,7 @@ function updateGuerraSheet() {
         id: idGuerra,
         row: [
           null,                      // N° (se asigna al escribir)
-          now,                       // Fecha
+          _fechaPrimeraConsultaRR_(ctxClan.temporada, ctxClan.periodIndex, clanTag, now), // Fecha = PRIMERA consulta del periodIndex (12-oct-2026); no cambia al actualizar
           ctxClan.temporada,         // Temporada
           ctxClan.sectionIndex + 1,  // Semana
           ctxClan.diaLetra,          // Día
@@ -1269,7 +1269,7 @@ function updateGuerraLogsSheet() {
         id:  idLog,
         row: [
           null,            // N°
-          now,             // Fecha
+          _fechaPrimeraConsultaRR_(temporadaClan, pIdx, clanTag, now), // Fecha = PRIMERA consulta del periodIndex (12-oct-2026); no cambia al actualizar
           temporadaClan,   // Temporada
           sIdx + 1,        // Semana
           diaLetraLog,     // Día
@@ -1453,7 +1453,7 @@ function updateGuerraLogsSheet() {
         id:  idLogR,
         row: [
           null,                                   // N°
-          now,                                    // Fecha
+          _fechaPrimeraConsultaRR_(temporadaRival, pIdxR, null, now), // Fecha = PRIMERA consulta del periodIndex (la más temprana de los Terna; 12-oct-2026)
           temporadaRival,                         // Temporada
           sIdxR + 1,                              // Semana
           periodIdxToLetra(pIdxR),                // Día
