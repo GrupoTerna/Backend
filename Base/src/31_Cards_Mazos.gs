@@ -1002,6 +1002,98 @@ function _generarUrlMazo2DesdeMapas(tag, cardInfo, playerCards) {
   return _ensamblarUrlMazo(listas.inc, listas.exc, false);
 }
 
+/**
+ * _construirCards2DeTag(tag) [→ Contexto_Base_Web.md §PF051]
+ * Igual que _construirCards2PorTag(), pero lee solo las filas de UN jugador (la usa el perfil web).
+ */
+function _construirCards2DeTag(tag) {
+  var tagLimpio = cleanTag(tag);
+  if (!tagLimpio) return null;
+  var csv = _leerCards2CSV();
+  if (!csv.rows || csv.rows.length === 0) return null;
+
+  // cols: 0=N°, 1=Tag, 2=ID, 3=Level, 4=EvolutionLevel
+  var cartas = {};
+  var hay = false;
+  for (var j = 0; j < csv.rows.length; j++) {
+    if (cleanTag(csv.rows[j][1]) !== tagLimpio) continue;
+    var pId = String(csv.rows[j][2] || '').trim();
+    if (!pId) continue;
+    var pLevel = csv.rows[j][3];
+    var pEvo   = csv.rows[j][4];
+    cartas[pId] = {
+      level: (pLevel !== '' && pLevel !== null && pLevel !== undefined) ? Number(pLevel) : 0,
+      evoLevel: (pEvo !== '' && pEvo !== null && pEvo !== undefined) ? Number(pEvo) : -1
+    };
+    hay = true;
+  }
+  return hay ? cartas : null;
+}
+
+/**
+ * _nivelPromedioCartas(playerCards) [→ Contexto_Base_Web.md §PF051]
+ * Nivel promedio ponderado: cada nivel pesa por la cantidad de cartas que tiene el jugador en ese nivel.
+ * Es la misma cuenta del pastel "Cartas por nivel" de perfil.html. No cuenta las cartas de torre ni las de nivel 0.
+ * @returns {?{promedio:number, nivelMinimo:number, cartas:number}} nivelMinimo = parte entera hacia abajo del promedio.
+ */
+function _nivelPromedioCartas(playerCards) {
+  if (!playerCards) return null;
+  var cantidadPorNivel = {};
+  var total = 0;
+  for (var id in playerCards) {
+    if (!playerCards.hasOwnProperty(id)) continue;
+    if (_esCartaTorre(id)) continue;
+    var nivel = Number(playerCards[id].level);
+    if (!(nivel >= 1)) continue;
+    cantidadPorNivel[nivel] = (cantidadPorNivel[nivel] || 0) + 1;
+    total++;
+  }
+  if (total === 0) return null;
+  var suma = 0;
+  for (var n in cantidadPorNivel) {
+    if (cantidadPorNivel.hasOwnProperty(n)) suma += Number(n) * cantidadPorNivel[n];
+  }
+  var promedio = suma / total;
+  return { promedio: promedio, nivelMinimo: Math.floor(promedio), cartas: total };
+}
+
+/**
+ * _generarUrlMazo3DesdeMapas(tag, cardInfo, playerCards) [→ Contexto_Base_Web.md §PF051]
+ * Tercera sugerencia: como la (2) (solo excluye, no fuerza cuáles incluir), pero además excluye las cartas de nivel menor
+ * que el máximo entero del nivel promedio. Una carta excluida por nivel se trata como si no estuviera desbloqueada
+ * (también se excluyen su evolución y su héroe).
+ * @returns {?{url:string, nivelPromedio:number, nivelMinimo:number}}
+ */
+function _generarUrlMazo3DesdeMapas(tag, cardInfo, playerCards) {
+  if (!tag) return null;
+  if (!cardInfo || Object.keys(cardInfo).length === 0) return null;
+  if (!playerCards) return null;
+
+  var prom = _nivelPromedioCartas(playerCards);
+  if (!prom) return null;
+
+  var altas = {};
+  for (var id in playerCards) {
+    if (playerCards.hasOwnProperty(id) && Number(playerCards[id].level) >= prom.nivelMinimo) altas[id] = playerCards[id];
+  }
+  var listas = _construirListasMazoDesdeMapas(cardInfo, altas);
+  return { url: _ensamblarUrlMazo(listas.inc, listas.exc, false), nivelPromedio: prom.promedio, nivelMinimo: prom.nivelMinimo };
+}
+
+/**
+ * generarMazo3(tag) [→ Contexto_Base_Web.md §PF051]
+ * Para el perfil web (_webPerfilExtendido): null si no hay datos de Cards_2 de este jugador.
+ */
+function generarMazo3(tag) {
+  if (!tag) return null;
+  var tagClean = String(tag).trim();
+  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
+
+  var ss = _getSs();
+  var cardInfo = _construirCardInfoMap(ss);
+  return _generarUrlMazo3DesdeMapas(tagClean, cardInfo, _construirCards2DeTag(tagClean));
+}
+
 // E) COSTOS DE SUBIDA DE NIVEL: Backup_Cards_3.csv (catálogo fijo, manual) [→ Contexto_Base_Web.md §31B051]
 
 /**
