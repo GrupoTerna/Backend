@@ -908,7 +908,7 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 - **Corrida equivocada, sin efecto (11-oct-2026, 9:31 p. m.):** antes de aplicar, la usuaria corrió por error `repararAtaquesHoyGuerraDesdeJSONAplicar()`, otra función. Resultado: `Backup_Guerra.csv`: 0 filas a cambiar, **7 sin resolver**; hoja Guerra: 0 y 0; no escribió ni hizo respaldo (solo escribe si hay cambios), solo dejó el informe `Reparacion_AtaquesHoy_Guerra_JSON 2026-10-11 21.31.46 (aplicado).csv`. **Pendiente de definir o contestar (regla 3):** qué son esas 7 filas sin resolver; no se vio el informe.
 
 **Pendiente de definir o contestar (regla 3).**
-- **5/07, 2/08 y 30/08:** no hay JSON en el repo. En el 5/07 las filas con fama 0 tampoco tienen ataques (0 de 97), así que no es el mismo patrón que el 04/10 y esta rutina no lo repara. Habría que usar el método del Log de RoyaleAPI. La afirmación de la sesión anterior «los 0 de 5/07 y 30/08 son esto mismo» **no está verificada**.
+- **[CORREGIDO el 11-oct-2026, ver §PF045: los JSON ya están en el repo y hay 166 filas recuperables; la frase «con AtaquesSemana = 0 el 0 es real» no vale para estos domingos]** **5/07, 2/08 y 30/08:** no hay JSON en el repo. En el 5/07 las filas con fama 0 tampoco tienen ataques (0 de 97), así que no es el mismo patrón que el 04/10 y esta rutina no lo repara. Habría que usar el método del Log de RoyaleAPI. La afirmación de la sesión anterior «los 0 de 5/07 y 30/08 son esto mismo» **no está verificada**.
 - **Viernes 09-oct y 11-oct de Chistris:** los ceros son reales. Los JSON dan `decksUsedToday = 0` y el acumulado no cambia (fama 600 y 1200). No es un fallo. El 11-oct estaba abierto en la última captura (13:02).
 - Si el Drive tiene una captura posterior de ceros del periodIndex 27 (lunes 05-oct, 4:48 a 5:08), el lector la elegiría como la última y esas filas quedarían «SIN RESOLVER» (no se sobrescribe nada). No se pudo comprobar qué capturas hay en Drive.
 - **Sin probar en Apps Script real:** la lectura de la carpeta de cada clan en Drive, `_syncGuerraCSV()` tras escribir la hoja y el reflejo en el perfil web (que puede tardar por la caché; falta confirmar qué función republica el perfil).
@@ -1098,6 +1098,31 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 **Probado.** 4 pruebas nuevas en `test/timeline-svg-dom.test.js` (jsdom con el tamaño del tooltip fijado a mano, ventana de 1024 × 768): sin choque, volteo a la izquierda, volteo hacia arriba y mínimo de 8 px. Pruebas (350), lint y `html-validate` en verde.
 
 **Sin probar en navegador real:** que en la gráfica de Medallas el tooltip del último punto (a la derecha) salga a la izquierda del cursor y entero, también en móvil y con la barra de desplazamiento visible. Hay que recargar con `sw.js` v51 (el service worker reemplaza la caché).
+
+### PF045 — Domingos 05/07, 02/08 y 30/08: ceros de fama y ataques que la reparación de PF031 no alcanza, contrastados contra los JSON subidos (11-oct-2026)
+
+**Corrección (regla 9).** PF031 (y la respuesta del chat de esta sesión) dijo que en esos domingos las filas con fama 0 y `AtaquesSemana` 0 eran ceros reales, y que solo había 0, 1 y 12 filas candidatas. **Eso no se sostiene.** `_calcularReparacionFamaDomingo_()` solo mira filas con Fame 0 y `AtaquesSemana` > 0; en estos tres domingos hay filas donde **Fame, `AtaquesSemana` y `AtaquesHoy` están los tres en 0** aunque el sábado de la misma temporada ya traía fama y ataques. La fama y los ataques semanales son acumulados, así que no pueden bajar a 0 dentro de la semana.
+
+**Evidencia (verificada el 11-oct-2026 con script sobre `Datos descargados/CSV/Backup_Guerra.csv` y los JSON `currentriverrace` de `Datos descargados/JSON`; la última captura del día de cada clan cuyo `periodIndex` interno coincide).**
+
+| Domingo | Candidatas de PF031 (Fame 0, ataques > 0) | Filas con los tres en 0 y sábado con datos | Con JSON que las recupera | Captura usada |
+|---|---|---|---|---|
+| 05/07 (T2 S5, PI 34) | 0 | 93 (Grupo乂Terna™ 48, GrupoXTerna™2 45) | 93 | 22:58 |
+| 02/08 (T3 S4, PI 27) | 1 | 7 | 8 en total | 14:13 |
+| 30/08 (T4 S4, PI 27) | 12 | 53 (GrupoXTerna™2 41, GrupoXTerna™3 9, Mini乂Ternas™ 3) | 65 en total | 09:34 |
+
+«Recupera» = el jugador aparece en el JSON del domingo, con fama y mazos (`decksUsed`) iguales o mayores a los del sábado. Chistris (`#2GG8PJ8GC`) el 05/07: sábado 1950 de fama y 12 ataques; JSON 2250 y 14 (o sea 300 medallas y 2 ataques el domingo), pero el CSV lo tiene en 0; por eso su gráfica marca 0 ese día (en ataques y en medallas). Total de filas recuperables: **166**.
+
+**Lo que no hace la función actual (por qué hay que cambiarla, no solo correrla).**
+1. Está fija a `REPARAR_FAMA_DOMINGO_TEMPORADA = 5` y `REPARAR_FAMA_DOMINGO_PERIODINDEX = 27`; hay que pasarla a una lista de (temporada, periodIndex): (2, 34), (3, 27), (4, 27).
+2. El criterio de candidata exige `AtaquesSemana` > 0. Para estos casos hay que aceptar Fame 0 y `AtaquesSemana` 0 con sábado > 0, y **reponer también `AtaquesSemana` y `AtaquesHoy`** (en T5 los ataques ya estaban reparados). `AtaquesHoy` saldría de `decksUsedToday` del JSON; no se verificó si coincide con lo que el CSV guarda para ese domingo.
+3. Lee de Drive (carpeta de cada clan), no de GitHub: los JSON deben estar también en Drive.
+
+**Advertencias.**
+- **Los JSON de 05/07 y 30/08 son capturas parciales del domingo** (22:58 y 09:34): la fama repuesta es la de esa hora. Para GrupoXTerna™3 del 05/07 solo hay captura de 04:58 (sin datos útiles): sin resolver.
+- **Una fila de 02/08 supera el tope de 900 medallas por día (PF036):** `ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡` (GrupoXTerna™2), sábado 400, JSON 1500 (1100 el domingo, 8 ataques). Las demás quedan entre 0 y 900 (máximo 900 el 05/07 y 700 el 30/08). Revisar antes de aplicar.
+- **Sin probar:** nada se corrió en Apps Script; la simulación copia la lógica de `_crearLectorDiaJSONGuerra_()` y `_calcularReparacionFamaDomingo_()` pero no es la función real. NARANJA x tiene JSON pero no filas en esos domingos.
+- **Pendiente de definir o contestar (regla 3):** si la usuaria quiere que se amplíe la función como en el punto anterior (con informe previo y respaldo, como en PF031) y si los JSON están también en las carpetas de Drive.
 
 ## 00_Main.gs — resumen rápido
 
