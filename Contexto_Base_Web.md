@@ -1323,6 +1323,19 @@ Todos miden menos de 24 px de alto, pero 11 de 12 cumplen por la excepción de e
 
 **Probado.** Lógica del backend con datos simulados en Node (promedio 14.25 → nivel base 14; sale excluida la carta de nivel 13, la no desbloqueada y la evolución que el jugador no tiene; la carta de torre no cuenta). Estilos y pastilla en maqueta con Playwright. **Sin probar:** Apps Script real (no se puede ejecutar desde la sesión) ni la URL en RoyaleAPI; falta abrir el botón (3) con un jugador real y comprobar que la búsqueda devuelve mazos y que el nivel base coincide con la pastilla.
 
+### PF052 — `perfil.html`: nuevo orden de las secciones (pedido del usuario, 12-oct-2026)
+
+**Orden vigente** (dentro de `#perfilContenido`): cabecera · Requisitos y cuadritos · minigráficas · **Evolución** (Ranking en el clan; Ataques, Medallas y Barcos por semana) · **Mazo actual** · **Carta favorita** · **Batallas más recientes** · **Competitivo** (`#mLeyendasCard`) · **Ciclo de cofres** · **Colección completa y Cartas de torre** · **Insignias** · **Logros** · **Progreso de eventos y modos**.
+
+**Criterio.** De lo más útil o frecuente a lo menos, para un sitio de clan: primero lo que decide el clan (requisitos, guerra y su tendencia), después lo que el jugador usa y juega ahora (mazo, favorita, batallas), después Competitivo y Ciclo de cofres, y al final lo largo o de exploración (la colección, que tiene filtros y cientos de cartas, y lo que va después). La propuesta salió del análisis de la estructura de la página, **no de estadísticas de uso**; si el uso real contradice el criterio, se reordena.
+
+**Qué revierte (regla 9).** Cambia tres decisiones de ubicación anteriores, cuyos comentarios siguen en el HTML como historial: «las gráficas al último» (23-sep-2026), «Camino de Leyendas y ligas debajo de las insignias» (21-sep-2026; ahora Competitivo queda antes de la colección y separado de Insignias y Logros) y «luego de la colección completa debe ir evolución» (11-oct-2026). El usuario aceptó la propuesta sabiendo que Evolución volvía arriba; que Competitivo se separe de las insignias es consecuencia del orden pedido (Insignias, Logros y Progreso después de la colección, el resto según la propuesta) y está sin confirmar.
+
+**Cómo está hecho.** Los 10 bloques son hijos directos de `#perfilContenido`, cada uno con sus comentarios, y se llenan por su `id`; se movieron enteros y el JS no cambia. Se comprobó que ningún JS ni CSS dependa de qué sección va al lado de cuál (las únicas reglas `:first-child` / `:last-child` / `nextElementSibling` son internas a un bloque), que el HTML queda balanceado y que no se perdió ninguna línea (la única añadida es un comentario). Las tarjetas ocultas por falta de datos (`display:none`) siguen sin ocupar sitio, así que el orden efectivo es el de arriba sin los huecos.
+
+**Sin probar en navegador real** con un perfil completo; falta comprobar a ojo que el espaciado entre tarjetas sea el mismo y que ninguna quede pegada a otra.
+
+
 
 ## 00_Main.gs — resumen rápido
 
