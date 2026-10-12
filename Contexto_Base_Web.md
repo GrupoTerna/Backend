@@ -1087,6 +1087,18 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 - `_obtenerTagsEnHojaNuevos()` no se revisó.
 - **Sin probar en Apps Script real ni en el navegador.**
 
+### PF044 — Gráficas de `perfil.html` y `directorio.html`: el tooltip del mouse se voltea a la izquierda cerca del borde derecho (pedido de la usuaria, 11-oct-2026)
+
+**Qué fallaba.** Los dos `mousemove` de las gráficas (`pintarGraficaPerfil()` en `perfil.html` y `activarTooltipsGraficasIngresos()` en `directorio.html`) ponían el tooltip siempre a `clientX + 14` y `clientY + 14`. En los puntos de la derecha (por ejemplo la semana más reciente) el tooltip se salía de la ventana y se cortaba, como en la captura de «Medallas por semana» con el tooltip de Chistris. El tooltip del **teclado** (`mostrar()` en `activarTecladoPuntosGrafica()`, `timeline-svg.js`) ya se volteaba a la izquierda y arriba; el del mouse nunca tuvo esa lógica. No hay otras gráficas con tooltip de mouse (`index.html`, `guerra.html` y `admin.html` no tienen `mousemove` sobre puntos).
+
+**Qué se decidió.** Una función compartida, `posicionarTooltipGrafica(tip, clientX, clientY)` en `assets/js/features/timeline-svg.js` (global, declarada en `eslint.config.js`), que usan los dos sitios. Va abajo a la derecha del cursor; si no cabe a la derecha (`x + ancho > ancho de ventana - 8`) pasa a la izquierda del cursor; si no cabe abajo (`y + alto > alto de ventana - 8`) pasa arriba. Nunca queda a menos de 8 px del borde izquierdo ni del superior. El tooltip debe estar con `display:block` antes de llamarla, porque se mide con `offsetWidth` y `offsetHeight`. El ancho de la ventana sale de `documentElement.clientWidth` (no cuenta la barra de desplazamiento) y, si es 0 (jsdom), de `window.innerWidth`.
+
+**Decisión: no se tocó `mostrar()` del teclado.** Posiciona respecto del rectángulo del punto, no del cursor, y ya funcionaba; unificarlo habría sido un cambio mayor sin que nadie lo pidiera.
+
+**Probado.** 4 pruebas nuevas en `test/timeline-svg-dom.test.js` (jsdom con el tamaño del tooltip fijado a mano, ventana de 1024 × 768): sin choque, volteo a la izquierda, volteo hacia arriba y mínimo de 8 px. Pruebas (350), lint y `html-validate` en verde.
+
+**Sin probar en navegador real:** que en la gráfica de Medallas el tooltip del último punto (a la derecha) salga a la izquierda del cursor y entero, también en móvil y con la barra de desplazamiento visible. Hay que recargar con `sw.js` v51 (el service worker reemplaza la caché).
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
