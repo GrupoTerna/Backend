@@ -1639,10 +1639,9 @@ function _loadCSVFromDrive(filename) {
   }
 
   // 3) Drive
-  var folder = _getCsvFolder();
-  var files = folder.getFilesByName(filename);
-  if (files.hasNext()) {
-    var texto = files.next().getBlob().getDataAsString('UTF-8');
+  var hit = _csvBuscarArchivo_(filename); // subcarpeta asignada -> raíz -> demás subcarpetas [→ Contexto_Base_Web.md §01B158]
+  if (hit) {
+    var texto = hit.file.getBlob().getDataAsString('UTF-8');
     _CSV_MEM_[filename] = texto;
     _csvCachePut_(filename, texto);
     return texto;
@@ -1944,12 +1943,20 @@ function _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx
 }
 
 function _saveCSVToDrive(filename, content) {
-  var folder = _getCsvFolder();
-  var files = folder.getFilesByName(filename);
-  if (files.hasNext()) {
-    files.next().setContent(content);
+  var hit = _csvBuscarArchivo_(filename); // nunca crea una copia si el archivo ya existe en alguna subcarpeta [→ Contexto_Base_Web.md §01B158]
+  var destino = _csvSubcarpetaDe_(filename);
+  if (hit) {
+    hit.file.setContent(content);
+    if (CSV_MOVER_A_SUBCARPETA && destino && hit.carpetaNombre !== destino) {
+      try {
+        hit.file.moveTo(_getCsvSubcarpeta_(destino, true));
+        Logger.log('[CSV] ' + filename + ' movido a la subcarpeta "' + destino + '".');
+      } catch (eMover) {
+        Logger.log('[CSV] No se pudo mover ' + filename + ' a "' + destino + '": ' + eMover.message);
+      }
+    }
   } else {
-    folder.createFile(filename, content, MimeType.CSV);
+    _getCsvSubcarpeta_(destino, true).createFile(filename, content, MimeType.CSV);
   }
   // Invalida la caché compartida y deja el texto nuevo en memoria de esta ejecución.
   _csvCacheBorrar_(filename);
@@ -2092,9 +2099,8 @@ function _logTampermonkeyADrive(boton, resultado, errorTexto) {
   try {
     var nombreArchivo = 'Log_Tampermonkey_' + boton + '.csv';
     var encabezado = 'Fecha,Estado,Resultado,Error';
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_CSV);
-    var files = folder.getFilesByName(nombreArchivo);
-    var file = files.hasNext() ? files.next() : null;
+    var hitLog = _csvBuscarArchivo_(nombreArchivo); // vive en la subcarpeta Tampermonkey [→ Contexto_Base_Web.md §01B158]
+    var file = hitLog ? hitLog.file : null;
 
     var lineas;
     if (file) {
@@ -2127,7 +2133,7 @@ function _logTampermonkeyADrive(boton, resultado, errorTexto) {
     if (file) {
       file.setContent(contenidoFinal);
     } else {
-      folder.createFile(nombreArchivo, contenidoFinal, MimeType.CSV);
+      _getCsvSubcarpeta_(_csvSubcarpetaDe_(nombreArchivo), true).createFile(nombreArchivo, contenidoFinal, MimeType.CSV);
     }
   } catch (eLog) {
     // Nunca debe romper el flujo del botón -- solo se registra en el log
