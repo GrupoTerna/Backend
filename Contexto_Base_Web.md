@@ -1349,6 +1349,11 @@ Todos miden menos de 24 px de alto, pero 11 de 12 cumplen por la excepción de e
 
 **Limpieza.** Se borró `_polTxt()` (solo la usaba esta función). Las reglas CSS `.leyendas-bloque` y `.leyendas-subcat` quedaron sin uso en el HTML y siguen en la hoja de estilos; se pueden quitar en otra tanda. **Sin probar:** en navegador real con un perfil completo (solo maqueta con Playwright usando la función real y dos juegos de datos, a 1300 y 420 px) ni la suite de `npm test` (falta `jsdom` en la sesión).
 
+### PF054 — `perfil.html`: «Puntos de experiencia» sin el total (pedido del usuario, 12-oct-2026)
+
+El cuadrito pasa de «162,523 / 4,581,293» a «162,523»: `renderExtendido()` pinta solo `rawClash.expPoints`. `totalExpPoints` **sigue llegando** (columna TotalExpPoints de `Backup_PerfilWeb.csv`, ver `36_PerfilWeb.gs`) pero la página ya no lo usa; no se tocó el backend. El cuadrito **conserva ancho 2** (decisión del 27-sep-2026, cuando el valor era largo): con el valor corto queda más ancho de lo necesario; si se prefiere ancho 1, cambiar el último argumento de `extItem()` (esto reacomoda la grilla de cuadritos, así que habría que mirar cómo cuadran las filas).
+
+
 
 
 
