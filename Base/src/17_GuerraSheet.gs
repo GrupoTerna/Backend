@@ -3390,6 +3390,7 @@ function _repararAtaquesHoyGuerraDesdeJSON_(aplicar) {
 // Fame = 0 en filas que si tenian ataques. Se repone SOLO la columna Fame (y Origen) desde la ultima captura
 // currentriverrace de ese periodIndex, y solo cuando los mazos del JSON coinciden con AtaquesSemana de la fila.
 // Primero correr ...Informe() (no escribe en la hoja ni en el CSV), revisar el CSV del informe en Drive y luego ...Aplicar().
+// Los domingos anteriores (05/07, 02/08 y 30/08) se reparan con las funciones repararFamaDomingosAnteriores...() de abajo [→ Contexto_Base_Web.md §PF045].
 // ==============================================================================
 var REPARAR_FAMA_DOMINGO_TEMPORADA = 5;
 var REPARAR_FAMA_DOMINGO_PERIODINDEX = 27;
@@ -3397,28 +3398,55 @@ var REPARAR_FAMA_DOMINGO_PERIODINDEX = 27;
 function repararFamaDomingoDesdeJSONInforme() { _repararFamaDomingoDesdeJSON_(false); }
 function repararFamaDomingoDesdeJSONAplicar() { _repararFamaDomingoDesdeJSON_(true); }
 
+// DOMINGOS ANTERIORES (11-oct-2026) [→ Contexto_Base_Web.md §PF045]
+// Domingos 05/07 (T2, periodIndex 34), 02/08 (T3, 27) y 30/08 (T4, 27). Ademas de las filas con Fame 0 y ataques > 0 (caso de PF031), repara
+// las filas con Fame, AtaquesSemana y AtaquesHoy los tres en 0 cuyo sabado (mismo jugador y clan, periodIndex - 1) ya traia datos: la fama y los
+// ataques semanales son acumulados y no pueden bajar a 0. En esas filas repone tambien AtaquesSemana y AtaquesHoy. Las capturas JSON del
+// domingo deben estar en la carpeta de Drive de cada clan. Primero ...Informe(), revisar el CSV en Drive y luego ...Aplicar().
+var REPARAR_FAMA_DOMINGOS_ANTERIORES = [[2, 34], [3, 27], [4, 27]];
+var REPARAR_FAMA_TOPE_MEDALLAS_DIA = 900;
+
+function repararFamaDomingosAnterioresInforme() { _repararFamaDomingoDesdeJSON_(false, REPARAR_FAMA_DOMINGOS_ANTERIORES); }
+function repararFamaDomingosAnterioresAplicar() { _repararFamaDomingoDesdeJSON_(true, REPARAR_FAMA_DOMINGOS_ANTERIORES); }
+
 /**
- * _calcularReparacionFamaDomingo_(filas, temporada, periodIdx, leerDia) [→ Contexto_Base_Web.md §PF031]
+ * _calcularReparacionFamaDomingo_(filas, temporada, periodIdx, leerDia, opciones) [→ Contexto_Base_Web.md §PF031 y §PF045]
  * Funcion pura (sin Drive ni hoja): recibe las filas y el lector de dias, devuelve { cambios, sinResolver }.
- * Candidatas: filas de esa temporada y periodIndex con Fame = 0 y AtaquesSemana > 0 (con AtaquesSemana = 0 el 0 es real).
- * Se repone la fama solo si el JSON trae fama > 0, sus mazos (decksUsed) igualan AtaquesSemana de la fila y la fama
- * no queda por debajo de la del sabado de la misma hoja. Cualquier otro caso queda SIN RESOLVER y no se toca.
+ * Caso A (PF031): filas de esa temporada y periodIndex con Fame = 0 y AtaquesSemana > 0. Se repone solo la fama si el JSON trae fama > 0,
+ * sus mazos (decksUsed) igualan AtaquesSemana de la fila y la fama no queda por debajo de la del sabado de la misma hoja.
+ * Caso B (PF045, solo con opciones.ceroTotal): Fame = 0, AtaquesSemana = 0 y AtaquesHoy = 0, pero el sabado del mismo jugador y clan
+ * (periodIndex - 1) tiene fama o ataques mayores que 0. Se reponen Fame, AtaquesSemana (decksUsed) y AtaquesHoy (decksUsedToday) desde el
+ * JSON si el jugador aparece con fama > 0, mazos > 0, y ni fama ni mazos quedan por debajo de los del sabado, y los de hoy no superan a los semanales.
+ * opciones.topeMedallas: si la fama nueva menos la del sabado lo supera, queda SIN RESOLVER (PF036). Sin opciones, se comporta como en PF031.
+ * Cualquier otro caso queda SIN RESOLVER y no se toca.
  */
-function _calcularReparacionFamaDomingo_(filas, temporada, periodIdx, leerDia) {
-  var cambios = [], sinResolver = [], famaSabado = {};
+function _calcularReparacionFamaDomingo_(filas, temporada, periodIdx, leerDia, opciones) {
+  opciones = opciones || {};
+  var cambios = [], sinResolver = [], famaSabado = {}, ataquesSabado = {}, hayFilaSabado = {};
   filas.forEach(function (f) {
     if (Number(f[GC.TEMPORADA - 1]) !== temporada || Number(f[GC.PERIOD_IDX - 1]) !== periodIdx - 1) return;
     var k = String(f[GC.TAG - 1] || '').trim().toUpperCase() + '|' + String(f[GC.CLAN - 1] || '');
     famaSabado[k] = Number(f[GC.FAME - 1]) || 0;
+    ataquesSabado[k] = Number(f[GC.ATAQUES_SEM - 1]) || 0;
+    hayFilaSabado[k] = true;
   });
   filas.forEach(function (f, i) {
     if (Number(f[GC.TEMPORADA - 1]) !== temporada || Number(f[GC.PERIOD_IDX - 1]) !== periodIdx) return;
     var fameAnt = Number(f[GC.FAME - 1]) || 0;
     var sRaw = f[GC.ATAQUES_SEM - 1];
     var ataqSem = (sRaw === '' || sRaw === null || sRaw === undefined) ? 0 : Number(sRaw);
-    if (fameAnt > 0 || !(ataqSem > 0)) return;
+    var hRaw = f[GC.ATAQUES_HOY - 1];
+    var ataqHoy = (hRaw === '' || hRaw === null || hRaw === undefined) ? 0 : Number(hRaw);
     var tag = String(f[GC.TAG - 1] || '').trim().toUpperCase();
     var clan = String(f[GC.CLAN - 1] || '');
+    var k = tag + '|' + clan;
+    if (fameAnt > 0) return;
+    var casoB = false;
+    if (!(ataqSem > 0)) {
+      // Caso B: los tres en 0 y el sabado con datos. Con AtaquesSemana = 0 y sin sabado con datos, el 0 es real.
+      if (!opciones.ceroTotal || ataqHoy > 0 || !hayFilaSabado[k] || !(famaSabado[k] > 0 || ataquesSabado[k] > 0)) return;
+      casoB = true;
+    }
     var r = leerDia(clan, temporada, periodIdx, tag) || { estado: 'sin_json' };
     if (r.estado !== 'ok') {
       var motivo = 'no hay JSON del domingo para este clan';
@@ -3430,42 +3458,57 @@ function _calcularReparacionFamaDomingo_(filas, temporada, periodIdx, leerDia) {
       return;
     }
     if (!(r.f > 0)) { sinResolver.push({ idx: i, motivo: 'el JSON (' + r.hora + ') trae fama 0 para este jugador' }); return; }
-    if (Number(r.d) !== ataqSem) {
+    var sab = famaSabado[k];
+    if (casoB) {
+      if (!(r.d > 0)) { sinResolver.push({ idx: i, motivo: 'el JSON (' + r.hora + ') trae 0 mazos para este jugador' }); return; }
+      if (r.d < (ataquesSabado[k] || 0)) { sinResolver.push({ idx: i, motivo: 'los mazos del JSON (' + r.d + ') son menos que los AtaquesSemana del sabado (' + ataquesSabado[k] + ')' }); return; }
+      if (r.t > r.d) { sinResolver.push({ idx: i, motivo: 'los mazos de hoy del JSON (' + r.t + ') superan a los semanales (' + r.d + ')' }); return; }
+    } else if (Number(r.d) !== ataqSem) {
       sinResolver.push({ idx: i, motivo: 'los mazos del JSON (' + r.d + ') no coinciden con AtaquesSemana de la fila (' + ataqSem + '): la fama del JSON puede estar desfasada' });
       return;
     }
-    var sab = famaSabado[tag + '|' + clan];
     if (sab !== undefined && r.f < sab) {
       sinResolver.push({ idx: i, motivo: 'la fama del JSON (' + r.f + ') es menor que la del sabado en la hoja (' + sab + ')' });
       return;
     }
+    if (opciones.topeMedallas > 0 && sab !== undefined && (r.f - sab) > opciones.topeMedallas) {
+      sinResolver.push({ idx: i, motivo: 'las medallas del domingo (' + (r.f - sab) + ') superan el tope de ' + opciones.topeMedallas + ' por dia: revisar a mano' });
+      return;
+    }
     cambios.push({ idx: i, fameAnt: fameAnt, fameNueva: r.f, ataqSem: ataqSem, sabado: sab,
-      detalle: 'Fama tomada del JSON de ' + r.hora + ' (mazos ' + r.d + ' = AtaquesSemana)' +
+      ataques: casoB, ataqSemNueva: casoB ? r.d : ataqSem, ataqHoyAnt: ataqHoy, ataqHoyNueva: casoB ? r.t : ataqHoy,
+      detalle: (casoB ? 'Fame, AtaquesSemana y AtaquesHoy tomados del JSON de ' : 'Fama tomada del JSON de ') + r.hora +
+        (casoB ? ' (mazos ' + r.d + ', de hoy ' + r.t + '; el sabado ya tenia datos)' : ' (mazos ' + r.d + ' = AtaquesSemana)') +
         (sab === undefined ? '. Sin fila del sabado para contrastar' : '. Fama del sabado en la hoja: ' + sab + ', medallas del domingo: ' + (r.f - sab)) });
   });
   return { cambios: cambios, sinResolver: sinResolver };
 }
 
-function _repararFamaDomingoDesdeJSON_(aplicar) {
+function _repararFamaDomingoDesdeJSON_(aplicar, objetivos) {
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) { Logger.log('[ReparoFamaDomingo] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
   try {
     var t0 = Date.now();
     var ss = _getSs();
-    var temp = REPARAR_FAMA_DOMINGO_TEMPORADA, pIdx = REPARAR_FAMA_DOMINGO_PERIODINDEX;
+    // Sin objetivos: el domingo 04-oct (T5, periodIndex 27) de PF031, igual que antes. Con objetivos: lista de [temporada, periodIndex] (PF045).
+    var anteriores = !!(objetivos && objetivos.length);
+    var lista = anteriores ? objetivos : [[REPARAR_FAMA_DOMINGO_TEMPORADA, REPARAR_FAMA_DOMINGO_PERIODINDEX]];
+    var opcionesCalculo = anteriores ? { ceroTotal: true, topeMedallas: REPARAR_FAMA_TOPE_MEDALLAS_DIA } : {};
+    var etiquetaObjetivos = lista.map(function (o) { return 'T' + o[0] + '_PI' + o[1]; }).join('_');
     var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
-    var informe = [['Fuente', 'Tipo', 'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'PeriodIndex', 'Fame anterior', 'Fame nueva', 'AtaquesSemana', 'Fame sabado', 'Detalle', 'Origen anterior']];
+    var informe = [['Fuente', 'Tipo', 'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'PeriodIndex', 'Fame anterior', 'Fame nueva', 'AtaquesSemana', 'Fame sabado', 'Detalle', 'Origen anterior', 'Reparado', 'AtaquesSemana nueva', 'AtaquesHoy anterior', 'AtaquesHoy nueva']];
     var lector = _crearLectorDiaJSONGuerra_(t0);
     var resumen = { csvCambios: 0, csvSinResolver: 0, hojaCambios: 0, hojaSinResolver: 0 };
 
     var agregarAlInforme = function (fuente, filas, res) {
       res.cambios.forEach(function (c) {
         var f = filas[c.idx];
-        informe.push([fuente, 'Cambio', f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], c.fameAnt, c.fameNueva, c.ataqSem, (c.sabado === undefined ? '' : c.sabado), c.detalle, f[GC.ORIGEN - 1]]);
+        informe.push([fuente, 'Cambio', f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], c.fameAnt, c.fameNueva, c.ataqSem, (c.sabado === undefined ? '' : c.sabado), c.detalle, f[GC.ORIGEN - 1],
+          (c.ataques ? 'Fame y ataques' : 'Fame'), (c.ataques ? c.ataqSemNueva : ''), (c.ataques ? c.ataqHoyAnt : ''), (c.ataques ? c.ataqHoyNueva : '')]);
       });
       res.sinResolver.forEach(function (s) {
         var f = filas[s.idx];
-        informe.push([fuente, 'SIN RESOLVER', f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], f[GC.FAME - 1], '', f[GC.ATAQUES_SEM - 1], '', s.motivo, f[GC.ORIGEN - 1]]);
+        informe.push([fuente, 'SIN RESOLVER', f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], f[GC.FAME - 1], '', f[GC.ATAQUES_SEM - 1], '', s.motivo, f[GC.ORIGEN - 1], '', '', '', '']);
       });
     };
 
@@ -3478,7 +3521,11 @@ function _repararFamaDomingoDesdeJSON_(aplicar) {
         encabezadoCsv = parsed[0];
         filasCsv = parsed.slice(1);
         for (var a = 0; a < filasCsv.length; a++) { while (filasCsv[a].length < GUERRA_TOTAL_COLS) filasCsv[a].push(''); }
-        resCsv = _calcularReparacionFamaDomingo_(filasCsv, temp, pIdx, lector.leer);
+        resCsv = { cambios: [], sinResolver: [] };
+        lista.forEach(function (o) {
+          var rr = _calcularReparacionFamaDomingo_(filasCsv, o[0], o[1], lector.leer, opcionesCalculo);
+          resCsv.cambios = resCsv.cambios.concat(rr.cambios); resCsv.sinResolver = resCsv.sinResolver.concat(rr.sinResolver);
+        });
         agregarAlInforme('Backup_Guerra.csv', filasCsv, resCsv);
         resumen.csvCambios = resCsv.cambios.length; resumen.csvSinResolver = resCsv.sinResolver.length;
       }
@@ -3489,48 +3536,60 @@ function _repararFamaDomingoDesdeJSON_(aplicar) {
     var datosHoja = null, resHoja = null;
     if (sh && sh.getLastRow() >= 2) {
       datosHoja = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
-      resHoja = _calcularReparacionFamaDomingo_(datosHoja, temp, pIdx, lector.leer);
+      resHoja = { cambios: [], sinResolver: [] };
+      lista.forEach(function (o) {
+        var rh = _calcularReparacionFamaDomingo_(datosHoja, o[0], o[1], lector.leer, opcionesCalculo);
+        resHoja.cambios = resHoja.cambios.concat(rh.cambios); resHoja.sinResolver = resHoja.sinResolver.concat(rh.sinResolver);
+      });
       agregarAlInforme('Hoja Guerra', datosHoja, resHoja);
       resumen.hojaCambios = resHoja.cambios.length; resumen.hojaSinResolver = resHoja.sinResolver.length;
     }
 
-    var nombreInforme = 'Reparacion_FamaDomingo_T' + temp + '_PI' + pIdx + ' ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    var nombreInforme = 'Reparacion_FamaDomingo' + (anteriores ? 'Anteriores_' : '_') + etiquetaObjetivos + ' ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
     if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
 
     if (aplicar && (resumen.csvCambios > 0 || resumen.hojaCambios > 0)) {
       // Respaldo previo del CSV completo, ANTES de escribir nada.
-      if (csvText) _saveCSVToDrive('Backup_Guerra ANTES de reparar FamaDomingo ' + marca + '.csv', csvText);
+      if (csvText) _saveCSVToDrive('Backup_Guerra ANTES de reparar FamaDomingo' + (anteriores ? 'Anteriores' : '') + ' ' + marca + '.csv', csvText);
 
       if (resCsv && resCsv.cambios.length) {
         resCsv.cambios.forEach(function (c) {
           var fila = filasCsv[c.idx];
           fila[GC.FAME - 1] = String(c.fameNueva);
+          if (c.ataques) { fila[GC.ATAQUES_SEM - 1] = String(c.ataqSemNueva); fila[GC.ATAQUES_HOY - 1] = String(c.ataqHoyNueva); }
           var og = String(fila[GC.ORIGEN - 1] || '').trim();
           if (og === '' || og === 'Original') fila[GC.ORIGEN - 1] = 'Corregido';
         });
         _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezadoCsv].concat(filasCsv)));
       }
       if (resHoja && resHoja.cambios.length) {
-        // Solo Fame y Origen: no se reescribe el resto de columnas.
+        // Solo Fame, Origen y (caso B de PF045) AtaquesHoy y AtaquesSemana: no se reescribe el resto de columnas.
         var colFame = datosHoja.map(function (r) { return [r[GC.FAME - 1]]; });
+        var colAtaquesHoy = datosHoja.map(function (r) { return [r[GC.ATAQUES_HOY - 1]]; });
+        var colAtaquesSem = datosHoja.map(function (r) { return [r[GC.ATAQUES_SEM - 1]]; });
         var colOrigen = datosHoja.map(function (r) { return [r[GC.ORIGEN - 1]]; });
         resHoja.cambios.forEach(function (c) {
           colFame[c.idx][0] = c.fameNueva;
+          if (c.ataques) { colAtaquesHoy[c.idx][0] = c.ataqHoyNueva; colAtaquesSem[c.idx][0] = c.ataqSemNueva; }
           var og = String(colOrigen[c.idx][0] || '').trim();
           if (og === '' || og === 'Original') colOrigen[c.idx][0] = 'Corregido';
         });
         sh.getRange(2, GC.FAME, colFame.length, 1).setValues(colFame);
+        if (resHoja.cambios.some(function (c) { return c.ataques; })) {
+          sh.getRange(2, GC.ATAQUES_HOY, colAtaquesHoy.length, 1).setValues(colAtaquesHoy);
+          sh.getRange(2, GC.ATAQUES_SEM, colAtaquesSem.length, 1).setValues(colAtaquesSem);
+        }
         sh.getRange(2, GC.ORIGEN, colOrigen.length, 1).setValues(colOrigen);
         _syncGuerraCSV(sh); // propaga la hoja al CSV, igual que repararAtaquesHoyGuerraDesdeJSONAplicar()
       }
     }
 
-    Logger.log('[ReparoFamaDomingo] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' T' + temp + ' periodIndex ' + pIdx + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). ' +
+    Logger.log('[ReparoFamaDomingo] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' ' + etiquetaObjetivos + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). ' +
       'Backup_Guerra.csv: ' + resumen.csvCambios + ' fila(s) a cambiar, ' + resumen.csvSinResolver + ' sin resolver. ' +
       'Hoja Guerra: ' + resumen.hojaCambios + ' fila(s) a cambiar, ' + resumen.hojaSinResolver + ' sin resolver. ' +
       (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que reparar.') +
       (lector.agotado() ? ' SE ACABO EL TIEMPO: volver a correr para seguir con las filas pendientes.' : '') +
-      (aplicar ? '' : ' (No se escribio nada; correr repararFamaDomingoDesdeJSONAplicar() para aplicar.)'));
+      (aplicar ? '' : ' (No se escribio nada; correr ' + (anteriores ? 'repararFamaDomingosAnterioresAplicar()' : 'repararFamaDomingoDesdeJSONAplicar()') + ' para aplicar.)'));
   } finally {
     lock.releaseLock();
   }
