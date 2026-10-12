@@ -3134,29 +3134,33 @@ function _obtenerListaCorreccionGuerra(opciones) {
   var jugadores = [];
   if (!soloClanes) {
     // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §18B107]
+    // PF042: se lee solo el Directorio físico (layout IC) en vez de _leerDirectorioFisicoComoDC(), que además leía Players y Links y armaba filas de 60 columnas para todos los registros; los seis campos que usa esta lista (estado, clan, tag, nombre, nom_multi, clan_tag) salen todos de la hoja Directorio y no se pisan con Players/Links. [→ Contexto_Base_Web.md §PF042]
     var shDirCorr = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
     var dirData;
+    var ix; // índices 0-based según el layout de las filas leídas
     if (shDirCorr && shDirCorr.getLastRow() >= 2) {
-      dirData = _leerDirectorioFisicoComoDC(ss);
+      dirData = shDirCorr.getRange(2, 1, shDirCorr.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+      ix = { estado: IC.ESTADO - 1, clanTag: IC.CLAN_TAG - 1, tag: IC.TAG - 1, nombre: IC.NOMBRE - 1, nomMulti: IC.NOM_MULTI - 1, clan: IC.CLAN - 1 };
     } else {
       var lecturaDirCorr = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
       dirData = (lecturaDirCorr.origen === 'csv') ? lecturaDirCorr.filas : [];
+      ix = { estado: DC.ESTADO - 1, clanTag: DC.CLAN_TAG - 1, tag: DC.TAG - 1, nombre: DC.NOMBRE - 1, nomMulti: DC.NOM_MULTI - 1, clan: DC.CLAN - 1 };
     }
 
     for (var i = 0; i < dirData.length; i++) {
       var r = dirData[i];
-      if (String(r[DC.ESTADO - 1]) !== 'Activo') continue;
-      var tag = String(r[DC.CLAN_TAG - 1] || '').trim();
+      if (String(r[ix.estado]) !== 'Activo') continue;
+      var tag = String(r[ix.clanTag] || '').trim();
       if (CFG.TERNA_TAGS.indexOf(tag) < 0) continue;
 
-      var tagJugador = String(r[DC.TAG - 1] || '').trim();
+      var tagJugador = String(r[ix.tag] || '').trim();
       if (!tagJugador) continue;
 
       // FIX (23-ago-2026, pedido usuario): antes se priorizaba Nom_Multi [→ Contexto_Base_Web.md §18B108]
       jugadores.push({
         tag: tagJugador,
-        nombre: String(r[DC.NOMBRE - 1] || r[DC.NOM_MULTI - 1] || ''),
-        clan: String(r[DC.CLAN - 1] || ''),
+        nombre: String(r[ix.nombre] || r[ix.nomMulti] || ''),
+        clan: String(r[ix.clan] || ''),
         royaleApiUrl: 'https://royaleapi.com/player/' + tagJugador.replace('#', '') + '/'
       });
     }
@@ -3194,6 +3198,10 @@ function _obtenerListaCorreccionGuerra(opciones) {
  * _construirCoberturaPorTag() [→ Contexto_Base_Web.md §18B111]
  */
 function _construirCoberturaPorTag() {
+  // PF042: el resultado (unos 14 KB con los datos reales) se guarda en CacheService; _csvCacheBorrar_('Backup_Guerra.csv') lo invalida al guardar el CSV y vence a los 10 min como el propio CSV. [→ Contexto_Base_Web.md §PF042]
+  var enCache = _coberturaGuerraCacheGet_();
+  if (enCache) return enCache;
+
   var cobertura = {};
   var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
   if (!csvText) return cobertura;
@@ -3220,7 +3228,28 @@ function _construirCoberturaPorTag() {
   for (var t = 0; t < tags.length; t++) {
     cobertura[tags[t]] = Object.keys(vistos[tags[t]]);
   }
+  _coberturaGuerraCachePut_(cobertura); // PF042
   return cobertura;
+}
+
+// PF042: lectura/escritura del caché de la cobertura; ante cualquier fallo se recalcula desde el CSV. [→ Contexto_Base_Web.md §PF042]
+function _coberturaGuerraCacheGet_() {
+  try {
+    var crudo = CacheService.getScriptCache().get(COBERTURA_GUERRA_CACHE_KEY);
+    if (!crudo) return null;
+    var obj = JSON.parse(crudo);
+    return (obj && typeof obj === 'object') ? obj : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function _coberturaGuerraCachePut_(cobertura) {
+  try {
+    var json = JSON.stringify(cobertura);
+    if (json.length > 90000) return; // tope de CacheService: 100 KB por valor
+    CacheService.getScriptCache().put(COBERTURA_GUERRA_CACHE_KEY, json, CSV_CACHE_TTL_SEG);
+  } catch (e) { /* sin caché: no pasa nada */ }
 }
 
 // CORREGIR GUERRA/BACKUP_GUERRA.CSV DESDE CONTROL_2 (MANUAL, UNA SOLA VEZ) [→ Contexto_Base_Web.md §18B113]
