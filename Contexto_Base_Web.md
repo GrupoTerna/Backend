@@ -1381,6 +1381,10 @@ El cuadrito pasa de «162,523 / 4,581,293» a «162,523»: `renderExtendido()` p
 
 **Pendiente.** Sin probar en navegador real (legibilidad del título sobre la cinta, en pantalla angosta y con el tema claro si existiera). Las cintas restantes (`ClashParadeBG`, `BombingJumpBG`, etc.) y los demás emotes quedan disponibles para otras tarjetas.
 
+### PF057 — `perfil.html`: «Competitivo» debajo de las minigráficas (pedido del usuario, 12-oct-2026)
+
+La tarjeta `#mLeyendasCard` (Competitivo: Camino de Leyendas y Camino de Trofeos, ver §PF053) pasa a ir justo después de la tarjeta de cabecera, que termina con las minigráficas (`#mMiniGraficosWrap`: Ataques y barcos por día, Fama por día, Victorias y derrotas, Donaciones), antes de Evolución. Antes iba después de «Batallas más recientes». Solo se movió HTML; esto **modifica el orden de §PF052**, cuya lista queda así: cabecera, requisitos, cuadritos y minigráficas, **Competitivo**, Evolución, Mazo actual, Carta favorita, Batallas más recientes, Ciclo de cofres, Colección completa y Cartas de torre, Insignias, Logros, Progreso de eventos y modos.
+
 
 
 
