@@ -525,10 +525,9 @@ function _getCsvDirMap() {
   var map = {};
 
   try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_CSV);
-    var files = folder.getFilesByName('Backup_Directorio.csv');
-    if (files.hasNext()) {
-      var csvText = files.next().getBlob().getDataAsString("UTF-8");
+    var hitDir = _csvBuscarArchivo_('Backup_Directorio.csv'); // subcarpeta Hojas [→ Contexto_Base_Web.md §01B158]
+    if (hitDir) {
+      var csvText = hitDir.file.getBlob().getDataAsString("UTF-8");
       var parsed = Utilities.parseCsv(csvText);
       if (parsed.length > 1) {
         var headers = parsed[0];
