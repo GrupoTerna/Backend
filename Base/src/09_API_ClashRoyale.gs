@@ -2855,6 +2855,69 @@ function _ctxPorClanDesdeDatos_(ctx, endpointKey, datos) {
   return copia;
 }
 
+// PRIMERA CONSULTA DE CADA periodIndex (12-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF063]
+// Guerra y Guerra_Logs crean sus filas con la fecha y hora de la PRIMERA consulta a la API de ese periodIndex
+// (un mismo día de guerra cubre dos fechas, porque cambia entre las 4 y las 5 a.m. y no a las 12). Esa hora no
+// cambia aunque la fila o el JSON se sigan actualizando. Clave: temporada|periodIndex|tag del clan (sin #).
+var PRIMERA_CONSULTA_RR_PROP = 'PRIMERA_CONSULTA_RR';
+var PRIMERA_CONSULTA_RR_MAX  = 150;
+var _PRIMERA_CONSULTA_RR_MEM = null;
+
+function _leerPrimeraConsultaRR_() {
+  if (_PRIMERA_CONSULTA_RR_MEM) return _PRIMERA_CONSULTA_RR_MEM;
+  var mapa = {};
+  try {
+    var txt = PropertiesService.getScriptProperties().getProperty(PRIMERA_CONSULTA_RR_PROP);
+    if (txt) mapa = JSON.parse(txt) || {};
+  } catch (e) { mapa = {}; }
+  _PRIMERA_CONSULTA_RR_MEM = mapa;
+  return mapa;
+}
+
+function _claveConsultaRR_(temporada, periodIndex, clanTag) {
+  return Number(temporada) + '|' + Number(periodIndex) + '|' + cleanTag(clanTag);
+}
+
+/** Guarda la hora de esta consulta SOLO si ese clan y periodIndex todavía no tienen una. Nunca la reemplaza. */
+function _registrarPrimeraConsultaRR_(clanTag, temporada, periodIndex, ms) {
+  try {
+    if (!isFinite(Number(temporada)) || !isFinite(Number(periodIndex))) return;
+    var mapa = _leerPrimeraConsultaRR_();
+    var k = _claveConsultaRR_(temporada, periodIndex, clanTag);
+    if (mapa[k]) return;
+    mapa[k] = ms || new Date().getTime();
+    var claves = Object.keys(mapa);
+    if (claves.length > PRIMERA_CONSULTA_RR_MAX) {
+      claves.sort(function(a, b) { return mapa[a] - mapa[b]; });
+      for (var i = 0; i < claves.length - PRIMERA_CONSULTA_RR_MAX; i++) delete mapa[claves[i]];
+    }
+    PropertiesService.getScriptProperties().setProperty(PRIMERA_CONSULTA_RR_PROP, JSON.stringify(mapa));
+  } catch (e) {
+    Logger.log('[PrimeraConsulta] No se pudo registrar: ' + e.message);
+  }
+}
+
+/**
+ * Fecha y hora de la primera consulta de ese periodIndex. Con clanTag usa la de ese clan; sin clanTag (o sin
+ * dato de ese clan, p. ej. un rival) usa la más temprana de los clanes Terna. Sin registro devuelve `respaldo`.
+ */
+function _fechaPrimeraConsultaRR_(temporada, periodIndex, clanTag, respaldo) {
+  try {
+    var mapa = _leerPrimeraConsultaRR_();
+    if (clanTag) {
+      var ms = mapa[_claveConsultaRR_(temporada, periodIndex, clanTag)];
+      if (ms) return new Date(ms);
+    }
+    var pref = Number(temporada) + '|' + Number(periodIndex) + '|';
+    var min = null;
+    for (var k in mapa) {
+      if (k.indexOf(pref) === 0 && (min === null || mapa[k] < min)) min = mapa[k];
+    }
+    if (min !== null) return new Date(min);
+  } catch (e) { /* cae al respaldo */ }
+  return respaldo;
+}
+
 /**
  * _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) [→ Contexto_Base_Web.md §09B157]
  */
@@ -2872,6 +2935,11 @@ function _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) {
   var clanName = (datos && datos.name)
     ? datos.name
     : ((datos && datos.clan && datos.clan.name) ? datos.clan.name : cleanTag(clanTag));
+
+  // PRIMERA CONSULTA (12-oct-2026): se anota la hora de la primera respuesta de este clan y periodIndex. [→ Contexto_Base_Web.md §PF063]
+  if (endpointKey === 'currentriverrace' && datos && datos.periodIndex !== '' && datos.periodIndex !== null && isFinite(Number(datos.periodIndex))) {
+    _registrarPrimeraConsultaRR_(clanTag, _temporadaDeClan_(ctxOrPeriodIndex || {}, Number(datos.periodIndex)), Number(datos.periodIndex), new Date().getTime());
+  }
 
   var filename   = _buildCacheFilename(ctx, endpointKey, clanName);
   var contenido  = JSON.stringify(datos, null, 2);
@@ -2896,9 +2964,11 @@ function _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) {
     }
 
     if (archivoExistente) {
-      // Renombrar (la fecha/hora en el nombre avanza) y actualizar contenido.
+      // Renombrar (la fecha/hora en el nombre avanza; en currentriverrace NO, ver abajo) y actualizar contenido.
       // Es EL MISMO archivo: nunca se crea uno nuevo para el mismo periodo.
-      if (archivoExistente.getName() !== filename) {
+      // currentriverrace (12-oct-2026): el nombre conserva la fecha y hora de la PRIMERA consulta del periodo y no se
+      // renombra; solo se actualiza el contenido. Los demás endpoints siguen renombrándose como siempre.
+      if (endpointKey !== 'currentriverrace' && archivoExistente.getName() !== filename) {
         archivoExistente.setName(filename);
       }
       archivoExistente.setContent(contenido);
