@@ -3595,6 +3595,182 @@ function _repararFamaDomingoDesdeJSON_(aplicar, objetivos) {
   }
 }
 
+// REPARACION DE LOS DOMINGOS CON EL LOG DE ROYALEAPI (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §PF047]
+// Corrige Fame y AtaquesSemana de los domingos 05/07 (T2, periodIndex 34), 02/08 (T3, 27), 30/08 (T4, 27) y 04/10 (T5, 27) en Backup_Guerra.csv
+// y en la hoja Guerra, tomando el total semanal que el Tampermonkey leyo del Log de RoyaleAPI (Correcciones_Guerra.csv, con Tag de jugador y de clan).
+// Solo sube valores: si el guardado es mayor que el del Log, la fila queda SIN RESOLVER. No toca AtaquesHoy ni Barcos (el Log no trae el dato del dia).
+// Primero ...Informe(), revisar el CSV en Drive y luego ...Aplicar().
+var REPARAR_DOMINGOS_CORRECCIONES = [[2, 34], [3, 27], [4, 27], [5, 27]];
+var REPARAR_DOMINGOS_CLANTAG = { 'Grupo乂Terna™': '#GCRG8L00', 'GrupoXTerna™2': '#GYCU9YRG', 'GrupoXTerna™3': '#GQQPPJGR', 'Mini乂Ternas™': '#GG99LCJY' };
+var REPARAR_DOMINGOS_TOPE_ATAQUES = 16;
+
+function repararDomingosDesdeCorreccionesInforme() { _repararDomingosDesdeCorrecciones_(false); }
+function repararDomingosDesdeCorreccionesAplicar() { _repararDomingosDesdeCorrecciones_(true); }
+
+/**
+ * _buscarCorreccionDomingo_(overlay, temporada, semana, clanTag, tag) [→ Contexto_Base_Web.md §PF047]
+ * Busca en el overlay de Correcciones_Guerra.csv (clave temporada|semana|clanTag|tag) la fila del jugador. Primero la de su clan; si el Log de esa semana
+ * no trae ClanTag (T2 S5 y anteriores) usa la fila sin ClanTag. Si hay filas con ClanTag pero ninguna de este clan, devuelve 'otro_clan'.
+ */
+function _buscarCorreccionDomingo_(overlay, temporada, semana, clanTag, tag) {
+  var t = String(temporada), s = String(semana);
+  if (clanTag && overlay[t + '|' + s + '|' + clanTag + '|' + tag]) return { estado: 'ok', e: overlay[t + '|' + s + '|' + clanTag + '|' + tag] };
+  var hayConClan = false;
+  (CFG.CLAN_TAGS || []).forEach(function (ct) { if (overlay[t + '|' + s + '|' + ct + '|' + tag]) hayConClan = true; });
+  if (hayConClan) return { estado: 'otro_clan' };
+  var sinClan = overlay[t + '|' + s + '||' + tag];
+  if (sinClan) return { estado: 'ok_sin_clan', e: sinClan };
+  return { estado: 'sin_dato' };
+}
+
+/**
+ * _calcularReparacionDomingoDesdeCorrecciones_(filas, temporada, periodIdx, overlay, opciones) [→ Contexto_Base_Web.md §PF047]
+ * Funcion pura (sin Drive ni hoja): devuelve { cambios, sinResolver, sinDato, iguales }. Solo mira las filas de esa temporada y ese periodIndex.
+ * Cambio: la fama y los ataques semanales del Log son iguales o mayores que los guardados (y alguno es mayor), no quedan por debajo de los del sabado
+ * del mismo jugador y clan, y las medallas del domingo no superan opciones.topeMedallas. Cualquier otro caso con diferencia queda SIN RESOLVER.
+ */
+function _calcularReparacionDomingoDesdeCorrecciones_(filas, temporada, periodIdx, overlay, opciones) {
+  opciones = opciones || {};
+  var cambios = [], sinResolver = [], sinDato = 0, iguales = 0, sabado = {}, filasPorTag = {};
+  filas.forEach(function (f) {
+    if (Number(f[GC.TEMPORADA - 1]) !== temporada) return;
+    var pi = Number(f[GC.PERIOD_IDX - 1]);
+    var tg = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+    if (pi === periodIdx - 1) {
+      sabado[tg + '|' + String(f[GC.CLAN - 1] || '')] = { fame: Number(f[GC.FAME - 1]) || 0, ataques: Number(f[GC.ATAQUES_SEM - 1]) || 0 };
+    } else if (pi === periodIdx) {
+      filasPorTag[tg] = (filasPorTag[tg] || 0) + 1;
+    }
+  });
+  filas.forEach(function (f, i) {
+    if (Number(f[GC.TEMPORADA - 1]) !== temporada || Number(f[GC.PERIOD_IDX - 1]) !== periodIdx) return;
+    var tag = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+    var clan = String(f[GC.CLAN - 1] || '');
+    var fameAnt = Number(f[GC.FAME - 1]) || 0;
+    var ataqAnt = Number(f[GC.ATAQUES_SEM - 1]) || 0;
+    var ataqHoy = Number(f[GC.ATAQUES_HOY - 1]) || 0;
+    var b = _buscarCorreccionDomingo_(overlay, temporada, Number(f[GC.SEMANA - 1]), REPARAR_DOMINGOS_CLANTAG[clan] || '', tag);
+    if (b.estado === 'sin_dato') { sinDato++; return; }
+    if (b.estado === 'otro_clan') { sinResolver.push({ idx: i, motivo: 'el Log trae a este jugador esa semana en otro clan, no en este' }); return; }
+    if (b.estado === 'ok_sin_clan' && filasPorTag[tag] > 1) { sinResolver.push({ idx: i, motivo: 'el jugador tiene varias filas ese domingo y el Log de esa semana no trae ClanTag: no se sabe a que clan corresponde' }); return; }
+    var fameNueva = Number(b.e.fame) || 0, ataqNueva = Number(b.e.ataquesSemana) || 0;
+    if (fameNueva === fameAnt && ataqNueva === ataqAnt) { iguales++; return; }
+    if (fameNueva < fameAnt || ataqNueva < ataqAnt) { sinResolver.push({ idx: i, motivo: 'lo guardado (ataques ' + ataqAnt + ', fama ' + fameAnt + ') es mayor que el Log (ataques ' + ataqNueva + ', fama ' + fameNueva + '): revisar a mano' }); return; }
+    var s = sabado[tag + '|' + clan];
+    if (s && fameNueva < s.fame) { sinResolver.push({ idx: i, motivo: 'la fama del Log (' + fameNueva + ') es menor que la del sabado en la hoja (' + s.fame + ')' }); return; }
+    if (s && ataqNueva < s.ataques) { sinResolver.push({ idx: i, motivo: 'los ataques del Log (' + ataqNueva + ') son menos que los del sabado en la hoja (' + s.ataques + ')' }); return; }
+    if (ataqNueva > REPARAR_DOMINGOS_TOPE_ATAQUES) { sinResolver.push({ idx: i, motivo: 'los ataques del Log (' + ataqNueva + ') superan el tope de ' + REPARAR_DOMINGOS_TOPE_ATAQUES + ' por semana: revisar a mano' }); return; }
+    if (opciones.topeMedallas > 0 && s && (fameNueva - s.fame) > opciones.topeMedallas) { sinResolver.push({ idx: i, motivo: 'las medallas del domingo (' + (fameNueva - s.fame) + ') superan el tope de ' + opciones.topeMedallas + ' por dia: revisar a mano' }); return; }
+    cambios.push({ idx: i, fameAnt: fameAnt, fameNueva: fameNueva, ataqAnt: ataqAnt, ataqNueva: ataqNueva, ataqHoy: ataqHoy,
+      sabFame: s ? s.fame : '', sabAtaques: s ? s.ataques : '',
+      detalle: 'Fame y AtaquesSemana tomados del Log de RoyaleAPI (Correcciones_Guerra.csv' + (b.estado === 'ok_sin_clan' ? ', sin ClanTag: cruzado solo por Tag' : '') + ')' +
+        (s ? '. Sabado en la hoja: fama ' + s.fame + ', ataques ' + s.ataques + '; medallas del domingo: ' + (fameNueva - s.fame) : '. Sin fila del sabado para contrastar') });
+  });
+  return { cambios: cambios, sinResolver: sinResolver, sinDato: sinDato, iguales: iguales };
+}
+
+function _repararDomingosDesdeCorrecciones_(aplicar) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[ReparoDomingosLog] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var t0 = Date.now();
+    var ss = _getSs();
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var overlay = _cargarOverlayCorreccionesGuerraPorClan();
+    if (!Object.keys(overlay).length) { Logger.log('[ReparoDomingosLog] Correcciones_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
+    var opciones = { topeMedallas: REPARAR_FAMA_TOPE_MEDALLAS_DIA };
+    var informe = [['Fuente', 'Tipo', 'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'PeriodIndex', 'Fame anterior', 'Fame nueva', 'AtaquesSemana anterior', 'AtaquesSemana nueva', 'Fame sabado', 'AtaquesSemana sabado', 'AtaquesHoy (no se toca)', 'Detalle', 'Origen anterior']];
+    var resumen = { csvCambios: 0, csvSinResolver: 0, csvIguales: 0, csvSinDato: 0, hojaCambios: 0, hojaSinResolver: 0 };
+
+    var calcular = function (filas) {
+      var r = { cambios: [], sinResolver: [], sinDato: 0, iguales: 0 };
+      REPARAR_DOMINGOS_CORRECCIONES.forEach(function (o) {
+        var x = _calcularReparacionDomingoDesdeCorrecciones_(filas, o[0], o[1], overlay, opciones);
+        r.cambios = r.cambios.concat(x.cambios); r.sinResolver = r.sinResolver.concat(x.sinResolver); r.sinDato += x.sinDato; r.iguales += x.iguales;
+      });
+      return r;
+    };
+    var agregarAlInforme = function (fuente, filas, res) {
+      res.cambios.forEach(function (c) {
+        var f = filas[c.idx];
+        informe.push([fuente, 'Cambio', f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], c.fameAnt, c.fameNueva, c.ataqAnt, c.ataqNueva, c.sabFame, c.sabAtaques, c.ataqHoy, c.detalle, f[GC.ORIGEN - 1]]);
+      });
+      res.sinResolver.forEach(function (s) {
+        var f = filas[s.idx];
+        informe.push([fuente, 'SIN RESOLVER', f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], f[GC.FAME - 1], '', f[GC.ATAQUES_SEM - 1], '', '', '', f[GC.ATAQUES_HOY - 1], s.motivo, f[GC.ORIGEN - 1]]);
+      });
+    };
+
+    // --- Backup_Guerra.csv (todas las temporadas) ---
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    var encabezadoCsv = null, filasCsv = null, resCsv = null;
+    if (csvText) {
+      var parsed = _parseCSV(csvText);
+      if (parsed && parsed.length > 1) {
+        encabezadoCsv = parsed[0];
+        filasCsv = parsed.slice(1);
+        for (var a = 0; a < filasCsv.length; a++) { while (filasCsv[a].length < GUERRA_TOTAL_COLS) filasCsv[a].push(''); }
+        resCsv = calcular(filasCsv);
+        agregarAlInforme('Backup_Guerra.csv', filasCsv, resCsv);
+        resumen.csvCambios = resCsv.cambios.length; resumen.csvSinResolver = resCsv.sinResolver.length; resumen.csvIguales = resCsv.iguales; resumen.csvSinDato = resCsv.sinDato;
+      }
+    }
+
+    // --- Hoja Guerra (temporada vigente; normalmente no tiene estas temporadas) ---
+    var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+    var datosHoja = null, resHoja = null;
+    if (sh && sh.getLastRow() >= 2) {
+      datosHoja = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+      resHoja = calcular(datosHoja);
+      agregarAlInforme('Hoja Guerra', datosHoja, resHoja);
+      resumen.hojaCambios = resHoja.cambios.length; resumen.hojaSinResolver = resHoja.sinResolver.length;
+    }
+
+    var nombreInforme = 'Reparacion_DomingosDesdeLog ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+
+    if (aplicar && (resumen.csvCambios > 0 || resumen.hojaCambios > 0)) {
+      // Respaldo previo del CSV completo, ANTES de escribir nada.
+      if (csvText) _saveCSVToDrive('Backup_Guerra ANTES de reparar DomingosDesdeLog ' + marca + '.csv', csvText);
+
+      if (resCsv && resCsv.cambios.length) {
+        resCsv.cambios.forEach(function (c) {
+          var fila = filasCsv[c.idx];
+          fila[GC.FAME - 1] = String(c.fameNueva);
+          fila[GC.ATAQUES_SEM - 1] = String(c.ataqNueva);
+          var og = String(fila[GC.ORIGEN - 1] || '').trim();
+          if (og === '' || og === 'Original') fila[GC.ORIGEN - 1] = 'Corregido';
+        });
+        _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezadoCsv].concat(filasCsv)));
+      }
+      if (resHoja && resHoja.cambios.length) {
+        // Solo Fame, AtaquesSemana y Origen: no se reescribe el resto de columnas.
+        var colFame = datosHoja.map(function (r) { return [r[GC.FAME - 1]]; });
+        var colAtaquesSem = datosHoja.map(function (r) { return [r[GC.ATAQUES_SEM - 1]]; });
+        var colOrigen = datosHoja.map(function (r) { return [r[GC.ORIGEN - 1]]; });
+        resHoja.cambios.forEach(function (c) {
+          colFame[c.idx][0] = c.fameNueva;
+          colAtaquesSem[c.idx][0] = c.ataqNueva;
+          var og = String(colOrigen[c.idx][0] || '').trim();
+          if (og === '' || og === 'Original') colOrigen[c.idx][0] = 'Corregido';
+        });
+        sh.getRange(2, GC.FAME, colFame.length, 1).setValues(colFame);
+        sh.getRange(2, GC.ATAQUES_SEM, colAtaquesSem.length, 1).setValues(colAtaquesSem);
+        sh.getRange(2, GC.ORIGEN, colOrigen.length, 1).setValues(colOrigen);
+        _syncGuerraCSV(sh); // propaga la hoja al CSV, igual que en PF031 y PF045
+      }
+    }
+
+    Logger.log('[ReparoDomingosLog] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). ' +
+      'Backup_Guerra.csv: ' + resumen.csvCambios + ' fila(s) a cambiar, ' + resumen.csvSinResolver + ' sin resolver, ' + resumen.csvIguales + ' ya iguales al Log, ' + resumen.csvSinDato + ' sin dato en el Log. ' +
+      'Hoja Guerra: ' + resumen.hojaCambios + ' fila(s) a cambiar, ' + resumen.hojaSinResolver + ' sin resolver. ' +
+      (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que reparar.') +
+      (aplicar ? '' : ' (No se escribio nada; correr repararDomingosDesdeCorreccionesAplicar() para aplicar.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 /**
  * _prepararFilaGuerraDesdeCSV(rawRow, numCols) [→ Contexto_Base_Web.md §17B168]
  */
