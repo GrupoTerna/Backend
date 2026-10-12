@@ -1429,6 +1429,17 @@ La tarjeta `#mLeyendasCard` (Competitivo: Camino de Leyendas y Camino de Trofeos
 **Pendiente.** Gráfica de copas en `clan.html` (tanda 3). **Sin probar** en Apps Script real ni en navegador real.
 
 
+### PF062 — `clan.html`: tarjeta «Evolución · Copas del clan» y acción `webClanCopas` (pedido del usuario, 12-oct-2026)
+
+**Aclaración que cambió el diseño.** Se había propuesto promediar las copas de los jugadores o guardar las del clan en otra hoja. El usuario indicó que el dato **ya está en Guerra_Logs**, columna N «Copas» (`GLC.COPAS`), con una fila por día y por clan. Por eso no se tocó ninguna hoja ni se calculó nada: se lee ese valor tal cual. La hoja Guerra (copas por jugador, §PF061) y Guerra_Logs (copas del clan) son fuentes distintas y no se mezclan.
+
+**Cómo funciona.** `webClanCopas?tag=` (38_Web_Endpoints.gs, con token de miembro como las demás) llama a `_webClanCopas(tag)` (17_GuerraSheet.gs), que lee Guerra_Logs con fallback a `Backup_Guerra_Logs.csv` (`_obtenerFilasConFallbackCSV`) y devuelve `{ clan, tag, puntos: [{ fecha 'dd/MM/yyyy', copas, periodIndex, temporada }] }` en orden cronológico. La fecha sale de `DiaGuerra` (col. F; fecha real en la hoja, texto `dd/MM/yyyy` en el CSV) y, si falta, de `Fecha`. Copas vacías o 0 = sin dato y no se devuelven; si hay dos filas el mismo día se queda la de mayor `PeriodIndex`. Un tag que no es de un clan Terna devuelve `puntos: []` (no se expone ningún clan rival). `clan.html` la pide con `apiGet('webClanCopas', { tag: clanInfo.clanTag }, { ttlMs: 300000, staleIfError: true })` y dibuja con `clanCopasSvg()`, una función propia y pequeña: los estilos y el SVG de las gráficas de `perfil.html` son inline de esa página y no están compartidos, así que no se reutilizaron.
+
+**Para no repetirlo.** Eje Y con piso redondo bajo el mínimo (las copas de un clan varían ±1 %, con base 0 la línea sería plana). Sin datos, sin tag o con error se muestra un aviso, no una tarjeta oculta.
+
+**Sin probar** en Apps Script real ni en navegador real; el lector se probó con datos simulados (celdas con `Date`, texto `138,244`, vacías y 0, filas de otro clan) y la gráfica con jsdom (`test/clan-copas-grafica.test.js`).
+
+
 
 ## 00_Main.gs — resumen rápido
 
