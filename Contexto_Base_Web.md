@@ -1153,6 +1153,9 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 
 **Qué no se hizo.** No se modificó ningún dato ni se cambió código. **Pendiente de definir o contestar (regla 3):** (1) si se completa T5 y la fila de T3 con el Log (clan principal): se haría por nombre, sin Tags, con el riesgo de nombres repetidos (en T5 hay 1 sin coincidencia por eso), con informe previo y respaldo; (2) el Log de la temporada 133 (T2 S5, 05/07) y de los otros clanes, para contrastar el resto de PF045; (3) por qué las dos filas de ceros no se reparan.
 
+**Aplicado el 11-oct-2026 a las 23:13 (Lima), a pedido de la usuaria, en Apps Script.** `repararFamaDomingosAnterioresInforme()` (23:12) dio `Backup_Guerra.csv`: 165 filas a cambiar y 1 sin resolver; hoja Guerra: 0 y 0 (esas temporadas ya no están en la hoja). `repararFamaDomingosAnterioresAplicar()` (23:13) dio los mismos números: se aplicaron 165 cambios y la fila de `ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡` (T3 S4, 1100 medallas) sigue sin tocar, «revisar a mano». Coincide con la prueba en node. Informe en Drive: `Reparacion_FamaDomingoAnteriores_T2_PI34_T3_PI27_T4_PI27 2026-10-11 23.13.06 (aplicado).csv`, con el respaldo previo del CSV. **Advertencia vigente (PF046):** la fama repuesta es la de la hora de la captura JSON (22:58, 14:13, 09:34 y 04:58), no la final del domingo; en 02/08 se conoce al menos 1 fila afectada (`<LU|$_∆ΠG€L>©∆`: JSON 10 mazos y 1600, Log 12 y 1900). Los valores de los otros clanes no están verificados.
+
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
