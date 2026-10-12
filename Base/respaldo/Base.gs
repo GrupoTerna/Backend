@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 12/10/2026 14:30:49 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 12/10/2026 18:40:42 */
 
 
 
@@ -3223,10 +3223,11 @@ function _setupGuerra(ss) {
                  'DiaGuerra','Etapa','Clan','Tag','Nombre',
                  'AtaquesHoy','AtaquesSemana','Fame','Barcos',
                  'Donaciones_r','Donaciones_d','Ranking',
-                 'Temporada_2','Origen'];
+                 'Temporada_2','Origen','Copas'];
+  if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Guerra OK (20 cols, incluye Temporada_2/Origen)');
+  Logger.log('[Setup] Guerra OK (21 cols, incluye Temporada_2/Origen/Copas)');
 }
 
 function _setupGuerraLogs(ss) {
@@ -11319,6 +11320,69 @@ function _ctxPorClanDesdeDatos_(ctx, endpointKey, datos) {
   return copia;
 }
 
+// PRIMERA CONSULTA DE CADA periodIndex (12-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF063]
+// Guerra y Guerra_Logs crean sus filas con la fecha y hora de la PRIMERA consulta a la API de ese periodIndex
+// (un mismo día de guerra cubre dos fechas, porque cambia entre las 4 y las 5 a.m. y no a las 12). Esa hora no
+// cambia aunque la fila o el JSON se sigan actualizando. Clave: temporada|periodIndex|tag del clan (sin #).
+var PRIMERA_CONSULTA_RR_PROP = 'PRIMERA_CONSULTA_RR';
+var PRIMERA_CONSULTA_RR_MAX  = 150;
+var _PRIMERA_CONSULTA_RR_MEM = null;
+
+function _leerPrimeraConsultaRR_() {
+  if (_PRIMERA_CONSULTA_RR_MEM) return _PRIMERA_CONSULTA_RR_MEM;
+  var mapa = {};
+  try {
+    var txt = PropertiesService.getScriptProperties().getProperty(PRIMERA_CONSULTA_RR_PROP);
+    if (txt) mapa = JSON.parse(txt) || {};
+  } catch (e) { mapa = {}; }
+  _PRIMERA_CONSULTA_RR_MEM = mapa;
+  return mapa;
+}
+
+function _claveConsultaRR_(temporada, periodIndex, clanTag) {
+  return Number(temporada) + '|' + Number(periodIndex) + '|' + cleanTag(clanTag);
+}
+
+/** Guarda la hora de esta consulta SOLO si ese clan y periodIndex todavía no tienen una. Nunca la reemplaza. */
+function _registrarPrimeraConsultaRR_(clanTag, temporada, periodIndex, ms) {
+  try {
+    if (!isFinite(Number(temporada)) || !isFinite(Number(periodIndex))) return;
+    var mapa = _leerPrimeraConsultaRR_();
+    var k = _claveConsultaRR_(temporada, periodIndex, clanTag);
+    if (mapa[k]) return;
+    mapa[k] = ms || new Date().getTime();
+    var claves = Object.keys(mapa);
+    if (claves.length > PRIMERA_CONSULTA_RR_MAX) {
+      claves.sort(function(a, b) { return mapa[a] - mapa[b]; });
+      for (var i = 0; i < claves.length - PRIMERA_CONSULTA_RR_MAX; i++) delete mapa[claves[i]];
+    }
+    PropertiesService.getScriptProperties().setProperty(PRIMERA_CONSULTA_RR_PROP, JSON.stringify(mapa));
+  } catch (e) {
+    Logger.log('[PrimeraConsulta] No se pudo registrar: ' + e.message);
+  }
+}
+
+/**
+ * Fecha y hora de la primera consulta de ese periodIndex. Con clanTag usa la de ese clan; sin clanTag (o sin
+ * dato de ese clan, p. ej. un rival) usa la más temprana de los clanes Terna. Sin registro devuelve `respaldo`.
+ */
+function _fechaPrimeraConsultaRR_(temporada, periodIndex, clanTag, respaldo) {
+  try {
+    var mapa = _leerPrimeraConsultaRR_();
+    if (clanTag) {
+      var ms = mapa[_claveConsultaRR_(temporada, periodIndex, clanTag)];
+      if (ms) return new Date(ms);
+    }
+    var pref = Number(temporada) + '|' + Number(periodIndex) + '|';
+    var min = null;
+    for (var k in mapa) {
+      if (k.indexOf(pref) === 0 && (min === null || mapa[k] < min)) min = mapa[k];
+    }
+    if (min !== null) return new Date(min);
+  } catch (e) { /* cae al respaldo */ }
+  return respaldo;
+}
+
 /**
  * _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) [→ Contexto_Base_Web.md §09B157]
  */
@@ -11336,6 +11400,11 @@ function _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) {
   var clanName = (datos && datos.name)
     ? datos.name
     : ((datos && datos.clan && datos.clan.name) ? datos.clan.name : cleanTag(clanTag));
+
+  // PRIMERA CONSULTA (12-oct-2026): se anota la hora de la primera respuesta de este clan y periodIndex. [→ Contexto_Base_Web.md §PF063]
+  if (endpointKey === 'currentriverrace' && datos && datos.periodIndex !== '' && datos.periodIndex !== null && isFinite(Number(datos.periodIndex))) {
+    _registrarPrimeraConsultaRR_(clanTag, _temporadaDeClan_(ctxOrPeriodIndex || {}, Number(datos.periodIndex)), Number(datos.periodIndex), new Date().getTime());
+  }
 
   var filename   = _buildCacheFilename(ctx, endpointKey, clanName);
   var contenido  = JSON.stringify(datos, null, 2);
@@ -11360,9 +11429,11 @@ function _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) {
     }
 
     if (archivoExistente) {
-      // Renombrar (la fecha/hora en el nombre avanza) y actualizar contenido.
+      // Renombrar (la fecha/hora en el nombre avanza; en currentriverrace NO, ver abajo) y actualizar contenido.
       // Es EL MISMO archivo: nunca se crea uno nuevo para el mismo periodo.
-      if (archivoExistente.getName() !== filename) {
+      // currentriverrace (12-oct-2026): el nombre conserva la fecha y hora de la PRIMERA consulta del periodo y no se
+      // renombra; solo se actualiza el contenido. Los demás endpoints siguen renombrándose como siempre.
+      if (endpointKey !== 'currentriverrace' && archivoExistente.getName() !== filename) {
         archivoExistente.setName(filename);
       }
       archivoExistente.setContent(contenido);
@@ -18003,17 +18074,18 @@ var GC = {
   DON_D:        17,
   RANKING:      18,
   TEMPORADA_2:  19,
-  ORIGEN:       20
+  ORIGEN:       20,
+  COPAS:        21   // 12-oct-2026: copas del jugador en ese día (mem.trophies de /clans/{tag}); se guarda igual que Ranking. Va al final para no mover ningún índice anterior.
 };
 
-var GUERRA_TOTAL_COLS = 20;
+var GUERRA_TOTAL_COLS = 21;
 
 // Encabezados canónicos de la hoja Guerra (mismo orden que GC de arriba). [→ Contexto_Base_Web.md §17B007]
 var GUERRA_HEADERS = ['N°','Fecha','Temporada','Semana','Día','PeriodIndex',
                        'DiaGuerra','Etapa','Clan','Tag','Nombre',
                        'AtaquesHoy','AtaquesSemana','Fame','Barcos',
                        'Donaciones_r','Donaciones_d','Ranking',
-                       'Temporada_2','Origen'];
+                       'Temporada_2','Origen','Copas'];
 
 // ÍNDICES DE COLUMNA - HOJA GUERRA_LOGS (1-based) [→ Contexto_Base_Web.md §17B008]
 var GLC = {
@@ -18583,12 +18655,30 @@ function _limpiarLinksAccidentalesGuerraIncremental(sh) {
 }
 
 /**
+ * _asegurarColumnaCopasGuerra_(sh) — 12-oct-2026 (pedido usuario: gráfica de copas en perfil y clan).
+ * La hoja Guerra pasa de 20 a 21 columnas (GC.COPAS). Si la hoja todavía tiene 20, agrega la columna y el
+ * encabezado «Copas» copiando el formato del encabezado de Origen. Idempotente. [→ Contexto_Base_Web.md §PF061]
+ */
+function _asegurarColumnaCopasGuerra_(sh) {
+  if (!sh) return;
+  if (sh.getMaxColumns() < GUERRA_TOTAL_COLS) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), GUERRA_TOTAL_COLS - sh.getMaxColumns());
+  }
+  var celda = sh.getRange(1, GC.COPAS);
+  if (String(celda.getValue() || '').trim() === '') {
+    sh.getRange(1, GC.ORIGEN).copyTo(celda, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
+    celda.setValue('Copas');
+  }
+}
+
+/**
  * Actualiza la hoja Guerra con los datos de participación del día actual. [→ Contexto_Base_Web.md §17B034]
  */
 function updateGuerraSheet() {
   var ss  = _getSs();
   var sh  = ss.getSheetByName(CFG.SHEETS.GUERRA);
   if (!sh) { Logger.log('[Guerra] Hoja no encontrada'); return; }
+  _asegurarColumnaCopasGuerra_(sh); // 12-oct-2026: la hoja necesita la columna 21 antes de leer o escribir con GUERRA_TOTAL_COLS
 
   // GUARDIA: sin cache no hay datos válidos — abortar para no corromper la [→ Contexto_Base_Web.md §17B035]
   if (!CACHE_CLAN_DATA) {
@@ -18725,6 +18815,7 @@ function updateGuerraSheet() {
       var donR    = Number(mem.donationsReceived) || 0;
       var donD    = Number(mem.donations)         || 0;
       var ranking = Number(mem.clanRank)          || 0;
+      var copas   = Number(mem.trophies)          || 0; // 12-oct-2026: copas del jugador hoy (misma fuente que clanRank)
 
       // Nombre: preferir el de /clans/{tag} (memberMap, mem.name), que [→ Contexto_Base_Web.md §17B045]
       var nombreActual = mem.name || part.name || '';
@@ -18778,6 +18869,7 @@ function updateGuerraSheet() {
         existing[GC.DON_R - 1]   = donR;
         existing[GC.DON_D - 1]   = donD;
         existing[GC.RANKING - 1] = ranking;
+        if (copas > 0) existing[GC.COPAS - 1] = copas; // 0 = la API no mandó trofeos; no se pisa un valor ya guardado
         if (nombreActual && nombreActual !== String(existing[GC.NOMBRE - 1] || '')) {
           existing[GC.NOMBRE - 1] = nombreActual;
         }
@@ -18796,7 +18888,7 @@ function updateGuerraSheet() {
         id: idGuerra,
         row: [
           null,                      // N° (se asigna al escribir)
-          now,                       // Fecha
+          _fechaPrimeraConsultaRR_(ctxClan.temporada, ctxClan.periodIndex, clanTag, now), // Fecha = PRIMERA consulta del periodIndex (12-oct-2026); no cambia al actualizar
           ctxClan.temporada,         // Temporada
           ctxClan.sectionIndex + 1,  // Semana
           ctxClan.diaLetra,          // Día
@@ -18814,7 +18906,8 @@ function updateGuerraSheet() {
           donD,                 // Donaciones_d
           ranking,              // Ranking
           ctxClan.temporada + _getTemporadaOffsetRoyaleApi(), // Temporada_2 (punto 1.4)
-          'Original'            // Origen (punto 1.5)
+          'Original',           // Origen (punto 1.5)
+          copas > 0 ? copas : '' // Copas (12-oct-2026)
         ]
       });
       existingIds[idGuerra] = true;
@@ -19214,7 +19307,7 @@ function updateGuerraLogsSheet() {
         id:  idLog,
         row: [
           null,            // N°
-          now,             // Fecha
+          _fechaPrimeraConsultaRR_(temporadaClan, pIdx, clanTag, now), // Fecha = PRIMERA consulta del periodIndex (12-oct-2026); no cambia al actualizar
           temporadaClan,   // Temporada
           sIdx + 1,        // Semana
           diaLetraLog,     // Día
@@ -19398,7 +19491,7 @@ function updateGuerraLogsSheet() {
         id:  idLogR,
         row: [
           null,                                   // N°
-          now,                                    // Fecha
+          _fechaPrimeraConsultaRR_(temporadaRival, pIdxR, null, now), // Fecha = PRIMERA consulta del periodIndex (la más temprana de los Terna; 12-oct-2026)
           temporadaRival,                         // Temporada
           sIdxR + 1,                              // Semana
           periodIdxToLetra(pIdxR),                // Día
@@ -19605,6 +19698,58 @@ function _webGuerraLogUnClan(tagNorm, data) {
 
   salida.clan    = nombreClan;
   salida.semanas = lista;
+  return salida;
+}
+
+// WEB: HISTORIAL DE COPAS DEL CLAN (gráfica «Copas» de clan.html) [→ Contexto_Base_Web.md §PF062]
+
+/**
+ * _webClanCopas(tag) — 12-oct-2026 (pedido usuario: gráfica de copas en clan.html).
+ * Copas del clan por día, desde Guerra_Logs (GLC.COPAS, una fila por día y por clan; fallback Backup_Guerra_Logs.csv).
+ * tag obligatorio y de un clan Terna; cualquier otro devuelve puntos: [] (no se expone ningún clan rival).
+ * Un punto por día de guerra: si hubiera más de una fila el mismo día se queda la de mayor PeriodIndex.
+ * Respuesta: { clan, tag, puntos: [{ fecha: 'dd/MM/yyyy', copas, periodIndex, temporada }] } en orden cronológico.
+ */
+function _webClanCopas(tag) {
+  var tagNorm = _tagComparableLogs_(tag);
+  var tagOficial = '';
+  for (var q = 0; q < CFG.TERNA_TAGS.length; q++) {
+    if (_tagComparableLogs_(CFG.TERNA_TAGS[q]) === tagNorm) { tagOficial = CFG.TERNA_TAGS[q]; break; }
+  }
+  var salida = { clan: '', tag: tagOficial || String(tag || ''), puntos: [] };
+  if (!tagOficial) return salida;
+
+  var ss = _getSs();
+  var tz = Session.getScriptTimeZone() || 'America/Lima';
+  var lectura = _obtenerFilasConFallbackCSV(
+    ss, CFG.SHEETS.GUERRA_LOGS, 'Backup_Guerra_Logs.csv', GUERRA_LOGS_TOTAL_COLS, 1
+  );
+  var data = lectura.filas;
+  var porDia = {}; // 'dd/MM/yyyy' -> punto
+  for (var i = 0; i < data.length; i++) {
+    var fila = data[i];
+    if (_tagComparableLogs_(fila[GLC.TAG - 1]) !== tagNorm) continue;
+    var copas = _numDesdeCeldaLogs_(fila[GLC.COPAS - 1]);
+    if (!(copas > 0)) continue; // vacío o 0 = sin dato
+    var dg = fila[GLC.DIA_GUERRA - 1];
+    var fecha = '';
+    if (dg instanceof Date && !isNaN(dg.getTime())) fecha = Utilities.formatDate(dg, tz, 'dd/MM/yyyy');
+    else if (/^\d{2}\/\d{2}\/\d{4}$/.test(String(dg || '').trim())) fecha = String(dg).trim();
+    if (!fecha) {
+      var fh = fila[GLC.FECHA - 1];
+      if (fh instanceof Date && !isNaN(fh.getTime())) fecha = Utilities.formatDate(fh, tz, 'dd/MM/yyyy');
+    }
+    if (!fecha) continue;
+    var periodIdx = Number(fila[GLC.PERIOD_IDX - 1]) || 0;
+    if (!porDia[fecha] || periodIdx > porDia[fecha].periodIndex) {
+      porDia[fecha] = { fecha: fecha, copas: copas, periodIndex: periodIdx, temporada: Number(fila[GLC.TEMPORADA - 1]) || 0 };
+    }
+    var nombre = String(fila[GLC.CLAN - 1] || '').trim();
+    if (nombre) salida.clan = nombre;
+  }
+  var lista = Object.keys(porDia).map(function (k) { return porDia[k]; });
+  lista.sort(function (a, b) { return (a.temporada - b.temporada) || (a.periodIndex - b.periodIndex); });
+  salida.puntos = lista;
   return salida;
 }
 
@@ -20660,6 +20805,161 @@ function _limpiarFilasColiseoGuerraLogs_(aplicar) {
   Logger.log(msg);
   _registrarLogScriptTerna('limpiarFilasColiseoGuerraLogs' + (aplicar ? 'Aplicar' : '') + '()', msg, []);
 }
+
+
+// ----- CORRECCIÓN DE Fecha EN Guerra_Logs (12-oct-2026, pedido de la usuaria) -----
+// [→ Contexto_Base_Web.md §PF063] Las filas anteriores a la regla «Fecha = primera consulta del periodIndex» quedaron con la hora
+// de la corrida que las creó (00:01:58, 21:02:28, 08:22:01) o sin hora (00:00:00). La mejor fuente que queda es la PRIMERA captura
+// de la hoja Guerra (y de Backup_Guerra.csv, que conserva lo purgado) para la misma temporada, periodIndex y clan. Los rivales no
+// están en Guerra: se usa la primera captura de cualquier clan Terna en ese periodIndex.
+// Primero se ejecuta el informe (no escribe nada) y después el que aplica. Reglas: solo se corrige hacia una hora MÁS TEMPRANA
+// (la primera consulta no puede ser posterior a la creación de la fila), o la hora de una fila que solo tenía fecha en el MISMO día;
+// la captura debe caer en la fecha del DiaGuerra o en la siguiente; nunca se inventa una hora (sin captura con hora, la fila no se toca).
+function corregirFechaGuerraLogsInforme() { _corregirFechaGuerraLogs_(false); }
+function corregirFechaGuerraLogsAplicar() { _corregirFechaGuerraLogs_(true); }
+
+function _msFechaConHoraLima_(v) {
+  var d = null;
+  if (v instanceof Date) d = v;
+  else {
+    var s = String(v || '').trim();
+    if (/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/.test(s)) {
+      try { d = Utilities.parseDate(s, 'America/Lima', 'dd/MM/yyyy HH:mm:ss'); } catch (e) { d = null; }
+    }
+  }
+  if (!d || isNaN(d.getTime())) return null;
+  if (Utilities.formatDate(d, 'America/Lima', 'HH:mm:ss') === '00:00:00') return null; // solo fecha: no es una hora real
+  return d.getTime();
+}
+
+function _diaLimaDe_(v) {
+  var d = null;
+  if (v instanceof Date) d = v;
+  else {
+    var s = String(v || '').trim();
+    var m = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(s);
+    if (m) return m[3] + m[2] + m[1];
+  }
+  if (!d || isNaN(d.getTime())) return '';
+  return Utilities.formatDate(d, 'America/Lima', 'yyyyMMdd');
+}
+
+/** Primera captura con hora por temporada|periodIndex|clan y por temporada|periodIndex|* (mínimo entre clanes). */
+function _primerasCapturasGuerra_(ss) {
+  var minimo = {}, sinHora = {}, total = {};
+  var anotar = function (filas) {
+    for (var i = 0; i < filas.length; i++) {
+      var f = filas[i];
+      if (_celdaVaciaGuerra_(f[GC.FECHA - 1])) continue;
+      var ms = _msFechaConHoraLima_(f[GC.FECHA - 1]);
+      var base = (Number(f[GC.TEMPORADA - 1]) || 0) + '|' + (Number(f[GC.PERIOD_IDX - 1]) || 0) + '|';
+      var ks = [base + String(f[GC.CLAN - 1] || '').trim(), base + '*'];
+      for (var k = 0; k < ks.length; k++) {
+        // Filas de Guerra con solo fecha (sin hora) son capturas de hora desconocida. Si son más del 10 % del grupo, el mínimo
+        // con hora ya no es confiable como primera captura y ese grupo no se usa (ver _corregirFechaGuerraLogs_).
+        total[ks[k]] = (total[ks[k]] || 0) + 1;
+        if (ms === null) { sinHora[ks[k]] = (sinHora[ks[k]] || 0) + 1; continue; }
+        if (minimo[ks[k]] === undefined || ms < minimo[ks[k]]) minimo[ks[k]] = ms;
+      }
+    }
+  };
+  var fuentes = 0;
+  try {
+    var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+    if (sh && sh.getLastRow() >= 2) { anotar(sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues()); fuentes++; }
+  } catch (e1) { Logger.log('[CorregirFecha] No se pudo leer la hoja Guerra: ' + e1.message); }
+  try {
+    var txt = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (txt) {
+      var p = _parseCSV(txt);
+      if (p && p.length > 1) { anotar(p.slice(1)); fuentes++; }
+    }
+  } catch (e2) { Logger.log('[CorregirFecha] No se pudo leer Backup_Guerra.csv: ' + e2.message); }
+  var inseguro = {};
+  for (var kk in sinHora) if (sinHora[kk] / total[kk] > 0.10) inseguro[kk] = true;
+  return { minimo: minimo, sinHora: inseguro, fuentes: fuentes };
+}
+
+/** Devuelve la fecha corregida (ms) o null si la fila no debe cambiar. */
+function _fechaCorregidaGuerraLog_(fechaActual, diaGuerra, fuenteMs) {
+  if (fuenteMs === undefined || fuenteMs === null) return null;
+  var diaFuente = Utilities.formatDate(new Date(fuenteMs), 'America/Lima', 'yyyyMMdd');
+  var dg = _diaLimaDe_(diaGuerra);
+  if (dg) {
+    var y = Number(dg.substr(0, 4)), m = Number(dg.substr(4, 2)) - 1, d = Number(dg.substr(6, 2));
+    var sig = Utilities.formatDate(new Date(y, m, d + 1, 12, 0, 0), 'America/Lima', 'yyyyMMdd');
+    if (diaFuente !== dg && diaFuente !== sig) return null; // captura de otro día: no es confiable
+  }
+  var actualMs = _msFechaConHoraLima_(fechaActual);
+  if (actualMs !== null) return (fuenteMs < actualMs - 1000) ? fuenteMs : null;
+  // La fila solo tenía fecha (sin hora): se completa si la captura es del mismo día.
+  var diaActual = _diaLimaDe_(fechaActual);
+  return (diaActual && diaActual === diaFuente) ? fuenteMs : null;
+}
+
+function _corregirFechaGuerraLogs_(aplicar) {
+  var etiqueta = aplicar ? 'APLICAR' : 'SOLO INFORMAR';
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA_LOGS);
+  if (!sh || sh.getLastRow() < 2) { Logger.log('[CorregirFecha] Guerra_Logs vacía o inexistente.'); return; }
+  var n = sh.getLastRow() - 1;
+  var datos = sh.getRange(2, 1, n, GUERRA_LOGS_TOTAL_COLS).getValues();
+  var cap = _primerasCapturasGuerra_(ss);
+  if (!cap.fuentes) { Logger.log('[CorregirFecha] Sin hoja Guerra ni Backup_Guerra.csv: no hay de dónde tomar la primera captura. No se cambió nada.'); return; }
+
+  var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+  var fmt = function (ms) { return Utilities.formatDate(new Date(ms), 'America/Lima', 'dd/MM/yyyy HH:mm:ss'); };
+  var cambiosLog = [['N°', 'Id', 'Tipo', 'Fecha anterior', 'Fecha nueva']];
+  var nuevaCol = [];
+  var porTipo = { Terna: 0, Rival: 0 }, sinFuente = 0, otroDia = 0, iguales = 0, horaDesconocida = 0;
+  var ejemplos = [];
+  for (var i = 0; i < n; i++) {
+    var f = datos[i];
+    var actual = f[GLC.FECHA - 1];
+    nuevaCol.push([actual]);
+    if (!String(f[GLC.TAG - 1] || '').trim()) continue;
+    var esRival = String(f[GLC.TIPO - 1] || '').trim() === 'Rival';
+    var base = (Number(f[GLC.TEMPORADA - 1]) || 0) + '|' + (Number(f[GLC.PERIOD_IDX - 1]) || 0) + '|';
+    var claveCap = base + (esRival ? '*' : String(f[GLC.CLAN - 1] || '').trim());
+    if (cap.sinHora[claveCap]) { horaDesconocida++; continue; }
+    var fuente = cap.minimo[claveCap];
+    if (fuente === undefined) { sinFuente++; continue; }
+    var nuevoMs = _fechaCorregidaGuerraLog_(actual, f[GLC.DIA_GUERRA - 1], fuente);
+    if (nuevoMs === null) {
+      var actMs = _msFechaConHoraLima_(actual);
+      if (actMs !== null && fuente >= actMs - 1000) iguales++; else otroDia++;
+      continue;
+    }
+    var tipo = esRival ? 'Rival' : 'Terna';
+    porTipo[tipo]++;
+    var antes = (actual instanceof Date) ? fmt(actual.getTime()) : String(actual);
+    cambiosLog.push([f[GLC.NUM - 1] || '', _claveFilaGuerraLogs_(f), tipo, antes, fmt(nuevoMs)]);
+    if (ejemplos.length < 6) ejemplos.push((f[GLC.NUM - 1] || '?') + ': ' + antes + ' -> ' + fmt(nuevoMs));
+    nuevaCol[i] = [new Date(nuevoMs)];
+  }
+  var total = cambiosLog.length - 1;
+  if (aplicar && total > 0) {
+    _saveCSVToDrive('Correccion_Fecha_Guerra_Logs ' + marca + '.csv', _encodeCSV(cambiosLog));
+    sh.getRange(2, GLC.FECHA, n, 1).setValues(nuevaCol);
+    sh.getRange(2, GLC.FECHA, n, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
+    _syncUnaAcumulativaCSV(
+      { sheetName: CFG.SHEETS.GUERRA_LOGS, fileName: 'Backup_Guerra_Logs.csv', numCols: GUERRA_LOGS_TOTAL_COLS, hasFecha: true, fechaCol: GLC.FECHA },
+      true
+    );
+  }
+  var msg = '[CorregirFecha] ' + etiqueta + ' | filas revisadas: ' + n + ' | fuentes de primera captura: ' + cap.fuentes +
+    ' | Fecha ' + (aplicar ? 'corregidas' : 'se corregirían') + ': ' + total + ' (Terna ' + porTipo.Terna + ', Rival ' + porTipo.Rival + ')' +
+    ' | sin captura con hora en Guerra (no se tocan): ' + sinFuente +
+    ' | periodos con capturas de Guerra sin hora, primera captura desconocida (no se tocan): ' + horaDesconocida +
+    ' | ya iguales o con hora más temprana (no se tocan): ' + iguales +
+    ' | captura de otro día (no se tocan): ' + otroDia +
+    (ejemplos.length ? ' | ejemplos: ' + ejemplos.join(' ; ') : '') +
+    (aplicar && total > 0 ? ' | valores anteriores guardados en Drive: "Correccion_Fecha_Guerra_Logs ' + marca + '.csv"; Backup_Guerra_Logs.csv resincronizado' : '');
+  Logger.log(msg);
+  _registrarLogScriptTerna('corregirFechaGuerraLogs' + (aplicar ? 'Aplicar' : 'Informe') + '()', msg, []);
+}
+
+
 
 
 
@@ -21933,6 +22233,7 @@ function _syncGuerraCSV(sh, forzar) {
     if (csvExistente) {
       var parsedExistente = _parseCSV(csvExistente);
       if (parsedExistente.length > 0) encabezado = parsedExistente[0]; // preferir el encabezado ya persistido
+      if (encabezado.length < GUERRA_TOTAL_COLS) encabezado = data[0]; // 12-oct-2026: CSV viejo de 20 columnas; se toma el encabezado de la hoja (trae «Copas»)
       for (var pi = 1; pi < parsedExistente.length; pi++) {
         var filaCsv = parsedExistente[pi].slice(0, GUERRA_TOTAL_COLS);
         while (filaCsv.length < GUERRA_TOTAL_COLS) filaCsv.push('');
@@ -24884,7 +25185,7 @@ function _cargarFuenteGuerraParaTemporada(temporadaPropia, temporadaReal) {
 
   var encabezadoCsv = ['N°', 'Fecha', 'Temporada', 'Semana', 'Día', 'PeriodIndex', 'DiaGuerra', 'Etapa',
     'Clan', 'Tag', 'Nombre', 'AtaquesHoy', 'AtaquesSemana', 'Fame', 'Barcos',
-    'Donaciones_r', 'Donaciones_d', 'Ranking', 'Temporada_2', 'Origen'];
+    'Donaciones_r', 'Donaciones_d', 'Ranking', 'Temporada_2', 'Origen', 'Copas'];
   var filas = [];
   var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
   if (csvText) {
@@ -29690,6 +29991,7 @@ function generarBackupGuerraSemanalCSV() {
     filaSalida[GC.DON_R      - 1] = filaMasReciente[GC.DON_R - 1];
     filaSalida[GC.DON_D      - 1] = filaMasReciente[GC.DON_D - 1];
     filaSalida[GC.RANKING    - 1] = filaMasReciente[GC.RANKING - 1];
+    filaSalida[GC.COPAS      - 1] = filaMasReciente[GC.COPAS - 1]; // 12-oct-2026
     // Temporada_2 / Origen (punto 1.4/1.5): mismo criterio que
     // Clan/Nombre — del día con mayor PeriodIndex del grupo.
     filaSalida[GC.TEMPORADA_2 - 1] = filaMasReciente[GC.TEMPORADA_2 - 1];
@@ -43956,7 +44258,8 @@ function _webPerfilJugador(tagBuscado, opciones) {
           ranking: rankingDia,
           ataques: Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0,
           puntaje: Number(dataGuerra[i][GC.FAME - 1]) || 0,
-          barcos:  Number(dataGuerra[i][GC.BARCOS - 1]) || 0
+          barcos:  Number(dataGuerra[i][GC.BARCOS - 1]) || 0,
+          copas:   Number(dataGuerra[i][GC.COPAS  - 1]) || 0 // 12-oct-2026: copas de ese día (0 = sin dato, filas anteriores a la columna). [→ Contexto_Base_Web.md §PF061]
         });
       }
 
@@ -47649,6 +47952,24 @@ function doGet(e) {
     try {
       return ContentService
         .createTextOutput(JSON.stringify(_webGuerraLog(e.parameter.tag)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('[Web] Error interno: ' + err.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  // webClanCopas (12-oct-2026): copas del clan por día desde Guerra_Logs, para la gráfica de clan.html; tag obligatorio y Terna (_webClanCopas). [→ Contexto_Base_Web.md §PF062]
+  if (e && e.parameter && e.parameter.accion === 'webClanCopas') {
+    if (e.parameter.token !== WEB_MEMBER_TOKEN) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'No autorizado', code: 401 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webClanCopas(e.parameter.tag)))
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       Logger.log('[Web] Error interno: ' + err.toString());
@@ -54258,6 +54579,26 @@ function migrarControlQuitarJugador() {
 // =============================================================================
 // SECCIÓN 1: funciones manuales (reordenado 23-ago-2026); sin _continuarX. [→ Contexto_Base_Web.md §47B015]
 // =============================================================================
+
+// migrarAgregarCopasAGuerra(): UNA vez (12-oct-2026, pedido usuario: gráfica de copas en perfil y clan). Agrega la columna «Copas» (col. 21, GC.COPAS) a la hoja Guerra y al encabezado de Backup_Guerra.csv; las filas viejas quedan con la celda vacía (no hay historial anterior de copas). Idempotente. Ejecutar a mano justo después de subirBaseDesdeGithub(). [→ Contexto_Base_Web.md §PF061]
+function migrarAgregarCopasAGuerra() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  if (!sh) { Logger.log('[Migración Copas Guerra] Hoja Guerra no encontrada.'); return; }
+  _asegurarColumnaCopasGuerra_(sh);
+  Logger.log('[Migración Copas Guerra] Hoja Guerra con ' + sh.getMaxColumns() + ' columnas y encabezado «Copas» en la columna ' + GC.COPAS + '.');
+
+  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+  if (!csvText) { Logger.log('[Migración Copas Guerra] Backup_Guerra.csv no existe todavía; se creará con la columna en la próxima fusión.'); return; }
+  var parsed = _parseCSV(csvText);
+  if (!parsed || !parsed.length) return;
+  if (parsed[0].length >= GUERRA_TOTAL_COLS) { Logger.log('[Migración Copas Guerra] Backup_Guerra.csv ya tiene ' + parsed[0].length + ' columnas; nada que hacer.'); return; }
+  for (var i = 0; i < parsed.length; i++) {
+    while (parsed[i].length < GUERRA_TOTAL_COLS) parsed[i].push(i === 0 ? 'Copas' : '');
+  }
+  _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV(parsed));
+  Logger.log('[Migración Copas Guerra] Backup_Guerra.csv actualizado a ' + GUERRA_TOTAL_COLS + ' columnas (' + (parsed.length - 1) + ' filas).');
+}
 
 // migrarPosicionCategoriaAscensosDescensosEnExtra(): UNA vez; corrige la posición de "Ascensos y descensos" en la columna Categoría de Extra (justo después de los torneos). [→ Contexto_Base_Web.md §47B016]
 function migrarPosicionCategoriaAscensosDescensosEnExtra() {
