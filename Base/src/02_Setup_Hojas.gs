@@ -252,10 +252,11 @@ function _setupGuerra(ss) {
                  'DiaGuerra','Etapa','Clan','Tag','Nombre',
                  'AtaquesHoy','AtaquesSemana','Fame','Barcos',
                  'Donaciones_r','Donaciones_d','Ranking',
-                 'Temporada_2','Origen'];
+                 'Temporada_2','Origen','Copas'];
+  if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Guerra OK (20 cols, incluye Temporada_2/Origen)');
+  Logger.log('[Setup] Guerra OK (21 cols, incluye Temporada_2/Origen/Copas)');
 }
 
 function _setupGuerraLogs(ss) {

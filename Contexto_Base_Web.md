@@ -1414,6 +1414,19 @@ La tarjeta `#mLeyendasCard` (Competitivo: Camino de Leyendas y Camino de Trofeos
 **Para no repetirlo.** Cualquier `<section>` que se use como bloque dentro de una tarjeta hereda ese 72 px: usar `<div>`, o poner `padding:0` en su clase. Otras tarjetas del perfil no usan `<section>` (solo `#perfilSec`, que ya lleva su `padding` en línea). **Sin probar** en navegador real con datos de un jugador ni en pantalla angosta.
 
 
+### PF061 — Hoja Guerra: columna «Copas» (pedido del usuario, 12-oct-2026)
+
+**Para qué.** Las gráficas de copas de `perfil.html` y `clan.html` necesitan un historial de copas por día; el backend solo conocía las copas de hoy (`DC.COPAS`) y el máximo, y cada punto de `historialRanking` traía ranking, ataques, medallas y barcos, nada de copas.
+
+**Decisión (la tomó el usuario).** Guardar las copas en la hoja Guerra, en una columna nueva, igual que se guarda el ranking. Se descartó una hoja aparte de fotos diarias.
+
+**Cómo funciona.** `GC.COPAS = 21` (al final, para no mover ningún índice anterior) y `GUERRA_TOTAL_COLS = 21`. `updateGuerraSheet()` (17_GuerraSheet.gs) lee `mem.trophies` del miembro en `/clans/{tag}` (misma fuente que `mem.clanRank`) y lo escribe en cada corrida diaria, en fila nueva y en fila existente. Si la API no manda trofeos (0) no se pisa un valor ya guardado. `23_Control2_GuerraSemanal.gs` copia la columna al consolidar. Las filas anteriores al 12-oct-2026 quedan con la celda vacía: **no hay historial anterior de copas y no se inventa**; la línea de la gráfica empieza el día en que se activa.
+
+**Cómo se activa (orden importa).** (1) `subirBaseDesdeGithub()`; (2) `migrarAgregarCopasAGuerra()` (47_Migraciones.gs), que agrega la columna y el encabezado «Copas» a la hoja y al encabezado de `Backup_Guerra.csv`. Si `updateGuerraSheet()` corre antes, `_asegurarColumnaCopasGuerra_()` agrega la columna sola. Lo que NO está cubierto: cualquier otra función que lea la hoja con `GUERRA_TOTAL_COLS` antes de esos dos pasos fallaría porque la hoja aún tiene 20 columnas (`getRange` fuera de rango); por eso la migración va primero.
+
+**Pendiente (siguientes tandas).** `37_Web_API.gs` debe mandar `copas` en cada punto de `historialRanking`; luego la gráfica en `perfil.html` y en `clan.html`. **Sin probar** en Apps Script real.
+
+
 
 ## 00_Main.gs — resumen rápido
 

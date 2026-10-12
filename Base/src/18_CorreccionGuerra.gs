@@ -2292,7 +2292,7 @@ function _cargarFuenteGuerraParaTemporada(temporadaPropia, temporadaReal) {
 
   var encabezadoCsv = ['N°', 'Fecha', 'Temporada', 'Semana', 'Día', 'PeriodIndex', 'DiaGuerra', 'Etapa',
     'Clan', 'Tag', 'Nombre', 'AtaquesHoy', 'AtaquesSemana', 'Fame', 'Barcos',
-    'Donaciones_r', 'Donaciones_d', 'Ranking', 'Temporada_2', 'Origen'];
+    'Donaciones_r', 'Donaciones_d', 'Ranking', 'Temporada_2', 'Origen', 'Copas'];
   var filas = [];
   var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
   if (csvText) {

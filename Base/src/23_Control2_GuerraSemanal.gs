@@ -343,6 +343,7 @@ function generarBackupGuerraSemanalCSV() {
     filaSalida[GC.DON_R      - 1] = filaMasReciente[GC.DON_R - 1];
     filaSalida[GC.DON_D      - 1] = filaMasReciente[GC.DON_D - 1];
     filaSalida[GC.RANKING    - 1] = filaMasReciente[GC.RANKING - 1];
+    filaSalida[GC.COPAS      - 1] = filaMasReciente[GC.COPAS - 1]; // 12-oct-2026
     // Temporada_2 / Origen (punto 1.4/1.5): mismo criterio que
     // Clan/Nombre — del día con mayor PeriodIndex del grupo.
     filaSalida[GC.TEMPORADA_2 - 1] = filaMasReciente[GC.TEMPORADA_2 - 1];
