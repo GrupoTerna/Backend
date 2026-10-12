@@ -1403,6 +1403,16 @@ La tarjeta `#mLeyendasCard` (Competitivo: Camino de Leyendas y Camino de Trofeos
 **Insignia de victorias de guerra.** `#mInsigniaGuerraWrap` va a la derecha de `#mClanIconoWrap` (el escudo). `renderMiembro()` busca en `rawClash.badges` la insignia con `name === 'ClanWarWins'` y pinta su ícono (`iconUrls.large` o `medium`, que cambia según el nivel de la insignia) con la misma regla de alto que el escudo (`height:100%`, máximo 90 px, mínimo 48 px). El tooltip y el `alt` traen el nombre, el nivel («Nv. 7/8») y el progreso. **Ubicación:** nombre, escudo e insignia van dentro de `.perfil-cabecera-izq` (flex con `align-items:stretch`, `flex-wrap`); `.perfil-cabecera` usa `justify-content:space-between`, así que si el escudo y la insignia son hijos sueltos se reparten por la fila (la primera versión dejó la insignia en el extremo derecho; **no volver a ponerlos como hijos directos**). Tamaños máximos: escudo 84 px, insignia 72 px (mínimo 48 px). Se oculta sola si el jugador no tiene esa insignia (solo salen las desbloqueadas) o si la imagen falla. Es la misma insignia que alimenta el ícono de «V. Guerra» (§PF055). **Sin probar** en navegador real, ni su alto en pantallas angostas.
 
 
+### PF060 — `perfil.html`: espacio en blanco bajo las gráficas de Evolución (pedido del usuario, 12-oct-2026)
+
+**Qué se veía.** Unos 70 a 100 px vacíos entre el rótulo «Fecha» de la última gráfica y el borde de la tarjeta, y huecos grandes entre una gráfica y la siguiente.
+
+**Causa (medida, no supuesta).** Cada gráfica de la tarjeta Evolución es un `<section class="pf-evo-seccion">` y `assets/styles.css` define `section{padding:72px 0}` (40 px bajo 720 px) para las secciones de página. La regla `.pf-evo-seccion + .pf-evo-seccion` solo cambiaba `padding-top`, así que el `padding-bottom` de 72 px seguía en todas, y la primera conservaba también 72 px arriba. Se midió en Chromium sin cabeza con puntos sintéticos: `padding-bottom` de la sección = 72 px; el SVG de la gráfica termina 8 px después de «Fecha», así que el hueco no lo causaba el dibujo.
+
+**Qué se hizo.** `.pf-evo-seccion{padding:0}`. La separación entre gráficas la siguen dando `margin-top:28px` y `padding-top:24px` de la regla siguiente. Con una gráfica la tarjeta pasa de 1163 a 803 px.
+
+**Para no repetirlo.** Cualquier `<section>` que se use como bloque dentro de una tarjeta hereda ese 72 px: usar `<div>`, o poner `padding:0` en su clase. Otras tarjetas del perfil no usan `<section>` (solo `#perfilSec`, que ya lleva su `padding` en línea). **Sin probar** en navegador real con datos de un jugador ni en pantalla angosta.
+
 
 
 ## 00_Main.gs — resumen rápido
