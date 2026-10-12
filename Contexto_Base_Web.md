@@ -1424,7 +1424,9 @@ La tarjeta `#mLeyendasCard` (Competitivo: Camino de Leyendas y Camino de Trofeos
 
 **Cómo se activa (orden importa).** (1) `subirBaseDesdeGithub()`; (2) `migrarAgregarCopasAGuerra()` (47_Migraciones.gs), que agrega la columna y el encabezado «Copas» a la hoja y al encabezado de `Backup_Guerra.csv`. Si `updateGuerraSheet()` corre antes, `_asegurarColumnaCopasGuerra_()` agrega la columna sola. Lo que NO está cubierto: cualquier otra función que lea la hoja con `GUERRA_TOTAL_COLS` antes de esos dos pasos fallaría porque la hoja aún tiene 20 columnas (`getRange` fuera de rango); por eso la migración va primero.
 
-**Pendiente (siguientes tandas).** `37_Web_API.gs` debe mandar `copas` en cada punto de `historialRanking`; luego la gráfica en `perfil.html` y en `clan.html`. **Sin probar** en Apps Script real.
+**Tanda 2 (hecha).** `37_Web_API.gs` manda `copas` en cada punto de `historialRanking` (0 = sin dato). `perfil.html`: sección «Copas» después de «Ranking en el clan» (`renderCopasChart()`); no pasa por `_valoresDiariosDesdeAcumulado()` porque las copas no son un contador de la semana; eje con piso redondo bajo el mínimo (con base 0 la línea sería plana); sin datos muestra un aviso en vez de ocultarse (antes la gráfica «no se veía» y no se sabía por qué). Prueba: `test/perfil-copas-grafica.test.js`.
+
+**Pendiente.** Gráfica de copas en `clan.html` (tanda 3). **Sin probar** en Apps Script real ni en navegador real.
 
 
 
