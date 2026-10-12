@@ -1612,6 +1612,9 @@ function _csvCachePut_(filename, text) {
   } catch (e) { /* sin caché: no pasa nada */ }
 }
 
+// PF042: caché del resultado de _construirCoberturaPorTag() (18_CorreccionGuerra.gs); se invalida junto con el CSV de guerra. [→ Contexto_Base_Web.md §PF042]
+var COBERTURA_GUERRA_CACHE_KEY = 'COBGUERRA_v1';
+
 function _csvCacheBorrar_(filename) {
   try {
     var cache = CacheService.getScriptCache();
@@ -1619,6 +1622,7 @@ function _csvCacheBorrar_(filename) {
     var n = parseInt(cache.get(base + '_n') || '0', 10);
     var keys = [base + '_n'];
     for (var i = 0; i < Math.max(n, 0); i++) keys.push(base + '_' + i);
+    if (filename === 'Backup_Guerra.csv') keys.push(COBERTURA_GUERRA_CACHE_KEY); // PF042
     cache.removeAll(keys);
   } catch (e) { /* nada que hacer */ }
 }
