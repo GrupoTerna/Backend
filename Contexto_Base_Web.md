@@ -1371,6 +1371,16 @@ El cuadrito pasa de «162,523 / 4,581,293» a «162,523»: `renderExtendido()` p
 
 **Pendiente.** Sin probar en navegador real. Segunda tanda acordada: decoración con banners y emotes (los PNG de 5 a 10 MB deben pasar a WebP reducido antes de usarlos). `npm test` (379 pruebas), `html-validate` y `check-links` pasan.
 
+### PF056 — `perfil.html` y `404.html`: cintas y emotes decorativos (pedido del usuario, 12-oct-2026)
+
+**Qué se pidió.** Segunda tanda de §PF055: usar los banners y emotes que el usuario subió a `assets/img/` (Fan Kit) para decorar la web.
+
+**Cómo funciona.** Las tarjetas Insignias, Logros y Carta favorita llevan la clase `.pf-cinta` y la variable CSS `--cinta` con su imagen (`cinta-insignias.webp` desde `84_IcePrincess_BG`, `cinta-logros.webp` desde `HereosMusketeerBG`, `cinta-favorita.webp` desde `BarbariansGoodDrinkBG`). `.pf-cinta::before` dibuja la cinta en los 76 px de arriba, con opacidad .5 y degradado hacia transparente, detrás del eyebrow y el título (`z-index` y sombra de texto) para no restar lectura. El «Ninguna todavía.» de las insignias lleva `emote-vacio.webp` (esqueleto llorando) y `404.html` lleva `emote-no.webp` (goblin «NO») sobre el código de error; ambos se quitan solos si no cargan.
+
+**Archivos.** Cintas de 720 px de ancho (~13 KB) y emotes de 200 px (~8 KB), en WebP. Los PNG originales no se usan en la web (los `Banner_*` pesan 5 MB y las poses de 4096 px hasta 10 MB); siguen en el repo.
+
+**Pendiente.** Sin probar en navegador real (legibilidad del título sobre la cinta, en pantalla angosta y con el tema claro si existiera). Las cintas restantes (`ClashParadeBG`, `BombingJumpBG`, etc.) y los demás emotes quedan disponibles para otras tarjetas.
+
 
 
 
