@@ -1354,6 +1354,23 @@ Todos miden menos de 24 px de alto, pero 11 de 12 cumplen por la excepción de e
 El cuadrito pasa de «162,523 / 4,581,293» a «162,523»: `renderExtendido()` pinta solo `rawClash.expPoints`. `totalExpPoints` **sigue llegando** (columna TotalExpPoints de `Backup_PerfilWeb.csv`, ver `36_PerfilWeb.gs`) pero la página ya no lo usa; no se tocó el backend. El cuadrito **conserva ancho 2** (decisión del 27-sep-2026, cuando el valor era largo): con el valor corto queda más ancho de lo necesario; si se prefiere ancho 1, cambiar el último argumento de `extItem()` (esto reacomoda la grilla de cuadritos, así que habría que mirar cómo cuadran las filas).
 
 
+### PF055 — `perfil.html`: íconos pequeños en los cuadritos y la cabecera (pedido del usuario, 12-oct-2026)
+
+**Qué se pidió.** Ícono de XP a la izquierda de «Puntos de experiencia» (como el de Puntos estelares), un emoji o ícono en cada cuadrito, el ícono de la insignia de guerra en «V. Guerra» y el de la insignia de nivel de colección, todos pequeños (como el de Nivel de XP y Puntos estelares). Los íconos nuevos los subió el usuario a `assets/img/` desde el Fan Kit de Supercell (uso permitido por el usuario).
+
+**Cómo funciona.** `extItem()` ya aceptaba un ícono como 5.º parámetro (así nació el de Puntos estelares); `renderExtendido()` ahora le pasa uno a cada cuadrito, armado con `_icoCuadritoHtml(archivo, alt, emoji)` y las constantes `_ICO_CUADRITO_*` (junto a `_ICONO_PUNTOS_ESTELARES_HTML`). Alto 14 px, a la izquierda de la etiqueta; si el archivo falla, `onerror` lo cambia por el emoji (guardado en `data-e`). Asignación: Ranking en el clan `ico-clan` · Copas máx. `Batalla.webp` · Arena solo 🏟️ · Torneos `ico-torneos` · Máx. victorias desafío `ico-desafios` · 3 coronas `BlueCrown.webp` · Puntos de experiencia `XP.webp` · Emotes `ico-emotes` (cerdito real) · Banners `ico-banners` (Item_Header_Banner_Small) · Cartas de desafíos y de torneos `ico-cartas`.
+
+**Cabecera.** «Nivel de torre del rey» lleva `ico-torre` (Tower Power icon). «V. Guerra» y «Nivel de colección» llevan el ícono de **su insignia** (`ClanWarWins` y `CollectionLevel` de `rawClash.badges[].iconUrls`, 512 px mostrados a 14 px), que cambia según el nivel de la insignia; `renderStatsAvanzadasCabecera()` cambia el `src` y, si falta la insignia o la URL falla, vuelve al ícono local (`data-base`: `Guerra.webp` y `ico-cartas`). Se mantiene el patrón de dos hijos de la cabecera (la etiqueta va en un `<span>` interno con `flex-direction:row` en línea, porque la regla `.perfil-cabecera .stats-mini span{flex-direction:column}` también alcanza a los `<span>` internos; es el mismo arreglo que ya lleva Nivel de XP).
+
+**Archivos.** `assets/img/ico-*.webp` (7 archivos, alto 40 px, 1 a 2 KB): recortes de `icon_menu_*`, `Item_Header_Banner_Small`, `Tower Power icon` y `emotes_royalhogsevo_flying_dl`. Los originales siguen en `assets/img/`.
+
+**Decisiones y por qué.**
+- **Arena sin ícono de archivo.** `assets/arenas/` solo trae `arena0` a `arena24`; las arenas actuales vienen con `rawName` tipo `Arena_L15` y `Arena_L17` (ver los JSON de `Datos descargados/`) y no hay correspondencia verificada con esos archivos. Se dejó 🏟️ en vez de adivinar un mapeo.
+- **Íconos de insignia desde los datos del jugador**, no desde `assets/badges/` (esa carpeta no son las insignias de jugador; aclarado por el usuario el 27-sep-2026).
+- **Emotes y banners:** el usuario indicó que los íconos de banner son los `Item_*Banner*`; los demás `Banner_*` y `*_BG` son banners completos, no íconos.
+
+**Pendiente.** Sin probar en navegador real. Segunda tanda acordada: decoración con banners y emotes (los PNG de 5 a 10 MB deben pasar a WebP reducido antes de usarlos). `npm test` (379 pruebas), `html-validate` y `check-links` pasan.
+
 
 
 
