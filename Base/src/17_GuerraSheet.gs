@@ -2769,6 +2769,161 @@ function _limpiarFilasColiseoGuerraLogs_(aplicar) {
 }
 
 
+// ----- CORRECCIÓN DE Fecha EN Guerra_Logs (12-oct-2026, pedido de la usuaria) -----
+// [→ Contexto_Base_Web.md §PF063] Las filas anteriores a la regla «Fecha = primera consulta del periodIndex» quedaron con la hora
+// de la corrida que las creó (00:01:58, 21:02:28, 08:22:01) o sin hora (00:00:00). La mejor fuente que queda es la PRIMERA captura
+// de la hoja Guerra (y de Backup_Guerra.csv, que conserva lo purgado) para la misma temporada, periodIndex y clan. Los rivales no
+// están en Guerra: se usa la primera captura de cualquier clan Terna en ese periodIndex.
+// Primero se ejecuta el informe (no escribe nada) y después el que aplica. Reglas: solo se corrige hacia una hora MÁS TEMPRANA
+// (la primera consulta no puede ser posterior a la creación de la fila), o la hora de una fila que solo tenía fecha en el MISMO día;
+// la captura debe caer en la fecha del DiaGuerra o en la siguiente; nunca se inventa una hora (sin captura con hora, la fila no se toca).
+function corregirFechaGuerraLogsInforme() { _corregirFechaGuerraLogs_(false); }
+function corregirFechaGuerraLogsAplicar() { _corregirFechaGuerraLogs_(true); }
+
+function _msFechaConHoraLima_(v) {
+  var d = null;
+  if (v instanceof Date) d = v;
+  else {
+    var s = String(v || '').trim();
+    if (/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/.test(s)) {
+      try { d = Utilities.parseDate(s, 'America/Lima', 'dd/MM/yyyy HH:mm:ss'); } catch (e) { d = null; }
+    }
+  }
+  if (!d || isNaN(d.getTime())) return null;
+  if (Utilities.formatDate(d, 'America/Lima', 'HH:mm:ss') === '00:00:00') return null; // solo fecha: no es una hora real
+  return d.getTime();
+}
+
+function _diaLimaDe_(v) {
+  var d = null;
+  if (v instanceof Date) d = v;
+  else {
+    var s = String(v || '').trim();
+    var m = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(s);
+    if (m) return m[3] + m[2] + m[1];
+  }
+  if (!d || isNaN(d.getTime())) return '';
+  return Utilities.formatDate(d, 'America/Lima', 'yyyyMMdd');
+}
+
+/** Primera captura con hora por temporada|periodIndex|clan y por temporada|periodIndex|* (mínimo entre clanes). */
+function _primerasCapturasGuerra_(ss) {
+  var minimo = {}, sinHora = {}, total = {};
+  var anotar = function (filas) {
+    for (var i = 0; i < filas.length; i++) {
+      var f = filas[i];
+      if (_celdaVaciaGuerra_(f[GC.FECHA - 1])) continue;
+      var ms = _msFechaConHoraLima_(f[GC.FECHA - 1]);
+      var base = (Number(f[GC.TEMPORADA - 1]) || 0) + '|' + (Number(f[GC.PERIOD_IDX - 1]) || 0) + '|';
+      var ks = [base + String(f[GC.CLAN - 1] || '').trim(), base + '*'];
+      for (var k = 0; k < ks.length; k++) {
+        // Filas de Guerra con solo fecha (sin hora) son capturas de hora desconocida. Si son más del 10 % del grupo, el mínimo
+        // con hora ya no es confiable como primera captura y ese grupo no se usa (ver _corregirFechaGuerraLogs_).
+        total[ks[k]] = (total[ks[k]] || 0) + 1;
+        if (ms === null) { sinHora[ks[k]] = (sinHora[ks[k]] || 0) + 1; continue; }
+        if (minimo[ks[k]] === undefined || ms < minimo[ks[k]]) minimo[ks[k]] = ms;
+      }
+    }
+  };
+  var fuentes = 0;
+  try {
+    var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+    if (sh && sh.getLastRow() >= 2) { anotar(sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues()); fuentes++; }
+  } catch (e1) { Logger.log('[CorregirFecha] No se pudo leer la hoja Guerra: ' + e1.message); }
+  try {
+    var txt = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (txt) {
+      var p = _parseCSV(txt);
+      if (p && p.length > 1) { anotar(p.slice(1)); fuentes++; }
+    }
+  } catch (e2) { Logger.log('[CorregirFecha] No se pudo leer Backup_Guerra.csv: ' + e2.message); }
+  var inseguro = {};
+  for (var kk in sinHora) if (sinHora[kk] / total[kk] > 0.10) inseguro[kk] = true;
+  return { minimo: minimo, sinHora: inseguro, fuentes: fuentes };
+}
+
+/** Devuelve la fecha corregida (ms) o null si la fila no debe cambiar. */
+function _fechaCorregidaGuerraLog_(fechaActual, diaGuerra, fuenteMs) {
+  if (fuenteMs === undefined || fuenteMs === null) return null;
+  var diaFuente = Utilities.formatDate(new Date(fuenteMs), 'America/Lima', 'yyyyMMdd');
+  var dg = _diaLimaDe_(diaGuerra);
+  if (dg) {
+    var y = Number(dg.substr(0, 4)), m = Number(dg.substr(4, 2)) - 1, d = Number(dg.substr(6, 2));
+    var sig = Utilities.formatDate(new Date(y, m, d + 1, 12, 0, 0), 'America/Lima', 'yyyyMMdd');
+    if (diaFuente !== dg && diaFuente !== sig) return null; // captura de otro día: no es confiable
+  }
+  var actualMs = _msFechaConHoraLima_(fechaActual);
+  if (actualMs !== null) return (fuenteMs < actualMs - 1000) ? fuenteMs : null;
+  // La fila solo tenía fecha (sin hora): se completa si la captura es del mismo día.
+  var diaActual = _diaLimaDe_(fechaActual);
+  return (diaActual && diaActual === diaFuente) ? fuenteMs : null;
+}
+
+function _corregirFechaGuerraLogs_(aplicar) {
+  var etiqueta = aplicar ? 'APLICAR' : 'SOLO INFORMAR';
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA_LOGS);
+  if (!sh || sh.getLastRow() < 2) { Logger.log('[CorregirFecha] Guerra_Logs vacía o inexistente.'); return; }
+  var n = sh.getLastRow() - 1;
+  var datos = sh.getRange(2, 1, n, GUERRA_LOGS_TOTAL_COLS).getValues();
+  var cap = _primerasCapturasGuerra_(ss);
+  if (!cap.fuentes) { Logger.log('[CorregirFecha] Sin hoja Guerra ni Backup_Guerra.csv: no hay de dónde tomar la primera captura. No se cambió nada.'); return; }
+
+  var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+  var fmt = function (ms) { return Utilities.formatDate(new Date(ms), 'America/Lima', 'dd/MM/yyyy HH:mm:ss'); };
+  var cambiosLog = [['N°', 'Id', 'Tipo', 'Fecha anterior', 'Fecha nueva']];
+  var nuevaCol = [];
+  var porTipo = { Terna: 0, Rival: 0 }, sinFuente = 0, otroDia = 0, iguales = 0, horaDesconocida = 0;
+  var ejemplos = [];
+  for (var i = 0; i < n; i++) {
+    var f = datos[i];
+    var actual = f[GLC.FECHA - 1];
+    nuevaCol.push([actual]);
+    if (!String(f[GLC.TAG - 1] || '').trim()) continue;
+    var esRival = String(f[GLC.TIPO - 1] || '').trim() === 'Rival';
+    var base = (Number(f[GLC.TEMPORADA - 1]) || 0) + '|' + (Number(f[GLC.PERIOD_IDX - 1]) || 0) + '|';
+    var claveCap = base + (esRival ? '*' : String(f[GLC.CLAN - 1] || '').trim());
+    if (cap.sinHora[claveCap]) { horaDesconocida++; continue; }
+    var fuente = cap.minimo[claveCap];
+    if (fuente === undefined) { sinFuente++; continue; }
+    var nuevoMs = _fechaCorregidaGuerraLog_(actual, f[GLC.DIA_GUERRA - 1], fuente);
+    if (nuevoMs === null) {
+      var actMs = _msFechaConHoraLima_(actual);
+      if (actMs !== null && fuente >= actMs - 1000) iguales++; else otroDia++;
+      continue;
+    }
+    var tipo = esRival ? 'Rival' : 'Terna';
+    porTipo[tipo]++;
+    var antes = (actual instanceof Date) ? fmt(actual.getTime()) : String(actual);
+    cambiosLog.push([f[GLC.NUM - 1] || '', _claveFilaGuerraLogs_(f), tipo, antes, fmt(nuevoMs)]);
+    if (ejemplos.length < 6) ejemplos.push((f[GLC.NUM - 1] || '?') + ': ' + antes + ' -> ' + fmt(nuevoMs));
+    nuevaCol[i] = [new Date(nuevoMs)];
+  }
+  var total = cambiosLog.length - 1;
+  if (aplicar && total > 0) {
+    _saveCSVToDrive('Correccion_Fecha_Guerra_Logs ' + marca + '.csv', _encodeCSV(cambiosLog));
+    sh.getRange(2, GLC.FECHA, n, 1).setValues(nuevaCol);
+    sh.getRange(2, GLC.FECHA, n, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
+    _syncUnaAcumulativaCSV(
+      { sheetName: CFG.SHEETS.GUERRA_LOGS, fileName: 'Backup_Guerra_Logs.csv', numCols: GUERRA_LOGS_TOTAL_COLS, hasFecha: true, fechaCol: GLC.FECHA },
+      true
+    );
+  }
+  var msg = '[CorregirFecha] ' + etiqueta + ' | filas revisadas: ' + n + ' | fuentes de primera captura: ' + cap.fuentes +
+    ' | Fecha ' + (aplicar ? 'corregidas' : 'se corregirían') + ': ' + total + ' (Terna ' + porTipo.Terna + ', Rival ' + porTipo.Rival + ')' +
+    ' | sin captura con hora en Guerra (no se tocan): ' + sinFuente +
+    ' | periodos con capturas de Guerra sin hora, primera captura desconocida (no se tocan): ' + horaDesconocida +
+    ' | ya iguales o con hora más temprana (no se tocan): ' + iguales +
+    ' | captura de otro día (no se tocan): ' + otroDia +
+    (ejemplos.length ? ' | ejemplos: ' + ejemplos.join(' ; ') : '') +
+    (aplicar && total > 0 ? ' | valores anteriores guardados en Drive: "Correccion_Fecha_Guerra_Logs ' + marca + '.csv"; Backup_Guerra_Logs.csv resincronizado' : '');
+  Logger.log(msg);
+  _registrarLogScriptTerna('corregirFechaGuerraLogs' + (aplicar ? 'Aplicar' : 'Informe') + '()', msg, []);
+}
+
+
+
+
 
 // ----- Funciones internas / helpers -----
 
