@@ -1531,7 +1531,8 @@ function _webPerfilJugador(tagBuscado, opciones) {
           ranking: rankingDia,
           ataques: Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0,
           puntaje: Number(dataGuerra[i][GC.FAME - 1]) || 0,
-          barcos:  Number(dataGuerra[i][GC.BARCOS - 1]) || 0
+          barcos:  Number(dataGuerra[i][GC.BARCOS - 1]) || 0,
+          copas:   Number(dataGuerra[i][GC.COPAS  - 1]) || 0 // 12-oct-2026: copas de ese día (0 = sin dato, filas anteriores a la columna). [→ Contexto_Base_Web.md §PF061]
         });
       }
 
