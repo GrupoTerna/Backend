@@ -1345,11 +1345,15 @@ function _obtenerListaCandidatosNuevos() {
   // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §14B082]
   var shDirNuevos = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
   var dirData;
+  var ix; // PF043: índices 0-based según el layout de las filas leídas (IC si viene de la hoja, DC si viene del CSV) [→ Contexto_Base_Web.md §PF043]
   if (shDirNuevos && shDirNuevos.getLastRow() >= 2) {
-    dirData = _leerDirectorioFisicoComoDC(ss);
+    // PF043: solo el rango físico del Directorio; ya no se leen Players ni Links ni se arman filas de 60 columnas. Los ocho campos que usa esta lista salen de la hoja Directorio y Players/Links no los pisan. [→ Contexto_Base_Web.md §PF043]
+    dirData = shDirNuevos.getRange(2, 1, shDirNuevos.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+    ix = { estado: IC.ESTADO - 1, clanTag: IC.CLAN_TAG - 1, rango: IC.RANGO - 1, admin: IC.ADMIN - 1, tag: IC.TAG - 1, nomMulti: IC.NOM_MULTI - 1, nombre: IC.NOMBRE - 1, clan: IC.CLAN - 1 };
   } else {
     var lecturaDirNuevos = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
     dirData = (lecturaDirNuevos.origen === 'csv') ? lecturaDirNuevos.filas : [];
+    ix = { estado: DC.ESTADO - 1, clanTag: DC.CLAN_TAG - 1, rango: DC.RANGO - 1, admin: DC.ADMIN - 1, tag: DC.TAG - 1, nomMulti: DC.NOM_MULTI - 1, nombre: DC.NOMBRE - 1, clan: DC.CLAN - 1 };
   }
   var candidatos = [];
 
@@ -1364,18 +1368,18 @@ function _obtenerListaCandidatosNuevos() {
 
   for (var i = 0; i < dirData.length; i++) {
     var r = dirData[i];
-    if (String(r[DC.ESTADO - 1]) !== 'Activo') continue;
+    if (String(r[ix.estado]) !== 'Activo') continue;
 
-    var clanTag = String(r[DC.CLAN_TAG - 1] || '').trim();
+    var clanTag = String(r[ix.clanTag] || '').trim();
     if (CFG.TERNA_TAGS.indexOf(clanTag) < 0) continue;
 
-    var rango = String(r[DC.RANGO - 1] || '').trim();
+    var rango = String(r[ix.rango] || '').trim();
     if (rango !== 'Miembro') continue;
 
-    var esAdmin = String(r[DC.ADMIN - 1] || '').trim() === 'Sí';
+    var esAdmin = String(r[ix.admin] || '').trim() === 'Sí';
     if (esAdmin) continue;
 
-    var tag = String(r[DC.TAG - 1] || '').trim();
+    var tag = String(r[ix.tag] || '').trim();
     if (!tag) continue;
 
     // FIX (29-ago-2026): ya tiene participación establecida en Terna [→ Contexto_Base_Web.md §14B086]
@@ -1383,8 +1387,8 @@ function _obtenerListaCandidatosNuevos() {
 
     candidatos.push({
       tag: tag,
-      nombre: String(r[DC.NOM_MULTI - 1] || r[DC.NOMBRE - 1] || ''),
-      clan: String(r[DC.CLAN - 1] || ''),
+      nombre: String(r[ix.nomMulti] || r[ix.nombre] || ''),
+      clan: String(r[ix.clan] || ''),
       royaleApiUrl: 'https://royaleapi.com/player/' + tag.replace('#', '') + '/',
       yaEnNuevos: tagsEnNuevos.hasOwnProperty(tag.toUpperCase())
     });
