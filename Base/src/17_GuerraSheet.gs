@@ -36,17 +36,18 @@ var GC = {
   DON_D:        17,
   RANKING:      18,
   TEMPORADA_2:  19,
-  ORIGEN:       20
+  ORIGEN:       20,
+  COPAS:        21   // 12-oct-2026: copas del jugador en ese día (mem.trophies de /clans/{tag}); se guarda igual que Ranking. Va al final para no mover ningún índice anterior.
 };
 
-var GUERRA_TOTAL_COLS = 20;
+var GUERRA_TOTAL_COLS = 21;
 
 // Encabezados canónicos de la hoja Guerra (mismo orden que GC de arriba). [→ Contexto_Base_Web.md §17B007]
 var GUERRA_HEADERS = ['N°','Fecha','Temporada','Semana','Día','PeriodIndex',
                        'DiaGuerra','Etapa','Clan','Tag','Nombre',
                        'AtaquesHoy','AtaquesSemana','Fame','Barcos',
                        'Donaciones_r','Donaciones_d','Ranking',
-                       'Temporada_2','Origen'];
+                       'Temporada_2','Origen','Copas'];
 
 // ÍNDICES DE COLUMNA - HOJA GUERRA_LOGS (1-based) [→ Contexto_Base_Web.md §17B008]
 var GLC = {
@@ -616,12 +617,30 @@ function _limpiarLinksAccidentalesGuerraIncremental(sh) {
 }
 
 /**
+ * _asegurarColumnaCopasGuerra_(sh) — 12-oct-2026 (pedido usuario: gráfica de copas en perfil y clan).
+ * La hoja Guerra pasa de 20 a 21 columnas (GC.COPAS). Si la hoja todavía tiene 20, agrega la columna y el
+ * encabezado «Copas» copiando el formato del encabezado de Origen. Idempotente. [→ Contexto_Base_Web.md §PF061]
+ */
+function _asegurarColumnaCopasGuerra_(sh) {
+  if (!sh) return;
+  if (sh.getMaxColumns() < GUERRA_TOTAL_COLS) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), GUERRA_TOTAL_COLS - sh.getMaxColumns());
+  }
+  var celda = sh.getRange(1, GC.COPAS);
+  if (String(celda.getValue() || '').trim() === '') {
+    sh.getRange(1, GC.ORIGEN).copyTo(celda, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
+    celda.setValue('Copas');
+  }
+}
+
+/**
  * Actualiza la hoja Guerra con los datos de participación del día actual. [→ Contexto_Base_Web.md §17B034]
  */
 function updateGuerraSheet() {
   var ss  = _getSs();
   var sh  = ss.getSheetByName(CFG.SHEETS.GUERRA);
   if (!sh) { Logger.log('[Guerra] Hoja no encontrada'); return; }
+  _asegurarColumnaCopasGuerra_(sh); // 12-oct-2026: la hoja necesita la columna 21 antes de leer o escribir con GUERRA_TOTAL_COLS
 
   // GUARDIA: sin cache no hay datos válidos — abortar para no corromper la [→ Contexto_Base_Web.md §17B035]
   if (!CACHE_CLAN_DATA) {
@@ -758,6 +777,7 @@ function updateGuerraSheet() {
       var donR    = Number(mem.donationsReceived) || 0;
       var donD    = Number(mem.donations)         || 0;
       var ranking = Number(mem.clanRank)          || 0;
+      var copas   = Number(mem.trophies)          || 0; // 12-oct-2026: copas del jugador hoy (misma fuente que clanRank)
 
       // Nombre: preferir el de /clans/{tag} (memberMap, mem.name), que [→ Contexto_Base_Web.md §17B045]
       var nombreActual = mem.name || part.name || '';
@@ -811,6 +831,7 @@ function updateGuerraSheet() {
         existing[GC.DON_R - 1]   = donR;
         existing[GC.DON_D - 1]   = donD;
         existing[GC.RANKING - 1] = ranking;
+        if (copas > 0) existing[GC.COPAS - 1] = copas; // 0 = la API no mandó trofeos; no se pisa un valor ya guardado
         if (nombreActual && nombreActual !== String(existing[GC.NOMBRE - 1] || '')) {
           existing[GC.NOMBRE - 1] = nombreActual;
         }
@@ -847,7 +868,8 @@ function updateGuerraSheet() {
           donD,                 // Donaciones_d
           ranking,              // Ranking
           ctxClan.temporada + _getTemporadaOffsetRoyaleApi(), // Temporada_2 (punto 1.4)
-          'Original'            // Origen (punto 1.5)
+          'Original',           // Origen (punto 1.5)
+          copas > 0 ? copas : '' // Copas (12-oct-2026)
         ]
       });
       existingIds[idGuerra] = true;
@@ -3966,6 +3988,7 @@ function _syncGuerraCSV(sh, forzar) {
     if (csvExistente) {
       var parsedExistente = _parseCSV(csvExistente);
       if (parsedExistente.length > 0) encabezado = parsedExistente[0]; // preferir el encabezado ya persistido
+      if (encabezado.length < GUERRA_TOTAL_COLS) encabezado = data[0]; // 12-oct-2026: CSV viejo de 20 columnas; se toma el encabezado de la hoja (trae «Copas»)
       for (var pi = 1; pi < parsedExistente.length; pi++) {
         var filaCsv = parsedExistente[pi].slice(0, GUERRA_TOTAL_COLS);
         while (filaCsv.length < GUERRA_TOTAL_COLS) filaCsv.push('');

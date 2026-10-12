@@ -182,6 +182,26 @@ function migrarControlQuitarJugador() {
 // SECCIÓN 1: funciones manuales (reordenado 23-ago-2026); sin _continuarX. [→ Contexto_Base_Web.md §47B015]
 // =============================================================================
 
+// migrarAgregarCopasAGuerra(): UNA vez (12-oct-2026, pedido usuario: gráfica de copas en perfil y clan). Agrega la columna «Copas» (col. 21, GC.COPAS) a la hoja Guerra y al encabezado de Backup_Guerra.csv; las filas viejas quedan con la celda vacía (no hay historial anterior de copas). Idempotente. Ejecutar a mano justo después de subirBaseDesdeGithub(). [→ Contexto_Base_Web.md §PF061]
+function migrarAgregarCopasAGuerra() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  if (!sh) { Logger.log('[Migración Copas Guerra] Hoja Guerra no encontrada.'); return; }
+  _asegurarColumnaCopasGuerra_(sh);
+  Logger.log('[Migración Copas Guerra] Hoja Guerra con ' + sh.getMaxColumns() + ' columnas y encabezado «Copas» en la columna ' + GC.COPAS + '.');
+
+  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+  if (!csvText) { Logger.log('[Migración Copas Guerra] Backup_Guerra.csv no existe todavía; se creará con la columna en la próxima fusión.'); return; }
+  var parsed = _parseCSV(csvText);
+  if (!parsed || !parsed.length) return;
+  if (parsed[0].length >= GUERRA_TOTAL_COLS) { Logger.log('[Migración Copas Guerra] Backup_Guerra.csv ya tiene ' + parsed[0].length + ' columnas; nada que hacer.'); return; }
+  for (var i = 0; i < parsed.length; i++) {
+    while (parsed[i].length < GUERRA_TOTAL_COLS) parsed[i].push(i === 0 ? 'Copas' : '');
+  }
+  _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV(parsed));
+  Logger.log('[Migración Copas Guerra] Backup_Guerra.csv actualizado a ' + GUERRA_TOTAL_COLS + ' columnas (' + (parsed.length - 1) + ' filas).');
+}
+
 // migrarPosicionCategoriaAscensosDescensosEnExtra(): UNA vez; corrige la posición de "Ascensos y descensos" en la columna Categoría de Extra (justo después de los torneos). [→ Contexto_Base_Web.md §47B016]
 function migrarPosicionCategoriaAscensosDescensosEnExtra() {
   var ss = _getSs();
