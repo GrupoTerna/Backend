@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 11/10/2026 23:56:51 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 12/10/2026 14:30:49 */
 
 
 
@@ -2759,6 +2759,62 @@ function _getCsvFolder() {
     var folders = DriveApp.getFoldersByName('CSV');
     return folders.hasNext() ? folders.next() : DriveApp.createFolder('CSV');
   }
+}
+
+// SUBCARPETAS DE LA CARPETA CSV (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §01B158]
+// Cada CSV tiene una subcarpeta asignada. Un nombre sin asignar se queda en la raíz de CSV.
+// Si CSV_MOVER_A_SUBCARPETA es true, al guardar un archivo encontrado fuera de su subcarpeta se mueve a ella.
+var CSV_MOVER_A_SUBCARPETA = true;
+var CSV_SUBCARPETAS_ = ['Background', 'Hojas', 'Informes', 'Tampermonkey'];
+var _CSV_SUBCARPETAS_MEM_ = {};
+
+function _csvSubcarpetaDe_(filename) {
+  var n = String(filename || '');
+  // Informes: respaldos previos a reparar, reparaciones, limpiezas, revisiones y diagnósticos.
+  if (/^Backup_Guerra ANTES de reparar/.test(n) || /^Reparacion_/.test(n) || /^Limpieza_Coliseo_/.test(n) ||
+      /^Revision_Guerra/.test(n) || /^Diagnostico_/.test(n) || /^HistorialGuerra_Grupal/.test(n)) return 'Informes';
+  // Tampermonkey: lo que se arma con datos traídos de RoyaleAPI por Tampermonkey.
+  if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv') return 'Tampermonkey';
+  var background = ['Backup_Cards.csv', 'Backup_Cards_2.csv', 'Backup_Cards_3.csv', 'Backup_Modo.csv', 'Backup_Arena.csv',
+    'Backup_Insignias.csv', 'Backup_Insignias_2.csv', 'Backup_Cofres.csv', 'Backup_Locations.csv',
+    'Backup_Seasons.csv', 'Backup_CaminoLeyendas.csv'];
+  if (background.indexOf(n) >= 0) return 'Background';
+  var hojas = ['Backup_Guerra.csv', 'Backup_Guerra_Logs.csv', 'Backup_Directorio.csv', 'Backup_Inactivos.csv',
+    'Backup_Clan.csv', 'Backup_Players.csv', 'Backup_Administradores.csv', 'Backup_Vetados.csv', 'Backup_Nuevos.csv',
+    'Backup_Pendientes.csv', 'Backup_Extra.csv', 'Backup_Mensajes.csv', 'Backup_Comentarios.csv',
+    'Backup_Calendario_2.csv', 'Backup_T_Lista.csv', 'Backup_T_Asistencia.csv', 'Backup_T_Resoluciones.csv',
+    'Backup_S_Lista.csv', 'Backup_S_Asistencia.csv', 'Backup_CR_Lista.csv', 'Backup_Historial_A-D.csv',
+    'Backup_Historial_I-S.csv', 'Backup_Grupo_Verificado.csv', 'Backup_Alertas_HistorialGuerra.csv',
+    'Alertas_HistorialGuerra.csv', 'Backup_Conflictos.csv'];
+  if (hojas.indexOf(n) >= 0) return 'Hojas';
+  return ''; // sin asignar: raíz de CSV (p. ej. Backup_Battlelogs, ProgresoEventos, PerfilWeb, Logros)
+}
+
+function _getCsvSubcarpeta_(nombre, crear) {
+  if (!nombre) return _getCsvFolder();
+  if (_CSV_SUBCARPETAS_MEM_[nombre]) return _CSV_SUBCARPETAS_MEM_[nombre];
+  var it = _getCsvFolder().getFoldersByName(nombre);
+  var carpeta = it.hasNext() ? it.next() : (crear ? _getCsvFolder().createFolder(nombre) : null);
+  if (carpeta) _CSV_SUBCARPETAS_MEM_[nombre] = carpeta;
+  return carpeta;
+}
+
+// Busca un CSV: primero en su subcarpeta, luego en la raíz y al final en las demás subcarpetas.
+// Devuelve { file, carpetaNombre } ('' = raíz) o null si no existe.
+function _csvBuscarArchivo_(filename) {
+  var asignada = _csvSubcarpetaDe_(filename);
+  var orden = [asignada];
+  if (asignada !== '') orden.push('');
+  for (var i = 0; i < CSV_SUBCARPETAS_.length; i++) {
+    if (orden.indexOf(CSV_SUBCARPETAS_[i]) < 0) orden.push(CSV_SUBCARPETAS_[i]);
+  }
+  for (var j = 0; j < orden.length; j++) {
+    var carpeta = _getCsvSubcarpeta_(orden[j], false);
+    if (!carpeta) continue;
+    var files = carpeta.getFilesByName(filename);
+    if (files.hasNext()) return { file: files.next(), carpetaNombre: orden[j] };
+  }
+  return null;
 }
 
 function _getSs() {
@@ -7123,10 +7179,9 @@ function _loadCSVFromDrive(filename) {
   }
 
   // 3) Drive
-  var folder = _getCsvFolder();
-  var files = folder.getFilesByName(filename);
-  if (files.hasNext()) {
-    var texto = files.next().getBlob().getDataAsString('UTF-8');
+  var hit = _csvBuscarArchivo_(filename); // subcarpeta asignada -> raíz -> demás subcarpetas [→ Contexto_Base_Web.md §01B158]
+  if (hit) {
+    var texto = hit.file.getBlob().getDataAsString('UTF-8');
     _CSV_MEM_[filename] = texto;
     _csvCachePut_(filename, texto);
     return texto;
@@ -7428,12 +7483,20 @@ function _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx
 }
 
 function _saveCSVToDrive(filename, content) {
-  var folder = _getCsvFolder();
-  var files = folder.getFilesByName(filename);
-  if (files.hasNext()) {
-    files.next().setContent(content);
+  var hit = _csvBuscarArchivo_(filename); // nunca crea una copia si el archivo ya existe en alguna subcarpeta [→ Contexto_Base_Web.md §01B158]
+  var destino = _csvSubcarpetaDe_(filename);
+  if (hit) {
+    hit.file.setContent(content);
+    if (CSV_MOVER_A_SUBCARPETA && destino && hit.carpetaNombre !== destino) {
+      try {
+        hit.file.moveTo(_getCsvSubcarpeta_(destino, true));
+        Logger.log('[CSV] ' + filename + ' movido a la subcarpeta "' + destino + '".');
+      } catch (eMover) {
+        Logger.log('[CSV] No se pudo mover ' + filename + ' a "' + destino + '": ' + eMover.message);
+      }
+    }
   } else {
-    folder.createFile(filename, content, MimeType.CSV);
+    _getCsvSubcarpeta_(destino, true).createFile(filename, content, MimeType.CSV);
   }
   // Invalida la caché compartida y deja el texto nuevo en memoria de esta ejecución.
   _csvCacheBorrar_(filename);
@@ -7576,9 +7639,8 @@ function _logTampermonkeyADrive(boton, resultado, errorTexto) {
   try {
     var nombreArchivo = 'Log_Tampermonkey_' + boton + '.csv';
     var encabezado = 'Fecha,Estado,Resultado,Error';
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_CSV);
-    var files = folder.getFilesByName(nombreArchivo);
-    var file = files.hasNext() ? files.next() : null;
+    var hitLog = _csvBuscarArchivo_(nombreArchivo); // vive en la subcarpeta Tampermonkey [→ Contexto_Base_Web.md §01B158]
+    var file = hitLog ? hitLog.file : null;
 
     var lineas;
     if (file) {
@@ -7611,7 +7673,7 @@ function _logTampermonkeyADrive(boton, resultado, errorTexto) {
     if (file) {
       file.setContent(contenidoFinal);
     } else {
-      folder.createFile(nombreArchivo, contenidoFinal, MimeType.CSV);
+      _getCsvSubcarpeta_(_csvSubcarpetaDe_(nombreArchivo), true).createFile(nombreArchivo, contenidoFinal, MimeType.CSV);
     }
   } catch (eLog) {
     // Nunca debe romper el flujo del botón -- solo se registra en el log
@@ -12387,10 +12449,9 @@ function _getCsvDirMap() {
   var map = {};
 
   try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_CSV);
-    var files = folder.getFilesByName('Backup_Directorio.csv');
-    if (files.hasNext()) {
-      var csvText = files.next().getBlob().getDataAsString("UTF-8");
+    var hitDir = _csvBuscarArchivo_('Backup_Directorio.csv'); // subcarpeta Hojas [→ Contexto_Base_Web.md §01B158]
+    if (hitDir) {
+      var csvText = hitDir.file.getBlob().getDataAsString("UTF-8");
       var parsed = Utilities.parseCsv(csvText);
       if (parsed.length > 1) {
         var headers = parsed[0];
@@ -40531,6 +40592,98 @@ function _generarUrlMazo2DesdeMapas(tag, cardInfo, playerCards) {
   return _ensamblarUrlMazo(listas.inc, listas.exc, false);
 }
 
+/**
+ * _construirCards2DeTag(tag) [→ Contexto_Base_Web.md §PF051]
+ * Igual que _construirCards2PorTag(), pero lee solo las filas de UN jugador (la usa el perfil web).
+ */
+function _construirCards2DeTag(tag) {
+  var tagLimpio = cleanTag(tag);
+  if (!tagLimpio) return null;
+  var csv = _leerCards2CSV();
+  if (!csv.rows || csv.rows.length === 0) return null;
+
+  // cols: 0=N°, 1=Tag, 2=ID, 3=Level, 4=EvolutionLevel
+  var cartas = {};
+  var hay = false;
+  for (var j = 0; j < csv.rows.length; j++) {
+    if (cleanTag(csv.rows[j][1]) !== tagLimpio) continue;
+    var pId = String(csv.rows[j][2] || '').trim();
+    if (!pId) continue;
+    var pLevel = csv.rows[j][3];
+    var pEvo   = csv.rows[j][4];
+    cartas[pId] = {
+      level: (pLevel !== '' && pLevel !== null && pLevel !== undefined) ? Number(pLevel) : 0,
+      evoLevel: (pEvo !== '' && pEvo !== null && pEvo !== undefined) ? Number(pEvo) : -1
+    };
+    hay = true;
+  }
+  return hay ? cartas : null;
+}
+
+/**
+ * _nivelPromedioCartas(playerCards) [→ Contexto_Base_Web.md §PF051]
+ * Nivel promedio ponderado: cada nivel pesa por la cantidad de cartas que tiene el jugador en ese nivel.
+ * Es la misma cuenta del pastel "Cartas por nivel" de perfil.html. No cuenta las cartas de torre ni las de nivel 0.
+ * @returns {?{promedio:number, nivelMinimo:number, cartas:number}} nivelMinimo = parte entera hacia abajo del promedio.
+ */
+function _nivelPromedioCartas(playerCards) {
+  if (!playerCards) return null;
+  var cantidadPorNivel = {};
+  var total = 0;
+  for (var id in playerCards) {
+    if (!playerCards.hasOwnProperty(id)) continue;
+    if (_esCartaTorre(id)) continue;
+    var nivel = Number(playerCards[id].level);
+    if (!(nivel >= 1)) continue;
+    cantidadPorNivel[nivel] = (cantidadPorNivel[nivel] || 0) + 1;
+    total++;
+  }
+  if (total === 0) return null;
+  var suma = 0;
+  for (var n in cantidadPorNivel) {
+    if (cantidadPorNivel.hasOwnProperty(n)) suma += Number(n) * cantidadPorNivel[n];
+  }
+  var promedio = suma / total;
+  return { promedio: promedio, nivelMinimo: Math.floor(promedio), cartas: total };
+}
+
+/**
+ * _generarUrlMazo3DesdeMapas(tag, cardInfo, playerCards) [→ Contexto_Base_Web.md §PF051]
+ * Tercera sugerencia: como la (2) (solo excluye, no fuerza cuáles incluir), pero además excluye las cartas de nivel menor
+ * que el máximo entero del nivel promedio. Una carta excluida por nivel se trata como si no estuviera desbloqueada
+ * (también se excluyen su evolución y su héroe).
+ * @returns {?{url:string, nivelPromedio:number, nivelMinimo:number}}
+ */
+function _generarUrlMazo3DesdeMapas(tag, cardInfo, playerCards) {
+  if (!tag) return null;
+  if (!cardInfo || Object.keys(cardInfo).length === 0) return null;
+  if (!playerCards) return null;
+
+  var prom = _nivelPromedioCartas(playerCards);
+  if (!prom) return null;
+
+  var altas = {};
+  for (var id in playerCards) {
+    if (playerCards.hasOwnProperty(id) && Number(playerCards[id].level) >= prom.nivelMinimo) altas[id] = playerCards[id];
+  }
+  var listas = _construirListasMazoDesdeMapas(cardInfo, altas);
+  return { url: _ensamblarUrlMazo(listas.inc, listas.exc, false), nivelPromedio: prom.promedio, nivelMinimo: prom.nivelMinimo };
+}
+
+/**
+ * generarMazo3(tag) [→ Contexto_Base_Web.md §PF051]
+ * Para el perfil web (_webPerfilExtendido): null si no hay datos de Cards_2 de este jugador.
+ */
+function generarMazo3(tag) {
+  if (!tag) return null;
+  var tagClean = String(tag).trim();
+  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
+
+  var ss = _getSs();
+  var cardInfo = _construirCardInfoMap(ss);
+  return _generarUrlMazo3DesdeMapas(tagClean, cardInfo, _construirCards2DeTag(tagClean));
+}
+
 // E) COSTOS DE SUBIDA DE NIVEL: Backup_Cards_3.csv (catálogo fijo, manual) [→ Contexto_Base_Web.md §31B051]
 
 /**
@@ -43099,6 +43252,16 @@ function _webPerfilExtendido(fila) {
   if (cwStats) ext.cwStats = cwStats;
   if (fila[DC.DECK   - 1]) ext.deck  = String(fila[DC.DECK   - 1]);
   if (fila[DC.DECK_2 - 1]) ext.deck2 = String(fila[DC.DECK_2 - 1]);
+  // Sugerencias de mazo (3) (12-oct-2026): solo cartas con nivel >= máximo entero del nivel promedio ponderado; se arma al vuelo desde Cards_2 (sin columna nueva en Directorio). [→ Contexto_Base_Web.md §PF051]
+  try {
+    var mazo3 = generarMazo3(fila[DC.TAG - 1]);
+    if (mazo3 && mazo3.url) {
+      ext.deck3 = mazo3.url;
+      ext.deck3Nivel = mazo3.nivelMinimo;
+    }
+  } catch (e3) {
+    Logger.log('[WebAPI] No se pudo armar la sugerencia de mazo (3): ' + e3.message);
+  }
 
   // CONEXIÓN 11-sep-2026: campos que Directorio no trae y solo están en el JSON crudo de /players en Drive (ver _webDatosDriveJugador()). FIX 15-sep-2026: se renombra `ext.drive` a `ext.rawClash`, que es lo que perfil.html lee (rawClash(j) busca j.extendido.rawClash); por el desajuste no se mostraba ninguna sección que dependiera de rawClash; cada sección decide sola si mostrarse. [→ Contexto_Base_Web.md §37B063]
   var datosDrive = _webDatosDriveJugador(fila[DC.TAG - 1]);
