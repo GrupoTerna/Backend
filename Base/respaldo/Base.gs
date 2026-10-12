@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 11/10/2026 23:39:19 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 11/10/2026 23:56:51 */
 
 
 
@@ -1655,20 +1655,10 @@ var CFG = {
   RAZON_VALORES_VALIDOS: ['NARANJA x','Vetado por clan','Incumplimiento de ataques','Conducta inapropiada','Inactividad prolongada','Solicitud propia'],
 
   // Datos del fundador (para lógica especial de multicuenta)
-  FUNDADOR: {celular:'XXXXXXXXX', prefijo:'51', jugador:'Leder (Caandre)'},
+  FUNDADOR: {prefijo:'51', jugador:'Leder (Caandre)'}, // el celular del fundador ya no esta en el codigo: Script Property FUNDADOR_CELULAR [→ Contexto_Base_Web.md §PF048]
 
-  // ADMIN_FAMILIA - Respaldo de qué clan(es) administra cada admin. [→ Contexto_Base_Web.md §01B006]
-  ADMIN_FAMILIA: [
-    {nombre:'Diana',      celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    {nombre:'Sebas',      celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    {nombre:'Maikel',     celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    {nombre:'Micho',      celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    {nombre:'MasterNopi', celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    {nombre:'Leder',      celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    // Solo administran Grupo乂Terna™ (ClanTag #GCRG8L00 = CFG.TERNA_TAGS[0], [→ Contexto_Base_Web.md §01B007]
-    {nombre:'Goncha',     celular:'XXXXXXXXX', prefijo:'51', clanes:['#GCRG8L00']},
-    {nombre:'Massimo',    celular:'XXXXXXXXX', prefijo:'51', clanes:['#GCRG8L00']},
-  ],
+  // ADMIN_FAMILIA (que clanes administra cada admin, por celular) ya no esta en el codigo porque el repo es publico: Script Property ADMIN_FAMILIA_JSON,
+  // que se lee con _getAdminFamilia_() [→ Contexto_Base_Web.md §PF048 y §01B006]
 
   // Nombre de respaldo por ClanTag, usado SOLO si todavía no hay cache de [→ Contexto_Base_Web.md §01B008]
   CLAN_NOMBRES_FALLBACK: {
@@ -2541,14 +2531,46 @@ function soloDigitos(v) {
   return String(v || '').replace(/\D/g, '');
 }
 
+// DATOS PRIVADOS FUERA DEL CODIGO (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §PF048]
+// El repo Backend es publico: los celulares ya no van en el codigo. Se guardan en Propiedades de la secuencia de comandos (Script Properties):
+//   FUNDADOR_CELULAR (solo digitos, sin prefijo), ADMIN_FAMILIA_JSON (lista [{nombre, celular, prefijo, clanes}]),
+//   CELULARES_RESPALDO_MANUAL_JSON ({ "TAGSINNUMERAL": "celular" }) y TELEFONO_PRUEBA (para simularMensajeBot()).
+// Si una propiedad falta, se usa un valor vacio y NO se hace ninguna coincidencia (nunca se compara contra un celular vacio).
+var _propPrivadaCache_ = {};
+function _getPropPrivada_(clave) {
+  if (Object.prototype.hasOwnProperty.call(_propPrivadaCache_, clave)) return _propPrivadaCache_[clave];
+  var v = '';
+  try { v = PropertiesService.getScriptProperties().getProperty(clave) || ''; } catch (e) { Logger.log('[Privado] No se pudo leer ' + clave + ': ' + e.message); }
+  _propPrivadaCache_[clave] = v;
+  return v;
+}
+function _getPropPrivadaJson_(clave, porDefecto) {
+  var txt = _getPropPrivada_(clave);
+  if (!txt) return porDefecto;
+  try { return JSON.parse(txt); } catch (e) { Logger.log('[Privado] ' + clave + ' no es un JSON valido: ' + e.message); return porDefecto; }
+}
+function _getFundadorCelular_() { return soloDigitos(_getPropPrivada_('FUNDADOR_CELULAR')); }
+function _getAdminFamilia_() { var l = _getPropPrivadaJson_('ADMIN_FAMILIA_JSON', []); return Object.prototype.toString.call(l) === '[object Array]' ? l : []; }
+function _getCelularesRespaldoManual_() { var m = _getPropPrivadaJson_('CELULARES_RESPALDO_MANUAL_JSON', {}); return (m && typeof m === 'object') ? m : {}; }
+
+/**
+ * verificarDatosPrivados(): ejecutar a mano para comprobar que las propiedades privadas estan cargadas. Solo informa cantidades, nunca los valores.
+ */
+function verificarDatosPrivados() {
+  Logger.log('[Privado] FUNDADOR_CELULAR: ' + (_getFundadorCelular_() ? 'cargado (' + _getFundadorCelular_().length + ' digitos)' : 'FALTA') +
+    ' | ADMIN_FAMILIA_JSON: ' + _getAdminFamilia_().length + ' admin(es) | CELULARES_RESPALDO_MANUAL_JSON: ' + Object.keys(_getCelularesRespaldoManual_()).length + ' tag(s)' +
+    ' | TELEFONO_PRUEBA: ' + (_getPropPrivada_('TELEFONO_PRUEBA') ? 'cargado' : 'no cargado (solo hace falta para simularMensajeBot)'));
+}
+
 /**
  * _getClanesAdminTexto(prefijo, celular) [→ Contexto_Base_Web.md §01B141]
  */
 function _getClanesAdminTexto(prefijo, celular) {
   var tel = soloDigitos(prefijo) + soloDigitos(celular);
   if (!tel) return '';
-  for (var i = 0; i < CFG.ADMIN_FAMILIA.length; i++) {
-    var a = CFG.ADMIN_FAMILIA[i];
+  var familia = _getAdminFamilia_();
+  for (var i = 0; i < familia.length; i++) {
+    var a = familia[i];
     var telA = soloDigitos(a.prefijo) + soloDigitos(a.celular);
     if (telA && telA === tel) {
       if (a.clanes === 'TODOS') return _getNombresClanesTernaOrdenados().join(', ');
@@ -3503,7 +3525,7 @@ function _setupAdministradores(ss) {
     'Prefijo','Celular','WSP(G)','Estado','Admin','Vetado','Razón',
     'Vigencia','Inactividad(d)','Alerta','Cat_disp','Funciones',
     // Clanes_Admin (col 22): CALCULADA. Ver _getClanesAdminTexto() en
-    // 01_Config_Global.gs y CFG.ADMIN_FAMILIA. No editar a mano.
+    // 01_Config_Global.gs y ADMIN_FAMILIA_JSON (Script Property). No editar a mano.
     'Clanes_Admin',
     // Clave (col 23): contraseña de login web EN TEXTO PLANO, autogenerada [→ Contexto_Base_Web.md §02B055]
     'Clave',
@@ -13035,9 +13057,10 @@ function _construirFila(tag, member, info, clanTag, existing, csvRow, tagMulticu
   }
 
   // RED DE SEGURIDAD — Celular (ver CELULARES_RESPALDO_MANUAL_ más arriba [→ Contexto_Base_Web.md §11B080]
-  if (!celular && CELULARES_RESPALDO_MANUAL_[cleanTag(tag)]) {
-    celular = CELULARES_RESPALDO_MANUAL_[cleanTag(tag)];
-    Logger.log('[Celular-Respaldo] ' + tag + ': Celular restaurado desde CELULARES_RESPALDO_MANUAL_ (existing y CSV llegaron vacíos).');
+  var respaldoManual = _getCelularesRespaldoManual_();
+  if (!celular && respaldoManual[cleanTag(tag)]) {
+    celular = soloDigitos(respaldoManual[cleanTag(tag)]);
+    Logger.log('[Celular-Respaldo] ' + tag + ': Celular restaurado desde la propiedad CELULARES_RESPALDO_MANUAL_JSON (existing y CSV llegaron vacíos).');
   }
 
   // RED DE SEGURIDAD — Vetado (pedido explícito del usuario: "el código no [→ Contexto_Base_Web.md §11B081]
@@ -13103,7 +13126,7 @@ function _construirFila(tag, member, info, clanTag, existing, csvRow, tagMulticu
   // Préstamo: columna de edición MANUAL. Indica a quién se prestó esta cuenta. [→ Contexto_Base_Web.md §11B086]
   fila[DC.PRESTAMO   - 1] = prestamo;
   // Clanes_Admin: calculada, no manual. Solo se llena si Admin="Sí" y el
-  // celular coincide con CFG.ADMIN_FAMILIA (01_Config_Global.gs).
+  // celular coincide con ADMIN_FAMILIA_JSON (_getAdminFamilia_(), 01_Config_Global.gs).
   fila[DC.CLANES_ADMIN - 1] = (String(admin || '').trim() === 'Sí')
     ? _getClanesAdminTexto(prefijo, celular)
     : '';
@@ -13134,7 +13157,8 @@ function _construirFila(tag, member, info, clanTag, existing, csvRow, tagMulticu
  */
 function _calcJugador(tag, nombre, nomMulti, celular, multiData) {
   var celLimpio = String(celular || '').replace(/\D/g,'');
-  if (celLimpio === CFG.FUNDADOR.celular) return CFG.FUNDADOR.jugador;
+  var celFundador = _getFundadorCelular_();
+  if (celFundador && celLimpio === celFundador) return CFG.FUNDADOR.jugador;
 
   var finalNomMulti = nomMulti || '';
 
@@ -13897,9 +13921,8 @@ var ASCENSOS_TOTAL_COLS = 18;
 var ASC_ESTADO_PROPUESTA_VALORES = ['Planificado', 'Realizado'];
 
 // RED DE SEGURIDAD (14-ago-2026, pedido explícito del usuario) — Celular de [→ Contexto_Base_Web.md §13B002]
-var CELULARES_RESPALDO_MANUAL_ = {
-  'JR9J0JCQ9': 'XXXXXXXXX' // Lucky — ver aviso arriba, NO borrar esta línea.
-};
+// El mapa CELULARES_RESPALDO_MANUAL_ ya no esta en el codigo (repo publico): vive en la Script Property CELULARES_RESPALDO_MANUAL_JSON y se lee con
+// _getCelularesRespaldoManual_() (01_Config_Global.gs) [→ Contexto_Base_Web.md §PF048]
 
 // RED DE SEGURIDAD (14-ago-2026, pedido explícito del usuario) — "el código [→ Contexto_Base_Web.md §13B003]
 var NOMBRE_JSON_VETADOS_CONFIRMADOS_ = 'ClanSystem_Backup_VetadosConfirmados.json';
@@ -17518,7 +17541,7 @@ function SincronizarContactosNube() {
       };
     }
     var g = grupos[phone];
-    if (cel === CFG.FUNDADOR.celular) g.esFundador = true;
+    if (_getFundadorCelular_() && cel === _getFundadorCelular_()) g.esFundador = true;
 
     // FUENTE DE VERDAD: Extrae y acumula de manera única la celda de la columna Jugador
     var jugadorTexto = String(f[C.JUGADOR] || '').trim();
@@ -21486,6 +21509,9 @@ function _repararFamaDomingoDesdeJSON_(aplicar, objetivos) {
 var REPARAR_DOMINGOS_CORRECCIONES = [[2, 34], [3, 27], [4, 27], [5, 27]];
 var REPARAR_DOMINGOS_CLANTAG = { 'Grupo乂Terna™': '#GCRG8L00', 'GrupoXTerna™2': '#GYCU9YRG', 'GrupoXTerna™3': '#GQQPPJGR', 'Mini乂Ternas™': '#GG99LCJY' };
 var REPARAR_DOMINGOS_TOPE_ATAQUES = 16;
+// Plausibilidad (12-oct-2026): cada ataque de guerra da al menos 75 de fama (barco perdido), asi que si los ataques suben respecto al sabado y las
+// medallas del domingo son menos que 75 por ataque nuevo, el Log no es coherente consigo mismo y la fila queda SIN RESOLVER [→ Contexto_Base_Web.md §PF047]
+var REPARAR_DOMINGOS_MEDALLAS_MIN_POR_ATAQUE = 75;
 
 function repararDomingosDesdeCorreccionesInforme() { _repararDomingosDesdeCorrecciones_(false); }
 function repararDomingosDesdeCorreccionesAplicar() { _repararDomingosDesdeCorrecciones_(true); }
@@ -21544,6 +21570,10 @@ function _calcularReparacionDomingoDesdeCorrecciones_(filas, temporada, periodId
     if (s && ataqNueva < s.ataques) { sinResolver.push({ idx: i, motivo: 'los ataques del Log (' + ataqNueva + ') son menos que los del sabado en la hoja (' + s.ataques + ')' }); return; }
     if (ataqNueva > REPARAR_DOMINGOS_TOPE_ATAQUES) { sinResolver.push({ idx: i, motivo: 'los ataques del Log (' + ataqNueva + ') superan el tope de ' + REPARAR_DOMINGOS_TOPE_ATAQUES + ' por semana: revisar a mano' }); return; }
     if (opciones.topeMedallas > 0 && s && (fameNueva - s.fame) > opciones.topeMedallas) { sinResolver.push({ idx: i, motivo: 'las medallas del domingo (' + (fameNueva - s.fame) + ') superan el tope de ' + opciones.topeMedallas + ' por dia: revisar a mano' }); return; }
+    if (s && opciones.medallasMinPorAtaque > 0 && (ataqNueva - s.ataques) > 0 && (fameNueva - s.fame) < opciones.medallasMinPorAtaque * (ataqNueva - s.ataques)) {
+      sinResolver.push({ idx: i, motivo: 'el Log sube los ataques (' + s.ataques + ' a ' + ataqNueva + ') pero las medallas del domingo son solo ' + (fameNueva - s.fame) + ' (minimo ' + (opciones.medallasMinPorAtaque * (ataqNueva - s.ataques)) + '): el Log no es coherente, revisar a mano' });
+      return;
+    }
     cambios.push({ idx: i, fameAnt: fameAnt, fameNueva: fameNueva, ataqAnt: ataqAnt, ataqNueva: ataqNueva, ataqHoy: ataqHoy,
       sabFame: s ? s.fame : '', sabAtaques: s ? s.ataques : '',
       detalle: 'Fame y AtaquesSemana tomados del Log de RoyaleAPI (Correcciones_Guerra.csv' + (b.estado === 'ok_sin_clan' ? ', sin ClanTag: cruzado solo por Tag' : '') + ')' +
@@ -21561,7 +21591,7 @@ function _repararDomingosDesdeCorrecciones_(aplicar) {
     var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
     var overlay = _cargarOverlayCorreccionesGuerraPorClan();
     if (!Object.keys(overlay).length) { Logger.log('[ReparoDomingosLog] Correcciones_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
-    var opciones = { topeMedallas: REPARAR_FAMA_TOPE_MEDALLAS_DIA };
+    var opciones = { topeMedallas: REPARAR_FAMA_TOPE_MEDALLAS_DIA, medallasMinPorAtaque: REPARAR_DOMINGOS_MEDALLAS_MIN_POR_ATAQUE };
     var informe = [['Fuente', 'Tipo', 'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'PeriodIndex', 'Fame anterior', 'Fame nueva', 'AtaquesSemana anterior', 'AtaquesSemana nueva', 'Fame sabado', 'AtaquesSemana sabado', 'AtaquesHoy (no se toca)', 'Detalle', 'Origen anterior']];
     var resumen = { csvCambios: 0, csvSinResolver: 0, csvIguales: 0, csvSinDato: 0, hojaCambios: 0, hojaSinResolver: 0 };
 
@@ -51786,7 +51816,8 @@ var FUENTES_CONTENIDO = [
 // -----------------------------------------------------------------------
 // simularMensajeBot(): ejecutar desde el editor cambiando TELEFONO_PRUEBA y TEXTO_PRUEBA; el resultado sale en el Logger. [→ Contexto_Base_Web.md §44B009]
 function simularMensajeBot() {
-  var TELEFONO_PRUEBA = '51XXXXXXXXX';
+  var TELEFONO_PRUEBA = _getPropPrivada_('TELEFONO_PRUEBA'); // Script Property (ya no va en el codigo, repo publico) [→ Contexto_Base_Web.md §PF048]
+  if (!TELEFONO_PRUEBA) { Logger.log('Falta la propiedad TELEFONO_PRUEBA (Propiedades de la secuencia de comandos).'); return; }
   var TEXTO_PRUEBA = 'hola';
   var resultado = _procesarMensajeEntrante(TELEFONO_PRUEBA, TEXTO_PRUEBA);
   var esObjeto  = resultado && typeof resultado === 'object' && typeof resultado.texto !== 'undefined';
