@@ -52,20 +52,10 @@ var CFG = {
   RAZON_VALORES_VALIDOS: ['NARANJA x','Vetado por clan','Incumplimiento de ataques','Conducta inapropiada','Inactividad prolongada','Solicitud propia'],
 
   // Datos del fundador (para lógica especial de multicuenta)
-  FUNDADOR: {celular:'XXXXXXXXX', prefijo:'51', jugador:'Leder (Caandre)'},
+  FUNDADOR: {prefijo:'51', jugador:'Leder (Caandre)'}, // el celular del fundador ya no esta en el codigo: Script Property FUNDADOR_CELULAR [→ Contexto_Base_Web.md §PF048]
 
-  // ADMIN_FAMILIA - Respaldo de qué clan(es) administra cada admin. [→ Contexto_Base_Web.md §01B006]
-  ADMIN_FAMILIA: [
-    {nombre:'Diana',      celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    {nombre:'Sebas',      celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    {nombre:'Maikel',     celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    {nombre:'Micho',      celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    {nombre:'MasterNopi', celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    {nombre:'Leder',      celular:'XXXXXXXXX', prefijo:'51', clanes:'TODOS'},
-    // Solo administran Grupo乂Terna™ (ClanTag #GCRG8L00 = CFG.TERNA_TAGS[0], [→ Contexto_Base_Web.md §01B007]
-    {nombre:'Goncha',     celular:'XXXXXXXXX', prefijo:'51', clanes:['#GCRG8L00']},
-    {nombre:'Massimo',    celular:'XXXXXXXXX', prefijo:'51', clanes:['#GCRG8L00']},
-  ],
+  // ADMIN_FAMILIA (que clanes administra cada admin, por celular) ya no esta en el codigo porque el repo es publico: Script Property ADMIN_FAMILIA_JSON,
+  // que se lee con _getAdminFamilia_() [→ Contexto_Base_Web.md §PF048 y §01B006]
 
   // Nombre de respaldo por ClanTag, usado SOLO si todavía no hay cache de [→ Contexto_Base_Web.md §01B008]
   CLAN_NOMBRES_FALLBACK: {
@@ -938,14 +928,46 @@ function soloDigitos(v) {
   return String(v || '').replace(/\D/g, '');
 }
 
+// DATOS PRIVADOS FUERA DEL CODIGO (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §PF048]
+// El repo Backend es publico: los celulares ya no van en el codigo. Se guardan en Propiedades de la secuencia de comandos (Script Properties):
+//   FUNDADOR_CELULAR (solo digitos, sin prefijo), ADMIN_FAMILIA_JSON (lista [{nombre, celular, prefijo, clanes}]),
+//   CELULARES_RESPALDO_MANUAL_JSON ({ "TAGSINNUMERAL": "celular" }) y TELEFONO_PRUEBA (para simularMensajeBot()).
+// Si una propiedad falta, se usa un valor vacio y NO se hace ninguna coincidencia (nunca se compara contra un celular vacio).
+var _propPrivadaCache_ = {};
+function _getPropPrivada_(clave) {
+  if (Object.prototype.hasOwnProperty.call(_propPrivadaCache_, clave)) return _propPrivadaCache_[clave];
+  var v = '';
+  try { v = PropertiesService.getScriptProperties().getProperty(clave) || ''; } catch (e) { Logger.log('[Privado] No se pudo leer ' + clave + ': ' + e.message); }
+  _propPrivadaCache_[clave] = v;
+  return v;
+}
+function _getPropPrivadaJson_(clave, porDefecto) {
+  var txt = _getPropPrivada_(clave);
+  if (!txt) return porDefecto;
+  try { return JSON.parse(txt); } catch (e) { Logger.log('[Privado] ' + clave + ' no es un JSON valido: ' + e.message); return porDefecto; }
+}
+function _getFundadorCelular_() { return soloDigitos(_getPropPrivada_('FUNDADOR_CELULAR')); }
+function _getAdminFamilia_() { var l = _getPropPrivadaJson_('ADMIN_FAMILIA_JSON', []); return Object.prototype.toString.call(l) === '[object Array]' ? l : []; }
+function _getCelularesRespaldoManual_() { var m = _getPropPrivadaJson_('CELULARES_RESPALDO_MANUAL_JSON', {}); return (m && typeof m === 'object') ? m : {}; }
+
+/**
+ * verificarDatosPrivados(): ejecutar a mano para comprobar que las propiedades privadas estan cargadas. Solo informa cantidades, nunca los valores.
+ */
+function verificarDatosPrivados() {
+  Logger.log('[Privado] FUNDADOR_CELULAR: ' + (_getFundadorCelular_() ? 'cargado (' + _getFundadorCelular_().length + ' digitos)' : 'FALTA') +
+    ' | ADMIN_FAMILIA_JSON: ' + _getAdminFamilia_().length + ' admin(es) | CELULARES_RESPALDO_MANUAL_JSON: ' + Object.keys(_getCelularesRespaldoManual_()).length + ' tag(s)' +
+    ' | TELEFONO_PRUEBA: ' + (_getPropPrivada_('TELEFONO_PRUEBA') ? 'cargado' : 'no cargado (solo hace falta para simularMensajeBot)'));
+}
+
 /**
  * _getClanesAdminTexto(prefijo, celular) [→ Contexto_Base_Web.md §01B141]
  */
 function _getClanesAdminTexto(prefijo, celular) {
   var tel = soloDigitos(prefijo) + soloDigitos(celular);
   if (!tel) return '';
-  for (var i = 0; i < CFG.ADMIN_FAMILIA.length; i++) {
-    var a = CFG.ADMIN_FAMILIA[i];
+  var familia = _getAdminFamilia_();
+  for (var i = 0; i < familia.length; i++) {
+    var a = familia[i];
     var telA = soloDigitos(a.prefijo) + soloDigitos(a.celular);
     if (telA && telA === tel) {
       if (a.clanes === 'TODOS') return _getNombresClanesTernaOrdenados().join(', ');

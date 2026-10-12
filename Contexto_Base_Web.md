@@ -1175,6 +1175,19 @@ Solo el 04/10 conserva los ataques con la fama en 0. Chistris: sábado 03/10 con
 **Cómo correrlo.** 1) `subirBaseDesdeGithub()` antes de cualquier descarga (skill 0.3). 2) `repararDomingosDesdeCorreccionesInforme()` y revisar el CSV en Drive. 3) `repararDomingosDesdeCorreccionesAplicar()`.
 
 
+### PF048 — Celulares fuera del código (repo público) (12-oct-2026, pedido del usuario)
+
+**Por qué.** `GrupoTerna/Backend` es público y tenía celulares en `Base/src/01_Config_Global.gs` (`CFG.FUNDADOR` y `CFG.ADMIN_FAMILIA`), `Base/src/13_Inactivos_Vetados.gs` (`CELULARES_RESPALDO_MANUAL_`) y `Base/src/44_BotWhatsApp.gs` (`TELEFONO_PRUEBA` de `simularMensajeBot()`), más tres menciones en este contexto (se enmascararon como `<celular>`). `Base/respaldo/Base.gs` es generado por Apps Script y se limpia solo en la primera `descargarBase()` posterior a `subirBaseDesdeGithub()`.
+
+**Cómo funciona ahora.** Los valores viven en Propiedades de la secuencia de comandos (Script Properties): `FUNDADOR_CELULAR` (solo dígitos, sin prefijo), `ADMIN_FAMILIA_JSON` (lista `[{nombre, celular, prefijo, clanes}]`, con `clanes` = `'TODOS'` o lista de ClanTags), `CELULARES_RESPALDO_MANUAL_JSON` (`{"TAGSINNUMERAL": "celular"}`) y `TELEFONO_PRUEBA`. Se leen con `_getPropPrivada_()`, `_getFundadorCelular_()`, `_getAdminFamilia_()` y `_getCelularesRespaldoManual_()` (`01_Config_Global.gs`, con caché por ejecución). `verificarDatosPrivados()` informa cuántos hay cargados, sin mostrar los valores. Usos: `_getClanesAdminTexto()` (columna `Clanes_Admin`), `_calcJugador()` y `ContactsSync` (excepción del fundador) y la red de seguridad del celular en `11_DirectorioSheet.gs`.
+
+**Decisión: por qué no se leen «desde Administradores o Directorio».** `Clanes_Admin` en Administradores se CALCULA a partir de `ADMIN_FAMILIA`; usar esa hoja como fuente sería circular. Quién es el fundador y qué clanes administra cada admin no se puede deducir de las hojas sin cambiar el diseño (habría que volver manual la columna). Por eso se eligieron las Script Properties, que no cambian el comportamiento. **Sin propiedades cargadas** el sistema no se rompe, pero pierde funciones: `Clanes_Admin` queda vacío, el fundador no se reconoce y la red de seguridad del celular de Lucky no actúa. Nunca se compara contra un celular vacío.
+
+**Qué no se resuelve con este cambio.** Los números siguen en el historial de git del repo público y en copias o clones ya hechos; solo se limpian reescribiendo el historial (decisión pendiente de la usuaria) o con repo privado. El ejemplo de celular de `Web/admin.html` (`placeholder`) es un número ficticio y se dejó.
+
+**Cómo se migró (para no perder los valores).** Antes de `subirBaseDesdeGithub()`, la usuaria corrió en Apps Script una función temporal que copiaba `CFG.FUNDADOR.celular`, `CFG.ADMIN_FAMILIA` y `CELULARES_RESPALDO_MANUAL_` del código viejo a las propiedades; `TELEFONO_PRUEBA` se cargó a mano. `subirBaseDesdeGithub()` reemplaza el proyecto por `Base/src/`, así que sin ese paso previo los valores se pierden de Apps Script.
+
+
 ## 00_Main.gs — resumen rápido
 
 Punto de entrada del proyecto (orquestación). Contiene los arreglos de pasos (`PASOS_RUNALL`, `PASOS_RUNUPDATE`, `PASOS_RUNGUERRARAPIDO`, `PASOS_RUNSYNCCSV`, `PASOS_RUNSORTEOS`), las funciones manuales `run*`, reparaciones puntuales, y el motor de locks/tandas (`_adquirirLockEjecucion`, `_ejecutarPorTandas`).
@@ -19512,7 +19525,7 @@ solo una red de auxilio, NO reemplaza arreglar la causa raíz de por qué
 se pierde: se consulta como ÚLTIMO recurso en _construirFila(), solo si
 Celular terminó vacío después de agotar existing/CSV. Nunca pisa un
 Celular que ya esté presente.
-  #JR9J0JCQ9 (Lucky) = +51 XXXXXXXXX
+  #JR9J0JCQ9 (Lucky) = +51 <celular>
 Para agregar otra cuenta, sumar una línea más "TAG: 'numero'" (sin
 espacios, sin +51, solo los dígitos del celular).
 =============================================================================
@@ -48753,7 +48766,7 @@ CADA FILA individual de Directorio (activos e inactivos, cualquier clan).
 
 IMPORTANTE: el préstamo es POR CUENTA, no por celular. Varias cuentas
 pueden compartir el mismo celular (multicuenta) y cada una puede estar
-prestada a una persona DISTINTA (ej. la cuenta A del celular XXXXXXXXX
+prestada a una persona DISTINTA (ej. la cuenta A del celular <celular>
 prestada a Diana, la cuenta B del mismo celular prestada a Carlos, y la
 cuenta C del mismo celular sin prestar a nadie). Por eso se lee
 directamente la columna Préstamo de la fila del tag en cuestión, sin
@@ -53654,7 +53667,7 @@ siempre a filas[0].nombre en vez de preferir el nombre de persona).
 ```text
 El teléfono se guarda partido en dos columnas: Prefijo (código de
 país, p.ej. "51") y Celular (número local). El mensaje entrante de
-WhatsApp llega con el número completo (p.ej. "51XXXXXXXXX"), así que
+WhatsApp llega con el número completo (p.ej. "<celular>"), así que
 hay que comparar contra Prefijo+Celular concatenados. Se compara
 también solo contra Celular por si alguna fila quedó sin Prefijo
 cargado (no rompe filas existentes que ya funcionaban antes).

@@ -20,9 +20,8 @@ var ASCENSOS_TOTAL_COLS = 18;
 var ASC_ESTADO_PROPUESTA_VALORES = ['Planificado', 'Realizado'];
 
 // RED DE SEGURIDAD (14-ago-2026, pedido explícito del usuario) — Celular de [→ Contexto_Base_Web.md §13B002]
-var CELULARES_RESPALDO_MANUAL_ = {
-  'JR9J0JCQ9': 'XXXXXXXXX' // Lucky — ver aviso arriba, NO borrar esta línea.
-};
+// El mapa CELULARES_RESPALDO_MANUAL_ ya no esta en el codigo (repo publico): vive en la Script Property CELULARES_RESPALDO_MANUAL_JSON y se lee con
+// _getCelularesRespaldoManual_() (01_Config_Global.gs) [→ Contexto_Base_Web.md §PF048]
 
 // RED DE SEGURIDAD (14-ago-2026, pedido explícito del usuario) — "el código [→ Contexto_Base_Web.md §13B003]
 var NOMBRE_JSON_VETADOS_CONFIRMADOS_ = 'ClanSystem_Backup_VetadosConfirmados.json';

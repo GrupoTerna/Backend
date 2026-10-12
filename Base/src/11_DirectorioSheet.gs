@@ -1195,9 +1195,10 @@ function _construirFila(tag, member, info, clanTag, existing, csvRow, tagMulticu
   }
 
   // RED DE SEGURIDAD — Celular (ver CELULARES_RESPALDO_MANUAL_ más arriba [→ Contexto_Base_Web.md §11B080]
-  if (!celular && CELULARES_RESPALDO_MANUAL_[cleanTag(tag)]) {
-    celular = CELULARES_RESPALDO_MANUAL_[cleanTag(tag)];
-    Logger.log('[Celular-Respaldo] ' + tag + ': Celular restaurado desde CELULARES_RESPALDO_MANUAL_ (existing y CSV llegaron vacíos).');
+  var respaldoManual = _getCelularesRespaldoManual_();
+  if (!celular && respaldoManual[cleanTag(tag)]) {
+    celular = soloDigitos(respaldoManual[cleanTag(tag)]);
+    Logger.log('[Celular-Respaldo] ' + tag + ': Celular restaurado desde la propiedad CELULARES_RESPALDO_MANUAL_JSON (existing y CSV llegaron vacíos).');
   }
 
   // RED DE SEGURIDAD — Vetado (pedido explícito del usuario: "el código no [→ Contexto_Base_Web.md §11B081]
@@ -1263,7 +1264,7 @@ function _construirFila(tag, member, info, clanTag, existing, csvRow, tagMulticu
   // Préstamo: columna de edición MANUAL. Indica a quién se prestó esta cuenta. [→ Contexto_Base_Web.md §11B086]
   fila[DC.PRESTAMO   - 1] = prestamo;
   // Clanes_Admin: calculada, no manual. Solo se llena si Admin="Sí" y el
-  // celular coincide con CFG.ADMIN_FAMILIA (01_Config_Global.gs).
+  // celular coincide con ADMIN_FAMILIA_JSON (_getAdminFamilia_(), 01_Config_Global.gs).
   fila[DC.CLANES_ADMIN - 1] = (String(admin || '').trim() === 'Sí')
     ? _getClanesAdminTexto(prefijo, celular)
     : '';
@@ -1294,7 +1295,8 @@ function _construirFila(tag, member, info, clanTag, existing, csvRow, tagMulticu
  */
 function _calcJugador(tag, nombre, nomMulti, celular, multiData) {
   var celLimpio = String(celular || '').replace(/\D/g,'');
-  if (celLimpio === CFG.FUNDADOR.celular) return CFG.FUNDADOR.jugador;
+  var celFundador = _getFundadorCelular_();
+  if (celFundador && celLimpio === celFundador) return CFG.FUNDADOR.jugador;
 
   var finalNomMulti = nomMulti || '';
 

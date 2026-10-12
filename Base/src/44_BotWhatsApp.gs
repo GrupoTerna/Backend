@@ -56,7 +56,8 @@ var FUENTES_CONTENIDO = [
 // -----------------------------------------------------------------------
 // simularMensajeBot(): ejecutar desde el editor cambiando TELEFONO_PRUEBA y TEXTO_PRUEBA; el resultado sale en el Logger. [→ Contexto_Base_Web.md §44B009]
 function simularMensajeBot() {
-  var TELEFONO_PRUEBA = '51XXXXXXXXX';
+  var TELEFONO_PRUEBA = _getPropPrivada_('TELEFONO_PRUEBA'); // Script Property (ya no va en el codigo, repo publico) [→ Contexto_Base_Web.md §PF048]
+  if (!TELEFONO_PRUEBA) { Logger.log('Falta la propiedad TELEFONO_PRUEBA (Propiedades de la secuencia de comandos).'); return; }
   var TEXTO_PRUEBA = 'hola';
   var resultado = _procesarMensajeEntrante(TELEFONO_PRUEBA, TEXTO_PRUEBA);
   var esObjeto  = resultado && typeof resultado === 'object' && typeof resultado.texto !== 'undefined';

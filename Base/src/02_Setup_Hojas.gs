@@ -610,7 +610,7 @@ function _setupAdministradores(ss) {
     'Prefijo','Celular','WSP(G)','Estado','Admin','Vetado','Razón',
     'Vigencia','Inactividad(d)','Alerta','Cat_disp','Funciones',
     // Clanes_Admin (col 22): CALCULADA. Ver _getClanesAdminTexto() en
-    // 01_Config_Global.gs y CFG.ADMIN_FAMILIA. No editar a mano.
+    // 01_Config_Global.gs y ADMIN_FAMILIA_JSON (Script Property). No editar a mano.
     'Clanes_Admin',
     // Clave (col 23): contraseña de login web EN TEXTO PLANO, autogenerada [→ Contexto_Base_Web.md §02B055]
     'Clave',

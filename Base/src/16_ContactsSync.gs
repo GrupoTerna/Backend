@@ -101,7 +101,7 @@ function SincronizarContactosNube() {
       };
     }
     var g = grupos[phone];
-    if (cel === CFG.FUNDADOR.celular) g.esFundador = true;
+    if (_getFundadorCelular_() && cel === _getFundadorCelular_()) g.esFundador = true;
 
     // FUENTE DE VERDAD: Extrae y acumula de manera única la celda de la columna Jugador
     var jugadorTexto = String(f[C.JUGADOR] || '').trim();
