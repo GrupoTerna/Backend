@@ -827,6 +827,16 @@ function _webPerfilExtendido(fila) {
   if (cwStats) ext.cwStats = cwStats;
   if (fila[DC.DECK   - 1]) ext.deck  = String(fila[DC.DECK   - 1]);
   if (fila[DC.DECK_2 - 1]) ext.deck2 = String(fila[DC.DECK_2 - 1]);
+  // Sugerencias de mazo (3) (12-oct-2026): solo cartas con nivel >= máximo entero del nivel promedio ponderado; se arma al vuelo desde Cards_2 (sin columna nueva en Directorio). [→ Contexto_Base_Web.md §PF051]
+  try {
+    var mazo3 = generarMazo3(fila[DC.TAG - 1]);
+    if (mazo3 && mazo3.url) {
+      ext.deck3 = mazo3.url;
+      ext.deck3Nivel = mazo3.nivelMinimo;
+    }
+  } catch (e3) {
+    Logger.log('[WebAPI] No se pudo armar la sugerencia de mazo (3): ' + e3.message);
+  }
 
   // CONEXIÓN 11-sep-2026: campos que Directorio no trae y solo están en el JSON crudo de /players en Drive (ver _webDatosDriveJugador()). FIX 15-sep-2026: se renombra `ext.drive` a `ext.rawClash`, que es lo que perfil.html lee (rawClash(j) busca j.extendido.rawClash); por el desajuste no se mostraba ninguna sección que dependiera de rawClash; cada sección decide sola si mostrarse. [→ Contexto_Base_Web.md §37B063]
   var datosDrive = _webDatosDriveJugador(fila[DC.TAG - 1]);
