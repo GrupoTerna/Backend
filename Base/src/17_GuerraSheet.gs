@@ -3603,6 +3603,9 @@ function _repararFamaDomingoDesdeJSON_(aplicar, objetivos) {
 var REPARAR_DOMINGOS_CORRECCIONES = [[2, 34], [3, 27], [4, 27], [5, 27]];
 var REPARAR_DOMINGOS_CLANTAG = { 'Grupo乂Terna™': '#GCRG8L00', 'GrupoXTerna™2': '#GYCU9YRG', 'GrupoXTerna™3': '#GQQPPJGR', 'Mini乂Ternas™': '#GG99LCJY' };
 var REPARAR_DOMINGOS_TOPE_ATAQUES = 16;
+// Plausibilidad (12-oct-2026): cada ataque de guerra da al menos 75 de fama (barco perdido), asi que si los ataques suben respecto al sabado y las
+// medallas del domingo son menos que 75 por ataque nuevo, el Log no es coherente consigo mismo y la fila queda SIN RESOLVER [→ Contexto_Base_Web.md §PF047]
+var REPARAR_DOMINGOS_MEDALLAS_MIN_POR_ATAQUE = 75;
 
 function repararDomingosDesdeCorreccionesInforme() { _repararDomingosDesdeCorrecciones_(false); }
 function repararDomingosDesdeCorreccionesAplicar() { _repararDomingosDesdeCorrecciones_(true); }
@@ -3661,6 +3664,10 @@ function _calcularReparacionDomingoDesdeCorrecciones_(filas, temporada, periodId
     if (s && ataqNueva < s.ataques) { sinResolver.push({ idx: i, motivo: 'los ataques del Log (' + ataqNueva + ') son menos que los del sabado en la hoja (' + s.ataques + ')' }); return; }
     if (ataqNueva > REPARAR_DOMINGOS_TOPE_ATAQUES) { sinResolver.push({ idx: i, motivo: 'los ataques del Log (' + ataqNueva + ') superan el tope de ' + REPARAR_DOMINGOS_TOPE_ATAQUES + ' por semana: revisar a mano' }); return; }
     if (opciones.topeMedallas > 0 && s && (fameNueva - s.fame) > opciones.topeMedallas) { sinResolver.push({ idx: i, motivo: 'las medallas del domingo (' + (fameNueva - s.fame) + ') superan el tope de ' + opciones.topeMedallas + ' por dia: revisar a mano' }); return; }
+    if (s && opciones.medallasMinPorAtaque > 0 && (ataqNueva - s.ataques) > 0 && (fameNueva - s.fame) < opciones.medallasMinPorAtaque * (ataqNueva - s.ataques)) {
+      sinResolver.push({ idx: i, motivo: 'el Log sube los ataques (' + s.ataques + ' a ' + ataqNueva + ') pero las medallas del domingo son solo ' + (fameNueva - s.fame) + ' (minimo ' + (opciones.medallasMinPorAtaque * (ataqNueva - s.ataques)) + '): el Log no es coherente, revisar a mano' });
+      return;
+    }
     cambios.push({ idx: i, fameAnt: fameAnt, fameNueva: fameNueva, ataqAnt: ataqAnt, ataqNueva: ataqNueva, ataqHoy: ataqHoy,
       sabFame: s ? s.fame : '', sabAtaques: s ? s.ataques : '',
       detalle: 'Fame y AtaquesSemana tomados del Log de RoyaleAPI (Correcciones_Guerra.csv' + (b.estado === 'ok_sin_clan' ? ', sin ClanTag: cruzado solo por Tag' : '') + ')' +
@@ -3678,7 +3685,7 @@ function _repararDomingosDesdeCorrecciones_(aplicar) {
     var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
     var overlay = _cargarOverlayCorreccionesGuerraPorClan();
     if (!Object.keys(overlay).length) { Logger.log('[ReparoDomingosLog] Correcciones_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
-    var opciones = { topeMedallas: REPARAR_FAMA_TOPE_MEDALLAS_DIA };
+    var opciones = { topeMedallas: REPARAR_FAMA_TOPE_MEDALLAS_DIA, medallasMinPorAtaque: REPARAR_DOMINGOS_MEDALLAS_MIN_POR_ATAQUE };
     var informe = [['Fuente', 'Tipo', 'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'PeriodIndex', 'Fame anterior', 'Fame nueva', 'AtaquesSemana anterior', 'AtaquesSemana nueva', 'Fame sabado', 'AtaquesSemana sabado', 'AtaquesHoy (no se toca)', 'Detalle', 'Origen anterior']];
     var resumen = { csvCambios: 0, csvSinResolver: 0, csvIguales: 0, csvSinDato: 0, hojaCambios: 0, hojaSinResolver: 0 };
 
