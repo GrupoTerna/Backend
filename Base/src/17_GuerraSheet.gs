@@ -1663,6 +1663,58 @@ function _webGuerraLogUnClan(tagNorm, data) {
   return salida;
 }
 
+// WEB: HISTORIAL DE COPAS DEL CLAN (gráfica «Copas» de clan.html) [→ Contexto_Base_Web.md §PF062]
+
+/**
+ * _webClanCopas(tag) — 12-oct-2026 (pedido usuario: gráfica de copas en clan.html).
+ * Copas del clan por día, desde Guerra_Logs (GLC.COPAS, una fila por día y por clan; fallback Backup_Guerra_Logs.csv).
+ * tag obligatorio y de un clan Terna; cualquier otro devuelve puntos: [] (no se expone ningún clan rival).
+ * Un punto por día de guerra: si hubiera más de una fila el mismo día se queda la de mayor PeriodIndex.
+ * Respuesta: { clan, tag, puntos: [{ fecha: 'dd/MM/yyyy', copas, periodIndex, temporada }] } en orden cronológico.
+ */
+function _webClanCopas(tag) {
+  var tagNorm = _tagComparableLogs_(tag);
+  var tagOficial = '';
+  for (var q = 0; q < CFG.TERNA_TAGS.length; q++) {
+    if (_tagComparableLogs_(CFG.TERNA_TAGS[q]) === tagNorm) { tagOficial = CFG.TERNA_TAGS[q]; break; }
+  }
+  var salida = { clan: '', tag: tagOficial || String(tag || ''), puntos: [] };
+  if (!tagOficial) return salida;
+
+  var ss = _getSs();
+  var tz = Session.getScriptTimeZone() || 'America/Lima';
+  var lectura = _obtenerFilasConFallbackCSV(
+    ss, CFG.SHEETS.GUERRA_LOGS, 'Backup_Guerra_Logs.csv', GUERRA_LOGS_TOTAL_COLS, 1
+  );
+  var data = lectura.filas;
+  var porDia = {}; // 'dd/MM/yyyy' -> punto
+  for (var i = 0; i < data.length; i++) {
+    var fila = data[i];
+    if (_tagComparableLogs_(fila[GLC.TAG - 1]) !== tagNorm) continue;
+    var copas = _numDesdeCeldaLogs_(fila[GLC.COPAS - 1]);
+    if (!(copas > 0)) continue; // vacío o 0 = sin dato
+    var dg = fila[GLC.DIA_GUERRA - 1];
+    var fecha = '';
+    if (dg instanceof Date && !isNaN(dg.getTime())) fecha = Utilities.formatDate(dg, tz, 'dd/MM/yyyy');
+    else if (/^\d{2}\/\d{2}\/\d{4}$/.test(String(dg || '').trim())) fecha = String(dg).trim();
+    if (!fecha) {
+      var fh = fila[GLC.FECHA - 1];
+      if (fh instanceof Date && !isNaN(fh.getTime())) fecha = Utilities.formatDate(fh, tz, 'dd/MM/yyyy');
+    }
+    if (!fecha) continue;
+    var periodIdx = Number(fila[GLC.PERIOD_IDX - 1]) || 0;
+    if (!porDia[fecha] || periodIdx > porDia[fecha].periodIndex) {
+      porDia[fecha] = { fecha: fecha, copas: copas, periodIndex: periodIdx, temporada: Number(fila[GLC.TEMPORADA - 1]) || 0 };
+    }
+    var nombre = String(fila[GLC.CLAN - 1] || '').trim();
+    if (nombre) salida.clan = nombre;
+  }
+  var lista = Object.keys(porDia).map(function (k) { return porDia[k]; });
+  lista.sort(function (a, b) { return (a.temporada - b.temporada) || (a.periodIndex - b.periodIndex); });
+  salida.puntos = lista;
+  return salida;
+}
+
 // WEB: PUESTOS POR DÍA DE GUERRA (botones Jue-Dom de guerra.html) [→ Contexto_Base_Web.md §17B099]
 
 /**

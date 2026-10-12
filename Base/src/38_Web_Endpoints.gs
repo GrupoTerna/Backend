@@ -423,6 +423,24 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // webClanCopas (12-oct-2026): copas del clan por día desde Guerra_Logs, para la gráfica de clan.html; tag obligatorio y Terna (_webClanCopas). [→ Contexto_Base_Web.md §PF062]
+  if (e && e.parameter && e.parameter.accion === 'webClanCopas') {
+    if (e.parameter.token !== WEB_MEMBER_TOKEN) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'No autorizado', code: 401 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webClanCopas(e.parameter.tag)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('[Web] Error interno: ' + err.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // webGuerraPuestosDia (19-sep-2026): puesto de cada clan Terna al cierre de cada día Jue-Dom de la última semana en Guerra_Logs; el día en curso queda en 0 y guerra.html lo toma de webPronosticoGuerra. [→ Contexto_Base_Web.md §38B032]
   if (e && e.parameter && e.parameter.accion === 'webGuerraPuestosDia') {
     if (e.parameter.token !== WEB_MEMBER_TOKEN) {
