@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 11/10/2026 18:36:35 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 11/10/2026 21:23:28 */
 
 
 
@@ -7074,6 +7074,9 @@ function _csvCachePut_(filename, text) {
   } catch (e) { /* sin caché: no pasa nada */ }
 }
 
+// PF042: caché del resultado de _construirCoberturaPorTag() (18_CorreccionGuerra.gs); se invalida junto con el CSV de guerra. [→ Contexto_Base_Web.md §PF042]
+var COBERTURA_GUERRA_CACHE_KEY = 'COBGUERRA_v1';
+
 function _csvCacheBorrar_(filename) {
   try {
     var cache = CacheService.getScriptCache();
@@ -7081,6 +7084,7 @@ function _csvCacheBorrar_(filename) {
     var n = parseInt(cache.get(base + '_n') || '0', 10);
     var keys = [base + '_n'];
     for (var i = 0; i < Math.max(n, 0); i++) keys.push(base + '_' + i);
+    if (filename === 'Backup_Guerra.csv') keys.push(COBERTURA_GUERRA_CACHE_KEY); // PF042
     cache.removeAll(keys);
   } catch (e) { /* nada que hacer */ }
 }
@@ -16236,41 +16240,49 @@ function _leerBloquesFechaNuevos(sh) {
  * _obtenerListaCandidatosNuevos() [→ Contexto_Base_Web.md §14B081]
  */
 function _obtenerListaCandidatosNuevos() {
+  var tIni = Date.now(); // PF043: tiempos en el log para ver dónde se va la espera [→ Contexto_Base_Web.md §PF043]
   var ss = _getSs();
   // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §14B082]
   var shDirNuevos = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
   var dirData;
+  var ix; // PF043: índices 0-based según el layout de las filas leídas (IC si viene de la hoja, DC si viene del CSV) [→ Contexto_Base_Web.md §PF043]
   if (shDirNuevos && shDirNuevos.getLastRow() >= 2) {
-    dirData = _leerDirectorioFisicoComoDC(ss);
+    // PF043: solo el rango físico del Directorio; ya no se leen Players ni Links ni se arman filas de 60 columnas. Los ocho campos que usa esta lista salen de la hoja Directorio y Players/Links no los pisan. [→ Contexto_Base_Web.md §PF043]
+    dirData = shDirNuevos.getRange(2, 1, shDirNuevos.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+    ix = { estado: IC.ESTADO - 1, clanTag: IC.CLAN_TAG - 1, rango: IC.RANGO - 1, admin: IC.ADMIN - 1, tag: IC.TAG - 1, nomMulti: IC.NOM_MULTI - 1, nombre: IC.NOMBRE - 1, clan: IC.CLAN - 1 };
   } else {
     var lecturaDirNuevos = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
     dirData = (lecturaDirNuevos.origen === 'csv') ? lecturaDirNuevos.filas : [];
+    ix = { estado: DC.ESTADO - 1, clanTag: DC.CLAN_TAG - 1, rango: DC.RANGO - 1, admin: DC.ADMIN - 1, tag: DC.TAG - 1, nomMulti: DC.NOM_MULTI - 1, nombre: DC.NOMBRE - 1, clan: DC.CLAN - 1 };
   }
+  var tDir = Date.now();
   var candidatos = [];
 
   // FIX (06-ago-2026): cada candidato ahora informa si YA está siendo [→ Contexto_Base_Web.md §14B083]
   var tagsEnNuevos = _obtenerTagsEnHojaNuevos(ss);
+  var tTags = Date.now();
 
   // FIX (29-ago-2026): mapa semanal por Tag construido SOLO desde [→ Contexto_Base_Web.md §14B084]
   var mapaSemanalPorTag = _construirMapaSemanalPorTagDesdeSupercell();
+  var tMapa = Date.now();
 
   // FIX (16-sep-2026): contexto vigente (temporada + semana en curso), para [→ Contexto_Base_Web.md §14B085]
   var ctx = _getCtx();
 
   for (var i = 0; i < dirData.length; i++) {
     var r = dirData[i];
-    if (String(r[DC.ESTADO - 1]) !== 'Activo') continue;
+    if (String(r[ix.estado]) !== 'Activo') continue;
 
-    var clanTag = String(r[DC.CLAN_TAG - 1] || '').trim();
+    var clanTag = String(r[ix.clanTag] || '').trim();
     if (CFG.TERNA_TAGS.indexOf(clanTag) < 0) continue;
 
-    var rango = String(r[DC.RANGO - 1] || '').trim();
+    var rango = String(r[ix.rango] || '').trim();
     if (rango !== 'Miembro') continue;
 
-    var esAdmin = String(r[DC.ADMIN - 1] || '').trim() === 'Sí';
+    var esAdmin = String(r[ix.admin] || '').trim() === 'Sí';
     if (esAdmin) continue;
 
-    var tag = String(r[DC.TAG - 1] || '').trim();
+    var tag = String(r[ix.tag] || '').trim();
     if (!tag) continue;
 
     // FIX (29-ago-2026): ya tiene participación establecida en Terna [→ Contexto_Base_Web.md §14B086]
@@ -16278,12 +16290,14 @@ function _obtenerListaCandidatosNuevos() {
 
     candidatos.push({
       tag: tag,
-      nombre: String(r[DC.NOM_MULTI - 1] || r[DC.NOMBRE - 1] || ''),
-      clan: String(r[DC.CLAN - 1] || ''),
+      nombre: String(r[ix.nomMulti] || r[ix.nombre] || ''),
+      clan: String(r[ix.clan] || ''),
       royaleApiUrl: 'https://royaleapi.com/player/' + tag.replace('#', '') + '/',
       yaEnNuevos: tagsEnNuevos.hasOwnProperty(tag.toUpperCase())
     });
   }
+
+  Logger.log('[Nuevos][Lista] ' + candidatos.length + ' candidato(s) · directorio ' + (tDir - tIni) + ' ms · hoja Nuevos ' + (tTags - tDir) + ' ms · mapa semanal ' + (tMapa - tTags) + ' ms · filtrado ' + (Date.now() - tMapa) + ' ms · total ' + (Date.now() - tIni) + ' ms');
 
   return {
     ok: true,
@@ -25378,36 +25392,46 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
 /**
  * _obtenerListaCorreccionGuerra() [→ Contexto_Base_Web.md §18B106]
  */
-function _obtenerListaCorreccionGuerra() {
+function _obtenerListaCorreccionGuerra(opciones) {
+  // PF041: opciones.soloClanes (Verificar semana en curso) omite Directorio y cobertura. [→ Contexto_Base_Web.md §PF041]
+  var soloClanes = !!(opciones && opciones.soloClanes);
+  var tInicio = Date.now();
   var ss = _getSs();
-  // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §18B107]
-  var shDirCorr = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  var dirData;
-  if (shDirCorr && shDirCorr.getLastRow() >= 2) {
-    dirData = _leerDirectorioFisicoComoDC(ss);
-  } else {
-    var lecturaDirCorr = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
-    dirData = (lecturaDirCorr.origen === 'csv') ? lecturaDirCorr.filas : [];
-  }
-
   var jugadores = [];
-  for (var i = 0; i < dirData.length; i++) {
-    var r = dirData[i];
-    if (String(r[DC.ESTADO - 1]) !== 'Activo') continue;
-    var tag = String(r[DC.CLAN_TAG - 1] || '').trim();
-    if (CFG.TERNA_TAGS.indexOf(tag) < 0) continue;
+  if (!soloClanes) {
+    // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §18B107]
+    // PF042: se lee solo el Directorio físico (layout IC) en vez de _leerDirectorioFisicoComoDC(), que además leía Players y Links y armaba filas de 60 columnas para todos los registros; los seis campos que usa esta lista (estado, clan, tag, nombre, nom_multi, clan_tag) salen todos de la hoja Directorio y no se pisan con Players/Links. [→ Contexto_Base_Web.md §PF042]
+    var shDirCorr = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+    var dirData;
+    var ix; // índices 0-based según el layout de las filas leídas
+    if (shDirCorr && shDirCorr.getLastRow() >= 2) {
+      dirData = shDirCorr.getRange(2, 1, shDirCorr.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+      ix = { estado: IC.ESTADO - 1, clanTag: IC.CLAN_TAG - 1, tag: IC.TAG - 1, nombre: IC.NOMBRE - 1, nomMulti: IC.NOM_MULTI - 1, clan: IC.CLAN - 1 };
+    } else {
+      var lecturaDirCorr = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
+      dirData = (lecturaDirCorr.origen === 'csv') ? lecturaDirCorr.filas : [];
+      ix = { estado: DC.ESTADO - 1, clanTag: DC.CLAN_TAG - 1, tag: DC.TAG - 1, nombre: DC.NOMBRE - 1, nomMulti: DC.NOM_MULTI - 1, clan: DC.CLAN - 1 };
+    }
 
-    var tagJugador = String(r[DC.TAG - 1] || '').trim();
-    if (!tagJugador) continue;
+    for (var i = 0; i < dirData.length; i++) {
+      var r = dirData[i];
+      if (String(r[ix.estado]) !== 'Activo') continue;
+      var tag = String(r[ix.clanTag] || '').trim();
+      if (CFG.TERNA_TAGS.indexOf(tag) < 0) continue;
 
-    // FIX (23-ago-2026, pedido usuario): antes se priorizaba Nom_Multi [→ Contexto_Base_Web.md §18B108]
-    jugadores.push({
-      tag: tagJugador,
-      nombre: String(r[DC.NOMBRE - 1] || r[DC.NOM_MULTI - 1] || ''),
-      clan: String(r[DC.CLAN - 1] || ''),
-      royaleApiUrl: 'https://royaleapi.com/player/' + tagJugador.replace('#', '') + '/'
-    });
+      var tagJugador = String(r[ix.tag] || '').trim();
+      if (!tagJugador) continue;
+
+      // FIX (23-ago-2026, pedido usuario): antes se priorizaba Nom_Multi [→ Contexto_Base_Web.md §18B108]
+      jugadores.push({
+        tag: tagJugador,
+        nombre: String(r[ix.nombre] || r[ix.nomMulti] || ''),
+        clan: String(r[ix.clan] || ''),
+        royaleApiUrl: 'https://royaleapi.com/player/' + tagJugador.replace('#', '') + '/'
+      });
+    }
   }
+  var tDirectorio = Date.now();
 
   // PUNTO 2 (Consolidado_HistorialGuerra_Jugador.md, Sección 2.4/3.1): River [→ Contexto_Base_Web.md §18B109]
   var ctxActual = _getCtx();
@@ -25418,6 +25442,11 @@ function _obtenerListaCorreccionGuerra() {
     semanaRiverRaceActual = ctxActual.sectionIndex + 1;
   }
 
+  var coberturaPorTag = soloClanes ? {} : _construirCoberturaPorTag();
+  Logger.log('[CorreccionGuerra][Lista] modo=' + (soloClanes ? 'clanes' : 'completo') +
+             ' · directorio ' + (tDirectorio - tInicio) + ' ms · cobertura ' + (Date.now() - tDirectorio) + ' ms · ' +
+             jugadores.length + ' jugador(es) · total ' + (Date.now() - tInicio) + ' ms');
+
   return {
     ok: true,
     temporadaOffsetRoyaleApi: _getTemporadaOffsetRoyaleApi(),
@@ -25427,7 +25456,7 @@ function _obtenerListaCorreccionGuerra() {
     clanTagsTerna: CFG.TERNA_TAGS,
     jugadores: jugadores,
     // FASE 10 (Consolidado_Cambios_Pendientes_Guerra.md, punto 3.1, pregunta [→ Contexto_Base_Web.md §18B110]
-    coberturaPorTag: _construirCoberturaPorTag()
+    coberturaPorTag: coberturaPorTag
   };
 }
 
@@ -25435,6 +25464,10 @@ function _obtenerListaCorreccionGuerra() {
  * _construirCoberturaPorTag() [→ Contexto_Base_Web.md §18B111]
  */
 function _construirCoberturaPorTag() {
+  // PF042: el resultado (unos 14 KB con los datos reales) se guarda en CacheService; _csvCacheBorrar_('Backup_Guerra.csv') lo invalida al guardar el CSV y vence a los 10 min como el propio CSV. [→ Contexto_Base_Web.md §PF042]
+  var enCache = _coberturaGuerraCacheGet_();
+  if (enCache) return enCache;
+
   var cobertura = {};
   var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
   if (!csvText) return cobertura;
@@ -25461,7 +25494,28 @@ function _construirCoberturaPorTag() {
   for (var t = 0; t < tags.length; t++) {
     cobertura[tags[t]] = Object.keys(vistos[tags[t]]);
   }
+  _coberturaGuerraCachePut_(cobertura); // PF042
   return cobertura;
+}
+
+// PF042: lectura/escritura del caché de la cobertura; ante cualquier fallo se recalcula desde el CSV. [→ Contexto_Base_Web.md §PF042]
+function _coberturaGuerraCacheGet_() {
+  try {
+    var crudo = CacheService.getScriptCache().get(COBERTURA_GUERRA_CACHE_KEY);
+    if (!crudo) return null;
+    var obj = JSON.parse(crudo);
+    return (obj && typeof obj === 'object') ? obj : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function _coberturaGuerraCachePut_(cobertura) {
+  try {
+    var json = JSON.stringify(cobertura);
+    if (json.length > 90000) return; // tope de CacheService: 100 KB por valor
+    CacheService.getScriptCache().put(COBERTURA_GUERRA_CACHE_KEY, json, CSV_CACHE_TTL_SEG);
+  } catch (e) { /* sin caché: no pasa nada */ }
 }
 
 // CORREGIR GUERRA/BACKUP_GUERRA.CSV DESDE CONTROL_2 (MANUAL, UNA SOLA VEZ) [→ Contexto_Base_Web.md §18B113]
@@ -46908,7 +46962,7 @@ function doGet(e) {
     }
     try {
       return ContentService
-        .createTextOutput(JSON.stringify(_obtenerListaCorreccionGuerra()))
+        .createTextOutput(JSON.stringify(_obtenerListaCorreccionGuerra({ soloClanes: e.parameter.modo === 'clanes' }))) // PF041: modo=clanes lo usa Verificar semana en curso [→ Contexto_Base_Web.md §PF041]
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       Logger.log('[Web] Error interno: ' + err.toString());
