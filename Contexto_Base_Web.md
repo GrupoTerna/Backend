@@ -6781,13 +6781,20 @@ _csvBuscarArchivo_, CSV_MOVER_A_SUBCARPETA), 05_Backup_CSV.gs
 11_DirectorioSheet.gs (_getCsvDirMap).
 
 Funcionamiento: la carpeta CSV tiene las subcarpetas Background, Hojas,
-Informes y Tampermonkey. _csvSubcarpetaDe_(nombre) devuelve la subcarpeta
+Informes, Tampermonkey y Jugador. _csvSubcarpetaDe_(nombre) devuelve la subcarpeta
 asignada a cada CSV (Informes: "Backup_Guerra ANTES de reparar*", Reparacion_*,
 Limpieza_Coliseo_*, Revision_Guerra*, Diagnostico_*; Tampermonkey: Correcciones_*,
 Log_Tampermonkey_* y Backup_Guerra_Semanal.csv, que Apps Script arma con datos
-traídos por Tampermonkey; Background y Hojas: listas explícitas). Un nombre sin
-asignar se queda en la raíz de CSV (hoy: Backup_Battlelogs, ProgresoEventos,
-PerfilWeb, Logros y Logros_2, pendientes de que la usuaria decida su carpeta).
+traídos por Tampermonkey; Background, Hojas y Jugador: listas explícitas).
+Criterio confirmado por la usuaria el 12-oct-2026: Background = comportamiento
+general sin datos personales de un jugador (Cards, Cards_3, Modo, Arena,
+Insignias, Logros, Cofres, Locations, Seasons, CaminoLeyendas); Jugador = datos
+que dependen de cada jugador (Cards_2, Insignias_2, Logros_2, ProgresoEventos,
+Battlelogs, PerfilWeb); Hojas = respaldo de una hoja de Sheets (incluye
+Backup_Índice). Corrección: la primera versión de este mapa (12-oct-2026
+mañana) puso Cards_2 e Insignias_2 en Background; son por jugador. Un nombre
+sin asignar se queda en la raíz de CSV (hoy no queda ninguno de los que usa el
+código).
 Todo el código lee y escribe CSV solo con _loadCSVFromDrive/_saveCSVToDrive,
 que buscan el archivo en este orden: subcarpeta asignada, raíz, demás
 subcarpetas. Si existe en cualquier sitio NO se crea otra copia; si se guarda
