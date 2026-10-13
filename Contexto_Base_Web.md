@@ -6791,7 +6791,10 @@ general sin datos personales de un jugador (Cards, Cards_3, Modo, Arena,
 Insignias, Logros, Cofres, Locations, Seasons, CaminoLeyendas); Jugador = datos
 que dependen de cada jugador (Cards_2, Insignias_2, Logros_2, ProgresoEventos,
 Battlelogs, PerfilWeb); Hojas = respaldo de una hoja de Sheets (incluye
-Backup_Índice). Corrección: la primera versión de este mapa (12-oct-2026
+Backup_Índice, Control, Control_2, T_Control, Calendario, Links y Multicuentas:
+cualquier hoja respaldada sale como Backup_<hoja>.csv por
+_respaldarListaHojasCSV, así que una hoja nueva debe sumarse a la lista de
+Hojas); Informes incluye también Correccion_Fecha_Guerra_Logs*. Corrección: la primera versión de este mapa (12-oct-2026
 mañana) puso Cards_2 e Insignias_2 en Background; son por jugador. Un nombre
 sin asignar se queda en la raíz de CSV (hoy no queda ninguno de los que usa el
 código).
