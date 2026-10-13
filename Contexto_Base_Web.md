@@ -66225,3 +66225,25 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 - *Solo lectura (informes):* `informeHojaContraCorrecciones()`, `informeBattlelogContraGuerra()`, `informeCorreccionConClanTag()` e `informeRepartoDomingoSinClanTag()` (`18_CorreccionGuerra.gs`); `repararAtaquesHoyGuerraDesdeJSONInforme()`, `repararDomingosDesdeCorreccionesInforme()` y `corregirFechaGuerraLogsInforme()` (`17_GuerraSheet.gs`). Cada «Aplicar» tiene su informe previo: se corre primero el informe.
 - *Cómo saber si una ya se corrió:* cada «Aplicar» deja un respaldo o detalle en Drive (`Backup_Guerra ANTES de reparar DomingosDesdeLog <fecha>.csv`, `Reparacion_DomingosDesdeLog <fecha> (aplicado).csv`, `Correccion_Fecha_Guerra_Logs <fecha>.csv`). Si el archivo existe, ya se corrió.
 - *Función que recibe el envío de Tampermonkey:* `doPost` (la que aparece en «Ejecuciones» de Apps Script como «Desconocida» cuando se corta por tiempo). `_logTampermonkeyADrive` está en `05_Backup_CSV.gs`.
+
+
+### PF068 — Envío del historial de guerra: lecturas y escrituras por lote en `_aplicarHistorialGuerra()` (arreglo hecho el 13-oct-2026)
+
+**Problema (evidencia de la usuaria, 13-oct-2026, versión 351).** Dos `doPost` del histórico duraron 360.993 s y 369.077 s y terminaron con «Excedió el tiempo máximo de ejecución». El log mostraba que **cada registro**, incluso los ignorados por «fuente de menor prioridad», hacía su propio recorrido por Drive (de 3 a 5 s cada uno): leer y reescribir el JSON individual y leer, parsear y reescribir **entero** `HistorialGuerra_Grupal.csv`. Contexto del hallazgo: §PF067 punto 5.
+
+**Qué se cambió (`Base/src/20_HistorialGuerraJugador.gs`).**
+- `_aplicarHistorialGuerra()` junta los registros de cada jugador y llama **una vez por jugador** a `_guardarRegistrosHistorialGuerraIndividual()`. Esa función lee el JSON una vez, fusiona todos los registros en memoria y **solo escribe si algo cambió** (o si el jugador aún no tiene archivo).
+- El CSV grupal ya no se toca por registro: `_aplicarHistorialGuerra()` acumula los registros y, al terminar, llama **una sola vez** a `_actualizarFilasHistorialGuerraGrupalLote()`. Esa función toma el lock una vez (hasta 30 s), lee el CSV una vez, aplica todo con `_aplicarRegistroEnFilasHistorialGuerraGrupal()` (en memoria) y escribe **una sola vez, y solo si hubo cambios**. Una fila resultante idéntica a la ya guardada cuenta como «sin cambio».
+- `_guardarRegistroHistorialGuerra()`, `_guardarRegistroHistorialGuerraIndividual()` y `_actualizarFilaHistorialGuerraGrupal()` se conservan con la misma firma (las usa `resolverAlertasHistorialGuerra()`); ahora son lotes de uno.
+- La respuesta del endpoint conserva `ok`, `procesados`, `registrosGuardados` y `errores` (Tampermonkey usa los dos primeros contadores) y añade `grupalGuardado`, `grupalCambios`, `grupalIgnorados` y `grupalSinLock`.
+
+**Qué NO cambió (a propósito).** Las reglas de fusión, la prioridad de fuentes (§PF032), la clave por clan (§PF040), la generación de alertas y el comentario manual. Cambió solo cuántas veces se toca Drive.
+
+**Efectos secundarios que conviene saber.**
+- Si un reenvío no cambia nada, **ya no se reescribe** el JSON del jugador: `fechaUltimaConsulta` y el nombre del archivo (que lleva fecha y hora) quedan como estaban hasta que haya un cambio real.
+- Si el lock del CSV grupal no se consigue en 30 s, se omite **todo** el CSV grupal de esa petición (antes se omitía registro por registro). Queda indicado en `grupalSinLock: true` y en el log; el JSON individual sí se guarda. Reenviar el lote lo corrige.
+- La actualización del CSV grupal se hace al final de la petición, después de todos los JSON individuales.
+
+**Sin verificar.** Solo se revisó la sintaxis; **no se probó en Apps Script real ni con Tampermonkey**. No se sabe cuánto bajará el tiempo de `doPost`; la lectura y escritura del JSON de cada jugador con cambios sigue siendo una por jugador (con el índice de Drive en memoria). Si un lote grande todavía pasara de ~6 min, la siguiente medida sería cortar por tiempo y devolver los jugadores pendientes, cosa que Tampermonkey hoy no sabe manejar. No se agregó para no cambiar el contrato con el cliente sin acordarlo.
+
+**Cómo probar.** (1) `subirBaseDesdeGithub()`; (2) confirmar en «Ejecuciones» que no hay `doPost` en curso; (3) reanudar **una sola vez** el envío del histórico en Tampermonkey; (4) mirar la duración del `doPost` y la respuesta (`grupalGuardado`, `grupalCambios`).
