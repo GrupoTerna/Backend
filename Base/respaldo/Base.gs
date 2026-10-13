@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 12/10/2026 21:09:06 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 13/10/2026 11:22:40 */
 
 
 
@@ -27163,65 +27163,104 @@ function diagnosticoRiverRaceHTML(clanTags) {
  */
 function _actualizarFilaHistorialGuerraGrupal(tag, nombre, registroNuevo) {
   if (!tag || !registroNuevo) return;
-  var lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) {
-    Logger.log('[HistorialGuerra][Grupal] No se pudo obtener el lock para ' + tag + ' — se omite esta actualización para evitar pisar otra escritura en curso.');
-    return;
-  }
-  try {
-    _actualizarFilaHistorialGuerraGrupalImpl(tag, nombre, registroNuevo);
-  } finally {
-    lock.releaseLock();
-  }
+  // Un solo registro = lote de uno (misma lógica que el envío masivo). [→ Contexto_Base_Web.md §PF068]
+  _actualizarFilasHistorialGuerraGrupalLote([{ tag: tag, nombre: nombre, registro: registroNuevo }]);
 }
 
-function _actualizarFilaHistorialGuerraGrupalImpl(tag, nombre, registroNuevo) {
+/**
+ * _actualizarFilasHistorialGuerraGrupalLote(items) [→ Contexto_Base_Web.md §PF068]
+ * items: [{ tag, nombre, registro }]. Toma el lock una vez, lee el CSV grupal UNA vez,
+ * aplica todos los items en memoria y lo escribe UNA vez, solo si algo cambió.
+ * Devuelve { guardado: bool, cambios: n, ignorados: n }.
+ */
+function _actualizarFilasHistorialGuerraGrupalLote(items) {
+  var res = { guardado: false, cambios: 0, ignorados: 0 };
+  if (!items || !items.length) return res;
+
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    Logger.log('[HistorialGuerra][Grupal] No se pudo obtener el lock — se omiten ' + items.length +
+               ' actualización(es) del CSV grupal para evitar pisar otra escritura en curso.');
+    res.sinLock = true;
+    return res;
+  }
   try {
     var csvText = _loadHistorialGuerraGrupalCSV();
     var filas = csvText ? _parseCSV(csvText) : [HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS.slice()];
     if (!filas.length) filas = [HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS.slice()];
 
-    var tagStr = String(tag).trim();
-    // PF040: la clave incluye el clan; mismas reglas que el JSON individual. [→ Contexto_Base_Web.md §PF040]
-    var regsTag = [], filaDeRegsTag = [];
-    for (var i = 1; i < filas.length; i++) { // fila 0 = encabezados
-      if (filas[i][0] === tagStr) {
-        regsTag.push(_filaHistorialGuerraGrupalARegistro(filas[i]));
-        filaDeRegsTag.push(i);
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (!it || !it.tag || !it.registro) continue;
+      try {
+        if (_aplicarRegistroEnFilasHistorialGuerraGrupal(filas, it.tag, it.nombre, it.registro)) res.cambios++;
+        else res.ignorados++;
+      } catch (eItem) {
+        Logger.log('[HistorialGuerra][Grupal] Error actualizando ' + it.tag + ': ' + eItem.message);
       }
     }
-    var posExistente = _buscarIndiceHistorialGuerra(regsTag, registroNuevo);
-    var idxExistente = (posExistente >= 0) ? filaDeRegsTag[posExistente] : -1;
 
-    var existenteObj = (idxExistente >= 0) ? _filaHistorialGuerraGrupalARegistro(filas[idxExistente]) : null;
-    var decision = _debeReemplazarRegistroHistorialGuerra(existenteObj, registroNuevo);
-
-    if (!decision.reemplazar) {
-      Logger.log('[HistorialGuerra][Grupal] Se ignora fila entrante (fuente "' + registroNuevo.fuente +
-                 '" de menor prioridad) para ' + tagStr + ' Temporada ' + registroNuevo.temporadaInterna +
-                 ' / Semana ' + registroNuevo.semana);
-      return;
+    if (res.cambios > 0) {
+      _saveHistorialGuerraGrupalCSV(_encodeCSV(filas));
+      res.guardado = true;
     }
-
-    var registroFinal = JSON.parse(JSON.stringify(registroNuevo));
-    if (decision.alerta) {
-      registroFinal.alerta = true;
-      _registrarAlertaHistorialGuerra(tagStr, nombre, existenteObj, registroNuevo);
-    }
-    // Comentario (FASE 2, 04-sep-2026): campo manual, nunca lo manda [→ Contexto_Base_Web.md §20B017]
-    registroFinal.comentario = (existenteObj && existenteObj.comentario) || '';
-
-    var filaNueva = _registroHistorialGuerraAFilaGrupal(tagStr, nombre, registroFinal);
-    if (idxExistente >= 0) {
-      filas[idxExistente] = filaNueva;
-    } else {
-      filas.push(filaNueva);
-    }
-
-    _saveHistorialGuerraGrupalCSV(_encodeCSV(filas));
   } catch (e) {
-    Logger.log('[HistorialGuerra][Grupal] Error actualizando ' + tag + ': ' + e.message);
+    Logger.log('[HistorialGuerra][Grupal] Error en el lote: ' + e.message);
+  } finally {
+    lock.releaseLock();
   }
+  return res;
+}
+
+/**
+ * _aplicarRegistroEnFilasHistorialGuerraGrupal(filas, tag, nombre, registroNuevo) [→ Contexto_Base_Web.md §PF068]
+ * Función en memoria (no toca Drive): fusiona el registro en `filas` (se modifica el array).
+ * Devuelve true si cambió algo, false si se ignoró por menor prioridad.
+ */
+function _aplicarRegistroEnFilasHistorialGuerraGrupal(filas, tag, nombre, registroNuevo) {
+  var tagStr = String(tag).trim();
+  // PF040: la clave incluye el clan; mismas reglas que el JSON individual. [→ Contexto_Base_Web.md §PF040]
+  var regsTag = [], filaDeRegsTag = [];
+  for (var i = 1; i < filas.length; i++) { // fila 0 = encabezados
+    if (filas[i][0] === tagStr) {
+      regsTag.push(_filaHistorialGuerraGrupalARegistro(filas[i]));
+      filaDeRegsTag.push(i);
+    }
+  }
+  var posExistente = _buscarIndiceHistorialGuerra(regsTag, registroNuevo);
+  var idxExistente = (posExistente >= 0) ? filaDeRegsTag[posExistente] : -1;
+
+  var existenteObj = (idxExistente >= 0) ? _filaHistorialGuerraGrupalARegistro(filas[idxExistente]) : null;
+  var decision = _debeReemplazarRegistroHistorialGuerra(existenteObj, registroNuevo);
+
+  if (!decision.reemplazar) {
+    Logger.log('[HistorialGuerra][Grupal] Se ignora fila entrante (fuente "' + registroNuevo.fuente +
+               '" de menor prioridad) para ' + tagStr + ' Temporada ' + registroNuevo.temporadaInterna +
+               ' / Semana ' + registroNuevo.semana);
+    return false;
+  }
+
+  var registroFinal = JSON.parse(JSON.stringify(registroNuevo));
+  if (decision.alerta) {
+    registroFinal.alerta = true;
+    _registrarAlertaHistorialGuerra(tagStr, nombre, existenteObj, registroNuevo);
+  }
+  // Comentario (FASE 2, 04-sep-2026): campo manual, nunca lo manda [→ Contexto_Base_Web.md §20B017]
+  registroFinal.comentario = (existenteObj && existenteObj.comentario) || '';
+
+  var filaNueva = _registroHistorialGuerraAFilaGrupal(tagStr, nombre, registroFinal);
+  if (idxExistente >= 0) {
+    // Si la fila resultante es idéntica a la ya guardada (reenvío de lo mismo), no hay cambio que escribir.
+    var iguales = (filas[idxExistente].length === filaNueva.length);
+    for (var c = 0; iguales && c < filaNueva.length; c++) {
+      if (String(filas[idxExistente][c]) !== String(filaNueva[c])) iguales = false;
+    }
+    if (iguales) return false;
+    filas[idxExistente] = filaNueva;
+  } else {
+    filas.push(filaNueva);
+  }
+  return true;
 }
 
 /**
@@ -27250,6 +27289,7 @@ function _aplicarHistorialGuerra(candidatosPayload) {
   var offset = _getTemporadaOffsetRoyaleApi(); // 18_CorreccionGuerra.gs — mismo mapeo que Correcciones_Guerra.csv
   var procesados = 0, registrosGuardados = 0;
   var errores = [];
+  var itemsGrupal = []; // se escriben todos juntos al final (un solo CSV grupal por petición) [→ Contexto_Base_Web.md §PF068]
 
   for (var c = 0; c < candidatosPayload.length; c++) {
     var cand = candidatosPayload[c] || {};
@@ -27257,6 +27297,8 @@ function _aplicarHistorialGuerra(candidatosPayload) {
     if (!tag) continue;
     var nombre = cand.nombre || '';
     var registrosEntrada = cand.registros || [];
+    var registrosDelJugador = [];
+    var clanDelJugador = '';
 
     try {
       for (var r = 0; r < registrosEntrada.length; r++) {
@@ -27277,9 +27319,13 @@ function _aplicarHistorialGuerra(candidatosPayload) {
           cerrada: reg.cerrada !== false // por defecto true; solo River Race mandaría cerrada:false explícito (todavía no implementado del lado cliente)
         };
 
-        _guardarRegistroHistorialGuerra(tag, nombre, registroCompleto.clan, registroCompleto);
+        registrosDelJugador.push(registroCompleto);
+        if (registroCompleto.clan) clanDelJugador = registroCompleto.clan; // el nombre del archivo usa el clan del último registro, como antes
+        itemsGrupal.push({ tag: tag, nombre: nombre, registro: registroCompleto });
         registrosGuardados++;
       }
+      // JSON individual: una lectura y, si cambió algo, una escritura por jugador.
+      _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanDelJugador, registrosDelJugador);
       procesados++;
     } catch (e) {
       errores.push({ tag: tag, error: e.message });
@@ -27287,7 +27333,14 @@ function _aplicarHistorialGuerra(candidatosPayload) {
     }
   }
 
-  return { ok: true, procesados: procesados, registrosGuardados: registrosGuardados, errores: errores };
+  // CSV grupal: una lectura y una escritura para toda la petición.
+  var grupal = _actualizarFilasHistorialGuerraGrupalLote(itemsGrupal);
+
+  return {
+    ok: true, procesados: procesados, registrosGuardados: registrosGuardados, errores: errores,
+    grupalGuardado: grupal.guardado, grupalCambios: grupal.cambios, grupalIgnorados: grupal.ignorados,
+    grupalSinLock: !!grupal.sinLock
+  };
 }
 
 // NOMBRE DE ARCHIVO E ÍNDICE POR TAG (mismo patrón que Players, [→ Contexto_Base_Web.md §20B020]
@@ -27508,9 +27561,29 @@ function _guardarRegistroHistorialGuerra(tag, nombre, clanActual, registroNuevo)
  */
 function _guardarRegistroHistorialGuerraIndividual(tag, nombre, clanActual, registroNuevo) {
   if (!tag || !registroNuevo) return;
+  _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanActual, [registroNuevo]);
+}
+
+/**
+ * _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanActual, registrosNuevos) [→ Contexto_Base_Web.md §PF068]
+ * Versión por lote: lee el JSON del jugador UNA vez, fusiona todos los registros en memoria
+ * y lo escribe UNA vez, y solo si algún registro cambió (o si el jugador aún no tiene archivo).
+ */
+function _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanActual, registrosNuevos) {
+  if (!tag || !registrosNuevos || !registrosNuevos.length) return;
   try {
-    var historial = _cargarHistorialGuerraIndividual(tag) || _crearHistorialGuerraVacio(tag);
-    historial.registros = _fusionarRegistroEnArrayHistorialGuerra(historial.registros || [], registroNuevo, tag, nombre);
+    var existente = _cargarHistorialGuerraIndividual(tag);
+    var historial = existente || _crearHistorialGuerraVacio(tag);
+    var registros = historial.registros || [];
+    var antes = JSON.stringify(registros);
+
+    for (var i = 0; i < registrosNuevos.length; i++) {
+      registros = _fusionarRegistroEnArrayHistorialGuerra(registros, registrosNuevos[i], tag, nombre);
+    }
+    historial.registros = registros;
+
+    if (existente && JSON.stringify(registros) === antes) return; // nada cambió: no se toca Drive
+
     historial.fechaUltimaConsulta = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
 
     var filename  = _buildHistorialGuerraFilename(tag, clanActual);
