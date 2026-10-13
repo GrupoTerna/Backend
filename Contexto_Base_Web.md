@@ -6788,9 +6788,9 @@ Log_Tampermonkey_* y Backup_Guerra_Semanal.csv, que Apps Script arma con datos
 traídos por Tampermonkey; Background, Hojas y Jugador: listas explícitas).
 Criterio confirmado por la usuaria el 12-oct-2026: Background = comportamiento
 general sin datos personales de un jugador (Cards, Cards_3, Modo, Arena,
-Insignias, Logros, Cofres, Locations, Seasons, CaminoLeyendas); Jugador = datos
+Insignias, Logros, Cofres, Locations, Seasons); Jugador = datos
 que dependen de cada jugador (Cards_2, Insignias_2, Logros_2, ProgresoEventos,
-Battlelogs, PerfilWeb); Hojas = respaldo de una hoja de Sheets (incluye
+Battlelogs, PerfilWeb, CaminoLeyendas); Hojas = respaldo de una hoja de Sheets (incluye
 Backup_Índice, Control, Control_2, T_Control, Calendario, Links y Multicuentas:
 cualquier hoja respaldada sale como Backup_<hoja>.csv por
 _respaldarListaHojasCSV, así que una hoja nueva debe sumarse a la lista de
