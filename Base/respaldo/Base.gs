@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 12/10/2026 19:33:29 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 12/10/2026 21:09:06 */
 
 
 
@@ -2772,17 +2772,18 @@ function _csvSubcarpetaDe_(filename) {
   var n = String(filename || '');
   // Informes: respaldos previos a reparar, reparaciones, limpiezas, revisiones y diagnósticos.
   if (/^Backup_Guerra ANTES de reparar/.test(n) || /^Reparacion_/.test(n) || /^Limpieza_Coliseo_/.test(n) ||
-      /^Revision_Guerra/.test(n) || /^Diagnostico_/.test(n) || /^HistorialGuerra_Grupal/.test(n)) return 'Informes';
+      /^Revision_Guerra/.test(n) || /^Diagnostico_/.test(n) || /^HistorialGuerra_Grupal/.test(n) ||
+      /^Correccion_Fecha_/.test(n)) return 'Informes';
   // Tampermonkey: lo que se arma con datos traídos de RoyaleAPI por Tampermonkey.
   if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv') return 'Tampermonkey';
   // Jugador: datos que dependen de cada jugador (no son comportamiento general ni respaldo de una hoja).
   var jugador = ['Backup_Cards_2.csv', 'Backup_Insignias_2.csv', 'Backup_Logros_2.csv', 'Backup_ProgresoEventos.csv',
-    'Backup_Battlelogs.csv', 'Backup_PerfilWeb.csv'];
+    'Backup_Battlelogs.csv', 'Backup_PerfilWeb.csv', 'Backup_CaminoLeyendas.csv'];
   if (jugador.indexOf(n) >= 0) return 'Jugador';
   // Background: comportamiento general, sin información personal de un jugador.
   var background = ['Backup_Cards.csv', 'Backup_Cards_3.csv', 'Backup_Modo.csv', 'Backup_Arena.csv',
     'Backup_Insignias.csv', 'Backup_Logros.csv', 'Backup_Cofres.csv', 'Backup_Locations.csv',
-    'Backup_Seasons.csv', 'Backup_CaminoLeyendas.csv'];
+    'Backup_Seasons.csv'];
   if (background.indexOf(n) >= 0) return 'Background';
   var hojas = ['Backup_Guerra.csv', 'Backup_Guerra_Logs.csv', 'Backup_Directorio.csv', 'Backup_Inactivos.csv',
     'Backup_Clan.csv', 'Backup_Players.csv', 'Backup_Administradores.csv', 'Backup_Vetados.csv', 'Backup_Nuevos.csv',
@@ -2790,7 +2791,9 @@ function _csvSubcarpetaDe_(filename) {
     'Backup_Calendario_2.csv', 'Backup_T_Lista.csv', 'Backup_T_Asistencia.csv', 'Backup_T_Resoluciones.csv',
     'Backup_S_Lista.csv', 'Backup_S_Asistencia.csv', 'Backup_CR_Lista.csv', 'Backup_Historial_A-D.csv',
     'Backup_Historial_I-S.csv', 'Backup_Grupo_Verificado.csv', 'Backup_Alertas_HistorialGuerra.csv',
-    'Alertas_HistorialGuerra.csv', 'Backup_Conflictos.csv', 'Backup_Índice.csv'];
+    'Alertas_HistorialGuerra.csv', 'Backup_Conflictos.csv', 'Backup_Índice.csv',
+    'Backup_Control.csv', 'Backup_Control_2.csv', 'Backup_T_Control.csv', 'Backup_Calendario.csv', 'Backup_Links.csv',
+    'Backup_Multicuentas.csv'];
   if (hojas.indexOf(n) >= 0) return 'Hojas';
   return ''; // sin asignar: raíz de CSV (hoy ninguno de los que usa el código)
 }
