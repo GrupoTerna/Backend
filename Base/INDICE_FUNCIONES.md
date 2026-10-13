@@ -167,7 +167,7 @@ Ninguno.
 | `_armarFilasPerfilWebParaTags` | función | 36_PerfilWeb.gs | 54 |  |
 | `_armarFilasProgresoEventos` | función | 35_ProgresoEventos.gs | 47 | Contexto_Base_Web.md §35B003 |
 | `_armarFilasProgresoEventosParaTags` | función | 35_ProgresoEventos.gs | 64 |  |
-| `_armarHeaderIdx` | función | 01_Config_Global.gs | 1234 | Contexto_Base_Web.md §01B151 |
+| `_armarHeaderIdx` | función | 01_Config_Global.gs | 1239 | Contexto_Base_Web.md §01B151 |
 | `_armarListasDesdeCRLista` | función | 25_Doc_AscensosDescensos.gs | 297 | Contexto_Base_Web.md §25B025 |
 | `_asegurarBloquesParaFechas` | función | 14_Nuevos_RoyaleAPI.gs | 865 |  |
 | `_asegurarColumnaCopasGuerra_` | función | 17_GuerraSheet.gs | 624 | Contexto_Base_Web.md §PF061 |
@@ -411,7 +411,7 @@ Ninguno.
 | `_cruceNormTemporada_` | función | 22_ControlCalendario.gs | 916 |  |
 | `_CSV_MEM_` | global | 05_Backup_CSV.gs | 1575 |  |
 | `_CSV_SUBCARPETAS_MEM_` | global | 01_Config_Global.gs | 1166 |  |
-| `_csvBuscarArchivo_` | función | 01_Config_Global.gs | 1201 |  |
+| `_csvBuscarArchivo_` | función | 01_Config_Global.gs | 1206 |  |
 | `_csvCacheBorrar_` | función | 05_Backup_CSV.gs | 1618 |  |
 | `_csvCacheGet_` | función | 05_Backup_CSV.gs | 1579 |  |
 | `_csvCacheKey_` | función | 05_Backup_CSV.gs | 1577 |  |
@@ -433,7 +433,7 @@ Ninguno.
 | `_decidirCierreFameBarcosDia_` | función | 17_GuerraSheet.gs | 3058 | Contexto_Base_Web.md §17B157 |
 | `_decidirCorreccionConClanTag_` | función | 18_CorreccionGuerra.gs | 221 | Contexto_Base_Web.md §18B016 |
 | `_derivarClanClanTagDesdeTagOrg` | función | 26_Torneos_Core.gs | 2567 | Contexto_Base_Web.md §26B194 |
-| `_desactivarGridlines` | función | 01_Config_Global.gs | 1225 |  |
+| `_desactivarGridlines` | función | 01_Config_Global.gs | 1230 |  |
 | `_descargarBattlelogYCofresParaTodos` | función | 09_API_ClashRoyale.gs | 1278 | Contexto_Base_Web.md §09B069 |
 | `_describirActivador_` | función | 08_Activadores.gs | 107 |  |
 | `_desgloseBarcosPorDia` | función | 17_GuerraSheet.gs | 2932 |  |
@@ -577,7 +577,7 @@ Ninguno.
 | `_getControlTemporadaSelectores` | función | 38_Web_Endpoints.gs | 2667 | Contexto_Base_Web.md §38B180 |
 | `_getCsvDirMap` | función | 11_DirectorioSheet.gs | 524 |  |
 | `_getCsvFolder` | función | 01_Config_Global.gs | 1153 |  |
-| `_getCsvSubcarpeta_` | función | 01_Config_Global.gs | 1190 |  |
+| `_getCsvSubcarpeta_` | función | 01_Config_Global.gs | 1195 |  |
 | `_getCtx` | función | 09_API_ClashRoyale.gs | 2489 | Contexto_Base_Web.md §09B139 |
 | `_getCuentasPorTelefono` | función | 44_BotWhatsApp.gs | 489 | Contexto_Base_Web.md §44B023 |
 | `_getDatosClanHoja` | función | 30_Mensajes.gs | 475 | Contexto_Base_Web.md §30B031 |
@@ -642,7 +642,7 @@ Ninguno.
 | `_getRivalesYConflicto` | función | 15_DeteccionInfiltrados.gs | 80 | Contexto_Base_Web.md §15B006 |
 | `_getSemanasDeTemporada` | función | 25_Doc_AscensosDescensos.gs | 227 | Contexto_Base_Web.md §25B017 |
 | `_getSemanasTemporada` | función | 38_Web_Endpoints.gs | 2194 | Contexto_Base_Web.md §38B151 |
-| `_getSs` | función | 01_Config_Global.gs | 1217 |  |
+| `_getSs` | función | 01_Config_Global.gs | 1222 |  |
 | `_getSubcarpetaEndpoint_` | función | 09_API_ClashRoyale.gs | 2595 | Contexto_Base_Web.md §09B145 |
 | `_getTagsAdmin` | función | 09_API_ClashRoyale.gs | 2269 | Contexto_Base_Web.md §09B128 |
 | `_getTagsAdminPorNomMulti` | función | 26_Torneos_Core.gs | 2492 | Contexto_Base_Web.md §26B190 |
@@ -885,7 +885,7 @@ Ninguno.
 | `_noticiasPruebaManual` | función | 40_Web_Noticias.gs | 508 | Contexto_Base_Web.md §40B012 |
 | `_noticiasSeccion_` | función | 40_Web_Noticias.gs | 49 |  |
 | `_noticiasSumarDias_` | función | 40_Web_Noticias.gs | 59 |  |
-| `_numDesdeCeldaCSV_` | función | 01_Config_Global.gs | 1327 | Contexto_Base_Web.md §01B155 |
+| `_numDesdeCeldaCSV_` | función | 01_Config_Global.gs | 1332 | Contexto_Base_Web.md §01B155 |
 | `_numDesdeCeldaLogs_` | función | 17_GuerraSheet.gs | 1568 | Contexto_Base_Web.md §17B094 |
 | `_numOrNull` | función | 20_HistorialGuerraJugador.gs | 567 | Contexto_Base_Web.md §20B038 |
 | `_obtenerArenaCompletaDesdeCatalogo` | función | 37_Web_API.gs | 3740 | Contexto_Base_Web.md §37B287 |
@@ -895,10 +895,10 @@ Ninguno.
 | `_obtenerDatosSinCelular` | función | 30_Mensajes.gs | 666 |  |
 | `_obtenerDatosSinEtiqueta` | función | 30_Mensajes.gs | 681 |  |
 | `_obtenerFechaCierrePorTemporadaSemana` | función | 20_HistorialGuerraJugador.gs | 666 | Contexto_Base_Web.md §20B044 |
-| `_obtenerFilasConFallbackCSV` | función | 01_Config_Global.gs | 1245 | Contexto_Base_Web.md §01B152 |
+| `_obtenerFilasConFallbackCSV` | función | 01_Config_Global.gs | 1250 | Contexto_Base_Web.md §01B152 |
 | `_obtenerListaCandidatosNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1343 | Contexto_Base_Web.md §14B081 |
 | `_obtenerListaCorreccionGuerra` | función | 18_CorreccionGuerra.gs | 3129 | Contexto_Base_Web.md §18B106 |
-| `_obtenerMapaPorTagConFallbackCSV` | función | 01_Config_Global.gs | 1314 | Contexto_Base_Web.md §01B154 |
+| `_obtenerMapaPorTagConFallbackCSV` | función | 01_Config_Global.gs | 1319 | Contexto_Base_Web.md §01B154 |
 | `_obtenerModoCompletoDesdeCatalogo` | función | 37_Web_API.gs | 3762 | Contexto_Base_Web.md §37B288 |
 | `_obtenerNomMultisAdmins` | función | 13_Inactivos_Vetados.gs | 473 | Contexto_Base_Web.md §13B028 |
 | `_obtenerNomMultisDistintos` | función | 11_DirectorioSheet.gs | 1582 | Contexto_Base_Web.md §11B109 |
@@ -1088,7 +1088,7 @@ Ninguno.
 | `_sanitizarPayloadWsp` | función | 44_BotWhatsApp.gs | 107 | Contexto_Base_Web.md §44B012 |
 | `_saveCSVToDrive` | función | 05_Backup_CSV.gs | 1945 |  |
 | `_saveHistorialGuerraGrupalCSV` | función | 20_HistorialGuerraJugador.gs | 651 |  |
-| `_scriptToken` | función | 01_Config_Global.gs | 1336 |  |
+| `_scriptToken` | función | 01_Config_Global.gs | 1341 |  |
 | `_seleccionarFechasNuevasNecesariasNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 2047 | Contexto_Base_Web.md §14B118 |
 | `_semAcumDiaAnteriorGuerra_` | función | 17_GuerraSheet.gs | 4842 | Contexto_Base_Web.md §17B199 |
 | `_semanaColiseoCerrada_` | función | 17_GuerraSheet.gs | 2549 | Contexto_Base_Web.md §17B143 |
@@ -1616,7 +1616,7 @@ Ninguno.
 | `GRID_WIDTH_NUEVOS` | global | 14_Nuevos_RoyaleAPI.gs | 39 |  |
 | `guardarAnchosColumnasFijos` | función | 04_Formato_Comun.gs | 824 | Contexto_Base_Web.md §04B051 |
 | `guardarApiDump` | función | 09_API_ClashRoyale.gs | 130 | Contexto_Base_Web.md §09B022 |
-| `guardarTokensEnScriptProperties` | función | 01_Config_Global.gs | 1349 | Contexto_Base_Web.md §01B157 |
+| `guardarTokensEnScriptProperties` | función | 01_Config_Global.gs | 1354 | Contexto_Base_Web.md §01B157 |
 | `GUERRA_CTX_ESTATICO_ARCHIVO` | global | 50_Publicar_Guerra.gs | 35 |  |
 | `GUERRA_ESTATICO_ARCHIVO` | global | 50_Publicar_Guerra.gs | 33 |  |
 | `GUERRA_ESTATICO_REPUBLICAR_MIN` | global | 50_Publicar_Guerra.gs | 36 |  |
