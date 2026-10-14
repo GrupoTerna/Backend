@@ -66027,6 +66027,8 @@ así que 5 min de antigüedad máxima no se nota. Para volver a 2 min, poner 120
 
 #### 37B361 — líneas 9573-9595 (comentario)
 
+> **Corrección (regla 9, 14-oct-2026, PF073 tanda 7):** este comentario de 19-sep dice que en la ventana de 4 a 5 a. m. el bot recalienta la caché y republica en cada disparo, y que `runGuerra` corre cada 10 min. **El código actual no lo hace:** `_runGuerraVentanaLigera_()` (`00_Main.gs`) solo hace `_fetchClanesBasico()`, `updateGuerraSheet()` y `_syncGuerraCSV()`, y `08_Activadores.gs` define `runGuerra` cada **5** min. La ventana ligera **no republica por decisión** (ver PF073, tanda 7). Lo que sigue es el texto original.
+
 ```text
 NUEVO (19-sep-2026, pedido del usuario -- cada 5 min un visitante esperaba
 11-18 s mientras se recalculaba el dashboard): el bot deja el caché de
@@ -66555,6 +66557,25 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 **Qué NO se probó:** nada en Apps Script real; la ruta CSV de `Extra` nunca se ha ejercitado en producción (el CSV se usaba solo para restaurar). Tampoco se comprobó el contenido real de `Backup_Extra.csv` en Drive (en `Datos descargados` no hay copia).
 
 **Cierre del pendiente 1.** Resultado a la pregunta de la usuaria («`doGet` cae a los `Backup_*.csv` cuando falla Sheets»): **`doGet` no cae por sí mismo; cada función `_web*` lo hace.** Tras las tandas 3 a 6, los endpoints públicos y las funciones compartidas leen hoja viva o CSV (o degradan a vacío conscientemente), con las excepciones y efectos anotados en las tandas 5 y 6. **Quedan fuera, por decisión:** los endpoints de admin que no se benefician de funciones compartidas y `listaCorreccionGuerra` / `listaNuevosRoyaleAPI`. **Verificación pendiente en real:** simular una caída de Sheets (por ejemplo renombrando temporalmente una hoja) y llamar a `webClanInfo`, `webTorneos` y `webIngresosRecientes`.
+
+#### Tanda 7 — decisiones delegadas sobre los hallazgos A a F (14-oct-2026; sí hay cambios de código)
+
+**Decisión de la usuaria (14-oct-2026): «tú decide».** Criterio aplicado y su motivo:
+
+| Hallazgo | Decisión | Estado |
+|---|---|---|
+| **A.** La ventana ligera (4 a 5 a. m.) no republica | **No se cambia el código.** En esa ventana el bot corre con alta frecuencia y publicar en cada disparo gastaría cuota de GitHub y de Apps Script sin necesidad; los JSON siguen vigentes hasta 3 h y el vivo cae a Apps Script. Se corrigió el comentario `37B361` (nota de corrección arriba). | Cerrado; **reversible** si la usuaria quiere republicar en la ventana |
+| **B.** El hash de `guerra.json` nunca coincidía | **Corregido** en `50_Publicar_Guerra.gs`, `_publicarGuerraEstatico_`: el hash se calcula **sin el bloque `tiempos`** (no solo sin `generadoTs`, porque `api.ultimaConsultaTs` también cambia en cada consulta del bot). La rama «sin cambios» se omite como máximo `GUERRA_ESTATICO_REPUBLICAR_MIN` = 50 min, tras lo cual se republica igual, así que la hora de «última consulta» puede verse hasta 50 min vieja si nada más cambia. | Hecho; sin probar en real |
+| **C.** `RUNGUERRA_ULTIMA_HORA` se marcaba antes del trabajo | **Corregido** en `00_Main.gs`, `runGuerra`: se sigue marcando antes (evita corridas simultáneas), pero si el trabajo de la hora no termina se **restaura la marca previa** en el `finally` y el siguiente disparo reintenta. Riesgo aceptado: mientras Sheets esté caído se reintenta en cada disparo (cada 5 min), con `_fetchClanesBasico` apoyado en su caché por antigüedad. | Hecho; sin probar en real |
+| **D.** `runGuerra` cada 5 o cada 10 min | **No se cambia el código.** La verdad del repo es `08_Activadores.gs` (5 min). Falta confirmar qué disparador está instalado en Apps Script (lo decide `installTriggers`); muchas menciones históricas de «cada 10 min» en este archivo quedan como historial y la corrección va en `37B361`. | Cerrado en texto; **verificar el disparador real** |
+| **E.** Filas `Estimado` marcaban días opcionales falsos en T2 | **Corregido** (opción «ignorar el inicio cuando Estado = Estimado») en `22_ControlCalendario.gs`, `_getMapaCruceMetaGuerraLogs_`: `ProgressStartOfDay` solo cuenta en filas Leídas o sin estado; el fin del día anterior se sigue usando. **Evidencia** (reproducción en Python sobre `Backup_Guerra_Logs.csv`, viernes a domingo, sin descartar semana de coliseo): T2 pasa de 19 días opcionales a 0; T3 (8), T4 (13) y T5 (3) no cambian. Motivo de la elección: en T2 el fin del día anterior era correcto (2 235 a 5 558) y solo el inicio estaba inflado. | Hecho; sin probar en Apps Script real |
+| **F.** `tiempos` en `roster.json`, `home.json`, `torneos.json` | **No se añade.** Esas páginas pueden tomar la hora de `guerra.json` (que sí la trae); añadirlo a tres publicadores aumentaría el cálculo y rompería el hash de roster, home y torneos, que hoy sí coincide. | Cerrado; **reversible** |
+
+**Efecto sobre lo documentado antes.** En la tanda 2, la medición de la tabla de T2 a T6 usaba la lógica anterior; con E, el hallazgo E queda resuelto. Los hallazgos A a D de la tanda 1 y E de la tanda 2 pasan a «decididos» según esta tabla.
+
+**Qué NO se probó:** nada en Apps Script real. Para B conviene mirar el registro de `[GuerraEstatico] sin cambios…` en el bot tras desplegar; para C, simular un fallo de Sheets y ver el mensaje «se restauró la marca de hora».
+
+**Recordatorio:** correr `subirBaseDesdeGithub()` antes de cualquier descarga.
 
 ### PF074 — Letra del día en el nombre de los JSON (`P.I-05-S`), verificación de `periodIndex` y pendiente de subcarpetas por temporada y semana (pedido de la usuaria, 14-oct-2026)
 
