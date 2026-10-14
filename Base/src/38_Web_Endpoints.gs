@@ -1910,6 +1910,20 @@ function _getDatosDashboardCalcular_() {
       if (guerraTempObjetivo !== String(ctx.temporada) && csvPorTemp) guerraFilasObjetivo = csvPorTemp[guerraTempObjetivo] || [];
     }
   }
+  // FIX 14-oct-2026 (pedido del usuario: la cabecera mostraba 30,700 / 30,300 / 31,850 y luego 123,000 el domingo, y barcos 0 / 4 / 4 / 12): GC.FAME y GC.BARCOS son acumulados de TODA la semana, no del día; sumarlos tal cual hacía que la cabecera mostrara el acumulado hasta ese día (el domingo, la semana completa). Ahora fame y barcos del día = acumulado del día objetivo menos el del día anterior del mismo Tag+Clan (en el jueves el anterior es 0), con el mismo tope de 900 por jugador y día que 'Valores diarios'. [→ Contexto_Base_Web.md §38B118]
+  var guerraFameAcumDia = {};   // clave tag|clan|periodIndex -> fame acumulado de la semana
+  var guerraBarcosAcumDia = {}; // idem para barcos
+  var guerraAyerValido = (Number(guerraPIdxObjetivo) % 7) > 3; // viernes a domingo; el jueves no tiene "ayer" dentro de la semana
+  if (guerraFilasObjetivo && guerraAyerValido) {
+    for (var iAc = 0; iAc < guerraFilasObjetivo.length; iAc++) {
+      var pIdxAc = Number(guerraFilasObjetivo[iAc][GC.PERIOD_IDX - 1]) || 0;
+      if (pIdxAc !== guerraPIdxObjetivo && pIdxAc !== guerraPIdxObjetivo - 1) continue;
+      if (String(guerraFilasObjetivo[iAc][GC.TEMPORADA - 1] || '') !== guerraTempObjetivo) continue;
+      var claveAc = String(guerraFilasObjetivo[iAc][GC.TAG - 1] || '') + '|' + String(guerraFilasObjetivo[iAc][GC.CLAN - 1] || 'Sin clan') + '|' + pIdxAc;
+      guerraFameAcumDia[claveAc]   = Number(guerraFilasObjetivo[iAc][GC.FAME - 1]) || 0;
+      guerraBarcosAcumDia[claveAc] = Math.max(guerraBarcosAcumDia[claveAc] || 0, Number(guerraFilasObjetivo[iAc][GC.BARCOS - 1]) || 0);
+    }
+  }
   if (guerraFilasObjetivo) {
     for (var i = 0; i < guerraFilasObjetivo.length; i++) {
       var pIdx = Number(guerraFilasObjetivo[i][GC.PERIOD_IDX - 1]) || 0;
@@ -1924,8 +1938,17 @@ function _getDatosDashboardCalcular_() {
       var g = guerraPorClan[clanNombreG];
       var ataqHoyG = Number(guerraFilasObjetivo[i][GC.ATAQUES_HOY - 1]) || 0;
       g.ataques += ataqHoyG;
-      g.fame    += Number(guerraFilasObjetivo[i][GC.FAME   - 1]) || 0;
-      g.barcos  += Number(guerraFilasObjetivo[i][GC.BARCOS - 1]) || 0;
+      // FIX 14-oct-2026: fame y barcos del DÍA (acumulado de hoy menos el de ayer del mismo Tag+Clan), no el acumulado de la semana. [→ Contexto_Base_Web.md §38B118]
+      var fameAcumHoyG   = Number(guerraFilasObjetivo[i][GC.FAME   - 1]) || 0;
+      var barcosAcumHoyG = Number(guerraFilasObjetivo[i][GC.BARCOS - 1]) || 0;
+      var fameAcumAyerG = 0, barcosAcumAyerG = 0;
+      if (guerraAyerValido) {
+        var claveAyerG = String(guerraFilasObjetivo[i][GC.TAG - 1] || '') + '|' + clanNombreG + '|' + (pIdx - 1);
+        fameAcumAyerG   = guerraFameAcumDia[claveAyerG]   || 0;
+        barcosAcumAyerG = guerraBarcosAcumDia[claveAyerG] || 0;
+      }
+      g.fame    += Math.min(Math.max(fameAcumHoyG - fameAcumAyerG, 0), 900);
+      g.barcos  += Math.max(barcosAcumHoyG - barcosAcumAyerG, 0);
       if (ataqHoyG > 0) g.atacaron++;
       // `totalHoy` ya no se incrementa aquí; se sobreescribe más abajo con el conteo real de Activos de Directorio. [→ Contexto_Base_Web.md §38B125]
     }
