@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 10/10/2026 04:22:05 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/10/2026 16:29:25 */
 
 
 
@@ -904,6 +904,32 @@ var CARPETAS_CLAN_ = {
   'naranja x':       '1DKxLFE7P0pnItV6nTk6Q1jCctF1YgGx9'
 };
 
+/**
+ * PF074 (14-oct-2026): ESQUEMA ACTUAL de carpetas, el que escribe Base desde el 25/26-sep: endpoint -> clan.
+ * endpoint (CurrentRiverRace / Clans) -> carpeta del clan dentro de ese endpoint. Las claves de clan son las mismas
+ * de CARPETAS_CLAN_. COPIA de _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_ y _SUBCARPETAS_CLAN_POR_ENDPOINT_CLANS_
+ * de Base/src/09_API_ClashRoyale.gs: si cambian alla, hay que cambiarlas aqui (son proyectos de Apps Script separados).
+ * CARPETAS_CLAN_ (esquema VIEJO: JSON/<clan>/CurrentRiverRace|Clans) se conserva solo para leer lo historico que
+ * pudiera seguir ahi. [→ Contexto_Base_Web.md §PF074]
+ * @const {Object.<string, Object.<string, string>>}
+ */
+var CARPETAS_CLAN_POR_ENDPOINT_ = {
+  'currentriverrace': {
+    'grupo乂terna™':   '18TF9ufSGw8YlEA9Hpu7fT8d0UmiPnkYB',
+    'grupoxterna™2':   '1X6dufNme2whAkjHarBCm1jdC6xI0_aQ6',
+    'grupoxterna™3':   '1BN8ercCNZeUZYib8jGoVCzkAx2OJ7LWB',
+    'mini乂ternas™':   '1gLW3F9cqNc58VYNvUKmAOT9TtUA6PMxQ',
+    'naranja x':       '1YHhptq93vyECa3KpcEnOEXjEcuz6XBvE'
+  },
+  'clans': {
+    'grupo乂terna™':   '1MiiF08kqyTcVt7CyBroyDRjv8eARpgfo',
+    'grupoxterna™2':   '1D_GUUFTw9P6oSQXsaonxwXlmmp7sZA9M',
+    'grupoxterna™3':   '15FCgOyzp2Vd9JtJszWd-EsS_2kKVnlnp',
+    'mini乂ternas™':   '16MPII4hSHAATIPhrGDhuV6uT_Rd2YzHQ',
+    'naranja x':       '1Lhs379eEIpdXJ-2DyWkcYBbkXg4WngaN'
+  }
+};
+
 // ID reservado para uso futuro (carpeta "players").
 var CARPETA_PLAYERS_ID_ = '1Kqmn7ExFr3cDER_DgKnHwHlWc9lLW9aF';
 
@@ -1028,17 +1054,14 @@ function _organizarJSON_procesarRaiz_(resumen, inicio) {
       continue;
     }
 
-    var carpetaClan = DriveApp.getFolderById(CARPETAS_CLAN_[clanClave]);
-
     var endpoint = partes.slice(2).join(' - ').replace(/\.json$/i, '').toLowerCase();
-    var nombreSubcarpeta = CARPETAS_JSON_POR_ENDPOINT_[endpoint];
-    var carpetaDestino = nombreSubcarpeta
-      ? _carpetaHijaOCrear_(carpetaClan, nombreSubcarpeta)
-      : carpetaClan;
+    // PF074: destino segun el esquema ACTUAL (endpoint -> clan); si el endpoint no esta mapeado, queda en la carpeta
+    // vieja del clan como antes.
+    var carpetaDestino = _carpetaDestinoJSON_(clanClave, endpoint);
 
     archivo.moveTo(carpetaDestino);
     resumen.movidos++;
-    console.log('    [raíz → ' + segClan + (nombreSubcarpeta ? '/' + nombreSubcarpeta : '') + '] ' + nombre);
+    console.log('    [raíz → ' + segClan + ' / ' + endpoint + '] ' + nombre);
   }
 
   return true;
@@ -1094,6 +1117,83 @@ function _archivosDeCarpetaClan_(carpetaClan) {
   return lista;
 }
 
+/**
+ * PF074: carpeta donde debe vivir un JSON de un clan y un endpoint: la del esquema ACTUAL (endpoint -> clan) si ese
+ * endpoint esta en CARPETAS_CLAN_POR_ENDPOINT_; si no, la carpeta vieja del clan (CARPETAS_CLAN_).
+ * @param {string} clanClave Clave de clan en minusculas (como en CARPETAS_CLAN_).
+ * @param {string} endpointKey 'currentriverrace' | 'clans' | otro.
+ * @return {Folder}
+ */
+function _carpetaDestinoJSON_(clanClave, endpointKey) {
+  var porClan = CARPETAS_CLAN_POR_ENDPOINT_[endpointKey];
+  if (porClan && porClan[clanClave]) return DriveApp.getFolderById(porClan[clanClave]);
+  return DriveApp.getFolderById(CARPETAS_CLAN_[clanClave]);
+}
+
+/**
+ * PF074: lista recursiva (hasta `maxNivel` niveles de subcarpetas) de los archivos de una carpeta.
+ * @param {Folder} carpeta
+ * @param {number} maxNivel
+ * @return {Array<File>}
+ */
+function _archivosRecursivo_(carpeta, maxNivel) {
+  var lista = [];
+  (function recorrer(c, nivel) {
+    var it = c.getFiles();
+    while (it.hasNext()) lista.push(it.next());
+    if (nivel >= maxNivel) return;
+    var sub = c.getFolders();
+    while (sub.hasNext()) recorrer(sub.next(), nivel + 1);
+  })(carpeta, 0);
+  return lista;
+}
+
+/**
+ * PF074: TODOS los archivos de un clan, vistos juntos: las carpetas del esquema ACTUAL (CurrentRiverRace/<clan> y
+ * Clans/<clan>, con sus subcarpetas de temporada y semana, hasta 3 niveles) mas la carpeta vieja del clan
+ * (CARPETAS_CLAN_, con sus subcarpetas CurrentRiverRace y Clans). Hace falta verlos juntos porque un clans.json no trae
+ * periodIndex y toma prestado el de la captura currentriverrace.json mas cercana (Paso B de _analizarCarpetaJSON_), y
+ * ahora esos dos tipos de archivo viven en carpetas distintas.
+ * @param {string} clanClave Clave de clan en minusculas (como en CARPETAS_CLAN_).
+ * @return {Array<File>}
+ */
+function _archivosDeClan_(clanClave) {
+  var vistos = {}, lista = [];
+  function agregar(arr) {
+    arr.forEach(function(f) {
+      var id = f.getId();
+      if (!vistos[id]) { vistos[id] = true; lista.push(f); }
+    });
+  }
+  Object.keys(CARPETAS_CLAN_POR_ENDPOINT_).forEach(function(endpointKey) {
+    var id = CARPETAS_CLAN_POR_ENDPOINT_[endpointKey][clanClave];
+    if (id) agregar(_archivosRecursivo_(DriveApp.getFolderById(id), 3));
+  });
+  if (CARPETAS_CLAN_[clanClave]) agregar(_archivosDeCarpetaClan_(DriveApp.getFolderById(CARPETAS_CLAN_[clanClave])));
+  return lista;
+}
+
+/** Memoria de las carpetas de temporada/semana ya resueltas en esta ejecucion (evita repetir getFoldersByName). */
+var _SEMANA_MEM_ = {};
+
+/**
+ * PF074: carpeta de la TEMPORADA y la SEMANA de un clan y un endpoint, dentro de la carpeta actual de ese endpoint:
+ * CurrentRiverRace|Clans / <clan> / T-02 / S-01. La crea si no existe. Los nombres (T-02, S-01, con cero a la izquierda)
+ * son un SUPUESTO por confirmar con la usuaria; el mismo formato que usa Base (_getCarpetaSemana_ en 09_API_ClashRoyale.gs).
+ * @return {?Folder} null si el endpoint no esta en CARPETAS_CLAN_POR_ENDPOINT_ (queda donde esta).
+ */
+function _carpetaSemanaJSON_(clanClave, endpointKey, temporada, sectionIndex) {
+  var idClan = (CARPETAS_CLAN_POR_ENDPOINT_[endpointKey] || {})[clanClave];
+  if (!idClan) return null;
+  var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(sectionIndex + 1);
+  var k = idClan + '|' + nT + '|' + nS;
+  if (_SEMANA_MEM_[k]) return _SEMANA_MEM_[k];
+  var cT = _carpetaHijaOCrear_(DriveApp.getFolderById(idClan), nT);
+  var cS = _carpetaHijaOCrear_(cT, nS);
+  _SEMANA_MEM_[k] = cS;
+  return cS;
+}
+
 function _organizarJSON_tiempoAgotado_(inicio) {
   return (new Date().getTime() - inicio) > ORGANIZAR_LIMITE_MS_;
 }
@@ -1111,7 +1211,7 @@ function _organizarJSON_borrarTriggersPendientes_() {
 // 05_Migrador_Formato.gs
 // Migra los archivos JSON al nuevo formato de nombre:
 //
-//   "T-<temporada> S-<semana> P.I-<periodIndex> <fecha hora> - <clan> - <endpoint>.json"
+//   "T-<temporada> S-<semana> P.I-<periodIndex>-<letra del día> <fecha hora> - <clan> - <endpoint>.json"
 //
 // donde:
 //   - temporada  : se INFIERE (ver _analizarCarpetaJSON_ en
@@ -1120,6 +1220,9 @@ function _organizarJSON_borrarTriggersPendientes_() {
 //   - semana     : sectionIndex + 1, leído del contenido de currentriverrace.json.
 //   - periodIndex: periodIndex real, leído del contenido de currentriverrace.json
 //                  (la PRIMERA mención dentro del archivo, ver _leerPeriodo_).
+//   - letra      : día de la semana de ese periodIndex (L M X J V S D), solo para
+//                  facilitar la búsqueda manual; ver _letraDiaGuerra_ y
+//                  [→ Contexto_Base_Web.md §PF074].
 //
 // Requiere que 04_Organizador_JSON.gs, 06_Limpieza_Duplicados_JSON.gs y
 // 07_Cache_Periodos_JSON.gs estén cargados en el MISMO proyecto de Apps
@@ -1230,7 +1333,7 @@ function migrarFormatoJSON() {
       var clave = estado.clanesPendientes[0];
       console.log('  Procesando: ' + clave);
 
-      var clanCompleto = _mig_etiquetarCarpetaClan(CARPETAS_CLAN_[clave], estado.resumen, cache, inicio);
+      var clanCompleto = _mig_etiquetarCarpetaClan(clave, estado.resumen, cache, inicio); // PF074: recibe la CLAVE del clan
 
       // El cache se guarda apenas se procesa (o intenta procesar) una
       // carpeta, sin importar si se terminó: es lo que evita releer
@@ -1294,7 +1397,7 @@ function migrarFormatoJSON_reiniciarEstado() {
  * una ejecución anterior, se reemplaza por el recién calculado en vez de
  * apilarse (ver _quitarTagExistente_ en el archivo 06), y si ya está en
  * su subcarpeta correcta no se vuelve a mover.
- * @param {string} folderId
+ * @param {string} clanClave Clave del clan en minúsculas (como en CARPETAS_CLAN_).
  * @param {Object} resumen
  * @param {Object} cache Cache de periodos (07_Cache_Periodos_JSON.gs).
  * @param {number=} inicio Timestamp (ms) de inicio de la ejecución actual.
@@ -1303,10 +1406,12 @@ function migrarFormatoJSON_reiniciarEstado() {
  *   reintentar completa la próxima vez; es rápido porque el análisis ya
  *   quedó en el cache y mover/renombrar un archivo ya correcto no hace nada).
  */
-function _mig_etiquetarCarpetaClan(folderId, resumen, cache, inicio) {
-  var carpeta  = DriveApp.getFolderById(folderId);
-  var analisis = _analizarCarpetaJSON_(carpeta, cache);
-  var subcarpetasCache = {}; // nombreSubcarpeta -> Folder (evita repetir getFoldersByName por cada archivo)
+function _mig_etiquetarCarpetaClan(clanClave, resumen, cache, inicio) {
+  // PF074 (14-oct-2026): recibe la CLAVE del clan y analiza juntas sus carpetas del esquema ACTUAL (endpoint -> clan) y
+  // la vieja. Los archivos que ya estan en la carpeta actual del endpoint NO se mueven; los que siguen en la carpeta
+  // vieja del clan se renombran en su sitio y se cuentan (resumen.enCarpetaVieja): moverlos es una decision pendiente.
+  var carpeta  = { getName: function() { return clanClave; } }; // solo para los mensajes del log
+  var analisis = _analizarCarpetaJSON_(clanClave, cache);
 
   analisis.sinResolver.forEach(function(clave) {
     resumen.ignorados.push('[' + carpeta.getName() + '] ' + clave +
@@ -1324,28 +1429,30 @@ function _mig_etiquetarCarpetaClan(folderId, resumen, cache, inicio) {
     var fechaHoraPura   = _mig_fechaHoraStr(item.real); // fecha real (getDateCreated), no la del nombre viejo (cv[0])
     var segClanOriginal = cv.slice(1).join(' - ');
 
+    // La letra del día sale del periodIndex del CONTENIDO (no de la fecha del
+    // nombre): "P.I-05-S" = sábado. Ver _letraDiaGuerra_ más abajo.
     var tag = 'T-' + _pad2_(item.temporada) +
       '  S-' + _pad2_(item.sectionIndex + 1) +
-      ' P.I-' + _pad2_(item.periodIndex);
+      ' P.I-' + _pad2_(item.periodIndex) + '-' + _letraDiaGuerra_(item.periodIndex);
 
     var endpointKeys = Object.keys(item.archivos);
     for (var j = 0; j < endpointKeys.length; j++) {
       var endpointKey = endpointKeys[j];
       var archivo = item.archivos[endpointKey];
 
-      // Mueve el archivo a su subcarpeta de endpoint (CurrentRiverRace /
-      // Clans), creándola si todavía no existe en ESTE clan (antes esto
-      // solo pasaba en el drenaje de la raíz, así que un archivo que ya
-      // estaba suelto directo en la carpeta del clan —sin haber pasado
-      // por la raíz— se quedaba ahí para siempre, solo renombrado).
-      var nombreSubcarpeta = CARPETAS_JSON_POR_ENDPOINT_[endpointKey];
-      if (nombreSubcarpeta) {
-        var carpetaDestino = subcarpetasCache[nombreSubcarpeta] ||
-          (subcarpetasCache[nombreSubcarpeta] = _carpetaHijaOCrear_(carpeta, nombreSubcarpeta));
-        if (!_mig_yaEstaEnCarpeta_(archivo, carpetaDestino)) {
-          archivo.moveTo(carpetaDestino);
+      // PF074: ya no se mueve a una subcarpeta de la carpeta vieja del clan. Si el archivo no cuelga de la carpeta
+      // actual de su endpoint, solo se cuenta (decision de moverlo pendiente; ver Contexto_Base_Web.md §PF074).
+      var idCarpetaActual = (CARPETAS_CLAN_POR_ENDPOINT_[endpointKey] || {})[clanClave];
+      if (idCarpetaActual && !_mig_estaBajoCarpeta_(archivo, idCarpetaActual)) {
+        resumen.enCarpetaVieja = (resumen.enCarpetaVieja || 0) + 1;
+      } else if (idCarpetaActual) {
+        // PF074 (tanda 4): lo que ya esta en la carpeta actual del endpoint va a su carpeta de temporada y semana
+        // (T-xx / S-xx, misma temporada y semana que el tag). Si ya esta ahi, no se mueve.
+        var carpetaSemana = _carpetaSemanaJSON_(clanClave, endpointKey, item.temporada, item.sectionIndex);
+        if (carpetaSemana && !_mig_yaEstaEnCarpeta_(archivo, carpetaSemana)) {
+          archivo.moveTo(carpetaSemana);
           resumen.movidos++;
-          console.log('    [clan] ' + endpointKey + ' movido a subcarpeta "' + nombreSubcarpeta + '"');
+          console.log('    [clan] ' + endpointKey + ' movido a ' + carpetaSemana.getName() + ' de la temporada ' + item.temporada);
         }
       }
 
@@ -1373,6 +1480,28 @@ function _mig_yaEstaEnCarpeta_(archivo, carpeta) {
   var padres = archivo.getParents();
   while (padres.hasNext()) {
     if (padres.next().getId() === carpeta.getId()) return true;
+  }
+  return false;
+}
+
+/**
+ * PF074: true si `archivo` esta dentro de la carpeta `idCarpeta` o de una subcarpeta suya (hasta 3 niveles hacia arriba:
+ * clan -> temporada -> semana).
+ */
+function _mig_estaBajoCarpeta_(archivo, idCarpeta) {
+  var actuales = [archivo];
+  for (var nivel = 0; nivel < 4; nivel++) {
+    var siguientes = [];
+    for (var i = 0; i < actuales.length; i++) {
+      var padres = actuales[i].getParents();
+      while (padres.hasNext()) {
+        var p = padres.next();
+        if (p.getId() === idCarpeta) return true;
+        siguientes.push(p);
+      }
+    }
+    actuales = siguientes;
+    if (!actuales.length) break;
   }
   return false;
 }
@@ -1441,6 +1570,24 @@ function _mig_renombrarSeguro(archivo, nombreNuevo, resumen) {
   }
   archivo.setName(nombreNuevo);
   return nombreNuevo;
+}
+
+/** @const {string} Letras del día de la semana, índice 0 = lunes … 6 = domingo (L M X J V S D). */
+var LETRAS_DIA_GUERRA_ = 'LMXJVSD';
+
+/**
+ * Letra del día de la semana al que corresponde un periodIndex:
+ * periodIndex % 7 → 0=L, 1=M, 2=X, 3=J, 4=V, 5=S, 6=D. Es la misma regla que
+ * usa el contexto del sistema (P.I de un día = 7*(Semana-1) + 3 jueves,
+ * 4 viernes, 5 sábado, 6 domingo) y se comprobó contra los 118
+ * currentriverrace.json de Datos descargados/JSON (117 coinciden con la
+ * fecha; la que queda es una captura dentro de la ventana 04:00-05:00 Lima).
+ * @param {number} periodIndex
+ * @return {string} Una letra de LETRAS_DIA_GUERRA_.
+ */
+function _letraDiaGuerra_(periodIndex) {
+  var n = Math.round(Number(periodIndex));
+  return LETRAS_DIA_GUERRA_.charAt(((n % 7) + 7) % 7);
 }
 
 /** Rellena con un cero a la izquierda si el número tiene un solo dígito. */
@@ -1530,6 +1677,7 @@ function _mig_finalizar_(estado, cache) {
   console.log('  Renombrados : ' + resumen.renombrados);
   console.log('  Movidos     : ' + resumen.movidos);
   console.log('  Duplicados  : ' + resumen.duplicados);
+  console.log('  En carpeta vieja (renombrados en su sitio, sin mover): ' + (resumen.enCarpetaVieja || 0));
   console.log('  Ignorados   : ' + resumen.ignorados.length);
   if (resumen.ignorados.length) {
     resumen.ignorados.forEach(function(l) { console.log('    · ' + l); });
@@ -1639,8 +1787,8 @@ function limpiarDuplicadosJSON() {
   _limpiarCarpeta_(DriveApp.getFolderById(CARPETA_JSON_RAIZ_ID_), '[RAÍZ / sin organizar]', cache);
 
   Object.keys(CARPETAS_CLAN_).forEach(function(clave) {
-    var carpeta = DriveApp.getFolderById(CARPETAS_CLAN_[clave]);
-    _limpiarCarpeta_(carpeta, clave, cache);
+    // PF074: se pasa la CLAVE del clan (no una carpeta) para ver juntas las carpetas del esquema actual y la vieja.
+    _limpiarCarpeta_(clave, clave, cache);
   });
 
   _cache_guardar_(cache);
@@ -1659,7 +1807,7 @@ function limpiarDuplicadosJSON() {
  * @param {string} etiqueta Nombre descriptivo para el log.
  * @param {Object=} cache Cache de periodos (07_Cache_Periodos_JSON.gs).
  */
-function _limpiarCarpeta_(carpeta, etiqueta, cache) {
+function _limpiarCarpeta_(carpeta, etiqueta, cache) { // PF074: `carpeta` puede ser una Folder (raiz) o la clave de un clan (string)
   console.log('── ' + etiqueta + ' ──');
 
   var analisis = _analizarCarpetaJSON_(carpeta, cache);
@@ -1781,14 +1929,14 @@ function _limpiarCarpeta_(carpeta, etiqueta, cache) {
  *   periodIndex, temporada, archivos ({endpoint: File}), tamano (bytes del
  *   currentriverrace.json). Ordenado por fecha real ascendente.
  */
-function _analizarCarpetaJSON_(carpeta, cache) {
+function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser una Folder (raiz) o la clave de un clan (string)
   cache = cache || {};
   // _archivosDeCarpetaClan_ (04_Organizador_JSON.gs) trae tanto los
   // archivos sueltos directamente en "carpeta" como los que ya están
   // organizados dentro de sus subcarpetas de endpoint (CurrentRiverRace,
   // Clans). En la carpeta raíz (sin esas subcarpetas) simplemente no
   // encuentra ninguna y se comporta igual que antes.
-  var archivos = _archivosDeCarpetaClan_(carpeta);
+  var archivos = (typeof carpeta === 'string') ? _archivosDeClan_(carpeta) : _archivosDeCarpetaClan_(carpeta);
   var capturas = {}; // claveCaptura -> { archivos: {endpoint: File}, realCreado: Date }
 
   archivos.forEach(function(f) {
@@ -1991,15 +2139,17 @@ function _primerLunesDia_(anio, mes0) {
 }
 
 /**
- * Quita un tag "T-<n> S-<n> P.I-<n> " existente al inicio de un segmento de
- * nombre, si lo trae (para poder re-analizar/re-etiquetar archivos que ya
- * pasaron por migrarFormatoJSON() en una ejecución anterior sin apilar
- * tags ni romper el agrupamiento por captura).
+ * Quita un tag "T-<n> S-<n> P.I-<n> " o "T-<n> S-<n> P.I-<n>-<letra> "
+ * existente al inicio de un segmento de nombre, si lo trae (para poder
+ * re-analizar/re-etiquetar archivos que ya pasaron por migrarFormatoJSON()
+ * en una ejecución anterior sin apilar tags ni romper el agrupamiento por
+ * captura). La letra opcional es la del día de guerra (L M X J V S D, ver
+ * _letraDiaGuerra_ en 05_Migrador_Formato.gs). [→ Contexto_Base_Web.md §PF074]
  * @param {string} segmento
  * @return {string}
  */
 function _quitarTagExistente_(segmento) {
-  return segmento.replace(/^T-\d+\s+S-\d+\s+P\.I-\d+\s+/, '');
+  return segmento.replace(/^T-\d+\s+S-\d+\s+P\.I-\d+(?:-[LMXJVSD])?\s+/, '');
 }
 
 /**
@@ -2835,4 +2985,279 @@ function _actualizarReadmeGenerador_() {
     return { ok: false, error: msg };
   }
 }
+
+// --- ARCHIVO: 10_Verificar_PeriodIndex_JSON.gs ---
+// =============================================================================
+// 10_Verificar_PeriodIndex_JSON.gs
+// Verificación de SOLO LECTURA de los respaldos JSON de cada clan: comprueba
+// que el tag del nombre ("T-.. S-.. P.I-..[-letra]") coincida con lo que
+// dice el CONTENIDO del currentriverrace.json y con su FECHA DE CREACIÓN en
+// Drive. No renombra, no mueve y no borra nada.
+//
+// POR QUÉ NO SE CONFÍA EN EL NOMBRE
+// ----------------------------------------------------------------------------
+// Ya hubo nombres con temporadas que todavía no existían (futuras) y hubo que
+// corregirlos. Por eso la verdad es, en este orden:
+//   1) el contenido del currentriverrace.json (periodIndex y sectionIndex,
+//      PRIMERA mención dentro del archivo, ver _leerPeriodo_ en 06);
+//   2) la fecha de CREACIÓN del archivo (getDateCreated, no la de
+//      modificación: el escritor de Base reescribe el contenido del mismo
+//      archivo durante todo el periodo, así que la modificación avanza);
+//   3) el nombre, solo como lo que se está verificando.
+//
+// VENTANA DE 04:00 A 05:00 (LIMA)
+// ----------------------------------------------------------------------------
+// Cada clan cambia de periodIndex dentro de esa hora (09:00-10:00 UTC, ver
+// BLG_VENTANA_CAMBIO_UTC en 18_CorreccionGuerra.gs de Base). Una captura
+// creada dentro de la ventana puede pertenecer al día anterior o al nuevo, así
+// que la FECHA no decide: se acepta cualquiera de los dos días y decide el
+// periodIndex del contenido. Fuera de la ventana, el día de la fecha tiene que
+// coincidir con el día del periodIndex (periodIndex % 7, ver _letraDiaGuerra_
+// en 05_Migrador_Formato.gs).
+//
+// Lima es UTC-5 todo el año (Perú no tiene horario de verano), por eso la
+// conversión es un desplazamiento fijo y no depende de Utilities.
+//
+// Requiere 04, 05, 06 y 07 en el mismo proyecto. Registro del diseño y de lo
+// comprobado: [→ Contexto_Base_Web.md §PF074].
+// =============================================================================
+
+/** @const {number} Lima es UTC-5 fijo. */
+var VERIF_LIMA_OFFSET_H_ = 5;
+
+/** @const {number} Hora Lima en que, como pronto, un clan cambia de día de guerra. */
+var VERIF_CAMBIO_DESDE_H_ = 4;
+
+/** @const {number} Hora Lima en que, como tarde, todos los clanes ya cambiaron. */
+var VERIF_CAMBIO_HASTA_H_ = 5;
+
+/** @const {RegExp} Tag del nombre: T-nn  S-nn P.I-nn[-letra] y el resto. */
+var VERIF_REGEX_TAG_ = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-([LMXJVSD]))?\s/;
+
+/** @const {number} Máximo de líneas de detalle que se escriben en el log del Generador. */
+var VERIF_MAX_LINEAS_LOG_ = 60;
+
+/**
+ * Punto de entrada manual. Recorre cada carpeta de clan (sueltos y
+ * subcarpetas CurrentRiverRace / Clans) y verifica cada currentriverrace.json
+ * y cada clans.json. Es de solo lectura; guarda el cache de periodos (07) para
+ * que una segunda corrida sea rápida si la primera se corta por tiempo.
+ *
+ * @return {{revisados:number, ok:number, faltaLetra:number, ventana:number,
+ *   problemas:Array<string>, sinVerificar:Array<string>, completo:boolean}}
+ */
+function verificarPeriodIndexJSON() {
+  var inicio = new Date().getTime();
+  var cache = _cache_cargar_();
+  var r = { revisados: 0, ok: 0, faltaLetra: 0, ventana: 0, problemas: [], sinVerificar: [], completo: true };
+
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('verificarPeriodIndexJSON() — ' + _mig_horaLima(new Date()) + ' — SOLO LECTURA');
+  console.log('Cache de periodos: ' + Object.keys(cache).length + ' archivos ya leídos.');
+  console.log('═══════════════════════════════════════════════════════');
+
+  var claves = Object.keys(CARPETAS_CLAN_);
+  for (var c = 0; c < claves.length && r.completo; c++) {
+    // PF074: se revisan juntas las carpetas del esquema ACTUAL (endpoint -> clan) y la vieja de cada clan.
+    var carpeta = { getName: function() { return claves[c]; } }; // solo para los mensajes
+    console.log('── ' + carpeta.getName() + ' ──');
+    var archivos = _archivosDeClan_(claves[c]);
+
+    for (var i = 0; i < archivos.length; i++) {
+      if (_mig_tiempoAgotado_(inicio)) { r.completo = false; break; }
+      var f = archivos[i];
+      var nombre = f.getName();
+      var esRiver = / - currentriverrace\.json$/i.test(nombre);
+      var esClans = / - clans\.json$/i.test(nombre);
+      if (!esRiver && !esClans) continue;
+
+      var idPeriodo = null;
+      if (esRiver) {
+        idPeriodo = _verif_periodoDeArchivo_(f, cache);
+        if (!idPeriodo) {
+          r.sinVerificar.push('[' + carpeta.getName() + '] ' + nombre + ' [no se pudo leer el contenido]');
+          continue;
+        }
+      }
+
+      var v = _verif_comparar_(nombre, idPeriodo, f.getDateCreated(), new Date());
+      r.revisados++;
+      if (v.problemas.length) {
+        r.problemas.push('[' + carpeta.getName() + '] ' + nombre + ' → ' + v.problemas.join(' | '));
+      } else if (v.estado === 'ventana') {
+        r.ventana++;
+      } else if (v.estado === 'falta-letra') {
+        r.faltaLetra++;
+      } else {
+        r.ok++;
+      }
+      if (v.avisos.length) {
+        r.sinVerificar.push('[' + carpeta.getName() + '] ' + nombre + ' → ' + v.avisos.join(' | '));
+      }
+    }
+    _cache_guardar_(cache);
+  }
+
+  _cache_guardar_(cache);
+  _verif_imprimirResumen_(r);
+  return r;
+}
+
+/**
+ * Lee (o toma del cache de 07) el sectionIndex/periodIndex de un
+ * currentriverrace.json. Misma lógica y misma forma de cache que
+ * _analizarCarpetaJSON_ en 06.
+ * @param {File} archivo
+ * @param {Object} cache
+ * @return {?{sectionIndex:number, periodIndex:number}}
+ */
+function _verif_periodoDeArchivo_(archivo, cache) {
+  var id = archivo.getId();
+  var cacheado = cache[id];
+  if (cacheado) return { sectionIndex: cacheado.s, periodIndex: cacheado.p };
+
+  var idPeriodo = _leerPeriodo_(archivo);
+  if (idPeriodo) {
+    cache[id] = { s: idPeriodo.sectionIndex, p: idPeriodo.periodIndex, t: archivo.getSize() };
+  }
+  return idPeriodo;
+}
+
+/**
+ * Índice del día de la semana (0 = lunes … 6 = domingo) de un instante, en
+ * hora de Lima, restándole "desplazH" horas antes de mirar el día (el día de
+ * guerra empieza a las 04:00-05:00 Lima, no a medianoche).
+ * @param {Date} fecha
+ * @param {number} desplazH
+ * @return {number}
+ */
+function _verif_indiceDiaLima_(fecha, desplazH) {
+  var ms = fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + desplazH) * 3600 * 1000;
+  return (new Date(ms).getUTCDay() + 6) % 7; // getUTCDay: 0 = domingo
+}
+
+/** @return {boolean} true si la hora de Lima de "fecha" cae dentro de [04:00, 05:00). */
+function _verif_enVentanaCambio_(fecha) {
+  var h = new Date(fecha.getTime() - VERIF_LIMA_OFFSET_H_ * 3600 * 1000).getUTCHours();
+  return h >= VERIF_CAMBIO_DESDE_H_ && h < VERIF_CAMBIO_HASTA_H_;
+}
+
+/**
+ * Compara el nombre de un archivo con su contenido y su fecha de creación.
+ * Es una función pura (no toca Drive), pensada para poder probarse fuera de
+ * Apps Script.
+ *
+ * @param {string} nombre Nombre completo del archivo.
+ * @param {?{sectionIndex:number, periodIndex:number}} idPeriodo Lo que dice el
+ *   contenido; null para clans.json (que no trae periodIndex propio): en ese
+ *   caso solo se compara el P.I del nombre contra la fecha de creación.
+ * @param {Date} creada Fecha de CREACIÓN en Drive.
+ * @param {Date} ahora Para detectar temporadas que todavía no existen.
+ * @return {{estado:string, problemas:Array<string>, avisos:Array<string>}}
+ *   estado: 'ok' | 'falta-letra' | 'ventana' | 'problema'.
+ */
+function _verif_comparar_(nombre, idPeriodo, creada, ahora) {
+  var problemas = [];
+  var avisos = [];
+  var m = VERIF_REGEX_TAG_.exec(nombre);
+
+  if (!m) {
+    return { estado: 'problema', problemas: ['sin tag T-/S-/P.I- en el nombre'], avisos: [] };
+  }
+
+  var tNombre = parseInt(m[1], 10);
+  var sNombre = parseInt(m[2], 10);
+  var pNombre = parseInt(m[3], 10);
+  var letraNombre = m[4] || '';
+
+  // El periodIndex que manda: el del contenido; si no hay (clans.json), el del
+  // nombre, que entonces solo se puede contrastar con la fecha.
+  var pReal = idPeriodo ? idPeriodo.periodIndex : pNombre;
+  var letraReal = _letraDiaGuerra_(pReal);
+
+  if (idPeriodo) {
+    if (pNombre !== idPeriodo.periodIndex) {
+      problemas.push('P.I del nombre ' + pNombre + ' ≠ periodIndex del contenido ' + idPeriodo.periodIndex);
+    }
+    if (sNombre !== idPeriodo.sectionIndex + 1) {
+      problemas.push('S del nombre ' + sNombre + ' ≠ sectionIndex+1 del contenido ' + (idPeriodo.sectionIndex + 1));
+    }
+  }
+  // Con idPeriodo === null (clans.json) no hay contenido que contrastar: solo
+  // se compara el P.I del nombre con la fecha de creación (más abajo). No se
+  // agrega un aviso por archivo para no llenar el reporte; lo dice el resumen.
+
+  if (letraNombre && letraNombre !== letraReal) {
+    problemas.push('letra del nombre ' + letraNombre + ' ≠ letra del periodIndex ' + pReal + ' (' + letraReal + ')');
+  }
+
+  // Fecha de creación contra el día del periodIndex, con la ventana 04:00-05:00.
+  var dia4 = _verif_indiceDiaLima_(creada, VERIF_CAMBIO_DESDE_H_);
+  var dia5 = _verif_indiceDiaLima_(creada, VERIF_CAMBIO_HASTA_H_);
+  var diaReal = pReal % 7;
+  var enVentana = _verif_enVentanaCambio_(creada);
+
+  if (enVentana) {
+    if (diaReal !== dia4 && diaReal !== dia5) {
+      problemas.push('creado dentro de la ventana 04:00-05:00 y el día del periodIndex (' + letraReal +
+        ') no es ni ' + LETRAS_DIA_GUERRA_.charAt(dia5) + ' ni ' + LETRAS_DIA_GUERRA_.charAt(dia4));
+    }
+  } else if (diaReal !== dia4) {
+    problemas.push('la fecha de creación cae en ' + LETRAS_DIA_GUERRA_.charAt(dia4) +
+      ' pero el periodIndex ' + pReal + ' es ' + letraReal);
+  }
+
+  // Temporada: tiene que ser la que corresponde a la fecha de creación y no
+  // una que todavía no existe. La fecha se prueba con y sin el desplazamiento
+  // de las 05:00 para no marcar capturas pegadas al reinicio del lunes.
+  var tFecha = _temporadaDeFecha_(creada);
+  var tFecha5 = _temporadaDeFecha_(new Date(creada.getTime() - VERIF_CAMBIO_HASTA_H_ * 3600 * 1000));
+  if (tNombre !== tFecha && tNombre !== tFecha5) {
+    problemas.push('T del nombre ' + tNombre + ' ≠ temporada de la fecha de creación ' + tFecha);
+  }
+  if (tNombre > _temporadaDeFecha_(ahora)) {
+    problemas.push('T del nombre ' + tNombre + ' es una temporada que todavía no existe');
+  }
+
+  var estado;
+  if (problemas.length) estado = 'problema';
+  else if (!letraNombre) estado = 'falta-letra';
+  else if (enVentana) estado = 'ventana';
+  else estado = 'ok';
+
+  return { estado: estado, problemas: problemas, avisos: avisos };
+}
+
+/** Escribe el resumen en la consola y deja una entrada en el log del Generador. */
+function _verif_imprimirResumen_(r) {
+  console.log('\n═══════════════════════════════════════════════════════');
+  console.log('RESUMEN (solo lectura, no se renombró nada):');
+  console.log('  Revisados                          : ' + r.revisados);
+  console.log('  Correctos (con letra)              : ' + r.ok);
+  console.log('  Correctos, creados en 04:00-05:00  : ' + r.ventana);
+  console.log('  Correctos pero sin letra todavía   : ' + r.faltaLetra + '  (los arregla migrarFormatoJSON, salvo un clans.json sin currentriverrace cercano)');
+  console.log('  Con problemas                      : ' + r.problemas.length);
+  console.log('  Avisos / sin poder verificar       : ' + r.sinVerificar.length);
+  console.log('  (clans.json no trae periodIndex: solo se contrastó su P.I del nombre con la fecha de creación)');
+  if (!r.completo) {
+    console.log('  ⏸ Se cortó por tiempo: vuelve a ejecutar verificarPeriodIndexJSON(); el cache ya guardó lo leído.');
+  }
+  r.problemas.forEach(function(l) { console.log('  ✘ ' + l); });
+  r.sinVerificar.forEach(function(l) { console.log('  · ' + l); });
+  console.log('═══════════════════════════════════════════════════════');
+
+  var lineas = r.problemas.concat(r.sinVerificar);
+  var recorte = lineas.slice(0, VERIF_MAX_LINEAS_LOG_);
+  if (lineas.length > recorte.length) {
+    recorte.push('… y ' + (lineas.length - recorte.length) + ' más (ver la consola de la ejecución).');
+  }
+  _registrarLogGenerador(
+    'verificarPeriodIndexJSON()',
+    'Verificación de solo lectura. Revisados: ' + r.revisados + ', correctos: ' + (r.ok + r.ventana) +
+    ', sin letra: ' + r.faltaLetra + ', con problemas: ' + r.problemas.length +
+    ', avisos: ' + r.sinVerificar.length + (r.completo ? '.' : ' (incompleta: se cortó por tiempo).'),
+    recorte
+  );
+}
+
 
