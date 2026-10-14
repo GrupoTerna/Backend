@@ -66386,7 +66386,7 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 
 | N.º | Pendiente | Estado |
 |---|---|---|
-| 1 | `doGet` cae a los `Backup_*.csv` cuando falla Sheets (Fase 13a, endpoint por endpoint) | En curso: tandas 3 y 4 (diagnóstico) y 5 (código, públicos) hechas; falta la tanda 6 (revisar los `try` cuyo `catch` solo registra) y el cierre |
+| 1 | `doGet` cae a los `Backup_*.csv` cuando falla Sheets (Fase 13a, endpoint por endpoint) | **Hecho en las tandas 3 a 6** para los endpoints públicos y las funciones compartidas (diagnóstico más código); los de admin y de Tampermonkey quedaron fuera por decisión (tanda 5). **Sin probar en Apps Script real** |
 | 2 | Qué claves publican `50_` a `53_`, y si el bot republica cuando Sheets falla | **Hecho en la tanda 1** |
 | 3 | Qué JSON traen `tiempos.api.ultimaConsultaTs` | **Hecho en la tanda 1** |
 | 4 | `_diasOpcionalesClanSemana_()` recorre viernes a domingo | **Hecho en la tanda 2** (recorrido correcto; hallazgo E sobre filas `Estimado`, pendiente de definir) |
@@ -66536,6 +66536,25 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 **Recordatorio:** correr `subirBaseDesdeGithub()` antes de cualquier `descargarBase()` o `subirBase…`, o el estado viejo de Apps Script se escribe encima.
 
 **Falta (tanda 6):** revisar los `try` cuyo `catch` solo registra en los endpoints públicos; marcar la Fase 13(a) en `Consolidado_Plan_de_Fases.md`; cerrar el pendiente 1.
+
+#### Tanda 6 — lecturas dentro de `try` en endpoints públicos y cierre del pendiente 1 (14-oct-2026; sí hay cambios de código)
+
+**Método:** el mismo analizador, esta vez sobre las lecturas que **sí** están dentro de un `try`, clasificando qué hace su `catch` (cae a CSV, devuelve vacío o solo registra). Sobre los 23 endpoints públicos aparecen 10 patrones distintos.
+
+| Patrón | Qué hace el `catch` | Decisión |
+|---|---|---|
+| `_webLeerDirectorioComoDC` (`37_Web_API.gs`, 635), `_webBuscarFilaInactivosPorTag` (667), `_leerFilasGuerraDeTag_` (1459), `_webHistorialGuerraComparador` (2087) | cae a CSV | correcto, sin cambios |
+| `_getIdVigenteExtraCR` y `_getIdVigenteExtra` (`26_Torneos_Core.gs`, 2998 y 3015) | devolvían `''` en silencio: sin `Descenso_Vigente_ID`, `_getMinGClanMaps` se quedaba **sin Min_G** y `webClanInfo` salía sin ese dato | **corregido**: ahora leen `Backup_Extra.csv` por nombre de encabezado con `_valorExtraDesdeCsv_` (nueva) |
+| `_getTemporadaMostrarExtra` (`28_Torneos_Docs.gs`) | (tanda 5) se quedaba con la temporada real | **mejorado**: prueba `Backup_Extra.csv` (`Mostrar_T`, o `Mostrar` si el CSV es antiguo) antes de usar la real |
+| `_nombreClanDesdeHojaClanDash_` (`38_Web_Endpoints.gs`) | devolvía `''` | **corregido**: hoja `Clan` o `Backup_Clan.csv` con el helper |
+| `_getParticipantesGuerraTemporada_` (`38_Web_Endpoints.gs`) | devolvía un mapa vacío si la hoja `Guerra` fallaba en la temporada real | **corregido**: reintenta con `_leerGuerraCsvAgrupado_()` antes de rendirse |
+| `_tiemposMensajesWeb_` (`42_Web_TiemposActualizacion.gs`, 119) | solo registra; falta la hora de «mensajes» en `tiempos` | **se deja**: dato informativo, sin efecto en el contenido |
+
+**Por qué por encabezado y no por posición:** `importarExtraDesdeCSV` (`05_Backup_CSV.gs`) mapea el CSV por nombre porque las columnas de `Extra` han cambiado de lugar (por ejemplo `Mostrar` pasó a `Mostrar_T`). Las columnas 20 a 23 de `Extra` (`Torneo_Vigente_ID`, `Sorteo_Vigente_ID`, `Ascenso_Vigente_ID`, `Descenso_Vigente_ID`) solo valen para la hoja viva.
+
+**Qué NO se probó:** nada en Apps Script real; la ruta CSV de `Extra` nunca se ha ejercitado en producción (el CSV se usaba solo para restaurar). Tampoco se comprobó el contenido real de `Backup_Extra.csv` en Drive (en `Datos descargados` no hay copia).
+
+**Cierre del pendiente 1.** Resultado a la pregunta de la usuaria («`doGet` cae a los `Backup_*.csv` cuando falla Sheets»): **`doGet` no cae por sí mismo; cada función `_web*` lo hace.** Tras las tandas 3 a 6, los endpoints públicos y las funciones compartidas leen hoja viva o CSV (o degradan a vacío conscientemente), con las excepciones y efectos anotados en las tandas 5 y 6. **Quedan fuera, por decisión:** los endpoints de admin que no se benefician de funciones compartidas y `listaCorreccionGuerra` / `listaNuevosRoyaleAPI`. **Verificación pendiente en real:** simular una caída de Sheets (por ejemplo renombrando temporalmente una hoja) y llamar a `webClanInfo`, `webTorneos` y `webIngresosRecientes`.
 
 ### PF074 — Letra del día en el nombre de los JSON (`P.I-05-S`), verificación de `periodIndex` y pendiente de subcarpetas por temporada y semana (pedido de la usuaria, 14-oct-2026)
 
