@@ -1,14 +1,14 @@
 # Índice de funciones — Generador
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Generador/src/`. Total: 137 nombres en 10 archivos .gs.
+Código real: `Generador/src/`. Total: 139 nombres en 10 archivos .gs.
 
 ## Por archivo
 
 - **01_Principal.gs** (16 funciones): descargarBase, subirBaseDesdeZip, subirBaseDesdeTxt, subirBaseDesdeGs, subirBaseDesdeMd, subirBaseDesdeGithub, subirBaseDesdeGithubForzado, descargarGenerador, subirGeneradorDesdeZip, subirGeneradorDesdeTxt, subirGeneradorDesdeGs, subirGeneradorDesdeMd, subirGeneradorDesdeGithub, subirGeneradorDesdeGithubForzado, probarConexionGithub, eliminarTodosLosArchivosDeBase
 - **02_Backstage.gs** (15 funciones): _carpetaDeRespaldos_, _conAviso_, _registrarLogGenerador, obtenerSpreadsheetPorNombreEnCarpeta_, consolidarCodigoDesdeZip, _extraerArchivosDeTexto, _generarMarkdownLegible_, _extraerArchivosDeMarkdown_, nombreBaseDesdeArchivo_, _descargarProyectoAArchivos, _subirArchivosAProyecto, actualizarScriptDeHoja, _eliminarTodosLosArchivosDeProyecto, obtenerArchivosProyecto_, crearProyectoVinculado_
 - **03_RoyaleAPI_Torneos.gs** (2 funciones): obtenerJSON_viaProxy, tryAlternativeProxy
-- **04_Organizador_JSON.gs** (10 funciones): organizarArchivosJSON, _organizarJSON_procesarRaiz_, _carpetaHijaOCrear_, _archivosDeCarpetaClan_, _carpetaDestinoJSON_, _archivosRecursivo_, _archivosDeClan_, _carpetaSemanaJSON_, _organizarJSON_tiempoAgotado_, _organizarJSON_borrarTriggersPendientes_
+- **04_Organizador_JSON.gs** (11 funciones): organizarArchivosJSON, _organizarJSON_procesarRaiz_, _carpetaHijaOCrear_, _archivosDeCarpetaClan_, _carpetaDestinoJSON_, _carpetaViejaDeClan_, _archivosRecursivo_, _archivosDeClan_, _carpetaSemanaJSON_, _organizarJSON_tiempoAgotado_, _organizarJSON_borrarTriggersPendientes_
 - **05_Migrador_Formato.gs** (20 funciones): migrarFormatoJSON, migrarFormatoJSON_reiniciarEstado, _mig_etiquetarCarpetaClan, _mig_yaEstaEnCarpeta_, _mig_estaBajoCarpeta_, _migrarCarpetaPlayers, _mig_renombrarSeguro, _letraDiaGuerra_, _pad2_, _mig_fechaHoraStr, _mig_soloHora, _mig_horaLima, _mig_tiempoAgotado_, _mig_estadoInicial_, _mig_guardarEstado_, _mig_borrarEstado_, _mig_pausarYContinuar_, _mig_programarContinuacion_, _mig_borrarTriggersPendientes_, _mig_finalizar_
 - **06_Limpieza_Duplicados_JSON.gs** (9 funciones): limpiarDuplicadosJSON, _limpiarCarpeta_, _analizarCarpetaJSON_, _anclaMasCercana_, _temporadaDeFecha_, _primerLunesDia_, _quitarTagExistente_, _leerPeriodo_, _primeraMencionNumerica_
 - **07_Cache_Periodos_JSON.gs** (3 funciones): _cache_cargar_, _cache_guardar_, reiniciarCachePeriodosJSON
@@ -27,16 +27,18 @@ Ninguno.
 | `_actualizarReadmeGenerador_` | función | 09_ReadmeGenerador.gs | 133 |  |
 | `_analizarCarpetaJSON_` | función | 06_Limpieza_Duplicados_JSON.gs | 231 |  |
 | `_anclaMasCercana_` | función | 06_Limpieza_Duplicados_JSON.gs | 364 |  |
-| `_archivosDeCarpetaClan_` | función | 04_Organizador_JSON.gs | 225 |  |
-| `_archivosDeClan_` | función | 04_Organizador_JSON.gs | 288 |  |
+| `_archivosDeCarpetaClan_` | función | 04_Organizador_JSON.gs | 229 |  |
+| `_archivosDeClan_` | función | 04_Organizador_JSON.gs | 317 |  |
 | `_archivosDelProyecto_` | función | 08_GitHub.gs | 106 |  |
-| `_archivosRecursivo_` | función | 04_Organizador_JSON.gs | 267 |  |
+| `_archivosRecursivo_` | función | 04_Organizador_JSON.gs | 296 |  |
 | `_cache_cargar_` | función | 07_Cache_Periodos_JSON.gs | 33 |  |
 | `_cache_guardar_` | función | 07_Cache_Periodos_JSON.gs | 54 |  |
+| `_CARPETA_VIEJA_AVISADA_` | global | 04_Organizador_JSON.gs | 266 |  |
 | `_carpetaDeRespaldos_` | función | 02_Backstage.gs | 26 |  |
-| `_carpetaDestinoJSON_` | función | 04_Organizador_JSON.gs | 255 |  |
-| `_carpetaHijaOCrear_` | función | 04_Organizador_JSON.gs | 207 |  |
-| `_carpetaSemanaJSON_` | función | 04_Organizador_JSON.gs | 313 |  |
+| `_carpetaDestinoJSON_` | función | 04_Organizador_JSON.gs | 259 |  |
+| `_carpetaHijaOCrear_` | función | 04_Organizador_JSON.gs | 211 |  |
+| `_carpetaSemanaJSON_` | función | 04_Organizador_JSON.gs | 352 |  |
+| `_carpetaViejaDeClan_` | función | 04_Organizador_JSON.gs | 275 |  |
 | `_conAviso_` | función | 02_Backstage.gs | 103 |  |
 | `_descargarProyectoAArchivos` | función | 02_Backstage.gs | 287 |  |
 | `_eliminarTodosLosArchivosDeProyecto` | función | 02_Backstage.gs | 555 |  |
@@ -74,9 +76,9 @@ Ninguno.
 | `_mig_tiempoAgotado_` | función | 05_Migrador_Formato.gs | 407 |  |
 | `_mig_yaEstaEnCarpeta_` | función | 05_Migrador_Formato.gs | 270 |  |
 | `_migrarCarpetaPlayers` | función | 05_Migrador_Formato.gs | 300 |  |
-| `_organizarJSON_borrarTriggersPendientes_` | función | 04_Organizador_JSON.gs | 329 |  |
+| `_organizarJSON_borrarTriggersPendientes_` | función | 04_Organizador_JSON.gs | 368 |  |
 | `_organizarJSON_procesarRaiz_` | función | 04_Organizador_JSON.gs | 153 |  |
-| `_organizarJSON_tiempoAgotado_` | función | 04_Organizador_JSON.gs | 325 |  |
+| `_organizarJSON_tiempoAgotado_` | función | 04_Organizador_JSON.gs | 364 |  |
 | `_pad2_` | función | 05_Migrador_Formato.gs | 385 |  |
 | `_primeraMencionNumerica_` | función | 06_Limpieza_Duplicados_JSON.gs | 487 |  |
 | `_primerLunesDia_` | función | 06_Limpieza_Duplicados_JSON.gs | 434 |  |
@@ -86,7 +88,7 @@ Ninguno.
 | `_readmeGrupo_` | función | 09_ReadmeGenerador.gs | 55 |  |
 | `_registrarLogGenerador` | función | 02_Backstage.gs | 112 |  |
 | `_scriptIdDeProyecto_` | función | 08_GitHub.gs | 90 |  |
-| `_SEMANA_MEM_` | global | 04_Organizador_JSON.gs | 305 |  |
+| `_SEMANA_MEM_` | global | 04_Organizador_JSON.gs | 344 |  |
 | `_subirArchivosAProyecto` | función | 02_Backstage.gs | 381 |  |
 | `_temporadaDeFecha_` | función | 06_Limpieza_Duplicados_JSON.gs | 403 |  |
 | `_verif_comparar_` | función | 10_Verificar_PeriodIndex_JSON.gs | 170 |  |
