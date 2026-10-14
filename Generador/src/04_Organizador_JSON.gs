@@ -301,6 +301,27 @@ function _archivosDeClan_(clanClave) {
   return lista;
 }
 
+/** Memoria de las carpetas de temporada/semana ya resueltas en esta ejecucion (evita repetir getFoldersByName). */
+var _SEMANA_MEM_ = {};
+
+/**
+ * PF074: carpeta de la TEMPORADA y la SEMANA de un clan y un endpoint, dentro de la carpeta actual de ese endpoint:
+ * CurrentRiverRace|Clans / <clan> / T-02 / S-01. La crea si no existe. Los nombres (T-02, S-01, con cero a la izquierda)
+ * son un SUPUESTO por confirmar con la usuaria; el mismo formato que usa Base (_getCarpetaSemana_ en 09_API_ClashRoyale.gs).
+ * @return {?Folder} null si el endpoint no esta en CARPETAS_CLAN_POR_ENDPOINT_ (queda donde esta).
+ */
+function _carpetaSemanaJSON_(clanClave, endpointKey, temporada, sectionIndex) {
+  var idClan = (CARPETAS_CLAN_POR_ENDPOINT_[endpointKey] || {})[clanClave];
+  if (!idClan) return null;
+  var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(sectionIndex + 1);
+  var k = idClan + '|' + nT + '|' + nS;
+  if (_SEMANA_MEM_[k]) return _SEMANA_MEM_[k];
+  var cT = _carpetaHijaOCrear_(DriveApp.getFolderById(idClan), nT);
+  var cS = _carpetaHijaOCrear_(cT, nS);
+  _SEMANA_MEM_[k] = cS;
+  return cS;
+}
+
 function _organizarJSON_tiempoAgotado_(inicio) {
   return (new Date().getTime() - inicio) > ORGANIZAR_LIMITE_MS_;
 }

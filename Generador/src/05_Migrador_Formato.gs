@@ -236,6 +236,15 @@ function _mig_etiquetarCarpetaClan(clanClave, resumen, cache, inicio) {
       var idCarpetaActual = (CARPETAS_CLAN_POR_ENDPOINT_[endpointKey] || {})[clanClave];
       if (idCarpetaActual && !_mig_estaBajoCarpeta_(archivo, idCarpetaActual)) {
         resumen.enCarpetaVieja = (resumen.enCarpetaVieja || 0) + 1;
+      } else if (idCarpetaActual) {
+        // PF074 (tanda 4): lo que ya esta en la carpeta actual del endpoint va a su carpeta de temporada y semana
+        // (T-xx / S-xx, misma temporada y semana que el tag). Si ya esta ahi, no se mueve.
+        var carpetaSemana = _carpetaSemanaJSON_(clanClave, endpointKey, item.temporada, item.sectionIndex);
+        if (carpetaSemana && !_mig_yaEstaEnCarpeta_(archivo, carpetaSemana)) {
+          archivo.moveTo(carpetaSemana);
+          resumen.movidos++;
+          console.log('    [clan] ' + endpointKey + ' movido a ' + carpetaSemana.getName() + ' de la temporada ' + item.temporada);
+        }
       }
 
       var partesArchivo = archivo.getName().split(' - ');
