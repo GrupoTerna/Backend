@@ -438,15 +438,17 @@ function _primerLunesDia_(anio, mes0) {
 }
 
 /**
- * Quita un tag "T-<n> S-<n> P.I-<n> " existente al inicio de un segmento de
- * nombre, si lo trae (para poder re-analizar/re-etiquetar archivos que ya
- * pasaron por migrarFormatoJSON() en una ejecución anterior sin apilar
- * tags ni romper el agrupamiento por captura).
+ * Quita un tag "T-<n> S-<n> P.I-<n> " o "T-<n> S-<n> P.I-<n>-<letra> "
+ * existente al inicio de un segmento de nombre, si lo trae (para poder
+ * re-analizar/re-etiquetar archivos que ya pasaron por migrarFormatoJSON()
+ * en una ejecución anterior sin apilar tags ni romper el agrupamiento por
+ * captura). La letra opcional es la del día de guerra (L M X J V S D, ver
+ * _letraDiaGuerra_ en 05_Migrador_Formato.gs). [→ Contexto_Base_Web.md §PF074]
  * @param {string} segmento
  * @return {string}
  */
 function _quitarTagExistente_(segmento) {
-  return segmento.replace(/^T-\d+\s+S-\d+\s+P\.I-\d+\s+/, '');
+  return segmento.replace(/^T-\d+\s+S-\d+\s+P\.I-\d+(?:-[LMXJVSD])?\s+/, '');
 }
 
 /**
