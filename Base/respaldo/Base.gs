@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 13/10/2026 20:17:00 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/10/2026 15:19:18 */
 
 
 
@@ -1080,6 +1080,9 @@ function runGuerra() {
              ' | Ventana ligera (4-5am): ' + enVentanaGuerra + ' ===');
 
   if (!_adquirirLockEjecucion('runGuerra')) return;
+  // PF073: la hora se marca antes del trabajo (evita corridas simultáneas), pero si el trabajo falla se restaura la marca previa para que el siguiente disparo reintente en vez de esperar a la hora siguiente. [→ Contexto_Base_Web.md §PF073]
+  var _marcaHoraPrevia = props.getProperty('RUNGUERRA_ULTIMA_HORA');
+  var _trabajoHoraCompleto = false;
   try {
     if (!enVentanaGuerra) props.setProperty('RUNGUERRA_ULTIMA_HORA', claveHora);
 
@@ -1127,8 +1130,18 @@ function runGuerra() {
       Logger.log('[runGuerra] _calentarCacheGuerraEnVivo_() falló: ' + eCalentar.message);
     }
 
+    _trabajoHoraCompleto = true;
     Logger.log('=== Actualización Guerra FIN (actualización horaria) ===');
   } finally {
+    if (!enVentanaGuerra && !_trabajoHoraCompleto) {
+      try {
+        if (_marcaHoraPrevia) props.setProperty('RUNGUERRA_ULTIMA_HORA', _marcaHoraPrevia);
+        else props.deleteProperty('RUNGUERRA_ULTIMA_HORA');
+        Logger.log('[runGuerra] El trabajo de la hora no terminó: se restauró la marca de hora para reintentar en el próximo disparo.');
+      } catch (eMarca) {
+        Logger.log('[runGuerra] No se pudo restaurar la marca de hora: ' + eMarca.message);
+      }
+    }
     _liberarLockEjecucion();
   }
 }
@@ -2831,6 +2844,17 @@ function _getSs() {
   var id = PropertiesService.getScriptProperties().getProperty('HOJA_ACTIVA_ID');
   if (id) { try { return SpreadsheetApp.openById(id); } catch(e) {} }
   throw new Error('No se encontró hoja activa ni ID de respaldo en Properties.');
+}
+
+// _hojaConFilas_(ss, nombre, minFilas): devuelve la hoja si existe y tiene al menos minFilas filas; null si falta, está corta o Sheets lanza error. Permite que los lectores web caigan a su rama de CSV. [→ Contexto_Base_Web.md §PF073]
+function _hojaConFilas_(ss, nombre, minFilas) {
+  try {
+    var sh = ss.getSheetByName(nombre);
+    if (sh && sh.getLastRow() >= minFilas) return sh;
+  } catch (e) {
+    Logger.log('[HojaConFilas] No se pudo leer la hoja "' + nombre + '": ' + e);
+  }
+  return null;
 }
 
 function _desactivarGridlines(sh) {
@@ -11962,9 +11986,10 @@ function _getMinGClanMaps() {
   }
 
   var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
-  if (sh && sh.getLastRow() >= 2) {
-    var data = sh.getRange(2, 1, sh.getLastRow() - 1, CC.NOMBRE).getValues();
+  // PF073: hoja Clan viva o Backup_Clan.csv. [→ Contexto_Base_Web.md §PF073]
+  var dataClanMin = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CLAN, 'Backup_Clan.csv', CC.CONDICION).filas;
+  if (dataClanMin.length) {
+    var data = dataClanMin;
     for (var i = 0; i < data.length; i++) {
       var tag    = String(data[i][CC.CLAN_TAG - 1] || '').trim();
       var nombre = String(data[i][CC.NOMBRE    - 1] || '').trim();
@@ -20107,7 +20132,7 @@ function recalcularGuerraLogsDesdeJSON() {
       var it = carpeta.getFiles();
       while (it.hasNext()) {
         var f = it.next();
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(f.getName());
+        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
         if (!m) continue;
         var temp = Number(m[1]), pI = Number(m[3]);
         if (RECALC_GUERRA_LOGS_TEMPORADAS.length && RECALC_GUERRA_LOGS_TEMPORADAS.indexOf(temp) < 0) continue;
@@ -20259,7 +20284,7 @@ function reconstruirRivalesHistoricosGuerraLogs() {
       var it = carpeta.getFiles();
       while (it.hasNext()) {
         var f = it.next();
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(f.getName());
+        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
         if (!m) continue;
         var temp = Number(m[1]), pI = Number(m[3]);
         if (RECALC_GUERRA_LOGS_TEMPORADAS.length && RECALC_GUERRA_LOGS_TEMPORADAS.indexOf(temp) < 0) continue;
@@ -20528,7 +20553,7 @@ function _rellenarEstadoGuerraLogsHistorico_(aplicar) {
       var it = carpeta.getFiles();
       while (it.hasNext()) {
         var fArch = it.next();
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(fArch.getName());
+        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(fArch.getName());
         if (!m) continue;
         var temp = Number(m[1]), pI = Number(m[3]);
         if (RECALC_GUERRA_LOGS_TEMPORADAS.length && RECALC_GUERRA_LOGS_TEMPORADAS.indexOf(temp) < 0) continue;
@@ -20723,7 +20748,7 @@ function _limpiarFilasColiseoGuerraLogs_(aplicar) {
       var it = carpeta.getFiles();
       while (it.hasNext()) {
         var fArch = it.next();
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(fArch.getName());
+        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(fArch.getName());
         if (!m) continue;
         var temp = Number(m[1]), pI = Number(m[3]);
         if (RECALC_GUERRA_LOGS_TEMPORADAS.length && RECALC_GUERRA_LOGS_TEMPORADAS.indexOf(temp) < 0) continue;
@@ -21492,7 +21517,7 @@ function _crearLectorDiaJSONGuerra_(t0) {
         var it = DriveApp.getFolderById(idCarpeta).getFiles();
         while (it.hasNext()) {
           var f = it.next(), nombre = f.getName();
-          var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(nombre);
+          var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(nombre);
           if (!m) continue;
           var mFh = /(\d{2})-(\d{2})-(\d{4})\s+(\d{2})\.(\d{2})/.exec(nombre);
           var h = mFh ? Number(mFh[3] + mFh[2] + mFh[1] + mFh[4] + mFh[5]) : 0;
@@ -28942,7 +28967,13 @@ function _getDatosGuerraParaControl(ctx, temporadaReal) {
   }
 
   if (String(ctx.temporada) === String(temporadaReal)) {
-    return _getDatosGuerraDesdeHojaParaControl(ctx);
+    // PF073: si la hoja Guerra no se puede leer, cae a Backup_Guerra.csv (sin el marcado de días opcionales por cruce de meta, que solo existe en la ruta de la hoja). [→ Contexto_Base_Web.md §PF073]
+    try {
+      return _getDatosGuerraDesdeHojaParaControl(ctx);
+    } catch (eHojaG) {
+      Logger.log('[Control] Guerra no disponible, se usa Backup_Guerra.csv: ' + eHojaG);
+      return _getDatosGuerraDesdeCsvParaControl(ctx);
+    }
   }
   return _getDatosGuerraDesdeCsvParaControl(ctx);
 }
@@ -29060,7 +29091,10 @@ function _getMapaCruceMetaGuerraLogs_() {
       if (!mapa[k]) mapa[k] = {};
       var reg = mapa[k][p] || (mapa[k][p] = { ini: 0, fin: 0 });
       // TANDA 12 (21-sep-2026): si la lectura cae al respaldo CSV, las celdas llegan [→ Contexto_Base_Web.md §22B053]
-      reg.ini = Math.max(reg.ini, _numDesdeCeldaLogs_(r[GLC.PROG_START - 1]) || 0);
+      // PF073 (hallazgo E): en las filas 'Estimado' ProgressStartOfDay no es fiable (T2: valores de 27 000 a 32 000 cuando el avance real al inicio del viernes era de ~2 000 a 5 000), así que solo se usa el inicio de filas Leídas o sin estado; el fin del día anterior sí se mantiene. [→ Contexto_Base_Web.md §PF073]
+      if (String(r[GLC.ESTADO - 1] || '').trim() !== GL_ESTADO_ESTIMADO) {
+        reg.ini = Math.max(reg.ini, _numDesdeCeldaLogs_(r[GLC.PROG_START - 1]) || 0);
+      }
       reg.fin = Math.max(reg.fin, _numDesdeCeldaLogs_(r[GLC.PROG_END   - 1]) || 0);
     }
   } catch (e) {
@@ -29095,7 +29129,7 @@ function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
       var it = carpeta.getFiles();
       while (it.hasNext()) {
         var f = it.next();
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(f.getName());
+        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
         if (m) idx[Number(m[1]) + '|' + Number(m[2]) + '|' + Number(m[3])] = f;
       }
       _CRUCE_META_JSON_IDX[nombre] = idx;
@@ -34900,7 +34934,7 @@ function _getIdVigenteExtra(nombreCategoria) {
     return val ? String(val).trim() : '';
   } catch (e) {
     Logger.log('[VigenteExtra] Error leyendo Extra!Torneo_Vigente_ID/Sorteo_Vigente_ID: ' + e.message);
-    return '';
+    return _valorExtraDesdeCsv_((nombreCategoria === 'Torneo') ? ['Torneo_Vigente_ID'] : ['Sorteo_Vigente_ID']); // PF073: respaldo CSV
   }
 }
 
@@ -34917,15 +34951,33 @@ function _getIdVigenteExtraCR(tipo) {
     return val ? String(val).trim() : '';
   } catch (e) {
     Logger.log('[VigenteExtra] Error leyendo Extra!Ascenso_Vigente_ID/Descenso_Vigente_ID: ' + e.message);
-    return '';
+    return _valorExtraDesdeCsv_((tipo === 'Ascenso') ? ['Ascenso_Vigente_ID'] : ['Descenso_Vigente_ID']); // PF073: respaldo CSV
   }
+}
+
+// _valorExtraDesdeCsv_(nombres): PF073. Valor de la fila 2 de Extra, leído de Backup_Extra.csv por NOMBRE de encabezado (el CSV se mapea por encabezado, no por posición; ver importarExtraDesdeCSV). Devuelve '' si no hay CSV, columna o valor; nunca lanza error. [→ Contexto_Base_Web.md §PF073]
+function _valorExtraDesdeCsv_(nombres) {
+  try {
+    var lec = _obtenerFilasConFallbackCSV(_getSs(), CFG.SHEETS.EXTRA, 'Backup_Extra.csv');
+    if (!lec.filas.length) return '';
+    for (var n = 0; n < nombres.length; n++) {
+      var idx = lec.headerIdx[nombres[n]];
+      if (idx === undefined) continue;
+      var v = lec.filas[0][idx];
+      if (v !== '' && v !== null && v !== undefined) return String(v).trim();
+    }
+  } catch (e) {
+    Logger.log('[VigenteExtra] Tampoco se pudo leer Backup_Extra.csv: ' + e);
+  }
+  return '';
 }
 
 function _getConfigMasRecienteCategoria(nombreCategoria, id) {
   var esTorneo = (nombreCategoria === 'Torneo');
   var ss = _getSs();
-  var sh = ss.getSheetByName(esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return [];
+  // PF073: si Sheets falla se trata como hoja vacía (devuelve []), igual que cuando la hoja no existe. [→ Contexto_Base_Web.md §PF073]
+  var sh = _hojaConFilas_(ss, esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA, 3);
+  if (!sh) return [];
 
   var totalCols = esTorneo ? TL_TOTAL_COLS : SL_TOTAL_COLS;
   var datos = sh.getRange(3, 1, sh.getLastRow() - 2, totalCols).getValues();
@@ -35568,10 +35620,11 @@ function _getParticipantesFusionadosPorTorneo(ss, idTorneo) {
  * _aplicarResolucionesTorneo(ss, idRaiz, participantes) [→ Contexto_Base_Web.md §26B267]
  */
 function _aplicarResolucionesTorneo(ss, idRaiz, participantes) {
-  var shTR = ss.getSheetByName(CFG.SHEETS.T_RESOLUCIONES);
+  // PF073: hoja viva o Backup_T_Resoluciones.csv (antes, si Sheets fallaba, el endpoint respondía 500). [→ Contexto_Base_Web.md §PF073]
   var resolucionPorTag = {};
-  if (shTR && shTR.getLastRow() >= 2) {
-    var data = shTR.getRange(2, 1, shTR.getLastRow() - 1, TR_TOTAL_COLS).getValues();
+  var dataTR = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.T_RESOLUCIONES, 'Backup_T_Resoluciones.csv', TR_TOTAL_COLS).filas;
+  if (dataTR.length) {
+    var data = dataTR;
     for (var i = 0; i < data.length; i++) {
       var idFila = String(data[i][TR.ID_TORNEO - 1] || '').trim();
       if (idFila !== String(idRaiz)) continue;
@@ -35901,9 +35954,9 @@ function _getMinTClanMaps() {
   var byTag = {};
   var info = _getMinTPorNombreClan('Torneo');
   var ss = _getSs();
-  var shClan = ss.getSheetByName(CFG.SHEETS.CLAN);
-  if (!shClan || shClan.getLastRow() < 2) return { byTag: byTag };
-  var clanData = shClan.getRange(2, 1, shClan.getLastRow() - 1, CC.CONDICION).getValues();
+  // PF073: hoja Clan viva o Backup_Clan.csv. [→ Contexto_Base_Web.md §PF073]
+  var clanData = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CLAN, 'Backup_Clan.csv', CC.CONDICION).filas;
+  if (!clanData.length) return { byTag: byTag };
   for (var c = 0; c < clanData.length; c++) {
     var nombreClan = String(clanData[c][CC.NOMBRE - 1] || '').trim();
     var clanTag    = String(clanData[c][CC.CLAN_TAG - 1] || '').trim();
@@ -38251,11 +38304,18 @@ function _insertarLineaParticipante(body, insertAt, nombre, puntaje) {
  */
 function _getTemporadaMostrarExtra(ss, ctxReal) {
   var temporadaMostrar = ctxReal.temporada;
-  var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
-  if (shExtra) {
-    var mostrarVal = shExtra.getRange(2, 7).getValue(); // G2 = Mostrar
-    var temporadaExtra = Number(mostrarVal);
-    if (temporadaExtra) temporadaMostrar = temporadaExtra;
+  // PF073: si Sheets falla prueba Backup_Extra.csv (columna Mostrar_T) y, si tampoco, se queda con la temporada real (antes lanzaba error y el endpoint respondía 500). [→ Contexto_Base_Web.md §PF073]
+  try {
+    var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
+    if (shExtra) {
+      var mostrarVal = shExtra.getRange(2, 7).getValue(); // G2 = Mostrar
+      var temporadaExtra = Number(mostrarVal);
+      if (temporadaExtra) temporadaMostrar = temporadaExtra;
+    }
+  } catch (eExtra) {
+    Logger.log('[Torneos] _getTemporadaMostrarExtra: no se pudo leer Extra, se prueba Backup_Extra.csv: ' + eExtra);
+    var temporadaCsv = Number(_valorExtraDesdeCsv_(['Mostrar_T', 'Mostrar']));
+    if (temporadaCsv) temporadaMostrar = temporadaCsv;
   }
   return temporadaMostrar;
 }
@@ -46026,8 +46086,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
   if (dataDirPrefetch) {
     dataDir = dataDirPrefetch;
   } else {
-    var shDirIngresos = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-    if (shDirIngresos && shDirIngresos.getLastRow() >= 2) {
+    var shDirIngresos = _hojaConFilas_(ss, CFG.SHEETS.DIRECTORIO, 2); // PF073: null también si Sheets lanza error, y entonces cae al CSV
+    if (shDirIngresos) {
       dataDir = _leerDirectorioFisicoComoDC(ss);
     } else {
       var lecturaDirIngresos = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
@@ -46076,8 +46136,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
   // ---- PASO 2 (enriquecimiento opcional): hoja "Nuevos" (Tampermonkey) ----
   var nuevosPorTag = {};
   var fechasGridNuevos = null, gridNuevosData = null, numBloquesReal = 0;
-  var shNuevos = ss.getSheetByName(CFG.SHEETS.NUEVOS);
-  if (shNuevos && shNuevos.getLastRow() >= NUEVOS_FILA_DATOS_INICIO) {
+  var shNuevos = _hojaConFilas_(ss, CFG.SHEETS.NUEVOS, NUEVOS_FILA_DATOS_INICIO); // PF073
+  if (shNuevos) {
     var numFilasN = shNuevos.getLastRow() - NUEVOS_FILA_DATOS_INICIO + 1;
     var dataNuevos = shNuevos.getRange(NUEVOS_FILA_DATOS_INICIO, 1, numFilasN, NC_TOTAL_FIJAS).getValues();
 
@@ -46116,8 +46176,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
   // 19-sep-2026 (pedido del usuario -- webGuerraEnVivo lento): si el caller ya leyó la hoja Guerra en esta misma ejecución (dataGuerraPrefetch), se reusa esa lectura en vez de volver a leer 9000+ filas. Solo lectura: este bloque… [→ Contexto_Base_Web.md §37B263]
   var dataGuerra = dataGuerraPrefetch || null;
   if (!dataGuerra) {
-    var shGuerra = ss.getSheetByName(CFG.SHEETS.GUERRA);
-    if (shGuerra && shGuerra.getLastRow() >= 2) {
+    var shGuerra = _hojaConFilas_(ss, CFG.SHEETS.GUERRA, 2); // PF073
+    if (shGuerra) {
       dataGuerra = shGuerra.getRange(2, 1, shGuerra.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
     }
   }
@@ -46194,8 +46254,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
 
   // Respaldo de historial: Control_2 (S1..S5, sin fecha real) — solo se usa para un candidato que NO tenga historial usable en "Nuevos". [→ Contexto_Base_Web.md §37B266]
   var historialPorTag = {};
-  var shC2 = ss.getSheetByName('Control_2');
-  if (shC2 && shC2.getLastRow() >= 4) {
+  var shC2 = _hojaConFilas_(ss, 'Control_2', 4); // PF073
+  if (shC2) {
     var numFilasC2 = shC2.getLastRow() - 3;
     var tagsC2   = shC2.getRange(4, CC2.TAG,  numFilasC2, 1).getValues();
     var clanesC2 = shC2.getRange(4, CC2.CLAN, numFilasC2, 1).getValues();
@@ -49416,9 +49476,8 @@ function _nombreClanDesdeHojaClanDash_(clanTag) {
   try {
     if (!_DASH_MEMO.nombresClan) {
       var mapa = {};
-      var sh = _getSs().getSheetByName(CFG.SHEETS.CLAN);
-      if (sh && sh.getLastRow() >= 2) {
-        var data = sh.getRange(2, 1, sh.getLastRow() - 1, CC.NOMBRE).getValues();
+      var data = _obtenerFilasConFallbackCSV(_getSs(), CFG.SHEETS.CLAN, 'Backup_Clan.csv', CC.CONDICION).filas; // PF073: hoja viva o Backup_Clan.csv
+      if (data.length) {
         for (var i = 0; i < data.length; i++) {
           var tag    = cleanTag(String(data[i][CC.CLAN_TAG - 1] || '').trim());
           var nombre = String(data[i][CC.NOMBRE - 1] || '').trim();
@@ -49569,6 +49628,20 @@ function _getDatosDashboardCalcular_() {
       if (guerraTempObjetivo !== String(ctx.temporada) && csvPorTemp) guerraFilasObjetivo = csvPorTemp[guerraTempObjetivo] || [];
     }
   }
+  // FIX 14-oct-2026 (pedido del usuario: la cabecera mostraba 30,700 / 30,300 / 31,850 y luego 123,000 el domingo, y barcos 0 / 4 / 4 / 12): GC.FAME y GC.BARCOS son acumulados de TODA la semana, no del día; sumarlos tal cual hacía que la cabecera mostrara el acumulado hasta ese día (el domingo, la semana completa). Ahora fame y barcos del día = acumulado del día objetivo menos el del día anterior del mismo Tag+Clan (en el jueves el anterior es 0), con el mismo tope de 900 por jugador y día que 'Valores diarios'. [→ Contexto_Base_Web.md §38B118]
+  var guerraFameAcumDia = {};   // clave tag|clan|periodIndex -> fame acumulado de la semana
+  var guerraBarcosAcumDia = {}; // idem para barcos
+  var guerraAyerValido = (Number(guerraPIdxObjetivo) % 7) > 3; // viernes a domingo; el jueves no tiene "ayer" dentro de la semana
+  if (guerraFilasObjetivo && guerraAyerValido) {
+    for (var iAc = 0; iAc < guerraFilasObjetivo.length; iAc++) {
+      var pIdxAc = Number(guerraFilasObjetivo[iAc][GC.PERIOD_IDX - 1]) || 0;
+      if (pIdxAc !== guerraPIdxObjetivo && pIdxAc !== guerraPIdxObjetivo - 1) continue;
+      if (String(guerraFilasObjetivo[iAc][GC.TEMPORADA - 1] || '') !== guerraTempObjetivo) continue;
+      var claveAc = String(guerraFilasObjetivo[iAc][GC.TAG - 1] || '') + '|' + String(guerraFilasObjetivo[iAc][GC.CLAN - 1] || 'Sin clan') + '|' + pIdxAc;
+      guerraFameAcumDia[claveAc]   = Number(guerraFilasObjetivo[iAc][GC.FAME - 1]) || 0;
+      guerraBarcosAcumDia[claveAc] = Math.max(guerraBarcosAcumDia[claveAc] || 0, Number(guerraFilasObjetivo[iAc][GC.BARCOS - 1]) || 0);
+    }
+  }
   if (guerraFilasObjetivo) {
     for (var i = 0; i < guerraFilasObjetivo.length; i++) {
       var pIdx = Number(guerraFilasObjetivo[i][GC.PERIOD_IDX - 1]) || 0;
@@ -49583,8 +49656,17 @@ function _getDatosDashboardCalcular_() {
       var g = guerraPorClan[clanNombreG];
       var ataqHoyG = Number(guerraFilasObjetivo[i][GC.ATAQUES_HOY - 1]) || 0;
       g.ataques += ataqHoyG;
-      g.fame    += Number(guerraFilasObjetivo[i][GC.FAME   - 1]) || 0;
-      g.barcos  += Number(guerraFilasObjetivo[i][GC.BARCOS - 1]) || 0;
+      // FIX 14-oct-2026: fame y barcos del DÍA (acumulado de hoy menos el de ayer del mismo Tag+Clan), no el acumulado de la semana. [→ Contexto_Base_Web.md §38B118]
+      var fameAcumHoyG   = Number(guerraFilasObjetivo[i][GC.FAME   - 1]) || 0;
+      var barcosAcumHoyG = Number(guerraFilasObjetivo[i][GC.BARCOS - 1]) || 0;
+      var fameAcumAyerG = 0, barcosAcumAyerG = 0;
+      if (guerraAyerValido) {
+        var claveAyerG = String(guerraFilasObjetivo[i][GC.TAG - 1] || '') + '|' + clanNombreG + '|' + (pIdx - 1);
+        fameAcumAyerG   = guerraFameAcumDia[claveAyerG]   || 0;
+        barcosAcumAyerG = guerraBarcosAcumDia[claveAyerG] || 0;
+      }
+      g.fame    += Math.min(Math.max(fameAcumHoyG - fameAcumAyerG, 0), 900);
+      g.barcos  += Math.max(barcosAcumHoyG - barcosAcumAyerG, 0);
       if (ataqHoyG > 0) g.atacaron++;
       // `totalHoy` ya no se incrementa aquí; se sobreescribe más abajo con el conteo real de Activos de Directorio. [→ Contexto_Base_Web.md §38B125]
     }
@@ -49924,7 +50006,14 @@ function _getParticipantesGuerraTemporada_(temporada, temporadaReal) {
     }
   } catch (e) {
     Logger.log('[Participantes Guerra] T' + temporada + ': ' + e.message);
-    return res;
+    // PF073: si la hoja Guerra falló en la temporada real, se reintenta con Backup_Guerra.csv antes de rendirse
+    try {
+      var csvResp = _leerGuerraCsvAgrupado_();
+      filas = (csvResp.porTemporada && csvResp.porTemporada[String(temporada)]) || [];
+    } catch (e2) {
+      Logger.log('[Participantes Guerra] T' + temporada + ': tampoco el CSV: ' + e2.message);
+      return res;
+    }
   }
   for (var i = 0; i < filas.length; i++) {
     var f = filas[i];
@@ -50360,7 +50449,7 @@ function _getControlTemporadaPorTemporada(ss, ctxReal, dataDir, temporadas) {
 // _getAportesInactivosSemanaActual(ss, ctx): FIX 05-sep-2026; aportes de inactivos de la semana vigente agrupados por Tag+Clan (un inactivo puede aportar a 2+ clanes el mismo día) con ataques, puntaje y barcos (delta diario por Tag+Clan, propio, no _procesarFilasGuerraParaControl()); solo tags de Inactivos con ataques > 0. Detalle en el .md. [→ Contexto_Base_Web.md §38B183]
 function _getAportesInactivosSemanaActual(ss, ctx) {
   // FIX 15-sep-2026: si Inactivos no está disponible se usa Backup_Inactivos.csv (formato DC de 60 columnas), indexando con IC.* para la hoja y con DC.* para el CSV, sin mezclar esquemas. [→ Contexto_Base_Web.md §38B184]
-  var shInactivos = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+  var shInactivos = _hojaConFilas_(ss, CFG.SHEETS.INACTIVOS, 2); // PF073: null también si Sheets lanza error
   var tagsInactivos = {}; // TAG (mayúsculas) -> Nombre (fallback si la fila de Guerra no trae Nombre)
 
   if (shInactivos && shInactivos.getLastRow() >= 2) {
@@ -50385,9 +50474,9 @@ function _getAportesInactivosSemanaActual(ss, ctx) {
   if (Object.keys(tagsInactivos).length === 0) return {};
 
   // FASE 15-sep-2026 (fallback web->CSV): mismo criterio que el bloque de Guerra de _getDatosDashboard(); campos numéricos o texto plano. [→ Contexto_Base_Web.md §38B186]
-  var shGuerra = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  var shGuerra = _hojaConFilas_(ss, CFG.SHEETS.GUERRA, 2); // PF073
   var dataGuerra;
-  if (shGuerra && shGuerra.getLastRow() >= 2) {
+  if (shGuerra) {
     dataGuerra = shGuerra.getRange(2, 1, shGuerra.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
   } else {
     var lecturaGuerraAportes = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.GUERRA, 'Backup_Guerra.csv', GUERRA_TOTAL_COLS);
@@ -55893,7 +55982,10 @@ function _publicarGuerraEstatico_(datos) {
 
     var publica = _webGuerraQuitarCamposAdmin_(datos);
     var jsonBase = JSON.stringify(publica);
-    var hash = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, jsonBase, Utilities.Charset.UTF_8));
+    // PF073: el hash se calcula SIN el bloque `tiempos` (generadoTs/generadoLima se arman con Date.now() en cada cálculo y api.* cambia en cada consulta del bot); con él, el hash nunca coincidía y la rama «sin cambios» no se alcanzaba. La republicación forzada cada GUERRA_ESTATICO_REPUBLICAR_MIN min mantiene la hora fresca. [→ Contexto_Base_Web.md §PF073]
+    var publicaParaHash = {};
+    Object.keys(publica).forEach(function (kH) { if (kH !== 'tiempos') publicaParaHash[kH] = publica[kH]; });
+    var hash = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, JSON.stringify(publicaParaHash), Utilities.Charset.UTF_8));
     var hashPrevio = props.getProperty('GUERRA_ESTATICO_HASH');
     var msPrevio = Number(props.getProperty('GUERRA_ESTATICO_MS')) || 0;
     if (hash === hashPrevio && (Date.now() - msPrevio) < GUERRA_ESTATICO_REPUBLICAR_MIN * 60000) {
