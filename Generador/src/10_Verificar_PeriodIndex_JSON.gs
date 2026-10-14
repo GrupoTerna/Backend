@@ -69,9 +69,10 @@ function verificarPeriodIndexJSON() {
 
   var claves = Object.keys(CARPETAS_CLAN_);
   for (var c = 0; c < claves.length && r.completo; c++) {
-    var carpeta = DriveApp.getFolderById(CARPETAS_CLAN_[claves[c]]);
+    // PF074: se revisan juntas las carpetas del esquema ACTUAL (endpoint -> clan) y la vieja de cada clan.
+    var carpeta = { getName: function() { return claves[c]; } }; // solo para los mensajes
     console.log('── ' + carpeta.getName() + ' ──');
-    var archivos = _archivosDeCarpetaClan_(carpeta);
+    var archivos = _archivosDeClan_(claves[c]);
 
     for (var i = 0; i < archivos.length; i++) {
       if (_mig_tiempoAgotado_(inicio)) { r.completo = false; break; }
