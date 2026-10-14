@@ -66355,3 +66355,49 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 3. **Pregunta e: decidido el reparto dentro de la misma semana (arriba). Pendiente de contestar:** en los 91 casos con solo la fila del jueves, repartir exige **crear las filas** de viernes, sábado y domingo que hoy no existen (la reconstrucción desde cero ya sabe hacerlo, `_reconstruirSemanaDesdeCero`); falta que la usuaria confirme si se crean o si esos 91 van a revisión manual. **Pendiente:** qué hacer con la diferencia de 600 en `#GYCU9YRG` T4 S5.
 4. **Campos cruzados (pregunta c: sí, dejar pendiente salvo perfil o battlelog):** la usuaria autorizó pedir acceso a Drive para leer la carpeta de JSON completos; en esta sesión el conector de Drive figura conectado pero **no se usó todavía**.
 5. **No implementado:** el cambio del tope de fame de 900 por día a la tabla en `18_CorreccionGuerra.gs` y la escritura del resultado en el Logger y en un CSV (decisión f: ambos). **No se probó en Apps Script real.**
+
+
+### PF073 — Contrastación del backend contra los pendientes de `Web/CHANGELOG.md` («requiere subir `Base.md`»): fallback a CSV, publicadores `50_` a `53_`, `ultimaConsultaTs` y comprobaciones menores (14-oct-2026; sin cambios de código)
+
+**Qué es esto.** Registro de la contrastación (regla de `/md` 0.4) de los pendientes que el `CHANGELOG.md` de `Web` marcaba como «por verificar con `Base.md`». Se hace por tandas y se guarda aquí al cerrar cada una. **Fuente:** `Base/src/` del repo `Backend` en el commit `4023bfa` (el historial de `Base/src` arranca con la descarga `5f3b8a5` del 09-oct-2026, así que git no sirve para saber desde cuándo existe algo). **Método:** lectura del código, con un grafo de llamadas armado a mano sobre los 56 152 renglones de `.gs`. **Qué NO se comprobó:** nada se probó en Apps Script real; «cae a CSV» significa que el código lo hace si la hoja lanza error, no que se haya visto fallar Sheets.
+
+**Estado de los cinco pendientes de la usuaria (se actualiza en cada tanda).**
+
+| N.º | Pendiente | Estado |
+|---|---|---|
+| 1 | `doGet` cae a los `Backup_*.csv` cuando falla Sheets (Fase 13a, endpoint por endpoint) | En curso (ver «Tanda 3 en adelante»; falta cerrarlo) |
+| 2 | Qué claves publican `50_` a `53_`, y si el bot republica cuando Sheets falla | **Hecho en la tanda 1** |
+| 3 | Qué JSON traen `tiempos.api.ultimaConsultaTs` | **Hecho en la tanda 1** |
+| 4 | `_diasOpcionalesClanSemana_()` recorre viernes a domingo | Pendiente |
+| 5 | Comentario de `alMax` en `pintarColeccion()` y `ext.batallas` = victorias + derrotas | Pendiente |
+
+#### Tanda 1 — publicadores `50_` a `53_`, `tiempos` y el bot con Sheets caído (14-oct-2026)
+
+**Qué publica cada archivo (todos van a la rama `data` del repo `GITHUB_REPO`, con `_publicadoEn` en ISO).**
+
+| Archivo | Función | Claves de primer nivel |
+|---|---|---|
+| `guerra.json` | `_publicarGuerraEstatico_(datos)` (`50_Publicar_Guerra.gs`) | Todo lo que devuelve `_getDatosDashboard()` menos `nomMulti` y `prestamo` de cada pendiente (`_webGuerraQuitarCamposAdmin_`): `ctx`, `guerraPorClan`, `guerraCongeladaLetra`, `diasSemanaGuerra`, `pendientes`, `resumenClanes`, `valoresDiariosSelectores`, `valoresDiariosPorSemana`, `controlTemporadaSemanas`, `controlTemporadaPorClan`, `temporadasDisponibles`, `controlTemporadaPorTemporada`, `controlTemporadaSelectores`, `nuevos`, **`tiempos`** |
+| `guerra_ctx.json` | el mismo `_publicarGuerraEstatico_` | solo `ctx` |
+| `guerra_top.json` | el mismo, con `_guerraTopRecortado_()` | `valoresDiariosSelectores` y `valoresDiariosPorSemana` reducido a una semana (la `porDefecto`) |
+| `roster.json` | `_publicarRosterEstatico_()` (`51_`) | lo que devuelve `_webRosterCalcular()` (`clanes`, …) |
+| `home.json` | `_publicarHomeEstatico_()` (`52_`) | `clanInfo` (`_webClanInfo`), `aniversarios`, `rankings`, `estadisticasCartas`, `ascensos` (`_webAscensosRecientes`); cada clave en su `try`: si una falla, se publica sin ella |
+| `torneos.json` | `_publicarTorneosEstatico_()` (`53_`) | `torneos` (`_webTorneos({esAdmin:false})`, sin `linkApp`) e `historial` (`_webHistorialTorneos({esAdmin:false})`); cada una en su `try`; se calcula como máximo cada 90 min |
+
+**`tiempos.api.ultimaConsultaTs` (pendiente 3).** La única asignación de `tiempos` en el flujo público es `38_Web_Endpoints.gs`, dentro del cálculo del dashboard (`tiempos: tiemposAct`, línea 2108; `_tiemposActualizacionWeb_()` nunca lanza error, y `_tiemposApiWeb_()` lee `TIEMPOS_API_CLANES` de las propiedades del script, no de Sheets). La otra es `41_Web_ActualizarRoster.gs` (línea 99), que es la respuesta de `webAdminEstadoActualizacion`, solo de admin. Resultado:
+- **`guerra.json`: sí** (por `_getDatosDashboard()`; `_webGuerraQuitarCamposAdmin_` copia todas las claves, así que `tiempos` pasa).
+- **`guerra_ctx.json` y `guerra_top.json`: no, y no pueden traerlo por construcción** (el primero es solo `ctx`; el segundo solo las dos claves de `valoresDiarios…`).
+- **`roster.json`, `home.json` y `torneos.json`: no.** Ni `_webRosterCalcular`, ni `_webClanInfo`, `_webAniversarios`, `_webRankings`, `_webEstadisticasCartas`, `_webAscensosRecientes`, `_webTorneos` ni `_webHistorialTorneos` arman `tiempos` (búsqueda de `.tiempos`, `tiempos:` y `'tiempos'` en los 54 archivos: solo aparecen las dos asignaciones de arriba).
+- **Decisión pendiente de definir (regla 3):** si el frontend debe mostrar «última consulta a la API» también en `directorio`, `index`/`comunidad` y `torneos`, hay que añadir `tiempos` a esos tres publicadores (hoy el `CHANGELOG` dice que el frontend lo muestra «solo si existe»). Alternativa: tomarlo de `guerra.json`. No se decidió.
+
+**¿El bot republica cuando Sheets falla? (pendiente 2) — No, y hay cuatro hechos relacionados.**
+1. **El único camino automático hacia los cuatro publicadores** es `_calentarCacheGuerraEnVivo_()` (`37_Web_API.gs`), llamada desde `runGuerra()` (`00_Main.gs`, línea 1081). Los demás llamadores son manuales: `calentarCacheGuerraEnVivo()`, `publicar*Estatico()` y el botón de actualizar roster (`41_Web_ActualizarRoster.gs`, línea 173). Ningún activador de `08_Activadores.gs` los llama.
+2. **Fuera de la ventana de guerra**, `runGuerra()` ejecuta `_fetchClanesBasico()`, `updateGuerraSheet()`, `updateGuerraLogsSheet()`, `updateControlSheet()` y `updatePendientesSheet()` **sin `try`**, antes del calentado. `updateGuerraSheet()` empieza con `_getSs()` y `getSheetByName` sin protección (`17_GuerraSheet.gs`, líneas 640-641). Si Sheets lanza error, `runGuerra()` termina ahí y no llega a la línea 1081: **no se republica nada**. Los JSON de `data` quedan como estaban.
+3. **Aunque llegara**, `_calentarCacheGuerraEnVivo_()` llama `_getDatosDashboard()` dentro de un `try/finally` sin `catch`: si lanza, tampoco se ejecutan los cuatro publicadores (el `catch` está un nivel arriba, en `runGuerra`, y solo registra el error). No se comprobó si `_getDatosDashboard()` lanza con Sheets caído; ver la tanda 3.
+4. **Consecuencia en la web:** al no actualizarse, `guerra.json`, `roster.json`, `home.json` y `torneos.json` envejecen y las páginas los descartan a las 3 h (según los docblocks de `50_` a `53_`) y piden a Apps Script, que sí cae a CSV en varios puntos (tanda 3).
+
+**Hallazgos nuevos de esta tanda (todos «pendiente de definir o contestar», regla 3).**
+- **A. La ventana ligera no republica.** `_runGuerraVentanaLigera_()` (`00_Main.gs`, línea 1096) solo hace `_fetchClanesBasico()`, `updateGuerraSheet()` y `_syncGuerraCSV()`; no llama a `_calentarCacheGuerraEnVivo_()`. El comentario `37B361` (19-sep) dice que en la ventana de 4 a 5 a. m. el bot recalienta la caché en cada disparo con TTL de 660 s, y esa constante (`WEB_GUERRA_VIVO_TTL_CALENTADO_VENTANA_SEG`) hoy solo la usan el atajo manual y el botón de roster. **Contradicción entre el comentario y el código; no se sabe si fue un cambio intencional o un olvido** (git no lo dice, ver «Fuente»). Efecto probable: durante la ventana, `guerra.json` no se renueva por el bot. **Pregunta a la usuaria:** ¿la ventana ligera debe publicar o no?
+- **B. El `hash` de `guerra.json` nunca coincide.** `_publicarGuerraEstatico_()` calcula el `hash` sobre `JSON.stringify(publica)`, y `publica` incluye `tiempos.generadoTs` y `tiempos.generadoLima` (se arman con `Date.now()` en cada cálculo). Por eso la rama «sin cambios desde la última publicación; se omite» no se alcanza nunca para `guerra.json` (para `roster`, `home` y `torneos` no se encontró ningún campo de hora como `tiempos`, así que sí pueden coincidir; no se revisó el resto de sus campos). Efecto: `guerra.json` se publica en cada corrida horaria aunque no cambie nada. No es un error de datos; contradice el docblock de `50_` («si los datos no cambiaron… se omite»). **Pregunta:** ¿se excluye `tiempos` del `hash`, o se deja así?
+- **C. Una falla de Sheets consume la hora.** En `runGuerra()`, `RUNGUERRA_ULTIMA_HORA` se guarda **antes** del trabajo (`00_Main.gs`, justo después de adquirir el candado). Si `updateGuerraSheet()` lanza error, los disparos siguientes de esa misma hora salen con «ya se hizo el trabajo de esta hora» y no reintentan hasta la hora siguiente. **Pregunta:** ¿es lo deseado (evitar reintentos en cadena) o conviene marcar la hora solo al terminar bien?
+- **D. Frecuencia de `runGuerra`.** `08_Activadores.gs` (línea 13) lo define cada **5** min; el contexto (línea 212 y `37B361`) dice cada **10**. No se verificó cuál está instalado en Apps Script (lo decide `installTriggers`). Es una discrepancia de texto, no un efecto conocido.
