@@ -3002,7 +3002,7 @@ function _getIdVigenteExtra(nombreCategoria) {
     return val ? String(val).trim() : '';
   } catch (e) {
     Logger.log('[VigenteExtra] Error leyendo Extra!Torneo_Vigente_ID/Sorteo_Vigente_ID: ' + e.message);
-    return '';
+    return _valorExtraDesdeCsv_((nombreCategoria === 'Torneo') ? ['Torneo_Vigente_ID'] : ['Sorteo_Vigente_ID']); // PF073: respaldo CSV
   }
 }
 
@@ -3019,8 +3019,25 @@ function _getIdVigenteExtraCR(tipo) {
     return val ? String(val).trim() : '';
   } catch (e) {
     Logger.log('[VigenteExtra] Error leyendo Extra!Ascenso_Vigente_ID/Descenso_Vigente_ID: ' + e.message);
-    return '';
+    return _valorExtraDesdeCsv_((tipo === 'Ascenso') ? ['Ascenso_Vigente_ID'] : ['Descenso_Vigente_ID']); // PF073: respaldo CSV
   }
+}
+
+// _valorExtraDesdeCsv_(nombres): PF073. Valor de la fila 2 de Extra, leído de Backup_Extra.csv por NOMBRE de encabezado (el CSV se mapea por encabezado, no por posición; ver importarExtraDesdeCSV). Devuelve '' si no hay CSV, columna o valor; nunca lanza error. [→ Contexto_Base_Web.md §PF073]
+function _valorExtraDesdeCsv_(nombres) {
+  try {
+    var lec = _obtenerFilasConFallbackCSV(_getSs(), CFG.SHEETS.EXTRA, 'Backup_Extra.csv');
+    if (!lec.filas.length) return '';
+    for (var n = 0; n < nombres.length; n++) {
+      var idx = lec.headerIdx[nombres[n]];
+      if (idx === undefined) continue;
+      var v = lec.filas[0][idx];
+      if (v !== '' && v !== null && v !== undefined) return String(v).trim();
+    }
+  } catch (e) {
+    Logger.log('[VigenteExtra] Tampoco se pudo leer Backup_Extra.csv: ' + e);
+  }
+  return '';
 }
 
 function _getConfigMasRecienteCategoria(nombreCategoria, id) {

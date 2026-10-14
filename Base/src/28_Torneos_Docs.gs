@@ -1075,7 +1075,7 @@ function _insertarLineaParticipante(body, insertAt, nombre, puntaje) {
  */
 function _getTemporadaMostrarExtra(ss, ctxReal) {
   var temporadaMostrar = ctxReal.temporada;
-  // PF073: si Sheets falla se queda con la temporada real (antes lanzaba error y el endpoint respondía 500). [→ Contexto_Base_Web.md §PF073]
+  // PF073: si Sheets falla prueba Backup_Extra.csv (columna Mostrar_T) y, si tampoco, se queda con la temporada real (antes lanzaba error y el endpoint respondía 500). [→ Contexto_Base_Web.md §PF073]
   try {
     var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
     if (shExtra) {
@@ -1084,7 +1084,9 @@ function _getTemporadaMostrarExtra(ss, ctxReal) {
       if (temporadaExtra) temporadaMostrar = temporadaExtra;
     }
   } catch (eExtra) {
-    Logger.log('[Torneos] _getTemporadaMostrarExtra: no se pudo leer Extra, se usa la temporada real: ' + eExtra);
+    Logger.log('[Torneos] _getTemporadaMostrarExtra: no se pudo leer Extra, se prueba Backup_Extra.csv: ' + eExtra);
+    var temporadaCsv = Number(_valorExtraDesdeCsv_(['Mostrar_T', 'Mostrar']));
+    if (temporadaCsv) temporadaMostrar = temporadaCsv;
   }
   return temporadaMostrar;
 }
