@@ -1,7 +1,7 @@
 # Índice de funciones — Generador
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Generador/src/`. Total: 139 nombres en 10 archivos .gs.
+Código real: `Generador/src/`. Total: 143 nombres en 10 archivos .gs.
 
 ## Por archivo
 
@@ -10,7 +10,7 @@ Código real: `Generador/src/`. Total: 139 nombres en 10 archivos .gs.
 - **03_RoyaleAPI_Torneos.gs** (2 funciones): obtenerJSON_viaProxy, tryAlternativeProxy
 - **04_Organizador_JSON.gs** (11 funciones): organizarArchivosJSON, _organizarJSON_procesarRaiz_, _carpetaHijaOCrear_, _archivosDeCarpetaClan_, _carpetaDestinoJSON_, _carpetaViejaDeClan_, _archivosRecursivo_, _archivosDeClan_, _carpetaSemanaJSON_, _organizarJSON_tiempoAgotado_, _organizarJSON_borrarTriggersPendientes_
 - **05_Migrador_Formato.gs** (20 funciones): migrarFormatoJSON, migrarFormatoJSON_reiniciarEstado, _mig_etiquetarCarpetaClan, _mig_yaEstaEnCarpeta_, _mig_estaBajoCarpeta_, _migrarCarpetaPlayers, _mig_renombrarSeguro, _letraDiaGuerra_, _pad2_, _mig_fechaHoraStr, _mig_soloHora, _mig_horaLima, _mig_tiempoAgotado_, _mig_estadoInicial_, _mig_guardarEstado_, _mig_borrarEstado_, _mig_pausarYContinuar_, _mig_programarContinuacion_, _mig_borrarTriggersPendientes_, _mig_finalizar_
-- **06_Limpieza_Duplicados_JSON.gs** (9 funciones): limpiarDuplicadosJSON, _limpiarCarpeta_, _analizarCarpetaJSON_, _anclaMasCercana_, _temporadaDeFecha_, _primerLunesDia_, _quitarTagExistente_, _leerPeriodo_, _primeraMencionNumerica_
+- **06_Limpieza_Duplicados_JSON.gs** (13 funciones): limpiarDuplicadosJSON, _limpiarCarpeta_, _analizarCarpetaJSON_, _anclaMasCercana_, _diaJuegoNum_, _diaJuegoFecha_, _esInicioDeTemporada_, _ajustarPeriodoPrestado_, _temporadaDeFecha_, _primerLunesDia_, _quitarTagExistente_, _leerPeriodo_, _primeraMencionNumerica_
 - **07_Cache_Periodos_JSON.gs** (3 funciones): _cache_cargar_, _cache_guardar_, reiniciarCachePeriodosJSON
 - **08_GitHub.gs** (14 funciones): _githubToken_, _ghReq_, _ghRespuesta_, _ghJson_, _scriptIdDeProyecto_, _extDeTipo_, _archivosDelProyecto_, _githubRevisarSecretos_, _githubGenerarIndice_, _githubGenerarLeeme_, _githubCommitArchivos_, _githubSincronizar_, _githubTraerAProyectoApps_, _githubProbar_
 - **09_ReadmeGenerador.gs** (4 funciones): _readmeFuncionesManuales_, _readmeGrupo_, _readmeAplicarBloque_, _actualizarReadmeGenerador_
@@ -25,8 +25,9 @@ Ninguno.
 | Nombre | Tipo | Archivo | Línea | Ref. contexto |
 |---|---|---|---|---|
 | `_actualizarReadmeGenerador_` | función | 09_ReadmeGenerador.gs | 133 |  |
-| `_analizarCarpetaJSON_` | función | 06_Limpieza_Duplicados_JSON.gs | 231 |  |
-| `_anclaMasCercana_` | función | 06_Limpieza_Duplicados_JSON.gs | 364 |  |
+| `_ajustarPeriodoPrestado_` | función | 06_Limpieza_Duplicados_JSON.gs | 443 |  |
+| `_analizarCarpetaJSON_` | función | 06_Limpieza_Duplicados_JSON.gs | 240 |  |
+| `_anclaMasCercana_` | función | 06_Limpieza_Duplicados_JSON.gs | 390 |  |
 | `_archivosDeCarpetaClan_` | función | 04_Organizador_JSON.gs | 229 |  |
 | `_archivosDeClan_` | función | 04_Organizador_JSON.gs | 317 |  |
 | `_archivosDelProyecto_` | función | 08_GitHub.gs | 106 |  |
@@ -41,7 +42,10 @@ Ninguno.
 | `_carpetaViejaDeClan_` | función | 04_Organizador_JSON.gs | 275 |  |
 | `_conAviso_` | función | 02_Backstage.gs | 103 |  |
 | `_descargarProyectoAArchivos` | función | 02_Backstage.gs | 287 |  |
+| `_diaJuegoFecha_` | función | 06_Limpieza_Duplicados_JSON.gs | 419 |  |
+| `_diaJuegoNum_` | función | 06_Limpieza_Duplicados_JSON.gs | 410 |  |
 | `_eliminarTodosLosArchivosDeProyecto` | función | 02_Backstage.gs | 555 |  |
+| `_esInicioDeTemporada_` | función | 06_Limpieza_Duplicados_JSON.gs | 424 |  |
 | `_extDeTipo_` | función | 08_GitHub.gs | 101 |  |
 | `_extraerArchivosDeMarkdown_` | función | 02_Backstage.gs | 242 |  |
 | `_extraerArchivosDeTexto` | función | 02_Backstage.gs | 184 |  |
@@ -57,32 +61,32 @@ Ninguno.
 | `_githubSincronizar_` | función | 08_GitHub.gs | 325 |  |
 | `_githubToken_` | función | 08_GitHub.gs | 46 |  |
 | `_githubTraerAProyectoApps_` | función | 08_GitHub.gs | 401 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
-| `_leerPeriodo_` | función | 06_Limpieza_Duplicados_JSON.gs | 464 |  |
-| `_letraDiaGuerra_` | función | 05_Migrador_Formato.gs | 379 |  |
+| `_leerPeriodo_` | función | 06_Limpieza_Duplicados_JSON.gs | 580 |  |
+| `_letraDiaGuerra_` | función | 05_Migrador_Formato.gs | 382 |  |
 | `_limpiarCarpeta_` | función | 06_Limpieza_Duplicados_JSON.gs | 109 |  |
-| `_mig_borrarEstado_` | función | 05_Migrador_Formato.gs | 424 |  |
-| `_mig_borrarTriggersPendientes_` | función | 05_Migrador_Formato.gs | 450 |  |
-| `_mig_estaBajoCarpeta_` | función | 05_Migrador_Formato.gs | 282 |  |
-| `_mig_estadoInicial_` | función | 05_Migrador_Formato.gs | 411 |  |
+| `_mig_borrarEstado_` | función | 05_Migrador_Formato.gs | 427 |  |
+| `_mig_borrarTriggersPendientes_` | función | 05_Migrador_Formato.gs | 453 |  |
+| `_mig_estaBajoCarpeta_` | función | 05_Migrador_Formato.gs | 285 |  |
+| `_mig_estadoInicial_` | función | 05_Migrador_Formato.gs | 414 |  |
 | `_mig_etiquetarCarpetaClan` | función | 05_Migrador_Formato.gs | 200 |  |
-| `_mig_fechaHoraStr` | función | 05_Migrador_Formato.gs | 390 |  |
-| `_mig_finalizar_` | función | 05_Migrador_Formato.gs | 459 |  |
-| `_mig_guardarEstado_` | función | 05_Migrador_Formato.gs | 420 |  |
-| `_mig_horaLima` | función | 05_Migrador_Formato.gs | 398 |  |
-| `_mig_pausarYContinuar_` | función | 05_Migrador_Formato.gs | 429 |  |
-| `_mig_programarContinuacion_` | función | 05_Migrador_Formato.gs | 442 |  |
-| `_mig_renombrarSeguro` | función | 05_Migrador_Formato.gs | 351 |  |
-| `_mig_soloHora` | función | 05_Migrador_Formato.gs | 394 |  |
-| `_mig_tiempoAgotado_` | función | 05_Migrador_Formato.gs | 407 |  |
-| `_mig_yaEstaEnCarpeta_` | función | 05_Migrador_Formato.gs | 270 |  |
-| `_migrarCarpetaPlayers` | función | 05_Migrador_Formato.gs | 300 |  |
+| `_mig_fechaHoraStr` | función | 05_Migrador_Formato.gs | 393 |  |
+| `_mig_finalizar_` | función | 05_Migrador_Formato.gs | 462 |  |
+| `_mig_guardarEstado_` | función | 05_Migrador_Formato.gs | 423 |  |
+| `_mig_horaLima` | función | 05_Migrador_Formato.gs | 401 |  |
+| `_mig_pausarYContinuar_` | función | 05_Migrador_Formato.gs | 432 |  |
+| `_mig_programarContinuacion_` | función | 05_Migrador_Formato.gs | 445 |  |
+| `_mig_renombrarSeguro` | función | 05_Migrador_Formato.gs | 354 |  |
+| `_mig_soloHora` | función | 05_Migrador_Formato.gs | 397 |  |
+| `_mig_tiempoAgotado_` | función | 05_Migrador_Formato.gs | 410 |  |
+| `_mig_yaEstaEnCarpeta_` | función | 05_Migrador_Formato.gs | 273 |  |
+| `_migrarCarpetaPlayers` | función | 05_Migrador_Formato.gs | 303 |  |
 | `_organizarJSON_borrarTriggersPendientes_` | función | 04_Organizador_JSON.gs | 368 |  |
 | `_organizarJSON_procesarRaiz_` | función | 04_Organizador_JSON.gs | 153 |  |
 | `_organizarJSON_tiempoAgotado_` | función | 04_Organizador_JSON.gs | 364 |  |
-| `_pad2_` | función | 05_Migrador_Formato.gs | 385 |  |
-| `_primeraMencionNumerica_` | función | 06_Limpieza_Duplicados_JSON.gs | 487 |  |
-| `_primerLunesDia_` | función | 06_Limpieza_Duplicados_JSON.gs | 434 |  |
-| `_quitarTagExistente_` | función | 06_Limpieza_Duplicados_JSON.gs | 450 | Contexto_Base_Web.md §PF074 |
+| `_pad2_` | función | 05_Migrador_Formato.gs | 388 |  |
+| `_primeraMencionNumerica_` | función | 06_Limpieza_Duplicados_JSON.gs | 603 |  |
+| `_primerLunesDia_` | función | 06_Limpieza_Duplicados_JSON.gs | 550 |  |
+| `_quitarTagExistente_` | función | 06_Limpieza_Duplicados_JSON.gs | 566 | Contexto_Base_Web.md §PF074 |
 | `_readmeAplicarBloque_` | función | 09_ReadmeGenerador.gs | 71 |  |
 | `_readmeFuncionesManuales_` | función | 09_ReadmeGenerador.gs | 28 |  |
 | `_readmeGrupo_` | función | 09_ReadmeGenerador.gs | 55 |  |
@@ -90,7 +94,7 @@ Ninguno.
 | `_scriptIdDeProyecto_` | función | 08_GitHub.gs | 90 |  |
 | `_SEMANA_MEM_` | global | 04_Organizador_JSON.gs | 344 |  |
 | `_subirArchivosAProyecto` | función | 02_Backstage.gs | 381 |  |
-| `_temporadaDeFecha_` | función | 06_Limpieza_Duplicados_JSON.gs | 403 |  |
+| `_temporadaDeFecha_` | función | 06_Limpieza_Duplicados_JSON.gs | 519 |  |
 | `_verif_comparar_` | función | 10_Verificar_PeriodIndex_JSON.gs | 170 |  |
 | `_verif_enVentanaCambio_` | función | 10_Verificar_PeriodIndex_JSON.gs | 151 |  |
 | `_verif_imprimirResumen_` | función | 10_Verificar_PeriodIndex_JSON.gs | 243 |  |
@@ -118,13 +122,13 @@ Ninguno.
 | `GITHUB_PATRONES_SECRETOS_` | global | 08_GitHub.gs | 27 |  |
 | `GITHUB_REGEX_ID_DRIVE_` | global | 08_GitHub.gs | 40 |  |
 | `GITHUB_REPO_` | global | 08_GitHub.gs | 19 |  |
-| `LETRAS_DIA_GUERRA_` | global | 05_Migrador_Formato.gs | 367 |  |
+| `LETRAS_DIA_GUERRA_` | global | 05_Migrador_Formato.gs | 370 |  |
 | `limpiarDuplicadosJSON` | función | 06_Limpieza_Duplicados_JSON.gs | 73 |  |
 | `LIMPIEZA_DRY_RUN_` | global | 06_Limpieza_Duplicados_JSON.gs | 66 |  |
 | `MANIFIESTO_CANONICO_` | global | 02_Backstage.gs | 33 |  |
 | `MIG_LIMITE_MS_` | global | 05_Migrador_Formato.gs | 65 |  |
 | `MIG_PROP_ESTADO_` | global | 05_Migrador_Formato.gs | 68 |  |
-| `MIG_TEMPORADA_ANCLA_` | global | 06_Limpieza_Duplicados_JSON.gs | 422 |  |
+| `MIG_TEMPORADA_ANCLA_` | global | 06_Limpieza_Duplicados_JSON.gs | 538 |  |
 | `MIG_TRIGGER_HANDLER_` | global | 05_Migrador_Formato.gs | 71 |  |
 | `migrarFormatoJSON` | función | 05_Migrador_Formato.gs | 90 |  |
 | `migrarFormatoJSON_reiniciarEstado` | función | 05_Migrador_Formato.gs | 173 |  |
@@ -137,7 +141,7 @@ Ninguno.
 | `ORGANIZAR_PROP_ESTADO_` | global | 04_Organizador_JSON.gs | 81 |  |
 | `ORGANIZAR_TRIGGER_HANDLER_` | global | 04_Organizador_JSON.gs | 84 |  |
 | `organizarArchivosJSON` | función | 04_Organizador_JSON.gs | 96 |  |
-| `PAREO_TOLERANCIA_MS_` | global | 06_Limpieza_Duplicados_JSON.gs | 355 |  |
+| `PAREO_TOLERANCIA_MS_` | global | 06_Limpieza_Duplicados_JSON.gs | 381 |  |
 | `probarConexionGithub` | función | 01_Principal.gs | 144 |  |
 | `README_GENERADOR_NOMBRE_` | global | 09_ReadmeGenerador.gs | 19 |  |
 | `README_LINEA_INICIO_` | global | 09_ReadmeGenerador.gs | 22 |  |
