@@ -821,7 +821,13 @@ function _getDatosGuerraParaControl(ctx, temporadaReal) {
   }
 
   if (String(ctx.temporada) === String(temporadaReal)) {
-    return _getDatosGuerraDesdeHojaParaControl(ctx);
+    // PF073: si la hoja Guerra no se puede leer, cae a Backup_Guerra.csv (sin el marcado de días opcionales por cruce de meta, que solo existe en la ruta de la hoja). [→ Contexto_Base_Web.md §PF073]
+    try {
+      return _getDatosGuerraDesdeHojaParaControl(ctx);
+    } catch (eHojaG) {
+      Logger.log('[Control] Guerra no disponible, se usa Backup_Guerra.csv: ' + eHojaG);
+      return _getDatosGuerraDesdeCsvParaControl(ctx);
+    }
   }
   return _getDatosGuerraDesdeCsvParaControl(ctx);
 }

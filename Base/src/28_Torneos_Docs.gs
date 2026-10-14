@@ -1075,11 +1075,16 @@ function _insertarLineaParticipante(body, insertAt, nombre, puntaje) {
  */
 function _getTemporadaMostrarExtra(ss, ctxReal) {
   var temporadaMostrar = ctxReal.temporada;
-  var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
-  if (shExtra) {
-    var mostrarVal = shExtra.getRange(2, 7).getValue(); // G2 = Mostrar
-    var temporadaExtra = Number(mostrarVal);
-    if (temporadaExtra) temporadaMostrar = temporadaExtra;
+  // PF073: si Sheets falla se queda con la temporada real (antes lanzaba error y el endpoint respondía 500). [→ Contexto_Base_Web.md §PF073]
+  try {
+    var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
+    if (shExtra) {
+      var mostrarVal = shExtra.getRange(2, 7).getValue(); // G2 = Mostrar
+      var temporadaExtra = Number(mostrarVal);
+      if (temporadaExtra) temporadaMostrar = temporadaExtra;
+    }
+  } catch (eExtra) {
+    Logger.log('[Torneos] _getTemporadaMostrarExtra: no se pudo leer Extra, se usa la temporada real: ' + eExtra);
   }
   return temporadaMostrar;
 }

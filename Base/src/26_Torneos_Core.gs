@@ -3026,8 +3026,9 @@ function _getIdVigenteExtraCR(tipo) {
 function _getConfigMasRecienteCategoria(nombreCategoria, id) {
   var esTorneo = (nombreCategoria === 'Torneo');
   var ss = _getSs();
-  var sh = ss.getSheetByName(esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return [];
+  // PF073: si Sheets falla se trata como hoja vacía (devuelve []), igual que cuando la hoja no existe. [→ Contexto_Base_Web.md §PF073]
+  var sh = _hojaConFilas_(ss, esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA, 3);
+  if (!sh) return [];
 
   var totalCols = esTorneo ? TL_TOTAL_COLS : SL_TOTAL_COLS;
   var datos = sh.getRange(3, 1, sh.getLastRow() - 2, totalCols).getValues();
@@ -3670,10 +3671,11 @@ function _getParticipantesFusionadosPorTorneo(ss, idTorneo) {
  * _aplicarResolucionesTorneo(ss, idRaiz, participantes) [→ Contexto_Base_Web.md §26B267]
  */
 function _aplicarResolucionesTorneo(ss, idRaiz, participantes) {
-  var shTR = ss.getSheetByName(CFG.SHEETS.T_RESOLUCIONES);
+  // PF073: hoja viva o Backup_T_Resoluciones.csv (antes, si Sheets fallaba, el endpoint respondía 500). [→ Contexto_Base_Web.md §PF073]
   var resolucionPorTag = {};
-  if (shTR && shTR.getLastRow() >= 2) {
-    var data = shTR.getRange(2, 1, shTR.getLastRow() - 1, TR_TOTAL_COLS).getValues();
+  var dataTR = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.T_RESOLUCIONES, 'Backup_T_Resoluciones.csv', TR_TOTAL_COLS).filas;
+  if (dataTR.length) {
+    var data = dataTR;
     for (var i = 0; i < data.length; i++) {
       var idFila = String(data[i][TR.ID_TORNEO - 1] || '').trim();
       if (idFila !== String(idRaiz)) continue;
@@ -4003,9 +4005,9 @@ function _getMinTClanMaps() {
   var byTag = {};
   var info = _getMinTPorNombreClan('Torneo');
   var ss = _getSs();
-  var shClan = ss.getSheetByName(CFG.SHEETS.CLAN);
-  if (!shClan || shClan.getLastRow() < 2) return { byTag: byTag };
-  var clanData = shClan.getRange(2, 1, shClan.getLastRow() - 1, CC.CONDICION).getValues();
+  // PF073: hoja Clan viva o Backup_Clan.csv. [→ Contexto_Base_Web.md §PF073]
+  var clanData = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CLAN, 'Backup_Clan.csv', CC.CONDICION).filas;
+  if (!clanData.length) return { byTag: byTag };
   for (var c = 0; c < clanData.length; c++) {
     var nombreClan = String(clanData[c][CC.NOMBRE - 1] || '').trim();
     var clanTag    = String(clanData[c][CC.CLAN_TAG - 1] || '').trim();
