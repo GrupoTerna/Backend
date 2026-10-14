@@ -66389,8 +66389,8 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 | 1 | `doGet` cae a los `Backup_*.csv` cuando falla Sheets (Fase 13a, endpoint por endpoint) | En curso (ver «Tanda 3 en adelante»; falta cerrarlo) |
 | 2 | Qué claves publican `50_` a `53_`, y si el bot republica cuando Sheets falla | **Hecho en la tanda 1** |
 | 3 | Qué JSON traen `tiempos.api.ultimaConsultaTs` | **Hecho en la tanda 1** |
-| 4 | `_diasOpcionalesClanSemana_()` recorre viernes a domingo | Pendiente |
-| 5 | Comentario de `alMax` en `pintarColeccion()` y `ext.batallas` = victorias + derrotas | Pendiente |
+| 4 | `_diasOpcionalesClanSemana_()` recorre viernes a domingo | **Hecho en la tanda 2** (recorrido correcto; hallazgo E sobre filas `Estimado`, pendiente de definir) |
+| 5 | Comentario de `alMax` en `pintarColeccion()` y `ext.batallas` = victorias + derrotas | **Hecho en la tanda 2** (`ext.batallas` NO es victorias + derrotas; el comportamiento de `alMax` ya está documentado en el backend) |
 
 #### Tanda 1 — publicadores `50_` a `53_`, `tiempos` y el bot con Sheets caído (14-oct-2026)
 
@@ -66422,6 +66422,31 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 - **B. El `hash` de `guerra.json` nunca coincide.** `_publicarGuerraEstatico_()` calcula el `hash` sobre `JSON.stringify(publica)`, y `publica` incluye `tiempos.generadoTs` y `tiempos.generadoLima` (se arman con `Date.now()` en cada cálculo). Por eso la rama «sin cambios desde la última publicación; se omite» no se alcanza nunca para `guerra.json` (para `roster`, `home` y `torneos` no se encontró ningún campo de hora como `tiempos`, así que sí pueden coincidir; no se revisó el resto de sus campos). Efecto: `guerra.json` se publica en cada corrida horaria aunque no cambie nada. No es un error de datos; contradice el docblock de `50_` («si los datos no cambiaron… se omite»). **Pregunta:** ¿se excluye `tiempos` del `hash`, o se deja así?
 - **C. Una falla de Sheets consume la hora.** En `runGuerra()`, `RUNGUERRA_ULTIMA_HORA` se guarda **antes** del trabajo (`00_Main.gs`, justo después de adquirir el candado). Si `updateGuerraSheet()` lanza error, los disparos siguientes de esa misma hora salen con «ya se hizo el trabajo de esta hora» y no reintentan hasta la hora siguiente. **Pregunta:** ¿es lo deseado (evitar reintentos en cadena) o conviene marcar la hora solo al terminar bien?
 - **D. Frecuencia de `runGuerra`.** `08_Activadores.gs` (línea 13) lo define cada **5** min; el contexto (línea 212 y `37B361`) dice cada **10**. No se verificó cuál está instalado en Apps Script (lo decide `installTriggers`). Es una discrepancia de texto, no un efecto conocido.
+
+#### Tanda 2 — `_diasOpcionalesClanSemana_()`, `ext.batallas` y `alMax` (14-oct-2026; sin cambios de código)
+
+**Fuente:** `Base/src/` y `Web` en el commit `f1df4ab` del repo `Backend` (la tanda 1 se hizo sobre `4023bfa`; después se subió PF074, que tocó `17_` y `22_` solo en la regex del nombre de JSON). **No se probó en Apps Script real.**
+
+**Pendiente 4, `_diasOpcionalesClanSemana_()` (`38_Web_Endpoints.gs`).**
+- **Recorrido: correcto.** El bucle `for (d = 1; d < 4)` evalúa `pIdx = sIdx*7 + 3 + d`, es decir 4, 5 y 6 = viernes, sábado y domingo, y empuja `letras[d]` (`v`, `s`, `d`). El jueves (`d = 0`, `j`) no se evalúa nunca; en la semana de coliseo (`_esPeriodoDeColiseo_(temporada, sIdx*7+4)`) no se marca ningún día; sin dato de `Guerra_Logs` (`_cruceMetaDesdeGuerraLogs_` devuelve `null`) no se marca. Un error se registra y devuelve lista vacía. Criterio igual al de `38_Web_Endpoints.gs` línea 1936 (`periodIndex % 7 > 3`).
+- **Cómo decide `_cruceMetaDesdeGuerraLogs_()` (`22_ControlCalendario.gs`).** Verdadero si `ProgressStartOfDay` del día ≥ `META_GUERRA_PROGRESO` (10 000) **o** `ProgressEndOfDay` del día anterior ≥ 10 000. El mapa toma el **máximo** de cada columna entre las filas del mismo clan y periodo, y **no mira la columna `Estado`**.
+- **Medición (reproducción en Python de esa lógica sobre `Datos descargados/CSV/Backup_Guerra_Logs.csv`, 560 filas: 379 `Leído`, 157 `Estimado`, 24 sin estado; cada temporada sin su última semana por si es coliseo; no es Apps Script).**
+
+| Temporada | Días marcados opcionales | Por inicio del día | Por fin del día anterior | Estado de las filas que activan por inicio |
+|---|---|---|---|---|
+| T2 | 19 | 19 | 0 | las 19 `Estimado` |
+| T3 | 0 | – | – | – |
+| T4 | 5 | 0 | 5 | – |
+| T5 | 3 | 1 | 2 | `Leído` |
+| T6 | 0 | – | – | – |
+
+- **Hallazgo E (pendiente de definir, regla 3). En T2 los 19 días marcados salen de `ProgressStartOfDay` de filas `Estimado`, con valores de 27 700 a 32 100 en los ejemplos, mientras el fin del día anterior de esos mismos días es de 2 235 a 5 558** (por ejemplo `Grupo乂Terna™`, semana 1, viernes: inicio 31 200, fin del jueves 2 235). Es decir, el clan no había cruzado la meta y se marcaría como opcional por error. Con `Leído` no apareció en T3 a T6: en T4 los 5 casos están respaldados por el fin del día anterior y en T5 los 3 son filas `Leído`. **Alcance: solo el historial de T2** que esté en el respaldo CSV; no se midió la hoja `Guerra_Logs` real. **Opciones, sin decidir:** (a) ignorar el inicio cuando `Estado` = `Estimado`; (b) usar solo el fin del día anterior; (c) dejarlo, porque solo afecta T2. Ver también PF072 (filas `Estimado`).
+- **Corrección a lo dicho en la sesión interrumpida (regla 9):** esa sesión dijo que en T5 los tres días eran filas «Rival». Esta medición no comprueba el tipo de fila. Lo medido: T5 tiene 3 días, 2 por el fin del día anterior y 1 solo por el inicio (`Los Mexicas`, semana 1, domingo, inicio 10 208, sin fila del sábado en el respaldo, fila `Leído`).
+
+**Pendiente 5, `ext.batallas` y `alMax`.**
+- **`ext.batallas` NO es victorias + derrotas** (el pendiente del `CHANGELOG.md` no se cumple tal cual). `_webPerfilExtendido()` (`37_Web_API.gs`, línea 804) arma `batallas: Number(fila[DC.BATALLAS - 1]) || 0`; sin suma. La columna `DC.BATALLAS` (18) se llena **solo** con `playerData.battleCount` de la API de Clash Royale, en `11_DirectorioSheet.gs` (línea 1083) y, para inactivos, en `13_Inactivos_Vetados.gs` (línea 192); el resto de asignaciones son copias de respaldo. El comentario de `perfil.html` (líneas 4401 a 4404) ya lo dice y el frontend usa `ext.batallas` en el centro del donut, con `victorias + derrotas` solo como respaldo. Corrige además la referencia: ese comentario cita `34_Web_API.gs ~línea 2045`, pero el archivo hoy es `37_Web_API.gs`, línea 804.
+- **No medido:** cuánto difiere `battleCount` de `wins + losses` en el Directorio real (en `Datos descargados` no hay copia del Directorio). Es lo que el frontend asume («puede incluir empates u otras partidas»).
+- **`alMax`: la comparación es solo del frontend.** `perfil.html` calcula `alMax = level >= maxLevel` en los tres sitios (líneas 2332, 3839 y 3987) con los datos crudos de `rawClash(j).cards` que el backend reenvía sin tocar (`37_Web_API.gs`, `ext.rawClash`). **El comportamiento de fondo que pide documentar el `CHANGELOG.md` ya está en este contexto:** al llegar al nivel máximo, las copias sobrantes pasan a reacciones y el contador `×N` queda en 0 (§31B033 y las entradas de `_actualizarCards2SoloAdmins`). El comentario del frontend dice «PENDIENTE: documentar… en el archivo 17 de Base.md»; ese pendiente queda cubierto por este contexto y el comentario puede actualizarse al recortar `perfil.html`.
 
 
 ### PF074 — Letra del día en el nombre de los JSON (`P.I-05-S`), verificación de `periodIndex` y pendiente de subcarpetas por temporada y semana (pedido de la usuaria, 14-oct-2026)
