@@ -1094,6 +1094,42 @@ function generarMazo3(tag) {
   return _generarUrlMazo3DesdeMapas(tagClean, cardInfo, _construirCards2DeTag(tagClean));
 }
 
+/**
+ * generarMazoPerfil(tag) [→ Contexto_Base_Web.md §PF070]
+ * Para el perfil web (_webPerfilExtendido): lee el catálogo (Cards) y las cartas del jugador (Cards_2) UNA sola vez y devuelve
+ *  - mazo3: lo mismo que generarMazo3() ({url, nivelPromedio, nivelMinimo}) o null;
+ *  - cartas: lista compacta de TODAS las cartas del catálogo (sin cartas de torre), una entrada [slug, nivel, evoLevel, maxEvoLevel] por carta:
+ *      nivel = nivel del jugador (0 si no la tiene); evoLevel = -1 si no tiene evolución ni héroe (igual que Cards_2);
+ *      maxEvoLevel = -1 si la carta solo existe en versión normal, o 1, 2 o 3 según el juego (igual que Cards).
+ *    Con esto la ventana «Sugerencias de mazo» de perfil.html arma la URL de RoyaleAPI en el navegador (incluir / excluir / nivel mínimo)
+ *    con la misma regla de _construirListasMazoDesdeMapas(). Las cartas que el jugador no tiene viajan con nivel 0 porque hay que excluirlas en la URL.
+ * @returns {?{mazo3: ?Object, cartas: Array}} null si no hay catálogo o no hay datos de Cards_2 de este jugador.
+ */
+function generarMazoPerfil(tag) {
+  if (!tag) return null;
+  var tagClean = String(tag).trim();
+  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
+
+  var ss = _getSs();
+  var cardInfo = _construirCardInfoMap(ss);
+  var playerCards = _construirCards2DeTag(tagClean);
+  var ids = Object.keys(cardInfo || {});
+  if (!playerCards || ids.length === 0) return null;
+
+  var cartas = [];
+  for (var i = 0; i < ids.length; i++) {
+    var info = cardInfo[ids[i]];
+    var p = playerCards[ids[i]];
+    cartas.push([
+      info.slug,
+      p ? (Number(p.level) || 0) : 0,
+      p ? p.evoLevel : -1,
+      info.maxEvoLevel
+    ]);
+  }
+  return { mazo3: _generarUrlMazo3DesdeMapas(tagClean, cardInfo, playerCards), cartas: cartas };
+}
+
 // E) COSTOS DE SUBIDA DE NIVEL: Backup_Cards_3.csv (catálogo fijo, manual) [→ Contexto_Base_Web.md §31B051]
 
 /**
