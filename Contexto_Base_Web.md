@@ -66386,7 +66386,7 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 
 | N.º | Pendiente | Estado |
 |---|---|---|
-| 1 | `doGet` cae a los `Backup_*.csv` cuando falla Sheets (Fase 13a, endpoint por endpoint) | En curso (ver «Tanda 3 en adelante»; falta cerrarlo) |
+| 1 | `doGet` cae a los `Backup_*.csv` cuando falla Sheets (Fase 13a, endpoint por endpoint) | En curso: tanda 3 hecha (endpoints públicos con hueco); faltan la tanda 4 (endpoints de admin y degradaciones silenciosas) y el cierre |
 | 2 | Qué claves publican `50_` a `53_`, y si el bot republica cuando Sheets falla | **Hecho en la tanda 1** |
 | 3 | Qué JSON traen `tiempos.api.ultimaConsultaTs` | **Hecho en la tanda 1** |
 | 4 | `_diasOpcionalesClanSemana_()` recorre viernes a domingo | **Hecho en la tanda 2** (recorrido correcto; hallazgo E sobre filas `Estimado`, pendiente de definir) |
@@ -66448,6 +66448,36 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 - **No medido:** cuánto difiere `battleCount` de `wins + losses` en el Directorio real (en `Datos descargados` no hay copia del Directorio). Es lo que el frontend asume («puede incluir empates u otras partidas»).
 - **`alMax`: la comparación es solo del frontend.** `perfil.html` calcula `alMax = level >= maxLevel` en los tres sitios (líneas 2332, 3839 y 3987) con los datos crudos de `rawClash(j).cards` que el backend reenvía sin tocar (`37_Web_API.gs`, `ext.rawClash`). **El comportamiento de fondo que pide documentar el `CHANGELOG.md` ya está en este contexto:** al llegar al nivel máximo, las copias sobrantes pasan a reacciones y el contador `×N` queda en 0 (§31B033 y las entradas de `_actualizarCards2SoloAdmins`). El comentario del frontend dice «PENDIENTE: documentar… en el archivo 17 de Base.md»; ese pendiente queda cubierto por este contexto y el comentario puede actualizarse al recortar `perfil.html`.
 
+
+#### Tanda 3 — pendiente 1: ¿`doGet` cae a los `Backup_*.csv`? Endpoints públicos (14-oct-2026; sin cambios de código)
+
+**Fuente:** `Base/src/` en el commit `eed145e` del repo `Backend`. **No se probó en Apps Script real**; es lectura estática del código.
+
+**Respuesta corta:** `doGet` **no cae a CSV por sí mismo**: solo despacha según `accion` y, ante cualquier excepción, responde `{ error: …, code: 500 }` (`38_Web_Endpoints.gs`, `catch` de cada bloque). El respaldo vive **dentro de cada función `_web*`**, con `_obtenerFilasConFallbackCSV()` y `_obtenerMapaPorTagConFallbackCSV()` (`01_Config_Global.gs`, líneas 1253 y 1322). El primero intenta la hoja dentro de un `try` y, si lanza error o está vacía, lee el `Backup_*.csv` de Drive. Por tanto, un endpoint cae a CSV **solo si todas sus lecturas de hoja pasan por esos helpers o por un `try`**.
+
+**Método (herramienta propia, no es Apps Script).** Analizador en Python sobre los 56 `.gs` (1 512 funciones): quita comentarios, cadenas y literales regex, arma el grafo de llamadas (incluye funciones pasadas como valor, como `_webCacheado('clave', 60, _webClanInfoCalcular)`, donde `_webCacheado` ejecuta `fn()` **sin `try`**) y, desde cada acción de `doGet`, busca lecturas `getSheetByName`/`getDataRange`/`getSheets` a las que se llega **sin ningún `try` en el camino**. `_getSs()` se trató aparte (en un script ligado a la hoja no abre nada por red). **Corrección de método (regla 9):** la primera versión perdió funciones en 6 archivos (por regex con comillas, p. ej. 28 de 48 en `20_HistorialGuerraJugador.gs`) y no seguía funciones pasadas como valor; con eso `webClanInfo` salía limpio cuando no lo está. La versión final detecta las 1 512 funciones en los 56 archivos (cuenta por archivo = `^function`). **Limitaciones:** un `try` cuenta como protección aunque el `catch` solo registre y siga (puede degradar en silencio, tanda 4); las ramas gateadas por `origen === 'sheet'` salen como falsos positivos y se descartaron a mano.
+
+**Resultado global.** De 59 acciones de `doGet`, 31 llegan a alguna lectura de hoja sin `try`; 28 no (entre ellas `webRoster`, `webGuerraEnVivo`, `webGuerraPendientes`, `webPronosticoGuerra`, `webPerfil`, `webRankings`, `webAniversarios`, `webCompararJugadores`, `webHistorialGuerraComparador`, `webGuerraLog`, `webClanCopas`, `webGuerraPuestosDia`, `webEstadisticasCartas`, `webAscensosRecientes`, `webTorneosJugador`, `webCofresJugador`, `webBattlelogJugador`, `webHistorialGuerraJugador`, `webMisCuentas`, `webCRListaListar`, `webCRListaFilaPorId`). **Esto confirma lo dicho en la sesión interrumpida** para `webPronosticoGuerra`, `webGuerraLog`, `webCofresJugador` y `webHistorialGuerraJugador`: no alcanzan lectores sin protección.
+
+**Huecos confirmados en endpoints públicos** (con Sheets lanzando error, el endpoint responde 500 aunque exista el CSV):
+
+| Endpoint | Lectura sin protección | Hoja y CSV que existe | Observación |
+|---|---|---|---|
+| `webClanInfo` (y `home.json`, clave `clanInfo`) | `_getMinGClanMaps()` (`10_ClanSheet.gs`, línea 161), llamada desde `_webClanInfoCalcular` (`37_Web_API.gs`, línea 1690) | `Clan` / `Backup_Clan.csv` | La lectura principal sí usa el helper (línea 1685). La de la línea 1695 está dentro de `if (lectura.origen === 'sheet')`: no es hueco. |
+| `webTorneos` (y `torneos.json`, clave `torneos`) | `_getMinTClanMaps()` (`26_Torneos_Core.gs`, línea 4006) | `Clan` / `Backup_Clan.csv` | llamada desde `_webGanadoresTorneoMasReciente` (`37_Web_API.gs`, línea 1834) |
+| `webTorneos` | `_getTemporadaMostrarExtra()` (`28_Torneos_Docs.gs`, línea 1078) | `Extra` / `Backup_Extra.csv` | sin `try` |
+| `webTorneos` | `_getConfigMasRecienteCategoria()` (`26_Torneos_Core.gs`, línea 3029), vía `_ataquesMinTorneoPorNombreClan` | `T_Lista` / `Backup_T_Lista.csv` | la lectura principal de `T_Lista` sí tiene fallback; esta no |
+| `webTorneos` | `_getDatosGuerraDesdeHojaParaControl()` (`22_ControlCalendario.gs`, línea 834), vía `_getTrofeosGuerraAcumuladosPorTagParaTemporada` | `Guerra` / `Backup_Guerra.csv` | `_getDatosGuerraParaControl` (línea 818) lee la hoja cuando la temporada a mostrar es la real y el CSV solo cuando es otra: **para la temporada actual no hay respaldo** |
+| `webTorneos` y `webHistorialTorneos` | `_aplicarResolucionesTorneo()` (`26_Torneos_Core.gs`, línea 3673), vía `_getParticipantesFusionadosPorTorneo` | `T_Resoluciones` / `Backup_T_Resoluciones.csv` | **ningún código lee ese CSV para servir la web**; solo lo usa la restauración de `26_Torneos_Core.gs` (línea 1408) |
+| `webIngresosRecientes` | `_construirIngresosRecientesUnificado()` (`37_Web_API.gs`), `getSheetByName` directos en las líneas 3185 (Directorio), 3235 (Nuevos), 3275 (Guerra) y 3353 (`Control_2`) | `Backup_Directorio.csv`, `Backup_Nuevos.csv`, `Backup_Guerra.csv`, `Backup_Control_2.csv` | Los de Directorio y Guerra **sí** tienen CSV, pero solo si la hoja viene vacía o ausente, no si lanza error. `Nuevos` y `Control_2` son enriquecimiento opcional, y aun así su error tumba todo el endpoint. |
+| `webAportesInactivos` (admin con sesión) | `_getAportesInactivosSemanaActual()` (`38_Web_Endpoints.gs`, líneas 2705 y 2730) | `Inactivos` y `Guerra` | mismo patrón «CSV solo si la hoja viene vacía» |
+
+**Patrón común (hallazgo F, pendiente de definir, regla 3).** Hay dos clases de hueco: (1) lecturas **sin ningún respaldo** (`_getMinGClanMaps`, `_getMinTClanMaps`, `_getTemporadaMostrarExtra`, `_aplicarResolucionesTorneo`, etc.); (2) lecturas del tipo `var sh = ss.getSheetByName(…); if (sh && sh.getLastRow() >= 2) {…} else { CSV }`, que cubren «hoja vacía o inexistente» pero **no «Sheets lanza error»**, porque `getSheetByName` queda fuera de todo `try`. **No se sabe** si en una caída real de Sheets `getSheetByName` lanza o devuelve `null`; solo con una prueba real en Apps Script se distingue. Si lanzara, la clase 2 sería hueco igual que la 1.
+**Pregunta para la usuaria:** ¿se corrigen estos huecos (por ejemplo, un `try` con lectura vía `_obtenerFilasConFallbackCSV` en cada uno) o se acepta que, con Sheets caído, `webClanInfo`, `webTorneos` y `webIngresosRecientes` respondan 500? Mientras tanto no se tocó `Base/src/`.
+
+**Efecto en los JSON estáticos.** `_publicarHomeEstatico_()` y `_publicarTorneosEstatico_()` calculan cada clave en su `try`; si `clanInfo` o `torneos` lanzan, se publica sin esa clave. Como además el bot no republica con Sheets caído (tanda 1), el fallo solo se vería en las llamadas en vivo a `webClanInfo` y `webTorneos`.
+
+**Falta (tanda 4):** (a) los 31 endpoints con lectura sin `try` ya están listados por el analizador; falta revisar a mano los de admin (`webAdmin*`, `webCRListaPropuestas`, `webPermisosListar`, `webSorteoCalificados`, `webAdminEstadoActualizacion`, `listaCorreccionGuerra`, `listaNuevosRoyaleAPI`, que usan hojas como `Administradores`, `Nom_Multi` o `Mensajes`); (b) revisar los endpoints «protegidos» por `try` cuyo `catch` solo registra, para ver si devuelven datos vacíos sin avisar; (c) cerrar el pendiente 1 y actualizar `Consolidado_Plan_de_Fases.md` (Fase 13(a)).
 
 ### PF074 — Letra del día en el nombre de los JSON (`P.I-05-S`), verificación de `periodIndex` y pendiente de subcarpetas por temporada y semana (pedido de la usuaria, 14-oct-2026)
 
