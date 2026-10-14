@@ -2058,7 +2058,7 @@ function recalcularGuerraLogsDesdeJSON() {
       var carpeta = DriveApp.getFolderById(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_[claves[c]]);
       // Último archivo (mayor P.I) de cada temporada+semana.
       var elegidos = {};
-      var it = carpeta.getFiles();
+      var it = _archivosConSubcarpetas_(carpeta);
       while (it.hasNext()) {
         var f = it.next();
         var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
@@ -2210,7 +2210,7 @@ function reconstruirRivalesHistoricosGuerraLogs() {
       // Mismo criterio de selección de archivo que recalcularGuerraLogsDesdeJSON(): [→ Contexto_Base_Web.md §17B132]
       var carpeta = DriveApp.getFolderById(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_[claves[c]]);
       var elegidos = {};
-      var it = carpeta.getFiles();
+      var it = _archivosConSubcarpetas_(carpeta);
       while (it.hasNext()) {
         var f = it.next();
         var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
@@ -2479,7 +2479,7 @@ function _rellenarEstadoGuerraLogsHistorico_(aplicar) {
     try {
       var carpeta = DriveApp.getFolderById(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_[claves[c]]);
       var elegidos = {};
-      var it = carpeta.getFiles();
+      var it = _archivosConSubcarpetas_(carpeta);
       while (it.hasNext()) {
         var fArch = it.next();
         var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(fArch.getName());
@@ -2674,7 +2674,7 @@ function _limpiarFilasColiseoGuerraLogs_(aplicar) {
       var carpeta = DriveApp.getFolderById(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_[claves[c]]);
       // Última captura de CADA día (temporada + P.I) de coliseo.
       var elegidos = {};
-      var it = carpeta.getFiles();
+      var it = _archivosConSubcarpetas_(carpeta);
       while (it.hasNext()) {
         var fArch = it.next();
         var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(fArch.getName());
@@ -3443,7 +3443,7 @@ function _crearLectorDiaJSONGuerra_(t0) {
     if (idCarpeta) {
       idx = {};
       try {
-        var it = DriveApp.getFolderById(idCarpeta).getFiles();
+        var it = _archivosConSubcarpetas_(DriveApp.getFolderById(idCarpeta)); // PF074: incluye subcarpetas de temporada y semana
         while (it.hasNext()) {
           var f = it.next(), nombre = f.getName();
           var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(nombre);

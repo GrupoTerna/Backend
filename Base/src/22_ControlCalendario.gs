@@ -980,7 +980,7 @@ function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
     if (!_CRUCE_META_JSON_IDX[nombre]) {
       var idx = {};
       var carpeta = _getSubcarpetaEndpoint_(_getCarpetaParaClan(nombreClan), 'currentriverrace');
-      var it = carpeta.getFiles();
+      var it = _archivosConSubcarpetas_(carpeta); // PF074: incluye subcarpetas de temporada y semana
       while (it.hasNext()) {
         var f = it.next();
         var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
