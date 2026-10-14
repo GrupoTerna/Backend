@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 13/10/2026 11:22:40 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 13/10/2026 20:17:00 */
 
 
 
@@ -41067,6 +41067,42 @@ function generarMazo3(tag) {
   return _generarUrlMazo3DesdeMapas(tagClean, cardInfo, _construirCards2DeTag(tagClean));
 }
 
+/**
+ * generarMazoPerfil(tag) [→ Contexto_Base_Web.md §PF070]
+ * Para el perfil web (_webPerfilExtendido): lee el catálogo (Cards) y las cartas del jugador (Cards_2) UNA sola vez y devuelve
+ *  - mazo3: lo mismo que generarMazo3() ({url, nivelPromedio, nivelMinimo}) o null;
+ *  - cartas: lista compacta de TODAS las cartas del catálogo (sin cartas de torre), una entrada [slug, nivel, evoLevel, maxEvoLevel] por carta:
+ *      nivel = nivel del jugador (0 si no la tiene); evoLevel = -1 si no tiene evolución ni héroe (igual que Cards_2);
+ *      maxEvoLevel = -1 si la carta solo existe en versión normal, o 1, 2 o 3 según el juego (igual que Cards).
+ *    Con esto la ventana «Sugerencias de mazo» de perfil.html arma la URL de RoyaleAPI en el navegador (incluir / excluir / nivel mínimo)
+ *    con la misma regla de _construirListasMazoDesdeMapas(). Las cartas que el jugador no tiene viajan con nivel 0 porque hay que excluirlas en la URL.
+ * @returns {?{mazo3: ?Object, cartas: Array}} null si no hay catálogo o no hay datos de Cards_2 de este jugador.
+ */
+function generarMazoPerfil(tag) {
+  if (!tag) return null;
+  var tagClean = String(tag).trim();
+  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
+
+  var ss = _getSs();
+  var cardInfo = _construirCardInfoMap(ss);
+  var playerCards = _construirCards2DeTag(tagClean);
+  var ids = Object.keys(cardInfo || {});
+  if (!playerCards || ids.length === 0) return null;
+
+  var cartas = [];
+  for (var i = 0; i < ids.length; i++) {
+    var info = cardInfo[ids[i]];
+    var p = playerCards[ids[i]];
+    cartas.push([
+      info.slug,
+      p ? (Number(p.level) || 0) : 0,
+      p ? p.evoLevel : -1,
+      info.maxEvoLevel
+    ]);
+  }
+  return { mazo3: _generarUrlMazo3DesdeMapas(tagClean, cardInfo, playerCards), cartas: cartas };
+}
+
 // E) COSTOS DE SUBIDA DE NIVEL: Backup_Cards_3.csv (catálogo fijo, manual) [→ Contexto_Base_Web.md §31B051]
 
 /**
@@ -43636,14 +43672,18 @@ function _webPerfilExtendido(fila) {
   if (fila[DC.DECK   - 1]) ext.deck  = String(fila[DC.DECK   - 1]);
   if (fila[DC.DECK_2 - 1]) ext.deck2 = String(fila[DC.DECK_2 - 1]);
   // Sugerencias de mazo (3) (12-oct-2026): solo cartas con nivel >= máximo entero del nivel promedio ponderado; se arma al vuelo desde Cards_2 (sin columna nueva en Directorio). [→ Contexto_Base_Web.md §PF051]
+  // 13-oct-2026: la misma lectura de Cards/Cards_2 también arma ext.mazoCartas (lista compacta de todo el catálogo con el nivel del jugador) para la ventana «Sugerencias de mazo» de perfil.html, que arma la URL en el navegador. ext.deck/deck2/deck3 se conservan mientras no se compruebe esa ventana con un jugador real. [→ Contexto_Base_Web.md §PF070]
   try {
-    var mazo3 = generarMazo3(fila[DC.TAG - 1]);
-    if (mazo3 && mazo3.url) {
-      ext.deck3 = mazo3.url;
-      ext.deck3Nivel = mazo3.nivelMinimo;
+    var mazoPerfil = generarMazoPerfil(fila[DC.TAG - 1]);
+    if (mazoPerfil) {
+      if (mazoPerfil.mazo3 && mazoPerfil.mazo3.url) {
+        ext.deck3 = mazoPerfil.mazo3.url;
+        ext.deck3Nivel = mazoPerfil.mazo3.nivelMinimo;
+      }
+      if (mazoPerfil.cartas && mazoPerfil.cartas.length) ext.mazoCartas = mazoPerfil.cartas;
     }
   } catch (e3) {
-    Logger.log('[WebAPI] No se pudo armar la sugerencia de mazo (3): ' + e3.message);
+    Logger.log('[WebAPI] No se pudo armar la sugerencia de mazo (3) ni la lista de cartas: ' + e3.message);
   }
 
   // CONEXIÓN 11-sep-2026: campos que Directorio no trae y solo están en el JSON crudo de /players en Drive (ver _webDatosDriveJugador()). FIX 15-sep-2026: se renombra `ext.drive` a `ext.rawClash`, que es lo que perfil.html lee (rawClash(j) busca j.extendido.rawClash); por el desajuste no se mostraba ninguna sección que dependiera de rawClash; cada sección decide sola si mostrarse. [→ Contexto_Base_Web.md §37B063]
