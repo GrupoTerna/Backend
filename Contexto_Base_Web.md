@@ -66318,3 +66318,36 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 **Verificación hecha.** `test/perfil-niveles-evoluciones.test.js` (11 pruebas, jsdom sobre las funciones reales del `<script>`): reparto en los cuatro conjuntos con cartas desbloqueadas y por desbloquear, Campeones, totales por variante, cálculo de faltantes (12 fragmentos y 600 monedas en el ejemplo), caso «ya tiene todo», dona sin leyenda con `soloDonut`, apertura y cierre de la ventana. Las 414 pruebas del repo pasan y `eslint assets` no marca errores. **No se hizo:** verla en un navegador (no había uno en la sesión: el diagrama, los emojis dentro del SVG y el móvil están sin ver), ni con datos reales de un jugador.
 
 **Ajuste visual (14-oct-2026, misma sesión; repo `Web`, `sw.js` v78).** Tras ver la ventana, la usuaria pidió: (a) «Cartas por nivel» en negrita y con el mismo trato que «Evoluciones y héroes» (son la misma categoría y no se veían igual): los tres títulos son ahora `h4` de `.col-modal-seccion`, en negrita; el título interno de la tarjeta de la dona se oculta solo en la ventana; (b) dona más grande (170 px; 140 px bajo 560 px) y centrada en el espacio entre el borde izquierdo de la tarjeta y los puntos de la leyenda: se logra con `margin:0 auto` en `.mini-pie-donut-wrap` dentro de un `.mini-pie-cuerpo` sin salto de línea, no con cálculos; (c) en el diagrama, «Evolución» y «Héroe» van a los lados, fuera de los círculos, con el color de su conjunto (morado y dorado). Sin ver en navegador: los tamaños salen de la lectura de las capturas, no de una medición.
+
+### PF072 — Cruce de solo lectura entre los totales de RoyaleAPI y el reparto diario del backup de guerra (14-oct-2026; sin cambios de código)
+
+**Corrección a lo dicho antes (regla 9).** Las cifras «105 contra 230» de la sesión anterior **no se pudieron depurar**: salían de un `cruce.py` que vivía en el directorio de trabajo de esa sesión y ya no existe, y no quedó escrito qué contaba cada número. Se descartan. El cruce se reescribió desde cero (script de la sesión, no está en el repo) y las cifras de abajo son las únicas vigentes. **Validación de la reescritura:** reproduce dos cifras que ya figuraban en el plan, los **9 imposibles** y los **24 casos sin ninguna fila del backup con totales distintos de cero** (pregunta b); eso da confianza en que el modelo es el mismo.
+
+**Qué se compara.** `Correcciones_Guerra.csv` es el total semanal por jugador de RoyaleAPI (ataques, barcos, fame). `Backup_Guerra.csv` trae `AtaquesHoy` diario y `AtaquesSemana`, `Fame` y `Barcos` **acumulados**. El cruce busca, por jugador, semana y clan (por `ClanTag`), todos los repartos de los 4 días (jueves a domingo) donde cada día es (ataques 0 a 4, barcos, fame) con la fame dentro de `_fameTablaDia_` y la suma exacta de los tres totales. Como «cambia menos» elige la solución con menos campos distintos del registro. Criterios de «días confiables»: el prefijo de días cuya fame cabe en la tabla queda fijo; si no hay solución se liberan días anteriores uno a uno; si aún no, se permite usar días sin fila; los días sin fila se asumen con 0 ataques.
+
+**Resultado sobre las 3020 correcciones con `ClanTag` (backup de `42ea0ac`).**
+
+| Clase | Casos |
+|---|---|
+| Ya coincide (sin cambio) | 1362 |
+| Solución única | 242 |
+| Varias soluciones (ambiguas) | 123 |
+| Imposibles | 9 |
+| Sin filas del clan esa semana | 1284 (1260 con totales en cero y 24 con totales mayores que cero) |
+
+- **Ambiguas (pregunta g, medida):** en **59 de 123** todas las soluciones óptimas coinciden en los ataques por día; en 64 no. Por la decisión a, solo esas 59 escriben (ataques por día), y el resto va a revisión manual.
+- **Hizo falta liberar días anteriores** en 147 casos y **usar días sin fila** en 13 (12 de ellos ambiguos): dejar fijos los días «confiables» daba 169 imposibles falsos; con la liberación bajan a 9.
+- **Los 9 imposibles** (todos T4: S1 uno, S2 cuatro, S3 uno, S4 tres): 7 tienen una fame por debajo del mínimo posible del total semanal y 2 no encajan por su estructura; van a revisión manual (opción 3 de la usuaria).
+- **Los 24 sin fila con totales** (pregunta b, fechas): T3 S4 (30-jul) 4, T4 S1 (6-ago) 3, T4 S2 (13-ago) 3, T4 S3 (20-ago) 8, T4 S4 (27-ago) 3, T4 S5 (4-sep) 1, T5 S1 (10-sep) 1, T5 S2 (17-sep) 1. 16 de ellos tienen filas del jugador en otro clan esa semana y 8 no tienen ninguna.
+- **Ejemplo `#YGPVUR9PV` (T4 S5, 6 ataques y 1400):** solución única con el reparto jueves 4 ataques y 900, viernes 0, sábado 2 y 500. **Corrección:** antes se dijo que el fame iría al viernes con 2 ataques; el cruce lo deja el sábado con 2 ataques, porque es la solución que cambia menos campos del registro.
+
+**`Backup_Guerra_Logs.csv` no sirve para validar la fame de semanas normales (decisión sobre «evaluar contra Logs»).** En las semanas normales `ProgressEndOfDay` es el avance del río (tope cercano a 10000), no la suma de fame. **En las semanas de coliseo sí coincide con la suma de fame de los jugadores:** T3 S4 coincide exacto en los 4 clanes con la suma de RoyaleAPI (123400, 13900, 17300 y 116950) y T4 S5 en 3 de 4; en `#GYCU9YRG` (T4 S5) RoyaleAPI suma 117200 y el Log 116600, **600 de diferencia sin explicar**. En esas dos semanas la suma de fame del backup queda por debajo del Log (por ejemplo T3 S4: 3250 y 4900 menos en los dos clanes grandes). Para semanas normales, la evidencia para contrastar es el total por jugador de `Correcciones_Guerra.csv`, que es lo que ya usa el cruce.
+
+**Días con más de 4 ataques (pregunta e, propuesta de Claude; pendiente de confirmar).** Son **249 días**, uno por jugador, semana y clan: **243 en T3 S1, S2 y S3** (65, 87 y 91), 5 en T3 S4 y 1 en T2 S5. Casi todos son el **sábado** (153) o el jueves (91), con 8, 12 o 16 ataques, y en 240 `AtaquesSemana` coincide con la suma de `AtaquesHoy`: es un patrón del registro de esas semanas (una fila trae lo de más de un día), no jugadores con ataques imposibles. **244 no tienen corrección de RoyaleAPI**, así que el cruce actual no los alcanza. Propuesta: repartir el exceso en el día siguiente sin fila (domingo), usando como totales los acumulados de la propia fila y la misma tabla de fame; escribir solo lo que coincida en todas las soluciones y mandar el resto a `Revision_Guerra.csv`.
+
+**Pendientes de definir o contestar (regla 3).**
+1. **Alcance (pregunta d: «para todas las filas»):** falta medir las **4536 correcciones sin `ClanTag`**, que hoy pasan por el reparto del domingo; en este cruce no entran.
+2. **Jugadores en más de un clan:** el tope de 4 ataques por día suma todos los clanes y este cruce los evalúa por separado; en 60 jugador-semana de guerra hay varios clanes.
+3. **Confirmar la propuesta de la pregunta e** (arriba) y qué hacer con la diferencia de 600 en `#GYCU9YRG` T4 S5.
+4. **Campos cruzados (pregunta c: sí, dejar pendiente salvo perfil o battlelog):** la usuaria autorizó pedir acceso a Drive para leer la carpeta de JSON completos; en esta sesión el conector de Drive figura conectado pero **no se usó todavía**.
+5. **No implementado:** el cambio del tope de fame de 900 por día a la tabla en `18_CorreccionGuerra.gs` y la escritura del resultado en el Logger y en un CSV (decisión f: ambos). **No se probó en Apps Script real.**
