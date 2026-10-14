@@ -86,8 +86,8 @@ function limpiarDuplicadosJSON() {
   _limpiarCarpeta_(DriveApp.getFolderById(CARPETA_JSON_RAIZ_ID_), '[RAÍZ / sin organizar]', cache);
 
   Object.keys(CARPETAS_CLAN_).forEach(function(clave) {
-    var carpeta = DriveApp.getFolderById(CARPETAS_CLAN_[clave]);
-    _limpiarCarpeta_(carpeta, clave, cache);
+    // PF074: se pasa la CLAVE del clan (no una carpeta) para ver juntas las carpetas del esquema actual y la vieja.
+    _limpiarCarpeta_(clave, clave, cache);
   });
 
   _cache_guardar_(cache);
@@ -106,7 +106,7 @@ function limpiarDuplicadosJSON() {
  * @param {string} etiqueta Nombre descriptivo para el log.
  * @param {Object=} cache Cache de periodos (07_Cache_Periodos_JSON.gs).
  */
-function _limpiarCarpeta_(carpeta, etiqueta, cache) {
+function _limpiarCarpeta_(carpeta, etiqueta, cache) { // PF074: `carpeta` puede ser una Folder (raiz) o la clave de un clan (string)
   console.log('── ' + etiqueta + ' ──');
 
   var analisis = _analizarCarpetaJSON_(carpeta, cache);
@@ -228,14 +228,14 @@ function _limpiarCarpeta_(carpeta, etiqueta, cache) {
  *   periodIndex, temporada, archivos ({endpoint: File}), tamano (bytes del
  *   currentriverrace.json). Ordenado por fecha real ascendente.
  */
-function _analizarCarpetaJSON_(carpeta, cache) {
+function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser una Folder (raiz) o la clave de un clan (string)
   cache = cache || {};
   // _archivosDeCarpetaClan_ (04_Organizador_JSON.gs) trae tanto los
   // archivos sueltos directamente en "carpeta" como los que ya están
   // organizados dentro de sus subcarpetas de endpoint (CurrentRiverRace,
   // Clans). En la carpeta raíz (sin esas subcarpetas) simplemente no
   // encuentra ninguna y se comporta igual que antes.
-  var archivos = _archivosDeCarpetaClan_(carpeta);
+  var archivos = (typeof carpeta === 'string') ? _archivosDeClan_(carpeta) : _archivosDeCarpetaClan_(carpeta);
   var capturas = {}; // claveCaptura -> { archivos: {endpoint: File}, realCreado: Date }
 
   archivos.forEach(function(f) {
