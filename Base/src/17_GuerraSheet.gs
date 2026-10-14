@@ -2061,7 +2061,7 @@ function recalcularGuerraLogsDesdeJSON() {
       var it = carpeta.getFiles();
       while (it.hasNext()) {
         var f = it.next();
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(f.getName());
+        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
         if (!m) continue;
         var temp = Number(m[1]), pI = Number(m[3]);
         if (RECALC_GUERRA_LOGS_TEMPORADAS.length && RECALC_GUERRA_LOGS_TEMPORADAS.indexOf(temp) < 0) continue;
@@ -2213,7 +2213,7 @@ function reconstruirRivalesHistoricosGuerraLogs() {
       var it = carpeta.getFiles();
       while (it.hasNext()) {
         var f = it.next();
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(f.getName());
+        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
         if (!m) continue;
         var temp = Number(m[1]), pI = Number(m[3]);
         if (RECALC_GUERRA_LOGS_TEMPORADAS.length && RECALC_GUERRA_LOGS_TEMPORADAS.indexOf(temp) < 0) continue;
@@ -2482,7 +2482,7 @@ function _rellenarEstadoGuerraLogsHistorico_(aplicar) {
       var it = carpeta.getFiles();
       while (it.hasNext()) {
         var fArch = it.next();
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(fArch.getName());
+        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(fArch.getName());
         if (!m) continue;
         var temp = Number(m[1]), pI = Number(m[3]);
         if (RECALC_GUERRA_LOGS_TEMPORADAS.length && RECALC_GUERRA_LOGS_TEMPORADAS.indexOf(temp) < 0) continue;
@@ -2677,7 +2677,7 @@ function _limpiarFilasColiseoGuerraLogs_(aplicar) {
       var it = carpeta.getFiles();
       while (it.hasNext()) {
         var fArch = it.next();
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(fArch.getName());
+        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(fArch.getName());
         if (!m) continue;
         var temp = Number(m[1]), pI = Number(m[3]);
         if (RECALC_GUERRA_LOGS_TEMPORADAS.length && RECALC_GUERRA_LOGS_TEMPORADAS.indexOf(temp) < 0) continue;
@@ -3446,7 +3446,7 @@ function _crearLectorDiaJSONGuerra_(t0) {
         var it = DriveApp.getFolderById(idCarpeta).getFiles();
         while (it.hasNext()) {
           var f = it.next(), nombre = f.getName();
-          var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(nombre);
+          var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(nombre);
           if (!m) continue;
           var mFh = /(\d{2})-(\d{2})-(\d{4})\s+(\d{2})\.(\d{2})/.exec(nombre);
           var h = mFh ? Number(mFh[3] + mFh[2] + mFh[1] + mFh[4] + mFh[5]) : 0;
