@@ -2620,6 +2620,85 @@ function _pad2_(n) {
 }
 
 /**
+ * PF074 (14-oct-2026): carpetas de temporada y semana dentro de la carpeta del clan de cada endpoint. [→ Contexto_Base_Web.md §PF074]
+ * Esquema: endpoint -> clan -> T-02 -> S-01 -> JSON de esa semana. Los nombres de las carpetas (T-02, S-01, con cero a la
+ * izquierda) son un SUPUESTO por confirmar con la usuaria. Devuelve la carpeta de la semana; la crea si no existe.
+ */
+var _CARPETA_SEMANA_MEM_ = {};
+function _getCarpetaSemana_(carpetaClan, ctx) {
+  var nT = 'T-' + _pad2_((ctx && ctx.temporada) || 0);
+  var nS = 'S-' + _pad2_(((ctx && ctx.sectionIndex) || 0) + 1);
+  var kMem = carpetaClan.getId() + '|' + nT + '|' + nS;
+  if (_CARPETA_SEMANA_MEM_[kMem]) {
+    try { _CARPETA_SEMANA_MEM_[kMem].getId(); return _CARPETA_SEMANA_MEM_[kMem]; } catch (e) { delete _CARPETA_SEMANA_MEM_[kMem]; }
+  }
+  function buscarOCrear(padre, nombre) {
+    var it = padre.getFoldersByName(nombre);
+    return it.hasNext() ? it.next() : padre.createFolder(nombre);
+  }
+  var cT = buscarOCrear(carpetaClan, nT);
+  var cS = buscarOCrear(cT, nS);
+  _CARPETA_SEMANA_MEM_[kMem] = cS;
+  return cS;
+}
+
+/**
+ * PF074: busca un archivo con el tag (T-/S-/P.I- sin letra) y el sufijo del endpoint. Primero en la carpeta de la semana
+ * y, si no esta, en la carpeta del clan (archivos antiguos que todavia no se movieron: asi no se crea un segundo archivo
+ * del mismo periodo). Devuelve el archivo o null. [→ Contexto_Base_Web.md §PF074]
+ */
+function _buscarArchivoDelPeriodo_(carpetaSemana, carpetaClan, tagPrefijo, sufijo) {
+  var carpetas = [carpetaSemana, carpetaClan];
+  for (var i = 0; i < carpetas.length; i++) {
+    if (!carpetas[i]) continue;
+    var todos = carpetas[i].getFiles();
+    while (todos.hasNext()) {
+      var f = todos.next();
+      var n = f.getName();
+      if (n.indexOf(tagPrefijo) !== 0) continue;
+      // El prefijo "P.I-05" tambien coincide con "P.I-05-S"; se exige que siga un espacio o la letra y luego el espacio.
+      var resto = n.substring(tagPrefijo.length);
+      if (!/^(?:-[LMXJVSD])?\s/.test(resto)) continue;
+      if (!n.endsWith(sufijo)) continue;
+      return f;
+    }
+  }
+  return null;
+}
+
+/**
+ * PF074: iterador de archivos de la carpeta del clan Y de sus subcarpetas de temporada y semana (hasta 2 niveles). Misma
+ * interfaz que FileIterator (hasNext/next), para sustituir carpeta.getFiles() en los lectores. `temporadas` (opcional,
+ * arreglo de numeros) evita entrar en carpetas T-xx de otras temporadas. [→ Contexto_Base_Web.md §PF074]
+ */
+function _archivosConSubcarpetas_(carpeta, temporadas) {
+  var MAX_NIVEL = 2;
+  var pila = [{ it: carpeta.getFiles(), sub: carpeta.getFolders(), n: 0 }];
+  var listo = null;
+  function avanzar() {
+    while (pila.length) {
+      var t = pila[pila.length - 1];
+      if (t.it.hasNext()) return t.it.next();
+      if (t.n < MAX_NIVEL && t.sub.hasNext()) {
+        var c = t.sub.next();
+        if (temporadas && temporadas.length && t.n === 0) {
+          var mT = /^T-(\d+)$/i.exec(c.getName());
+          if (mT && temporadas.indexOf(Number(mT[1])) < 0) continue;
+        }
+        pila.push({ it: c.getFiles(), sub: c.getFolders(), n: t.n + 1 });
+        continue;
+      }
+      pila.pop();
+    }
+    return null;
+  }
+  return {
+    hasNext: function () { if (listo === null) listo = avanzar(); return listo !== null; },
+    next:    function () { if (listo === null) listo = avanzar(); var r = listo; listo = null; return r; }
+  };
+}
+
+/**
  * _buildPrefijoTSP_(ctx) [→ Contexto_Base_Web.md §09B146]
  */
 function _buildPrefijoTSP_(ctx) {
@@ -2649,7 +2728,9 @@ function _horaLimaMensaje12h(d) {
  * _buildCacheFilename(ctx, endpointKey, clanName) [→ Contexto_Base_Web.md §09B149]
  */
 function _buildCacheFilename(ctx, endpointKey, clanName) {
-  var tag       = _buildPrefijoTSP_(ctx);
+  // PF074 (14-oct-2026): el nombre nuevo lleva la letra del dia pegada al P.I (P.I-05-S). _buildPrefijoTSP_ sigue SIN
+  // letra a proposito: es el prefijo con el que se buscan los archivos existentes (con o sin letra). [→ Contexto_Base_Web.md §PF074]
+  var tag       = _buildPrefijoTSP_(ctx) + '-' + periodIdxToLetra(ctx ? _normalizarPeriodIndex_(ctx.periodIndex) : 0);
   var fechaHora = _horaLimaNow();
   var nombre    = (clanName && String(clanName).trim()) ? String(clanName).trim() : 'Sin clan';
   return tag + ' ' + fechaHora + ' - ' + nombre + ' - ' + endpointKey + '.json';
@@ -2695,7 +2776,17 @@ function _cargarCacheDesideDrive(clanTag, endpointKey, ctxOrPeriodIndex) {
 
     var tagPrefijo = _buildPrefijoTSP_(ctx);
     var sufijo     = _buildCacheSuffix(endpointKey);
-    var todos      = folder.getFiles();
+    // PF074: se busca en la carpeta de la semana (solo si ya existe; leer no crea carpetas) y en la del clan. [→ Contexto_Base_Web.md §PF074]
+    var carpetasBusqueda = [];
+    try {
+      var nTl = 'T-' + _pad2_(ctx.temporada || 0), nSl = 'S-' + _pad2_((ctx.sectionIndex || 0) + 1);
+      var itT = folder.getFoldersByName(nTl);
+      if (itT.hasNext()) { var itS = itT.next().getFoldersByName(nSl); if (itS.hasNext()) carpetasBusqueda.push(itS.next()); }
+    } catch (eS) { /* sin carpeta de semana: se sigue con la del clan */ }
+    carpetasBusqueda.push(folder);
+
+    for (var cb = 0; cb < carpetasBusqueda.length; cb++) {
+    var todos      = carpetasBusqueda[cb].getFiles();
 
     while (todos.hasNext()) {
       var f = todos.next();
@@ -2703,6 +2794,7 @@ function _cargarCacheDesideDrive(clanTag, endpointKey, ctxOrPeriodIndex) {
       // Filtrar por prefijo (tag T-/S-/P.I- del periodo) + sufijo de endpoint,
       // sin importar la fecha/hora con la que se guardó el archivo.
       if (n.indexOf(tagPrefijo) !== 0) continue;
+      if (!/^(?:-[LMXJVSD])?\s/.test(n.substring(tagPrefijo.length))) continue; // PF074: acepta la letra del dia
       if (!n.endsWith(sufijo)) continue;
 
       try {
@@ -2718,6 +2810,7 @@ function _cargarCacheDesideDrive(clanTag, endpointKey, ctxOrPeriodIndex) {
         Logger.log('[Cache] Cargado desde Drive: ' + n);
         return obj;
       } catch(e2) { /* continuar con siguiente archivo */ }
+    }
     }
     return null;
   } catch(e) {
@@ -2947,21 +3040,14 @@ function _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) {
   try {
     // Guardar dentro de la subcarpeta del endpoint, dentro de la carpeta del clan.
     var carpetaClan = _getCarpetaParaClan(clanName);
-    var folder = _getSubcarpetaEndpoint_(carpetaClan, endpointKey);
+    var carpetaClanDrive = _getSubcarpetaEndpoint_(carpetaClan, endpointKey);
+    // PF074 (14-oct-2026): se guarda en la carpeta de la temporada y la semana (se crea si no existe). [→ Contexto_Base_Web.md §PF074]
+    var folder = _getCarpetaSemana_(carpetaClanDrive, ctx);
 
     // Buscar un archivo YA EXISTENTE con este mismo tag (periodo) + endpoint,
-    // SIN importar la fecha/hora que tenga en el nombre.
+    // SIN importar la fecha/hora que tenga en el nombre (ni la letra). Primero en la semana y luego en la carpeta del clan.
     var sufijo = _buildCacheSuffix(endpointKey);
-    var archivoExistente = null;
-    var todos = folder.getFiles();
-    while (todos.hasNext()) {
-      var f = todos.next();
-      var n = f.getName();
-      if (n.indexOf(tagPrefijo) === 0 && n.endsWith(sufijo)) {
-        archivoExistente = f;
-        break;
-      }
-    }
+    var archivoExistente = _buscarArchivoDelPeriodo_(folder, carpetaClanDrive, tagPrefijo, sufijo);
 
     if (archivoExistente) {
       // Renombrar (la fecha/hora en el nombre avanza; en currentriverrace NO, ver abajo) y actualizar contenido.
