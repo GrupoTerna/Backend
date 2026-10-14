@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/10/2026 16:29:25 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/10/2026 16:32:50 */
 
 
 
@@ -1058,6 +1058,10 @@ function _organizarJSON_procesarRaiz_(resumen, inicio) {
     // PF074: destino segun el esquema ACTUAL (endpoint -> clan); si el endpoint no esta mapeado, queda en la carpeta
     // vieja del clan como antes.
     var carpetaDestino = _carpetaDestinoJSON_(clanClave, endpoint);
+    if (!carpetaDestino) {
+      resumen.ignorados.push(nombre + '  [razón: endpoint "' + endpoint + '" sin carpeta actual y la carpeta vieja del clan no existe]');
+      continue;
+    }
 
     archivo.moveTo(carpetaDestino);
     resumen.movidos++;
@@ -1127,7 +1131,32 @@ function _archivosDeCarpetaClan_(carpetaClan) {
 function _carpetaDestinoJSON_(clanClave, endpointKey) {
   var porClan = CARPETAS_CLAN_POR_ENDPOINT_[endpointKey];
   if (porClan && porClan[clanClave]) return DriveApp.getFolderById(porClan[clanClave]);
-  return DriveApp.getFolderById(CARPETAS_CLAN_[clanClave]);
+  return _carpetaViejaDeClan_(clanClave); // puede ser null si la carpeta vieja ya no existe
+}
+
+/** Clanes para los que ya se aviso que su carpeta vieja no se puede abrir (un solo aviso por ejecucion). */
+var _CARPETA_VIEJA_AVISADA_ = {};
+
+/**
+ * PF074: carpeta VIEJA del clan (esquema JSON/<clan>/...). Devuelve null, y avisa una vez en el registro, si ya no
+ * existe o la cuenta no tiene acceso (el 14-oct-2026 la del clan "grupo乂terna™" daba "No item with the given ID could be
+ * found"). Todo lo que depende de la carpeta vieja debe tolerar el null.
+ * @param {string} clanClave
+ * @return {?Folder}
+ */
+function _carpetaViejaDeClan_(clanClave) {
+  var id = CARPETAS_CLAN_[clanClave];
+  if (!id) return null;
+  try {
+    return DriveApp.getFolderById(id);
+  } catch (e) {
+    if (!_CARPETA_VIEJA_AVISADA_[clanClave]) {
+      _CARPETA_VIEJA_AVISADA_[clanClave] = true;
+      console.log('    ⚠ La carpeta VIEJA del clan "' + clanClave + '" no se puede abrir (ID ' + id +
+        '): se omite y se sigue con las carpetas actuales. (' + e.message + ')');
+    }
+    return null;
+  }
 }
 
 /**
@@ -1167,9 +1196,19 @@ function _archivosDeClan_(clanClave) {
   }
   Object.keys(CARPETAS_CLAN_POR_ENDPOINT_).forEach(function(endpointKey) {
     var id = CARPETAS_CLAN_POR_ENDPOINT_[endpointKey][clanClave];
-    if (id) agregar(_archivosRecursivo_(DriveApp.getFolderById(id), 3));
+    if (!id) return;
+    var carpetaActual;
+    try {
+      carpetaActual = DriveApp.getFolderById(id);
+    } catch (e) {
+      // La carpeta ACTUAL si debe existir: se falla con un mensaje claro en vez de seguir con datos incompletos.
+      throw 'No se pudo abrir la carpeta ACTUAL de ' + endpointKey + ' del clan "' + clanClave + '" (ID ' + id +
+        '). Revisa CARPETAS_CLAN_POR_ENDPOINT_ en 04_Organizador_JSON.gs contra Base. (' + e.message + ')';
+    }
+    agregar(_archivosRecursivo_(carpetaActual, 3));
   });
-  if (CARPETAS_CLAN_[clanClave]) agregar(_archivosDeCarpetaClan_(DriveApp.getFolderById(CARPETAS_CLAN_[clanClave])));
+  var carpetaVieja = _carpetaViejaDeClan_(clanClave);
+  if (carpetaVieja) agregar(_archivosDeCarpetaClan_(carpetaVieja));
   return lista;
 }
 
