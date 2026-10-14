@@ -66421,7 +66421,7 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 | 1 | `doGet` cae a los `Backup_*.csv` cuando falla Sheets (Fase 13a, endpoint por endpoint) | **Hecho en las tandas 3 a 6** para los endpoints públicos y las funciones compartidas (diagnóstico más código); los de admin y de Tampermonkey quedaron fuera por decisión (tanda 5). **Sin probar en Apps Script real** |
 | 2 | Qué claves publican `50_` a `53_`, y si el bot republica cuando Sheets falla | **Hecho en la tanda 1** |
 | 3 | Qué JSON traen `tiempos.api.ultimaConsultaTs` | **Hecho en la tanda 1** |
-| 4 | `_diasOpcionalesClanSemana_()` recorre viernes a domingo | **Hecho en la tanda 2** (recorrido correcto; hallazgo E sobre filas `Estimado`, pendiente de definir) |
+| 4 | `_diasOpcionalesClanSemana_()` recorre viernes a domingo | **Hecho en la tanda 2** (recorrido correcto); el hallazgo E sobre filas `Estimado` quedó **corregido en la tanda 7** (`22_ControlCalendario.gs`, `_getMapaCruceMetaGuerraLogs_`). Sin probar en Apps Script real |
 | 5 | Comentario de `alMax` en `pintarColeccion()` y `ext.batallas` = victorias + derrotas | **Hecho en la tanda 2** (`ext.batallas` NO es victorias + derrotas; el comportamiento de `alMax` ya está documentado en el backend) |
 
 #### Tanda 1 — publicadores `50_` a `53_`, `tiempos` y el bot con Sheets caído (14-oct-2026)
