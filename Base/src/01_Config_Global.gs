@@ -1230,6 +1230,17 @@ function _getSs() {
   throw new Error('No se encontró hoja activa ni ID de respaldo en Properties.');
 }
 
+// _hojaConFilas_(ss, nombre, minFilas): devuelve la hoja si existe y tiene al menos minFilas filas; null si falta, está corta o Sheets lanza error. Permite que los lectores web caigan a su rama de CSV. [→ Contexto_Base_Web.md §PF073]
+function _hojaConFilas_(ss, nombre, minFilas) {
+  try {
+    var sh = ss.getSheetByName(nombre);
+    if (sh && sh.getLastRow() >= minFilas) return sh;
+  } catch (e) {
+    Logger.log('[HojaConFilas] No se pudo leer la hoja "' + nombre + '": ' + e);
+  }
+  return null;
+}
+
 function _desactivarGridlines(sh) {
   try { sh.setHiddenGridlines(true); } catch(e) {}
 }

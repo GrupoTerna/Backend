@@ -158,9 +158,10 @@ function _getMinGClanMaps() {
   }
 
   var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
-  if (sh && sh.getLastRow() >= 2) {
-    var data = sh.getRange(2, 1, sh.getLastRow() - 1, CC.NOMBRE).getValues();
+  // PF073: hoja Clan viva o Backup_Clan.csv. [→ Contexto_Base_Web.md §PF073]
+  var dataClanMin = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CLAN, 'Backup_Clan.csv', CC.CONDICION).filas;
+  if (dataClanMin.length) {
+    var data = dataClanMin;
     for (var i = 0; i < data.length; i++) {
       var tag    = String(data[i][CC.CLAN_TAG - 1] || '').trim();
       var nombre = String(data[i][CC.NOMBRE    - 1] || '').trim();

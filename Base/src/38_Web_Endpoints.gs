@@ -2702,7 +2702,7 @@ function _getControlTemporadaPorTemporada(ss, ctxReal, dataDir, temporadas) {
 // _getAportesInactivosSemanaActual(ss, ctx): FIX 05-sep-2026; aportes de inactivos de la semana vigente agrupados por Tag+Clan (un inactivo puede aportar a 2+ clanes el mismo día) con ataques, puntaje y barcos (delta diario por Tag+Clan, propio, no _procesarFilasGuerraParaControl()); solo tags de Inactivos con ataques > 0. Detalle en el .md. [→ Contexto_Base_Web.md §38B183]
 function _getAportesInactivosSemanaActual(ss, ctx) {
   // FIX 15-sep-2026: si Inactivos no está disponible se usa Backup_Inactivos.csv (formato DC de 60 columnas), indexando con IC.* para la hoja y con DC.* para el CSV, sin mezclar esquemas. [→ Contexto_Base_Web.md §38B184]
-  var shInactivos = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+  var shInactivos = _hojaConFilas_(ss, CFG.SHEETS.INACTIVOS, 2); // PF073: null también si Sheets lanza error
   var tagsInactivos = {}; // TAG (mayúsculas) -> Nombre (fallback si la fila de Guerra no trae Nombre)
 
   if (shInactivos && shInactivos.getLastRow() >= 2) {
@@ -2727,9 +2727,9 @@ function _getAportesInactivosSemanaActual(ss, ctx) {
   if (Object.keys(tagsInactivos).length === 0) return {};
 
   // FASE 15-sep-2026 (fallback web->CSV): mismo criterio que el bloque de Guerra de _getDatosDashboard(); campos numéricos o texto plano. [→ Contexto_Base_Web.md §38B186]
-  var shGuerra = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  var shGuerra = _hojaConFilas_(ss, CFG.SHEETS.GUERRA, 2); // PF073
   var dataGuerra;
-  if (shGuerra && shGuerra.getLastRow() >= 2) {
+  if (shGuerra) {
     dataGuerra = shGuerra.getRange(2, 1, shGuerra.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
   } else {
     var lecturaGuerraAportes = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.GUERRA, 'Backup_Guerra.csv', GUERRA_TOTAL_COLS);
