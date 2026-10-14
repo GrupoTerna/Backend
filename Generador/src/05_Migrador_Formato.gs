@@ -204,9 +204,12 @@ function _mig_etiquetarCarpetaClan(clanClave, resumen, cache, inicio) {
   var carpeta  = { getName: function() { return clanClave; } }; // solo para los mensajes del log
   var analisis = _analizarCarpetaJSON_(clanClave, cache);
 
+  var enRevision = {}; // PF077: clans.json que caen en la ventana 04:00-05:00 (o piden una captura que cae ahi)
+  analisis.aRevision.forEach(function(r) { enRevision[r.clave] = r.motivo; });
   analisis.sinResolver.forEach(function(clave) {
-    resumen.ignorados.push('[' + carpeta.getName() + '] ' + clave +
-      ' [sin currentriverrace.json legible, no se pudo etiquetar]');
+    resumen.ignorados.push('[' + carpeta.getName() + '] ' + clave + (enRevision[clave]
+      ? ' [A REVISAR: ' + enRevision[clave] + '; no se renombró]'
+      : ' [sin currentriverrace.json legible, no se pudo etiquetar]'));
   });
 
   for (var i = 0; i < analisis.resueltas.length; i++) {

@@ -111,11 +111,17 @@ function _limpiarCarpeta_(carpeta, etiqueta, cache) { // PF074: `carpeta` puede 
 
   var analisis = _analizarCarpetaJSON_(carpeta, cache);
   var resueltas = analisis.resueltas;
-  var sinResolver = analisis.sinResolver;
+  var enRevision = {};
+  analisis.aRevision.forEach(function(r) { enRevision[r.clave] = r.motivo; });
+  var sinResolver = analisis.sinResolver.filter(function(c) { return !enRevision[c]; });
 
   if (sinResolver.length) {
     console.log('  Sin currentriverrace.json legible, se dejan intactas (' + sinResolver.length + '):');
     sinResolver.forEach(function(c) { console.log('    · ' + c); });
+  }
+  if (analisis.aRevision.length) {
+    console.log('  A revisión (no se sabe el día de juego), se dejan intactas (' + analisis.aRevision.length + '):');
+    analisis.aRevision.forEach(function(r) { console.log('    · ' + r.clave + ' → ' + r.motivo); });
   }
 
   if (resueltas.length === 0) {
@@ -223,10 +229,13 @@ function _limpiarCarpeta_(carpeta, etiqueta, cache) { // PF074: `carpeta` puede 
  *   que quien llamó a esta función pueda persistirlo después. Si se omite,
  *   se usa un cache vacío de un solo uso (comportamiento anterior, sin
  *   ahorro entre llamadas).
- * @return {{resueltas: Array<Object>, sinResolver: Array<string>}}
+ * @return {{resueltas: Array<Object>, sinResolver: Array<string>, aRevision: Array<{clave:string, motivo:string}>}}
  *   Cada elemento de "resueltas" trae: clave, real, sectionIndex,
  *   periodIndex, temporada, archivos ({endpoint: File}), tamano (bytes del
- *   currentriverrace.json). Ordenado por fecha real ascendente.
+ *   currentriverrace.json), esAncla, cortes (PF077). Ordenado por fecha real
+ *   ascendente. "aRevision" (PF077) lista, con su motivo, las capturas sin
+ *   currentriverrace.json propio cuyo dia de juego no se pudo fijar (ventana
+ *   04:00-05:00); tambien figuran en "sinResolver" y quedan sin etiquetar.
  */
 function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser una Folder (raiz) o la clave de un clan (string)
   cache = cache || {};
@@ -304,19 +313,32 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
   // _limpiarCarpeta_ NUNCA las compare/descarte como si fueran
   // duplicados de la ancla de la que tomaron prestada la identidad
   // (comparten (temporada,sección,periodo) mas no son la misma captura).
+  // PF077 (14-oct-2026): el periodIndex prestado ya NO se copia tal cual: se corre segun los cortes de las 04:00 (Lima)
+  // que separan la fecha del archivo de la de la ancla (_ajustarPeriodoPrestado_). Si el archivo o la ancla caen en la
+  // ventana 04:00-05:00, donde no se sabe el dia, queda SIN etiquetar y se lista aparte en "aRevision".
   var resueltas = [];
   var sinResolver = [];
+  var aRevision = []; // { clave, motivo }; tambien estan en sinResolver, para que quien no lo lea los trate como intactos
 
   claves.forEach(function(clave) {
     var grupo = capturas[clave];
     var esAncla = !!grupo.idPeriodo;
     var idPeriodo = grupo.idPeriodo;
     var tamano = grupo.tamano;
+    var cortes = 0;
+    var temporadaDelDia = null;
 
     if (!idPeriodo && anclas.length) {
       var prestada = _anclaMasCercana_(anclas, grupo.realCreado);
       if (prestada && Math.abs(prestada.real.getTime() - grupo.realCreado.getTime()) <= PAREO_TOLERANCIA_MS_) {
-        idPeriodo = { sectionIndex: prestada.sectionIndex, periodIndex: prestada.periodIndex };
+        var ajuste = _ajustarPeriodoPrestado_(prestada, grupo.realCreado);
+        if (ajuste.revision) {
+          aRevision.push({ clave: clave, motivo: ajuste.revision });
+        } else {
+          idPeriodo = { sectionIndex: ajuste.sectionIndex, periodIndex: ajuste.periodIndex };
+          cortes = ajuste.cortes;
+          temporadaDelDia = ajuste.temporada;
+        }
       }
     }
 
@@ -332,7 +354,9 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
       periodIndex: idPeriodo.periodIndex,
       archivos: grupo.archivos,
       tamano: tamano,
-      esAncla: esAncla // false = identidad prestada de otra captura cercana
+      esAncla: esAncla, // false = identidad prestada de otra captura cercana
+      cortes: cortes, // PF077: dias que se corrio el periodIndex prestado (-1, 0 o +1); 0 en las anclas
+      temporadaDelDia: temporadaDelDia // PF077: temporada del DIA DE JUEGO si se corrio el periodIndex; null si no
     });
   });
 
@@ -342,10 +366,12 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
   resueltas.sort(function(a, b) { return a.real - b.real; });
 
   resueltas.forEach(function(item) {
-    item.temporada = _temporadaDeFecha_(item.real);
+    // PF077: si el periodIndex se corrio un dia, la temporada sale del dia de juego (04:00 Lima), no de la fecha de
+    // calendario: asi un clans.json de la madrugada del primer lunes sigue en la temporada que termina.
+    item.temporada = (item.temporadaDelDia != null) ? item.temporadaDelDia : _temporadaDeFecha_(item.real);
   });
 
-  return { resueltas: resueltas, sinResolver: sinResolver };
+  return { resueltas: resueltas, sinResolver: sinResolver, aRevision: aRevision };
 }
 
 /** @const {number} Margen máximo para prestar identidad a una captura sin
@@ -372,6 +398,96 @@ function _anclaMasCercana_(anclas, fecha) {
     }
   }
   return mejor;
+}
+
+/**
+ * PF077: numero de DIA DE JUEGO de un instante: dias enteros desde 1970 contados en hora de Lima con el cambio de dia
+ * a las 04:00. Dos instantes con el mismo numero estan en el mismo dia de juego; la resta de dos numeros es la cantidad
+ * de cortes de las 04:00 que los separan. Usa las constantes de 10_Verificar_PeriodIndex_JSON.gs (Lima = UTC-5, corte 04:00).
+ * @param {Date} fecha
+ * @return {number}
+ */
+function _diaJuegoNum_(fecha) {
+  return Math.floor((fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + VERIF_CAMBIO_DESDE_H_) * 3600 * 1000) / 86400000);
+}
+
+/**
+ * PF077: fecha de calendario (UTC, solo para leer anio/mes/dia/dia de semana) del DIA DE JUEGO de un instante.
+ * @param {Date} fecha
+ * @return {Date}
+ */
+function _diaJuegoFecha_(fecha) {
+  return new Date(fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + VERIF_CAMBIO_DESDE_H_) * 3600 * 1000);
+}
+
+/** @return {boolean} true si el dia de juego de "fecha" es el primer lunes de su mes, o sea el dia 0 de una temporada. */
+function _esInicioDeTemporada_(fecha) {
+  var d = _diaJuegoFecha_(fecha);
+  return d.getUTCDay() === 1 && d.getUTCDate() === _primerLunesDia_(d.getUTCFullYear(), d.getUTCMonth());
+}
+
+/**
+ * PF077: corre el (sectionIndex, periodIndex) de una ancla al dia de juego de otro archivo (un clans.json, que no trae
+ * periodIndex propio). Cuenta los cortes de las 04:00 (Lima) entre ambas fechas: 0 = mismo dia, se copia; +1 / -1 = se suma
+ * o resta un dia. Como el prestamo es de 6 horas como maximo (PAREO_TOLERANCIA_MS_), no puede haber mas de un corte.
+ *  - Si el archivo o la ancla cayeron entre las 04:00 y las 05:00 no se sabe en que dia estaba el servidor: se devuelve
+ *    {revision} y el archivo queda sin etiquetar para que lo revise la usuaria.
+ *  - La semana (sectionIndex) sube o baja cuando el nuevo periodIndex cruza un multiplo de 7.
+ *  - Si el dia nuevo es el primer dia de una temporada (primer lunes del mes), el periodIndex es 0 y la semana 0; si es
+ *    el ultimo de la anterior, el largo de esa temporada sale del calendario (del primer lunes anterior a este).
+ * Funcion pura (no toca Drive): se puede probar fuera de Apps Script.
+ * @param {{real:Date, sectionIndex:number, periodIndex:number}} ancla
+ * @param {Date} fecha Fecha de creacion del archivo que toma prestado.
+ * @return {{sectionIndex:number, periodIndex:number, cortes:number, temporada:?number}|{revision:string}}
+ */
+function _ajustarPeriodoPrestado_(ancla, fecha) {
+  if (_verif_enVentanaCambio_(fecha)) {
+    return { revision: 'creado entre las 04:00 y las 05:00 (Lima): no se sabe en que dia de juego estaba el servidor' };
+  }
+  if (_verif_enVentanaCambio_(ancla.real)) {
+    return { revision: 'la captura de la que tomaria el periodIndex se guardo entre las 04:00 y las 05:00 (Lima): no se sabe en que dia de juego estaba' };
+  }
+
+  var cortes = _diaJuegoNum_(fecha) - _diaJuegoNum_(ancla.real);
+  var s = ancla.sectionIndex;
+  var p = ancla.periodIndex;
+
+  if (cortes === 0) {
+    return { sectionIndex: s, periodIndex: p, cortes: 0, temporada: null };
+  }
+  if (Math.abs(cortes) > 1) {
+    return { revision: 'hay ' + Math.abs(cortes) + ' cortes de las 04:00 entre el archivo y la captura de la que tomaria el periodIndex' };
+  }
+
+  var nuevoP, nuevoS;
+  if (cortes === 1) {
+    if (_esInicioDeTemporada_(fecha)) {
+      nuevoP = 0; nuevoS = 0; // primer dia de la temporada nueva
+    } else {
+      nuevoP = p + 1;
+      nuevoS = s + Math.floor(nuevoP / 7) - Math.floor(p / 7);
+    }
+  } else { // cortes === -1
+    if (_esInicioDeTemporada_(ancla.real)) {
+      // El archivo es del ultimo dia de la temporada anterior: su largo sale del calendario.
+      var d = _diaJuegoFecha_(ancla.real);
+      var anio = d.getUTCFullYear(), mes0 = d.getUTCMonth();
+      var anioAnt = mes0 === 0 ? anio - 1 : anio, mesAnt0 = mes0 === 0 ? 11 : mes0 - 1;
+      var largo = Math.round((Date.UTC(anio, mes0, _primerLunesDia_(anio, mes0)) -
+        Date.UTC(anioAnt, mesAnt0, _primerLunesDia_(anioAnt, mesAnt0))) / 86400000);
+      nuevoP = largo - 1;
+      nuevoS = Math.floor(nuevoP / 7);
+    } else if (p === 0) {
+      return { revision: 'la captura de la que tomaria el periodIndex dice periodIndex 0 pero su dia de juego no es un primer lunes: no cuadra con el calendario' };
+    } else {
+      nuevoP = p - 1;
+      nuevoS = s + Math.floor(nuevoP / 7) - Math.floor(p / 7);
+    }
+  }
+
+  // Temporada del DIA DE JUEGO del archivo (no la de la fecha de calendario).
+  var temporada = _temporadaDeFecha_(new Date(fecha.getTime() - VERIF_CAMBIO_DESDE_H_ * 3600 * 1000));
+  return { sectionIndex: nuevoS, periodIndex: nuevoP, cortes: cortes, temporada: temporada };
 }
 
 /**
