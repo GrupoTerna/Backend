@@ -2,7 +2,7 @@
 // 05_Migrador_Formato.gs
 // Migra los archivos JSON al nuevo formato de nombre:
 //
-//   "T-<temporada> S-<semana> P.I-<periodIndex> <fecha hora> - <clan> - <endpoint>.json"
+//   "T-<temporada> S-<semana> P.I-<periodIndex>-<letra del día> <fecha hora> - <clan> - <endpoint>.json"
 //
 // donde:
 //   - temporada  : se INFIERE (ver _analizarCarpetaJSON_ en
@@ -11,6 +11,9 @@
 //   - semana     : sectionIndex + 1, leído del contenido de currentriverrace.json.
 //   - periodIndex: periodIndex real, leído del contenido de currentriverrace.json
 //                  (la PRIMERA mención dentro del archivo, ver _leerPeriodo_).
+//   - letra      : día de la semana de ese periodIndex (L M X J V S D), solo para
+//                  facilitar la búsqueda manual; ver _letraDiaGuerra_ y
+//                  [→ Contexto_Base_Web.md §PF074].
 //
 // Requiere que 04_Organizador_JSON.gs, 06_Limpieza_Duplicados_JSON.gs y
 // 07_Cache_Periodos_JSON.gs estén cargados en el MISMO proyecto de Apps
@@ -215,9 +218,11 @@ function _mig_etiquetarCarpetaClan(folderId, resumen, cache, inicio) {
     var fechaHoraPura   = _mig_fechaHoraStr(item.real); // fecha real (getDateCreated), no la del nombre viejo (cv[0])
     var segClanOriginal = cv.slice(1).join(' - ');
 
+    // La letra del día sale del periodIndex del CONTENIDO (no de la fecha del
+    // nombre): "P.I-05-S" = sábado. Ver _letraDiaGuerra_ más abajo.
     var tag = 'T-' + _pad2_(item.temporada) +
       '  S-' + _pad2_(item.sectionIndex + 1) +
-      ' P.I-' + _pad2_(item.periodIndex);
+      ' P.I-' + _pad2_(item.periodIndex) + '-' + _letraDiaGuerra_(item.periodIndex);
 
     var endpointKeys = Object.keys(item.archivos);
     for (var j = 0; j < endpointKeys.length; j++) {
@@ -332,6 +337,24 @@ function _mig_renombrarSeguro(archivo, nombreNuevo, resumen) {
   }
   archivo.setName(nombreNuevo);
   return nombreNuevo;
+}
+
+/** @const {string} Letras del día de la semana, índice 0 = lunes … 6 = domingo (L M X J V S D). */
+var LETRAS_DIA_GUERRA_ = 'LMXJVSD';
+
+/**
+ * Letra del día de la semana al que corresponde un periodIndex:
+ * periodIndex % 7 → 0=L, 1=M, 2=X, 3=J, 4=V, 5=S, 6=D. Es la misma regla que
+ * usa el contexto del sistema (P.I de un día = 7*(Semana-1) + 3 jueves,
+ * 4 viernes, 5 sábado, 6 domingo) y se comprobó contra los 118
+ * currentriverrace.json de Datos descargados/JSON (117 coinciden con la
+ * fecha; la que queda es una captura dentro de la ventana 04:00-05:00 Lima).
+ * @param {number} periodIndex
+ * @return {string} Una letra de LETRAS_DIA_GUERRA_.
+ */
+function _letraDiaGuerra_(periodIndex) {
+  var n = Math.round(Number(periodIndex));
+  return LETRAS_DIA_GUERRA_.charAt(((n % 7) + 7) % 7);
 }
 
 /** Rellena con un cero a la izquierda si el número tiene un solo dígito. */
