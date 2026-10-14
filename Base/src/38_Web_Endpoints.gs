@@ -1758,9 +1758,8 @@ function _nombreClanDesdeHojaClanDash_(clanTag) {
   try {
     if (!_DASH_MEMO.nombresClan) {
       var mapa = {};
-      var sh = _getSs().getSheetByName(CFG.SHEETS.CLAN);
-      if (sh && sh.getLastRow() >= 2) {
-        var data = sh.getRange(2, 1, sh.getLastRow() - 1, CC.NOMBRE).getValues();
+      var data = _obtenerFilasConFallbackCSV(_getSs(), CFG.SHEETS.CLAN, 'Backup_Clan.csv', CC.CONDICION).filas; // PF073: hoja viva o Backup_Clan.csv
+      if (data.length) {
         for (var i = 0; i < data.length; i++) {
           var tag    = cleanTag(String(data[i][CC.CLAN_TAG - 1] || '').trim());
           var nombre = String(data[i][CC.NOMBRE - 1] || '').trim();
@@ -2266,7 +2265,14 @@ function _getParticipantesGuerraTemporada_(temporada, temporadaReal) {
     }
   } catch (e) {
     Logger.log('[Participantes Guerra] T' + temporada + ': ' + e.message);
-    return res;
+    // PF073: si la hoja Guerra falló en la temporada real, se reintenta con Backup_Guerra.csv antes de rendirse
+    try {
+      var csvResp = _leerGuerraCsvAgrupado_();
+      filas = (csvResp.porTemporada && csvResp.porTemporada[String(temporada)]) || [];
+    } catch (e2) {
+      Logger.log('[Participantes Guerra] T' + temporada + ': tampoco el CSV: ' + e2.message);
+      return res;
+    }
   }
   for (var i = 0; i < filas.length; i++) {
     var f = filas[i];
