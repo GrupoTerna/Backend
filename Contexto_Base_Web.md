@@ -57038,6 +57038,30 @@ ver el bloque "Directorio: resumen de activos por clan" más abajo en
 esta misma función. `ataques`/`fame`/`barcos`/`atacaron` NO cambian:
 siguen siendo datos reales de guerra de HOY, agregados desde la hoja
 Guerra tal como antes.
+
+FIX (14-oct-2026, pedido usuario -- "las medallas de la cabecera
+aparecen con 30,700 el jueves, 30,300 el viernes, 31,850 el sábado y
+123,000 el domingo [...] en barcos hay 0, 4, 4 y 12"): `fame` y `barcos`
+de `guerraPorClan` sumaban GC.FAME y GC.BARCOS tal cual, pero esas
+columnas son ACUMULADOS DE TODA LA SEMANA (el contador se reinicia el
+jueves), no del día. Jueves daba el valor del día (el acumulado es el
+del día); viernes a domingo daban el acumulado hasta ese día, y el
+domingo la semana completa. Jue-Sáb se veían bien al elegir el día
+porque el navegador sumaba «Valores diarios» (que ya restaba el día
+anterior); el domingo, día que las tarjetas muestran por defecto, usa
+los valores exactos del backend y por eso salía el acumulado.
+Ahora, por jugador, `fame` del día = acumulado de hoy menos el de ayer
+del mismo Tag+Clan (tope 900 por jugador y día, igual que Valores
+diarios) y `barcos` del día = acumulado de hoy menos el de ayer (nunca
+negativo). El jueves «ayer» es 0 (el criterio es PeriodIndex % 7 > 3 para
+buscar el día anterior). `ataques` ya era diario (AtaquesHoy) y no cambia.
+Efecto colateral buscado: clan.html, el resumen de WhatsApp («Medallas
+del día») y las tarjetas de guerra.html reciben ya el valor del día.
+NO se hizo en el navegador: arreglarlo solo en guerra.html habría dejado
+mal clan.html y el resumen; el origen es el backend.
+Con los números de la queja el domingo debería quedar en ~30,150
+medallas y 4 barcos (123,000 - 92,850 y 12 - 8); falta confirmarlo con
+el dashboard en vivo tras correr subirBaseDesdeGithub().
 ```
 
 #### 38B119 — líneas 2731-2733 (comentario)
