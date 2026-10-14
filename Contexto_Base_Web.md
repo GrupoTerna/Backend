@@ -66386,7 +66386,7 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 
 | N.º | Pendiente | Estado |
 |---|---|---|
-| 1 | `doGet` cae a los `Backup_*.csv` cuando falla Sheets (Fase 13a, endpoint por endpoint) | En curso: tanda 3 hecha (endpoints públicos con hueco); faltan la tanda 4 (endpoints de admin y degradaciones silenciosas) y el cierre |
+| 1 | `doGet` cae a los `Backup_*.csv` cuando falla Sheets (Fase 13a, endpoint por endpoint) | En curso: tandas 3 (públicos) y 4 (admin y herramientas) hechas; falta la tanda 5 (revisar a mano los `try` cuyo `catch` solo registra, en los endpoints públicos) y el cierre |
 | 2 | Qué claves publican `50_` a `53_`, y si el bot republica cuando Sheets falla | **Hecho en la tanda 1** |
 | 3 | Qué JSON traen `tiempos.api.ultimaConsultaTs` | **Hecho en la tanda 1** |
 | 4 | `_diasOpcionalesClanSemana_()` recorre viernes a domingo | **Hecho en la tanda 2** (recorrido correcto; hallazgo E sobre filas `Estimado`, pendiente de definir) |
@@ -66478,6 +66478,32 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 **Efecto en los JSON estáticos.** `_publicarHomeEstatico_()` y `_publicarTorneosEstatico_()` calculan cada clave en su `try`; si `clanInfo` o `torneos` lanzan, se publica sin esa clave. Como además el bot no republica con Sheets caído (tanda 1), el fallo solo se vería en las llamadas en vivo a `webClanInfo` y `webTorneos`.
 
 **Falta (tanda 4):** (a) los 31 endpoints con lectura sin `try` ya están listados por el analizador; falta revisar a mano los de admin (`webAdmin*`, `webCRListaPropuestas`, `webPermisosListar`, `webSorteoCalificados`, `webAdminEstadoActualizacion`, `listaCorreccionGuerra`, `listaNuevosRoyaleAPI`, que usan hojas como `Administradores`, `Nom_Multi` o `Mensajes`); (b) revisar los endpoints «protegidos» por `try` cuyo `catch` solo registra, para ver si devuelven datos vacíos sin avisar; (c) cerrar el pendiente 1 y actualizar `Consolidado_Plan_de_Fases.md` (Fase 13(a)).
+
+#### Tanda 4 — pendiente 1: endpoints de admin y de herramientas (14-oct-2026; sin cambios de código)
+
+**Fuente y método:** los de la tanda 3 (`Base/src/` en `932b47d`, mismo analizador). **No se probó en Apps Script real.**
+
+**Qué sale.** Fuera de los cinco endpoints de la tanda 3, el analizador encuentra **36 lecturas de hoja sin `try`** (función + hoja) alcanzables desde 26 acciones de admin y de herramientas. Agrupadas por hoja, y con el CSV que existe en el código:
+
+| Hoja | `Backup_*.csv` | Funciones con lectura directa |
+|---|---|---|
+| `Clan` | `Backup_Clan.csv` | `_getDatosClanHoja` (`30_Mensajes.gs`, línea 476), `_getNombresClanesOrdenados` (`30_Mensajes.gs`, 558), `_getOrdenClanHoja` (`43_Menu_Dinamico.gs`, 197), `_getNombresClanesTernaOrdenados` (`01_Config_Global.gs`, 987), `_getMinGClanMaps` (ya en tanda 3) |
+| `Extra` | `Backup_Extra.csv` | `_getOrdenExtra` (`43_Menu_Dinamico.gs`, 180), `_leerCategoriasDeExtra` (`44_BotWhatsApp.gs`, 672), `_getTemporadaMostrarExtra` |
+| `Mensajes` | `Backup_Mensajes.csv` | `_agregarEntradasDinamicas` (`43_Menu_Dinamico.gs`, 456) |
+| `Administradores` | `Backup_Administradores.csv` | `_webBuscarAdminPorCelular` (`37_Web_API.gs`, 56), `_webPermisosLeerHoja` (313), `_obtenerNomMultisAdmins` (`13_Inactivos_Vetados.gs`, 475) |
+| `Directorio` / `Inactivos` | `Backup_Directorio.csv`, `Backup_Inactivos.csv` | `_webAdminCuentasInactivas` (`37_Web_API.gs`, 3956 y 4005), `_webAdminOtrasCuentas` (4073 y 4082), `_getParticipacionHoyGuerra` (`17_GuerraSheet.gs`, 4738), `_generarJsonContactos` (`38_Web_Endpoints.gs`, 1670), `_obtenerListaCorreccionGuerra` (`18_CorreccionGuerra.gs`, 3138), `_obtenerListaCandidatosNuevos` |
+| `T_Lista` / `S_Lista` / `T_Asistencia` / `Grupo_Verificado` | `Backup_T_Lista.csv`, `Backup_S_Lista.csv`, `Backup_T_Asistencia.csv`, `Backup_Grupo_Verificado.csv` | `_listarTorneosDeHoy` (`26_Torneos_Core.gs`, 4284), `_listarSorteosDeHoy` (4458), `_getUltimoRegistroTorneoOSorteo` (3153), `_getTagsVistosEnGrupo` (3831), `_contarTorneosPorTagEnSemanas` (`28_Torneos_Docs.gs`, 1292) |
+| `Nuevos` | `Backup_Nuevos.csv` | `_obtenerTagsEnHojaNuevos` |
+| varias (nombre de hoja por parámetro) | según la hoja | `_leerHojaComoMapaPorTag` (`11_DirectorioSheet.gs`, 1759), `_obtenerNomMultisDistintos` (1588), `_obtenerCuentasDeNomMulti` (`13_Inactivos_Vetados.gs`, 504), `_webCelularPorTag` (`37_Web_API.gs`, 3080), `_webAdminBuscarMiembroSugerencias` (2244) |
+
+**Lectura de esto (regla 3: todo es «pendiente de definir»).**
+1. **Casi todas esas hojas tienen su CSV, pero estas funciones no lo usan.** Es el mismo patrón de la tanda 3 (clase 1: sin respaldo; clase 2: «CSV solo si la hoja viene vacía»).
+2. **Muchas son funciones auxiliares compartidas.** `_getNombresClanesTernaOrdenados` se alcanza desde 4 endpoints; `_getMinGClanMaps` desde 2 más; `_leerDirectorioFisicoComoDC` y `_leerLinksComoMapaPorTagConUrls`, desde 4. **Corregir esas 3 o 4 funciones auxiliares reduciría el hueco en muchos endpoints a la vez**, a diferencia de tocar cada endpoint. No se decidió.
+3. **Hay lecturas directas que son intencionales.** `_obtenerListaCorreccionGuerra` lee solo el Directorio físico por PF042 (comentario en `18_CorreccionGuerra.gs`, línea 3137), y `listaCorreccionGuerra` / `listaNuevosRoyaleAPI` son endpoints de las herramientas de Tampermonkey, que operan sobre la hoja viva. Para ellas el fallback a CSV tiene poco sentido; **pregunta para la usuaria:** ¿se excluyen del alcance de la Fase 13(a)?
+4. **Los endpoints de admin que escriben** (`webAdmin…` de guardado) necesitan Sheets para escribir, así que un respaldo de lectura solo ayudaría a que la pantalla cargue. **Pregunta para la usuaria:** ¿la Fase 13(a) cubre también los de admin o solo los públicos? Con tu respuesta se decide si el pendiente 1 se limita a los 5 endpoints de la tanda 3 más las funciones compartidas.
+5. **`_leerDirectorioFisicoComoDC`** (`11_DirectorioSheet.gs`, línea 1820) es la lectura «física» del Directorio y tiene 20 llamadores; en los endpoints web se llama solo después de comprobar que la hoja existe (`_webLeerDirectorioComoDC` decide hoja viva o CSV), así que en los endpoints públicos no cuenta como hueco, pero sí en `webAdminOtrasCuentas`, `webAdminParticipacionHoyGuerra`, `webCRListaPropuestas` y `webAdminEstadoActualizacion`, donde se llama sin esa comprobación (no se verificó función por función).
+
+**Falta (tanda 5):** revisar a mano los `try` cuyo `catch` solo registra (clasificado «protegido» por el analizador) en los endpoints públicos y ver si devuelven vacío sin avisar; cerrar el pendiente 1; marcar la Fase 13(a) en `Consolidado_Plan_de_Fases.md`.
 
 ### PF074 — Letra del día en el nombre de los JSON (`P.I-05-S`), verificación de `periodIndex` y pendiente de subcarpetas por temporada y semana (pedido de la usuaria, 14-oct-2026)
 
