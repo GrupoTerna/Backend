@@ -3182,8 +3182,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
   if (dataDirPrefetch) {
     dataDir = dataDirPrefetch;
   } else {
-    var shDirIngresos = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-    if (shDirIngresos && shDirIngresos.getLastRow() >= 2) {
+    var shDirIngresos = _hojaConFilas_(ss, CFG.SHEETS.DIRECTORIO, 2); // PF073: null también si Sheets lanza error, y entonces cae al CSV
+    if (shDirIngresos) {
       dataDir = _leerDirectorioFisicoComoDC(ss);
     } else {
       var lecturaDirIngresos = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
@@ -3232,8 +3232,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
   // ---- PASO 2 (enriquecimiento opcional): hoja "Nuevos" (Tampermonkey) ----
   var nuevosPorTag = {};
   var fechasGridNuevos = null, gridNuevosData = null, numBloquesReal = 0;
-  var shNuevos = ss.getSheetByName(CFG.SHEETS.NUEVOS);
-  if (shNuevos && shNuevos.getLastRow() >= NUEVOS_FILA_DATOS_INICIO) {
+  var shNuevos = _hojaConFilas_(ss, CFG.SHEETS.NUEVOS, NUEVOS_FILA_DATOS_INICIO); // PF073
+  if (shNuevos) {
     var numFilasN = shNuevos.getLastRow() - NUEVOS_FILA_DATOS_INICIO + 1;
     var dataNuevos = shNuevos.getRange(NUEVOS_FILA_DATOS_INICIO, 1, numFilasN, NC_TOTAL_FIJAS).getValues();
 
@@ -3272,8 +3272,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
   // 19-sep-2026 (pedido del usuario -- webGuerraEnVivo lento): si el caller ya leyó la hoja Guerra en esta misma ejecución (dataGuerraPrefetch), se reusa esa lectura en vez de volver a leer 9000+ filas. Solo lectura: este bloque… [→ Contexto_Base_Web.md §37B263]
   var dataGuerra = dataGuerraPrefetch || null;
   if (!dataGuerra) {
-    var shGuerra = ss.getSheetByName(CFG.SHEETS.GUERRA);
-    if (shGuerra && shGuerra.getLastRow() >= 2) {
+    var shGuerra = _hojaConFilas_(ss, CFG.SHEETS.GUERRA, 2); // PF073
+    if (shGuerra) {
       dataGuerra = shGuerra.getRange(2, 1, shGuerra.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
     }
   }
@@ -3350,8 +3350,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
 
   // Respaldo de historial: Control_2 (S1..S5, sin fecha real) — solo se usa para un candidato que NO tenga historial usable en "Nuevos". [→ Contexto_Base_Web.md §37B266]
   var historialPorTag = {};
-  var shC2 = ss.getSheetByName('Control_2');
-  if (shC2 && shC2.getLastRow() >= 4) {
+  var shC2 = _hojaConFilas_(ss, 'Control_2', 4); // PF073
+  if (shC2) {
     var numFilasC2 = shC2.getLastRow() - 3;
     var tagsC2   = shC2.getRange(4, CC2.TAG,  numFilasC2, 1).getValues();
     var clanesC2 = shC2.getRange(4, CC2.CLAN, numFilasC2, 1).getValues();
