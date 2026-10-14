@@ -945,7 +945,10 @@ function _getMapaCruceMetaGuerraLogs_() {
       if (!mapa[k]) mapa[k] = {};
       var reg = mapa[k][p] || (mapa[k][p] = { ini: 0, fin: 0 });
       // TANDA 12 (21-sep-2026): si la lectura cae al respaldo CSV, las celdas llegan [→ Contexto_Base_Web.md §22B053]
-      reg.ini = Math.max(reg.ini, _numDesdeCeldaLogs_(r[GLC.PROG_START - 1]) || 0);
+      // PF073 (hallazgo E): en las filas 'Estimado' ProgressStartOfDay no es fiable (T2: valores de 27 000 a 32 000 cuando el avance real al inicio del viernes era de ~2 000 a 5 000), así que solo se usa el inicio de filas Leídas o sin estado; el fin del día anterior sí se mantiene. [→ Contexto_Base_Web.md §PF073]
+      if (String(r[GLC.ESTADO - 1] || '').trim() !== GL_ESTADO_ESTIMADO) {
+        reg.ini = Math.max(reg.ini, _numDesdeCeldaLogs_(r[GLC.PROG_START - 1]) || 0);
+      }
       reg.fin = Math.max(reg.fin, _numDesdeCeldaLogs_(r[GLC.PROG_END   - 1]) || 0);
     }
   } catch (e) {

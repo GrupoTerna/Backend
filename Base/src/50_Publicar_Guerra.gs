@@ -49,7 +49,10 @@ function _publicarGuerraEstatico_(datos) {
 
     var publica = _webGuerraQuitarCamposAdmin_(datos);
     var jsonBase = JSON.stringify(publica);
-    var hash = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, jsonBase, Utilities.Charset.UTF_8));
+    // PF073: el hash se calcula SIN el bloque `tiempos` (generadoTs/generadoLima se arman con Date.now() en cada cálculo y api.* cambia en cada consulta del bot); con él, el hash nunca coincidía y la rama «sin cambios» no se alcanzaba. La republicación forzada cada GUERRA_ESTATICO_REPUBLICAR_MIN min mantiene la hora fresca. [→ Contexto_Base_Web.md §PF073]
+    var publicaParaHash = {};
+    Object.keys(publica).forEach(function (kH) { if (kH !== 'tiempos') publicaParaHash[kH] = publica[kH]; });
+    var hash = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, JSON.stringify(publicaParaHash), Utilities.Charset.UTF_8));
     var hashPrevio = props.getProperty('GUERRA_ESTATICO_HASH');
     var msPrevio = Number(props.getProperty('GUERRA_ESTATICO_MS')) || 0;
     if (hash === hashPrevio && (Date.now() - msPrevio) < GUERRA_ESTATICO_REPUBLICAR_MIN * 60000) {

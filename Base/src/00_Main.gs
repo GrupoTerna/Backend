@@ -1037,6 +1037,9 @@ function runGuerra() {
              ' | Ventana ligera (4-5am): ' + enVentanaGuerra + ' ===');
 
   if (!_adquirirLockEjecucion('runGuerra')) return;
+  // PF073: la hora se marca antes del trabajo (evita corridas simultáneas), pero si el trabajo falla se restaura la marca previa para que el siguiente disparo reintente en vez de esperar a la hora siguiente. [→ Contexto_Base_Web.md §PF073]
+  var _marcaHoraPrevia = props.getProperty('RUNGUERRA_ULTIMA_HORA');
+  var _trabajoHoraCompleto = false;
   try {
     if (!enVentanaGuerra) props.setProperty('RUNGUERRA_ULTIMA_HORA', claveHora);
 
@@ -1084,8 +1087,18 @@ function runGuerra() {
       Logger.log('[runGuerra] _calentarCacheGuerraEnVivo_() falló: ' + eCalentar.message);
     }
 
+    _trabajoHoraCompleto = true;
     Logger.log('=== Actualización Guerra FIN (actualización horaria) ===');
   } finally {
+    if (!enVentanaGuerra && !_trabajoHoraCompleto) {
+      try {
+        if (_marcaHoraPrevia) props.setProperty('RUNGUERRA_ULTIMA_HORA', _marcaHoraPrevia);
+        else props.deleteProperty('RUNGUERRA_ULTIMA_HORA');
+        Logger.log('[runGuerra] El trabajo de la hora no terminó: se restauró la marca de hora para reintentar en el próximo disparo.');
+      } catch (eMarca) {
+        Logger.log('[runGuerra] No se pudo restaurar la marca de hora: ' + eMarca.message);
+      }
+    }
     _liberarLockEjecucion();
   }
 }
