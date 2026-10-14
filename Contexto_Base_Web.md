@@ -66386,7 +66386,7 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 
 | N.º | Pendiente | Estado |
 |---|---|---|
-| 1 | `doGet` cae a los `Backup_*.csv` cuando falla Sheets (Fase 13a, endpoint por endpoint) | En curso: tandas 3 (públicos) y 4 (admin y herramientas) hechas; falta la tanda 5 (revisar a mano los `try` cuyo `catch` solo registra, en los endpoints públicos) y el cierre |
+| 1 | `doGet` cae a los `Backup_*.csv` cuando falla Sheets (Fase 13a, endpoint por endpoint) | En curso: tandas 3 y 4 (diagnóstico) y 5 (código, públicos) hechas; falta la tanda 6 (revisar los `try` cuyo `catch` solo registra) y el cierre |
 | 2 | Qué claves publican `50_` a `53_`, y si el bot republica cuando Sheets falla | **Hecho en la tanda 1** |
 | 3 | Qué JSON traen `tiempos.api.ultimaConsultaTs` | **Hecho en la tanda 1** |
 | 4 | `_diasOpcionalesClanSemana_()` recorre viernes a domingo | **Hecho en la tanda 2** (recorrido correcto; hallazgo E sobre filas `Estimado`, pendiente de definir) |
@@ -66504,6 +66504,38 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 5. **`_leerDirectorioFisicoComoDC`** (`11_DirectorioSheet.gs`, línea 1820) es la lectura «física» del Directorio y tiene 20 llamadores; en los endpoints web se llama solo después de comprobar que la hoja existe (`_webLeerDirectorioComoDC` decide hoja viva o CSV), así que en los endpoints públicos no cuenta como hueco, pero sí en `webAdminOtrasCuentas`, `webAdminParticipacionHoyGuerra`, `webCRListaPropuestas` y `webAdminEstadoActualizacion`, donde se llama sin esa comprobación (no se verificó función por función).
 
 **Falta (tanda 5):** revisar a mano los `try` cuyo `catch` solo registra (clasificado «protegido» por el analizador) en los endpoints públicos y ver si devuelven vacío sin avisar; cerrar el pendiente 1; marcar la Fase 13(a) en `Consolidado_Plan_de_Fases.md`.
+
+#### Tanda 5 — decisiones delegadas y corrección de los huecos de los endpoints públicos (14-oct-2026; **sí hay cambios de código**, en `Base/src/`)
+
+**Decisión de la usuaria (14-oct-2026): «decide tú».** Las tres preguntas de las tandas 3 y 4 se resolvieron con este criterio, que la usuaria puede revertir:
+1. **Sí se corrigen** los huecos de los endpoints públicos y de las funciones auxiliares compartidas (así también mejoran varios de admin).
+2. **Alcance de la Fase 13(a):** endpoints públicos más funciones compartidas. Los endpoints de admin **no** se tocan uno por uno: su valor es bajo (guardar exige Sheets) y la mayoría ya se benefician de las funciones compartidas.
+3. **`listaCorreccionGuerra` y `listaNuevosRoyaleAPI` quedan fuera**: operan sobre la hoja viva por diseño (PF042).
+
+**Qué se cambió** (sintaxis comprobada con `node --check` sobre copias `.js`; **no se probó en Apps Script real**):
+
+| Archivo | Función | Cambio |
+|---|---|---|
+| `01_Config_Global.gs` | `_hojaConFilas_(ss, nombre, minFilas)` (nueva) | devuelve la hoja, o `null` si falta, está corta o Sheets lanza error; permite que el código existente caiga a su rama de CSV |
+| `10_ClanSheet.gs` | `_getMinGClanMaps` | lee `Clan` con `_obtenerFilasConFallbackCSV` (`Backup_Clan.csv`) |
+| `26_Torneos_Core.gs` | `_getMinTClanMaps` | igual, con `Backup_Clan.csv` |
+| `26_Torneos_Core.gs` | `_aplicarResolucionesTorneo` | lee `T_Resoluciones` con el helper (`Backup_T_Resoluciones.csv`); es la primera vez que ese CSV sirve a la web |
+| `26_Torneos_Core.gs` | `_getConfigMasRecienteCategoria` | si Sheets falla devuelve `[]`, igual que con hoja inexistente |
+| `28_Torneos_Docs.gs` | `_getTemporadaMostrarExtra` | `try/catch`; si falla usa la temporada real |
+| `22_ControlCalendario.gs` | `_getDatosGuerraParaControl` | si la hoja `Guerra` falla en la temporada real, cae a `_getDatosGuerraDesdeCsvParaControl` |
+| `37_Web_API.gs` | `_construirIngresosRecientesUnificado` | Directorio, Nuevos, Guerra y `Control_2` por `_hojaConFilas_` |
+| `38_Web_Endpoints.gs` | `_getAportesInactivosSemanaActual` | Inactivos y Guerra por `_hojaConFilas_` |
+
+**Efectos a tener presentes (pendientes de verificar en real).**
+- Con origen CSV, los números llegan como texto; `_getMinGClanMaps` y `_getMinTClanMaps` solo usan Tag y Nombre (texto) y `_aplicarResolucionesTorneo` convierte `puestoFinal` con `Number(...)`, así que no se espera diferencia.
+- Cambio de comportamiento menor y consciente: si la hoja `Clan` o `T_Resoluciones` está **vacía** (no caída), el helper ahora cae al CSV, donde antes no se leía nada. Afecta también a los llamadores de escritura de `_getMinGClanMaps` (`17_`, `22_`, `23_`, `29_`, `30_`, `44_`); no se espera efecto salvo hoja vacía.
+- En la ruta CSV de `_getDatosGuerraParaControl` **no se marcan los días opcionales por cruce de meta** (solo existe en la ruta de la hoja), así que durante una caída de Sheets esa marca puede faltar.
+- `_getTemporadaMostrarExtra` no usa `Backup_Extra.csv` porque no se verificó la posición de la columna `Mostrar` en el CSV; usa la temporada real.
+- Sigue sin verificarse si `getSheetByName` lanza o devuelve `null` con Sheets caído; `_hojaConFilas_` cubre ambos casos.
+
+**Recordatorio:** correr `subirBaseDesdeGithub()` antes de cualquier `descargarBase()` o `subirBase…`, o el estado viejo de Apps Script se escribe encima.
+
+**Falta (tanda 6):** revisar los `try` cuyo `catch` solo registra en los endpoints públicos; marcar la Fase 13(a) en `Consolidado_Plan_de_Fases.md`; cerrar el pendiente 1.
 
 ### PF074 — Letra del día en el nombre de los JSON (`P.I-05-S`), verificación de `periodIndex` y pendiente de subcarpetas por temporada y semana (pedido de la usuaria, 14-oct-2026)
 
