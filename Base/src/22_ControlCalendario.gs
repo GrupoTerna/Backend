@@ -974,7 +974,7 @@ function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
       var it = carpeta.getFiles();
       while (it.hasNext()) {
         var f = it.next();
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)\s.*- currentriverrace\.json$/i.exec(f.getName());
+        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
         if (m) idx[Number(m[1]) + '|' + Number(m[2]) + '|' + Number(m[3])] = f;
       }
       _CRUCE_META_JSON_IDX[nombre] = idx;
