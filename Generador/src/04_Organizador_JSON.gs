@@ -32,6 +32,32 @@ var CARPETAS_CLAN_ = {
   'naranja x':       '1DKxLFE7P0pnItV6nTk6Q1jCctF1YgGx9'
 };
 
+/**
+ * PF074 (14-oct-2026): ESQUEMA ACTUAL de carpetas, el que escribe Base desde el 25/26-sep: endpoint -> clan.
+ * endpoint (CurrentRiverRace / Clans) -> carpeta del clan dentro de ese endpoint. Las claves de clan son las mismas
+ * de CARPETAS_CLAN_. COPIA de _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_ y _SUBCARPETAS_CLAN_POR_ENDPOINT_CLANS_
+ * de Base/src/09_API_ClashRoyale.gs: si cambian alla, hay que cambiarlas aqui (son proyectos de Apps Script separados).
+ * CARPETAS_CLAN_ (esquema VIEJO: JSON/<clan>/CurrentRiverRace|Clans) se conserva solo para leer lo historico que
+ * pudiera seguir ahi. [→ Contexto_Base_Web.md §PF074]
+ * @const {Object.<string, Object.<string, string>>}
+ */
+var CARPETAS_CLAN_POR_ENDPOINT_ = {
+  'currentriverrace': {
+    'grupo乂terna™':   '18TF9ufSGw8YlEA9Hpu7fT8d0UmiPnkYB',
+    'grupoxterna™2':   '1X6dufNme2whAkjHarBCm1jdC6xI0_aQ6',
+    'grupoxterna™3':   '1BN8ercCNZeUZYib8jGoVCzkAx2OJ7LWB',
+    'mini乂ternas™':   '1gLW3F9cqNc58VYNvUKmAOT9TtUA6PMxQ',
+    'naranja x':       '1YHhptq93vyECa3KpcEnOEXjEcuz6XBvE'
+  },
+  'clans': {
+    'grupo乂terna™':   '1MiiF08kqyTcVt7CyBroyDRjv8eARpgfo',
+    'grupoxterna™2':   '1D_GUUFTw9P6oSQXsaonxwXlmmp7sZA9M',
+    'grupoxterna™3':   '15FCgOyzp2Vd9JtJszWd-EsS_2kKVnlnp',
+    'mini乂ternas™':   '16MPII4hSHAATIPhrGDhuV6uT_Rd2YzHQ',
+    'naranja x':       '1Lhs379eEIpdXJ-2DyWkcYBbkXg4WngaN'
+  }
+};
+
 // ID reservado para uso futuro (carpeta "players").
 var CARPETA_PLAYERS_ID_ = '1Kqmn7ExFr3cDER_DgKnHwHlWc9lLW9aF';
 
@@ -156,17 +182,14 @@ function _organizarJSON_procesarRaiz_(resumen, inicio) {
       continue;
     }
 
-    var carpetaClan = DriveApp.getFolderById(CARPETAS_CLAN_[clanClave]);
-
     var endpoint = partes.slice(2).join(' - ').replace(/\.json$/i, '').toLowerCase();
-    var nombreSubcarpeta = CARPETAS_JSON_POR_ENDPOINT_[endpoint];
-    var carpetaDestino = nombreSubcarpeta
-      ? _carpetaHijaOCrear_(carpetaClan, nombreSubcarpeta)
-      : carpetaClan;
+    // PF074: destino segun el esquema ACTUAL (endpoint -> clan); si el endpoint no esta mapeado, queda en la carpeta
+    // vieja del clan como antes.
+    var carpetaDestino = _carpetaDestinoJSON_(clanClave, endpoint);
 
     archivo.moveTo(carpetaDestino);
     resumen.movidos++;
-    console.log('    [raíz → ' + segClan + (nombreSubcarpeta ? '/' + nombreSubcarpeta : '') + '] ' + nombre);
+    console.log('    [raíz → ' + segClan + ' / ' + endpoint + '] ' + nombre);
   }
 
   return true;
@@ -219,6 +242,62 @@ function _archivosDeCarpetaClan_(carpetaClan) {
     }
   });
 
+  return lista;
+}
+
+/**
+ * PF074: carpeta donde debe vivir un JSON de un clan y un endpoint: la del esquema ACTUAL (endpoint -> clan) si ese
+ * endpoint esta en CARPETAS_CLAN_POR_ENDPOINT_; si no, la carpeta vieja del clan (CARPETAS_CLAN_).
+ * @param {string} clanClave Clave de clan en minusculas (como en CARPETAS_CLAN_).
+ * @param {string} endpointKey 'currentriverrace' | 'clans' | otro.
+ * @return {Folder}
+ */
+function _carpetaDestinoJSON_(clanClave, endpointKey) {
+  var porClan = CARPETAS_CLAN_POR_ENDPOINT_[endpointKey];
+  if (porClan && porClan[clanClave]) return DriveApp.getFolderById(porClan[clanClave]);
+  return DriveApp.getFolderById(CARPETAS_CLAN_[clanClave]);
+}
+
+/**
+ * PF074: lista recursiva (hasta `maxNivel` niveles de subcarpetas) de los archivos de una carpeta.
+ * @param {Folder} carpeta
+ * @param {number} maxNivel
+ * @return {Array<File>}
+ */
+function _archivosRecursivo_(carpeta, maxNivel) {
+  var lista = [];
+  (function recorrer(c, nivel) {
+    var it = c.getFiles();
+    while (it.hasNext()) lista.push(it.next());
+    if (nivel >= maxNivel) return;
+    var sub = c.getFolders();
+    while (sub.hasNext()) recorrer(sub.next(), nivel + 1);
+  })(carpeta, 0);
+  return lista;
+}
+
+/**
+ * PF074: TODOS los archivos de un clan, vistos juntos: las carpetas del esquema ACTUAL (CurrentRiverRace/<clan> y
+ * Clans/<clan>, con sus subcarpetas de temporada y semana, hasta 3 niveles) mas la carpeta vieja del clan
+ * (CARPETAS_CLAN_, con sus subcarpetas CurrentRiverRace y Clans). Hace falta verlos juntos porque un clans.json no trae
+ * periodIndex y toma prestado el de la captura currentriverrace.json mas cercana (Paso B de _analizarCarpetaJSON_), y
+ * ahora esos dos tipos de archivo viven en carpetas distintas.
+ * @param {string} clanClave Clave de clan en minusculas (como en CARPETAS_CLAN_).
+ * @return {Array<File>}
+ */
+function _archivosDeClan_(clanClave) {
+  var vistos = {}, lista = [];
+  function agregar(arr) {
+    arr.forEach(function(f) {
+      var id = f.getId();
+      if (!vistos[id]) { vistos[id] = true; lista.push(f); }
+    });
+  }
+  Object.keys(CARPETAS_CLAN_POR_ENDPOINT_).forEach(function(endpointKey) {
+    var id = CARPETAS_CLAN_POR_ENDPOINT_[endpointKey][clanClave];
+    if (id) agregar(_archivosRecursivo_(DriveApp.getFolderById(id), 3));
+  });
+  if (CARPETAS_CLAN_[clanClave]) agregar(_archivosDeCarpetaClan_(DriveApp.getFolderById(CARPETAS_CLAN_[clanClave])));
   return lista;
 }
 

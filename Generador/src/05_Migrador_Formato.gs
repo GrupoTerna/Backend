@@ -124,7 +124,7 @@ function migrarFormatoJSON() {
       var clave = estado.clanesPendientes[0];
       console.log('  Procesando: ' + clave);
 
-      var clanCompleto = _mig_etiquetarCarpetaClan(CARPETAS_CLAN_[clave], estado.resumen, cache, inicio);
+      var clanCompleto = _mig_etiquetarCarpetaClan(clave, estado.resumen, cache, inicio); // PF074: recibe la CLAVE del clan
 
       // El cache se guarda apenas se procesa (o intenta procesar) una
       // carpeta, sin importar si se terminó: es lo que evita releer
@@ -188,7 +188,7 @@ function migrarFormatoJSON_reiniciarEstado() {
  * una ejecución anterior, se reemplaza por el recién calculado en vez de
  * apilarse (ver _quitarTagExistente_ en el archivo 06), y si ya está en
  * su subcarpeta correcta no se vuelve a mover.
- * @param {string} folderId
+ * @param {string} clanClave Clave del clan en minúsculas (como en CARPETAS_CLAN_).
  * @param {Object} resumen
  * @param {Object} cache Cache de periodos (07_Cache_Periodos_JSON.gs).
  * @param {number=} inicio Timestamp (ms) de inicio de la ejecución actual.
@@ -197,10 +197,12 @@ function migrarFormatoJSON_reiniciarEstado() {
  *   reintentar completa la próxima vez; es rápido porque el análisis ya
  *   quedó en el cache y mover/renombrar un archivo ya correcto no hace nada).
  */
-function _mig_etiquetarCarpetaClan(folderId, resumen, cache, inicio) {
-  var carpeta  = DriveApp.getFolderById(folderId);
-  var analisis = _analizarCarpetaJSON_(carpeta, cache);
-  var subcarpetasCache = {}; // nombreSubcarpeta -> Folder (evita repetir getFoldersByName por cada archivo)
+function _mig_etiquetarCarpetaClan(clanClave, resumen, cache, inicio) {
+  // PF074 (14-oct-2026): recibe la CLAVE del clan y analiza juntas sus carpetas del esquema ACTUAL (endpoint -> clan) y
+  // la vieja. Los archivos que ya estan en la carpeta actual del endpoint NO se mueven; los que siguen en la carpeta
+  // vieja del clan se renombran en su sitio y se cuentan (resumen.enCarpetaVieja): moverlos es una decision pendiente.
+  var carpeta  = { getName: function() { return clanClave; } }; // solo para los mensajes del log
+  var analisis = _analizarCarpetaJSON_(clanClave, cache);
 
   analisis.sinResolver.forEach(function(clave) {
     resumen.ignorados.push('[' + carpeta.getName() + '] ' + clave +
@@ -229,20 +231,11 @@ function _mig_etiquetarCarpetaClan(folderId, resumen, cache, inicio) {
       var endpointKey = endpointKeys[j];
       var archivo = item.archivos[endpointKey];
 
-      // Mueve el archivo a su subcarpeta de endpoint (CurrentRiverRace /
-      // Clans), creándola si todavía no existe en ESTE clan (antes esto
-      // solo pasaba en el drenaje de la raíz, así que un archivo que ya
-      // estaba suelto directo en la carpeta del clan —sin haber pasado
-      // por la raíz— se quedaba ahí para siempre, solo renombrado).
-      var nombreSubcarpeta = CARPETAS_JSON_POR_ENDPOINT_[endpointKey];
-      if (nombreSubcarpeta) {
-        var carpetaDestino = subcarpetasCache[nombreSubcarpeta] ||
-          (subcarpetasCache[nombreSubcarpeta] = _carpetaHijaOCrear_(carpeta, nombreSubcarpeta));
-        if (!_mig_yaEstaEnCarpeta_(archivo, carpetaDestino)) {
-          archivo.moveTo(carpetaDestino);
-          resumen.movidos++;
-          console.log('    [clan] ' + endpointKey + ' movido a subcarpeta "' + nombreSubcarpeta + '"');
-        }
+      // PF074: ya no se mueve a una subcarpeta de la carpeta vieja del clan. Si el archivo no cuelga de la carpeta
+      // actual de su endpoint, solo se cuenta (decision de moverlo pendiente; ver Contexto_Base_Web.md §PF074).
+      var idCarpetaActual = (CARPETAS_CLAN_POR_ENDPOINT_[endpointKey] || {})[clanClave];
+      if (idCarpetaActual && !_mig_estaBajoCarpeta_(archivo, idCarpetaActual)) {
+        resumen.enCarpetaVieja = (resumen.enCarpetaVieja || 0) + 1;
       }
 
       var partesArchivo = archivo.getName().split(' - ');
@@ -269,6 +262,28 @@ function _mig_yaEstaEnCarpeta_(archivo, carpeta) {
   var padres = archivo.getParents();
   while (padres.hasNext()) {
     if (padres.next().getId() === carpeta.getId()) return true;
+  }
+  return false;
+}
+
+/**
+ * PF074: true si `archivo` esta dentro de la carpeta `idCarpeta` o de una subcarpeta suya (hasta 3 niveles hacia arriba:
+ * clan -> temporada -> semana).
+ */
+function _mig_estaBajoCarpeta_(archivo, idCarpeta) {
+  var actuales = [archivo];
+  for (var nivel = 0; nivel < 4; nivel++) {
+    var siguientes = [];
+    for (var i = 0; i < actuales.length; i++) {
+      var padres = actuales[i].getParents();
+      while (padres.hasNext()) {
+        var p = padres.next();
+        if (p.getId() === idCarpeta) return true;
+        siguientes.push(p);
+      }
+    }
+    actuales = siguientes;
+    if (!actuales.length) break;
   }
   return false;
 }
@@ -444,6 +459,7 @@ function _mig_finalizar_(estado, cache) {
   console.log('  Renombrados : ' + resumen.renombrados);
   console.log('  Movidos     : ' + resumen.movidos);
   console.log('  Duplicados  : ' + resumen.duplicados);
+  console.log('  En carpeta vieja (renombrados en su sitio, sin mover): ' + (resumen.enCarpetaVieja || 0));
   console.log('  Ignorados   : ' + resumen.ignorados.length);
   if (resumen.ignorados.length) {
     resumen.ignorados.forEach(function(l) { console.log('    · ' + l); });
