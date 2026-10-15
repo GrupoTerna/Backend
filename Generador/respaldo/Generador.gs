@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/10/2026 20:37:36 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/10/2026 14:24:06 */
 
 
 
@@ -1393,7 +1393,7 @@ function _mig_ejecutarMigracion_() {
       var clave = estado.clanesPendientes[0];
       console.log('  Procesando: ' + clave);
 
-      var clanCompleto = _mig_etiquetarCarpetaClan(clave, estado.resumen, cache, inicio); // PF074: recibe la CLAVE del clan
+      var clanCompleto = _mig_etiquetarCarpetaClan(clave, estado.resumen, cache, inicio, estado); // PF074: recibe la CLAVE del clan; PF080: y el estado, para retomar dentro del clan
 
       // El cache se guarda apenas se procesa (o intenta procesar) una
       // carpeta, sin importar si se terminó: es lo que evita releer
@@ -1410,6 +1410,7 @@ function _mig_ejecutarMigracion_() {
       }
 
       estado.clanesPendientes.shift();
+      estado.progresoClan = null; // PF080
       _mig_guardarEstado_(estado);
 
       if (_mig_tiempoAgotado_(inicio)) {
@@ -1461,12 +1462,14 @@ function migrarFormatoJSON_reiniciarEstado() {
  * @param {Object} resumen
  * @param {Object} cache Cache de periodos (07_Cache_Periodos_JSON.gs).
  * @param {number=} inicio Timestamp (ms) de inicio de la ejecución actual.
+ * @param {Object=} estado Estado persistente de migrarFormatoJSON(). PF080: guarda en estado.progresoClan
+ *   ({clave, hechos}) cuántas capturas de ESTE clan ya se procesaron, para retomar desde ahí y no desde cero.
  * @return {boolean} true si se terminó de etiquetar toda la carpeta,
  *   false si se cortó por presupuesto de tiempo (la carpeta se debe
  *   reintentar completa la próxima vez; es rápido porque el análisis ya
  *   quedó en el cache y mover/renombrar un archivo ya correcto no hace nada).
  */
-function _mig_etiquetarCarpetaClan(clanClave, resumen, cache, inicio) {
+function _mig_etiquetarCarpetaClan(clanClave, resumen, cache, inicio, estado) {
   // PF074 (14-oct-2026): recibe la CLAVE del clan y analiza juntas sus carpetas del esquema ACTUAL (endpoint -> clan) y
   // la vieja. Los archivos que ya estan en la carpeta actual del endpoint NO se mueven; los que siguen en la carpeta
   // vieja del clan se renombran en su sitio y se cuentan (resumen.enCarpetaVieja): moverlos es una decision pendiente.
@@ -1485,9 +1488,20 @@ function _mig_etiquetarCarpetaClan(clanClave, resumen, cache, inicio) {
     if (resumen.ignorados.indexOf(linea) === -1) resumen.ignorados.push(linea);
   });
 
-  for (var i = 0; i < analisis.resueltas.length; i++) {
+  // PF080 (15-oct-2026): retomar donde se quedó. Antes, una carpeta que no cabía en el presupuesto de tiempo se volvía a
+  // recorrer desde la primera captura en cada ejecución (el 15-oct, grupoxterna™2: 6 ejecuciones seguidas con 0 renombrados
+  // y 0 movidos, sin avanzar). El orden de "resueltas" es fijo (fecha de creación y, a igual fecha, la clave), así que
+  // basta con guardar cuántas ya se hicieron.
+  var desde = 0;
+  if (estado && estado.progresoClan && estado.progresoClan.clave === clanClave) {
+    desde = Math.min(estado.progresoClan.hechos || 0, analisis.resueltas.length);
+    if (desde > 0) console.log('    (retomando en la captura ' + (desde + 1) + ' de ' + analisis.resueltas.length + '; las anteriores ya se procesaron)');
+  }
+
+  for (var i = desde; i < analisis.resueltas.length; i++) {
     if (inicio && _mig_tiempoAgotado_(inicio)) {
-      console.log('    (presupuesto de tiempo alcanzado dentro de "' + carpeta.getName() + '"; se retoma esta misma carpeta en la próxima ejecución)');
+      if (estado) estado.progresoClan = { clave: clanClave, hechos: i };
+      console.log('    (presupuesto de tiempo alcanzado dentro de "' + carpeta.getName() + '", capturas hechas: ' + i + ' de ' + analisis.resueltas.length + '; se retoma desde ahí en la próxima ejecución)');
       return false;
     }
 
@@ -1510,13 +1524,18 @@ function _mig_etiquetarCarpetaClan(clanClave, resumen, cache, inicio) {
       // PF074: ya no se mueve a una subcarpeta de la carpeta vieja del clan. Si el archivo no cuelga de la carpeta
       // actual de su endpoint, solo se cuenta (decision de moverlo pendiente; ver Contexto_Base_Web.md §PF074).
       var idCarpetaActual = (CARPETAS_CLAN_POR_ENDPOINT_[endpointKey] || {})[clanClave];
-      if (idCarpetaActual && !_mig_estaBajoCarpeta_(archivo, idCarpetaActual)) {
-        resumen.enCarpetaVieja = (resumen.enCarpetaVieja || 0) + 1;
-      } else if (idCarpetaActual) {
+      if (idCarpetaActual) {
         // PF074 (tanda 4): lo que ya esta en la carpeta actual del endpoint va a su carpeta de temporada y semana
         // (T-xx / S-xx, misma temporada y semana que el tag). Si ya esta ahi, no se mueve.
+        // PF080: se mira primero si ya esta en SU carpeta de semana (1 consulta de padres); si lo esta, tambien esta bajo la
+        // carpeta del endpoint y se evita _mig_estaBajoCarpeta_ (hasta 4 niveles de consultas por archivo, lo que hacia
+        // que un clan entero no cupiera en el presupuesto de tiempo).
         var carpetaSemana = _carpetaSemanaJSON_(clanClave, endpointKey, item.temporada, item.sectionIndex);
-        if (carpetaSemana && !_mig_yaEstaEnCarpeta_(archivo, carpetaSemana)) {
+        if (carpetaSemana && _mig_yaEstaEnCarpeta_(archivo, carpetaSemana)) {
+          // ya esta en su sitio
+        } else if (!_mig_estaBajoCarpeta_(archivo, idCarpetaActual)) {
+          resumen.enCarpetaVieja = (resumen.enCarpetaVieja || 0) + 1;
+        } else if (carpetaSemana) {
           archivo.moveTo(carpetaSemana);
           resumen.movidos++;
           console.log('    [clan] ' + endpointKey + ' movido a ' + carpetaSemana.getName() + ' de la temporada ' + item.temporada);
@@ -2135,7 +2154,7 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
   // Orden por fecha REAL de creación en Drive (no el nombre, que puede
   // traer una fecha ficticia): solo para dejar el resultado ordenado
   // cronológicamente, ya no hace falta para calcular la temporada.
-  resueltas.sort(function(a, b) { return a.real - b.real; });
+  resueltas.sort(function(a, b) { return (a.real - b.real) || (a.clave < b.clave ? -1 : a.clave > b.clave ? 1 : 0); }); // PF080: desempate por clave para que el orden sea fijo entre ejecuciones
 
   resueltas.forEach(function(item) {
     // PF077: si el periodIndex se corrio un dia, la temporada sale del dia de juego (04:00 Lima), no de la fecha de
