@@ -3319,18 +3319,67 @@ function _guardarModoCSVSiHayNuevos() {
  */
 function _guardarJsonTorneoEnDrive(tagTorneo, datos) {
   try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_TORNEOS);
     var filename = 'Torneo - ' + tagTorneo + '.json';
     var contenido = JSON.stringify(datos, null, 2);
-    var existentes = folder.getFilesByName(filename);
-    if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
-    } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+
+    // 14-oct-2026 (pedido de la usuaria): la subcarpeta se decide UNA SOLA VEZ, la primera
+    // vez que se guarda el torneo. Si el archivo ya existe en Terna o en la raíz de Torneos,
+    // se sobrescribe ahí y no se mueve (el creador puede cambiarse de clan después).
+    // [→ Contexto_Base_Web.md §PF078]
+    var folderTerna = null;
+    try { folderTerna = DriveApp.getFolderById(DRIVE_FOLDER_ID_TORNEOS_TERNA); }
+    catch (eT) { Logger.log('[Torneos] No se pudo abrir la carpeta Terna (revisar DRIVE_FOLDER_ID_TORNEOS_TERNA): ' + eT.message); }
+    var folderRaiz = DriveApp.getFolderById(DRIVE_FOLDER_ID_TORNEOS);
+
+    if (folderTerna) {
+      var enTerna = folderTerna.getFilesByName(filename);
+      if (enTerna.hasNext()) { enTerna.next().setContent(contenido); return; }
     }
+    var enRaiz = folderRaiz.getFilesByName(filename);
+    if (enRaiz.hasNext()) { enRaiz.next().setContent(contenido); return; }
+
+    // Primera vez: se decide la subcarpeta.
+    var destino = (folderTerna && _creadorTorneoEnClanTerna_(datos)) ? folderTerna : folderRaiz;
+    destino.createFile(filename, contenido, MimeType.PLAIN_TEXT);
   } catch(e) {
     Logger.log('[Torneos] Error guardando JSON de ' + tagTorneo + ': ' + e.message);
   }
+}
+
+/**
+ * _creadorTorneoEnClanTerna_(datos) -- true si el creador (datos.creatorTag) está, en este
+ * momento, en uno de los clanes de CFG.TERNA_TAGS. El clan sale de la entrada del creador en
+ * datos.membersList; si no figura ahí, del Directorio. Sin creatorTag o sin clan: false.
+ * [→ Contexto_Base_Web.md §PF078]
+ */
+function _creadorTorneoEnClanTerna_(datos) {
+  var norm = function (t) {
+    t = String(t || '').trim().toUpperCase();
+    return (t && t.charAt(0) !== '#') ? '#' + t : t;
+  };
+  var creador = norm(datos && datos.creatorTag);
+  if (!creador) return false;
+
+  var clanTag = '';
+  var lista = (datos && datos.membersList) || [];
+  for (var i = 0; i < lista.length; i++) {
+    if (norm(lista[i].tag) === creador) {
+      clanTag = norm(lista[i].clan && lista[i].clan.tag);
+      break;
+    }
+  }
+  if (!clanTag) {
+    try {
+      var info = _getDirectorioLookupPorTag(_getSs())[creador];
+      if (info) clanTag = norm(info.clanTag);
+    } catch (e) { /* sin Directorio: queda sin clan */ }
+  }
+  if (!clanTag) return false;
+
+  for (var j = 0; j < CFG.TERNA_TAGS.length; j++) {
+    if (norm(CFG.TERNA_TAGS[j]) === clanTag) return true;
+  }
+  return false;
 }
 
 // DETALLE /tournaments?name=X (25-sep-2026, confirmado por el usuario; movido [→ Contexto_Base_Web.md §26B249]
