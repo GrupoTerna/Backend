@@ -5192,6 +5192,8 @@ REFERENCIA RÁPIDA (nombre visible en Drive -> constante en el código):
       "Seasons"          (dentro de Endpoints) -> DRIVE_FOLDER_ID_SEASONS (EN USO desde 25-sep-2026: Cache_Seasons.json, vía descargarSeasons(), 09_API_ClashRoyale.gs)
       "Torneos"          (dentro de Endpoints) -> DRIVE_FOLDER_ID_TORNEOS (YA EXISTÍA; antes colgaba directo de "JSON", el usuario la movió dentro de "Endpoints" — mismo ID, no cambia nada en el código)
         "Globales"       (dentro de Torneos) -> DRIVE_FOLDER_ID_TORNEOS_GLOBALES (EN USO desde 25-sep-2026: Cache_GlobalTournaments.json, vía descargarGlobalTournaments(), 09_API_ClashRoyale.gs)
+        "Terna"          (dentro de Torneos) -> DRIVE_FOLDER_ID_TORNEOS_TERNA (EN USO desde 14-oct-2026: Torneo - <tag>.json de torneos cuyo creador estaba en un clan Terna, vía _guardarJsonTorneoEnDrive(), 26_Torneos_Core.gs; ver §PF078)
+        "Locales"        (dentro de Torneos) -> DRIVE_FOLDER_ID_TORNEOS_LOCALES (NUEVA, SIN USO; llevará una subcarpeta por país; ver §PF078)
       "UpcomingChests"   (dentro de Endpoints) -> DRIVE_FOLDER_ID_UPCOMINGCHESTS (EN USO desde 25-sep-2026: JSON crudo por jugador, vía descargarUpcomingChestsJugador(), MANUAL, 09_API_ClashRoyale.gs)
     "Otros"       (dentro de JSON, NO dentro de Endpoints) -> DRIVE_FOLDER_ID_OTROS (EN USO PARCIAL desde 25-sep-2026 fase B; ver checklist de AVISOS ABIERTOS / FASE B en 09_API_ClashRoyale.gs)
     "RoyaleAPI"   (dentro de JSON, NO dentro de Endpoints) -> DRIVE_FOLDER_ID_ROYALEAPI (NUEVA; antes era "carpeta contenedora, sin constante propia")
@@ -66774,3 +66776,23 @@ Con la regla de topes (punto 1), **solo la de ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄ�
 - Los dos `currentriverrace.json` de T-05 (14-09, `S-01 P.I-06` en el nombre y `P.I-07` en el contenido) siguen igual: los corrige `migrarFormatoJSON()`, pero falta correr `limpiarDuplicadosJSON()` en simulación por si quedan dos del mismo periodo (§PF074).
 
 **Orden para aplicarlo (reemplaza el del final de §PF074 en lo que toca a `05_` y `06_`).** 1) Pull de `Backend` en GitHub Desktop. 2) Pasar a mano al Generador `05_Migrador_Formato.gs` y `06_Limpieza_Duplicados_JSON.gs` (no hay bajada de GitHub al Generador). 3) Correr `migrarFormatoJSON()`; si encadena triggers, esperar a que termine. 4) Revisar «Ignorados» (los `[A REVISAR]`) y la línea «En carpeta vieja». 5) Volver a correr `verificarPeriodIndexJSON()`: los 13 deberían salir sin problema. **No hace falta tocar `Base`**, así que `subirBaseDesdeGithub()` no es necesario por este cambio.
+
+
+### PF078 — `Torneo - <tag>.json` se guarda en `Torneos/Terna` o en la raíz de `Torneos` según el clan del creador; `Locales` queda pendiente (pedido de la usuaria, 14-oct-2026; `Base`)
+
+**Corrección a lo dicho antes (regla 9).** En la sesión del 14-oct se dijo que los `Torneo - <tag>.json` de `Torneos/Terna` eran copias viejas y que Base solo escribía en la raíz. Era cierto del código, pero la usuaria aclaró que `Terna` es una carpeta de destino prevista y que faltaba actualizar Base: no es un archivo histórico.
+
+**Cómo se reparten las carpetas de `Torneos` (dicho por la usuaria).** `Globales`: torneos globales (mundiales), que tienen su propio endpoint `/globaltournaments` y no pasan por `_fetchMembersTorneo()`, así que no se confunden con los normales (ya los guarda `descargarGlobalTournaments()`). `Locales`: los de cada país. `Por búsqueda de nombre`: el JSON de una búsqueda por palabra clave (coincidencias). `Terna`: los generados en cualquiera de los clanes Terna. Todo torneo que no cumpla ninguno de esos criterios va a la raíz de `Torneos`.
+
+**Qué cambió (`Base/src/26_Torneos_Core.gs`, `_guardarJsonTorneoEnDrive()` y la función nueva `_creadorTorneoEnClanTerna_()`; `Base/src/01_Config_Global.gs`, constantes `DRIVE_FOLDER_ID_TORNEOS_TERNA` y `DRIVE_FOLDER_ID_TORNEOS_LOCALES`).**
+- **La subcarpeta se decide una sola vez**, la primera vez que se guarda el torneo (la usuaria: el creador puede cambiarse de clan después). Si `Torneo - <tag>.json` ya existe en `Terna` o en la raíz, se sobrescribe ahí y no se mueve; se mira primero `Terna`.
+- **Primera vez:** va a `Terna` si el creador estaba en un clan de `CFG.TERNA_TAGS`; si no, a la raíz. El creador es `creatorTag` del JSON de `/tournaments/{tag}`. Su clan sale de su propia entrada en `membersList` (`clan.tag`); si el creador no figura ahí, del Directorio (`_getDirectorioLookupPorTag`). Sin `creatorTag` o sin clan conocido: raíz. Los tags se comparan sin importar mayúsculas ni el `#`.
+- Si no se puede abrir la carpeta `Terna` (ID mal puesto), se loguea y todo sigue como antes, en la raíz.
+
+**Evidencia.** `node --check` sobre copias de los dos `.gs`; prueba de `_creadorTorneoEnClanTerna_()` cargada con `vm` (6 casos: creador en Terna, tag sin `#` y en minúsculas, clan ajeno, sin clan ni Directorio, clan solo en Directorio, sin `creatorTag`): los 6 dan lo esperado. **No probado:** Apps Script real, ni el guardado en Drive. Tampoco se comprobó con un JSON real que `membersList[i].clan.tag` venga siempre; `_extraerInfoOrganizador()` ya lo usa, y el Directorio cubre el resto.
+
+**Archivos que hay que mover a mano (la usuaria).** Los 5 `Torneo - <tag>.json` repetidos de la raíz de `Torneos` (los vigentes, de fecha 26-sep) los mueve ella a `Terna`. En `Terna` ya hay copias viejas (7-sep) con el mismo nombre: al mover hay que **reemplazar** las de `Terna`, no conservar ambas. Hasta entonces, Base escribe en la copia de `Terna` (se mira primero), así que la de la raíz no se actualiza.
+
+**Pendiente de definir o contestar: `Locales`.** La usuaria dijo que la subcarpeta de cada país se llamará `name - id - COUNTRYCODE` según `Cache_Locations.json` (sin código si `isCountry` es `false`), por ejemplo `Peru - 57000184 - PE`, y se crea al guardar el primer torneo local de ese país. **Falta saber cómo sabe Base el país de un torneo:** el JSON de `/tournaments/{tag}` no trae ubicación. Opciones por contestar: la ubicación del clan donde está el creador (`/clans/{tag}` trae `location`; exige una consulta extra a la API para creadores de clanes no Terna), otro campo, o una lista manual. Mientras tanto, esos torneos van a la raíz y `DRIVE_FOLDER_ID_TORNEOS_LOCALES` no se usa.
+
+**Pasos para aplicarlo.** 1) Pull de `Backend` en GitHub Desktop. 2) `subirBaseDesdeGithub()` **antes de cualquier descarga** (Base cambió). 3) Mover los 5 archivos de la raíz a `Terna` reemplazando.
