@@ -46,18 +46,15 @@ var VERIF_CAMBIO_HASTA_H_ = 5;
 var VERIF_REGEX_TAG_ = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-([LMXJVSD]))?\s/;
 
 /**
- * @const {Array<string>} PF080 (15-oct-2026, decidido por la usuaria): archivos cuyo nombre es correcto aunque la fecha de
- * creación no cuadre con el día del periodIndex. Son los 4 de T-05 del 13-09-2026 12.26 (Grupo乂Terna™ y Mini乂Ternas™,
- * currentriverrace.json y clans.json): Drive los creó un domingo, pero la API ya devolvía periodIndex 7 (lunes) ese día, y
- * en este sistema manda el contenido. Solo se exceptúa el aviso «la fecha de creación cae en X pero el periodIndex…»; el
- * resto de las comprobaciones sigue aplicándose. Comparación sin distinguir espacios repetidos.
+ * @const {Array<string>} PF080: nombres de archivo que son correctos aunque la fecha de creación no cuadre con el día del
+ * periodIndex (manda el contenido). Solo se exceptúa el aviso «la fecha de creación cae en X pero el periodIndex…»; el resto
+ * de las comprobaciones sigue aplicándose. Comparación sin distinguir espacios repetidos.
+ * HOY VACÍA (15-oct-2026): tenía los 4 archivos de T-05 del 13-09-2026 12.26 (Grupo乂Terna™ y Mini乂Ternas™), que la API
+ * devolvió con periodIndex 7 un domingo. Se borraron de Drive con limpiarDuplicadosJSON() y su evidencia quedó en
+ * Datos descargados/JSON/Anomalías/ del repo [→ Contexto_Base_Web.md §PF080]. Si vuelve a pasar algo igual y se decide
+ * que manda el contenido, se agrega el nombre aquí.
  */
-var VERIF_EXCEPCIONES_FECHA_ = [
-  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - currentriverrace.json',
-  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - clans.json',
-  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - currentriverrace.json',
-  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - clans.json'
-];
+var VERIF_EXCEPCIONES_FECHA_ = [];
 
 /** @return {boolean} true si el nombre está en VERIF_EXCEPCIONES_FECHA_ (ignorando espacios repetidos). */
 function _verif_esExcepcionFecha_(nombre) {
@@ -273,7 +270,7 @@ function _verif_imprimirResumen_(r) {
   console.log('  Correctos (con letra)              : ' + r.ok);
   console.log('  Correctos, creados en 04:00-05:00  : ' + r.ventana);
   console.log('  Correctos pero sin letra todavía   : ' + r.faltaLetra + '  (los arregla migrarFormatoJSON, salvo un clans.json sin currentriverrace cercano)');
-  console.log('  Exceptuados (ya contados arriba)   : ' + r.exceptuados + '  (T-05 del 13-09: la fecha no cuadra con el periodIndex 7, manda el contenido)');
+  console.log('  Exceptuados (ya contados arriba)   : ' + r.exceptuados + '  (nombres de VERIF_EXCEPCIONES_FECHA_, cuya fecha no cuadra pero manda el contenido; hoy ninguno)');
   console.log('  Con problemas                      : ' + r.problemas.length);
   console.log('  Avisos / sin poder verificar       : ' + r.sinVerificar.length);
   console.log('  (clans.json no trae periodIndex: solo se contrastó su P.I del nombre con la fecha de creación)');
