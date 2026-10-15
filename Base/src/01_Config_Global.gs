@@ -491,6 +491,16 @@ var DRIVE_FOLDER_ID_TORNEOS_GLOBALES = '1gpyHZJd_aGwPLenhfcLFSgNpL8N_JfgS';
 // Nombre en Drive: "Por búsqueda de nombre" (subcarpeta dentro de "Torneos", [→ Contexto_Base_Web.md §01B092]
 var DRIVE_FOLDER_ID_TORNEOS_BUSQUEDA_NOMBRE = '1WQa8CF5baUm1dSlHNYvc3rb5BTw6mW45';
 
+// Nombre en Drive: "Terna" (subcarpeta dentro de "Torneos"). Recibe el JSON de
+// los torneos cuyo creador estaba en un clan Terna al guardarse por primera vez
+// (14-oct-2026). [→ Contexto_Base_Web.md §PF078]
+var DRIVE_FOLDER_ID_TORNEOS_TERNA = '1qf0Qyby4CHLL_zIiJInBpMrgfd5hiR85';
+
+// Nombre en Drive: "Locales" (subcarpeta dentro de "Torneos"). SIN USO todavía:
+// llevará una subcarpeta por país ("Peru - 57000184 - PE") y falta definir cómo se
+// sabe el país de un torneo. [→ Contexto_Base_Web.md §PF078]
+var DRIVE_FOLDER_ID_TORNEOS_LOCALES = '1lzCjtbq5R-fgBAcEFJnnTChdl-N7BYA2';
+
 // REORGANIZACIÓN DE DRIVE (25-sep-2026, pedido del usuario): "JSON" > [→ Contexto_Base_Web.md §01B093]
 
 // Carpeta contenedora "Endpoints" (dentro de "JSON"). Agrupa todas las
