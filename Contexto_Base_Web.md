@@ -67175,3 +67175,10 @@ Eran los 11 comentarios HTML largos de `admin.html` de la parte 7a. Los números
 - *Estado posterior (15-oct):* **«Mensajes» ya no vive en `admin.html`:** `initMensajesAutomaticos()` y `cargarGrupoToggle()` están hoy en `mensajes.html` (la página aparte; ver §PF016 y §PF018).
 
 **Sin probar:** nada de esta parte se vio en un navegador en esta tanda; el comportamiento sale de los comentarios originales (pedidos de la usuaria, sin pruebas registradas) y de la lectura del código actual. No se comprobó el valor por defecto actual de WhatsApp en Cambio de Rango ni de Barcos.
+
+#### PF080 · Cierre de la migración (15-oct-2026, 14:58 Lima)
+- `migrarFormatoJSON()` terminó ("completado"): fase clans y fase players. La fase players corrió en 7 s con 0 renombrados porque la corrida de las 14:36 ya había renombrado todo por fecha de creación.
+- **Ignorados finales: 13** (decisión: se aceptan, no se fuerzan):
+  - 10 `[A REVISAR]` (rangos medidos: grupo乂terna™ 04:27–05:19; grupoxterna™2 04:27–05:19; grupoxterna™3 02:25–04:58). Son capturas creadas dentro de la ventana del corte diario; no hay forma de saber si el servidor ya estaba en el día nuevo. Se dejan sin renombrar hasta tener un dato adicional.
+  - 3 "sin currentriverrace.json legible": grupoxterna™3 05-10 12.17, mini乂ternas™ 05-10 12.17 y 03-09 12.29. El archivo no existe en Drive (solo hay `clans.json`); causa en Base sin determinar.
+- Pendiente: correr `verificarPeriodIndexJSON()` y decidir si se exceptúan los 4 archivos T-05 (P.I-07 en domingo).
