@@ -21,15 +21,19 @@
 var CARPETA_JSON_RAIZ_ID_ = '1fe_z2gahCDeVrYEbG8B2ts-XDJzbNBu8';
 
 /**
- * Mapa de clanes a IDs de subcarpeta en Drive.
+ * Claves de clan (en minusculas) que reconoce el Generador. PF080 (14-oct-2026): los IDs de las carpetas VIEJAS
+ * (esquema JSON/<clan>/...) se dejaron en blanco porque ya no se pueden abrir ("No item with the given ID could be
+ * found") y cada intento hacia esperar unos 30 s en verificarPeriodIndexJSON(). Los IDs que tenian estan anotados en
+ * Contexto_Base_Web.md §PF080 por si hay que volver a ponerlos. Con el ID en blanco, _carpetaViejaDeClan_ devuelve null
+ * sin avisar y el resto del codigo ya lo tolera. Las claves se conservan: son la lista de clanes.
  * @const {Object.<string, string>}
  */
 var CARPETAS_CLAN_ = {
-  'grupo乂terna™':   '1J7M0A2sKoN0vwXDHPOKjJ_QkLzwbIoWR',
-  'grupoxterna™2':   '1i7lZIw_69S_6NtQLAmSjMV_6TePKu8cH',
-  'grupoxterna™3':   '1nkBknCl29nAO7Pph4QM4BAeO05Up2GFm',
-  'mini乂ternas™':   '1p7mu6rh0wu5hCWTEPttlCjNGF1Cgdqbi',
-  'naranja x':       '1DKxLFE7P0pnItV6nTk6Q1jCctF1YgGx9'
+  'grupo乂terna™':   '',
+  'grupoxterna™2':   '',
+  'grupoxterna™3':   '',
+  'mini乂ternas™':   '',
+  'naranja x':       ''
 };
 
 /**
