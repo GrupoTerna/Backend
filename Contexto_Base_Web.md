@@ -67290,3 +67290,26 @@ Eran los 11 comentarios HTML largos de `admin.html` de la parte 7a. Los números
 - **Qué NO se debe hacer sin evidencia:** renombrar o mover los 6 `[A REVISAR]` deduciendo el día por la hora de la clave del nombre viejo; esa hora no es la de creación (ver §PF080, «Horas de las claves»).
 - **Limitación del conector de Drive** (ya registrada en la entrada de `subirEvidenciaT05AGithub()`): entrega el contenido como texto en el chat, no como archivo en el equipo de Claude. Sirve para leer y contrastar; no para copiar archivos grandes sin alterar un byte.
 - **Pendiente:** hacer la investigación con el conector de Drive y registrar aquí, por cada uno de los 9, la hora real de creación (Lima), el contenido relevante y la decisión de la usuaria.
+
+#### PF080 · Resultado de la investigación de los 9 archivos sin tocar (15-oct-2026, tarde; Drive consultado por Claude con el conector, solo metadatos: título, tamaño, creado, modificado; NO se abrió el contenido de ningún JSON). Completa la entrada anterior «pedida y aún sin resultado».
+- **Corrección a lo dicho antes (regla 9):** la lista de «9 sin tocar» salió de los registros de limpieza y **está desfasada**: 3 de los 6 `[A REVISAR]` ya aparecen en Drive con el formato nuevo. La hora de la clave del nombre viejo es la de **modificación**, no la de creación; con Drive se ven las dos.
+- **Los 6 `[A REVISAR]` (todos son `clans.json`; en Drive solo hay un archivo por clave, sin `currentriverrace.json` de esa captura):**
+
+| Clave | Nombre actual en Drive | Creado (Lima) | Modificado (Lima) | Estado |
+|---|---|---|---|---|
+| grupo乂terna™ 09-07 05.15 | `T-03 S-01 P.I-03-J …` | 09-07 05:15:00 | 14-oct 17:03 | ya con letra |
+| grupoxterna™3 11-07 02.58 | `T-03 S-01 P.I-04-V …` | 11-07 02:58:58 | 14-oct 17:35 | ya con letra |
+| grupoxterna™3 01-07 02.40 | `T-02 S-05 P.I-29-M …` | 01-07 02:40:57 | 14-oct 17:33 | ya con letra |
+| grupoxterna™2 01-08 02.55 | `T-03 S-04 P.I-25 …` | **31-07** 04:54:49 | 01-08 02:55 | **sin letra** |
+| grupoxterna™3 02-08 14.13 | `T-03 S-04 P.I-27 …` | 02-08 04:56:21 | 02-08 14:13 | **sin letra** |
+| grupoxterna™3 09-07 04.54 | `T-03 S-01 P.I-02 …` | 09-07 04:54:59 | 23-jul 06:23 | **sin letra** |
+
+  - Los 3 sin letra se crearon **dentro de la ventana de corte** de su clan (grupoxterna™2 04:27-05:19; grupoxterna™3 02:25-04:58), y sin `currentriverrace.json` de esa captura no hay `periodIndex` de contenido: por eso siguen en revisión. En el de grupoxterna™2 la fecha de la clave (01-08) **no coincide** con la de creación (31-07), porque la clave toma la modificación.
+  - **No comprobado:** que la letra de los 3 «ya con letra» sea la correcta; no se leyó su contenido ni se supo cómo se les asignó (se modificaron el 14-oct por la tarde, antes de las corridas registradas de las 20:01).
+- **Los 3 «sin `currentriverrace.json` legible»: la causa no es que esté ilegible, es que ese archivo NO EXISTE en Drive** para esa captura (la búsqueda por la clave devuelve solo el `clans.json`):
+  - grupoxterna™3 05-10-2026 12.17: `T-06 S-01 P.I-00 …clans.json`, 4499 bytes, creado 05-10 12:17:31, sin modificar desde entonces.
+  - mini乂ternas™ 05-10-2026 12.17: `T-06 S-01 P.I-00 …clans.json`, 4573 bytes, creado 05-10 12:17:53, sin modificar.
+  - mini乂ternas™ 03-09-2026 12.29: `T-04 S-05 P.I-31 …clans.json`, 7588 bytes, creado 03-09 12:29:59, sin modificar.
+  - Los tres se crearon a las 12:xx, **fuera** de toda ventana de corte. 05-10-2026 es lunes (el de grupoxterna™2 de la misma hora se llama `P.I-00-L`) y 03-09-2026 es jueves (`J`); la fecha basta para el día, pero **el migrador no lo hace sin `currentriverrace.json`**.
+  - **Sin determinar:** por qué Base guardó el `clans.json` sin `currentriverrace.json` en esas 3 capturas (no se revisó Base ni sus registros de ese día).
+- **Pendiente de decisión de la usuaria (no aplicado):** (a) para esos 3, deducir la letra por la fecha de creación cuando el archivo cae fuera de la ventana de corte y no hay `currentriverrace.json`; (b) para los 3 dentro de la ventana, dejarlos sin letra o decidir con otra evidencia (por ejemplo, leer su contenido).
