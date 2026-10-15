@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/10/2026 14:24:06 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/10/2026 14:56:59 */
 
 
 
@@ -1334,10 +1334,10 @@ var MIG_TRIGGER_HANDLER_ = 'migrarFormatoJSON';
  *         captura (temporada/sección/periodIndex) sobre el historial
  *         COMPLETO de esa carpeta y renombra todos sus archivos con el
  *         tag "T-.. S-.. P.I-..".
- * Paso 3: normaliza los nombres de la carpeta de players usando la fecha
- *         real de creación de CADA archivo (getDateCreated), no la hora
- *         de la corrida actual; esos archivos no llevan tag, porque no
- *         tienen sectionIndex/periodIndex propio.
+ * Paso 3: carpeta de players. El nombre lleva la fecha de CREACIÓN del
+ *         archivo (getDateCreated), no la de modificación, y sin sufijo
+ *         « - P{n}» (regla de la usuaria, 15-oct-2026). Esos archivos no
+ *         llevan tag, porque no tienen sectionIndex/periodIndex propio.
  */
 function migrarFormatoJSON() {
   // PF080 (14-oct-2026): candado para que no corran dos ejecuciones a la vez. El 14-oct, una ejecucion manual y la del
@@ -1426,7 +1426,11 @@ function _mig_ejecutarMigracion_() {
   // --- Paso 3: carpeta players ---
   if (estado.fase === 'players') {
     console.log('\n── Carpeta players ──');
-    _migrarCarpetaPlayers(estado.resumen);
+    // PF080: con presupuesto de tiempo. Si no alcanza, se pausa y la continuacion automatica sigue (los ya correctos se saltan).
+    if (!_migrarCarpetaPlayers(estado.resumen, inicio)) {
+      _mig_pausarYContinuar_(estado, cache, 'durante la carpeta players');
+      return;
+    }
     estado.fase = 'hecho';
   }
 
@@ -1592,43 +1596,70 @@ function _mig_estaBajoCarpeta_(archivo, idCarpeta) {
   return false;
 }
 
-function _migrarCarpetaPlayers(resumen) {
+/**
+ * Paso 3: carpeta players. REGLA (la usuaria, 15-oct-2026): el nombre de un JSON de players lleva la fecha de CREACION del
+ * archivo en Drive (getDateCreated), nunca la de modificacion; y sin sufijo « - P{n}». Formato:
+ * "dd-MM-yyyy HH.mm - {Clan} - {#TAG}.json". Se vuelve a este criterio tras haberlo cambiado por error el mismo dia.
+ * PF080: mejoras de tiempo, sin cambiar la regla. (1) Clan y tag se toman del propio nombre (que ya los trae), de modo que
+ * no se descarga ni se parsea el JSON; solo si el nombre no tiene la forma esperada se lee el contenido, como antes.
+ * (2) Un archivo que ya tiene su nombre correcto se salta. (3) Respeta el presupuesto de tiempo de la ejecucion.
+ * @param {Object} resumen
+ * @param {number=} inicio Timestamp (ms) de inicio de la ejecucion actual, para respetar el presupuesto de tiempo.
+ * @return {boolean} true si se reviso toda la carpeta; false si se corto por presupuesto de tiempo (se retoma sola: los
+ *   archivos ya correctos se saltan sin costo).
+ */
+function _migrarCarpetaPlayers(resumen, inicio) {
   var carpeta  = DriveApp.getFolderById(CARPETA_PLAYERS_ID_);
   var archivos = carpeta.getFiles();
 
   while (archivos.hasNext()) {
+    if (inicio && _mig_tiempoAgotado_(inicio)) {
+      console.log('    (presupuesto de tiempo alcanzado dentro de players; se retoma en la próxima ejecución)');
+      return false;
+    }
+
     var archivo = archivos.next();
     var nombre  = archivo.getName();
 
     if (nombre.slice(-5).toLowerCase() !== '.json') continue;
 
-    var contenido, obj;
-    try {
-      contenido = archivo.getBlob().getDataAsString('UTF-8');
-      obj       = JSON.parse(contenido);
-    } catch(e) {
-      resumen.ignorados.push(nombre + ' [players — no se pudo leer/parsear JSON]');
-      continue;
-    }
-
-    var playerTag = (obj.tag || nombre.replace('.json', '')).trim();
-    var clanName  = (obj.clan && obj.clan.name) ? obj.clan.name : 'Sin clan';
-
-    // Fecha real de creación de ESTE archivo (getDateCreated), no la hora
-    // compartida de la corrida actual: así cada player conserva su propia
-    // fecha de captura en vez de que todos queden re-fechados con el
-    // instante en que se ejecutó migrarFormatoJSON() (mismo bug que se
-    // corrigió en _mig_etiquetarCarpetaClan, ver 05_Migrador_Formato.gs).
+    // Fecha real de creación de ESTE archivo (no la hora de la corrida ni la de modificación).
     var fechaHora = _mig_fechaHoraStr(archivo.getDateCreated());
 
-    var nombreNuevo = fechaHora + ' - ' + clanName + ' - ' + playerTag + '.json';
+    var nombreNuevo = _mig_nombrePlayerPorCreacion_(nombre, fechaHora);
+    if (nombreNuevo === null) {
+      // El nombre no tiene la forma "fecha - clan - tag": se arma desde el contenido, como antes de PF080.
+      var obj;
+      try {
+        obj = JSON.parse(archivo.getBlob().getDataAsString('UTF-8'));
+      } catch(e) {
+        resumen.ignorados.push(nombre + ' [players — no se pudo leer/parsear JSON]');
+        continue;
+      }
+      var playerTag = (obj.tag || nombre.replace('.json', '')).trim();
+      var clanName  = (obj.clan && obj.clan.name) ? obj.clan.name : 'Sin clan';
+      nombreNuevo = fechaHora + ' - ' + clanName + ' - ' + playerTag + '.json';
+    }
 
     if (nombre === nombreNuevo) continue;
 
-    _mig_renombrarSeguro(archivo, nombreNuevo, resumen);
+    nombreNuevo = _mig_renombrarSeguro(archivo, nombreNuevo, resumen);
     resumen.renombrados++;
     console.log('    [player] ' + nombre + '\n       → ' + nombreNuevo);
   }
+  return true;
+}
+
+/**
+ * PF080: nombre que debe llevar un JSON de players: la fecha de creacion + el clan y el tag que ya trae el nombre, sin el
+ * sufijo « - P{n}» del formato anterior a la Fase 18. Funcion pura.
+ * @param {string} nombre Ej. "15-10-2026 13.16 - GrupoXTerna™2 - #VYQRG02V9.json" o con " - P17" antes de ".json".
+ * @param {string} fechaHora Fecha de creacion ya formateada "dd-MM-yyyy HH.mm".
+ * @return {?string} el nombre nuevo, o null si el nombre no tiene la forma "dd-MM-yyyy HH.mm - clan - tag.json".
+ */
+function _mig_nombrePlayerPorCreacion_(nombre, fechaHora) {
+  var m = /^\d{2}-\d{2}-\d{4} \d{2}\.\d{2} - (.+ - #[^ ]+?)(?: - P\d+)?\.json$/i.exec(nombre);
+  return m ? fechaHora + ' - ' + m[1] + '.json' : null;
 }
 
 /**
