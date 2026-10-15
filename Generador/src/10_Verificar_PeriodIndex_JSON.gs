@@ -45,6 +45,26 @@ var VERIF_CAMBIO_HASTA_H_ = 5;
 /** @const {RegExp} Tag del nombre: T-nn  S-nn P.I-nn[-letra] y el resto. */
 var VERIF_REGEX_TAG_ = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-([LMXJVSD]))?\s/;
 
+/**
+ * @const {Array<string>} PF080 (15-oct-2026, decidido por la usuaria): archivos cuyo nombre es correcto aunque la fecha de
+ * creación no cuadre con el día del periodIndex. Son los 4 de T-05 del 13-09-2026 12.26 (Grupo乂Terna™ y Mini乂Ternas™,
+ * currentriverrace.json y clans.json): Drive los creó un domingo, pero la API ya devolvía periodIndex 7 (lunes) ese día, y
+ * en este sistema manda el contenido. Solo se exceptúa el aviso «la fecha de creación cae en X pero el periodIndex…»; el
+ * resto de las comprobaciones sigue aplicándose. Comparación sin distinguir espacios repetidos.
+ */
+var VERIF_EXCEPCIONES_FECHA_ = [
+  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - currentriverrace.json',
+  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - clans.json',
+  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - currentriverrace.json',
+  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - clans.json'
+];
+
+/** @return {boolean} true si el nombre está en VERIF_EXCEPCIONES_FECHA_ (ignorando espacios repetidos). */
+function _verif_esExcepcionFecha_(nombre) {
+  var n = String(nombre).replace(/\s+/g, ' ').trim();
+  return VERIF_EXCEPCIONES_FECHA_.indexOf(n) !== -1;
+}
+
 /** @const {number} Máximo de líneas de detalle que se escriben en el log del Generador. */
 var VERIF_MAX_LINEAS_LOG_ = 60;
 
@@ -60,7 +80,7 @@ var VERIF_MAX_LINEAS_LOG_ = 60;
 function verificarPeriodIndexJSON() {
   var inicio = new Date().getTime();
   var cache = _cache_cargar_();
-  var r = { revisados: 0, ok: 0, faltaLetra: 0, ventana: 0, problemas: [], sinVerificar: [], completo: true };
+  var r = { revisados: 0, ok: 0, faltaLetra: 0, ventana: 0, exceptuados: 0, problemas: [], sinVerificar: [], completo: true };
 
   console.log('═══════════════════════════════════════════════════════');
   console.log('verificarPeriodIndexJSON() — ' + _mig_horaLima(new Date()) + ' — SOLO LECTURA');
@@ -93,6 +113,7 @@ function verificarPeriodIndexJSON() {
 
       var v = _verif_comparar_(nombre, idPeriodo, f.getDateCreated(), new Date());
       r.revisados++;
+      if (v.exceptuado) r.exceptuados++; // PF080: se cuenta aparte, además de su estado normal
       if (v.problemas.length) {
         r.problemas.push('[' + carpeta.getName() + '] ' + nombre + ' → ' + v.problemas.join(' | '));
       } else if (v.estado === 'ventana') {
@@ -170,6 +191,7 @@ function _verif_enVentanaCambio_(fecha) {
 function _verif_comparar_(nombre, idPeriodo, creada, ahora) {
   var problemas = [];
   var avisos = [];
+  var exceptuado = false;
   var m = VERIF_REGEX_TAG_.exec(nombre);
 
   if (!m) {
@@ -214,8 +236,12 @@ function _verif_comparar_(nombre, idPeriodo, creada, ahora) {
         ') no es ni ' + LETRAS_DIA_GUERRA_.charAt(dia5) + ' ni ' + LETRAS_DIA_GUERRA_.charAt(dia4));
     }
   } else if (diaReal !== dia4) {
-    problemas.push('la fecha de creación cae en ' + LETRAS_DIA_GUERRA_.charAt(dia4) +
-      ' pero el periodIndex ' + pReal + ' es ' + letraReal);
+    if (_verif_esExcepcionFecha_(nombre)) {
+      exceptuado = true; // PF080: nombre correcto (manda el contenido); ver VERIF_EXCEPCIONES_FECHA_
+    } else {
+      problemas.push('la fecha de creación cae en ' + LETRAS_DIA_GUERRA_.charAt(dia4) +
+        ' pero el periodIndex ' + pReal + ' es ' + letraReal);
+    }
   }
 
   // Temporada: tiene que ser la que corresponde a la fecha de creación y no
@@ -236,7 +262,7 @@ function _verif_comparar_(nombre, idPeriodo, creada, ahora) {
   else if (enVentana) estado = 'ventana';
   else estado = 'ok';
 
-  return { estado: estado, problemas: problemas, avisos: avisos };
+  return { estado: estado, problemas: problemas, avisos: avisos, exceptuado: exceptuado };
 }
 
 /** Escribe el resumen en la consola y deja una entrada en el log del Generador. */
@@ -247,6 +273,7 @@ function _verif_imprimirResumen_(r) {
   console.log('  Correctos (con letra)              : ' + r.ok);
   console.log('  Correctos, creados en 04:00-05:00  : ' + r.ventana);
   console.log('  Correctos pero sin letra todavía   : ' + r.faltaLetra + '  (los arregla migrarFormatoJSON, salvo un clans.json sin currentriverrace cercano)');
+  console.log('  Exceptuados (ya contados arriba)   : ' + r.exceptuados + '  (T-05 del 13-09: la fecha no cuadra con el periodIndex 7, manda el contenido)');
   console.log('  Con problemas                      : ' + r.problemas.length);
   console.log('  Avisos / sin poder verificar       : ' + r.sinVerificar.length);
   console.log('  (clans.json no trae periodIndex: solo se contrastó su P.I del nombre con la fecha de creación)');
