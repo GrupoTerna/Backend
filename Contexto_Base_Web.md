@@ -67274,3 +67274,11 @@ Eran los 11 comentarios HTML largos de `admin.html` de la parte 7a. Los números
 - **Siguen intactos, sin cambios respecto a antes:** 6 `[A REVISAR]` (grupo乂terna™ 1, grupoxterna™2 1, grupoxterna™3 4) y 3 «sin currentriverrace.json legible» (grupoxterna™3 1, mini乂ternas™ 2).
 - **Se puede recuperar** de la papelera de Drive mientras no se vacíe; además la evidencia está en el repo.
 - **Pendiente:** correr `verificarPeriodIndexJSON()` (esperado: 0 problemas y 0 exceptuados, unos 1235 revisados) y, si sale así, quitar `VERIF_EXCEPCIONES_FECHA_` de `10_Verificar_PeriodIndex_JSON.gs`. **No comprobado:** que los 4 archivos estén en la papelera de Drive (solo lo dice el registro).
+
+#### PF080 · Verificador sin excepciones y los 9 archivos que quedan sin tocar (15-oct-2026, 17:12-17:15 Lima; registro de la usuaria; Generador)
+- **`verificarPeriodIndexJSON()` después del borrado:** 1235 revisados, 1032 correctos con letra, 197 correctos en 04:00-05:00, 6 sin letra todavía, **0 exceptuados, 0 problemas, 0 avisos** (antes 1239 y 4 exceptuados: 1239 − 4 borrados = 1235). Duró unos 2 min 10 s.
+- **Cambio en `10_Verificar_PeriodIndex_JSON.gs`:** `VERIF_EXCEPCIONES_FECHA_` queda **vacía** (`[]`); se conserva el mecanismo (`_verif_esExcepcionFecha_`, el contador «Exceptuados») por si la API repite una anomalía así y se decide que manda el contenido. Probado solo cargando el archivo en Node; no en Apps Script. El Generador no baja de GitHub: hay que pasarlo a mano.
+- **Los 9 archivos que migración y limpieza dejan sin tocar** (de los registros de limpieza del 15-oct; la hora del nombre es la del nombre viejo, no la de creación en Drive):
+  - `[A REVISAR]` (6): grupo乂terna™ `09-07-2026 05.15`; grupoxterna™2 `01-08-2026 02.55`; grupoxterna™3 `02-08-2026 14.13`, `09-07-2026 04.54`, `11-07-2026 02.58` y `01-07-2026 02.40`.
+  - Sin `currentriverrace.json` legible (3): grupoxterna™3 `05-10-2026 12.17`; mini乂ternas™ `05-10-2026 12.17` y `03-09-2026 12.29`.
+  - Los «6 correctos pero sin letra todavía» del verificador son otra lista (archivos bien, a los que solo falta la letra del día).
