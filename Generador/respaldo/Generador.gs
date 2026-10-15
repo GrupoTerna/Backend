@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/10/2026 16:42:57 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/10/2026 16:59:13 */
 
 
 
@@ -3210,6 +3210,107 @@ function _githubProbar_() {
   var texto = 'Repo: ' + repo.full_name + ' | ' + (repo.private ? 'PRIVADO' : 'PÚBLICO') +
               ' | escritura: ' + escritura + ' | rama ' + GITHUB_BRANCH_ + ': ' + rama.object.sha.substring(0, 7);
   console.log('[GitHub] ' + texto);
+  return texto;
+}
+
+// -----------------------------------------------------------------------------
+// Subida puntual de archivos de Drive a GitHub (solo AGREGA, nunca borra)
+// [→ Contexto_Base_Web.md §PF080]
+// -----------------------------------------------------------------------------
+
+var EVIDENCIA_T05_CARPETA_GITHUB_ = 'Datos descargados/JSON/';
+var EVIDENCIA_T05_NOMBRES_ = [
+  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - currentriverrace.json',
+  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - clans.json',
+  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - currentriverrace.json',
+  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - clans.json'
+];
+
+/**
+ * Copia a GitHub (Datos descargados/JSON/) los 4 archivos de T-05 del 13-09 12.26 que
+ * limpiarDuplicadosJSON() mandaría a la papelera. Correrla ANTES del borrado real: una vez en la
+ * papelera, getFilesByName() ya no los encuentra. No toca nada en Drive.
+ */
+function subirEvidenciaT05AGithub() {
+  return _githubSubirArchivosDeDrive_(
+    EVIDENCIA_T05_NOMBRES_,
+    EVIDENCIA_T05_CARPETA_GITHUB_,
+    'Datos descargados: T-05 del 13-09 12.26 (grupo乂terna™ y mini乂ternas™), copiados de Drive antes de borrar duplicados'
+  );
+}
+
+/**
+ * Busca cada archivo por nombre exacto en Drive (fuera de la papelera), comprueba que se lee
+ * igual que en Drive (mismos bytes) y que es JSON válido, y lo sube en UN solo commit a
+ * carpetaDestino de GitHub. El repo es público: si hay un posible secreto o teléfono, no sube nada.
+ * Si cualquier archivo falla, no se sube ninguno. Nunca borra archivos del repo.
+ */
+function _githubSubirArchivosDeDrive_(nombres, carpetaDestino, mensaje) {
+  if (!_githubToken_()) throw 'Falta GITHUB_TOKEN: Configuración del proyecto → Propiedades del script.';
+
+  console.log('════════════════════════════════════════════');
+  console.log('Subida de ' + nombres.length + ' archivos de Drive a GitHub (' + carpetaDestino + ')');
+  console.log('════════════════════════════════════════════');
+
+  var problemas = [];
+  var entradas = [];
+
+  nombres.forEach(function(nombre) {
+    var it = DriveApp.getFilesByName(nombre);
+    var encontrados = [];
+    while (it.hasNext()) encontrados.push(it.next());
+
+    if (encontrados.length === 0) {
+      problemas.push(nombre + ' → no está en Drive (¿ya está en la papelera?)');
+      return;
+    }
+    if (encontrados.length > 1) {
+      problemas.push(nombre + ' → hay ' + encontrados.length + ' archivos con ese nombre en Drive; no sé cuál subir');
+      return;
+    }
+
+    var archivo = encontrados[0];
+    var contenido = archivo.getBlob().getDataAsString('UTF-8');
+    var bytesDrive = archivo.getSize();
+    var bytesTexto = Utilities.newBlob(contenido, 'text/plain').getBytes().length;
+    if (bytesTexto !== bytesDrive) {
+      problemas.push(nombre + ' → Drive dice ' + bytesDrive + ' bytes y el texto leído da ' + bytesTexto +
+                     ' (no es UTF-8 limpio); no se sube para no alterarlo');
+      return;
+    }
+    try {
+      JSON.parse(contenido);
+    } catch (e) {
+      problemas.push(nombre + ' → no es un JSON válido');
+      return;
+    }
+    var rev = _githubRevisarSecretos_([{ name: nombre, source: contenido }]);
+    if (rev.bloqueos.length) {
+      problemas.push(nombre + ' → posible secreto: ' + rev.bloqueos.join(', '));
+      return;
+    }
+    if (/\+\d[\d\s-]{7,}\d|\b\d{9,}\b/.test(contenido)) {
+      problemas.push(nombre + ' → posible número de teléfono (9 o más dígitos seguidos); revisa el archivo antes de subirlo a un repo público');
+      return;
+    }
+
+    entradas.push({ path: carpetaDestino + nombre, content: contenido });
+    console.log('  · ' + nombre + ' (' + bytesDrive + ' bytes): leído y verificado');
+  });
+
+  if (problemas.length) {
+    problemas.forEach(function(p) { console.log('  ✗ ' + p); });
+    throw 'No se subió nada a GitHub. Problemas (' + problemas.length + '): ' + problemas.join(' | ');
+  }
+
+  // El prefijo '(sin borrar)/' no coincide con ninguna ruta real y rutasAntiguas va vacío:
+  // así _githubCommitArchivos_ solo agrega y no borra nada del repo.
+  var res = _githubCommitArchivos_(entradas, '(sin borrar)/', [], mensaje);
+  var texto = res.sinCambios
+    ? 'Sin cambios: GitHub ya tenía estos ' + entradas.length + ' archivos idénticos (no se creó commit).'
+    : 'Subidos ' + entradas.length + ' archivos en el commit ' + res.commit.substring(0, 7) + '.';
+  console.log(texto);
+  console.log('Falta hacer pull de Backend en GitHub Desktop para verlos en tu equipo.');
   return texto;
 }
 
