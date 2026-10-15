@@ -203,6 +203,7 @@ function _mig_etiquetarCarpetaClan(clanClave, resumen, cache, inicio) {
   // vieja del clan se renombran en su sitio y se cuentan (resumen.enCarpetaVieja): moverlos es una decision pendiente.
   var carpeta  = { getName: function() { return clanClave; } }; // solo para los mensajes del log
   var analisis = _analizarCarpetaJSON_(clanClave, cache);
+  console.log('    [' + clanClave + '] ' + _textoCorteDiario_(analisis.corteDiario)); // PF080
 
   var enRevision = {}; // PF077: clans.json que caen en la ventana 04:00-05:00 (o piden una captura que cae ahi)
   analisis.aRevision.forEach(function(r) { enRevision[r.clave] = r.motivo; });

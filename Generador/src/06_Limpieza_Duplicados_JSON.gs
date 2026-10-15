@@ -110,6 +110,7 @@ function _limpiarCarpeta_(carpeta, etiqueta, cache) { // PF074: `carpeta` puede 
   console.log('── ' + etiqueta + ' ──');
 
   var analisis = _analizarCarpetaJSON_(carpeta, cache);
+  console.log('  ' + _textoCorteDiario_(analisis.corteDiario)); // PF080
   var resueltas = analisis.resueltas;
   var enRevision = {};
   analisis.aRevision.forEach(function(r) { enRevision[r.clave] = r.motivo; });
@@ -229,7 +230,7 @@ function _limpiarCarpeta_(carpeta, etiqueta, cache) { // PF074: `carpeta` puede 
  *   que quien llamó a esta función pueda persistirlo después. Si se omite,
  *   se usa un cache vacío de un solo uso (comportamiento anterior, sin
  *   ahorro entre llamadas).
- * @return {{resueltas: Array<Object>, sinResolver: Array<string>, aRevision: Array<{clave:string, motivo:string}>}}
+ * @return {{resueltas: Array<Object>, sinResolver: Array<string>, aRevision: Array<{clave:string, motivo:string}>, corteDiario: ?Object}}
  *   Cada elemento de "resueltas" trae: clave, real, sectionIndex,
  *   periodIndex, temporada, archivos ({endpoint: File}), tamano (bytes del
  *   currentriverrace.json), esAncla, cortes (PF077). Ordenado por fecha real
@@ -302,6 +303,9 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
 
   anclas.sort(function(a, b) { return a.real - b.real; });
 
+  // PF080: hora real del corte diario de ESTE clan, medida con sus propias anclas (null si no hay datos suficientes).
+  var corteDiario = _estimarCorteDiario_(anclas);
+
   // --- Paso B: a las capturas SIN currentriverrace.json propio y legible
   // (p. ej. un "clans.json" cuya llamada a la API quedó con un timestamp
   // unos segundos/minutos distinto al de su currentriverrace.json
@@ -331,7 +335,7 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
     if (!idPeriodo && anclas.length) {
       var prestada = _anclaMasCercana_(anclas, grupo.realCreado);
       if (prestada && Math.abs(prestada.real.getTime() - grupo.realCreado.getTime()) <= PAREO_TOLERANCIA_MS_) {
-        var ajuste = _ajustarPeriodoPrestado_(prestada, grupo.realCreado);
+        var ajuste = _ajustarPeriodoPrestado_(prestada, grupo.realCreado, (corteDiario && corteDiario.ok) ? corteDiario : null);
         if (ajuste.revision) {
           aRevision.push({ clave: clave, motivo: ajuste.revision });
         } else {
@@ -371,7 +375,7 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
     item.temporada = (item.temporadaDelDia != null) ? item.temporadaDelDia : _temporadaDeFecha_(item.real);
   });
 
-  return { resueltas: resueltas, sinResolver: sinResolver, aRevision: aRevision };
+  return { resueltas: resueltas, sinResolver: sinResolver, aRevision: aRevision, corteDiario: corteDiario };
 }
 
 /** @const {number} Margen máximo para prestar identidad a una captura sin
@@ -400,6 +404,117 @@ function _anclaMasCercana_(anclas, fecha) {
   return mejor;
 }
 
+/** @return {string} PF080: linea de log con el corte diario medido (o por que se uso la ventana 04:00-05:00). */
+function _textoCorteDiario_(c) {
+  if (!c) return 'Corte diario: sin pares de anclas seguidas, se usa la ventana 04:00-05:00.';
+  if (!c.ok) return 'Corte diario: no se pudo medir (' + c.motivo + '), se usa la ventana 04:00-05:00.';
+  return 'Corte diario medido: ' + _fmtHoraH_(c.desdeH) + '-' + _fmtHoraH_(c.hastaH) + ' (Lima), con ' + c.coinciden + ' de ' + c.pares + ' pares de anclas.';
+}
+
+/** @const {number} PF080: minimo de pares de anclas consecutivas (p -> p+1) para dar por medido el corte diario. */
+var CORTE_MIN_PARES_ = 3;
+
+/** @const {number} PF080: fraccion minima de esos pares que debe coincidir en el rango medido (tolera anclas raras). */
+var CORTE_MIN_FRACCION_ = 0.9;
+
+/** @return {string} Hora decimal (0-24) como "HH:MM". */
+function _fmtHoraH_(h) {
+  var min = Math.round(h * 60);
+  var hh = Math.floor(min / 60) % 24, mm = min % 60;
+  return (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
+}
+
+/** @return {number} Hora de Lima de un instante, decimal en [0, 24). */
+function _horaLimaDecimal_(fecha) {
+  var d = new Date(fecha.getTime() - VERIF_LIMA_OFFSET_H_ * 3600 * 1000);
+  return d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600 + d.getUTCMilliseconds() / 3600000;
+}
+
+/**
+ * PF080: true si la hora de Lima de "fecha" cae estrictamente dentro de (corte.desdeH, corte.hastaH), o, sin "corte",
+ * dentro de la ventana fija [04:00, 05:00) (_verif_enVentanaCambio_). Los extremos del rango medido son las horas de las
+ * propias anclas que lo fijan, y esas anclas ya traen su periodIndex: no se las marca como dudosas.
+ * @param {Date} fecha
+ * @param {?{desdeH:number, hastaH:number}} corte
+ * @return {boolean}
+ */
+function _enVentanaCorte_(fecha, corte) {
+  if (!corte) return _verif_enVentanaCambio_(fecha);
+  var h = _horaLimaDecimal_(fecha);
+  return h > corte.desdeH && h < corte.hastaH;
+}
+
+/**
+ * PF080 (regla nueva, decidida por la usuaria el 14-oct-2026): mide la hora REAL del corte diario de un clan en lugar de
+ * suponer la ventana 04:00-05:00. Usa solo las anclas (currentriverrace.json con periodIndex propio, ordenadas por fecha
+ * de creacion):
+ *  - Dos anclas seguidas con periodIndex p y p+1 (y la semana que corresponde), a menos de 24 h una de otra, dicen que el
+ *    corte ocurrio entre sus dos horas de Lima. Cada par es un intervalo de hora del dia donde puede estar el corte.
+ *  - Dos anclas seguidas con el MISMO periodIndex dicen que el corte NO esta entre sus dos horas (a menos de 24 h).
+ *  - El corte es una hora fija del dia: se toma el rango que coincide en mas intervalos (se tolera una minoria de anclas
+ *    raras, como la T-05 con periodIndex 7 en un domingo) y se le recortan los bordes con los pares "sin corte".
+ * Las horas se miden desde el mediodia de Lima para que un corte de madrugada no cruce el cambio de dia; un par cuyo
+ * intervalo cruza ese punto se omite (no informa).
+ * Funcion pura (no toca Drive). Devuelve null si no hay ningun par utilizable.
+ * @param {Array<{real:Date, sectionIndex:number, periodIndex:number}>} anclas Ordenadas por fecha ascendente.
+ * @return {?{ok:boolean, desdeH:number, hastaH:number, pares:number, coinciden:number, motivo:string}}
+ *   ok = true si hay al menos CORTE_MIN_PARES_ pares y coinciden CORTE_MIN_FRACCION_ de ellos; desdeH/hastaH en horas de
+ *   Lima (decimal). Si ok es false, "motivo" dice por que y el llamador usa la ventana fija 04:00-05:00.
+ */
+function _estimarCorteDiario_(anclas) {
+  var intervalos = []; // [ini, fin] en horas desde el mediodia de Lima
+  var exclusiones = [];
+  var unDia = 24 * 3600 * 1000;
+  var desdeNoon = function(fecha) { return (_horaLimaDecimal_(fecha) - 12 + 24) % 24; };
+
+  for (var i = 1; i < anclas.length; i++) {
+    var a = anclas[i - 1], b = anclas[i];
+    var dt = b.real.getTime() - a.real.getTime();
+    if (dt <= 0 || dt >= unDia) continue;
+    var ia = desdeNoon(a.real), ib = desdeNoon(b.real);
+    if (ib < ia) continue; // cruza el mediodia de Lima: no informa
+    var mismaSemana = (b.sectionIndex === a.sectionIndex + Math.floor(b.periodIndex / 7) - Math.floor(a.periodIndex / 7));
+    if (b.periodIndex === a.periodIndex + 1 && mismaSemana) {
+      intervalos.push([ia, ib]);
+    } else if (b.periodIndex === a.periodIndex && b.sectionIndex === a.sectionIndex) {
+      exclusiones.push([ia, ib]);
+    }
+  }
+
+  if (!intervalos.length) return null;
+
+  // Rango de mayor coincidencia (barrido de extremos).
+  var eventos = [];
+  intervalos.forEach(function(iv) { eventos.push([iv[0], 1]); eventos.push([iv[1], -1]); });
+  eventos.sort(function(x, y) { return x[0] - y[0] || y[1] - x[1]; }); // a igual hora, primero las entradas
+  var cuenta = 0, mejor = 0, lo = null, hi = null;
+  for (var e = 0; e < eventos.length; e++) {
+    cuenta += eventos[e][1];
+    if (cuenta > mejor) {
+      mejor = cuenta; lo = eventos[e][0];
+      hi = (e + 1 < eventos.length) ? eventos[e + 1][0] : lo;
+    }
+  }
+
+  // Bordes: un par "sin corte" que tapa el principio o el final del rango lo acorta.
+  exclusiones.forEach(function(x) {
+    if (x[0] <= lo && x[1] > lo && x[1] < hi) lo = x[1];
+    else if (x[1] >= hi && x[0] < hi && x[0] > lo) hi = x[0];
+  });
+
+  var res = { ok: false, desdeH: (lo + 12) % 24, hastaH: (hi + 12) % 24, pares: intervalos.length, coinciden: mejor, motivo: '' };
+  if (intervalos.length < CORTE_MIN_PARES_) {
+    res.motivo = 'solo ' + intervalos.length + ' par(es) de anclas seguidas (se piden ' + CORTE_MIN_PARES_ + ')';
+  } else if (mejor < CORTE_MIN_FRACCION_ * intervalos.length) {
+    res.motivo = 'los pares no coinciden: ' + mejor + ' de ' + intervalos.length;
+  } else if (!(hi > lo)) {
+    res.motivo = 'el rango medido quedo vacio';
+  } else {
+    res.ok = true;
+  }
+  return res;
+}
+
 /**
  * PF077: numero de DIA DE JUEGO de un instante: dias enteros desde 1970 contados en hora de Lima con el cambio de dia
  * a las 04:00. Dos instantes con el mismo numero estan en el mismo dia de juego; la resta de dos numeros es la cantidad
@@ -407,8 +522,9 @@ function _anclaMasCercana_(anclas, fecha) {
  * @param {Date} fecha
  * @return {number}
  */
-function _diaJuegoNum_(fecha) {
-  return Math.floor((fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + VERIF_CAMBIO_DESDE_H_) * 3600 * 1000) / 86400000);
+function _diaJuegoNum_(fecha, corteH) {
+  var c = (corteH == null) ? VERIF_CAMBIO_DESDE_H_ : corteH; // PF080: hora de corte opcional (por defecto 04:00)
+  return Math.floor((fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + c) * 3600 * 1000) / 86400000);
 }
 
 /**
@@ -416,13 +532,14 @@ function _diaJuegoNum_(fecha) {
  * @param {Date} fecha
  * @return {Date}
  */
-function _diaJuegoFecha_(fecha) {
-  return new Date(fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + VERIF_CAMBIO_DESDE_H_) * 3600 * 1000);
+function _diaJuegoFecha_(fecha, corteH) {
+  var c = (corteH == null) ? VERIF_CAMBIO_DESDE_H_ : corteH; // PF080
+  return new Date(fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + c) * 3600 * 1000);
 }
 
 /** @return {boolean} true si el dia de juego de "fecha" es el primer lunes de su mes, o sea el dia 0 de una temporada. */
-function _esInicioDeTemporada_(fecha) {
-  var d = _diaJuegoFecha_(fecha);
+function _esInicioDeTemporada_(fecha, corteH) {
+  var d = _diaJuegoFecha_(fecha, corteH);
   return d.getUTCDay() === 1 && d.getUTCDate() === _primerLunesDia_(d.getUTCFullYear(), d.getUTCMonth());
 }
 
@@ -440,15 +557,20 @@ function _esInicioDeTemporada_(fecha) {
  * @param {Date} fecha Fecha de creacion del archivo que toma prestado.
  * @return {{sectionIndex:number, periodIndex:number, cortes:number, temporada:?number}|{revision:string}}
  */
-function _ajustarPeriodoPrestado_(ancla, fecha) {
-  if (_verif_enVentanaCambio_(fecha)) {
-    return { revision: 'creado entre las 04:00 y las 05:00 (Lima): no se sabe en que dia de juego estaba el servidor' };
+function _ajustarPeriodoPrestado_(ancla, fecha, corte) {
+  // PF080: "corte" ({desdeH, hastaH}, horas de Lima) es la hora real del cambio de dia estimada con las anclas del clan
+  // (_estimarCorteDiario_). Si es null se usa la ventana fija 04:00-05:00 de siempre. Fuera de la ventana el dia de juego
+  // es el mismo con cualquier hora de corte entre desdeH y hastaH (los extremos quedan a cada lado del punto medio).
+  var cH = corte ? (corte.desdeH + corte.hastaH) / 2 : VERIF_CAMBIO_DESDE_H_;
+  var ventana = corte ? ('entre las ' + _fmtHoraH_(corte.desdeH) + ' y las ' + _fmtHoraH_(corte.hastaH)) : 'entre las 04:00 y las 05:00';
+  if (_enVentanaCorte_(fecha, corte)) {
+    return { revision: 'creado ' + ventana + ' (Lima): no se sabe en que dia de juego estaba el servidor' };
   }
-  if (_verif_enVentanaCambio_(ancla.real)) {
-    return { revision: 'la captura de la que tomaria el periodIndex se guardo entre las 04:00 y las 05:00 (Lima): no se sabe en que dia de juego estaba' };
+  if (_enVentanaCorte_(ancla.real, corte)) {
+    return { revision: 'la captura de la que tomaria el periodIndex se guardo ' + ventana + ' (Lima): no se sabe en que dia de juego estaba' };
   }
 
-  var cortes = _diaJuegoNum_(fecha) - _diaJuegoNum_(ancla.real);
+  var cortes = _diaJuegoNum_(fecha, cH) - _diaJuegoNum_(ancla.real, cH);
   var s = ancla.sectionIndex;
   var p = ancla.periodIndex;
 
@@ -461,16 +583,16 @@ function _ajustarPeriodoPrestado_(ancla, fecha) {
 
   var nuevoP, nuevoS;
   if (cortes === 1) {
-    if (_esInicioDeTemporada_(fecha)) {
+    if (_esInicioDeTemporada_(fecha, cH)) {
       nuevoP = 0; nuevoS = 0; // primer dia de la temporada nueva
     } else {
       nuevoP = p + 1;
       nuevoS = s + Math.floor(nuevoP / 7) - Math.floor(p / 7);
     }
   } else { // cortes === -1
-    if (_esInicioDeTemporada_(ancla.real)) {
+    if (_esInicioDeTemporada_(ancla.real, cH)) {
       // El archivo es del ultimo dia de la temporada anterior: su largo sale del calendario.
-      var d = _diaJuegoFecha_(ancla.real);
+      var d = _diaJuegoFecha_(ancla.real, cH);
       var anio = d.getUTCFullYear(), mes0 = d.getUTCMonth();
       var anioAnt = mes0 === 0 ? anio - 1 : anio, mesAnt0 = mes0 === 0 ? 11 : mes0 - 1;
       var largo = Math.round((Date.UTC(anio, mes0, _primerLunesDia_(anio, mes0)) -
@@ -486,7 +608,7 @@ function _ajustarPeriodoPrestado_(ancla, fecha) {
   }
 
   // Temporada del DIA DE JUEGO del archivo (no la de la fecha de calendario).
-  var temporada = _temporadaDeFecha_(new Date(fecha.getTime() - VERIF_CAMBIO_DESDE_H_ * 3600 * 1000));
+  var temporada = _temporadaDeFecha_(new Date(fecha.getTime() - cH * 3600 * 1000));
   return { sectionIndex: nuevoS, periodIndex: nuevoP, cortes: cortes, temporada: temporada };
 }
 
