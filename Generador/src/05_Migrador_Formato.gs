@@ -82,11 +82,10 @@ var MIG_TRIGGER_HANDLER_ = 'migrarFormatoJSON';
  *         captura (temporada/sección/periodIndex) sobre el historial
  *         COMPLETO de esa carpeta y renombra todos sus archivos con el
  *         tag "T-.. S-.. P.I-..".
- * Paso 3: carpeta de players. PF080 (15-oct-2026): solo quita el sufijo
- *         « - P{n}» del formato anterior a la Fase 18 y conserva la fecha
- *         del nombre (la de la última captura; getDateCreated es la de la
- *         primera creación). Esos archivos no llevan tag, porque no
- *         tienen sectionIndex/periodIndex propio.
+ * Paso 3: carpeta de players. El nombre lleva la fecha de CREACIÓN del
+ *         archivo (getDateCreated), no la de modificación, y sin sufijo
+ *         « - P{n}» (regla de la usuaria, 15-oct-2026). Esos archivos no
+ *         llevan tag, porque no tienen sectionIndex/periodIndex propio.
  */
 function migrarFormatoJSON() {
   // PF080 (14-oct-2026): candado para que no corran dos ejecuciones a la vez. El 14-oct, una ejecucion manual y la del
@@ -346,15 +345,12 @@ function _mig_estaBajoCarpeta_(archivo, idCarpeta) {
 }
 
 /**
- * Paso 3: carpeta players. PF080 (15-oct-2026, decidido por la usuaria dejando la lectura a Claude tras revisar el
- * contexto): Base guarda UN solo archivo por jugador, lo sobreescribe y le pone en el nombre la hora real de la ultima
- * captura (Fase 18, `_buildPlayerFilename`, «puramente informativa»), mientras que Drive conserva la fecha de CREACION de
- * la primera vez. Por eso aqui ya NO se reemplaza la fecha del nombre por getDateCreated() (el 15-oct se vio que cambiaba
- * `15-10-2026 13.16` por `09-10-2026 15.15`): solo se quita el sufijo « - P{n}» del formato anterior a la Fase 18 y se
- * conserva el resto del nombre tal cual. Un archivo sin ese sufijo se salta SIN descargarlo (antes se bajaba y parseaba
- * cada JSON, y la fase no cabia en el tiempo maximo de ejecucion).
- * No revierte los nombres que corridas anteriores ya cambiaron a la fecha de creacion: Base los corrige solo en el
- * siguiente guardado de cada jugador.
+ * Paso 3: carpeta players. REGLA (la usuaria, 15-oct-2026): el nombre de un JSON de players lleva la fecha de CREACION del
+ * archivo en Drive (getDateCreated), nunca la de modificacion; y sin sufijo « - P{n}». Formato:
+ * "dd-MM-yyyy HH.mm - {Clan} - {#TAG}.json". Se vuelve a este criterio tras haberlo cambiado por error el mismo dia.
+ * PF080: mejoras de tiempo, sin cambiar la regla. (1) Clan y tag se toman del propio nombre (que ya los trae), de modo que
+ * no se descarga ni se parsea el JSON; solo si el nombre no tiene la forma esperada se lee el contenido, como antes.
+ * (2) Un archivo que ya tiene su nombre correcto se salta. (3) Respeta el presupuesto de tiempo de la ejecucion.
  * @param {Object} resumen
  * @param {number=} inicio Timestamp (ms) de inicio de la ejecucion actual, para respetar el presupuesto de tiempo.
  * @return {boolean} true si se reviso toda la carpeta; false si se corto por presupuesto de tiempo (se retoma sola: los
@@ -375,8 +371,25 @@ function _migrarCarpetaPlayers(resumen, inicio) {
 
     if (nombre.slice(-5).toLowerCase() !== '.json') continue;
 
-    var nombreNuevo = _mig_nombrePlayerSinSufijoP_(nombre);
-    if (nombreNuevo === nombre) continue; // ya esta en el formato vigente: no se descarga ni se toca
+    // Fecha real de creación de ESTE archivo (no la hora de la corrida ni la de modificación).
+    var fechaHora = _mig_fechaHoraStr(archivo.getDateCreated());
+
+    var nombreNuevo = _mig_nombrePlayerPorCreacion_(nombre, fechaHora);
+    if (nombreNuevo === null) {
+      // El nombre no tiene la forma "fecha - clan - tag": se arma desde el contenido, como antes de PF080.
+      var obj;
+      try {
+        obj = JSON.parse(archivo.getBlob().getDataAsString('UTF-8'));
+      } catch(e) {
+        resumen.ignorados.push(nombre + ' [players — no se pudo leer/parsear JSON]');
+        continue;
+      }
+      var playerTag = (obj.tag || nombre.replace('.json', '')).trim();
+      var clanName  = (obj.clan && obj.clan.name) ? obj.clan.name : 'Sin clan';
+      nombreNuevo = fechaHora + ' - ' + clanName + ' - ' + playerTag + '.json';
+    }
+
+    if (nombre === nombreNuevo) continue;
 
     nombreNuevo = _mig_renombrarSeguro(archivo, nombreNuevo, resumen);
     resumen.renombrados++;
@@ -386,13 +399,15 @@ function _migrarCarpetaPlayers(resumen, inicio) {
 }
 
 /**
- * PF080: quita el sufijo « - P{n}» (periodIndex) del nombre de un player del formato anterior a la Fase 18; cualquier
- * otro nombre vuelve igual. Funcion pura.
- * @param {string} nombre Ej. "05-08-2026 15.02 - Grupo乂Terna™ - #2GG8PJ8GC - P17.json"
- * @return {string} Ej. "05-08-2026 15.02 - Grupo乂Terna™ - #2GG8PJ8GC.json"
+ * PF080: nombre que debe llevar un JSON de players: la fecha de creacion + el clan y el tag que ya trae el nombre, sin el
+ * sufijo « - P{n}» del formato anterior a la Fase 18. Funcion pura.
+ * @param {string} nombre Ej. "15-10-2026 13.16 - GrupoXTerna™2 - #VYQRG02V9.json" o con " - P17" antes de ".json".
+ * @param {string} fechaHora Fecha de creacion ya formateada "dd-MM-yyyy HH.mm".
+ * @return {?string} el nombre nuevo, o null si el nombre no tiene la forma "dd-MM-yyyy HH.mm - clan - tag.json".
  */
-function _mig_nombrePlayerSinSufijoP_(nombre) {
-  return nombre.replace(/ - P\d+(\.json)$/i, '$1');
+function _mig_nombrePlayerPorCreacion_(nombre, fechaHora) {
+  var m = /^\d{2}-\d{2}-\d{4} \d{2}\.\d{2} - (.+ - #[^ ]+?)(?: - P\d+)?\.json$/i.exec(nombre);
+  return m ? fechaHora + ' - ' + m[1] + '.json' : null;
 }
 
 /**
