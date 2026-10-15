@@ -546,7 +546,7 @@ function _githubProbar_() {
 // [→ Contexto_Base_Web.md §PF080]
 // -----------------------------------------------------------------------------
 
-var EVIDENCIA_T05_CARPETA_GITHUB_ = 'Datos descargados/JSON/';
+var EVIDENCIA_T05_CARPETA_GITHUB_ = 'Datos descargados/JSON/Anomalías/';
 var EVIDENCIA_T05_NOMBRES_ = [
   'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - currentriverrace.json',
   'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - clans.json',
@@ -555,7 +555,7 @@ var EVIDENCIA_T05_NOMBRES_ = [
 ];
 
 /**
- * Copia a GitHub (Datos descargados/JSON/) los 4 archivos de T-05 del 13-09 12.26 que
+ * Copia a GitHub (Datos descargados/JSON/Anomalías/) los 4 archivos de T-05 del 13-09 12.26 que
  * limpiarDuplicadosJSON() mandaría a la papelera. Correrla ANTES del borrado real: una vez en la
  * papelera, getFilesByName() ya no los encuentra. No toca nada en Drive.
  */
