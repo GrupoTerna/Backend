@@ -104,12 +104,12 @@ Ninguno.
 | `_subirArchivosAProyecto` | función | 02_Backstage.gs | 381 |  |
 | `_temporadaDeFecha_` | función | 06_Limpieza_Duplicados_JSON.gs | 673 |  |
 | `_textoCorteDiario_` | función | 06_Limpieza_Duplicados_JSON.gs | 412 |  |
-| `_verif_comparar_` | función | 10_Verificar_PeriodIndex_JSON.gs | 191 |  |
-| `_verif_enVentanaCambio_` | función | 10_Verificar_PeriodIndex_JSON.gs | 172 |  |
-| `_verif_esExcepcionFecha_` | función | 10_Verificar_PeriodIndex_JSON.gs | 63 |  |
-| `_verif_imprimirResumen_` | función | 10_Verificar_PeriodIndex_JSON.gs | 269 |  |
-| `_verif_indiceDiaLima_` | función | 10_Verificar_PeriodIndex_JSON.gs | 166 |  |
-| `_verif_periodoDeArchivo_` | función | 10_Verificar_PeriodIndex_JSON.gs | 146 |  |
+| `_verif_comparar_` | función | 10_Verificar_PeriodIndex_JSON.gs | 188 |  |
+| `_verif_enVentanaCambio_` | función | 10_Verificar_PeriodIndex_JSON.gs | 169 |  |
+| `_verif_esExcepcionFecha_` | función | 10_Verificar_PeriodIndex_JSON.gs | 60 |  |
+| `_verif_imprimirResumen_` | función | 10_Verificar_PeriodIndex_JSON.gs | 266 |  |
+| `_verif_indiceDiaLima_` | función | 10_Verificar_PeriodIndex_JSON.gs | 163 |  |
+| `_verif_periodoDeArchivo_` | función | 10_Verificar_PeriodIndex_JSON.gs | 143 |  |
 | `actualizarScriptDeHoja` | función | 02_Backstage.gs | 459 |  |
 | `AVISO_ANTI_CARPETAS_` | global | 02_Backstage.gs | 65 |  |
 | `CACHE_PERIODOS_NOMBRE_` | global | 07_Cache_Periodos_JSON.gs | 24 |  |
@@ -178,8 +178,8 @@ Ninguno.
 | `tryAlternativeProxy` | función | 03_RoyaleAPI_Torneos.gs | 22 |  |
 | `VERIF_CAMBIO_DESDE_H_` | global | 10_Verificar_PeriodIndex_JSON.gs | 40 |  |
 | `VERIF_CAMBIO_HASTA_H_` | global | 10_Verificar_PeriodIndex_JSON.gs | 43 |  |
-| `VERIF_EXCEPCIONES_FECHA_` | global | 10_Verificar_PeriodIndex_JSON.gs | 55 |  |
+| `VERIF_EXCEPCIONES_FECHA_` | global | 10_Verificar_PeriodIndex_JSON.gs | 57 | Contexto_Base_Web.md §PF080 |
 | `VERIF_LIMA_OFFSET_H_` | global | 10_Verificar_PeriodIndex_JSON.gs | 37 |  |
-| `VERIF_MAX_LINEAS_LOG_` | global | 10_Verificar_PeriodIndex_JSON.gs | 69 |  |
+| `VERIF_MAX_LINEAS_LOG_` | global | 10_Verificar_PeriodIndex_JSON.gs | 66 |  |
 | `VERIF_REGEX_TAG_` | global | 10_Verificar_PeriodIndex_JSON.gs | 46 |  |
-| `verificarPeriodIndexJSON` | función | 10_Verificar_PeriodIndex_JSON.gs | 80 |  |
+| `verificarPeriodIndexJSON` | función | 10_Verificar_PeriodIndex_JSON.gs | 77 |  |
