@@ -1,7 +1,7 @@
 # Índice de funciones — Generador
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Generador/src/`. Total: 150 nombres en 10 archivos .gs.
+Código real: `Generador/src/`. Total: 151 nombres en 10 archivos .gs.
 
 ## Por archivo
 
@@ -9,7 +9,7 @@ Código real: `Generador/src/`. Total: 150 nombres en 10 archivos .gs.
 - **02_Backstage.gs** (15 funciones): _carpetaDeRespaldos_, _conAviso_, _registrarLogGenerador, obtenerSpreadsheetPorNombreEnCarpeta_, consolidarCodigoDesdeZip, _extraerArchivosDeTexto, _generarMarkdownLegible_, _extraerArchivosDeMarkdown_, nombreBaseDesdeArchivo_, _descargarProyectoAArchivos, _subirArchivosAProyecto, actualizarScriptDeHoja, _eliminarTodosLosArchivosDeProyecto, obtenerArchivosProyecto_, crearProyectoVinculado_
 - **03_RoyaleAPI_Torneos.gs** (2 funciones): obtenerJSON_viaProxy, tryAlternativeProxy
 - **04_Organizador_JSON.gs** (11 funciones): organizarArchivosJSON, _organizarJSON_procesarRaiz_, _carpetaHijaOCrear_, _archivosDeCarpetaClan_, _carpetaDestinoJSON_, _carpetaViejaDeClan_, _archivosRecursivo_, _archivosDeClan_, _carpetaSemanaJSON_, _organizarJSON_tiempoAgotado_, _organizarJSON_borrarTriggersPendientes_
-- **05_Migrador_Formato.gs** (20 funciones): migrarFormatoJSON, migrarFormatoJSON_reiniciarEstado, _mig_etiquetarCarpetaClan, _mig_yaEstaEnCarpeta_, _mig_estaBajoCarpeta_, _migrarCarpetaPlayers, _mig_renombrarSeguro, _letraDiaGuerra_, _pad2_, _mig_fechaHoraStr, _mig_soloHora, _mig_horaLima, _mig_tiempoAgotado_, _mig_estadoInicial_, _mig_guardarEstado_, _mig_borrarEstado_, _mig_pausarYContinuar_, _mig_programarContinuacion_, _mig_borrarTriggersPendientes_, _mig_finalizar_
+- **05_Migrador_Formato.gs** (21 funciones): migrarFormatoJSON, _mig_ejecutarMigracion_, migrarFormatoJSON_reiniciarEstado, _mig_etiquetarCarpetaClan, _mig_yaEstaEnCarpeta_, _mig_estaBajoCarpeta_, _migrarCarpetaPlayers, _mig_renombrarSeguro, _letraDiaGuerra_, _pad2_, _mig_fechaHoraStr, _mig_soloHora, _mig_horaLima, _mig_tiempoAgotado_, _mig_estadoInicial_, _mig_guardarEstado_, _mig_borrarEstado_, _mig_pausarYContinuar_, _mig_programarContinuacion_, _mig_borrarTriggersPendientes_, _mig_finalizar_
 - **06_Limpieza_Duplicados_JSON.gs** (18 funciones): limpiarDuplicadosJSON, _limpiarCarpeta_, _analizarCarpetaJSON_, _anclaMasCercana_, _textoCorteDiario_, _fmtHoraH_, _horaLimaDecimal_, _enVentanaCorte_, _estimarCorteDiario_, _diaJuegoNum_, _diaJuegoFecha_, _esInicioDeTemporada_, _ajustarPeriodoPrestado_, _temporadaDeFecha_, _primerLunesDia_, _quitarTagExistente_, _leerPeriodo_, _primeraMencionNumerica_
 - **07_Cache_Periodos_JSON.gs** (3 funciones): _cache_cargar_, _cache_guardar_, reiniciarCachePeriodosJSON
 - **08_GitHub.gs** (14 funciones): _githubToken_, _ghReq_, _ghRespuesta_, _ghJson_, _scriptIdDeProyecto_, _extDeTipo_, _archivosDelProyecto_, _githubRevisarSecretos_, _githubGenerarIndice_, _githubGenerarLeeme_, _githubCommitArchivos_, _githubSincronizar_, _githubTraerAProyectoApps_, _githubProbar_
@@ -66,28 +66,29 @@ Ninguno.
 | `_githubTraerAProyectoApps_` | función | 08_GitHub.gs | 401 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
 | `_horaLimaDecimal_` | función | 06_Limpieza_Duplicados_JSON.gs | 428 |  |
 | `_leerPeriodo_` | función | 06_Limpieza_Duplicados_JSON.gs | 702 |  |
-| `_letraDiaGuerra_` | función | 05_Migrador_Formato.gs | 386 |  |
+| `_letraDiaGuerra_` | función | 05_Migrador_Formato.gs | 403 |  |
 | `_limpiarCarpeta_` | función | 06_Limpieza_Duplicados_JSON.gs | 109 |  |
-| `_mig_borrarEstado_` | función | 05_Migrador_Formato.gs | 431 |  |
-| `_mig_borrarTriggersPendientes_` | función | 05_Migrador_Formato.gs | 457 |  |
-| `_mig_estaBajoCarpeta_` | función | 05_Migrador_Formato.gs | 289 |  |
-| `_mig_estadoInicial_` | función | 05_Migrador_Formato.gs | 418 |  |
-| `_mig_etiquetarCarpetaClan` | función | 05_Migrador_Formato.gs | 200 |  |
-| `_mig_fechaHoraStr` | función | 05_Migrador_Formato.gs | 397 |  |
-| `_mig_finalizar_` | función | 05_Migrador_Formato.gs | 466 |  |
-| `_mig_guardarEstado_` | función | 05_Migrador_Formato.gs | 427 |  |
-| `_mig_horaLima` | función | 05_Migrador_Formato.gs | 405 |  |
-| `_mig_pausarYContinuar_` | función | 05_Migrador_Formato.gs | 436 |  |
-| `_mig_programarContinuacion_` | función | 05_Migrador_Formato.gs | 449 |  |
-| `_mig_renombrarSeguro` | función | 05_Migrador_Formato.gs | 358 |  |
-| `_mig_soloHora` | función | 05_Migrador_Formato.gs | 401 |  |
-| `_mig_tiempoAgotado_` | función | 05_Migrador_Formato.gs | 414 |  |
-| `_mig_yaEstaEnCarpeta_` | función | 05_Migrador_Formato.gs | 277 |  |
-| `_migrarCarpetaPlayers` | función | 05_Migrador_Formato.gs | 307 |  |
+| `_mig_borrarEstado_` | función | 05_Migrador_Formato.gs | 448 |  |
+| `_mig_borrarTriggersPendientes_` | función | 05_Migrador_Formato.gs | 474 |  |
+| `_mig_ejecutarMigracion_` | función | 05_Migrador_Formato.gs | 107 |  |
+| `_mig_estaBajoCarpeta_` | función | 05_Migrador_Formato.gs | 306 |  |
+| `_mig_estadoInicial_` | función | 05_Migrador_Formato.gs | 435 |  |
+| `_mig_etiquetarCarpetaClan` | función | 05_Migrador_Formato.gs | 217 |  |
+| `_mig_fechaHoraStr` | función | 05_Migrador_Formato.gs | 414 |  |
+| `_mig_finalizar_` | función | 05_Migrador_Formato.gs | 483 |  |
+| `_mig_guardarEstado_` | función | 05_Migrador_Formato.gs | 444 |  |
+| `_mig_horaLima` | función | 05_Migrador_Formato.gs | 422 |  |
+| `_mig_pausarYContinuar_` | función | 05_Migrador_Formato.gs | 453 |  |
+| `_mig_programarContinuacion_` | función | 05_Migrador_Formato.gs | 466 |  |
+| `_mig_renombrarSeguro` | función | 05_Migrador_Formato.gs | 375 |  |
+| `_mig_soloHora` | función | 05_Migrador_Formato.gs | 418 |  |
+| `_mig_tiempoAgotado_` | función | 05_Migrador_Formato.gs | 431 |  |
+| `_mig_yaEstaEnCarpeta_` | función | 05_Migrador_Formato.gs | 294 |  |
+| `_migrarCarpetaPlayers` | función | 05_Migrador_Formato.gs | 324 |  |
 | `_organizarJSON_borrarTriggersPendientes_` | función | 04_Organizador_JSON.gs | 372 |  |
 | `_organizarJSON_procesarRaiz_` | función | 04_Organizador_JSON.gs | 157 |  |
 | `_organizarJSON_tiempoAgotado_` | función | 04_Organizador_JSON.gs | 368 |  |
-| `_pad2_` | función | 05_Migrador_Formato.gs | 392 |  |
+| `_pad2_` | función | 05_Migrador_Formato.gs | 409 |  |
 | `_primeraMencionNumerica_` | función | 06_Limpieza_Duplicados_JSON.gs | 725 |  |
 | `_primerLunesDia_` | función | 06_Limpieza_Duplicados_JSON.gs | 672 |  |
 | `_quitarTagExistente_` | función | 06_Limpieza_Duplicados_JSON.gs | 688 | Contexto_Base_Web.md §PF074 |
@@ -129,7 +130,7 @@ Ninguno.
 | `GITHUB_PATRONES_SECRETOS_` | global | 08_GitHub.gs | 27 |  |
 | `GITHUB_REGEX_ID_DRIVE_` | global | 08_GitHub.gs | 40 |  |
 | `GITHUB_REPO_` | global | 08_GitHub.gs | 19 |  |
-| `LETRAS_DIA_GUERRA_` | global | 05_Migrador_Formato.gs | 374 |  |
+| `LETRAS_DIA_GUERRA_` | global | 05_Migrador_Formato.gs | 391 |  |
 | `limpiarDuplicadosJSON` | función | 06_Limpieza_Duplicados_JSON.gs | 73 |  |
 | `LIMPIEZA_DRY_RUN_` | global | 06_Limpieza_Duplicados_JSON.gs | 66 |  |
 | `MANIFIESTO_CANONICO_` | global | 02_Backstage.gs | 33 |  |
@@ -138,7 +139,7 @@ Ninguno.
 | `MIG_TEMPORADA_ANCLA_` | global | 06_Limpieza_Duplicados_JSON.gs | 660 |  |
 | `MIG_TRIGGER_HANDLER_` | global | 05_Migrador_Formato.gs | 71 |  |
 | `migrarFormatoJSON` | función | 05_Migrador_Formato.gs | 90 |  |
-| `migrarFormatoJSON_reiniciarEstado` | función | 05_Migrador_Formato.gs | 173 |  |
+| `migrarFormatoJSON_reiniciarEstado` | función | 05_Migrador_Formato.gs | 190 |  |
 | `NOMBRE_HOJA_BASE` | global | 02_Backstage.gs | 9 |  |
 | `nombreBaseDesdeArchivo_` | función | 02_Backstage.gs | 271 |  |
 | `obtenerArchivosProyecto_` | función | 02_Backstage.gs | 601 |  |
