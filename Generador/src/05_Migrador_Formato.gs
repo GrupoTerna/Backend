@@ -208,9 +208,12 @@ function _mig_etiquetarCarpetaClan(clanClave, resumen, cache, inicio) {
   var enRevision = {}; // PF077: clans.json que caen en la ventana 04:00-05:00 (o piden una captura que cae ahi)
   analisis.aRevision.forEach(function(r) { enRevision[r.clave] = r.motivo; });
   analisis.sinResolver.forEach(function(clave) {
-    resumen.ignorados.push('[' + carpeta.getName() + '] ' + clave + (enRevision[clave]
+    var linea = '[' + carpeta.getName() + '] ' + clave + (enRevision[clave]
       ? ' [A REVISAR: ' + enRevision[clave] + '; no se renombró]'
-      : ' [sin currentriverrace.json legible, no se pudo etiquetar]'));
+      : ' [sin currentriverrace.json legible, no se pudo etiquetar]');
+    // PF080: cada ejecución encadenada vuelve a analizar la carpeta que se cortó por tiempo y repetía estas líneas
+    // (el 14-oct-2026: 24 líneas, 14 distintas); se anota una sola vez.
+    if (resumen.ignorados.indexOf(linea) === -1) resumen.ignorados.push(linea);
   });
 
   for (var i = 0; i < analisis.resueltas.length; i++) {
