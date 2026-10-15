@@ -367,7 +367,7 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
   // Orden por fecha REAL de creación en Drive (no el nombre, que puede
   // traer una fecha ficticia): solo para dejar el resultado ordenado
   // cronológicamente, ya no hace falta para calcular la temporada.
-  resueltas.sort(function(a, b) { return a.real - b.real; });
+  resueltas.sort(function(a, b) { return (a.real - b.real) || (a.clave < b.clave ? -1 : a.clave > b.clave ? 1 : 0); }); // PF080: desempate por clave para que el orden sea fijo entre ejecuciones
 
   resueltas.forEach(function(item) {
     // PF077: si el periodIndex se corrio un dia, la temporada sale del dia de juego (04:00 Lima), no de la fecha de
