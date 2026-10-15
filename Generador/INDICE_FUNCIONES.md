@@ -1,7 +1,7 @@
 # Índice de funciones — Generador
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Generador/src/`. Total: 155 nombres en 10 archivos .gs.
+Código real: `Generador/src/`. Total: 159 nombres en 10 archivos .gs.
 
 ## Por archivo
 
@@ -12,7 +12,7 @@ Código real: `Generador/src/`. Total: 155 nombres en 10 archivos .gs.
 - **05_Migrador_Formato.gs** (22 funciones): migrarFormatoJSON, _mig_ejecutarMigracion_, migrarFormatoJSON_reiniciarEstado, _mig_etiquetarCarpetaClan, _mig_yaEstaEnCarpeta_, _mig_estaBajoCarpeta_, _migrarCarpetaPlayers, _mig_nombrePlayerPorCreacion_, _mig_renombrarSeguro, _letraDiaGuerra_, _pad2_, _mig_fechaHoraStr, _mig_soloHora, _mig_horaLima, _mig_tiempoAgotado_, _mig_estadoInicial_, _mig_guardarEstado_, _mig_borrarEstado_, _mig_pausarYContinuar_, _mig_programarContinuacion_, _mig_borrarTriggersPendientes_, _mig_finalizar_
 - **06_Limpieza_Duplicados_JSON.gs** (19 funciones): limpiarDuplicadosJSON, _limpiarCarpeta_, _analizarCarpetaJSON_, _anclaMasCercana_, _textoCorteDiario_, _fmtHoraH_, _horaLimaDecimal_, _enVentanaCorte_, _estimarCorteDiario_, _diaJuegoNum_, _diaJuegoFecha_, _esInicioDeTemporada_, _diaJuegoAnclaEnVentana_, _ajustarPeriodoPrestado_, _temporadaDeFecha_, _primerLunesDia_, _quitarTagExistente_, _leerPeriodo_, _primeraMencionNumerica_
 - **07_Cache_Periodos_JSON.gs** (3 funciones): _cache_cargar_, _cache_guardar_, reiniciarCachePeriodosJSON
-- **08_GitHub.gs** (14 funciones): _githubToken_, _ghReq_, _ghRespuesta_, _ghJson_, _scriptIdDeProyecto_, _extDeTipo_, _archivosDelProyecto_, _githubRevisarSecretos_, _githubGenerarIndice_, _githubGenerarLeeme_, _githubCommitArchivos_, _githubSincronizar_, _githubTraerAProyectoApps_, _githubProbar_
+- **08_GitHub.gs** (16 funciones): _githubToken_, _ghReq_, _ghRespuesta_, _ghJson_, _scriptIdDeProyecto_, _extDeTipo_, _archivosDelProyecto_, _githubRevisarSecretos_, _githubGenerarIndice_, _githubGenerarLeeme_, _githubCommitArchivos_, _githubSincronizar_, _githubTraerAProyectoApps_, _githubProbar_, subirEvidenciaT05AGithub, _githubSubirArchivosDeDrive_
 - **09_ReadmeGenerador.gs** (4 funciones): _readmeFuncionesManuales_, _readmeGrupo_, _readmeAplicarBloque_, _actualizarReadmeGenerador_
 - **10_Verificar_PeriodIndex_JSON.gs** (7 funciones): _verif_esExcepcionFecha_, verificarPeriodIndexJSON, _verif_periodoDeArchivo_, _verif_indiceDiaLima_, _verif_enVentanaCambio_, _verif_comparar_, _verif_imprimirResumen_
 
@@ -63,6 +63,7 @@ Ninguno.
 | `_githubProbar_` | función | 08_GitHub.gs | 533 |  |
 | `_githubRevisarSecretos_` | función | 08_GitHub.gs | 120 |  |
 | `_githubSincronizar_` | función | 08_GitHub.gs | 325 |  |
+| `_githubSubirArchivosDeDrive_` | función | 08_GitHub.gs | 576 |  |
 | `_githubToken_` | función | 08_GitHub.gs | 46 |  |
 | `_githubTraerAProyectoApps_` | función | 08_GitHub.gs | 401 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
 | `_horaLimaDecimal_` | función | 06_Limpieza_Duplicados_JSON.gs | 432 |  |
@@ -127,6 +128,8 @@ Ninguno.
 | `descargarBase` | función | 01_Principal.gs | 15 |  |
 | `descargarGenerador` | función | 01_Principal.gs | 81 |  |
 | `eliminarTodosLosArchivosDeBase` | función | 01_Principal.gs | 153 |  |
+| `EVIDENCIA_T05_CARPETA_GITHUB_` | global | 08_GitHub.gs | 549 |  |
+| `EVIDENCIA_T05_NOMBRES_` | global | 08_GitHub.gs | 550 |  |
 | `GITHUB_BORRAR_FORMATOS_ANTIGUOS_` | global | 08_GitHub.gs | 24 |  |
 | `GITHUB_BRANCH_` | global | 08_GitHub.gs | 20 |  |
 | `GITHUB_OWNER_` | global | 08_GitHub.gs | 18 |  |
@@ -165,6 +168,7 @@ Ninguno.
 | `subirBaseDesdeMd` | función | 01_Principal.gs | 53 |  |
 | `subirBaseDesdeTxt` | función | 01_Principal.gs | 39 |  |
 | `subirBaseDesdeZip` | función | 01_Principal.gs | 32 |  |
+| `subirEvidenciaT05AGithub` | función | 08_GitHub.gs | 562 |  |
 | `subirGeneradorDesdeGithub` | función | 01_Principal.gs | 129 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
 | `subirGeneradorDesdeGithubForzado` | función | 01_Principal.gs | 134 |  |
 | `subirGeneradorDesdeGs` | función | 01_Principal.gs | 108 |  |
