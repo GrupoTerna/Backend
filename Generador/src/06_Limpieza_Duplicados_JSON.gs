@@ -167,10 +167,14 @@ function _limpiarCarpeta_(carpeta, etiqueta, cache) { // PF074: `carpeta` puede 
 
   Object.keys(porPeriodo).forEach(function(k) {
     var grupo = porPeriodo[k];
-    grupo.sort(function(a, b) { return b.tamano - a.tamano; }); // mayor tamaño primero
+    // PF080 (15-oct-2026, decidido por la usuaria): mayor tamaño primero y, a IGUAL tamaño, la captura MAS RECIENTE
+    // (antes quedaba la mas antigua por el orden de "resueltas"). Dos capturas del mismo periodo con el mismo peso pueden
+    // diferir en el contenido (caso Mini乂Ternas™ T-05, 13-09 y 14-09: solo cambia decksUsedToday) y la posterior trae mas datos.
+    grupo.sort(function(a, b) { return (b.tamano - a.tamano) || (b.real - a.real); });
     aConservar.push(grupo[0]);
     grupo.slice(1).forEach(function(item) {
-      item.motivo = 'duplicado del mismo periodo (' + k + '), no es el más completo (' + item.tamano + ' bytes vs ' + grupo[0].tamano + ' bytes)';
+      item.motivo = 'duplicado del mismo periodo (' + k + '), no es el más completo (' + item.tamano + ' bytes vs ' + grupo[0].tamano + ' bytes' +
+        (item.tamano === grupo[0].tamano ? ', mismo tamaño: se conserva la captura más reciente' : '') + ')';
       descartadas.push(item);
     });
   });
