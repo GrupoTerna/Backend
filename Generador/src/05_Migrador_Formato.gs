@@ -88,6 +88,23 @@ var MIG_TRIGGER_HANDLER_ = 'migrarFormatoJSON';
  *         tienen sectionIndex/periodIndex propio.
  */
 function migrarFormatoJSON() {
+  // PF080 (14-oct-2026): candado para que no corran dos ejecuciones a la vez. El 14-oct, una ejecucion manual y la del
+  // disparador automatico se solaparon (8:22/8:23 y 8:29/8:31 p. m.), leyeron el mismo estado guardado y repitieron
+  // clanes ya hechos. Si hay otra en curso, esta sale sin tocar nada; la que esta corriendo programa su continuacion.
+  var candado = LockService.getScriptLock();
+  if (!candado.tryLock(5000)) {
+    console.log('migrarFormatoJSON(): ya hay otra ejecución en curso; esta se omite. Espera a que termine (o a su continuación automática); no la lances a mano mientras haya una en proceso.');
+    return;
+  }
+  try {
+    _mig_ejecutarMigracion_();
+  } finally {
+    candado.releaseLock();
+  }
+}
+
+/** Cuerpo de migrarFormatoJSON() (ver el candado arriba). */
+function _mig_ejecutarMigracion_() {
   var inicio = new Date().getTime();
   var props = PropertiesService.getScriptProperties();
   var estadoGuardado = props.getProperty(MIG_PROP_ESTADO_);
@@ -443,7 +460,7 @@ function _mig_pausarYContinuar_(estado, cache, motivo) {
     ' | Movidos: ' + estado.resumen.movidos +
     ' | Duplicados: ' + estado.resumen.duplicados);
   console.log('   Se programó una continuación automática en ~1 minuto.');
-  console.log('   (también se puede ejecutar migrarFormatoJSON() manualmente para continuar antes)');
+  console.log('   (no la ejecutes a mano mientras esa continuación esté pendiente o corriendo: el candado la omitiría; si quieres adelantarla, espera a que no haya ninguna en proceso)');
 }
 
 function _mig_programarContinuacion_() {
