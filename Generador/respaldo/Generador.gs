@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/10/2026 14:56:59 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/10/2026 15:55:27 */
 
 
 
@@ -2362,11 +2362,30 @@ function _esInicioDeTemporada_(fecha, corteH) {
 }
 
 /**
+ * PF080 (15-oct-2026): dia de juego de una ancla guardada DENTRO de la ventana de corte, deducido de su propio periodIndex.
+ * El periodIndex da el dia de la semana (0 = lunes ... 6 = domingo): si coincide con el dia de calendario de Lima de la
+ * captura, el servidor ya estaba en el dia nuevo; si coincide con el anterior, todavia estaba en el viejo. Cualquier otro
+ * valor (por ejemplo la T-05 con periodIndex 7 un domingo) no se puede interpretar y devuelve null.
+ * Funcion pura (no toca Drive).
+ * @param {{real:Date, periodIndex:number}} ancla
+ * @return {?number} Numero de dia de calendario de Lima (dias enteros desde 1970) del dia de juego, o null.
+ */
+function _diaJuegoAnclaEnVentana_(ancla) {
+  var calNum = _diaJuegoNum_(ancla.real, 0); // dia de calendario de Lima (corte a las 00:00)
+  var diaSemanaCal = (((calNum + 3) % 7) + 7) % 7; // 1970-01-01 fue jueves = 3 (0 = lunes)
+  var diaSemanaP = (((Math.round(Number(ancla.periodIndex)) % 7) + 7) % 7);
+  if (diaSemanaP === diaSemanaCal) return calNum;
+  if (diaSemanaP === (diaSemanaCal + 6) % 7) return calNum - 1;
+  return null;
+}
+
+/**
  * PF077: corre el (sectionIndex, periodIndex) de una ancla al dia de juego de otro archivo (un clans.json, que no trae
  * periodIndex propio). Cuenta los cortes de las 04:00 (Lima) entre ambas fechas: 0 = mismo dia, se copia; +1 / -1 = se suma
  * o resta un dia. Como el prestamo es de 6 horas como maximo (PAREO_TOLERANCIA_MS_), no puede haber mas de un corte.
- *  - Si el archivo o la ancla cayeron entre las 04:00 y las 05:00 no se sabe en que dia estaba el servidor: se devuelve
- *    {revision} y el archivo queda sin etiquetar para que lo revise la usuaria.
+ *  - Si el ARCHIVO cayo entre las 04:00 y las 05:00 no se sabe en que dia estaba el servidor: se devuelve {revision} y el
+ *    archivo queda sin etiquetar para que lo revise la usuaria. PF080: si solo la ANCLA cayo en la ventana, el dia de juego
+ *    de la ancla se deduce de su periodIndex (_diaJuegoAnclaEnVentana_) y el archivo se resuelve por su fecha.
  *  - La semana (sectionIndex) sube o baja cuando el nuevo periodIndex cruza un multiplo de 7.
  *  - Si el dia nuevo es el primer dia de una temporada (primer lunes del mes), el periodIndex es 0 y la semana 0; si es
  *    el ultimo de la anterior, el largo de esa temporada sale del calendario (del primer lunes anterior a este).
@@ -2384,11 +2403,20 @@ function _ajustarPeriodoPrestado_(ancla, fecha, corte) {
   if (_enVentanaCorte_(fecha, corte)) {
     return { revision: 'creado ' + ventana + ' (Lima): no se sabe en que dia de juego estaba el servidor' };
   }
+  // PF080 (15-oct-2026, decidido por la usuaria): si la ANCLA cayo en la ventana pero el archivo esta claramente fuera de
+  // ella, el dia de juego del archivo se calcula por su fecha. El dia de juego de la ancla sale de su propio periodIndex
+  // (_diaJuegoAnclaEnVentana_) y se usa una hora de referencia del mismo dia, fuera de la ventana, para el resto del calculo.
+  var anclaReal = ancla.real;
   if (_enVentanaCorte_(ancla.real, corte)) {
-    return { revision: 'la captura de la que tomaria el periodIndex se guardo ' + ventana + ' (Lima): no se sabe en que dia de juego estaba' };
+    var diaAncla = _diaJuegoAnclaEnVentana_(ancla);
+    if (diaAncla === null) {
+      return { revision: 'la captura de la que tomaria el periodIndex se guardo ' + ventana + ' (Lima) y su periodIndex ' + ancla.periodIndex +
+        ' no cuadra con el dia de la semana de su fecha: no se sabe en que dia de juego estaba' };
+    }
+    anclaReal = new Date(diaAncla * 86400000 + (VERIF_LIMA_OFFSET_H_ + cH) * 3600 * 1000 + 12 * 3600 * 1000);
   }
 
-  var cortes = _diaJuegoNum_(fecha, cH) - _diaJuegoNum_(ancla.real, cH);
+  var cortes = _diaJuegoNum_(fecha, cH) - _diaJuegoNum_(anclaReal, cH);
   var s = ancla.sectionIndex;
   var p = ancla.periodIndex;
 
@@ -2408,9 +2436,9 @@ function _ajustarPeriodoPrestado_(ancla, fecha, corte) {
       nuevoS = s + Math.floor(nuevoP / 7) - Math.floor(p / 7);
     }
   } else { // cortes === -1
-    if (_esInicioDeTemporada_(ancla.real, cH)) {
+    if (_esInicioDeTemporada_(anclaReal, cH)) {
       // El archivo es del ultimo dia de la temporada anterior: su largo sale del calendario.
-      var d = _diaJuegoFecha_(ancla.real, cH);
+      var d = _diaJuegoFecha_(anclaReal, cH);
       var anio = d.getUTCFullYear(), mes0 = d.getUTCMonth();
       var anioAnt = mes0 === 0 ? anio - 1 : anio, mesAnt0 = mes0 === 0 ? 11 : mes0 - 1;
       var largo = Math.round((Date.UTC(anio, mes0, _primerLunesDia_(anio, mes0)) -
@@ -3389,6 +3417,26 @@ var VERIF_CAMBIO_HASTA_H_ = 5;
 /** @const {RegExp} Tag del nombre: T-nn  S-nn P.I-nn[-letra] y el resto. */
 var VERIF_REGEX_TAG_ = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-([LMXJVSD]))?\s/;
 
+/**
+ * @const {Array<string>} PF080 (15-oct-2026, decidido por la usuaria): archivos cuyo nombre es correcto aunque la fecha de
+ * creación no cuadre con el día del periodIndex. Son los 4 de T-05 del 13-09-2026 12.26 (Grupo乂Terna™ y Mini乂Ternas™,
+ * currentriverrace.json y clans.json): Drive los creó un domingo, pero la API ya devolvía periodIndex 7 (lunes) ese día, y
+ * en este sistema manda el contenido. Solo se exceptúa el aviso «la fecha de creación cae en X pero el periodIndex…»; el
+ * resto de las comprobaciones sigue aplicándose. Comparación sin distinguir espacios repetidos.
+ */
+var VERIF_EXCEPCIONES_FECHA_ = [
+  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - currentriverrace.json',
+  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - clans.json',
+  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - currentriverrace.json',
+  'T-05 S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - clans.json'
+];
+
+/** @return {boolean} true si el nombre está en VERIF_EXCEPCIONES_FECHA_ (ignorando espacios repetidos). */
+function _verif_esExcepcionFecha_(nombre) {
+  var n = String(nombre).replace(/\s+/g, ' ').trim();
+  return VERIF_EXCEPCIONES_FECHA_.indexOf(n) !== -1;
+}
+
 /** @const {number} Máximo de líneas de detalle que se escriben en el log del Generador. */
 var VERIF_MAX_LINEAS_LOG_ = 60;
 
@@ -3404,7 +3452,7 @@ var VERIF_MAX_LINEAS_LOG_ = 60;
 function verificarPeriodIndexJSON() {
   var inicio = new Date().getTime();
   var cache = _cache_cargar_();
-  var r = { revisados: 0, ok: 0, faltaLetra: 0, ventana: 0, problemas: [], sinVerificar: [], completo: true };
+  var r = { revisados: 0, ok: 0, faltaLetra: 0, ventana: 0, exceptuados: 0, problemas: [], sinVerificar: [], completo: true };
 
   console.log('═══════════════════════════════════════════════════════');
   console.log('verificarPeriodIndexJSON() — ' + _mig_horaLima(new Date()) + ' — SOLO LECTURA');
@@ -3437,6 +3485,7 @@ function verificarPeriodIndexJSON() {
 
       var v = _verif_comparar_(nombre, idPeriodo, f.getDateCreated(), new Date());
       r.revisados++;
+      if (v.exceptuado) r.exceptuados++; // PF080: se cuenta aparte, además de su estado normal
       if (v.problemas.length) {
         r.problemas.push('[' + carpeta.getName() + '] ' + nombre + ' → ' + v.problemas.join(' | '));
       } else if (v.estado === 'ventana') {
@@ -3514,6 +3563,7 @@ function _verif_enVentanaCambio_(fecha) {
 function _verif_comparar_(nombre, idPeriodo, creada, ahora) {
   var problemas = [];
   var avisos = [];
+  var exceptuado = false;
   var m = VERIF_REGEX_TAG_.exec(nombre);
 
   if (!m) {
@@ -3558,8 +3608,12 @@ function _verif_comparar_(nombre, idPeriodo, creada, ahora) {
         ') no es ni ' + LETRAS_DIA_GUERRA_.charAt(dia5) + ' ni ' + LETRAS_DIA_GUERRA_.charAt(dia4));
     }
   } else if (diaReal !== dia4) {
-    problemas.push('la fecha de creación cae en ' + LETRAS_DIA_GUERRA_.charAt(dia4) +
-      ' pero el periodIndex ' + pReal + ' es ' + letraReal);
+    if (_verif_esExcepcionFecha_(nombre)) {
+      exceptuado = true; // PF080: nombre correcto (manda el contenido); ver VERIF_EXCEPCIONES_FECHA_
+    } else {
+      problemas.push('la fecha de creación cae en ' + LETRAS_DIA_GUERRA_.charAt(dia4) +
+        ' pero el periodIndex ' + pReal + ' es ' + letraReal);
+    }
   }
 
   // Temporada: tiene que ser la que corresponde a la fecha de creación y no
@@ -3580,7 +3634,7 @@ function _verif_comparar_(nombre, idPeriodo, creada, ahora) {
   else if (enVentana) estado = 'ventana';
   else estado = 'ok';
 
-  return { estado: estado, problemas: problemas, avisos: avisos };
+  return { estado: estado, problemas: problemas, avisos: avisos, exceptuado: exceptuado };
 }
 
 /** Escribe el resumen en la consola y deja una entrada en el log del Generador. */
@@ -3591,6 +3645,7 @@ function _verif_imprimirResumen_(r) {
   console.log('  Correctos (con letra)              : ' + r.ok);
   console.log('  Correctos, creados en 04:00-05:00  : ' + r.ventana);
   console.log('  Correctos pero sin letra todavía   : ' + r.faltaLetra + '  (los arregla migrarFormatoJSON, salvo un clans.json sin currentriverrace cercano)');
+  console.log('  Exceptuados (ya contados arriba)   : ' + r.exceptuados + '  (T-05 del 13-09: la fecha no cuadra con el periodIndex 7, manda el contenido)');
   console.log('  Con problemas                      : ' + r.problemas.length);
   console.log('  Avisos / sin poder verificar       : ' + r.sinVerificar.length);
   console.log('  (clans.json no trae periodIndex: solo se contrastó su P.I del nombre con la fecha de creación)');
