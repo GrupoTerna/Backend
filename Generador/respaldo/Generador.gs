@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/10/2026 18:40:32 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/10/2026 19:24:37 */
 
 
 
@@ -2003,7 +2003,7 @@ function _limpiarCarpeta_(carpeta, etiqueta, cache) { // PF074: `carpeta` puede 
   aConservar.forEach(function(item) {
     console.log('  ✔ CONSERVA  temporada ' + item.temporada + ' / sección ' + item.sectionIndex + ' / periodo ' + item.periodIndex +
       ' | fecha real: ' + item.real + ' | nombre: "' + item.clave + '"' +
-      (item.esAncla ? ' | tamaño: ' + item.tamano + ' bytes' : ' | identidad prestada de la captura más cercana en el tiempo'));
+      (item.esAncla ? ' | tamaño: ' + item.tamano + ' bytes' : (item.porEtiqueta ? ' | identidad tomada del tag con letra que ya traía el nombre' : ' | identidad prestada de la captura más cercana en el tiempo')));
   });
 
   var archivosAfectados = 0;
@@ -2059,6 +2059,8 @@ function _limpiarCarpeta_(carpeta, etiqueta, cache) { // PF074: `carpeta` puede 
  *   ascendente. "aRevision" (PF077) lista, con su motivo, las capturas sin
  *   currentriverrace.json propio cuyo dia de juego no se pudo fijar (ventana
  *   04:00-05:00); tambien figuran en "sinResolver" y quedan sin etiquetar.
+ *   PF080: salvo que el nombre ya traiga un tag completo con letra (T-xx S-xx P.I-xx-L, letra = periodIndex mod 7): entonces
+ *   esa captura pasa a "resueltas" (esAncla=false, porEtiqueta=true) y deja de listarse como ignorada.
  */
 function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser una Folder (raiz) o la clave de un clan (string)
   cache = cache || {};
@@ -2083,6 +2085,18 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
 
     if (!capturas[claveCaptura]) {
       capturas[claveCaptura] = { archivos: {}, realCreado: f.getDateCreated() };
+    }
+    // PF080 (15-oct-2026, pedido de la usuaria): si el nombre ya trae un tag COMPLETO con letra (T-xx S-xx P.I-xx-L), se
+    // guarda como ultimo recurso para las capturas que no se puedan resolver por contenido ni por ancla (ver abajo).
+    // Solo se acepta si la letra coincide con periodIndex mod 7 (_letraDiaGuerra_); si no, se ignora.
+    if (!capturas[claveCaptura].etiquetaManual) {
+      var mTag = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)-([LMXJVSD])\s/.exec(partes[0].trim() + ' ');
+      if (mTag) {
+        var tT = parseInt(mTag[1], 10), tS = parseInt(mTag[2], 10), tP = parseInt(mTag[3], 10);
+        if (tT >= 1 && tS >= 1 && _letraDiaGuerra_(tP) === mTag[4]) {
+          capturas[claveCaptura].etiquetaManual = { temporada: tT, sectionIndex: tS - 1, periodIndex: tP };
+        }
+      }
     }
     capturas[claveCaptura].archivos[endpoint] = f;
     if (f.getDateCreated() < capturas[claveCaptura].realCreado) {
@@ -2153,13 +2167,15 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
     var tamano = grupo.tamano;
     var cortes = 0;
     var temporadaDelDia = null;
+    var motivoRevision = null;
+    var porEtiqueta = false;
 
     if (!idPeriodo && anclas.length) {
       var prestada = _anclaMasCercana_(anclas, grupo.realCreado);
       if (prestada && Math.abs(prestada.real.getTime() - grupo.realCreado.getTime()) <= PAREO_TOLERANCIA_MS_) {
         var ajuste = _ajustarPeriodoPrestado_(prestada, grupo.realCreado, (corteDiario && corteDiario.ok) ? corteDiario : null);
         if (ajuste.revision) {
-          aRevision.push({ clave: clave, motivo: ajuste.revision });
+          motivoRevision = ajuste.revision;
         } else {
           idPeriodo = { sectionIndex: ajuste.sectionIndex, periodIndex: ajuste.periodIndex };
           cortes = ajuste.cortes;
@@ -2168,7 +2184,18 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
       }
     }
 
+    // PF080 (15-oct-2026, pedido de la usuaria): ULTIMO RECURSO. Si no se pudo resolver ni por contenido ni por ancla (o
+    // cayo en revision) pero el nombre ya trae un tag completo con letra puesto a mano, se respeta ese tag y la captura
+    // se trata como resuelta (el migrador la mueve a su carpeta T-xx / S-xx y la renombra con el formato de siempre).
+    // No pisa nada resuelto por contenido o ancla: solo ocupa el lugar de "ignorado".
+    if (!idPeriodo && grupo.etiquetaManual) {
+      idPeriodo = { sectionIndex: grupo.etiquetaManual.sectionIndex, periodIndex: grupo.etiquetaManual.periodIndex };
+      temporadaDelDia = grupo.etiquetaManual.temporada;
+      porEtiqueta = true;
+    }
+
     if (!idPeriodo) {
+      if (motivoRevision) aRevision.push({ clave: clave, motivo: motivoRevision });
       sinResolver.push(clave);
       return;
     }
@@ -2182,7 +2209,8 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
       tamano: tamano,
       esAncla: esAncla, // false = identidad prestada de otra captura cercana
       cortes: cortes, // PF077: dias que se corrio el periodIndex prestado (-1, 0 o +1); 0 en las anclas
-      temporadaDelDia: temporadaDelDia // PF077: temporada del DIA DE JUEGO si se corrio el periodIndex; null si no
+      temporadaDelDia: temporadaDelDia, // PF077: temporada del DIA DE JUEGO si se corrio el periodIndex; null si no
+      porEtiqueta: porEtiqueta // PF080: true = identidad tomada del tag con letra que ya traia el nombre (decidido a mano)
     });
   });
 
