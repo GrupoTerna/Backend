@@ -67446,3 +67446,20 @@ Eran los 11 comentarios HTML largos de `admin.html` de la parte 7a. Los números
 **Qué hipótesis sigue sin comprobarse.** Que `runPendientesYMensajesProgramado()` haya empezado entre las 20:03:49 y las 20:04:04 (antes de que `runGuerra()` guardara el checkpoint nuevo), leído el de las ~19:34 y terminado antes que `runGuerra()`, que reescribió Pendientes a las 20:05:21. **Falta el registro de esa hora de `runPendientesYMensajesProgramado()`**; la usuaria dijo que ese detalle no es el punto: lo que importa es que `runGuerra()` ocupa el candado ~150 s por el procesamiento, no por la descarga. Lo comprobado es solo que el checkpoint ya queda guardado ~10 s después de empezar `runGuerra()`.
 
 **Cuando se programe:** cambiará `Base/src/`; recordar a la usuaria correr `subirBaseDesdeGithub()` antes de cualquier descarga; actualizar §B002, §B118, §08B001 y §08B003; y registrar la prueba (qué se pudo verificar y qué no, regla 8).
+
+#### PF091 · Medición de la ventana ligera de 4 a 5 a. m. (15-oct-2026; registro de la usuaria con 3 corridas de `runGuerra()`; no está en `Datos descargados`)
+- **Corrección a lo dicho antes (regla 9):** en la respuesta anterior se estimó 60 a 100 s para «captura + Guerra + CSV» restando de la cifra de ~100 s anotada el 05-oct en §08B001 (aviso 6). **Era una estimación con una cifra vieja; lo medido es 33 a 62 s** (tabla). La cifra de 100 s de §08B001 no se tocó.
+- **Tiempos (hora Lima, tomados de las marcas del registro; precisión de ±1 s):**
+
+| Corrida | Captura de los 5 clanes | Hasta «[Guerra] Actualizando» | Hoja Guerra | CSV (`Backup_Guerra.csv`) | Total del registro (panel) |
+|---|---|---|---|---|---|
+| 4:48:49 | 7 s | 3 s | 11 s | 14 s | 36 s (39,3 s) |
+| 4:53:49 | 9 s | 4 s | 13 s | 7 s | 34 s (38,7 s) |
+| 4:58:49 | 7 s | 3 s | 18 s | 34 s | 64 s (67,6 s) |
+
+- **Lectura:** la captura sola son 7 a 9 s. Añadirle la hoja Guerra suma 11 a 18 s y añadirle además el CSV suma 7 a 34 s, es decir, **la corrida completa de la ventana tarda 33 a 62 s sobre la captura (≈ +25 a +55 s)**. La hoja Guerra es estable (11, 13 y 18 s); **el CSV es lo que más varía** (7, 14 y 34 s) y **no hay dato que explique por qué** (en las tres corridas dice 15774 filas y 0 nuevas). Los 3 a 4 s entre el resumen de periodos y «[Guerra] Actualizando» no tienen líneas de registro; **no se comprobó** qué los ocupa (podría ser guardar el checkpoint, pero es una suposición).
+- **Confirma §PF091:** en las tres corridas no hay ninguna línea `[Cache]` ni `[ApiDump]`; **la ventana no escribe JSON por periodo**, solo el checkpoint. Por eso **el costo de escribir esos JSON en la captura sigue sin medirse**.
+- **El checkpoint nunca se reutiliza en la ventana:** el registro dice «Progreso de clanes en Drive tiene 5 min — más viejo que el máximo permitido (1.5 min)» en las tres; con disparos cada 5 min y un máximo de 90 s (`CLANES_PROGRESO_MAX_EDAD_MS_GUERRA_VENTANA`), cada disparo vuelve a pedir la API.
+- **`runPendientesYMensajesProgramado()` también corre dentro de la ventana** (4:52:24, 29,3 s; 4:57:24, 24,3 s; solo se vio el encabezado, no su registro). Empieza unos 85 s antes de cada `runGuerra()` y termina 56 y 61 s antes de que empiece, así que **en estas tres no se solaparon**; leería un checkpoint de ~3,5 min, **no comprobado** porque falta su registro.
+- **`pingProxyRender` corrió a las 4:51:03 (3,5 s)** aunque `ACTIVADORES_CONFIG` lo tiene con `activo:false`: **su activador sigue instalado**. Según §08B001 (aviso 8b) se retira al volver a correr `activarTodosLosActivadores()`; no se comprobó que se haya vuelto a correr desde el 05-oct.
+- **Margen de la ventana:** la corrida más larga (67,6 s) terminó a las 4:59:56, 4 s antes de las 5:00; `LOCK_MAX_DURACION_MS` es 6 min 30 s, así que sobra tiempo respecto del candado, pero la última corrida de la ventana ya llega hasta el límite horario.
