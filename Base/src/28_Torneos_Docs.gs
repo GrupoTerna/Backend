@@ -835,13 +835,15 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
   // FIX (05-ago-2026) — mismo pedido que en los docs de torneo: la [→ Contexto_Base_Web.md §28B059]
   var ctxReal = ctxParam || _getCtx();
   var temporadaActual = _getTemporadaMostrarExtra(ss, ctxReal);
-  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaActual, ctxReal);
+  var ctxAtaques = _clonarCtxParaTemporada(ctxReal, temporadaActual);
+  // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers; ctxAtaques es el mismo ctx que arma por dentro el helper de trofeos; [→ Contexto_Base_Web.md §PF091]
+  var guerraDataUnica = _getDatosGuerraParaControl(ctxAtaques, ctxReal.temporada);
+  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaActual, ctxReal, guerraDataUnica);
   var torneosPorTag = requisitos.minTorneos ? _contarTorneosPorTagEnTemporada(ss, temporadaActual) : null;
 
   // NUEVO (19-sep-2026, pedido del usuario): ataques + exonerados de la [→ Contexto_Base_Web.md §28B060]
-  var ctxAtaques = _clonarCtxParaTemporada(ctxReal, temporadaActual);
   var ataquesSemanaPorTag = (Object.keys(requisitos.minAtaquesPorClan).length > 0)
-    ? _getAtaquesYExentosSemanaActualPorTag(ctxAtaques, ctxReal.temporada)
+    ? _getAtaquesYExentosSemanaActualPorTag(ctxAtaques, ctxReal.temporada, guerraDataUnica)
     : {};
 
   var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
