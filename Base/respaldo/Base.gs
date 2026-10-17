@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 18:29:18 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 18:55:19 */
 
 
 
@@ -31779,9 +31779,16 @@ function _getExtraMostrarTemporada(ss, ctxReal) {
 /**
  * _getSemanasDeTemporada(temporada) [→ Contexto_Base_Web.md §25B017]
  */
+// 17-oct-2026 (PF091): memo por ejecución. CFG.REF_DEFAULT lee Propiedades del script en cada acceso y _esPeriodoDeColiseo_() llama a esta función en cada fila de guerra. [→ Contexto_Base_Web.md §PF091]
+var _SEMANAS_TEMPORADA_MEMO = {};
+function _limpiarMemoSemanasTemporada_() { _SEMANAS_TEMPORADA_MEMO = {}; }
 function _getSemanasDeTemporada(temporada) {
+  var clave = String(temporada);
+  if (Object.prototype.hasOwnProperty.call(_SEMANAS_TEMPORADA_MEMO, clave)) return _SEMANAS_TEMPORADA_MEMO[clave];
   var pl = primerLunesTemporada(CFG.REF_DEFAULT, temporada);
-  return lunesEnMes(pl.getFullYear(), pl.getMonth());
+  var n = lunesEnMes(pl.getFullYear(), pl.getMonth());
+  _SEMANAS_TEMPORADA_MEMO[clave] = n;
+  return n;
 }
 
 // 5) Rango/clan ACTUAL de cada jugador (hoja Directorio, mapeo dinámico de [→ Contexto_Base_Web.md §25B018]
@@ -36414,11 +36421,12 @@ function _getMinTClanMaps() {
  */
 function _combinarFechaHora(fechaStr, horaStr) {
   var mFecha = String(fechaStr || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  var mHora  = String(horaStr  || '').trim().match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
+  // 17-oct-2026 (PF098): los segundos son opcionales; admin.html manda la hora como "HH:MM:SS" (horaConSegundos()) y el bot como "HH:mm". [→ Contexto_Base_Web.md §PF098]
+  var mHora  = String(horaStr  || '').trim().match(/^([01]?\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/);
   if (!mFecha || !mHora) return null;
   var dia = Number(mFecha[1]), mes = Number(mFecha[2]), anio = Number(mFecha[3]);
-  var horas = Number(mHora[1]), minutos = Number(mHora[2]);
-  var fecha = new Date(anio, mes - 1, dia, horas, minutos, 0);
+  var horas = Number(mHora[1]), minutos = Number(mHora[2]), segundos = Number(mHora[3] || 0);
+  var fecha = new Date(anio, mes - 1, dia, horas, minutos, segundos);
   if (isNaN(fecha.getTime())) return null;
   return fecha;
 }
@@ -55808,6 +55816,7 @@ function _finalizarReenumeracion() {
   var offsetNuevo   = offsetViejo - deltaMeses;
 
   props.setProperty('CFG_REF_ACTIVO', nuevaRefStr);
+  _limpiarMemoSemanasTemporada_(); // PF091: la Ref cambió; se descarta el memo de semanas por temporada
   props.setProperty('CFG_OFFSET_ROYALEAPI', String(offsetNuevo));
 
   // Refresco inmediato en pantalla, sin esperar el próximo runAll/runUpdate.
