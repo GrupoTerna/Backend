@@ -45297,3 +45297,9069 @@ configurado" de "configurado en 0".
 ---
 
 
+# Archivo 31_Cards_Mazos.gs
+
+Datos de cartas (Backup_Cards.csv / Backup_Cards_2.csv, hojas Cards/Cards2) y generador de links de mazo de RoyaleAPI (`generarUrlMazo()`, `_mergearCards2CSV()`). Los IDs de bloque llevan prefijo `31`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 31B001 | 6-477 | `Cabecera del archivo` | REGLA DE TRABAJO DE ESTE PROYECTO (ver también 17_GuerraSheet.gs): toda |
+| 31B002 | 481-506 | `Cabecera del archivo` | updateCardsSheet() |
+| 31B003 | 508-510 | `updateCardsSheet` | Asegura los perfiles de /players (memoizado: no repite peticiones si |
+| 31B004 | 528-530 | `updateCardsSheet` | FIX (23-sep-2026, 2da tanda): refrescar Maxlevel, MaxEvolutionLevel y URLs |
+| 31B005 | 556-559 | `updateCardsSheet` | manualmente por el usuario; nueva carta -> |
+| 31B006 | 593-607 | `updateCards2Sheet` | Si PLAYERS_API_ENABLED = false: NO se llama a /players para nadie |
+| 31B007 | 662-666 | `updateCards2Sheet` | FIX (24-sep-2026, pedido usuario -- "currentFavouriteCard se debe |
+| 31B008 | 676-691 | `updateCards2Sheet` | DOC (21-sep-2026, pendiente marcado en perfil.html — "el 'x0' al lado |
+| 31B009 | 713-715 | `updateCards2Sheet` | 24-sep-2026 (pedido del usuario): cartas de torre (`supportCards`). Va ANTES del |
+| 31B010 | 743-752 | `updateCards2Sheet` | FIX (04-ago-2026, conservado tal cual con el merge de 06-ago-2026): |
+| 31B011 | 761-781 | `updateCards2Sheet` | generarUrlMazo(tag) |
+| 31B012 | 793-800 | `generarUrlMazo` | generarUrlMazo2(tag) |
+| 31B013 | 814-898 | `generarUrlMazo2` | D) DATOS DE CARTAS: Backup_Cards.csv (fijos) y Backup_Cards_2.csv (por jugador) |
+| 31B014 | 900-924 | `generarUrlMazo2` | DIFERENCIA FIJA DE NIVEL POR RAREZA (nivel del JSON -> nivel unificado de la app) |
+| 31B015 | 927-938 | `_cacheDiferenciaNivelPorRareza` | CARTAS DE TORRE (24-sep-2026, pedido del usuario). Las tropas de torre viven en |
+| 31B016 | 941-948 | `CARTAS_TORRE_ID_MIN` | _esCartaTorreDatos(id, tipo) |
+| 31B017 | 955-969 | `_esCartaTorreDatos` | _mapaDiferenciaNivelPorRareza() |
+| 31B018 | 995-1005 | `_mapaDiferenciaNivelPorRareza` | _esCartaTorre(id) |
+| 31B019 | 1013-1017 | `_esCartaTorre` | _invalidarCacheDiferenciaNivelPorRareza() |
+| 31B020 | 1022-1029 | `_invalidarCacheDiferenciaNivelPorRareza` | _diferenciaNivelRareza(rarity) |
+| 31B021 | 1037-1046 | `_diferenciaNivelRareza` | _nivelUnificadoMaxDeCartas(cards) |
+| 31B022 | 1064-1076 | `_nivelUnificadoMaxDeCartas` | _nivelUnificadoDeCarta(card, topeRespaldo, rarezasSinDif) |
+| 31B023 | 1089-1095 | `_nivelUnificadoDeCarta` | _avisarRarezasSinDiferencia(rarezasSinDif, etiqueta) |
+| 31B024 | 1105-1112 | `_avisarRarezasSinDiferencia` | _leerCardsCSV() |
+| 31B025 | 1135-1140 | `_guardarCardsCSV` | _leerCards2CSV() |
+| 31B026 | 1142-1149 | `_leerCards2CSV` | FIX (24-sep-2026, pedido usuario -- "currentFavouriteCard se debe |
+| 31B027 | 1157-1164 | `_leerCards2CSV` | AVISO 7 (23-sep-2026, 4ta tanda): un Backup_Cards_2.csv anterior a esta |
+| 31B028 | 1182-1197 | `_guardarCards2CSV` | _getTodosLosCardIdsDesdeCSV() |
+| 31B029 | 1208-1221 | `_getTodosLosCardIdsDesdeCSV` | _mergearCards2CSV(filasExistentes, todasFilas) |
+| 31B030 | 1250-1254 | `_mergearCards2CSV` | _actualizarCards2SoloAdmins() |
+| 31B031 | 1269-1273 | `_actualizarCards2SoloAdmins` | Leer Directorio para obtener los tags de admins. |
+| 31B032 | 1288-1290 | `_actualizarCards2SoloAdmins` | IMPORTANTE: se llama _fetchPlayersData() ANTES de revisar la cache |
+| 31B033 | 1329-1332 | `_actualizarCards2SoloAdmins` | DOC: mismo comportamiento "copias sobrantes -> reacciones al nivel |
+| 31B034 | 1365-1374 | `_actualizarCards2SoloAdmins` | _rarezaParaFila(c) |
+| 31B035 | 1381-1408 | `_rarezaParaFila` | _filasCards2DeTorre(tag, pd, idsDelJugador, topeJugador, rarezasSinDif) |
+| 31B036 | 1451-1453 | `_getTagsParaPartialMode` | Fase C1 (16/07/2026): V_Guerra vive ahora en Players, así que se usa |
+| 31B037 | 1466-1473 | `_getTagsParaPartialMode` | Admins: incluir SIEMPRE, sin importar Estado (mismo criterio que |
+| 31B038 | 1491-1513 | `_getTagsParaPartialMode` | _getCardsFromCache() |
+| 31B039 | 1573-1582 | `_getCardsFromCache` | _mezclarCartasEnMapa(map, cards) |
+| 31B040 | 1614-1630 | `_mezclarCartasEnMapa` | _refrescarCardsRows(rows, cardMap) |
+| 31B041 | 1713-1717 | `_refrescarCardsRows` | _getTagsConPlayerCache() |
+| 31B042 | 1736-1786 | `_getTagsConPlayerCache` | GENERADOR DE LINKS DE MAZOS ROYALEAPI |
+| 31B043 | 1788-1793 | `_getTagsConPlayerCache` | _cardNameToSlug(name) |
+| 31B044 | 1802-1813 | `_cardNameToSlug` | _construirCardInfoMap(ss) |
+| 31B045 | 1818-1820 | `_construirCardInfoMap` | cols: 0=N°, 1=ID, 2=Name, 3=Nombre, 4=Maxlevel, 5=MaxEvolutionLevel |
+| 31B046 | 1838-1851 | `_construirCardInfoMap` | _construirCards2PorTag(ss) |
+| 31B047 | 1875-1893 | `_construirCards2PorTag` | _construirListasMazoDesdeMapas(cardInfo, playerCards) |
+| 31B048 | 1934-1939 | `_construirListasMazoDesdeMapas` | _ensamblarUrlMazo(inc, exc, incluirInc) |
+| 31B049 | 1956-1970 | `_ensamblarUrlMazo` | _generarUrlMazoDesdeMapas(tag, cardInfo, playerCards) |
+| 31B050 | 1980-1989 | `_generarUrlMazoDesdeMapas` | _generarUrlMazo2DesdeMapas(tag, cardInfo, playerCards) |
+| 31B051 | 1999-2065 | `_generarUrlMazo2DesdeMapas` | E) COSTOS DE SUBIDA DE NIVEL: Backup_Cards_3.csv (catálogo fijo, manual) |
+| 31B052 | 2067-2073 | `_generarUrlMazo2DesdeMapas` | _leerCards3CSV() |
+| 31B053 | 2085-2096 | `_leerCards3CSV` | _construirCostosPorRareza() |
+| 31B054 | 2135-2147 | `_construirCostosPorRareza` | _nivelRarezaDesdeNivelApp(nivelApp, rarity) |
+| 31B055 | 2155-2163 | `_nivelRarezaDesdeNivelApp` | _costoSubirNivel(costos, rarity, nivelRareza) |
+| 31B056 | 2173-2183 | `_costoSubirNivel` | _construirCartaRarezaMap() |
+| 31B057 | 2200-2224 | `_construirCartaRarezaMap` | _calcularCostosSubirDesdeMapas(playerCards, cartaInfo, costos) |
+| 31B058 | 2267-2277 | `_calcularCostosSubirDesdeMapas` | costosSubirNivelJugador(tag) |
+| 31B059 | 2297-2309 | `costosSubirNivelJugador` | _nivelesFaltantesEnCards3(cardsRows, costos) |
+| 31B060 | 2330-2339 | `_nivelesFaltantesEnCards3` | _avisarNivelesFaltantesCards3(cardsRows) |
+| 31B061 | 2357-2371 | `_avisarNivelesFaltantesCards3` | _avisarDiferenciasNivelCards(cardsRows) |
+| 31B062 | 2413-2421 | `_avisarDiferenciasNivelCards` | _avisarRevisionNivelesCards(cardsRows) |
+| 31B063 | 2427-2433 | `_avisarRevisionNivelesCards` | probarCostosSubirNivel() |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+Cada bloque se copió tal cual estaba en el `.gs` (sin los `//`). Los números de línea son los del archivo ANTES de la limpieza.
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 31B001 — líneas 6-477 (comentario)
+
+```text
+=============================================================================
+REGLA DE TRABAJO DE ESTE PROYECTO (ver también 17_GuerraSheet.gs): toda
+ALERTA, ADVERTENCIA o SUGERENCIA de una tanda nueva se escribe PRIMERO acá,
+en el bloque AVISOS ABIERTOS, y no solo en el chat. El aviso queda escrito
+hasta que el usuario lo confirme; entonces se ELIMINA o se ACTUALIZA en ese
+mismo cambio. Los cambios se hacen chicos e incrementales, y los archivos
+se entregan en tandas (solo los .gs modificados, completos y con su nombre
+exacto, nunca como parche).
+
+AVISOS ABIERTOS -- CARTAS DE TORRE EN Backup_Cards.csv / Backup_Cards_2.csv / Backup_Cards_3.csv
+(24-sep-2026, pedido del usuario: "incluye las cartas de torre en Cards,
+Cards_2 y Cards_3, ya que también tienen rareza y costo de oro y elixir").
+Hasta hoy los tres CSV solo cubrían el campo `cards` de /players. Las cartas de
+torre (tropas de torre) vienen aparte: `supportCards` (todas las que tiene el
+jugador) y `currentDeckSupportCards` (la equipada). No estaban en ningún CSV.
+
+CAMBIOS (referencias por archivo + función):
+  - 31_Cards_Mazos.gs, _getCardsFromCache() y _mezclarCartasEnMapa() (parámetro
+    nuevo `esTorre`): además de `cards`, ahora leen `supportCards` de las cuentas
+    de los líderes y del primer jugador con cache (mismo criterio y mismo límite
+    del AVISO 13). Cada carta del mapa lleva `esTorre`. Deja en el log cuántas
+    cartas de torre encontró.
+  - 31_Cards_Mazos.gs, updateCardsSheet(): las cartas de torre nuevas entran a
+    Backup_Cards.csv igual que las demás (ID, Name, Maxlevel, Rarity y URL de la
+    carta; Elixircost queda vacío porque el JSON no lo manda, ver AVISO B),
+    con Tipo = 'Torre' escrito solo en las filas NUEVAS (nunca
+    se pisa un Tipo ya escrito a mano). Nombre queda vacío para traducirlo a
+    mano. Si el JSON no trae la rareza de una carta de torre, lo avisa en el log.
+    El refresco de Maxlevel/URLs de _refrescarCardsRows() ya las cubre sin cambios.
+  - 31_Cards_Mazos.gs, _filasCards2DeTorre() (nueva), llamada desde
+    updateCards2Sheet() y _actualizarCards2SoloAdmins(): por cada jugador agrega a
+    Backup_Cards_2.csv una fila por cada carta de `supportCards` (Level unificado,
+    Count, StarLevel, Currentdeck = 'Sí' si está en currentDeckSupportCards). Las
+    cartas de torre que el jugador NO tiene salen con Level 0 por el mismo relleno
+    que ya se hacía con las cartas normales (_getTodosLosCardIdsDesdeCSV() ahora
+    también devuelve los IDs de torre).
+  - 31_Cards_Mazos.gs, Backup_Cards_3.csv: SIN cambios de datos ni de código. Esa
+    tabla es por (Rarity, Level), no por carta, y el usuario ya confirmó (AVISO 8)
+    que el costo de subida de las cartas de torre es el mismo que el de las cartas
+    normales de su rareza. Al estar ahora en Backup_Cards.csv (Rarity) y
+    Backup_Cards_2.csv (Level), costosSubirNivelJugador(), probarCostosSubirNivel()
+    y las 4 listas de la web las cruzan solas. Si alguna carta de torre llegara a
+    tener otra tabla de costos, habría que agregar filas o una columna nueva.
+  - 31_Cards_Mazos.gs, _esCartaTorreDatos() y _esCartaTorre() (nuevas) y la
+    variable CARTAS_TORRE_ID_MIN: una carta es de torre si su Tipo dice 'Torre' o
+    su ID es >= CARTAS_TORRE_ID_MIN (159000000, el rango de las tropas de torre
+    de Supercell). _esCartaTorre() la usa el resto del proyecto (memoizada dentro
+    de _mapaDiferenciaNivelPorRareza(), que ahora devuelve también `idsTorre`).
+  - 31_Cards_Mazos.gs, _construirCardInfoMap(): SALTA las cartas de torre. Ese
+    mapa arma los links de RoyaleAPI (columnas Mazo/Mazo2 de Directorio, inc=/exc=)
+    y una tropa de torre no es una carta de mazo: sin este filtro sus slugs
+    ("tower-princess", etc.) habrían entrado al link de todos los jugadores.
+  - 31_Cards_Mazos.gs, _mapaDiferenciaNivelPorRareza(): las cartas de torre SÍ
+    participan del cálculo de la diferencia de nivel por rareza (mismo tope y misma
+    numeración por rareza que las cartas normales, confirmado por el usuario, ver
+    AVISO A). Además el mismo recorrido junta `idsTorre` para _esCartaTorre().
+  - 37_Web_API.gs, _webMazoActualDesdeCards2() y _webEstadisticasCartas(): saltan
+    las filas de torre. Sin este filtro la tropa de torre equipada (Currentdeck =
+    'Sí') habría aparecido como una novena carta del mazo actual, distorsionado el
+    elixir promedio y encabezado el Top 10 de cartas más usadas de la Familia.
+    La carta de torre del mazo sigue saliendo por currentDeckSupportCards, como antes.
+
+PENDIENTES / VERIFICACIONES ABIERTAS (24-sep-2026):
+  AVISO A (RESUELTO 24-sep-2026, confirmado por el usuario) -- Numeración de
+    niveles de las cartas de torre: tienen el MISMO tope que el resto de cartas y su
+    nivel crudo (`level`/`maxLevel` de `supportCards`) se determina por su rareza,
+    igual que las cartas de `cards`. CORRECCIÓN a lo entregado antes el mismo día (no
+    se sobrescribe en silencio): la primera versión de este cambio dejaba a las
+    cartas de torre FUERA del cálculo de la diferencia por rareza como precaución,
+    porque esa numeración no estaba confirmada; con la confirmación del usuario esa
+    exclusión se quitó (_mapaDiferenciaNivelPorRareza()). Conservado: en el log de
+    updateCardsSheet() no debería aparecer "TOPES DE NIVEL DESALINEADOS"; si aparece,
+    revisar el Maxlevel de las filas de torre en Backup_Cards.csv.
+  AVISO B (RESUELTO 24-sep-2026, confirmado por el usuario) -- Elixircost de las
+    cartas de torre: NO tienen costo de elixir porque siempre están activas y no
+    consumen elixir; por eso la columna Elixircost de sus filas en Backup_Cards.csv
+    queda VACÍA a propósito. CORRECCIÓN a lo dicho antes el mismo día (no se
+    sobrescribe en silencio): el pedido original decía que tenían "costo de oro y
+    elixir"; el JSON real de /players (GrupoXTerna_2, #VCQ8GJUP8, 22-sep-2026) no trae
+    `elixirCost` en `supportCards` y el usuario aclaró que es correcto. Nada que
+    completar a mano. El código ya tolera la celda vacía (las cartas de torre además
+    no entran al mazo ni al Top 10 de 37_Web_API.gs).
+  AVISO C (RESUELTO 24-sep-2026, con JSON real) -- Rareza en `supportCards`: el JSON real
+    SÍ la trae (Tower Princess common, Cannoneer epic, Dagger Duchess y Royal Chef
+    legendary) y sus maxLevel (16, 11, 8, 8) coinciden con los topes por rareza de las
+    cartas normales (AVISO A). Se conserva el log "CARTA DE TORRE SIN RAREZA" solo como
+    red de seguridad por si Supercell agrega una carta de torre sin rareza; en ese caso
+    se puede completar a mano en Backup_Cards.csv. Nota: el nivel de Backup_Cards_2.csv
+    se calcula con la rareza del JSON (no la del CSV, AVISO 14).
+  AVISO D (RESUELTO 24-sep-2026, confirmado por el usuario) -- Tipo = 'Torre' se
+    escribe solo en filas NUEVAS de Backup_Cards.csv (nunca pisa un Tipo ya escrito a
+    mano). La detección de cartas de torre también funciona por ID (>= 159000000).
+  AVISO E (RESUELTO 28-sep-2026, CORRECCIÓN a lo escrito el 27-sep; no se
+    sobrescribe en silencio) -- la usuaria aclaró que la imagen de la insignia
+    está bien: lo que se mostraba mal era el NOMBRE, y ya fue corregido. El
+    diagnóstico del 27-sep ("la imagen siempre muestra el ícono del primer nivel")
+    no era el problema real. Sin acción pendiente en este archivo. Texto anterior,
+    conservado solo como historial:
+  AVISO E (CORRECCIÓN 27-sep-2026 -- diagnóstico distinto al original, no
+    se sobrescribe en silencio) -- Frontend (Web-main.zip, no subido en
+    esta tanda). El pedido original decía "revisar que se vean bien";
+    el usuario confirmó que las cartas de torre YA muestran bien su
+    nombre en español (nombreEs) -- eso no era el problema. El bug real:
+    la IMAGEN de la insignia (icono de la carta de torre) siempre muestra
+    el ícono del PRIMER nivel de esa insignia, aunque el jugador ya haya
+    desbloqueado un nivel superior. Sigue siendo 100% frontend
+    (Web-main.zip); no hay nada que tocar en 31_Cards_Mazos.gs hasta
+    tener ese archivo.
+  NO SE PUDO VERIFICAR: ejecución en Apps Script real ni con los Backup_Cards*.csv
+    reales. Verificado: sintaxis y una simulación en Node con los helpers reales de CSV
+    de Base.md, primero con jugadores de prueba y luego con el JSON real de /players
+    (#VCQ8GJUP8, 22-sep-2026, Backup_Cards.csv arrancando vacío): se generan las 4
+    filas de torre con Rarity Common/Epic/Legendary/Legendary y Tipo Torre; Cards_2
+    da nivel de app 15/8/13/9 y Count 10/12/0/1 con Tower Princess como carta de torre
+    del mazo; la diferencia por rareza sigue en common 0, rare 2, epic 5, legendary 8,
+    champion 10 y el tope en 16; los links de mazo no llevan slugs de torre.
+
+AVISOS ABIERTOS -- PENDIENTES TRASLADADOS DESDE Lista_de_cambios.docx
+(22-sep-2026, revisión hecha con /lectura-de-md contra este Base.md). El
+docx es ANTERIOR a varias cosas que este archivo ya resuelve -- por
+ejemplo, la columna "Nombre" (traducción manual al español, índice 3,
+justo después de "Name") YA EXISTE para Cards/Cards2, así que el bug de
+nombres en inglés (ej. "petardera") que describe el docx probablemente ya
+no depende del backend, salvo que: (a) sea una carta nueva cuya columna
+Nombre todavía está vacía (se llena a mano), o (b) el frontend no esté
+leyendo la columna Nombre. Ninguna de las dos se pudo confirmar sin
+Web-main.zip. Lo que sigue es lo que el docx pedía y que, tras revisar
+este archivo, no se encontró ya resuelto:
+
+  AVISO 1 (RESUELTO 27-sep-2026) -- Cofres y ciclo de cofres: el docx pedía
+    mostrar próximo cofre, secuencia de próximos cofres, ciclo, cofres
+    especiales y predicción. YA IMPLEMENTADO en el backend: el endpoint
+    /upcomingchests (descargarUpcomingChestsJugador(), 09_API_ClashRoyale.gs)
+    trae exactamente el ciclo de cofres por conseguir. OJO (aclarado por el
+    usuario): este endpoint SOLO trae cofres FUTUROS (todavía no recibidos)
+    -- no sirve para historial de cofres ya recibidos. Igual que
+    `battlelog` (AVISO 3), es un JSON por jugador, NO acumulativo: cada
+    corrida lo reemplaza con el más reciente, no se van sumando registros.
+    ACTUALIZADO 28-sep-2026 (comentario desactualizado, corrección a lo escrito antes):
+    la web YA lo usa. perfil.html muestra el ciclo de cofres con
+    webCofresJugador (37_Web_API.gs). Sin acción pendiente en este archivo.
+    Ojo: descargarUpcomingChestsJugador() no consulta nada mientras
+    PLAYERS_API_ENABLED (01_Config_Global.gs) valga 'partial' (pregunta 21 del consolidado).
+
+  AVISO 2 (27-sep-2026, actualizado) -- Historial de mazos realmente
+    utilizados (a partir del historial de batallas: mazos usados, partidas
+    y victorias por mazo, cartas más frecuentes). Es distinto de los
+    botones actuales "Sugerencia de mazo" / "Sugerencia de mazo 2" (que
+    solo arman un link de RoyaleAPI con las cartas del jugador, ver
+    _generarUrlMazo2DesdeMapas() más abajo en este archivo). YA SE PUEDE
+    IMPLEMENTAR (confirmado por el usuario): con `battlelog` disponible
+    (ver AVISO 3) ya hay de dónde sacar el historial de batallas para
+    reconstruir mazos usados. FALTA: todavía no se implementó (ni backend
+    de agregación ni frontend).
+
+  AVISO 3 (RESUELTO/CONFIRMADO 27-sep-2026) -- Historial detallado de
+    batallas del jugador (fecha/hora, tipo, modo, resultado, coronas, mazo
+    propio y rival, cartas usadas), similar a lo que muestra RoyaleAPI.
+    CONFIRMADO por el usuario: /players NO trae batallas -- la única
+    fuente es `battlelog` (descargarBattlelogJugador(),
+    09_API_ClashRoyale.gs), una consulta INDEPENDIENTE de /players, con su
+    propio JSON por jugador, no acumulativo (mismo criterio que
+    upcomingchests, ver AVISO 1). ACTUALIZADO 28-sep-2026 (comentario desactualizado,
+    corrección a lo escrito antes): la web YA lo usa. perfil.html muestra las batallas
+    con webBattlelogJugador (37_Web_API.gs). Sin acción pendiente en este archivo.
+    Ojo: no se descarga mientras PLAYERS_API_ENABLED valga 'partial' (pregunta 21 del consolidado).
+
+  AVISO 4 (RESUELTO 27-sep-2026, confirmado por el usuario) -- Colección
+    completa de cartas del jugador en el perfil (todas las cartas, imagen,
+    nombre en español, nivel, cantidad, progreso, rareza, evolución,
+    héroe). Era 100% trabajo de FRONTEND (Web-main.zip); la base de datos
+    (Cards/Cards2, columnas Name/Nombre) ya existía en este archivo desde
+    antes. El usuario confirmó que ya está implementado en el frontend y
+    funciona bien. Sin acción pendiente en este archivo.
+
+  AVISO 5 (RESUELTO 27-sep-2026, confirmado por el usuario) -- Sección
+    "Carta favorita" + insignias en el perfil: el docx pedía moverla justo
+    después de la sección de cartas, reducir el tamaño del ícono de
+    rareza ("la gota") y corregir que carta/insignia tomara el nombre en
+    español de la columna Nombre (antes aparecía en inglés). Era 100%
+    frontend (HTML/CSS/JS de Web-main.zip); no había nada que tocar en
+    este archivo. El usuario confirmó que ya está implementado y funciona
+    bien. Sin acción pendiente en este archivo. (Distinto de AVISO E, que
+    es sobre la imagen de la insignia, no el nombre; AVISO E sigue sin
+    resolver -- ver bloque de AVISOS de cartas de torre más arriba.)
+
+AVISOS ABIERTOS -- BACKUP_CARDS_3.CSV (costos de subida de nivel)
+(23-sep-2026, pedido del usuario: "he creado el csv Backup_Cards_3.csv,
+se debe ligar la información con cards y cards_2"). Confirmado por el
+usuario: Goldcost = monedas de oro que cuesta subir de nivel; Cardcost =
+cantidad de cartas que hacen falta para subir de nivel; para subir se
+necesitan AMBOS. Decisiones confirmadas por el usuario el mismo día:
+  - El oro sale del propio juego (batallas, cofres): NO se pide ni se
+    evalúa; solo se MUESTRA el costo en oro (Goldcost).
+  - Backup_Cards_2.csv DEBE guardar la cantidad de cartas (AVISO 7,
+    implementado el 23-sep-2026, 4ta tanda: columna Count).
+  - Backup_Cards.csv.Maxlevel NO debe ser estático: se actualiza solo si
+    se detecta un nivel nuevo.
+  - El JSON de /players trae siempre el nivel de cada carta y su máximo. El
+    usuario confirmó que runUpdate se corrió el 23-sep-2026 para TODOS los
+    jugadores sin excepción (la cache de /players está completa ese día).
+  - (2da tanda, 23-sep-2026) Son 4 clanes Terna y cada uno tiene su líder:
+    el nivel máximo de cada carta se revisa en las cuentas de los 4 líderes,
+    no en uno solo.
+  - (2da tanda) Backup_Cards.csv.Maxlevel y Backup_Cards_3.csv.Level usan la
+    MISMA numeración: la del JSON de /players. Solo Backup_Cards_2.csv
+    convierte (columna Level) para alinear los topes de todas las rarezas al
+    mismo nivel de la app (hoy 16).
+  - (2da tanda) El 16 NO es fijo: lo fijo es la DIFERENCIA, por rareza,
+    entre el nivel del JSON y el de la app. Ejemplo dado por el usuario: si
+    el JSON manda 8 como máximo (Legendary) y en el juego es 16, la
+    diferencia es 8; si crean el nivel 17, el JSON manda 9 y la diferencia
+    sigue siendo 8.
+  - (2da tanda) MaxEvolutionLevel y las URLs de Carta/Héroe/Evolución
+    también deben refrescarse, porque el juego agrega evoluciones todo el
+    tiempo.
+  - (2da tanda) Para las cartas se usa primero la cuenta de los líderes
+    ("está bien que se use primero las cuentas de los líderes").
+
+CAMBIOS DE LA 2DA TANDA (23-sep-2026) -- referencias por archivo + función
+  - 31_Cards_Mazos.gs, CARDS_DIFERENCIA_NIVEL_POR_RAREZA (variable global
+    nueva) y _diferenciaNivelRareza() (nueva): tabla de diferencias fijas
+    por rareza (Common 0, Rare 2, Epic 5, Legendary 8, Champion 10). Es la
+    misma diferencia que hoy daba `16 - maxLevel` del JSON, así que HOY los
+    niveles de Backup_Cards_2.csv salen idénticos; solo cambian cuando el
+    juego suba el nivel máximo (y entonces salen bien).
+  - 31_Cards_Mazos.gs, updateCards2Sheet() y _actualizarCards2SoloAdmins():
+    `16 - maxLevel + level` reemplazado por _nivelUnificadoDeCarta() (nivel
+    del JSON + diferencia de la rareza). Ya no usan `card.maxLevel || 14`.
+    Auxiliares nuevas: _nivelUnificadoMaxDeCartas() y
+    _avisarRarezasSinDiferencia().
+  - 31_Cards_Mazos.gs, _nivelRarezaDesdeNivelApp() y
+    _calcularCostosSubirDesdeMapas() (sección E): la conversión inversa usa
+    la misma diferencia (nivelRareza = nivelApp - diferencia). El segundo
+    parámetro de _nivelRarezaDesdeNivelApp() cambió: ahora recibe la
+    RAREZA, ya no el Maxlevel. Cada carta del resultado ya no trae
+    `nivelMaxRareza` (ningún otro archivo lo usa).
+  - 31_Cards_Mazos.gs, _getCardsFromCache(): ahora lee primero las cuentas de
+    los líderes de los 4 clanes y las une (mayor Maxlevel y
+    MaxEvolutionLevel por carta; para el resto, el primer dato no vacío) y
+    después completa con el primer jugador con cache, como antes. Deja en
+    el log cuántos líderes tenían cartas en cache. Auxiliar nueva:
+    _mezclarCartasEnMapa().
+  - 31_Cards_Mazos.gs, _getMaxLevelPorCarta(): ELIMINADA (el máximo ya sale
+    de _getCardsFromCache(), que ahora revisa los 4 líderes).
+  - 31_Cards_Mazos.gs, _refrescarMaxlevelCardsRows(): reemplazada por
+    _refrescarCardsRows(), que en las cartas existentes refresca Maxlevel,
+    MaxEvolutionLevel y las URLs de Carta, Héroe y Evolución.
+  - 31_Cards_Mazos.gs, _avisarDiferenciasNivelCards() y
+    _avisarRevisionNivelesCards() (nuevas): log de rarezas sin diferencia
+    definida y de topes desalineados entre rarezas. updateCardsSheet() y
+    probarCostosSubirNivel() llaman al wrapper (que también revisa Cards_3).
+  - CORRECCIONES a lo entregado antes el mismo día (no se sobrescriben en
+    silencio): (a) la 1ra tanda propuso calcular el tope unificado desde el
+    propio JSON (AVISO 11): el usuario lo corrigió, lo fijo es la
+    DIFERENCIA por rareza, no el tope. (b) el cruce de la sección E tomaba
+    el MAYOR entre el Maxlevel de Backup_Cards.csv y el de Backup_Cards_3.csv:
+    era un parche para un Maxlevel viejo; como ambos usan la numeración del
+    JSON, ya no hace falta. (c) _getMaxLevelPorCarta() usaba solo el primer
+    líder con cache; ahora se revisan los 4.
+  - Sigue vigente de la 1ra tanda: el refresco de Maxlevel solo lo SUBE (si
+    el JSON trae uno menor no lo pisa y lo deja en el log), el aviso
+    "NIVEL NUEVO DETECTADO" (_nivelesFaltantesEnCards3(),
+    _avisarNivelesFaltantesCards3()) y que el oro solo se muestra
+    (_puedeSubirNivel() ya no existe).
+
+PENDIENTES:
+
+  AVISO 6 (RESUELTO 23-sep-2026, confirmado por el usuario) -- Oro del
+    jugador: no se pide ni se evalúa, solo se muestra el costo en oro.
+    Conservado acá solo para dejar constancia del cambio de criterio.
+
+  AVISO 7 (RESUELTO 23-sep-2026, 4ta tanda; VERIFICACIÓN ABIERTA) -- Cantidad
+    de copias de cada carta. Decidido por el usuario: Backup_Cards_2.csv DEBE
+    guardarla. HECHO: columna nueva AL FINAL, Count (índice 6), para no correr
+    los índices 0-5 que leen _construirCards2PorTag(),
+    _webMazoActualDesdeCards2() y _webEstadisticasCartas() (revisados: leen por
+    índice, no por largo de fila). Cambios en 31_Cards_Mazos.gs:
+    _leerCards2CSV() (encabezado por defecto y agrega Count a un CSV viejo),
+    _guardarCards2CSV() (rellena con '' las filas viejas), y las filas nuevas
+    de updateCards2Sheet() y _actualizarCards2SoloAdmins() (card.count; 0 si
+    el jugador no tiene la carta).
+    Notas: (a) los tags que una corrida no actualice conservan su fila vieja,
+    con Count vacío, hasta la siguiente; (b) al nivel máximo `count` queda en 0
+    (las copias sobrantes pasan a reacciones); (c) el perfil individual sigue
+    leyendo `count` del JSON crudo (AVISO 8), no de esta columna.
+    CORRECCIÓN a lo dicho antes (no se sobrescribe en silencio): se sugirió que
+    _webEstadisticasCartas() (37_Web_API.gs) podría usar Count. Revisada: solo
+    cuenta en cuántos mazos activos está cada carta (Currentdeck = 'Sí', top
+    10), no necesita las copias, así que no tiene nada que ganar con Count.
+    DECIDIDO por el usuario (24-sep-2026): la web (perfil.html) debe leer la
+    cantidad PRINCIPALMENTE de esta columna Count y, si falta, del `count` del
+    JSON de Drive. HECHO en 37_Web_API.gs, _webDatosDriveJugador() +
+    _webMapaCards2PorId() + _webConCards2Csv(): el backend pone el
+    Count del CSV en cards[]/supportCards[]/currentDeck[]/
+    currentDeckSupportCards[].count; perfil.html no cambia (ya lee `.count`).
+    (24-sep-2026: la misma función también manda `level` CRUDO —Level del CSV
+    menos la diferencia de la rareza, AVISO 14— y `evolutionLevel` del CSV.)
+    Costo: un segundo recorrido de Backup_Cards_2.csv por consulta de perfil.
+    RESUELTO (27-sep-2026): no era un reporte nuevo para toda la Familia --
+    el usuario aclaró que solo hacía falta una PASTILLA DE FILTRO
+    "Mejora disponible" en la sección "Colección completa" del perfil
+    individual. Como el backend ya manda costoOro/cartasSiguienteNivel y ya
+    resalta en verde/negrita cuándo count >= cartasSiguienteNivel (AVISO 8),
+    el dato para ese filtro ya existía en lo que recibe el frontend -- no
+    hizo falta nada nuevo del backend. YA IMPLEMENTADO en Web-main.zip
+    (confirmado por el usuario).
+    NO SE PUDO VERIFICAR: ejecución en Apps Script real ni un
+    Backup_Cards_2.csv real; solo la sintaxis y la lógica de filas.
+    (24-sep-2026: mismo patrón con la columna StarLevel, índice 7, para `starLevel`.)
+
+  AVISO 8 (RESUELTO 23-sep-2026, 3ra tanda; VERIFICACIÓN ABIERTA) -- Conexión
+    a la web. Decidido por el usuario: (a) los costos se mandan en las 4
+    listas de cartas de rawClash: cards[], supportCards[], currentDeck[] y
+    currentDeckSupportCards[] (currentFavouriteCard no: la API no expone su
+    nivel actual); (b) la cantidad de cartas se acopla al "xN" de cada ficha
+    y pasa a decir "12/20" (tiene/necesita).
+    Implementado: 37_Web_API.gs, _webDatosDriveJugador() + _webConCostoSubida()
+    (nueva): cada carta lleva `costoOro` (Goldcost) y `cartasSiguienteNivel`
+    (Cardcost) de Backup_Cards_3.csv, buscados con la rareza y el `level`
+    CRUDOS del JSON (misma numeración, no hace falta Backup_Cards_2.csv ni el
+    AVISO 7: (actualizado 24-sep-2026: ahora salen primero de Backup_Cards_2.csv.Count
+    y el `count` del JSON queda de respaldo) las copias que tiene el jugador salen del `count` del propio
+    JSON). No se mandan si la carta está al máximo o si Backup_Cards_3.csv no
+    tiene fila para esa rareza/nivel (nivel o rareza nueva: ver AVISO 14 y el
+    aviso "NIVEL NUEVO DETECTADO"). perfil.html, _cantidadCartasHtml(): "12/20"
+    si hay costo, "x12" de siempre si no; la fila "Cartas: N" que se había
+    preparado en "Colección completa" se eliminó.
+    DECISIONES POSTERIORES DEL USUARIO (mismo día, antes PENDIENTES): (1) el
+    oro se muestra como fila propia también en Mazo actual, Cartas de torre y
+    Carta de torre del mazo (perfil.html, _oroHtml()/_filaCostoMejora()); las
+    cartas al nivel máximo no la muestran; (2) el costo de subida de las
+    cartas de torre (supportCards) es el mismo que el de las cartas normales
+    de su rareza (CONFIRMADO por el usuario; ya no es una suposición); (3)
+    "12/20" se resalta (verde y negrita) cuando las copias que tiene alcanzan
+    para subir (count >= cartasSiguienteNivel). Solo se comparan las CARTAS:
+    el oro no se evalúa (AVISO 6), por eso el título del resaltado aclara que
+    aparte hace falta el oro.
+
+  AVISO 9 (RESUELTO 23-sep-2026, ver CAMBIOS DE LA 2DA TANDA) -- Maxlevel de
+    Backup_Cards.csv desactualizado: ahora se refresca en cada corrida,
+    mirando las cuentas de los 4 líderes.
+    VERIFICACIÓN ABIERTA: falta ver el resultado real de la primera corrida
+    de runUpdate con este cambio (cuántas cartas cambian de Maxlevel,
+    MaxEvolutionLevel y URLs, y que el log diga 4 de 4 líderes leídos).
+
+  AVISO 10 (RESUELTO 23-sep-2026, 3ra tanda) -- Comentario desactualizado
+    en OTRO archivo: 37_Web_API.gs, _webMazoActualDesdeCards2(): el
+    comentario de `nivel` decía "ya viene normalizado 1-14 (16-Maxlevel+Level)",
+    pero Backup_Cards_2.csv.Level es el nivel unificado de la app (hoy 1-16,
+    ver _nivelUnificadoDeCarta()). Corregido en el docblock y en el comentario
+    junto al campo `nivel`; era solo el comentario, el cálculo real ya usaba
+    la diferencia fija por rareza desde el AVISO 11. La otra mitad de este
+    aviso (el respaldo `card.maxLevel || 14` de updateCards2Sheet()) quedó
+    RESUELTA en la 2da tanda: el nivel ya no depende del maxLevel del JSON
+    sino de la rareza.
+
+  AVISO 11 (RESUELTO 23-sep-2026, 2da tanda) -- El "16" fijo del nivel
+    unificado. El usuario aclaró que lo fijo es la DIFERENCIA por rareza;
+    updateCards2Sheet(), _actualizarCards2SoloAdmins() y la sección E ya la
+    usan la diferencia por rareza (hoy _mapaDiferenciaNivelPorRareza(), antes una
+    tabla fija). Ver también AVISO 14.
+
+  AVISO 12 (27-sep-2026, actualizado -- CORRECCIÓN a lo dicho en el mismo
+    cambio, no se sobrescribe en silencio) -- Otras columnas de
+    Backup_Cards.csv. RESUELTO (23-sep-2026): MaxEvolutionLevel y las URLs
+    de Carta/Héroe/Evolución ahora se refrescan en filas existentes (una
+    URL guardada solo se reemplaza si el JSON trae una distinta y no
+    vacía; nunca se borra una URL porque el JSON no la traiga;
+    MaxEvolutionLevel solo sube, igual que Maxlevel). AVANCE (27-sep-2026):
+    ya existe descargarCards() (09_API_ClashRoyale.gs), que llama al
+    endpoint /cards (catálogo COMPLETO de Supercell, no depende de que
+    algún jugador ya haya desbloqueado la carta) y se programó para correr
+    una vez por semana (activarTriggerDescargarCards(), mismo archivo).
+    PENDIENTE DE DEFINIR (encontrado al revisar, no confirmado con el
+    usuario todavía): _refrescarCardsRows() -- que descargarCards()
+    reusa -- SOLO actualiza Maxlevel/MaxEvolutionLevel/URLs en filas YA
+    EXISTENTES; Name, Rarity y Elixircost recién se completan cuando una
+    carta es NUEVA (fila que se agrega por primera vez). Es decir: con
+    /cards disponible se PODRÍA además refrescar Name/Rarity/Elixircost en
+    filas existentes (por si alguno quedó mal o Supercell lo cambia), pero
+    el código actual todavía no lo hace -- falta confirmar si se quiere
+    extender _refrescarCardsRows() para eso. El método viejo de este
+    archivo (_getCardsFromCache()/_mezclarCartasEnMapa(), que lee las 4
+    cuentas de líderes) se CONSERVA sin cambios como respaldo automático:
+    si /cards falla, descargarCards() cae solo a este método (comparados
+    campo por campo antes de decidir: extraen exactamente los mismos
+    campos, /cards solo tiene mejor cobertura). Nombre (traducción
+    española) y Tipo siguen sin poder completarse desde ninguna API, esas
+    dos siguen 100% manuales, sin cambios.
+
+  AVISO 13 (RESUELTO 23-sep-2026, 2da tanda) -- Detección de cartas NUEVAS:
+    _getCardsFromCache() ya no se detiene en el primer jugador con cache;
+    lee primero las cuentas de los líderes (confirmado por el usuario) y
+    completa con el primer jugador con cache. Límite que queda: una carta
+    nueva que NINGÚN líder ni ese primer jugador tengan no se agrega hasta
+    que alguno la tenga.
+
+  AVISO 14 (RESUELTO 23-sep-2026, 4ta tanda; VERIFICACIÓN ABIERTA) -- Rareza
+    nueva / tabla de diferencias. Pedido del usuario: el Maxlevel se compara
+    en TODAS las rarezas, el más alto es el nivel máximo absoluto y la
+    compensación es (nivel máximo absoluto - Maxlevel de esa rareza) + nivel
+    de la carta. CORRECCIÓN a lo dicho antes (no se sobrescribe en silencio):
+    una sesión anterior dio por resuelto el aviso porque el respaldo con el
+    JSON del jugador ya hacía esa cuenta; el usuario quería que la TABLA
+    FIJA desapareciera, y ese era justo el punto pendiente.
+    HECHO: 31_Cards_Mazos.gs, CARDS_DIFERENCIA_NIVEL_POR_RAREZA (tabla fija)
+    BORRADA y reemplazada por _mapaDiferenciaNivelPorRareza() (calcula del
+    catálogo Backup_Cards.csv, memoizado por ejecución) +
+    _invalidarCacheDiferenciaNivelPorRareza() (la llama _guardarCardsCSV()).
+    _diferenciaNivelRareza() conserva su firma, así que
+    _nivelUnificadoDeCarta(), _nivelRarezaDesdeNivelApp(),
+    _avisarDiferenciasNivelCards() y _webCartaAlTope() (37_Web_API.gs)
+    funcionan sin cambios. Respaldo si el catálogo está vacío o la rareza no
+    está: el tope sale del JSON del jugador (mayor maxLevel entre todas sus
+    cartas), sin depender de ninguna tabla.
+    PENDIENTE DE DEFINIR / VERIFICAR:
+      a) perfil.html (Web-main.zip, nivelAppAjustado()) todavía tiene su copia
+         manual de la tabla vieja: con el backend dinámico puede desalinearse
+         el día que el catálogo cambie. Falta subir Web-main.zip para tocarlo
+         (idea: que el backend mande la diferencia por rareza).
+      b) RESUELTO (5ta tanda): 37_Web_API.gs, _webMazoActualDesdeCards2(), ya
+         no calcula topeApp a mano; usa _mapaDiferenciaNivelPorRareza().absoluto
+         (una sola fuente de verdad). Nota: esa función relee Backup_Cards.csv
+         una vez por ejecución web (memoizado) aunque la función web ya lo lea.
+      c) Riesgo a confirmar: si el juego sube el nivel máximo y Backup_Cards.csv
+         refresca el Maxlevel de una rareza antes que el de las otras, el
+         absoluto sube solo con esa rareza y las diferencias quedan
+         transitoriamente desfasadas hasta el siguiente updateCardsSheet().
+         _avisarDiferenciasNivelCards() ya no puede detectarlo (con el mapa
+         dinámico los topes cuadran por construcción).
+      d) No se pudo probar en Apps Script real ni con Backup_Cards.csv real.
+
+  AVISO 15 (RESUELTO 23-sep-2026, 3ra tanda; VERIFICACIÓN ABIERTA) --
+    Frontend y el tope 16. Si el juego crea el nivel 17,
+    Backup_Cards_2.csv.Level llegará a 17 en las cartas al máximo. Revisado
+    Web-main.zip: solo perfil.html suponía 16 (los demás archivos no). Tres
+    puntos, todos resueltos:
+      1) perfil.html, nivelAppAjustado(): ahora usa la diferencia fija por
+         rareza (copia manual de CARDS_DIFERENCIA_NIVEL_POR_RAREZA; si se
+         agrega una rareza hay que sumarla en AMBOS lados). Sus 6 llamadas
+         pasan `rarity`.
+      2) perfil.html, _cartaMazoFallback(): reutiliza nivelAppAjustado() en
+         vez de duplicar la fórmula.
+      3) "Mazo actual": perfil.html, renderMazoActual(), comparaba
+         `c.nivel === 16` (borde dorado y ocultar el "×N"). Ahora usa
+         `alTope`. 37_Web_API.gs, _webMazoActualDesdeCards2() manda ese
+         boolean por carta, calculado con la nueva _webCartaAlTope(): nivel
+         de Backup_Cards_2.csv >= Maxlevel de Backup_Cards.csv + diferencia
+         de la rareza (equivale al `level >= maxLevel` crudo del JSON, sin
+         cambiar el formato de ningún CSV). Si la rareza es nueva (AVISO 14)
+         o falta el Maxlevel, respaldo: tope de la app calculado del catálogo.
+         En el frontend, si el backend todavía no manda `alTope`, se calcula
+         con el level/maxLevel crudos de rawClash(j).currentDeck.
+    CORRECCIÓN a lo dicho antes (no se sobrescribe en silencio): se afirmó
+    que el punto 3 no se podía arreglar solo del lado del frontend porque
+    mazoActual.cartas no manda level/maxLevel crudos. Es cierto de esa
+    lista, pero perfil.html ya cruza cada carta con
+    rawClash(j).currentDeck (que sí trae level/maxLevel crudos), así que
+    el frontend podía calcularlo solo. Se dejó igual el campo en el backend
+    (pedido del usuario) porque es la fuente primaria y cubre el caso de un
+    snapshot sin currentDeck; el cruce crudo queda como respaldo.
+    VERIFICACIÓN ABIERTA: falta probarlo en Apps Script y navegador reales
+    con datos de Backup_Cards.csv/Backup_Cards_2.csv reales (ver la lista
+    de NO SE PUDO VERIFICAR más abajo).
+
+  NO SE PUDO VERIFICAR (23-sep-2026): Backup_Cards.csv y Backup_Cards_2.csv
+    reales (solo se subió Backup_Cards_3.csv en la 1ra tanda), ni ejecución
+    en Apps Script real. Lo verificado: sintaxis del archivo y el
+    cruce/refresco/conversión con datos de prueba y con los helpers reales
+    de CSV de Base.md (ver el resumen de la entrega).
+=============================================================================
+```
+
+#### 31B002 — líneas 481-506 (docblock)
+
+```text
+updateCardsSheet()
+Nombre histórico conservado tal cual (llamado desde PASOS_RUNALL/
+PASOS_RUNUPDATE en 31_Cards_Mazos.gs) aunque ya no toca ninguna hoja: agrega a
+Backup_Cards.csv las cartas nuevas encontradas en el cache de jugadores y
+refresca los datos de las que ya existían.
+Cartas nuevas: se leen primero las cuentas de los LÍDERES de los 4 clanes
+Terna y luego, como complemento, el primer jugador con cache (ver
+_getCardsFromCache()). Deduplicación por ID.
+
+FIX (23-sep-2026, pedido del usuario — "Maxlevel de cards no debe ser
+estático, debe actualizarse si detecta un nivel nuevo"): las cartas que YA
+existían refrescan su columna Maxlevel cuando el JSON de /players trae un
+máximo mayor (ver _refrescarCardsRows()).
+
+FIX (23-sep-2026, 2da tanda — "los links también se deben refrescar y
+maxevolutionlevel porque continuamente añaden evoluciones"): esas mismas
+filas existentes también refrescan MaxEvolutionLevel y las URLs de Carta,
+Héroe y Evolución. Name, Nombre, Rarity, Tipo y Elixircost NO se tocan (ver
+AVISO 12).
+
+FIX (24-sep-2026, pedido del usuario — "incluye las cartas de torre en Cards"):
+el mapa que llega de _getCardsFromCache() ahora trae también las cartas de torre
+(`supportCards`). Las nuevas entran igual que las demás, con Tipo = 'Torre'; las
+que ya existían se refrescan con las mismas columnas de siempre.
+```
+
+
+### Ubicación: `updateCardsSheet`
+
+#### 31B003 — líneas 508-510 (comentario)
+
+```text
+Asegura los perfiles de /players (memoizado: no repite peticiones si
+ya se obtuvieron antes en esta misma ejecución, p.ej. al construir
+Directorio en este mismo ciclo).
+```
+
+#### 31B004 — líneas 528-530 (comentario)
+
+```text
+FIX (23-sep-2026, 2da tanda): refrescar Maxlevel, MaxEvolutionLevel y URLs
+de las cartas existentes ANTES de agregar las nuevas (las nuevas ya nacen
+con los datos actuales).
+```
+
+#### 31B005 — líneas 556-559 (comentario)
+
+```text
+manualmente por el usuario; nueva carta ->
+queda vacía hasta que se complete a mano).
+24-sep-2026: las cartas de torre nuevas
+entran con 'Torre' (AVISO D).
+```
+
+
+### Ubicación: `updateCards2Sheet`
+
+#### 31B006 — líneas 593-607 (comentario)
+
+```text
+Si PLAYERS_API_ENABLED = false:    NO se llama a /players para nadie
+                                   (ni admins) -> no se toca
+                                   Backup_Cards_2.csv, se preserva tal cual.
+Si PLAYERS_API_ENABLED = 'admin':  actualizar SOLO ADMINS, preservar el resto
+Si PLAYERS_API_ENABLED = 'partial':actualizar solo admins + nuevos (V_Guerra vacía)
+Si PLAYERS_API_ENABLED = true:     actualizar todos
+
+FASE (02/08/2026): antes el modo OFF ('false') actualizaba igual a los
+admins (mismo criterio histórico de "admins siempre al día"). Ahora ese
+comportamiento vive en su propio modo explícito ('admin'); 'false' es
+un apagado total, sin excepciones.
+
+FIX (06-ago-2026): nombre histórico conservado (llamado desde
+PASOS_RUNALL/PASOS_RUNUPDATE), pero ya no toca ninguna hoja — lee y
+escribe directo Backup_Cards_2.csv vía _leerCards2CSV()/_guardarCards2CSV().
+```
+
+#### 31B007 — líneas 662-666 (comentario)
+
+```text
+FIX (24-sep-2026, pedido usuario -- "currentFavouriteCard se debe
+guardar en cards, en el csv que corresponda"): mismo criterio que
+deckIds, pero para UNA sola carta (la API manda un solo objeto, no
+una lista). Se arma una vez por jugador y se pasa a cada fila (ver
+columna Favorita más abajo) y a _filasCards2DeTorre().
+```
+
+#### 31B008 — líneas 676-691 (comentario)
+
+```text
+DOC (21-sep-2026, pendiente marcado en perfil.html — "el 'x0' al lado
+del nivel de carta no se debe mostrar en cartas al nivel 16"): al
+llegar una carta a su nivel máximo (hoy 16 en este sistema unificado,
+ver nivelApp abajo), Clash Royale convierte automáticamente todas
+las copias sobrantes de esa carta en puntos para comprar
+reacciones — el jugador deja de "guardar" copias de esa carta, así
+que `card.count` (cantidad de copias del JSON crudo de la API, que
+este backend no guarda en Cards_2) queda pegado en 0 para siempre
+en esa carta. No es un bug de la API ni de este backend: es el
+comportamiento real del juego. El frontend (perfil.html) ya lo
+maneja ocultando el contador "×N" cuando level>=maxLevel — mismo
+comentario ahí, fechado 21-sep-2026.
+FIX (23-sep-2026, 2da tanda): antes `16 - maxLevel + level`. Ahora es el
+nivel del JSON + la diferencia de su rareza (nivel máximo absoluto -
+Maxlevel de esa rareza, ver _mapaDiferenciaNivelPorRareza(), AVISO 14):
+sigue funcionando si el juego crea el nivel 17.
+```
+
+#### 31B009 — líneas 713-715 (comentario)
+
+```text
+24-sep-2026 (pedido del usuario): cartas de torre (`supportCards`). Va ANTES del
+relleno de abajo para que idsDelJugador ya las incluya y solo se rellenen
+(Level 0) las de torre que el jugador no tiene.
+```
+
+#### 31B010 — líneas 743-752 (comentario)
+
+```text
+FIX (04-ago-2026, conservado tal cual con el merge de 06-ago-2026):
+"no se debe borrar nada de Cards_2, solo actualizar" (reporte del
+usuario: tras una corrida con fetch parcial de /players,
+_getTagsConPlayerCache() devolvía solo un subconjunto de jugadores y
+el modo TRUE igual reescribía TODO el CSV solo con esos pocos tags).
+Ahora TRUE y PARTIAL usan el MISMO merge (_mergearCards2CSV()) — si el
+fetch fue completo, el resultado es idéntico a antes (todos los tags
+están en todasFilas, así que todos se actualizan); si fue parcial, los
+tags que no se llegaron a pedir esta vez simplemente conservan su fila
+anterior en Backup_Cards_2.csv en vez de desaparecer.
+```
+
+#### 31B011 — líneas 761-781 (docblock)
+
+```text
+generarUrlMazo(tag)
+Wrapper de conveniencia para obtener el link de la columna MAZO de UN
+SOLO jugador de forma puntual (ej. desde el editor de Apps Script o un
+menú manual).
+
+ADVERTENCIA DE RENDIMIENTO: esta función lee Backup_Cards.csv y
+Backup_Cards_2.csv COMPLETOS desde cero en cada llamada. NUNCA debe
+llamarse dentro de un loop sobre muchos jugadores (eso fue, de hecho, la
+causa real de un timeout de updateDirectorioSheet(): con Backup_Cards_2.csv
+teniendo miles de filas —cada jugador × ~120 cartas— y Directorio con
+~139 filas, llamar a esta función una vez por fila releía ese CSV
+completo ~139 veces, un costo O(filas_directorio × filas_cards2) que
+agota el tiempo máximo de ejecución). Para loops, usar _construirCardInfoMap() +
+_construirCards2PorTag() UNA VEZ antes del loop, y dentro del loop llamar
+a _generarUrlMazoDesdeMapas(tag, cardInfo, cards2PorTag[tagClean]) (o a
+_generarUrlMazo2DesdeMapas() para la columna Mazo2).
+
+@param {string} tag - Tag del jugador (con o sin #)
+@returns {string|null} URL completa o null si no hay datos de Cards_2 para ese tag.
+```
+
+
+### Ubicación: `generarUrlMazo`
+
+#### 31B012 — líneas 793-800 (docblock)
+
+```text
+generarUrlMazo2(tag)
+Wrapper de conveniencia equivalente a generarUrlMazo(), pero para la
+columna MAZO2 (solo exclusión). Misma advertencia de rendimiento: nunca
+llamar dentro de un loop sobre muchos jugadores.
+@param {string} tag - Tag del jugador (con o sin #)
+@returns {string|null} URL completa o null si no hay datos de Cards_2 para ese tag.
+```
+
+
+### Ubicación: `generarUrlMazo2`
+
+#### 31B013 — líneas 814-898 (comentario)
+
+```text
+=============================================================================
+D) DATOS DE CARTAS: Backup_Cards.csv (fijos) y Backup_Cards_2.csv (por jugador)
+
+FIX (06-ago-2026): Cards y Cards_2 DEJARON DE SER HOJAS del spreadsheet.
+Ambas vivían antes como hojas de Sheets con un respaldo CSV aparte
+(Backup_Cards.csv/Backup_Cards_2.csv); ahora es al revés: esos dos CSV en
+Drive (carpeta DRIVE_FOLDER_ID_CSV, ver _getCsvFolder()) SON el único
+almacenamiento de estos datos — no existe ninguna hoja "Cards"/"Cards_2"
+que leer ni escribir. setupAllSheets() ya no las crea (01_Config_Global.gs) y, si
+una versión anterior del proyecto las dejó creadas, _limpiarHojasCardsObsoletas()
+(02_Setup_Hojas.gs) las respalda una última vez y las elimina.
+
+Todo el resto del flujo (generarUrlMazo()/generarUrlMazo2(), la columna
+Mazo/Mazo2 de Links, etc.) se conecta a estos dos CSV a través de
+_construirCardInfoMap()/_construirCards2PorTag() más abajo — ningún otro
+archivo del proyecto necesita saber que el almacenamiento cambió de hoja
+a CSV.
+
+Backup_Cards.csv:
+  Encabezados: N° | ID | Name | Nombre | Maxlevel | MaxEvolutionLevel |
+               Rarity | Tipo | Elixircost | Carta | Héroe | Evolución
+  (las últimas 3 columnas guardan la URL real de IconUrls_Medium/Hero/
+  Evolution como texto plano — ya no hace falta el enlace de texto
+  enriquecido de makeLink(), que solo tenía sentido dentro de una hoja).
+  FASE (05-sep-2026, pedido del usuario): se agregó la columna "Nombre"
+  (índice 3, justo después de "Name") con la traducción al español de
+  cada carta, completada a mano por el usuario directamente en el CSV —
+  evita depender de una búsqueda externa para traducir nombres de carta.
+  Todas las columnas que venían después de "Name" (Maxlevel en adelante)
+  se corrieron una posición hacia la derecha por este cambio.
+  FASE (05-sep-2026, pedido del usuario): se agregó también la columna
+  "Tipo" (índice 7, justo después de "Rarity"), que indica el tipo real
+  de la carta (Tropa/Hechizo/Estructura), completada a mano por el usuario
+  —la API de Supercell no manda este dato en el endpoint /players. Las
+  columnas que venían después de "Rarity" (Elixircost en adelante) se
+  corrieron una posición más hacia la derecha por este segundo cambio.
+  Una fila por carta, independiente del jugador. Aparece aquí toda carta
+  que al menos UN jugador del clan tenga desbloqueada (basta con que la
+  primera persona la desbloquee para que ya aparezca, ej. cartas nuevas).
+  Fuente: campo 'cards' del endpoint /players de cualquier miembro (ese
+  campo SOLO incluye las cartas que el jugador consultado sí tiene) y, desde el
+  24-sep-2026, también 'supportCards' (cartas de torre): esas filas llevan
+  Tipo = 'Torre' y su ID es >= 159000000 (ver _esCartaTorre()).
+
+Backup_Cards_2.csv:
+  Encabezados: N° | Tag | ID | Level | EvolutionLevel | Currentdeck | Count | StarLevel
+  (StarLevel, índice 7, se agregó el 24-sep-2026, pedido del usuario: `starLevel`
+  de la carta según el JSON de /players; vacío si la carta no lo trae o el
+  jugador no la tiene. La web lo lee de aquí primero y del JSON de respaldo.
+  CORRECCIÓN 24-sep-2026: antes solo cubría `cards`; ahora también cubre las
+  cartas de torre (`supportCards`), ver _filasCards2DeTorre().)
+  (Count, índice 6, se agregó el 23-sep-2026, AVISO 7: copias de la carta que
+  tiene el jugador según `count` del JSON de /players; 0 si no la tiene. Al
+  nivel máximo suele ser 0 porque las copias sobrantes pasan a reacciones. Las
+  filas de tags aún no actualizados desde ese día quedan con Count vacío.)
+  UNA fila por CADA carta de Backup_Cards.csv, para CADA jugador
+  consultado (no solo las que el jugador tiene desbloqueadas):
+    - Si el jugador SÍ tiene la carta: Level = nivel mostrado en la app
+      (level(api) + diferencia de su rareza, ver
+      _mapaDiferenciaNivelPorRareza(); antes 16 - maxlevel(api) + level(api),
+      que da lo mismo hoy), EvolutionLevel según el campo
+      evolutionLevel de la API, Currentdeck = 'Sí'/'No' según corresponda.
+    - Si el jugador NO tiene la carta (no aparece como objeto en 'cards'
+      del endpoint /players para ese jugador, es decir, ni siquiera tiene
+      desbloqueada la versión base): Level = 0, EvolutionLevel vacío,
+      Currentdeck = 'No'. Esto permite que _generarUrlMazoDesdeMapas() /
+      _generarUrlMazo2DesdeMapas() (más abajo en este archivo) detecten
+      de forma explícita qué cartas base le faltan al jugador y las
+      excluyan también a ellas (no solo sus variantes evolución/héroe).
+  Solo se llena para jugadores con interruptor activo (PLAYERS_API_ENABLED).
+  Nunca se vacía por completo en ningún modo: cada actualización hace
+  MERGE por Tag contra el CSV existente (ver _mergearCards2CSV() más
+  abajo), preservando intactas las filas de cualquier tag que no se haya
+  vuelto a consultar en esta corrida.
+
+  EvolutionLevel (mismo campo en Backup_Cards.csv.MaxEvolutionLevel y
+  Backup_Cards_2.csv.EvolutionLevel):
+    ausente -> la carta no tiene ningún tipo de evolución (solo versión normal)
+    1       -> la carta tiene evolución
+    2       -> la carta tiene su versión Héroe
+    3       -> la carta tiene evolución Y versión Héroe
+
+Backup_Cards_3.csv (costos de subida de nivel, editado a mano): ver la
+sección E, al final de este archivo.
+=============================================================================
+```
+
+#### 31B014 — líneas 900-924 (comentario)
+
+```text
+-----------------------------------------------------------------------------
+DIFERENCIA FIJA DE NIVEL POR RAREZA (nivel del JSON -> nivel unificado de la app)
+
+FIX (23-sep-2026, 2da tanda, pedido del usuario — "el 16 no es fijo, lo fijo
+es la diferencia"): el JSON de /players numera los niveles relativos a la
+rareza (hoy máximo: Common 16, Rare 14, Epic 11, Legendary 8, Champion 6) y
+la app muestra todas las rarezas en una misma escala que termina en el mismo
+tope (hoy 16). La DIFERENCIA entre ambas numeraciones es fija por rareza:
+  nivel de la app = nivel del JSON + diferencia de su rareza
+Si el juego crea el nivel 17, el máximo del JSON de cada rareza sube en 1 y
+la diferencia sigue siendo la misma (Legendary: 9 + 8 = 17). Por eso el
+código ya no escribe un 16 a mano.
+
+Solo Backup_Cards_2.csv.Level guarda el nivel convertido. Backup_Cards.csv
+(Maxlevel) y Backup_Cards_3.csv (Level) conservan la numeración del JSON.
+AVISO 14 (23-sep-2026, 4ta tanda): la diferencia YA NO es una tabla escrita a
+mano. Se calcula del catálogo (Backup_Cards.csv) con la regla que dio el
+usuario: se compara el Maxlevel de TODAS las rarezas, el más alto es el nivel
+máximo absoluto de la app, y la diferencia de cada rareza es
+  diferencia = nivel máximo absoluto - Maxlevel de esa rareza
+(por eso: nivel de la app = nivel máximo absoluto - Maxlevel de la rareza +
+nivel de la carta). Con los datos de hoy da lo mismo que la tabla vieja
+(Common 0, Rare 2, Epic 5, Legendary 8, Champion 10). Una rareza nueva se
+incorpora sola apenas una carta suya entre a Backup_Cards.csv con su Maxlevel.
+-----------------------------------------------------------------------------
+```
+
+
+### Ubicación: `_cacheDiferenciaNivelPorRareza`
+
+#### 31B015 — líneas 927-938 (comentario)
+
+```text
+-----------------------------------------------------------------------------
+CARTAS DE TORRE (24-sep-2026, pedido del usuario). Las tropas de torre viven en
+`supportCards` del JSON de /players y sus IDs de Supercell empiezan en
+159000000 (las cartas normales están por debajo de 30000000). Una fila de
+Backup_Cards.csv es de torre si su Tipo dice 'Torre' (lo escribe
+updateCardsSheet() en las filas nuevas) o si su ID es >= este valor.
+VERIFICADO (24-sep-2026) con un JSON real de /players (GrupoXTerna_2, #VCQ8GJUP8,
+del 22-sep-2026): sus 4 supportCards tienen ID 159000000 (Tower Princess),
+159000001 (Cannoneer), 159000002 (Dagger Duchess) y 159000004 (Royal Chef); las
+122 cartas de `cards` de ese JSON tienen ID menor a 30000000. El log de
+updateCardsSheet() sigue imprimiendo los IDs de torre por si aparece alguna nueva.
+-----------------------------------------------------------------------------
+```
+
+
+### Ubicación: `CARTAS_TORRE_ID_MIN`
+
+#### 31B016 — líneas 941-948 (docblock)
+
+```text
+_esCartaTorreDatos(id, tipo)
+Versión pura (no lee ningún CSV): true si el Tipo dice 'Torre' o el ID es >=
+CARTAS_TORRE_ID_MIN.
+@param {string|number} id
+@param {string} tipo - Columna Tipo de Backup_Cards.csv ('' si no se conoce).
+@returns {boolean}
+```
+
+
+### Ubicación: `_esCartaTorreDatos`
+
+#### 31B017 — líneas 955-969 (docblock)
+
+```text
+_mapaDiferenciaNivelPorRareza()
+Devuelve { absoluto, porRareza } calculado de Backup_Cards.csv: agrupa el
+Maxlevel por rareza (toma el mayor de cada una), el mayor de todas es el
+`absoluto` y `porRareza[rarezaEnMinuscula]` = absoluto - su propio Maxlevel.
+Se calcula una sola vez por ejecución (memoizado); si Backup_Cards.csv falta o
+está vacío devuelve { absoluto: 0, porRareza: {} } y las funciones que lo
+usan caen al respaldo con el JSON del jugador (ver _nivelUnificadoDeCarta()).
+Nunca lanza error (si la lectura falla, lo deja en el log).
+FIX (24-sep-2026, cartas de torre): las filas de torre (ver _esCartaTorreDatos())
+SÍ participan del cálculo: tienen el mismo tope y la misma numeración por rareza que
+las cartas normales (confirmado por el usuario, AVISO A). Además el mismo recorrido
+junta `idsTorre` ({ id: true }), que usa _esCartaTorre() sin releer el CSV.
+@returns {{absoluto: number, porRareza: Object<string,number>, idsTorre: Object<string,boolean>}}
+```
+
+
+### Ubicación: `_mapaDiferenciaNivelPorRareza`
+
+#### 31B018 — líneas 995-1005 (docblock)
+
+```text
+_esCartaTorre(id)
+24-sep-2026: dice si el ID es de una carta de torre (tropa de torre). Usa los IDs
+de torre que ya juntó _mapaDiferenciaNivelPorRareza() (memoizado por ejecución,
+una sola lectura de Backup_Cards.csv) y, como respaldo, la regla por ID de
+_esCartaTorreDatos() (sirve aunque el CSV no se pueda leer). Lo usan
+37_Web_API.gs (_webMazoActualDesdeCards2(), _webEstadisticasCartas()) para no
+contar la tropa de torre como una carta del mazo.
+@param {string|number} id
+@returns {boolean}
+```
+
+
+### Ubicación: `_esCartaTorre`
+
+#### 31B019 — líneas 1013-1017 (docblock)
+
+```text
+_invalidarCacheDiferenciaNivelPorRareza()
+Descarta el memo de _mapaDiferenciaNivelPorRareza() para que la siguiente
+llamada relea Backup_Cards.csv. Se llama al guardarlo (_guardarCardsCSV()).
+```
+
+
+### Ubicación: `_invalidarCacheDiferenciaNivelPorRareza`
+
+#### 31B020 — líneas 1022-1029 (docblock)
+
+```text
+_diferenciaNivelRareza(rarity)
+Diferencia entre el nivel del JSON y el de la app para esa rareza
+(cualquier mayúscula/minúscula: la API suele mandar "common", los CSV
+dicen "Common"). Sale de _mapaDiferenciaNivelPorRareza() (AVISO 14).
+@param {string} rarity
+@returns {?number} La diferencia, o null si la rareza no está en el catálogo.
+```
+
+
+### Ubicación: `_diferenciaNivelRareza`
+
+#### 31B021 — líneas 1037-1046 (docblock)
+
+```text
+_nivelUnificadoMaxDeCartas(cards)
+Tope del nivel de la app según las cartas del JSON de UN jugador: el mayor
+(maxLevel + diferencia de su rareza) entre las cartas cuya rareza está en el
+catálogo; si ninguna lo está, el mayor maxLevel del JSON de todas las
+rarezas (AVISO 14). Solo se usa como respaldo para una rareza que todavía no
+esté en Backup_Cards.csv (ver _nivelUnificadoDeCarta()).
+@param {Array<Object>} cards - Campo `cards` del JSON de /players.
+@returns {number} El tope, o 0 si ninguna carta permite calcularlo.
+```
+
+
+### Ubicación: `_nivelUnificadoMaxDeCartas`
+
+#### 31B022 — líneas 1064-1076 (docblock)
+
+```text
+_nivelUnificadoDeCarta(card, topeRespaldo, rarezasSinDif)
+Nivel que se guarda en Backup_Cards_2.csv.Level para una carta del JSON de
+/players: nivel del JSON + diferencia fija de su rareza. Reemplaza al antiguo
+`16 - maxLevel + level` (FIX 23-sep-2026, 2da tanda).
+Si la rareza no está en la tabla (rareza nueva, AVISO 14) usa el tope del
+propio JSON del jugador (topeRespaldo - maxLevel del JSON) y anota la
+rareza en `rarezasSinDif` para que quien llama deje el aviso en el log.
+@param {Object} card - Carta del JSON de /players.
+@param {number} topeRespaldo - Resultado de _nivelUnificadoMaxDeCartas() de ese jugador.
+@param {Object<string,number>} rarezasSinDif - Acumulador { rareza: cantidad } (se modifica).
+@returns {number} Nivel de la app.
+```
+
+
+### Ubicación: `_nivelUnificadoDeCarta`
+
+#### 31B023 — líneas 1089-1095 (docblock)
+
+```text
+_avisarRarezasSinDiferencia(rarezasSinDif, etiqueta)
+Deja en el log las rarezas que _nivelUnificadoDeCarta() no encontró en la
+tabla (una sola línea por corrida, no una por carta).
+@param {Object<string,number>} rarezasSinDif
+@param {string} etiqueta - Prefijo del log, p. ej. '[Cards2]'.
+```
+
+
+### Ubicación: `_avisarRarezasSinDiferencia`
+
+#### 31B024 — líneas 1105-1112 (docblock)
+
+```text
+_leerCardsCSV()
+Lee Backup_Cards.csv y lo devuelve ya parseado como { headers, rows }.
+Si el archivo todavía no existe (primera corrida), devuelve el
+encabezado por defecto con rows=[] — mismo layout que antes tenía la
+hoja Cards.
+@returns {{headers: Array<string>, rows: Array<Array>}}
+```
+
+
+### Ubicación: `_guardarCardsCSV`
+
+#### 31B025 — líneas 1135-1140 (docblock)
+
+```text
+_leerCards2CSV()
+Lee Backup_Cards_2.csv y lo devuelve ya parseado como { headers, rows }.
+Mismo patrón que _leerCardsCSV().
+@returns {{headers: Array<string>, rows: Array<Array>}}
+```
+
+
+### Ubicación: `_leerCards2CSV`
+
+#### 31B026 — líneas 1142-1149 (comentario)
+
+```text
+FIX (24-sep-2026, pedido usuario -- "currentFavouriteCard se debe
+guardar en cards, en el csv que corresponda"): columna 'Favorita'
+(índice 8) agregada al final, mismo criterio 'Sí'/'No' que ya usa
+'Currentdeck' (índice 5). Marca, por Tag, cuál fila es la carta
+favorita del jugador (pd.currentFavouriteCard.id) -- ver
+updateCards2Sheet()/_actualizarCards2SoloAdmins()/_filasCards2DeTorre()
+más abajo, y _webCartaFavoritaCsvPrimero() en 39_CartasWeb.gs para la
+lectura del lado web.
+```
+
+#### 31B027 — líneas 1157-1164 (comentario)
+
+```text
+AVISO 7 (23-sep-2026, 4ta tanda): un Backup_Cards_2.csv anterior a esta
+tanda no trae la columna Count (índice 6); se agrega al encabezado aquí y
+_guardarCards2CSV() rellena con '' las filas viejas hasta que su tag se
+vuelva a actualizar. Mismo criterio aplica ahora para 'Favorita'
+(índice 8, 24-sep-2026): un CSV anterior a esta tanda queda sin esa
+columna hasta que el tag se actualice de nuevo; mientras tanto,
+_webCartaFavoritaCsvPrimero() no encuentra ningún 'Sí' para ese tag y
+cae al JSON, igual que hace hoy con cualquier otro campo faltante.
+```
+
+
+### Ubicación: `_guardarCards2CSV`
+
+#### 31B028 — líneas 1182-1197 (docblock)
+
+```text
+_getTodosLosCardIdsDesdeCSV()
+Lee la columna ID de Backup_Cards.csv (poblado por updateCardsSheet(),
+que SIEMPRE corre antes que updateCards2Sheet(), ver orden en
+31_Cards_Mazos.gs) y devuelve la lista completa de IDs de carta conocidos por
+el sistema. Se usa para que updateCards2Sheet() también pueda agregar,
+por cada jugador, las filas de las cartas que NO tiene (Level=0) — ver
+explicación completa en el comentario de la sección D más arriba.
+FIX (06-ago-2026): antes leía la hoja Cards (_getTodosLosCardIdsDesdeHoja);
+ahora lee directo Backup_Cards.csv.
+24-sep-2026: la lista incluye los IDs de las cartas de torre (están en
+Backup_Cards.csv), así que también reciben su fila Level 0 cuando el jugador no
+las tiene (ver _filasCards2DeTorre()).
+@returns {Array<string>} Lista de IDs (como string), o [] si el CSV no
+         existe o está vacío.
+```
+
+
+### Ubicación: `_getTodosLosCardIdsDesdeCSV`
+
+#### 31B029 — líneas 1208-1221 (docblock)
+
+```text
+_mergearCards2CSV(filasExistentes, todasFilas)
+Núcleo común de merge por Tag: agrega/actualiza las filas de los tags
+presentes en todasFilas y preserva intactas las filas de cualquier otro
+tag ya presente en filasExistentes. Usado por updateCards2Sheet() (modos
+TRUE/PARTIAL) y por _actualizarCards2SoloAdmins() (modo ADMIN) — mismo
+comportamiento que antes tenían _mergearCards2Partial() (para
+TRUE/PARTIAL) y el merge manual dentro de _actualizarCards2SoloAdmins(),
+unificados acá porque ya no dependen de una hoja (sh) sino de arrays
+puros leídos/escritos por _leerCards2CSV()/_guardarCards2CSV().
+@param {Array<Array>} filasExistentes - Filas actuales del CSV.
+@param {Array<Array>} todasFilas - Filas nuevas a aplicar (uno o más tags).
+@returns {Array<Array>} Filas finales, listas para _guardarCards2CSV().
+```
+
+
+### Ubicación: `_mergearCards2CSV`
+
+#### 31B030 — líneas 1250-1254 (docblock)
+
+```text
+_actualizarCards2SoloAdmins()
+Cuando PLAYERS_API_ENABLED = 'admin', actualizar SOLO filas de admins en
+Backup_Cards_2.csv. Los no-admins se preservan tal como están.
+```
+
+
+### Ubicación: `_actualizarCards2SoloAdmins`
+
+#### 31B031 — líneas 1269-1273 (comentario)
+
+```text
+Leer Directorio para obtener los tags de admins.
+Fase C1 (16/07/2026): Admin y Tag siguen físicamente en Directorio (29
+cols, orden IC) — antes se indexaba con DC (orden histórico), que ya no
+coincide con el layout real. No hace falta _leerDirectorioFisicoComoDC()
+porque no se necesita ningún campo de Players/Links.
+```
+
+#### 31B032 — líneas 1288-1290 (comentario)
+
+```text
+IMPORTANTE: se llama _fetchPlayersData() ANTES de revisar la cache
+(mismo fix del 06-jul-2026: los admins deben actualizarse en todas las
+corridas, sin importar el interruptor).
+```
+
+#### 31B033 — líneas 1329-1332 (comentario)
+
+```text
+DOC: mismo comportamiento "copias sobrantes -> reacciones al nivel
+máximo" documentado en updateCards2Sheet() más arriba (21-sep-2026).
+FIX (23-sep-2026, 2da tanda): mismo cálculo que updateCards2Sheet()
+(nivel del JSON + diferencia fija de la rareza), ya no `16 - maxLevel + level`.
+```
+
+#### 31B034 — líneas 1365-1374 (docblock)
+
+```text
+_rarezaParaFila(c)
+24-sep-2026: Rarity que se escribe en una fila NUEVA de Backup_Cards.csv. Tal cual
+viene del JSON, salvo en las cartas de torre, donde se le pone inicial mayúscula
+("common" -> "Common") para que coincida con el resto del CSV y con
+Backup_Cards_3.csv. Todo el proyecto compara la rareza sin distinguir mayúsculas,
+así que esto solo afecta cómo se ve el archivo.
+@param {{rarity:string, esTorre:boolean}} c - Carta del mapa de _getCardsFromCache().
+@returns {string}
+```
+
+
+### Ubicación: `_rarezaParaFila`
+
+#### 31B035 — líneas 1381-1408 (docblock)
+
+```text
+_filasCards2DeTorre(tag, pd, idsDelJugador, topeJugador, rarezasSinDif)
+24-sep-2026 (pedido del usuario — "incluye las cartas de torre en Cards_2"):
+arma las filas de Backup_Cards_2.csv de UN jugador para sus cartas de torre
+(`supportCards` del JSON de /players). Mismo formato de fila que las cartas
+normales de updateCards2Sheet(): ['', Tag, ID, Level, EvolutionLevel,
+Currentdeck, Count, StarLevel].
+  - Level: nivel unificado de la app (_nivelUnificadoDeCarta(): nivel del JSON +
+    diferencia de su rareza). AVISO A (confirmado por el usuario): misma numeración
+    y mismo tope que las cartas normales; si el JSON no trae `rarity` (AVISO C) usa
+    el tope del propio jugador.
+  - Currentdeck: 'Sí' si la carta está en `currentDeckSupportCards`.
+  - EvolutionLevel / StarLevel: los de la carta si el JSON los trae, si no vacío.
+  - Favorita (24-sep-2026, pedido usuario): 'Sí' si esta es
+    pd.currentFavouriteCard (caso raro pero posible: una tropa de torre
+    marcada como favorita), mismo criterio que la columna homónima de
+    updateCards2Sheet().
+Marca en `idsDelJugador` (se modifica) cada ID que agrega, para que el relleno con
+Level 0 de quien llama solo cubra las cartas de torre que el jugador no tiene.
+@param {string} tag - Tag del jugador (con #).
+@param {Object} pd - JSON de /players de ese jugador (del cache).
+@param {Object<string,boolean>} idsDelJugador - IDs ya presentes (se modifica).
+@param {number} topeJugador - _nivelUnificadoMaxDeCartas() de sus `cards` (respaldo).
+@param {Object<string,number>} rarezasSinDif - Acumulador de _nivelUnificadoDeCarta().
+@param {?string} favId - String(pd.currentFavouriteCard.id), o null si no tiene. Quien
+  llama lo arma UNA vez (ver updateCards2Sheet()) para no repetirlo por cada tarjeta.
+@returns {Array<Array>} Filas nuevas (vacío si el jugador no trae supportCards).
+```
+
+
+### Ubicación: `_getTagsParaPartialMode`
+
+#### 31B036 — líneas 1451-1453 (comentario)
+
+```text
+Fase C1 (16/07/2026): V_Guerra vive ahora en Players, así que se usa
+_leerDirectorioFisicoComoDC() (11_DirectorioSheet.gs) en vez de leer la
+hoja física de Directorio (29 cols, orden IC) e indexarla con DC.
+```
+
+#### 31B037 — líneas 1466-1473 (comentario)
+
+```text
+Admins: incluir SIEMPRE, sin importar Estado (mismo criterio que
+_actualizarCards2SoloAdmins() para PLAYERS_API_ENABLED=false y que
+_fetchPlayersData()/la rama de Directorio Inactivo para Rango/Clan).
+Antes acá se filtraba "estado !== 'Activo'" ANTES de mirar si era
+admin, así que un admin que pasaba a Inactivo dejaba de actualizarse
+en Cards_2 en modo 'partial' —aunque en Directorio sí se le seguían
+refrescando Rango/Clan/stats—, dejando sus cartas congeladas de forma
+inconsistente con el resto del sistema.
+```
+
+#### 31B038 — líneas 1491-1513 (docblock)
+
+```text
+_getCardsFromCache()
+Extrae un mapa de cartas (id → {name, maxLevel, maxEvolutionLevel, rarity,
+elixirCost, iconMedium, iconHeroMedium, iconEvolutionMedium, esTorre}) del
+cache de players.
+
+FIX (24-sep-2026, pedido del usuario — cartas de torre): además de `cards`, lee
+`supportCards` (tropas de torre) de las mismas cuentas, con el mismo criterio
+(líderes primero y luego el primer jugador con cache). Esas cartas llevan
+`esTorre: true`. Mismo límite del AVISO 13: una carta de torre que ni los líderes
+ni ese primer jugador tengan no se agrega hasta que alguno la tenga.
+
+FIX (23-sep-2026, 2da tanda — "son 4 clanes, cada uno tiene su líder, es
+mejor que revise el nivel máximo de cartas de los 4" / "está bien que se use
+primero las cuentas de los líderes"): 1) lee primero la cuenta del LÍDER de
+cada uno de los clanes de CFG.TERNA_TAGS y une sus cartas (para una misma
+carta se queda con el mayor Maxlevel y el mayor MaxEvolutionLevel de los
+líderes; para el resto de campos, el primer dato no vacío); 2) completa con
+el primer jugador con cache (el criterio de antes), que solo agrega cartas
+o datos que ningún líder trajo. Antes se detenía en el primer jugador con
+cache, sin mirar a los líderes.
+@returns {Object} Mapa id→card, o {} si no hay datos.
+```
+
+
+### Ubicación: `_getCardsFromCache`
+
+#### 31B039 — líneas 1573-1582 (docblock)
+
+```text
+_mezclarCartasEnMapa(map, cards)
+Agrega al mapa id→card las cartas del campo `cards` de UN jugador. Si la
+carta ya estaba (la trajo otra cuenta), conserva el MAYOR Maxlevel y el
+MAYOR MaxEvolutionLevel y solo completa los campos que estaban vacíos.
+@param {Object} map - Mapa id→card (se modifica).
+@param {Array<Object>} cards - Campo `cards` (o `supportCards`, si esTorre) del JSON de /players.
+@param {boolean=} esTorre - true cuando `cards` es el campo `supportCards` (24-sep-2026):
+       cada carta queda marcada con `esTorre: true`.
+```
+
+
+### Ubicación: `_mezclarCartasEnMapa`
+
+#### 31B040 — líneas 1614-1630 (docblock)
+
+```text
+_refrescarCardsRows(rows, cardMap)
+FIX (23-sep-2026, 2da tanda; reemplaza a _refrescarMaxlevelCardsRows()):
+actualiza EN SITIO, en las filas de Backup_Cards.csv que ya existían, las
+columnas que el juego va cambiando:
+  - Maxlevel (índice 4) y MaxEvolutionLevel (índice 5): solo SUBEN (o se
+    completan si estaban vacías). Si el JSON trae un valor MENOR al guardado
+    no se pisa (sería un nivel o una evolución que "desaparece": no es lo
+    esperado) y solo queda en el log, agrupado en una línea.
+  - Carta (9), Héroe (10) y Evolución (11), URLs: se reemplazan cuando el
+    JSON trae una URL no vacía y distinta. Si el JSON no trae la URL, la
+    guardada NO se borra.
+No toca Name, Nombre, Rarity, Tipo ni Elixircost (ver AVISO 12) ni agrega filas.
+@param {Array<Array>} rows - Filas de _leerCardsCSV() (se modifican).
+@param {Object} cardMap - Resultado de _getCardsFromCache().
+@returns {number} Cantidad de filas modificadas (0 = no hay nada que guardar).
+```
+
+
+### Ubicación: `_refrescarCardsRows`
+
+#### 31B041 — líneas 1713-1717 (docblock)
+
+```text
+_getTagsConPlayerCache()
+Devuelve la lista de player tags que tienen datos en el cache de players.
+@returns {string[]}
+```
+
+
+### Ubicación: `_getTagsConPlayerCache`
+
+#### 31B042 — líneas 1736-1786 (comentario)
+
+```text
+=============================================================================
+GENERADOR DE LINKS DE MAZOS ROYALEAPI
+generarUrlMazo(tag) / generarUrlMazo2(tag)
+
+Hay DOS columnas/funciones, que comparten exactamente el mismo criterio
+de qué cartas/variantes excluir, y solo se diferencian en si además
+fuerzan (inc=) las cartas que el jugador sí tiene:
+
+  Mazo  (_generarUrlMazoDesdeMapas):  usa inc= Y exc=.
+    inc= todas las cartas base que el jugador SÍ tiene desbloqueadas
+         + evoluciones que SÍ tiene + héroes que SÍ tiene
+    exc= lo mismo que en Mazo2 (ver abajo)
+
+  Mazo2 (_generarUrlMazo2DesdeMapas): usa SOLO exc= (nunca fuerza inc=).
+    exc= cartas base NO desbloqueadas (no aparecen como objeto en 'cards'
+         del endpoint /players de ese jugador)
+       + evoluciones que NO tiene + héroes que NO tiene
+         (de cartas base que el jugador SÍ tiene, pero sin esa evolución/héroe)
+
+En ambos casos se aplica el mismo criterio de exclusión de carta base:
+si el jugador no tiene la carta desbloqueada (Cards_2.Level = 0, o no hay
+fila para ese ID en Cards_2 — ver updateCards2Sheet()), se excluye el
+slug base Y, si esa carta tiene evolución/héroe en el juego, también
+esas variantes.
+
+Fuentes de datos (FIX 06-ago-2026: ya no son hojas, son CSV en Drive):
+  - Backup_Cards.csv (datos fijos): ID | Name | Nombre | MaxEvolutionLevel
+      MaxEvolutionLevel vacío  → solo existe versión normal
+      1 → tiene evolución
+      2 → tiene versión Héroe
+      3 → tiene evolución Y versión Héroe
+  - Backup_Cards_2.csv (por jugador): Tag | ID | Level | EvolutionLevel
+      Level = 0            → el jugador NO tiene la carta desbloqueada
+      Level > 0            → el jugador SÍ tiene la carta desbloqueada
+      EvolutionLevel vacío → (si Level>0) tiene la carta normal, sin evo/héroe
+      1 → tiene desbloqueada la evolución
+      2 → tiene desbloqueado el Héroe
+      3 → tiene ambas (evolución y Héroe)
+
+Reglas del slug de RoyaleAPI:
+  Nombre base : texto del campo Name en minúsculas, espacios → guiones
+                Ej: "Musketeer" → "musketeer"
+                    "Magic Archer" → "magic-archer"
+  Evolución   : slug-base + "-ev1"   (ej: "musketeer-ev1")
+  Héroe       : slug-base + "-hero"  (ej: "musketeer-hero")
+
+Parámetros fijos del link (estéticos/de búsqueda):
+  time=7d | sort=win | size=30 | players=PvP | min_elixir=1 | max_elixir=9
+  evo=All | min_cycle_elixir=4 | max_cycle_elixir=28 | mode=detail
+  type=NormalBattle | global_exclude=false
+=============================================================================
+```
+
+#### 31B043 — líneas 1788-1793 (docblock)
+
+```text
+_cardNameToSlug(name)
+Convierte el nombre de una carta al slug usado por RoyaleAPI.
+"Magic Archer" → "magic-archer"
+"Goblin Gang"  → "goblin-gang"
+```
+
+
+### Ubicación: `_cardNameToSlug`
+
+#### 31B044 — líneas 1802-1813 (docblock)
+
+```text
+_construirCardInfoMap(ss)
+Lee Backup_Cards.csv UNA SOLA VEZ y devuelve el mapa ID → { slug, maxEvoLevel }
+que generarUrlMazo()/generarUrlMazo2() necesitan.
+FIX (06-ago-2026): antes leía la hoja Cards; ahora lee directo el CSV
+(ver _leerCardsCSV() más arriba). El parámetro ss se conserva sin uso
+para no tener que tocar ningún caller existente.
+FIX (24-sep-2026, cartas de torre): SALTA las cartas de torre (Tipo 'Torre' o ID >=
+CARTAS_TORRE_ID_MIN). Este mapa arma los links de RoyaleAPI (inc=/exc=) y una
+tropa de torre no es una carta de mazo: sus slugs no deben entrar al link.
+@returns {Object} Mapa id→{slug, maxEvoLevel}, o {} si el CSV no existe o está vacío.
+```
+
+
+### Ubicación: `_construirCardInfoMap`
+
+#### 31B045 — líneas 1818-1820 (comentario)
+
+```text
+cols: 0=N°, 1=ID, 2=Name, 3=Nombre, 4=Maxlevel, 5=MaxEvolutionLevel
+FASE (05-sep-2026): se corrió un índice hacia la derecha desde
+MaxEvolutionLevel en adelante por la nueva columna "Nombre" (índice 3).
+```
+
+#### 31B046 — líneas 1838-1851 (docblock)
+
+```text
+_construirCards2PorTag(ss)
+Lee Backup_Cards_2.csv UNA SOLA VEZ y lo agrupa por Tag, devolviendo
+{ tag: { id: { level, evoLevel } } } para los ~139 jugadores de una sola
+pasada, en vez de que cada jugador dispare su propia lectura completa
+del CSV.
+FIX (06-ago-2026): antes leía la hoja Cards_2; ahora lee directo el CSV
+(ver _leerCards2CSV() más arriba). El parámetro ss se conserva sin uso
+para no tener que tocar ningún caller existente.
+level=0 en el resultado significa "el jugador NO tiene la carta
+desbloqueada" (ya sea porque la fila explícita de Backup_Cards_2.csv
+trae Level=0, ver updateCards2Sheet(), o porque no hay fila para ese ID).
+@returns {Object} Mapa tag→{id:{level, evoLevel}}, o {} si el CSV no existe o está vacío.
+```
+
+
+### Ubicación: `_construirCards2PorTag`
+
+#### 31B047 — líneas 1875-1893 (docblock)
+
+```text
+_construirListasMazoDesdeMapas(cardInfo, playerCards)
+Recorre TODAS las cartas conocidas (cardInfo) y, para cada una, decide si
+va a inc= (el jugador la tiene) o a exc= (el jugador no la tiene, o no
+tiene su evolución/héroe). Es el núcleo compartido por
+_generarUrlMazoDesdeMapas() (columna Mazo, usa inc+exc) y
+_generarUrlMazo2DesdeMapas() (columna Mazo2, usa solo exc).
+
+Criterio de exclusión de carta BASE (nuevo): si el jugador no tiene la
+carta desbloqueada (playerCards[id] no existe, o existe con level <= 0 —
+es decir, la carta no aparece como objeto en 'cards' del endpoint
+/players de ese jugador), se excluye el slug base Y, si esa carta tiene
+evolución/héroe en el juego, también esas variantes. Antes solo se
+excluían las variantes evolución/héroe, nunca la carta base.
+
+@param {Object} cardInfo - Mapa id→{slug, maxEvoLevel}.
+@param {Object} playerCards - Mapa id→{level, evoLevel} de UN jugador.
+@returns {{inc: Array<string>, exc: Array<string>}}
+```
+
+
+### Ubicación: `_construirListasMazoDesdeMapas`
+
+#### 31B048 — líneas 1934-1939 (docblock)
+
+```text
+_ensamblarUrlMazo(inc, exc, incluirInc)
+Construye la URL final de RoyaleAPI Decks a partir de las listas inc/exc
+ya calculadas. Si incluirInc es false, los parámetros inc= se omiten
+(columna Mazo2: solo exclusión, nunca fuerza qué cartas usar).
+```
+
+
+### Ubicación: `_ensamblarUrlMazo`
+
+#### 31B049 — líneas 1956-1970 (docblock)
+
+```text
+_generarUrlMazoDesdeMapas(tag, cardInfo, playerCards)
+Columna MAZO: inclusión + exclusión. Construye el link de RoyaleAPI Decks
+para UN jugador a partir de los mapas ya precalculados (ver
+_construirCardInfoMap/_construirCards2PorTag). No lee ninguna hoja — es
+la parte "pura" de generarUrlMazo(), pensada para llamarse dentro de un
+loop sobre muchos jugadores sin pagar el costo de releer Cards/Cards_2 en
+cada iteración.
+@param {string} tag - Tag del jugador (con o sin #), solo se usa para validación.
+@param {Object} cardInfo - Mapa id→{slug, maxEvoLevel} (de _construirCardInfoMap).
+@param {Object|undefined} playerCards - Mapa id→{level, evoLevel} de ESTE
+       jugador (es decir, cards2PorTag[tagClean]; undefined si el jugador
+       no tiene filas en Cards_2).
+@returns {string|null} URL completa o null si no hay datos suficientes.
+```
+
+
+### Ubicación: `_generarUrlMazoDesdeMapas`
+
+#### 31B050 — líneas 1980-1989 (docblock)
+
+```text
+_generarUrlMazo2DesdeMapas(tag, cardInfo, playerCards)
+Columna MAZO2: SOLO exclusión (nunca fuerza inc=, no fuerza qué cartas
+debe usar el jugador). Mismos parámetros y mismo criterio de exclusión
+que _generarUrlMazoDesdeMapas() — ver _construirListasMazoDesdeMapas().
+@param {string} tag - Tag del jugador (con o sin #), solo se usa para validación.
+@param {Object} cardInfo - Mapa id→{slug, maxEvoLevel} (de _construirCardInfoMap).
+@param {Object|undefined} playerCards - Mapa id→{level, evoLevel} de ESTE jugador.
+@returns {string|null} URL completa o null si no hay datos suficientes.
+```
+
+
+### Ubicación: `_generarUrlMazo2DesdeMapas`
+
+#### 31B051 — líneas 1999-2065 (comentario)
+
+```text
+=============================================================================
+E) COSTOS DE SUBIDA DE NIVEL: Backup_Cards_3.csv (catálogo fijo, manual)
+
+FASE (23-sep-2026, pedido del usuario): el usuario creó Backup_Cards_3.csv y
+pidió ligarlo con Cards y Cards_2 (Backup_Cards.csv / Backup_Cards_2.csv).
+
+Backup_Cards_3.csv:
+  Encabezados: N° | Rarity | Level | Goldcost | Cardcost
+  Una fila por (Rarity, Level). Goldcost = monedas de oro que cuesta subir
+  una carta DESDE ese Level hasta el siguiente; Cardcost = cantidad de
+  copias de la carta que hacen falta para esa misma subida. Para poder
+  subir se necesitan AMBOS (el oro Y las cartas). Decisión del usuario
+  (23-sep-2026): el oro sale del propio juego, así que NO se pide ni se
+  evalúa; solo se MUESTRA su costo. Las copias se compararán con Cardcost
+  cuando Backup_Cards_2.csv guarde la cantidad de cartas (AVISO 7; la columna
+  Count ya existe desde la 4ta tanda, falta decidir si este cálculo la usa).
+  La última fila de cada rareza (Common 16, Rare 14, Epic 11, Legendary 8,
+  Champion 6) trae Goldcost y Cardcost vacíos: es el nivel máximo y ya no
+  se puede subir más.
+  Se edita a mano (mismo criterio que las columnas "Nombre"/"Tipo" de
+  Backup_Cards.csv): este backend solo la LEE, nunca la escribe. Si el juego
+  agrega un nivel o una rareza, hay que agregar las filas a mano.
+
+CÓMO SE LIGA CON Cards Y Cards_2:
+  Cadena de cruce:
+    Backup_Cards_2.csv (Tag, ID, Level)
+      --ID-->  Backup_Cards.csv (Rarity)
+      --(Rarity, nivel de rareza)-->  Backup_Cards_3.csv (Goldcost, Cardcost)
+
+  OJO: los dos "Level" NO son la misma escala (decisión confirmada por el
+  usuario el 23-sep-2026, 2da tanda).
+    - Backup_Cards_3.csv.Level y Backup_Cards.csv.Maxlevel usan la MISMA
+      numeración: la del JSON de /players, relativa a la rareza (hoy Common
+      1-16, Rare 1-14, Epic 1-11, Legendary 1-8, Champion 1-6).
+    - Backup_Cards_2.csv.Level guarda el nivel UNIFICADO de la app, donde
+      todas las rarezas terminan en el mismo tope (hoy 16). Es el único de
+      los tres archivos que convierte (ver updateCards2Sheet()).
+  Equivalencia, con la DIFERENCIA de cada rareza (calculada del catálogo por
+  _mapaDiferenciaNivelPorRareza(), más arriba; AVISO 14):
+    nivelApp = nivelRareza + diferencia   ->   nivelRareza = nivelApp - diferencia
+  (Common +0, Rare +2, Epic +5, Legendary +8, Champion +10; ej. Rare nivel 1
+  = nivel 3 en la app). Lo fijo es la diferencia, no el tope: si el juego crea
+  el nivel 17, el máximo del JSON de cada rareza sube en 1 y la diferencia
+  sigue igual (por eso ya no se escribe un 16 a mano).
+  Verificado el 23-sep-2026 contra el propio CSV: convertidas a nivel
+  unificado, las 5 rarezas tienen el MISMO Goldcost en cada nivel (ej. Rare
+  1 = app 3 = 50 monedas = Common 3), y las 5 terminan en app 16 con costo
+  vacío. Eso confirma la equivalencia de arriba.
+
+  La conversión ya NO depende del Maxlevel de Backup_Cards.csv (2da tanda; la
+  1ra tanda usaba el mayor entre ese Maxlevel y el de Backup_Cards_3.csv, un
+  parche que dejó de hacer falta). Si el juego agrega un nivel: Maxlevel
+  sube solo (updateCardsSheet()), pero Backup_Cards_3.csv no tiene sus
+  filas, así que el costo sale "sin dato" (null) y updateCardsSheet() deja en
+  el log "NIVEL NUEVO DETECTADO" para que se agreguen a mano.
+  La rareza se compara sin distinguir mayúsculas (Backup_Cards_3.csv dice
+  "Common"; la API suele mandar "common"). Una rareza que no esté en
+  Backup_Cards.csv sale "sin dato" (ver AVISO 14).
+
+CARTAS DE TORRE (24-sep-2026, pedido del usuario — "incluye las cartas de torre en
+  ... Cards_3"): esta tabla es por (Rarity, Level), no por carta, así que no lleva
+  filas nuevas. Las cartas de torre usan las filas de su rareza (costo confirmado
+  por el usuario, AVISO 8) y entran al cruce solas desde que están en
+  Backup_Cards.csv (Rarity) y Backup_Cards_2.csv (Level): ver _filasCards2DeTorre().
+
+Nada de esta sección escribe en Drive ni modifica otros CSV.
+=============================================================================
+```
+
+#### 31B052 — líneas 2067-2073 (docblock)
+
+```text
+_leerCards3CSV()
+Lee Backup_Cards_3.csv y lo devuelve ya parseado como { headers, rows }.
+Mismo patrón que _leerCardsCSV()/_leerCards2CSV(). Si el archivo no existe
+devuelve el encabezado por defecto con rows=[] (no lo crea: se edita a mano).
+@returns {{headers: Array<string>, rows: Array<Array>}}
+```
+
+
+### Ubicación: `_leerCards3CSV`
+
+#### 31B053 — líneas 2085-2096 (docblock)
+
+```text
+_construirCostosPorRareza()
+Lee Backup_Cards_3.csv UNA SOLA VEZ y arma el catálogo de costos:
+  porRareza[rarezaEnMinuscula][nivelDeRareza] = { oro, cartas, esMax }
+    oro / cartas = costo de subir DESDE ese nivel (null si es el máximo).
+    esMax = true cuando Goldcost y Cardcost vienen ambos vacíos.
+  maxNivel[rarezaEnMinuscula] = nivel máximo de esa rareza (el de la fila
+    con costos vacíos; si no hubiera ninguna, el nivel más alto listado).
+Una fila con solo UNO de los dos costos, o con un costo no numérico, se
+ignora y queda anotada en el log (mejor "sin dato" que un costo a medias).
+@returns {{porRareza: Object, maxNivel: Object<string,number>, hayDatos: boolean}}
+```
+
+
+### Ubicación: `_construirCostosPorRareza`
+
+#### 31B054 — líneas 2135-2147 (docblock)
+
+```text
+_nivelRarezaDesdeNivelApp(nivelApp, rarity)
+Convierte el nivel unificado de la app (Backup_Cards_2.csv.Level) al nivel
+relativo a la rareza (Backup_Cards_3.csv.Level, misma numeración del JSON):
+nivelRareza = nivelApp - diferencia fija de la rareza. Ver la explicación de
+la escala en el comentario de la sección E.
+FIX (23-sep-2026, 2da tanda): el segundo parámetro era el Maxlevel de la
+carta (y la cuenta `nivelApp - (16 - max)`); ahora es la RAREZA.
+@param {number} nivelApp - Nivel unificado (>= 1).
+@param {string} rarity   - Rareza de la carta (cualquier mayúscula/minúscula).
+@returns {?number} Nivel de rareza, o null si el nivel no es válido o la
+         rareza no está en Backup_Cards.csv (AVISO 14).
+```
+
+
+### Ubicación: `_nivelRarezaDesdeNivelApp`
+
+#### 31B055 — líneas 2155-2163 (docblock)
+
+```text
+_costoSubirNivel(costos, rarity, nivelRareza)
+Costo de subir una carta de esa rareza DESDE ese nivel de rareza.
+@param {Object} costos - Resultado de _construirCostosPorRareza().
+@param {string} rarity - Rareza tal como viene de Backup_Cards.csv (cualquier mayúscula/minúscula).
+@param {number} nivelRareza - Nivel relativo a la rareza.
+@returns {?{oro: ?number, cartas: ?number, esMax: boolean}} Una copia, o null
+         si no hay fila para esa rareza y nivel.
+```
+
+
+### Ubicación: `_costoSubirNivel`
+
+#### 31B056 — líneas 2173-2183 (docblock)
+
+```text
+_construirCartaRarezaMap()
+Lee Backup_Cards.csv UNA SOLA VEZ y devuelve el mapa
+ID -> { nombre, rarity, maxLevelCsv } que necesita el cruce con
+Backup_Cards_3.csv. `nombre` sigue el mismo criterio que
+_webEstadisticasCartas(): "Nombre" (español, a mano) y, si está vacío,
+"Name". maxLevelCsv es la columna Maxlevel (refrescada por
+updateCardsSheet()): ya NO interviene en la conversión de niveles (2da tanda:
+esa usa la diferencia fija por rareza); queda como dato informativo.
+@returns {Object} Mapa id -> {nombre, rarity, maxLevelCsv}, o {} si el CSV no existe o está vacío.
+```
+
+
+### Ubicación: `_construirCartaRarezaMap`
+
+#### 31B057 — líneas 2200-2224 (docblock)
+
+```text
+_calcularCostosSubirDesdeMapas(playerCards, cartaInfo, costos)
+Parte "pura" del cruce (no lee ningún CSV): para UN jugador devuelve, por
+cada carta de Backup_Cards_2.csv, cuánto cuesta subirla al siguiente nivel.
+Pensada para llamarse dentro de un loop sobre muchos jugadores, con los
+tres mapas armados UNA sola vez antes del loop (mismo criterio que
+_generarUrlMazoDesdeMapas()).
+FIX (23-sep-2026, 2da tanda): el nivel de la app se convierte al de la
+rareza con la diferencia fija de esa rareza (_nivelRarezaDesdeNivelApp()); ya
+no se usa ningún tope. Se quitó `nivelMaxRareza` del resultado.
+@param {Object} playerCards - Mapa id -> {level, evoLevel} de ESTE jugador
+       (cards2PorTag[tag], de _construirCards2PorTag()).
+@param {Object} cartaInfo - Mapa de _construirCartaRarezaMap().
+@param {Object} costos - Resultado de _construirCostosPorRareza().
+@returns {Array<{id:string, nombre:string, rarity:string, nivelApp:number,
+         nivelRareza:?number, diferenciaNivel:?number, maxLevelCsv:?number,
+         nivelMaxCards3:?number, desbloqueada:boolean, esMax:?boolean,
+         oro:?number, cartas:?number}>}
+         Ordenado por ID. maxLevelCsv y nivelMaxCards3 son solo informativos
+         (ambos usan la numeración del JSON y deberían coincidir).
+         oro/cartas = costo de subir al siguiente nivel; null si la
+         carta no está desbloqueada, ya está al máximo, o no hay dato en
+         Backup_Cards_3.csv / la rareza no tiene diferencia definida (en esos
+         últimos casos esMax también es null).
+```
+
+
+### Ubicación: `_calcularCostosSubirDesdeMapas`
+
+#### 31B058 — líneas 2267-2277 (docblock)
+
+```text
+costosSubirNivelJugador(tag)
+Wrapper de conveniencia para UN solo jugador (ej. desde el editor de Apps
+Script): lee Backup_Cards_3.csv, Backup_Cards.csv y Backup_Cards_2.csv
+COMPLETOS en cada llamada. Misma ADVERTENCIA DE RENDIMIENTO que
+generarUrlMazo(): nunca llamarla dentro de un loop sobre muchos jugadores;
+para loops, armar _construirCostosPorRareza(), _construirCartaRarezaMap() y
+_construirCards2PorTag() UNA vez y llamar a _calcularCostosSubirDesdeMapas().
+@param {string} tag - Tag del jugador (con o sin #).
+@returns {Array} Ver _calcularCostosSubirDesdeMapas(); [] si no hay datos.
+```
+
+
+### Ubicación: `costosSubirNivelJugador`
+
+#### 31B059 — líneas 2297-2309 (docblock)
+
+```text
+_nivelesFaltantesEnCards3(cardsRows, costos)
+Detecta niveles nuevos del juego que Backup_Cards_3.csv todavía no cubre:
+para cada rareza compara el mayor Maxlevel que traen las filas de
+Backup_Cards.csv contra el nivel máximo de esa rareza en Backup_Cards_3.csv.
+Si el de las cartas es MAYOR (o la rareza no existe en Backup_Cards_3.csv),
+faltan filas con Goldcost/Cardcost, que la API no manda y hay que escribir
+a mano.
+@param {Array<Array>} cardsRows - Filas de _leerCardsCSV() (cols: 4=Maxlevel, 6=Rarity).
+@param {Object} costos - Resultado de _construirCostosPorRareza().
+@returns {Array<{rarity:string, nivelMaxCards:number, nivelMaxCards3:number}>}
+         nivelMaxCards3 = 0 si la rareza no está en Backup_Cards_3.csv.
+```
+
+
+### Ubicación: `_nivelesFaltantesEnCards3`
+
+#### 31B060 — líneas 2330-2339 (docblock)
+
+```text
+_avisarNivelesFaltantesCards3(cardsRows)
+Llamada a través de _avisarRevisionNivelesCards() al final de
+updateCardsSheet() (y desde probarCostosSubirNivel()): deja en el log una línea "NIVEL NUEVO DETECTADO" por cada rareza cuyo
+Maxlevel ya supera lo que cubre Backup_Cards_3.csv. Solo LOG: no escribe
+nada. Va dentro de try/catch a propósito: una falla leyendo
+Backup_Cards_3.csv nunca debe romper la actualización de Backup_Cards.csv.
+Si Backup_Cards_3.csv no existe o está vacío, no avisa nada.
+@param {Array<Array>} cardsRows - Filas de Backup_Cards.csv.
+```
+
+
+### Ubicación: `_avisarNivelesFaltantesCards3`
+
+#### 31B061 — líneas 2357-2371 (docblock)
+
+```text
+_avisarDiferenciasNivelCards(cardsRows)
+FIX (23-sep-2026, 2da tanda): revisa las diferencias de nivel por rareza contra
+Backup_Cards.csv. AVISO 14 (4ta tanda): desde que la diferencia se calcula del
+propio catálogo (_mapaDiferenciaNivelPorRareza()) estas dos revisiones quedan
+como red de seguridad y no deberían dispararse. Para cada rareza toma su Maxlevel más
+alto (numeración del JSON), le suma su diferencia y espera que TODAS las
+rarezas den el mismo tope de la app. Deja en el log, solo si hay algo que
+revisar: (a) una rareza sin diferencia definida (AVISO 14) y (b) topes
+distintos entre rarezas (p. ej. si el juego subió el nivel máximo de una
+rareza y todavía no de las demás, o si Maxlevel quedó viejo). Solo LOG: no
+escribe nada. Va dentro de try/catch a propósito: nunca debe romper la
+actualización de Backup_Cards.csv.
+@param {Array<Array>} cardsRows - Filas de Backup_Cards.csv (cols: 4=Maxlevel, 6=Rarity).
+```
+
+
+### Ubicación: `_avisarDiferenciasNivelCards`
+
+#### 31B062 — líneas 2413-2421 (docblock)
+
+```text
+_avisarRevisionNivelesCards(cardsRows)
+Punto único de las revisiones de niveles que van al final de
+updateCardsSheet() (y de probarCostosSubirNivel()): diferencia por rareza
+(_avisarDiferenciasNivelCards()) y cobertura de Backup_Cards_3.csv
+(_avisarNivelesFaltantesCards3()). Ambas son solo log y tienen su propio
+try/catch.
+@param {Array<Array>} cardsRows - Filas de Backup_Cards.csv.
+```
+
+
+### Ubicación: `_avisarRevisionNivelesCards`
+
+#### 31B063 — líneas 2427-2433 (docblock)
+
+```text
+probarCostosSubirNivel()
+Función manual para revisar el cruce sin escribir código: toma el primer
+Tag que aparezca en Backup_Cards_2.csv, calcula los costos de subida de sus
+cartas y deja un resumen en el log (Ver > Registros de ejecución). No
+escribe nada en Drive ni en las hojas.
+```
+
+
+---
+
+
+# Archivo 32_Insignias.gs
+
+Datos de insignias/badges de jugador (Backup_Insignias.csv catálogo y Backup_Insignias_2.csv por jugador): `updateInsigniasSheet()`, `updateInsignias2Sheet()`, traducción de Maestría contra Cards. Los IDs de bloque llevan prefijo `32`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 32B001 | 6-77 | `Cabecera del archivo` | Mismo patrón de almacenamiento que Backup_Cards.csv/Backup_Cards_2.csv |
+| 32B002 | 79-147 | `Cabecera del archivo` | A) DATOS DE INSIGNIAS: Backup_Insignias.csv (catálogo) y Backup_Insignias_2.csv (por jugador) |
+| 32B003 | 149-155 | `Cabecera del archivo` | _leerInsigniasCSV() |
+| 32B004 | 167-171 | `_leerInsigniasCSV` | _guardarInsigniasCSV(headers, rows) |
+| 32B005 | 178-189 | `_guardarInsigniasCSV` | _ordenarFilasCatalogoInsignias(rows) |
+| 32B006 | 211-216 | `_ordenarFilasCatalogoInsignias` | _leerInsignias2CSV() |
+| 32B007 | 237-239 | `_guardarInsignias2CSV` | TRADUCCIÓN AUTOMÁTICA DE INSIGNIAS DE MAESTRÍA (contra Backup_Cards.csv) |
+| 32B008 | 241-251 | `_guardarInsignias2CSV` | _extraerNombreCartaDeInsigniaMastery(nombreInsignia) |
+| 32B009 | 259-267 | `_extraerNombreCartaDeInsigniaMastery` | _normalizarClaveInsignia(texto) |
+| 32B010 | 272-274 | `_normalizarClaveInsignia` | Memo por ejecución del mapa nombre-de-carta -> Nombre en español (ver |
+| 32B011 | 277-284 | `_INSIGNIAS_MAPA_CARTAS_MEMO` | _getMapaCartasEs() |
+| 32B012 | 298-308 | `_getMapaCartasEs` | _buscarTraduccionCartaPorNombre(nombreCartaIngles) |
+| 32B013 | 315-332 | `_buscarTraduccionCartaPorNombre` | _traducirNombreInsignia(nombreInsignia) |
+| 32B014 | 339-351 | `_traducirNombreInsignia` | _construirMapaNombresCatalogo(rows) |
+| 32B015 | 362-371 | `_construirMapaNombresCatalogo` | _resolverNombreInsignia(nombreInsignia, mapaCatalogo) |
+| 32B016 | 378-382 | `_resolverNombreInsignia` | SINCRONIZACIÓN REAL DESDE EL CACHE DE /players |
+| 32B017 | 386-405 | `_resolverNombreInsignia` | updateInsigniasSheet() |
+| 32B018 | 493-506 | `updateInsigniasSheet` | updateInsignias2Sheet() |
+| 32B019 | 542-546 | `updateInsignias2Sheet` | FIX de diseño (mismo criterio que updateCards2Sheet(), 04/06-ago-2026): |
+| 32B020 | 556-565 | `updateInsignias2Sheet` | _getInsigniasDesdeCache() |
+| 32B021 | 579-593 | `_getInsigniasDesdeCache` | FIX (27-sep-2026, pedido usuario -- "CrazyArenaBadge1 y 2025YearBadge |
+| 32B022 | 604-606 | `_getInsigniasDesdeCache` | Por seguridad, si algún jugador reportara un maxLevel distinto |
+| 32B023 | 622-630 | `_getInsigniasDesdeCache` | _getNombresInsigniasConocidas() |
+| 32B024 | 653-663 | `_getNombresInsigniasConocidas` | _armarFilasInsignias2ParaTags(tags) |
+| 32B025 | 688-692 | `_armarFilasInsignias2ParaTags` | FIX (27-sep-2026, mismo caso que _getInsigniasDesdeCache(), más |
+| 32B026 | 714-719 | `_armarFilasInsignias2ParaTags` | _actualizarInsignias2SoloAdmins() |
+| 32B027 | 748-750 | `_actualizarInsignias2SoloAdmins` | IMPORTANTE: se llama _fetchPlayersData() ANTES de revisar la cache |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+Cada bloque se copió tal cual estaba en el `.gs` (sin los `//`). Los números de línea son los del archivo ANTES de la limpieza.
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 32B001 — líneas 6-77 (comentario)
+
+```text
+Mismo patrón de almacenamiento que Backup_Cards.csv/Backup_Cards_2.csv
+(31_Cards_Mazos.gs): dos CSV en Drive (carpeta DRIVE_FOLDER_ID_CSV, ver
+_getCsvFolder()), sin ninguna hoja intermedia del spreadsheet.
+
+TANDA 1 (12-sep-2026, pedido del usuario): monta la configuración de
+ambos CSV (lectura/escritura + traducción automática de insignias de
+Maestría contra Cards).
+
+TANDA 2 (12-sep-2026, mismo pedido, continuación): agrega la sincronización
+real desde el cache de /players (updateInsigniasSheet()/
+updateInsignias2Sheet(), equivalentes a updateCardsSheet()/
+updateCards2Sheet() de 31_Cards_Mazos.gs).
+
+FASE 5(a) del plan de fases (23-sep-2026, pedido del usuario): ambas
+funciones ya están conectadas a PASOS_RUNALL/PASOS_RUNUPDATE (00_Main.gs),
+justo después de Cards/Cards_2 y antes de Directorio — se actualizan
+solas en cada corrida, ya no hace falta llamarlas a mano.
+
+FIX (23-sep-2026, pedido del usuario — "hice un csv con la columna Nombre
+en español ... pero veo que no se están usando"). CORRECCIÓN a lo dicho en
+el diseño anterior: la traducción que el usuario completa a mano vive en
+Backup_Insignias.csv (catálogo, columna Nombre), pero NADIE la leía: el
+endpoint web (_webMapaNombreInsigniaPorName(), 37_Web_API.gs) cruzaba
+contra la columna Nombre de Backup_Insignias_2.csv, y esa columna solo se
+llenaba sola para las insignias "Mastery..." (el resto quedaba vacío, y
+completarlo a mano por jugador es inviable). Cambios en este archivo:
+  - _construirMapaNombresCatalogo() (nueva): mapa Name -> Nombre a partir
+    del catálogo; es la ÚNICA fuente de traducción (mismo criterio que
+    Cards: el Nombre se escribe una vez en el catálogo y se cruza por
+    clave, no se reescribe por jugador).
+  - _resolverNombreInsignia() (nueva): catálogo primero, auto-traducción
+    de Maestría (contra Backup_Cards.csv) solo como respaldo.
+  - updateInsigniasSheet(): una fila nueva (nivel todavía no visto) o con
+    Nombre vacío ahora HEREDA el Nombre que ya tenga cualquier otra fila
+    de la MISMA insignia (antes quedaba vacía: el usuario escribía
+    "Años jugando" en el nivel 9 y los otros 10 niveles nacían sin nombre).
+  - updateInsignias2Sheet()/_armarFilasInsignias2ParaTags(): la columna
+    Nombre de Insignias_2 se llena desde el mismo catálogo (queda
+    coherente, aunque la web ya no depende de ella).
+  - _guardarInsigniasCSV(): antes de guardar agrupa las filas por
+    insignia (orden de primera aparición en el CSV; insignias nuevas al
+    final, en orden alfabético) y por Nivel ascendente dentro de cada una,
+    para que las filas reservadas de una insignia queden juntas.
+  - Rendimiento: el mapa de cartas (Backup_Cards.csv) se lee UNA sola vez
+    por ejecución (_getMapaCartasEs()). Antes cada fila nueva releía ese
+    CSV desde Drive (cientos de lecturas en una primera corrida).
+  - La búsqueda de la carta ignora espacios/signos/mayúsculas en ambos
+    lados ("MasteryGoblinGang" ahora encuentra "Goblin Gang"); sigue
+    siendo coincidencia exacta tras normalizar, no aproximada.
+
+AVISOS ABIERTOS (23-sep-2026) — PENDIENTES DE DEFINIR / CONTESTAR:
+  AVISO 1 (RESUELTO 24-sep-2026) -- Insignias_2 y filas en cero. El usuario
+    confirmó: todas las insignias se guardan por jugador, sin reservar solo
+    para algunas, y las nuevas también. HECHO: _armarFilasInsignias2ParaTags()
+    escribe una fila por cada insignia conocida (Progreso=0 y Nivel=0 si el
+    jugador no la tiene), igual que Cards_2. Costo esperado: Insignias_2
+    pasa a ~(n° de insignias conocidas) filas por jugador (con ~180 insignias,
+    decenas de miles de filas en total) — más lectura/escritura en Drive y
+    37_Web_API.gs recorre más filas por consulta de perfil. La web ignora los
+    rellenos (Nivel=0). NO SE PUDO PROBAR en Apps Script real.
+  AVISO 2 -- Backup_Insignias.csv ya existente (7 filas escritas a mano:
+    YearsPlayed, BattleWins, ClanWarsVeteran, ClanWarWins,
+    EmoteCollection, BannerCollection, CollectionLevel, una por insignia
+    en el nivel actual). Al correr la sincronización se conservan sus
+    Nombre/Objetivo/Ícono y se agregan las filas de los demás niveles
+    (1..Nivel_max), heredando el Nombre. Las filas se reordenan
+    (agrupadas por insignia); la columna N° se renumera como siempre.
+  AVISO 3 -- Objetivo/Ícono de un nivel solo se llenan cuando ALGÚN
+    jugador del cache está en ese nivel. Los niveles que nadie ha
+    alcanzado quedan con esas dos columnas vacías hasta que alguien
+    aparezca en ese nivel (comportamiento previo, sin cambios).
+==============================================================================
+```
+
+#### 32B002 — líneas 79-147 (comentario)
+
+```text
+=============================================================================
+A) DATOS DE INSIGNIAS: Backup_Insignias.csv (catálogo) y Backup_Insignias_2.csv (por jugador)
+
+Fuente: campo 'badges' del endpoint /players de Supercell. Ejemplo real:
+  {
+    "name": "MasteryRageBarbarian",
+    "level": 7,
+    "maxLevel": 10,
+    "progress": 7,
+    "target": 8,
+    "iconUrls": { "large": "https://api-assets.clashroyale.com/..." }
+  }
+
+Backup_Insignias.csv (catálogo fijo, independiente del jugador):
+  Encabezados: N° | Name | Nombre | Nivel | Nivel_max | Objetivo | Ícono
+    N°        -> numeración automática (renumerada en _guardarInsigniasCSV()).
+    Name      -> nombre EXACTO de la insignia tal cual viene en el JSON
+                 (ej. "MasteryRageBarbarian", "YearsPlayed").
+    Nombre    -> traducción al español. SEMI-MANUAL:
+                   - Insignias de Maestría ("Mastery" + nombre de carta en
+                     inglés, ej. "MasteryWizard"): se auto-completa
+                     buscando el nombre de carta ("Wizard") en la columna
+                     Name de Backup_Cards.csv y copiando su columna
+                     Nombre (traducción ya existente ahí). Si no se
+                     encuentra la carta, se deja vacío para completar a mano.
+                   - Insignias particulares (no-Mastery, ej. "YearsPlayed",
+                     "BattleWins"): siempre se dejan vacías para que el
+                     usuario las traduzca a mano (no hay fuente automática).
+    Nivel     -> nivel puntual de ESTA fila (level, 1..maxLevel).
+    Nivel_max -> maxLevel de la insignia (igual en todas las filas de una
+                 misma insignia, repetido por fila para no depender de un
+                 merge con otra tabla).
+    Objetivo  -> target del nivel puntual de esta fila (cantidad de puntos
+                 para subir de nivel de maestría en ESE nivel específico).
+    Ícono     -> URL real de iconUrls.large para ESE nivel específico (el
+                 ícono cambia por nivel, de ahí que se reserve una fila
+                 por cada nivel 1..maxLevel en vez de una sola fila por
+                 insignia).
+  UNA fila por CADA (insignia, nivel) conocido por el sistema — no por
+  jugador. Aparece aquí toda insignia que al menos UN jugador del clan
+  tenga, en cualquier nivel que se haya observado. Dos jugadores distintos
+  pueden tener (o no) la misma insignia, y en niveles distintos — eso NO
+  vive acá, vive en Backup_Insignias_2.csv (ver abajo).
+
+Backup_Insignias_2.csv (por jugador):
+  Encabezados: N° | Tag | Name | Nombre | Progreso | Nivel
+    N°       -> numeración automática (renumerada en _guardarInsignias2CSV()).
+    Tag      -> tag del jugador (con #).
+    Name     -> nombre EXACTO de la insignia (igual que la columna Name de
+                Backup_Insignias.csv, para poder cruzar ambos CSV).
+    Nombre   -> traducción al español, copiada del catálogo
+                (Backup_Insignias.csv, columna Nombre) por Name. Se escribe
+                UNA vez en el catálogo; acá solo se replica.
+    Progreso -> progress del jugador en esa insignia (cantidad de puntos
+                que ya tiene acumulados).
+    Nivel    -> level actual del jugador en esa insignia.
+  CAMBIO (24-sep-2026, pedido del usuario — "todas las insignias deben
+  guardarse en el csv, no se reserva para algunas, si se crean insignias
+  nuevas, se deben guardar también"; responde el AVISO 1): igual que
+  Backup_Cards_2.csv, cada jugador tiene UNA fila por CADA insignia
+  conocida. Si la tiene, con su Progreso y Nivel reales; si no la tiene,
+  fila de relleno con Progreso=0 y Nivel=0. "Conocida" = está en el catálogo
+  Backup_Insignias.csv o la trae /players de algún jugador en la corrida
+  (ver _getNombresInsigniasConocidas()), así que una insignia nueva entra
+  sola para todos los jugadores actualizados apenas alguien la tenga.
+  Un Nivel=0 explícito significa "relleno / no la tiene" (una insignia sin
+  nivel real queda con Nivel vacío). Los tags que una corrida no actualiza
+  conservan sus filas anteriores (pueden no tener aún los rellenos).
+=============================================================================
+```
+
+#### 32B003 — líneas 149-155 (docblock)
+
+```text
+_leerInsigniasCSV()
+Lee Backup_Insignias.csv y lo devuelve ya parseado como { headers, rows }.
+Si el archivo todavía no existe (primera corrida), devuelve el encabezado
+por defecto con rows=[] — mismo patrón que _leerCardsCSV() (31_Cards_Mazos.gs).
+@returns {{headers: Array<string>, rows: Array<Array>}}
+```
+
+
+### Ubicación: `_leerInsigniasCSV`
+
+#### 32B004 — líneas 167-171 (docblock)
+
+```text
+_guardarInsigniasCSV(headers, rows)
+Agrupa las filas por insignia y nivel (ver _ordenarFilasCatalogoInsignias()),
+renumera la columna N° (índice 0) y guarda Backup_Insignias.csv completo.
+```
+
+
+### Ubicación: `_guardarInsigniasCSV`
+
+#### 32B005 — líneas 178-189 (docblock)
+
+```text
+_ordenarFilasCatalogoInsignias(rows)
+Devuelve las filas de Backup_Insignias.csv agrupadas por insignia (columna
+Name, índice 1) y, dentro de cada insignia, por Nivel (índice 3)
+ascendente. El orden entre insignias es el de su PRIMERA aparición en
+`rows` (las que ya estaban en el CSV conservan su lugar; las nuevas, que
+updateInsigniasSheet() agrega en orden alfabético, quedan al final). No
+pierde ni duplica filas: solo las reordena (desempate estable por
+posición original).
+@param {Array<Array>} rows
+@returns {Array<Array>}
+```
+
+
+### Ubicación: `_ordenarFilasCatalogoInsignias`
+
+#### 32B006 — líneas 211-216 (docblock)
+
+```text
+_leerInsignias2CSV()
+Lee Backup_Insignias_2.csv y lo devuelve ya parseado como { headers, rows }.
+Mismo patrón que _leerInsigniasCSV().
+@returns {{headers: Array<string>, rows: Array<Array>}}
+```
+
+
+### Ubicación: `_guardarInsignias2CSV`
+
+#### 32B007 — líneas 237-239 (comentario)
+
+```text
+=============================================================================
+TRADUCCIÓN AUTOMÁTICA DE INSIGNIAS DE MAESTRÍA (contra Backup_Cards.csv)
+=============================================================================
+```
+
+#### 32B008 — líneas 241-251 (docblock)
+
+```text
+_extraerNombreCartaDeInsigniaMastery(nombreInsignia)
+Si el nombre de la insignia empieza con el prefijo "Mastery" (insignias
+genéricas de maestría de carta, ej. "MasteryWizard", "MasteryRageBarbarian"),
+devuelve el nombre de carta en inglés que le sigue (ej. "Wizard",
+"RageBarbarian") para poder buscarlo en Backup_Cards.csv.
+Si no empieza con ese prefijo (insignia particular, no genérica de
+maestría), devuelve null.
+@param {string} nombreInsignia - Columna Name de Insignias/Insignias_2 (ej. "MasteryWizard").
+@returns {string|null}
+```
+
+
+### Ubicación: `_extraerNombreCartaDeInsigniaMastery`
+
+#### 32B009 — líneas 259-267 (docblock)
+
+```text
+_normalizarClaveInsignia(texto)
+Minúsculas y solo letras/dígitos (sin espacios ni signos), para comparar
+el nombre de carta que viene pegado dentro de la insignia ("GoblinGang")
+con el Name de Backup_Cards.csv ("Goblin Gang"). Sigue siendo una
+coincidencia exacta tras normalizar, no una búsqueda aproximada.
+@param {string} texto
+@returns {string}
+```
+
+
+### Ubicación: `_normalizarClaveInsignia`
+
+#### 32B010 — líneas 272-274 (comentario)
+
+```text
+Memo por ejecución del mapa nombre-de-carta -> Nombre en español (ver
+_getMapaCartasEs()). Apps Script reinicia las variables globales en cada
+ejecución, así que nunca queda un valor viejo de una corrida anterior.
+```
+
+
+### Ubicación: `_INSIGNIAS_MAPA_CARTAS_MEMO`
+
+#### 32B011 — líneas 277-284 (docblock)
+
+```text
+_getMapaCartasEs()
+Lee Backup_Cards.csv UNA sola vez por ejecución y devuelve el mapa
+{ nombreNormalizado: 'Nombre en español' } (columna Name, índice 2 ->
+columna Nombre, índice 3, ver _leerCardsCSV(), 31_Cards_Mazos.gs). Solo se
+registran las cartas cuya columna Nombre NO está vacía.
+@returns {Object<string,string>}
+```
+
+
+### Ubicación: `_getMapaCartasEs`
+
+#### 32B012 — líneas 298-308 (docblock)
+
+```text
+_buscarTraduccionCartaPorNombre(nombreCartaIngles)
+Busca `nombreCartaIngles` en la columna Name de Backup_Cards.csv
+(coincidencia exacta tras _normalizarClaveInsignia(): sin distinguir
+mayúsculas ni espacios/signos) y devuelve su columna Nombre (traducción
+al español ya completada a mano ahí). Si no se encuentra la carta, o si
+la encuentra pero su columna Nombre todavía está vacía (carta nueva sin
+traducir), devuelve ''. Usa el mapa memoizado de _getMapaCartasEs().
+@param {string} nombreCartaIngles - Ej. "Wizard".
+@returns {string} Traducción en español, o '' si no se encontró.
+```
+
+
+### Ubicación: `_buscarTraduccionCartaPorNombre`
+
+#### 32B013 — líneas 315-332 (docblock)
+
+```text
+_traducirNombreInsignia(nombreInsignia)
+Punto de entrada único para la columna Nombre, semi-manual, de
+Insignias/Insignias_2:
+  - Si es una insignia de Maestría ("Mastery" + carta): intenta
+    auto-traducir buscando la carta en Backup_Cards.csv. Si la
+    encuentra, devuelve esa traducción; si no, devuelve '' (vacío,
+    para que el usuario la complete a mano igual que una carta nueva
+    sin traducir todavía).
+  - Si NO es una insignia de Maestría (insignia particular, ej.
+    "YearsPlayed", "BattleWins"): siempre devuelve '' — no hay fuente
+    automática posible, se deja para traducción 100% manual.
+Pensada para llamarse SOLO al crear una fila nueva (insignia o nivel
+nuevo todavía no visto); nunca debe pisar una traducción ya completada
+a mano en el CSV existente.
+@param {string} nombreInsignia - Columna Name (ej. "MasteryWizard", "YearsPlayed").
+@returns {string} Traducción automática, o '' si debe completarse a mano.
+```
+
+
+### Ubicación: `_traducirNombreInsignia`
+
+#### 32B014 — líneas 339-351 (docblock)
+
+```text
+_construirMapaNombresCatalogo(rows)
+Arma el mapa { Name: 'Nombre en español' } a partir de las filas de
+Backup_Insignias.csv (columna Name, índice 1; columna Nombre, índice 2).
+Como el catálogo tiene UNA fila por nivel, si varias filas de una misma
+insignia tienen Nombre se usa la primera que no esté vacía. Las
+insignias sin ninguna traducción no aparecen en el mapa. Es la ÚNICA
+fuente de traducción de insignias: el endpoint web
+(_webMapaNombreInsigniaPorName(), 37_Web_API.gs) y la sincronización de
+este archivo la usan tal cual.
+@param {Array<Array>} rows - csv.rows de _leerInsigniasCSV().
+@returns {Object<string,string>}
+```
+
+
+### Ubicación: `_construirMapaNombresCatalogo`
+
+#### 32B015 — líneas 362-371 (docblock)
+
+```text
+_resolverNombreInsignia(nombreInsignia, mapaCatalogo)
+Nombre en español de una insignia: primero lo que ya esté escrito en el
+catálogo para ESA insignia (cualquier nivel, completado a mano o
+auto-traducido antes); si no hay, la auto-traducción de Maestría
+(_traducirNombreInsignia()); si tampoco, '' (queda para traducir a mano).
+@param {string} nombreInsignia - Columna Name.
+@param {Object<string,string>} mapaCatalogo - ver _construirMapaNombresCatalogo().
+@returns {string}
+```
+
+
+### Ubicación: `_resolverNombreInsignia`
+
+#### 32B016 — líneas 378-382 (comentario)
+
+```text
+=============================================================================
+SINCRONIZACIÓN REAL DESDE EL CACHE DE /players
+updateInsigniasSheet() (catálogo) / updateInsignias2Sheet() (por jugador)
+Mismo patrón que updateCardsSheet()/updateCards2Sheet() (31_Cards_Mazos.gs).
+=============================================================================
+```
+
+#### 32B017 — líneas 386-405 (docblock)
+
+```text
+updateInsigniasSheet()
+Recorre el cache de /players de TODOS los jugadores (a diferencia de
+_getCardsFromCache(), que se detiene con el primer jugador que tenga
+datos: acá hace falta seguir viendo jugadores porque cada uno puede
+tener insignias y niveles distintos, ver _getInsigniasDesdeCache() más
+abajo) y arma/actualiza el catálogo Backup_Insignias.csv:
+  - Insignia nunca vista: reserva sus filas 1..maxLevel completas de una
+    sola vez (con Objetivo/Ícono llenos SOLO en los niveles que ya se
+    observaron en esta corrida, vacíos en el resto hasta que algún
+    jugador aparezca en ese nivel en una corrida futura).
+  - Insignia ya conocida: si en esta corrida se observó un nivel que
+    todavía tenía Objetivo/Ícono vacíos (o cambiaron), se completan/
+    actualizan esas 2 columnas para esa fila puntual.
+  - Nombre: se completa con _resolverNombreInsignia() SOLO si la fila
+    todavía la tiene vacía — nunca se pisa una traducción ya escrita a
+    mano en el CSV (mismo criterio que Backup_Cards.csv). Una fila nueva
+    o vacía hereda el Nombre de cualquier otra fila de la misma insignia
+    (FIX 23-sep-2026, ver cabecera del archivo).
+```
+
+
+### Ubicación: `updateInsigniasSheet`
+
+#### 32B018 — líneas 493-506 (docblock)
+
+```text
+updateInsignias2Sheet()
+Mismos 4 modos de PLAYERS_API_ENABLED que updateCards2Sheet()
+(31_Cards_Mazos.gs):
+  false     -> no se llama a /players para nadie, Backup_Insignias_2.csv
+               queda exactamente como estaba.
+  'admin'   -> actualizar SOLO ADMINS, preservar el resto (ver
+               _actualizarInsignias2SoloAdmins() más abajo).
+  'partial' -> admins + nuevos (V_Guerra vacía en Directorio).
+  true      -> todos los jugadores con datos en cache.
+CAMBIO (24-sep-2026, AVISO 1): igual que updateCards2Sheet(), ahora SÍ se
+reservan filas en 0 (Progreso=0, Nivel=0) para las insignias conocidas que
+el jugador no tiene (ver docblock de la sección A más arriba).
+```
+
+
+### Ubicación: `updateInsignias2Sheet`
+
+#### 32B019 — líneas 542-546 (comentario)
+
+```text
+FIX de diseño (mismo criterio que updateCards2Sheet(), 04/06-ago-2026):
+"no se debe borrar nada de Insignias_2, solo actualizar" — se reutiliza
+_mergearCards2CSV() (31_Cards_Mazos.gs) tal cual: es un merge genérico
+por columna Tag (índice 1), que es exactamente el mismo layout que usa
+Backup_Insignias_2.csv, así que no hace falta duplicar esa lógica acá.
+```
+
+#### 32B020 — líneas 556-565 (docblock)
+
+```text
+_getInsigniasDesdeCache()
+Extrae un mapa de insignias (name -> { maxLevel, niveles: { nivel:
+{objetivo, icono} } }) recorriendo el cache de players de TODOS los
+jugadores del clan (a diferencia de _getCardsFromCache(), que se detiene
+en el primer jugador con datos: acá cada jugador puede aportar insignias
+y/o niveles que ningún otro tiene, así que hace falta ver a todos para
+maximizar cuántos niveles quedan cubiertos por corrida).
+@returns {Object} Mapa name→{maxLevel, niveles}, o {} si no hay datos.
+```
+
+
+### Ubicación: `_getInsigniasDesdeCache`
+
+#### 32B021 — líneas 579-593 (comentario)
+
+```text
+FIX (27-sep-2026, pedido usuario -- "CrazyArenaBadge1 y 2025YearBadge
+no aparecen en el csv de insignias, no es problema de traducción, no
+aparecen para nada"). Causa raíz confirmada con el JSON real de
+/players para estas dos insignias:
+  { "name": "CrazyArenaBadge1", "progress": 1, "iconUrls": {...} }
+  { "name": "2025YearBadge",    "progress": 1, "iconUrls": {...} }
+Son insignias de UN SOLO nivel (logros puntuales de evento/año) --
+Supercell las manda SIN 'maxLevel' NI 'level', a diferencia de las
+insignias de progreso (ej. "YearsPlayed", que sí trae maxLevel/
+level/target). Antes, `Number(b.maxLevel) || 0` daba 0 para estas y
+el `continue` las descartaba ACÁ, antes de llegar siquiera al
+catálogo (Backup_Insignias.csv) -- por eso no era un problema de
+traducción (la columna Nombre vacía es normal y esperada), la fila
+del catálogo simplemente nunca se creaba. Se normalizan a
+maxLevel=1, nivel=1 (insignia de nivel único) en vez de saltarlas.
+```
+
+#### 32B022 — líneas 604-606 (comentario)
+
+```text
+Por seguridad, si algún jugador reportara un maxLevel distinto
+(no debería pasar: maxLevel es propio del juego, no del jugador),
+se conserva el mayor visto.
+```
+
+#### 32B023 — líneas 622-630 (docblock)
+
+```text
+_getNombresInsigniasConocidas()
+AVISO 1 (24-sep-2026): lista de los Name de TODAS las insignias conocidas:
+primero las del catálogo Backup_Insignias.csv (en su orden), luego las que
+traiga /players de cualquier jugador en el cache y todavía no estén en el
+catálogo (en orden alfabético). A diferencia de _getInsigniasDesdeCache() NO
+exige maxLevel: una insignia sin maxLevel también se guarda.
+@returns {Array<string>} Names únicos.
+```
+
+
+### Ubicación: `_getNombresInsigniasConocidas`
+
+#### 32B024 — líneas 653-663 (docblock)
+
+```text
+_armarFilasInsignias2ParaTags(tags)
+Construye las filas de Backup_Insignias_2.csv para la lista de tags
+dada, leyendo directo del cache de players (ya poblado por el caller vía
+_fetchPlayersData()).
+CAMBIO (24-sep-2026, AVISO 1): una fila por CADA insignia conocida
+(_getNombresInsigniasConocidas()): la real del jugador si la tiene, o una de
+relleno con Progreso=0 y Nivel=0 si no. Ver el docblock de la sección A.
+@param {Array<string>} tags - Tags de jugador a procesar.
+@returns {Array<Array>} Filas listas para mergear con _mergearCards2CSV().
+```
+
+
+### Ubicación: `_armarFilasInsignias2ParaTags`
+
+#### 32B025 — líneas 688-692 (comentario)
+
+```text
+FIX (27-sep-2026, mismo caso que _getInsigniasDesdeCache(), más
+arriba en este archivo): insignias de un solo nivel (ej.
+"2025YearBadge", "CrazyArenaBadge1") no traen 'level' NI
+'maxLevel' -- se guarda Nivel=1 (en vez de vacío) para que
+coincida con el Nivel_max=1 que el catálogo les asigna.
+```
+
+#### 32B026 — líneas 714-719 (docblock)
+
+```text
+_actualizarInsignias2SoloAdmins()
+Cuando PLAYERS_API_ENABLED = 'admin', actualizar SOLO filas de admins en
+Backup_Insignias_2.csv. Los no-admins se preservan tal como están. Mismo
+patrón que _actualizarCards2SoloAdmins() (31_Cards_Mazos.gs).
+```
+
+
+### Ubicación: `_actualizarInsignias2SoloAdmins`
+
+#### 32B027 — líneas 748-750 (comentario)
+
+```text
+IMPORTANTE: se llama _fetchPlayersData() ANTES de revisar la cache
+(mismo fix que _actualizarCards2SoloAdmins(): los admins deben
+actualizarse en todas las corridas, sin importar el interruptor).
+```
+
+
+# Archivo 33_CaminoLeyendas.gs
+
+Backup_CaminoLeyendas.csv: CSV exclusivo de Camino de Leyendas y leagueStatistics por jugador (una fila por jugador, 21 columnas). La web (perfil.html) lo lee primero; el JSON de Drive queda de respaldo. Fuente: cache de /players. Los IDs de bloque llevan prefijo `33`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 33B001 | 7-38 | `Cabecera del archivo` | NUEVO (24-sep-2026, pedido del usuario) |
+| 33B002 | 55-60 | `CAMINO_LEYENDAS_HEADERS` | _leerCaminoLeyendasCSV() |
+| 33B003 | 88-91 | `_clCelda` | _armarFilaCaminoLeyendas(tag, pd) |
+| 33B004 | 122-127 | `_armarFilasCaminoLeyendasParaTags` | updateCaminoLeyendasSheet() |
+| 33B005 | 166-170 | `updateCaminoLeyendasSheet` | _actualizarCaminoLeyendasSoloAdmins() |
+| 33B006 | 243-248 | `_clLiga` | _webCaminoLeyendasCsv(tag) |
+| 33B007 | 277-282 | `_webCaminoLeyendasCsv` | _webAplicarCaminoLeyendasCsv(extra, csv) |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 33B001 — líneas 7-38 (comentario)
+
+```text
+NUEVO (24-sep-2026, pedido del usuario)
+Fuente: mismo cache de /players que ya usan Cards_2 e Insignias_2
+(_fetchPlayersData() es memoizado: este paso NO repite consultas a la API).
+  currentPathOfLegendSeasonResult -> Actual_*
+  lastPathOfLegendSeasonResult    -> Anterior_*
+  bestPathOfLegendSeasonResult    -> Mejor_*
+  legacyTrophyRoadHighScore       -> Ladder_Historico
+Cada resultado de temporada trae { leagueNumber, trophies, rank }.
+
+Backup_CaminoLeyendas.csv (UNA fila por jugador):
+  N° | Tag | Actual_Liga | Actual_Trofeos | Actual_Rango |
+  Anterior_Liga | Anterior_Trofeos | Anterior_Rango |
+  Mejor_Liga | Mejor_Trofeos | Mejor_Rango | Ladder_Historico
+Celda vacía = la API no mandó ese dato (no es lo mismo que 0).
+
+leagueStatistics (Ligas) TAMBIÉN vive aquí (24-sep-2026, pedido del usuario),
+como 9 columnas al final (no mueven los índices anteriores):
+  Liga_Actual_Id | Liga_Actual_Trofeos | Liga_Actual_Mejor |
+  Liga_Anterior_Id | Liga_Anterior_Trofeos | Liga_Anterior_Mejor |
+  Liga_Mejor_Id | Liga_Mejor_Trofeos | Liga_Mejor_Mejor
+(currentSeason / previousSeason / bestSeason de leagueStatistics; cada una con
+id de temporada, trophies y bestTrophies). Un CSV creado antes de estas
+columnas se completa solo al leerlo.
+
+NO SE TOCAN las columnas "Camino de leyendas_*" de Players ni de los CSV de
+Directorio/Inactivos (decisión del usuario, para ahorrar trabajo): este CSV
+es adicional.
+
+Modos de PLAYERS_API_ENABLED (igual que updateCards2Sheet()/
+updateInsignias2Sheet()): false = no se toca el CSV; 'admin' = solo admins;
+'partial' = admins + nuevos; true = todos. El merge es por Tag y NUNCA vacía
+el CSV: los tags que una corrida no actualiza conservan su fila anterior.
+```
+
+
+### Ubicación: `CAMINO_LEYENDAS_HEADERS`
+
+#### 33B002 — líneas 55-60 (docblock)
+
+```text
+_leerCaminoLeyendasCSV()
+Lee Backup_CaminoLeyendas.csv como { headers, rows }. Si no existe todavía
+(primera corrida) devuelve los encabezados por defecto con rows=[] — mismo
+patrón que _leerInsignias2CSV().
+```
+
+
+### Ubicación: `_clCelda`
+
+#### 33B003 — líneas 88-91 (docblock)
+
+```text
+_armarFilaCaminoLeyendas(tag, pd)
+Fila del CSV para un jugador a partir de su JSON de /players (`pd`).
+```
+
+
+### Ubicación: `_armarFilasCaminoLeyendasParaTags`
+
+#### 33B004 — líneas 122-127 (docblock)
+
+```text
+updateCaminoLeyendasSheet()
+Actualiza Backup_CaminoLeyendas.csv con el mismo criterio de modos que
+updateInsignias2Sheet(). Reusa _mergearCards2CSV() (31_Cards_Mazos.gs): es
+un merge genérico por la columna Tag (índice 1), justo el layout de este CSV.
+```
+
+
+### Ubicación: `updateCaminoLeyendasSheet`
+
+#### 33B005 — líneas 166-170 (docblock)
+
+```text
+_actualizarCaminoLeyendasSoloAdmins()
+PLAYERS_API_ENABLED='admin': actualiza SOLO filas de admins; el resto se
+preserva. Mismo patrón que _actualizarInsignias2SoloAdmins().
+```
+
+
+### Ubicación: `_clLiga`
+
+#### 33B006 — líneas 243-248 (docblock)
+
+```text
+_webCaminoLeyendasCsv(tag)
+@returns {?{actual:?Object, anterior:?Object, mejor:?Object, ladder:?number,
+  ligaActual:?Object, ligaAnterior:?Object, ligaMejor:?Object}}
+  null si el tag no tiene fila o la fila está vacía / el CSV no se puede leer.
+```
+
+
+### Ubicación: `_webCaminoLeyendasCsv`
+
+#### 33B007 — líneas 277-282 (docblock)
+
+```text
+_webAplicarCaminoLeyendasCsv(extra, csv)
+Pisa en `extra` (rawClash) lo que el CSV trae; cada campo que el CSV no trae
+queda como lo mandó el JSON. Copia el objeto de cada temporada para no mutar
+el JSON cacheado (_DRIVE_CACHE_MEM), mismo criterio que _webConNombreEs().
+```
+
+
+
+# Archivo 34_Logros.gs
+
+Logros (achievements de /players) en dos CSV: Backup_Logros.csv (catálogo, con Nombre e Info_es semi-manuales) y Backup_Logros_2.csv (por jugador, con filas de relleno). Misma dinámica que Cards/Cards_2 e Insignias/Insignias_2. Los IDs de bloque llevan prefijo `34`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 34B001 | 10-44 | `Cabecera del archivo` | Backup_Logros.csv    (catálogo, independiente del jugador) |
+| 34B002 | 93-97 | `_lgCelda` | _getLogrosDesdeCache() |
+| 34B003 | 115-119 | `_getLogrosDesdeCache` | updateLogrosSheet() |
+| 34B004 | 183-186 | `_mapaNombresLogrosCatalogo` | _armarFilasLogros2ParaTags(tags) |
+| 34B005 | 218-222 | `_armarFilasLogros2ParaTags` | _logrosTagsAActualizar() |
+| 34B006 | 268-273 | `updateLogros2Sheet` | _webMapaNombreLogroPorName() |
+| 34B007 | 291-295 | `_webMapaNombreLogroPorName` | _webConNombreLogroEs(a, catalogo) |
+| 34B008 | 311-318 | `_webConNombreLogroEs` | _webLogrosCsvPrimero(tag, logrosJson) |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 34B001 — líneas 10-44 (comentario)
+
+```text
+  Backup_Logros.csv    (catálogo, independiente del jugador)
+    N° | Name | Nombre | Info | Info_es
+      Name   -> nombre EXACTO del logro en el JSON (ej. "Team Player").
+      Nombre -> traducción al español. SEMI-MANUAL: no hay fuente automática,
+                se deja vacío y se completa a mano; nunca se pisa una vez
+                escrito (mismo criterio que Backup_Cards.csv).
+      Info   -> descripción (en inglés, tal cual la API) tal como se vio por
+                primera vez; solo se completa si está vacía. La descripción
+                cambia con el objetivo de cada estrella, así que la vigente de
+                cada jugador está en Backup_Logros_2.csv.
+      Info_es -> descripción en español (24-sep-2026). SEMI-MANUAL, nunca se
+                pisa. Como el número del objetivo cambia con las estrellas, se
+                puede escribir el marcador {objetivo}, que la web reemplaza
+                por el target vigente del jugador. Ej.: "Dona {objetivo} cartas".
+    UNA fila por logro conocido. Un logro nuevo del juego entra solo apenas
+    algún jugador lo trae (al final, en orden alfabético).
+
+  Backup_Logros_2.csv  (por jugador)
+    N° | Tag | Name | Nombre | Estrellas | Progreso | Objetivo | Info | Completado
+      Estrellas  -> stars actuales.
+      Progreso   -> value (avance hacia el objetivo vigente).
+      Objetivo   -> target del SIGUIENTE hito (varía con las estrellas).
+      Info       -> info vigente de la API.
+      Completado -> completionInfo (vacío si la API no lo manda).
+    Igual que Cards_2/Insignias_2: cada jugador tiene UNA fila por CADA logro
+    conocido. Si lo tiene, con sus datos reales; si no, fila de RELLENO con
+    Estrellas=0, Progreso=0 y Objetivo VACÍO. Regla: Objetivo vacío = relleno
+    (un logro real de la API siempre trae target), y la web lo ignora.
+    Los tags que una corrida no actualiza conservan sus filas anteriores.
+
+Fuente: mismo cache de /players que ya usan Cards_2 e Insignias_2
+(_fetchPlayersData() es memoizado: NO se repiten consultas a la API).
+Modos de PLAYERS_API_ENABLED: false = no se toca ningún CSV; 'admin' = solo
+admins; 'partial' = admins + nuevos; true = todos. El merge por Tag reusa
+_mergearCards2CSV() (31_Cards_Mazos.gs) y NUNCA vacía el CSV.
+```
+
+
+### Ubicación: `_lgCelda`
+
+#### 34B002 — líneas 93-97 (docblock)
+
+```text
+_getLogrosDesdeCache()
+Mapa name -> info (primera descripción no vacía vista) recorriendo el cache de
+/players de TODOS los jugadores (cada uno puede traer logros que otro no).
+```
+
+
+### Ubicación: `_getLogrosDesdeCache`
+
+#### 34B003 — líneas 115-119 (docblock)
+
+```text
+updateLogrosSheet()
+Agrega al catálogo los logros nuevos (alfabético, al final) y completa Info si
+estaba vacía. NUNCA pisa un Nombre ya escrito ni borra filas.
+```
+
+
+### Ubicación: `_mapaNombresLogrosCatalogo`
+
+#### 34B004 — líneas 183-186 (docblock)
+
+```text
+_armarFilasLogros2ParaTags(tags)
+Una fila por CADA logro conocido: el real del jugador o relleno (0/0/vacío).
+```
+
+
+### Ubicación: `_armarFilasLogros2ParaTags`
+
+#### 34B005 — líneas 218-222 (docblock)
+
+```text
+_logrosTagsAActualizar()
+Tags a refrescar según PLAYERS_API_ENABLED (mismos 4 modos que
+updateInsignias2Sheet()/updateCards2Sheet()).
+```
+
+
+### Ubicación: `updateLogros2Sheet`
+
+#### 34B006 — líneas 268-273 (docblock)
+
+```text
+_webMapaNombreLogroPorName()
+Catálogo para la web: { name: { nombre, infoEs } } desde Backup_Logros.csv
+(columnas Nombre e Info_es). Si el CSV no se puede leer devuelve {} y la web
+queda con el name/info crudos del JSON.
+```
+
+
+### Ubicación: `_webMapaNombreLogroPorName`
+
+#### 34B007 — líneas 291-295 (docblock)
+
+```text
+_webConNombreLogroEs(a, catalogo)
+Copia de `a` con `nombreEs` e `infoEs` (Info_es con {objetivo} reemplazado por
+el target vigente) si el catálogo los tiene; si no, `a` sin tocar.
+```
+
+
+### Ubicación: `_webConNombreLogroEs`
+
+#### 34B008 — líneas 311-318 (docblock)
+
+```text
+_webLogrosCsvPrimero(tag, logrosJson)
+Arma achievements[] para perfil.html: por cada logro del jugador en
+Backup_Logros_2.csv (relleno ignorado: Objetivo vacío) toma stars, value,
+target, info y completionInfo del CSV; cada campo que el CSV no trae queda como
+lo mande el JSON. Los logros solo del JSON pasan tal cual; los solo del CSV se
+agregan al final. Si el CSV no se puede leer devuelve el JSON. Devuelve copias.
+```
+
+
+
+# Archivo 35_ProgresoEventos.gs
+
+Backup_ProgresoEventos.csv: progress{} de /players (modos rotativos/temporales como Táctica Royale o Princesa Sorpresa), en formato fila por jugador y clave de evento, y normalización del nombre de arena para la web. Los IDs de bloque llevan prefijo `35`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 35B001 | 3-10 | `Cabecera del archivo` | Backup_ProgresoEventos.csv, un CSV |
+| 35B002 | 16-43 | `Cabecera del archivo` | A diferencia de Camino de Leyendas o Perfil (36_PerfilWeb.gs), progress{} NO |
+| 35B003 | 80-86 | `_peCelda` | _armarFilasProgresoEventos(tag, pd) |
+| 35B004 | 114-120 | `_armarFilasProgresoEventosParaTags` | updateProgresoEventosSheet() |
+| 35B005 | 146-153 | `updateProgresoEventosSheet` | OJO: a diferencia de CaminoLeyendas/PerfilWeb, acá `nuevas` puede quedar |
+| 35B006 | 163-167 | `updateProgresoEventosSheet` | _actualizarProgresoEventosSoloAdmins() |
+| 35B007 | 216-221 | `_peNumero` | _webProgresoEventosCsv(tag) |
+| 35B008 | 255-271 | `_webProgresoEventosCsv` | _webResolverArenaEsEnProgreso(extra) |
+| 35B009 | 283-294 | `_webResolverArenaEsEnProgreso` | _webAplicarProgresoEventosCsv(extra, csv) |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 35B001 — líneas 3-10 (comentario)
+
+```text
+Backup_ProgresoEventos.csv, un CSV
+EXCLUSIVO de progress{} (el diccionario dinámico de /players con el avance
+del jugador en los modos ROTATIVOS/TEMPORALES del juego -- Táctica Royale,
+Torneo de Princesa Sorpresa, Ruleta Royale, etc.; confirmado por captura de
+pantalla del usuario 24-sep-2026). NO es Camino de trofeos (trophies/
+bestTrophies normales) ni Camino de Leyendas/Modo competitivo
+(currentPathOfLegendSeasonResult/leagueStatistics, ya en 33_CaminoLeyendas.gs)
+-- esos dos NO se tocan acá.
+```
+
+#### 35B002 — líneas 16-43 (comentario)
+
+```text
+A diferencia de Camino de Leyendas o Perfil (36_PerfilWeb.gs), progress{} NO
+tiene un número fijo de columnas: sus claves son el nombre de cada evento
+(ej. "AutoChess_2026_Season_11", "seasonal-trophy-road-202609", o "" para un
+evento ya cerrado que quedó sin nombre) y cambian cada vez que Supercell
+rota los modos. Por eso este CSV usa el mismo patrón fila-por-jugador-y-clave
+que Backup_Logros_2.csv, no el de fila-única-por-jugador de CaminoLeyendas/
+PerfilWeb.
+
+Forma de cada entrada en pd.progress[clave] (confirmada con datos reales del
+usuario, 24-sep-2026):
+  { arena: { id, name, rawName }, trophies, bestTrophies }
+
+Backup_ProgresoEventos.csv (UNA fila por jugador + clave de evento):
+  N° | Tag | Clave | Arena_Id | Arena_Nombre | Arena_RawName | Trofeos | Mejor_Trofeos
+Celda vacía = la API no mandó ese dato (no es lo mismo que 0).
+
+Fuente: mismo cache de /players que ya usan Cards_2/Insignias_2/
+CaminoLeyendas/Logros_2/PerfilWeb (_fetchPlayersData() es memoizado: este
+paso NO repite consultas a la API).
+
+Merge: reusa _mergearCards2CSV() (31_Cards_Mazos.gs), igual que Logros_2 --
+por cada jugador actualizado en esta corrida, TODAS sus filas viejas se
+reemplazan por el set fresco (así una clave que ya no está en el JSON
+desaparece del CSV para ese jugador); los tags que una corrida no actualiza
+conservan sus filas anteriores tal cual.
+
+Modos de PLAYERS_API_ENABLED (igual que el resto): false = no se toca el
+CSV; 'admin' = solo admins; 'partial' = admins + nuevos; true = todos.
+```
+
+
+### Ubicación: `_peCelda`
+
+#### 35B003 — líneas 80-86 (docblock)
+
+```text
+_armarFilasProgresoEventos(tag, pd)
+Una fila por CADA clave que pd.progress traiga para este jugador. Si el
+jugador no tiene progress{} (o está vacío), no agrega ninguna fila -- a
+diferencia de Logros_2, acá NO hay relleno: una clave ausente significa que
+el jugador no participó en ese evento, no que sea un dato faltante.
+```
+
+
+### Ubicación: `_armarFilasProgresoEventosParaTags`
+
+#### 35B004 — líneas 114-120 (docblock)
+
+```text
+updateProgresoEventosSheet()
+Actualiza Backup_ProgresoEventos.csv con el mismo criterio de modos que
+updateCaminoLeyendasSheet()/updatePerfilWebSheet(). Reusa _mergearCards2CSV():
+por cada tag en esta corrida, reemplaza TODAS sus filas (no solo agrega),
+para que una clave de evento que ya cerró desaparezca del CSV.
+```
+
+
+### Ubicación: `updateProgresoEventosSheet`
+
+#### 35B005 — líneas 146-153 (comentario)
+
+```text
+OJO: a diferencia de CaminoLeyendas/PerfilWeb, acá `nuevas` puede quedar
+vacía sin que eso sea un error -- simplemente ningún jugador de esta
+corrida tiene eventos rotativos activos ahora mismo. Igual se corre el
+merge (con lista vacía) para que los tags actualizados en esta corrida
+PIERDAN sus filas viejas si ya no tienen ningún progress{} (el reemplazo
+por tag de _mergearCards2CSV solo pasa si el tag aparece en `nuevas`; si
+TODOS los jugadores quedaron sin progress{}, `nuevas` está vacía y no se
+reemplaza nada -- caso extremo, poco probable pero documentado).
+```
+
+#### 35B006 — líneas 163-167 (docblock)
+
+```text
+_actualizarProgresoEventosSoloAdmins()
+PLAYERS_API_ENABLED='admin': actualiza SOLO filas de admins; el resto se
+preserva. Mismo patrón que _actualizarCaminoLeyendasSoloAdmins().
+```
+
+
+### Ubicación: `_peNumero`
+
+#### 35B007 — líneas 216-221 (docblock)
+
+```text
+_webProgresoEventosCsv(tag)
+@returns {?Object} progress{} armado desde el CSV, misma forma que el JSON
+  ({ clave: { arena: {id,name,rawName}, trophies, bestTrophies } }); null si
+  el tag no tiene ninguna fila o el CSV no se puede leer.
+```
+
+
+### Ubicación: `_webProgresoEventosCsv`
+
+#### 35B008 — líneas 255-271 (docblock)
+
+```text
+_webResolverArenaEsEnProgreso(extra)
+FIX (27-sep-2026, pedido usuario -- "extiende a todos los que pidan
+arena"): normaliza el `name` de cada `arena` dentro de `extra.progress`
+(venga del CSV -- Backup_ProgresoEventos.csv -- o del JSON de respaldo, ver
+_webDatosDriveJugador(), 37_Web_API.gs) pasándolo por
+_resolverArenaDesdeCatalogo() (09_API_ClashRoyale.gs) -- mismo catálogo y
+mismo criterio de fallback (español -> inglés -> rawName) que ya usa el
+cuadrito "Arena" de _webPerfilExtendido(). Sin esto, renderProgresoEventos()
+(perfil.html, sección "Progreso de eventos y modos") mostraba el `name`
+crudo de la API (inglés) para cada evento/modo rotativo, sin pasar nunca
+por el catálogo. Solo toca `arena.name`; `arena.id`/`arena.rawName` quedan
+intactos por si el frontend los llega a necesitar más adelante. No hace
+nada si la entrada no trae `arena.rawName` (nada que buscar en el
+catálogo, que está indexado por RawName).
+@param {Object} extra - objeto que ya tiene (o no) `extra.progress`.
+```
+
+
+### Ubicación: `_webResolverArenaEsEnProgreso`
+
+#### 35B009 — líneas 283-294 (docblock)
+
+```text
+_webAplicarProgresoEventosCsv(extra, csv)
+Si el CSV tiene datos para este jugador, PISA por completo `extra.progress`
+(no se mezcla clave por clave con el JSON: el CSV es el set fresco de la
+última sincronización, así que si una clave ya no está en el CSV es porque
+ese evento ya cerró para este jugador). Si el CSV no trae nada, `extra`
+queda con el progress{} que ya le haya puesto el JSON como respaldo.
+FIX (27-sep-2026, pedido usuario): sin importar de dónde haya salido
+`extra.progress` (este CSV o el JSON de respaldo), siempre se llama a
+_webResolverArenaEsEnProgreso() al final para que el nombre de arena de
+cada evento pase por Backup_Arena.csv -- ver docblock de esa función.
+```
+
+
+
+# Archivo 36_PerfilWeb.gs
+
+Backup_PerfilWeb.csv: los 5 contadores de la cabecera de estadísticas avanzadas del perfil (ExpLevel, KingTowerLevel, StarPoints, ExpPoints, TotalExpPoints), una fila por jugador. CSV primero, JSON de respaldo. Los IDs de bloque llevan prefijo `36`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 36B001 | 3-7 | `Cabecera del archivo` | Backup_PerfilWeb.csv, un CSV |
+| 36B002 | 12-38 | `Cabecera del archivo` | Fuente: mismo cache de /players que ya usan Cards_2/Insignias_2/ |
+| 36B003 | 49-54 | `PERFIL_WEB_HEADERS` | _leerPerfilWebCSV() |
+| 36B004 | 80-83 | `_pwCelda` | _armarFilaPerfilWeb(tag, pd) |
+| 36B005 | 102-108 | `_armarFilasPerfilWebParaTags` | updatePerfilWebSheet() |
+| 36B006 | 147-151 | `updatePerfilWebSheet` | _actualizarPerfilWebSoloAdmins() |
+| 36B007 | 203-208 | `_pwNumero` | _webPerfilWebCsv(tag) |
+| 36B008 | 236-241 | `_webPerfilWebCsv` | _webAplicarPerfilWebCsv(extra, csv) |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 36B001 — líneas 3-7 (comentario)
+
+```text
+Backup_PerfilWeb.csv, un CSV
+EXCLUSIVO de los 5 contadores de la cabecera de estadísticas avanzadas del
+perfil (renderStatsAvanzadasCabecera(), perfil.html), del que la web lee
+PRIMERO; el JSON de Drive queda solo como respaldo. Mismo patrón que
+Backup_CaminoLeyendas.csv (33_CaminoLeyendas.gs).
+```
+
+#### 36B002 — líneas 12-38 (comentario)
+
+```text
+Fuente: mismo cache de /players que ya usan Cards_2/Insignias_2/
+CaminoLeyendas/Logros_2 (_fetchPlayersData() es memoizado: este paso NO
+repite consultas a la API).
+  expLevel        -> ExpLevel
+  kingTowerLevel   -> KingTowerLevel
+  starPoints       -> StarPoints
+  expPoints        -> ExpPoints
+  totalExpPoints   -> TotalExpPoints
+
+Backup_PerfilWeb.csv (UNA fila por jugador):
+  N° | Tag | ExpLevel | KingTowerLevel | StarPoints | ExpPoints | TotalExpPoints
+Celda vacía = la API no mandó ese dato (no es lo mismo que 0).
+
+NO SE TOCA la columna "Nivel" de Directorio/Inactivos (nivelXp, otro
+formato de texto, ver 11_DirectorioSheet.gs/13_Directorio_Inactivos_
+Vetados.gs): este CSV es adicional, igual que Backup_CaminoLeyendas.csv no
+tocó las columnas "Camino de leyendas_*".
+
+Fuera de alcance de este archivo (pendiente, sin CSV todavía): progress{}
+(tabla genérica de progreso) — no tiene la misma forma fila-por-jugador que
+los 5 contadores de acá, así que se deja para cuando se defina su diseño.
+
+Modos de PLAYERS_API_ENABLED (igual que updateCards2Sheet()/
+updateInsignias2Sheet()/updateCaminoLeyendasSheet()): false = no se toca el
+CSV; 'admin' = solo admins; 'partial' = admins + nuevos; true = todos. El
+merge es por Tag y NUNCA vacía el CSV: los tags que una corrida no
+actualiza conservan su fila anterior.
+```
+
+
+### Ubicación: `PERFIL_WEB_HEADERS`
+
+#### 36B003 — líneas 49-54 (docblock)
+
+```text
+_leerPerfilWebCSV()
+Lee Backup_PerfilWeb.csv como { headers, rows }. Si no existe todavía
+(primera corrida) devuelve los encabezados por defecto con rows=[] — mismo
+patrón que _leerCaminoLeyendasCSV().
+```
+
+
+### Ubicación: `_pwCelda`
+
+#### 36B004 — líneas 80-83 (docblock)
+
+```text
+_armarFilaPerfilWeb(tag, pd)
+Fila del CSV para un jugador a partir de su JSON de /players (`pd`).
+```
+
+
+### Ubicación: `_armarFilasPerfilWebParaTags`
+
+#### 36B005 — líneas 102-108 (docblock)
+
+```text
+updatePerfilWebSheet()
+Actualiza Backup_PerfilWeb.csv con el mismo criterio de modos que
+updateCaminoLeyendasSheet(). Reusa _mergearCards2CSV() (31_Cards_Mazos.gs):
+es un merge genérico por la columna Tag (índice 1), justo el layout de
+este CSV.
+```
+
+
+### Ubicación: `updatePerfilWebSheet`
+
+#### 36B006 — líneas 147-151 (docblock)
+
+```text
+_actualizarPerfilWebSoloAdmins()
+PLAYERS_API_ENABLED='admin': actualiza SOLO filas de admins; el resto se
+preserva. Mismo patrón que _actualizarCaminoLeyendasSoloAdmins().
+```
+
+
+### Ubicación: `_pwNumero`
+
+#### 36B007 — líneas 203-208 (docblock)
+
+```text
+_webPerfilWebCsv(tag)
+@returns {?{expLevel:?number, kingTowerLevel:?number, starPoints:?number,
+  expPoints:?number, totalExpPoints:?number}}
+  null si el tag no tiene fila o la fila está vacía / el CSV no se puede leer.
+```
+
+
+### Ubicación: `_webPerfilWebCsv`
+
+#### 36B008 — líneas 236-241 (docblock)
+
+```text
+_webAplicarPerfilWebCsv(extra, csv)
+Pisa en `extra` (rawClash) lo que el CSV trae; cada contador que el CSV no
+trae queda como lo mandó el JSON (o sin tocar, si tampoco vino del JSON).
+Mismo criterio que _webAplicarCaminoLeyendasCsv().
+```
+
+
+
+# Archivo 39_CartasWeb.gs
+
+Lectura CSV-primero de todos los datos de cartas de perfil.html (Backup_Cards, Backup_Cards_2, Backup_Cards_3), con el JSON de Drive solo como respaldo; incluye la carta favorita. Los IDs de bloque llevan prefijo `39`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 39B001 | 7-41 | `Cabecera del archivo` | NUEVO (24-sep-2026, pedido del usuario — "que todos los datos de cartas se |
+| 39B002 | 46-52 | `_CW_CATALOGO_MEMO` | _webCatalogoCartasPorId() |
+| 39B003 | 88-92 | `_webCatalogoCartasPorId` | _webCartaDesdeCatalogo(obj, catalogo) |
+| 39B004 | 119-129 | `_webCartaDesdeCatalogo` | _webCartasCsvPrimero(tag, datos) |
+| 39B005 | 206-231 | `_webCartasCsvPrimero` | _webCartaFavoritaCsvPrimero(tag, datos) |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 39B001 — líneas 7-41 (comentario)
+
+```text
+NUEVO (24-sep-2026, pedido del usuario — "que todos los datos de cartas se
+lean desde los csv cards, cards_2 y cards_3")
+
+  Backup_Cards.csv   (catálogo, por ID)  -> name, rarity, maxLevel,
+       maxEvolutionLevel, elixirCost, tipo, iconUrls.{medium, heroMedium,
+       evolutionMedium}            [_webCatalogoCartasPorId()/_webCartaDesdeCatalogo()]
+  Backup_Cards_2.csv (por jugador)       -> QUÉ cartas tiene, cuáles van en el
+       mazo/torre equipados, y level/count/evolutionLevel/starLevel
+       [_webCartasCsvPrimero() + _webConCards2Csv() ya existente]
+  Backup_Cards_3.csv (costos de subida)  -> costoOro/cartasSiguienteNivel/
+       costosNiveles  [_webConCostoSubida() ya existente]
+  nombreEs (columna Nombre de Backup_Cards.csv) ya existía.
+
+Reglas de respaldo (siempre CSV primero; el JSON solo si el CSV no responde):
+ - Campos fijos: si el catálogo trae el dato (celda no vacía) pisa al JSON; si
+   no, queda el del JSON. Los ícono/medium/hero/evolution se mezclan con el
+   iconUrls del JSON (los que el CSV no tenga, p. ej. `large`, se conservan).
+ - Colección (cards[]) y cartas de torre (supportCards[]): unión del JSON con
+   las cartas que Cards_2 dice que el jugador tiene (Level >= 1), para no
+   perder una carta recién desbloqueada si el CSV va un paso atrás.
+ - Mazo (currentDeck[]) y torre equipada (currentDeckSupportCards[]): si
+   Cards_2 marca Currentdeck='Sí' para el jugador, ESAS cartas son el mazo
+   (con el orden del JSON cuando la carta también está ahí); si no hay marcas,
+   se usa el mazo del JSON.
+ - Si algún CSV falla o el jugador no tiene filas, todo queda como venía del JSON.
+
+CORRECCIÓN (24-sep-2026, pedido usuario -- "currentFavouriteCard se debe
+guardar en cards, en el csv que corresponda"): el párrafo de abajo decía
+que currentFavouriteCard "no está en ningún CSV" -- eso YA NO es cierto.
+updateCards2Sheet()/_actualizarCards2SoloAdmins() (31_Cards_Mazos.gs)
+ahora marcan Favorita='Sí' en la fila de Backup_Cards_2.csv de esa carta
+(misma idea que ya usaban para Currentdeck), así que CUÁL carta es la
+favorita también sale primero del CSV -- ver _webCartaFavoritaCsvPrimero()
+más abajo. El resto de sus datos (nombre, nivel, costo) ya salía de los 3
+CSV por ID desde antes; eso no cambia.
+```
+
+
+### Ubicación: `_CW_CATALOGO_MEMO`
+
+#### 39B002 — líneas 46-52 (docblock)
+
+```text
+_webCatalogoCartasPorId()
+Backup_Cards.csv como { id: {name, nombre, maxLevel, maxEvo, rarity, tipo,
+elixir, icon, heroIcon, evoIcon} }. Columnas: 1=ID 2=Name 3=Nombre 4=Maxlevel
+5=MaxEvolutionLevel 6=Rarity 7=Tipo 8=Elixircost 9=Carta 10=Héroe 11=Evolución.
+Devuelve {} si el CSV no se puede leer.
+```
+
+
+### Ubicación: `_webCatalogoCartasPorId`
+
+#### 39B003 — líneas 88-92 (docblock)
+
+```text
+_webCartaDesdeCatalogo(obj, catalogo)
+COPIA de la carta `obj` (con `id`) con los datos fijos del catálogo pisando al
+JSON cuando el CSV trae el dato. Sin fila en el catálogo devuelve `obj` tal cual.
+```
+
+
+### Ubicación: `_webCartaDesdeCatalogo`
+
+#### 39B004 — líneas 119-129 (docblock)
+
+```text
+_webCartasCsvPrimero(tag, datos)
+Arma las 4 listas de cartas de rawClash con Backup_Cards_2.csv como fuente de
+QUÉ cartas hay en cada una (ver cabecera). Devuelve
+{ cards, supportCards, currentDeck, currentDeckSupportCards } (arrays de
+objetos con al menos `id`; el resto de datos se completa después con el
+catálogo, Cards_2 y Cards_3) o null si el tag no tiene ninguna carta en Cards_2
+(entonces la web usa el JSON completo).
+@param {string} tag
+@param {Object} datos - JSON de /players del jugador (respaldo y orden).
+```
+
+
+### Ubicación: `_webCartasCsvPrimero`
+
+#### 39B005 — líneas 206-231 (docblock)
+
+```text
+_webCartaFavoritaCsvPrimero(tag, datos)
+NUEVO (24-sep-2026, pedido usuario -- "currentFavouriteCard se debe
+guardar en cards, en el csv que corresponda"): antes, CUÁL carta es la
+favorita del jugador solo se sabía leyendo datos.currentFavouriteCard del
+JSON de Drive (ver corrección en el encabezado de este archivo). Ahora
+updateCards2Sheet()/_actualizarCards2SoloAdmins() (31_Cards_Mazos.gs)
+marcan Favorita='Sí' en la fila de Backup_Cards_2.csv de esa carta, mismo
+criterio que ya usan para Currentdeck (índice 5). Esta función busca esa
+marca por Tag.
+
+Devuelve el objeto base de la carta (con `id` como mínimo): si esa misma
+carta también aparece en alguna de las 4 listas del JSON
+(cards[]/supportCards[]/currentDeck[]/currentDeckSupportCards[]), se usa
+ESE objeto para no perder campos crudos que el CSV no guarda (rarity,
+maxLevel, etc. -- ya los completa después _webCartaDesdeCatalogo() de
+todos modos, pero así no se pierde nada si el catálogo también fallara);
+si no aparece en ninguna, se arma un objeto mínimo `{id}` y el resto de
+datos sale igual del catálogo/Cards_2/Cards_3 vía conNombreYCosto()
+(mismo criterio que cualquier otra carta).
+
+@param {string} tag
+@param {Object} datos - JSON de /players del jugador (respaldo y fuente de campos crudos).
+@returns {?Object} {id,...} o null si ningún CSV marca una carta como
+  favorita para este tag (quien llama cae a datos.currentFavouriteCard).
+```
+
+
+
+# Archivo 42_Web_TiemposActualizacion.gs
+
+Horas de actualización que muestra la web: hora de cálculo del objeto, última consulta a la API de clanes y hora de elaboración de los mensajes. Incluye AVISOS ABIERTOS pendientes de definir (ver bloque 42B002). Los IDs de bloque llevan prefijo `42`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 42B001 | 3-6 | `Cabecera del archivo` | Horas de actualizacion que debe mostrar la web. |
+| 42B002 | 9-48 | `Cabecera del archivo` | QUE HORAS HAY Y DE DONDE SALE CADA UNA |
+| 42B003 | 62-67 | `TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS` | _registrarConsultaApiClanes_(completa) |
+| 42B004 | 84-89 | `_registrarConsultaApiClanes_` | _registrarGeneracionMensajes_(ts, cantidad) |
+| 42B005 | 105-110 | `_registrarGeneracionMensajes_` | _tiemposActualizacionWeb_(generadoTs) |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 42B001 — líneas 3-6 (comentario)
+
+```text
+Horas de actualizacion que debe mostrar la web.
+Creado el 05-oct-2026 (pedido del usuario: "en la web se debe mostrar la ultima hora de actualizacion de la web y
+la ultima hora de consulta a la api. en el caso de los mensajes de guerra, tambien mostraria la hora de
+elaboracion de los mensajes").
+```
+
+#### 42B002 — líneas 9-48 (comentario)
+
+```text
+QUE HORAS HAY Y DE DONDE SALE CADA UNA
+ 1. WEB (generadoTs): momento en que se CALCULO el objeto que muestra la web (_getDatosDashboard(),
+    38_Web_Endpoints.gs). Va dentro del propio objeto, asi que si la web lo sirve desde la cache compartida
+    (_webGuerraEnVivoCompleta_(), 37_Web_API.gs) muestra la hora en que esa cache se armo, no la de la visita.
+ 2. API (api.*): ultima vez que el bot CONSULTO la API de Clash Royale por clanes (/clans/{tag} y
+    /currentriverrace de los 5 clanes), registrada al final de _fetchClanesBasico() (09_API_ClashRoyale.gs) en
+    la propiedad TIEMPOS_API_CLANES. Guarda dos horas:
+      - ultimaConsulta: la ultima consulta, haya salido completa o no.
+      - ultimaCompleta: la ultima consulta en la que los 5 clanes llegaron frescos y con currentriverrace (la
+        misma condicion con la que se guarda el checkpoint de clanes en Drive). `completa` dice si la ultima
+        consulta cumplio esa condicion.
+    NO se registra cuando _fetchClanesBasico() reutiliza un checkpoint de Drive (ahi no hay consulta a la API).
+ 3. MENSAJES (mensajes.*): momento en que se elaboraron los mensajes (generarTodosMensajes(), 30_Mensajes.gs).
+    Es la MISMA hora que el mensaje de ataques pendientes lleva escrita en su ultima linea. Se guarda en la
+    propiedad TIEMPOS_MENSAJES al terminar de escribir la hoja Mensajes.
+
+OBJETO QUE ARMA _tiemposActualizacionWeb_()  (los campos sin dato vienen en null; las horas Lima son
+'dd/MM/yyyy HH:mm:ss' en 24 h y los Ts son milisegundos desde 1970 para que el frontend los formatee a su gusto):
+  {
+    generadoTs, generadoLima,
+    api:      { ultimaConsultaTs, ultimaConsultaLima, completa, ultimaCompletaTs, ultimaCompletaLima, origen },
+    mensajes: { generadosTs, generadosLima, cantidad, origen }
+  }
+  origen = 'registro' (propiedad guardada por el bot) | 'respaldo' (reconstruido: hora del checkpoint de clanes en
+  Drive, o columna Fecha de la hoja Mensajes) | null.
+
+FUNCIONES MANUALES (ejecutar desde el editor):
+ - verTiemposActualizacion()   imprime en el log el objeto completo, para comprobar que se esta registrando.
+
+AVISOS ABIERTOS (pendientes de definir o contestar):
+ 1. "Actualizacion de la web" = hora en que se calculo el objeto, NO la hora en que se escribio por ultima vez la
+    hoja Guerra. Si una visita cae en una cache vencida, el objeto se recalcula en ese momento y la hora salta a la
+    de la visita aunque los datos de la hoja no hayan cambiado. Las horas de API y de mensajes si son las reales de
+    esos datos. PENDIENTE DE DEFINIR si se quiere ademas la hora de la ultima escritura de la hoja Guerra.
+ 2. La consulta a la API que se registra es la de clanes (/clans y /currentriverrace). /players esta suprimido
+    (SUPRIMIR_PLAYERS_TEMPORAL) y no cuenta; tampoco las consultas sueltas de buscadores o del bot de WhatsApp.
+ 3. Hasta que corra la primera consulta a la API despues de subir estos archivos, api.* sale del respaldo (hora del
+    checkpoint en Drive, si existe) o en null; lo mismo mensajes.* hasta que se genere por primera vez (respaldo:
+    columna Fecha de la hoja Mensajes). Dura como maximo ~1 h.
+ 4. No se probo en Apps Script real.
+```
+
+
+### Ubicación: `TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS`
+
+#### 42B003 — líneas 62-67 (docblock)
+
+```text
+_registrarConsultaApiClanes_(completa)
+Deja anotada la consulta a la API de clanes que se acaba de hacer. Nunca lanza error: un fallo aqui no debe tumbar
+la captura de guerra.
+@param {boolean} completa - true si los 5 clanes llegaron frescos y con currentriverrace.
+```
+
+
+### Ubicación: `_registrarConsultaApiClanes_`
+
+#### 42B004 — líneas 84-89 (docblock)
+
+```text
+_registrarGeneracionMensajes_(ts, cantidad)
+Deja anotada la hora en que se elaboraron los mensajes. Nunca lanza error.
+@param {number} ts - milisegundos de la hora de elaboracion (la misma `now` que lleva el mensaje).
+@param {number} cantidad - filas escritas en la hoja Mensajes.
+```
+
+
+### Ubicación: `_registrarGeneracionMensajes_`
+
+#### 42B005 — líneas 105-110 (docblock)
+
+```text
+_tiemposActualizacionWeb_(generadoTs)
+Arma el objeto completo de horas (ver el encabezado del archivo). Nunca lanza error: si algo falla devuelve lo que
+pudo armar, con null en el resto.
+@param {number} [generadoTs] - hora de calculo de la web; por defecto, ahora.
+```
+
+
+
+# Archivo 48_Herramientas_Debug.gs
+
+Herramientas de mantenimiento y depuración de un solo uso (debugAtaquesTag, diagnosticoPlayersTag y otras). Usar con precaución; varias son temporales. Los IDs de bloque llevan prefijo `48`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 48B001 | 3-7 | `Cabecera del archivo` | Herramientas de mantenimiento/depuracion de un solo uso. USAR CON PRECAUCION: |
+| 48B002 | 13-22 | `Cabecera del archivo` | debug_ataques.gs  (TEMPORAL — pegar en cualquier archivo del proyecto, |
+| 48B003 | 157-181 | `_testDiagnosticoCofresBattlelog` | diagnosticoPlayersTag(tags) |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 48B001 — líneas 3-7 (comentario)
+
+```text
+Herramientas de mantenimiento/depuracion de un solo uso. USAR CON PRECAUCION:
+debugAtaquesTag() es una herramienta de diagnostico
+puntual (ver su propio comentario para saber si ya cumplio su proposito).
+NOTA: demolerTodoElSpreadsheet() (borra datos) vive ahora en 00_Main.gs, justo despues de cancelarEjecucion().
+diagnosticoPlayersTag() viene de 04_Formato_Comun.gs (movida aqui: es un diagnostico puntual).
+```
+
+#### 48B002 — líneas 13-22 (comentario)
+
+```text
+debug_ataques.gs  (TEMPORAL — pegar en cualquier archivo del proyecto,
+correr UNA VEZ desde el editor de Apps Script seleccionando la función
+debugAtaquesTag() y dándole "Ejecutar", y después borrar este archivo).
+
+No escribe nada en ninguna hoja — solo lee y deja todo en el Registro de
+ejecución (View > Logs, o Ctrl+Enter). Sirve para ver, para UN tag
+puntual, exactamente qué tiene la hoja Guerra y qué arma
+_procesarFilasGuerraParaControl() con eso — así confirmamos si el dato
+se pierde al leer/agrupar (bug real) o si en realidad nunca llegó a
+escribirse como pensábamos.
+```
+
+
+### Ubicación: `_testDiagnosticoCofresBattlelog`
+
+#### 48B003 — líneas 157-181 (docblock)
+
+```text
+diagnosticoPlayersTag(tags)
+Fase 12 (18/07/2026) — diagnóstico puntual para el reporte "cuentas Mily
+(admin) siguen mostrando Mini乂Ternas™ aunque Estado=Inactivo hace 83
+días". Llama a /players/{tag} DIRECTO (sin pasar por CACHE_CLAN_DATA ni
+por el presupuesto de tiempo de _fetchPlayersData()) para uno o varios
+tags puntuales, y loguea la respuesta cruda: si la API responde 200 con
+o sin campo "clan", o si falla (HTTP distinto de 200 / excepción).
+
+Esto permite distinguir las dos causas posibles de que Clan/Clan_Tag
+queden desactualizados indefinidamente en una cuenta Admin=Sí Inactiva
+(ver _construirFilaInactiva(), 13_Inactivos_Vetados.gs, ~línea 1256): el
+código ahí SOLO pisa el valor viejo cuando _getPlayerCache(tag) devuelve
+datos frescos de esta misma corrida — si /players nunca trae datos para
+un tag puntual (por la razón que sea), el valor viejo queda guardado
+para siempre sin que nada lo avise.
+
+No modifica ninguna hoja. Uso: elegir esta función en el selector del
+editor de Apps Script y correr "Ejecutar", o llamarla desde otra función
+con un array de tags concreto, ej.:
+  diagnosticoPlayersTag(['#JURQQRGV9', '#VPQCQRCYJ']);
+
+@param {string[]} [tags] Tags a diagnosticar. Sin argumento, usa las dos
+  cuentas "Mily" del reporte del 18/07/2026 como valor por defecto.
+```
+
+
+
+# Archivo 49_Diagnostico_Domingo.gs
+
+Reparación del domingo 04-oct-2026 (Temporada 5, Semana 4, periodIndex 27) en Backup_Guerra.csv y diagnóstico de solo lectura de por qué ese día no tiene filas en Guerra. Contiene pendientes abiertos (5 filas SIN RESOLVER, fuentes de respaldo). Los IDs de bloque llevan prefijo `49`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 49B001 | 3-6 | `Cabecera del archivo` | Repara los ataques del DOMINGO 04-oct (Temporada 5, Semana 4, periodIndex 27, coliseo) que quedaron en 0. |
+| 49B002 | 8-45 | `Cabecera del archivo` | (05-oct-2026) |
+| 49B003 | 140-152 | `_repararDomingoT5S4_` | DIAGNÓSTICO DE SOLO LECTURA (06-oct-2026). No escribe en ninguna hoja ni archivo: solo Logger.log(). |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 49B001 — líneas 3-6 (comentario)
+
+```text
+Repara los ataques del DOMINGO 04-oct (Temporada 5, Semana 4, periodIndex 27, coliseo) que quedaron en 0.
+* Causa (ver logs del lunes 05-oct, 4:48-5:08 a.m.): la API devolvio decksUsedToday/decksUsed/fame en 0 para los
+* clanes mientras el bot todavia etiquetaba la corrida como periodIndex 27, y la rama "FILA EXISTENTE" de
+* updateGuerraSheet() sobrescribio el domingo con esos ceros (no hay ratchet).
+```
+
+#### 49B002 — líneas 8-45 (docblock)
+
+```text
+(05-oct-2026)
+Fuente del dato: el JSON de currentriverrace del domingo guardado en Drive (captura de las 12:16, hora Lima del nombre),
+leido con _crearLectorDiaJSONGuerra_(), el mismo lector de repararAtaquesHoyGuerraDesdeJSON*.
+  acumulado hasta el sabado = decksUsed - decksUsedToday del JSON del domingo   (exacto)
+  domingo (minimo)          = decksUsedToday del JSON del domingo
+Seguridad:
+  - Solo toca filas de Backup_Guerra.csv con Temporada 5, Semana 4, periodIndex 27. No toca la hoja Guerra
+    (la T5 ya fue purgada de ahi) ni ninguna otra semana.
+  - Valida contra la fila del SABADO del mismo jugador: su AtaquesSemana debe ser igual al acumulado del JSON.
+    Si no coincide, esa fila queda SIN RESOLVER y no se toca.
+  - Si la fila del domingo conserva un AtaquesSemana mayor (ej. Clan 3 con 16) y la diferencia con el acumulado
+    del sabado esta entre 0 y 4, se usa ese valor, porque es evidencia de ataques posteriores a la captura de las 12:16.
+  - Solo escribe AtaquesHoy, AtaquesSemana y Origen ('Corregido'). Fame y Barcos NO se tocan.
+  - Aplicar guarda antes un respaldo del CSV completo en Drive.
+
+LIMITE: el JSON es de las 12:16; los ataques del domingo posteriores a esa hora no se ven. El resultado es un
+MINIMO salvo para quien llego a 4 (o a 16 en la semana). Para esos casos usar "Verificar Semana en Curso" (RoyaleAPI).
+
+ESTADO (05-oct-2026, 17:16-17:17 Lima): Aplicar corrio bien. Filas del domingo T5 S4: 119 -> 95 corregidas
+  (153 ataques recuperados), 19 ya correctas, 5 SIN RESOLVER. Una 2.a corrida del Informe dio "a cambiar: 0".
+  Las 5 SIN RESOLVER NO se borran ni se modifican (la funcion jamas elimina filas): quedan en el CSV tal como
+  estaban, con lo que tuvieran (posiblemente ceros). Solo afectan a la T5 S4 domingo; no tocan la T6 ni la hoja
+  Guerra (la T5 ya no esta ahi). Motivos posibles: jugador ausente del JSON de las 12:16, o acumulado del JSON
+  distinto del AtaquesSemana de su fila del sabado (ver el CSV de detalle en Drive, columna Detalle).
+POR QUE EL DOMINGO QUEDO EN CERO: ver 00_Main.gs (ventana protegida) y 17_GuerraSheet.gs (temporada por clan).
+  Ademas _syncGuerraCSV() fusiona hoja->CSV sin ratchet, asi que los ceros de la hoja llegaron al CSV.
+FUENTES PARA COMPLETAR LAS 5 FILAS Y LOS "MINIMOS" (pendiente, el usuario ofrecio aportarlas):
+  a) JSON de currentriverrace de los 4 clanes de ayer y hoy (fuente sin interpretacion del backend).
+     Hay capturas posteriores a las 12:16 que el lector (_crearLectorDiaJSONGuerra_) hoy no usa? Verificar.
+  b) Versiones anteriores de Backup_Guerra.csv en Drive (Administrar versiones): la de ~4:11 a.m. del 05-oct
+     (sincronizacion horaria de las 4:07, SI llego a correr: verificar la fecha de la version) deberia tener el
+     domingo casi completo hasta ese momento.
+  Regla para cualquier fuente nueva: tomar el MAXIMO (AtaquesHoy/AtaquesSemana) solo si valida contra el
+  acumulado del sabado; nunca bajar un valor ya corregido; guardar respaldo del CSV antes de escribir.
+Uso: 1) repararDomingoT5S4Informe()  -> no escribe en el CSV; deja un informe en Drive y resume en el registro.
+     2) repararDomingoT5S4Aplicar()  -> escribe (con respaldo previo).
+```
+
+
+### Ubicación: `_repararDomingoT5S4_`
+
+#### 49B003 — líneas 140-152 (comentario)
+
+```text
+DIAGNÓSTICO DE SOLO LECTURA (06-oct-2026). No escribe en ninguna hoja ni archivo: solo Logger.log().
+
+PARA QUÉ: confirmar por qué el domingo 4-oct-2026 (último día de la temporada 5, semana 4, PeriodIndex 27) no tiene
+filas en Guerra. Hipótesis (sin confirmar): la hoja Guerra solo conserva la temporada vigente y
+_purgarTemporadasAnterioresGuerra() (17_GuerraSheet.gs) la pasa a Backup_Guerra.csv; el respaldo (_syncGuerraCSV) se
+llama desde syncAllCSV(), no en cada captura. Si la purga corrió el lunes 5-oct antes de un respaldo que incluyera la
+última captura del domingo, esas filas no están ni en la hoja ni en el CSV.
+
+CÓMO USAR: en el editor de Apps Script, elegir _diagnosticoGuerraDia() y Ejecutar. Leer el resultado en el Registro.
+Los parámetros son opcionales; sin ellos usa temporada 5, semana 4, domingo (PeriodIndex = (semana - 1) * 7 + 6).
+
+Usa solo helpers que ya existen: _getSs(), _loadCSVFromDrive(), _parseCSV(), cleanTag() no hace falta, y las constantes
+CFG.SHEETS.GUERRA, GUERRA_TOTAL_COLS y GC (mismo uso que _webHistorialGuerraComparador(), 37_Web_API.gs).
+```
+
+
+# Archivo 40_Web_Noticias.gs
+
+Endpoint de solo lectura _webAdminNoticiasSemana(token, lunesIso) del panel admin: resumen de una semana en cinco noticias (barcos, ascensos, posiciones, guerra y movimientos). Archivo autónomo (Fase 9, punto e, 05-oct-2026). Contiene avisos con PENDIENTE DE VERIFICAR (bloque 40B002). Los IDs de bloque llevan prefijo `40`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 40B001 | 5-42 | `Cabecera del archivo` | (Fase 9, punto (e) del plan |
+| 40B002 | 47-102 | `Cabecera del archivo` | [1] NO SE PROBÓ EN APPS SCRIPT REAL NI CON LOS DATOS REALES DE DRIVE. Revisado |
+| 40B003 | 112-118 | `NOTICIAS_MAX_NOMBRES_LISTA` | _webAdminNoticiasSemana(token, lunesIso) |
+| 40B004 | 168-174 | `_noticiasSumarDias_` | _noticiasMesDeTemporada_(temporada) |
+| 40B005 | 184-189 | `_noticiasMesDeTemporada_` | _noticiasEtiquetaSorteo_(celdaSemanas) |
+| 40B006 | 212-220 | `_noticiasEtiquetaSorteo_` | _noticiasLimitesBarcos_(semana) |
+| 40B007 | 255-261 | `_noticiasLimitesBarcos_` | _noticiasBarcos_(semana) |
+| 40B008 | 362-368 | `_noticiasBarcos_` | _noticiasAscensos_(semana) |
+| 40B009 | 411-417 | `_noticiasAscensos_` | _noticiasPosiciones_(semana) |
+| 40B010 | 469-482 | `_noticiasNum_` | _noticiasGuerra_(semana) |
+| 40B011 | 604-610 | `_noticiasGuerra_` | _noticiasMovimientos_(semana) |
+| 40B012 | 661-666 | `_noticiasMovimientos_` | _noticiasPruebaManual() |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 40B001 — líneas 5-42 (comentario)
+
+```text
+(Fase 9, punto (e) del plan
+"Lista_de_cambios.docx vs Base.md", 5-oct-2026).
+
+QUÉ HACE: un solo endpoint de SOLO LECTURA, _webAdminNoticiasSemana(token,
+lunesIso), que arma el resumen de UNA semana para las tres subsecciones que
+admin.html dejó como maqueta:
+  1) barcos      : ataques a barcos por jugador y clan (Backup_Battlelogs.csv).
+  2) ascensos    : cambios de rango de la semana (Historial_A/D).
+  3) posiciones  : posición final de cada clan Terna (Guerra_Logs), con la
+                   tendencia de las últimas 6 semanas para el gráfico.
+  4) guerra      : fame y participación (ataques usados vs posibles, jugadores
+                   sin ataques, ranking de fame) por clan (hoja Guerra).
+  5) movimientos : ingresos, reingresos, salidas y expulsiones (Historial_I/S).
+(4 y 5 son noticias NUEVAS, 5-oct-2026, pedidas por la usuaria; ver AVISOS 8 y 9.)
+Cada sección se calcula por separado y devuelve su propio {ok, ...}: si una
+falla (por ejemplo, falta el CSV de battlelogs) las otras dos se siguen
+mostrando.
+
+ARCHIVO NUEVO Y AUTÓNOMO (mismo criterio que 06_Battlelogs_Siembra.gs): no
+modifica ninguna función de otro .gs. Solo LEE, y usa helpers que ya existen:
+  - _webAuthValidar(), _getSs(), _obtenerFilasConFallbackCSV(), _parseSpanishDate()
+  - _webAdminSemanasRecientes()          (37_Web_API.gs)
+  - _getConfigMasRecienteCategoria()     (26_Torneos_Core.gs)
+  - _blsLeerCsv_(), BLS_HEADERS, BLS_CSV_NOMBRE   (06_Battlelogs_Siembra.gs)
+  - _blgLimitesDiasGuerra_(), _blgDiaDeBatalla_(), _blgParsearBattleTime_(),
+    _blgNormalizarTag_()                 (18_CorreccionGuerra.gs)
+  - _webGuerraLog()                      (17_GuerraSheet.gs / web de guerra)
+  - _getNombresClanesTernaOrdenados()    (01_Config_Global.gs)
+El único cambio fuera de este archivo es el enrutado de la acción
+'webAdminNoticiasSemana' en doGet() (38_Web_Endpoints.gs).
+
+DECISIONES (confirmadas por el usuario, 05-oct-2026; ver CHANGELOG.md):
+  (a) lo ve cualquier admin con sesión (no hay Función nueva);
+  (b) la semana se elige de la misma lista de semanas recientes de
+      Torneos/Sorteos (webAdminSemanasRecientes);
+  (c) todo se arma al vuelo, no se guarda ningún CSV de respaldo por ahora;
+  (d) hoy entran cinco noticias (barcos, ascensos, posiciones, guerra y
+      movimientos); sumar más es opcional, no falta ninguna (usuario, 07-oct-2026).
+```
+
+#### 40B002 — líneas 47-102 (comentario)
+
+```text
+  [1] NO SE PROBÓ EN APPS SCRIPT REAL NI CON LOS DATOS REALES DE DRIVE. Revisado
+      solo por lectura contra el código de Base.md (nombres de funciones,
+      columnas y formatos). Probar primero _noticiasPruebaManual() desde el
+      editor (solo escribe en el log) con el lunes de una semana ya jugada.
+  [2] Visibilidad: lo ven todos los admins con sesión válida (decisión por defecto, sin objeción).
+  [3] Semana de la lista de recientes y todo al vuelo, sin CSV de respaldo (por defecto).
+      CERRADO (usuario, 07-oct-2026): no falta ninguna noticia; las ideas de [10] son opcionales.
+  [4] BARCOS depende de Backup_Battlelogs.csv, que solo tiene lo que alcanzó
+      a descargarse del battlelog de cada jugador. Si a un jugador no se le
+      descargó el log a tiempo, sus ataques de esa semana pueden faltar. La
+      respuesta trae `defensas`, `sinLado` y `dudosas` para que la pantalla
+      lo diga: defensas = filas «defender» (no cuentan), sinLado = filas
+      viejas sin LadoBarco (NO CONCLUYENTES, decisión de la usuaria del
+      4-oct-2026, no se suman), dudosas = batallas dentro de la ventana de
+      cambio de día que pudieron caer fuera de la semana (no se suman).
+  [5] BARCOS: CAMBIO 05-oct-2026 (decisión de la usuaria). El máximo NO es único: se evalúa por evento de la
+      semana (torneo, sorteo y cambio de rango cuya columna Semanas incluye esa temporada y semana; cada
+      fila trae UN tope para los 4 clanes, y siempre es la suma de la semana). Respuesta: `limites` (lista),
+      `limite` (el más estricto, compatibilidad), `origenLimite` ('semana' | 'vigente' | 'ninguno') y, por
+      jugador, `excedeEn` (qué eventos superó). Sin evento en la semana se usa el torneo vigente como respaldo.
+      DECIDIDO (usuario, 06-oct-2026): el tope es UNO por evento y el MISMO para los 4 clanes; no hace falta columna por clan.
+      SORTEOS (06-oct-2026): se identifican por temporada evaluada, semanas y mes evaluado (_noticiasEtiquetaSorteo_()); el mes
+      sale de la temporada (_noticiasMesDeTemporada_(): temporada 1 = mayo 2026, +1 por mes), no de la fecha del sorteo.
+      Sin probar en Apps Script real.
+  [6] CORRECCIÓN a lo dicho antes (5-oct-2026): la primera entrega NO incluía la
+      «fame total» por clan porque no se había encontrado de dónde sacarla. Ahora
+      sí: _noticiasGuerra_() suma, por clan, la Fame acumulada de cada jugador en
+      la hoja Guerra (columna Fame es ACUMULADA de la semana, ver 08/19). Los
+      Guerra_Logs siguen sin una columna de fame total de clan.
+  [8] GUERRA (noticia nueva): CAMBIO 05-oct-2026 (decisión de la usuaria). La participación es
+      ataques en días EXIGIDOS / (4 x días en que el jugador estuvo en el clan y el día no era opcional).
+      «Estuvo» = hay fila de ese jugador ese día en Guerra (sin fila no se le exige ni cuenta como 0).
+      Los días OPCIONALES (meta ya cruzada, _clanYaCruzoMetaEnPeriodo(); jueves y coliseo nunca) no se
+      exigen; sus ataques se informan aparte en `ataquesEnOpcionales`. Un día sin ninguna fila del clan sale
+      null en fameDias. «Sin ningún ataque» y «completos» solo miran días exigidos.
+      DECIDIDO (usuario, 06-oct-2026): ganar al terminar el sábado = meta ya cruzada (es el mismo caso).
+      UNIFICADO (usuario, 07-oct-2026): que solo pasara el domingo era lo observado, NO una regla confirmada por Supercell
+      (no comparte su configuración; en teoría la meta podría cruzarse el jueves o el viernes, aunque nunca se ha visto).
+      Por eso viernes, sábado y domingo se evalúan igual en todas las pantallas (esta, metaCruzada y
+      _diasOpcionalesClanSemana_() de 38_Web_Endpoints.gs, y opcional de 37_Web_API.gs); el jueves nunca (la meta no puede
+      estar cruzada al empezar la guerra) ni coliseo.
+      CERRADO (usuario, 07-oct-2026): no quedan otros motivos de exoneración por definir.
+      HECHO (07-oct-2026): _clanYaCruzoMetaEnPeriodo() (22_ControlCalendario.gs), la que usa esta pantalla y también Control y
+      el perfil, ya acepta viernes a domingo (pIdx % 7 > 3).
+      PENDIENTE DE VERIFICAR: (1) en una semana EN CURSO el día de hoy cuenta como
+      exigido aunque el jugador aún pueda atacar; (2) si un jugador cambia de clan en la misma semana, cada
+      clan lo cuenta por sus propios días; (3) sin probar en Apps Script real.
+  [9] MOVIMIENTOS (noticia nueva): sale de Historial_I/S, que ya tiene un pendiente
+      anotado (28-sep-2026, 24_Historial_Ascensos.gs) sobre movimientos que
+      pudieron no registrarse. Los conteos son lo registrado, no necesariamente todo.
+  [10] IDEAS OPCIONALES (no es un pendiente; decidido 07-oct-2026): noticias NO construidas, por si se quieren sumar:
+      torneos y sorteos de la semana, donaciones, jugadores en riesgo de descenso,
+      avance del barco por día. Cada una necesita confirmar su fuente de datos.
+  [7] POSICIONES: el puesto de una semana en curso, o de la semana de coliseo,
+      puede ser ESTIMADO (campo rankEstimado, igual que guerra.html); la
+      pantalla lo marca con «~».
+```
+
+
+### Ubicación: `NOTICIAS_MAX_NOMBRES_LISTA`
+
+#### 40B003 — líneas 112-118 (docblock)
+
+```text
+_webAdminNoticiasSemana(token, lunesIso)
+Punto de entrada web (GET, solo lectura). lunesIso = 'yyyy-MM-dd', uno de los
+`lunesIso` que entrega _webAdminSemanasRecientes(). Devuelve
+{ ok, semana:{lunesIso, domingoIso, temporada, semana},
+  barcos:{ok,...}, ascensos:{ok,...}, posiciones:{ok,...} }.
+```
+
+
+### Ubicación: `_noticiasSumarDias_`
+
+#### 40B004 — líneas 168-174 (docblock)
+
+```text
+_noticiasMesDeTemporada_(temporada)
+NUEVO (06-oct-2026, decisión del usuario): la temporada 1 fue en mayo de 2026 y cada mes suma una (la 5 = septiembre,
+la 6 = octubre). Cada temporada empieza el PRIMER LUNES del mes y llega hasta el día anterior al inicio de la siguiente
+(la 5 terminó el 4-oct). Por eso el «mes evaluado» de un sorteo sale de su temporada evaluada y no de la fecha del sorteo.
+Devuelve { mes:'septiembre', anio:2026, etiqueta:'septiembre 2026' } o null si la temporada no es un entero >= 1.
+```
+
+
+### Ubicación: `_noticiasMesDeTemporada_`
+
+#### 40B005 — líneas 184-189 (docblock)
+
+```text
+_noticiasEtiquetaSorteo_(celdaSemanas)
+NUEVO (06-oct-2026, decisión del usuario): un sorteo se identifica por temporada evaluada, semanas y mes evaluado.
+Arma, p. ej., «Temporada 5 (septiembre 2026), semanas 1-4». Con varias temporadas las separa con « + ».
+Si la celda Semanas no se puede leer devuelve ''.
+```
+
+
+### Ubicación: `_noticiasEtiquetaSorteo_`
+
+#### 40B006 — líneas 212-220 (docblock)
+
+```text
+_noticiasLimitesBarcos_(semana)
+NUEVO (05-oct-2026, pedido usuario): el máximo de ataques a barcos NO es único. Se evalúa por EVENTO de la semana:
+cada torneo (T_Lista), sorteo (S_Lista) y cambio de rango (CR_Lista) cuya columna Semanas incluye esta temporada y
+semana trae su propio tope (columna Barcos, un solo valor por fila, igual para los 4 clanes; 0 es un tope válido y
+celda vacía = sin tope). En los tres casos el tope es la SUMA de los barcos de toda la semana.
+Devuelve [{origen:'Torneo'|'Sorteo'|'Cambio de rango', id, nombre, qty}] (solo filas con tope configurado).
+Nunca lanza error: si una hoja falla se ignora y se registra en el log.
+```
+
+
+### Ubicación: `_noticiasLimitesBarcos_`
+
+#### 40B007 — líneas 255-261 (docblock)
+
+```text
+_noticiasBarcos_(semana)
+Cuenta, por jugador y clan, los ataques a barcos de la semana de guerra
+(jueves a domingo) a partir de Backup_Battlelogs.csv. Solo cuentan las filas
+boatBattle con LadoBarco de ataque (cualquier valor distinto de vacío y de
+«defender», igual que _blgClasificarBatallaGuerra_()).
+```
+
+
+### Ubicación: `_noticiasBarcos_`
+
+#### 40B008 — líneas 362-368 (docblock)
+
+```text
+_noticiasAscensos_(semana)
+Registros de Historial_A/D cuya Fecha (en hora de Lima) cae entre el lunes y
+el domingo de la semana. Se omiten las filas aún 'Planificado' (son
+propuestas, no cambios hechos). Mismo origen y mismo respaldo CSV que
+_webAdminAscensosEditables() (24_Historial_Ascensos.gs).
+```
+
+
+### Ubicación: `_noticiasAscensos_`
+
+#### 40B009 — líneas 411-417 (docblock)
+
+```text
+_noticiasPosiciones_(semana)
+Posición final (1..5), trofeos y avance del barco de cada clan Terna en la
+semana pedida, más la variación contra la semana anterior que tenga el mismo
+clan en Guerra_Logs. Reusa _webGuerraLog() (la misma fuente de guerra.html).
+variacionPuesto > 0 = subió de puesto; < 0 = bajó; null = no comparable.
+```
+
+
+### Ubicación: `_noticiasNum_`
+
+#### 40B010 — líneas 469-482 (docblock)
+
+```text
+_noticiasGuerra_(semana)
+Por clan Terna: fame total de la semana, ataques usados contra los posibles,
+jugadores sin ningún ataque y jugadores con todos sus ataques exigidos.
+CAMBIO (05-oct-2026, pedido usuario): solo cuentan los días de guerra (jueves a domingo) EN LOS QUE EL JUGADOR
+ESTUVO EN EL CLAN (hay fila ese día; sin fila = no estaba = no se le exige ni aparece como 0), y se descuentan los
+días OPCIONALES (meta ya cruzada): cada día exigido vale 4 ataques. Un día en que el clan no tiene ninguna fila
+sale como null en fameDias (no 0). Además el ranking
+de fame de la familia y la fame acumulada día a día (Jue..Dom) de cada clan.
+Fuente: hoja Guerra (o Backup_Guerra.csv). Mismo criterio que el panel de
+pendientes (22_ControlCalendario.gs / 08): se filtra por Temporada y Semana, el
+PeriodIndex del jueves es (Semana - 1) * 7 + 3; AtaquesHoy es del día (se toma el
+mayor visto por día) y Fame es ACUMULADA de la semana (se toma la mayor vista).
+```
+
+
+### Ubicación: `_noticiasGuerra_`
+
+#### 40B011 — líneas 604-610 (docblock)
+
+```text
+_noticiasMovimientos_(semana)
+Movimientos de Historial_I/S cuya Fecha (hora de Lima) cae en la semana:
+Ingreso, Reingreso, Salida y Expulsión, contados por clan y con la lista.
+Mismo origen y mismo respaldo CSV (Backup_Historial_I-S.csv) que usa el resto
+del proyecto para esta hoja (N°|Fecha|Tag|Nombre|Movimiento|Clan|ClanTag).
+```
+
+
+### Ubicación: `_noticiasMovimientos_`
+
+#### 40B012 — líneas 661-666 (docblock)
+
+```text
+_noticiasPruebaManual()
+Desde el editor de Apps Script: cambia LUNES_PRUEBA por el lunes de una semana
+ya jugada (formato yyyy-MM-dd) y revisa el log. No necesita sesión: llama
+directo a las tres secciones, salteando el token.
+```
+
+
+
+# Archivo 41_Web_ActualizarRoster.gs
+
+Actualización manual del roster, Pendientes y Mensajes de guerra pedida desde la web por un admin (equivale a runPendientesYMensajesManual()), con estados, reglas de protección de la API y AVISOS (bloque 41B002, incluye un punto PENDIENTE DE DEFINIR). Los IDs de bloque llevan prefijo `41`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 41B001 | 3-6 | `Cabecera del archivo` | Actualizacion manual del roster, Pendientes y Mensajes de guerra pedida DESDE LA WEB por un admin |
+| 41B002 | 9-51 | `Cabecera del archivo` | PERMISO: Funcion 'Actualizar roster' (WEB_FUNCION_ACTUALIZAR_ROSTER, 37_Web_API.gs). Viene activa para todos l |
+| 41B003 | 64-67 | `WEB_ACTROSTER_ARRANQUE_MS` | _webAdminActualizarRoster(token) |
+| 41B004 | 121-124 | `_webAdminActualizarRoster` | _webAdminEstadoActualizacion(token) |
+| 41B005 | 159-162 | `_webAdminEstadoActualizacion` | _webActualizarRosterEjecutar() |
+| 41B006 | 212-219 | `_webActualizarRosterEjecutar` | _webActRosterRecalentarWeb_(inicioTs) |
+| 41B007 | 272-276 | `_webActRosterGuardarEstado_` | Lee el estado y, si quedo trabado, lo pasa a 'error' y lo guarda: |
+| 41B008 | 299-302 | `_webActRosterEstadoVigente_` | Decide si se puede iniciar ahora. Devuelve { bloqueado, motivo, esperaSeg }. |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 41B001 — líneas 3-6 (comentario)
+
+```text
+Actualizacion manual del roster, Pendientes y Mensajes de guerra pedida DESDE LA WEB por un admin
+(equivale a correr runPendientesYMensajesManual() a mano: forza roster 100% fresco y consulta la API).
+Creado el 05-oct-2026 (pedido del usuario: "una opcion en la que el admin pueda actualizar el roster y tener los
+valores, o sea, correr runPendientesYMensajesManual pero desde la web").
+```
+
+#### 41B002 — líneas 9-51 (comentario)
+
+```text
+PERMISO: Funcion 'Actualizar roster' (WEB_FUNCION_ACTUALIZAR_ROSTER, 37_Web_API.gs). Viene activa para todos los
+admin y se desactiva por admin desde permisos.html (esta en el catalogo WEB_FUNCIONES_ADMIN). Se relee de la hoja en
+cada llamada, asi que quitarla surte efecto de inmediato aunque la sesion siga abierta.
+
+ACCIONES (rutas en 38_Web_Endpoints.gs):
+ - POST accion=webAdminActualizarRoster   body { sessionToken }
+     Valida sesion + Funcion + que se pueda iniciar, deja el estado en 'pendiente' y programa un disparador de un
+     solo uso (_webActualizarRosterEjecutar) que corre el trabajo. Responde enseguida:
+       { ok:true, estado:'pendiente', id, solicitadoLima, mensaje }  |  { ok:false, error, bloqueo? }
+ - GET  accion=webAdminEstadoActualizacion&sessionToken=...
+     Estado actual (para sondear cada pocos segundos mientras estado sea 'pendiente' o 'ejecutando'):
+       { ok:true, estado, id, solicitadoPor, solicitadoLima, inicioLima, finLima, duracionSeg, mensaje,
+         puedeIniciar, motivoBloqueo, esperaSeg, webRecalentada, tiempos }
+     estado: 'ninguna' (nunca se pidio) | 'pendiente' | 'ejecutando' | 'ok' | 'ok_parcial' | 'omitido' | 'error'.
+     webRecalentada (NUEVO 05-oct-2026): true si al terminar se recalculo la cache de la web (guerra.html) para que
+       muestre los datos nuevos; false si no se pudo (la web los mostrara cuando venza su cache); null si no aplica.
+     tiempos (NUEVO 05-oct-2026): horas de actualizacion (web, ultima consulta a la API, mensajes); ver
+       _tiemposActualizacionWeb_() en 42_Web_TiemposActualizacion.gs. Puede ser null si no se pudo armar.
+
+REGLAS PARA PROTEGER LA CUOTA DE LA API Y LA CAPTURA DE GUERRA
+ - No se puede iniciar entre CFG.VENTANA_GUERRA_PRE_MARGEN_MIN min antes de las 4:00 a.m. Lima y las 5:00 a.m.
+   (ventana protegida de runGuerra; ahi runPendientesYMensajesManual tampoco empezaria: lo rechaza el candado).
+ - Solo una a la vez, y no mientras otra ejecucion pesada tenga el candado global (EJECUCION_EN_CURSO).
+ - Tiempo de espera de WEB_ACTROSTER_ESPERA_MS (3 min) entre un inicio y el siguiente, para todos los admin.
+ - Un estado 'pendiente' que no arranca en WEB_ACTROSTER_PENDIENTE_MAX_MS, o 'ejecutando' que supera el limite del
+   candado, se marca como 'error' solo (el disparador no arranco o la ejecucion fue cortada por tiempo).
+
+AVISOS
+ 1. El disparador de un solo uso (timeBased().after(5 s)) puede tardar unos segundos o hasta ~1 min en arrancar:
+    el frontend debe mostrar 'pendiente' sin alarmarse. Se borra al arrancar; no es un activador administrado en
+    08_Activadores.gs (igual que las continuaciones por tandas) y activar/desactivarTodosLosActivadores() no lo tocan.
+ 2. No se probo en Apps Script real.
+ 3. 'ok_parcial' = la corrida se hizo pero Pendientes aborto por falta de datos de guerra de la API
+    (PENDIENTES_ABORTADO_POR_API, 17_GuerraSheet.gs): se conservo la hoja anterior y no hay mensajes nuevos.
+ 4. CORRECCION (05-oct-2026) a lo entregado en el avance 2: (a) al terminar bien, la cache de la web no se
+    recalculaba, asi que guerra.html seguia mostrando los pendientes viejos hasta 2 h; ahora se recalienta
+    (_calentarCacheGuerraEnVivo_(), 37_Web_API.gs) mientras el estado sigue en 'ejecutando' y se informa en
+    webRecalentada. (b) 'omitido' nunca se detectaba porque runPendientesYMensajesManual() no devolvia false; se
+    corrigio en 00_Main.gs. (c) el Indice de contenido que lee webAdminContenido tampoco se refrescaba; ver AVISO 7 de
+    00_Main.gs.
+ 5. El contenido de webAdminContenido tiene una cache de 60 s (_webCacheado, 37_Web_API.gs): el panel de mensajes
+    puede tardar hasta 1 min mas en reflejar el cambio despues de que el estado pase a 'ok'. PENDIENTE DE DEFINIR si
+    se quiere invalidar esa cache al terminar.
+```
+
+
+### Ubicación: `WEB_ACTROSTER_ARRANQUE_MS`
+
+#### 41B003 — líneas 64-67 (docblock)
+
+```text
+_webAdminActualizarRoster(token)
+Inicia (de forma asincrona) la actualizacion manual. Ver el encabezado del archivo.
+```
+
+
+### Ubicación: `_webAdminActualizarRoster`
+
+#### 41B004 — líneas 121-124 (docblock)
+
+```text
+_webAdminEstadoActualizacion(token)
+Estado de la ultima actualizacion pedida desde la web + si se puede iniciar otra ahora.
+```
+
+
+### Ubicación: `_webAdminEstadoActualizacion`
+
+#### 41B005 — líneas 159-162 (docblock)
+
+```text
+_webActualizarRosterEjecutar()
+Handler del disparador de un solo uso. Corre runPendientesYMensajesManual() y deja el resultado en el estado.
+```
+
+
+### Ubicación: `_webActualizarRosterEjecutar`
+
+#### 41B006 — líneas 212-219 (docblock)
+
+```text
+_webActRosterRecalentarWeb_(inicioTs)
+Recalcula la cache compartida de guerra.html (_calentarCacheGuerraEnVivo_(), 37_Web_API.gs) con los datos recien
+escritos. Mismo criterio de presupuesto que runGuerra(): si ya no queda margen antes del limite de la ejecucion, se
+salta. TTL: el de la ventana si ahora estamos dentro de 4:00-4:59 a.m. Lima (no deberia pasar, esta bloqueado), el
+normal de fuera de ventana en cualquier otro caso. Nunca lanza error.
+@returns {boolean} true si la cache quedo guardada.
+```
+
+
+### Ubicación: `_webActRosterGuardarEstado_`
+
+#### 41B007 — líneas 272-276 (docblock)
+
+```text
+Lee el estado y, si quedo trabado, lo pasa a 'error' y lo guarda:
+ - 'pendiente' sin arrancar tras WEB_ACTROSTER_PENDIENTE_MAX_MS,
+ - 'ejecutando' por mas de CFG.LOCK_MAX_DURACION_MS (cortada por tiempo de la plataforma).
+```
+
+
+### Ubicación: `_webActRosterEstadoVigente_`
+
+#### 41B008 — líneas 299-302 (docblock)
+
+```text
+Decide si se puede iniciar ahora. Devuelve { bloqueado, motivo, esperaSeg }.
+Orden: ventana protegida, otra solicitud en curso, otra ejecucion pesada, tiempo de espera.
+```
+
+
+
+# Archivo 43_Menu_Dinamico.gs
+
+Índice de contenido del bot y del panel web (reemplaza a la antigua hoja Menú): Docs de Drive (Estático) más Información sobre el clan y Mensajes (Dinámico), guardado en Drive (Indice_Contenido.json) y en caché. Los IDs de bloque llevan prefijo `43`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 43B001 | 3-5 | `Cabecera del archivo` | Índice de contenido del bot y del panel web (reemplaza a la antigua hoja |
+| 43B002 | 10-16 | `Cabecera del archivo` | actualizarMenuSheet() |
+| 43B003 | 23-41 | `actualizarMenuSheet` | SINCRONIZACIÓN DE PLANTILLAS DESDE GOOGLE DRIVE |
+| 43B004 | 78-87 | `syncPlantillasDesdeDrive` | _actualizarIndiceContenido(ss, entradas, orden) |
+| 43B005 | 111-124 | `_actualizarIndiceContenido` | _actualizarMenuDinamico() |
+| 43B006 | 155-162 | `_actualizarMenuDinamico` | _renombrarDocFormatoAntiguo(ss, file, clan, categoria) |
+| 43B007 | 233-238 | `_renombrarDocFormatoAntiguo` | _getOrdenExtra(ss, tipo) |
+| 43B008 | 255-259 | `_getOrdenExtra` | _getOrdenClanHoja(ss) |
+| 43B009 | 279-296 | `_getOrdenClanHoja` | Guarda, en lista plana, lo que antes contenía la hoja Menú (eliminada): una entrada |
+| 43B010 | 303-307 | `INDICE_CONTENIDO_CHUNK` | _getIndiceContenido() |
+| 43B011 | 322-326 | `_getIndiceContenido` | _leerEntradasIndicePorTipo(tipo) |
+| 43B012 | 336-340 | `_leerEntradasIndicePorTipo` | _guardarIndiceContenido(lista) |
+| 43B013 | 408-417 | `_leerIndiceContenidoDeDrive` | _reconstruirIndiceContenido() |
+| 43B014 | 431-437 | `_reconstruirIndiceContenido` | _leerIndiceGuardado() |
+| 43B015 | 446-450 | `_leerIndiceGuardado` | _leerEntradasIndiceGuardadoPorTipo(tipo) |
+| 43B016 | 460-465 | `_leerEntradasIndiceGuardadoPorTipo` | inicializarIndiceContenido() |
+| 43B017 | 473-479 | `inicializarIndiceContenido` | _leerEntradasEstaticasDrive(ss) |
+| 43B018 | 542-550 | `_leerEntradasEstaticasDrive` | Prioridad: el primer doc encontrado para una misma clave gana. |
+| 43B019 | 561-566 | `_leerEntradasEstaticasDrive` | _agregarEntradasDinamicas(ss, entradas, orden) |
+| 43B020 | 570-575 | `_agregarEntradasDinamicas` | 2) INFORMACIÓN SOBRE EL CLAN — se construye directo acá (una fila por |
+| 43B021 | 596-604 | `_agregarEntradasDinamicas` | 3) Mensajes fresco -> Dinámico, solo si la clave no está ya cubierta |
+| 43B022 | 624-629 | `_agregarEntradasDinamicas` | _ordenarEntradasIndice(ss, lista) |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 43B001 — líneas 3-5 (comentario)
+
+```text
+Índice de contenido del bot y del panel web (reemplaza a la antigua hoja
+Menú): Google Docs de Drive (Estático) + Información sobre el clan y Mensajes
+(Dinámico). Se guarda en Drive (Indice_Contenido.json) y en caché.
+```
+
+#### 43B002 — líneas 10-16 (docblock)
+
+```text
+actualizarMenuSheet()
+Wrapper de conveniencia para pruebas manuales desde el editor de Apps
+Script: refresca el índice de contenido llamando a
+syncPlantillasDesdeDrive() y luego a _actualizarMenuDinamico(), en el mismo
+orden que el pipeline. Ya no escribe ninguna hoja.
+```
+
+
+### Ubicación: `actualizarMenuSheet`
+
+#### 43B003 — líneas 23-41 (comentario)
+
+```text
+SINCRONIZACIÓN DE PLANTILLAS DESDE GOOGLE DRIVE
+Lee los Google Docs de la carpeta DRIVE_FOLDER_ID_PLANTILLAS Y de sus 5
+subcarpetas (Torneos y sorteos, Otras, Mazos, Descripciones, Bienvenidas;
+ver 01_Config_Global.gs) y guarda su contenido, junto con su docId, en el
+índice de contenido (_getIndiceContenido(), más abajo en este archivo). El
+nombre de cada documento debe seguir la estructura
+"Categoría - Subcategoría - Clan" (separador " - "):
+  - Categoría:    primera parte del nombre.
+  - Subcategoría: segunda parte.
+  - Clan:         tercera parte.
+Solo se procesan Google Docs. Cualquier archivo cuyo nombre no contenga dos
+separadores " - " se ignora y se registra en el log. La lectura de Drive
+vive en _leerEntradasEstaticasDrive().
+
+Preserva las entradas Tipo=Dinámico que ya estén guardadas en el índice
+(generadas por _actualizarMenuDinamico() en una corrida anterior).
+
+RENOMBRADO AUTOMÁTICO: si un doc tiene el formato antiguo "Clan - Categoría",
+se detecta y se renombra al nuevo formato (ver _renombrarDocFormatoAntiguo()).
+```
+
+
+### Ubicación: `syncPlantillasDesdeDrive`
+
+#### 43B004 — líneas 78-87 (docblock)
+
+```text
+_actualizarIndiceContenido(ss, entradas, orden)
+Núcleo compartido de syncPlantillasDesdeDrive(), _actualizarMenuDinamico() y
+_reconstruirIndiceContenido(). Recibe una lista de entradas YA resuelta
+(cada una con su `contenido`), la ordena por Extra (Categoría ->
+Subcategoría) y por el orden de la hoja Clan, y guarda el resultado como
+índice de contenido (Drive + caché, ver _guardarIndiceContenido()).
+Devuelve el índice guardado ([] si no había datos; en ese caso NO se pisa
+el índice existente).
+```
+
+
+### Ubicación: `_actualizarIndiceContenido`
+
+#### 43B005 — líneas 111-124 (docblock)
+
+```text
+_actualizarMenuDinamico()
+Refresca las entradas Tipo=Dinámico del índice de contenido leyendo Mensajes
+(ya generado en esta misma corrida por runPendientesYMensajes()) y la hoja
+Clan (Información sobre el clan). Preserva las entradas Tipo=Estático que
+syncPlantillasDesdeDrive() dejó frescas en el índice en el mismo ciclo.
+Si el índice guardado no tiene ninguna entrada Estático (primera corrida, o
+caché y archivo de Drive perdidos), reconstruye todo desde las fuentes para
+no guardar un índice sin plantillas.
+
+Se ejecuta después de runPendientesYMensajes() (ver PASOS_RUNALL/
+PASOS_RUNUPDATE/PASOS_RUNGUERRARAPIDO, 00_Main.gs). El nombre se conserva
+de cuando escribía la hoja Menú, para no tocar esas llamadas.
+```
+
+
+### Ubicación: `_actualizarMenuDinamico`
+
+#### 43B006 — líneas 155-162 (docblock)
+
+```text
+_renombrarDocFormatoAntiguo(ss, file, clan, categoria)
+Intenta renombrar un Google Doc del formato antiguo "Clan - Categoría"
+al nuevo formato "Categoría - Subcategoría - Clan".
+Busca primero en el índice de contenido guardado; si no hay coincidencia, usa el mapa de subcategorías
+conocidas definido en CFG (o hardcoded aquí como fallback).
+Devuelve el nuevo nombre si tuvo éxito, o null si no lo encontró.
+```
+
+
+### Ubicación: `_renombrarDocFormatoAntiguo`
+
+#### 43B007 — líneas 233-238 (docblock)
+
+```text
+_getOrdenExtra(ss, tipo)
+Lee la hoja Extra y devuelve un mapa { valorLower -> índice } para
+tipo = 'categoria' (col 12, índice 11) o 'subcategoria' (col 13, índice 12).
+El índice refleja el orden en que aparecen los valores únicos en la hoja.
+```
+
+
+### Ubicación: `_getOrdenExtra`
+
+#### 43B008 — líneas 255-259 (docblock)
+
+```text
+_getOrdenClanHoja(ss)
+Lee la hoja Clan y devuelve un mapa { nombreClanLower -> índice }
+basado en el orden de las filas (columna Nombre = col 3, índice 2).
+```
+
+
+### Ubicación: `_getOrdenClanHoja`
+
+#### 43B009 — líneas 279-296 (comentario)
+
+```text
+Guarda, en lista plana, lo que antes contenía la hoja Menú (eliminada): una entrada
+{ categoria, subcategoria, clan, tipo, contenido, docId } por cada Doc de
+Drive (Estático) y por cada Mensaje dinámico / Información sobre el clan
+(Dinámico), ordenada por Extra (Categoría -> Subcategoría) y hoja Clan.
+
+Dónde vive (de más rápido a más lento):
+  1) CacheService (script): por partes de INDICE_CONTENIDO_CHUNK caracteres,
+     porque cada valor admite 100 KB. Vence a las 6 h.
+  2) Drive: Indice_Contenido.json en DRIVE_FOLDER_ID_OTROS (carpeta
+     "Otros" dentro de "JSON"; antes iba suelto directo en "JSON" —
+     ver AVISOS ABIERTOS / FASE B en 09_API_ClashRoyale.gs). Persistente,
+     es el respaldo si la caché venció.
+  3) Reconstrucción desde las fuentes reales (Drive + Mensajes + Clan), solo
+     si no existe ninguno de los dos anteriores. Es lo más lento.
+
+Quién lo escribe: _actualizarIndiceContenido() (llamada desde
+syncPlantillasDesdeDrive(), _actualizarMenuDinamico() y
+_reconstruirIndiceContenido()). Quién lo lee: _getIndiceContenido().
+```
+
+
+### Ubicación: `INDICE_CONTENIDO_CHUNK`
+
+#### 43B010 — líneas 303-307 (docblock)
+
+```text
+_getIndiceContenido()
+Devuelve el índice completo (array de entradas). Orden de búsqueda:
+caché -> archivo en Drive -> reconstrucción desde las fuentes.
+```
+
+
+### Ubicación: `_getIndiceContenido`
+
+#### 43B011 — líneas 322-326 (docblock)
+
+```text
+_leerEntradasIndicePorTipo(tipo)
+Devuelve las entradas del índice de un tipo (reconstruye el índice si no existe).
+tipo: 'Estático' o 'Dinámico'.
+```
+
+
+### Ubicación: `_leerEntradasIndicePorTipo`
+
+#### 43B012 — líneas 336-340 (docblock)
+
+```text
+_guardarIndiceContenido(lista)
+Persiste el índice en Drive y en caché. Nunca lanza error: si algo falla
+se registra en el log y el resto del flujo sigue.
+```
+
+
+### Ubicación: `_leerIndiceContenidoDeDrive`
+
+#### 43B013 — líneas 408-417 (docblock)
+
+```text
+_reconstruirIndiceContenido()
+Arma el índice desde las fuentes reales:
+  Estático  -> Google Docs de Drive
+  Dinámico  -> hoja Clan (Información sobre el clan) + hoja Mensajes
+Prioridad ante una misma clave: Estático > Información sobre el clan >
+Mensajes, ante una misma clave Categoría+Subcategoría+Clan.
+Si no se pueden abrir las carpetas de Drive, NO pisa el índice guardado
+(devuelve el de Drive, o [] si no hay ninguno).
+```
+
+
+### Ubicación: `_reconstruirIndiceContenido`
+
+#### 43B014 — líneas 431-437 (docblock)
+
+```text
+_leerIndiceGuardado()
+Devuelve el índice guardado (caché -> Drive) SIN reconstruirlo si no existe
+(en ese caso devuelve null). Se usa dentro de la propia reconstrucción y de
+la sincronización, donde llamar a _getIndiceContenido() podría reconstruir
+el índice en medio de otra reconstrucción.
+```
+
+
+### Ubicación: `_leerIndiceGuardado`
+
+#### 43B015 — líneas 446-450 (docblock)
+
+```text
+_leerEntradasIndiceGuardadoPorTipo(tipo)
+Como _leerEntradasIndicePorTipo() pero sin reconstruir: devuelve [] si no
+hay índice guardado.
+```
+
+
+### Ubicación: `_leerEntradasIndiceGuardadoPorTipo`
+
+#### 43B016 — líneas 460-465 (docblock)
+
+```text
+inicializarIndiceContenido()
+Función manual: fuerza la reconstrucción del índice desde Drive, Clan y
+Mensajes. Ejecutar una vez tras instalar esta versión, o cuando se quiera
+regenerar el índice sin correr todo el pipeline.
+```
+
+
+### Ubicación: `inicializarIndiceContenido`
+
+#### 43B017 — líneas 473-479 (docblock)
+
+```text
+_leerEntradasEstaticasDrive(ss)
+Lee los Google Docs de la carpeta raíz de plantillas y sus subcarpetas.
+Devuelve { entradas, orden } (entradas: mapa por clave Categoría||Subcategoría||Clan)
+o null si no se pudo abrir ninguna carpeta. Es la lectura que antes estaba
+dentro de syncPlantillasDesdeDrive().
+```
+
+
+### Ubicación: `_leerEntradasEstaticasDrive`
+
+#### 43B018 — líneas 542-550 (comentario)
+
+```text
+Prioridad: el primer doc encontrado para una misma clave gana.
+Se guarda `contenido` (recién leído del Doc) y `docId` (f.getId())
+directo en la entrada. El docId permite que el panel web arme el link
+https://docs.google.com/document/d/{docId}/export?format=pdf y muestre
+el Doc real (con formato) en vez de solo el texto plano — ver
+_obtenerOpcionesClanCategoria() en 44_BotWhatsApp.gs y
+_webAdminContenido() en 37_Web_API.gs. Las entradas Dinámico (Mensajes)
+no tienen Doc de origen: su docId queda vacío y el frontend no muestra
+el botón "Ver original" para esas opciones.
+```
+
+#### 43B019 — líneas 561-566 (docblock)
+
+```text
+_agregarEntradasDinamicas(ss, entradas, orden)
+Agrega a `entradas`/`orden` las entradas Dinámico: Información sobre el
+clan (hoja Clan) y Mensajes (hoja Mensajes). No pisa claves ya presentes.
+Es el bloque que antes estaba dentro de _actualizarMenuDinamico().
+```
+
+
+### Ubicación: `_agregarEntradasDinamicas`
+
+#### 43B020 — líneas 570-575 (comentario)
+
+```text
+2) INFORMACIÓN SOBRE EL CLAN — se construye directo acá (una fila por
+   clan Terna, datos de la hoja Clan), sin pasar por Mensajes. Antes
+   (hasta el 19/08/2026) esto lo armaba generarTodosMensajes()
+   (30_Mensajes.gs) y este paso lo recogía indirectamente leyendo
+   Mensajes en el paso 3. Se agrega ANTES del paso 3 (mismo criterio de
+   prioridad que las Estático: "si ya existe la clave, no se pisa").
+```
+
+#### 43B021 — líneas 596-604 (comentario)
+
+```text
+3) Mensajes fresco -> Dinámico, solo si la clave no está ya cubierta
+   por una fila Estático o por el paso 2 (misma regla que "Si ya existe,
+   NO lo sobreescribimos" de la vieja actualizarMenuSheet()).
+   Se guarda `contenido` directo desde la fila de Mensajes ya leída (MC.CONTENIDO).
+   FIX (28-sep-2026, revisión pedida por el usuario tras el desfase de encabezados de
+   Mensajes): esta lectura era posicional y fija (14 columnas, Contenido = índice 13).
+   Desde que Mensajes tiene 15 columnas (Rango=13, Tipo=14, Contenido=15, ver MC en
+   30_Mensajes.gs), el índice 13 es "Tipo", así que el contenido de las entradas
+   Dinámicas del índice salía con el texto de Tipo en vez del mensaje. Ahora usa MC.
+```
+
+#### 43B022 — líneas 624-629 (docblock)
+
+```text
+_ordenarEntradasIndice(ss, lista)
+Ordena una lista de entradas por Extra (Categoría -> Subcategoría) y por el
+orden de la hoja Clan. Devuelve la misma lista ordenada. Es el ordenamiento
+que antes estaba dentro de _reconstruirMenu(), cuando el destino era la hoja Menú.
+```
+
+
+
+# Archivo 45_Vigilante_UptimeRobot.gs
+
+Vigilante de UptimeRobot con respaldo automático: activa el ping al proxy (pingProxyRender) solo mientras UptimeRobot siga caído. Se engancha en runGuerra(). Incluye una función temporal que debe borrarse (configurarUptimeRobotTemporal) y AVISOS 1-3 (bloque 45B002). Los IDs de bloque llevan prefijo `45`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 45B001 | 3-7 | `Cabecera del archivo` | Vigilante de UptimeRobot con respaldo automatico: si UptimeRobot deja de mantener despierto el proxy de Render |
+| 45B002 | 10-47 | `Cabecera del archivo` | COMO FUNCIONA |
+| 45B003 | 62-64 | `VIG_UR_PING_LENTO_MS` | Valor inicial del estado guardado. |
+| 45B004 | 99-102 | `_vigUrGuardarEstado_` | Punto de enganche para runGuerra(). Nunca lanza: un fallo del vigilante no debe tumbar la captura de guerra. |
+| 45B005 | 112-114 | `_vigilarUptimeRobotSeguro_` | Logica principal. forzar=true ignora el throttle de chequeo y de ping (uso manual). |
+| 45B006 | 151-153 | `_vigilarUptimeRobot_` | Consulta la API de UptimeRobot y actualiza el estado (activa / desactiva el respaldo). Devuelve el estado. |
+| 45B007 | 208-212 | `_vigUrChequear_` | Pide a UptimeRobot el monitor del proxy. Devuelve { errorApi, sano, status, detalle }. |
+| 45B008 | 323-325 | `reiniciarVigilanteUptimeRobot` | Estado del vigilante como objeto simple, con fechas en ISO. Pensado para que la web lo muestre (panel admin). |
+| 45B009 | 345-347 | `getEstadoVigilanteUptimeRobot_` | FUNCION TEMPORAL: guardar la configuracion desde el codigo (las propiedades agregadas a mano en la interfaz no |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 45B001 — líneas 3-7 (comentario)
+
+```text
+Vigilante de UptimeRobot con respaldo automatico: si UptimeRobot deja de mantener despierto el proxy de Render,
+este archivo activa el ping al proxy (pingProxyRender) SOLO mientras UptimeRobot siga caido, y lo desactiva solo
+cuando UptimeRobot vuelve a funcionar.
+Creado el 05-oct-2026 (pedido del usuario: "que el backend detecte si uptimerobot falla y active pingproxyrender
+como fallback solo hasta que uptimerobot vuelva a funcionar").
+```
+
+#### 45B002 — líneas 10-47 (comentario)
+
+```text
+COMO FUNCIONA
+ - NO crea ningun activador nuevo (no gasta cuota de disparadores extra). Se engancha en runGuerra() (00_Main.gs),
+   que ya corre cada 5 min: al inicio de cada disparo FUERA de la ventana 4:00-4:59 a.m. Lima llama a
+   _vigilarUptimeRobotSeguro_(). Dentro de la ventana no hace nada (ahi runGuerra ya consulta la API del proxy en
+   cada disparo, asi que Render esta despierto).
+ - Cada VIG_UR_CHECK_CADA_MS (10 min) consulta la API de UptimeRobot (getMonitors, 1 solicitud; el plan gratuito
+   admite 10 por minuto) y decide si UptimeRobot esta cuidando el proxy:
+     * status 2 (up) y ultimo chequeo reciente  -> UptimeRobot OK.
+     * status 0 (pausado), 1 (sin chequear), 8/9 (caido), monitor no encontrado, o ultimo chequeo viejo -> FALLO.
+     * error al consultar la API de UptimeRobot (red, 429, clave invalida): estado desconocido. Se mantiene el
+       estado anterior; tras VIG_UR_FALLOS_API_MAX (3) fallos seguidos (30 min) se activa el respaldo por precaucion.
+ - Mientras el respaldo esta activo, cada VIG_UR_PING_CADA_MS (9 min) llama a pingProxyRender() (09_API_ClashRoyale.gs).
+ - Histeresis: el respaldo se ACTIVA con 1 chequeo malo, pero se DESACTIVA solo tras VIG_UR_OK_PARA_DESACTIVAR (2)
+   chequeos buenos seguidos (~20 min), para que no se prenda y apague en cada parpadeo.
+
+CONFIGURACION (las propiedades puestas a mano en la interfaz no se guardan: usar configurarUptimeRobotTemporal(),
+al final de este archivo, y borrarla despues). Propiedades que usa el vigilante:
+ - UPTIMEROBOT_API_KEY      (obligatoria) clave de API de UptimeRobot, de solo lectura si la cuenta la ofrece
+                            (UptimeRobot -> Integraciones y API). Sin esta propiedad el vigilante no hace nada
+                            y lo avisa una sola vez en el log.
+ - UPTIMEROBOT_MONITOR_ID   (opcional) id numerico del monitor que vigila el proxy. Si falta, se busca el monitor
+                            cuya URL tenga el mismo host que CFG.API_BASE.
+
+FUNCIONES MANUALES (ejecutar desde el editor):
+ - vigilarUptimeRobotAhora()      fuerza un chequeo ahora mismo y deja el resultado en el log.
+ - estadoVigilanteUptimeRobot()   imprime el estado guardado.
+ - reiniciarVigilanteUptimeRobot() borra el estado guardado (vuelve a empezar desde cero).
+ - getEstadoVigilanteUptimeRobot_() devuelve el estado como objeto (para mostrarlo en la web mas adelante).
+
+AVISOS
+ 1. Los valores de status de UptimeRobot (0 pausado, 1 sin chequear, 2 up, 8 parece caido, 9 caido) son los de su
+    API v2. El chequeo de "ultimo chequeo viejo" usa response_times[0].datetime si la API lo devuelve; si no lo
+    devuelve, solo se usa el status. No se pudo probar contra la API real desde aqui: la primera vez, ejecutar
+    vigilarUptimeRobotAhora() y revisar el log.
+ 2. Un status 8/9 significa que UptimeRobot NO consigue respuesta del proxy; en ese caso el ping de respaldo tampoco
+    arregla el proxy, pero se activa igual porque el trafico propio ayuda a despertarlo si estaba dormido.
+ 3. El docblock de pingProxyRender() en 09_API_ClashRoyale.gs sigue diciendo que UptimeRobot no toca el proxy: esta
+    desactualizado (ver AVISO 8b de 08_Activadores.gs). Se corrige la proxima vez que se edite 07.
+```
+
+
+### Ubicación: `VIG_UR_PING_LENTO_MS`
+
+#### 45B003 — líneas 62-64 (docblock)
+
+```text
+Valor inicial del estado guardado.
+```
+
+
+### Ubicación: `_vigUrGuardarEstado_`
+
+#### 45B004 — líneas 99-102 (docblock)
+
+```text
+Punto de enganche para runGuerra(). Nunca lanza: un fallo del vigilante no debe tumbar la captura de guerra.
+Fuera de la ventana protegida 4:00-4:59 a.m. Lima no hace nada si esta dentro.
+```
+
+
+### Ubicación: `_vigilarUptimeRobotSeguro_`
+
+#### 45B005 — líneas 112-114 (docblock)
+
+```text
+Logica principal. forzar=true ignora el throttle de chequeo y de ping (uso manual).
+```
+
+
+### Ubicación: `_vigilarUptimeRobot_`
+
+#### 45B006 — líneas 151-153 (docblock)
+
+```text
+Consulta la API de UptimeRobot y actualiza el estado (activa / desactiva el respaldo). Devuelve el estado.
+```
+
+
+### Ubicación: `_vigUrChequear_`
+
+#### 45B007 — líneas 208-212 (docblock)
+
+```text
+Pide a UptimeRobot el monitor del proxy. Devuelve { errorApi, sano, status, detalle }.
+ - errorApi: texto si no se pudo obtener una respuesta valida (red, HTTP != 200, stat != 'ok', JSON invalido).
+ - sano: true si UptimeRobot esta chequeando el proxy con normalidad.
+```
+
+
+### Ubicación: `reiniciarVigilanteUptimeRobot`
+
+#### 45B008 — líneas 323-325 (docblock)
+
+```text
+Estado del vigilante como objeto simple, con fechas en ISO. Pensado para que la web lo muestre (panel admin).
+```
+
+
+### Ubicación: `getEstadoVigilanteUptimeRobot_`
+
+#### 45B009 — líneas 345-347 (comentario)
+
+```text
+FUNCION TEMPORAL: guardar la configuracion desde el codigo (las propiedades agregadas a mano en la interfaz no
+se estan guardando). USO: pegar la clave entre las comillas, ejecutar UNA vez, comprobar el log y BORRAR ESTA
+FUNCION (o al menos vaciar las comillas) para no dejar la clave escrita en el codigo.
+```
+
+
+
+# Archivo 46_Test.gs
+
+Pruebas manuales de endpoints de la API de Clash Royale (cofres, battlelog y el resto de endpoints). Archivo temporal: se borra cuando se terminen de implementar los endpoints nuevos. Los IDs de bloque llevan prefijo `46`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 46B001 | 8-11 | `TAG_PRUEBA` | Prueba los endpoints /players/{tag}/upcomingchests y /players/{tag}/battlelog |
+| 46B002 | 63-68 | `testCofresYBatallas` | Test alternativo: recorre TODOS los jugadores del cache actual (debe |
+| 46B003 | 93-119 | `testCofresYBatallasTodos` | Endpoints MUERTOS / REMOVIDOS por Supercell — NO se prueban acá a propósito: |
+| 46B004 | 202-206 | `testTodosLosEndpoints` | Tournament tag (primer torneo que matchea "name=terna", filtro obligatorio) |
+| 46B005 | 373-376 | `testTodosLosEndpoints` | Helper: prueba UN endpoint con _apiGet() y devuelve una línea de resumen. |
+| 46B006 | 393-395 | `_probarEp` | _guardarJsonBusquedaNombreEnDrive() vive en 09_API_ClashRoyale.gs (no acá: |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `TAG_PRUEBA`
+
+#### 46B001 — líneas 8-11 (docblock)
+
+```text
+Prueba los endpoints /players/{tag}/upcomingchests y /players/{tag}/battlelog
+Imprime en el log un resumen legible de la respuesta.
+```
+
+
+### Ubicación: `testCofresYBatallas`
+
+#### 46B002 — líneas 63-68 (docblock)
+
+```text
+Test alternativo: recorre TODOS los jugadores del cache actual (debe
+haberse llamado antes a _fetchClanesBasico o similar) y prueba los dos
+endpoints solo con el PRIMER miembro de cada clan Terna. Útil para
+verificar que el proxy responde bien para varios tags seguidos.
+```
+
+
+### Ubicación: `testCofresYBatallasTodos`
+
+#### 46B003 — líneas 93-119 (comentario)
+
+```text
+Endpoints MUERTOS / REMOVIDOS por Supercell — NO se prueban acá a propósito:
+  /leagues, /seasons, /seasons/{id}, /seasons/{id}/rankings/players,
+  /challenges, /clans/{tag}/warlog,
+  /clans/{tag}/currentwar       -> {reason:"gone"} (removido permanentemente)
+  /locations/global/seasons/{id}/rankings/players -> 404
+
+Endpoints VIVOS pero que devuelven {items:[]} con frecuencia:
+  /locations/{id}/rankings/players   (limitación conocida de RoyaleAPI)
+  /locations/global/rankings/players
+  /globaltournaments
+  /locations/global/seasons/{id}     (solo devuelve {"id": "..."})
+
+Endpoints CON datos útiles que sí se prueban:
+  /cards, /locations, /locations/{id}, /locations/global/seasons,
+  /tournaments?name=X, /tournaments/{tag},
+  /clans?name=X[&locationId=Y],
+  /clans/{tag}/members,
+  /locations/{id}/rankings/clans|clanwars,
+  /locations/global/rankings/clans|clanwars,
+  /locations/{id}/pathoflegend/players,
+  /locations/global/pathoflegend/{seasonId}/rankings/players
+
+DETALLE /tournaments?name=X: todo el contexto (por qué "name" es
+obligatorio, por qué "terna" trae {"items":[]} casi siempre, resultados
+efímeros, etc.) vive en 26_Torneos_Core.gs, no acá -- este archivo es
+temporal (se borra cuando se terminen de implementar los endpoints
+nuevos) y todo contexto de torneos va en el archivo 24.
+```
+
+
+### Ubicación: `testTodosLosEndpoints`
+
+#### 46B004 — líneas 202-206 (comentario)
+
+```text
+Tournament tag (primer torneo que matchea "name=terna", filtro obligatorio)
+NOTA (25-sep-2026): {"items":[]} acá es el resultado NORMAL casi siempre
+(ver "DETALLE /tournaments?name=X" en 26_Torneos_Core.gs) -- "terna" es
+una palabra rebuscada y los resultados de este endpoint son efímeros,
+no un fallo.
+```
+
+#### 46B005 — líneas 373-376 (docblock)
+
+```text
+Helper: prueba UN endpoint con _apiGet() y devuelve una línea de resumen.
+No lanza — cualquier error queda capturado y devuelto como string.
+```
+
+
+### Ubicación: `_probarEp`
+
+#### 46B006 — líneas 393-395 (comentario)
+
+```text
+_guardarJsonBusquedaNombreEnDrive() vive en 09_API_ClashRoyale.gs (no acá:
+este archivo es temporal), se llama arriba tal cual, sin necesidad de
+importarla (mismo proyecto de Apps Script).
+```
+
+
+# Archivo 44_BotWhatsApp.gs
+
+Bot de WhatsApp "Sweetyuri_jj": router de intenciones (autorización, admin, bienvenida, menú de categorías, flujos de Gestionar miembros, Torneos y Sorteos, información de jugador y clan). La cabecera declara que aún no estaba conectado a Meta; eso quedó desactualizado: el bot sí estuvo conectado un tiempo y hoy está inactivo por falta de chip (confirmado por el usuario, 07-oct-2026; ver nota después del bloque 44B001). Los IDs de bloque llevan prefijo `44`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 44B001 | 10-58 | `Cabecera del archivo` | 44_BotWhatsApp.gs |
+| 44B002 | 66-73 | `BOT_NOMBRE` | Pie de texto que se agrega a los mensajes de pasos intermedios (no a las |
+| 44B003 | 76-106 | `PIE_NAVEGACION` | _categoriasDisponibles(esAdmin, telefono) |
+| 44B004 | 112-117 | `CATEGORIAS_PUBLICAS` | FASE 9 — Categorías cuya respuesta depende de `estado.tag` (la cuenta |
+| 44B005 | 120-127 | `CATEGORIAS_QUE_NECESITAN_CUENTA` | Nom_Multi y Préstamo son los únicos 2 campos OPCIONALES del registro. En |
+| 44B006 | 133-145 | `OPCION_VACIA_REGISTRO` | NOTA DE DEPENDENCIA: esta sección llama a funciones que deben existir en |
+| 44B007 | 153-179 | `TORNEOS_OPCIONES_MENU` | FUENTES_CONTENIDO |
+| 44B008 | 187-191 | `FUENTES_CONTENIDO` | NOTA DE REORDEN (23-ago-2026, pedido usuario): simularMensajeBot() -- la |
+| 44B009 | 196-201 | `FUENTES_CONTENIDO` | simularMensajeBot() |
+| 44B010 | 215-226 | `simularMensajeBot` | _extraerMensajeMeta(body) |
+| 44B011 | 250-264 | `_extraerMensajeMeta` | _evitarAutoLinkWsp(texto) |
+| 44B012 | 274-282 | `_evitarAutoLinkWsp` | _sanitizarPayloadWsp(payload) |
+| 44B013 | 307-312 | `_sanitizarPayloadWsp` | _postWhatsApp(payload, descripcionLog) |
+| 44B014 | 397-410 | `_truncarTitulo` | _enviarRespuestaBot(telefono, resultado) |
+| 44B015 | 428-433 | `_enviarRespuestaBot` | OPCIONES INTERACTIVAS (botones/lista) — puente entre las listas de datos |
+| 44B016 | 464-471 | `_conOpciones` | _avanzarEstado(telefono, estadoNuevo, estadoActualParaVolver) |
+| 44B017 | 478-483 | `_avanzarEstado` | _reconstruirMensajeDePaso(telefono, estadoDestino) |
+| 44B018 | 531-543 | `_reconstruirMensajeDePaso` | _procesarMensajeEntrante(telefono, texto) |
+| 44B019 | 663-673 | `_clearEstadoUsuario` | _getFilasDirectorioPorTelefono(telefono) |
+| 44B020 | 684-691 | `_getFilasDirectorioPorTelefono` | El teléfono se guarda partido en dos columnas: Prefijo (código de |
+| 44B021 | 710-716 | `_getFilasDirectorioPorTelefono` | _esUsuarioAutorizado(telefono) |
+| 44B022 | 725-729 | `_esUsuarioAutorizado` | _esAdministrador(telefono) |
+| 44B023 | 738-745 | `_esAdministrador` | _getCuentasPorTelefono(telefono, esAdmin) |
+| 44B024 | 759-765 | `_msgRestriccion` | _msgBienvenida(esAdmin, telefono) // Mensaje 1 (admin) / Mensaje 2 (no admin) |
+| 44B025 | 790-797 | `_msgBienvenida` | _getFilasCompletasDirectorioPorTelefono(telefono) |
+| 44B026 | 820-848 | `_getFilasCompletasDirectorioPorTelefono` | _msgBienvenidaAdmin(telefono) |
+| 44B027 | 852-856 | `_msgBienvenidaAdmin` | [Nombre del Administrador]: Nom_Multi de cualquiera de sus cuentas (es |
+| 44B028 | 947-952 | `_msgBienvenidaAdmin` | _digitosAEmojis(numero) |
+| 44B029 | 992-1018 | `_leerCategoriasDeExtra` | _catDispDeTelefono(telefono) |
+| 44B030 | 1051-1067 | `_catDispDeTelefono` | _categoriasDisponibles(esAdmin, telefono) |
+| 44B031 | 1085-1100 | `_categoriasDisponibles` | FIX (19-sep-2026, mismo pedido): Cat_disp es "SOLO accesos a |
+| 44B032 | 1117-1124 | `_msgElegirCategoria` | _matchOpcion(texto, opciones) |
+| 44B033 | 1156-1164 | `_matchOpcion` | Helper genérico para leer el contenido de un Google Doc de la carpeta de |
+| 44B034 | 1176-1186 | `_leerSeccionDocDrive` | _iniciarRespuestaCategoria(telefono, categoria, estado) |
+| 44B035 | 1273-1284 | `_iniciarRespuestaCategoria` | Flujo de varios turnos: elegir acción (ingresar/actualizar celular) -> |
+| 44B036 | 1293-1298 | `_opcionesDesdeGestionAccion` | _getCelularesActualesPorTag() |
+| 44B037 | 1313-1320 | `_getCelularesActualesPorTag` | _listarMiembrosClanParaGestion(clanTag, accion) |
+| 44B038 | 1334-1340 | `_listarMiembrosClanParaGestion` | _msgGestionElegirMiembro(miembros) |
+| 44B039 | 1348-1354 | `_msgGestionElegirMiembro` | _matchMiembroGestion(texto, miembros) |
+| 44B040 | 1492-1497 | `_msgElegirOpcionClan` | _msgElegirClanInfo(opciones) |
+| 44B041 | 1551-1555 | `_esHoraValida` | _respuestaTorneosParticipantesCalificados() / _respuestaTorneosGanadores() |
+| 44B042 | 1657-1674 | `_procesarPasoTorneos` | _obtenerOpcionesClanCategoria(categoria) |
+| 44B043 | 1731-1738 | `_obtenerOpcionesClanCategoria` | _formatearCaminoLeyendas(liga, trofeos, rango) |
+| 44B044 | 1756-1760 | `_formatearCaminoLeyendas` | _respuestaInfoMi(tag) |
+| 44B045 | 1768-1774 | `_respuestaInfoMi` | Fase C3 (16/07/2026): esta función solo necesita 1 Tag puntual, así que |
+| 44B046 | 1798-1805 | `_respuestaInfoMi` | FIX (27-sep-2026, pedido usuario -- "extiende a todos los que pidan |
+| 44B047 | 1865-1870 | `_respuestaInfoMi` | _respuestaInfoClan(tag) |
+| 44B048 | 1890-1896 | `_respuestaInfoClan` | _respuestaInfoClanPorTag(clanTag) |
+| 44B049 | 1969-1974 | `_respuestaInfoClanPorTag` | _clanTernaOpciones() |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 44B001 — líneas 10-58 (comentario)
+
+```text
+44_BotWhatsApp.gs
+
+Bot de WhatsApp "Sweetyuri_jj" — router de intenciones.
+Flujo (actualizado Fases 9-15, 30/07/2026): ¿Usuario autorizado? ->
+¿Es administrador? -> Mensaje de bienvenida -> Menú de categorías directo
+(la cuenta ya NO se pregunta de entrada; se pide solo si la categoría
+elegida la necesita) -> respuesta según categoría elegida. En cualquier
+paso de varios turnos existen los comandos reservados "0" (menú
+principal) y "9" (paso anterior).
+
+MEJORAS (01/07/2026):
+  ✅ Opciones numeradas con emojis (1️⃣, 2️⃣, 3️⃣, ...) para mejor UX
+  ✅ Usuario puede responder solo con números sin escribir nombres
+  ✅ Búsqueda fuzzy mejorada en _matchOpcion (3 intentos progresivos)
+  ✅ Totalmente backward compatible (sigue aceptando nombres parciales)
+
+AVANCE PLAN DE CAMBIOS — FASES 9 A 15 (30/07/2026):
+  ✅ Fase 9  — Bienvenida directa al menú de categorías; la cuenta se
+               pregunta solo bajo demanda (paso ELEGIR_CUENTA_PARA).
+  ✅ Fase 10 — Navegación universal: comandos reservados "0"/"menu"/
+               "inicio" (menú principal) y "9"/"atras"/"volver" (paso
+               anterior, vía estado.previo y _avanzarEstado()).
+  ⚠️ Fase 11 — El reordenamiento de CFG.EXTRA_CATEGORIAS vive en
+               01_Config_Global.gs (no en este archivo). Aquí ya se usa el
+               nombre nuevo "Gestionar información de miembros", y
+               "Torneos"/"Sorteos" quedan admin-exclusivas por no estar
+               en CATEGORIAS_PUBLICAS (mismo criterio que ya existía).
+  ✅ Fase 12 — Flujo nuevo "Gestionar información de miembros"
+               (GESTION_ACCION -> GESTION_CLAN -> GESTION_MIEMBRO ->
+               GESTION_PREFIJO -> GESTION_CELULAR -> GESTION_NOMMULTI ->
+               GESTION_PRESTAMO), reemplaza el registro manual por Tag.
+  ✅ Fase 13 — Flujo nuevo "Torneos": Ingresar link / Modificar existente
+               (llama a _registrarTorneoDesdeBot/_listarTorneosDeHoy/
+               _modificarFechaHoraTorneo — deben existir en 26_Torneos_Core.gs).
+  ✅ Fase 14 — "Torneos": lectura de participantes calificados y
+               ganadores (llama a _leerSeccionDocDrive con
+               NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_TORNEO /
+               NOMBRE_DOC_GANADORES_TORNEO — el 2do debe existir en
+               28_Torneos_Docs.gs junto con actualizarDocGanadoresTorneo()).
+  ✅ Fase 15 — Flujo "Sorteos" (lectura directa del doc de participantes
+               calificados de sorteo).
+
+IMPORTANTE — Estado actual: esto NO está conectado a Meta todavía (no hay
+número/chip registrado). Por eso toda la lógica de decisión vive en
+_procesarMensajeEntrante(telefono, texto), que NO sabe nada de WhatsApp.
+Cuando tengas el webhook real, doPost(e) solo traduce el payload de Meta
+a esa función y traduce la respuesta de vuelta a una llamada a la Cloud
+API. Mientras tanto, usa simularMensajeBot() (ver abajo) para probar todo
+el árbol de decisiones desde el editor de Apps Script, sin WhatsApp.
+```
+
+
+> **Corrección a lo dicho en 44B001 (07-oct-2026, confirmado por el usuario):** el párrafo "IMPORTANTE — Estado actual: esto NO está conectado a Meta todavía" ya no es cierto tal cual. El bot **sí estuvo conectado a Meta durante un tiempo** (por eso existen `_postWhatsApp()` y la lógica de la Cloud API en `44_BotWhatsApp.gs`), pero **ya no se usa porque se perdió el chip/número**. Estado vigente: **bot inactivo**. El código se conserva; `simularMensajeBot()` sigue sirviendo para probar el árbol de decisiones sin WhatsApp. El texto original de arriba se deja intacto como historial.
+>
+> **Decidido (07-oct-2026, usuario):** el código del bot (44, y el router `doPost` de `38_Web_Endpoints.gs`) **debe conservarse** tal cual, por si se consigue otro número. No retirar ni recortar. Datos útiles para cuando se reactive: no hay en el código un interruptor tipo `BOT_ACTIVO` (el bot simplemente no recibe mensajes); sin `WHATSAPP_TOKEN`/`WHATSAPP_PHONE_ID` en Script Properties, `_postWhatsApp()` solo registra el aviso en el log y no envía. Habría que cargar ambas propiedades con el número nuevo.
+
+### Ubicación: `BOT_NOMBRE`
+
+#### 44B002 — líneas 66-73 (docblock)
+
+```text
+Pie de texto que se agrega a los mensajes de pasos intermedios (no a las
+respuestas finales, que ya regresan solas a ELEGIR_CATEGORIA). Es solo
+texto informativo: el reconocimiento real de "9"/"0" lo hace el
+interceptor de comandos reservados en _procesarMensajeEntrante(), no
+_matchOpcion(); por eso estas dos líneas NUNCA se agregan al arreglo de
+`opciones` que se pasa a los botones/lista de WhatsApp.
+```
+
+
+### Ubicación: `PIE_NAVEGACION`
+
+#### 44B003 — líneas 76-106 (docblock)
+
+```text
+_categoriasDisponibles(esAdmin, telefono)
+Lee la columna Categoría (N) de la hoja Extra — la misma fuente que usa
+updateExtraSheet() para escribir CFG.EXTRA_CATEGORIAS — y aplica tres
+filtros antes de devolver la lista:
+FIX (30-ago-2026): COL_EXTRA_CATEGORIA apuntaba a la columna L (12), que
+dejó de ser "Categoría" cuando se agregaron Mostrar_S/Mostrar_D y todo el
+bloque Categoría..Edición se corrió 2 columnas a la derecha (ahora N..S,
+ver updateExtraSheet() en 22_ControlCalendario.gs). L quedó siendo
+"Rangos" (CFG.EXTRA_RANGOS), por eso el panel de admin ("Visor de
+contenido por categoría") mostraba Líder/Colíder/Veterano/Miembro en vez
+de las categorías reales.
+
+1) Público vs. admin: las categorías en CATEGORIAS_PUBLICAS son las
+   únicas visibles para usuarios no-admin; el resto (incluidas
+   "Gestionar información de miembros", "Torneos" y "Sorteos" —
+   exclusivas de administradores, Fase 11/12/13/15 del plan de cambios)
+   solo se muestra si esAdmin=true. Se filtra por NOMBRE (no por
+   posición en la lista) para no depender del orden de
+   CFG.EXTRA_CATEGORIAS.
+2) Guerra vs. entrenamiento (según ctx.esDiaGuerra, ya calculado a partir
+   del periodIndex real del clan): en entrenamiento se oculta "Día de
+   guerra" y "Mensaje de Guerra"; en día de guerra se oculta "Defensas
+   de barcos".
+3) NUEVO (19-sep-2026, pedido del usuario: "cat_disp sí se debe usar"):
+   Cat_disp del admin (columna de Administradores, editable desde el
+   panel de permisos de Diana). Se pasa `telefono` para resolverla
+   (ver _catDispDeTelefono(), definida junto al cuerpo de esta función
+   más abajo en este mismo archivo). Sin `telefono`, o sin Cat_disp
+   guardada, no se filtra nada — mismo comportamiento de siempre.
+```
+
+
+### Ubicación: `CATEGORIAS_PUBLICAS`
+
+#### 44B004 — líneas 112-117 (docblock)
+
+```text
+FASE 9 — Categorías cuya respuesta depende de `estado.tag` (la cuenta
+elegida). Si `estado.tag` todavía no está definido y hay más de una
+cuenta, se pregunta la cuenta EN ESE MOMENTO (paso ELEGIR_CUENTA_PARA)
+en vez de habérsela preguntado desde el primer mensaje.
+```
+
+
+### Ubicación: `CATEGORIAS_QUE_NECESITAN_CUENTA`
+
+#### 44B005 — líneas 120-127 (docblock)
+
+```text
+Nom_Multi y Préstamo son los únicos 2 campos OPCIONALES del registro. En
+vez de obligar a escribir un texto tipo "-" para dejarlos vacíos, se
+ofrece una opción numerada explícita ("1️⃣ No aplica / dejar vacío") —
+ver _msgGestionPedirNomMulti() / _msgRegistrarPedirPrestamo() más abajo.
+_esRespuestaVacia() reconoce esa opción (por número o por texto, vía
+_matchOpcion) o el atajo "-".
+```
+
+
+### Ubicación: `OPCION_VACIA_REGISTRO`
+
+#### 44B006 — líneas 133-145 (docblock)
+
+```text
+NOTA DE DEPENDENCIA: esta sección llama a funciones que deben existir en
+26_Torneos_Core.gs y 28_Torneos_Docs.gs (no incluido en este archivo):
+  _registrarTorneoDesdeBot(link, fecha, hora) -> {ok, id, corregido, error}
+    (`corregido` agregado el 02-oct-2026: true si corrigió una fila ya registrada; se usa en TORNEOS_LINK_HORA)
+  _listarTorneosDeHoy() -> [{id, fecha: Date}]
+  _modificarFechaHoraTorneo(id, fecha, hora) -> {ok, error}
+  NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_TORNEO (constante)
+  NOMBRE_DOC_GANADORES_TORNEO (constante) + actualizarDocGanadoresTorneo()
+Si esas piezas todavía no están escritas en 26_Torneos_Core.gs y 28_Torneos_Docs.gs, este archivo
+queda listo del lado del bot pero esas 2 sub-opciones fallarán hasta que
+se agreguen (ver Fase 13/14 del plan de cambios para su implementación).
+```
+
+
+### Ubicación: `TORNEOS_OPCIONES_MENU`
+
+#### 44B007 — líneas 153-179 (docblock)
+
+```text
+FUENTES_CONTENIDO
+Fuentes de contenido que se leen DIRECTO de una hoja. Hoy queda una sola:
+Mensajes (contenido dinámico del día). Cada fuente declara sus propios
+índices de columna (1-based), porque Mensajes tiene columnas extra (Fecha,
+Temporada, etc.) antes de Categoría/Subcategoría/Clan/Contenido.
+
+La otra fuente, con MÁS prioridad, ya no es una hoja: es el índice de
+contenido (_getIndiceContenido(), 43_Menu_Dinamico.gs), que reúne los
+Google Docs de Drive (Estático, con su docId), Información sobre el clan y
+los Mensajes ya consolidados. Ver _obtenerOpcionesClanCategoria() más abajo.
+
+Prioridad de búsqueda: índice de contenido -> Mensajes. Si el mismo
+clan/subcategoría aparece en ambas para la misma categoría, gana la
+primera. Mensajes NO tiene columna de DocId a propósito: su Contenido se
+genera solo (no viene de un Doc de Drive).
+
+`csv` (24-sep-2026, pedido del usuario -- "a mensajes ponle el csv como
+fallback si sheets no está disponible"): nombre del respaldo en Drive de
+esa hoja, mismo criterio que el resto del proyecto (Backup_<Hoja>.csv,
+mismo orden de columnas que la hoja viva -- ver
+respaldarHojasDerivadasCSV(), 05_Backup_CSV.gs). Se usa en
+_obtenerOpcionesClanCategoria() de abajo vía
+_obtenerFilasConFallbackCSV() (01_Config_Global.gs): si Sheets no está
+disponible (o la hoja está vacía), cae automáticamente a
+Backup_Mensajes.csv en vez de mostrar el contenido dinámico vacío.
+```
+
+
+### Ubicación: `FUENTES_CONTENIDO`
+
+#### 44B008 — líneas 187-191 (comentario)
+
+```text
+NOTA DE REORDEN (23-ago-2026, pedido usuario): simularMensajeBot() -- la
+otra funcion manual del archivo, sin _continuar asociada -- se movio aqui
+arriba, junto a doPost(), para que ambas funciones manuales queden juntas al
+inicio del archivo. El resto del archivo (helpers "_algo()") sigue debajo,
+en el mismo orden relativo que tenia antes.
+```
+
+#### 44B009 — líneas 196-201 (docblock)
+
+```text
+simularMensajeBot()
+Ejecuta esta función directamente desde el editor de Apps Script para
+probar el router. Cambia TELEFONO_PRUEBA y TEXTO_PRUEBA y mira el
+resultado en "Ver registros" (Logger).
+```
+
+
+### Ubicación: `simularMensajeBot`
+
+#### 44B010 — líneas 215-226 (docblock)
+
+```text
+_extraerMensajeMeta(body)
+Saca { telefono, texto } del payload estándar de Cloud API. Reconoce dos
+tipos de mensaje entrante:
+- 'text': mensaje escrito a mano -> texto = lo que escribió.
+- 'interactive' (button_reply / list_reply): el usuario tocó un botón o
+  una fila de lista -> texto = el id que le asignamos nosotros mismos al
+  construir el mensaje ("1", "2", "3"...), que _matchOpcion ya sabe
+  interpretar igual que si lo hubiera tecleado. Así no hace falta tocar
+  nada de la lógica de _procesarMensajeEntrante/_matchOpcion.
+Estructura real de Meta: body.entry[0].changes[0].value.messages[0]
+```
+
+
+### Ubicación: `_extraerMensajeMeta`
+
+#### 44B011 — líneas 250-264 (docblock)
+
+```text
+_evitarAutoLinkWsp(texto)
+FASE (01/08/2026): WhatsApp autoenlaza cualquier texto que "parezca" un
+dominio (ej. "drax_tv.sv" — ".sv" es un TLD válido, El Salvador), igual
+que hace Google Sheets con las columnas Nombre/Jugador/Nom_Multi (ver
+limpiarLinksAccidentalesDeNombres(), 11_DirectorioSheet.gs). El bot no
+envía enlaces reales dentro del texto de sus mensajes (los enlaces del
+sistema — RoyaleAPI, CWStats, WSP, la API del proxy — viven en las hojas
+de Sheets, no en el chat), así que es seguro insertar un espacio de ancho
+cero (U+200B, invisible) justo antes del punto de cualquier fragmento con
+forma de dominio: rompe el patrón que usan los parsers de enlaces de
+WhatsApp sin cambiar nada visible para quien lee el mensaje. Se dejan
+intactos los fragmentos que ya vienen precedidos de "http://", "https://"
+o "www." por si en el futuro se llega a enviar un enlace real a propósito.
+```
+
+
+### Ubicación: `_evitarAutoLinkWsp`
+
+#### 44B012 — líneas 274-282 (docblock)
+
+```text
+_sanitizarPayloadWsp(payload)
+Aplica _evitarAutoLinkWsp() a todos los campos de texto visibles del
+payload antes de enviarlo (cuerpo del mensaje, texto de botones/lista y
+título de cada botón/fila), sin tocar los campos de control (to, type,
+ids, etc.). Se llama una sola vez, desde _postWhatsApp(), así que cubre
+los 3 tipos de mensaje (texto plano, botones, lista) sin repetirlo en
+cada uno.
+```
+
+
+### Ubicación: `_sanitizarPayloadWsp`
+
+#### 44B013 — líneas 307-312 (docblock)
+
+```text
+_postWhatsApp(payload, descripcionLog)
+Hace el POST real a la Cloud API. Compartido por los 3 tipos de mensaje
+(texto plano, botones, lista) para no repetir 3 veces la lectura del
+token/Phone Number ID ni el manejo de errores.
+```
+
+
+### Ubicación: `_truncarTitulo`
+
+#### 44B014 — líneas 397-410 (docblock)
+
+```text
+_enviarRespuestaBot(telefono, resultado)
+Despachador único que usa doPost(). `resultado` puede ser:
+- un string simple (mensaje final, sin opciones para elegir) -> texto plano
+- un objeto { texto, opciones } (ver _conOpciones más abajo) -> decide el
+  formato según CUÁNTAS opciones haya:
+    <=3   -> botones
+    4-10  -> lista desplegable
+    11+   -> texto plano con la lista numerada (como antes), porque
+             WhatsApp no permite más de 10 filas en una lista. El usuario
+             sigue pudiendo responder escribiendo el número a mano en
+             cualquiera de los 3 casos (los botones/lista son un atajo,
+             no reemplazan la entrada manual).
+```
+
+
+### Ubicación: `_enviarRespuestaBot`
+
+#### 44B015 — líneas 428-433 (comentario)
+
+```text
+OPCIONES INTERACTIVAS (botones/lista) — puente entre las listas de datos
+(cuentas, categorías, etc.) y el formato genérico { id, titulo } que
+usan _enviarMensajeBotones/_enviarMensajeLista. El id es simplemente el
+número de orden ("1", "2", ...) — el mismo que _matchOpcion ya sabe
+interpretar cuando el usuario lo escribe a mano, así que al tocar un
+botón/fila no hace falta ninguna lógica de matching nueva.
+```
+
+
+### Ubicación: `_conOpciones`
+
+#### 44B016 — líneas 464-471 (docblock)
+
+```text
+_avanzarEstado(telefono, estadoNuevo, estadoActualParaVolver)
+Igual que _setEstadoUsuario(), pero además guarda el estado desde el que
+se avanzó bajo la clave `previo`, para que el comando reservado "9"
+(volver) pueda reconstruir el paso anterior. Se usa en todo avance real
+de paso (no en los casos que solo repiten la pregunta actual por una
+respuesta no reconocida).
+```
+
+
+### Ubicación: `_avanzarEstado`
+
+#### 44B017 — líneas 478-483 (docblock)
+
+```text
+_reconstruirMensajeDePaso(telefono, estadoDestino)
+Dado un estado (con su `paso` y sus datos), devuelve el mismo mensaje que
+se mostró la primera vez que se llegó a ese paso. Usado por el comando
+reservado "9" (volver) para no tener que duplicar la lógica de cada paso.
+```
+
+
+### Ubicación: `_reconstruirMensajeDePaso`
+
+#### 44B018 — líneas 531-543 (docblock)
+
+```text
+_procesarMensajeEntrante(telefono, texto)
+Implementa: ¿Usuario autorizado? -> ¿Es administrador? -> Bienvenida ->
+Menú de categorías directo -> (cuenta solo si la categoría la necesita) ->
+respuesta según categoría. Devuelve el texto de respuesta (string u
+objeto {texto, opciones}). No envía nada por sí mismo.
+
+NOTA DE ESTADO: el diagrama tiene pasos de varios turnos. Eso requiere
+recordar en qué paso está cada usuario entre un mensaje y el siguiente.
+Se implementa con PropertiesService (ver _getEstadoUsuario /
+_setEstadoUsuario) para que sobreviva aunque la ejecución de Apps Script
+termine entre mensajes.
+```
+
+
+### Ubicación: `_clearEstadoUsuario`
+
+#### 44B019 — líneas 663-673 (docblock)
+
+```text
+_getFilasDirectorioPorTelefono(telefono)
+Lee Directorio UNA sola vez y devuelve todas las filas (cuentas) cuya
+columna Celular coincide con ese teléfono (comparando solo dígitos, para
+no fallar por espacios/formato). Es la base de la que se derivan
+autorización, admin y la lista de cuentas para "Elección de cuenta".
+Cada objeto incluye tag/nombre/estado/admin/nom_multi (BUG fix 16/07/2026:
+nom_multi faltaba en el objeto devuelto pese a que _msgBienvenida() ya lo
+leía — filas[i].nom_multi siempre era undefined y el saludo no-admin caía
+siempre a filas[0].nombre en vez de preferir el nombre de persona).
+```
+
+
+### Ubicación: `_getFilasDirectorioPorTelefono`
+
+#### 44B020 — líneas 684-691 (comentario)
+
+```text
+El teléfono se guarda partido en dos columnas: Prefijo (código de
+país, p.ej. "51") y Celular (número local). El mensaje entrante de
+WhatsApp llega con el número completo (p.ej. "<celular>"), así que
+hay que comparar contra Prefijo+Celular concatenados. Se compara
+también solo contra Celular por si alguna fila quedó sin Prefijo
+cargado (no rompe filas existentes que ya funcionaban antes).
+Fase C3 (16/07/2026): Prefijo/Celular/Tag/Nombre/Estado/Admin siguen
+físicamente en Directorio (29 cols, orden IC) — se indexa con IC.
+```
+
+#### 44B021 — líneas 710-716 (docblock)
+
+```text
+_esUsuarioAutorizado(telefono)
+Autorizado si, entre las cuentas de Directorio con ese Celular, hay al
+menos una con Estado="Activo" (miembro activo) O una con Admin="Sí"
+(administrador, aunque su cuenta esté Inactivo). Si no aparece ninguna
+fila con ese celular, o todas son inactivas y no-admin, no autorizado.
+```
+
+
+### Ubicación: `_esUsuarioAutorizado`
+
+#### 44B022 — líneas 725-729 (docblock)
+
+```text
+_esAdministrador(telefono)
+Admin si alguna fila de Directorio con ese Celular tiene Admin="Sí"
+(independiente de su Estado: un admin inactivo sigue siendo admin).
+```
+
+
+### Ubicación: `_esAdministrador`
+
+#### 44B023 — líneas 738-745 (docblock)
+
+```text
+_getCuentasPorTelefono(telefono, esAdmin)
+Devuelve las cuentas (filas de Directorio) asociadas a ese celular, para
+el paso "Elección de cuenta". Si esAdmin es false, solo se devuelven las
+cuentas con Estado="Activo" — las inactivas son visibles únicamente para
+administradores (que sí necesitan poder elegirlas, p.ej. para consultar
+"Información sobre mí" de una cuenta inactiva a su cargo).
+```
+
+
+### Ubicación: `_msgRestriccion`
+
+#### 44B024 — líneas 759-765 (docblock)
+
+```text
+_msgBienvenida(esAdmin, telefono) // Mensaje 1 (admin) / Mensaje 2 (no admin)
+Para no-admin, mensaje simple. Para admin, arma la plantilla completa con
+sus clanes a cargo (cuentas Activas en clanes de CFG.TERNA_TAGS, agrupadas
+por Clan), sus cuentas fuera de la comunidad (Inactivas, vetadas, o en
+clanes fuera de CFG.TERNA_TAGS) y el estado del día (Guerra/Entrenamiento).
+```
+
+
+### Ubicación: `_msgBienvenida`
+
+#### 44B025 — líneas 790-797 (docblock)
+
+```text
+_getFilasCompletasDirectorioPorTelefono(telefono)
+Igual que _getFilasDirectorioPorTelefono(), pero devuelve la fila COMPLETA
+de Directorio (no solo tag/nombre/estado/admin), para poder armar el
+mensaje de bienvenida de administrador (Clan, ClanTag, Rango, Vetado,
+Nom_Multi). Usa la misma lógica de coincidencia de teléfono (Prefijo +
+Celular, con fallback a Celular solo) que _getFilasDirectorioPorTelefono.
+```
+
+
+### Ubicación: `_getFilasCompletasDirectorioPorTelefono`
+
+#### 44B026 — líneas 820-848 (docblock)
+
+```text
+_msgBienvenidaAdmin(telefono)
+Arma el mensaje 1 (admin) según la plantilla:
+  ✨ Bienvenid@, [Nombre] 🦙 al Sistema de Gestión de Clanes...
+  🔰 [Clan] / * [Cuenta] — [Rango]   (una sección por cada clan a cargo)
+  📌 Cuentas fuera de la comunidad (si aplica) / * [Nombre] — [Estado]
+  📅 Estado del día: Guerra o Entrenamiento, según ctx.esDiaGuerra.
+
+Regla de "dentro de la comunidad":
+  Esta función solo se llama cuando _esAdministrador(telefono) ya dio
+  true, y sincronizarEdicionAdminCatDisp() (44_BotWhatsApp.gs)
+  propaga Admin="Sí" a TODAS las filas de Directorio que comparten ese
+  mismo Celular en cuanto una se marca admin. Es decir: si un número es
+  admin, TODAS sus cuentas en Directorio ya están marcadas Admin="Sí" —
+  no hace falta volver a chequearlo fila por fila aquí.
+  Por eso, para cualquier fila de este teléfono, "dentro de la
+  comunidad" = no vetada y no está en el clan vetado, sin importar si
+  está Activa o Inactiva ni si su clan actual es uno de los 4 oficiales
+  (CFG.TERNA_TAGS) — un admin sigue siendo parte de la comunidad aunque
+  alguna de sus cuentas no esté, por ahora, en un clan Terna.
+  "Fuera de la comunidad" = Estado≠Activo solo cuenta como motivo para el
+  "público en general" (no aplica aquí, porque todo lo que llega a esta
+  función ya es admin); en la práctica esta sección solo contendrá
+  cuentas vetadas o en el clan vetado.
+  NOTA: cuentas sin fila en Directorio (nunca estuvieron en un clan
+  Terna) son, por definición, "fuera de la comunidad" — pero el bot solo
+  puede consultar Directorio por celular, así que no tiene forma de
+  nombrarlas ni listarlas; simplemente no aparecen en ninguna lista.
+```
+
+
+### Ubicación: `_msgBienvenidaAdmin`
+
+#### 44B027 — líneas 852-856 (comentario)
+
+```text
+[Nombre del Administrador]: Nom_Multi de cualquiera de sus cuentas (es
+el nombre de persona ya calculado para multicuentas); si no hay
+Nom_Multi (cuenta única), se usa el Nombre de la primera cuenta.
+Fase C3 (16/07/2026): Nom_Multi/Nombre/ClanTag/Vetado/Clan/Rango siguen
+físicamente en Directorio (29 cols, orden IC) — se indexa con IC.
+```
+
+#### 44B028 — líneas 947-952 (docblock)
+
+```text
+_digitosAEmojis(numero)
+Convierte un número a emojis de dígitos:
+- 1-10: usa emojis de números estándar (1️⃣, 2️⃣, ..., 🔟)
+- 11+: usa un emoji por cada dígito (1️⃣1️⃣ para 11, 1️⃣2️⃣ para 12, etc.)
+```
+
+
+### Ubicación: `_leerCategoriasDeExtra`
+
+#### 44B029 — líneas 992-1018 (docblock)
+
+```text
+_catDispDeTelefono(telefono)
+NUEVO (19-sep-2026, pedido del usuario: "cat_disp sí se debe usar").
+Cat_disp (columna de la hoja Administradores, editable desde el panel de
+permisos de Diana — ver PANEL DE PERMISOS en 37_Web_API.gs) del admin
+dueño de ese Celular, ya separada en lista (mismo parseo que usa el
+panel: _webPermisosParsearLista(), 37_Web_API.gs — Apps Script comparte
+el ámbito global entre todos los .gs del proyecto, así que llamarla
+desde acá es seguro, mismo patrón que ya usan otros archivos con
+_scriptToken()/AC.*).
+Memoizado por Celular dentro de la misma ejecución: varias funciones de
+este archivo pueden consultarla para un mismo mensaje entrante (ej. al
+reconstruir el menú después de una acción).
+Contrato de retorno:
+  - []              → sin restricción (Cat_disp vacía, o admin no
+                       encontrado en Administradores): se ve TODO, igual
+                       que antes de este filtro. Este es el valor por
+                       defecto para no romper a nadie que todavía no
+                       pasó por el panel de permisos.
+  - ['(ninguna)']    → Cat_disp fue guardada explícitamente sin ninguna
+                       categoría marcada (WEB_PERMISOS_SIN_NADA,
+                       37_Web_API.gs): no matchea ningún nombre real de
+                       categoría, así que en la práctica no deja pasar
+                       ninguna (salvo las públicas, ver
+                       _categoriasDisponibles()).
+  - [...categorías]  → exactamente esas, además de las públicas.
+```
+
+
+### Ubicación: `_catDispDeTelefono`
+
+#### 44B030 — líneas 1051-1067 (docblock)
+
+```text
+_categoriasDisponibles(esAdmin, telefono)
+ACTUALIZACIÓN (19-sep-2026, pedido del usuario: "cat_disp sí se debe
+usar"): antes, todo admin veía SIEMPRE las mismas categorías
+(filtradasPorPeriodo completo), sin importar su Cat_disp — la columna
+existía y el panel de permisos ya la editaba, pero no tenía efecto (ver
+nota vieja en 37_Web_API.gs, PANEL DE PERMISOS). Ahora, si se pasa
+`telefono`, se consulta su Cat_disp (_catDispDeTelefono()) y se usa para
+restringir cuáles categorías admin ve ESE admin en particular.
+Las categorías públicas (CATEGORIAS_PUBLICAS) NUNCA se ocultan por
+Cat_disp: son la base mínima que ya ve cualquier miembro, admin o no, y
+Cat_disp es "SOLO accesos a contenido/categorías de Menú" adicionales
+(ver comentario histórico en AC.CAT_DISP, 11_DirectorioSheet.gs), no un
+candado sobre lo que ya es público.
+`telefono` es OPCIONAL: si no se pasa (o no hay Cat_disp guardada para
+ese Celular), no se filtra nada — mismo comportamiento de siempre.
+```
+
+
+### Ubicación: `_categoriasDisponibles`
+
+#### 44B031 — líneas 1085-1100 (comentario)
+
+```text
+FIX (19-sep-2026, mismo pedido): Cat_disp es "SOLO accesos a
+contenido/categorías de Menú" (ver el comentario histórico junto a
+AC.CAT_DISP, 11_DirectorioSheet.gs) -- NO gobierna las categorías de
+FLUJO/ACCIÓN exclusivas de admin (Torneos, Sorteos, Gestionar
+información de miembros), que ni siquiera aparecen en el catálogo que
+arma _webPermisosCategoriasCatalogo() (37_Web_API.gs, a partir de
+_getIndiceContenido()) ni en el autocompletado por defecto de
+actualizarDropdownCatDisp() (11_DirectorioSheet.gs) -- ambos leen SOLO
+el índice de contenido, que nunca incluye estas tres. Si no se las
+eximiera acá igual que a CATEGORIAS_PUBLICAS, CUALQUIER admin con
+Cat_disp ya autocompletada (que es la gran mayoría, por diseño de
+actualizarDropdownCatDisp()) perdería Torneos/Sorteos/Gestión de
+buenas a primeras, aunque nadie se las haya quitado a propósito.
+Reutiliza WEB_CATEGORIAS_SIN_CONTENIDO_PLANO (37_Web_API.gs) para no
+duplicar esta lista en dos archivos y no correr el riesgo de que se
+desalineen con el tiempo.
+```
+
+
+### Ubicación: `_msgElegirCategoria`
+
+#### 44B032 — líneas 1117-1124 (docblock)
+
+```text
+_matchOpcion(texto, opciones)
+Intenta hacer matching de tres formas (en orden):
+1) Si es un número (1, 2, 3, ...), devuelve esa opción
+2) Si coincide el inicio de la opción (búsqueda case-insensitive)
+3) Si la opción contiene el texto como substring
+Esto permite que el usuario responda con números O con nombres parciales.
+```
+
+
+### Ubicación: `_matchOpcion`
+
+#### 44B033 — líneas 1156-1164 (comentario)
+
+```text
+Helper genérico para leer el contenido de un Google Doc de la carpeta de
+Plantillas y devolverlo como texto. Reutilizable en Torneos (Fase 14) y
+Sorteos (Fase 15).
+FASE (01/08/2026): _buscarArchivoEnPlantillas() ahora busca primero por
+ID (idDoc, si se pasa) y, si no viene o falla, cae al nombre — recorriendo
+raíz + las 5 subcarpetas de Plantillas hasta encontrar el archivo. Docs
+como "Participantes calificados (torneo/sorteo)" y "Ganadores
+(torneo/sorteo)" viven en la subcarpeta "Torneos y sorteos"
+(DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS_SORTEOS, 01_Config_Global.gs).
+```
+
+
+### Ubicación: `_leerSeccionDocDrive`
+
+#### 44B034 — líneas 1176-1186 (docblock)
+
+```text
+_iniciarRespuestaCategoria(telefono, categoria, estado)
+"Información sobre mí" e "Información sobre el clan" tienen lógica propia
+(leen Directorio/Clan directamente). "Gestionar información de miembros",
+"Torneos" y "Sorteos" tienen sus propios flujos (Fases 12-15). El resto de
+categorías consultan el índice de contenido + Mensajes filtrando por
+Categoría/Subcategoría/Clan: si hay una sola opción de contenido para esa
+categoría, se responde directo; si hay varias (p.ej. una por cada clan,
+más "Chat General"), se pide elegir primero — ese es el paso
+ELEGIR_CLAN_CONTENIDO.
+```
+
+
+### Ubicación: `_iniciarRespuestaCategoria`
+
+#### 44B035 — líneas 1273-1284 (docblock)
+
+```text
+Flujo de varios turnos: elegir acción (ingresar/actualizar celular) ->
+elegir clan -> elegir miembro (filtrado según tenga o no celular ya
+registrado) -> Prefijo -> Celular -> Nom_Multi (opcional) -> Préstamo
+(opcional). Al completar, se guarda con _guardarRegistroNuevoMiembro()
+(11_DirectorioSheet.gs) usando el tag del miembro elegido de la lista
+real del clan (nunca un tag tecleado a mano), así siempre cae en la rama
+de "fila ya existente" de esa función.
+
+En cualquier paso, el admin puede escribir "cancelar" para abortar (ver
+el guard en _procesarMensajeEntrante).
+```
+
+
+### Ubicación: `_opcionesDesdeGestionAccion`
+
+#### 44B036 — líneas 1293-1298 (docblock)
+
+```text
+_getCelularesActualesPorTag()
+Lee Directorio y devuelve un mapa Tag -> Celular (solo tags con celular
+no vacío), para saber qué miembros de un clan ya tienen celular
+registrado y cuáles no.
+```
+
+
+### Ubicación: `_getCelularesActualesPorTag`
+
+#### 44B037 — líneas 1313-1320 (docblock)
+
+```text
+_listarMiembrosClanParaGestion(clanTag, accion)
+Llama al endpoint de clanes para tener la lista de miembros actualizada
+(_fetchClanesBasico()/_getClanCache(), ya existentes en 09_API_ClashRoyale.gs)
+y la cruza con Directorio para filtrar según la acción elegida:
+- 'ingresar'   -> solo miembros SIN celular registrado
+- 'actualizar' -> solo miembros CON celular registrado
+```
+
+
+### Ubicación: `_listarMiembrosClanParaGestion`
+
+#### 44B038 — líneas 1334-1340 (docblock)
+
+```text
+_msgGestionElegirMiembro(miembros)
+Un clan Terna puede tener más de los 10 miembros que WhatsApp permite en
+una lista. Se muestran los primeros 9 numerados y, como texto, la opción
+de escribir directamente el nombre o Tag para buscarlo en TODA la lista
+filtrada (ver _matchMiembroGestion, que sí revisa la lista completa).
+```
+
+
+### Ubicación: `_msgGestionElegirMiembro`
+
+#### 44B039 — líneas 1348-1354 (docblock)
+
+```text
+_matchMiembroGestion(texto, miembros)
+Igual que _matchOpcion pero: (a) el índice numérico solo aplica a los
+primeros 9 mostrados, y (b) además de por nombre, también intenta
+matchear por Tag — ambas búsquedas sobre la lista COMPLETA filtrada, no
+solo los primeros 9.
+```
+
+
+### Ubicación: `_msgElegirOpcionClan`
+
+#### 44B040 — líneas 1492-1497 (docblock)
+
+```text
+_msgElegirClanInfo(opciones)
+Lista las opciones de clan Terna para que el admin elija cuál consultar
+en "Información sobre el clan" (y en Fase 12, para elegir el clan cuyos
+miembros se van a gestionar). opciones = [{tag, nombre}].
+```
+
+
+### Ubicación: `_esHoraValida`
+
+#### 44B041 — líneas 1551-1555 (docblock)
+
+```text
+_respuestaTorneosParticipantesCalificados() / _respuestaTorneosGanadores()
+Fase 14: ambos documentos ya se mantienen actualizados automáticamente
+desde procesarTorneos() (26_Torneos_Core.gs) — acá solo se leen y reenvían.
+```
+
+
+### Ubicación: `_procesarPasoTorneos`
+
+#### 44B042 — líneas 1657-1674 (docblock)
+
+```text
+_obtenerOpcionesClanCategoria(categoria)
+Busca todo el contenido con esa Categoría y devuelve una opción por cada
+Clan/Subcategoría distinto encontrado (sin duplicar). Fuentes, en orden de
+prioridad:
+  1) El índice de contenido (_getIndiceContenido(), 43_Menu_Dinamico.gs):
+     Docs de Drive + Información sobre el clan + Mensajes consolidados.
+  2) Las hojas de FUENTES_CONTENIDO (hoy solo Mensajes, leída en vivo).
+Si la opción corresponde a un clan específico, su Subcategoría real es
+"Particular" (así está generado en 30_Mensajes.gs); si es general (p.ej.
+"Chat General", "Comunidad"), se usa esa Subcategoría como etiqueta en
+vez del nombre largo del clan de chat general.
+
+Si la entrada trae `docId` (los Docs de Drive), se suma a la opción: el
+panel web (admin.html, _webAdminContenido en 37_Web_API.gs) lo usa para
+mostrar "Ver original". Las que no lo traen (Mensajes, Información sobre
+el clan) simplemente no muestran ese botón.
+```
+
+
+### Ubicación: `_obtenerOpcionesClanCategoria`
+
+#### 44B043 — líneas 1731-1738 (docblock)
+
+```text
+_formatearCaminoLeyendas(liga, trofeos, rango)
+Sub-árbol del diagrama: vacío cuenta como 0 para las tres validaciones.
+  Liga = 0                -> no se muestra nada de Camino de leyendas.
+  Liga <>0, Trofeos = 0    -> se muestra solo Liga.
+  Liga y Trofeos <>0, Rango = 0 -> se muestra Liga y Trofeos.
+  Los tres <>0             -> se muestra Liga, Trofeos y Rango.
+```
+
+
+### Ubicación: `_formatearCaminoLeyendas`
+
+#### 44B044 — líneas 1756-1760 (docblock)
+
+```text
+_respuestaInfoMi(tag)
+Lee la fila de Directorio de esa cuenta y arma la respuesta con información
+completa del jugador, incluyendo el sub-árbol de Camino de leyendas.
+```
+
+
+### Ubicación: `_respuestaInfoMi`
+
+#### 44B045 — líneas 1768-1774 (comentario)
+
+```text
+Fase C3 (16/07/2026): esta función solo necesita 1 Tag puntual, así que
+usa _leerFilaHojaPorTag() (11_DirectorioSheet.gs, versión de 1 Tag con
+createTextFinder) en vez de traer toda la hoja Directorio y recorrerla.
+Directorio (29 cols, orden IC) + Players (31, PC) + Links (14, LC) se
+combinan con _reconstruirFilaDCDesdeFisico() en una fila de 60 columnas
+(formato DC), así todos los DC.CAMPO de abajo quedan correctos sin más
+cambios.
+```
+
+#### 44B046 — líneas 1798-1805 (comentario)
+
+```text
+FIX (27-sep-2026, pedido usuario -- "extiende a todos los que pidan
+arena"): antes se mandaba fila[DC.ARENA - 1] tal cual (rawName crudo,
+ej. "Arena_L17"). _resolverArenaDesdeCatalogo() (09_API_ClashRoyale.gs)
+busca ese rawName en Backup_Arena.csv y devuelve "Nombre" (traducción
+manual al español) si ya está completa, o "Name" (inglés) si "Nombre"
+está vacío; si el rawName no tiene match en el catálogo, cae de vuelta
+al rawName recibido. Mismo criterio que usa el cuadrito "Arena" del
+perfil web (_webPerfilExtendido(), 37_Web_API.gs).
+```
+
+#### 44B047 — líneas 1865-1870 (docblock)
+
+```text
+_respuestaInfoClan(tag)
+Para usuarios NO admin: lee el ClanTag de la cuenta en Directorio y
+muestra la info de ese clan. El no-admin no elige clan — siempre ve el
+de su cuenta seleccionada.
+```
+
+
+### Ubicación: `_respuestaInfoClan`
+
+#### 44B048 — líneas 1890-1896 (docblock)
+
+```text
+_respuestaInfoClanPorTag(clanTag)
+Lee la fila de la hoja Clan para ese ClanTag y arma la respuesta.
+Devuelve un solo mensaje con toda la información del clan.
+Usada tanto por el no-admin (vía _respuestaInfoClan) como por el admin
+(después de elegir el clan en el paso ELEGIR_CLAN_INFO).
+```
+
+
+### Ubicación: `_respuestaInfoClanPorTag`
+
+#### 44B049 — líneas 1969-1974 (docblock)
+
+```text
+_clanTernaOpciones()
+Devuelve [{tag, nombre}] para los 4 clanes Terna en el orden de
+CFG.TERNA_TAGS, resolviendo el nombre real vía _resolverNombreClan()
+(cache de la API → fallback de CFG.CLAN_NOMBRES_FALLBACK → tag literal).
+```
+
+
+
+# Archivo 47_Migraciones.gs
+
+Funciones de migración de una sola vez (migrarX), conservadas por trazabilidad, y la herramienta manual de reenumeración de temporadas (runReenumerarTemporadas y su familia, antes en 52_ReenumerarTemporadas.gs). Los bloques 47B002 y 47B008 eran restos de cabeceras de `02_Setup_Hojas.gs` y `22_ControlCalendario.gs`; se revisaron el 07-oct-2026 y quedaron reducidos a una nota (su contenido vigente ya está en 02B049, 11B001 y 22B007). Los IDs de bloque llevan prefijo `47`.
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 47B001 | 3-11 | `Cabecera del archivo` | Funciones de migracion de una sola vez (migrarX). Se conservan por trazabilidad; |
+| 47B002 | 37-54 | `PASOS_REENUMERAR_TEMPORADAS` | Resto de cabecera de 02_Setup_Hojas.gs (resuelto: duplicado obsoleto, sin contenido nuevo) |
+| 47B003 | 58-62 | `PASOS_REENUMERAR_TEMPORADAS` | SECCIÓN 1: FUNCIONES MANUALES (entry points de mantenimiento, ejecutar a mano |
+| 47B004 | 65-79 | `PASOS_REENUMERAR_TEMPORADAS` | migrarQuitarCatDispClanesAdminDeDirectorio() |
+| 47B005 | 101-108 | `migrarQuitarCatDispClanesAdminDeDirectorio` | migrarLinksQuitarJugador() |
+| 47B006 | 123-133 | `migrarLinksQuitarJugador` | MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps Script |
+| 47B007 | 155-186 | `migrarDirectorioColumnaPrestamo` | migrarAdministradoresAEstructuraReducida() — función ELIMINADA el 07-oct-2026 (bloque conservado como historial) |
+| 47B008 | 236-253 | `migrarAdministradoresAEstructuraReducida` | Resto de cabecera de 22_ControlCalendario.gs (resuelto: se conservó solo lo no duplicado) |
+| 47B009 | 257-259 | `migrarAdministradoresAEstructuraReducida` | SECCIÓN 1: FUNCIONES MANUALES (entry points de mantenimiento, ejecutar a mano |
+| 47B010 | 262-282 | `migrarAdministradoresAEstructuraReducida` | MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps Script |
+| 47B011 | 295-299 | `migrarControlColumnasExtra` | Layout ANTES de esta migración (COL_INICIO_GRID=17, 4 métricas x25 cols): |
+| 47B012 | 319-328 | `migrarControlColumnasExtra` | MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps Script |
+| 47B013 | 355-367 | `migrarControlColumnaAscenso` | migrarControlQuitarJugador() |
+| 47B014 | 392-412 | `migrarControlQuitarJugador` | _getOrdenMensajesCategoria() |
+| 47B015 | 414-416 | `migrarControlQuitarJugador` | SECCIÓN 1: FUNCIONES MANUALES (entry points de mantenimiento, ejecutar a mano |
+| 47B016 | 419-433 | `migrarControlQuitarJugador` | migrarPosicionCategoriaAscensosDescensosEnExtra() |
+| 47B017 | 486-494 | `migrarPosicionCategoriaAscensosDescensosEnExtra` | BAJA DEFINITIVA (14-sep-2026, pedido del usuario -- Fase 9 completa, |
+| 47B018 | 501-514 | `migrarPosicionCategoriaAscensosDescensosEnExtra` | migrarFuncionCorregirAutorATodosLosAdmins() |
+| 47B019 | 546-552 | `migrarFuncionCorregirAutorATodosLosAdmins` | migrarFuncionActualizarRosterATodosLosAdmins() |
+| 47B020 | 584-624 | `migrarFuncionActualizarRosterATodosLosAdmins` | Sistema de reenumeración de temporadas — cambia UNA sola fecha Ref (y el |
+| 47B021 | 627-643 | `migrarFuncionActualizarRosterATodosLosAdmins` | runReenumerarTemporadas(nuevaFechaRefStr) |
+| 47B022 | 675-697 | `runReenumerarTemporadas` | PUNTO 2 (Consolidado_Cambios_Pendientes_Guerra.md) — DETECCIÓN AUTOMÁTICA |
+| 47B023 | 700-730 | `runReenumerarTemporadas` | detectarTemporadaMasAntiguaConPresenciaTerna() |
+| 47B024 | 770-774 | `detectarTemporadaMasAntiguaConPresenciaTerna` | _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna) |
+| 47B025 | 798-808 | `_buscarFechaMasAntiguaTernaEnBackupGuerra` | _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna) |
+| 47B026 | 845-857 | `_buscarFechaMasAntiguaTernaEnNuevos` | ejecutarReenumeracionSugerida(fechaRefStr) |
+| 47B027 | 933-940 | `_migrarColumnaPrestamoEnHoja` | _continuarReenumerarTemporadas() |
+| 47B028 | 969-992 | `_continuarReenumerarTemporadas` | _reenumerarCSV(filename, colMap, totalCols, colTemporada) |
+| 47B029 | 1039-1060 | `_reenumerarCSV` | _reenumerarHoja(sheetName, colMap, totalCols, colTemporada, filaInicio) |
+| 47B030 | 1083-1089 | `_reenumerarHoja` | _reenumerarCalendario2Hoja() |
+| 47B031 | 1111-1121 | `_reenumerarCalendario2Hoja` | _reenumerarCorreccionesGuerraCSV() |
+| 47B032 | 1148-1155 | `_reenumerarCorreccionesGuerraCSV` | _finalizarReenumeracion() |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 47B001 — líneas 3-11 (comentario)
+
+```text
+Funciones de migracion de una sola vez (migrarX). Se conservan por trazabilidad;
+pueden eliminarse una vez confirmado que ya se ejecutaron en todos los entornos.
+
+Incluye tambien (movidos aca, sin cambios de codigo):
+  - La herramienta manual de reenumeracion de temporadas (uso ocasional,
+    runReenumerarTemporadas() y su familia), que antes vivia completa en el archivo
+    52_ReenumerarTemporadas.gs.
+  - migrarFuncionCorregirAutorATodosLosAdmins() (antes en 37_Web_API.gs) y
+    migrarFuncionActualizarRosterATodosLosAdmins() (antes en 41_Web_ActualizarRoster.gs).
+```
+
+
+### Ubicación: `PASOS_REENUMERAR_TEMPORADAS`
+
+#### 47B002 — líneas 37-54 (comentario) — RESUELTO 07-oct-2026
+
+Era un resto pegado de la cabecera de `02_Setup_Hojas.gs`. Se revisó contra las secciones ya procesadas y **no se movió nada**, porque cada dato ya vive en su sitio y la versión de aquí estaba desactualizada:
+
+- Historial de 7 columnas (N°|Fecha|Tag|Nombre|Movimiento|Clan|ClanTag): ya figura en la cabecera de 02 y en 11B001.
+- Multicuentas de 15 columnas: la versión vigente es **02B049** (FIX 07-ago-2026: se sacó "Jugador", se agregó "Préstamo").
+- Control con `COL_INICIO_GRID = 17` y "Ascenso" tras "Ataques pendientes": la versión vigente es **22B007** (FIX 03-ago-2026).
+- "NOTA JUGADOR / NOM_MULTI" decía que la columna "Jugador" existe en todas las hojas derivadas. **Ya no es cierto**: se quitó de Multicuentas, Control y Vetados; el criterio vigente está en **11B001**.
+
+El texto original se eliminó de este archivo por ser un duplicado obsoleto. Si hiciera falta verlo, está en la versión anterior de este `.md` (bloque 47B002).
+
+#### 47B003 — líneas 58-62 (comentario)
+
+```text
+SECCIÓN 1: FUNCIONES MANUALES (entry points de mantenimiento, ejecutar a mano
+desde el editor de Apps Script). Reordenado el 23-ago-2026 (pedido usuario):
+antes estaban mezcladas entre los helpers de setup, en el orden en que se
+fueron agregando históricamente. Ninguna tiene función _continuarX asociada
+(son migraciones puntuales de una sola pasada, no procesos por tandas).
+```
+
+#### 47B004 — líneas 65-79 (docblock)
+
+```text
+migrarQuitarCatDispClanesAdminDeDirectorio()
+MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps
+Script tras subir esta versión (12/07/2026). Antes, Directorio tenía 60
+columnas (terminaba en Admin, Cat_disp, Clanes_Admin). Ahora Cat_disp y
+Clanes_Admin viven SOLO en Administradores (donde ya estaban, al final —
+no cambian de posición ahí) y en Backup_Directorio.csv; Directorio en
+Sheets se queda en 58 columnas (termina en Admin).
+
+Esta función solo BORRA físicamente las columnas 59 y 60 de la hoja
+Directorio si todavía existen con el layout viejo (verifica encabezados
+antes de tocar nada, igual que migrarDirectorioColumnaPrestamo() más
+abajo). No hace falta rescatar esos datos antes de borrar: ya están
+duplicados en Administradores, que esta función NO toca.
+```
+
+
+### Ubicación: `migrarQuitarCatDispClanesAdminDeDirectorio`
+
+#### 47B005 — líneas 101-108 (docblock)
+
+```text
+migrarLinksQuitarJugador()
+MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps
+Script tras subir esta versión (12/07/2026), si la hoja Links ya existía
+con el layout viejo (15 columnas, con "Jugador" en la columna 4). Borra
+físicamente esa columna (desplazando Nom_Multi..Render una posición a la
+izquierda) y no pierde datos: los demás campos quedan intactos.
+```
+
+
+### Ubicación: `migrarLinksQuitarJugador`
+
+#### 47B006 — líneas 123-133 (docblock)
+
+```text
+MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps Script
+sobre Directorio y Administradores YA EXISTENTES que todavía tengan el
+layout viejo (Préstamo en la columna 59, justo antes de Clanes_Admin).
+Mueve físicamente los DATOS de esa columna a la posición 6 (a la derecha
+de Nom_Multi), desplazando Multicuenta..Cat_disp una posición a la
+derecha — igual que ahora define el objeto DC en 11_DirectorioSheet.gs.
+Reescribe también la fila de encabezados de inmediato (no espera al
+próximo setupAllSheets()/runAll()), para que la hoja quede consistente
+apenas termine la migración.
+```
+
+
+### Ubicación: `migrarDirectorioColumnaPrestamo`
+
+#### 47B007 — líneas 155-186 (docblock)
+
+```text
+migrarAdministradoresAEstructuraReducida()
+MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps
+Script tras subir esta versión (12/07/2026). Antes, Administradores era
+un espejo completo de Directorio (60 columnas). Ahora tiene su propia
+estructura reducida (ver _setupAdministradores() en 02_Setup_Hojas.gs y
+AC en 11_DirectorioSheet.gs).
+
+FIX (25-ago-2026): el guard usaba "21" fijo (cantidad de columnas de
+Administradores hasta esa fecha). Con el agregado de Funciones/Clave
+(FASE 4, ver AC/ADMINISTRADORES_TOTAL_COLS en 11_DirectorioSheet.gs), la
+hoja migrada legítimamente ya tiene 23 columnas — con el "21" viejo, esta
+función ya NO se reconocía a sí misma como "ya migrada" y, si alguien la
+volvía a correr por error, hubiera entrado de nuevo al bloque de abajo:
+sh.clear() + deleteColumns(22, ...) hubiera borrado Funciones/Clave
+(Clave es una CONTRASEÑA de login — pérdida grave) antes de que
+sincronizarAdministradores() reconstruyera la hoja, sin nada que las
+restaure (la preservación de Funciones/Clave lee el valor ANTERIOR de la
+hoja, que sh.clear() ya habría borrado). Ahora el guard y el recorte de
+columnas usan ADMINISTRADORES_TOTAL_COLS (23), no un número suelto.
+
+Pasos:
+  1. Si la hoja ya tiene ADMINISTRADORES_TOTAL_COLS columnas o menos, no
+     hace nada (ya migrada).
+  2. Guarda Cat_disp por Tag del layout viejo (única columna con edición
+     manual que no se puede recalcular; todo lo demás se reconstruye
+     solo desde Directorio).
+  3. Borra TODO el contenido/formato de la hoja y las columnas sobrantes,
+     y escribe los encabezados nuevos.
+  4. Reconstruye los datos con sincronizarAdministradores() y restaura el
+     Cat_disp guardado en el paso 2.
+```
+
+
+> **Corrección a la nota anterior de esta misma fecha:** había escrito que la hoja Administradores tiene 23 columnas. **Hoy tiene 24**: el 15-sep-2026 se agregó Clave_Hash al final (23 → 24, sin migración, ver 02B054 y 11B003). El "23" del docblock de arriba es del 25-ago-2026 y quedó viejo; el código no lo usa como número fijo sino a través de `ADMINISTRADORES_TOTAL_COLS`, así que el guard se actualizó solo.
+>
+> **Estado de `migrarAdministradoresAEstructuraReducida()` (07-oct-2026): ya no hace falta ejecutarla y, ejecutada hoy, no haría nada.**
+>
+> Encabezados actuales de Administradores, dados por el usuario (24): 1 N° · 2 Tag · 3 Nombre · 4 Nom_Multi · 5 Préstamo · 6 Clan · 7 ClanTag · 8 Rango · 9 Líder · 10 Prefijo · 11 Celular · 12 WSP(G) · 13 Estado · 14 Admin · 15 Vetado · 16 Razón · 17 Vigencia · 18 Inactividad(d) · 19 Alerta · 20 Cat_disp · 21 Funciones · 22 Clanes_Admin · 23 Clave · 24 Clave_Hash. Es la estructura reducida (el layout viejo era un espejo de 60 columnas de Directorio), así que la migración ya se hizo o la hoja se recreó directamente con `_setupAdministradores()` (por ejemplo tras un Demoler + runAll). En ambos casos el resultado es el mismo.
+>
+> **Qué haría la función, columna por columna:**
+> - **Con la hoja actual (24 columnas):** `getLastColumn()` = 24, que no supera `ADMINISTRADORES_TOTAL_COLS`; escribe "no hay nada que migrar" en el log y termina. No elimina ni modifica ninguna columna.
+> - **Si la hoja estuviera en el layout viejo (más de 24 columnas):** conservaría **solo Cat_disp**, guardado por Tag desde la columna 59 del layout viejo. Con `sh.clear()` borraría todo lo demás (valores y formato), recortaría las columnas sobrantes (de la 25 en adelante), reescribiría los 24 encabezados y reconstruiría los datos desde Directorio con `sincronizarAdministradores()`. Las columnas calculadas se recuperan solas. **Funciones, Clave y Clave_Hash se perderían**, porque la preservación lee el valor anterior de la hoja y `sh.clear()` ya lo habría borrado (Clave es una contraseña de login). Los respaldos en CSV de Funciones/Clave/Clave_Hash agregados después (FIX 30-ago y 15-sep-2026; desde el 20-sep la Clave en texto plano ya no se restaura desde el CSV) podrían recuperar parte, pero no lo verifiqué porque `11_DirectorioSheet.gs` no estaba entre los archivos subidos.
+>
+> **Pendiente (menor):** confirmar cuando se suba `11_DirectorioSheet.gs` que `ADMINISTRADORES_TOTAL_COLS = 24`. Indicio a favor: `37_Web_API.gs` lee la hoja con ese número de columnas y luego usa `AC.CLAVE_HASH` (col 24), lo cual solo funciona si la constante ya vale 24.
+>
+> **Conclusión:** la función puede conservarse como historial, sin riesgo mientras Administradores tenga 24 columnas. Sigue siendo peligrosa solo si alguien agrega columnas extra a esa hoja (pasaría el guard y haría `sh.clear()`).
+
+> **ELIMINADA de `47_Migraciones.gs` el 07-oct-2026 (pedido del usuario).** Se borró la función `migrarAdministradoresAEstructuraReducida()` completa (y su línea corta de comentario) porque la hoja Administradores ya está en la estructura reducida de 24 columnas y la función ya no tenía nada que migrar. No quedaba ninguna llamada a ella en los archivos revisados (44, 47, 37, 38 y las secciones ya documentadas de este `.md`). Este bloque 47B007 y las notas anteriores se conservan solo como historial. Si en el futuro hiciera falta reconstruir Administradores desde cero, el camino es `_setupAdministradores()` + `sincronizarAdministradores()`, no esta migración.
+
+### Ubicación: `migrarAdministradoresAEstructuraReducida`
+
+#### 47B008 — líneas 236-253 (comentario) — RESUELTO 07-oct-2026
+
+Era un resto pegado de la cabecera de `22_ControlCalendario.gs`. Se revisó y se dejó solo lo que no estaba en otra parte:
+
+- **Hoja Extra:** tiene filtros nativos (botones de embudo) aplicados en `_aplicarTablasYGridlines()` y bordes grises en la fila de datos (fila 2).
+- **Hoja Control:** las columnas de la cuadrícula miden 45 px sin reducir el tamaño de fuente.
+
+**Confirmado por el usuario (07-oct-2026):** la columna Jugador solo se conserva en **Directorio** e **Inactivos** (columna 4, oculta). Coincide con 11B001 y con la nota de 02 que pide que no quede ninguna referencia a "Jugador" fuera de esas dos hojas; Multicuentas, Vetados, Control, Links y Administradores ya no la tienen. Su valor se forma siempre como `Nom_Multi (Nombre1 Nombre2 Nombre3...)`, con los nombres de juego de todas las cuentas de la persona; si Nom_Multi está vacío se usa el nombre del juego.
+
+Todo lo demás (`COL_INICIO_GRID = 17`, encabezados en fila 3, datos desde fila 4, campo Jugador/Nom_Multi y su uso para etiquetar en WhatsApp) ya está en **22B007** y **11B001**. El texto sobre "CAMPO JUGADOR (col 4)" estaba desactualizado: la columna "Jugador" se quitó de Control el 03-ago-2026 y hoy la columna 4 es Nom_Multi.
+
+#### 47B009 — líneas 257-259 (comentario)
+
+```text
+SECCIÓN 1: FUNCIONES MANUALES (entry points de mantenimiento, ejecutar a mano
+desde el editor de Apps Script). Reordenado el 23-ago-2026 (pedido usuario).
+Ninguna tiene función _continuarX asociada.
+```
+
+#### 47B010 — líneas 262-282 (docblock)
+
+```text
+MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps Script
+(seleccionar esta función en el desplegable y presionar "Ejecutar") sobre
+una hoja Control YA EXISTENTE que todavía tenga el layout viejo (116
+columnas: 4 métricas de 25 columnas cada una, sin Total/%/Prom).
+
+Inserta las columnas nuevas EN LA HOJA REAL (no reconstruye desde cero, así
+que ningún dato existente se pierde ni se mueve de fila):
+  - Ataques:  +Total, +% (a la derecha de Tsem5 de Ataques, col 41)
+  - Puntaje:  +Prom, +% (a la derecha de Tsem5 de Puntaje, col 66 -> 68
+              tras la inserción anterior)
+  - Barcos:   +Total (a la derecha de Tsem5 de Barcos, col 116 -> 120 tras
+              las dos inserciones anteriores)
+Al final repinta las 3 filas de encabezado completas (_pintarEncabezadosControl,
+02_Setup_Hojas.gs) para que las nuevas columnas queden con su título, su "Sem N"/
+"Total"/"%"/"Prom" y sus bordes — sin tocar los datos de las filas 4+.
+
+Después de correr esto UNA vez, ejecuta updateControlSheet() (o espera a
+la siguiente corrida automática) para que las columnas nuevas se llenen
+con valores.
+```
+
+
+### Ubicación: `migrarControlColumnasExtra`
+
+#### 47B011 — líneas 295-299 (comentario)
+
+```text
+Layout ANTES de esta migración (COL_INICIO_GRID=17, 4 métricas x25 cols):
+  Ataques   17-41  (Tsem5 en 41)
+  Puntaje   42-66  (Tsem5 en 66)
+  Acumulado 67-91
+  Barcos    92-116 (Tsem5 en 116)
+```
+
+#### 47B012 — líneas 319-328 (docblock)
+
+```text
+MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps Script
+sobre una hoja Control YA EXISTENTE que todavía tenga 16 columnas fijas
+(layout previo a agregar la columna "Ascenso"). Inserta una columna nueva
+en la posición 17 (a la derecha de "Ataques pendientes", empujando toda la
+cuadrícula +1 sin mover ni perder ningún dato existente) y repinta los
+encabezados completos. Después de correr esto UNA vez, ejecuta
+updateControlSheet() (o espera a la siguiente corrida automática) para que
+la columna nueva se llené con valores.
+```
+
+
+### Ubicación: `migrarControlColumnaAscenso`
+
+#### 47B013 — líneas 355-367 (docblock)
+
+```text
+migrarControlQuitarJugador()
+MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps
+Script tras subir esta versión (03-ago-2026), si la hoja Control ya
+existía con el layout viejo (17 columnas fijas, con "Jugador" en la
+columna 4). Mismo patrón que migrarLinksQuitarJugador() (47_Migraciones.gs):
+borra físicamente esa columna (desplazando Nom_Multi..Ascenso Y TODA la
+cuadrícula de guerra una posición a la izquierda — deleteColumn() corre
+también las columnas del grid, no solo las fijas) y no pierde datos.
+Repinta encabezados/título y reaplica el formato condicional desde cero
+(setConditionalFormatRules() reemplaza todas las reglas existentes, así
+que no quedan reglas viejas apuntando a columnas corridas).
+```
+
+
+### Ubicación: `migrarControlQuitarJugador`
+
+#### 47B014 — líneas 392-412 (docblock)
+
+```text
+_getOrdenMensajesCategoria()
+FIX (19-ago-2026, pedido usuario): mapa de orden — clave = nombre de
+categoría en minúscula, valor = posición — EXCLUSIVO para
+generarTodosMensajes(), construido a partir de
+CFG.MENSAJES_ORDEN_CATEGORIAS (01_Config_Global.gs), NO de la hoja Extra.
+Antes, Mensajes reutilizaba _getOrdenExtra(ss,'categoria') — el mismo
+orden que usa la hoja Menú (vía _actualizarMenuDinamico(),
+02_Setup_Hojas.gs) — así que un cambio de orden pensado solo para Menú
+(CFG.EXTRA_CATEGORIAS) siempre arrastraba también el orden de
+Mensajes, y viceversa. Ahora son dos arreglos independientes.
+
+Categorías que NO aparecen en CFG.MENSAJES_ORDEN_CATEGORIAS (ej. una
+plantilla Estática nueva agregada en Drive que aún no se contempló
+acá) simplemente no tienen entrada en el mapa devuelto —
+generarTodosMensajes() ya trata eso como 9999 (va al final) y, más
+abajo en esa misma función, la registra dinámicamente vía
+_agregarCategoriaAExtra() (que sigue escribiendo en la hoja Extra —
+eso no cambia, solo se usa como último recurso para categorías
+imprevistas, nunca como fuente principal del orden de Mensajes).
+```
+
+#### 47B015 — líneas 414-416 (comentario)
+
+```text
+SECCIÓN 1: FUNCIONES MANUALES (entry points de mantenimiento, ejecutar a mano
+desde el editor de Apps Script). Reordenado el 23-ago-2026 (pedido usuario).
+Sin función _continuarX asociada.
+```
+
+#### 47B016 — líneas 419-433 (docblock)
+
+```text
+migrarPosicionCategoriaAscensosDescensosEnExtra()
+MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps
+Script (Ejecutar > migrarPosicionCategoriaAscensosDescensosEnExtra) para
+corregir la posición de "Ascensos y descensos" en la hoja real: como se
+agregó ANTES de que _agregarCategoriaAExtra() supiera de
+CATEGORIAS_ANCLA_EXTRA, quedó pegada al final de la columna L
+(Categoría) de Extra en vez de justo después de los torneos.
+
+Esta función mueve esa fila (solo el valor de columna L, sin tocar el
+resto de columnas de referencia de la hoja, que son listas
+independientes) a la posición que le correspondería si se agregara hoy
+con la ancla ya activa. Es idempotente: si ya está en la posición
+correcta, no hace nada.
+```
+
+
+### Ubicación: `migrarPosicionCategoriaAscensosDescensosEnExtra`
+
+#### 47B017 — líneas 486-494 (comentario)
+
+```text
+BAJA DEFINITIVA (14-sep-2026, pedido del usuario -- Fase 9 completa,
+continuación de la limpieza de T_Requisitos): se quita
+migrarOrdenCategoriasTRequisitos() -- era una migración de una sola vez
+(FASE 28, 11/08/2026) ya ejecutada hace tiempo, y que además operaba
+sobre la hoja T_Requisitos, dada de baja junto con el resto del código
+asociado (ver 27_Torneos_Sorteos_Requisitos.gs). Llamaba a
+setupTRequisitosFormato() al final, función también removida de ese
+archivo -- de haber quedado, esta función habría roto con
+ReferenceError apenas se la intentara correr de nuevo.
+```
+
+#### 47B018 — líneas 501-514 (docblock)
+
+```text
+migrarFuncionCorregirAutorATodosLosAdmins()
+MANTENIMIENTO MANUAL: ejecutar UNA vez desde el editor de Apps Script,
+ANTES de abrir el panel de permisos. Hasta hoy cualquier admin con sesión
+podía corregir el Autor de un ascenso/descenso; desde este cambio hace
+falta la Función 'Corregir autor'. Esta función se la agrega a todos los
+admins que ya tienen alguna Función escrita, para que nadie pierda de golpe
+lo que ya podía hacer; después Diana quita la casilla a quien corresponda.
+Idempotente: volver a correrla no repite nada. No toca:
+  - celdas vacías (esas las llena actualizarDropdownCatDisp() con los
+    valores por defecto, que NO incluyen 'Corregir autor'),
+  - celdas en "(ninguna)" (Diana ya le quitó todo a ese admin a propósito).
+No escribe celulares ni claves en el registro, solo cantidades.
+```
+
+
+### Ubicación: `migrarFuncionCorregirAutorATodosLosAdmins`
+
+#### 47B019 — líneas 546-552 (docblock)
+
+```text
+migrarFuncionActualizarRosterATodosLosAdmins()
+MANTENIMIENTO MANUAL: ejecutar UNA vez desde el editor. Agrega la Funcion 'Actualizar roster' a todos los admin que
+ya tienen alguna Funcion escrita (los de celda vacia la reciben solos con la lista por defecto de
+actualizarDropdownCatDisp()). No toca las celdas en "(ninguna)" (a ese admin se le quito todo a proposito).
+Idempotente. Despues, la casilla se quita por admin desde permisos.html.
+```
+
+
+### Ubicación: `migrarFuncionActualizarRosterATodosLosAdmins`
+
+#### 47B020 — líneas 584-624 (comentario)
+
+```text
+Sistema de reenumeración de temporadas — cambia UNA sola fecha Ref (y el
+Offset de RoyaleAPI, en consecuencia) y propaga el mismo delta de meses a
+todo número de "Temporada" ya guardado, en CSVs y hojas por igual.
+
+FUNCIÓN MANUAL, de ejecución manual únicamente — nada de este archivo se
+engancha a runAll()/runUpdate() ni a ningún trigger automático. Se corre
+a propósito, una vez, desde el editor de Apps Script (o desde donde el
+usuario decida invocar runReenumerarTemporadas('YYYY-MM-DD')).
+
+TODAVÍA NO conecta el detector automático de RoyaleAPI — esta etapa deja
+el sistema LISTO para reenumerar cambiando Ref a mano; la detección
+automática de cuándo reenumerar queda para más adelante.
+
+PRINCIPIO CONFIRMADO: temporadaPropia = temporadaRoyaleApi - OFFSET es un
+simple desfase constante. Cambiar Ref y Offset al mismo tiempo, de forma
+consistente, NO requiere recalcular ningún DiaGuerra — la fecha real de
+cada día de guerra ya calculada queda idéntica:
+
+  primerLunesTemporada(ref, temporada):
+    mes_total = ref.mes + (temporada - 1)
+
+  Si ref retrocede deltaMeses y temporada sube deltaMeses:
+    mes_total_nuevo = (ref.mes - deltaMeses) + (temporada + deltaMeses - 1)
+                    = ref.mes + temporada - 1
+                    = mes_total_viejo
+
+  => primerLunesTemporada() da la MISMA fecha
+  => calcDiaGuerraIdx() (que solo le suma el mismo periodIndex) también
+  => DiaGuerra queda idéntico, sin necesidad de recalcularlo
+
+Por eso este archivo NUNCA toca DiaGuerra, Fecha ni PeriodIndex en ningún
+lado — solo suma/resta deltaMeses en cada columna "Temporada" guardada.
+
+QUÉ NO SE TOCA (confirmado):
+  - Mensajes, Calendario (hoja 1): se regeneran enteras cada corrida
+    desde ctx.temporada, no guardan historial propio.
+  - Ascensos/Historial_A-D, Historial_I/S, Comentarios: no tienen columna
+    Temporada.
+  - CSV de debug de "Nuevos" del userscript (Tag|Temporada|Fecha|...):
+    esa "Temporada" es la numeración cruda de RoyaleAPI, nunca la
+    interna — no se toca.
+```
+
+#### 47B021 — líneas 627-643 (docblock)
+
+```text
+runReenumerarTemporadas(nuevaFechaRefStr)
+Punto de entrada MANUAL. `nuevaFechaRefStr` en formato 'YYYY-MM-DD' — la
+nueva fecha de Ref (primer lunes de la Temporada 1 bajo la nueva
+numeración).
+
+Reutiliza el mismo motor de tandas/continuación que ya usan
+runAll()/runUpdate() (_ejecutarPorTandas(), 00_Main.gs), porque Guerra
+puede tener miles de filas y una sola ejecución de Apps Script podría no
+alcanzar a reenumerar todo.
+
+ESTADO ENTRE TANDAS: cada continuación es una ejecución nueva de Apps
+Script (memoria reiniciada), así que deltaMeses/nuevaFechaRef NO pueden
+vivir en una variable JS normal entre pasos — se guardan en
+PropertiesService apenas arranca la función y cada paso los relee de ahí
+(mismo patrón que ya usa RUNALL_PASO/CACHE_CLAN_DATA).
+```
+
+
+### Ubicación: `runReenumerarTemporadas`
+
+#### 47B022 — líneas 675-697 (comentario)
+
+```text
+PUNTO 2 (Consolidado_Cambios_Pendientes_Guerra.md) — DETECCIÓN AUTOMÁTICA
+(SOLO SUGERENCIA) de la temporada más antigua con presencia Terna.
+
+DECIDIDO (pregunta abierta 5): esta detección NUNCA dispara la
+reenumeración por su cuenta. detectarTemporadaMasAntiguaConPresenciaTerna()
+solo escribe el resultado en el log (y lo guarda en PropertiesService para
+que ejecutarReenumeracionSugerida() lo pueda reutilizar sin que el usuario
+tenga que copiar la fecha a mano) — no llama a runReenumerarTemporadas()
+ni a ninguna otra función que modifique datos. Corre bajo demanda, nunca
+integrada a PASOS_RUNALL/PASOS_RUNUPDATE ni a PASOS_REENUMERAR_TEMPORADAS.
+
+NOTA sobre el "nuevo requisito" de continuación de esta ronda (guardar
+progreso + programar continuación automática si runReenumerarTemporadas()
+no alcanza a terminar en 6 minutos): YA ESTÁ IMPLEMENTADO — ver
+runReenumerarTemporadas()/_continuarReenumerarTemporadas() arriba, que
+reutilizan el mismo motor de tandas/continuación que runAll()/runUpdate()
+(_ejecutarPorTandas(), 00_Main.gs): guarda REENUM_PASO en PropertiesService,
+programa un trigger de continuación a los 10s si se agota el presupuesto
+(_programarContinuacion()), y se auto-elimina el trigger al terminar
+(_borrarTriggersDeContinuacion()). Los pasos sobre CSV grandes
+(_reenumerarCSV()) además tienen SU PROPIO presupuesto interno por
+archivo (REENUM_CSV_IDX_<archivo>), igual que respaldarHojasDerivadasCSV()
+(05_Backup_CSV.gs). No se duplica nada de esto acá.
+```
+
+#### 47B023 — líneas 700-730 (docblock)
+
+```text
+detectarTemporadaMasAntiguaConPresenciaTerna()
+MANUAL, DE SOLO SUGERENCIA — nunca modifica datos ni llama a
+runReenumerarTemporadas(). Cruza dos fuentes para encontrar la fecha real
+más antigua con presencia confirmada de algún miembro en un clan Terna:
+
+  1) Backup_Guerra.csv (histórico completo, ver 17_GuerraSheet.gs): la
+     fila con Fecha más antigua cuyo Clan (GC.CLAN, nombre real escrito
+     por updateGuerraSheet()) coincida con alguno de los 4 clanes Terna
+     actuales (_getNombresClanesTernaOrdenados(), 01_Config_Global.gs).
+     En la práctica TODA fila de Backup_Guerra.csv ya es de un clan
+     Terna (updateGuerraSheet() solo recorre CFG.TERNA_TAGS), así que
+     este filtro es más una salvaguarda que una necesidad real hoy —
+     pero se aplica igual, tal como lo pide el punto 2 del Consolidado,
+     por si la fuente cambiara en el futuro.
+  2) Hoja Nuevos (historial importado por RoyaleAPI vía Tampermonkey,
+     ver 14_Nuevos_RoyaleAPI.gs): cada bloque de fecha de la cuadrícula
+     (_leerBloquesFechaNuevos()) tiene una sub-columna "Clan" por
+     candidato — si algún candidato tiene ese clan (de esa fecha)
+     coincidiendo con un clan Terna, esa fecha de bloque es candidata.
+     Este historial puede llegar más atrás que Backup_Guerra.csv para
+     jugadores que se unieron después pero cuyo historial de RoyaleAPI
+     cubre semanas anteriores a que el sistema propio empezara a
+     registrar guerras.
+
+Se queda con la fecha MÁS ANTIGUA de ambas fuentes y la deja en el log,
+junto con qué fuente la determinó — y la guarda en PropertiesService
+(REENUM_SUGERENCIA_FECHA / REENUM_SUGERENCIA_FUENTE) para que
+ejecutarReenumeracionSugerida() la pueda aplicar sin que el usuario tenga
+que volver a escribirla.
+```
+
+
+### Ubicación: `detectarTemporadaMasAntiguaConPresenciaTerna`
+
+#### 47B024 — líneas 770-774 (docblock)
+
+```text
+_buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna)
+Ver detectarTemporadaMasAntiguaConPresenciaTerna(), fuente 1.
+@return {Date|null}
+```
+
+
+### Ubicación: `_buscarFechaMasAntiguaTernaEnBackupGuerra`
+
+#### 47B025 — líneas 798-808 (docblock)
+
+```text
+_buscarFechaMasAntiguaTernaEnNuevos(nombresTerna)
+Ver detectarTemporadaMasAntiguaConPresenciaTerna(), fuente 2. Recorre
+cada bloque de fecha de la hoja Nuevos (_leerBloquesFechaNuevos(),
+14_Nuevos_RoyaleAPI.gs) y, dentro de ese bloque, su sub-columna "Clan"
+(offset 0 de las 4 columnas del bloque — Clan|Ataques|Fame|Barcos, ver
+_pintarEncabezadosNuevos()) para cada candidato ya importado. Si algún
+candidato tiene ese clan (de esa fecha) coincidiendo con un clan Terna,
+la fecha de ese bloque es candidata.
+@return {Date|null}
+```
+
+
+### Ubicación: `_buscarFechaMasAntiguaTernaEnNuevos`
+
+#### 47B026 — líneas 845-857 (docblock)
+
+```text
+ejecutarReenumeracionSugerida(fechaRefStr)
+MANUAL — el usuario la corre A MANO, después de revisar en el log la
+sugerencia dejada por detectarTemporadaMasAntiguaConPresenciaTerna()
+(DECIDIDO, pregunta abierta 5: la detección nunca dispara esto sola).
+
+@param {string} [fechaRefStr] 'YYYY-MM-DD'. Si se omite, usa la última
+  sugerencia guardada por detectarTemporadaMasAntiguaConPresenciaTerna()
+  (PropertiesService: REENUM_SUGERENCIA_FECHA) — el usuario puede pasar
+  cualquier otra fecha si prefiere no usar la sugerida, tal como pide el
+  Consolidado ("o con la fecha que el usuario decida, no necesariamente
+  la sugerida").
+```
+
+
+### Ubicación: `_migrarColumnaPrestamoEnHoja`
+
+#### 47B027 — líneas 933-940 (docblock)
+
+```text
+_continuarReenumerarTemporadas()
+Punto de entrada tanto de runReenumerarTemporadas() como del trigger de
+continuación automática. NO debe llamarse directamente para iniciar una
+corrida nueva (usar runReenumerarTemporadas()), porque no adquiere el
+lock — solo lo usa el trigger interno para reanudar una corrida ya en
+curso.
+```
+
+
+### Ubicación: `_continuarReenumerarTemporadas`
+
+#### 47B028 — líneas 969-992 (docblock)
+
+```text
+_reenumerarCSV(filename, colMap, totalCols, colTemporada)
+Suma REENUM_DELTA_MESES a la columna `colTemporada` (1-based) de TODAS
+las filas de `filename` (CSV en Drive) y lo reescribe.
+
+`colMap` no se usa para indexar (colTemporada ya viene resuelto) — solo
+se recibe para que la lista de pasos (PASOS_REENUMERAR_TEMPORADAS) quede
+autoexplicativa sobre qué mapa de columnas corresponde a cada archivo;
+puede venir `null` (ej. Backup_Calendario_2.csv, que no tiene un CC
+dedicado).
+
+REANUDABLE: sigue el mismo patrón con presupuesto interno que ya usa
+respaldarHojasDerivadasCSV() (05_Backup_CSV.gs) — si el archivo es grande
+(ej. Backup_Guerra.csv, miles de filas) y se acerca al borde del
+presupuesto (CFG.RESPALDO_DERIVADAS_BUDGET_MS), guarda el progreso ya
+sumado hasta ese punto, recuerda en qué fila se quedó
+(REENUM_CSV_IDX_<filename>) y devuelve `false` — así el guardián de
+_ejecutarPorTandas() reintenta el MISMO paso en la próxima continuación,
+retomando justo donde quedó en vez de perder progreso ni duplicar el
+delta ya aplicado.
+
+@returns {boolean} true si terminó todo el archivo, false si quedó
+         incompleto (presupuesto interno agotado) y hay que reintentar.
+```
+
+
+### Ubicación: `_reenumerarCSV`
+
+#### 47B029 — líneas 1039-1060 (docblock)
+
+```text
+_reenumerarHoja(sheetName, colMap, totalCols, colTemporada, filaInicio)
+Suma REENUM_DELTA_MESES a la columna `colTemporada` (1-based) de TODAS
+las filas de datos de la hoja `sheetName`.
+
+`colMap` no se usa para indexar (mismo motivo que en _reenumerarCSV) —
+solo deja explícito en el llamador qué mapa de columnas corresponde.
+
+`filaInicio` (opcional, default 2): primera fila de DATOS reales.
+FIX (09-sep-2026, pedido usuario — Consolidado_Cambios_Pendientes_
+Torneos_Sorteos.md): T_Lista ahora tiene header de 2 filas (fila 1
+merges, fila 2 sub-encabezados C1-C4 -- ver _setupTLista(),
+02_Setup_Hojas.gs), así que sus datos arrancan en la fila 3, no en la 2.
+El resto de hojas que usan esta función (ej. Guerra) siguen con header
+de 1 fila, por eso el default se mantiene en 2 para no romperlas.
+
+Sin presupuesto interno propio: a diferencia de los CSV (que acumulan
+TODO el histórico), estas hojas solo guardan la temporada/semana
+ACTUALMENTE vigente (ver docblocks de 17_GuerraSheet.gs y 26_Torneos_Core.gs),
+así que su volumen de filas está acotado y una sola tanda alcanza sin
+riesgo de superar el presupuesto.
+```
+
+
+### Ubicación: `_reenumerarHoja`
+
+#### 47B030 — líneas 1083-1089 (docblock)
+
+```text
+_reenumerarCalendario2Hoja()
+Caso especial de _reenumerarHoja(): Calendario_2 no tiene un mapa de
+columnas (CC) dedicado en ningún archivo — sus 6 columnas fijas son
+N°|Fecha|Temporada|Semana|DiaLetra|Nota (ver updateCalendario2(),
+22_ControlCalendario.gs), con Temporada en la columna 3.
+```
+
+
+### Ubicación: `_reenumerarCalendario2Hoja`
+
+#### 47B031 — líneas 1111-1121 (docblock)
+
+```text
+_reenumerarCorreccionesGuerraCSV()
+Distinto a los demás: en Correcciones_Guerra.csv "Temporada" es parte de
+la CLAVE del overlay ("temporada|semana|clantag|tag" desde el 29-sep-2026, ver
+_cargarOverlayCorreccionesGuerraPorClan()/_guardarOverlayCorreccionesGuerra(),
+18_CorreccionGuerra.gs), no solo un valor de columna — hay que
+reconstruir cada clave con la nueva temporada y volver a armar el mapa
+completo antes de guardar. Reutiliza esas dos funciones existentes en
+vez de leer/escribir el CSV a mano, para no duplicar esa lógica (orden
+numérico de escritura, deduplicación, etc.) acá.
+```
+
+
+### Ubicación: `_reenumerarCorreccionesGuerraCSV`
+
+#### 47B032 — líneas 1148-1155 (docblock)
+
+```text
+_finalizarReenumeracion()
+Último paso de PASOS_REENUMERAR_TEMPORADAS: activa la nueva Ref y el
+nuevo Offset de RoyaleAPI (los getters/helper de CFG.REF_DEFAULT y
+_getTemporadaOffsetRoyaleApi() los leen de acá en adelante), y refresca
+Extra + Calendario de inmediato en pantalla, sin esperar el próximo
+runAll()/runUpdate() automático.
+```
+
+
+# Archivo 38_Web_Endpoints.gs
+
+Router web global de Apps Script: `doGet` (endpoint de contactos, dashboard HTML/JSON, webhook de verificación de WhatsApp y todas las acciones `web*` del portal y del panel admin) y `doPost`, más el generador del dashboard y los datos de guerra del dashboard. Se procesa por partes: **parte 1 = líneas 1-1585** (cabecera, tokens, rate limits y `doGet` completo, hasta antes del docblock de `doPost`); **parte 2 = líneas 1583-2699** (`doPost`, helpers de contactos y primera mitad del dashboard); **parte 3 = línea 2700 hasta el final** (cálculos de guerra del dashboard y generador del HTML); las partes siguientes agregan filas al índice y bloques al detalle. Los IDs de bloque llevan prefijo `38`. Los números de línea son los del archivo original ANTES de la limpieza.
+
+### Notas de la parte 1 (07-oct-2026)
+
+- **Referencias viejas a `44_BotWhatsApp.gs` para `doPost()`** (bloque 38B005, y el docblock de `doPost` en la parte 2): vienen de la numeración anterior. Hoy `doPost` vive en este archivo (`38_Web_Endpoints.gs`); `44_BotWhatsApp.gs` solo tiene la lógica de conversación del bot.
+- **Corrección a 38B038 (`webBattlelogJugador`):** el comentario original decía que llama en vivo a la API de Clash Royale y no guarda nada. Es incorrecto desde el 29-sep-2026: `_webBattlelogJugador()` (37_Web_API.gs) lee el JSON de Drive con una descarga por Tag y por día, igual que `webCofresJugador` (cambio ya anotado en 38B037). El texto original se deja intacto como historial.
+- **38B002** es el texto de cabecera de `09_API_ClashRoyale.gs` que quedó pegado en este archivo. No figura en 09B001 (que es otra cabecera, más nueva). Se conserva completo porque contiene el esquema de carpetas y de nombres de archivo del cache en Drive y la decisión de la Fase 18 (un solo archivo vigente por cuenta en `/players`). La sección B de ese texto (endpoint de contactos) sí corresponde a este archivo. **Pendiente de definir:** si se mueve esa documentación a la sección de 09 cuando se revise su código, o se deja aquí como historial.
+- **Pendientes abiertos que venían en 38B001 (AVISOS ABIERTOS, 28-sep-2026):** (1) VERIFICAR en guerra.html que cada pestaña de clan muestre Líder, Colíderes, Veteranos y Miembros en ese orden (Fase 3b); (2) PENDIENTE DE DEFINIR Fase 3a: que las cuentas que no estaban en el clan no aparezcan con ceros (hoy se oculta solo por Fecha_ing, pregunta 30 del consolidado); (3) PRUEBA PENDIENTE en Apps Script real de `sesionVencida:true` con token vencido o cerrado desde otro dispositivo, y de que `webCofresJugador`/`webBattlelogJugador` sigan respondiendo igual. Siguen sin confirmarse; la línea corta del `.gs` los menciona.
+
+
+### Notas de la parte 2 (07-oct-2026)
+
+Bloques 38B070 a 38B116, líneas originales 1583-2680: `doPost` completo (rutas POST del portal web y endpoints Tampermonkey), los helpers del endpoint de contactos y la primera mitad del bloque del dashboard (hasta `_diagGuerraVivo_`/`verDiagnosticoGuerraVivo`). Queda para la parte 3 desde el docblock de `_getDatosDashboardCalcular_()` (línea original 2700 aprox.) hasta el final. El código no cambió (comparado sin comentarios) y la sintaxis pasa con Node; no se probó en Apps Script real.
+
+- **Corrección a 38B070 (docblock y banner de `doPost`):** el texto dice que `doPost` "por ahora solo deja la estructura lista" y que el envío real se implementa cuando haya token y Phone Number ID. Está desactualizado: `doPost` ya enruta todas las acciones POST `web*` del portal, el login y los tres endpoints de Tampermonkey. La lógica de conversación del bot está en `44_BotWhatsApp.gs`. El bot estuvo conectado un tiempo y hoy está inactivo por falta de chip; el código se conserva por decisión del usuario (ver 44B001). El texto original se deja intacto como historial.
+- **Corrección a 38B072 (rate limit de login):** menciona un tope genérico de "90/min GLOBAL". Desde el FIX B-30 (18-sep-2026) el tope es 180/min para público y 240/min para admin con sesión válida (ver 38B007 y 38B008).
+- **38B100 (`_normalizarClanTagContactos`) está duplicada a propósito:** la función equivalente de `16_ContactsSync.gs` es un closure local dentro de `SincronizarContactosNube()`, no es global. Si cambia el criterio de normalización en 16, hay que cambiarlo también aquí.
+- **38B102 (`_generarJsonContactos`):** desde el 15-sep-2026 usa `_leerDirectorioFisicoComoDC()` (formato DC de 60 columnas) y, si la hoja Directorio no está, `Backup_Directorio.csv` (también en DC). No usar `DIR_SHEET_COLS` (formato IC de 29 columnas) con ese CSV: corrompería el JSON en silencio.
+- **38B081 (torneos) y la nota "PENDIENTE BACKEND":** el bloque menciona que `admin.html` marcaba como pendiente el envío de `tagOrg/clanOrg/clanTagOrg`; el mismo bloque documenta que el 12-sep-2026 ya se reenvían en Registrar, Planificar y Modificar. Se considera resuelto.
+- **38B078 (`webAdminActualizarRoster`):** responde de inmediato y el trabajo corre en un disparador de un solo uso.
+- **Bloques de diagnóstico del dashboard (38B108 a 38B116):** son instrumentación de rendimiento de `webGuerraEnVivo` del 19-sep-2026 (memos por ejecución, cronómetro por etapas, `verDiagnosticoGuerraVivo()`). No cambian ningún resultado; se pueden retirar si ya no se necesitan.
+
+
+### Notas de la parte 3 (07-oct-2026)
+
+Bloques 38B117 a 38B195, líneas originales 2700 hasta el final del archivo (`_getDatosDashboardCalcular_` en adelante: cálculos de guerra del dashboard, cuadrículas de Valores diarios y Valores semanales, aportes de inactivos, helpers de clan y generador del HTML). Con esta parte **38 queda completo**. El código no cambió (comparado sin comentarios; solo se acortaron 3 comentarios en línea largos: 38B127, 38B143 y 38B159) y la sintaxis pasa con Node; no se probó en Apps Script real. Se dejaron en el `.gs`, sin mover, los rótulos de una sola línea cortos (por ejemplo "---- Bloque: Estado de guerra por clan ----").
+
+- **Corrección a 38B167 (docblock de `_getControlTemporadaPorClan`):** el docblock habla de "ancho fijo de 5 semanas" y de `semanas` = 'Sem 1'..'Sem 5'. Está superado por el FIX del 05-oct-2026 (comentario en línea de la misma función): hoy las columnas son `numSemanasTemporada` (4 o 5 según los lunes del mes de la temporada). El texto original se deja como historial.
+- **Docblock de `_getControlActivosGridPorTemporada` (38B155):** documenta 4 parámetros (`dataDir, temporada, temporadaReal, semanas`) pero la función recibe además `ctxVigente`. Falta ese parámetro en el docblock.
+- **Docblock de `_getAportesInactivosSemanaActual` (38B183):** dice que cada lista va ordenada por total de Ataques descendente. Esa función no se tocó en el cambio de orden por rango del 28-sep-2026 (Fase 3b), que sí aplica a Valores diarios y Valores semanales.
+- **Docblock de `_getNombreClanDump` (38B191):** dice "desde cache o API". Desde el 19-sep y el 02-oct-2026 también usa la hoja Clan (dentro del dashboard) y el último checkpoint de clanes en Drive antes de llamar a la API.
+- **Referencia numérica vieja (38B142, bloque de `tiempos`):** el comentario sobre `_tiemposActualizacionWeb_()` habla de "subir este archivo antes que el 51"; hoy esa función vive en `42_Web_TiemposActualizacion.gs`. Es numeración anterior; no se tocó el texto.
+- **Pendiente abierto en 38B126 (`metaCruzada`, 05-oct-2026):** "VERIFICAR el tiempo de ?dashboard=json tras desplegar". No hay confirmación de que se haya hecho.
+- **Criterio de meta cruzada (38B127, comentario en línea del 07-oct-2026):** viernes a domingo se evalúan con Guerra_Logs porque Supercell no confirma desde qué día se puede cruzar la meta. Es el mismo criterio de `_diasOpcionalesClanSemana_()`.
+- **Renombre:** los comentarios que hablan de "Cuadrícula de Activos (Semana Actual)" se refieren a lo que hoy se llama "Valores diarios", y "Cuadrícula de Temporada (Semanal)" a "Valores semanales".
+
+
+## Índice de bloques movidos
+
+| ID | Líneas orig. | Ubicación | Resumen |
+|---|---|---|---|
+| 38B001 | 8-30 | `Cabecera del archivo` | AVISOS ABIERTOS (28-sep-2026, Fase 3 del consolidado de fases) |
+| 38B002 | 34-89 | `Cabecera del archivo` | 09_API_ClashRoyale.gs |
+| 38B003 | 91-99 | `Cabecera del archivo` | TOKEN DE SEGURIDAD — endpoint de contactos |
+| 38B004 | 102-118 | `CONTACTOS_TOKEN` | TOKEN DE SEGURIDAD — dashboard de administradores |
+| 38B005 | 121-129 | `DASHBOARD_TOKEN` | TOKEN DE SEGURIDAD — corrección de guerra (Tampermonkey, ver |
+| 38B006 | 132-150 | `CORRECCION_GUERRA_TOKEN` | RATE LIMIT BÁSICO — acciones públicas del portal web (accion=web*, doGet). |
+| 38B007 | 151 | `CORRECCION_GUERRA_TOKEN` | FIX B-30 (auditoría backend, 18-sep-2026): antes 90. Cada carga de página dispar |
+| 38B008 | 153-161 | `WEB_RATE_LIMIT_MAX_POR_MINUTO` | FIX B-30 (auditoría backend, 18-sep-2026): contador APARTE para pedidos |
+| 38B009 | 164-178 | `WEB_RATE_LIMIT_ADMIN_MAX_POR_MINUTO` | _webRateLimitExcedido(sessionTokenValido) |
+| 38B010 | 196-202 | `_webRateLimitExcedido` | _webRespuesta429() |
+| 38B011 | 209-224 | `_webRespuesta429` | RATE LIMIT ESPECÍFICO — login de admin (webLogin, doPost). Pedido de |
+| 38B012 | 228-239 | `WEB_LOGIN_RATE_LIMIT_VENTANA_SEG` | _webLoginRateLimitExcedido(celular) |
+| 38B013 | 256-261 | `_webLoginRateLimitExcedido` | _webRespuesta429Login() |
+| 38B014 | 268-294 | `_webRespuesta429Login` | _webMarcarSesionVencida(resultado, sessionToken, esAdminValido) |
+| 38B015 | 316-327 | `_webMarcarSesionVencida` | B) ENDPOINT SEGURO DE CONTACTOS (doGet) |
+| 38B016 | 329-337 | `_webMarcarSesionVencida` | doGet(e) |
+| 38B017 | 339-342 | `doGet` | Verificación del webhook de WhatsApp (Meta hace este GET una sola vez, |
+| 38B018 | 351-356 | `doGet` | Modo JSON (24-ago-2026, pedido usuario): mismo token y misma fuente de |
+| 38B019 | 389-391 | `doGet` | Endpoint de corrección de guerra (Tampermonkey) — ver 18_CorreccionGuerra.gs. |
+| 38B020 | 428-445 | `doGet` | PORTAL WEB PÚBLICO (grupoterna.github.io/Web) — ver 37_Web_API.gs. |
+| 38B021 | 467-469 | `doGet` | FASE 0 (24-ago-2026, pedido del usuario): info real de los 4 clanes |
+| 38B022 | 487-503 | `doGet` | FIX (30-ago-2026, pedido usuario — revisión de seguridad): guerra.html |
+| 38B023 | 521-529 | `doGet` | NUEVO (re-aplicado 19-sep-2026 -- quedó pendiente de una sesión |
+| 38B024 | 547-550 | `doGet` | CAMBIO (28-sep-2026, Fase 5b tanda A): sessionToken es OPCIONAL. Si llega y |
+| 38B025 | 568-575 | `doGet` | FASE 1 (24-ago-2026, pedido del usuario): torneos públicos — listado + |
+| 38B026 | 593-598 | `doGet` | FASE 9 (30-ago-2026, pedido del usuario): "salón de la fama" — top 3 |
+| 38B027 | 616-618 | `doGet` | FASE 10 (30-ago-2026, pedido del usuario): "Rankings" público — top 10 |
+| 38B028 | 636-638 | `doGet` | FASE 10 (30-ago-2026, pedido del usuario): "Aniversarios en la |
+| 38B029 | 656-660 | `doGet` | FASE 10 (30-ago-2026, pedido del usuario): comparador de jugadores. |
+| 38B030 | 678-686 | `doGet` | FASE 25 (02-sep-2026, pedido del usuario, punto 9 del PDF de torneos — |
+| 38B031 | 704-714 | `doGet` | FASE 13 punto 1 del plan de cambios web (07-sep-2026, vista (a) del |
+| 38B032 | 732-740 | `doGet` | NUEVO (19-sep-2026, pedido del usuario -- "Botones Jue-Dom (siguiente |
+| 38B033 | 758-763 | `doGet` | FASE 10 (30-ago-2026, pedido del usuario): estadísticas de mazos/ |
+| 38B034 | 781-787 | `doGet` | FASE 6 (28-ago-2026, pedido del usuario): "Ingresos recientes" público — |
+| 38B035 | 805-809 | `doGet` | FASE 8 (30-ago-2026, pedido del usuario): "Ascensos recientes" público |
+| 38B036 | 827-833 | `doGet` | FASE 7 (29-ago-2026, pedido del usuario): participación de UN jugador |
+| 38B037 | 851-861 | `doGet` | NUEVO (27-sep-2026, pedido del usuario): ciclo de cofres (cola de |
+| 38B038 | 879-884 | `doGet` | NUEVO (27-sep-2026, pedido usuario, "haz lo mismo para battlelog"): |
+| 38B039 | 914-917 | `doGet` | FIX (09-sep-2026, pedido usuario — buscador de "Buscar miembro" con |
+| 38B040 | 930-939 | `doGet` | FASE 2 (04-sep-2026, pedido del usuario, punto 1 del documento de |
+| 38B041 | 952-955 | `doGet` | FIX (03-sep-2026, pedido usuario, punto 17 — "mostrar primero la |
+| 38B042 | 968-972 | `doGet` | FASE 2 (24-ago-2026, pedido del usuario): visor de contenido por |
+| 38B043 | 997-1008 | `doGet` | FIX (05-sep-2026, pedido usuario — panel "Aportes de Inactivos a la |
+| 38B044 | 1021-1031 | `doGet` | FIX (03-sep-2026, pedido usuario — "no me gusta que se vean esos |
+| 38B045 | 1044-1049 | `doGet` | FASE 3 (25-ago-2026, pedido del usuario): gestión de torneos desde el |
+| 38B046 | 1062-1072 | `doGet` | FIX (11-sep-2026, pedido usuario — selector de semanas conectado a un |
+| 38B047 | 1085-1089 | `doGet` | NUEVO (07-oct-2026, pedido del usuario -- selector de semanas de CR_Lista): |
+| 38B048 | 1102-1116 | `doGet` | NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.1, |
+| 38B049 | 1129-1138 | `doGet` | NUEVO (16-sep-2026, pedido del usuario -- botones "↻ Precargar datos |
+| 38B050 | 1151-1157 | `doGet` | NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.1, |
+| 38B051 | 1170-1175 | `doGet` | NUEVO (18-sep-2026, pedido del usuario -- "haz la conexión al backend"): |
+| 38B052 | 1188-1194 | `doGet` | NUEVO (13-sep-2026, pedido del usuario -- Fase 7 del plan de Cambio de |
+| 38B053 | 1231-1235 | `doGet` | NUEVO (13-sep-2026, pedido del usuario -- "fase nueva y chica" que la |
+| 38B054 | 1248-1254 | `doGet` | NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, panel |
+| 38B055 | 1267-1271 | `doGet` | NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, |
+| 38B056 | 1284-1288 | `doGet` | FASE 24 (02-sep-2026, pedido del usuario — descalificaciones y |
+| 38B057 | 1301-1305 | `doGet` | FASE 4 (26-ago-2026, pedido del usuario): registro de miembro nuevo, |
+| 38B058 | 1332-1335 | `doGet` | FIX (05-sep-2026, pedido usuario — "autor del torneo" en el panel): |
+| 38B059 | 1348-1352 | `doGet` | FIX (12-sep-2026, pedido usuario -- panel admin, cuadro "¿Con cuál |
+| 38B060 | 1365-1367 | `doGet` | FASE 7 (29-ago-2026, pedido del usuario): tarjeta adicional de "cuentas |
+| 38B061 | 1380-1382 | `doGet` | FASE 7 (29-ago-2026, pedido del usuario): botón "Ver otras cuentas" del |
+| 38B062 | 1395-1399 | `doGet` | FASE 3 del plan de cambios web (punto 3 de cambios_web.docx): cuentas |
+| 38B063 | 1412-1415 | `doGet` | FASE 8 (30-ago-2026, pedido del usuario): autocompletado de la Ruleta |
+| 38B064 | 1428-1434 | `doGet` | FASE 6 (punto 6 del documento — Detección de infiltrados/sabotaje): |
+| 38B065 | 1448-1454 | `doGet` | FASE 7 (Parte B, 06-sep-2026, punto 7 del documento — edición de autor |
+| 38B066 | 1468-1473 | `doGet` | NUEVO (5-oct-2026, Fase 9 punto (e), "Noticias de la semana" de admin.html): |
+| 38B067 | 1487-1493 | `doGet` | PANEL DE PERMISOS (19-sep-2026, pedido de Diana) — ver el bloque "PANEL DE |
+| 38B068 | 1554-1558 | `doGet` | testContactosEndpoint() |
+| 38B069 | 1565-1572 | `testContactosEndpoint` | testDashboardEndpoint() |
+| 38B070 | 1583-1592 | `testDashboardEndpoint` | PUNTO DE ENTRADA REAL (se completa cuando exista el webhook de Meta) |
+| 38B071 | 1594-1612 | `doPost` | PORTAL WEB PÚBLICO — login de admin y guardado de gestión de miembro. |
+| 38B072 | 1626-1632 | `doPost` | RATE LIMIT ESPECÍFICO DE LOGIN (30-ago-2026, pedido de revisión): |
+| 38B073 | 1636-1638 | `doPost` | FASE 5 (26-ago-2026): el login deja de mandar una única |
+| 38B074 | 1649-1654 | `doPost` | FIX B-27 (auditoría backend, 18-sep-2026): endpoint de cierre de |
+| 38B075 | 1663-1664 | `doPost` | Aun si algo falla parseando el body, el resultado deseado del |
+| 38B076 | 1684-1688 | `doPost` | FASE 4 (26-ago-2026, pedido del usuario): registro de miembro nuevo, |
+| 38B077 | 1703-1704 | `doPost` | FASE 4: vetado de un miembro desde el panel admin — ver |
+| 38B078 | 1719-1722 | `doPost` | NUEVO (05-oct-2026): pedir la actualizacion manual del roster + Pendientes + Men |
+| 38B079 | 1737-1741 | `doPost` | FASE 7 (Parte B, 06-sep-2026, punto 7 del documento): edición del Autor |
+| 38B080 | 1759-1763 | `doPost` | PANEL DE PERMISOS (19-sep-2026, pedido de Diana): guarda Funciones y |
+| 38B081 | 1778-1815 | `doPost` | FASE 3 (25-ago-2026, pedido del usuario): gestión de torneos — registrar |
+| 38B082 | 1843-1846 | `doPost` | FIX (05-sep-2026, pedido usuario — "Planificar torneo"): mismo patrón |
+| 38B083 | 1874-1879 | `doPost` | FIX (12-sep-2026, pedido del usuario -- consolidado sección 5.2/5.3, |
+| 38B084 | 1909-1914 | `doPost` | NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, |
+| 38B085 | 1941-1944 | `doPost` | NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, |
+| 38B086 | 1972-1976 | `doPost` | NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, |
+| 38B087 | 2005-2010 | `doPost` | FASE 24 (02-sep-2026, pedido del usuario — descalificaciones y |
+| 38B088 | 2028-2035 | `doPost` | NUEVO (13-sep-2026, pedido del usuario -- Fase 7 del plan de Cambio de |
+| 38B089 | 2053-2056 | `doPost` | webCRListaGenerarPropuestas: POST porque sí escribe (Historial_A/D) -- |
+| 38B090 | 2075-2081 | `doPost` | NUEVO (13-sep-2026, pedido del usuario -- "fase nueva y chica" que la |
+| 38B091 | 2100-2105 | `doPost` | NUEVO (14-sep-2026, pedido del usuario -- cierre del CONTRATO PENDIENTE |
+| 38B092 | 2124-2130 | `doPost` | FASE (10-sep-2026, pedido del usuario -- consolidado de pendientes, |
+| 38B093 | 2148-2153 | `doPost` | FASE (12-sep-2026, pedido del usuario -- consolidado de pendientes, |
+| 38B094 | 2171-2174 | `doPost` | Endpoint de corrección de guerra (Tampermonkey) — ver 18_CorreccionGuerra.gs. |
+| 38B095 | 2184-2189 | `doPost` | FIX (13-ago-2026, pedido del usuario): log en Drive por botón — ver |
+| 38B096 | 2202-2202 | `doPost` | Endpoint de importación "Nuevos" (Tampermonkey) — ver 14_Nuevos_RoyaleAPI.gs. |
+| 38B097 | 2212-2213 | `doPost` | FIX (13-ago-2026, pedido del usuario): log en Drive por botón — ver |
+| 38B098 | 2225-2227 | `doPost` | Endpoint del histórico de Guerra por jugador (Tampermonkey) — ver |
+| 38B099 | 2248-2252 | `doPost` | Endpoint de "Verificar Semana en Curso" (fase `race`, Tampermonkey) — |
+| 38B100 | 2290-2300 | `doPost` | _normalizarClanTagContactos(tag) |
+| 38B101 | 2305-2323 | `_normalizarClanTagContactos` | _leerMapaCodigosClanContactos() |
+| 38B102 | 2330-2378 | `_leerMapaCodigosClanContactos` | _generarJsonContactos() |
+| 38B103 | 2394-2395 | `_generarJsonContactos` | FIX: mapa de códigos de clan (C-1,2,3,4...), leído UNA vez antes del |
+| 38B104 | 2410-2412 | `_generarJsonContactos` | FIX: código de clan (C-1,2,3,4...) correspondiente a este ClanTag, |
+| 38B105 | 2430-2430 | `_generarJsonContactos` | Ordenar por clan (orden en TERNA_TAGS) y luego por nombre |
+| 38B106 | 2443-2450 | `_generarJsonContactos` | C) DASHBOARD DE ADMINISTRADORES (doGet ?dashboard=1) |
+| 38B107 | 2452-2501 | `_generarJsonContactos` | _getDatosDashboard() |
+| 38B108 | 2503-2508 | `_getDatosDashboard` | 19-sep-2026 (pedido del usuario -- webGuerraEnVivo tardaba 28-39 s): mientras |
+| 38B109 | 2520-2530 | `_getDatosDashboard` | _DASH_MEMO / _getMinGClanMapsDash_() |
+| 38B110 | 2541-2546 | `_getMinGClanMapsDash_` | _nombreClanDesdeHojaClanDash_(clanTag) |
+| 38B111 | 2568-2580 | `_nombreClanDesdeHojaClanDash_` | _leerDirectorioDashboard_(ss) |
+| 38B112 | 2609-2615 | `_leerDirectorioDashboard_` | _dashTiempoIniciar_() / _dashTiempoMarca_() / _dashTiempoFin_() |
+| 38B113 | 2621-2628 | `_dashTiempoIniciar_` | _DASH_T / _dashAcum_(etiqueta, desde) |
+| 38B114 | 2649-2667 | `_dashTiempoFin_` | _diagGuerraVivo_(texto) / verDiagnosticoGuerraVivo() |
+| 38B115 | 2678-2678 | `_diagGuerraVivo_` | La medición completa de la última recalculada tiene su propia clave. |
+| 38B116 | 2680-2680 | `_diagGuerraVivo_` | Los "caché HIT" son decenas por hora y llenaban la lista; no se guardan aquí. |
+| 38B117 | 2700-2705 | `verDiagnosticoGuerraVivo` | _getDatosDashboardCalcular_() |
+| 38B118 | 2713-2727 | `_getDatosDashboardCalcular_` | ---- Guerra de HOY, agregada por clan ---- |
+| 38B119 | 2731-2733 | `_getDatosDashboardCalcular_` | 19-sep-2026: `true` solo si dataGuerra salió de la hoja viva. Se usa más abajo |
+| 38B120 | 2738-2739 | `_getDatosDashboardCalcular_` | 19-sep-2026: mismas filas, mismo rango que lee _getDatosGuerraDesdeHojaParaContr |
+| 38B121 | 2742-2750 | `_getDatosDashboardCalcular_` | FASE (15-sep-2026, pedido del usuario -- fallback web->CSV, continuación |
+| 38B122 | 2754-2765 | `_getDatosDashboardCalcular_` | FIX (05-oct-2026, pedido usuario -- "se dio la indicacion de congelar los |
+| 38B123 | 2773-2775 | `_getDatosDashboardCalcular_` | 2da version (05-oct-2026): la hoja Guerra solo trae la temporada vigente, asi qu |
+| 38B124 | 2793-2802 | `_getDatosDashboardCalcular_` | FIX (04-sep-2026, pedido usuario -- "no se entiende bien de dónde |
+| 38B125 | 2816-2817 | `_getDatosDashboardCalcular_` | `totalHoy` YA NO se incrementa acá (contaba filas de Guerra) -- se |
+| 38B126 | 2821-2826 | `_getDatosDashboardCalcular_` | NUEVO (05-oct-2026, pedido usuario -- "la meta ya cruzada si se debe considerar" |
+| 38B127 | 2827-2827 | `_getDatosDashboardCalcular_` | 07-oct-2026 (criterio unificado, igual que _diasOpcionalesClanSemana_()): vierne |
+| 38B128 | 2844-2848 | `_getDatosDashboardCalcular_` | 10 columnas reales hoy: N°\|Tag\|Nombre\|Nom_Multi\|Préstamo\|Clan\|Faltantes\| |
+| 38B129 | 2851-2865 | `_getDatosDashboardCalcular_` | FASE (15-sep-2026, pedido del usuario -- fallback web->CSV): |
+| 38B130 | 2886-2905 | `_getDatosDashboardCalcular_` | ---- Fechas reales de los 4 días de guerra (Jue-Dom) de la semana vigente ---- |
+| 38B131 | 2921-2941 | `_getDatosDashboardCalcular_` | FIX (10-sep-2026, pedido usuario -- "guerra ya tiene la columna Rango |
+| 38B132 | 2944-2953 | `_getDatosDashboardCalcular_` | FASE (15-sep-2026, pedido del usuario -- fallback web->CSV, continuación |
+| 38B133 | 2955-2960 | `_getDatosDashboardCalcular_` | Fase C1 (16/07/2026): antes leía shDir.getRange(2,1,...,DIR_SHEET_COLS) |
+| 38B134 | 2996-3001 | `_getDatosDashboardCalcular_` | Mismo FIX de arriba: recién acá, con infoDirPorTagDir ya armado, se |
+| 38B135 | 3009-3017 | `_getDatosDashboardCalcular_` | FIX (09-sep-2026, pedido usuario -- ver comentario completo en el |
+| 38B136 | 3024-3029 | `_getDatosDashboardCalcular_` | ---- Lista de temporadas con datos de guerra (más reciente primero) -- |
+| 38B137 | 3033-3044 | `_getDatosDashboardCalcular_` | ---- "Valores diarios" (antes "Cuadrícula de Activos (Semana Actual)") |
+| 38B138 | 3050-3054 | `_getDatosDashboardCalcular_` | ---- Panel "tipo hoja Control_2" — valores SEMANALES de toda la |
+| 38B139 | 3059-3065 | `_getDatosDashboardCalcular_` | ---- FIX (07-sep-2026, pedido usuario -- "Cuadrícula de Temporada debe |
+| 38B140 | 3070-3077 | `_getDatosDashboardCalcular_` | ---- FIX (09-sep-2026, pedido usuario -- "añádele el selector de año y |
+| 38B141 | 3081-3097 | `_getDatosDashboardCalcular_` | ---- Panel de "Ingresos recientes" ---- |
+| 38B142 | 3112-3113 | `_getDatosDashboardCalcular_` | NUEVO (05-oct-2026): horas de actualizacion para la web (ver 42_Web_TiemposActua |
+| 38B143 | 3121-3121 | `_getDatosDashboardCalcular_` | NUEVO 05-oct-2026: J/V/S/D del dia que muestran las tarjetas mientras estan cong |
+| 38B144 | 3137-3145 | `_getDatosDashboardCalcular_` | _webAportesInactivos(token) |
+| 38B145 | 3153-3160 | `_webAportesInactivos` | _MESES_ES_ / _MESES_ABREV_ES_ |
+| 38B146 | 3164-3172 | `_MESES_ABREV_ES_` | _fmtFechaCortaSemana(d) |
+| 38B147 | 3179-3191 | `_fmtFechaCortaSemana` | _elegirPeriodoGuerraCongelado_(dataGuerra, csvPorTemporada, ctx) |
+| 38B148 | 3223-3242 | `_elegirPeriodoGuerraCongelado_` | _getInfoTemporada(temporada) |
+| 38B149 | 3256-3265 | `_getInfoTemporada` | _getRangoFechasSemana(temporada, sectionIndex) |
+| 38B150 | 3276-3294 | `_getRangoFechasSemana` | _getUltimaSemanaJugada(ctx) |
+| 38B151 | 3299-3314 | `_getUltimaSemanaJugada` | _getSemanasTemporada(ctx, temporada) |
+| 38B152 | 3317-3320 | `_getSemanasTemporada` | FIX (05-oct-2026, pedido usuario -- "se mostraba la semana 5 de una temporada qu |
+| 38B153 | 3339-3365 | `_getSemanasTemporada` | _getValoresDiariosSelectores(ctx, temporadasDisponibles) |
+| 38B154 | 3385-3388 | `_getValoresDiariosSelectores` | La PRIMERA temporada de la lista con al menos una semana jugada es, |
+| 38B155 | 3402-3437 | `_getValoresDiariosSelectores` | _getControlActivosGridPorTemporada(dataDir, temporada, temporadaReal, semanas) |
+| 38B156 | 3439-3457 | `_getControlActivosGridPorTemporada` | Tag (mayúsculas) -> {nombre, clan, fechaIngreso}, SOLO Estado=Activo -- |
+| 38B157 | 3478-3485 | `_getControlActivosGridPorTemporada` | FIX (05-oct-2026, pedido usuario -- "el domingo [ultimo dia de la temporada 5] s |
+| 38B158 | 3505-3508 | `_getControlActivosGridPorTemporada` | Solo cuentan los ATAQUES: puntaje y barcos del dia son diferencias de acumulados |
+| 38B159 | 3522-3522 | `_getControlActivosGridPorTemporada` | NUEVO (05-oct-2026): dias opcionales (meta ya cruzada) por clan, para ESTA seman |
+| 38B160 | 3523-3524 | `_getControlActivosGridPorTemporada` | Fin (23:59:59.999) de ESTA semana, para comparar contra fechaIngreso |
+| 38B161 | 3535-3536 | `_getControlActivosGridPorTemporada` | Todavía no había ingresado para el fin de esta semana -- se omite |
+| 38B162 | 3549-3556 | `_getControlActivosGridPorTemporada` | FIX (05-oct-2026, pedido usuario -- "si estuvieron y no atacaron |
+| 38B163 | 3576-3579 | `_getControlActivosGridPorTemporada` | NUEVO (05-oct-2026, pedido usuario -- "marca de meta ya cruzada"): dias de ESTA  |
+| 38B164 | 3586-3587 | `_getControlActivosGridPorTemporada` | FIX 28-sep-2026 (Fase 3b, pedido del docx): orden por rango (lider > colider > v |
+| 38B165 | 3596-3604 | `_getControlActivosGridPorTemporada` | _getValoresDiariosPorSemana(dataDir, ctx, selectores) |
+| 38B166 | 3614-3629 | `_getValoresDiariosPorSemana` | _diasOpcionalesClanSemana_(clan, temporada, sIdx, memo) |
+| 38B167 | 3650-3743 | `_diasOpcionalesClanSemana_` | _getControlTemporadaPorClan(ss, ctx, dataDirParam) |
+| 38B168 | 3749-3752 | `_getControlTemporadaPorClan` | FIX (05-oct-2026, pedido usuario -- "se muestra la temporada 5 semana 5 cuando s |
+| 38B169 | 3757-3764 | `_getControlTemporadaPorClan` | FASE (15-sep-2026, pedido del usuario -- fallback web->CSV): mismo |
+| 38B170 | 3799-3817 | `_getControlTemporadaPorClan` | FIX (10-sep-2026, pedido usuario — "cuentas que han ingresado esta |
+| 38B171 | 3828-3830 | `_getControlTemporadaPorClan` | NUEVO (05-oct-2026, pedido usuario -- umbral del verde semanal): dias opcionales |
+| 38B172 | 3867-3872 | `_getControlTemporadaPorClan` | Sin ningún día registrado esta semana = el jugador no estuvo en |
+| 38B173 | 3875-3877 | `_getControlTemporadaPorClan` | FIX (05-oct-2026, pedido usuario): no estuvo en el clan esa |
+| 38B174 | 3894-3895 | `_getControlTemporadaPorClan` | Desde el 05-oct-2026 el loop ya solo recorre 1..numSemanasTemporada, asi que una |
+| 38B175 | 3901-3904 | `_getControlTemporadaPorClan` | % de Ataques: denominador dinámico (16 * semanas donde el jugador |
+| 38B176 | 3906-3907 | `_getControlTemporadaPorClan` | FIX (05-oct-2026, pedido usuario): el denominador descuenta 4 por cada dia opcio |
+| 38B177 | 3919-3920 | `_getControlTemporadaPorClan` | FIX (05-oct-2026): sin ninguna semana presente en la temporada, los |
+| 38B178 | 3948-3967 | `_getControlTemporadaPorClan` | _getTemporadasDisponibles(ctxReal) |
+| 38B179 | 3973-3978 | `_getTemporadasDisponibles` | 19-sep-2026 (pedido del usuario -- webGuerraEnVivo lento): la lectura + |
+| 38B180 | 3990-4015 | `_getTemporadasDisponibles` | _getControlTemporadaSelectores(ctx, temporadasDisponibles) |
+| 38B181 | 4039-4067 | `_getControlTemporadaSelectores` | _getControlTemporadaPorTemporada(ss, ctxReal, dataDir, temporadas) |
+| 38B182 | 4073-4074 | `_getControlTemporadaPorTemporada` | FIX (07-sep-2026): se pasa ctxReal.temporada explícito -- ver |
+| 38B183 | 4080-4130 | `_getControlTemporadaPorTemporada` | _getAportesInactivosSemanaActual(ss, ctx) |
+| 38B184 | 4132-4146 | `_getAportesInactivosSemanaActual` | FIX (15-sep-2026, barrido de conexión web->CSV): antes, si la hoja |
+| 38B185 | 4158-4159 | `_getAportesInactivosSemanaActual` | Hoja no disponible: Backup_Inactivos.csv, formato DC (60 columnas) — |
+| 38B186 | 4172-4177 | `_getAportesInactivosSemanaActual` | FASE (15-sep-2026, pedido del usuario -- fallback web->CSV): mismo |
+| 38B187 | 4193-4195 | `_getAportesInactivosSemanaActual` | Acumulado de Fame/Barcos por periodo, indexado por Tag+Clan (no solo |
+| 38B188 | 4234-4237 | `_getAportesInactivosSemanaActual` | GC.FAME/GC.BARCOS de esta fila son acumulados de TODA la semana de |
+| 38B189 | 4245-4249 | `_getAportesInactivosSemanaActual` | Segunda pasada: Puntaje/Barcos del día = acumulado de hoy - acumulado |
+| 38B190 | 4304-4308 | `_getAportesInactivosSemanaActual` | _escapeHtmlDash(s) |
+| 38B191 | 4315-4319 | `_escapeHtmlDash` | _getNombreClanDump(clanTag) |
+| 38B192 | 4323-4328 | `_getNombreClanDump` | 19-sep-2026 (medición real: c2.minG = 5,3 s por ejecución del dashboard): en una |
+| 38B193 | 4333-4336 | `_getNombreClanDump` | FIX (02-oct-2026): en ejecuciones sin CACHE_CLAN_DATA (ej. Índice/Torneos en |
+| 38B194 | 4355-4359 | `_NOMBRES_CLAN_CHECKPOINT` | _getClanTagByName(clanName) |
+| 38B195 | 4369-4373 | `_getClanTagByName` | _generarDashboardHtml() |
+
+---
+
+## Detalle (texto original, sin cambios)
+
+Cada bloque se copió tal cual estaba en el `.gs` (sin los `//`). Los números de línea son los del archivo ANTES de la limpieza.
+
+
+### Ubicación: `Cabecera del archivo`
+
+#### 38B001 — líneas 8-30 (comentario)
+
+```text
+AVISOS ABIERTOS (28-sep-2026, Fase 3 del consolidado de fases)
+ HECHO (Fase 3b): las cuadrículas Valores diarios (_getControlActivosGridPorTemporada) y
+ Valores semanales (_getControlTemporadaPorClan) se ordenan por rango y luego nombre, con el
+ helper global _ordenRango() (30_Mensajes.gs). No se probó en Apps Script real ni en navegador:
+ VERIFICAR en guerra.html que cada pestaña de clan muestre Líder, Colíderes, Veteranos y Miembros
+ en ese orden. El filtro interactivo por columna de guerra.html sigue permitiendo reordenar a mano.
+ PENDIENTE DE DEFINIR (Fase 3a): que cuentas que no estaban en el clan no aparezcan con ceros;
+ hoy se oculta solo por Fecha_ing (ver pregunta 30 del consolidado). No se tocó en esta tanda.
+ Nota: los comentarios de este archivo que citan 24_Historial_Ascensos.gs para
+ _getControlActivosGridPorTemporada() usan la numeración vieja; la función vive en este archivo.
+ HECHO (03-oct-2026, tanda 3, decisión del usuario, opción 2 de "Sesión de admin vencida
+ A4/A6"): doGet(), helper _webMarcarSesionVencida(). En los 10 endpoints que aceptan un
+ sessionToken opcional (webGuerraEnVivo, webPerfil, webTorneos, webHistorialTorneos,
+ webCompararJugadores, webHistorialGuerraComparador, webIngresosRecientes,
+ webTorneosJugador, webCofresJugador, webBattlelogJugador), si llega un sessionToken que
+ ya no es válido la respuesta lleva sesionVencida:true (el resto de la respuesta es la
+ misma de un visitante). Sin token, o con token válido, la respuesta no cambia.
+ PRUEBA PENDIENTE en Apps Script real (solo se probó por lectura y con node --check):
+ VERIFICAR con un token vencido o cerrado desde otro dispositivo que la respuesta traiga
+ sesionVencida:true, y que con sesión válida y sin sesión NO aparezca. VERIFICAR también
+ que webCofresJugador y webBattlelogJugador (que arman sus opciones con
+ _webOpcionesCofresBattlelog(), en 37_Web_API.gs) sigan respondiendo igual.
+==============================================================================
+```
+
+#### 38B002 — líneas 34-89 (comentario)
+
+```text
+=============================================================================
+09_API_ClashRoyale.gs
+  El formato de fecha en los NOMBRES DE ARCHIVO es: dd-mm-yyyy HH.mm
+  El formato de fecha en los LOGS y encabezados es:  dd/mm/yyyy HH:mm:ss
+Sistema unificado de:
+  A) CACHE DE API EN DRIVE
+     - Una sola llamada por endpoint por clan por ejecución.
+     - Los JSON de clanes (clans, currentriverrace) se persisten en:
+         {carpeta del clan} / {subcarpeta del endpoint} / archivo.json
+       replicando EXACTAMENTE el esquema que ya usa el proyecto Generador
+       (04_Organizador_JSON.gs / 05_Migrador_Formato.gs de ese otro
+       proyecto): subcarpeta "CurrentRiverRace" para currentriverrace,
+       "Clans" para clans (ver CARPETAS_JSON_POR_ENDPOINT_ más abajo). Un
+       endpoint que no esté en ese mapa se queda suelto en la raíz de la
+       carpeta del clan, igual que hace el Generador.
+     - Nombre de archivo (20/07/2026 — reemplaza el esquema anterior de
+       "- P{periodIndex}.json"):
+         "T-{temporada}  S-{semana} P.I-{periodIndex} {fecha hora} - {Clan} - {endpoint}.json"
+       El tag "T-/S-/P.I-" (con exactamente el mismo padding y espaciado
+       que usa el Generador — ver _buildPrefijoTSP_) es la identidad real
+       de una captura: mismo tag = mismo periodo de guerra, sin importar
+       cuándo se guardó. Deduplicación: se busca dentro de la subcarpeta
+       del endpoint un archivo cuyo nombre EMPIECE con ese tag exacto y
+       TERMINE en "- {endpoint}.json"; si existe, se actualiza (mismo
+       archivo); si no, se crea uno nuevo. Los de periodos anteriores
+       nunca se tocan ni se borran — quedan como histórico.
+     - Los JSON de /players se persisten en DRIVE_FOLDER_ID_PLAYERS:
+       un solo archivo VIGENTE por cuenta, "... - {playerTag}.json"
+       (Fase 18 del plan de cambios, 30/07/2026 — decisión confirmada:
+       se descarta guardar histórico por periodo/temporada). Cada
+       consulta nueva de /players SOBREESCRIBE el único archivo de esa
+       cuenta (ver _guardarPlayerEnDrive() / _getPlayersDriveIndexPorTag()
+       más abajo). Los archivos de periodos anteriores al esquema viejo
+       ("... - {playerTag} - P{n}.json") que ya existían en Drive antes de
+       esta fase NO se borran automáticamente; simplemente deja de
+       crearse uno nuevo por periodo a partir de ahora.
+     - Al iniciar, carga desde Drive si el JSON ya existe.
+     - _fetchAllClanData() en 09_API_ClashRoyale.gs usa este cache automáticamente.
+
+  B) ENDPOINT SEGURO DE CONTACTOS (doGet)
+     - Expone el JSON de contactos del Directorio (tag + nombre + teléfono)
+       protegido con token. Solo responde si el token es correcto.
+     - Diseñado para ser consumido por la cuenta secundaria
+       admingrupoterna@gmail.com sin acceder a la Spreadsheet.
+
+ENDPOINTS CACHEADOS:
+  - clans/{tag}                   → info general del clan
+  - clans/{tag}/currentriverrace  → carrera del río actual
+  - players/{tag}                 → jugador individual (si PLAYERS_API_ENABLED)
+
+CARPETAS EN DRIVE:
+  Clanes  → subcarpetas por clan dentro de DRIVE_FOLDER_ID_JSON, y dentro
+            de cada una, subcarpeta por endpoint (CurrentRiverRace/Clans).
+  Players → DRIVE_FOLDER_ID_PLAYERS (un solo archivo vigente por tag de
+            jugador, ver Fase 18 arriba) — no usa subcarpetas de endpoint.
+=============================================================================
+```
+
+#### 38B003 — líneas 91-99 (comentario)
+
+```text
+---------------------------------------------------------------------------
+TOKEN DE SEGURIDAD — endpoint de contactos
+Solo quienes conozcan este token pueden consultar el JSON de contactos.
+NUEVO (15-sep-2026, hallazgo B-35 de Plan_Fases.md): movido a Script
+Properties vía _scriptToken() (37_Web_API.gs).
+ACTUALIZACIÓN (19-sep-2026, pedido del usuario): confirmada la Property
+guardada, se retira del código el literal de respaldo. Si la Property
+faltara, _scriptToken() corta con error en vez de usar un valor viejo.
+---------------------------------------------------------------------------
+```
+
+
+### Ubicación: `CONTACTOS_TOKEN`
+
+#### 38B004 — líneas 102-118 (comentario)
+
+```text
+---------------------------------------------------------------------------
+TOKEN DE SEGURIDAD — dashboard de administradores
+URL: pedir el token vigente a Script Properties (▸ DASHBOARD_TOKEN) en vez
+de escribirlo acá.
+Es el mismo Web App que el endpoint de contactos, distinguido por el
+parámetro ?dashboard=1 — ver doGet() más abajo.
+
+NUEVO (15-sep-2026, hallazgo B-29 de Plan_Fases.md, Alta severidad): el
+valor anterior de este token quedó expuesto en el propio repo público
+(este comentario + una mención en CHANGELOG.md) desde el 30-ago-2026,
+cuando guerra.html dejó de usarlo pero el valor nunca se rotó.
+ACTUALIZACIÓN (19-sep-2026, pedido del usuario): el valor que reemplazó
+al filtrado también quedó escrito en Base.md al compartirlo, así que ya
+no vive en el código en ningún literal -- solo en Script Properties.
+Rótalo cuando quieras editando la Property (avisa a los administradores
+del dashboard cuando lo hagas).
+---------------------------------------------------------------------------
+```
+
+
+### Ubicación: `DASHBOARD_TOKEN`
+
+#### 38B005 — líneas 121-129 (comentario)
+
+```text
+---------------------------------------------------------------------------
+TOKEN DE SEGURIDAD — corrección de guerra (Tampermonkey, ver
+18_CorreccionGuerra.gs). Mismo Web App: se distingue por
+?accion=listaCorreccionGuerra (GET, este archivo) y ?accion=corregirGuerra
+(POST, ver doPost() en 44_BotWhatsApp.gs).
+NUEVO (15-sep-2026, hallazgo B-35): movido a Script Properties, mismo
+criterio que CONTACTOS_TOKEN de arriba.
+ACTUALIZACIÓN (19-sep-2026): retirado el literal de respaldo del código.
+---------------------------------------------------------------------------
+```
+
+
+### Ubicación: `CORRECCION_GUERRA_TOKEN`
+
+#### 38B006 — líneas 132-150 (comentario)
+
+```text
+---------------------------------------------------------------------------
+RATE LIMIT BÁSICO — acciones públicas del portal web (accion=web*, doGet).
+Pedido de revisión (30-ago-2026): WEB_MEMBER_TOKEN es un string fijo
+visible en el JS del sitio (assets/common.js) — cualquiera que abra el
+sitio puede verlo, así que NO protege contra scraping, solo evita que
+alguien pegue la URL del Web App sin pasar por el sitio. Sin límite de
+pedidos, un script en loop podría agotar la cuota diaria de ejecuciones
+de Apps Script (20.000/día en cuentas gratuitas — ver comentario en
+runGuerra(), 00_Main.gs, sobre la misma cuota).
+
+OJO — limitación real de la plataforma: los Web Apps de Apps Script NO
+exponen la IP del cliente en el objeto `e` de doGet/doPost (a diferencia
+de un backend tradicional). Por eso esto NO es un rate-limit por IP/por
+usuario: es un tope GLOBAL de pedidos por minuto a TODAS las acciones
+"web*" juntas, usando CacheService (compartido entre ejecuciones, con
+expiración automática). Alcanza para frenar un bot/script agresivo en
+loop rápido; no reemplaza un rate-limit por IP, que Apps Script no
+permite implementar del lado del servidor.
+---------------------------------------------------------------------------
+```
+
+#### 38B007 — línea 151 (comentario en línea)
+
+```text
+FIX B-30 (auditoría backend, 18-sep-2026): antes 90. Cada carga de página dispara 3-5 llamadas "web*", así que ~20 cargas/min ya agotaban el tope viejo con tráfico legítimo. 180 sigue siendo un tope conservador frente a la cuota diaria de Apps Script (20.000/día), con más margen para navegación normal (varias pestañas/usuarios a la vez).
+```
+
+
+### Ubicación: `WEB_RATE_LIMIT_MAX_POR_MINUTO`
+
+#### 38B008 — líneas 153-161 (comentario)
+
+```text
+FIX B-30 (auditoría backend, 18-sep-2026): contador APARTE para pedidos
+que ya traen un sessionToken de admin válido. Antes, un solo contador
+global compartía cupo entre visitantes públicos y admins — con tráfico
+público alto (o un scraper agresivo) el login y las acciones del panel
+de administración podían quedar bloqueados junto con todo lo demás.
+Separarlo no es "menos seguro": validar un sessionToken es una lectura
+barata de CacheService (WEBSESSION_*), así que no abre una puerta nueva
+para abusar del límite — solo evita que tráfico público le quite cupo a
+un admin ya autenticado.
+```
+
+
+### Ubicación: `WEB_RATE_LIMIT_ADMIN_MAX_POR_MINUTO`
+
+#### 38B009 — líneas 164-178 (docblock)
+
+```text
+_webRateLimitExcedido(sessionTokenValido)
+true si ya se superó el tope de pedidos "web*" en la ventana de 60s
+actual. Cuenta con CacheService.getScriptCache() (cache compartido a
+nivel del proyecto, no por usuario). Si CacheService fallara por lo que
+sea, se deja pasar el pedido en vez de tirar todo el sitio abajo por un
+problema de infraestructura ajeno al rate-limit.
+@param {boolean} [sessionTokenValido] FIX B-30: si es true, el pedido
+  cuenta contra WEB_RATE_LIMIT_ADMIN_MAX_POR_MINUTO en un bucket propio
+  ('WEBRLADM_'), separado del bucket público ('WEBRL_'), en vez de
+  competir por el mismo cupo que la navegación pública. El llamador es
+  responsable de haber validado el token ANTES de pasar este flag (ver
+  doGet()/doPost() más abajo) — esta función no vuelve a validar nada,
+  solo decide en qué bucket contar.
+```
+
+
+### Ubicación: `_webRateLimitExcedido`
+
+#### 38B010 — líneas 196-202 (docblock)
+
+```text
+_webRespuesta429()
+Misma forma que las respuestas 401/500 ya usadas en doGet() (JSON con
+error/code), para que el frontend (fetch en assets/common.js /
+guerra.html / sorteo.html) pueda manejarla igual que cualquier otro
+error de la API.
+```
+
+
+### Ubicación: `_webRespuesta429`
+
+#### 38B011 — líneas 209-224 (comentario)
+
+```text
+---------------------------------------------------------------------------
+RATE LIMIT ESPECÍFICO — login de admin (webLogin, doPost). Pedido de
+revisión (30-ago-2026): el rate-limit genérico de arriba (90/min GLOBAL,
+compartido por TODAS las acciones "web*") no alcanza para frenar fuerza
+bruta dirigida contra un Celular en particular, porque 90 intentos/min
+ya son de sobra para probar muchas combinaciones de Clave antes de que
+el límite global siquiera se note.
+
+Igual que el limitador genérico, Apps Script no expone la IP del
+cliente, así que este limitador es por CELULAR (el dato que el propio
+atacante tiene que fijar para poder probar claves), usando CacheService.
+No es infalible (un atacante podría rotar el Celular también), pero
+sí sube muchísimo el costo de un ataque de fuerza bruta contra una
+cuenta puntual, que es el escenario más realista (alguien probando
+claves contra el celular de un admin conocido).
+---------------------------------------------------------------------------
+```
+
+
+### Ubicación: `WEB_LOGIN_RATE_LIMIT_VENTANA_SEG`
+
+#### 38B012 — líneas 228-239 (docblock)
+
+```text
+_webLoginRateLimitExcedido(celular)
+true si ya se superaron WEB_LOGIN_RATE_LIMIT_MAX intentos de login para
+ese celular en la ventana actual de WEB_LOGIN_RATE_LIMIT_VENTANA_SEG.
+Se cuenta CADA intento (exitoso o no) apenas llega el pedido — no solo
+los fallidos — para que un atacante no pueda usar intentos exitosos
+para "resetear" el contador. Si `celular` viene vacío (payload
+inválido), se usa una clave fija: sigue sirviendo para frenar un loop
+que ni siquiera manda celular. Mismo criterio que
+_webRateLimitExcedido(): si CacheService fallara, se deja pasar el
+pedido en vez de romper el login para todos.
+```
+
+
+### Ubicación: `_webLoginRateLimitExcedido`
+
+#### 38B013 — líneas 256-261 (docblock)
+
+```text
+_webRespuesta429Login()
+Mismo formato que _webRespuesta429(), con mensaje específico para que el
+admin entienda que el bloqueo es por intentos de login, no por
+navegación general del sitio.
+```
+
+
+### Ubicación: `_webRespuesta429Login`
+
+#### 38B014 — líneas 268-294 (docblock)
+
+```text
+_webMarcarSesionVencida(resultado, sessionToken, esAdminValido)
+NUEVO (03-oct-2026, octava sesión, tanda 3, decisión del usuario: opción 2 de
+"Sesión de admin vencida (A4/A6)"). Las páginas públicas (perfil, directorio,
+torneos, guerra) mandan el sessionToken del admin con apiGet({conSesion:true}).
+Si ese token ya venció en el servidor (6 h, WEB_SESSION_DURACION_SEG) o fue
+invalidado (cierre de sesión desde otro dispositivo, expulsión de CacheService),
+_webAuthValidar() da false y el endpoint responde como a un visitante, sin
+ningún aviso. Esta función agrega sesionVencida:true a esa respuesta para que
+assets/js/core/api.js (apiGet) borre la sesión guardada y avise al admin.
+
+Solo marca cuando llegó un sessionToken NO vacío Y no es válido. Un visitante
+sin token no recibe el campo, y un admin con sesión válida tampoco: la
+respuesta no cambia para ellos. No toca respuestas con error ni que no sean
+un objeto (por ejemplo, un arreglo).
+
+Devuelve una COPIA superficial con el campo agregado (no modifica el objeto
+original, que podría venir de una caché en memoria). Esta marca se agrega
+aquí, en doGet(), DESPUÉS de las cachés del backend (por ejemplo la de
+webGuerraEnVivo): nunca queda guardada en ninguna.
+
+@param {*} resultado Lo que devolvió la función del dominio (_webPerfilJugador, etc.).
+@param {string} [sessionToken] e.parameter.sessionToken tal como llegó.
+@param {boolean} [esAdminValido] Resultado ya calculado de _webAuthValidar() en doGet()
+  (variable esAdminValidoGet). Si no se pasa, se valida aquí.
+@returns {*} El mismo resultado, o una copia con sesionVencida:true.
+```
+
+
+### Ubicación: `_webMarcarSesionVencida`
+
+#### 38B015 — líneas 316-327 (comentario)
+
+```text
+=============================================================================
+B) ENDPOINT SEGURO DE CONTACTOS (doGet)
+Protegido con token. Consume la Spreadsheet principal y devuelve JSON
+con tag + nombre + teléfono de los jugadores activos Terna con celular.
+
+URL de ejemplo:
+  https://script.google.com/macros/s/{DEPLOYMENT_ID}/exec?token={CONTACTOS_TOKEN}
+(valor real: Script Properties ▸ CONTACTOS_TOKEN, ya no en el código)
+
+La cuenta admingrupoterna@gmail.com puede consumir esta URL sin acceder
+a la base de datos directamente.
+=============================================================================
+```
+
+#### 38B016 — líneas 329-337 (docblock)
+
+```text
+doGet(e)
+Handler HTTP GET del Web App. Tiene 2 modos, distinguidos por
+e.parameter.dashboard:
+  - Sin ?dashboard=1 (por defecto): endpoint de contactos, JSON, token
+    CONTACTOS_TOKEN — comportamiento original, sin cambios.
+  - Con ?dashboard=1: dashboard HTML para administradores, token
+    DASHBOARD_TOKEN — ver _generarDashboardHtml() más abajo.
+```
+
+
+### Ubicación: `doGet`
+
+#### 38B017 — líneas 339-342 (comentario)
+
+```text
+Verificación del webhook de WhatsApp (Meta hace este GET una sola vez,
+al momento de guardar la URL del webhook en el panel de Meta). Debe
+devolver e.parameter['hub.challenge'] en texto plano si el
+hub.verify_token coincide con lo que guardaste en Script Properties.
+```
+
+#### 38B018 — líneas 351-356 (comentario)
+
+```text
+Modo JSON (24-ago-2026, pedido usuario): mismo token y misma fuente de
+datos (_getDatosDashboard()) que el dashboard HTML de abajo, pero
+devuelve JSON crudo en vez de HTML. Pensado para ser consumido desde un
+sitio estático externo (ej. GitHub Pages) vía fetch(), en vez de
+renderizar el dashboard server-side. Se resuelve ANTES que el modo HTML
+para no interferir con ?dashboard=1 (comportamiento original intacto).
+```
+
+#### 38B019 — líneas 389-391 (comentario)
+
+```text
+Endpoint de corrección de guerra (Tampermonkey) — ver 18_CorreccionGuerra.gs.
+Se resuelve ANTES del token de contactos porque usa su propio token
+(CORRECCION_GUERRA_TOKEN), independiente de CONTACTOS_TOKEN.
+```
+
+#### 38B020 — líneas 428-445 (comentario)
+
+```text
+---------------------------------------------------------------------
+PORTAL WEB PÚBLICO (grupoterna.github.io/Web) — ver 37_Web_API.gs.
+Acciones GET (24-ago-2026, pedido usuario): roster público, info de
+clan (Fase 0), perfil de jugador, y buscador de admin (esta última
+requiere sesión, validada dentro de _webAdminBuscarMiembro() vía
+WEBSESSION_ en CacheService — no un token fijo como los endpoints de
+arriba). Se resuelven ANTES del token de contactos porque usan su
+propio token (WEB_MEMBER_TOKEN) o, en el caso de admin, el token de
+sesión de login.
+---------------------------------------------------------------------
+RATE LIMIT (30-ago-2026, pedido de revisión): un solo chequeo acá
+arriba, ANTES de cualquier bloque webXxx de abajo, para cubrirlos
+todos de una — ver _webRateLimitExcedido() y el comentario de
+WEB_RATE_LIMIT_MAX_POR_MINUTO más arriba en este archivo (incluye la
+limitación real de la plataforma: esto NO es por IP).
+FIX B-30 (auditoría backend, 18-sep-2026): si el pedido ya trae un
+sessionToken de admin válido, cuenta aparte (bucket propio, tope más
+alto) para que el tráfico público no pueda dejar sin cupo al panel.
+```
+
+#### 38B021 — líneas 467-469 (comentario)
+
+```text
+FASE 0 (24-ago-2026, pedido del usuario): info real de los 4 clanes
+Terna para las tarjetas de index.html — ver _webClanInfo() en
+37_Web_API.gs. Mismo token público de solo-lectura que webRoster.
+```
+
+#### 38B022 — líneas 487-503 (comentario)
+
+```text
+FIX (30-ago-2026, pedido usuario — revisión de seguridad): guerra.html
+es una página PÚBLICA e indexable (tiene canonical/og:*, sin noindex)
+que hasta ahora leía sus datos vía ?dashboard=json con DASHBOARD_TOKEN
+— el mismo token que el comentario de arriba dice compartir "SOLO con
+administradores" (abre además el dashboard HTML completo de admins).
+Cualquier visitante que abriera "Ver código fuente" de guerra.html se
+llevaba ese token. Se agrega este endpoint público equivalente,
+gateado con WEB_MEMBER_TOKEN (el mismo token de solo-lectura que ya
+usan webRoster/webClanInfo/etc.), para que guerra.html deje de tocar
+el token de admins. Reutiliza la MISMA fuente de datos que el
+dashboard (_getDatosDashboard(), más abajo en este archivo) a través
+de _webGuerraEnVivo() (37_Web_API.gs).
+CORRECCIÓN (28-sep-2026, Fase 5b tanda C): la nota original decía "sin datos
+nuevos ni sensibles: nunca celular ni préstamo". Era incorrecto para
+préstamo: cada pendiente traía nomMulti y prestamo. Ahora sessionToken es
+OPCIONAL, igual que en webPerfil; sin sesión de admin, cada pendiente sale
+SIN nomMulti ni prestamo (celular nunca viajó por este endpoint).
+```
+
+#### 38B023 — líneas 521-529 (comentario)
+
+```text
+NUEVO (re-aplicado 19-sep-2026 -- quedó pendiente de una sesión
+anterior que no llegó a entregar archivos. Pedido del usuario, punto 1
+de cambios_web.docx: "Guerra (pronóstico de trofeos de guerra)"):
+techo de fame que cada clan (propio y rivales) puede alcanzar HOY con
+los mazos que le quedan -- ver 21_Pronostico_Guerra.gs para todo el
+modelo (duelo/individual, documentado ahí con el mismo detalle que
+pidió el usuario). Mismo token público de solo lectura que
+webGuerraEnVivo, justo arriba -- no expone ningún dato que
+currentriverrace no muestre ya.
+```
+
+#### 38B024 — líneas 547-550 (comentario)
+
+```text
+CAMBIO (28-sep-2026, Fase 5b tanda A): sessionToken es OPCIONAL. Si llega y
+es válido (_webAuthValidar), el perfil de una cuenta de Inactivos sale con
+estado 'Inactivo'; si no, como 'Sin registro con nosotros'. Se sigue
+exigiendo WEB_MEMBER_TOKEN en ambos casos.
+```
+
+#### 38B025 — líneas 568-575 (comentario)
+
+```text
+FASE 1 (24-ago-2026, pedido del usuario): torneos públicos — listado +
+ganadores del más reciente. Ver _webTorneos() en 37_Web_API.gs. Mismo
+token público de solo-lectura que webRoster/webClanInfo/webPerfil.
+CAMBIO (28-sep-2026, Fase 5b tanda D, AVISO A9): se pasa {esAdmin} igual
+que en webTorneosJugador -- _webTorneos() lo usa para decidir si el
+Tag de un participante oculto (ex-miembro) sale real o null. Sin
+sessionToken (visitante normal), _webAuthValidar(undefined) da false,
+así que el comportamiento para quien no manda sesión no cambia.
+```
+
+#### 38B026 — líneas 593-598 (comentario)
+
+```text
+FASE 9 (30-ago-2026, pedido del usuario): "salón de la fama" — top 3
+de CADA torneo registrado (no solo el más reciente). Ver
+_webHistorialTorneos() en 37_Web_API.gs. Mismo token público de
+solo-lectura que webTorneos.
+CAMBIO (28-sep-2026, Fase 5b tanda D, AVISO A9): mismo cambio que
+webTorneos arriba — se pasa {esAdmin} para el Tag condicional.
+```
+
+#### 38B027 — líneas 616-618 (comentario)
+
+```text
+FASE 10 (30-ago-2026, pedido del usuario): "Rankings" público — top 10
+de donadores/racha/torneos/victorias con 3 coronas. Ver _webRankings()
+en 37_Web_API.gs. Mismo token público de solo-lectura que webRoster.
+```
+
+#### 38B028 — líneas 636-638 (comentario)
+
+```text
+FASE 10 (30-ago-2026, pedido del usuario): "Aniversarios en la
+Familia" público. Ver _webAniversarios() en 37_Web_API.gs. Mismo
+token público de solo-lectura que webRoster.
+```
+
+#### 38B029 — líneas 656-660 (comentario)
+
+```text
+FASE 10 (30-ago-2026, pedido del usuario): comparador de jugadores.
+Ver _webCompararJugadores() en 37_Web_API.gs. Recibe tag1/tag2. Mismo
+token público de solo-lectura que webPerfil.
+CAMBIO (28-sep-2026, Fase 5b tanda A): sessionToken opcional, igual que en
+webPerfil (ver arriba).
+```
+
+#### 38B030 — líneas 678-686 (comentario)
+
+```text
+FASE 25 (02-sep-2026, pedido del usuario, punto 9 del PDF de torneos —
+"Cara a cara debería mostrar el desempeño de guerra con gráficas,
+sacadas de la hoja Guerra/CSV, valores diarios, eje X solo por mes"):
+historial diario de guerra (Ataques + Fame por fecha) de los dos Tags
+del comparador. Ver _webHistorialGuerraComparador() en 37_Web_API.gs.
+Recibe tag1/tag2, igual que webCompararJugadores. Mismo token público
+de solo-lectura que webPerfil/webCompararJugadores.
+CAMBIO (28-sep-2026, Fase 5b tanda A3): sessionToken opcional, igual que en
+webPerfil; sin sesión de admin, el lado de una cuenta inactiva sale vacío.
+```
+
+#### 38B031 — líneas 704-714 (comentario)
+
+```text
+FASE 13 punto 1 del plan de cambios web (07-sep-2026, vista (a) del
+"Log" de guerra de RoyaleAPI, recreada con datos propios): histórico
+Temporada -> Semana -> Rank/Boat/Trophy de los clanes Terna. Ver
+_webGuerraLog() en 17_GuerraSheet.gs -- lee de la hoja Guerra_Logs
+(acumulativa, nunca se purga, cubre todas las temporadas), con
+fallback a Backup_Guerra_Logs.csv (FIX 15-sep-2026) si la hoja no
+está disponible; sin llamada nueva a la API. `tag` es OPCIONAL: sin él
+devuelve los CFG.TERNA_TAGS.length clanes Terna juntos (`clanes: []`
+de un solo elemento por clan); con un `tag` que no sea uno de
+CFG.TERNA_TAGS devuelve `clanes: []` vacío. Mismo token público de
+solo-lectura que webRoster/webPerfil.
+```
+
+#### 38B032 — líneas 732-740 (comentario)
+
+```text
+NUEVO (19-sep-2026, pedido del usuario -- "Botones Jue-Dom (siguiente
+tanda)" de guerra.html): puesto de cada clan Terna al cierre de cada
+día de guerra (Jueves..Domingo) de la semana más reciente registrada en
+Guerra_Logs (columna EndOfDayRank). Ver _webGuerraPuestosDia() en
+17_GuerraSheet.gs -- misma fuente y mismo fallback a CSV que
+webGuerraLog, justo arriba; sin llamada nueva a la API. El puesto del
+día EN CURSO no sale de aquí (queda en 0 hasta que el día cierra):
+guerra.html lo toma en vivo de webPronosticoGuerra. Mismo token público
+de solo-lectura que webGuerraLog.
+```
+
+#### 38B033 — líneas 758-763 (comentario)
+
+```text
+FASE 10 (30-ago-2026, pedido del usuario): estadísticas de mazos/
+cartas de la Familia (top 10 cartas más usadas). Ver
+_webEstadisticasCartas() en 37_Web_API.gs — OJO: depende de
+PLAYERS_API_ENABLED, puede devolver top10 vacío si ese interruptor
+está apagado (ver docblock de la función). Mismo token público de
+solo-lectura que webRoster.
+```
+
+#### 38B034 — líneas 781-787 (comentario)
+
+```text
+FASE 6 (28-ago-2026, pedido del usuario): "Ingresos recientes" público —
+reemplaza la sección "Torneos" de index.html. Ver _webIngresosRecientes()
+en 37_Web_API.gs. Mismo token público de solo-lectura que webRoster/
+webClanInfo/webPerfil/webTorneos.
+CAMBIO (28-sep-2026, Fase 5b tanda B): sessionToken opcional, igual que en
+webPerfil; sin sesión de admin, cada ingreso sale SIN esRivalTemporada ni
+clanRivalDetectado.
+```
+
+#### 38B035 — líneas 805-809 (comentario)
+
+```text
+FASE 8 (30-ago-2026, pedido del usuario): "Ascensos recientes" público
+(reconocimiento de la comunidad) — solo Ascensos, nunca Degradaciones,
+y nunca cambios de rango de cuentas que hoy son Administradores. Ver
+_webAscensosRecientes() en 37_Web_API.gs. Mismo token público de
+solo-lectura que webRoster/webClanInfo/webTorneos/webIngresosRecientes.
+```
+
+#### 38B036 — líneas 827-833 (comentario)
+
+```text
+FASE 7 (29-ago-2026, pedido del usuario): participación de UN jugador
+puntual en torneos (torneo/puesto/victorias/fecha), para el botón
+"Ver Torneos" del perfil en jugadores.html. Ver _webTorneosJugador()
+en 37_Web_API.gs. Mismo token público de solo-lectura que webPerfil/
+webTorneos/webIngresosRecientes.
+CAMBIO (28-sep-2026, Fase 5b tanda A3): sessionToken opcional, igual que en
+webPerfil; sin sesión de admin, una cuenta inactiva responde torneos:[].
+```
+
+#### 38B037 — líneas 851-861 (comentario)
+
+```text
+NUEVO (27-sep-2026, pedido del usuario): ciclo de cofres (cola de
+/upcomingchests) de UN jugador puntual, para el botón "Ver ciclo de
+cofres" del perfil en perfil.html. Ver _webCofresJugador() en
+37_Web_API.gs — a diferencia de webTorneosJugador (arriba), esta SÍ
+llama en vivo a la API de Clash Royale (no hay cache/hoja equivalente
+para la cola de cofres). Mismo token público de solo-lectura que
+webPerfil/webTorneosJugador.
+CAMBIO (29-sep-2026, pedido de la usuaria): esta nota reemplaza lo que dice
+arriba de que llama EN VIVO a Clash Royale: ahora lee el JSON de Drive, con una
+descarga por Tag y por día (Lima). Un no admin solo ve miembros activos; el admin
+con panel de permisos puede mandar forzar=1. Ver AVISO A8 en 37_Web_API.gs.
+```
+
+#### 38B038 — líneas 879-884 (comentario)
+
+```text
+NUEVO (27-sep-2026, pedido usuario, "haz lo mismo para battlelog"):
+historial de batallas de UN jugador puntual, para el botón "Ver
+batallas más recientes" del perfil en perfil.html. Ver
+_webBattlelogJugador() en 37_Web_API.gs — mismo criterio que
+webCofresJugador (arriba): llama en vivo a la API de Clash Royale, no
+guarda nada en Drive/Sheets, mismo token público de solo-lectura.
+```
+
+#### 38B039 — líneas 914-917 (comentario)
+
+```text
+FIX (09-sep-2026, pedido usuario — buscador de "Buscar miembro" con
+sugerencias por nombre/Nom_Multi/Tag, ver _webAdminBuscarMiembroSugerencias()
+en 37_Web_API.gs): mismo patrón que webAdminBuscarMiembro (sesión
+validada adentro), parámetro nuevo `q` con el texto ya escrito.
+```
+
+#### 38B040 — líneas 930-939 (comentario)
+
+```text
+FASE 2 (04-sep-2026, pedido del usuario, punto 1 del documento de
+cambios pendientes): historial COMPLETO de guerra de un jugador
+(Temporada/Semana/Ataques/Puntaje/Barcos/Comentario), para el botón
+dedicado en perfil.html — SOLO administradores. Sesión validada
+adentro, mismo patrón que webAdminBuscarMiembro. Ver
+_webHistorialGuerraJugador() en 20_HistorialGuerraJugador.gs.
+NUEVO (re-aplicado 19-sep-2026, quedó pendiente de una sesión anterior
+sin entregar): parámetro OPCIONAL `limite` (cantidad de semanas más
+recientes a devolver). Si no viene, la función devuelve el historial
+completo igual que siempre.
+```
+
+#### 38B041 — líneas 952-955 (comentario)
+
+```text
+FIX (03-sep-2026, pedido usuario, punto 17 — "mostrar primero la
+lista de cuentas del admin"): mismo patrón que webAdminBuscarMiembro/
+webAdminCategorias — sesión validada dentro de _webMisCuentas()
+(37_Web_API.gs).
+```
+
+#### 38B042 — líneas 968-972 (comentario)
+
+```text
+FASE 2 (24-ago-2026, pedido del usuario): visor de contenido por
+categoría en el panel admin, SOLO LECTURA (ver nota de diseño en la
+cabecera de 37_Web_API.gs — Menú/Mensajes se reconstruyen enteros en
+cada corrida automática, así que no hay endpoint de guardado). Sesión
+validada dentro de cada función, igual que webAdminBuscarMiembro.
+```
+
+#### 38B043 — líneas 997-1008 (comentario)
+
+```text
+FIX (05-sep-2026, pedido usuario — panel "Aportes de Inactivos a la
+Guerra" en guerra.html, ver _webAportesInactivos()/
+_getAportesInactivosSemanaActual() en 38_Web_Endpoints.gs): mismo
+patrón autenticado que webAdminContenido justo arriba (sessionToken
+validado DENTRO de la función, no acá en el router). A propósito NO
+se agregó este dato a _getDatosDashboard()/webGuerraEnVivo (el
+endpoint público de guerra.html, ver nota de seguridad del
+30-ago-2026 en _webGuerraEnVivo() más abajo): quién está marcado
+como Inactivo es información de gestión interna, no algo que deba
+viajar en la respuesta pública aunque la UI la oculte — con un
+endpoint aparte, sin sesión de admin válida directamente no llega el
+dato al navegador.
+```
+
+#### 38B044 — líneas 1021-1031 (comentario)
+
+```text
+FIX (03-sep-2026, pedido usuario — "no me gusta que se vean esos
+márgenes [del Doc en el iframe], debería verse como cuando en Word se
+escoge el modo de diseño web"): botón "Ver original" del panel dejó de
+incrustar el Doc como <iframe src=".../preview"> (ese modo SIEMPRE
+pagina con márgenes de impresión — es el propio visor de Google
+Docs, contenido de otro dominio, así que ni el CSS del panel puede
+tocarlo) y pasó a pedirle a este endpoint el HTML del Doc para
+pintarlo dentro de un <div> propio, con el CSS del panel — ver
+_webAdminContenidoDocHtml() en 37_Web_API.gs para el detalle de
+por qué esto sigue siendo SOLO LECTURA (no se llama a ningún método
+de escritura de DocumentApp/Drive; el Doc de origen no se toca).
+```
+
+#### 38B045 — líneas 1044-1049 (comentario)
+
+```text
+FASE 3 (25-ago-2026, pedido del usuario): gestión de torneos desde el
+panel admin — ver _webAdminTorneosHoy() en 37_Web_API.gs.
+FASE 24 (02-sep-2026): "Ver ganadores" pasó a tener su propio endpoint
+de solo-admin, webAdminGanadoresTorneoDetalle (ver más abajo) — antes
+reutilizaba el público webTorneos, pero ese nunca expone el Tag y el
+panel lo necesita para poder registrar descalificaciones/desempates.
+```
+
+#### 38B046 — líneas 1062-1072 (comentario)
+
+```text
+FIX (11-sep-2026, pedido usuario — selector de semanas conectado a un
+backend real): reemplaza el cálculo de "Temporada N" que antes hacía
+generarSemanasRecientes() a mano en admin.html -- ver
+_webAdminSemanasRecientes() en 37_Web_API.gs. GET porque no escribe
+nada, mismo criterio que webAdminTorneosHoy arriba.
+FIX (16-sep-2026, pedido del usuario -- selector de semanas de
+CR_Lista): se reenvía el parámetro OPCIONAL `todasSemanasVigente` tal
+cual a _webAdminSemanasRecientes() -- ver su docblock para el detalle
+de cuándo admin.html debe mandarlo ('1', SOLO al pintar el selector del
+formulario de CR_Lista) y cuándo omitirlo (los 6 formularios de
+Torneos/Sorteos, que deben seguir viendo el comportamiento de siempre).
+```
+
+#### 38B047 — líneas 1085-1089 (comentario)
+
+```text
+NUEVO (07-oct-2026, pedido del usuario -- selector de semanas de CR_Lista):
+todas las semanas de UNA temporada con su rango de fechas, ver
+_webAdminSemanasDeTemporada() en 37_Web_API.gs. Recibe `temporada` (query
+string). GET porque no escribe nada, mismo criterio que
+webAdminSemanasRecientes arriba.
+```
+
+#### 38B048 — líneas 1102-1116 (comentario)
+
+```text
+NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.1,
+"webAdminRequisitosClanes sigue sin existir"): ver
+_webAdminRequisitosClanes() en 37_Web_API.gs -- devuelve los
+requisitos (Min_T/Ataques por clan, Miembro activo, Reacción,
+WhatsApp) ya guardados en el torneo más reciente de T_Lista, para que
+cargarRequisitosPorClan() (admin.html) precargue el formulario. GET
+porque no escribe nada, mismo criterio que webAdminTorneosHoy/
+webAdminSemanasRecientes arriba.
+FIX (12-sep-2026, mismo día -- pedido del usuario: la precarga debe
+leer solo el torneo puntual seleccionado, no siempre "el más
+reciente"): se reenvía el parámetro OPCIONAL `id` (query string) tal
+cual a _webAdminRequisitosClanes() -- ver su docblock para el detalle
+de cuándo admin.html debe mandarlo (caso "Modificar" con un torneo ya
+elegido) y cuándo omitirlo (caso "Registrar"/"Planificar", sin ID
+todavía).
+```
+
+#### 38B049 — líneas 1129-1138 (comentario)
+
+```text
+NUEVO (16-sep-2026, pedido del usuario -- botones "↻ Precargar datos
+del último torneo/sorteo registrado" de admin.html): ver
+_webAdminUltimoRegistroTorneoOSorteo() en 37_Web_API.gs -- devuelve
+Organizador/Cuenta organizadora/Comentario del último torneo o sorteo
+ya registrado (según `categoria`, query string obligatorio: 'Torneo' o
+'Sorteo'). GET porque no escribe nada, mismo criterio que
+webAdminRequisitosClanes justo arriba. La contraparte de Cambio de
+Rango no necesita este caso nuevo -- reutiliza webCRListaListar/
+webCRListaFilaPorId, que ya existen (ver precargarUltimoRegistroCR(),
+admin.html).
+```
+
+#### 38B050 — líneas 1151-1157 (comentario)
+
+```text
+NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.1,
+"CLANES_REQUISITOS hardcodeado en admin.html porque no existe todavía un
+endpoint que los entregue"): ver _webAdminClanesFamilia() en
+37_Web_API.gs -- devuelve los 4 clanes de la Familia (nombres reales, en
+el mismo orden que el resto del sistema), para que admin.html deje de
+tener `CLANES_REQUISITOS` hardcodeado. GET porque no escribe nada, mismo
+criterio que webAdminRequisitosClanes/webAdminSemanasRecientes arriba.
+```
+
+#### 38B051 — líneas 1170-1175 (comentario)
+
+```text
+NUEVO (18-sep-2026, pedido del usuario -- "haz la conexión al backend"):
+lista de miembros ACTIVOS de un clan de la Familia para el modo "Buscar
+en Directorio" de "Registrar miembro nuevo" (admin.html,
+cargarMiembrosClanNM()) -- ver _webAdminListaMiembrosClan() en
+37_Web_API.gs. GET porque no escribe nada; requiere sesión con la
+Función "Registrar miembro nuevo" (se valida dentro de la función).
+```
+
+#### 38B052 — líneas 1188-1194 (comentario)
+
+```text
+NUEVO (13-sep-2026, pedido del usuario -- Fase 7 del plan de Cambio de
+Rango, faltaba el enrutamiento): _webCRListaListar()/_webCRListaFilaPorId()/
+_webCRListaPropuestas() (37_Web_API.gs) ya existían y admin.html ya las
+llama (cargarCRListaPares(), PASO 2 del frontend), pero ninguna de las 3
+tenía su bloque acá -- las llamadas fallaban en silencio (ninguna rama
+de este doGet las reconocía). Las 3 son GET porque ninguna escribe nada,
+mismo criterio que webAdminTorneosHoy/webAdminSemanasRecientes arriba.
+```
+
+#### 38B053 — líneas 1231-1235 (comentario)
+
+```text
+NUEVO (13-sep-2026, pedido del usuario -- "fase nueva y chica" que la
+Fase 0 del plan de corrección Torneo/Sorteo dejaba anotada para más
+adelante): _webAdminVigenteListar() (37_Web_API.gs) -- GET porque no
+escribe nada, mismo criterio que webCRListaListar arriba. `categoria`
+('Torneo'|'Sorteo') viaja en el query string.
+```
+
+#### 38B054 — líneas 1248-1254 (comentario)
+
+```text
+NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, panel
+de Sorteos completo, backend): gemela del bloque de arriba, apuntando a
+_webAdminRequisitosClanesSorteo() (37_Web_API.gs) en vez de
+_webAdminRequisitosClanes() -- mismo criterio exacto de `id` opcional
+(query string), GET porque tampoco escribe nada. Cierra el pendiente
+"no existe el equivalente de _webAdminRequisitosClanes() para la
+categoría Sorteo" del consolidado.
+```
+
+#### 38B055 — líneas 1267-1271 (comentario)
+
+```text
+NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4,
+panel de Sorteos completo, backend): ver _webAdminSorteosHoy()
+(37_Web_API.gs). Mismo criterio exacto que webAdminTorneosHoy más
+arriba (GET porque no escribe nada) -- puebla el selector de
+"Modificar" del panel de Sorteos.
+```
+
+#### 38B056 — líneas 1284-1288 (comentario)
+
+```text
+FASE 24 (02-sep-2026, pedido del usuario — descalificaciones y
+desempates de torneos): versión de solo-admin (con Tag) de "Ganadores
+del torneo más reciente" — ver _webAdminGanadoresTorneoDetalle() en
+37_Web_API.gs. GET porque no escribe nada, mismo criterio que
+webAdminTorneosHoy arriba.
+```
+
+#### 38B057 — líneas 1301-1305 (comentario)
+
+```text
+FASE 4 (26-ago-2026, pedido del usuario): registro de miembro nuevo,
+Paso 1 (verificar Tag contra la API antes de dejar completar el
+registro) — ver _webAdminVerificarTag() en 37_Web_API.gs. Es GET (no
+POST) porque no escribe nada, mismo criterio que webAdminCategorias/
+webAdminContenido arriba.
+```
+
+#### 38B058 — líneas 1332-1335 (comentario)
+
+```text
+FIX (05-sep-2026, pedido usuario — "autor del torneo" en el panel):
+lista de Nom_Multi de ADMINS (no de todo Directorio) para el <select>
+"¿Quién organizó el torneo?" — ver _webAdminNomMultisAdmins() en
+37_Web_API.gs.
+```
+
+#### 38B059 — líneas 1348-1352 (comentario)
+
+```text
+FIX (12-sep-2026, pedido usuario -- panel admin, cuadro "¿Con cuál
+cuenta organizó?"): dado un Nom_Multi (elegido en "¿Quién organizó el
+torneo?"), devuelve todas sus cuentas de Clash Royale con Clan/ClanTag
+ya resueltos desde Directorio -- ver _webAdminCuentasDeNomMulti() en
+37_Web_API.gs y admin.html, cargarCuentasDelAutor()/initCuentaOrgBox().
+```
+
+#### 38B060 — líneas 1365-1367 (comentario)
+
+```text
+FASE 7 (29-ago-2026, pedido del usuario): tarjeta adicional de "cuentas
+inactivas" en Inicio/Clanes, visible solo con sesión de admin activa.
+Ver _webAdminCuentasInactivas() en 37_Web_API.gs.
+```
+
+#### 38B061 — líneas 1380-1382 (comentario)
+
+```text
+FASE 7 (29-ago-2026, pedido del usuario): botón "Ver otras cuentas" del
+perfil en jugadores.html, visible solo para admins — ver
+_webAdminOtrasCuentas() en 37_Web_API.gs.
+```
+
+#### 38B062 — líneas 1395-1399 (comentario)
+
+```text
+FASE 3 del plan de cambios web (punto 3 de cambios_web.docx): cuentas
+ya reservadas (AtaquesHoy > 0, ya no reemplazables) vs. disponibles
+por clan Terna, más casos de un mismo Tag atacando hoy en más de un
+clan a la vez — panel de admin. Es GET (no escribe nada), requiere
+sesión de admin. Ver _webAdminParticipacionHoyGuerra() en 37_Web_API.gs.
+```
+
+#### 38B063 — líneas 1412-1415 (comentario)
+
+```text
+FASE 8 (30-ago-2026, pedido del usuario): autocompletado de la Ruleta
+de Sorteo (sorteo.html) con los participantes que califican según la
+fila más reciente de cada clan en S_Lista — ver _webSorteoCalificados() en
+37_Web_API.gs. Es GET (no escribe nada), requiere sesión de admin.
+```
+
+#### 38B064 — líneas 1428-1434 (comentario)
+
+```text
+FASE 6 (punto 6 del documento — Detección de infiltrados/sabotaje):
+dado un Tag de clan o de jugador, devuelve coincidencias contra
+nuestro propio roster (Directorio/Inactivos/Vetados) y contra los
+clanes rivales de la temporada actual + la lista manual de conflicto
+— ver _webAdminBuscarInfiltrado() en 15_DeteccionInfiltrados.gs. Es
+GET (no escribe nada), requiere sesión de admin. Prerrequisito de la
+Fase 7 (avisos en Ingresos recientes).
+```
+
+#### 38B065 — líneas 1448-1454 (comentario)
+
+```text
+FASE 7 (Parte B, 06-sep-2026, punto 7 del documento — edición de autor
+de ascenso): lista de admin de los últimos registros de Historial_A/D
+(Ascensos/Descensos), CON Autor y Comentario (a diferencia de
+_webAscensosRecientes(), 37_Web_API.gs, que es pública y
+deliberadamente no los incluye) — ver
+_webAdminAscensosEditables() en 24_Historial_Ascensos.gs.
+GET (no escribe nada), requiere sesión de admin.
+```
+
+#### 38B066 — líneas 1468-1473 (comentario)
+
+```text
+NUEVO (5-oct-2026, Fase 9 punto (e), "Noticias de la semana" de admin.html):
+resumen de UNA semana (ataques a barcos, ascensos/descensos y posiciones
+finales por clan). GET, SOLO LECTURA (no escribe nada), requiere sesión de
+admin. Parámetro: lunesIso ('yyyy-MM-dd', uno de los que entrega
+webAdminSemanasRecientes). Ver _webAdminNoticiasSemana() en
+40_Web_Noticias.gs.
+```
+
+#### 38B067 — líneas 1487-1493 (comentario)
+
+```text
+PANEL DE PERMISOS (19-sep-2026, pedido de Diana) — ver el bloque "PANEL DE
+PERMISOS" en 37_Web_API.gs. Ambas son GET (no escriben nada), sessionToken
+en la query igual que el resto de las lecturas de admin.
+  - webAdminMisPermisos: cualquier admin con sesión; devuelve sus Funciones
+    actuales (releídas de la hoja) y si puede ver el panel de permisos.
+  - webPermisosListar: SOLO el Celular guardado en la Script Property
+    PANEL_PERMISOS_CELULAR; catálogo + un registro por administrador.
+```
+
+#### 38B068 — líneas 1554-1558 (docblock)
+
+```text
+testContactosEndpoint()
+Función de prueba manual: imprime el JSON de contactos en el Logger.
+Ejecutar desde el editor de Apps Script para verificar el output.
+```
+
+
+### Ubicación: `testContactosEndpoint`
+
+#### 38B069 — líneas 1565-1572 (docblock)
+
+```text
+testDashboardEndpoint()
+Ejecutar manualmente desde el editor de Apps Script para probar la
+generación del dashboard SIN pasar por el Web App desplegado (útil para
+descartar un despliegue desactualizado, igual que testContactosEndpoint()
+para el endpoint de contactos). Loguea un resumen de los datos y confirma
+que el HTML se generó sin errores.
+```
+
+### Ubicación: `testDashboardEndpoint`
+
+#### 38B070 — líneas 1583-1592 (docblock)
+
+```text
+-----------------------------------------------------------------------
+PUNTO DE ENTRADA REAL (se completa cuando exista el webhook de Meta)
+-----------------------------------------------------------------------
+
+doPost(e)
+Webhook de Cloud API. Por ahora solo deja la estructura lista: extraer
+teléfono y texto del payload de Meta, llamar al router, y enviar la
+respuesta de vuelta. El envío real (fetch a graph.facebook.com) se
+implementa cuando tengas el token/Phone Number ID.
+```
+
+### Ubicación: `doPost`
+
+#### 38B071 — líneas 1594-1612 (comentario)
+
+```text
+---------------------------------------------------------------------
+PORTAL WEB PÚBLICO — login de admin y guardado de gestión de miembro.
+Ver 37_Web_API.gs. Se resuelven ANTES que cualquier otro accion= de
+este router, mismo motivo que el resto de bloques Tampermonkey de acá
+abajo: nunca chocan porque cada uno mira su propio e.parameter.accion.
+---------------------------------------------------------------------
+RATE LIMIT (30-ago-2026, pedido de revisión): mismo chequeo genérico
+que ya existía en doGet() (ver _webRateLimitExcedido()) pero que acá
+en doPost() nunca se había agregado — cualquiera podía mandar POSTs
+"web*" (incluido webLogin) sin ningún límite. Se aplica ANTES de
+cualquier bloque webXxx de abajo, para cubrirlos todos de una.
+FIX B-30 (auditoría backend, 18-sep-2026): mismo criterio que en
+doGet() — si el body ya trae un sessionToken de admin válido, cuenta
+en el bucket aparte de mayor tope. En POST el sessionToken viaja
+dentro de e.postData.contents (JSON), no en e.parameter, así que hay
+que intentar parsearlo acá; si el body no es JSON válido (ej. webLogin
+manda celular/clave, sin sessionToken) simplemente no hay token que
+validar y el pedido cuenta como público, sin romper nada.
+---------------------------------------------------------------------
+```
+
+#### 38B072 — líneas 1626-1632 (comentario)
+
+```text
+RATE LIMIT ESPECÍFICO DE LOGIN (30-ago-2026, pedido de revisión):
+sin esto, el límite genérico de arriba (90/min GLOBAL, compartido
+por TODAS las acciones web*) igual dejaba probar decenas de
+combinaciones de Celular+Clave por minuto — ver
+_webLoginRateLimitExcedido() más arriba en este archivo para el
+detalle de por qué se cuenta por celular y no por IP (Apps
+Script no expone la IP del cliente).
+```
+
+#### 38B073 — líneas 1636-1638 (comentario)
+
+```text
+FASE 5 (26-ago-2026): el login deja de mandar una única
+"password" compartida y pasa a mandar Celular+Clave — ver
+_webAuthLogin(celular, clave) en 37_Web_API.gs.
+```
+
+#### 38B074 — líneas 1649-1654 (comentario)
+
+```text
+FIX B-27 (auditoría backend, 18-sep-2026): endpoint de cierre de
+sesión — ver _webAuthLogout() en 37_Web_API.gs. sessionToken viaja en
+el body, igual que el resto de acciones "web*" autenticadas por POST.
+Llamar a esto NO requiere que la sesión siga siendo válida (si ya
+venció, no hay nada que invalidar y _webAuthLogout() igual responde
+ok:true), así que no se valida con _webAuthValidar() acá.
+```
+
+#### 38B075 — líneas 1663-1664 (comentario)
+
+```text
+Aun si algo falla parseando el body, el resultado deseado del
+lado del cliente es el mismo: tratar la sesión como cerrada.
+```
+
+#### 38B076 — líneas 1684-1688 (comentario)
+
+```text
+FASE 4 (26-ago-2026, pedido del usuario): registro de miembro nuevo,
+Paso 2 (guardar, ya con el Tag verificado en el Paso 1 vía
+webAdminVerificarTag, GET) — ver _webAdminRegistrarNuevo() en
+37_Web_API.gs. Mismo patrón que webAdminGuardarGestion arriba:
+sessionToken y datos viajan en el body.
+```
+
+#### 38B077 — líneas 1703-1704 (comentario)
+
+```text
+FASE 4: vetado de un miembro desde el panel admin — ver
+_webAdminVetar() en 37_Web_API.gs. datos = { tag, razon, comentario }.
+```
+
+#### 38B078 — líneas 1719-1722 (comentario)
+
+```text
+NUEVO (05-oct-2026): pedir la actualizacion manual del roster + Pendientes + Mensajes (runPendientesYMensajesManual)
+desde el panel admin. POST con { sessionToken }. Responde de inmediato (ok:true, estado:'pendiente'): el trabajo corre
+en un disparador de un solo uso y el frontend consulta el avance con GET webAdminEstadoActualizacion. Exige la
+Funcion 'Actualizar roster'. Ver _webAdminActualizarRoster() en 41_Web_ActualizarRoster.gs.
+```
+
+#### 38B079 — líneas 1737-1741 (comentario)
+
+```text
+FASE 7 (Parte B, 06-sep-2026, punto 7 del documento): edición del Autor
+de un registro de Historial_A/D (Ascensos/Descensos) desde el panel
+admin. datos = { id, autorNuevo }, con `id` = Tag+'|'+FechaISO (ver
+docblock de _webAdminAscensosEditables(), 24_Historial_Ascensos.gs).
+Ver _webAdminEditarAutorAscenso() en ese mismo archivo.
+```
+
+#### 38B080 — líneas 1759-1763 (comentario)
+
+```text
+PANEL DE PERMISOS (19-sep-2026, pedido de Diana): guarda Funciones y
+Cat_disp de UN administrador. datos = { id, funciones:[...], categorias:[...] }
+— ver _webPermisosGuardar() en 37_Web_API.gs. SOLO el Celular guardado en
+la Script Property PANEL_PERMISOS_CELULAR; el resto recibe "No tienes
+acceso a esta sección."
+```
+
+#### 38B081 — líneas 1778-1815 (comentario)
+
+```text
+FASE 3 (25-ago-2026, pedido del usuario): gestión de torneos — registrar
+link nuevo y modificar fecha/hora del de hoy. Ver 37_Web_API.gs /
+26_Torneos_Core.gs. Mismo patrón que webAdminGuardarGestion arriba:
+sessionToken viaja en el body (no en la query string).
+FIX (05-sep-2026, pedido usuario — flujo "Torneo principal"/"Torneo de
+continuación" del panel web): ambos endpoints ahora reenvían también
+payload.tagTorneoPrincipal (opcional) hacia _webAdminTorneoRegistrar/
+_webAdminTorneoModificar (37_Web_API.gs) -- ver esas funciones para el
+detalle. Si el front no lo manda (torneo "principal", sin
+continuación), llega undefined y el comportamiento es igual que antes.
+FIX (05-sep-2026, pedido usuario — "autor del torneo"): Registrar
+también reenvía payload.autor (opcional) -- ver _webAdminTorneoRegistrar()
+para cómo se resuelve contra el admin de la sesión.
+FIX (11-sep-2026, pedido usuario — selector de semanas conectado a un
+backend real): también reenvía payload.semanas (opcional, CSV de
+fechas ISO de LUNES marcadas en #semanasSelectorReg -- ver
+obtenerSemanasSeleccionadas() en admin.html).
+FIX (12-sep-2026, pedido del usuario -- consolidado sección 5.1,
+"Requisitos del torneo/sorteo no viajan al backend"): Registrar y
+Planificar reenvían payload.requisitos/payload.comentario
+(armarPayloadRequisitos()/#tComentario, admin.html).
+FIX (12-sep-2026, mismo día -- pedido del usuario: una vez que la
+precarga de Modificar lee el torneo puntual por ID, ya no hay riesgo
+de sobrescribir requisitos ajenos en blanco): Modificar AHORA TAMBIÉN
+reenvía payload.requisitos, además de payload.comentario -- ver
+_webAdminRequisitosClanes(token, id) (37_Web_API.gs) para la precarga
+que hace esto seguro, y el docblock de _modificarFechaHoraTorneo()
+(26_Torneos_Core.gs) para el detalle de la escritura.
+FIX (12-sep-2026, gap detectado: admin.html ya mandaba
+payload.tagOrg/payload.clanOrg/payload.clanTagOrg en los 3 endpoints de
+Torneos -- ver leerCuentaOrgElegida()/cargarCuentasDelAutor() en
+admin.html, marcado ahí como "PENDIENTE BACKEND" -- pero ninguno de los
+3 los reenviaba todavía): Registrar y Planificar ahora también reenvían
+esos 3 campos. Modificar, además, ahora TAMBIÉN reenvía payload.autor y
+payload.premios (antes descartados en silencio) -- ver el docblock de
+_webAdminTorneoModificar() (37_Web_API.gs) para el detalle de por qué
+Modificar no usa fallback al admin de la sesión como sí hacen Registrar
+y Planificar.
+```
+
+#### 38B082 — líneas 1843-1846 (comentario)
+
+```text
+FIX (05-sep-2026, pedido usuario — "Planificar torneo"): mismo patrón
+que webAdminTorneoRegistrar de arriba, pero para cargar Fecha+Premios
+de un torneo con anticipación, antes de tener el link real -- ver
+_webAdminTorneoPlanificarGuardar() en 37_Web_API.gs.
+```
+
+#### 38B083 — líneas 1874-1879 (comentario)
+
+```text
+FIX (12-sep-2026, pedido del usuario -- consolidado sección 5.2/5.3,
+"link directo en Modificar torneo"): se reenvía también payload.link
+(opcional) -- ver el docblock de _webAdminTorneoModificar() (37_Web_API.gs)
+para el detalle de cuándo se usa (opción "Ingresar link" de #tSelectHoy,
+admin.html) y por qué en ese caso se delega a _registrarTorneoDesdeBot()
+en vez de a _modificarFechaHoraTorneo().
+```
+
+#### 38B084 — líneas 1909-1914 (comentario)
+
+```text
+NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4,
+panel de Sorteos completo, backend): mismo patrón EXACTO que
+webAdminTorneoRegistrar de arriba, pero para S_Lista -- ver
+_webAdminSorteoRegistrar() (37_Web_API.gs) para el detalle de cada
+parámetro (sin `link`, con `idSorteoPrincipal` en vez de
+`tagTorneoPrincipal`).
+```
+
+#### 38B085 — líneas 1941-1944 (comentario)
+
+```text
+NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4,
+panel de Sorteos completo, backend): mismo patrón EXACTO que
+webAdminTorneoPlanificarGuardar de arriba, pero para S_Lista -- ver
+_webAdminSorteoPlanificarGuardar() (37_Web_API.gs).
+```
+
+#### 38B086 — líneas 1972-1976 (comentario)
+
+```text
+NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4,
+panel de Sorteos completo, backend): mismo patrón EXACTO que
+webAdminTorneoModificar de arriba, pero para S_Lista -- ver
+_webAdminSorteoModificar() (37_Web_API.gs). Sin modo "Ingresar link"
+(Sorteos no tiene ese concepto).
+```
+
+#### 38B087 — líneas 2005-2010 (comentario)
+
+```text
+FASE 24 (02-sep-2026, pedido del usuario — descalificaciones y
+desempates de torneos): registrar/actualizar una resolución manual
+sobre una cuenta puntual del torneo más reciente. Ver
+_webAdminTorneoResolucionGuardar() en 37_Web_API.gs. Mismo patrón que
+webAdminVetar/webAdminTorneoRegistrar: sessionToken y datos viajan en
+el body. datos = { idTorneo, tag, tipoResolucion, puestoFinal, motivo }.
+```
+
+#### 38B088 — líneas 2028-2035 (comentario)
+
+```text
+NUEVO (13-sep-2026, pedido del usuario -- Fase 7 del plan de Cambio de
+Rango, faltaba el enrutamiento): _webCRListaGuardar()/
+_webCRListaGenerarPropuestas() (37_Web_API.gs) ya existían pero no
+tenían bloque en este doPost -- mismo motivo que los 3 GET agregados
+arriba en doGet. webCRListaGuardar: sessionToken y datos viajan en el
+body, datos = { idExistente, fecha, hora, semanas, organizador, tagOrg,
+clanOrg, clanTagOrg, comentario, ascenso, descenso } (ver docblock de
+_webCRListaGuardar()).
+```
+
+#### 38B089 — líneas 2053-2056 (comentario)
+
+```text
+webCRListaGenerarPropuestas: POST porque sí escribe (Historial_A/D) --
+a diferencia de webCRListaPropuestas (doGet arriba), que solo calcula
+sin guardar. sessionToken/idAscenso/idDescenso viajan en el body, mismo
+patrón que webAdminTorneoResolucionGuardar arriba.
+```
+
+#### 38B090 — líneas 2075-2081 (comentario)
+
+```text
+NUEVO (13-sep-2026, pedido del usuario -- "fase nueva y chica" que la
+Fase 0 del plan de corrección Torneo/Sorteo dejaba anotada para más
+adelante): _webAdminVigenteGuardar() (37_Web_API.gs). POST porque sí
+escribe (Extra!Torneo_Vigente_ID/Sorteo_Vigente_ID) -- a diferencia de
+webAdminVigenteListar (GET arriba), que solo lee. sessionToken/
+categoria/id viajan en el body, mismo patrón que webCRListaGenerarPropuestas
+justo arriba.
+```
+
+#### 38B091 — líneas 2100-2105 (comentario)
+
+```text
+NUEVO (14-sep-2026, pedido del usuario -- cierre del CONTRATO PENDIENTE
+"Marcar visto en el grupo" dejado en admin.html el 08-sep-2026, ver
+docblock junto a _grupoVerificadoTags ahí). _webAdminMarcarVistoEnGrupo()
+(37_Web_API.gs). POST porque sí escribe (Grupo_Verificado) -- mismo
+patrón que webAdminVigenteGuardar justo arriba: sessionToken/tag/nombre
+viajan en el body, sin envolver en `datos` (son solo 2 valores).
+```
+
+#### 38B092 — líneas 2124-2130 (comentario)
+
+```text
+FASE (10-sep-2026, pedido del usuario -- consolidado de pendientes,
+sección 1, puntos 4 y 6): registrar/actualizar la resolución final de
+UN ganador de sorteo (Califica/No califica + Razón + Premio) sobre
+S_Asistencia. Ver _webAdminSorteoResolucionGuardar() en 37_Web_API.gs.
+Mismo patrón que webAdminTorneoResolucionGuardar justo arriba:
+sessionToken y datos viajan en el body. datos = { idSorteo, tag,
+nombre, premio, resultado, razon, permitirSinTag }.
+```
+
+#### 38B093 — líneas 2148-2153 (comentario)
+
+```text
+FASE (12-sep-2026, pedido del usuario -- consolidado de pendientes,
+punto 1): el botón "Exportar" de sorteo.html dispara el docx real al
+instante en vez de esperar la corrida diaria de runUpdate(). Ver
+_webAdminSorteoActualizarDocGanadores() en 37_Web_API.gs -- solo
+sessionToken en el body, sin `datos` (no hace falta idSorteo: resuelve
+el sorteo más reciente igual que la corrida diaria).
+```
+
+#### 38B094 — líneas 2171-2174 (comentario)
+
+```text
+Endpoint de corrección de guerra (Tampermonkey) — ver 18_CorreccionGuerra.gs.
+Se resuelve ANTES de intentar parsear el payload de Meta (que siempre
+llega SIN parámetros de query string), así que este chequeo es seguro:
+solo entra acá cuando la propia URL trae ?accion=corregirGuerra&token=...
+```
+
+#### 38B095 — líneas 2184-2189 (comentario)
+
+```text
+FIX (13-ago-2026, pedido del usuario): log en Drive por botón — ver
+_logTampermonkeyADrive() (05_Backup_CSV.gs). resultado.avisoControl2
+(ver fix de la misma fecha en _aplicarCorreccionesGuerra(),
+18_CorreccionGuerra.gs) ahora viaja también acá si actualizarControl2()
+falló a mitad de camino — antes ese error solo quedaba en
+Logger.log(), invisible fuera del editor de Apps Script.
+```
+
+#### 38B096 — líneas 2202-2202 (comentario)
+
+```text
+Endpoint de importación "Nuevos" (Tampermonkey) — ver 14_Nuevos_RoyaleAPI.gs.
+```
+
+#### 38B097 — líneas 2212-2213 (comentario)
+
+```text
+FIX (13-ago-2026, pedido del usuario): log en Drive por botón — ver
+_logTampermonkeyADrive() (05_Backup_CSV.gs).
+```
+
+#### 38B098 — líneas 2225-2227 (comentario)
+
+```text
+Endpoint del histórico de Guerra por jugador (Tampermonkey) — ver
+20_HistorialGuerraJugador.gs. Mismo patrón de token + payload por lotes
+que 'importarNuevos'.
+```
+
+#### 38B099 — líneas 2248-2252 (comentario)
+
+```text
+Endpoint de "Verificar Semana en Curso" (fase `race`, Tampermonkey) —
+ver 19_CorreccionRiverRace.gs. Mismo patrón de token + payload que los
+demás endpoints de este bloque. A diferencia de 'corregirGuerra', este
+NUNCA escribe directo sobre Guerra/Control_2 — solo deja discrepancias
+pendientes de aprobación manual (ver aprobarCorreccionesRiverRacePendientes()).
+```
+
+#### 38B100 — líneas 2290-2300 (docblock)
+
+```text
+_normalizarClanTagContactos(tag)
+FIX (pedido usuario, sufijo C-1,2,3,4 en el correo secundario): mismo
+criterio que normalizarClanTag() en 16_ContactsSync.gs — sin '#', sin
+espacios, en mayúsculas — para que las claves coincidan EXACTO con las
+que ya usa SincronizarContactosNube() al guardar CLAN_CODIGOS_MAP en las
+Propiedades del Script. Se duplica acá (en vez de llamar a la función del
+otro archivo) porque esa función vive DENTRO de SincronizarContactosNube()
+(closure local), no en el scope global, así que no es accesible desde
+acá aunque esté en el mismo proyecto.
+```
+
+### Ubicación: `_normalizarClanTagContactos`
+
+#### 38B101 — líneas 2305-2323 (docblock)
+
+```text
+_leerMapaCodigosClanContactos()
+FIX (pedido usuario, sufijo C-1,2,3,4 en el correo secundario): lee (SIN
+escribir) el mapa de códigos de clan (C-1, C-2, C-3, C-4...) que
+SincronizarContactosNube() (16_ContactsSync.gs) mantiene en las
+Propiedades del Script bajo la clave 'CLAN_CODIGOS_MAP' — mismo proyecto,
+misma fuente de verdad, así que el código que recibe el correo secundario
+es EXACTAMENTE el mismo que ya usa la cuenta principal.
+
+Esta función NUNCA asigna códigos nuevos (esa sigue siendo responsabilidad
+exclusiva de SincronizarContactosNube(), para no tener dos funciones
+escribiendo la misma propiedad en paralelo y arriesgar una condición de
+carrera). Si un tag de clan todavía no tiene código asignado (clan recién
+creado, antes de que corra la próxima sincronización de contactos de la
+cuenta principal), devuelve undefined para ese tag — _generarJsonContactos()
+simplemente no le agrega codigo_clan por ahora, y lo recibirá en la
+próxima llamada al Web App una vez que SincronizarContactosNube() ya lo
+haya registrado (corre antes, en el mismo runAll()/runUpdate()).
+```
+
+### Ubicación: `_leerMapaCodigosClanContactos`
+
+#### 38B102 — líneas 2330-2378 (docblock)
+
+```text
+_generarJsonContactos()
+Lee el Directorio y devuelve la lista de contactos activos Terna con celular registrado.
+Formato de cada elemento:
+  { tag, nombre, jugador, clan, clan_tag, codigo_clan, prefijo, celular, telefono_completo }
+
+Solo incluye jugadores:
+  - Estado = Activo
+  - Clan en CFG.TERNA_TAGS
+  - Celular no vacío
+
+FIX (pedido usuario, sufijo C-1,2,3,4 en el correo secundario): se
+agregan clan_tag (el ClanTag crudo, ej. "#GCRG8L00") y codigo_clan (el
+número que SincronizarContactosNube(), 16_ContactsSync.gs, ya le asignó
+a ese tag en CLAN_CODIGOS_MAP — ver _leerMapaCodigosClanContactos() más
+arriba). Antes ninguno de los dos viajaba en el JSON, así que el correo
+secundario nunca podía calcular el sufijo "(C-1,2,3,4)" que sí arma la
+cuenta principal. codigo_clan puede venir null si el clan todavía no
+tiene código asignado (ver docblock de _leerMapaCodigosClanContactos()).
+
+FIX (15-sep-2026, barrido de conexión web->CSV): antes esta función leía
+la hoja Directorio DIRECTO e indexaba con IC (29 columnas, orden físico
+real de la hoja) — a diferencia del resto de funciones de Directorio de
+este archivo, que ya usan DC (60 columnas, Directorio+Players+Links
+fusionados). El motivo por el que no se podía conectar sin más al mismo
+fallback genérico: Backup_Directorio.csv se guarda SIEMPRE en formato DC
+de 60 columnas (ver syncDirectorioCSV(), 05_Backup_CSV.gs), nunca en
+formato IC — así que _obtenerFilasConFallbackCSV() con DIR_SHEET_COLS
+(29) habría recortado las primeras 29 columnas del CSV en orden DC, que
+NO corresponden a las columnas IC (ej. la columna 13 en DC es
+COPAS_MAX, no Celular como en IC), corrompiendo el JSON de contactos en
+silencio.
+
+SOLUCIÓN: mismo criterio EXACTO ya probado en `dataDir` más arriba en
+este archivo (ver el bloque "FASE (15-sep-2026, ... continuación de
+_webRosterCalcular()"): si la hoja Directorio está disponible, se usa
+_leerDirectorioFisicoComoDC() (11_DirectorioSheet.gs), que reconstruye
+cada fila fusionando Directorio+Players+Links y devuelve formato DC de
+60 columnas. Si no está disponible, se cae a
+_obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO,
+'Backup_Directorio.csv', DIR_TOTAL_COLS) — que, con la hoja ya
+descartada, va directo a Backup_Directorio.csv, YA en formato DC, así
+que los índices DC.* de abajo quedan correctos sin importar cuál de las
+dos fuentes se haya usado. Esta función no usa ningún campo de fecha
+(Vigencia/FechaIng), así que a diferencia del bloque `dataDir` no hace
+falta reconstruir esas columnas con _parseSpanishDate().
+
+@returns {Array} Array de objetos de contacto
+```
+
+### Ubicación: `_generarJsonContactos`
+
+#### 38B103 — líneas 2394-2395 (comentario)
+
+```text
+FIX: mapa de códigos de clan (C-1,2,3,4...), leído UNA vez antes del
+loop — ver _leerMapaCodigosClanContactos() más arriba en este archivo.
+```
+
+#### 38B104 — líneas 2410-2412 (comentario)
+
+```text
+FIX: código de clan (C-1,2,3,4...) correspondiente a este ClanTag,
+igual que ya calcula SincronizarContactosNube() para la cuenta
+principal. null si el clan todavía no tiene código asignado.
+```
+
+#### 38B105 — líneas 2430-2430 (comentario)
+
+```text
+Ordenar por clan (orden en TERNA_TAGS) y luego por nombre
+```
+
+#### 38B106 — líneas 2443-2450 (comentario)
+
+```text
+=============================================================================
+C) DASHBOARD DE ADMINISTRADORES (doGet ?dashboard=1)
+Página HTML de solo lectura, pensada para abrirse desde el celular
+(compartir el link con token a los administradores de la Familia Terna).
+Lee directamente de las hojas ya actualizadas (Guerra/Pendientes/
+Directorio) — NO hace llamadas a la API de Clash Royale, así que carga
+rápido y no depende de que /players esté habilitado.
+=============================================================================
+```
+
+#### 38B107 — líneas 2452-2501 (docblock)
+
+```text
+_getDatosDashboard()
+Junta todo lo que necesita el dashboard en un solo objeto:
+  - ctx: temporada/semana/día/esDiaGuerra (ver _getCtx(), 09_API_ClashRoyale.gs)
+  - guerraPorClan: { nombreClan -> {ataques, fame, barcos, atacaron, totalHoy} },
+    ataques/fame/barcos/atacaron se agregan desde la hoja Guerra,
+    filtrando SOLO las filas de HOY (PeriodIndex === ctx.periodIndex) de
+    la temporada vigente. `totalHoy` YA NO cuenta esas filas (ver FIX
+    09-sep-2026 más abajo) -- es el total de miembros Activos de ESE
+    clan según Directorio (mismo número que resumenClanes).
+  - diasSemanaGuerra: array de 4 {letra, fecha} (Jue/Vie/Sáb/Dom de la
+    semana vigente), con la fecha real tomada de GC.DIA_GUERRA — usado
+    por guerra.html para el timeline (ver fix 28-ago-2026 más abajo)
+  - pendientes: array de {tag, nombre, clan, rango, faltantes} desde
+    Pendientes (rango se cruza aparte por Tag contra Directorio, ver FIX
+    10-sep-2026 más abajo — la hoja Pendientes en sí no tiene esa
+    columna)
+  - resumenClanes: { nombreClan -> cantidad de miembros Activos } desde Directorio
+  - valoresDiariosSelectores / valoresDiariosPorSemana: cuadrícula
+    "Valores diarios" (antes "Cuadrícula de Activos (Semana Actual)"),
+    valores DIARIOS J/V/S/D de cada Activo -- ahora seleccionable por
+    CUALQUIER año/temporada(mes)/semana con datos, no solo la semana
+    vigente de la temporada vigente. Ver _getValoresDiariosSelectores()/
+    _getControlActivosGridPorTemporada() más abajo (FIX 09-sep-2026,
+    pedido usuario -- "reestructurar, ya no es solo semana actual").
+  - controlTemporadaSemanas / controlTemporadaPorClan: cuadrícula "Tipo
+    Control_2" (semanal, toda la temporada) — ver
+    _getControlTemporadaPorClan() más abajo (FIX 05-sep-2026, pedido
+    usuario).
+  - temporadasDisponibles / controlTemporadaPorTemporada: selector de
+    temporadas anteriores para la cuadrícula de arriba — ver
+    _getTemporadasDisponibles()/_getControlTemporadaPorTemporada() más
+    abajo (FIX 07-sep-2026, pedido usuario).
+  - controlTemporadaSelectores: agrupa esas mismas temporadas por
+    año → temporada(mes) para el selector de año/mes de "Valores
+    semanales" (antes "Cuadrícula de Temporada (Semanal)") — ver
+    _getControlTemporadaSelectores() más abajo (FIX 09-sep-2026, pedido
+    usuario -- "añádele el selector de año y reemplaza el selector de
+    temporada por el de mes, tal como se definió para la otra
+    cuadrícula").
+  - nuevos: array de miembros recién ingresados (ver criterio abajo), con
+    links de RoyaleAPI y CWStats ya generados
+  - tiempos (NUEVO 05-oct-2026, pedido usuario): horas de actualización para
+    mostrar en la web: { generadoTs, generadoLima, api:{ultimaConsultaTs,
+    ultimaConsultaLima, completa, ultimaCompletaTs, ultimaCompletaLima, origen},
+    mensajes:{generadosTs, generadosLima, cantidad, origen} }. Ver
+    _tiemposActualizacionWeb_() en 42_Web_TiemposActualizacion.gs. Es null si no
+    se pudo armar (nunca rompe el resto del objeto). Como webGuerraEnVivo cachea
+    este objeto, generadoTs es la hora en que se armó esa caché.
+```
+
+### Ubicación: `_getDatosDashboard`
+
+#### 38B108 — líneas 2503-2508 (comentario)
+
+```text
+19-sep-2026 (pedido del usuario -- webGuerraEnVivo tardaba 28-39 s): mientras
+dura ESTA función, Backup_Guerra.csv se lee y parsea una sola vez (en vez de
+2N+1 veces con N temporadas históricas) y Guerra_Logs también una sola vez.
+La memo vive solo durante esta ejecución y se limpia siempre al salir, aun
+si algo falla a mitad de camino. Ver _guerraMemoIniciar_() en
+22_ControlCalendario.gs. La forma del JSON devuelto no cambia.
+```
+
+#### 38B109 — líneas 2520-2530 (docblock)
+
+```text
+_DASH_MEMO / _getMinGClanMapsDash_()
+19-sep-2026 (medición real: control2Historico=9.2 s + control2Vigente=4.9 s).
+_getControlTemporadaPorClan() llama _getMinGClanMaps() (10_ClanSheet.gs) una
+vez por la temporada vigente y otra por CADA temporada histórica, y esa función
+lee tres hojas (Extra, CR_Lista y Clan) cada vez, aunque el resultado no
+depende de la temporada. Mientras dura _getDatosDashboard() (que es solo
+lectura: no escribe ninguna de esas hojas) se calcula UNA vez y se reusa.
+Fuera de esa ejecución (_DASH_MEMO en null) se llama a _getMinGClanMaps()
+directo, igual que antes. Los callers solo leen `.byNombre`, nunca lo modifican.
+```
+
+### Ubicación: `_getMinGClanMapsDash_`
+
+#### 38B110 — líneas 2541-2546 (docblock)
+
+```text
+_nombreClanDesdeHojaClanDash_(clanTag)
+Solo para uso dentro del dashboard (_DASH_MEMO activo). Lee la hoja Clan UNA vez
+por ejecución (Tag -> Nombre) y devuelve el nombre de ese clan, o '' si no está.
+Mismas columnas (CC.CLAN_TAG / CC.NOMBRE) que ya usa _getMinGClanMaps().
+```
+
+### Ubicación: `_nombreClanDesdeHojaClanDash_`
+
+#### 38B111 — líneas 2568-2580 (docblock)
+
+```text
+_leerDirectorioDashboard_(ss)
+19-sep-2026 (medición real: dir.lectura = 4,5 s de 17,5 s). Igual que
+_leerDirectorioFisicoComoDC() (11_DirectorioSheet.gs) pero SIN leer las URLs reales
+de los enlaces con getRichTextValues() (6 lecturas de texto enriquecido de la hoja
+Links, que es lo lento). El dashboard solo usa los enlaces de RoyaleAPI y CWStats, y
+esas URLs siempre se generan igual desde el Tag
+(https://royaleapi.com/player/<TAG>/ y https://cwstats.com/player/<TAG>/, ver la
+generación de la hoja Links en 12_Players_Links.gs), así que se arman
+directo. Solo se rellenan si la celda de Links de ese jugador tiene enlace (celda no
+vacía), igual que antes. Los demás enlaces (WSP, Render, Mazo) quedan con el texto
+visible, y el dashboard no los usa. Solo lectura.
+```
+
+### Ubicación: `_leerDirectorioDashboard_`
+
+#### 38B112 — líneas 2609-2615 (docblock)
+
+```text
+_dashTiempoIniciar_() / _dashTiempoMarca_() / _dashTiempoFin_()
+19-sep-2026: cronómetro por etapas de _getDatosDashboardCalcular_(). Deja UNA
+línea en el registro de ejecuciones de Apps Script con los milisegundos de
+cada etapa, para ver con datos reales dónde se va el tiempo de
+webGuerraEnVivo en vez de adivinarlo. No cambia ningún resultado.
+```
+
+### Ubicación: `_dashTiempoIniciar_`
+
+#### 38B113 — líneas 2621-2628 (docblock)
+
+```text
+_DASH_T / _dashAcum_(etiqueta, desde)
+19-sep-2026 (2.ª medición: control2Vigente≈4.9 s y control2Historico≈8-9 s casi
+no se movieron con las memorias de lectura, así que el costo no está donde se
+pensaba). Suma, por etiqueta, los milisegundos y las veces que se ejecutó un
+tramo dentro de esas etapas; _dashTiempoFin_() los imprime al final de la línea
+[Dashboard] como `detalle`. Solo mide: no cambia ningún resultado.
+```
+
+### Ubicación: `_dashTiempoFin_`
+
+#### 38B114 — líneas 2649-2667 (docblock)
+
+```text
+_diagGuerraVivo_(texto) / verDiagnosticoGuerraVivo()
+19-sep-2026 (pedido del usuario -- en Ejecuciones, las filas de doGet no
+mostraban ningún detalle: Logger.log de una Web App desplegada no siempre
+aparece ahí). Cada línea de diagnóstico de webGuerraEnVivo (el cronómetro
+[Dashboard] y los avisos de caché [WebGuerraEnVivo]) ahora se escribe por
+tres vías: Logger.log, console.log (este sí llega a los registros de Cloud de
+las ejecuciones web) y una lista corta en CacheService (últimas 15 líneas,
+6 h) que se lee ejecutando verDiagnosticoGuerraVivo() desde el editor de
+Apps Script. Nunca lanza error: si algo falla, simplemente no registra.
+No cambia ningún resultado del endpoint.
+
+19-sep-2026 (registro real: las 15 líneas guardadas eran todas "caché HIT" y la
+línea [Dashboard] build=... ya se había desplazado, así que no se podía ver la
+medición). Dos ajustes solo de diagnóstico: (1) los avisos "caché HIT" ya no
+entran a la lista de 15 líneas (siguen en Logger/console); (2) la última línea
+[Dashboard] se guarda además en su propia clave, que ninguna otra línea pisa, y
+verDiagnosticoGuerraVivo() la muestra primero.
+```
+
+### Ubicación: `_diagGuerraVivo_`
+
+#### 38B115 — líneas 2678-2678 (comentario)
+
+```text
+La medición completa de la última recalculada tiene su propia clave.
+```
+
+#### 38B116 — líneas 2680-2680 (comentario)
+
+```text
+Los "caché HIT" son decenas por hora y llenaban la lista; no se guardan aquí.
+```
+
+### Ubicación: `verDiagnosticoGuerraVivo`
+
+#### 38B117 — líneas 2700-2705 (docblock)
+
+```text
+_getDatosDashboardCalcular_()
+Cuerpo original de _getDatosDashboard() (ver docblock arriba, que describe
+todo lo que devuelve). Separado el 19-sep-2026 solo para poder envolverlo con
+la memo por ejecución de Backup_Guerra.csv; su lógica no cambió.
+```
+
+### Ubicación: `_getDatosDashboardCalcular_`
+
+#### 38B118 — líneas 2713-2727 (comentario)
+
+```text
+---- Guerra de HOY, agregada por clan ----
+FIX (09-sep-2026, pedido usuario -- "no debe mostrarse la cantidad de
+filas de la hoja guerra, se debe tomar la cantidad de miembros
+activos [...] esa no es la cantidad de miembros que tiene el clan"):
+`totalHoy` ANTES contaba cuántas filas de la hoja Guerra ya existían
+para hoy (PeriodIndex + Temporada vigente) por clan -- eso depende de
+cuántas filas ya escribió el proceso que sincroniza la guerra de hoy
+(17_GuerraSheet.gs o similar), NO de cuántos miembros tiene el clan, y
+por eso podía mostrar "0/3 atacaron hoy" en un clan con 14 Activos
+reales. Ahora `totalHoy` se sobreescribe más abajo (una vez leído
+Directorio) con el mismo conteo de Activos que ya usa resumenClanes --
+ver el bloque "Directorio: resumen de activos por clan" más abajo en
+esta misma función. `ataques`/`fame`/`barcos`/`atacaron` NO cambian:
+siguen siendo datos reales de guerra de HOY, agregados desde la hoja
+Guerra tal como antes.
+
+FIX (14-oct-2026, pedido usuario -- "las medallas de la cabecera
+aparecen con 30,700 el jueves, 30,300 el viernes, 31,850 el sábado y
+123,000 el domingo [...] en barcos hay 0, 4, 4 y 12"): `fame` y `barcos`
+de `guerraPorClan` sumaban GC.FAME y GC.BARCOS tal cual, pero esas
+columnas son ACUMULADOS DE TODA LA SEMANA (el contador se reinicia el
+jueves), no del día. Jueves daba el valor del día (el acumulado es el
+del día); viernes a domingo daban el acumulado hasta ese día, y el
+domingo la semana completa. Jue-Sáb se veían bien al elegir el día
+porque el navegador sumaba «Valores diarios» (que ya restaba el día
+anterior); el domingo, día que las tarjetas muestran por defecto, usa
+los valores exactos del backend y por eso salía el acumulado.
+Ahora, por jugador, `fame` del día = acumulado de hoy menos el de ayer
+del mismo Tag+Clan (tope 900 por jugador y día, igual que Valores
+diarios) y `barcos` del día = acumulado de hoy menos el de ayer (nunca
+negativo). El jueves «ayer» es 0 (el criterio es PeriodIndex % 7 > 3 para
+buscar el día anterior). `ataques` ya era diario (AtaquesHoy) y no cambia.
+Efecto colateral buscado: clan.html, el resumen de WhatsApp («Medallas
+del día») y las tarjetas de guerra.html reciben ya el valor del día.
+NO se hizo en el navegador: arreglarlo solo en guerra.html habría dejado
+mal clan.html y el resumen; el origen es el backend.
+Con los números de la queja el domingo debería quedar en ~30,150
+medallas y 4 barcos (123,000 - 92,850 y 12 - 8); falta confirmarlo con
+el dashboard en vivo tras correr subirBaseDesdeGithub().
+```
+
+#### 38B119 — líneas 2731-2733 (comentario)
+
+```text
+19-sep-2026: `true` solo si dataGuerra salió de la hoja viva. Se usa más abajo
+para reusar esta lectura en _construirIngresosRecientesUnificado() sin leer
+Guerra dos veces (con el respaldo CSV no se reusa, para no cambiar su resultado).
+```
+
+#### 38B120 — líneas 2738-2739 (comentario)
+
+```text
+19-sep-2026: mismas filas, mismo rango que lee _getDatosGuerraDesdeHojaParaControl()
+(22_ControlCalendario.gs); se comparten para no releer la hoja en las cuadrículas.
+```
+
+#### 38B121 — líneas 2742-2750 (comentario)
+
+```text
+FASE (15-sep-2026, pedido del usuario -- fallback web->CSV, continuación
+de _webRosterCalcular()/Directorio de este mismo archivo): Backup_Guerra.csv
+se arma en _syncGuerraCSV() (05_Backup_CSV.gs) leyendo la hoja Guerra
+posicionalmente (sh.getRange(...).getDisplayValues(), mismo orden GC),
+sin remapeo por nombre de encabezado -- mismo criterio ya confirmado
+seguro para Backup_Historial_A-D.csv/Ascensos. Los campos que este
+bloque usa (PERIOD_IDX/TEMPORADA/CLAN/ATAQUES_HOY/FAME/BARCOS) son
+todos numéricos o texto plano -- a diferencia del bloque de Directorio
+de más arriba, acá no hace falta reconstruir ningún campo como Date.
+```
+
+#### 38B122 — líneas 2754-2765 (comentario)
+
+```text
+FIX (05-oct-2026, pedido usuario -- "se dio la indicacion de congelar los
+resultados del domingo (no cambiar a ceros el lunes) hasta que empiece la
+siguiente guerra, pero hay 3 clanes en ceros y solo el 3 conserva los
+datos"): en dia de ENTRENAMIENTO (lunes a miercoles) el periodIndex de
+hoy no tiene filas de guerra utiles (unos clanes tienen filas arrastradas,
+otros ninguna), por eso unos salian en ceros y otros no. Ahora, fuera de
+dia de guerra, TODOS los clanes se agregan desde el MISMO periodo: el
+ultimo dia de guerra jugado (el domingo anterior), y asi se mantiene
+congelado hasta que empiece la guerra del jueves. En dia de guerra todo
+sigue igual (solo hoy). Si ese domingo no tiene filas en la temporada
+vigente (temporada recien arrancada), se toma el ultimo dia de guerra con
+datos de cualquier temporada anterior.
+```
+
+#### 38B123 — líneas 2773-2775 (comentario)
+
+```text
+2da version (05-oct-2026): la hoja Guerra solo trae la temporada vigente, asi que justo tras un
+cambio de temporada el ultimo dia de guerra esta en Backup_Guerra.csv. Primero se mira solo la
+hoja; el CSV se lee unicamente si ahi no hay un dia de guerra util de la temporada vigente.
+```
+
+#### 38B124 — líneas 2793-2802 (comentario)
+
+```text
+FIX (04-sep-2026, pedido usuario -- "no se entiende bien de dónde
+salen los [totales], no es solo estético, no entiendo qué significa
+esa información"): faltaba filtrar por TEMPORADA además de
+PERIOD_IDX. PERIOD_IDX se reinicia cada temporada (0..~34), así que
+sin este filtro las filas de temporadas anteriores con el mismo
+PERIOD_IDX que el día de hoy también se sumaban, inflando ataques/
+fame/barcos muy por encima del roster real del clan (ver mismo
+patrón ya usado en el resto del proyecto, ej. línea con
+"String(fila[GC.TEMPORADA - 1]) !== String(ctx.temporada)" en
+18_CorreccionGuerra.gs / 22_ControlCalendario.gs).
+```
+
+#### 38B125 — líneas 2816-2817 (comentario)
+
+```text
+`totalHoy` YA NO se incrementa acá (contaba filas de Guerra) -- se
+sobreescribe más abajo con el conteo real de Activos de Directorio.
+```
+
+#### 38B126 — líneas 2821-2826 (comentario)
+
+```text
+NUEVO (05-oct-2026, pedido usuario -- "la meta ya cruzada si se debe considerar"): marca `metaCruzada` por
+clan en la tarjeta "Guerra de hoy". Solo en dia de guerra y nunca el jueves ni en coliseo (misma regla que
+_diasOpcionalesClanSemana_()). Usa SOLO _cruceMetaDesdeGuerraLogs_() (busqueda en memoria sobre Guerra_Logs,
+leido una vez por ejecucion), NO el JSON de Drive ni el cache de la API que causaron los 28-39 s del 19-sep.
+Campo ADITIVO: solo aparece como `true`; sin dato de Guerra_Logs no se marca (lado conservador). Si falla,
+se ignora y la tarjeta sale sin marca. VERIFICAR el tiempo de ?dashboard=json tras desplegar.
+```
+
+#### 38B127 — líneas 2827-2827 (comentario en línea)
+
+```text
+07-oct-2026 (criterio unificado, igual que _diasOpcionalesClanSemana_()): viernes a domingo se evalúan con Guerra_Logs; Supercell no confirma desde qué día se puede cruzar la meta
+```
+
+#### 38B128 — líneas 2844-2848 (comentario)
+
+```text
+10 columnas reales hoy: N°|Tag|Nombre|Nom_Multi|Préstamo|Clan|Faltantes|
+Celular|WSP|RoyaleAPI (Nom_Multi agregada 06-ago-2026, Préstamo
+agregada 07-ago-2026 y RoyaleAPI agregada 13-ago-2026 -- ver
+_setupPendientes(), 02_Setup_Hojas.gs). Este bloque solo necesita las
+primeras 7 (hasta Faltantes), Celular/WSP/RoyaleAPI no hacen falta acá.
+```
+
+#### 38B129 — líneas 2851-2865 (comentario)
+
+```text
+FASE (15-sep-2026, pedido del usuario -- fallback web->CSV):
+Pendientes NO tiene un mecanismo de respaldo DEDICADO (no aparece en
+hojasConRespaldoDedicado de respaldarHojasDerivadasCSV(),
+05_Backup_CSV.gs) pero TAMPOCO está excluida de ahí -- cae en el
+balde genérico de "hojas derivadas": cualquier hoja del spreadsheet
+que no esté en esa lista de exclusión se respalda igual, siempre,
+vía _respaldarListaHojasCSV(ss, [nombreHoja], false) ->
+_extraerValoresConLinksReales() (lectura 100% posicional, un solo
+encabezado de 1 fila, sin remapeo por nombre -- Pendientes no tiene
+el header de 2/3 filas de T_Lista/S_Lista/CR_Lista). Por eso
+Backup_Pendientes.csv YA existe y ya está en el mismo orden que la
+hoja viva, sin necesidad de crear ningún mecanismo nuevo -- solo
+faltaba conectarle este fallback, igual que Directorio/Guerra más
+arriba en este archivo. totalCols=7 recorta el CSV igual que el
+getRange(...,7) de la rama de arriba, misma columna Faltantes como tope.
+```
+
+#### 38B130 — líneas 2886-2905 (comentario)
+
+```text
+---- Fechas reales de los 4 días de guerra (Jue-Dom) de la semana vigente ----
+FIX (28-ago-2026, pedido del usuario — el timeline de guerra.html
+mostraba el rótulo sin sentido "Jueves A / Viernes B / Sábado C /
+Domingo D"). Se tomaba la fecha calendario real de GC.DIA_GUERRA (col.
+7 de la hoja Guerra) de la primera fila encontrada para cada uno de los
+4 PeriodIndex de la semana vigente — pero eso significaba que un día
+que TODAVÍA no tuviera ninguna fila en Guerra (ej. hoy es viernes: sábado
+y domingo no han corrido runGuerra() todavía) se quedaba con fecha=null,
+y el frontend mostraba "—" en vez de la fecha (bug reportado, 04-sep-2026,
+pedido usuario — "Panel de Guerra: se debe mostrar las 4 fechas pero
+seguir resaltando el día actual").
+FIX (04-sep-2026, pedido usuario): las 4 fechas de la semana vigente
+(Jueves..Domingo) son 100% deterministas a partir de ctx.ref/ctx.temporada
+— son el mismo cálculo que ya usa ctx.diaGuerra para el día de HOY (ver
+calcDiaGuerraIdx(), 04_Formato_Comun.gs), solo que acá se llama una vez
+por cada uno de los 4 PeriodIndex de la sección en vez de una sola vez
+para periodIndex actual. Ya NO depende de que exista una fila en la hoja
+Guerra para ese día — las 4 fechas se muestran siempre, hayan corrido o
+no todavía, y el frontend sigue resaltando "HOY" comparando la letra
+(ctx.diaLetra) como ya hacía antes.
+```
+
+#### 38B131 — líneas 2921-2941 (comentario)
+
+```text
+FIX (10-sep-2026, pedido usuario -- "guerra ya tiene la columna Rango
+pero no se muestra ningún dato ahí"): la hoja Pendientes (ver bloque
+"Pendientes de atacar" más arriba) no tiene columna Rango, así que
+`pendientes` se armaba sin ese campo -- guerra.html (que ya esperaba
+`p.rango` desde el fix de esa columna) siempre mostraba "—". Se arma
+acá, junto con el resto de datos que ya salen de este mismo loop sobre
+dataDir, un mapa Tag -> {rango, royaleApi, cwStats} (TODOS los tags de
+Directorio, activos o no, por si algún pendiente quedó con Estado
+distinto de Activo) que se usa más abajo para completar `pendientes`.
+AMPLIADO (15-sep-2026, cierre de conexión pendiente -- guerra.html,
+sección "Pendientes de atacar", ya esperaba también p.royaleApi/
+p.cwStats para pintar los íconos de perfil a la derecha de Faltantes
+-- ver el comentario "PENDIENTE BACKEND" que había junto a esa tabla
+en el <script>; solo faltaba exponer estos 2 campos, mismo criterio
+de columnas DC que ya usa _construirIngresosRecientesUnificado() para
+lo mismo en Ingresos recientes, vía _webUrlPerfilExterno() (mismo
+dominio/segmento 'royaleapi.com'/'player' y 'cwstats.com'/'player'
+que usa esa función; sin el respaldo por Tag que sí tiene
+_urlPerfilConFallback(), porque acá basta con no romper la tabla si
+el link no está guardado -- guerra.html ya contempla que la celda
+quede sin ícono en ese caso).
+```
+
+#### 38B132 — líneas 2944-2953 (comentario)
+
+```text
+FASE (15-sep-2026, pedido del usuario -- fallback web->CSV, continuación
+de _webRosterCalcular() [37_Web_API.gs]): mismo criterio ya probado ahí.
+Si Directorio no está disponible o vacío, se cae a Backup_Directorio.csv
+(formato DC de 60 columnas, Directorio+Players+Links ya fusionados por
+syncDirectorioCSV(), 05_Backup_CSV.gs) en vez de dejar dataDir en null,
+que es lo que devolvería _leerDirectorioFisicoComoDC(ss) en ese caso.
+Este dataDir se reutiliza más abajo para Valores diarios/Control_2/
+Ingresos recientes -- algunos de esos consumidores sí necesitan
+DC.VIGENCIA/DC.FECHA_ING como objeto Date, así que se reconstruyen acá
+mismo con _parseSpanishDate(), igual que ya hace _webRosterCalcular().
+```
+
+#### 38B133 — líneas 2955-2960 (comentario)
+
+```text
+Fase C1 (16/07/2026): antes leía shDir.getRange(2,1,...,DIR_SHEET_COLS)
+e indexaba con DC — la hoja física de Directorio ya solo tiene 29
+columnas (orden IC), y V_Guerra vive en Players. Se usa
+_leerDirectorioFisicoComoDC() (11_DirectorioSheet.gs), que devuelve
+cada fila ya reconstruida en formato DC de 60 columnas (con los campos
+de Players incluidos), así los DC.CAMPO de abajo quedan correctos.
+```
+
+#### 38B134 — líneas 2996-3001 (comentario)
+
+```text
+Mismo FIX de arriba: recién acá, con infoDirPorTagDir ya armado, se
+completa cada pendiente con su Rango/RoyaleAPI/CWStats (por Tag, misma
+normalización en mayúsculas que el resto de cruces por Tag de este
+archivo). Si el tag no aparece en Directorio (no debería pasar --
+Pendientes se alimenta de Directorio) quedan '' y guerra.html sigue
+mostrando "—" (o sin ícono) en vez de romper.
+```
+
+#### 38B135 — líneas 3009-3017 (comentario)
+
+```text
+FIX (09-sep-2026, pedido usuario -- ver comentario completo en el
+bloque "Guerra de HOY, agregada por clan" más arriba): recién ACÁ, con
+resumenClanes ya calculado, se fija totalHoy de cada clan de
+guerraPorClan al conteo real de Activos de Directorio (mismo número
+que ya muestra "Miembros Activos por Clan"). Un clan que hoy no tenga
+ninguna fila todavía en la hoja Guerra (por eso no está en
+guerraPorClan) simplemente no aparece en la tarjeta "Guerra de Hoy" --
+eso no cambia con este fix, solo el número de abajo (antes contaba
+filas de Guerra, ahora cuenta Activos).
+```
+
+#### 38B136 — líneas 3024-3029 (comentario)
+
+```text
+---- Lista de temporadas con datos de guerra (más reciente primero) --
+ahora se calcula ACÁ ARRIBA (antes vivía más abajo, junto a la
+Cuadrícula de Temporada) porque _getValoresDiariosSelectores() de
+"Valores diarios" (más abajo) también la necesita para armar el
+selector de año/temporada de ESA cuadrícula. Ver _getTemporadasDisponibles()
+más abajo en este archivo.
+```
+
+#### 38B137 — líneas 3033-3044 (comentario)
+
+```text
+---- "Valores diarios" (antes "Cuadrícula de Activos (Semana Actual)")
+-- grid J/V/S/D de cada Activo por clan. FIX (09-sep-2026, pedido
+usuario -- "ya no se muestran solo semanas de la temporada actual,
+sino cualquiera disponible según el año y la temporada seleccionada"):
+reemplaza por completo el trío controlActivosSemanaActual/
+semanasControlActivosDisponibles/controlActivosPorSemana (acotado a la
+temporada vigente) por un selector año -> temporada(mes) -> semana que
+cubre TODAS las temporadas de `temporadasDisponibles`, más la
+cuadrícula ya calculada para cada combinación disponible. Ver
+_getValoresDiariosSelectores()/_getControlActivosGridPorTemporada() más
+abajo en este archivo. Reusa el dataDir ya leído arriba para no releer
+Directorio una segunda vez.
+```
+
+#### 38B138 — líneas 3050-3054 (comentario)
+
+```text
+---- Panel "tipo hoja Control_2" — valores SEMANALES de toda la
+temporada (a diferencia de "Valores diarios" de arriba, que es
+"tipo hoja Control": valores DIARIOS por semana). Ver
+_getControlTemporadaPorClan() más abajo en este archivo. Reusa el
+dataDir ya leído arriba para no releer Directorio una tercera vez.
+```
+
+#### 38B139 — líneas 3059-3065 (comentario)
+
+```text
+---- FIX (07-sep-2026, pedido usuario -- "Cuadrícula de Temporada debe
+tener un botón para seleccionar la temporada que se quiere ver, así se
+puede ver temporadas anteriores"): la cuadrícula "Tipo Control_2"
+completa de cada temporada ANTERIOR a la vigente (la vigente ya viaja
+arriba en controlTemporadaSemanas/controlTemporadaPorClan, no hace
+falta duplicarla acá -- ver _getControlTemporadaPorTemporada() más
+abajo). `temporadasDisponibles` ya se calculó arriba.
+```
+
+#### 38B140 — líneas 3070-3077 (comentario)
+
+```text
+---- FIX (09-sep-2026, pedido usuario -- "añádele el selector de año y
+reemplaza el selector de temporada por el de mes, tal como se definió
+para la otra cuadrícula"): agrupa `temporadasDisponibles` por
+año → temporada(mes) para el selector de esta cuadrícula -- mismo
+criterio que valoresDiariosSelectores de arriba, pero sin nivel de
+semana (acá siempre se muestran las 5 semanas de la temporada elegida
+juntas). Ver _getControlTemporadaSelectores() más abajo en este
+archivo. No requiere dataDir (solo agrupa números de temporada).
+```
+
+#### 38B141 — líneas 3081-3097 (comentario)
+
+```text
+---- Panel de "Ingresos recientes" ----
+FIX (01-sep-2026, pedido usuario — "haz que trabajen juntos"): antes
+esta función calculaba su PROPIA lista de "nuevos" (mismo criterio de
+Directorio que ahora vive en _construirIngresosRecientesUnificado(),
+37_Web_API.gs, PASO 1), pero SIN el enriquecimiento de la hoja
+"Nuevos"/Tampermonkey que sí tenía index.html (webIngresosRecientes) —
+de ahí que Inicio y Guerra mostraran gente distinta para la misma
+sección. Ahora ambas páginas comparten la MISMA función: el universo
+sigue siendo 100% Directorio (no negociable), y se enriquece con
+Tampermonkey si hay datos disponibles para ese candidato. Se reusa el
+dataDir/ctx ya calculados arriba para no releer la hoja Directorio una
+segunda vez. guerra.html (ver render() en guerra.html) solo consume
+tag/nombre/clan/fechaIng/royaleApi/cwstats de cada elemento — el resto
+de campos del contrato unificado (copas, historialSemanal, etc.) se
+ignoran ahí sin problema, JSON de sobra no rompe nada.
+19-sep-2026: se le pasa la lectura de Guerra ya hecha arriba (si vino de la
+hoja) y el cronómetro, para no releer Guerra y ver el desglose por lectura.
+```
+
+#### 38B142 — líneas 3112-3113 (comentario)
+
+```text
+NUEVO (05-oct-2026): horas de actualizacion para la web (ver 42_Web_TiemposActualizacion.gs). El try/catch cubre
+tambien el caso de subir este archivo antes que el 51 (ReferenceError): la web nunca debe romperse por esto.
+```
+
+#### 38B143 — líneas 3121-3121 (comentario en línea)
+
+```text
+NUEVO 05-oct-2026: J/V/S/D del dia que muestran las tarjetas mientras estan congeladas (null en dia de guerra)
+```
+
+#### 38B144 — líneas 3137-3145 (docblock)
+
+```text
+_webAportesInactivos(token)
+Punto de entrada del endpoint 'webAportesInactivos' (ver router en
+doGet() más arriba). Sesión de admin validada ACÁ DENTRO — mismo patrón
+que _webAdminContenido()/_webAdminCategorias() (37_Web_API.gs): un
+token inválido o vencido devuelve { ok:false, error } sin tocar la hoja
+Inactivos ni la hoja Guerra para nada.
+@returns {{ok:boolean, aportesInactivos?:Object, error?:string}}
+```
+
+### Ubicación: `_webAportesInactivos`
+
+#### 38B145 — líneas 3153-3160 (docblock)
+
+```text
+_MESES_ES_ / _MESES_ABREV_ES_
+FIX (09-sep-2026, pedido usuario — selectores de año/temporada(mes) para
+"Valores diarios"): nombres de mes en español, fijos en vez de depender
+de Intl/toLocaleDateString (más predecible en Apps Script, y evita el
+punto final que agrega 'es-PE' en abreviaturas tipo "sept."). Índice
+0-based (0 = enero), igual que Date.getMonth().
+```
+
+### Ubicación: `_MESES_ABREV_ES_`
+
+#### 38B146 — líneas 3164-3172 (docblock)
+
+```text
+_fmtFechaCortaSemana(d)
+"DD MES" en mayúsculas (ej. "07 SEP"), usado en las etiquetas de semana
+del selector de "Valores diarios" (ver _getInfoTemporada()/
+_getRangoFechasSemana() más abajo). Sin punto ni año — mismo criterio
+visual que ya usaba fmtDiaMes() en guerra.html, solo que en mayúsculas y
+sin depender de toLocaleDateString (acá, en el backend, por consistencia
+de formato entre corridas/locales del servidor).
+```
+
+### Ubicación: `_fmtFechaCortaSemana`
+
+#### 38B147 — líneas 3179-3191 (docblock)
+
+```text
+_elegirPeriodoGuerraCongelado_(dataGuerra, csvPorTemporada, ctx)
+NUEVO (05-oct-2026, pedido usuario -- "Guerra de hoy" congelada con solo 2 clanes): elige el ULTIMO dia
+de guerra (Jue-Dom) ya jugado, entre la hoja Guerra (temporada vigente) y Backup_Guerra.csv
+(temporadas anteriores; la hoja ya no las tiene). Prefiere el ultimo dia con ATAQUES REALES: un dia en
+el que ningun jugador tiene ataques (ej. domingo T5 S4, filas creadas al empezar el dia y nunca
+actualizadas) se considera sin registro y se salta, igual que en Valores diarios. Si ningun dia tiene
+ataques, devuelve el ultimo dia de guerra a secas. Funcion pura: no lee hojas ni Drive.
+@param {Array[]|null} dataGuerra - filas de la hoja (o del CSV si la hoja estaba vacia).
+@param {Object|null} csvPorTemporada - { temporada: filas[] } de _leerGuerraCsvAgrupado_() (solo se usan las anteriores a ctx.temporada).
+@param {Object} ctx - de _getCtx().
+@returns {{temporada:number, periodIndex:number, letra:string, valido:boolean}|null}
+```
+
+### Ubicación: `_elegirPeriodoGuerraCongelado_`
+
+#### 38B148 — líneas 3223-3242 (docblock)
+
+```text
+_getInfoTemporada(temporada)
+FIX (09-sep-2026, pedido usuario — "el selector de temporada debe
+mostrar la temporada y el mes entre paréntesis, ej. 'Temporada 5
+(Septiembre)'" + "el selector de año solo debe mostrar valores numéricos
+[...] hasta el 4 de enero deberían aparecer los valores en el selector
+del 2025 y en el del 2026 desde el 5 de enero"): a cada número de
+temporada le corresponde SIEMPRE un único mes calendario (el primer
+lunes de ese mes es el inicio de la temporada — ver primerLunesTemporada(),
+01_Config_Global.gs), así que el año que le corresponde a una temporada
+para el selector es el año DE ESE PRIMER LUNES, no el año de la fecha de
+referencia del proyecto. Una temporada que arranca el último lunes de
+diciembre queda agrupada bajo el año de diciembre, aunque sus últimos
+días de guerra ya caigan en enero del año siguiente — exactamente el
+comportamiento pedido por el usuario.
+@param {number|string} temporada
+@returns {{temporada:number, anio:number, mes:number, mesLabel:string,
+  label:string}|null} null si CFG.REF_DEFAULT todavía no está listo
+  (no debería pasar en producción).
+```
+
+### Ubicación: `_getInfoTemporada`
+
+#### 38B149 — líneas 3256-3265 (docblock)
+
+```text
+_getRangoFechasSemana(temporada, sectionIndex)
+Lunes..Domingo REAL de una semana de temporada (sectionIndex 0-based),
+para las etiquetas del selector de semana ("S1 (07 SEP – 13 SEP)" — ver
+docblock de _getSemanasTemporada() más abajo). El lunes de la semana
+`sectionIndex` es el primer lunes de la temporada + sectionIndex*7 días
+(mismo cálculo que ya usa calcDiaGuerraIdx() para el jueves de guerra,
+solo que acá se ancla al lunes de la semana completa, no al jueves).
+@returns {{inicio:Date, fin:Date}|null}
+```
+
+### Ubicación: `_getRangoFechasSemana`
+
+#### 38B150 — líneas 3276-3294 (docblock)
+
+```text
+_getUltimaSemanaJugada(ctx)
+Calcula el sectionIndex de la última semana que YA arrancó su guerra
+(Jue-Dom) de la temporada VIGENTE, es decir la última semana con datos
+reales -- no necesariamente ctx.sectionIndex.
+
+ctx.sectionIndex avanza con el periodIndex de Supercell (~4-5am), sin
+esperar a que arranque la guerra del jueves: en día de entrenamiento,
+ctx.sectionIndex YA es la semana nueva que todavía no jugó ni un día de
+guerra, así que esa semana NO cuenta como "disponible" todavía -- la
+última jugada sigue siendo ctx.sectionIndex - 1. En día de guerra,
+ctx.sectionIndex sí es una semana con datos reales (aunque sea el primer
+día), así que esa cuenta.
+
+@param {Object} ctx - de _getCtx()
+@returns {number} sectionIndex de la última semana jugada, o -1 si la
+  temporada vigente todavía no tuvo ningún día de guerra (recién
+  arrancando, en entrenamiento de la semana 1).
+```
+
+### Ubicación: `_getUltimaSemanaJugada`
+
+#### 38B151 — líneas 3299-3314 (docblock)
+
+```text
+_getSemanasTemporada(ctx, temporada)
+FIX (09-sep-2026, pedido usuario — "ya no se muestran solo semanas de la
+temporada actual, sino cualquiera disponible según el año y la temporada
+seleccionada"): lista de semanas DISPONIBLES (ya jugadas) de UNA
+temporada cualquiera, con su etiqueta de fechas reales.
+  - Si `temporada` es la temporada VIGENTE (ctx.temporada): solo hasta
+    _getUltimaSemanaJugada(ctx) -- nunca semanas futuras.
+  - Si `temporada` es una temporada ANTERIOR (ya terminada): TODAS sus
+    semanas, 1..lunesEnMes(mes de esa temporada) -- una temporada pasada
+    ya jugó todas sus semanas por definición.
+@param {Object} ctx - de _getCtx()
+@param {number} temporada
+@returns {Array<{sectionIndex:number, label:string}>} vacío si la
+  temporada vigente todavía no tuvo ningún día de guerra.
+```
+
+### Ubicación: `_getSemanasTemporada`
+
+#### 38B152 — líneas 3317-3320 (comentario)
+
+```text
+FIX (05-oct-2026, pedido usuario -- "se mostraba la semana 5 de una temporada que solo tiene 4"):
+una temporada tiene tantas semanas como lunes tiene el mes de su primer lunes (4 o 5). Ese tope
+ahora se aplica SIEMPRE, tambien a la temporada vigente, para que un sectionIndex adelantado o
+desactualizado de la API (ej. justo al cambiar de temporada) nunca genere una semana inexistente.
+```
+
+#### 38B153 — líneas 3339-3365 (docblock)
+
+```text
+_getValoresDiariosSelectores(ctx, temporadasDisponibles)
+FIX (09-sep-2026, pedido usuario — "añade un selector de año [...]
+selector de temporada [...] y el tercero es el selector de semana [...]
+por defecto se debe seleccionar el año, temporada y semana más recientes
+disponibles"): arma los 3 niveles del selector de "Valores diarios"
+(antes "Cuadrícula de Activos (Semana Actual)") a partir de
+`temporadasDisponibles` (ver _getTemporadasDisponibles() más abajo en
+este archivo, más reciente primero).
+
+Cada temporada de `temporadasDisponibles` se agrupa bajo el AÑO de su
+propio primer lunes (ver _getInfoTemporada()) — el selector de año solo
+muestra valores numéricos (2026, 2025, 2024...), nunca temporadas
+sueltas. La temporada vigente se excluye del selector si todavía no jugó
+ninguna semana (recién arrancando, en entrenamiento de la semana 1) —
+no tiene sentido ofrecerla vacía; el default cae solo a la temporada
+anterior en ese caso.
+
+@param {Object} ctx - de _getCtx()
+@param {number[]} temporadasDisponibles - de _getTemporadasDisponibles(),
+  más reciente primero.
+@returns {{anios:number[], temporadasPorAnio:Object,
+  semanasPorTemporada:Object, porDefecto:{anio:number,temporada:number,
+  sectionIndex:number}|null}} porDefecto es null solo si ninguna
+  temporada de la lista tiene todavía ninguna semana jugada (proyecto
+  recién arrancando).
+```
+
+### Ubicación: `_getValoresDiariosSelectores`
+
+#### 38B154 — líneas 3385-3388 (comentario)
+
+```text
+La PRIMERA temporada de la lista con al menos una semana jugada es,
+por construcción (temporadasDisponibles ya viene ordenada de más
+reciente a más antigua), la combinación año/temporada/semana más
+reciente disponible -- el default pedido por el usuario.
+```
+
+#### 38B155 — líneas 3402-3437 (docblock)
+
+```text
+_getControlActivosGridPorTemporada(dataDir, temporada, temporadaReal, semanas)
+FIX (09-sep-2026, pedido usuario — selector de año/temporada/semana en
+"Valores diarios"): equivalente de la vieja _getControlActivosSemanaActual()
+pero para TODAS las semanas de UNA temporada en un solo cálculo, en vez
+de una llamada (con su propia lectura de hoja/CSV) por cada semana --
+reutiliza _getDatosGuerraParaControl() (22_ControlCalendario.gs, la
+MISMA función que ya usa _getControlTemporadaPorClan() más abajo en este
+archivo), que decide sola si leer la hoja Guerra (temporada vigente) o
+Backup_Guerra.csv (temporada histórica) y devuelve, en una sola pasada,
+el mapa { tag: { sIdx: { dia_0..dia_3: {ataques,puntaje,barcos} } } } ya
+resuelto (deltas diarios de Fame/Barcos incluidos, ver
+_procesarFilasGuerraParaControl()). Evita releer/re-parsear el CSV una
+vez por cada semana, que era el costo de _getControlActivosPorSemana()
+(removida).
+
+Se listan TODOS los Activos de `dataDir` en cada semana, aunque no
+tengan ningún ataque esa semana (0/0/0/0) -- mismo criterio que la vieja
+_getControlActivosSemanaActual() -- EXCEPTO en las semanas anteriores al
+ingreso real del jugador (DC.FECHA_ING), donde directamente no aparece
+en vez de listarse en ceros (FIX 10-sep-2026, ver comentario dentro de
+la función).
+
+@param {Array} dataDir - de _leerDirectorioFisicoComoDC(ss), ya leído
+  por el caller (_getDatosDashboard()).
+@param {number} temporada - temporada a calcular (vigente o histórica).
+@param {number|string} temporadaReal - temporada real vigente, para que
+  _getDatosGuerraParaControl() decida hoja vs CSV.
+@param {Array<{sectionIndex:number}>} semanas - de _getSemanasTemporada(),
+  las semanas de ESTA temporada que hay que calcular.
+@returns {Object} { [sectionIndex]: { [clanNombre]: [ {tag, nombre, j,
+  v, s, d, total, puntaje:{j,v,s,d,total}, barcos:{j,v,s,d,total}}, ...
+  ] } }, cada lista ordenada por RANGO (CFG.RANGO_ORDEN) y luego nombre
+  (FIX 28-sep-2026, Fase 3b; antes: total de Ataques descendente). Cada fila trae
+  además `rango` (campo aditivo).
+```
+
+### Ubicación: `_getControlActivosGridPorTemporada`
+
+#### 38B156 — líneas 3439-3457 (comentario)
+
+```text
+Tag (mayúsculas) -> {nombre, clan, fechaIngreso}, SOLO Estado=Activo --
+mismo criterio que la vieja _getControlActivosSemanaActual().
+FIX (10-sep-2026, pedido usuario — "hay cuentas que han ingresado esta
+semana [...] no deberían aparecer cuando selecciono temporadas
+anteriores [...] sus valores se rellenan con ceros, no tendrían por
+qué aparecer en una temporada donde no han estado"): antes `activos`
+se armaba UNA sola vez con todos los Activos ACTUALES de Directorio, y
+esa misma lista se repetía sin cambios para cada semana de CUALQUIER
+temporada (pasada o vigente) — un ingreso reciente aparecía también en
+semanas/temporadas anteriores a su ingreso real, siempre en 0/0/0/0
+porque _getDatosGuerraParaControl() no tiene ataques suyos ahí. Ahora
+se guarda también fechaIngreso (DC.FECHA_ING, Date de la celda o null
+si está vacía) y, dentro del forEach de semanas más abajo, cada semana
+se filtra para excluir a quien todavía no había ingresado para el FIN
+de esa semana (ver rangoSemana/finSemanaMs). Sin fecha de ingreso
+registrada (columna vacía) el jugador se sigue listando en todas las
+semanas, igual que antes — fail-safe: no ocultar a nadie por falta de
+dato, solo cuando SÍ hay fecha y esta cae después de la semana en
+cuestión.
+```
+
+#### 38B157 — líneas 3478-3485 (comentario)
+
+```text
+FIX (05-oct-2026, pedido usuario -- "el domingo [ultimo dia de la temporada 5] sale en ceros pero no
+hay registros de ese dia"): al cambiar de temporada la hoja Guerra se reinicia y el ultimo dia de la
+temporada anterior puede no haber quedado respaldado en Backup_Guerra.csv; aun asi pueden existir
+filas en 0 para ese dia. Un dia YA TERMINADO en el que NADIE (ni un solo jugador, de ningun clan)
+tiene ataques no es un dia real de guerra sin ataques: es un dia sin registro,
+asi que se trata como vacio (null) para todos, igual que cuando no hay fila. "Actividad" = algun
+jugador con ataques > 0 ese dia (ver _diasSinRegistroReal()). El dia en curso de la
+temporada vigente no se toca (al empezar la guerra todos estan legitimamente en 0).
+```
+
+#### 38B158 — líneas 3505-3508 (comentario)
+
+```text
+Solo cuentan los ATAQUES: puntaje y barcos del dia son diferencias de acumulados contra el dia
+anterior y, si el contador semanal se reinicio (el domingo de la ultima semana), pueden salir
+positivos aunque nadie haya atacado ese dia. Datos reales T5 S4 (05-oct-2026): domingo con 0
+ataques en los 4 clanes y fame menor que la del sabado.
+```
+
+#### 38B159 — líneas 3522-3522 (comentario en línea)
+
+```text
+NUEVO (05-oct-2026): dias opcionales (meta ya cruzada) por clan, para ESTA semana (ver _diasOpcionalesClanSemana_()).
+```
+
+#### 38B160 — líneas 3523-3524 (comentario)
+
+```text
+Fin (23:59:59.999) de ESTA semana, para comparar contra fechaIngreso
+-- ver FIX arriba.
+```
+
+#### 38B161 — líneas 3535-3536 (comentario)
+
+```text
+Todavía no había ingresado para el fin de esta semana -- se omite
+la fila en vez de mostrarla en 0/0/0/0 (ver FIX arriba).
+```
+
+#### 38B162 — líneas 3549-3556 (comentario)
+
+```text
+FIX (05-oct-2026, pedido usuario -- "si estuvieron y no atacaron
+se muestra el cero, pero si no estuvo, el campo se deja vacio"):
+un dia SIN registro en la hoja Guerra/Backup_Guerra.csv (dData
+null) significa que el jugador no estaba en el clan ese dia (o
+el dia todavia no se juega) -> se devuelve null (el frontend lo
+pinta vacio) en vez de 0. Un dia CON registro y 0 ataques sigue
+siendo 0 (estuvo y no ataco). Mismo criterio de presencia que ya
+usa _getControlTemporadaPorClan() ("estuvoPresenteEstaSemana").
+```
+
+#### 38B163 — líneas 3576-3579 (comentario)
+
+```text
+NUEVO (05-oct-2026, pedido usuario -- "marca de meta ya cruzada"): dias de ESTA semana en los que el
+clan del jugador ya habia cruzado la meta al empezar el dia, asi que atacar era opcional. Campo ADITIVO
+y solo presente cuando hay alguno (ej. opc:['s','d']); ataques/puntaje/barcos NO se alteran. Se calcula
+solo con Guerra_Logs (una lectura memoizada), sin JSON de Drive ni cache de la API: es la fuente rapida.
+```
+
+#### 38B164 — líneas 3586-3587 (comentario)
+
+```text
+FIX 28-sep-2026 (Fase 3b, pedido del docx): orden por rango (lider > colider > veterano >
+miembro, CFG.RANGO_ORDEN via _ordenRango()) y luego nombre; antes era por total de Ataques.
+```
+
+#### 38B165 — líneas 3596-3604 (docblock)
+
+```text
+_getValoresDiariosPorSemana(dataDir, ctx, selectores)
+Recorre todas las temporadas de `selectores.semanasPorTemporada` (ver
+_getValoresDiariosSelectores() arriba) y arma, para cada una, su
+cuadrícula completa vía _getControlActivosGridPorTemporada() (una sola
+lectura de hoja/CSV por temporada, no por semana).
+@returns {Object} { [temporada]: { [sectionIndex]: mismo shape que
+  _getControlActivosGridPorTemporada() } }.
+```
+
+### Ubicación: `_getValoresDiariosPorSemana`
+
+#### 38B166 — líneas 3614-3629 (docblock)
+
+```text
+_diasOpcionalesClanSemana_(clan, temporada, sIdx, memo)
+NUEVO (05-oct-2026, pedido usuario -- marca de "meta ya cruzada" en Valores diarios). Devuelve las letras
+de los dias de guerra de la semana `sIdx` (subconjunto de ['v','s','d']) en los que `clan` ya habia cruzado
+la meta al empezar el dia, es decir, atacar era opcional. El jueves nunca es opcional y la semana de
+coliseo tampoco (misma regla que _clanYaCruzoMetaEnPeriodo()).
+Se apoya SOLO en _cruceMetaDesdeGuerraLogs_() (fuente 1): Guerra_Logs se lee y se agrupa UNA vez por
+ejecucion (_getMapaCruceMetaGuerraLogs_()), asi que aqui cada consulta es una busqueda en memoria. NO usa
+el JSON de Drive ni el cache de la API, que son lo que volvia lenta a webGuerraEnVivo (28-39 s, 19-sep).
+Sin dato de Guerra_Logs para ese clan/dia -> no se marca (lado conservador: se exige el dia).
+@param {string} clan
+@param {number|string} temporada
+@param {number} sIdx - indice de semana 0-based.
+@param {Object} memo - memo por semana ({clan: letras[]}) creado por el caller.
+@returns {string[]}
+```
+
+### Ubicación: `_diasOpcionalesClanSemana_`
+
+#### 38B167 — líneas 3650-3743 (docblock)
+
+```text
+_getControlTemporadaPorClan(ss, ctx, dataDirParam)
+FIX (05-sep-2026, pedido usuario — "haz una sección como la hoja
+Control_2, solo por referencia visual, ya que la hoja Control_2 trae
+datos de otra parte y debes basarte en los csv, igual que en la sección
+tipo hoja Control... 'Tipo Control_2' muestra valores SEMANALES de TODA
+la temporada, mientras que 'Tipo Control' es de valores DIARIOS para la
+semana actual"): arma, por clan, la cuadrícula Jugador/Sem 1../Sem 5/
+Resumen de CADA miembro Activo de Directorio para TODA la temporada de
+guerra en curso — el equivalente "Tipo Control_2" de
+_getControlActivosGridPorTemporada() (arriba en este archivo, "Tipo
+Control" / "Valores diarios").
+
+FIX (05-sep-2026, corrección del propio usuario tras la primera versión
+de esta función — "dije que no se debe usar la fuente de Control_2.
+Control se alimenta de la api de Supercell, Control_2 se alimenta de
+RoyaleAPI y no siempre coinciden los datos"): la primera versión sí
+reutilizaba actualizarControl2() completa, overlay incluido — error
+señalado por el usuario. Ahora usa el MISMO cálculo de base que "Tipo
+Control" (_getControlActivosGridPorTemporada()/_procesarFilasGuerraParaControl()
+más arriba en este archivo): _getDatosGuerraParaControl() leyendo la
+hoja Guerra/Backup_Guerra.csv (datos crudos de la API de Supercell, tal
+cual los registra el bot), SIN pasar por el overlay de
+_cargarOverlayCorreccionesGuerra() (18_CorreccionGuerra.gs), que es
+donde entran las correcciones manuales sacadas de RoyaleAPI. Solo se
+conserva de actualizarControl2() lo que es pura fórmula/visual, no
+fuente de dato: el ancho fijo de 5 semanas, el denominador dinámico del
+% de Ataques y _getMinGClanMaps() para el % de Puntaje (umbral Min_G del
+clan, no un dato de guerra en sí).
+
+numSemanasTemporada = lunesEnMes(...) para el denominador dinámico de
+Ataques/Puntaje, y _getMinGClanMaps() para el % de Puntaje (Prom vs
+Min_G del clan). El destino del resultado también cambia frente a
+actualizarControl2(): en vez de escribir celdas de Sheets (gridFila +
+OFF2), arma un objeto JSON agrupado por clan para el frontend — mismo
+ancho fijo de 5 semanas que CONTROL2_METRICAS/OFF2, solo por referencia
+visual (si la temporada trae menos de 5 semanas jugadas, las semanas
+futuras quedan en 0).
+
+A diferencia de Barcos en Control_2 (que NO tiene columna "%", ver
+OFF2.BAR_TOTAL sin BAR_PCT), acá se respeta lo mismo: barcos.pct no
+existe en el resultado.
+
+Igual que _getControlActivosGridPorTemporada(): PÚBLICA a propósito (sin
+session token), se listan TODOS los Activos aunque no tengan ningún
+dato de guerra esta temporada (temporada recién arrancando o jugador
+recién ingresado — sus 5 semanas quedan en 0), y NO trae las columnas
+que vienen de otra parte del Directorio (Ingreso/Ascenso/Rango/etc. —
+el pedido fue explícito en que esas "traen datos de otra parte" y
+quedan fuera de esta cuadrícula, que es solo Ataques/Puntaje/Barcos).
+EXCEPCIÓN (FIX 10-sep-2026, ver comentario dentro de la función): un
+jugador cuyo DC.FECHA_ING cae DESPUÉS del fin de la temporada que se
+está armando directamente no aparece en `porClan` para esa temporada —
+no tiene sentido listarlo con sus 5 semanas en 0 si ni siquiera había
+ingresado. Sí se sigue listando (con las semanas previas a su ingreso en
+0) cuando ingresó a MITAD de la temporada que se está armando.
+
+FIX (07-sep-2026, pedido usuario -- "puedo seleccionar cualquier
+temporada y en todas aparecen puros ceros"): esta función llamaba a
+_getDatosGuerraParaControl(ctx, ctx.temporada) -- pasando ctx.temporada
+COMO SI FUERA la temporada real vigente, en vez de la temporada real de
+verdad. Eso hacía que la comparación interna de
+_getDatosGuerraParaControl() ("¿ctx.temporada === temporadaReal?")
+fuera SIEMPRE verdadera, sin importar qué temporada se estuviera
+pidiendo -- así que SIEMPRE leía la hoja Guerra en vivo (que solo tiene
+la temporada real vigente, ver _purgarTemporadasAnterioresGuerra(),
+17_GuerraSheet.gs) y NUNCA caía al camino de Backup_Guerra.csv para
+temporadas históricas, devolviendo 0 filas para cualquier temporada
+distinta a la que esté vigente hoy. Se agrega el parámetro
+`temporadaReal` (mismo patrón que ya usa correctamente
+updateControlSheet(), 22_ControlCalendario.gs: "_getDatosGuerraParaControl(ctx,
+ctxReal.temporada)") para que la bifurcación hoja/CSV funcione de
+verdad.
+
+@param {Spreadsheet} ss
+@param {Object} ctx - de _getCtx(), o clonado (_clonarCtxParaTemporada())
+  con la temporada histórica que se quiere mostrar.
+@param {Array} [dataDirParam] - opcional, resultado de
+  _leerDirectorioFisicoComoDC(ss) si el caller ya lo tiene (para no
+  releer Directorio dos veces desde _getDatosDashboard()).
+@param {number|string} [temporadaReal] - temporada real vigente, para
+  decidir si _getDatosGuerraParaControl() lee la hoja Guerra o
+  Backup_Guerra.csv. Si se omite, se calcula con _getCtx().temporada
+  (compatibilidad con callers que no la pasan explícitamente).
+@returns {{semanas: string[], porClan: Object}}
+  `semanas` son las 5 etiquetas de columna fijas ('Sem 1'..'Sem 5').
+  `porClan` es { [clanNombre]: [ {tag, nombre,
+    ataques:{semanas:number[5], total, pct},
+    puntaje:{semanas:number[5], prom, pct},
+    barcos:{semanas:number[5], total} }, ... ] }, cada lista ordenada
+  por RANGO (CFG.RANGO_ORDEN) y luego nombre (FIX 28-sep-2026, Fase 3b; antes: Total de
+  Ataques descendente) — mismo criterio de orden que _getControlActivosGridPorTemporada(). {semanas:[], porClan:{}}
+  si no hay Activos en Directorio.
+```
+
+### Ubicación: `_getControlTemporadaPorClan`
+
+#### 38B168 — líneas 3749-3752 (comentario)
+
+```text
+FIX (05-oct-2026, pedido usuario -- "se muestra la temporada 5 semana 5 cuando solo tiene 4 semanas"):
+antes esta cuadricula tenia SIEMPRE 5 columnas (Sem 1..Sem 5, mismo ancho fijo que CONTROL2_METRICAS/OFF2 de
+23_Control2_GuerraSemanal.gs), asi que una temporada de 4 semanas mostraba una "Sem 5" que no existe. Ahora el
+numero de columnas es numSemanasTemporada (lunes del mes de la temporada, ver abajo): 4 o 5 segun la temporada.
+```
+
+#### 38B169 — líneas 3757-3764 (comentario)
+
+```text
+FASE (15-sep-2026, pedido del usuario -- fallback web->CSV): mismo
+criterio ya aplicado en _webRosterCalcular() (37_Web_API.gs) y en el
+bloque de Directorio de _getDatosDashboard() (38_Web_Endpoints.gs).
+En la práctica, hoy todos los callers de esta función ya resuelven
+dataDir antes de llamarla (ver _getDatosDashboard()/
+_getControlTemporadaPorTemporada()), así que esta rama rara vez se
+ejecuta -- se deja igual de robusta para cualquier caller futuro que
+la invoque directamente sin precargar dataDir.
+```
+
+#### 38B170 — líneas 3799-3817 (comentario)
+
+```text
+FIX (10-sep-2026, pedido usuario — "cuentas que han ingresado esta
+semana no deberían aparecer cuando selecciono temporadas anteriores
+[...] no tendrían por qué aparecer en una temporada donde no han
+estado"): `activos` (arriba) es SIEMPRE la foto ACTUAL de Directorio,
+sin importar qué temporada esté pidiendo esta llamada (esta misma
+función se reusa para la vigente Y, vía _getControlTemporadaPorTemporada(),
+para cada temporada histórica) — así un ingreso reciente aparecía con
+la fila entera en 0 también en temporadas pasadas completas, anteriores
+a su ingreso real. Se calcula el fin de LA TEMPORADA que esta llamada
+está armando (mismo primer-lunes-del-mes + numSemanasTemporada ya
+calculado arriba) y, en el loop de abajo, se omite por completo la
+fila de cualquier jugador cuyo DC.FECHA_ING sea posterior a ese fin de
+temporada. Sin fecha de ingreso registrada (columna vacía) el jugador
+se sigue listando igual que antes (fail-safe). Esto NO reemplaza el
+criterio ya existente más abajo ("estuvoPresenteEstaSemana", basado en
+datos reales de guerra) que sigue poniendo en 0 semana por semana a
+quien se unió a MITAD de esta misma temporada — ambos criterios se
+complementan: uno decide si la fila aparece, el otro qué semanas
+dentro de ella quedan en 0.
+```
+
+#### 38B171 — líneas 3828-3830 (comentario)
+
+```text
+NUEVO (05-oct-2026, pedido usuario -- umbral del verde semanal): dias opcionales (meta ya cruzada) por clan y
+semana, via _diasOpcionalesClanSemana_() (misma fuente que Valores diarios: Guerra_Logs, leido una sola vez por
+ejecucion). Un memo por semana; dentro de cada memo la clave es el clan.
+```
+
+#### 38B172 — líneas 3867-3872 (comentario)
+
+```text
+Sin ningún día registrado esta semana = el jugador no estuvo en
+el clan esa semana (mismo criterio que
+_procesarFilasGuerraParaControl()/"Tipo Control": queda en 0, no
+cuenta en Resumen). A propósito SIN overlay de correcciones de
+RoyaleAPI (ver FIX en el docblock de esta función) — los datos
+crudos de Supercell son la única fuente, igual que "Tipo Control".
+```
+
+#### 38B173 — líneas 3875-3877 (comentario)
+
+```text
+FIX (05-oct-2026, pedido usuario): no estuvo en el clan esa
+semana -> vacio (null), no 0. El 0 queda solo para "estuvo y no
+ataco" (hay registro de algun dia pero sin ataques).
+```
+
+#### 38B174 — líneas 3894-3895 (comentario)
+
+```text
+Desde el 05-oct-2026 el loop ya solo recorre 1..numSemanasTemporada, asi que una semana 5 de una temporada de 4
+no existe ni se cuenta (antes Ataques/Puntaje la excluian aqui y Barcos si la sumaba).
+```
+
+#### 38B175 — líneas 3901-3904 (comentario)
+
+```text
+% de Ataques: denominador dinámico (16 * semanas donde el jugador
+realmente estuvo presente), mismo criterio "avance real" que ya usa
+actualizarControl2()/_getAgregadosAscensoPorTag() — así alguien que
+se unió tarde no queda con un % artificialmente bajo.
+```
+
+#### 38B176 — líneas 3906-3907 (comentario)
+
+```text
+FIX (05-oct-2026, pedido usuario): el denominador descuenta 4 por cada dia opcional (meta ya cruzada), igual que
+el Control (16 * semanas - 4 * dias opcionales) y que el umbral del verde de guerra.html. Tope 100%.
+```
+
+#### 38B177 — líneas 3919-3920 (comentario)
+
+```text
+FIX (05-oct-2026): sin ninguna semana presente en la temporada, los
+resumenes (Total/Prom/%) tambien quedan vacios (null), no en 0/0%.
+```
+
+#### 38B178 — líneas 3948-3967 (docblock)
+
+```text
+_getTemporadasDisponibles(ctxReal)
+FIX (07-sep-2026, pedido usuario -- "Cuadrícula de Temporada debe tener
+un botón para seleccionar la temporada que se quiere ver, así se puede
+ver temporadas anteriores"): junta todas las temporadas con datos de
+guerra, leyendo las temporadas distintas registradas en
+Backup_Guerra.csv (histórico completo, mismo archivo que ya lee
+_getDatosGuerraDesdeCsvParaControl()/auditarPisoBarcosAtaques() para
+temporadas pasadas) y agregando siempre la temporada REAL vigente
+(ctxReal.temporada), por si todavía no tiene ninguna fila en el CSV
+(temporada recién arrancada, backup no corrido todavía).
+
+Orden: descendente (más reciente primero) -- así el <select> del
+frontend (ver pintarSelectoresControlTemporada(), guerra.html) muestra
+la temporada vigente como primera opción por defecto, sin tener que
+marcar ningún "selected" explícito.
+
+@param {Object} ctxReal - de _getCtx(), la temporada real vigente.
+@returns {number[]} temporadas ordenadas de más reciente a más antigua.
+```
+
+### Ubicación: `_getTemporadasDisponibles`
+
+#### 38B179 — líneas 3973-3978 (comentario)
+
+```text
+19-sep-2026 (pedido del usuario -- webGuerraEnVivo lento): la lectura +
+parseo de Backup_Guerra.csv pasó a _leerGuerraCsvAgrupado_()
+(22_ControlCalendario.gs), que dentro de _getDatosDashboard() lo hace UNA
+sola vez y lo reutiliza para todas las temporadas. Mismo resultado que
+antes: temporadas distintas no vacías; CSV inexistente o sin filas de
+datos -> no agrega nada (porTemporada queda vacío).
+```
+
+#### 38B180 — líneas 3990-4015 (docblock)
+
+```text
+_getControlTemporadaSelectores(ctx, temporadasDisponibles)
+FIX (09-sep-2026, pedido usuario — "🗓️ Cuadrícula de Temporada (Semanal)
+[...] se le debe añadir el selector de año y reemplazar el selector de
+temporada por el de mes, tal como se definió para la otra cuadrícula"):
+agrupa `temporadasDisponibles` (ver _getTemporadasDisponibles() arriba)
+por año → temporada(mes), mismo criterio y mismo helper
+(_getInfoTemporada(), ver docblock más arriba en este archivo) que ya
+usa _getValoresDiariosSelectores() para "Valores diarios" — a
+diferencia de esa, ACÁ NO hay un tercer nivel de semana: esta cuadrícula
+siempre muestra TODAS las semanas de la temporada elegida de una vez
+(columnas Sem 1..Sem 5), nunca una sola semana suelta.
+
+A diferencia de _getValoresDiariosSelectores() (que OMITE la temporada
+vigente del selector si todavía no jugó ninguna semana), acá la
+temporada vigente SIEMPRE se incluye — esta cuadrícula ya mostraba sus 5
+semanas completas (con las futuras en 0) desde antes de este cambio, así
+que no hay combinación "vacía" que excluir.
+
+@param {Object} ctx - de _getCtx(), la temporada real vigente.
+@param {number[]} temporadasDisponibles - de _getTemporadasDisponibles(),
+  más reciente primero.
+@returns {{anios:number[], temporadasPorAnio:Object,
+  porDefecto:{anio:number,temporada:number}|null}} porDefecto es
+  siempre año/temporada de la temporada VIGENTE (ctx.temporada).
+```
+
+### Ubicación: `_getControlTemporadaSelectores`
+
+#### 38B181 — líneas 4039-4067 (docblock)
+
+```text
+_getControlTemporadaPorTemporada(ss, ctxReal, dataDir, temporadas)
+FIX (07-sep-2026, pedido usuario -- selector de temporada en la
+Cuadrícula de Temporada): arma, para cada temporada de `temporadas` (ver
+_getTemporadasDisponibles() arriba) DISTINTA a la vigente, el mismo
+shape {semanas, porClan} que ya arma _getControlTemporadaPorClan() para
+la temporada vigente -- reutilizando esa misma función tal cual, sin
+duplicar su lógica, sobre un ctx clonado con _clonarCtxParaTemporada()
+(22_ControlCalendario.gs, ya usado por el resto del proyecto para
+mostrar temporadas históricas -- ej. actualizarControl2()). Ese clon
+fuerza periodIndex/sectionIndex a "temporada completa" (ver docblock de
+_clonarCtxParaTemporada()), así _getControlTemporadaPorClan() muestra
+las 5 semanas enteras de la temporada histórica en vez de cortarla en la
+semana vigente de HOY.
+
+La temporada vigente (ctxReal.temporada) se omite a propósito: ya viaja
+por separado en controlTemporadaSemanas/controlTemporadaPorClan (ver
+_getDatosDashboard()), no hace falta duplicarla acá -- el frontend cae
+solo a esos 2 campos cuando la temporada elegida no está en este mapa
+(ver pintarSelectorTemporada()/render(), guerra.html).
+
+@param {Spreadsheet} ss
+@param {Object} ctxReal - de _getCtx(), la temporada real vigente.
+@param {Array} dataDir - de _leerDirectorioFisicoComoDC(ss), ya leído por
+  el caller (_getDatosDashboard()).
+@param {number[]} temporadas - de _getTemporadasDisponibles().
+@returns {Object} { [temporada]: {semanas, porClan} }, una entrada por
+  cada temporada de `temporadas` distinta a la vigente.
+```
+
+### Ubicación: `_getControlTemporadaPorTemporada`
+
+#### 38B182 — líneas 4073-4074 (comentario)
+
+```text
+FIX (07-sep-2026): se pasa ctxReal.temporada explícito -- ver
+docblock de _getControlTemporadaPorClan() más arriba para el porqué.
+```
+
+#### 38B183 — líneas 4080-4130 (docblock)
+
+```text
+_getAportesInactivosSemanaActual(ss, ctx)
+FIX (05-sep-2026, pedido usuario — panel "tipo hoja Control" de aportes
+de miembros inactivos, ver comentario completo en _getDatosDashboard()).
+
+Diferencia clave frente a _procesarFilasGuerraParaControl()/
+updateControlSheet() (22_ControlCalendario.gs), que es la lógica que ya
+arma la cuadrícula J/V/S/D de la hoja Control: ahí el mapa se indexa
+SOLO por Tag (`map[tag][sIdx]['dia_'+d]`), porque cada jugador Activo de
+Directorio tiene un único clan asignado. Acá NO alcanza: el pedido es
+justamente ver el caso de un inactivo que atacó para 2 o más clanes el
+MISMO día ("puede que un miembro aporte a 2 o más clanes el mismo día"),
+así que el agrupamiento va por Tag+Clan (una fila de resultado por cada
+combinación), leyendo GC.CLAN de cada fila de Guerra directamente (no
+hay que resolver tag->clan aparte).
+
+FIX (05-sep-2026, pedido usuario — "los inactivos estaban trayendo solo
+la categoría ataques, faltaba puntaje y barcos"): igual que Activos (ver
+_getControlActivosGridPorTemporada() más arriba en este archivo), cada fila
+ahora también trae `puntaje` y `barcos` ({j,v,s,d,total}), calculados
+como el delta diario del acumulado de Fame/boatAttacks (hoy - ayer,
+Puntaje acotado 0-900, Barcos acotado a >=0) — mismo criterio que usa la
+hoja Control real. A diferencia de Activos, ACÁ NO se puede reutilizar
+_procesarFilasGuerraParaControl() para ese cálculo: esa función indexa
+su acumulado de Fame/Barcos SOLO por Tag (asume 1 clan por tag), así que
+si un inactivo aportó a 2+ clanes el mismo día, el delta de un clan se
+mezclaría con el del otro (se queda con el mayor de los dos vistos para
+ese Tag+Periodo, perdiendo justo la separación por Clan que esta función
+existe para conservar — ver el "Diferencia clave" de arriba). Por eso el
+acumulado de Fame/Barcos por periodo se trackea acá mismo, indexado por
+Tag+Clan (fameByKeyPeriod/barcosByKeyPeriod más abajo), no solo por Tag.
+
+Alcance: SOLO la semana de guerra vigente (ctx.temporada + ctx.sectionIndex
+— "esto sería solo para la semana actual"), y SOLO tags presentes en la
+hoja Inactivos (IC.TAG, o DC.TAG si se usó el fallback a
+Backup_Inactivos.csv — ver comentario al inicio de la función). Si dos
+filas de Guerra coinciden en
+Tag+Clan+Día (no debería pasar tras el fix de deduplicación de
+updateGuerraSheet()/_mapaIdsGuerra(), ver 17_GuerraSheet.gs, pero por las
+dudas), se conserva el MAYOR valor visto para Ataques/acumulados —
+mismo criterio defensivo que ya usa _procesarFilasGuerraParaControl().
+
+@returns {Object} { [clanNombre]: [ {tag, nombre, j, v, s, d, total,
+  puntaje:{j,v,s,d,total}, barcos:{j,v,s,d,total}}, ... ] }, cada lista
+  ordenada por total de Ataques descendente. El filtro de qué Tag+Clan
+  aparece sigue siendo "total de Ataques > 0" (no cambia con este fix:
+  Puntaje/Barcos son datos adicionales de un aporte que ya calificaba
+  por Ataques, no un criterio nuevo de inclusión). Clanes/tags sin
+  ningún ataque esta semana no aparecen (objeto vacío si no hay
+  inactivos aportando).
+```
+
+### Ubicación: `_getAportesInactivosSemanaActual`
+
+#### 38B184 — líneas 4132-4146 (comentario)
+
+```text
+FIX (15-sep-2026, barrido de conexión web->CSV): antes, si la hoja
+Inactivos no estaba disponible, esta función devolvía {} de golpe (ver
+el comentario más abajo que quedaba anotado como pendiente). El motivo
+por el que no se podía usar sin más el mismo _obtenerFilasConFallbackCSV()
+que ya usa el bloque de Guerra unas líneas más abajo: Backup_Inactivos.csv
+se guarda SIEMPRE en formato DC de 60 columnas (mismo layout que
+Directorio, ver syncInactivosCSV(), 05_Backup_CSV.gs), mientras que la
+hoja Inactivos física solo tiene 29 columnas en formato IC — mismo
+desajuste ya resuelto en _generarJsonContactos() más arriba en este
+archivo (ver su docblock para el detalle completo del riesgo). Acá el
+riesgo es menor de resolver porque esta función SOLO necesita 2 campos
+de Inactivos (Tag, Nombre) para armar `tagsInactivos` — así que, igual
+que ahí, se resuelve indexando con IC.* cuando la fuente es la hoja y
+con DC.* cuando la fuente es el CSV de respaldo (nunca mezclando un
+índice de un esquema contra datos del otro).
+```
+
+#### 38B185 — líneas 4158-4159 (comentario)
+
+```text
+Hoja no disponible: Backup_Inactivos.csv, formato DC (60 columnas) —
+se indexa con DC.TAG/DC.NOMBRE, NUNCA con IC.* sobre estos datos.
+```
+
+#### 38B186 — líneas 4172-4177 (comentario)
+
+```text
+FASE (15-sep-2026, pedido del usuario -- fallback web->CSV): mismo
+criterio ya aplicado al bloque de Guerra de _getDatosDashboard() más
+arriba en este archivo (Backup_Guerra.csv respeta el mismo orden GC
+que la hoja viva; los campos que usa este bloque -- TEMPORADA/SEMANA/
+TAG/PERIOD_IDX/CLAN/NOMBRE/ATAQUES_HOY/FAME/BARCOS -- son numéricos o
+texto plano, sin necesidad de reconstruir ningún Date).
+```
+
+#### 38B187 — líneas 4193-4195 (comentario)
+
+```text
+Acumulado de Fame/Barcos por periodo, indexado por Tag+Clan (no solo
+Tag — ver docblock de arriba, "Diferencia clave" #2). Se resuelve a
+delta diario recién en la segunda pasada, más abajo.
+```
+
+#### 38B188 — líneas 4234-4237 (comentario)
+
+```text
+GC.FAME/GC.BARCOS de esta fila son acumulados de TODA la semana de
+guerra (no del día — ver "boatAttacks es ACUMULADO" en
+17_GuerraSheet.gs), así que acá solo se registra el acumulado visto
+para este periodo puntual; el delta diario se calcula después.
+```
+
+#### 38B189 — líneas 4245-4249 (comentario)
+
+```text
+Segunda pasada: Puntaje/Barcos del día = acumulado de hoy - acumulado
+de ayer, por Tag+Clan — mismo patrón que _procesarFilasGuerraParaControl()
+pero sin cruzar clanes distintos entre sí. Para d=0 (Jueves), "ayer" es
+un día de entrenamiento sin registros (acumulado anterior = 0),
+correcto: el contador se reinicia en cada semana de guerra.
+```
+
+#### 38B190 — líneas 4304-4308 (docblock)
+
+```text
+_escapeHtmlDash(s)
+Escapa texto dinámico antes de insertarlo en el HTML del dashboard, para
+evitar que un Nombre/Tag con caracteres especiales rompa el markup.
+```
+
+### Ubicación: `_escapeHtmlDash`
+
+#### 38B191 — líneas 4315-4319 (docblock)
+
+```text
+_getNombreClanDump(clanTag)
+Obtiene el nombre del clan desde cache o API.
+Mantenido por retrocompatibilidad.
+```
+
+### Ubicación: `_getNombreClanDump`
+
+#### 38B192 — líneas 4323-4328 (comentario)
+
+```text
+19-sep-2026 (medición real: c2.minG = 5,3 s por ejecución del dashboard): en una
+ejecución web CACHE_CLAN_DATA está vacío, así que cada clan (4) caía a una
+llamada HTTP a la API de Supercell (~1,3 s cada una) solo para saber su nombre.
+Dentro de _getDatosDashboard() (_DASH_MEMO activo) el nombre se toma de la hoja
+Clan, la misma que ya lee _getMinGClanMaps(). Si el clan no está ahí, se sigue
+al camino de siempre (API). Fuera del dashboard nada cambia.
+```
+
+#### 38B193 — líneas 4333-4336 (comentario)
+
+```text
+FIX (02-oct-2026): en ejecuciones sin CACHE_CLAN_DATA (ej. Índice/Torneos en
+una tanda aparte) esto caía a la API y, si fallaba (500/525), devolvía el TAG
+como nombre de clan. Antes de la API se usa el nombre del último checkpoint
+de clanes en Drive (el nombre casi nunca cambia), leído una vez por ejecución.
+```
+
+### Ubicación: `_NOMBRES_CLAN_CHECKPOINT`
+
+#### 38B194 — líneas 4355-4359 (docblock)
+
+```text
+_getClanTagByName(clanName)
+Busca el tag de un clan dado su nombre, para poder ordenar por TERNA_TAGS.
+Retorna '' si no se encuentra.
+```
+
+### Ubicación: `_getClanTagByName`
+
+#### 38B195 — líneas 4369-4373 (docblock)
+
+```text
+_generarDashboardHtml()
+Arma la página HTML completa del dashboard (mobile-first, sin
+dependencias externas) a partir de _getDatosDashboard().
+```
+
+
