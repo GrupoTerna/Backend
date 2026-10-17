@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 12:30:04 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 13:21:33 */
 
 
 
@@ -8656,6 +8656,10 @@ var _clanesBasicoDesdeApiEnEstaEjecucion = false;
 var CLANES_INFO_RESPALDO = [];
 var _jsonClanesEscritosEnEstaEjecucion = false;
 var _jsonClanesUltimoTotal = 0;
+// PF091 etapa 4 (17-oct-2026): mientras _guardarJsonClanesDesdeCaptura_() escribe los JSON de la captura, esta variable es un arreglo y
+// _guardarCacheEnDrive() anota ahi el nombre de cada archivo en vez de agregar una entrada a Log_ScriptTerna.json por archivo (cada
+// entrada lee y reescribe todo el log, ~3 s). Al terminar se registra UNA sola entrada. Fuera de la captura vale null (se registra cada uno).
+var _logJsonCapturaAcumulado_ = null;
 
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS [→ Contexto_Base_Web.md §09B009]
 
@@ -10500,8 +10504,10 @@ function _guardarJsonClanesDesdeCaptura_(forzar) {
   if (!CACHE_CLAN_DATA || Object.keys(CACHE_CLAN_DATA).length === 0) return 0;
   var t0 = Date.now();
   var total = 0;
+  var nombresEscritos = [];
   try {
     var ctx = _getCtx();
+    _logJsonCapturaAcumulado_ = nombresEscritos;   // PF091 etapa 4: una sola entrada en Log_ScriptTerna.json al terminar
     for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
       var tag = CFG.CLAN_TAGS[i];
       var d = CACHE_CLAN_DATA && CACHE_CLAN_DATA[tag];
@@ -10516,6 +10522,15 @@ function _guardarJsonClanesDesdeCaptura_(forzar) {
     }
   } catch (e) {
     Logger.log('[Captura][JSON] Error escribiendo los JSON: ' + e.message);
+  }
+  // PF091 etapa 4: se suelta el acumulador (siempre, incluso tras un error) y se registra UNA entrada con todos los archivos.
+  _logJsonCapturaAcumulado_ = null;
+  if (nombresEscritos.length > 0) {
+    _registrarLogScriptTerna(
+      '_guardarJsonClanesDesdeCaptura_()',
+      'JSON de clans y currentriverrace guardados en Drive (' + nombresEscritos.length + ' archivo(s)): ' + nombresEscritos.join(' | '),
+      []
+    );
   }
   _jsonClanesUltimoTotal = total;
   Logger.log('[Captura][JSON] ' + total + ' archivo(s) escrito(s) en ' + Math.round((Date.now() - t0) / 100) / 10 + ' s');
@@ -11759,13 +11774,18 @@ function _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) {
       Logger.log('[Cache] Creado en Drive (nuevo periodo ' + tagPrefijo + '): ' + filename);
     }
 
-    // Registrar en el log acumulativo del Script Terna
-    _registrarLogScriptTerna(
-      '_guardarCacheEnDrive()',
-      'JSON guardado en Drive: ' + filename + ' | Clan: ' + clanName + ' | Endpoint: ' + endpointKey +
-      ' | ' + tagPrefijo,
-      []
-    );
+    // Registrar en el log acumulativo del Script Terna. PF091 etapa 4: dentro de la captura de clanes solo se anota el nombre
+    // del archivo y _guardarJsonClanesDesdeCaptura_() registra una sola entrada al final.
+    if (_logJsonCapturaAcumulado_) {
+      _logJsonCapturaAcumulado_.push(filename);
+    } else {
+      _registrarLogScriptTerna(
+        '_guardarCacheEnDrive()',
+        'JSON guardado en Drive: ' + filename + ' | Clan: ' + clanName + ' | Endpoint: ' + endpointKey +
+        ' | ' + tagPrefijo,
+        []
+      );
+    }
 
     // Guardar en memoria de sesión
     var memKey = clanTag + '|' + endpointKey + '|P' + _normalizarPeriodIndex_(ctx.periodIndex);
