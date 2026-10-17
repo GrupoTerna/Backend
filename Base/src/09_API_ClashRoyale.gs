@@ -142,6 +142,13 @@ function guardarApiDump() {
   // Antes volvia a pedir los mismos 2 endpoints de los 5 clanes. [→ Contexto_Base_Web.md §PF091]
   Logger.log('[ApiDump] Iniciando (usa la captura, sin pedir de nuevo a la API) para ' + CFG.CLAN_TAGS.length + ' clanes...');
   capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'guardarApiDump');
+  // PF091 etapa 4 (17-oct-2026, registro de runUpdate del 12:04): si la captura de OTRA ejecucion (p. ej. el paso 0 de la misma cadena, antes
+  // de una continuacion) ya escribio los JSON con este checkpoint, no se reescriben: costaba ~40 s y renombraba los de clans con una hora
+  // sin datos nuevos.
+  if (!_jsonClanesEscritosEnEstaEjecucion && _jsonClanesDeEsteCheckpointYaEscritos_()) {
+    Logger.log('[ApiDump] OMITIDO: los JSON de clans y currentriverrace ya se escribieron con este checkpoint (CLANES_JSON_ESCRITOS_TS); reescribirlos solo cambiaria la hora del nombre de los de clans.');
+    return;
+  }
   _guardarJsonClanesDesdeCaptura_(true);  // no hace nada si la captura de esta ejecucion ya los escribio
   var total = _jsonClanesUltimoTotal;
   var nota = _clanesBasicoDesdeApiEnEstaEjecucion ? '' : ' (datos del checkpoint, sin pedir a la API)';
@@ -1904,12 +1911,33 @@ function _guardarJsonClanesDesdeCaptura_(forzar) {
       if (d.riverrace) { _guardarCacheEnDrive(tag, 'currentriverrace', ctx, d.riverrace); total++; }
     }
     _jsonClanesEscritosEnEstaEjecucion = true;
+    // PF091 etapa 4: hora de la ultima escritura completa, para que otra ejecucion (guardarApiDump() tras una continuacion) sepa que ya estan.
+    if (total > 0) {
+      try { PropertiesService.getScriptProperties().setProperty('CLANES_JSON_ESCRITOS_TS', String(Date.now())); } catch (eTs) { /* solo informativa */ }
+    }
   } catch (e) {
     Logger.log('[Captura][JSON] Error escribiendo los JSON: ' + e.message);
   }
   _jsonClanesUltimoTotal = total;
   Logger.log('[Captura][JSON] ' + total + ' archivo(s) escrito(s) en ' + Math.round((Date.now() - t0) / 100) / 10 + ' s');
   return total;
+}
+
+/**
+ * PF091 etapa 4 (17-oct-2026): true si los JSON de clans y currentriverrace ya se escribieron DESPUES de que se guardo el checkpoint de
+ * clanes que hay hoy en Drive (propiedad CLANES_JSON_ESCRITOS_TS >= hora del checkpoint). Si el checkpoint viene de una captura de la
+ * ventana de 4 a 5 a. m. (que no escribe JSON), la propiedad es anterior y devuelve false. Ante cualquier duda devuelve false (se escribe).
+ * [→ Contexto_Base_Web.md §PF091]
+ */
+function _jsonClanesDeEsteCheckpointYaEscritos_() {
+  try {
+    var escritos = Number(PropertiesService.getScriptProperties().getProperty('CLANES_JSON_ESCRITOS_TS')) || 0;
+    if (escritos <= 0) return false;
+    var cp = _leerProgresoClanesConEdad_();
+    return !!(cp && cp.ts > 0 && escritos >= cp.ts);
+  } catch (e) {
+    return false;
+  }
 }
 
 // PERSISTENCIA DE PROGRESO DE CLANES (para reanudación sin repetir) [→ Contexto_Base_Web.md §09B099]
