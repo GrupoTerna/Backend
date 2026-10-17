@@ -1106,6 +1106,10 @@ function capturarApiClanes_(maxEdadMs, origen) {
   var t0 = Date.now();
   Logger.log('[Captura] INICIO (' + (origen || 'sin origen') + ', edad maxima del checkpoint ' + Math.round(maxEdadMs / 1000) + ' s)');
   var datos = _fetchClanesBasico(maxEdadMs);
+  // PF091 (17-oct-2026): primera consulta de cada clan y periodo (todas las corridas, tambien la ventana: solo una propiedad
+  // de script) y, FUERA de la ventana, los JSON de clans y currentriverrace con las mismas respuestas (sin API).
+  _registrarPrimeraConsultaDesdeCaptura_();
+  if (origen !== 'ventana') _guardarJsonClanesDesdeCaptura_();
   Logger.log('[Captura] FIN (' + (origen || 'sin origen') + ', ' + Math.round((Date.now() - t0) / 1000) + ' s)');
   return datos;
 }
