@@ -4152,11 +4152,12 @@ function _getMinTClanMaps() {
  */
 function _combinarFechaHora(fechaStr, horaStr) {
   var mFecha = String(fechaStr || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  var mHora  = String(horaStr  || '').trim().match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
+  // 17-oct-2026 (PF098): los segundos son opcionales; admin.html manda la hora como "HH:MM:SS" (horaConSegundos()) y el bot como "HH:mm". [→ Contexto_Base_Web.md §PF098]
+  var mHora  = String(horaStr  || '').trim().match(/^([01]?\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/);
   if (!mFecha || !mHora) return null;
   var dia = Number(mFecha[1]), mes = Number(mFecha[2]), anio = Number(mFecha[3]);
-  var horas = Number(mHora[1]), minutos = Number(mHora[2]);
-  var fecha = new Date(anio, mes - 1, dia, horas, minutos, 0);
+  var horas = Number(mHora[1]), minutos = Number(mHora[2]), segundos = Number(mHora[3] || 0);
+  var fecha = new Date(anio, mes - 1, dia, horas, minutos, segundos);
   if (isNaN(fecha.getTime())) return null;
   return fecha;
 }
