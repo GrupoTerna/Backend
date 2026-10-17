@@ -907,7 +907,7 @@ function _getCelularesActualesPorTag() {
 
 // _listarMiembrosClanParaGestion(clanTag, accion): miembros del clan (API) cruzados con Directorio y filtrados según la acción. [→ Contexto_Base_Web.md §44B037]
 function _listarMiembrosClanParaGestion(clanTag, accion) {
-  _fetchClanesBasico();
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'BotWhatsApp');
   var clanData = _getClanCache(clanTag);
   if (!clanData) return [];
   var celularesPorTag = _getCelularesActualesPorTag();

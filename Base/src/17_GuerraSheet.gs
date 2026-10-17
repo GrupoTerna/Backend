@@ -645,7 +645,7 @@ function updateGuerraSheet() {
   // GUARDIA: sin cache no hay datos válidos — abortar para no corromper la [→ Contexto_Base_Web.md §17B035]
   if (!CACHE_CLAN_DATA) {
     Logger.log('[Guerra] cache vacío en esta ejecución, se intenta recuperar checkpoint de clanes...');
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'GuerraSheet');
   }
   if (!CACHE_CLAN_DATA || !Object.keys(CACHE_CLAN_DATA).length) {
     Logger.log('[Guerra] ABORT: no hay cache de clanes ni checkpoint recuperable. Llamar desde runGuerra() o runUpdate(), no directamente.');
@@ -1822,7 +1822,7 @@ function updatePendientesSheet() {
   // Garantizar que el cache esté disponible (Pendientes no usa /players)
   if (!CACHE_CLAN_DATA) {
     Logger.log('[Pendientes] Cache vacío, ejecutando _fetchClanesBasico()...');
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'GuerraSheet');
   }
 
   var ctx = _getCtx();
