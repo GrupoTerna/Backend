@@ -67612,3 +67612,23 @@ Eran las 11 entradas largas del 11-oct que no tenían todavía su explicación e
 - **`_webPerfilJugador()` ahora lee `Backup_Guerra.csv` (todas las temporadas) y la hoja viva con `_leerFilasGuerraDeTag_()`.** **Antes** solo leía la hoja, y el CSV solo si Sheets fallaba, así que **`historialRanking` arrancaba vacío en cada temporada nueva**. Existe hoy. No se probó en Apps Script real.
 
 **Sin probar:** nada de esto se vio en un navegador en esta tanda; lo que se afirma sale de las entradas originales y de la lectura del código.
+
+### PF095 — «Tres momentos» de la portada y de `clan.html` con `fmtTresTiemposDeResultado()`; «Cartas de desafíos» a 2 columnas; botones de acciones en la cabecera del perfil (pasado desde el `CHANGELOG.md` de `Web`, 15-oct-2026, tanda 18)
+
+Eran 3 entradas de 12 a 14-oct-2026 sin su explicación en el contexto. **Comprobado el 15-oct leyendo el código** (`util.js`, `index.html`, `clan.html` y `perfil.html` de GitHub; **no se abrió ninguna página en un navegador**). Las versiones de `sw.js` que citaban (v60 y v82) solo marcan el momento del cambio; hoy es `terna-static-v85`.
+
+**«Tres momentos» con una sola función (v82; ver también §PF025)**
+- **Qué cambió.** Antes la portada (`index.html`, `cargarClanes()`) y `clan.html` (`cargarClan()`) armaban `fmtTresTiempos({...})` a mano; ahora llaman a **`fmtTresTiemposDeResultado({ ...r, accion: 'webClanInfo' })`**, igual que `directorio.html`, `comunidad.html` y `torneos.html` (hoy `index.html` tiene 2 menciones, `clan.html` 2 y `util.js` define la función).
+- **Por qué el texto sigue idéntico.** `fmtTresTiemposDeResultado()` toma la fecha del respaldo local de `desde` o, si no viene, de **`guardadoDesde`**, que es el nombre con el que la devuelven `obtenerHome()` y `clanObtenerInfo()`. **No se debe asumir `desde`** en esas dos páginas.
+- **Pruebas que se citan** (`test/index-clan-estatico.test.js` y `test/util.test.js`): texto y tooltip iguales a la fórmula anterior en los **cuatro orígenes** (JSON vigente, Apps Script, archivo viejo, respaldo local), en las dos páginas. **Sin cambios visibles.** No se volvieron a correr en esta tanda.
+
+**`perfil.html`: «Cartas de desafíos» y títulos de minigráficas (v60, 12-oct)**
+- **`renderExtendido()`:** `extItem(ext.cartasDesafios, 'Cartas de desafíos', true, 2, …)` pasa **`ancho=2`** (mismo mecanismo que el cuadrito de Arena). Existe hoy (con el ícono `_ICO_CUADRITO_CARTAS`).
+- **`.mini-pie-titulo`:** `font-weight` de 600 a **800**. **Esa clase la usan los títulos de las minigráficas y los de las dos tarjetas de Competitivo** (Camino de Leyendas y Camino de Trofeos), así que cambiar su peso cambia las tres; hoy `perfil.html` la usa 9 veces.
+
+**`perfil.html`: los botones de acciones suben a la cabecera (14-oct)**
+- **Qué cambió.** RoyaleAPI, CWStats, Vetar, Ver torneos, Ver otras cuentas e Historial de guerra (`#mAccionesRow`) pasaron de debajo de la card a la **columna derecha de la cabecera**, debajo de nivel, copas y vigencia, dentro de un contenedor nuevo **`.perfil-cabecera-der`** (`display:flex; flex-direction:column; align-items:flex-end`; los enlaces con `justify-content:flex-end`). Los paneles que abren (`#mTorneosWrap`, `#mOtrasCuentasWrap`, `#mHistorialGuerraWrap`, `#mVetarWrap`) **suben justo debajo de la cabecera**.
+- **Lo que no cambió.** Los ids no cambian y no se tocó JS. **`sw.js` no cambió** en esa entrada (`perfil.html` no está en `CORE_ASSETS`). La clase vive en el `<style>` de `perfil.html`, no en `styles.css`.
+- **Pendiente de comprobar:** el aspecto con nombres largos y en móvil (no se midió).
+
+**Sin probar:** nada de esto se vio en un navegador en esta tanda.
