@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 10:58:07 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 11:31:46 */
 
 
 
@@ -1149,6 +1149,10 @@ function capturarApiClanes_(maxEdadMs, origen) {
   var t0 = Date.now();
   Logger.log('[Captura] INICIO (' + (origen || 'sin origen') + ', edad maxima del checkpoint ' + Math.round(maxEdadMs / 1000) + ' s)');
   var datos = _fetchClanesBasico(maxEdadMs);
+  // PF091 (17-oct-2026): primera consulta de cada clan y periodo (todas las corridas, tambien la ventana: solo una propiedad
+  // de script) y, FUERA de la ventana, los JSON de clans y currentriverrace con las mismas respuestas (sin API).
+  _registrarPrimeraConsultaDesdeCaptura_();
+  if (origen !== 'ventana') _guardarJsonClanesDesdeCaptura_();
   Logger.log('[Captura] FIN (' + (origen || 'sin origen') + ', ' + Math.round((Date.now() - t0) / 1000) + ' s)');
   return datos;
 }
@@ -8564,6 +8568,15 @@ var CACHE_ENDPOINT_PLAYER = {
 // CACHE EN MEMORIA (sesión actual de ejecución) [→ Contexto_Base_Web.md §09B008]
 var _DRIVE_CACHE_MEM = {};
 
+// PF091 (17-oct-2026): estado de la captura de clanes en ESTA ejecucion. _clanesBasicoDesdeApiEnEstaEjecucion = true solo si
+// _fetchClanesBasico() pidio a la API (no si reutilizo el checkpoint); CLANES_INFO_RESPALDO = tags cuyo /clans salio del
+// respaldo del checkpoint por falla de la API (no son datos frescos y no se escriben como JSON);
+// _jsonClanesEscritosEnEstaEjecucion evita escribir dos veces los mismos JSON; _jsonClanesUltimoTotal = cuantos se escribieron.
+var _clanesBasicoDesdeApiEnEstaEjecucion = false;
+var CLANES_INFO_RESPALDO = [];
+var _jsonClanesEscritosEnEstaEjecucion = false;
+var _jsonClanesUltimoTotal = 0;
+
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS [→ Contexto_Base_Web.md §09B009]
 
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS — pregunta 51, tanda 2: CSV de battlelogs [→ Contexto_Base_Web.md §09B010]
@@ -8643,32 +8656,20 @@ function resetGuardianPeriodIndex() {
  * guardarApiDump() [→ Contexto_Base_Web.md §09B022]
  */
 function guardarApiDump() {
-  Logger.log('[ApiDump] Iniciando (con cache) para ' + CFG.CLAN_TAGS.length + ' clanes...');
+  // PF091 (17-oct-2026, pedido usuario): ya NO pide a la API por su cuenta. Usa la captura (capturarApiClanes_), que reutiliza el
+  // checkpoint si tiene <= CFG.CLANES_PROGRESO_MAX_EDAD_MS o pide una sola vez, y escribe los JSON con esas respuestas.
+  // Antes volvia a pedir los mismos 2 endpoints de los 5 clanes. [→ Contexto_Base_Web.md §PF091]
+  Logger.log('[ApiDump] Iniciando (usa la captura, sin pedir de nuevo a la API) para ' + CFG.CLAN_TAGS.length + ' clanes...');
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'guardarApiDump');
+  _guardarJsonClanesDesdeCaptura_(true);  // no hace nada si la captura de esta ejecucion ya los escribio
+  var total = _jsonClanesUltimoTotal;
+  var nota = _clanesBasicoDesdeApiEnEstaEjecucion ? '' : ' (datos del checkpoint, sin pedir a la API)';
 
-  var ctx = _getCtx(); // { temporada, sectionIndex, periodIndex, ... } — se pasa completo para el tag T-/S-/P.I-
-  var total = 0;
-
-  for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
-    var clanTag = CFG.CLAN_TAGS[i];
-
-    for (var j = 0; j < CACHE_ENDPOINTS.length; j++) {
-      var ep    = CACHE_ENDPOINTS[j];
-      var datos = _apiGetCached(clanTag, ep.key, ep.path, ctx);
-      if (datos) {
-        total++;
-        Logger.log('[ApiDump] OK: ' + clanTag + ' / ' + ep.key);
-      } else {
-        Logger.log('[ApiDump] FALLO: ' + clanTag + ' / ' + ep.key);
-      }
-      Utilities.sleep(200);
-    }
-  }
-
-  Logger.log('[ApiDump] Completado. Endpoints procesados: ' + total);
+  Logger.log('[ApiDump] Completado. Endpoints escritos: ' + total + nota);
   _registrarLogScriptTerna('guardarApiDump()',
-    'Dump de API completado. Endpoints procesados: ' + total +
-    ' de ' + (CFG.CLAN_TAGS.length * CACHE_ENDPOINTS.length) + ' posibles.',
-    total === 0 ? ['Ningún endpoint respondió correctamente'] : []);
+    'Dump de API completado. Endpoints escritos: ' + total +
+    ' de ' + (CFG.CLAN_TAGS.length * CACHE_ENDPOINTS.length) + ' posibles.' + nota,
+    total === 0 ? ['Ningún endpoint se pudo escribir'] : []);
 }
 
 // LIMPIEZA DE DUPLICADOS — CACHE DE PLAYERS [→ Contexto_Base_Web.md §09B023]
@@ -10260,6 +10261,7 @@ function _fetchClanesBasico(maxEdadMs) {
   if (progreso && Object.keys(progreso).length === CFG.CLAN_TAGS.length) {
     CACHE_CLAN_DATA = progreso;
     _clanesBasicoListoEnEstaEjecucion = true;
+    _clanesBasicoDesdeApiEnEstaEjecucion = false;  // PF091: datos del checkpoint, no de una consulta nueva
     _playersCompletoEnEstaEjecucion = false;
     Logger.log('[API] Progreso anterior de clanes recuperado de Drive (' +
                Object.keys(progreso).length + ' clan(es)), no se vuelven a pedir a la API.');
@@ -10268,6 +10270,7 @@ function _fetchClanesBasico(maxEdadMs) {
 
   CACHE_CLAN_DATA = {};
   CLANES_SIN_RIVERRACE = [];
+  CLANES_INFO_RESPALDO = [];  // PF091
   var huboFallbackInfo = false;
   // FIX (02-oct-2026): último checkpoint conocido (sin importar su edad) como
   // respaldo SOLO para /clans/{tag} (roster) cuando la API falla.
@@ -10320,6 +10323,7 @@ function _fetchClanesBasico(maxEdadMs) {
       if (prev && prev.info) {
         CACHE_CLAN_DATA[tag] = { info: prev.info, members: prev.members || [], riverrace: riverrace };
         huboFallbackInfo = true;
+        CLANES_INFO_RESPALDO.push(tag);  // PF091: este /clans no es fresco
         if (!riverrace) CLANES_SIN_RIVERRACE.push(tag);
         Logger.log('[API] FALLO info de clan ' + tag + ' - se usa el roster del último checkpoint (' +
                    (prev.members || []).length + ' miembros).');
@@ -10364,8 +10368,67 @@ function _fetchClanesBasico(maxEdadMs) {
   catch (eRegApi) { Logger.log('[API] No se pudo registrar la hora de la consulta a la API: ' + eRegApi.message); }
 
   _clanesBasicoListoEnEstaEjecucion = true;
+  _clanesBasicoDesdeApiEnEstaEjecucion = true;      // PF091: datos recien pedidos a la API
+  _jsonClanesEscritosEnEstaEjecucion = false;       // PF091: datos nuevos, se pueden escribir de nuevo
   // Cache de jugadores nuevo en esta ejecución: aún no se ha pedido.
   _playersCompletoEnEstaEjecucion = false;
+}
+
+/**
+ * PF091 (17-oct-2026): anota la hora de la PRIMERA consulta de cada clan y periodIndex directamente de lo recien pedido a la
+ * API (solo una propiedad de script, sin Drive; nunca reemplaza una hora ya registrada). Se llama en TODAS las capturas, tambien
+ * en la ventana de 4 a 5 a. m., para que un periodo nuevo que aparece a las 4:xx quede con su hora real aunque la ventana no
+ * escriba JSON. Solo actua si esta ejecucion pidio a la API. [→ Contexto_Base_Web.md §PF091]
+ */
+function _registrarPrimeraConsultaDesdeCaptura_() {
+  if (!_clanesBasicoDesdeApiEnEstaEjecucion) return;
+  try {
+    var ctx = _getCtx();
+    var ahora = new Date().getTime();
+    for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
+      var tag = CFG.CLAN_TAGS[i];
+      var d = CACHE_CLAN_DATA && CACHE_CLAN_DATA[tag];
+      var rr = d && d.riverrace;
+      if (!rr || rr.periodIndex === '' || rr.periodIndex === null || rr.periodIndex === undefined || !isFinite(Number(rr.periodIndex))) continue;
+      _registrarPrimeraConsultaRR_(tag, _temporadaDeClan_(ctx, Number(rr.periodIndex)), Number(rr.periodIndex), ahora);
+    }
+  } catch (e) {
+    Logger.log('[Captura] No se pudo registrar la primera consulta: ' + e.message);
+  }
+}
+
+/**
+ * PF091 (17-oct-2026): escribe en Drive los JSON de clans y currentriverrace de cada clan con las MISMAS respuestas que acaba de
+ * traer la captura (sin ninguna llamada nueva a la API); es lo que antes hacia guardarApiDump() pidiendo de nuevo. Usa
+ * _guardarCacheEnDrive(): un solo archivo por clan, endpoint y periodo; el de currentriverrace conserva la hora de la primera
+ * consulta en el nombre. No escribe el /clans de un clan cuyo roster salio del respaldo del checkpoint, ni clanes sin riverrace.
+ * Solo actua si esta ejecucion pidio a la API y no escribio ya estos datos. Devuelve cuantos archivos escribio.
+ * [→ Contexto_Base_Web.md §PF091]
+ */
+function _guardarJsonClanesDesdeCaptura_(forzar) {
+  // forzar = true (guardarApiDump): escribe aunque los datos vengan del checkpoint (el checkpoint solo se guarda con los 5 clanes
+  // completos y sin respaldo, asi que son datos de una consulta real); sin forzar, solo si esta ejecucion pidio a la API.
+  if (_jsonClanesEscritosEnEstaEjecucion) return 0;
+  if (!forzar && !_clanesBasicoDesdeApiEnEstaEjecucion) return 0;
+  if (!CACHE_CLAN_DATA || Object.keys(CACHE_CLAN_DATA).length === 0) return 0;
+  var t0 = Date.now();
+  var total = 0;
+  try {
+    var ctx = _getCtx();
+    for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
+      var tag = CFG.CLAN_TAGS[i];
+      var d = CACHE_CLAN_DATA && CACHE_CLAN_DATA[tag];
+      if (!d) continue;
+      if (d.info && CLANES_INFO_RESPALDO.indexOf(tag) < 0) { _guardarCacheEnDrive(tag, 'clans', ctx, d.info); total++; }
+      if (d.riverrace) { _guardarCacheEnDrive(tag, 'currentriverrace', ctx, d.riverrace); total++; }
+    }
+    _jsonClanesEscritosEnEstaEjecucion = true;
+  } catch (e) {
+    Logger.log('[Captura][JSON] Error escribiendo los JSON: ' + e.message);
+  }
+  _jsonClanesUltimoTotal = total;
+  Logger.log('[Captura][JSON] ' + total + ' archivo(s) escrito(s) en ' + Math.round((Date.now() - t0) / 100) / 10 + ' s');
+  return total;
 }
 
 // PERSISTENCIA DE PROGRESO DE CLANES (para reanudación sin repetir) [→ Contexto_Base_Web.md §09B099]
@@ -10551,7 +10614,9 @@ function _borrarProgresoClanes() {
  * Llama a la API para todos los clanes (datos básicos) Y, si [→ Contexto_Base_Web.md §09B111]
  */
 function _fetchAllClanData() {
-  _fetchClanesBasico();
+  // PF091 (17-oct-2026): los clanes se piden a traves de capturarApiClanes_() (00_Main.gs), que ademas anota la primera consulta y
+  // escribe los JSON de clans y currentriverrace con esas respuestas (sin volver a pedir). Misma edad maxima de siempre (45 min).
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'runUpdate/runAll');
 
   // IMPORTANTE: _fetchPlayersData() SIEMPRE se llama, sin importar [→ Contexto_Base_Web.md §09B112]
   var playersCompleto = true;
@@ -11242,11 +11307,12 @@ function _horaLimaMensaje12h(d) {
 /**
  * _buildCacheFilename(ctx, endpointKey, clanName) [→ Contexto_Base_Web.md §09B149]
  */
-function _buildCacheFilename(ctx, endpointKey, clanName) {
+function _buildCacheFilename(ctx, endpointKey, clanName, fechaMs) {
   // PF074 (14-oct-2026): el nombre nuevo lleva la letra del dia pegada al P.I (P.I-05-S). _buildPrefijoTSP_ sigue SIN
   // letra a proposito: es el prefijo con el que se buscan los archivos existentes (con o sin letra). [→ Contexto_Base_Web.md §PF074]
   var tag       = _buildPrefijoTSP_(ctx) + '-' + periodIdxToLetra(ctx ? _normalizarPeriodIndex_(ctx.periodIndex) : 0);
-  var fechaHora = _horaLimaNow();
+  // PF091 (17-oct-2026): fechaMs opcional = hora de la primera consulta del periodo (el archivo NUEVO de currentriverrace la usa en el nombre)
+  var fechaHora = fechaMs ? Utilities.formatDate(new Date(fechaMs), 'America/Lima', 'dd-MM-yyyy HH.mm') : _horaLimaNow();
   var nombre    = (clanName && String(clanName).trim()) ? String(clanName).trim() : 'Sin clan';
   return tag + ' ' + fechaHora + ' - ' + nombre + ' - ' + endpointKey + '.json';
 }
@@ -11545,11 +11611,15 @@ function _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) {
     : ((datos && datos.clan && datos.clan.name) ? datos.clan.name : cleanTag(clanTag));
 
   // PRIMERA CONSULTA (12-oct-2026): se anota la hora de la primera respuesta de este clan y periodIndex. [→ Contexto_Base_Web.md §PF063]
+  var fechaPrimeraMs = null;  // PF091: hora de la primera consulta, para el nombre de un archivo NUEVO de currentriverrace
   if (endpointKey === 'currentriverrace' && datos && datos.periodIndex !== '' && datos.periodIndex !== null && isFinite(Number(datos.periodIndex))) {
-    _registrarPrimeraConsultaRR_(clanTag, _temporadaDeClan_(ctxOrPeriodIndex || {}, Number(datos.periodIndex)), Number(datos.periodIndex), new Date().getTime());
+    var _tempRR = _temporadaDeClan_(ctxOrPeriodIndex || {}, Number(datos.periodIndex));
+    _registrarPrimeraConsultaRR_(clanTag, _tempRR, Number(datos.periodIndex), new Date().getTime());
+    var _dPrimera = _fechaPrimeraConsultaRR_(_tempRR, Number(datos.periodIndex), clanTag, null);
+    if (_dPrimera) fechaPrimeraMs = _dPrimera.getTime();
   }
 
-  var filename   = _buildCacheFilename(ctx, endpointKey, clanName);
+  var filename   = _buildCacheFilename(ctx, endpointKey, clanName, fechaPrimeraMs);
   var contenido  = JSON.stringify(datos, null, 2);
   var tagPrefijo = _buildPrefijoTSP_(ctx);
   try {
