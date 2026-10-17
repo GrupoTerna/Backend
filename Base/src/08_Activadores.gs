@@ -33,8 +33,9 @@ var ACTIVADORES_CONFIG = [
   { handler: '_autogenerarParCRListaSiCorrespondeInicioTemporada', tipo: 'diario', hora: 6, activo: true }
 ];
 
-// Disparadores de versiones anteriores del proyecto que, si siguen instalados, deben retirarse al activar/desactivar
-// (por ejemplo, el disparador de runGuerraRapido, que ahora es runGuerraRapidoProgramado).
+// Nombres que NO deben tener activador y que, si alguno sigue instalado, se retira al activar/desactivar. Desde el 17-oct-2026
+// son las versiones MANUALES (sin sufijo); los activadores usan las versiones ...Programado (antes eran disparadores de versiones
+// anteriores del proyecto). [-> Contexto_Base_Web.md §PF091]
 var ACTIVADORES_HANDLERS_LEGADOS_ = ['runGuerraRapido', 'runPendientesYMensajes'];
 
 /**

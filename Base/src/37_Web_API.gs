@@ -202,7 +202,7 @@ function _webAdminTieneFuncion(funcionesStr, funcionBuscada) {
 // Nombre exacto de la Función que permite corregir el Autor de un ascenso/descenso (usada por _webAdminEditarAutorAscenso(), 24_Historial_Ascensos.gs). [→ Contexto_Base_Web.md §37B019]
 var WEB_FUNCION_CORREGIR_AUTOR = 'Corregir autor';
 
-// NUEVO 05-oct-2026: Función que permite pedir desde la web la actualización manual del roster y de guerra (runPendientesYMensajesManual); la usan _webAdminActualizarRoster()/_webAdminEstadoActualizacion() (41_Web_ActualizarRoster.gs); ACTIVA para todos los admin (migrarFuncionActualizarRosterATodosLosAdmins(), 47_Migraciones.gs); se desactiva por admin en permisos.html. [→ Contexto_Base_Web.md §37B020]
+// NUEVO 05-oct-2026: Función que permite pedir desde la web la actualización manual del roster y de guerra (runPendientesYMensajes); la usan _webAdminActualizarRoster()/_webAdminEstadoActualizacion() (41_Web_ActualizarRoster.gs); ACTIVA para todos los admin (migrarFuncionActualizarRosterATodosLosAdmins(), 47_Migraciones.gs); se desactiva por admin en permisos.html. [→ Contexto_Base_Web.md §37B020]
 var WEB_FUNCION_ACTUALIZAR_ROSTER = 'Actualizar roster';
 
 // Catálogo de Funciones del panel: `id` = texto exacto de la celda Funciones (y de _webAdminTieneFuncion()); etiqueta/descripcion solo para mostrar. Para sumar una: agregarla aquí y validarla en el endpoint. 'Corregir autor' no está en los valores por defecto de actualizarDropdownCatDisp() a propósito: Diana la da desde el panel. [→ Contexto_Base_Web.md §37B021]
