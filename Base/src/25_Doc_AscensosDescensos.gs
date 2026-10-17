@@ -224,9 +224,16 @@ function _getExtraMostrarTemporada(ss, ctxReal) {
 /**
  * _getSemanasDeTemporada(temporada) [→ Contexto_Base_Web.md §25B017]
  */
+// 17-oct-2026 (PF091): memo por ejecución. CFG.REF_DEFAULT lee Propiedades del script en cada acceso y _esPeriodoDeColiseo_() llama a esta función en cada fila de guerra. [→ Contexto_Base_Web.md §PF091]
+var _SEMANAS_TEMPORADA_MEMO = {};
+function _limpiarMemoSemanasTemporada_() { _SEMANAS_TEMPORADA_MEMO = {}; }
 function _getSemanasDeTemporada(temporada) {
+  var clave = String(temporada);
+  if (Object.prototype.hasOwnProperty.call(_SEMANAS_TEMPORADA_MEMO, clave)) return _SEMANAS_TEMPORADA_MEMO[clave];
   var pl = primerLunesTemporada(CFG.REF_DEFAULT, temporada);
-  return lunesEnMes(pl.getFullYear(), pl.getMonth());
+  var n = lunesEnMes(pl.getFullYear(), pl.getMonth());
+  _SEMANAS_TEMPORADA_MEMO[clave] = n;
+  return n;
 }
 
 // 5) Rango/clan ACTUAL de cada jugador (hoja Directorio, mapeo dinámico de [→ Contexto_Base_Web.md §25B018]
