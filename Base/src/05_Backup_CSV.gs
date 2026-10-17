@@ -1126,7 +1126,7 @@ function _compararInactivosConCSV(ss) {
 
   // --- 3b. Membresía ACTUAL (en vivo) del clan Vetado, vía el cache de la [→ Contexto_Base_Web.md §05B064]
   var tagsEnClanVetado = {};
-  _fetchClanesBasico();
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'Backup_CSV');
   var clanVetadoCache = _getClanCache(CFG.VETADO_TAG);
   if (clanVetadoCache && clanVetadoCache.members) {
     for (var i = 0; i < clanVetadoCache.members.length; i++) {

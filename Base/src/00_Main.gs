@@ -20,7 +20,7 @@ var PASOS_RUNGUERRARAPIDO = [
       _fetchClanesBasicoSinApi();
     } else {
       forzarRosterFrescoAhora();
-      _fetchClanesBasico();
+      capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'runGuerraRapido paso 0');
     }
   },
   // Directorio (sin /players) — roster 100% fresco desde acá en adelante.
@@ -574,7 +574,7 @@ function forzarRosterFrescoAhora() {
  * _pendientesYMensajesNucleo_(sinApi) [→ Contexto_Base_Web.md §B089]
  */
 function _pendientesYMensajesNucleo_(sinApi) {
-  if (sinApi !== true) _fetchClanesBasico();  // Asegura el cache básico actualizado (Pendientes/Mensajes no usan /players)
+  if (sinApi !== true) capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'pendientesYMensajesNucleo');  // Asegura el cache básico actualizado (Pendientes/Mensajes no usan /players)
   updatePendientesSheet();   // Reconstruye Pendientes desde Guerra + cache
   runGenerarMensajes();      // Reconstruye Mensajes desde Pendientes
 }
@@ -1173,7 +1173,7 @@ function runResaltarDia() {
   Logger.log('[Calendario] Resaltando día actual...');
 
   // FIX (13-ago-2026, pedido del usuario): "el calendario trae la fecha [→ Contexto_Base_Web.md §B119]
-  _fetchClanesBasico();
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'runResaltarDia');
   resaltarDiaActual();
   Logger.log('[Calendario] Completado.');
 }
@@ -1511,7 +1511,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       }
     } else {
       Logger.log('[' + idEjecucion + '] Reanudando en el paso ' + paso + ': cache de clanes vacío (ejecución nueva), se reconstruye la parte básica antes de continuar.');
-      _fetchClanesBasico();
+      capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'tandas');
     }
   }
 

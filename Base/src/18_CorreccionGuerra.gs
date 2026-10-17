@@ -1967,7 +1967,7 @@ function corregirGuerraYControlDesdeControl2() {
 
   // FIX (20-ago-2026, pedido usuario): "corregirGuerraYControlDesdeControl2() [→ Contexto_Base_Web.md §18B064]
   try {
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionGuerra');
   } catch (eFetch) {
     Logger.log('[Corregir Guerra<-Control_2] AVISO: no se pudo refrescar el cache de clanes (' +
       eFetch.message + '). Se continúa igual -- Control/Control_2 podrían no repintarse al final.');
@@ -2080,7 +2080,7 @@ function aplicarCorreccionGuerraATemporadaSeleccionada() {
   }
 
   try {
-    _fetchClanesBasico(); // ver comentario equivalente en corregirGuerraYControlDesdeControl2()
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionGuerra'); // ver comentario equivalente en corregirGuerraYControlDesdeControl2()
   } catch (eFetch) {
     Logger.log('[Corregir Guerra<-RoyaleAPI] AVISO: no se pudo refrescar el cache de clanes (' +
       eFetch.message + '). Se continúa igual.');
@@ -2146,7 +2146,7 @@ function aplicarCorreccionGuerraATodasLasTemporadas() {
   }
 
   try {
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionGuerra');
   } catch (eFetch) {
     Logger.log('[Corregir Guerra<-RoyaleAPI] AVISO: no se pudo refrescar el cache de clanes (' +
       eFetch.message + '). Se continúa igual.');
