@@ -148,7 +148,7 @@ Estas mismas reglas rigen al editarlo, y también al editar la skill `/md`: camb
 | 4 | `20` a `25` y `27` a `30` | 412 KB | **Hecha el 17-oct-2026** |
 | 5 | `26_Torneos_Core.gs` | 386 KB | **Hecha el 17-oct-2026** |
 | 6 | `31` a `36`, `39`, `42`, `48`, `49`, `40`, `41`, `43`, `45`, `46`, `44`, `47` y `38_Web_Endpoints.gs` | 437 KB | **Hecha el 17-oct-2026** |
-| 7 | `00_Main.gs` (sección «resumen rápido», índice y detalle, dentro de la primera sección del principal) | por medir | Pendiente |
+| 7 | `00_Main.gs` (sección «resumen rápido», índice y detalle, dentro de la primera sección del principal) | por medir | **Hecha el 17-oct-2026** |
 | 8 | `37_Web_API.gs`: solo su resumen, su «Índice de bloques movidos» y su «Detalle»; **las secciones PF que están después se quedan** | unos 600 KB de bloques | Pendiente |
 
 Las partes 7 y 8 piden cuidado extra: los bloques no coinciden con un `# Archivo` contiguo. Antes de empezarlas se fija el límite exacto y se anota aquí.

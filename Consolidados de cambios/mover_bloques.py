@@ -35,6 +35,16 @@ H1 = [i for i, l in enumerate(L) if l.startswith('# Archivo ')]
 fin_de = {}
 for k, i in enumerate(H1):
     fin_de[L[i][len('# Archivo '):]] = (i, H1[k + 1] if k + 1 < len(H1) else len(L))
+# Casos especiales (regla 9.6, partes 7 y 8):
+#  - 00_Main.gs no tiene «# Archivo»: va de «## 00_Main.gs — resumen rápido» hasta el siguiente «# » de nivel 1.
+#  - 37_Web_API.gs termina justo antes de la primera sección «### PF» que le sigue (las PF se quedan).
+H_todos = [i for i, l in enumerate(L) if re.match(r'^# ', l)]
+for i, l in enumerate(L):
+    if l == '## 00_Main.gs — resumen rápido':
+        fin_de['00_Main.gs'] = (i, next(j for j in H_todos if j > i))
+if '37_Web_API.gs' in fin_de:
+    i37 = fin_de['37_Web_API.gs'][0]
+    fin_de['37_Web_API.gs'] = (i37, next(j for j in range(i37, len(L)) if re.match(r'^### PF\d+', L[j])))
 cuerpos, rangos, ids = [], [], 0
 for n in a.archivos:
     if n not in fin_de:
