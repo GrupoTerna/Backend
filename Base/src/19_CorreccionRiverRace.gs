@@ -48,7 +48,7 @@ function aprobarCorreccionesRiverRacePendientes() {
   var ss = _getSs();
 
   try {
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionRiverRace');
   } catch (eFetch) {
     Logger.log('[RiverRace] AVISO: no se pudo refrescar el cache de clanes (' + eFetch.message + '). Se continúa igual.');
   }
@@ -243,7 +243,7 @@ function _procesarVerificacionRiverRace(participantesPayload) {
 
   // Mismo motivo que corregirGuerraYControlDesdeControl2() (18_CorreccionGuerra.gs): [→ Contexto_Base_Web.md §19B014]
   try {
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionRiverRace');
   } catch (eFetch) {
     Logger.log('[RiverRace] AVISO: no se pudo refrescar el cache de clanes (' +
       eFetch.message + '). Se continúa igual -- puede fallar más abajo si _getCtx() queda sin datos.');

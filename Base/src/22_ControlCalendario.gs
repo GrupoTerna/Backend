@@ -148,7 +148,7 @@ function updateControlSheet(ctxOverride) {
     }
     if (faltaCache) {
       Logger.log('[Control] cache incompleto en esta ejecución, se intenta recuperar checkpoint de clanes...');
-      _fetchClanesBasico();
+      capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'ControlCalendario');
     }
     for (var j = 0; j < CFG.TERNA_TAGS.length; j++) {
       if (!_getClanCache(CFG.TERNA_TAGS[j])) {
@@ -1576,7 +1576,7 @@ function _leerNotasCalendario2PorSemana(temporada) {
 }
 
 function _probarCentradoControl() {
-  _fetchClanesBasico();
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'ControlCalendario');
   updateControlSheet();
   _aplicarTablasYGridlines();
 }

@@ -473,7 +473,7 @@ function _esMiembroVigenteEnClanesFamilia(tag) {
   var tagNorm = String(tag || '').trim();
   if (!tagNorm) return false;
 
-  _fetchClanesBasico();
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'Torneos_Core');
   if (!CACHE_CLAN_DATA) return false;
 
   for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {

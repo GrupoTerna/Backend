@@ -2127,7 +2127,7 @@ function _fetchPlayersData() {
 
   if (!CACHE_CLAN_DATA) {
     Logger.log('[API] _fetchPlayersData: CACHE_CLAN_DATA vacío, se obtiene primero la info básica de clanes.');
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'API_ClashRoyale');
   }
   if (_playersCompletoEnEstaEjecucion && CACHE_CLAN_DATA._players) {
     Logger.log('[API] _fetchPlayersData: /players ya se completó en esta ejecución, se omite repetir.');
