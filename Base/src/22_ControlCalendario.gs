@@ -845,12 +845,17 @@ function _getDatosGuerraDesdeHojaParaControl(ctx) {
   if (_GUERRA_MEMO_ACTIVO && _GUERRA_HOJA_MEMO) {
     data = _GUERRA_HOJA_MEMO;
   } else {
+    var _medTG = Date.now(); // 17-oct-2026 (PF091): medición de la lectura de la hoja Guerra (solo Logger.log)
     data = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+    Logger.log('[TorneosMed] hoja Guerra: ' + data.length + ' fila(s) leídas en ' + (Date.now() - _medTG) + 'ms');
     if (_GUERRA_MEMO_ACTIVO) _GUERRA_HOJA_MEMO = data;
   }
   // NUEVO (19-sep-2026): `true` = temporada real, aquí sí se puede marcar los
   // días opcionales por cruce de meta (ver _clanYaCruzoMetaEnPeriodo()).
-  return _procesarFilasGuerraParaControl(data, ctx, true);
+  var _medTP = Date.now();
+  var _medRes = _procesarFilasGuerraParaControl(data, ctx, true);
+  Logger.log('[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en ' + (Date.now() - _medTP) + 'ms');
+  return _medRes;
 }
 
 /**
@@ -930,11 +935,13 @@ function _cruceNormTemporada_(t) {
 function _getMapaCruceMetaGuerraLogs_() {
   if (_CRUCE_META_LOGS_MEMO) return _CRUCE_META_LOGS_MEMO;
   var mapa = {};
+  var _medTL = Date.now(), _medFilasL = 0; // 17-oct-2026 (PF091): medición de la lectura de Guerra_Logs (solo Logger.log)
   try {
     var lectura = _obtenerFilasConFallbackCSV(
       _getSs(), CFG.SHEETS.GUERRA_LOGS, 'Backup_Guerra_Logs.csv', GUERRA_LOGS_TOTAL_COLS, 1
     );
     var filas = (lectura && lectura.filas) || [];
+    _medFilasL = filas.length;
     for (var i = 0; i < filas.length; i++) {
       var r = filas[i];
       var temp   = _cruceNormTemporada_(r[GLC.TEMPORADA - 1]);
@@ -955,6 +962,7 @@ function _getMapaCruceMetaGuerraLogs_() {
     Logger.log('[Control] No se pudo leer Guerra_Logs para cruce de meta: ' + e.message);
   }
   _CRUCE_META_LOGS_MEMO = mapa;
+  Logger.log('[TorneosMed] Guerra_Logs: ' + _medFilasL + ' fila(s) leídas y procesadas en ' + (Date.now() - _medTL) + 'ms');
   return mapa;
 }
 
@@ -994,7 +1002,9 @@ function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
     var archivo = _CRUCE_META_JSON_IDX[nombre][Number(temporada) + '|' + (periodIdxToSectionIndex(pIdx) + 1) + '|' + pIdx];
     var res = null;
     if (archivo) {
+      var _medTJ = Date.now();
       var obj = JSON.parse(archivo.getBlob().getDataAsString('UTF-8'));
+      Logger.log('[TorneosMed] JSON de Drive abierto para cruce de meta (' + nombre + ', periodo ' + pIdx + ') en ' + (Date.now() - _medTJ) + 'ms');
       var miTag = String((obj.clan && obj.clan.tag) || obj.tag || '').toUpperCase();
       var logs = obj.periodLogs || [];
       for (var l = 0; l < logs.length && res === null; l++) {
