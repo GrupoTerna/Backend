@@ -33,6 +33,10 @@
  * ejecución le quedan menos de TORNEOS_ESTATICO_MIN_RESTANTE_MS (250 s) antes de CFG.PLATAFORMA_LIMITE_EJECUCION_MS, no calcula ni marca
  * TORNEOS_ESTATICO_CALC_MS (reintenta en el siguiente ciclo). Consecuencia esperada: en una corrida horaria larga casi nunca alcanzará, y
  * torneos.json se renovará sobre todo con publicarTorneosEstatico() a mano. [→ Contexto_Base_Web.md §PF091]
+ * CAMBIO 17-oct-2026 (registro de Torneo en vivo): _webHistorialTorneos() no terminó ni en 274 s tras «torneos» (83-87 s), así que la
+ * publicación completa no cabe en una ejecución. _publicarTorneosEstatico_(forzar, completo): sin `completo` (bot y Torneo en vivo) calcula
+ * solo «torneos» y conserva el `historial` ya publicado (_leerHistorialTorneosPublicado_); con `completo` (publicarTorneosEstatico() manual)
+ * recalcula las dos. El historial, por tanto, solo se renueva con la manual, y esa podría no terminar. [→ Contexto_Base_Web.md §PF091]
  */
 var TORNEOS_ESTATICO_ARCHIVO = 'torneos.json';
 var TORNEOS_ESTATICO_REPUBLICAR_MIN = 50;
@@ -40,10 +44,13 @@ var TORNEOS_ESTATICO_CALCULAR_CADA_MIN = 90;
 // 17-oct-2026 (PF091, decisión B): desde el bot no se calcula si a la ejecución le quedan menos de esto antes del límite de la plataforma
 // (CFG.PLATAFORMA_LIMITE_EJECUCION_MS). Estimación (calcular las dos secciones tardó ~4 min en la primera corrida manual); no medida con exactitud.
 var TORNEOS_ESTATICO_MIN_RESTANTE_MS = 250 * 1000;
+// 17-oct-2026: modo SIN historial (el de Torneo en vivo y el del bot). Con «torneos» (≈ 83-87 s en el registro) más la publicación (no medida)
+// bastan ~150 s: estimación, no medida con exactitud. [→ Contexto_Base_Web.md §PF091]
+var TORNEOS_ESTATICO_MIN_RESTANTE_SOLO_TORNEOS_MS = 150 * 1000;
 // Marca de inicio de la ejecución: el código global se evalúa al arrancar cada ejecución de Apps Script.
 var TORNEOS_ESTATICO_EJEC_INICIO_MS_ = Date.now();
 
-function _publicarTorneosEstatico_(forzar) {
+function _publicarTorneosEstatico_(forzar, completo) {
   var t0 = Date.now();
   try {
     var props = PropertiesService.getScriptProperties();
@@ -66,8 +73,9 @@ function _publicarTorneosEstatico_(forzar) {
     // La corrida manual (forzar) no se limita: es la forma de renovar torneos.json cuando el bot no alcanza.
     if (!forzar) {
       var restanteMs = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - TORNEOS_ESTATICO_EJEC_INICIO_MS_);
-      if (restanteMs < TORNEOS_ESTATICO_MIN_RESTANTE_MS) {
-        _diagGuerraVivo_('[TorneosEstatico] OMITIDO: quedan ' + Math.round(restanteMs / 1000) + ' s de la ejecución y se piden ' + Math.round(TORNEOS_ESTATICO_MIN_RESTANTE_MS / 1000) + ' s; se reintenta en el siguiente ciclo');
+      var pideMs = completo ? TORNEOS_ESTATICO_MIN_RESTANTE_MS : TORNEOS_ESTATICO_MIN_RESTANTE_SOLO_TORNEOS_MS;
+      if (restanteMs < pideMs) {
+        _diagGuerraVivo_('[TorneosEstatico] OMITIDO: quedan ' + Math.round(restanteMs / 1000) + ' s de la ejecución y se piden ' + Math.round(pideMs / 1000) + ' s; se reintenta en el siguiente ciclo');
         return false;
       }
     }
@@ -75,10 +83,16 @@ function _publicarTorneosEstatico_(forzar) {
 
     var datos = {};
     var fallas = [];
-    [
-      ['torneos', function () { return _webTorneos({ esAdmin: false }); }],
-      ['historial', function () { return _webHistorialTorneos({ esAdmin: false }); }]
-    ].forEach(function (par) {
+    var secciones = [['torneos', function () { return _webTorneos({ esAdmin: false }); }]];
+    if (completo) {
+      secciones.push(['historial', function () { return _webHistorialTorneos({ esAdmin: false }); }]);
+    } else {
+      // Sin recalcular 'historial' (en el registro del 17-oct no terminó ni en 274 s tras 'torneos'): se conserva el ya publicado.
+      var histPrevio = _leerHistorialTorneosPublicado_(token, repo, rama);
+      if (histPrevio) datos.historial = histPrevio;
+      _diagGuerraVivo_('[TorneosEstatico] modo sin historial: ' + (histPrevio ? 'se conserva el historial ya publicado' : 'no se pudo leer el publicado; se publica sin esa clave (la página la pide a Apps Script)'));
+    }
+    secciones.forEach(function (par) {
       var tSec = Date.now();
       try {
         var r = par[1]();
@@ -130,12 +144,27 @@ function _publicarTorneosEstatico_(forzar) {
 }
 
 /**
+ * _leerHistorialTorneosPublicado_(token, repo, rama) (17-oct-2026, PF091)
+ * Lee la clave `historial` del torneos.json ya publicado (API de contenidos de GitHub, con el mismo token; no depende de la caché del CDN).
+ * Devuelve el objeto o null si no se pudo leer. Nunca lanza error.
+ */
+function _leerHistorialTorneosPublicado_(token, repo, rama) {
+  try {
+    var r = _ghFetch_(token, 'get', '/repos/' + repo + '/contents/' + TORNEOS_ESTATICO_ARCHIVO + '?ref=' + encodeURIComponent(rama));
+    if (r.code !== 200 || !r.body || !r.body.content) return null;
+    var txt = Utilities.newBlob(Utilities.base64Decode(String(r.body.content).replace(/\s/g, ''))).getDataAsString('UTF-8');
+    var obj = JSON.parse(txt);
+    return (obj && obj.historial) ? obj.historial : null;
+  } catch (e) { return null; }
+}
+
+/**
  * publicarTorneosEstatico()
  * Atajo manual (ejecutar desde el editor): publica ya torneos.json. El resultado queda en
  * verDiagnosticoGuerraVivo() y en el log. Útil justo después de registrar o corregir un torneo.
  */
 function publicarTorneosEstatico() {
   PropertiesService.getScriptProperties().deleteProperty('TORNEOS_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
-  var ok = _publicarTorneosEstatico_(true); // true: calcula aunque se haya calculado hace poco
+  var ok = _publicarTorneosEstatico_(true, true); // 1.º true: calcula aunque se haya calculado hace poco; 2.º true: recalcula también el historial
   Logger.log('[TorneosEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
 }

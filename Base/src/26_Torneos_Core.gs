@@ -1761,11 +1761,12 @@ function _tickTorneoEnVivo() {
     return;
   }
 
+  // 17-oct-2026: procesarTorneos() tarda 170-220 s (registros del 17-oct) y publicar 'torneos' ≈ 85-90 s más la subida, así que no caben
+  // juntos en 360 s: cuando toca publicar (cada 15 min), este tick SOLO publica (datos del tick anterior; sin recalcular el historial)
+  // y el siguiente vuelve a procesar.
+  if (_publicarTorneosDesdeTick_(false)) return;
   Logger.log('[TorneoEnVivo] Ejecutando procesarTorneos() (quedan ' +
              Math.round((TORNEO_EN_VIVO_DURACION_MS - transcurrido) / 60000) + ' min de ventana).');
-  // 17-oct-2026: procesarTorneos() tarda ~175 s (registro del 17-oct) y publicar necesita ~250 s, así que no caben juntos en 360 s:
-  // cuando toca publicar (cada 15 min), este tick SOLO publica (con los datos del tick anterior) y el siguiente vuelve a procesar.
-  if (_publicarTorneosDesdeTick_(false)) return;
   procesarTorneos();
 }
 
@@ -1786,7 +1787,7 @@ function _publicarTorneosDesdeTick_(ignorarCadencia) {
       Logger.log('[TorneoEnVivo] torneos.json NO se publica: quedan ' + Math.round(restanteMs / 1000) + ' s; se reintenta en 15 min.');
       return true;
     }
-    var ok = _publicarTorneosEstatico_(true); // true también cuando no hubo cambios; false si falló
+    var ok = _publicarTorneosEstatico_(true, false); // sin recalcular el historial; true también cuando no hubo cambios, false si falló
     Logger.log('[TorneoEnVivo] torneos.json: ' + (ok ? 'publicado o sin cambios' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
     return true;
   } catch (e) {
