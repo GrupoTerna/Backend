@@ -2,11 +2,161 @@
 
 Contexto, historial de decisiones, fixes, notas de fases y correcciones de los archivos `.gs` del proyecto, sacado de los comentarios largos del código para dejar los `.gs` casi como código puro. En cada `.gs` queda una línea corta con la síntesis y la referencia `[→ Contexto_Base_Web.md §Bxxx]`.
 
-Archivos procesados hasta ahora: **00** a **32** (00_Main … 32_Insignias), más **33, 34, 35, 36, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48 y 49** (tandas 1 a 3 de la serie 33-49). 38 completo (partes 1 a 3). **37 completo** (partes 1 a 7; bloques 37B001 a 37B364; en el `.gs` queda código más una síntesis de una línea con su referencia `[→ Contexto_Base_Web.md §37Bxxx]`). Las líneas de los bloques 37B245 en adelante usan la numeración original del archivo (línea actual + 3476). Los comentarios cortos de una sola línea (hasta ~160 caracteres) se dejaron en el código.
+**Cómo usar este archivo:** (1) busca el tema en «Mapa de secciones PF»; (2) los bloques por `.gs` (`# Archivo NN_…`) traen arriba su «Índice de bloques movidos» y después el «Detalle (texto original, sin cambios)», que es histórico y puede no coincidir con el código de hoy; (3) para los nombres de `.gs` anteriores al 7-oct-2026 usa «Equivalencias de nombres de archivo `.gs`»; (4) el «Registro del traslado» cuenta de dónde salió cada cosa. Cuando algo del detalle y de una sección PF se contradicen, manda la sección PF más reciente.
+
+## Mapa de secciones PF
+
+Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de número ni agrupadas por tema). Esta tabla es la guía para encontrarlas: busca el tema aquí y luego busca `### PFxxx` en el archivo. **Al crear una sección PF nueva, se añade su fila aquí** (regla en `Consolidados de cambios/Reglas_Consolidados.md`, sección 6). Los números no se reutilizan: el 15-oct-2026 había dos `PF029` distintos y «Medallas y Trofeos» pasó a `PF096`. La tabla recoge el título de cada sección; si dos secciones tratan lo mismo, la más reciente manda, y no indica qué PF sigue vigente.
+
+| Sección | Tema |
+|---|---|
+| `PF001` | Fase 3: cuadrículas de guerra — cómo se pintan y quién decide el orden |
+| `PF002` | Fase 4: panel de Torneos de la web con dos bloques vacíos — por qué el bug es del backend |
+| `PF003` | Fase 5: qué expone `/players` y qué no (comprobado con JSON real el 22/23-sep-2026) |
+| `PF004` | Fase 14: Cambio de Rango — por qué calculaba mal y qué se decidió (28-sep-2026) |
+| `PF005` | Fase 15: corrección de guerra con el Log y el perfil de RoyaleAPI — base del diseño y decisiones |
+| `PF006` | Fecha_ing deducida y pérdida de fechas en `Historial_I/S` (28-sep-2026) |
+| `PF007` | Cambio de Rango: presencia por semana y reglas de Colíder |
+| `PF008` | Fecha_ing en Cambio de Rango: casos, criterios descartados y por qué (28-sep-2026) |
+| `PF009` | Fase 5: cofres y battlelog de la web — por qué ya no se consulta a Supercell en cada clic (29-sep-2026) |
+| `PF010` | Fase 15: forma de la escritura de correcciones de guerra |
+| `PF011` | Web: caché de `webGuerraEnVivo`, hueco de las 12:02 y qué expone la guerra en vivo |
+| `PF012` | Seguridad del backend: tokens, claves de admin, límite de login y permiso «Corregir autor» |
+| `PF013` | Frontend: vista de Inactivos del panel Admin y panel de Admin (buscador, infiltrados, Ingresos recientes) — qué hay y dónde vive |
+| `PF014` | Frontend: Sorteos (celular), historiales del Perfil y fallback a CSV / carga lenta — qué hay hoy |
+| `PF015` | Frontend: Cara a cara y comparador (Directorio) y fichas de carta del Perfil — cómo funcionan hoy |
+| `PF016` | Frontend (sitio estático): caché, service worker y sesión; decisiones tomadas y descartadas con su motivo |
+| `PF017` | Frontend: cuentas ocultas en el sitio, costo en oro, rendimiento de `index`/`guerra` y medición de `webGuerraEnVivo` |
+| `PF018` | Frontend: sesión de admin vencida, foco, doble envío y editor de premios — decisiones de la octava sesión del plan de CSS (2 al 5-oct-2026) |
+| `PF019` | Estructura de `Base.md` (reordenamiento del 7-oct-2026): equivalencia de nombres de archivo |
+| `PF020` | Incidente del domingo 4-oct-2026 (T5 S4) en cero: evidencia, hipótesis y propuestas |
+| `PF021` | Estructura del repositorio `Backend`: qué es cada carpeta y cómo se usa (explicado por la usuaria el 11-oct-2026) |
+| `PF022` | `PLAYERS_API_ENABLED` se queda en `'partial'` o `false` (decisión de la usuaria) y bug comprobado en `_corregirCampoDiarioConDistribucion()`… |
+| `PF023` | Comprobaciones del 11-oct-2026 contra el repo y los JSON: preguntas 18, 51 y 52 |
+| `PF024` | Reglas de los consolidados: un solo archivo, y los consolidados se borran al aplicarse (11-oct-2026) |
+| `PF025` | Frontend: JSON estático como último recurso, «tres momentos» de actualización y aviso «Datos guardados» (09-oct-2026; pasado desde el… |
+| `PF026` | Cómo se registran los cambios nuevos, borrado de consolidados y token temporal |
+| `PF027` | Frontend: héroes y monedas en el perfil, `guerra.html` (celdas vacías, congelado, meta cruzada, mini historial), Noticias de la semana y `sw.js`… |
+| `PF028` | `guerra.html`: por qué las tarjetas y las cuadrículas se ven como se ven (decisiones de estilo del 4 al 16-sep-2026; pasado desde el… |
+| `PF029` | `guerra.html` (script): estado de módulo, carga, cuadrículas, filtros y pestañas (bloques «Línea original N (script)», tanda 1 de 2: 15 bloques… |
+| `PF030` | `guerra.html` (script): selectores, cuadrículas de Activos y de Temporada, Inactivos, mensajes, Pendientes, Participación de Hoy y Log (bloques… |
+| `PF031` | Fama en 0 en los domingos de coliseo: qué se verificó, protección en `updateGuerraSheet` y reparación del 04-oct desde los JSON (11-oct-2026) |
+| `PF032` | Qué muestra cada fuente de RoyaleAPI (diario o semanal, un clan o varios) y cambio de prioridad a Log > Analytics > Perfil (hechos de la usuaria,… |
+| `PF033` | `perfil.html`, sección «Competitivo»: Camino de Leyendas (escalones) y Camino de Trofeos (copas) son fuentes distintas |
+| `PF034` | `guerra.html`: los botones Jue–Dom cambian el puesto de las tarjetas de «Guerra de Hoy» y se retira el panel «Puesto en vivo» |
+| `PF035` | `perfil.html`: orden de las 4 minigráficas y marcas del eje Y en las de dispersión |
+| `PF036` | `perfil.html`: tope de 4 ataques y de 900 medallas por día en las gráficas grandes; lo que lo supera es una anomalía |
+| `PF037` | `perfil.html`: los botones de «Ciclo de cofres» y «Batallas más recientes» usan el formato de pastilla de la web |
+| `PF038` | `perfil.html`: orden de las secciones del perfil y de dónde sale la pastilla «Camino de Leyendas · N» |
+| `PF039` | `perfil.html`: las 4 minigráficas comparten la misma estructura vertical y el anillo del donut coincide con el trazado de las dispersiones |
+| `PF040` | Historial de guerra por jugador: un registro por clan y semana (Log y Analytics coexisten), pedido y hechos de la usuaria, 11-oct-2026 |
+| `PF041` | Verificar semana en curso no recibía respuesta del backend: lista liviana (`modo=clanes`) y tope de tiempo en el envío |
+| `PF042` | Lista de Corrección de Guerra más liviana: Directorio sin Players/Links y caché de la cobertura |
+| `PF043` | Lista de Nuevos: Directorio sin Players/Links |
+| `PF044` | Gráficas de `perfil.html` y `directorio.html`: el tooltip del mouse se voltea a la izquierda cerca del borde derecho |
+| `PF045` | Domingos 05/07, 02/08 y 30/08: ceros de fama y ataques que la reparación de PF031 no alcanza, contrastados contra los JSON subidos (11-oct-2026) |
+| `PF046` | `Datos descargados/Otros formatos/Clan War Season 136.txt` (pestaña Logs de RoyaleAPI, clan principal): qué trae y contraste con el CSV (11-oct-2026) |
+| `PF047` | Reparación de Fame y AtaquesSemana de los domingos T2 a T5 con el Log de RoyaleAPI (`Correcciones_Guerra.csv`) |
+| `PF048` | Celulares fuera del código (repo público) (12-oct-2026, pedido del usuario) |
+| `PF049` | Accesibilidad de la web: P-1 y P-4 ya estaban aplicados, auditoría con axe-core del 12-oct-2026, `sorteo.html` y un robo de foco corregido en… |
+| `PF050` | Accesibilidad de la web: respuestas a las preguntas abiertas (12-oct-2026, por encargo de la usuaria; pendientes de que ella confirme) y cómo… |
+| `PF051` | `perfil.html`: minigráficas a todo el ancho, puntos centrados en su día, nivel promedio y «Sugerencias de mazo (3)» |
+| `PF052` | `perfil.html`: nuevo orden de las secciones |
+| `PF053` | `perfil.html`: «Competitivo» pasa de tablas de texto a tarjetas gráficas |
+| `PF054` | `perfil.html`: «Puntos de experiencia» sin el total |
+| `PF055` | `perfil.html`: íconos pequeños en los cuadritos y la cabecera |
+| `PF056` | `perfil.html` y `404.html`: cintas y emotes decorativos |
+| `PF057` | `perfil.html`: «Competitivo» debajo de las minigráficas |
+| `PF058` | `perfil.html`: nombre del jugador en dorado brillante |
+| `PF059` | `perfil.html`: «Estado · Rango (Tag)» e insignia de guerra junto al escudo |
+| `PF060` | `perfil.html`: espacio en blanco bajo las gráficas de Evolución |
+| `PF061` | Hoja Guerra: columna «Copas» |
+| `PF062` | `clan.html`: tarjeta «Evolución · Copas del clan» y acción `webClanCopas` |
+| `PF063` | `Fecha` de Guerra y Guerra_Logs = primera consulta del periodIndex; el JSON de currentriverrace ya no se renombra |
+| `PF064` | `perfil.html`: banner en la tarjeta de cabecera |
+| `PF065` | Banners en el resto de la web, por tandas |
+| `PF066` | `perfil.html`: eje X de las gráficas como el de copas de `clan.html` |
+| `PF067` | Corrección de guerra: topes por jugador, reparación de domingos del 13-oct, diagnóstico del envío del historial y orden de funciones (registro de… |
+| `PF068` | Envío del historial de guerra: lecturas y escrituras por lote en `_aplicarHistorialGuerra()` (arreglo hecho el 13-oct-2026) |
+| `PF069` | Separación estándar entre secciones y emotes decorativos en `perfil.html` |
+| `PF070` | Propuesta pendiente: una sola pastilla «Sugerencias de mazo» con ventana de opciones |
+| `PF071` | Ventana «Niveles y evoluciones» de la colección de `perfil.html` |
+| `PF072` | Cruce de solo lectura entre los totales de RoyaleAPI y el reparto diario del backup de guerra (14-oct-2026; sin cambios de código) |
+| `PF073` | Contrastación del backend contra los pendientes de `Web/CHANGELOG.md` («requiere subir `Base.md`»): fallback a CSV, publicadores `50_` a `53_`,… |
+| `PF074` | Letra del día en el nombre de los JSON (`P.I-05-S`), verificación de `periodIndex` y pendiente de subcarpetas por temporada y semana |
+| `PF075` | Contrastación del consolidado (Fases 7, 9, 10, 12 y 13, y verificaciones «sin hacer») contra el código de `Web` y de `Base/src` (14-oct-2026; sin… |
+| `PF076` | Ventanas de `perfil.html` abrían ampliadas y desplazadas en móvil; revisión parcial de «Niveles y evoluciones» y «Sugerencias de mazo» con datos… |
+| `PF077` | Regla de los cortes de las 04:00 para el `P.I` que un `clans.json` toma prestado (decidido por la usuaria, 14-oct-2026; Generador) |
+| `PF078` | `Torneo - <tag>.json` se guarda en `Torneos/Terna` o en la raíz de `Torneos` según el clan del creador; `Locales` queda sin uso |
+| `PF079` | Resultado de `migrarFormatoJSON()` y de `verificarPeriodIndexJSON()` tras aplicar §PF077 (registros de la usuaria, 14-oct-2026; sin cambios de código) |
+| `PF080` | Hora real del corte diario medida con las anclas de cada clan; IDs de las carpetas viejas; decisión sobre los `currentriverrace.json` de T-05… |
+| `PF081` | `perfil.html`: cartas, cabecera, insignias, pasteles e íconos del 23 al 27-sep-2026 |
+| `PF082` | `assets/styles.css`: consolidación del CSS repetido entre páginas, siete lotes del 18-sep-2026 (criterio, qué se movió, qué se descartó y por qué;… |
+| `PF083` | `admin.html`: del 30-ago al 16-sep-2026, cómo se armó el panel y por qué |
+| `PF084` | `torneos.html` y `comunidad.html`: cómo se armaron y por qué (30-ago al 13-sep-2026; pasado desde el `CHANGELOG.md` de `Web`, secciones… |
+| `PF085` | `perfil.html`: nacimiento de la página y de sus secciones, y qué trae el JSON crudo del jugador (31-ago al 13-sep-2026; pasado desde el… |
+| `PF086` | `directorio.html`: comparador, tabla del directorio, «Ingresos recientes» y filtros — cómo se armaron y por qué (31-ago al 16-sep-2026; pasado… |
+| `PF087` | `index.html`: bloques «Línea original N (HTML)» — datos estructurados, navegación, hero, sección de clanes, Rankings, aniversarios e Ingresos… |
+| `PF088` | `index.html` (script): orden fijo de los clanes y las gráficas comparativas de «Ingresos recientes» (3 al 10-sep-2026; hoy viven en… |
+| `PF089` | `sorteo.html`: acceso restringido, ruleta, resoluciones de ganadores y tickets (28-ago a 14-sep-2026; pasado desde el `CHANGELOG.md` de `Web`,… |
+| `PF090` | `admin.html` (HTML, parte 7a): Torneos, Sorteos, Cambio de Rango y Mensajes — cómo se armaron los formularios y por qué (9 al 16-sep-2026; pasado… |
+| `PF091` | Función de captura de la API separada del procesamiento; fin de las versiones `...Manual`; funciones de los activadores sin API directa |
+| `PF092` | `admin.html` (script, parte 7b): orden de arranque, organizador, requisitos, Torneos y Cambio de Rango — qué hace cada ajuste y por qué (29-ago al… |
+| `PF093` | `admin.html` (HTML, parte 7c): cómo está armado el panel — secciones, Registrar y Vetar, Sorteos, Cambio de Rango y resoluciones (28-ago al… |
+| `PF094` | Cambios del 11-oct-2026 en `perfil.html`, `directorio.html`, `guerra.html`, `index.html`, `admin.html` y el CSS compartido: el porqué de `sw.js`… |
+| `PF095` | «Tres momentos» de la portada y de `clan.html` con `fmtTresTiemposDeResultado()`; «Cartas de desafíos» a 2 columnas; botones de acciones en la… |
+| `PF096` | Medallas y Trofeos: dos cosas distintas, y de dónde sale la cuadrícula diaria de un ingreso |
+
+## Equivalencias de nombres de archivo `.gs`
+
+Muchos textos de este archivo citan el nombre **anterior** del `.gs` (antes del reordenamiento de `Base.md` del 7-oct-2026, ver `PF019`). **Cuidado: casi todos los números antiguos hoy son otro archivo** (la última columna avisa). Ante un nombre antiguo, búscalo aquí antes de abrir el `.gs` por su número.
+
+| Nombre anterior | Nombre actual | Ojo |
+|---|---|---|
+| `03_Setup_Hojas.gs` | `02_Setup_Hojas.gs` | hoy el 03 es `03_Indice_Sheet.gs` |
+| `30_Backup_CSV.gs` | `05_Backup_CSV.gs` | hoy el 30 es `30_Mensajes.gs` |
+| `45_Battlelogs_Siembra.gs` | `06_Battlelogs_Siembra.gs` | hoy el 45 es `45_Vigilante_UptimeRobot.gs` |
+| `46_Battlelogs_Hoja.gs` | `07_Battlelogs_Hoja.gs` | hoy el 46 es `46_Test.gs` |
+| `07_API_ClashRoyale.gs` | `09_API_ClashRoyale.gs` | hoy el 07 es `07_Battlelogs_Hoja.gs` |
+| `13_Directorio_Inactivos_Vetados.gs` | `13_Inactivos_Vetados.gs` |  |
+| `16_Nuevos_RoyaleAPI.gs` | `14_Nuevos_RoyaleAPI.gs` | hoy el 16 es `16_ContactsSync.gs` |
+| `35_DeteccionInfiltrados.gs` | `15_DeteccionInfiltrados.gs` | hoy el 35 es `35_ProgresoEventos.gs` |
+| `28_ContactsSync.gs` | `16_ContactsSync.gs` | hoy el 28 es `28_Torneos_Docs.gs` |
+| `21_HistorialGuerraJugador.gs` | `20_HistorialGuerraJugador.gs` | hoy el 21 es `21_Pronostico_Guerra.gs` |
+| `38_Pronostico_Guerra.gs` | `21_Pronostico_Guerra.gs` | hoy el 38 es `38_Web_Endpoints.gs` |
+| `19_ControlCalendario.gs` | `22_ControlCalendario.gs` | hoy el 19 es `19_CorreccionRiverRace.gs` |
+| `20_Control2_GuerraSemanal.gs` | `23_Control2_GuerraSemanal.gs` | hoy el 20 es `20_HistorialGuerraJugador.gs` |
+| `14_Directorio_HistorialAscensos.gs` | `24_Historial_Ascensos.gs` | hoy el 14 es `14_Nuevos_RoyaleAPI.gs` |
+| `23_Doc_AscensosDescensos.gs` | `25_Doc_AscensosDescensos.gs` | hoy el 23 es `23_Control2_GuerraSemanal.gs` |
+| `24_Torneos_Core.gs` | `26_Torneos_Core.gs` | hoy el 24 es `24_Historial_Ascensos.gs` |
+| `26_Torneos_Requisitos.gs` | `27_Torneos_Sorteos_Requisitos.gs` | hoy el 26 es `26_Torneos_Core.gs` |
+| `25_Torneos_Docs.gs` | `28_Torneos_Docs.gs` | hoy el 25 es `25_Doc_AscensosDescensos.gs` |
+| `37_Docs_NoCalificados.gs` | `29_Docs_NoCalificados.gs` | hoy el 37 es `37_Web_API.gs` |
+| `27_Mensajes.gs` | `30_Mensajes.gs` | hoy el 27 es `27_Torneos_Sorteos_Requisitos.gs` |
+| `09_Cards_Mazos.gs` | `31_Cards_Mazos.gs` | hoy el 09 es `09_API_ClashRoyale.gs` |
+| `36_Insignias.gs` | `32_Insignias.gs` | hoy el 36 es `36_PerfilWeb.gs` |
+| `43_ProgresoEventos.gs` | `35_ProgresoEventos.gs` | hoy el 43 es `43_Menu_Dinamico.gs` |
+| `42_PerfilWeb.gs` | `36_PerfilWeb.gs` | hoy el 42 es `42_Web_TiemposActualizacion.gs` |
+| `34_Web_API.gs` | `37_Web_API.gs` | hoy el 34 es `34_Logros.gs` |
+| `08_Web_Endpoints.gs` | `38_Web_Endpoints.gs` | hoy el 08 es `08_Activadores.gs` |
+| `41_CartasWeb.gs` | `39_CartasWeb.gs` | hoy el 41 es `41_Web_ActualizarRoster.gs` |
+| `05_Menu_Dinamico.gs` | `43_Menu_Dinamico.gs` | hoy el 05 es `05_Backup_CSV.gs` |
+| `29_BotWhatsApp.gs` | `44_BotWhatsApp.gs` | hoy el 29 es `29_Docs_NoCalificados.gs` |
+| `44_Test.gs` | `46_Test.gs` | hoy el 44 es `44_BotWhatsApp.gs` |
+| `06_Migraciones.gs` | `47_Migraciones.gs` | hoy el 06 es `06_Battlelogs_Siembra.gs` |
+| `32_ReenumerarTemporadas.gs` | dentro de `47_Migraciones.gs` | |
+| `47_Web_Noticias.gs` | `40_Web_Noticias.gs` | hoy el 47 es `47_Migraciones.gs` (equivalencia tomada del CHANGELOG de `Web`; no está en `PF019`) |
+
+## Registro del traslado
+
+Bitácora de cómo se fue armando este archivo (qué se trasladó en cada tanda). No describe el sistema: sirve para saber de dónde salió cada cosa. **Al terminar una tanda, se añade su línea al final del último bloque de este registro.**
+
+**Estado histórico de los `.gs` procesados (no se actualiza):** Archivos procesados hasta ahora: **00** a **32** (00_Main … 32_Insignias), más **33, 34, 35, 36, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48 y 49** (tandas 1 a 3 de la serie 33-49). 38 completo (partes 1 a 3). **37 completo** (partes 1 a 7; bloques 37B001 a 37B364; en el `.gs` queda código más una síntesis de una línea con su referencia `[→ Contexto_Base_Web.md §37Bxxx]`). Las líneas de los bloques 37B245 en adelante usan la numeración original del archivo (línea actual + 3476). Los comentarios cortos de una sola línea (hasta ~160 caracteres) se dejaron en el código.
 
 **Plan de fases (parte 68, 08-oct-2026; corregida en la parte 69):** del `Consolidado_Plan_de_Fases.md` solo se conserva aquí el funcionamiento del sistema y las decisiones tomadas o descartadas con su motivo. El estado, los pendientes, «archivos a subir» y la «confianza» se van con el consolidado, que se descartará al terminar. Revisadas hasta ahora: Fases 1, 2, 3, 4, 5, 6, 14 y 15, y de las preguntas del backend la 26 a la 30, la 33, la 36 a la 52 la 3, 6, 13, 14, 17, 18, 20 y 21, y la 53 a 67, y las funciones y pruebas manuales (3.1.4), y de 3.1.5 las decisiones 4.1 y 4.3 y la auditoría de `webGuerraEnVivo`; 3.2.3 revisada sin nada nuevo, de 3.2.4 las decisiones de Bk-1 a Bk-5 y lo demás de esa sección, y 3.2.5 y 3.2.6 sin nada nuevo (partes 77 y 78, 9-oct-2026; con esto queda cerrada la parte del backend; sigue el frontend: Fases 7 y 9 en `PF013`, Fases 10, 12 y 13 en `PF014`, Fases 8 y 11 y la pregunta 31 en `PF015`, plan de CSS (4.3 sesiones del 18 al 30-sep y 4.4) en `PF016`, `PF017` y `PF018`, estructura de `Base.md` en `PF019`, y la Parte 6 (historial) revisada sin nada nuevo, partes 79 a 85) (ver sección «Plan de fases (backend)»; lo movido se borra del consolidado).
 
 **Frontend — traslado desde `CHANGELOG.md` de `Web` (desde el 11-oct-2026, por tandas; sigue la regla «primero mover, luego recortar»):** lo que explica cómo funciona el frontend y las decisiones tomadas o descartadas con su motivo se escribe aquí, en secciones `PF025` en adelante; el `CHANGELOG.md` conserva solo el historial corto. **Entradas ya trasladadas:** las del 09-oct-2026 (Fases 1 a 5 del plan «JSON estático como último recurso», «tres momentos» de actualización, aviso «Datos guardados», `sw.js` v17 a v25, `ctx` de 24 h en `perfil.html`) en `PF025`. **Tanda 3 (4-oct, octava sesión, tandas 6 y 7):** accesibilidad y foco de `admin.html`, doble envío de los tres botones de torneo y `msg-success`, en `PF018`. **Tanda 2 (del 5 al 7-oct-2026; el `CHANGELOG.md` de `Web` ya quedó recortado a formato corto hasta el 05-oct):** el lado frontend (héroes y monedas en el perfil, `guerra.html`, «Noticias de la semana», defensas de barco, historial de cofres, `sw.js` v14 a v16) en `PF027`; la octava sesión (2 al 5-oct) ya estaba en `PF018`, y los bloques «Línea original N (estilo)» de `guerra.html` (4 a 16-sep) están en `PF028`, igual que sus bloques «(HTML)» (31-ago a 13-sep, Parte 2 de `PF028`; trasladados el 11-oct); sus 30 bloques «(script)» (30-ago a 17-sep) están en `PF029` (los 15 primeros, 30-ago a 17-sep) y `PF030` (los 15 últimos, 4 a 15-sep; trasladados el 11-oct); el backend de esos días (semanas de temporada de Cambio de Rango, «meta ya cruzada», Noticias) ya estaba aquí por los bloques de `37_Web_API.gs`, `38_Web_Endpoints.gs` y `40_Web_Noticias.gs`. **Tanda 4 (15-oct-2026):** las entradas de `perfil.html` del 23 y 27-sep (fichas de carta, cabecera, pasteles, insignias, «Competitivo», costo en oro, íconos) en `PF081`. **Tanda 5 (15-oct-2026):** las dos entradas fechadas de `directorio.html` (18-sep) en `PF016` (el resto ya estaba en esa sección). **Tanda 6 (15-oct-2026):** los siete lotes de consolidación CSS de `assets/styles.css` (18-sep) en `PF082`. **Tanda 7 (15-oct-2026):** los Tramos 1 y 2 de `admin.html` (30-ago a 16-sep: fecha y hora, Cambio de rango, Registrar miembro, Buscar miembro, orden del panel, mensajes automáticos, torneos y sorteos) en `PF083`. **Tanda 8 (15-oct-2026):** `torneos.html` y `comunidad.html` (30-ago a 13-sep) en `PF084`. **Tanda 9 (15-oct-2026):** los bloques «Línea original N» de `perfil.html` (31-ago a 13-sep) en `PF085`. **Tanda 10 (15-oct-2026):** los bloques «Línea original N» de `directorio.html` (31-ago a 16-sep) en `PF086`. **Tanda 11 (15-oct-2026):** los 16 bloques «Línea original N (HTML)» de `index.html` (29-ago a 10-sep) en `PF087`. **Tanda 12 (15-oct-2026):** los 13 bloques `// (script)` de `index.html` (3 al 10-sep; 12 describen código que hoy vive en `directorio.html`) en `PF088`. **Tanda 13 (15-oct-2026):** los 21 bloques de `sorteo.html` (28-ago a 14-sep) en `PF089`. **Tanda 14 (15-oct-2026):** los 11 bloques HTML largos de `admin.html`, parte 7a (5 al 16-sep), en `PF090`. **Tanda 15 (15-oct-2026):** los 37 comentarios del `<script>` de `admin.html`, parte 7b (29-ago al 17-sep), en `PF092`. **Tanda 16 (15-oct-2026):** los 57 bloques HTML restantes de `admin.html`, parte 7c (28-ago al 16-sep), en `PF093`. **Con la tanda 16 queda trasladado todo el texto largo del `CHANGELOG.md` de `Web`** (el `PF091` no es de este traslado: es de otra línea de trabajo). Lo que no se pudo comprobar en un navegador está anotado como «sin probar» en cada sección; los avisos de comentarios desactualizados que siguen en el código de `Web` (por ejemplo el de la ruleta en `admin.html`) están en `PF089` y `PF093`. **Orden del `CHANGELOG.md` (15-oct-2026, decisión de la usuaria):** fecha (la más reciente arriba) y, dentro de cada fecha, archivo (A-Z; entradas del mismo archivo juntas, sin fundirlas; las que no empiezan por archivo, al final de su fecha). La sección «guerra.html», que estaba aparte, se repartió por fecha. La regla para entradas futuras (dónde insertar, cómo empieza la viñeta, qué hacer con cambios de varios archivos o de dos fechas) está en `Consolidados de cambios/Reglas_Consolidados.md`, sección 6, y `scripts/verificar-changelog.js` de `Web` (`npm run check-changelog`) la comprueba.
+
 
 ## Plan de fases (backend) — qué se conserva del Consolidado_Plan_de_Fases.md
 
@@ -66139,7 +66289,7 @@ Defensivas como _webCacheado(): cualquier fallo (cuota, trozo expirado, gzip)
 se degrada a "sin caché", nunca rompe el endpoint.
 ```
 
-### PF029 — Medallas y Trofeos: dos cosas distintas, y de dónde sale la cuadrícula diaria de un ingreso (decisión de la usuaria, 11-oct-2026)
+### PF096 — Medallas y Trofeos: dos cosas distintas, y de dónde sale la cuadrícula diaria de un ingreso (decisión de la usuaria, 11-oct-2026)
 
 **Vocabulario (corrección explícita, regla 9).** Hasta el 11-oct-2026 la web llamaba «Puntaje» (y en algunos sitios «Trofeos de guerra») al *fame* del jugador. La usuaria aclaró que se estaba confundiendo:
 - **Medallas = fame:** lo que gana el jugador en la guerra. Es `GC.FAME` en la hoja Guerra y `puntaje` en los JSON y en el código.
