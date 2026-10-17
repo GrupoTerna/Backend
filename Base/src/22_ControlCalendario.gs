@@ -979,14 +979,17 @@ function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
 
     if (!_CRUCE_META_JSON_IDX[nombre]) {
       var idx = {};
+      var _medT = Date.now(), _medN = 0; // 17-oct-2026 (PF091): medición del listado de Drive (solo Logger.log); [→ Contexto_Base_Web.md §PF091]
       var carpeta = _getSubcarpetaEndpoint_(_getCarpetaParaClan(nombreClan), 'currentriverrace');
       var it = _archivosConSubcarpetas_(carpeta); // PF074: incluye subcarpetas de temporada y semana
       while (it.hasNext()) {
         var f = it.next();
+        _medN++;
         var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
         if (m) idx[Number(m[1]) + '|' + Number(m[2]) + '|' + Number(m[3])] = f;
       }
       _CRUCE_META_JSON_IDX[nombre] = idx;
+      Logger.log('[TorneosMed] listado Drive currentriverrace de "' + nombre + '": ' + _medN + ' archivo(s) en ' + (Date.now() - _medT) + 'ms');
     }
     var archivo = _CRUCE_META_JSON_IDX[nombre][Number(temporada) + '|' + (periodIdxToSectionIndex(pIdx) + 1) + '|' + pIdx];
     var res = null;
