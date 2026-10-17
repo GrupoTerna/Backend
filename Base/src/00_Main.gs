@@ -9,7 +9,7 @@
 
 // CONTEXTO: VENTANA DE GUERRA PROTEGIDA 4:00-4:59 a.m. Lima. En esa hora solo corre runGuerra() ligera; ninguna otra ejecución pesada empieza ni continúa (desde 20 min antes). [→ Contexto_Base_Web.md §B001]
 
-// CONTEXTO: VERSIONES PROGRAMADA / MANUAL (runPendientesYMensajes y runGuerraRapido). Programada = lee checkpoint sin API; Manual (SIN sufijo desde el 17-oct-2026) = roster fresco + API. [→ Contexto_Base_Web.md §B002]
+// CONTEXTO: VERSIONES PROGRAMADA / MANUAL (runPendientesYMensajes, runGuerraRapido y, desde el 17-oct-2026, runUpdate). Programada = lee checkpoint sin API (runUpdateProgramado sigue pidiendo /players); Manual (SIN sufijo desde el 17-oct-2026) = roster fresco + API. [→ Contexto_Base_Web.md §B002]
 
 // FIX (22-ago-2026): "runGuerraRapido se cancela por excederse en el [→ Contexto_Base_Web.md §B003]
 var PASOS_RUNGUERRARAPIDO = [
@@ -355,7 +355,8 @@ var PASOS_RUNUPDATE = [
   },
   // FASE 4 (05-ago-2026, plan de migración Plantillas -> Menú): igual que [→ Contexto_Base_Web.md §B064]
   function () { syncPlantillasDesdeDrive(); },
-  function () { _pendientesYMensajesNucleo_(); },
+  // PF091 (17-oct-2026): en la version programada (bandera RUNUPDATE_SIN_API) no se vuelve a pasar por la captura.
+  function () { _pendientesYMensajesNucleo_(PropertiesService.getScriptProperties().getProperty('RUNUPDATE_SIN_API') === '1'); },
   // FIX (23-ago-2026, pedido usuario): "escribí una nota en el calendario, [→ Contexto_Base_Web.md §B065]
   function () {
     try { updateCalendario2(); }
@@ -461,6 +462,9 @@ function cancelarEjecucion() {
   // programada de Pendientes/Mensajes.
   props.deleteProperty('RUNGUERRARAPIDO_SIN_API');
   props.deleteProperty('RUNGUERRARAPIDO_SIN_API_TS');
+  // PF091 (17-oct-2026): bandera de la version programada de runUpdate.
+  props.deleteProperty('RUNUPDATE_SIN_API');
+  props.deleteProperty('RUNUPDATE_SIN_API_TS');
   props.deleteProperty('PYM_PROGRAMADO_EN_CURSO');
 
   // Borra también el progreso de /players guardado en Drive (ver [→ Contexto_Base_Web.md §B081]
@@ -493,6 +497,8 @@ function demolerTodoElSpreadsheet() {
     propsCheckpoint.deleteProperty('RUNALL_REINTENTO');
     propsCheckpoint.deleteProperty('RUNUPDATE_PASO');
     propsCheckpoint.deleteProperty('RUNUPDATE_REINTENTO');
+    propsCheckpoint.deleteProperty('RUNUPDATE_SIN_API');     // PF091 (17-oct-2026)
+    propsCheckpoint.deleteProperty('RUNUPDATE_SIN_API_TS');
     Logger.log('[Demoler] Checkpoint de runAll()/runUpdate() borrado.');
   } catch (e) {
     Logger.log('[Demoler] AVISO: no se pudo borrar el checkpoint de runAll()/runUpdate() (' + e.message + '). Se continúa igual.');
@@ -831,34 +837,93 @@ function _continuarRunAll() {
 }
 
 /**
- * runUpdate() - Actualización periódica (cada 2 horas). [→ Contexto_Base_Web.md §B103]
+ * runUpdateProgramado() - VERSION PARA EL DISPARADOR (17-oct-2026, pedido usuario; PF091). Mismo patron que
+ * runGuerraRapidoProgramado(): lee los clanes SOLO del checkpoint que dejo la captura (edad maxima
+ * CLANES_SIN_API_MAX_EDAD_MS) y NO pide /clans ni /currentriverrace a la API. /players SI se sigue pidiendo (es otro trabajo,
+ * por tandas). Si no hay checkpoint utilizable, avisa y no corre (se reintenta en el proximo disparo). Si no hubo captura nueva
+ * desde la ultima cadena completada con exito, no hace nada. Al terminar NO borra el checkpoint de clanes (lo siguen leyendo
+ * las otras versiones programadas); solo borra el progreso de /players. [→ Contexto_Base_Web.md §PF091]
  */
-function runUpdate() {
+function runUpdateProgramado() {
+  var props = PropertiesService.getScriptProperties();
+
+  // 1) Datos de clanes: solo del checkpoint, sin API. Se lee ANTES de pedir el candado global: si no hay nada que hacer,
+  //    esta funcion ni lo toca (no puede demorar ni cancelar a runGuerra()).
+  if (!_fetchClanesBasicoSinApi()) {
+    Logger.log('[runUpdateProgramado] ABORTADO: no hay un checkpoint de clanes utilizable. ' +
+      'No se toco ninguna hoja; se reintenta en el proximo disparo.');
+    return;
+  }
+
+  // 2) Sin captura nueva desde la ultima cadena completada con exito: no se hace nada (mismo criterio que
+  //    runGuerraRapidoProgramado()). La hora de captura procesada se guarda al TERMINAR la cadena.
+  var tsCaptura = CLANES_SIN_API_TS_CARGADO;
+  var tsUltimo = Number(props.getProperty('RUNUPDATE_PROGRAMADO_ULTIMO_TS')) || 0;
+  if (tsCaptura > 0 && tsCaptura === tsUltimo) {
+    Logger.log('[runUpdateProgramado] Sin captura nueva desde la ultima vez (captura de ' +
+      _horaLimaCortaMs_(tsCaptura) + ' Lima). Sin accion.');
+    return;
+  }
+
+  // 3) Candado global (esta cadena escribe casi todas las hojas): bloqueado en la ventana protegida.
   if (!_adquirirLockEjecucion('runUpdate')) return;
-  PropertiesService.getScriptProperties().setProperty('RUNUPDATE_PASO', '0');
+  props.setProperty('RUNUPDATE_SIN_API', '1');
+  props.setProperty('RUNUPDATE_SIN_API_TS', String(tsCaptura));
+  props.setProperty('RUNUPDATE_PASO', '0');
   _continuarRunUpdate();
 }
 
 /**
- * _continuarRunUpdate() - punto de entrada de runUpdate() y de su trigger
+ * runUpdate() - VERSION PARA CORRER A MANO, SIN SUFIJO (17-oct-2026, pedido usuario; antes era la que usaba el activador diario,
+ * que ahora apunta a runUpdateProgramado()). Fuerza el roster fresco (forzarRosterFrescoAhora()) y pide los clanes a la API a
+ * traves de capturarApiClanes_(), ademas de /players. NO debe tener activador. [→ Contexto_Base_Web.md §B103]
+ */
+function runUpdate() {
+  if (!_adquirirLockEjecucion('runUpdate')) return;
+  var props = PropertiesService.getScriptProperties();
+  props.deleteProperty('RUNUPDATE_SIN_API');
+  props.deleteProperty('RUNUPDATE_SIN_API_TS');
+  props.setProperty('RUNUPDATE_PASO', '0');
+  forzarRosterFrescoAhora();
+  _continuarRunUpdate();
+}
+
+/**
+ * _continuarRunUpdate() - punto de entrada de las dos versiones de runUpdate (manual y programada) y de su trigger
  * de continuación automática (ver _continuarRunAll() para el mismo patrón).
  */
 function _continuarRunUpdate() {
-  var paso = parseInt(PropertiesService.getScriptProperties().getProperty('RUNUPDATE_PASO') || '0', 10);
-  Logger.log(paso === 0 ? '=== Actualización periódica INICIO ===' : '=== Actualización periódica CONTINÚA desde el paso ' + paso + '/' + PASOS_RUNUPDATE.length + ' ===');
+  var props = PropertiesService.getScriptProperties();
+  var paso = parseInt(props.getProperty('RUNUPDATE_PASO') || '0', 10);
+  var sinApi = props.getProperty('RUNUPDATE_SIN_API') === '1';
+  Logger.log((paso === 0 ? '=== Actualización periódica INICIO' : '=== Actualización periódica CONTINÚA desde el paso ' + paso + '/' + PASOS_RUNUPDATE.length) +
+    (sinApi ? ' [programada, sin /clans ni /currentriverrace]' : ' [manual, roster fresco]') + ' ===');
   try {
     var completo = _ejecutarPorTandas('RUNUPDATE', PASOS_RUNUPDATE, CFG.RUNUPDATE_PRESUPUESTO_MS, '_continuarRunUpdate');
     if (completo) {
       // Ver comentario equivalente en _continuarRunAll(): el progreso de [→ Contexto_Base_Web.md §B104]
       _borrarProgresoPlayers();
-      // FIX (06-ago-2026): mismo criterio que _borrarProgresoPlayers() —
-      // ver comentario equivalente en _continuarRunAll().
-      _borrarProgresoClanes();
+      if (sinApi) {
+        // Version programada: se marca la captura como procesada (salvo que Pendientes haya abortado por falta de datos de
+        // guerra: PENDIENTES_ABORT_TS lo pone/borra updatePendientesSheet() en cada corrida). El checkpoint de clanes NO se
+        // borra: lo leen runPendientesYMensajesProgramado() y runGuerraRapidoProgramado() hasta la siguiente captura.
+        var tsProc = props.getProperty('RUNUPDATE_SIN_API_TS');
+        if (tsProc && !props.getProperty('PENDIENTES_ABORT_TS')) props.setProperty('RUNUPDATE_PROGRAMADO_ULTIMO_TS', tsProc);
+        else Logger.log('[runUpdate] Pendientes abortó por falta de datos: NO se marca la captura como procesada, se reintenta.');
+        props.deleteProperty('RUNUPDATE_SIN_API');
+        props.deleteProperty('RUNUPDATE_SIN_API_TS');
+      } else {
+        // FIX (06-ago-2026): mismo criterio que _borrarProgresoPlayers() —
+        // ver comentario equivalente en _continuarRunAll().
+        _borrarProgresoClanes();
+      }
       _liberarLockEjecucion();
       Logger.log('=== Actualización periódica FIN ===');
     }
   } catch (e) {
-    PropertiesService.getScriptProperties().deleteProperty('RUNUPDATE_PASO');
+    props.deleteProperty('RUNUPDATE_PASO');
+    props.deleteProperty('RUNUPDATE_SIN_API');
+    props.deleteProperty('RUNUPDATE_SIN_API_TS');
     _borrarTriggersDeContinuacion('_continuarRunUpdate');
     _liberarLockEjecucion();
     Logger.log('[runUpdate] ERROR: ' + e.message + ' — lock liberado.');
@@ -1493,7 +1558,10 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   var reintentoMismoPaso = props.getProperty(idEjecucion + '_REINTENTO') === '1';
 
   // IMPORTANTE: CACHE_CLAN_DATA es una variable global en memoria (no se [→ Contexto_Base_Web.md §B137]
-  if (paso > 0 && !reintentoMismoPaso &&
+  // PF091 (17-oct-2026): en una cadena PROGRAMADA (bandera <ID>_SIN_API) el cache se reconstruye del checkpoint aunque el paso se
+  // reintente o sea el 0 (runUpdateProgramado: su primer paso, _fetchAllClanData(), pediria la API si el checkpoint tiene mas de 45 min).
+  var cadenaSinApi = props.getProperty(idEjecucion + '_SIN_API') === '1';
+  if (((paso > 0 && !reintentoMismoPaso) || cadenaSinApi) &&
       (typeof CACHE_CLAN_DATA === 'undefined' || CACHE_CLAN_DATA === null)) {
     // CAMBIO (05-oct-2026): si la cadena es de una version PROGRAMADA (bandera <ID>_SIN_API = 1), el cache se [→ Contexto_Base_Web.md §B138]
     if (props.getProperty(idEjecucion + '_SIN_API') === '1') {

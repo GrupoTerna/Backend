@@ -17,7 +17,7 @@ var ACTIVADORES_CONFIG = [
   { handler: 'runGuerraRapidoProgramado',    tipo: 'horas',   cada: 2,  activo: true },  // ver AVISOS 2 y 6
 
   // ---- Mantenimiento diario (horas conservadas de installTriggers()) ----
-  { handler: 'runUpdate',                    tipo: 'diario',  hora: 12, activo: true },
+  { handler: 'runUpdateProgramado',          tipo: 'diario',  hora: 12, activo: true },  // 17-oct-2026 (PF091): antes 'runUpdate'; lee el checkpoint, sin /clans ni /currentriverrace
   { handler: 'runResaltarDia',               tipo: 'diario',  hora: 5,  activo: true },
   { handler: 'runFormato',                   tipo: 'diario',  hora: 11, activo: true },
   { handler: 'runSyncCSV',                   tipo: 'diario',  hora: 7,  activo: true },
@@ -36,7 +36,7 @@ var ACTIVADORES_CONFIG = [
 // Nombres que NO deben tener activador y que, si alguno sigue instalado, se retira al activar/desactivar. Desde el 17-oct-2026
 // son las versiones MANUALES (sin sufijo); los activadores usan las versiones ...Programado (antes eran disparadores de versiones
 // anteriores del proyecto). [-> Contexto_Base_Web.md §PF091]
-var ACTIVADORES_HANDLERS_LEGADOS_ = ['runGuerraRapido', 'runPendientesYMensajes'];
+var ACTIVADORES_HANDLERS_LEGADOS_ = ['runGuerraRapido', 'runPendientesYMensajes', 'runUpdate'];
 
 /**
  * activarTodosLosActivadores() [→ Contexto_Base_Web.md §08B004]
