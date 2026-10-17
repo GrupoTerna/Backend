@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 18:16:11 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 18:29:18 */
 
 
 
@@ -29570,6 +29570,7 @@ function _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) {
   // 19-sep-2026 (pedido del usuario -- webGuerraEnVivo tardaba 28-39 s): dentro [→ Contexto_Base_Web.md §22B062]
   if (_GUERRA_MEMO_ACTIVO) aplicarCruceMeta = false;
   if (aplicarCruceMeta) { _CRUCE_META_LOGS_MEMO = null; _CRUCE_META_RES_MEMO = {}; } // datos frescos de Guerra_Logs en cada corrida
+  var _medP0 = Date.now(), _medCrN = 0, _medCrMs = 0, _medFilasOk = 0; // 17-oct-2026 (PF091): medición del cruce de meta por fila (solo Logger.log)
   var map = {};
   var fameByTagPeriod   = {};
   // boatAttacks es ACUMULADO para toda la semana de guerra (no se reinicia [→ Contexto_Base_Web.md §22B063]
@@ -29596,6 +29597,7 @@ function _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) {
     var esFilaReconstruida = String(data[i][GC.ORIGEN - 1] || '').trim().toLowerCase() === 'reconstruido';
 
     if (!tag || !esDiaGuerraIdx(pIdx)) continue;
+    _medFilasOk++;
 
     var offDia = (pIdx % 7) - 3;
 
@@ -29612,8 +29614,14 @@ function _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) {
       if (ataquesAcum > (map[tag][sIdx][clave].ataquesAcum || 0)) map[tag][sIdx][clave].ataquesAcum = ataquesAcum;
       if (fame    > map[tag][sIdx][clave].fameAcum) map[tag][sIdx][clave].fameAcum = fame;
     }
-    if (aplicarCruceMeta && !map[tag][sIdx][clave].opcional &&
-        _clanYaCruzoMetaEnPeriodo(String(data[i][GC.CLAN - 1] || ''), pIdx, tempStr, aplicarCruceMeta === true)) {
+    var _medCruzo = false;
+    if (aplicarCruceMeta && !map[tag][sIdx][clave].opcional) {
+      var _medTc = Date.now();
+      _medCruzo = _clanYaCruzoMetaEnPeriodo(String(data[i][GC.CLAN - 1] || ''), pIdx, tempStr, aplicarCruceMeta === true);
+      _medCrMs += Date.now() - _medTc;
+      _medCrN++;
+    }
+    if (_medCruzo) {
       map[tag][sIdx][clave].opcional = true;
     }
     if (!fameByTagPeriod[tag])   fameByTagPeriod[tag]   = {};
@@ -29641,6 +29649,7 @@ function _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) {
     }
   }
 
+  var _medBucle1 = Date.now() - _medP0;
   for (var tag in map) {
     for (var sIdx in map[tag]) {
       for (var d = 0; d < 4; d++) {
@@ -29666,6 +29675,7 @@ function _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) {
     }
   }
 
+  if (aplicarCruceMeta) Logger.log('[TorneosMed] procesar: ' + data.length + ' fila(s), ' + _medFilasOk + ' de día de guerra; bucle 1 = ' + _medBucle1 + 'ms (cruce de meta: ' + _medCrN + ' llamada(s), ' + _medCrMs + 'ms); bucle 2 = ' + (Date.now() - _medP0 - _medBucle1) + 'ms');
   return map;
 }
 
@@ -38493,13 +38503,15 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
   // FIX (05-ago-2026) — mismo pedido que en los docs de torneo: la [→ Contexto_Base_Web.md §28B059]
   var ctxReal = ctxParam || _getCtx();
   var temporadaActual = _getTemporadaMostrarExtra(ss, ctxReal);
-  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaActual, ctxReal);
+  var ctxAtaques = _clonarCtxParaTemporada(ctxReal, temporadaActual);
+  // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers; ctxAtaques es el mismo ctx que arma por dentro el helper de trofeos; [→ Contexto_Base_Web.md §PF091]
+  var guerraDataUnica = _getDatosGuerraParaControl(ctxAtaques, ctxReal.temporada);
+  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaActual, ctxReal, guerraDataUnica);
   var torneosPorTag = requisitos.minTorneos ? _contarTorneosPorTagEnTemporada(ss, temporadaActual) : null;
 
   // NUEVO (19-sep-2026, pedido del usuario): ataques + exonerados de la [→ Contexto_Base_Web.md §28B060]
-  var ctxAtaques = _clonarCtxParaTemporada(ctxReal, temporadaActual);
   var ataquesSemanaPorTag = (Object.keys(requisitos.minAtaquesPorClan).length > 0)
-    ? _getAtaquesYExentosSemanaActualPorTag(ctxAtaques, ctxReal.temporada)
+    ? _getAtaquesYExentosSemanaActualPorTag(ctxAtaques, ctxReal.temporada, guerraDataUnica)
     : {};
 
   var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
