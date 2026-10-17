@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 13:21:33 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 16:25:18 */
 
 
 
@@ -1171,7 +1171,7 @@ function runGuerra() {
     // Respaldo a Backup_Guerra.csv 1 vez por hora (esPrimerDisparoDeHora), con chequeo de presupuesto [→ Contexto_Base_Web.md §B116]
     if (esPrimerDisparoDeHora) {
       var _msTranscurridosRunGuerra = Date.now() - _tRunGuerra0;
-      var _msLimiteParaSyncCsv = CFG.LOCK_MAX_DURACION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
+      var _msLimiteParaSyncCsv = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
       if (_msTranscurridosRunGuerra > _msLimiteParaSyncCsv) {
         Logger.log('[runGuerra] _syncGuerraCSV() SALTADO esta hora: ya van ' +
           Math.round(_msTranscurridosRunGuerra / 1000) + 's de corrida, sin margen suficiente ' +
@@ -1185,7 +1185,7 @@ function runGuerra() {
 
     // NUEVO (19-sep-2026, pedido del usuario): dejar el caché de [→ Contexto_Base_Web.md §B117]
     try {
-      var _msRestantesCalentar = CFG.LOCK_MAX_DURACION_MS - (Date.now() - _tRunGuerra0);
+      var _msRestantesCalentar = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - _tRunGuerra0);
       if (_msRestantesCalentar < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
         Logger.log('[runGuerra] Calentamiento del caché de guerra.html SALTADO: quedan solo ' +
           Math.round(_msRestantesCalentar / 1000) + 's de presupuesto.');
@@ -1246,7 +1246,7 @@ function _runGuerraVentanaLigera_(t0) {
       Logger.log('[runGuerra][ventana] CSV omitido: la restauración de la hoja Guerra quedó incompleta; se reintenta en la próxima corrida.');
     } else {
       var msUsados = Date.now() - t0;
-      var msLimite = CFG.LOCK_MAX_DURACION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
+      var msLimite = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
       if (msUsados > msLimite) {
         Logger.log('[runGuerra][ventana] _syncGuerraCSV() SALTADO: ya van ' + Math.round(msUsados / 1000) +
           's, sin margen (' + Math.round(msLimite / 1000) + 's). La hoja Guerra ya quedó actualizada; el CSV se pone al día en la próxima corrida.');
@@ -1933,6 +1933,11 @@ var CFG = {
 
   // --- Control de ejecución (locks auto-expirables, ver 00_Main.gs) --- [→ Contexto_Base_Web.md §01B029]
   LOCK_MAX_DURACION_MS: 6 * 60 * 1000 + 30 * 1000, // 6m30s
+
+  // 17-oct-2026 (PF091, decisión A): límite REAL de una ejecución de Apps Script (360 s; lo midió el registro de runGuerra de las 12:43,
+  // cortado a los 361 s). LOCK_MAX_DURACION_MS (6m30s) sigue siendo solo la vigencia del candado; los márgenes de tiempo de
+  // runGuerra() y de su calentamiento se calculan contra ESTE valor. [→ Contexto_Base_Web.md §PF091]
+  PLATAFORMA_LIMITE_EJECUCION_MS: 6 * 60 * 1000, // 6m00s
 
   // Presupuesto de tiempo objetivo para cada "tanda" de runAll/runUpdate antes [→ Contexto_Base_Web.md §01B030]
   RUNALL_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000,    // 3m30s
@@ -33296,6 +33301,10 @@ var TORNEO_EN_VIVO_HANDLER     = '_tickTorneoEnVivo';
 var TORNEO_EN_VIVO_PROP        = 'TORNEO_EN_VIVO_INICIO';
 
 var TORNEO_EN_VIVO_DURACION_MS = 2 * 60 * 60 * 1000; // 2 horas
+// 17-oct-2026 (PF091; la usuaria eligió 15 min): mientras dura la ventana, _tickTorneoEnVivo() republica torneos.json (53_Publicar_Torneos.gs)
+// como máximo cada 15 min y una vez más al cerrar la ventana. [→ Contexto_Base_Web.md §PF091]
+var TORNEO_EN_VIVO_PUBLICAR_CADA_MS = 15 * 60 * 1000;
+var TORNEO_EN_VIVO_PUB_PROP         = 'TORNEO_EN_VIVO_PUB_MS';
 
 // ----- Funciones manuales / punto de entrada -----
 
@@ -33316,6 +33325,7 @@ function iniciarActualizacionTorneoEnVivo(inicio) {
 function detenerActualizacionTorneoEnVivo() {
   _borrarTriggersPorHandler(TORNEO_EN_VIVO_HANDLER);
   PropertiesService.getScriptProperties().deleteProperty(TORNEO_EN_VIVO_PROP);
+  PropertiesService.getScriptProperties().deleteProperty(TORNEO_EN_VIVO_PUB_PROP);
   Logger.log('[TorneoEnVivo] Activador detenido manualmente.');
 }
 
@@ -33953,6 +33963,7 @@ function _instalarActivadorTorneoEnVivo(inicio) {
   }
 
   PropertiesService.getScriptProperties().setProperty(TORNEO_EN_VIVO_PROP, String(inicioMs));
+  PropertiesService.getScriptProperties().deleteProperty(TORNEO_EN_VIVO_PUB_PROP); // el primer tick de la ventana publica
 
   ScriptApp.newTrigger(TORNEO_EN_VIVO_HANDLER)
     .timeBased()
@@ -33984,12 +33995,40 @@ function _tickTorneoEnVivo() {
     _borrarTriggersPorHandler(TORNEO_EN_VIVO_HANDLER);
     props.deleteProperty(TORNEO_EN_VIVO_PROP);
     Logger.log('[TorneoEnVivo] Se cumplieron las 2 horas, activador detenido automáticamente.');
+    _publicarTorneosDesdeTick_(true); // última publicación con lo que dejó el tick anterior
+    props.deleteProperty(TORNEO_EN_VIVO_PUB_PROP);
     return;
   }
 
   Logger.log('[TorneoEnVivo] Ejecutando procesarTorneos() (quedan ' +
              Math.round((TORNEO_EN_VIVO_DURACION_MS - transcurrido) / 60000) + ' min de ventana).');
   procesarTorneos();
+  _publicarTorneosDesdeTick_(false);
+}
+
+/**
+ * _publicarTorneosDesdeTick_(ignorarCadencia) (17-oct-2026, PF091)
+ * Republica torneos.json desde el tick de Torneo en vivo. Publica como máximo cada TORNEO_EN_VIVO_PUBLICAR_CADA_MS (15 min), salvo
+ * ignorarCadencia (cierre de la ventana). Si a la ejecución le quedan menos de TORNEOS_ESTATICO_MIN_RESTANTE_MS no calcula y
+ * reintenta en el tick siguiente. Nunca lanza error: no debe impedir que el activador siga.
+ */
+function _publicarTorneosDesdeTick_(ignorarCadencia) {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var ahora = Date.now();
+    var ultima = Number(props.getProperty(TORNEO_EN_VIVO_PUB_PROP)) || 0;
+    if (!ignorarCadencia && (ahora - ultima) < TORNEO_EN_VIVO_PUBLICAR_CADA_MS) return;
+    var restanteMs = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (ahora - TORNEOS_ESTATICO_EJEC_INICIO_MS_);
+    if (restanteMs < TORNEOS_ESTATICO_MIN_RESTANTE_MS) {
+      Logger.log('[TorneoEnVivo] torneos.json NO se publica en este tick: quedan ' + Math.round(restanteMs / 1000) + ' s; se reintenta en el siguiente.');
+      return;
+    }
+    var ok = _publicarTorneosEstatico_(true); // true también cuando no hubo cambios; false si falló
+    if (ok) props.setProperty(TORNEO_EN_VIVO_PUB_PROP, String(Date.now()));
+    Logger.log('[TorneoEnVivo] torneos.json: ' + (ok ? 'publicado o sin cambios' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
+  } catch (e) {
+    Logger.log('[TorneoEnVivo] error al publicar torneos.json (el activador sigue): ' + e);
+  }
 }
 
 /**
@@ -56704,10 +56743,19 @@ function publicarHomeEstatico() {
  * de las 3 h que torneos.html tolera. Si nada cambió se omite, salvo que pasen TORNEOS_ESTATICO_REPUBLICAR_MIN minutos.
  * Un torneo nuevo o un resultado cambiado se ve en la web en el siguiente cálculo (hasta ~2 h) más ~5 min de caché de
  * GitHub; para verlo antes, ejecutar publicarTorneosEstatico() a mano.
+ * CAMBIO 17-oct-2026 (PF091, decisión B; el runGuerra() de las 12:43 murió a los 360 s mientras calculaba torneos): desde el bot, si a la
+ * ejecución le quedan menos de TORNEOS_ESTATICO_MIN_RESTANTE_MS (250 s) antes de CFG.PLATAFORMA_LIMITE_EJECUCION_MS, no calcula ni marca
+ * TORNEOS_ESTATICO_CALC_MS (reintenta en el siguiente ciclo). Consecuencia esperada: en una corrida horaria larga casi nunca alcanzará, y
+ * torneos.json se renovará sobre todo con publicarTorneosEstatico() a mano. [→ Contexto_Base_Web.md §PF091]
  */
 var TORNEOS_ESTATICO_ARCHIVO = 'torneos.json';
 var TORNEOS_ESTATICO_REPUBLICAR_MIN = 50;
 var TORNEOS_ESTATICO_CALCULAR_CADA_MIN = 90;
+// 17-oct-2026 (PF091, decisión B): desde el bot no se calcula si a la ejecución le quedan menos de esto antes del límite de la plataforma
+// (CFG.PLATAFORMA_LIMITE_EJECUCION_MS). Estimación (calcular las dos secciones tardó ~4 min en la primera corrida manual); no medida con exactitud.
+var TORNEOS_ESTATICO_MIN_RESTANTE_MS = 250 * 1000;
+// Marca de inicio de la ejecución: el código global se evalúa al arrancar cada ejecución de Apps Script.
+var TORNEOS_ESTATICO_EJEC_INICIO_MS_ = Date.now();
 
 function _publicarTorneosEstatico_(forzar) {
   var t0 = Date.now();
@@ -56727,6 +56775,15 @@ function _publicarTorneosEstatico_(forzar) {
     if (!forzar && (Date.now() - msCalcPrevio) < TORNEOS_ESTATICO_CALCULAR_CADA_MIN * 60000) {
       _diagGuerraVivo_('[TorneosEstatico] se calculó hace menos de ' + TORNEOS_ESTATICO_CALCULAR_CADA_MIN + ' min; se omite en este ciclo');
       return true;
+    }
+    // Decisión B (17-oct-2026): sin tiempo suficiente no se calcula NI se marca TORNEOS_ESTATICO_CALC_MS, para que el siguiente ciclo reintente.
+    // La corrida manual (forzar) no se limita: es la forma de renovar torneos.json cuando el bot no alcanza.
+    if (!forzar) {
+      var restanteMs = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - TORNEOS_ESTATICO_EJEC_INICIO_MS_);
+      if (restanteMs < TORNEOS_ESTATICO_MIN_RESTANTE_MS) {
+        _diagGuerraVivo_('[TorneosEstatico] OMITIDO: quedan ' + Math.round(restanteMs / 1000) + ' s de la ejecución y se piden ' + Math.round(TORNEOS_ESTATICO_MIN_RESTANTE_MS / 1000) + ' s; se reintenta en el siguiente ciclo');
+        return false;
+      }
     }
     props.setProperty('TORNEOS_ESTATICO_CALC_MS', String(Date.now()));
 
