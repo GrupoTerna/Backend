@@ -29,10 +29,19 @@
  * de las 3 h que torneos.html tolera. Si nada cambió se omite, salvo que pasen TORNEOS_ESTATICO_REPUBLICAR_MIN minutos.
  * Un torneo nuevo o un resultado cambiado se ve en la web en el siguiente cálculo (hasta ~2 h) más ~5 min de caché de
  * GitHub; para verlo antes, ejecutar publicarTorneosEstatico() a mano.
+ * CAMBIO 17-oct-2026 (PF091, decisión B; el runGuerra() de las 12:43 murió a los 360 s mientras calculaba torneos): desde el bot, si a la
+ * ejecución le quedan menos de TORNEOS_ESTATICO_MIN_RESTANTE_MS (250 s) antes de CFG.PLATAFORMA_LIMITE_EJECUCION_MS, no calcula ni marca
+ * TORNEOS_ESTATICO_CALC_MS (reintenta en el siguiente ciclo). Consecuencia esperada: en una corrida horaria larga casi nunca alcanzará, y
+ * torneos.json se renovará sobre todo con publicarTorneosEstatico() a mano. [→ Contexto_Base_Web.md §PF091]
  */
 var TORNEOS_ESTATICO_ARCHIVO = 'torneos.json';
 var TORNEOS_ESTATICO_REPUBLICAR_MIN = 50;
 var TORNEOS_ESTATICO_CALCULAR_CADA_MIN = 90;
+// 17-oct-2026 (PF091, decisión B): desde el bot no se calcula si a la ejecución le quedan menos de esto antes del límite de la plataforma
+// (CFG.PLATAFORMA_LIMITE_EJECUCION_MS). Estimación (calcular las dos secciones tardó ~4 min en la primera corrida manual); no medida con exactitud.
+var TORNEOS_ESTATICO_MIN_RESTANTE_MS = 250 * 1000;
+// Marca de inicio de la ejecución: el código global se evalúa al arrancar cada ejecución de Apps Script.
+var TORNEOS_ESTATICO_EJEC_INICIO_MS_ = Date.now();
 
 function _publicarTorneosEstatico_(forzar) {
   var t0 = Date.now();
@@ -52,6 +61,15 @@ function _publicarTorneosEstatico_(forzar) {
     if (!forzar && (Date.now() - msCalcPrevio) < TORNEOS_ESTATICO_CALCULAR_CADA_MIN * 60000) {
       _diagGuerraVivo_('[TorneosEstatico] se calculó hace menos de ' + TORNEOS_ESTATICO_CALCULAR_CADA_MIN + ' min; se omite en este ciclo');
       return true;
+    }
+    // Decisión B (17-oct-2026): sin tiempo suficiente no se calcula NI se marca TORNEOS_ESTATICO_CALC_MS, para que el siguiente ciclo reintente.
+    // La corrida manual (forzar) no se limita: es la forma de renovar torneos.json cuando el bot no alcanza.
+    if (!forzar) {
+      var restanteMs = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - TORNEOS_ESTATICO_EJEC_INICIO_MS_);
+      if (restanteMs < TORNEOS_ESTATICO_MIN_RESTANTE_MS) {
+        _diagGuerraVivo_('[TorneosEstatico] OMITIDO: quedan ' + Math.round(restanteMs / 1000) + ' s de la ejecución y se piden ' + Math.round(TORNEOS_ESTATICO_MIN_RESTANTE_MS / 1000) + ' s; se reintenta en el siguiente ciclo');
+        return false;
+      }
     }
     props.setProperty('TORNEOS_ESTATICO_CALC_MS', String(Date.now()));
 

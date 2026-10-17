@@ -1128,7 +1128,7 @@ function runGuerra() {
     // Respaldo a Backup_Guerra.csv 1 vez por hora (esPrimerDisparoDeHora), con chequeo de presupuesto [→ Contexto_Base_Web.md §B116]
     if (esPrimerDisparoDeHora) {
       var _msTranscurridosRunGuerra = Date.now() - _tRunGuerra0;
-      var _msLimiteParaSyncCsv = CFG.LOCK_MAX_DURACION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
+      var _msLimiteParaSyncCsv = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
       if (_msTranscurridosRunGuerra > _msLimiteParaSyncCsv) {
         Logger.log('[runGuerra] _syncGuerraCSV() SALTADO esta hora: ya van ' +
           Math.round(_msTranscurridosRunGuerra / 1000) + 's de corrida, sin margen suficiente ' +
@@ -1142,7 +1142,7 @@ function runGuerra() {
 
     // NUEVO (19-sep-2026, pedido del usuario): dejar el caché de [→ Contexto_Base_Web.md §B117]
     try {
-      var _msRestantesCalentar = CFG.LOCK_MAX_DURACION_MS - (Date.now() - _tRunGuerra0);
+      var _msRestantesCalentar = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - _tRunGuerra0);
       if (_msRestantesCalentar < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
         Logger.log('[runGuerra] Calentamiento del caché de guerra.html SALTADO: quedan solo ' +
           Math.round(_msRestantesCalentar / 1000) + 's de presupuesto.');
@@ -1203,7 +1203,7 @@ function _runGuerraVentanaLigera_(t0) {
       Logger.log('[runGuerra][ventana] CSV omitido: la restauración de la hoja Guerra quedó incompleta; se reintenta en la próxima corrida.');
     } else {
       var msUsados = Date.now() - t0;
-      var msLimite = CFG.LOCK_MAX_DURACION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
+      var msLimite = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
       if (msUsados > msLimite) {
         Logger.log('[runGuerra][ventana] _syncGuerraCSV() SALTADO: ya van ' + Math.round(msUsados / 1000) +
           's, sin margen (' + Math.round(msLimite / 1000) + 's). La hoja Guerra ya quedó actualizada; el CSV se pone al día en la próxima corrida.');
