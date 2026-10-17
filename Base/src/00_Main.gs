@@ -295,7 +295,15 @@ var NOMBRES_PASOS_RUNALL = [
 var PASOS_RUNUPDATE = [
   // FIX (15-ago-2026): ver comentario equivalente en PASOS_RUNALL — [→ Contexto_Base_Web.md §B051]
   function () { return _fetchAllClanData(); },
-  function () { guardarApiDump(); },
+  // PF091 etapa 4 (17-oct-2026): en la version programada se omite: la captura que dejo el checkpoint ya escribio los JSON de
+  // clans y currentriverrace, y reescribirlos desde el checkpoint solo les cambiaria la hora del nombre sin datos nuevos.
+  function () {
+    if (PropertiesService.getScriptProperties().getProperty('RUNUPDATE_SIN_API') === '1') {
+      Logger.log('[ApiDump] OMITIDO en la version programada de runUpdate: los JSON de clans y currentriverrace ya los escribio la captura que dejo el checkpoint.');
+    } else {
+      guardarApiDump();
+    }
+  },
   // Ver comentario equivalente en PASOS_RUNALL: Extra y Clan van separados
   // para dar un punto de control de presupuesto entre ambos.
   function () { updateExtraSheet(); },
@@ -804,6 +812,10 @@ function _continuarRunGuerraRapido() {
 function runAll() {
   if (!_adquirirLockEjecucion('runAll')) return;
   PropertiesService.getScriptProperties().setProperty('RUNALL_PASO', '0');
+  // PF091 etapa 4 (17-oct-2026, decision de Claude): runAll() es manual (no tiene activador), asi que, como las otras manuales sin
+  // sufijo, fuerza el roster fresco: invalida el checkpoint de clanes (no lo borra, queda de respaldo si la API falla) y borra el
+  // progreso de /players.
+  forzarRosterFrescoAhora();
   _continuarRunAll();
 }
 
@@ -819,7 +831,8 @@ function _continuarRunAll() {
       // FASE 21 (01/08/2026): el progreso de /players (Drive) ya NO se [→ Contexto_Base_Web.md §B100]
       _borrarProgresoPlayers();
       // FIX (06-ago-2026): mismo criterio que _borrarProgresoPlayers() — [→ Contexto_Base_Web.md §B101]
-      _borrarProgresoClanes();
+      // PF091 etapa 4 (17-oct-2026): YA NO se borra el checkpoint de clanes al terminar (lo dejo recien capturado runAll() y lo leen
+      // las versiones programadas); la frescura de la proxima corrida la garantiza forzarRosterFrescoAhora() al empezar.
       // NUEVO (27-sep-2026): mismo criterio que las 2 líneas de arriba — [→ Contexto_Base_Web.md §B102]
       _borrarProgresoBattlelogChests();
       _liberarLockEjecucion();
@@ -876,7 +889,8 @@ function runUpdateProgramado() {
 /**
  * runUpdate() - VERSION PARA CORRER A MANO, SIN SUFIJO (17-oct-2026, pedido usuario; antes era la que usaba el activador diario,
  * que ahora apunta a runUpdateProgramado()). Fuerza el roster fresco (forzarRosterFrescoAhora()) y pide los clanes a la API a
- * traves de capturarApiClanes_(), ademas de /players. NO debe tener activador. [→ Contexto_Base_Web.md §B103]
+ * traves de capturarApiClanes_(), ademas de /players. NO debe tener activador. Al terminar ya no borra el checkpoint de clanes
+ * (etapa 4, 17-oct-2026). [→ Contexto_Base_Web.md §B103]
  */
 function runUpdate() {
   if (!_adquirirLockEjecucion('runUpdate')) return;
@@ -912,11 +926,9 @@ function _continuarRunUpdate() {
         else Logger.log('[runUpdate] Pendientes abortó por falta de datos: NO se marca la captura como procesada, se reintenta.');
         props.deleteProperty('RUNUPDATE_SIN_API');
         props.deleteProperty('RUNUPDATE_SIN_API_TS');
-      } else {
-        // FIX (06-ago-2026): mismo criterio que _borrarProgresoPlayers() —
-        // ver comentario equivalente en _continuarRunAll().
-        _borrarProgresoClanes();
       }
+      // PF091 etapa 4 (17-oct-2026): la manual tampoco borra ya el checkpoint de clanes (ver el comentario equivalente en
+      // _continuarRunAll()): lo capturo recien con forzarRosterFrescoAhora() + capturarApiClanes_() y las programadas lo leen.
       _liberarLockEjecucion();
       Logger.log('=== Actualización periódica FIN ===');
     }
