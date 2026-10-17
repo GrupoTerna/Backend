@@ -354,7 +354,7 @@ y el nivel de certeza con el que se identificó el pendiente.
 4. ~~Nombres de `runUpdate()` y `runAll()`~~ **Aplicado el 17-oct-2026 (Claude decidió, sin confirmar):** `runUpdate()` es la manual y `runUpdateProgramado()` la del activador; `runAll()` queda igual y no tiene versión programada (no tiene activador). Ver §PF091, etapa 4.
 5. `/players` (`runUpdate()` y `runAll()` lo piden): ¿se separa también o se queda?
 6. Las otras funciones que piden la API con edad de 45 min (lista en §PF091) y `runResaltarDia()`: ¿pasan a leer sin API?
-7. ¿`runAll()` y `runUpdate()` siguen borrando el checkpoint al terminar? **Decidido por Claude el 17-oct-2026 (la usuaria delegó; puede cambiarlo):** ninguna de las tres cadenas lo borra al terminar (§PF091 etapa 4).
+7. ¿`runAll()` y `runUpdate()` siguen borrando el checkpoint al terminar? **Decidido por Claude el 17-oct-2026 y confirmado por la usuaria el mismo día:** ninguna de las tres cadenas lo borra al terminar (§PF091 etapa 4).
 8. Botones o dibujos de la hoja asignados a un `...Manual`: la usuaria debe revisarlos antes de borrar esos nombres.
 9. Ajustes al renombrar: `41_Web_ActualizarRoster.gs` (línea 126) y `ACTIVADORES_HANDLERS_LEGADOS_`.
 10. **Antes de mover la escritura de los JSON a la captura:** la «primera consulta» de §PF063 solo se anota hoy desde `guardarApiDump()`; hay que revisar qué hora quedó registrada.
