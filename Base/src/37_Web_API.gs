@@ -1833,9 +1833,12 @@ function _webGanadoresTorneoMasReciente(ss, opciones) {
   var temporadaMostrar = _getTemporadaMostrarExtra(ss, ctxReal);
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaMostrar);
   _medMarca('ctx');
-  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx); // 19-sep-2026: { ataques, exentos }
+  // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers (antes cada uno los leía por su cuenta, ~20 s c/u); [→ Contexto_Base_Web.md §PF091]
+  var guerraDataUnica = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
+  _medMarca('datosGuerra');
+  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada, guerraDataUnica); // 19-sep-2026: { ataques, exentos }
   _medMarca('ataquesSemana');
-  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal);
+  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal, guerraDataUnica);
   _medMarca('trofeos');
   var minTPorTag = _getMinTClanMaps().byTag;
   _medMarca('minT');
