@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 16:25:18 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 16:35:48 */
 
 
 
@@ -33314,6 +33314,7 @@ var TORNEO_EN_VIVO_PUB_PROP         = 'TORNEO_EN_VIVO_PUB_MS';
  * iniciarActualizacionTorneoEnVivo(inicio) [→ Contexto_Base_Web.md §26B085]
  */
 function iniciarActualizacionTorneoEnVivo(inicio) {
+  PropertiesService.getScriptProperties().deleteProperty(TORNEO_EN_VIVO_PUB_PROP); // ventana nueva: el primer tick publica
   _instalarActivadorTorneoEnVivo(inicio);
   procesarTorneos();
 }
@@ -33963,7 +33964,6 @@ function _instalarActivadorTorneoEnVivo(inicio) {
   }
 
   PropertiesService.getScriptProperties().setProperty(TORNEO_EN_VIVO_PROP, String(inicioMs));
-  PropertiesService.getScriptProperties().deleteProperty(TORNEO_EN_VIVO_PUB_PROP); // el primer tick de la ventana publica
 
   ScriptApp.newTrigger(TORNEO_EN_VIVO_HANDLER)
     .timeBased()
@@ -34002,32 +34002,35 @@ function _tickTorneoEnVivo() {
 
   Logger.log('[TorneoEnVivo] Ejecutando procesarTorneos() (quedan ' +
              Math.round((TORNEO_EN_VIVO_DURACION_MS - transcurrido) / 60000) + ' min de ventana).');
+  // 17-oct-2026: procesarTorneos() tarda ~175 s (registro del 17-oct) y publicar necesita ~250 s, así que no caben juntos en 360 s:
+  // cuando toca publicar (cada 15 min), este tick SOLO publica (con los datos del tick anterior) y el siguiente vuelve a procesar.
+  if (_publicarTorneosDesdeTick_(false)) return;
   procesarTorneos();
-  _publicarTorneosDesdeTick_(false);
 }
 
 /**
  * _publicarTorneosDesdeTick_(ignorarCadencia) (17-oct-2026, PF091)
  * Republica torneos.json desde el tick de Torneo en vivo. Publica como máximo cada TORNEO_EN_VIVO_PUBLICAR_CADA_MS (15 min), salvo
- * ignorarCadencia (cierre de la ventana). Si a la ejecución le quedan menos de TORNEOS_ESTATICO_MIN_RESTANTE_MS no calcula y
- * reintenta en el tick siguiente. Nunca lanza error: no debe impedir que el activador siga.
+ * ignorarCadencia (cierre de la ventana). Devuelve true si le tocaba publicar (lo intentó) y false si aún no. Nunca lanza error.
  */
 function _publicarTorneosDesdeTick_(ignorarCadencia) {
   try {
     var props = PropertiesService.getScriptProperties();
     var ahora = Date.now();
     var ultima = Number(props.getProperty(TORNEO_EN_VIVO_PUB_PROP)) || 0;
-    if (!ignorarCadencia && (ahora - ultima) < TORNEO_EN_VIVO_PUBLICAR_CADA_MS) return;
+    if (!ignorarCadencia && (ahora - ultima) < TORNEO_EN_VIVO_PUBLICAR_CADA_MS) return false;
+    props.setProperty(TORNEO_EN_VIVO_PUB_PROP, String(ahora)); // se marca el INTENTO: si falla, se reintenta a los 15 min y no se frena procesarTorneos()
     var restanteMs = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (ahora - TORNEOS_ESTATICO_EJEC_INICIO_MS_);
     if (restanteMs < TORNEOS_ESTATICO_MIN_RESTANTE_MS) {
-      Logger.log('[TorneoEnVivo] torneos.json NO se publica en este tick: quedan ' + Math.round(restanteMs / 1000) + ' s; se reintenta en el siguiente.');
-      return;
+      Logger.log('[TorneoEnVivo] torneos.json NO se publica: quedan ' + Math.round(restanteMs / 1000) + ' s; se reintenta en 15 min.');
+      return true;
     }
     var ok = _publicarTorneosEstatico_(true); // true también cuando no hubo cambios; false si falló
-    if (ok) props.setProperty(TORNEO_EN_VIVO_PUB_PROP, String(Date.now()));
     Logger.log('[TorneoEnVivo] torneos.json: ' + (ok ? 'publicado o sin cambios' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
+    return true;
   } catch (e) {
     Logger.log('[TorneoEnVivo] error al publicar torneos.json (el activador sigue): ' + e);
+    return true;
   }
 }
 
