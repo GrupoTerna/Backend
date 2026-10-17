@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/10/2026 20:14:09 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 10:58:07 */
 
 
 
@@ -52,7 +52,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
 
 // CONTEXTO: VENTANA DE GUERRA PROTEGIDA 4:00-4:59 a.m. Lima. En esa hora solo corre runGuerra() ligera; ninguna otra ejecución pesada empieza ni continúa (desde 20 min antes). [→ Contexto_Base_Web.md §B001]
 
-// CONTEXTO: VERSIONES PROGRAMADA / MANUAL (runPendientesYMensajes y runGuerraRapido). Programada = lee checkpoint sin API; Manual = roster fresco + API. [→ Contexto_Base_Web.md §B002]
+// CONTEXTO: VERSIONES PROGRAMADA / MANUAL (runPendientesYMensajes y runGuerraRapido). Programada = lee checkpoint sin API; Manual (SIN sufijo desde el 17-oct-2026) = roster fresco + API. [→ Contexto_Base_Web.md §B002]
 
 // FIX (22-ago-2026): "runGuerraRapido se cancela por excederse en el [→ Contexto_Base_Web.md §B003]
 var PASOS_RUNGUERRARAPIDO = [
@@ -694,28 +694,23 @@ function runPendientesYMensajesProgramado() {
 }
 
 /**
- * runPendientesYMensajesManual() - VERSION PARA CORRER A MANO (05-oct-2026, pedido usuario). [→ Contexto_Base_Web.md §B092]
+ * runPendientesYMensajes() - VERSION PARA CORRER A MANO, SIN SUFIJO (17-oct-2026, pedido usuario; antes se llamaba
+ * runPendientesYMensajesManual() y esta era solo su alias). Fuerza el roster fresco y usa la API. Devuelve true si
+ * corrio y false si no pudo empezar (ventana protegida u otra ejecucion): 41_Web_ActualizarRoster.gs usa ese valor.
+ * NO debe tener activador: el del disparador es runPendientesYMensajesProgramado(). [→ Contexto_Base_Web.md §PF091]
  */
-function runPendientesYMensajesManual() {
-  if (!_adquirirLockEjecucion('runPendientesYMensajesManual')) return false;
+function runPendientesYMensajes() {
+  if (!_adquirirLockEjecucion('runPendientesYMensajes')) return false;
   try {
-    Logger.log('=== runPendientesYMensajesManual INICIO (roster fresco, con API) ===');
+    Logger.log('=== runPendientesYMensajes INICIO (manual: roster fresco, con API) ===');
     forzarRosterFrescoAhora();
     _pendientesYMensajesNucleo_(false);
     _actualizarIndiceTrasPendientes_();  // NUEVO 05-oct-2026 (AVISO 7)
-    Logger.log('=== runPendientesYMensajesManual FIN ===');
+    Logger.log('=== runPendientesYMensajes FIN ===');
     return true;
   } finally {
     _liberarLockEjecucion();
   }
-}
-
-/**
- * runPendientesYMensajes() - ALIAS de runPendientesYMensajesManual() (conservado para no romper llamadas por nombre).
- * Los pasos de PASOS_RUNALL/PASOS_RUNUPDATE ya NO lo usan (llaman a _pendientesYMensajesNucleo_()).
- */
-function runPendientesYMensajes() {
-  runPendientesYMensajesManual();
 }
 
 /** Candado propio de runPendientesYMensajesProgramado(): auto-expira a los CFG.LOCK_MAX_DURACION_MS. */
@@ -788,22 +783,16 @@ function runGuerraRapidoProgramado() {
 }
 
 /**
- * runGuerraRapidoManual() - VERSION PARA CORRER A MANO (05-oct-2026, pedido usuario). [→ Contexto_Base_Web.md §B094]
+ * runGuerraRapido() - VERSION PARA CORRER A MANO, SIN SUFIJO (17-oct-2026, pedido usuario; antes se llamaba
+ * runGuerraRapidoManual() y esta era solo su alias). NO debe tener activador: el del disparador es
+ * runGuerraRapidoProgramado(). [→ Contexto_Base_Web.md §PF091]
  */
-function runGuerraRapidoManual() {
+function runGuerraRapido() {
   if (!_adquirirLockEjecucion('runGuerraRapido')) return;
   var props = PropertiesService.getScriptProperties();
   props.deleteProperty('RUNGUERRARAPIDO_SIN_API');
   props.setProperty('RUNGUERRARAPIDO_PASO', '0');
   _continuarRunGuerraRapido();
-}
-
-/**
- * runGuerraRapido() - ALIAS de runGuerraRapidoManual() (conservado para no romper el disparador ya instalado ni
- * llamadas por nombre). El disparador debe pasar a runGuerraRapidoProgramado() (ver AVISOS ABIERTOS, arriba).
- */
-function runGuerraRapido() {
-  runGuerraRapidoManual();
 }
 
 /**
@@ -1092,7 +1081,7 @@ function runGuerra() {
     }
 
     // Guerra/Guerra_Logs/Control/Pendientes no leen perfiles de /players [→ Contexto_Base_Web.md §B114]
-    _fetchClanesBasico(CFG.CLANES_PROGRESO_MAX_EDAD_MS_GUERRA);
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS_GUERRA, 'hora');
     updateGuerraSheet();
     updateGuerraLogsSheet();
     updateControlSheet();
@@ -1147,10 +1136,28 @@ function runGuerra() {
 }
 
 /**
+ * capturarApiClanes_(maxEdadMs, origen) - FUNCION DE CAPTURA (17-oct-2026, pedido usuario; PF091). Es lo UNICO que pide a la API
+ * /clans/{tag} y /clans/{tag}/currentriverrace de los 5 clanes y guarda el resultado (checkpoint Cache_Clanes_Progreso.json,
+ * que escribe _fetchClanesBasico() solo si llegaron los 5 clanes completos). No toca hojas, Dashboard, Web, Pendientes ni
+ * Mensajes: eso se hace despues, con lo que esta funcion deja guardado. La llaman runGuerra() (fuera de la ventana,
+ * 1 vez por hora UTC) y _runGuerraVentanaLigera_() (de 4:00 a 4:59 a. m. Lima, cada 5 min). No toma candado propio: corre
+ * dentro del de runGuerra(), asi que la ventana protegida no la bloquea. maxEdadMs = cuanto puede tener el checkpoint para
+ * reutilizarlo en vez de pedir a la API (en la ventana, 90 s: con disparos de 5 min nunca se reutiliza).
+ * Devuelve lo mismo que _fetchClanesBasico(). [→ Contexto_Base_Web.md §PF091]
+ */
+function capturarApiClanes_(maxEdadMs, origen) {
+  var t0 = Date.now();
+  Logger.log('[Captura] INICIO (' + (origen || 'sin origen') + ', edad maxima del checkpoint ' + Math.round(maxEdadMs / 1000) + ' s)');
+  var datos = _fetchClanesBasico(maxEdadMs);
+  Logger.log('[Captura] FIN (' + (origen || 'sin origen') + ', ' + Math.round((Date.now() - t0) / 1000) + ' s)');
+  return datos;
+}
+
+/**
  * _runGuerraVentanaLigera_(t0) [→ Contexto_Base_Web.md §B118]
  */
 function _runGuerraVentanaLigera_(t0) {
-  _fetchClanesBasico(CFG.CLANES_PROGRESO_MAX_EDAD_MS_GUERRA_VENTANA);
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS_GUERRA_VENTANA, 'ventana');
   var resultadoGuerra = updateGuerraSheet();
 
   if (CFG.RUNGUERRA_VENTANA_SYNC_CSV) {
@@ -8422,8 +8429,9 @@ var ACTIVADORES_CONFIG = [
   { handler: '_autogenerarParCRListaSiCorrespondeInicioTemporada', tipo: 'diario', hora: 6, activo: true }
 ];
 
-// Disparadores de versiones anteriores del proyecto que, si siguen instalados, deben retirarse al activar/desactivar
-// (por ejemplo, el disparador de runGuerraRapido, que ahora es runGuerraRapidoProgramado).
+// Nombres que NO deben tener activador y que, si alguno sigue instalado, se retira al activar/desactivar. Desde el 17-oct-2026
+// son las versiones MANUALES (sin sufijo); los activadores usan las versiones ...Programado (antes eran disparadores de versiones
+// anteriores del proyecto). [-> Contexto_Base_Web.md §PF091]
 var ACTIVADORES_HANDLERS_LEGADOS_ = ['runGuerraRapido', 'runPendientesYMensajes'];
 
 /**
@@ -43251,7 +43259,7 @@ function _webAdminTieneFuncion(funcionesStr, funcionBuscada) {
 // Nombre exacto de la Función que permite corregir el Autor de un ascenso/descenso (usada por _webAdminEditarAutorAscenso(), 24_Historial_Ascensos.gs). [→ Contexto_Base_Web.md §37B019]
 var WEB_FUNCION_CORREGIR_AUTOR = 'Corregir autor';
 
-// NUEVO 05-oct-2026: Función que permite pedir desde la web la actualización manual del roster y de guerra (runPendientesYMensajesManual); la usan _webAdminActualizarRoster()/_webAdminEstadoActualizacion() (41_Web_ActualizarRoster.gs); ACTIVA para todos los admin (migrarFuncionActualizarRosterATodosLosAdmins(), 47_Migraciones.gs); se desactiva por admin en permisos.html. [→ Contexto_Base_Web.md §37B020]
+// NUEVO 05-oct-2026: Función que permite pedir desde la web la actualización manual del roster y de guerra (runPendientesYMensajes); la usan _webAdminActualizarRoster()/_webAdminEstadoActualizacion() (41_Web_ActualizarRoster.gs); ACTIVA para todos los admin (migrarFuncionActualizarRosterATodosLosAdmins(), 47_Migraciones.gs); se desactiva por admin en permisos.html. [→ Contexto_Base_Web.md §37B020]
 var WEB_FUNCION_ACTUALIZAR_ROSTER = 'Actualizar roster';
 
 // Catálogo de Funciones del panel: `id` = texto exacto de la celda Funciones (y de _webAdminTieneFuncion()); etiqueta/descripcion solo para mostrar. Para sumar una: agregarla aquí y validarla en el endpoint. 'Corregir autor' no está en los valores por defecto de actualizarDropdownCatDisp() a propósito: Diana la da desde el panel. [→ Contexto_Base_Web.md §37B021]
@@ -51626,7 +51634,7 @@ function _noticiasPruebaManual() {
 // --- ARCHIVO: 41_Web_ActualizarRoster.gs ---
 // ==============================================================================
 // 41_Web_ActualizarRoster.gs
-// Actualización manual del roster, Pendientes y Mensajes de guerra pedida desde la web por un admin (equivale a runPendientesYMensajesManual(); creado 05-oct-2026). [→ Contexto_Base_Web.md §41B001]
+// Actualización manual del roster, Pendientes y Mensajes de guerra pedida desde la web por un admin (equivale a runPendientesYMensajes(); creado 05-oct-2026). [→ Contexto_Base_Web.md §41B001]
 // ==============================================================================
 //
 // Permiso 'Actualizar roster', acciones POST/GET, estados, reglas para proteger la API y la captura de guerra, y AVISOS 1-5 (sin probar en Apps Script real; AVISO 5 PENDIENTE DE DEFINIR: invalidar la cache de webAdminContenido). [→ Contexto_Base_Web.md §41B002]
@@ -51731,7 +51739,7 @@ function _webAdminEstadoActualizacion(token) {
 // Ejecucion (la dispara el activador de un solo uso)
 // ---------------------------------------------------------------------------
 
-// Handler del disparador de un solo uso: corre runPendientesYMensajesManual() y deja el resultado en el estado. [→ Contexto_Base_Web.md §41B005]
+// Handler del disparador de un solo uso: corre runPendientesYMensajes() y deja el resultado en el estado. [→ Contexto_Base_Web.md §41B005]
 function _webActualizarRosterEjecutar() {
   _borrarTriggersDeContinuacion(WEB_ACTROSTER_HANDLER);
 
@@ -51749,7 +51757,7 @@ function _webActualizarRosterEjecutar() {
 
   var resultado;
   try {
-    var corrio = runPendientesYMensajesManual();
+    var corrio = runPendientesYMensajes();
     if (corrio === false) {
       resultado = { estado: 'omitido', mensaje: _webActRosterMotivoNoInicio_() + ' Intenta de nuevo mas tarde.' };
     } else if (typeof PENDIENTES_ABORTADO_POR_API !== 'undefined' && PENDIENTES_ABORTADO_POR_API) {
@@ -51893,7 +51901,7 @@ function _webActRosterEjecucionEnCurso_(ahora) {
   return '';
 }
 
-/** Texto para cuando runPendientesYMensajesManual() no empezo (ventana protegida u otra ejecucion). */
+/** Texto para cuando runPendientesYMensajes() no empezo (ventana protegida u otra ejecucion). */
 function _webActRosterMotivoNoInicio_() {
   var ahora = Date.now();
   if (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_(new Date(ahora)).protegida) return _webActRosterTextoVentana_();
