@@ -127,11 +127,12 @@ Estas mismas reglas rigen al editarlo, y también al editar la skill `/md`: camb
 **9.3 Cómo se pasa una parte (siempre en este orden, todo en **un solo commit** del repo `Backend`).**
 1. `git pull --rebase` justo antes de empezar y `python3 "Consolidados de cambios/verificar_contexto.py"`: debe dar «OK» **antes** de mover nada. Si no da OK, se arregla eso primero y se anota.
 2. La unidad es el bloque completo de un `.gs` (desde su `# Archivo NN_…` hasta justo antes del siguiente `# Archivo`, o desde `## 00_Main.gs — resumen rápido` en el caso de `00_Main.gs`). **Nunca se parte un bloque.** Una parte agrupa `.gs` contiguos hasta unos 500 KB.
-3. Se **copian** los bloques, sin modificarlos, a `Contexto_Base_Web_Detalle.md` (se crea con su cabecera si no existe; se respeta el orden por número de archivo) y se comprueba que lo copiado es **idéntico byte a byte** a lo que había.
+3. Se **copian** los bloques, sin modificarlos, al final de `Contexto_Base_Web_Detalle.md` (se crea con su cabecera si no existe; quedan en el orden en que estaban en el principal) y se comprueba que lo copiado es **idéntico byte a byte** a lo que había.
+   Pasos 1 a 6 los hace `python3 "Consolidados de cambios/mover_bloques.py" --parte N archivo1.gs archivo2.gs …` (verifica antes y después, se niega a mover un bloque que contenga secciones PF y no usa `git`); los pasos 1 a 6 se hacen a mano solo en las partes 7 y 8.
 4. Se borran del principal y se cambia en el «Mapa de bloques por `.gs`» la columna «Dónde está su bloque» de esos archivos.
 5. Se corre `verificar_contexto.py`: debe dar «OK» (mismos IDs de bloque, ninguno repetido ni perdido, mapa coherente, **todas las referencias de los `.gs` siguen resolviendo**).
 6. Se añade una línea a «Registro del traslado» (parte, archivos, tamaño que salió del principal) y se marca la parte en el plan de abajo.
-7. `git pull --rebase` otra vez, y se sube de inmediato (otras sesiones escriben en el mismo archivo; cuanto menos tiempo pase entre mover y subir, menos choques).
+7. `git pull --rebase` otra vez, y se sube de inmediato. (Si hay otra sesión escribiendo en el mismo archivo —el 17-oct-2026 la usuaria confirmó que no había ninguna—, cuanto menos tiempo pase entre mover y subir, menos choques.)
 
 **9.4 Qué no se hace.** No se mezclan en el mismo commit el traslado de una parte y otros cambios de contenido. No se renumeran IDs. No se borra un bloque del principal sin haberlo verificado en el detalle. No se deja un bloque en los dos archivos (el verificador lo marca como error). No se mueve nada si hay otra sesión con cambios sin subir sobre esos bloques (se pregunta).
 
@@ -142,7 +143,7 @@ Estas mismas reglas rigen al editarlo, y también al editar la skill `/md`: camb
 | Parte | `.gs` | Tamaño aprox. | Estado |
 |---|---|---|---|
 | 1 | `01` a `08` | 468 KB | **Hecha el 17-oct-2026** |
-| 2 | `09` a `14` | 495 KB | Pendiente |
+| 2 | `09` a `14` | 495 KB | **Hecha el 17-oct-2026** |
 | 3 | `15` a `19` | 523 KB | Pendiente |
 | 4 | `20` a `25` y `27` a `30` | 412 KB | Pendiente |
 | 5 | `26_Torneos_Core.gs` | 386 KB | Pendiente |
