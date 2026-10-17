@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 11:59:10 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 12:30:04 */
 
 
 
@@ -338,7 +338,15 @@ var NOMBRES_PASOS_RUNALL = [
 var PASOS_RUNUPDATE = [
   // FIX (15-ago-2026): ver comentario equivalente en PASOS_RUNALL — [→ Contexto_Base_Web.md §B051]
   function () { return _fetchAllClanData(); },
-  function () { guardarApiDump(); },
+  // PF091 etapa 4 (17-oct-2026): en la version programada se omite: la captura que dejo el checkpoint ya escribio los JSON de
+  // clans y currentriverrace, y reescribirlos desde el checkpoint solo les cambiaria la hora del nombre sin datos nuevos.
+  function () {
+    if (PropertiesService.getScriptProperties().getProperty('RUNUPDATE_SIN_API') === '1') {
+      Logger.log('[ApiDump] OMITIDO en la version programada de runUpdate: los JSON de clans y currentriverrace ya los escribio la captura que dejo el checkpoint.');
+    } else {
+      guardarApiDump();
+    }
+  },
   // Ver comentario equivalente en PASOS_RUNALL: Extra y Clan van separados
   // para dar un punto de control de presupuesto entre ambos.
   function () { updateExtraSheet(); },
@@ -847,6 +855,10 @@ function _continuarRunGuerraRapido() {
 function runAll() {
   if (!_adquirirLockEjecucion('runAll')) return;
   PropertiesService.getScriptProperties().setProperty('RUNALL_PASO', '0');
+  // PF091 etapa 4 (17-oct-2026, decision de Claude): runAll() es manual (no tiene activador), asi que, como las otras manuales sin
+  // sufijo, fuerza el roster fresco: invalida el checkpoint de clanes (no lo borra, queda de respaldo si la API falla) y borra el
+  // progreso de /players.
+  forzarRosterFrescoAhora();
   _continuarRunAll();
 }
 
@@ -862,7 +874,8 @@ function _continuarRunAll() {
       // FASE 21 (01/08/2026): el progreso de /players (Drive) ya NO se [→ Contexto_Base_Web.md §B100]
       _borrarProgresoPlayers();
       // FIX (06-ago-2026): mismo criterio que _borrarProgresoPlayers() — [→ Contexto_Base_Web.md §B101]
-      _borrarProgresoClanes();
+      // PF091 etapa 4 (17-oct-2026): YA NO se borra el checkpoint de clanes al terminar (lo dejo recien capturado runAll() y lo leen
+      // las versiones programadas); la frescura de la proxima corrida la garantiza forzarRosterFrescoAhora() al empezar.
       // NUEVO (27-sep-2026): mismo criterio que las 2 líneas de arriba — [→ Contexto_Base_Web.md §B102]
       _borrarProgresoBattlelogChests();
       _liberarLockEjecucion();
@@ -919,7 +932,8 @@ function runUpdateProgramado() {
 /**
  * runUpdate() - VERSION PARA CORRER A MANO, SIN SUFIJO (17-oct-2026, pedido usuario; antes era la que usaba el activador diario,
  * que ahora apunta a runUpdateProgramado()). Fuerza el roster fresco (forzarRosterFrescoAhora()) y pide los clanes a la API a
- * traves de capturarApiClanes_(), ademas de /players. NO debe tener activador. [→ Contexto_Base_Web.md §B103]
+ * traves de capturarApiClanes_(), ademas de /players. NO debe tener activador. Al terminar ya no borra el checkpoint de clanes
+ * (etapa 4, 17-oct-2026). [→ Contexto_Base_Web.md §B103]
  */
 function runUpdate() {
   if (!_adquirirLockEjecucion('runUpdate')) return;
@@ -955,11 +969,9 @@ function _continuarRunUpdate() {
         else Logger.log('[runUpdate] Pendientes abortó por falta de datos: NO se marca la captura como procesada, se reintenta.');
         props.deleteProperty('RUNUPDATE_SIN_API');
         props.deleteProperty('RUNUPDATE_SIN_API_TS');
-      } else {
-        // FIX (06-ago-2026): mismo criterio que _borrarProgresoPlayers() —
-        // ver comentario equivalente en _continuarRunAll().
-        _borrarProgresoClanes();
       }
+      // PF091 etapa 4 (17-oct-2026): la manual tampoco borra ya el checkpoint de clanes (ver el comentario equivalente en
+      // _continuarRunAll()): lo capturo recien con forzarRosterFrescoAhora() + capturarApiClanes_() y las programadas lo leen.
       _liberarLockEjecucion();
       Logger.log('=== Actualización periódica FIN ===');
     }
@@ -8729,6 +8741,13 @@ function guardarApiDump() {
   // Antes volvia a pedir los mismos 2 endpoints de los 5 clanes. [→ Contexto_Base_Web.md §PF091]
   Logger.log('[ApiDump] Iniciando (usa la captura, sin pedir de nuevo a la API) para ' + CFG.CLAN_TAGS.length + ' clanes...');
   capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'guardarApiDump');
+  // PF091 etapa 4 (17-oct-2026, registro de runUpdate del 12:04): si la captura de OTRA ejecucion (p. ej. el paso 0 de la misma cadena, antes
+  // de una continuacion) ya escribio los JSON con este checkpoint, no se reescriben: costaba ~40 s y renombraba los de clans con una hora
+  // sin datos nuevos.
+  if (!_jsonClanesEscritosEnEstaEjecucion && _jsonClanesDeEsteCheckpointYaEscritos_()) {
+    Logger.log('[ApiDump] OMITIDO: los JSON de clans y currentriverrace ya se escribieron con este checkpoint (CLANES_JSON_ESCRITOS_TS); reescribirlos solo cambiaria la hora del nombre de los de clans.');
+    return;
+  }
   _guardarJsonClanesDesdeCaptura_(true);  // no hace nada si la captura de esta ejecucion ya los escribio
   var total = _jsonClanesUltimoTotal;
   var nota = _clanesBasicoDesdeApiEnEstaEjecucion ? '' : ' (datos del checkpoint, sin pedir a la API)';
@@ -10491,12 +10510,33 @@ function _guardarJsonClanesDesdeCaptura_(forzar) {
       if (d.riverrace) { _guardarCacheEnDrive(tag, 'currentriverrace', ctx, d.riverrace); total++; }
     }
     _jsonClanesEscritosEnEstaEjecucion = true;
+    // PF091 etapa 4: hora de la ultima escritura completa, para que otra ejecucion (guardarApiDump() tras una continuacion) sepa que ya estan.
+    if (total > 0) {
+      try { PropertiesService.getScriptProperties().setProperty('CLANES_JSON_ESCRITOS_TS', String(Date.now())); } catch (eTs) { /* solo informativa */ }
+    }
   } catch (e) {
     Logger.log('[Captura][JSON] Error escribiendo los JSON: ' + e.message);
   }
   _jsonClanesUltimoTotal = total;
   Logger.log('[Captura][JSON] ' + total + ' archivo(s) escrito(s) en ' + Math.round((Date.now() - t0) / 100) / 10 + ' s');
   return total;
+}
+
+/**
+ * PF091 etapa 4 (17-oct-2026): true si los JSON de clans y currentriverrace ya se escribieron DESPUES de que se guardo el checkpoint de
+ * clanes que hay hoy en Drive (propiedad CLANES_JSON_ESCRITOS_TS >= hora del checkpoint). Si el checkpoint viene de una captura de la
+ * ventana de 4 a 5 a. m. (que no escribe JSON), la propiedad es anterior y devuelve false. Ante cualquier duda devuelve false (se escribe).
+ * [→ Contexto_Base_Web.md §PF091]
+ */
+function _jsonClanesDeEsteCheckpointYaEscritos_() {
+  try {
+    var escritos = Number(PropertiesService.getScriptProperties().getProperty('CLANES_JSON_ESCRITOS_TS')) || 0;
+    if (escritos <= 0) return false;
+    var cp = _leerProgresoClanesConEdad_();
+    return !!(cp && cp.ts > 0 && escritos >= cp.ts);
+  } catch (e) {
+    return false;
+  }
 }
 
 // PERSISTENCIA DE PROGRESO DE CLANES (para reanudación sin repetir) [→ Contexto_Base_Web.md §09B099]
