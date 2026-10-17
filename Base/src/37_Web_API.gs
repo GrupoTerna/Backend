@@ -1823,15 +1823,22 @@ function _webGanadoresTorneoMasReciente(ss, opciones) {
   if (!idMasReciente) return null;
 
   // FASE 23 (30/08/2026, Tag_Tor_2): mismo fusionado que actualizarDocGanadoresTorneo() (28_Torneos_Docs.gs): si el torneo más reciente pertenece a un grupo de continuación, se fusionan Victorias y Puesto de todo el grupo antes de tomar el top 3; FASE 24 (02-sep-2026): _getParticipantesFusionadosPorTorneo() ya aplica las resoluciones vigentes y _topNTrasResoluciones() arma el top 3 real (excluye descalificados, respeta el Puesto_Final de un desempate) en vez del slice(0,3) de antes. [→ Contexto_Base_Web.md §37B156]
+  var _medT0 = Date.now(), _medPaso = Date.now(), _med = []; // 17-oct-2026 (PF091): medición por paso, solo Logger.log; [→ Contexto_Base_Web.md §PF091]
+  function _medMarca(n) { var a = Date.now(); _med.push(n + '=' + (a - _medPaso) + 'ms'); _medPaso = a; }
   var participantesGrupo = _getParticipantesFusionadosPorTorneo(ss, idMasReciente).participantes;
+  _medMarca('participantes');
   var top3 = _topNTrasResoluciones(participantesGrupo, 3);
 
   var ctxReal = _getCtx();
   var temporadaMostrar = _getTemporadaMostrarExtra(ss, ctxReal);
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaMostrar);
+  _medMarca('ctx');
   var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx); // 19-sep-2026: { ataques, exentos }
+  _medMarca('ataquesSemana');
   var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal);
+  _medMarca('trofeos');
   var minTPorTag = _getMinTClanMaps().byTag;
+  _medMarca('minT');
   // FIX 19-sep-2026: este endpoint había quedado fuera del cambio "el 16 fijo debe leer el Ataques configurado por clan en T_Lista" (actualizarDocGanadoresTorneo() ya usaba _ataquesMinTorneoPorNombreClan()/_cumpleAtaquesTorneoClan()); con Ataques en 16 coincidía, pero con otro valor configurado la web mostraba un top3 distinto al del documento real. [→ Contexto_Base_Web.md §37B157]
   var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan();
 
@@ -1868,6 +1875,8 @@ function _webGanadoresTorneoMasReciente(ss, opciones) {
       };
     });
 
+  _medMarca('top3yLista');
+  Logger.log('[TorneosMed] _webGanadoresTorneoMasReciente total=' + (Date.now() - _medT0) + 'ms; ' + _med.join(', '));
   return { idTorneo: idMasReciente, fecha: fechaMasReciente.toISOString(), top3: top3Filtrado, participantes: participantes };
 }
 
