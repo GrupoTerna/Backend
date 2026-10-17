@@ -149,6 +149,6 @@ Estas mismas reglas rigen al editarlo, y también al editar la skill `/md`: camb
 | 5 | `26_Torneos_Core.gs` | 386 KB | **Hecha el 17-oct-2026** |
 | 6 | `31` a `36`, `39`, `42`, `48`, `49`, `40`, `41`, `43`, `45`, `46`, `44`, `47` y `38_Web_Endpoints.gs` | 437 KB | **Hecha el 17-oct-2026** |
 | 7 | `00_Main.gs` (sección «resumen rápido», índice y detalle, dentro de la primera sección del principal) | por medir | **Hecha el 17-oct-2026** |
-| 8 | `37_Web_API.gs`: solo su resumen, su «Índice de bloques movidos» y su «Detalle»; **las secciones PF que están después se quedan** | unos 600 KB de bloques | Pendiente |
+| 8 | `37_Web_API.gs`: solo su resumen, su «Índice de bloques movidos» y su «Detalle»; **las secciones PF que están después se quedan** | unos 600 KB de bloques | **Hecha el 17-oct-2026** |
 
-Las partes 7 y 8 piden cuidado extra: los bloques no coinciden con un `# Archivo` contiguo. Antes de empezarlas se fija el límite exacto y se anota aquí.
+**Límites que se usaron en las partes 7 y 8 (17-oct-2026), por si hay que repetirlos:** `00_Main.gs` va desde `## 00_Main.gs — resumen rápido` hasta el siguiente encabezado de nivel 1 (no tiene `# Archivo`); `37_Web_API.gs` va desde su `# Archivo` hasta justo antes de la primera `### PF` que le sigue (`PF096`), y las secciones PF se quedaron en el principal bajo «Secciones PF posteriores al plan de fases». `mover_bloques.py` ya contempla ambos casos. **Las ocho partes están hechas;** lo que se añada después (regla 9.5) va al detalle.
