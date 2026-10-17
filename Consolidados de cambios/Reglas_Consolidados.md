@@ -78,7 +78,7 @@ Las secciones anteriores dicen cómo se trabaja un consolidado. Esta dice dónde
 | Pendientes, advertencias y preguntas | El consolidado, marcados «pendiente de definir o contestar» (regla 3). Los del frontend que ya no dependen de un consolidado van a la sección «Abiertos» del `CHANGELOG.md`. Los que deben vivir en el código, en `AVISOS ABIERTOS` (regla 10). |
 | Archivos de evidencia (JSON, CSV, registros) | `Datos descargados/` del repo `Backend`, sin teléfonos ni datos personales. |
 
-**Formato del `CHANGELOG.md` de `Web`** (checklist, ordenado **por fecha** —la más reciente arriba— y, **dentro de cada fecha, por archivo** —de la A a la Z, según el primer archivo que nombra la viñeta—; las entradas de un mismo archivo van juntas, una después de otra, sin fundirlas en una sola; las viñetas que no empiezan por un archivo van al final de esa fecha). Orden de decisión: **fecha > archivo**. Un cambio que toca varios archivos sigue siendo **una** viñeta y va bajo su primer archivo. Las viñetas sin fecha conocida van en la sección final «Sin fecha en el comentario original», con el mismo criterio de archivo. Nada de secciones por archivo aparte del orden por fecha (la sección «guerra.html» que existía se repartió por fecha el 15-oct-2026):
+**Formato del `CHANGELOG.md` de `Web`** (checklist, ordenado **por fecha** —la más reciente arriba— y, **dentro de cada fecha, por archivo** —de la A a la Z, según el primer archivo que nombra la viñeta—; las entradas de un mismo archivo van juntas, una después de otra, sin fundirlas en una sola; las viñetas que no empiezan por un archivo van al final de esa fecha). Orden de decisión: **fecha > archivo**. Un cambio que toca varios archivos sigue siendo **una** viñeta y va bajo su primer archivo. Las viñetas sin fecha conocida van en la sección final «Sin fecha en el comentario original», con el mismo criterio de archivo. Nada de secciones por archivo aparte del orden por fecha (la sección «guerra.html» que existía se repartió por fecha el 17-oct-2026):
 - **Una viñeta por cambio**, aunque toque varios archivos. Lleva: título corto, versión de `sw.js` si aplica, cada archivo con la función o bloque tocado (regla 5, sección anterior), una línea de qué cambió y el enlace `→ §PFxxx` al contexto.
 - **No lleva:** cómo funciona hoy, por qué se decidió, alternativas descartadas ni pruebas. Eso va al contexto, y lo que se probó y se descartó se deja escrito allí.
 - **Los pendientes no viven en la viñeta.** Van en la sección «Abiertos» al inicio del archivo, que se actualiza; al cumplirse, se borra la línea y queda la viñeta del cambio.
@@ -112,3 +112,42 @@ Si un consolidado necesita una regla que solo vale para él (por ejemplo, en qu�
 ## 8. Al editar este archivo
 
 Estas mismas reglas rigen al editarlo, y también al editar la skill `/md`: cambios chicos, sin asumir ni omitir nada, cualquier cambio de criterio marcado como corrección (regla 9), y antes de guardar se revisa que la regla nueva no contradiga ni duplique otra. Una regla se escribe en un solo lugar.
+
+## 9. Contexto en dos archivos: `Contexto_Base_Web.md` (vigente) y `Contexto_Base_Web_Detalle.md` (detalle por `.gs`)
+
+*Por qué.* `Contexto_Base_Web.md` llegó a 4,26 MB, el 79 % en bloques históricos «Detalle (texto original, sin cambios)» que casi nunca hace falta leer entera. Desde el 17-oct-2026 esos bloques se pasan, **por partes**, a `Contexto_Base_Web_Detalle.md` (decisión de la usuaria). El archivo principal queda con lo que sí se lee siempre: cabecera, «Mapa de secciones PF», «Equivalencias», «Mapa de bloques por `.gs`», «Abiertos del contexto», «Registro del traslado», el plan de fases y las secciones `PFxxx`.
+
+**9.1 Qué va en cada archivo.**
+- **`Contexto_Base_Web.md`:** todo lo que no es un bloque por `.gs`, y **todas las secciones `### PFxxx`, siempre**. Una sección PF nunca va al archivo de detalle, aunque hoy esté físicamente dentro del rango de un bloque (como las `PF074` en adelante, que están después del bloque de `37_Web_API.gs`).
+- **`Contexto_Base_Web_Detalle.md`:** los bloques de cada `.gs` (`# Archivo NN_Nombre.gs`, con su «Índice de bloques movidos» y su «Detalle»), copiados **tal cual, sin cambiar una coma**. Es histórico: puede no coincidir con el código de hoy y **no se edita**; si algo de ahí quedó desactualizado, se corrige con una sección PF o una nota «Estado posterior (regla 9)» en la sección PF que corresponda, no tocando el bloque.
+- **«Mapa de bloques por `.gs`»** (en el principal) dice en qué archivo está cada bloque. Es la única fuente de verdad de la ubicación.
+
+**9.2 Cómo se resuelve una referencia `[→ Contexto_Base_Web.md §…]` de un `.gs` o de un texto.** `§PFxxx` está siempre en `Contexto_Base_Web.md`. `§NNBxxx` (o `§Bxxx`, de `00_Main.gs`): el prefijo `NN` se busca en el «Mapa de bloques por `.gs`» y el bloque está en el archivo que ella indique. **No se reescriben los comentarios de los `.gs`** (`Base/src` se pisa en cada «Descarga Base» desde Apps Script, así que el cambio se perdería y el código en vivo seguiría con el nombre viejo). Tampoco se reescriben las citas `§NNBxxx` dentro de los textos de las secciones PF.
+
+**9.3 Cómo se pasa una parte (siempre en este orden, todo en **un solo commit** del repo `Backend`).**
+1. `git pull --rebase` justo antes de empezar y `python3 "Consolidados de cambios/verificar_contexto.py"`: debe dar «OK» **antes** de mover nada. Si no da OK, se arregla eso primero y se anota.
+2. La unidad es el bloque completo de un `.gs` (desde su `# Archivo NN_…` hasta justo antes del siguiente `# Archivo`, o desde `## 00_Main.gs — resumen rápido` en el caso de `00_Main.gs`). **Nunca se parte un bloque.** Una parte agrupa `.gs` contiguos hasta unos 500 KB.
+3. Se **copian** los bloques, sin modificarlos, a `Contexto_Base_Web_Detalle.md` (se crea con su cabecera si no existe; se respeta el orden por número de archivo) y se comprueba que lo copiado es **idéntico byte a byte** a lo que había.
+4. Se borran del principal y se cambia en el «Mapa de bloques por `.gs`» la columna «Dónde está su bloque» de esos archivos.
+5. Se corre `verificar_contexto.py`: debe dar «OK» (mismos IDs de bloque, ninguno repetido ni perdido, mapa coherente, **todas las referencias de los `.gs` siguen resolviendo**).
+6. Se añade una línea a «Registro del traslado» (parte, archivos, tamaño que salió del principal) y se marca la parte en el plan de abajo.
+7. `git pull --rebase` otra vez, y se sube de inmediato (otras sesiones escriben en el mismo archivo; cuanto menos tiempo pase entre mover y subir, menos choques).
+
+**9.4 Qué no se hace.** No se mezclan en el mismo commit el traslado de una parte y otros cambios de contenido. No se renumeran IDs. No se borra un bloque del principal sin haberlo verificado en el detalle. No se deja un bloque en los dos archivos (el verificador lo marca como error). No se mueve nada si hay otra sesión con cambios sin subir sobre esos bloques (se pregunta).
+
+**9.5 Bloques nuevos o ampliados.** Si un cambio de código crea un bloque nuevo para un `.gs` ya movido, el bloque va en `Contexto_Base_Web_Detalle.md`, en el «Índice de bloques movidos» de ese archivo, con el siguiente ID libre de su prefijo. Las decisiones y el funcionamiento de ese cambio van, como siempre, en una sección PF del principal.
+
+**9.6 Plan de partes** (se marca cada una al terminarla, en este mismo cuadro y en el registro):
+
+| Parte | `.gs` | Tamaño aprox. | Estado |
+|---|---|---|---|
+| 1 | `01` a `08` | 468 KB | **Hecha el 17-oct-2026** |
+| 2 | `09` a `14` | 495 KB | Pendiente |
+| 3 | `15` a `19` | 523 KB | Pendiente |
+| 4 | `20` a `25` y `27` a `30` | 412 KB | Pendiente |
+| 5 | `26_Torneos_Core.gs` | 386 KB | Pendiente |
+| 6 | `31` a `36`, `39`, `42`, `48`, `49`, `40`, `41`, `43`, `45`, `46`, `44`, `47` y `38_Web_Endpoints.gs` | 437 KB | Pendiente |
+| 7 | `00_Main.gs` (sección «resumen rápido», índice y detalle, dentro de la primera sección del principal) | por medir | Pendiente |
+| 8 | `37_Web_API.gs`: solo su resumen, su «Índice de bloques movidos» y su «Detalle»; **las secciones PF que están después se quedan** | unos 600 KB de bloques | Pendiente |
+
+Las partes 7 y 8 piden cuidado extra: los bloques no coinciden con un `# Archivo` contiguo. Antes de empezarlas se fija el límite exacto y se anota aquí.
