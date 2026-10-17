@@ -1038,7 +1038,7 @@ function runGuerra() {
     }
 
     // Guerra/Guerra_Logs/Control/Pendientes no leen perfiles de /players [→ Contexto_Base_Web.md §B114]
-    _fetchClanesBasico(CFG.CLANES_PROGRESO_MAX_EDAD_MS_GUERRA);
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS_GUERRA, 'hora');
     updateGuerraSheet();
     updateGuerraLogsSheet();
     updateControlSheet();
@@ -1093,10 +1093,28 @@ function runGuerra() {
 }
 
 /**
+ * capturarApiClanes_(maxEdadMs, origen) - FUNCION DE CAPTURA (17-oct-2026, pedido usuario; PF091). Es lo UNICO que pide a la API
+ * /clans/{tag} y /clans/{tag}/currentriverrace de los 5 clanes y guarda el resultado (checkpoint Cache_Clanes_Progreso.json,
+ * que escribe _fetchClanesBasico() solo si llegaron los 5 clanes completos). No toca hojas, Dashboard, Web, Pendientes ni
+ * Mensajes: eso se hace despues, con lo que esta funcion deja guardado. La llaman runGuerra() (fuera de la ventana,
+ * 1 vez por hora UTC) y _runGuerraVentanaLigera_() (de 4:00 a 4:59 a. m. Lima, cada 5 min). No toma candado propio: corre
+ * dentro del de runGuerra(), asi que la ventana protegida no la bloquea. maxEdadMs = cuanto puede tener el checkpoint para
+ * reutilizarlo en vez de pedir a la API (en la ventana, 90 s: con disparos de 5 min nunca se reutiliza).
+ * Devuelve lo mismo que _fetchClanesBasico(). [→ Contexto_Base_Web.md §PF091]
+ */
+function capturarApiClanes_(maxEdadMs, origen) {
+  var t0 = Date.now();
+  Logger.log('[Captura] INICIO (' + (origen || 'sin origen') + ', edad maxima del checkpoint ' + Math.round(maxEdadMs / 1000) + ' s)');
+  var datos = _fetchClanesBasico(maxEdadMs);
+  Logger.log('[Captura] FIN (' + (origen || 'sin origen') + ', ' + Math.round((Date.now() - t0) / 1000) + ' s)');
+  return datos;
+}
+
+/**
  * _runGuerraVentanaLigera_(t0) [→ Contexto_Base_Web.md §B118]
  */
 function _runGuerraVentanaLigera_(t0) {
-  _fetchClanesBasico(CFG.CLANES_PROGRESO_MAX_EDAD_MS_GUERRA_VENTANA);
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS_GUERRA_VENTANA, 'ventana');
   var resultadoGuerra = updateGuerraSheet();
 
   if (CFG.RUNGUERRA_VENTANA_SYNC_CSV) {
