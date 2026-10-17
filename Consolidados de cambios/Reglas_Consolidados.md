@@ -84,11 +84,20 @@ Las secciones anteriores dicen cómo se trabaja un consolidado. Esta dice dónde
 - **Los pendientes no viven en la viñeta.** Van en la sección «Abiertos» al inicio del archivo, que se actualiza; al cumplirse, se borra la línea y queda la viñeta del cambio.
 - Si un cambio corrige un diagnóstico o una entrada anterior, la viñeta empieza señalándolo (regla 9).
 - Los `.html` y `.js` pueden dejar una línea corta que remita al contexto (`[→ Contexto_Base_Web.md §PFxxx]`), no el historial.
+- **Dónde va una entrada nueva (fecha > archivo):**
+  1. Busca la sección `## DD-mmm-AAAA` de la fecha del cambio (meses: ene, feb, mar, abr, may, jun, jul, ago, sep, oct, nov, dic). Si no existe, créala en su lugar, entre la fecha posterior y la anterior (la más reciente arriba). El encabezado puede llevar una aclaración entre paréntesis, por ejemplo `## 28-sep-2026 (Fase 5b, tandas D, C, B y A)`.
+  2. Dentro de la fecha, **la viñeta empieza por su archivo principal entre comillas invertidas**: `- **`perfil.html` · Título corto.** …`. El verificador lee ese primer archivo, así que no se antepone nada antes (ni «Backend», ni la versión de `sw.js`; esas van después).
+  3. Inserta la viñeta **junto a las demás del mismo archivo** (después de la última de ese archivo en esa fecha). Si el archivo aún no tiene entradas esa fecha, ábrele su lugar en orden alfabético (A-Z, sin distinguir mayúsculas; `assets/styles.css` ordena por su ruta completa). Las entradas de un mismo archivo van una después de otra; **no se funden en una sola viñeta** ni se meten en una sección por archivo.
+  4. Un cambio que toca varios archivos sigue siendo una sola viñeta, bajo su primer archivo. Si lo principal no es un archivo (una decisión, una corrección de un diagnóstico, una medición), la viñeta empieza por texto en negrita sin archivo y va **al final de esa fecha**.
+  5. Un cambio que abarca dos fechas se pone bajo la más reciente y la otra se anota en el título (por ejemplo «(04 y 05-sep)»).
+  6. Lo que no tiene fecha conocida va en la sección final «Sin fecha en el comentario original», con el mismo criterio de archivo.
+  7. Las secciones «Abiertos» (al inicio) y «Sin fecha…» (al final) son las únicas que no son una fecha. **No se crean secciones por archivo ni por tema.** Al trasladar texto largo del historial, cada entrada corta se reparte en la fecha que le corresponde.
+- **Verificación obligatoria al añadir viñetas:** corre `npm run check-changelog` (o `node scripts/verificar-changelog.js`) en el repo `Web`; falla si una fecha está fuera de orden, si hay secciones que no son fecha, si las entradas de un archivo no están juntas, si los archivos no van de la A a la Z o si las entradas sin archivo no quedan al final de su fecha. No dar por terminada la tanda con el verificador en rojo.
 
 **Orden al terminar una tanda de cambios:**
 1. Subir el código al repo que corresponda.
 2. Escribir en el contexto el funcionamiento, las decisiones y lo probado.
-3. Añadir la viñeta al `CHANGELOG.md` (si es frontend) y actualizar «Abiertos».
+3. Añadir la viñeta al `CHANGELOG.md` (si es frontend) en su fecha y archivo, correr `npm run check-changelog` y actualizar «Abiertos».
 4. Marcar lo hecho en el consolidado del que salió el cambio, si lo hay.
 5. Dar la lista de archivos modificados o creados (con su commit) y los recordatorios que apliquen: pull en GitHub Desktop, `subirBaseDesdeGithub()`, pasar el `Generador` a mano.
 6. Si con esto el consolidado queda aplicado por completo, informarlo y preguntar si se borra (sección 1).
