@@ -9,7 +9,7 @@
 
 // CONTEXTO: VENTANA DE GUERRA PROTEGIDA 4:00-4:59 a.m. Lima. En esa hora solo corre runGuerra() ligera; ninguna otra ejecución pesada empieza ni continúa (desde 20 min antes). [→ Contexto_Base_Web.md §B001]
 
-// CONTEXTO: VERSIONES PROGRAMADA / MANUAL (runPendientesYMensajes y runGuerraRapido). Programada = lee checkpoint sin API; Manual = roster fresco + API. [→ Contexto_Base_Web.md §B002]
+// CONTEXTO: VERSIONES PROGRAMADA / MANUAL (runPendientesYMensajes y runGuerraRapido). Programada = lee checkpoint sin API; Manual (SIN sufijo desde el 17-oct-2026) = roster fresco + API. [→ Contexto_Base_Web.md §B002]
 
 // FIX (22-ago-2026): "runGuerraRapido se cancela por excederse en el [→ Contexto_Base_Web.md §B003]
 var PASOS_RUNGUERRARAPIDO = [
@@ -651,28 +651,23 @@ function runPendientesYMensajesProgramado() {
 }
 
 /**
- * runPendientesYMensajesManual() - VERSION PARA CORRER A MANO (05-oct-2026, pedido usuario). [→ Contexto_Base_Web.md §B092]
+ * runPendientesYMensajes() - VERSION PARA CORRER A MANO, SIN SUFIJO (17-oct-2026, pedido usuario; antes se llamaba
+ * runPendientesYMensajesManual() y esta era solo su alias). Fuerza el roster fresco y usa la API. Devuelve true si
+ * corrio y false si no pudo empezar (ventana protegida u otra ejecucion): 41_Web_ActualizarRoster.gs usa ese valor.
+ * NO debe tener activador: el del disparador es runPendientesYMensajesProgramado(). [→ Contexto_Base_Web.md §PF091]
  */
-function runPendientesYMensajesManual() {
-  if (!_adquirirLockEjecucion('runPendientesYMensajesManual')) return false;
+function runPendientesYMensajes() {
+  if (!_adquirirLockEjecucion('runPendientesYMensajes')) return false;
   try {
-    Logger.log('=== runPendientesYMensajesManual INICIO (roster fresco, con API) ===');
+    Logger.log('=== runPendientesYMensajes INICIO (manual: roster fresco, con API) ===');
     forzarRosterFrescoAhora();
     _pendientesYMensajesNucleo_(false);
     _actualizarIndiceTrasPendientes_();  // NUEVO 05-oct-2026 (AVISO 7)
-    Logger.log('=== runPendientesYMensajesManual FIN ===');
+    Logger.log('=== runPendientesYMensajes FIN ===');
     return true;
   } finally {
     _liberarLockEjecucion();
   }
-}
-
-/**
- * runPendientesYMensajes() - ALIAS de runPendientesYMensajesManual() (conservado para no romper llamadas por nombre).
- * Los pasos de PASOS_RUNALL/PASOS_RUNUPDATE ya NO lo usan (llaman a _pendientesYMensajesNucleo_()).
- */
-function runPendientesYMensajes() {
-  runPendientesYMensajesManual();
 }
 
 /** Candado propio de runPendientesYMensajesProgramado(): auto-expira a los CFG.LOCK_MAX_DURACION_MS. */
@@ -745,22 +740,16 @@ function runGuerraRapidoProgramado() {
 }
 
 /**
- * runGuerraRapidoManual() - VERSION PARA CORRER A MANO (05-oct-2026, pedido usuario). [→ Contexto_Base_Web.md §B094]
+ * runGuerraRapido() - VERSION PARA CORRER A MANO, SIN SUFIJO (17-oct-2026, pedido usuario; antes se llamaba
+ * runGuerraRapidoManual() y esta era solo su alias). NO debe tener activador: el del disparador es
+ * runGuerraRapidoProgramado(). [→ Contexto_Base_Web.md §PF091]
  */
-function runGuerraRapidoManual() {
+function runGuerraRapido() {
   if (!_adquirirLockEjecucion('runGuerraRapido')) return;
   var props = PropertiesService.getScriptProperties();
   props.deleteProperty('RUNGUERRARAPIDO_SIN_API');
   props.setProperty('RUNGUERRARAPIDO_PASO', '0');
   _continuarRunGuerraRapido();
-}
-
-/**
- * runGuerraRapido() - ALIAS de runGuerraRapidoManual() (conservado para no romper el disparador ya instalado ni
- * llamadas por nombre). El disparador debe pasar a runGuerraRapidoProgramado() (ver AVISOS ABIERTOS, arriba).
- */
-function runGuerraRapido() {
-  runGuerraRapidoManual();
 }
 
 /**

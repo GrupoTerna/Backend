@@ -1,6 +1,6 @@
 // ==============================================================================
 // 41_Web_ActualizarRoster.gs
-// Actualización manual del roster, Pendientes y Mensajes de guerra pedida desde la web por un admin (equivale a runPendientesYMensajesManual(); creado 05-oct-2026). [→ Contexto_Base_Web.md §41B001]
+// Actualización manual del roster, Pendientes y Mensajes de guerra pedida desde la web por un admin (equivale a runPendientesYMensajes(); creado 05-oct-2026). [→ Contexto_Base_Web.md §41B001]
 // ==============================================================================
 //
 // Permiso 'Actualizar roster', acciones POST/GET, estados, reglas para proteger la API y la captura de guerra, y AVISOS 1-5 (sin probar en Apps Script real; AVISO 5 PENDIENTE DE DEFINIR: invalidar la cache de webAdminContenido). [→ Contexto_Base_Web.md §41B002]
@@ -105,7 +105,7 @@ function _webAdminEstadoActualizacion(token) {
 // Ejecucion (la dispara el activador de un solo uso)
 // ---------------------------------------------------------------------------
 
-// Handler del disparador de un solo uso: corre runPendientesYMensajesManual() y deja el resultado en el estado. [→ Contexto_Base_Web.md §41B005]
+// Handler del disparador de un solo uso: corre runPendientesYMensajes() y deja el resultado en el estado. [→ Contexto_Base_Web.md §41B005]
 function _webActualizarRosterEjecutar() {
   _borrarTriggersDeContinuacion(WEB_ACTROSTER_HANDLER);
 
@@ -123,7 +123,7 @@ function _webActualizarRosterEjecutar() {
 
   var resultado;
   try {
-    var corrio = runPendientesYMensajesManual();
+    var corrio = runPendientesYMensajes();
     if (corrio === false) {
       resultado = { estado: 'omitido', mensaje: _webActRosterMotivoNoInicio_() + ' Intenta de nuevo mas tarde.' };
     } else if (typeof PENDIENTES_ABORTADO_POR_API !== 'undefined' && PENDIENTES_ABORTADO_POR_API) {
@@ -267,7 +267,7 @@ function _webActRosterEjecucionEnCurso_(ahora) {
   return '';
 }
 
-/** Texto para cuando runPendientesYMensajesManual() no empezo (ventana protegida u otra ejecucion). */
+/** Texto para cuando runPendientesYMensajes() no empezo (ventana protegida u otra ejecucion). */
 function _webActRosterMotivoNoInicio_() {
   var ahora = Date.now();
   if (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_(new Date(ahora)).protegida) return _webActRosterTextoVentana_();
