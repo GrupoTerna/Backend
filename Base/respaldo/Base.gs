@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 17:13:44 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 17:41:38 */
 
 
 
@@ -29432,14 +29432,17 @@ function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
 
     if (!_CRUCE_META_JSON_IDX[nombre]) {
       var idx = {};
+      var _medT = Date.now(), _medN = 0; // 17-oct-2026 (PF091): medición del listado de Drive (solo Logger.log); [→ Contexto_Base_Web.md §PF091]
       var carpeta = _getSubcarpetaEndpoint_(_getCarpetaParaClan(nombreClan), 'currentriverrace');
       var it = _archivosConSubcarpetas_(carpeta); // PF074: incluye subcarpetas de temporada y semana
       while (it.hasNext()) {
         var f = it.next();
+        _medN++;
         var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
         if (m) idx[Number(m[1]) + '|' + Number(m[2]) + '|' + Number(m[3])] = f;
       }
       _CRUCE_META_JSON_IDX[nombre] = idx;
+      Logger.log('[TorneosMed] listado Drive currentriverrace de "' + nombre + '": ' + _medN + ' archivo(s) en ' + (Date.now() - _medT) + 'ms');
     }
     var archivo = _CRUCE_META_JSON_IDX[nombre][Number(temporada) + '|' + (periodIdxToSectionIndex(pIdx) + 1) + '|' + pIdx];
     var res = null;
@@ -45121,15 +45124,22 @@ function _webGanadoresTorneoMasReciente(ss, opciones) {
   if (!idMasReciente) return null;
 
   // FASE 23 (30/08/2026, Tag_Tor_2): mismo fusionado que actualizarDocGanadoresTorneo() (28_Torneos_Docs.gs): si el torneo más reciente pertenece a un grupo de continuación, se fusionan Victorias y Puesto de todo el grupo antes de tomar el top 3; FASE 24 (02-sep-2026): _getParticipantesFusionadosPorTorneo() ya aplica las resoluciones vigentes y _topNTrasResoluciones() arma el top 3 real (excluye descalificados, respeta el Puesto_Final de un desempate) en vez del slice(0,3) de antes. [→ Contexto_Base_Web.md §37B156]
+  var _medT0 = Date.now(), _medPaso = Date.now(), _med = []; // 17-oct-2026 (PF091): medición por paso, solo Logger.log; [→ Contexto_Base_Web.md §PF091]
+  function _medMarca(n) { var a = Date.now(); _med.push(n + '=' + (a - _medPaso) + 'ms'); _medPaso = a; }
   var participantesGrupo = _getParticipantesFusionadosPorTorneo(ss, idMasReciente).participantes;
+  _medMarca('participantes');
   var top3 = _topNTrasResoluciones(participantesGrupo, 3);
 
   var ctxReal = _getCtx();
   var temporadaMostrar = _getTemporadaMostrarExtra(ss, ctxReal);
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaMostrar);
+  _medMarca('ctx');
   var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx); // 19-sep-2026: { ataques, exentos }
+  _medMarca('ataquesSemana');
   var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal);
+  _medMarca('trofeos');
   var minTPorTag = _getMinTClanMaps().byTag;
+  _medMarca('minT');
   // FIX 19-sep-2026: este endpoint había quedado fuera del cambio "el 16 fijo debe leer el Ataques configurado por clan en T_Lista" (actualizarDocGanadoresTorneo() ya usaba _ataquesMinTorneoPorNombreClan()/_cumpleAtaquesTorneoClan()); con Ataques en 16 coincidía, pero con otro valor configurado la web mostraba un top3 distinto al del documento real. [→ Contexto_Base_Web.md §37B157]
   var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan();
 
@@ -45166,6 +45176,8 @@ function _webGanadoresTorneoMasReciente(ss, opciones) {
       };
     });
 
+  _medMarca('top3yLista');
+  Logger.log('[TorneosMed] _webGanadoresTorneoMasReciente total=' + (Date.now() - _medT0) + 'ms; ' + _med.join(', '));
   return { idTorneo: idMasReciente, fecha: fechaMasReciente.toISOString(), top3: top3Filtrado, participantes: participantes };
 }
 
