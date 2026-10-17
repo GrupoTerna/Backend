@@ -3549,9 +3549,52 @@ function _webTorneosJugador(tagBuscado, opciones) {
   return { ok: true, torneos: torneos };
 }
 
+// _webOcultasIndice_() (17-oct-2026, PF091): { dir: {tagNorm: estadoEnMinusculas}, inact: {tagNorm: true}, inactLeida: bool } armado una sola vez por
+// ejecución de Apps Script (la variable global se reinicia en cada ejecución). dir sale de _webLeerDirectorioComoDC() (hoja o Backup_Directorio.csv, como
+// la búsqueda original); inact, de la columna Tag de la hoja Inactivos, y solo si la hoja se pudo leer (si no, inactLeida=false y quien llama usa la
+// búsqueda original, que prueba Backup_Inactivos.csv). Devuelve null si no se pudo leer el Directorio. Para el primer registro de un tag en Directorio
+// vale lo mismo que en la búsqueda original (la primera fila gana).
+var _WEB_OCULTAS_IDX_ = null;
+function _webOcultasIndice_() {
+  if (_WEB_OCULTAS_IDX_) return _WEB_OCULTAS_IDX_;
+  var idx = { dir: {}, inact: {}, inactLeida: false };
+  var filas = _webLeerDirectorioComoDC().filas || [];
+  for (var i = 0; i < filas.length; i++) {
+    var t = cleanTag(filas[i][DC.TAG - 1]);
+    if (t && !idx.dir.hasOwnProperty(t)) idx.dir[t] = String(filas[i][DC.ESTADO - 1] || '').trim().toLowerCase();
+  }
+  try {
+    var shInact = _getSs().getSheetByName(CFG.SHEETS.INACTIVOS);
+    if (shInact && shInact.getLastRow() >= 2) {
+      var tags = shInact.getRange(2, IC.TAG, shInact.getLastRow() - 1, 1).getValues();
+      for (var j = 0; j < tags.length; j++) {
+        var ti = cleanTag(String(tags[j][0] || '').trim());
+        if (ti) idx.inact[ti] = true;
+      }
+      idx.inactLeida = true;
+    }
+  } catch (eInact) { idx.inactLeida = false; }
+  _WEB_OCULTAS_IDX_ = idx;
+  return idx;
+}
+
 // _webCuentaOcultaParaVisitante(): NUEVO (28-sep-2026, Fase 5b tanda A3). true si el Tag es de una cuenta INACTIVA y quien pregunta NO es admin (opciones.esAdmin distinto de true). Mismo criterio exacto que _webPerfilJugador(): la cuenta está en la hoja Inactivos… [→ Contexto_Base_Web.md §37B278]
 function _webCuentaOcultaParaVisitante(tagBuscado, opciones) {
   if (opciones && opciones.esAdmin === true) return false;
+  // 17-oct-2026 (PF091, opción a): índice en memoria de Directorio e Inactivos, armado UNA vez por ejecución. Antes cada llamada leía la hoja
+  // Directorio completa (y, si el tag no estaba, la de Inactivos) y _webHistorialTorneos()/_webTorneos() la llaman por cada participante de cada
+  // torneo. Mismo resultado que la búsqueda de abajo; si el índice no se puede armar, se usa esa búsqueda como antes. [→ Contexto_Base_Web.md §PF091]
+  try {
+    var idxOc = _webOcultasIndice_();
+    if (idxOc) {
+      var tagOc = cleanTag(tagBuscado);
+      if (!tagOc) return false;
+      if (idxOc.dir.hasOwnProperty(tagOc)) return idxOc.dir[tagOc] === 'inactivo';
+      if (idxOc.inactLeida) return idxOc.inact.hasOwnProperty(tagOc);
+    }
+  } catch (eIdxOc) {
+    Logger.log('[WebAPI] _webCuentaOcultaParaVisitante: el índice falló (' + eIdxOc.message + '); se usa la búsqueda directa.');
+  }
   try {
     var hallazgo = _webBuscarFilaDirectorioPorTagConOrigen(tagBuscado);
     if (!hallazgo || !hallazgo.fila) return false;
