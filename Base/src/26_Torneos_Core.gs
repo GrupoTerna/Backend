@@ -1066,6 +1066,8 @@ var TORNEO_EN_VIVO_DURACION_MS = 2 * 60 * 60 * 1000; // 2 horas
 // como máximo cada 15 min y una vez más al cerrar la ventana. [→ Contexto_Base_Web.md §PF091]
 var TORNEO_EN_VIVO_PUBLICAR_CADA_MS = 15 * 60 * 1000;
 var TORNEO_EN_VIVO_PUB_PROP         = 'TORNEO_EN_VIVO_PUB_MS';
+// 17-oct-2026 (PF091): marca de inicio del tick en curso, para que un tick no arranque mientras el anterior sigue corriendo (ver _tickTorneoEnVivo()).
+var TORNEO_EN_VIVO_TICK_PROP        = 'TORNEO_EN_VIVO_TICK_MS';
 
 // ----- Funciones manuales / punto de entrada -----
 
@@ -1740,6 +1742,26 @@ function _instalarActivadorTorneoEnVivo(inicio) {
  * _tickTorneoEnVivo() [→ Contexto_Base_Web.md §26B134]
  */
 function _tickTorneoEnVivo() {
+  // 17-oct-2026 (PF091): los ticks son cada 5 min y procesarTorneos() ya tarda ~270-320 s, así que el siguiente tick empezaba con el anterior
+  // todavía corriendo (registro de las 17:44:58 y 17:49:58): dos ejecuciones escribiendo los mismos documentos y compitiendo por Drive.
+  // Si el tick anterior marcó su inicio hace menos de límite + 20 s, este se omite. La marca se borra al terminar; si el anterior murió por
+  // tiempo no la borra, y por eso caduca sola. [→ Contexto_Base_Web.md §PF091]
+  var propsG = PropertiesService.getScriptProperties();
+  var ahoraG = Date.now();
+  var inicioPrevioG = Number(propsG.getProperty(TORNEO_EN_VIVO_TICK_PROP)) || 0;
+  if (inicioPrevioG && (ahoraG - inicioPrevioG) < CFG.PLATAFORMA_LIMITE_EJECUCION_MS + 20000) {
+    Logger.log('[TorneoEnVivo] El tick anterior sigue corriendo (empezó hace ' + Math.round((ahoraG - inicioPrevioG) / 1000) + ' s); este tick se omite.');
+    return;
+  }
+  propsG.setProperty(TORNEO_EN_VIVO_TICK_PROP, String(ahoraG));
+  try {
+    _tickTorneoEnVivoCuerpo_();
+  } finally {
+    propsG.deleteProperty(TORNEO_EN_VIVO_TICK_PROP);
+  }
+}
+
+function _tickTorneoEnVivoCuerpo_() {
   var props = PropertiesService.getScriptProperties();
   var inicioStr = props.getProperty(TORNEO_EN_VIVO_PROP);
   var inicio = inicioStr ? Number(inicioStr) : null;
