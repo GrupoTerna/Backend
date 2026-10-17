@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 17:41:38 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 18:03:31 */
 
 
 
@@ -33308,6 +33308,8 @@ var TORNEO_EN_VIVO_DURACION_MS = 2 * 60 * 60 * 1000; // 2 horas
 // como máximo cada 15 min y una vez más al cerrar la ventana. [→ Contexto_Base_Web.md §PF091]
 var TORNEO_EN_VIVO_PUBLICAR_CADA_MS = 15 * 60 * 1000;
 var TORNEO_EN_VIVO_PUB_PROP         = 'TORNEO_EN_VIVO_PUB_MS';
+// 17-oct-2026 (PF091): marca de inicio del tick en curso, para que un tick no arranque mientras el anterior sigue corriendo (ver _tickTorneoEnVivo()).
+var TORNEO_EN_VIVO_TICK_PROP        = 'TORNEO_EN_VIVO_TICK_MS';
 
 // ----- Funciones manuales / punto de entrada -----
 
@@ -33982,6 +33984,26 @@ function _instalarActivadorTorneoEnVivo(inicio) {
  * _tickTorneoEnVivo() [→ Contexto_Base_Web.md §26B134]
  */
 function _tickTorneoEnVivo() {
+  // 17-oct-2026 (PF091): los ticks son cada 5 min y procesarTorneos() ya tarda ~270-320 s, así que el siguiente tick empezaba con el anterior
+  // todavía corriendo (registro de las 17:44:58 y 17:49:58): dos ejecuciones escribiendo los mismos documentos y compitiendo por Drive.
+  // Si el tick anterior marcó su inicio hace menos de límite + 20 s, este se omite. La marca se borra al terminar; si el anterior murió por
+  // tiempo no la borra, y por eso caduca sola. [→ Contexto_Base_Web.md §PF091]
+  var propsG = PropertiesService.getScriptProperties();
+  var ahoraG = Date.now();
+  var inicioPrevioG = Number(propsG.getProperty(TORNEO_EN_VIVO_TICK_PROP)) || 0;
+  if (inicioPrevioG && (ahoraG - inicioPrevioG) < CFG.PLATAFORMA_LIMITE_EJECUCION_MS + 20000) {
+    Logger.log('[TorneoEnVivo] El tick anterior sigue corriendo (empezó hace ' + Math.round((ahoraG - inicioPrevioG) / 1000) + ' s); este tick se omite.');
+    return;
+  }
+  propsG.setProperty(TORNEO_EN_VIVO_TICK_PROP, String(ahoraG));
+  try {
+    _tickTorneoEnVivoCuerpo_();
+  } finally {
+    propsG.deleteProperty(TORNEO_EN_VIVO_TICK_PROP);
+  }
+}
+
+function _tickTorneoEnVivoCuerpo_() {
   var props = PropertiesService.getScriptProperties();
   var inicioStr = props.getProperty(TORNEO_EN_VIVO_PROP);
   var inicio = inicioStr ? Number(inicioStr) : null;
@@ -37740,9 +37762,11 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
   }
   var temporadaMostrar = _getTemporadaMostrarExtra(ss, ctxReal);
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaMostrar);
+  // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers (antes cada uno los leía por su cuenta, ~20 s c/u); [→ Contexto_Base_Web.md §PF091]
+  var guerraDataUnica = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
 
   // Ataques: FIX (05-ago-2026) — antes exigía 16 ataques en la semana REAL [→ Contexto_Base_Web.md §28B014]
-  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada); // 19-sep-2026: { ataques, exentos }
+  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada, guerraDataUnica); // 19-sep-2026: { ataques, exentos }
   // 19-sep-2026 (pedido del usuario): el mínimo de ataques sale del Ataques configurado por clan en T_Lista
   // (ya no un 16 fijo); ver _ataquesMinTorneoPorNombreClan() y _cumpleAtaquesTorneoClan().
   var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan();
@@ -37765,7 +37789,7 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
   var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
   if (!shDir || shDir.getLastRow() < 2) { doc.saveAndClose(); return; }
 
-  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal);
+  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal, guerraDataUnica);
   var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
 
   // Un array de calificados por cada clan (mismo orden que clanesOrden).
@@ -37857,8 +37881,10 @@ function actualizarDocGanadoresTorneo(ctxParam) {
   var ctxReal = ctxParam || _getCtx();
   var temporadaMostrar = _getTemporadaMostrarExtra(ss, ctxReal);
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaMostrar);
-  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada); // 19-sep-2026: { ataques, exentos }
-  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal);
+  // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers (antes cada uno los leía por su cuenta, ~20 s c/u); [→ Contexto_Base_Web.md §PF091]
+  var guerraDataUnica = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
+  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada, guerraDataUnica); // 19-sep-2026: { ataques, exentos }
+  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal, guerraDataUnica);
   var minTPorTag = _getMinTClanMaps().byTag;
   var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan(); // 19-sep-2026: Ataques de T_Lista por clan
 
@@ -38362,9 +38388,9 @@ function _getAtaquesSemanaActualPorTag(ctx, temporadaReal) {
 /**
  * _getAtaquesYExentosSemanaActualPorTag(ctx, temporadaReal) [→ Contexto_Base_Web.md §28B052]
  */
-function _getAtaquesYExentosSemanaActualPorTag(ctx, temporadaReal) {
+function _getAtaquesYExentosSemanaActualPorTag(ctx, temporadaReal, guerraDataPrecalculada) {
   var mapa = {};
-  var guerraData = _getDatosGuerraParaControl(ctx, temporadaReal);
+  var guerraData = guerraDataPrecalculada || _getDatosGuerraParaControl(ctx, temporadaReal); // 17-oct-2026 (PF091): 3.er parámetro opcional
   for (var tag in guerraData) {
     var semData = guerraData[tag] ? guerraData[tag][ctx.sectionIndex] : null;
     if (!semData) continue;
@@ -38720,9 +38746,9 @@ function _getTemporadaMostrarExtra(ss, ctxReal) {
 /**
  * _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaObjetivo, ctxReal) [→ Contexto_Base_Web.md §28B077]
  */
-function _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaObjetivo, ctxReal) {
+function _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaObjetivo, ctxReal, guerraDataPrecalculada) {
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaObjetivo);
-  var guerraData = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
+  var guerraData = guerraDataPrecalculada || _getDatosGuerraParaControl(ctx, ctxReal.temporada); // 17-oct-2026 (PF091): 3.er parámetro opcional
   var mapa = {};
 
   for (var tag in guerraData) {
@@ -39095,7 +39121,9 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
 
   var temporadaMostrar = _getTemporadaMostrarExtra(ss, ctxReal);
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaMostrar);
-  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada); // 19-sep-2026: { ataques, exentos }
+  // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers (antes cada uno los leía por su cuenta, ~20 s c/u); [→ Contexto_Base_Web.md §PF091]
+  var guerraDataUnica = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
+  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada, guerraDataUnica); // 19-sep-2026: { ataques, exentos }
   var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan(); // 19-sep-2026 (pedido del usuario): Ataques de T_Lista por clan
 
   var bloqueBarcos = _getConfigMasRecienteCategoria('Torneo');
@@ -39115,7 +39143,7 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
     return;
   }
 
-  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal);
+  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal, guerraDataUnica);
   var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
 
   // --- Requisitos, al INICIO del documento ---
@@ -45134,9 +45162,12 @@ function _webGanadoresTorneoMasReciente(ss, opciones) {
   var temporadaMostrar = _getTemporadaMostrarExtra(ss, ctxReal);
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaMostrar);
   _medMarca('ctx');
-  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx); // 19-sep-2026: { ataques, exentos }
+  // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers (antes cada uno los leía por su cuenta, ~20 s c/u); [→ Contexto_Base_Web.md §PF091]
+  var guerraDataUnica = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
+  _medMarca('datosGuerra');
+  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada, guerraDataUnica); // 19-sep-2026: { ataques, exentos }
   _medMarca('ataquesSemana');
-  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal);
+  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal, guerraDataUnica);
   _medMarca('trofeos');
   var minTPorTag = _getMinTClanMaps().byTag;
   _medMarca('minT');
