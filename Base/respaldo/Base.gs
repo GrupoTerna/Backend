@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 11:31:46 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 11:59:10 */
 
 
 
@@ -52,7 +52,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
 
 // CONTEXTO: VENTANA DE GUERRA PROTEGIDA 4:00-4:59 a.m. Lima. En esa hora solo corre runGuerra() ligera; ninguna otra ejecución pesada empieza ni continúa (desde 20 min antes). [→ Contexto_Base_Web.md §B001]
 
-// CONTEXTO: VERSIONES PROGRAMADA / MANUAL (runPendientesYMensajes y runGuerraRapido). Programada = lee checkpoint sin API; Manual (SIN sufijo desde el 17-oct-2026) = roster fresco + API. [→ Contexto_Base_Web.md §B002]
+// CONTEXTO: VERSIONES PROGRAMADA / MANUAL (runPendientesYMensajes, runGuerraRapido y, desde el 17-oct-2026, runUpdate). Programada = lee checkpoint sin API (runUpdateProgramado sigue pidiendo /players); Manual (SIN sufijo desde el 17-oct-2026) = roster fresco + API. [→ Contexto_Base_Web.md §B002]
 
 // FIX (22-ago-2026): "runGuerraRapido se cancela por excederse en el [→ Contexto_Base_Web.md §B003]
 var PASOS_RUNGUERRARAPIDO = [
@@ -63,7 +63,7 @@ var PASOS_RUNGUERRARAPIDO = [
       _fetchClanesBasicoSinApi();
     } else {
       forzarRosterFrescoAhora();
-      _fetchClanesBasico();
+      capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'runGuerraRapido paso 0');
     }
   },
   // Directorio (sin /players) — roster 100% fresco desde acá en adelante.
@@ -398,7 +398,8 @@ var PASOS_RUNUPDATE = [
   },
   // FASE 4 (05-ago-2026, plan de migración Plantillas -> Menú): igual que [→ Contexto_Base_Web.md §B064]
   function () { syncPlantillasDesdeDrive(); },
-  function () { _pendientesYMensajesNucleo_(); },
+  // PF091 (17-oct-2026): en la version programada (bandera RUNUPDATE_SIN_API) no se vuelve a pasar por la captura.
+  function () { _pendientesYMensajesNucleo_(PropertiesService.getScriptProperties().getProperty('RUNUPDATE_SIN_API') === '1'); },
   // FIX (23-ago-2026, pedido usuario): "escribí una nota en el calendario, [→ Contexto_Base_Web.md §B065]
   function () {
     try { updateCalendario2(); }
@@ -504,6 +505,9 @@ function cancelarEjecucion() {
   // programada de Pendientes/Mensajes.
   props.deleteProperty('RUNGUERRARAPIDO_SIN_API');
   props.deleteProperty('RUNGUERRARAPIDO_SIN_API_TS');
+  // PF091 (17-oct-2026): bandera de la version programada de runUpdate.
+  props.deleteProperty('RUNUPDATE_SIN_API');
+  props.deleteProperty('RUNUPDATE_SIN_API_TS');
   props.deleteProperty('PYM_PROGRAMADO_EN_CURSO');
 
   // Borra también el progreso de /players guardado en Drive (ver [→ Contexto_Base_Web.md §B081]
@@ -536,6 +540,8 @@ function demolerTodoElSpreadsheet() {
     propsCheckpoint.deleteProperty('RUNALL_REINTENTO');
     propsCheckpoint.deleteProperty('RUNUPDATE_PASO');
     propsCheckpoint.deleteProperty('RUNUPDATE_REINTENTO');
+    propsCheckpoint.deleteProperty('RUNUPDATE_SIN_API');     // PF091 (17-oct-2026)
+    propsCheckpoint.deleteProperty('RUNUPDATE_SIN_API_TS');
     Logger.log('[Demoler] Checkpoint de runAll()/runUpdate() borrado.');
   } catch (e) {
     Logger.log('[Demoler] AVISO: no se pudo borrar el checkpoint de runAll()/runUpdate() (' + e.message + '). Se continúa igual.');
@@ -617,7 +623,7 @@ function forzarRosterFrescoAhora() {
  * _pendientesYMensajesNucleo_(sinApi) [→ Contexto_Base_Web.md §B089]
  */
 function _pendientesYMensajesNucleo_(sinApi) {
-  if (sinApi !== true) _fetchClanesBasico();  // Asegura el cache básico actualizado (Pendientes/Mensajes no usan /players)
+  if (sinApi !== true) capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'pendientesYMensajesNucleo');  // Asegura el cache básico actualizado (Pendientes/Mensajes no usan /players)
   updatePendientesSheet();   // Reconstruye Pendientes desde Guerra + cache
   runGenerarMensajes();      // Reconstruye Mensajes desde Pendientes
 }
@@ -874,34 +880,93 @@ function _continuarRunAll() {
 }
 
 /**
- * runUpdate() - Actualización periódica (cada 2 horas). [→ Contexto_Base_Web.md §B103]
+ * runUpdateProgramado() - VERSION PARA EL DISPARADOR (17-oct-2026, pedido usuario; PF091). Mismo patron que
+ * runGuerraRapidoProgramado(): lee los clanes SOLO del checkpoint que dejo la captura (edad maxima
+ * CLANES_SIN_API_MAX_EDAD_MS) y NO pide /clans ni /currentriverrace a la API. /players SI se sigue pidiendo (es otro trabajo,
+ * por tandas). Si no hay checkpoint utilizable, avisa y no corre (se reintenta en el proximo disparo). Si no hubo captura nueva
+ * desde la ultima cadena completada con exito, no hace nada. Al terminar NO borra el checkpoint de clanes (lo siguen leyendo
+ * las otras versiones programadas); solo borra el progreso de /players. [→ Contexto_Base_Web.md §PF091]
  */
-function runUpdate() {
+function runUpdateProgramado() {
+  var props = PropertiesService.getScriptProperties();
+
+  // 1) Datos de clanes: solo del checkpoint, sin API. Se lee ANTES de pedir el candado global: si no hay nada que hacer,
+  //    esta funcion ni lo toca (no puede demorar ni cancelar a runGuerra()).
+  if (!_fetchClanesBasicoSinApi()) {
+    Logger.log('[runUpdateProgramado] ABORTADO: no hay un checkpoint de clanes utilizable. ' +
+      'No se toco ninguna hoja; se reintenta en el proximo disparo.');
+    return;
+  }
+
+  // 2) Sin captura nueva desde la ultima cadena completada con exito: no se hace nada (mismo criterio que
+  //    runGuerraRapidoProgramado()). La hora de captura procesada se guarda al TERMINAR la cadena.
+  var tsCaptura = CLANES_SIN_API_TS_CARGADO;
+  var tsUltimo = Number(props.getProperty('RUNUPDATE_PROGRAMADO_ULTIMO_TS')) || 0;
+  if (tsCaptura > 0 && tsCaptura === tsUltimo) {
+    Logger.log('[runUpdateProgramado] Sin captura nueva desde la ultima vez (captura de ' +
+      _horaLimaCortaMs_(tsCaptura) + ' Lima). Sin accion.');
+    return;
+  }
+
+  // 3) Candado global (esta cadena escribe casi todas las hojas): bloqueado en la ventana protegida.
   if (!_adquirirLockEjecucion('runUpdate')) return;
-  PropertiesService.getScriptProperties().setProperty('RUNUPDATE_PASO', '0');
+  props.setProperty('RUNUPDATE_SIN_API', '1');
+  props.setProperty('RUNUPDATE_SIN_API_TS', String(tsCaptura));
+  props.setProperty('RUNUPDATE_PASO', '0');
   _continuarRunUpdate();
 }
 
 /**
- * _continuarRunUpdate() - punto de entrada de runUpdate() y de su trigger
+ * runUpdate() - VERSION PARA CORRER A MANO, SIN SUFIJO (17-oct-2026, pedido usuario; antes era la que usaba el activador diario,
+ * que ahora apunta a runUpdateProgramado()). Fuerza el roster fresco (forzarRosterFrescoAhora()) y pide los clanes a la API a
+ * traves de capturarApiClanes_(), ademas de /players. NO debe tener activador. [→ Contexto_Base_Web.md §B103]
+ */
+function runUpdate() {
+  if (!_adquirirLockEjecucion('runUpdate')) return;
+  var props = PropertiesService.getScriptProperties();
+  props.deleteProperty('RUNUPDATE_SIN_API');
+  props.deleteProperty('RUNUPDATE_SIN_API_TS');
+  props.setProperty('RUNUPDATE_PASO', '0');
+  forzarRosterFrescoAhora();
+  _continuarRunUpdate();
+}
+
+/**
+ * _continuarRunUpdate() - punto de entrada de las dos versiones de runUpdate (manual y programada) y de su trigger
  * de continuación automática (ver _continuarRunAll() para el mismo patrón).
  */
 function _continuarRunUpdate() {
-  var paso = parseInt(PropertiesService.getScriptProperties().getProperty('RUNUPDATE_PASO') || '0', 10);
-  Logger.log(paso === 0 ? '=== Actualización periódica INICIO ===' : '=== Actualización periódica CONTINÚA desde el paso ' + paso + '/' + PASOS_RUNUPDATE.length + ' ===');
+  var props = PropertiesService.getScriptProperties();
+  var paso = parseInt(props.getProperty('RUNUPDATE_PASO') || '0', 10);
+  var sinApi = props.getProperty('RUNUPDATE_SIN_API') === '1';
+  Logger.log((paso === 0 ? '=== Actualización periódica INICIO' : '=== Actualización periódica CONTINÚA desde el paso ' + paso + '/' + PASOS_RUNUPDATE.length) +
+    (sinApi ? ' [programada, sin /clans ni /currentriverrace]' : ' [manual, roster fresco]') + ' ===');
   try {
     var completo = _ejecutarPorTandas('RUNUPDATE', PASOS_RUNUPDATE, CFG.RUNUPDATE_PRESUPUESTO_MS, '_continuarRunUpdate');
     if (completo) {
       // Ver comentario equivalente en _continuarRunAll(): el progreso de [→ Contexto_Base_Web.md §B104]
       _borrarProgresoPlayers();
-      // FIX (06-ago-2026): mismo criterio que _borrarProgresoPlayers() —
-      // ver comentario equivalente en _continuarRunAll().
-      _borrarProgresoClanes();
+      if (sinApi) {
+        // Version programada: se marca la captura como procesada (salvo que Pendientes haya abortado por falta de datos de
+        // guerra: PENDIENTES_ABORT_TS lo pone/borra updatePendientesSheet() en cada corrida). El checkpoint de clanes NO se
+        // borra: lo leen runPendientesYMensajesProgramado() y runGuerraRapidoProgramado() hasta la siguiente captura.
+        var tsProc = props.getProperty('RUNUPDATE_SIN_API_TS');
+        if (tsProc && !props.getProperty('PENDIENTES_ABORT_TS')) props.setProperty('RUNUPDATE_PROGRAMADO_ULTIMO_TS', tsProc);
+        else Logger.log('[runUpdate] Pendientes abortó por falta de datos: NO se marca la captura como procesada, se reintenta.');
+        props.deleteProperty('RUNUPDATE_SIN_API');
+        props.deleteProperty('RUNUPDATE_SIN_API_TS');
+      } else {
+        // FIX (06-ago-2026): mismo criterio que _borrarProgresoPlayers() —
+        // ver comentario equivalente en _continuarRunAll().
+        _borrarProgresoClanes();
+      }
       _liberarLockEjecucion();
       Logger.log('=== Actualización periódica FIN ===');
     }
   } catch (e) {
-    PropertiesService.getScriptProperties().deleteProperty('RUNUPDATE_PASO');
+    props.deleteProperty('RUNUPDATE_PASO');
+    props.deleteProperty('RUNUPDATE_SIN_API');
+    props.deleteProperty('RUNUPDATE_SIN_API_TS');
     _borrarTriggersDeContinuacion('_continuarRunUpdate');
     _liberarLockEjecucion();
     Logger.log('[runUpdate] ERROR: ' + e.message + ' — lock liberado.');
@@ -1216,7 +1281,7 @@ function runResaltarDia() {
   Logger.log('[Calendario] Resaltando día actual...');
 
   // FIX (13-ago-2026, pedido del usuario): "el calendario trae la fecha [→ Contexto_Base_Web.md §B119]
-  _fetchClanesBasico();
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'runResaltarDia');
   resaltarDiaActual();
   Logger.log('[Calendario] Completado.');
 }
@@ -1536,7 +1601,10 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   var reintentoMismoPaso = props.getProperty(idEjecucion + '_REINTENTO') === '1';
 
   // IMPORTANTE: CACHE_CLAN_DATA es una variable global en memoria (no se [→ Contexto_Base_Web.md §B137]
-  if (paso > 0 && !reintentoMismoPaso &&
+  // PF091 (17-oct-2026): en una cadena PROGRAMADA (bandera <ID>_SIN_API) el cache se reconstruye del checkpoint aunque el paso se
+  // reintente o sea el 0 (runUpdateProgramado: su primer paso, _fetchAllClanData(), pediria la API si el checkpoint tiene mas de 45 min).
+  var cadenaSinApi = props.getProperty(idEjecucion + '_SIN_API') === '1';
+  if (((paso > 0 && !reintentoMismoPaso) || cadenaSinApi) &&
       (typeof CACHE_CLAN_DATA === 'undefined' || CACHE_CLAN_DATA === null)) {
     // CAMBIO (05-oct-2026): si la cadena es de una version PROGRAMADA (bandera <ID>_SIN_API = 1), el cache se [→ Contexto_Base_Web.md §B138]
     if (props.getProperty(idEjecucion + '_SIN_API') === '1') {
@@ -1554,7 +1622,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       }
     } else {
       Logger.log('[' + idEjecucion + '] Reanudando en el paso ' + paso + ': cache de clanes vacío (ejecución nueva), se reconstruye la parte básica antes de continuar.');
-      _fetchClanesBasico();
+      capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'tandas');
     }
   }
 
@@ -6720,7 +6788,7 @@ function _compararInactivosConCSV(ss) {
 
   // --- 3b. Membresía ACTUAL (en vivo) del clan Vetado, vía el cache de la [→ Contexto_Base_Web.md §05B064]
   var tagsEnClanVetado = {};
-  _fetchClanesBasico();
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'Backup_CSV');
   var clanVetadoCache = _getClanCache(CFG.VETADO_TAG);
   if (clanVetadoCache && clanVetadoCache.members) {
     for (var i = 0; i < clanVetadoCache.members.length; i++) {
@@ -8417,7 +8485,7 @@ var ACTIVADORES_CONFIG = [
   { handler: 'runGuerraRapidoProgramado',    tipo: 'horas',   cada: 2,  activo: true },  // ver AVISOS 2 y 6
 
   // ---- Mantenimiento diario (horas conservadas de installTriggers()) ----
-  { handler: 'runUpdate',                    tipo: 'diario',  hora: 12, activo: true },
+  { handler: 'runUpdateProgramado',          tipo: 'diario',  hora: 12, activo: true },  // 17-oct-2026 (PF091): antes 'runUpdate'; lee el checkpoint, sin /clans ni /currentriverrace
   { handler: 'runResaltarDia',               tipo: 'diario',  hora: 5,  activo: true },
   { handler: 'runFormato',                   tipo: 'diario',  hora: 11, activo: true },
   { handler: 'runSyncCSV',                   tipo: 'diario',  hora: 7,  activo: true },
@@ -8436,7 +8504,7 @@ var ACTIVADORES_CONFIG = [
 // Nombres que NO deben tener activador y que, si alguno sigue instalado, se retira al activar/desactivar. Desde el 17-oct-2026
 // son las versiones MANUALES (sin sufijo); los activadores usan las versiones ...Programado (antes eran disparadores de versiones
 // anteriores del proyecto). [-> Contexto_Base_Web.md §PF091]
-var ACTIVADORES_HANDLERS_LEGADOS_ = ['runGuerraRapido', 'runPendientesYMensajes'];
+var ACTIVADORES_HANDLERS_LEGADOS_ = ['runGuerraRapido', 'runPendientesYMensajes', 'runUpdate'];
 
 /**
  * activarTodosLosActivadores() [→ Contexto_Base_Web.md §08B004]
@@ -10646,7 +10714,7 @@ function _fetchPlayersData() {
 
   if (!CACHE_CLAN_DATA) {
     Logger.log('[API] _fetchPlayersData: CACHE_CLAN_DATA vacío, se obtiene primero la info básica de clanes.');
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'API_ClashRoyale');
   }
   if (_playersCompletoEnEstaEjecucion && CACHE_CLAN_DATA._players) {
     Logger.log('[API] _fetchPlayersData: /players ya se completó en esta ejecución, se omite repetir.');
@@ -18890,7 +18958,7 @@ function updateGuerraSheet() {
   // GUARDIA: sin cache no hay datos válidos — abortar para no corromper la [→ Contexto_Base_Web.md §17B035]
   if (!CACHE_CLAN_DATA) {
     Logger.log('[Guerra] cache vacío en esta ejecución, se intenta recuperar checkpoint de clanes...');
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'GuerraSheet');
   }
   if (!CACHE_CLAN_DATA || !Object.keys(CACHE_CLAN_DATA).length) {
     Logger.log('[Guerra] ABORT: no hay cache de clanes ni checkpoint recuperable. Llamar desde runGuerra() o runUpdate(), no directamente.');
@@ -20067,7 +20135,7 @@ function updatePendientesSheet() {
   // Garantizar que el cache esté disponible (Pendientes no usa /players)
   if (!CACHE_CLAN_DATA) {
     Logger.log('[Pendientes] Cache vacío, ejecutando _fetchClanesBasico()...');
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'GuerraSheet');
   }
 
   var ctx = _getCtx();
@@ -25067,7 +25135,7 @@ function corregirGuerraYControlDesdeControl2() {
 
   // FIX (20-ago-2026, pedido usuario): "corregirGuerraYControlDesdeControl2() [→ Contexto_Base_Web.md §18B064]
   try {
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionGuerra');
   } catch (eFetch) {
     Logger.log('[Corregir Guerra<-Control_2] AVISO: no se pudo refrescar el cache de clanes (' +
       eFetch.message + '). Se continúa igual -- Control/Control_2 podrían no repintarse al final.');
@@ -25180,7 +25248,7 @@ function aplicarCorreccionGuerraATemporadaSeleccionada() {
   }
 
   try {
-    _fetchClanesBasico(); // ver comentario equivalente en corregirGuerraYControlDesdeControl2()
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionGuerra'); // ver comentario equivalente en corregirGuerraYControlDesdeControl2()
   } catch (eFetch) {
     Logger.log('[Corregir Guerra<-RoyaleAPI] AVISO: no se pudo refrescar el cache de clanes (' +
       eFetch.message + '). Se continúa igual.');
@@ -25246,7 +25314,7 @@ function aplicarCorreccionGuerraATodasLasTemporadas() {
   }
 
   try {
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionGuerra');
   } catch (eFetch) {
     Logger.log('[Corregir Guerra<-RoyaleAPI] AVISO: no se pudo refrescar el cache de clanes (' +
       eFetch.message + '). Se continúa igual.');
@@ -26794,7 +26862,7 @@ function aprobarCorreccionesRiverRacePendientes() {
   var ss = _getSs();
 
   try {
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionRiverRace');
   } catch (eFetch) {
     Logger.log('[RiverRace] AVISO: no se pudo refrescar el cache de clanes (' + eFetch.message + '). Se continúa igual.');
   }
@@ -26989,7 +27057,7 @@ function _procesarVerificacionRiverRace(participantesPayload) {
 
   // Mismo motivo que corregirGuerraYControlDesdeControl2() (18_CorreccionGuerra.gs): [→ Contexto_Base_Web.md §19B014]
   try {
-    _fetchClanesBasico();
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionRiverRace');
   } catch (eFetch) {
     Logger.log('[RiverRace] AVISO: no se pudo refrescar el cache de clanes (' +
       eFetch.message + '). Se continúa igual -- puede fallar más abajo si _getCtx() queda sin datos.');
@@ -28468,7 +28536,7 @@ function updateControlSheet(ctxOverride) {
     }
     if (faltaCache) {
       Logger.log('[Control] cache incompleto en esta ejecución, se intenta recuperar checkpoint de clanes...');
-      _fetchClanesBasico();
+      capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'ControlCalendario');
     }
     for (var j = 0; j < CFG.TERNA_TAGS.length; j++) {
       if (!_getClanCache(CFG.TERNA_TAGS[j])) {
@@ -29896,7 +29964,7 @@ function _leerNotasCalendario2PorSemana(temporada) {
 }
 
 function _probarCentradoControl() {
-  _fetchClanesBasico();
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'ControlCalendario');
   updateControlSheet();
   _aplicarTablasYGridlines();
 }
@@ -32579,7 +32647,7 @@ function _esMiembroVigenteEnClanesFamilia(tag) {
   var tagNorm = String(tag || '').trim();
   if (!tagNorm) return false;
 
-  _fetchClanesBasico();
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'Torneos_Core');
   if (!CACHE_CLAN_DATA) return false;
 
   for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
@@ -53584,7 +53652,7 @@ function _getCelularesActualesPorTag() {
 
 // _listarMiembrosClanParaGestion(clanTag, accion): miembros del clan (API) cruzados con Directorio y filtrados según la acción. [→ Contexto_Base_Web.md §44B037]
 function _listarMiembrosClanParaGestion(clanTag, accion) {
-  _fetchClanesBasico();
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'BotWhatsApp');
   var clanData = _getClanCache(clanTag);
   if (!clanData) return [];
   var celularesPorTag = _getCelularesActualesPorTag();
