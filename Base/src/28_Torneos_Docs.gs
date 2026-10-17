@@ -114,9 +114,11 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
   }
   var temporadaMostrar = _getTemporadaMostrarExtra(ss, ctxReal);
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaMostrar);
+  // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers (antes cada uno los leía por su cuenta, ~20 s c/u); [→ Contexto_Base_Web.md §PF091]
+  var guerraDataUnica = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
 
   // Ataques: FIX (05-ago-2026) — antes exigía 16 ataques en la semana REAL [→ Contexto_Base_Web.md §28B014]
-  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada); // 19-sep-2026: { ataques, exentos }
+  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada, guerraDataUnica); // 19-sep-2026: { ataques, exentos }
   // 19-sep-2026 (pedido del usuario): el mínimo de ataques sale del Ataques configurado por clan en T_Lista
   // (ya no un 16 fijo); ver _ataquesMinTorneoPorNombreClan() y _cumpleAtaquesTorneoClan().
   var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan();
@@ -139,7 +141,7 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
   var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
   if (!shDir || shDir.getLastRow() < 2) { doc.saveAndClose(); return; }
 
-  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal);
+  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal, guerraDataUnica);
   var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
 
   // Un array de calificados por cada clan (mismo orden que clanesOrden).
@@ -231,8 +233,10 @@ function actualizarDocGanadoresTorneo(ctxParam) {
   var ctxReal = ctxParam || _getCtx();
   var temporadaMostrar = _getTemporadaMostrarExtra(ss, ctxReal);
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaMostrar);
-  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada); // 19-sep-2026: { ataques, exentos }
-  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal);
+  // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers (antes cada uno los leía por su cuenta, ~20 s c/u); [→ Contexto_Base_Web.md §PF091]
+  var guerraDataUnica = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
+  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada, guerraDataUnica); // 19-sep-2026: { ataques, exentos }
+  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal, guerraDataUnica);
   var minTPorTag = _getMinTClanMaps().byTag;
   var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan(); // 19-sep-2026: Ataques de T_Lista por clan
 
@@ -736,9 +740,9 @@ function _getAtaquesSemanaActualPorTag(ctx, temporadaReal) {
 /**
  * _getAtaquesYExentosSemanaActualPorTag(ctx, temporadaReal) [→ Contexto_Base_Web.md §28B052]
  */
-function _getAtaquesYExentosSemanaActualPorTag(ctx, temporadaReal) {
+function _getAtaquesYExentosSemanaActualPorTag(ctx, temporadaReal, guerraDataPrecalculada) {
   var mapa = {};
-  var guerraData = _getDatosGuerraParaControl(ctx, temporadaReal);
+  var guerraData = guerraDataPrecalculada || _getDatosGuerraParaControl(ctx, temporadaReal); // 17-oct-2026 (PF091): 3.er parámetro opcional
   for (var tag in guerraData) {
     var semData = guerraData[tag] ? guerraData[tag][ctx.sectionIndex] : null;
     if (!semData) continue;
@@ -1094,9 +1098,9 @@ function _getTemporadaMostrarExtra(ss, ctxReal) {
 /**
  * _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaObjetivo, ctxReal) [→ Contexto_Base_Web.md §28B077]
  */
-function _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaObjetivo, ctxReal) {
+function _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaObjetivo, ctxReal, guerraDataPrecalculada) {
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaObjetivo);
-  var guerraData = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
+  var guerraData = guerraDataPrecalculada || _getDatosGuerraParaControl(ctx, ctxReal.temporada); // 17-oct-2026 (PF091): 3.er parámetro opcional
   var mapa = {};
 
   for (var tag in guerraData) {

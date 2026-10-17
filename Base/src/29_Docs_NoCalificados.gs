@@ -59,7 +59,9 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
 
   var temporadaMostrar = _getTemporadaMostrarExtra(ss, ctxReal);
   var ctx = _clonarCtxParaTemporada(ctxReal, temporadaMostrar);
-  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada); // 19-sep-2026: { ataques, exentos }
+  // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers (antes cada uno los leía por su cuenta, ~20 s c/u); [→ Contexto_Base_Web.md §PF091]
+  var guerraDataUnica = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
+  var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada, guerraDataUnica); // 19-sep-2026: { ataques, exentos }
   var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan(); // 19-sep-2026 (pedido del usuario): Ataques de T_Lista por clan
 
   var bloqueBarcos = _getConfigMasRecienteCategoria('Torneo');
@@ -79,7 +81,7 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
     return;
   }
 
-  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal);
+  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal, guerraDataUnica);
   var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
 
   // --- Requisitos, al INICIO del documento ---
