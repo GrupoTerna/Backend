@@ -698,6 +698,7 @@ function _finalizarReenumeracion() {
   var offsetNuevo   = offsetViejo - deltaMeses;
 
   props.setProperty('CFG_REF_ACTIVO', nuevaRefStr);
+  _limpiarMemoSemanasTemporada_(); // PF091: la Ref cambió; se descarta el memo de semanas por temporada
   props.setProperty('CFG_OFFSET_ROYALEAPI', String(offsetNuevo));
 
   // Refresco inmediato en pantalla, sin esperar el próximo runAll/runUpdate.
