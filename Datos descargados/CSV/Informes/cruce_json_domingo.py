@@ -1,27 +1,33 @@
 #!/usr/bin/env python3
 """Cruce de solo lectura (18-oct-2026, PF120 punto 9): ultima captura de domingo de cada semana-clan de
-Datos descargados/JSON (currentriverrace, sin las variantes -L) contra el ultimo dia de Backup_Guerra.csv.
+Datos descargados/JSON/Endpoints/CurrentRiverRace (currentriverrace; no mira JSON/Anomalias) contra el ultimo dia de CSV/Hojas/Backup_Guerra.csv.
 Regla de la usuaria: una captura temprana solo importa si al jugador le quedaban ataques (4 - decksUsedToday).
 Se acepta que el sistema sea mayor que el JSON si la diferencia de ataques <= ataques que le quedaban y la
 diferencia de fame <= maximo de la tabla para los ataques que le quedaban: 200, 500, 700, 900 con 1, 2, 3, 4 (corregido el 18-oct-2026). Sistema menor que el JSON = conflicto.
+Si la ultima captura de una semana-clan viene toda en ceros (0 ataques y 0 fame de todos), se usa la anterior (18-oct-2026).
 Escribe cruce_json_domingo_conflictos.csv junto a este archivo. No modifica nada."""
 import json, glob, re, csv, collections, os
-AQUI = os.path.dirname(os.path.abspath(__file__)); JS = os.path.join(AQUI, '..', '..', 'JSON'); CSV = os.path.join(AQUI, '..', 'Backup_Guerra.csv')
+AQUI = os.path.dirname(os.path.abspath(__file__)); JS = os.path.join(AQUI, '..', '..', 'JSON', 'Endpoints', 'CurrentRiverRace'); CSV = os.path.join(AQUI, '..', 'Hojas', 'Backup_Guerra.csv')
 MAXF = {0: 0, 1: 200, 2: 500, 3: 700, 4: 900}
 N = lambda v: int(float(v)) if v not in ('', None) else 0
-pat = re.compile(r'^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(-L)?\s+(\d\d)-(\d\d)-(\d{4}) (\d\d)\.(\d\d) - (.+) - currentriverrace\.json$')
-snap = {}
-for f in glob.glob(os.path.join(JS, '*currentriverrace.json')):
+pat = re.compile(r'^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)-([LMXJVSD])\s+(\d\d)-(\d\d)-(\d{4}) (\d\d)\.(\d\d) - (.+) - currentriverrace\.json$')
+snap = {}; vacias = collections.Counter(); cand = collections.defaultdict(list)
+for f in glob.glob(os.path.join(JS, '**', '*currentriverrace.json'), recursive=True):
     m = pat.match(os.path.basename(f))
-    if not m or m[4]: continue
+    if not m: continue
     orden = (int(m[3]), m[7], m[6], m[5], m[8], m[9]); k = (str(int(m[1])), str(int(m[2])), m[10])
-    if k not in snap or orden > snap[k][0]: snap[k] = (orden, f)
+    cand[k].append((orden, f))
+for k, lst in cand.items():
+    for orden, f in sorted(lst, reverse=True):  # la mas reciente que NO venga en ceros (18-oct-2026: p. ej. T4 S5 P.I-34-D de tres clanes trae 0 ataques y 0 fame en todos)
+        if not any(p['decksUsed'] or p['fame'] for p in json.load(open(f, encoding='utf-8'))['clan']['participants']):
+            vacias['captura vacia (todo en cero; se usa la anterior)'] += 1; continue
+        snap[k] = (orden, f); break
 last = {}
 for x in csv.DictReader(open(CSV, encoding='utf-8-sig')):
     if x['Etapa'] != 'Guerra' or x['Día'] not in ('J', 'V', 'S', 'D'): continue
     k = (x['Temporada'], x['Semana'], x['Clan'], x['Tag']); o = 'JVSD'.index(x['Día'])
     if k not in last or o > last[k][0]: last[k] = (o, N(x['AtaquesSemana']), N(x['Barcos']), N(x['Fame']), x['Día'])
-tot = collections.Counter(); conf = []
+tot = collections.Counter(vacias); conf = []
 for (T, S, nom), (orden, f) in sorted(snap.items(), key=lambda a: (int(a[0][0]), int(a[0][1]), a[0][2])):
     if orden[0] % 7 != 6: tot['captura no es domingo (omitida)'] += 1; continue
     part = {p['tag']: p for p in json.load(open(f, encoding='utf-8'))['clan']['participants']}
