@@ -2104,7 +2104,9 @@ function procesarTListaNuevasFilas(ss) {
     }
 
     // Fase 9 (25-sep-2026, plan T_Lista -- ver TL.ORGANIZADOR_FUENTE más [→ Contexto_Base_Web.md §26B167]
-    sh.getRange(filaHoja, TL.ORGANIZADOR_FUENTE).setValue(creatorTagValor ? 'API' : 'Manual');
+    // PF100 (18-oct-2026): con creatorTag el organizador ya es el definitivo -> 'API'. Sin creatorTag, una fila que vino de la web conserva 'Web' (antes quedaba 'Manual' y pisaba el origen); las demás, 'Manual'. [→ Contexto_Base_Web.md §PF100]
+    var fuenteActualFila = String(fila[TL.ORGANIZADOR_FUENTE - 1] || '').trim();
+    sh.getRange(filaHoja, TL.ORGANIZADOR_FUENTE).setValue(creatorTagValor ? 'API' : (fuenteActualFila === 'Web' ? 'Web' : 'Manual'));
 
     // Autocompletado INDEPENDIENTE de Clan/ClanTag (sección 8): a partir [→ Contexto_Base_Web.md §26B168]
     var tagOrgFinal = tagOrgManual || (infoOrg && infoOrg.tag) || '';
@@ -2315,7 +2317,9 @@ function repararTorneosViejosDesdeAPI() {
       sh.getRange(filaHoja, TL.MODO).setValue(_resolverModoDesdeCatalogo(modoIdCelda));
       huboCambio = true;
     }
-    if (!(fila[TL.CREACION - 1] instanceof Date) || isNaN(fila[TL.CREACION - 1].getTime())) {
+    // PF100: si el origen sigue en 'Web', la Creación guardada es la TEMPORAL (momento del registro en la web) y se reemplaza por la real del JSON. [→ Contexto_Base_Web.md §PF100]
+    var creacionEsTemporal = String(fila[TL.ORGANIZADOR_FUENTE - 1] || '').trim() === 'Web';
+    if (creacionEsTemporal || !(fila[TL.CREACION - 1] instanceof Date) || isNaN(fila[TL.CREACION - 1].getTime())) {
       var creacion = _parseFechaApiSupercell(torneoData.createdTime);
       if (creacion) {
         sh.getRange(filaHoja, TL.CREACION).setValue(creacion);
@@ -4302,6 +4306,14 @@ function _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organiz
   if (filaPlanificadaEncontrada !== -1) {
     filaDestino = filaPlanificadaEncontrada;
     sh.getRange(filaDestino, TL.LINK_APP).setValue(link);
+    // PF100: si la fila planificada (p. ej. escrita a mano en la hoja) no traía origen ni Creación, quedan como 'Web' y ahora; si ya los traía, no se tocan. [→ Contexto_Base_Web.md §PF100]
+    if (String(sh.getRange(filaDestino, TL.ORGANIZADOR_FUENTE).getValue() || '').trim() === '') {
+      sh.getRange(filaDestino, TL.ORGANIZADOR_FUENTE).setValue('Web');
+    }
+    var creacionPlanCelda = sh.getRange(filaDestino, TL.CREACION).getValue();
+    if (!(creacionPlanCelda instanceof Date) || isNaN(creacionPlanCelda.getTime())) {
+      sh.getRange(filaDestino, TL.CREACION).setValue(new Date());
+    }
     if (tagTorneoPrincipal) sh.getRange(filaDestino, TL.TAG_TOR_2).setValue(String(tagTorneoPrincipal).trim());
     if (organizadorInfo && organizadorInfo.nombre && organizadorInfo.tag) {
       var nombresOrgFila = _nombresOrganizadorTL_(organizadorInfo);
@@ -4321,6 +4333,9 @@ function _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organiz
     fila[TL.FECHA - 1]    = fechaSolo;
     fila[TL.HORA - 1]     = horaSolo;
     fila[TL.LINK_APP - 1] = link;
+    // PF100: igual que al planificar; el JSON del link reemplaza ambos valores. [→ Contexto_Base_Web.md §PF100]
+    fila[TL.ORGANIZADOR_FUENTE - 1] = 'Web';
+    fila[TL.CREACION - 1] = new Date();
     if (tagTorneoPrincipal) fila[TL.TAG_TOR_2 - 1] = String(tagTorneoPrincipal).trim();
     if (organizadorInfo && organizadorInfo.nombre && organizadorInfo.tag) {
       var nombresOrgReg = _nombresOrganizadorTL_(organizadorInfo);
@@ -4338,6 +4353,7 @@ function _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organiz
   // FASE 1: se reaplican los DOS formatos siempre (fila nueva o fila [→ Contexto_Base_Web.md §26B289]
   _trySetFmt(sh, filaDestino, TL.FECHA, 'dd/mm/yyyy');
   _trySetFmt(sh, filaDestino, TL.HORA, 'h:mm:ss AM/PM');
+  _trySetFmt(sh, filaDestino, TL.CREACION, 'dd/mm/yyyy hh:mm:ss');
 
   // FIX (12-sep-2026): ver docblock de arriba -- se aplica DESPUÉS del [→ Contexto_Base_Web.md §26B290]
   if (requisitos) {
@@ -4403,6 +4419,9 @@ function _planificarTorneoDesdeBot(fecha, hora, premios, tagTorneoPrincipal, org
   fila[TL.HORA - 1]    = horaSolo;
   fila[TL.PREMIOS - 1] = premiosTexto;
   fila[TL.ESTADO - 1]  = 'Planificado';
+  // 18-oct-2026 (PF100): origen 'Web' y Creación TEMPORAL = momento en que se planificó desde el panel/bot. Cuando se registre el link y llegue el JSON, procesarTListaNuevasFilas() las reemplaza por 'API' y la hora de creación real del torneo. [→ Contexto_Base_Web.md §PF100]
+  fila[TL.ORGANIZADOR_FUENTE - 1] = 'Web';
+  fila[TL.CREACION - 1] = new Date();
   if (tagTorneoPrincipal) fila[TL.TAG_TOR_2 - 1] = String(tagTorneoPrincipal).trim();
   if (organizadorInfo && organizadorInfo.nombre && organizadorInfo.tag) {
     var nombresOrgPlan = _nombresOrganizadorTL_(organizadorInfo);
@@ -4421,6 +4440,7 @@ function _planificarTorneoDesdeBot(fecha, hora, premios, tagTorneoPrincipal, org
   // uno solo, 'dd/mm/yyyy hh:mm', combinado).
   _trySetFmt(sh, filaDestino, TL.FECHA, 'dd/mm/yyyy');
   _trySetFmt(sh, filaDestino, TL.HORA, 'h:mm:ss AM/PM');
+  _trySetFmt(sh, filaDestino, TL.CREACION, 'dd/mm/yyyy hh:mm:ss');
 
   // FIX (12-sep-2026): ver docblock de _registrarTorneoDesdeBot() para el
   // detalle completo de _valoresMinTAtaquesPorClan()/_normalizarSiNoRequisito().
@@ -4470,7 +4490,7 @@ function _listarTorneosDeHoy() {
         semanas: _extraerIsosDesdeSemanasCsv(String(f[TL.SEMANAS - 1] || '').trim()),
         // FIX (15-sep-2026): ver docblock de arriba.
         comentario: String(f[TL.COMENTARIO - 1] || '').trim(),
-        // Fase 9 (25-sep-2026, plan T_Lista): 'API'|'Manual'|'' -- ver [→ Contexto_Base_Web.md §26B297]
+        // Fase 9 (25-sep-2026, plan T_Lista): 'API'|'Manual'|'Web'|'' (Web desde PF100) -- ver [→ Contexto_Base_Web.md §26B297]
         organizadorFuente: String(f[TL.ORGANIZADOR_FUENTE - 1] || '').trim()
       };
     });
