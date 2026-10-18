@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 22:42:42 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 23:44:08 */
 
 
 
@@ -13508,9 +13508,12 @@ function _construirFila(tag, member, info, clanTag, existing, csvRow, tagMulticu
     prestamo = String(existing[iPrestamo] || '').trim();
   }
 
-  // Admin/Cat_disp: si no hubo "existing" (ej. justo después de demolerTodoElSpreadsheet(), [→ Contexto_Base_Web.md §11B078]
-  if (!admin   && csvRow && csvRow.admin)    admin   = String(csvRow.admin).trim();
-  if (!catDisp && csvRow && csvRow.cat_disp) catDisp = String(csvRow.cat_disp).trim();
+  // Admin/Cat_disp: mismo criterio que Préstamo (abajo). Solo se cae al CSV si la cuenta NO tiene fila en la hoja
+  // (existing == null, ej. justo después de demolerTodoElSpreadsheet()). Si la fila existe y la celda está vacía,
+  // es un borrado deliberado y se respeta; antes se restauraban desde Backup_Directorio.csv en cada
+  // runUpdate()/runAll() [→ Contexto_Base_Web.md §PF114; antes §11B078]
+  if (!existing && !admin   && csvRow && csvRow.admin)    admin   = String(csvRow.admin).trim();
+  if (!existing && !catDisp && csvRow && csvRow.cat_disp) catDisp = String(csvRow.cat_disp).trim();
   // Préstamo: solo se cae al CSV si la cuenta NO tiene fila en la hoja (existing == null, ej. tras
   // demolerTodoElSpreadsheet()). Si la fila existe y la celda está vacía, es un borrado deliberado
   // (la cuenta ya no se presta) y se respeta; antes se restauraba desde Backup_Directorio.csv en cada
