@@ -3,10 +3,11 @@
 Datos descargados/JSON (currentriverrace, sin las variantes -L) contra el ultimo dia de Backup_Guerra.csv.
 Regla de la usuaria: una captura temprana solo importa si al jugador le quedaban ataques (4 - decksUsedToday).
 Se acepta que el sistema sea mayor que el JSON si la diferencia de ataques <= ataques que le quedaban y la
-diferencia de fame <= 200 por ataque restante (propuesta de Claude). Sistema menor que el JSON = conflicto.
+diferencia de fame <= maximo de la tabla para los ataques que le quedaban: 200, 500, 700, 900 con 1, 2, 3, 4 (corregido el 18-oct-2026). Sistema menor que el JSON = conflicto.
 Escribe cruce_json_domingo_conflictos.csv junto a este archivo. No modifica nada."""
 import json, glob, re, csv, collections, os
 AQUI = os.path.dirname(os.path.abspath(__file__)); JS = os.path.join(AQUI, '..', '..', 'JSON'); CSV = os.path.join(AQUI, '..', 'Backup_Guerra.csv')
+MAXF = {0: 0, 1: 200, 2: 500, 3: 700, 4: 900}
 N = lambda v: int(float(v)) if v not in ('', None) else 0
 pat = re.compile(r'^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(-L)?\s+(\d\d)-(\d\d)-(\d{4}) (\d\d)\.(\d\d) - (.+) - currentriverrace\.json$')
 snap = {}
@@ -35,7 +36,7 @@ for (T, S, nom), (orden, f) in sorted(snap.items(), key=lambda a: (int(a[0][0]),
         _, a, b, fm, dia = s; rest = max(0, 4 - p.get('decksUsedToday', 0)); da = a - p['decksUsed']; df = fm - p['fame']
         if (da, df, b) == (0, 0, p.get('boatAttacks', 0)): c = 'igual'
         elif da < 0 or df < 0: c = 'sistema menor que el JSON'
-        elif da <= rest and df <= rest * 200: c = 'sistema mayor, cabe en los ataques que le quedaban'
+        elif da <= rest and df <= MAXF[min(rest, 4)]: c = 'sistema mayor, cabe en los ataques que le quedaban'
         else: c = 'sistema mayor, no cabe'
         tot[c] += 1
         if c in ('sistema menor que el JSON', 'sistema mayor, no cabe'):
