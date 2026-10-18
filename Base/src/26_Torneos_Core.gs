@@ -4273,7 +4273,9 @@ function _valoresMinSAtaquesTorneosPorClan(requisitos) {
     var datosClan = porClan[nombreClan] || {};
     minS.push(Number(datosClan.minTrofeosGuerra) || 0);
     ataques.push(Number(datosClan.minAtaquesSemana) || 0);
-    torneos.push(Number(datosClan.minTorneos) || 0);
+    // PF110 (18-oct-2026): admin.html manda `minTorneosJugados` (y así lo devuelve _webAdminRequisitosClanesSorteo()), pero aquí se leía `minTorneos`, que nunca llegaba: los «Torneos jugados mínimos» escritos en la web se guardaban siempre como 0. Se lee el nombre real y se conserva `minTorneos` por compatibilidad. [→ Contexto_Base_Web.md §PF110]
+    var torneosClan = (datosClan.minTorneosJugados !== undefined && datosClan.minTorneosJugados !== '') ? datosClan.minTorneosJugados : datosClan.minTorneos;
+    torneos.push(Number(torneosClan) || 0);
   });
   return { minS: minS, ataques: ataques, torneos: torneos };
 }
