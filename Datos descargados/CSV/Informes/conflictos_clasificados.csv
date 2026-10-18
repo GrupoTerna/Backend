@@ -1,0 +1,134 @@
+T,S,clan,tag,caso,sis_ataques,sis_barcos,sis_fame,json_ataques,json_barcos,json_fame,ataques_que_le_quedaban,clase,clanes_en_la_semana,dias_sistema,ultimo_dia_sistema,semanas_del_jugador_en_ese_clan_en_la_temporada
+2,1,GrupoXTerna™2,#Q2GR9JVQL,solo JSON con actividad,,,,1,0,200,,F,,,,
+2,1,GrupoXTerna™2,#C92GJYP82,solo JSON con actividad,,,,8,4,1100,,F,,,,
+2,1,GrupoXTerna™2,#8YJGLRJUJ,solo JSON con actividad,,,,1,0,200,,F,,,,"4,5"
+2,1,GrupoXTerna™2,#JJJL8QP2U,solo JSON con actividad,,,,8,2,1350,,F,,,,
+2,1,GrupoXTerna™2,#UCVP89PJQ,solo JSON con actividad,,,,2,0,300,,F,,,,
+2,1,GrupoXTerna™2,#JR0V99Y0U,solo JSON con actividad,,,,2,2,250,,F,,,,
+2,1,GrupoXTerna™2,#C0JRUURGU,solo JSON con actividad,,,,1,1,125,,F,,,,
+2,1,GrupoXTerna™3,#UJYULR99J,solo JSON con actividad,,,,4,4,500,,F,,,,
+2,1,GrupoXTerna™3,#200RPCYV8L,solo JSON con actividad,,,,7,7,825,,F,,,,
+2,1,GrupoXTerna™3,#2CR90VVV,solo JSON con actividad,,,,4,4,500,,F,,,,
+2,1,GrupoXTerna™3,#9Y88C8U8Y,solo JSON con actividad,,,,4,4,500,,F,,,,
+2,1,GrupoXTerna™3,#JR88CULJ0,solo JSON con actividad,,,,6,6,650,,F,,,,
+2,1,GrupoXTerna™3,#UYU0PGUYJ,solo JSON con actividad,,,,4,0,550,,F,GrupoXTerna™2,,,4
+2,1,GrupoXTerna™3,#UQL8V0YVJ,solo JSON con actividad,,,,4,4,500,,F,,,,
+2,1,Grupo乂Terna™,#L9L9Y9JYV,sistema menor que el JSON,8,0,1700,12,0,2250,4,E,Grupo乂Terna™,V:8/1700 S:8/1700,S,1
+2,2,GrupoXTerna™2,#LRQ8YJRCU,sistema menor que el JSON,7,0,700,11,0,1200,0,D,GrupoXTerna™2 | Grupo乂Terna™,J:3/300 V:7/700 S:7/700,S,"1,2"
+2,2,GrupoXTerna™2,#G99UVCG,sistema menor que el JSON,14,0,1900,14,0,2200,2,E,GrupoXTerna™2,J:4/600 V:8/1200 S:12/1900 D:14/1900,D,"1,2"
+2,2,Grupo乂Terna™,#P8Y0CQ9VR,sistema menor que el JSON,3,0,400,8,0,1200,4,E,Grupo乂Terna™,J:3/400,J,2
+2,2,Grupo乂Terna™,#LRQ8YJRCU,"sistema mayor, no cabe",11,0,1200,4,0,600,4,G,GrupoXTerna™2 | Grupo乂Terna™,D:11/1200,D,"2,3,4,5"
+2,2,Grupo乂Terna™,#RR8CRJPUV,sistema menor que el JSON,1,0,100,4,0,700,4,E,Grupo乂Terna™,J:1/100,J,2
+2,2,Grupo乂Terna™,#Y8CVG9VYL,sistema menor que el JSON,8,0,1000,12,0,1500,0,D,GrupoXTerna™2 | Grupo乂Terna™,S:8/1000 D:8/1000,D,"1,2,4,5"
+2,2,Grupo乂Terna™,#JCUPQ88J,sistema menor que el JSON,8,0,1200,12,0,1750,0,D,GrupoXTerna™3 | Grupo乂Terna™,S:8/1200 D:8/1200,D,"1,2,4,5"
+2,2,Grupo乂Terna™,#2C982888C,sistema menor que el JSON,8,0,1100,12,0,1700,0,D,Grupo乂Terna™ | Mini乂Ternas™,S:8/1100 D:8/1100,D,"1,2,3,5"
+2,3,GrupoXTerna™2,#20JPVQYL8Q,sistema menor que el JSON,0,0,0,2,2,150,4,E,GrupoXTerna™2,V:0/0 S:0/0,S,"3,5"
+2,3,GrupoXTerna™2,#2C982888C,sistema menor que el JSON,1,0,200,8,0,1400,0,D,GrupoXTerna™2 | Grupo乂Terna™,V:1/200,V,3
+2,3,GrupoXTerna™3,#U8G029GUQ,solo JSON con actividad,,,,4,0,400,,F,Mini乂Ternas™,,,"4,5"
+2,3,Grupo乂Terna™,#Y8CVG9VYL,solo JSON con actividad,,,,8,0,1300,,D,GrupoXTerna™2 | GrupoXTerna™3,,,"1,2,4,5"
+2,3,Grupo乂Terna™,#JCUPQ88J,solo JSON con actividad,,,,8,0,1300,,F,GrupoXTerna™2,,,"1,2,4,5"
+2,4,GrupoXTerna™2,#VYV8U9CL2,sistema menor que el JSON,0,0,0,1,1,125,4,E,GrupoXTerna™2,J:0/0,J,"3,4"
+2,4,GrupoXTerna™2,#UL2L8R9UQ,solo JSON con actividad,,,,1,1,125,,F,,,,2
+2,4,Grupo乂Terna™,#VLY0G9LU9,sistema menor que el JSON,0,0,0,1,0,200,4,D,GrupoXTerna™3 | Grupo乂Terna™,J:0/0,J,"1,2,3,4"
+2,4,Grupo乂Terna™,#VPPCGQR2C,sistema menor que el JSON,0,0,0,2,0,200,4,E,Grupo乂Terna™,J:0/0,J,4
+2,4,Grupo乂Terna™,#20JPVQYL8Q,sistema menor que el JSON,1,1,75,3,2,250,4,E,Grupo乂Terna™,S:1/75,S,4
+2,5,GrupoXTerna™2,#Y8CVG9VYL,solo JSON con actividad,,,,1,0,100,,F,Grupo乂Terna™,,,"1,2,3"
+2,5,Grupo乂Terna™,#LRQ8YJRCU,sistema menor que el JSON,0,0,0,4,0,500,4,D,GrupoXTerna™3 | Grupo乂Terna™,J:0/0,J,"2,3,4,5"
+2,5,Grupo乂Terna™,#20JPVQYL8Q,solo JSON con actividad,,,,3,0,400,,D,GrupoXTerna™2 | Mini乂Ternas™,,,4
+2,5,Grupo乂Terna™,#JCUPQ88J,sistema menor que el JSON,0,0,0,12,0,1900,4,E,Grupo乂Terna™,D:0/0,D,"1,2,4,5"
+3,1,GrupoXTerna™2,#JJ9VVRCYG,solo JSON con actividad,,,,4,0,600,,F,,,,2
+3,1,GrupoXTerna™2,#202PRG8QU,sistema menor que el JSON,8,0,1200,12,0,1800,4,E,GrupoXTerna™2,J:4/600 V:8/1200 S:8/1200,S,"1,2,3,4"
+3,1,GrupoXTerna™2,#UU02UUQGY,sistema menor que el JSON,8,0,1400,12,0,2000,1,E,GrupoXTerna™2,J:4/800 V:8/1400 S:8/1400,S,"1,2"
+3,1,GrupoXTerna™2,#8YCLY8CRU,sistema menor que el JSON,8,0,1600,16,0,2950,0,E,GrupoXTerna™2,J:4/800 V:8/1600 S:8/1600,S,"1,2"
+3,1,GrupoXTerna™2,#JCUPQ88J,sistema menor que el JSON,0,0,0,4,0,700,4,E,GrupoXTerna™2,J:1/200 V:0/0,V,"1,4"
+3,1,GrupoXTerna™2,#JGCU09PJ8,sistema menor que el JSON,3,0,400,7,0,900,0,E,GrupoXTerna™2,S:3/400,S,"1,2,3"
+3,1,GrupoXTerna™2,#UYU0PGUYJ,sistema menor que el JSON,8,0,1150,12,0,1550,4,E,GrupoXTerna™2,J:4/650 V:8/1150 S:8/1150,S,"1,2,4"
+3,1,GrupoXTerna™2,#Y8CVG9VYL,sistema menor que el JSON,4,0,200,4,0,700,4,E,GrupoXTerna™2,J:4/700 V:4/200,V,"1,4"
+3,1,GrupoXTerna™2,#GLPC8YQGV,sistema menor que el JSON,8,0,1700,16,0,2800,0,E,GrupoXTerna™2,J:4/900 V:8/1700 S:8/1700,S,"1,2,3"
+3,1,GrupoXTerna™2,#CPYUPLLPC,sistema menor que el JSON,8,0,1200,16,0,2350,0,E,GrupoXTerna™2,J:4/550 V:8/1200 S:8/1200,S,"1,2,3"
+3,1,GrupoXTerna™3,#80QCQ9R9Y,sistema menor que el JSON,8,0,1300,16,0,2600,0,E,GrupoXTerna™3,J:4/600 V:8/1300 S:8/1300,S,"1,2"
+3,1,GrupoXTerna™3,#2C982888C,sistema menor que el JSON,0,0,0,4,0,600,4,E,GrupoXTerna™3,J:4/600 V:0/0,V,1
+3,1,GrupoXTerna™3,#GYU0R0V29,sistema menor que el JSON,5,0,600,9,0,1000,4,E,GrupoXTerna™3,J:4/500 V:5/600 S:5/600,S,"1,2,4"
+3,1,GrupoXTerna™3,#JJ0RUP0RR,sistema menor que el JSON,8,0,1400,12,0,1900,0,E,GrupoXTerna™3,J:4/700 V:8/1400 S:8/1400,S,"1,2"
+3,1,GrupoXTerna™3,#JVVG9YUG0,sistema menor que el JSON,4,0,550,8,0,1050,4,E,GrupoXTerna™3,J:0/0 V:4/550 S:4/550,S,"1,2"
+3,1,GrupoXTerna™3,#VP2GYQGQ8,solo JSON con actividad,,,,1,0,100,,F,,,,2
+3,1,Grupo乂Terna™,#CCQVL0029,sistema menor que el JSON,8,0,1200,12,0,1850,4,E,Grupo乂Terna™,J:4/700 V:8/1200 S:8/1200,S,"1,2,3"
+3,1,Grupo乂Terna™,#JCUPQ88J,solo JSON con actividad,,,,8,0,1300,,F,GrupoXTerna™2,,,
+3,1,Grupo乂Terna™,#2CJJ9JLLQ,sistema menor que el JSON,8,0,1100,12,0,1600,4,E,Grupo乂Terna™,J:4/400 V:8/1100 S:8/1100,S,"1,2"
+3,1,Grupo乂Terna™,#2C982888C,solo JSON con actividad,,,,8,0,1200,,F,GrupoXTerna™3,,,"2,4"
+3,1,Grupo乂Terna™,#J9GJC900J,sistema menor que el JSON,8,0,1600,12,0,2400,4,E,Grupo乂Terna™,J:4/800 V:8/1600 S:8/1600,S,"1,2,3"
+3,1,Grupo乂Terna™,#Y8CVG9VYL,solo JSON con actividad,,,,8,0,1200,,F,GrupoXTerna™2,,,
+3,4,GrupoXTerna™2,#VUVC9P8VL,sistema menor que el JSON,4,0,400,4,0,700,4,D,GrupoXTerna™2 | Mini乂Ternas™,J:0/0 V:4/200 S:4/400,S,4
+3,4,GrupoXTerna™2,#LLUURU990,solo sistema,4,0,700,,,,,C,GrupoXTerna™2,D:4/700,D,4
+3,4,GrupoXTerna™2,#JLU999JRU,sistema menor que el JSON,1,0,100,4,0,400,4,D,GrupoXTerna™2 | Grupo乂Terna™,J:1/100,J,4
+3,4,GrupoXTerna™2,#Y8CVG9VYL,sistema menor que el JSON,8,0,0,8,0,1500,4,E,GrupoXTerna™2,J:4/800 V:8/1500 S:8/400 D:8/0,D,"1,4"
+3,4,GrupoXTerna™2,#2C982888C,sistema menor que el JSON,8,0,600,8,0,1100,4,D,GrupoXTerna™2 | Grupo乂Terna™,J:4/300 V:8/1100 S:8/600,S,4
+3,4,Grupo乂Terna™,#VUVC9P8VL,solo JSON con actividad,,,,3,0,500,,D,GrupoXTerna™2 | Mini乂Ternas™,,,
+3,4,Grupo乂Terna™,#Y8CVG9VYL,solo JSON con actividad,,,,4,0,400,,F,GrupoXTerna™2,,,
+3,4,Grupo乂Terna™,#V9L9V9YV0,sistema menor que el JSON,7,0,1000,8,0,1200,4,D,GrupoXTerna™2 | Grupo乂Terna™ | Mini乂Ternas™,V:1/200 S:7/1000,S,"1,2,4"
+3,4,Grupo乂Terna™,#JCUPQ88J,solo JSON con actividad,,,,4,0,550,,F,GrupoXTerna™2,,,
+3,4,Mini乂Ternas™,#20VU2RVR0J,solo sistema,0,0,0,,,,,B,Mini乂Ternas™,D:0/0,D,4
+3,4,Mini乂Ternas™,#V29LQ2UPQ,solo sistema,0,0,0,,,,,B,Mini乂Ternas™,D:0/0,D,4
+4,1,GrupoXTerna™2,#22C090RVJ,sistema menor que el JSON,8,0,1100,9,0,1200,4,E,GrupoXTerna™2,J:4/500 V:5/700 S:8/1100,S,1
+4,1,GrupoXTerna™2,#VUVC9P8VL,sistema menor que el JSON,0,0,0,8,0,900,4,D,GrupoXTerna™2 | GrupoXTerna™3 | Mini乂Ternas™,S:8/0 D:0/0,D,1
+4,1,GrupoXTerna™2,#UJY0PGPUV,sistema menor que el JSON,0,0,0,7,0,1200,4,D,GrupoXTerna™2 | GrupoXTerna™3 | Mini乂Ternas™,S:7/0 D:0/0,D,1
+4,1,GrupoXTerna™2,#V9L9V9YV0,solo JSON con actividad,,,,4,0,500,,D,GrupoXTerna™3 | Grupo乂Terna™,,,
+4,1,GrupoXTerna™2,#UJYP2GYCY,solo JSON con actividad,,,,1,0,200,,F,,,,
+4,1,GrupoXTerna™2,#J9QQYQGP9,solo JSON con actividad,,,,1,0,200,,F,,,,
+4,1,GrupoXTerna™3,#VUVC9P8VL,sistema menor que el JSON,4,0,0,4,0,400,4,D,GrupoXTerna™2 | GrupoXTerna™3 | Mini乂Ternas™,V:4/0,V,"1,2,3,4,5"
+4,1,GrupoXTerna™3,#UJY0PGPUV,sistema menor que el JSON,3,0,0,4,0,400,4,D,GrupoXTerna™2 | GrupoXTerna™3 | Mini乂Ternas™,V:3/0,V,"1,2,3,4,5"
+4,1,GrupoXTerna™3,#JCUPQ88J,solo sistema,4,0,400,,,,,D,GrupoXTerna™3 | Grupo乂Terna™,D:4/400,D,"1,2,3,5"
+4,1,Grupo乂Terna™,#Y8CVG9VYL,sistema menor que el JSON,7,0,1000,12,0,1800,4,D,GrupoXTerna™2 | Grupo乂Terna™,J:4/600 V:7/1000,V,"1,2,4,5"
+4,1,Grupo乂Terna™,#JCUPQ88J,sistema menor que el JSON,8,0,1400,12,0,1900,4,D,GrupoXTerna™3 | Grupo乂Terna™,J:4/700 V:8/1400 S:8/1400,S,"1,2,4"
+4,2,GrupoXTerna™2,#8YYYPP8LY,sistema menor que el JSON,0,0,0,3,0,600,4,E,GrupoXTerna™2,V:0/0,V,2
+4,2,GrupoXTerna™2,#QRQULCCV8,solo JSON con actividad,,,,4,0,800,,F,Grupo乂Terna™,,,
+4,2,GrupoXTerna™3,#VUVC9P8VL,sistema menor que el JSON,0,0,0,8,0,1500,4,E,GrupoXTerna™3,V:4/0 S:8/0 D:0/0,D,"1,2,3,4,5"
+4,2,GrupoXTerna™3,#UJY0PGPUV,sistema menor que el JSON,4,0,400,4,0,500,4,D,GrupoXTerna™3 | Mini乂Ternas™,S:4/400,S,"1,2,3,4,5"
+4,2,Grupo乂Terna™,#Y8CVG9VYL,sistema menor que el JSON,10,0,1700,12,0,2000,4,E,Grupo乂Terna™,J:4/500 V:7/1100 S:10/1700,S,"1,2,4,5"
+4,2,Grupo乂Terna™,#V9L9V9YV0,solo JSON con actividad,,,,4,0,400,,F,GrupoXTerna™3,,,1
+4,2,Grupo乂Terna™,#QRQULCCV8,sistema menor que el JSON,4,0,800,12,0,2100,4,E,Grupo乂Terna™,J:4/650 V:8/800 S:12/800 D:4/800,D,"1,2,3,4,5"
+4,2,Grupo乂Terna™,#JCUPQ88J,sistema menor que el JSON,4,0,700,8,0,1500,4,D,GrupoXTerna™3 | Grupo乂Terna™,S:4/700,S,"1,2,4"
+4,2,Grupo乂Terna™,#2C982888C,solo JSON con actividad,,,,4,0,550,,F,,,,"1,5"
+4,3,GrupoXTerna™2,#U9LQJLQUG,solo JSON con actividad,,,,12,0,2200,,F,,,,4
+4,3,GrupoXTerna™2,#CJCY20J9C,solo JSON con actividad,,,,12,0,2400,,F,,,,4
+4,3,GrupoXTerna™2,#JVPPLCGC0,solo JSON con actividad,,,,16,0,2600,,F,,,,4
+4,3,GrupoXTerna™3,#2C982888C,sistema menor que el JSON,0,0,0,4,0,800,4,E,GrupoXTerna™3,S:4/800 D:0/0,D,"1,3,4"
+4,3,Mini乂Ternas™,#VCCU98J0U,sistema menor que el JSON,0,0,0,6,0,800,3,E,Mini乂Ternas™,J:0/0 V:1/100 S:5/800 D:0/0,D,"1,2,3,4,5"
+4,3,Mini乂Ternas™,#VJL99Q9LR,sistema menor que el JSON,0,0,0,12,0,1100,0,E,Mini乂Ternas™,J:4/500 V:8/1100 S:8/1100 D:0/0,D,"1,2,3,4,5"
+4,3,Mini乂Ternas™,#20080J8GRY,sistema menor que el JSON,0,0,0,4,0,400,4,E,Mini乂Ternas™,J:0/0 V:3/300 S:4/400 D:0/0,D,"1,2,3,4,5"
+4,3,Mini乂Ternas™,#VRJYU8Q8P,sistema menor que el JSON,0,0,0,12,0,2000,4,E,Mini乂Ternas™,J:4/500 V:8/1300 S:12/2000 D:0/0,D,"1,2,3,4,5"
+4,3,Mini乂Ternas™,#VCLRVUCLG,sistema menor que el JSON,0,0,0,9,0,1300,4,E,Mini乂Ternas™,J:4/600 V:8/1100 S:9/1300 D:0/0,D,"1,2,3,4,5"
+4,3,Mini乂Ternas™,#LYVJU9UJJ,sistema menor que el JSON,0,0,0,4,0,700,4,E,Mini乂Ternas™,J:4/700 V:4/700 S:4/700 D:0/0,D,"2,3,4,5"
+4,4,GrupoXTerna™2,#LRQ8YJRCU,sistema menor que el JSON,3,0,400,4,0,500,4,E,GrupoXTerna™2,S:3/400,S,"1,2,4,5"
+4,4,GrupoXTerna™2,#UYU0PGUYJ,sistema menor que el JSON,2,0,300,4,0,600,4,E,GrupoXTerna™2,J:2/300,J,"1,2,3,4,5"
+4,4,GrupoXTerna™3,#20LPQU9P28,solo sistema,0,0,0,,,,,B,GrupoXTerna™3,D:0/0,D,"4,5"
+4,4,GrupoXTerna™3,#VPRRYY9VU,solo sistema,0,0,0,,,,,B,GrupoXTerna™3,D:0/0,D,4
+4,4,Grupo乂Terna™,#22C090RVJ,solo JSON con actividad,,,,4,0,800,,F,Mini乂Ternas™,,,
+4,4,Grupo乂Terna™,#JCUPQ88J,sistema menor que el JSON,10,0,1500,12,0,1700,4,E,Grupo乂Terna™,J:4/500 V:4/500 S:10/1500,S,"1,2,4"
+4,4,Grupo乂Terna™,#CRR2889JU,solo sistema,0,0,0,,,,,B,Grupo乂Terna™,D:0/0,D,4
+4,5,Grupo乂Terna™,#JCUPQ88J,solo JSON con actividad,,,,4,0,800,,F,GrupoXTerna™3,,,"1,2,4"
+4,5,Grupo乂Terna™,#2C982888C,sistema menor que el JSON,2,0,300,4,0,500,4,E,Grupo乂Terna™,J:2/300,J,"1,5"
+5,1,GrupoXTerna™2,#QPV2QQRRQ,sistema menor que el JSON,8,0,1200,9,0,1300,4,E,GrupoXTerna™2,J:4/700 V:8/1200 S:8/1200,S,1
+5,1,GrupoXTerna™2,#U2QL9PYUU,"sistema mayor, no cabe",16,0,2000,15,0,2000,0,G,GrupoXTerna™2,J:4/800 V:7/1100 S:11/1600 D:16/2000,D,"1,2,3,4"
+5,1,GrupoXTerna™2,#UYJCQQ028,"sistema mayor, no cabe",16,0,2300,15,0,2300,0,G,GrupoXTerna™2,J:4/500 V:7/900 S:11/1600 D:16/2300,D,"1,2,3,4"
+5,1,GrupoXTerna™2,#QR8JGLC9Q,"sistema mayor, no cabe",16,0,2100,15,0,2100,0,G,GrupoXTerna™2,J:4/400 V:7/700 S:11/1400 D:16/2100,D,"1,2,3,4"
+5,1,GrupoXTerna™3,#V0UJ0RPVP,"sistema mayor, no cabe",16,0,1800,13,0,1800,0,G,GrupoXTerna™3,J:4/500 V:8/1100 S:9/1300 D:16/1800,D,"1,2,3,4"
+5,1,GrupoXTerna™3,#90QYJQRQ8,sistema menor que el JSON,16,0,2400,16,0,2700,0,E,GrupoXTerna™3,J:0/0 V:8/900 S:12/1600 D:16/2400,D,"1,2,3,4"
+5,1,GrupoXTerna™3,#900PCRQ2R,sistema menor que el JSON,12,0,2400,16,0,2800,0,E,GrupoXTerna™3,V:8/900 S:12/1700 D:12/2400,D,"1,2,3,4"
+5,2,Grupo乂Terna™,#RVG29QC2C,solo sistema,0,0,0,,,,,B,Grupo乂Terna™,D:0/0,D,2
+5,2,Grupo乂Terna™,#GYU0R0V29,solo JSON con actividad,,,,4,0,400,,F,,,,
+5,2,Grupo乂Terna™,#JV2QVGPJJ,solo sistema,2,0,200,,,,,C,Grupo乂Terna™,D:2/200,D,2
+5,2,Grupo乂Terna™,#800VVC9VC,sistema menor que el JSON,2,0,300,3,0,400,4,E,Grupo乂Terna™,V:2/300 S:2/300,S,2
+5,2,Grupo乂Terna™,#V8PYCGPU,solo sistema,0,0,0,,,,,B,Grupo乂Terna™,D:0/0,D,2
+5,4,GrupoXTerna™2,#PPRVURPYQ,solo sistema,2,0,200,,,,,C,GrupoXTerna™2,D:2/200,D,4
+5,4,GrupoXTerna™2,#J00L0YV9V,solo sistema,4,0,800,,,,,C,GrupoXTerna™2,D:4/800,D,4
+5,4,GrupoXTerna™3,#20YJL20Y09,solo sistema,0,0,0,,,,,B,GrupoXTerna™3,D:0/0,D,4
+5,4,GrupoXTerna™3,#9RUQQCJJ2,solo sistema,0,0,0,,,,,B,GrupoXTerna™3,D:0/0,D,4
+5,4,Grupo乂Terna™,#2QC2C2VU8,solo sistema,0,0,0,,,,,B,Grupo乂Terna™,D:0/0,D,4
+6,1,GrupoXTerna™2,#2Q8GJVR8V,solo sistema,4,0,600,,,,,C,GrupoXTerna™2,D:4/600,D,1
+6,1,GrupoXTerna™2,#RYYLL0J8G,solo sistema,0,0,0,,,,,B,GrupoXTerna™2,D:0/0,D,1
+6,1,GrupoXTerna™2,#LRQ8YJRCU,solo sistema,3,0,500,,,,,C,GrupoXTerna™2,D:3/500,D,1
+6,1,GrupoXTerna™3,#900PCRQ2R,solo sistema,0,0,0,,,,,B,GrupoXTerna™3,D:0/0,D,"1,2"
+6,1,Grupo乂Terna™,#RCCV2LQUJ,solo sistema,0,0,0,,,,,B,Grupo乂Terna™,J:0/0 V:0/0 S:0/0 D:0/0,D,"1,2"
+6,1,Grupo乂Terna™,#82QCRUYYG,solo sistema,4,0,800,,,,,C,Grupo乂Terna™,D:4/800,D,"1,2"
+6,1,Grupo乂Terna™,#P0J8Q02CP,solo sistema,4,0,800,,,,,C,Grupo乂Terna™,D:4/800,D,"1,2"
