@@ -7,7 +7,7 @@ No modifica nada. Uso: python3 auditoria_topes.py  (escribe auditoria_topes_deta
 Solo mira filas con Etapa = Guerra. Fame y AtaquesSemana son acumulados de la semana POR CLAN."""
 import csv, os, collections
 AQUI = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(AQUI, '..', 'Backup_Guerra.csv')
+SRC = os.path.join(AQUI, '..', 'Hojas', 'Backup_Guerra.csv')
 OFF = {'J': 0, 'V': 1, 'S': 2, 'D': 3}
 N = lambda v: int(float(v)) if v not in ('', None) else 0
 

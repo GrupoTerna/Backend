@@ -19,7 +19,7 @@ ataques_semana):
 """
 import csv, os, collections, itertools
 AQUI = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(AQUI, '..', 'Backup_Guerra.csv')
+SRC = os.path.join(AQUI, '..', 'Hojas', 'Backup_Guerra.csv')
 OFF = {'J': 0, 'V': 1, 'S': 2, 'D': 3}; LET = 'JVSD'
 N = lambda v: int(float(v)) if v not in ('', None) else 0
 PG, PP, BG, BP = 200, 100, 125, 75

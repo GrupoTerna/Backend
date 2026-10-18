@@ -8,7 +8,7 @@ Reutiliza la tabla de fame de cruce.py. Regla acordada el 14-oct-2026:
 Se parte de los ACUMULADOS (AtaquesSemana, Fame, Barcos) de cada fila: AtaquesHoy no es confiable
 (en 5 casos de T3 S4 vale 0 mientras el acumulado sube)."""
 import csv, sys, os, collections, json
-sys.path.insert(0, '/home/claude/backend/Datos descargados/CSV/Informes')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cruce as C
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else '.'
