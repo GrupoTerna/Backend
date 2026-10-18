@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 18/10/2026 02:02:29 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 18/10/2026 14:02:32 */
 
 
 
@@ -24065,14 +24065,12 @@ function _problemasFilasClan_(filas, offsets) {
  */
 function _ajustarSemanaDeUnClan_(filas, offsets, valores, opciones) {
   opciones = opciones || {};
-  var barcosCambio = false;
-  if (valores.barcos !== null && valores.barcos !== undefined) {
-    barcosCambio = _corregirCampoAcumuladoConDistribucion(filas, offsets, GC.BARCOS, valores.barcos, 4);
+  // Reparto conjunto (§PF122): si ninguna combinacion de la tabla cuadra, no se toca nada y se avisa.
+  var rep = _repartirSemanaConjunto_(filas, offsets, valores);
+  if (!rep.ok) {
+    Logger.log('[Reparto conjunto] SIN CAMBIOS: ' + rep.motivo + '. No se toca esta semana del clan.');
+    return false;
   }
-  var pisoPorOffset = _reconstruirDeltaAcumulado(filas, offsets, GC.BARCOS);
-  var pisoCambio = _aplicarPisoDiario(filas, offsets, GC.ATAQUES_HOY, pisoPorOffset, 4);
-  var ataquesCambio = _corregirCampoDiarioConDistribucion(filas, offsets, GC.ATAQUES_HOY, valores.ataquesSemana, 4, pisoPorOffset);
-  var fameCambio = _corregirCampoAcumuladoConDistribucion(filas, offsets, GC.FAME, valores.fame, 900);
   var offsOrd = Object.keys(offsets).map(Number).sort(function (a, b) { return b - a; });
   var ultima = filas[offsets[offsOrd[0]]];
   var semAnterior = ultima[GC.ATAQUES_SEM - 1];
@@ -24081,7 +24079,7 @@ function _ajustarSemanaDeUnClan_(filas, offsets, valores, opciones) {
   if (opciones.temporadaRoyaleApi) {
     for (var i = 0; i < offsOrd.length; i++) filas[offsets[offsOrd[i]]][GC.TEMPORADA_2 - 1] = opciones.temporadaRoyaleApi;
   }
-  var huboCambio = barcosCambio || pisoCambio || ataquesCambio || fameCambio || semCambio;
+  var huboCambio = rep.huboCambio || semCambio;
   if (huboCambio) _marcarOrigenCorregido(filas, offsets);
   return huboCambio;
 }
@@ -24092,6 +24090,7 @@ function _ajustarSemanaDeUnClan_(filas, offsets, valores, opciones) {
 function _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opciones, nombreClan, nombreJugador) {
   var temp = { tipo: fuente.tipo, filas: [] };
   var offsTemp = _reconstruirSemanaDesdeCero(temp, temporadaPropia, semana, tag, valores, opciones || {});
+  if (!offsTemp) return {}; // sin combinacion (§PF122): no se escribe nada; la comprobacion (b) de quien llama lo revierte y lo avisa
   for (var i = 0; i < temp.filas.length; i++) {
     temp.filas[i][GC.CLAN - 1] = nombreClan;
     if (nombreJugador) temp.filas[i][GC.NOMBRE - 1] = nombreJugador;
@@ -25672,6 +25671,7 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
   var inicioSemanaPeriodIndex = (Number(semana) - 1) * 7;
 
   var offsetsNuevos = {};
+  var filasAntes = fuente.filas.length;
   for (var off = 0; off <= 3; off++) {
     var pIdx = inicioSemanaPeriodIndex + 3 + off; // 3=Jueves .. 6=Domingo
     var diaGuerraObj = calcDiaGuerraIdx(CFG.REF_DEFAULT, temporadaPropia, pIdx);
@@ -25709,15 +25709,14 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
     fuente.filas.push(filaNueva);
   }
 
-  // Mismo reparto Barcos-primero + piso + Ataques + Fame que el modo
-  // ajuste (punto 1.6), partiendo de una base de 4 días en cero.
-  if (valores.barcos !== null && valores.barcos !== undefined) {
-    _corregirCampoAcumuladoConDistribucion(fuente.filas, offsetsNuevos, GC.BARCOS, valores.barcos, 4);
+  // Mismo reparto conjunto que el modo ajuste (§PF122), partiendo de una base de 4 días en cero.
+  // Si ninguna combinación cuadra no se crea nada: se quitan las filas recién agregadas y se devuelve null.
+  var rep = _repartirSemanaConjunto_(fuente.filas, offsetsNuevos, valores);
+  if (!rep.ok) {
+    fuente.filas.length = filasAntes;
+    Logger.log('[Reparto conjunto] SIN CAMBIOS (reconstruccion) T' + temporadaPropia + ' S' + semana + ' ' + tag + ': ' + rep.motivo + '. No se crean las filas.');
+    return null;
   }
-  var pisoPorOffset = _reconstruirDeltaAcumulado(fuente.filas, offsetsNuevos, GC.BARCOS);
-  _aplicarPisoDiario(fuente.filas, offsetsNuevos, GC.ATAQUES_HOY, pisoPorOffset, 4);
-  _corregirCampoDiarioConDistribucion(fuente.filas, offsetsNuevos, GC.ATAQUES_HOY, valores.ataquesSemana, 4, pisoPorOffset);
-  _corregirCampoAcumuladoConDistribucion(fuente.filas, offsetsNuevos, GC.FAME, valores.fame, 900);
 
   fuente.filas[offsetsNuevos[3]][GC.ATAQUES_SEM - 1] = valores.ataquesSemana;
 
@@ -25735,16 +25734,14 @@ function _aplicarCorreccionAGuerraConReparto(fuente, offsetsPorClave, temporadaP
 
   if (offsetsClave) {
     // ---- MODO AJUSTE ----
-    var barcosCambio = false;
-    if (valores.barcos !== null && valores.barcos !== undefined) {
-      barcosCambio = _corregirCampoAcumuladoConDistribucion(fuente.filas, offsetsClave, GC.BARCOS, valores.barcos, 4);
+    // Reparto conjunto (§PF122): si ninguna combinacion de la tabla cuadra, no se toca nada y se avisa.
+    var rep = _repartirSemanaConjunto_(fuente.filas, offsetsClave, valores);
+    if (!rep.ok) {
+      stats.sinCombinacion = (stats.sinCombinacion || 0) + 1;
+      Logger.log('[Reparto conjunto] SIN CAMBIOS T' + temporadaPropia + ' S' + semana + ' ' + tag + ': ' + rep.motivo + '. No se toca.');
+      if (opciones.revision) opciones.revision.push({ temporada: temporadaPropia, semana: semana, tag: tag, nombre: '', tipo: 'alarma', motivo: 'reparto conjunto sin combinacion', detalle: rep.motivo });
+      return { modo: 'ajuste', huboCambio: false, sinCombinacion: true, motivo: rep.motivo };
     }
-
-    var pisoPorOffset = _reconstruirDeltaAcumulado(fuente.filas, offsetsClave, GC.BARCOS);
-    var pisoCambio = _aplicarPisoDiario(fuente.filas, offsetsClave, GC.ATAQUES_HOY, pisoPorOffset, 4);
-
-    var ataquesCambio = _corregirCampoDiarioConDistribucion(fuente.filas, offsetsClave, GC.ATAQUES_HOY, valores.ataquesSemana, 4, pisoPorOffset);
-    var fameCambio = _corregirCampoAcumuladoConDistribucion(fuente.filas, offsetsClave, GC.FAME, valores.fame, 900);
 
     var offsetsOrdenados = Object.keys(offsetsClave).map(Number).sort(function (a, b) { return b - a; });
     fuente.filas[offsetsClave[offsetsOrdenados[0]]][GC.ATAQUES_SEM - 1] = valores.ataquesSemana;
@@ -25755,7 +25752,7 @@ function _aplicarCorreccionAGuerraConReparto(fuente, offsetsPorClave, temporadaP
       }
     }
 
-    var huboCambio = barcosCambio || pisoCambio || ataquesCambio || fameCambio;
+    var huboCambio = rep.huboCambio;
     if (huboCambio) _marcarOrigenCorregido(fuente.filas, offsetsClave);
 
     stats.corregidas = (stats.corregidas || 0) + 1;
@@ -25764,6 +25761,11 @@ function _aplicarCorreccionAGuerraConReparto(fuente, offsetsPorClave, temporadaP
 
   // ---- MODO RECONSTRUCCIÓN COMPLETA (punto 1.5) ----
   var offsetsNuevos = _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valores, opciones);
+  if (!offsetsNuevos) {
+    stats.sinCombinacion = (stats.sinCombinacion || 0) + 1;
+    if (opciones.revision) opciones.revision.push({ temporada: temporadaPropia, semana: semana, tag: tag, nombre: '', tipo: 'alarma', motivo: 'reparto conjunto sin combinacion (reconstruccion)', detalle: 'no se crearon las filas' });
+    return { modo: 'reconstruccion', huboCambio: false, sinCombinacion: true };
+  }
   offsetsPorClave[clave] = offsetsNuevos;
   stats.reconstruidas = (stats.reconstruidas || 0) + 1;
   return { modo: 'reconstruccion', huboCambio: true };
@@ -26632,6 +26634,131 @@ function _corregirCampoAcumuladoConDistribucion(dataRows, offsetsExistentes, cam
   }
 
   return huboCambio;
+}
+
+// REPARTO CONJUNTO DE ATAQUES, BARCOS Y FAME DE UNA SEMANA [→ Contexto_Base_Web.md §PF122]
+var _FAME_CATALOGO_DIA_CACHE_ = null;
+
+/**
+ * _fameCatalogoDia_() [→ Contexto_Base_Web.md §PF122]
+ * Todos los estados posibles de UN dia: lista de { n: ataques, b: barcos, f: medallas } sin repetir,
+ * sacada de _fameDescomposicionesDia_() (77 estados). Se calcula una sola vez por ejecucion.
+ */
+function _fameCatalogoDia_() {
+  if (_FAME_CATALOGO_DIA_CACHE_) return _FAME_CATALOGO_DIA_CACHE_;
+  var vistos = {};
+  var lista = [];
+  for (var n = 0; n <= FAME_MAZOS_POR_DIA; n++) {
+    for (var b = 0; b <= n; b++) {
+      var desc = _fameDescomposicionesDia_(n, b);
+      for (var i = 0; i < desc.length; i++) {
+        var clave = n + ',' + b + ',' + desc[i].fame;
+        if (!vistos[clave]) { vistos[clave] = true; lista.push({ n: n, b: b, f: desc[i].fame }); }
+      }
+    }
+  }
+  _FAME_CATALOGO_DIA_CACHE_ = lista;
+  return lista;
+}
+
+/**
+ * _repartirSemanaConjunto_(filas, offsetsExistentes, valores) [→ Contexto_Base_Web.md §PF122]
+ * Reemplaza el reparto por campos (barcos, piso, ataques, fame) y el «sobrante». Recibe las tres cifras a la vez
+ * (valores.ataquesSemana, valores.fame y valores.barcos; barcos null = «sin dato», se conserva el actual) y busca para
+ * cada fila existente (jueves a domingo) UN estado de la tabla de _fameCatalogoDia_() tal que la suma de la semana cuadre.
+ * Entre las soluciones elige la que cambia menos dias (un dia que ya encaja se deja igual) y, a igual numero de dias,
+ * la que se mueve menos y prefiere cambiar los dias mas recientes. Si NINGUNA combinacion cuadra NO TOCA nada y devuelve
+ * { ok: false, motivo }. Escribe AtaquesHoy (diario), Barcos y Fame (acumulados) y AtaquesSemana (acumulado) en cada fila.
+ * Busqueda por mitades (maximo 77 x 77 combinaciones por mitad), sin recorrer toda la semana.
+ */
+function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
+  var offs = Object.keys(offsetsExistentes).map(Number).sort(function (a, b) { return a - b; });
+  var k = offs.length;
+  if (!k) return { ok: false, huboCambio: false, motivo: 'no hay filas de guerra para repartir' };
+
+  var A = Number(valores.ataquesSemana);
+  var F = Number(valores.fame);
+  if (!isFinite(A) || A % 1 !== 0 || A < 0 || !isFinite(F) || F < 0) {
+    return { ok: false, huboCambio: false, motivo: 'ataques o fame de la semana no son validos (' + valores.ataquesSemana + ', ' + valores.fame + ')' };
+  }
+
+  // Estado actual de cada fila como dia (ataques del dia; barcos y fame por diferencia de acumulados).
+  var cur = [];
+  var cbPrev = 0, cfPrev = 0, maxB = 0;
+  for (var i = 0; i < k; i++) {
+    var fila = filas[offsetsExistentes[offs[i]]];
+    var cb = Number(fila[GC.BARCOS - 1]) || 0;
+    var cf = Number(fila[GC.FAME - 1]) || 0;
+    cur.push({ n: Number(fila[GC.ATAQUES_HOY - 1]) || 0, b: cb - cbPrev, f: cf - cfPrev });
+    cbPrev = cb; cfPrev = cf;
+    if (cb > maxB) maxB = cb;
+  }
+  var B = (valores.barcos === null || valores.barcos === undefined) ? maxB : Number(valores.barcos);
+  if (!isFinite(B) || B % 1 !== 0 || B < 0) {
+    return { ok: false, huboCambio: false, motivo: 'barcos de la semana no son validos (' + valores.barcos + ')' };
+  }
+
+  var catalogo = _fameCatalogoDia_();
+  function costo(j, s) {
+    var c = cur[j];
+    if (c.n === s.n && c.b === s.b && c.f === s.f) return 0;
+    return 1000000 + (3 - offs[j]) * 10000 + Math.abs(c.n - s.n) * 100 + Math.abs(c.b - s.b) * 100 + Math.abs(c.f - s.f);
+  }
+  function grupo(indices) {
+    var mapa = { '0,0,0': { a: 0, b: 0, f: 0, c: 0, p: [] } };
+    for (var x = 0; x < indices.length; x++) {
+      var j = indices[x];
+      var nuevo = {};
+      var claves = Object.keys(mapa);
+      for (var q = 0; q < claves.length; q++) {
+        var m = mapa[claves[q]];
+        for (var t = 0; t < catalogo.length; t++) {
+          var s = catalogo[t];
+          var na = m.a + s.n, nb = m.b + s.b, nf = m.f + s.f;
+          if (na > A || nb > B || nf > F) continue;
+          var c = m.c + costo(j, s);
+          var kk = na + ',' + nb + ',' + nf;
+          if (!nuevo[kk] || c < nuevo[kk].c) nuevo[kk] = { a: na, b: nb, f: nf, c: c, p: m.p.concat([s]) };
+        }
+      }
+      mapa = nuevo;
+    }
+    return mapa;
+  }
+
+  var h = Math.floor(k / 2);
+  var izqIdx = [], derIdx = [];
+  for (var u = 0; u < k; u++) { if (u < h) izqIdx.push(u); else derIdx.push(u); }
+  var izq = grupo(izqIdx);
+  var der = grupo(derIdx);
+  var mejor = null;
+  var clavesIzq = Object.keys(izq);
+  for (var w = 0; w < clavesIzq.length; w++) {
+    var li = izq[clavesIzq[w]];
+    var rd = der[(A - li.a) + ',' + (B - li.b) + ',' + (F - li.f)];
+    if (!rd) continue;
+    var total = li.c + rd.c;
+    if (mejor === null || total < mejor.c) mejor = { c: total, p: li.p.concat(rd.p) };
+  }
+  if (mejor === null) {
+    return { ok: false, huboCambio: false, motivo: 'ninguna combinacion de la tabla suma ataques=' + A + ', barcos=' + B + ', fame=' + F + ' en ' + k + ' dia(s)' };
+  }
+
+  var huboCambio = false;
+  var an = 0, bn = 0, fn = 0;
+  for (var z = 0; z < k; z++) {
+    var fila2 = filas[offsetsExistentes[offs[z]]];
+    an += mejor.p[z].n; bn += mejor.p[z].b; fn += mejor.p[z].f;
+    if ((Number(fila2[GC.ATAQUES_HOY - 1]) || 0) !== mejor.p[z].n) huboCambio = true;
+    if ((Number(fila2[GC.ATAQUES_SEM - 1]) || 0) !== an) huboCambio = true;
+    if ((Number(fila2[GC.BARCOS - 1]) || 0) !== bn) huboCambio = true;
+    if ((Number(fila2[GC.FAME - 1]) || 0) !== fn) huboCambio = true;
+    fila2[GC.ATAQUES_HOY - 1] = mejor.p[z].n;
+    fila2[GC.ATAQUES_SEM - 1] = an;
+    fila2[GC.BARCOS - 1] = bn;
+    fila2[GC.FAME - 1] = fn;
+  }
+  return { ok: true, huboCambio: huboCambio };
 }
 
 // INFORME HOJA GUERRA vs CORRECCIONES (SOLO LECTURA) [→ Contexto_Base_Web.md §18B120]
