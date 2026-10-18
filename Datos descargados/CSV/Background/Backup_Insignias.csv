@@ -1,0 +1,1504 @@
+N°,Name,Nombre,Nivel,Nivel_max,Objetivo,Ícono
+1,YearsPlayed,1 año jugando,1,11,730,https://api-assets.clashroyale.com/playerbadges/512/Jp5cLGokbSds2hf55-7QlnLpQnlOFivp8GL5ghqXY7M.png
+2,YearsPlayed,2 años jugando,2,11,1095,https://api-assets.clashroyale.com/playerbadges/512/SlmLq0AclBHaPRaCN14pqR1KAd3eYP2u4Ih4vqQcVmw.png
+3,YearsPlayed,3 años jugando,3,11,1460,https://api-assets.clashroyale.com/playerbadges/512/SzClqblGfO5kz4WJFty4Wyulhba3R0HF4Eyb0vL3UC0.png
+4,YearsPlayed,4 años jugando,4,11,1825,https://api-assets.clashroyale.com/playerbadges/512/DvW4PDPHJTEtm5zvENjX17xGuTvKAyqBr-QXP1jNEdI.png
+5,YearsPlayed,5 años jugando,5,11,2190,https://api-assets.clashroyale.com/playerbadges/512/oqcHoJf6dNP_OFjYisgmo3tPptwYqAxv1tPzYpCWb5w.png
+6,YearsPlayed,6 años jugando,6,11,2555,https://api-assets.clashroyale.com/playerbadges/512/nSXiP2cMAriEEqxrxiaPpbocBvRmRxZTaNPpCg5wlmY.png
+7,YearsPlayed,7 años jugando,7,11,2920,https://api-assets.clashroyale.com/playerbadges/512/EolhUOLM3CSxlLqRTHQ9VXQbgizGhYkgWya5gPQqjLo.png
+8,YearsPlayed,8 años jugando,8,11,3285,https://api-assets.clashroyale.com/playerbadges/512/T9iTL2NzRUCMK5KoV3p9to5vxhUUvsooT-DMxwIvSCg.png
+9,YearsPlayed,9 años jugando,9,11,3650,https://api-assets.clashroyale.com/playerbadges/512/3TeHoCb_VUTGDRtC3j5H-wn6e_ROJ1rhOe5w-fZzqIM.png
+10,YearsPlayed,10 años jugando,10,11,4015,https://api-assets.clashroyale.com/playerbadges/512/VI28fEl7qdSZ0CZxr6pWT1jCOkkr-OjwEJ30901DKKA.png
+11,YearsPlayed,11 años jugando,11,11,,
+12,BattleWins,Victorias en batallas,1,8,,
+13,BattleWins,250 victorias en batallas,2,8,250,https://api-assets.clashroyale.com/playerbadges/512/i9CNP634ogX9R9burS5bvg_-TVv6CaUDFmH2eg3aQUc.png
+14,BattleWins,500 victorias en batallas,3,8,500,https://api-assets.clashroyale.com/playerbadges/512/m4b1Oh9yVMtxYqd2OW-BzGxTc7biRROEHopeinsynGU.png
+15,BattleWins,"1,000 victorias en batallas",4,8,1000,https://api-assets.clashroyale.com/playerbadges/512/jM1LK131aF9pZ9PROP2rGWSdthvNTEN3GxK7LdIVtr0.png
+16,BattleWins,"2,500 victorias en batallas",5,8,2500,https://api-assets.clashroyale.com/playerbadges/512/CieJfquVnq21pi7rxzDMLXC6oBKQ7KFT_8N6zadEEeE.png
+17,BattleWins,"5,000 victorias en batallas",6,8,5000,https://api-assets.clashroyale.com/playerbadges/512/Hh18NG8LhvwZrcmtGR8rSKRezmhOxCilxqhroDLBnys.png
+18,BattleWins,"10,000 victorias en batallas",7,8,10000,https://api-assets.clashroyale.com/playerbadges/512/ESFjdvjDaVO2KOaUfni9fe2DiHjvzKn-FuOeZRKeDEs.png
+19,BattleWins,Victorias en batallas,8,8,,https://api-assets.clashroyale.com/playerbadges/512/GjBLSroASSMeDGJvXXAaL_GJW0YKkQfOuY5ZW4QQu-Y.png
+20,ClanWarsVeteran,Veterano de guerra de clanes,1,3,10,https://api-assets.clashroyale.com/playerbadges/512/vny7kn4tOV3c9vJBR93JFENbula3RmrVm8VDiCvE268.png
+21,ClanWarsVeteran,Veterano de guerra de clanes,2,3,100,https://api-assets.clashroyale.com/playerbadges/512/rIYzDp4Yxy8tyEJBOuMRCudNERR03VUHvdJRcvi5Hnc.png
+22,ClanWarsVeteran,Veterano de guerra de clanes,3,3,,https://api-assets.clashroyale.com/playerbadges/512/K0WPHZB54EHRNFB5r-2Vl2dyM-ke2tfVe3oB4LEQNCs.png
+23,ClanWarWins,25 victorias de guerras de clanes,1,8,25,https://api-assets.clashroyale.com/playerbadges/512/J1cscDN2IYNZM7MUAVNqAw3QzGiR9ZRLxvbjf_gGBpE.png
+24,ClanWarWins,50 victorias de guerras de clanes,2,8,50,https://api-assets.clashroyale.com/playerbadges/512/84WGzFfbSpBPG4AL5kH7xWgufTL-My-uF2X754cFrms.png
+25,ClanWarWins,100 victorias de guerras de clanes,3,8,100,https://api-assets.clashroyale.com/playerbadges/512/q_EcWT52wxQyNMPCpcWrcrAK1iKNLesurdFeUIdGr3Q.png
+26,ClanWarWins,250 victorias de guerras de clanes,4,8,250,https://api-assets.clashroyale.com/playerbadges/512/wEbE9f0PyqFnH8Tx5DUNfTYu93P9MCh7zMKjWYuu5OY.png
+27,ClanWarWins,500 victorias de guerras de clanes,5,8,500,https://api-assets.clashroyale.com/playerbadges/512/gTrItst0t65YbLBDgLwdNi-3ANANjfv1zB6hcEzc8Ug.png
+28,ClanWarWins,"1,000 victorias de guerras de clanes",6,8,1000,https://api-assets.clashroyale.com/playerbadges/512/WgWS0A2vy4RHUYIFhvNu9AZPsQURS6XY5JySYfqPtAk.png
+29,ClanWarWins,"2,500 victorias de guerras de clanes",7,8,2500,https://api-assets.clashroyale.com/playerbadges/512/FpS6HBCXGrTjCaPS9Z5HkV4bhtSdjTdS7ojcNeMZ0ZA.png
+30,ClanWarWins,Victorias de guerras de clanes,8,8,,
+31,EmoteCollection,25 reacciones conseguidas,1,8,25,https://api-assets.clashroyale.com/playerbadges/512/6f5zy7bLv8sPM6xKJg1qZWLMNbbNYaOTpW3VVl7oXEo.png
+32,EmoteCollection,50 reacciones conseguidas,2,8,50,https://api-assets.clashroyale.com/playerbadges/512/AqE1wPkRCdh1EnL1BvWQ5nNUOZuQETURVZ4sh5ilIbc.png
+33,EmoteCollection,100 reacciones conseguidas,3,8,100,https://api-assets.clashroyale.com/playerbadges/512/XFr9s1QjVFQFPaQpU0uB6-mIFct7adY0n6ia3TnEIx4.png
+34,EmoteCollection,150 reacciones conseguidas,4,8,150,https://api-assets.clashroyale.com/playerbadges/512/UmVFyz9HgRouVrRdWGTa2o4iEPLSR49NVEB1xDOyYDI.png
+35,EmoteCollection,200 reacciones conseguidas,5,8,200,https://api-assets.clashroyale.com/playerbadges/512/39iZFyYyG_OJhD-vVD_lyy7_sAtvk5Yf3sA7s4iMphw.png
+36,EmoteCollection,250 reacciones conseguidas,6,8,250,https://api-assets.clashroyale.com/playerbadges/512/8PTiNqEMDPvZYSFG5-83b3IeCbep1WsWsc57spiAfTk.png
+37,EmoteCollection,300 reacciones conseguidas,7,8,300,https://api-assets.clashroyale.com/playerbadges/512/hbKOKIviBVytMhY9LL5TjwVo03qyJtR0jd-_cgf-uWE.png
+38,EmoteCollection,Colección de emotes,8,8,,https://api-assets.clashroyale.com/playerbadges/512/igeEdDtfUQ_WyNcknOLa9mwk47QBLZj4EHs7ItW_NuM.png
+39,BannerCollectio,Colección de banners,3,8,100,https://api-assets.clashroyale.com/playerbadges/512/94OPmS6bPOWq9--g6DXI-EnzIV2GkK6SnWzkzCAwm40.png
+40,CollectionLevel,Nivel de colección,1,8,,
+41,CollectionLevel,Nivel de colección 400,2,8,400,https://api-assets.clashroyale.com/playerbadges/512/oMrAGAgO0rV7LpA3Uzk_xmQ-phq5DAR8ZFIYOOwvfOM.png
+42,CollectionLevel,Nivel de colección 600,3,8,600,https://api-assets.clashroyale.com/playerbadges/512/xOnFhRoRllYmHNzeRtIgSFkbh2nTKie3lFAsQghgkSw.png
+43,CollectionLevel,Nivel de colección 800,4,8,800,https://api-assets.clashroyale.com/playerbadges/512/NaXuE07g3zohGeYiciFJODvF_YVClUOq8GvR7L8Q4kg.png
+44,CollectionLevel,"Nivel de colección 1,000",5,8,1000,https://api-assets.clashroyale.com/playerbadges/512/TSR_wP-8318zkzsKicTkT4d00Pvx4sJzljaRou7NGi8.png
+45,CollectionLevel,"Nivel de colección 1,200",6,8,1200,https://api-assets.clashroyale.com/playerbadges/512/qE8qmfIq6d3V2AmzXMiaffhYjhPdwOWd4OZ1EXK-MPg.png
+46,CollectionLevel,"Nivel de colección 1,400",7,8,1400,https://api-assets.clashroyale.com/playerbadges/512/_TuidQHb6mPuDDIzJnTGBWZufPsPXlMXCfqJtSf6mFQ.png
+47,CollectionLevel,Nivel de colección,8,8,,https://api-assets.clashroyale.com/playerbadges/512/vlnuFrtu6rT5pQSQjqjT6OW32K2gJmb8zYYG01UF1f4.png
+48,2026YearBadge,Camino de trofeos de temporada de 2026,1,6,2,https://api-assets.clashroyale.com/playerbadges/512/6W_EezGEBWG2GWKsHR2sBeuHjS_-o_Ksd4sHvBiQuXI.png
+49,2026YearBadge,Camino de trofeos de temporada de 2026,2,6,3,https://api-assets.clashroyale.com/playerbadges/512/dn7oznu7WjGekjAF47BtfpKiU1kcvJqUZ1R35ikJOWc.png
+50,2026YearBadge,Camino de trofeos de temporada de 2026,3,6,4,https://api-assets.clashroyale.com/playerbadges/512/bgX44JwTXVz1SleIO9QLF3n4QwNQQt_qgSA3La5krcc.png
+51,2026YearBadge,Camino de trofeos de temporada de 2026,4,6,,
+52,2026YearBadge,Camino de trofeos de temporada de 2026,5,6,,
+53,2026YearBadge,Camino de trofeos de temporada de 2026,6,6,,
+54,2v2,25 victorias en batallas 2c2,1,7,25,https://api-assets.clashroyale.com/playerbadges/512/KfHPJFbfYV0s6_qNGljoM4nEnFko6GoiYBSPLbBy-a4.png
+55,2v2,50 victorias en batallas 2c2,2,7,50,https://api-assets.clashroyale.com/playerbadges/512/Q0n-COE_PyMBqdSDuO1yNbr_3X1oYj7hXJ2Kb6r9RmM.png
+56,2v2,100 victorias en batallas 2c2,3,7,100,https://api-assets.clashroyale.com/playerbadges/512/7MFWxr5276vavLhz8DOtbDo1vAgOzpeh5fPVtPohsqU.png
+57,2v2,200 victorias en batallas 2c2,4,7,200,https://api-assets.clashroyale.com/playerbadges/512/uhI0cenyuwPspMYA3vbE6JaG0Y0JKl5rfjCiBG9yXa8.png
+58,2v2,500 victorias en batallas 2c2,5,7,500,https://api-assets.clashroyale.com/playerbadges/512/vixT1YzgAzjrQQmOxVSekJJHN2E95eg_odTXaDRpitU.png
+59,2v2,"1,000 victorias en batallas 2c2",6,7,1000,https://api-assets.clashroyale.com/playerbadges/512/VgklDo_YMFi8Wjy_S08V5DFKBkfM3vAxT6SHRtBebE0.png
+60,2v2,Victorias en batallas 2c2,7,7,,https://api-assets.clashroyale.com/playerbadges/512/M5CRh5LM2rBJfmiqWwTTPV7rEGMeDomPgfIbwG_lTDo.png
+61,2v2LeagueCompletion,Liga de 2c2 completada,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/EWmE9nLxi7T0l3iy3XZ4LdDAYPpW_n_pgJYGLcap7tQ.png
+62,2v2LeagueCompletion,Liga de 2c2 completada,2,10,,
+63,2v2LeagueCompletion,Liga de 2c2 completada,3,10,,
+64,2v2LeagueCompletion,Liga de 2c2 completada,4,10,,
+65,2v2LeagueCompletion,Liga de 2c2 completada,5,10,,
+66,2v2LeagueCompletion,Liga de 2c2 completada,6,10,,
+67,2v2LeagueCompletion,Liga de 2c2 completada,7,10,,
+68,2v2LeagueCompletion,Liga de 2c2 completada,8,10,,
+69,2v2LeagueCompletion,Liga de 2c2 completada,9,10,,
+70,2v2LeagueCompletion,Liga de 2c2 completada,10,10,,
+71,2xElixir,25 victorias en doble elixir,1,7,25,https://api-assets.clashroyale.com/playerbadges/512/4Xzk9up2vZThvmoGkzFr7AUddyMUiO7MX0C1qCBDEsg.png
+72,2xElixir,50 victorias en doble elixir,2,7,50,https://api-assets.clashroyale.com/playerbadges/512/ayodhtIKgsn67Rgyldpys5WjRmtqmyuYXQkmv8X4D_g.png
+73,2xElixir,100 victorias en doble elixir,3,7,100,https://api-assets.clashroyale.com/playerbadges/512/RYYaQt-dKLTLnnEgnQGJMHK3UqTKuPGzzjuTYyJmM9k.png
+74,2xElixir,200 victorias en doble elixir,4,7,200,https://api-assets.clashroyale.com/playerbadges/512/F-yoW5wingKYabnzEj4FEJ9zjEYNYtOSF0G5WOWhZ3I.png
+75,2xElixir,500 victorias en doble elixir,5,7,500,https://api-assets.clashroyale.com/playerbadges/512/lWJmhqiCjDm-U1lQGBP1j9S900UVLq_BMxnaUaPdmuo.png
+76,2xElixir,Victorias en doble elixir,6,7,,
+77,2xElixir,Victorias en doble elixir,7,7,,
+78,AnarchyLeagueCompletion,Insignia secreta del C.A.O.S.,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/yuXq4woNwXzxfIgbpUPCn7wZ4gmZpq7kw9aVKFo8ObI.png
+79,AnarchyLeagueCompletion,Insignia secreta del C.A.O.S.,2,10,,
+80,AnarchyLeagueCompletion,Insignia secreta del C.A.O.S.,3,10,,
+81,AnarchyLeagueCompletion,Insignia secreta del C.A.O.S.,4,10,,
+82,AnarchyLeagueCompletion,Insignia secreta del C.A.O.S.,5,10,,
+83,AnarchyLeagueCompletion,Insignia secreta del C.A.O.S.,6,10,,
+84,AnarchyLeagueCompletion,Insignia secreta del C.A.O.S.,7,10,,
+85,AnarchyLeagueCompletion,Insignia secreta del C.A.O.S.,8,10,,
+86,AnarchyLeagueCompletion,Insignia secreta del C.A.O.S.,9,10,,
+87,AnarchyLeagueCompletion,Insignia secreta del C.A.O.S.,10,10,,
+88,BannerCollection,30 estandartes conseguidos,1,8,30,https://api-assets.clashroyale.com/playerbadges/512/Lzu_2_YeM2OMFLCm-K6XX3mXjjYcrpBQ095pV3BX_ww.png
+89,BannerCollection,50 standartes conseguidos,2,8,50,https://api-assets.clashroyale.com/playerbadges/512/8jW2bVK_9lfhrDs2K_LcpYhixWipmy3_BWh7Q_-Fxgo.png
+90,BannerCollection,100 estandartes conseguidos,3,8,100,https://api-assets.clashroyale.com/playerbadges/512/94OPmS6bPOWq9--g6DXI-EnzIV2GkK6SnWzkzCAwm40.png
+91,BannerCollection,150 estandartes conseguidos,4,8,150,https://api-assets.clashroyale.com/playerbadges/512/x5BTyW4eIq00QDjrzWAayD1yC0d3uGiwu_bG-qS1UHQ.png
+92,BannerCollection,200 estandartes conseguidos,5,8,200,https://api-assets.clashroyale.com/playerbadges/512/cD2D7Ov4IJcrU_mEl8gGfeAFMmKQ4N4TEj42lp25TVI.png
+93,BannerCollection,300 estandartes conseguidos,6,8,300,https://api-assets.clashroyale.com/playerbadges/512/6o9UOH1z4y2kjsIXb498YWmxpSxaIa2xPnsj8nHYrL8.png
+94,BannerCollection,400 estandartes conseguidos,7,8,400,https://api-assets.clashroyale.com/playerbadges/512/Nms_JtyHS6OFxYuqB0r36tA5jeKK41yFbxk8t6uK5WE.png
+95,BannerCollection,Estandartes conseguidos,8,8,,https://api-assets.clashroyale.com/playerbadges/512/u5trcfAKOn2fY2wWNUkGQoZMMRg5Q4mU332Bi8CNT30.png
+96,ChaosDraftLeagueCompletion,Liga del C.A.O.S. completada,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/VeZA9lKcBfhYBK0IfzELwOFyt46bCTraZ2ftwVspOqw.png
+97,ChaosDraftLeagueCompletion,Liga del C.A.O.S. completada,2,10,,
+98,ChaosDraftLeagueCompletion,Liga del C.A.O.S. completada,3,10,,
+99,ChaosDraftLeagueCompletion,Liga del C.A.O.S. completada,4,10,,
+100,ChaosDraftLeagueCompletion,Liga del C.A.O.S. completada,5,10,,
+101,ChaosDraftLeagueCompletion,Liga del C.A.O.S. completada,6,10,,
+102,ChaosDraftLeagueCompletion,Liga del C.A.O.S. completada,7,10,,
+103,ChaosDraftLeagueCompletion,Liga del C.A.O.S. completada,8,10,,
+104,ChaosDraftLeagueCompletion,Liga del C.A.O.S. completada,9,10,,
+105,ChaosDraftLeagueCompletion,Liga del C.A.O.S. completada,10,10,,
+106,ChaosDraftLeagueRank,Liga de elección del Caos,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/WuDQQ8dEb_hH39xJObRpDQvBNKC99k18hvsP1GSmILg.png
+107,ChaosDraftLeagueRank,Liga de elección del Caos,2,10,,
+108,ChaosDraftLeagueRank,Liga de elección del Caos,3,10,,
+109,ChaosDraftLeagueRank,Liga de elección del Caos,4,10,,
+110,ChaosDraftLeagueRank,Liga de elección del Caos,5,10,,
+111,ChaosDraftLeagueRank,Liga de elección del Caos,6,10,,
+112,ChaosDraftLeagueRank,Liga de elección del Caos,7,10,,
+113,ChaosDraftLeagueRank,Liga de elección del Caos,8,10,,
+114,ChaosDraftLeagueRank,Liga de elección del Caos,9,10,,
+115,ChaosDraftLeagueRank,Liga de elección del Caos,10,10,,
+116,ClanDonations,500 cartas donadas,1,8,500,https://api-assets.clashroyale.com/playerbadges/512/8q7mW1LlZFi_6fanSAMH6_374Z9feIvP07DBQE5e8wk.png
+117,ClanDonations,"1,000 cartas donadas",2,8,1000,https://api-assets.clashroyale.com/playerbadges/512/kQkK0Uak63hi1ImXXX0rHhYR5Z9hMZ-5CV4x-Fwqb_g.png
+118,ClanDonations,"5,000 cartas donadas",3,8,5000,https://api-assets.clashroyale.com/playerbadges/512/8mR3rsDpDmwlsPQoxIoj7cyT4nsMWs7fMSSYjpEkVUs.png
+119,ClanDonations,"10,000 cartas donadas",4,8,10000,https://api-assets.clashroyale.com/playerbadges/512/aTyebr5jxkOad8nu-zmk7keMs87ed_yroqQ7U6KKAiU.png
+120,ClanDonations,"25,000 cartas donadas",5,8,25000,https://api-assets.clashroyale.com/playerbadges/512/J12DE8Lx-z1mXydZiQj7YTQ1SdX9ZxK4LaNSXkkr7vs.png
+121,ClanDonations,"50,000 cartas donadas",6,8,50000,https://api-assets.clashroyale.com/playerbadges/512/vPTwqJDRx-UyJSQWddV6oUkkyl7Ymgi9w5jshyuTgpM.png
+122,ClanDonations,"100,000 cartas donadas",7,8,100000,https://api-assets.clashroyale.com/playerbadges/512/bBzzOXqej33MDfC0D14qbhiIDB91UdSHskBRyBs3aNM.png
+123,ClanDonations,Cartas donadas,8,8,,https://api-assets.clashroyale.com/playerbadges/512/7oTq2WTilSOYgWWTp_CsNL1322phB9GlXWhImSXXNvE.png
+124,Classic12Wins,Triunfo en el gran desafío,1,8,10,https://api-assets.clashroyale.com/playerbadges/512/eQU06dDRaTL6uIgiZiSVaOj8Y0sIUA_0Mf6Mnnr4D6Q.png
+125,Classic12Wins,Triunfo en el gran desafío,2,8,25,https://api-assets.clashroyale.com/playerbadges/512/3KZi1SIOX07IrzGfhbFaNEwHImy6mac6Ag9uNiwE9es.png
+126,Classic12Wins,Triunfo en el gran desafío,3,8,50,https://api-assets.clashroyale.com/playerbadges/512/X76rTx3y7z5_bSiW2pkCCHWUODnF2Zt-vbuWudwsMfY.png
+127,Classic12Wins,Triunfo en el gran desafío,4,8,100,https://api-assets.clashroyale.com/playerbadges/512/4vyfPbXppisJOKO1vrL53GPCNfIC89bePKPmhgoAm20.png
+128,Classic12Wins,Triunfo en el gran desafío,5,8,,
+129,Classic12Wins,Triunfo en el gran desafío,6,8,,
+130,Classic12Wins,Triunfo en el gran desafío,7,8,,
+131,Classic12Wins,Triunfo en el gran desafío,8,8,,
+132,ClassicRoyale_2025,Clásico de 2025,1,2,2,https://api-assets.clashroyale.com/playerbadges/512/GoaVEfIR28aAI2t9ZpsfHFjbAiVcj58ti8clfUS6bMA.png
+133,ClassicRoyale_2025,Clásico de 2025,2,2,,https://api-assets.clashroyale.com/playerbadges/512/vfvt6EAqRrMO54GdKJx-SZFxyNBgR0wszRIcLwGDi8M.png
+134,CrazyArenaCompletion,Insignia secreta del C.A.O.S.,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/bQ-gVtqqxgWocGTmnDiDzDAzjDJkKlONi5w9tR_4Hck.png
+135,CrazyArenaCompletion,Insignia secreta del C.A.O.S.,2,10,,
+136,CrazyArenaCompletion,Insignia secreta del C.A.O.S.,3,10,,
+137,CrazyArenaCompletion,Insignia secreta del C.A.O.S.,4,10,,
+138,CrazyArenaCompletion,Insignia secreta del C.A.O.S.,5,10,,
+139,CrazyArenaCompletion,Insignia secreta del C.A.O.S.,6,10,,
+140,CrazyArenaCompletion,Insignia secreta del C.A.O.S.,7,10,,
+141,CrazyArenaCompletion,Insignia secreta del C.A.O.S.,8,10,,
+142,CrazyArenaCompletion,Insignia secreta del C.A.O.S.,9,10,,
+143,CrazyArenaCompletion,Insignia secreta del C.A.O.S.,10,10,,
+144,Draft,25 victorias en batallas de elección,1,7,25,https://api-assets.clashroyale.com/playerbadges/512/MAHwbpas2HbniFqw-UW8miMoeZCzXj5FJtoaaBmnobw.png
+145,Draft,50 victorias en batallas de elección,2,7,50,https://api-assets.clashroyale.com/playerbadges/512/m39nkPThMnd2RVlNF7rwm0ZsiUiIhE87mJ369b_DEdA.png
+146,Draft,100 victorias en batallas de elección,3,7,100,https://api-assets.clashroyale.com/playerbadges/512/g-L43NAU10b0o_bNv3AohhNXDi2eIeJ6et223lPZGDY.png
+147,Draft,200 victorias en batallas de elección,4,7,200,https://api-assets.clashroyale.com/playerbadges/512/elgTIOAuUffYtC9uiY46Da2pqP-gJv3XSTXw_lCRaVU.png
+148,Draft,500 victorias en batallas de elección,5,7,500,https://api-assets.clashroyale.com/playerbadges/512/2JLAlZ3iGkT__3ccot61cHHACPCMBBOrqcL74AP2PD8.png
+149,Draft,"1,000 victorias en batallas de elección",6,7,1000,https://api-assets.clashroyale.com/playerbadges/512/d4VTL6pmWst1d2JB_nSXokTm46faUkpGqvcLG8d50R4.png
+150,Draft,Victorias en batallas de elección,7,7,,
+151,GoblinJourney2024,Arena 1 en el viaje de la reina duende,1,5,2,https://api-assets.clashroyale.com/playerbadges/512/tgN_JDLHnHXnb4Iw2vqXkbHPbmH7b9zRVo2acFczrFc.png
+152,GoblinJourney2024,Arena 2 en el viaje de la reina duende,2,5,3,https://api-assets.clashroyale.com/playerbadges/512/KYUs-DUqHWudWUo1rIid6XZpihkCC25Qm3dI1ctTprQ.png
+153,GoblinJourney2024,Arena 3 en el viaje de la reina duende,3,5,4,https://api-assets.clashroyale.com/playerbadges/512/K3zoOhGVU5ks1sAfOTMAtMNnvI0SzWV7GLQl3JkQPko.png
+154,GoblinJourney2024,Arena 4 en el viaje de la reina duende,4,5,5,https://api-assets.clashroyale.com/playerbadges/512/_iTSXAhtaDprbMk1jp64e5YcMbGA05ukO-REWJF_BGI.png
+155,GoblinJourney2024,Arena 5 en el viaje de la reina duende,5,5,,https://api-assets.clashroyale.com/playerbadges/512/_wmXNvh3Lul0vtrT2U1_BG0bLnCGt7gBsvjSw5JxwRw.png
+156,Grand12Wins,Alcanza el top en torneos reales,1,8,10,https://api-assets.clashroyale.com/playerbadges/512/ZFz4mQdY4SyxNvcq_JaAIIjJexo5y0lKCEZnk2mFRJc.png
+157,Grand12Wins,Alcanza el top en torneos reales,2,8,25,https://api-assets.clashroyale.com/playerbadges/512/xwvsZsOYNemTpV8TL2F1nPGCMXE9w2z1ZegwYcdQYOI.png
+158,Grand12Wins,Alcanza el top en torneos reales,3,8,,
+159,Grand12Wins,Alcanza el top en torneos reales,4,8,,
+160,Grand12Wins,Alcanza el top en torneos reales,5,8,,
+161,Grand12Wins,Alcanza el top en torneos reales,6,8,,
+162,Grand12Wins,Alcanza el top en torneos reales,7,8,,
+163,Grand12Wins,Alcanza el top en torneos reales,8,8,,
+164,LadderTournamentTop1000,"Top 1,000 del torneo mundial",1,10,2,https://api-assets.clashroyale.com/playerbadges/512/my1jhaX5i5BT8FK0V62ZwERmcO34-wlMdxZNlhNcTOk.png
+165,LadderTournamentTop1000,"Top 1,000 del torneo mundial",2,10,,
+166,LadderTournamentTop1000,"Top 1,000 del torneo mundial",3,10,4,https://api-assets.clashroyale.com/playerbadges/512/7cTNh0JIsRFj4Aq-EoADHpC6IX4E5W1KwYd6TLTYFAo.png
+167,LadderTournamentTop1000,"Top 1,000 del torneo mundial",4,10,,
+168,LadderTournamentTop1000,"Top 1,000 del torneo mundial",5,10,,
+169,LadderTournamentTop1000,"Top 1,000 del torneo mundial",6,10,,
+170,LadderTournamentTop1000,"Top 1,000 del torneo mundial",7,10,,
+171,LadderTournamentTop1000,"Top 1,000 del torneo mundial",8,10,,
+172,LadderTournamentTop1000,"Top 1,000 del torneo mundial",9,10,,
+173,LadderTournamentTop1000,"Top 1,000 del torneo mundial",10,10,,
+174,MasteryAngryBarbarians,Bárbaros,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/eJYEasRf1Pa1INWZKgAqcAtDh8sMoSx9c8AKjZBkNn4.png
+175,MasteryAngryBarbarians,Bárbaros,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/9pxJWPrVZO7AqpgVfl6L-Ovv5jAEZPqRVIHs5CLXMJ4.png
+176,MasteryAngryBarbarians,Bárbaros,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/P2EaHQTAsc8m0iOWLx8VCiXkzFPL-I8frXLzdTGjbtM.png
+177,MasteryAngryBarbarians,Bárbaros,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/eUZC4gv1MNuoK--RK-sT8Yz7sTAao2ja-PeHMSCmfa4.png
+178,MasteryAngryBarbarians,Bárbaros,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/eFut-OaBWqxMbEDF04bvErHPNAUq6ta85SPaPHhxoeI.png
+179,MasteryAngryBarbarians,Bárbaros,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/2SOumV-SyuOsNe1zepC-hogk-oRC9q9pHwe-Cn7GVQg.png
+180,MasteryAngryBarbarians,Bárbaros,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/YwBpvzUGY1eEksAJ_H9gcrBxfxBKQgAck2dqv4TdlIU.png
+181,MasteryAngryBarbarians,Bárbaros,8,10,,
+182,MasteryAngryBarbarians,Bárbaros,9,10,,
+183,MasteryAngryBarbarians,Bárbaros,10,10,,
+184,MasteryArcher,Arqueras,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/etZsTpgQl5WxQz3mv6KO_zgdFNCgEDLwZFiwvyIoZ4w.png
+185,MasteryArcher,Arqueras,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/tDw13D_aJjqe3n0VJaekN0ZLTCaSNmtIapd1bvzy1dc.png
+186,MasteryArcher,Arqueras,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/4QtDEOCzkIozaQNX2AUWo-ukc8-t-PWMBhXejCzDuAg.png
+187,MasteryArcher,Arqueras,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/4oKskjIfeILNRcV2xhT4b8Z6tqI3MIsp5jp18a5PfBw.png
+188,MasteryArcher,Arqueras,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/dpKoUFI3LUUzbFiJTdjoXWuTscuy6IqhxeuEFV5lIcA.png
+189,MasteryArcher,Arqueras,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/INzoYQTp5Vs_inxf5lnptS1DXoBxwfzhgn7tXR1yb_4.png
+190,MasteryArcher,Arqueras,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/c6EpLTc1Z9U7kxC7wx-eGMNUY3PiBp4PUSsg4PdQNgo.png
+191,MasteryArcher,Arqueras,8,10,,
+192,MasteryArcher,Arqueras,9,10,,
+193,MasteryArcher,Arqueras,10,10,,
+194,MasteryArcherQueen,Reina Arquera,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/sMyNhPpgz8Q06y-JNozLBZMa2LmnedDMd-Zi_45SsYQ.png
+195,MasteryArcherQueen,Reina Arquera,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/b7GhEeTCfZzDcLAb8x8B2E5gneYonh3uf77sSiti2gs.png
+196,MasteryArcherQueen,Reina Arquera,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/_3OK322b39DZxtt8UM5hzAu6JdEfW_wpxDE3Nl2E-vw.png
+197,MasteryArcherQueen,Reina Arquera,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/FLzDnOpiF0u8lmqoo2RGUSB6qRjKv-1lfyBUXes5Dn8.png
+198,MasteryArcherQueen,Reina Arquera,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/kSiDSED9PhJkCSWbj_DULZCG0WaeTHVHUKc4wQWH-GE.png
+199,MasteryArcherQueen,Reina Arquera,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/SScxFLwr4_3jLBwPUQ_lql0fPZIESx6GQiemqjOcgMk.png
+200,MasteryArcherQueen,Reina Arquera,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/3p_7HThLQz6_VwaNlhVsLaQuZYNVg-Gn8zelXdyxTeE.png
+201,MasteryArcherQueen,Reina Arquera,8,10,,
+202,MasteryArcherQueen,Reina Arquera,9,10,,
+203,MasteryArcherQueen,Reina Arquera,10,10,,
+204,MasteryArrows,Flechas,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/Pg42UuVN8UHtUrJnP-0MO0-Gr_D4k0yFVlBcKsglJzE.png
+205,MasteryArrows,Flechas,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/uuPpQh3onm4tO_GiS9rniahMcwq8XEqC6eLebZHe6mw.png
+206,MasteryArrows,Flechas,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/a4tnevPlHKos6Ui7jUNqrPBA8ntsV-WG7bsxk6bHNq8.png
+207,MasteryArrows,Flechas,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/g_257NrfJXU9-YZR1aPr8jvvM67mH7w8-n78XIZZyu0.png
+208,MasteryArrows,Flechas,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/S21WJpsrYLobgkBw97FbresOV72SrckT-RdFOrE_gV4.png
+209,MasteryArrows,Flechas,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/6UHPvzg9eBfoEPUvV7FF_fO83iUTvQeEsdg1q9V1lBg.png
+210,MasteryArrows,Flechas,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/Rrz3pLD987qb2ZBBYCbyGTXwu_KnkWb_pgK8hixGOFw.png
+211,MasteryArrows,Flechas,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/ZjrQn9unxfn5ulUcxhrAhTaWLZ8WxgIIb81OynL3n7A.png
+212,MasteryArrows,Flechas,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/Vo0P_jpkMVjx6GF_tBMIj5nkALRPDkm1SRR0nmh_Tik.png
+213,MasteryArrows,Flechas,10,10,,https://api-assets.clashroyale.com/playerbadges/512/VJe5jJ8hH-QfKkqYyVFN-dbmqhK1J6V8YyojKKL9L2U.png
+214,MasteryAssassin,Bandida,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/rajFTEGOR0OxDRvAQhTG7Mx62iV9ZZsqr-pGB0BNCdM.png
+215,MasteryAssassin,Bandida,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/wQZljb94HQkfAk36yWeySOUYOFQzur2146EhHQuWHec.png
+216,MasteryAssassin,Bandida,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/tM4VkFF7VNxWhTffsbqfFqsPJZvlca8ST41J8cfp1-k.png
+217,MasteryAssassin,Bandida,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/NB6sO7m4xUSsTFdCUJcFLKxQ11LWQIJBSUltNIQNh2Q.png
+218,MasteryAssassin,Bandida,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/djmbxPsVhnpcORe7jMcePlQn2w9CuCcp8MzqeDNKmfc.png
+219,MasteryAssassin,Bandida,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/x9S-V2nbadEufriy5Ld-q-kEU3McpsjPgImkOz4wmUk.png
+220,MasteryAssassin,Bandida,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/8GCZOlveRAtaTomXPaL1NkUmYD4aevIACLsVeHuydLA.png
+221,MasteryAssassin,Bandida,8,10,,
+222,MasteryAssassin,Bandida,9,10,,
+223,MasteryAssassin,Bandida,10,10,,
+224,MasteryAxeMan,Verdugo,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/pOqek4eBFVkDgXpbdyn6A7IbT3ieyqDA7gyb_dPMSUk.png
+225,MasteryAxeMan,Verdugo,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/SUYsjPlgmneIEj-eyJn5Pf3AqIxnxhetaHBBBP_XaW8.png
+226,MasteryAxeMan,Verdugo,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/CXP3bpttYkCMBcRhTgrzcWPvOXYKtbVnHFj7UftNNsY.png
+227,MasteryAxeMan,Verdugo,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/Ip6y0JSyr0Nuh9qC90LDLvlJSNXSaXx8Ddxvxs93DW0.png
+228,MasteryAxeMan,Verdugo,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/9knZdQFkg20RR4iE2jaHEz68VVy_mFGP2eBiWGocMgU.png
+229,MasteryAxeMan,Verdugo,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/Ig1aiDdzgrA1qMtRjzdFrqh9YM8WVU4yMtrmervmwGs.png
+230,MasteryAxeMan,Verdugo,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/t1_rY6zC9i9g21bXcJMSrh1vzLHASbcID1PgIuBiV0c.png
+231,MasteryAxeMan,Verdugo,8,10,,
+232,MasteryAxeMan,Verdugo,9,10,,
+233,MasteryAxeMan,Verdugo,10,10,,
+234,MasteryBabyDragon,Bebé dragón,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/xdIL40vhvAK77GfbQSjrjLXziXArPMH0q5PDNLcdhKQ.png
+235,MasteryBabyDragon,Bebé dragón,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/oA3HAPFYLze0e5BqT_QWJReHuEQtdvXw5Vr7PeVwF58.png
+236,MasteryBabyDragon,Bebé dragón,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/aqpSByhRj3xvNFxlz-wHu4s3i9f1jXMHTmMh_EaLMEU.png
+237,MasteryBabyDragon,Bebé dragón,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/iUEEBCe3PAY2_iK_l54gavqz9aoEoo4e4yju7-LrMRM.png
+238,MasteryBabyDragon,Bebé dragón,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/HmuqjmMEXkveUGmnD_JFkWAARHCTcPG5pE99AQW2SpE.png
+239,MasteryBabyDragon,Bebé dragón,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/1ocdiRDq6J25mT2JuGT8B19o-Ewku4SN293XqWwSOCA.png
+240,MasteryBabyDragon,Bebé dragón,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/yPrGPvfwJoDLEk5sp2imlkuDJJu_z7J6fmsig4_OglA.png
+241,MasteryBabyDragon,Bebé dragón,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/7-3STjubpmQJAuqhz-zIOV2kak8JauFMF0yGXt0g924.png
+242,MasteryBabyDragon,Bebé dragón,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/ljARs0xT-6E3-nobRoX8uFz3SeOKfHsVxTsDcVQLsFU.png
+243,MasteryBabyDragon,Bebé dragón,10,10,,https://api-assets.clashroyale.com/playerbadges/512/_zyamT8ctCKS8evYDJ26gZRB9qWkDE6oTYb-VAVxsZE.png
+244,MasteryBalloon,Globo bombástico,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/-m2LgkQdfBLyskWeibNNryL0TLt6OA2x8SlYoGXtYew.png
+245,MasteryBalloon,Globo bombástico,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/3XDhvaRqs8PEfI7l63EmdEcK3Jdl4bqQObLKAcH2SFM.png
+246,MasteryBalloon,Globo bombástico,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/5NWIYb9y_4H1M134VSObMrR01UtgrXG7uWYWTaFj2QY.png
+247,MasteryBalloon,Globo bombástico,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/ePACbQFO-nLGJcX4ZdUsCPl3Ue6kSJlleGdh8b7fZSU.png
+248,MasteryBalloon,Globo bombástico,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/IlqSPrZCM5mgE7mpnM04_FNDn_x22jxa41pFeoxT_y4.png
+249,MasteryBalloon,Globo bombástico,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/Khx2m-vg7mJhBhrJqB6sHhS4QlmqRGRPggPwWM8puv0.png
+250,MasteryBalloon,Globo bombástico,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/uf4xP97PZzb276M2Fm2bZI23QcoFoqdWRPjh-8Jb5WE.png
+251,MasteryBalloon,Globo bombástico,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/dI1Ep3ZBQaCwMlv-Mxy4c9EiNYSxSfbzBf0ZpRZ6vM0.png
+252,MasteryBalloon,Globo bombástico,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/p3242IURNYyx2AHCWF798cDhzPqBp0Zsfmfa2aBj5JA.png
+253,MasteryBalloon,Globo bombástico,10,10,,https://api-assets.clashroyale.com/playerbadges/512/WovJkqmUKvjqTFojRV91Y58eqKHbvpovK1rfEX1pOu8.png
+254,MasteryBarbLog,Barril de bárbaro,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/HpEkuh4q22OnON2GDwdXp_BsDE28lIlIUHBus0yC-mk.png
+255,MasteryBarbLog,Barril de bárbaro,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/-QOIzsk02XNpRW6q8Sbcxggc2PRrEJnylEYq9siyQv0.png
+256,MasteryBarbLog,Barril de bárbaro,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/x6Qc2_XWDSoC2UJzFACC4ZygRe8AzI-1q6nxA_EqnZk.png
+257,MasteryBarbLog,Barril de bárbaro,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/vdDVLYdMqpz-9LRQBoTtdCaqmTjmFT9ic_7oZ7YT-cQ.png
+258,MasteryBarbLog,Barril de bárbaro,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/inmgeMglfFFli19Y5yskhOYbflIRiVVuBE6PYhlgH5U.png
+259,MasteryBarbLog,Barril de bárbaro,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/edPVRYJ5-0Y1lO0ye9wbwyfI_1_TtGn3uGMVzhQ23rM.png
+260,MasteryBarbLog,Barril de bárbaro,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/x26-a2nF7tDarQxRKlFivSZ8_kuUIQl2IdO4xNupR4A.png
+261,MasteryBarbLog,Barril de bárbaro,8,10,,
+262,MasteryBarbLog,Barril de bárbaro,9,10,,
+263,MasteryBarbLog,Barril de bárbaro,10,10,,
+264,MasteryBarbarianHut,Choza de bárbaros,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/Zm98W4b4WtIAVVnqstwy7OCe1ZB8jgyb9iPhvyEXvVo.png
+265,MasteryBarbarianHut,Choza de bárbaros,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/h7vSRjIUDaJpqeLJoTT-TirFnktsFLP1RSWvPXOiDXE.png
+266,MasteryBarbarianHut,Choza de bárbaros,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/8kL5ZPOE16RTZRjMl3nrzwCQxp-VWrZDWIgnPs1io6U.png
+267,MasteryBarbarianHut,Choza de bárbaros,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/sRZCIQ5qMox49Jvoyyhpv_7MtrkLgy2YNdsc4RHnUgQ.png
+268,MasteryBarbarianHut,Choza de bárbaros,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/6orvpUoeITsSC74zMczZaGKMrqehG0rA6yk7CnOsxmY.png
+269,MasteryBarbarianHut,Choza de bárbaros,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/jWWs-zZOuwFnwS_yJP77z-fk4uv_eZMsMnpI61XJLRI.png
+270,MasteryBarbarianHut,Choza de bárbaros,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/gF8UtATFzw-E27J-xgzFEnY3aRj2ZiAs5XAvkGr_x5U.png
+271,MasteryBarbarianHut,Choza de bárbaros,8,10,,
+272,MasteryBarbarianHut,Choza de bárbaros,9,10,,
+273,MasteryBarbarianHut,Choza de bárbaros,10,10,,
+274,MasteryBarbarians,Bárbaros,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/48uY-Frr5hw10jViSsg9qr1lLzgxeVKPzVJ_42D2gMg.png
+275,MasteryBarbarians,Bárbaros,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/6JanCOpc3NHxnuoS1ZmhdUcD4lFYMY3yXkRzZXAEJ3E.png
+276,MasteryBarbarians,Bárbaros,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/4GSR6kukE1XS89bnVx3KV7IwPWsC2C_Je3FKuSwfF2Q.png
+277,MasteryBarbarians,Bárbaros,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/jShYPKMCVpq6lyzCksIqAxHjztI2WtZwoe0ynBPhQCs.png
+278,MasteryBarbarians,Bárbaros,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/8YbfWdX-pEHllsru1Yd5ZoV-Lf7Ifc2tIZAmJSq9fkw.png
+279,MasteryBarbarians,Bárbaros,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/g_N90I5TJrjfKuXNbeVm_xV-yT5Qm8dqhjBbVNnHbos.png
+280,MasteryBarbarians,Bárbaros,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/M9jmPTDsuBbG3p5hn-dVwgo5bSwz3HWvICsOyc1DZ8A.png
+281,MasteryBarbarians,Bárbaros,8,10,,
+282,MasteryBarbarians,Bárbaros,9,10,,
+283,MasteryBarbarians,Bárbaros,10,10,,
+284,MasteryBats,Murciélagos,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/Wma-uXZmqak7OObtQAmYtudt7KQPyoD1gxg8BBVFup4.png
+285,MasteryBats,Murciélagos,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/VYK79j1FbWt7J-59KfC84rmlOY7xmDnn2NeSk8ekM5M.png
+286,MasteryBats,Murciélagos,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/dtGX_GS72j13Mep8H4FPbFoGHNvwUM_ANbxRbqqXbv0.png
+287,MasteryBats,Murciélagos,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/mx7SAhT5Wk0zf5qcAQDJS6T7FWTmP9caULfu0taJlyE.png
+288,MasteryBats,Murciélagos,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/WUd9_WRvBIbECtmFuuH7GgKjFJdkNePokTCuvesYGIY.png
+289,MasteryBats,Murciélagos,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/Izflw-9MxjqKUzif-l9wAVQJ7GV25hYNuE2itzf5r1s.png
+290,MasteryBats,Murciélagos,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/fhLnPYQpB-REqi7DS-QkJB-mzUVxqPBfU5JPuhjuKXQ.png
+291,MasteryBats,Murciélagos,8,10,,
+292,MasteryBats,Murciélagos,9,10,,
+293,MasteryBats,Murciélagos,10,10,,
+294,MasteryBattleHealer,Curandera guerrera,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/1rzrbNxMHcye4Gy2VnqGrj1v47_C-4WPvWfQX4Qf8XA.png
+295,MasteryBattleHealer,Curandera guerrera,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/tNv2k3EaIG-JsfK1L-mf-bdPrurgw_5kwKKyFVfLTZs.png
+296,MasteryBattleHealer,Curandera guerrera,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/9d8i45MDvu8RWh2VFyXyyRKZdzMcdUMvFv_TrZCXuqw.png
+297,MasteryBattleHealer,Curandera guerrera,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/C4GmVJK5eIMq4GmjBI3K-xTIoiWhh3-H5ZNeZxuKwbw.png
+298,MasteryBattleHealer,Curandera guerrera,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/9rkGTPeXZ073v1supMFdexhhWlKlEue42vAlYsxNu-g.png
+299,MasteryBattleHealer,Curandera guerrera,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/_cvgBIO-4_snrGJmj-1PCBtsYRANcXpH2L06SGKnxvk.png
+300,MasteryBattleHealer,Curandera guerrera,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/cZQc686ikZtwViWkkILmPoqDE57ybRfJlpt5PFluP9U.png
+301,MasteryBattleHealer,Curandera guerrera,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/OGSu5WAkwlIDVuXjY1EMtFigGwblOCakzu6r7KdcFi0.png
+302,MasteryBattleHealer,Curandera guerrera,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/0ZwDbpsiR9l9GNJV-biqZM_k1HlXwzVkDE2gvzCR824.png
+303,MasteryBattleHealer,Curandera guerrera,10,10,,https://api-assets.clashroyale.com/playerbadges/512/dtGouF68g1R8stZet2pVgHW2VUfwjORyjy6NpiiPZMw.png
+304,MasteryBattleRam,Ariete de batalla,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/LatE1XUGNrkouO7t48wYliayX0_zRN-ZbbB9FcPGH8g.png
+305,MasteryBattleRam,Ariete de batalla,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/iaOReUGPda_uZnZNQJ7rtrx4JIOR31BStwlOzAirQaY.png
+306,MasteryBattleRam,Ariete de batalla,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/gZ_1GueXKgMSUf6X6y-t_93xQqtK1K-nYOnk6wxf37c.png
+307,MasteryBattleRam,Ariete de batalla,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/FoWQPjKqJOzVbKxu_3jPSZKOmFx4EoQ6MSs5fiVQlRY.png
+308,MasteryBattleRam,Ariete de batalla,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/L4AYum7YMb_O6oR7fbweU4tSOfSH7orieqdSvtFarrw.png
+309,MasteryBattleRam,Ariete de batalla,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/ixXI_wvsVO5A-SxrhHxd-8dfYVh54966_xsgn7AfOmE.png
+310,MasteryBattleRam,Ariete de batalla,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/6nLeBpNcARQTadk2OQ9IyNZczGoVBmdpBhp1w-kizO0.png
+311,MasteryBattleRam,Ariete de batalla,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/dLCw-bUc53rMrFzsWYY4ir3DWr57jQZ9oSp7rFl0sYQ.png
+312,MasteryBattleRam,Ariete de batalla,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/7lXqYHnaRJsOpi6vHDMLgmPtJtpytr4ocuxPjxB_Yqo.png
+313,MasteryBattleRam,Ariete de batalla,10,10,,https://api-assets.clashroyale.com/playerbadges/512/ifgTxB4sxNqP6UaX4XJxcTYJI33hnWrqRT4w5YUU9mg.png
+314,MasteryBerserker,Berserker,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/n9UvjIobjxaDDh11-2WS2KR3XsOVzez2uv3m-Z81jwA.png
+315,MasteryBerserker,Berserker,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/QhS0BBdOJd7TWlZvzGjn1dG3mSxWEQtT88HuJcLY0t0.png
+316,MasteryBerserker,Berserker,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/2LQWckZuC-H18Oq_fQ0YHvcI3--6XJCDapII8Re5ABw.png
+317,MasteryBerserker,Berserker,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/Qi3c9TCqKzh56K3FRMwKwomfLAzbcdOn-RGNqyVPrHk.png
+318,MasteryBerserker,Berserker,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/E998HZPiI5bnuGqL1rT-qKTtGuTSDvI-Xx9PTXafst8.png
+319,MasteryBerserker,Berserker,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/D6sBRT6-m4zIyZe1jXYed4X0ptY3a2sOB6G1JbBpQ8A.png
+320,MasteryBerserker,Berserker,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/Yv8RDWdzIaeIY1LwJIOEXHZWp6Bg1yvwDWCLZANjL5o.png
+321,MasteryBerserker,Berserker,8,10,,
+322,MasteryBerserker,Berserker,9,10,,
+323,MasteryBerserker,Berserker,10,10,,
+324,MasteryBlowdartGoblin,Duende lanzadardos,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/LIcPkqh9cxZXVIeZLs4qGPCrvFndZhbOzjvecOxvg_M.png
+325,MasteryBlowdartGoblin,Duende lanzadardos,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/FbflZ0Z6ttUdPTMXB4rPQEqtkRsDtbuDhiTLQOzPT1E.png
+326,MasteryBlowdartGoblin,Duende lanzadardos,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/kqwua4rTc9MSa1NWHUfaB2I7E7I2Dc0Hy07LbZHJx6E.png
+327,MasteryBlowdartGoblin,Duende lanzadardos,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/wgX3_ut3JgMz2aCuAZavJRj4QIlepRVDG-HIdYLXDt8.png
+328,MasteryBlowdartGoblin,Duende lanzadardos,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/EtlIccsWTVeoPrCGZ9Qnpo7U9zp1zDsisI5keIxkOGA.png
+329,MasteryBlowdartGoblin,Duende lanzadardos,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/XaCHRuaUIqTrt0JKzg5wgY0XBN_HfuHa7ggwXn0poCE.png
+330,MasteryBlowdartGoblin,Duende lanzadardos,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/4kq7FkxH03uc6x_C4yFTRYkfolkxOBa0O7RL4AoKowc.png
+331,MasteryBlowdartGoblin,Duende lanzadardos,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/4R-3zKkx8Z_qUqtO9tBX3YCIs0xQBnQNH1RJsQJfOUs.png
+332,MasteryBlowdartGoblin,Duende lanzadardos,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/SDbYY5auvOjRQsrjXmV0iindxTnLz4rwO5ImlC3IaUk.png
+333,MasteryBlowdartGoblin,Duende lanzadardos,10,10,,https://api-assets.clashroyale.com/playerbadges/512/fpI-iVi40YfxU6_RzgJDMFKnPAow61Ai07mEwNkAG3Y.png
+334,MasteryBombTower,Torre bombardera,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/FDT76_aKL-yMRB2BBrQph1BgVNekd79iJzQgB8EJICg.png
+335,MasteryBombTower,Torre bombardera,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/PKT__YPotKpgGkRJeGTOyfexdId3WezGo9PFDhO1YC0.png
+336,MasteryBombTower,Torre bombardera,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/DOqN_AIL2CYlSdvHctN8YYOF02B6x_EkbPPlf52o5KU.png
+337,MasteryBombTower,Torre bombardera,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/ybeEBNA6dXHcXlzuQM192Y96RrKmG-s6yO8PMN4gDD4.png
+338,MasteryBombTower,Torre bombardera,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/ph59DWkqOH_UyxLQPM9E4esDKR7ryhp27kcPAhZQqJc.png
+339,MasteryBombTower,Torre bombardera,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/z8ap8nVyoL9x_tVdMLa1w3p1kaPFFuD2TNbdf47HKAs.png
+340,MasteryBombTower,Torre bombardera,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/eaVCKURpE30BQPEwVsDysDb_pIjGoQwIFWp70I87xAg.png
+341,MasteryBombTower,Torre bombardera,8,10,,
+342,MasteryBombTower,Torre bombardera,9,10,,
+343,MasteryBombTower,Torre bombardera,10,10,,
+344,MasteryBomber,Bombardero,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/CchOX4cm4s0OzWT4VPtPZLtV9EdKIc6b4bBuq2P_EFg.png
+345,MasteryBomber,Bombardero,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/xmuCR1wsTpiVgNWwxojZ31jISF8RpOW5cXWCBOmxyyY.png
+346,MasteryBomber,Bombardero,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/KdfVQ9HZ6LbASh7LPXficoTAZdqPmUBJokBAjaXAfNc.png
+347,MasteryBomber,Bombardero,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/GUnXx6ZbIucevd-Ym-o5Ax8AwxH34uOlynCcE9wR4PU.png
+348,MasteryBomber,Bombardero,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/tErleNa-q-IZ5pkXfMUhczUq3JFTYLL-M915CjZKgmE.png
+349,MasteryBomber,Bombardero,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/5vJuaZ98ld9CzYXrVbDtWuy101NNrzhIQdQ-V1CbvlY.png
+350,MasteryBomber,Bombardero,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/opzmDVJgIIq_T1qU23e-eho7zSNG59o608iiDNfWUJI.png
+351,MasteryBomber,Bombardero,8,10,,
+352,MasteryBomber,Bombardero,9,10,,
+353,MasteryBomber,Bombardero,10,10,,
+354,MasteryBossBandit,Bandida líder,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/ywTmIp4Wcfl7cMxA5Y-pbsNVYfGY5GtMHqBjjb4jZw8.png
+355,MasteryBossBandit,Bandida líder,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/zdoG5YH49ezAC_HfK-W0HRyU9IN5uTbIGVnFaTXnpnE.png
+356,MasteryBossBandit,Bandida líder,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/nCR6lYa7QWhzqqgXDEfUSUUTZQgYCOzadfgDDS7VZH0.png
+357,MasteryBossBandit,Bandida líder,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/TqfOLL5V5uj1NibTklbWtYQZILFHXIk3a_WRU8jVr-I.png
+358,MasteryBossBandit,Bandida líder,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/uV1sOb4dlKHFEI3KQ59-8kpmJGWY8QZAL2BdPS5CRp0.png
+359,MasteryBossBandit,Bandida líder,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/NQYOEtJTKxCVCc_gb5ShabDuPziqMm_iiM8cFH97U1Q.png
+360,MasteryBossBandit,Bandida líder,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/9r4o-d-dGHuKaACWU_DPwBTTXGlc2v4SLjmvZtiGnm4.png
+361,MasteryBossBandit,Bandida líder,8,10,,
+362,MasteryBossBandit,Bandida líder,9,10,,
+363,MasteryBossBandit,Bandida líder,10,10,,
+364,MasteryBowler,Lanzarrocas,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/boaSEsZrrre3sws4YCViheE6nY7abjOpkV_WQnV36gk.png
+365,MasteryBowler,Lanzarrocas,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/_OpbGkCxOkmaS5R6UPzkaCr_yU6grncOJ44TVTFfe6o.png
+366,MasteryBowler,Lanzarrocas,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/fT9MkUXQc_ymYeLkKn6acB4mrGYWIP3fHStVXsLqfYg.png
+367,MasteryBowler,Lanzarrocas,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/VZRxbqU9iDaiIU-uc-QenvC9ZVM440fpjePIAyA9yP4.png
+368,MasteryBowler,Lanzarrocas,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/Kg877SaMJuEIn1WgcENPn1jZphtRaPe0c-Z3hxftbVE.png
+369,MasteryBowler,Lanzarrocas,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/t6_bvfgdKp-KgABw0LmSOB5qKBJi5_6zG4rx6XpGJQ0.png
+370,MasteryBowler,Lanzarrocas,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/gGQNpp06C3l9iGAucvTNDmF0sPBuzper0aAmkn4TLzA.png
+371,MasteryBowler,Lanzarrocas,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/MPNEfEyn6WvG_5zVqNH9GQxUu9ekdTu7zKPghTD-2-s.png
+372,MasteryBowler,Lanzarrocas,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/sglq-cjrK7iddL-QFtBrSGw574HPpLCveLZnnFTLnJc.png
+373,MasteryBowler,Lanzarrocas,10,10,,https://api-assets.clashroyale.com/playerbadges/512/1vrtMX6EvBYqKBPM6k0Ev2uECvYfUEtUznDUjiKIWjU.png
+374,MasteryCannon,Cañón,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/FMdsTdxtRYlQ6EADrgc3rY6_Aq7uqBI_SJJmm6vKb44.png
+375,MasteryCannon,Cañón,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/AllRES2kswFvclLMojPrBNDCVQf5a1UcJirQFCglar4.png
+376,MasteryCannon,Cañón,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/YjdC1bKSzkM8ciKGceuCmGtIVuvnwa2d8uZ5O639Kd8.png
+377,MasteryCannon,Cañón,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/vFHrAfsQYfujG-FcVE6OnSGfnGcpZNqeUWZlskgkbxI.png
+378,MasteryCannon,Cañón,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/iOkr96w-IMamLMS4zXWe6VCA2FqmfYG7BuZe27IjTuw.png
+379,MasteryCannon,Cañón,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/YARx5MG829lHZyFtjMWxdUCc-dzrMUIVjbKxo3YX3x0.png
+380,MasteryCannon,Cañón,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/u1_Zbq86yDVN80dbwVIx_YCwth1Oxe0MfVvTSGdBDeU.png
+381,MasteryCannon,Cañón,8,10,,
+382,MasteryCannon,Cañón,9,10,,
+383,MasteryCannon,Cañón,10,10,,
+384,MasteryClone,Clon,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/sCmeFCH_o_EH7eU6Eyu2eNdlU3OwgKx1ZbRMaLrzMy8.png
+385,MasteryClone,Clon,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/3aV3x5hJtMR8OYx4VBNyIPal0un9oSkSxAYMi7ay-1g.png
+386,MasteryClone,Clon,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/Ryg2MG272Err3kOUFYOX577fr7LDYx5RoORqZuWe2Nk.png
+387,MasteryClone,Clon,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/1Dtk9w5pZHPtdD3_2sQIU-QfaNqqm_iUbFu2cD-bKXk.png
+388,MasteryClone,Clon,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/XZlPzVTFUbTOQJqT9vbDHrtfqxACUC-4G4TCr_SyCP4.png
+389,MasteryClone,Clon,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/aYAKYi6ojjaKjcVETL3xm-6a7peOeOpDweb_EqOFNOA.png
+390,MasteryClone,Clon,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/BP-BHsGRMOU4bSojaljPj6WbSBvFmThPqc05q5K-ZwI.png
+391,MasteryClone,Clon,8,10,,
+392,MasteryClone,Clon,9,10,,
+393,MasteryClone,Clon,10,10,,
+394,MasteryDarkMagic,Vacío,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/HEKtWbcoucEVfquz-0VKbRfJu5NKQnWVJXP6n1fNQK8.png
+395,MasteryDarkMagic,Vacío,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/DndS1hp0uYyq6hC1R8SaqdI49-VKWM4Guddbfov4iBM.png
+396,MasteryDarkMagic,Vacío,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/snfF54tCGVFFEk_bdmsCqmWp2rk_Y3SlgK8Lz1nghKE.png
+397,MasteryDarkMagic,Vacío,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/M3dG5SapV8AYcxrfposG7R43pDF-tXEIiEytemJXXss.png
+398,MasteryDarkMagic,Vacío,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/ILx-VxqGswyigMCg-bdwRg30pBmX6yQlwFq2gmYsZfU.png
+399,MasteryDarkMagic,Vacío,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/V-amTaD0QzpcsRYIGHBpT45CAQn92vre4Ulbzfrcrm0.png
+400,MasteryDarkMagic,Vacío,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/I8w2x5A9YVRhunfSIeuioRrA5l-N9iaoJVHNJISec8Y.png
+401,MasteryDarkMagic,Vacío,8,10,,
+402,MasteryDarkMagic,Vacío,9,10,,
+403,MasteryDarkMagic,Vacío,10,10,,
+404,MasteryDarkPrince,Príncipe oscuro,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/0X2an_X24MVF7B_EEnzDwW5iwSL8uXIB8IbE9YxGyz8.png
+405,MasteryDarkPrince,Príncipe oscuro,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/hQP9jOtIYINhKZ0PviYlG3jElmI0E_uG0u6hWNMd6sE.png
+406,MasteryDarkPrince,Príncipe oscuro,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/I6Rv3CrqpCS8bDwDTrU8bPKO-8eTKI6VF_3NCTazMfU.png
+407,MasteryDarkPrince,Príncipe oscuro,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/umH6vw9cFtyIu5hl5BnjNb-O4pHokHOanwPCfVA3irs.png
+408,MasteryDarkPrince,Príncipe oscuro,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/5vQGW_gYQ6sr4LDZIEPLshW_Ux9eIex9MEKhYYu3LaM.png
+409,MasteryDarkPrince,Príncipe oscuro,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/T39DQyJveBHHmw9W0G4tdiM3WKBW7UQAQAAfrQXKWrk.png
+410,MasteryDarkPrince,Príncipe oscuro,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/wo-UdkSKmkeQfDaZoCBtfwN8magUM-wtp3md-giEShM.png
+411,MasteryDarkPrince,Príncipe oscuro,8,10,,
+412,MasteryDarkPrince,Príncipe oscuro,9,10,,
+413,MasteryDarkPrince,Príncipe oscuro,10,10,,
+414,MasteryDarkWitch,Bruja nocturna,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/593kWN5HKOIcf0ZjgXCSz4arbRvlE_1kudzfWBwKS9A.png
+415,MasteryDarkWitch,Bruja nocturna,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/WZWGCn6Hkguh_7O69UROeWWvSeNrgIyo9hACHNXds04.png
+416,MasteryDarkWitch,Bruja nocturna,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/D7g5uFzmyqiHLrJjoTGyHL75rEQTVcCFXG60HQ2N44c.png
+417,MasteryDarkWitch,Bruja nocturna,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/YDNw1soNughp9yeGnGjjBO_Iz-nm2BfbzUM0t14NpeQ.png
+418,MasteryDarkWitch,Bruja nocturna,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/VtJX1FUwkltAGKQtq_0igSedZK3asZtb3bWyFhEEzwQ.png
+419,MasteryDarkWitch,Bruja nocturna,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/WJt2ImOHD0_H9mGNx0MPIuRurWlEXpjdk7UrfmUCBDE.png
+420,MasteryDarkWitch,Bruja nocturna,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/eDQADasfwnMDkAlfuHpBEiM4ktJfPMRm2-DmY--r0XM.png
+421,MasteryDarkWitch,Bruja nocturna,8,10,,
+422,MasteryDarkWitch,Bruja nocturna,9,10,,
+423,MasteryDarkWitch,Bruja nocturna,10,10,,
+424,MasteryDartBarrell,Máquina voladora,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/OGZbIWG0OEUGkZTdrejX0lth0Q2RbhZdOMSL1x_kigU.png
+425,MasteryDartBarrell,Máquina voladora,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/_iTB1KlfnkWjfGtLqR8tToWTziWDHCVn3llfcuiRedA.png
+426,MasteryDartBarrell,Máquina voladora,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/eRdnwJUYyqMfUZqxswIMFiy1K0A8UImgzUcYVR4BrIk.png
+427,MasteryDartBarrell,Máquina voladora,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/sq4YRexlGy25UeTtWifU396i7n-d6HlpP9J6iJI5Dxc.png
+428,MasteryDartBarrell,Máquina voladora,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/V3MrgQaMKAmVUFKyRkJzQ6D3H7YSx9Hm6h1PoGGfmAs.png
+429,MasteryDartBarrell,Máquina voladora,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/8FqyRLW8iw15qZX2OTURoWa7kE7nqCgCGv-DDZJ46l8.png
+430,MasteryDartBarrell,Máquina voladora,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/b1oLCbU-v9Ohr6DkXu55BDDTnbRCncutglL9NSus1ic.png
+431,MasteryDartBarrell,Máquina voladora,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/TiBvcRkUYsmK8JKaDpkc3uumx4wsqH8HxkDiP9QFypM.png
+432,MasteryDartBarrell,Máquina voladora,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/94KjiWCvQVUFIgICX6j1b-5kWMx9y4sVx313wM1Pxpw.png
+433,MasteryDartBarrell,Máquina voladora,10,10,,https://api-assets.clashroyale.com/playerbadges/512/ghjl0pwdEywnbtYc7DSXAP8mJVntpqhKrUweCJya0fM.png
+434,MasteryEarthquake,Terremoto,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/QZqmjsqlHse_KQrzy4nfJ7Z8ubumfNOnrBzlNprXtyI.png
+435,MasteryEarthquake,Terremoto,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/wsp1kuVFYzx8tG3cntv346tkVz0QRv2virT1njrss40.png
+436,MasteryEarthquake,Terremoto,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/8FLnwHuvQbEaoOHhyATqjM30TuHP_oMSl6jCs87qDMc.png
+437,MasteryEarthquake,Terremoto,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/6zq6pu3BCU8rZJWmhh7AiqKnqiRzMWJdYo0aACUuKn0.png
+438,MasteryEarthquake,Terremoto,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/lRdKNniCCDZd5r_YhX3BnJ9QFRtkVhR_21bPNKYBtrs.png
+439,MasteryEarthquake,Terremoto,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/1MuBsO1-gBrFAD2j2yCGnRSfYJVvwKuJSZifcjTUOls.png
+440,MasteryEarthquake,Terremoto,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/okaL4KI5i7aAZ-Dmv4_5n5R7VnrylROV23p9GUecQto.png
+441,MasteryEarthquake,Terremoto,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/SZR_sGz2-oWUyGEkp4JffqCHbx7TQBKtnGyF0lO1jLE.png
+442,MasteryEarthquake,Terremoto,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/q6n_xatKWvCvmxAufWIcyimimQ-sbdEFUgM5YMhDSRU.png
+443,MasteryEarthquake,Terremoto,10,10,,https://api-assets.clashroyale.com/playerbadges/512/E-qnv7t4ShB5S1IYKsH0Ek4mY_4Po8qGVI0uYexYAf8.png
+444,MasteryElectroDragon,Dragón eléctrico,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/aqM-lj6wd42dOopHScZHFa5NiTSiLHwJa4yYb4nYmRY.png
+445,MasteryElectroDragon,Dragón eléctrico,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/nmYe-15pfxKzkKwlRvzXyNAav8oZ8dUIVr4QRk7dy70.png
+446,MasteryElectroDragon,Dragón eléctrico,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/9z3vrqaHXMbjSxL5Dn1BHd2QYNlyggpqyqASO7fjOVQ.png
+447,MasteryElectroDragon,Dragón eléctrico,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/1zs3jag0iowejOYi_hvneX7TOI7Lm809rOkIzUz0twE.png
+448,MasteryElectroDragon,Dragón eléctrico,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/qXPjf4OHGkxNxWsXZWBkPwJ5J_1sJYpuycAGC3ZOfkM.png
+449,MasteryElectroDragon,Dragón eléctrico,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/6YimuZw6dZo37_IWlJIAHBVLP4gnhKG8B34UTeOE_V4.png
+450,MasteryElectroDragon,Dragón eléctrico,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/AmB99vh9PSjY8LDZB4ZFekuCSS9s2NVvUGcveo70dAU.png
+451,MasteryElectroDragon,Dragón eléctrico,8,10,,
+452,MasteryElectroDragon,Dragón eléctrico,9,10,,
+453,MasteryElectroDragon,Dragón eléctrico,10,10,,
+454,MasteryElectroGiant,Gigante eléctrico,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/H27aRuG6KRvf3fbv3i7lbsYDB16JfgTZOemaj21xRHE.png
+455,MasteryElectroGiant,Gigante eléctrico,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/2RdI9n6YeoxBAnP83HUg-8Nmlj6ngMvJJLiCfNCoPOA.png
+456,MasteryElectroGiant,Gigante eléctrico,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/y9U2ZVI1fHRE7efEvh2tBk-SFt7-pluSB3L3yFPbjOM.png
+457,MasteryElectroGiant,Gigante eléctrico,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/kcNgFfn2qojWiR0RuJ6yq11-bnt1uRTghHHc_nyJxzM.png
+458,MasteryElectroGiant,Gigante eléctrico,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/4vD0GXAYVdsOE3YjqVmjEdsik6iG7BEIqTDZeBHQE18.png
+459,MasteryElectroGiant,Gigante eléctrico,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/0BpwNiY51wrkbJ_hOFmF5MZEwfXIValN3EYlIbFi4f0.png
+460,MasteryElectroGiant,Gigante eléctrico,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/pZDHbi6Gb8ewAk66_Rxt9W6Ulkd4g7seOhWH9zlRkC0.png
+461,MasteryElectroGiant,Gigante eléctrico,8,10,,
+462,MasteryElectroGiant,Gigante eléctrico,9,10,,
+463,MasteryElectroGiant,Gigante eléctrico,10,10,,
+464,MasteryElectroSpirit,Espíritu eléctrico,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/4xsWgZTvq3z4QlKsSJ0vuZojJhp0aZi1oNFE8P37m8U.png
+465,MasteryElectroSpirit,Espíritu eléctrico,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/-qQiEQS443ur8I2UmywfhtQEkk1kuYLHrFZyHTott_U.png
+466,MasteryElectroSpirit,Espíritu eléctrico,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/MJoEw9JZHHrQkQivi39eOz57gQmDQWBb5yfVAMuNXtc.png
+467,MasteryElectroSpirit,Espíritu eléctrico,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/p-HnA0e9IgZ-D_bgwfvVE4WPdcyV_GSOZ-87-MRcRpo.png
+468,MasteryElectroSpirit,Espíritu eléctrico,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/-Nvi0D_LvMRGipM5YjvLlhfEsiIDGU_5AAZV0AVxssM.png
+469,MasteryElectroSpirit,Espíritu eléctrico,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/eA6krdpLHuV_Rt1rNbQrYz7NNc3bVnX0hqpGwmi-r7Q.png
+470,MasteryElectroSpirit,Espíritu eléctrico,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/0oBKotq4E7hRssMuY0bDu9BHGhSey-_A5zeoU1X9XRM.png
+471,MasteryElectroSpirit,Espíritu eléctrico,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/XyV9yJd1kxxTKdW0k-8LKyHAWEmMt25aUdx457vN6yY.png
+472,MasteryElectroSpirit,Espíritu eléctrico,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/MF3xDtWVPF3XzgHffYy5lCIbOkCGWTu2MlMB0E81Kfc.png
+473,MasteryElectroSpirit,Espíritu eléctrico,10,10,,https://api-assets.clashroyale.com/playerbadges/512/0JVvfu0FmojZi-ThtXAD7CB_T9bnvoZujwhKuZpeF3o.png
+474,MasteryElectroWizard,Mago eléctrico,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/WVeIS9gk1dQZyUEEZDVTrXkB5OB0MjbTKM7hENCHKus.png
+475,MasteryElectroWizard,Mago eléctrico,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/JO2f4CQBjgSaF8vzVRgugQr9qW9L05HeqccL2jux99s.png
+476,MasteryElectroWizard,Mago eléctrico,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/8VIXVuz5YbB1k9mWMLDz-SFqpPfw_2EC4gaZpTfBHnE.png
+477,MasteryElectroWizard,Mago eléctrico,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/hXSzoN9NQT32Q6cf2dtguQ1GD2zDoQRUJxFlazUF3AA.png
+478,MasteryElectroWizard,Mago eléctrico,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/rENJOsLuZGmsbESsHvHC7cJh0ezFhQsBliZKlhrRO-Q.png
+479,MasteryElectroWizard,Mago eléctrico,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/R0BVEPkL7M-hB9zrdSYyy_1j5BAu3I_M4xOHw7hzn2I.png
+480,MasteryElectroWizard,Mago eléctrico,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/E5wJJJd4RmsAK8EZ9Uu-BilPn_pKOTQd0WvCrsYeLmg.png
+481,MasteryElectroWizard,Mago eléctrico,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/Kzq4T6KriOovufbcOXsZaUuR3UoEMJ2u4Ga30F21jsQ.png
+482,MasteryElectroWizard,Mago eléctrico,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/AOZA-4MywE52P7lGlOvjh93kJ5crg6GSP-o7trGeiCY.png
+483,MasteryElectroWizard,Mago eléctrico,10,10,,https://api-assets.clashroyale.com/playerbadges/512/fSgrsSLTSVH7t5b578_BQZu8DTitnw9sCJz50o-J7fg.png
+484,MasteryEliteArcher,Arquero mágico,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/29HyKLRoNYWhOMMuvSQbdvG3ZmdpA-aADEZXCwzglKY.png
+485,MasteryEliteArcher,Arquero mágico,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/xsOFDyoS3SbBEoijrF-0hvIuuabFwxOPOd6slalypGs.png
+486,MasteryEliteArcher,Arquero mágico,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/4oJMiaKkIWZpUzYW0icUu0zf1lnRHozqODFjKk-XVxo.png
+487,MasteryEliteArcher,Arquero mágico,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/Wc0tLoqVudXrvLn5jlWDasqTmoega_aNIleQeUjb2IA.png
+488,MasteryEliteArcher,Arquero mágico,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/8p8YGGfSSgMOgKju83YRmva8hLLxWVFr7Pk7ENKgHr0.png
+489,MasteryEliteArcher,Arquero mágico,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/TF-aDaQ48FH6w4TWzthKFgWymP7DKS2jNJPwHLFFQ0w.png
+490,MasteryEliteArcher,Arquero mágico,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/mBxCzESDExHQxMbZEu4g9kDUUsjx5fRENYpUMOdyEh8.png
+491,MasteryEliteArcher,Arquero mágico,8,10,,
+492,MasteryEliteArcher,Arquero mágico,9,10,,
+493,MasteryEliteArcher,Arquero mágico,10,10,,
+494,MasteryElixir Collector,Recolector de elixir,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/diNAROlea8Qbm5198Gs6AbwWoLAWPFIPrOpDrEs-wqs.png
+495,MasteryElixir Collector,Recolector de elixir,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/nDDA6qCRrH1GnTe6jeqtpRvMZOBTAUAsYDQAc_PxVyw.png
+496,MasteryElixir Collector,Recolector de elixir,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/CEE18PLX8y6HgDNccIWfIRPPGyr_bkIe7kghBGHzPA0.png
+497,MasteryElixir Collector,Recolector de elixir,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/D4hucPLqs8421SciWP_G6OKDrFiM0K4oo-oKTiSCk6w.png
+498,MasteryElixir Collector,Recolector de elixir,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/i7zOSV8XkBy79xJjwMDJ5AWXykcsZgBllIGzjBIUT3U.png
+499,MasteryElixir Collector,Recolector de elixir,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/lBujrP6Toqdzk271X5oL_vI-HVrTFAE7mOpPIoE_eLg.png
+500,MasteryElixir Collector,Recolector de elixir,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/PJl-WNgzK3J2TLzTjKBdT-9n5k-FyNcT5U7WSUdmNM8.png
+501,MasteryElixir Collector,Recolector de elixir,8,10,,
+502,MasteryElixir Collector,Recolector de elixir,9,10,,
+503,MasteryElixir Collector,Recolector de elixir,10,10,,
+504,MasteryElixirGolem,Gólem de elixir,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/S6fXARKx2HhJ1Si7xUyq3teshQz_g-7sMSdq3-Zo_Fo.png
+505,MasteryElixirGolem,Gólem de elixir,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/9kYRMQIxJ6cThC_U2F5A9NNAOHcreacMx_cOPJP1H8M.png
+506,MasteryElixirGolem,Gólem de elixir,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/sfsrJqwaLcAE45pATmLr1xEIHrnK9cpYmsXpL4dx_Es.png
+507,MasteryElixirGolem,Gólem de elixir,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/9_5iArwEvZF_8tCptLTxD7ANYWad8HZvCDcXWVpMIqA.png
+508,MasteryElixirGolem,Gólem de elixir,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/Fqn7pcI5DYHAv44sHTPUU10_QULlTyvRPdA9nJUdsZM.png
+509,MasteryElixirGolem,Gólem de elixir,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/uZz36YgulJNp0gBfUNjJiW4Ek2L2bylXRjMfk79ANsM.png
+510,MasteryElixirGolem,Gólem de elixir,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/ePXW-WUE4kGl-qD-aYGfMRwXRp262N-LZWHfM489FK8.png
+511,MasteryElixirGolem,Gólem de elixir,8,10,,
+512,MasteryElixirGolem,Gólem de elixir,9,10,,
+513,MasteryElixirGolem,Gólem de elixir,10,10,,
+514,MasteryFireSpirits,Espíritu de fuego,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/XUSjSv716926wnk5H5_zMUs2RPqmwEIL58SvXJIaONc.png
+515,MasteryFireSpirits,Espíritu de fuego,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/Cy-9HSmPWUSsMvp6CyqeqpZz2_l13-tYkqBYnMzvrYw.png
+516,MasteryFireSpirits,Espíritu de fuego,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/rXiRMexNQR0tK4NNd78u_VmuH5zWlJvqyC3CWgUMlds.png
+517,MasteryFireSpirits,Espíritu de fuego,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/FYrXB1fTnU4ElgYbIpuFEsQe9J6dbRihWWj8cx6BXY8.png
+518,MasteryFireSpirits,Espíritu de fuego,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/YK6oDL1N6Z_-18c8KChS3WpApweX9NoLqBVS3EfaAbY.png
+519,MasteryFireSpirits,Espíritu de fuego,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/Ac9d65ZLIz-bk_58zmiA2-m4eNR-MCSEIqCPfCIciM4.png
+520,MasteryFireSpirits,Espíritu de fuego,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/vBnWHE-M7SwD4VsZq50iBp5Avfsk3dPXxAyJu8RFJE8.png
+521,MasteryFireSpirits,Espíritu de fuego,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/ZTOsMSLPZJiiiCjHxVLxS-cvSMyrpIK1Cu3pE3v8-Wk.png
+522,MasteryFireSpirits,Espíritu de fuego,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/f6MHKoWBt0yGYHb6zojYoS-fsDE4ulbZWitc_tPe8CY.png
+523,MasteryFireSpirits,Espíritu de fuego,10,10,,
+524,MasteryFireball,Bola de fuego,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/KecWq2K2nQY1pvFOIdbt33v9afWP0n45wwiHnRHHkRg.png
+525,MasteryFireball,Bola de fuego,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/UnWVXgnNApKj8jtLVCnCmGc7RJemXjk-4nLwOetu6jU.png
+526,MasteryFireball,Bola de fuego,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/X-Sqq_f89rjg0WlcuShhX_f08k0onMQkwpKVV5QekRY.png
+527,MasteryFireball,Bola de fuego,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/fbQybKyBapKN-_FuXbF3HwlOZGEZbJPJb7qZmmFIgOY.png
+528,MasteryFireball,Bola de fuego,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/bb58MzTok_JNba9vAJPR4HX6r85bk1G9sYVuUKxjv1k.png
+529,MasteryFireball,Bola de fuego,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/ag31-bkXroV4sIgNIAIeDW0i_RLiDfTub7k7f9_gJ6Y.png
+530,MasteryFireball,Bola de fuego,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/6KlFl9AZntq8zXLllJQc0nIxm8ffC37hrD939aLatfc.png
+531,MasteryFireball,Bola de fuego,8,10,,
+532,MasteryFireball,Bola de fuego,9,10,,
+533,MasteryFireball,Bola de fuego,10,10,,
+534,MasteryFirecracker,Lanzafuegos,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/jr7pI1V48ahGaCqBev0jYiJtDPxdpnzeBeaiw6Jlm9M.png
+535,MasteryFirecracker,Lanzafuegos,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/WX91Ffgw_Z0GbmKlaTMPuWOsOZnbDLVOHMAUzpvar4A.png
+536,MasteryFirecracker,Lanzafuegos,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/EEbR0sxpnuVwtMeBgFhzldBbox4mggUAEGeKYOJ2Zgs.png
+537,MasteryFirecracker,Lanzafuegos,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/eJmBbJtM6bj0vSygvhYBy7cIAIcVdC_uGZ_P4ptjQcE.png
+538,MasteryFirecracker,Lanzafuegos,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/gayQQ-Xp9aiBMOgKxkJPOw0ToDZAQzd1EbW4qOgjQ9A.png
+539,MasteryFirecracker,Lanzafuegos,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/_sQPUDrKfHwt8GGJWjafkFNLqe8NQppuUzwlFRCR_-w.png
+540,MasteryFirecracker,Lanzafuegos,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/afmB9Sdauh-od7uOr-0i1raXKSCAMGfY9KqARP1aNIE.png
+541,MasteryFirecracker,Lanzafuegos,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/epRG1ohUWTMa7xWj8GUEic-eN7Bp4X75E6ihjasu5PQ.png
+542,MasteryFirecracker,Lanzafuegos,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/g6sJM__rXZx_lzB6QhfgvEsnH1ww_GF0xgYeTGUqr4s.png
+543,MasteryFirecracker,Lanzafuegos,10,10,,https://api-assets.clashroyale.com/playerbadges/512/XwQkUOIFbPz5AoXVeWVmjIvFbRUxDEOHDLhkeaDOL5o.png
+544,MasteryFirespiritHut,Horno,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/A9mHCAjcNE8-pMtLNzQdX3dqCtmg-qEIHRpeb4Qt7jA.png
+545,MasteryFirespiritHut,Horno,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/c8dcdpX0b9uuDiEaWzbdKVZZrmVcOZ68FGNaEzfMLWs.png
+546,MasteryFirespiritHut,Horno,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/J1vmkYJzDC9MH2VN2yaMyMZnzCYP2omRqidpPCnbEV0.png
+547,MasteryFirespiritHut,Horno,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/SayNz2p_M0j9YTi4JclI0kiJtkxrDGQqU_bKXUo7siw.png
+548,MasteryFirespiritHut,Horno,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/-7Mh14xgHPCD5Nqgzj7qmS9sB9pEVYZb5ZPLlwI58j0.png
+549,MasteryFirespiritHut,Horno,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/RcvLOBNA5EyJhHeB6ukddHcWlvAEYmSVo5GYQ0TRbvA.png
+550,MasteryFirespiritHut,Horno,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/IzZlTmeWVBFgLtbg-cUrUDMAWgt3r9IW78JXBnXKBV8.png
+551,MasteryFirespiritHut,Horno,8,10,,
+552,MasteryFirespiritHut,Horno,9,10,,
+553,MasteryFirespiritHut,Horno,10,10,,
+554,MasteryFisherman,Pescador,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/n9L7ApR8aQu1LOYd4Aw4_xtzGsEfH5dTY2ig8U7vHkQ.png
+555,MasteryFisherman,Pescador,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/FQPfTuS_uH8bWWKJMNp0yo6qgl_sjoRu1Tv3IMdOJ0g.png
+556,MasteryFisherman,Pescador,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/Ie8-s8CKYm6Z6IYGTts3TrGPVcjwf97cD6K8LavpG6g.png
+557,MasteryFisherman,Pescador,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/n13x9F79wrhYDgPB2y158MJroYczsjW0I7J5HU51ys8.png
+558,MasteryFisherman,Pescador,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/llbgNHU7JObonnrKFur0pd4vukvo12F2yz1KhcsZKKU.png
+559,MasteryFisherman,Pescador,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/uUpTr0D09xdhcJo941rLKq1j295iIdklUB60QweYkMw.png
+560,MasteryFisherman,Pescador,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/axXuZgyLHn-aA_4OOTPDJhJ62-VtczQFVd9VOXn0T7k.png
+561,MasteryFisherman,Pescador,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/ERRwzPe6vCIFs5JD7LuTW2dZAc84Apb2JOrdPhj1VKQ.png
+562,MasteryFisherman,Pescador,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/M1OQC8ioNx6t3wfJ1u0Z2MOzNeHSYPFjqaMAGJqhvYU.png
+563,MasteryFisherman,Pescador,10,10,,https://api-assets.clashroyale.com/playerbadges/512/nV2tTIAhaNrra1OUumV6_Dut1Wc84v-iF9xKaDk3f5I.png
+564,MasteryFreeze,Hielo,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/DvHcEPqAuP8ZyUUcWxn_BM42ZdQN1kysEtR04az1RvM.png
+565,MasteryFreeze,Hielo,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/K89vwRuk1DDVhUBHNbvzOu1cvjb84yL98dvJPt0KmuI.png
+566,MasteryFreeze,Hielo,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/dICX3HwZC2qImXUaAJHqZbvbGG01xZZfiDCIUYOY3V0.png
+567,MasteryFreeze,Hielo,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/RwkwWKTfRIqJWLANr6doqXajBGh91sznTfuk5FnLXZI.png
+568,MasteryFreeze,Hielo,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/fHdelkZdHNZ7MOmiUDEF4fZMy6WGOAWWC44MADblVkw.png
+569,MasteryFreeze,Hielo,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/kQcyUsecJXLSwFk9u-UDH9NbME5U7voYQbJNyW9CnPw.png
+570,MasteryFreeze,Hielo,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/JegJYz2enibUv8idxcGSCILm7G9mercx7Xck6Bc9mDc.png
+571,MasteryFreeze,Hielo,8,10,,
+572,MasteryFreeze,Hielo,9,10,,
+573,MasteryFreeze,Hielo,10,10,,
+574,MasteryGhost,Fantasma,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/PxP0MeXqes5YB5ydmDBq7M_HOGyhL7x82fNwSHpzy6w.png
+575,MasteryGhost,Fantasma,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/DM1nRgXm9NcwWUwkKcNpOkKBRnBlu3l-dtBM9tfm8GQ.png
+576,MasteryGhost,Fantasma,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/4k5ILUItVKvDSqllDPUruHnm56bZe0ip2SB3P3JR1Q8.png
+577,MasteryGhost,Fantasma,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/fsRBSZ0cX0r6NqMSuNsNnpX2IB4ZrBZbq_eMt8amv2g.png
+578,MasteryGhost,Fantasma,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/XSSrMfAmi0LO7qF_iYsogB2EYVrarvaF-htbxt9FmPA.png
+579,MasteryGhost,Fantasma,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/sELWCgaAVKFVrZ4oGmy5MPtzL9oVvsxnesKCh7qk-PU.png
+580,MasteryGhost,Fantasma,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/9dNPQNMFyYlcAyY2z6zbxicHVPRKsHXcvYQDaNsxZm0.png
+581,MasteryGhost,Fantasma,8,10,,
+582,MasteryGhost,Fantasma,9,10,,
+583,MasteryGhost,Fantasma,10,10,,
+584,MasteryGiant,Gigante,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/psP-YqHjKKNxNUqd-eE05AVbmG671pPACFphGlUCsAI.png
+585,MasteryGiant,Gigante,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/aQZkw4-1X2mVX0W3QF0CR6A8zsdTRj2RQPbd1lIhxBU.png
+586,MasteryGiant,Gigante,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/T9CD7bZDYk0Ou1RhplTZB8pACiwNceN0vbIh-JfiNCI.png
+587,MasteryGiant,Gigante,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/W-ZANCuPCBrMJ3i-5u-VZ0LXAXspRn0thNIA07YagMs.png
+588,MasteryGiant,Gigante,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/nue-UZLMuRZCG12LE37G81lSBuLdNoBtW5XopJvX_rs.png
+589,MasteryGiant,Gigante,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/APRev6i0tj7KrVgKT_I3-ZDP-Rs_vM7_SD0sse5-ONI.png
+590,MasteryGiant,Gigante,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/mZmM4OCLRXyshgIsVfEcf5EaOq75PtK-prA6mmVjjdE.png
+591,MasteryGiant,Gigante,8,10,,
+592,MasteryGiant,Gigante,9,10,,
+593,MasteryGiant,Gigante,10,10,,
+594,MasteryGiantBuffer,Gigante rúnica,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/Qk1ST4DOM1WI6qHt3hOWFaixNIY63TG-dxM_hLWnz-4.png
+595,MasteryGiantBuffer,Gigante rúnica,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/sXHkWlwohNknCmJwZfIls6fk2Qywm4DhhwM9oRG_ekY.png
+596,MasteryGiantBuffer,Gigante rúnica,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/NadXpPar8gt-3aY2hSdQnda2wckWDcYgrMAML33rxS0.png
+597,MasteryGiantBuffer,Gigante rúnica,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/QHm7hOUa8IOfznhXqS7IN0cbx0VwwKVDed17UZYn9CQ.png
+598,MasteryGiantBuffer,Gigante rúnica,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/igsx1D2QuLRSvK-TQuIPaLXqu0rwCoNdb9WZLVq7EKk.png
+599,MasteryGiantBuffer,Gigante rúnica,6,10,,
+600,MasteryGiantBuffer,Gigante rúnica,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/8i_Zyt0R0LQujsC0118j7gfMLDJg1acQi9uZwdIZ4j8.png
+601,MasteryGiantBuffer,Gigante rúnica,8,10,,
+602,MasteryGiantBuffer,Gigante rúnica,9,10,,
+603,MasteryGiantBuffer,Gigante rúnica,10,10,,
+604,MasteryGiantSkeleton,Esqueleto gigante,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/du_7ikDUST2DGKr02j20DYyPjoHTeTIBFmV0XEsjdnA.png
+605,MasteryGiantSkeleton,Esqueleto gigante,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/JvV5o0o83r5ZfJ74dPu3oSrVE0q8-inQsahw3Y60nB4.png
+606,MasteryGiantSkeleton,Esqueleto gigante,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/hv7MvkTThF1Vv4lQovINLo-ecxjHuauZsyE0FSg0FrI.png
+607,MasteryGiantSkeleton,Esqueleto gigante,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/U9IlWHywoAKPVPTxUO-yailz9NVt3L19oiyv01bxIHo.png
+608,MasteryGiantSkeleton,Esqueleto gigante,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/OYEEX5x2nerDprnC7gZOeTmiW849Lhfo1BFEoQDAWhE.png
+609,MasteryGiantSkeleton,Esqueleto gigante,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/IzwvL--8nGRp45UEj0_ggU0m4_p-80Tc4Z2v7-si8yg.png
+610,MasteryGiantSkeleton,Esqueleto gigante,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/2D6byuT_jX8ojqBJpu-w9IeJ-pZiJDx-ndmzD25IKBE.png
+611,MasteryGiantSkeleton,Esqueleto gigante,8,10,,
+612,MasteryGiantSkeleton,Esqueleto gigante,9,10,,
+613,MasteryGiantSkeleton,Esqueleto gigante,10,10,,
+614,MasteryGoblinBarrel,Barril de duendes,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/_1qE8EtL1ndY24ryNUU1gcfdwp4zlCY6SUqP12ny1iM.png
+615,MasteryGoblinBarrel,Barril de duendes,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/sh-LCiBphaChYxYFmEyRsl9hvO3Q0rUrMMKVthstnnM.png
+616,MasteryGoblinBarrel,Barril de duendes,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/6Pv_caSJolrqjONYGT73soJ0mBy6VPdK-xU4PfmTMlQ.png
+617,MasteryGoblinBarrel,Barril de duendes,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/sF61IJH8CPfqlyma0cdRKue-1DGlZw6DTWh7t2tdK3w.png
+618,MasteryGoblinBarrel,Barril de duendes,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/r9L8h5hXrcTyPhTWLNvuNcytb3HHbIer5yd_flW40xU.png
+619,MasteryGoblinBarrel,Barril de duendes,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/XsqY7GVJhKKuFz7AAN8ZMEfMbAfMKKrXrpJfeIPz1RQ.png
+620,MasteryGoblinBarrel,Barril de duendes,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/BRMX02yNq3fda8rBRORd2zCZRviibw42ofCWqD0URnc.png
+621,MasteryGoblinBarrel,Barril de duendes,8,10,,
+622,MasteryGoblinBarrel,Barril de duendes,9,10,,
+623,MasteryGoblinBarrel,Barril de duendes,10,10,,
+624,MasteryGoblinCage,Jaula del forzudo,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/6ikgcJwi1BxzHZ6W1PozD58eRfAHdcBYbTqpgXLx-04.png
+625,MasteryGoblinCage,Jaula del forzudo,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/9eymxfJBIP482f4crTGH_xB1gjlckq0wJRj9e1kvfa8.png
+626,MasteryGoblinCage,Jaula del forzudo,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/JFkqL7mVkv6OyxQ5H5_qdhBCTSqPpwNyYSDH1uOaGKM.png
+627,MasteryGoblinCage,Jaula del forzudo,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/p3yWVBqxbv9v8KT64QZDjXm8ez8Fe3cyDYHR4DjhPII.png
+628,MasteryGoblinCage,Jaula del forzudo,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/gkneYlxxn_ThK6jwivGOeIjYQwlbmYoV4go2lj6hShw.png
+629,MasteryGoblinCage,Jaula del forzudo,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/Gia6-5e7KWKuCxtz5RXftJVEBEJW5aLYTTdh3eW9uEg.png
+630,MasteryGoblinCage,Jaula del forzudo,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/MXUFF2ZMqgfl4u5nk7tQcg-6VXU_5CWJM21TlG31T4g.png
+631,MasteryGoblinCage,Jaula del forzudo,8,10,,
+632,MasteryGoblinCage,Jaula del forzudo,9,10,,
+633,MasteryGoblinCage,Jaula del forzudo,10,10,,
+634,MasteryGoblinCurse,Maldición Duende,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/X5Qz2As2rMCW8Bqx7hc1Ywg0r-3ZlHnKzEafPUqgXQE.png
+635,MasteryGoblinCurse,Maldición Duende,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/5goWRkIauB6-4e6gMupNtKgzTvzxyAxu84_3vc2OCnI.png
+636,MasteryGoblinCurse,Maldición Duende,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/x42JVltI9qZC2nFVGxAPsaW4_lL2QZIKBKUbMyNzt9I.png
+637,MasteryGoblinCurse,Maldición Duende,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/yfFOmXhcJRajXWXuGO2QRyu5OLhGoGy3erYmUNgdgUo.png
+638,MasteryGoblinCurse,Maldición Duende,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/WksRpUhL-kX9eiKZ8-GzdtpJ5eR2d3JCUKuWuBwqybg.png
+639,MasteryGoblinCurse,Maldición Duende,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/rEYXYIyEtlOhDx1daYq9QAbSs1TWpp2BChrpqhR9A3s.png
+640,MasteryGoblinCurse,Maldición Duende,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/FdDf4BgaMg5-r_wglUr-QEmtlIgLleghsZH58uii8vQ.png
+641,MasteryGoblinCurse,Maldición Duende,8,10,,
+642,MasteryGoblinCurse,Maldición Duende,9,10,,
+643,MasteryGoblinCurse,Maldición Duende,10,10,,
+644,MasteryGoblinDemolisher,Demoledor Duende,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/5oyl2TYhXtG-WuFLZdQoOiGXIn8ardeze-nI3Lc1hYk.png
+645,MasteryGoblinDemolisher,Demoledor Duende,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/UhvzNoe7SKz8H-gjP3QM5Ljb-pVQWFbTXsCawvgLj2E.png
+646,MasteryGoblinDemolisher,Demoledor Duende,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/_iGYDPY__UecRH1_eWALJt9dvrTC4PlTXf-kCtHlI-c.png
+647,MasteryGoblinDemolisher,Demoledor Duende,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/Z6P0BTg6JaP_xUhEcZzKUxTpLELUodrLh9LOdKRsAR8.png
+648,MasteryGoblinDemolisher,Demoledor Duende,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/TjYbS4vrRfnP42cjWvGwbwNB1WRGhC_Pnudf5ke_xHk.png
+649,MasteryGoblinDemolisher,Demoledor Duende,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/HCDUbr4INbx4XQe9FUjD-0xSnpf8FvaddBgocpmjSvg.png
+650,MasteryGoblinDemolisher,Demoledor Duende,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/xa1ZWtPLVz_GfJ2U7ZKDYO7pbJSriDafqMKXAf0Dhw8.png
+651,MasteryGoblinDemolisher,Demoledor Duende,8,10,,
+652,MasteryGoblinDemolisher,Demoledor Duende,9,10,,
+653,MasteryGoblinDemolisher,Demoledor Duende,10,10,,
+654,MasteryGoblinDrill,Excavadora de duendes,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/UxaHVYeipyKN9JwJzlOJy_q5kwzmQjmQy8H_KQdh2GQ.png
+655,MasteryGoblinDrill,Excavadora de duendes,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/SymHCs0VqcCcl7lX76RbLQ446XoMBH1d1Ka8afDuMYs.png
+656,MasteryGoblinDrill,Excavadora de duendes,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/lCSEy76syMwhfWyvMQcb9AlzhKX0xaDNnp7wl6OXMx8.png
+657,MasteryGoblinDrill,Excavadora de duendes,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/eQhezto-LWgvWDM-Rx1FpZ7NNEs90qJE5rx7VC-4lv0.png
+658,MasteryGoblinDrill,Excavadora de duendes,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/ARYMFnQ0tElQq2DV3FXfiRxjt5Cv5H6O0bO0Se-TYhs.png
+659,MasteryGoblinDrill,Excavadora de duendes,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/r5zL5k3Ayx2-YyXEVv9KCkdQ2voRmj_ASUx-_ru8BHk.png
+660,MasteryGoblinDrill,Excavadora de duendes,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/MKLgVe2WTF_-YagHBBjAcZyQB2deQmsom302EsoxHGg.png
+661,MasteryGoblinDrill,Excavadora de duendes,8,10,,
+662,MasteryGoblinDrill,Excavadora de duendes,9,10,,
+663,MasteryGoblinDrill,Excavadora de duendes,10,10,,
+664,MasteryGoblinGang,Pandilla de duendes,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/5Lx3Tk9tmheUf2GEDY0xAW97nOle2v2gD00M66jRWCM.png
+665,MasteryGoblinGang,Pandilla de duendes,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/9JWkEvqUV1DSOYh4LQvo-_d4cyFxtWa5JhouR85Wmj4.png
+666,MasteryGoblinGang,Pandilla de duendes,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/lgDqLDUeQlTSilO5CKrCv31ZcbG_jf3BXKwmhOGBZJE.png
+667,MasteryGoblinGang,Pandilla de duendes,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/AQrAf93VSLt_oUDj8k2kX0XLR8KJF2iFV2RA5F2wM0E.png
+668,MasteryGoblinGang,Pandilla de duendes,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/GUmrx5EElESleu6r4E4FpAQGOTQSWFZfYdJqtu2NkXQ.png
+669,MasteryGoblinGang,Pandilla de duendes,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/vvOe1I4thmgAlI5_Ufx8FYjl1xE2n1oGhS1u9CTdCKg.png
+670,MasteryGoblinGang,Pandilla de duendes,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/w9vZQ2allcaF0vTE8q1XgzSs2KmDIzh11DAAQ4f6Qbo.png
+671,MasteryGoblinGang,Pandilla de duendes,8,10,,
+672,MasteryGoblinGang,Pandilla de duendes,9,10,,
+673,MasteryGoblinGang,Pandilla de duendes,10,10,,
+674,MasteryGoblinGiant,Duende gigante,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/4OGpv2cJgUvwtWNWjGNGaz95uoQC9BznWfa9eWHdc-M.png
+675,MasteryGoblinGiant,Duende gigante,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/cxIpmlcW13oRyxKMpZe6EFoyfkqH0M74bUgujpJJ-7k.png
+676,MasteryGoblinGiant,Duende gigante,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/1UeMJQ8WKi1OIcTaxZE4SVzWtYTRI10KltR5d_8cxAs.png
+677,MasteryGoblinGiant,Duende gigante,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/GK5MBz890j8dwCT2aI9wG0pHluy7htBZOahVqSk7OuQ.png
+678,MasteryGoblinGiant,Duende gigante,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/RDCjkY-SlN9FEAEMRIAa3NXfM3GCBfAJD9L5LA1XAFc.png
+679,MasteryGoblinGiant,Duende gigante,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/EYOpyzyRg57ifmcGIsdHWosIpuRJRvOUtfhO8FA0m2c.png
+680,MasteryGoblinGiant,Duende gigante,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/cY_mzLnTTH_l-MV7kEPDR_oH3KrekATSI6-yfgHH0P0.png
+681,MasteryGoblinGiant,Duende gigante,8,10,,
+682,MasteryGoblinGiant,Duende gigante,9,10,,
+683,MasteryGoblinGiant,Duende gigante,10,10,,
+684,MasteryGoblinHut,Choza de duendes,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/tbKjQ3mNwNc7KWedVd6DP94XgYZA_Zai3GX7rFvbB9E.png
+685,MasteryGoblinHut,Choza de duendes,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/PkCe6mRPMxZWizvtMaxY558s6d_bPqBFibEusULreNo.png
+686,MasteryGoblinHut,Choza de duendes,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/N5O4sdSguV6zIAoUDPQ0hiXLQRxheoj-VJ0cnvcowi8.png
+687,MasteryGoblinHut,Choza de duendes,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/jjRXzT4wp3k7E4WNJy0ZhuJMdj_rbrV0WsRQbgEY8IA.png
+688,MasteryGoblinHut,Choza de duendes,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/DC8_cfve3SNkPKRsrY6LtHtuCyBF8R9HP_W-Bgkpcog.png
+689,MasteryGoblinHut,Choza de duendes,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/9qsoG3OQ3PK1Lha_F29ZeUpS81tUnCOHZxclpIgv8l4.png
+690,MasteryGoblinHut,Choza de duendes,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/zB59SbR-o6uZmFoBdHGCL33BnYWycBTU1Mh_l3rsV6g.png
+691,MasteryGoblinHut,Choza de duendes,8,10,,
+692,MasteryGoblinHut,Choza de duendes,9,10,,
+693,MasteryGoblinHut,Choza de duendes,10,10,,
+694,MasteryGoblinMachine,Máquina Duende,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/8pE2e4Dw1J5d6GIpNSoQ3DyPqUclGG53yyhmy20SH7Y.png
+695,MasteryGoblinMachine,Máquina Duende,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/o1MTP5_Y9cTdUHMZ8wuobTXK4ooKIZ4Rpe7e2nZxWsM.png
+696,MasteryGoblinMachine,Máquina Duende,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/Q9E28lp0a7V9cMldgoU_-3BLrBnku0VgyZiJC6SNbQE.png
+697,MasteryGoblinMachine,Máquina Duende,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/DPm6hTlXRyVIRyCntrM_gecXC2j80rzXWXjlbjafwrs.png
+698,MasteryGoblinMachine,Máquina Duende,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/7_Ek5NIG-ePYJDnTa0ODrAfYUQbUQOXWItLuw6gcyzw.png
+699,MasteryGoblinMachine,Máquina Duende,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/vNzL0L10uFQYz1qiMN6_NAe6V0nhwryUDEwEuPnbWmA.png
+700,MasteryGoblinMachine,Máquina Duende,7,10,,
+701,MasteryGoblinMachine,Máquina Duende,8,10,,
+702,MasteryGoblinMachine,Máquina Duende,9,10,,
+703,MasteryGoblinMachine,Máquina Duende,10,10,,
+704,MasteryGoblins,Duendes,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/OO7YrlxYN2T1CATgjoeXSHvkGxpaYhm3YjPRYH2wNbg.png
+705,MasteryGoblins,Duendes,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/kV8vwH57nJss1dYyrPxJVKYZR-ICdR3SXThoh_82ikY.png
+706,MasteryGoblins,Duendes,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/oU-4SSKItHBzR5aEqgvOM7roaxLA2pt-0T8zF3s2CDw.png
+707,MasteryGoblins,Duendes,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/qMnn5NG2WNzH2lsEtRNznwxdX78R9xbjLTnln9yQ0y0.png
+708,MasteryGoblins,Duendes,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/xZttkNcLa2exskfRarJGXjPVgjZzZoV2rPO7MysFNBY.png
+709,MasteryGoblins,Duendes,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/lUm6IkT133xOnEXsVpjnK1rSHV-I3Kn1VL1zcvafyQM.png
+710,MasteryGoblins,Duendes,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/n93rFHa4OEJmjRkY85NsRlrzdxmn9gpeVmg5JzsEmpo.png
+711,MasteryGoblins,Duendes,8,10,,
+712,MasteryGoblins,Duendes,9,10,,
+713,MasteryGoblins,Duendes,10,10,,
+714,MasteryGoblinstein,Duendenstein,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/clqdO0VFL9kOtGBW18ZR7VCePN_TYZcix8XmTR0-9g4.png
+715,MasteryGoblinstein,Duendenstein,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/g9Syn233goAeldI4-W3IV5V_GQLPl9DKfY2S4qHP5kA.png
+716,MasteryGoblinstein,Duendenstein,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/kor78PJHgqI5N_lApKZeJwWWaw7D6240qAFz3nAQpkk.png
+717,MasteryGoblinstein,Duendenstein,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/10O5qmdHPoz_YWHtEWOm4RH5wSt7-ojZBiE4EWJWf_I.png
+718,MasteryGoblinstein,Duendenstein,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/khYsE4_NteVQ6v1_zz941aPAk-cNNMh61ga80lt03KQ.png
+719,MasteryGoblinstein,Duendenstein,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/cM2z35tfaGlkoU4BmS4TSx9LJbuaLE23hCXijf78dtY.png
+720,MasteryGoblinstein,Duendenstein,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/UtvqXhJ2PgEKPyvnzvLKhJGWTR4NW27zyw063-1QxG0.png
+721,MasteryGoblinstein,Duendenstein,8,10,,
+722,MasteryGoblinstein,Duendenstein,9,10,,
+723,MasteryGoblinstein,Duendenstein,10,10,,
+724,MasteryGoldenKnight,Caballero Dorado,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/UlXKSlMAGh9qrXAQF4U77zH6dGkDYTf3niAbnFPyI2Y.png
+725,MasteryGoldenKnight,Caballero Dorado,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/FLIL7kFKwmMBTIonCX7iYoKEX1-80lb4TcAQf3sMVhU.png
+726,MasteryGoldenKnight,Caballero Dorado,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/dexAcv3B0yDScT0QUts1hk2v6LjyhwKMdsVdD3ehZZQ.png
+727,MasteryGoldenKnight,Caballero Dorado,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/bltHqE7_RWS79W_pyUWeKIan4FaJpg7Atwf486l5l5w.png
+728,MasteryGoldenKnight,Caballero Dorado,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/Ucecsi4gs1b16lyo1wPV0ng77NA22Gz-1ew2FGNNons.png
+729,MasteryGoldenKnight,Caballero Dorado,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/p_gzze--xG39yqxOmBxl6rBq5VDWbO2Jl8KhKvi-Y1o.png
+730,MasteryGoldenKnight,Caballero Dorado,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/dQ2bRIVwLFrBmSYzuIU5vsmVQXbhL-Nab91kcwIixUs.png
+731,MasteryGoldenKnight,Caballero Dorado,8,10,,
+732,MasteryGoldenKnight,Caballero Dorado,9,10,,
+733,MasteryGoldenKnight,Caballero Dorado,10,10,,
+734,MasteryGolem,Gólem,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/oSbFg5PWUDNeBywVZX-0SU0_2Cp7atB_tbXS5hA0Zv4.png
+735,MasteryGolem,Gólem,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/fn32-KFaNFM3Kg3pomMOR1VyNj6yq79gs4YcfTlZ2RM.png
+736,MasteryGolem,Gólem,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/4lZ6wL5ZtmGogpbY4WVk5nkKhWMmgfd3P36ncAsKrQ4.png
+737,MasteryGolem,Gólem,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/da2rrkf2c_M8x-BejQmNxHjQb5tly4-ivNi1VlYi3Fo.png
+738,MasteryGolem,Gólem,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/sj6KjWiOKU7vdNScQe_Fex1pBhEFnfz5NZDL-pdbQJE.png
+739,MasteryGolem,Gólem,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/neu1QZaLbYSDFSfdwtmmiIU9mWYQyipQtCskEEO4fOs.png
+740,MasteryGolem,Gólem,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/meuukbtfUM0rgEjOM2RSf6BXROfk6HiJoijSH7zIh0Y.png
+741,MasteryGolem,Gólem,8,10,,
+742,MasteryGolem,Gólem,9,10,,
+743,MasteryGolem,Gólem,10,10,,
+744,MasteryGraveyard,Cementerio,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/hc8USuDgq8-7NO70PV58l-HAL7Z6l8HeW9omU-s3X5o.png
+745,MasteryGraveyard,Cementerio,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/sOD8QKv8T3miacP5m-nuHugleSlIx60dVDP0x1W2fgs.png
+746,MasteryGraveyard,Cementerio,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/uapwVft70Ihei8_ymQhb15ZWgxDOH0ws5YyhAV4f80I.png
+747,MasteryGraveyard,Cementerio,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/fhJlivRFEWT4ubtYEyeRQKgxp1ZWMxe1v1xBiXgD32w.png
+748,MasteryGraveyard,Cementerio,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/sgMiR8uS3KOz5tDKnWulX1uWuor0xzqwwiWVTI3DAZw.png
+749,MasteryGraveyard,Cementerio,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/qNY5D0gzHsllGFHHukyxI_FciL4jlfcnQL0W_IIf0ek.png
+750,MasteryGraveyard,Cementerio,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/au1Xl7SeBjWtASurMu6DwyhKWNGlxBdq5y6vBfHF2rA.png
+751,MasteryGraveyard,Cementerio,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/3gwhkQAnIbEx6HwAd47zxmJOfPN_bcUAKKKvL4lGW4A.png
+752,MasteryGraveyard,Cementerio,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/B1yUU6RjHfbq79xUnDQPG-TD3XU_99z-GRrA5pMv1tI.png
+753,MasteryGraveyard,Cementerio,10,10,,https://api-assets.clashroyale.com/playerbadges/512/98sFQ9QQWCMFy-usQicl4jIdZcxnNy2JIn5p5gkNedE.png
+754,MasteryHeal,Espíritu sanador,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/lk7VyRBSGXmV2xzGgB94bdCgmNCcf3KstY_Cn30SF6E.png
+755,MasteryHeal,Espíritu sanador,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/F8iv5r4NwWB_MR6C1gQOPM5CLxi-xuSgiD-rEQNWRJ0.png
+756,MasteryHeal,Espíritu sanador,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/00QjnJhCOVQPKAubI_uN5eTVA4DWXBOE-5QxWAiroNo.png
+757,MasteryHeal,Espíritu sanador,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/HFuIfomtGTyuGVLnt5SH4h5igrUUk1aR5wIKfyLUu0o.png
+758,MasteryHeal,Espíritu sanador,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/AIHc7B_AzZWJxsb6YJft5MuF5hWctc7wzqzTohBsRH8.png
+759,MasteryHeal,Espíritu sanador,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/U2VLF99z-_RCZL9p5hdt0vqfuT8J2oTNETQ8McNGBb0.png
+760,MasteryHeal,Espíritu sanador,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/bKp20eL8T9DMv178jARuzqmU_FGqPIKMrr7h3nWG3V8.png
+761,MasteryHeal,Espíritu sanador,8,10,,
+762,MasteryHeal,Espíritu sanador,9,10,,
+763,MasteryHeal,Espíritu sanador,10,10,,
+764,MasteryHogRider,Montapuercos,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/PkoFIEAVw4zlfaP-laLAQtvkmZ-SDO6rzW_-bU_8NjU.png
+765,MasteryHogRider,Montapuercos,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/1qcmGMz_iF8TFV2dsnlzO4RlbH7E9ZLXoznynMzmnwI.png
+766,MasteryHogRider,Montapuercos,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/lik_x2_z4PBASAU3Nlle5lrnJuETSQEKGOdLhS02WSo.png
+767,MasteryHogRider,Montapuercos,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/npWQpouz44zhwNkAZdcfwjuOuzMTnEJg9ZhTAYRa8i4.png
+768,MasteryHogRider,Montapuercos,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/eKRviJot7dxxuVJzx2h7y3QD_L71DiHlZySvV0oIJaM.png
+769,MasteryHogRider,Montapuercos,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/HwtXlPpfP_AMKNqYosf1tFjtMClAyqWkfgRZQJhXF2o.png
+770,MasteryHogRider,Montapuercos,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/iPDoG5H_TqOrs8W6q4N9ayzfPcaioMWg_ngjxcevqC0.png
+771,MasteryHogRider,Montapuercos,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/fohmzmtAKI73HKGEHxXIVwFYt-k1buRDb0XQm8hjv9w.png
+772,MasteryHogRider,Montapuercos,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/-pSdmr_jE_U4zWvvCbclv2vNesIfHxijH7clVBIoygE.png
+773,MasteryHogRider,Montapuercos,10,10,,https://api-assets.clashroyale.com/playerbadges/512/PERvr3AnMsFkNPMbm6_YR5pcsailPI-d6aoRrq8kzS0.png
+774,MasteryHunter,Cazador,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/YzNDwfHjXLDlhxiRAfc8Pj9db1oJNunKQLnT1Loya8k.png
+775,MasteryHunter,Cazador,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/UpbmH-1z9T5oRIaGe1Hh-RIMXNnCbC7trMgkyVfpuw4.png
+776,MasteryHunter,Cazador,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/YGGLi6_CIubBI6Gz0R9xLlNMRQomK4pR4vbpgRmL0kE.png
+777,MasteryHunter,Cazador,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/CodJXkWH4frJMy4tw1gweqwDzjcW7KE9JMBEllSDDVQ.png
+778,MasteryHunter,Cazador,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/XDqHfULmU7fSQdyTkOWwvpBxnF8h1OTRkNs95pZRQGw.png
+779,MasteryHunter,Cazador,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/gJdskjI-Vfp0L2aZhkP9-p9U-thNQcwXdmOf_N5W-L0.png
+780,MasteryHunter,Cazador,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/x5EzLPMGRqBtKbfAXF0uxEowcMR5C25uyTWBIgybcrc.png
+781,MasteryHunter,Cazador,8,10,,
+782,MasteryHunter,Cazador,9,10,,
+783,MasteryHunter,Cazador,10,10,,
+784,MasteryIceGolemite,Gólem de hielo,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/koRT02e6gemhHUo8WjPWPLe9NFOVrjS_3ELp7QFL6kw.png
+785,MasteryIceGolemite,Gólem de hielo,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/ui2zhBChHMrULI8sifngVAQQlB2a6jbiQLJao8PLlbU.png
+786,MasteryIceGolemite,Gólem de hielo,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/eEBMDuZBWmi531CuTK3E8dndtUZXUKxOrhPDG8eXz7A.png
+787,MasteryIceGolemite,Gólem de hielo,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/esQdxBYp3a0BLh0hWlpIjcdC61qoxCUPFzTExkZFbAI.png
+788,MasteryIceGolemite,Gólem de hielo,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/DXxhyT3j-dkX0hdhM9cXr35BqO-zrFlpAAEigoI38-g.png
+789,MasteryIceGolemite,Gólem de hielo,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/RLS0IsbkXtN6WbbY9mH60o4wEhTe9Yri-6EItaDUwOw.png
+790,MasteryIceGolemite,Gólem de hielo,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/GsNrqBJM7WtDaQlM7J7TgF1Uz8MgxrqD9KNrrjT53zU.png
+791,MasteryIceGolemite,Gólem de hielo,8,10,,
+792,MasteryIceGolemite,Gólem de hielo,9,10,,
+793,MasteryIceGolemite,Gólem de hielo,10,10,,
+794,MasteryIceSpirits,Espíritu de hielo,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/ycW4RK-k2BFc6roQXf21CTmFunh78gscbberEFXmfcY.png
+795,MasteryIceSpirits,Espíritu de hielo,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/GQMgcRm6TUC3hE5rRgwrkHA4l3qUalvkTdu-J-3UO-U.png
+796,MasteryIceSpirits,Espíritu de hielo,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/llGvu5kelIPYGx25vj09Nak3aDFyPpzwi-pxAgQbRKU.png
+797,MasteryIceSpirits,Espíritu de hielo,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/7pchRwcK3PRehbY8lbMLj_wGLH-XWuLb2ftIlv7Aq5c.png
+798,MasteryIceSpirits,Espíritu de hielo,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/07mSbDZyD3ZzjXvKHWxdBIDbyHcjqNhsm6DPJ5_kPvI.png
+799,MasteryIceSpirits,Espíritu de hielo,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/5qd8EhB9MY6HuUJ-n3ghaR_iFCrJzJTECS1EtZWG_Uc.png
+800,MasteryIceSpirits,Espíritu de hielo,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/dRszAVT3EI93u_tZ7EBxQUzFuVYvuLFKch92AxphWvg.png
+801,MasteryIceSpirits,Espíritu de hielo,8,10,,
+802,MasteryIceSpirits,Espíritu de hielo,9,10,,
+803,MasteryIceSpirits,Espíritu de hielo,10,10,,
+804,MasteryIceWizard,Mago de hielo,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/ZThfJZ6Zv41pP-4JnMi-8YyTfzsKHgMoO8uwSs7uzVA.png
+805,MasteryIceWizard,Mago de hielo,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/Y_JTnW1TTfQkbAABP2UsoeoDsqsIjpvflAOw8xOGOg0.png
+806,MasteryIceWizard,Mago de hielo,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/zG6Qy7cqzbLJYIAk3_JHe59Hc2XQCAbvriYoVqfwBNE.png
+807,MasteryIceWizard,Mago de hielo,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/7Os1aE7kzSRJ-JOySSl3YU4GpH99ZXO2HK897dC7Ovs.png
+808,MasteryIceWizard,Mago de hielo,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/a4WxqFce6yHbDobNpgAI562S5IT-xN8g_DLgejG3v1w.png
+809,MasteryIceWizard,Mago de hielo,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/Tot5vqPuY8c6ThV62U6xaKudnW8eWy6zytk0sXRgqP4.png
+810,MasteryIceWizard,Mago de hielo,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/H9o-TxQ5M36OfrhR8QJg3-XSwLQXbQnQlKgKaobldRQ.png
+811,MasteryIceWizard,Mago de hielo,8,10,,
+812,MasteryIceWizard,Mago de hielo,9,10,,
+813,MasteryIceWizard,Mago de hielo,10,10,,
+814,MasteryInfernoDragon,Dragón Infernal,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/cglgd6xYTGEjDHELr5TABa8uaAE9423Wco4z1XC2tss.png
+815,MasteryInfernoDragon,Dragón Infernal,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/DptaB73_PIanhiMEV3i5gyT9XnV7G7fLCUPuAsVwo1s.png
+816,MasteryInfernoDragon,Dragón Infernal,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/bVV0wXk23pdZtIhCQFnloe4OTuFai0dhaRIzMYzOJUo.png
+817,MasteryInfernoDragon,Dragón Infernal,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/WaH-ndw5L8p2xbeGiaYikLLRyL2K8XLJNcS--UaEdaI.png
+818,MasteryInfernoDragon,Dragón Infernal,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/vJJ_0nacXk73hY9osfZbTjGFznZOpbv7cChTkfqaiis.png
+819,MasteryInfernoDragon,Dragón Infernal,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/psD3TgYQATWQT8BnLmuf7nZhbKNundbuBs-0vwrwA-E.png
+820,MasteryInfernoDragon,Dragón Infernal,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/B6e8580DFLjDGqd5Mb7qNt-AriddFTejYFuin2xPYQQ.png
+821,MasteryInfernoDragon,Dragón Infernal,8,10,,
+822,MasteryInfernoDragon,Dragón Infernal,9,10,,
+823,MasteryInfernoDragon,Dragón Infernal,10,10,,
+824,MasteryInfernoTower,Torre infernal,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/1-898vrL4BvithOfLGgilTNnWIwosLduD8Tb6LF1GNs.png
+825,MasteryInfernoTower,Torre infernal,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/ZrTocmsGZ3dtMzVFpMcUFL65ghB7dlDnrg91IBvl9xc.png
+826,MasteryInfernoTower,Torre infernal,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/kp2oFXlk7wePAedOhw0dq-IOzLAariyThLLvcdI6SZw.png
+827,MasteryInfernoTower,Torre infernal,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/6bDs2Oavfp0TFqLO7GEeUISlQ9DYi8Y-uAiHL2v9qhY.png
+828,MasteryInfernoTower,Torre infernal,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/ENImE4dwdjpwb7SacpBZv1C4B1cXvxLiC2RNhGtT8h0.png
+829,MasteryInfernoTower,Torre infernal,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/iuZsFbWPG0NPxDqwPh9FSR6Lo-z4YIat3E9soprcuE8.png
+830,MasteryInfernoTower,Torre infernal,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/aD2Cdd85XIet7EzjWWezu2j6mMsxf2JjoXLanndFp8I.png
+831,MasteryInfernoTower,Torre infernal,8,10,,
+832,MasteryInfernoTower,Torre infernal,9,10,,
+833,MasteryInfernoTower,Torre infernal,10,10,,
+834,MasteryKnight,Caballero,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/ircFQBrnjd0ITUujXlZy4gLjihoBUifM38r6gD6NsWU.png
+835,MasteryKnight,Caballero,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/M9q2L9i5JaK5wEq2zd0Xz3LXk2Y0eq0U8yS9pmQNleQ.png
+836,MasteryKnight,Caballero,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/z-UmF93yKqJDfFqnfAS-x5wTnZA5eSGXLWUyLZNOGDc.png
+837,MasteryKnight,Caballero,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/nEuzu-ak39wtdmGJjpQnrunDycYRTR8DDIOl7ppO5Jc.png
+838,MasteryKnight,Caballero,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/Wycmr3HO5djgF0v_JTYQWZBEUTbxx2duPY4rPfKeTFU.png
+839,MasteryKnight,Caballero,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/X1Uhv_ft6HIuSTb41nzUXfRpcpoLyt2cMUo01Q2S35w.png
+840,MasteryKnight,Caballero,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/0Qs-ELSO2B52EZH3cnjbGoTZ2njdUW5eDj5R9vQTxy4.png
+841,MasteryKnight,Caballero,8,10,,
+842,MasteryKnight,Caballero,9,10,,
+843,MasteryKnight,Caballero,10,10,,
+844,MasteryLavaHound,Sabueso de lava,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/XJf5rfPoxknyr75XlygVsGyq85xMPQIHQXPnwDYlDhQ.png
+845,MasteryLavaHound,Sabueso de lava,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/pqcLWAwDXSydKE5CeZRK0eu2oZB8vz_F9IB_w41wCcE.png
+846,MasteryLavaHound,Sabueso de lava,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/pGNSH_viejMyB4FoesWuKG7jq71aNnmkX8H_edKzU7w.png
+847,MasteryLavaHound,Sabueso de lava,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/89w16ZSt_zANqM4AQHBBhy8ZDxR7RA-GfuR6KJzYvEI.png
+848,MasteryLavaHound,Sabueso de lava,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/pplFHJirWD57o-7-vGiIY83-WUXComUKY9LqrjGNylM.png
+849,MasteryLavaHound,Sabueso de lava,6,10,,
+850,MasteryLavaHound,Sabueso de lava,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/7FLh5VtD63YjIDUa6jOQJmGQOUYisuyBKBJVuo8er3c.png
+851,MasteryLavaHound,Sabueso de lava,8,10,,
+852,MasteryLavaHound,Sabueso de lava,9,10,,
+853,MasteryLavaHound,Sabueso de lava,10,10,,
+854,MasteryLightning,Rayo,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/MBl16IzslToaAg3y9F3R_hC0pvB9q-RC3xxz00UDbs0.png
+855,MasteryLightning,Rayo,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/SRJMZp4X-Rw1gmqzehqN-RQ_LqsCGl4UXjf_r44aeo8.png
+856,MasteryLightning,Rayo,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/RylMJlxiVzmKHtdXQdxvjPG1ZTc4J5SCtCOFKsbfnDs.png
+857,MasteryLightning,Rayo,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/9tC39oxSbI_ZHS3EasaqIKGKTkfdKGSeU_r8lO70U40.png
+858,MasteryLightning,Rayo,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/Nfot1K83q9BA1Q8R5DVWdauYXiLH72itbcybkUCOP2k.png
+859,MasteryLightning,Rayo,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/ngthHpAG-5BBCXE7NOJNg0awqUx526dqVijGPFQe41Q.png
+860,MasteryLightning,Rayo,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/OlxcfFECIJVdRNCszdp18wLkOqrMJtvnogBW-ePVQ8Q.png
+861,MasteryLightning,Rayo,8,10,,
+862,MasteryLightning,Rayo,9,10,,
+863,MasteryLightning,Rayo,10,10,,
+864,MasteryLittlePrince,Principito,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/i1TIJM_QGaQS7RTB_MRYYmF0Ynvxm0XYbe8p0eM6Yuo.png
+865,MasteryLittlePrince,Principito,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/n07mB2O9od5p9MvoaQrwlxr31DNfzhR4rCw2ayXxCCs.png
+866,MasteryLittlePrince,Principito,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/8b1TxvMrAdTCrufwFCyT3ihve2IMSt8vdIoKMNRG6qM.png
+867,MasteryLittlePrince,Principito,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/GvxU6k9aS2jhhy8Oq5AQiu_xzxsRgYDyQ7v44paCHgI.png
+868,MasteryLittlePrince,Principito,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/KSoWz8lzE2CsnCe4nSW1FBNuabgLQ4Twq8_znJGeqPI.png
+869,MasteryLittlePrince,Principito,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/pO8kenKg7XZmGartQRNzvH71oaES6ytbV4Z1j9l_5v4.png
+870,MasteryLittlePrince,Principito,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/mFKEIVpdfQvu51N_UN0z_uNXXU0UXRj_6QZsCN6S-qI.png
+871,MasteryLittlePrince,Principito,8,10,,
+872,MasteryLittlePrince,Principito,9,10,,
+873,MasteryLittlePrince,Principito,10,10,,
+874,MasteryLog,El tronco,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/x6qWm5RPhBy7CQ-tdCkAjLdDehPzZm-tZ5f4AG-aNFo.png
+875,MasteryLog,El tronco,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/gO3-FLSYZkC0vvLeNdlY-Vp7P_Ah3dN15SsKyZOCIgY.png
+876,MasteryLog,El tronco,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/e0JS0bxCwyqmhfnFjojm3f7rX3t-8KwELah8IXubGdk.png
+877,MasteryLog,El tronco,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/O9Ukd9xWMvOufvdvl3r--sxZc3vT7-5IGysXxyCA4oU.png
+878,MasteryLog,El tronco,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/bGKi2_zpQFulYEhuepKy7NNlyx3n3pO7Pkfqub0P-XA.png
+879,MasteryLog,El tronco,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/fPDfOeGuuVyhrP666NM0Kpp1b3ydgMtgRLziwBMA-hY.png
+880,MasteryLog,El tronco,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/1BlsSWslCw9LUu5hf2SkPs0fitvJME0z1H7yVrPr5ts.png
+881,MasteryLog,El tronco,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/wzP2QT9jKGfZ-0A91wSLD6h3kGC7vZgVAkvbvGxwZFA.png
+882,MasteryLog,El tronco,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/MSvi-9Ycpu5X-Q4ZdMWFApk4Fvmbj6SoBIIp2eGgQsI.png
+883,MasteryLog,El tronco,10,10,,https://api-assets.clashroyale.com/playerbadges/512/ecyWYkcvrPkA2fKZSXLgN3-owXYS31g4N7_RZaL3Szg.png
+884,MasteryMegaKnight,Megacaballero,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/ZL8ejd9V8cugJOcNJxSI2BkUmGQ2dRixbV8VwOMthqA.png
+885,MasteryMegaKnight,Megacaballero,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/F4HORCxUX86-CE0XYQ1vH1rn3AAAdu3WYhikoF4Ppo8.png
+886,MasteryMegaKnight,Megacaballero,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/vW8Yq99paM-lgghA2VKMl8K4nfjv5hfkfFm-Z_l5EOs.png
+887,MasteryMegaKnight,Megacaballero,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/5ZgpwaeFNCcrPHbYW6QvH_uEYMMaTHhYa8H3FuRZpQs.png
+888,MasteryMegaKnight,Megacaballero,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/h0yR-FwkgUHaDu2B7yz86n2U3jjjucvmPN49qkMlEH0.png
+889,MasteryMegaKnight,Megacaballero,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/hOyoNXQ4Iwd4QpIDiXo_nSU9OCnexh5kT7dKHQFNi78.png
+890,MasteryMegaKnight,Megacaballero,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/m5CkApvuVQD5Fxx0wfRqeLFfONOnZ1ln53rftG9nd_I.png
+891,MasteryMegaKnight,Megacaballero,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/t-E0QEL67-6z4N0NBUdO0U8Pi4zEbPqbPIpd1jIlrTs.png
+892,MasteryMegaKnight,Megacaballero,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/58zZn-pqtdy1QynGU92p25kaozU2TsGuo_EF5XDwcu0.png
+893,MasteryMegaKnight,Megacaballero,10,10,,https://api-assets.clashroyale.com/playerbadges/512/lSm4SB5dLgJCjjFuJIKqqHjD0FX_Wwjo9LxFAhI7Joc.png
+894,MasteryMegaMinion,Megaesbirro,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/TwV2wpFKDAwLHtz6uOuxiOWReB-IoHyjnW0_liFRHqw.png
+895,MasteryMegaMinion,Megaesbirro,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/yB7GT9vCZRkhJk44fgKxjlTOdvT8KAXljw4e8H1Dxpk.png
+896,MasteryMegaMinion,Megaesbirro,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/_GObQCrRYUfPRk73FkdMSI2RsjN1xl3Gc8-xj3ZJhfY.png
+897,MasteryMegaMinion,Megaesbirro,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/ANi3r9T7wLvTGblkM9F0zFwLl3vB2sCkq4yUkp6GiUU.png
+898,MasteryMegaMinion,Megaesbirro,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/ORC7dB4nd3_bDkimxMhRxWzz0gP4QwPr7rlR2x9A_Sc.png
+899,MasteryMegaMinion,Megaesbirro,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/8zS_p_GU8AGvdx_niLAM-h1OdHtW8QZ7Vp93QmK6xuk.png
+900,MasteryMegaMinion,Megaesbirro,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/VqBPNnY1O6QcxGjH9fIYL0kOJT485BjRZmORUHDy4P0.png
+901,MasteryMegaMinion,Megaesbirro,8,10,,
+902,MasteryMegaMinion,Megaesbirro,9,10,,
+903,MasteryMegaMinion,Megaesbirro,10,10,,
+904,MasteryMergeMaiden,Emperatriz Espiritual,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/4WdNYOM4Fz9fzFbqOkXijrmuLFmGaqMKXx054N1kgsU.png
+905,MasteryMergeMaiden,Emperatriz Espiritual,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/PzKgIWefK7tRFGJqoQWkgqCLnmhE7HzMD5u6kukR4BU.png
+906,MasteryMergeMaiden,Emperatriz Espiritual,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/aC3BJ6cRXpw_Z8cUPfwBTdR_St1LJOV6Oih1W76hAWY.png
+907,MasteryMergeMaiden,Emperatriz Espiritual,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/y4TQuVkkXKY3vyUzn1VGNetydBRwvjNL1vSdAsIJQfQ.png
+908,MasteryMergeMaiden,Emperatriz Espiritual,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/-4jftjFC--WdeOkKTHxX88ezoVpjUJ4RUAi1sENaWBE.png
+909,MasteryMergeMaiden,Emperatriz Espiritual,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/GFXYmuSdMQP5Ky94Qno6dnJULHMgdIEXTP_4fV2DY1o.png
+910,MasteryMergeMaiden,Emperatriz Espiritual,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/sR2bYO0GH9hHgR8Q4L2kNTsbljdhGHgk0doMWh81RTs.png
+911,MasteryMergeMaiden,Emperatriz Espiritual,8,10,,
+912,MasteryMergeMaiden,Emperatriz Espiritual,9,10,,
+913,MasteryMergeMaiden,Emperatriz Espiritual,10,10,,
+914,MasteryMightyMiner,Gran Minero,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/THvggdBgnUtqzqb6QLhX-iFhELhxqDPTrdsTXKm48r4.png
+915,MasteryMightyMiner,Gran Minero,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/HpBoLEm3M7mdDuK6pX7Uj-WIaKRmOj7fIpqIQNex64I.png
+916,MasteryMightyMiner,Gran Minero,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/SAAr_F9n-1KjLGq8qEZgFppHTqSw7RhoXRm_y8QU2p8.png
+917,MasteryMightyMiner,Gran Minero,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/glDZ1qJoJ-AoweWnsGbbvnIaEJgLLBx_5GpKSuAFOZQ.png
+918,MasteryMightyMiner,Gran Minero,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/LrZpEgKdrIRBNGXLoRoATkcEL0Xt9uykV7YLVXjzmeM.png
+919,MasteryMightyMiner,Gran Minero,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/9BrUOvLD91eAABgvKIA8acy1I-nWF_3X8noWA7Y7rZQ.png
+920,MasteryMightyMiner,Gran Minero,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/sDHyJKK5zWNUqhB5emz6c1Q5C76PPLGgqBjCSEpIac4.png
+921,MasteryMightyMiner,Gran Minero,8,10,,
+922,MasteryMightyMiner,Gran Minero,9,10,,
+923,MasteryMightyMiner,Gran Minero,10,10,,
+924,MasteryMiner,Minero,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/pk27JhV15ZxduFsSEjm2TKJ44c15GJUoxb4uN5T5CUg.png
+925,MasteryMiner,Minero,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/HhAKkJ7CMa5gz0eyA54xUVr1MM-CzW3hYXELP_IUm2E.png
+926,MasteryMiner,Minero,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/srdhEIfzsQrBXUZa8qU5csopyXgtgccNYdb6Fx7HPbs.png
+927,MasteryMiner,Minero,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/Omwx4Ig5SrsYmP0bSq1v1xadXQV0iPbjf6N6EweROr0.png
+928,MasteryMiner,Minero,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/nyhQ6RCHiCpuctJRkUilbRkiyn0Y8x4_n4sdw6HjbIw.png
+929,MasteryMiner,Minero,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/_pb4OPYHjkeV8c02K4hPzTY1YV9t0QZUX4H46UIchCs.png
+930,MasteryMiner,Minero,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/uBUE8SX3qUO9mjF1g8Ey2OyXrQljNP4qWt1MKg3bWkY.png
+931,MasteryMiner,Minero,8,10,,
+932,MasteryMiner,Minero,9,10,,
+933,MasteryMiner,Minero,10,10,,
+934,MasteryMiniPekka,Mini P.E.K.K.A,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/ux6w7PT-AsIj5uMi9B_P22A7VolGd_vQkGPRA4E8q8k.png
+935,MasteryMiniPekka,Mini P.E.K.K.A,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/m36GJPbm-WXoMrrt2QR1C2-XBUtvtleU7FjKpmIje0g.png
+936,MasteryMiniPekka,Mini P.E.K.K.A,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/Ndrj4Z0nu0K8PTuVwBU0jP9J94-sWxY4NoYOEaPybbI.png
+937,MasteryMiniPekka,Mini P.E.K.K.A,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/Qo-ect_4qPoUMusWqyhPx863BvAUMTJmuP1HqUZ7fMQ.png
+938,MasteryMiniPekka,Mini P.E.K.K.A,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/-97DjUzQDBAcIubDIS30H4C4KwstPDipkIyVADJL0eY.png
+939,MasteryMiniPekka,Mini P.E.K.K.A,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/1attZky-XjT9t90dScVyeCGG7KkZU06W4vUelnArWAM.png
+940,MasteryMiniPekka,Mini P.E.K.K.A,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/XAVfqysIL1FOO1t35BfB4ZK4IqE6h0s3ozJCHSaEezE.png
+941,MasteryMiniPekka,Mini P.E.K.K.A,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/cNcQ4DFGyB8u2Z9bd_IH1BYviryb0qDZADotO3zrQ3g.png
+942,MasteryMiniPekka,Mini P.E.K.K.A,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/ieTrbe3IiBxHnuIaicOVkSXRZcWOhMSQWZENhvYK3Eo.png
+943,MasteryMiniPekka,Mini P.E.K.K.A,10,10,,https://api-assets.clashroyale.com/playerbadges/512/CcnjvcRLfpZTHCVDUZ06OtTynxUvoGj1CyknrW-Dugk.png
+944,MasteryMiniSparkys,Electrocutadores,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/ZHxYE5vpjLmNZuQ-oD2fLrWRPRObF_O4BruqzZwl7HU.png
+945,MasteryMiniSparkys,Electrocutadores,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/nsb9Q3tWCt1aiCCkofbY6um3dkbyk55SF0QPCaS-MX0.png
+946,MasteryMiniSparkys,Electrocutadores,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/S4XM4YLiXdFzB0sFFElqENmPwhU8GcmV6akshUBxnOM.png
+947,MasteryMiniSparkys,Electrocutadores,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/5BXd4CV5pidpmD0ewVZqADj1z4-eQkwRSqy5PiipNwo.png
+948,MasteryMiniSparkys,Electrocutadores,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/VCdyPITh67HU7HTFnezSrd0fsjYoLd_iHFbKCXLlaKA.png
+949,MasteryMiniSparkys,Electrocutadores,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/fxKk5CFEORbPNulT7jmf9R44uTtLu1EXx8RJKiGql-I.png
+950,MasteryMiniSparkys,Electrocutadores,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/F6GA27lmWl5P616Vwy25Mr4omw8AbpnvX1SM7so6T4Q.png
+951,MasteryMiniSparkys,Electrocutadores,8,10,,
+952,MasteryMiniSparkys,Electrocutadores,9,10,,
+953,MasteryMiniSparkys,Electrocutadores,10,10,,
+954,MasteryMinionGiant,Esbirro gigante,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/KBT6RZqjLac4bq5MJ0h1eAq0J8kzO4CTVgKTgxtWA1g.png
+955,MasteryMinionGiant,Esbirro gigante,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/967zStJvNpnQk07WSgvgSnTrnGvzU48fLp7zGKIX9-g.png
+956,MasteryMinionGiant,Esbirro gigante,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/Ou-TResJbAk5HDzNEF_vnLo94cop_NgEMij1wx4jMPA.png
+957,MasteryMinionGiant,Esbirro gigante,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/wLjChn_jPW_ZJ_PW5NCoo7Vqq9kI-S1i_Rp0gXLaYWM.png
+958,MasteryMinionGiant,Esbirro gigante,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/XG5H17klizf_M09txETOZh8r-9rgl5vOJvuXnq_ayCA.png
+959,MasteryMinionGiant,Esbirro gigante,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/po9z-6EllsBbR1nKQegQXJILiidpkqoopyK7r_qIaLI.png
+960,MasteryMinionGiant,Esbirro gigante,7,10,,
+961,MasteryMinionGiant,Esbirro gigante,8,10,,
+962,MasteryMinionGiant,Esbirro gigante,9,10,,
+963,MasteryMinionGiant,Esbirro gigante,10,10,,
+964,MasteryMinionHorde,Horda de esbirros,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/an2xnmWqqWI_cW8Cu-76wRvHeB2jyBMg0RVUBQHQuJY.png
+965,MasteryMinionHorde,Horda de esbirros,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/bRQnXUNcjNiR9K31wI4q7sEg74f4WNsisu43YIkXEBA.png
+966,MasteryMinionHorde,Horda de esbirros,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/kAxDd3O59mDruDxeuhbpqgxXKpQUexgZpNJQyQDxxA4.png
+967,MasteryMinionHorde,Horda de esbirros,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/wc_jd4ic-kKoKH7DWlh4AAHEqeJYGmpeNMsjXC5Qnro.png
+968,MasteryMinionHorde,Horda de esbirros,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/VK8-Sb3ubcpVgIUgPbOrx9z99tJjt0yiUv5V9R6FOuE.png
+969,MasteryMinionHorde,Horda de esbirros,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/kc9FqsQ0qdLOstYW9RqGKF2yEhw0-nGSrC-1DEOHbPY.png
+970,MasteryMinionHorde,Horda de esbirros,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/ipCDYk6z8dxv_o9-7Nq0cqy3Bd0QzwsdAqdY_MDlmKQ.png
+971,MasteryMinionHorde,Horda de esbirros,8,10,,
+972,MasteryMinionHorde,Horda de esbirros,9,10,,
+973,MasteryMinionHorde,Horda de esbirros,10,10,,
+974,MasteryMinions,Esbirros,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/7HOF3CqHFzXNHoze9X7K6gdtY9jlXUVlFwbq9rzZjvI.png
+975,MasteryMinions,Esbirros,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/KG-9sZLMBgek0Gh4B0Do0Vz9epz2oea_YMbjQoD324Q.png
+976,MasteryMinions,Esbirros,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/rsr4h8llyyOJyZrj-doAO1Y9zsqXmvAfo3G6OeLibz0.png
+977,MasteryMinions,Esbirros,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/PG9tuhjNDnq0xoNmz1DMDx_F9atmu6aD_eJE-Iiu0uc.png
+978,MasteryMinions,Esbirros,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/ef9bT6GhTRAooaHunskI-nUtyAf3LgJLS0dK4eeunWA.png
+979,MasteryMinions,Esbirros,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/aONORvYfCC80EkqV3niN24FFFX5K0QooCFt7r4sIXf8.png
+980,MasteryMinions,Esbirros,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/UmMlSkLML_lW8Io-678LfmpLDLIFpGuAedsTUzEqJJA.png
+981,MasteryMinions,Esbirros,8,10,,
+982,MasteryMinions,Esbirros,9,10,,
+983,MasteryMinions,Esbirros,10,10,,
+984,MasteryMirror,Espejo,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/7VRba5INYnRKYcnC_Hiri1nqqMJzKtFkbH00LjF-hLo.png
+985,MasteryMirror,Espejo,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/6louVF6CXXhHnOn1ibo6zhCfZohQCuGC_GrawzGhwDM.png
+986,MasteryMirror,Espejo,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/4ULRfBzuxO7QCClfcI3kyAnkiVx2zIKK91zJ2jM2DTU.png
+987,MasteryMirror,Espejo,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/yfGsI0uNfvWfcSgan3fhgQBj1kJyd49c0gIvjvzeQ_I.png
+988,MasteryMirror,Espejo,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/vwIcg04Xf2lmBSRPcABMB6QR0DjhyItkO1av6_TBF0Y.png
+989,MasteryMirror,Espejo,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/T5YGkx-Gn-pEKEYOKkjXLYNGMnB3XKBPnOiHC06yMOg.png
+990,MasteryMirror,Espejo,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/URlJJlwVtOkdrEpb8--14oWvyR_RjOdbelwoDbSKHkE.png
+991,MasteryMirror,Espejo,8,10,,
+992,MasteryMirror,Espejo,9,10,,
+993,MasteryMirror,Espejo,10,10,,
+994,MasteryMonk,Monje,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/rYwlo6KkWBGQdB5vjxK3RFF73TBbHPc3TrWCJiJuBX4.png
+995,MasteryMonk,Monje,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/tr6ixS7ORlYE9m8MD-ILWqZ5wSoiZ7u3dM2-9rO_nXg.png
+996,MasteryMonk,Monje,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/FXZ4jR2t-K4CzT1rOsiDeMsWEBr-DG8iIKBOXn0WSw4.png
+997,MasteryMonk,Monje,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/llt1OYbCq12korXf84sF9ik-aUFCu3FOT5HEh-QGWQs.png
+998,MasteryMonk,Monje,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/4WgkKfkwKry4vBxiFPLUz4sS_LqFLdtu2k0lnU9vKFs.png
+999,MasteryMonk,Monje,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/ISsKx4zHI9s3cXbBmZOddA5gNGzqGQeniJy7rZLit74.png
+1000,MasteryMonk,Monje,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/J134QRV0WvQvHlk27RjYvZTqCF_hn8lXDrllAKhk4o0.png
+1001,MasteryMonk,Monje,8,10,,
+1002,MasteryMonk,Monje,9,10,,
+1003,MasteryMonk,Monje,10,10,,
+1004,MasteryMortar,Mortero,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/X3qcvmjYjrSeDVLHdaqH8zZnT97n9SFfIrj15wx8XjE.png
+1005,MasteryMortar,Mortero,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/oBlIM_mJidbqF40Pp0EEIQQgHHMFj4ZeKtcb_wO18sI.png
+1006,MasteryMortar,Mortero,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/fKlD9VpU-YMkFwC7RCIcBmyxmL_kae0XHNg8ZE79hpA.png
+1007,MasteryMortar,Mortero,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/IcIziDzJUEe_xa5LdBTnl50_XgZIS9DmtX6KOubcECQ.png
+1008,MasteryMortar,Mortero,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/WMi_1joTOpC7jG0TiPV3UKw5risIqU_rVOkd19fFJe8.png
+1009,MasteryMortar,Mortero,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/I-uOIfODjNelfdIxRBG_-nA-WEldHC4ygaIL5VtKD44.png
+1010,MasteryMortar,Mortero,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/xqLHxUm8oAh8nKQrzrH2751ZNASzqY4ey1FPxWFX1A0.png
+1011,MasteryMortar,Mortero,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/fI65wka8XbSX1HkR_suVu5CLsLiScupAxijCU2uKzGA.png
+1012,MasteryMortar,Mortero,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/uJFWAmB4F0remcEXRB9D71aou5-uQsnVsuLTnhoQhco.png
+1013,MasteryMortar,Mortero,10,10,,https://api-assets.clashroyale.com/playerbadges/512/ObQCHcKEzixdwtkbZTukp_BlcR4Q5AT2ntmzlI13uak.png
+1014,MasteryMovingCannon,Cañón con ruedas,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/6JY6Sz1CS8wUIe5r1ZpVQ7CVK637DZ37wTQMMkyIy2A.png
+1015,MasteryMovingCannon,Cañón con ruedas,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/a0moh7NbFeRheg_IFP9YJk8gQRkg7bCH1hdbXOqya8g.png
+1016,MasteryMovingCannon,Cañón con ruedas,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/Vhn8vI8T8Ff6z9QzgfEVMpRb7YOm1SEzT3ofNrykVE0.png
+1017,MasteryMovingCannon,Cañón con ruedas,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/c8FKjAg99PdoUvSCgpaB-USmR9aKD26ajb-TsAGyb3w.png
+1018,MasteryMovingCannon,Cañón con ruedas,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/kC2WyqhZgPdGcDVbgbeZSX6BKU1DfL4YlqmTBrlJGKk.png
+1019,MasteryMovingCannon,Cañón con ruedas,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/SRXJUhb5-5hTmEIwVXQSK2z1Tnh5RV9U90GhBvt_V54.png
+1020,MasteryMovingCannon,Cañón con ruedas,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/xIEKIF2XgZrzruHgxSjfHdf4n85boA2sKLFA53pGFpU.png
+1021,MasteryMovingCannon,Cañón con ruedas,8,10,,
+1022,MasteryMovingCannon,Cañón con ruedas,9,10,,
+1023,MasteryMovingCannon,Cañón con ruedas,10,10,,
+1024,MasteryMusketeer,Mosquetera,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/Ae_0w-nsxT34X7q7pcQTcxL8PQtaHjXErhLSwzbvcUk.png
+1025,MasteryMusketeer,Mosquetera,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/1ndFyFFMEPzov4tEsYxEeRb1z68JEqOxfmcLmCwBUn4.png
+1026,MasteryMusketeer,Mosquetera,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/feDhtiKC5Oz2RLHYvelHCRBXTblKSn-15o5DDb3EGgc.png
+1027,MasteryMusketeer,Mosquetera,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/3sTckTfQ-mM1ysn9hZ_8uXP4lhOiAXS61qMH35s_cxw.png
+1028,MasteryMusketeer,Mosquetera,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/7N_u8MQR2wgHYVMeIzcLihxLUzd1Z2HQxv5s0JPdruA.png
+1029,MasteryMusketeer,Mosquetera,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/XO04lgoWkeYlLfnmaUB1KegswYkM3Tch4cN_jeKV0LM.png
+1030,MasteryMusketeer,Mosquetera,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/a5TtxCtesDSJbLQ0j2A3n_hxXmtpaCojUtamW3vlzE0.png
+1031,MasteryMusketeer,Mosquetera,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/v_u-WAT8fIHLdWEIpVhLobl9cEP1yc4tCWdmjgZ7mq4.png
+1032,MasteryMusketeer,Mosquetera,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/yhnKlUyl22XIsOkQ_BXeHHKw-2Yjwp8q73Vn9rJT18M.png
+1033,MasteryMusketeer,Mosquetera,10,10,,https://api-assets.clashroyale.com/playerbadges/512/IOcUAkBI-fMx-07kRfiGGArFspkHayLlSrsmsp-XWpA.png
+1034,MasteryPekka,P.E.K.K.A,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/quQ0vR4tAGu3sI0EzRUs63GNC4vMS8oUp2d53hMYwbU.png
+1035,MasteryPekka,P.E.K.K.A,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/jcVead8Ddv0E3qLDIlyNvm9mwON3dIWa8osaoi9yYqU.png
+1036,MasteryPekka,P.E.K.K.A,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/chxGOXQuKK4r6YnHRazHhDA1AWkaCSKcSK76MCBrYC4.png
+1037,MasteryPekka,P.E.K.K.A,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/fBk3FAz3AOkIU0LeqiznOjSjyuY0zEYdc0NcXVDvJJE.png
+1038,MasteryPekka,P.E.K.K.A,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/kImTYIBEiT6iv0yApoHFJ1wVGzG7R8HF8QwC4NO3qeQ.png
+1039,MasteryPekka,P.E.K.K.A,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/6xi3CZ_H7T0jRdSzav_4WpveEz9AZ-K2_-twlMILZys.png
+1040,MasteryPekka,P.E.K.K.A,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/7UUF3XF8EW6LeNZRjPYFPKpg2FIVVKHJ71kUtFjxFYc.png
+1041,MasteryPekka,P.E.K.K.A,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/76LP0Yv9r5CRCt697tMvsXPc5fd4f6nEjW8XQdQF13E.png
+1042,MasteryPekka,P.E.K.K.A,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/V-xu1hEQCqJGgsoS62aS3diOhWi_lwZY1P3zAPUhVYo.png
+1043,MasteryPekka,P.E.K.K.A,10,10,,https://api-assets.clashroyale.com/playerbadges/512/44EZatRC48qe-l93BeLSXxKiSGy_1dzlHrkvCIF-j6w.png
+1044,MasteryPhoenix,Fénix,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/gzTO_CVUsAXM90xIvhRbIiDUf8nBP97NJDbP9U1hht0.png
+1045,MasteryPhoenix,Fénix,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/s5dtpmzRlVa5byn2V3V7Ip74LLycmP0WNH72DfEXp8U.png
+1046,MasteryPhoenix,Fénix,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/3P2bUCR6JbTWNH3Zd7VX2hRNdrFXDdfN40l-SwXAWWI.png
+1047,MasteryPhoenix,Fénix,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/VCATTiJAA8EwPxiDuBqgrNETbfEfPzBa_Hcz2rXwzIc.png
+1048,MasteryPhoenix,Fénix,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/hbHExRs0_5OQFHI6UI0dJjx_Zc-GO3ueT3bcOrnn-DA.png
+1049,MasteryPhoenix,Fénix,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/GcOky0Rwq-MlCqBVLjNX0jZ97HckwItvDIemznnnk18.png
+1050,MasteryPhoenix,Fénix,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/UeP6C8bxxCqNSEFeZmbJo777ti5MmNhnqEqjfCQyeDg.png
+1051,MasteryPhoenix,Fénix,8,10,,
+1052,MasteryPhoenix,Fénix,9,10,,
+1053,MasteryPhoenix,Fénix,10,10,,
+1054,MasteryPoison,Veneno,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/GG4MQtEsFPW0FhNxbgXyvkd1_O2QjhGFiszmLWXDCIE.png
+1055,MasteryPoison,Veneno,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/WkeUvvsDTBlM7z8nS1rBbKnV_uE2ZMDYD_NzgEk5Ojw.png
+1056,MasteryPoison,Veneno,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/na_t34WALaEQNMtGtI5mcmOpzIPux50ickH00JLIu24.png
+1057,MasteryPoison,Veneno,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/6iA2LdepOJl9o1uk8fdphb-TV-eZR34gOq_oyFrTXtM.png
+1058,MasteryPoison,Veneno,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/AsBZEI1Srr4zU9EPNgGmV6iHBr9YRxnNRMLKOllKeIY.png
+1059,MasteryPoison,Veneno,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/r0HucGr4fGt5VBAfTslZjpX1Dn4v_XJhfhwX0wA6mhk.png
+1060,MasteryPoison,Veneno,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/v1mQrNfyrSJ4ytg-XHJjxaLz0Q_favHJQ3GdSFyentI.png
+1061,MasteryPoison,Veneno,8,10,,
+1062,MasteryPoison,Veneno,9,10,,
+1063,MasteryPoison,Veneno,10,10,,
+1064,MasteryPrince,Príncipe,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/FOmNJArEj4Ng-izUDNGAs9Z3phwf0P7MW0MjmRX1fD0.png
+1065,MasteryPrince,Príncipe,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/GyQF4tAf0QViRV3pr6_aD0QJUb7J-nLGF0LcGyLHnJ8.png
+1066,MasteryPrince,Príncipe,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/kWz-3vjbKK-Yc_BoS4KV9C0RobpoONIiXt5mgeGPlHo.png
+1067,MasteryPrince,Príncipe,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/QX6Ed_NS3jrHPjaaYroaGrN0op13IRL1ChIDbAnWm7A.png
+1068,MasteryPrince,Príncipe,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/UR0kXNDaRaMVJRjpM0oELMnsODZNbuhW3Cjs5khMZus.png
+1069,MasteryPrince,Príncipe,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/wLFko6oiiQIQBQEQ0Kqp4FFY7eYm064hNqKMwiBzs5I.png
+1070,MasteryPrince,Príncipe,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/EFe0-Gu-DE1WfCw1AMKBjzEFzZaxilx85wpw3LJZg_U.png
+1071,MasteryPrince,Príncipe,8,10,,
+1072,MasteryPrince,Príncipe,9,10,,
+1073,MasteryPrince,Príncipe,10,10,,
+1074,MasteryPrincess,Princesa,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/xKtloAfkLSKK6x-2WxjQPusMJ8BXhSkB1-_r6B0PBTg.png
+1075,MasteryPrincess,Princesa,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/ym1WRR-Y3ivemflbiFJSxE_YKC8D-Ylfso1S6FuM6kk.png
+1076,MasteryPrincess,Princesa,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/TGTJzlIYMlx6Tr3FwjsVZVKra3FTfhR_fnnRllJZ8RE.png
+1077,MasteryPrincess,Princesa,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/bKuLRi3V-7gL7Gr9ww_NdvY7A3aYVz7oh5p1UVIJmp0.png
+1078,MasteryPrincess,Princesa,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/sFugU5j6Ukq81jcp9Yo6Df43rQhVorpxfyoIHQ9QwOA.png
+1079,MasteryPrincess,Princesa,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/gLkor0QQbOlt_6FhGb-oejcRZCiLdkaA6GOHiNFUrzM.png
+1080,MasteryPrincess,Princesa,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/YyBFs1OvFGxS1cMDjmZ2A0F9Lz4CCD-3t1aHujtPtJg.png
+1081,MasteryPrincess,Princesa,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/ivLrcHGqpDThFsFKpaC9bW9Q-BOxKgvvb8Ej5u8WBWo.png
+1082,MasteryPrincess,Princesa,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/4z-18kgm2j65Wb4fdFujF7yIDZ6c_14jPs5VMVnl2tg.png
+1083,MasteryPrincess,Princesa,10,10,,https://api-assets.clashroyale.com/playerbadges/512/Un-0675RmCl_r2yUzcr75CmNS1EIE9BWQdGJhoCPJhM.png
+1084,MasteryRage,Furia,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/qwkEk_RAMiujQhPPuOEoZpxNty7U-4Qye-khRjgfmA4.png
+1085,MasteryRage,Furia,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/HJQJp-4nBLCVI9SyVnhx31QYtkNOFsrk2iYxqnBl7RY.png
+1086,MasteryRage,Furia,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/xySXtQjgFyEZB-p_cH76RKpJwf0JuPJQ6exaQq3W3O0.png
+1087,MasteryRage,Furia,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/Hp3rofR-J3OMmReevdW0JJ2KU8sME1ksOml-fpakSh4.png
+1088,MasteryRage,Furia,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/PRk0EVtyBJgmO0S27rxyNV-zpQ-PDYql_zVcihu_YJE.png
+1089,MasteryRage,Furia,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/aK3gKhUvTixQikm0kHnD5n1oRtf-Cl93LI74cQh8qq4.png
+1090,MasteryRage,Furia,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/c9QwAeyR0_sxdnzJyhztW1VvL0iLNi1JOAcLFfEj0q4.png
+1091,MasteryRage,Furia,8,10,,
+1092,MasteryRage,Furia,9,10,,
+1093,MasteryRage,Furia,10,10,,
+1094,MasteryRageBarbarian,Leñador,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/W7E5scebWkLC9cHgfUArbUVSjCBtIH9Z4JsOGjeSr7Q.png
+1095,MasteryRageBarbarian,Leñador,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/BsHGR70J_oFtLsqgwEN_EMB3hG94U-Sld-ilaMB5giU.png
+1096,MasteryRageBarbarian,Leñador,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/zeZ-Pgu0fapYfreudiNLajOXfma-8Ii2pdqeu5m-PHY.png
+1097,MasteryRageBarbarian,Leñador,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/o28vJdXExhhcDL8ltuobkh_0oWHtlTYsEK45wg9AE9o.png
+1098,MasteryRageBarbarian,Leñador,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/TnNz_S058z0TdmTh8LrVjBIKHeKp5esDCgG3bAba68Y.png
+1099,MasteryRageBarbarian,Leñador,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/1b7BPfqT0_vZCe2ykX6LndlStq3O4bi6PSbUSNifFDI.png
+1100,MasteryRageBarbarian,Leñador,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/Ed2DxO6fRLHUMcC430juIzv-8Dqr3WaCoWP68mMAblo.png
+1101,MasteryRageBarbarian,Leñador,8,10,,
+1102,MasteryRageBarbarian,Leñador,9,10,,
+1103,MasteryRageBarbarian,Leñador,10,10,,
+1104,MasteryRamRider,Montacarneros,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/ANG2b48JCQ8CACG6VvI9rzt1fPMRDDYJk3CDMEKkQrg.png
+1105,MasteryRamRider,Montacarneros,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/quCbifB8bAYrUBxyJZhhEKEwWerxRexfLWazLo9tgI4.png
+1106,MasteryRamRider,Montacarneros,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/sZAtkgsrIxc6z1TLh22hyfeXHJmT3T44RAODmL4bfaM.png
+1107,MasteryRamRider,Montacarneros,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/tyO3FLWuwiz08ux2F9CHKjnsEn_bC5lpi1iyF3ou3LA.png
+1108,MasteryRamRider,Montacarneros,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/8q_OcZuN9eYfO7GLVIuARC78g963aZ4jX47YlUvkr-Y.png
+1109,MasteryRamRider,Montacarneros,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/btgyiamq6_3vIsZbWRdbMlsLjLPv8tvZRSqKTnf3PnA.png
+1110,MasteryRamRider,Montacarneros,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/1GGsj8Lr1Qk5tqgdd4w8Pq6Sc32FcHultNLAsWMqSYo.png
+1111,MasteryRamRider,Montacarneros,8,10,,
+1112,MasteryRamRider,Montacarneros,9,10,,
+1113,MasteryRamRider,Montacarneros,10,10,,
+1114,MasteryRascals,Pillos,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/zVm2071esX7SW1AwZ3X5LmzD5ZBdwmWUAtWAtKdyEk0.png
+1115,MasteryRascals,Pillos,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/rJ7N0DhEZ6Dke9eU1DAZ2AAWf5TsxNfVwg5Ctorr_Xw.png
+1116,MasteryRascals,Pillos,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/FpMdoYv3lkrhSADzQsanDtV4Z-fEaHqPplp14RSPadM.png
+1117,MasteryRascals,Pillos,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/C2p6EKAW6mWLREUVI8bXCD6yOthYwci8Qo3hITSm1qw.png
+1118,MasteryRascals,Pillos,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/fonwLmZLAONraoUXOOFenCNI1Cx53vTcFEm0tWPu7Vs.png
+1119,MasteryRascals,Pillos,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/8CaB-hOEJyVRObUSv-U4TTZQGLVNllOPyArPK2WJ1ZU.png
+1120,MasteryRascals,Pillos,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/vLur5Cqxb4u799bQsyBUJSnIx6-73RB5XHyYyIsRt0c.png
+1121,MasteryRascals,Pillos,8,10,,
+1122,MasteryRascals,Pillos,9,10,,
+1123,MasteryRascals,Pillos,10,10,,
+1124,MasteryRocket,Cohete,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/tHsgY8iWv_Sd74mTCmBKYQrP-JCJKuP4TAzwe3RSudA.png
+1125,MasteryRocket,Cohete,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/zlThkHw2p5N-tvf8b9E9eaXJW6tQpQxwc4w6DHNdNuA.png
+1126,MasteryRocket,Cohete,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/z-wHYYe5E5PwYVP0SjzFwWtzR0oFySLmypD1cLMa9ms.png
+1127,MasteryRocket,Cohete,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/ekst6x3SoqY0FE2UnBzs4FFEhLZvqipk8pEXZ8kaVVY.png
+1128,MasteryRocket,Cohete,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/OOrFC5ytiJkpbxeOwfNBaDy2-WLppvkLp4XiOLhTjUo.png
+1129,MasteryRocket,Cohete,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/q_pWLSdJwQl5hB-RyY8QNrze3hAjK238l8MlR6TJiz4.png
+1130,MasteryRocket,Cohete,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/R2m1Qf1J0-SY-aMeDdx1eKcLOEi1lDepAGJDriMhsjE.png
+1131,MasteryRocket,Cohete,8,10,,
+1132,MasteryRocket,Cohete,9,10,,
+1133,MasteryRocket,Cohete,10,10,,
+1134,MasteryRonin,Ronin,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/rFOhxPJQhjrdWWhKD54ZeWfXiQl4WvKjCseurpAnc7U.png
+1135,MasteryRonin,Ronin,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/azggkPuwy3PhBw-e9ymdPbEBdUhcR6Ve1kXac6MqTTE.png
+1136,MasteryRonin,Ronin,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/8bWWeWpZoBeOoObDvldTEakPJipVJa-f3bf8JnQxTy0.png
+1137,MasteryRonin,Ronin,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/adeLiHYyZ8FgfHRFPTFah0VodKjT0RFQShJAWzbWXYk.png
+1138,MasteryRonin,Ronin,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/WCLqVk6tTifHonHkb4At0xs8Yud048is9y2tzHKKCj8.png
+1139,MasteryRonin,Ronin,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/ou8vAclcUVH8wxOjWQuas8OG0H4wWAE9LdKyZJv_CFo.png
+1140,MasteryRonin,Ronin,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/RAWsTRJmnbbi3G3hIFk0vj8usWOWoUW71CJFq3vQfgQ.png
+1141,MasteryRonin,Ronin,8,10,,
+1142,MasteryRonin,Ronin,9,10,,
+1143,MasteryRonin,Ronin,10,10,,
+1144,MasteryRoyalDelivery,Paquete real,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/1Xf4eOm4ICyWD9VXXLbaMcQo4gOL1wZYp9KpVhOYQWw.png
+1145,MasteryRoyalDelivery,Paquete real,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/1poais8raF4AjhB8gvGjkoC4WwPi-DkT_NV5RJ10tOI.png
+1146,MasteryRoyalDelivery,Paquete real,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/TnSeKUHUQVAYr3e10LTzuwEMrX3Qsn0eXCNdH_Afit8.png
+1147,MasteryRoyalDelivery,Paquete real,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/0svD4cp00jPUi8tPK8Y2ihsJi_dAI-6p1rSTsI0Pf6U.png
+1148,MasteryRoyalDelivery,Paquete real,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/xxc05C8Kh7FpKt0a2ezjTgwxxKpX4W-91FxeVqI_0Ic.png
+1149,MasteryRoyalDelivery,Paquete real,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/ZaTdmsOa1oXLNrHsLODv0G3hfBH2je_5n29JS2bi1lk.png
+1150,MasteryRoyalDelivery,Paquete real,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/OBPXeIUF0yhxw89gam5-XqmX5aJSObdYpAAwRbI01xM.png
+1151,MasteryRoyalDelivery,Paquete real,8,10,,
+1152,MasteryRoyalDelivery,Paquete real,9,10,,
+1153,MasteryRoyalDelivery,Paquete real,10,10,,
+1154,MasteryRoyalGiant,Gigante noble,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/anvPZozzSlKn1L_qAk5Tyo3NbafAmEitWQD5PfAg8Lc.png
+1155,MasteryRoyalGiant,Gigante noble,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/yeyp9orAQn_5mN-0fWsTogfmeKuiMQ2nAvLqwbJ1fv8.png
+1156,MasteryRoyalGiant,Gigante noble,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/b1yCxRGu0sL9DlVUuLJe1WyYVUOJupTpmN5Aid-J_mQ.png
+1157,MasteryRoyalGiant,Gigante noble,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/bkrOXh7bP8h2abgZSgp3_RkX4EV1SUr3JrkAGPm-NHY.png
+1158,MasteryRoyalGiant,Gigante noble,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/TnQVidjE0itdnEgIHL6S5X3NOIBXbtvQwf3JpZ7_0RY.png
+1159,MasteryRoyalGiant,Gigante noble,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/wLj1Ed9cNvPb_4XrGgKiIWZiG5M8v67X61qtuBr5euE.png
+1160,MasteryRoyalGiant,Gigante noble,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/MT9kVdqa4xx3RgaTUOUo8wBdFAFhUap3FYacoeznPrw.png
+1161,MasteryRoyalGiant,Gigante noble,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/bfNxI4ji-ioJ8fA1WNMuWBsDeGXOjTonWCJvvWMEJBY.png
+1162,MasteryRoyalGiant,Gigante noble,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/zgngtyrxvESXFjN6F5TfeZHefqfM2Hqk1TN9hBXFC4w.png
+1163,MasteryRoyalGiant,Gigante noble,10,10,,https://api-assets.clashroyale.com/playerbadges/512/EA9VUnESuYeRQqLj-EZHH-q2cKyTU2g8pUgMWMP13yI.png
+1164,MasteryRoyalHogs,Puercos reales,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/LDWzFi_Ip7HgsmCH1_A-p2WJMTNXmI70SdbJAsV9kdU.png
+1165,MasteryRoyalHogs,Puercos reales,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/NjHkZv4PvYbBK2WSeOEj0ihO653afBjXMJoJC6P5c-E.png
+1166,MasteryRoyalHogs,Puercos reales,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/W2l6K2_yHcs_MVfaJiPX21O1iVWqfssPC1DjLQxFE0Y.png
+1167,MasteryRoyalHogs,Puercos reales,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/NjwaWf-fdTD-wEW5Ok8Zz8xTDWQIsKebIakvyFXmeis.png
+1168,MasteryRoyalHogs,Puercos reales,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/8gNVmCXkJzptQ3Kc_xM7igU2KbaO7ZDYjQre_5yb6S4.png
+1169,MasteryRoyalHogs,Puercos reales,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/S0yPBoE9t0mLwqp2gBFlfiNXUPc81fpDo7QjyRv1b18.png
+1170,MasteryRoyalHogs,Puercos reales,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/gdqm-oP8mstm8Q7-BdxMkEAayrylFfeQn57dInemNrQ.png
+1171,MasteryRoyalHogs,Puercos reales,8,10,,
+1172,MasteryRoyalHogs,Puercos reales,9,10,,
+1173,MasteryRoyalHogs,Puercos reales,10,10,,
+1174,MasteryRoyalRecruits,Reclutas reales,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/qGNGNTAhWmYjs7g1oYYzGS7wx6-axQ7CIumKTV_Uxfc.png
+1175,MasteryRoyalRecruits,Reclutas reales,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/Lw31JtGY8MvG5XbR6tlazhzQgY3ysNHpJYdXwnGJSzc.png
+1176,MasteryRoyalRecruits,Reclutas reales,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/CY2U3Ein8Ca8h6wUYhO93vhTdoM5Iw9E3fjk4jTHv_c.png
+1177,MasteryRoyalRecruits,Reclutas reales,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/V4A-c9pCIj3_qzTQZx8KM1qK7e5MMtE0JOVpY4r0zLI.png
+1178,MasteryRoyalRecruits,Reclutas reales,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/rE1q8oFWu_i3J5Z7SSgQDE_zjx69BmTHNSX011m6h78.png
+1179,MasteryRoyalRecruits,Reclutas reales,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/5FbuHUry5SOpjujFOvxbMGh7Srv--AoCVsSaT5aQ0O0.png
+1180,MasteryRoyalRecruits,Reclutas reales,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/jysEYaLMmXSI6akSMm8CpBIlaCRIthCTp2GVDUhbjsY.png
+1181,MasteryRoyalRecruits,Reclutas reales,8,10,,
+1182,MasteryRoyalRecruits,Reclutas reales,9,10,,
+1183,MasteryRoyalRecruits,Reclutas reales,10,10,,
+1184,MasterySkeletonArmy,Ejército de esqueletos,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/DGm0Qo69vEiNbIOaaG7-UlZTlSYDm-S1c5RpUgzRgYY.png
+1185,MasterySkeletonArmy,Ejército de esqueletos,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/KVhblbD9DOfccGMDUL1EC0gAJ1vi2cp2jN3HI346QQU.png
+1186,MasterySkeletonArmy,Ejército de esqueletos,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/fGbgX92ytdFSLqbHFrC-giiGpYWNGMAdBHh8ONxCZrM.png
+1187,MasterySkeletonArmy,Ejército de esqueletos,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/bMjkmre4cst6iJYTAEQmGQxw_xXjuFpl7qVFmzAhC4A.png
+1188,MasterySkeletonArmy,Ejército de esqueletos,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/rv7w3Ayt-3UDyAWNrt5SsJil_m-zSpegjgYY_8al7mw.png
+1189,MasterySkeletonArmy,Ejército de esqueletos,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/nNzrk3It0H2t5vWorSU46KmEi_siqQcQM4xdDjYqJcc.png
+1190,MasterySkeletonArmy,Ejército de esqueletos,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/MUkXZlpYs2_i536ZKSvzEQ1ujiXsVhSVLDmtXOZi4lg.png
+1191,MasterySkeletonArmy,Ejército de esqueletos,8,10,,
+1192,MasterySkeletonArmy,Ejército de esqueletos,9,10,,
+1193,MasterySkeletonArmy,Ejército de esqueletos,10,10,,
+1194,MasterySkeletonBalloon,Barril de esqueletos,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/hjA8n7P-LYBlNKh-j1AEO7_KE2q2J85NIM7Nbm1-Buw.png
+1195,MasterySkeletonBalloon,Barril de esqueletos,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/cKcN498k9CW1aGuI7_oizp4_wEONmhIZg7UrmiGAdgk.png
+1196,MasterySkeletonBalloon,Barril de esqueletos,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/8GyeRJVqWrZr2UqiRGKM4T3c3Wed9xCFw4szT73SriY.png
+1197,MasterySkeletonBalloon,Barril de esqueletos,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/KFXwYE6YHOPU9rZ0Q2gM5EtirL6eFxn9tMOqM9K1jnI.png
+1198,MasterySkeletonBalloon,Barril de esqueletos,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/f3WWIdFzCnCcGqNIpJY4RS6hN99spzWBJkN40VGX-uc.png
+1199,MasterySkeletonBalloon,Barril de esqueletos,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/KB-oyx8u4WmtDd52snIsMA08g4PGGYPiJ8GQJGIOYe8.png
+1200,MasterySkeletonBalloon,Barril de esqueletos,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/zCqq_W-Y7_mPrKo0nE8cYB3i3AA38XkOK5gInda0Hhc.png
+1201,MasterySkeletonBalloon,Barril de esqueletos,8,10,,
+1202,MasterySkeletonBalloon,Barril de esqueletos,9,10,,
+1203,MasterySkeletonBalloon,Barril de esqueletos,10,10,,
+1204,MasterySkeletonDragons,Dragones esqueleto,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/0heuf77x68kmEQ1xW7c0vTLC78tMulR-WvDw7Y_8Qko.png
+1205,MasterySkeletonDragons,Dragones esqueleto,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/HUYHImt9rME8oaTUpCBYHYayfdpwL66Rlq8vrg1YVAY.png
+1206,MasterySkeletonDragons,Dragones esqueleto,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/YKC9Bb2n9sMeCcJwRBfbX2-VO4TB4WKUqa4p-FArVIM.png
+1207,MasterySkeletonDragons,Dragones esqueleto,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/lDBZwxIZV70jLIMYRnRSbxsPzpUNHEpzACWJdsOZETM.png
+1208,MasterySkeletonDragons,Dragones esqueleto,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/VvcNwjGW-oepX1PK6bq3VuELEIBCtTwhT4TArhSHCeY.png
+1209,MasterySkeletonDragons,Dragones esqueleto,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/tgom8cmIAa66YIh-FmWTdegoTNbLXdxvv5iWtA0RV5Y.png
+1210,MasterySkeletonDragons,Dragones esqueleto,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/5upysGYWqUOYp-6-ZreBJ3qffDu5bfWVc3cC92HwJg0.png
+1211,MasterySkeletonDragons,Dragones esqueleto,8,10,,
+1212,MasterySkeletonDragons,Dragones esqueleto,9,10,,
+1213,MasterySkeletonDragons,Dragones esqueleto,10,10,,
+1214,MasterySkeletonKing,Rey Esqueleto,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/AX7WlK-jNC6jShgW-unQxcGcLh4Jzk7HbxbDT5UCqNQ.png
+1215,MasterySkeletonKing,Rey Esqueleto,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/bLgI68-3xI8QN8gQ9L5wvaKMMK_XRnXXWrn4s79cqwc.png
+1216,MasterySkeletonKing,Rey Esqueleto,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/Zg0k3vSG1a2SySEGmj1-4tdDa7gN8ImpAqk2xFG3vws.png
+1217,MasterySkeletonKing,Rey Esqueleto,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/LU8dCJgBBYBMSxMxIKcEzImg1S1-ZBu7B05F3e2pF94.png
+1218,MasterySkeletonKing,Rey Esqueleto,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/qnsWdZBwKw97cEk2oDxt5p-zt7iqMY1n0k90ri4v-d8.png
+1219,MasterySkeletonKing,Rey Esqueleto,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/2GF5J5aoDc1ZaiAQLMxbq4w2cr_TUHqFGPxrewNZ4uE.png
+1220,MasterySkeletonKing,Rey Esqueleto,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/bLaZtnBB-3YJWbJcNIoX7RK7WC1BAFqLmgHI5wdPjrQ.png
+1221,MasterySkeletonKing,Rey Esqueleto,8,10,,
+1222,MasterySkeletonKing,Rey Esqueleto,9,10,,
+1223,MasterySkeletonKing,Rey Esqueleto,10,10,,
+1224,MasterySkeletonWarriors,Guardias,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/IN_QbL0gfQtmJGAXVF125NdwcJkMqVMGswa0HPBKYUs.png
+1225,MasterySkeletonWarriors,Guardias,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/lAvxZqZuztE-2eTOw3pDbIxd9aKXHEe5UGcR6IvcpAc.png
+1226,MasterySkeletonWarriors,Guardias,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/EYybG8TI-kDmhtLpMScT-XDy09r-V5rw4QuSudPeUAM.png
+1227,MasterySkeletonWarriors,Guardias,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/SIstmhGhRY9wb12sKC5RN8RZhaCN1mUMAF2is8BQW_0.png
+1228,MasterySkeletonWarriors,Guardias,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/TptIvJvksA6zYEUIRRX149mZnj1IRVsa4-hquwN-dHA.png
+1229,MasterySkeletonWarriors,Guardias,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/o8Em3DQlWOqTmc-M6reFdfGuURIfCGj_axWDAYmB7OQ.png
+1230,MasterySkeletonWarriors,Guardias,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/-BzOyw_GoOmozS8qhR1kmxllOXude-BhQl-xD05HjXs.png
+1231,MasterySkeletonWarriors,Guardias,8,10,,
+1232,MasterySkeletonWarriors,Guardias,9,10,,
+1233,MasterySkeletonWarriors,Guardias,10,10,,
+1234,MasterySkeletons,Esqueletos,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/g6W3ZfzWMFDs5yiaxiUdzvVS5S4kXR3n6_mUIR0lqnE.png
+1235,MasterySkeletons,Esqueletos,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/mPghANX6oMmKGnKnyp4oR-hl-OKDa1QProz2vJILrG4.png
+1236,MasterySkeletons,Esqueletos,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/pZ-JGuFIN1cufjgMl_vnFRt2kyCSjtYGpjcL1I4-CT8.png
+1237,MasterySkeletons,Esqueletos,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/nZnLFCDH2xaFqFVbH5CkrrNysXDqz7FjN1i7kCXKexc.png
+1238,MasterySkeletons,Esqueletos,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/dexVAFStUjCLqAji67mhDwQ2Lf2W6phWkMu_SkErE_s.png
+1239,MasterySkeletons,Esqueletos,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/s0jIpJXy0jxePu3PTnTy-xbytoU6cckbKZPcoJYhw4s.png
+1240,MasterySkeletons,Esqueletos,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/DbgHv8A5VbX8DF6Nuqiy2JHXyfa0ImaEOMhfrlE2ioc.png
+1241,MasterySkeletons,Esqueletos,8,10,,
+1242,MasterySkeletons,Esqueletos,9,10,,
+1243,MasterySkeletons,Esqueletos,10,10,,
+1244,MasterySnowball,Bola de hielo,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/izPL0G_pfl8SALSFDhX22UGmt9mWvw1NWVAhGW7Evas.png
+1245,MasterySnowball,Bola de hielo,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/QElkkyYWIs3JHYkItc3aulCg-pDvQN1lDI_Rl7shYkE.png
+1246,MasterySnowball,Bola de hielo,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/EZdgrmITUorREHborUgg6WmjtBSU0C8Vk9GIW8_3MiU.png
+1247,MasterySnowball,Bola de hielo,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/NtOUTvfJvdVr3BJm-VxFzzj7csFRydSsVS5vsM0V3GM.png
+1248,MasterySnowball,Bola de hielo,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/Dis72-sOFFolb6wFFEO3K3s_ltoe8W1MTTqs1G5xH3g.png
+1249,MasterySnowball,Bola de hielo,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/a_FX5gY8JZfIBpvVv6hyuPoXSKvBCxTemwhFVhyMZT0.png
+1250,MasterySnowball,Bola de hielo,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/zje8tQJaxkqhS72MBVQu1kkyQ9nCPaNqeT9n5SEx8WQ.png
+1251,MasterySnowball,Bola de hielo,8,10,,
+1252,MasterySnowball,Bola de hielo,9,10,,
+1253,MasterySnowball,Bola de hielo,10,10,,
+1254,MasterySpearGoblins,Duendes con lanza,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/DUDcBdnyHzCeIXn21QMPFbFYqXHXCYoTxGJKPI7qloU.png
+1255,MasterySpearGoblins,Duendes con lanza,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/ULhoEAaMWnb5RWfs9EBFJbRj4qtTKwo19UA49oXpIl0.png
+1256,MasterySpearGoblins,Duendes con lanza,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/eUuimn7IN68uq-1wMZ899mbkOhMafaEK1_wkjYajRDM.png
+1257,MasterySpearGoblins,Duendes con lanza,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/VMY5nel5IjWe8xB_MwZrF54rHn1aq0l2uCjjY2tDK8A.png
+1258,MasterySpearGoblins,Duendes con lanza,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/nGKWBSwavbP_iMZoKyT_LTymFrg5up0zTXoqIYcO0HY.png
+1259,MasterySpearGoblins,Duendes con lanza,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/uydM_sVMkfK8D-irhu5wjkHXL56Dmn_x73Kk5JfYiAQ.png
+1260,MasterySpearGoblins,Duendes con lanza,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/ShMIsPpRlOhQSr0_7krnzAyXRJhGI4ewB9Q6wVwdcRE.png
+1261,MasterySpearGoblins,Duendes con lanza,8,10,,
+1262,MasterySpearGoblins,Duendes con lanza,9,10,,
+1263,MasterySpearGoblins,Duendes con lanza,10,10,,
+1264,MasterySuspiciousBush,Arbusto Sospechoso,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/EZo6xf7lh8pPzQudnQvnouDqIB_xKU48GohK4dvmBrk.png
+1265,MasterySuspiciousBush,Arbusto Sospechoso,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/zvbfnVL6Vmb8G20BD1NsV-KeJgN82iQoesOMp052UMs.png
+1266,MasterySuspiciousBush,Arbusto Sospechoso,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/Li4RDuLRF8MHee2ZCeWF6VEOFFtXHfTZccW1l8UUDJI.png
+1267,MasterySuspiciousBush,Arbusto Sospechoso,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/vGWm8VHK9q0_ntqR0McUoSA1xCilQ9cUExvhEFHpBzU.png
+1268,MasterySuspiciousBush,Arbusto Sospechoso,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/ciMq9ycWc4NxhcHZ-L7pAYjnHnKvx6qOESBcXBbbRwo.png
+1269,MasterySuspiciousBush,Arbusto Sospechoso,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/guYG_2YSVNPqwblQO5_w8DfvxRcKJ3J_kX-NluuPGyQ.png
+1270,MasterySuspiciousBush,Arbusto Sospechoso,7,10,,
+1271,MasterySuspiciousBush,Arbusto Sospechoso,8,10,,
+1272,MasterySuspiciousBush,Arbusto Sospechoso,9,10,,
+1273,MasterySuspiciousBush,Arbusto Sospechoso,10,10,,
+1274,MasteryTesla,Torre Tesla,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/7A77t6PWSvSp0NEFB5juK9Q6LBQO8VpOXEZfDy97ODg.png
+1275,MasteryTesla,Torre Tesla,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/TQ_WPeNEzAXWw1rhZqu1xxPoZ3Txw6J__e3XW71BXec.png
+1276,MasteryTesla,Torre Tesla,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/-JvqGFfNA-M9Y1HBwB60hyuhsDWdZEVbcZIRAD40kM0.png
+1277,MasteryTesla,Torre Tesla,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/AV5zEyFG3YgtYthE25Y0uWLF5cgikOSQgxz9u8qqKtY.png
+1278,MasteryTesla,Torre Tesla,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/y7Q8abyDTNHQpGKoWBxUJqqY48Jc9_8P9i97uZl6Wg4.png
+1279,MasteryTesla,Torre Tesla,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/XwjSwrb9XFVs7eNZ_kto2NBzrzt9rUcmUgzp1XVJI78.png
+1280,MasteryTesla,Torre Tesla,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/Fh2SxOUq5hotlrng5hTB7VP_ixm5x0aSRWdvp4b6lU0.png
+1281,MasteryTesla,Torre Tesla,8,10,,
+1282,MasteryTesla,Torre Tesla,9,10,,
+1283,MasteryTesla,Torre Tesla,10,10,,
+1284,MasteryThreeMusketeers,Trío de mosqueteras,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/zJ2dziok0T_bUqU9GzE1CL3ATf3v20T27rGkuTpZpy0.png
+1285,MasteryThreeMusketeers,Trío de mosqueteras,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/FSKhhKZ1e5G407YOjzgbXy46J75LJkrkI2345x8BZSI.png
+1286,MasteryThreeMusketeers,Trío de mosqueteras,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/MkkNgYO_ZygaqUomCv5sAutPGbBm6lWad_PDSHBHe-c.png
+1287,MasteryThreeMusketeers,Trío de mosqueteras,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/pYz5VAFWCvmB8XUsEGieo6odFvquUFbd3Ft1UcXfctQ.png
+1288,MasteryThreeMusketeers,Trío de mosqueteras,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/hIol8zCIAie7esad9NrvavA1yte7G_6A_Nijx7Dx2do.png
+1289,MasteryThreeMusketeers,Trío de mosqueteras,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/Iyxm9KJ7h7ueNq9fZEUaSZWAKI6vpR0hbbrzOnzECug.png
+1290,MasteryThreeMusketeers,Trío de mosqueteras,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/hz7i3Ibau56YlK-NtQyKX5EmNaBT9MXIl_-AYWc2ATs.png
+1291,MasteryThreeMusketeers,Trío de mosqueteras,8,10,,
+1292,MasteryThreeMusketeers,Trío de mosqueteras,9,10,,
+1293,MasteryThreeMusketeers,Trío de mosqueteras,10,10,,
+1294,MasteryTombstone,Lápida,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/BAzERt0zT5fiL5CDH_CXT_4nNGsBRBMJuKoUSmASQPo.png
+1295,MasteryTombstone,Lápida,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/mTAibd3-D1g4_1-0JrBL5aAzF5tsH9L9mSGQbj2QPTY.png
+1296,MasteryTombstone,Lápida,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/p8taRpGl2by75sxr4oLKzxwprr9cVpVF2Lp-2Wnk6Ok.png
+1297,MasteryTombstone,Lápida,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/gUUcuV0XPEkPlWLSGkjSis3FyDnGCTQDKo0i3BbsCB8.png
+1298,MasteryTombstone,Lápida,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/_F0ZJDhl6vJHSRkGxwr90H-4AnVZxuIMmKqXBntQxck.png
+1299,MasteryTombstone,Lápida,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/Csx-rdtkn61B75fe4R1miDVu_bcfPmnAQfBJi3LVSbs.png
+1300,MasteryTombstone,Lápida,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/_qfShWCa8XSv41exzRm0l45gRCD2IAh-7jHzKtXHh5w.png
+1301,MasteryTombstone,Lápida,8,10,,
+1302,MasteryTombstone,Lápida,9,10,,
+1303,MasteryTombstone,Lápida,10,10,,
+1304,MasteryTornado,Tornado,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/RX_Fb5OD9usajEt3qIGgZrTXB93MLBZ1uQLMqNWVqUw.png
+1305,MasteryTornado,Tornado,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/nve3LmO1tmdZrfUYHTs1BA3bu-PcnfWxQc7TCJoanCI.png
+1306,MasteryTornado,Tornado,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/UPFfXcdy-JXmS61C7ggUl-iIhx1OrittJzmghgrpA4g.png
+1307,MasteryTornado,Tornado,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/-PaL7tPKKp4jXybXK_4iNemSNGiUqR5VzhVLHH2HcKA.png
+1308,MasteryTornado,Tornado,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/uOOnHvr8m98Z7QOsyDp-TmHcOJB1aYGT2JbGO5Z_OZg.png
+1309,MasteryTornado,Tornado,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/-sLqOGVavXwJAl7EfVbbRkby3EspsLY3anJwpV353gM.png
+1310,MasteryTornado,Tornado,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/OEXsVel9629Z3K-N6qNpD6fOE1Jjuci1FtguqCo-eNc.png
+1311,MasteryTornado,Tornado,8,10,,
+1312,MasteryTornado,Tornado,9,10,,
+1313,MasteryTornado,Tornado,10,10,,
+1314,MasteryValkyrie,Valquiria,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/N9mSO8Sh_47TdPfCuP84tiNGlvxq-9ZVPP0OTSoIZGM.png
+1315,MasteryValkyrie,Valquiria,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/AMH_rJhbqA_A6d5oTb3ieaozB0Y9BaNPfoPEhlrtyqc.png
+1316,MasteryValkyrie,Valquiria,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/l3BDjOuvDVmI9YKOlg4UB5cdcwFxG1F3_m_OJrrGX6E.png
+1317,MasteryValkyrie,Valquiria,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/No2xGvPFyC2gKoNG2-Vyxbn3635lnjorZytJJphzXFM.png
+1318,MasteryValkyrie,Valquiria,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/vraLuFCM63nJeYhzizmeQFO2AzXJW8cIs24-ASETyis.png
+1319,MasteryValkyrie,Valquiria,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/uoUQ5BlTv938XFg0F9SBeokHV0IMeCk03DwUp7ENRn4.png
+1320,MasteryValkyrie,Valquiria,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/LzqWiLfcXYSrHvwpizCR_nwsSOXYrObFYQaZ5gFitII.png
+1321,MasteryValkyrie,Valquiria,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/euXZ8rdEPg21i0ow0ytrpG9-sUCttoAHKG4Zij-xQog.png
+1322,MasteryValkyrie,Valquiria,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/-MwXhWIbO67V9W1IeLq3TutEMPfgbMy7bV0yuzHCFig.png
+1323,MasteryValkyrie,Valquiria,10,10,,https://api-assets.clashroyale.com/playerbadges/512/I87LusUmfA-hMudbLDH6GJGqtbmrh8gV3uMqR2Tvka4.png
+1324,MasteryVines,Enredadera,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/jcXVCGTxqRiWUaMM3WYDnBOUgbgj3jAZXqaeqdH_fzg.png
+1325,MasteryVines,Enredadera,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/CgvI8UHPo_3Af0u9peCLvMpfAQ1Zkm1pxOgCHqH88AE.png
+1326,MasteryVines,Enredadera,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/zLKFFtrLm6wyTX0H0TBObztxxxy0wfv6Cic6q5rK_j8.png
+1327,MasteryVines,Enredadera,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/2BBjNnhD50ZrGBN4IZazpiV5DTaNfGQYVLoA5_Aitwc.png
+1328,MasteryVines,Enredadera,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/lFSk4MICG4Xp_Brk-ROdapSM6iFIdRLMgL0eAOATFYw.png
+1329,MasteryVines,Enredadera,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/lRIj0sUs1KocuO-CqbiUwD8ntX-0tyCTCspnAAtn_HI.png
+1330,MasteryVines,Enredadera,7,10,,
+1331,MasteryVines,Enredadera,8,10,,
+1332,MasteryVines,Enredadera,9,10,,
+1333,MasteryVines,Enredadera,10,10,,
+1334,MasteryWallbreakers,Rompemuros,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/ruWtusruMHdyOLzEewen5c6HuLY7snwyVA8bey8oT3k.png
+1335,MasteryWallbreakers,Rompemuros,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/6KYbyJptQDwGOlU93XaDeQvctTIqfXSPc-1BKzDtP80.png
+1336,MasteryWallbreakers,Rompemuros,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/-6zO_trZIFLwT4cOIgpHhqHBhg9V3Zft9PESZexFSwk.png
+1337,MasteryWallbreakers,Rompemuros,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/cbvlzDxmjl4a9T_PuxuiaLhDm5JhhieZ2QGrs5yUOc4.png
+1338,MasteryWallbreakers,Rompemuros,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/Cofund3O-90r3hZHof-s1EqBHBXw6xLO8Bra3iEXtc4.png
+1339,MasteryWallbreakers,Rompemuros,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/4OVLG4z-Ia62d9MOYA3TLM4urb4T7H3L7IslfDhUl4I.png
+1340,MasteryWallbreakers,Rompemuros,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/gCJTsb4fwiMtJNZvOY6LKsiNZuk86x-PGUMnfMlG6fs.png
+1341,MasteryWallbreakers,Rompemuros,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/tsnzzeBgs1-jstz380QpWqUzyh5AIdXdzriZ_pXg7Lk.png
+1342,MasteryWallbreakers,Rompemuros,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/tAL-Zc1SZvOKgdATIij1xVjlWFVeoZrhsS0yIc9WO7Q.png
+1343,MasteryWallbreakers,Rompemuros,10,10,,https://api-assets.clashroyale.com/playerbadges/512/AL-dPOYiZ_vl3UMcZFphNHcDulN9jfih4So-s23ATpE.png
+1344,MasteryWitch,Bruja,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/27mJ3iTUWx5H-n-sTfA7YnmAcTx29Krm4MXeOZGy-hM.png
+1345,MasteryWitch,Bruja,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/WrNLNFoqp6UyJK47_MUqTXbUhUw8vOrO2-9XJ8P7oRM.png
+1346,MasteryWitch,Bruja,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/--l_mVpiIGlKm_ccKeMNfij-tk6cxSEN7LYK7AEDXOA.png
+1347,MasteryWitch,Bruja,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/5c3QnDeWMGqA_FOJdTCJWKoXNXOWOVj-B9820Ppn_y0.png
+1348,MasteryWitch,Bruja,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/iqBO04ZuM0xepRYO6fe2fnUpGYTYAiDwS3UTfOaDfe0.png
+1349,MasteryWitch,Bruja,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/wunW3GCdP37vpOHH-6ky-PXo2cqpIh5YKdDdZbU5ACA.png
+1350,MasteryWitch,Bruja,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/uFYl5sXxGiYO88vldEn3mr74_od40PnN6JIYXenXYXg.png
+1351,MasteryWitch,Bruja,8,10,,
+1352,MasteryWitch,Bruja,9,10,,
+1353,MasteryWitch,Bruja,10,10,,
+1354,MasteryWitchMother,Bruja madre,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/XF_GBc0KbT011VlpY2pogk7bnRmFh7iZnSsVDgJ38Js.png
+1355,MasteryWitchMother,Bruja madre,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/QkhF5E0mraUZRQotJBkzi7qqVfmJtUvBfk41HhyGmXw.png
+1356,MasteryWitchMother,Bruja madre,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/3-0atWjn3uJO2V4tg6MTaaiO4NKMs6VYdzaDDzSX09c.png
+1357,MasteryWitchMother,Bruja madre,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/dAmUdFbsZ-1KLwgf2eILjcWODEcpvEnHbr2x5k9wy2Y.png
+1358,MasteryWitchMother,Bruja madre,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/vKZtlihM95VBJ9AriCglYJ4fSVEYHS3Q2CgtnsHJmDQ.png
+1359,MasteryWitchMother,Bruja madre,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/jZj1I4xfd7wtX_GKOsL6jmwi9_9bCfXLgT4LMyByM4s.png
+1360,MasteryWitchMother,Bruja madre,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/fuH-ao_ww2V9ndLNFXFAHSmsK4kAsTT5lm-oT09vEnM.png
+1361,MasteryWitchMother,Bruja madre,8,10,,
+1362,MasteryWitchMother,Bruja madre,9,10,,
+1363,MasteryWitchMother,Bruja madre,10,10,,
+1364,MasteryWizard,Mago,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/U-8wnOdS6a5Fs8qHGnPNREyVnIo8ZVv11gvupcoUA9o.png
+1365,MasteryWizard,Mago,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/15-gYonVuxVQ_F6Svblt1vT1qKxQCrXK9Ko9AFSU5X4.png
+1366,MasteryWizard,Mago,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/hKFc0OKfEdo5wI4Z6r3NUnJ9Tt9p_BX_8C_iSCZajgA.png
+1367,MasteryWizard,Mago,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/gnHQEhQPKtljcWTLZ4Hpow4LEAMFvmdEZMoCFp7df20.png
+1368,MasteryWizard,Mago,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/l8ZhNHZkH-ttiUMe5yrWKgwLtfdd0-wSddxHY_0BjEs.png
+1369,MasteryWizard,Mago,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/9vytzsCdqPhXsP0Cj1NOxu_FGfB0dDdWa-oAMED2gN0.png
+1370,MasteryWizard,Mago,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/FuQOmsHyWiFPpag5xyzrtYW1hShlRA3Df7kMeN0p8Fg.png
+1371,MasteryWizard,Mago,8,10,9,https://api-assets.clashroyale.com/playerbadges/512/nk_hkXk1M6Cm3uBCJcleHANj6h3U5xj0a9vZI-pJdHk.png
+1372,MasteryWizard,Mago,9,10,10,https://api-assets.clashroyale.com/playerbadges/512/Bz5LzNTwgm1-k6NIBec0diUB_IYI80SduCccY98h7sg.png
+1373,MasteryWizard,Mago,10,10,,https://api-assets.clashroyale.com/playerbadges/512/Cl4RvZBn9aOPBRC9vEpGgYxRgEE8CoyBT-aMb-_JF2U.png
+1374,MasteryXbow,Ballesta,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/QMyvwoaRXxPluyGpsrZGTl7fQsrBYXpU_eolrsfSSus.png
+1375,MasteryXbow,Ballesta,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/gsmTHXMiVyajXqI6l3v0Ww9KtzMq_YT6lzanvAYMbDA.png
+1376,MasteryXbow,Ballesta,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/xl4ZpCnmvuGi4V36MrSwLgSa4-HvkjZOUCUPxzc56RQ.png
+1377,MasteryXbow,Ballesta,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/rT4Aq5rxIq2HQ3_b-wn55fblBeAGiniE-znXhxXr1EA.png
+1378,MasteryXbow,Ballesta,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/TIsUKpWRcr6-XLWWtQOsWxDXzwr4pR83y6CN0wZ5CkI.png
+1379,MasteryXbow,Ballesta,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/3waSOOcvwbn6kY-OZf5qEoykHTDk0KrqnfrnRznfajs.png
+1380,MasteryXbow,Ballesta,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/51lSJT5fIbu-h153rizDDy5WOvsfma5F6J_eOJemG2A.png
+1381,MasteryXbow,Ballesta,8,10,,
+1382,MasteryXbow,Ballesta,9,10,,
+1383,MasteryXbow,Ballesta,10,10,,
+1384,MasteryZap,Descarga,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/XYouGOrB1E6gTp76hGp1CEKoABDgwFTTn909w4O9q5k.png
+1385,MasteryZap,Descarga,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/qBxmSIU8swPpRVXDB0fhsoSAAfDasxwbOvjNLY1A5tY.png
+1386,MasteryZap,Descarga,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/k3_FXoQV5njz-wCsWieQiaKZxxfchHwCzXynxrSYo1k.png
+1387,MasteryZap,Descarga,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/GdvY09KLSA-b3I5MaOCFh6c8yamzpTNNb49Es98Au6M.png
+1388,MasteryZap,Descarga,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/NeN6Db1T3pXd6z-LSKJnCPb4kX3HOpqBIAHxkFi-DTQ.png
+1389,MasteryZap,Descarga,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/THfX9_kwacJu26EE6vL2Urk-WBzs5sbjVJMi3yffF-w.png
+1390,MasteryZap,Descarga,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/MmdhQZkK6rVL3n028wPJcHya9G4Y5WcWmGoeft08Cc4.png
+1391,MasteryZap,Descarga,8,10,,
+1392,MasteryZap,Descarga,9,10,,
+1393,MasteryZap,Descarga,10,10,,
+1394,MasteryZapMachine,Chispitas,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/l2ws2ZCgj4xwlpny2vwF7Ch75KdJoMZFGrwhNE7WV4w.png
+1395,MasteryZapMachine,Chispitas,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/HOMhbjm2smW-Y43qSVPLnRcMkabtGqRZ-Qi4LGsu7ng.png
+1396,MasteryZapMachine,Chispitas,3,10,4,https://api-assets.clashroyale.com/playerbadges/512/6GuD5xR2uaC9k2h_ROf0wiG4AynpErsL6WieA_bzSUI.png
+1397,MasteryZapMachine,Chispitas,4,10,5,https://api-assets.clashroyale.com/playerbadges/512/zfqyjxPAxsBKo_BWqkDkHyc21epD239bn8H85mbHgOc.png
+1398,MasteryZapMachine,Chispitas,5,10,6,https://api-assets.clashroyale.com/playerbadges/512/BehzTTsb1r2PIPplEtO5I8KpC74c5gw33G10mJ2yJhs.png
+1399,MasteryZapMachine,Chispitas,6,10,7,https://api-assets.clashroyale.com/playerbadges/512/9qbMkGJo7wJErM9RsV5-GXvt5Cf37Eqx8lUnjQXeGEE.png
+1400,MasteryZapMachine,Chispitas,7,10,8,https://api-assets.clashroyale.com/playerbadges/512/r8CHMFHvCLingvaf5jM-bVniy9tykO2cd19SY8LSHKM.png
+1401,MasteryZapMachine,Chispitas,8,10,,
+1402,MasteryZapMachine,Chispitas,9,10,,
+1403,MasteryZapMachine,Chispitas,10,10,,
+1404,MegaDraftLeagueBadge,Liga de megaelección,1,2,2,https://api-assets.clashroyale.com/playerbadges/512/x1u3By8TtUDARps9Bp02Az7RTrq7GT1PbmzBjO8HX3o.png
+1405,MegaDraftLeagueBadge,Liga de megaelección,2,2,,https://api-assets.clashroyale.com/playerbadges/512/6yM6qy1i3GTZimEcbIoIM3z5IZqPOAqIl8YaNHJogog.png
+1406,MergeTacticsBadge_202506,Táctica Royale,1,9,3,https://api-assets.clashroyale.com/playerbadges/512/7n275V473pIHOiHRmH3Awk--7_MlYuFzZ3nQ8eC3fcU.png
+1407,MergeTacticsBadge_202506,Táctica Royale,2,9,4,https://api-assets.clashroyale.com/playerbadges/512/FtwO8oNgt1OPtGhbVM4KhWxXuiWblgg4rxpZOcjLdJ0.png
+1408,MergeTacticsBadge_202506,Táctica Royale,3,9,5,https://api-assets.clashroyale.com/playerbadges/512/xoXl2PPneE_yxHJDuGeNPN2ydB24NZ7VkM9DdkOhFTI.png
+1409,MergeTacticsBadge_202506,Táctica Royale,4,9,6,https://api-assets.clashroyale.com/playerbadges/512/UB98hycLY3YV5WMYaUaiflJ9KxEoi3gTwVGpTgFFGWU.png
+1410,MergeTacticsBadge_202506,Táctica Royale,5,9,7,https://api-assets.clashroyale.com/playerbadges/512/yhgDspNp6J9tBWNrGyuQUAjQNwdP05GXfSeN0MuglSM.png
+1411,MergeTacticsBadge_202506,Táctica Royale,6,9,8,https://api-assets.clashroyale.com/playerbadges/512/ZRdd1d8thQjZYCHZ4BfzfL7MLuum5nh8ARHoIpzy14Y.png
+1412,MergeTacticsBadge_202506,Táctica Royale,7,9,9,https://api-assets.clashroyale.com/playerbadges/512/NG8lJp6QljsRfoCSvn1BE1ZUkHgEndMY4N-q7Z2Omvs.png
+1413,MergeTacticsBadge_202506,Táctica Royale,8,9,10,https://api-assets.clashroyale.com/playerbadges/512/dAvyGQ3FVNtzpjkGdXvm6IByKB4OsW47dI7MkoBZ6N8.png
+1414,MergeTacticsBadge_202506,Táctica Royale,9,9,,https://api-assets.clashroyale.com/playerbadges/512/3oIP-qcO1GbO0mxPXxuwm_nRhjoFWx6UhBNQpM_t_Zg.png
+1415,RampUp,25 victorias en batallas de aumento,1,7,25,https://api-assets.clashroyale.com/playerbadges/512/SrWz_-L5DEUHhMbzwQM6OdW5KMx97KjX_g2gHaTBLrE.png
+1416,RampUp,50 victorias en batallas de aumento,2,7,50,https://api-assets.clashroyale.com/playerbadges/512/7nZguBONVrR-VQU2iPOPp1_z2HnvEjZJmxZGV2pCnMU.png
+1417,RampUp,100 victorias en batallas de aumento,3,7,100,https://api-assets.clashroyale.com/playerbadges/512/XhtxSXPtrKtQOpWGys3xq7oKFrA93aAFU-9tsyoKzv4.png
+1418,RampUp,200 vctorias en batallas de aumento,4,7,200,https://api-assets.clashroyale.com/playerbadges/512/uLAXUJ4u4Vyu8Vx0ADzweRHQPMosnKjTVDeqzavLp00.png
+1419,RampUp,500 victorias en batallas de aumento,5,7,500,https://api-assets.clashroyale.com/playerbadges/512/pRfq0qQLjzWygxztemVTSe849yy1nfLlJvHW35gaQdg.png
+1420,RampUp,Victorias en batallas de aumento,6,7,,
+1421,RampUp,Victorias en batallas de aumento,7,7,,
+1422,RoyalTournamentCompletion,Torneo real completado,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/iK7etpa8cYd3ewLr2lxBG2k5zuz5owQuAJCeIOR7Rwk.png
+1423,RoyalTournamentCompletion,Torneo real completado,2,10,3,https://api-assets.clashroyale.com/playerbadges/512/6P50Dn_NpoZ_uqyzChgvOS5-_5H1a_YwjkFK5BhldqM.png
+1424,RoyalTournamentCompletion,Torneo real completado,3,10,,
+1425,RoyalTournamentCompletion,Torneo real completado,4,10,,
+1426,RoyalTournamentCompletion,Torneo real completado,5,10,,
+1427,RoyalTournamentCompletion,Torneo real completado,6,10,,
+1428,RoyalTournamentCompletion,Torneo real completado,7,10,,
+1429,RoyalTournamentCompletion,Torneo real completado,8,10,,
+1430,RoyalTournamentCompletion,Torneo real completado,9,10,,
+1431,RoyalTournamentCompletion,Torneo real completado,10,10,,
+1432,RoyalTournamentRank_v2,Clasificación en el torneo real,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/dM2pXZHF_MP60wjDVwemX6N7LhCS1ObZmodXDg1zvag.png
+1433,RoyalTournamentRank_v2,Clasificación en el torneo real,2,10,,
+1434,RoyalTournamentRank_v2,Clasificación en el torneo real,3,10,,
+1435,RoyalTournamentRank_v2,Clasificación en el torneo real,4,10,,
+1436,RoyalTournamentRank_v2,Clasificación en el torneo real,5,10,,
+1437,RoyalTournamentRank_v2,Clasificación en el torneo real,6,10,,
+1438,RoyalTournamentRank_v2,Clasificación en el torneo real,7,10,,
+1439,RoyalTournamentRank_v2,Clasificación en el torneo real,8,10,,
+1440,RoyalTournamentRank_v2,Clasificación en el torneo real,9,10,,
+1441,RoyalTournamentRank_v2,Clasificación en el torneo real,10,10,,
+1442,Royals2v2_2024,Liga de 2 contra 2 de 2024,1,2,2,https://api-assets.clashroyale.com/playerbadges/512/Je3BgHzDJqD93GtrHDoI1whoC1vl0Lz2CM7sn30P9nc.png
+1443,Royals2v2_2024,Liga de 2 contra 2 de 2024,2,2,,https://api-assets.clashroyale.com/playerbadges/512/hHTShZ8SNIrv3N6-UwPCgw4BCmyqVbRASEumw4NYV0c.png
+1444,SeasonalBadge_202507_v2,Campeón definitivo de julio,1,3,5,https://api-assets.clashroyale.com/playerbadges/512/Guz4mSqvB4ZNlpn3isEW2CSpF7B6cyjotvgHvoo4-RM.png
+1445,SeasonalBadge_202507_v2,Campeón definitivo de julio,2,3,,
+1446,SeasonalBadge_202507_v2,Campeón definitivo de julio,3,3,,https://api-assets.clashroyale.com/playerbadges/512/ph-c99DQlTPQanJ1H2v8KPpjRg4clMDbr9ADHAHpBl4.png
+1447,SeasonalBadge_202508,Campeón definitivo de agosto,1,3,5,https://api-assets.clashroyale.com/playerbadges/512/TXE8GRlxur3HmJPh5I0IgBQrJN2OFzHLSWJerrKnMYs.png
+1448,SeasonalBadge_202508,Campeón definitivo de agosto,2,3,6,https://api-assets.clashroyale.com/playerbadges/512/_MxcR18kYmOwnoVcenGoQrU-PNot77LoxT6i5JaOvEs.png
+1449,SeasonalBadge_202508,Campeón definitivo de agosto,3,3,,https://api-assets.clashroyale.com/playerbadges/512/PGWyfdaJANp4nCX_7gW5fNC7RHdX_jHKsvdC-QMkIbU.png
+1450,SeasonalBadge_202509,Campeón definitivo de septiembre,1,3,5,https://api-assets.clashroyale.com/playerbadges/512/yfRSh8eyWyyfpZorlmvvjLLYToDaIIs8LOx0LfPECjE.png
+1451,SeasonalBadge_202509,Campeón definitivo de septiembre,2,3,6,https://api-assets.clashroyale.com/playerbadges/512/FghG3pHNYYPRyHlJY_9juTDSuID5Bv8G4Blv0WVzbXM.png
+1452,SeasonalBadge_202509,Campeón definitivo de septiembre,3,3,,https://api-assets.clashroyale.com/playerbadges/512/ljlA0j5eEnvE-LtgbuE6fsytVbZ56pt6mLAUxqNj-FI.png
+1453,SeasonalBadge_202510,Campeón definitivo de octubre,1,3,5,https://api-assets.clashroyale.com/playerbadges/512/Gj2OYYIdShktagSLefXHcG5ictu7oKj8s-TDy0Q1avI.png
+1454,SeasonalBadge_202510,Campeón definitivo de octubre,2,3,6,https://api-assets.clashroyale.com/playerbadges/512/zRGMp6JrNyuzsMbFcafKKKx7Ohl0UQUgAp0s8Is33L4.png
+1455,SeasonalBadge_202510,Campeón definitivo de octubre,3,3,,https://api-assets.clashroyale.com/playerbadges/512/0-JPvv3r8ZxOEaCZMIgo9i80G0lBf_CpvX81u_XXFs4.png
+1456,SeasonalBadge_202511,Campeón definitivo de noviembre,1,3,5,https://api-assets.clashroyale.com/playerbadges/512/HuWRbyk4RXYjwuMQXN2e-413or6zqbMDnHJWOifzroo.png
+1457,SeasonalBadge_202511,Campeón definitivo de noviembre,2,3,6,https://api-assets.clashroyale.com/playerbadges/512/gSEfdZsZ42LZ5F9M1P-50XL-o6kRx95D5XCYa1dplcA.png
+1458,SeasonalBadge_202511,Campeón definitivo de noviembre,3,3,,https://api-assets.clashroyale.com/playerbadges/512/0aRfCLc9598V_CkYu69TMWYX7Uvt7aqnpghzkpNnmng.png
+1459,SuddenDeath,25 victorias en muerte súbita,1,7,25,https://api-assets.clashroyale.com/playerbadges/512/ca-LBmoLgSuBZ8sLah-6eC-WHob3TUPCGKjvLLR7fL0.png
+1460,SuddenDeath,50 victorias en muerte súbita,2,7,50,https://api-assets.clashroyale.com/playerbadges/512/V65_y3l2jvvUF_lCVmka3mQvfA59Y1Ew1rE79AtnoWo.png
+1461,SuddenDeath,100 victorias en muerte súbita,3,7,100,https://api-assets.clashroyale.com/playerbadges/512/Js2RgvZBiHZ9iWkdTqZc7TfeIt43HBrqy3wF__oC5HI.png
+1462,SuddenDeath,200 victorias en muerte súbita,4,7,200,https://api-assets.clashroyale.com/playerbadges/512/0rQqjZLlByVk9z9Zwr94uvpgwknNMYBo6b-Qi-Qe7pY.png
+1463,SuddenDeath,500 victorias en muerte súbita,5,7,500,https://api-assets.clashroyale.com/playerbadges/512/XKfr6pOVTWJM8rsfYpJbeutzUWYBoZO5_h1SuJXlUYA.png
+1464,SuddenDeath,Victorias en muerte súbita,6,7,,
+1465,SuddenDeath,Victorias en muerte súbita,7,7,,https://api-assets.clashroyale.com/playerbadges/512/ySGlOHxeNC2UnDTwdplIS647DBRg8fMkjVfIZIESRSA.png
+1466,SuddenDeathTrailCompletion,Camino de Muerte Súbita completado,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/XCxHPW0JVl6Ez0dswo9qeLuKpNjW3FLjFwDfmDFRwGk.png
+1467,SuddenDeathTrailCompletion,Camino de Muerte Súbita completado,2,10,,
+1468,SuddenDeathTrailCompletion,Camino de Muerte Súbita completado,3,10,,
+1469,SuddenDeathTrailCompletion,Camino de Muerte Súbita completado,4,10,,
+1470,SuddenDeathTrailCompletion,Camino de Muerte Súbita completado,5,10,,
+1471,SuddenDeathTrailCompletion,Camino de Muerte Súbita completado,6,10,,
+1472,SuddenDeathTrailCompletion,Camino de Muerte Súbita completado,7,10,,
+1473,SuddenDeathTrailCompletion,Camino de Muerte Súbita completado,8,10,,
+1474,SuddenDeathTrailCompletion,Camino de Muerte Súbita completado,9,10,,
+1475,SuddenDeathTrailCompletion,Camino de Muerte Súbita completado,10,10,,
+1476,TouchdownLeagueBadge,Liga de touchdown,1,2,2,https://api-assets.clashroyale.com/playerbadges/512/1f6m-k7oaHM891EEntuXBL2MHSVSzxazhH2qUPMcO2o.png
+1477,TouchdownLeagueBadge,Liga de touchdown,2,2,,https://api-assets.clashroyale.com/playerbadges/512/b4IeLpoKFlwVfctEUZw6CelQB1VXzQYSQcOlUo1Qm_Y.png
+1478,TripleDraftLeagueCompletion,Liga de triple elección,1,10,2,https://api-assets.clashroyale.com/playerbadges/512/YMVcUn56XaywvxESguFGkIjiFWrZ2G-uw7QMSovLE_8.png
+1479,TripleDraftLeagueCompletion,Liga de triple elección,2,10,,
+1480,TripleDraftLeagueCompletion,Liga de triple elección,3,10,,
+1481,TripleDraftLeagueCompletion,Liga de triple elección,4,10,,
+1482,TripleDraftLeagueCompletion,Liga de triple elección,5,10,,
+1483,TripleDraftLeagueCompletion,Liga de triple elección,6,10,,
+1484,TripleDraftLeagueCompletion,Liga de triple elección,7,10,,
+1485,TripleDraftLeagueCompletion,Liga de triple elección,8,10,,
+1486,TripleDraftLeagueCompletion,Liga de triple elección,9,10,,
+1487,TripleDraftLeagueCompletion,Liga de triple elección,10,10,,
+1488,2025YearBadge,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/veoqw74aZaZ_4A11BprqZLHFAklu02yeLsTYDJGy5ak.png
+1489,BeatingDeathBadge,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/k0GZJG0GOUfNs2fHfjJ2UorgslccdX_T82Z6sbj72_0.png
+1490,Chaos_S2,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/5SUhm5ee0am0h9DXamCHezwy-gJrWAck_r_tFCNSVi4.png
+1491,CrazyArenaBadge1,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/DcvUrIWpbNtQJ_EUc1fH7B7iFQ4pIYcZDsgVQUN5FOw.png
+1492,CrazyArenaBadge2,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/J_J8iuS6xArPJVsG4PkH4yCxtIlzJlL2nS_ghlXygjU.png
+1493,CrazyArenaBadge3,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/5cCFGFTiBGF5JAK9-URawJ2Z4zqcIhSPsi7ClpZSuk8.png
+1494,Crl20Wins,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/adGXJ0yOJjQJKb9cvurkekBilzIkaeCMwPnxzCMZIPo.png
+1495,Crl20Wins2023,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/cOPNkD_LwDq4hTPjlj7tURNKUKG_z3aTb4MRnGYDOMQ.png
+1496,CrlSpectator2022,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/BnrTPRZ4ABrFT8kgw1nXRNU6UJYFivPioIxWSXt0e8M.png
+1497,CrlSpectator2025,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/1xXk3spJHk7I_jYSj2Y8MHItmTDHnZrykv0v04yQQmk.png
+1498,EasterEgg,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/9RVs96D4R45LEwGi15aYzYER1MYkDAvXhBCROmLYdsw.png
+1499,RouletteAllModes,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/qPx2qedZCJ9ZoG9cBIH_mq73pgLOUmc6vztA5J6Anq0.png
+1500,Chaos_S3,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/6fhdIPlN2g6krMd4iMfMRJPh3MpUbIH0r1XOS_86DsM.png
+1501,Crl20Wins2021,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/3EiZP7p40uOUc98DAlrwoDRkluYPc1dCAoXz-9zQ4sM.png
+1502,Crl20Wins2022,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/uqlOcronXa6O7Rx_vu32Q8R6FOe2Hlr-Q1liSmYojYI.png
+1503,Crl20Wins2024,,1,1,,https://api-assets.clashroyale.com/playerbadges/512/XsiDhIO04-ciRLs28oUOTTp4_zGBc5sRPw34DLdoIOo.png

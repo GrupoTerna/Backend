@@ -1,0 +1,43 @@
+N°,ID,Name,Nombre
+1,72000232,7xElixir_Friendly,Elíxir x7 (Amistoso)
+2,72000261,7xElixir_Ladder,Elíxir x7
+3,72000519,All_Random_Princess_Friendly,Ruleta Royale: Elección de la Princesa
+4,72000001,Base_1v1_Regular,Batalla normal
+5,72000009,Base_1v1_SuddenDeath,Muerte Súbita
+6,72000027,Base_2v2_Draft,Elección 2c2
+7,72000024,Base_2v2_Regular,Batalla 2c2
+8,72000474,Challenge_AllCards_EventDeck_NoSet,Desafío de baraja de evento
+9,72000512,Chaos_1v1_MegaDraft_All,Megaelección del caos 1c1
+10,72000266,ClanWar_BoatBattle,Ataque a barcos
+11,72000087,ClassicDecks_Friendly,Barajas clásicas (Amistoso)
+12,72000268,CW_Battle_1v1,Guerra de clanes: Batalla 1c1
+13,72000267,CW_Duel_1v1,Guerra de clanes: Duelo
+14,72000194,Draft_Competitive,Elección competitiva
+15,72000005,DraftMode,Desafío de elección
+16,72000007,Friendly,Batalla amistosa
+17,72000006,Ladder,Batalla de trofeos
+18,72000254,MirrorDeck_Friendly,Desafío de la baraja duplicada (Amistoso)
+19,72000031,Overtime_Friendly,Tiempo extra (Amistoso)
+20,72000060,Overtime_Ladder,Tiempo extra (Amistoso)
+21,72000042,PickMode,Modo de selección
+22,72000073,Rage_Ladder,Furia
+23,72000070,RampUpElixir_Ladder,Aumento de elíxir
+24,72000464,Ranked1v1_NewArena2,Modo competitivo 1c1
+25,72000520,RR_AllEvoBattle_Friendly,Ruleta Royale: Batalla de evoluciones
+26,72000528,RR_Blackout_Friendly,Ruleta Royale: Apagón
+27,72000531,RR_CaptureTheEgg_Friendly,Ruleta Royale: Captura el huevo
+28,72000527,RR_Event_Mega_Monk,Ruleta Royale: Mega Monje
+29,72000529,RR_FourCard_Friendly,Ruleta Royale: Baraja de 4 cartas
+30,72000525,RR_Heist_Friendly,Ruleta Royale: Atraco
+31,72000530,RR_MortarCapture_Friendly,Ruleta Royale: Captura el mortero
+32,72000523,RR_Overtime_Friendly,Ruleta Royale: Prórroga
+33,72000524,RR_Rage_Friendly,Ruleta Royale: Furia
+34,72000526,RR_Snowball_bombardment,Ruleta Royale: Bombardeo de bolas de nieve
+35,72000522,RR_SuperTroopBattle_Friendly,Ruleta Royale: Batalla de supertropas
+36,72000521,RR_TripleElixir_Friendly,Ruleta Royale: Triple elíxir
+37,72000065,Showdown_Friendly,Confrontación (Amistoso)
+38,72000014,TeamVsTeam,Batalla por equipos (2c2)
+39,72000321,Touchdown_ClanWar,Touchdown de Guerra de clanes
+40,72000050,Touchdown_Draft,Elección de Touchdown
+41,72000032,TripleElixir_Friendly,Triple elíxir (Amistoso)
+42,72000062,TripleElixir_Ladder,Triple elíxir
