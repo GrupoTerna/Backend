@@ -122,6 +122,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF110` | «Torneos jugados mínimos por clan» es obligatorio en Sorteos (0 = no considerar torneos) y el backend deja de descartarlo: leía `minTorneos` y la web manda `minTorneosJugados` (18-oct-2026, tanda 3 de 3) |
 | `PF111` | «¿Quién organizó el sorteo?» de Registrar, Modificar y Planificar sorteo lista los Nom_Multi de los admins, igual que Torneos y Cambio de rango: `cargarNomMultisAdmins()` nunca llenaba esas tres listas (18-oct-2026) |
 | `PF112` | Los «acá» de los comentarios de `Web` pasan a «aquí» (247 apariciones en 26 archivos; cierra el pendiente de §PF106) (18-oct-2026) |
+| `PF113` | Decisión de la usuaria: `runGuerra` se documenta cada **5 min**, como dice `08_Activadores.gs`; las menciones de «cada 10 min» son historial (18-oct-2026) |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -257,7 +258,7 @@ Lista única de lo que quedó «pendiente de definir o contestar» (regla 3) en 
 | `PF110` | Comprobar en navegador real, con `Base` ya subida (`subirBaseDesdeGithub()`) y `Web` publicada: (1) Registrar, Planificar y Modificar sorteo rechazan los «Torneos jugados mínimos» vacíos y aceptan 0; (2) un sorteo guardado con 2 en un clan y 0 en otro vuelve a cargarse con esos valores en `S_Lista` (columnas Torneos C1 a C4). | Abierto, **sin probar** (18-oct-2026). Hay pruebas con DOM simulado (`test/torneos-minimos-sorteo-obligatorio-dom.test.js`, 6 casos) y la función del backend se probó con ejemplos; falta Apps Script real. |
 | `PF111` | Comprobar en navegador real, con `Web` publicada: en Registrar, Planificar y Modificar sorteo, abrir «¿Quién organizó el sorteo?» y ver que salen los Nom_Multi de los admins; al elegir uno debe aparecer «¿Con cuál cuenta organizó?» con sus cuentas. | Abierto, **sin probar** (18-oct-2026). Hay pruebas con DOM simulado (`test/organizador-sorteos-nom-multi-dom.test.js`, 4 casos); falta navegador real. |
 | `PF106` | Quedan unos 225 «acá» solo en comentarios del código de `Web`; decidir si se cambian por «aquí» en una tanda aparte. | **Resuelto** el 18-oct-2026: la usuaria pidió cambiarlos; se cambiaron 247 apariciones (ver `PF112`). |
-| Tanda 1 del 14-oct, hallazgo D | `runGuerra` figura cada 5 min en `08_Activadores.gs` y el contexto dice cada 10; no se sabe cuál está instalado en Apps Script. | Abierto: el código dice 5 (comprobado); falta ver el activador instalado. |
+| Tanda 1 del 14-oct, hallazgo D | `runGuerra` figura cada 5 min en `08_Activadores.gs` y el contexto dice cada 10; no se sabe cuál está instalado en Apps Script. | **Resuelto en texto** el 18-oct-2026 (ver `PF113`): la usuaria decidió usar lo que dice el código, 5 min. Sigue sin comprobarse el activador instalado en Apps Script. |
 | `PF024` | Quién borra un consolidado y cuándo se considera terminado. | **Resuelto** el 11-oct-2026 (ver `PF026`). |
 | `PF043` | Caché de `_construirMapaSemanalPorTagDesdeSupercell()` (`14_Nuevos_RoyaleAPI.gs`): su resultado serializado mide unos 204 KB, más que el tope de 100 KB por valor de CacheService; habría que partirlo o guardar menos campos. | Abierto: la función sigue sin caché (comprobado el 17-oct-2026). Es un cambio mayor. |
 | `PF050` | `.part-pend-cero` de `guerra.html` (2,97:1 por `opacity:.7`) y D-20 (contraste de «Ver original»). | **Resuelto:** `guerra.html` ya no usa `opacity` en esa regla (comprobado) y la usuaria cerró D-20 el 14-oct-2026. Lo no comprobado (lector de pantalla real, Firefox, Safari, un Doc de cada categoría) quedó aceptado así en la misma sección. |
@@ -1916,6 +1917,13 @@ Desde aquí hasta el final del archivo hay 33 secciones PF (empiezan en `PF096` 
 - **Por qué es seguro.** Antes de reemplazar se quitaron los comentarios de cada archivo (`/* */`, `<!-- -->` y `//`) y se buscó «acá» en lo que quedaba: **ninguna aparición estaba fuera de un comentario** (ni texto visible ni lógica ni cadenas que una prueba compare). Después del reemplazo, la diferencia línea por línea (246 líneas) era solo «acá» → «aquí». `sw.js` **no** subió de versión: no cambia nada que el usuario vea ni ejecute.
 - **Lo que no se tocó.** La entrada del `CHANGELOG.md` de `Web` sobre `sorteo.html` (18-oct-2026) conserva «acá» porque cita la palabra que se cambió; es historial. Los comentarios de los `.gs` de `Base` no entran: no se revisaron en esta tanda y `Base/src` se pisa en cada «Descarga Base» (§9.2 de `Reglas_Consolidados.md`).
 - **Pruebas (regla 8).** `node --test`: **493 de 493**; `npm run lint` y `npm run validate-html` sin avisos; `npm run check-links`: 146 rutas sin roturas; `node --check` de cada `.js` tocado. **No se abrió ninguna página en navegador** (no hace falta: solo cambian comentarios).
+
+### PF113 — `runGuerra` se documenta cada 5 minutos (18-oct-2026; cierra el hallazgo D de la tanda 1 del 14-oct)
+
+- **Decisión de la usuaria.** Entre «cada 5 min» (código) y «cada 10 min» (contexto), vale **lo que dice el código**: `ACTIVADORES_CONFIG` de `08_Activadores.gs`, línea 13, tiene `{ handler: 'runGuerra', tipo: 'minutos', cada: 5, activo: true }` (releído el 18-oct-2026). Es lo mismo que ya concluía la tanda 7 (decisión D): la verdad del repo es ese archivo.
+- **Qué queda como historial (corrección según la regla 9).** Todo «`runGuerra` corre cada 10 min» del contexto describe cómo se creía que funcionaba, no cómo está en el código: lo dicen §PF011 (párrafo «Caché y TTL») y varios bloques del archivo de detalle (entre ellos `37B361`, que no se edita según §9.1 de `Reglas_Consolidados.md`). **Al leerlos, cambia «10» por «5».** No se reescribieron para no perder el texto original.
+- **Lo que no se comprobó.** Qué activador está realmente instalado en Apps Script (lo decide `installTriggers()`): el código no lo dice y esta sesión no ve Apps Script. Si algún día el tiempo de ejecución o el reparto de la hora (`esPrimerDisparoDeHora`, `minUtc < 10`) no cuadra con 5 min, mirar primero **Activadores** y **Ejecuciones** del proyecto.
+- **Cambios de código:** ninguno. Solo contexto.
 
 ### PF064 — `perfil.html`: banner en la tarjeta de cabecera (pedido de la usuaria, 12-oct-2026)
 
