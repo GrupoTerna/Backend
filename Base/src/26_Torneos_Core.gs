@@ -83,12 +83,13 @@ var CR_ATAQUES_COLS = {
  * _horaStringADate(fechaBase, horaStr) [→ Contexto_Base_Web.md §26B011]
  */
 function _horaStringADate(fechaBase, horaStr) {
-  var m = String(horaStr || '').trim().match(/^(\d{1,2}):(\d{2})$/);
+  // 18-oct-2026 (PF099): los segundos son opcionales; admin.html manda "HH:MM:SS" (horaConSegundos()), el bot "HH:mm". Antes solo aceptaba HH:MM y la Hora quedaba vacía en T_Lista al planificar desde la web. [→ Contexto_Base_Web.md §PF099]
+  var m = String(horaStr || '').trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
   if (!m) return null;
   if (!(fechaBase instanceof Date) || isNaN(fechaBase.getTime())) return null;
-  var h = Number(m[1]), min = Number(m[2]);
-  if (h > 23 || min > 59) return null;
-  return new Date(fechaBase.getFullYear(), fechaBase.getMonth(), fechaBase.getDate(), h, min, 0);
+  var h = Number(m[1]), min = Number(m[2]), seg = Number(m[3] || 0);
+  if (h > 23 || min > 59 || seg > 59) return null;
+  return new Date(fechaBase.getFullYear(), fechaBase.getMonth(), fechaBase.getDate(), h, min, seg);
 }
 
 /**
@@ -4148,6 +4149,40 @@ function _getMinTClanMaps() {
 // FASE 13/14 (30/07/2026) — INTEGRACIÓN CON EL BOT DE WHATSAPP [→ Contexto_Base_Web.md §26B278]
 
 /**
+ * _barcosDeRequisitos_(requisitos) — 18-oct-2026 (PF099). admin.html manda el requisito de barcos como `ataquesBarcosSemana` (armarPayloadRequisitos()); el bot y el resto del backend lo leían como `barcos`, así que desde la web nunca se guardaba. Devuelve lo que llegue por cualquiera de los dos nombres, o '' si no hay nada. [→ Contexto_Base_Web.md §PF099]
+ */
+function _barcosDeRequisitos_(requisitos) {
+  if (!requisitos) return '';
+  var v = requisitos.barcos;
+  if (v === undefined || v === null || v === '') v = requisitos.ataquesBarcosSemana;
+  return (v === undefined || v === null) ? '' : v;
+}
+
+/**
+ * _nombresOrganizadorTL_(organizadorInfo) — 18-oct-2026 (PF099). organizadorInfo.nombre trae el Nom_Multi del admin (ver _buscarInfoOrganizadorPorNomMulti()). En T_Lista, Nombre_Org es el nombre REAL de la cuenta y Nom_Multi_Org el Nom_Multi (así lo deja el flujo por API, _resolverOrganizadorPorCreatorTag()). Devuelve { nombreOrg, nomMultiOrg }: nombreOrg sale del Directorio (o Inactivos) por Tag_org; si no se encuentra, cae al Nom_Multi para no dejar la celda vacía. [→ Contexto_Base_Web.md §PF099]
+ */
+function _nombresOrganizadorTL_(organizadorInfo) {
+  var nomMulti = String((organizadorInfo && organizadorInfo.nombre) || '').trim();
+  var tag = String((organizadorInfo && organizadorInfo.tag) || '').trim();
+  var nombreReal = '';
+  if (tag && tag !== '#MANUAL') {
+    if (tag.charAt(0) !== '#') tag = '#' + tag;
+    try {
+      var ss = _getSs();
+      var infoDir = _getDirectorioLookupPorTag(ss)[tag];
+      if (infoDir && infoDir.nombre) nombreReal = String(infoDir.nombre).trim();
+      if (!nombreReal) {
+        var infoInact = _getInactivosLookupPorTag(ss)[tag];
+        if (infoInact && infoInact.nombre) nombreReal = String(infoInact.nombre).trim();
+      }
+    } catch (e) {
+      Logger.log('[T_Lista] _nombresOrganizadorTL_(): no se pudo resolver el nombre real de ' + tag + ': ' + e.message);
+    }
+  }
+  return { nombreOrg: nombreReal || nomMulti, nomMultiOrg: nomMulti };
+}
+
+/**
  * _combinarFechaHora(fechaStr, horaStr) [→ Contexto_Base_Web.md §26B279]
  */
 function _combinarFechaHora(fechaStr, horaStr) {
@@ -4269,7 +4304,9 @@ function _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organiz
     sh.getRange(filaDestino, TL.LINK_APP).setValue(link);
     if (tagTorneoPrincipal) sh.getRange(filaDestino, TL.TAG_TOR_2).setValue(String(tagTorneoPrincipal).trim());
     if (organizadorInfo && organizadorInfo.nombre && organizadorInfo.tag) {
-      sh.getRange(filaDestino, TL.ORGANIZADOR).setValue(organizadorInfo.nombre);
+      var nombresOrgFila = _nombresOrganizadorTL_(organizadorInfo);
+      sh.getRange(filaDestino, TL.ORGANIZADOR).setValue(nombresOrgFila.nombreOrg);
+      sh.getRange(filaDestino, TL.NOM_MULTI_ORG).setValue(nombresOrgFila.nomMultiOrg);
       sh.getRange(filaDestino, TL.TAG_ORG).setValue(organizadorInfo.tag);
       sh.getRange(filaDestino, TL.CLAN).setValue(organizadorInfo.clan || '');
       sh.getRange(filaDestino, TL.CLAN_TAG).setValue(organizadorInfo.clanTag || '');
@@ -4286,10 +4323,12 @@ function _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organiz
     fila[TL.LINK_APP - 1] = link;
     if (tagTorneoPrincipal) fila[TL.TAG_TOR_2 - 1] = String(tagTorneoPrincipal).trim();
     if (organizadorInfo && organizadorInfo.nombre && organizadorInfo.tag) {
-      fila[TL.ORGANIZADOR - 1] = organizadorInfo.nombre;
-      fila[TL.TAG_ORG - 1]     = organizadorInfo.tag;
-      fila[TL.CLAN - 1]        = organizadorInfo.clan || '';
-      fila[TL.CLAN_TAG - 1]    = organizadorInfo.clanTag || '';
+      var nombresOrgReg = _nombresOrganizadorTL_(organizadorInfo);
+      fila[TL.ORGANIZADOR - 1]    = nombresOrgReg.nombreOrg;
+      fila[TL.NOM_MULTI_ORG - 1]  = nombresOrgReg.nomMultiOrg;
+      fila[TL.TAG_ORG - 1]        = organizadorInfo.tag;
+      fila[TL.CLAN - 1]           = organizadorInfo.clan || '';
+      fila[TL.CLAN_TAG - 1]       = organizadorInfo.clanTag || '';
     }
     // FIX (11-sep-2026): ver docblock de arriba.
     if (semanasIsoCsv) fila[TL.SEMANAS - 1] = _construirSemanasCsvDesdeIsos(semanasIsoCsv);
@@ -4306,8 +4345,8 @@ function _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organiz
     sh.getRange(filaDestino, TL.MIN_T_C1, 1, 4).setValues([reqVals.minT]);
     sh.getRange(filaDestino, TL.ATAQUES_C1, 1, 4).setValues([reqVals.ataques]);
     // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §26B291]
-    if (requisitos.barcos !== undefined && requisitos.barcos !== null && requisitos.barcos !== '') {
-      sh.getRange(filaDestino, TL.BARCOS).setValue(Number(requisitos.barcos) || 0);
+    if (_barcosDeRequisitos_(requisitos) !== '') {
+      sh.getRange(filaDestino, TL.BARCOS).setValue(Number(_barcosDeRequisitos_(requisitos)) || 0);
     }
     var miembroActivoNorm = _normalizarSiNoRequisito(requisitos.miembroActivo);
     if (miembroActivoNorm) sh.getRange(filaDestino, TL.MIEMBRO_ACTIVO).setValue(miembroActivoNorm);
@@ -4366,10 +4405,12 @@ function _planificarTorneoDesdeBot(fecha, hora, premios, tagTorneoPrincipal, org
   fila[TL.ESTADO - 1]  = 'Planificado';
   if (tagTorneoPrincipal) fila[TL.TAG_TOR_2 - 1] = String(tagTorneoPrincipal).trim();
   if (organizadorInfo && organizadorInfo.nombre && organizadorInfo.tag) {
-    fila[TL.ORGANIZADOR - 1] = organizadorInfo.nombre;
-    fila[TL.TAG_ORG - 1]     = organizadorInfo.tag;
-    fila[TL.CLAN - 1]        = organizadorInfo.clan || '';
-    fila[TL.CLAN_TAG - 1]    = organizadorInfo.clanTag || '';
+    var nombresOrgPlan = _nombresOrganizadorTL_(organizadorInfo);
+    fila[TL.ORGANIZADOR - 1]    = nombresOrgPlan.nombreOrg;
+    fila[TL.NOM_MULTI_ORG - 1]  = nombresOrgPlan.nomMultiOrg;
+    fila[TL.TAG_ORG - 1]        = organizadorInfo.tag;
+    fila[TL.CLAN - 1]           = organizadorInfo.clan || '';
+    fila[TL.CLAN_TAG - 1]       = organizadorInfo.clanTag || '';
   }
   // FIX (11-sep-2026): ver docblock de _registrarTorneoDesdeBot() para el
   // detalle completo de _construirSemanasCsvDesdeIsos().
@@ -4388,8 +4429,8 @@ function _planificarTorneoDesdeBot(fecha, hora, premios, tagTorneoPrincipal, org
     sh.getRange(filaDestino, TL.MIN_T_C1, 1, 4).setValues([reqVals.minT]);
     sh.getRange(filaDestino, TL.ATAQUES_C1, 1, 4).setValues([reqVals.ataques]);
     // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §26B294]
-    if (requisitos.barcos !== undefined && requisitos.barcos !== null && requisitos.barcos !== '') {
-      sh.getRange(filaDestino, TL.BARCOS).setValue(Number(requisitos.barcos) || 0);
+    if (_barcosDeRequisitos_(requisitos) !== '') {
+      sh.getRange(filaDestino, TL.BARCOS).setValue(Number(_barcosDeRequisitos_(requisitos)) || 0);
     }
     var miembroActivoNorm = _normalizarSiNoRequisito(requisitos.miembroActivo);
     if (miembroActivoNorm) sh.getRange(filaDestino, TL.MIEMBRO_ACTIVO).setValue(miembroActivoNorm);
@@ -4430,6 +4471,53 @@ function _listarTorneosDeHoy() {
         // FIX (15-sep-2026): ver docblock de arriba.
         comentario: String(f[TL.COMENTARIO - 1] || '').trim(),
         // Fase 9 (25-sep-2026, plan T_Lista): 'API'|'Manual'|'' -- ver [→ Contexto_Base_Web.md §26B297]
+        organizadorFuente: String(f[TL.ORGANIZADOR_FUENTE - 1] || '').trim()
+      };
+    });
+}
+
+/**
+ * _listarTorneosModificables() — 18-oct-2026 (PF099, pedido del usuario). Lista para "Modificar torneo" del panel web: los de hoy, MÁS los Planificados (aunque sean de otro día) y los que todavía no tienen link. Antes solo mostraba los de hoy y un torneo planificado para mañana no se podía editar. Mismos campos que _listarTorneosDeHoy() más hora, estado, fechaTxt, nomMulti, tagOrg, clan y clanTag. Va ordenada por fecha. No reemplaza a _listarTorneosDeHoy(): esa la usan procesarTorneos() y el bot. [→ Contexto_Base_Web.md §PF099]
+ */
+function _listarTorneosModificables() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.T_LISTA);
+  if (!sh || sh.getLastRow() < 3) return [];
+  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, TL_TOTAL_COLS).getValues();
+  var hoy = _hoyLimaSinHora();
+  return datos
+    .filter(function (f) {
+      var id = String(f[TL.ID - 1] || '').trim();
+      if (!id) return false;
+      var fecha = f[TL.FECHA - 1];
+      var esHoy = fecha instanceof Date && _mismoDia(fecha, hoy);
+      var estado = String(f[TL.ESTADO - 1] || '').trim();
+      var sinLink = !String(f[TL.LINK_APP - 1] || '').trim();
+      return esHoy || estado === 'Planificado' || sinLink;
+    })
+    .sort(function (a, b) {
+      var ta = a[TL.FECHA - 1] instanceof Date ? a[TL.FECHA - 1].getTime() : 0;
+      var tb = b[TL.FECHA - 1] instanceof Date ? b[TL.FECHA - 1].getTime() : 0;
+      return ta - tb;
+    })
+    .map(function (f) {
+      var fecha = f[TL.FECHA - 1];
+      var fechaOk = fecha instanceof Date && !isNaN(fecha.getTime());
+      return {
+        id: f[TL.ID - 1],
+        fecha: fecha,
+        fechaTxt: fechaOk ? Utilities.formatDate(fecha, 'America/Lima', 'dd/MM/yyyy') : '',
+        hora: _formatHoraCanonica(f[TL.HORA - 1]),
+        estado: String(f[TL.ESTADO - 1] || '').trim(),
+        tagTor: String(f[TL.TAG_TOR - 1] || '').trim(),
+        link: String(f[TL.LINK_APP - 1] || '').trim(),
+        autor: String(f[TL.ORGANIZADOR - 1] || '').trim(),
+        nomMulti: String(f[TL.NOM_MULTI_ORG - 1] || '').trim(),
+        tagOrg: String(f[TL.TAG_ORG - 1] || '').trim(),
+        clan: String(f[TL.CLAN - 1] || '').trim(),
+        clanTag: String(f[TL.CLAN_TAG - 1] || '').trim(),
+        premios: String(f[TL.PREMIOS - 1] || '').trim(),
+        semanas: _extraerIsosDesdeSemanasCsv(String(f[TL.SEMANAS - 1] || '').trim()),
+        comentario: String(f[TL.COMENTARIO - 1] || '').trim(),
         organizadorFuente: String(f[TL.ORGANIZADOR_FUENTE - 1] || '').trim()
       };
     });
@@ -4490,8 +4578,8 @@ function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasI
         sh.getRange(fila, TL.MIN_T_C1, 1, 4).setValues([reqVals.minT]);
         sh.getRange(fila, TL.ATAQUES_C1, 1, 4).setValues([reqVals.ataques]);
         // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §26B301]
-        if (requisitos.barcos !== undefined && requisitos.barcos !== null && requisitos.barcos !== '') {
-          sh.getRange(fila, TL.BARCOS).setValue(Number(requisitos.barcos) || 0);
+        if (_barcosDeRequisitos_(requisitos) !== '') {
+          sh.getRange(fila, TL.BARCOS).setValue(Number(_barcosDeRequisitos_(requisitos)) || 0);
         }
         var miembroActivoNorm = _normalizarSiNoRequisito(requisitos.miembroActivo);
         if (miembroActivoNorm) sh.getRange(fila, TL.MIEMBRO_ACTIVO).setValue(miembroActivoNorm);
@@ -4502,7 +4590,9 @@ function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasI
       }
       // FIX (12-sep-2026, gap admin.html/btnModificarTorneo): ver docblock [→ Contexto_Base_Web.md §26B302]
       if (organizadorInfo && organizadorInfo.nombre && organizadorInfo.tag) {
-        sh.getRange(fila, TL.ORGANIZADOR).setValue(organizadorInfo.nombre);
+        var nombresOrgMod = _nombresOrganizadorTL_(organizadorInfo);
+        sh.getRange(fila, TL.ORGANIZADOR).setValue(nombresOrgMod.nombreOrg);
+        sh.getRange(fila, TL.NOM_MULTI_ORG).setValue(nombresOrgMod.nomMultiOrg);
         sh.getRange(fila, TL.TAG_ORG).setValue(organizadorInfo.tag);
         sh.getRange(fila, TL.CLAN).setValue(organizadorInfo.clan || '');
         sh.getRange(fila, TL.CLAN_TAG).setValue(organizadorInfo.clanTag || '');
@@ -4664,8 +4754,8 @@ function _registrarSorteoDesdeBot(fecha, hora, idSorteoPrincipal, organizadorInf
     sh.getRange(filaDestino, SL.MIN_S_C1, 1, 4).setValues([reqVals.minS]);
     sh.getRange(filaDestino, SL.ATAQUES_C1, 1, 4).setValues([reqVals.ataques]);
     // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §26B311]
-    if (requisitos.barcos !== undefined && requisitos.barcos !== null && requisitos.barcos !== '') {
-      sh.getRange(filaDestino, SL.BARCOS).setValue(Number(requisitos.barcos) || 0);
+    if (_barcosDeRequisitos_(requisitos) !== '') {
+      sh.getRange(filaDestino, SL.BARCOS).setValue(Number(_barcosDeRequisitos_(requisitos)) || 0);
     }
     sh.getRange(filaDestino, SL.TORNEOS_C1, 1, 4).setValues([reqVals.torneos]);
     if (requisitos.delta !== undefined && requisitos.delta !== null && requisitos.delta !== '') {
@@ -4724,8 +4814,8 @@ function _planificarSorteoDesdeBot(fecha, hora, premios, idSorteoPrincipal, orga
     sh.getRange(filaDestino, SL.MIN_S_C1, 1, 4).setValues([reqVals.minS]);
     sh.getRange(filaDestino, SL.ATAQUES_C1, 1, 4).setValues([reqVals.ataques]);
     // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §26B313]
-    if (requisitos.barcos !== undefined && requisitos.barcos !== null && requisitos.barcos !== '') {
-      sh.getRange(filaDestino, SL.BARCOS).setValue(Number(requisitos.barcos) || 0);
+    if (_barcosDeRequisitos_(requisitos) !== '') {
+      sh.getRange(filaDestino, SL.BARCOS).setValue(Number(_barcosDeRequisitos_(requisitos)) || 0);
     }
     sh.getRange(filaDestino, SL.TORNEOS_C1, 1, 4).setValues([reqVals.torneos]);
     if (requisitos.delta !== undefined && requisitos.delta !== null && requisitos.delta !== '') {
@@ -4772,8 +4862,8 @@ function _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanasIs
         sh.getRange(fila, SL.MIN_S_C1, 1, 4).setValues([reqVals.minS]);
         sh.getRange(fila, SL.ATAQUES_C1, 1, 4).setValues([reqVals.ataques]);
         // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §26B315]
-        if (requisitos.barcos !== undefined && requisitos.barcos !== null && requisitos.barcos !== '') {
-          sh.getRange(fila, SL.BARCOS).setValue(Number(requisitos.barcos) || 0);
+        if (_barcosDeRequisitos_(requisitos) !== '') {
+          sh.getRange(fila, SL.BARCOS).setValue(Number(_barcosDeRequisitos_(requisitos)) || 0);
         }
         sh.getRange(fila, SL.TORNEOS_C1, 1, 4).setValues([reqVals.torneos]);
         if (requisitos.delta !== undefined && requisitos.delta !== null && requisitos.delta !== '') {
