@@ -9,6 +9,14 @@ description: "Lectura de Base.md (backend Apps Script), Web-main.zip (frontend J
 
 Responder siempre en **español de Perú**. Evitar modismos, léxico o entonación de español de Argentina u otras variantes regionales.
 
+**La regla vale también para todo lo que se escribe en los archivos, no solo para el chat** (desde el 18-oct-2026; `Contexto_Base_Web.md §PF106`): textos visibles de HTML y JS (botones, avisos, errores), comentarios, `CHANGELOG.md`, contexto, consolidados y esta skill. Claude tiende a caer en español rioplatense (Argentina o Uruguay) y, escrito en el código o la interfaz, lo lee todo el clan peruano.
+
+- **Tuteo, nunca voseo:** «gira», «usa», «agrega», «vuelve», «revisa», «inténtalo», «puedes», «tienes», «quieres», «sigue», «marca», «abre». Nada de «girá», «usá», «agregá», «podés», «tenés», «querés», «seguí», «sos», «vos».
+- **Imperativo con pronombre: también tuteo y con la tilde que corresponde** («agrégalo», «déjalo», «revísalo»). Las formas voseantes («agregalo», «dejalo», «revisalo», «fijate», «avisame») **no llevan tilde**, así que una búsqueda solo por vocales acentuadas **no las encuentra**.
+- **Léxico:** «aquí» en vez de «acá» en textos nuevos; sin «che», «dale», «laburo», «plata» (por dinero), «pibe», «boludo» ni similares.
+- **Antes de entregar un archivo con texto nuevo**, buscar en él formas terminadas en `-ás`, `-és`, `-ís`, imperativos con tilde final (`-á`, `-é`, `-í`), verbo + `lo/la/los/las/me/te/se` sin tilde, y el léxico anterior. Ojo con falsos positivos como `'activate'` de `sw.js`.
+- **Si una frase ya existente tiene voseo y no es parte del pedido, se avisa** en lugar de dejarla; si es un texto de interfaz, se corrige en la misma tanda y se anota en el `CHANGELOG.md`.
+
 ---
 
 # 0. Repositorios, entrega por GitHub y reglas nuevas (actualizado el 10-oct-2026; tiene precedencia sobre lo que contradiga más abajo)
