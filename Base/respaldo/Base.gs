@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 19:24:24 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 21:23:28 */
 
 
 
@@ -13509,8 +13509,11 @@ function _construirFila(tag, member, info, clanTag, existing, csvRow, tagMulticu
   // Admin/Cat_disp: si no hubo "existing" (ej. justo después de demolerTodoElSpreadsheet(), [→ Contexto_Base_Web.md §11B078]
   if (!admin   && csvRow && csvRow.admin)    admin   = String(csvRow.admin).trim();
   if (!catDisp && csvRow && csvRow.cat_disp) catDisp = String(csvRow.cat_disp).trim();
-  // Préstamo: si no había en existing, caer al CSV (preserva ediciones manuales antiguas)
-  if (!prestamo && csvRow && csvRow.prestamo) prestamo = String(csvRow.prestamo).trim();
+  // Préstamo: solo se cae al CSV si la cuenta NO tiene fila en la hoja (existing == null, ej. tras
+  // demolerTodoElSpreadsheet()). Si la fila existe y la celda está vacía, es un borrado deliberado
+  // (la cuenta ya no se presta) y se respeta; antes se restauraba desde Backup_Directorio.csv en cada
+  // runUpdate()/runAll() [→ Contexto_Base_Web.md §PF104]
+  if (!existing && !prestamo && csvRow && csvRow.prestamo) prestamo = String(csvRow.prestamo).trim();
 
   // IMPORTANTE: prioridad = 1) valor ya en la hoja (existing, incluye ediciones [→ Contexto_Base_Web.md §11B079]
   if (csvRow) {
@@ -36798,6 +36801,7 @@ function _listarTorneosModificables() {
         hora: _formatHoraCanonica(f[TL.HORA - 1]),
         estado: String(f[TL.ESTADO - 1] || '').trim(),
         tagTor: String(f[TL.TAG_TOR - 1] || '').trim(),
+        tagPrincipal: String(f[TL.TAG_TOR_2 - 1] || '').trim(), // PF105: Tag_Tor del torneo principal del que este es continuación ('' = es principal)
         link: String(f[TL.LINK_APP - 1] || '').trim(),
         autor: String(f[TL.ORGANIZADOR - 1] || '').trim(),
         nomMulti: String(f[TL.NOM_MULTI_ORG - 1] || '').trim(),
@@ -36832,7 +36836,8 @@ function _extraerIsosDesdeSemanasCsv(semanasCsv) {
 /**
  * _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal) [→ Contexto_Base_Web.md §26B299]
  */
-function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasIsoCsv, comentario, requisitos, organizadorInfo, premios) {
+// PF105 (18-oct-2026): 10.º parámetro opcional `tipoTorneo` ('principal' | 'continuacion' | otro/vacío = no tocar el tipo). 'principal' borra Tag_Tor_2 (antes solo se podía escribir, nunca quitar); 'continuacion' exige `tagTorneoPrincipal`, no puede ser el propio Tag_Tor y no se admite si otros torneos ya son continuación de este (evita cadenas). El bot llama con 3 argumentos y no cambia. [→ Contexto_Base_Web.md §PF105]
+function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasIsoCsv, comentario, requisitos, organizadorInfo, premios, tipoTorneo) {
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
   if (!sh) return { ok: false, error: 'No encontré la hoja T_Lista.' };
@@ -36850,13 +36855,33 @@ function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasI
   for (var i = 0; i < ids.length; i++) {
     if (String(ids[i][0] || '') === String(id)) {
       var fila = i + 3;
+      // PF105: validaciones del cambio de tipo ANTES de escribir nada.
+      var tipoNorm = String(tipoTorneo || '').trim();
+      var tagPrincipalNuevo = String(tagTorneoPrincipal || '').trim();
+      if (tipoNorm === 'continuacion') {
+        if (!tagPrincipalNuevo) return { ok: false, error: 'Elige de cuál torneo principal es continuación.' };
+        var tagPropio = String(sh.getRange(fila, TL.TAG_TOR).getValue() || '').trim();
+        if (tagPropio && tagPrincipalNuevo === tagPropio) {
+          return { ok: false, error: 'Un torneo no puede ser continuación de sí mismo.' };
+        }
+        if (tagPropio) {
+          var tags2 = sh.getRange(3, TL.TAG_TOR_2, lastRow - 2, 1).getValues();
+          for (var k = 0; k < tags2.length; k++) {
+            if (k !== i && String(tags2[k][0] || '').trim() === tagPropio) {
+              return { ok: false, error: 'Este torneo es el principal de otros torneos de continuación; cambia primero esos torneos antes de convertirlo en continuación.' };
+            }
+          }
+        }
+      }
       sh.getRange(fila, TL.FECHA).setValue(fechaSolo);
       sh.getRange(fila, TL.HORA).setValue(horaSolo);
       _trySetFmt(sh, fila, TL.FECHA, 'dd/mm/yyyy');
       _trySetFmt(sh, fila, TL.HORA, 'h:mm:ss AM/PM');
       var temporadaNueva = _calcularTemporadaParaFecha(fechaSolo);
       sh.getRange(fila, TL.TEMPORADA).setValue(temporadaNueva);
-      if (tagTorneoPrincipal) sh.getRange(fila, TL.TAG_TOR_2).setValue(String(tagTorneoPrincipal).trim());
+      // PF105: 'principal' quita la continuación (Tag_Tor_2 vacío); si no, se escribe el principal elegido (comportamiento anterior).
+      if (tipoNorm === 'principal') sh.getRange(fila, TL.TAG_TOR_2).setValue('');
+      else if (tagTorneoPrincipal) sh.getRange(fila, TL.TAG_TOR_2).setValue(String(tagTorneoPrincipal).trim());
       // FIX (11-sep-2026): ver docblock de arriba.
       if (semanasIsoCsv) sh.getRange(fila, TL.SEMANAS).setValue(_construirSemanasCsvDesdeIsos(semanasIsoCsv));
       // FIX (12-sep-2026): ver docblock de arriba -- '' = no tocar.
@@ -46318,6 +46343,73 @@ function _webAdminRequisitosClanesSorteo(token, id) {
   return { ok: true, requisitos: requisitos };
 }
 
+// _webAdminBarcosAnterior(): NUEVO (18-oct-2026, PF105, pedido de la usuaria: el valor inicial de "Ataques a barcos" debe salir del registro anterior y solo caer a 16 si no hay ninguno). Endpoint de SOLO LECTURA. `categoria` = 'Torneo', 'Sorteo', 'CR_Ascenso' o 'CR_Descenso'. Con `id` busca el registro con valor de Barcos inmediatamente anterior a ese registro (por Fecha; a igual Fecha, el de fila anterior), sin contarlo a el; sin `id` devuelve el mas reciente que tenga valor. Una celda en blanco significa "sin requisito" y no cuenta como valor. Devuelve { ok:true, qty:Number|null, idOrigen:String }; qty null = no hay registro anterior con Barcos y el front usa 16. [→ Contexto_Base_Web.md §PF105]
+function _webAdminBarcosAnterior(token, categoria, id) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  categoria = String(categoria || '').trim();
+  id = String(id || '').trim();
+  if (['Torneo', 'Sorteo', 'CR_Ascenso', 'CR_Descenso'].indexOf(categoria) === -1) {
+    return { ok: false, error: 'Categoría desconocida: ' + categoria + '.' };
+  }
+
+  var ss = _getSs();
+  var filas = [];
+  var COL_ID, COL_FECHA, COL_BARCOS, prefijo = '';
+  if (categoria === 'Torneo' || categoria === 'Sorteo') {
+    var esTorneo = (categoria === 'Torneo');
+    var sh = _hojaConFilas_(ss, esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA, 3);
+    if (!sh) return { ok: true, qty: null, idOrigen: '' };
+    filas = sh.getRange(3, 1, sh.getLastRow() - 2, esTorneo ? TL_TOTAL_COLS : SL_TOTAL_COLS).getValues();
+    COL_ID = esTorneo ? TL.ID : SL.ID;
+    COL_FECHA = esTorneo ? TL.FECHA : SL.FECHA;
+    COL_BARCOS = esTorneo ? TL.BARCOS : SL.BARCOS;
+  } else {
+    var lecturaCR = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CR_LISTA, 'Backup_CR_Lista.csv', CR_TOTAL_COLS, 3);
+    filas = lecturaCR.filas;
+    COL_ID = CR.ID;
+    COL_FECHA = CR.FECHA;
+    COL_BARCOS = CR.BARCOS;
+    prefijo = (categoria === 'CR_Ascenso') ? 'A_' : 'D_';
+  }
+
+  function fechaMs(celda) {
+    var d = (celda instanceof Date) ? celda : _parseSpanishDate(celda);
+    return (d instanceof Date && !isNaN(d.getTime())) ? d.getTime() : 0;
+  }
+
+  // Posicion (Fecha, fila) del registro de referencia; sin `id` no hay tope.
+  var refFecha = null, refFila = -1;
+  if (id) {
+    for (var r = 0; r < filas.length; r++) {
+      if (String(filas[r][COL_ID - 1] || '').trim() === id) {
+        refFecha = fechaMs(filas[r][COL_FECHA - 1]);
+        refFila = r;
+        break;
+      }
+    }
+  }
+
+  var mejor = null, idMejor = '', mejorFecha = -1, mejorFila = -1;
+  for (var i = 0; i < filas.length; i++) {
+    var idFila = String(filas[i][COL_ID - 1] || '').trim();
+    if (!idFila || idFila === id) continue;
+    if (prefijo && idFila.indexOf(prefijo) !== 0) continue;
+    var celdaBarcos = filas[i][COL_BARCOS - 1];
+    if (celdaBarcos === '' || celdaBarcos === null || celdaBarcos === undefined) continue; // en blanco = sin requisito
+    var qty = Number(celdaBarcos);
+    if (isNaN(qty)) continue;
+    var f = fechaMs(filas[i][COL_FECHA - 1]);
+    if (refFila >= 0 && (f > refFecha || (f === refFecha && i > refFila))) continue; // solo registros anteriores al elegido
+    if (f > mejorFecha || (f === mejorFecha && i > mejorFila)) {
+      mejor = qty;
+      idMejor = idFila;
+      mejorFecha = f;
+      mejorFila = i;
+    }
+  }
+  return { ok: true, qty: mejor, idOrigen: idMejor };
+}
+
 // _webAdminTorneoRegistrar(): FASE 3 (25-ago-2026, pedido del usuario — gestión de torneos). Envuelve _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organizadorInfo) (26_Torneos_Core.gs) — la MISMA función que usa el bot en el paso "Ingresar… [→ Contexto_Base_Web.md §37B230, §37B231]
 function _webAdminTorneoRegistrar(token, link, fecha, hora, tagTorneoPrincipal, autor, semanas, requisitos, comentario, tagOrg, clanOrg, clanTagOrg) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
@@ -46371,7 +46463,7 @@ function _webAdminTorneoPlanificarGuardar(token, fecha, hora, premios, tagTorneo
 }
 
 // _webAdminTorneoModificar(): FASE 3 (25-ago-2026, pedido del usuario — gestión de torneos). Envuelve TAL CUAL _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal) (26_Torneos_Core.gs) — la MISMA función que usa el bot en el paso "Modificar datos de… [→ Contexto_Base_Web.md §37B234, §37B235, §37B236, §37B237, §37B238, §37B239, §37B240]
-function _webAdminTorneoModificar(token, id, fecha, hora, tagTorneoPrincipal, semanas, comentario, requisitos, autor, premios, tagOrg, clanOrg, clanTagOrg, link) {
+function _webAdminTorneoModificar(token, id, fecha, hora, tagTorneoPrincipal, semanas, comentario, requisitos, autor, premios, tagOrg, clanOrg, clanTagOrg, link, tipoTorneo) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
   if (!fecha || !hora) return { ok: false, error: 'Falta la fecha u hora nueva.' };
 
@@ -46416,7 +46508,8 @@ function _webAdminTorneoModificar(token, id, fecha, hora, tagTorneoPrincipal, se
     }
   }
 
-  return _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanas, comentario, requisitos, organizadorInfo, premios);
+  // PF105: `tipoTorneo` ('principal' | 'continuacion') permite cambiar el tipo en ambos sentidos.
+  return _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanas, comentario, requisitos, organizadorInfo, premios, tipoTorneo);
 }
 
 // _webAdminSorteosHoy(): NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, panel de Sorteos completo, backend). Envuelve TAL CUAL _listarSorteosDeHoy() (26_Torneos_Core.gs) -- mismo patrón que _webAdminTorneosHoy() de arriba, pero para… [→ Contexto_Base_Web.md §37B241]
@@ -49164,6 +49257,19 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // NUEVO 18-oct-2026 (PF105): webAdminBarcosAnterior, Barcos del registro anterior (Torneo, Sorteo, CR_Ascenso, CR_Descenso) para el valor inicial de «Ataques a barcos». [→ Contexto_Base_Web.md §PF105]
+  if (e && e.parameter && e.parameter.accion === 'webAdminBarcosAnterior') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminBarcosAnterior(e.parameter.sessionToken, e.parameter.categoria, e.parameter.id)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('[Web] Error interno: ' + err.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // NUEVO 12-sep-2026 (sección 5.4): webAdminSorteosHoy, puebla el selector 'Modificar' del panel de Sorteos. [→ Contexto_Base_Web.md §38B055]
   if (e && e.parameter && e.parameter.accion === 'webAdminSorteosHoy') {
     try {
@@ -49664,7 +49770,8 @@ function doPost(e) {
         payloadTMod && payloadTMod.tagOrg,
         payloadTMod && payloadTMod.clanOrg,
         payloadTMod && payloadTMod.clanTagOrg,
-        payloadTMod && payloadTMod.link
+        payloadTMod && payloadTMod.link,
+        payloadTMod && payloadTMod.tipoTorneo
       );
       return ContentService
         .createTextOutput(JSON.stringify(resultadoTMod))
