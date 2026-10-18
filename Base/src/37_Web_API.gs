@@ -2716,7 +2716,8 @@ function _webAdminContenidoDocHtml(token, docId) {
 // _webAdminTorneosHoy(): FASE 3 (25-ago-2026, pedido del usuario — gestión de torneos). Envuelve TAL CUAL _listarTorneosDeHoy() (26_Torneos_Core.gs) — la MISMA lista que ve un admin al elegir "Modificar datos de torneo existente" por WhatsApp (solo… [→ Contexto_Base_Web.md §37B220]
 function _webAdminTorneosHoy(token) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  return { ok: true, torneos: _listarTorneosDeHoy() };
+  // 18-oct-2026 (PF099): ya no solo los de hoy; también los Planificados y los que no tienen link. [→ Contexto_Base_Web.md §PF099]
+  return { ok: true, torneos: _listarTorneosModificables() };
 }
 
 // _webAdminSemanasRecientes(): FIX (11-sep-2026, pedido usuario — conectar el selector de semanas de admin.html a un backend real): devuelve las semanas (lunes a domingo) con su Temporada/Semana REALES (misma fuente que TL.TEMPORADA --… [→ Contexto_Base_Web.md §37B221]
@@ -2815,6 +2816,7 @@ function _webAdminRequisitosClanes(token, id) {
     requisitos.reaccion = bloque[0].reaccion.activo ? 'Sí' : 'No';
     requisitos.presenciaWhatsapp = bloque[0].whatsapp.activo ? 'Sí' : 'No';
     requisitos.barcos = bloque[0].barcos.activo ? String(bloque[0].barcos.qty) : '';
+    if (bloque[0].barcos.activo) requisitos.ataquesBarcosSemana = String(bloque[0].barcos.qty); // admin.html lee este nombre (PF099)
   }
 
   return { ok: true, requisitos: requisitos };
@@ -2841,6 +2843,7 @@ function _webAdminRequisitosClanesSorteo(token, id) {
     requisitos.reaccion = bloque[0].reaccion.activo ? 'Sí' : 'No';
     requisitos.presenciaWhatsapp = bloque[0].whatsapp.activo ? 'Sí' : 'No';
     requisitos.barcos = bloque[0].barcos.activo ? String(bloque[0].barcos.qty) : '';
+    if (bloque[0].barcos.activo) requisitos.ataquesBarcosSemana = String(bloque[0].barcos.qty); // admin.html lee este nombre (PF099)
   }
 
   return { ok: true, requisitos: requisitos };
