@@ -1,0 +1,30 @@
+T,S,caso,jugadores
+2,1,no concluyente (varios clanes),2
+2,1,sin diferencia,152
+2,1,sin diferencia (suma de clanes respaldada por el JSON),1
+2,1,sistema menor,2
+2,2,doble conteo,1
+2,2,no concluyente (varios clanes),3
+2,2,sin diferencia,182
+2,2,sin diferencia (suma de clanes respaldada por el JSON),3
+2,2,sistema menor,4
+2,3,"RoyaleAPI sin registro (0, 0, 0)",3
+2,3,sin diferencia,158
+2,3,sin diferencia (suma de clanes respaldada por el JSON),1
+2,3,sistema menor,1
+2,4,"RoyaleAPI sin registro (0, 0, 0)",7
+2,4,sin diferencia,127
+2,4,sistema menor,4
+2,4,sobrante: fila del clan anterior,4
+3,1,"RoyaleAPI sin registro (0, 0, 0)",1
+3,1,doble conteo,4
+3,1,sin diferencia,113
+3,1,sistema menor,20
+3,1,sobrante: fila del clan anterior,1
+4,1,doble conteo,2
+4,1,sin diferencia,180
+4,1,sistema menor,6
+5,1,doble conteo,1
+5,1,sin diferencia,132
+5,1,sistema menor,3
+5,1,sobrante real,13
