@@ -1307,10 +1307,10 @@ function importarSListaDesdeCSV() {
   // de 2 filas -- ver comentario de arriba).
   sh.getRange(3, 1, filas.length, SL_TOTAL_COLS).setValues(filas);
   for (var i = 0; i < filas.length; i++) {
-    // PF109: los sorteos guardan fecha y hora juntas en Fecha (`dd/mm/yyyy hh:mm`, igual que al registrar o modificar); con solo `dd/mm/yyyy` la hora quedaba oculta tras restaurar.
+    // PF118: los sorteos guardan fecha y hora juntas en Fecha (`dd/mm/yyyy hh:mm`, igual que al registrar o modificar); con solo `dd/mm/yyyy` la hora quedaba oculta tras restaurar.
     _trySetFmt(sh, i + 3, SL.FECHA, 'dd/mm/yyyy hh:mm');
   }
-  // PF109: Hora como hora de verdad y con formato de solo hora, no «30/12/1899 20:00:00».
+  // PF118: Hora como hora de verdad y con formato de solo hora, no «30/12/1899 20:00:00».
   _normalizarHoraSLista(sh);
   applyBorderCenter(sh.getRange(3, 1, filas.length, SL_TOTAL_COLS));
   _aplicarDropdownId2SLista(ss);
@@ -2702,6 +2702,9 @@ function _aplicarDropdownTagTor2TLista(ss) {
   for (var i = 0; i < datos.length; i++) {
     var t = String(datos[i][TL.TAG_TOR - 1] || '').trim();
     if (t && tags.indexOf(t) < 0) tags.push(t);
+    // PF118: un torneo sin Tag_Tor (planificado, sin link) se ofrece por su ID, que es lo que se guarda en Tag_Tor_2 mientras no tenga tag.
+    var idSinTag = String(datos[i][TL.ID - 1] || '').trim();
+    if (!t && idSinTag && tags.indexOf(idSinTag) < 0) tags.push(idSinTag);
   }
   if (tags.length === 0) return; // sin ningún Tag_Tor registrado todavía, nada para ofrecer en la lista
   tags.sort();
@@ -2903,7 +2906,7 @@ function _aplicarDropdownClanSLista(ss) {
 }
 
 /**
- * _normalizarHoraSLista(sh) — 18-oct-2026 (PF109, pedido del usuario). Deja la columna Hora de S_Lista como HORA de verdad (solo hora, sin fecha): (1) si una celda trae texto con una hora («30/12/1899 20:00:00», «20:00:00», «8:00 PM»), la convierte en el número de la hora del día (fracción de día; no depende de la zona horaria); (2) reaplica a toda la columna el formato de solo hora `h:mm:ss AM/PM`, el mismo que usa T_Lista. Antes nadie le ponía formato a esa columna: al restaurar desde el CSV (el respaldo guarda toda hora con su fecha 30/12/1899) la celda volvía a mostrarse como «30/12/1899 20:00:00», aunque la usuaria le hubiera cambiado el formato a mano. Los valores ya correctos no se reescriben. Se llama desde `procesarSListaNuevasFilas()` (todas las rutas de runUpdate/runAll), `_setupSLista()` e `importarSListaDesdeCSV()`. [→ Contexto_Base_Web.md §PF109]
+ * _normalizarHoraSLista(sh) — 18-oct-2026 (PF118, pedido del usuario). Deja la columna Hora de S_Lista como HORA de verdad (solo hora, sin fecha): (1) si una celda trae texto con una hora («30/12/1899 20:00:00», «20:00:00», «8:00 PM»), la convierte en el número de la hora del día (fracción de día; no depende de la zona horaria); (2) reaplica a toda la columna el formato de solo hora `h:mm:ss AM/PM`, el mismo que usa T_Lista. Antes nadie le ponía formato a esa columna: al restaurar desde el CSV (el respaldo guarda toda hora con su fecha 30/12/1899) la celda volvía a mostrarse como «30/12/1899 20:00:00», aunque la usuaria le hubiera cambiado el formato a mano. Los valores ya correctos no se reescriben. Se llama desde `procesarSListaNuevasFilas()` (todas las rutas de runUpdate/runAll), `_setupSLista()` e `importarSListaDesdeCSV()`. [→ Contexto_Base_Web.md §PF118]
  */
 function _normalizarHoraSLista(sh) {
   if (!sh || sh.getLastRow() < 3) return;
@@ -2935,7 +2938,7 @@ function procesarSListaNuevasFilas(ss) {
   // Mismo motivo que en procesarTListaNuevasFilas(): la validación de [→ Contexto_Base_Web.md §26B212]
   sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS).clearDataValidations();
 
-  // PF109: la columna Hora queda siempre como hora sin fecha (ver _normalizarHoraSLista()).
+  // PF118: la columna Hora queda siempre como hora sin fecha (ver _normalizarHoraSLista()).
   _normalizarHoraSLista(sh);
 
   var mapaDirectorioOrg = _getDirectorioLookupPorTag(ss);
@@ -3731,6 +3734,8 @@ function _resolverGruposContinuacionTorneos(ss) {
     var tagObjetivo = continuaDe[id];
     if (!tagObjetivo) return id; // no continúa a nada: es su propia raíz
     var idObjetivo = idPorTagTor[tagObjetivo];
+    // PF118 (18-oct-2026): Tag_Tor_2 también puede traer el ID del principal cuando este aún no tiene link ni Tag_Tor (torneo planificado). Los Tag_Tor empiezan con «#», así que no chocan con un ID.
+    if (!idObjetivo && infoTorneo.hasOwnProperty(tagObjetivo)) idObjetivo = tagObjetivo;
     // Sin coincidencia (Tag_Tor_2 mal tipeado / torneo aún no registrado) [→ Contexto_Base_Web.md §26B262]
     if (!idObjetivo || idObjetivo === id || visitados[id]) return id;
     var visitadosNuevo = {};
@@ -4142,14 +4147,18 @@ function _validarTagTor2SinCoincidencia(ss) {
   for (var i = 0; i < datos.length; i++) {
     var tagTor = String(datos[i][TL.TAG_TOR - 1] || '').trim();
     if (tagTor) tagsExistentes[tagTor] = true;
+    // PF118: Tag_Tor_2 también puede ser el ID de un principal sin tag todavía.
+    var idFila = String(datos[i][TL.ID - 1] || '').trim();
+    if (idFila) tagsExistentes[idFila] = true;
   }
 
   for (var j = 0; j < datos.length; j++) {
     var tagTor2 = String(datos[j][TL.TAG_TOR_2 - 1] || '').trim();
     if (!tagTor2) continue;
     var propioTagTor = String(datos[j][TL.TAG_TOR - 1] || '').trim();
-    if (tagTor2 === propioTagTor) {
-      Logger.log('[T_Lista] Fila ' + (j + 3) + ': Tag_Tor_2 (' + tagTor2 + ') es igual a su propio Tag_Tor -- se ignora (no puede continuarse a sí mismo).');
+    var propioId = String(datos[j][TL.ID - 1] || '').trim();
+    if (tagTor2 === propioTagTor || tagTor2 === propioId) {
+      Logger.log('[T_Lista] Fila ' + (j + 3) + ': Tag_Tor_2 (' + tagTor2 + ') es igual a su propio Tag_Tor o ID -- se ignora (no puede continuarse a sí mismo).');
       continue;
     }
     if (!tagsExistentes[tagTor2]) {
@@ -4620,13 +4629,16 @@ function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasI
       if (tipoNorm === 'continuacion') {
         if (!tagPrincipalNuevo) return { ok: false, error: 'Elige de cuál torneo principal es continuación.' };
         var tagPropio = String(sh.getRange(fila, TL.TAG_TOR).getValue() || '').trim();
-        if (tagPropio && tagPrincipalNuevo === tagPropio) {
+        // PF118: el principal puede venir como Tag_Tor o, si aún no tiene link, como su ID; ambos cuentan como «este mismo torneo».
+        var idPropio = String(id).trim();
+        var referenciasPropias = tagPropio ? [tagPropio, idPropio] : [idPropio];
+        if (referenciasPropias.indexOf(tagPrincipalNuevo) >= 0) {
           return { ok: false, error: 'Un torneo no puede ser continuación de sí mismo.' };
         }
-        if (tagPropio) {
+        {
           var tags2 = sh.getRange(3, TL.TAG_TOR_2, lastRow - 2, 1).getValues();
           for (var k = 0; k < tags2.length; k++) {
-            if (k !== i && String(tags2[k][0] || '').trim() === tagPropio) {
+            if (k !== i && referenciasPropias.indexOf(String(tags2[k][0] || '').trim()) >= 0) {
               return { ok: false, error: 'Este torneo es el principal de otros torneos de continuación; cambia primero esos torneos antes de convertirlo en continuación.' };
             }
           }
