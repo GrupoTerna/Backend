@@ -1174,8 +1174,11 @@ function _construirFila(tag, member, info, clanTag, existing, csvRow, tagMulticu
   // Admin/Cat_disp: si no hubo "existing" (ej. justo después de demolerTodoElSpreadsheet(), [→ Contexto_Base_Web.md §11B078]
   if (!admin   && csvRow && csvRow.admin)    admin   = String(csvRow.admin).trim();
   if (!catDisp && csvRow && csvRow.cat_disp) catDisp = String(csvRow.cat_disp).trim();
-  // Préstamo: si no había en existing, caer al CSV (preserva ediciones manuales antiguas)
-  if (!prestamo && csvRow && csvRow.prestamo) prestamo = String(csvRow.prestamo).trim();
+  // Préstamo: solo se cae al CSV si la cuenta NO tiene fila en la hoja (existing == null, ej. tras
+  // demolerTodoElSpreadsheet()). Si la fila existe y la celda está vacía, es un borrado deliberado
+  // (la cuenta ya no se presta) y se respeta; antes se restauraba desde Backup_Directorio.csv en cada
+  // runUpdate()/runAll() [→ Contexto_Base_Web.md §PF104]
+  if (!existing && !prestamo && csvRow && csvRow.prestamo) prestamo = String(csvRow.prestamo).trim();
 
   // IMPORTANTE: prioridad = 1) valor ya en la hoja (existing, incluye ediciones [→ Contexto_Base_Web.md §11B079]
   if (csvRow) {
