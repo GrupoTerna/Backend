@@ -130,6 +130,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF118` | Torneo de continuación enlazado a un principal sin link (`Tag_Tor_2` acepta el ID) y listas de torneos, sorteos y cambio de rango de más reciente a más antiguo (`admin.html`, `26_Torneos_Core.gs`). |
 | `PF119` | Reglas dictadas el 18-oct-2026 para corregir las anomalías de topes (4 ataques por día, 16 por semana, 900 medallas por día, 3600 por semana) y para repartir filas nuevas o reconstruidas; regla de buscar en Drive si falta el archivo reciente en GitHub. **Solo registradas; nada aplicado.** |
 | `PF120` | Contraste del 18-oct-2026 de lo pendiente de §PF119 contra el código y Drive: valores de medallas por tipo de batalla (barco 75/125, normal 100/200, duelo 100/250 por batalla; coinciden con el código), rangos de fame por día, el «sobrante» sigue vigente, copia vieja de `Backup_Guerra.csv` en el repo, y la regla de buscar en Drive pasa a la skill `/md` (18-oct-2026); punto 13: cobertura de los JSON de domingo, historial de celulares y plan por tandas 0 a 6. **Solo lectura; ningún `.gs` ni CSV tocado.** |
+| `PF121` | Tabla de todas las combinaciones posibles de ataques, barcos y medallas por día (77) y por semana (3196), generada con la lógica de `_fameDescomposicionesDia_()`; coincide con los rangos de §PF120. **Solo un CSV de referencia; ningún `.gs` tocado.** |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -2232,6 +2233,18 @@ El caso de la usuaria (4 ataques, los 4 a barcos: entre 300 y 500) sale exacto. 
 *Propuesta de Claude, sin confirmar:* **reemplazar el reparto independiente por uno conjunto.** Para cada jugador y semana, con los totales objetivo (ataques, barcos, fame), buscar una asignación día por día (cada día una combinación de la tabla con sus ataques, barcos y fame) cuya suma dé esos totales, respetando los días que ya están bien y el piso de cada día. **Si no existe una combinación que cuadre, no tocar y avisar** (esto sustituye al «sobrante»). Cambia el reparto en los 12 sitios de llamada (10 en `18_CorreccionGuerra.gs`, 2 en `19_CorreccionRiverRace.gs`), así que conviene hacerlo en una sola función nueva que reciban las tres cifras a la vez.
 
 - **Pendiente derivado.** (1) Tanda 3: C, D y E del punto 11 sobre las 133 filas, empezando por los 13 y los 10 de arriba. (2) Antes de decidir «sobrante → no tocar y avisar» (tanda 5), la usuaria debe saber que **no todo sobrante es sobrante real**: de los 26 casos con el sistema mayor y una referencia clara, 13 son doble conteo o fila del clan anterior (mecanismo del cambio de clan) y los otros 13 son el sobrante real de T5 S1; otros 5 quedan sin decidir (varios clanes) y 11 no tienen referencia porque RoyaleAPI viene en ceros.
+
+### PF121 — Tabla de todas las combinaciones posibles de ataques, barcos y medallas por día y por semana (pedido de la usuaria, 18-oct-2026; SOLO REFERENCIA)
+
+**Qué es.** `Datos descargados/CSV/Informes/combinaciones_ataques_medallas.csv`, generado por `combinaciones_ataques_medallas.py` (misma carpeta). Columnas: `Periodo` (Dia o Semana), `Ataques`, `Barcos`, `Medallas`, `Variantes`, `Detalle`. No modifica ningún dato del sistema y no contiene datos de jugadores.
+
+**Reglas que usa (las de §PF120, punto 1; copia de `_fameDescomposicionesDia_()` en `18_CorreccionGuerra.gs`).** Por día, sumando todos los clanes del jugador: de 0 a 4 ataques; los barcos son parte de esos ataques (gana 125, pierde 75); el resto son batallas normales (gana 200, pierde 100); como máximo un duelo por día (0-2 = 200, 2-0 = 500, 1-2 = 450, 2-1 = 600). Por semana: suma de los 4 días de guerra (jueves a domingo).
+
+**Resultado.** Día: **77** combinaciones distintas de (ataques, barcos, medallas); en `Detalle` va cada forma de llegar a esa cifra (por ejemplo, 2 ataques y 200 medallas son «PvP 0G-2P» o «duelo 0-2»). Semana: **3196** combinaciones de (ataques, barcos, medallas) alcanzables; `Variantes` es cuántos repartos ordenados de jueves a domingo dan esa cifra semanal. Máximos: 900 medallas por día y **3600 por semana** con 16 ataques (coincide con los topes de §PF119).
+
+**Comprobado (en Python, no en Apps Script).** Los mínimos y máximos de medallas por (ataques, barcos) del CSV son idénticos a la tabla de §PF120, punto 1.
+
+**Límites (decisión de Claude, no confirmada).** La combinación semanal supone que cualquier combinación diaria puede repetirse en cualquier día; no filtra por la regla de que los acumulados no bajan, porque esa regla no limita las cifras de un día. No se aplicó al reparto del código: el cambio de `_corregirCampoDiarioConDistribucion()` y `_corregirCampoAcumuladoConDistribucion()` sigue abierto en §PF120.
 
 ### PF064 — `perfil.html`: banner en la tarjeta de cabecera (pedido de la usuaria, 12-oct-2026)
 
