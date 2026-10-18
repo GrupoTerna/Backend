@@ -4529,6 +4529,7 @@ function _listarTorneosModificables() {
         hora: _formatHoraCanonica(f[TL.HORA - 1]),
         estado: String(f[TL.ESTADO - 1] || '').trim(),
         tagTor: String(f[TL.TAG_TOR - 1] || '').trim(),
+        tagPrincipal: String(f[TL.TAG_TOR_2 - 1] || '').trim(), // PF105: Tag_Tor del torneo principal del que este es continuación ('' = es principal)
         link: String(f[TL.LINK_APP - 1] || '').trim(),
         autor: String(f[TL.ORGANIZADOR - 1] || '').trim(),
         nomMulti: String(f[TL.NOM_MULTI_ORG - 1] || '').trim(),
@@ -4563,7 +4564,8 @@ function _extraerIsosDesdeSemanasCsv(semanasCsv) {
 /**
  * _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal) [→ Contexto_Base_Web.md §26B299]
  */
-function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasIsoCsv, comentario, requisitos, organizadorInfo, premios) {
+// PF105 (18-oct-2026): 10.º parámetro opcional `tipoTorneo` ('principal' | 'continuacion' | otro/vacío = no tocar el tipo). 'principal' borra Tag_Tor_2 (antes solo se podía escribir, nunca quitar); 'continuacion' exige `tagTorneoPrincipal`, no puede ser el propio Tag_Tor y no se admite si otros torneos ya son continuación de este (evita cadenas). El bot llama con 3 argumentos y no cambia. [→ Contexto_Base_Web.md §PF105]
+function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasIsoCsv, comentario, requisitos, organizadorInfo, premios, tipoTorneo) {
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
   if (!sh) return { ok: false, error: 'No encontré la hoja T_Lista.' };
@@ -4581,13 +4583,33 @@ function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasI
   for (var i = 0; i < ids.length; i++) {
     if (String(ids[i][0] || '') === String(id)) {
       var fila = i + 3;
+      // PF105: validaciones del cambio de tipo ANTES de escribir nada.
+      var tipoNorm = String(tipoTorneo || '').trim();
+      var tagPrincipalNuevo = String(tagTorneoPrincipal || '').trim();
+      if (tipoNorm === 'continuacion') {
+        if (!tagPrincipalNuevo) return { ok: false, error: 'Elige de cuál torneo principal es continuación.' };
+        var tagPropio = String(sh.getRange(fila, TL.TAG_TOR).getValue() || '').trim();
+        if (tagPropio && tagPrincipalNuevo === tagPropio) {
+          return { ok: false, error: 'Un torneo no puede ser continuación de sí mismo.' };
+        }
+        if (tagPropio) {
+          var tags2 = sh.getRange(3, TL.TAG_TOR_2, lastRow - 2, 1).getValues();
+          for (var k = 0; k < tags2.length; k++) {
+            if (k !== i && String(tags2[k][0] || '').trim() === tagPropio) {
+              return { ok: false, error: 'Este torneo es el principal de otros torneos de continuación; cambia primero esos torneos antes de convertirlo en continuación.' };
+            }
+          }
+        }
+      }
       sh.getRange(fila, TL.FECHA).setValue(fechaSolo);
       sh.getRange(fila, TL.HORA).setValue(horaSolo);
       _trySetFmt(sh, fila, TL.FECHA, 'dd/mm/yyyy');
       _trySetFmt(sh, fila, TL.HORA, 'h:mm:ss AM/PM');
       var temporadaNueva = _calcularTemporadaParaFecha(fechaSolo);
       sh.getRange(fila, TL.TEMPORADA).setValue(temporadaNueva);
-      if (tagTorneoPrincipal) sh.getRange(fila, TL.TAG_TOR_2).setValue(String(tagTorneoPrincipal).trim());
+      // PF105: 'principal' quita la continuación (Tag_Tor_2 vacío); si no, se escribe el principal elegido (comportamiento anterior).
+      if (tipoNorm === 'principal') sh.getRange(fila, TL.TAG_TOR_2).setValue('');
+      else if (tagTorneoPrincipal) sh.getRange(fila, TL.TAG_TOR_2).setValue(String(tagTorneoPrincipal).trim());
       // FIX (11-sep-2026): ver docblock de arriba.
       if (semanasIsoCsv) sh.getRange(fila, TL.SEMANAS).setValue(_construirSemanasCsvDesdeIsos(semanasIsoCsv));
       // FIX (12-sep-2026): ver docblock de arriba -- '' = no tocar.
