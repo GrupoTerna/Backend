@@ -823,6 +823,19 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // NUEVO 18-oct-2026 (PF105): webAdminBarcosAnterior, Barcos del registro anterior (Torneo, Sorteo, CR_Ascenso, CR_Descenso) para el valor inicial de «Ataques a barcos». [→ Contexto_Base_Web.md §PF105]
+  if (e && e.parameter && e.parameter.accion === 'webAdminBarcosAnterior') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminBarcosAnterior(e.parameter.sessionToken, e.parameter.categoria, e.parameter.id)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('[Web] Error interno: ' + err.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // NUEVO 12-sep-2026 (sección 5.4): webAdminSorteosHoy, puebla el selector 'Modificar' del panel de Sorteos. [→ Contexto_Base_Web.md §38B055]
   if (e && e.parameter && e.parameter.accion === 'webAdminSorteosHoy') {
     try {
@@ -1323,7 +1336,8 @@ function doPost(e) {
         payloadTMod && payloadTMod.tagOrg,
         payloadTMod && payloadTMod.clanOrg,
         payloadTMod && payloadTMod.clanTagOrg,
-        payloadTMod && payloadTMod.link
+        payloadTMod && payloadTMod.link,
+        payloadTMod && payloadTMod.tipoTorneo
       );
       return ContentService
         .createTextOutput(JSON.stringify(resultadoTMod))
