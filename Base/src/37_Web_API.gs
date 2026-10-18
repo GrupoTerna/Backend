@@ -3021,7 +3021,8 @@ function _webAdminTorneoModificar(token, id, fecha, hora, tagTorneoPrincipal, se
 // _webAdminSorteosHoy(): NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, panel de Sorteos completo, backend). Envuelve TAL CUAL _listarSorteosDeHoy() (26_Torneos_Core.gs) -- mismo patrón que _webAdminTorneosHoy() de arriba, pero para… [→ Contexto_Base_Web.md §37B241]
 function _webAdminSorteosHoy(token) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  return { ok: true, sorteos: _listarSorteosDeHoy() };
+  // PF108 (18-oct-2026): «Modificar sorteo» lista los de hoy y los Planificados, no solo los de hoy. [→ Contexto_Base_Web.md §PF108]
+  return { ok: true, sorteos: _listarSorteosModificables() };
 }
 
 // _webAdminSorteoRegistrar(): NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, panel de Sorteos completo, backend). Envuelve _registrarSorteoDesdeBot() (26_Torneos_Core.gs) -- mismo patrón EXACTO que _webAdminTorneoRegistrar() de arriba… [→ Contexto_Base_Web.md §37B242]
