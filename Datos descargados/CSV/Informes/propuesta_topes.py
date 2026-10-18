@@ -11,7 +11,8 @@ ataques_semana):
  - Cada dia es un estado (n ataques, b barcos, f medallas) valido segun la tabla de fame de
    18_CorreccionGuerra.gs (_fameDescomposicionesDia_): n<=4, b<=n, barco 75/125, normal 100/200,
    duelo 2-0=500, 0-2=200, 2-1=600, 1-2=450 (maximo un duelo por dia).
- - (Version final) 1) puntos de control coherentes; 2) si no caben, semana entera; ver codigo.
+ - (Version del 18-oct-2026) se conservan las filas cuyos acumulados caben en las tablas (puntos de control) y se
+   reparte de domingo a jueves solo dentro de los tramos imposibles; ver codigo (programacion dinamica).
  - Si hay UNA sola solucion -> 'determinado'. Si hay varias -> 'regla domingo a jueves': se llena el
    domingo con el maximo (ataques, luego barcos, luego medallas) que deje el resto factible, y se
    retrocede. Si no hay ninguna -> 'revision' (no se toca). Varios clanes en la semana -> 'revision'.
@@ -80,29 +81,55 @@ for k in sorted(claves, key=lambda t: (int(t[0]), int(t[1]), t[2])):
                 for a, b in zip(sorted(dias), sorted(dias)[1:]))
     terminada = (k[0], k[1]) != SEM_ACTUAL
     offs = sorted(dias)
-    # 1) Reglas que ya existen: los acumulados de cada fila son puntos de control; cada tramo entre dos
-    #    puntos (o desde el jueves) se reparte por separado. Solo vale si TODOS los tramos son posibles.
-    tramos = []; prev = (0, 0, 0); po = -1; coherente = True
-    for o in offs:
-        cur = (N(dias[o]['AtaquesSemana']), N(dias[o]['Barcos']), N(dias[o]['Fame']))
-        delta = tuple(c - p_ for c, p_ in zip(cur, prev)); nd = o - po
+    # Version "conservar tramos buenos" (decidida por la usuaria el 18-oct-2026): cada fila es un punto de control
+    # posible. Se eligen los puntos de control que se conservan (los que dejan tramos posibles segun las tablas) y se
+    # reparte de domingo a jueves SOLO dentro de los tramos imposibles de respetar. Se conserva la mayor cantidad
+    # posible de filas; el total de la semana (ultima fila) queda fijo.
+    def tramo_ok(a, b):
+        (oa, va), (ob, vb) = a, b
+        nd = ob - oa; delta = tuple(x - y for x, y in zip(vb, va))
+        if nd <= 0 or min(delta) < 0: return None
         t_, m_, sol_ = repartir(delta, nd)
-        if t_ == 'revision' or min(delta) < 0: coherente = False
-        tramos.append((po + 1, nd, delta, t_, sol_)); prev, po = cur, o
-    if coherente and not (terminada and maxoff < 3):
-        tipo = 'puntos de control coherentes'
-        sol = []
-        for (ini, nd, delta, t_, sol_) in tramos:
-            sol += [(ini + d, n, bb, ff) for (d, n, bb, ff) in sol_]
-        sol.sort(); motivo = 'cada tramo entre filas se reparte de domingo a jueves dentro del tramo; mas de una forma en %d tramo/s' % sum(1 for t in tramos if t[3] != 'determinado')
-    elif coherente:
-        tipo, motivo, sol = 'revision', 'faltan las filas finales de una semana terminada y los acumulados existentes son coherentes: no se sabe si el total ya esta completo', None
-    else:
-        # 2) Los puntos de control no caben en las tablas: se fijan solo los totales y se reparte toda la semana.
-        ndias = maxoff + 1 if not terminada else 4
-        t_, m_, sol = repartir(total, ndias)
-        tipo = 'semana entera domingo a jueves' if sol else 'revision'
-        motivo = 'los acumulados de las filas no caben en las tablas; ' + m_
+        return None if t_ == 'revision' else (t_, sol_)
+    ini_ = (-1, (0, 0, 0))
+    def planear(fin_off):
+        """Puntos de control = filas existentes (menos la ultima) + el total de la semana en fin_off.
+        Devuelve (cps, mejor): mejor[i] = (filas conservadas hasta i, indice anterior) o None."""
+        cps = [(o, (N(dias[o]['AtaquesSemana']), N(dias[o]['Barcos']), N(dias[o]['Fame']))) for o in offs[:-1]]
+        cps.append((fin_off, total))
+        mejor = [None] * len(cps)
+        for i, cp in enumerate(cps):
+            cand = []
+            if tramo_ok(ini_, cp): cand.append((0, -1))
+            for j in range(i):
+                if mejor[j] is not None and tramo_ok(cps[j], cp): cand.append((mejor[j][0] + 1, j))
+            mejor[i] = max(cand) if cand else None
+        return cps, mejor
+    cps, mejor = planear(maxoff)                  # primero con la ultima fila en su dia real
+    coherente = mejor[-1] is not None and mejor[-1][0] == len(cps) - 1
+    if terminada and maxoff < 3:
+        if coherente:
+            cps = None; tipo = 'revision'; sol = None
+            motivo = 'faltan las filas finales de una semana terminada y los acumulados existentes son coherentes: no se sabe si el total ya esta completo'
+        else:
+            cps, mejor = planear(3)               # el total de la semana se reparte hasta el domingo
+    if cps is not None and mejor[-1] is None:
+        tipo = 'revision'; sol = None; motivo = 'ninguna combinacion de la tabla suma el total de la semana'
+    elif cps is not None:
+        cadena = []; i = len(cps) - 1
+        while i != -1: cadena.append(i); i = mejor[i][1]
+        cadena.reverse(); conserv = [cps[i][0] for i in cadena[:-1]]
+        sol = []; prev = ini_
+        for i in cadena:
+            cur = cps[i]; nd = cur[0] - prev[0]
+            delta = tuple(x - y for x, y in zip(cur[1], prev[1]))
+            t_, m_, sol_ = repartir(delta, nd)
+            sol += [(prev[0] + 1 + d, n, bb, ff) for (d, n, bb, ff) in sol_]
+            prev = cur
+        sol.sort()
+        quedan = len(cps) - 1 - len(conserv)
+        tipo = 'conserva tramos buenos' if conserv else 'semana entera domingo a jueves'
+        motivo = '%d de %d filas con acumulados conservados como puntos de control; %d fila/s imposible/s repartidas dentro de su tramo' % (len(conserv), len(cps) - 1, quedan)
     resumen[(tipo, '')] += 1
     if sol is None:
         salida.append([k[0], k[1], k[2], nom, clan, tipo, motivo, '', '', '', '', '', '', '', '', '']); continue
