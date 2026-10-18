@@ -2849,6 +2849,73 @@ function _webAdminRequisitosClanesSorteo(token, id) {
   return { ok: true, requisitos: requisitos };
 }
 
+// _webAdminBarcosAnterior(): NUEVO (18-oct-2026, PF105, pedido de la usuaria: el valor inicial de "Ataques a barcos" debe salir del registro anterior y solo caer a 16 si no hay ninguno). Endpoint de SOLO LECTURA. `categoria` = 'Torneo', 'Sorteo', 'CR_Ascenso' o 'CR_Descenso'. Con `id` busca el registro con valor de Barcos inmediatamente anterior a ese registro (por Fecha; a igual Fecha, el de fila anterior), sin contarlo a el; sin `id` devuelve el mas reciente que tenga valor. Una celda en blanco significa "sin requisito" y no cuenta como valor. Devuelve { ok:true, qty:Number|null, idOrigen:String }; qty null = no hay registro anterior con Barcos y el front usa 16. [→ Contexto_Base_Web.md §PF105]
+function _webAdminBarcosAnterior(token, categoria, id) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  categoria = String(categoria || '').trim();
+  id = String(id || '').trim();
+  if (['Torneo', 'Sorteo', 'CR_Ascenso', 'CR_Descenso'].indexOf(categoria) === -1) {
+    return { ok: false, error: 'Categoría desconocida: ' + categoria + '.' };
+  }
+
+  var ss = _getSs();
+  var filas = [];
+  var COL_ID, COL_FECHA, COL_BARCOS, prefijo = '';
+  if (categoria === 'Torneo' || categoria === 'Sorteo') {
+    var esTorneo = (categoria === 'Torneo');
+    var sh = _hojaConFilas_(ss, esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA, 3);
+    if (!sh) return { ok: true, qty: null, idOrigen: '' };
+    filas = sh.getRange(3, 1, sh.getLastRow() - 2, esTorneo ? TL_TOTAL_COLS : SL_TOTAL_COLS).getValues();
+    COL_ID = esTorneo ? TL.ID : SL.ID;
+    COL_FECHA = esTorneo ? TL.FECHA : SL.FECHA;
+    COL_BARCOS = esTorneo ? TL.BARCOS : SL.BARCOS;
+  } else {
+    var lecturaCR = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CR_LISTA, 'Backup_CR_Lista.csv', CR_TOTAL_COLS, 3);
+    filas = lecturaCR.filas;
+    COL_ID = CR.ID;
+    COL_FECHA = CR.FECHA;
+    COL_BARCOS = CR.BARCOS;
+    prefijo = (categoria === 'CR_Ascenso') ? 'A_' : 'D_';
+  }
+
+  function fechaMs(celda) {
+    var d = (celda instanceof Date) ? celda : _parseSpanishDate(celda);
+    return (d instanceof Date && !isNaN(d.getTime())) ? d.getTime() : 0;
+  }
+
+  // Posicion (Fecha, fila) del registro de referencia; sin `id` no hay tope.
+  var refFecha = null, refFila = -1;
+  if (id) {
+    for (var r = 0; r < filas.length; r++) {
+      if (String(filas[r][COL_ID - 1] || '').trim() === id) {
+        refFecha = fechaMs(filas[r][COL_FECHA - 1]);
+        refFila = r;
+        break;
+      }
+    }
+  }
+
+  var mejor = null, idMejor = '', mejorFecha = -1, mejorFila = -1;
+  for (var i = 0; i < filas.length; i++) {
+    var idFila = String(filas[i][COL_ID - 1] || '').trim();
+    if (!idFila || idFila === id) continue;
+    if (prefijo && idFila.indexOf(prefijo) !== 0) continue;
+    var celdaBarcos = filas[i][COL_BARCOS - 1];
+    if (celdaBarcos === '' || celdaBarcos === null || celdaBarcos === undefined) continue; // en blanco = sin requisito
+    var qty = Number(celdaBarcos);
+    if (isNaN(qty)) continue;
+    var f = fechaMs(filas[i][COL_FECHA - 1]);
+    if (refFila >= 0 && (f > refFecha || (f === refFecha && i > refFila))) continue; // solo registros anteriores al elegido
+    if (f > mejorFecha || (f === mejorFecha && i > mejorFila)) {
+      mejor = qty;
+      idMejor = idFila;
+      mejorFecha = f;
+      mejorFila = i;
+    }
+  }
+  return { ok: true, qty: mejor, idOrigen: idMejor };
+}
+
 // _webAdminTorneoRegistrar(): FASE 3 (25-ago-2026, pedido del usuario — gestión de torneos). Envuelve _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organizadorInfo) (26_Torneos_Core.gs) — la MISMA función que usa el bot en el paso "Ingresar… [→ Contexto_Base_Web.md §37B230, §37B231]
 function _webAdminTorneoRegistrar(token, link, fecha, hora, tagTorneoPrincipal, autor, semanas, requisitos, comentario, tagOrg, clanOrg, clanTagOrg) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
@@ -2902,7 +2969,7 @@ function _webAdminTorneoPlanificarGuardar(token, fecha, hora, premios, tagTorneo
 }
 
 // _webAdminTorneoModificar(): FASE 3 (25-ago-2026, pedido del usuario — gestión de torneos). Envuelve TAL CUAL _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal) (26_Torneos_Core.gs) — la MISMA función que usa el bot en el paso "Modificar datos de… [→ Contexto_Base_Web.md §37B234, §37B235, §37B236, §37B237, §37B238, §37B239, §37B240]
-function _webAdminTorneoModificar(token, id, fecha, hora, tagTorneoPrincipal, semanas, comentario, requisitos, autor, premios, tagOrg, clanOrg, clanTagOrg, link) {
+function _webAdminTorneoModificar(token, id, fecha, hora, tagTorneoPrincipal, semanas, comentario, requisitos, autor, premios, tagOrg, clanOrg, clanTagOrg, link, tipoTorneo) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
   if (!fecha || !hora) return { ok: false, error: 'Falta la fecha u hora nueva.' };
 
@@ -2947,7 +3014,8 @@ function _webAdminTorneoModificar(token, id, fecha, hora, tagTorneoPrincipal, se
     }
   }
 
-  return _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanas, comentario, requisitos, organizadorInfo, premios);
+  // PF105: `tipoTorneo` ('principal' | 'continuacion') permite cambiar el tipo en ambos sentidos.
+  return _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanas, comentario, requisitos, organizadorInfo, premios, tipoTorneo);
 }
 
 // _webAdminSorteosHoy(): NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, panel de Sorteos completo, backend). Envuelve TAL CUAL _listarSorteosDeHoy() (26_Torneos_Core.gs) -- mismo patrón que _webAdminTorneosHoy() de arriba, pero para… [→ Contexto_Base_Web.md §37B241]
