@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 21:54:19 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 22:42:42 */
 
 
 
@@ -3960,6 +3960,8 @@ function _setupSLista(ss) {
   ];
   var totalCols = _aplicarHeaderDosFilas(sh, columnas);
   _protegerSoloAdvertencia(sh);
+  // PF109 (18-oct-2026): la columna Hora de S_Lista queda como hora sin fecha (antes nadie le ponía formato y aparecía «30/12/1899 20:00:00»). [→ Contexto_Base_Web.md §PF109]
+  _normalizarHoraSLista(sh);
   // Desplegables fijo/dinámico — ver docblocks de las 4 funciones [→ Contexto_Base_Web.md §02B075]
   _aplicarDropdownId2SLista(ss);
   _aplicarDropdownEstadoSLista(ss);
@@ -33579,8 +33581,11 @@ function importarSListaDesdeCSV() {
   // de 2 filas -- ver comentario de arriba).
   sh.getRange(3, 1, filas.length, SL_TOTAL_COLS).setValues(filas);
   for (var i = 0; i < filas.length; i++) {
-    _trySetFmt(sh, i + 3, SL.FECHA, 'dd/mm/yyyy');
+    // PF109: los sorteos guardan fecha y hora juntas en Fecha (`dd/mm/yyyy hh:mm`, igual que al registrar o modificar); con solo `dd/mm/yyyy` la hora quedaba oculta tras restaurar.
+    _trySetFmt(sh, i + 3, SL.FECHA, 'dd/mm/yyyy hh:mm');
   }
+  // PF109: Hora como hora de verdad y con formato de solo hora, no «30/12/1899 20:00:00».
+  _normalizarHoraSLista(sh);
   applyBorderCenter(sh.getRange(3, 1, filas.length, SL_TOTAL_COLS));
   _aplicarDropdownId2SLista(ss);
   _aplicarDropdownEstadoSLista(ss);
@@ -35172,6 +35177,29 @@ function _aplicarDropdownClanSLista(ss) {
 }
 
 /**
+ * _normalizarHoraSLista(sh) — 18-oct-2026 (PF109, pedido del usuario). Deja la columna Hora de S_Lista como HORA de verdad (solo hora, sin fecha): (1) si una celda trae texto con una hora («30/12/1899 20:00:00», «20:00:00», «8:00 PM»), la convierte en el número de la hora del día (fracción de día; no depende de la zona horaria); (2) reaplica a toda la columna el formato de solo hora `h:mm:ss AM/PM`, el mismo que usa T_Lista. Antes nadie le ponía formato a esa columna: al restaurar desde el CSV (el respaldo guarda toda hora con su fecha 30/12/1899) la celda volvía a mostrarse como «30/12/1899 20:00:00», aunque la usuaria le hubiera cambiado el formato a mano. Los valores ya correctos no se reescriben. Se llama desde `procesarSListaNuevasFilas()` (todas las rutas de runUpdate/runAll), `_setupSLista()` e `importarSListaDesdeCSV()`. [→ Contexto_Base_Web.md §PF109]
+ */
+function _normalizarHoraSLista(sh) {
+  if (!sh || sh.getLastRow() < 3) return;
+  var n = sh.getLastRow() - 2;
+  var rango = sh.getRange(3, SL.HORA, n, 1);
+  var vals = rango.getValues();
+  for (var i = 0; i < vals.length; i++) {
+    var v = vals[i][0];
+    if (typeof v !== 'string' || !v.trim()) continue;
+    var m = v.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(a\.?\s?m\.?|p\.?\s?m\.?)?/i);
+    if (!m) continue; // texto sin hora: no se toca
+    var h = Number(m[1]), min = Number(m[2]), seg = Number(m[3] || 0);
+    var ampm = m[4] ? m[4].toLowerCase().replace(/[.\s]/g, '') : '';
+    if (ampm === 'pm' && h < 12) h += 12;
+    if (ampm === 'am' && h === 12) h = 0;
+    if (h > 23 || min > 59 || seg > 59) continue;
+    sh.getRange(i + 3, SL.HORA).setValue((h * 3600 + min * 60 + seg) / 86400);
+  }
+  rango.setNumberFormat('h:mm:ss AM/PM');
+}
+
+/**
  * procesarSListaNuevasFilas(ss) [→ Contexto_Base_Web.md §26B211]
  */
 function procesarSListaNuevasFilas(ss) {
@@ -35180,6 +35208,9 @@ function procesarSListaNuevasFilas(ss) {
 
   // Mismo motivo que en procesarTListaNuevasFilas(): la validación de [→ Contexto_Base_Web.md §26B212]
   sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS).clearDataValidations();
+
+  // PF109: la columna Hora queda siempre como hora sin fecha (ver _normalizarHoraSLista()).
+  _normalizarHoraSLista(sh);
 
   var mapaDirectorioOrg = _getDirectorioLookupPorTag(ss);
   var numFilas = sh.getLastRow() - 2;
@@ -36516,7 +36547,9 @@ function _valoresMinSAtaquesTorneosPorClan(requisitos) {
     var datosClan = porClan[nombreClan] || {};
     minS.push(Number(datosClan.minTrofeosGuerra) || 0);
     ataques.push(Number(datosClan.minAtaquesSemana) || 0);
-    torneos.push(Number(datosClan.minTorneos) || 0);
+    // PF110 (18-oct-2026): admin.html manda `minTorneosJugados` (y así lo devuelve _webAdminRequisitosClanesSorteo()), pero aquí se leía `minTorneos`, que nunca llegaba: los «Torneos jugados mínimos» escritos en la web se guardaban siempre como 0. Se lee el nombre real y se conserva `minTorneos` por compatibilidad. [→ Contexto_Base_Web.md §PF110]
+    var torneosClan = (datosClan.minTorneosJugados !== undefined && datosClan.minTorneosJugados !== '') ? datosClan.minTorneosJugados : datosClan.minTorneos;
+    torneos.push(Number(torneosClan) || 0);
   });
   return { minS: minS, ataques: ataques, torneos: torneos };
 }
@@ -37003,6 +37036,48 @@ function _listarSorteosDeHoy() {
         premios: String(f[SL.PREMIOS - 1] || '').trim(),
         semanas: _extraerIsosDesdeSemanasCsv(String(f[SL.SEMANAS - 1] || '').trim()),
         // AMPLIADO (15-sep-2026, cierre de conexión pendiente -- mismo [→ Contexto_Base_Web.md §26B309]
+        comentario: String(f[SL.COMENTARIO - 1] || '').trim()
+      };
+    });
+}
+
+/**
+ * _listarSorteosModificables() — 18-oct-2026 (PF108, pedido del usuario). Lista para "Modificar sorteo" del panel web: los de hoy, MÁS los Planificados (aunque sean de otro día). Antes solo mostraba los de hoy y un sorteo planificado para mañana no se podía editar (mismo problema que ya se corrigió en torneos, PF099). Mismos campos que _listarSorteosDeHoy() más fechaTxt, hora y estado. La hora sale de la propia Fecha (los sorteos se guardan como «dd/mm/yyyy hh:mm»); si la Fecha viene sin hora (00:00), se usa la columna Hora. Va ordenada por fecha. No reemplaza a _listarSorteosDeHoy(). [→ Contexto_Base_Web.md §PF108]
+ */
+function _listarSorteosModificables() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return [];
+  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS).getValues();
+  var hoy = _hoyLimaSinHora();
+  return datos
+    .filter(function (f) {
+      var id = String(f[SL.ID - 1] || '').trim();
+      if (!id) return false;
+      var fecha = f[SL.FECHA - 1];
+      var esHoy = fecha instanceof Date && !isNaN(fecha.getTime()) && _mismoDia(fecha, hoy);
+      var estado = String(f[SL.ESTADO - 1] || '').trim();
+      return esHoy || estado === 'Planificado';
+    })
+    .sort(function (a, b) {
+      var ta = a[SL.FECHA - 1] instanceof Date ? a[SL.FECHA - 1].getTime() : 0;
+      var tb = b[SL.FECHA - 1] instanceof Date ? b[SL.FECHA - 1].getTime() : 0;
+      return ta - tb;
+    })
+    .map(function (f) {
+      var fecha = f[SL.FECHA - 1];
+      var fechaOk = fecha instanceof Date && !isNaN(fecha.getTime());
+      var horaFecha = fechaOk ? Utilities.formatDate(fecha, 'America/Lima', 'HH:mm:ss') : '';
+      var hora = (horaFecha && horaFecha !== '00:00:00') ? horaFecha : (_formatHoraCanonica(f[SL.HORA - 1]) || horaFecha);
+      return {
+        id: f[SL.ID - 1],
+        fecha: fecha,
+        fechaTxt: fechaOk ? Utilities.formatDate(fecha, 'America/Lima', 'dd/MM/yyyy') : '',
+        hora: hora,
+        estado: String(f[SL.ESTADO - 1] || '').trim(),
+        idPrincipal: String(f[SL.ID_2 - 1] || '').trim(),
+        autor: String(f[SL.ORGANIZADOR - 1] || '').trim(),
+        premios: String(f[SL.PREMIOS - 1] || '').trim(),
+        semanas: _extraerIsosDesdeSemanasCsv(String(f[SL.SEMANAS - 1] || '').trim()),
         comentario: String(f[SL.COMENTARIO - 1] || '').trim()
       };
     });
@@ -46533,7 +46608,8 @@ function _webAdminTorneoModificar(token, id, fecha, hora, tagTorneoPrincipal, se
 // _webAdminSorteosHoy(): NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, panel de Sorteos completo, backend). Envuelve TAL CUAL _listarSorteosDeHoy() (26_Torneos_Core.gs) -- mismo patrón que _webAdminTorneosHoy() de arriba, pero para… [→ Contexto_Base_Web.md §37B241]
 function _webAdminSorteosHoy(token) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  return { ok: true, sorteos: _listarSorteosDeHoy() };
+  // PF108 (18-oct-2026): «Modificar sorteo» lista los de hoy y los Planificados, no solo los de hoy. [→ Contexto_Base_Web.md §PF108]
+  return { ok: true, sorteos: _listarSorteosModificables() };
 }
 
 // _webAdminSorteoRegistrar(): NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, panel de Sorteos completo, backend). Envuelve _registrarSorteoDesdeBot() (26_Torneos_Core.gs) -- mismo patrón EXACTO que _webAdminTorneoRegistrar() de arriba… [→ Contexto_Base_Web.md §37B242]
