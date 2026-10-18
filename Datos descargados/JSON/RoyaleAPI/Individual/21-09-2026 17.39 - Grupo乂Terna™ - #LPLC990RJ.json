@@ -1,0 +1,21 @@
+{
+  "tag": "#LPLC990RJ",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "21/09/2026",
+  "registros": [
+    {
+      "temporadaInterna": 5,
+      "temporadaRoyaleAPI": 136,
+      "semana": 3,
+      "clan": "Grupo乂Terna™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    }
+  ]
+}

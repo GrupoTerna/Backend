@@ -1,0 +1,203 @@
+{
+  "tag": "#GG99LCJY",
+  "name": "Mini乂Ternas™",
+  "type": "open",
+  "description": "ᴳ乂ᵀ ⚜️ Familia Terna. GUERRA OBLIGATORIA ⚔️ Usa 4 mazos. No barcos ❌ ω: Sí. Cantera: #GCRG8L00 CODE: RoyaleAPI CWStats",
+  "badgeId": 16000028,
+  "clanScore": 14123,
+  "clanWarTrophies": 1716,
+  "location": {
+    "id": 57000184,
+    "name": "Peru",
+    "isCountry": true,
+    "countryCode": "PE"
+  },
+  "requiredTrophies": 2000,
+  "donationsPerWeek": 0,
+  "clanChestStatus": "inactive",
+  "clanChestLevel": 1,
+  "clanChestMaxLevel": 0,
+  "members": 10,
+  "memberList": [
+    {
+      "tag": "#20080J8GRY",
+      "name": "ᴳ乂ᵀ⚜️MiniCandre",
+      "role": "coLeader",
+      "lastSeen": "20261001T051947.000Z",
+      "expLevel": 0,
+      "trophies": 4343,
+      "arena": {
+        "id": 54000055,
+        "name": "Rascal's Hideout",
+        "rawName": "Arena13"
+      },
+      "clanRank": 1,
+      "previousClanRank": 1,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20P80C9229",
+      "name": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+      "role": "coLeader",
+      "lastSeen": "20261001T051841.000Z",
+      "expLevel": 0,
+      "trophies": 4003,
+      "arena": {
+        "id": 54000011,
+        "name": "Spooky Town",
+        "rawName": "Arena_T"
+      },
+      "clanRank": 2,
+      "previousClanRank": 2,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#URRG2QG20",
+      "name": "ᴳ乂ᵀ ⚜️ Calito",
+      "role": "coLeader",
+      "lastSeen": "20261001T051918.000Z",
+      "expLevel": 0,
+      "trophies": 3842,
+      "arena": {
+        "id": 54000011,
+        "name": "Spooky Town",
+        "rawName": "Arena_T"
+      },
+      "clanRank": 3,
+      "previousClanRank": 3,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VJQLY8JV8",
+      "name": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+      "role": "coLeader",
+      "lastSeen": "20261001T051753.000Z",
+      "expLevel": 0,
+      "trophies": 3591,
+      "arena": {
+        "id": 54000024,
+        "name": "Electro Valley",
+        "rawName": "Arena_Electric"
+      },
+      "clanRank": 4,
+      "previousClanRank": 4,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VRVCV0QR8",
+      "name": "ᴳ乂ᵀ ⚜️ Carlinho",
+      "role": "coLeader",
+      "lastSeen": "20261001T051522.000Z",
+      "expLevel": 0,
+      "trophies": 2427,
+      "arena": {
+        "id": 54000009,
+        "name": "Frozen Peak",
+        "rawName": "Arena8"
+      },
+      "clanRank": 5,
+      "previousClanRank": 5,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20LUCQG0LJ",
+      "name": "ᴳ乂ᵀ ⚜️ Cali",
+      "role": "coLeader",
+      "lastSeen": "20261001T051817.000Z",
+      "expLevel": 0,
+      "trophies": 1912,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 6,
+      "previousClanRank": 6,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#2098PGRCPC",
+      "name": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+      "role": "leader",
+      "lastSeen": "20261001T051649.000Z",
+      "expLevel": 0,
+      "trophies": 1758,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 7,
+      "previousClanRank": 7,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V0J90R2V2",
+      "name": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+      "role": "coLeader",
+      "lastSeen": "20261001T051729.000Z",
+      "expLevel": 0,
+      "trophies": 1685,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 8,
+      "previousClanRank": 8,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V8LPC909C",
+      "name": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+      "role": "coLeader",
+      "lastSeen": "20261001T051706.000Z",
+      "expLevel": 0,
+      "trophies": 1511,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 9,
+      "previousClanRank": 9,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#LYVJU9UJJ",
+      "name": "fggij09",
+      "role": "member",
+      "lastSeen": "20261005T234453.000Z",
+      "expLevel": 0,
+      "trophies": 3180,
+      "arena": {
+        "id": 54000007,
+        "name": "Hog Mountain",
+        "rawName": "Arena_L"
+      },
+      "clanRank": 10,
+      "previousClanRank": 0,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    }
+  ]
+}

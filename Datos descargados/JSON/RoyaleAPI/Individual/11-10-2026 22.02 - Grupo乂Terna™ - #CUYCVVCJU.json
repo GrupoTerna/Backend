@@ -1,0 +1,21 @@
+{
+  "tag": "#CUYCVVCJU",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "11/10/2026",
+  "registros": [
+    {
+      "temporadaInterna": 6,
+      "temporadaRoyaleAPI": 137,
+      "semana": 1,
+      "clan": "Grupo乂Terna™",
+      "ataques": 2,
+      "fame": 200,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    }
+  ]
+}

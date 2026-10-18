@@ -1,0 +1,90 @@
+{
+  "tag": "#VCCU98J0U",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "21/09/2026",
+  "registros": [
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 2,
+      "clan": "Mini乂Ternas™\n                2026-08-17",
+      "ataques": 12,
+      "fame": 1400,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 1,
+      "clan": "Mini乂Ternas™\n                2026-08-10",
+      "ataques": 7,
+      "fame": 1100,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 3,
+      "clan": "Mini乂Ternas™\n                2026-08-24",
+      "ataques": 6,
+      "fame": 800,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 5,
+      "temporadaRoyaleAPI": 136,
+      "semana": 2,
+      "clan": "Mini乂Ternas™",
+      "ataques": 12,
+      "fame": 1800,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 5,
+      "temporadaRoyaleAPI": 136,
+      "semana": 1,
+      "clan": "Mini乂Ternas™",
+      "ataques": 11,
+      "fame": 1600,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 5,
+      "clan": "Mini乂Ternas™",
+      "ataques": 10,
+      "fame": 1600,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 4,
+      "clan": "Mini乂Ternas™",
+      "ataques": 16,
+      "fame": 2200,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    }
+  ]
+}

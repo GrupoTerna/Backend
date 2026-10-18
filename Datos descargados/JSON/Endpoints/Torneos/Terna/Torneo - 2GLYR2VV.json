@@ -1,0 +1,207 @@
+{
+  "tag": "#2GLYR2VV",
+  "type": "passwordProtected",
+  "status": "ended",
+  "creatorTag": "#QRQULCCV8",
+  "name": "TORNEO INTERNO GRUPOXTERNA ",
+  "levelCap": 11,
+  "firstPlaceCardPrize": 0,
+  "capacity": 17,
+  "maxCapacity": 100,
+  "preparationDuration": 3600,
+  "duration": 3600,
+  "createdTime": "20260720T003227.000Z",
+  "startedTime": "20260720T013034.000Z",
+  "membersList": [
+    {
+      "tag": "#228VUG2RU",
+      "name": "†✧▯オFazeteッ▯✧†",
+      "score": 15,
+      "rank": 1,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#PU2GP2LPG",
+      "name": "JNTN",
+      "score": 13,
+      "rank": 2,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#CGGGR82PJ",
+      "name": "ᴳ乂ᵀ N1V1C",
+      "score": 10,
+      "rank": 3,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#QRQULCCV8",
+      "name": "ᴳ乂ᵀ ⚜️ Maikel",
+      "score": 9,
+      "rank": 4,
+      "clan": {
+        "tag": "#GYCU9YRG",
+        "name": "GrupoXTerna™2",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#UQJU0JRG2",
+      "name": "ivzn",
+      "score": 8,
+      "rank": 5,
+      "clan": {
+        "tag": "#GYCU9YRG",
+        "name": "GrupoXTerna™2",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#V9YLPQY0L",
+      "name": "ᴳ乂ᵀ ⚜️ SHON",
+      "score": 8,
+      "rank": 6,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#829GQP0JL",
+      "name": "Procrastinador.",
+      "score": 6,
+      "rank": 7,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#298JJ9RUL",
+      "name": "Sebas JAS",
+      "score": 4,
+      "rank": 8,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#RGQUGU0CU",
+      "name": "ᴳ乂ᵀ ⚜️pedro289",
+      "score": 2,
+      "rank": 9,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#VPRGY9YGG",
+      "name": "luisxzz_",
+      "score": 2,
+      "rank": 10,
+      "clan": {
+        "tag": "#GYCU9YRG",
+        "name": "GrupoXTerna™2",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#80PPY9R9G",
+      "name": "ᴳ乂ᵀ ⚜️ Sunix :)",
+      "score": 1,
+      "rank": 11,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#UYJCQQ028",
+      "name": "cristofer adt",
+      "score": 1,
+      "rank": 12,
+      "clan": {
+        "tag": "#GYCU9YRG",
+        "name": "GrupoXTerna™2",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#2GYUC0QLV",
+      "name": "miguel",
+      "score": 0,
+      "rank": 13,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#92V9L92GV",
+      "name": "JeaPro18",
+      "score": 0,
+      "rank": 14,
+      "clan": {
+        "tag": "#GYCU9YRG",
+        "name": "GrupoXTerna™2",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#YG8U8Q2PC",
+      "name": "skap",
+      "score": 0,
+      "rank": 15,
+      "clan": {
+        "tag": "#GYCU9YRG",
+        "name": "GrupoXTerna™2",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#P0Q2VGGUR",
+      "name": "Jordy :v",
+      "score": 0,
+      "rank": 16,
+      "clan": {
+        "tag": "#VPQLULG",
+        "name": "Killer Squad",
+        "badgeId": 16000175
+      }
+    },
+    {
+      "tag": "#CYR2PVLLY",
+      "name": "carepoto:3",
+      "score": 0,
+      "rank": 17,
+      "clan": {
+        "tag": "#GYCU9YRG",
+        "name": "GrupoXTerna™2",
+        "badgeId": 16000028
+      }
+    }
+  ],
+  "gameMode": {
+    "id": 72000027
+  }
+}

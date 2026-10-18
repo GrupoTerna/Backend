@@ -1,0 +1,988 @@
+{
+  "state": "full",
+  "clan": {
+    "tag": "#GG99LCJY",
+    "name": "Mini乂Ternas™",
+    "badgeId": 16000028,
+    "fame": 2800,
+    "repairPoints": 0,
+    "participants": [
+      {
+        "tag": "#20RLY2LRR8",
+        "name": "Benjamin",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#VUVC9P8VL",
+        "name": "ᴳ乂ᵀ ⚜️ Percape",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#20080J8GRY",
+        "name": "ᴳ乂ᵀ⚜️MiniCandre",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#LYVJU9UJJ",
+        "name": "fggij09",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#229R89VCV9",
+        "name": "el tronco FC",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#20P80C9229",
+        "name": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#RR8CRJPUV",
+        "name": "ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#20JPVQYL8Q",
+        "name": "MiniSebas",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#V9L9V9YV0",
+        "name": "ᴳ乂ᵀ ⚜️ Xarxos",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#20PGGU909G",
+        "name": "Naomi",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#VCLRVUCLG",
+        "name": "manzanita",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#VRJYU8Q8P",
+        "name": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#VRVJCPR2L",
+        "name": "dxrl",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#URRG2QG20",
+        "name": "ᴳ乂ᵀ ⚜️ Calito",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#UJY0PGPUV",
+        "name": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+        "fame": 0,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 0,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#20VJLLRP0U",
+        "name": "monchi",
+        "fame": 300,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 2,
+        "decksUsedToday": 1
+      },
+      {
+        "tag": "#20LUCQG0LJ",
+        "name": "ᴳ乂ᵀ ⚜️ Cali",
+        "fame": 400,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 3,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#VJQLY8JV8",
+        "name": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+        "fame": 500,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 4,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#V8LPC909C",
+        "name": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+        "fame": 500,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 4,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#V0J90R2V2",
+        "name": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+        "fame": 700,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 4,
+        "decksUsedToday": 0
+      },
+      {
+        "tag": "#229R0GP2YQ",
+        "name": "messi",
+        "fame": 900,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 7,
+        "decksUsedToday": 4
+      },
+      {
+        "tag": "#2098PGRCPC",
+        "name": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+        "fame": 1000,
+        "repairPoints": 0,
+        "boatAttacks": 0,
+        "decksUsed": 5,
+        "decksUsedToday": 0
+      }
+    ],
+    "periodPoints": 600,
+    "clanScore": 1536
+  },
+  "clans": [
+    {
+      "tag": "#LPYVPR2V",
+      "name": "Mcdonalds Crew",
+      "badgeId": 16000163,
+      "fame": 118,
+      "repairPoints": 0,
+      "participants": [
+        {
+          "tag": "#PYGC8CGVY",
+          "name": "25Etorres",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#GUYQQCRRQ",
+          "name": "ElTshett",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#RQRG0RR20",
+          "name": "MustardV32",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#2LPJ8CUP9",
+          "name": "808lowks",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#J8ULPU9V0",
+          "name": "andrew",
+          "fame": 200,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 1,
+          "decksUsedToday": 1
+        }
+      ],
+      "periodPoints": 200,
+      "clanScore": 1526
+    },
+    {
+      "tag": "#28VCU8V",
+      "name": "underdogs",
+      "badgeId": 16000077,
+      "fame": 718,
+      "repairPoints": 0,
+      "participants": [
+        {
+          "tag": "#82LY8LP2",
+          "name": "tywun",
+          "fame": 700,
+          "repairPoints": 0,
+          "boatAttacks": 8,
+          "decksUsed": 8,
+          "decksUsedToday": 4
+        }
+      ],
+      "periodPoints": 350,
+      "clanScore": 1534
+    },
+    {
+      "tag": "#YL0LJVJ8",
+      "name": "وحوش سوريا",
+      "badgeId": 16000026,
+      "fame": 2800,
+      "repairPoints": 0,
+      "participants": [
+        {
+          "tag": "#99YG8R8PP",
+          "name": "الصقر",
+          "fame": 1350,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 8,
+          "decksUsedToday": 0
+        }
+      ],
+      "periodPoints": 0,
+      "clanScore": 1786
+    },
+    {
+      "tag": "#GG99LCJY",
+      "name": "Mini乂Ternas™",
+      "badgeId": 16000028,
+      "fame": 2800,
+      "repairPoints": 0,
+      "participants": [
+        {
+          "tag": "#20RLY2LRR8",
+          "name": "Benjamin",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "name": "ᴳ乂ᵀ ⚜️ Percape",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#20080J8GRY",
+          "name": "ᴳ乂ᵀ⚜️MiniCandre",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "name": "fggij09",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#229R89VCV9",
+          "name": "el tronco FC",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "name": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#RR8CRJPUV",
+          "name": "ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#20JPVQYL8Q",
+          "name": "MiniSebas",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "name": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#20PGGU909G",
+          "name": "Naomi",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#VCLRVUCLG",
+          "name": "manzanita",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#VRJYU8Q8P",
+          "name": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#VRVJCPR2L",
+          "name": "dxrl",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "name": "ᴳ乂ᵀ ⚜️ Calito",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "name": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#20VJLLRP0U",
+          "name": "monchi",
+          "fame": 300,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 2,
+          "decksUsedToday": 1
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "name": "ᴳ乂ᵀ ⚜️ Cali",
+          "fame": 400,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 3,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "name": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+          "fame": 500,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 4,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "name": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "fame": 500,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 4,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "name": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "fame": 700,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 4,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#229R0GP2YQ",
+          "name": "messi",
+          "fame": 900,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 7,
+          "decksUsedToday": 4
+        },
+        {
+          "tag": "#2098PGRCPC",
+          "name": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "fame": 1000,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 5,
+          "decksUsedToday": 0
+        }
+      ],
+      "periodPoints": 600,
+      "clanScore": 1536
+    },
+    {
+      "tag": "#QQ0R9G88",
+      "name": "HUNTERS",
+      "badgeId": 16000058,
+      "fame": 6560,
+      "repairPoints": 0,
+      "participants": [
+        {
+          "tag": "#20P80C9229",
+          "name": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+          "fame": 0,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 0,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#RVJ9JCCRQ",
+          "name": "MORANGUINHO",
+          "fame": 1100,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 8,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#JVR20C880",
+          "name": "10.000",
+          "fame": 1100,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 8,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#P2QGC22CP",
+          "name": "PRINCESA HUNTER",
+          "fame": 1200,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 8,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#RY99GVRQL",
+          "name": "SARIM",
+          "fame": 1350,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 8,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#JYG0RUPQ2",
+          "name": "SERENA",
+          "fame": 1600,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 8,
+          "decksUsedToday": 0
+        },
+        {
+          "tag": "#PJCYJVR92",
+          "name": "RED HUNTER",
+          "fame": 1950,
+          "repairPoints": 0,
+          "boatAttacks": 0,
+          "decksUsed": 10,
+          "decksUsedToday": 2
+        }
+      ],
+      "periodPoints": 500,
+      "clanScore": 1989
+    }
+  ],
+  "sectionIndex": 1,
+  "periodIndex": 12,
+  "periodType": "warDay",
+  "periodLogs": [
+    {
+      "periodIndex": 3,
+      "items": [
+        {
+          "clan": {
+            "tag": "#GG99LCJY"
+          },
+          "pointsEarned": 2500,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 3323,
+          "endOfDayRank": 0,
+          "progressEarned": 3000,
+          "numOfDefensesRemaining": 13,
+          "progressEarnedFromDefenses": 323
+        },
+        {
+          "clan": {
+            "tag": "#QQ0R9G88"
+          },
+          "pointsEarned": 2000,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 1900,
+          "endOfDayRank": 1,
+          "progressEarned": 1800,
+          "numOfDefensesRemaining": 2,
+          "progressEarnedFromDefenses": 100
+        },
+        {
+          "clan": {
+            "tag": "#28VCU8V"
+          },
+          "pointsEarned": 400,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 1059,
+          "endOfDayRank": 2,
+          "progressEarned": 1000,
+          "numOfDefensesRemaining": 1,
+          "progressEarnedFromDefenses": 59
+        },
+        {
+          "clan": {
+            "tag": "#LPYVPR2V"
+          },
+          "pointsEarned": 0,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 0,
+          "endOfDayRank": 3,
+          "progressEarned": 0,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#YL0LJVJ8"
+          },
+          "pointsEarned": 0,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 0,
+          "endOfDayRank": 3,
+          "progressEarned": 0,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        }
+      ]
+    },
+    {
+      "periodIndex": 4,
+      "items": [
+        {
+          "clan": {
+            "tag": "#GG99LCJY"
+          },
+          "pointsEarned": 4200,
+          "progressStartOfDay": 3323,
+          "progressEndOfDay": 6646,
+          "endOfDayRank": 0,
+          "progressEarned": 3000,
+          "numOfDefensesRemaining": 13,
+          "progressEarnedFromDefenses": 323
+        },
+        {
+          "clan": {
+            "tag": "#QQ0R9G88"
+          },
+          "pointsEarned": 3800,
+          "progressStartOfDay": 1900,
+          "progressEndOfDay": 3747,
+          "endOfDayRank": 1,
+          "progressEarned": 1800,
+          "numOfDefensesRemaining": 1,
+          "progressEarnedFromDefenses": 47
+        },
+        {
+          "clan": {
+            "tag": "#YL0LJVJ8"
+          },
+          "pointsEarned": 300,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 1000,
+          "endOfDayRank": 2,
+          "progressEarned": 1000,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#28VCU8V"
+          },
+          "pointsEarned": 250,
+          "progressStartOfDay": 1059,
+          "progressEndOfDay": 1718,
+          "endOfDayRank": 3,
+          "progressEarned": 600,
+          "numOfDefensesRemaining": 1,
+          "progressEarnedFromDefenses": 59
+        },
+        {
+          "clan": {
+            "tag": "#LPYVPR2V"
+          },
+          "pointsEarned": 0,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 0,
+          "endOfDayRank": 4,
+          "progressEarned": 0,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        }
+      ]
+    },
+    {
+      "periodIndex": 5,
+      "items": [
+        {
+          "clan": {
+            "tag": "#QQ0R9G88"
+          },
+          "pointsEarned": 3000,
+          "progressStartOfDay": 3747,
+          "progressEndOfDay": 6747,
+          "endOfDayRank": 0,
+          "progressEarned": 3000,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#LPYVPR2V"
+          },
+          "pointsEarned": 700,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 1800,
+          "endOfDayRank": 1,
+          "progressEarned": 1800,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#28VCU8V"
+          },
+          "pointsEarned": 450,
+          "progressStartOfDay": 1718,
+          "progressEndOfDay": 2777,
+          "endOfDayRank": 2,
+          "progressEarned": 1000,
+          "numOfDefensesRemaining": 1,
+          "progressEarnedFromDefenses": 59
+        },
+        {
+          "clan": {
+            "tag": "#YL0LJVJ8"
+          },
+          "pointsEarned": 0,
+          "progressStartOfDay": 1000,
+          "progressEndOfDay": 1000,
+          "endOfDayRank": 3,
+          "progressEarned": 0,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#GG99LCJY"
+          },
+          "pointsEarned": 0,
+          "progressStartOfDay": 6646,
+          "progressEndOfDay": 6922,
+          "endOfDayRank": 3,
+          "progressEarned": 0,
+          "numOfDefensesRemaining": 12,
+          "progressEarnedFromDefenses": 276
+        }
+      ]
+    },
+    {
+      "periodIndex": 6,
+      "items": [
+        {
+          "clan": {
+            "tag": "#QQ0R9G88"
+          },
+          "pointsEarned": 3650,
+          "progressStartOfDay": 6747,
+          "progressEndOfDay": 9747,
+          "endOfDayRank": 0,
+          "progressEarned": 3000,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#LPYVPR2V"
+          },
+          "pointsEarned": 400,
+          "progressStartOfDay": 1800,
+          "progressEndOfDay": 3200,
+          "endOfDayRank": 1,
+          "progressEarned": 1400,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#28VCU8V"
+          },
+          "pointsEarned": 400,
+          "progressStartOfDay": 2777,
+          "progressEndOfDay": 4236,
+          "endOfDayRank": 1,
+          "progressEarned": 1400,
+          "numOfDefensesRemaining": 1,
+          "progressEarnedFromDefenses": 59
+        },
+        {
+          "clan": {
+            "tag": "#YL0LJVJ8"
+          },
+          "pointsEarned": 0,
+          "progressStartOfDay": 1000,
+          "progressEndOfDay": 1000,
+          "endOfDayRank": 3,
+          "progressEarned": 0,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#GG99LCJY"
+          },
+          "pointsEarned": 0,
+          "progressStartOfDay": 6922,
+          "progressEndOfDay": 7198,
+          "endOfDayRank": 3,
+          "progressEarned": 0,
+          "numOfDefensesRemaining": 12,
+          "progressEarnedFromDefenses": 276
+        }
+      ]
+    },
+    {
+      "periodIndex": 10,
+      "items": [
+        {
+          "clan": {
+            "tag": "#QQ0R9G88"
+          },
+          "pointsEarned": 4100,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 3280,
+          "endOfDayRank": 0,
+          "progressEarned": 3000,
+          "numOfDefensesRemaining": 6,
+          "progressEarnedFromDefenses": 280
+        },
+        {
+          "clan": {
+            "tag": "#GG99LCJY"
+          },
+          "pointsEarned": 3300,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 1800,
+          "endOfDayRank": 1,
+          "progressEarned": 1800,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#YL0LJVJ8"
+          },
+          "pointsEarned": 550,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 1000,
+          "endOfDayRank": 2,
+          "progressEarned": 1000,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#28VCU8V"
+          },
+          "pointsEarned": 350,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 659,
+          "endOfDayRank": 3,
+          "progressEarned": 600,
+          "numOfDefensesRemaining": 1,
+          "progressEarnedFromDefenses": 59
+        },
+        {
+          "clan": {
+            "tag": "#LPYVPR2V"
+          },
+          "pointsEarned": 0,
+          "progressStartOfDay": 0,
+          "progressEndOfDay": 59,
+          "endOfDayRank": 4,
+          "progressEarned": 0,
+          "numOfDefensesRemaining": 1,
+          "progressEarnedFromDefenses": 59
+        }
+      ]
+    },
+    {
+      "periodIndex": 11,
+      "items": [
+        {
+          "clan": {
+            "tag": "#QQ0R9G88"
+          },
+          "pointsEarned": 3700,
+          "progressStartOfDay": 3280,
+          "progressEndOfDay": 6560,
+          "endOfDayRank": 0,
+          "progressEarned": 3000,
+          "numOfDefensesRemaining": 6,
+          "progressEarnedFromDefenses": 280
+        },
+        {
+          "clan": {
+            "tag": "#YL0LJVJ8"
+          },
+          "pointsEarned": 800,
+          "progressStartOfDay": 1000,
+          "progressEndOfDay": 2800,
+          "endOfDayRank": 1,
+          "progressEarned": 1800,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#GG99LCJY"
+          },
+          "pointsEarned": 400,
+          "progressStartOfDay": 1800,
+          "progressEndOfDay": 2800,
+          "endOfDayRank": 2,
+          "progressEarned": 1000,
+          "numOfDefensesRemaining": 0,
+          "progressEarnedFromDefenses": 0
+        },
+        {
+          "clan": {
+            "tag": "#LPYVPR2V"
+          },
+          "pointsEarned": 0,
+          "progressStartOfDay": 59,
+          "progressEndOfDay": 118,
+          "endOfDayRank": 3,
+          "progressEarned": 0,
+          "numOfDefensesRemaining": 1,
+          "progressEarnedFromDefenses": 59
+        },
+        {
+          "clan": {
+            "tag": "#28VCU8V"
+          },
+          "pointsEarned": 0,
+          "progressStartOfDay": 659,
+          "progressEndOfDay": 718,
+          "endOfDayRank": 3,
+          "progressEarned": 0,
+          "numOfDefensesRemaining": 1,
+          "progressEarnedFromDefenses": 59
+        }
+      ]
+    }
+  ]
+}

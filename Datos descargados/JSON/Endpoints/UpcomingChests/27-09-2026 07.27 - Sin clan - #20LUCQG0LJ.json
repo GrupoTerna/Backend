@@ -1,0 +1,48 @@
+{
+  "items": [
+    {
+      "index": 0,
+      "name": "Wooden Chest"
+    },
+    {
+      "index": 1,
+      "name": "Wooden Chest"
+    },
+    {
+      "index": 2,
+      "name": "Crown Chest"
+    },
+    {
+      "index": 3,
+      "name": "Wooden Chest"
+    },
+    {
+      "index": 4,
+      "name": "Silver Chest"
+    },
+    {
+      "index": 5,
+      "name": "Wooden Chest"
+    },
+    {
+      "index": 6,
+      "name": "Wooden Chest"
+    },
+    {
+      "index": 7,
+      "name": "Crown Chest"
+    },
+    {
+      "index": 8,
+      "name": "Wooden Chest"
+    },
+    {
+      "index": 237,
+      "name": "Mega Lightning Chest"
+    },
+    {
+      "index": 238,
+      "name": "Epic Chest"
+    }
+  ]
+}

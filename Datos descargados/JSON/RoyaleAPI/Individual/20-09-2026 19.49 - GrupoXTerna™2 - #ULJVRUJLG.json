@@ -1,0 +1,21 @@
+{
+  "tag": "#ULJVRUJLG",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "20/09/2026",
+  "registros": [
+    {
+      "temporadaInterna": 5,
+      "temporadaRoyaleAPI": 136,
+      "semana": 2,
+      "clan": "GrupoXTerna™2",
+      "ataques": 16,
+      "fame": 2750,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    }
+  ]
+}

@@ -1,0 +1,923 @@
+{
+  "tag": "#GG99LCJY",
+  "name": "Mini乂Ternas™",
+  "type": "open",
+  "description": "ᴳ乂ᵀ ⚜️ Familia Terna. GUERRA OBLIGATORIA ⚔️ Usa 4 mazos. No barcos ❌ ω: Sí. Cantera: #GCRG8L00 CODE: RoyaleAPI CWStats",
+  "badgeId": 16000028,
+  "clanScore": 42318,
+  "clanWarTrophies": 1666,
+  "location": {
+    "id": 57000184,
+    "name": "Peru",
+    "isCountry": true,
+    "countryCode": "PE"
+  },
+  "requiredTrophies": 300,
+  "donationsPerWeek": 1038,
+  "clanChestStatus": "inactive",
+  "clanChestLevel": 1,
+  "clanChestMaxLevel": 0,
+  "members": 50,
+  "memberList": [
+    {
+      "tag": "#V29LQ2UPQ",
+      "name": "GuisodeFideos",
+      "role": "member",
+      "lastSeen": "20260806T181733.000Z",
+      "expLevel": 0,
+      "trophies": 10278,
+      "arena": {
+        "id": 54000117,
+        "name": "Lumberlove Cabin",
+        "rawName": "Arena_L11"
+      },
+      "clanRank": 1,
+      "previousClanRank": 1,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V0JYGV2CL",
+      "name": "☆Cątsîęėń☆ミ",
+      "role": "member",
+      "lastSeen": "20260807T204407.000Z",
+      "expLevel": 0,
+      "trophies": 10155,
+      "arena": {
+        "id": 54000117,
+        "name": "Lumberlove Cabin",
+        "rawName": "Arena_L11"
+      },
+      "clanRank": 2,
+      "previousClanRank": 2,
+      "donations": 40,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#PUPUJUJCU",
+      "name": "lenn4321",
+      "role": "member",
+      "lastSeen": "20260808T194326.000Z",
+      "expLevel": 0,
+      "trophies": 9730,
+      "arena": {
+        "id": 54000031,
+        "name": "Legendary Arena",
+        "rawName": "Arena_L10"
+      },
+      "clanRank": 3,
+      "previousClanRank": 3,
+      "donations": 18,
+      "donationsReceived": 78,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#8L0UUCLPU",
+      "name": "Angel mak",
+      "role": "member",
+      "lastSeen": "20260803T034347.000Z",
+      "expLevel": 0,
+      "trophies": 8406,
+      "arena": {
+        "id": 54000018,
+        "name": "Clash Fest",
+        "rawName": "Arena_L7"
+      },
+      "clanRank": 4,
+      "previousClanRank": 4,
+      "donations": 28,
+      "donationsReceived": 50,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VQ9CJ9VQU",
+      "name": "blak",
+      "role": "member",
+      "lastSeen": "20260806T050316.000Z",
+      "expLevel": 0,
+      "trophies": 6024,
+      "arena": {
+        "id": 54000014,
+        "name": "Royal Crypt",
+        "rawName": "Arena_L3"
+      },
+      "clanRank": 5,
+      "previousClanRank": 5,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20080J8GRY",
+      "name": "ᴳ乂ᵀ⚜️MiniCandre",
+      "role": "coLeader",
+      "lastSeen": "20260808T031925.000Z",
+      "expLevel": 0,
+      "trophies": 3900,
+      "arena": {
+        "id": 54000011,
+        "name": "Spooky Town",
+        "rawName": "Arena_T"
+      },
+      "clanRank": 6,
+      "previousClanRank": 6,
+      "donations": 63,
+      "donationsReceived": 16,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20P80C9229",
+      "name": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+      "role": "coLeader",
+      "lastSeen": "20260805T214641.000Z",
+      "expLevel": 0,
+      "trophies": 3883,
+      "arena": {
+        "id": 54000011,
+        "name": "Spooky Town",
+        "rawName": "Arena_T"
+      },
+      "clanRank": 7,
+      "previousClanRank": 7,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#URRG2QG20",
+      "name": "ᴳ乂ᵀ ⚜️ Calito",
+      "role": "coLeader",
+      "lastSeen": "20260805T214354.000Z",
+      "expLevel": 0,
+      "trophies": 3812,
+      "arena": {
+        "id": 54000011,
+        "name": "Spooky Town",
+        "rawName": "Arena_T"
+      },
+      "clanRank": 8,
+      "previousClanRank": 8,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#222U2U89YJ",
+      "name": "adriano 121419",
+      "role": "member",
+      "lastSeen": "20260808T214903.000Z",
+      "expLevel": 0,
+      "trophies": 3759,
+      "arena": {
+        "id": 54000024,
+        "name": "Electro Valley",
+        "rawName": "Arena_Electric"
+      },
+      "clanRank": 9,
+      "previousClanRank": 10,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#229R0GP2YQ",
+      "name": "messi",
+      "role": "member",
+      "lastSeen": "20260808T203039.000Z",
+      "expLevel": 0,
+      "trophies": 3718,
+      "arena": {
+        "id": 54000024,
+        "name": "Electro Valley",
+        "rawName": "Arena_Electric"
+      },
+      "clanRank": 10,
+      "previousClanRank": 9,
+      "donations": 64,
+      "donationsReceived": 36,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VJQLY8JV8",
+      "name": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+      "role": "coLeader",
+      "lastSeen": "20260805T214853.000Z",
+      "expLevel": 0,
+      "trophies": 3501,
+      "arena": {
+        "id": 54000024,
+        "name": "Electro Valley",
+        "rawName": "Arena_Electric"
+      },
+      "clanRank": 11,
+      "previousClanRank": 11,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#LYVJU9UJJ",
+      "name": "fggij09",
+      "role": "member",
+      "lastSeen": "20260731T031614.000Z",
+      "expLevel": 0,
+      "trophies": 3024,
+      "arena": {
+        "id": 54000007,
+        "name": "Hog Mountain",
+        "rawName": "Arena_L"
+      },
+      "clanRank": 12,
+      "previousClanRank": 12,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VRJYU8Q8P",
+      "name": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+      "role": "member",
+      "lastSeen": "20260807T213955.000Z",
+      "expLevel": 0,
+      "trophies": 3023,
+      "arena": {
+        "id": 54000007,
+        "name": "Hog Mountain",
+        "rawName": "Arena_L"
+      },
+      "clanRank": 13,
+      "previousClanRank": 13,
+      "donations": 12,
+      "donationsReceived": 28,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#222CCLPY9U",
+      "name": "Lord Yomito",
+      "role": "member",
+      "lastSeen": "20260808T040259.000Z",
+      "expLevel": 0,
+      "trophies": 2961,
+      "arena": {
+        "id": 54000010,
+        "name": "Jungle Arena",
+        "rawName": "Arena9"
+      },
+      "clanRank": 14,
+      "previousClanRank": 14,
+      "donations": 5,
+      "donationsReceived": 220,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VCLRVUCLG",
+      "name": "¡momazos pedro!",
+      "role": "member",
+      "lastSeen": "20260808T222304.000Z",
+      "expLevel": 0,
+      "trophies": 2953,
+      "arena": {
+        "id": 54000010,
+        "name": "Jungle Arena",
+        "rawName": "Arena9"
+      },
+      "clanRank": 15,
+      "previousClanRank": 15,
+      "donations": 116,
+      "donationsReceived": 80,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VRVJCPR2L",
+      "name": "dxrl",
+      "role": "member",
+      "lastSeen": "20260808T013316.000Z",
+      "expLevel": 0,
+      "trophies": 2672,
+      "arena": {
+        "id": 54000010,
+        "name": "Jungle Arena",
+        "rawName": "Arena9"
+      },
+      "clanRank": 16,
+      "previousClanRank": 16,
+      "donations": 133,
+      "donationsReceived": 30,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20VJLYY8RP",
+      "name": "drax_tv.sv",
+      "role": "member",
+      "lastSeen": "20260808T192646.000Z",
+      "expLevel": 0,
+      "trophies": 2509,
+      "arena": {
+        "id": 54000009,
+        "name": "Frozen Peak",
+        "rawName": "Arena8"
+      },
+      "clanRank": 17,
+      "previousClanRank": 17,
+      "donations": 0,
+      "donationsReceived": 118,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VCGGRQY8Q",
+      "name": "RODRÍGUEZ 666",
+      "role": "member",
+      "lastSeen": "20260808T151803.000Z",
+      "expLevel": 0,
+      "trophies": 2367,
+      "arena": {
+        "id": 54000009,
+        "name": "Frozen Peak",
+        "rawName": "Arena8"
+      },
+      "clanRank": 18,
+      "previousClanRank": 18,
+      "donations": 38,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VVQLLUC9P",
+      "name": "Lily :3",
+      "role": "member",
+      "lastSeen": "20260808T131400.000Z",
+      "expLevel": 0,
+      "trophies": 2000,
+      "arena": {
+        "id": 54000008,
+        "name": "Royal Arena",
+        "rawName": "Arena7"
+      },
+      "clanRank": 19,
+      "previousClanRank": 19,
+      "donations": 12,
+      "donationsReceived": 40,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20VU2RVR0J",
+      "name": "Washington",
+      "role": "member",
+      "lastSeen": "20260808T220319.000Z",
+      "expLevel": 0,
+      "trophies": 1939,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 20,
+      "previousClanRank": 23,
+      "donations": 0,
+      "donationsReceived": 30,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VRVCV0QR8",
+      "name": "ᴳ乂ᵀ ⚜️ Carlinho",
+      "role": "coLeader",
+      "lastSeen": "20260806T225931.000Z",
+      "expLevel": 0,
+      "trophies": 1896,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 21,
+      "previousClanRank": 20,
+      "donations": 45,
+      "donationsReceived": 30,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#UR8CU0CYR",
+      "name": "Cami",
+      "role": "member",
+      "lastSeen": "20260807T210429.000Z",
+      "expLevel": 0,
+      "trophies": 1801,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 22,
+      "previousClanRank": 21,
+      "donations": 0,
+      "donationsReceived": 20,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20LUCQG0LJ",
+      "name": "ᴳ乂ᵀ ⚜️ Cali",
+      "role": "coLeader",
+      "lastSeen": "20260805T214827.000Z",
+      "expLevel": 0,
+      "trophies": 1793,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 23,
+      "previousClanRank": 22,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VCGPQQGR2",
+      "name": "Axhlii_w",
+      "role": "member",
+      "lastSeen": "20260805T104435.000Z",
+      "expLevel": 0,
+      "trophies": 1697,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 24,
+      "previousClanRank": 24,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20VCLQGPG8",
+      "name": "JCCC",
+      "role": "member",
+      "lastSeen": "20260808T065933.000Z",
+      "expLevel": 0,
+      "trophies": 1674,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 25,
+      "previousClanRank": 28,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#2098PGRCPC",
+      "name": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+      "role": "leader",
+      "lastSeen": "20260807T031759.000Z",
+      "expLevel": 0,
+      "trophies": 1668,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 26,
+      "previousClanRank": 25,
+      "donations": 28,
+      "donationsReceived": 20,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V0J90R2V2",
+      "name": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+      "role": "coLeader",
+      "lastSeen": "20260808T030820.000Z",
+      "expLevel": 0,
+      "trophies": 1622,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 27,
+      "previousClanRank": 27,
+      "donations": 64,
+      "donationsReceived": 20,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VJQ2G99QJ",
+      "name": "Brayan",
+      "role": "member",
+      "lastSeen": "20260808T122328.000Z",
+      "expLevel": 0,
+      "trophies": 1609,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 28,
+      "previousClanRank": 26,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VCCU98J0U",
+      "name": "Alexx123",
+      "role": "member",
+      "lastSeen": "20260808T214900.000Z",
+      "expLevel": 0,
+      "trophies": 1567,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 29,
+      "previousClanRank": 39,
+      "donations": 36,
+      "donationsReceived": 44,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20JPVQYL8Q",
+      "name": "MiniSebas",
+      "role": "member",
+      "lastSeen": "20260808T161558.000Z",
+      "expLevel": 0,
+      "trophies": 1527,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 30,
+      "previousClanRank": 0,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20PV0LQRJY",
+      "name": "leo",
+      "role": "member",
+      "lastSeen": "20260808T145645.000Z",
+      "expLevel": 0,
+      "trophies": 1516,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 31,
+      "previousClanRank": 29,
+      "donations": 30,
+      "donationsReceived": 20,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VJ00CCC0L",
+      "name": "bur",
+      "role": "member",
+      "lastSeen": "20260808T220459.000Z",
+      "expLevel": 0,
+      "trophies": 1512,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 32,
+      "previousClanRank": 33,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V8LPC909C",
+      "name": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+      "role": "coLeader",
+      "lastSeen": "20260807T034031.000Z",
+      "expLevel": 0,
+      "trophies": 1481,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 33,
+      "previousClanRank": 30,
+      "donations": 64,
+      "donationsReceived": 20,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VCJULQ09P",
+      "name": "Dante",
+      "role": "member",
+      "lastSeen": "20260805T211346.000Z",
+      "expLevel": 0,
+      "trophies": 1443,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 34,
+      "previousClanRank": 31,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V8R88QJYG",
+      "name": "percy",
+      "role": "member",
+      "lastSeen": "20260802T161421.000Z",
+      "expLevel": 0,
+      "trophies": 1427,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 35,
+      "previousClanRank": 32,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VJYJRQ2CC",
+      "name": "Dani",
+      "role": "member",
+      "lastSeen": "20260804T033813.000Z",
+      "expLevel": 0,
+      "trophies": 1418,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 36,
+      "previousClanRank": 34,
+      "donations": 1,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VJL99Q9LR",
+      "name": "iRaftyCat",
+      "role": "member",
+      "lastSeen": "20260808T190730.000Z",
+      "expLevel": 0,
+      "trophies": 1415,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 37,
+      "previousClanRank": 35,
+      "donations": 79,
+      "donationsReceived": 68,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VCQVYJCRC",
+      "name": "hola234",
+      "role": "member",
+      "lastSeen": "20260807T184810.000Z",
+      "expLevel": 0,
+      "trophies": 1377,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 38,
+      "previousClanRank": 36,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20JJ8LLP8G",
+      "name": "sr&tumbaochamo",
+      "role": "member",
+      "lastSeen": "20260805T211011.000Z",
+      "expLevel": 0,
+      "trophies": 1372,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 39,
+      "previousClanRank": 37,
+      "donations": 50,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#PQ8GJ2LPG",
+      "name": "MBSJ",
+      "role": "member",
+      "lastSeen": "20260805T154710.000Z",
+      "expLevel": 0,
+      "trophies": 1348,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 40,
+      "previousClanRank": 38,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#229C822Q0R",
+      "name": "gatusso",
+      "role": "member",
+      "lastSeen": "20260808T154959.000Z",
+      "expLevel": 0,
+      "trophies": 1328,
+      "arena": {
+        "id": 54000005,
+        "name": "Builder's Workshop",
+        "rawName": "Arena5"
+      },
+      "clanRank": 41,
+      "previousClanRank": 43,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20JCY8RUP9",
+      "name": "WAZA999",
+      "role": "member",
+      "lastSeen": "20260808T191633.000Z",
+      "expLevel": 0,
+      "trophies": 1257,
+      "arena": {
+        "id": 54000004,
+        "name": "Spell Valley",
+        "rawName": "Arena4"
+      },
+      "clanRank": 42,
+      "previousClanRank": 40,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20VCCQ9GC8",
+      "name": "Franklin",
+      "role": "member",
+      "lastSeen": "20260807T221414.000Z",
+      "expLevel": 0,
+      "trophies": 1154,
+      "arena": {
+        "id": 54000004,
+        "name": "Spell Valley",
+        "rawName": "Arena4"
+      },
+      "clanRank": 43,
+      "previousClanRank": 41,
+      "donations": 2,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20PC2CL99Q",
+      "name": "BRAYAN YT",
+      "role": "member",
+      "lastSeen": "20260807T165547.000Z",
+      "expLevel": 0,
+      "trophies": 1151,
+      "arena": {
+        "id": 54000004,
+        "name": "Spell Valley",
+        "rawName": "Arena4"
+      },
+      "clanRank": 44,
+      "previousClanRank": 42,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VGQPU9CRG",
+      "name": "degod",
+      "role": "member",
+      "lastSeen": "20260808T212651.000Z",
+      "expLevel": 0,
+      "trophies": 1065,
+      "arena": {
+        "id": 54000004,
+        "name": "Spell Valley",
+        "rawName": "Arena4"
+      },
+      "clanRank": 45,
+      "previousClanRank": 0,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#202LLCYPRC",
+      "name": "lufty",
+      "role": "member",
+      "lastSeen": "20260805T210654.000Z",
+      "expLevel": 0,
+      "trophies": 1051,
+      "arena": {
+        "id": 54000004,
+        "name": "Spell Valley",
+        "rawName": "Arena4"
+      },
+      "clanRank": 46,
+      "previousClanRank": 44,
+      "donations": 0,
+      "donationsReceived": 20,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VJ0G9QL9C",
+      "name": "XXEduardoXX",
+      "role": "member",
+      "lastSeen": "20260807T192656.000Z",
+      "expLevel": 0,
+      "trophies": 1022,
+      "arena": {
+        "id": 54000004,
+        "name": "Spell Valley",
+        "rawName": "Arena4"
+      },
+      "clanRank": 47,
+      "previousClanRank": 45,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VJV0QGPJG",
+      "name": "67",
+      "role": "member",
+      "lastSeen": "20260808T150921.000Z",
+      "expLevel": 0,
+      "trophies": 1000,
+      "arena": {
+        "id": 54000004,
+        "name": "Spell Valley",
+        "rawName": "Arena4"
+      },
+      "clanRank": 48,
+      "previousClanRank": 48,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20GRQLG0CG",
+      "name": "jxzmnj",
+      "role": "member",
+      "lastSeen": "20260731T022811.000Z",
+      "expLevel": 0,
+      "trophies": 823,
+      "arena": {
+        "id": 54000003,
+        "name": "Barbarian Bowl",
+        "rawName": "Arena3"
+      },
+      "clanRank": 49,
+      "previousClanRank": 46,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VJ0LJCU2P",
+      "name": "kate_stph",
+      "role": "member",
+      "lastSeen": "20260808T192220.000Z",
+      "expLevel": 0,
+      "trophies": 600,
+      "arena": {
+        "id": 54000003,
+        "name": "Barbarian Bowl",
+        "rawName": "Arena3"
+      },
+      "clanRank": 50,
+      "previousClanRank": 47,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    }
+  ]
+}

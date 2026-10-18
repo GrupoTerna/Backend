@@ -1,0 +1,203 @@
+{
+  "tag": "#GG99LCJY",
+  "name": "Mini乂Ternas™",
+  "type": "open",
+  "description": "ᴳ乂ᵀ ⚜️ Familia Terna. GUERRA OBLIGATORIA ⚔️ Usa 4 mazos. No barcos ❌ ω: Sí. Cantera: #GCRG8L00 CODE: RoyaleAPI CWStats",
+  "badgeId": 16000028,
+  "clanScore": 33984,
+  "clanWarTrophies": 1370,
+  "location": {
+    "id": 57000184,
+    "name": "Peru",
+    "isCountry": true,
+    "countryCode": "PE"
+  },
+  "requiredTrophies": 300,
+  "donationsPerWeek": 567,
+  "clanChestStatus": "inactive",
+  "clanChestLevel": 1,
+  "clanChestMaxLevel": 0,
+  "members": 10,
+  "memberList": [
+    {
+      "tag": "#UG90QUU0P",
+      "name": "MiniNopi",
+      "role": "coLeader",
+      "lastSeen": "20260606T194109.000Z",
+      "expLevel": 0,
+      "trophies": 9530,
+      "arena": {
+        "id": 54000031,
+        "name": "Legendary Arena",
+        "rawName": "Arena_L10"
+      },
+      "clanRank": 1,
+      "previousClanRank": 2,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VPQCQRCYJ",
+      "name": "m i l y :)",
+      "role": "coLeader",
+      "lastSeen": "20260415T134318.000Z",
+      "expLevel": 0,
+      "trophies": 8683,
+      "arena": {
+        "id": 54000019,
+        "name": "PANCAKES!",
+        "rawName": "Arena_L8"
+      },
+      "clanRank": 2,
+      "previousClanRank": 3,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#JURQQRGV9",
+      "name": "M I L Y",
+      "role": "coLeader",
+      "lastSeen": "20260601T105415.000Z",
+      "expLevel": 0,
+      "trophies": 8089,
+      "arena": {
+        "id": 54000018,
+        "name": "Clash Fest",
+        "rawName": "Arena_L7"
+      },
+      "clanRank": 3,
+      "previousClanRank": 4,
+      "donations": 0,
+      "donationsReceived": 49,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#90QYJQRQ8",
+      "name": "Diana",
+      "role": "leader",
+      "lastSeen": "20260607T004630.000Z",
+      "expLevel": 0,
+      "trophies": 7787,
+      "arena": {
+        "id": 54000017,
+        "name": "Boot Camp",
+        "rawName": "Arena_L6"
+      },
+      "clanRank": 4,
+      "previousClanRank": 5,
+      "donations": 118,
+      "donationsReceived": 94,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V0JPP0UJR",
+      "name": "fatima",
+      "role": "elder",
+      "lastSeen": "20260607T000420.000Z",
+      "expLevel": 0,
+      "trophies": 7148,
+      "arena": {
+        "id": 54000016,
+        "name": "Dragon Spa",
+        "rawName": "Arena_L5"
+      },
+      "clanRank": 5,
+      "previousClanRank": 6,
+      "donations": 118,
+      "donationsReceived": 36,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20V2J02R2Y",
+      "name": "✞︎❦︎ale❦︎✞︎",
+      "role": "member",
+      "lastSeen": "20260606T225018.000Z",
+      "expLevel": 0,
+      "trophies": 7041,
+      "arena": {
+        "id": 54000016,
+        "name": "Dragon Spa",
+        "rawName": "Arena_L5"
+      },
+      "clanRank": 6,
+      "previousClanRank": 7,
+      "donations": 0,
+      "donationsReceived": 56,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V9P20U8RC",
+      "name": "kayserleandro",
+      "role": "elder",
+      "lastSeen": "20260606T043126.000Z",
+      "expLevel": 0,
+      "trophies": 6119,
+      "arena": {
+        "id": 54000014,
+        "name": "Royal Crypt",
+        "rawName": "Arena_L3"
+      },
+      "clanRank": 7,
+      "previousClanRank": 8,
+      "donations": 84,
+      "donationsReceived": 50,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#U8G029GUQ",
+      "name": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+      "role": "member",
+      "lastSeen": "20260606T123256.000Z",
+      "expLevel": 0,
+      "trophies": 6050,
+      "arena": {
+        "id": 54000014,
+        "name": "Royal Crypt",
+        "rawName": "Arena_L3"
+      },
+      "clanRank": 8,
+      "previousClanRank": 0,
+      "donations": 10,
+      "donationsReceived": 30,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20P2UP80UY",
+      "name": "♤FƆŔ",
+      "role": "member",
+      "lastSeen": "20260606T182437.000Z",
+      "expLevel": 0,
+      "trophies": 4719,
+      "arena": {
+        "id": 54000056,
+        "name": "Serenity Peak",
+        "rawName": "Arena14"
+      },
+      "clanRank": 9,
+      "previousClanRank": 9,
+      "donations": 123,
+      "donationsReceived": 116,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#LYVJU9UJJ",
+      "name": "fggij09",
+      "role": "coLeader",
+      "lastSeen": "20260607T010737.000Z",
+      "expLevel": 0,
+      "trophies": 2809,
+      "arena": {
+        "id": 54000010,
+        "name": "Jungle Arena",
+        "rawName": "Arena9"
+      },
+      "clanRank": 10,
+      "previousClanRank": 10,
+      "donations": 0,
+      "donationsReceived": 30,
+      "clanChestPoints": 0
+    }
+  ]
+}

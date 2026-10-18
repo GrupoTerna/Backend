@@ -1,0 +1,311 @@
+{
+  "tag": "#RYYCRGVG",
+  "name": "NARANJA x",
+  "type": "closed",
+  "description": "guerras de clanes obligatorio ‼️ limpieza todo los domingos ✅ mínimo 2k de placas ‼️‼️‼️‼️.......... NARANJITA X 🍊 POR SIEMPRE",
+  "badgeId": 16000140,
+  "clanScore": 65385,
+  "clanWarTrophies": 1000,
+  "location": {
+    "id": 57000184,
+    "name": "Peru",
+    "isCountry": true,
+    "countryCode": "PE"
+  },
+  "requiredTrophies": 7000,
+  "donationsPerWeek": 0,
+  "clanChestStatus": "inactive",
+  "clanChestLevel": 1,
+  "clanChestMaxLevel": 0,
+  "members": 16,
+  "memberList": [
+    {
+      "tag": "#V0VY2QC2P",
+      "name": "♛┈⛧Ander",
+      "role": "member",
+      "lastSeen": "20260927T125235.000Z",
+      "expLevel": 0,
+      "trophies": 14000,
+      "arena": {
+        "id": 54000144,
+        "name": "Spirit Square",
+        "rawName": "Arena_L18"
+      },
+      "clanRank": 1,
+      "previousClanRank": 1,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#UYLQQRP0P",
+      "name": "ᴳ乂ᵀ ⚜️ Goldberg",
+      "role": "coLeader",
+      "lastSeen": "20260927T191425.000Z",
+      "expLevel": 0,
+      "trophies": 13555,
+      "arena": {
+        "id": 54000144,
+        "name": "Spirit Square",
+        "rawName": "Arena_L18"
+      },
+      "clanRank": 2,
+      "previousClanRank": 2,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V0LVJ9988",
+      "name": "¡Gino!",
+      "role": "coLeader",
+      "lastSeen": "20260926T172246.000Z",
+      "expLevel": 0,
+      "trophies": 13181,
+      "arena": {
+        "id": 54000143,
+        "name": "Little Prince's Tavern",
+        "rawName": "Arena_L17"
+      },
+      "clanRank": 3,
+      "previousClanRank": 3,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#UQL0P2R9C",
+      "name": "ᴳ乂ᵀ ⚜️MELAD|",
+      "role": "leader",
+      "lastSeen": "20260928T010538.000Z",
+      "expLevel": 0,
+      "trophies": 12921,
+      "arena": {
+        "id": 54000142,
+        "name": "Ultimate Clash Pit",
+        "rawName": "Arena_L16"
+      },
+      "clanRank": 4,
+      "previousClanRank": 4,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#U0GVQQP99",
+      "name": "ᴳ乂ᵀ ⚜️ ABNER",
+      "role": "coLeader",
+      "lastSeen": "20260924T234919.000Z",
+      "expLevel": 0,
+      "trophies": 12193,
+      "arena": {
+        "id": 54000141,
+        "name": "Magic Academy",
+        "rawName": "Arena_L15"
+      },
+      "clanRank": 5,
+      "previousClanRank": 5,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#JJL8C0P09",
+      "name": "ᴳ乂ᵀ ⚜️ Rodrigoツ",
+      "role": "coLeader",
+      "lastSeen": "20260926T023059.000Z",
+      "expLevel": 0,
+      "trophies": 10426,
+      "arena": {
+        "id": 54000117,
+        "name": "Lumberlove Cabin",
+        "rawName": "Arena_L11"
+      },
+      "clanRank": 6,
+      "previousClanRank": 6,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#CRYJGRPUY",
+      "name": "jijijija",
+      "role": "member",
+      "lastSeen": "20260928T022909.000Z",
+      "expLevel": 0,
+      "trophies": 10122,
+      "arena": {
+        "id": 54000117,
+        "name": "Lumberlove Cabin",
+        "rawName": "Arena_L11"
+      },
+      "clanRank": 7,
+      "previousClanRank": 7,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#GJGPU8PLC",
+      "name": "ᴳ乂ᵀ ⚜️ sfxno18",
+      "role": "coLeader",
+      "lastSeen": "20260830T221524.000Z",
+      "expLevel": 0,
+      "trophies": 9431,
+      "arena": {
+        "id": 54000020,
+        "name": "Valkalla",
+        "rawName": "Arena_L9"
+      },
+      "clanRank": 8,
+      "previousClanRank": 8,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#J8UJ002J0",
+      "name": "piero16",
+      "role": "elder",
+      "lastSeen": "20260730T131254.000Z",
+      "expLevel": 0,
+      "trophies": 8802,
+      "arena": {
+        "id": 54000019,
+        "name": "PANCAKES!",
+        "rawName": "Arena_L8"
+      },
+      "clanRank": 9,
+      "previousClanRank": 9,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VPCPRVJLL",
+      "name": "Tú mamá",
+      "role": "coLeader",
+      "lastSeen": "20260928T033945.000Z",
+      "expLevel": 0,
+      "trophies": 8587,
+      "arena": {
+        "id": 54000019,
+        "name": "PANCAKES!",
+        "rawName": "Arena_L8"
+      },
+      "clanRank": 10,
+      "previousClanRank": 10,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#JCYLVGQ8C",
+      "name": "kingssj",
+      "role": "member",
+      "lastSeen": "20260927T004022.000Z",
+      "expLevel": 0,
+      "trophies": 7846,
+      "arena": {
+        "id": 54000017,
+        "name": "Boot Camp",
+        "rawName": "Arena_L6"
+      },
+      "clanRank": 11,
+      "previousClanRank": 11,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VJCGY9R22",
+      "name": "GOKU",
+      "role": "coLeader",
+      "lastSeen": "20260926T150636.000Z",
+      "expLevel": 0,
+      "trophies": 7142,
+      "arena": {
+        "id": 54000016,
+        "name": "Dragon Spa",
+        "rawName": "Arena_L5"
+      },
+      "clanRank": 12,
+      "previousClanRank": 12,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VQ8JCJ92R",
+      "name": "cristian....",
+      "role": "member",
+      "lastSeen": "20260923T153633.000Z",
+      "expLevel": 0,
+      "trophies": 6159,
+      "arena": {
+        "id": 54000014,
+        "name": "Royal Crypt",
+        "rawName": "Arena_L3"
+      },
+      "clanRank": 13,
+      "previousClanRank": 13,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20298YYG8R",
+      "name": "faty",
+      "role": "elder",
+      "lastSeen": "20260513T140056.000Z",
+      "expLevel": 0,
+      "trophies": 6135,
+      "arena": {
+        "id": 54000014,
+        "name": "Royal Crypt",
+        "rawName": "Arena_L3"
+      },
+      "clanRank": 14,
+      "previousClanRank": 14,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V220QRLVU",
+      "name": "ᴳ乂ᵀ ⚜️ MELAD|",
+      "role": "coLeader",
+      "lastSeen": "20260715T234042.000Z",
+      "expLevel": 0,
+      "trophies": 4099,
+      "arena": {
+        "id": 54000011,
+        "name": "Spooky Town",
+        "rawName": "Arena_T"
+      },
+      "clanRank": 15,
+      "previousClanRank": 15,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V8RC2VGCG",
+      "name": "minilucky",
+      "role": "coLeader",
+      "lastSeen": "20260825T180948.000Z",
+      "expLevel": 0,
+      "trophies": 3750,
+      "arena": {
+        "id": 54000024,
+        "name": "Electro Valley",
+        "rawName": "Arena_Electric"
+      },
+      "clanRank": 16,
+      "previousClanRank": 16,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    }
+  ]
+}

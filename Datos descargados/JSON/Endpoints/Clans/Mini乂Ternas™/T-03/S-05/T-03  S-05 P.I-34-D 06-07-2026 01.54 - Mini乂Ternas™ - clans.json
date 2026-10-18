@@ -1,0 +1,95 @@
+{
+  "tag": "#GG99LCJY",
+  "name": "Mini乂Ternas™",
+  "type": "open",
+  "description": "ᴳ乂ᵀ ⚜️ Familia Terna. GUERRA OBLIGATORIA ⚔️ Usa 4 mazos. No barcos ❌ ω: Sí. Cantera: #GCRG8L00 CODE: RoyaleAPI CWStats",
+  "badgeId": 16000028,
+  "clanScore": 6992,
+  "clanWarTrophies": 1426,
+  "location": {
+    "id": 57000184,
+    "name": "Peru",
+    "isCountry": true,
+    "countryCode": "PE"
+  },
+  "requiredTrophies": 300,
+  "donationsPerWeek": 0,
+  "clanChestStatus": "inactive",
+  "clanChestLevel": 1,
+  "clanChestMaxLevel": 0,
+  "members": 4,
+  "memberList": [
+    {
+      "tag": "#VPQCQRCYJ",
+      "name": "m i l y :)",
+      "role": "coLeader",
+      "lastSeen": "20260415T134318.000Z",
+      "expLevel": 0,
+      "trophies": 8683,
+      "arena": {
+        "id": 54000019,
+        "name": "PANCAKES!",
+        "rawName": "Arena_L8"
+      },
+      "clanRank": 1,
+      "previousClanRank": 1,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#LYVJU9UJJ",
+      "name": "fggij09",
+      "role": "leader",
+      "lastSeen": "20260706T055832.000Z",
+      "expLevel": 0,
+      "trophies": 2809,
+      "arena": {
+        "id": 54000010,
+        "name": "Jungle Arena",
+        "rawName": "Arena9"
+      },
+      "clanRank": 2,
+      "previousClanRank": 3,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VJU9L8GR2",
+      "name": "Destripador",
+      "role": "member",
+      "lastSeen": "20260705T055128.000Z",
+      "expLevel": 0,
+      "trophies": 1876,
+      "arena": {
+        "id": 54000006,
+        "name": "P.E.K.K.A's Playhouse",
+        "rawName": "Arena6"
+      },
+      "clanRank": 3,
+      "previousClanRank": 4,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20VLVQLP08",
+      "name": "ElAbramh",
+      "role": "member",
+      "lastSeen": "20260626T184102.000Z",
+      "expLevel": 0,
+      "trophies": 618,
+      "arena": {
+        "id": 54000003,
+        "name": "Barbarian Bowl",
+        "rawName": "Arena3"
+      },
+      "clanRank": 4,
+      "previousClanRank": 5,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    }
+  ]
+}

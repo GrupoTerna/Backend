@@ -1,0 +1,65 @@
+{
+  "tag": "#VJL99Q9LR",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "21/09/2026",
+  "registros": [
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 2,
+      "clan": "Mini乂Ternas™",
+      "ataques": 14,
+      "fame": 1900,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 1,
+      "clan": "Mini乂Ternas™",
+      "ataques": 8,
+      "fame": 1300,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 3,
+      "temporadaRoyaleAPI": 134,
+      "semana": 4,
+      "clan": "Mini乂Ternas™",
+      "ataques": 8,
+      "fame": 1200,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 3,
+      "temporadaRoyaleAPI": 134,
+      "semana": 3,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 5,
+      "temporadaRoyaleAPI": 136,
+      "semana": 3,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    }
+  ]
+}
