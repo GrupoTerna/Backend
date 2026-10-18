@@ -4737,6 +4737,48 @@ function _listarSorteosDeHoy() {
 }
 
 /**
+ * _listarSorteosModificables() — 18-oct-2026 (PF108, pedido del usuario). Lista para "Modificar sorteo" del panel web: los de hoy, MÁS los Planificados (aunque sean de otro día). Antes solo mostraba los de hoy y un sorteo planificado para mañana no se podía editar (mismo problema que ya se corrigió en torneos, PF099). Mismos campos que _listarSorteosDeHoy() más fechaTxt, hora y estado. La hora sale de la propia Fecha (los sorteos se guardan como «dd/mm/yyyy hh:mm»); si la Fecha viene sin hora (00:00), se usa la columna Hora. Va ordenada por fecha. No reemplaza a _listarSorteosDeHoy(). [→ Contexto_Base_Web.md §PF108]
+ */
+function _listarSorteosModificables() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return [];
+  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS).getValues();
+  var hoy = _hoyLimaSinHora();
+  return datos
+    .filter(function (f) {
+      var id = String(f[SL.ID - 1] || '').trim();
+      if (!id) return false;
+      var fecha = f[SL.FECHA - 1];
+      var esHoy = fecha instanceof Date && !isNaN(fecha.getTime()) && _mismoDia(fecha, hoy);
+      var estado = String(f[SL.ESTADO - 1] || '').trim();
+      return esHoy || estado === 'Planificado';
+    })
+    .sort(function (a, b) {
+      var ta = a[SL.FECHA - 1] instanceof Date ? a[SL.FECHA - 1].getTime() : 0;
+      var tb = b[SL.FECHA - 1] instanceof Date ? b[SL.FECHA - 1].getTime() : 0;
+      return ta - tb;
+    })
+    .map(function (f) {
+      var fecha = f[SL.FECHA - 1];
+      var fechaOk = fecha instanceof Date && !isNaN(fecha.getTime());
+      var horaFecha = fechaOk ? Utilities.formatDate(fecha, 'America/Lima', 'HH:mm:ss') : '';
+      var hora = (horaFecha && horaFecha !== '00:00:00') ? horaFecha : (_formatHoraCanonica(f[SL.HORA - 1]) || horaFecha);
+      return {
+        id: f[SL.ID - 1],
+        fecha: fecha,
+        fechaTxt: fechaOk ? Utilities.formatDate(fecha, 'America/Lima', 'dd/MM/yyyy') : '',
+        hora: hora,
+        estado: String(f[SL.ESTADO - 1] || '').trim(),
+        idPrincipal: String(f[SL.ID_2 - 1] || '').trim(),
+        autor: String(f[SL.ORGANIZADOR - 1] || '').trim(),
+        premios: String(f[SL.PREMIOS - 1] || '').trim(),
+        semanas: _extraerIsosDesdeSemanasCsv(String(f[SL.SEMANAS - 1] || '').trim()),
+        comentario: String(f[SL.COMENTARIO - 1] || '').trim()
+      };
+    });
+}
+
+/**
  * _registrarSorteoDesdeBot(fecha, hora, idSorteoPrincipal, organizadorInfo, semanasIsoCsv, requisitos, comentario) [→ Contexto_Base_Web.md §26B310]
  */
 function _registrarSorteoDesdeBot(fecha, hora, idSorteoPrincipal, organizadorInfo, semanasIsoCsv, requisitos, comentario) {
