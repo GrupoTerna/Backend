@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 21:23:28 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/10/2026 21:54:19 */
 
 
 
@@ -37152,7 +37152,8 @@ function _planificarSorteoDesdeBot(fecha, hora, premios, idSorteoPrincipal, orga
 /**
  * _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanasIsoCsv, comentario, requisitos,… [→ Contexto_Base_Web.md §26B314]
  */
-function _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanasIsoCsv, comentario, requisitos, organizadorInfo, premios) {
+// PF107 (18-oct-2026): 10.º parámetro opcional `tipoSorteo` ('principal' | 'continuacion' | otro/vacío = no tocar el tipo), gemelo del `tipoTorneo` de _modificarFechaHoraTorneo() (PF105). 'principal' borra ID_2 (antes solo se podía escribir, nunca quitar); 'continuacion' exige `idSorteoPrincipal`, no puede ser el propio ID y no se admite si otros sorteos ya son continuación de este (evita cadenas A <- B <- C). Las validaciones corren antes de escribir cualquier celda. El bot no pasa el parámetro y no cambia. [→ Contexto_Base_Web.md §PF107]
+function _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanasIsoCsv, comentario, requisitos, organizadorInfo, premios, tipoSorteo) {
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
   if (!sh) return { ok: false, error: 'No encontré la hoja S_Lista.' };
@@ -37164,11 +37165,28 @@ function _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanasIs
   for (var i = 0; i < ids.length; i++) {
     if (String(ids[i][0] || '') === String(id)) {
       var fila = i + 3;
+      // PF107: validaciones del cambio de tipo ANTES de escribir nada.
+      var tipoSorteoNorm = String(tipoSorteo || '').trim();
+      var idPrincipalNuevo = String(idSorteoPrincipal || '').trim();
+      if (tipoSorteoNorm === 'continuacion') {
+        if (!idPrincipalNuevo) return { ok: false, error: 'Elige de cuál sorteo principal es continuación.' };
+        if (idPrincipalNuevo === String(id).trim()) {
+          return { ok: false, error: 'Un sorteo no puede ser continuación de sí mismo.' };
+        }
+        var ids2 = sh.getRange(3, SL.ID_2, lastRow - 2, 1).getValues();
+        for (var k = 0; k < ids2.length; k++) {
+          if (k !== i && String(ids2[k][0] || '').trim() === String(id).trim()) {
+            return { ok: false, error: 'Este sorteo es el principal de otros sorteos de continuación; cambia primero esos sorteos antes de convertirlo en continuación.' };
+          }
+        }
+      }
       sh.getRange(fila, SL.FECHA).setValue(fechaHora);
       _trySetFmt(sh, fila, SL.FECHA, 'dd/mm/yyyy hh:mm');
       var temporadaNueva = _calcularTemporadaParaFecha(fechaHora);
       sh.getRange(fila, SL.TEMPORADA).setValue(temporadaNueva);
-      if (idSorteoPrincipal) sh.getRange(fila, SL.ID_2).setValue(String(idSorteoPrincipal).trim());
+      // PF107: 'principal' quita la continuación (ID_2 vacío); si no, se escribe el principal elegido (comportamiento anterior).
+      if (tipoSorteoNorm === 'principal') sh.getRange(fila, SL.ID_2).setValue('');
+      else if (idSorteoPrincipal) sh.getRange(fila, SL.ID_2).setValue(String(idSorteoPrincipal).trim());
       if (semanasIsoCsv) sh.getRange(fila, SL.SEMANAS).setValue(_construirSemanasCsvDesdeIsos(semanasIsoCsv));
       if (comentario) sh.getRange(fila, SL.COMENTARIO).setValue(String(comentario).trim());
       if (requisitos) {
@@ -46570,7 +46588,7 @@ function _webAdminSorteoPlanificarGuardar(token, fecha, hora, premios, idSorteoP
 }
 
 // _webAdminSorteoModificar(): NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, panel de Sorteos completo, backend). Envuelve _modificarFechaHoraSorteo() (26_Torneos_Core.gs) -- mismo patrón que _webAdminTorneoModificar() de arriba (mismo… [→ Contexto_Base_Web.md §37B244]
-function _webAdminSorteoModificar(token, id, fecha, hora, idSorteoPrincipal, semanas, comentario, requisitos, autor, premios, tagOrg, clanOrg, clanTagOrg) {
+function _webAdminSorteoModificar(token, id, fecha, hora, idSorteoPrincipal, semanas, comentario, requisitos, autor, premios, tagOrg, clanOrg, clanTagOrg, tipoSorteo) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
   if (!fecha || !hora) return { ok: false, error: 'Falta la fecha u hora nueva.' };
   if (!id) return { ok: false, error: 'Falta el ID del sorteo.' };
@@ -46588,7 +46606,8 @@ function _webAdminSorteoModificar(token, id, fecha, hora, idSorteoPrincipal, sem
     }
   }
 
-  return _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanas, comentario, requisitos, organizadorInfo, premios);
+  // PF107: `tipoSorteo` ('principal' | 'continuacion') permite cambiar el tipo en ambos sentidos, igual que `tipoTorneo` en torneos.
+  return _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanas, comentario, requisitos, organizadorInfo, premios, tipoSorteo);
 }
 
 // _webAdminGanadoresTorneoDetalle(): FASE 24 (02-sep-2026, pedido del usuario — descalificaciones y desempates de torneos). Versión de SOLO-ADMIN de _webGanadoresTorneoMasReciente() para la sección "Ganadores del torneo más reciente" del panel (admin.html): el… [→ Contexto_Base_Web.md §37B245]
@@ -49855,7 +49874,8 @@ function doPost(e) {
         payloadSMod && payloadSMod.premios,
         payloadSMod && payloadSMod.tagOrg,
         payloadSMod && payloadSMod.clanOrg,
-        payloadSMod && payloadSMod.clanTagOrg
+        payloadSMod && payloadSMod.clanTagOrg,
+        payloadSMod && payloadSMod.tipoSorteo
       );
       return ContentService
         .createTextOutput(JSON.stringify(resultadoSMod))
