@@ -3076,7 +3076,7 @@ function _webAdminSorteoPlanificarGuardar(token, fecha, hora, premios, idSorteoP
 }
 
 // _webAdminSorteoModificar(): NUEVO (12-sep-2026, pedido del usuario -- consolidado sección 5.4, panel de Sorteos completo, backend). Envuelve _modificarFechaHoraSorteo() (26_Torneos_Core.gs) -- mismo patrón que _webAdminTorneoModificar() de arriba (mismo… [→ Contexto_Base_Web.md §37B244]
-function _webAdminSorteoModificar(token, id, fecha, hora, idSorteoPrincipal, semanas, comentario, requisitos, autor, premios, tagOrg, clanOrg, clanTagOrg) {
+function _webAdminSorteoModificar(token, id, fecha, hora, idSorteoPrincipal, semanas, comentario, requisitos, autor, premios, tagOrg, clanOrg, clanTagOrg, tipoSorteo) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
   if (!fecha || !hora) return { ok: false, error: 'Falta la fecha u hora nueva.' };
   if (!id) return { ok: false, error: 'Falta el ID del sorteo.' };
@@ -3094,7 +3094,8 @@ function _webAdminSorteoModificar(token, id, fecha, hora, idSorteoPrincipal, sem
     }
   }
 
-  return _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanas, comentario, requisitos, organizadorInfo, premios);
+  // PF107: `tipoSorteo` ('principal' | 'continuacion') permite cambiar el tipo en ambos sentidos, igual que `tipoTorneo` en torneos.
+  return _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanas, comentario, requisitos, organizadorInfo, premios, tipoSorteo);
 }
 
 // _webAdminGanadoresTorneoDetalle(): FASE 24 (02-sep-2026, pedido del usuario — descalificaciones y desempates de torneos). Versión de SOLO-ADMIN de _webGanadoresTorneoMasReciente() para la sección "Ganadores del torneo más reciente" del panel (admin.html): el… [→ Contexto_Base_Web.md §37B245]

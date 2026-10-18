@@ -1421,7 +1421,8 @@ function doPost(e) {
         payloadSMod && payloadSMod.premios,
         payloadSMod && payloadSMod.tagOrg,
         payloadSMod && payloadSMod.clanOrg,
-        payloadSMod && payloadSMod.clanTagOrg
+        payloadSMod && payloadSMod.clanTagOrg,
+        payloadSMod && payloadSMod.tipoSorteo
       );
       return ContentService
         .createTextOutput(JSON.stringify(resultadoSMod))
