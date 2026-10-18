@@ -1,0 +1,31 @@
+{
+  "tag": "#8G222CQUR",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "27/08/2026",
+  "registros": [
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 3,
+      "clan": "Grupo乂Terna™\n                2026-08-24",
+      "ataques": 13,
+      "fame": 1950,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 4,
+      "clan": "Grupo乂Terna™",
+      "ataques": 4,
+      "fame": 700,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false
+    }
+  ]
+}

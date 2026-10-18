@@ -1,0 +1,293 @@
+{
+  "tag": "#GQQPPJGR",
+  "name": "GrupoXTerna™3",
+  "type": "open",
+  "description": "ᴳ乂ᵀ ⚜️ Familia Terna. GUERRA OBLIGATORIA ⚔️ Usa 4 mazos. No barcos ❌ ω: Sí. Cantera: #GCRG8L00 CODE: RoyaleAPI CWStats",
+  "badgeId": 16000028,
+  "clanScore": 59635,
+  "clanWarTrophies": 2600,
+  "location": {
+    "id": 57000184,
+    "name": "Peru",
+    "isCountry": true,
+    "countryCode": "PE"
+  },
+  "requiredTrophies": 5000,
+  "donationsPerWeek": 468,
+  "clanChestStatus": "inactive",
+  "clanChestLevel": 1,
+  "clanChestMaxLevel": 0,
+  "members": 15,
+  "memberList": [
+    {
+      "tag": "#VLY0G9LU9",
+      "name": "ᴳ乂ᵀ ⚜. josuexd.",
+      "role": "member",
+      "lastSeen": "20260908T121453.000Z",
+      "expLevel": 0,
+      "trophies": 14000,
+      "arena": {
+        "id": 54000144,
+        "name": "Spirit Square",
+        "rawName": "Arena_L18"
+      },
+      "clanRank": 1,
+      "previousClanRank": 1,
+      "donations": 14,
+      "donationsReceived": 56,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#JGGLGVCGU",
+      "name": "ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ",
+      "role": "member",
+      "lastSeen": "20260908T121139.000Z",
+      "expLevel": 0,
+      "trophies": 14000,
+      "arena": {
+        "id": 54000144,
+        "name": "Spirit Square",
+        "rawName": "Arena_L18"
+      },
+      "clanRank": 2,
+      "previousClanRank": 2,
+      "donations": 8,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#2PUYLPPRG",
+      "name": "COSCU06",
+      "role": "member",
+      "lastSeen": "20260905T103153.000Z",
+      "expLevel": 0,
+      "trophies": 14000,
+      "arena": {
+        "id": 54000144,
+        "name": "Spirit Square",
+        "rawName": "Arena_L18"
+      },
+      "clanRank": 3,
+      "previousClanRank": 3,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#8VU0Y9LJ0",
+      "name": "Yisus Craiz",
+      "role": "member",
+      "lastSeen": "20260907T022141.000Z",
+      "expLevel": 0,
+      "trophies": 12739,
+      "arena": {
+        "id": 54000142,
+        "name": "Ultimate Clash Pit",
+        "rawName": "Arena_L16"
+      },
+      "clanRank": 4,
+      "previousClanRank": 4,
+      "donations": 58,
+      "donationsReceived": 40,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20P2UP80UY",
+      "name": "ᴳ乂ᵀ ⚜️ SHAKA",
+      "role": "member",
+      "lastSeen": "20260908T013142.000Z",
+      "expLevel": 0,
+      "trophies": 9264,
+      "arena": {
+        "id": 54000020,
+        "name": "Valkalla",
+        "rawName": "Arena_L9"
+      },
+      "clanRank": 5,
+      "previousClanRank": 5,
+      "donations": 0,
+      "donationsReceived": 63,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#2092GR8VGY",
+      "name": "TT:David.cr_2",
+      "role": "member",
+      "lastSeen": "20260908T165133.000Z",
+      "expLevel": 0,
+      "trophies": 8997,
+      "arena": {
+        "id": 54000019,
+        "name": "PANCAKES!",
+        "rawName": "Arena_L8"
+      },
+      "clanRank": 6,
+      "previousClanRank": 6,
+      "donations": 32,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#900PCRQ2R",
+      "name": "ᴳ乂ᵀ ⚜️ アンドレ",
+      "role": "leader",
+      "lastSeen": "20260907T075426.000Z",
+      "expLevel": 0,
+      "trophies": 8121,
+      "arena": {
+        "id": 54000018,
+        "name": "Clash Fest",
+        "rawName": "Arena_L7"
+      },
+      "clanRank": 7,
+      "previousClanRank": 7,
+      "donations": 26,
+      "donationsReceived": 50,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V0JPP0UJR",
+      "name": "fatima",
+      "role": "elder",
+      "lastSeen": "20260907T141613.000Z",
+      "expLevel": 0,
+      "trophies": 7873,
+      "arena": {
+        "id": 54000017,
+        "name": "Boot Camp",
+        "rawName": "Arena_L6"
+      },
+      "clanRank": 8,
+      "previousClanRank": 8,
+      "donations": 34,
+      "donationsReceived": 48,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#90QYJQRQ8",
+      "name": "Diana",
+      "role": "member",
+      "lastSeen": "20260908T143442.000Z",
+      "expLevel": 0,
+      "trophies": 7800,
+      "arena": {
+        "id": 54000017,
+        "name": "Boot Camp",
+        "rawName": "Arena_L6"
+      },
+      "clanRank": 9,
+      "previousClanRank": 9,
+      "donations": 72,
+      "donationsReceived": 78,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V0UJ0RPVP",
+      "name": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+      "role": "member",
+      "lastSeen": "20260907T021025.000Z",
+      "expLevel": 0,
+      "trophies": 7211,
+      "arena": {
+        "id": 54000016,
+        "name": "Dragon Spa",
+        "rawName": "Arena_L5"
+      },
+      "clanRank": 10,
+      "previousClanRank": 10,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V9L9V9YV0",
+      "name": "ᴳ乂ᵀ ⚜️ Xarxos",
+      "role": "member",
+      "lastSeen": "20260907T070216.000Z",
+      "expLevel": 0,
+      "trophies": 6567,
+      "arena": {
+        "id": 54000015,
+        "name": "Silent Sanctuary",
+        "rawName": "Arena_L4"
+      },
+      "clanRank": 11,
+      "previousClanRank": 11,
+      "donations": 84,
+      "donationsReceived": 40,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VUVC9P8VL",
+      "name": "ᴳ乂ᵀ ⚜️ Percape",
+      "role": "member",
+      "lastSeen": "20260907T063849.000Z",
+      "expLevel": 0,
+      "trophies": 6498,
+      "arena": {
+        "id": 54000014,
+        "name": "Royal Crypt",
+        "rawName": "Arena_L3"
+      },
+      "clanRank": 12,
+      "previousClanRank": 12,
+      "donations": 74,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V9P20U8RC",
+      "name": "kayserleandro",
+      "role": "elder",
+      "lastSeen": "20260907T135515.000Z",
+      "expLevel": 0,
+      "trophies": 6119,
+      "arena": {
+        "id": 54000014,
+        "name": "Royal Crypt",
+        "rawName": "Arena_L3"
+      },
+      "clanRank": 13,
+      "previousClanRank": 13,
+      "donations": 20,
+      "donationsReceived": 32,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#U8G029GUQ",
+      "name": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+      "role": "member",
+      "lastSeen": "20260907T073114.000Z",
+      "expLevel": 0,
+      "trophies": 6107,
+      "arena": {
+        "id": 54000014,
+        "name": "Royal Crypt",
+        "rawName": "Arena_L3"
+      },
+      "clanRank": 14,
+      "previousClanRank": 14,
+      "donations": 30,
+      "donationsReceived": 61,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#UJY0PGPUV",
+      "name": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+      "role": "member",
+      "lastSeen": "20260907T074409.000Z",
+      "expLevel": 0,
+      "trophies": 5260,
+      "arena": {
+        "id": 54000012,
+        "name": "Miner's Mine",
+        "rawName": "Arena_L1"
+      },
+      "clanRank": 15,
+      "previousClanRank": 15,
+      "donations": 16,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    }
+  ]
+}

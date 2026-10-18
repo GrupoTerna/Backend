@@ -1,0 +1,33 @@
+{
+  "tag": "#2RCRUR9LG",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "12/10/2026",
+  "registros": [
+    {
+      "temporadaInterna": 6,
+      "temporadaRoyaleAPI": 137,
+      "semana": 1,
+      "clan": "Grupo乂Terna™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 6,
+      "temporadaRoyaleAPI": 137,
+      "semana": 2,
+      "clan": "Grupo乂Terna™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    }
+  ]
+}

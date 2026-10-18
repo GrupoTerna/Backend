@@ -1,0 +1,229 @@
+{
+  "tag": "#CPRQG82L",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "28/08/2026",
+  "registros": [
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 2,
+      "clan": "GrupoXTerna™2\n                2026-08-17",
+      "ataques": 16,
+      "fame": 2300,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 1,
+      "clan": "GrupoXTerna™2\n                2026-08-10",
+      "ataques": 16,
+      "fame": 2200,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 3,
+      "temporadaRoyaleAPI": 134,
+      "semana": 4,
+      "clan": "GrupoXTerna™2\n                2026-08-03",
+      "ataques": 16,
+      "fame": 2600,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 3,
+      "temporadaRoyaleAPI": 134,
+      "semana": 3,
+      "clan": "GrupoXTerna™2\n                2026-07-27",
+      "ataques": 16,
+      "fame": 2400,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 3,
+      "temporadaRoyaleAPI": 134,
+      "semana": 2,
+      "clan": "GrupoXTerna™2\n                2026-07-20",
+      "ataques": 16,
+      "fame": 2500,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 3,
+      "temporadaRoyaleAPI": 134,
+      "semana": 1,
+      "clan": "GrupoXTerna™2\n                2026-07-13",
+      "ataques": 16,
+      "fame": 2200,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 2,
+      "temporadaRoyaleAPI": 133,
+      "semana": 5,
+      "clan": "GrupoXTerna™2\n                2026-07-06",
+      "ataques": 16,
+      "fame": 2400,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 2,
+      "temporadaRoyaleAPI": 133,
+      "semana": 4,
+      "clan": "GrupoXTerna™2\n                2026-06-29",
+      "ataques": 16,
+      "fame": 2100,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 2,
+      "temporadaRoyaleAPI": 133,
+      "semana": 3,
+      "clan": "GrupoXTerna™2\n                2026-06-22",
+      "ataques": 16,
+      "fame": 2500,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 2,
+      "temporadaRoyaleAPI": 133,
+      "semana": 2,
+      "clan": "GrupoXTerna™2\n                2026-06-15",
+      "ataques": 16,
+      "fame": 2300,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 2,
+      "temporadaRoyaleAPI": 133,
+      "semana": 1,
+      "clan": "GrupoXTerna™2\n                2026-06-08",
+      "ataques": 16,
+      "fame": 2600,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 1,
+      "temporadaRoyaleAPI": 132,
+      "semana": 4,
+      "clan": "GrupoXTerna™2\n                2026-06-01",
+      "ataques": 16,
+      "fame": 2500,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 1,
+      "temporadaRoyaleAPI": 132,
+      "semana": 3,
+      "clan": "GrupoXTerna™2\n                2026-05-25",
+      "ataques": 16,
+      "fame": 2500,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 1,
+      "temporadaRoyaleAPI": 132,
+      "semana": 2,
+      "clan": "GrupoXTerna™2\n                2026-05-18",
+      "ataques": 16,
+      "fame": 2600,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 1,
+      "temporadaRoyaleAPI": 132,
+      "semana": 1,
+      "clan": "GrupoXTerna™2\n                2026-05-11",
+      "ataques": 16,
+      "fame": 2300,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 0,
+      "temporadaRoyaleAPI": 131,
+      "semana": 4,
+      "clan": "GrupoXTerna™2\n                2026-05-04",
+      "ataques": 16,
+      "fame": 2300,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 0,
+      "temporadaRoyaleAPI": 131,
+      "semana": 3,
+      "clan": "GrupoXTerna™2\n                2026-04-27",
+      "ataques": 16,
+      "fame": 2400,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 0,
+      "temporadaRoyaleAPI": 131,
+      "semana": 2,
+      "clan": "GrupoXTerna™2\n                2026-04-20",
+      "ataques": 16,
+      "fame": 2600,
+      "barcos": 4,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 4,
+      "clan": "GrupoXTerna™2",
+      "ataques": 1,
+      "fame": 200,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 3,
+      "clan": "GrupoXTerna™2\n                2026-08-24",
+      "ataques": 12,
+      "fame": 1600,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    }
+  ]
+}

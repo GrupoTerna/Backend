@@ -1,0 +1,33 @@
+{
+  "tag": "#2092GR8VGY",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "21/09/2026",
+  "registros": [
+    {
+      "temporadaInterna": 5,
+      "temporadaRoyaleAPI": 136,
+      "semana": 2,
+      "clan": "GrupoXTerna™3",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 5,
+      "temporadaRoyaleAPI": 136,
+      "semana": 3,
+      "clan": "GrupoXTerna™3",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    }
+  ]
+}

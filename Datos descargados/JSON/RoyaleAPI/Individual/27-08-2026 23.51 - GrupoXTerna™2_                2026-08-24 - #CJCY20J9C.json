@@ -1,0 +1,20 @@
+{
+  "tag": "#CJCY20J9C",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "27/08/2026",
+  "registros": [
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 3,
+      "clan": "GrupoXTerna™2\n                2026-08-24",
+      "ataques": 12,
+      "fame": 2400,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    }
+  ]
+}

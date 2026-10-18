@@ -1,0 +1,53 @@
+{
+  "tag": "#20GL9Q0V0",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "27/08/2026",
+  "registros": [
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 2,
+      "clan": "Grupo乂Terna™\n                2026-08-17",
+      "ataques": 12,
+      "fame": 1800,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 1,
+      "clan": "Grupo乂Terna™\n                2026-08-10",
+      "ataques": 16,
+      "fame": 2000,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 3,
+      "clan": "Grupo乂Terna™\n                2026-08-24",
+      "ataques": 16,
+      "fame": 2200,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 4,
+      "clan": "Grupo乂Terna™",
+      "ataques": 4,
+      "fame": 800,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false
+    }
+  ]
+}

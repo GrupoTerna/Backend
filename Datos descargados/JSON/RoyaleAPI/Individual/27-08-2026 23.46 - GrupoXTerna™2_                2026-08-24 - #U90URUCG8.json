@@ -1,0 +1,31 @@
+{
+  "tag": "#U90URUCG8",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "27/08/2026",
+  "registros": [
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 3,
+      "clan": "GrupoXTerna™2\n                2026-08-24",
+      "ataques": 16,
+      "fame": 2600,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 4,
+      "temporadaRoyaleAPI": 135,
+      "semana": 4,
+      "clan": "GrupoXTerna™2",
+      "ataques": 4,
+      "fame": 800,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false
+    }
+  ]
+}

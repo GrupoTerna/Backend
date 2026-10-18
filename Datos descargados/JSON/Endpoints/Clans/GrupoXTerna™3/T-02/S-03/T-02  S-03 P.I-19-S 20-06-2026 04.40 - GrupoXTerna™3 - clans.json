@@ -1,0 +1,203 @@
+{
+  "tag": "#GQQPPJGR",
+  "name": "GrupoXTerna™3",
+  "type": "open",
+  "description": "ᴳ乂ᵀ ⚜️ Familia Terna. GUERRA OBLIGATORIA ⚔️ Usa 4 mazos. No barcos ❌ ω: Sí. Cantera: #GCRG8L00 CODE: RoyaleAPI CWStats",
+  "badgeId": 16000028,
+  "clanScore": 46676,
+  "clanWarTrophies": 2490,
+  "location": {
+    "id": 57000184,
+    "name": "Peru",
+    "isCountry": true,
+    "countryCode": "PE"
+  },
+  "requiredTrophies": 6500,
+  "donationsPerWeek": 3056,
+  "clanChestStatus": "inactive",
+  "clanChestLevel": 1,
+  "clanChestMaxLevel": 0,
+  "members": 10,
+  "memberList": [
+    {
+      "tag": "#V929CC8CC",
+      "name": "esteban",
+      "role": "elder",
+      "lastSeen": "20260621T043832.000Z",
+      "expLevel": 0,
+      "trophies": 13172,
+      "arena": {
+        "id": 54000143,
+        "name": "Little Prince's Tavern",
+        "rawName": "Arena_L17"
+      },
+      "clanRank": 1,
+      "previousClanRank": 1,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#LPJY28VVU",
+      "name": "MINI ꧁ ꠵ＮＥＴＯ꠵ ꧂",
+      "role": "elder",
+      "lastSeen": "20260621T032451.000Z",
+      "expLevel": 0,
+      "trophies": 11592,
+      "arena": {
+        "id": 54000132,
+        "name": "Summit of Heroes",
+        "rawName": "Arena_L14"
+      },
+      "clanRank": 2,
+      "previousClanRank": 2,
+      "donations": 259,
+      "donationsReceived": 89,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#80QCQ9R9Y",
+      "name": "JEQ",
+      "role": "member",
+      "lastSeen": "20260620T180630.000Z",
+      "expLevel": 0,
+      "trophies": 10974,
+      "arena": {
+        "id": 54000130,
+        "name": "Royal Road",
+        "rawName": "Arena_L12"
+      },
+      "clanRank": 3,
+      "previousClanRank": 3,
+      "donations": 548,
+      "donationsReceived": 290,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#GYU0R0V29",
+      "name": "Love--Adri<3",
+      "role": "member",
+      "lastSeen": "20260621T082944.000Z",
+      "expLevel": 0,
+      "trophies": 10450,
+      "arena": {
+        "id": 54000117,
+        "name": "Lumberlove Cabin",
+        "rawName": "Arena_L11"
+      },
+      "clanRank": 4,
+      "previousClanRank": 4,
+      "donations": 44,
+      "donationsReceived": 16,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#V0G8YG2GV",
+      "name": "Crazy",
+      "role": "member",
+      "lastSeen": "20260620T160333.000Z",
+      "expLevel": 0,
+      "trophies": 9346,
+      "arena": {
+        "id": 54000020,
+        "name": "Valkalla",
+        "rawName": "Arena_L9"
+      },
+      "clanRank": 5,
+      "previousClanRank": 5,
+      "donations": 90,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#VPLY0J00J",
+      "name": "LA CALLE S.M.P",
+      "role": "member",
+      "lastSeen": "20260620T222400.000Z",
+      "expLevel": 0,
+      "trophies": 8601,
+      "arena": {
+        "id": 54000019,
+        "name": "PANCAKES!",
+        "rawName": "Arena_L8"
+      },
+      "clanRank": 6,
+      "previousClanRank": 6,
+      "donations": 60,
+      "donationsReceived": 40,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#20P2UP80UY",
+      "name": "♤FƆŔ",
+      "role": "member",
+      "lastSeen": "20260621T012934.000Z",
+      "expLevel": 0,
+      "trophies": 7911,
+      "arena": {
+        "id": 54000017,
+        "name": "Boot Camp",
+        "rawName": "Arena_L6"
+      },
+      "clanRank": 7,
+      "previousClanRank": 7,
+      "donations": 72,
+      "donationsReceived": 288,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#900PCRQ2R",
+      "name": "ᴳ乂ᵀ ⚜️ アンドレ",
+      "role": "leader",
+      "lastSeen": "20260621T085326.000Z",
+      "expLevel": 0,
+      "trophies": 7544,
+      "arena": {
+        "id": 54000017,
+        "name": "Boot Camp",
+        "rawName": "Arena_L6"
+      },
+      "clanRank": 8,
+      "previousClanRank": 8,
+      "donations": 80,
+      "donationsReceived": 70,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#200C8YYJ82",
+      "name": "•josue•",
+      "role": "member",
+      "lastSeen": "20260619T114151.000Z",
+      "expLevel": 0,
+      "trophies": 7501,
+      "arena": {
+        "id": 54000017,
+        "name": "Boot Camp",
+        "rawName": "Arena_L6"
+      },
+      "clanRank": 9,
+      "previousClanRank": 9,
+      "donations": 0,
+      "donationsReceived": 32,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#JVVG9YUG0",
+      "name": "Fiorela.",
+      "role": "coLeader",
+      "lastSeen": "20260621T002418.000Z",
+      "expLevel": 0,
+      "trophies": 6264,
+      "arena": {
+        "id": 54000014,
+        "name": "Royal Crypt",
+        "rawName": "Arena_L3"
+      },
+      "clanRank": 10,
+      "previousClanRank": 11,
+      "donations": 10,
+      "donationsReceived": 60,
+      "clanChestPoints": 0
+    }
+  ]
+}

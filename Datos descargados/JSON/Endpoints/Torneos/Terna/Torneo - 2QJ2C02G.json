@@ -1,0 +1,152 @@
+{
+  "tag": "#2QJ2C02G",
+  "type": "passwordProtected",
+  "status": "ended",
+  "creatorTag": "#QRQULCCV8",
+  "name": "TORNEO TERNA",
+  "levelCap": 11,
+  "firstPlaceCardPrize": 0,
+  "capacity": 12,
+  "maxCapacity": 100,
+  "preparationDuration": 3600,
+  "duration": 1800,
+  "createdTime": "20260831T012613.000Z",
+  "startedTime": "20260831T013727.000Z",
+  "membersList": [
+    {
+      "tag": "#CGGGR82PJ",
+      "name": "ᴳ乂ᵀ ⚜️ N1V1C",
+      "score": 4,
+      "rank": 1,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#228VUG2RU",
+      "name": "ᴳ乂ᵀ ⚜ Fazete",
+      "score": 3,
+      "rank": 2,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#C8GPVLVJL",
+      "name": "~$VNThONY$~",
+      "score": 3,
+      "rank": 3,
+      "clan": {
+        "tag": "#GYCU9YRG",
+        "name": "GrupoXTerna™2",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#9U9QUL02R",
+      "name": "j y j",
+      "score": 3,
+      "rank": 4,
+      "clan": {
+        "tag": "#GYCU9YRG",
+        "name": "GrupoXTerna™2",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#RGCL8LGJC",
+      "name": "Alex♡Dmr",
+      "score": 3,
+      "rank": 5,
+      "clan": {
+        "tag": "#GYCU9YRG",
+        "name": "GrupoXTerna™2",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#80PPY9R9G",
+      "name": "ᴳ乂ᵀ ⚜️ Sunix :)",
+      "score": 2,
+      "rank": 6,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#V9YLPQY0L",
+      "name": "ᴳ乂ᵀ ⚜️ SHON",
+      "score": 2,
+      "rank": 7,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#QRQULCCV8",
+      "name": "ᴳ乂ᵀ ⚜️ Maikel",
+      "score": 2,
+      "rank": 8,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#CYR2PVLLY",
+      "name": "carepoto:3",
+      "score": 1,
+      "rank": 9,
+      "clan": {
+        "tag": "#GYCU9YRG",
+        "name": "GrupoXTerna™2",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#UJL0GR80Y",
+      "name": "j0rdxn_17xd",
+      "score": 0,
+      "rank": 10,
+      "clan": {
+        "tag": "#GCRG8L00",
+        "name": "Grupo乂Terna™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#VCCU98J0U",
+      "name": "Alexx123",
+      "score": 0,
+      "rank": 11,
+      "clan": {
+        "tag": "#GG99LCJY",
+        "name": "Mini乂Ternas™",
+        "badgeId": 16000028
+      }
+    },
+    {
+      "tag": "#VQPQ09LUP",
+      "name": "Isabel^•^",
+      "score": 0,
+      "rank": 12,
+      "clan": {
+        "tag": "#QQ2P9VCR",
+        "name": "GamingClub Up",
+        "badgeId": 16000045
+      }
+    }
+  ],
+  "gameMode": {
+    "id": 72000512
+  }
+}

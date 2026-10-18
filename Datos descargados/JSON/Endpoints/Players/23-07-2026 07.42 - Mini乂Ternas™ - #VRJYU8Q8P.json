@@ -1,0 +1,2361 @@
+{
+  "tag": "#VRJYU8Q8P",
+  "name": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+  "collectionLevel": 1157,
+  "kingTowerLevel": 12,
+  "expLevel": 1,
+  "trophies": 7312,
+  "bestTrophies": 7312,
+  "wins": 320,
+  "losses": 53,
+  "battleCount": 373,
+  "threeCrownWins": 103,
+  "challengeCardsWon": 0,
+  "challengeMaxWins": 0,
+  "tournamentCardsWon": 0,
+  "tournamentBattleCount": 0,
+  "currentWinLoseStreak": 1,
+  "role": "elder",
+  "donations": 0,
+  "donationsReceived": 48,
+  "totalDonations": 204,
+  "warDayWins": 0,
+  "clanCardsCollected": 0,
+  "clan": {
+    "tag": "#GG99LCJY",
+    "name": "Mini乂Ternas™",
+    "badgeId": 16000028
+  },
+  "arena": {
+    "id": 54000016,
+    "name": "Dragon Spa",
+    "rawName": "Arena_L5"
+  },
+  "badges": [
+    {
+      "name": "EmoteCollection",
+      "level": 1,
+      "maxLevel": 8,
+      "progress": 22,
+      "target": 25,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/6f5zy7bLv8sPM6xKJg1qZWLMNbbNYaOTpW3VVl7oXEo.png"
+      }
+    },
+    {
+      "name": "BannerCollection",
+      "level": 1,
+      "maxLevel": 8,
+      "progress": 28,
+      "target": 30,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/Lzu_2_YeM2OMFLCm-K6XX3mXjjYcrpBQ095pV3BX_ww.png"
+      }
+    },
+    {
+      "name": "BattleWins",
+      "level": 3,
+      "maxLevel": 8,
+      "progress": 320,
+      "target": 500,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/m4b1Oh9yVMtxYqd2OW-BzGxTc7biRROEHopeinsynGU.png"
+      }
+    },
+    {
+      "name": "ClanWarWins",
+      "level": 3,
+      "maxLevel": 8,
+      "progress": 72,
+      "target": 100,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/q_EcWT52wxQyNMPCpcWrcrAK1iKNLesurdFeUIdGr3Q.png"
+      }
+    },
+    {
+      "name": "CollectionLevel",
+      "level": 6,
+      "maxLevel": 8,
+      "progress": 1157,
+      "target": 1200,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/qE8qmfIq6d3V2AmzXMiaffhYjhPdwOWd4OZ1EXK-MPg.png"
+      }
+    },
+    {
+      "name": "MasterySkeletons",
+      "level": 6,
+      "maxLevel": 10,
+      "progress": 6,
+      "target": 7,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/s0jIpJXy0jxePu3PTnTy-xbytoU6cckbKZPcoJYhw4s.png"
+      }
+    },
+    {
+      "name": "MasteryMinions",
+      "level": 5,
+      "maxLevel": 10,
+      "progress": 5,
+      "target": 6,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/ef9bT6GhTRAooaHunskI-nUtyAf3LgJLS0dK4eeunWA.png"
+      }
+    },
+    {
+      "name": "MasteryCannon",
+      "level": 6,
+      "maxLevel": 10,
+      "progress": 6,
+      "target": 7,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/YARx5MG829lHZyFtjMWxdUCc-dzrMUIVjbKxo3YX3x0.png"
+      }
+    },
+    {
+      "name": "MasteryMusketeer",
+      "level": 5,
+      "maxLevel": 10,
+      "progress": 5,
+      "target": 6,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/7N_u8MQR2wgHYVMeIzcLihxLUzd1Z2HQxv5s0JPdruA.png"
+      }
+    },
+    {
+      "name": "MasteryMiniPekka",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/ux6w7PT-AsIj5uMi9B_P22A7VolGd_vQkGPRA4E8q8k.png"
+      }
+    },
+    {
+      "name": "MasteryBattleRam",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/iaOReUGPda_uZnZNQJ7rtrx4JIOR31BStwlOzAirQaY.png"
+      }
+    },
+    {
+      "name": "MasteryFireball",
+      "level": 4,
+      "maxLevel": 10,
+      "progress": 4,
+      "target": 5,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/fbQybKyBapKN-_FuXbF3HwlOZGEZbJPJb7qZmmFIgOY.png"
+      }
+    },
+    {
+      "name": "MasteryArrows",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/uuPpQh3onm4tO_GiS9rniahMcwq8XEqC6eLebZHe6mw.png"
+      }
+    },
+    {
+      "name": "ClanDonations",
+      "level": 1,
+      "maxLevel": 8,
+      "progress": 204,
+      "target": 500,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/8q7mW1LlZFi_6fanSAMH6_374Z9feIvP07DBQE5e8wk.png"
+      }
+    },
+    {
+      "name": "MasteryRonin",
+      "level": 3,
+      "maxLevel": 10,
+      "progress": 3,
+      "target": 4,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/8bWWeWpZoBeOoObDvldTEakPJipVJa-f3bf8JnQxTy0.png"
+      }
+    },
+    {
+      "name": "MasteryHogRider",
+      "level": 5,
+      "maxLevel": 10,
+      "progress": 5,
+      "target": 6,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/eKRviJot7dxxuVJzx2h7y3QD_L71DiHlZySvV0oIJaM.png"
+      }
+    },
+    {
+      "name": "MasteryIceSpirits",
+      "level": 6,
+      "maxLevel": 10,
+      "progress": 6,
+      "target": 7,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/5qd8EhB9MY6HuUJ-n3ghaR_iFCrJzJTECS1EtZWG_Uc.png"
+      }
+    },
+    {
+      "name": "MasteryWizard",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/15-gYonVuxVQ_F6Svblt1vT1qKxQCrXK9Ko9AFSU5X4.png"
+      }
+    },
+    {
+      "name": "MasteryGoblins",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/kV8vwH57nJss1dYyrPxJVKYZR-ICdR3SXThoh_82ikY.png"
+      }
+    },
+    {
+      "name": "MasteryGoblinBarrel",
+      "level": 4,
+      "maxLevel": 10,
+      "progress": 4,
+      "target": 5,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/sF61IJH8CPfqlyma0cdRKue-1DGlZw6DTWh7t2tdK3w.png"
+      }
+    },
+    {
+      "name": "MasteryPrince",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/FOmNJArEj4Ng-izUDNGAs9Z3phwf0P7MW0MjmRX1fD0.png"
+      }
+    },
+    {
+      "name": "MasteryBabyDragon",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/xdIL40vhvAK77GfbQSjrjLXziXArPMH0q5PDNLcdhKQ.png"
+      }
+    },
+    {
+      "name": "MasteryBomber",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/xmuCR1wsTpiVgNWwxojZ31jISF8RpOW5cXWCBOmxyyY.png"
+      }
+    },
+    {
+      "name": "MasteryWitch",
+      "level": 6,
+      "maxLevel": 10,
+      "progress": 6,
+      "target": 7,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/wunW3GCdP37vpOHH-6ky-PXo2cqpIh5YKdDdZbU5ACA.png"
+      }
+    },
+    {
+      "name": "MasteryPekka",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/quQ0vR4tAGu3sI0EzRUs63GNC4vMS8oUp2d53hMYwbU.png"
+      }
+    },
+    {
+      "name": "MasteryVines",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/jcXVCGTxqRiWUaMM3WYDnBOUgbgj3jAZXqaeqdH_fzg.png"
+      }
+    },
+    {
+      "name": "MasterySnowball",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/QElkkyYWIs3JHYkItc3aulCg-pDvQN1lDI_Rl7shYkE.png"
+      }
+    },
+    {
+      "name": "MasteryElectroSpirit",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/4xsWgZTvq3z4QlKsSJ0vuZojJhp0aZi1oNFE8P37m8U.png"
+      }
+    },
+    {
+      "name": "MasteryDartBarrell",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/_iTB1KlfnkWjfGtLqR8tToWTziWDHCVn3llfcuiRedA.png"
+      }
+    },
+    {
+      "name": "MasteryTombstone",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/BAzERt0zT5fiL5CDH_CXT_4nNGsBRBMJuKoUSmASQPo.png"
+      }
+    },
+    {
+      "name": "MasteryFireSpirits",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/Cy-9HSmPWUSsMvp6CyqeqpZz2_l13-tYkqBYnMzvrYw.png"
+      }
+    },
+    {
+      "name": "MasterySpearGoblins",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/ULhoEAaMWnb5RWfs9EBFJbRj4qtTKwo19UA49oXpIl0.png"
+      }
+    },
+    {
+      "name": "MasterySkeletonDragons",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/0heuf77x68kmEQ1xW7c0vTLC78tMulR-WvDw7Y_8Qko.png"
+      }
+    },
+    {
+      "name": "MasteryZap",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/qBxmSIU8swPpRVXDB0fhsoSAAfDasxwbOvjNLY1A5tY.png"
+      }
+    },
+    {
+      "name": "MasteryBlowdartGoblin",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/FbflZ0Z6ttUdPTMXB4rPQEqtkRsDtbuDhiTLQOzPT1E.png"
+      }
+    },
+    {
+      "name": "MasteryGoblinGiant",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/4OGpv2cJgUvwtWNWjGNGaz95uoQC9BznWfa9eWHdc-M.png"
+      }
+    },
+    {
+      "name": "MasteryBarbLog",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/-QOIzsk02XNpRW6q8Sbcxggc2PRrEJnylEYq9siyQv0.png"
+      }
+    },
+    {
+      "name": "MasteryIceGolemite",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/koRT02e6gemhHUo8WjPWPLe9NFOVrjS_3ELp7QFL6kw.png"
+      }
+    },
+    {
+      "name": "MasteryBerserker",
+      "level": 4,
+      "maxLevel": 10,
+      "progress": 4,
+      "target": 5,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/Qi3c9TCqKzh56K3FRMwKwomfLAzbcdOn-RGNqyVPrHk.png"
+      }
+    },
+    {
+      "name": "MasteryValkyrie",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/N9mSO8Sh_47TdPfCuP84tiNGlvxq-9ZVPP0OTSoIZGM.png"
+      }
+    },
+    {
+      "name": "MasteryLog",
+      "level": 6,
+      "maxLevel": 10,
+      "progress": 6,
+      "target": 7,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/fPDfOeGuuVyhrP666NM0Kpp1b3ydgMtgRLziwBMA-hY.png"
+      }
+    },
+    {
+      "name": "MasterySkeletonArmy",
+      "level": 4,
+      "maxLevel": 10,
+      "progress": 4,
+      "target": 5,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/bMjkmre4cst6iJYTAEQmGQxw_xXjuFpl7qVFmzAhC4A.png"
+      }
+    },
+    {
+      "name": "MasteryKnight",
+      "level": 2,
+      "maxLevel": 10,
+      "progress": 2,
+      "target": 3,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/M9q2L9i5JaK5wEq2zd0Xz3LXk2Y0eq0U8yS9pmQNleQ.png"
+      }
+    },
+    {
+      "name": "MasteryMiner",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/pk27JhV15ZxduFsSEjm2TKJ44c15GJUoxb4uN5T5CUg.png"
+      }
+    },
+    {
+      "name": "MasteryAngryBarbarians",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/eJYEasRf1Pa1INWZKgAqcAtDh8sMoSx9c8AKjZBkNn4.png"
+      }
+    },
+    {
+      "name": "MasteryMegaKnight",
+      "level": 4,
+      "maxLevel": 10,
+      "progress": 4,
+      "target": 5,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/5ZgpwaeFNCcrPHbYW6QvH_uEYMMaTHhYa8H3FuRZpQs.png"
+      }
+    },
+    {
+      "name": "MasteryPoison",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/GG4MQtEsFPW0FhNxbgXyvkd1_O2QjhGFiszmLWXDCIE.png"
+      }
+    },
+    {
+      "name": "MasteryRamRider",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/ANG2b48JCQ8CACG6VvI9rzt1fPMRDDYJk3CDMEKkQrg.png"
+      }
+    },
+    {
+      "name": "MasteryElectroGiant",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/H27aRuG6KRvf3fbv3i7lbsYDB16JfgTZOemaj21xRHE.png"
+      }
+    },
+    {
+      "name": "MasteryAssassin",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/rajFTEGOR0OxDRvAQhTG7Mx62iV9ZZsqr-pGB0BNCdM.png"
+      }
+    },
+    {
+      "name": "MasteryGoldenKnight",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/UlXKSlMAGh9qrXAQF4U77zH6dGkDYTf3niAbnFPyI2Y.png"
+      }
+    },
+    {
+      "name": "MasterySkeletonKing",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/AX7WlK-jNC6jShgW-unQxcGcLh4Jzk7HbxbDT5UCqNQ.png"
+      }
+    },
+    {
+      "name": "MasteryRage",
+      "level": 1,
+      "maxLevel": 10,
+      "progress": 1,
+      "target": 2,
+      "iconUrls": {
+        "large": "https://api-assets.clashroyale.com/playerbadges/512/qwkEk_RAMiujQhPPuOEoZpxNty7U-4Qye-khRjgfmA4.png"
+      }
+    }
+  ],
+  "achievements": [
+    {
+      "name": "Team Player",
+      "stars": 3,
+      "value": 2,
+      "target": 1,
+      "info": "Join a Clan",
+      "completionInfo": null
+    },
+    {
+      "name": "Friend in Need",
+      "stars": 1,
+      "value": 204,
+      "target": 250,
+      "info": "Donate 250 cards",
+      "completionInfo": null
+    },
+    {
+      "name": "Road to Glory",
+      "stars": 3,
+      "value": 19,
+      "target": 6,
+      "info": "Reach Arena 6",
+      "completionInfo": null
+    },
+    {
+      "name": "Gatherer",
+      "stars": 3,
+      "value": 113,
+      "target": 40,
+      "info": "Collect 40 cards",
+      "completionInfo": null
+    },
+    {
+      "name": "TV Royale",
+      "stars": 0,
+      "value": 0,
+      "target": 1,
+      "info": "Watch a TV Royale Replay",
+      "completionInfo": null
+    },
+    {
+      "name": "Tournament Rewards",
+      "stars": 0,
+      "value": 0,
+      "target": 1000,
+      "info": "Win 1000 cards from tournaments",
+      "completionInfo": null
+    },
+    {
+      "name": "Tournament Host",
+      "stars": 0,
+      "value": 0,
+      "target": 1,
+      "info": "Create and finish one tournament",
+      "completionInfo": null
+    },
+    {
+      "name": "Tournament Player",
+      "stars": 0,
+      "value": 0,
+      "target": 1,
+      "info": "Join a tournament",
+      "completionInfo": null
+    },
+    {
+      "name": "Challenge Streak",
+      "stars": 0,
+      "value": 0,
+      "target": 4,
+      "info": "Get 4 wins in a single Challenge",
+      "completionInfo": null
+    },
+    {
+      "name": "Practice with Friends",
+      "stars": 1,
+      "value": 3,
+      "target": 5,
+      "info": "Win 5 Friendly Battles",
+      "completionInfo": null
+    },
+    {
+      "name": "Special Challenge",
+      "stars": 0,
+      "value": 0,
+      "target": 1,
+      "info": "Participate in 1 unique Special Event Challenges",
+      "completionInfo": null
+    },
+    {
+      "name": "Friend in Need II",
+      "stars": 0,
+      "value": 204,
+      "target": 5000,
+      "info": "Donate 5000 cards",
+      "completionInfo": null
+    }
+  ],
+  "cards": [
+    {
+      "name": "Knight",
+      "id": 26000000,
+      "level": 12,
+      "evolutionLevel": 1,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 3,
+      "rarity": "common",
+      "count": 337,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/jAj1Q5rclXxU9kVImGqSJxa4wEMfEhvwNQ_4jiGUuqg.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/jAj1Q5rclXxU9kVImGqSJxa4wEMfEhvwNQ_4jiGUuqg.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/jAj1Q5rclXxU9kVImGqSJxa4wEMfEhvwNQ_4jiGUuqg.png"
+      }
+    },
+    {
+      "name": "Archers",
+      "id": 26000001,
+      "level": 9,
+      "evolutionLevel": 1,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 190,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/W4Hmp8MTSdXANN8KdblbtHwtsbt0o749BbxNqmJYfA8.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/W4Hmp8MTSdXANN8KdblbtHwtsbt0o749BbxNqmJYfA8.png"
+      }
+    },
+    {
+      "name": "Minions",
+      "id": 26000005,
+      "level": 11,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 242,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/yHGpoEnmUWPGV_hBbhn-Kk-Bs838OjGzWzJJlQpQKQA.png"
+      }
+    },
+    {
+      "name": "Arrows",
+      "id": 28000001,
+      "level": 8,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 54,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Flsoci-Y6y8ZFVi5uRFTmgkPnCmMyMVrU7YmmuPvSBo.png"
+      }
+    },
+    {
+      "name": "Fireball",
+      "id": 28000000,
+      "level": 8,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 30,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/lZD9MILQv7O-P3XBr_xOLS5idwuz3_7Ws9G60U36yhc.png"
+      }
+    },
+    {
+      "name": "Giant",
+      "id": 26000003,
+      "level": 6,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 2,
+      "rarity": "rare",
+      "count": 6,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Axr4ox5_b7edmLsoHxBX3vmgijAIibuF6RImTbqLlXE.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/Axr4ox5_b7edmLsoHxBX3vmgijAIibuF6RImTbqLlXE.png"
+      }
+    },
+    {
+      "name": "Mini P.E.K.K.A",
+      "id": 26000018,
+      "level": 8,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 2,
+      "rarity": "rare",
+      "count": 193,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Fmltc4j3Ve9vO_xhHHPEO3PRP3SmU2oKp2zkZQHRZT4.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/Fmltc4j3Ve9vO_xhHHPEO3PRP3SmU2oKp2zkZQHRZT4.png"
+      }
+    },
+    {
+      "name": "Musketeer",
+      "id": 26000014,
+      "level": 8,
+      "starLevel": 1,
+      "evolutionLevel": 1,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 3,
+      "rarity": "rare",
+      "count": 195,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Tex1C48UTq9FKtAX-3tzG0FJmc9jzncUZG3bb5Vf-Ds.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/Tex1C48UTq9FKtAX-3tzG0FJmc9jzncUZG3bb5Vf-Ds.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/Tex1C48UTq9FKtAX-3tzG0FJmc9jzncUZG3bb5Vf-Ds.png"
+      }
+    },
+    {
+      "name": "Goblin Hut",
+      "id": 27000001,
+      "level": 6,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 3,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/l8ZdzzNLcwB4u7ihGgxNFQOjCT_njFuAhZr7D6PRF7E.png"
+      }
+    },
+    {
+      "name": "Goblins",
+      "id": 26000002,
+      "level": 10,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 2,
+      "rarity": "common",
+      "count": 100,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/X_DQUye_OaS3QN6VC9CPw05Fit7wvSm3XegXIXKP--0.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/X_DQUye_OaS3QN6VC9CPw05Fit7wvSm3XegXIXKP--0.png"
+      }
+    },
+    {
+      "name": "Spear Goblins",
+      "id": 26000019,
+      "level": 12,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 1152,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/FSDFotjaXidI4ku_WFpVCTWS1hKGnFh1sxX0lxM43_E.png"
+      }
+    },
+    {
+      "name": "Goblin Cage",
+      "id": 27000012,
+      "level": 7,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 1,
+      "rarity": "rare",
+      "count": 162,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/vD24bBgK4rSq7wx5QEbuqChtPMRFviL_ep76GwQw1yA.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/vD24bBgK4rSq7wx5QEbuqChtPMRFviL_ep76GwQw1yA.png"
+      }
+    },
+    {
+      "name": "Tombstone",
+      "id": 27000009,
+      "level": 8,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 2,
+      "rarity": "rare",
+      "count": 169,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/LjSfSbwQfkZuRJY4pVxKspZ-a0iM5KAhU8w-a_N5Z7Y.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/LjSfSbwQfkZuRJY4pVxKspZ-a0iM5KAhU8w-a_N5Z7Y.png"
+      }
+    },
+    {
+      "name": "Skeletons",
+      "id": 26000010,
+      "level": 11,
+      "evolutionLevel": 1,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 47,
+      "elixirCost": 1,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/oO7iKMU5m0cdxhYPZA3nWQiAUh2yoGgdThLWB1rVSec.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/oO7iKMU5m0cdxhYPZA3nWQiAUh2yoGgdThLWB1rVSec.png"
+      }
+    },
+    {
+      "name": "Bomber",
+      "id": 26000013,
+      "level": 11,
+      "evolutionLevel": 1,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 429,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/12n1CesxKIcqVYntjxcF36EFA-ONw7Z-DoL0_rQrbdo.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/12n1CesxKIcqVYntjxcF36EFA-ONw7Z-DoL0_rQrbdo.png"
+      }
+    },
+    {
+      "name": "Valkyrie",
+      "id": 26000011,
+      "level": 6,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 3,
+      "rarity": "rare",
+      "count": 85,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/0lIoYf3Y_plFTzo95zZL93JVxpfb3MMgFDDhgSDGU9A.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/0lIoYf3Y_plFTzo95zZL93JVxpfb3MMgFDDhgSDGU9A.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/0lIoYf3Y_plFTzo95zZL93JVxpfb3MMgFDDhgSDGU9A.png"
+      }
+    },
+    {
+      "name": "Cannon",
+      "id": 27000000,
+      "level": 13,
+      "starLevel": 2,
+      "evolutionLevel": 1,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 3204,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/nZK1y-beLxO5vnlyUhK6-2zH2NzXJwqykcosqQ1cmZ8.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/nZK1y-beLxO5vnlyUhK6-2zH2NzXJwqykcosqQ1cmZ8.png"
+      }
+    },
+    {
+      "name": "Barbarians",
+      "id": 26000008,
+      "level": 9,
+      "evolutionLevel": 1,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 152,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/TvJsuu2S4yhyk1jVYUAQwdKOnW4U77KuWWOTPOWnwfI.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/TvJsuu2S4yhyk1jVYUAQwdKOnW4U77KuWWOTPOWnwfI.png"
+      }
+    },
+    {
+      "name": "Mega Minion",
+      "id": 26000039,
+      "level": 7,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 2,
+      "rarity": "rare",
+      "count": 39,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/-T_e4YLbuhPBKbYnBwQfXgynNpp5eOIN_0RracYwL9c.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/-T_e4YLbuhPBKbYnBwQfXgynNpp5eOIN_0RracYwL9c.png"
+      }
+    },
+    {
+      "name": "Battle Ram",
+      "id": 26000036,
+      "level": 6,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 1,
+      "rarity": "rare",
+      "count": 27,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/dyc50V2cplKi4H7pq1B3I36pl_sEH5DQrNHboS_dbbM.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/dyc50V2cplKi4H7pq1B3I36pl_sEH5DQrNHboS_dbbM.png"
+      }
+    },
+    {
+      "name": "Wizard",
+      "id": 26000017,
+      "level": 7,
+      "evolutionLevel": 1,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 3,
+      "rarity": "rare",
+      "count": 147,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Mej7vnv4H_3p_8qPs_N6_GKahy6HDr7pU7i9eTHS84U.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/Mej7vnv4H_3p_8qPs_N6_GKahy6HDr7pU7i9eTHS84U.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/Mej7vnv4H_3p_8qPs_N6_GKahy6HDr7pU7i9eTHS84U.png"
+      }
+    },
+    {
+      "name": "Bomb Tower",
+      "id": 27000004,
+      "level": 5,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 31,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/rirYRyHPc97emRjoH-c1O8uZCBzPVnToaGuNGusF3TQ.png"
+      }
+    },
+    {
+      "name": "Inferno Tower",
+      "id": 27000003,
+      "level": 8,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 156,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/GSHY_wrooMMLET6bG_WJB8redtwx66c4i80ipi4gYOM.png"
+      }
+    },
+    {
+      "name": "Skeleton Dragons",
+      "id": 26000080,
+      "level": 8,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 274,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/qPOtg9uONh47_NLxGhhFc_ww9PlZ6z3Ry507q1NZUXs.png"
+      }
+    },
+    {
+      "name": "Fire Spirit",
+      "id": 26000031,
+      "level": 10,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 0,
+      "elixirCost": 1,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/16-BqusVvynIgYI8_Jci3LDC-r8AI_xaIYLgXqtlmS8.png"
+      }
+    },
+    {
+      "name": "Zap",
+      "id": 28000008,
+      "level": 8,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 306,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/7dxh2-yCBy1x44GrBaL29vjqnEEeJXHEAlsi5g6D1eY.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/7dxh2-yCBy1x44GrBaL29vjqnEEeJXHEAlsi5g6D1eY.png"
+      }
+    },
+    {
+      "name": "Electro Spirit",
+      "id": 26000084,
+      "level": 8,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 30,
+      "elixirCost": 1,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/WKd4-IAFsgPpMo7dDi9sujmYjRhOMEWiE07OUJpvD9g.png"
+      }
+    },
+    {
+      "name": "Rocket",
+      "id": 28000003,
+      "level": 7,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 50,
+      "elixirCost": 6,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Ie07nQNK9CjhKOa4-arFAewi4EroqaA-86Xo7r5tx94.png"
+      }
+    },
+    {
+      "name": "Bats",
+      "id": 26000049,
+      "level": 9,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 386,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/EnIcvO21hxiNpoI-zO6MDjLmzwPbq8Z4JPo2OKoVUjU.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/EnIcvO21hxiNpoI-zO6MDjLmzwPbq8Z4JPo2OKoVUjU.png"
+      }
+    },
+    {
+      "name": "Hog Rider",
+      "id": 26000021,
+      "level": 9,
+      "starLevel": 1,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 20,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Ubu0oUl8tZkusnkZf8Xv9Vno5IO29Y-jbZ4fhoNJ5oc.png"
+      }
+    },
+    {
+      "name": "Baby Dragon",
+      "id": 26000015,
+      "level": 3,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 6,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/cjC9n4AvEZJ3urkVh-rwBkJ-aRSsydIMqSAV48hAih0.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/cjC9n4AvEZJ3urkVh-rwBkJ-aRSsydIMqSAV48hAih0.png"
+      }
+    },
+    {
+      "name": "Skeleton Army",
+      "id": 26000012,
+      "level": 7,
+      "evolutionLevel": 1,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 5,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/fAOToOi1pRy7svN2xQS6mDkhQw2pj9m_17FauaNqyl4.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/fAOToOi1pRy7svN2xQS6mDkhQw2pj9m_17FauaNqyl4.png"
+      }
+    },
+    {
+      "name": "Witch",
+      "id": 26000007,
+      "level": 7,
+      "starLevel": 1,
+      "evolutionLevel": 1,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 2,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/cfwk1vzehVyHC-uloEIH6NOI0hOdofCutR5PyhIgO6w.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/cfwk1vzehVyHC-uloEIH6NOI0hOdofCutR5PyhIgO6w.png"
+      }
+    },
+    {
+      "name": "Ronin",
+      "id": 26000106,
+      "level": 2,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 2,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/X0dTFs7OGUavreDEzOtYd_YNZ8Zly6qgAE-dd-bNfWU.png"
+      }
+    },
+    {
+      "name": "Flying Machine",
+      "id": 26000057,
+      "level": 8,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 115,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/hzKNE3QwFcrSrDDRuVW3QY_OnrDPijSiIp-PsWgFevE.png"
+      }
+    },
+    {
+      "name": "Guards",
+      "id": 26000025,
+      "level": 3,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 7,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/1ArKfLJxYo6_NU_S9cAeIrfbXqWH0oULVJXedxBXQlU.png"
+      }
+    },
+    {
+      "name": "Goblin Barrel",
+      "id": 28000004,
+      "level": 8,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 0,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/CoZdp5PpsTH858l212lAMeJxVJ0zxv9V-f5xC8Bvj5g.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/CoZdp5PpsTH858l212lAMeJxVJ0zxv9V-f5xC8Bvj5g.png"
+      }
+    },
+    {
+      "name": "P.E.K.K.A",
+      "id": 26000004,
+      "level": 5,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 17,
+      "elixirCost": 7,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/MlArURKhn_zWAZY-Xj1qIRKLVKquarG25BXDjUQajNs.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/MlArURKhn_zWAZY-Xj1qIRKLVKquarG25BXDjUQajNs.png"
+      }
+    },
+    {
+      "name": "Mortar",
+      "id": 27000002,
+      "level": 7,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 4,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/lPOSw6H7YOHq2miSCrf7ZDL3ANjhJdPPDYOTujdNrVE.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/lPOSw6H7YOHq2miSCrf7ZDL3ANjhJdPPDYOTujdNrVE.png"
+      }
+    },
+    {
+      "name": "Royal Giant",
+      "id": 26000024,
+      "level": 9,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 510,
+      "elixirCost": 6,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/mnlRaNtmfpQx2e6mp70sLd0ND-pKPF70Cf87_agEKg4.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/mnlRaNtmfpQx2e6mp70sLd0ND-pKPF70Cf87_agEKg4.png"
+      }
+    },
+    {
+      "name": "Royal Hogs",
+      "id": 26000059,
+      "level": 7,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 1,
+      "rarity": "rare",
+      "count": 32,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/ASSQJG_MoVq9e81HZzo4bynMnyLNpNJMfSLb3hqydOw.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/ASSQJG_MoVq9e81HZzo4bynMnyLNpNJMfSLb3hqydOw.png"
+      }
+    },
+    {
+      "name": "Royal Recruits",
+      "id": 26000047,
+      "level": 9,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 114,
+      "elixirCost": 7,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/jcNyYGUiXXNz3kuz8NBkHNKNREQKraXlb_Ts7rhCIdM.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/jcNyYGUiXXNz3kuz8NBkHNKNREQKraXlb_Ts7rhCIdM.png"
+      }
+    },
+    {
+      "name": "Dark Prince",
+      "id": 26000027,
+      "level": 3,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 2,
+      "rarity": "epic",
+      "count": 0,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/M7fXlrKXHu2IvpSGpk36kXVstslbR08Bbxcy0jQcln8.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/M7fXlrKXHu2IvpSGpk36kXVstslbR08Bbxcy0jQcln8.png"
+      }
+    },
+    {
+      "name": "Prince",
+      "id": 26000016,
+      "level": 3,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 9,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/3JntJV62aY0G1Qh6LIs-ek-0ayeYFY3VItpG7cb9I60.png"
+      }
+    },
+    {
+      "name": "Ice Spirit",
+      "id": 26000030,
+      "level": 13,
+      "evolutionLevel": 1,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 954,
+      "elixirCost": 1,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/lv1budiafU9XmSdrDkk0NYyqASAFYyZ06CPysXKZXlA.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/lv1budiafU9XmSdrDkk0NYyqASAFYyZ06CPysXKZXlA.png"
+      }
+    },
+    {
+      "name": "Balloon",
+      "id": 26000006,
+      "level": 4,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 2,
+      "rarity": "epic",
+      "count": 4,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/qBipxLo-3hhCnPrApp2Nn3b2NgrSrvwzWytvREev0CY.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/qBipxLo-3hhCnPrApp2Nn3b2NgrSrvwzWytvREev0CY.png"
+      }
+    },
+    {
+      "name": "Giant Snowball",
+      "id": 28000017,
+      "level": 10,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 589,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/7MaJLa6hK9WN2_VIshuh5DIDfGwm0wEv98gXtAxLDPs.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/7MaJLa6hK9WN2_VIshuh5DIDfGwm0wEv98gXtAxLDPs.png"
+      }
+    },
+    {
+      "name": "Battle Healer",
+      "id": 26000068,
+      "level": 7,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 106,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/KdwXcoigS2Kg-cgA7BJJIANbUJG6SNgjetRQ-MegZ08.png"
+      }
+    },
+    {
+      "name": "Vines",
+      "id": 28000026,
+      "level": 4,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 8,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/V5sJlPuo2WBRtirJ1lGEPJA4NvQ0KPwFeMrpxLX5z_8.png"
+      }
+    },
+    {
+      "name": "Ice Golem",
+      "id": 26000038,
+      "level": 8,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 2,
+      "rarity": "rare",
+      "count": 100,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/r05cmpwV1o7i7FHodtZwW3fmjbXCW34IJCsDEV5cZC4.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/r05cmpwV1o7i7FHodtZwW3fmjbXCW34IJCsDEV5cZC4.png"
+      }
+    },
+    {
+      "name": "Lightning",
+      "id": 28000007,
+      "level": 3,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 9,
+      "elixirCost": 6,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/fpnESbYqe5GyZmaVVYe-SEu7tE0Kxh_HZyVigzvLjks.png"
+      }
+    },
+    {
+      "name": "Rune Giant",
+      "id": 26000101,
+      "level": 4,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 4,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/UogMnGHQXT-TOVXRxslKdAKXUPhqUvrD_hV9x8lbzdE.png"
+      }
+    },
+    {
+      "name": "Goblin Gang",
+      "id": 26000041,
+      "level": 8,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 30,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/NHflxzVAQT4oAz7eDfdueqpictb5vrWezn1nuqFhE4w.png"
+      }
+    },
+    {
+      "name": "Berserker",
+      "id": 26000102,
+      "level": 8,
+      "evolutionLevel": 2,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 2,
+      "rarity": "common",
+      "count": 98,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/NA6W8S1JBYBlOPwD3dNvJLFvVDKq-UuBs_J3i3ewLFI.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/NA6W8S1JBYBlOPwD3dNvJLFvVDKq-UuBs_J3i3ewLFI.png"
+      }
+    },
+    {
+      "name": "Three Musketeers",
+      "id": 26000028,
+      "level": 7,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 47,
+      "elixirCost": 9,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/_J2GhbkX3vswaFk1wG-dopwiHyNc_YiPhwroiKF3Mek.png"
+      }
+    },
+    {
+      "name": "Goblin Giant",
+      "id": 26000060,
+      "level": 4,
+      "evolutionLevel": 1,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 18,
+      "elixirCost": 6,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/SoW16cY3jXBwaTDvb39DkqiVsoFVaDWbzf5QBYphJrY.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/SoW16cY3jXBwaTDvb39DkqiVsoFVaDWbzf5QBYphJrY.png"
+      }
+    },
+    {
+      "name": "Dart Goblin",
+      "id": 26000040,
+      "level": 7,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 1,
+      "rarity": "rare",
+      "count": 31,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/BmpK3bqEAviflqHCdxxnfm-_l3pRPJw3qxHkwS55nCY.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/BmpK3bqEAviflqHCdxxnfm-_l3pRPJw3qxHkwS55nCY.png"
+      }
+    },
+    {
+      "name": "Skeleton Barrel",
+      "id": 26000056,
+      "level": 9,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 10,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/vCB4DWCcrGbTkarjcOiVz4aNDx6GWLm0yUepg9E1MGo.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/vCB4DWCcrGbTkarjcOiVz4aNDx6GWLm0yUepg9E1MGo.png"
+      }
+    },
+    {
+      "name": "Barbarian Barrel",
+      "id": 28000015,
+      "level": 5,
+      "evolutionLevel": 2,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 2,
+      "rarity": "epic",
+      "count": 24,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Gb0G1yNy0i5cIGUHin8uoFWxqntNtRPhY_jeMXg7HnA.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/Gb0G1yNy0i5cIGUHin8uoFWxqntNtRPhY_jeMXg7HnA.png"
+      }
+    },
+    {
+      "name": "Barbarian Hut",
+      "id": 27000005,
+      "level": 9,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 158,
+      "elixirCost": 6,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/ho0nOG2y3Ch86elHHcocQs8Fv_QNe0cFJ2CijsxABZA.png"
+      }
+    },
+    {
+      "name": "Giant Skeleton",
+      "id": 26000020,
+      "level": 5,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 0,
+      "elixirCost": 6,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/0p0gd0XaVRu1Hb1iSG1hTYbz2AN6aEiZnhaAib5O8Z8.png"
+      }
+    },
+    {
+      "name": "Poison",
+      "id": 28000009,
+      "level": 5,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 7,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/98HDkG2189yOULcVG9jz2QbJKtfuhH21DIrIjkOjxI8.png"
+      }
+    },
+    {
+      "name": "Goblin Curse",
+      "id": 28000024,
+      "level": 2,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 0,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/OQPfGgT5mHEUvPuKKt0plZT0PNtIjCqUgQ3Rm86dQ2k.png"
+      }
+    },
+    {
+      "name": "X-Bow",
+      "id": 27000008,
+      "level": 5,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 0,
+      "elixirCost": 6,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/zVQ9Hme1hlj9Dc6e1ORl9xWwglcSrP7ejow5mAhLUJc.png"
+      }
+    },
+    {
+      "name": "Elite Barbarians",
+      "id": 26000043,
+      "level": 8,
+      "evolutionLevel": 1,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 387,
+      "elixirCost": 6,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/C88C5JH_F3lLZj6K-tLcMo5DPjrFmvzIb1R2M6xCfTE.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/C88C5JH_F3lLZj6K-tLcMo5DPjrFmvzIb1R2M6xCfTE.png"
+      }
+    },
+    {
+      "name": "Freeze",
+      "id": 28000005,
+      "level": 4,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 4,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/I1M20_Zs_p_BS1NaNIVQjuMJkYI_1-ePtwYZahn0JXQ.png"
+      }
+    },
+    {
+      "name": "Zappies",
+      "id": 26000052,
+      "level": 6,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 78,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/QZfHRpLRmutZbCr5fpLnTpIp89vLI6NrAwzGZ8tHEc4.png"
+      }
+    },
+    {
+      "name": "Minion Horde",
+      "id": 26000022,
+      "level": 7,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 33,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Wyjq5l0IXHTkX9Rmpap6HaH08MvjbxFp1xBO9a47YSI.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/Wyjq5l0IXHTkX9Rmpap6HaH08MvjbxFp1xBO9a47YSI.png"
+      }
+    },
+    {
+      "name": "Hunter",
+      "id": 26000044,
+      "level": 4,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 7,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/VNabB1WKnYtYRSG7X_FZfnZjQDHTBs9A96OGMFmecrA.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/VNabB1WKnYtYRSG7X_FZfnZjQDHTBs9A96OGMFmecrA.png"
+      }
+    },
+    {
+      "name": "Golem",
+      "id": 26000009,
+      "level": 4,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 11,
+      "elixirCost": 8,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/npdmCnET7jmVjJvjJQkFnNSNnDxYHDBigbvIAloFMds.png"
+      }
+    },
+    {
+      "name": "Tesla",
+      "id": 27000006,
+      "level": 8,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 232,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/OiwnGrxFMNiHetYEerE-UZt0L_uYNzFY7qV_CA_OxR4.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/OiwnGrxFMNiHetYEerE-UZt0L_uYNzFY7qV_CA_OxR4.png"
+      }
+    },
+    {
+      "name": "Furnace",
+      "id": 27000010,
+      "level": 7,
+      "maxLevel": 14,
+      "maxEvolutionLevel": 1,
+      "rarity": "rare",
+      "count": 124,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/iqbDiG7yYRIzvCPXdt9zPb3IvMt7F7Gi4wIPnh2x4aI.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/iqbDiG7yYRIzvCPXdt9zPb3IvMt7F7Gi4wIPnh2x4aI.png"
+      }
+    },
+    {
+      "name": "Miner",
+      "id": 26000032,
+      "level": 2,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 1,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Y4yWvdwBCg2FpAZgs8T09Gy34WOwpLZW-ttL52Ae8NE.png"
+      }
+    },
+    {
+      "name": "The Log",
+      "id": 28000011,
+      "level": 4,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 0,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/_iDwuDLexHPFZ_x4_a0eP-rxCS6vwWgTs6DLauwwoaY.png"
+      }
+    },
+    {
+      "name": "Electro Dragon",
+      "id": 26000063,
+      "level": 3,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 7,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/tN9h6lnMNPCNsx0LMFmvpHgznbDZ1fBRkx-C7UfNmfY.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/tN9h6lnMNPCNsx0LMFmvpHgznbDZ1fBRkx-C7UfNmfY.png"
+      }
+    },
+    {
+      "name": "Mega Knight",
+      "id": 26000055,
+      "level": 3,
+      "starLevel": 2,
+      "maxLevel": 8,
+      "maxEvolutionLevel": 1,
+      "rarity": "legendary",
+      "count": 0,
+      "elixirCost": 7,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/O2NycChSNhn_UK9nqBXUhhC_lILkiANzPuJjtjoz0CE.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/O2NycChSNhn_UK9nqBXUhhC_lILkiANzPuJjtjoz0CE.png"
+      }
+    },
+    {
+      "name": "Goblin Demolisher",
+      "id": 26000095,
+      "level": 6,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 23,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/KVVOgdn40xasFLYuQv8Go_U_LCV7wSG9q9eE1H7f3Qk.png"
+      }
+    },
+    {
+      "name": "Sparky",
+      "id": 26000033,
+      "level": 2,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 0,
+      "elixirCost": 6,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/2GKMkBrArZXgQxf2ygFjDs4VvGYPbx8F6Lj_68iVhIM.png"
+      }
+    },
+    {
+      "name": "Wall Breakers",
+      "id": 26000058,
+      "level": 4,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 4,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/_xPphEfC8eEwFNrfU3cMQG9-f5JaLQ31ARCA7l3XtW4.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/_xPphEfC8eEwFNrfU3cMQG9-f5JaLQ31ARCA7l3XtW4.png"
+      }
+    },
+    {
+      "name": "Inferno Dragon",
+      "id": 26000037,
+      "level": 2,
+      "maxLevel": 8,
+      "maxEvolutionLevel": 1,
+      "rarity": "legendary",
+      "count": 1,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/y5HDbKtTbWG6En6TGWU0xoVIGs1-iQpIP4HC-VM7u8A.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/y5HDbKtTbWG6En6TGWU0xoVIGs1-iQpIP4HC-VM7u8A.png"
+      }
+    },
+    {
+      "name": "Firecracker",
+      "id": 26000064,
+      "level": 9,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 84,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/c1rL3LO1U2D9-TkeFfAC18gP3AO8ztSwrcHMZplwL2Q.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/c1rL3LO1U2D9-TkeFfAC18gP3AO8ztSwrcHMZplwL2Q.png"
+      }
+    },
+    {
+      "name": "Earthquake",
+      "id": 28000014,
+      "level": 1,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 0,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/XeQXcrUu59C52DslyZVwCnbi4yamID-WxfVZLShgZmE.png"
+      }
+    },
+    {
+      "name": "Ram Rider",
+      "id": 26000051,
+      "level": 2,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 0,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/QaJyerT7f7oMyZ3Fv1glKymtLSvx7YUXisAulxl7zRI.png"
+      }
+    },
+    {
+      "name": "Rascals",
+      "id": 26000053,
+      "level": 8,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 377,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/KV48DfwVHKx9XCjzBdk3daT_Eb52Me4VgjVO7WctRc4.png"
+      }
+    },
+    {
+      "name": "Magic Archer",
+      "id": 26000062,
+      "level": 1,
+      "maxLevel": 8,
+      "maxEvolutionLevel": 2,
+      "rarity": "legendary",
+      "count": 1,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Avli3W7BxU9HQ2SoLiXnBgGx25FoNXUSFm7OcAk68ek.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/Avli3W7BxU9HQ2SoLiXnBgGx25FoNXUSFm7OcAk68ek.png"
+      }
+    },
+    {
+      "name": "Bowler",
+      "id": 26000034,
+      "level": 4,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 2,
+      "rarity": "epic",
+      "count": 18,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/SU4qFXmbQXWjvASxVI6z9IJuTYolx4A0MKK90sTIE88.png",
+        "heroMedium": "https://api-assets.clashroyale.com/cardheroes/300/SU4qFXmbQXWjvASxVI6z9IJuTYolx4A0MKK90sTIE88.png"
+      }
+    },
+    {
+      "name": "Suspicious Bush",
+      "id": 26000097,
+      "level": 5,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 24,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/vqTzGAjseQv9F5rf4tsFWeocvg0dyPw1j_nB1cmDZfI.png"
+      }
+    },
+    {
+      "name": "Lava Hound",
+      "id": 26000029,
+      "level": 1,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 1,
+      "elixirCost": 7,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/unicRQ975sBY2oLtfgZbAI56ZvaWz7azj-vXTLxc0r8.png"
+      }
+    },
+    {
+      "name": "Heal Spirit",
+      "id": 28000016,
+      "level": 4,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 5,
+      "elixirCost": 1,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/GITl06sa2nGRLPvboyXbGEv5E3I-wAwn1Eqa5esggbc.png"
+      }
+    },
+    {
+      "name": "Executioner",
+      "id": 26000045,
+      "level": 5,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 14,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/9XL5BP2mqzV8kza6KF8rOxrpCZTyuGLp2l413DTjEoM.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/9XL5BP2mqzV8kza6KF8rOxrpCZTyuGLp2l413DTjEoM.png"
+      }
+    },
+    {
+      "name": "Bandit",
+      "id": 26000046,
+      "level": 2,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 0,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/QWDdXMKJNpv0go-HYaWQWP6p8uIOHjqn-zX7G0p3DyM.png"
+      }
+    },
+    {
+      "name": "Princess",
+      "id": 26000026,
+      "level": 1,
+      "maxLevel": 8,
+      "maxEvolutionLevel": 1,
+      "rarity": "legendary",
+      "count": 1,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/bAwMcqp9EKVIKH3ZLm_m0MqZFSG72zG-vKxpx8aKoVs.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/bAwMcqp9EKVIKH3ZLm_m0MqZFSG72zG-vKxpx8aKoVs.png"
+      }
+    },
+    {
+      "name": "Goblin Drill",
+      "id": 27000013,
+      "level": 6,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 1,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/eN2TKUYbih-26yBi0xy5LVFOA0zDftgDqxxnVfdIg1o.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/eN2TKUYbih-26yBi0xy5LVFOA0zDftgDqxxnVfdIg1o.png"
+      }
+    },
+    {
+      "name": "Electro Giant",
+      "id": 26000085,
+      "level": 6,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 30,
+      "elixirCost": 7,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/_uChZkNHAMq6tPb3v6A49xinOe3CnhjstOhG6OZbPYc.png"
+      }
+    },
+    {
+      "name": "Rage",
+      "id": 28000002,
+      "level": 4,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 4,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/bGP21OOmcpHMJ5ZA79bHVV2D-NzPtDkvBskCNJb7pg0.png"
+      }
+    },
+    {
+      "name": "Cannon Cart",
+      "id": 26000054,
+      "level": 3,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 6,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/aqwxRz8HXzqlMCO4WMXNA1txynjXTsLinknqsgZLbok.png"
+      }
+    },
+    {
+      "name": "Mother Witch",
+      "id": 26000083,
+      "level": 1,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 1,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/fO-Xah8XZkYKaSK9SCp3wnzwxtvIhun9NVY-zzte1Ng.png"
+      }
+    },
+    {
+      "name": "Royal Delivery",
+      "id": 28000018,
+      "level": 9,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 314,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/LPg7AGjGI3_xmi7gLLgGC50yKM1jJ2teWkZfoHJcIZo.png"
+      }
+    },
+    {
+      "name": "Void",
+      "id": 28000023,
+      "level": 3,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 7,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/BykyeWDqzn4PlHSszu3NbrXT1mHxW2EA8vHbQGR5LDE.png"
+      }
+    },
+    {
+      "name": "Clone",
+      "id": 28000013,
+      "level": 4,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 4,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/mHVCet-1TkwWq-pxVIU2ZWY9_2z7Z7wtP25ArEUsP_g.png"
+      }
+    },
+    {
+      "name": "Graveyard",
+      "id": 28000010,
+      "level": 2,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 1,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Icp8BIyyfBTj1ncCJS7mb82SY7TPV-MAE-J2L2R48DI.png"
+      }
+    },
+    {
+      "name": "Golden Knight",
+      "id": 26000074,
+      "level": 2,
+      "maxLevel": 6,
+      "rarity": "champion",
+      "count": 2,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/WJd207D0O1sN-l1FTb8P9KhYL2oF5jY26vRUfTUW3FQ.png"
+      }
+    },
+    {
+      "name": "Elixir Collector",
+      "id": 27000007,
+      "level": 1,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 1,
+      "elixirCost": 6,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/BGLo3Grsp81c72EpxLLk-Sofk3VY56zahnUNOv3JcT0.png"
+      }
+    },
+    {
+      "name": "Elixir Golem",
+      "id": 26000067,
+      "level": 7,
+      "maxLevel": 14,
+      "rarity": "rare",
+      "count": 115,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/puhMsZjCIqy21HW3hYxjrk_xt8NIPyFqjRy-BeLKZwo.png"
+      }
+    },
+    {
+      "name": "Tornado",
+      "id": 28000012,
+      "level": 5,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 13,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/QJB-QK1QJHdw4hjpAwVSyZBozc2ZWAR9pQ-SMUyKaT0.png"
+      }
+    },
+    {
+      "name": "Mirror",
+      "id": 28000006,
+      "level": 3,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/wC6Cm9rKLEOk72zTsukVwxewKIoO4ZcMJun54zCPWvA.png"
+      }
+    },
+    {
+      "name": "Skeleton King",
+      "id": 26000069,
+      "level": 2,
+      "maxLevel": 6,
+      "rarity": "champion",
+      "count": 0,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/dCd69_wN9f8DxwuqOGtR4QgWhHIPIaTNxZ1e23RzAAc.png"
+      }
+    },
+    {
+      "name": "Night Witch",
+      "id": 26000048,
+      "level": 2,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 3,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/NpCrXDEDBBJgNv9QrBAcJmmMFbS7pe3KCY8xJ5VB18A.png"
+      }
+    },
+    {
+      "name": "Archer Queen",
+      "id": 26000072,
+      "level": 1,
+      "maxLevel": 6,
+      "rarity": "champion",
+      "count": 1,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/p7OQmOAFTery7zCzlpDdm-LOD1kINTm42AwIHchZfWk.png"
+      }
+    },
+    {
+      "name": "Mighty Miner",
+      "id": 26000065,
+      "level": 1,
+      "maxLevel": 6,
+      "rarity": "champion",
+      "count": 1,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Cd9R56yraxTvJiD8xJ2qT2OdsHyh94FqOAarXpbyelo.png"
+      }
+    },
+    {
+      "name": "Goblinstein",
+      "id": 26000099,
+      "level": 1,
+      "maxLevel": 6,
+      "rarity": "champion",
+      "count": 1,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/mQ20B49dXdk7Nv0lMdLw175M3YvkSpN6KNnho8UKBd8.png"
+      }
+    },
+    {
+      "name": "Lumberjack",
+      "id": 26000035,
+      "level": 2,
+      "maxLevel": 8,
+      "maxEvolutionLevel": 1,
+      "rarity": "legendary",
+      "count": 2,
+      "elixirCost": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/E6RWrnCuk13xMX5OE1EQtLEKTZQV6B78d00y8PlXt6Q.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/E6RWrnCuk13xMX5OE1EQtLEKTZQV6B78d00y8PlXt6Q.png"
+      }
+    },
+    {
+      "name": "Spirit Empress",
+      "id": 28000025,
+      "level": 2,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 2,
+      "elixirCost": 6,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/MWWBZqiQeRBXSqEITVMj46nO_uCIUsqBidvUw9K2twY.png"
+      }
+    }
+  ],
+  "supportCards": [
+    {
+      "name": "Tower Princess",
+      "id": 159000000,
+      "level": 12,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 1,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Nzo5Gjbh7NG6O3Hyu7ev54Pu5zK7vDMR2fbpGdVsS64.png"
+      }
+    },
+    {
+      "name": "Cannoneer",
+      "id": 159000001,
+      "level": 4,
+      "maxLevel": 11,
+      "rarity": "epic",
+      "count": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/cUfU4UowRdbIiRvxv0ns4ezQUNndJTy7D2q4I_K_fzg.png"
+      }
+    },
+    {
+      "name": "Dagger Duchess",
+      "id": 159000002,
+      "level": 3,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 4,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/MVj028nMLCmBuP3HlV503uxVAxFg7jyliJVZ5JYJ1h8.png"
+      }
+    }
+  ],
+  "currentDeck": [
+    {
+      "name": "Cannon",
+      "id": 27000000,
+      "level": 13,
+      "starLevel": 2,
+      "evolutionLevel": 1,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 3204,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/nZK1y-beLxO5vnlyUhK6-2zH2NzXJwqykcosqQ1cmZ8.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/nZK1y-beLxO5vnlyUhK6-2zH2NzXJwqykcosqQ1cmZ8.png"
+      }
+    },
+    {
+      "name": "Witch",
+      "id": 26000007,
+      "level": 7,
+      "starLevel": 1,
+      "evolutionLevel": 1,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 2,
+      "elixirCost": 5,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/cfwk1vzehVyHC-uloEIH6NOI0hOdofCutR5PyhIgO6w.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/cfwk1vzehVyHC-uloEIH6NOI0hOdofCutR5PyhIgO6w.png"
+      }
+    },
+    {
+      "name": "Mega Knight",
+      "id": 26000055,
+      "level": 3,
+      "starLevel": 2,
+      "maxLevel": 8,
+      "maxEvolutionLevel": 1,
+      "rarity": "legendary",
+      "count": 0,
+      "elixirCost": 7,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/O2NycChSNhn_UK9nqBXUhhC_lILkiANzPuJjtjoz0CE.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/O2NycChSNhn_UK9nqBXUhhC_lILkiANzPuJjtjoz0CE.png"
+      }
+    },
+    {
+      "name": "The Log",
+      "id": 28000011,
+      "level": 4,
+      "maxLevel": 8,
+      "rarity": "legendary",
+      "count": 0,
+      "elixirCost": 2,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/_iDwuDLexHPFZ_x4_a0eP-rxCS6vwWgTs6DLauwwoaY.png"
+      }
+    },
+    {
+      "name": "Goblin Barrel",
+      "id": 28000004,
+      "level": 8,
+      "maxLevel": 11,
+      "maxEvolutionLevel": 1,
+      "rarity": "epic",
+      "count": 0,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/CoZdp5PpsTH858l212lAMeJxVJ0zxv9V-f5xC8Bvj5g.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/CoZdp5PpsTH858l212lAMeJxVJ0zxv9V-f5xC8Bvj5g.png"
+      }
+    },
+    {
+      "name": "Ice Spirit",
+      "id": 26000030,
+      "level": 13,
+      "evolutionLevel": 1,
+      "maxLevel": 16,
+      "maxEvolutionLevel": 1,
+      "rarity": "common",
+      "count": 954,
+      "elixirCost": 1,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/lv1budiafU9XmSdrDkk0NYyqASAFYyZ06CPysXKZXlA.png",
+        "evolutionMedium": "https://api-assets.clashroyale.com/cardevolutions/300/lv1budiafU9XmSdrDkk0NYyqASAFYyZ06CPysXKZXlA.png"
+      }
+    },
+    {
+      "name": "Minions",
+      "id": 26000005,
+      "level": 11,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 242,
+      "elixirCost": 3,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/yHGpoEnmUWPGV_hBbhn-Kk-Bs838OjGzWzJJlQpQKQA.png"
+      }
+    }
+  ],
+  "currentDeckSupportCards": [
+    {
+      "name": "Tower Princess",
+      "id": 159000000,
+      "level": 12,
+      "maxLevel": 16,
+      "rarity": "common",
+      "count": 1,
+      "iconUrls": {
+        "medium": "https://api-assets.clashroyale.com/cards/300/Nzo5Gjbh7NG6O3Hyu7ev54Pu5zK7vDMR2fbpGdVsS64.png"
+      }
+    }
+  ],
+  "currentFavouriteCard": {
+    "name": "Golden Knight",
+    "id": 26000074,
+    "maxLevel": 6,
+    "elixirCost": 4,
+    "iconUrls": {
+      "medium": "https://api-assets.clashroyale.com/cards/300/WJd207D0O1sN-l1FTb8P9KhYL2oF5jY26vRUfTUW3FQ.png"
+    },
+    "rarity": "champion"
+  },
+  "starPoints": 23002,
+  "expPoints": 0,
+  "legacyTrophyRoadHighScore": null,
+  "currentPathOfLegendSeasonResult": {
+    "leagueNumber": 1,
+    "trophies": 0,
+    "rank": null
+  },
+  "lastPathOfLegendSeasonResult": {
+    "leagueNumber": 1,
+    "trophies": 0,
+    "rank": null
+  },
+  "bestPathOfLegendSeasonResult": {
+    "leagueNumber": 1,
+    "trophies": 0,
+    "rank": null
+  },
+  "progress": {
+    "": {
+      "arena": {
+        "id": 168000050,
+        "name": "Bronze I",
+        "rawName": "AutoChessArena1_2025_Oct"
+      },
+      "trophies": 0,
+      "bestTrophies": 0
+    },
+    "AutoChess_2026_Season_11": {
+      "arena": {
+        "id": 168000180,
+        "name": "Bronze I",
+        "rawName": "AutoChessArena1_2026_Season_11"
+      },
+      "trophies": 0,
+      "bestTrophies": 0
+    },
+    "seasonal-trophy-road-202609": {
+      "arena": {
+        "id": 168000195,
+        "name": "Seasonal Arena I",
+        "rawName": "SeasonalArenas_202609_Arena1"
+      },
+      "trophies": 14000,
+      "bestTrophies": 0
+    }
+  },
+  "totalExpPoints": 0,
+  "_fecha": "27/09/2026",
+  "_clan": "Mini乂Ternas™"
+}

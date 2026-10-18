@@ -1,0 +1,60 @@
+{
+  "items": [
+    {
+      "index": 0,
+      "name": "Giant Chest"
+    },
+    {
+      "index": 1,
+      "name": "Tower Troop Chest"
+    },
+    {
+      "index": 2,
+      "name": "Golden Chest"
+    },
+    {
+      "index": 3,
+      "name": "Magical Chest"
+    },
+    {
+      "index": 4,
+      "name": "Golden Chest"
+    },
+    {
+      "index": 5,
+      "name": "Golden Chest"
+    },
+    {
+      "index": 6,
+      "name": "Golden Chest"
+    },
+    {
+      "index": 7,
+      "name": "Giant Chest"
+    },
+    {
+      "index": 8,
+      "name": "Tower Troop Chest"
+    },
+    {
+      "index": 36,
+      "name": "Overflowing Gold Crate"
+    },
+    {
+      "index": 40,
+      "name": "Royal Wild Chest"
+    },
+    {
+      "index": 365,
+      "name": "Mega Lightning Chest"
+    },
+    {
+      "index": 423,
+      "name": "Legendary Chest"
+    },
+    {
+      "index": 545,
+      "name": "Epic Chest"
+    }
+  ]
+}

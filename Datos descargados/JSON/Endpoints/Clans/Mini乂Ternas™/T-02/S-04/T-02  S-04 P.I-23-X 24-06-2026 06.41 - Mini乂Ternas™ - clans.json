@@ -1,0 +1,95 @@
+{
+  "tag": "#GG99LCJY",
+  "name": "Mini乂Ternas™",
+  "type": "open",
+  "description": "ᴳ乂ᵀ ⚜️ Familia Terna. GUERRA OBLIGATORIA ⚔️ Usa 4 mazos. No barcos ❌ ω: Sí. Cantera: #GCRG8L00 CODE: RoyaleAPI CWStats",
+  "badgeId": 16000028,
+  "clanScore": 13826,
+  "clanWarTrophies": 1430,
+  "location": {
+    "id": 57000184,
+    "name": "Peru",
+    "isCountry": true,
+    "countryCode": "PE"
+  },
+  "requiredTrophies": 300,
+  "donationsPerWeek": 86,
+  "clanChestStatus": "inactive",
+  "clanChestLevel": 1,
+  "clanChestMaxLevel": 0,
+  "members": 4,
+  "memberList": [
+    {
+      "tag": "#VPQCQRCYJ",
+      "name": "m i l y :)",
+      "role": "coLeader",
+      "lastSeen": "20260415T134318.000Z",
+      "expLevel": 0,
+      "trophies": 8683,
+      "arena": {
+        "id": 54000019,
+        "name": "PANCAKES!",
+        "rawName": "Arena_L8"
+      },
+      "clanRank": 1,
+      "previousClanRank": 2,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#JURQQRGV9",
+      "name": "M I L Y",
+      "role": "coLeader",
+      "lastSeen": "20260601T105415.000Z",
+      "expLevel": 0,
+      "trophies": 8089,
+      "arena": {
+        "id": 54000018,
+        "name": "Clash Fest",
+        "rawName": "Arena_L7"
+      },
+      "clanRank": 2,
+      "previousClanRank": 3,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#Q09UJ2UP2",
+      "name": "MASTER K.",
+      "role": "member",
+      "lastSeen": "20260620T141746.000Z",
+      "expLevel": 0,
+      "trophies": 8074,
+      "arena": {
+        "id": 54000018,
+        "name": "Clash Fest",
+        "rawName": "Arena_L7"
+      },
+      "clanRank": 3,
+      "previousClanRank": 4,
+      "donations": 0,
+      "donationsReceived": 8,
+      "clanChestPoints": 0
+    },
+    {
+      "tag": "#LYVJU9UJJ",
+      "name": "fggij09",
+      "role": "leader",
+      "lastSeen": "20260623T152747.000Z",
+      "expLevel": 0,
+      "trophies": 2809,
+      "arena": {
+        "id": 54000010,
+        "name": "Jungle Arena",
+        "rawName": "Arena9"
+      },
+      "clanRank": 4,
+      "previousClanRank": 9,
+      "donations": 0,
+      "donationsReceived": 0,
+      "clanChestPoints": 0
+    }
+  ]
+}
