@@ -851,6 +851,8 @@ function _setupSLista(ss) {
   ];
   var totalCols = _aplicarHeaderDosFilas(sh, columnas);
   _protegerSoloAdvertencia(sh);
+  // PF109 (18-oct-2026): la columna Hora de S_Lista queda como hora sin fecha (antes nadie le ponía formato y aparecía «30/12/1899 20:00:00»). [→ Contexto_Base_Web.md §PF109]
+  _normalizarHoraSLista(sh);
   // Desplegables fijo/dinámico — ver docblocks de las 4 funciones [→ Contexto_Base_Web.md §02B075]
   _aplicarDropdownId2SLista(ss);
   _aplicarDropdownEstadoSLista(ss);

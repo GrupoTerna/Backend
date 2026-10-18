@@ -1307,8 +1307,11 @@ function importarSListaDesdeCSV() {
   // de 2 filas -- ver comentario de arriba).
   sh.getRange(3, 1, filas.length, SL_TOTAL_COLS).setValues(filas);
   for (var i = 0; i < filas.length; i++) {
-    _trySetFmt(sh, i + 3, SL.FECHA, 'dd/mm/yyyy');
+    // PF109: los sorteos guardan fecha y hora juntas en Fecha (`dd/mm/yyyy hh:mm`, igual que al registrar o modificar); con solo `dd/mm/yyyy` la hora quedaba oculta tras restaurar.
+    _trySetFmt(sh, i + 3, SL.FECHA, 'dd/mm/yyyy hh:mm');
   }
+  // PF109: Hora como hora de verdad y con formato de solo hora, no «30/12/1899 20:00:00».
+  _normalizarHoraSLista(sh);
   applyBorderCenter(sh.getRange(3, 1, filas.length, SL_TOTAL_COLS));
   _aplicarDropdownId2SLista(ss);
   _aplicarDropdownEstadoSLista(ss);
@@ -2900,6 +2903,29 @@ function _aplicarDropdownClanSLista(ss) {
 }
 
 /**
+ * _normalizarHoraSLista(sh) — 18-oct-2026 (PF109, pedido del usuario). Deja la columna Hora de S_Lista como HORA de verdad (solo hora, sin fecha): (1) si una celda trae texto con una hora («30/12/1899 20:00:00», «20:00:00», «8:00 PM»), la convierte en el número de la hora del día (fracción de día; no depende de la zona horaria); (2) reaplica a toda la columna el formato de solo hora `h:mm:ss AM/PM`, el mismo que usa T_Lista. Antes nadie le ponía formato a esa columna: al restaurar desde el CSV (el respaldo guarda toda hora con su fecha 30/12/1899) la celda volvía a mostrarse como «30/12/1899 20:00:00», aunque la usuaria le hubiera cambiado el formato a mano. Los valores ya correctos no se reescriben. Se llama desde `procesarSListaNuevasFilas()` (todas las rutas de runUpdate/runAll), `_setupSLista()` e `importarSListaDesdeCSV()`. [→ Contexto_Base_Web.md §PF109]
+ */
+function _normalizarHoraSLista(sh) {
+  if (!sh || sh.getLastRow() < 3) return;
+  var n = sh.getLastRow() - 2;
+  var rango = sh.getRange(3, SL.HORA, n, 1);
+  var vals = rango.getValues();
+  for (var i = 0; i < vals.length; i++) {
+    var v = vals[i][0];
+    if (typeof v !== 'string' || !v.trim()) continue;
+    var m = v.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(a\.?\s?m\.?|p\.?\s?m\.?)?/i);
+    if (!m) continue; // texto sin hora: no se toca
+    var h = Number(m[1]), min = Number(m[2]), seg = Number(m[3] || 0);
+    var ampm = m[4] ? m[4].toLowerCase().replace(/[.\s]/g, '') : '';
+    if (ampm === 'pm' && h < 12) h += 12;
+    if (ampm === 'am' && h === 12) h = 0;
+    if (h > 23 || min > 59 || seg > 59) continue;
+    sh.getRange(i + 3, SL.HORA).setValue((h * 3600 + min * 60 + seg) / 86400);
+  }
+  rango.setNumberFormat('h:mm:ss AM/PM');
+}
+
+/**
  * procesarSListaNuevasFilas(ss) [→ Contexto_Base_Web.md §26B211]
  */
 function procesarSListaNuevasFilas(ss) {
@@ -2908,6 +2934,9 @@ function procesarSListaNuevasFilas(ss) {
 
   // Mismo motivo que en procesarTListaNuevasFilas(): la validación de [→ Contexto_Base_Web.md §26B212]
   sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS).clearDataValidations();
+
+  // PF109: la columna Hora queda siempre como hora sin fecha (ver _normalizarHoraSLista()).
+  _normalizarHoraSLista(sh);
 
   var mapaDirectorioOrg = _getDirectorioLookupPorTag(ss);
   var numFilas = sh.getLastRow() - 2;
