@@ -1,0 +1,263 @@
+id,name,isCountry,countryCode
+57000000,Europe,No,
+57000001,North America,No,
+57000002,South America,No,
+57000003,Asia,No,
+57000004,Oceania,No,
+57000005,Africa,No,
+57000006,International,No,
+57000007,Afghanistan,Sí,AF
+57000008,Åland Islands,Sí,AX
+57000009,Albania,Sí,AL
+57000010,Algeria,Sí,DZ
+57000011,American Samoa,Sí,AS
+57000012,Andorra,Sí,AD
+57000013,Angola,Sí,AO
+57000014,Anguilla,Sí,AI
+57000015,Antarctica,Sí,AQ
+57000016,Antigua and Barbuda,Sí,AG
+57000017,Argentina,Sí,AR
+57000018,Armenia,Sí,AM
+57000019,Aruba,Sí,AW
+57000020,Ascension Island,Sí,AC
+57000021,Australia,Sí,AU
+57000022,Austria,Sí,AT
+57000023,Azerbaijan,Sí,AZ
+57000024,Bahamas,Sí,BS
+57000025,Bahrain,Sí,BH
+57000026,Bangladesh,Sí,BD
+57000027,Barbados,Sí,BB
+57000028,Belarus,Sí,BY
+57000029,Belgium,Sí,BE
+57000030,Belize,Sí,BZ
+57000031,Benin,Sí,BJ
+57000032,Bermuda,Sí,BM
+57000033,Bhutan,Sí,BT
+57000034,Bolivia,Sí,BO
+57000035,Bosnia and Herzegovina,Sí,BA
+57000036,Botswana,Sí,BW
+57000037,Bouvet Island,Sí,BV
+57000038,Brazil,Sí,BR
+57000039,British Indian Ocean Territory,Sí,IO
+57000040,British Virgin Islands,Sí,VG
+57000041,Brunei,Sí,BN
+57000042,Bulgaria,Sí,BG
+57000043,Burkina Faso,Sí,BF
+57000044,Burundi,Sí,BI
+57000045,Cambodia,Sí,KH
+57000046,Cameroon,Sí,CM
+57000047,Canada,Sí,CA
+57000048,Canary Islands,Sí,IC
+57000049,Cape Verde,Sí,CV
+57000050,Caribbean Netherlands,Sí,BQ
+57000051,Cayman Islands,Sí,KY
+57000052,Central African Republic,Sí,CF
+57000053,Ceuta and Melilla,Sí,EA
+57000054,Chad,Sí,TD
+57000055,Chile,Sí,CL
+57000056,China,Sí,CN
+57000057,Christmas Island,Sí,CX
+57000058,Cocos (Keeling) Islands,Sí,CC
+57000059,Colombia,Sí,CO
+57000060,Comoros,Sí,KM
+57000061,Congo (DRC),Sí,CG
+57000062,Congo (Republic),Sí,CD
+57000063,Cook Islands,Sí,CK
+57000064,Costa Rica,Sí,CR
+57000065,Côte d’Ivoire,Sí,CI
+57000066,Croatia,Sí,HR
+57000067,Cuba,Sí,CU
+57000068,Curaçao,Sí,CW
+57000069,Cyprus,Sí,CY
+57000070,Czech Republic,Sí,CZ
+57000071,Denmark,Sí,DK
+57000072,Diego Garcia,Sí,DG
+57000073,Djibouti,Sí,DJ
+57000074,Dominica,Sí,DM
+57000075,Dominican Republic,Sí,DO
+57000076,Ecuador,Sí,EC
+57000077,Egypt,Sí,EG
+57000078,El Salvador,Sí,SV
+57000079,Equatorial Guinea,Sí,GQ
+57000080,Eritrea,Sí,ER
+57000081,Estonia,Sí,EE
+57000082,Ethiopia,Sí,ET
+57000083,Falkland Islands,Sí,FK
+57000084,Faroe Islands,Sí,FO
+57000085,Fiji,Sí,FJ
+57000086,Finland,Sí,FI
+57000087,France,Sí,FR
+57000088,French Guiana,Sí,GF
+57000089,French Polynesia,Sí,PF
+57000090,French Southern Territories,Sí,TF
+57000091,Gabon,Sí,GA
+57000092,Gambia,Sí,GM
+57000093,Georgia,Sí,GE
+57000094,Germany,Sí,DE
+57000095,Ghana,Sí,GH
+57000096,Gibraltar,Sí,GI
+57000097,Greece,Sí,GR
+57000098,Greenland,Sí,GL
+57000099,Grenada,Sí,GD
+57000100,Guadeloupe,Sí,GP
+57000101,Guam,Sí,GU
+57000102,Guatemala,Sí,GT
+57000103,Guernsey,Sí,GG
+57000104,Guinea,Sí,GN
+57000105,Guinea-Bissau,Sí,GW
+57000106,Guyana,Sí,GY
+57000107,Haiti,Sí,HT
+57000108,Heard & McDonald Islands,Sí,HM
+57000109,Honduras,Sí,HN
+57000110,Hong Kong,Sí,HK
+57000111,Hungary,Sí,HU
+57000112,Iceland,Sí,IS
+57000113,India,Sí,IN
+57000114,Indonesia,Sí,ID
+57000115,Iran,Sí,IR
+57000116,Iraq,Sí,IQ
+57000117,Ireland,Sí,IE
+57000118,Isle of Man,Sí,IM
+57000119,Israel,Sí,IL
+57000120,Italy,Sí,IT
+57000121,Jamaica,Sí,JM
+57000122,Japan,Sí,JP
+57000123,Jersey,Sí,JE
+57000124,Jordan,Sí,JO
+57000125,Kazakhstan,Sí,KZ
+57000126,Kenya,Sí,KE
+57000127,Kiribati,Sí,KI
+57000128,Kosovo,Sí,XK
+57000129,Kuwait,Sí,KW
+57000130,Kyrgyzstan,Sí,KG
+57000131,Laos,Sí,LA
+57000132,Latvia,Sí,LV
+57000133,Lebanon,Sí,LB
+57000134,Lesotho,Sí,LS
+57000135,Liberia,Sí,LR
+57000136,Libya,Sí,LY
+57000137,Liechtenstein,Sí,LI
+57000138,Lithuania,Sí,LT
+57000139,Luxembourg,Sí,LU
+57000140,Macau,Sí,MO
+57000141,Macedonia (FYROM),Sí,MK
+57000142,Madagascar,Sí,MG
+57000143,Malawi,Sí,MW
+57000144,Malaysia,Sí,MY
+57000145,Maldives,Sí,MV
+57000146,Mali,Sí,ML
+57000147,Malta,Sí,MT
+57000148,Marshall Islands,Sí,MH
+57000149,Martinique,Sí,MQ
+57000150,Mauritania,Sí,MR
+57000151,Mauritius,Sí,MU
+57000152,Mayotte,Sí,YT
+57000153,Mexico,Sí,MX
+57000154,Micronesia,Sí,FM
+57000155,Moldova,Sí,MD
+57000156,Monaco,Sí,MC
+57000157,Mongolia,Sí,MN
+57000158,Montenegro,Sí,ME
+57000159,Montserrat,Sí,MS
+57000160,Morocco,Sí,MA
+57000161,Mozambique,Sí,MZ
+57000162,Myanmar (Burma),Sí,MM
+57000163,Namibia,Sí,NA
+57000164,Nauru,Sí,NR
+57000165,Nepal,Sí,NP
+57000166,Netherlands,Sí,NL
+57000167,New Caledonia,Sí,NC
+57000168,New Zealand,Sí,NZ
+57000169,Nicaragua,Sí,NI
+57000170,Niger,Sí,NE
+57000171,Nigeria,Sí,NG
+57000172,Niue,Sí,NU
+57000173,Norfolk Island,Sí,NF
+57000174,North Korea,Sí,KP
+57000175,Northern Mariana Islands,Sí,MP
+57000176,Norway,Sí,NO
+57000177,Oman,Sí,OM
+57000178,Pakistan,Sí,PK
+57000179,Palau,Sí,PW
+57000180,Palestine,Sí,PS
+57000181,Panama,Sí,PA
+57000182,Papua New Guinea,Sí,PG
+57000183,Paraguay,Sí,PY
+57000184,Peru,Sí,PE
+57000185,Philippines,Sí,PH
+57000186,Pitcairn Islands,Sí,PN
+57000187,Poland,Sí,PL
+57000188,Portugal,Sí,PT
+57000189,Puerto Rico,Sí,PR
+57000190,Qatar,Sí,QA
+57000191,Réunion,Sí,RE
+57000192,Romania,Sí,RO
+57000193,Russia,Sí,RU
+57000194,Rwanda,Sí,RW
+57000195,Saint Barthélemy,Sí,BL
+57000196,Saint Helena,Sí,SH
+57000197,Saint Kitts and Nevis,Sí,KN
+57000198,Saint Lucia,Sí,LC
+57000199,Saint Martin,Sí,MF
+57000200,Saint Pierre and Miquelon,Sí,PM
+57000201,Samoa,Sí,WS
+57000202,San Marino,Sí,SM
+57000203,São Tomé and Príncipe,Sí,ST
+57000204,Saudi Arabia,Sí,SA
+57000205,Senegal,Sí,SN
+57000206,Serbia,Sí,RS
+57000207,Seychelles,Sí,SC
+57000208,Sierra Leone,Sí,SL
+57000209,Singapore,Sí,SG
+57000210,Sint Maarten,Sí,SX
+57000211,Slovakia,Sí,SK
+57000212,Slovenia,Sí,SI
+57000213,Solomon Islands,Sí,SB
+57000214,Somalia,Sí,SO
+57000215,South Africa,Sí,ZA
+57000216,South Korea,Sí,KR
+57000217,South Sudan,Sí,SS
+57000218,Spain,Sí,ES
+57000219,Sri Lanka,Sí,LK
+57000220,St. Vincent & Grenadines,Sí,VC
+57000221,Sudan,Sí,SD
+57000222,Suriname,Sí,SR
+57000223,Svalbard and Jan Mayen,Sí,SJ
+57000224,Swaziland,Sí,SZ
+57000225,Sweden,Sí,SE
+57000226,Switzerland,Sí,CH
+57000227,Syria,Sí,SY
+57000228,Taiwan,Sí,TW
+57000229,Tajikistan,Sí,TJ
+57000230,Tanzania,Sí,TZ
+57000231,Thailand,Sí,TH
+57000232,Timor-Leste,Sí,TL
+57000233,Togo,Sí,TG
+57000234,Tokelau,Sí,TK
+57000235,Tonga,Sí,TO
+57000236,Trinidad and Tobago,Sí,TT
+57000237,Tristan da Cunha,Sí,TA
+57000238,Tunisia,Sí,TN
+57000239,Turkey,Sí,TR
+57000240,Turkmenistan,Sí,TM
+57000241,Turks and Caicos Islands,Sí,TC
+57000242,Tuvalu,Sí,TV
+57000243,U.S. Outlying Islands,Sí,UM
+57000244,U.S. Virgin Islands,Sí,VI
+57000245,Uganda,Sí,UG
+57000246,Ukraine,Sí,UA
+57000247,United Arab Emirates,Sí,AE
+57000248,United Kingdom,Sí,GB
+57000249,United States,Sí,US
+57000250,Uruguay,Sí,UY
+57000251,Uzbekistan,Sí,UZ
+57000252,Vanuatu,Sí,VU
+57000253,Vatican City,Sí,VA
+57000254,Venezuela,Sí,VE
+57000255,Vietnam,Sí,VN
+57000256,Wallis and Futuna,Sí,WF
+57000257,Western Sahara,Sí,EH
+57000258,Yemen,Sí,YE
+57000259,Zambia,Sí,ZM
+57000260,Zimbabwe,Sí,ZW
+57000261,Unknown,No,
