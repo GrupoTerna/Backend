@@ -3912,7 +3912,7 @@ function _calcularCompletarDomingoDesdeJson_(filas, indiceJson, opciones) {
     var a = x.split('|'), b = y.split('|');
     return (Number(a[0]) - Number(b[0])) || (Number(a[1]) - Number(b[1]));
   });
-  var salida = { cambios: [], cotejo: [], conteo: {} };
+  var salida = { cambios: [], repartos: [], cotejo: [], conteo: {}, repararMenos: !!opciones.repararMenos };
   orden.forEach(function (ks) { _cdjProcesarSemana_(filas, semanas[ks], indiceJson, topeA, topeM, letraDomingo, salida); });
   salida.cotejo.forEach(function (c) { salida.conteo[c.estado] = (salida.conteo[c.estado] || 0) + 1; });
   return salida;
@@ -3970,7 +3970,7 @@ function _cdjProcesarSemana_(filas, sem, indiceJson, topeA, topeM, letraDomingo,
   });
 
   // Cotejo con el JSON.
-  var candidatos = {};
+  var candidatos = {}, candidatosMenos = {};
   var cotejoSemana = [];
   var tagsJsonSemana = (indiceJson.porSemana && indiceJson.porSemana[T + '|' + S]) || {};
   claves.sort().forEach(function (sk) {
@@ -4004,6 +4004,7 @@ function _cdjProcesarSemana_(filas, sem, indiceJson, topeA, topeM, letraDomingo,
         candidatos[sk] = { da: da, df: df, db: db, js: js };
       } else if (da <= 0 && df <= 0 && db <= 0) {
         fila.estado = 'json_menos'; fila.tipo = 'No se toca'; fila.detalle = txt;
+        candidatosMenos[sk] = { js: js };
       } else {
         fila.estado = 'json_distinto'; fila.tipo = 'No se toca'; fila.detalle = txt + ' (unos suben y otros bajan)';
       }
@@ -4049,8 +4050,59 @@ function _cdjProcesarSemana_(filas, sem, indiceJson, topeA, topeM, letraDomingo,
     }
   });
 
+  // Reparto de lo que el JSON trae de MENOS (solo en el modo salida.repararMenos): se reparte la semana de la serie con _repartirSemanaConjunto_().
+  var repMenos = {}, motivoMenos = {};
+  if (salida.repararMenos) {
+    Object.keys(candidatosMenos).forEach(function (sk) {
+      if (Object.keys(repetidas[sk]).length) { motivoMenos[sk] = 'hay un periodo repetido en la hoja para esa serie: revisar a mano'; return; }
+      var r = _cdjRepartirSerieMenos_(filas, series[sk], candidatosMenos[sk].js);
+      if (r.ok) repMenos[sk] = r; else motivoMenos[sk] = r.motivo;
+    });
+    // Cada dia que cambia, la suma de los clanes del mismo jugador debe seguir siendo un dia posible y no pasar de topeA ataques.
+    var tagsRep = {};
+    Object.keys(repMenos).forEach(function (sk) { tagsRep[series[sk].tag] = true; });
+    Object.keys(tagsRep).forEach(function (tag) {
+      var pisCambiados = {};
+      Object.keys(repMenos).forEach(function (sk) {
+        if (series[sk].tag !== tag) return;
+        repMenos[sk].cambios.forEach(function (c) { pisCambiados[c.periodIndex] = true; });
+      });
+      var malo = '';
+      Object.keys(pisCambiados).forEach(function (pi) {
+        var tot = { m: 0, a: 0, b: 0 };
+        claves.forEach(function (sk) {
+          if (series[sk].tag !== tag) return;
+          var v = repMenos[sk] ? repMenos[sk].dias[pi] : dia[sk + '|' + pi];
+          if (!v) return;
+          tot.m += v.m; tot.a += v.a; tot.b += v.b;
+        });
+        if (!malo && (_cdjEstadoDia_(tot.m, tot.a, tot.b) === 'no_existe' || tot.a > topeA)) {
+          malo = 'la suma de los clanes del jugador el periodo ' + pi + ' (' + tot.m + ' medallas, ' + tot.a + ' ataques, ' + tot.b + ' barcos) no es un dia posible';
+        }
+      });
+      if (malo) {
+        Object.keys(repMenos).forEach(function (sk) {
+          if (series[sk].tag !== tag) return;
+          motivoMenos[sk] = malo;
+          delete repMenos[sk];
+        });
+      }
+    });
+  }
+
   cotejoSemana.forEach(function (e) {
     var fila = e.fila, sk = e.sk;
+    if (fila.estado === 'json_menos' && salida.repararMenos) {
+      if (repMenos[sk]) {
+        fila.estado = 'json_menos_reparado'; fila.tipo = 'Cambio';
+        fila.detalle += ' | semana repartida con el JSON';
+        salida.repartos.push({ temporada: T, semana: S, tag: fila.tag, nombre: fila.nombre, clan: fila.clan, cambios: repMenos[sk].cambios,
+          jsonAtaques: fila.ja, jsonFame: fila.jf, jsonBarcos: fila.jb, jsonFuentes: fila.fuentes, detalle: fila.detalle });
+      } else {
+        fila.estado = 'json_menos_no_resuelve'; fila.tipo = 'SIN RESOLVER';
+        fila.detalle += ' | ' + (motivoMenos[sk] || '');
+      }
+    }
     if (fila.estado === 'json_mas') {
       if (prov[sk]) {
         var c = candidatos[sk], x = dia[sk + '|' + dom];
@@ -4075,6 +4127,50 @@ function _cdjProcesarSemana_(filas, sem, indiceJson, topeA, topeM, letraDomingo,
     }
     salida.cotejo.push(fila);
   });
+}
+
+var REPARAR_SEMANA_JSON_OFFSET_DIA = { 'J': 0, 'V': 1, 'S': 2, 'D': 3 };
+
+/**
+ * _cdjRepartirSerieMenos_(filas, ser, js) [→ Contexto_Base_Web.md §PF123]
+ * Para una serie (jugador y clan, una semana) donde el JSON cerrado de RoyaleAPI trae MENOS que lo guardado: reparte la semana con
+ * _repartirSemanaConjunto_() (ataques, barcos y fame del JSON a la vez) sobre COPIAS de las filas; no escribe en el arreglo recibido.
+ * Devuelve { ok:false, motivo } o { ok:true, cambios:[{ idx, periodIndex, letra, ataquesHoyAnt, ataquesHoyNuevo, ataquesSemAnt, ataquesSemNueva,
+ * fameAnt, fameNueva, barcosAnt, barcosNuevo, origenAnt, origenNuevo }], dias:{ periodIndex: {m, a, b} } } (dias = el dia nuevo de cada fila).
+ */
+function _cdjRepartirSerieMenos_(filas, ser, js) {
+  var pis = Object.keys(ser.porPi).map(Number).sort(function (a, b) { return a - b; });
+  var tmp = [], offsets = {}, info = [];
+  for (var p = 0; p < pis.length; p++) {
+    var i = ser.porPi[pis[p]];
+    var letra = String(filas[i][GC.DIA - 1] || '').trim();
+    var off = REPARAR_SEMANA_JSON_OFFSET_DIA[letra];
+    if (off === undefined) return { ok: false, motivo: 'dia de guerra no reconocido (' + (letra || 'vacio') + ')' };
+    if (offsets[off] !== undefined) return { ok: false, motivo: 'hay dos filas el mismo dia (' + letra + ')' };
+    tmp.push(filas[i].slice());
+    offsets[off] = tmp.length - 1;
+    info.push({ i: i, pi: pis[p], letra: letra });
+  }
+  var rep = _repartirSemanaConjunto_(tmp, offsets, { ataquesSemana: js.ataques, fame: js.fame, barcos: js.barcos });
+  if (!rep.ok) return { ok: false, motivo: rep.motivo };
+  var cambios = [], dias = {}, pf = 0, pb = 0;
+  for (var q = 0; q < info.length; q++) {
+    var a = filas[info[q].i], n = tmp[q];
+    var fN = _cdjEntero_(n[GC.FAME - 1]), bN = _cdjEntero_(n[GC.BARCOS - 1]);
+    dias[info[q].pi] = { m: fN - pf, a: _cdjEntero_(n[GC.ATAQUES_HOY - 1]), b: bN - pb };
+    pf = fN; pb = bN;
+    if (_cdjEntero_(a[GC.ATAQUES_HOY - 1]) !== _cdjEntero_(n[GC.ATAQUES_HOY - 1]) || _cdjEntero_(a[GC.ATAQUES_SEM - 1]) !== _cdjEntero_(n[GC.ATAQUES_SEM - 1]) ||
+        _cdjEntero_(a[GC.FAME - 1]) !== fN || _cdjEntero_(a[GC.BARCOS - 1]) !== bN) {
+      var og = String(a[GC.ORIGEN - 1] || '').trim();
+      cambios.push({ idx: info[q].i, periodIndex: info[q].pi, letra: info[q].letra,
+        ataquesHoyAnt: _cdjEntero_(a[GC.ATAQUES_HOY - 1]), ataquesHoyNuevo: _cdjEntero_(n[GC.ATAQUES_HOY - 1]),
+        ataquesSemAnt: _cdjEntero_(a[GC.ATAQUES_SEM - 1]), ataquesSemNueva: _cdjEntero_(n[GC.ATAQUES_SEM - 1]),
+        fameAnt: _cdjEntero_(a[GC.FAME - 1]), fameNueva: fN, barcosAnt: _cdjEntero_(a[GC.BARCOS - 1]), barcosNuevo: bN,
+        origenAnt: og, origenNuevo: (og === '' || og === 'Original') ? 'Corregido' : og });
+    }
+  }
+  if (!cambios.length) return { ok: false, motivo: 'el reparto no cambia ninguna fila' };
+  return { ok: true, cambios: cambios, dias: dias };
 }
 
 /**
@@ -4216,6 +4312,140 @@ function _completarDomingoDesdeJsonRoyaleApi_(aplicar) {
       ' serie(s) a completar (' + resumenConteo(resHoja) + '). ' +
       (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que completar.') +
       (aplicar ? ' Si cambio la hoja, corre updateControlSheet() y actualizarControl2() para refrescar los controles.' : ' (No se escribio nada en Guerra; corre completarDomingoDesdeJsonRoyaleApiAplicar() para aplicar.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// ==============================================================================
+// REPARAR LA SEMANA CUANDO EL JSON DE RoyaleAPI TRAE MENOS QUE LO GUARDADO (19-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF123]
+// Si el JSON cerrado de RoyaleAPI coincide con RoyaleAPI (Correcciones_Guerra, HistorialGuerra_Grupal y Backup_Guerra_Semanal) y la serie guardada trae MAS, la
+// que esta mal es la hoja o el CSV: se reparte la semana de esa serie con _repartirSemanaConjunto_() (ataques, barcos y fame del JSON a la vez), solo entre las
+// filas que ya existen. Si ninguna combinacion de la tabla cuadra, o la suma de los clanes del jugador ese dia deja de ser un dia posible, no se toca y se avisa.
+// Las filas cambiadas pasan a Origen = Corregido (si ya eran Reconstruido o Corregido se mantienen). Primero ...Informe() y luego ...Aplicar() (respalda Backup_Guerra.csv).
+// ==============================================================================
+
+var REPARAR_SEMANA_JSON_ENCABEZADO_INFORME = ['Fuente', 'Tipo', 'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'PeriodIndex', 'Dia', 'Estado',
+  'AtaquesHoy anterior', 'AtaquesHoy nuevo', 'AtaquesSemana anterior', 'AtaquesSemana nueva', 'Fame anterior', 'Fame nueva', 'Barcos anterior', 'Barcos nuevo',
+  'JSON ataques', 'JSON fame', 'JSON barcos', 'JSON fuentes', 'Detalle', 'Origen anterior', 'Origen nuevo'];
+
+function repararSemanaDesdeJsonRoyaleApiInforme() { _repararSemanaDesdeJsonRoyaleApi_(false); }
+function repararSemanaDesdeJsonRoyaleApiAplicar() { _repararSemanaDesdeJsonRoyaleApi_(true); }
+
+/**
+ * _repararSemanaDesdeJsonRoyaleApi_(aplicar) [→ Contexto_Base_Web.md §PF123]
+ * Informe (aplicar = false): solo lee y deja un CSV de informe en Drive. Aplicar (aplicar = true): respalda Backup_Guerra.csv, escribe en el CSV y en la hoja Guerra
+ * (solo AtaquesHoy, AtaquesSemana, Fame, Barcos y Origen de las filas que cambian) y sincroniza la hoja con el CSV.
+ */
+function _repararSemanaDesdeJsonRoyaleApi_(aplicar) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[RepararSemanaJson] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var t0 = Date.now();
+    var ss = _getSs();
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    var encabezadoCsv = null, filasCsv = null;
+    if (csvText) {
+      var parsed = _parseCSV(csvText);
+      if (parsed && parsed.length > 1) {
+        encabezadoCsv = parsed[0];
+        filasCsv = parsed.slice(1);
+        for (var a = 0; a < filasCsv.length; a++) { while (filasCsv[a].length < GUERRA_TOTAL_COLS) filasCsv[a].push(''); }
+      }
+    }
+    var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+    var datosHoja = (sh && sh.getLastRow() >= 2) ? sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues() : null;
+    if (!filasCsv && !datosHoja) { Logger.log('[RepararSemanaJson] No hay filas en Backup_Guerra.csv ni en la hoja Guerra; no se hace nada.'); return; }
+
+    var tagsSet = {};
+    [filasCsv, datosHoja].forEach(function (filas) {
+      (filas || []).forEach(function (f) {
+        if (String(f[GC.ETAPA - 1] || '').trim() !== 'Guerra') return;
+        var tg = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+        if (tg) tagsSet[tg] = true;
+      });
+    });
+    var lectura = _cdjCargarRegistrosJsonDrive_(tagsSet, COMPLETAR_DOMINGO_JSON_PRESUPUESTO_LECTURA_MS);
+    if (!lectura.ok) {
+      Logger.log('[RepararSemanaJson] ABORT: se agoto el presupuesto de tiempo leyendo los JSON de RoyaleAPI (' + lectura.archivos + ' archivos leidos). No se escribio nada.');
+      return;
+    }
+    var indiceJson = _cdjIndexarRegistrosJson_(lectura.porTag);
+
+    var resCsv = filasCsv ? _calcularCompletarDomingoDesdeJson_(filasCsv, indiceJson, { repararMenos: true }) : null;
+    var resHoja = datosHoja ? _calcularCompletarDomingoDesdeJson_(datosHoja, indiceJson, { repararMenos: true }) : null;
+
+    // --- Informe en Drive: una linea por fila que cambia, y una por serie que no se resuelve o que el JSON deja distinta ---
+    var informe = [REPARAR_SEMANA_JSON_ENCABEZADO_INFORME];
+    var agregarInforme = function (fuente, res) {
+      if (!res) return;
+      var porClave = {};
+      res.repartos.forEach(function (r) { porClave[r.temporada + '|' + r.semana + '|' + r.tag + '|' + r.clan] = r; });
+      res.cotejo.forEach(function (c) {
+        if (c.estado !== 'json_menos_reparado' && c.estado !== 'json_menos_no_resuelve' && c.estado !== 'json_distinto' && c.estado !== 'json_inconsistente') return;
+        var base = [fuente, c.tipo, c.temporada, c.semana, c.tag, c.nombre, c.clan];
+        var fin = [c.ja === null ? '' : c.ja, c.jf === null ? '' : c.jf, c.jb === null ? '' : c.jb, c.fuentes, c.detalle];
+        var rep = (c.estado === 'json_menos_reparado') ? porClave[c.temporada + '|' + c.semana + '|' + c.tag + '|' + c.clan] : null;
+        if (rep) {
+          rep.cambios.forEach(function (x) {
+            informe.push(base.concat([x.periodIndex, x.letra, c.estado, x.ataquesHoyAnt, x.ataquesHoyNuevo, x.ataquesSemAnt, x.ataquesSemNueva,
+              x.fameAnt, x.fameNueva, x.barcosAnt, x.barcosNuevo]).concat(fin).concat([x.origenAnt, x.origenNuevo]));
+          });
+        } else {
+          informe.push(base.concat(['', '', c.estado, '', '', '', '', '', '', '', '']).concat(fin).concat(['', '']));
+        }
+      });
+    };
+    agregarInforme('Backup_Guerra.csv', resCsv);
+    agregarInforme('Hoja Guerra', resHoja);
+    var nombreInforme = 'Reparar_SemanaDesdeJsonRoyaleApi ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+
+    var nCsv = resCsv ? resCsv.repartos.length : 0, nHoja = resHoja ? resHoja.repartos.length : 0;
+    if (aplicar && (nCsv > 0 || nHoja > 0)) {
+      // Respaldo previo del CSV completo, ANTES de escribir nada.
+      if (csvText) _saveCSVToDrive('Backup_Guerra ANTES de reparar SemanaDesdeJsonRoyaleApi ' + marca + '.csv', csvText);
+
+      if (resCsv && nCsv) {
+        resCsv.repartos.forEach(function (r) {
+          r.cambios.forEach(function (c) {
+            var fila = filasCsv[c.idx];
+            fila[GC.ATAQUES_HOY - 1] = String(c.ataquesHoyNuevo);
+            fila[GC.ATAQUES_SEM - 1] = String(c.ataquesSemNueva);
+            fila[GC.FAME - 1] = String(c.fameNueva);
+            fila[GC.BARCOS - 1] = String(c.barcosNuevo);
+            fila[GC.ORIGEN - 1] = c.origenNuevo;
+          });
+        });
+        _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezadoCsv].concat(filasCsv)));
+      }
+      if (resHoja && nHoja) {
+        // Solo AtaquesHoy, AtaquesSemana, Fame, Barcos (columnas contiguas) y Origen: no se reescribe el resto.
+        var bloque = datosHoja.map(function (r) { return [r[GC.ATAQUES_HOY - 1], r[GC.ATAQUES_SEM - 1], r[GC.FAME - 1], r[GC.BARCOS - 1]]; });
+        var colOrigen = datosHoja.map(function (r) { return [r[GC.ORIGEN - 1]]; });
+        resHoja.repartos.forEach(function (r) {
+          r.cambios.forEach(function (c) {
+            bloque[c.idx] = [c.ataquesHoyNuevo, c.ataquesSemNueva, c.fameNueva, c.barcosNuevo];
+            colOrigen[c.idx][0] = c.origenNuevo;
+          });
+        });
+        sh.getRange(2, GC.ATAQUES_HOY, bloque.length, 4).setValues(bloque);
+        sh.getRange(2, GC.ORIGEN, colOrigen.length, 1).setValues(colOrigen);
+        _syncGuerraCSV(sh); // propaga la hoja al CSV, igual que en PF031, PF045 y PF047
+      }
+    }
+
+    function resumenConteo(res) {
+      if (!res) return 'sin filas';
+      return Object.keys(res.conteo).sort().map(function (k) { return k + ' ' + res.conteo[k]; }).join(', ');
+    }
+    Logger.log('[RepararSemanaJson] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). JSON: ' + lectura.archivos +
+      ' archivo(s) leidos, ' + lectura.errores + ' con error. Backup_Guerra.csv: ' + nCsv + ' serie(s) a reparar (' + resumenConteo(resCsv) + '). Hoja Guerra: ' + nHoja +
+      ' serie(s) a reparar (' + resumenConteo(resHoja) + '). ' +
+      (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que reparar.') +
+      (aplicar ? ' Si cambio la hoja, corre updateControlSheet() y actualizarControl2() para refrescar los controles.' : ' (No se escribio nada en Guerra; corre repararSemanaDesdeJsonRoyaleApiAplicar() para aplicar.)'));
   } finally {
     lock.releaseLock();
   }
