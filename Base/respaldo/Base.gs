@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 18/10/2026 22:18:52 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 18/10/2026 22:49:28 */
 
 
 
@@ -2892,7 +2892,7 @@ function _csvSubcarpetaDe_(filename) {
   // Informes: respaldos previos a reparar, reparaciones, limpiezas, revisiones y diagnósticos.
   if (/^Backup_Guerra ANTES de reparar/.test(n) || /^Reparacion_/.test(n) || /^Limpieza_Coliseo_/.test(n) ||
       /^Revision_Guerra/.test(n) || /^Diagnostico_/.test(n) || /^HistorialGuerra_Grupal/.test(n) ||
-      /^Correccion_Fecha_/.test(n)) return 'Informes';
+      /^Correccion_Fecha_/.test(n) || /^Completar_DomingoDesdeJsonRoyaleApi /.test(n)) return 'Informes';
   // Tampermonkey: lo que se arma con datos traídos de RoyaleAPI por Tampermonkey.
   if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv') return 'Tampermonkey';
   // Jugador: datos que dependen de cada jugador (no son comportamiento general ni respaldo de una hoja).
