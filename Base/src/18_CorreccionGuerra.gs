@@ -3769,3 +3769,454 @@ function informeHojaContraCorrecciones() {
     Logger.log(etiqueta + ' ... y ' + (lineas.length - tope) + ' linea(s) mas sin mostrar (primero se listan las que difieren en ataques, luego las que solo difieren en fame, al final las correcciones sin fila en la hoja).');
   }
 }
+// ==============================================================================
+// COMPLETAR EL DOMINGO CON LOS JSON DE RoyaleAPI (19-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF123]
+// Si el JSON individual de RoyaleAPI (registros cerrados: perfil, log, analytics) trae MAS que lo guardado en Guerra para un jugador, un clan y una semana,
+// la diferencia se asigna al domingo (ultimo dia de guerra) de esa serie: AtaquesHoy, AtaquesSemana, Fame y Barcos, con Origen = Reconstruido.
+// Solo se aplica si ningun valor del JSON es menor que lo guardado, la serie tiene fila de domingo, el domingo no pasa de 4 ataques ni de 900 medallas y la suma de
+// los clanes del jugador ese domingo sigue siendo un dia posible (la misma tabla que Diario_C, calculada con _fameEsPosibleDia_). Lo demas se avisa y no se toca.
+// Primero ...Informe() (solo lee y escribe un CSV de informe en Drive) y luego ...Aplicar() (respalda Backup_Guerra.csv antes de escribir).
+// ==============================================================================
+
+var COMPLETAR_DOMINGO_JSON_TOPE_ATAQUES_DIA = 4;
+var COMPLETAR_DOMINGO_JSON_TOPE_MEDALLAS_DIA = 900;
+var COMPLETAR_DOMINGO_JSON_LETRA_DOMINGO = 'D';
+var COMPLETAR_DOMINGO_JSON_PRESUPUESTO_LECTURA_MS = 240000;
+var COMPLETAR_DOMINGO_JSON_ENCABEZADO_INFORME = ['Fuente', 'Tipo', 'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'PeriodIndex domingo', 'Estado',
+  'AtaquesHoy anterior', 'AtaquesHoy nuevo', 'AtaquesSemana anterior', 'AtaquesSemana nueva', 'Fame anterior', 'Fame nueva', 'Barcos anterior', 'Barcos nuevo',
+  'JSON ataques', 'JSON fame', 'JSON barcos', 'JSON fuentes', 'Detalle', 'Origen anterior'];
+var _CDJ_CACHE_DIA_POSIBLE = {};
+
+function completarDomingoDesdeJsonRoyaleApiInforme() { _completarDomingoDesdeJsonRoyaleApi_(false); }
+function completarDomingoDesdeJsonRoyaleApiAplicar() { _completarDomingoDesdeJsonRoyaleApi_(true); }
+
+/**
+ * _cdjEntero_(v) [→ Contexto_Base_Web.md §PF123]
+ * Entero de una celda (vacio o no numerico = 0; trunca hacia cero).
+ */
+function _cdjEntero_(v) {
+  if (v === '' || v === null || v === undefined) return 0;
+  var n = Number(v);
+  if (!isFinite(n)) return 0;
+  return n < 0 ? Math.ceil(n) : Math.floor(n);
+}
+
+/**
+ * _cdjNormalizarClan_(c) [→ Contexto_Base_Web.md §PF123]
+ * En los registros perfil de RoyaleAPI el clan a veces trae basura de rascado (salto de linea y una fecha): se corta en el primer salto de linea.
+ */
+function _cdjNormalizarClan_(c) {
+  return String(c === null || c === undefined ? '' : c).split('\n')[0].trim();
+}
+
+/**
+ * _cdjEstadoDia_(m, a, b) [→ Contexto_Base_Web.md §PF123]
+ * 'sin_ataques' si todo es 0; 'existe' si (medallas, ataques, barcos) es un dia posible (equivale a una clave de Diario_C); 'no_existe' en otro caso.
+ */
+function _cdjEstadoDia_(m, a, b) {
+  if (a === 0 && m === 0 && b === 0) return 'sin_ataques';
+  var k = m + '|' + a + '|' + b;
+  if (_CDJ_CACHE_DIA_POSIBLE[k] === undefined) _CDJ_CACHE_DIA_POSIBLE[k] = _fameEsPosibleDia_(a, m, b);
+  return _CDJ_CACHE_DIA_POSIBLE[k] ? 'existe' : 'no_existe';
+}
+
+/**
+ * _cdjIndexarRegistrosJson_(registrosPorTag) [→ Contexto_Base_Web.md §PF123]
+ * registrosPorTag: { '#TAG': [registro, ...] } con los registros de todos los JSON individuales de ese tag.
+ * Devuelve { series: { 'TAG|clan|T|S': [[ataques, fame, barcos|null, fuente, cerrada], ...] }, porSemana: { 'T|S': { 'TAG': { clan: true } } } }.
+ */
+function _cdjIndexarRegistrosJson_(registrosPorTag) {
+  var series = {}, porSemana = {};
+  Object.keys(registrosPorTag || {}).forEach(function (tagCrudo) {
+    var tag = String(tagCrudo).trim().toUpperCase();
+    (registrosPorTag[tagCrudo] || []).forEach(function (x) {
+      if (!x) return;
+      var t = Number(x.temporadaInterna), s = Number(x.semana);
+      var ataques = Number(x.ataques), fame = Number(x.fame);
+      if (!(t > 0) || !(s > 0) || !isFinite(ataques) || !isFinite(fame)) return;
+      var barcos = (x.barcos === null || x.barcos === undefined || x.barcos === '') ? null : Number(x.barcos);
+      if (barcos !== null && !isFinite(barcos)) barcos = null;
+      var clan = _cdjNormalizarClan_(x.clan);
+      var v = [ataques, fame, barcos, String(x.fuente || ''), !!x.cerrada];
+      var k = tag + '|' + clan + '|' + t + '|' + s;
+      var lista = series[k] || (series[k] = []);
+      var vk = JSON.stringify(v);
+      for (var i = 0; i < lista.length; i++) { if (JSON.stringify(lista[i]) === vk) return; }
+      lista.push(v);
+      var ks = t + '|' + s;
+      if (!porSemana[ks]) porSemana[ks] = {};
+      if (!porSemana[ks][tag]) porSemana[ks][tag] = {};
+      porSemana[ks][tag][clan] = true;
+    });
+  });
+  return { series: series, porSemana: porSemana };
+}
+
+/**
+ * _cdjJsonDeSerie_(regs) [→ Contexto_Base_Web.md §PF123]
+ * Valor semanal del JSON para una serie. Prefiere los registros cerrados (perfil, log, analytics). Si solo hay riverrace (instantanea de una semana sin cerrar)
+ * usa el mayor, que es un piso y no el total. Devuelve { estado, ataques, fame, barcos, fuentes, cerrado }.
+ */
+function _cdjJsonDeSerie_(regs) {
+  var vacio = { estado: 'sin_json', ataques: null, fame: null, barcos: null, fuentes: [], cerrado: false };
+  if (!regs || !regs.length) return vacio;
+  function unicos(lista) {
+    var o = {};
+    lista.forEach(function (z) { o[z] = true; });
+    return Object.keys(o).sort();
+  }
+  var cerr = regs.filter(function (r) { return r[4]; });
+  if (!cerr.length) {
+    var mejor = regs[0];
+    regs.forEach(function (r) { if (r[0] > mejor[0] || (r[0] === mejor[0] && r[1] > mejor[1])) mejor = r; });
+    return { estado: 'ok', ataques: mejor[0], fame: mejor[1], barcos: mejor[2], fuentes: unicos(regs.map(function (r) { return r[3]; })), cerrado: false };
+  }
+  var pares = {}, barcos = {}, nPares = 0, nBarcos = 0;
+  cerr.forEach(function (r) {
+    var kp = r[0] + '|' + r[1];
+    if (!pares[kp]) { pares[kp] = [r[0], r[1]]; nPares++; }
+    if (r[2] !== null && !barcos[r[2]]) { barcos[r[2]] = true; nBarcos++; }
+  });
+  var fuentes = unicos(cerr.map(function (r) { return r[3]; }));
+  if (nPares > 1 || nBarcos > 1) return { estado: 'json_inconsistente', ataques: null, fame: null, barcos: null, fuentes: fuentes, cerrado: true };
+  var par = pares[Object.keys(pares)[0]];
+  var bk = Object.keys(barcos);
+  return { estado: 'ok', ataques: par[0], fame: par[1], barcos: bk.length ? Number(bk[0]) : null, fuentes: fuentes, cerrado: true };
+}
+
+/**
+ * _calcularCompletarDomingoDesdeJson_(filas, indiceJson, opciones) [→ Contexto_Base_Web.md §PF123]
+ * Funcion pura (sin Drive ni hoja). filas: filas de Guerra (GUERRA_TOTAL_COLS columnas, indices GC). indiceJson: salida de _cdjIndexarRegistrosJson_.
+ * Devuelve { cambios, cotejo, conteo }:
+ *  - cambios: una por serie a completar { idx (fila en filas), temporada, semana, tag, nombre, clan, periodIndex, ataquesHoyAnt, ataquesHoyNuevo, ataquesSemAnt,
+ *    ataquesSemNueva, fameAnt, fameNueva, barcosAnt, barcosNuevo, origenAnt, jsonAtaques, jsonFame, jsonBarcos, jsonFuentes, detalle };
+ *  - cotejo: una por serie con el estado (coincide, sin_json, json_mas_reconstruido, json_mas_no_resuelve, json_menos, json_distinto, json_inconsistente, json_sin_cerrar);
+ *  - conteo: { estado: cantidad }.
+ */
+function _calcularCompletarDomingoDesdeJson_(filas, indiceJson, opciones) {
+  opciones = opciones || {};
+  var topeA = opciones.topeAtaquesDia || COMPLETAR_DOMINGO_JSON_TOPE_ATAQUES_DIA;
+  var topeM = opciones.topeMedallasDia || COMPLETAR_DOMINGO_JSON_TOPE_MEDALLAS_DIA;
+  var letraDomingo = opciones.letraDomingo || COMPLETAR_DOMINGO_JSON_LETRA_DOMINGO;
+  var semanas = {}, orden = [];
+  for (var i = 0; i < filas.length; i++) {
+    var f = filas[i];
+    if (String(f[GC.ETAPA - 1] || '').trim() !== 'Guerra') continue;
+    var t = _cdjEntero_(f[GC.TEMPORADA - 1]), s = _cdjEntero_(f[GC.SEMANA - 1]);
+    if (!(t > 0) || !(s > 0)) continue;
+    var ks = t + '|' + s;
+    if (!semanas[ks]) { semanas[ks] = { t: t, s: s, idxs: [] }; orden.push(ks); }
+    semanas[ks].idxs.push(i);
+  }
+  orden.sort(function (x, y) {
+    var a = x.split('|'), b = y.split('|');
+    return (Number(a[0]) - Number(b[0])) || (Number(a[1]) - Number(b[1]));
+  });
+  var salida = { cambios: [], cotejo: [], conteo: {} };
+  orden.forEach(function (ks) { _cdjProcesarSemana_(filas, semanas[ks], indiceJson, topeA, topeM, letraDomingo, salida); });
+  salida.cotejo.forEach(function (c) { salida.conteo[c.estado] = (salida.conteo[c.estado] || 0) + 1; });
+  return salida;
+}
+
+/**
+ * _cdjProcesarSemana_(filas, sem, indiceJson, topeA, topeM, letraDomingo, salida) [→ Contexto_Base_Web.md §PF123]
+ * Cotejo y reconstruccion de UNA semana (ver _calcularCompletarDomingoDesdeJson_).
+ */
+function _cdjProcesarSemana_(filas, sem, indiceJson, topeA, topeM, letraDomingo, salida) {
+  var T = sem.t, S = sem.s;
+  var piSet = {}, letras = {};
+  sem.idxs.forEach(function (i) {
+    var f = filas[i];
+    var pi = _cdjEntero_(f[GC.PERIOD_IDX - 1]);
+    piSet[pi] = true;
+    var l = String(f[GC.DIA - 1] || '').trim();
+    if (!letras[pi]) letras[pi] = {};
+    letras[pi][l] = (letras[pi][l] || 0) + 1;
+  });
+  var pis = Object.keys(piSet).map(Number).sort(function (a, b) { return a - b; });
+  var dom = pis.length ? pis[pis.length - 1] : null;
+  var letraDom = '';
+  if (dom !== null) {
+    var mejorN = -1;
+    Object.keys(letras[dom]).forEach(function (l) { if (letras[dom][l] > mejorN) { mejorN = letras[dom][l]; letraDom = l; } });
+  }
+  var domEsDomingo = (letraDom === letraDomingo);
+
+  // Series (jugador + clan): gana la ultima fila del archivo si un periodIndex se repite.
+  var series = {}, repetidas = {}, claves = [];
+  sem.idxs.forEach(function (i) {
+    var f = filas[i];
+    var tag = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+    var clan = String(f[GC.CLAN - 1] === null || f[GC.CLAN - 1] === undefined ? '' : f[GC.CLAN - 1]).trim();
+    var pi = _cdjEntero_(f[GC.PERIOD_IDX - 1]);
+    var sk = tag + '|' + clan;
+    if (!series[sk]) { series[sk] = { tag: tag, clan: clan, porPi: {} }; repetidas[sk] = {}; claves.push(sk); }
+    if (series[sk].porPi[pi] !== undefined) repetidas[sk][pi] = true;
+    series[sk].porPi[pi] = i;
+  });
+
+  // Valores del dia por serie (Fame y Barcos son acumulados de la semana: el dia es la diferencia con la fila anterior).
+  var dia = {};
+  claves.forEach(function (sk) {
+    var d = series[sk].porPi;
+    var ps = Object.keys(d).map(Number).sort(function (a, b) { return a - b; });
+    var pf = 0, pb = 0;
+    ps.forEach(function (pi) {
+      var f = filas[d[pi]];
+      var fame = _cdjEntero_(f[GC.FAME - 1]), barcos = _cdjEntero_(f[GC.BARCOS - 1]), ataques = _cdjEntero_(f[GC.ATAQUES_HOY - 1]);
+      dia[sk + '|' + pi] = { m: fame - pf, a: ataques, b: barcos - pb, i: d[pi], recon: false };
+      pf = fame; pb = barcos;
+    });
+  });
+
+  // Cotejo con el JSON.
+  var candidatos = {};
+  var cotejoSemana = [];
+  var tagsJsonSemana = (indiceJson.porSemana && indiceJson.porSemana[T + '|' + S]) || {};
+  claves.sort().forEach(function (sk) {
+    var ser = series[sk], d = ser.porPi;
+    var ps = Object.keys(d).map(Number).sort(function (a, b) { return a - b; });
+    var ultPi = ps[ps.length - 1];
+    var ult = filas[d[ultPi]];
+    var aS = 0;
+    ps.forEach(function (pi) { aS += _cdjEntero_(filas[d[pi]][GC.ATAQUES_HOY - 1]); });
+    var fS = _cdjEntero_(ult[GC.FAME - 1]), bS = _cdjEntero_(ult[GC.BARCOS - 1]);
+    var js = _cdjJsonDeSerie_(indiceJson.series[ser.tag + '|' + ser.clan + '|' + T + '|' + S]);
+    var fila = { temporada: T, semana: S, tag: ser.tag, nombre: String(ult[GC.NOMBRE - 1] || ''), clan: ser.clan, estado: '', tipo: '', detalle: '',
+      idxDomingo: null, aS: aS, fS: fS, bS: bS, ja: js.ataques, jf: js.fame, jb: js.barcos, fuentes: js.fuentes.join(','), origenAnt: '' };
+    if (js.estado === 'sin_json') {
+      var otros = Object.keys(tagsJsonSemana[ser.tag] || {}).filter(function (c) { return c !== ser.clan; }).sort();
+      fila.estado = 'sin_json'; fila.tipo = 'Aviso';
+      fila.detalle = 'No hay JSON de ese jugador y clan esa semana' + (otros.length ? ' (hay JSON de otro clan del mismo jugador: ' + otros.join(' | ') + ')' : '');
+    } else if (js.estado === 'json_inconsistente') {
+      fila.estado = 'json_inconsistente'; fila.tipo = 'No se toca';
+      fila.detalle = 'Los registros cerrados del JSON no coinciden entre si';
+    } else {
+      var da = js.ataques - aS, df = js.fame - fS, db = (js.barcos !== null) ? (js.barcos - bS) : 0;
+      var txt = 'JSON - Guerra: ataques ' + (da > 0 ? '+' : '') + da + ', fame ' + (df > 0 ? '+' : '') + df + ', barcos ' + (db > 0 ? '+' : '') + db;
+      if (da === 0 && df === 0 && db === 0) {
+        fila.estado = 'coincide'; fila.tipo = '';
+      } else if (!js.cerrado) {
+        fila.estado = 'json_sin_cerrar'; fila.tipo = 'No se toca';
+        fila.detalle = txt + ' (instantanea de una semana sin cerrar: es un piso, no el total)';
+      } else if (da >= 0 && df >= 0 && db >= 0) {
+        fila.estado = 'json_mas'; fila.detalle = txt;
+        candidatos[sk] = { da: da, df: df, db: db, js: js };
+      } else if (da <= 0 && df <= 0 && db <= 0) {
+        fila.estado = 'json_menos'; fila.tipo = 'No se toca'; fila.detalle = txt;
+      } else {
+        fila.estado = 'json_distinto'; fila.tipo = 'No se toca'; fila.detalle = txt + ' (unos suben y otros bajan)';
+      }
+    }
+    cotejoSemana.push({ sk: sk, fila: fila });
+  });
+
+  // Reconstruccion: lo que el JSON trae de mas va al domingo, solo si el reparto es posible.
+  var motivo = {}, prov = {};
+  Object.keys(candidatos).forEach(function (sk) {
+    var c = candidatos[sk];
+    var x = dia[sk + '|' + dom];
+    var ps = Object.keys(series[sk].porPi).map(Number);
+    var ultPi = Math.max.apply(null, ps);
+    if (!domEsDomingo) { motivo[sk] = 'la ultima fila de la semana no es un domingo (' + (letraDom || 'sin dia') + '): semana abierta o incompleta'; return; }
+    if (!x || ultPi !== dom) { motivo[sk] = 'no hay fila de domingo para esa serie'; return; }
+    if (repetidas[sk][dom]) { motivo[sk] = 'la fila del domingo esta repetida en la hoja: revisar a mano'; return; }
+    var p = { m: x.m + c.df, a: x.a + c.da, b: x.b + c.db };
+    if (p.a > topeA || p.m < 0 || p.m > topeM) { motivo[sk] = 'el domingo pasaria el tope diario (' + topeA + ' ataques o ' + topeM + ' medallas)'; return; }
+    prov[sk] = p;
+  });
+  // La suma de los clanes del mismo jugador el domingo debe seguir siendo un dia posible.
+  var porJugador = {};
+  Object.keys(prov).forEach(function (sk) {
+    var tag = series[sk].tag;
+    if (!porJugador[tag]) porJugador[tag] = [];
+    porJugador[tag].push(sk);
+  });
+  Object.keys(porJugador).forEach(function (tag) {
+    var tot = { m: 0, a: 0, b: 0 };
+    claves.forEach(function (sk) {
+      if (series[sk].tag !== tag) return;
+      var v = dia[sk + '|' + dom];
+      if (!v) return;
+      var src = prov[sk] || v;
+      tot.m += src.m; tot.a += src.a; tot.b += src.b;
+    });
+    if (_cdjEstadoDia_(tot.m, tot.a, tot.b) === 'no_existe' || tot.a > topeA) {
+      porJugador[tag].forEach(function (sk) {
+        motivo[sk] = 'la suma de los clanes del jugador el domingo (' + tot.m + ' medallas, ' + tot.a + ' ataques, ' + tot.b + ' barcos) no es un dia posible';
+        delete prov[sk];
+      });
+    }
+  });
+
+  cotejoSemana.forEach(function (e) {
+    var fila = e.fila, sk = e.sk;
+    if (fila.estado === 'json_mas') {
+      if (prov[sk]) {
+        var c = candidatos[sk], x = dia[sk + '|' + dom];
+        var f = filas[x.i];
+        fila.estado = 'json_mas_reconstruido'; fila.tipo = 'Cambio';
+        fila.detalle += ' | domingo completado';
+        fila.idxDomingo = x.i;
+        fila.origenAnt = String(f[GC.ORIGEN - 1] || '');
+        salida.cambios.push({
+          idx: x.i, temporada: T, semana: S, tag: fila.tag, nombre: fila.nombre, clan: fila.clan, periodIndex: dom,
+          ataquesHoyAnt: _cdjEntero_(f[GC.ATAQUES_HOY - 1]), ataquesHoyNuevo: prov[sk].a,
+          ataquesSemAnt: _cdjEntero_(f[GC.ATAQUES_SEM - 1]), ataquesSemNueva: c.js.ataques,
+          fameAnt: _cdjEntero_(f[GC.FAME - 1]), fameNueva: c.js.fame,
+          barcosAnt: _cdjEntero_(f[GC.BARCOS - 1]), barcosNuevo: fila.bS + c.db,
+          origenAnt: fila.origenAnt, jsonAtaques: c.js.ataques, jsonFame: c.js.fame, jsonBarcos: c.js.barcos, jsonFuentes: fila.fuentes,
+          detalle: fila.detalle
+        });
+      } else {
+        fila.estado = 'json_mas_no_resuelve'; fila.tipo = 'SIN RESOLVER';
+        fila.detalle += ' | ' + (motivo[sk] || '');
+      }
+    }
+    salida.cotejo.push(fila);
+  });
+}
+
+/**
+ * _cdjCargarRegistrosJsonDrive_(tagsSet, presupuestoMs) [→ Contexto_Base_Web.md §PF123]
+ * Lee TODOS los JSON individuales de RoyaleAPI de esos tags (si un tag tiene mas de un archivo, junta los registros de todos). Se detiene si se pasa del presupuesto
+ * de tiempo: en ese caso devuelve ok:false y no se debe escribir nada.
+ */
+function _cdjCargarRegistrosJsonDrive_(tagsSet, presupuestoMs) {
+  var t0 = Date.now();
+  var carpeta = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL);
+  var reTag = /-\s(#[0-9A-Z]+)\.json$/i;
+  var porTag = {}, archivos = 0, errores = 0;
+  var it = carpeta.getFiles();
+  while (it.hasNext()) {
+    if (Date.now() - t0 > presupuestoMs) return { ok: false, porTag: porTag, archivos: archivos, errores: errores };
+    var f = it.next();
+    var m = reTag.exec(f.getName());
+    if (!m) continue;
+    var tagNombre = m[1].toUpperCase();
+    if (!tagsSet[tagNombre]) continue;
+    try {
+      var d = JSON.parse(f.getBlob().getDataAsString('UTF-8'));
+      var tag = String((d && d.tag) || tagNombre).trim().toUpperCase();
+      if (!porTag[tag]) porTag[tag] = [];
+      porTag[tag] = porTag[tag].concat(d.registros || []);
+      archivos++;
+    } catch (e) {
+      errores++;
+      Logger.log('[CompletarDomingoJson] No se pudo leer ' + f.getName() + ': ' + e.message);
+    }
+  }
+  return { ok: true, porTag: porTag, archivos: archivos, errores: errores };
+}
+
+/**
+ * _completarDomingoDesdeJsonRoyaleApi_(aplicar) [→ Contexto_Base_Web.md §PF123]
+ * Informe (aplicar = false): solo lee y deja un CSV de informe en Drive. Aplicar (aplicar = true): respalda Backup_Guerra.csv, escribe en el CSV y en la hoja Guerra
+ * (solo AtaquesHoy, AtaquesSemana, Fame, Barcos y Origen) y sincroniza la hoja con el CSV, igual que repararDomingosDesdeCorrecciones.
+ */
+function _completarDomingoDesdeJsonRoyaleApi_(aplicar) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[CompletarDomingoJson] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var t0 = Date.now();
+    var ss = _getSs();
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+
+    // --- Fuentes: Backup_Guerra.csv (todas las temporadas) y hoja Guerra (temporada vigente) ---
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    var encabezadoCsv = null, filasCsv = null;
+    if (csvText) {
+      var parsed = _parseCSV(csvText);
+      if (parsed && parsed.length > 1) {
+        encabezadoCsv = parsed[0];
+        filasCsv = parsed.slice(1);
+        for (var a = 0; a < filasCsv.length; a++) { while (filasCsv[a].length < GUERRA_TOTAL_COLS) filasCsv[a].push(''); }
+      }
+    }
+    var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+    var datosHoja = (sh && sh.getLastRow() >= 2) ? sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues() : null;
+    if (!filasCsv && !datosHoja) { Logger.log('[CompletarDomingoJson] No hay filas en Backup_Guerra.csv ni en la hoja Guerra; no se hace nada.'); return; }
+
+    // --- JSON de RoyaleAPI de los jugadores que aparecen en esas filas ---
+    var tagsSet = {};
+    [filasCsv, datosHoja].forEach(function (filas) {
+      (filas || []).forEach(function (f) {
+        if (String(f[GC.ETAPA - 1] || '').trim() !== 'Guerra') return;
+        var tg = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+        if (tg) tagsSet[tg] = true;
+      });
+    });
+    var lectura = _cdjCargarRegistrosJsonDrive_(tagsSet, COMPLETAR_DOMINGO_JSON_PRESUPUESTO_LECTURA_MS);
+    if (!lectura.ok) {
+      Logger.log('[CompletarDomingoJson] ABORT: se agoto el presupuesto de tiempo leyendo los JSON de RoyaleAPI (' + lectura.archivos + ' archivos leidos). No se escribio nada.');
+      return;
+    }
+    var indiceJson = _cdjIndexarRegistrosJson_(lectura.porTag);
+
+    var resCsv = filasCsv ? _calcularCompletarDomingoDesdeJson_(filasCsv, indiceJson) : null;
+    var resHoja = datosHoja ? _calcularCompletarDomingoDesdeJson_(datosHoja, indiceJson) : null;
+
+    // --- Informe en Drive: solo lo que cambia, no se toca o queda sin resolver (coincide y sin_json van como conteo en el log) ---
+    var informe = [COMPLETAR_DOMINGO_JSON_ENCABEZADO_INFORME];
+    var agregarInforme = function (fuente, res) {
+      if (!res) return;
+      res.cotejo.forEach(function (c) {
+        if (c.estado === 'coincide' || c.estado === 'sin_json') return;
+        var cambio = null;
+        if (c.estado === 'json_mas_reconstruido') {
+          for (var q = 0; q < res.cambios.length; q++) { if (res.cambios[q].idx === c.idxDomingo) { cambio = res.cambios[q]; break; } }
+        }
+        informe.push([fuente, c.tipo, c.temporada, c.semana, c.tag, c.nombre, c.clan, cambio ? cambio.periodIndex : '', c.estado,
+          cambio ? cambio.ataquesHoyAnt : '', cambio ? cambio.ataquesHoyNuevo : '', cambio ? cambio.ataquesSemAnt : '', cambio ? cambio.ataquesSemNueva : '',
+          cambio ? cambio.fameAnt : '', cambio ? cambio.fameNueva : '', cambio ? cambio.barcosAnt : '', cambio ? cambio.barcosNuevo : '',
+          c.ja === null ? '' : c.ja, c.jf === null ? '' : c.jf, c.jb === null ? '' : c.jb, c.fuentes, c.detalle, c.origenAnt]);
+      });
+    };
+    agregarInforme('Backup_Guerra.csv', resCsv);
+    agregarInforme('Hoja Guerra', resHoja);
+    var nombreInforme = 'Completar_DomingoDesdeJsonRoyaleApi ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+
+    var nCsv = resCsv ? resCsv.cambios.length : 0, nHoja = resHoja ? resHoja.cambios.length : 0;
+    if (aplicar && (nCsv > 0 || nHoja > 0)) {
+      // Respaldo previo del CSV completo, ANTES de escribir nada.
+      if (csvText) _saveCSVToDrive('Backup_Guerra ANTES de completar DomingoDesdeJsonRoyaleApi ' + marca + '.csv', csvText);
+
+      if (resCsv && nCsv) {
+        resCsv.cambios.forEach(function (c) {
+          var fila = filasCsv[c.idx];
+          fila[GC.ATAQUES_HOY - 1] = String(c.ataquesHoyNuevo);
+          fila[GC.ATAQUES_SEM - 1] = String(c.ataquesSemNueva);
+          fila[GC.FAME - 1] = String(c.fameNueva);
+          fila[GC.BARCOS - 1] = String(c.barcosNuevo);
+          fila[GC.ORIGEN - 1] = 'Reconstruido';
+        });
+        _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezadoCsv].concat(filasCsv)));
+      }
+      if (resHoja && nHoja) {
+        // Solo AtaquesHoy, AtaquesSemana, Fame, Barcos (columnas contiguas) y Origen: no se reescribe el resto.
+        var bloque = datosHoja.map(function (r) { return [r[GC.ATAQUES_HOY - 1], r[GC.ATAQUES_SEM - 1], r[GC.FAME - 1], r[GC.BARCOS - 1]]; });
+        var colOrigen = datosHoja.map(function (r) { return [r[GC.ORIGEN - 1]]; });
+        resHoja.cambios.forEach(function (c) {
+          bloque[c.idx] = [c.ataquesHoyNuevo, c.ataquesSemNueva, c.fameNueva, c.barcosNuevo];
+          colOrigen[c.idx][0] = 'Reconstruido';
+        });
+        sh.getRange(2, GC.ATAQUES_HOY, bloque.length, 4).setValues(bloque);
+        sh.getRange(2, GC.ORIGEN, colOrigen.length, 1).setValues(colOrigen);
+        _syncGuerraCSV(sh); // propaga la hoja al CSV, igual que en PF031, PF045 y PF047
+      }
+    }
+
+    function resumenConteo(res) {
+      if (!res) return 'sin filas';
+      return Object.keys(res.conteo).sort().map(function (k) { return k + ' ' + res.conteo[k]; }).join(', ');
+    }
+    Logger.log('[CompletarDomingoJson] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). JSON: ' + lectura.archivos +
+      ' archivo(s) leidos, ' + lectura.errores + ' con error. Backup_Guerra.csv: ' + nCsv + ' serie(s) a completar (' + resumenConteo(resCsv) + '). Hoja Guerra: ' + nHoja +
+      ' serie(s) a completar (' + resumenConteo(resHoja) + '). ' +
+      (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que completar.') +
+      (aplicar ? ' Si cambio la hoja, corre updateControlSheet() y actualizarControl2() para refrescar los controles.' : ' (No se escribio nada en Guerra; corre completarDomingoDesdeJsonRoyaleApiAplicar() para aplicar.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
