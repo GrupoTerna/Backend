@@ -135,6 +135,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF123` | Modelo de auditoría semanal por día, jugador y clan (5 casillas por día: 4 clanes Terna y un «externo»), explicado por la usuaria el 18-oct-2026; confirma que no caben dos duelos en un día. Incluye: verificación en dos etapas (`Diario_C` y luego `Diario_D`), tabla semanal por intervalos de ataques con dos IDs, formato ligero (no tiene que ser Excel) y el hueco actual entre clanes. **Incluye las tablas semanales ya generadas (`Informes/Semanal/`) y la estructura decidida de cuatro archivos enlazados (`Semanal_C`, `Semanal_D`, `Diario_C`, `Diario_D`) con columna «N.º», prefijo `S_` y mapa. Sin código que las lea todavía.** **Incluye el JSON de guerra por semana ya generado (`Datos descargados/JSON/Guerra/`, 21 archivos, 16.025 filas verificadas contra el CSV) y su cotejo con los JSON de RoyaleAPI (19-oct-2026); sin código que lo lea ni lo escriba todavía.** |
 | `PF124` | `directorio.html` (Ingresos recientes): pastilla «Ocultar admins» (cuentas de administradores = todas las filas del Directorio con el Celular de un admin; flag `esCuentaAdmin` de `_webIngresosRecientes()`, solo con sesión de admin), tarjetas que desaparecen, clan actual en el tooltip y topes semanales; `perfil.html`: más barcos que ataques es anomalía (19-oct-2026). Corrige la primera versión (Líder/Colíder). |
 | `PF125` | `directorio.html` (Ingresos recientes): la cuadrícula de Ataques, Medallas y Barcos queda congelada con lo último de la guerra (hasta el domingo) de lunes a miércoles y se muestra hasta que empiece la siguiente; flag `guerraCongelada` de `_webIngresosRecientes()` (19-oct-2026). |
+| `PF126` | `37_Web_API.gs` (`_webPerfilJugador()`): cada punto de `historialRanking` trae el `clan` de esa fecha; las gráficas de `perfil.html` dejan de mostrar siempre el clan actual |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -2361,6 +2362,16 @@ El caso de la usuaria (4 ataques, los 4 a barcos: entre 300 y 500) sale exacto. 
 **Un miembro sin fila en la última guerra** (ingresó el martes, por ejemplo) no tiene cuadrícula de lunes a miércoles: no se rellena con ceros fuera de día de guerra, igual que antes (PF-ceros del 11-oct).
 
 **Para que funcione:** correr `subirBaseDesdeGithub()` en Apps Script **antes de cualquier descarga**, y publicar `Web`. **Sin probar:** con la hoja Guerra real un lunes a miércoles, ni el cambio de temporada.
+
+### PF126 — Gráficas de `perfil.html`: el clan de cada punto es el de esa fecha, no el actual (pedido de la usuaria, 19-oct-2026; SIN PROBAR en Apps Script real ni en navegador real)
+
+- **Pedido de la usuaria.** En las gráficas del perfil, el clan mostrado era siempre el clan actual; si la cuenta había pasado por varios clanes Terna, todas las fechas aparecían con el clan de hoy en lugar del clan donde estaba esa cuenta en esa fecha.
+- **Causa (verificada leyendo el código el 19-oct-2026).** `_webPerfilJugador()` (`37_Web_API.gs`) armaba cada entrada de `extendido.historialRanking` con `semana`, `ranking`, `ataques`, `puntaje`, `barcos` y `copas`, **pero sin `clan`**. El frontend (`perfil.html`, `renderRankingChart()`, `renderCopasChart()`, `renderMetricaSemanal()`) ya leía `h.clan` de cada registro y, al no llegar, caía en `perfilGraficaCtx.clan` (el `clan` actual del jugador, fijado en `renderMiembro()`): de ahí el síntoma.
+- **Qué cambia.** Se agrega `clan: String(dataGuerra[i][GC.CLAN - 1] || '').trim()` a cada entrada. Es la columna Clan de la fila de Guerra de ese día (la misma que ya usaba `diasGuerraSemana`), con el texto tal como lo guarda la hoja. Las filas vienen de `_leerFilasGuerraDeTag_()` (CSV de todas las temporadas + hoja viva), así que el clan histórico llega también para temporadas pasadas.
+- **Frontend: no se tocó.** `_historialDiasGuerra()` conserva el `clan` del registro del domingo al fusionarlo con el cierre del lunes (`Object.assign` sobre el registro previo), y los puntos sin clan (huecos sin dato) siguen usando el texto de `motivo`. `perfilGraficaCtx.clan` queda solo como respaldo si una fila de Guerra tuviera la columna Clan vacía.
+- **Lo que no se comprobó.** No se corrió en Apps Script ni se abrió `perfil.html` con una cuenta que haya cambiado de clan. Falta confirmar con una cuenta real que el nombre del clan de la fila de Guerra coincide con el formato que muestra la leyenda. Si el día del cambio de clan la fila de Guerra aún trae el clan anterior, ese día se verá con el clan viejo (depende de cuándo `runGuerra` escribe la columna).
+- **Para que funcione:** correr `subirBaseDesdeGithub()` en Apps Script **antes de cualquier descarga** (si no, el estado viejo pisa el cambio). La respuesta de `webPerfil` puede estar en caché unos minutos.
+- Historial de frontend: ninguno (cambio solo de backend).
 
 ### PF064 — `perfil.html`: banner en la tarjeta de cabecera (pedido de la usuaria, 12-oct-2026)
 
