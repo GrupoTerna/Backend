@@ -3379,6 +3379,30 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
       Logger.log('[IngresosRecientes] no se pudo leer el respaldo de Guerra: ' + eCsvIR.message);
     }
   }
+  // 19-oct-2026 (pedido de la usuaria): de lunes a miércoles (entrenamiento) la cuadrícula de Ataques, Medallas y Barcos de «Ingresos recientes» queda congelada con lo último obtenido en la guerra (hasta el domingo) y se sigue mostrando hasta que empiece la siguiente (jueves). Antes, en entrenamiento, el desglose diario salía null (no se dibujaba) y los totales de la semana salían en 0 porque se buscaba la semana nueva, que aún no tiene días de guerra. Referencia = última fila de día de guerra (temporada, periodIndex) que no sea futura; en día de guerra la referencia sigue siendo el contexto actual. [→ Contexto_Base_Web.md §PF125]
+  var refGuerraIR = { temporada: String(ctx.temporada), sectionIndex: ctx.sectionIndex, periodIndex: ctx.periodIndex };
+  var guerraCongeladaIR = false;
+  if (dataGuerra && !esDiaGuerraIdx(ctx.periodIndex)) {
+    var mejorTempIR = -1, mejorPeriodoIR = -1, mejorFilaIR = null;
+    for (var gRef = 0; gRef < dataGuerra.length; gRef++) {
+      var pRefIR = Number(dataGuerra[gRef][GC.PERIOD_IDX - 1]);
+      if (!pRefIR || !esDiaGuerraIdx(pRefIR)) continue;
+      var tRefIR = Number(dataGuerra[gRef][GC.TEMPORADA - 1]) || 0;
+      if (!tRefIR || tRefIR > Number(ctx.temporada)) continue;
+      if (tRefIR === Number(ctx.temporada) && pRefIR > ctx.periodIndex) continue; // no futuras
+      if (tRefIR > mejorTempIR || (tRefIR === mejorTempIR && pRefIR > mejorPeriodoIR)) {
+        mejorTempIR = tRefIR; mejorPeriodoIR = pRefIR; mejorFilaIR = dataGuerra[gRef];
+      }
+    }
+    if (mejorFilaIR) {
+      refGuerraIR = {
+        temporada:    String(mejorFilaIR[GC.TEMPORADA - 1]),
+        sectionIndex: (Number(mejorFilaIR[GC.SEMANA - 1]) || 1) - 1,
+        periodIndex:  mejorPeriodoIR
+      };
+      guerraCongeladaIR = true;
+    }
+  }
   if (dataGuerra) {
     for (var g = 0; g < dataGuerra.length; g++) {
       if (String(dataGuerra[g][GC.TEMPORADA - 1] || '') === String(ctx.temporada)) {
@@ -3393,8 +3417,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
 
       // FIX (11-oct-2026, pedido usuario — "YAHIR tiene ataques pero su cuadrícula aparece vacía"): el desglose diario J/V/S/D solo salía de la hoja "Nuevos" (Tampermonkey); un ingreso sin fila ahí (caso YAHIR, ingresó el sábado) quedaba con guerraSemanaDias = null aunque la hoja Guerra sí tenía sus ataques. Se guardan acá, por Tag, los valores de CADA día de guerra de la semana en curso, para usarlos de respaldo más abajo. Mismo criterio que _webPerfilJugador() (GC.ATAQUES_HOY / GC.FAME / GC.BARCOS por día). [→ Contexto_Base_Web.md §37B262B]
       var pIdxDiaG = Number(dataGuerra[g][GC.PERIOD_IDX - 1]) || 0;
-      if (String(dataGuerra[g][GC.TEMPORADA - 1]) === String(ctx.temporada) &&
-          ((Number(dataGuerra[g][GC.SEMANA - 1]) || 1) - 1) === ctx.sectionIndex &&
+      if (String(dataGuerra[g][GC.TEMPORADA - 1]) === refGuerraIR.temporada &&
+          ((Number(dataGuerra[g][GC.SEMANA - 1]) || 1) - 1) === refGuerraIR.sectionIndex &&
           esDiaGuerraIdx(pIdxDiaG)) {
         var tagDiaG = cleanTag(dataGuerra[g][GC.TAG - 1]);
         if (tagDiaG) {
@@ -3407,7 +3431,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
         }
       }
 
-      if (Number(dataGuerra[g][GC.PERIOD_IDX - 1]) !== ctx.periodIndex) continue;
+      if (Number(dataGuerra[g][GC.PERIOD_IDX - 1]) !== refGuerraIR.periodIndex ||
+          String(dataGuerra[g][GC.TEMPORADA - 1]) !== refGuerraIR.temporada) continue;
       var tagG = cleanTag(dataGuerra[g][GC.TAG - 1]);
       if (!tagG) continue;
       guerraSemanaPorTag[tagG] = {
@@ -3593,6 +3618,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
   });
 
   // FASE 10 (09-sep-2026): ver comentario junto a 'fechaMasRecientePorSemana' más arriba. Se ordena de más antigua a más reciente (mismo criterio de fecha real "dd/MM/yyyy" que ya usa historialSemanal cuando viene de "Nuevos") y se… [→ Contexto_Base_Web.md §37B275]
+  lista.guerraCongelada = guerraCongeladaIR; // PF125: true en entrenamiento (lunes a miércoles); el frontend rotula «Última guerra»
   lista.semanasGuerra = Object.keys(fechaMasRecientePorSemana)
     .map(Number)
     .sort(function (a, b) { return a - b; })
@@ -3603,7 +3629,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
 
 function _webIngresosRecientesCalcular() {
   var lista = _construirIngresosRecientesUnificado();
-  return { ingresos: lista, semanasGuerra: lista.semanasGuerra || [] };
+  return { ingresos: lista, semanasGuerra: lista.semanasGuerra || [], guerraCongelada: !!lista.guerraCongelada };
 }
 
 // _webTorneosJugador(): FASE 7 (29-ago-2026, pedido del usuario — botón "Ver Torneos" del perfil en jugadores.html). A diferencia de _webTorneos() (que solo expone el Top 3 del torneo MÁS RECIENTE, sin indagar en ningún jugador puntual), esta función es… [→ Contexto_Base_Web.md §37B276]
