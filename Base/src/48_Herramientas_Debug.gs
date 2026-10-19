@@ -443,3 +443,1322 @@ function testTiempoPerfil(tag) {
     Object.keys(originales).forEach(function (nombre) { G[nombre] = originales[nombre]; });
   }
 }
+/**
+ * cruzarSinResolverConHistorialInforme()
+ *
+ * SOLO INFORMA. No escribe en la hoja Guerra ni toca Backup_Guerra.csv.
+ *
+ * Toma las series "SIN RESOLVER" (json_mas_no_resuelve) del ultimo informe
+ * Completar_DomingoDesdeJsonRoyaleApi ... (informe).csv, y compara el total
+ * semanal de cada una entre tres fuentes:
+ *   - Backup_Guerra.csv      (ultima fila de la semana)
+ *   - JSON RoyaleAPI         (columnas "JSON ataques/fame/barcos" del informe)
+ *   - HistorialGuerra_Grupal (Ataques/Fame/Barcos de la semana)
+ *
+ * Deja un CSV en la carpeta Informes con la clasificacion de cada serie.
+ */
+var CRUCE_CFG = {
+  CARPETA_BACKUP_ID: '1emYkDZMEzYgO5lwmtY-NMhFc5JJd2I3R',
+  CARPETA_HISTORIAL_ID: '1T8PhxVVRZ-p7o2A_U6ARP-LsC3Zg7ObL',
+  CARPETA_INFORMES_ID: '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X',
+  ARCHIVO_BACKUP: 'Backup_Guerra.csv',
+  ARCHIVO_HISTORIAL: 'HistorialGuerra_Grupal.csv',
+  PREFIJO_INFORME: 'Completar_DomingoDesdeJsonRoyaleApi'
+};
+
+function cruzarSinResolverConHistorialInforme() {
+  var t0 = new Date();
+
+  // 1) Series SIN RESOLVER del ultimo informe de completar domingo.
+  var inf = cruce_leerUltimoInforme_();
+  var hi = cruce_indices_(inf.filas[0]);
+  var objetivos = [];
+  var claves = {};
+  for (var i = 1; i < inf.filas.length; i++) {
+    var f = inf.filas[i];
+    if (cruce_celda_(f, hi, 'Fuente') !== 'Backup_Guerra.csv') continue;
+    if (cruce_celda_(f, hi, 'Tipo') !== 'SIN RESOLVER') continue;
+    var o = {
+      temporada: cruce_num_(cruce_celda_(f, hi, 'Temporada')),
+      semana: cruce_num_(cruce_celda_(f, hi, 'Semana')),
+      tag: cruce_tag_(cruce_celda_(f, hi, 'Tag')),
+      nombre: cruce_celda_(f, hi, 'Nombre'),
+      clan: cruce_clan_(cruce_celda_(f, hi, 'Clan')),
+      jsonAtaques: cruce_num_(cruce_celda_(f, hi, 'JSON ataques')),
+      jsonFame: cruce_num_(cruce_celda_(f, hi, 'JSON fame')),
+      jsonBarcos: cruce_num_(cruce_celda_(f, hi, 'JSON barcos'))
+    };
+    o.clave = cruce_clave_(o.tag, o.temporada, o.semana, o.clan);
+    objetivos.push(o);
+    claves[o.clave] = true;
+  }
+
+  // 2) Total semanal en Backup_Guerra.csv (fila con mayor PeriodIndex de la semana).
+  var bk = cruce_leerCsv_(CRUCE_CFG.CARPETA_BACKUP_ID, CRUCE_CFG.ARCHIVO_BACKUP);
+  var hb = cruce_indices_(bk[0]);
+  var backup = {};
+  for (var b = 1; b < bk.length; b++) {
+    var r = bk[b];
+    var kb = cruce_clave_(
+      cruce_tag_(cruce_celda_(r, hb, 'Tag')),
+      cruce_num_(cruce_celda_(r, hb, 'Temporada')),
+      cruce_num_(cruce_celda_(r, hb, 'Semana')),
+      cruce_clan_(cruce_celda_(r, hb, 'Clan')));
+    if (!claves[kb]) continue;
+    var pi = cruce_num_(cruce_celda_(r, hb, 'PeriodIndex'));
+    var previo = backup[kb];
+    if (!previo || pi >= previo.pi) {
+      backup[kb] = {
+        pi: pi,
+        ataques: cruce_num_(cruce_celda_(r, hb, 'AtaquesSemana')),
+        fame: cruce_num_(cruce_celda_(r, hb, 'Fame')),
+        barcos: cruce_num_(cruce_celda_(r, hb, 'Barcos'))
+      };
+    }
+  }
+
+  // 3) Totales semanales en HistorialGuerra_Grupal.csv.
+  var hs = cruce_leerCsv_(CRUCE_CFG.CARPETA_HISTORIAL_ID, CRUCE_CFG.ARCHIVO_HISTORIAL);
+  var hh = cruce_indices_(hs[0]);
+  var historial = {};
+  var temporadasHist = {};
+  for (var h = 1; h < hs.length; h++) {
+    var q = hs[h];
+    var temp = cruce_num_(cruce_celda_(q, hh, 'TemporadaInterna'));
+    temporadasHist[temp] = true;
+    var kh = cruce_clave_(
+      cruce_tag_(cruce_celda_(q, hh, 'Tag')),
+      temp,
+      cruce_num_(cruce_celda_(q, hh, 'Semana')),
+      cruce_clan_(cruce_celda_(q, hh, 'Clan')));
+    if (!claves[kh]) continue;
+    var cerrada = String(cruce_celda_(q, hh, 'Cerrada')).toLowerCase() === 'true';
+    var reg = {
+      ataques: cruce_num_(cruce_celda_(q, hh, 'Ataques')),
+      fame: cruce_num_(cruce_celda_(q, hh, 'Fame')),
+      barcos: cruce_num_(cruce_celda_(q, hh, 'Barcos')),
+      cerrada: cerrada,
+      fuente: cruce_celda_(q, hh, 'Fuente')
+    };
+    // Si hay varias filas para la misma clave, prefiere la cerrada.
+    var ex = historial[kh];
+    if (!ex || (reg.cerrada && !ex.cerrada)) historial[kh] = reg;
+  }
+
+  // 4) Clasificar.
+  var salida = [[
+    'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan',
+    'JSON ataques', 'JSON fame', 'JSON barcos',
+    'Backup ataques', 'Backup fame', 'Backup barcos',
+    'Historial ataques', 'Historial fame', 'Historial barcos',
+    'Historial cerrada', 'Historial fuente',
+    'Clasificacion'
+  ]];
+  var conteo = {};
+  for (var k = 0; k < objetivos.length; k++) {
+    var ob = objetivos[k];
+    var bb = backup[ob.clave];
+    var hr = historial[ob.clave];
+    var clase;
+    if (!bb) {
+      clase = 'SIN_FILA_BACKUP';
+    } else if (!hr) {
+      clase = 'SIN_FILA_HISTORIAL';
+    } else {
+      var hiEqBk = hr.ataques === bb.ataques && hr.fame === bb.fame;
+      var hiEqJs = hr.ataques === ob.jsonAtaques && hr.fame === ob.jsonFame;
+      if (hiEqBk) clase = 'HISTORIAL_IGUAL_BACKUP';
+      else if (hiEqJs) clase = 'HISTORIAL_IGUAL_JSON';
+      else clase = 'HISTORIAL_DISTINTO_DE_AMBOS';
+      if (!hr.cerrada) clase += ' (semana abierta en historial)';
+    }
+    conteo[clase] = (conteo[clase] || 0) + 1;
+    salida.push([
+      ob.temporada, ob.semana, ob.tag, ob.nombre, ob.clan,
+      ob.jsonAtaques, ob.jsonFame, ob.jsonBarcos,
+      bb ? bb.ataques : '', bb ? bb.fame : '', bb ? bb.barcos : '',
+      hr ? hr.ataques : '', hr ? hr.fame : '', hr ? hr.barcos : '',
+      hr ? hr.cerrada : '', hr ? hr.fuente : '',
+      clase
+    ]);
+  }
+
+  // 5) Guardar informe en Informes.
+  var zona = Session.getScriptTimeZone();
+  var nombre = 'Cruce_SinResolver_Historial ' +
+    Utilities.formatDate(new Date(), zona, 'yyyy-MM-dd HH.mm.ss') + ' (informe).csv';
+  var csv = salida.map(function (fila) {
+    return fila.map(cruce_csvCelda_).join(',');
+  }).join('\r\n');
+  DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID).createFile(nombre, csv, MimeType.CSV);
+
+  var resumen = Object.keys(conteo).sort().map(function (c) {
+    return c + ' ' + conteo[c];
+  }).join(' | ');
+  var seg = Math.round((new Date() - t0) / 1000);
+  Logger.log('[CruceSinResolver] SOLO INFORMAR (' + seg + ' s). Informe base: ' + inf.nombre +
+    '. Series SIN RESOLVER: ' + objetivos.length + '. ' + resumen +
+    '. TemporadaInterna en historial: ' + Object.keys(temporadasHist).sort().join(',') +
+    '. Detalle en Drive: ' + nombre + '. (No se escribio nada en Guerra.)');
+}
+
+// ---------- utilidades ----------
+
+function cruce_leerCsv_(carpetaId, nombre) {
+  var it = DriveApp.getFolderById(carpetaId).getFilesByName(nombre);
+  if (!it.hasNext()) throw new Error('No encuentro ' + nombre + ' en la carpeta ' + carpetaId);
+  var texto = it.next().getBlob().getDataAsString('UTF-8');
+  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
+  return Utilities.parseCsv(texto);
+}
+
+function cruce_leerUltimoInforme_() {
+  var it = DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID).getFiles();
+  var mejor = null;
+  while (it.hasNext()) {
+    var f = it.next();
+    var n = f.getName();
+    if (n.indexOf(CRUCE_CFG.PREFIJO_INFORME) !== 0) continue;
+    if (n.indexOf('(informe).csv') === -1) continue;
+    if (!mejor || f.getDateCreated() > mejor.getDateCreated()) mejor = f;
+  }
+  if (!mejor) throw new Error('No hay informe ' + CRUCE_CFG.PREFIJO_INFORME + ' en Informes.');
+  var texto = mejor.getBlob().getDataAsString('UTF-8');
+  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
+  return { nombre: mejor.getName(), filas: Utilities.parseCsv(texto) };
+}
+
+function cruce_indices_(encabezado) {
+  var m = {};
+  for (var i = 0; i < encabezado.length; i++) {
+    m[String(encabezado[i]).trim()] = i;
+  }
+  return m;
+}
+
+function cruce_celda_(fila, indices, nombre) {
+  var i = indices[nombre];
+  if (i === undefined) throw new Error('Falta la columna "' + nombre + '"');
+  return fila[i] === undefined ? '' : String(fila[i]).trim();
+}
+
+function cruce_num_(v) {
+  var n = parseInt(String(v).replace(/[^\d-]/g, ''), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function cruce_tag_(v) {
+  var t = String(v).trim().toUpperCase();
+  return t.charAt(0) === '#' ? t : '#' + t;
+}
+
+// En el historial el clan viene como "Nombre\nfecha": se queda con la primera linea.
+function cruce_clan_(v) {
+  return String(v).split(/\r?\n/)[0].trim();
+}
+
+function cruce_clave_(tag, temporada, semana, clan) {
+  return tag + '|' + temporada + '|' + semana + '|' + clan;
+}
+
+function cruce_csvCelda_(v) {
+  var s = (v === null || v === undefined) ? '' : String(v);
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+/**
+ * aplicarTotalesSemanaDesdeHistorialInforme()  -> SOLO INFORMA (no escribe nada).
+ * aplicarTotalesSemanaDesdeHistorialAplicar()  -> escribe en Backup_Guerra.csv (con copia previa).
+ *
+ * Que hace:
+ *  Toma las series "SIN RESOLVER" (Backup_Guerra.csv) del ultimo informe
+ *  Completar_DomingoDesdeJsonRoyaleApi ... (informe).csv y, para cada una,
+ *  corrige los TOTALES SEMANALES (AtaquesSemana, Fame, Barcos) de la ULTIMA fila
+ *  de esa semana (la de mayor PeriodIndex) cuando se cumplen TODAS estas condiciones:
+ *    1. Existe la fila en el Backup y en HistorialGuerra_Grupal.csv.
+ *    2. La semana esta cerrada en el Historial.
+ *    3. El Historial coincide exactamente con el JSON (ataques, fame y barcos).
+ *    4. El Backup no coincide y es MENOR O IGUAL en los tres totales (nunca se baja nada).
+ *    5. La semana no esta vacia en el Backup (ataques y fame distintos de 0 a la vez
+ *       no son ambos 0): si el Backup tiene 0/0 se deja para revision manual.
+ *
+ *  NO toca AtaquesHoy ni ninguna otra fila de la semana. No reparte ataques por dia.
+ *  NO toca la hoja Guerra.
+ *
+ * Seguridad:
+ *  - Antes de escribir comprueba que re-serializar el CSV reproduce EXACTAMENTE el texto
+ *    original; si no, aborta sin escribir.
+ *  - Guarda una copia "Backup_Guerra ANTES de aplicar TotalesSemanaDesdeHistorial ..." en Informes.
+ *  - Aborta si hay mas de MAX_CAMBIOS cambios (se esperan ~27).
+ *  - Verifica leyendo de nuevo el archivo despues de escribir.
+ */
+var TOT_CFG = {
+  CARPETA_BACKUP_ID: '1emYkDZMEzYgO5lwmtY-NMhFc5JJd2I3R',
+  CARPETA_HISTORIAL_ID: '1T8PhxVVRZ-p7o2A_U6ARP-LsC3Zg7ObL',
+  CARPETA_INFORMES_ID: '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X',
+  ARCHIVO_BACKUP: 'Backup_Guerra.csv',
+  ARCHIVO_HISTORIAL: 'HistorialGuerra_Grupal.csv',
+  PREFIJO_INFORME: 'Completar_DomingoDesdeJsonRoyaleApi',
+  MAX_CAMBIOS: 60
+};
+
+function aplicarTotalesSemanaDesdeHistorialInforme() { tot_ejecutar_(false); }
+function aplicarTotalesSemanaDesdeHistorialAplicar() { tot_ejecutar_(true); }
+
+function tot_ejecutar_(aplicar) {
+  var t0 = new Date();
+  var zona = Session.getScriptTimeZone();
+  var sello = Utilities.formatDate(new Date(), zona, 'yyyy-MM-dd HH.mm.ss');
+
+  // 1) Series SIN RESOLVER del ultimo informe de completar domingo.
+  var inf = tot_leerUltimoInforme_();
+  var hi = tot_indices_(inf.filas[0]);
+  var objetivos = [];
+  var claves = {};
+  for (var i = 1; i < inf.filas.length; i++) {
+    var f = inf.filas[i];
+    if (tot_celda_(f, hi, 'Fuente') !== 'Backup_Guerra.csv') continue;
+    if (tot_celda_(f, hi, 'Tipo') !== 'SIN RESOLVER') continue;
+    var o = {
+      temporada: tot_num_(tot_celda_(f, hi, 'Temporada')),
+      semana: tot_num_(tot_celda_(f, hi, 'Semana')),
+      tag: tot_tag_(tot_celda_(f, hi, 'Tag')),
+      nombre: tot_celda_(f, hi, 'Nombre'),
+      clan: tot_clan_(tot_celda_(f, hi, 'Clan')),
+      jsonAtaques: tot_num_(tot_celda_(f, hi, 'JSON ataques')),
+      jsonFame: tot_num_(tot_celda_(f, hi, 'JSON fame')),
+      jsonBarcos: tot_num_(tot_celda_(f, hi, 'JSON barcos'))
+    };
+    o.clave = tot_clave_(o.tag, o.temporada, o.semana, o.clan);
+    objetivos.push(o);
+    claves[o.clave] = true;
+  }
+
+  // 2) Backup: lee el texto, comprueba que el formato se reproduce y ubica la ultima fila.
+  var archivoBackup = tot_buscarArchivo_(TOT_CFG.CARPETA_BACKUP_ID, TOT_CFG.ARCHIVO_BACKUP);
+  var texto = archivoBackup.getBlob().getDataAsString('UTF-8');
+  var bom = texto.charCodeAt(0) === 0xFEFF;
+  if (bom) texto = texto.substring(1);
+  var eol = texto.indexOf('\r\n') !== -1 ? '\r\n' : '\n';
+  var terminaEnEol = /\r?\n$/.test(texto);
+  var filas = Utilities.parseCsv(texto);
+  while (filas.length && filas[filas.length - 1].length === 1 && filas[filas.length - 1][0] === '') filas.pop();
+
+  var reproduce = tot_serializar_(filas, eol) === texto.replace(/(\r?\n)+$/, '');
+
+  var hb = tot_indices_(filas[0]);
+  var cAtk = tot_indice_(hb, 'AtaquesSemana');
+  var cFame = tot_indice_(hb, 'Fame');
+  var cBar = tot_indice_(hb, 'Barcos');
+  var ultimo = {};
+  for (var b = 1; b < filas.length; b++) {
+    var r = filas[b];
+    var kb = tot_clave_(
+      tot_tag_(tot_celda_(r, hb, 'Tag')),
+      tot_num_(tot_celda_(r, hb, 'Temporada')),
+      tot_num_(tot_celda_(r, hb, 'Semana')),
+      tot_clan_(tot_celda_(r, hb, 'Clan')));
+    if (!claves[kb]) continue;
+    var pi = tot_num_(tot_celda_(r, hb, 'PeriodIndex'));
+    var previo = ultimo[kb];
+    if (!previo || pi >= previo.pi) {
+      ultimo[kb] = {
+        idx: b, pi: pi,
+        ataques: tot_num_(r[cAtk]), fame: tot_num_(r[cFame]), barcos: tot_num_(r[cBar])
+      };
+    }
+  }
+
+  // 3) Historial semanal.
+  var hs = tot_leerCsv_(TOT_CFG.CARPETA_HISTORIAL_ID, TOT_CFG.ARCHIVO_HISTORIAL);
+  var hh = tot_indices_(hs[0]);
+  var historial = {};
+  for (var h = 1; h < hs.length; h++) {
+    var q = hs[h];
+    var kh = tot_clave_(
+      tot_tag_(tot_celda_(q, hh, 'Tag')),
+      tot_num_(tot_celda_(q, hh, 'TemporadaInterna')),
+      tot_num_(tot_celda_(q, hh, 'Semana')),
+      tot_clan_(tot_celda_(q, hh, 'Clan')));
+    if (!claves[kh]) continue;
+    var reg = {
+      ataques: tot_num_(tot_celda_(q, hh, 'Ataques')),
+      fame: tot_num_(tot_celda_(q, hh, 'Fame')),
+      barcos: tot_num_(tot_celda_(q, hh, 'Barcos')),
+      cerrada: String(tot_celda_(q, hh, 'Cerrada')).toLowerCase() === 'true'
+    };
+    var ex = historial[kh];
+    if (!ex || (reg.cerrada && !ex.cerrada)) historial[kh] = reg;
+  }
+
+  // 4) Evaluar cada serie.
+  var salida = [[
+    'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Linea en Backup', 'PeriodIndex',
+    'Ataques antes', 'Ataques nuevo', 'Fame antes', 'Fame nueva', 'Barcos antes', 'Barcos nuevo',
+    'Decision'
+  ]];
+  var cambios = [];
+  var conteo = {};
+  for (var k = 0; k < objetivos.length; k++) {
+    var ob = objetivos[k];
+    var bb = ultimo[ob.clave];
+    var hr = historial[ob.clave];
+    var motivo;
+    if (!bb) motivo = 'SIN_FILA_BACKUP';
+    else if (!hr) motivo = 'SIN_FILA_HISTORIAL';
+    else if (!hr.cerrada) motivo = 'HISTORIAL_ABIERTO';
+    else if (hr.ataques !== ob.jsonAtaques || hr.fame !== ob.jsonFame || hr.barcos !== ob.jsonBarcos) motivo = 'HISTORIAL_DISTINTO_DE_JSON';
+    else if (bb.ataques === ob.jsonAtaques && bb.fame === ob.jsonFame && bb.barcos === ob.jsonBarcos) motivo = 'YA_COINCIDE';
+    else if (bb.ataques > ob.jsonAtaques || bb.fame > ob.jsonFame || bb.barcos > ob.jsonBarcos) motivo = 'BACKUP_MAYOR_EN_ALGO';
+    else if (bb.ataques === 0 && bb.fame === 0) motivo = 'SEMANA_VACIA_EN_BACKUP_REVISAR';
+    else motivo = 'APLICAR';
+    conteo[motivo] = (conteo[motivo] || 0) + 1;
+
+    if (motivo === 'APLICAR') {
+      cambios.push({ idx: bb.idx, atk: ob.jsonAtaques, fame: ob.jsonFame, barcos: ob.jsonBarcos });
+    }
+    salida.push([
+      ob.temporada, ob.semana, ob.tag, ob.nombre, ob.clan,
+      bb ? bb.idx + 1 : '', bb ? bb.pi : '',
+      bb ? bb.ataques : '', motivo === 'APLICAR' ? ob.jsonAtaques : '',
+      bb ? bb.fame : '', motivo === 'APLICAR' ? ob.jsonFame : '',
+      bb ? bb.barcos : '', motivo === 'APLICAR' ? ob.jsonBarcos : '',
+      motivo
+    ]);
+  }
+
+  var resumen = Object.keys(conteo).sort().map(function (c) { return c + ' ' + conteo[c]; }).join(' | ');
+  var carpetaInformes = DriveApp.getFolderById(TOT_CFG.CARPETA_INFORMES_ID);
+
+  // 5) Solo informar: guarda el detalle y termina.
+  if (!aplicar) {
+    var nombreInf = 'AplicarTotalesSemana_Historial ' + sello + ' (informe).csv';
+    tot_guardarCsv_(carpetaInformes, nombreInf, salida);
+    Logger.log('[TotalesSemanaHistorial] SOLO INFORMAR (' + Math.round((new Date() - t0) / 1000) + ' s). ' +
+      'Informe base: ' + inf.nombre + '. Series SIN RESOLVER: ' + objetivos.length + '. ' + resumen +
+      '. Cambios que se aplicarian: ' + cambios.length +
+      '. Formato del Backup reproducible: ' + (reproduce ? 'SI' : 'NO (no se podria aplicar)') +
+      '. Detalle en Drive: ' + nombreInf + '. (No se escribio nada.)');
+    return;
+  }
+
+  // 6) Aplicar: validaciones previas.
+  if (!reproduce) {
+    throw new Error('El formato de ' + TOT_CFG.ARCHIVO_BACKUP + ' no se reproduce exactamente al re-serializarlo. No se escribio nada.');
+  }
+  if (cambios.length === 0) {
+    Logger.log('[TotalesSemanaHistorial] APLICAR: no hay nada que cambiar. ' + resumen);
+    return;
+  }
+  if (cambios.length > TOT_CFG.MAX_CAMBIOS) {
+    throw new Error('Se piden ' + cambios.length + ' cambios (limite ' + TOT_CFG.MAX_CAMBIOS + '). No se escribio nada.');
+  }
+
+  // 7) Copia previa, escritura y verificacion.
+  var nombreCopia = 'Backup_Guerra ANTES de aplicar TotalesSemanaDesdeHistorial ' + sello + '.csv';
+  archivoBackup.makeCopy(nombreCopia, carpetaInformes);
+
+  for (var c = 0; c < cambios.length; c++) {
+    var cb = cambios[c];
+    filas[cb.idx][cAtk] = String(cb.atk);
+    filas[cb.idx][cFame] = String(cb.fame);
+    filas[cb.idx][cBar] = String(cb.barcos);
+  }
+  var nuevoTexto = tot_serializar_(filas, eol) + (terminaEnEol ? eol : '');
+  archivoBackup.setContent((bom ? '﻿' : '') + nuevoTexto);
+
+  var texto2 = archivoBackup.getBlob().getDataAsString('UTF-8');
+  if (texto2.charCodeAt(0) === 0xFEFF) texto2 = texto2.substring(1);
+  var filas2 = Utilities.parseCsv(texto2);
+  while (filas2.length && filas2[filas2.length - 1].length === 1 && filas2[filas2.length - 1][0] === '') filas2.pop();
+  var ok = filas2.length === filas.length;
+  for (var v = 0; ok && v < cambios.length; v++) {
+    var vb = cambios[v];
+    ok = filas2[vb.idx][cAtk] === String(vb.atk) &&
+         filas2[vb.idx][cFame] === String(vb.fame) &&
+         filas2[vb.idx][cBar] === String(vb.barcos);
+  }
+
+  var nombreApl = 'AplicarTotalesSemana_Historial ' + sello + ' (aplicado).csv';
+  tot_guardarCsv_(carpetaInformes, nombreApl, salida);
+  Logger.log('[TotalesSemanaHistorial] APLICADO (' + Math.round((new Date() - t0) / 1000) + ' s). ' +
+    cambios.length + ' fila(s) corregidas en ' + TOT_CFG.ARCHIVO_BACKUP + '. ' + resumen +
+    '. Verificacion tras escribir: ' + (ok ? 'OK' : 'FALLO, restaura la copia previa') +
+    '. Copia previa: ' + nombreCopia + '. Detalle: ' + nombreApl +
+    '. Siguiente: sube Backup_Guerra.csv a GitHub y corre updateControlSheet() y actualizarControl2().');
+}
+
+// ---------- utilidades ----------
+
+function tot_buscarArchivo_(carpetaId, nombre) {
+  var it = DriveApp.getFolderById(carpetaId).getFilesByName(nombre);
+  if (!it.hasNext()) throw new Error('No encuentro ' + nombre + ' en la carpeta ' + carpetaId);
+  return it.next();
+}
+
+function tot_leerCsv_(carpetaId, nombre) {
+  var texto = tot_buscarArchivo_(carpetaId, nombre).getBlob().getDataAsString('UTF-8');
+  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
+  return Utilities.parseCsv(texto);
+}
+
+function tot_leerUltimoInforme_() {
+  var it = DriveApp.getFolderById(TOT_CFG.CARPETA_INFORMES_ID).getFiles();
+  var mejor = null;
+  while (it.hasNext()) {
+    var f = it.next();
+    var n = f.getName();
+    if (n.indexOf(TOT_CFG.PREFIJO_INFORME) !== 0) continue;
+    if (n.indexOf('(informe).csv') === -1) continue;
+    if (!mejor || f.getDateCreated() > mejor.getDateCreated()) mejor = f;
+  }
+  if (!mejor) throw new Error('No hay informe ' + TOT_CFG.PREFIJO_INFORME + ' en Informes.');
+  var texto = mejor.getBlob().getDataAsString('UTF-8');
+  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
+  return { nombre: mejor.getName(), filas: Utilities.parseCsv(texto) };
+}
+
+function tot_indices_(encabezado) {
+  var m = {};
+  for (var i = 0; i < encabezado.length; i++) m[String(encabezado[i]).trim()] = i;
+  return m;
+}
+
+function tot_indice_(indices, nombre) {
+  var i = indices[nombre];
+  if (i === undefined) throw new Error('Falta la columna "' + nombre + '"');
+  return i;
+}
+
+function tot_celda_(fila, indices, nombre) {
+  var i = tot_indice_(indices, nombre);
+  return fila[i] === undefined ? '' : String(fila[i]).trim();
+}
+
+function tot_num_(v) {
+  var n = parseInt(String(v).replace(/[^\d-]/g, ''), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function tot_tag_(v) {
+  var t = String(v).trim().toUpperCase();
+  return t.charAt(0) === '#' ? t : '#' + t;
+}
+
+// En el historial el clan viene como "Nombre\nfecha": se queda con la primera linea.
+function tot_clan_(v) {
+  return String(v).split(/\r?\n/)[0].trim();
+}
+
+function tot_clave_(tag, temporada, semana, clan) {
+  return tag + '|' + temporada + '|' + semana + '|' + clan;
+}
+
+function tot_csvCelda_(v) {
+  var s = (v === null || v === undefined) ? '' : String(v);
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function tot_serializar_(filas, eol) {
+  return filas.map(function (fila) {
+    return fila.map(tot_csvCelda_).join(',');
+  }).join(eol);
+}
+
+function tot_guardarCsv_(carpeta, nombre, filas) {
+  carpeta.createFile(nombre, tot_serializar_(filas, '\r\n'), MimeType.CSV);
+}
+/**
+ * cruzarSinResolverConHistorialInforme()
+ *
+ * SOLO INFORMA. No escribe en la hoja Guerra ni toca Backup_Guerra.csv.
+ *
+ * Toma las series "SIN RESOLVER" (json_mas_no_resuelve) del ultimo informe
+ * Completar_DomingoDesdeJsonRoyaleApi ... (informe).csv, y compara el total
+ * semanal de cada una entre tres fuentes:
+ *   - Backup_Guerra.csv      (ultima fila de la semana)
+ *   - JSON RoyaleAPI         (columnas "JSON ataques/fame/barcos" del informe)
+ *   - HistorialGuerra_Grupal (Ataques/Fame/Barcos de la semana)
+ *
+ * Deja un CSV en la carpeta Informes con la clasificacion de cada serie.
+ */
+var CRUCE_CFG = {
+  CARPETA_BACKUP_ID: '1emYkDZMEzYgO5lwmtY-NMhFc5JJd2I3R',
+  CARPETA_HISTORIAL_ID: '1T8PhxVVRZ-p7o2A_U6ARP-LsC3Zg7ObL',
+  CARPETA_INFORMES_ID: '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X',
+  ARCHIVO_BACKUP: 'Backup_Guerra.csv',
+  ARCHIVO_HISTORIAL: 'HistorialGuerra_Grupal.csv',
+  PREFIJO_INFORME: 'Completar_DomingoDesdeJsonRoyaleApi'
+};
+
+function cruzarSinResolverConHistorialInforme() {
+  var t0 = new Date();
+
+  // 1) Series SIN RESOLVER del ultimo informe de completar domingo.
+  var inf = cruce_leerUltimoInforme_();
+  var hi = cruce_indices_(inf.filas[0]);
+  var objetivos = [];
+  var claves = {};
+  for (var i = 1; i < inf.filas.length; i++) {
+    var f = inf.filas[i];
+    if (cruce_celda_(f, hi, 'Fuente') !== 'Backup_Guerra.csv') continue;
+    if (cruce_celda_(f, hi, 'Tipo') !== 'SIN RESOLVER') continue;
+    var o = {
+      temporada: cruce_num_(cruce_celda_(f, hi, 'Temporada')),
+      semana: cruce_num_(cruce_celda_(f, hi, 'Semana')),
+      tag: cruce_tag_(cruce_celda_(f, hi, 'Tag')),
+      nombre: cruce_celda_(f, hi, 'Nombre'),
+      clan: cruce_clan_(cruce_celda_(f, hi, 'Clan')),
+      jsonAtaques: cruce_num_(cruce_celda_(f, hi, 'JSON ataques')),
+      jsonFame: cruce_num_(cruce_celda_(f, hi, 'JSON fame')),
+      jsonBarcos: cruce_num_(cruce_celda_(f, hi, 'JSON barcos'))
+    };
+    o.clave = cruce_clave_(o.tag, o.temporada, o.semana, o.clan);
+    objetivos.push(o);
+    claves[o.clave] = true;
+  }
+
+  // 2) Total semanal en Backup_Guerra.csv (fila con mayor PeriodIndex de la semana).
+  var bk = cruce_leerCsv_(CRUCE_CFG.CARPETA_BACKUP_ID, CRUCE_CFG.ARCHIVO_BACKUP);
+  var hb = cruce_indices_(bk[0]);
+  var backup = {};
+  for (var b = 1; b < bk.length; b++) {
+    var r = bk[b];
+    var kb = cruce_clave_(
+      cruce_tag_(cruce_celda_(r, hb, 'Tag')),
+      cruce_num_(cruce_celda_(r, hb, 'Temporada')),
+      cruce_num_(cruce_celda_(r, hb, 'Semana')),
+      cruce_clan_(cruce_celda_(r, hb, 'Clan')));
+    if (!claves[kb]) continue;
+    var pi = cruce_num_(cruce_celda_(r, hb, 'PeriodIndex'));
+    var previo = backup[kb];
+    if (!previo || pi >= previo.pi) {
+      backup[kb] = {
+        pi: pi,
+        ataques: cruce_num_(cruce_celda_(r, hb, 'AtaquesSemana')),
+        fame: cruce_num_(cruce_celda_(r, hb, 'Fame')),
+        barcos: cruce_num_(cruce_celda_(r, hb, 'Barcos'))
+      };
+    }
+  }
+
+  // 3) Totales semanales en HistorialGuerra_Grupal.csv.
+  var hs = cruce_leerCsv_(CRUCE_CFG.CARPETA_HISTORIAL_ID, CRUCE_CFG.ARCHIVO_HISTORIAL);
+  var hh = cruce_indices_(hs[0]);
+  var historial = {};
+  var temporadasHist = {};
+  for (var h = 1; h < hs.length; h++) {
+    var q = hs[h];
+    var temp = cruce_num_(cruce_celda_(q, hh, 'TemporadaInterna'));
+    temporadasHist[temp] = true;
+    var kh = cruce_clave_(
+      cruce_tag_(cruce_celda_(q, hh, 'Tag')),
+      temp,
+      cruce_num_(cruce_celda_(q, hh, 'Semana')),
+      cruce_clan_(cruce_celda_(q, hh, 'Clan')));
+    if (!claves[kh]) continue;
+    var cerrada = String(cruce_celda_(q, hh, 'Cerrada')).toLowerCase() === 'true';
+    var reg = {
+      ataques: cruce_num_(cruce_celda_(q, hh, 'Ataques')),
+      fame: cruce_num_(cruce_celda_(q, hh, 'Fame')),
+      barcos: cruce_num_(cruce_celda_(q, hh, 'Barcos')),
+      cerrada: cerrada,
+      fuente: cruce_celda_(q, hh, 'Fuente')
+    };
+    // Si hay varias filas para la misma clave, prefiere la cerrada.
+    var ex = historial[kh];
+    if (!ex || (reg.cerrada && !ex.cerrada)) historial[kh] = reg;
+  }
+
+  // 4) Clasificar.
+  var salida = [[
+    'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan',
+    'JSON ataques', 'JSON fame', 'JSON barcos',
+    'Backup ataques', 'Backup fame', 'Backup barcos',
+    'Historial ataques', 'Historial fame', 'Historial barcos',
+    'Historial cerrada', 'Historial fuente',
+    'Clasificacion'
+  ]];
+  var conteo = {};
+  for (var k = 0; k < objetivos.length; k++) {
+    var ob = objetivos[k];
+    var bb = backup[ob.clave];
+    var hr = historial[ob.clave];
+    var clase;
+    if (!bb) {
+      clase = 'SIN_FILA_BACKUP';
+    } else if (!hr) {
+      clase = 'SIN_FILA_HISTORIAL';
+    } else {
+      var hiEqBk = hr.ataques === bb.ataques && hr.fame === bb.fame;
+      var hiEqJs = hr.ataques === ob.jsonAtaques && hr.fame === ob.jsonFame;
+      if (hiEqBk) clase = 'HISTORIAL_IGUAL_BACKUP';
+      else if (hiEqJs) clase = 'HISTORIAL_IGUAL_JSON';
+      else clase = 'HISTORIAL_DISTINTO_DE_AMBOS';
+      if (!hr.cerrada) clase += ' (semana abierta en historial)';
+    }
+    conteo[clase] = (conteo[clase] || 0) + 1;
+    salida.push([
+      ob.temporada, ob.semana, ob.tag, ob.nombre, ob.clan,
+      ob.jsonAtaques, ob.jsonFame, ob.jsonBarcos,
+      bb ? bb.ataques : '', bb ? bb.fame : '', bb ? bb.barcos : '',
+      hr ? hr.ataques : '', hr ? hr.fame : '', hr ? hr.barcos : '',
+      hr ? hr.cerrada : '', hr ? hr.fuente : '',
+      clase
+    ]);
+  }
+
+  // 5) Guardar informe en Informes.
+  var zona = Session.getScriptTimeZone();
+  var nombre = 'Cruce_SinResolver_Historial ' +
+    Utilities.formatDate(new Date(), zona, 'yyyy-MM-dd HH.mm.ss') + ' (informe).csv';
+  var csv = salida.map(function (fila) {
+    return fila.map(cruce_csvCelda_).join(',');
+  }).join('\r\n');
+  DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID).createFile(nombre, csv, MimeType.CSV);
+
+  var resumen = Object.keys(conteo).sort().map(function (c) {
+    return c + ' ' + conteo[c];
+  }).join(' | ');
+  var seg = Math.round((new Date() - t0) / 1000);
+  Logger.log('[CruceSinResolver] SOLO INFORMAR (' + seg + ' s). Informe base: ' + inf.nombre +
+    '. Series SIN RESOLVER: ' + objetivos.length + '. ' + resumen +
+    '. TemporadaInterna en historial: ' + Object.keys(temporadasHist).sort().join(',') +
+    '. Detalle en Drive: ' + nombre + '. (No se escribio nada en Guerra.)');
+}
+
+// ---------- utilidades ----------
+
+function cruce_leerCsv_(carpetaId, nombre) {
+  var it = DriveApp.getFolderById(carpetaId).getFilesByName(nombre);
+  if (!it.hasNext()) throw new Error('No encuentro ' + nombre + ' en la carpeta ' + carpetaId);
+  var texto = it.next().getBlob().getDataAsString('UTF-8');
+  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
+  return Utilities.parseCsv(texto);
+}
+
+function cruce_leerUltimoInforme_() {
+  var it = DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID).getFiles();
+  var mejor = null;
+  while (it.hasNext()) {
+    var f = it.next();
+    var n = f.getName();
+    if (n.indexOf(CRUCE_CFG.PREFIJO_INFORME) !== 0) continue;
+    if (n.indexOf('(informe).csv') === -1) continue;
+    if (!mejor || f.getDateCreated() > mejor.getDateCreated()) mejor = f;
+  }
+  if (!mejor) throw new Error('No hay informe ' + CRUCE_CFG.PREFIJO_INFORME + ' en Informes.');
+  var texto = mejor.getBlob().getDataAsString('UTF-8');
+  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
+  return { nombre: mejor.getName(), filas: Utilities.parseCsv(texto) };
+}
+
+function cruce_indices_(encabezado) {
+  var m = {};
+  for (var i = 0; i < encabezado.length; i++) {
+    m[String(encabezado[i]).trim()] = i;
+  }
+  return m;
+}
+
+function cruce_celda_(fila, indices, nombre) {
+  var i = indices[nombre];
+  if (i === undefined) throw new Error('Falta la columna "' + nombre + '"');
+  return fila[i] === undefined ? '' : String(fila[i]).trim();
+}
+
+function cruce_num_(v) {
+  var n = parseInt(String(v).replace(/[^\d-]/g, ''), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function cruce_tag_(v) {
+  var t = String(v).trim().toUpperCase();
+  return t.charAt(0) === '#' ? t : '#' + t;
+}
+
+// En el historial el clan viene como "Nombre\nfecha": se queda con la primera linea.
+function cruce_clan_(v) {
+  return String(v).split(/\r?\n/)[0].trim();
+}
+
+function cruce_clave_(tag, temporada, semana, clan) {
+  return tag + '|' + temporada + '|' + semana + '|' + clan;
+}
+
+function cruce_csvCelda_(v) {
+  var s = (v === null || v === undefined) ? '' : String(v);
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+/**
+ * aplicarTotalesSemanaDesdeHistorialInforme()  -> SOLO INFORMA (no escribe nada).
+ * aplicarTotalesSemanaDesdeHistorialAplicar()  -> escribe en Backup_Guerra.csv (con copia previa).
+ *
+ * Que hace:
+ *  Toma las series "SIN RESOLVER" (Backup_Guerra.csv) del ultimo informe
+ *  Completar_DomingoDesdeJsonRoyaleApi ... (informe).csv y, para cada una,
+ *  corrige los TOTALES SEMANALES (AtaquesSemana, Fame, Barcos) de la ULTIMA fila
+ *  de esa semana (la de mayor PeriodIndex) cuando se cumplen TODAS estas condiciones:
+ *    1. Existe la fila en el Backup y en HistorialGuerra_Grupal.csv.
+ *    2. La semana esta cerrada en el Historial.
+ *    3. El Historial coincide exactamente con el JSON (ataques, fame y barcos).
+ *    4. El Backup no coincide y es MENOR O IGUAL en los tres totales (nunca se baja nada).
+ *    5. La semana no esta vacia en el Backup (ataques y fame distintos de 0 a la vez
+ *       no son ambos 0): si el Backup tiene 0/0 se deja para revision manual.
+ *
+ *  NO toca AtaquesHoy ni ninguna otra fila de la semana. No reparte ataques por dia.
+ *  NO toca la hoja Guerra.
+ *
+ * Seguridad:
+ *  - Antes de escribir comprueba que re-serializar el CSV reproduce EXACTAMENTE el texto
+ *    original; si no, aborta sin escribir.
+ *  - Guarda una copia "Backup_Guerra ANTES de aplicar TotalesSemanaDesdeHistorial ..." en Informes.
+ *  - Aborta si hay mas de MAX_CAMBIOS cambios (se esperan ~27).
+ *  - Verifica leyendo de nuevo el archivo despues de escribir.
+ */
+var TOT_CFG = {
+  CARPETA_BACKUP_ID: '1emYkDZMEzYgO5lwmtY-NMhFc5JJd2I3R',
+  CARPETA_HISTORIAL_ID: '1T8PhxVVRZ-p7o2A_U6ARP-LsC3Zg7ObL',
+  CARPETA_INFORMES_ID: '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X',
+  ARCHIVO_BACKUP: 'Backup_Guerra.csv',
+  ARCHIVO_HISTORIAL: 'HistorialGuerra_Grupal.csv',
+  PREFIJO_INFORME: 'Completar_DomingoDesdeJsonRoyaleApi',
+  MAX_CAMBIOS: 60
+};
+
+function aplicarTotalesSemanaDesdeHistorialInforme() { tot_ejecutar_(false); }
+function aplicarTotalesSemanaDesdeHistorialAplicar() { tot_ejecutar_(true); }
+
+function tot_ejecutar_(aplicar) {
+  var t0 = new Date();
+  var zona = Session.getScriptTimeZone();
+  var sello = Utilities.formatDate(new Date(), zona, 'yyyy-MM-dd HH.mm.ss');
+
+  // 1) Series SIN RESOLVER del ultimo informe de completar domingo.
+  var inf = tot_leerUltimoInforme_();
+  var hi = tot_indices_(inf.filas[0]);
+  var objetivos = [];
+  var claves = {};
+  for (var i = 1; i < inf.filas.length; i++) {
+    var f = inf.filas[i];
+    if (tot_celda_(f, hi, 'Fuente') !== 'Backup_Guerra.csv') continue;
+    if (tot_celda_(f, hi, 'Tipo') !== 'SIN RESOLVER') continue;
+    var o = {
+      temporada: tot_num_(tot_celda_(f, hi, 'Temporada')),
+      semana: tot_num_(tot_celda_(f, hi, 'Semana')),
+      tag: tot_tag_(tot_celda_(f, hi, 'Tag')),
+      nombre: tot_celda_(f, hi, 'Nombre'),
+      clan: tot_clan_(tot_celda_(f, hi, 'Clan')),
+      jsonAtaques: tot_num_(tot_celda_(f, hi, 'JSON ataques')),
+      jsonFame: tot_num_(tot_celda_(f, hi, 'JSON fame')),
+      jsonBarcos: tot_num_(tot_celda_(f, hi, 'JSON barcos'))
+    };
+    o.clave = tot_clave_(o.tag, o.temporada, o.semana, o.clan);
+    objetivos.push(o);
+    claves[o.clave] = true;
+  }
+
+  // 2) Backup: lee el texto, comprueba que el formato se reproduce y ubica la ultima fila.
+  var archivoBackup = tot_buscarArchivo_(TOT_CFG.CARPETA_BACKUP_ID, TOT_CFG.ARCHIVO_BACKUP);
+  var texto = archivoBackup.getBlob().getDataAsString('UTF-8');
+  var bom = texto.charCodeAt(0) === 0xFEFF;
+  if (bom) texto = texto.substring(1);
+  var eol = texto.indexOf('\r\n') !== -1 ? '\r\n' : '\n';
+  var terminaEnEol = /\r?\n$/.test(texto);
+  var filas = Utilities.parseCsv(texto);
+  while (filas.length && filas[filas.length - 1].length === 1 && filas[filas.length - 1][0] === '') filas.pop();
+
+  var reproduce = tot_serializar_(filas, eol) === texto.replace(/(\r?\n)+$/, '');
+
+  var hb = tot_indices_(filas[0]);
+  var cAtk = tot_indice_(hb, 'AtaquesSemana');
+  var cFame = tot_indice_(hb, 'Fame');
+  var cBar = tot_indice_(hb, 'Barcos');
+  var ultimo = {};
+  for (var b = 1; b < filas.length; b++) {
+    var r = filas[b];
+    var kb = tot_clave_(
+      tot_tag_(tot_celda_(r, hb, 'Tag')),
+      tot_num_(tot_celda_(r, hb, 'Temporada')),
+      tot_num_(tot_celda_(r, hb, 'Semana')),
+      tot_clan_(tot_celda_(r, hb, 'Clan')));
+    if (!claves[kb]) continue;
+    var pi = tot_num_(tot_celda_(r, hb, 'PeriodIndex'));
+    var previo = ultimo[kb];
+    if (!previo || pi >= previo.pi) {
+      ultimo[kb] = {
+        idx: b, pi: pi,
+        ataques: tot_num_(r[cAtk]), fame: tot_num_(r[cFame]), barcos: tot_num_(r[cBar])
+      };
+    }
+  }
+
+  // 3) Historial semanal.
+  var hs = tot_leerCsv_(TOT_CFG.CARPETA_HISTORIAL_ID, TOT_CFG.ARCHIVO_HISTORIAL);
+  var hh = tot_indices_(hs[0]);
+  var historial = {};
+  for (var h = 1; h < hs.length; h++) {
+    var q = hs[h];
+    var kh = tot_clave_(
+      tot_tag_(tot_celda_(q, hh, 'Tag')),
+      tot_num_(tot_celda_(q, hh, 'TemporadaInterna')),
+      tot_num_(tot_celda_(q, hh, 'Semana')),
+      tot_clan_(tot_celda_(q, hh, 'Clan')));
+    if (!claves[kh]) continue;
+    var reg = {
+      ataques: tot_num_(tot_celda_(q, hh, 'Ataques')),
+      fame: tot_num_(tot_celda_(q, hh, 'Fame')),
+      barcos: tot_num_(tot_celda_(q, hh, 'Barcos')),
+      cerrada: String(tot_celda_(q, hh, 'Cerrada')).toLowerCase() === 'true'
+    };
+    var ex = historial[kh];
+    if (!ex || (reg.cerrada && !ex.cerrada)) historial[kh] = reg;
+  }
+
+  // 4) Evaluar cada serie.
+  var salida = [[
+    'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Linea en Backup', 'PeriodIndex',
+    'Ataques antes', 'Ataques nuevo', 'Fame antes', 'Fame nueva', 'Barcos antes', 'Barcos nuevo',
+    'Decision'
+  ]];
+  var cambios = [];
+  var conteo = {};
+  for (var k = 0; k < objetivos.length; k++) {
+    var ob = objetivos[k];
+    var bb = ultimo[ob.clave];
+    var hr = historial[ob.clave];
+    var motivo;
+    if (!bb) motivo = 'SIN_FILA_BACKUP';
+    else if (!hr) motivo = 'SIN_FILA_HISTORIAL';
+    else if (!hr.cerrada) motivo = 'HISTORIAL_ABIERTO';
+    else if (hr.ataques !== ob.jsonAtaques || hr.fame !== ob.jsonFame || hr.barcos !== ob.jsonBarcos) motivo = 'HISTORIAL_DISTINTO_DE_JSON';
+    else if (bb.ataques === ob.jsonAtaques && bb.fame === ob.jsonFame && bb.barcos === ob.jsonBarcos) motivo = 'YA_COINCIDE';
+    else if (bb.ataques > ob.jsonAtaques || bb.fame > ob.jsonFame || bb.barcos > ob.jsonBarcos) motivo = 'BACKUP_MAYOR_EN_ALGO';
+    else if (bb.ataques === 0 && bb.fame === 0) motivo = 'SEMANA_VACIA_EN_BACKUP_REVISAR';
+    else motivo = 'APLICAR';
+    conteo[motivo] = (conteo[motivo] || 0) + 1;
+
+    if (motivo === 'APLICAR') {
+      cambios.push({ idx: bb.idx, atk: ob.jsonAtaques, fame: ob.jsonFame, barcos: ob.jsonBarcos });
+    }
+    salida.push([
+      ob.temporada, ob.semana, ob.tag, ob.nombre, ob.clan,
+      bb ? bb.idx + 1 : '', bb ? bb.pi : '',
+      bb ? bb.ataques : '', motivo === 'APLICAR' ? ob.jsonAtaques : '',
+      bb ? bb.fame : '', motivo === 'APLICAR' ? ob.jsonFame : '',
+      bb ? bb.barcos : '', motivo === 'APLICAR' ? ob.jsonBarcos : '',
+      motivo
+    ]);
+  }
+
+  var resumen = Object.keys(conteo).sort().map(function (c) { return c + ' ' + conteo[c]; }).join(' | ');
+  var carpetaInformes = DriveApp.getFolderById(TOT_CFG.CARPETA_INFORMES_ID);
+
+  // 5) Solo informar: guarda el detalle y termina.
+  if (!aplicar) {
+    var nombreInf = 'AplicarTotalesSemana_Historial ' + sello + ' (informe).csv';
+    tot_guardarCsv_(carpetaInformes, nombreInf, salida);
+    Logger.log('[TotalesSemanaHistorial] SOLO INFORMAR (' + Math.round((new Date() - t0) / 1000) + ' s). ' +
+      'Informe base: ' + inf.nombre + '. Series SIN RESOLVER: ' + objetivos.length + '. ' + resumen +
+      '. Cambios que se aplicarian: ' + cambios.length +
+      '. Formato del Backup reproducible: ' + (reproduce ? 'SI' : 'NO (no se podria aplicar)') +
+      '. Detalle en Drive: ' + nombreInf + '. (No se escribio nada.)');
+    return;
+  }
+
+  // 6) Aplicar: validaciones previas.
+  if (!reproduce) {
+    throw new Error('El formato de ' + TOT_CFG.ARCHIVO_BACKUP + ' no se reproduce exactamente al re-serializarlo. No se escribio nada.');
+  }
+  if (cambios.length === 0) {
+    Logger.log('[TotalesSemanaHistorial] APLICAR: no hay nada que cambiar. ' + resumen);
+    return;
+  }
+  if (cambios.length > TOT_CFG.MAX_CAMBIOS) {
+    throw new Error('Se piden ' + cambios.length + ' cambios (limite ' + TOT_CFG.MAX_CAMBIOS + '). No se escribio nada.');
+  }
+
+  // 7) Copia previa, escritura y verificacion.
+  var nombreCopia = 'Backup_Guerra ANTES de aplicar TotalesSemanaDesdeHistorial ' + sello + '.csv';
+  archivoBackup.makeCopy(nombreCopia, carpetaInformes);
+
+  for (var c = 0; c < cambios.length; c++) {
+    var cb = cambios[c];
+    filas[cb.idx][cAtk] = String(cb.atk);
+    filas[cb.idx][cFame] = String(cb.fame);
+    filas[cb.idx][cBar] = String(cb.barcos);
+  }
+  var nuevoTexto = tot_serializar_(filas, eol) + (terminaEnEol ? eol : '');
+  archivoBackup.setContent((bom ? '﻿' : '') + nuevoTexto);
+
+  var texto2 = archivoBackup.getBlob().getDataAsString('UTF-8');
+  if (texto2.charCodeAt(0) === 0xFEFF) texto2 = texto2.substring(1);
+  var filas2 = Utilities.parseCsv(texto2);
+  while (filas2.length && filas2[filas2.length - 1].length === 1 && filas2[filas2.length - 1][0] === '') filas2.pop();
+  var ok = filas2.length === filas.length;
+  for (var v = 0; ok && v < cambios.length; v++) {
+    var vb = cambios[v];
+    ok = filas2[vb.idx][cAtk] === String(vb.atk) &&
+         filas2[vb.idx][cFame] === String(vb.fame) &&
+         filas2[vb.idx][cBar] === String(vb.barcos);
+  }
+
+  var nombreApl = 'AplicarTotalesSemana_Historial ' + sello + ' (aplicado).csv';
+  tot_guardarCsv_(carpetaInformes, nombreApl, salida);
+  Logger.log('[TotalesSemanaHistorial] APLICADO (' + Math.round((new Date() - t0) / 1000) + ' s). ' +
+    cambios.length + ' fila(s) corregidas en ' + TOT_CFG.ARCHIVO_BACKUP + '. ' + resumen +
+    '. Verificacion tras escribir: ' + (ok ? 'OK' : 'FALLO, restaura la copia previa') +
+    '. Copia previa: ' + nombreCopia + '. Detalle: ' + nombreApl +
+    '. Siguiente: sube Backup_Guerra.csv a GitHub y corre updateControlSheet() y actualizarControl2().');
+}
+
+// ---------- utilidades ----------
+
+function tot_buscarArchivo_(carpetaId, nombre) {
+  var it = DriveApp.getFolderById(carpetaId).getFilesByName(nombre);
+  if (!it.hasNext()) throw new Error('No encuentro ' + nombre + ' en la carpeta ' + carpetaId);
+  return it.next();
+}
+
+function tot_leerCsv_(carpetaId, nombre) {
+  var texto = tot_buscarArchivo_(carpetaId, nombre).getBlob().getDataAsString('UTF-8');
+  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
+  return Utilities.parseCsv(texto);
+}
+
+function tot_leerUltimoInforme_() {
+  var it = DriveApp.getFolderById(TOT_CFG.CARPETA_INFORMES_ID).getFiles();
+  var mejor = null;
+  while (it.hasNext()) {
+    var f = it.next();
+    var n = f.getName();
+    if (n.indexOf(TOT_CFG.PREFIJO_INFORME) !== 0) continue;
+    if (n.indexOf('(informe).csv') === -1) continue;
+    if (!mejor || f.getDateCreated() > mejor.getDateCreated()) mejor = f;
+  }
+  if (!mejor) throw new Error('No hay informe ' + TOT_CFG.PREFIJO_INFORME + ' en Informes.');
+  var texto = mejor.getBlob().getDataAsString('UTF-8');
+  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
+  return { nombre: mejor.getName(), filas: Utilities.parseCsv(texto) };
+}
+
+function tot_indices_(encabezado) {
+  var m = {};
+  for (var i = 0; i < encabezado.length; i++) m[String(encabezado[i]).trim()] = i;
+  return m;
+}
+
+function tot_indice_(indices, nombre) {
+  var i = indices[nombre];
+  if (i === undefined) throw new Error('Falta la columna "' + nombre + '"');
+  return i;
+}
+
+function tot_celda_(fila, indices, nombre) {
+  var i = tot_indice_(indices, nombre);
+  return fila[i] === undefined ? '' : String(fila[i]).trim();
+}
+
+function tot_num_(v) {
+  var n = parseInt(String(v).replace(/[^\d-]/g, ''), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function tot_tag_(v) {
+  var t = String(v).trim().toUpperCase();
+  return t.charAt(0) === '#' ? t : '#' + t;
+}
+
+// En el historial el clan viene como "Nombre\nfecha": se queda con la primera linea.
+function tot_clan_(v) {
+  return String(v).split(/\r?\n/)[0].trim();
+}
+
+function tot_clave_(tag, temporada, semana, clan) {
+  return tag + '|' + temporada + '|' + semana + '|' + clan;
+}
+
+function tot_csvCelda_(v) {
+  var s = (v === null || v === undefined) ? '' : String(v);
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function tot_serializar_(filas, eol) {
+  return filas.map(function (fila) {
+    return fila.map(tot_csvCelda_).join(',');
+  }).join(eol);
+}
+
+function tot_guardarCsv_(carpeta, nombre, filas) {
+  carpeta.createFile(nombre, tot_serializar_(filas, '\r\n'), MimeType.CSV);
+}
+
+/**
+ * informeAnomaliasAtaquesSemana()  -> SOLO INFORMA (no escribe en Guerra ni en Backup_Guerra.csv).
+ *
+ * Busca en Backup_Guerra.csv las series (jugador + temporada + semana + clan) con mas de
+ * 16 ataques semanales (4 dias x 4 ataques), que son anomalias heredadas de correcciones
+ * erroneas de las primeras versiones. Detecta dos casos:
+ *   - SEMANA_MAYOR_16:       alguna fila de la serie tiene AtaquesSemana > 16.
+ *   - SUMA_CLANES_MAYOR_16:  el jugador estuvo en varios clanes esa semana y la suma de los
+ *                            totales finales de sus series supera 16.
+ *
+ * Para cada serie anomala compara con:
+ *   - la suma de AtaquesHoy de sus filas (reconstruccion desde los dias), y
+ *   - el total semanal de HistorialGuerra_Grupal.csv (si existe y la semana esta cerrada),
+ * y propone una accion SIN aplicarla.
+ *
+ * Deja dos CSV en la carpeta Informes:
+ *   Anomalias_AtaquesSemana <fecha> (resumen).csv   una fila por serie anomala
+ *   Anomalias_AtaquesSemana <fecha> (detalle).csv   todas las filas de esas series
+ */
+var ANO_CFG = {
+  CARPETA_BACKUP_ID: '1emYkDZMEzYgO5lwmtY-NMhFc5JJd2I3R',
+  CARPETA_HISTORIAL_ID: '1T8PhxVVRZ-p7o2A_U6ARP-LsC3Zg7ObL',
+  CARPETA_INFORMES_ID: '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X',
+  ARCHIVO_BACKUP: 'Backup_Guerra.csv',
+  ARCHIVO_HISTORIAL: 'HistorialGuerra_Grupal.csv',
+  TOPE_SEMANA: 16,
+  TOPE_DIA: 4
+};
+
+function informeAnomaliasAtaquesSemana() {
+  var t0 = new Date();
+  var zona = Session.getScriptTimeZone();
+  var sello = Utilities.formatDate(new Date(), zona, 'yyyy-MM-dd HH.mm.ss');
+
+  // 1) Agrupar el Backup por serie.
+  var bk = ano_leerCsv_(ANO_CFG.CARPETA_BACKUP_ID, ANO_CFG.ARCHIVO_BACKUP);
+  var hb = ano_indices_(bk[0]);
+  var series = {};
+  var orden = [];
+  for (var b = 1; b < bk.length; b++) {
+    var r = bk[b];
+    if (r.length < 2) continue;
+    var tag = ano_tag_(ano_celda_(r, hb, 'Tag'));
+    var temp = ano_num_(ano_celda_(r, hb, 'Temporada'));
+    var sem = ano_num_(ano_celda_(r, hb, 'Semana'));
+    var clan = ano_clan_(ano_celda_(r, hb, 'Clan'));
+    var k = ano_clave_(tag, temp, sem, clan);
+    var s = series[k];
+    if (!s) {
+      s = { clave: k, tag: tag, temp: temp, sem: sem, clan: clan, nombre: '', filas: [] };
+      series[k] = s;
+      orden.push(k);
+    }
+    s.nombre = ano_celda_(r, hb, 'Nombre');
+    s.filas.push({
+      idx: b,
+      fecha: ano_celdaOpc_(r, hb, 'Fecha'),
+      dia: ano_celdaOpc_(r, hb, 'Día'),
+      pi: ano_num_(ano_celda_(r, hb, 'PeriodIndex')),
+      hoy: ano_num_(ano_celda_(r, hb, 'AtaquesHoy')),
+      sem: ano_num_(ano_celda_(r, hb, 'AtaquesSemana')),
+      fame: ano_num_(ano_celda_(r, hb, 'Fame')),
+      barcos: ano_num_(ano_celda_(r, hb, 'Barcos')),
+      origen: ano_celdaOpc_(r, hb, 'Origen')
+    });
+  }
+
+  // 2) Resumen por serie y suma de clanes por jugador-semana.
+  var jugadorSemana = {};
+  for (var i = 0; i < orden.length; i++) {
+    var se = series[orden[i]];
+    var ult = se.filas[0];
+    var maxSem = 0, sumaHoy = 0, maxHoy = 0, conOrigen = 0;
+    for (var j = 0; j < se.filas.length; j++) {
+      var fl = se.filas[j];
+      if (fl.pi >= ult.pi) ult = fl;
+      if (fl.sem > maxSem) maxSem = fl.sem;
+      sumaHoy += fl.hoy;
+      if (fl.hoy > maxHoy) maxHoy = fl.hoy;
+      if (fl.origen) conOrigen++;
+    }
+    se.ult = ult; se.maxSem = maxSem; se.sumaHoy = sumaHoy; se.maxHoy = maxHoy; se.conOrigen = conOrigen;
+    var kj = se.tag + '|' + se.temp + '|' + se.sem;
+    if (!jugadorSemana[kj]) jugadorSemana[kj] = { suma: 0, series: [] };
+    jugadorSemana[kj].suma += ult.sem;
+    jugadorSemana[kj].series.push(se.clave);
+  }
+
+  var anomalas = [];
+  var claves = {};
+  for (var a = 0; a < orden.length; a++) {
+    var sa = series[orden[a]];
+    var tipos = [];
+    if (sa.maxSem > ANO_CFG.TOPE_SEMANA) tipos.push('SEMANA_MAYOR_16');
+    var js = jugadorSemana[sa.tag + '|' + sa.temp + '|' + sa.sem];
+    if (js.series.length > 1 && js.suma > ANO_CFG.TOPE_SEMANA) tipos.push('SUMA_CLANES_MAYOR_16');
+    if (tipos.length) {
+      sa.tipo = tipos.join('+');
+      sa.sumaClanes = js.suma;
+      anomalas.push(sa);
+      claves[sa.clave] = true;
+    }
+  }
+
+  // 3) Historial de referencia solo para las series anomalas.
+  var historial = {};
+  var hs = ano_leerCsv_(ANO_CFG.CARPETA_HISTORIAL_ID, ANO_CFG.ARCHIVO_HISTORIAL);
+  var hh = ano_indices_(hs[0]);
+  for (var h = 1; h < hs.length; h++) {
+    var q = hs[h];
+    if (q.length < 3) continue;
+    var kh = ano_clave_(
+      ano_tag_(ano_celda_(q, hh, 'Tag')),
+      ano_num_(ano_celda_(q, hh, 'TemporadaInterna')),
+      ano_num_(ano_celda_(q, hh, 'Semana')),
+      ano_clan_(ano_celda_(q, hh, 'Clan')));
+    if (!claves[kh]) continue;
+    var reg = {
+      ataques: ano_num_(ano_celda_(q, hh, 'Ataques')),
+      fame: ano_num_(ano_celda_(q, hh, 'Fame')),
+      barcos: ano_num_(ano_celda_(q, hh, 'Barcos')),
+      cerrada: String(ano_celda_(q, hh, 'Cerrada')).toLowerCase() === 'true',
+      fuente: ano_celdaOpc_(q, hh, 'Fuente')
+    };
+    var ex = historial[kh];
+    if (!ex || (reg.cerrada && !ex.cerrada)) historial[kh] = reg;
+  }
+
+  // 4) Proponer (sin aplicar) y armar salidas.
+  var resumen = [[
+    'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Tipo de anomalia',
+    'Filas', 'Max AtaquesSemana', 'AtaquesSemana final', 'Suma de clanes (final)',
+    'Suma AtaquesHoy', 'Max AtaquesHoy', 'Filas con Origen',
+    'Fame final', 'Barcos final',
+    'Historial ataques', 'Historial fame', 'Historial barcos', 'Historial cerrada', 'Historial fuente',
+    'Propuesta', 'Valor propuesto AtaquesSemana final'
+  ]];
+  var detalle = [[
+    'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Linea en Backup', 'Fecha', 'Dia', 'PeriodIndex',
+    'AtaquesHoy', 'AtaquesSemana', 'Fame', 'Barcos', 'Origen', 'Tipo de anomalia'
+  ]];
+  var porPropuesta = {};
+  var porTipo = {};
+  var porTemporada = {};
+  var filasConOrigen = 0;
+
+  anomalas.sort(function (x, y) {
+    return (x.temp - y.temp) || (x.sem - y.sem) || (x.tag < y.tag ? -1 : x.tag > y.tag ? 1 : 0);
+  });
+
+  for (var n = 0; n < anomalas.length; n++) {
+    var an = anomalas[n];
+    var hr = historial[an.clave];
+    var hoyOk = an.sumaHoy <= ANO_CFG.TOPE_SEMANA && an.maxHoy <= ANO_CFG.TOPE_DIA;
+    var histOk = !!hr && hr.cerrada && hr.ataques <= ANO_CFG.TOPE_SEMANA;
+    var propuesta, valor;
+    if (histOk && hoyOk && hr.ataques === an.sumaHoy) {
+      propuesta = 'CONFIABLE (Historial = suma de AtaquesHoy)'; valor = hr.ataques;
+    } else if (histOk && hoyOk) {
+      propuesta = 'USAR_HISTORIAL (suma de AtaquesHoy distinta)'; valor = hr.ataques;
+    } else if (histOk) {
+      propuesta = 'USAR_HISTORIAL (AtaquesHoy no confiable)'; valor = hr.ataques;
+    } else if (hoyOk) {
+      propuesta = 'USAR_SUMA_HOY (sin respaldo del Historial)'; valor = an.sumaHoy;
+    } else {
+      propuesta = 'MANUAL'; valor = '';
+    }
+    porPropuesta[propuesta] = (porPropuesta[propuesta] || 0) + 1;
+    porTipo[an.tipo] = (porTipo[an.tipo] || 0) + 1;
+    var kt = 'T' + an.temp + 'S' + an.sem;
+    porTemporada[kt] = (porTemporada[kt] || 0) + 1;
+    filasConOrigen += an.conOrigen;
+
+    resumen.push([
+      an.temp, an.sem, an.tag, an.nombre, an.clan, an.tipo,
+      an.filas.length, an.maxSem, an.ult.sem, an.sumaClanes,
+      an.sumaHoy, an.maxHoy, an.conOrigen,
+      an.ult.fame, an.ult.barcos,
+      hr ? hr.ataques : '', hr ? hr.fame : '', hr ? hr.barcos : '', hr ? hr.cerrada : '', hr ? hr.fuente : '',
+      propuesta, valor
+    ]);
+
+    var ordenadas = an.filas.slice().sort(function (x, y) { return (x.pi - y.pi) || (x.idx - y.idx); });
+    for (var d = 0; d < ordenadas.length; d++) {
+      var f = ordenadas[d];
+      detalle.push([
+        an.temp, an.sem, an.tag, an.nombre, an.clan, f.idx + 1, f.fecha, f.dia, f.pi,
+        f.hoy, f.sem, f.fame, f.barcos, f.origen, an.tipo
+      ]);
+    }
+  }
+
+  // 5) Guardar.
+  var carpeta = DriveApp.getFolderById(ANO_CFG.CARPETA_INFORMES_ID);
+  var nombreRes = 'Anomalias_AtaquesSemana ' + sello + ' (resumen).csv';
+  var nombreDet = 'Anomalias_AtaquesSemana ' + sello + ' (detalle).csv';
+  ano_guardarCsv_(carpeta, nombreRes, resumen);
+  ano_guardarCsv_(carpeta, nombreDet, detalle);
+
+  var fmt = function (o) {
+    return Object.keys(o).sort().map(function (c) { return c + ' ' + o[c]; }).join(' | ');
+  };
+  Logger.log('[AnomaliasAtaquesSemana] SOLO INFORMAR (' + Math.round((new Date() - t0) / 1000) + ' s). ' +
+    'Series revisadas: ' + orden.length + '. Series anomalas: ' + anomalas.length + '. ' +
+    'Por tipo: ' + (fmt(porTipo) || '-') + '. ' +
+    'Por propuesta: ' + (fmt(porPropuesta) || '-') + '. ' +
+    'Por temporada/semana: ' + (fmt(porTemporada) || '-') + '. ' +
+    'Filas con Origen en series anomalas: ' + filasConOrigen + '. ' +
+    'Detalle en Drive: ' + nombreRes + ' y ' + nombreDet + '. (No se escribio nada en el Backup ni en Guerra.)');
+}
+
+// ---------- utilidades ----------
+
+function ano_leerCsv_(carpetaId, nombre) {
+  var it = DriveApp.getFolderById(carpetaId).getFilesByName(nombre);
+  if (!it.hasNext()) throw new Error('No encuentro ' + nombre + ' en la carpeta ' + carpetaId);
+  var texto = it.next().getBlob().getDataAsString('UTF-8');
+  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
+  var filas = Utilities.parseCsv(texto);
+  while (filas.length && filas[filas.length - 1].length === 1 && filas[filas.length - 1][0] === '') filas.pop();
+  return filas;
+}
+
+function ano_indices_(encabezado) {
+  var m = {};
+  for (var i = 0; i < encabezado.length; i++) m[String(encabezado[i]).trim()] = i;
+  return m;
+}
+
+function ano_celda_(fila, indices, nombre) {
+  var i = indices[nombre];
+  if (i === undefined) throw new Error('Falta la columna "' + nombre + '"');
+  return fila[i] === undefined ? '' : String(fila[i]).trim();
+}
+
+function ano_celdaOpc_(fila, indices, nombre) {
+  var i = indices[nombre];
+  return (i === undefined || fila[i] === undefined) ? '' : String(fila[i]).trim();
+}
+
+function ano_num_(v) {
+  var n = parseInt(String(v).replace(/[^\d-]/g, ''), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function ano_tag_(v) {
+  var t = String(v).trim().toUpperCase();
+  return t.charAt(0) === '#' ? t : '#' + t;
+}
+
+// En el historial el clan viene como "Nombre\nfecha": se queda con la primera linea.
+function ano_clan_(v) {
+  return String(v).split(/\r?\n/)[0].trim();
+}
+
+function ano_clave_(tag, temporada, semana, clan) {
+  return tag + '|' + temporada + '|' + semana + '|' + clan;
+}
+
+function ano_csvCelda_(v) {
+  var s = (v === null || v === undefined) ? '' : String(v);
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function ano_guardarCsv_(carpeta, nombre, filas) {
+  var texto = filas.map(function (fila) { return fila.map(ano_csvCelda_).join(','); }).join('\r\n');
+  carpeta.createFile(nombre, texto, MimeType.CSV);
+}
