@@ -205,6 +205,9 @@ def procesar_semana(cab, filas, dc, js, T, S):
     motivo = {}
     prov = {}
     for k, cand in candidatos.items():
+        if letra.get(dom) != 'D':  # semana sin domingo en el CSV (T3_S1, T3_S3): la diferencia no se asigna a otro día
+            motivo[k] = 'la última fila de la semana no es un domingo (%s): semana incompleta' % (letra.get(dom) or 'sin día')
+            continue
         if previos[k] is None or max(series[k]) != dom:
             motivo[k] = 'no hay fila de domingo para esa serie'
             continue
