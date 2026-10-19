@@ -136,6 +136,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF124` | `directorio.html` (Ingresos recientes): pastilla «Ocultar admins» (cuentas de administradores = todas las filas del Directorio con el Celular de un admin; flag `esCuentaAdmin` de `_webIngresosRecientes()`, solo con sesión de admin), tarjetas que desaparecen, clan actual en el tooltip y topes semanales; `perfil.html`: más barcos que ataques es anomalía (19-oct-2026). Corrige la primera versión (Líder/Colíder). |
 | `PF125` | `directorio.html` (Ingresos recientes): la cuadrícula de Ataques, Medallas y Barcos queda congelada con lo último de la guerra (hasta el domingo) de lunes a miércoles y se muestra hasta que empiece la siguiente; flag `guerraCongelada` de `_webIngresosRecientes()` (19-oct-2026). |
 | `PF126` | `37_Web_API.gs` (`_webPerfilJugador()`): cada punto de `historialRanking` trae el `clan` de esa fecha; las gráficas de `perfil.html` dejan de mostrar siempre el clan actual |
+| `PF127` | `perfil.html`: la insignia de victorias de guerra de la cabecera se muestra sin su margen transparente (recorte en `canvas`, con respaldo a la imagen original si el CDN no permite CORS) |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -2372,6 +2373,17 @@ El caso de la usuaria (4 ataques, los 4 a barcos: entre 300 y 500) sale exacto. 
 - **Lo que no se comprobó.** No se corrió en Apps Script ni se abrió `perfil.html` con una cuenta que haya cambiado de clan. Falta confirmar con una cuenta real que el nombre del clan de la fila de Guerra coincide con el formato que muestra la leyenda. Si el día del cambio de clan la fila de Guerra aún trae el clan anterior, ese día se verá con el clan viejo (depende de cuándo `runGuerra` escribe la columna).
 - **Para que funcione:** correr `subirBaseDesdeGithub()` en Apps Script **antes de cualquier descarga** (si no, el estado viejo pisa el cambio). La respuesta de `webPerfil` puede estar en caché unos minutos.
 - Historial de frontend: ninguno (cambio solo de backend).
+
+### PF127 — `perfil.html`: la insignia de victorias de guerra ocupa toda su casilla (pedido de la usuaria, 19-oct-2026; SIN PROBAR en navegador real)
+
+- **Pedido de la usuaria.** La insignia de victorias de guerra de la cabecera se veía pequeña porque el PNG trae mucho margen vacío. Pidió acercar la imagen dentro de su contenedor lo máximo posible **sin cambiar el tamaño de la casilla** y sin cortar nada del dibujo.
+- **Causa.** La imagen es `ClanWarWins.iconUrls.large` del JSON crudo (`api-assets.clashroyale.com/playerbadges/512/….png`, 512×512 con borde transparente) y se mostraba tal cual. El margen está en el propio PNG, no en el CSS (`#mInsigniaGuerraWrap img`: `height:100%`, entre 48 y 72 px, sin tocar).
+- **Qué se hizo (`renderMiembro()` y dos funciones nuevas justo encima).** `_cajaOpacaDeImagen()` mide la caja de píxeles con alfa mayor que 8; `recortarMargenTransparente(url)` dibuja esa caja, centrada, en un `canvas` **cuadrado** (máximo 256 px) y devuelve un data URL. Como el resultado sigue siendo cuadrado, la casilla mide lo mismo que antes y solo el dibujo crece. Se cachea por URL. Si el margen es menor del 3 % por lado, no se toca.
+- **Respaldo.** Leer píxeles exige que el CDN responda con CORS. Si no (canvas «contaminado»), o si la carga falla, la promesa devuelve `null` y la insignia queda como estaba. La imagen visible se carga **sin** `crossorigin` a propósito: con `crossorigin` y un CDN sin CORS la insignia desaparecería por completo. La CSP ya permite `data:` en `img-src`.
+- **Lo que no se comprobó.** Si `api-assets.clashroyale.com` envía `Access-Control-Allow-Origin` (desde la sesión de trabajo ese dominio está bloqueado). Hay un riesgo adicional: si el navegador reutiliza la copia ya cacheada de la imagen sin `Origin`, la lectura con CORS podría fallar aunque el CDN lo soporte; en ese caso no hay cambio visible. **Si en el navegador la insignia sigue igual, ese es el primer sospechoso** (abrir la consola y buscar el error de CORS). Alternativa si falla: guardar los PNG recortados en `assets/badges/` (mismo origen, sin CORS), a costa de subir uno por nivel.
+- **Alcance.** Solo la insignia de la cabecera. El ícono de «V. Guerra» de las tarjetas pequeñas (`mIcoVGuerra`) usa la misma imagen y **no** se recortó porque no se pidió.
+- **Pruebas (regla 8).** `test/perfil-insignia-recorte.test.js` (4 casos de la caja opaca); `node --test` 561 de 561, `npm run lint` y `npm run validate-html` sin avisos. jsdom no dibuja canvas: el recorte en sí no se probó.
+- Historial: `CHANGELOG.md` de `Web`, 19-oct-2026.
 
 ### PF064 — `perfil.html`: banner en la tarjeta de cabecera (pedido de la usuaria, 12-oct-2026)
 
