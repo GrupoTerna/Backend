@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 1989 nombres en 54 archivos .gs.
+Código real: `Base/src/`. Total: 2057 nombres en 54 archivos .gs.
 
 ## Por archivo
 
@@ -53,7 +53,7 @@ Código real: `Base/src/`. Total: 1989 nombres en 54 archivos .gs.
 - **45_Vigilante_UptimeRobot.gs** (14 funciones): _vigUrEstadoInicial_, _vigUrLeerEstado_, _vigUrGuardarEstado_, _vigilarUptimeRobotSeguro_, _vigilarUptimeRobot_, _vigUrChequear_, _vigUrConsultarMonitor_, _vigUrEdadUltimoChequeoMs_, _vigUrHost_, vigilarUptimeRobotAhora, estadoVigilanteUptimeRobot, reiniciarVigilanteUptimeRobot, getEstadoVigilanteUptimeRobot_, configurarUptimeRobotTemporal
 - **46_Test.gs** (4 funciones): testCofresYBatallas, testCofresYBatallasTodos, testTodosLosEndpoints, _probarEp
 - **47_Migraciones.gs** (22 funciones): migrarQuitarCatDispClanesAdminDeDirectorio, migrarLinksQuitarJugador, migrarDirectorioColumnaPrestamo, migrarControlColumnasExtra, migrarControlColumnaAscenso, migrarControlQuitarJugador, migrarAgregarCopasAGuerra, migrarPosicionCategoriaAscensosDescensosEnExtra, migrarFuncionCorregirAutorATodosLosAdmins, migrarFuncionActualizarRosterATodosLosAdmins, runReenumerarTemporadas, detectarTemporadaMasAntiguaConPresenciaTerna, _buscarFechaMasAntiguaTernaEnBackupGuerra, _buscarFechaMasAntiguaTernaEnNuevos, ejecutarReenumeracionSugerida, _migrarColumnaPrestamoEnHoja, _continuarReenumerarTemporadas, _reenumerarCSV, _reenumerarHoja, _reenumerarCalendario2Hoja, _reenumerarCorreccionesGuerraCSV, _finalizarReenumeracion
-- **48_Herramientas_Debug.gs** (14 funciones): debugAtaquesTag, fixGuerraYControl, testRespaldoRoyaleAPI, testTorneoJsonDesdeAppsScript, _diagCompararTemporadaCSVvsCtx, DIAGNOSTICO_totalHoy, DIAGNOSTICO_duplicadosHoy, _testDiagnosticoCofresBattlelog, diagnosticoPlayersTag, testTamanioPerfiles, _tpSumarClaves_, testTiempoEstaticos, construirIndicePlayers, testTiempoPerfil
+- **48_Herramientas_Debug.gs** (77 funciones): debugAtaquesTag, fixGuerraYControl, testRespaldoRoyaleAPI, testTorneoJsonDesdeAppsScript, _diagCompararTemporadaCSVvsCtx, DIAGNOSTICO_totalHoy, DIAGNOSTICO_duplicadosHoy, _testDiagnosticoCofresBattlelog, diagnosticoPlayersTag, testTamanioPerfiles, _tpSumarClaves_, testTiempoEstaticos, construirIndicePlayers, testTiempoPerfil, cruzarSinResolverConHistorialInforme, cruce_leerCsv_, cruce_leerUltimoInforme_, cruce_indices_, cruce_celda_, cruce_num_, cruce_tag_, cruce_clan_, cruce_clave_, cruce_csvCelda_, aplicarTotalesSemanaDesdeHistorialInforme, aplicarTotalesSemanaDesdeHistorialAplicar, tot_ejecutar_, tot_buscarArchivo_, tot_leerCsv_, tot_leerUltimoInforme_, tot_indices_, tot_indice_, tot_celda_, tot_num_, tot_tag_, tot_clan_, tot_clave_, tot_csvCelda_, tot_serializar_, tot_guardarCsv_, cruzarSinResolverConHistorialInforme, cruce_leerCsv_, cruce_leerUltimoInforme_, cruce_indices_, cruce_celda_, cruce_num_, cruce_tag_, cruce_clan_, cruce_clave_, cruce_csvCelda_, aplicarTotalesSemanaDesdeHistorialInforme, aplicarTotalesSemanaDesdeHistorialAplicar, tot_ejecutar_, tot_buscarArchivo_, tot_leerCsv_, tot_leerUltimoInforme_, tot_indices_, tot_indice_, tot_celda_, tot_num_, tot_tag_, tot_clan_, tot_clave_, tot_csvCelda_, tot_serializar_, tot_guardarCsv_, informeAnomaliasAtaquesSemana, ano_leerCsv_, ano_indices_, ano_celda_, ano_celdaOpc_, ano_num_, ano_tag_, ano_clan_, ano_clave_, ano_csvCelda_, ano_guardarCsv_
 - **49_Diagnostico_Domingo.gs** (4 funciones): repararDomingoT5S4Informe, repararDomingoT5S4Aplicar, _repararDomingoT5S4_, _diagnosticoGuerraDia
 - **50_Publicar_Guerra.gs** (7 funciones): _publicarGuerraEstatico_, _guerraEstaticoFallo_, _guerraTopRecortado_, _ghPublicarArchivo_, _ghPublicarArchivos_, _ghFetch_, publicarGuerraEstatico
 - **51_Publicar_Roster.gs** (2 funciones): _publicarRosterEstatico_, publicarRosterEstatico
@@ -62,7 +62,34 @@ Código real: `Base/src/`. Total: 1989 nombres en 54 archivos .gs.
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
-Ninguno.
+- `CRUCE_CFG`: 48_Herramientas_Debug.gs:460, 48_Herramientas_Debug.gs:985
+- `TOT_CFG`: 48_Herramientas_Debug.gs:695, 48_Herramientas_Debug.gs:1220
+- `aplicarTotalesSemanaDesdeHistorialAplicar`: 48_Herramientas_Debug.gs:706, 48_Herramientas_Debug.gs:1231
+- `aplicarTotalesSemanaDesdeHistorialInforme`: 48_Herramientas_Debug.gs:705, 48_Herramientas_Debug.gs:1230
+- `cruce_celda_`: 48_Herramientas_Debug.gs:639, 48_Herramientas_Debug.gs:1164
+- `cruce_clan_`: 48_Herramientas_Debug.gs:656, 48_Herramientas_Debug.gs:1181
+- `cruce_clave_`: 48_Herramientas_Debug.gs:660, 48_Herramientas_Debug.gs:1185
+- `cruce_csvCelda_`: 48_Herramientas_Debug.gs:664, 48_Herramientas_Debug.gs:1189
+- `cruce_indices_`: 48_Herramientas_Debug.gs:631, 48_Herramientas_Debug.gs:1156
+- `cruce_leerCsv_`: 48_Herramientas_Debug.gs:607, 48_Herramientas_Debug.gs:1132
+- `cruce_leerUltimoInforme_`: 48_Herramientas_Debug.gs:615, 48_Herramientas_Debug.gs:1140
+- `cruce_num_`: 48_Herramientas_Debug.gs:645, 48_Herramientas_Debug.gs:1170
+- `cruce_tag_`: 48_Herramientas_Debug.gs:650, 48_Herramientas_Debug.gs:1175
+- `cruzarSinResolverConHistorialInforme`: 48_Herramientas_Debug.gs:469, 48_Herramientas_Debug.gs:994
+- `tot_buscarArchivo_`: 48_Herramientas_Debug.gs:893, 48_Herramientas_Debug.gs:1418
+- `tot_celda_`: 48_Herramientas_Debug.gs:933, 48_Herramientas_Debug.gs:1458
+- `tot_clan_`: 48_Herramientas_Debug.gs:949, 48_Herramientas_Debug.gs:1474
+- `tot_clave_`: 48_Herramientas_Debug.gs:953, 48_Herramientas_Debug.gs:1478
+- `tot_csvCelda_`: 48_Herramientas_Debug.gs:957, 48_Herramientas_Debug.gs:1482
+- `tot_ejecutar_`: 48_Herramientas_Debug.gs:708, 48_Herramientas_Debug.gs:1233
+- `tot_guardarCsv_`: 48_Herramientas_Debug.gs:968, 48_Herramientas_Debug.gs:1493
+- `tot_indice_`: 48_Herramientas_Debug.gs:927, 48_Herramientas_Debug.gs:1452
+- `tot_indices_`: 48_Herramientas_Debug.gs:921, 48_Herramientas_Debug.gs:1446
+- `tot_leerCsv_`: 48_Herramientas_Debug.gs:899, 48_Herramientas_Debug.gs:1424
+- `tot_leerUltimoInforme_`: 48_Herramientas_Debug.gs:905, 48_Herramientas_Debug.gs:1430
+- `tot_num_`: 48_Herramientas_Debug.gs:938, 48_Herramientas_Debug.gs:1463
+- `tot_serializar_`: 48_Herramientas_Debug.gs:962, 48_Herramientas_Debug.gs:1487
+- `tot_tag_`: 48_Herramientas_Debug.gs:943, 48_Herramientas_Debug.gs:1468
 
 ## Orden alfabético
 
@@ -1419,6 +1446,17 @@ Ninguno.
 | `AHG_ENCABEZADOS` | global | 20_HistorialGuerraJugador.gs | 31 |  |
 | `AHG_TOTAL_COLS` | global | 20_HistorialGuerraJugador.gs | 37 |  |
 | `ANCHOS_COLUMNAS_ARCHIVO` | global | 04_Formato_Comun.gs | 617 |  |
+| `ano_celda_` | función | 48_Herramientas_Debug.gs | 1726 |  |
+| `ano_celdaOpc_` | función | 48_Herramientas_Debug.gs | 1732 |  |
+| `ANO_CFG` | global | 48_Herramientas_Debug.gs | 1516 |  |
+| `ano_clan_` | función | 48_Herramientas_Debug.gs | 1748 |  |
+| `ano_clave_` | función | 48_Herramientas_Debug.gs | 1752 |  |
+| `ano_csvCelda_` | función | 48_Herramientas_Debug.gs | 1756 |  |
+| `ano_guardarCsv_` | función | 48_Herramientas_Debug.gs | 1761 |  |
+| `ano_indices_` | función | 48_Herramientas_Debug.gs | 1720 |  |
+| `ano_leerCsv_` | función | 48_Herramientas_Debug.gs | 1710 |  |
+| `ano_num_` | función | 48_Herramientas_Debug.gs | 1737 |  |
+| `ano_tag_` | función | 48_Herramientas_Debug.gs | 1742 |  |
 | `API_GET_ESPERA_429_MS` | global | 09_API_ClashRoyale.gs | 29 | Contexto_Base_Web.md §09B006 |
 | `API_GET_ESPERA_BASE_MS` | global | 09_API_ClashRoyale.gs | 26 |  |
 | `API_GET_MAX_INTENTOS` | global | 09_API_ClashRoyale.gs | 24 |  |
@@ -1426,6 +1464,10 @@ Ninguno.
 | `aplicarCorreccionGuerraATemporadaSeleccionada` | función | 18_CorreccionGuerra.gs | 2059 | Contexto_Base_Web.md §18B066 |
 | `aplicarCorreccionGuerraATodasLasTemporadas` | función | 18_CorreccionGuerra.gs | 2138 | Contexto_Base_Web.md §18B067 |
 | `aplicarFormatoGlobal` | función | 04_Formato_Comun.gs | 12 | Contexto_Base_Web.md §04B002 |
+| `aplicarTotalesSemanaDesdeHistorialAplicar` | función | 48_Herramientas_Debug.gs | 706 |  |
+| `aplicarTotalesSemanaDesdeHistorialAplicar` | función | 48_Herramientas_Debug.gs | 1231 |  |
+| `aplicarTotalesSemanaDesdeHistorialInforme` | función | 48_Herramientas_Debug.gs | 705 |  |
+| `aplicarTotalesSemanaDesdeHistorialInforme` | función | 48_Herramientas_Debug.gs | 1230 |  |
 | `applyBorderCenter` | función | 01_Config_Global.gs | 1135 |  |
 | `applyHeaderStyle` | función | 01_Config_Global.gs | 1142 |  |
 | `aprobarCorreccionesRiverRacePendientes` | función | 19_CorreccionRiverRace.gs | 47 |  |
@@ -1548,6 +1590,28 @@ Ninguno.
 | `CRC` | global | 19_CorreccionRiverRace.gs | 11 | Contexto_Base_Web.md §19B002 |
 | `CRC_ENCABEZADOS` | global | 19_CorreccionRiverRace.gs | 26 |  |
 | `CRC_TOTAL_COLS` | global | 19_CorreccionRiverRace.gs | 24 |  |
+| `cruce_celda_` | función | 48_Herramientas_Debug.gs | 639 |  |
+| `cruce_celda_` | función | 48_Herramientas_Debug.gs | 1164 |  |
+| `CRUCE_CFG` | global | 48_Herramientas_Debug.gs | 460 |  |
+| `CRUCE_CFG` | global | 48_Herramientas_Debug.gs | 985 |  |
+| `cruce_clan_` | función | 48_Herramientas_Debug.gs | 656 |  |
+| `cruce_clan_` | función | 48_Herramientas_Debug.gs | 1181 |  |
+| `cruce_clave_` | función | 48_Herramientas_Debug.gs | 660 |  |
+| `cruce_clave_` | función | 48_Herramientas_Debug.gs | 1185 |  |
+| `cruce_csvCelda_` | función | 48_Herramientas_Debug.gs | 664 |  |
+| `cruce_csvCelda_` | función | 48_Herramientas_Debug.gs | 1189 |  |
+| `cruce_indices_` | función | 48_Herramientas_Debug.gs | 631 |  |
+| `cruce_indices_` | función | 48_Herramientas_Debug.gs | 1156 |  |
+| `cruce_leerCsv_` | función | 48_Herramientas_Debug.gs | 607 |  |
+| `cruce_leerCsv_` | función | 48_Herramientas_Debug.gs | 1132 |  |
+| `cruce_leerUltimoInforme_` | función | 48_Herramientas_Debug.gs | 615 |  |
+| `cruce_leerUltimoInforme_` | función | 48_Herramientas_Debug.gs | 1140 |  |
+| `cruce_num_` | función | 48_Herramientas_Debug.gs | 645 |  |
+| `cruce_num_` | función | 48_Herramientas_Debug.gs | 1170 |  |
+| `cruce_tag_` | función | 48_Herramientas_Debug.gs | 650 |  |
+| `cruce_tag_` | función | 48_Herramientas_Debug.gs | 1175 |  |
+| `cruzarSinResolverConHistorialInforme` | función | 48_Herramientas_Debug.gs | 469 |  |
+| `cruzarSinResolverConHistorialInforme` | función | 48_Herramientas_Debug.gs | 994 |  |
 | `CSV_CACHE_CHUNK` | global | 05_Backup_CSV.gs | 1573 |  |
 | `CSV_CACHE_MAX_CHUNK` | global | 05_Backup_CSV.gs | 1574 |  |
 | `CSV_CACHE_TTL_SEG` | global | 05_Backup_CSV.gs | 1572 |  |
@@ -1710,6 +1774,7 @@ Ninguno.
 | `INDICE_CONTENIDO_CACHE_TTL` | global | 43_Menu_Dinamico.gs | 219 |  |
 | `INDICE_CONTENIDO_CHUNK` | global | 43_Menu_Dinamico.gs | 220 |  |
 | `INDICE_CONTENIDO_FILE` | global | 43_Menu_Dinamico.gs | 217 | Contexto_Base_Web.md §43B009 |
+| `informeAnomaliasAtaquesSemana` | función | 48_Herramientas_Debug.gs | 1526 |  |
 | `informeBattlelogContraGuerra` | función | 18_CorreccionGuerra.gs | 1679 | Contexto_Base_Web.md §18B058 |
 | `informeCorreccionConClanTag` | función | 18_CorreccionGuerra.gs | 730 | Contexto_Base_Web.md §18B027 |
 | `informeHojaContraCorrecciones` | función | 18_CorreccionGuerra.gs | 3665 | Contexto_Base_Web.md §18B124 |
@@ -1993,6 +2058,36 @@ Ninguno.
 | `TORNEOS_ESTATICO_MIN_RESTANTE_SOLO_TORNEOS_MS` | global | 53_Publicar_Torneos.gs | 49 | Contexto_Base_Web.md §PF091 |
 | `TORNEOS_ESTATICO_REPUBLICAR_MIN` | global | 53_Publicar_Torneos.gs | 42 |  |
 | `TORNEOS_OPCIONES_MENU` | global | 44_BotWhatsApp.gs | 37 | Contexto_Base_Web.md §44B006 |
+| `tot_buscarArchivo_` | función | 48_Herramientas_Debug.gs | 893 |  |
+| `tot_buscarArchivo_` | función | 48_Herramientas_Debug.gs | 1418 |  |
+| `tot_celda_` | función | 48_Herramientas_Debug.gs | 933 |  |
+| `tot_celda_` | función | 48_Herramientas_Debug.gs | 1458 |  |
+| `TOT_CFG` | global | 48_Herramientas_Debug.gs | 695 |  |
+| `TOT_CFG` | global | 48_Herramientas_Debug.gs | 1220 |  |
+| `tot_clan_` | función | 48_Herramientas_Debug.gs | 949 |  |
+| `tot_clan_` | función | 48_Herramientas_Debug.gs | 1474 |  |
+| `tot_clave_` | función | 48_Herramientas_Debug.gs | 953 |  |
+| `tot_clave_` | función | 48_Herramientas_Debug.gs | 1478 |  |
+| `tot_csvCelda_` | función | 48_Herramientas_Debug.gs | 957 |  |
+| `tot_csvCelda_` | función | 48_Herramientas_Debug.gs | 1482 |  |
+| `tot_ejecutar_` | función | 48_Herramientas_Debug.gs | 708 |  |
+| `tot_ejecutar_` | función | 48_Herramientas_Debug.gs | 1233 |  |
+| `tot_guardarCsv_` | función | 48_Herramientas_Debug.gs | 968 |  |
+| `tot_guardarCsv_` | función | 48_Herramientas_Debug.gs | 1493 |  |
+| `tot_indice_` | función | 48_Herramientas_Debug.gs | 927 |  |
+| `tot_indice_` | función | 48_Herramientas_Debug.gs | 1452 |  |
+| `tot_indices_` | función | 48_Herramientas_Debug.gs | 921 |  |
+| `tot_indices_` | función | 48_Herramientas_Debug.gs | 1446 |  |
+| `tot_leerCsv_` | función | 48_Herramientas_Debug.gs | 899 |  |
+| `tot_leerCsv_` | función | 48_Herramientas_Debug.gs | 1424 |  |
+| `tot_leerUltimoInforme_` | función | 48_Herramientas_Debug.gs | 905 |  |
+| `tot_leerUltimoInforme_` | función | 48_Herramientas_Debug.gs | 1430 |  |
+| `tot_num_` | función | 48_Herramientas_Debug.gs | 938 |  |
+| `tot_num_` | función | 48_Herramientas_Debug.gs | 1463 |  |
+| `tot_serializar_` | función | 48_Herramientas_Debug.gs | 962 |  |
+| `tot_serializar_` | función | 48_Herramientas_Debug.gs | 1487 |  |
+| `tot_tag_` | función | 48_Herramientas_Debug.gs | 943 |  |
+| `tot_tag_` | función | 48_Herramientas_Debug.gs | 1468 |  |
 | `TR` | global | 26_Torneos_Core.gs | 1032 | Contexto_Base_Web.md §26B080 |
 | `TR_TOTAL_COLS` | global | 26_Torneos_Core.gs | 1037 |  |
 | `updateAscensosSheet` | función | 24_Historial_Ascensos.gs | 118 |  |
