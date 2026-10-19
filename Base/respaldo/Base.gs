@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 19/10/2026 01:18:08 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 19/10/2026 15:54:47 */
 
 
 
@@ -47661,7 +47661,7 @@ function _webIngresosRecientes(opciones) {
   copia.ingresos = ((completa && completa.ingresos) || []).map(function (ing) {
     var limpio = {};
     Object.keys(ing).forEach(function (k) {
-      if (k !== 'esRivalTemporada' && k !== 'clanRivalDetectado') limpio[k] = ing[k];
+      if (k !== 'esRivalTemporada' && k !== 'clanRivalDetectado' && k !== 'esCuentaAdmin') limpio[k] = ing[k];
     });
     return limpio;
   });
@@ -47698,6 +47698,13 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
         dataDir = [];
       }
     }
+  }
+  // 19-oct-2026 (pedido de la usuaria, pastilla «Ocultar admins» de directorio.html): cuentas de administradores = todas las filas del Directorio cuyo Celular es el de un administrador (fila con Admin = 'Sí'), el mismo criterio con que sincronizarAdministradores() arma la hoja Administradores (11_DirectorioSheet.gs). Solo se publica el booleano esCuentaAdmin (y solo con sesión de admin, ver _webIngresosRecientes()); el celular nunca sale.
+  var celularesAdminIR = {};
+  for (var iAdm = 0; iAdm < dataDir.length; iAdm++) {
+    if (String(dataDir[iAdm][DC.ADMIN - 1] || '').trim() !== 'Sí') continue;
+    var celAdm = soloDigitos(dataDir[iAdm][DC.CELULAR - 1]);
+    if (celAdm) celularesAdminIR[celAdm] = true;
   }
   var hoy = new Date();
   var LIMITE_DIAS_NUEVO = 7;
@@ -47980,6 +47987,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
       fuenteHistorial:  fuenteHistorial,
       // FASE 7 (Parte A, punto 7 del documento): ver bloque "FASE 7 (Parte A)" más arriba en este mismo archivo para el detalle del cruce (por NOMBRE de clan, no por Tag) y su limitación conocida. [→ Contexto_Base_Web.md §37B274]
       esRivalTemporada: esRivalTemporadaIR,
+      esCuentaAdmin: (function () { var celIR = soloDigitos(filaDir[DC.CELULAR - 1]); return !!(celIR && celularesAdminIR[celIR]); })(),
       clanRivalDetectado: clanRivalDetectadoIR ? {
         nombre:  clanRivalDetectadoIR.nombre || '',
         fuente:  clanRivalDetectadoIR.fuente || '',
