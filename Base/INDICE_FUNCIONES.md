@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2057 nombres en 54 archivos .gs.
+Código real: `Base/src/`. Total: 2073 nombres en 55 archivos .gs.
 
 ## Por archivo
 
@@ -59,6 +59,7 @@ Código real: `Base/src/`. Total: 2057 nombres en 54 archivos .gs.
 - **51_Publicar_Roster.gs** (2 funciones): _publicarRosterEstatico_, publicarRosterEstatico
 - **52_Publicar_Home.gs** (2 funciones): _publicarHomeEstatico_, publicarHomeEstatico
 - **53_Publicar_Torneos.gs** (3 funciones): _publicarTorneosEstatico_, _leerHistorialTorneosPublicado_, publicarTorneosEstatico
+- **54_Correccion_AtaquesSemana_Anomalias.gs** (13 funciones): _anomAtqSemNum_, _anomAtqSemTag_, _anomAtqSemClan_, _anomAtqSemCoincide_, _anomAtqSemValores_, _anomAtqSemIguales_, _anomAtqSemSumaClanes_, _anomAtqSemEvaluar_, _anomAtqSemSeriesAfectadas_, _anomAtqSemTextoSumas_, corregirAnomaliasAtaquesSemanaInforme, corregirAnomaliasAtaquesSemanaAplicar, _corregirAnomaliasAtaquesSemana_
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
@@ -124,6 +125,16 @@ Código real: `Base/src/`. Total: 2057 nombres en 54 archivos .gs.
 | `_agruparPorClanOrdenado` | función | 30_Mensajes.gs | 567 | Contexto_Base_Web.md §30B033 |
 | `_ajustarSemanaDeUnClan_` | función | 18_CorreccionGuerra.gs | 825 | Contexto_Base_Web.md §18B031 |
 | `_algunValorBajoHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 288 | Contexto_Base_Web.md §20B018 |
+| `_anomAtqSemClan_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 62 |  |
+| `_anomAtqSemCoincide_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 64 |  |
+| `_anomAtqSemEvaluar_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 109 |  |
+| `_anomAtqSemIguales_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 81 |  |
+| `_anomAtqSemNum_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 55 |  |
+| `_anomAtqSemSeriesAfectadas_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 130 |  |
+| `_anomAtqSemSumaClanes_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 89 |  |
+| `_anomAtqSemTag_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 61 |  |
+| `_anomAtqSemTextoSumas_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 139 |  |
+| `_anomAtqSemValores_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 72 |  |
 | `_apiGet` | función | 09_API_ClashRoyale.gs | 2482 | Contexto_Base_Web.md §09B134 |
 | `_apiGetCached` | función | 09_API_ClashRoyale.gs | 3202 | Contexto_Base_Web.md §09B159 |
 | `_apiGetPlayerCached` | función | 09_API_ClashRoyale.gs | 3406 | Contexto_Base_Web.md §09B168 |
@@ -431,6 +442,7 @@ Código real: `Base/src/`. Total: 2057 nombres en 54 archivos .gs.
 | `_copiarComentarioAscensoAComentarios` | función | 24_Historial_Ascensos.gs | 565 | Contexto_Base_Web.md §24B030 |
 | `_copiarLineaConFormato` | función | 27_Torneos_Sorteos_Requisitos.gs | 487 | Contexto_Base_Web.md §27B023 |
 | `_copiarPremiosFechaAGanadoresTorneo` | función | 27_Torneos_Sorteos_Requisitos.gs | 544 | Contexto_Base_Web.md §27B027 |
+| `_corregirAnomaliasAtaquesSemana_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 149 |  |
 | `_corregirCampoAcumuladoConDistribucion` | función | 18_CorreccionGuerra.gs | 3332 | Contexto_Base_Web.md §18B118 |
 | `_corregirCampoDiarioConDistribucion` | función | 18_CorreccionGuerra.gs | 3262 | Contexto_Base_Web.md §18B114 |
 | `_corregirFechaGuerraLogs_` | función | 17_GuerraSheet.gs | 2862 |  |
@@ -1457,6 +1469,9 @@ Código real: `Base/src/`. Total: 2057 nombres en 54 archivos .gs.
 | `ano_leerCsv_` | función | 48_Herramientas_Debug.gs | 1710 |  |
 | `ano_num_` | función | 48_Herramientas_Debug.gs | 1737 |  |
 | `ano_tag_` | función | 48_Herramientas_Debug.gs | 1742 |  |
+| `ANOM_ATQSEM_CORRECCIONES` | global | 54_Correccion_AtaquesSemana_Anomalias.gs | 24 |  |
+| `ANOM_ATQSEM_PENDIENTES` | global | 54_Correccion_AtaquesSemana_Anomalias.gs | 46 |  |
+| `ANOM_ATQSEM_TOPE_SEMANA` | global | 54_Correccion_AtaquesSemana_Anomalias.gs | 53 |  |
 | `API_GET_ESPERA_429_MS` | global | 09_API_ClashRoyale.gs | 29 | Contexto_Base_Web.md §09B006 |
 | `API_GET_ESPERA_BASE_MS` | global | 09_API_ClashRoyale.gs | 26 |  |
 | `API_GET_MAX_INTENTOS` | global | 09_API_ClashRoyale.gs | 24 |  |
@@ -1576,6 +1591,8 @@ Código real: `Base/src/`. Total: 2057 nombres en 54 archivos .gs.
 | `CORRECCION_SIN_CLANTAG_REPARTO_DOMINGO` | global | 18_CorreccionGuerra.gs | 196 | Contexto_Base_Web.md §18B012 |
 | `CORRECCIONES_GUERRA_CSV` | global | 18_CorreccionGuerra.gs | 20 |  |
 | `CORRECCIONES_RIVERRACE_PENDIENTES_CSV` | global | 19_CorreccionRiverRace.gs | 35 |  |
+| `corregirAnomaliasAtaquesSemanaAplicar` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 147 |  |
+| `corregirAnomaliasAtaquesSemanaInforme` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 146 |  |
 | `corregirFechaGuerraLogsAplicar` | función | 17_GuerraSheet.gs | 2781 |  |
 | `corregirFechaGuerraLogsInforme` | función | 17_GuerraSheet.gs | 2780 | Contexto_Base_Web.md §PF063 |
 | `corregirFechasComoTextoEnBackups` | función | 05_Backup_CSV.gs | 670 | Contexto_Base_Web.md §05B049 |
