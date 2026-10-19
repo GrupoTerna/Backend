@@ -265,8 +265,8 @@
 ["#V9YLPQY0L","Grupo乂Terna™",17,"J",3150,16,0,"M_3150_A_16_B_0","no_existe",0,""],
 ["#VC2YLQQ9P","Mini乂Ternas™",17,"J",0,0,0,"M_000_A_0_B_0","sin_ataques",0,""],
 ["#VCGGRQY8Q","Mini乂Ternas™",17,"J",0,0,0,"M_000_A_0_B_0","sin_ataques",0,""],
-["#VCLRVUCLG","Mini乂Ternas™",17,"J",150,2,2,"M_150_A_2_B_2","unica",1,"Reconstruido"],
-["#VJQLY8JV8","Mini乂Ternas™",17,"J",450,4,2,"M_450_A_4_B_2","ambigua",3,"Reconstruido"],
+["#VCLRVUCLG","Mini乂Ternas™",17,"J",150,2,1,"M_150_A_2_B_1","no_existe",0,""],
+["#VJQLY8JV8","Mini乂Ternas™",17,"J",450,4,0,"M_450_A_4_B_0","no_existe",0,""],
 ["#VLU8GLL09","Grupo乂Terna™",17,"J",3150,16,0,"M_3150_A_16_B_0","no_existe",0,""],
 ["#VLY0G9LU9","GrupoXTerna™3",17,"J",600,4,0,"M_600_A_4_B_0","ambigua",2,""],
 ["#VPRGY9YGG","GrupoXTerna™2",17,"J",2400,16,0,"M_2400_A_16_B_0","no_existe",0,""],
@@ -406,8 +406,8 @@
 ["#V9YLPQY0L",17,"J",3150,16,0,"M_3150_A_16_B_0","no_existe",0,1,""],
 ["#VC2YLQQ9P",17,"J",0,0,0,"M_000_A_0_B_0","sin_ataques",0,1,""],
 ["#VCGGRQY8Q",17,"J",0,0,0,"M_000_A_0_B_0","sin_ataques",0,1,""],
-["#VCLRVUCLG",17,"J",150,2,2,"M_150_A_2_B_2","unica",1,1,"Reconstruido"],
-["#VJQLY8JV8",17,"J",450,4,2,"M_450_A_4_B_2","ambigua",3,1,"Reconstruido"],
+["#VCLRVUCLG",17,"J",150,2,1,"M_150_A_2_B_1","no_existe",0,1,""],
+["#VJQLY8JV8",17,"J",450,4,0,"M_450_A_4_B_0","no_existe",0,1,""],
 ["#VLU8GLL09",17,"J",3150,16,0,"M_3150_A_16_B_0","no_existe",0,1,""],
 ["#VLY0G9LU9",17,"J",600,4,0,"M_600_A_4_B_0","ambigua",2,1,""],
 ["#VPRGY9YGG",17,"J",2400,16,0,"M_2400_A_16_B_0","no_existe",0,1,""],
@@ -424,8 +424,5 @@
 ["#YLYGC9Y9C",17,"J",2500,16,0,"M_2500_A_16_B_0","no_existe",0,1,""]
 ],
 "reconstruidos_columnas": ["Tag","Clan","PeriodIndex","Medallas_CSV","Ataques_CSV","Barcos_CSV","Medallas_final","Ataques_final","Barcos_final","JSON_ataques","JSON_fame","JSON_barcos","JSON_fuentes"],
-"reconstruidos": [
-["#VCLRVUCLG","Mini乂Ternas™",17,150,2,1,150,2,2,2,150,2,"perfil"],
-["#VJQLY8JV8","Mini乂Ternas™",17,450,4,0,450,4,2,4,450,2,"perfil"]
-]
+"reconstruidos": []
 }

@@ -804,7 +804,7 @@
 2,5,#YG8U8Q2PC,skap,GrupoXTerna™2,sin_json,16,16,2700,0,,,,,,"avisar, no se toca",
 2,5,#YGL2QV8LG,ᴳ乂ᵀ ⚜ T3RR1BL3!,Grupo乂Terna™,coincide,12,12,2200,0,12,2200,0,perfil,,,
 2,5,#YLYGC9Y9C,TOTTI,GrupoXTerna™2,coincide,16,16,2800,0,16,2800,0,perfil,,,
-3,1,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,GrupoXTerna™2,json_mas_reconstruido,0,4,500,0,4,500,0,perfil,,"domingo completado en ""diario"" (Marca Reconstruido)","JSON - CSV: ataques +4, fame +0, barcos +0"
+3,1,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,GrupoXTerna™2,json_mas_no_resuelve,0,4,500,0,4,500,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,sin_json,4,4,500,0,,,,,GrupoXTerna™2,"avisar, no se toca",
 3,1,#200Y80CU29,KElito,GrupoXTerna™2,sin_json,8,8,1200,0,,,,,,"avisar, no se toca",
 3,1,#202PRG8QU,miner90000,GrupoXTerna™2,sin_json,8,8,1200,0,,,,,,"avisar, no se toca",
@@ -820,7 +820,7 @@
 3,1,#298JJ9RUL,Sebas JAS,Grupo乂Terna™,coincide,13,13,2000,0,13,2000,0,perfil,,,
 3,1,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™3,sin_json,4,0,0,0,,,,,,"avisar, no se toca",
 3,1,#2CJJ9JLLQ,ᴳ乂ᵀ ⚜️ CASTRO,Grupo乂Terna™,sin_json,8,8,1100,0,,,,,,"avisar, no se toca",
-3,1,#2GG8PJ8GC,ᴳ乂ᵀ ⚜️ Chistris,Grupo乂Terna™,json_mas_no_resuelve,14,16,2900,0,16,2900,0,perfil,,no se toca,"JSON - CSV: ataques +2, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#2GG8PJ8GC,ᴳ乂ᵀ ⚜️ Chistris,Grupo乂Terna™,json_mas_no_resuelve,14,16,2900,0,16,2900,0,perfil,,no se toca,"JSON - CSV: ataques +2, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#2GYUC0QLV,miguel,Grupo乂Terna™,coincide,16,16,2950,0,16,2950,0,perfil,,,
 3,1,#2LCJLUC9J,DANIEL,Grupo乂Terna™,coincide,16,16,2400,0,16,2400,0,perfil,,,
 3,1,#2PUYLPPRG,COSCU06,Grupo乂Terna™,coincide,12,12,1800,0,12,1800,0,perfil,,,
@@ -834,43 +834,43 @@
 3,1,#8C0PQ9PR9,Sieh,Grupo乂Terna™,coincide,16,16,2900,0,16,2900,0,perfil,,,
 3,1,#8GCCGQP8L,$g-alfh-a$,GrupoXTerna™2,sin_json,4,4,600,0,,,,,,"avisar, no se toca",
 3,1,#8J9PL92GU,Marín,Grupo乂Terna™,coincide,16,16,1750,0,16,1750,0,perfil,,,
-3,1,#8PYCU9U9Q,KAITO KID,Grupo乂Terna™,json_mas_no_resuelve,12,16,2500,0,16,2500,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#8PYCU9U9Q,KAITO KID,Grupo乂Terna™,json_mas_no_resuelve,12,16,2500,0,16,2500,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#8Q92GV08U,Dxniel,Grupo乂Terna™,coincide,16,16,2300,0,16,2300,0,perfil,,,
 3,1,#8VU0Y9LJ0,Yisus Craiz,Grupo乂Terna™,coincide,16,16,2800,0,16,2800,0,perfil,,,
-3,1,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,GrupoXTerna™2,json_mas_no_resuelve,8,8,1600,0,16,2950,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +1350, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,GrupoXTerna™2,json_mas_no_resuelve,8,8,1600,0,16,2950,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +1350, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,GrupoXTerna™3,coincide,12,12,1400,0,12,1400,0,perfil,,,
 3,1,#900UU80R9,Maliante olger,GrupoXTerna™2,coincide,16,16,3200,0,16,3200,0,perfil,,,
 3,1,#90QYJQRQ8,Diana,GrupoXTerna™3,coincide,12,12,1600,0,12,1600,0,perfil,,,
-3,1,#90U80RR2Y,ᴳ乂ᵀ ⚜️Cristofer,Grupo乂Terna™,json_mas_no_resuelve,14,16,2300,0,16,2300,0,perfil,,no se toca,"JSON - CSV: ataques +2, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#90U80RR2Y,ᴳ乂ᵀ ⚜️Cristofer,Grupo乂Terna™,json_mas_no_resuelve,14,16,2300,0,16,2300,0,perfil,,no se toca,"JSON - CSV: ataques +2, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#92V9L92GV,JeaPro18,GrupoXTerna™2,coincide,15,15,2000,0,15,2000,0,perfil,,,
-3,1,#92YRUUV9P,ᴳ乂ᵀ ⚜️ iJonahjk,Grupo乂Terna™,json_mas_no_resuelve,7,16,2100,0,16,2100,0,perfil,,no se toca,"JSON - CSV: ataques +9, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#92YRUUV9P,ᴳ乂ᵀ ⚜️ iJonahjk,Grupo乂Terna™,json_mas_no_resuelve,7,16,2100,0,16,2100,0,perfil,,no se toca,"JSON - CSV: ataques +9, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#9G0RQR2GV,frank -.-,GrupoXTerna™2,coincide,16,16,2850,0,16,2850,0,perfil,,,
 3,1,#9LCJ2JQ08,Adrian,Grupo乂Terna™,coincide,16,16,3400,0,16,3400,0,perfil,,,
-3,1,#9U9QUL02R,j y j,GrupoXTerna™2,json_mas_no_resuelve,8,16,2600,0,16,2600,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#9U9QUL02R,j y j,GrupoXTerna™2,json_mas_no_resuelve,8,16,2600,0,16,2600,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#C0PGPR90U,27R.C.Lazarinos,Grupo乂Terna™,coincide,16,16,2500,0,16,2500,0,perfil,,,
-3,1,#C0YVCRPY2,ÐɑʀҟƑîʀɛ,GrupoXTerna™2,json_mas_no_resuelve,14,16,2600,0,16,2600,0,perfil,,no se toca,"JSON - CSV: ataques +2, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
-3,1,#C289JPLQG,[ TORO ],GrupoXTerna™2,json_mas_no_resuelve,4,16,2500,0,16,2500,0,perfil,,no se toca,"JSON - CSV: ataques +12, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#C0YVCRPY2,ÐɑʀҟƑîʀɛ,GrupoXTerna™2,json_mas_no_resuelve,14,16,2600,0,16,2600,0,perfil,,no se toca,"JSON - CSV: ataques +2, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
+3,1,#C289JPLQG,[ TORO ],GrupoXTerna™2,json_mas_no_resuelve,4,16,2500,0,16,2500,0,perfil,,no se toca,"JSON - CSV: ataques +12, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#C2V90LPQG,JORDI_JK,GrupoXTerna™2,sin_json,0,0,0,0,,,,,,"avisar, no se toca",
-3,1,#C8GPVLVJL,~$VNThONY$~,GrupoXTerna™2,json_mas_no_resuelve,4,16,2250,0,16,2250,0,perfil,,no se toca,"JSON - CSV: ataques +12, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
-3,1,#C8Q0C88UL,ᴳ乂ᵀ ⚜️S C Λ R Ξ,GrupoXTerna™2,json_mas_no_resuelve,8,16,2500,0,16,2500,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#C8GPVLVJL,~$VNThONY$~,GrupoXTerna™2,json_mas_no_resuelve,4,16,2250,0,16,2250,0,perfil,,no se toca,"JSON - CSV: ataques +12, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
+3,1,#C8Q0C88UL,ᴳ乂ᵀ ⚜️S C Λ R Ξ,GrupoXTerna™2,json_mas_no_resuelve,8,16,2500,0,16,2500,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#CCQVL0029,ᴳ乂ᵀ ⚜️Cr7亗,Grupo乂Terna™,sin_json,8,8,1200,0,,,,,,"avisar, no se toca",
 3,1,#CGGGR82PJ,ᴳ乂ᵀ N1V1C,Grupo乂Terna™,coincide,16,16,2850,0,16,2850,0,perfil,,,
 3,1,#CPRQG82L,tatsumi,GrupoXTerna™2,coincide,16,16,2200,0,16,2200,0,perfil,,,
 3,1,#CPYUPLLPC,henry,GrupoXTerna™2,sin_json,8,8,1200,0,,,,,,"avisar, no se toca",
 3,1,#CUQG9CJUG,ᴳ乂ᵀ ⚜️Marzz,Grupo乂Terna™,coincide,16,16,2500,0,16,2500,0,perfil,,,
 3,1,#CUU92GQQG,Larry god,GrupoXTerna™2,sin_json,14,14,2400,0,,,,,,"avisar, no se toca",
-3,1,#CV9U8PU8G,DAVII BOYX,GrupoXTerna™2,json_mas_no_resuelve,6,16,2900,0,16,2900,0,perfil,,no se toca,"JSON - CSV: ataques +10, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#CV9U8PU8G,DAVII BOYX,GrupoXTerna™2,json_mas_no_resuelve,6,16,2900,0,16,2900,0,perfil,,no se toca,"JSON - CSV: ataques +10, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#CYR2PVLLY,carepoto:3,GrupoXTerna™2,coincide,13,13,2500,0,13,2500,0,perfil,,,
 3,1,#G00VR89QG,Jjordan,GrupoXTerna™2,sin_json,0,0,0,0,,,,,,"avisar, no se toca",
 3,1,#G2Q9UYY89,✨✞₳Ⱡ€Ӿ✞✨♣️YV♠️,Grupo乂Terna™,sin_json,8,12,1900,0,,,,,,"avisar, no se toca",
-3,1,#GLPC8YQGV,ᴳ乂ᵀ ⚜️Drill,GrupoXTerna™2,json_mas_no_resuelve,8,8,1700,0,16,2800,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +1100, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#GLPC8YQGV,ᴳ乂ᵀ ⚜️Drill,GrupoXTerna™2,json_mas_no_resuelve,8,8,1700,0,16,2800,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +1100, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#GVVPJ8CLG,JP Titan :),Grupo乂Terna™,coincide,16,16,2700,0,16,2700,0,perfil,,,
 3,1,#GY0GJ09C0,ᴳ乂ᵀ ⚜️ ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,coincide,16,16,2250,0,16,2250,0,perfil,,,
-3,1,#GYU0R0V29,Love--Adri<3,GrupoXTerna™3,json_mas_reconstruido,5,5,600,0,9,1000,0,perfil,,"domingo completado en ""diario"" (Marca Reconstruido)","JSON - CSV: ataques +4, fame +400, barcos +0"
-3,1,#J2JJ8LGV9,TUVILOL,GrupoXTerna™2,json_mas_no_resuelve,15,16,2650,0,16,2650,0,perfil,,no se toca,"JSON - CSV: ataques +1, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
-3,1,#J8V9PQJP9,ilmiatraxxp,Grupo乂Terna™,json_mas_no_resuelve,15,16,2100,0,16,2100,0,perfil,,no se toca,"JSON - CSV: ataques +1, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#GYU0R0V29,Love--Adri<3,GrupoXTerna™3,json_mas_no_resuelve,5,5,600,0,9,1000,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +400, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
+3,1,#J2JJ8LGV9,TUVILOL,GrupoXTerna™2,json_mas_no_resuelve,15,16,2650,0,16,2650,0,perfil,,no se toca,"JSON - CSV: ataques +1, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
+3,1,#J8V9PQJP9,ilmiatraxxp,Grupo乂Terna™,json_mas_no_resuelve,15,16,2100,0,16,2100,0,perfil,,no se toca,"JSON - CSV: ataques +1, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#J9GJC900J,ʜᴀʀᴜ,Grupo乂Terna™,sin_json,8,8,1600,0,,,,,,"avisar, no se toca",
-3,1,#JC99L0Y8P,MADNESS,GrupoXTerna™2,json_mas_no_resuelve,8,16,2700,0,16,2700,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#JC99L0Y8P,MADNESS,GrupoXTerna™2,json_mas_no_resuelve,8,16,2700,0,16,2700,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,GrupoXTerna™2,sin_json,1,0,0,0,,,,,Grupo乂Terna™,"avisar, no se toca",
 3,1,#JGCU09PJ8,BICHOTE,GrupoXTerna™2,sin_json,3,3,400,0,,,,,,"avisar, no se toca",
 3,1,#JGGLGVCGU,ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ,Grupo乂Terna™,coincide,16,16,2550,0,16,2550,0,perfil,,,
@@ -884,56 +884,56 @@
 3,1,#LPGG98PLL,chris da amor,GrupoXTerna™2,sin_json,8,8,1200,0,,,,,,"avisar, no se toca",
 3,1,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,GrupoXTerna™3,coincide,16,16,1800,0,16,1800,0,perfil,,,
 3,1,#LRR2RGCCV,gabriel18,GrupoXTerna™2,sin_json,16,16,2850,0,,,,,,"avisar, no se toca",
-3,1,#LVVP82CU9,ᴳ乂ᵀ ⚜️Angel R.,GrupoXTerna™2,json_mas_no_resuelve,3,15,2050,0,15,2050,0,perfil,,no se toca,"JSON - CSV: ataques +12, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#LVVP82CU9,ᴳ乂ᵀ ⚜️Angel R.,GrupoXTerna™2,json_mas_no_resuelve,3,15,2050,0,15,2050,0,perfil,,no se toca,"JSON - CSV: ataques +12, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#LYVJU9UJJ,fggij09,Mini乂Ternas™,coincide,8,8,1200,0,8,1200,0,perfil,,,
-3,1,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,GrupoXTerna™2,json_mas_reconstruido,8,8,1300,0,12,1950,0,perfil,,"domingo completado en ""diario"" (Marca Reconstruido)","JSON - CSV: ataques +4, fame +650, barcos +0"
+3,1,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,GrupoXTerna™2,json_mas_no_resuelve,8,8,1300,0,12,1950,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +650, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#P9RLYPQCG,ｉＯＳ┊ㅤ¢ня1ѕѕ_м4χ,GrupoXTerna™2,sin_json,0,0,0,0,,,,,,"avisar, no se toca",
 3,1,#PGLYYV9Q0,carloselpro,GrupoXTerna™2,coincide,16,16,2800,0,16,2800,0,perfil,,,
 3,1,#PJL9GL8U2,Luigi,GrupoXTerna™2,coincide,16,16,2400,0,16,2400,0,perfil,,,
 3,1,#Q09UJ2UP2,MASTER K.,GrupoXTerna™3,sin_json,4,4,500,0,,,,,,"avisar, no se toca",
 3,1,#Q98RGPGCU,ᴳ乂ᵀ ⚜️ Senju,Grupo乂Terna™,coincide,16,16,2500,0,16,2500,0,perfil,,,
-3,1,#Q9J8ULV0,AlexX,GrupoXTerna™2,json_mas_no_resuelve,12,16,2500,0,16,2500,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#Q9J8ULV0,AlexX,GrupoXTerna™2,json_mas_no_resuelve,12,16,2500,0,16,2500,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#QG2PP89G2,Har,Grupo乂Terna™,coincide,16,16,2650,0,16,2650,0,perfil,,,
 3,1,#QR8JGLC9Q,ᴳ乂ᵀ⚜️Bloodshot,Grupo乂Terna™,coincide,16,16,2700,0,16,2700,0,perfil,,,
-3,1,#QRQULCCV8,ᴳ乂ᵀ ⚜️ Maikel,GrupoXTerna™2,json_mas_no_resuelve,14,16,3100,0,16,3100,0,perfil,,no se toca,"JSON - CSV: ataques +2, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#QRQULCCV8,ᴳ乂ᵀ ⚜️ Maikel,GrupoXTerna™2,json_mas_no_resuelve,14,16,3100,0,16,3100,0,perfil,,no se toca,"JSON - CSV: ataques +2, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#QV8PQ0JRC,leo trx,GrupoXTerna™2,sin_json,0,0,0,0,,,,,,"avisar, no se toca",
 3,1,#R98JQRU99,ᴳ乂ᵀ ⚜️Rukon_RB,Grupo乂Terna™,coincide,16,16,2500,0,16,2500,0,perfil,,,
 3,1,#RGCL8LGJC,Alex♡Dmr,GrupoXTerna™3,coincide,16,16,2300,0,16,2300,0,perfil,,,
 3,1,#RGQUGU0CU,ᴳ乂ᵀ ⚜️pedro289,Grupo乂Terna™,coincide,16,16,2250,0,16,2250,0,perfil,,,
 3,1,#RPLVY0R08,rata-piola,GrupoXTerna™3,coincide,12,12,1900,0,12,1900,0,perfil,,,
-3,1,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,GrupoXTerna™2,json_mas_reconstruido,4,4,500,0,8,900,0,perfil,,"domingo completado en ""diario"" (Marca Reconstruido)","JSON - CSV: ataques +4, fame +400, barcos +0"
+3,1,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,GrupoXTerna™2,json_mas_no_resuelve,4,4,500,0,8,900,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +400, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,Mini乂Ternas™,sin_json,0,0,0,0,,,,,GrupoXTerna™2,"avisar, no se toca",
 3,1,#RVYQC09PU,fabura,GrupoXTerna™2,sin_json,0,0,0,0,,,,,,"avisar, no se toca",
 3,1,#RYCR2C2YR,✨Daniel Cc✨,Grupo乂Terna™,sin_json,0,0,0,0,,,,,,"avisar, no se toca",
-3,1,#U2QJ2LCY9,ivan,GrupoXTerna™2,json_mas_no_resuelve,8,16,3050,0,16,3050,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#U2QJ2LCY9,ivan,GrupoXTerna™2,json_mas_no_resuelve,8,16,3050,0,16,3050,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,GrupoXTerna™2,sin_json,16,16,2500,0,,,,,,"avisar, no se toca",
 3,1,#U8G029GUQ,ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️,GrupoXTerna™3,coincide,12,12,1500,0,12,1500,0,perfil,,,
 3,1,#U9L82V28P,Dajorami,GrupoXTerna™2,sin_json,16,16,2600,0,,,,,,"avisar, no se toca",
 3,1,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,GrupoXTerna™2,coincide,16,16,2200,0,16,2200,0,perfil,,,
 3,1,#UG90QUU0P,MiniNopi,GrupoXTerna™3,sin_json,16,16,2600,0,,,,,,"avisar, no se toca",
 3,1,#UJUGRYY9C,ㅤᴀᴅᴍㅤϟ,Grupo乂Terna™,coincide,16,16,3100,0,16,3100,0,perfil,,,
-3,1,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,GrupoXTerna™3,json_mas_reconstruido,0,4,500,0,4,500,0,perfil,,"domingo completado en ""diario"" (Marca Reconstruido)","JSON - CSV: ataques +4, fame +0, barcos +0"
+3,1,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,GrupoXTerna™3,json_mas_no_resuelve,0,4,500,0,4,500,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,Mini乂Ternas™,sin_json,3,3,400,0,,,,,GrupoXTerna™3,"avisar, no se toca",
-3,1,#UQJU0JRG2,ivzn,GrupoXTerna™2,json_mas_no_resuelve,7,16,3000,0,16,3000,0,perfil,,no se toca,"JSON - CSV: ataques +9, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#UQJU0JRG2,ivzn,GrupoXTerna™2,json_mas_no_resuelve,7,16,3000,0,16,3000,0,perfil,,no se toca,"JSON - CSV: ataques +9, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#UR902UV8L,hola,GrupoXTerna™2,coincide,16,16,2800,0,16,2800,0,perfil,,,
-3,1,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,GrupoXTerna™2,json_mas_reconstruido,0,4,600,0,4,600,0,perfil,,"domingo completado en ""diario"" (Marca Reconstruido)","JSON - CSV: ataques +4, fame +0, barcos +0"
+3,1,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,GrupoXTerna™2,json_mas_no_resuelve,0,4,600,0,4,600,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,Mini乂Ternas™,sin_json,4,4,600,0,,,,,GrupoXTerna™2,"avisar, no se toca",
 3,1,#UU02UUQGY,dark zz,GrupoXTerna™2,sin_json,8,8,1400,0,,,,,,"avisar, no se toca",
 3,1,#UVU2UYYC2,ᴳ乂ᵀ⚜️MasterNopi,Grupo乂Terna™,coincide,12,12,1700,0,12,1700,0,perfil,,,
 3,1,#UVV02Q0PC,alex280301,GrupoXTerna™3,sin_json,1,4,400,0,,,,,,"avisar, no se toca",
-3,1,#UYJCQQ028,cristofer adt,GrupoXTerna™2,json_mas_no_resuelve,4,13,2100,0,13,2100,0,perfil,,no se toca,"JSON - CSV: ataques +9, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#UYJCQQ028,cristofer adt,GrupoXTerna™2,json_mas_no_resuelve,4,13,2100,0,13,2100,0,perfil,,no se toca,"JSON - CSV: ataques +9, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,GrupoXTerna™2,sin_json,8,8,1150,0,,,,,,"avisar, no se toca",
 3,1,#V0J90R2V2,ᴳ乂ᵀ ⚜️ Αντρέ¹⁸,Mini乂Ternas™,coincide,8,8,1400,0,8,1400,0,perfil,,,
-3,1,#V0JPP0UJR,fatima,GrupoXTerna™3,json_mas_no_resuelve,12,16,2700,0,16,2700,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#V0JPP0UJR,fatima,GrupoXTerna™3,json_mas_no_resuelve,12,16,2700,0,16,2700,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#V0UJ0RPVP,MassimoBabyOhh,GrupoXTerna™3,coincide,16,16,2200,0,16,2200,0,"analytics,perfil",,,
 3,1,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,Grupo乂Terna™,coincide,12,12,1600,0,12,1600,0,perfil,,,
 3,1,#V2RUQ9LUG,ᴳ乂ᵀ ⚜️yanx_zz,Grupo乂Terna™,coincide,16,16,2900,0,16,2900,0,perfil,,,
 3,1,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,Mini乂Ternas™,coincide,8,8,1000,0,8,1000,0,perfil,,,
 3,1,#V929CC8CC,esteban,GrupoXTerna™3,sin_json,4,15,2250,0,,,,,,"avisar, no se toca",
-3,1,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,Grupo乂Terna™,json_mas_reconstruido,0,4,500,0,4,500,0,perfil,,"domingo completado en ""diario"" (Marca Reconstruido)","JSON - CSV: ataques +4, fame +0, barcos +0"
+3,1,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,Grupo乂Terna™,json_mas_no_resuelve,0,4,500,0,4,500,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,Mini乂Ternas™,sin_json,4,4,500,0,,,,,Grupo乂Terna™,"avisar, no se toca",
-3,1,#V9P20U8RC,kayserleandro,GrupoXTerna™3,json_mas_no_resuelve,8,16,2300,0,16,2300,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
-3,1,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,Grupo乂Terna™,json_mas_no_resuelve,8,16,2450,0,16,2450,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#V9P20U8RC,kayserleandro,GrupoXTerna™3,json_mas_no_resuelve,8,16,2300,0,16,2300,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
+3,1,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,Grupo乂Terna™,json_mas_no_resuelve,8,16,2450,0,16,2450,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,Mini乂Ternas™,coincide,4,4,700,0,4,700,0,perfil,,,
 3,1,#VLU8GLL09,angel,Grupo乂Terna™,sin_json,16,16,2900,0,,,,,,"avisar, no se toca",
 3,1,#VLY0G9LU9,ᴳ乂ᵀ ⚜. josuexd.,GrupoXTerna™3,coincide,8,8,1300,0,8,1300,0,perfil,,,
@@ -942,13 +942,13 @@
 3,1,#VQR0QCV8J,SAINZ,GrupoXTerna™2,sin_json,0,0,0,0,,,,,,"avisar, no se toca",
 3,1,#VR92C8LYU,ᴳ乂ᵀ ⚜️GONCHA,Grupo乂Terna™,coincide,16,16,2300,0,16,2300,0,perfil,,,
 3,1,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,Mini乂Ternas™,coincide,4,4,400,0,4,400,0,perfil,,,
-3,1,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,GrupoXTerna™3,json_mas_reconstruido,0,4,500,0,4,500,0,perfil,,"domingo completado en ""diario"" (Marca Reconstruido)","JSON - CSV: ataques +4, fame +0, barcos +0"
+3,1,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,GrupoXTerna™3,json_mas_no_resuelve,0,4,500,0,4,500,0,perfil,,no se toca,"JSON - CSV: ataques +4, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,Mini乂Ternas™,sin_json,4,4,500,0,,,,,GrupoXTerna™3,"avisar, no se toca",
-3,1,#VY0UJ82PV,Manamunacoc,GrupoXTerna™2,json_mas_no_resuelve,4,16,2700,0,16,2700,0,perfil,,no se toca,"JSON - CSV: ataques +12, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#VY0UJ82PV,Manamunacoc,GrupoXTerna™2,json_mas_no_resuelve,4,16,2700,0,16,2700,0,perfil,,no se toca,"JSON - CSV: ataques +12, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,GrupoXTerna™2,sin_json,4,4,200,0,,,,,Grupo乂Terna™,"avisar, no se toca",
 3,1,#YG8U8Q2PC,skap,GrupoXTerna™2,sin_json,11,16,2500,0,,,,,,"avisar, no se toca",
 3,1,#YGL2QV8LG,ᴳ乂ᵀ ⚜ T3RR1BL3!,Grupo乂Terna™,coincide,12,12,2250,0,12,2250,0,perfil,,,
-3,1,#YLYGC9Y9C,TOTTI,GrupoXTerna™2,json_mas_no_resuelve,11,16,2200,0,16,2200,0,perfil,,no se toca,"JSON - CSV: ataques +5, fame +0, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,1,#YLYGC9Y9C,TOTTI,GrupoXTerna™2,json_mas_no_resuelve,11,16,2200,0,16,2200,0,perfil,,no se toca,"JSON - CSV: ataques +5, fame +0, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,1,#YPGQL2L9U,⚡AnderFast⚡,Grupo乂Terna™,sin_json,0,0,0,0,,,,,,"avisar, no se toca",
 3,2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,GrupoXTerna™2,coincide,0,0,0,0,0,0,0,perfil,,,
 3,2,#200Y80CU29,KElito,GrupoXTerna™2,sin_json,4,8,1150,0,,,,,,"avisar, no se toca",
@@ -984,7 +984,7 @@
 3,2,#8PYCU9U9Q,KAITO KID,Grupo乂Terna™,coincide,16,16,2500,0,16,2500,0,perfil,,,
 3,2,#8Q92GV08U,Dxniel,Grupo乂Terna™,coincide,16,16,2500,0,16,2500,0,perfil,,,
 3,2,#8VU0Y9LJ0,Yisus Craiz,Grupo乂Terna™,coincide,16,16,2400,0,16,2400,0,perfil,,,
-3,2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,GrupoXTerna™2,json_mas_no_resuelve,4,8,1450,0,16,2800,0,perfil,,no se toca,"JSON - CSV: ataques +12, fame +1350, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,GrupoXTerna™2,json_mas_no_resuelve,4,8,1450,0,16,2800,0,perfil,,no se toca,"JSON - CSV: ataques +12, fame +1350, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,2,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,GrupoXTerna™3,coincide,6,6,700,0,6,700,0,perfil,,,
 3,2,#900UU80R9,Maliante olger,GrupoXTerna™2,coincide,16,16,2850,0,16,2850,0,perfil,,,
 3,2,#90QYJQRQ8,Diana,GrupoXTerna™3,coincide,9,9,1300,0,9,1300,0,perfil,,,
@@ -1009,7 +1009,7 @@
 3,2,#CV9U8PU8G,DAVII BOYX,GrupoXTerna™2,coincide,12,12,1900,0,12,1900,0,perfil,,,
 3,2,#CYR2PVLLY,carepoto:3,GrupoXTerna™2,coincide,16,16,2600,0,16,2600,0,perfil,,,
 3,2,#G2Q9UYY89,✨✞₳Ⱡ€Ӿ✞✨♣️YV♠️,Grupo乂Terna™,sin_json,8,8,1450,0,,,,,,"avisar, no se toca",
-3,2,#GLPC8YQGV,ᴳ乂ᵀ ⚜️Drill,GrupoXTerna™2,json_mas_no_resuelve,8,12,2050,0,16,2850,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +800, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,2,#GLPC8YQGV,ᴳ乂ᵀ ⚜️Drill,GrupoXTerna™2,json_mas_no_resuelve,8,12,2050,0,16,2850,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +800, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,2,#GVVPJ8CLG,JP Titan :),Grupo乂Terna™,coincide,16,16,2550,0,16,2550,0,perfil,,,
 3,2,#GY0GJ09C0,ᴳ乂ᵀ ⚜️ ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,coincide,16,16,2900,0,16,2900,0,perfil,,,
 3,2,#GYU0R0V29,Love--Adri<3,GrupoXTerna™3,sin_json,1,1,100,0,,,,,GrupoXTerna™2,"avisar, no se toca",
@@ -1024,7 +1024,7 @@
 3,2,#JR9J0JCQ9,LUCKY,GrupoXTerna™2,sin_json,16,16,3250,0,,,,,,"avisar, no se toca",
 3,2,#JV08RQU2Y,ᴳ乂ᵀ ⚜️ DAVID ★,Grupo乂Terna™,coincide,16,16,2700,0,16,2700,0,perfil,,,
 3,2,#JVVG9YUG0,Fiorela.,GrupoXTerna™3,sin_json,4,6,850,0,,,,,,"avisar, no se toca",
-3,2,#L28JYY2J,Gamer,GrupoXTerna™2,json_mas_no_resuelve,16,16,2325,0,16,2325,1,perfil,,no se toca,"JSON - CSV: ataques +0, fame +0, barcos +1 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,2,#L28JYY2J,Gamer,GrupoXTerna™2,json_mas_no_resuelve,16,16,2325,0,16,2325,1,perfil,,no se toca,"JSON - CSV: ataques +0, fame +0, barcos +1 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,2,#LJ0CYCG9V,ᴳ乂ᵀ ⚜️CERFIRE,Grupo乂Terna™,coincide,16,16,2600,0,16,2600,0,perfil,,,
 3,2,#LJJVQGJ,Dade ,GrupoXTerna™2,sin_json,16,16,2900,0,,,,,,"avisar, no se toca",
 3,2,#LPGG98PLL,chris da amor,GrupoXTerna™2,sin_json,0,4,700,0,,,,,,"avisar, no se toca",
@@ -1033,7 +1033,7 @@
 3,2,#LVVP82CU9,ᴳ乂ᵀ ⚜️Angel R.,GrupoXTerna™2,coincide,16,16,2550,0,16,2550,0,perfil,,,
 3,2,#LYVJU9UJJ,fggij09,Mini乂Ternas™,sin_json,5,5,600,0,,,,,GrupoXTerna™2,"avisar, no se toca",
 3,2,#P09CPYUU8,ROMPE CORAZONES,GrupoXTerna™2,sin_json,0,4,650,0,,,,,,"avisar, no se toca",
-3,2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,GrupoXTerna™2,json_mas_no_resuelve,8,12,2050,0,16,2850,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +800, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,GrupoXTerna™2,json_mas_no_resuelve,8,12,2050,0,16,2850,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +800, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,2,#PGLYYV9Q0,carloselpro,GrupoXTerna™2,coincide,11,11,1900,0,11,1900,0,perfil,,,
 3,2,#PJL9GL8U2,Luigi,GrupoXTerna™2,coincide,16,16,2700,0,16,2700,0,perfil,,,
 3,2,#PU2GP2LPG,JNTN,Grupo乂Terna™,sin_json,4,4,800,0,,,,,,"avisar, no se toca",
@@ -1049,7 +1049,7 @@
 3,2,#RGCL8LGJC,Alex♡Dmr,GrupoXTerna™3,coincide,13,13,1700,0,13,1700,0,perfil,,,
 3,2,#RGQUGU0CU,ᴳ乂ᵀ ⚜️pedro289,Grupo乂Terna™,coincide,16,16,2600,0,16,2600,0,perfil,,,
 3,2,#RPLVY0R08,rata-piola,GrupoXTerna™3,coincide,8,8,1300,0,8,1300,0,perfil,,,
-3,2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,GrupoXTerna™2,json_mas_no_resuelve,8,12,2300,0,16,2950,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +650, barcos +0 | el domingo pasaría el tope diario (4 ataques o 900 medallas)"
+3,2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,GrupoXTerna™2,json_mas_no_resuelve,8,12,2300,0,16,2950,0,perfil,,no se toca,"JSON - CSV: ataques +8, fame +650, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,2,#U2QJ2LCY9,ivan,GrupoXTerna™2,coincide,16,16,2750,0,16,2750,0,perfil,,,
 3,2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,GrupoXTerna™2,sin_json,16,16,2700,0,,,,,,"avisar, no se toca",
 3,2,#U8G029GUQ,ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️,GrupoXTerna™3,sin_json,4,4,650,0,,,,,GrupoXTerna™2,"avisar, no se toca",
@@ -1074,7 +1074,7 @@
 3,2,#V2RUQ9LUG,ᴳ乂ᵀ ⚜️yanx_zz,Grupo乂Terna™,coincide,14,14,2200,0,14,2200,0,perfil,,,
 3,2,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,Mini乂Ternas™,coincide,4,4,500,0,4,500,0,perfil,,,
 3,2,#V929CC8CC,esteban,GrupoXTerna™3,sin_json,16,16,2700,0,,,,,,"avisar, no se toca",
-3,2,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,Grupo乂Terna™,json_mas_no_resuelve,1,1,75,1,8,875,1,perfil,,no se toca,"JSON - CSV: ataques +7, fame +800, barcos +0 | no hay fila de domingo para esa serie"
+3,2,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,Grupo乂Terna™,json_mas_no_resuelve,1,1,75,1,8,875,1,perfil,,no se toca,"JSON - CSV: ataques +7, fame +800, barcos +0 | la última fila de la semana no es un domingo (S): semana incompleta"
 3,2,#V9P20U8RC,kayserleandro,GrupoXTerna™3,coincide,15,15,2100,0,15,2100,0,perfil,,,
 3,2,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,Grupo乂Terna™,coincide,16,16,2750,0,16,2750,0,perfil,,,
 3,2,#VCLRVUCLG,manzanita,Mini乂Ternas™,coincide,0,0,0,0,0,0,0,perfil,,,
@@ -1214,8 +1214,8 @@
 3,3,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,Grupo乂Terna™,coincide,16,16,3150,0,16,3150,0,perfil,,,
 3,3,#VC2YLQQ9P,ni,Mini乂Ternas™,sin_json,0,0,0,0,,,,,,"avisar, no se toca",
 3,3,#VCGGRQY8Q,RODRÍGUEZ 666,Mini乂Ternas™,sin_json,0,0,0,0,,,,,,"avisar, no se toca",
-3,3,#VCLRVUCLG,¡momazos pedro!,Mini乂Ternas™,json_mas_reconstruido,2,2,150,1,2,150,2,perfil,,"domingo completado en ""diario"" (Marca Reconstruido)","JSON - CSV: ataques +0, fame +0, barcos +1"
-3,3,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,Mini乂Ternas™,json_mas_reconstruido,4,4,450,0,4,450,2,perfil,,"domingo completado en ""diario"" (Marca Reconstruido)","JSON - CSV: ataques +0, fame +0, barcos +2"
+3,3,#VCLRVUCLG,¡momazos pedro!,Mini乂Ternas™,json_mas_no_resuelve,2,2,150,1,2,150,2,perfil,,no se toca,"JSON - CSV: ataques +0, fame +0, barcos +1 | la última fila de la semana no es un domingo (J): semana incompleta"
+3,3,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,Mini乂Ternas™,json_mas_no_resuelve,4,4,450,0,4,450,2,perfil,,no se toca,"JSON - CSV: ataques +0, fame +0, barcos +2 | la última fila de la semana no es un domingo (J): semana incompleta"
 3,3,#VLU8GLL09,angel,Grupo乂Terna™,sin_json,16,16,3150,0,,,,,,"avisar, no se toca",
 3,3,#VLY0G9LU9,ᴳ乂ᵀ ⚜. josuexd.,GrupoXTerna™3,coincide,4,4,600,0,4,600,0,perfil,,,
 3,3,#VPRGY9YGG,luisxzz_,GrupoXTerna™2,coincide,16,16,2400,0,16,2400,0,perfil,,,
