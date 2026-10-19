@@ -4,7 +4,7 @@ Respaldo enlazado de cuatro niveles. El cálculo al vuelo es la vía rápida; es
 
     Semanal_C  ->  Semanal_D  ->  Diario_C  ->  Diario_D
 
-Esta carpeta () guarda Semanal_C y Semanal_D;  y  están un nivel arriba, en .
+Esta carpeta (`Informes/Semanal/`) guarda Semanal_C y Semanal_D; `Diario_C.csv` y `Diario_D.csv` están un nivel arriba, en `Informes/`.
 
 Todos llevan la columna `N°` (numeración automática, solo para ubicarte a mano; el código no depende de ella).
 El orden de los días no importa: cada reparto se guarda una sola vez, con sus 4 IDs de Diario_C ordenados por texto.
@@ -29,4 +29,4 @@ Para asignarlo a días concretos se permutan esos 4 IDs (como máximo 24).
 
 ## Comprobaciones al generar
 Suma de `Variantes_semanales` = 1.581.580; suma de `Repartos_D` = 6.438.740; 3196 IDs; máximo 20.025 repartos en `S_1925_A_14_B_05`.
-Generador: `generar_semanal.py`.
+Generador: `generar_semanal.py <carpeta con Diario_C.csv y Diario_D.csv> <carpeta de salida> [MB por tramo]`.
