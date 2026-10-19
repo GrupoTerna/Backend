@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 19/10/2026 17:19:59 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 19/10/2026 18:21:53 */
 
 
 
@@ -45948,7 +45948,8 @@ function _webPerfilJugador(tagBuscado, opciones) {
           ataques: Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0,
           puntaje: Number(dataGuerra[i][GC.FAME - 1]) || 0,
           barcos:  Number(dataGuerra[i][GC.BARCOS - 1]) || 0,
-          copas:   Number(dataGuerra[i][GC.COPAS  - 1]) || 0 // 12-oct-2026: copas de ese día (0 = sin dato, filas anteriores a la columna). [→ Contexto_Base_Web.md §PF061]
+          copas:   Number(dataGuerra[i][GC.COPAS  - 1]) || 0, // 12-oct-2026: copas de ese día (0 = sin dato, filas anteriores a la columna). [→ Contexto_Base_Web.md §PF061]
+          clan:    String(dataGuerra[i][GC.CLAN - 1] || '').trim() // 19-oct-2026 (pedido usuaria): clan donde estaba la cuenta ESE día (columna Clan de la fila de Guerra), para que las gráficas de perfil.html no muestren siempre el clan actual. [→ Contexto_Base_Web.md §PF126]
         });
       }
 
