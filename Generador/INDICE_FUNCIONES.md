@@ -68,14 +68,14 @@ Ninguno.
 | `_githubToken_` | función | 08_GitHub.gs | 46 |  |
 | `_githubTraerAProyectoApps_` | función | 08_GitHub.gs | 401 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
 | `_horaLimaDecimal_` | función | 06_Limpieza_Duplicados_JSON.gs | 460 |  |
-| `_imgApiCarpetasApiFaltantes_` | función | 11_Imagenes_API.gs | 275 |  |
-| `_imgApiCommit_` | función | 11_Imagenes_API.gs | 299 |  |
-| `_imgApiContexto_` | función | 11_Imagenes_API.gs | 255 |  |
+| `_imgApiCarpetasApiFaltantes_` | función | 11_Imagenes_API.gs | 283 |  |
+| `_imgApiCommit_` | función | 11_Imagenes_API.gs | 307 |  |
+| `_imgApiContexto_` | función | 11_Imagenes_API.gs | 263 |  |
 | `_imgApiEjecutar_` | función | 11_Imagenes_API.gs | 99 |  |
-| `_imgApiJson_` | función | 11_Imagenes_API.gs | 242 |  |
+| `_imgApiJson_` | función | 11_Imagenes_API.gs | 250 |  |
 | `_imgApiRecolectarUrls_` | función | 11_Imagenes_API.gs | 183 |  |
-| `_imgApiReq_` | función | 11_Imagenes_API.gs | 224 |  |
-| `_imgApiToken_` | función | 11_Imagenes_API.gs | 219 |  |
+| `_imgApiReq_` | función | 11_Imagenes_API.gs | 232 |  |
+| `_imgApiToken_` | función | 11_Imagenes_API.gs | 227 |  |
 | `_leerPeriodo_` | función | 06_Limpieza_Duplicados_JSON.gs | 762 |  |
 | `_letraDiaGuerra_` | función | 05_Migrador_Formato.gs | 453 |  |
 | `_limpiarCarpeta_` | función | 06_Limpieza_Duplicados_JSON.gs | 109 |  |
