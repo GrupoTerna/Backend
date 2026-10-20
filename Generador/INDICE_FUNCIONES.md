@@ -1,7 +1,7 @@
 # Índice de funciones — Generador
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Generador/src/`. Total: 159 nombres en 10 archivos .gs.
+Código real: `Generador/src/`. Total: 182 nombres en 11 archivos .gs.
 
 ## Por archivo
 
@@ -15,6 +15,7 @@ Código real: `Generador/src/`. Total: 159 nombres en 10 archivos .gs.
 - **08_GitHub.gs** (16 funciones): _githubToken_, _ghReq_, _ghRespuesta_, _ghJson_, _scriptIdDeProyecto_, _extDeTipo_, _archivosDelProyecto_, _githubRevisarSecretos_, _githubGenerarIndice_, _githubGenerarLeeme_, _githubCommitArchivos_, _githubSincronizar_, _githubTraerAProyectoApps_, _githubProbar_, subirEvidenciaT05AGithub, _githubSubirArchivosDeDrive_
 - **09_ReadmeGenerador.gs** (4 funciones): _readmeFuncionesManuales_, _readmeGrupo_, _readmeAplicarBloque_, _actualizarReadmeGenerador_
 - **10_Verificar_PeriodIndex_JSON.gs** (7 funciones): _verif_esExcepcionFecha_, verificarPeriodIndexJSON, _verif_periodoDeArchivo_, _verif_indiceDiaLima_, _verif_enVentanaCambio_, _verif_comparar_, _verif_imprimirResumen_
+- **11_Imagenes_API.gs** (13 funciones): imagenesApiProbar, imagenesApiCartasAGithub, imagenesApiInsigniasAGithub, imagenesApiAGithub, carpetasApiJuntoAFankit, _imgApiEjecutar_, _imgApiRecolectarUrls_, _imgApiToken_, _imgApiReq_, _imgApiJson_, _imgApiContexto_, _imgApiCarpetasApiFaltantes_, _imgApiCommit_
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
@@ -67,6 +68,14 @@ Ninguno.
 | `_githubToken_` | función | 08_GitHub.gs | 46 |  |
 | `_githubTraerAProyectoApps_` | función | 08_GitHub.gs | 401 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
 | `_horaLimaDecimal_` | función | 06_Limpieza_Duplicados_JSON.gs | 460 |  |
+| `_imgApiCarpetasApiFaltantes_` | función | 11_Imagenes_API.gs | 275 |  |
+| `_imgApiCommit_` | función | 11_Imagenes_API.gs | 299 |  |
+| `_imgApiContexto_` | función | 11_Imagenes_API.gs | 255 |  |
+| `_imgApiEjecutar_` | función | 11_Imagenes_API.gs | 99 |  |
+| `_imgApiJson_` | función | 11_Imagenes_API.gs | 242 |  |
+| `_imgApiRecolectarUrls_` | función | 11_Imagenes_API.gs | 183 |  |
+| `_imgApiReq_` | función | 11_Imagenes_API.gs | 224 |  |
+| `_imgApiToken_` | función | 11_Imagenes_API.gs | 219 |  |
 | `_leerPeriodo_` | función | 06_Limpieza_Duplicados_JSON.gs | 762 |  |
 | `_letraDiaGuerra_` | función | 05_Migrador_Formato.gs | 453 |  |
 | `_limpiarCarpeta_` | función | 06_Limpieza_Duplicados_JSON.gs | 109 |  |
@@ -120,6 +129,7 @@ Ninguno.
 | `CARPETAS_CLAN_` | global | 04_Organizador_JSON.gs | 31 |  |
 | `CARPETAS_CLAN_POR_ENDPOINT_` | global | 04_Organizador_JSON.gs | 48 | Contexto_Base_Web.md §PF074 |
 | `CARPETAS_JSON_POR_ENDPOINT_` | global | 04_Organizador_JSON.gs | 76 |  |
+| `carpetasApiJuntoAFankit` | función | 11_Imagenes_API.gs | 80 |  |
 | `consolidarCodigoDesdeZip` | función | 02_Backstage.gs | 153 |  |
 | `CORTE_MIN_FRACCION_` | global | 06_Limpieza_Duplicados_JSON.gs | 450 |  |
 | `CORTE_MIN_PARES_` | global | 06_Limpieza_Duplicados_JSON.gs | 447 |  |
@@ -136,6 +146,20 @@ Ninguno.
 | `GITHUB_PATRONES_SECRETOS_` | global | 08_GitHub.gs | 27 |  |
 | `GITHUB_REGEX_ID_DRIVE_` | global | 08_GitHub.gs | 40 |  |
 | `GITHUB_REPO_` | global | 08_GitHub.gs | 19 |  |
+| `imagenesApiAGithub` | función | 11_Imagenes_API.gs | 75 |  |
+| `imagenesApiCartasAGithub` | función | 11_Imagenes_API.gs | 67 |  |
+| `imagenesApiInsigniasAGithub` | función | 11_Imagenes_API.gs | 71 |  |
+| `imagenesApiProbar` | función | 11_Imagenes_API.gs | 63 |  |
+| `IMGAPI_BRANCH_` | global | 11_Imagenes_API.gs | 37 |  |
+| `IMGAPI_CSV_CARTAS_` | global | 11_Imagenes_API.gs | 50 |  |
+| `IMGAPI_CSV_INSIGNIAS_` | global | 11_Imagenes_API.gs | 51 |  |
+| `IMGAPI_DESTINOS_` | global | 11_Imagenes_API.gs | 43 |  |
+| `IMGAPI_LOTE_` | global | 11_Imagenes_API.gs | 57 |  |
+| `IMGAPI_MAX_ARCHIVOS_` | global | 11_Imagenes_API.gs | 54 |  |
+| `IMGAPI_MAX_BYTES_` | global | 11_Imagenes_API.gs | 55 |  |
+| `IMGAPI_MAX_MS_` | global | 11_Imagenes_API.gs | 56 |  |
+| `IMGAPI_REGEX_URL_` | global | 11_Imagenes_API.gs | 41 |  |
+| `IMGAPI_REPO_` | global | 11_Imagenes_API.gs | 36 |  |
 | `LETRAS_DIA_GUERRA_` | global | 05_Migrador_Formato.gs | 441 |  |
 | `limpiarDuplicadosJSON` | función | 06_Limpieza_Duplicados_JSON.gs | 73 |  |
 | `LIMPIEZA_DRY_RUN_` | global | 06_Limpieza_Duplicados_JSON.gs | 66 |  |
