@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 19/10/2026 18:21:53 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 19/10/2026 20:33:07 */
 
 
 
@@ -59541,16 +59541,17 @@ var ANOM_ATQSEM_CORRECCIONES = [
     esperado: { hoy: 4, sem: 16, fame: 2700, barcos: 0 },
     nuevo:    { hoy: 0, sem: 0,  fame: 0,    barcos: 0 },
     motivo: 'Lunes (dia de entrenamiento, sin ataques). Valores de la semana anterior arrastrados; no cambia el cierre de la semana (11, confirmado por el Historial).'
+  },
+  {
+    temporada: 2, semana: 2, tag: '#LRQ8YJRCU', clan: 'Grupo乂Terna™', periodIndex: 13,
+    esperado: { hoy: 4, sem: 11, fame: 1200, barcos: 0 },
+    nuevo:    { hoy: 0, sem: 0,  fame: 0,    barcos: 0 },
+    motivo: 'Domingo. Perfil de RoyaleAPI (semana 133-2): solo figura GrupoXTerna™2 con 11 ataques y 1200; Grupo乂Terna™ no tiene fila esa semana. El cotejo con el JSON marca estos 11 / 1200 como de otro clan.'
   }
 ];
 
-// Filas detectadas pero SIN decidir: el informe las lista y NO se tocan.
-var ANOM_ATQSEM_PENDIENTES = [
-  {
-    temporada: 2, semana: 2, tag: '#LRQ8YJRCU', clan: 'Grupo乂Terna™', periodIndex: 13,
-    motivo: 'Domingo con AtaquesHoy 4, pero AtaquesSemana 11 y Fame 1200 iguales a los de GrupoXTerna™2. Vale 4 si ataco ese dia en Grupo乂Terna™, o 0 si son datos de otro clan. Falta la tabla de Grupo乂Terna™ (semana 133-2).'
-  }
-];
+// Filas detectadas pero SIN decidir: el informe las lista y NO se tocan (hoy no queda ninguna).
+var ANOM_ATQSEM_PENDIENTES = [];
 
 var ANOM_ATQSEM_TOPE_SEMANA = 16;
 
