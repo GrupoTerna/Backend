@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2073 nombres en 55 archivos .gs.
+Código real: `Base/src/`. Total: 2089 nombres en 56 archivos .gs.
 
 ## Por archivo
 
@@ -60,6 +60,7 @@ Código real: `Base/src/`. Total: 2073 nombres en 55 archivos .gs.
 - **52_Publicar_Home.gs** (2 funciones): _publicarHomeEstatico_, publicarHomeEstatico
 - **53_Publicar_Torneos.gs** (3 funciones): _publicarTorneosEstatico_, _leerHistorialTorneosPublicado_, publicarTorneosEstatico
 - **54_Correccion_AtaquesSemana_Anomalias.gs** (13 funciones): _anomAtqSemNum_, _anomAtqSemTag_, _anomAtqSemClan_, _anomAtqSemCoincide_, _anomAtqSemValores_, _anomAtqSemIguales_, _anomAtqSemSumaClanes_, _anomAtqSemEvaluar_, _anomAtqSemSeriesAfectadas_, _anomAtqSemTextoSumas_, corregirAnomaliasAtaquesSemanaInforme, corregirAnomaliasAtaquesSemanaAplicar, _corregirAnomaliasAtaquesSemana_
+- **55_Reparar_DiasConExceso.gs** (13 funciones): _excDiasOpciones, _excDiasNum, _excDiasAgrupar, _excDiasSegmentos, _excDiasFaltanteJueves, _excDiasSoluciones, _excDiasEsCero, _excDiasResolver, _excDiasResumir, _excDiasClasificar, _excDiasTextoPorDia, _excDiasTextoActual, repararDiasConExcesoInforme
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
@@ -551,6 +552,19 @@ Código real: `Base/src/`. Total: 2073 nombres en 55 archivos .gs.
 | `_evaluarCorreccionConClanTagSemana_` | función | 18_CorreccionGuerra.gs | 649 | Contexto_Base_Web.md §18B026 |
 | `_evaluarRequisitosAscenso` | función | 22_ControlCalendario.gs | 703 | Contexto_Base_Web.md §22B039 |
 | `_evitarAutoLinkWsp` | función | 44_BotWhatsApp.gs | 97 | Contexto_Base_Web.md §44B011 |
+| `_excDiasAgrupar` | función | 55_Reparar_DiasConExceso.gs | 48 |  |
+| `_excDiasClasificar` | función | 55_Reparar_DiasConExceso.gs | 239 |  |
+| `_excDiasEsCero` | función | 55_Reparar_DiasConExceso.gs | 119 |  |
+| `_excDiasFaltanteJueves` | función | 55_Reparar_DiasConExceso.gs | 86 |  |
+| `_excDiasNum` | función | 55_Reparar_DiasConExceso.gs | 39 |  |
+| `_excDiasOpciones` | función | 55_Reparar_DiasConExceso.gs | 26 |  |
+| `_excDiasOpciones_` | global | 55_Reparar_DiasConExceso.gs | 25 |  |
+| `_excDiasResolver` | función | 55_Reparar_DiasConExceso.gs | 122 |  |
+| `_excDiasResumir` | función | 55_Reparar_DiasConExceso.gs | 211 |  |
+| `_excDiasSegmentos` | función | 55_Reparar_DiasConExceso.gs | 71 |  |
+| `_excDiasSoluciones` | función | 55_Reparar_DiasConExceso.gs | 96 |  |
+| `_excDiasTextoActual` | función | 55_Reparar_DiasConExceso.gs | 258 |  |
+| `_excDiasTextoPorDia` | función | 55_Reparar_DiasConExceso.gs | 252 |  |
 | `_existeParCRListaParaTemporada` | función | 26_Torneos_Core.gs | 217 | Contexto_Base_Web.md §26B022 |
 | `_extraColsInactivosDesdeCsv` | función | 05_Backup_CSV.gs | 1047 | Contexto_Base_Web.md §05B061 |
 | `_extraerClanDeBattlelog` | función | 09_API_ClashRoyale.gs | 1481 | Contexto_Base_Web.md §09B079 |
@@ -1719,6 +1733,8 @@ Código real: `Base/src/`. Total: 2073 nombres en 55 archivos .gs.
 | `esRazonValida` | función | 01_Config_Global.gs | 1031 | Contexto_Base_Web.md §01B144 |
 | `estadoVigilanteUptimeRobot` | función | 45_Vigilante_UptimeRobot.gs | 259 |  |
 | `esTagOculto` | función | 01_Config_Global.gs | 1038 | Contexto_Base_Web.md §01B145 |
+| `EXC_DIAS_CAP` | global | 55_Reparar_DiasConExceso.gs | 22 |  |
+| `EXC_DIAS_LETRAS` | global | 55_Reparar_DiasConExceso.gs | 23 |  |
 | `exportarBackupCelulares` | función | 05_Backup_CSV.gs | 34 |  |
 | `FALLBACK_TAG_ORG_POR_NOMMULTI` | global | 26_Torneos_Core.gs | 2551 | Contexto_Base_Web.md §26B189 |
 | `FAME_BARCO_GANA` | global | 18_CorreccionGuerra.gs | 25 |  |
@@ -1945,6 +1961,7 @@ Código real: `Base/src/`. Total: 2073 nombres en 55 archivos .gs.
 | `repararAtaquesHoyGuerraDesdeJSONAplicar` | función | 17_GuerraSheet.gs | 3336 |  |
 | `repararAtaquesHoyGuerraDesdeJSONInforme` | función | 17_GuerraSheet.gs | 3335 |  |
 | `repararAtaquesHoyGuerraInforme` | función | 17_GuerraSheet.gs | 3169 | Contexto_Base_Web.md §17B160 |
+| `repararDiasConExcesoInforme` | función | 55_Reparar_DiasConExceso.gs | 269 |  |
 | `repararDomingosDesdeCorreccionesAplicar` | función | 17_GuerraSheet.gs | 3840 |  |
 | `repararDomingosDesdeCorreccionesInforme` | función | 17_GuerraSheet.gs | 3839 |  |
 | `repararDomingoT5S4Aplicar` | función | 49_Diagnostico_Domingo.gs | 7 |  |
