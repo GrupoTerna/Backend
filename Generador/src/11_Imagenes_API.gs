@@ -8,17 +8,24 @@
 //  al lado, una carpeta `api`. Orden de uso en la web: enlace de la API → copia
 //  en `api` → copia en `Fankit`.
 //
-//  De dónde salen los enlaces: de los CSV que ya están en Drive
+//  De dónde salen los enlaces: (1) de los CSV que ya están en Drive
 //  (Backup_Cards.csv, Backup_Cards_2.csv, Backup_Insignias.csv y
-//  Backup_Insignias_2.csv). Se buscan TODAS las direcciones de
-//  api-assets.clashroyale.com que aparezcan en ellos, sin depender de columnas.
+//  Backup_Insignias_2.csv) y (2) de los JSON de jugadores de la carpeta
+//  «players» (CARPETA_PLAYERS_ID_, 04_Organizador_JSON.gs), que
+//  imagenesApiEscanearJsonPlayers() recorre y resume en el archivo de Drive
+//  Imagenes_API_Urls.txt (una dirección por línea). Se buscan TODAS las
+//  direcciones de api-assets.clashroyale.com que aparezcan, sin depender de columnas.
 //
 //  Dónde se guardan (nombre del archivo = el de la dirección, que es único):
 //    cards/, cardevolutions/, cardheroes/  → assets/cards/api/<archivo>
 //    playerbadges/                          → assets/playerbadges/api/<archivo>
 //
 //  Funciones para correr desde el editor:
-//    - imagenesApiProbar():          solo cuenta y muestra qué faltaría; no escribe.
+//    - imagenesApiEscanearJsonPlayers(): recorre los JSON de players y guarda las direcciones
+//                                    en Imagenes_API_Urls.txt; reanudable (vuelve a correrla
+//                                    hasta que diga «TERMINADO»). Correrla ANTES de subir.
+//    - imagenesApiReiniciarEscaneoJson(): olvida el avance del escaneo (no borra el archivo).
+//    - imagenesApiProbar():          solo cuenta y muestra qué faltaría; no escribe en GitHub.
 //    - imagenesApiCartasAGithub():   cartas, evoluciones y héroes.
 //    - imagenesApiInsigniasAGithub(): insignias de jugador.
 //    - imagenesApiAGithub():         las dos categorías.
@@ -49,6 +56,16 @@ var IMGAPI_DESTINOS_ = {
 
 var IMGAPI_CSV_CARTAS_      = ['Backup_Cards.csv', 'Backup_Cards_2.csv'];
 var IMGAPI_CSV_INSIGNIAS_   = ['Backup_Insignias.csv', 'Backup_Insignias_2.csv'];
+
+// Acumulador de direcciones sacadas de los JSON de players, y estado del escaneo.
+var IMGAPI_ARCHIVO_URLS_    = 'Imagenes_API_Urls.txt';
+var IMGAPI_PROP_ESCANEO_    = 'IMGAPI_ESCANEO_JSON_V1';
+var IMGAPI_ESCANEO_MS_      = 4 * 60 * 1000;
+
+var IMGAPI_CATEGORIAS_ = {
+  cartas:    { cards: 1, cardevolutions: 1, cardheroes: 1 },
+  insignias: { playerbadges: 1 }
+};
 
 // Topes por corrida (Apps Script corta a los 6 minutos).
 // La subida a GitHub tarda más que la descarga (127 cartas = 5,5 min en la primera corrida real), y el
@@ -107,7 +124,10 @@ function _imgApiEjecutar_(grupos, soloProbar) {
   var nombresCsv = [];
   if (grupos.indexOf('cartas') !== -1)    nombresCsv = nombresCsv.concat(IMGAPI_CSV_CARTAS_);
   if (grupos.indexOf('insignias') !== -1) nombresCsv = nombresCsv.concat(IMGAPI_CSV_INSIGNIAS_);
-  var urls = _imgApiRecolectarUrls_(nombresCsv);
+  nombresCsv.push(IMGAPI_ARCHIVO_URLS_); // direcciones de los JSON de players (si ya se escanearon)
+  var urls = _imgApiRecolectarUrls_(nombresCsv).filter(function(u) {
+    return grupos.some(function(g) { return IMGAPI_CATEGORIAS_[g][u.categoria]; });
+  });
 
   var porCategoria = {};
   urls.forEach(function(u) { porCategoria[u.categoria] = (porCategoria[u.categoria] || 0) + 1; });
@@ -176,6 +196,79 @@ function _imgApiEjecutar_(grupos, soloProbar) {
   console.log(texto);
   console.log('Falta hacer pull de Web en GitHub Desktop.');
   return texto;
+}
+
+// -----------------------------------------------------------------------------
+// Escaneo de los JSON de players (reanudable)
+// -----------------------------------------------------------------------------
+
+/** Archivo acumulador en Drive (raíz); lo crea vacío si no existe. Si hay varios con el mismo nombre usa el más reciente. */
+function _imgApiArchivoUrls_() {
+  var it = DriveApp.getFilesByName(IMGAPI_ARCHIVO_URLS_);
+  var archivos = [];
+  while (it.hasNext()) archivos.push(it.next());
+  if (!archivos.length) return DriveApp.createFile(IMGAPI_ARCHIVO_URLS_, '', 'text/plain');
+  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
+  return archivos[0];
+}
+
+/**
+ * Recorre la carpeta «players» (los .json de jugadores) y suma al archivo Imagenes_API_Urls.txt
+ * todas las direcciones de imágenes de la API que encuentre (se leen con una expresión regular,
+ * sin interpretar el JSON). Solo lee Drive; no toca GitHub. Se corta a los 4 minutos y guarda el
+ * punto de avance: se vuelve a correr hasta que el registro diga «TERMINADO».
+ */
+function imagenesApiEscanearJsonPlayers() {
+  var inicio = Date.now();
+  var props = PropertiesService.getScriptProperties();
+  var estado = {};
+  try { estado = JSON.parse(props.getProperty(IMGAPI_PROP_ESCANEO_) || '{}'); } catch (e) { estado = {}; }
+  var escaneados = estado.escaneados || 0;
+
+  var archivoUrls = _imgApiArchivoUrls_();
+  var conocidas = {};
+  archivoUrls.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) { l = l.trim(); if (l) conocidas[l] = true; });
+  var antes = Object.keys(conocidas).length;
+
+  var it;
+  if (estado.token) {
+    try { it = DriveApp.continueFileIterator(estado.token); }
+    catch (e) { console.log('No se pudo retomar el avance guardado (' + e + '); se empieza de nuevo.'); estado = {}; escaneados = 0; }
+  }
+  if (!it) it = DriveApp.getFolderById(CARPETA_PLAYERS_ID_).getFiles();
+
+  var terminado = true;
+  var hechosEstaVez = 0;
+  while (it.hasNext()) {
+    if (Date.now() - inicio > IMGAPI_ESCANEO_MS_) { terminado = false; break; }
+    var archivo = it.next();
+    if (archivo.getName().slice(-5).toLowerCase() !== '.json') continue;
+    var texto = archivo.getBlob().getDataAsString('UTF-8');
+    var m;
+    IMGAPI_REGEX_URL_.lastIndex = 0;
+    while ((m = IMGAPI_REGEX_URL_.exec(texto)) !== null) conocidas[m[0]] = true;
+    escaneados++;
+    hechosEstaVez++;
+  }
+
+  var lista = Object.keys(conocidas).sort();
+  archivoUrls.setContent(lista.join('\n') + '\n');
+  var nuevas = lista.length - antes;
+
+  if (terminado) props.deleteProperty(IMGAPI_PROP_ESCANEO_);
+  else props.setProperty(IMGAPI_PROP_ESCANEO_, JSON.stringify({ token: it.getContinuationToken(), escaneados: escaneados }));
+
+  var texto2 = (terminado ? 'TERMINADO. ' : 'Falta recorrer más archivos: vuelve a correr la función. ') +
+               'Esta vez se leyeron ' + hechosEstaVez + ' JSON (' + escaneados + ' en total) y se sumaron ' + nuevas +
+               ' direcciones nuevas; ' + lista.length + ' en ' + IMGAPI_ARCHIVO_URLS_ + '.';
+  console.log(texto2);
+  return texto2;
+}
+
+/** Olvida el avance del escaneo para volver a empezar desde el primer archivo. No borra Imagenes_API_Urls.txt. */
+function imagenesApiReiniciarEscaneoJson() {
+  PropertiesService.getScriptProperties().deleteProperty(IMGAPI_PROP_ESCANEO_);
+  console.log('Avance del escaneo borrado.');
 }
 
 // -----------------------------------------------------------------------------
