@@ -184,6 +184,7 @@ function _imgApiRecolectarUrls_(nombresCsv) {
   var vistas = {};
   var lista = [];
   var destinosUsados = {};
+  var repetidas = 0, ejemplosRepetidas = [];
   nombresCsv.forEach(function(nombre) {
     var it = DriveApp.getFilesByName(nombre);
     var archivos = [];
@@ -201,7 +202,10 @@ function _imgApiRecolectarUrls_(nombresCsv) {
       vistas[url] = true;
       var destino = IMGAPI_DESTINOS_[m[1]] + m[3];
       if (destinosUsados[destino]) {
-        console.log('  ! Dos direcciones darían el mismo archivo (' + destino + '); se conserva la primera.');
+        // Mismo nombre de archivo bajo otra categoría (por ejemplo la evolución que usa el mismo PNG
+        // que la carta): el nombre es un hash del contenido, así que es la misma imagen; se baja una vez.
+        repetidas++;
+        if (ejemplosRepetidas.length < 3) ejemplosRepetidas.push(m[1] + '/' + m[3]);
         continue;
       }
       destinosUsados[destino] = true;
@@ -209,6 +213,10 @@ function _imgApiRecolectarUrls_(nombresCsv) {
     }
     console.log('  · ' + nombre + ': ' + (lista.length - antes) + ' direcciones nuevas.');
   });
+  if (repetidas) {
+    console.log('  · ' + repetidas + ' direcciones repetidas (mismo archivo bajo otra categoría o en otro CSV con otra ruta); se bajan una sola vez. Ejemplos: ' +
+                ejemplosRepetidas.join(', '));
+  }
   return lista;
 }
 
