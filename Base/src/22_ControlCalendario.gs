@@ -1141,7 +1141,7 @@ function _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) {
     var barcos  = Number(data[i][14]) || 0;
     // NUEVO (29-sep-2026, P1 de la pregunta 30 del consolidado): columna Origen (GC.ORIGEN, col. 20)
     // de la fila: 'Original' | 'Corregido' | 'Reconstruido'. Vacia o ausente (CSV viejo) = real.
-    var esFilaReconstruida = String(data[i][GC.ORIGEN - 1] || '').trim().toLowerCase() === 'reconstruido';
+    var esFilaReconstruida = _origenGuerraEs_(data[i][GC.ORIGEN - 1], 'Reconstruido');
 
     if (!tag || !esDiaGuerraIdx(pIdx)) continue;
     _medFilasOk++;

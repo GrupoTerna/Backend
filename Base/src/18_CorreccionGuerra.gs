@@ -2730,7 +2730,7 @@ function _auditarReconstruccionesGuerraSospechosas() {
   var ordenClaves = [];
   for (var i = 1; i < parsed.length; i++) {
     var f = parsed[i];
-    if (String(f[GC.ORIGEN - 1] || '').trim() !== 'Reconstruido') continue;
+    if (!_origenGuerraEs_(f[GC.ORIGEN - 1], 'Reconstruido')) continue;
 
     var temporada = String(f[GC.TEMPORADA - 1] || '').trim();
     var semana    = String(f[GC.SEMANA - 1]    || '').trim();
@@ -2821,7 +2821,7 @@ function _eliminarFilasReconstruidasDeCSV() {
 
   for (var i = 1; i < parsed.length; i++) {
     var f = parsed[i];
-    if (String(f[GC.ORIGEN - 1] || '').trim() === 'Reconstruido') {
+    if (_origenGuerraEs_(f[GC.ORIGEN - 1], 'Reconstruido')) {
       resultado.eliminadas++;
       continue; // se descarta, no pasa al CSV nuevo
     }

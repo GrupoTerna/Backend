@@ -42,6 +42,15 @@ var GC = {
 
 var GUERRA_TOTAL_COLS = 21;
 
+// Origen de una fila de Guerra: 'Original' | 'Corregido' | 'Reconstruido', con un sufijo opcional desde el 20-oct-2026
+// (§PF132): 'Corregido - Solución única', 'Corregido - Solución estimada', 'Reconstruido - Solución única' y
+// 'Reconstruido - Solución estimada'. Para comparar el origen se usa SIEMPRE esta función, no ===.
+function _origenGuerraEs_(valor, base) {
+  var v = String(valor === null || valor === undefined ? '' : valor).trim().toLowerCase();
+  var b = String(base).toLowerCase();
+  return v === b || v.indexOf(b + ' - ') === 0;
+}
+
 // Encabezados canónicos de la hoja Guerra (mismo orden que GC de arriba). [→ Contexto_Base_Web.md §17B007]
 var GUERRA_HEADERS = ['N°','Fecha','Temporada','Semana','Día','PeriodIndex',
                        'DiaGuerra','Etapa','Clan','Tag','Nombre',
@@ -3230,7 +3239,7 @@ function _calcularReparacionAtaquesHoy_(filas) {
     var propuestos = [];
     for (var j = 0; j < idxs.length && exceso > 0; j++) {
       var fj = filas[idxs[j]];
-      if (String(fj[GC.ORIGEN - 1] || '').trim() !== 'Corregido') continue;
+      if (!_origenGuerraEs_(fj[GC.ORIGEN - 1], 'Corregido')) continue;
       var subida = S[j] - (j > 0 ? S[j - 1] : 0);
       var posible = H[j] - Math.max(0, subida);
       if (posible <= 0) continue;
