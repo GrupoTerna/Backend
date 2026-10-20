@@ -912,7 +912,7 @@ function _inicioRachaDesdeFilasGuerra_(filas) {
     var tag = String(f[GC.TAG - 1] || '').trim();
     if (!tag) continue;
     var origen = String(f[GC.ORIGEN - 1] || '').trim();
-    if (origen === 'Reconstruido') continue;
+    if (_origenGuerraEs_(origen, 'Reconstruido')) continue;
     var fecha = _parseSpanishDate(f[GC.FECHA - 1]);
     if (!(fecha instanceof Date) || isNaN(fecha.getTime())) continue;
     if (!porTag[tag]) porTag[tag] = {};

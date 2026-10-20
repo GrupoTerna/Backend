@@ -9,7 +9,7 @@
  *   repararDiasConExcesoInforme()        -> SOLO INFORMA: CSV de clasificacion y CSV del plan (lo que escribiria el aplicar).
  *   repararDiasConExcesoAplicarUnicas()  -> tanda 1: escribe solo los casos de clase 'unica'.
  *   repararDiasConExcesoAplicar()        -> escribe 'unica' y 'ambigua_ataques_coinciden'; el resto va a Revision_Guerra.csv.
- * Escribir = respaldo previo de Backup_Guerra.csv, reparto de AtaquesHoy, creacion de las filas que faltan (Origen 'Reconstruido')
+ * Escribir = respaldo previo de Backup_Guerra.csv, reparto de AtaquesHoy, creacion de las filas que faltan (Origen 'Reconstruido - Solución ...')
  * y verificacion releyendo el CSV. Solo toca Backup_Guerra.csv (los casos de la hoja Guerra no se tocan).
  *
  * Es el modelo de Datos descargados/CSV/Informes/cruce_exceso.py (Python, 14-oct-2026) pasado a Apps Script;
@@ -20,7 +20,8 @@
  *  - Si un tramo no cabe en sus días, se prueban coberturas que absorben filas vecinas con delta cero (filas viejas)
  *    o que se extienden hasta el domingo; se elige la de menos días extra y, si hay varias, se unen sus soluciones.
  *  - Se escribe solo si los ataques por día coinciden en todas las soluciones; entre varias ternas válidas (barcos y fame del día)
- *    se elige UNA terna completa, la que menos cambia lo registrado, y la fila queda como 'Reconstruido'. Lo demás, revisión manual.
+ *    se elige UNA terna completa, la que menos cambia lo registrado, y el Origen dice 'Corregido - Solución estimada' o
+ *    'Reconstruido - Solución estimada' (con una sola terna posible: '... - Solución única'). Lo demás, revisión manual.
  * La tabla de fame de un día es la de _fameTablaDia_() (18_CorreccionGuerra.gs).
  */
 
@@ -307,10 +308,18 @@ function _excDiasFinalDe(dias) {
   return { a: _excDiasNum(r[GC.ATAQUES_SEM - 1]), b: _excDiasNum(r[GC.BARCOS - 1]), f: _excDiasNum(r[GC.FAME - 1]) };
 }
 
-function _excDiasOrigenNuevo(origenActual, estimado) {
+/**
+ * Origen nuevo de una fila: 'Corregido' (la fila ya existia) o 'Reconstruido' (la fila se crea), mas el sufijo
+ * ' - Solución única' (una sola terna posible en el tramo) o ' - Solución estimada' (varias ternas válidas; se eligió una).
+ * Una fila que ya era 'Reconstruido' sigue siendo 'Reconstruido'. Cualquier otro origen distinto de vacío, 'Original' o
+ * 'Corregido' no se toca.
+ */
+function _excDiasOrigenNuevo(origenActual, existe, estimado) {
+  var sufijo = estimado ? ' - Solución estimada' : ' - Solución única';
+  if (!existe) return 'Reconstruido' + sufijo;
   var o = String(origenActual || '').trim();
-  if (o === 'Reconstruido') return 'Reconstruido';
-  if (o === '' || o === 'Original' || o === 'Corregido') return estimado ? 'Reconstruido' : 'Corregido';
+  if (_origenGuerraEs_(o, 'Reconstruido')) return 'Reconstruido' + sufijo;
+  if (o === '' || _origenGuerraEs_(o, 'Original') || _origenGuerraEs_(o, 'Corregido')) return 'Corregido' + sufijo;
   return o;
 }
 
@@ -346,7 +355,8 @@ function _excDiasPlanificar(filas, clases) {
         cubiertos[d] = true;
         ops.push({ dia: d, existe: !!fila, fila: fila, estimadoDia: item.sols.length > 1,
           ant: fila ? { hoy: _excDiasNum(fila[GC.ATAQUES_HOY - 1]), sem: _excDiasNum(fila[GC.ATAQUES_SEM - 1]), fame: _excDiasNum(fila[GC.FAME - 1]), barcos: _excDiasNum(fila[GC.BARCOS - 1]), origen: String(fila[GC.ORIGEN - 1] || '') } : null,
-          nuevo: { hoy: z[i][0], sem: cumA, fame: cumF, barcos: cumB, origen: '' } });
+          antDia: reg[d] || null,
+          nuevo: { hoy: z[i][0], sem: cumA, fame: cumF, barcos: cumB, fameDia: z[i][2], barcosDia: z[i][1], origen: '' } });
       });
     });
     // Toda fila existente tiene que quedar cubierta por algun tramo.
@@ -368,7 +378,7 @@ function _excDiasPlanificar(filas, clases) {
     otros.forEach(function (o) { semanaOtros += _excDiasFinalDe(o.dias).a; });
     if (!excede && cumA + semanaOtros > 16) excede = 'la semana quedaria con ' + (cumA + semanaOtros) + ' ataques sumando clanes';
     if (excede) { plan.omitidos.push({ grupo: g, clase: clase, motivo: excede }); return; }
-    ops.forEach(function (op) { op.nuevo.origen = op.existe ? _excDiasOrigenNuevo(op.ant.origen, op.estimadoDia) : 'Reconstruido'; });
+    ops.forEach(function (op) { op.nuevo.origen = _excDiasOrigenNuevo(op.existe ? op.ant.origen : '', op.existe, op.estimadoDia); });
     plan.casos.push({ grupo: g, clase: clase, estimado: estimado, ops: ops });
   });
   return plan;
@@ -528,20 +538,24 @@ function _repararDiasConExceso_(aplicar, clases) {
 
     // CSV del plan / de lo aplicado: una fila por dia escrito.
     var detalle = [['Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Clase', 'Dia', 'PeriodIndex', 'Accion',
-      'AtaquesHoy anterior', 'AtaquesHoy nuevo', 'AtaquesSemana anterior', 'AtaquesSemana nueva', 'Fame anterior', 'Fame nueva',
-      'Barcos anterior', 'Barcos nuevo', 'Origen anterior', 'Origen nuevo', 'Dato estimado (varias soluciones validas)']];
+      'AtaquesHoy anterior', 'AtaquesHoy nuevo', 'AtaquesSemana anterior (acumulado)', 'AtaquesSemana nueva (acumulado)',
+      'Fame del dia anterior', 'Fame del dia nueva', 'Fame anterior (acumulado)', 'Fame nueva (acumulado)',
+      'Barcos del dia anterior', 'Barcos del dia nuevo', 'Barcos anterior (acumulado)', 'Barcos nuevo (acumulado)',
+      'Origen anterior', 'Origen nuevo', 'Solucion']];
     plan.casos.forEach(function (c) {
       var g = c.grupo;
       c.ops.forEach(function (op) {
         var an = op.ant;
         detalle.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, c.clase, EXC_DIAS_LETRAS.charAt(op.dia), (Number(g.semana) - 1) * 7 + 3 + op.dia,
-          op.existe ? 'Modificar' : 'Crear', an ? an.hoy : '', op.nuevo.hoy, an ? an.sem : '', op.nuevo.sem, an ? an.fame : '', op.nuevo.fame,
-          an ? an.barcos : '', op.nuevo.barcos, an ? an.origen : '', op.nuevo.origen, op.estimadoDia ? 'si' : 'no']);
+          op.existe ? 'Modificar' : 'Crear', an ? an.hoy : '', op.nuevo.hoy, an ? an.sem : '', op.nuevo.sem,
+          op.antDia ? op.antDia.f : '', op.nuevo.fameDia, an ? an.fame : '', op.nuevo.fame,
+          op.antDia ? op.antDia.b : '', op.nuevo.barcosDia, an ? an.barcos : '', op.nuevo.barcos,
+          an ? an.origen : '', op.nuevo.origen, op.estimadoDia ? 'estimada (varias ternas validas)' : 'unica']);
       });
     });
     plan.omitidos.forEach(function (o) {
       var g = o.grupo;
-      detalle.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, o.clase, '', '', 'OMITIDO: ' + o.motivo, '', '', '', '', '', '', '', '', '', '', '']);
+      detalle.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, o.clase, '', '', 'OMITIDO: ' + o.motivo, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
     });
     var nomDetalle = 'Reparacion_DiasConExceso ' + marca + ' (' + (aplicar ? 'aplicado' : 'plan') + ').csv';
     if (detalle.length > 1) { _saveCSVToDrive(nomDetalle, _encodeCSV(detalle)); nombresCsv.push(nomDetalle); }
