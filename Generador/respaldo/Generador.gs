@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 19/10/2026 20:10:23 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 19/10/2026 20:19:32 */
 
 
 
@@ -3829,7 +3829,7 @@ function _verif_imprimirResumen_(r) {
 //    - carpetasApiJuntoAFankit():    crea `api/LEEME.txt` donde haya `Fankit` y falte `api`.
 //
 //  Es REANUDABLE: omite lo que ya está en GitHub, y cada corrida procesa un
-//  tope (archivos, MB y tiempo). Si queda algo, el registro lo dice: se vuelve
+//  tope (60 archivos, 12 MB o 2 minutos de descarga). Si queda algo, el registro lo dice: se vuelve
 //  a correr la misma función. Solo AGREGA archivos: nunca borra nada del repo.
 //
 //  TOKEN: el mismo GITHUB_TOKEN de 08_GitHub.gs, pero debe tener acceso al repo
@@ -3855,9 +3855,12 @@ var IMGAPI_CSV_CARTAS_      = ['Backup_Cards.csv', 'Backup_Cards_2.csv'];
 var IMGAPI_CSV_INSIGNIAS_   = ['Backup_Insignias.csv', 'Backup_Insignias_2.csv'];
 
 // Topes por corrida (Apps Script corta a los 6 minutos).
-var IMGAPI_MAX_ARCHIVOS_ = 150;
-var IMGAPI_MAX_BYTES_    = 25 * 1024 * 1024;
-var IMGAPI_MAX_MS_       = 4 * 60 * 1000;
+// La subida a GitHub tarda más que la descarga (127 cartas = 5,5 min en la primera corrida real), y el
+// tope de tiempo solo vigila la descarga: por eso los topes son bajos, para que la corrida entera
+// quede muy por debajo de los 6 minutos de Apps Script.
+var IMGAPI_MAX_ARCHIVOS_ = 60;
+var IMGAPI_MAX_BYTES_    = 12 * 1024 * 1024;
+var IMGAPI_MAX_MS_       = 2 * 60 * 1000;
 var IMGAPI_LOTE_         = 15;
 
 // -----------------------------------------------------------------------------
