@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 19/10/2026 20:33:07 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 19/10/2026 20:42:21 */
 
 
 
@@ -25735,6 +25735,17 @@ function _aplicarCorreccionAGuerraConReparto(fuente, offsetsPorClave, temporadaP
 
   if (offsetsClave) {
     // ---- MODO AJUSTE ----
+    // Varios clanes (§PF131): esta rama no sabe de clanes (offsetsClave guarda una sola fila por dia, la de
+    // mayor PeriodIndex, sea del clan que sea) y escribiria el total del jugador sobre filas de clanes distintos.
+    // Si el jugador tiene filas en mas de un clan esa semana, no se escribe nada y se avisa en Revision_Guerra.csv.
+    var clanesDeLaSemana = Object.keys(_indexarFilasJugadorSemanaPorClan_(fuente.filas, temporadaPropia, semana, tag));
+    if (clanesDeLaSemana.length > 1) {
+      stats.variosClanes = (stats.variosClanes || 0) + 1;
+      var detVarios = 'clanes con filas esa semana: ' + clanesDeLaSemana.join(', ') + '; correccion sin ClanTag: ataques ' + valores.ataquesSemana + ', fame ' + valores.fame;
+      Logger.log('[Sin ClanTag, varios clanes] SIN CAMBIOS T' + temporadaPropia + ' S' + semana + ' ' + tag + ': ' + detVarios + '. No se toca.');
+      if (opciones.revision) opciones.revision.push({ temporada: temporadaPropia, semana: semana, tag: tag, nombre: '', tipo: 'alarma', motivo: 'correccion sin ClanTag con varios clanes en la semana', detalle: detVarios });
+      return { modo: 'ajuste', huboCambio: false, variosClanes: true };
+    }
     // Reparto conjunto (§PF122): si ninguna combinacion de la tabla cuadra, no se toca nada y se avisa.
     var rep = _repartirSemanaConjunto_(fuente.filas, offsetsClave, valores);
     if (!rep.ok) {
