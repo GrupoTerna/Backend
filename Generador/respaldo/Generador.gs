@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 20/10/2026 12:47:53 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 20/10/2026 13:27:16 */
 
 
 
@@ -3834,6 +3834,14 @@ function _verif_imprimirResumen_(r) {
 //    - imagenesApiInsigniasAGithub(): insignias de jugador.
 //    - imagenesApiAGithub():         las dos categorías.
 //    - carpetasApiJuntoAFankit():    crea `api/LEEME.txt` donde haya `Fankit` y falte `api`.
+//    - imagenesApiReintentarNoDisponibles(): vacía la lista de direcciones con HTTP 404 (ver abajo)
+//                                    para que la próxima corrida vuelva a probarlas.
+//
+//  Direcciones que el CDN ya no tiene (HTTP 404, «NoSuchKey»; 20-oct-2026): se anotan una vez en el
+//  archivo de Drive Imagenes_API_No_Disponibles.txt (raíz; una dirección por línea) y las corridas
+//  siguientes las omiten, en vez de contarlas como «Fallos» en cada ejecución. Solo el 404 entra en
+//  esa lista: un 403, un 5xx, un tiempo agotado o una respuesta que no es imagen siguen contando
+//  como fallos y se reintentan.
 //
 //  Es REANUDABLE: omite lo que ya está en GitHub, y cada corrida procesa un
 //  tope (60 archivos, 12 MB o 2 minutos de descarga). Si queda algo, el registro lo dice: se vuelve
@@ -3864,6 +3872,9 @@ var IMGAPI_CSV_INSIGNIAS_   = ['Backup_Insignias.csv', 'Backup_Insignias_2.csv']
 // Acumulador de direcciones sacadas de los JSON de players, y estado del escaneo.
 var IMGAPI_ARCHIVO_URLS_    = 'Imagenes_API_Urls.txt';
 var IMGAPI_PROP_ESCANEO_    = 'IMGAPI_ESCANEO_JSON_V1';
+
+// Direcciones que el CDN respondió con HTTP 404: se omiten en las corridas siguientes.
+var IMGAPI_ARCHIVO_404_     = 'Imagenes_API_No_Disponibles.txt';
 var IMGAPI_ESCANEO_MS_      = 4 * 60 * 1000;
 
 var IMGAPI_CATEGORIAS_ = {
@@ -3916,6 +3927,22 @@ function carpetasApiJuntoAFankit() {
   return texto;
 }
 
+/**
+ * Vacía la lista de direcciones no disponibles (manda a la papelera de Drive el archivo
+ * Imagenes_API_No_Disponibles.txt; se puede recuperar desde ahí). La próxima corrida vuelve a
+ * probar esas direcciones y, las que sigan dando 404, las anota otra vez.
+ */
+function imagenesApiReintentarNoDisponibles() {
+  var it = DriveApp.getFilesByName(IMGAPI_ARCHIVO_404_);
+  var n = 0;
+  while (it.hasNext()) { it.next().setTrashed(true); n++; }
+  var texto = n
+    ? 'Lista de no disponibles a la papelera (' + n + ' archivo' + (n === 1 ? '' : 's') + '). La próxima corrida vuelve a probar esas direcciones.'
+    : 'No hay lista de no disponibles; no hay nada que vaciar.';
+  console.log(texto);
+  return texto;
+}
+
 // -----------------------------------------------------------------------------
 // Flujo principal
 // -----------------------------------------------------------------------------
@@ -3938,19 +3965,25 @@ function _imgApiEjecutar_(grupos, soloProbar) {
   console.log('Direcciones únicas encontradas: ' + urls.length + ' ' + JSON.stringify(porCategoria));
 
   // 2) Cuáles faltan en GitHub (por ruta destino).
-  var faltan = urls.filter(function(u) { return !ctx.rutas[u.destino]; });
-  console.log('Ya están en GitHub: ' + (urls.length - faltan.length) + ' | faltan: ' + faltan.length);
+  var faltanTodas = urls.filter(function(u) { return !ctx.rutas[u.destino]; });
+  // Las que el CDN ya respondió con 404 en una corrida anterior no se vuelven a pedir.
+  var noDisp = _imgApiLeerNoDisponibles_();
+  var faltan = faltanTodas.filter(function(u) { return !noDisp.mapa[u.url]; });
+  var omitidas404 = faltanTodas.length - faltan.length;
+  console.log('Ya están en GitHub: ' + (urls.length - faltanTodas.length) + ' | faltan: ' + faltan.length +
+              (omitidas404 ? ' | no disponibles en origen (HTTP 404, se omiten): ' + omitidas404 : ''));
 
   if (soloProbar) {
     var carpetas = _imgApiCarpetasApiFaltantes_(ctx.rutas).map(function(e) { return e.path.replace('/LEEME.txt', ''); });
     var t = 'Prueba sin escribir. Faltan ' + faltan.length + ' imágenes de ' + urls.length +
+            (omitidas404 ? ' (' + omitidas404 + ' más dan 404 en el CDN y se omiten)' : '') +
             (carpetas.length ? '; faltan carpetas api en: ' + carpetas.join(', ') : '; todas las carpetas Fankit tienen su api.');
     console.log(t);
     return t;
   }
 
   // 3) Descarga en lotes, con topes de archivos, bytes y tiempo.
-  var entradas = [], bytes = 0, fallos = [], procesadas = 0;
+  var entradas = [], bytes = 0, fallos = [], nuevas404 = [], procesadas = 0;
   for (var i = 0; i < faltan.length; i += IMGAPI_LOTE_) {
     if (entradas.length >= IMGAPI_MAX_ARCHIVOS_ || bytes >= IMGAPI_MAX_BYTES_ || (Date.now() - inicio) > IMGAPI_MAX_MS_) break;
     var lote = faltan.slice(i, i + IMGAPI_LOTE_);
@@ -3960,6 +3993,7 @@ function _imgApiEjecutar_(grupos, soloProbar) {
       procesadas++;
       var u = lote[k], r = resps[k];
       var code = r.getResponseCode();
+      if (code === 404) { nuevas404.push(u.url); continue; }
       if (code !== 200) { fallos.push(u.url + ' → HTTP ' + code); continue; }
       var tipo = String(r.getHeaders()['Content-Type'] || r.getHeaders()['content-type'] || '');
       var datos = r.getContent();
@@ -3973,15 +4007,34 @@ function _imgApiEjecutar_(grupos, soloProbar) {
   }
   var pendientes = faltan.length - procesadas;
 
+  // Los 404 se guardan aunque no haya nada que subir. Si Drive falla, se avisa y se sigue con lo demás.
+  if (nuevas404.length) {
+    try {
+      _imgApiGuardarNoDisponibles_(noDisp, nuevas404);
+      console.log('Sin copia en el CDN (HTTP 404): ' + nuevas404.length + ' direcciones nuevas; quedaron en ' +
+                  IMGAPI_ARCHIVO_404_ + ' y ya no se vuelven a pedir.');
+    } catch (e) {
+      console.log('No se pudo guardar ' + IMGAPI_ARCHIVO_404_ + ' (' + e + '); esas ' + nuevas404.length + ' direcciones se volverán a pedir.');
+    }
+    nuevas404.slice(0, 40).forEach(function(f) { console.log('  · 404: ' + f); });
+    if (nuevas404.length > 40) console.log('  · … y ' + (nuevas404.length - 40) + ' más (están todas en ' + IMGAPI_ARCHIVO_404_ + ').');
+  }
+
   // Las carpetas api que falten junto a Fankit se crean en el mismo commit.
   var nuevasRutas = {};
   entradas.forEach(function(e) { nuevasRutas[e.path] = true; });
   var conLeeme = _imgApiCarpetasApiFaltantes_(Object.assign({}, ctx.rutas, nuevasRutas));
 
   if (!entradas.length && !conLeeme.length) {
-    var vacio = fallos.length
-      ? 'No se descargó ninguna imagen. Fallos (' + fallos.length + '): ' + fallos.slice(0, 5).join(' | ')
-      : 'No hay nada por descargar: GitHub ya tiene todas las imágenes.';
+    var vacio;
+    if (fallos.length) {
+      vacio = 'No se descargó ninguna imagen. Fallos (' + fallos.length + '): ' + fallos.slice(0, 5).join(' | ');
+    } else if (nuevas404.length) {
+      vacio = 'No hay nada por subir: ' + nuevas404.length + ' direcciones dieron HTTP 404 (el CDN ya no las tiene) y pasaron a la lista de no disponibles. GitHub ya tiene todo lo demás.';
+    } else {
+      vacio = 'No hay nada por descargar: GitHub ya tiene todas las imágenes' +
+              (omitidas404 ? ' (' + omitidas404 + ' dan 404 en el CDN y se omiten)' : '') + '.';
+    }
     console.log(vacio);
     return vacio;
   }
@@ -3993,6 +4046,7 @@ function _imgApiEjecutar_(grupos, soloProbar) {
   var texto = 'Subidas ' + entradas.length + ' imágenes (' + mb + ' MB) y ' + conLeeme.length + ' carpetas api nuevas en el commit ' +
               res.commit.substring(0, 7) + '.';
   if (pendientes > 0) texto += ' QUEDAN ' + pendientes + ' por subir: vuelve a correr la misma función.';
+  if (nuevas404.length) texto += ' ' + nuevas404.length + ' dieron HTTP 404 y pasaron a la lista de no disponibles.';
   if (fallos.length) {
     texto += ' Fallos: ' + fallos.length + ' (se reintentan en la próxima corrida).';
     fallos.slice(0, 10).forEach(function(f) { console.log('  ✗ ' + f); });
@@ -4000,6 +4054,31 @@ function _imgApiEjecutar_(grupos, soloProbar) {
   console.log(texto);
   console.log('Falta hacer pull de Web en GitHub Desktop.');
   return texto;
+}
+
+// -----------------------------------------------------------------------------
+// Lista de direcciones no disponibles en el CDN (HTTP 404)
+// -----------------------------------------------------------------------------
+
+/** Lee Imagenes_API_No_Disponibles.txt (si hay varios, el más reciente). No lo crea. Devuelve { archivo: File|null, mapa: {url: true} }. */
+function _imgApiLeerNoDisponibles_() {
+  var it = DriveApp.getFilesByName(IMGAPI_ARCHIVO_404_);
+  var archivos = [];
+  while (it.hasNext()) archivos.push(it.next());
+  var mapa = {};
+  if (!archivos.length) return { archivo: null, mapa: mapa };
+  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
+  archivos[0].getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) { l = l.trim(); if (l) mapa[l] = true; });
+  return { archivo: archivos[0], mapa: mapa };
+}
+
+/** Suma las direcciones nuevas a la lista (ordenada, una por línea) y la guarda; crea el archivo si no existía. Solo agrega. */
+function _imgApiGuardarNoDisponibles_(actual, nuevas) {
+  var mapa = actual.mapa;
+  nuevas.forEach(function(u) { mapa[u] = true; });
+  var texto = Object.keys(mapa).sort().join('\n') + '\n';
+  if (actual.archivo) actual.archivo.setContent(texto);
+  else actual.archivo = DriveApp.createFile(IMGAPI_ARCHIVO_404_, texto, 'text/plain');
 }
 
 // -----------------------------------------------------------------------------
