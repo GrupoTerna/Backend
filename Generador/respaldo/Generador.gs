@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 20/10/2026 13:27:16 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 20/10/2026 18:12:32 */
 
 
 
@@ -3805,12 +3805,14 @@ function _verif_imprimirResumen_(r) {
 // =============================================================================
 // 11_Imagenes_API.gs
 // Descarga a GitHub (repo GrupoTerna/Web) las imágenes de la API de Supercell
-// y las guarda en las carpetas `api`, junto a las de `Fankit`.
+// y las guarda en las carpetas API, junto a las de Fankit:
+// assets/Imágenes/<tipo>/{API,Fankit}.
 // [→ Contexto_Base_Web.md §PF130]
 //
-//  Regla de la usuaria (19-oct-2026): donde hay una carpeta `Fankit` debe haber,
-//  al lado, una carpeta `api`. Orden de uso en la web: enlace de la API → copia
-//  en `api` → copia en `Fankit`.
+//  Regla de la usuaria (19-oct-2026; rutas nuevas desde el 20-oct-2026): donde hay una
+//  carpeta Fankit debe haber, al lado, una carpeta API (en mayúscula: GitHub Pages
+//  distingue mayúsculas). Orden de uso en la web: enlace de la API → copia en API →
+//  copia en Fankit.
 //
 //  De dónde salen los enlaces: (1) de los CSV que ya están en Drive
 //  (Backup_Cards.csv, Backup_Cards_2.csv, Backup_Insignias.csv y
@@ -3821,19 +3823,31 @@ function _verif_imprimirResumen_(r) {
 //  direcciones de api-assets.clashroyale.com que aparezcan, sin depender de columnas.
 //
 //  Dónde se guardan (nombre del archivo = el de la dirección, que es único):
-//    cards/, cardevolutions/, cardheroes/  → assets/cards/api/<archivo>
-//    playerbadges/                          → assets/playerbadges/api/<archivo>
+//    cards/, cardevolutions/, cardheroes/  → assets/Imágenes/cards/API/<archivo>
+//    playerbadges/ (maestrías: el nombre empieza con Mastery)
+//                                           → assets/Imágenes/badges/API/Maestrías/<archivo>
+//    playerbadges/ (todas las demás)        → assets/Imágenes/badges/API/Insignias/<archivo>
+//
+//  Cómo se sabe si una insignia es maestría (20-oct-2026): la dirección solo trae un hash, el
+//  nombre (por ejemplo MasteryArcher) está en la columna Name de Backup_Insignias.csv y en cada
+//  insignia de los JSON de players. imagenesApiEscanearJsonPlayers() anota ese tipo, junto con el
+//  archivo, en Imagenes_API_Insignias_Tipos.txt (una línea por insignia: M o I, tabulador y
+//  archivo). Una insignia que no esté en ninguna de las dos fuentes NO se descarga (para no
+//  guardarla en la carpeta equivocada): el registro avisa cuántas son y qué hacer.
 //
 //  Funciones para correr desde el editor:
 //    - imagenesApiEscanearJsonPlayers(): recorre los JSON de players y guarda las direcciones
-//                                    en Imagenes_API_Urls.txt; reanudable (vuelve a correrla
-//                                    hasta que diga «TERMINADO»). Correrla ANTES de subir.
-//    - imagenesApiReiniciarEscaneoJson(): olvida el avance del escaneo (no borra el archivo).
+//                                    en Imagenes_API_Urls.txt y el tipo de cada insignia en
+//                                    Imagenes_API_Insignias_Tipos.txt; reanudable (vuelve a
+//                                    correrla hasta que diga «TERMINADO»). Correrla ANTES de subir.
+//    - imagenesApiReiniciarEscaneoJson(): olvida el avance del escaneo (no borra los archivos).
+//                                    Hay que usarla una vez para que el escaneo vuelva a pasar
+//                                    por los JSON ya leídos y anote los tipos de insignia.
 //    - imagenesApiProbar():          solo cuenta y muestra qué faltaría; no escribe en GitHub.
 //    - imagenesApiCartasAGithub():   cartas, evoluciones y héroes.
 //    - imagenesApiInsigniasAGithub(): insignias de jugador.
 //    - imagenesApiAGithub():         las dos categorías.
-//    - carpetasApiJuntoAFankit():    crea `api/LEEME.txt` donde haya `Fankit` y falte `api`.
+//    - carpetasApiJuntoAFankit():    crea API/LEEME.txt donde haya Fankit y falte API.
 //    - imagenesApiReintentarNoDisponibles(): vacía la lista de direcciones con HTTP 404 (ver abajo)
 //                                    para que la próxima corrida vuelva a probarlas.
 //
@@ -3860,11 +3874,20 @@ var IMGAPI_BRANCH_ = 'main';
 var IMGAPI_REGEX_URL_ = /https:\/\/api-assets\.clashroyale\.com\/(cards|cardevolutions|cardheroes|playerbadges)\/(\d+)\/([A-Za-z0-9_-]+\.(?:png|webp|jpg))/g;
 
 var IMGAPI_DESTINOS_ = {
-  cards:          'assets/cards/api/',
-  cardevolutions: 'assets/cards/api/',
-  cardheroes:     'assets/cards/api/',
-  playerbadges:   'assets/playerbadges/api/'
+  cards:          'assets/Imágenes/cards/API/',
+  cardevolutions: 'assets/Imágenes/cards/API/',
+  cardheroes:     'assets/Imágenes/cards/API/'
 };
+
+// Insignias de jugador (playerbadges): el destino depende del tipo, no de la categoría.
+var IMGAPI_DESTINO_MAESTRIAS_ = 'assets/Imágenes/badges/API/Maestrías/';
+var IMGAPI_DESTINO_INSIGNIAS_ = 'assets/Imágenes/badges/API/Insignias/';
+var IMGAPI_PREFIJO_MAESTRIA_  = 'Mastery';
+var IMGAPI_ARCHIVO_TIPOS_     = 'Imagenes_API_Insignias_Tipos.txt';
+
+// En los JSON de players: "name": "MasteryArcher", ..., "iconUrls": {"large": "https://.../playerbadges/512/<archivo>"}.
+// [^{}]*? no cruza llaves, así que nombre y dirección son siempre de la misma insignia.
+var IMGAPI_REGEX_INSIGNIA_ = /"name"\s*:\s*"([^"]+)"[^{}]*?"iconUrls"\s*:\s*\{\s*"large"\s*:\s*"https:\/\/api-assets\.clashroyale\.com\/playerbadges\/\d+\/([A-Za-z0-9_-]+\.(?:png|webp|jpg))"/g;
 
 var IMGAPI_CSV_CARTAS_      = ['Backup_Cards.csv', 'Backup_Cards_2.csv'];
 var IMGAPI_CSV_INSIGNIAS_   = ['Backup_Insignias.csv', 'Backup_Insignias_2.csv'];
@@ -3911,16 +3934,16 @@ function imagenesApiAGithub() {
   return _imgApiEjecutar_(['cartas', 'insignias'], false);
 }
 
-/** Crea api/LEEME.txt junto a cada carpeta Fankit que no tenga su `api` al lado. */
+/** Crea API/LEEME.txt junto a cada carpeta Fankit que no tenga su carpeta API al lado. */
 function carpetasApiJuntoAFankit() {
   var ctx = _imgApiContexto_();
   var entradas = _imgApiCarpetasApiFaltantes_(ctx.rutas);
   if (!entradas.length) {
-    console.log('Todas las carpetas Fankit ya tienen su carpeta api al lado.');
+    console.log('Todas las carpetas Fankit ya tienen su carpeta API al lado.');
     return 'Sin cambios.';
   }
-  var res = _imgApiCommit_(ctx, entradas, 'Carpetas api junto a cada carpeta Fankit (con LEEME.txt)');
-  var texto = 'Se crearon ' + entradas.length + ' carpetas api (commit ' + res.commit.substring(0, 7) + '): ' +
+  var res = _imgApiCommit_(ctx, entradas, 'Carpetas API junto a cada carpeta Fankit (con LEEME.txt)');
+  var texto = 'Se crearon ' + entradas.length + ' carpetas API (commit ' + res.commit.substring(0, 7) + '): ' +
               entradas.map(function(e) { return e.path.replace('/LEEME.txt', ''); }).join(', ');
   console.log(texto);
   console.log('Falta hacer pull de Web en GitHub Desktop.');
@@ -3977,7 +4000,7 @@ function _imgApiEjecutar_(grupos, soloProbar) {
     var carpetas = _imgApiCarpetasApiFaltantes_(ctx.rutas).map(function(e) { return e.path.replace('/LEEME.txt', ''); });
     var t = 'Prueba sin escribir. Faltan ' + faltan.length + ' imágenes de ' + urls.length +
             (omitidas404 ? ' (' + omitidas404 + ' más dan 404 en el CDN y se omiten)' : '') +
-            (carpetas.length ? '; faltan carpetas api en: ' + carpetas.join(', ') : '; todas las carpetas Fankit tienen su api.');
+            (carpetas.length ? '; faltan carpetas API en: ' + carpetas.join(', ') : '; todas las carpetas Fankit tienen su API.');
     console.log(t);
     return t;
   }
@@ -4020,7 +4043,7 @@ function _imgApiEjecutar_(grupos, soloProbar) {
     if (nuevas404.length > 40) console.log('  · … y ' + (nuevas404.length - 40) + ' más (están todas en ' + IMGAPI_ARCHIVO_404_ + ').');
   }
 
-  // Las carpetas api que falten junto a Fankit se crean en el mismo commit.
+  // Las carpetas API que falten junto a Fankit se crean en el mismo commit.
   var nuevasRutas = {};
   entradas.forEach(function(e) { nuevasRutas[e.path] = true; });
   var conLeeme = _imgApiCarpetasApiFaltantes_(Object.assign({}, ctx.rutas, nuevasRutas));
@@ -4040,10 +4063,10 @@ function _imgApiEjecutar_(grupos, soloProbar) {
   }
 
   var res = _imgApiCommit_(ctx, entradas.concat(conLeeme),
-    'Imágenes de la API de Supercell en las carpetas api (' + entradas.length + ' archivos)');
+    'Imágenes de la API de Supercell en las carpetas API (' + entradas.length + ' archivos)');
 
   var mb = (bytes / 1048576).toFixed(1);
-  var texto = 'Subidas ' + entradas.length + ' imágenes (' + mb + ' MB) y ' + conLeeme.length + ' carpetas api nuevas en el commit ' +
+  var texto = 'Subidas ' + entradas.length + ' imágenes (' + mb + ' MB) y ' + conLeeme.length + ' carpetas API nuevas en el commit ' +
               res.commit.substring(0, 7) + '.';
   if (pendientes > 0) texto += ' QUEDAN ' + pendientes + ' por subir: vuelve a correr la misma función.';
   if (nuevas404.length) texto += ' ' + nuevas404.length + ' dieron HTTP 404 y pasaron a la lista de no disponibles.';
@@ -4113,6 +4136,15 @@ function imagenesApiEscanearJsonPlayers() {
   archivoUrls.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) { l = l.trim(); if (l) conocidas[l] = true; });
   var antes = Object.keys(conocidas).length;
 
+  // Tipo de cada insignia (M = maestría, I = insignia), por nombre de archivo.
+  var archivoTipos = _imgApiArchivoTipos_();
+  var tiposConocidos = {};
+  archivoTipos.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) {
+    var partes = l.trim().split('\t');
+    if (partes.length === 2 && (partes[0] === 'M' || partes[0] === 'I')) tiposConocidos[partes[1]] = partes[0];
+  });
+  var antesTipos = Object.keys(tiposConocidos).length;
+
   var it;
   if (estado.token) {
     try { it = DriveApp.continueFileIterator(estado.token); }
@@ -4130,6 +4162,10 @@ function imagenesApiEscanearJsonPlayers() {
     var m;
     IMGAPI_REGEX_URL_.lastIndex = 0;
     while ((m = IMGAPI_REGEX_URL_.exec(texto)) !== null) conocidas[m[0]] = true;
+    IMGAPI_REGEX_INSIGNIA_.lastIndex = 0;
+    while ((m = IMGAPI_REGEX_INSIGNIA_.exec(texto)) !== null) {
+      tiposConocidos[m[2]] = m[1].indexOf(IMGAPI_PREFIJO_MAESTRIA_) === 0 ? 'M' : 'I';
+    }
     escaneados++;
     hechosEstaVez++;
   }
@@ -4138,12 +4174,18 @@ function imagenesApiEscanearJsonPlayers() {
   archivoUrls.setContent(lista.join('\n') + '\n');
   var nuevas = lista.length - antes;
 
+  var archivosConTipo = Object.keys(tiposConocidos).sort();
+  archivoTipos.setContent(archivosConTipo.map(function(a) { return tiposConocidos[a] + '\t' + a; }).join('\n') + '\n');
+  var nMaestrias = archivosConTipo.filter(function(a) { return tiposConocidos[a] === 'M'; }).length;
+
   if (terminado) props.deleteProperty(IMGAPI_PROP_ESCANEO_);
   else props.setProperty(IMGAPI_PROP_ESCANEO_, JSON.stringify({ token: it.getContinuationToken(), escaneados: escaneados }));
 
   var texto2 = (terminado ? 'TERMINADO. ' : 'Falta recorrer más archivos: vuelve a correr la función. ') +
                'Esta vez se leyeron ' + hechosEstaVez + ' JSON (' + escaneados + ' en total) y se sumaron ' + nuevas +
-               ' direcciones nuevas; ' + lista.length + ' en ' + IMGAPI_ARCHIVO_URLS_ + '.';
+               ' direcciones nuevas; ' + lista.length + ' en ' + IMGAPI_ARCHIVO_URLS_ + '. Tipos de insignia anotados: ' +
+               archivosConTipo.length + ' (' + nMaestrias + ' maestrías y ' + (archivosConTipo.length - nMaestrias) +
+               ' insignias; ' + (archivosConTipo.length - antesTipos) + ' nuevos) en ' + IMGAPI_ARCHIVO_TIPOS_ + '.';
   console.log(texto2);
   return texto2;
 }
@@ -4152,6 +4194,85 @@ function imagenesApiEscanearJsonPlayers() {
 function imagenesApiReiniciarEscaneoJson() {
   PropertiesService.getScriptProperties().deleteProperty(IMGAPI_PROP_ESCANEO_);
   console.log('Avance del escaneo borrado.');
+}
+
+// -----------------------------------------------------------------------------
+// Tipo de las insignias de jugador: maestría o insignia (20-oct-2026)
+// -----------------------------------------------------------------------------
+
+/** El archivo de Drive con ese nombre (si hay varios, el más reciente), o null si no existe. No lo crea. */
+function _imgApiArchivoMasReciente_(nombre) {
+  var it = DriveApp.getFilesByName(nombre);
+  var archivos = [];
+  while (it.hasNext()) archivos.push(it.next());
+  if (!archivos.length) return null;
+  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
+  return archivos[0];
+}
+
+/** Archivo de tipos de insignia en Drive (raíz); lo crea vacío si no existe. */
+function _imgApiArchivoTipos_() {
+  return _imgApiArchivoMasReciente_(IMGAPI_ARCHIVO_TIPOS_) || DriveApp.createFile(IMGAPI_ARCHIVO_TIPOS_, '', 'text/plain');
+}
+
+/** Ruta destino de una insignia de jugador según su tipo. */
+function _imgApiDestinoInsignia_(esMaestria, archivo) {
+  return (esMaestria ? IMGAPI_DESTINO_MAESTRIAS_ : IMGAPI_DESTINO_INSIGNIAS_) + archivo;
+}
+
+function _imgApiNormalizarCabecera_(texto) {
+  return String(texto || '').replace(/^\uFEFF/, '').trim().toLowerCase();
+}
+
+/**
+ * Devuelve { archivo: true|false } para las insignias de jugador: true si es maestría (el nombre
+ * empieza con Mastery), false si es una insignia común. Fuentes: la columna Name de
+ * Backup_Insignias.csv (y su segunda parte) junto a la columna Ícono, y el archivo
+ * Imagenes_API_Insignias_Tipos.txt que llena el escaneo de los JSON de players. Si las dos fuentes
+ * dicen cosas distintas para el mismo archivo, manda el CSV y se avisa en el registro.
+ */
+function _imgApiTiposInsignias_() {
+  var tipos = {};
+  var deCsv = 0, deJson = 0, conflictos = 0;
+  var reArchivo = /playerbadges\/\d+\/([A-Za-z0-9_-]+\.(?:png|webp|jpg))/;
+
+  IMGAPI_CSV_INSIGNIAS_.forEach(function(nombre) {
+    var archivo = _imgApiArchivoMasReciente_(nombre);
+    if (!archivo) return;
+    var filas = Utilities.parseCsv(archivo.getBlob().getDataAsString('UTF-8'));
+    if (!filas.length) return;
+    var cab = filas[0].map(_imgApiNormalizarCabecera_);
+    var iNombre = cab.indexOf('name');
+    var iIcono = cab.indexOf('ícono');
+    if (iIcono === -1) iIcono = cab.indexOf('icono');
+    if (iNombre === -1 || iIcono === -1) {
+      console.log('  · ' + nombre + ': no tiene las columnas Name e Ícono; no sirve para saber el tipo de las insignias.');
+      return;
+    }
+    for (var i = 1; i < filas.length; i++) {
+      var m = reArchivo.exec(String(filas[i][iIcono] || ''));
+      if (!m) continue;
+      var esMaestria = String(filas[i][iNombre] || '').trim().indexOf(IMGAPI_PREFIJO_MAESTRIA_) === 0;
+      if (tipos[m[1]] === undefined) { tipos[m[1]] = esMaestria; deCsv++; }
+      else if (tipos[m[1]] !== esMaestria) conflictos++;
+    }
+  });
+
+  var archivoTipos = _imgApiArchivoMasReciente_(IMGAPI_ARCHIVO_TIPOS_);
+  if (archivoTipos) {
+    archivoTipos.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(linea) {
+      var partes = linea.trim().split('\t');
+      if (partes.length !== 2 || (partes[0] !== 'M' && partes[0] !== 'I')) return;
+      var esMaestria = partes[0] === 'M';
+      if (tipos[partes[1]] === undefined) { tipos[partes[1]] = esMaestria; deJson++; }
+      else if (tipos[partes[1]] !== esMaestria) conflictos++;
+    });
+  }
+
+  console.log('  · Tipo de insignias: ' + deCsv + ' desde Backup_Insignias.csv y ' + deJson + ' más desde ' + IMGAPI_ARCHIVO_TIPOS_ +
+              (archivoTipos ? '' : ' (no existe todavía; se crea al correr imagenesApiEscanearJsonPlayers())') + '.');
+  if (conflictos) console.log('  · Aviso: ' + conflictos + ' insignias con tipo distinto entre el CSV y los JSON; se usó el del CSV.');
+  return tipos;
 }
 
 // -----------------------------------------------------------------------------
@@ -4164,6 +4285,7 @@ function _imgApiRecolectarUrls_(nombresCsv) {
   var lista = [];
   var destinosUsados = {};
   var repetidas = 0, ejemplosRepetidas = [];
+  var tiposInsignias = null, sinClasificar = 0, ejemplosSinClasificar = [];
   nombresCsv.forEach(function(nombre) {
     var it = DriveApp.getFilesByName(nombre);
     var archivos = [];
@@ -4179,7 +4301,20 @@ function _imgApiRecolectarUrls_(nombresCsv) {
       var url = m[0];
       if (vistas[url]) continue;
       vistas[url] = true;
-      var destino = IMGAPI_DESTINOS_[m[1]] + m[3];
+      var destino;
+      if (m[1] === 'playerbadges') {
+        if (!tiposInsignias) tiposInsignias = _imgApiTiposInsignias_();
+        var esMaestria = tiposInsignias[m[3]];
+        if (esMaestria === undefined) {
+          // No se sabe si es maestría o insignia: no se descarga para no dejarla en la carpeta equivocada.
+          sinClasificar++;
+          if (ejemplosSinClasificar.length < 3) ejemplosSinClasificar.push(m[3]);
+          continue;
+        }
+        destino = _imgApiDestinoInsignia_(esMaestria, m[3]);
+      } else {
+        destino = IMGAPI_DESTINOS_[m[1]] + m[3];
+      }
       if (destinosUsados[destino]) {
         // Mismo nombre de archivo bajo otra categoría (por ejemplo la evolución que usa el mismo PNG
         // que la carta): el nombre es un hash del contenido, así que es la misma imagen; se baja una vez.
@@ -4195,6 +4330,11 @@ function _imgApiRecolectarUrls_(nombresCsv) {
   if (repetidas) {
     console.log('  · ' + repetidas + ' direcciones repetidas (mismo archivo bajo otra categoría o en otro CSV con otra ruta); se bajan una sola vez. Ejemplos: ' +
                 ejemplosRepetidas.join(', '));
+  }
+  if (sinClasificar) {
+    console.log('  · ' + sinClasificar + ' insignias sin tipo conocido (no están en Backup_Insignias.csv ni en ' + IMGAPI_ARCHIVO_TIPOS_ +
+                '); NO se descargan. Ejemplos: ' + ejemplosSinClasificar.join(', ') + '. Para clasificarlas: corre imagenesApiReiniciarEscaneoJson() y ' +
+                'luego imagenesApiEscanearJsonPlayers() hasta que diga «TERMINADO».');
   }
   return lista;
 }
@@ -4255,9 +4395,9 @@ function _imgApiContexto_() {
 }
 
 /**
- * Para cada carpeta llamada `Fankit` (en cualquier nivel) devuelve la entrada api/LEEME.txt
- * si en el mismo nivel no hay ningún archivo bajo `api/`. Entradas: { path, texto }.
- * Como git no guarda carpetas vacías, la carpeta api «existe» si tiene al menos un archivo.
+ * Para cada carpeta llamada Fankit (en cualquier nivel) devuelve la entrada API/LEEME.txt
+ * si en el mismo nivel no hay ningún archivo bajo API/ (en mayúscula). Entradas: { path, texto }.
+ * Como git no guarda carpetas vacías, la carpeta API «existe» si tiene al menos un archivo.
  */
 function _imgApiCarpetasApiFaltantes_(rutas) {
   var carpetasFankit = {};
@@ -4269,13 +4409,13 @@ function _imgApiCarpetasApiFaltantes_(rutas) {
   });
   var salida = [];
   Object.keys(carpetasFankit).forEach(function(padre) {
-    var prefijoApi = (padre ? padre + '/' : '') + 'api/';
+    var prefijoApi = (padre ? padre + '/' : '') + 'API/';
     var existe = Object.keys(rutas).some(function(r) { return r.indexOf(prefijoApi) === 0; });
     if (existe) return;
     salida.push({
       path: prefijoApi + 'LEEME.txt',
       texto: 'Carpeta reservada para imágenes descargadas desde la API de Supercell (api-assets.clashroyale.com).\n' +
-             'Va al lado de la carpeta Fankit. Orden de uso: enlace de la API, luego esta carpeta (api), luego Fankit.\n' +
+             'Va al lado de la carpeta Fankit. Orden de uso: enlace de la API, luego esta carpeta (API), luego Fankit.\n' +
              'La llena la función imagenesApiAGithub() del Generador. Ver §PF130 de Contexto_Base_Web.md (repo Backend).\n'
     });
   });
