@@ -3,9 +3,10 @@
 // Ataques y fame por día de cada jugador, leídos de las capturas de CurrentRiverRace guardadas en Drive
 // (21-oct-2026; Contexto_Base_Web.md §PF139, regla 1: «lo más confiable son los CurrentRiverRace»).
 //
-// PRIMERA TANDA: solo LEE y calcula. Nada de lo que ya existe llama a estas funciones todavía; no escribe en ninguna hoja
-// ni CSV. Las tandas siguientes harán que _repartirSemanaConjunto_(), la corrección al cerrar el día y
-// AplicarTotalesSemana_Historial usen _crrDiasDeJugador_() como primera fuente.
+// Este archivo solo LEE y calcula; no escribe en ninguna hoja ni CSV.
+// Tanda 1 (21-oct-2026): módulo nuevo. Tanda 2 (21-oct-2026): _repartirSemanaConjunto_() (18_CorreccionGuerra.gs) ya usa
+// _crrDiasDeJugador_() como restricción. Quedan para las tandas siguientes la corrección al cerrar el día y
+// AplicarTotalesSemana_Historial.
 //
 // Qué trae cada captura (un archivo por clan, semana y día, que se va sobrescribiendo: queda la ÚLTIMA captura de ese día):
 //   decksUsed = ataques acumulados de la semana; decksUsedToday = ataques de ese día; fame = fame acumulada de la semana.

@@ -3432,6 +3432,45 @@ function _fameCatalogoDia_() {
 }
 
 /**
+ * _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores) [→ Contexto_Base_Web.md §PF139]
+ * Pide al modulo 56 los ataques y la fame por dia de CurrentRiverRace del jugador de estas filas. Temporada propia, semana y tag salen de
+ * la primera fila (valores.temporada, valores.semana y valores.tag, si vienen, los reemplazan). Devuelve { etiqueta, dias: [{ n, f }] } con una
+ * entrada por cada posicion de offs (null = sin dato en CurrentRiverRace), o null si no hay capturas, si estas son incoherentes, si no se pudo
+ * leer Drive o si valores.sinCurrentRiverRace es true. No escribe nada.
+ */
+function _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores) {
+  if (valores.sinCurrentRiverRace === true || typeof _crrDiasDeJugador_ !== 'function') return null;
+  try {
+    var f0 = filas[offsetsExistentes[offs[0]]];
+    function num(v) { var t = String(v === undefined || v === null ? '' : v).trim(); return t === '' ? NaN : Number(t); }
+    var temp = num(valores.temporada !== undefined ? valores.temporada : f0[GC.TEMPORADA - 1]);
+    var sem = num(valores.semana !== undefined ? valores.semana : f0[GC.SEMANA - 1]);
+    var tag = _blgNormalizarTag_(valores.tag !== undefined ? valores.tag : f0[GC.TAG - 1]);
+    if (!(temp > 0) || !(sem > 0) || !tag) return null;
+    var etiqueta = 'T' + temp + ' S' + sem + ' ' + tag;
+    var r = _crrDiasDeJugador_(temp, sem, tag, A, F);
+    if (!r || !r.hayCapturas) return null;
+    if (r.notas && r.notas.length) {
+      Logger.log('[Reparto conjunto] CurrentRiverRace ' + etiqueta + ': capturas incoherentes (' + r.notas.join('; ') + '). No se usa; se reparte como siempre.');
+      return null;
+    }
+    var fd = _crrFameDia_(r.fameAcum);
+    var dias = [], hay = false;
+    for (var i = 0; i < offs.length; i++) {
+      var o = offs[i];
+      var n = (r.ataques[o] === undefined) ? null : r.ataques[o];
+      var f = (fd[o] === undefined) ? null : fd[o];
+      dias.push({ n: n, f: f });
+      if (n !== null || f !== null) hay = true;
+    }
+    return hay ? { etiqueta: etiqueta, dias: dias } : null;
+  } catch (e) {
+    Logger.log('[Reparto conjunto] No se pudo leer CurrentRiverRace: ' + e.message + '. Se reparte como siempre.');
+    return null;
+  }
+}
+
+/**
  * _repartirSemanaConjunto_(filas, offsetsExistentes, valores) [→ Contexto_Base_Web.md §PF122]
  * Reemplaza el reparto por campos (barcos, piso, ataques, fame) y el «sobrante». Recibe las tres cifras a la vez
  * (valores.ataquesSemana, valores.fame y valores.barcos; barcos null = «sin dato», se conserva el actual) y busca para
@@ -3440,6 +3479,10 @@ function _fameCatalogoDia_() {
  * la que se mueve menos y prefiere cambiar los dias mas recientes. Si NINGUNA combinacion cuadra NO TOCA nada y devuelve
  * { ok: false, motivo }. Escribe AtaquesHoy (diario), Barcos y Fame (acumulados) y AtaquesSemana (acumulado) en cada fila.
  * Busqueda por mitades (maximo 77 x 77 combinaciones por mitad), sin recorrer toda la semana.
+ * CurrentRiverRace (§PF139, 21-oct-2026): si el modulo 56 tiene los ataques y la fame de un dia, ese dia SOLO puede tomar un estado de la tabla con
+ * esas cifras (lo que falta, como los barcos o la fame de un dia sin dato, lo sigue decidiendo el reparto). Si con esas restricciones ninguna
+ * combinacion suma los totales, se AVISA en el registro y se hace el reparto de siempre, sin restricciones. El resultado trae crr:
+ * 'aplicado', 'conflicto' o 'sin datos'. valores.sinCurrentRiverRace = true apaga todo esto.
  */
 function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   var offs = Object.keys(offsetsExistentes).map(Number).sort(function (a, b) { return a - b; });
@@ -3474,16 +3517,17 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     if (c.n === s.n && c.b === s.b && c.f === s.f) return 0;
     return 1000000 + (3 - offs[j]) * 10000 + Math.abs(c.n - s.n) * 100 + Math.abs(c.b - s.b) * 100 + Math.abs(c.f - s.f);
   }
-  function grupo(indices) {
+  function grupo(indices, cats) {
     var mapa = { '0,0,0': { a: 0, b: 0, f: 0, c: 0, p: [] } };
     for (var x = 0; x < indices.length; x++) {
       var j = indices[x];
       var nuevo = {};
       var claves = Object.keys(mapa);
+      var catJ = cats[j];
       for (var q = 0; q < claves.length; q++) {
         var m = mapa[claves[q]];
-        for (var t = 0; t < catalogo.length; t++) {
-          var s = catalogo[t];
+        for (var t = 0; t < catJ.length; t++) {
+          var s = catJ[t];
           var na = m.a + s.n, nb = m.b + s.b, nf = m.f + s.f;
           if (na > A || nb > B || nf > F) continue;
           var c = m.c + costo(j, s);
@@ -3499,19 +3543,48 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   var h = Math.floor(k / 2);
   var izqIdx = [], derIdx = [];
   for (var u = 0; u < k; u++) { if (u < h) izqIdx.push(u); else derIdx.push(u); }
-  var izq = grupo(izqIdx);
-  var der = grupo(derIdx);
-  var mejor = null;
-  var clavesIzq = Object.keys(izq);
-  for (var w = 0; w < clavesIzq.length; w++) {
-    var li = izq[clavesIzq[w]];
-    var rd = der[(A - li.a) + ',' + (B - li.b) + ',' + (F - li.f)];
-    if (!rd) continue;
-    var total = li.c + rd.c;
-    if (mejor === null || total < mejor.c) mejor = { c: total, p: li.p.concat(rd.p) };
+  function resolver(cats) {
+    var izq = grupo(izqIdx, cats);
+    var der = grupo(derIdx, cats);
+    var mej = null;
+    var clavesIzq = Object.keys(izq);
+    for (var w = 0; w < clavesIzq.length; w++) {
+      var li = izq[clavesIzq[w]];
+      var rd = der[(A - li.a) + ',' + (B - li.b) + ',' + (F - li.f)];
+      if (!rd) continue;
+      var total = li.c + rd.c;
+      if (mej === null || total < mej.c) mej = { c: total, p: li.p.concat(rd.p) };
+    }
+    return mej;
   }
+
+  // CurrentRiverRace como restriccion (§PF139): cada dia con dato solo admite estados de la tabla con esos ataques y esa fame.
+  var catsLlenos = [];
+  for (var v = 0; v < k; v++) catsLlenos.push(catalogo);
+  var mejor = null;
+  var estadoCrr = 'sin datos';
+  var crr = _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores);
+  if (crr) {
+    var catsCrr = [];
+    for (var d = 0; d < k; d++) {
+      var rest = crr.dias[d];
+      catsCrr.push(catalogo.filter(function (s2) {
+        return (rest.n === null || s2.n === rest.n) && (rest.f === null || s2.f === rest.f);
+      }));
+    }
+    mejor = resolver(catsCrr);
+    if (mejor !== null) {
+      estadoCrr = 'aplicado';
+    } else {
+      estadoCrr = 'conflicto';
+      Logger.log('[Reparto conjunto] AVISO CurrentRiverRace ' + crr.etiqueta + ': ataques ' + crr.dias.map(function (x) { return x.n === null ? '?' : x.n; }).join('|') +
+        ', fame ' + crr.dias.map(function (x) { return x.f === null ? '?' : x.f; }).join('|') + ' no cuadran con los totales (ataques=' + A + ', barcos=' + B +
+        ', fame=' + F + '). Se reparte como siempre, sin usarlos.');
+    }
+  }
+  if (mejor === null) mejor = resolver(catsLlenos);
   if (mejor === null) {
-    return { ok: false, huboCambio: false, motivo: 'ninguna combinacion de la tabla suma ataques=' + A + ', barcos=' + B + ', fame=' + F + ' en ' + k + ' dia(s)' };
+    return { ok: false, huboCambio: false, crr: estadoCrr, motivo: 'ninguna combinacion de la tabla suma ataques=' + A + ', barcos=' + B + ', fame=' + F + ' en ' + k + ' dia(s)' };
   }
 
   var huboCambio = false;
@@ -3528,7 +3601,7 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     fila2[GC.BARCOS - 1] = bn;
     fila2[GC.FAME - 1] = fn;
   }
-  return { ok: true, huboCambio: huboCambio };
+  return { ok: true, huboCambio: huboCambio, crr: estadoCrr };
 }
 
 // INFORME HOJA GUERRA vs CORRECCIONES (SOLO LECTURA) [→ Contexto_Base_Web.md §18B120]
