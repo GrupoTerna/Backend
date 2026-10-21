@@ -1125,32 +1125,20 @@ function runGuerra() {
     try { _cerrarSemanaActualNuevos(); }
     catch (eCierreNuevos) { Logger.log('[runGuerra] _cerrarSemanaActualNuevos() falló: ' + eCierreNuevos.message); }
 
-    // Respaldo a Backup_Guerra.csv 1 vez por hora (esPrimerDisparoDeHora), con chequeo de presupuesto [→ Contexto_Base_Web.md §B116]
-    if (esPrimerDisparoDeHora) {
-      var _msTranscurridosRunGuerra = Date.now() - _tRunGuerra0;
-      var _msLimiteParaSyncCsv = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
-      if (_msTranscurridosRunGuerra > _msLimiteParaSyncCsv) {
-        Logger.log('[runGuerra] _syncGuerraCSV() SALTADO esta hora: ya van ' +
-          Math.round(_msTranscurridosRunGuerra / 1000) + 's de corrida, sin margen suficiente ' +
-          '(' + Math.round(_msLimiteParaSyncCsv / 1000) + 's) antes del límite duro de la plataforma. ' +
-          'Se reintenta en el próximo disparo horario.');
-      } else {
-        var shGuerraBackup = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
-        if (shGuerraBackup) _syncGuerraCSV(shGuerraBackup);
-      }
-    }
-
-    // NUEVO (19-sep-2026, pedido del usuario): dejar el caché de [→ Contexto_Base_Web.md §B117]
+    // PF143 (21-oct-2026): el respaldo a Backup_Guerra.csv y el calentamiento del caché (Dashboard + guerra.json, roster.json, home.json, torneos.json) ya NO corren aquí. Con Guerra + Control + Pendientes (180-230 s) más ese tramo (100-180 s) la corrida pasaba de 360 s y la plataforma la cortaba casi cada hora. Se programa una continuación con su propio presupuesto de 6 min. [→ Contexto_Base_Web.md §PF143]
+    var _colaProgramada = false;
     try {
-      var _msRestantesCalentar = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - _tRunGuerra0);
-      if (_msRestantesCalentar < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
-        Logger.log('[runGuerra] Calentamiento del caché de guerra.html SALTADO: quedan solo ' +
-          Math.round(_msRestantesCalentar / 1000) + 's de presupuesto.');
-      } else {
-        _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG);
-      }
-    } catch (eCalentar) {
-      Logger.log('[runGuerra] _calentarCacheGuerraEnVivo_() falló: ' + eCalentar.message);
+      props.setProperty('RUNGUERRA_COLA_PENDIENTE', claveHora);
+      props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+      _programarContinuacion('_continuarRunGuerraCola');
+      _colaProgramada = true;
+      Logger.log('[runGuerra] Respaldo CSV y calentamiento del caché pasan a la continuación _continuarRunGuerraCola (arranca en ~10 s, con su propio presupuesto).');
+    } catch (eCola) {
+      Logger.log('[runGuerra] No se pudo programar _continuarRunGuerraCola: ' + eCola.message + '. Se hace el respaldo y el calentamiento aquí, como antes.');
+    }
+    if (!_colaProgramada) {
+      try { _runGuerraColaHoraria_(_tRunGuerra0); }
+      catch (eColaEnLinea) { Logger.log('[runGuerra] El tramo final (respaldo CSV y caché) falló: ' + eColaEnLinea.message); }
     }
 
     _trabajoHoraCompleto = true;
@@ -1165,6 +1153,88 @@ function runGuerra() {
         Logger.log('[runGuerra] No se pudo restaurar la marca de hora: ' + eMarca.message);
       }
     }
+    _liberarLockEjecucion();
+  }
+}
+
+/**
+ * _runGuerraColaHoraria_(t0) - Tramo final de la actualización horaria de guerra (PF143, 21-oct-2026): respaldo a Backup_Guerra.csv y
+ * calentamiento del caché de guerra.html (Dashboard y publicaciones estáticas). Antes estaba al final de runGuerra(); ahora lo ejecuta
+ * _continuarRunGuerraCola() en una ejecución nueva (o runGuerra(), solo si no pudo programar la continuación). t0 = inicio de la
+ * ejecución que lo llama, para respetar el margen contra el límite duro de la plataforma. No depende de variables en memoria de
+ * runGuerra(): _syncGuerraCSV() recibe la hoja y _calentarCacheGuerraEnVivo_() lee todo por su cuenta. [→ Contexto_Base_Web.md §PF143]
+ */
+function _runGuerraColaHoraria_(t0) {
+  var msTranscurridos = Date.now() - t0;
+  var msLimiteParaSyncCsv = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
+  if (msTranscurridos > msLimiteParaSyncCsv) {
+    Logger.log('[runGuerra] _syncGuerraCSV() SALTADO esta hora: ya van ' +
+      Math.round(msTranscurridos / 1000) + 's de corrida, sin margen suficiente ' +
+      '(' + Math.round(msLimiteParaSyncCsv / 1000) + 's) antes del límite duro de la plataforma. ' +
+      'Se reintenta en el próximo disparo horario.');
+  } else {
+    var shGuerraBackup = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+    if (shGuerraBackup) _syncGuerraCSV(shGuerraBackup);
+  }
+
+  try {
+    var msRestantesCalentar = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - t0);
+    if (msRestantesCalentar < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
+      Logger.log('[runGuerra] Calentamiento del caché de guerra.html SALTADO: quedan solo ' +
+        Math.round(msRestantesCalentar / 1000) + 's de presupuesto.');
+    } else {
+      _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG);
+    }
+  } catch (eCalentar) {
+    Logger.log('[runGuerra] _calentarCacheGuerraEnVivo_() falló: ' + eCalentar.message);
+  }
+}
+
+/**
+ * _continuarRunGuerraCola() - Handler de la continuación que programa runGuerra() al terminar Pendientes (PF143, 21-oct-2026).
+ * Corre _runGuerraColaHoraria_() en una ejecución nueva de 6 min. Reglas:
+ *  - Una sola vez por programación: borra su propio activador al empezar, así que si la plataforma la corta no se repite en bucle;
+ *    el siguiente runGuerra() horario vuelve a programarla.
+ *  - Si entra la ventana de guerra protegida (4:00-5:00 a. m. Lima y su margen previo) no corre y descarta la tarea.
+ *  - Si hay otra ejecución con el candado, reintenta cada CFG.RUNGUERRA_COLA_REINTENTO_MS hasta CFG.RUNGUERRA_COLA_REINTENTOS_MAX veces
+ *    y luego se descarta (la próxima hora vuelve a intentarlo).
+ * [→ Contexto_Base_Web.md §PF143]
+ */
+function _continuarRunGuerraCola() {
+  var props = PropertiesService.getScriptProperties();
+  _borrarTriggersDeContinuacion('_continuarRunGuerraCola');
+  if (!props.getProperty('RUNGUERRA_COLA_PENDIENTE')) {
+    Logger.log('[runGuerraCola] Sin tarea pendiente (ya se hizo o se descartó). No se hace nada.');
+    return;
+  }
+  if (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
+    Logger.log('[runGuerraCola] ABORTADA: la ventana de guerra protegida está activa. Se descarta; el próximo runGuerra() horario la vuelve a programar.');
+    props.deleteProperty('RUNGUERRA_COLA_PENDIENTE');
+    props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+    return;
+  }
+  if (!_adquirirLockEjecucion('runGuerraCola')) {
+    var intentos = Number(props.getProperty('RUNGUERRA_COLA_INTENTOS')) || 0;
+    if (intentos < CFG.RUNGUERRA_COLA_REINTENTOS_MAX) {
+      props.setProperty('RUNGUERRA_COLA_INTENTOS', String(intentos + 1));
+      ScriptApp.newTrigger('_continuarRunGuerraCola').timeBased().after(CFG.RUNGUERRA_COLA_REINTENTO_MS).create();
+      Logger.log('[runGuerraCola] Hay otra ejecución en curso: se reintenta en ' + Math.round(CFG.RUNGUERRA_COLA_REINTENTO_MS / 1000) +
+        ' s (intento ' + (intentos + 1) + ' de ' + CFG.RUNGUERRA_COLA_REINTENTOS_MAX + ').');
+    } else {
+      Logger.log('[runGuerraCola] Se agotaron los reintentos con otra ejecución en curso. Se descarta; la próxima hora vuelve a intentarlo.');
+      props.deleteProperty('RUNGUERRA_COLA_PENDIENTE');
+      props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+    }
+    return;
+  }
+  var t0 = Date.now();
+  try {
+    props.deleteProperty('RUNGUERRA_COLA_PENDIENTE'); // antes del trabajo: si la plataforma corta esta ejecución, no se repite en bucle
+    props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+    Logger.log('[runGuerraCola] INICIO (respaldo CSV + calentamiento del caché)');
+    _runGuerraColaHoraria_(t0);
+    Logger.log('[runGuerraCola] FIN (' + Math.round((Date.now() - t0) / 1000) + ' s)');
+  } finally {
     _liberarLockEjecucion();
   }
 }
