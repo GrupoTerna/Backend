@@ -5,8 +5,8 @@
 //
 // Este archivo solo LEE y calcula; no escribe en ninguna hoja ni CSV.
 // Tanda 1 (21-oct-2026): módulo nuevo. Tanda 2 (21-oct-2026): _repartirSemanaConjunto_() (18_CorreccionGuerra.gs) ya usa
-// _crrDiasDeJugador_() como restricción. Quedan para las tandas siguientes la corrección al cerrar el día y
-// AplicarTotalesSemana_Historial.
+// _crrDiasDeJugador_() como restricción. Tanda 3 (21-oct-2026): la corrección al cerrar el día (17_GuerraSheet.gs,
+// _autocorregirAtaqueDiaAnteriorDecksUsed) usa _crrAyerParaCierre_(). Queda para la tanda siguiente AplicarTotalesSemana_Historial.
 //
 // Qué trae cada captura (un archivo por clan, semana y día, que se va sobrescribiendo: queda la ÚLTIMA captura de ese día):
 //   decksUsed = ataques acumulados de la semana; decksUsedToday = ataques de ese día; fame = fame acumulada de la semana.
@@ -176,4 +176,25 @@ function probarCurrentRiverRaceDias() {
   var ok = ata === '4|4|4|4' && fame === '600|800|800|700';
   Logger.log('[CRR] T3 S1: ' + tags.length + ' jugador(es) con capturas. Chistris: ataques ' + ata + ', fame ' + fame + ' -> ' +
     (ok ? 'OK (coincide con lo comprobado a mano).' : 'DIFIERE de lo esperado (4|4|4|4 y 600|800|800|700).') + ' (No se escribio nada.)');
+}
+
+/**
+ * Para la corrección al cerrar el día (17_GuerraSheet.gs, §PF139): ataques de AYER y fame acumulada al cierre de ayer de un jugador, según
+ * CurrentRiverRace. ctx = el contexto del clan (temporada propia y sectionIndex); offAyer = 0..2 (jueves a sábado). No se pasan totales
+ * semanales (no se conocen aquí), así que el domingo nunca se resuelve por esta vía. Devuelve { ataquesAyer, fameAcumAyer } (null = sin dato)
+ * o null si no hay capturas, si estas se contradicen o si falla la lectura de Drive. Solo lee.
+ */
+function _crrAyerParaCierre_(tag, ctx, offAyer) {
+  try {
+    if (!(offAyer >= 0 && offAyer <= 2)) return null;
+    var temp = Number(ctx && ctx.temporada), sem = Number(ctx && ctx.sectionIndex) + 1;
+    if (!(temp > 0) || !(sem > 0)) return null;
+    var r = _crrDiasDeJugador_(temp, sem, tag, null, null);
+    if (!r.hayCapturas || (r.notas && r.notas.length)) return null;
+    var a = r.ataques[offAyer], f = r.fameAcum[offAyer];
+    return { ataquesAyer: (a === undefined ? null : a), fameAcumAyer: (f === undefined ? null : f) };
+  } catch (e) {
+    Logger.log('[CRR] No se pudo consultar CurrentRiverRace para cerrar el dia (' + tag + '): ' + e.message);
+    return null;
+  }
 }
