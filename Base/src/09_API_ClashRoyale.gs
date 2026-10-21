@@ -2296,6 +2296,12 @@ function _fetchPlayersData() {
   }
 
   // FASE 21 (01/08/2026): antes se llamaba a _borrarProgresoPlayers() aquí [→ Contexto_Base_Web.md §09B122]
+  // PF140 (21-oct-2026): FASE 21 dejó el archivo vivo pero solo se escribía si la tanda se cortaba por tiempo; si /players
+  // terminaba completo, el archivo nunca se creaba y la continuación siguiente (ejecución nueva, memoria vacía) pedía los
+  // 58 otra vez. Ahora, si esta tanda trajo jugadores nuevos, se guarda el mapa completo para que las continuaciones de la
+  // MISMA corrida lo recuperen. Lo borra _continuarRunUpdate()/_continuarRunAll() al terminar el ciclo, y
+  // _cargarProgresoPlayers() lo descarta si tiene más de CFG.PLAYERS_PROGRESO_MAX_EDAD_MS. [→ Contexto_Base_Web.md §PF140]
+  if (pendientes.length > 0) _guardarProgresoPlayers(CACHE_CLAN_DATA._players);
   _playersCompletoEnEstaEjecucion = true;
   Logger.log('[API] /players completado. Datos obtenidos: ' + Object.keys(CACHE_CLAN_DATA._players).length + resumenErrores);
   return true;
