@@ -360,6 +360,9 @@ function _descargarProyectoAArchivos(nombreBase) {
     carpeta.createFile(nombreMd, markdownLegible, MimeType.PLAIN_TEXT); // Crea nuevo
   }
 
+  // 2c. Indice_<Nombre>.md: tabla N.º / archivo / estado respecto de la descarga anterior
+  _guardarIndiceArchivos_(nombreBase, carpeta, archivos, fechaStr);
+
   // 3. Guardar ZIP (archivos sueltos tal cual están en el proyecto, + marcador + consolidado)
   var blobs = archivos.map(function(archivo) {
     var extension = (archivo.type === 'JSON') ? '.json' : (archivo.type === 'HTML') ? '.html' : '.gs';
@@ -376,6 +379,97 @@ function _descargarProyectoAArchivos(nombreBase) {
   carpeta.createFile(Utilities.zip(blobs, nombreZip)); // Crea el nuevo reemplazándolo
 
   _registrarLogGenerador('_descargarProyectoAArchivos() / ' + nombreBase, 'Proyecto descargado a ' + nombreZip + ', ' + nombreTxt + ', ' + nombreGs + ' y ' + nombreMd + ' con ' + archivos.length + ' archivos.', []);
+}
+
+// -----------------------------------------------------------------------------
+// Indice_Base.md / Indice_Generador.md
+// Se REEMPLAZAN en cada descarga o subida (también en GitHub: <Nombre>/Indice_<Nombre>.md).
+// Tabla con N.º automático, nombre del archivo y estado respecto de la descarga anterior:
+// «permanece igual», «modificado» (solo los que no se crearon ni eliminaron en esa tanda),
+// «creado» o «eliminado». Para saber qué cambió, el propio archivo guarda al final la huella
+// de cada archivo en un comentario <!-- HUELLAS {...} -->; la siguiente descarga lo lee.
+// Los eliminados figuran solo en la tanda en que desaparecen.
+// [→ Contexto_Base_Web.md §PF151]
+// -----------------------------------------------------------------------------
+
+var INDICE_ARCHIVOS_RE_HUELLAS_ = /<!--\s*HUELLAS\s+(\{[\s\S]*?\})\s*-->/;
+
+/** Huella corta (MD5, 12 caracteres) del tipo y del contenido de un archivo del proyecto. */
+function _huellaArchivo_(a) {
+  var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5,
+                                      String(a.type) + '\n' + String(a.source || ''),
+                                      Utilities.Charset.UTF_8);
+  var hex = '';
+  for (var i = 0; i < bytes.length; i++) {
+    hex += ('0' + (bytes[i] < 0 ? bytes[i] + 256 : bytes[i]).toString(16)).slice(-2);
+  }
+  return hex.substring(0, 12);
+}
+
+/**
+ * Arma el texto de Indice_<Nombre>.md. Función pura (salvo la huella): recibe el contenido del
+ * índice anterior (o '' si no hay) y los archivos reales del proyecto (sin "Script consolidado").
+ */
+function _generarIndiceArchivos_(nombreBase, archivos, indicePrevio, fechaStr) {
+  var previas = null;
+  var m = INDICE_ARCHIVOS_RE_HUELLAS_.exec(String(indicePrevio || ''));
+  if (m) { try { previas = JSON.parse(m[1]); } catch (e) { previas = null; } }
+
+  var actuales = archivos.map(function(a) {
+    return { nombre: a.name + _extDeTipo_(a.type), huella: _huellaArchivo_(a) };
+  }).sort(function(x, y) { return x.nombre < y.nombre ? -1 : (x.nombre > y.nombre ? 1 : 0); });
+
+  var filas = [];
+  var cuenta = { 'permanece igual': 0, 'modificado': 0, 'creado': 0, 'eliminado': 0 };
+  var huellasNuevas = {};
+  actuales.forEach(function(f) {
+    huellasNuevas[f.nombre] = f.huella;
+    var estado;
+    if (!previas || !(f.nombre in previas)) estado = 'creado';
+    else estado = previas[f.nombre] === f.huella ? 'permanece igual' : 'modificado';
+    cuenta[estado]++;
+    filas.push({ nombre: f.nombre, estado: estado });
+  });
+  if (previas) {
+    Object.keys(previas).sort().forEach(function(n) {
+      if (!(n in huellasNuevas)) { cuenta['eliminado']++; filas.push({ nombre: n, estado: 'eliminado' }); }
+    });
+  }
+
+  var out = [];
+  out.push('# Índice de archivos — ' + nombreBase);
+  out.push('');
+  out.push('Generado automáticamente por el Generador el ' + fechaStr + ' (Lima). No editar a mano: se reemplaza en cada descarga o subida.');
+  out.push('El estado es respecto de la descarga o subida anterior. «modificado» es solo para los archivos que no se crearon ni eliminaron en esa tanda; los eliminados figuran únicamente en la tanda en que desaparecen.');
+  if (!previas) {
+    out.push('');
+    out.push('**No había un índice anterior con el que comparar:** esta vez todos los archivos figuran como «creado».');
+  }
+  out.push('');
+  out.push('Total: ' + actuales.length + ' archivos en el proyecto — ' + cuenta['permanece igual'] + ' permanecen iguales, ' +
+           cuenta['modificado'] + ' modificados, ' + cuenta['creado'] + ' creados, ' + cuenta['eliminado'] + ' eliminados.');
+  out.push('');
+  out.push('| N.º | Archivo | Estado |');
+  out.push('|---|---|---|');
+  filas.forEach(function(f, i) {
+    out.push('| ' + (i + 1) + ' | ' + f.nombre + ' | ' + f.estado + ' |');
+  });
+  out.push('');
+  out.push('<!-- HUELLAS ' + JSON.stringify(huellasNuevas) + ' -->');
+  out.push('');
+  return out.join('\n');
+}
+
+/** Crea o reemplaza (setContent, para conservar las versiones de Drive) Indice_<Nombre>.md en la carpeta de respaldos. */
+function _guardarIndiceArchivos_(nombreBase, carpeta, archivos, fechaStr) {
+  var nombreIndice = 'Indice_' + nombreBase + '.md';
+  var it = carpeta.getFilesByName(nombreIndice);
+  var archivoIndice = it.hasNext() ? it.next() : null;
+  var previo = archivoIndice ? archivoIndice.getBlob().getDataAsString('UTF-8') : '';
+  var texto = _generarIndiceArchivos_(nombreBase, archivos, previo, fechaStr);
+  if (archivoIndice) archivoIndice.setContent(texto);
+  else carpeta.createFile(nombreIndice, texto, MimeType.PLAIN_TEXT);
+  return texto;
 }
 
 function _subirArchivosAProyecto(nombreBase, extension) {

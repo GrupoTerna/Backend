@@ -7,7 +7,7 @@
 // ------------------------------------------------------------------
 // DESCARGA (zip + txt + gs + md, siempre los 4 a la vez)
 // Además sincroniza GitHub (08_GitHub.gs): .gs sueltos en <Nombre>/src/,
-// consolidado en <Nombre>/respaldo/, INDICE_FUNCIONES.md y LEEME_IA.md.
+// consolidado en <Nombre>/respaldo/, INDICE_FUNCIONES.md, Indice_<Nombre>.md y LEEME_IA.md.
 // Si no hay GITHUB_TOKEN en las propiedades del script, GitHub se omite.
 // ------------------------------------------------------------------
 
