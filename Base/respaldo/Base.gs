@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 20/10/2026 19:14:01 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 20/10/2026 20:08:05 */
 
 
 
@@ -45962,8 +45962,12 @@ function _webPerfilJugador(tagBuscado, opciones) {
           ? Utilities.formatDate(fechaDia, tz, 'dd/MM/yyyy')
           : String(fechaDia || '');
         // FIX 09-sep-2026 (perfil.html, renderMetricaSemanal()/renderMetricasSemanales(): "solo se está mostrando evolución de ranking, falta ataques, puntaje y barcos"): el frontend ya esperaba 'ataques', 'puntaje' y 'barcos' en cada entrada de historialRanking (oculta la tarjeta si no llegan); se agregan con la misma fila/día que 'ranking' (GC.ATAQUES_SEM/GC.FAME/GC.BARCOS, point-in-time de ese día en vez de filtrados al periodIndex actual); 'puntaje' = Fame; un día de entrenamiento sin fila de guerra queda sin entrada (no se inventa un 0). [→ Contexto_Base_Web.md §37B123]
+        var etiquetaDiaRK = _etiquetaTemporadaSemanaDia_(dataGuerra[i][GC.TEMPORADA - 1], dataGuerra[i][GC.SEMANA - 1], dataGuerra[i][GC.PERIOD_IDX - 1]); // 20-oct-2026 (pedido usuaria): temporada, semana y día para el tooltip de cada punto. [→ Contexto_Base_Web.md §PF133]
         historialRanking.push({
           semana:  semanaTxt,
+          temporada:    etiquetaDiaRK ? etiquetaDiaRK.temporada    : null,
+          semanaGuerra: etiquetaDiaRK ? etiquetaDiaRK.semanaGuerra : null,
+          diaGuerra:    etiquetaDiaRK ? etiquetaDiaRK.diaGuerra    : null,
           ranking: rankingDia,
           ataques: Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0,
           puntaje: Number(dataGuerra[i][GC.FAME - 1]) || 0,
@@ -46064,6 +46068,16 @@ function _webApiGetRapido(path) {
     Logger.log('[WebApiGetRapido] Falló ' + path + ': ' + e.message);
     return null;
   }
+}
+
+// _etiquetaTemporadaSemanaDia_(temporada, semana, periodIndex): 20-oct-2026 (pedido usuaria: en los tooltips de las gráficas, una línea "Temporada 3, Semana 1, Jueves" en cada punto). Devuelve { temporada, semanaGuerra, diaGuerra } o null si falta algún dato. El día sale de periodIndex % 7 (0=Lunes … 3=Jueves … 6=Domingo, igual que guerra.html y _historialDiasGuerra() de perfil.html). Un registro de LUNES (periodIndex % 7 = 0) es el cierre del domingo anterior (el frontend ya lo trata así): se etiqueta Domingo de la semana anterior; si no hay semana anterior en esa temporada (semana 1), se deja como Lunes de la misma semana. [→ Contexto_Base_Web.md §PF133]
+function _etiquetaTemporadaSemanaDia_(temporada, semana, periodIndex) {
+  var NOMBRES_DIA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  var t = Number(temporada), s = Number(semana), p = Number(periodIndex);
+  if (!isFinite(t) || !isFinite(s) || !isFinite(p) || t < 1 || s < 1 || p < 0) return null;
+  var dia = p % 7;
+  if (dia === 0 && s > 1) return { temporada: t, semanaGuerra: s - 1, diaGuerra: NOMBRES_DIA[6] };
+  return { temporada: t, semanaGuerra: s, diaGuerra: NOMBRES_DIA[dia] };
 }
 
 // _webPerfilJugadorSinRegistro(tagBuscado, opciones): FIX 09-sep-2026 (ver docblock de _webPerfilJugador()): a donde cae _webPerfilJugador() cuando el Tag no tiene fila en Directorio; consulta el perfil PÚBLICO de Supercell (mismo proxy que _webAdminVerificarTag()) para mostrar al menos nombre/clan de cualquier jugador; a propósito sin respaldo de RoyaleAPI (tampoco lo tiene ya _webAdminVerificarTag()): RoyaleAPI bloquea (Cloudflare) las llamadas server-side de Apps Script y solo se puede leer vía el script de Tampermonkey (navegador), ver Tampermonkey.md, y agregarlo sumaba segundos sin posibilidad real de encontrar nada; FIX 09-sep-2026 (mismo día): usaba _apiGet() (3 reintentos), lo que disparaba el error "<!DOCTYPE..." con el proxy dormido, ahora usa _webApiGetRapido() (un solo intento); todo lo que depende de datos internos (guerra, torneos, ascensos, mazo) vuelve en 0/null y renderMiembro() (admin.html) ya lo muestra vacío; sinRegistro:true deja distinguir este caso (hoy el frontend no lo usa). CAMBIO 28-sep-2026 (Fase 5b tanda A): 2.º parámetro opcional opciones = {sinDatosDrive}; si es true no se adjunta extendido.rawClash (lo usa _webPerfilJugador() para las cuentas de Inactivos que ve un no-admin). @param tagBuscado, opciones; @returns {{ok, error?, jugador?}} [→ Contexto_Base_Web.md §37B135]
@@ -47956,8 +47970,13 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
         var ataquesBloque = filaGridNuevos[offBloque + OFFN.ATAQUES];
         if (ataquesBloque === '' || ataquesBloque === null || ataquesBloque === undefined) continue;
         // FIX (17-sep-2026, cierre de conexión pendiente — index.html, renderComparativaSemanal()/gráfica "Barcos por semana"): faltaba `barcos` acá. OFFN.BARCOS (14_Nuevos_RoyaleAPI.gs) ya existe y trae exactamente este dato por semana en… [→ Contexto_Base_Web.md §37B269]
+        var tsBloque = _fechaATemporadaSemana(fechaBloque); // 20-oct-2026 (pedido usuaria): temporada, semana y día para el tooltip de cada punto semanal. [→ Contexto_Base_Web.md §PF133]
+        var etiquetaDiaBloque = tsBloque ? _etiquetaTemporadaSemanaDia_(tsBloque.temporadaPropia, tsBloque.semana, tsBloque.periodIndex) : null;
         historialFila.push({
           semana:  Utilities.formatDate(fechaBloque, tz, 'dd/MM/yyyy'),
+          temporada:    etiquetaDiaBloque ? etiquetaDiaBloque.temporada    : null,
+          semanaGuerra: etiquetaDiaBloque ? etiquetaDiaBloque.semanaGuerra : null,
+          diaGuerra:    etiquetaDiaBloque ? etiquetaDiaBloque.diaGuerra    : null,
           clan:    String(filaGridNuevos[offBloque + OFFN.CLAN] || '').trim() || String(filaDir[DC.CLAN - 1] || ''),
           ataques: Number(ataquesBloque) || 0,
           puntaje: Number(filaGridNuevos[offBloque + OFFN.FAME]) || 0,
@@ -60178,7 +60197,13 @@ function _excDiasPlanificar(filas, clases) {
     otros.forEach(function (o) { semanaOtros += _excDiasFinalDe(o.dias).a; });
     if (!excede && cumA + semanaOtros > 16) excede = 'la semana quedaria con ' + (cumA + semanaOtros) + ' ataques sumando clanes';
     if (excede) { plan.omitidos.push({ grupo: g, clase: clase, motivo: excede }); return; }
-    ops.forEach(function (op) { op.nuevo.origen = _excDiasOrigenNuevo(op.existe ? op.ant.origen : '', op.existe, op.estimadoDia); });
+    ops.forEach(function (op) {
+      op.nuevo.origen = _excDiasOrigenNuevo(op.existe ? op.ant.origen : '', op.existe, op.estimadoDia);
+      // Una fila que ya tenia exactamente esos valores no cambia: se deja con su Origen (no se marca 'Corregido' sin haberla corregido).
+      if (op.existe && op.ant.hoy === op.nuevo.hoy && op.ant.sem === op.nuevo.sem && op.ant.fame === op.nuevo.fame && op.ant.barcos === op.nuevo.barcos) {
+        op.sinCambio = true; op.nuevo.origen = op.ant.origen;
+      }
+    });
     plan.casos.push({ grupo: g, clase: clase, estimado: estimado, ops: ops });
   });
   return plan;
@@ -60217,7 +60242,7 @@ function _excDiasAplicarPlan(filas, plan) {
         filas.push(fila);
         op.filaNueva = fila;
         creadas++;
-      } else {
+      } else if (!op.sinCambio) {
         modificadas++;
       }
       fila[GC.ATAQUES_HOY - 1] = String(op.nuevo.hoy);
@@ -60313,7 +60338,7 @@ function _repararDiasConExceso_(aplicar, clases) {
       c.ops.forEach(function (op) { if (op.existe) op.idxAntes = idxDe.get(op.fila); });
     });
     var nCrear = 0, nModificar = 0;
-    plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.existe) nModificar++; else nCrear++; }); });
+    plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (!op.existe) nCrear++; else if (!op.sinCambio) nModificar++; }); });
 
     // Hoja Guerra (temporada vigente): los casos de la hoja no se tocan, solo se cuentan.
     var casosHoja = 0;
@@ -60347,7 +60372,7 @@ function _repararDiasConExceso_(aplicar, clases) {
       c.ops.forEach(function (op) {
         var an = op.ant;
         detalle.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, c.clase, EXC_DIAS_LETRAS.charAt(op.dia), (Number(g.semana) - 1) * 7 + 3 + op.dia,
-          op.existe ? 'Modificar' : 'Crear', an ? an.hoy : '', op.nuevo.hoy, an ? an.sem : '', op.nuevo.sem,
+          !op.existe ? 'Crear' : (op.sinCambio ? 'Sin cambio' : 'Modificar'), an ? an.hoy : '', op.nuevo.hoy, an ? an.sem : '', op.nuevo.sem,
           op.antDia ? op.antDia.f : '', op.nuevo.fameDia, an ? an.fame : '', op.nuevo.fame,
           op.antDia ? op.antDia.b : '', op.nuevo.barcosDia, an ? an.barcos : '', op.nuevo.barcos,
           an ? an.origen : '', op.nuevo.origen, op.estimadoDia ? 'estimada (varias ternas validas)' : 'unica']);
