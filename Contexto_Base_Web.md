@@ -149,6 +149,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF136` | `Base/src/` (`38_Web_Endpoints.gs`, `26_Torneos_Core.gs`, `37_Web_API.gs`, `48_Herramientas_Debug.gs`): cuatro textos con voseo pasados a tuteo, y revisión del voseo en `Web` y `Backend` (20-oct-2026). **Falta correr `subirBaseDesdeGithub()`.** |
 | `PF137` | `guerra.html` (`pintarValoresDiaEnTarjetas()`, `valoresDiaDeClan()`, `_filasDiariasDeClan()`): las tarjetas de clan cambian por completo al elegir un día Jue–Dom (14-oct-2026; corrige el límite de PF034) |
 | `PF138` | `guerra.html` (`columnasTextoGrid()`, `celdaJugadorGrid()`, `gridActualizarTotales()`, `datosExportGrid()`): Nombre, Rango y Estado en columnas separadas en Valores diarios y semanales; sin espacio vacío al final (19-oct-2026) |
+| `PF139` | Regla de método para toda reparación y corrección de guerra: se parte de lo que ya hay (hoja Guerra, CSV y `CurrentRiverRace`, el más confiable) y no se estima si hay dato; la tabla de fame se usa siempre; la misma regla va en la corrección automática al cerrar el día (dicho por la usuaria, 20-oct-2026; SOLO REGISTRADA, sin código) |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -4226,3 +4227,32 @@ Eran 3 entradas de 12 a 14-oct-2026 sin su explicación en el contexto. **Compro
 - **Pendiente de comprobar:** el aspecto con nombres largos y en móvil (no se midió).
 
 **Sin probar:** nada de esto se vio en un navegador en esta tanda.
+
+### PF139 — Regla de método: toda reparación y corrección de guerra parte de lo que ya hay; `CurrentRiverRace` manda sobre cualquier estimación (dicha por la usuaria varias veces; registrada el 20-oct-2026; SOLO REGISTRADA, nada aplicado ni programado)
+
+**Por qué se registra.** La usuaria tuvo que repetir esta regla en varias sesiones porque cada herramienta de reparación nueva (por ejemplo `repararDiasConExcesoAplicar()`) se diseñó casi desde cero. Esta sección es el lugar donde se lee **antes** de diseñar o cambiar cualquier reparación, informe o corrección de guerra.
+
+**La regla (dicha por la usuaria).**
+1. **Se parte de lo que ya hay:** hoja Guerra, `Backup_Guerra.csv` y los JSON de `CurrentRiverRace` (`Datos descargados/JSON/Endpoints/CurrentRiverRace/<clan>/T-<t>/S-<s>/`). **Lo más confiable son los `CurrentRiverRace`**: traen `fame`, `decksUsed` y `decksUsedToday` por jugador en cada captura. Con dos capturas seguidas, la diferencia de `fame` y de `decksUsed` da lo del día.
+2. **Si hay dato, no se estima.** Reparto por criterio (domingo hacia atrás, §PF119) **solo** para lo que ningún registro cubre. Elegir algo ajeno a los registros existentes es adivinar.
+3. **La tabla de fame se usa siempre** (`_fameEsPosibleDia_()`, §PF121): todo resultado, venga de un JSON o de un reparto, tiene que encajar con un resultado posible (4 ataques por día, 16 por semana, 900 de fame por día, 3600 por semana).
+4. **Se arregla lo que ya hay** y desde eso se arman los JSON de guerra por día (§PF123) y las funciones de corrección.
+5. **La misma regla va en la corrección automática al cerrar el día**, no solo en las reparaciones manuales.
+
+**Cómo se lee una captura (comprobado el 20-oct-2026 con Chistris, `#2GG8PJ8GC`, T3 S1 y S2).** `decksUsed` = ataques acumulados de la semana; si es 4, 8, 12 o 16, el día quedó completo y su fame ya no cambia. Nombre del archivo: `T-03  S-02 P.I-11-V 17-07-2026 11.35 - … - currentriverrace.json` (periodIndex, día, fecha y hora de la captura).
+
+| Semana | Día | Captura | Fame acumulada | Ataques acumulados | Fame del día |
+|---|---|---|---|---|---|
+| T3 S1 | J / V / S / D | 10-07 02.59 / 11-07 02.58 / 11-07 21.30 / 12-07 13.30 | 600 / 1400 / 2200 / 2900 | 4 / 8 / 12 / 16 | 600 / 800 / 800 / 700 |
+| T3 S2 | J / V / S | 17-07 04.27 / 17-07 11.35 / 19-07 01.47 | 700 / 1200 / 1800 | 4 / 8 / 12 | 700 / 500 / 600 (D = 600 por el total semanal 2400) |
+| T3 S3 | X / J | 23-07 01.52 / 23-07 07.25 | 0 / 0 | 0 / 0 | sin dato posterior: sigue siendo estimación |
+
+**Qué se encontró al contrastar (20-oct-2026, Lima; solo lectura).**
+- **T3 S2, Chistris:** V fue de **4 ataques y 500 de fame**, no de 3 y 400 como decía el CSV (esa captura se hizo antes del último ataque). Con el dato real **no hace falta ninguna excepción** para el «imposible»: J 700, V 500, S 600, D 600. El caso estaba en `Revision_Guerra.csv` solo porque la herramienta no usó el `CurrentRiverRace`.
+- **T3 S1, Chistris:** `repararDiasConExcesoAplicar()` (corrida de las 7:23 p. m.) dejó S 600 y D 900 de fame; el `CurrentRiverRace` dice **S 800 y D 700**. Los ataques (4 por día) coinciden. **La estimación pisó un dato que existía.**
+- **Consecuencia:** las 175 «Solución estimada» aplicadas y las 60 ambiguas de `Revision_Guerra.csv` (62 con los 2 imposibles) hay que **cruzarlas con `CurrentRiverRace`** (T2 S5 y T3 S1 a S3) antes de seguir con el criterio de domingo. El respaldo previo está en Drive y en `Datos descargados/CSV/Informes/Backup_Guerra ANTES de reparar DiasConExceso 2026-10-20 19.23.51.csv`.
+
+**Pendiente (no se hizo).**
+- Cruzar los 235 casos con `CurrentRiverRace`: cuántos quedan con fame por día real, cuáles siguen siendo estimación y cuáles de las 175 ya aplicadas cambian (con informe y respaldo, como siempre).
+- Hacer que `_repartirSemanaConjunto_()` y las reparaciones lean primero las capturas de `CurrentRiverRace`, y llevar la misma lectura a la corrección automática al cerrar el día (punto 5). Hoy `CurrentRiverRace` solo figura en `01_Config_Global.gs` y `09_API_ClashRoyale.gs` de `Base/src/`.
+- Decidir con la usuaria si se revierten las 175 estimadas y se vuelven a calcular con esta regla, o solo las que difieran del JSON.
