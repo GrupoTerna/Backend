@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 21/10/2026 14:46:57 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 21/10/2026 17:16:11 */
 
 
 
@@ -46502,15 +46502,26 @@ function _webTorneos(opciones) {
     });
   }
 
+  // PF154 (21-oct-2026, decisión de la usuaria): un torneo con continuación es UN solo torneo en la web. Solo salen las raíces de cada grupo (misma regla que _webHistorialTorneos()); `partes` cuenta la raíz más sus continuaciones (raíz + 1 continuación = 2) e `idsPartes` lista los ids del grupo. Fecha, clan y organizador son los de la raíz. [→ Contexto_Base_Web.md §PF154]
+  var grupos = _resolverGruposContinuacionTorneos(ss);
   var torneos = listaData
     .filter(function (f) { return f[TL.FECHA - 1] instanceof Date && f[TL.ID - 1]; })
+    .filter(function (f) {
+      var id = String(f[TL.ID - 1]);
+      var raiz = grupos.raizPorId.hasOwnProperty(id) ? grupos.raizPorId[id] : id;
+      return raiz === id; // las continuaciones no salen como torneo aparte
+    })
     .map(function (f) {
+      var idTxt = String(f[TL.ID - 1]);
+      var idsGrupo = grupos.grupoPorRaiz[idTxt] || [idTxt];
       return {
         id:          f[TL.ID - 1],
         fecha:       f[TL.FECHA - 1].toISOString(),
         clan:        String(f[TL.CLAN - 1] || ''),
         organizador: String(f[TL.ORGANIZADOR - 1] || ''),
-        linkApp:     String(f[TL.LINK_APP - 1] || '')
+        linkApp:     String(f[TL.LINK_APP - 1] || ''),
+        partes:      idsGrupo.length,
+        idsPartes:   idsGrupo.slice()
       };
     })
     .sort(function (a, b) { return new Date(b.fecha) - new Date(a.fecha); })
@@ -50967,7 +50978,7 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
-  // PANEL DE PERMISOS (19-sep-2026, pedido de Diana): webPermisosGuardar guarda Funciones y Cat_disp de UN administrador; datos = { id, funciones, categorias }; solo el Celular de la Script Property PANEL_PERMISOS_CELULAR; ver _webPermisosGuardar() en 37_Web_API.gs. [→ Contexto_Base_Web.md §38B080]
+  // PANEL DE PERMISOS (19-sep-2026, pedido de Diana): webPermisosGuardar guarda Funciones y Cat_disp de UN administrador; datos = { id, funciones, categorias, clanesAdmin? } (clanesAdmin es opcional: si no viene, no se tocan los clanes del admin; PF155); solo el Celular de la Script Property PANEL_PERMISOS_CELULAR; ver _webPermisosGuardar() en 37_Web_API.gs. [→ Contexto_Base_Web.md §38B080]
   if (e && e.parameter && e.parameter.accion === 'webPermisosGuardar') {
     try {
       var payloadPermisos = JSON.parse(e.postData.contents);
@@ -58040,545 +58051,11 @@ var TOT_CFG = {
   MAX_CAMBIOS: 60
 };
 
-function aplicarTotalesSemanaDesdeHistorialInforme() { tot_ejecutar_(false); }
-function aplicarTotalesSemanaDesdeHistorialAplicar() { tot_ejecutar_(true); }
-
-function tot_ejecutar_(aplicar) {
-  var t0 = new Date();
-  var zona = Session.getScriptTimeZone();
-  var sello = Utilities.formatDate(new Date(), zona, 'yyyy-MM-dd HH.mm.ss');
-
-  // 1) Series SIN RESOLVER del ultimo informe de completar domingo.
-  var inf = tot_leerUltimoInforme_();
-  var hi = tot_indices_(inf.filas[0]);
-  var objetivos = [];
-  var claves = {};
-  for (var i = 1; i < inf.filas.length; i++) {
-    var f = inf.filas[i];
-    if (tot_celda_(f, hi, 'Fuente') !== 'Backup_Guerra.csv') continue;
-    if (tot_celda_(f, hi, 'Tipo') !== 'SIN RESOLVER') continue;
-    var o = {
-      temporada: tot_num_(tot_celda_(f, hi, 'Temporada')),
-      semana: tot_num_(tot_celda_(f, hi, 'Semana')),
-      tag: tot_tag_(tot_celda_(f, hi, 'Tag')),
-      nombre: tot_celda_(f, hi, 'Nombre'),
-      clan: tot_clan_(tot_celda_(f, hi, 'Clan')),
-      jsonAtaques: tot_num_(tot_celda_(f, hi, 'JSON ataques')),
-      jsonFame: tot_num_(tot_celda_(f, hi, 'JSON fame')),
-      jsonBarcos: tot_num_(tot_celda_(f, hi, 'JSON barcos'))
-    };
-    o.clave = tot_clave_(o.tag, o.temporada, o.semana, o.clan);
-    objetivos.push(o);
-    claves[o.clave] = true;
-  }
-
-  // 2) Backup: lee el texto, comprueba que el formato se reproduce y ubica la ultima fila.
-  var archivoBackup = tot_buscarArchivo_(TOT_CFG.CARPETA_BACKUP_ID, TOT_CFG.ARCHIVO_BACKUP);
-  var texto = archivoBackup.getBlob().getDataAsString('UTF-8');
-  var bom = texto.charCodeAt(0) === 0xFEFF;
-  if (bom) texto = texto.substring(1);
-  var eol = texto.indexOf('\r\n') !== -1 ? '\r\n' : '\n';
-  var terminaEnEol = /\r?\n$/.test(texto);
-  var filas = Utilities.parseCsv(texto);
-  while (filas.length && filas[filas.length - 1].length === 1 && filas[filas.length - 1][0] === '') filas.pop();
-
-  var reproduce = tot_serializar_(filas, eol) === texto.replace(/(\r?\n)+$/, '');
-
-  var hb = tot_indices_(filas[0]);
-  var cAtk = tot_indice_(hb, 'AtaquesSemana');
-  var cFame = tot_indice_(hb, 'Fame');
-  var cBar = tot_indice_(hb, 'Barcos');
-  var ultimo = {};
-  for (var b = 1; b < filas.length; b++) {
-    var r = filas[b];
-    var kb = tot_clave_(
-      tot_tag_(tot_celda_(r, hb, 'Tag')),
-      tot_num_(tot_celda_(r, hb, 'Temporada')),
-      tot_num_(tot_celda_(r, hb, 'Semana')),
-      tot_clan_(tot_celda_(r, hb, 'Clan')));
-    if (!claves[kb]) continue;
-    var pi = tot_num_(tot_celda_(r, hb, 'PeriodIndex'));
-    if (pi % 7 < 3) continue;   // §PF139: solo jueves a domingo (un PeriodIndex no numerico, que da 0, tambien queda fuera)
-    var previo = ultimo[kb];
-    if (!previo || pi >= previo.pi) {
-      ultimo[kb] = {
-        idx: b, pi: pi,
-        ataques: tot_num_(r[cAtk]), fame: tot_num_(r[cFame]), barcos: tot_num_(r[cBar])
-      };
-    }
-  }
-
-  // 3) Historial semanal.
-  var hs = tot_leerCsv_(TOT_CFG.CARPETA_HISTORIAL_ID, TOT_CFG.ARCHIVO_HISTORIAL);
-  var hh = tot_indices_(hs[0]);
-  var historial = {};
-  for (var h = 1; h < hs.length; h++) {
-    var q = hs[h];
-    var kh = tot_clave_(
-      tot_tag_(tot_celda_(q, hh, 'Tag')),
-      tot_num_(tot_celda_(q, hh, 'TemporadaInterna')),
-      tot_num_(tot_celda_(q, hh, 'Semana')),
-      tot_clan_(tot_celda_(q, hh, 'Clan')));
-    if (!claves[kh]) continue;
-    var reg = {
-      ataques: tot_num_(tot_celda_(q, hh, 'Ataques')),
-      fame: tot_num_(tot_celda_(q, hh, 'Fame')),
-      barcos: tot_num_(tot_celda_(q, hh, 'Barcos')),
-      cerrada: String(tot_celda_(q, hh, 'Cerrada')).toLowerCase() === 'true'
-    };
-    var ex = historial[kh];
-    if (!ex || (reg.cerrada && !ex.cerrada)) historial[kh] = reg;
-  }
-
-  // 4) Evaluar cada serie.
-  var salida = [[
-    'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Linea en Backup', 'PeriodIndex',
-    'Ataques antes', 'Ataques nuevo', 'Fame antes', 'Fame nueva', 'Barcos antes', 'Barcos nuevo',
-    'Decision', 'CRR ataques domingo', 'CRR fame domingo'
-  ]];
-  var cambios = [];
-  var conteo = {};
-  for (var k = 0; k < objetivos.length; k++) {
-    var ob = objetivos[k];
-    var bb = ultimo[ob.clave];
-    var hr = historial[ob.clave];
-    var motivo;
-    if (!bb) motivo = 'SIN_FILA_BACKUP';
-    else if (!hr) motivo = 'SIN_FILA_HISTORIAL';
-    else if (!hr.cerrada) motivo = 'HISTORIAL_ABIERTO';
-    else if (hr.ataques !== ob.jsonAtaques || hr.fame !== ob.jsonFame || hr.barcos !== ob.jsonBarcos) motivo = 'HISTORIAL_DISTINTO_DE_JSON';
-    // §PF139: el total semanal solo se escribe en la fila del DOMINGO. Si la ultima fila que hay es otra (por ejemplo el sabado), no se escribe
-    // nada y se avisa: escribirlo ahi hace que esa fila absorba los ataques del domingo (como paso el 18-oct-2026 en 11 casos de T3 S1 a S3).
-    else if (bb.pi % 7 !== 6) motivo = 'ULTIMA_FILA_NO_ES_DOMINGO';
-    else if (bb.ataques === ob.jsonAtaques && bb.fame === ob.jsonFame && bb.barcos === ob.jsonBarcos) motivo = 'YA_COINCIDE';
-    else if (bb.ataques > ob.jsonAtaques || bb.fame > ob.jsonFame || bb.barcos > ob.jsonBarcos) motivo = 'BACKUP_MAYOR_EN_ALGO';
-    else if (bb.ataques === 0 && bb.fame === 0) motivo = 'SEMANA_VACIA_EN_BACKUP_REVISAR';
-    else motivo = 'APLICAR';
-    // §PF139: CurrentRiverRace como comprobacion. Si con estos totales el domingo (o cualquier dia) saldria imposible, no se escribe y se avisa.
-    var crrDom = null;
-    if (motivo === 'APLICAR' && typeof _crrDomingoParaTotales_ === 'function') {
-      crrDom = _crrDomingoParaTotales_(ob.temporada, ob.semana, ob.tag, ob.jsonAtaques, ob.jsonFame);
-      if (crrDom && crrDom.conflicto) motivo = 'CRR_NO_CUADRA';
-    }
-    conteo[motivo] = (conteo[motivo] || 0) + 1;
-
-    if (motivo === 'APLICAR') {
-      cambios.push({ idx: bb.idx, atk: ob.jsonAtaques, fame: ob.jsonFame, barcos: ob.jsonBarcos });
-    }
-    salida.push([
-      ob.temporada, ob.semana, ob.tag, ob.nombre, ob.clan,
-      bb ? bb.idx + 1 : '', bb ? bb.pi : '',
-      bb ? bb.ataques : '', motivo === 'APLICAR' ? ob.jsonAtaques : '',
-      bb ? bb.fame : '', motivo === 'APLICAR' ? ob.jsonFame : '',
-      bb ? bb.barcos : '', motivo === 'APLICAR' ? ob.jsonBarcos : '',
-      motivo + (crrDom && crrDom.conflicto ? ' (' + crrDom.conflicto + ')' : ''),
-      crrDom && crrDom.ataquesDomingo !== null ? crrDom.ataquesDomingo : '',
-      crrDom && crrDom.fameDomingo !== null ? crrDom.fameDomingo : ''
-    ]);
-  }
-
-  var resumen = Object.keys(conteo).sort().map(function (c) { return c + ' ' + conteo[c]; }).join(' | ');
-  var carpetaInformes = DriveApp.getFolderById(TOT_CFG.CARPETA_INFORMES_ID);
-
-  // 5) Solo informar: guarda el detalle y termina.
-  if (!aplicar) {
-    var nombreInf = 'AplicarTotalesSemana_Historial ' + sello + ' (informe).csv';
-    tot_guardarCsv_(carpetaInformes, nombreInf, salida);
-    Logger.log('[TotalesSemanaHistorial] SOLO INFORMAR (' + Math.round((new Date() - t0) / 1000) + ' s). ' +
-      'Informe base: ' + inf.nombre + '. Series SIN RESOLVER: ' + objetivos.length + '. ' + resumen +
-      '. Cambios que se aplicarian: ' + cambios.length +
-      '. Formato del Backup reproducible: ' + (reproduce ? 'SI' : 'NO (no se podria aplicar)') +
-      '. Detalle en Drive: ' + nombreInf + '. (No se escribio nada.)');
-    return;
-  }
-
-  // 6) Aplicar: validaciones previas.
-  if (!reproduce) {
-    throw new Error('El formato de ' + TOT_CFG.ARCHIVO_BACKUP + ' no se reproduce exactamente al re-serializarlo. No se escribio nada.');
-  }
-  if (cambios.length === 0) {
-    Logger.log('[TotalesSemanaHistorial] APLICAR: no hay nada que cambiar. ' + resumen);
-    return;
-  }
-  if (cambios.length > TOT_CFG.MAX_CAMBIOS) {
-    throw new Error('Se piden ' + cambios.length + ' cambios (limite ' + TOT_CFG.MAX_CAMBIOS + '). No se escribio nada.');
-  }
-
-  // 7) Copia previa, escritura y verificacion.
-  var nombreCopia = 'Backup_Guerra ANTES de aplicar TotalesSemanaDesdeHistorial ' + sello + '.csv';
-  archivoBackup.makeCopy(nombreCopia, carpetaInformes);
-
-  for (var c = 0; c < cambios.length; c++) {
-    var cb = cambios[c];
-    filas[cb.idx][cAtk] = String(cb.atk);
-    filas[cb.idx][cFame] = String(cb.fame);
-    filas[cb.idx][cBar] = String(cb.barcos);
-  }
-  var nuevoTexto = tot_serializar_(filas, eol) + (terminaEnEol ? eol : '');
-  archivoBackup.setContent((bom ? '﻿' : '') + nuevoTexto);
-
-  var texto2 = archivoBackup.getBlob().getDataAsString('UTF-8');
-  if (texto2.charCodeAt(0) === 0xFEFF) texto2 = texto2.substring(1);
-  var filas2 = Utilities.parseCsv(texto2);
-  while (filas2.length && filas2[filas2.length - 1].length === 1 && filas2[filas2.length - 1][0] === '') filas2.pop();
-  var ok = filas2.length === filas.length;
-  for (var v = 0; ok && v < cambios.length; v++) {
-    var vb = cambios[v];
-    ok = filas2[vb.idx][cAtk] === String(vb.atk) &&
-         filas2[vb.idx][cFame] === String(vb.fame) &&
-         filas2[vb.idx][cBar] === String(vb.barcos);
-  }
-
-  var nombreApl = 'AplicarTotalesSemana_Historial ' + sello + ' (aplicado).csv';
-  tot_guardarCsv_(carpetaInformes, nombreApl, salida);
-  Logger.log('[TotalesSemanaHistorial] APLICADO (' + Math.round((new Date() - t0) / 1000) + ' s). ' +
-    cambios.length + ' fila(s) corregidas en ' + TOT_CFG.ARCHIVO_BACKUP + '. ' + resumen +
-    '. Verificacion tras escribir: ' + (ok ? 'OK' : 'FALLO, restaura la copia previa') +
-    '. Copia previa: ' + nombreCopia + '. Detalle: ' + nombreApl +
-    '. Siguiente: sube Backup_Guerra.csv a GitHub y corre updateControlSheet() y actualizarControl2().');
-}
-
-// ---------- utilidades ----------
-
-function tot_buscarArchivo_(carpetaId, nombre) {
-  var it = DriveApp.getFolderById(carpetaId).getFilesByName(nombre);
-  if (!it.hasNext()) throw new Error('No encuentro ' + nombre + ' en la carpeta ' + carpetaId);
-  return it.next();
-}
-
-function tot_leerCsv_(carpetaId, nombre) {
-  var texto = tot_buscarArchivo_(carpetaId, nombre).getBlob().getDataAsString('UTF-8');
-  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
-  return Utilities.parseCsv(texto);
-}
-
-function tot_leerUltimoInforme_() {
-  var it = DriveApp.getFolderById(TOT_CFG.CARPETA_INFORMES_ID).getFiles();
-  var mejor = null;
-  while (it.hasNext()) {
-    var f = it.next();
-    var n = f.getName();
-    if (n.indexOf(TOT_CFG.PREFIJO_INFORME) !== 0) continue;
-    if (n.indexOf('(informe).csv') === -1) continue;
-    if (!mejor || f.getDateCreated() > mejor.getDateCreated()) mejor = f;
-  }
-  if (!mejor) throw new Error('No hay informe ' + TOT_CFG.PREFIJO_INFORME + ' en Informes.');
-  var texto = mejor.getBlob().getDataAsString('UTF-8');
-  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
-  return { nombre: mejor.getName(), filas: Utilities.parseCsv(texto) };
-}
-
-function tot_indices_(encabezado) {
-  var m = {};
-  for (var i = 0; i < encabezado.length; i++) m[String(encabezado[i]).trim()] = i;
-  return m;
-}
-
-function tot_indice_(indices, nombre) {
-  var i = indices[nombre];
-  if (i === undefined) throw new Error('Falta la columna "' + nombre + '"');
-  return i;
-}
-
-function tot_celda_(fila, indices, nombre) {
-  var i = tot_indice_(indices, nombre);
-  return fila[i] === undefined ? '' : String(fila[i]).trim();
-}
-
-function tot_num_(v) {
-  var n = parseInt(String(v).replace(/[^\d-]/g, ''), 10);
-  return isNaN(n) ? 0 : n;
-}
-
-function tot_tag_(v) {
-  var t = String(v).trim().toUpperCase();
-  return t.charAt(0) === '#' ? t : '#' + t;
-}
-
-// En el historial el clan viene como "Nombre\nfecha": se queda con la primera linea.
-function tot_clan_(v) {
-  return String(v).split(/\r?\n/)[0].trim();
-}
-
-function tot_clave_(tag, temporada, semana, clan) {
-  return tag + '|' + temporada + '|' + semana + '|' + clan;
-}
-
-function tot_csvCelda_(v) {
-  var s = (v === null || v === undefined) ? '' : String(v);
-  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-}
-
-function tot_serializar_(filas, eol) {
-  return filas.map(function (fila) {
-    return fila.map(tot_csvCelda_).join(',');
-  }).join(eol);
-}
-
-function tot_guardarCsv_(carpeta, nombre, filas) {
-  carpeta.createFile(nombre, tot_serializar_(filas, '\r\n'), MimeType.CSV);
-}
-/**
- * cruzarSinResolverConHistorialInforme()
- *
- * SOLO INFORMA. No escribe en la hoja Guerra ni toca Backup_Guerra.csv.
- *
- * Toma las series "SIN RESOLVER" (json_mas_no_resuelve) del ultimo informe
- * Completar_DomingoDesdeJsonRoyaleApi ... (informe).csv, y compara el total
- * semanal de cada una entre tres fuentes:
- *   - Backup_Guerra.csv      (ultima fila de la semana)
- *   - JSON RoyaleAPI         (columnas "JSON ataques/fame/barcos" del informe)
- *   - HistorialGuerra_Grupal (Ataques/Fame/Barcos de la semana)
- *
- * Deja un CSV en la carpeta Informes con la clasificacion de cada serie.
- */
-var CRUCE_CFG = {
-  CARPETA_BACKUP_ID: '1emYkDZMEzYgO5lwmtY-NMhFc5JJd2I3R',
-  CARPETA_HISTORIAL_ID: '1T8PhxVVRZ-p7o2A_U6ARP-LsC3Zg7ObL',
-  CARPETA_INFORMES_ID: '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X',
-  ARCHIVO_BACKUP: 'Backup_Guerra.csv',
-  ARCHIVO_HISTORIAL: 'HistorialGuerra_Grupal.csv',
-  PREFIJO_INFORME: 'Completar_DomingoDesdeJsonRoyaleApi'
-};
-
-function cruzarSinResolverConHistorialInforme() {
-  var t0 = new Date();
-
-  // 1) Series SIN RESOLVER del ultimo informe de completar domingo.
-  var inf = cruce_leerUltimoInforme_();
-  var hi = cruce_indices_(inf.filas[0]);
-  var objetivos = [];
-  var claves = {};
-  for (var i = 1; i < inf.filas.length; i++) {
-    var f = inf.filas[i];
-    if (cruce_celda_(f, hi, 'Fuente') !== 'Backup_Guerra.csv') continue;
-    if (cruce_celda_(f, hi, 'Tipo') !== 'SIN RESOLVER') continue;
-    var o = {
-      temporada: cruce_num_(cruce_celda_(f, hi, 'Temporada')),
-      semana: cruce_num_(cruce_celda_(f, hi, 'Semana')),
-      tag: cruce_tag_(cruce_celda_(f, hi, 'Tag')),
-      nombre: cruce_celda_(f, hi, 'Nombre'),
-      clan: cruce_clan_(cruce_celda_(f, hi, 'Clan')),
-      jsonAtaques: cruce_num_(cruce_celda_(f, hi, 'JSON ataques')),
-      jsonFame: cruce_num_(cruce_celda_(f, hi, 'JSON fame')),
-      jsonBarcos: cruce_num_(cruce_celda_(f, hi, 'JSON barcos'))
-    };
-    o.clave = cruce_clave_(o.tag, o.temporada, o.semana, o.clan);
-    objetivos.push(o);
-    claves[o.clave] = true;
-  }
-
-  // 2) Total semanal en Backup_Guerra.csv (fila con mayor PeriodIndex de la semana).
-  var bk = cruce_leerCsv_(CRUCE_CFG.CARPETA_BACKUP_ID, CRUCE_CFG.ARCHIVO_BACKUP);
-  var hb = cruce_indices_(bk[0]);
-  var backup = {};
-  for (var b = 1; b < bk.length; b++) {
-    var r = bk[b];
-    var kb = cruce_clave_(
-      cruce_tag_(cruce_celda_(r, hb, 'Tag')),
-      cruce_num_(cruce_celda_(r, hb, 'Temporada')),
-      cruce_num_(cruce_celda_(r, hb, 'Semana')),
-      cruce_clan_(cruce_celda_(r, hb, 'Clan')));
-    if (!claves[kb]) continue;
-    var pi = cruce_num_(cruce_celda_(r, hb, 'PeriodIndex'));
-    var previo = backup[kb];
-    if (!previo || pi >= previo.pi) {
-      backup[kb] = {
-        pi: pi,
-        ataques: cruce_num_(cruce_celda_(r, hb, 'AtaquesSemana')),
-        fame: cruce_num_(cruce_celda_(r, hb, 'Fame')),
-        barcos: cruce_num_(cruce_celda_(r, hb, 'Barcos'))
-      };
-    }
-  }
-
-  // 3) Totales semanales en HistorialGuerra_Grupal.csv.
-  var hs = cruce_leerCsv_(CRUCE_CFG.CARPETA_HISTORIAL_ID, CRUCE_CFG.ARCHIVO_HISTORIAL);
-  var hh = cruce_indices_(hs[0]);
-  var historial = {};
-  var temporadasHist = {};
-  for (var h = 1; h < hs.length; h++) {
-    var q = hs[h];
-    var temp = cruce_num_(cruce_celda_(q, hh, 'TemporadaInterna'));
-    temporadasHist[temp] = true;
-    var kh = cruce_clave_(
-      cruce_tag_(cruce_celda_(q, hh, 'Tag')),
-      temp,
-      cruce_num_(cruce_celda_(q, hh, 'Semana')),
-      cruce_clan_(cruce_celda_(q, hh, 'Clan')));
-    if (!claves[kh]) continue;
-    var cerrada = String(cruce_celda_(q, hh, 'Cerrada')).toLowerCase() === 'true';
-    var reg = {
-      ataques: cruce_num_(cruce_celda_(q, hh, 'Ataques')),
-      fame: cruce_num_(cruce_celda_(q, hh, 'Fame')),
-      barcos: cruce_num_(cruce_celda_(q, hh, 'Barcos')),
-      cerrada: cerrada,
-      fuente: cruce_celda_(q, hh, 'Fuente')
-    };
-    // Si hay varias filas para la misma clave, prefiere la cerrada.
-    var ex = historial[kh];
-    if (!ex || (reg.cerrada && !ex.cerrada)) historial[kh] = reg;
-  }
-
-  // 4) Clasificar.
-  var salida = [[
-    'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan',
-    'JSON ataques', 'JSON fame', 'JSON barcos',
-    'Backup ataques', 'Backup fame', 'Backup barcos',
-    'Historial ataques', 'Historial fame', 'Historial barcos',
-    'Historial cerrada', 'Historial fuente',
-    'Clasificacion'
-  ]];
-  var conteo = {};
-  for (var k = 0; k < objetivos.length; k++) {
-    var ob = objetivos[k];
-    var bb = backup[ob.clave];
-    var hr = historial[ob.clave];
-    var clase;
-    if (!bb) {
-      clase = 'SIN_FILA_BACKUP';
-    } else if (!hr) {
-      clase = 'SIN_FILA_HISTORIAL';
-    } else {
-      var hiEqBk = hr.ataques === bb.ataques && hr.fame === bb.fame;
-      var hiEqJs = hr.ataques === ob.jsonAtaques && hr.fame === ob.jsonFame;
-      if (hiEqBk) clase = 'HISTORIAL_IGUAL_BACKUP';
-      else if (hiEqJs) clase = 'HISTORIAL_IGUAL_JSON';
-      else clase = 'HISTORIAL_DISTINTO_DE_AMBOS';
-      if (!hr.cerrada) clase += ' (semana abierta en historial)';
-    }
-    conteo[clase] = (conteo[clase] || 0) + 1;
-    salida.push([
-      ob.temporada, ob.semana, ob.tag, ob.nombre, ob.clan,
-      ob.jsonAtaques, ob.jsonFame, ob.jsonBarcos,
-      bb ? bb.ataques : '', bb ? bb.fame : '', bb ? bb.barcos : '',
-      hr ? hr.ataques : '', hr ? hr.fame : '', hr ? hr.barcos : '',
-      hr ? hr.cerrada : '', hr ? hr.fuente : '',
-      clase
-    ]);
-  }
-
-  // 5) Guardar informe en Informes.
-  var zona = Session.getScriptTimeZone();
-  var nombre = 'Cruce_SinResolver_Historial ' +
-    Utilities.formatDate(new Date(), zona, 'yyyy-MM-dd HH.mm.ss') + ' (informe).csv';
-  var csv = salida.map(function (fila) {
-    return fila.map(cruce_csvCelda_).join(',');
-  }).join('\r\n');
-  DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID).createFile(nombre, csv, MimeType.CSV);
-
-  var resumen = Object.keys(conteo).sort().map(function (c) {
-    return c + ' ' + conteo[c];
-  }).join(' | ');
-  var seg = Math.round((new Date() - t0) / 1000);
-  Logger.log('[CruceSinResolver] SOLO INFORMAR (' + seg + ' s). Informe base: ' + inf.nombre +
-    '. Series SIN RESOLVER: ' + objetivos.length + '. ' + resumen +
-    '. TemporadaInterna en historial: ' + Object.keys(temporadasHist).sort().join(',') +
-    '. Detalle en Drive: ' + nombre + '. (No se escribio nada en Guerra.)');
-}
-
-// ---------- utilidades ----------
-
-function cruce_leerCsv_(carpetaId, nombre) {
-  var it = DriveApp.getFolderById(carpetaId).getFilesByName(nombre);
-  if (!it.hasNext()) throw new Error('No encuentro ' + nombre + ' en la carpeta ' + carpetaId);
-  var texto = it.next().getBlob().getDataAsString('UTF-8');
-  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
-  return Utilities.parseCsv(texto);
-}
-
-function cruce_leerUltimoInforme_() {
-  var it = DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID).getFiles();
-  var mejor = null;
-  while (it.hasNext()) {
-    var f = it.next();
-    var n = f.getName();
-    if (n.indexOf(CRUCE_CFG.PREFIJO_INFORME) !== 0) continue;
-    if (n.indexOf('(informe).csv') === -1) continue;
-    if (!mejor || f.getDateCreated() > mejor.getDateCreated()) mejor = f;
-  }
-  if (!mejor) throw new Error('No hay informe ' + CRUCE_CFG.PREFIJO_INFORME + ' en Informes.');
-  var texto = mejor.getBlob().getDataAsString('UTF-8');
-  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.substring(1);
-  return { nombre: mejor.getName(), filas: Utilities.parseCsv(texto) };
-}
-
-function cruce_indices_(encabezado) {
-  var m = {};
-  for (var i = 0; i < encabezado.length; i++) {
-    m[String(encabezado[i]).trim()] = i;
-  }
-  return m;
-}
-
-function cruce_celda_(fila, indices, nombre) {
-  var i = indices[nombre];
-  if (i === undefined) throw new Error('Falta la columna "' + nombre + '"');
-  return fila[i] === undefined ? '' : String(fila[i]).trim();
-}
-
-function cruce_num_(v) {
-  var n = parseInt(String(v).replace(/[^\d-]/g, ''), 10);
-  return isNaN(n) ? 0 : n;
-}
-
-function cruce_tag_(v) {
-  var t = String(v).trim().toUpperCase();
-  return t.charAt(0) === '#' ? t : '#' + t;
-}
-
-// En el historial el clan viene como "Nombre\nfecha": se queda con la primera linea.
-function cruce_clan_(v) {
-  return String(v).split(/\r?\n/)[0].trim();
-}
-
-function cruce_clave_(tag, temporada, semana, clan) {
-  return tag + '|' + temporada + '|' + semana + '|' + clan;
-}
-
-function cruce_csvCelda_(v) {
-  var s = (v === null || v === undefined) ? '' : String(v);
-  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-}
-
-/**
- * aplicarTotalesSemanaDesdeHistorialInforme()  -> SOLO INFORMA (no escribe nada).
- * aplicarTotalesSemanaDesdeHistorialAplicar()  -> escribe en Backup_Guerra.csv (con copia previa).
- *
- * Que hace:
- *  Toma las series "SIN RESOLVER" (Backup_Guerra.csv) del ultimo informe
- *  Completar_DomingoDesdeJsonRoyaleApi ... (informe).csv y, para cada una,
- *  corrige los TOTALES SEMANALES (AtaquesSemana, Fame, Barcos) de la ULTIMA fila
- *  de esa semana (la de mayor PeriodIndex) cuando se cumplen TODAS estas condiciones:
- *    1. Existe la fila en el Backup y en HistorialGuerra_Grupal.csv.
- *    2. La semana esta cerrada en el Historial.
- *    3. El Historial coincide exactamente con el JSON (ataques, fame y barcos).
- *    4. El Backup no coincide y es MENOR O IGUAL en los tres totales (nunca se baja nada).
- *    5. La semana no esta vacia en el Backup (ataques y fame distintos de 0 a la vez
- *       no son ambos 0): si el Backup tiene 0/0 se deja para revision manual.
- *
- *  NO toca AtaquesHoy ni ninguna otra fila de la semana. No reparte ataques por dia.
- *  NO toca la hoja Guerra.
- *
- * Seguridad:
- *  - Antes de escribir comprueba que re-serializar el CSV reproduce EXACTAMENTE el texto
- *    original; si no, aborta sin escribir.
- *  - Guarda una copia "Backup_Guerra ANTES de aplicar TotalesSemanaDesdeHistorial ..." en Informes.
- *  - Aborta si hay mas de MAX_CAMBIOS cambios (se esperan ~27).
- *  - Verifica leyendo de nuevo el archivo despues de escribir.
- */
-var TOT_CFG = {
-  CARPETA_BACKUP_ID: '1emYkDZMEzYgO5lwmtY-NMhFc5JJd2I3R',
-  CARPETA_HISTORIAL_ID: '1T8PhxVVRZ-p7o2A_U6ARP-LsC3Zg7ObL',
-  CARPETA_INFORMES_ID: '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X',
-  ARCHIVO_BACKUP: 'Backup_Guerra.csv',
-  ARCHIVO_HISTORIAL: 'HistorialGuerra_Grupal.csv',
-  PREFIJO_INFORME: 'Completar_DomingoDesdeJsonRoyaleApi',
-  MAX_CAMBIOS: 60
-};
-
-function aplicarTotalesSemanaDesdeHistorialInforme() { tot_ejecutar_(false); }
-function aplicarTotalesSemanaDesdeHistorialAplicar() { tot_ejecutar_(true); }
+// §PF139 (21-oct-2026): estas dos entradas ahora llaman a _totSemanaPorDias_() (57_ReconstruirSemanaPorDias.gs), que reconstruye los cuatro dias de cada
+// semana con los registros, el total cerrado de RoyaleAPI y CurrentRiverRace, y corrige o crea las filas. tot_ejecutar_() (la version que solo ponia el
+// total en la ultima fila) queda sin uso.
+function aplicarTotalesSemanaDesdeHistorialInforme() { _totSemanaPorDias_(false); }
+function aplicarTotalesSemanaDesdeHistorialAplicar() { _totSemanaPorDias_(true); }
 
 function tot_ejecutar_(aplicar) {
   var t0 = new Date();
@@ -61001,7 +60478,8 @@ function _fameCrr52Verificar_(filasAntes, filasDespues, plan) {
 // Este archivo solo LEE y calcula; no escribe en ninguna hoja ni CSV.
 // Tanda 1 (21-oct-2026): módulo nuevo. Tanda 2 (21-oct-2026): _repartirSemanaConjunto_() (18_CorreccionGuerra.gs) ya usa
 // _crrDiasDeJugador_() como restricción. Tanda 3 (21-oct-2026): la corrección al cerrar el día (17_GuerraSheet.gs,
-// _autocorregirAtaqueDiaAnteriorDecksUsed) usa _crrAyerParaCierre_(). Tanda 4 (21-oct-2026): AplicarTotalesSemana_Historial (48_Herramientas_Debug.gs, tot_ejecutar_) usa _crrDomingoParaTotales_().
+// _autocorregirAtaqueDiaAnteriorDecksUsed) usa _crrAyerParaCierre_(). Tanda 4 (21-oct-2026): AplicarTotalesSemana_Historial se rehizo en 57_ReconstruirSemanaPorDias.gs, que usa _crrDiasDeJugador_() y _crrFameDia_();
+// _crrDomingoParaTotales_() (abajo) solo la usa tot_ejecutar_() de 48_Herramientas_Debug.gs, que ya no se llama.
 //
 // Qué trae cada captura (un archivo por clan, semana y día, que se va sobrescribiendo: queda la ÚLTIMA captura de ese día):
 //   decksUsed = ataques acumulados de la semana; decksUsedToday = ataques de ese día; fame = fame acumulada de la semana.
@@ -61216,6 +60694,446 @@ function _crrDomingoParaTotales_(temporada, semana, tag, totA, totF) {
   } catch (e) {
     Logger.log('[CRR] No se pudo comprobar los totales (' + tag + '): ' + e.message);
     return null;
+  }
+}
+
+
+// --- ARCHIVO: 57_ReconstruirSemanaPorDias.gs ---
+/**
+ * 57_ReconstruirSemanaPorDias.gs
+ *
+ * Reconstruye, por jugador y clan, los ataques, barcos y fame de CADA día de una semana de guerra (jueves a domingo) en
+ * Backup_Guerra.csv a partir de lo registrado, del total semanal de RoyaleAPI y, si existe, de CurrentRiverRace.
+ * Reemplaza a la escritura de «AplicarTotalesSemana_Historial» (que solo ponía el total en la última fila). Contexto_Base_Web.md §PF139.
+ *
+ * Entradas (Drive):
+ *   aplicarTotalesSemanaDesdeHistorialInforme() -> SOLO INFORMA: CSV de series y CSV del plan. No escribe nada en el Backup.
+ *   aplicarTotalesSemanaDesdeHistorialAplicar() -> respaldo previo, escribe, y verifica releyendo el CSV.
+ *   (las dos llaman a _totSemanaPorDias_(aplicar); sus nombres se mantienen y están en 48_Herramientas_Debug.gs)
+ *
+ * El modelo (decisiones de la usuaria, 21-oct-2026):
+ *  - Cada día es una terna (ataques, barcos, fame) de la tabla de fame (_fameTablaDia_()). No se editan por separado.
+ *  - El acumulado de la semana al final del domingo es el total CERRADO de RoyaleAPI (los JSON que ya lee completarDomingoDesdeJsonRoyaleApi; una semana sin cerrar no se toca).
+ *  - Cada fila registrada es un acumulado al momento de registrarla. Si el registro fue temprano, le faltan ataques o medallas: el verdadero
+ *    acumulado de ese día es MAYOR que el registrado. Si no, es igual. Se sabe cuál es el caso por las diferencias:
+ *    AtaquesSemana - AtaquesHoy de una fila = ataques hechos hasta el día anterior (jueves = viernes, y así).
+ *  - Una fila puede traer el acumulado de un día POSTERIOR (el total puesto en la última fila que existía, como pasó en T3 S1 a S3): se prueba
+ *    que cada fila corresponda a su día o a uno de los días siguientes hasta la próxima fila (primero lo menos desplazado).
+ *  - Se buscan TODAS las combinaciones de ternas de los cuatro días que cumplan eso y sumen el total. Con una sola, es definitiva
+ *    («Solución única»). Con varias, se elige la que menos cambia lo registrado y, a igualdad, la que reparte de domingo a jueves
+ *    («Solución estimada»). Los días con la misma terna en todas las soluciones se marcan «única» aunque la semana sea ambigua.
+ *  - CurrentRiverRace (módulo 56), si hay, fija los ataques y la fame de cada día que tenga dato. Si con eso no hay solución, se avisa
+ *    y se reparte sin él (misma decisión de las tandas anteriores de §PF139).
+ *  - Se corrigen las filas existentes que no coinciden y se CREAN las que faltan (Origen 'Reconstruido - Solución ...').
+ *  - Si ningún reparto cumple los registros y el total, no se escribe y la serie queda en el informe y en Revision_Guerra.csv.
+ * Reutiliza de 55_Reparar_DiasConExceso.gs la agrupación, la creación de filas, la aplicación del plan y la verificación.
+ */
+
+var RS_MAX_FILAS = 2500;     // tope de filas a modificar + crear en una escritura (si se pasa, no se escribe nada)
+var RS_MS_LIMITE = 270000;   // tiempo máximo de planificación (ms); lo que falte se deja para otra corrida
+
+var RS_NIVELES = [
+  { nombre: 'estricto con AtaquesHoy y CurrentRiverRace', estricto: true, hoy: true, crr: true },
+  { nombre: 'estricto con AtaquesHoy', estricto: true, hoy: true, crr: false },
+  { nombre: 'estricto sin AtaquesHoy', estricto: true, hoy: false, crr: false },
+  { nombre: 'relajado con AtaquesHoy', estricto: false, hoy: true, crr: false },
+  { nombre: 'relajado sin AtaquesHoy', estricto: false, hoy: false, crr: false }
+];
+
+var _rsCatalogo_ = null;
+/** Las 77 ternas posibles de un día: { lista: [{ n, b, f, k }], claves: { 'n,b,f': true } }. */
+function _rsCatalogo() {
+  if (_rsCatalogo_) return _rsCatalogo_;
+  var o = _excDiasOpciones(), lista = [], claves = {};
+  for (var i = 0; i < o.length; i++) {
+    var e = { n: o[i][0], b: o[i][1], f: o[i][2], k: o[i][0] + ',' + o[i][1] + ',' + o[i][2] };
+    lista.push(e); claves[e.k] = true;
+  }
+  _rsCatalogo_ = { lista: lista, claves: claves };
+  return _rsCatalogo_;
+}
+
+/** Lo registrado por día (acumulados de la fila): arreglo de 4 con { a, b, f, hoy } o null. */
+function _rsRegistros(dias) {
+  var rec = [null, null, null, null];
+  for (var d = 0; d < 4; d++) {
+    var r = dias[d];
+    if (r) rec[d] = { a: _excDiasNum(r[GC.ATAQUES_SEM - 1]), b: _excDiasNum(r[GC.BARCOS - 1]), f: _excDiasNum(r[GC.FAME - 1]), hoy: _excDiasNum(r[GC.ATAQUES_HOY - 1]) };
+  }
+  return rec;
+}
+
+/**
+ * A qué día puede corresponder cada fila registrada: a su propio día o a uno de los siguientes hasta la próxima fila.
+ * Devuelve { offs: [días con fila], combos: [[día al que corresponde cada fila]] } con los menos desplazados primero.
+ */
+function _rsMapeos(rec) {
+  var offs = [];
+  for (var d = 0; d < 4; d++) if (rec[d]) offs.push(d);
+  var combos = [[]];
+  offs.forEach(function (d, i) {
+    var hi = (i + 1 < offs.length) ? offs[i + 1] - 1 : 3;
+    var nuevos = [];
+    combos.forEach(function (c) { for (var m = d; m <= hi; m++) nuevos.push(c.concat([m])); });
+    combos = nuevos;
+  });
+  var desp = function (c) { var s = 0; for (var i = 0; i < c.length; i++) s += c[i] - offs[i]; return s; };
+  combos.sort(function (u, v) { return desp(u) - desp(v); });
+  return { offs: offs, combos: combos };
+}
+
+/** ¿La solución a es mejor que b a igualdad de cambios? Reparte de domingo a jueves: más ataques, luego más fame, luego más barcos, mirando primero el domingo. */
+function _rsMenor(a, b) {
+  var d;
+  for (d = 3; d >= 0; d--) if (a[d].n !== b[d].n) return a[d].n > b[d].n;
+  for (d = 3; d >= 0; d--) if (a[d].f !== b[d].f) return a[d].f > b[d].f;
+  for (d = 3; d >= 0; d--) if (a[d].b !== b[d].b) return a[d].b > b[d].b;
+  return false;
+}
+
+/**
+ * Busca todas las soluciones (t0, t1, t2, t3) de un nivel y una correspondencia fila -> día.
+ *  tot = { a, b, f } total de la semana; rec = _rsRegistros(); mapeo = { offs, m: [día al que corresponde cada fila] };
+ *  restr = restricciones de CurrentRiverRace por día ([{ n, f }|null] o null).
+ * Devuelve { nSol, porDia: [cantidad de ternas distintas por día], mejor: [4 ternas] | null }.
+ */
+function _rsResolverNivel(tot, rec, mapeo, restr, nivel) {
+  var cat = _rsCatalogo();
+  var cand = [], sets = [], d, i;
+  for (d = 0; d < 4; d++) {
+    var rs = restr ? restr[d] : null, lst = [], st = {};
+    for (i = 0; i < cat.lista.length; i++) {
+      var e = cat.lista[i];
+      if (rs && ((rs.n !== null && e.n !== rs.n) || (rs.f !== null && e.f !== rs.f))) continue;
+      lst.push(e); st[e.k] = true;
+    }
+    cand.push(lst); sets.push(st);
+  }
+  var rowAt = [null, null, null, null], K = [null, null, null, tot.a];
+  for (i = 0; i < mapeo.offs.length; i++) {
+    var dEn = mapeo.offs[i], dMap = mapeo.m[i], r = rec[dEn];
+    rowAt[dMap] = r;
+    // Ataques hechos hasta el dia anterior = AtaquesSemana - AtaquesHoy (solo si la fila corresponde a su propio dia).
+    if (nivel.hoy && dMap === dEn && dEn >= 1 && r.hoy <= r.a) {
+      var v = r.a - r.hoy;
+      if (v <= 4 * dEn && K[dEn - 1] === null) K[dEn - 1] = v;
+    }
+  }
+  function chk(dia, a, b, f) {
+    if (K[dia] !== null && a !== K[dia]) return false;
+    var rr = rowAt[dia];
+    if (!rr) return true;
+    if (a < rr.a || b < rr.b || f < rr.f) return false;
+    if (nivel.estricto && a === rr.a && (b !== rr.b || f !== rr.f)) return false;
+    return true;
+  }
+  var vacio = { nSol: 0, porDia: [0, 0, 0, 0], mejor: null };
+  if (!chk(3, tot.a, tot.b, tot.f)) return vacio;
+
+  var nSol = 0, mejor = null, mejorCosto = Infinity, claves = [{}, {}, {}, {}];
+  var l0 = cand[0], l1 = cand[1], l3 = cand[3], s2 = sets[2];
+  for (var i3 = 0; i3 < l3.length; i3++) {
+    var t3 = l3[i3];
+    var a2 = tot.a - t3.n, b2 = tot.b - t3.b, f2 = tot.f - t3.f;           // acumulado al cierre del sabado
+    if (a2 < 0 || b2 < 0 || f2 < 0 || !chk(2, a2, b2, f2)) continue;
+    for (var i0 = 0; i0 < l0.length; i0++) {
+      var t0 = l0[i0];
+      if (t0.n > a2 || t0.b > b2 || t0.f > f2 || !chk(0, t0.n, t0.b, t0.f)) continue;
+      for (var i1 = 0; i1 < l1.length; i1++) {
+        var t1 = l1[i1];
+        var a1 = t0.n + t1.n, b1 = t0.b + t1.b, f1 = t0.f + t1.f;           // acumulado al cierre del viernes
+        if (a1 > a2 || b1 > b2 || f1 > f2 || !chk(1, a1, b1, f1)) continue;
+        var k2 = (a2 - a1) + ',' + (b2 - b1) + ',' + (f2 - f1);
+        if (!s2[k2]) continue;
+        nSol++;
+        claves[0][t0.k] = true; claves[1][t1.k] = true; claves[2][k2] = true; claves[3][t3.k] = true;
+        // Costo = campos de las filas registradas que cambian.
+        var costo = 0;
+        for (i = 0; i < mapeo.offs.length; i++) {
+          var dd = mapeo.offs[i], rg = rec[dd];
+          var ca = dd === 0 ? t0.n : (dd === 1 ? a1 : (dd === 2 ? a2 : tot.a));
+          var cb = dd === 0 ? t0.b : (dd === 1 ? b1 : (dd === 2 ? b2 : tot.b));
+          var cf = dd === 0 ? t0.f : (dd === 1 ? f1 : (dd === 2 ? f2 : tot.f));
+          costo += (ca !== rg.a ? 1 : 0) + (cb !== rg.b ? 1 : 0) + (cf !== rg.f ? 1 : 0);
+        }
+        if (costo > mejorCosto) continue;
+        var p = k2.split(',');
+        var cand4 = [t0, t1, { n: Number(p[0]), b: Number(p[1]), f: Number(p[2]), k: k2 }, t3];
+        if (mejor === null || costo < mejorCosto || _rsMenor(cand4, mejor)) { mejor = cand4; mejorCosto = costo; }
+      }
+    }
+  }
+  return { nSol: nSol, porDia: claves.map(function (c) { return Object.keys(c).length; }), mejor: mejor };
+}
+
+/**
+ * Resuelve una serie: de lo más estricto a lo más relajado, y con las filas en su día antes que desplazadas, la primera
+ * forma que tenga solución. Devuelve { nSol, porDia, mejor, nivel, desplazadas, crrIgnorado } o { nSol: 0 } si no hay ninguna.
+ */
+function _rsResolver(dias, tot, crr) {
+  var rec = _rsRegistros(dias), mp = _rsMapeos(rec);
+  for (var n = 0; n < RS_NIVELES.length; n++) {
+    var nivel = RS_NIVELES[n];
+    if (nivel.crr && !crr) continue;
+    for (var c = 0; c < mp.combos.length; c++) {
+      var mapeo = { offs: mp.offs, m: mp.combos[c] };
+      var res = _rsResolverNivel(tot, rec, mapeo, nivel.crr ? crr : null, nivel);
+      if (res.nSol > 0) {
+        var despl = [];
+        mapeo.offs.forEach(function (o, i) { if (mapeo.m[i] !== o) despl.push(EXC_DIAS_LETRAS.charAt(o) + '->' + EXC_DIAS_LETRAS.charAt(mapeo.m[i])); });
+        res.nivel = nivel.nombre; res.desplazadas = despl.join(' '); res.crrIgnorado = !!crr && !nivel.crr;
+        return res;
+      }
+    }
+  }
+  return { nSol: 0, porDia: [0, 0, 0, 0], mejor: null, nivel: '', desplazadas: '', crrIgnorado: !!crr };
+}
+
+/** Restricciones de CurrentRiverRace por día ([{ n, f }|null] x 4) o null si no hay capturas, se contradicen o no se puede leer Drive. */
+function _rsCrrRestricciones(temporada, semana, tag, tot) {
+  if (typeof _crrDiasDeJugador_ !== 'function') return null;
+  try {
+    var r = _crrDiasDeJugador_(temporada, semana, tag, tot.a, tot.f);
+    if (!r || !r.hayCapturas || (r.notas && r.notas.length)) return null;
+    var fd = _crrFameDia_(r.fameAcum), out = [], hay = false;
+    for (var d = 0; d < 4; d++) {
+      var n = (r.ataques[d] === undefined) ? null : r.ataques[d];
+      var f = (fd[d] === undefined) ? null : fd[d];
+      if (n === null && f === null) { out.push(null); continue; }
+      out.push({ n: n, f: f }); hay = true;
+    }
+    return hay ? out : null;
+  } catch (e) {
+    Logger.log('[Semana por dias] No se pudo leer CurrentRiverRace (' + tag + '): ' + e.message + '. Se sigue sin el.');
+    return null;
+  }
+}
+
+/**
+ * Planifica la escritura. NO modifica filas. objetivos = [{ temporada, semana, tag, nombre, clan, jsonAtaques, jsonFame, jsonBarcos, omitir }]
+ * (omitir = motivo de texto si el Historial no confirma el total). opciones = { usarCrr, t0 }.
+ * Devuelve { casos: [{ grupo, clase, estimado, ops, finalAntes }], omitidos: [{ grupo, clase, motivo, alarma }], series: [...] } (mismo formato de ops que
+ * _excDiasPlanificar(), para reutilizar _excDiasAplicarPlan() y _excDiasVerificar()).
+ */
+function _rsPlanificar(filas, objetivos, opciones) {
+  opciones = opciones || {};
+  var grupos = _excDiasAgrupar(filas), porClave = {}, porSemana = {};
+  Object.keys(grupos).forEach(function (k) {
+    var g = grupos[k];
+    porClave[tot_clave_(tot_tag_(g.tag), tot_num_(g.temporada), tot_num_(g.semana), tot_clan_(g.clan))] = g;
+    var ks = g.temporada + '|' + g.semana + '|' + g.tag;
+    if (!porSemana[ks]) porSemana[ks] = [];
+    porSemana[ks].push(g);
+  });
+  var plan = { casos: [], omitidos: [], series: [] };
+  var t0 = opciones.t0 || Date.now();
+
+  objetivos.forEach(function (ob) {
+    var clave = tot_clave_(ob.tag, ob.temporada, ob.semana, ob.clan);
+    var g = porClave[clave] || { temporada: String(ob.temporada), semana: String(ob.semana), tag: ob.tag, clan: ob.clan, nombre: ob.nombre || '', dias: {} };
+    var patron = Object.keys(g.dias).map(Number).sort(function (a, b) { return a - b; }).map(function (o) { return EXC_DIAS_LETRAS.charAt(o); }).join('');
+    var tot = { a: ob.jsonAtaques, b: ob.jsonBarcos, f: ob.jsonFame };
+    var serie = { grupo: g, ob: ob, patron: patron, tot: tot, clase: '', nivel: '', soluciones: '', accion: '', nMod: 0, nCrear: 0, notas: '' };
+    plan.series.push(serie);
+    var omitir = function (motivo, alarma) {
+      serie.clase = 'omitida'; serie.accion = 'OMITIDA'; serie.notas = motivo;
+      plan.omitidos.push({ grupo: g, clase: 'omitida', motivo: motivo, alarma: !!alarma });
+    };
+    if (ob.omitir) { omitir(ob.omitir, false); return; }
+    if (Date.now() - t0 > RS_MS_LIMITE) { omitir('tiempo agotado: volver a correr para el resto', false); return; }
+    if (tot.a > 16 || tot.a < 0) { omitir('total de ataques fuera de 0 a 16 (' + tot.a + ')', true); return; }
+
+    var crr = opciones.usarCrr === false ? null : _rsCrrRestricciones(ob.temporada, ob.semana, ob.tag, tot);
+    var res = _rsResolver(g.dias, tot, crr);
+    if (res.nSol === 0) {
+      omitir('ningun reparto de ternas cumple los registros y el total de RoyaleAPI (' + tot.a + '/' + tot.b + '/' + tot.f + ')', true);
+      return;
+    }
+    serie.nivel = res.nivel; serie.soluciones = res.nSol;
+    var notas = [];
+    if (res.crrIgnorado) { notas.push('CurrentRiverRace no cuadra con los registros y el total: no se uso'); Logger.log('[Semana por dias] AVISO ' + ob.tag + ' T' + ob.temporada + ' S' + ob.semana + ': CurrentRiverRace no cuadra; se repartio sin el.'); }
+    if (res.desplazadas) notas.push('fila(s) con el acumulado de un dia posterior: ' + res.desplazadas);
+    if (res.nivel.indexOf('sin AtaquesHoy') >= 0) notas.push('AtaquesHoy no cuadra con los acumulados: no se uso');
+    if (res.nivel.indexOf('relajado') === 0) notas.push('nivel relajado: se acepto que una fila con todos sus ataques tuviera barcos o fame mayores (revisar)');
+
+    var reg = _excDiasRegistradoPorDia(g.dias), sol = res.mejor, cumA = 0, cumB = 0, cumF = 0, ops = [], estimado = false;
+    for (var d = 0; d < 4; d++) {
+      var e = sol[d];
+      cumA += e.n; cumB += e.b; cumF += e.f;
+      var fila = g.dias[d] || null, estDia = res.porDia[d] > 1;
+      if (estDia) estimado = true;
+      ops.push({ dia: d, existe: !!fila, fila: fila, estimadoDia: estDia,
+        ant: fila ? { hoy: _excDiasNum(fila[GC.ATAQUES_HOY - 1]), sem: _excDiasNum(fila[GC.ATAQUES_SEM - 1]), fame: _excDiasNum(fila[GC.FAME - 1]), barcos: _excDiasNum(fila[GC.BARCOS - 1]), origen: String(fila[GC.ORIGEN - 1] || '') } : null,
+        antDia: reg[d] || null,
+        nuevo: { hoy: e.n, sem: cumA, fame: cumF, barcos: cumB, fameDia: e.f, barcosDia: e.b, origen: '' } });
+    }
+    // Comprobacion entre clanes: tope de 4 por dia y de 16 por semana sumando los demas clanes del jugador.
+    var otros = (porSemana[g.temporada + '|' + g.semana + '|' + g.tag] || []).filter(function (o) { return o.clan !== g.clan; });
+    var excede = '';
+    ops.forEach(function (op) {
+      var suma = op.nuevo.hoy;
+      otros.forEach(function (o) { if (o.dias[op.dia]) suma += _excDiasNum(o.dias[op.dia][GC.ATAQUES_HOY - 1]); });
+      if (suma > 4) excede = 'el dia ' + EXC_DIAS_LETRAS.charAt(op.dia) + ' quedaria con ' + suma + ' ataques sumando clanes';
+    });
+    var semanaOtros = 0;
+    otros.forEach(function (o) { semanaOtros += _excDiasFinalDe(o.dias).a; });
+    if (!excede && cumA + semanaOtros > 16) excede = 'la semana quedaria con ' + (cumA + semanaOtros) + ' ataques sumando clanes';
+    if (excede) { omitir(excede, true); return; }
+
+    ops.forEach(function (op) {
+      op.nuevo.origen = _excDiasOrigenNuevo(op.existe ? op.ant.origen : '', op.existe, op.estimadoDia);
+      if (op.existe && op.ant.hoy === op.nuevo.hoy && op.ant.sem === op.nuevo.sem && op.ant.fame === op.nuevo.fame && op.ant.barcos === op.nuevo.barcos) {
+        op.sinCambio = true; op.nuevo.origen = op.ant.origen;
+      }
+      if (!op.existe) serie.nCrear++; else if (!op.sinCambio) serie.nMod++;
+    });
+    serie.clase = res.nSol === 1 ? 'unica' : 'estimada';
+    serie.notas = notas.join('; ');
+    if (serie.nMod === 0 && serie.nCrear === 0) { serie.accion = 'Sin cambios'; return; }
+    serie.accion = 'Escribir';
+    plan.casos.push({ grupo: g, clase: serie.clase, estimado: estimado, ops: ops, finalAntes: { a: tot.a, b: tot.b, f: tot.f } });
+  });
+  return plan;
+}
+
+/** Claves (tag|temporada|semana|clan) de las series que tienen filas en la hoja Guerra (temporada vigente): esas no se tocan aqui. */
+function _rsClavesHoja() {
+  var set = {};
+  try {
+    var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+    if (!sh || sh.getLastRow() < 2) return set;
+    var datos = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+    datos.forEach(function (f) {
+      if (String(f[GC.ETAPA - 1] || '').trim() !== 'Guerra') return;
+      set[tot_clave_(tot_tag_(f[GC.TAG - 1]), tot_num_(f[GC.TEMPORADA - 1]), tot_num_(f[GC.SEMANA - 1]), tot_clan_(f[GC.CLAN - 1]))] = true;
+    });
+  } catch (e) { Logger.log('[Semana por dias] No se pudo leer la hoja Guerra: ' + e.message); }
+  return set;
+}
+
+/**
+ * Objetivos = una serie (jugador, clan, temporada, semana) por cada total semanal CERRADO de los JSON de RoyaleAPI de los jugadores que aparecen en el
+ * Backup (mismo origen que completarDomingoDesdeJsonRoyaleApi: _cdjCargarRegistrosJsonDrive_ y _cdjIndexarRegistrosJson_), con o sin filas en el Backup.
+ * Cada objetivo trae omitir (texto) si no se puede usar: JSON sin cerrar, JSON inconsistente, sin total de barcos o serie de la hoja Guerra.
+ * Devuelve null si se agotó el tiempo leyendo los JSON (no se escribe nada).
+ */
+function _rsObjetivos(filas, claveHoja) {
+  var tagsSet = {};
+  filas.forEach(function (f) {
+    if (String(f[GC.ETAPA - 1] || '').trim() !== 'Guerra') return;
+    var tg = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+    if (tg) tagsSet[tg] = true;
+  });
+  var lectura = _cdjCargarRegistrosJsonDrive_(tagsSet, COMPLETAR_DOMINGO_JSON_PRESUPUESTO_LECTURA_MS);
+  if (!lectura.ok) return null;
+  var indice = _cdjIndexarRegistrosJson_(lectura.porTag), objetivos = [];
+  Object.keys(indice.series).sort().forEach(function (k) {
+    var p = k.split('|');
+    var js = _cdjJsonDeSerie_(indice.series[k]);
+    var ob = { temporada: Number(p[2]), semana: Number(p[3]), tag: tot_tag_(p[0]), nombre: '', clan: tot_clan_(p[1]),
+      jsonAtaques: js.ataques, jsonFame: js.fame, jsonBarcos: js.barcos, omitir: '' };
+    ob.clave = tot_clave_(ob.tag, ob.temporada, ob.semana, ob.clan);
+    if (js.estado === 'json_inconsistente') ob.omitir = 'JSON_INCONSISTENTE';
+    else if (js.estado !== 'ok') return;
+    else if (!js.cerrado) ob.omitir = 'JSON_SIN_CERRAR';
+    else if (js.barcos === null) ob.omitir = 'JSON_SIN_TOTAL_DE_BARCOS';
+    else if (claveHoja && claveHoja[ob.clave]) ob.omitir = 'SERIE_EN_LA_HOJA_GUERRA (no se toca)';
+    objetivos.push(ob);
+  });
+  return objetivos;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// ENTRADA (Drive)
+// ---------------------------------------------------------------------------------------------------------------
+
+function _totSemanaPorDias_(aplicar) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[Semana por dias] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var t0 = Date.now();
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (!csvText) { Logger.log('[Semana por dias] No se encontro Backup_Guerra.csv; no se hace nada.'); return; }
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length < 2) { Logger.log('[Semana por dias] Backup_Guerra.csv esta vacio; no se hace nada.'); return; }
+    var encabezado = parsed[0], filas = parsed.slice(1);
+    for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
+    var copiaAntes = filas.map(function (r) { return r.slice(); });
+
+    var objetivos = _rsObjetivos(filas, _rsClavesHoja());
+    if (!objetivos) { Logger.log('[Semana por dias] ABORT: se agoto el tiempo leyendo los JSON de RoyaleAPI. No se escribio nada.'); return; }
+    var plan = _rsPlanificar(filas, objetivos, { usarCrr: true, t0: t0 });
+    var idxDe = new Map();
+    for (var q = 0; q < filas.length; q++) idxDe.set(filas[q], q);
+    plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.existe) op.idxAntes = idxDe.get(op.fila); }); });
+    var nCrear = 0, nModificar = 0, cuenta = {};
+    plan.series.forEach(function (s) { nCrear += s.nCrear; nModificar += s.nMod; var k = s.clase + ' / ' + s.accion; cuenta[k] = (cuenta[k] || 0) + 1; });
+    var resumenSeries = Object.keys(cuenta).sort().map(function (k) { return k + ': ' + cuenta[k]; }).join(' | ');
+
+    var nombresCsv = [];
+    var series = [['Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Filas existentes', 'Total RoyaleAPI ataques/barcos/fame', 'Nivel', 'Soluciones', 'Clase', 'Accion', 'Filas a modificar', 'Filas a crear', 'Notas']];
+    plan.series.forEach(function (s) {
+      var g = s.grupo;
+      series.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, s.patron, s.tot.a + '/' + s.tot.b + '/' + s.tot.f, s.nivel, s.soluciones, s.clase, s.accion, s.nMod, s.nCrear, s.notas]);
+    });
+    if (!aplicar && series.length > 1) {
+      var nomSeries = 'AplicarTotalesSemana_Historial ' + marca + ' (informe).csv';
+      _saveCSVToDrive(nomSeries, _encodeCSV(series)); nombresCsv.push(nomSeries);
+    }
+    var detalle = [['Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Clase', 'Dia', 'PeriodIndex', 'Accion',
+      'AtaquesHoy anterior', 'AtaquesHoy nuevo', 'AtaquesSemana anterior (acumulado)', 'AtaquesSemana nueva (acumulado)',
+      'Fame del dia anterior', 'Fame del dia nueva', 'Fame anterior (acumulado)', 'Fame nueva (acumulado)',
+      'Barcos del dia anterior', 'Barcos del dia nuevo', 'Barcos anterior (acumulado)', 'Barcos nuevo (acumulado)',
+      'Origen anterior', 'Origen nuevo', 'Solucion']];
+    plan.casos.forEach(function (c) {
+      var g = c.grupo;
+      c.ops.forEach(function (op) {
+        var an = op.ant;
+        detalle.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, c.clase, EXC_DIAS_LETRAS.charAt(op.dia), (Number(g.semana) - 1) * 7 + 3 + op.dia,
+          !op.existe ? 'Crear' : (op.sinCambio ? 'Sin cambio' : 'Modificar'), an ? an.hoy : '', op.nuevo.hoy, an ? an.sem : '', op.nuevo.sem,
+          op.antDia ? op.antDia.f : '', op.nuevo.fameDia, an ? an.fame : '', op.nuevo.fame,
+          op.antDia ? op.antDia.b : '', op.nuevo.barcosDia, an ? an.barcos : '', op.nuevo.barcos,
+          an ? an.origen : '', op.nuevo.origen, op.estimadoDia ? 'estimada (varias ternas validas)' : 'unica']);
+      });
+    });
+    var nomDetalle = 'AplicarTotalesSemana_Historial ' + marca + ' (' + (aplicar ? 'aplicado' : 'plan') + ').csv';
+    if (detalle.length > 1) { _saveCSVToDrive(nomDetalle, _encodeCSV(detalle)); nombresCsv.push(nomDetalle); }
+
+    var verificacion = '', revisionTxt = '';
+    if (aplicar && (nCrear + nModificar) > RS_MAX_FILAS) {
+      verificacion = 'NO SE ESCRIBIO NADA: ' + (nCrear + nModificar) + ' fila(s) a modificar o crear pasan el tope de ' + RS_MAX_FILAS + '. Revisar el CSV del plan (corre primero el informe).';
+    } else if (aplicar && plan.casos.length > 0) {
+      _saveCSVToDrive('Backup_Guerra ANTES de aplicar TotalesSemanaDesdeHistorial ' + marca + '.csv', csvText);
+      var res = _excDiasAplicarPlan(filas, plan);
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
+      var problemas = [];
+      var despues = _loadCSVFromDrive('Backup_Guerra.csv');
+      var parsedDespues = despues ? _parseCSV(despues) : null;
+      if (!parsedDespues || parsedDespues.length < 2) {
+        problemas.push('No se pudo releer Backup_Guerra.csv');
+      } else {
+        var filasDespues = parsedDespues.slice(1);
+        for (var b = 0; b < filasDespues.length; b++) { while (filasDespues[b].length < GUERRA_TOTAL_COLS) filasDespues[b].push(''); }
+        problemas = _excDiasVerificar(copiaAntes, filasDespues, plan, res.creadas);
+      }
+      verificacion = problemas.length
+        ? 'VERIFICACION FALLO (' + problemas.length + '): ' + problemas.slice(0, 5).join('; ') + '. Restaurar con el respaldo "Backup_Guerra ANTES de aplicar TotalesSemanaDesdeHistorial ' + marca + '.csv".'
+        : 'Verificacion OK (' + res.modificadas + ' fila(s) modificadas, ' + res.creadas + ' creadas).';
+      var entradas = [];
+      plan.omitidos.forEach(function (o) {
+        if (!o.alarma) return;
+        entradas.push({ temporada: o.grupo.temporada, semana: o.grupo.semana, tag: o.grupo.tag, nombre: o.grupo.nombre, tipo: 'alarma',
+          motivo: 'totales semanales: no se escribio', detalle: o.grupo.clan + ': ' + o.motivo });
+      });
+      if (entradas.length) { var rr = _registrarRevisionGuerra_(entradas); revisionTxt = 'Revision_Guerra.csv: ' + rr.nuevas + ' nuevas, ' + rr.actualizadas + ' actualizadas. '; }
+    }
+    Logger.log('[Semana por dias] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Backup_Guerra.csv: ' + filas.length + ' filas. ' +
+      'Series del informe: ' + plan.series.length + ' (' + resumenSeries + '). Filas a modificar: ' + nModificar + ', a crear: ' + nCrear + '. ' + revisionTxt +
+      (verificacion ? verificacion + ' ' : '') + (nombresCsv.length ? 'Detalle en Drive: ' + nombresCsv.join(' y ') + '.' : 'Nada que escribir.') +
+      (aplicar ? '' : ' (No se escribio nada en el Backup ni en Guerra.)'));
+  } finally {
+    lock.releaseLock();
   }
 }
 
