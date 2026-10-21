@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 20/10/2026 18:12:32 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 21/10/2026 15:30:22 */
 
 
 
@@ -50,7 +50,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
 // ------------------------------------------------------------------
 // DESCARGA (zip + txt + gs + md, siempre los 4 a la vez)
 // Además sincroniza GitHub (08_GitHub.gs): .gs sueltos en <Nombre>/src/,
-// consolidado en <Nombre>/respaldo/, INDICE_FUNCIONES.md y LEEME_IA.md.
+// consolidado en <Nombre>/respaldo/, INDICE_FUNCIONES.md, Indice_<Nombre>.md y LEEME_IA.md.
 // Si no hay GITHUB_TOKEN en las propiedades del script, GitHub se omite.
 // ------------------------------------------------------------------
 
@@ -58,6 +58,16 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
 function descargarBase() {
   _descargarProyectoAArchivos('Base');
   _githubSincronizar_('Base');
+}
+
+/**
+ * Igual que descargarBase(), pero escribe en GitHub aunque haya un "pull pendiente": cambios nuevos
+ * en Base/ de GitHub que este proyecto no trajo. Esos cambios de GitHub SE PIERDEN (quedan solo en
+ * el historial de git). Úsala solo si quieres que lo de Apps Script pise lo de GitHub.
+ */
+function descargarBaseForzado() {
+  _descargarProyectoAArchivos('Base');
+  _githubSincronizar_('Base', true);
 }
 // ------------------------------------------------------------------
 // SUBIDA A BASE (Funciones independientes por tipo de archivo)
@@ -124,6 +134,16 @@ function subirBaseDesdeGithubForzado() {
 function descargarGenerador() {
   _descargarProyectoAArchivos('Generador');
   _githubSincronizar_('Generador');
+}
+
+/**
+ * Igual que descargarGenerador(), pero escribe en GitHub aunque haya un "pull pendiente": cambios
+ * nuevos en Generador/ de GitHub que este proyecto no trajo. Esos cambios de GitHub SE PIERDEN
+ * (quedan solo en el historial de git). Úsala solo si quieres que lo de Apps Script pise lo de GitHub.
+ */
+function descargarGeneradorForzado() {
+  _descargarProyectoAArchivos('Generador');
+  _githubSincronizar_('Generador', true);
 }
 
 // ------------------------------------------------------------------
@@ -561,6 +581,9 @@ function _descargarProyectoAArchivos(nombreBase) {
     carpeta.createFile(nombreMd, markdownLegible, MimeType.PLAIN_TEXT); // Crea nuevo
   }
 
+  // 2c. Indice_<Nombre>.md: tabla N.º / archivo / estado respecto de la descarga anterior
+  _guardarIndiceArchivos_(nombreBase, carpeta, archivos, fechaStr);
+
   // 3. Guardar ZIP (archivos sueltos tal cual están en el proyecto, + marcador + consolidado)
   var blobs = archivos.map(function(archivo) {
     var extension = (archivo.type === 'JSON') ? '.json' : (archivo.type === 'HTML') ? '.html' : '.gs';
@@ -577,6 +600,97 @@ function _descargarProyectoAArchivos(nombreBase) {
   carpeta.createFile(Utilities.zip(blobs, nombreZip)); // Crea el nuevo reemplazándolo
 
   _registrarLogGenerador('_descargarProyectoAArchivos() / ' + nombreBase, 'Proyecto descargado a ' + nombreZip + ', ' + nombreTxt + ', ' + nombreGs + ' y ' + nombreMd + ' con ' + archivos.length + ' archivos.', []);
+}
+
+// -----------------------------------------------------------------------------
+// Indice_Base.md / Indice_Generador.md
+// Se REEMPLAZAN en cada descarga o subida (también en GitHub: <Nombre>/Indice_<Nombre>.md).
+// Tabla con N.º automático, nombre del archivo y estado respecto de la descarga anterior:
+// «permanece igual», «modificado» (solo los que no se crearon ni eliminaron en esa tanda),
+// «creado» o «eliminado». Para saber qué cambió, el propio archivo guarda al final la huella
+// de cada archivo en un comentario <!-- HUELLAS {...} -->; la siguiente descarga lo lee.
+// Los eliminados figuran solo en la tanda en que desaparecen.
+// [→ Contexto_Base_Web.md §PF151]
+// -----------------------------------------------------------------------------
+
+var INDICE_ARCHIVOS_RE_HUELLAS_ = /<!--\s*HUELLAS\s+(\{[\s\S]*?\})\s*-->/;
+
+/** Huella corta (MD5, 12 caracteres) del tipo y del contenido de un archivo del proyecto. */
+function _huellaArchivo_(a) {
+  var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5,
+                                      String(a.type) + '\n' + String(a.source || ''),
+                                      Utilities.Charset.UTF_8);
+  var hex = '';
+  for (var i = 0; i < bytes.length; i++) {
+    hex += ('0' + (bytes[i] < 0 ? bytes[i] + 256 : bytes[i]).toString(16)).slice(-2);
+  }
+  return hex.substring(0, 12);
+}
+
+/**
+ * Arma el texto de Indice_<Nombre>.md. Función pura (salvo la huella): recibe el contenido del
+ * índice anterior (o '' si no hay) y los archivos reales del proyecto (sin "Script consolidado").
+ */
+function _generarIndiceArchivos_(nombreBase, archivos, indicePrevio, fechaStr) {
+  var previas = null;
+  var m = INDICE_ARCHIVOS_RE_HUELLAS_.exec(String(indicePrevio || ''));
+  if (m) { try { previas = JSON.parse(m[1]); } catch (e) { previas = null; } }
+
+  var actuales = archivos.map(function(a) {
+    return { nombre: a.name + _extDeTipo_(a.type), huella: _huellaArchivo_(a) };
+  }).sort(function(x, y) { return x.nombre < y.nombre ? -1 : (x.nombre > y.nombre ? 1 : 0); });
+
+  var filas = [];
+  var cuenta = { 'permanece igual': 0, 'modificado': 0, 'creado': 0, 'eliminado': 0 };
+  var huellasNuevas = {};
+  actuales.forEach(function(f) {
+    huellasNuevas[f.nombre] = f.huella;
+    var estado;
+    if (!previas || !(f.nombre in previas)) estado = 'creado';
+    else estado = previas[f.nombre] === f.huella ? 'permanece igual' : 'modificado';
+    cuenta[estado]++;
+    filas.push({ nombre: f.nombre, estado: estado });
+  });
+  if (previas) {
+    Object.keys(previas).sort().forEach(function(n) {
+      if (!(n in huellasNuevas)) { cuenta['eliminado']++; filas.push({ nombre: n, estado: 'eliminado' }); }
+    });
+  }
+
+  var out = [];
+  out.push('# Índice de archivos — ' + nombreBase);
+  out.push('');
+  out.push('Generado automáticamente por el Generador el ' + fechaStr + ' (Lima). No editar a mano: se reemplaza en cada descarga o subida.');
+  out.push('El estado es respecto de la descarga o subida anterior. «modificado» es solo para los archivos que no se crearon ni eliminaron en esa tanda; los eliminados figuran únicamente en la tanda en que desaparecen.');
+  if (!previas) {
+    out.push('');
+    out.push('**No había un índice anterior con el que comparar:** esta vez todos los archivos figuran como «creado».');
+  }
+  out.push('');
+  out.push('Total: ' + actuales.length + ' archivos en el proyecto — ' + cuenta['permanece igual'] + ' permanecen iguales, ' +
+           cuenta['modificado'] + ' modificados, ' + cuenta['creado'] + ' creados, ' + cuenta['eliminado'] + ' eliminados.');
+  out.push('');
+  out.push('| N.º | Archivo | Estado |');
+  out.push('|---|---|---|');
+  filas.forEach(function(f, i) {
+    out.push('| ' + (i + 1) + ' | ' + f.nombre + ' | ' + f.estado + ' |');
+  });
+  out.push('');
+  out.push('<!-- HUELLAS ' + JSON.stringify(huellasNuevas) + ' -->');
+  out.push('');
+  return out.join('\n');
+}
+
+/** Crea o reemplaza (setContent, para conservar las versiones de Drive) Indice_<Nombre>.md en la carpeta de respaldos. */
+function _guardarIndiceArchivos_(nombreBase, carpeta, archivos, fechaStr) {
+  var nombreIndice = 'Indice_' + nombreBase + '.md';
+  var it = carpeta.getFilesByName(nombreIndice);
+  var archivoIndice = it.hasNext() ? it.next() : null;
+  var previo = archivoIndice ? archivoIndice.getBlob().getDataAsString('UTF-8') : '';
+  var texto = _generarIndiceArchivos_(nombreBase, archivos, previo, fechaStr);
+  if (archivoIndice) archivoIndice.setContent(texto);
+  else carpeta.createFile(nombreIndice, texto, MimeType.PLAIN_TEXT);
+  return texto;
 }
 
 function _subirArchivosAProyecto(nombreBase, extension) {
@@ -2704,10 +2818,13 @@ function reiniciarCachePeriodosJSON() {
 //
 //  - _githubSincronizar_(nombre): sube a GitHub, en UN solo commit, los .gs
 //    sueltos (Base/src/ o Generador/src/), el consolidado de respaldo
-//    (respaldo/<nombre>.gs), INDICE_FUNCIONES.md y LEEME_IA.md.
+//    (respaldo/<nombre>.gs), INDICE_FUNCIONES.md, Indice_<nombre>.md (N.º, archivo y
+//    estado; lo genera _guardarIndiceArchivos_ en 02_Backstage.gs) y LEEME_IA.md.
 //  - _githubTraerAProyectoApps_(nombre): lee <Nombre>/src/ de GitHub y deja el
 //    proyecto de Apps Script de Base (o del propio Generador) EXACTAMENTE igual
 //    (reemplazo atómico).
+//  - Aviso de pull pendiente: _githubSincronizar_ no escribe si GitHub tiene cambios
+//    nuevos en <Nombre>/ que el Generador no trajo (ver _githubRevisarPullPendiente_).
 //
 // TOKEN: nunca va en el código. Se guarda en Configuración del proyecto →
 // Propiedades del script → GITHUB_TOKEN (fine-grained, solo el repo Backend,
@@ -2781,6 +2898,91 @@ function _ghRespuesta_(resp, req) {
 function _ghJson_(req) {
   var resp = UrlFetchApp.fetchAll([req])[0];
   return JSON.parse(_ghRespuesta_(resp, req).getContentText());
+}
+
+// -----------------------------------------------------------------------------
+// Aviso de "pull pendiente": no escribir encima de cambios que el Generador no trajo
+// -----------------------------------------------------------------------------
+// El Generador recuerda (en las propiedades del script) el último commit de GitHub que él
+// mismo trajo o escribió, uno por proyecto: GITHUB_ULTIMO_COMMIT_Base y GITHUB_ULTIMO_COMMIT_Generador.
+// Antes de escribir en GitHub compara ese commit con el último de la rama. Si hay cambios nuevos
+// en la carpeta del proyecto (<Nombre>/), BLOQUEA la subida: escribir el estado de Apps Script
+// los pisaría. La variante forzada (descargarBaseForzado / descargarGeneradorForzado) escribe igual.
+// [→ Contexto_Base_Web.md §PF150]
+
+var GITHUB_PROP_ULTIMO_COMMIT_ = 'GITHUB_ULTIMO_COMMIT_';
+
+// true: solo bloquea si cambió algo dentro de <Nombre>/ (los commits que tocan solo el contexto,
+// los consolidados o la otra carpeta no cuentan, porque _githubCommitArchivos_ los conserva).
+// false: bloquea con cualquier commit nuevo en la rama.
+var GITHUB_AVISO_SOLO_CARPETA_ = true;
+
+function _githubLeerUltimoCommit_(nombreBase) {
+  return PropertiesService.getScriptProperties().getProperty(GITHUB_PROP_ULTIMO_COMMIT_ + nombreBase) || '';
+}
+
+function _githubGuardarUltimoCommit_(nombreBase, sha) {
+  if (!sha) return;
+  PropertiesService.getScriptProperties().setProperty(GITHUB_PROP_ULTIMO_COMMIT_ + nombreBase, sha);
+}
+
+/** SHA del último commit de la rama. */
+function _githubCabezaRemota_() {
+  return _ghJson_(_ghReq_('get', '/git/ref/heads/' + GITHUB_BRANCH_)).object.sha;
+}
+
+/**
+ * Compara el último commit que el Generador trajo (o escribió) de <nombreBase> con el de GitHub.
+ * Devuelve { bloquear, cabeza, sinBase, mensaje }.
+ *  - Sin commit recordado (primera vez): no bloquea, porque no hay con qué comparar; avisa con sinBase.
+ *  - Si no se puede comparar (commit recordado ya no existe, o hay 300 archivos o más distintos):
+ *    se bloquea, por precaución.
+ */
+function _githubRevisarPullPendiente_(nombreBase) {
+  var cabeza = _githubCabezaRemota_();
+  var base = _githubLeerUltimoCommit_(nombreBase);
+  if (!base) return { bloquear: false, cabeza: cabeza, sinBase: true };
+  if (base === cabeza) return { bloquear: false, cabeza: cabeza };
+
+  var carpeta = nombreBase + '/';
+  var cambiados = [];
+  var noComparable = '';
+
+  var rq = _ghReq_('get', '/compare/' + base + '...' + cabeza);
+  var resp = UrlFetchApp.fetchAll([rq])[0];
+  var code = resp.getResponseCode();
+  if (code === 404 || code === 422) {
+    noComparable = 'el commit que recordaba (' + base.substring(0, 7) + ') ya no existe en GitHub';
+  } else {
+    var cmp = JSON.parse(_ghRespuesta_(resp, rq).getContentText());
+    var archivos = cmp.files || [];
+    if (archivos.length >= 300) noComparable = 'hay 300 archivos o más distintos y no se puede listar todos';
+    archivos.forEach(function(f) {
+      if (f.filename.indexOf(carpeta) === 0 ||
+          (f.previous_filename && f.previous_filename.indexOf(carpeta) === 0)) {
+        cambiados.push(f.filename);
+      }
+    });
+  }
+
+  if (!noComparable && GITHUB_AVISO_SOLO_CARPETA_ && !cambiados.length) {
+    return { bloquear: false, cabeza: cabeza, soloOtrosArchivos: true };
+  }
+
+  var detalle = noComparable
+    ? 'No se pudo comparar: ' + noComparable + '.'
+    : (cambiados.length
+        ? 'Archivos distintos en ' + carpeta + ' (' + cambiados.length + '): ' +
+          cambiados.slice(0, 10).join(', ') + (cambiados.length > 10 ? ' y ' + (cambiados.length - 10) + ' más' : '') + '.'
+        : 'Hay commits nuevos en GitHub (aviso por commit, GITHUB_AVISO_SOLO_CARPETA_ = false).');
+  var forzada = nombreBase === 'Base' ? 'descargarBaseForzado()' : 'descargarGeneradorForzado()';
+  var traer   = nombreBase === 'Base' ? 'subirBaseDesdeGithub()' : 'subirGeneradorDesdeGithub()';
+  var mensaje = 'SUBIDA A GITHUB BLOQUEADA: PULL PENDIENTE. GitHub tiene cambios en ' + carpeta +
+                ' que este proyecto no ha traído (último commit traído: ' + base.substring(0, 7) +
+                ', último en GitHub: ' + cabeza.substring(0, 7) + '). ' + detalle +
+                ' Si quieres quedarte con lo de GitHub, corre ' + traer + ' (reemplaza lo que haya en Apps Script). ' +
+                'Si quieres que lo de Apps Script pise lo de GitHub, corre ' + forzada + '.';
+  return { bloquear: true, cabeza: cabeza, mensaje: mensaje };
 }
 
 // -----------------------------------------------------------------------------
@@ -2923,6 +3125,8 @@ function _githubGenerarLeeme_(nombreBase, nArchivos) {
     '  **Lee solo esta carpeta.**',
     '- `INDICE_FUNCIONES.md` — en qué archivo y línea vive cada función. Búscala aquí',
     '  primero (con grep o con la búsqueda del repo) y abre solo el archivo que toque.',
+    '- `Indice_' + nombreBase + '.md` — lista numerada de los archivos del proyecto y su estado en la última',
+    '  tanda (permanece igual, modificado, creado o eliminado).',
     '',
     '## Qué ignorar',
     '',
@@ -2963,6 +3167,18 @@ function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje
   // El consolidado trae la fecha de generación en su primera línea: si es lo único que cambió,
   // se reutiliza el contenido que ya está en GitHub para que no cuente como cambio.
   var reFechaConsolidado = /\/\* CÓDIGO CONSOLIDADO GENERADO EL [^*]*\*\//;
+  // Indice_<Nombre>.md lleva la fecha y los estados de la última tanda: si las huellas de los archivos
+  // son las mismas que las del que ya está en GitHub, no hubo cambios de código y se conserva el remoto.
+  var reHuellas = /<!--\s*HUELLAS\s+(\{[\s\S]*?\})\s*-->/;
+  entradas.forEach(function(e) {
+    if (!/\/Indice_[^\/]+\.md$/.test(e.path)) return;
+    var nodoI = (arbol.tree || []).filter(function(n) { return n.type === 'blob' && n.path === e.path; })[0];
+    if (!nodoI) return;
+    var rqI = _ghReq_('get', '/git/blobs/' + nodoI.sha, null, 'application/vnd.github.raw+json');
+    var viejoI = _ghRespuesta_(UrlFetchApp.fetchAll([rqI])[0], rqI).getContentText('UTF-8');
+    var hv = reHuellas.exec(viejoI), hn = reHuellas.exec(e.content);
+    if (hv && hn && hv[1] === hn[1]) e.content = viejoI;
+  });
   entradas.forEach(function(e) {
     if (!/\/respaldo\/[^\/]+\.gs$/.test(e.path)) return;
     var nodo = (arbol.tree || []).filter(function(n) { return n.type === 'blob' && n.path === e.path; })[0];
@@ -3021,12 +3237,32 @@ function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje
  * Sincroniza GitHub con el estado actual del proyecto de Apps Script.
  * NUNCA lanza error: si algo falla lo deja en el log y devuelve { ok:false }.
  * Así una falla de GitHub no rompe las descargas/subidas a Drive.
+ *
+ * PULL PENDIENTE: antes de escribir compara el último commit que el Generador trajo con el de
+ * GitHub (_githubRevisarPullPendiente_). Si GitHub tiene cambios nuevos en <nombreBase>/, NO escribe
+ * y devuelve { ok:false, bloqueado:true }. Con forzar=true escribe igual y lo deja en el aviso del log.
  */
-function _githubSincronizar_(nombreBase) {
+function _githubSincronizar_(nombreBase, forzar) {
   try {
     if (!_githubToken_()) {
       console.log('[GitHub] No hay GITHUB_TOKEN en las propiedades del script: se omite la sincronización.');
       return { ok: false, omitido: true };
+    }
+
+    var pull = _githubRevisarPullPendiente_(nombreBase);
+    var avisoForzado = [];
+    if (pull.bloquear && !forzar) {
+      console.error('[GitHub] ' + pull.mensaje);
+      try { _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, 'BLOQUEADO: ' + pull.mensaje, [pull.mensaje]); } catch (e0) {}
+      return { ok: false, bloqueado: true, error: pull.mensaje };
+    }
+    if (pull.bloquear && forzar) {
+      var avisoF = 'FORZADO: se escribe en GitHub aunque había cambios nuevos en ' + nombreBase + '/ que no se habían traído.';
+      console.warn('[GitHub] ' + avisoF + ' ' + pull.mensaje);
+      avisoForzado.push(avisoF);
+    }
+    if (pull.sinBase) {
+      console.log('[GitHub] Aún no hay commit de referencia para ' + nombreBase + ' (primera vez): no se pudo comprobar si había un pull pendiente.');
     }
 
     var archivos = _archivosDelProyecto_(nombreBase);
@@ -3048,6 +3284,13 @@ function _githubSincronizar_(nombreBase) {
     });
     entradas.push({ path: nombreBase + '/respaldo/' + nombreBase + '.gs', content: consolidado });
     entradas.push({ path: nombreBase + '/INDICE_FUNCIONES.md', content: _githubGenerarIndice_(nombreBase, archivos) });
+    // Indice_<Nombre>.md (N.º / archivo / estado): lo generó _descargarProyectoAArchivos() en Drive.
+    var itIndice = _carpetaDeRespaldos_(nombreBase).getFilesByName('Indice_' + nombreBase + '.md');
+    if (itIndice.hasNext()) {
+      entradas.push({ path: nombreBase + '/Indice_' + nombreBase + '.md', content: itIndice.next().getBlob().getDataAsString('UTF-8') });
+    } else {
+      console.warn('[GitHub] No encontré Indice_' + nombreBase + '.md en Drive: no se escribe en GitHub.');
+    }
     entradas.push({ path: nombreBase + '/LEEME_IA.md', content: _githubGenerarLeeme_(nombreBase, archivos.length) });
 
     var antiguos = ['.md', '.txt', '.zip', '.gs'].map(function(e) { return nombreBase + '/' + nombreBase + e; });
@@ -3061,14 +3304,17 @@ function _githubSincronizar_(nombreBase) {
       var detalleSin = 'Sin cambios: GitHub ya estaba igual a ' + nombreBase + ' (' + res.archivos +
                        ' archivos revisados). No se creó commit.';
       console.log('[GitHub] ' + detalleSin);
-      _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, detalleSin, []);
+      _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, detalleSin, avisoForzado);
+      // GitHub ya es igual a este proyecto: el último commit de la rama pasa a ser el de referencia.
+      _githubGuardarUltimoCommit_(nombreBase, pull.cabeza);
       return { ok: true, commit: null, sinCambios: true, borrados: [] };
     }
+    _githubGuardarUltimoCommit_(nombreBase, res.commit);
 
     var detalle = 'Commit ' + res.commit.substring(0, 7) + ' en ' + GITHUB_OWNER_ + '/' + GITHUB_REPO_ +
                   ' (' + res.archivos + ' archivos escritos, ' + res.borrados.length + ' borrados' +
                   (res.borrados.length ? ': ' + res.borrados.join(', ') : '') + ').';
-    var avisos = [];
+    var avisos = avisoForzado.slice();
     if (rev.idsDrive) avisos.push(rev.idsDrive + ' línea(s) con cadenas que parecen IDs de Drive/Hojas (visibles en el repo público).');
     console.log('[GitHub] ' + detalle);
     _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, detalle, avisos);
@@ -3124,7 +3370,10 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
   }
 
   // 2. Leer <Nombre>/src/ de GitHub.
-  var arbol = _ghJson_(_ghReq_('get', '/git/trees/' + GITHUB_BRANCH_ + '?recursive=1'));
+  //    Se fija el último commit y se lee su árbol: ese commit queda como referencia del pull pendiente.
+  var cabezaTraida = _githubCabezaRemota_();
+  var treeTraidoSha = _ghJson_(_ghReq_('get', '/git/commits/' + cabezaTraida)).tree.sha;
+  var arbol = _ghJson_(_ghReq_('get', '/git/trees/' + treeTraidoSha + '?recursive=1'));
   if (arbol.truncated) throw 'El árbol de GitHub vino truncado; no es seguro continuar.';
   var prefijo = nombreBase + '/src/';
   var nodos = (arbol.tree || []).filter(function(n) {
@@ -3190,6 +3439,8 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
   if (resp.getResponseCode() !== 200) {
     throw 'Error al actualizar el proyecto de ' + nombreBase + ' (' + resp.getResponseCode() + '): ' + resp.getContentText();
   }
+  // El proyecto ya es igual a GitHub en ese commit: es la referencia para el aviso de pull pendiente.
+  _githubGuardarUltimoCommit_(nombreBase, cabezaTraida);
 
   // 6. Reporte.
   var antes = {};
