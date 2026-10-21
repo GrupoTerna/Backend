@@ -1778,15 +1778,26 @@ function _webTorneos(opciones) {
     });
   }
 
+  // PF154 (21-oct-2026, decisión de la usuaria): un torneo con continuación es UN solo torneo en la web. Solo salen las raíces de cada grupo (misma regla que _webHistorialTorneos()); `partes` cuenta la raíz más sus continuaciones (raíz + 1 continuación = 2) e `idsPartes` lista los ids del grupo. Fecha, clan y organizador son los de la raíz. [→ Contexto_Base_Web.md §PF154]
+  var grupos = _resolverGruposContinuacionTorneos(ss);
   var torneos = listaData
     .filter(function (f) { return f[TL.FECHA - 1] instanceof Date && f[TL.ID - 1]; })
+    .filter(function (f) {
+      var id = String(f[TL.ID - 1]);
+      var raiz = grupos.raizPorId.hasOwnProperty(id) ? grupos.raizPorId[id] : id;
+      return raiz === id; // las continuaciones no salen como torneo aparte
+    })
     .map(function (f) {
+      var idTxt = String(f[TL.ID - 1]);
+      var idsGrupo = grupos.grupoPorRaiz[idTxt] || [idTxt];
       return {
         id:          f[TL.ID - 1],
         fecha:       f[TL.FECHA - 1].toISOString(),
         clan:        String(f[TL.CLAN - 1] || ''),
         organizador: String(f[TL.ORGANIZADOR - 1] || ''),
-        linkApp:     String(f[TL.LINK_APP - 1] || '')
+        linkApp:     String(f[TL.LINK_APP - 1] || ''),
+        partes:      idsGrupo.length,
+        idsPartes:   idsGrupo.slice()
       };
     })
     .sort(function (a, b) { return new Date(b.fecha) - new Date(a.fecha); })
