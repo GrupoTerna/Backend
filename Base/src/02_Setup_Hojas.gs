@@ -420,7 +420,7 @@ function _pintarEncabezadosControl(sh) {
                COLOR_BORDE_HEADER, SpreadsheetApp.BorderStyle.SOLID);
 
   // A1:C2 debe quedar SIN bordes (ver comentario más arriba) — se limpia
-  // acá, después del borde general, para que no lo sobreescriba.
+  // aquí, después del borde general, para que no lo sobreescriba.
   sh.getRange(1, 1, 2, 3).setBorder(false, false, false, false, false, false);
 }
 

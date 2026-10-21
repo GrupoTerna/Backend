@@ -12,7 +12,7 @@
 
 // BAJA DEFINITIVA (14-sep-2026, pedido del usuario -- Fase 9 completa): se [→ Contexto_Base_Web.md §27B002]
 
-// --- Textos de las líneas automatizadas (editar acá si hace falta otra redacción) --- [→ Contexto_Base_Web.md §27B003]
+// --- Textos de las líneas automatizadas (editar aquí si hace falta otra redacción) --- [→ Contexto_Base_Web.md §27B003]
 var REQ_DOC_TEXTO_ATAQUES_HEADER = 'Solo participan miembros del clan que jueguen sus guerras completas (ataques semanales mínimos por clan):';
 
 var REQ_DOC_TEXTO_MIEMBRO_ACTIVO = 'Jugadores expulsados o sancionados NO participan';

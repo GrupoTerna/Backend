@@ -23,7 +23,7 @@ var PASOS_RUNGUERRARAPIDO = [
       capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'runGuerraRapido paso 0');
     }
   },
-  // Directorio (sin /players) — roster 100% fresco desde acá en adelante.
+  // Directorio (sin /players) — roster 100% fresco desde aquí en adelante.
   function () { updateDirectorioSheet(); },
   // FIX (20-ago-2026, pedido usuario): "expulsé miembros, corrí [→ Contexto_Base_Web.md §B005]
   function () {
@@ -66,7 +66,7 @@ var NOMBRES_PASOS_RUNGUERRARAPIDO = [
 ];
 
 var PASOS_RUNALL = [
-  // FIX (06-ago-2026): _limpiarHojasCardsObsoletas() se agrega acá, mismo [→ Contexto_Base_Web.md §B008]
+  // FIX (06-ago-2026): _limpiarHojasCardsObsoletas() se agrega aquí, mismo [→ Contexto_Base_Web.md §B008]
   function () { _renombrarHojasHistorialLegacy(); },
   function () { setupAllSheets(); },
   // Se suma _limpiarHojaMenuObsoleta(): borra la hoja Menú (reemplazada por el [→ Contexto_Base_Web.md §B009]
@@ -164,7 +164,7 @@ var PASOS_RUNALL = [
     try { _cerrarSemanaActualNuevos(); }
     catch (eCierreNuevos) { Logger.log('[PASOS_RUNALL] _cerrarSemanaActualNuevos() falló: ' + eCierreNuevos.message); }
   },
-  // FIX (20-ago-2026, pedido usuario): se agrega actualizarControl2() acá, [→ Contexto_Base_Web.md §B029]
+  // FIX (20-ago-2026, pedido usuario): se agrega actualizarControl2() aquí, [→ Contexto_Base_Web.md §B029]
   function () { updateControlSheet(); },
   function () { updateVistasDerivadas(); },
   function () {
@@ -355,7 +355,7 @@ var PASOS_RUNUPDATE = [
     try { _cerrarSemanaActualNuevos(); }
     catch (eCierreNuevos) { Logger.log('[PASOS_RUNUPDATE] _cerrarSemanaActualNuevos() falló: ' + eCierreNuevos.message); }
   },
-  // FIX (20-ago-2026, pedido usuario): se agrega actualizarControl2() acá — [→ Contexto_Base_Web.md §B063]
+  // FIX (20-ago-2026, pedido usuario): se agrega actualizarControl2() aquí — [→ Contexto_Base_Web.md §B063]
   function () { updateControlSheet(); },
   function () {
     try { actualizarControl2(); }

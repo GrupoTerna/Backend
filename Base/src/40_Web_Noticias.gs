@@ -369,7 +369,7 @@ function _noticiasGuerra_(semana) {
   }
 
   // Días OPCIONALES por clan (meta ya cruzada al empezar el día): atacar no se exige. Misma regla que el
-  // Control y el perfil (_clanYaCruzoMetaEnPeriodo(), 22_ControlCalendario.gs), pero acá se evalúan viernes, sábado y domingo
+  // Control y el perfil (_clanYaCruzoMetaEnPeriodo(), 22_ControlCalendario.gs), pero aquí se evalúan viernes, sábado y domingo
   // (criterio unificado 07-oct-2026; Supercell no confirma desde qué día se puede cruzar la meta): el jueves no puede ser opcional; coliseo tampoco.
   var opcPorClan = {};
   function opcionales(clan) {

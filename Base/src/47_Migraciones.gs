@@ -532,7 +532,7 @@ function _migrarColumnaPrestamoEnHoja(sh, nombreHoja, headers) {
   }
 
   // Reescribir encabezados YA (Administradores solo los reescribe si la
-  // celda A1 está vacía — acá se fuerza para no depender de eso).
+  // celda A1 está vacía — aquí se fuerza para no depender de eso).
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
 }
@@ -601,7 +601,7 @@ function _reenumerarCSV(filename, colMap, totalCols, colTemporada) {
 
     var quedanFilas = (i + 1) < filas.length;
     if (quedanFilas && (Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
-      // Guarda lo ya sumado hasta acá (incluida la fila i) para no perder
+      // Guarda lo ya sumado hasta aquí (incluida la fila i) para no perder
       // progreso ni tener que recalcular desde cero en la continuación.
       _saveCSVToDrive(filename, _encodeCSV([encabezado].concat(filas)));
       props.setProperty(claveIdx, String(i + 1));

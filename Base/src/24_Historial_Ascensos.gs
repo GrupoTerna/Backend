@@ -873,7 +873,7 @@ function _indexarPropuestasPendientesAscensos(sh) {
     var tag    = String(f[ASC.TAG - 1] || '').trim();
     var rango  = String(f[ASC.RANGO - 1] || '').trim();
     var rango2 = String(f[ASC.RANGO_2 - 1] || '').trim();
-    if (!tag || !rango || !rango2) continue; // 'Expulsión'/'Elegible Admin' -- nunca se resuelven acá
+    if (!tag || !rango || !rango2) continue; // 'Expulsión'/'Elegible Admin' -- nunca se resuelven aquí
 
     var clave = tag + '|' + rango + '|' + rango2;
     if (!mapa[clave]) {
