@@ -9,6 +9,8 @@ descarga o se sube el proyecto "Base". No edites estos archivos a mano.
   **Lee solo esta carpeta.**
 - `INDICE_FUNCIONES.md` — en qué archivo y línea vive cada función. Búscala aquí
   primero (con grep o con la búsqueda del repo) y abre solo el archivo que toque.
+- `Indice_Base.md` — lista numerada de los archivos del proyecto y su estado en la última
+  tanda (permanece igual, modificado, creado o eliminado).
 
 ## Qué ignorar
 
