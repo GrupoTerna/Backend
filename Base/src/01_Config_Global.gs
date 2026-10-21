@@ -310,6 +310,10 @@ var CFG = {
   // FIX (02-sep-2026): runGuerra() (00_Main.gs) es monolítica — a diferencia [→ Contexto_Base_Web.md §01B054]
   RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS: 90 * 1000, // 1m30s de margen mínimo antes del límite duro
 
+  // PF143 (21-oct-2026): el respaldo CSV y el calentamiento del caché de runGuerra() corren en la continuación _continuarRunGuerraCola(). [→ Contexto_Base_Web.md §PF143]
+  RUNGUERRA_COLA_REINTENTOS_MAX: 5,
+  RUNGUERRA_COLA_REINTENTO_MS: 60 * 1000, // 1 min entre reintentos si el candado está ocupado
+
   // FASE 6 (05-ago-2026, cierre del plan de migración Plantillas -> Menú): [→ Contexto_Base_Web.md §01B055]
 
   // Colores de fondo por letra de día (para formato condicional en Guerra) [→ Contexto_Base_Web.md §01B056]
