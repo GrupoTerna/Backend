@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2111 nombres en 56 archivos .gs.
+Código real: `Base/src/`. Total: 2121 nombres en 57 archivos .gs.
 
 ## Por archivo
 
@@ -61,6 +61,7 @@ Código real: `Base/src/`. Total: 2111 nombres en 56 archivos .gs.
 - **53_Publicar_Torneos.gs** (3 funciones): _publicarTorneosEstatico_, _leerHistorialTorneosPublicado_, publicarTorneosEstatico
 - **54_Correccion_AtaquesSemana_Anomalias.gs** (13 funciones): _anomAtqSemNum_, _anomAtqSemTag_, _anomAtqSemClan_, _anomAtqSemCoincide_, _anomAtqSemValores_, _anomAtqSemIguales_, _anomAtqSemSumaClanes_, _anomAtqSemEvaluar_, _anomAtqSemSeriesAfectadas_, _anomAtqSemTextoSumas_, corregirAnomaliasAtaquesSemanaInforme, corregirAnomaliasAtaquesSemanaAplicar, _corregirAnomaliasAtaquesSemana_
 - **55_Reparar_DiasConExceso.gs** (29 funciones): _excDiasOpciones, _excDiasNum, _excDiasAgrupar, _excDiasSegmentos, _excDiasFaltanteJueves, _excDiasSoluciones, _excDiasEsCero, _excDiasResolver, _excDiasResumir, _excDiasClasificar, _excDiasTextoPorDia, _excDiasTextoActual, _excDiasRegistradoPorDia, _excDiasElegirSolucion, _excDiasFinalDe, _excDiasOrigenNuevo, _excDiasPlanificar, _excDiasFilaNueva, _excDiasAplicarPlan, _excDiasVerificar, repararDiasConExcesoInforme, repararDiasConExcesoAplicarUnicas, repararDiasConExcesoAplicar, _repararDiasConExceso_, informeFameCurrentRiverRace52, aplicarFameCurrentRiverRace52, _fameCrr52Planificar_, _fameCrr52_, _fameCrr52Verificar_
+- **56_CurrentRiverRace_Dias.gs** (8 funciones): _crrParsearNombre_, _crrCapturasDesdeArchivos_, _crrResolverJugador_, _crrFameDia_, _crrSubcarpeta_, _crrCapturasDeSemana_, _crrDiasDeJugador_, probarCurrentRiverRaceDias
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
@@ -459,6 +460,14 @@ Código real: `Base/src/`. Total: 2111 nombres en 56 archivos .gs.
 | `_crearLectorDiaJSONGuerra_` | función | 17_GuerraSheet.gs | 3446 | Contexto_Base_Web.md §17B166 |
 | `_crearRegistroAscenso` | función | 24_Historial_Ascensos.gs | 528 | Contexto_Base_Web.md §24B028 |
 | `_crearTabla` | función | 04_Formato_Comun.gs | 233 |  |
+| `_CRR_CACHE_SEMANA_` | global | 56_CurrentRiverRace_Dias.gs | 116 |  |
+| `_crrCapturasDesdeArchivos_` | función | 56_CurrentRiverRace_Dias.gs | 39 |  |
+| `_crrCapturasDeSemana_` | función | 56_CurrentRiverRace_Dias.gs | 128 |  |
+| `_crrDiasDeJugador_` | función | 56_CurrentRiverRace_Dias.gs | 159 |  |
+| `_crrFameDia_` | función | 56_CurrentRiverRace_Dias.gs | 104 |  |
+| `_crrParsearNombre_` | función | 56_CurrentRiverRace_Dias.gs | 26 |  |
+| `_crrResolverJugador_` | función | 56_CurrentRiverRace_Dias.gs | 61 |  |
+| `_crrSubcarpeta_` | función | 56_CurrentRiverRace_Dias.gs | 118 |  |
 | `_CRUCE_META_JSON_IDX` | global | 22_ControlCalendario.gs | 924 |  |
 | `_CRUCE_META_JSON_RES` | global | 22_ControlCalendario.gs | 925 |  |
 | `_CRUCE_META_LOGS_MEMO` | global | 22_ControlCalendario.gs | 922 | Contexto_Base_Web.md §22B051 |
@@ -1636,6 +1645,7 @@ Código real: `Base/src/`. Total: 2111 nombres en 56 archivos .gs.
 | `CRC` | global | 19_CorreccionRiverRace.gs | 11 | Contexto_Base_Web.md §19B002 |
 | `CRC_ENCABEZADOS` | global | 19_CorreccionRiverRace.gs | 26 |  |
 | `CRC_TOTAL_COLS` | global | 19_CorreccionRiverRace.gs | 24 |  |
+| `CRR_DIAS_LETRAS` | global | 56_CurrentRiverRace_Dias.gs | 23 |  |
 | `cruce_celda_` | función | 48_Herramientas_Debug.gs | 639 |  |
 | `cruce_celda_` | función | 48_Herramientas_Debug.gs | 1164 |  |
 | `CRUCE_CFG` | global | 48_Herramientas_Debug.gs | 460 |  |
@@ -1933,6 +1943,7 @@ Código real: `Base/src/`. Total: 2111 nombres en 56 archivos .gs.
 | `primerLunesDelMes` | función | 01_Config_Global.gs | 908 |  |
 | `primerLunesTemporada` | función | 01_Config_Global.gs | 924 |  |
 | `probarCostosSubirNivel` | función | 31_Cards_Mazos.gs | 1396 | Contexto_Base_Web.md §31B063 |
+| `probarCurrentRiverRaceDias` | función | 56_CurrentRiverRace_Dias.gs | 170 |  |
 | `procesarSListaNuevasFilas` | función | 26_Torneos_Core.gs | 2934 | Contexto_Base_Web.md §26B211 |
 | `procesarSorteos` | función | 26_Torneos_Core.gs | 3045 | Contexto_Base_Web.md §26B217 |
 | `procesarTListaNuevasFilas` | función | 26_Torneos_Core.gs | 1845 |  |
