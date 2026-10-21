@@ -37,6 +37,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 - **Al terminar cada tanda da la lista de archivos modificados o creados** (ruta, estado «modificado» o «creado» y commit), y si subió cambios a un repo que la usuaria tiene en GitHub Desktop, añade «Pendiente de pull en GitHub Desktop: <repo> (commit xxxxxxx)». Claude no ve el equipo de la usuaria; solo sabe lo que él subió.
 - Si no se puede subir (por permiso o por error), lo dice y pregunta; no sustituye la subida por un archivo descargable sin avisar. Si el motivo es que la sesión no tiene permiso de escritura, ver 0.7.
 - Los repos `Backend` y `Web` son **públicos**: nunca se escriben tokens, claves ni datos personales en el código ni en los documentos.
+- **Fechas de lo que se escribe (20-oct-2026):** son las de Lima (UTC-5), no la hora UTC del commit ni la del contenedor; entre las 19:00 y las 23:59 de Lima, la fecha UTC ya es la del día siguiente. Detalle en `Consolidados de cambios/Reglas_Consolidados.md`, sección 6.
 
 ## 0.3 Cómo se sincronizan Apps Script y GitHub (verificado en `Generador/src/01_Principal.gs` y `08_GitHub.gs`; evita pisar cambios)
 
@@ -62,7 +63,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 ## 0.6 Pendientes de definir sobre esta skill (regla 2 y 3)
 
 - **Qué lugar ocupan `Base.md`, `Web-main.zip`, `Tampermonkey.md` y `Generador.md` frente a los repos.** Provisional, **no confirmado por la usuaria**: la fuente del código actual es el repo; si la usuaria sube alguno de esos archivos, se lee como instantánea y, si difiere del repo, se avisa antes de editar.
-- **README en cada repo** (`Web`, `Backend`, `Script`): por redactar.
+- **README en cada repo** (corregido el 20-oct-2026; antes decía «por redactar»): `Web/README.md` y `Backend/README.md` **ya existen y están completos**. **Falta el de `Script`:** no se puede redactar sin leer `package.json` y `server.js`, y subirlo puede redesplegar Render, así que se hace solo cuando la usuaria suba esos dos archivos al chat (Claude le deja el README como archivo para descargar, excepción de 0.2) o dé un token con permiso sobre `Script`.
 - **Piezas del Generador por programar** (de a una por tanda; la pieza (2), `subirGeneradorDesdeGithub()` y `subirGeneradorDesdeGithubForzado()`, **ya existe y funcionó el 14-oct-2026**, por eso salió de la lista; comprobado el 18-oct-2026 que (1) y (3) **siguen sin existir** en `Generador/src/`): (1) aviso de pull pendiente: antes de escribir en GitHub compara el último commit del repo con el que él mismo trajo y **bloquea**, con variante forzada; (3) `Indice_Base.md` e `Indice_Generador.md`, que **se reemplazan** en cada descarga o subida (también en Drive, en las carpetas de Base y Generador, reemplazando el mismo archivo para conservar las versiones) y traen una tabla: **N.º automático, nombre del archivo y estado** (permanece igual, modificado, creado o eliminado; «modificado» es solo para los que no se crearon ni eliminaron en esa tanda). Cuando existan, actualizar 0.3.
 - **Contrastar los pendientes del consolidado contra el código** y migrar el contexto del frontend y del `CHANGELOG.md` de `Web`: pendientes, de a bloques chicos.
 
