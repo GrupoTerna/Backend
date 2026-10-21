@@ -16,6 +16,16 @@ function descargarBase() {
   _descargarProyectoAArchivos('Base');
   _githubSincronizar_('Base');
 }
+
+/**
+ * Igual que descargarBase(), pero escribe en GitHub aunque haya un "pull pendiente": cambios nuevos
+ * en Base/ de GitHub que este proyecto no trajo. Esos cambios de GitHub SE PIERDEN (quedan solo en
+ * el historial de git). Úsala solo si quieres que lo de Apps Script pise lo de GitHub.
+ */
+function descargarBaseForzado() {
+  _descargarProyectoAArchivos('Base');
+  _githubSincronizar_('Base', true);
+}
 // ------------------------------------------------------------------
 // SUBIDA A BASE (Funciones independientes por tipo de archivo)
 // "Subir" y "actualizar" ya NO son cosas distintas: cada función de
@@ -81,6 +91,16 @@ function subirBaseDesdeGithubForzado() {
 function descargarGenerador() {
   _descargarProyectoAArchivos('Generador');
   _githubSincronizar_('Generador');
+}
+
+/**
+ * Igual que descargarGenerador(), pero escribe en GitHub aunque haya un "pull pendiente": cambios
+ * nuevos en Generador/ de GitHub que este proyecto no trajo. Esos cambios de GitHub SE PIERDEN
+ * (quedan solo en el historial de git). Úsala solo si quieres que lo de Apps Script pise lo de GitHub.
+ */
+function descargarGeneradorForzado() {
+  _descargarProyectoAArchivos('Generador');
+  _githubSincronizar_('Generador', true);
 }
 
 // ------------------------------------------------------------------

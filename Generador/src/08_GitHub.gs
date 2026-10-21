@@ -8,6 +8,8 @@
 //  - _githubTraerAProyectoApps_(nombre): lee <Nombre>/src/ de GitHub y deja el
 //    proyecto de Apps Script de Base (o del propio Generador) EXACTAMENTE igual
 //    (reemplazo atómico).
+//  - Aviso de pull pendiente: _githubSincronizar_ no escribe si GitHub tiene cambios
+//    nuevos en <Nombre>/ que el Generador no trajo (ver _githubRevisarPullPendiente_).
 //
 // TOKEN: nunca va en el código. Se guarda en Configuración del proyecto →
 // Propiedades del script → GITHUB_TOKEN (fine-grained, solo el repo Backend,
@@ -81,6 +83,91 @@ function _ghRespuesta_(resp, req) {
 function _ghJson_(req) {
   var resp = UrlFetchApp.fetchAll([req])[0];
   return JSON.parse(_ghRespuesta_(resp, req).getContentText());
+}
+
+// -----------------------------------------------------------------------------
+// Aviso de "pull pendiente": no escribir encima de cambios que el Generador no trajo
+// -----------------------------------------------------------------------------
+// El Generador recuerda (en las propiedades del script) el último commit de GitHub que él
+// mismo trajo o escribió, uno por proyecto: GITHUB_ULTIMO_COMMIT_Base y GITHUB_ULTIMO_COMMIT_Generador.
+// Antes de escribir en GitHub compara ese commit con el último de la rama. Si hay cambios nuevos
+// en la carpeta del proyecto (<Nombre>/), BLOQUEA la subida: escribir el estado de Apps Script
+// los pisaría. La variante forzada (descargarBaseForzado / descargarGeneradorForzado) escribe igual.
+// [→ Contexto_Base_Web.md §PF150]
+
+var GITHUB_PROP_ULTIMO_COMMIT_ = 'GITHUB_ULTIMO_COMMIT_';
+
+// true: solo bloquea si cambió algo dentro de <Nombre>/ (los commits que tocan solo el contexto,
+// los consolidados o la otra carpeta no cuentan, porque _githubCommitArchivos_ los conserva).
+// false: bloquea con cualquier commit nuevo en la rama.
+var GITHUB_AVISO_SOLO_CARPETA_ = true;
+
+function _githubLeerUltimoCommit_(nombreBase) {
+  return PropertiesService.getScriptProperties().getProperty(GITHUB_PROP_ULTIMO_COMMIT_ + nombreBase) || '';
+}
+
+function _githubGuardarUltimoCommit_(nombreBase, sha) {
+  if (!sha) return;
+  PropertiesService.getScriptProperties().setProperty(GITHUB_PROP_ULTIMO_COMMIT_ + nombreBase, sha);
+}
+
+/** SHA del último commit de la rama. */
+function _githubCabezaRemota_() {
+  return _ghJson_(_ghReq_('get', '/git/ref/heads/' + GITHUB_BRANCH_)).object.sha;
+}
+
+/**
+ * Compara el último commit que el Generador trajo (o escribió) de <nombreBase> con el de GitHub.
+ * Devuelve { bloquear, cabeza, sinBase, mensaje }.
+ *  - Sin commit recordado (primera vez): no bloquea, porque no hay con qué comparar; avisa con sinBase.
+ *  - Si no se puede comparar (commit recordado ya no existe, o hay 300 archivos o más distintos):
+ *    se bloquea, por precaución.
+ */
+function _githubRevisarPullPendiente_(nombreBase) {
+  var cabeza = _githubCabezaRemota_();
+  var base = _githubLeerUltimoCommit_(nombreBase);
+  if (!base) return { bloquear: false, cabeza: cabeza, sinBase: true };
+  if (base === cabeza) return { bloquear: false, cabeza: cabeza };
+
+  var carpeta = nombreBase + '/';
+  var cambiados = [];
+  var noComparable = '';
+
+  var rq = _ghReq_('get', '/compare/' + base + '...' + cabeza);
+  var resp = UrlFetchApp.fetchAll([rq])[0];
+  var code = resp.getResponseCode();
+  if (code === 404 || code === 422) {
+    noComparable = 'el commit que recordaba (' + base.substring(0, 7) + ') ya no existe en GitHub';
+  } else {
+    var cmp = JSON.parse(_ghRespuesta_(resp, rq).getContentText());
+    var archivos = cmp.files || [];
+    if (archivos.length >= 300) noComparable = 'hay 300 archivos o más distintos y no se puede listar todos';
+    archivos.forEach(function(f) {
+      if (f.filename.indexOf(carpeta) === 0 ||
+          (f.previous_filename && f.previous_filename.indexOf(carpeta) === 0)) {
+        cambiados.push(f.filename);
+      }
+    });
+  }
+
+  if (!noComparable && GITHUB_AVISO_SOLO_CARPETA_ && !cambiados.length) {
+    return { bloquear: false, cabeza: cabeza, soloOtrosArchivos: true };
+  }
+
+  var detalle = noComparable
+    ? 'No se pudo comparar: ' + noComparable + '.'
+    : (cambiados.length
+        ? 'Archivos distintos en ' + carpeta + ' (' + cambiados.length + '): ' +
+          cambiados.slice(0, 10).join(', ') + (cambiados.length > 10 ? ' y ' + (cambiados.length - 10) + ' más' : '') + '.'
+        : 'Hay commits nuevos en GitHub (aviso por commit, GITHUB_AVISO_SOLO_CARPETA_ = false).');
+  var forzada = nombreBase === 'Base' ? 'descargarBaseForzado()' : 'descargarGeneradorForzado()';
+  var traer   = nombreBase === 'Base' ? 'subirBaseDesdeGithub()' : 'subirGeneradorDesdeGithub()';
+  var mensaje = 'SUBIDA A GITHUB BLOQUEADA: PULL PENDIENTE. GitHub tiene cambios en ' + carpeta +
+                ' que este proyecto no ha traído (último commit traído: ' + base.substring(0, 7) +
+                ', último en GitHub: ' + cabeza.substring(0, 7) + '). ' + detalle +
+                ' Si quieres quedarte con lo de GitHub, corre ' + traer + ' (reemplaza lo que haya en Apps Script). ' +
+                'Si quieres que lo de Apps Script pise lo de GitHub, corre ' + forzada + '.';
+  return { bloquear: true, cabeza: cabeza, mensaje: mensaje };
 }
 
 // -----------------------------------------------------------------------------
@@ -321,12 +408,32 @@ function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje
  * Sincroniza GitHub con el estado actual del proyecto de Apps Script.
  * NUNCA lanza error: si algo falla lo deja en el log y devuelve { ok:false }.
  * Así una falla de GitHub no rompe las descargas/subidas a Drive.
+ *
+ * PULL PENDIENTE: antes de escribir compara el último commit que el Generador trajo con el de
+ * GitHub (_githubRevisarPullPendiente_). Si GitHub tiene cambios nuevos en <nombreBase>/, NO escribe
+ * y devuelve { ok:false, bloqueado:true }. Con forzar=true escribe igual y lo deja en el aviso del log.
  */
-function _githubSincronizar_(nombreBase) {
+function _githubSincronizar_(nombreBase, forzar) {
   try {
     if (!_githubToken_()) {
       console.log('[GitHub] No hay GITHUB_TOKEN en las propiedades del script: se omite la sincronización.');
       return { ok: false, omitido: true };
+    }
+
+    var pull = _githubRevisarPullPendiente_(nombreBase);
+    var avisoForzado = [];
+    if (pull.bloquear && !forzar) {
+      console.error('[GitHub] ' + pull.mensaje);
+      try { _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, 'BLOQUEADO: ' + pull.mensaje, [pull.mensaje]); } catch (e0) {}
+      return { ok: false, bloqueado: true, error: pull.mensaje };
+    }
+    if (pull.bloquear && forzar) {
+      var avisoF = 'FORZADO: se escribe en GitHub aunque había cambios nuevos en ' + nombreBase + '/ que no se habían traído.';
+      console.warn('[GitHub] ' + avisoF + ' ' + pull.mensaje);
+      avisoForzado.push(avisoF);
+    }
+    if (pull.sinBase) {
+      console.log('[GitHub] Aún no hay commit de referencia para ' + nombreBase + ' (primera vez): no se pudo comprobar si había un pull pendiente.');
     }
 
     var archivos = _archivosDelProyecto_(nombreBase);
@@ -361,14 +468,17 @@ function _githubSincronizar_(nombreBase) {
       var detalleSin = 'Sin cambios: GitHub ya estaba igual a ' + nombreBase + ' (' + res.archivos +
                        ' archivos revisados). No se creó commit.';
       console.log('[GitHub] ' + detalleSin);
-      _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, detalleSin, []);
+      _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, detalleSin, avisoForzado);
+      // GitHub ya es igual a este proyecto: el último commit de la rama pasa a ser el de referencia.
+      _githubGuardarUltimoCommit_(nombreBase, pull.cabeza);
       return { ok: true, commit: null, sinCambios: true, borrados: [] };
     }
+    _githubGuardarUltimoCommit_(nombreBase, res.commit);
 
     var detalle = 'Commit ' + res.commit.substring(0, 7) + ' en ' + GITHUB_OWNER_ + '/' + GITHUB_REPO_ +
                   ' (' + res.archivos + ' archivos escritos, ' + res.borrados.length + ' borrados' +
                   (res.borrados.length ? ': ' + res.borrados.join(', ') : '') + ').';
-    var avisos = [];
+    var avisos = avisoForzado.slice();
     if (rev.idsDrive) avisos.push(rev.idsDrive + ' línea(s) con cadenas que parecen IDs de Drive/Hojas (visibles en el repo público).');
     console.log('[GitHub] ' + detalle);
     _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, detalle, avisos);
@@ -424,7 +534,10 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
   }
 
   // 2. Leer <Nombre>/src/ de GitHub.
-  var arbol = _ghJson_(_ghReq_('get', '/git/trees/' + GITHUB_BRANCH_ + '?recursive=1'));
+  //    Se fija el último commit y se lee su árbol: ese commit queda como referencia del pull pendiente.
+  var cabezaTraida = _githubCabezaRemota_();
+  var treeTraidoSha = _ghJson_(_ghReq_('get', '/git/commits/' + cabezaTraida)).tree.sha;
+  var arbol = _ghJson_(_ghReq_('get', '/git/trees/' + treeTraidoSha + '?recursive=1'));
   if (arbol.truncated) throw 'El árbol de GitHub vino truncado; no es seguro continuar.';
   var prefijo = nombreBase + '/src/';
   var nodos = (arbol.tree || []).filter(function(n) {
@@ -490,6 +603,8 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
   if (resp.getResponseCode() !== 200) {
     throw 'Error al actualizar el proyecto de ' + nombreBase + ' (' + resp.getResponseCode() + '): ' + resp.getContentText();
   }
+  // El proyecto ya es igual a GitHub en ese commit: es la referencia para el aviso de pull pendiente.
+  _githubGuardarUltimoCommit_(nombreBase, cabezaTraida);
 
   // 6. Reporte.
   var antes = {};
