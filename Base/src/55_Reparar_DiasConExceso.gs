@@ -9,6 +9,7 @@
  *   repararDiasConExcesoInforme()        -> SOLO INFORMA: CSV de clasificacion y CSV del plan (lo que escribiria el aplicar).
  *   repararDiasConExcesoAplicarUnicas()  -> tanda 1: escribe solo los casos de clase 'unica'.
  *   repararDiasConExcesoAplicar()        -> escribe 'unica' y 'ambigua_ataques_coinciden'; el resto va a Revision_Guerra.csv.
+ *   informeFameCurrentRiverRace52() / aplicarFameCurrentRiverRace52() -> fame por día real de 52 casos de T3 S1 y S2 según CurrentRiverRace (al final del archivo; §PF139).
  * Escribir = respaldo previo de Backup_Guerra.csv, reparto de AtaquesHoy, creacion de las filas que faltan (Origen 'Reconstruido - Solución ...')
  * y verificacion releyendo el CSV. Solo toca Backup_Guerra.csv (los casos de la hoja Guerra no se tocan).
  *
@@ -618,4 +619,239 @@ function _repararDiasConExceso_(aplicar, clases) {
   } finally {
     lock.releaseLock();
   }
+}
+
+
+// ============================================================================================================
+// FAME POR DÍA REAL DE LOS 52 CASOS CON CurrentRiverRace (20-oct-2026; Contexto_Base_Web.md §PF139)
+// Cruce hecho en solo lectura (Datos descargados/CSV/Informes/Informe_52_CurrentRiverRace_vs_Hoja 2026-10-20.csv):
+// en estos casos los ataques por día ya coinciden con CurrentRiverRace y la fame de la semana también; solo cambia
+// cómo se reparte la fame entre los días. Cada fila: [temporada, semana, tag, ataques J|V|S|D, fame por día HOY,
+// fame por día REAL]. La fame por día real sale de los JSON de CurrentRiverRace (cierre de cada día) y del total semanal.
+//   informeFameCurrentRiverRace52()  -> SOLO INFORMA: CSV con lo que escribiría. No toca nada.
+//   aplicarFameCurrentRiverRace52()  -> respaldo previo de Backup_Guerra.csv, escribe la Fame acumulada de J, V y S
+//                                       (el domingo conserva el total semanal), Origen 'Corregido - CurrentRiverRace',
+//                                       y verifica releyendo el CSV.
+// Solo escribe un caso si TODO coincide con lo medido: las cuatro filas existen, AtaquesHoy y AtaquesSemana son los del
+// informe, Barcos acumulados = 0 y la fame por día de hoy es exactamente la del informe. Si no, lo omite y dice por qué
+// (si ya tiene la fame real, dice «ya aplicado»). No toca ataques, barcos ni el total semanal.
+// ============================================================================================================
+var FAME_CRR52_ORIGEN = 'Corregido - CurrentRiverRace';
+var FAME_CRR52_CASOS = [
+  ['3', '1', '#20YVVYCU2', '4|4|4|4', '800|500|400|500', '800|500|500|400'],
+  ['3', '1', '#22C090RVJ', '4|4|4|4', '600|600|400|800', '600|600|500|700'],
+  ['3', '1', '#2GG8PJ8GC', '4|4|4|4', '600|800|600|900', '600|800|800|700'],
+  ['3', '1', '#2LCJLUC9J', '4|4|4|4', '550|550|400|900', '550|550|600|700'],
+  ['3', '1', '#80PPY9R9G', '4|4|4|4', '700|800|400|700', '700|800|600|500'],
+  ['3', '1', '#829GQP0JL', '4|4|4|4', '600|500|400|800', '600|500|600|600'],
+  ['3', '1', '#8C0PQ9PR9', '4|4|4|4', '800|800|400|900', '800|800|500|800'],
+  ['3', '1', '#8VU0Y9LJ0', '4|4|4|4', '700|700|500|900', '700|700|600|800'],
+  ['3', '1', '#9G0RQR2GV', '4|4|4|4', '800|650|500|900', '800|650|700|700'],
+  ['3', '1', '#9LCJ2JQ08', '4|4|4|4', '900|900|700|900', '900|900|800|800'],
+  ['3', '1', '#C0PGPR90U', '4|4|4|4', '800|700|400|600', '800|700|500|500'],
+  ['3', '1', '#C0YVCRPY2', '4|4|4|4', '800|700|400|700', '800|700|500|600'],
+  ['3', '1', '#CGGGR82PJ', '4|4|4|4', '550|800|600|900', '550|800|800|700'],
+  ['3', '1', '#CPRQG82L', '4|4|4|4', '700|500|400|600', '700|500|600|400'],
+  ['3', '1', '#CUQG9CJUG', '4|4|4|4', '800|500|400|800', '800|500|500|700'],
+  ['3', '1', '#GVVPJ8CLG', '4|4|4|4', '500|700|600|900', '500|700|800|700'],
+  ['3', '1', '#J2JJ8LGV9', '4|4|4|4', '900|400|550|800', '900|400|650|700'],
+  ['3', '1', '#J8V9PQJP9', '4|4|4|4', '500|400|400|800', '500|400|600|600'],
+  ['3', '1', '#JV08RQU2Y', '4|4|4|4', '800|400|400|650', '800|400|500|550'],
+  ['3', '1', '#LRQ8YJRCU', '4|4|4|4', '400|400|400|600', '400|400|500|500'],
+  ['3', '1', '#LRR2RGCCV', '4|4|4|4', '650|700|600|900', '650|700|800|700'],
+  ['3', '1', '#PJL9GL8U2', '4|4|4|4', '600|600|400|800', '600|600|600|600'],
+  ['3', '1', '#Q98RGPGCU', '4|4|4|4', '500|600|500|900', '500|600|600|800'],
+  ['3', '1', '#QR8JGLC9Q', '4|4|4|4', '800|700|400|800', '800|700|700|500'],
+  ['3', '1', '#R98JQRU99', '4|4|4|4', '500|600|500|900', '500|600|700|700'],
+  ['3', '1', '#RGQUGU0CU', '4|4|4|4', '550|650|400|650', '550|650|500|550'],
+  ['3', '1', '#U9L82V28P', '4|4|4|4', '500|700|500|900', '500|700|800|600'],
+  ['3', '1', '#U9P0PYQQ2', '4|4|4|4', '500|500|400|800', '500|500|500|700'],
+  ['3', '1', '#UG90QUU0P', '4|4|4|4', '700|700|400|800', '700|700|600|600'],
+  ['3', '1', '#UJUGRYY9C', '4|4|4|4', '800|700|700|900', '800|700|800|800'],
+  ['3', '1', '#UR902UV8L', '4|4|4|4', '600|700|600|900', '600|700|700|800'],
+  ['3', '1', '#V0UJ0RPVP', '4|4|4|4', '500|500|400|800', '500|500|700|500'],
+  ['3', '1', '#VLU8GLL09', '4|4|4|4', '700|700|600|900', '700|700|700|800'],
+  ['3', '1', '#VPRGY9YGG', '4|4|4|4', '700|700|400|800', '700|700|600|600'],
+  ['3', '1', '#VQCG0G09G', '4|4|4|4', '500|800|400|650', '500|800|500|550'],
+  ['3', '1', '#VR92C8LYU', '4|4|4|4', '500|700|400|700', '500|700|550|550'],
+  ['3', '1', '#YGL2QV8LG', '0|4|4|4', '0|650|700|900', '0|650|900|700'],
+  ['3', '2', '#20YVVYCU2', '4|4|4|4', '800|400|550|700', '800|550|700|400'],
+  ['3', '2', '#8J9PL92GU', '4|4|4|4', '650|400|400|700', '650|400|500|600'],
+  ['3', '2', '#8PYCU9U9Q', '4|4|4|4', '700|400|500|900', '700|600|600|600'],
+  ['3', '2', '#8Q92GV08U', '4|4|4|4', '600|400|600|900', '600|700|500|700'],
+  ['3', '2', '#8VU0Y9LJ0', '4|4|4|4', '500|400|600|900', '500|500|600|800'],
+  ['3', '2', '#92YRUUV9P', '4|4|4|4', '400|500|400|500', '400|500|500|400'],
+  ['3', '2', '#C8Q0C88UL', '4|4|4|4', '500|700|400|500', '500|700|500|400'],
+  ['3', '2', '#CGGGR82PJ', '4|4|4|4', '800|700|550|800', '800|700|650|700'],
+  ['3', '2', '#CYR2PVLLY', '4|4|4|4', '650|400|650|900', '650|500|800|650'],
+  ['3', '2', '#Q98RGPGCU', '4|4|4|4', '600|400|600|900', '600|600|800|500'],
+  ['3', '2', '#RGQUGU0CU', '4|4|4|4', '900|400|400|900', '900|550|650|500'],
+  ['3', '2', '#U8CJG9JQ0', '4|4|4|4', '600|400|800|900', '600|800|700|600'],
+  ['3', '2', '#V929CC8CC', '4|4|4|4', '550|550|700|900', '550|650|800|700'],
+  ['3', '2', '#VLU8GLL09', '4|4|4|4', '800|500|900|900', '800|600|800|900'],
+  ['3', '2', '#VY0UJ82PV', '4|4|4|4', '700|400|400|900', '700|600|600|500']
+];
+
+function informeFameCurrentRiverRace52() { _fameCrr52_(false); }
+function aplicarFameCurrentRiverRace52() { _fameCrr52_(true); }
+
+/** Arma el plan sobre filas (arreglo de arreglos sin encabezado). No modifica filas. */
+function _fameCrr52Planificar_(filas) {
+  var grupos = _excDiasAgrupar(filas);
+  var porClave = {};
+  Object.keys(grupos).forEach(function (k) {
+    var g = grupos[k], c = [g.temporada, g.semana, g.tag].join('|');
+    if (!porClave[c]) porClave[c] = [];
+    porClave[c].push(g);
+  });
+  var casos = [], omitidos = [], yaAplicados = [];
+  FAME_CRR52_CASOS.forEach(function (e) {
+    var etq = 'T' + e[0] + ' S' + e[1] + ' ' + e[2];
+    var lista = porClave[[e[0], e[1], e[2]].join('|')] || [];
+    if (lista.length !== 1) { omitidos.push({ etq: etq, motivo: lista.length ? 'el jugador aparece en ' + lista.length + ' clanes esa semana' : 'no se encuentra la serie en Backup_Guerra.csv' }); return; }
+    var g = lista[0];
+    var ata = e[3].split('|').map(Number), fh = e[4].split('|').map(Number), fr = e[5].split('|').map(Number);
+    var motivo = '', cur = [], ops = [], acumAnt = 0, acumNue = 0, acumAtaques = 0;
+    for (var d = 0; d < 4 && !motivo; d++) {
+      var f = g.dias[d];
+      if (!f) { motivo = 'falta la fila del dia ' + EXC_DIAS_LETRAS.charAt(d); break; }
+      var hoy = _excDiasNum(f[GC.ATAQUES_HOY - 1]), sem = _excDiasNum(f[GC.ATAQUES_SEM - 1]), fame = _excDiasNum(f[GC.FAME - 1]), barcos = _excDiasNum(f[GC.BARCOS - 1]);
+      acumAtaques += ata[d];
+      if (hoy !== ata[d] || sem !== acumAtaques) { motivo = 'los ataques del dia ' + EXC_DIAS_LETRAS.charAt(d) + ' ya no son los del informe (' + hoy + ' hoy y ' + sem + ' acumulados)'; break; }
+      if (barcos !== 0) { motivo = 'el dia ' + EXC_DIAS_LETRAS.charAt(d) + ' tiene barcos acumulados (' + barcos + ')'; break; }
+      cur.push(fame - acumAnt);
+      acumNue += fr[d];
+      ops.push({ dia: d, fila: f, acumAnt: fame, acumNue: acumNue, deltaAnt: fame - acumAnt, deltaNue: fr[d], origenAnt: String(f[GC.ORIGEN - 1] || '') });
+      acumAnt = fame;
+    }
+    if (!motivo) {
+      var igualHoy = cur.every(function (v, i) { return v === fh[i]; });
+      var igualReal = cur.every(function (v, i) { return v === fr[i]; });
+      var sumH = fh.reduce(function (a, b) { return a + b; }, 0), sumR = fr.reduce(function (a, b) { return a + b; }, 0);
+      if (sumH !== sumR) motivo = 'el informe no conserva el total semanal (' + sumH + ' contra ' + sumR + ')';
+      else if (igualReal) { yaAplicados.push({ etq: etq, motivo: 'ya aplicado: la fame por dia ya es la de CurrentRiverRace' }); return; }
+      else if (!igualHoy) motivo = 'la fame por dia de hoy (' + cur.join('|') + ') no es la del informe (' + fh.join('|') + ')';
+      else {
+        for (var q = 0; q < 4; q++) {
+          if (_fameTablaDia_(ata[q], 0).indexOf(fr[q]) < 0) { motivo = 'la fame real del dia ' + EXC_DIAS_LETRAS.charAt(q) + ' (' + fr[q] + ') no esta en la tabla para ' + ata[q] + ' ataques'; break; }
+        }
+      }
+    }
+    if (motivo) { omitidos.push({ etq: etq, motivo: motivo }); return; }
+    casos.push({ grupo: g, etq: etq, ops: ops, ata: ata, fh: fh, fr: fr, totalFame: ops[3].acumAnt });
+  });
+  return { casos: casos, omitidos: omitidos, yaAplicados: yaAplicados };
+}
+
+function _fameCrr52_(aplicar) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[FameCRR52] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (!csvText) { Logger.log('[FameCRR52] No se encontro Backup_Guerra.csv; no se hace nada.'); return; }
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length < 2) { Logger.log('[FameCRR52] Backup_Guerra.csv esta vacio; no se hace nada.'); return; }
+    var encabezado = parsed[0];
+    var filas = parsed.slice(1);
+    for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
+    var copiaAntes = filas.map(function (r) { return r.slice(); });
+    var idxDe = new Map();
+    for (var q = 0; q < filas.length; q++) idxDe.set(filas[q], q);
+
+    var plan = _fameCrr52Planificar_(filas);
+    plan.casos.forEach(function (c) { c.ops.forEach(function (op) { op.idxAntes = idxDe.get(op.fila); }); });
+    var nFilas = 0;
+    plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.acumAnt !== op.acumNue) nFilas++; }); });
+
+    var detalle = [['Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Dia', 'PeriodIndex', 'Accion', 'Ataques del dia',
+      'Fame del dia anterior', 'Fame del dia nueva', 'Fame anterior (acumulado)', 'Fame nueva (acumulado)', 'Origen anterior', 'Origen nuevo']];
+    plan.casos.forEach(function (c) {
+      var g = c.grupo;
+      c.ops.forEach(function (op) {
+        detalle.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, EXC_DIAS_LETRAS.charAt(op.dia), _excDiasNum(op.fila[GC.PERIOD_IDX - 1]),
+          op.acumAnt !== op.acumNue ? 'Modificar' : 'Sin cambio', c.ata[op.dia], op.deltaAnt, op.deltaNue, op.acumAnt, op.acumNue,
+          op.origenAnt, op.acumAnt !== op.acumNue ? FAME_CRR52_ORIGEN : op.origenAnt]);
+      });
+    });
+    plan.omitidos.concat(plan.yaAplicados).forEach(function (o) {
+      detalle.push(['', '', o.etq, '', '', '', '', 'OMITIDO: ' + o.motivo, '', '', '', '', '', '', '']);
+    });
+    var nomDetalle = 'Reparacion_FameCurrentRiverRace52 ' + marca + ' (' + (aplicar ? 'aplicado' : 'plan') + ').csv';
+    if (detalle.length > 1) _saveCSVToDrive(nomDetalle, _encodeCSV(detalle));
+
+    var verificacion = '';
+    if (aplicar && plan.casos.length > 0) {
+      _saveCSVToDrive('Backup_Guerra ANTES de reparar FameCurrentRiverRace52 ' + marca + '.csv', csvText);
+      plan.casos.forEach(function (c) {
+        c.ops.forEach(function (op) {
+          if (op.acumAnt === op.acumNue) return;
+          op.fila[GC.FAME - 1] = String(op.acumNue);
+          op.fila[GC.ORIGEN - 1] = FAME_CRR52_ORIGEN;
+        });
+      });
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
+
+      var problemas = [];
+      var despues = _loadCSVFromDrive('Backup_Guerra.csv');
+      var parsedDespues = despues ? _parseCSV(despues) : null;
+      if (!parsedDespues || parsedDespues.length < 2) {
+        problemas.push('No se pudo releer Backup_Guerra.csv');
+      } else {
+        var filasDespues = parsedDespues.slice(1);
+        for (var b = 0; b < filasDespues.length; b++) { while (filasDespues[b].length < GUERRA_TOTAL_COLS) filasDespues[b].push(''); }
+        problemas = _fameCrr52Verificar_(copiaAntes, filasDespues, plan);
+      }
+      verificacion = problemas.length
+        ? 'VERIFICACION FALLO (' + problemas.length + '): ' + problemas.slice(0, 5).join('; ') + '. Restaurar con el respaldo "Backup_Guerra ANTES de reparar FameCurrentRiverRace52 ' + marca + '.csv".'
+        : 'Verificacion OK (' + nFilas + ' fila(s) modificadas en ' + plan.casos.length + ' caso(s)).';
+
+      var entradas = plan.omitidos.map(function (o) {
+        return { temporada: '', semana: '', tag: o.etq, nombre: '', tipo: 'alarma', motivo: 'fame por dia con CurrentRiverRace: no se escribio', detalle: o.motivo };
+      });
+      if (entradas.length) {
+        var rr = _registrarRevisionGuerra_(entradas);
+        verificacion += ' Revision_Guerra.csv: ' + rr.nuevas + ' nuevas, ' + rr.actualizadas + ' actualizadas.';
+      }
+    }
+
+    Logger.log('[FameCRR52] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + '. Casos del informe: ' + FAME_CRR52_CASOS.length + '. Se escribirian/escribieron: ' + plan.casos.length +
+      ' caso(s) y ' + nFilas + ' fila(s). Ya aplicados: ' + plan.yaAplicados.length + '. Omitidos: ' + plan.omitidos.length +
+      (plan.omitidos.length ? ' (' + plan.omitidos.slice(0, 5).map(function (o) { return o.etq + ': ' + o.motivo; }).join('; ') + ')' : '') + '. ' +
+      (verificacion ? verificacion + ' ' : '') + (detalle.length > 1 ? 'Detalle en Drive: ' + nomDetalle + '.' : 'No hay nada que hacer.') +
+      (aplicar ? '' : ' (No se escribio nada en el Backup ni en Guerra.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function _fameCrr52Verificar_(filasAntes, filasDespues, plan) {
+  var problemas = [];
+  if (filasDespues.length !== filasAntes.length) problemas.push('numero de filas ' + filasDespues.length + ' en vez de ' + filasAntes.length);
+  var tocadas = {};
+  plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.acumAnt !== op.acumNue) tocadas[op.idxAntes] = true; }); });
+  for (var i = 0; i < filasAntes.length && i < filasDespues.length; i++) {
+    var a = filasAntes[i].slice(), d = filasDespues[i].slice(0, filasAntes[i].length);
+    if (tocadas[i]) {
+      a[GC.FAME - 1] = ''; d[GC.FAME - 1] = ''; a[GC.ORIGEN - 1] = ''; d[GC.ORIGEN - 1] = '';
+    }
+    if (a.join('\u0001') !== d.join('\u0001')) { problemas.push('cambio una fila no planeada o una columna que no era (linea ' + (i + 2) + ')'); if (problemas.length > 10) break; }
+  }
+  var grupos = _excDiasAgrupar(filasDespues);
+  plan.casos.forEach(function (c) {
+    var g = c.grupo, k = [g.temporada, g.semana, g.tag, g.clan].join('|'), gd = grupos[k];
+    if (!gd) { problemas.push(c.etq + ': no se encuentra la serie'); return; }
+    var pf = 0, pa = 0;
+    for (var d2 = 0; d2 < 4; d2++) {
+      var f = gd.dias[d2];
+      if (!f) { problemas.push(c.etq + ': falta la fila del dia ' + EXC_DIAS_LETRAS.charAt(d2)); return; }
+      var fm = _excDiasNum(f[GC.FAME - 1]), sem = _excDiasNum(f[GC.ATAQUES_SEM - 1]);
+      if (fm - pf !== c.fr[d2]) problemas.push(c.etq + ': la fame del dia ' + EXC_DIAS_LETRAS.charAt(d2) + ' quedo en ' + (fm - pf) + ' y debia ser ' + c.fr[d2]);
+      if (_fameTablaDia_(c.ata[d2], 0).indexOf(fm - pf) < 0) problemas.push(c.etq + ': dia ' + EXC_DIAS_LETRAS.charAt(d2) + ' fuera de la tabla de fame');
+      if (sem - pa !== c.ata[d2] || _excDiasNum(f[GC.ATAQUES_HOY - 1]) !== c.ata[d2]) problemas.push(c.etq + ': cambiaron los ataques del dia ' + EXC_DIAS_LETRAS.charAt(d2));
+      pf = fm; pa = sem;
+    }
+    if (pf !== c.totalFame) problemas.push(c.etq + ': el total de fame de la semana cambio (' + pf + ' contra ' + c.totalFame + ')');
+  });
+  return problemas;
 }
