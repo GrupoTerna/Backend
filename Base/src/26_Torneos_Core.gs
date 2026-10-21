@@ -4051,7 +4051,7 @@ function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, ra
 
   var tagNorm = String(tag || '').trim().toUpperCase();
   if (!tagNorm && !permitirSinTag) {
-    return { ok: false, error: 'Falta el Tag del ganador. Si es intencional (cuenta externa a los clanes), confirmá explícitamente el guardado sin Tag.' };
+    return { ok: false, error: 'Falta el Tag del ganador. Si es intencional (cuenta externa a los clanes), confirma explícitamente el guardado sin Tag.' };
   }
   var tagConHash = tagNorm ? (tagNorm.charAt(0) === '#' ? tagNorm : '#' + tagNorm) : '';
 

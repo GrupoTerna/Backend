@@ -146,6 +146,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF134` | `timeline-svg.js` (`bandasTemporadaSvg()`), `styles.css`, `perfil.html` y `directorio.html`: sombreado ligero e intercalado por temporada en las gráficas (pedido de la usuaria, 20-oct-2026). **Probado con pruebas en node y DOM simulado; sin ver en navegador real.** |
 
 | `PF135` | `perfil.html` (`perfilLineChartSvg()`, `_dispersionMiniHtml()`) y `sw.js` v120: el valor diario se dibuja siempre encima del acumulado o semanal cuando coinciden, en las gráficas grandes y en la minigráfica de medallas (pedido de la usuaria, 20-oct-2026); el 21-oct (`sw.js` v121) el acumulado solo se engrosa donde coincide con el diario. **Probado con pruebas en node y DOM simulado; sin ver en navegador real.** |
+| `PF136` | `Base/src/` (`38_Web_Endpoints.gs`, `26_Torneos_Core.gs`, `37_Web_API.gs`, `48_Herramientas_Debug.gs`): cuatro textos con voseo pasados a tuteo, y revisión del voseo en `Web` y `Backend` (21-oct-2026). **Falta correr `subirBaseDesdeGithub()`.** |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -2524,6 +2525,14 @@ El caso de la usuaria (4 ataques, los 4 a barcos: entre 300 y 500) sale exacto. 
 - **Límite conocido.** La coincidencia se mide en píxeles del SVG, no en valores: dos valores distintos que caigan a menos de 0,5 px (rango del eje muy grande) se tratan como coincidentes. Un tramo con un día sin dato (punto hueco, `real: false`) nunca se engrosa.
 - **Pruebas (node).** `test/perfil-acumulado-semanal-grafica.test.js` (la de v120 se partió en dos: «no coinciden → línea normal y aro 5» y «coinciden, todo en 0 → tramo engrosado y aro ≥ 3 px más que el diario») y `test/perfil-minigrafica-diario-encima.test.js` (el primer caso ahora espera 6,5 solo en el día 0, donde coinciden, y 5 en los demás). `node --test` en `Web`: 591 en verde.
 - **Lo que no se comprobó.** No se abrió en un navegador real: falta ver «Medallas por semana» con un jugador real y un jugador cuyos barcos acumulados y diarios no coincidan.
+
+### PF136 — Revisión del voseo en `Web` y `Backend` y cuatro textos corregidos en `Base/src/` (21-oct-2026)
+
+- **Qué se hizo.** Barrido de formas de voseo y léxico rioplatense (`vos`, `sos`, `acá`, `che`, `dale`, `podés`, `tenés`, imperativos en `-á`/`-é`/`-í`, y verbo + `lo/la/me/te` sin tilde) según la regla del 18-oct-2026 (`PF106`, skill `md`, «Idioma»).
+- **`Web` (`*.html`, `*.js`).** Sin voseo ni «acá» en textos de interfaz ni en comentarios. Las coincidencias que salieron son falsos positivos: «revés», «cachés», «dale una estética gamer» (cita de la usuaria en un comentario; «dale» es aquí «dar» + pronombre) y las formas voseantes citadas en la entrada del 18-oct del `CHANGELOG.md` para explicar lo que se corrigió.
+- **`Backend`.** Cuatro textos corregidos (los tres primeros los ve el usuario en la web): `38_Web_Endpoints.gs` («Probá de nuevo» → «Inténtalo de nuevo», error 429), `26_Torneos_Core.gs` («confirmá explícitamente» → «confirma explícitamente», guardado sin Tag), `37_Web_API.gs` («Agregá participantes» → «Agrega participantes», `S_Lista` sin clan) y `48_Herramientas_Debug.gs` («Revisá» → «Revisa» en el registro de diagnóstico, y el comentario «poné acá» → «pon aquí»). Ninguna lógica cambia y `Web` no depende de esos textos (se buscaron: no aparecen).
+- **Sin tocar, a propósito.** 61 «acá» en comentarios de `Base/src/` y 11 en `Tampermonkey.md`, y dos frases con voseo en `Consolidado_Plan_de_Fases.md` (líneas ~2265 y 2267: «tenés», «querés»; texto histórico de un consolidado). Regla: lo que ya existía y no es parte del pedido se avisa, no se reescribe; los textos de interfaz sí se corrigen. **Si la usuaria quiere que se cambien también los «acá» de los comentarios, se hace en tandas aparte.** `Generador/src/02_Backstage.gs:73` («dale un nombre») no es voseo: es «dar» + pronombre.
+- **Pendiente para que llegue a la web.** Los cambios están en GitHub (`Base/src/`). Hay que correr `subirBaseDesdeGithub()` antes de cualquier descarga (skill, 0.3); si no, el próximo `descargarBase()` los pisa.
 
 ### PF064 — `perfil.html`: banner en la tarjeta de cabecera (pedido de la usuaria, 12-oct-2026)
 

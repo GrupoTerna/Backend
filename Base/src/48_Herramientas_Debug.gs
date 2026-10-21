@@ -131,7 +131,7 @@ function DIAGNOSTICO_duplicadosHoy() {
   }
 }
 function _testDiagnosticoCofresBattlelog() {
-  var tag = '#2GG8PJ8GC'; // poné acá un tag real, con el # incluido
+  var tag = '#2GG8PJ8GC'; // pon aquí un tag real, con el # incluido
   Logger.log('--- COFRES ---');
   Logger.log(JSON.stringify(_webCofresJugador(tag)));
   Logger.log('--- BATTLELOG ---');
@@ -184,7 +184,7 @@ function diagnosticoPlayersTag(tags) {
     Utilities.sleep(300);
   }
 
-  Logger.log('[Diag] Fin del diagnóstico. Revisá el detalle arriba para cada tag.');
+  Logger.log('[Diag] Fin del diagnóstico. Revisa el detalle arriba para cada tag.');
 }
 /**
  * 53_Test_Tamanio_Perfiles.gs  (NUEVO 08-oct-2026)
