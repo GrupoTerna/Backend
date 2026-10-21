@@ -811,7 +811,7 @@ function _iniciarRespuestaCategoria(telefono, categoria, estado) {
 
   if (categoria === 'Gestionar información de miembros') {
     // Exclusiva de administradores (ver _categoriasDisponibles, que ya la
-    // excluye de la lista para no-admin) — se valida de nuevo acá por si
+    // excluye de la lista para no-admin) — se valida de nuevo aquí por si
     // se llegara a este punto con un estado manipulado.
     if (!estado.esAdmin) {
       _setEstadoUsuario(telefono, { paso: 'ELEGIR_CATEGORIA', esAdmin: estado.esAdmin, tag: estado.tag });

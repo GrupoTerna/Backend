@@ -3114,7 +3114,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       avisos.push(avisoControl2);
     }
 
-    // Implementación (pregunta 4, FIX 27-ago-2026): recién acá se conoce el [→ Contexto_Base_Web.md §18B103]
+    // Implementación (pregunta 4, FIX 27-ago-2026): recién aquí se conoce el [→ Contexto_Base_Web.md §18B103]
     for (var k = 0; k < clavesTocadas.length; k++) {
       mapa[clavesTocadas[k]].implementacion = falloAlgunaPropagacion ? 'No' : 'Sí';
     }

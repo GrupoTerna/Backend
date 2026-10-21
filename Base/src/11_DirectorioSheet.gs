@@ -353,7 +353,7 @@ function sincronizarAdministradores() {
       clavePrevioPorCelular[celularNormK] = claveK;
     }
     fila[AC.CLAVE - 1] = claveK;
-    // NUEVO (15-sep-2026): Clave_Hash NUNCA se genera acá -- a propósito, [→ Contexto_Base_Web.md §11B037]
+    // NUEVO (15-sep-2026): Clave_Hash NUNCA se genera aquí -- a propósito, [→ Contexto_Base_Web.md §11B037]
     fila[AC.CLAVE_HASH - 1] = celularNormK ? (claveHashPrevioPorCelular[celularNormK] || '') : '';
     filasAdmin.push(fila);
   }
@@ -578,7 +578,7 @@ function _getCsvDirMap() {
                 return esRazonValida(v) ? v : '';
               })(),
               fechaIng:   colIdx['Fecha_ing']      !== undefined ? row[colIdx['Fecha_ing']]     : '',
-              // Vigencia y Fecha_lim: antes NO se leían acá — se perdían al [→ Contexto_Base_Web.md §11B049]
+              // Vigencia y Fecha_lim: antes NO se leían aquí — se perdían al [→ Contexto_Base_Web.md §11B049]
               vigencia:   colIdx['Vigencia']       !== undefined ? row[colIdx['Vigencia']]      : '',
               fechaLim:   colIdx['Fecha_lim']      !== undefined ? row[colIdx['Fecha_lim']]     : '',
               nivel:      colIdx['Nivel']          !== undefined ? row[colIdx['Nivel']]         : '',

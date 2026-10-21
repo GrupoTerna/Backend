@@ -90,7 +90,7 @@ function generarTodosMensajes() {
 
   // Leer orden de clanes desde hoja Clan (para respetar orden de filas)
   var clanOrden = _getOrdenClanHoja(ss);
-  // NOTA: ya no se lee acá "nombresClanTerna" (_getNombresClanesOrdenados) — [→ Contexto_Base_Web.md §30B010]
+  // NOTA: ya no se lee aquí "nombresClanTerna" (_getNombresClanesOrdenados) — [→ Contexto_Base_Web.md §30B010]
 
   var pendientes  = _obtenerDatosPendientes(ss);
   var sinCelular  = _obtenerDatosSinCelular(ss);
@@ -101,7 +101,7 @@ function generarTodosMensajes() {
   // Construir bloques de mensajes en orden de Categorías (hoja Extra) [→ Contexto_Base_Web.md §30B011]
   var bloques = []; // cada bloque: { categoria, subcategoria, clan, contenido }
 
-  // "INFORMACIÓN SOBRE EL CLAN" YA NO se genera acá (19/08/2026, pedido del [→ Contexto_Base_Web.md §30B012]
+  // "INFORMACIÓN SOBRE EL CLAN" YA NO se genera aquí (19/08/2026, pedido del [→ Contexto_Base_Web.md §30B012]
 
   // 1. DEFENSAS DE BARCOS: ELIMINADA (11/08/2026, pedido del usuario). [→ Contexto_Base_Web.md §30B013]
 

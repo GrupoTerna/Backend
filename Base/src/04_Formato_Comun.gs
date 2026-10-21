@@ -269,7 +269,7 @@ function _repararMergesFiltroHeader(sh, filaHeader) {
       m.breakApart();
 
       // La porción de arriba (fila inicio..filaHeader-1) queda EN BLANCO —
-      // el rótulo ya no vive acá, ver comentario de la función.
+      // el rótulo ya no vive aquí, ver comentario de la función.
       var arriba = sh.getRange(r0, c0, filaHeader - r0, numC);
       if (arriba.getNumRows() > 1) arriba.merge();
       arriba.setValue('')

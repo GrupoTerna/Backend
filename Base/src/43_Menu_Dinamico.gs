@@ -29,7 +29,7 @@ function syncPlantillasDesdeDrive() {
     Logger.log('[Plantillas] Sin documentos válidos encontrados.');
   }
 
-  // Preservar las entradas Dinámico ya guardadas (no se relee Mensajes acá).
+  // Preservar las entradas Dinámico ya guardadas (no se relee Mensajes aquí).
   var preservadas = _leerEntradasIndiceGuardadoPorTipo('Dinámico');
   for (var p = 0; p < preservadas.length; p++) {
     var e  = preservadas[p];

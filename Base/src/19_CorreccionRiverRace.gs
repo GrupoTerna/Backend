@@ -159,7 +159,7 @@ function aprobarCorreccionesRiverRacePendientes() {
     }
   }
 
-  // Reescribe el CSV completo (nunca se purga acá -- ver
+  // Reescribe el CSV completo (nunca se purga aquí -- ver
   // limpiarCorreccionesRiverRacePendientesAplicadas() para eso).
   var salidaCsv = [CRC_ENCABEZADOS].concat(filas);
   _saveCSVToDrive(CORRECCIONES_RIVERRACE_PENDIENTES_CSV, _encodeCSV(salidaCsv));

@@ -3,7 +3,7 @@
 // Reemplaza la regla de tres que se venía usando a ojo ("si 126 ataques
 // lograron 20.550 puntos, entonces 20.550 x (200/126)") por un techo
 // calculado ataque por ataque, que es lo único que permite decir "hasta
-// acá PUEDE llegar este clan" sin inventar.
+// aquí PUEDE llegar este clan" sin inventar.
 // ==============================================================================
 
 // DOCUMENTACIÓN DEL PUNTAJE DE GUERRA: valor de ataques/duelos, techo diario 900/700/400/200/0, límites 200 ataques / 50 cuentas (pedido 15-sep-2026). [→ Contexto_Base_Web.md §21B001]
@@ -69,7 +69,7 @@ function _pronosticoTechoRestante(ataquesUsadosHoy, fameDelDiaOpcional) {
     return fameDuelo20 + PG.FAME_VICTORIA_NORMAL * (restantes - 2);
   }
 
-  // Menos de 3 mazos: el duelo ya no es posible. Acá vive la corrección del
+  // Menos de 3 mazos: el duelo ya no es posible. Aquí vive la corrección del
   // 15-sep-2026 (2 mazos = 400, no 500).
   return PG.FAME_VICTORIA_NORMAL * restantes;
 }

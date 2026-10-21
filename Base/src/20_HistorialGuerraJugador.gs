@@ -776,7 +776,7 @@ function _webHistorialGuerraJugador(token, tagBuscado, limite) {
   var historial = _cargarHistorialGuerraIndividual(tagNorm);
   var registros = (historial && historial.registros) ? historial.registros : [];
 
-  // Se arma UNA sola vez acá, fuera del .map() de abajo, para no
+  // Se arma UNA sola vez aquí, fuera del .map() de abajo, para no
   // releer/parsear Backup_Guerra.csv una vez por cada registro semanal.
   var mapaFechas = _obtenerFechaCierrePorTemporadaSemana(tagNorm);
 

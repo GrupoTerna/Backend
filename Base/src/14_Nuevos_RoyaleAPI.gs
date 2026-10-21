@@ -750,7 +750,7 @@ function _aplicarImportacionNuevos(candidatosPayload) {
         fijas[NC.INACTIVIDAD - 1] = dRow[DC.INACTIVIDAD - 1];
         fijas[NC.CELULAR - 1]     = dRow[DC.CELULAR - 1];
       }
-      // NC.ROYALE_API se deja tal cual venía en fijasActuales acá (no se [→ Contexto_Base_Web.md §14B048]
+      // NC.ROYALE_API se deja tal cual venía en fijasActuales aquí (no se [→ Contexto_Base_Web.md §14B048]
       sh.getRange(fila, 1, 1, NC_TOTAL_FIJAS).setValues([fijas]);
 
       // --- RoyaleAPI: enlace clicable generado directo desde el Tag, [→ Contexto_Base_Web.md §14B049]

@@ -36,7 +36,7 @@ function updateExtraSheet() {
 
   // Mostrar_S (col 8) y Mostrar_D (col 9): agregadas para, en el futuro, [→ Contexto_Base_Web.md §22B004]
 
-  // FIX (16-ago-2026): las 3 listas fijas de acá abajo (Liga, Rangos, [→ Contexto_Base_Web.md §22B005]
+  // FIX (16-ago-2026): las 3 listas fijas de aquí abajo (Liga, Rangos, [→ Contexto_Base_Web.md §22B005]
   var ligaRows = CFG.EXTRA_LIGAS_ROWS;
   for (var i = 0; i < ligaRows.length; i++) {
     sh.getRange(i + 2, 10).setValue(ligaRows[i][0]);

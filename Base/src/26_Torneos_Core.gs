@@ -1127,7 +1127,7 @@ function procesarTorneos() {
   // FIX (07-sep-2026, pedido usuario -- ver docblock completo del corte [→ Contexto_Base_Web.md §26B090]
   if (idsNuevos.cortadoPorPresupuesto) {
     Logger.log('[Torneos] procesarTListaNuevasFilas() quedó incompleta por presupuesto/tanda de ' +
-               'RoyaleAPI -- se corta procesarTorneos() acá, sin tocar Participantes calificados/' +
+               'RoyaleAPI -- se corta procesarTorneos() aquí, sin tocar Participantes calificados/' +
                'T_Control todavía, para que la próxima continuación retome el refetch pendiente.');
     return false;
   }
@@ -1265,7 +1265,7 @@ function importarTListaDesdeCSV() {
   // FIX (07-sep-2026, pedido del usuario): reaplica también los [→ Contexto_Base_Web.md §26B106]
   _aplicarDropdownMiembroActivoTLista(ss);
   _aplicarDropdownReaccionTLista(ss);
-  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar acá también el
+  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el
   // desplegable de WhatsApp, mismo criterio que Miembro activo/Reacción.
   _aplicarDropdownWhatsappTLista(ss);
   Logger.log('[Torneos] T_Lista restaurada desde CSV: ' + filas.length + ' fila(s).');
@@ -1318,7 +1318,7 @@ function importarSListaDesdeCSV() {
   // FIX (07-sep-2026, pedido del usuario): reaplica también los [→ Contexto_Base_Web.md §26B111]
   _aplicarDropdownMiembroActivoSLista(ss);
   _aplicarDropdownReaccionSLista(ss);
-  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar acá también el
+  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el
   // desplegable de WhatsApp, mismo criterio que Miembro activo/Reacción.
   _aplicarDropdownWhatsappSLista(ss);
   Logger.log('[Sorteos] S_Lista restaurada desde CSV: ' + filas.length + ' fila(s).');
@@ -1850,7 +1850,7 @@ function procesarTListaNuevasFilas(ss) {
   // FIX (31/08/2026, pedido del usuario -- mismo patrón que el FIX [→ Contexto_Base_Web.md §26B139]
   sh.getRange(3, 1, sh.getLastRow() - 2, TL_TOTAL_COLS).clearDataValidations();
 
-  // Se arma UNA sola vez acá (no en cada fila del loop) y se pasa a [→ Contexto_Base_Web.md §26B140]
+  // Se arma UNA sola vez aquí (no en cada fila del loop) y se pasa a [→ Contexto_Base_Web.md §26B140]
   var mapaDirectorioOrg = _getDirectorioLookupPorTag(ss);
   // FASE 8 (25-sep-2026, rediseño T_Lista -- punto G del docblock de [→ Contexto_Base_Web.md §26B141]
   var mapaInactivosOrg = _getInactivosLookupPorTag(ss);
@@ -1941,7 +1941,7 @@ function procesarTListaNuevasFilas(ss) {
         (Date.now() - _inicioRefetchTorneos) > CFG.TORNEOS_REFETCH_BUDGET_MS) {
       Logger.log('[T_Lista] Presupuesto/tanda de refetch a RoyaleAPI agotado en la fila ' +
                  filaHoja + ' (' + _consultasRefetchEnEstaTanda + ' consulta(s) ya hechas en ' +
-                 'esta tanda). Se corta acá; la próxima continuación retoma los torneos que falten.');
+                 'esta tanda). Se corta aquí; la próxima continuación retoma los torneos que falten.');
       _cortadoPorPresupuestoRefetch = true;
       break;
     }
@@ -2138,7 +2138,7 @@ function procesarTListaNuevasFilas(ss) {
   // de Miembro activo y Reacción, mismo criterio que Estado justo arriba.
   _aplicarDropdownMiembroActivoTLista(ss);
   _aplicarDropdownReaccionTLista(ss);
-  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar acá también el
+  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el
   // desplegable de WhatsApp, mismo criterio que Miembro activo/Reacción.
   _aplicarDropdownWhatsappTLista(ss);
 
@@ -2250,7 +2250,7 @@ function repararTorneosViejosDesdeAPI() {
     if (consultas >= CFG.TORNEOS_REFETCH_MAX_POR_TANDA ||
         (Date.now() - inicio) > CFG.TORNEOS_REFETCH_BUDGET_MS) {
       Logger.log('[Reparación Fase 13] Presupuesto/tanda agotado en la fila ' + filaHoja +
-                 ' (' + consultas + ' consulta(s) ya hechas en esta tanda). Se corta acá; ' +
+                 ' (' + consultas + ' consulta(s) ya hechas en esta tanda). Se corta aquí; ' +
                  'correr repararTorneosViejosDesdeAPI() de nuevo para continuar.');
       props.setProperty(PROP_ULTIMA_FILA, String(i));
       cortadoPorPresupuesto = true;
@@ -3028,7 +3028,7 @@ function procesarSListaNuevasFilas(ss) {
   _aplicarDropdownEstadoSLista(ss);
   _aplicarDropdownMiembroActivoSLista(ss);
   _aplicarDropdownReaccionSLista(ss);
-  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar acá también el
+  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el
   // desplegable de WhatsApp, mismo criterio que Miembro activo/Reacción.
   _aplicarDropdownWhatsappSLista(ss);
 
@@ -4364,7 +4364,7 @@ function _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organiz
       sh.getRange(filaDestino, TL.CLAN_TAG).setValue(organizadorInfo.clanTag || '');
     }
     // FIX (11-sep-2026): ver docblock de arriba -- semanas viajan desde el
-    // selector del panel, se convierten a "T{n}_S{m},..." recién acá.
+    // selector del panel, se convierten a "T{n}_S{m},..." recién aquí.
     if (semanasIsoCsv) sh.getRange(filaDestino, TL.SEMANAS).setValue(_construirSemanasCsvDesdeIsos(semanasIsoCsv));
   } else {
     var fila = new Array(TL_TOTAL_COLS).fill('');
@@ -4447,7 +4447,7 @@ function _planificarTorneoDesdeBot(fecha, hora, premios, tagTorneoPrincipal, org
   var fechaHora = _combinarFechaHora(fecha, hora);
   if (!fechaHora) return { ok: false, error: 'Fecha u hora inválida.' };
   // FASE 1 (25-sep-2026): ver docblock de arriba / _registrarTorneoDesdeBot()
-  // -- mismo criterio, Fecha y Hora se separan acá también.
+  // -- mismo criterio, Fecha y Hora se separan aquí también.
   var fechaSolo = new Date(fechaHora.getFullYear(), fechaHora.getMonth(), fechaHora.getDate());
   var horaSolo = _horaStringADate(fechaSolo, hora);
 
@@ -4612,7 +4612,7 @@ function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasI
   var fechaHora = _combinarFechaHora(fecha, hora);
   if (!fechaHora) return { ok: false, error: 'Fecha u hora inválida.' };
   // FASE 1 (25-sep-2026): ver docblock de arriba / _registrarTorneoDesdeBot()
-  // -- mismo criterio, Fecha y Hora se separan acá también.
+  // -- mismo criterio, Fecha y Hora se separan aquí también.
   var fechaSolo = new Date(fechaHora.getFullYear(), fechaHora.getMonth(), fechaHora.getDate());
   var horaSolo = _horaStringADate(fechaSolo, hora);
   var lastRow = sh.getLastRow();
@@ -4738,7 +4738,7 @@ function _corregirLinkTorneoYaRegistrado(ss, id, linkNuevo) {
   sh.getRange(filaHoja, TL.LINK_APP).setValue(linkNuevo);
 
   if (tagExistente && tagNuevoNorm === tagExistenteNorm) {
-    // Mismo torneo -- solo pudo cambiar &pass=. Se actualiza Contraseña acá [→ Contexto_Base_Web.md §26B306]
+    // Mismo torneo -- solo pudo cambiar &pass=. Se actualiza Contraseña aquí [→ Contexto_Base_Web.md §26B306]
     sh.getRange(filaHoja, TL.CONTRASENA).setValue(contrasenaNueva);
     Logger.log('[T_Lista] Fila ' + filaHoja + ' (id ' + id + '): Link_app corregido, mismo Tag_Tor (' +
                tagExistente + ') -- se trata como refresco normal, Organizador no se reprocesa.');

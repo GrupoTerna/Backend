@@ -792,7 +792,7 @@ function sincronizarRazonHaciaVetados(shDir, row) {
   var shVet = _getSs().getSheetByName(CFG.SHEETS.VETADOS);
   if (!shVet || shVet.getLastRow() < 2) return;
   // Usar VC.* (nunca índices sueltos) para que el orden real de columnas
-  // de Vetados nunca vuelva a desalinear qué campo se lee/escribe acá.
+  // de Vetados nunca vuelva a desalinear qué campo se lee/escribe aquí.
   var data = shVet.getRange(2, 1, shVet.getLastRow() - 1, VETADOS_TOTAL_COLS).getValues();
   for (var i = 0; i < data.length; i++) {
     if (String(data[i][VC.TAG - 1] || '') === tag) {

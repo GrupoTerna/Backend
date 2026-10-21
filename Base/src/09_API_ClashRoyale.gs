@@ -1273,7 +1273,7 @@ function descargarUpcomingChestsJugador(playerTag) {
       Logger.log('[UpcomingChests] Sin cofres nuevos para Backup_Cofres.csv (' + data.items.length + ' en la cola de ' + tag + ').');
     }
   } catch (eCsv) {
-    // El JSON ya quedó guardado (guardadoOk=true); un fallo acá no lo revierte.
+    // El JSON ya quedó guardado (guardadoOk=true); un fallo aquí no lo revierte.
     Logger.log('[UpcomingChests] Error actualizando Backup_Cofres.csv: ' + eCsv.message);
   }
 
@@ -2276,7 +2276,7 @@ function _fetchPlayersData() {
       // FIX (19/07/2026): antes NINGÚN punto del flujo real llamaba a [→ Contexto_Base_Web.md §09B120]
       _guardarPlayerEnDrive(playerTag, periodIndex, playerData);
     } else {
-      // Sin log individual acá a propósito (ver nota FIX 23/07/2026 más
+      // Sin log individual aquí a propósito (ver nota FIX 23/07/2026 más
       // abajo) — se acumula y se reporta junto con el resumen final.
       erroresPlayers.push(playerTag);
     }
@@ -2295,7 +2295,7 @@ function _fetchPlayersData() {
     return false;
   }
 
-  // FASE 21 (01/08/2026): antes se llamaba a _borrarProgresoPlayers() acá [→ Contexto_Base_Web.md §09B122]
+  // FASE 21 (01/08/2026): antes se llamaba a _borrarProgresoPlayers() aquí [→ Contexto_Base_Web.md §09B122]
   _playersCompletoEnEstaEjecucion = true;
   Logger.log('[API] /players completado. Datos obtenidos: ' + Object.keys(CACHE_CLAN_DATA._players).length + resumenErrores);
   return true;

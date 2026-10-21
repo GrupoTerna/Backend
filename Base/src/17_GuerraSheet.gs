@@ -682,7 +682,7 @@ function updateGuerraSheet() {
   var restauracionCompleta = _restaurarGuerraDesdeCSVSiVacia(sh, temporadasActivas);
   Logger.log('[Guerra][t] tras _restaurarGuerraDesdeCSVSiVacia: ' + (Date.now() - _tGS0) + ' ms');
   if (restauracionCompleta === false) {
-    Logger.log('[Guerra] updateGuerraSheet() corta acá: restauración desde CSV quedó incompleta, se reintenta en la próxima continuación antes de fusionar datos frescos.');
+    Logger.log('[Guerra] updateGuerraSheet() corta aquí: restauración desde CSV quedó incompleta, se reintenta en la próxima continuación antes de fusionar datos frescos.');
     return false;
   }
 
@@ -1664,7 +1664,7 @@ function _webGuerraLogUnClan(tagNorm, data) {
   }
 
   // Se devuelve DESCENDENTE (más reciente primero) -- se invierte recién
-  // acá, DESPUÉS de calcular los deltas en orden cronológico.
+  // aquí, DESPUÉS de calcular los deltas en orden cronológico.
   lista.reverse();
 
   salida.clan    = nombreClan;
@@ -4159,7 +4159,7 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
     return true;
   } catch(e) {
     Logger.log('[Guerra] Error restaurando desde CSV: ' + e.message);
-    return true; // no bloquear el resto de updateGuerraSheet() por un error puntual acá; ya quedó logueado.
+    return true; // no bloquear el resto de updateGuerraSheet() por un error puntual aquí; ya quedó logueado.
   }
 }
 
@@ -4178,7 +4178,7 @@ function _syncGuerraCSV(sh, forzar) {
       return;
     }
 
-    // NO se usa _extraerValoresConLinksReales() acá (17-jul-2026): esa [→ Contexto_Base_Web.md §17B174]
+    // NO se usa _extraerValoresConLinksReales() aquí (17-jul-2026): esa [→ Contexto_Base_Web.md §17B174]
     var data = sh.getRange(1, 1, lastRow, GUERRA_TOTAL_COLS).getDisplayValues();
 
     // FASE 1 (Lista_de_cambios.md, 18-jul-2026): getDisplayValues() sobre [→ Contexto_Base_Web.md §17B175]

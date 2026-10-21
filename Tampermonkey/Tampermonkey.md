@@ -135,7 +135,7 @@
       '</div></div>';
     ov.innerHTML = html;
 
-    // RoyaleAPI tiene atajos de teclado a nivel de documento: se cortan acá
+    // RoyaleAPI tiene atajos de teclado a nivel de documento: se cortan aquí
     // para que escribir/pegar en los campos no dispare nada de la página.
     ['keydown', 'keyup', 'keypress'].forEach(function (tipo) {
       ov.addEventListener(tipo, function (e) { e.stopPropagation(); });
@@ -487,7 +487,7 @@
 
   // NUEVO — método rápido por página de Analytics (ver sección
   // "MÉTODO RÁPIDO — WAR ANALYTICS" más abajo).
-  var ANALYTICS_TABLE_WAIT_MS = 15000;   // igual de generoso que TABLE_WAIT_MS, por si Cloudflare también aparece acá
+  var ANALYTICS_TABLE_WAIT_MS = 15000;   // igual de generoso que TABLE_WAIT_MS, por si Cloudflare también aparece aquí
   var PAUSA_ENTRE_CLANES_MS = 1500;
 
   // FIX (20-sep-2026): tope de espera de las solicitudes de lista al backend
@@ -670,7 +670,7 @@
       // --- PUNTO 2 (histórico de Guerra por jugador, consolidado Sección 5/8) ---
       // jugadorPorTag: índice tag -> {tag, nombre, clan, royaleApiUrl}, para
       // poder poner `nombre` en los registros que salen de Analytics/Log
-      // (que solo traen el tag). Se construye una sola vez acá.
+      // (que solo traen el tag). Se construye una sola vez aquí.
       jugadorPorTag: construirIndiceJugadoresPorTag(jugadores),
       // historialAcumulado: { tag: { tag, nombre, clan, registros:[...] } } —
       // se vacía por lote con _tomarLoteHistorial(). historialTotalRegistros
@@ -811,7 +811,7 @@
       jugadorPorTag: construirIndiceJugadoresPorTag(jugadores || []),
       // Los ~100 jugadores de las 4 páginas entran cómodos en un solo
       // request (a diferencia de Analytics/Log/Historial, que sí necesitan
-      // batching): se acumulan acá y se mandan de una sola vez al terminar
+      // batching): se acumulan aquí y se mandan de una sola vez al terminar
       // el recorrido de los 4 clanes -- ver terminarRace().
       participantesAcumulados: [],
       totalDiscrepancias: 0,  // se completa con resp.discrepancias al terminar
@@ -1321,7 +1321,7 @@
   // Antes esta función solo pedía decksUsedIdx/fameIdx a detectarColumnasCompleto()
   // — la columna de Barcos ("Boat Attacks") YA se detecta ahí (idx.barcos,
   // usada desde antes por leerHistorialCompleto() para el flujo de
-  // "Nuevos"), simplemente no se exponía acá. Ahora se expone también
+  // "Nuevos"), simplemente no se exponía aquí. Ahora se expone también
   // barcosIdx.
   function detectarColumnas(tabla) {
     var c = detectarColumnasCompleto(tabla);
@@ -2432,10 +2432,10 @@
     }
 
     var filas = leerFilasClanWars2(tabla, estado.clanesTerna);
-    // PUNTO 2 — a diferencia de Analytics/Log, acá `clan` viene POR FILA
+    // PUNTO 2 — a diferencia de Analytics/Log, aquí `clan` viene POR FILA
     // (leerFilasClanWars2() ya lo trae, es la única de las tres fuentes que
     // indica con certeza en qué clan estuvo el jugador esa semana puntual —
-    // Sección 2.3 del consolidado). Se registran TODAS las filas leídas acá
+    // Sección 2.3 del consolidado). Se registran TODAS las filas leídas aquí
     // (no solo `nuevasOActualizadas`): coberturaPorTag solo evita reenvíos a
     // Correcciones_Guerra.csv, es un concepto distinto de la cobertura del
     // histórico.
@@ -2708,7 +2708,7 @@
           estado.totalFilasEliminadas = (estado.totalFilasEliminadas || 0) + (resp.filasEliminadas || 0);
           // FIX (06-ago-2026): errores individuales de UN candidato (ver
           // try/catch por tag en _aplicarImportacionNuevos()) ya no abortan
-          // el lote entero, pero sí se reportan acá para que queden a la
+          // el lote entero, pero sí se reportan aquí para que queden a la
           // vista en el panel en vez de perderse en el log de Apps Script.
           if (resp.errores && resp.errores.length) {
             logNuevos(estado, '  ⚠ ' + resp.errores.length + ' jugador(es) con error individual: ' +
@@ -2819,7 +2819,7 @@
    * Lee `decks_used_today` (el delta diario, que 'riverrace' ignora a
    * propósito) en vez de `decks_used` (acumulado semanal de ataques, que
    * este flujo no necesita -- Sección 3 del consolidado: ataquesHoy =
-   * decksHoy viene directo de acá, sin restar nada). `fame`/`boat_attacks`
+   * decksHoy viene directo de aquí, sin restar nada). `fame`/`boat_attacks`
    * sí son los acumulados de la semana (fameSemana/barcosSemana), tal como
    * los necesita _procesarVerificacionRiverRace() del backend para poder
    * restarles lo ya registrado en Guerra.
@@ -2917,7 +2917,7 @@
    * terminarRace(estado)
    * Cierra el flujo: manda TODO lo acumulado en un solo request a
    * accion=verificarSemanaActual (Sección 7 del consolidado) -- a
-   * diferencia de Corrección de Guerra/Historial, acá no hace falta lotear
+   * diferencia de Corrección de Guerra/Historial, aquí no hace falta lotear
    * durante el recorrido porque son ~100 jugadores como mucho (4 clanes).
    * El backend NUNCA escribe directo sobre Guerra/Control_2 con esto -- solo
    * calcula discrepancias y las deja pendientes de aprobación manual (ver
@@ -2966,7 +2966,7 @@
   // navegación distinta), el panel se recrea en cada carga — sin guardar el
   // tamaño, cualquier ajuste manual se perdería en la siguiente página. Por
   // eso el tamaño elegido se guarda en Tampermonkey (GM_setValue) con un
-  // ResizeObserver y se restaura acá al crear el panel.
+  // ResizeObserver y se restaura aquí al crear el panel.
   var PANEL_SIZE_KEY = 'cg_panel_size_v1';
 
   function _leerTamanoPanelGuardado() {

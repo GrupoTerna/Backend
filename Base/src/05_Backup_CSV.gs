@@ -140,7 +140,7 @@ function respaldarIndiceYProtegidasCSV() {
     _aplicarDropdownEstadoSLista(ss);
     _aplicarDropdownMiembroActivoSLista(ss);
     _aplicarDropdownReaccionSLista(ss);
-    // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar acá también el [→ Contexto_Base_Web.md §05B013]
+    // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el [→ Contexto_Base_Web.md §05B013]
     _aplicarDropdownWhatsappSLista(ss);
   } catch (eSL) {
     Logger.log('[Backup] ERROR respaldando S_Lista (o sus dropdowns): ' + eSL.message + ' -- se continúa con el resto de hojas protegidas.');
@@ -581,7 +581,7 @@ function importarAcumulativosDesdeCSV() {
       if ((numFilas + 1) > sh.getMaxRows()) sh.insertRowsAfter(sh.getMaxRows(), (numFilas + 1) - sh.getMaxRows() + 10);
       if (numCols > sh.getMaxColumns()) sh.insertColumnsAfter(sh.getMaxColumns(), numCols - sh.getMaxColumns());
 
-      // FIX (18-sep-2026): la fila 1 (encabezado) ya NO se toca acá -- antes [→ Contexto_Base_Web.md §05B045]
+      // FIX (18-sep-2026): la fila 1 (encabezado) ya NO se toca aquí -- antes [→ Contexto_Base_Web.md §05B045]
       if (sh.getLastRow() >= 2) {
         sh.getRange(2, 1, sh.getLastRow() - 1, numCols).clearContent();
       }
@@ -1242,7 +1242,7 @@ function _extraerValoresConLinksReales(sh, numRows, numCols, colConHoraForzada, 
     }
     if (!tieneEnlace) continue;
 
-    // Columna con enlaces confirmada: recién acá se lee completa con [→ Contexto_Base_Web.md §05B074]
+    // Columna con enlaces confirmada: recién aquí se lee completa con [→ Contexto_Base_Web.md §05B074]
     var richCol = sh.getRange(primeraFilaDatos, c + 1, filasDatos, 1).getRichTextValues();
     for (var r2 = 0; r2 < richCol.length; r2++) {
       valores[r2 + 1][c] = richCol[r2][0].getLinkUrl() || '';
