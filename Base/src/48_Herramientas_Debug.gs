@@ -702,8 +702,11 @@ var TOT_CFG = {
   MAX_CAMBIOS: 60
 };
 
-function aplicarTotalesSemanaDesdeHistorialInforme() { tot_ejecutar_(false); }
-function aplicarTotalesSemanaDesdeHistorialAplicar() { tot_ejecutar_(true); }
+// §PF139 (21-oct-2026): estas dos entradas ahora llaman a _totSemanaPorDias_() (57_ReconstruirSemanaPorDias.gs), que reconstruye los cuatro dias de cada
+// semana con los registros, el total cerrado de RoyaleAPI y CurrentRiverRace, y corrige o crea las filas. tot_ejecutar_() (la version que solo ponia el
+// total en la ultima fila) queda sin uso.
+function aplicarTotalesSemanaDesdeHistorialInforme() { _totSemanaPorDias_(false); }
+function aplicarTotalesSemanaDesdeHistorialAplicar() { _totSemanaPorDias_(true); }
 
 function tot_ejecutar_(aplicar) {
   var t0 = new Date();
@@ -1239,8 +1242,11 @@ var TOT_CFG = {
   MAX_CAMBIOS: 60
 };
 
-function aplicarTotalesSemanaDesdeHistorialInforme() { tot_ejecutar_(false); }
-function aplicarTotalesSemanaDesdeHistorialAplicar() { tot_ejecutar_(true); }
+// §PF139 (21-oct-2026): estas dos entradas ahora llaman a _totSemanaPorDias_() (57_ReconstruirSemanaPorDias.gs), que reconstruye los cuatro dias de cada
+// semana con los registros, el total cerrado de RoyaleAPI y CurrentRiverRace, y corrige o crea las filas. tot_ejecutar_() (la version que solo ponia el
+// total en la ultima fila) queda sin uso.
+function aplicarTotalesSemanaDesdeHistorialInforme() { _totSemanaPorDias_(false); }
+function aplicarTotalesSemanaDesdeHistorialAplicar() { _totSemanaPorDias_(true); }
 
 function tot_ejecutar_(aplicar) {
   var t0 = new Date();
