@@ -4252,7 +4252,15 @@ Eran 3 entradas de 12 a 14-oct-2026 sin su explicación en el contexto. **Compro
 - **T3 S1, Chistris:** `repararDiasConExcesoAplicar()` (corrida de las 7:23 p. m.) dejó S 600 y D 900 de fame; el `CurrentRiverRace` dice **S 800 y D 700**. Los ataques (4 por día) coinciden. **La estimación pisó un dato que existía.**
 - **Consecuencia:** las 175 «Solución estimada» aplicadas y las 60 ambiguas de `Revision_Guerra.csv` (62 con los 2 imposibles) hay que **cruzarlas con `CurrentRiverRace`** (T2 S5 y T3 S1 a S3) antes de seguir con el criterio de domingo. El respaldo previo está en Drive y en `Datos descargados/CSV/Informes/Backup_Guerra ANTES de reparar DiasConExceso 2026-10-20 19.23.51.csv`.
 
+**Resultado del cruce de los 249 casos con `CurrentRiverRace` (20-oct-2026, Lima; SOLO LECTURA; script de prueba, no está en el repo).** Método: cierre de cada día con la captura del día siguiente (`decksUsed − decksUsedToday` da los ataques al cierre; la fame al cierre solo si ese día siguiente tenía `decksUsedToday` = 0, o si el día ya tenía 4 ataques); el domingo sale del total semanal de `Correcciones_Guerra.csv`; barcos = 0 porque el Log trae `Barcos` 0 en esos casos; todo validado con la tabla de fame (`_fameEsPosibleDia_()`); si faltaba la fame de algún día se enumeraron las cifras de la tabla que suman el total. Se usaron `Backup_Guerra.csv` (23:24 Lima) y los informes `19.16.20` y `19.23.51`.
+- **80 de 249 quedan resueltos con dato real** (ataques y fame por día únicos): 71 solo con `CurrentRiverRace` + total semanal y 9 más con la tabla.
+- **61 tienen los ataques por día ya fijados por `CurrentRiverRace`**, pero la fame de algún día admite más de una cifra válida; ahí sí queda un desempate, solo sobre los días sin dato.
+- **106 no tienen captura suficiente:** 91 de T3 S3 (solo hay capturas de X y J de la madrugada, con todo en 0) y 15 de T3 S2 (falta la captura de V o S). Son los únicos que siguen siendo estimación pura.
+- 2 sin evaluar: 1 de T2 S5 cuyos ataques de `CurrentRiverRace` no suman el total, y 1 de T3 S2 con barcos.
+- **Contra lo aplicado:** de los 65 casos de «ataques coinciden» que `CurrentRiverRace` resuelve, **52 tienen hoy una fame por día distinta** de la real (casi siempre S y D). Ejemplo: Chistris T3 S1, hoy S 600 y D 900; real S 800 y D 700.
+- **Chistris T3 S2 (el «imposible»):** resuelto, J 700, V 500, S 600, D 600.
+
 **Pendiente (no se hizo).**
-- Cruzar los 235 casos con `CurrentRiverRace`: cuántos quedan con fame por día real, cuáles siguen siendo estimación y cuáles de las 175 ya aplicadas cambian (con informe y respaldo, como siempre).
+- (Hecho el 20-oct-2026, ver el resultado arriba; falta aplicarlo.) Cruzar los casos con `CurrentRiverRace`: cuántos quedan con fame por día real, cuáles siguen siendo estimación y cuáles de las 175 ya aplicadas cambian (con informe y respaldo, como siempre).
 - Hacer que `_repartirSemanaConjunto_()` y las reparaciones lean primero las capturas de `CurrentRiverRace`, y llevar la misma lectura a la corrección automática al cerrar el día (punto 5). Hoy `CurrentRiverRace` solo figura en `01_Config_Global.gs` y `09_API_ClashRoyale.gs` de `Base/src/`.
 - Decidir con la usuaria si se revierten las 175 estimadas y se vuelven a calcular con esta regla, o solo las que difieran del JSON.
