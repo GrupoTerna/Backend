@@ -209,7 +209,7 @@ function _rsCrrRestricciones(temporada, semana, tag, tot) {
 }
 
 /**
- * Planifica la escritura. NO modifica `filas`. objetivos = [{ temporada, semana, tag, nombre, clan, jsonAtaques, jsonFame, jsonBarcos, omitir }]
+ * Planifica la escritura. NO modifica filas. objetivos = [{ temporada, semana, tag, nombre, clan, jsonAtaques, jsonFame, jsonBarcos, omitir }]
  * (omitir = motivo de texto si el Historial no confirma el total). opciones = { usarCrr, t0 }.
  * Devuelve { casos: [{ grupo, clase, estimado, ops, finalAntes }], omitidos: [{ grupo, clase, motivo, alarma }], series: [...] } (mismo formato de ops que
  * _excDiasPlanificar(), para reutilizar _excDiasAplicarPlan() y _excDiasVerificar()).
@@ -313,7 +313,7 @@ function _rsClavesHoja() {
 /**
  * Objetivos = una serie (jugador, clan, temporada, semana) por cada total semanal CERRADO de los JSON de RoyaleAPI de los jugadores que aparecen en el
  * Backup (mismo origen que completarDomingoDesdeJsonRoyaleApi: _cdjCargarRegistrosJsonDrive_ y _cdjIndexarRegistrosJson_), con o sin filas en el Backup.
- * Cada objetivo trae `omitir` (texto) si no se puede usar: JSON sin cerrar, JSON inconsistente, sin total de barcos o serie de la hoja Guerra.
+ * Cada objetivo trae omitir (texto) si no se puede usar: JSON sin cerrar, JSON inconsistente, sin total de barcos o serie de la hoja Guerra.
  * Devuelve null si se agotó el tiempo leyendo los JSON (no se escribe nada).
  */
 function _rsObjetivos(filas, claveHoja) {
