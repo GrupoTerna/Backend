@@ -4,7 +4,8 @@
 //
 //  - _githubSincronizar_(nombre): sube a GitHub, en UN solo commit, los .gs
 //    sueltos (Base/src/ o Generador/src/), el consolidado de respaldo
-//    (respaldo/<nombre>.gs), INDICE_FUNCIONES.md y LEEME_IA.md.
+//    (respaldo/<nombre>.gs), INDICE_FUNCIONES.md, Indice_<nombre>.md (N.º, archivo y
+//    estado; lo genera _guardarIndiceArchivos_ en 02_Backstage.gs) y LEEME_IA.md.
 //  - _githubTraerAProyectoApps_(nombre): lee <Nombre>/src/ de GitHub y deja el
 //    proyecto de Apps Script de Base (o del propio Generador) EXACTAMENTE igual
 //    (reemplazo atómico).
@@ -310,6 +311,8 @@ function _githubGenerarLeeme_(nombreBase, nArchivos) {
     '  **Lee solo esta carpeta.**',
     '- `INDICE_FUNCIONES.md` — en qué archivo y línea vive cada función. Búscala aquí',
     '  primero (con grep o con la búsqueda del repo) y abre solo el archivo que toque.',
+    '- `Indice_' + nombreBase + '.md` — lista numerada de los archivos del proyecto y su estado en la última',
+    '  tanda (permanece igual, modificado, creado o eliminado).',
     '',
     '## Qué ignorar',
     '',
@@ -350,6 +353,18 @@ function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje
   // El consolidado trae la fecha de generación en su primera línea: si es lo único que cambió,
   // se reutiliza el contenido que ya está en GitHub para que no cuente como cambio.
   var reFechaConsolidado = /\/\* CÓDIGO CONSOLIDADO GENERADO EL [^*]*\*\//;
+  // Indice_<Nombre>.md lleva la fecha y los estados de la última tanda: si las huellas de los archivos
+  // son las mismas que las del que ya está en GitHub, no hubo cambios de código y se conserva el remoto.
+  var reHuellas = /<!--\s*HUELLAS\s+(\{[\s\S]*?\})\s*-->/;
+  entradas.forEach(function(e) {
+    if (!/\/Indice_[^\/]+\.md$/.test(e.path)) return;
+    var nodoI = (arbol.tree || []).filter(function(n) { return n.type === 'blob' && n.path === e.path; })[0];
+    if (!nodoI) return;
+    var rqI = _ghReq_('get', '/git/blobs/' + nodoI.sha, null, 'application/vnd.github.raw+json');
+    var viejoI = _ghRespuesta_(UrlFetchApp.fetchAll([rqI])[0], rqI).getContentText('UTF-8');
+    var hv = reHuellas.exec(viejoI), hn = reHuellas.exec(e.content);
+    if (hv && hn && hv[1] === hn[1]) e.content = viejoI;
+  });
   entradas.forEach(function(e) {
     if (!/\/respaldo\/[^\/]+\.gs$/.test(e.path)) return;
     var nodo = (arbol.tree || []).filter(function(n) { return n.type === 'blob' && n.path === e.path; })[0];
@@ -455,6 +470,13 @@ function _githubSincronizar_(nombreBase, forzar) {
     });
     entradas.push({ path: nombreBase + '/respaldo/' + nombreBase + '.gs', content: consolidado });
     entradas.push({ path: nombreBase + '/INDICE_FUNCIONES.md', content: _githubGenerarIndice_(nombreBase, archivos) });
+    // Indice_<Nombre>.md (N.º / archivo / estado): lo generó _descargarProyectoAArchivos() en Drive.
+    var itIndice = _carpetaDeRespaldos_(nombreBase).getFilesByName('Indice_' + nombreBase + '.md');
+    if (itIndice.hasNext()) {
+      entradas.push({ path: nombreBase + '/Indice_' + nombreBase + '.md', content: itIndice.next().getBlob().getDataAsString('UTF-8') });
+    } else {
+      console.warn('[GitHub] No encontré Indice_' + nombreBase + '.md en Drive: no se escribe en GitHub.');
+    }
     entradas.push({ path: nombreBase + '/LEEME_IA.md', content: _githubGenerarLeeme_(nombreBase, archivos.length) });
 
     var antiguos = ['.md', '.txt', '.zip', '.gs'].map(function(e) { return nombreBase + '/' + nombreBase + e; });
