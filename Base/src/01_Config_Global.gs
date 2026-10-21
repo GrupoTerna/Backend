@@ -314,6 +314,10 @@ var CFG = {
   RUNGUERRA_COLA_REINTENTOS_MAX: 5,
   RUNGUERRA_COLA_REINTENTO_MS: 60 * 1000, // 1 min entre reintentos si el candado está ocupado
 
+  // PF144 (21-oct-2026): índice 'T|S|P' -> id de archivo de currentriverrace del cruce de meta, en la caché del script. [→ Contexto_Base_Web.md §PF144]
+  CRUCE_META_IDX_TTL_SEG: 6 * 60 * 60, // 6 h (máximo de CacheService)
+  CRUCE_META_IDX_REFRESCO_MIN_MS: 5 * 60 * 1000, // mínimo entre dos listados de Drive por una clave que falta
+
   // FASE 6 (05-ago-2026, cierre del plan de migración Plantillas -> Menú): [→ Contexto_Base_Web.md §01B055]
 
   // Colores de fondo por letra de día (para formato condicional en Guerra) [→ Contexto_Base_Web.md §01B056]

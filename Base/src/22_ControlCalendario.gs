@@ -921,7 +921,7 @@ function _getDatosGuerraDesdeCsvParaControl(ctx) {
 // CRUCE DE META POR DÍA (19-sep-2026, pedido del usuario): ¿el clan ya había [→ Contexto_Base_Web.md §22B051]
 var _CRUCE_META_LOGS_MEMO = null;   // { 'temp|clan': { periodIndex: {ini, fin} } }
 var _CRUCE_META_RES_MEMO  = {};     // { 'temp|clan|pIdx': true/false }
-var _CRUCE_META_JSON_IDX  = {};     // { 'clan': { 'T|S|P': DriveFile } }
+var _CRUCE_META_JSON_IDX  = {};     // { 'clan': { t, fresco, ids: { 'T|S|P': idArchivoDrive } } } (PF144: ya no guarda DriveFile)
 var _CRUCE_META_JSON_RES  = {};     // { 'temp|clan|pIdx': true/false/null }
 
 function _cruceNormTemporada_(t) {
@@ -978,6 +978,9 @@ function _cruceMetaDesdeGuerraLogs_(nombreClan, pIdx, temporada) {
 
 /**
  * Fuente 2. Busca en Drive el JSON de currentriverrace del periodo `pIdx` [→ Contexto_Base_Web.md §22B054]
+ * PF144 (21-oct-2026): el índice 'T|S|P' -> id de archivo de cada clan ya no se rearma en cada ejecución: se guarda en la caché del script
+ * (CFG.CRUCE_META_IDX_TTL_SEG) y solo se vuelve a listar Drive si falta la clave pedida (como máximo 1 vez cada
+ * CFG.CRUCE_META_IDX_REFRESCO_MIN_MS) o si el archivo del índice ya no se puede abrir. [→ Contexto_Base_Web.md §PF144]
  */
 function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
   try {
@@ -985,21 +988,26 @@ function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
     var claveRes = _cruceNormTemporada_(temporada) + '|' + nombre + '|' + pIdx;
     if (_CRUCE_META_JSON_RES.hasOwnProperty(claveRes)) return _CRUCE_META_JSON_RES[claveRes];
 
-    if (!_CRUCE_META_JSON_IDX[nombre]) {
-      var idx = {};
-      var _medT = Date.now(), _medN = 0; // 17-oct-2026 (PF091): medición del listado de Drive (solo Logger.log); [→ Contexto_Base_Web.md §PF091]
-      var carpeta = _getSubcarpetaEndpoint_(_getCarpetaParaClan(nombreClan), 'currentriverrace');
-      var it = _archivosConSubcarpetas_(carpeta); // PF074: incluye subcarpetas de temporada y semana
-      while (it.hasNext()) {
-        var f = it.next();
-        _medN++;
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
-        if (m) idx[Number(m[1]) + '|' + Number(m[2]) + '|' + Number(m[3])] = f;
-      }
-      _CRUCE_META_JSON_IDX[nombre] = idx;
-      Logger.log('[TorneosMed] listado Drive currentriverrace de "' + nombre + '": ' + _medN + ' archivo(s) en ' + (Date.now() - _medT) + 'ms');
+    var ent = _CRUCE_META_JSON_IDX[nombre];
+    if (!ent) {
+      ent = _cruceMetaIndiceDesdeCache_(nombre) || _cruceMetaListarIndiceDrive_(nombreClan, nombre);
+      _CRUCE_META_JSON_IDX[nombre] = ent;
     }
-    var archivo = _CRUCE_META_JSON_IDX[nombre][Number(temporada) + '|' + (periodIdxToSectionIndex(pIdx) + 1) + '|' + pIdx];
+    var claveArch = Number(temporada) + '|' + (periodIdxToSectionIndex(pIdx) + 1) + '|' + pIdx;
+    var idArch = ent.ids[claveArch];
+    // Falta la clave en un índice que viene de la caché: puede ser un archivo creado después de listar. Se relista, con piso de tiempo para no listar en cada consulta de una clave que de verdad no existe.
+    if (!idArch && !ent.fresco && (Date.now() - ent.t) > CFG.CRUCE_META_IDX_REFRESCO_MIN_MS) {
+      ent = _cruceMetaListarIndiceDrive_(nombreClan, nombre);
+      _CRUCE_META_JSON_IDX[nombre] = ent;
+      idArch = ent.ids[claveArch];
+    }
+    var archivo = idArch ? _cruceMetaAbrirArchivo_(idArch) : null;
+    if (idArch && !archivo && !ent.fresco) { // el índice cacheado apunta a un archivo borrado o en la papelera
+      ent = _cruceMetaListarIndiceDrive_(nombreClan, nombre);
+      _CRUCE_META_JSON_IDX[nombre] = ent;
+      idArch = ent.ids[claveArch];
+      archivo = idArch ? _cruceMetaAbrirArchivo_(idArch) : null;
+    }
     var res = null;
     if (archivo) {
       var _medTJ = Date.now();
@@ -1023,6 +1031,52 @@ function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
     return res;
   } catch (e) {
     Logger.log('[Control] JSON de Drive no disponible para cruce de meta (' + nombreClan + ', periodo ' + pIdx + '): ' + e.message);
+    return null;
+  }
+}
+
+/** PF144: lista Drive (carpeta currentriverrace del clan, con subcarpetas) y devuelve { t, fresco: true, ids: { 'T|S|P': idArchivo } }; lo deja también en la caché del script. */
+function _cruceMetaListarIndiceDrive_(nombreClan, nombre) {
+  var ids = {};
+  var _medT = Date.now(), _medN = 0; // 17-oct-2026 (PF091): medición del listado de Drive (solo Logger.log); [→ Contexto_Base_Web.md §PF091]
+  var carpeta = _getSubcarpetaEndpoint_(_getCarpetaParaClan(nombreClan), 'currentriverrace');
+  var it = _archivosConSubcarpetas_(carpeta); // PF074: incluye subcarpetas de temporada y semana
+  while (it.hasNext()) {
+    var f = it.next();
+    _medN++;
+    var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
+    if (m) ids[Number(m[1]) + '|' + Number(m[2]) + '|' + Number(m[3])] = f.getId();
+  }
+  Logger.log('[TorneosMed] listado Drive currentriverrace de "' + nombre + '": ' + _medN + ' archivo(s) en ' + (Date.now() - _medT) + 'ms');
+  var ent = { t: Date.now(), fresco: true, ids: ids };
+  try {
+    CacheService.getScriptCache().put('CRUCE_META_IDX_' + nombre, JSON.stringify({ t: ent.t, ids: ids }), CFG.CRUCE_META_IDX_TTL_SEG);
+  } catch (eCache) {
+    Logger.log('[TorneosMed] No se pudo guardar el índice de currentriverrace de "' + nombre + '" en la caché (se vuelve a listar la próxima vez): ' + eCache.message);
+  }
+  return ent;
+}
+
+/** PF144: índice guardado en la caché del script, o null si no hay (nunca guardado, vencido o evicto). Devuelve { t, fresco: false, ids }. */
+function _cruceMetaIndiceDesdeCache_(nombre) {
+  try {
+    var raw = CacheService.getScriptCache().get('CRUCE_META_IDX_' + nombre);
+    if (!raw) return null;
+    var o = JSON.parse(raw);
+    if (!o || !o.ids || !isFinite(Number(o.t))) return null;
+    Logger.log('[TorneosMed] índice de currentriverrace de "' + nombre + '" tomado de la caché (' + Object.keys(o.ids).length + ' archivo(s), edad ' + Math.round((Date.now() - Number(o.t)) / 1000) + ' s), sin listar Drive');
+    return { t: Number(o.t), fresco: false, ids: o.ids };
+  } catch (e) {
+    return null;
+  }
+}
+
+/** PF144: abre un archivo por id; null si no existe o está en la papelera. */
+function _cruceMetaAbrirArchivo_(id) {
+  try {
+    var f = DriveApp.getFileById(id);
+    return f.isTrashed() ? null : f;
+  } catch (e) {
     return null;
   }
 }
