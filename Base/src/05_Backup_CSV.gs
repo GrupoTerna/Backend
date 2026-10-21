@@ -109,32 +109,42 @@ function respaldarHojasRestantesCSV() {
   while (!respaldarHojasDerivadasCSV()) { /* continúa hasta terminar */ }
 }
 
+// PF146 (21-oct-2026): claves de los 8 respaldos de respaldarIndiceYProtegidasCSV(), en el orden en que se hacen.
+var PROTEGIDAS_CSV_CLAVES = ['INDICE', 'VETADOS', 'T_LISTA', 'S_LISTA', 'CR_LISTA', 'T_ASISTENCIA', 'S_ASISTENCIA', 'EXTRA'];
+
+function _tocaProtegida_(soloClave, clave) {
+  return !soloClave || soloClave === clave;
+}
+
 /**
  * respaldarIndiceYProtegidasCSV() [→ Contexto_Base_Web.md §05B008]
  */
-function respaldarIndiceYProtegidasCSV() {
+function respaldarIndiceYProtegidasCSV(soloClave) {
+  // PF146 (21-oct-2026): parametro opcional. Sin argumento hace los 8 respaldos, igual que antes (lo usan runAll,
+  // runUpdate y los botones manuales). Con una clave de PROTEGIDAS_CSV_CLAVES hace solo ese respaldo; asi
+  // PASOS_RUNSYNCCSV lo reparte en 8 pasos y _ejecutarPorTandas puede cortar entre uno y otro. [→ Contexto_Base_Web.md §PF146]
   var ss = _getSs();
   // FIX (18-sep-2026, pedido usuario -- "el ID de la hoja de cambio de [→ Contexto_Base_Web.md §05B009]
-  try {
+  if (_tocaProtegida_(soloClave, 'INDICE')) try {
     _respaldarIndiceCSV(ss);
   } catch (eIdx) {
     Logger.log('[Backup] ERROR respaldando Índice: ' + eIdx.message + ' -- se continúa con el resto de hojas protegidas.');
   }
 
   // Hojas protegidas (edición manual, se bloquea si se reducen las filas). [→ Contexto_Base_Web.md §05B010]
-  try {
+  if (_tocaProtegida_(soloClave, 'VETADOS')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.VETADOS], true, 2, _colSet(VC.FECHA));
   } catch (eVet) {
     Logger.log('[Backup] ERROR respaldando Vetados: ' + eVet.message + ' -- se continúa con el resto de hojas protegidas.');
   }
-  try {
+  if (_tocaProtegida_(soloClave, 'T_LISTA')) try {
     // FASE 5 (25-sep-2026, rediseño T_Lista -- ver punto B-bis y comentario [→ Contexto_Base_Web.md §05B011]
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.T_LISTA], true, null, null, _colSet(TL.PREPARACION, TL.DURACION));
   } catch (eTL) {
     Logger.log('[Backup] ERROR respaldando T_Lista: ' + eTL.message + ' -- se continúa con el resto de hojas protegidas.');
   }
   // FASE (07-sep-2026, pedido del usuario): S_Lista es la hoja análoga a [→ Contexto_Base_Web.md §05B012]
-  try {
+  if (_tocaProtegida_(soloClave, 'S_LISTA')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_LISTA], true);
     _aplicarDropdownId2SLista(ss);
     _aplicarDropdownEstadoSLista(ss);
@@ -146,7 +156,7 @@ function respaldarIndiceYProtegidasCSV() {
     Logger.log('[Backup] ERROR respaldando S_Lista (o sus dropdowns): ' + eSL.message + ' -- se continúa con el resto de hojas protegidas.');
   }
   // NUEVO (13-sep-2026, pedido del usuario): CR_Lista ya tiene su propio [→ Contexto_Base_Web.md §05B014]
-  try {
+  if (_tocaProtegida_(soloClave, 'CR_LISTA')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.CR_LISTA], true);
     _aplicarDropdownTipoCRLista(ss);
     // NUEVO (16-sep-2026, pedido del usuario): mismo criterio que el [→ Contexto_Base_Web.md §05B015]
@@ -155,21 +165,21 @@ function respaldarIndiceYProtegidasCSV() {
     Logger.log('[Backup] ERROR respaldando CR_Lista (o sus dropdowns): ' + eCR.message + ' -- se continúa con el resto de hojas protegidas.');
   }
   // FIX (07-sep-2026, reportado por el usuario -- "T_Asistencia y T_Control [→ Contexto_Base_Web.md §05B016]
-  try {
+  if (_tocaProtegida_(soloClave, 'T_ASISTENCIA')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.T_ASISTENCIA], true, TA.ID);
   } catch (eTA) {
     Logger.log('[Backup] ERROR respaldando T_Asistencia: ' + eTA.message + ' -- se continúa con el resto de hojas protegidas.');
   }
 
   // RESUELTO (10-sep-2026, pedido usuario -- ver Consolidado_Cambios_ [→ Contexto_Base_Web.md §05B017]
-  try {
+  if (_tocaProtegida_(soloClave, 'S_ASISTENCIA')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_ASISTENCIA], true, SA.ID);
   } catch (eSA) {
     Logger.log('[Backup] ERROR respaldando S_Asistencia: ' + eSA.message + ' -- se continúa con el resto de hojas protegidas.');
   }
 
   // FIX (27-sep-2026, pedido del usuario -- ver docblock completo de [→ Contexto_Base_Web.md §05B018]
-  try {
+  if (_tocaProtegida_(soloClave, 'EXTRA')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.EXTRA], true);
   } catch (eExtra) {
     Logger.log('[Backup] ERROR respaldando Extra: ' + eExtra.message + ' -- se continúa con el resto de hojas protegidas.');

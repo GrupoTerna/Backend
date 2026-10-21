@@ -423,7 +423,18 @@ var PASOS_RUNSYNCCSV = [
     exportarBackupCelulares();
     Logger.log('[Backup] syncAllCSV (parte 2/2): celulares (JSON) sincronizado.');
   },
-  function () { respaldarIndiceYProtegidasCSV(); },
+  // PF146 (21-oct-2026): antes este paso era UN solo respaldarIndiceYProtegidasCSV() (5 respaldos de 15-52 s cada uno, ~200 s
+  // sin poder cortarse; el 21-oct a las 7:51 la corrida llego a 361 s). Ahora cada respaldo es un paso, para que
+  // _ejecutarPorTandas revise el presupuesto entre uno y otro. Las claves son las de PROTEGIDAS_CSV_CLAVES (05_Backup_CSV.gs).
+  // La cadena pasa de 7 a 14 pasos. [→ Contexto_Base_Web.md §PF146]
+  function () { respaldarIndiceYProtegidasCSV('INDICE'); },
+  function () { respaldarIndiceYProtegidasCSV('VETADOS'); },
+  function () { respaldarIndiceYProtegidasCSV('T_LISTA'); },
+  function () { respaldarIndiceYProtegidasCSV('S_LISTA'); },
+  function () { respaldarIndiceYProtegidasCSV('CR_LISTA'); },
+  function () { respaldarIndiceYProtegidasCSV('T_ASISTENCIA'); },
+  function () { respaldarIndiceYProtegidasCSV('S_ASISTENCIA'); },
+  function () { respaldarIndiceYProtegidasCSV('EXTRA'); },
   function () { return respaldarHojasDerivadasCSV(); },
   // NUEVO (2-oct-2026, pregunta 51, hoja Battlelogs; decision de la usuaria): [→ Contexto_Base_Web.md §B074]
   function () {
