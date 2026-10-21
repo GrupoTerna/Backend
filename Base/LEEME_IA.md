@@ -5,7 +5,7 @@ descarga o se sube el proyecto "Base". No edites estos archivos a mano.
 
 ## Qué leer
 
-- `src/` — el código real: 57 archivos sueltos, uno por archivo de Apps Script.
+- `src/` — el código real: 58 archivos sueltos, uno por archivo de Apps Script.
   **Lee solo esta carpeta.**
 - `INDICE_FUNCIONES.md` — en qué archivo y línea vive cada función. Búscala aquí
   primero (con grep o con la búsqueda del repo) y abre solo el archivo que toque.
