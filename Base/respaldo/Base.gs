@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 20/10/2026 20:08:05 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 20/10/2026 23:21:48 */
 
 
 
@@ -66,7 +66,7 @@ var PASOS_RUNGUERRARAPIDO = [
       capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'runGuerraRapido paso 0');
     }
   },
-  // Directorio (sin /players) — roster 100% fresco desde acá en adelante.
+  // Directorio (sin /players) — roster 100% fresco desde aquí en adelante.
   function () { updateDirectorioSheet(); },
   // FIX (20-ago-2026, pedido usuario): "expulsé miembros, corrí [→ Contexto_Base_Web.md §B005]
   function () {
@@ -109,7 +109,7 @@ var NOMBRES_PASOS_RUNGUERRARAPIDO = [
 ];
 
 var PASOS_RUNALL = [
-  // FIX (06-ago-2026): _limpiarHojasCardsObsoletas() se agrega acá, mismo [→ Contexto_Base_Web.md §B008]
+  // FIX (06-ago-2026): _limpiarHojasCardsObsoletas() se agrega aquí, mismo [→ Contexto_Base_Web.md §B008]
   function () { _renombrarHojasHistorialLegacy(); },
   function () { setupAllSheets(); },
   // Se suma _limpiarHojaMenuObsoleta(): borra la hoja Menú (reemplazada por el [→ Contexto_Base_Web.md §B009]
@@ -207,7 +207,7 @@ var PASOS_RUNALL = [
     try { _cerrarSemanaActualNuevos(); }
     catch (eCierreNuevos) { Logger.log('[PASOS_RUNALL] _cerrarSemanaActualNuevos() falló: ' + eCierreNuevos.message); }
   },
-  // FIX (20-ago-2026, pedido usuario): se agrega actualizarControl2() acá, [→ Contexto_Base_Web.md §B029]
+  // FIX (20-ago-2026, pedido usuario): se agrega actualizarControl2() aquí, [→ Contexto_Base_Web.md §B029]
   function () { updateControlSheet(); },
   function () { updateVistasDerivadas(); },
   function () {
@@ -398,7 +398,7 @@ var PASOS_RUNUPDATE = [
     try { _cerrarSemanaActualNuevos(); }
     catch (eCierreNuevos) { Logger.log('[PASOS_RUNUPDATE] _cerrarSemanaActualNuevos() falló: ' + eCierreNuevos.message); }
   },
-  // FIX (20-ago-2026, pedido usuario): se agrega actualizarControl2() acá — [→ Contexto_Base_Web.md §B063]
+  // FIX (20-ago-2026, pedido usuario): se agrega actualizarControl2() aquí — [→ Contexto_Base_Web.md §B063]
   function () { updateControlSheet(); },
   function () {
     try { actualizarControl2(); }
@@ -3530,7 +3530,7 @@ function _pintarEncabezadosControl(sh) {
                COLOR_BORDE_HEADER, SpreadsheetApp.BorderStyle.SOLID);
 
   // A1:C2 debe quedar SIN bordes (ver comentario más arriba) — se limpia
-  // acá, después del borde general, para que no lo sobreescriba.
+  // aquí, después del borde general, para que no lo sobreescriba.
   sh.getRange(1, 1, 2, 3).setBorder(false, false, false, false, false, false);
 }
 
@@ -4840,7 +4840,7 @@ function _repararMergesFiltroHeader(sh, filaHeader) {
       m.breakApart();
 
       // La porción de arriba (fila inicio..filaHeader-1) queda EN BLANCO —
-      // el rótulo ya no vive acá, ver comentario de la función.
+      // el rótulo ya no vive aquí, ver comentario de la función.
       var arriba = sh.getRange(r0, c0, filaHeader - r0, numC);
       if (arriba.getNumRows() > 1) arriba.merge();
       arriba.setValue('')
@@ -5822,7 +5822,7 @@ function respaldarIndiceYProtegidasCSV() {
     _aplicarDropdownEstadoSLista(ss);
     _aplicarDropdownMiembroActivoSLista(ss);
     _aplicarDropdownReaccionSLista(ss);
-    // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar acá también el [→ Contexto_Base_Web.md §05B013]
+    // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el [→ Contexto_Base_Web.md §05B013]
     _aplicarDropdownWhatsappSLista(ss);
   } catch (eSL) {
     Logger.log('[Backup] ERROR respaldando S_Lista (o sus dropdowns): ' + eSL.message + ' -- se continúa con el resto de hojas protegidas.');
@@ -6263,7 +6263,7 @@ function importarAcumulativosDesdeCSV() {
       if ((numFilas + 1) > sh.getMaxRows()) sh.insertRowsAfter(sh.getMaxRows(), (numFilas + 1) - sh.getMaxRows() + 10);
       if (numCols > sh.getMaxColumns()) sh.insertColumnsAfter(sh.getMaxColumns(), numCols - sh.getMaxColumns());
 
-      // FIX (18-sep-2026): la fila 1 (encabezado) ya NO se toca acá -- antes [→ Contexto_Base_Web.md §05B045]
+      // FIX (18-sep-2026): la fila 1 (encabezado) ya NO se toca aquí -- antes [→ Contexto_Base_Web.md §05B045]
       if (sh.getLastRow() >= 2) {
         sh.getRange(2, 1, sh.getLastRow() - 1, numCols).clearContent();
       }
@@ -6924,7 +6924,7 @@ function _extraerValoresConLinksReales(sh, numRows, numCols, colConHoraForzada, 
     }
     if (!tieneEnlace) continue;
 
-    // Columna con enlaces confirmada: recién acá se lee completa con [→ Contexto_Base_Web.md §05B074]
+    // Columna con enlaces confirmada: recién aquí se lee completa con [→ Contexto_Base_Web.md §05B074]
     var richCol = sh.getRange(primeraFilaDatos, c + 1, filasDatos, 1).getRichTextValues();
     for (var r2 = 0; r2 < richCol.length; r2++) {
       valores[r2 + 1][c] = richCol[r2][0].getLinkUrl() || '';
@@ -9880,7 +9880,7 @@ function descargarUpcomingChestsJugador(playerTag) {
       Logger.log('[UpcomingChests] Sin cofres nuevos para Backup_Cofres.csv (' + data.items.length + ' en la cola de ' + tag + ').');
     }
   } catch (eCsv) {
-    // El JSON ya quedó guardado (guardadoOk=true); un fallo acá no lo revierte.
+    // El JSON ya quedó guardado (guardadoOk=true); un fallo aquí no lo revierte.
     Logger.log('[UpcomingChests] Error actualizando Backup_Cofres.csv: ' + eCsv.message);
   }
 
@@ -10883,7 +10883,7 @@ function _fetchPlayersData() {
       // FIX (19/07/2026): antes NINGÚN punto del flujo real llamaba a [→ Contexto_Base_Web.md §09B120]
       _guardarPlayerEnDrive(playerTag, periodIndex, playerData);
     } else {
-      // Sin log individual acá a propósito (ver nota FIX 23/07/2026 más
+      // Sin log individual aquí a propósito (ver nota FIX 23/07/2026 más
       // abajo) — se acumula y se reporta junto con el resumen final.
       erroresPlayers.push(playerTag);
     }
@@ -10902,7 +10902,7 @@ function _fetchPlayersData() {
     return false;
   }
 
-  // FASE 21 (01/08/2026): antes se llamaba a _borrarProgresoPlayers() acá [→ Contexto_Base_Web.md §09B122]
+  // FASE 21 (01/08/2026): antes se llamaba a _borrarProgresoPlayers() aquí [→ Contexto_Base_Web.md §09B122]
   _playersCompletoEnEstaEjecucion = true;
   Logger.log('[API] /players completado. Datos obtenidos: ' + Object.keys(CACHE_CLAN_DATA._players).length + resumenErrores);
   return true;
@@ -12691,7 +12691,7 @@ function sincronizarAdministradores() {
       clavePrevioPorCelular[celularNormK] = claveK;
     }
     fila[AC.CLAVE - 1] = claveK;
-    // NUEVO (15-sep-2026): Clave_Hash NUNCA se genera acá -- a propósito, [→ Contexto_Base_Web.md §11B037]
+    // NUEVO (15-sep-2026): Clave_Hash NUNCA se genera aquí -- a propósito, [→ Contexto_Base_Web.md §11B037]
     fila[AC.CLAVE_HASH - 1] = celularNormK ? (claveHashPrevioPorCelular[celularNormK] || '') : '';
     filasAdmin.push(fila);
   }
@@ -12916,7 +12916,7 @@ function _getCsvDirMap() {
                 return esRazonValida(v) ? v : '';
               })(),
               fechaIng:   colIdx['Fecha_ing']      !== undefined ? row[colIdx['Fecha_ing']]     : '',
-              // Vigencia y Fecha_lim: antes NO se leían acá — se perdían al [→ Contexto_Base_Web.md §11B049]
+              // Vigencia y Fecha_lim: antes NO se leían aquí — se perdían al [→ Contexto_Base_Web.md §11B049]
               vigencia:   colIdx['Vigencia']       !== undefined ? row[colIdx['Vigencia']]      : '',
               fechaLim:   colIdx['Fecha_lim']      !== undefined ? row[colIdx['Fecha_lim']]     : '',
               nivel:      colIdx['Nivel']          !== undefined ? row[colIdx['Nivel']]         : '',
@@ -15174,7 +15174,7 @@ function sincronizarRazonHaciaVetados(shDir, row) {
   var shVet = _getSs().getSheetByName(CFG.SHEETS.VETADOS);
   if (!shVet || shVet.getLastRow() < 2) return;
   // Usar VC.* (nunca índices sueltos) para que el orden real de columnas
-  // de Vetados nunca vuelva a desalinear qué campo se lee/escribe acá.
+  // de Vetados nunca vuelva a desalinear qué campo se lee/escribe aquí.
   var data = shVet.getRange(2, 1, shVet.getLastRow() - 1, VETADOS_TOTAL_COLS).getValues();
   for (var i = 0; i < data.length; i++) {
     if (String(data[i][VC.TAG - 1] || '') === tag) {
@@ -16153,7 +16153,7 @@ function _aplicarImportacionNuevos(candidatosPayload) {
         fijas[NC.INACTIVIDAD - 1] = dRow[DC.INACTIVIDAD - 1];
         fijas[NC.CELULAR - 1]     = dRow[DC.CELULAR - 1];
       }
-      // NC.ROYALE_API se deja tal cual venía en fijasActuales acá (no se [→ Contexto_Base_Web.md §14B048]
+      // NC.ROYALE_API se deja tal cual venía en fijasActuales aquí (no se [→ Contexto_Base_Web.md §14B048]
       sh.getRange(fila, 1, 1, NC_TOTAL_FIJAS).setValues([fijas]);
 
       // --- RoyaleAPI: enlace clicable generado directo desde el Tag, [→ Contexto_Base_Web.md §14B049]
@@ -19069,7 +19069,7 @@ function updateGuerraSheet() {
   var restauracionCompleta = _restaurarGuerraDesdeCSVSiVacia(sh, temporadasActivas);
   Logger.log('[Guerra][t] tras _restaurarGuerraDesdeCSVSiVacia: ' + (Date.now() - _tGS0) + ' ms');
   if (restauracionCompleta === false) {
-    Logger.log('[Guerra] updateGuerraSheet() corta acá: restauración desde CSV quedó incompleta, se reintenta en la próxima continuación antes de fusionar datos frescos.');
+    Logger.log('[Guerra] updateGuerraSheet() corta aquí: restauración desde CSV quedó incompleta, se reintenta en la próxima continuación antes de fusionar datos frescos.');
     return false;
   }
 
@@ -20051,7 +20051,7 @@ function _webGuerraLogUnClan(tagNorm, data) {
   }
 
   // Se devuelve DESCENDENTE (más reciente primero) -- se invierte recién
-  // acá, DESPUÉS de calcular los deltas en orden cronológico.
+  // aquí, DESPUÉS de calcular los deltas en orden cronológico.
   lista.reverse();
 
   salida.clan    = nombreClan;
@@ -22546,7 +22546,7 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
     return true;
   } catch(e) {
     Logger.log('[Guerra] Error restaurando desde CSV: ' + e.message);
-    return true; // no bloquear el resto de updateGuerraSheet() por un error puntual acá; ya quedó logueado.
+    return true; // no bloquear el resto de updateGuerraSheet() por un error puntual aquí; ya quedó logueado.
   }
 }
 
@@ -22565,7 +22565,7 @@ function _syncGuerraCSV(sh, forzar) {
       return;
     }
 
-    // NO se usa _extraerValoresConLinksReales() acá (17-jul-2026): esa [→ Contexto_Base_Web.md §17B174]
+    // NO se usa _extraerValoresConLinksReales() aquí (17-jul-2026): esa [→ Contexto_Base_Web.md §17B174]
     var data = sh.getRange(1, 1, lastRow, GUERRA_TOTAL_COLS).getDisplayValues();
 
     // FASE 1 (Lista_de_cambios.md, 18-jul-2026): getDisplayValues() sobre [→ Contexto_Base_Web.md §17B175]
@@ -26365,7 +26365,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       avisos.push(avisoControl2);
     }
 
-    // Implementación (pregunta 4, FIX 27-ago-2026): recién acá se conoce el [→ Contexto_Base_Web.md §18B103]
+    // Implementación (pregunta 4, FIX 27-ago-2026): recién aquí se conoce el [→ Contexto_Base_Web.md §18B103]
     for (var k = 0; k < clavesTocadas.length; k++) {
       mapa[clavesTocadas[k]].implementacion = falloAlgunaPropagacion ? 'No' : 'Sí';
     }
@@ -27876,7 +27876,7 @@ function aprobarCorreccionesRiverRacePendientes() {
     }
   }
 
-  // Reescribe el CSV completo (nunca se purga acá -- ver
+  // Reescribe el CSV completo (nunca se purga aquí -- ver
   // limpiarCorreccionesRiverRacePendientesAplicadas() para eso).
   var salidaCsv = [CRC_ENCABEZADOS].concat(filas);
   _saveCSVToDrive(CORRECCIONES_RIVERRACE_PENDIENTES_CSV, _encodeCSV(salidaCsv));
@@ -28927,7 +28927,7 @@ function _webHistorialGuerraJugador(token, tagBuscado, limite) {
   var historial = _cargarHistorialGuerraIndividual(tagNorm);
   var registros = (historial && historial.registros) ? historial.registros : [];
 
-  // Se arma UNA sola vez acá, fuera del .map() de abajo, para no
+  // Se arma UNA sola vez aquí, fuera del .map() de abajo, para no
   // releer/parsear Backup_Guerra.csv una vez por cada registro semanal.
   var mapaFechas = _obtenerFechaCierrePorTemporadaSemana(tagNorm);
 
@@ -28972,7 +28972,7 @@ function _webHistorialGuerraJugador(token, tagBuscado, limite) {
 // Reemplaza la regla de tres que se venía usando a ojo ("si 126 ataques
 // lograron 20.550 puntos, entonces 20.550 x (200/126)") por un techo
 // calculado ataque por ataque, que es lo único que permite decir "hasta
-// acá PUEDE llegar este clan" sin inventar.
+// aquí PUEDE llegar este clan" sin inventar.
 // ==============================================================================
 
 // DOCUMENTACIÓN DEL PUNTAJE DE GUERRA: valor de ataques/duelos, techo diario 900/700/400/200/0, límites 200 ataques / 50 cuentas (pedido 15-sep-2026). [→ Contexto_Base_Web.md §21B001]
@@ -29038,7 +29038,7 @@ function _pronosticoTechoRestante(ataquesUsadosHoy, fameDelDiaOpcional) {
     return fameDuelo20 + PG.FAME_VICTORIA_NORMAL * (restantes - 2);
   }
 
-  // Menos de 3 mazos: el duelo ya no es posible. Acá vive la corrección del
+  // Menos de 3 mazos: el duelo ya no es posible. Aquí vive la corrección del
   // 15-sep-2026 (2 mazos = 400, no 500).
   return PG.FAME_VICTORIA_NORMAL * restantes;
 }
@@ -29327,7 +29327,7 @@ function updateExtraSheet() {
 
   // Mostrar_S (col 8) y Mostrar_D (col 9): agregadas para, en el futuro, [→ Contexto_Base_Web.md §22B004]
 
-  // FIX (16-ago-2026): las 3 listas fijas de acá abajo (Liga, Rangos, [→ Contexto_Base_Web.md §22B005]
+  // FIX (16-ago-2026): las 3 listas fijas de aquí abajo (Liga, Rangos, [→ Contexto_Base_Web.md §22B005]
   var ligaRows = CFG.EXTRA_LIGAS_ROWS;
   for (var i = 0; i < ligaRows.length; i++) {
     sh.getRange(i + 2, 10).setValue(ligaRows[i][0]);
@@ -32356,7 +32356,7 @@ function _indexarPropuestasPendientesAscensos(sh) {
     var tag    = String(f[ASC.TAG - 1] || '').trim();
     var rango  = String(f[ASC.RANGO - 1] || '').trim();
     var rango2 = String(f[ASC.RANGO_2 - 1] || '').trim();
-    if (!tag || !rango || !rango2) continue; // 'Expulsión'/'Elegible Admin' -- nunca se resuelven acá
+    if (!tag || !rango || !rango2) continue; // 'Expulsión'/'Elegible Admin' -- nunca se resuelven aquí
 
     var clave = tag + '|' + rango + '|' + rango2;
     if (!mapa[clave]) {
@@ -34234,7 +34234,7 @@ function procesarTorneos() {
   // FIX (07-sep-2026, pedido usuario -- ver docblock completo del corte [→ Contexto_Base_Web.md §26B090]
   if (idsNuevos.cortadoPorPresupuesto) {
     Logger.log('[Torneos] procesarTListaNuevasFilas() quedó incompleta por presupuesto/tanda de ' +
-               'RoyaleAPI -- se corta procesarTorneos() acá, sin tocar Participantes calificados/' +
+               'RoyaleAPI -- se corta procesarTorneos() aquí, sin tocar Participantes calificados/' +
                'T_Control todavía, para que la próxima continuación retome el refetch pendiente.');
     return false;
   }
@@ -34372,7 +34372,7 @@ function importarTListaDesdeCSV() {
   // FIX (07-sep-2026, pedido del usuario): reaplica también los [→ Contexto_Base_Web.md §26B106]
   _aplicarDropdownMiembroActivoTLista(ss);
   _aplicarDropdownReaccionTLista(ss);
-  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar acá también el
+  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el
   // desplegable de WhatsApp, mismo criterio que Miembro activo/Reacción.
   _aplicarDropdownWhatsappTLista(ss);
   Logger.log('[Torneos] T_Lista restaurada desde CSV: ' + filas.length + ' fila(s).');
@@ -34425,7 +34425,7 @@ function importarSListaDesdeCSV() {
   // FIX (07-sep-2026, pedido del usuario): reaplica también los [→ Contexto_Base_Web.md §26B111]
   _aplicarDropdownMiembroActivoSLista(ss);
   _aplicarDropdownReaccionSLista(ss);
-  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar acá también el
+  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el
   // desplegable de WhatsApp, mismo criterio que Miembro activo/Reacción.
   _aplicarDropdownWhatsappSLista(ss);
   Logger.log('[Sorteos] S_Lista restaurada desde CSV: ' + filas.length + ' fila(s).');
@@ -34957,7 +34957,7 @@ function procesarTListaNuevasFilas(ss) {
   // FIX (31/08/2026, pedido del usuario -- mismo patrón que el FIX [→ Contexto_Base_Web.md §26B139]
   sh.getRange(3, 1, sh.getLastRow() - 2, TL_TOTAL_COLS).clearDataValidations();
 
-  // Se arma UNA sola vez acá (no en cada fila del loop) y se pasa a [→ Contexto_Base_Web.md §26B140]
+  // Se arma UNA sola vez aquí (no en cada fila del loop) y se pasa a [→ Contexto_Base_Web.md §26B140]
   var mapaDirectorioOrg = _getDirectorioLookupPorTag(ss);
   // FASE 8 (25-sep-2026, rediseño T_Lista -- punto G del docblock de [→ Contexto_Base_Web.md §26B141]
   var mapaInactivosOrg = _getInactivosLookupPorTag(ss);
@@ -35048,7 +35048,7 @@ function procesarTListaNuevasFilas(ss) {
         (Date.now() - _inicioRefetchTorneos) > CFG.TORNEOS_REFETCH_BUDGET_MS) {
       Logger.log('[T_Lista] Presupuesto/tanda de refetch a RoyaleAPI agotado en la fila ' +
                  filaHoja + ' (' + _consultasRefetchEnEstaTanda + ' consulta(s) ya hechas en ' +
-                 'esta tanda). Se corta acá; la próxima continuación retoma los torneos que falten.');
+                 'esta tanda). Se corta aquí; la próxima continuación retoma los torneos que falten.');
       _cortadoPorPresupuestoRefetch = true;
       break;
     }
@@ -35245,7 +35245,7 @@ function procesarTListaNuevasFilas(ss) {
   // de Miembro activo y Reacción, mismo criterio que Estado justo arriba.
   _aplicarDropdownMiembroActivoTLista(ss);
   _aplicarDropdownReaccionTLista(ss);
-  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar acá también el
+  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el
   // desplegable de WhatsApp, mismo criterio que Miembro activo/Reacción.
   _aplicarDropdownWhatsappTLista(ss);
 
@@ -35357,7 +35357,7 @@ function repararTorneosViejosDesdeAPI() {
     if (consultas >= CFG.TORNEOS_REFETCH_MAX_POR_TANDA ||
         (Date.now() - inicio) > CFG.TORNEOS_REFETCH_BUDGET_MS) {
       Logger.log('[Reparación Fase 13] Presupuesto/tanda agotado en la fila ' + filaHoja +
-                 ' (' + consultas + ' consulta(s) ya hechas en esta tanda). Se corta acá; ' +
+                 ' (' + consultas + ' consulta(s) ya hechas en esta tanda). Se corta aquí; ' +
                  'correr repararTorneosViejosDesdeAPI() de nuevo para continuar.');
       props.setProperty(PROP_ULTIMA_FILA, String(i));
       cortadoPorPresupuesto = true;
@@ -36135,7 +36135,7 @@ function procesarSListaNuevasFilas(ss) {
   _aplicarDropdownEstadoSLista(ss);
   _aplicarDropdownMiembroActivoSLista(ss);
   _aplicarDropdownReaccionSLista(ss);
-  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar acá también el
+  // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el
   // desplegable de WhatsApp, mismo criterio que Miembro activo/Reacción.
   _aplicarDropdownWhatsappSLista(ss);
 
@@ -37158,7 +37158,7 @@ function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, ra
 
   var tagNorm = String(tag || '').trim().toUpperCase();
   if (!tagNorm && !permitirSinTag) {
-    return { ok: false, error: 'Falta el Tag del ganador. Si es intencional (cuenta externa a los clanes), confirmá explícitamente el guardado sin Tag.' };
+    return { ok: false, error: 'Falta el Tag del ganador. Si es intencional (cuenta externa a los clanes), confirma explícitamente el guardado sin Tag.' };
   }
   var tagConHash = tagNorm ? (tagNorm.charAt(0) === '#' ? tagNorm : '#' + tagNorm) : '';
 
@@ -37471,7 +37471,7 @@ function _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organiz
       sh.getRange(filaDestino, TL.CLAN_TAG).setValue(organizadorInfo.clanTag || '');
     }
     // FIX (11-sep-2026): ver docblock de arriba -- semanas viajan desde el
-    // selector del panel, se convierten a "T{n}_S{m},..." recién acá.
+    // selector del panel, se convierten a "T{n}_S{m},..." recién aquí.
     if (semanasIsoCsv) sh.getRange(filaDestino, TL.SEMANAS).setValue(_construirSemanasCsvDesdeIsos(semanasIsoCsv));
   } else {
     var fila = new Array(TL_TOTAL_COLS).fill('');
@@ -37554,7 +37554,7 @@ function _planificarTorneoDesdeBot(fecha, hora, premios, tagTorneoPrincipal, org
   var fechaHora = _combinarFechaHora(fecha, hora);
   if (!fechaHora) return { ok: false, error: 'Fecha u hora inválida.' };
   // FASE 1 (25-sep-2026): ver docblock de arriba / _registrarTorneoDesdeBot()
-  // -- mismo criterio, Fecha y Hora se separan acá también.
+  // -- mismo criterio, Fecha y Hora se separan aquí también.
   var fechaSolo = new Date(fechaHora.getFullYear(), fechaHora.getMonth(), fechaHora.getDate());
   var horaSolo = _horaStringADate(fechaSolo, hora);
 
@@ -37719,7 +37719,7 @@ function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasI
   var fechaHora = _combinarFechaHora(fecha, hora);
   if (!fechaHora) return { ok: false, error: 'Fecha u hora inválida.' };
   // FASE 1 (25-sep-2026): ver docblock de arriba / _registrarTorneoDesdeBot()
-  // -- mismo criterio, Fecha y Hora se separan acá también.
+  // -- mismo criterio, Fecha y Hora se separan aquí también.
   var fechaSolo = new Date(fechaHora.getFullYear(), fechaHora.getMonth(), fechaHora.getDate());
   var horaSolo = _horaStringADate(fechaSolo, hora);
   var lastRow = sh.getLastRow();
@@ -37845,7 +37845,7 @@ function _corregirLinkTorneoYaRegistrado(ss, id, linkNuevo) {
   sh.getRange(filaHoja, TL.LINK_APP).setValue(linkNuevo);
 
   if (tagExistente && tagNuevoNorm === tagExistenteNorm) {
-    // Mismo torneo -- solo pudo cambiar &pass=. Se actualiza Contraseña acá [→ Contexto_Base_Web.md §26B306]
+    // Mismo torneo -- solo pudo cambiar &pass=. Se actualiza Contraseña aquí [→ Contexto_Base_Web.md §26B306]
     sh.getRange(filaHoja, TL.CONTRASENA).setValue(contrasenaNueva);
     Logger.log('[T_Lista] Fila ' + filaHoja + ' (id ' + id + '): Link_app corregido, mismo Tag_Tor (' +
                tagExistente + ') -- se trata como refresco normal, Organizador no se reprocesa.');
@@ -38156,7 +38156,7 @@ function _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanasIs
 
 // BAJA DEFINITIVA (14-sep-2026, pedido del usuario -- Fase 9 completa): se [→ Contexto_Base_Web.md §27B002]
 
-// --- Textos de las líneas automatizadas (editar acá si hace falta otra redacción) --- [→ Contexto_Base_Web.md §27B003]
+// --- Textos de las líneas automatizadas (editar aquí si hace falta otra redacción) --- [→ Contexto_Base_Web.md §27B003]
 var REQ_DOC_TEXTO_ATAQUES_HEADER = 'Solo participan miembros del clan que jueguen sus guerras completas (ataques semanales mínimos por clan):';
 
 var REQ_DOC_TEXTO_MIEMBRO_ACTIVO = 'Jugadores expulsados o sancionados NO participan';
@@ -40954,7 +40954,7 @@ function generarTodosMensajes() {
 
   // Leer orden de clanes desde hoja Clan (para respetar orden de filas)
   var clanOrden = _getOrdenClanHoja(ss);
-  // NOTA: ya no se lee acá "nombresClanTerna" (_getNombresClanesOrdenados) — [→ Contexto_Base_Web.md §30B010]
+  // NOTA: ya no se lee aquí "nombresClanTerna" (_getNombresClanesOrdenados) — [→ Contexto_Base_Web.md §30B010]
 
   var pendientes  = _obtenerDatosPendientes(ss);
   var sinCelular  = _obtenerDatosSinCelular(ss);
@@ -40965,7 +40965,7 @@ function generarTodosMensajes() {
   // Construir bloques de mensajes en orden de Categorías (hoja Extra) [→ Contexto_Base_Web.md §30B011]
   var bloques = []; // cada bloque: { categoria, subcategoria, clan, contenido }
 
-  // "INFORMACIÓN SOBRE EL CLAN" YA NO se genera acá (19/08/2026, pedido del [→ Contexto_Base_Web.md §30B012]
+  // "INFORMACIÓN SOBRE EL CLAN" YA NO se genera aquí (19/08/2026, pedido del [→ Contexto_Base_Web.md §30B012]
 
   // 1. DEFENSAS DE BARCOS: ELIMINADA (11/08/2026, pedido del usuario). [→ Contexto_Base_Web.md §30B013]
 
@@ -46019,7 +46019,7 @@ function _webPerfilJugador(tagBuscado, opciones) {
   var DIAS_GUERRA_PERFIL = ['Jueves', 'Viernes', 'Sábado', 'Domingo'];
   var guerraSemanaDias = null;
   if (Object.keys(guerraSemanaDiasVals).length) {
-    _diarioDesdeAcumuladoGuerra_(guerraSemanaDiasVals); // 11-oct-2026: Fame y barcos de la hoja Guerra son acumulados; acá se pasan a valor de cada día (puntajeAcumulado, abajo, vuelve a ser la suma real)
+    _diarioDesdeAcumuladoGuerra_(guerraSemanaDiasVals); // 11-oct-2026: Fame y barcos de la hoja Guerra son acumulados; aquí se pasan a valor de cada día (puntajeAcumulado, abajo, vuelve a ser la suma real)
     var acumFamePerfil = 0, huboFamePerfil = false;
     var puntajeAcumuladoPerfil = [0, 1, 2, 3].map(function (d) {
       var vDia = guerraSemanaDiasVals[d];
@@ -46111,7 +46111,7 @@ function _webPerfilJugadorSinRegistro(tagBuscado, opciones) {
       estado: 'Sin registro con nosotros', vGuerra: 0, torneos: 0, copas: 0,
       vigencia: '',
       guerraSemana: { ataques: 0, fame: 0, barcos: 0, ataquesMax: 0 },
-      // FIX 23-sep-2026: mismo campo nuevo que _webPerfilJugador() (guerraSemanaDias, ver ese docblock); acá null porque un Tag sin registro en Directorio nunca tiene filas propias en Guerra. [→ Contexto_Base_Web.md §37B139]
+      // FIX 23-sep-2026: mismo campo nuevo que _webPerfilJugador() (guerraSemanaDias, ver ese docblock); aquí null porque un Tag sin registro en Directorio nunca tiene filas propias en Guerra. [→ Contexto_Base_Web.md §37B139]
       guerraSemanaDias: null,
       progreso: { ascensos: null, descensos: null },
       extendido: extendidoSinRegistro,
@@ -46229,7 +46229,7 @@ function _webTorneos(opciones) {
 
 // _webGanadoresTorneoMasReciente(ss, opciones): helper de _webTorneos(); réplica exacta (solo lectura, JSON en vez de Google Doc) de actualizarDocGanadoresTorneo() (28_Torneos_Docs.gs): torneo de mayor Fecha de T_Lista, top 3 (fusionando Victorias/Puesto de todo el grupo de continuación, _getParticipantesFusionadosPorTorneo(), 26_Torneos_Core.gs, FASE 23), filtrado a quienes cumplen los requisitos de "calificado" (Ataques configurado por clan en T_Lista con exención por domingo opcional, FIX 19-sep-2026, antes 16 fijo; trofeos >= Min_T de su clan según la temporada de Extra!Mostrar); si nadie del top 3 real califica, top3 puede salir vacío (nunca se rellena con el 4.°/5.°); FASE 24 (02-sep-2026): top3 y lista completa reflejan las resoluciones vigentes de T_Resoluciones (_aplicarResolucionesTorneo()/_topNTrasResoluciones()): un descalificado sale del top3 pero sigue en participantes con descalificado:true, y "Empate - Reparto de premio" sale con premioRepartido:true; hasta entonces no se exponía el Tag (el panel admin usa _webAdminGanadoresTorneoDetalle() cuando necesita el Tag para registrar una resolución); CAMBIO 28-sep-2026 (Fase 5b tanda D): cada objeto de top3 y participantes trae tag condicional vía _webCuentaOcultaParaVisitante(p.tag, opciones) (null si la cuenta está oculta y opciones.esAdmin no es true; torneos.html lo usa para decidir link a perfil.html o texto plano; mismo patrón que _webTorneosJugador/_webHistorialGuerraComparador). @param {{esAdmin?:boolean}=} opciones; @returns {{idTorneo, fecha:string, top3:Array, participantes:Array}|null} (participantes = lista completa con Victorias > 0, sin el filtro de calificado) [→ Contexto_Base_Web.md §37B151]
 function _webGanadoresTorneoMasReciente(ss, opciones) {
-  // FASE 15-sep-2026 (fallback web->CSV): ya no se exige T_Asistencia como hoja viva (shTA.getLastRow() >= 2) antes de seguir; _getParticipantesFusionadosPorTorneo() (26_Torneos_Core.gs) cae sola a Backup_T_Asistencia.csv (y devuelve participantes vacíos si tampoco hay CSV, sin romper esta función); exigirla acá solo bloqueaba el camino antes de que ese fallback pudiera actuar. [→ Contexto_Base_Web.md §37B152]
+  // FASE 15-sep-2026 (fallback web->CSV): ya no se exige T_Asistencia como hoja viva (shTA.getLastRow() >= 2) antes de seguir; _getParticipantesFusionadosPorTorneo() (26_Torneos_Core.gs) cae sola a Backup_T_Asistencia.csv (y devuelve participantes vacíos si tampoco hay CSV, sin romper esta función); exigirla aquí solo bloqueaba el camino antes de que ese fallback pudiera actuar. [→ Contexto_Base_Web.md §37B152]
 
   // FASE 15-sep-2026 (fallback web->CSV, continuación de _webTorneos()): T_Lista ya no se lee con shTL.getRange() directo sino con _obtenerFilasConFallbackCSV() (01_Config_Global.gs), headerRowsHoja=2 como en _webTorneos(); si T_Lista no está disponible o está vacía, cae a Backup_T_Lista.csv. [→ Contexto_Base_Web.md §37B153]
   var lecturaTL = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.T_LISTA, 'Backup_T_Lista.csv', TL_TOTAL_COLS, 2);
@@ -46333,7 +46333,7 @@ function _webGanadoresTorneoMasReciente(ss, opciones) {
 // _webHistorialTorneos(opciones): FASE 9 (30-ago-2026, "salón de la fama" en torneos.html): top 3 por Puesto de CADA torneo de T_Lista; a propósito NO aplica el filtro de "calificado" de _webGanadoresTorneoMasReciente() (Ataques por clan + trofeos >= Min_T), porque se apoya en el acumulado de la SEMANA DE GUERRA ACTUAL (_getAtaquesSemanaActualPorTag()/_getTrofeosGuerraAcumuladosPorTagParaTemporada()) y para un torneo de hace semanas o meses daría resultados incorrectos sin avisar (Guerra no guarda un histórico indexable por fecha arbitraria), así que muestra el resultado real ya cerrado de T_Asistencia; tampoco filtra por Admin ni por Estado del Directorio (a diferencia de _webAscensosRecientes()): es un registro de torneos ya jugados y un ganador sigue siéndolo aunque hoy sea admin o ya no esté activo; FASE 23 (30/08/2026, Tag_Tor_2): un torneo de continuación no sale como entrada aparte, se fusiona con la RAÍZ de su grupo (_resolverGruposContinuacionTorneos(), 26_Torneos_Core.gs; mismo criterio que T_Control y Ganadores) con Victorias/Puesto sumados; FASE 24 (02-sep-2026): el top3 usa _topNTrasResoluciones() (excluye descalificados, respeta el Puesto_Final de un desempate); participantes sigue mostrando a los descalificados (descalificado:true) y ambos exponen premioRepartido:true cuando corresponde; lectura pública con el mismo WEB_MEMBER_TOKEN de solo lectura que webTorneos; CAMBIO 28-sep-2026 (Fase 5b tanda D): como en _webGanadoresTorneoMasReciente(), top3 y participantes traen tag condicional (_webCuentaOcultaParaVisitante(p.tag, opciones): null para Inactivos/Estado='Inactivo' salvo opciones.esAdmin); el salón de la fama sigue mostrando a ex-miembros sin ocultar nombre/clan/puesto, solo el Tag es condicional (torneos.html decide enlace o texto plano). @param {{esAdmin?:boolean}=} opciones; @returns {{historial: Array<{idTorneo, fecha:string, top3:Array, participantes:Array}>}} (participantes = lista completa de ese torneo con Victorias > 0) [→ Contexto_Base_Web.md §37B160]
 function _webHistorialTorneos(opciones) {
   var ss = _getSs();
-  // FASE 15-sep-2026 (fallback web->CSV, continuación de _webTorneos()/_webGanadoresTorneoMasReciente()): T_Lista se lee con _obtenerFilasConFallbackCSV() (01_Config_Global.gs), headerRowsHoja=2 (la hoja tiene 2 filas de encabezado fusionadas, el CSV ya trae 1 combinada), que cae a Backup_T_Lista.csv si la hoja no está disponible o está vacía; T_Asistencia no necesita un shTA propio acá: su fallback está un nivel más adentro, en _getParticipantesFusionadosPorTorneo() (26_Torneos_Core.gs), que cae sola a Backup_T_Asistencia.csv (o devuelve participantes vacíos sin romper esta función). [→ Contexto_Base_Web.md §37B161]
+  // FASE 15-sep-2026 (fallback web->CSV, continuación de _webTorneos()/_webGanadoresTorneoMasReciente()): T_Lista se lee con _obtenerFilasConFallbackCSV() (01_Config_Global.gs), headerRowsHoja=2 (la hoja tiene 2 filas de encabezado fusionadas, el CSV ya trae 1 combinada), que cae a Backup_T_Lista.csv si la hoja no está disponible o está vacía; T_Asistencia no necesita un shTA propio aquí: su fallback está un nivel más adentro, en _getParticipantesFusionadosPorTorneo() (26_Torneos_Core.gs), que cae sola a Backup_T_Asistencia.csv (o devuelve participantes vacíos sin romper esta función). [→ Contexto_Base_Web.md §37B161]
   var lecturaTL = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.T_LISTA, 'Backup_T_Lista.csv', TL_TOTAL_COLS, 2);
   if (lecturaTL.origen === 'vacio') return { historial: [] };
 
@@ -46564,7 +46564,7 @@ function _webHistorialGuerraComparador(tag1, tag2, opciones) {
     return Object.keys(porTag[tagNorm])
       .map(function (k) { return porTag[tagNorm][k]; })
       .filter(function (r) { return r.fecha >= limiteClave; })
-      // FIX 03-sep-2026: solo días de guerra (ver el comentario junto a _registrar()); esDiaGuerra ya cumplió su propósito acá (decidir el filtro) y no se manda al frontend, porque cada registro que llega es por definición un día de guerra real. [→ Contexto_Base_Web.md §37B178]
+      // FIX 03-sep-2026: solo días de guerra (ver el comentario junto a _registrar()); esDiaGuerra ya cumplió su propósito aquí (decidir el filtro) y no se manda al frontend, porque cada registro que llega es por definición un día de guerra real. [→ Contexto_Base_Web.md §37B178]
       .filter(function (r) { return r.esDiaGuerra; })
       .map(function (r) {
         var o = { fecha: r.fecha, ataques: r.ataques, fame: r.fame, barcos: r.barcos };
@@ -46793,7 +46793,7 @@ function _webAdminRegistrarNuevo(token, datos) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
   var admin = _webAuthObtenerAdmin(token);
   if (!admin) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  // FIX B-32 (auditoría backend, 18-sep-2026): las Funciones se copian a la sesión al hacer login y no se releen hasta 6 h; se releen acá con _webBuscarAdminPorCelular() para que quitar "Registrar miembro nuevo" surta efecto de inmediato (igual que _webAdminEditarAutorAscenso()). [→ Contexto_Base_Web.md §37B197]
+  // FIX B-32 (auditoría backend, 18-sep-2026): las Funciones se copian a la sesión al hacer login y no se releen hasta 6 h; se releen aquí con _webBuscarAdminPorCelular() para que quitar "Registrar miembro nuevo" surta efecto de inmediato (igual que _webAdminEditarAutorAscenso()). [→ Contexto_Base_Web.md §37B197]
   var adminFresco = _webBuscarAdminPorCelular(admin.celular);
   if (!adminFresco || !_webAdminTieneFuncion(adminFresco.funciones, 'Registrar miembro nuevo')) {
     return { ok: false, error: 'No tienes permiso para registrar miembros nuevos.' };
@@ -47078,7 +47078,7 @@ function _webAdminCategorias(token) {
   return { ok: true, categorias: disponibles, secciones: secciones, etiquetas: etiquetas };
 }
 
-// _webAdminContenido(token, categoria): FASE 2 (24-ago-2026); visor de solo lectura; reutiliza _obtenerOpcionesClanCategoria() (44_BotWhatsApp.gs) con el mismo orden de fuentes que el bot (FUENTES_CONTENIDO); NO usa _obtenerContenidoMenu()/_obtenerContenidoPlantilla() (30_Mensajes.gs) porque siguen apuntando a la hoja Plantillas, que ya no existe; DELIBERADAMENTE solo lectura: Menú y Mensajes se reconstruyen enteros en cada corrida, así que una edición manual se perdería (lo Estático se edita en los Google Docs de Plantillas en Drive); FIX 30-ago-2026 cacheada 60 s con _webCacheado() por categoría, sin el token en la clave (el contenido no depende del admin); NUEVO 19-sep-2026 valida también acá que la categoría esté en el Cat_disp del admin de la sesión; NUEVO 05-oct-2026 suma `elaboracion` = {aplica, generadosTs, generadosLima, cantidad, origen} (aplica solo para Mensaje de Guerra, Celular y Etiqueta de miembro, ver TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS en 42_Web_TiemposActualizacion.gs), se lee fresca fuera de la caché de 60 s y puede ser null. @returns {{ok, error?, opciones?, elaboracion?}} [→ Contexto_Base_Web.md §37B214]
+// _webAdminContenido(token, categoria): FASE 2 (24-ago-2026); visor de solo lectura; reutiliza _obtenerOpcionesClanCategoria() (44_BotWhatsApp.gs) con el mismo orden de fuentes que el bot (FUENTES_CONTENIDO); NO usa _obtenerContenidoMenu()/_obtenerContenidoPlantilla() (30_Mensajes.gs) porque siguen apuntando a la hoja Plantillas, que ya no existe; DELIBERADAMENTE solo lectura: Menú y Mensajes se reconstruyen enteros en cada corrida, así que una edición manual se perdería (lo Estático se edita en los Google Docs de Plantillas en Drive); FIX 30-ago-2026 cacheada 60 s con _webCacheado() por categoría, sin el token en la clave (el contenido no depende del admin); NUEVO 19-sep-2026 valida también aquí que la categoría esté en el Cat_disp del admin de la sesión; NUEVO 05-oct-2026 suma `elaboracion` = {aplica, generadosTs, generadosLima, cantidad, origen} (aplica solo para Mensaje de Guerra, Celular y Etiqueta de miembro, ver TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS en 42_Web_TiemposActualizacion.gs), se lee fresca fuera de la caché de 60 s y puede ser null. @returns {{ok, error?, opciones?, elaboracion?}} [→ Contexto_Base_Web.md §37B214]
 function _webAdminContenido(token, categoria) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
   if (!categoria) return { ok: false, error: 'Falta la categoría.' };
@@ -47862,7 +47862,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
         }
       }
 
-      // FIX (11-oct-2026, pedido usuario — "YAHIR tiene ataques pero su cuadrícula aparece vacía"): el desglose diario J/V/S/D solo salía de la hoja "Nuevos" (Tampermonkey); un ingreso sin fila ahí (caso YAHIR, ingresó el sábado) quedaba con guerraSemanaDias = null aunque la hoja Guerra sí tenía sus ataques. Se guardan acá, por Tag, los valores de CADA día de guerra de la semana en curso, para usarlos de respaldo más abajo. Mismo criterio que _webPerfilJugador() (GC.ATAQUES_HOY / GC.FAME / GC.BARCOS por día). [→ Contexto_Base_Web.md §37B262B]
+      // FIX (11-oct-2026, pedido usuario — "YAHIR tiene ataques pero su cuadrícula aparece vacía"): el desglose diario J/V/S/D solo salía de la hoja "Nuevos" (Tampermonkey); un ingreso sin fila ahí (caso YAHIR, ingresó el sábado) quedaba con guerraSemanaDias = null aunque la hoja Guerra sí tenía sus ataques. Se guardan aquí, por Tag, los valores de CADA día de guerra de la semana en curso, para usarlos de respaldo más abajo. Mismo criterio que _webPerfilJugador() (GC.ATAQUES_HOY / GC.FAME / GC.BARCOS por día). [→ Contexto_Base_Web.md §37B262B]
       var pIdxDiaG = Number(dataGuerra[g][GC.PERIOD_IDX - 1]) || 0;
       if (String(dataGuerra[g][GC.TEMPORADA - 1]) === refGuerraIR.temporada &&
           ((Number(dataGuerra[g][GC.SEMANA - 1]) || 1) - 1) === refGuerraIR.sectionIndex &&
@@ -47928,7 +47928,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
       for (var sem = 0; sem < 5; sem++) {
         var ataquesSem = gridC2[c2][OFF2.ATA + sem];
         if (ataquesSem === '' || ataquesSem === null) continue; // semana futura, en blanco
-        // FIX (17-sep-2026, cierre de conexión pendiente — index.html, renderComparativaSemanal()/gráfica "Barcos por semana"): faltaba `barcos` acá. OFF2.BAR (23_Control2_GuerraSemanal.gs) ya existe y trae exactamente este dato por… [→ Contexto_Base_Web.md §37B267]
+        // FIX (17-sep-2026, cierre de conexión pendiente — index.html, renderComparativaSemanal()/gráfica "Barcos por semana"): faltaba `barcos` aquí. OFF2.BAR (23_Control2_GuerraSemanal.gs) ya existe y trae exactamente este dato por… [→ Contexto_Base_Web.md §37B267]
         semanas.push({
           semana:  'Semana ' + (sem + 1),
           clan:    clanC2,
@@ -47969,7 +47969,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
         if (!(fechaBloque instanceof Date) || isNaN(fechaBloque.getTime())) continue; // bloque sin usar
         var ataquesBloque = filaGridNuevos[offBloque + OFFN.ATAQUES];
         if (ataquesBloque === '' || ataquesBloque === null || ataquesBloque === undefined) continue;
-        // FIX (17-sep-2026, cierre de conexión pendiente — index.html, renderComparativaSemanal()/gráfica "Barcos por semana"): faltaba `barcos` acá. OFFN.BARCOS (14_Nuevos_RoyaleAPI.gs) ya existe y trae exactamente este dato por semana en… [→ Contexto_Base_Web.md §37B269]
+        // FIX (17-sep-2026, cierre de conexión pendiente — index.html, renderComparativaSemanal()/gráfica "Barcos por semana"): faltaba `barcos` aquí. OFFN.BARCOS (14_Nuevos_RoyaleAPI.gs) ya existe y trae exactamente este dato por semana en… [→ Contexto_Base_Web.md §37B269]
         var tsBloque = _fechaATemporadaSemana(fechaBloque); // 20-oct-2026 (pedido usuaria): temporada, semana y día para el tooltip de cada punto semanal. [→ Contexto_Base_Web.md §PF133]
         var etiquetaDiaBloque = tsBloque ? _etiquetaTemporadaSemanaDia_(tsBloque.temporadaPropia, tsBloque.semana, tsBloque.periodIndex) : null;
         historialFila.push({
@@ -48431,7 +48431,7 @@ function _webBattlelogJugador(tagBuscado, opciones) {
     var arenaCat = _obtenerArenaCompletaDesdeCatalogo(b && b.arena && b.arena.rawName);
     var modoCat  = _obtenerModoCompletoDesdeCatalogo(b && b.gameMode && b.gameMode.id);
 
-    // Mismo texto ya resuelto que la versión anterior (Nombre -> Name -> dato crudo), reutilizando los resolvers existentes -- no se duplica esa lógica de fallback acá, solo se manda además el detalle crudo. [→ Contexto_Base_Web.md §37B291]
+    // Mismo texto ya resuelto que la versión anterior (Nombre -> Name -> dato crudo), reutilizando los resolvers existentes -- no se duplica esa lógica de fallback aquí, solo se manda además el detalle crudo. [→ Contexto_Base_Web.md §37B291]
     var arenaTxt = _resolverArenaDesdeCatalogo(b && b.arena && b.arena.rawName);
     var modoTxt  = _resolverModoDesdeCatalogo(b && b.gameMode && b.gameMode.id) ||
                     String((b && b.gameMode && b.gameMode.name) || '');
@@ -48703,7 +48703,7 @@ function _webAdminOtrasCuentas(token, tag) {
     dataInact = (lecturaInactOtras.origen === 'csv') ? lecturaInactOtras.filas : [];
     dataInactOrigen = lecturaInactOtras.origen;
   }
-  // A partir de acá, dataInact puede venir en formato IC (29 cols, hoja viva) o DC (60 cols, CSV de respaldo) según dataInactOrigen -- los dos usos de abajo (búsqueda de Celular y recorrido final) ya distinguen ambos casos en vez de… [→ Contexto_Base_Web.md §37B308]
+  // A partir de aquí, dataInact puede venir en formato IC (29 cols, hoja viva) o DC (60 cols, CSV de respaldo) según dataInactOrigen -- los dos usos de abajo (búsqueda de Celular y recorrido final) ya distinguen ambos casos en vez de… [→ Contexto_Base_Web.md §37B308]
 
   // 1) Ubicar la fila del jugador consultado (Directorio primero, luego Inactivos) para sacar su Celular. [→ Contexto_Base_Web.md §37B309]
   var celularObjetivo = '';
@@ -48752,7 +48752,7 @@ function _webSorteoCalificados(token) {
 
   var bloque = _getConfigMasRecienteCategoria('Sorteo');
   if (bloque.length === 0) {
-    return { ok: false, error: 'S_Lista no tiene ninguna fila con Clan asignado todavía. Agregá participantes a mano mientras tanto.' };
+    return { ok: false, error: 'S_Lista no tiene ninguna fila con Clan asignado todavía. Agrega participantes a mano mientras tanto.' };
   }
 
   var ss = _getSs();
@@ -49097,7 +49097,7 @@ function _webCRListaGuardar(token, datos) {
   }
 
   var ss = _getSs();
-  // FASE (16-sep-2026, fallback web->CSV, escritura): ya NO se corta acá con "La hoja CR_Lista no existe" -- ni el MODO CREAR ni el MODO EDITAR (ambos más abajo) necesitan `sh` para arrancar: los dos caen a Backup_CR_Lista.csv cuando… [→ Contexto_Base_Web.md §37B344]
+  // FASE (16-sep-2026, fallback web->CSV, escritura): ya NO se corta aquí con "La hoja CR_Lista no existe" -- ni el MODO CREAR ni el MODO EDITAR (ambos más abajo) necesitan `sh` para arrancar: los dos caen a Backup_CR_Lista.csv cuando… [→ Contexto_Base_Web.md §37B344]
   var sh = ss.getSheetByName(CFG.SHEETS.CR_LISTA);
 
   var semanas = String(datos.semanas || '').trim();
@@ -49475,7 +49475,7 @@ function _webRateLimitExcedido(sessionTokenValido) {
 // _webRespuesta429(): error 429 con la misma forma que las respuestas 401/500 de doGet(). [→ Contexto_Base_Web.md §38B010]
 function _webRespuesta429() {
   return ContentService
-    .createTextOutput(JSON.stringify({ error: 'Demasiados pedidos. Probá de nuevo en un minuto.', code: 429 }))
+    .createTextOutput(JSON.stringify({ error: 'Demasiados pedidos. Inténtalo de nuevo en un minuto.', code: 429 }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -53049,7 +53049,7 @@ function _noticiasGuerra_(semana) {
   }
 
   // Días OPCIONALES por clan (meta ya cruzada al empezar el día): atacar no se exige. Misma regla que el
-  // Control y el perfil (_clanYaCruzoMetaEnPeriodo(), 22_ControlCalendario.gs), pero acá se evalúan viernes, sábado y domingo
+  // Control y el perfil (_clanYaCruzoMetaEnPeriodo(), 22_ControlCalendario.gs), pero aquí se evalúan viernes, sábado y domingo
   // (criterio unificado 07-oct-2026; Supercell no confirma desde qué día se puede cruzar la meta): el jueves no puede ser opcional; coliseo tampoco.
   var opcPorClan = {};
   function opcionales(clan) {
@@ -53704,7 +53704,7 @@ function syncPlantillasDesdeDrive() {
     Logger.log('[Plantillas] Sin documentos válidos encontrados.');
   }
 
-  // Preservar las entradas Dinámico ya guardadas (no se relee Mensajes acá).
+  // Preservar las entradas Dinámico ya guardadas (no se relee Mensajes aquí).
   var preservadas = _leerEntradasIndiceGuardadoPorTipo('Dinámico');
   for (var p = 0; p < preservadas.length; p++) {
     var e  = preservadas[p];
@@ -54990,7 +54990,7 @@ function _iniciarRespuestaCategoria(telefono, categoria, estado) {
 
   if (categoria === 'Gestionar información de miembros') {
     // Exclusiva de administradores (ver _categoriasDisponibles, que ya la
-    // excluye de la lista para no-admin) — se valida de nuevo acá por si
+    // excluye de la lista para no-admin) — se valida de nuevo aquí por si
     // se llegara a este punto con un estado manipulado.
     if (!estado.esAdmin) {
       _setEstadoUsuario(telefono, { paso: 'ELEGIR_CATEGORIA', esAdmin: estado.esAdmin, tag: estado.tag });
@@ -56865,7 +56865,7 @@ function _migrarColumnaPrestamoEnHoja(sh, nombreHoja, headers) {
   }
 
   // Reescribir encabezados YA (Administradores solo los reescribe si la
-  // celda A1 está vacía — acá se fuerza para no depender de eso).
+  // celda A1 está vacía — aquí se fuerza para no depender de eso).
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
 }
@@ -56934,7 +56934,7 @@ function _reenumerarCSV(filename, colMap, totalCols, colTemporada) {
 
     var quedanFilas = (i + 1) < filas.length;
     if (quedanFilas && (Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
-      // Guarda lo ya sumado hasta acá (incluida la fila i) para no perder
+      // Guarda lo ya sumado hasta aquí (incluida la fila i) para no perder
       // progreso ni tener que recalcular desde cero en la continuación.
       _saveCSVToDrive(filename, _encodeCSV([encabezado].concat(filas)));
       props.setProperty(claveIdx, String(i + 1));
@@ -57177,7 +57177,7 @@ function DIAGNOSTICO_duplicadosHoy() {
   }
 }
 function _testDiagnosticoCofresBattlelog() {
-  var tag = '#2GG8PJ8GC'; // poné acá un tag real, con el # incluido
+  var tag = '#2GG8PJ8GC'; // pon aquí un tag real, con el # incluido
   Logger.log('--- COFRES ---');
   Logger.log(JSON.stringify(_webCofresJugador(tag)));
   Logger.log('--- BATTLELOG ---');
@@ -57230,7 +57230,7 @@ function diagnosticoPlayersTag(tags) {
     Utilities.sleep(300);
   }
 
-  Logger.log('[Diag] Fin del diagnóstico. Revisá el detalle arriba para cada tag.');
+  Logger.log('[Diag] Fin del diagnóstico. Revisa el detalle arriba para cada tag.');
 }
 /**
  * 53_Test_Tamanio_Perfiles.gs  (NUEVO 08-oct-2026)
