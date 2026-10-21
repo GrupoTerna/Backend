@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 21/10/2026 00:16:38 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 21/10/2026 14:46:57 */
 
 
 
@@ -466,7 +466,18 @@ var PASOS_RUNSYNCCSV = [
     exportarBackupCelulares();
     Logger.log('[Backup] syncAllCSV (parte 2/2): celulares (JSON) sincronizado.');
   },
-  function () { respaldarIndiceYProtegidasCSV(); },
+  // PF146 (21-oct-2026): antes este paso era UN solo respaldarIndiceYProtegidasCSV() (5 respaldos de 15-52 s cada uno, ~200 s
+  // sin poder cortarse; el 21-oct a las 7:51 la corrida llego a 361 s). Ahora cada respaldo es un paso, para que
+  // _ejecutarPorTandas revise el presupuesto entre uno y otro. Las claves son las de PROTEGIDAS_CSV_CLAVES (05_Backup_CSV.gs).
+  // La cadena pasa de 7 a 14 pasos. [→ Contexto_Base_Web.md §PF146]
+  function () { respaldarIndiceYProtegidasCSV('INDICE'); },
+  function () { respaldarIndiceYProtegidasCSV('VETADOS'); },
+  function () { respaldarIndiceYProtegidasCSV('T_LISTA'); },
+  function () { respaldarIndiceYProtegidasCSV('S_LISTA'); },
+  function () { respaldarIndiceYProtegidasCSV('CR_LISTA'); },
+  function () { respaldarIndiceYProtegidasCSV('T_ASISTENCIA'); },
+  function () { respaldarIndiceYProtegidasCSV('S_ASISTENCIA'); },
+  function () { respaldarIndiceYProtegidasCSV('EXTRA'); },
   function () { return respaldarHojasDerivadasCSV(); },
   // NUEVO (2-oct-2026, pregunta 51, hoja Battlelogs; decision de la usuaria): [→ Contexto_Base_Web.md §B074]
   function () {
@@ -1168,32 +1179,20 @@ function runGuerra() {
     try { _cerrarSemanaActualNuevos(); }
     catch (eCierreNuevos) { Logger.log('[runGuerra] _cerrarSemanaActualNuevos() falló: ' + eCierreNuevos.message); }
 
-    // Respaldo a Backup_Guerra.csv 1 vez por hora (esPrimerDisparoDeHora), con chequeo de presupuesto [→ Contexto_Base_Web.md §B116]
-    if (esPrimerDisparoDeHora) {
-      var _msTranscurridosRunGuerra = Date.now() - _tRunGuerra0;
-      var _msLimiteParaSyncCsv = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
-      if (_msTranscurridosRunGuerra > _msLimiteParaSyncCsv) {
-        Logger.log('[runGuerra] _syncGuerraCSV() SALTADO esta hora: ya van ' +
-          Math.round(_msTranscurridosRunGuerra / 1000) + 's de corrida, sin margen suficiente ' +
-          '(' + Math.round(_msLimiteParaSyncCsv / 1000) + 's) antes del límite duro de la plataforma. ' +
-          'Se reintenta en el próximo disparo horario.');
-      } else {
-        var shGuerraBackup = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
-        if (shGuerraBackup) _syncGuerraCSV(shGuerraBackup);
-      }
-    }
-
-    // NUEVO (19-sep-2026, pedido del usuario): dejar el caché de [→ Contexto_Base_Web.md §B117]
+    // PF143 (21-oct-2026): el respaldo a Backup_Guerra.csv y el calentamiento del caché (Dashboard + guerra.json, roster.json, home.json, torneos.json) ya NO corren aquí. Con Guerra + Control + Pendientes (180-230 s) más ese tramo (100-180 s) la corrida pasaba de 360 s y la plataforma la cortaba casi cada hora. Se programa una continuación con su propio presupuesto de 6 min. [→ Contexto_Base_Web.md §PF143]
+    var _colaProgramada = false;
     try {
-      var _msRestantesCalentar = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - _tRunGuerra0);
-      if (_msRestantesCalentar < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
-        Logger.log('[runGuerra] Calentamiento del caché de guerra.html SALTADO: quedan solo ' +
-          Math.round(_msRestantesCalentar / 1000) + 's de presupuesto.');
-      } else {
-        _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG);
-      }
-    } catch (eCalentar) {
-      Logger.log('[runGuerra] _calentarCacheGuerraEnVivo_() falló: ' + eCalentar.message);
+      props.setProperty('RUNGUERRA_COLA_PENDIENTE', claveHora);
+      props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+      _programarContinuacion('_continuarRunGuerraCola');
+      _colaProgramada = true;
+      Logger.log('[runGuerra] Respaldo CSV y calentamiento del caché pasan a la continuación _continuarRunGuerraCola (arranca en ~10 s, con su propio presupuesto).');
+    } catch (eCola) {
+      Logger.log('[runGuerra] No se pudo programar _continuarRunGuerraCola: ' + eCola.message + '. Se hace el respaldo y el calentamiento aquí, como antes.');
+    }
+    if (!_colaProgramada) {
+      try { _runGuerraColaHoraria_(_tRunGuerra0); }
+      catch (eColaEnLinea) { Logger.log('[runGuerra] El tramo final (respaldo CSV y caché) falló: ' + eColaEnLinea.message); }
     }
 
     _trabajoHoraCompleto = true;
@@ -1208,6 +1207,88 @@ function runGuerra() {
         Logger.log('[runGuerra] No se pudo restaurar la marca de hora: ' + eMarca.message);
       }
     }
+    _liberarLockEjecucion();
+  }
+}
+
+/**
+ * _runGuerraColaHoraria_(t0) - Tramo final de la actualización horaria de guerra (PF143, 21-oct-2026): respaldo a Backup_Guerra.csv y
+ * calentamiento del caché de guerra.html (Dashboard y publicaciones estáticas). Antes estaba al final de runGuerra(); ahora lo ejecuta
+ * _continuarRunGuerraCola() en una ejecución nueva (o runGuerra(), solo si no pudo programar la continuación). t0 = inicio de la
+ * ejecución que lo llama, para respetar el margen contra el límite duro de la plataforma. No depende de variables en memoria de
+ * runGuerra(): _syncGuerraCSV() recibe la hoja y _calentarCacheGuerraEnVivo_() lee todo por su cuenta. [→ Contexto_Base_Web.md §PF143]
+ */
+function _runGuerraColaHoraria_(t0) {
+  var msTranscurridos = Date.now() - t0;
+  var msLimiteParaSyncCsv = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
+  if (msTranscurridos > msLimiteParaSyncCsv) {
+    Logger.log('[runGuerra] _syncGuerraCSV() SALTADO esta hora: ya van ' +
+      Math.round(msTranscurridos / 1000) + 's de corrida, sin margen suficiente ' +
+      '(' + Math.round(msLimiteParaSyncCsv / 1000) + 's) antes del límite duro de la plataforma. ' +
+      'Se reintenta en el próximo disparo horario.');
+  } else {
+    var shGuerraBackup = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+    if (shGuerraBackup) _syncGuerraCSV(shGuerraBackup);
+  }
+
+  try {
+    var msRestantesCalentar = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - t0);
+    if (msRestantesCalentar < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
+      Logger.log('[runGuerra] Calentamiento del caché de guerra.html SALTADO: quedan solo ' +
+        Math.round(msRestantesCalentar / 1000) + 's de presupuesto.');
+    } else {
+      _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG);
+    }
+  } catch (eCalentar) {
+    Logger.log('[runGuerra] _calentarCacheGuerraEnVivo_() falló: ' + eCalentar.message);
+  }
+}
+
+/**
+ * _continuarRunGuerraCola() - Handler de la continuación que programa runGuerra() al terminar Pendientes (PF143, 21-oct-2026).
+ * Corre _runGuerraColaHoraria_() en una ejecución nueva de 6 min. Reglas:
+ *  - Una sola vez por programación: borra su propio activador al empezar, así que si la plataforma la corta no se repite en bucle;
+ *    el siguiente runGuerra() horario vuelve a programarla.
+ *  - Si entra la ventana de guerra protegida (4:00-5:00 a. m. Lima y su margen previo) no corre y descarta la tarea.
+ *  - Si hay otra ejecución con el candado, reintenta cada CFG.RUNGUERRA_COLA_REINTENTO_MS hasta CFG.RUNGUERRA_COLA_REINTENTOS_MAX veces
+ *    y luego se descarta (la próxima hora vuelve a intentarlo).
+ * [→ Contexto_Base_Web.md §PF143]
+ */
+function _continuarRunGuerraCola() {
+  var props = PropertiesService.getScriptProperties();
+  _borrarTriggersDeContinuacion('_continuarRunGuerraCola');
+  if (!props.getProperty('RUNGUERRA_COLA_PENDIENTE')) {
+    Logger.log('[runGuerraCola] Sin tarea pendiente (ya se hizo o se descartó). No se hace nada.');
+    return;
+  }
+  if (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
+    Logger.log('[runGuerraCola] ABORTADA: la ventana de guerra protegida está activa. Se descarta; el próximo runGuerra() horario la vuelve a programar.');
+    props.deleteProperty('RUNGUERRA_COLA_PENDIENTE');
+    props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+    return;
+  }
+  if (!_adquirirLockEjecucion('runGuerraCola')) {
+    var intentos = Number(props.getProperty('RUNGUERRA_COLA_INTENTOS')) || 0;
+    if (intentos < CFG.RUNGUERRA_COLA_REINTENTOS_MAX) {
+      props.setProperty('RUNGUERRA_COLA_INTENTOS', String(intentos + 1));
+      ScriptApp.newTrigger('_continuarRunGuerraCola').timeBased().after(CFG.RUNGUERRA_COLA_REINTENTO_MS).create();
+      Logger.log('[runGuerraCola] Hay otra ejecución en curso: se reintenta en ' + Math.round(CFG.RUNGUERRA_COLA_REINTENTO_MS / 1000) +
+        ' s (intento ' + (intentos + 1) + ' de ' + CFG.RUNGUERRA_COLA_REINTENTOS_MAX + ').');
+    } else {
+      Logger.log('[runGuerraCola] Se agotaron los reintentos con otra ejecución en curso. Se descarta; la próxima hora vuelve a intentarlo.');
+      props.deleteProperty('RUNGUERRA_COLA_PENDIENTE');
+      props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+    }
+    return;
+  }
+  var t0 = Date.now();
+  try {
+    props.deleteProperty('RUNGUERRA_COLA_PENDIENTE'); // antes del trabajo: si la plataforma corta esta ejecución, no se repite en bucle
+    props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+    Logger.log('[runGuerraCola] INICIO (respaldo CSV + calentamiento del caché)');
+    _runGuerraColaHoraria_(t0);
+    Logger.log('[runGuerraCola] FIN (' + Math.round((Date.now() - t0) / 1000) + ' s)');
+  } finally {
     _liberarLockEjecucion();
   }
 }
@@ -1866,7 +1947,7 @@ var CFG = {
   ],
 
   // Valores para el dropdown de Rangos en la hoja Extra
-  EXTRA_RANGOS:  ['Líder','Colider','Veterano','Miembro'],
+  EXTRA_RANGOS:  ['Líder','Colíder','Veterano','Miembro'], // PF141 (21-oct-2026): «Colíder» con tilde, igual que el resto del sistema
 
   // Valores para el dropdown de Alertas en la hoja Extra
   EXTRA_ALERTAS: ['Vetado','Reactivado','Pendiente','Candidato a expulsión'],
@@ -2016,6 +2097,14 @@ var CFG = {
 
   // FIX (02-sep-2026): runGuerra() (00_Main.gs) es monolítica — a diferencia [→ Contexto_Base_Web.md §01B054]
   RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS: 90 * 1000, // 1m30s de margen mínimo antes del límite duro
+
+  // PF143 (21-oct-2026): el respaldo CSV y el calentamiento del caché de runGuerra() corren en la continuación _continuarRunGuerraCola(). [→ Contexto_Base_Web.md §PF143]
+  RUNGUERRA_COLA_REINTENTOS_MAX: 5,
+  RUNGUERRA_COLA_REINTENTO_MS: 60 * 1000, // 1 min entre reintentos si el candado está ocupado
+
+  // PF144 (21-oct-2026): índice 'T|S|P' -> id de archivo de currentriverrace del cruce de meta, en la caché del script. [→ Contexto_Base_Web.md §PF144]
+  CRUCE_META_IDX_TTL_SEG: 6 * 60 * 60, // 6 h (máximo de CacheService)
+  CRUCE_META_IDX_REFRESCO_MIN_MS: 5 * 60 * 1000, // mínimo entre dos listados de Drive por una clave que falta
 
   // FASE 6 (05-ago-2026, cierre del plan de migración Plantillas -> Menú): [→ Contexto_Base_Web.md §01B055]
 
@@ -5791,32 +5880,42 @@ function respaldarHojasRestantesCSV() {
   while (!respaldarHojasDerivadasCSV()) { /* continúa hasta terminar */ }
 }
 
+// PF146 (21-oct-2026): claves de los 8 respaldos de respaldarIndiceYProtegidasCSV(), en el orden en que se hacen.
+var PROTEGIDAS_CSV_CLAVES = ['INDICE', 'VETADOS', 'T_LISTA', 'S_LISTA', 'CR_LISTA', 'T_ASISTENCIA', 'S_ASISTENCIA', 'EXTRA'];
+
+function _tocaProtegida_(soloClave, clave) {
+  return !soloClave || soloClave === clave;
+}
+
 /**
  * respaldarIndiceYProtegidasCSV() [→ Contexto_Base_Web.md §05B008]
  */
-function respaldarIndiceYProtegidasCSV() {
+function respaldarIndiceYProtegidasCSV(soloClave) {
+  // PF146 (21-oct-2026): parametro opcional. Sin argumento hace los 8 respaldos, igual que antes (lo usan runAll,
+  // runUpdate y los botones manuales). Con una clave de PROTEGIDAS_CSV_CLAVES hace solo ese respaldo; asi
+  // PASOS_RUNSYNCCSV lo reparte en 8 pasos y _ejecutarPorTandas puede cortar entre uno y otro. [→ Contexto_Base_Web.md §PF146]
   var ss = _getSs();
   // FIX (18-sep-2026, pedido usuario -- "el ID de la hoja de cambio de [→ Contexto_Base_Web.md §05B009]
-  try {
+  if (_tocaProtegida_(soloClave, 'INDICE')) try {
     _respaldarIndiceCSV(ss);
   } catch (eIdx) {
     Logger.log('[Backup] ERROR respaldando Índice: ' + eIdx.message + ' -- se continúa con el resto de hojas protegidas.');
   }
 
   // Hojas protegidas (edición manual, se bloquea si se reducen las filas). [→ Contexto_Base_Web.md §05B010]
-  try {
+  if (_tocaProtegida_(soloClave, 'VETADOS')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.VETADOS], true, 2, _colSet(VC.FECHA));
   } catch (eVet) {
     Logger.log('[Backup] ERROR respaldando Vetados: ' + eVet.message + ' -- se continúa con el resto de hojas protegidas.');
   }
-  try {
+  if (_tocaProtegida_(soloClave, 'T_LISTA')) try {
     // FASE 5 (25-sep-2026, rediseño T_Lista -- ver punto B-bis y comentario [→ Contexto_Base_Web.md §05B011]
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.T_LISTA], true, null, null, _colSet(TL.PREPARACION, TL.DURACION));
   } catch (eTL) {
     Logger.log('[Backup] ERROR respaldando T_Lista: ' + eTL.message + ' -- se continúa con el resto de hojas protegidas.');
   }
   // FASE (07-sep-2026, pedido del usuario): S_Lista es la hoja análoga a [→ Contexto_Base_Web.md §05B012]
-  try {
+  if (_tocaProtegida_(soloClave, 'S_LISTA')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_LISTA], true);
     _aplicarDropdownId2SLista(ss);
     _aplicarDropdownEstadoSLista(ss);
@@ -5828,7 +5927,7 @@ function respaldarIndiceYProtegidasCSV() {
     Logger.log('[Backup] ERROR respaldando S_Lista (o sus dropdowns): ' + eSL.message + ' -- se continúa con el resto de hojas protegidas.');
   }
   // NUEVO (13-sep-2026, pedido del usuario): CR_Lista ya tiene su propio [→ Contexto_Base_Web.md §05B014]
-  try {
+  if (_tocaProtegida_(soloClave, 'CR_LISTA')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.CR_LISTA], true);
     _aplicarDropdownTipoCRLista(ss);
     // NUEVO (16-sep-2026, pedido del usuario): mismo criterio que el [→ Contexto_Base_Web.md §05B015]
@@ -5837,21 +5936,21 @@ function respaldarIndiceYProtegidasCSV() {
     Logger.log('[Backup] ERROR respaldando CR_Lista (o sus dropdowns): ' + eCR.message + ' -- se continúa con el resto de hojas protegidas.');
   }
   // FIX (07-sep-2026, reportado por el usuario -- "T_Asistencia y T_Control [→ Contexto_Base_Web.md §05B016]
-  try {
+  if (_tocaProtegida_(soloClave, 'T_ASISTENCIA')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.T_ASISTENCIA], true, TA.ID);
   } catch (eTA) {
     Logger.log('[Backup] ERROR respaldando T_Asistencia: ' + eTA.message + ' -- se continúa con el resto de hojas protegidas.');
   }
 
   // RESUELTO (10-sep-2026, pedido usuario -- ver Consolidado_Cambios_ [→ Contexto_Base_Web.md §05B017]
-  try {
+  if (_tocaProtegida_(soloClave, 'S_ASISTENCIA')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_ASISTENCIA], true, SA.ID);
   } catch (eSA) {
     Logger.log('[Backup] ERROR respaldando S_Asistencia: ' + eSA.message + ' -- se continúa con el resto de hojas protegidas.');
   }
 
   // FIX (27-sep-2026, pedido del usuario -- ver docblock completo de [→ Contexto_Base_Web.md §05B018]
-  try {
+  if (_tocaProtegida_(soloClave, 'EXTRA')) try {
     _respaldarListaHojasCSV(ss, [CFG.SHEETS.EXTRA], true);
   } catch (eExtra) {
     Logger.log('[Backup] ERROR respaldando Extra: ' + eExtra.message + ' -- se continúa con el resto de hojas protegidas.');
@@ -10903,6 +11002,12 @@ function _fetchPlayersData() {
   }
 
   // FASE 21 (01/08/2026): antes se llamaba a _borrarProgresoPlayers() aquí [→ Contexto_Base_Web.md §09B122]
+  // PF140 (21-oct-2026): FASE 21 dejó el archivo vivo pero solo se escribía si la tanda se cortaba por tiempo; si /players
+  // terminaba completo, el archivo nunca se creaba y la continuación siguiente (ejecución nueva, memoria vacía) pedía los
+  // 58 otra vez. Ahora, si esta tanda trajo jugadores nuevos, se guarda el mapa completo para que las continuaciones de la
+  // MISMA corrida lo recuperen. Lo borra _continuarRunUpdate()/_continuarRunAll() al terminar el ciclo, y
+  // _cargarProgresoPlayers() lo descarta si tiene más de CFG.PLAYERS_PROGRESO_MAX_EDAD_MS. [→ Contexto_Base_Web.md §PF140]
+  if (pendientes.length > 0) _guardarProgresoPlayers(CACHE_CLAN_DATA._players);
   _playersCompletoEnEstaEjecucion = true;
   Logger.log('[API] /players completado. Datos obtenidos: ' + Object.keys(CACHE_CLAN_DATA._players).length + resumenErrores);
   return true;
@@ -21420,7 +21525,7 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
   if (typeof fameApi === 'number' && typeof barcosApi === 'number' && !isNaN(fameApi) && !isNaN(barcosApi)) {
     var filaAyer = datosGuerra[rowIdx];
     var filaBase = rowIdxBase >= 0 ? datosGuerra[rowIdxBase] : null; // sin fila el dia D-1: base 0
-    var dec = _decidirCierreFameBarcosDia_({
+    var parCierre = {
       apiSem: ataqSemApi, apiHoy: ataqHoyApi, apiFame: fameApi, apiBarcos: barcosApi,
       sumaAtaquesPrevios: sumaAtaquesDiasPrevios,
       guardadoAtaqSem: Number(filaAyer[GC.ATAQUES_SEM - 1]) || 0,
@@ -21428,20 +21533,33 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
       guardadosBarcos: Number(filaAyer[GC.BARCOS - 1]) || 0,
       baseFame: filaBase ? (Number(filaBase[GC.FAME - 1]) || 0) : 0,
       baseBarcos: filaBase ? (Number(filaBase[GC.BARCOS - 1]) || 0) : 0
-    });
+    };
+    var dec = _decidirCierreFameBarcosDia_(parCierre);
+    // §PF139 (21-oct-2026): si ayer queda pendiente porque hoy ya hay ataques, se consulta CurrentRiverRace (solo en ese caso, para no leer Drive en cada corrida).
+    if (dec.accion === 'pendiente' && typeof _crrAyerParaCierre_ === 'function') {
+      var crrAyer = _crrAyerParaCierre_(tag, ctx, offHoyDia - 1);
+      if (crrAyer) {
+        parCierre.crr = crrAyer;
+        dec = _decidirCierreFameBarcosDia_(parCierre);
+      }
+    }
     if (dec.accion === 'aplicar') {
       filaAyer[GC.ATAQUES_SEM - 1] = dec.nuevoAtaqSem;
       filaAyer[GC.FAME - 1]        = dec.nuevaFame;
       filaAyer[GC.BARCOS - 1]      = dec.nuevosBarcos;
       var origenCierre = String(filaAyer[GC.ORIGEN - 1] || '').trim();
-      if (origenCierre === '' || origenCierre === 'Original') filaAyer[GC.ORIGEN - 1] = 'Corregido';
+      if (dec.fuente === 'CurrentRiverRace') {
+        if (origenCierre === '' || origenCierre === 'Original' || origenCierre === 'Corregido') filaAyer[GC.ORIGEN - 1] = 'Corregido - CurrentRiverRace';
+      } else if (origenCierre === '' || origenCierre === 'Original') {
+        filaAyer[GC.ORIGEN - 1] = 'Corregido';
+      }
       Logger.log('[Guerra][Cierre de dia] ' + tag + ' en ' + (_clanNombreAutocorregir || clanTag) +
         ', periodIndex ' + periodIndexAnterior + ': acumulado de ayer corregido (' + dec.motivo + ').' +
         (dec.alarmaTabla ? ' ALARMA: ' + dec.nDia + ' ataque(s), ' + dec.barcosDia + ' barco(s) y fame ' +
           dec.fameDia + ' del dia NO cuadran con la tabla de fame (se escribio igual: es el dato oficial).' : ''));
       huboCambio = true;
     } else if (dec.accion === 'pendiente' || dec.accion === 'alarma') {
-      Logger.log('[Guerra][Cierre de dia] ' + (dec.accion === 'alarma' ? 'ALARMA' : 'PENDIENTE') + ': ' + tag +
+      Logger.log('[Guerra][Cierre de dia] ' + (dec.accion === 'alarma' ? 'ALARMA' : (dec.crrConflicto ? 'AVISO CurrentRiverRace, PENDIENTE' : 'PENDIENTE')) + ': ' + tag +
         ' en ' + (_clanNombreAutocorregir || clanTag) + ', periodIndex ' + periodIndexAnterior + ' -- ' + dec.motivo);
     }
   }
@@ -21470,8 +21588,27 @@ function _decidirCierreFameBarcosDia_(p) {
   if (gSem >= nCum) return { accion: 'nada', motivo: 'la fila de ayer ya tiene todos sus ataques' };
 
   if (apiHoy > 0) {
-    return { accion: 'pendiente', nDia: nDia, motivo: 'la fila de ayer quedo con ' + gSem + ' ataque(s) acumulado(s) de ' + nCum +
-      ', pero hoy ya hay ' + apiHoy + ' ataque(s) y no se puede separar con certeza su fame ni sus barcos; no se escribe nada' };
+    var motivoPend = 'la fila de ayer quedo con ' + gSem + ' ataque(s) acumulado(s) de ' + nCum +
+      ', pero hoy ya hay ' + apiHoy + ' ataque(s) y no se puede separar con certeza su fame ni sus barcos; no se escribe nada';
+    // CurrentRiverRace (§PF139, 21-oct-2026): si p.crr trae la fame acumulada al cierre de ayer y sus ataques, se cierra ayer con ese dato real.
+    // Los barcos de ayer no vienen en CurrentRiverRace: se dejan los guardados. Si algo no cuadra, se queda pendiente y se avisa (crrConflicto).
+    var c = p.crr;
+    if (c && c.fameAcumAyer !== null && c.fameAcumAyer !== undefined) {
+      var fameDiaC = c.fameAcumAyer - bFame, barcosDiaC = gBarcos - bBarcos, noUsa = '';
+      if (c.ataquesAyer === null || c.ataquesAyer === undefined) noUsa = 'no trae los ataques de ayer';
+      else if (c.ataquesAyer !== nDia) noUsa = 'los ataques de ayer no coinciden (CurrentRiverRace ' + c.ataquesAyer + ', API y hoja ' + nDia + ')';
+      else if (c.fameAcumAyer < gFame) noUsa = 'la fame de ayer (' + c.fameAcumAyer + ') es menor que la guardada (' + gFame + ')';
+      else if (c.fameAcumAyer > apiFame) noUsa = 'la fame de ayer (' + c.fameAcumAyer + ') es mayor que la de hoy (' + apiFame + ')';
+      else if (fameDiaC < 0 || barcosDiaC < 0 || barcosDiaC > nDia) noUsa = 'el dia sale con fame ' + fameDiaC + ' y ' + barcosDiaC + ' barco(s) en ' + nDia + ' ataque(s)';
+      else if (typeof _fameEsPosibleDia_ === 'function' && !_fameEsPosibleDia_(nDia, fameDiaC, barcosDiaC)) noUsa = nDia + ' ataque(s), ' + barcosDiaC + ' barco(s) y fame ' + fameDiaC + ' no cuadran con la tabla de fame';
+      if (noUsa === '') {
+        return { accion: 'aplicar', nDia: nDia, fameDia: fameDiaC, barcosDia: barcosDiaC, alarmaTabla: false, fuente: 'CurrentRiverRace',
+          nuevoAtaqSem: nCum, nuevaFame: c.fameAcumAyer, nuevosBarcos: gBarcos,
+          motivo: 'segun CurrentRiverRace: ataques ' + gSem + ' -> ' + nCum + ', fame ' + gFame + ' -> ' + c.fameAcumAyer + ', barcos ' + gBarcos + ' (los guardados)' };
+      }
+      return { accion: 'pendiente', nDia: nDia, crrConflicto: true, motivo: motivoPend + '. CurrentRiverRace NO se usa: ' + noUsa };
+    }
+    return { accion: 'pendiente', nDia: nDia, motivo: motivoPend };
   }
 
   // apiHoy === 0: todo lo nuevo es de ayer. El acumulado de hoy es el de fin de ayer.
@@ -26683,6 +26820,45 @@ function _fameCatalogoDia_() {
 }
 
 /**
+ * _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores) [→ Contexto_Base_Web.md §PF139]
+ * Pide al modulo 56 los ataques y la fame por dia de CurrentRiverRace del jugador de estas filas. Temporada propia, semana y tag salen de
+ * la primera fila (valores.temporada, valores.semana y valores.tag, si vienen, los reemplazan). Devuelve { etiqueta, dias: [{ n, f }] } con una
+ * entrada por cada posicion de offs (null = sin dato en CurrentRiverRace), o null si no hay capturas, si estas son incoherentes, si no se pudo
+ * leer Drive o si valores.sinCurrentRiverRace es true. No escribe nada.
+ */
+function _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores) {
+  if (valores.sinCurrentRiverRace === true || typeof _crrDiasDeJugador_ !== 'function') return null;
+  try {
+    var f0 = filas[offsetsExistentes[offs[0]]];
+    function num(v) { var t = String(v === undefined || v === null ? '' : v).trim(); return t === '' ? NaN : Number(t); }
+    var temp = num(valores.temporada !== undefined ? valores.temporada : f0[GC.TEMPORADA - 1]);
+    var sem = num(valores.semana !== undefined ? valores.semana : f0[GC.SEMANA - 1]);
+    var tag = _blgNormalizarTag_(valores.tag !== undefined ? valores.tag : f0[GC.TAG - 1]);
+    if (!(temp > 0) || !(sem > 0) || !tag) return null;
+    var etiqueta = 'T' + temp + ' S' + sem + ' ' + tag;
+    var r = _crrDiasDeJugador_(temp, sem, tag, A, F);
+    if (!r || !r.hayCapturas) return null;
+    if (r.notas && r.notas.length) {
+      Logger.log('[Reparto conjunto] CurrentRiverRace ' + etiqueta + ': capturas incoherentes (' + r.notas.join('; ') + '). No se usa; se reparte como siempre.');
+      return null;
+    }
+    var fd = _crrFameDia_(r.fameAcum);
+    var dias = [], hay = false;
+    for (var i = 0; i < offs.length; i++) {
+      var o = offs[i];
+      var n = (r.ataques[o] === undefined) ? null : r.ataques[o];
+      var f = (fd[o] === undefined) ? null : fd[o];
+      dias.push({ n: n, f: f });
+      if (n !== null || f !== null) hay = true;
+    }
+    return hay ? { etiqueta: etiqueta, dias: dias } : null;
+  } catch (e) {
+    Logger.log('[Reparto conjunto] No se pudo leer CurrentRiverRace: ' + e.message + '. Se reparte como siempre.');
+    return null;
+  }
+}
+
+/**
  * _repartirSemanaConjunto_(filas, offsetsExistentes, valores) [→ Contexto_Base_Web.md §PF122]
  * Reemplaza el reparto por campos (barcos, piso, ataques, fame) y el «sobrante». Recibe las tres cifras a la vez
  * (valores.ataquesSemana, valores.fame y valores.barcos; barcos null = «sin dato», se conserva el actual) y busca para
@@ -26691,6 +26867,10 @@ function _fameCatalogoDia_() {
  * la que se mueve menos y prefiere cambiar los dias mas recientes. Si NINGUNA combinacion cuadra NO TOCA nada y devuelve
  * { ok: false, motivo }. Escribe AtaquesHoy (diario), Barcos y Fame (acumulados) y AtaquesSemana (acumulado) en cada fila.
  * Busqueda por mitades (maximo 77 x 77 combinaciones por mitad), sin recorrer toda la semana.
+ * CurrentRiverRace (§PF139, 21-oct-2026): si el modulo 56 tiene los ataques y la fame de un dia, ese dia SOLO puede tomar un estado de la tabla con
+ * esas cifras (lo que falta, como los barcos o la fame de un dia sin dato, lo sigue decidiendo el reparto). Si con esas restricciones ninguna
+ * combinacion suma los totales, se AVISA en el registro y se hace el reparto de siempre, sin restricciones. El resultado trae crr:
+ * 'aplicado', 'conflicto' o 'sin datos'. valores.sinCurrentRiverRace = true apaga todo esto.
  */
 function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   var offs = Object.keys(offsetsExistentes).map(Number).sort(function (a, b) { return a - b; });
@@ -26725,16 +26905,17 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     if (c.n === s.n && c.b === s.b && c.f === s.f) return 0;
     return 1000000 + (3 - offs[j]) * 10000 + Math.abs(c.n - s.n) * 100 + Math.abs(c.b - s.b) * 100 + Math.abs(c.f - s.f);
   }
-  function grupo(indices) {
+  function grupo(indices, cats) {
     var mapa = { '0,0,0': { a: 0, b: 0, f: 0, c: 0, p: [] } };
     for (var x = 0; x < indices.length; x++) {
       var j = indices[x];
       var nuevo = {};
       var claves = Object.keys(mapa);
+      var catJ = cats[j];
       for (var q = 0; q < claves.length; q++) {
         var m = mapa[claves[q]];
-        for (var t = 0; t < catalogo.length; t++) {
-          var s = catalogo[t];
+        for (var t = 0; t < catJ.length; t++) {
+          var s = catJ[t];
           var na = m.a + s.n, nb = m.b + s.b, nf = m.f + s.f;
           if (na > A || nb > B || nf > F) continue;
           var c = m.c + costo(j, s);
@@ -26750,19 +26931,48 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   var h = Math.floor(k / 2);
   var izqIdx = [], derIdx = [];
   for (var u = 0; u < k; u++) { if (u < h) izqIdx.push(u); else derIdx.push(u); }
-  var izq = grupo(izqIdx);
-  var der = grupo(derIdx);
-  var mejor = null;
-  var clavesIzq = Object.keys(izq);
-  for (var w = 0; w < clavesIzq.length; w++) {
-    var li = izq[clavesIzq[w]];
-    var rd = der[(A - li.a) + ',' + (B - li.b) + ',' + (F - li.f)];
-    if (!rd) continue;
-    var total = li.c + rd.c;
-    if (mejor === null || total < mejor.c) mejor = { c: total, p: li.p.concat(rd.p) };
+  function resolver(cats) {
+    var izq = grupo(izqIdx, cats);
+    var der = grupo(derIdx, cats);
+    var mej = null;
+    var clavesIzq = Object.keys(izq);
+    for (var w = 0; w < clavesIzq.length; w++) {
+      var li = izq[clavesIzq[w]];
+      var rd = der[(A - li.a) + ',' + (B - li.b) + ',' + (F - li.f)];
+      if (!rd) continue;
+      var total = li.c + rd.c;
+      if (mej === null || total < mej.c) mej = { c: total, p: li.p.concat(rd.p) };
+    }
+    return mej;
   }
+
+  // CurrentRiverRace como restriccion (§PF139): cada dia con dato solo admite estados de la tabla con esos ataques y esa fame.
+  var catsLlenos = [];
+  for (var v = 0; v < k; v++) catsLlenos.push(catalogo);
+  var mejor = null;
+  var estadoCrr = 'sin datos';
+  var crr = _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores);
+  if (crr) {
+    var catsCrr = [];
+    for (var d = 0; d < k; d++) {
+      var rest = crr.dias[d];
+      catsCrr.push(catalogo.filter(function (s2) {
+        return (rest.n === null || s2.n === rest.n) && (rest.f === null || s2.f === rest.f);
+      }));
+    }
+    mejor = resolver(catsCrr);
+    if (mejor !== null) {
+      estadoCrr = 'aplicado';
+    } else {
+      estadoCrr = 'conflicto';
+      Logger.log('[Reparto conjunto] AVISO CurrentRiverRace ' + crr.etiqueta + ': ataques ' + crr.dias.map(function (x) { return x.n === null ? '?' : x.n; }).join('|') +
+        ', fame ' + crr.dias.map(function (x) { return x.f === null ? '?' : x.f; }).join('|') + ' no cuadran con los totales (ataques=' + A + ', barcos=' + B +
+        ', fame=' + F + '). Se reparte como siempre, sin usarlos.');
+    }
+  }
+  if (mejor === null) mejor = resolver(catsLlenos);
   if (mejor === null) {
-    return { ok: false, huboCambio: false, motivo: 'ninguna combinacion de la tabla suma ataques=' + A + ', barcos=' + B + ', fame=' + F + ' en ' + k + ' dia(s)' };
+    return { ok: false, huboCambio: false, crr: estadoCrr, motivo: 'ninguna combinacion de la tabla suma ataques=' + A + ', barcos=' + B + ', fame=' + F + ' en ' + k + ' dia(s)' };
   }
 
   var huboCambio = false;
@@ -26779,7 +26989,7 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     fila2[GC.BARCOS - 1] = bn;
     fila2[GC.FAME - 1] = fn;
   }
-  return { ok: true, huboCambio: huboCambio };
+  return { ok: true, huboCambio: huboCambio, crr: estadoCrr };
 }
 
 // INFORME HOJA GUERRA vs CORRECCIONES (SOLO LECTURA) [→ Contexto_Base_Web.md §18B120]
@@ -30212,7 +30422,7 @@ function _getDatosGuerraDesdeCsvParaControl(ctx) {
 // CRUCE DE META POR DÍA (19-sep-2026, pedido del usuario): ¿el clan ya había [→ Contexto_Base_Web.md §22B051]
 var _CRUCE_META_LOGS_MEMO = null;   // { 'temp|clan': { periodIndex: {ini, fin} } }
 var _CRUCE_META_RES_MEMO  = {};     // { 'temp|clan|pIdx': true/false }
-var _CRUCE_META_JSON_IDX  = {};     // { 'clan': { 'T|S|P': DriveFile } }
+var _CRUCE_META_JSON_IDX  = {};     // { 'clan': { t, fresco, ids: { 'T|S|P': idArchivoDrive } } } (PF144: ya no guarda DriveFile)
 var _CRUCE_META_JSON_RES  = {};     // { 'temp|clan|pIdx': true/false/null }
 
 function _cruceNormTemporada_(t) {
@@ -30269,6 +30479,9 @@ function _cruceMetaDesdeGuerraLogs_(nombreClan, pIdx, temporada) {
 
 /**
  * Fuente 2. Busca en Drive el JSON de currentriverrace del periodo `pIdx` [→ Contexto_Base_Web.md §22B054]
+ * PF144 (21-oct-2026): el índice 'T|S|P' -> id de archivo de cada clan ya no se rearma en cada ejecución: se guarda en la caché del script
+ * (CFG.CRUCE_META_IDX_TTL_SEG) y solo se vuelve a listar Drive si falta la clave pedida (como máximo 1 vez cada
+ * CFG.CRUCE_META_IDX_REFRESCO_MIN_MS) o si el archivo del índice ya no se puede abrir. [→ Contexto_Base_Web.md §PF144]
  */
 function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
   try {
@@ -30276,21 +30489,26 @@ function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
     var claveRes = _cruceNormTemporada_(temporada) + '|' + nombre + '|' + pIdx;
     if (_CRUCE_META_JSON_RES.hasOwnProperty(claveRes)) return _CRUCE_META_JSON_RES[claveRes];
 
-    if (!_CRUCE_META_JSON_IDX[nombre]) {
-      var idx = {};
-      var _medT = Date.now(), _medN = 0; // 17-oct-2026 (PF091): medición del listado de Drive (solo Logger.log); [→ Contexto_Base_Web.md §PF091]
-      var carpeta = _getSubcarpetaEndpoint_(_getCarpetaParaClan(nombreClan), 'currentriverrace');
-      var it = _archivosConSubcarpetas_(carpeta); // PF074: incluye subcarpetas de temporada y semana
-      while (it.hasNext()) {
-        var f = it.next();
-        _medN++;
-        var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
-        if (m) idx[Number(m[1]) + '|' + Number(m[2]) + '|' + Number(m[3])] = f;
-      }
-      _CRUCE_META_JSON_IDX[nombre] = idx;
-      Logger.log('[TorneosMed] listado Drive currentriverrace de "' + nombre + '": ' + _medN + ' archivo(s) en ' + (Date.now() - _medT) + 'ms');
+    var ent = _CRUCE_META_JSON_IDX[nombre];
+    if (!ent) {
+      ent = _cruceMetaIndiceDesdeCache_(nombre) || _cruceMetaListarIndiceDrive_(nombreClan, nombre);
+      _CRUCE_META_JSON_IDX[nombre] = ent;
     }
-    var archivo = _CRUCE_META_JSON_IDX[nombre][Number(temporada) + '|' + (periodIdxToSectionIndex(pIdx) + 1) + '|' + pIdx];
+    var claveArch = Number(temporada) + '|' + (periodIdxToSectionIndex(pIdx) + 1) + '|' + pIdx;
+    var idArch = ent.ids[claveArch];
+    // Falta la clave en un índice que viene de la caché: puede ser un archivo creado después de listar. Se relista, con piso de tiempo para no listar en cada consulta de una clave que de verdad no existe.
+    if (!idArch && !ent.fresco && (Date.now() - ent.t) > CFG.CRUCE_META_IDX_REFRESCO_MIN_MS) {
+      ent = _cruceMetaListarIndiceDrive_(nombreClan, nombre);
+      _CRUCE_META_JSON_IDX[nombre] = ent;
+      idArch = ent.ids[claveArch];
+    }
+    var archivo = idArch ? _cruceMetaAbrirArchivo_(idArch) : null;
+    if (idArch && !archivo && !ent.fresco) { // el índice cacheado apunta a un archivo borrado o en la papelera
+      ent = _cruceMetaListarIndiceDrive_(nombreClan, nombre);
+      _CRUCE_META_JSON_IDX[nombre] = ent;
+      idArch = ent.ids[claveArch];
+      archivo = idArch ? _cruceMetaAbrirArchivo_(idArch) : null;
+    }
     var res = null;
     if (archivo) {
       var _medTJ = Date.now();
@@ -30314,6 +30532,52 @@ function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
     return res;
   } catch (e) {
     Logger.log('[Control] JSON de Drive no disponible para cruce de meta (' + nombreClan + ', periodo ' + pIdx + '): ' + e.message);
+    return null;
+  }
+}
+
+/** PF144: lista Drive (carpeta currentriverrace del clan, con subcarpetas) y devuelve { t, fresco: true, ids: { 'T|S|P': idArchivo } }; lo deja también en la caché del script. */
+function _cruceMetaListarIndiceDrive_(nombreClan, nombre) {
+  var ids = {};
+  var _medT = Date.now(), _medN = 0; // 17-oct-2026 (PF091): medición del listado de Drive (solo Logger.log); [→ Contexto_Base_Web.md §PF091]
+  var carpeta = _getSubcarpetaEndpoint_(_getCarpetaParaClan(nombreClan), 'currentriverrace');
+  var it = _archivosConSubcarpetas_(carpeta); // PF074: incluye subcarpetas de temporada y semana
+  while (it.hasNext()) {
+    var f = it.next();
+    _medN++;
+    var m = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-[LMXJVSD])?\s.*- currentriverrace\.json$/i.exec(f.getName());
+    if (m) ids[Number(m[1]) + '|' + Number(m[2]) + '|' + Number(m[3])] = f.getId();
+  }
+  Logger.log('[TorneosMed] listado Drive currentriverrace de "' + nombre + '": ' + _medN + ' archivo(s) en ' + (Date.now() - _medT) + 'ms');
+  var ent = { t: Date.now(), fresco: true, ids: ids };
+  try {
+    CacheService.getScriptCache().put('CRUCE_META_IDX_' + nombre, JSON.stringify({ t: ent.t, ids: ids }), CFG.CRUCE_META_IDX_TTL_SEG);
+  } catch (eCache) {
+    Logger.log('[TorneosMed] No se pudo guardar el índice de currentriverrace de "' + nombre + '" en la caché (se vuelve a listar la próxima vez): ' + eCache.message);
+  }
+  return ent;
+}
+
+/** PF144: índice guardado en la caché del script, o null si no hay (nunca guardado, vencido o evicto). Devuelve { t, fresco: false, ids }. */
+function _cruceMetaIndiceDesdeCache_(nombre) {
+  try {
+    var raw = CacheService.getScriptCache().get('CRUCE_META_IDX_' + nombre);
+    if (!raw) return null;
+    var o = JSON.parse(raw);
+    if (!o || !o.ids || !isFinite(Number(o.t))) return null;
+    Logger.log('[TorneosMed] índice de currentriverrace de "' + nombre + '" tomado de la caché (' + Object.keys(o.ids).length + ' archivo(s), edad ' + Math.round((Date.now() - Number(o.t)) / 1000) + ' s), sin listar Drive');
+    return { t: Number(o.t), fresco: false, ids: o.ids };
+  } catch (e) {
+    return null;
+  }
+}
+
+/** PF144: abre un archivo por id; null si no existe o está en la papelera. */
+function _cruceMetaAbrirArchivo_(id) {
+  try {
+    var f = DriveApp.getFileById(id);
+    return f.isTrashed() ? null : f;
+  } catch (e) {
     return null;
   }
 }
@@ -41295,7 +41559,9 @@ function _agregarCategoriaAExtra(ss, categoria) {
   var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
   if (!sh) return 9999;
 
-  var COL_CATEGORIA = 12; // columna L
+  // PF141 (21-oct-2026): antes la columna estaba fija en 12 (L), que desde que se agregaron Mostrar_S/Mostrar_D es Rangos; la
+  // columna Categoría es la N (14). Ahora se busca por el encabezado «Categoría» (con la N como respaldo).
+  var COL_CATEGORIA = _colCategoriaExtra_(sh);
   var categoriaLower = String(categoria).toLowerCase();
 
   var lastRowSheet = sh.getLastRow();
@@ -41306,6 +41572,12 @@ function _agregarCategoriaAExtra(ss, categoria) {
       var vv = String(colVals[k][0] || '').trim();
       if (vv !== '') valoresActuales.push(vv);
     }
+  }
+
+  // PF141: si la categoría ya está en la columna, no se vuelve a agregar (antes se agregaba una copia en cada corrida de
+  // Mensajes). Se devuelve la posición que ya tiene.
+  for (var ex = 0; ex < valoresActuales.length; ex++) {
+    if (valoresActuales[ex].toLowerCase() === categoriaLower) return ex;
   }
 
   // Por defecto: al final. Si hay anclas para esta categoría, se busca la
@@ -41323,12 +41595,32 @@ function _agregarCategoriaAExtra(ss, categoria) {
   try {
     var nuevaColumna = valoresActuales.map(function (v) { return [v]; });
     sh.getRange(2, COL_CATEGORIA, nuevaColumna.length, 1).setValues(nuevaColumna);
-    Logger.log('[Mensajes] Categoría nueva "' + categoria + '" agregada a Extra (columna L, posición ' + (posInsercion + 1) + ' de ' + nuevaColumna.length + ').');
+    Logger.log('[Mensajes] Categoría nueva "' + categoria + '" agregada a Extra (columna ' + colLetter(COL_CATEGORIA) + ', posición ' + (posInsercion + 1) + ' de ' + nuevaColumna.length + ').');
   } catch(e) {
     Logger.log('[Mensajes] Error agregando categoría "' + categoria + '" a Extra: ' + e.message);
   }
 
   return posInsercion;
+}
+
+/**
+ * _colCategoriaExtra_(sh) [→ Contexto_Base_Web.md §PF141]
+ * Número de columna (base 1) del encabezado «Categoría» de la hoja Extra. Si no se encuentra, usa COL_EXTRA_CATEGORIA (44_BotWhatsApp.gs; 14 = N).
+ */
+function _colCategoriaExtra_(sh) {
+  var respaldo = (typeof COL_EXTRA_CATEGORIA === 'number') ? COL_EXTRA_CATEGORIA : 14;
+  try {
+    var ultima = sh.getLastColumn();
+    if (ultima < 1) return respaldo;
+    var encabezados = sh.getRange(1, 1, 1, ultima).getValues()[0];
+    for (var c = 0; c < encabezados.length; c++) {
+      var h = String(encabezados[c] || '').trim().toLowerCase().replace('í', 'i');
+      if (h === 'categoria') return c + 1;
+    }
+  } catch (e) {
+    Logger.log('[Mensajes] No se pudo leer el encabezado de Extra (' + e.message + '); se usa la columna ' + respaldo + '.');
+  }
+  return respaldo;
 }
 
 // Helpers de datos [→ Contexto_Base_Web.md §30B030]
@@ -56541,7 +56833,7 @@ function migrarPosicionCategoriaAscensosDescensosEnExtra() {
   var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
   if (!sh) { Logger.log('[Migración Extra] Hoja Extra no encontrada.'); return; }
 
-  var COL_CATEGORIA = 12; // columna L
+  var COL_CATEGORIA = _colCategoriaExtra_(sh); // PF141 (21-oct-2026): antes fija en 12 (L = Rangos); ver 30_Mensajes.gs
   var categoria = 'Ascensos y descensos';
   var categoriaLower = categoria.toLowerCase();
 
@@ -57806,6 +58098,7 @@ function tot_ejecutar_(aplicar) {
       tot_clan_(tot_celda_(r, hb, 'Clan')));
     if (!claves[kb]) continue;
     var pi = tot_num_(tot_celda_(r, hb, 'PeriodIndex'));
+    if (pi % 7 < 3) continue;   // §PF139: solo jueves a domingo (un PeriodIndex no numerico, que da 0, tambien queda fuera)
     var previo = ultimo[kb];
     if (!previo || pi >= previo.pi) {
       ultimo[kb] = {
@@ -57841,7 +58134,7 @@ function tot_ejecutar_(aplicar) {
   var salida = [[
     'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Linea en Backup', 'PeriodIndex',
     'Ataques antes', 'Ataques nuevo', 'Fame antes', 'Fame nueva', 'Barcos antes', 'Barcos nuevo',
-    'Decision'
+    'Decision', 'CRR ataques domingo', 'CRR fame domingo'
   ]];
   var cambios = [];
   var conteo = {};
@@ -57854,10 +58147,19 @@ function tot_ejecutar_(aplicar) {
     else if (!hr) motivo = 'SIN_FILA_HISTORIAL';
     else if (!hr.cerrada) motivo = 'HISTORIAL_ABIERTO';
     else if (hr.ataques !== ob.jsonAtaques || hr.fame !== ob.jsonFame || hr.barcos !== ob.jsonBarcos) motivo = 'HISTORIAL_DISTINTO_DE_JSON';
+    // §PF139: el total semanal solo se escribe en la fila del DOMINGO. Si la ultima fila que hay es otra (por ejemplo el sabado), no se escribe
+    // nada y se avisa: escribirlo ahi hace que esa fila absorba los ataques del domingo (como paso el 18-oct-2026 en 11 casos de T3 S1 a S3).
+    else if (bb.pi % 7 !== 6) motivo = 'ULTIMA_FILA_NO_ES_DOMINGO';
     else if (bb.ataques === ob.jsonAtaques && bb.fame === ob.jsonFame && bb.barcos === ob.jsonBarcos) motivo = 'YA_COINCIDE';
     else if (bb.ataques > ob.jsonAtaques || bb.fame > ob.jsonFame || bb.barcos > ob.jsonBarcos) motivo = 'BACKUP_MAYOR_EN_ALGO';
     else if (bb.ataques === 0 && bb.fame === 0) motivo = 'SEMANA_VACIA_EN_BACKUP_REVISAR';
     else motivo = 'APLICAR';
+    // §PF139: CurrentRiverRace como comprobacion. Si con estos totales el domingo (o cualquier dia) saldria imposible, no se escribe y se avisa.
+    var crrDom = null;
+    if (motivo === 'APLICAR' && typeof _crrDomingoParaTotales_ === 'function') {
+      crrDom = _crrDomingoParaTotales_(ob.temporada, ob.semana, ob.tag, ob.jsonAtaques, ob.jsonFame);
+      if (crrDom && crrDom.conflicto) motivo = 'CRR_NO_CUADRA';
+    }
     conteo[motivo] = (conteo[motivo] || 0) + 1;
 
     if (motivo === 'APLICAR') {
@@ -57869,7 +58171,9 @@ function tot_ejecutar_(aplicar) {
       bb ? bb.ataques : '', motivo === 'APLICAR' ? ob.jsonAtaques : '',
       bb ? bb.fame : '', motivo === 'APLICAR' ? ob.jsonFame : '',
       bb ? bb.barcos : '', motivo === 'APLICAR' ? ob.jsonBarcos : '',
-      motivo
+      motivo + (crrDom && crrDom.conflicto ? ' (' + crrDom.conflicto + ')' : ''),
+      crrDom && crrDom.ataquesDomingo !== null ? crrDom.ataquesDomingo : '',
+      crrDom && crrDom.fameDomingo !== null ? crrDom.fameDomingo : ''
     ]);
   }
 
@@ -58331,6 +58635,7 @@ function tot_ejecutar_(aplicar) {
       tot_clan_(tot_celda_(r, hb, 'Clan')));
     if (!claves[kb]) continue;
     var pi = tot_num_(tot_celda_(r, hb, 'PeriodIndex'));
+    if (pi % 7 < 3) continue;   // §PF139: solo jueves a domingo (un PeriodIndex no numerico, que da 0, tambien queda fuera)
     var previo = ultimo[kb];
     if (!previo || pi >= previo.pi) {
       ultimo[kb] = {
@@ -58366,7 +58671,7 @@ function tot_ejecutar_(aplicar) {
   var salida = [[
     'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Linea en Backup', 'PeriodIndex',
     'Ataques antes', 'Ataques nuevo', 'Fame antes', 'Fame nueva', 'Barcos antes', 'Barcos nuevo',
-    'Decision'
+    'Decision', 'CRR ataques domingo', 'CRR fame domingo'
   ]];
   var cambios = [];
   var conteo = {};
@@ -58379,10 +58684,19 @@ function tot_ejecutar_(aplicar) {
     else if (!hr) motivo = 'SIN_FILA_HISTORIAL';
     else if (!hr.cerrada) motivo = 'HISTORIAL_ABIERTO';
     else if (hr.ataques !== ob.jsonAtaques || hr.fame !== ob.jsonFame || hr.barcos !== ob.jsonBarcos) motivo = 'HISTORIAL_DISTINTO_DE_JSON';
+    // §PF139: el total semanal solo se escribe en la fila del DOMINGO. Si la ultima fila que hay es otra (por ejemplo el sabado), no se escribe
+    // nada y se avisa: escribirlo ahi hace que esa fila absorba los ataques del domingo (como paso el 18-oct-2026 en 11 casos de T3 S1 a S3).
+    else if (bb.pi % 7 !== 6) motivo = 'ULTIMA_FILA_NO_ES_DOMINGO';
     else if (bb.ataques === ob.jsonAtaques && bb.fame === ob.jsonFame && bb.barcos === ob.jsonBarcos) motivo = 'YA_COINCIDE';
     else if (bb.ataques > ob.jsonAtaques || bb.fame > ob.jsonFame || bb.barcos > ob.jsonBarcos) motivo = 'BACKUP_MAYOR_EN_ALGO';
     else if (bb.ataques === 0 && bb.fame === 0) motivo = 'SEMANA_VACIA_EN_BACKUP_REVISAR';
     else motivo = 'APLICAR';
+    // §PF139: CurrentRiverRace como comprobacion. Si con estos totales el domingo (o cualquier dia) saldria imposible, no se escribe y se avisa.
+    var crrDom = null;
+    if (motivo === 'APLICAR' && typeof _crrDomingoParaTotales_ === 'function') {
+      crrDom = _crrDomingoParaTotales_(ob.temporada, ob.semana, ob.tag, ob.jsonAtaques, ob.jsonFame);
+      if (crrDom && crrDom.conflicto) motivo = 'CRR_NO_CUADRA';
+    }
     conteo[motivo] = (conteo[motivo] || 0) + 1;
 
     if (motivo === 'APLICAR') {
@@ -58394,7 +58708,9 @@ function tot_ejecutar_(aplicar) {
       bb ? bb.ataques : '', motivo === 'APLICAR' ? ob.jsonAtaques : '',
       bb ? bb.fame : '', motivo === 'APLICAR' ? ob.jsonFame : '',
       bb ? bb.barcos : '', motivo === 'APLICAR' ? ob.jsonBarcos : '',
-      motivo
+      motivo + (crrDom && crrDom.conflicto ? ' (' + crrDom.conflicto + ')' : ''),
+      crrDom && crrDom.ataquesDomingo !== null ? crrDom.ataquesDomingo : '',
+      crrDom && crrDom.fameDomingo !== null ? crrDom.fameDomingo : ''
     ]);
   }
 
@@ -60682,9 +60998,10 @@ function _fameCrr52Verificar_(filasAntes, filasDespues, plan) {
 // Ataques y fame por día de cada jugador, leídos de las capturas de CurrentRiverRace guardadas en Drive
 // (21-oct-2026; Contexto_Base_Web.md §PF139, regla 1: «lo más confiable son los CurrentRiverRace»).
 //
-// PRIMERA TANDA: solo LEE y calcula. Nada de lo que ya existe llama a estas funciones todavía; no escribe en ninguna hoja
-// ni CSV. Las tandas siguientes harán que _repartirSemanaConjunto_(), la corrección al cerrar el día y
-// AplicarTotalesSemana_Historial usen _crrDiasDeJugador_() como primera fuente.
+// Este archivo solo LEE y calcula; no escribe en ninguna hoja ni CSV.
+// Tanda 1 (21-oct-2026): módulo nuevo. Tanda 2 (21-oct-2026): _repartirSemanaConjunto_() (18_CorreccionGuerra.gs) ya usa
+// _crrDiasDeJugador_() como restricción. Tanda 3 (21-oct-2026): la corrección al cerrar el día (17_GuerraSheet.gs,
+// _autocorregirAtaqueDiaAnteriorDecksUsed) usa _crrAyerParaCierre_(). Tanda 4 (21-oct-2026): AplicarTotalesSemana_Historial (48_Herramientas_Debug.gs, tot_ejecutar_) usa _crrDomingoParaTotales_().
 //
 // Qué trae cada captura (un archivo por clan, semana y día, que se va sobrescribiendo: queda la ÚLTIMA captura de ese día):
 //   decksUsed = ataques acumulados de la semana; decksUsedToday = ataques de ese día; fame = fame acumulada de la semana.
@@ -60854,6 +61171,52 @@ function probarCurrentRiverRaceDias() {
   var ok = ata === '4|4|4|4' && fame === '600|800|800|700';
   Logger.log('[CRR] T3 S1: ' + tags.length + ' jugador(es) con capturas. Chistris: ataques ' + ata + ', fame ' + fame + ' -> ' +
     (ok ? 'OK (coincide con lo comprobado a mano).' : 'DIFIERE de lo esperado (4|4|4|4 y 600|800|800|700).') + ' (No se escribio nada.)');
+}
+
+/**
+ * Para la corrección al cerrar el día (17_GuerraSheet.gs, §PF139): ataques de AYER y fame acumulada al cierre de ayer de un jugador, según
+ * CurrentRiverRace. ctx = el contexto del clan (temporada propia y sectionIndex); offAyer = 0..2 (jueves a sábado). No se pasan totales
+ * semanales (no se conocen aquí), así que el domingo nunca se resuelve por esta vía. Devuelve { ataquesAyer, fameAcumAyer } (null = sin dato)
+ * o null si no hay capturas, si estas se contradicen o si falla la lectura de Drive. Solo lee.
+ */
+function _crrAyerParaCierre_(tag, ctx, offAyer) {
+  try {
+    if (!(offAyer >= 0 && offAyer <= 2)) return null;
+    var temp = Number(ctx && ctx.temporada), sem = Number(ctx && ctx.sectionIndex) + 1;
+    if (!(temp > 0) || !(sem > 0)) return null;
+    var r = _crrDiasDeJugador_(temp, sem, tag, null, null);
+    if (!r.hayCapturas || (r.notas && r.notas.length)) return null;
+    var a = r.ataques[offAyer], f = r.fameAcum[offAyer];
+    return { ataquesAyer: (a === undefined ? null : a), fameAcumAyer: (f === undefined ? null : f) };
+  } catch (e) {
+    Logger.log('[CRR] No se pudo consultar CurrentRiverRace para cerrar el dia (' + tag + '): ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * Para AplicarTotalesSemana_Historial (48_Herramientas_Debug.gs, §PF139): comprueba unos totales semanales (ataques y fame) contra CurrentRiverRace.
+ * Devuelve null si no hay capturas, si se contradicen o si no hay ningun dato del domingo; si no, { ataquesDomingo, fameDomingo, conflicto }, con
+ * conflicto = '' si todo es posible o el motivo si algun dia saldria imposible con esos totales (ataques de un dia fuera de 0 a 4, o fame de un dia
+ * fuera de 0 a 900, ver _fameEsPosibleDia_()). Solo lee; no escribe nada.
+ */
+function _crrDomingoParaTotales_(temporada, semana, tag, totA, totF) {
+  try {
+    var r = _crrDiasDeJugador_(temporada, semana, tag, totA, totF);
+    if (!r.hayCapturas || (r.notas && r.notas.length)) return null;
+    var fd = _crrFameDia_(r.fameAcum);
+    var out = { ataquesDomingo: r.ataques[3], fameDomingo: fd[3], conflicto: '' };
+    if (out.ataquesDomingo === null && out.fameDomingo === null) return null;
+    var nombres = ['jueves', 'viernes', 'sabado', 'domingo'];
+    for (var i = 0; i < 4 && !out.conflicto; i++) {
+      if (r.ataques[i] !== null && (r.ataques[i] < 0 || r.ataques[i] > 4)) out.conflicto = 'CurrentRiverRace: ' + r.ataques[i] + ' ataque(s) el ' + nombres[i];
+      else if (fd[i] !== null && (fd[i] < 0 || fd[i] > 900)) out.conflicto = 'CurrentRiverRace: fame ' + fd[i] + ' el ' + nombres[i];
+    }
+    return out;
+  } catch (e) {
+    Logger.log('[CRR] No se pudo comprobar los totales (' + tag + '): ' + e.message);
+    return null;
+  }
 }
 
 
