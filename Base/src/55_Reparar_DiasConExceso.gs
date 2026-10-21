@@ -378,7 +378,13 @@ function _excDiasPlanificar(filas, clases) {
     otros.forEach(function (o) { semanaOtros += _excDiasFinalDe(o.dias).a; });
     if (!excede && cumA + semanaOtros > 16) excede = 'la semana quedaria con ' + (cumA + semanaOtros) + ' ataques sumando clanes';
     if (excede) { plan.omitidos.push({ grupo: g, clase: clase, motivo: excede }); return; }
-    ops.forEach(function (op) { op.nuevo.origen = _excDiasOrigenNuevo(op.existe ? op.ant.origen : '', op.existe, op.estimadoDia); });
+    ops.forEach(function (op) {
+      op.nuevo.origen = _excDiasOrigenNuevo(op.existe ? op.ant.origen : '', op.existe, op.estimadoDia);
+      // Una fila que ya tenia exactamente esos valores no cambia: se deja con su Origen (no se marca 'Corregido' sin haberla corregido).
+      if (op.existe && op.ant.hoy === op.nuevo.hoy && op.ant.sem === op.nuevo.sem && op.ant.fame === op.nuevo.fame && op.ant.barcos === op.nuevo.barcos) {
+        op.sinCambio = true; op.nuevo.origen = op.ant.origen;
+      }
+    });
     plan.casos.push({ grupo: g, clase: clase, estimado: estimado, ops: ops });
   });
   return plan;
@@ -417,7 +423,7 @@ function _excDiasAplicarPlan(filas, plan) {
         filas.push(fila);
         op.filaNueva = fila;
         creadas++;
-      } else {
+      } else if (!op.sinCambio) {
         modificadas++;
       }
       fila[GC.ATAQUES_HOY - 1] = String(op.nuevo.hoy);
@@ -513,7 +519,7 @@ function _repararDiasConExceso_(aplicar, clases) {
       c.ops.forEach(function (op) { if (op.existe) op.idxAntes = idxDe.get(op.fila); });
     });
     var nCrear = 0, nModificar = 0;
-    plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.existe) nModificar++; else nCrear++; }); });
+    plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (!op.existe) nCrear++; else if (!op.sinCambio) nModificar++; }); });
 
     // Hoja Guerra (temporada vigente): los casos de la hoja no se tocan, solo se cuentan.
     var casosHoja = 0;
@@ -547,7 +553,7 @@ function _repararDiasConExceso_(aplicar, clases) {
       c.ops.forEach(function (op) {
         var an = op.ant;
         detalle.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, c.clase, EXC_DIAS_LETRAS.charAt(op.dia), (Number(g.semana) - 1) * 7 + 3 + op.dia,
-          op.existe ? 'Modificar' : 'Crear', an ? an.hoy : '', op.nuevo.hoy, an ? an.sem : '', op.nuevo.sem,
+          !op.existe ? 'Crear' : (op.sinCambio ? 'Sin cambio' : 'Modificar'), an ? an.hoy : '', op.nuevo.hoy, an ? an.sem : '', op.nuevo.sem,
           op.antDia ? op.antDia.f : '', op.nuevo.fameDia, an ? an.fame : '', op.nuevo.fame,
           op.antDia ? op.antDia.b : '', op.nuevo.barcosDia, an ? an.barcos : '', op.nuevo.barcos,
           an ? an.origen : '', op.nuevo.origen, op.estimadoDia ? 'estimada (varias ternas validas)' : 'unica']);
