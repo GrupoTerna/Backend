@@ -6,7 +6,8 @@
 // Este archivo solo LEE y calcula; no escribe en ninguna hoja ni CSV.
 // Tanda 1 (21-oct-2026): módulo nuevo. Tanda 2 (21-oct-2026): _repartirSemanaConjunto_() (18_CorreccionGuerra.gs) ya usa
 // _crrDiasDeJugador_() como restricción. Tanda 3 (21-oct-2026): la corrección al cerrar el día (17_GuerraSheet.gs,
-// _autocorregirAtaqueDiaAnteriorDecksUsed) usa _crrAyerParaCierre_(). Tanda 4 (21-oct-2026): AplicarTotalesSemana_Historial (48_Herramientas_Debug.gs, tot_ejecutar_) usa _crrDomingoParaTotales_().
+// _autocorregirAtaqueDiaAnteriorDecksUsed) usa _crrAyerParaCierre_(). Tanda 4 (21-oct-2026): AplicarTotalesSemana_Historial se rehizo en 57_ReconstruirSemanaPorDias.gs, que usa _crrDiasDeJugador_() y _crrFameDia_();
+// _crrDomingoParaTotales_() (abajo) solo la usa tot_ejecutar_() de 48_Herramientas_Debug.gs, que ya no se llama.
 //
 // Qué trae cada captura (un archivo por clan, semana y día, que se va sobrescribiendo: queda la ÚLTIMA captura de ese día):
 //   decksUsed = ataques acumulados de la semana; decksUsedToday = ataques de ese día; fame = fame acumulada de la semana.
