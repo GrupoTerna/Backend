@@ -166,6 +166,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF153` | Contrastación de 11 pendientes de «Abiertos» contra `Base/src/` y `Web` (carpetas `API`, `sitemap.xml`, hallazgo A, `PF043`, `PF073`, `PF084`, `PF141`, `PF016`) |
 | `PF154` | Un torneo con continuación se muestra como uno solo: `_webTorneos()` envía solo la raíz con `partes` e `idsPartes`; `torneos.html` indica «Realizado en N partes» |
 | `PF155` | `sitemap.xml` al día, comentario de `webPermisosGuardar` corregido y evidencia de los dos `currentriverrace.json` de T-05 (`PF079`) |
+| `PF156` | `48_Herramientas_Debug.gs`: se quita un bloque de 540 líneas que estaba duplicado (26 funciones repetidas) |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -4477,3 +4478,12 @@ Eran 3 entradas de 12 a 14-oct-2026 sin su explicación en el contexto. **Compro
 - **No se tocó** el código de Apps Script que renombra o clasifica los JSON.
 - **Pruebas (regla 8).** Solo lectura de archivos del repo y `node --check`. No se ejecutó nada en Apps Script, Drive ni navegador.
 - **Recordatorios.** Antes de cualquier descarga de Base, `subirBaseDesdeGithub()`; publicar `Web` (`sitemap.xml` no pasa por `sw.js`).
+
+### PF156 — `48_Herramientas_Debug.gs`: bloque duplicado de 540 líneas (21-oct-2026; SIN PROBAR en Apps Script)
+
+- **Hallazgo.** Al correr sobre `Base/src/` los mismos controles que `generador-ci.yml` aplica a `Generador/` (el CI de este repo no mira `Base/`), 26 funciones aparecían dos veces en `48_Herramientas_Debug.gs`: de `cruzarSinResolverConHistorialInforme()` a `tot_guardarCsv_()`, con su comentario y `var CRUCE_CFG`, el bloque estaba pegado dos veces seguidas, de 540 líneas cada uno (446 a 985 y 986 a 1525). Eso explica que el commit `dc7bf48` dijera «ambas copias» al editar `tot_ejecutar_`.
+- **Comprobado antes de tocar.** Las dos copias eran idénticas línea por línea (comparación exacta). En Apps Script V8 la última declaración de una función repetida es la que vale, así que no cambiaba ningún comportamiento, pero cualquier edición hecha solo en la primera copia habría quedado sin efecto.
+- **Hecho.** Se quitó la segunda copia (líneas 986 a 1525): el archivo pasó de 1 794 a 1 254 líneas. Quedan las mismas 51 funciones distintas, 0 repetidas y 0 `var` repetidas; `node --check` sin errores en los 57 `.gs` de `Base/src/` y en los de `Generador/src/`; `verificar_contexto.py` en «OK». No se tocó ninguna otra función.
+- **Desfasado a propósito.** `Base/INDICE_FUNCIONES.md` (que cuenta 77 funciones para este archivo y da líneas como 708 y 1245 para `tot_ejecutar_`) e `Indice_Base.md` pueden seguir con los números de antes hasta que el Generador los regenere; no se editaron a mano.
+- **Sin probar.** No se ejecutó nada en Apps Script. Falta correr `subirBaseDesdeGithub()` y abrir una función de solo lectura de este archivo (por ejemplo `informeAnomaliasAtaquesSemana()`) para confirmar que carga.
+- **Sugerencia, sin hacer.** Extender `generador-ci.yml` a `Base/src/` para que las funciones repetidas se detecten al subir. No se hizo porque el token de esta sesión no incluye el permiso para modificar workflows.
