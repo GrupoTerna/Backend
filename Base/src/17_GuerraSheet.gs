@@ -3033,7 +3033,7 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
   if (typeof fameApi === 'number' && typeof barcosApi === 'number' && !isNaN(fameApi) && !isNaN(barcosApi)) {
     var filaAyer = datosGuerra[rowIdx];
     var filaBase = rowIdxBase >= 0 ? datosGuerra[rowIdxBase] : null; // sin fila el dia D-1: base 0
-    var dec = _decidirCierreFameBarcosDia_({
+    var parCierre = {
       apiSem: ataqSemApi, apiHoy: ataqHoyApi, apiFame: fameApi, apiBarcos: barcosApi,
       sumaAtaquesPrevios: sumaAtaquesDiasPrevios,
       guardadoAtaqSem: Number(filaAyer[GC.ATAQUES_SEM - 1]) || 0,
@@ -3041,20 +3041,33 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
       guardadosBarcos: Number(filaAyer[GC.BARCOS - 1]) || 0,
       baseFame: filaBase ? (Number(filaBase[GC.FAME - 1]) || 0) : 0,
       baseBarcos: filaBase ? (Number(filaBase[GC.BARCOS - 1]) || 0) : 0
-    });
+    };
+    var dec = _decidirCierreFameBarcosDia_(parCierre);
+    // §PF139 (21-oct-2026): si ayer queda pendiente porque hoy ya hay ataques, se consulta CurrentRiverRace (solo en ese caso, para no leer Drive en cada corrida).
+    if (dec.accion === 'pendiente' && typeof _crrAyerParaCierre_ === 'function') {
+      var crrAyer = _crrAyerParaCierre_(tag, ctx, offHoyDia - 1);
+      if (crrAyer) {
+        parCierre.crr = crrAyer;
+        dec = _decidirCierreFameBarcosDia_(parCierre);
+      }
+    }
     if (dec.accion === 'aplicar') {
       filaAyer[GC.ATAQUES_SEM - 1] = dec.nuevoAtaqSem;
       filaAyer[GC.FAME - 1]        = dec.nuevaFame;
       filaAyer[GC.BARCOS - 1]      = dec.nuevosBarcos;
       var origenCierre = String(filaAyer[GC.ORIGEN - 1] || '').trim();
-      if (origenCierre === '' || origenCierre === 'Original') filaAyer[GC.ORIGEN - 1] = 'Corregido';
+      if (dec.fuente === 'CurrentRiverRace') {
+        if (origenCierre === '' || origenCierre === 'Original' || origenCierre === 'Corregido') filaAyer[GC.ORIGEN - 1] = 'Corregido - CurrentRiverRace';
+      } else if (origenCierre === '' || origenCierre === 'Original') {
+        filaAyer[GC.ORIGEN - 1] = 'Corregido';
+      }
       Logger.log('[Guerra][Cierre de dia] ' + tag + ' en ' + (_clanNombreAutocorregir || clanTag) +
         ', periodIndex ' + periodIndexAnterior + ': acumulado de ayer corregido (' + dec.motivo + ').' +
         (dec.alarmaTabla ? ' ALARMA: ' + dec.nDia + ' ataque(s), ' + dec.barcosDia + ' barco(s) y fame ' +
           dec.fameDia + ' del dia NO cuadran con la tabla de fame (se escribio igual: es el dato oficial).' : ''));
       huboCambio = true;
     } else if (dec.accion === 'pendiente' || dec.accion === 'alarma') {
-      Logger.log('[Guerra][Cierre de dia] ' + (dec.accion === 'alarma' ? 'ALARMA' : 'PENDIENTE') + ': ' + tag +
+      Logger.log('[Guerra][Cierre de dia] ' + (dec.accion === 'alarma' ? 'ALARMA' : (dec.crrConflicto ? 'AVISO CurrentRiverRace, PENDIENTE' : 'PENDIENTE')) + ': ' + tag +
         ' en ' + (_clanNombreAutocorregir || clanTag) + ', periodIndex ' + periodIndexAnterior + ' -- ' + dec.motivo);
     }
   }
@@ -3083,8 +3096,27 @@ function _decidirCierreFameBarcosDia_(p) {
   if (gSem >= nCum) return { accion: 'nada', motivo: 'la fila de ayer ya tiene todos sus ataques' };
 
   if (apiHoy > 0) {
-    return { accion: 'pendiente', nDia: nDia, motivo: 'la fila de ayer quedo con ' + gSem + ' ataque(s) acumulado(s) de ' + nCum +
-      ', pero hoy ya hay ' + apiHoy + ' ataque(s) y no se puede separar con certeza su fame ni sus barcos; no se escribe nada' };
+    var motivoPend = 'la fila de ayer quedo con ' + gSem + ' ataque(s) acumulado(s) de ' + nCum +
+      ', pero hoy ya hay ' + apiHoy + ' ataque(s) y no se puede separar con certeza su fame ni sus barcos; no se escribe nada';
+    // CurrentRiverRace (§PF139, 21-oct-2026): si p.crr trae la fame acumulada al cierre de ayer y sus ataques, se cierra ayer con ese dato real.
+    // Los barcos de ayer no vienen en CurrentRiverRace: se dejan los guardados. Si algo no cuadra, se queda pendiente y se avisa (crrConflicto).
+    var c = p.crr;
+    if (c && c.fameAcumAyer !== null && c.fameAcumAyer !== undefined) {
+      var fameDiaC = c.fameAcumAyer - bFame, barcosDiaC = gBarcos - bBarcos, noUsa = '';
+      if (c.ataquesAyer === null || c.ataquesAyer === undefined) noUsa = 'no trae los ataques de ayer';
+      else if (c.ataquesAyer !== nDia) noUsa = 'los ataques de ayer no coinciden (CurrentRiverRace ' + c.ataquesAyer + ', API y hoja ' + nDia + ')';
+      else if (c.fameAcumAyer < gFame) noUsa = 'la fame de ayer (' + c.fameAcumAyer + ') es menor que la guardada (' + gFame + ')';
+      else if (c.fameAcumAyer > apiFame) noUsa = 'la fame de ayer (' + c.fameAcumAyer + ') es mayor que la de hoy (' + apiFame + ')';
+      else if (fameDiaC < 0 || barcosDiaC < 0 || barcosDiaC > nDia) noUsa = 'el dia sale con fame ' + fameDiaC + ' y ' + barcosDiaC + ' barco(s) en ' + nDia + ' ataque(s)';
+      else if (typeof _fameEsPosibleDia_ === 'function' && !_fameEsPosibleDia_(nDia, fameDiaC, barcosDiaC)) noUsa = nDia + ' ataque(s), ' + barcosDiaC + ' barco(s) y fame ' + fameDiaC + ' no cuadran con la tabla de fame';
+      if (noUsa === '') {
+        return { accion: 'aplicar', nDia: nDia, fameDia: fameDiaC, barcosDia: barcosDiaC, alarmaTabla: false, fuente: 'CurrentRiverRace',
+          nuevoAtaqSem: nCum, nuevaFame: c.fameAcumAyer, nuevosBarcos: gBarcos,
+          motivo: 'segun CurrentRiverRace: ataques ' + gSem + ' -> ' + nCum + ', fame ' + gFame + ' -> ' + c.fameAcumAyer + ', barcos ' + gBarcos + ' (los guardados)' };
+      }
+      return { accion: 'pendiente', nDia: nDia, crrConflicto: true, motivo: motivoPend + '. CurrentRiverRace NO se usa: ' + noUsa };
+    }
+    return { accion: 'pendiente', nDia: nDia, motivo: motivoPend };
   }
 
   // apiHoy === 0: todo lo nuevo es de ayer. El acumulado de hoy es el de fin de ayer.
