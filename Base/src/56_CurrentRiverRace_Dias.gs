@@ -6,7 +6,7 @@
 // Este archivo solo LEE y calcula; no escribe en ninguna hoja ni CSV.
 // Tanda 1 (21-oct-2026): módulo nuevo. Tanda 2 (21-oct-2026): _repartirSemanaConjunto_() (18_CorreccionGuerra.gs) ya usa
 // _crrDiasDeJugador_() como restricción. Tanda 3 (21-oct-2026): la corrección al cerrar el día (17_GuerraSheet.gs,
-// _autocorregirAtaqueDiaAnteriorDecksUsed) usa _crrAyerParaCierre_(). Queda para la tanda siguiente AplicarTotalesSemana_Historial.
+// _autocorregirAtaqueDiaAnteriorDecksUsed) usa _crrAyerParaCierre_(). Tanda 4 (21-oct-2026): AplicarTotalesSemana_Historial (48_Herramientas_Debug.gs, tot_ejecutar_) usa _crrDomingoParaTotales_().
 //
 // Qué trae cada captura (un archivo por clan, semana y día, que se va sobrescribiendo: queda la ÚLTIMA captura de ese día):
 //   decksUsed = ataques acumulados de la semana; decksUsedToday = ataques de ese día; fame = fame acumulada de la semana.
@@ -195,6 +195,31 @@ function _crrAyerParaCierre_(tag, ctx, offAyer) {
     return { ataquesAyer: (a === undefined ? null : a), fameAcumAyer: (f === undefined ? null : f) };
   } catch (e) {
     Logger.log('[CRR] No se pudo consultar CurrentRiverRace para cerrar el dia (' + tag + '): ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * Para AplicarTotalesSemana_Historial (48_Herramientas_Debug.gs, §PF139): comprueba unos totales semanales (ataques y fame) contra CurrentRiverRace.
+ * Devuelve null si no hay capturas, si se contradicen o si no hay ningun dato del domingo; si no, { ataquesDomingo, fameDomingo, conflicto }, con
+ * conflicto = '' si todo es posible o el motivo si algun dia saldria imposible con esos totales (ataques de un dia fuera de 0 a 4, o fame de un dia
+ * fuera de 0 a 900, ver _fameEsPosibleDia_()). Solo lee; no escribe nada.
+ */
+function _crrDomingoParaTotales_(temporada, semana, tag, totA, totF) {
+  try {
+    var r = _crrDiasDeJugador_(temporada, semana, tag, totA, totF);
+    if (!r.hayCapturas || (r.notas && r.notas.length)) return null;
+    var fd = _crrFameDia_(r.fameAcum);
+    var out = { ataquesDomingo: r.ataques[3], fameDomingo: fd[3], conflicto: '' };
+    if (out.ataquesDomingo === null && out.fameDomingo === null) return null;
+    var nombres = ['jueves', 'viernes', 'sabado', 'domingo'];
+    for (var i = 0; i < 4 && !out.conflicto; i++) {
+      if (r.ataques[i] !== null && (r.ataques[i] < 0 || r.ataques[i] > 4)) out.conflicto = 'CurrentRiverRace: ' + r.ataques[i] + ' ataque(s) el ' + nombres[i];
+      else if (fd[i] !== null && (fd[i] < 0 || fd[i] > 900)) out.conflicto = 'CurrentRiverRace: fame ' + fd[i] + ' el ' + nombres[i];
+    }
+    return out;
+  } catch (e) {
+    Logger.log('[CRR] No se pudo comprobar los totales (' + tag + '): ' + e.message);
     return null;
   }
 }

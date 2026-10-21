@@ -760,6 +760,7 @@ function tot_ejecutar_(aplicar) {
       tot_clan_(tot_celda_(r, hb, 'Clan')));
     if (!claves[kb]) continue;
     var pi = tot_num_(tot_celda_(r, hb, 'PeriodIndex'));
+    if (pi % 7 < 3) continue;   // §PF139: solo jueves a domingo (un PeriodIndex no numerico, que da 0, tambien queda fuera)
     var previo = ultimo[kb];
     if (!previo || pi >= previo.pi) {
       ultimo[kb] = {
@@ -795,7 +796,7 @@ function tot_ejecutar_(aplicar) {
   var salida = [[
     'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Linea en Backup', 'PeriodIndex',
     'Ataques antes', 'Ataques nuevo', 'Fame antes', 'Fame nueva', 'Barcos antes', 'Barcos nuevo',
-    'Decision'
+    'Decision', 'CRR ataques domingo', 'CRR fame domingo'
   ]];
   var cambios = [];
   var conteo = {};
@@ -808,10 +809,19 @@ function tot_ejecutar_(aplicar) {
     else if (!hr) motivo = 'SIN_FILA_HISTORIAL';
     else if (!hr.cerrada) motivo = 'HISTORIAL_ABIERTO';
     else if (hr.ataques !== ob.jsonAtaques || hr.fame !== ob.jsonFame || hr.barcos !== ob.jsonBarcos) motivo = 'HISTORIAL_DISTINTO_DE_JSON';
+    // §PF139: el total semanal solo se escribe en la fila del DOMINGO. Si la ultima fila que hay es otra (por ejemplo el sabado), no se escribe
+    // nada y se avisa: escribirlo ahi hace que esa fila absorba los ataques del domingo (como paso el 18-oct-2026 en 11 casos de T3 S1 a S3).
+    else if (bb.pi % 7 !== 6) motivo = 'ULTIMA_FILA_NO_ES_DOMINGO';
     else if (bb.ataques === ob.jsonAtaques && bb.fame === ob.jsonFame && bb.barcos === ob.jsonBarcos) motivo = 'YA_COINCIDE';
     else if (bb.ataques > ob.jsonAtaques || bb.fame > ob.jsonFame || bb.barcos > ob.jsonBarcos) motivo = 'BACKUP_MAYOR_EN_ALGO';
     else if (bb.ataques === 0 && bb.fame === 0) motivo = 'SEMANA_VACIA_EN_BACKUP_REVISAR';
     else motivo = 'APLICAR';
+    // §PF139: CurrentRiverRace como comprobacion. Si con estos totales el domingo (o cualquier dia) saldria imposible, no se escribe y se avisa.
+    var crrDom = null;
+    if (motivo === 'APLICAR' && typeof _crrDomingoParaTotales_ === 'function') {
+      crrDom = _crrDomingoParaTotales_(ob.temporada, ob.semana, ob.tag, ob.jsonAtaques, ob.jsonFame);
+      if (crrDom && crrDom.conflicto) motivo = 'CRR_NO_CUADRA';
+    }
     conteo[motivo] = (conteo[motivo] || 0) + 1;
 
     if (motivo === 'APLICAR') {
@@ -823,7 +833,9 @@ function tot_ejecutar_(aplicar) {
       bb ? bb.ataques : '', motivo === 'APLICAR' ? ob.jsonAtaques : '',
       bb ? bb.fame : '', motivo === 'APLICAR' ? ob.jsonFame : '',
       bb ? bb.barcos : '', motivo === 'APLICAR' ? ob.jsonBarcos : '',
-      motivo
+      motivo + (crrDom && crrDom.conflicto ? ' (' + crrDom.conflicto + ')' : ''),
+      crrDom && crrDom.ataquesDomingo !== null ? crrDom.ataquesDomingo : '',
+      crrDom && crrDom.fameDomingo !== null ? crrDom.fameDomingo : ''
     ]);
   }
 
@@ -1285,6 +1297,7 @@ function tot_ejecutar_(aplicar) {
       tot_clan_(tot_celda_(r, hb, 'Clan')));
     if (!claves[kb]) continue;
     var pi = tot_num_(tot_celda_(r, hb, 'PeriodIndex'));
+    if (pi % 7 < 3) continue;   // §PF139: solo jueves a domingo (un PeriodIndex no numerico, que da 0, tambien queda fuera)
     var previo = ultimo[kb];
     if (!previo || pi >= previo.pi) {
       ultimo[kb] = {
@@ -1320,7 +1333,7 @@ function tot_ejecutar_(aplicar) {
   var salida = [[
     'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Linea en Backup', 'PeriodIndex',
     'Ataques antes', 'Ataques nuevo', 'Fame antes', 'Fame nueva', 'Barcos antes', 'Barcos nuevo',
-    'Decision'
+    'Decision', 'CRR ataques domingo', 'CRR fame domingo'
   ]];
   var cambios = [];
   var conteo = {};
@@ -1333,10 +1346,19 @@ function tot_ejecutar_(aplicar) {
     else if (!hr) motivo = 'SIN_FILA_HISTORIAL';
     else if (!hr.cerrada) motivo = 'HISTORIAL_ABIERTO';
     else if (hr.ataques !== ob.jsonAtaques || hr.fame !== ob.jsonFame || hr.barcos !== ob.jsonBarcos) motivo = 'HISTORIAL_DISTINTO_DE_JSON';
+    // §PF139: el total semanal solo se escribe en la fila del DOMINGO. Si la ultima fila que hay es otra (por ejemplo el sabado), no se escribe
+    // nada y se avisa: escribirlo ahi hace que esa fila absorba los ataques del domingo (como paso el 18-oct-2026 en 11 casos de T3 S1 a S3).
+    else if (bb.pi % 7 !== 6) motivo = 'ULTIMA_FILA_NO_ES_DOMINGO';
     else if (bb.ataques === ob.jsonAtaques && bb.fame === ob.jsonFame && bb.barcos === ob.jsonBarcos) motivo = 'YA_COINCIDE';
     else if (bb.ataques > ob.jsonAtaques || bb.fame > ob.jsonFame || bb.barcos > ob.jsonBarcos) motivo = 'BACKUP_MAYOR_EN_ALGO';
     else if (bb.ataques === 0 && bb.fame === 0) motivo = 'SEMANA_VACIA_EN_BACKUP_REVISAR';
     else motivo = 'APLICAR';
+    // §PF139: CurrentRiverRace como comprobacion. Si con estos totales el domingo (o cualquier dia) saldria imposible, no se escribe y se avisa.
+    var crrDom = null;
+    if (motivo === 'APLICAR' && typeof _crrDomingoParaTotales_ === 'function') {
+      crrDom = _crrDomingoParaTotales_(ob.temporada, ob.semana, ob.tag, ob.jsonAtaques, ob.jsonFame);
+      if (crrDom && crrDom.conflicto) motivo = 'CRR_NO_CUADRA';
+    }
     conteo[motivo] = (conteo[motivo] || 0) + 1;
 
     if (motivo === 'APLICAR') {
@@ -1348,7 +1370,9 @@ function tot_ejecutar_(aplicar) {
       bb ? bb.ataques : '', motivo === 'APLICAR' ? ob.jsonAtaques : '',
       bb ? bb.fame : '', motivo === 'APLICAR' ? ob.jsonFame : '',
       bb ? bb.barcos : '', motivo === 'APLICAR' ? ob.jsonBarcos : '',
-      motivo
+      motivo + (crrDom && crrDom.conflicto ? ' (' + crrDom.conflicto + ')' : ''),
+      crrDom && crrDom.ataquesDomingo !== null ? crrDom.ataquesDomingo : '',
+      crrDom && crrDom.fameDomingo !== null ? crrDom.fameDomingo : ''
     ]);
   }
 
