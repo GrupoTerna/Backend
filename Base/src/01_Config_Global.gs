@@ -159,7 +159,7 @@ var CFG = {
   ],
 
   // Valores para el dropdown de Rangos en la hoja Extra
-  EXTRA_RANGOS:  ['Líder','Colider','Veterano','Miembro'],
+  EXTRA_RANGOS:  ['Líder','Colíder','Veterano','Miembro'], // PF141 (21-oct-2026): «Colíder» con tilde, igual que el resto del sistema
 
   // Valores para el dropdown de Alertas en la hoja Extra
   EXTRA_ALERTAS: ['Vetado','Reactivado','Pendiente','Candidato a expulsión'],

@@ -208,7 +208,7 @@ function migrarPosicionCategoriaAscensosDescensosEnExtra() {
   var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
   if (!sh) { Logger.log('[Migración Extra] Hoja Extra no encontrada.'); return; }
 
-  var COL_CATEGORIA = 12; // columna L
+  var COL_CATEGORIA = _colCategoriaExtra_(sh); // PF141 (21-oct-2026): antes fija en 12 (L = Rangos); ver 30_Mensajes.gs
   var categoria = 'Ascensos y descensos';
   var categoriaLower = categoria.toLowerCase();
 

@@ -431,7 +431,9 @@ function _agregarCategoriaAExtra(ss, categoria) {
   var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
   if (!sh) return 9999;
 
-  var COL_CATEGORIA = 12; // columna L
+  // PF141 (21-oct-2026): antes la columna estaba fija en 12 (L), que desde que se agregaron Mostrar_S/Mostrar_D es Rangos; la
+  // columna Categoría es la N (14). Ahora se busca por el encabezado «Categoría» (con la N como respaldo).
+  var COL_CATEGORIA = _colCategoriaExtra_(sh);
   var categoriaLower = String(categoria).toLowerCase();
 
   var lastRowSheet = sh.getLastRow();
@@ -442,6 +444,12 @@ function _agregarCategoriaAExtra(ss, categoria) {
       var vv = String(colVals[k][0] || '').trim();
       if (vv !== '') valoresActuales.push(vv);
     }
+  }
+
+  // PF141: si la categoría ya está en la columna, no se vuelve a agregar (antes se agregaba una copia en cada corrida de
+  // Mensajes). Se devuelve la posición que ya tiene.
+  for (var ex = 0; ex < valoresActuales.length; ex++) {
+    if (valoresActuales[ex].toLowerCase() === categoriaLower) return ex;
   }
 
   // Por defecto: al final. Si hay anclas para esta categoría, se busca la
@@ -459,12 +467,32 @@ function _agregarCategoriaAExtra(ss, categoria) {
   try {
     var nuevaColumna = valoresActuales.map(function (v) { return [v]; });
     sh.getRange(2, COL_CATEGORIA, nuevaColumna.length, 1).setValues(nuevaColumna);
-    Logger.log('[Mensajes] Categoría nueva "' + categoria + '" agregada a Extra (columna L, posición ' + (posInsercion + 1) + ' de ' + nuevaColumna.length + ').');
+    Logger.log('[Mensajes] Categoría nueva "' + categoria + '" agregada a Extra (columna ' + colLetter(COL_CATEGORIA) + ', posición ' + (posInsercion + 1) + ' de ' + nuevaColumna.length + ').');
   } catch(e) {
     Logger.log('[Mensajes] Error agregando categoría "' + categoria + '" a Extra: ' + e.message);
   }
 
   return posInsercion;
+}
+
+/**
+ * _colCategoriaExtra_(sh) [→ Contexto_Base_Web.md §PF141]
+ * Número de columna (base 1) del encabezado «Categoría» de la hoja Extra. Si no se encuentra, usa COL_EXTRA_CATEGORIA (44_BotWhatsApp.gs; 14 = N).
+ */
+function _colCategoriaExtra_(sh) {
+  var respaldo = (typeof COL_EXTRA_CATEGORIA === 'number') ? COL_EXTRA_CATEGORIA : 14;
+  try {
+    var ultima = sh.getLastColumn();
+    if (ultima < 1) return respaldo;
+    var encabezados = sh.getRange(1, 1, 1, ultima).getValues()[0];
+    for (var c = 0; c < encabezados.length; c++) {
+      var h = String(encabezados[c] || '').trim().toLowerCase().replace('í', 'i');
+      if (h === 'categoria') return c + 1;
+    }
+  } catch (e) {
+    Logger.log('[Mensajes] No se pudo leer el encabezado de Extra (' + e.message + '); se usa la columna ' + respaldo + '.');
+  }
+  return respaldo;
 }
 
 // Helpers de datos [→ Contexto_Base_Web.md §30B030]
