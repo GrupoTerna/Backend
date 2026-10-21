@@ -47,7 +47,7 @@ function _webRateLimitExcedido(sessionTokenValido) {
 // _webRespuesta429(): error 429 con la misma forma que las respuestas 401/500 de doGet(). [→ Contexto_Base_Web.md §38B010]
 function _webRespuesta429() {
   return ContentService
-    .createTextOutput(JSON.stringify({ error: 'Demasiados pedidos. Probá de nuevo en un minuto.', code: 429 }))
+    .createTextOutput(JSON.stringify({ error: 'Demasiados pedidos. Inténtalo de nuevo en un minuto.', code: 429 }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 

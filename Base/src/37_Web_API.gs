@@ -4320,7 +4320,7 @@ function _webSorteoCalificados(token) {
 
   var bloque = _getConfigMasRecienteCategoria('Sorteo');
   if (bloque.length === 0) {
-    return { ok: false, error: 'S_Lista no tiene ninguna fila con Clan asignado todavía. Agregá participantes a mano mientras tanto.' };
+    return { ok: false, error: 'S_Lista no tiene ninguna fila con Clan asignado todavía. Agrega participantes a mano mientras tanto.' };
   }
 
   var ss = _getSs();
