@@ -12,8 +12,7 @@ Registro: AtaquesHoy es diario; AtaquesSemana, Fame y Barcos son ACUMULADOS de l
 import csv, sys, collections, itertools, json, os
 from functools import lru_cache
 
-REPO = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')  # carpeta CSV/
-RUTAS = {'Backup_Guerra.csv': 'Hojas', 'Correcciones_Guerra.csv': 'Tampermonkey'}  # subcarpeta de cada CSV desde el 18-oct-2026
+REPO = '/home/claude/backend/Datos descargados/CSV'
 OUT = sys.argv[1] if len(sys.argv) > 1 else '.'
 
 BG, BP, PG, PP = 125, 75, 200, 100
@@ -42,7 +41,7 @@ def opciones_dia():
 
 
 def leer(nombre):
-    rows = list(csv.reader(open(os.path.join(REPO, RUTAS.get(nombre, ''), nombre), encoding='utf-8')))
+    rows = list(csv.reader(open(os.path.join(REPO, nombre), encoding='utf-8')))
     h = rows[0]
     return [dict(zip(h, r[:len(h)])) for r in rows[1:]]
 
