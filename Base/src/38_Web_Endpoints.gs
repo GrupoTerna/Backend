@@ -1247,7 +1247,7 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
-  // PANEL DE PERMISOS (19-sep-2026, pedido de Diana): webPermisosGuardar guarda Funciones y Cat_disp de UN administrador; datos = { id, funciones, categorias }; solo el Celular de la Script Property PANEL_PERMISOS_CELULAR; ver _webPermisosGuardar() en 37_Web_API.gs. [→ Contexto_Base_Web.md §38B080]
+  // PANEL DE PERMISOS (19-sep-2026, pedido de Diana): webPermisosGuardar guarda Funciones y Cat_disp de UN administrador; datos = { id, funciones, categorias, clanesAdmin? } (clanesAdmin es opcional: si no viene, no se tocan los clanes del admin; PF155); solo el Celular de la Script Property PANEL_PERMISOS_CELULAR; ver _webPermisosGuardar() en 37_Web_API.gs. [→ Contexto_Base_Web.md §38B080]
   if (e && e.parameter && e.parameter.accion === 'webPermisosGuardar') {
     try {
       var payloadPermisos = JSON.parse(e.postData.contents);
