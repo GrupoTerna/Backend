@@ -2262,9 +2262,9 @@ pregunta 16.
    hoja "Menú" y ambos CSV (Menu y Menú); el dato ahora vive en un JSON.
    Fase 6 cerrada por este punto.
 
-15. ~~**[Fase 1, nuevo — 23-sep-2026]** ahora que ya tenés el nombre de la
+15. ~~**[Fase 1, nuevo — 23-sep-2026]** ahora que ya tienes el nombre de la
     función (`corregirGuerraYControlDesdeControl2()`) y la lista completa
-    de funciones manuales sin ejecutar (sección 6): ¿querés que armemos
+    de funciones manuales sin ejecutar (sección 6): ¿quieres que armemos
     juntos el orden en que conviene correrlas, o prefieres ejecutarlas por
     tu cuenta y avisar cuando termines para retomar la validación?~~
     **Resuelta el 23-sep-2026 (tercera continuación de sesión 3):** por
