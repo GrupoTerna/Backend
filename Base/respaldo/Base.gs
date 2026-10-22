@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 21/10/2026 21:46:20 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 22/10/2026 02:05:29 */
 
 
 
@@ -59886,15 +59886,35 @@ function _excDiasResumir(res) {
 }
 
 /**
+ * ¿Esta serie (jugador, clan, semana) necesita reparo? [→ Contexto_Base_Web.md §PF160, criterio 1]
+ * Se parte de los ACUMULADOS, no de AtaquesHoy (que es de la última captura y puede quedarse atrás). Necesita reparo si:
+ *  - algún AtaquesHoy pasa de 4 (selector de siempre), o
+ *  - algún tramo trae más ataques de los que caben en los días que cubre (4 por día): el acumulado salta de más, o
+ *  - falta la fila de un día anterior y el tramo que lo absorbe trae más de 4 ataques (ejemplo: primera fila el viernes con 8 acumulados;
+ *    el jueves sale de AtaquesSemana - AtaquesHoy del viernes, ver _excDiasFaltanteJueves()).
+ * Antes solo se miraba el primer punto, y los jueves que faltan con AtaquesHoy de 4 o menos quedaban fuera aunque el perfil los mostrara con 8.
+ */
+function _excDiasNecesitaReparo(dias) {
+  var offs = Object.keys(dias);
+  for (var i = 0; i < offs.length; i++) {
+    if (_excDiasNum(dias[offs[i]][GC.ATAQUES_HOY - 1]) > 4) return true;
+  }
+  var segs = _excDiasSegmentos(dias);
+  for (var j = 0; j < segs.length; j++) {
+    var s = segs[j];
+    if (s.A > 4 * s.dias.length) return true;
+    if (s.dias.length > 1 && s.A > 4) return true;
+  }
+  return false;
+}
+
+/**
  * Clasifica todos los casos de un conjunto de filas (sin encabezado). Devuelve un arreglo de
  * { grupo, patron, resumen } ordenado por temporada, semana, tag y clan.
  */
 function _excDiasClasificar(filas) {
   var grupos = _excDiasAgrupar(filas);
-  var claves = Object.keys(grupos).filter(function (k) {
-    var dias = grupos[k].dias;
-    return Object.keys(dias).some(function (o) { return _excDiasNum(dias[o][GC.ATAQUES_HOY - 1]) > 4; });
-  }).sort();
+  var claves = Object.keys(grupos).filter(function (k) { return _excDiasNecesitaReparo(grupos[k].dias); }).sort();
   return claves.map(function (k) {
     var g = grupos[k];
     var patron = Object.keys(g.dias).map(Number).sort(function (a, b) { return a - b; }).map(function (o) { return EXC_DIAS_LETRAS.charAt(o); }).join('');
