@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 21/10/2026 15:30:22 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 22/10/2026 02:29:40 */
 
 
 
@@ -4086,6 +4086,13 @@ function _verif_imprimirResumen_(r) {
 //  archivo). Una insignia que no esté en ninguna de las dos fuentes NO se descarga (para no
 //  guardarla en la carpeta equivocada): el registro avisa cuántas son y qué hacer.
 //
+//  Recorte del margen (22-oct-2026, pedido de la usuaria): las insignias de jugador (playerbadges) se
+//  suben ya recortadas al rectángulo de los píxeles con alfa >= 8, sin reescalar, igual que las 1 079
+//  copias que se recortaron antes (PF161), para que todas llenen igual su caja en la web. Los PNG que
+//  no sean RGBA de 8 bits, o que no se puedan recortar, NO se suben y quedan como fallo que se
+//  reintenta; lo que ni siquiera es un PNG se sube tal cual y se avisa. Las cartas no se recortan.
+//  Detalle y límites (sin probar en Apps Script real): sección «Recorte del margen» y §PF162.
+//
 //  Funciones para correr desde el editor:
 //    - imagenesApiEscanearJsonPlayers(): recorre los JSON de players y guarda las direcciones
 //                                    en Imagenes_API_Urls.txt y el tipo de cada insignia en
@@ -4257,7 +4264,7 @@ function _imgApiEjecutar_(grupos, soloProbar) {
   }
 
   // 3) Descarga en lotes, con topes de archivos, bytes y tiempo.
-  var entradas = [], bytes = 0, fallos = [], nuevas404 = [], procesadas = 0;
+  var entradas = [], bytes = 0, fallos = [], nuevas404 = [], procesadas = 0, recortadas = 0, sinMargen = 0, noPng = 0;
   for (var i = 0; i < faltan.length; i += IMGAPI_LOTE_) {
     if (entradas.length >= IMGAPI_MAX_ARCHIVOS_ || bytes >= IMGAPI_MAX_BYTES_ || (Date.now() - inicio) > IMGAPI_MAX_MS_) break;
     var lote = faltan.slice(i, i + IMGAPI_LOTE_);
@@ -4274,6 +4281,21 @@ function _imgApiEjecutar_(grupos, soloProbar) {
       if (tipo.indexOf('image/') !== 0 || !datos || datos.length < 100) {
         fallos.push(u.url + ' → no parece una imagen (' + tipo + ', ' + (datos ? datos.length : 0) + ' bytes)');
         continue;
+      }
+      if (u.categoria === 'playerbadges') {
+        // Las insignias de jugador se suben sin el margen transparente (PF162). Ver «Recorte del margen».
+        var rec = _imgApiRecortarPng_(datos);
+        if (rec.ok) {
+          datos = rec.bytes;
+          if (rec.recortado) { recortadas++; } else { sinMargen++; }
+        } else if (!rec.esPng) {
+          // No es un PNG (por ejemplo un webp): se sube tal cual, porque no hay cómo recortarlo aquí.
+          noPng++;
+          console.log('  · Aviso: ' + u.url + ' no es un PNG (' + rec.motivo + '); se sube tal cual, sin recortar.');
+        } else {
+          fallos.push(u.url + ' → no se pudo recortar: ' + rec.motivo);
+          continue;
+        }
       }
       entradas.push({ path: u.destino, base64: Utilities.base64Encode(datos), bytes: datos.length });
       bytes += datos.length;
@@ -4319,6 +4341,10 @@ function _imgApiEjecutar_(grupos, soloProbar) {
   var mb = (bytes / 1048576).toFixed(1);
   var texto = 'Subidas ' + entradas.length + ' imágenes (' + mb + ' MB) y ' + conLeeme.length + ' carpetas API nuevas en el commit ' +
               res.commit.substring(0, 7) + '.';
+  if (recortadas || sinMargen || noPng) {
+    texto += ' Insignias: ' + recortadas + ' recortadas' + (sinMargen ? ', ' + sinMargen + ' que ya no tenían margen' : '') +
+             (noPng ? ', ' + noPng + ' que no eran PNG y se subieron tal cual' : '') + '.';
+  }
   if (pendientes > 0) texto += ' QUEDAN ' + pendientes + ' por subir: vuelve a correr la misma función.';
   if (nuevas404.length) texto += ' ' + nuevas404.length + ' dieron HTTP 404 y pasaron a la lista de no disponibles.';
   if (fallos.length) {
@@ -4588,6 +4614,428 @@ function _imgApiRecolectarUrls_(nombresCsv) {
                 'luego imagenesApiEscanearJsonPlayers() hasta que diga «TERMINADO».');
   }
   return lista;
+}
+
+// -----------------------------------------------------------------------------
+// Recorte del margen transparente de las insignias (22-oct-2026, pedido de la usuaria)
+// [→ Contexto_Base_Web.md §PF162]
+//
+// Las copias locales de badges/API/ se suben SIN el margen transparente que traen los PNG de
+// Supercell (512x512 con el dibujo en ~58 % del ancho), igual que las 1 079 que ya se recortaron
+// a mano (PF161). Apps Script no trae librería de imágenes, así que aquí hay un lector y escritor
+// de PNG en JavaScript puro:
+//   - Solo PNG RGBA de 8 bits, sin entrelazado (el formato de todas las insignias vistas). Otro
+//     formato NO se sube y queda como fallo que se reintenta; un archivo que ni siquiera es PNG
+//     se sube tal cual y se avisa en el registro.
+//   - Criterio: rectángulo mínimo con los píxeles de alfa >= 8 (el mismo de PF161). No se reescala
+//     ni se cambia ningún píxel; solo se corta. Si no hay nada que cortar, el archivo no se toca.
+//   - Descomprime con un inflate propio (se evita Utilities.ungzip porque, por lo que se sabe,
+//     valida el CRC del resultado, que aquí no se conoce; no se probó en Apps Script) y comprime
+//     con Utilities.gzip, cuyo deflate se envuelve como zlib. Si ese
+//     deflate no se puede descomprimir de vuelta igual, se usa compresión «almacenada» (sin
+//     comprimir pero válida).
+// -----------------------------------------------------------------------------
+
+var IMGAPI_ALFA_MIN_ = 8;
+
+/** Bytes con signo de Apps Script (-128..127) a Uint8Array. */
+function _imgApiAU8_(bytes) {
+  var n = bytes.length, u = new Uint8Array(n);
+  for (var i = 0; i < n; i++) u[i] = bytes[i] & 255;
+  return u;
+}
+
+/** Uint8Array a bytes con signo, que es lo que esperan Utilities.base64Encode y newBlob. */
+function _imgApiAConSigno_(u8) {
+  var n = u8.length, a = new Array(n);
+  for (var i = 0; i < n; i++) { var v = u8[i]; a[i] = v > 127 ? v - 256 : v; }
+  return a;
+}
+
+var _IMGAPI_TABLA_CRC_ = null;
+function _imgApiCrc32_(u8, ini, fin) {
+  if (!_IMGAPI_TABLA_CRC_) {
+    _IMGAPI_TABLA_CRC_ = new Uint32Array(256);
+    for (var n = 0; n < 256; n++) {
+      var c = n;
+      for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      _IMGAPI_TABLA_CRC_[n] = c >>> 0;
+    }
+  }
+  var crc = 0xFFFFFFFF;
+  for (var i = ini; i < fin; i++) crc = _IMGAPI_TABLA_CRC_[(crc ^ u8[i]) & 255] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+function _imgApiAdler32_(u8) {
+  var a = 1, b = 0, n = u8.length, i = 0;
+  while (i < n) {
+    var tope = Math.min(i + 3800, n);
+    for (; i < tope; i++) { a += u8[i]; b += a; }
+    a %= 65521; b %= 65521;
+  }
+  return ((b << 16) | a) >>> 0;
+}
+
+var _IMGAPI_LONG_BASE_ = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+var _IMGAPI_LONG_EXTRA_ = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+var _IMGAPI_DIST_BASE_ = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
+var _IMGAPI_DIST_EXTRA_ = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+var _IMGAPI_ORDEN_CL_ = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+
+/** Tabla de Huffman canónica a partir de las longitudes de código (algoritmo de puff.c). */
+function _imgApiHuffman_(longitudes, n) {
+  var cuenta = new Array(16), simbolo = new Array(n), desp = new Array(16), i;
+  for (i = 0; i < 16; i++) cuenta[i] = 0;
+  for (i = 0; i < n; i++) cuenta[longitudes[i]]++;
+  desp[1] = 0;
+  for (i = 1; i < 15; i++) desp[i + 1] = desp[i] + cuenta[i];
+  for (i = 0; i < n; i++) if (longitudes[i] !== 0) simbolo[desp[longitudes[i]]++] = i;
+  return { cuenta: cuenta, simbolo: simbolo };
+}
+
+/**
+ * Inflate (deflate crudo, RFC 1951) de src desde pos. Devuelve un Uint8Array de exactamente
+ * tam bytes; si los datos dan más o menos, lanza error.
+ */
+function _imgApiInflate_(src, pos, tam) {
+  var out = new Uint8Array(tam), op = 0, bitBuf = 0, bitCnt = 0;
+  function bits(n) {
+    while (bitCnt < n) {
+      if (pos >= src.length) throw new Error('inflate: datos truncados');
+      bitBuf |= src[pos++] << bitCnt;
+      bitCnt += 8;
+    }
+    var v = bitBuf & ((1 << n) - 1);
+    bitBuf >>>= n; bitCnt -= n;
+    return v;
+  }
+  function decodificar(h) {
+    var codigo = 0, primero = 0, indice = 0;
+    for (var len = 1; len <= 15; len++) {
+      codigo |= bits(1);
+      var cuenta = h.cuenta[len];
+      if (codigo - cuenta < primero) return h.simbolo[indice + (codigo - primero)];
+      indice += cuenta; primero += cuenta; primero <<= 1; codigo <<= 1;
+    }
+    throw new Error('inflate: código de Huffman inválido');
+  }
+  var fijoLit = null, fijoDist = null;
+  var ultimo;
+  do {
+    ultimo = bits(1);
+    var tipo = bits(2), lit, dist, i;
+    if (tipo === 0) {
+      bitBuf = 0; bitCnt = 0; // se descartan los bits que sobran del byte
+      if (pos + 4 > src.length) throw new Error('inflate: bloque almacenado truncado');
+      var len = src[pos] | (src[pos + 1] << 8), nlen = src[pos + 2] | (src[pos + 3] << 8);
+      pos += 4;
+      if ((len ^ 65535) !== nlen) throw new Error('inflate: longitud almacenada inconsistente');
+      if (pos + len > src.length || op + len > tam) throw new Error('inflate: bloque almacenado fuera de rango');
+      for (i = 0; i < len; i++) out[op++] = src[pos++];
+    } else if (tipo === 1 || tipo === 2) {
+      if (tipo === 1) {
+        if (!fijoLit) {
+          var l = new Array(288);
+          for (i = 0; i < 144; i++) l[i] = 8;
+          for (; i < 256; i++) l[i] = 9;
+          for (; i < 280; i++) l[i] = 7;
+          for (; i < 288; i++) l[i] = 8;
+          fijoLit = _imgApiHuffman_(l, 288);
+          var d = new Array(30);
+          for (i = 0; i < 30; i++) d[i] = 5;
+          fijoDist = _imgApiHuffman_(d, 30);
+        }
+        lit = fijoLit; dist = fijoDist;
+      } else {
+        var nlit = bits(5) + 257, ndist = bits(5) + 1, ncl = bits(4) + 4;
+        var lcl = new Array(19);
+        for (i = 0; i < 19; i++) lcl[i] = 0;
+        for (i = 0; i < ncl; i++) lcl[_IMGAPI_ORDEN_CL_[i]] = bits(3);
+        var hcl = _imgApiHuffman_(lcl, 19);
+        var largos = new Array(nlit + ndist);
+        var idx = 0;
+        while (idx < nlit + ndist) {
+          var s = decodificar(hcl);
+          if (s < 16) { largos[idx++] = s; continue; }
+          var rep, val = 0;
+          if (s === 16) {
+            if (idx === 0) throw new Error('inflate: repetición sin valor previo');
+            val = largos[idx - 1]; rep = 3 + bits(2);
+          } else if (s === 17) { rep = 3 + bits(3); }
+          else { rep = 11 + bits(7); }
+          if (idx + rep > nlit + ndist) throw new Error('inflate: demasiadas longitudes');
+          while (rep--) largos[idx++] = val;
+        }
+        lit = _imgApiHuffman_(largos.slice(0, nlit), nlit);
+        dist = _imgApiHuffman_(largos.slice(nlit), ndist);
+      }
+      while (true) {
+        var sim = decodificar(lit);
+        if (sim < 256) {
+          if (op >= tam) throw new Error('inflate: más datos de los esperados');
+          out[op++] = sim;
+        } else if (sim === 256) {
+          break;
+        } else {
+          sim -= 257;
+          if (sim >= 29) throw new Error('inflate: símbolo de longitud inválido');
+          var largo = _IMGAPI_LONG_BASE_[sim] + bits(_IMGAPI_LONG_EXTRA_[sim]);
+          var sd = decodificar(dist);
+          if (sd >= 30) throw new Error('inflate: símbolo de distancia inválido');
+          var d2 = _IMGAPI_DIST_BASE_[sd] + bits(_IMGAPI_DIST_EXTRA_[sd]);
+          if (d2 > op) throw new Error('inflate: distancia fuera de rango');
+          if (op + largo > tam) throw new Error('inflate: más datos de los esperados');
+          for (i = 0; i < largo; i++) { out[op] = out[op - d2]; op++; }
+        }
+      }
+    } else {
+      throw new Error('inflate: tipo de bloque inválido');
+    }
+  } while (!ultimo);
+  if (op !== tam) throw new Error('inflate: se esperaban ' + tam + ' bytes y salieron ' + op);
+  return out;
+}
+
+/** Deflate crudo «almacenado» (sin comprimir, pero válido). */
+function _imgApiDeflateAlmacenado_(datos) {
+  var n = datos.length, bloques = Math.max(1, Math.ceil(n / 65535));
+  var out = new Uint8Array(n + bloques * 5), op = 0;
+  for (var b = 0; b < bloques; b++) {
+    var ini = b * 65535, len = Math.min(65535, n - ini);
+    out[op++] = (b === bloques - 1) ? 1 : 0;
+    out[op++] = len & 255; out[op++] = len >>> 8;
+    out[op++] = (~len) & 255; out[op++] = ((~len) >>> 8) & 255;
+    for (var i = 0; i < len; i++) out[op++] = datos[ini + i];
+  }
+  return out;
+}
+
+/**
+ * Comprime datos como flujo zlib. Usa Utilities.gzip y le quita la cabecera y el cierre de gzip
+ * (RFC 1952). Se comprueba descomprimiéndolo de vuelta con el inflate propio; si no coincide
+ * (o algo falla), cae a la compresión almacenada. Devuelve { zlib: Uint8Array, modo: 'deflate'|'almacenado' }.
+ */
+function _imgApiZlib_(datos) {
+  var crudo = null;
+  try {
+    var gz = _imgApiAU8_(Utilities.gzip(Utilities.newBlob(_imgApiAConSigno_(datos), 'application/octet-stream', 'x')).getBytes());
+    if (gz.length > 18 && gz[0] === 0x1f && gz[1] === 0x8b && gz[2] === 8) {
+      var flg = gz[3], p = 10;
+      if (flg & 4) p += 2 + (gz[p] | (gz[p + 1] << 8));
+      if (flg & 8) { while (gz[p] !== 0) p++; p++; }
+      if (flg & 16) { while (gz[p] !== 0) p++; p++; }
+      if (flg & 2) p += 2;
+      var candidato = gz.subarray(p, gz.length - 8);
+      var vuelta = _imgApiInflate_(candidato, 0, datos.length);
+      var igual = true;
+      for (var i = 0; i < datos.length; i++) { if (vuelta[i] !== datos[i]) { igual = false; break; } }
+      if (igual) crudo = candidato;
+    }
+  } catch (e) { crudo = null; }
+  var modo = 'deflate';
+  if (!crudo) { crudo = _imgApiDeflateAlmacenado_(datos); modo = 'almacenado'; }
+  var z = new Uint8Array(crudo.length + 6);
+  z[0] = 0x78; z[1] = 0x9c;
+  z.set(crudo, 2);
+  var ad = _imgApiAdler32_(datos), f = crudo.length + 2;
+  z[f] = (ad >>> 24) & 255; z[f + 1] = (ad >>> 16) & 255; z[f + 2] = (ad >>> 8) & 255; z[f + 3] = ad & 255;
+  return { zlib: z, modo: modo };
+}
+
+function _imgApiLeeU32_(u8, p) { return ((u8[p] << 24) | (u8[p + 1] << 16) | (u8[p + 2] << 8) | u8[p + 3]) >>> 0; }
+
+/** Escribe un trozo PNG (longitud, tipo, datos, CRC) en out desde p; devuelve la posición siguiente. */
+function _imgApiTrozoPng_(out, p, tipo, datos) {
+  var n = datos.length;
+  out[p] = (n >>> 24) & 255; out[p + 1] = (n >>> 16) & 255; out[p + 2] = (n >>> 8) & 255; out[p + 3] = n & 255;
+  for (var i = 0; i < 4; i++) out[p + 4 + i] = tipo.charCodeAt(i);
+  out.set(datos, p + 8);
+  var crc = _imgApiCrc32_(out, p + 4, p + 8 + n);
+  var q = p + 8 + n;
+  out[q] = (crc >>> 24) & 255; out[q + 1] = (crc >>> 16) & 255; out[q + 2] = (crc >>> 8) & 255; out[q + 3] = crc & 255;
+  return q + 4;
+}
+
+/**
+ * Quita los filtros de PNG de las filas de crudo (cada fila: 1 byte de filtro + ancho*4 bytes).
+ * Devuelve los píxeles RGBA (alto filas de ancho*4 bytes) o null si algún filtro es inválido.
+ * Un bucle por tipo de filtro: así es mucho más rápido que decidir byte a byte.
+ */
+function _imgApiQuitarFiltros_(crudo, ancho, alto) {
+  var bpp = 4, fila = ancho * bpp, pix = new Uint8Array(alto * fila);
+  for (var y = 0; y < alto; y++) {
+    var o = y * (fila + 1), ft = crudo[o]; o++;
+    var d = y * fila, dp = d - fila, i, a, b, c, pp, pa, pb, pc;
+    if (ft > 4) return null;
+    if (ft === 0) {
+      for (i = 0; i < fila; i++) pix[d + i] = crudo[o + i];
+    } else if (ft === 1) {
+      for (i = 0; i < bpp; i++) pix[d + i] = crudo[o + i];
+      for (; i < fila; i++) pix[d + i] = (crudo[o + i] + pix[d + i - bpp]) & 255;
+    } else if (ft === 2) {
+      if (y === 0) { for (i = 0; i < fila; i++) pix[d + i] = crudo[o + i]; }
+      else { for (i = 0; i < fila; i++) pix[d + i] = (crudo[o + i] + pix[dp + i]) & 255; }
+    } else if (ft === 3) {
+      for (i = 0; i < fila; i++) {
+        a = i >= bpp ? pix[d + i - bpp] : 0;
+        b = y > 0 ? pix[dp + i] : 0;
+        pix[d + i] = (crudo[o + i] + ((a + b) >> 1)) & 255;
+      }
+    } else {
+      for (i = 0; i < fila; i++) {
+        a = i >= bpp ? pix[d + i - bpp] : 0;
+        b = y > 0 ? pix[dp + i] : 0;
+        c = (y > 0 && i >= bpp) ? pix[dp + i - bpp] : 0;
+        pp = a + b - c; pa = pp > a ? pp - a : a - pp; pb = pp > b ? pp - b : b - pp; pc = pp > c ? pp - c : c - pp;
+        pix[d + i] = (crudo[o + i] + ((pa <= pb && pa <= pc) ? a : (pb <= pc ? b : c))) & 255;
+      }
+    }
+  }
+  return pix;
+}
+
+/** Rectángulo mínimo [x0, y0, x1, y1] (incluyente) de los píxeles con alfa >= IMGAPI_ALFA_MIN_; x1 = -1 si no hay ninguno. */
+function _imgApiRectanguloVisible_(pix, ancho, alto) {
+  var x0 = ancho, y0 = alto, x1 = -1, y1 = -1, fila = ancho * 4, amin = IMGAPI_ALFA_MIN_;
+  for (var y = 0; y < alto; y++) {
+    var base = y * fila + 3;
+    for (var x = 0; x < ancho; x++) {
+      if (pix[base + x * 4] >= amin) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        y1 = y;
+      }
+    }
+  }
+  return [x0, y0, x1, y1];
+}
+
+/**
+ * Filtra una fila del recorte con el filtro t (0..4) y la deja en dst. La fila empieza en pix[bo]
+ * y mide n bytes; la anterior, si hay, empieza en pix[bo - fila] (las filas del recorte son
+ * contiguas en pix, con paso fila).
+ */
+function _imgApiFiltrarFila_(t, pix, bo, hayPrevia, fila, n, dst) {
+  var bpp = 4, k, a, b, c, p, pa, pb, pc, bp = bo - fila;
+  if (t === 0) {
+    for (k = 0; k < n; k++) dst[k] = pix[bo + k];
+  } else if (t === 1) {
+    for (k = 0; k < bpp; k++) dst[k] = pix[bo + k];
+    for (; k < n; k++) dst[k] = (pix[bo + k] - pix[bo + k - bpp]) & 255;
+  } else if (t === 2) {
+    if (!hayPrevia) { for (k = 0; k < n; k++) dst[k] = pix[bo + k]; }
+    else { for (k = 0; k < n; k++) dst[k] = (pix[bo + k] - pix[bp + k]) & 255; }
+  } else if (t === 3) {
+    for (k = 0; k < n; k++) {
+      a = k >= bpp ? pix[bo + k - bpp] : 0;
+      b = hayPrevia ? pix[bp + k] : 0;
+      dst[k] = (pix[bo + k] - ((a + b) >> 1)) & 255;
+    }
+  } else {
+    for (k = 0; k < n; k++) {
+      a = k >= bpp ? pix[bo + k - bpp] : 0;
+      b = hayPrevia ? pix[bp + k] : 0;
+      c = (hayPrevia && k >= bpp) ? pix[bp + k - bpp] : 0;
+      p = a + b - c; pa = p > a ? p - a : a - p; pb = p > b ? p - b : b - p; pc = p > c ? p - c : c - p;
+      dst[k] = (pix[bo + k] - ((pa <= pb && pa <= pc) ? a : (pb <= pc ? b : c))) & 255;
+    }
+  }
+}
+
+/** Vuelve a filtrar el recorte (x0, y0, w2, h2) de pix; por fila elige el filtro de menor suma de valores absolutos. */
+function _imgApiFiltrarRecorte_(pix, ancho, x0, y0, w2, h2) {
+  var fila = ancho * 4, n = w2 * 4;
+  var salida = new Uint8Array(h2 * (n + 1));
+  var cand = [new Uint8Array(n), new Uint8Array(n), new Uint8Array(n), new Uint8Array(n), new Uint8Array(n)];
+  for (var r = 0; r < h2; r++) {
+    var bo = (y0 + r) * fila + x0 * 4, mejor = 0, mejorSuma = -1;
+    for (var t = 0; t < 5; t++) {
+      var dst = cand[t];
+      _imgApiFiltrarFila_(t, pix, bo, r > 0, fila, n, dst);
+      var suma = 0;
+      for (var k = 0; k < n; k++) { var v = dst[k]; suma += v < 128 ? v : 256 - v; }
+      if (mejorSuma < 0 || suma < mejorSuma) { mejorSuma = suma; mejor = t; }
+    }
+    var so = r * (n + 1);
+    salida[so] = mejor;
+    salida.set(cand[mejor], so + 1);
+  }
+  return salida;
+}
+
+/**
+ * Recorta el margen transparente de un PNG RGBA de 8 bits.
+ * bytes: contenido con signo, tal como lo da UrlFetchApp. Devuelve:
+ *   { ok: true,  bytes: <con signo>, recortado: true|false, ancho, alto, anchoOrig, altoOrig, modo }
+ *   { ok: false, esPng: true|false, motivo: '...' }
+ * Sin recortar (recortado:false) devuelve los mismos bytes: ya no tenía margen.
+ */
+function _imgApiRecortarPng_(bytes) {
+  var src;
+  try { src = _imgApiAU8_(bytes); } catch (e0) { return { ok: false, esPng: false, motivo: 'no se pudo leer el contenido' }; }
+  var firma = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+  if (src.length < 33) return { ok: false, esPng: false, motivo: 'archivo demasiado corto' };
+  for (var f = 0; f < 8; f++) if (src[f] !== firma[f]) return { ok: false, esPng: false, motivo: 'no tiene la firma de un PNG' };
+  try {
+    var p = 8, ancho = 0, alto = 0, idats = [], totalIdat = 0, visto = false;
+    while (p + 12 <= src.length) {
+      var n = _imgApiLeeU32_(src, p);
+      var tipo = String.fromCharCode(src[p + 4], src[p + 5], src[p + 6], src[p + 7]);
+      if (p + 12 + n > src.length) return { ok: false, esPng: true, motivo: 'PNG truncado' };
+      if (tipo === 'IHDR') {
+        if (n !== 13) return { ok: false, esPng: true, motivo: 'IHDR inválido' };
+        ancho = _imgApiLeeU32_(src, p + 8); alto = _imgApiLeeU32_(src, p + 12);
+        var prof = src[p + 16], color = src[p + 17], compr = src[p + 18], filtro = src[p + 19], entrel = src[p + 20];
+        if (prof !== 8 || color !== 6 || compr !== 0 || filtro !== 0 || entrel !== 0) {
+          return { ok: false, esPng: true, motivo: 'no es PNG RGBA de 8 bits sin entrelazado (profundidad ' + prof + ', color ' + color + ', entrelazado ' + entrel + ')' };
+        }
+        visto = true;
+      } else if (tipo === 'IDAT') {
+        idats.push(src.subarray(p + 8, p + 8 + n)); totalIdat += n;
+      } else if (tipo === 'IEND') {
+        break;
+      }
+      p += 12 + n;
+    }
+    if (!visto || !idats.length) return { ok: false, esPng: true, motivo: 'faltan IHDR o IDAT' };
+    if (ancho < 1 || alto < 1 || ancho > 4096 || alto > 4096) return { ok: false, esPng: true, motivo: 'tamaño fuera de lo esperado (' + ancho + 'x' + alto + ')' };
+
+    var comp = new Uint8Array(totalIdat), q = 0;
+    idats.forEach(function(t) { comp.set(t, q); q += t.length; });
+    if ((comp[0] & 15) !== 8 || ((comp[0] << 8) | comp[1]) % 31 !== 0 || (comp[1] & 32)) return { ok: false, esPng: true, motivo: 'cabecera zlib inválida' };
+
+    var crudo = _imgApiInflate_(comp, 2, alto * (ancho * 4 + 1));
+
+    var pix = _imgApiQuitarFiltros_(crudo, ancho, alto);
+    if (!pix) return { ok: false, esPng: true, motivo: 'filtro de fila inválido' };
+
+    var rect = _imgApiRectanguloVisible_(pix, ancho, alto);
+    var x0 = rect[0], y0 = rect[1], x1 = rect[2], y1 = rect[3];
+    if (x1 < 0) return { ok: false, esPng: true, motivo: 'no tiene ningún píxel visible (alfa >= ' + IMGAPI_ALFA_MIN_ + ')' };
+    if (x0 === 0 && y0 === 0 && x1 === ancho - 1 && y1 === alto - 1) {
+      return { ok: true, bytes: bytes, recortado: false, ancho: ancho, alto: alto, anchoOrig: ancho, altoOrig: alto, modo: 'sin cambios' };
+    }
+
+    var w2 = x1 - x0 + 1, h2 = y1 - y0 + 1;
+    var salida = _imgApiFiltrarRecorte_(pix, ancho, x0, y0, w2, h2);
+
+    var z = _imgApiZlib_(salida);
+    var ihdr = new Uint8Array(13);
+    ihdr[0] = (w2 >>> 24) & 255; ihdr[1] = (w2 >>> 16) & 255; ihdr[2] = (w2 >>> 8) & 255; ihdr[3] = w2 & 255;
+    ihdr[4] = (h2 >>> 24) & 255; ihdr[5] = (h2 >>> 16) & 255; ihdr[6] = (h2 >>> 8) & 255; ihdr[7] = h2 & 255;
+    ihdr[8] = 8; ihdr[9] = 6; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
+    var png = new Uint8Array(8 + (12 + 13) + (12 + z.zlib.length) + 12);
+    png.set(firma, 0);
+    var pos = 8;
+    pos = _imgApiTrozoPng_(png, pos, 'IHDR', ihdr);
+    pos = _imgApiTrozoPng_(png, pos, 'IDAT', z.zlib);
+    _imgApiTrozoPng_(png, pos, 'IEND', new Uint8Array(0));
+    return { ok: true, bytes: _imgApiAConSigno_(png), recortado: true, ancho: w2, alto: h2, anchoOrig: ancho, altoOrig: alto, modo: z.modo };
+  } catch (e) {
+    return { ok: false, esPng: true, motivo: 'error al recortar: ' + e };
+  }
 }
 
 // -----------------------------------------------------------------------------
