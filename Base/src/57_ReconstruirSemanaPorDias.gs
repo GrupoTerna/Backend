@@ -26,10 +26,18 @@
  *  - Se corrigen las filas existentes que no coinciden y se CREAN las que faltan (Origen 'Reconstruido - Solución ...').
  *  - Si ningún reparto cumple los registros y el total, no se escribe y la serie queda en el informe y en Revision_Guerra.csv.
  * Reutiliza de 55_Reparar_DiasConExceso.gs la agrupación, la creación de filas, la aplicación del plan y la verificación.
+ *
+ * Pasadas (21-oct-2026, Contexto_Base_Web.md §PF139, tanda 5): en Apps Script no alcanza el tiempo para todas las series en una corrida. Se recorre por
+ * semanas; al pasar RS_MS_LIMITE se corta al empezar otra semana y el avance queda en la propiedad RS_CURSOR_INFORME o RS_CURSOR_APLICAR. Se vuelve a
+ * correr la misma función hasta que el log diga TERMINADO. Lo leído de los JSON queda 6 horas en Cache_TotalesSemana_Objetivos.csv.
+ * totalesSemanaPorDiasReiniciar() borra el avance y esa caché.
  */
 
 var RS_MAX_FILAS = 2500;     // tope de filas a modificar + crear en una escritura (si se pasa, no se escribe nada)
-var RS_MS_LIMITE = 270000;   // tiempo máximo de planificación (ms); lo que falte se deja para otra corrida
+var RS_MS_LIMITE = 240000;   // tiempo máximo desde que empieza la corrida (ms) para EMPEZAR otra semana; lo que falte se hace en la corrida siguiente (queda margen para escribir y verificar)
+var RS_CACHE_ARCHIVO = 'Cache_TotalesSemana_Objetivos.csv';   // totales cerrados leidos de los JSON de RoyaleAPI (se reutilizan para no releer 231 archivos en cada corrida)
+var RS_CACHE_MS = 6 * 3600 * 1000;   // vigencia de ese archivo (6 horas)
+var RS_CURSOR_PROP = 'RS_CURSOR_';   // propiedad del script: ultima semana ya recorrida (sufijo INFORME o APLICAR)
 
 var RS_NIVELES = [
   { nombre: 'estricto con AtaquesHoy y CurrentRiverRace', estricto: true, hoy: true, crr: true },
@@ -224,10 +232,21 @@ function _rsPlanificar(filas, objetivos, opciones) {
     if (!porSemana[ks]) porSemana[ks] = [];
     porSemana[ks].push(g);
   });
-  var plan = { casos: [], omitidos: [], series: [] };
+  var plan = { casos: [], omitidos: [], series: [], semanas: [], pendientes: 0, semanasPendientes: 0, cursor: null, terminado: true };
   var t0 = opciones.t0 || Date.now();
+  var desde = Number(opciones.desde) || 0, semActual = null, parado = false, pendSet = {};
 
   objetivos.forEach(function (ob) {
+    // Se recorre por semanas (ya vienen ordenadas): la lectura de CurrentRiverRace de cada semana se hace una sola vez. Si se acaba el tiempo
+    // se corta SOLO al empezar otra semana y se guarda hasta donde se llego; la siguiente corrida sigue desde ahi.
+    var ks = _rsClaveSem_(ob.temporada, ob.semana);
+    if (ks <= desde) return;
+    if (parado) { plan.pendientes++; pendSet[ks] = true; return; }
+    if (ks !== semActual) {
+      if (semActual !== null && Date.now() - t0 > RS_MS_LIMITE) { parado = true; plan.pendientes++; pendSet[ks] = true; return; }
+      semActual = ks;
+      plan.semanas.push('T' + ob.temporada + ' S' + ob.semana);
+    }
     var clave = tot_clave_(ob.tag, ob.temporada, ob.semana, ob.clan);
     var g = porClave[clave] || { temporada: String(ob.temporada), semana: String(ob.semana), tag: ob.tag, clan: ob.clan, nombre: ob.nombre || '', dias: {} };
     var patron = Object.keys(g.dias).map(Number).sort(function (a, b) { return a - b; }).map(function (o) { return EXC_DIAS_LETRAS.charAt(o); }).join('');
@@ -239,7 +258,6 @@ function _rsPlanificar(filas, objetivos, opciones) {
       plan.omitidos.push({ grupo: g, clase: 'omitida', motivo: motivo, alarma: !!alarma });
     };
     if (ob.omitir) { omitir(ob.omitir, false); return; }
-    if (Date.now() - t0 > RS_MS_LIMITE) { omitir('tiempo agotado: volver a correr para el resto', false); return; }
     if (tot.a > 16 || tot.a < 0) { omitir('total de ataques fuera de 0 a 16 (' + tot.a + ')', true); return; }
 
     var crr = opciones.usarCrr === false ? null : _rsCrrRestricciones(ob.temporada, ob.semana, ob.tag, tot);
@@ -292,7 +310,36 @@ function _rsPlanificar(filas, objetivos, opciones) {
     serie.accion = 'Escribir';
     plan.casos.push({ grupo: g, clase: serie.clase, estimado: estimado, ops: ops, finalAntes: { a: tot.a, b: tot.b, f: tot.f } });
   });
+  plan.cursor = semActual;
+  plan.terminado = !parado;
+  plan.semanasPendientes = Object.keys(pendSet).length;
   return plan;
+}
+
+/** Clave numerica para ordenar y comparar semanas: temporada * 1000 + semana. */
+function _rsClaveSem_(temporada, semana) { return Number(temporada) * 1000 + Number(semana); }
+
+/** Ultima semana ya recorrida (0 = empezar desde el principio). tipo: 'INFORME' o 'APLICAR'. */
+function _rsCursorLeer_(tipo) {
+  try { return Number(PropertiesService.getScriptProperties().getProperty(RS_CURSOR_PROP + tipo)) || 0; }
+  catch (e) { return 0; }
+}
+
+/** Guarda hasta que semana se llego; con terminado = true (o sin semana) borra el avance y la proxima corrida empieza de nuevo. */
+function _rsCursorGuardar_(tipo, plan) {
+  try {
+    var p = PropertiesService.getScriptProperties();
+    if (plan.terminado || plan.cursor === null) p.deleteProperty(RS_CURSOR_PROP + tipo);
+    else p.setProperty(RS_CURSOR_PROP + tipo, String(plan.cursor));
+  } catch (e) { Logger.log('[Semana por dias] No se pudo guardar el avance: ' + e.message); }
+}
+
+/** Borra el avance de las dos funciones y el archivo de totales leidos de los JSON: la proxima corrida empieza desde cero y relee los JSON. */
+function totalesSemanaPorDiasReiniciar() {
+  var p = PropertiesService.getScriptProperties();
+  p.deleteProperty(RS_CURSOR_PROP + 'INFORME'); p.deleteProperty(RS_CURSOR_PROP + 'APLICAR');
+  try { if (_csvBuscarArchivo_(RS_CACHE_ARCHIVO)) _saveCSVToDrive(RS_CACHE_ARCHIVO, 'Creado\n'); } catch (e) { Logger.log('[Semana por dias] No se pudo vaciar ' + RS_CACHE_ARCHIVO + ': ' + e.message); }
+  Logger.log('[Semana por dias] Avance borrado. La proxima corrida empieza desde la primera semana y vuelve a leer los JSON de RoyaleAPI.');
 }
 
 /** Claves (tag|temporada|semana|clan) de las series que tienen filas en la hoja Guerra (temporada vigente): esas no se tocan aqui. */
@@ -317,6 +364,23 @@ function _rsClavesHoja() {
  * Devuelve null si se agotó el tiempo leyendo los JSON (no se escribe nada).
  */
 function _rsObjetivos(filas, claveHoja) {
+  var objetivos = _rsObjetivosDeCache_();
+  if (!objetivos) {
+    objetivos = _rsObjetivosDeJson_(filas);
+    if (!objetivos) return null;
+    _rsObjetivosGuardarCache_(objetivos);
+  }
+  objetivos.forEach(function (ob) {
+    if (!ob.omitir && claveHoja && claveHoja[ob.clave]) ob.omitir = 'SERIE_EN_LA_HOJA_GUERRA (no se toca)';
+  });
+  objetivos.sort(function (a, b) {
+    return (_rsClaveSem_(a.temporada, a.semana) - _rsClaveSem_(b.temporada, b.semana)) || (a.clan < b.clan ? -1 : (a.clan > b.clan ? 1 : 0)) || (a.tag < b.tag ? -1 : (a.tag > b.tag ? 1 : 0));
+  });
+  return objetivos;
+}
+
+/** Lee los JSON de RoyaleAPI de Drive (lento: unos 160 s). Devuelve null si se agoto el tiempo. No aplica lo de la hoja Guerra (eso se hace despues, siempre al dia). */
+function _rsObjetivosDeJson_(filas) {
   var tagsSet = {};
   filas.forEach(function (f) {
     if (String(f[GC.ETAPA - 1] || '').trim() !== 'Guerra') return;
@@ -336,10 +400,47 @@ function _rsObjetivos(filas, claveHoja) {
     else if (js.estado !== 'ok') return;
     else if (!js.cerrado) ob.omitir = 'JSON_SIN_CERRAR';
     else if (js.barcos === null) ob.omitir = 'JSON_SIN_TOTAL_DE_BARCOS';
-    else if (claveHoja && claveHoja[ob.clave]) ob.omitir = 'SERIE_EN_LA_HOJA_GUERRA (no se toca)';
     objetivos.push(ob);
   });
   return objetivos;
+}
+
+/** Totales leidos de los JSON, guardados en Drive (un CSV). Sirve 6 horas: las corridas siguientes ya no releen los 231 archivos. */
+function _rsObjetivosGuardarCache_(objetivos) {
+  try {
+    var ahora = String(Date.now());
+    var filas = [['Creado', 'Temporada', 'Semana', 'Tag', 'Clan', 'Ataques', 'Fame', 'Barcos', 'Omitir']];
+    objetivos.forEach(function (ob) {
+      filas.push([ahora, ob.temporada, ob.semana, ob.tag, ob.clan,
+        ob.jsonAtaques === null || ob.jsonAtaques === undefined ? '' : ob.jsonAtaques,
+        ob.jsonFame === null || ob.jsonFame === undefined ? '' : ob.jsonFame,
+        ob.jsonBarcos === null || ob.jsonBarcos === undefined ? '' : ob.jsonBarcos, ob.omitir]);
+    });
+    _saveCSVToDrive(RS_CACHE_ARCHIVO, _encodeCSV(filas));
+  } catch (e) { Logger.log('[Semana por dias] No se pudo guardar ' + RS_CACHE_ARCHIVO + ': ' + e.message); }
+}
+
+/** Devuelve los objetivos guardados si tienen menos de 6 horas; si no, null (hay que leer los JSON). */
+function _rsObjetivosDeCache_() {
+  try {
+    var txt = _loadCSVFromDrive(RS_CACHE_ARCHIVO);
+    if (!txt) return null;
+    var rows = _parseCSV(txt);
+    if (!rows || rows.length < 2) return null;
+    var creado = Number(rows[1][0]);
+    if (!(creado > 0) || Date.now() - creado > RS_CACHE_MS) return null;
+    var num = function (v) { return (v === '' || v === undefined || v === null) ? null : Number(v); };
+    var out = [];
+    for (var i = 1; i < rows.length; i++) {
+      var r = rows[i];
+      var ob = { temporada: Number(r[1]), semana: Number(r[2]), tag: String(r[3]), nombre: '', clan: String(r[4]),
+        jsonAtaques: num(r[5]), jsonFame: num(r[6]), jsonBarcos: num(r[7]), omitir: String(r[8] || '') };
+      ob.clave = tot_clave_(ob.tag, ob.temporada, ob.semana, ob.clan);
+      out.push(ob);
+    }
+    Logger.log('[Semana por dias] Totales de los JSON tomados de ' + RS_CACHE_ARCHIVO + ' (' + out.length + ' series, de hace ' + Math.round((Date.now() - creado) / 60000) + ' min).');
+    return out;
+  } catch (e) { Logger.log('[Semana por dias] No se pudo leer ' + RS_CACHE_ARCHIVO + ': ' + e.message); return null; }
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -362,7 +463,8 @@ function _totSemanaPorDias_(aplicar) {
 
     var objetivos = _rsObjetivos(filas, _rsClavesHoja());
     if (!objetivos) { Logger.log('[Semana por dias] ABORT: se agoto el tiempo leyendo los JSON de RoyaleAPI. No se escribio nada.'); return; }
-    var plan = _rsPlanificar(filas, objetivos, { usarCrr: true, t0: t0 });
+    var tipoCursor = aplicar ? 'APLICAR' : 'INFORME';
+    var plan = _rsPlanificar(filas, objetivos, { usarCrr: true, t0: t0, desde: _rsCursorLeer_(tipoCursor) });
     var idxDe = new Map();
     for (var q = 0; q < filas.length; q++) idxDe.set(filas[q], q);
     plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.existe) op.idxAntes = idxDe.get(op.fila); }); });
@@ -399,8 +501,9 @@ function _totSemanaPorDias_(aplicar) {
     var nomDetalle = 'AplicarTotalesSemana_Historial ' + marca + ' (' + (aplicar ? 'aplicado' : 'plan') + ').csv';
     if (detalle.length > 1) { _saveCSVToDrive(nomDetalle, _encodeCSV(detalle)); nombresCsv.push(nomDetalle); }
 
-    var verificacion = '', revisionTxt = '';
+    var verificacion = '', revisionTxt = '', avanzar = true;
     if (aplicar && (nCrear + nModificar) > RS_MAX_FILAS) {
+      avanzar = false;
       verificacion = 'NO SE ESCRIBIO NADA: ' + (nCrear + nModificar) + ' fila(s) a modificar o crear pasan el tope de ' + RS_MAX_FILAS + '. Revisar el CSV del plan (corre primero el informe).';
     } else if (aplicar && plan.casos.length > 0) {
       _saveCSVToDrive('Backup_Guerra ANTES de aplicar TotalesSemanaDesdeHistorial ' + marca + '.csv', csvText);
@@ -416,6 +519,7 @@ function _totSemanaPorDias_(aplicar) {
         for (var b = 0; b < filasDespues.length; b++) { while (filasDespues[b].length < GUERRA_TOTAL_COLS) filasDespues[b].push(''); }
         problemas = _excDiasVerificar(copiaAntes, filasDespues, plan, res.creadas);
       }
+      if (problemas.length) avanzar = false;
       verificacion = problemas.length
         ? 'VERIFICACION FALLO (' + problemas.length + '): ' + problemas.slice(0, 5).join('; ') + '. Restaurar con el respaldo "Backup_Guerra ANTES de aplicar TotalesSemanaDesdeHistorial ' + marca + '.csv".'
         : 'Verificacion OK (' + res.modificadas + ' fila(s) modificadas, ' + res.creadas + ' creadas).';
@@ -427,7 +531,17 @@ function _totSemanaPorDias_(aplicar) {
       });
       if (entradas.length) { var rr = _registrarRevisionGuerra_(entradas); revisionTxt = 'Revision_Guerra.csv: ' + rr.nuevas + ' nuevas, ' + rr.actualizadas + ' actualizadas. '; }
     }
-    Logger.log('[Semana por dias] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Backup_Guerra.csv: ' + filas.length + ' filas. ' +
+    var avance = '';
+    if (avanzar) {
+      _rsCursorGuardar_(tipoCursor, plan);
+      avance = plan.semanas.length ? 'Semanas de esta pasada: ' + plan.semanas[0] + ' a ' + plan.semanas[plan.semanas.length - 1] + ' (' + plan.semanas.length + '). ' : 'No habia semanas por recorrer. ';
+      avance += plan.terminado
+        ? 'TERMINADO: ya se recorrieron todas las semanas; la proxima corrida empieza otra vez desde el principio. '
+        : 'FALTAN ' + plan.pendientes + ' serie(s) en ' + plan.semanasPendientes + ' semana(s): vuelve a correr la misma funcion para seguir. ';
+    } else {
+      avance = 'El avance NO se guardo: al volver a correr se repite esta misma tanda de semanas. ';
+    }
+    Logger.log('[Semana por dias] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Backup_Guerra.csv: ' + filas.length + ' filas. ' + avance +
       'Series del informe: ' + plan.series.length + ' (' + resumenSeries + '). Filas a modificar: ' + nModificar + ', a crear: ' + nCrear + '. ' + revisionTxt +
       (verificacion ? verificacion + ' ' : '') + (nombresCsv.length ? 'Detalle en Drive: ' + nombresCsv.join(' y ') + '.' : 'Nada que escribir.') +
       (aplicar ? '' : ' (No se escribio nada en el Backup ni en Guerra.)'));
