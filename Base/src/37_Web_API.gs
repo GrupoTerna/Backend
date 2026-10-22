@@ -1552,7 +1552,6 @@ function _webPerfilJugador(tagBuscado, opciones) {
           // 21-oct-2026 (pedido usuaria, caso Chistris #2GG8PJ8GC): PeriodIndex de la fila. perfil.html (_historialDiasGuerra(), _periodIndexRegistro()) ya lo leía pero el backend no lo mandaba; sin él ubica cada día por la fecha, y la captura del jueves tomada de madrugada del viernes (fecha 04/09, PeriodIndex 31) pisaba a la del viernes (04/09, PeriodIndex 32): la gráfica mostraba 8 ataques en vez de 4 y 4. null si la celda está vacía. [→ Contexto_Base_Web.md §PF159]
           periodIndex: pIdxHist,
           ataques: Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0,
-          ataquesHoy: (dataGuerra[i][GC.ATAQUES_HOY - 1] === '' || dataGuerra[i][GC.ATAQUES_HOY - 1] == null || !isFinite(Number(dataGuerra[i][GC.ATAQUES_HOY - 1]))) ? null : Number(dataGuerra[i][GC.ATAQUES_HOY - 1]), // 21-oct-2026: ataques de ESE día (columna AtaquesHoy); null si la celda está vacía. perfil.html solo lo usa cuando el valor calculado restando el acumulado es imposible (más de 4 en un día). [→ Contexto_Base_Web.md §PF159]
           puntaje: Number(dataGuerra[i][GC.FAME - 1]) || 0,
           barcos:  Number(dataGuerra[i][GC.BARCOS - 1]) || 0,
           copas:   Number(dataGuerra[i][GC.COPAS  - 1]) || 0, // 12-oct-2026: copas de ese día (0 = sin dato, filas anteriores a la columna). [→ Contexto_Base_Web.md §PF061]
