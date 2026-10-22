@@ -1191,7 +1191,7 @@ var _CSV_SUBCARPETAS_MEM_ = {};
 function _csvSubcarpetaDe_(filename) {
   var n = String(filename || '');
   // Informes: respaldos previos a reparar, reparaciones, limpiezas, revisiones y diagnósticos.
-  if (/^Backup_Guerra ANTES de reparar/.test(n) || /^Reparacion_/.test(n) || /^Limpieza_Coliseo_/.test(n) ||
+  if (/^Backup_Guerra ANTES de /.test(n) || /^Reparacion_/.test(n) || /^Limpieza_Coliseo_/.test(n) ||
       /^Revision_Guerra/.test(n) || /^Diagnostico_/.test(n) || /^HistorialGuerra_Grupal/.test(n) ||
       /^Correccion_Fecha_/.test(n) || /^Completar_DomingoDesdeJsonRoyaleApi /.test(n) ||
       /^Reparar_SemanaDesdeJsonRoyaleApi /.test(n)) return 'Informes';
@@ -1216,7 +1216,27 @@ function _csvSubcarpetaDe_(filename) {
     'Backup_Control.csv', 'Backup_Control_2.csv', 'Backup_T_Control.csv', 'Backup_Calendario.csv', 'Backup_Links.csv',
     'Backup_Multicuentas.csv'];
   if (hojas.indexOf(n) >= 0) return 'Hojas';
+  // Regla general (21-oct-2026, Contexto_Base_Web.md §PF139 tanda 5): todo informe, plan, aplicado, detalle, resumen o respaldo previo lleva fecha y hora
+  // en el nombre (aaaa-mm-dd hh.mm.ss) o termina en (informe), (plan), (aplicado), (detalle) o (resumen): va a Informes aunque su prefijo no esté en la lista de arriba.
+  // Así un informe nuevo ya no cae en la raíz de CSV por olvido. Ningún Backup_*.csv de hoja lleva fecha en el nombre.
+  if (/ \d{4}-\d{2}-\d{2} \d{2}\.\d{2}\.\d{2}/.test(n) || /\((informe|plan|aplicado|detalle|resumen)\)\.csv$/.test(n)) return 'Informes';
+  if (/^(Cotejo_|Cruce_|Informe_|Anomalias_|AplicarTotalesSemana_)/.test(n) || n === 'Cache_TotalesSemana_Objetivos.csv') return 'Informes';
   return ''; // sin asignar: raíz de CSV (hoy ninguno de los que usa el código)
+}
+
+/**
+ * Mueve a CSV/Informes los informes que ya quedaron sueltos en la raíz de la carpeta CSV (los creados antes de esta corrección no se mueven solos).
+ * Solo mueve archivos cuya subcarpeta asignada por _csvSubcarpetaDe_() sea Informes; no toca nada más ni borra nada. Se puede correr las veces que haga falta.
+ */
+function moverInformesSueltosASubcarpeta() {
+  var raiz = _getCsvFolder(), destino = _getCsvSubcarpeta_('Informes', true), it = raiz.getFiles(), movidos = 0, errores = 0;
+  while (it.hasNext()) {
+    var f = it.next(), nombre = f.getName();
+    if (_csvSubcarpetaDe_(nombre) !== 'Informes') continue;
+    try { f.moveTo(destino); movidos++; }
+    catch (e) { errores++; Logger.log('[Informes] No se pudo mover ' + nombre + ': ' + e.message); }
+  }
+  Logger.log('[Informes] Movidos a CSV/Informes: ' + movidos + (errores ? ' (con ' + errores + ' error(es), ver arriba)' : '') + '. Lo que no es informe no se toco.');
 }
 
 function _getCsvSubcarpeta_(nombre, crear) {
