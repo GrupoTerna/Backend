@@ -1,0 +1,81 @@
+Temporada,Semana,Tag,Nombre,Clan,Clase,Dia,PeriodIndex,Accion,AtaquesHoy anterior,AtaquesHoy nuevo,AtaquesSemana anterior (acumulado),AtaquesSemana nueva (acumulado),Fame del dia anterior,Fame del dia nueva,Fame anterior (acumulado),Fame nueva (acumulado),Barcos del dia anterior,Barcos del dia nuevo,Barcos anterior (acumulado),Barcos nuevo (acumulado),Origen anterior,Origen nuevo,Solucion
+3,2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,GrupoXTerna™2,unica,J,10,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,unica
+3,2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,GrupoXTerna™2,unica,V,11,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,unica
+3,2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,GrupoXTerna™2,unica,S,12,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,unica
+3,2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+3,3,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,unica,J,17,Sin cambio,4,4,4,4,600,600,600,600,0,0,0,0,,,unica
+3,3,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,unica,V,18,Crear,,0,,4,,0,,600,,0,,0,,Reconstruido - Solución única,unica
+3,3,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,unica,S,19,Crear,,0,,4,,0,,600,,0,,0,,Reconstruido - Solución única,unica
+3,3,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,unica,D,20,Crear,,0,,4,,0,,600,,0,,0,,Reconstruido - Solución única,unica
+3,4,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,J,24,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,estimada (varias ternas validas)
+3,4,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,V,25,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,estimada (varias ternas validas)
+3,4,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,S,26,Modificar,0,4,4,4,500,500,500,500,0,0,0,0,,Corregido - Solución estimada,estimada (varias ternas validas)
+3,4,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,D,27,Modificar,4,0,4,4,0,0,500,500,0,0,0,0,,Corregido - Solución única,unica
+4,1,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,J,3,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,estimada (varias ternas validas)
+4,1,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,V,4,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,estimada (varias ternas validas)
+4,1,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,S,5,Modificar,0,4,4,4,500,500,500,500,0,0,0,0,,Corregido - Solución estimada,estimada (varias ternas validas)
+4,1,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,D,6,Modificar,4,0,4,4,0,0,500,500,0,0,0,0,,Corregido - Solución única,unica
+4,2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,J,10,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,estimada (varias ternas validas)
+4,2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,V,11,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,estimada (varias ternas validas)
+4,2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,S,12,Modificar,0,3,3,3,300,300,300,300,0,0,0,0,,Corregido - Solución estimada,estimada (varias ternas validas)
+4,2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,D,13,Modificar,3,0,3,3,0,0,300,300,0,0,0,0,,Corregido - Solución única,unica
+4,3,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,estimada (varias ternas validas)
+4,3,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,V,18,Modificar,0,3,3,3,300,300,300,300,0,0,0,0,,Corregido - Solución estimada,estimada (varias ternas validas)
+4,3,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,S,19,Modificar,0,1,4,4,100,100,400,400,0,0,0,0,,Corregido - Solución estimada,estimada (varias ternas validas)
+4,3,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,estimada,D,20,Modificar,0,0,0,4,0,0,0,400,0,0,0,0,,Corregido - Solución única,unica
+5,1,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+5,1,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,unica,V,4,Sin cambio,4,4,4,4,500,500,500,500,0,0,0,0,Original,Original,unica
+5,1,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,unica,S,5,Sin cambio,0,0,4,4,0,0,500,500,0,0,0,0,Corregido,Corregido,unica
+5,1,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,Mini乂Ternas™,unica,D,6,Sin cambio,0,0,4,4,0,0,500,500,0,0,0,0,Corregido,Corregido,unica
+3,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,J,3,Sin cambio,4,4,4,4,700,700,700,700,0,0,0,0,Corregido - Solución única,Corregido - Solución única,unica
+3,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,V,4,Sin cambio,4,4,8,8,400,400,1100,1100,0,0,0,0,Corregido - Solución única,Corregido - Solución única,unica
+3,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,S,5,Sin cambio,0,0,8,8,0,0,1100,1100,0,0,0,0,Corregido - Solución única,Corregido - Solución única,unica
+3,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,D,6,Crear,,0,,8,,0,,1100,,0,,0,,Reconstruido - Solución única,unica
+3,2,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,J,10,Sin cambio,4,4,4,4,800,800,800,800,0,0,0,0,,,unica
+3,2,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,V,11,Modificar,0,1,4,5,0,200,800,1000,0,0,0,0,,Corregido - Solución única,unica
+3,2,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,S,12,Modificar,1,0,5,5,200,0,1000,1000,0,0,0,0,,Corregido - Solución única,unica
+3,2,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,D,13,Crear,,0,,5,,0,,1000,,0,,0,,Reconstruido - Solución única,unica
+3,3,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,J,17,Sin cambio,4,4,4,4,500,500,500,500,0,0,0,0,,,unica
+3,3,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,V,18,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+3,3,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,S,19,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+3,3,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,D,20,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+4,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,J,3,Modificar,0,4,4,4,400,400,400,400,0,0,0,0,,Corregido - Solución única,unica
+4,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,V,4,Sin cambio,0,0,4,4,0,0,400,400,0,0,0,0,,,unica
+4,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,S,5,Sin cambio,0,0,4,4,0,0,400,400,0,0,0,0,,,unica
+4,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,D,6,Modificar,4,0,4,4,0,0,400,400,0,0,0,0,,Corregido - Solución única,unica
+4,5,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,estimada,J,31,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+4,5,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,estimada,V,32,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,estimada (varias ternas validas)
+4,5,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,estimada,S,33,Modificar,4,4,0,4,0,600,0,600,0,0,0,0,Corregido,Corregido - Solución estimada,estimada (varias ternas validas)
+4,5,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,estimada,D,34,Sin cambio,0,0,4,4,600,0,600,600,0,0,0,0,Original,Original,unica
+5,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+5,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,V,4,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+5,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,S,5,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+5,1,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,Mini乂Ternas™,unica,D,6,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+5,1,#209Y2UU2G8,Txz Cr1s,Grupo乂Terna™,unica,J,3,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Reconstruido,Reconstruido,unica
+5,1,#209Y2UU2G8,Txz Cr1s,Grupo乂Terna™,unica,V,4,Modificar,4,4,0,4,0,700,0,700,0,0,0,0,Reconstruido,Reconstruido - Solución única,unica
+5,1,#209Y2UU2G8,Txz Cr1s,Grupo乂Terna™,unica,S,5,Modificar,4,4,0,8,800,500,800,1200,0,0,0,0,Reconstruido,Reconstruido - Solución única,unica
+5,1,#209Y2UU2G8,Txz Cr1s,Grupo乂Terna™,unica,D,6,Sin cambio,4,4,12,12,900,500,1700,1700,0,0,0,0,Reconstruido,Reconstruido,unica
+3,1,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,J,3,Modificar,0,4,0,4,0,600,0,600,0,0,0,0,,Corregido - Solución única,unica
+3,1,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,V,4,Sin cambio,0,0,4,4,600,0,600,600,0,0,0,0,,,unica
+3,1,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,S,5,Modificar,4,0,4,4,0,0,600,600,0,0,0,0,,Corregido - Solución única,unica
+3,1,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,D,6,Crear,,0,,4,,0,,600,,0,,0,,Reconstruido - Solución única,unica
+3,2,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,J,10,Sin cambio,3,3,3,3,400,400,400,400,0,0,0,0,,,unica
+3,2,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,V,11,Sin cambio,0,0,3,3,0,0,400,400,0,0,0,0,,,unica
+3,2,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,S,12,Sin cambio,0,0,3,3,0,0,400,400,0,0,0,0,,,unica
+3,2,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,D,13,Crear,,0,,3,,0,,400,,0,,0,,Reconstruido - Solución única,unica
+3,3,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,J,17,Modificar,5,1,5,1,900,100,900,100,0,0,0,0,,Corregido - Solución estimada,estimada (varias ternas validas)
+3,3,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,V,18,Crear,,4,,5,,800,,900,,0,,0,,Reconstruido - Solución estimada,estimada (varias ternas validas)
+3,3,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,S,19,Crear,,0,,5,,0,,900,,0,,0,,Reconstruido - Solución única,unica
+3,3,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,D,20,Crear,,0,,5,,0,,900,,0,,0,,Reconstruido - Solución única,unica
+3,4,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,J,24,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,estimada (varias ternas validas)
+3,4,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,V,25,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,estimada (varias ternas validas)
+3,4,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,S,26,Modificar,0,4,4,4,500,500,500,500,0,0,0,0,,Corregido - Solución estimada,estimada (varias ternas validas)
+3,4,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,D,27,Modificar,4,0,4,4,0,0,500,500,0,0,0,0,,Corregido - Solución única,unica
+4,5,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,J,31,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+4,5,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,V,32,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,estimada (varias ternas validas)
+4,5,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,S,33,Modificar,1,1,0,1,0,200,0,200,0,0,0,0,Corregido,Corregido - Solución estimada,estimada (varias ternas validas)
+4,5,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,estimada,D,34,Sin cambio,0,0,1,1,200,0,200,200,0,0,0,0,Original,Original,unica
+5,1,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+5,1,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,V,4,Sin cambio,4,4,4,4,600,600,600,600,0,0,0,0,Original,Original,unica
+5,1,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,S,5,Sin cambio,0,0,4,4,0,0,600,600,0,0,0,0,Corregido,Corregido,unica
+5,1,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,Mini乂Ternas™,unica,D,6,Sin cambio,0,0,4,4,0,0,600,600,0,0,0,0,Corregido,Corregido,unica
