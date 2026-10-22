@@ -4601,7 +4601,7 @@ Responde el «sí» de la usuaria a §PF158 y **corrige dos puntos de lo que ah�
 3. `_repartirSemanaConjunto_` (18): fijar los ataques del día anterior con `AtaquesSemana − AtaquesHoy` cuando haya fila del día siguiente (criterio 2).
 4. `_calcularReparacionAtaquesHoy_` (17): decidir si sigue existiendo o se retira (usa la suma de `AtaquesHoy`).
 5. `57`: decidir si los niveles que ignoran la fórmula se quitan; `55`: extender `_excDiasFaltanteJueves()` a viernes, sábado y domingo faltantes.
-6. Revisar a fondo `19`, `20`, `23` y `49` contra los 8 criterios.
+6. Revisar a fondo `19`, `20`, `23` y `49` contra los 11 criterios.
 7. Validar con la tabla de fame el método sobre los 91 días del perfil (§PF159) una vez corrido el informe de `55`.
 8. **Archivo especial de anomalías de RoyaleAPI (criterio 11): no existe.** Lo más parecido: `Revision_Guerra.csv` (columnas N°, Fecha, Temporada, Semana, Tag, Nombre, Tipo, Motivo, Detalle, Estado; `_registrarRevisionGuerra_()` en `18_CorreccionGuerra.gs`), donde hoy caen mezcladas **todas** las series que el modelo no resuelve (`55` y `57`), y el informe `Anomalias_AtaquesSemana` (`48_Herramientas_Debug.gs`), que solo mira la suma de clanes mayor que 16. Falta: crear el archivo, definir cuándo se escribe (valor de RoyaleAPI sobre un tope diario o semanal, o barcos mayores que ataques) y que `57` y `_cdjProcesarSemana_` lo usen en vez de mezclarlo con el resto.
 9. Encadenar la fórmula de jueves a domingo en `55` (criterio 9) y recoger de la usuaria cuál fue el caso en que la API mandó datos sin `periodIndex` o en ceros (criterio 10), para no corregir esos casos como si fueran un error propio.
