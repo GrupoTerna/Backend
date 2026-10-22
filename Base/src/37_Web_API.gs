@@ -1519,12 +1519,24 @@ function _webPerfilJugador(tagBuscado, opciones) {
   var lecturaGuerraPerfil = _leerFilasGuerraDeTag_(ss, cleanTag(tag)); // 11-oct-2026: CSV (todas las temporadas) + hoja viva (temporada actual); antes solo la hoja
   var dataGuerra = lecturaGuerraPerfil.filas;
   if (dataGuerra.length) {
+    // 21-oct-2026 (pedido usuaria, caso Chistris #2GG8PJ8GC): una fila de un día de guerra con Ranking vacío (las del Origen «Reconstruido», p. ej. el jueves 04/06/2026) se manda también al historial cuando ese día NO tiene otra fila con Ranking > 0. Antes se descartaban todas y el día quedaba sin registro, así que el viernes heredaba los ataques acumulados del jueves y la gráfica mostraba 6. Si el día sí tiene una fila con Ranking, la vacía se sigue descartando: en el Backup (21-oct-2026), de 2 103 filas con Ranking vacío o 0, 104 son hermanas de una fila con Ranking del mismo día y dejarlas pasar haría que la reconstruida pise a la real (el frontend se queda con la última fila de cada día); las otras 1 999 son la única fila de su día y pasan a verse. Clave = Temporada + PeriodIndex (el PeriodIndex se repite entre temporadas). [→ Contexto_Base_Web.md §PF159]
+    var diasConRankingPerfil = {};
+    for (var iRk = 0; iRk < dataGuerra.length; iRk++) {
+      if (cleanTag(dataGuerra[iRk][GC.TAG - 1]) !== cleanTag(tag)) continue;
+      if (Number(dataGuerra[iRk][GC.RANKING - 1]) > 0) {
+        diasConRankingPerfil[String(dataGuerra[iRk][GC.TEMPORADA - 1]) + '|' + String(Number(dataGuerra[iRk][GC.PERIOD_IDX - 1]))] = true;
+      }
+    }
     for (var i = 0; i < dataGuerra.length; i++) {
       if (cleanTag(dataGuerra[i][GC.TAG - 1]) !== cleanTag(tag)) continue;
 
       // Ranking de ESE día puntual si la fila trae uno (0/vacío = sin dato, ej. día de entrenamiento); "semana" en formato fecha real dd/MM/yyyy como historialSemanal en otros endpoints (ver _webIngresosRecientes()), para que el orden alfabético del frontend (renderRankingChart(), perfil.html) coincida con el cronológico dentro de la temporada. [→ Contexto_Base_Web.md §37B122]
       var rankingDia = Number(dataGuerra[i][GC.RANKING - 1]) || 0;
-      if (rankingDia > 0) {
+      var pIdxCeldaHist = dataGuerra[i][GC.PERIOD_IDX - 1];
+      var pIdxHist = (pIdxCeldaHist === '' || pIdxCeldaHist == null || !isFinite(Number(pIdxCeldaHist))) ? null : Number(pIdxCeldaHist);
+      var sinRankingPeroUnicaDelDia = rankingDia <= 0 && pIdxHist !== null && esDiaGuerraIdx(pIdxHist) &&
+        !diasConRankingPerfil[String(dataGuerra[i][GC.TEMPORADA - 1]) + '|' + String(pIdxHist)]; // 21-oct-2026 [→ Contexto_Base_Web.md §PF159]
+      if (rankingDia > 0 || sinRankingPeroUnicaDelDia) {
         var fechaDia = dataGuerra[i][GC.FECHA - 1];
         var semanaTxt = (fechaDia instanceof Date && !isNaN(fechaDia.getTime()))
           ? Utilities.formatDate(fechaDia, tz, 'dd/MM/yyyy')
@@ -1536,8 +1548,11 @@ function _webPerfilJugador(tagBuscado, opciones) {
           temporada:    etiquetaDiaRK ? etiquetaDiaRK.temporada    : null,
           semanaGuerra: etiquetaDiaRK ? etiquetaDiaRK.semanaGuerra : null,
           diaGuerra:    etiquetaDiaRK ? etiquetaDiaRK.diaGuerra    : null,
-          ranking: rankingDia,
+          ranking: rankingDia > 0 ? rankingDia : null, // 21-oct-2026: null cuando la fila no tiene Ranking (la gráfica de Ranking ignora esos días). [→ Contexto_Base_Web.md §PF159]
+          // 21-oct-2026 (pedido usuaria, caso Chistris #2GG8PJ8GC): PeriodIndex de la fila. perfil.html (_historialDiasGuerra(), _periodIndexRegistro()) ya lo leía pero el backend no lo mandaba; sin él ubica cada día por la fecha, y la captura del jueves tomada de madrugada del viernes (fecha 04/09, PeriodIndex 31) pisaba a la del viernes (04/09, PeriodIndex 32): la gráfica mostraba 8 ataques en vez de 4 y 4. null si la celda está vacía. [→ Contexto_Base_Web.md §PF159]
+          periodIndex: pIdxHist,
           ataques: Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0,
+          ataquesHoy: (dataGuerra[i][GC.ATAQUES_HOY - 1] === '' || dataGuerra[i][GC.ATAQUES_HOY - 1] == null || !isFinite(Number(dataGuerra[i][GC.ATAQUES_HOY - 1]))) ? null : Number(dataGuerra[i][GC.ATAQUES_HOY - 1]), // 21-oct-2026: ataques de ESE día (columna AtaquesHoy); null si la celda está vacía. perfil.html solo lo usa cuando el valor calculado restando el acumulado es imposible (más de 4 en un día). [→ Contexto_Base_Web.md §PF159]
           puntaje: Number(dataGuerra[i][GC.FAME - 1]) || 0,
           barcos:  Number(dataGuerra[i][GC.BARCOS - 1]) || 0,
           copas:   Number(dataGuerra[i][GC.COPAS  - 1]) || 0, // 12-oct-2026: copas de ese día (0 = sin dato, filas anteriores a la columna). [→ Contexto_Base_Web.md §PF061]
