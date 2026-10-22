@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2119 nombres en 58 archivos .gs.
+Código real: `Base/src/`. Total: 2129 nombres en 58 archivos .gs.
 
 ## Por archivo
 
@@ -62,7 +62,7 @@ Código real: `Base/src/`. Total: 2119 nombres en 58 archivos .gs.
 - **54_Correccion_AtaquesSemana_Anomalias.gs** (13 funciones): _anomAtqSemNum_, _anomAtqSemTag_, _anomAtqSemClan_, _anomAtqSemCoincide_, _anomAtqSemValores_, _anomAtqSemIguales_, _anomAtqSemSumaClanes_, _anomAtqSemEvaluar_, _anomAtqSemSeriesAfectadas_, _anomAtqSemTextoSumas_, corregirAnomaliasAtaquesSemanaInforme, corregirAnomaliasAtaquesSemanaAplicar, _corregirAnomaliasAtaquesSemana_
 - **55_Reparar_DiasConExceso.gs** (29 funciones): _excDiasOpciones, _excDiasNum, _excDiasAgrupar, _excDiasSegmentos, _excDiasFaltanteJueves, _excDiasSoluciones, _excDiasEsCero, _excDiasResolver, _excDiasResumir, _excDiasClasificar, _excDiasTextoPorDia, _excDiasTextoActual, _excDiasRegistradoPorDia, _excDiasElegirSolucion, _excDiasFinalDe, _excDiasOrigenNuevo, _excDiasPlanificar, _excDiasFilaNueva, _excDiasAplicarPlan, _excDiasVerificar, repararDiasConExcesoInforme, repararDiasConExcesoAplicarUnicas, repararDiasConExcesoAplicar, _repararDiasConExceso_, informeFameCurrentRiverRace52, aplicarFameCurrentRiverRace52, _fameCrr52Planificar_, _fameCrr52_, _fameCrr52Verificar_
 - **56_CurrentRiverRace_Dias.gs** (10 funciones): _crrParsearNombre_, _crrCapturasDesdeArchivos_, _crrResolverJugador_, _crrFameDia_, _crrSubcarpeta_, _crrCapturasDeSemana_, _crrDiasDeJugador_, probarCurrentRiverRaceDias, _crrAyerParaCierre_, _crrDomingoParaTotales_
-- **57_ReconstruirSemanaPorDias.gs** (11 funciones): _rsCatalogo, _rsRegistros, _rsMapeos, _rsMenor, _rsResolverNivel, _rsResolver, _rsCrrRestricciones, _rsPlanificar, _rsClavesHoja, _rsObjetivos, _totSemanaPorDias_
+- **57_ReconstruirSemanaPorDias.gs** (18 funciones): _rsCatalogo, _rsRegistros, _rsMapeos, _rsMenor, _rsResolverNivel, _rsResolver, _rsCrrRestricciones, _rsPlanificar, _rsClaveSem_, _rsCursorLeer_, _rsCursorGuardar_, totalesSemanaPorDiasReiniciar, _rsClavesHoja, _rsObjetivos, _rsObjetivosDeJson_, _rsObjetivosGuardarCache_, _rsObjetivosDeCache_, _totSemanaPorDias_
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
@@ -1180,17 +1180,23 @@ Ninguno.
 | `_retirarActivadoresAdministrados_` | función | 08_Activadores.gs | 72 |  |
 | `_retirarDeInactivosPorReactivacion` | función | 13_Inactivos_Vetados.gs | 332 | Contexto_Base_Web.md §13B020 |
 | `_round1` | función | 26_Torneos_Core.gs | 639 | Contexto_Base_Web.md §26B050 |
-| `_rsCatalogo` | función | 57_ReconstruirSemanaPorDias.gs | 44 |  |
-| `_rsCatalogo_` | global | 57_ReconstruirSemanaPorDias.gs | 42 |  |
-| `_rsClavesHoja` | función | 57_ReconstruirSemanaPorDias.gs | 299 |  |
-| `_rsCrrRestricciones` | función | 57_ReconstruirSemanaPorDias.gs | 192 |  |
-| `_rsMapeos` | función | 57_ReconstruirSemanaPorDias.gs | 69 |  |
-| `_rsMenor` | función | 57_ReconstruirSemanaPorDias.gs | 85 |  |
-| `_rsObjetivos` | función | 57_ReconstruirSemanaPorDias.gs | 319 |  |
-| `_rsPlanificar` | función | 57_ReconstruirSemanaPorDias.gs | 217 |  |
-| `_rsRegistros` | función | 57_ReconstruirSemanaPorDias.gs | 56 |  |
-| `_rsResolver` | función | 57_ReconstruirSemanaPorDias.gs | 172 |  |
-| `_rsResolverNivel` | función | 57_ReconstruirSemanaPorDias.gs | 99 |  |
+| `_rsCatalogo` | función | 57_ReconstruirSemanaPorDias.gs | 52 |  |
+| `_rsCatalogo_` | global | 57_ReconstruirSemanaPorDias.gs | 50 |  |
+| `_rsClaveSem_` | función | 57_ReconstruirSemanaPorDias.gs | 320 |  |
+| `_rsClavesHoja` | función | 57_ReconstruirSemanaPorDias.gs | 346 |  |
+| `_rsCrrRestricciones` | función | 57_ReconstruirSemanaPorDias.gs | 200 |  |
+| `_rsCursorGuardar_` | función | 57_ReconstruirSemanaPorDias.gs | 329 |  |
+| `_rsCursorLeer_` | función | 57_ReconstruirSemanaPorDias.gs | 323 |  |
+| `_rsMapeos` | función | 57_ReconstruirSemanaPorDias.gs | 77 |  |
+| `_rsMenor` | función | 57_ReconstruirSemanaPorDias.gs | 93 |  |
+| `_rsObjetivos` | función | 57_ReconstruirSemanaPorDias.gs | 366 |  |
+| `_rsObjetivosDeCache_` | función | 57_ReconstruirSemanaPorDias.gs | 424 |  |
+| `_rsObjetivosDeJson_` | función | 57_ReconstruirSemanaPorDias.gs | 383 |  |
+| `_rsObjetivosGuardarCache_` | función | 57_ReconstruirSemanaPorDias.gs | 409 |  |
+| `_rsPlanificar` | función | 57_ReconstruirSemanaPorDias.gs | 225 |  |
+| `_rsRegistros` | función | 57_ReconstruirSemanaPorDias.gs | 64 |  |
+| `_rsResolver` | función | 57_ReconstruirSemanaPorDias.gs | 180 |  |
+| `_rsResolverNivel` | función | 57_ReconstruirSemanaPorDias.gs | 107 |  |
 | `_runGuerraColaHoraria_` | función | 00_Main.gs | 1178 | Contexto_Base_Web.md §PF143 |
 | `_runGuerraVentanaLigera_` | función | 00_Main.gs | 1278 | Contexto_Base_Web.md §B118 |
 | `_sanitizarPayloadWsp` | función | 44_BotWhatsApp.gs | 107 | Contexto_Base_Web.md §44B012 |
@@ -1267,7 +1273,7 @@ Ninguno.
 | `_tocaProtegida_` | función | 05_Backup_CSV.gs | 115 |  |
 | `_topNTrasResoluciones` | función | 26_Torneos_Core.gs | 3887 | Contexto_Base_Web.md §26B269 |
 | `_totalesSemanaDesdeAcumulados` | función | 28_Torneos_Docs.gs | 1165 | Contexto_Base_Web.md §28B080 |
-| `_totSemanaPorDias_` | función | 57_ReconstruirSemanaPorDias.gs | 349 |  |
+| `_totSemanaPorDias_` | función | 57_ReconstruirSemanaPorDias.gs | 450 |  |
 | `_tpSumarClaves_` | función | 48_Herramientas_Debug.gs | 290 |  |
 | `_traducirNombreInsignia` | función | 32_Insignias.gs | 130 | Contexto_Base_Web.md §32B013 |
 | `_truncarTitulo` | función | 44_BotWhatsApp.gs | 210 |  |
@@ -2012,9 +2018,12 @@ Ninguno.
 | `REVISION_GUERRA_ENCABEZADO` | global | 18_CorreccionGuerra.gs | 202 |  |
 | `ROSTER_ESTATICO_ARCHIVO` | global | 51_Publicar_Roster.gs | 22 |  |
 | `ROSTER_ESTATICO_REPUBLICAR_MIN` | global | 51_Publicar_Roster.gs | 23 |  |
-| `RS_MAX_FILAS` | global | 57_ReconstruirSemanaPorDias.gs | 31 |  |
-| `RS_MS_LIMITE` | global | 57_ReconstruirSemanaPorDias.gs | 32 |  |
-| `RS_NIVELES` | global | 57_ReconstruirSemanaPorDias.gs | 34 |  |
+| `RS_CACHE_ARCHIVO` | global | 57_ReconstruirSemanaPorDias.gs | 38 |  |
+| `RS_CACHE_MS` | global | 57_ReconstruirSemanaPorDias.gs | 39 |  |
+| `RS_CURSOR_PROP` | global | 57_ReconstruirSemanaPorDias.gs | 40 |  |
+| `RS_MAX_FILAS` | global | 57_ReconstruirSemanaPorDias.gs | 36 |  |
+| `RS_MS_LIMITE` | global | 57_ReconstruirSemanaPorDias.gs | 37 |  |
+| `RS_NIVELES` | global | 57_ReconstruirSemanaPorDias.gs | 42 |  |
 | `RT_ENCABEZADO_ASCENDER` | global | 25_Doc_AscensosDescensos.gs | 22 |  |
 | `RT_ENCABEZADO_CONSERVAR` | global | 25_Doc_AscensosDescensos.gs | 26 |  |
 | `RT_ENCABEZADO_PERMANECER` | global | 25_Doc_AscensosDescensos.gs | 24 |  |
@@ -2127,6 +2136,7 @@ Ninguno.
 | `tot_num_` | función | 48_Herramientas_Debug.gs | 953 |  |
 | `tot_serializar_` | función | 48_Herramientas_Debug.gs | 977 |  |
 | `tot_tag_` | función | 48_Herramientas_Debug.gs | 958 |  |
+| `totalesSemanaPorDiasReiniciar` | función | 57_ReconstruirSemanaPorDias.gs | 338 |  |
 | `TR` | global | 26_Torneos_Core.gs | 1032 | Contexto_Base_Web.md §26B080 |
 | `TR_TOTAL_COLS` | global | 26_Torneos_Core.gs | 1037 |  |
 | `updateAscensosSheet` | función | 24_Historial_Ascensos.gs | 118 |  |
