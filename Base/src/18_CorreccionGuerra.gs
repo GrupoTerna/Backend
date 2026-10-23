@@ -7,7 +7,7 @@
 
 // ----- Variables y constantes -----
 
-// Índices de columna (1-based) — Correcciones_Guerra.csv. [→ Contexto_Base_Web.md §18B002]
+// Índices de columna (1-based) — Correcciones_Guerra.csv en FORMATO LARGO (el de antes de §PF164): desde el 22-oct-2026 el archivo se escribe en formato ancho y estos índices solo sirven para leer/migrar el formato largo. [→ Contexto_Base_Web.md §18B002]
 var CGC = {
   NUM: 1, TEMPORADA: 2, SEMANA: 3, TAG: 4,
   ATAQUES_SEMANA: 5, BARCOS: 6, FAME: 7, ACTUALIZADO: 8,
@@ -2233,43 +2233,36 @@ function aplicarCorreccionGuerraATodasLasTemporadas() {
  * limpiarCorreccionesGuerraAprobadasImplementadas() [→ Contexto_Base_Web.md §18B068]
  */
 function limpiarCorreccionesGuerraAprobadasImplementadas() {
-  var csvText = _loadCSVFromDrive(CORRECCIONES_GUERRA_CSV);
-  if (!csvText) {
-    Logger.log('[CorreccionGuerra] Nada que limpiar — ' + CORRECCIONES_GUERRA_CSV + ' no existe todavía.');
+  // §PF164: con el formato ancho hay UNA fila por jugador y semana (clanes y perfil juntos), así que se borra el jugador-semana
+  // completo, y solo si TODAS sus entradas están aprobadas e implementadas (Sí y Sí). Hoy Aprobación está vacía en todas las filas
+  // y esta función no borra nada. La regla que quiere la usuaria para borrar («solo si se cumplen los acumulados de cada clan y
+  // del perfil») sigue sin definirse. [→ Contexto_Base_Web.md §PF164]
+  var mapa = _cargarOverlayCorreccionesGuerraPorClan();
+  var claves = Object.keys(mapa);
+  if (!claves.length) {
+    Logger.log('[CorreccionGuerra] Nada que limpiar — ' + CORRECCIONES_GUERRA_CSV + ' no existe todavía o está vacío.');
     return;
   }
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length < 2) {
-    Logger.log('[CorreccionGuerra] Nada que limpiar — ' + CORRECCIONES_GUERRA_CSV + ' está vacío.');
-    return;
-  }
-  var filas = parsed.slice(1);
 
-  var conservadas = filas.filter(function (f) {
-    var esAprobadaImplementada =
-      String(f[CGC.APROBACION - 1]     || '').trim() === 'Sí' &&
-      String(f[CGC.IMPLEMENTACION - 1] || '').trim() === 'Sí';
-    return !esAprobadaImplementada;
+  var grupos = {};
+  for (var i = 0; i < claves.length; i++) {
+    var p = claves[i].split('|'); // temporada | semana | clantag | tag
+    var g = p[0] + '|' + p[1] + '|' + p[3];
+    if (!grupos[g]) grupos[g] = [];
+    grupos[g].push(claves[i]);
+  }
+  var borradas = 0, semanasBorradas = 0;
+  Object.keys(grupos).forEach(function (g) {
+    var ks = grupos[g];
+    var todas = ks.every(function (k) { return mapa[k].aprobacion === 'Sí' && mapa[k].implementacion === 'Sí'; });
+    if (!todas) return;
+    ks.forEach(function (k) { delete mapa[k]; borradas++; });
+    semanasBorradas++;
   });
-  var borradas = filas.length - conservadas.length;
 
-  // Renumera N° según el nuevo orden físico (mismo criterio que el resto de
-  // CSV del proyecto: la columna N° es decorativa, se recalcula entera).
-  for (var i = 0; i < conservadas.length; i++) {
-    conservadas[i][CGC.NUM - 1] = i + 1;
-  }
-
-  // FIX (29-sep-2026, Fase 15 tanda 1): columna 11 ClanTag; las filas del CSV
-  // anterior (10 columnas) se rellenan con '' para que todas midan lo mismo.
-  for (var ic = 0; ic < conservadas.length; ic++) {
-    while (conservadas[ic].length < CGC_TOTAL_COLS) conservadas[ic].push('');
-  }
-  var encabezado = ['N°', 'Temporada', 'Semana', 'Tag', 'AtaquesSemana', 'Barcos', 'Fame', 'Actualizado', 'Aprobación', 'Implementación', 'ClanTag'];
-  var salida = [encabezado].concat(conservadas);
-  _saveCSVToDrive(CORRECCIONES_GUERRA_CSV, _encodeCSV(salida));
-
-  Logger.log('[CorreccionGuerra] Limpieza manual: ' + borradas + ' fila(s) borrada(s) (Aprobación=Sí + Implementación=Sí). ' +
-    'Quedan ' + conservadas.length + ' fila(s) en el CSV.');
+  if (borradas > 0) _guardarOverlayCorreccionesGuerra(mapa);
+  Logger.log('[CorreccionGuerra] Limpieza manual: ' + semanasBorradas + ' jugador-semana(s) borrada(s) (' + borradas +
+    ' entrada(s) con Aprobación=Sí + Implementación=Sí). Quedan ' + Object.keys(mapa).length + ' entrada(s) en el CSV.');
 }
 
 // NÚCLEO REUTILIZABLE DE CORRECCIÓN (punto 1.1) + RECONSTRUCCIÓN COMPLETA [→ Contexto_Base_Web.md §18B069]
@@ -2862,6 +2855,27 @@ function _getTemporadaRoyaleApiDesdePropia(temporadaPropia) {
 
 // OVERLAY — lectura y escritura de Correcciones_Guerra.csv [→ Contexto_Base_Web.md §18B092]
 
+// FORMATO ANCHO DEFINITIVO (22-oct-2026, pedido de la usuaria; [→ Contexto_Base_Web.md §PF164]).
+// Correcciones_Guerra.csv pasa de una fila por (temporada, semana, jugador, clan) a UNA fila por (temporada, semana, jugador):
+//   N°, Actualizado, Temporada, Semana, Tag,
+//   Ataques <clan1..clanN>, Ataques Externo, Ataques RoyaleAPI, Barcos ..., Medallas ...,
+//   Aprobación, Implementación, Origen RoyaleAPI
+// En memoria NADA cambia: el mapa sigue siendo «temporada|semana|clanTag|tag» (clanTag '' = el perfil) y los consumidores
+// (17, 18, 23, 47) no se enteran; solo cambia la capa que lee y escribe el CSV (este bloque).
+// Reglas: (a) una fila por temporada, semana y jugador; (b) el Log actualiza las columnas de cada clan; (c) la columna RoyaleAPI
+// la actualiza la visita al perfil; (d) Externo = RoyaleAPI - suma de los clanes, solo si la suma es menor; vacío en los demás casos.
+// «Origen RoyaleAPI» dice de dónde salió esa columna: «perfil» (la mandó la fase de perfiles) o «desconocido» (no se puede asegurar).
+var CGW_MAGNITUDES = [
+  { nombre: 'Ataques',  campo: 'ataquesSemana' },
+  { nombre: 'Barcos',   campo: 'barcos' },
+  { nombre: 'Medallas', campo: 'fame' }
+];
+var CGW_ORIGEN_PERFIL = 'perfil';
+var CGW_ORIGEN_DESCONOCIDO = 'desconocido';
+var CGW_ENCABEZADO_ORIGEN = 'Origen RoyaleAPI';
+// Antes de esta fecha (v2.9 de Tampermonkey) las filas sin ClanTag podían ser lo leído en un clan y no el perfil. [→ Contexto_Base_Web.md §PF164]
+var CGW_FECHA_CORTE_PERFIL = '2026-09-29 00:00:00';
+
 /**
  * _normalizarClanTagCorreccion(v)
  * ClanTag siempre en mayúsculas y con '#'; '' si no viene (formato anterior).
@@ -2872,17 +2886,39 @@ function _normalizarClanTagCorreccion(v) {
   return t.charAt(0) === '#' ? t : '#' + t;
 }
 
+function _cgwQuitarBom_(texto) {
+  return (texto && texto.charCodeAt(0) === 0xFEFF) ? texto.substring(1) : texto;
+}
+
+// El formato ancho se reconoce por su columna «Ataques RoyaleAPI»; el largo (el de antes) por «ClanTag».
+function _cgwEsFormatoAncho_(encabezado) {
+  for (var i = 0; i < (encabezado || []).length; i++) {
+    if (String(encabezado[i]).trim() === 'Ataques RoyaleAPI') return true;
+  }
+  return false;
+}
+
+function _cgwNuevaEntrada_(ataques, barcos, medallas, comunes, clanTag, origenPerfil) {
+  var e = {
+    ataquesSemana: Number(ataques) || 0,
+    // Barcos es opcional: '' = sin dato (null), nunca un 0 falso. [→ Contexto_Base_Web.md §18B094]
+    barcos: (barcos === '' || barcos === undefined || barcos === null) ? null : (Number(barcos) || 0),
+    fame: Number(medallas) || 0,
+    actualizado: comunes.actualizado,
+    aprobacion: comunes.aprobacion,
+    implementacion: comunes.implementacion,
+    clanTag: clanTag
+  };
+  if (clanTag === '') e.origenPerfil = origenPerfil || CGW_ORIGEN_DESCONOCIDO;
+  return e;
+}
+
 /**
- * _cargarOverlayCorreccionesGuerraPorClan() [→ Contexto_Base_Web.md §18B093]
+ * _cgwFilasLargasAMapa_(parsed)
+ * Lee el formato de antes (una fila por clan, columna ClanTag) y le asigna el origen a las filas sin ClanTag. [→ Contexto_Base_Web.md §18B093]
  */
-function _cargarOverlayCorreccionesGuerraPorClan() {
+function _cgwFilasLargasAMapa_(parsed) {
   var mapa = {};
-  var csvText = _loadCSVFromDrive(CORRECCIONES_GUERRA_CSV);
-  if (!csvText) return mapa;
-
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length < 2) return mapa;
-
   var filas = parsed.slice(1);
   for (var i = 0; i < filas.length; i++) {
     var f = filas[i];
@@ -2894,26 +2930,121 @@ function _cargarOverlayCorreccionesGuerraPorClan() {
     var clanTag = _normalizarClanTagCorreccion(f[CGC.CLAN_TAG - 1]);
     var clave = temporada + '|' + semana + '|' + clanTag + '|' + tag;
     var actualizado = String(f[CGC.ACTUALIZADO - 1] || '').trim();
-    var barcosTxt = f[CGC.BARCOS - 1];
 
     var existente = mapa[clave];
     if (existente && existente.actualizado && actualizado && existente.actualizado >= actualizado) {
       continue; // ya había una fila igual o más reciente para esta clave — se descarta esta duplicada
     }
 
-    mapa[clave] = {
-      ataquesSemana: Number(f[CGC.ATAQUES_SEMANA - 1]) || 0,
-      // Barcos es opcional (ver comentario al inicio del archivo): '' o [→ Contexto_Base_Web.md §18B094]
-      barcos: (barcosTxt === '' || barcosTxt === undefined || barcosTxt === null) ? null : (Number(barcosTxt) || 0),
-      fame:          Number(f[CGC.FAME - 1]) || 0,
-      actualizado:   actualizado,
-      // Aprobación/Implementación (pregunta 4, FIX 27-ago-2026): se leen tal [→ Contexto_Base_Web.md §18B095]
-      aprobacion:     String(f[CGC.APROBACION - 1]     || '').trim(),
-      implementacion: String(f[CGC.IMPLEMENTACION - 1] || '').trim(),
-      clanTag:        clanTag
+    // Aprobación/Implementación (pregunta 4, FIX 27-ago-2026): se leen tal cual. [→ Contexto_Base_Web.md §18B095]
+    mapa[clave] = _cgwNuevaEntrada_(f[CGC.ATAQUES_SEMANA - 1], f[CGC.BARCOS - 1], f[CGC.FAME - 1], {
+      actualizado: actualizado,
+      aprobacion: String(f[CGC.APROBACION - 1] || '').trim(),
+      implementacion: String(f[CGC.IMPLEMENTACION - 1] || '').trim()
+    }, clanTag, CGW_ORIGEN_PERFIL);
+  }
+  _cgwAsignarOrigenMigracion_(mapa);
+  return mapa;
+}
+
+/**
+ * _cgwAsignarOrigenMigracion_(mapa)
+ * Migración del formato largo: una fila sin ClanTag anterior al 29-sep-2026 (CGW_FECHA_CORTE_PERFIL) en una semana con 2 o más clanes
+ * NO se trata como perfil (pudo ser lo leído en un clan, no lo que decía el perfil: «desconocido»). En las semanas de un solo clan,
+ * o desde el 29-sep, se deja como «perfil». [→ Contexto_Base_Web.md §PF164]
+ */
+function _cgwAsignarOrigenMigracion_(mapa) {
+  var clanesPorSemana = {};
+  var claves = Object.keys(mapa);
+  for (var i = 0; i < claves.length; i++) {
+    var p = claves[i].split('|'); // temporada | semana | clanTag | tag
+    if (p[2] === '') continue;
+    var g = p[0] + '|' + p[1] + '|' + p[3];
+    clanesPorSemana[g] = (clanesPorSemana[g] || 0) + 1;
+  }
+  for (var j = 0; j < claves.length; j++) {
+    var q = claves[j].split('|');
+    if (q[2] !== '') continue;
+    var e = mapa[claves[j]];
+    var anterior = !e.actualizado || e.actualizado < CGW_FECHA_CORTE_PERFIL;
+    var varios = (clanesPorSemana[q[0] + '|' + q[1] + '|' + q[3]] || 0) >= 2;
+    e.origenPerfil = (anterior && varios) ? CGW_ORIGEN_DESCONOCIDO : CGW_ORIGEN_PERFIL;
+  }
+}
+
+/**
+ * _cgwFilasAnchasAMapa_(parsed)
+ * Lee el formato ancho POR NOMBRE DE ENCABEZADO (no por posición): si aparece un clan nuevo se leen sus columnas en vez de perderlas.
+ * Cada fila se expande a una entrada por clan con algún valor y, si RoyaleAPI trae algún valor, a la entrada del perfil (clanTag '').
+ * Actualizado, Aprobación e Implementación son de la fila (de la semana del jugador) y se copian a todas sus entradas.
+ * Externo se ignora al leer: se recalcula al escribir.
+ */
+function _cgwFilasAnchasAMapa_(parsed) {
+  var mapa = {};
+  var enc = parsed[0].map(function (h) { return String(h).trim(); });
+  var col = {};
+  var colClan = {}; // clanTag -> { Ataques: i, Barcos: i, Medallas: i }
+  var clanes = [];
+  var reClan = /^(Ataques|Barcos|Medallas) (#[0-9A-Za-z]+)$/;
+  for (var h = 0; h < enc.length; h++) {
+    col[enc[h]] = h;
+    var m = reClan.exec(enc[h]);
+    if (m) {
+      var ct = _normalizarClanTagCorreccion(m[2]);
+      if (!colClan[ct]) { colClan[ct] = {}; clanes.push(ct); }
+      colClan[ct][m[1]] = h;
+    }
+  }
+  function cel(f, idx) {
+    if (idx === undefined) return '';
+    var v = f[idx];
+    return (v === undefined || v === null) ? '' : String(v).trim();
+  }
+
+  for (var i = 1; i < parsed.length; i++) {
+    var f = parsed[i];
+    var temporada = cel(f, col['Temporada']);
+    var semana    = cel(f, col['Semana']);
+    var tag       = cel(f, col['Tag']);
+    if (!temporada || !semana || !tag) continue;
+
+    var comunes = {
+      actualizado: cel(f, col['Actualizado']),
+      aprobacion: cel(f, col['Aprobación']),
+      implementacion: cel(f, col['Implementación'])
     };
+    for (var c = 0; c < clanes.length; c++) {
+      var cc = colClan[clanes[c]];
+      var a = cel(f, cc.Ataques), b = cel(f, cc.Barcos), md = cel(f, cc.Medallas);
+      if (a === '' && b === '' && md === '') continue;
+      mapa[temporada + '|' + semana + '|' + clanes[c] + '|' + tag] = _cgwNuevaEntrada_(a, b, md, comunes, clanes[c]);
+    }
+    var pa = cel(f, col['Ataques RoyaleAPI']), pb = cel(f, col['Barcos RoyaleAPI']), pm = cel(f, col['Medallas RoyaleAPI']);
+    if (pa !== '' || pb !== '' || pm !== '') {
+      var origen = cel(f, col[CGW_ENCABEZADO_ORIGEN]).toLowerCase() === CGW_ORIGEN_PERFIL ? CGW_ORIGEN_PERFIL : CGW_ORIGEN_DESCONOCIDO;
+      mapa[temporada + '|' + semana + '||' + tag] = _cgwNuevaEntrada_(pa, pb, pm, comunes, '', origen);
+    }
   }
   return mapa;
+}
+
+/**
+ * _cgwLeerOverlayDeTexto_(csvText)
+ * Reconoce el formato (ancho o largo) por el encabezado y devuelve el mapa «temporada|semana|clanTag|tag».
+ */
+function _cgwLeerOverlayDeTexto_(csvText) {
+  if (!csvText) return {};
+  var parsed = _parseCSV(_cgwQuitarBom_(csvText));
+  if (!parsed || parsed.length < 2) return {};
+  return _cgwEsFormatoAncho_(parsed[0]) ? _cgwFilasAnchasAMapa_(parsed) : _cgwFilasLargasAMapa_(parsed);
+}
+
+/**
+ * _cargarOverlayCorreccionesGuerraPorClan() [→ Contexto_Base_Web.md §18B093]
+ * Lee Correcciones_Guerra.csv en cualquiera de los dos formatos (ancho o largo; §PF164).
+ */
+function _cargarOverlayCorreccionesGuerraPorClan() {
+  return _cgwLeerOverlayDeTexto_(_loadCSVFromDrive(CORRECCIONES_GUERRA_CSV));
 }
 
 /**
@@ -2963,40 +3094,107 @@ function _cargarOverlayCorreccionesGuerra() {
   return mapa;
 }
 
+// Externo (regla (d) de la usuaria, 22-oct-2026): RoyaleAPI - suma de los clanes, solo si la suma es MENOR; vacío en los demás casos
+// (también si son iguales, si ningún clan trae dato de esa magnitud o si el origen de RoyaleAPI no es «perfil»: un valor «desconocido»
+// pudo ser lo leído en un clan y no se compara). Es un valor calculado: nunca se lee del CSV. [→ Contexto_Base_Web.md §PF164]
+function _cgwExterno_(perfil, entradasClan, campo) {
+  if (!perfil || perfil.origenPerfil !== CGW_ORIGEN_PERFIL) return '';
+  var pv = perfil[campo];
+  if (pv === null || pv === undefined) return '';
+  var suma = 0, hay = false;
+  for (var i = 0; i < entradasClan.length; i++) {
+    var v = entradasClan[i][campo];
+    if (v !== null && v !== undefined) { suma += v; hay = true; }
+  }
+  if (!hay) return '';
+  return pv > suma ? pv - suma : '';
+}
+
+function _cgwEncabezadoAncho_(clanes) {
+  var enc = ['N°', 'Actualizado', 'Temporada', 'Semana', 'Tag'];
+  for (var m = 0; m < CGW_MAGNITUDES.length; m++) {
+    for (var c = 0; c < clanes.length; c++) enc.push(CGW_MAGNITUDES[m].nombre + ' ' + clanes[c]);
+    enc.push(CGW_MAGNITUDES[m].nombre + ' Externo');
+    enc.push(CGW_MAGNITUDES[m].nombre + ' RoyaleAPI');
+  }
+  enc.push('Aprobación', 'Implementación', CGW_ENCABEZADO_ORIGEN);
+  return enc;
+}
+
+/**
+ * _cgwMapaAFilasAnchas_(mapa)
+ * Convierte el mapa en memoria en las filas del formato ancho (encabezado incluido). Los clanes de las columnas son los de
+ * CFG.TERNA_TAGS (en ese orden) más cualquier otro clan que tenga datos en el mapa (nunca se pierde un dato por falta de columna).
+ * Una fila por temporada, semana y jugador.
+ */
+function _cgwMapaAFilasAnchas_(mapa) {
+  var claves = Object.keys(mapa).sort();
+  var clanes = CFG.TERNA_TAGS.slice();
+  var grupos = {};
+  for (var i = 0; i < claves.length; i++) {
+    var p = claves[i].split('|');
+    if (p.length < 4) p = [p[0], p[1], '', p[2]]; // clave de 3 partes (formato anterior): sin clan
+    var ct = p[2];
+    if (ct !== '' && clanes.indexOf(ct) < 0) clanes.push(ct);
+    var gk = p[0] + '|' + p[1] + '|' + p[3];
+    if (!grupos[gk]) grupos[gk] = { temporada: p[0], semana: p[1], tag: p[3], clanes: {}, perfil: null, todas: [] };
+    var e = mapa[claves[i]];
+    if (ct === '') grupos[gk].perfil = e; else grupos[gk].clanes[ct] = e;
+    grupos[gk].todas.push(e);
+  }
+  var gks = Object.keys(grupos).sort(function (a, b) {
+    var ga = grupos[a], gb = grupos[b];
+    if (Number(ga.temporada) !== Number(gb.temporada)) return Number(ga.temporada) - Number(gb.temporada);
+    if (Number(ga.semana) !== Number(gb.semana)) return Number(ga.semana) - Number(gb.semana);
+    return String(ga.tag).localeCompare(String(gb.tag));
+  });
+
+  var filas = [_cgwEncabezadoAncho_(clanes)];
+  for (var n = 0; n < gks.length; n++) {
+    var g = grupos[gks[n]];
+    var actualizado = '', todasAprobadas = true, todasImpl = true, algunaImplNo = false;
+    for (var k = 0; k < g.todas.length; k++) {
+      var r = g.todas[k];
+      if (r.actualizado && r.actualizado > actualizado) actualizado = r.actualizado;
+      if (r.aprobacion !== 'Sí') todasAprobadas = false;
+      if (r.implementacion !== 'Sí') todasImpl = false;
+      if (r.implementacion === 'No') algunaImplNo = true;
+    }
+    var entradasClan = Object.keys(g.clanes).map(function (x) { return g.clanes[x]; });
+    var fila = [n + 1, actualizado, g.temporada, g.semana, g.tag];
+    for (var m = 0; m < CGW_MAGNITUDES.length; m++) {
+      var campo = CGW_MAGNITUDES[m].campo;
+      for (var c = 0; c < clanes.length; c++) {
+        var ec = g.clanes[clanes[c]];
+        fila.push((ec && ec[campo] !== null && ec[campo] !== undefined) ? ec[campo] : '');
+      }
+      fila.push(_cgwExterno_(g.perfil, entradasClan, campo));
+      fila.push((g.perfil && g.perfil[campo] !== null && g.perfil[campo] !== undefined) ? g.perfil[campo] : '');
+    }
+    fila.push(todasAprobadas ? 'Sí' : '', todasImpl ? 'Sí' : (algunaImplNo ? 'No' : ''),
+      g.perfil ? (g.perfil.origenPerfil || CGW_ORIGEN_DESCONOCIDO) : '');
+    filas.push(fila);
+  }
+  return filas;
+}
+
 /**
  * _guardarOverlayCorreccionesGuerra(mapa) [→ Contexto_Base_Web.md §18B097]
+ * Escribe SIEMPRE en formato ancho (§PF164), UTF-8 con BOM (para que Excel lea bien «N°» y las tildes). Si el archivo que encuentra
+ * todavía está en formato largo, antes guarda una copia suya (Correcciones_Guerra_formato_largo_AAAAMMDD_HHmmss.csv).
  */
 function _guardarOverlayCorreccionesGuerra(mapa) {
-  var encabezado = ['N°', 'Temporada', 'Semana', 'Tag', 'AtaquesSemana', 'Barcos', 'Fame', 'Actualizado', 'Aprobación', 'Implementación', 'ClanTag'];
-  function _partes(clave) {
-    var p = clave.split('|');
-    return p.length >= 4
-      ? { temporada: p[0], semana: p[1], clanTag: p[2], tag: p[3] }
-      : { temporada: p[0], semana: p[1], clanTag: '', tag: p[2] };
+  var actual = _loadCSVFromDrive(CORRECCIONES_GUERRA_CSV);
+  if (actual) {
+    var primera = _cgwQuitarBom_(actual).split(/\r?\n/)[0];
+    var eraLargo = primera.indexOf('ClanTag') >= 0 && primera.indexOf('Ataques RoyaleAPI') < 0;
+    if (eraLargo) {
+      var sello = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT-5', 'yyyyMMdd_HHmmss');
+      _saveCSVToDrive('Correcciones_Guerra_formato_largo_' + sello + '.csv', actual);
+      Logger.log('[CorreccionGuerra] Formato largo respaldado en Correcciones_Guerra_formato_largo_' + sello + '.csv antes de pasar al formato ancho.');
+    }
   }
-  var claves = Object.keys(mapa).sort(function (a, b) {
-    var pa = _partes(a), pb = _partes(b);
-    if (Number(pa.temporada) !== Number(pb.temporada)) return Number(pa.temporada) - Number(pb.temporada);
-    if (Number(pa.semana) !== Number(pb.semana)) return Number(pa.semana) - Number(pb.semana);
-    var porTag = String(pa.tag).localeCompare(String(pb.tag));
-    if (porTag !== 0) return porTag;
-    return String(pa.clanTag).localeCompare(String(pb.clanTag));
-  });
-  var filas = [];
-  var num = 1;
-  for (var i = 0; i < claves.length; i++) {
-    var pt = _partes(claves[i]);
-    var v = mapa[claves[i]];
-    filas.push([
-      num++, pt.temporada, pt.semana, pt.tag,
-      v.ataquesSemana, (v.barcos === null || v.barcos === undefined) ? '' : v.barcos,
-      v.fame, v.actualizado || '',
-      v.aprobacion || '', v.implementacion || '',
-      pt.clanTag
-    ]);
-  }
-  var salida = [encabezado].concat(filas);
-  _saveCSVToDrive(CORRECCIONES_GUERRA_CSV, _encodeCSV(salida));
+  _saveCSVToDrive(CORRECCIONES_GUERRA_CSV, '﻿' + _encodeCSV(_cgwMapaAFilasAnchas_(mapa)));
 }
 
 /**
@@ -3063,6 +3261,11 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       aprobacion: existente ? (existente.aprobacion || '') : '',
       clanTag: clanTag
     };
+    // §PF164: la fila sin ClanTag es la columna RoyaleAPI; su origen es «perfil» solo si Tampermonkey (v3.2 o posterior) lo dice
+    // con fuente:'perfil'. Sin ese dato (versión anterior del script, otro origen) queda «desconocido»: no se compara con los clanes.
+    if (clanTag === '') {
+      mapa[clave].origenPerfil = String(c.fuente || '').trim().toLowerCase() === CGW_ORIGEN_PERFIL ? CGW_ORIGEN_PERFIL : CGW_ORIGEN_DESCONOCIDO;
+    }
     clavesTocadas.push(clave);
     aplicadas++;
   }
@@ -3190,6 +3393,7 @@ function _obtenerListaCorreccionGuerra(opciones) {
   }
 
   var coberturaPorTag = soloClanes ? {} : _construirCoberturaPorTag();
+  var cuentasVariosClanes = soloClanes ? [] : _cuentasConVariosClanesEnOverlay_(); // §PF164: para forzar su perfil desde Tampermonkey (v3.2)
   Logger.log('[CorreccionGuerra][Lista] modo=' + (soloClanes ? 'clanes' : 'completo') +
              ' · directorio ' + (tDirectorio - tInicio) + ' ms · cobertura ' + (Date.now() - tDirectorio) + ' ms · ' +
              jugadores.length + ' jugador(es) · total ' + (Date.now() - tInicio) + ' ms');
@@ -3203,8 +3407,31 @@ function _obtenerListaCorreccionGuerra(opciones) {
     clanTagsTerna: CFG.TERNA_TAGS,
     jugadores: jugadores,
     // FASE 10 (Consolidado_Cambios_Pendientes_Guerra.md, punto 3.1, pregunta [→ Contexto_Base_Web.md §18B110]
-    coberturaPorTag: coberturaPorTag
+    coberturaPorTag: coberturaPorTag,
+    // §PF164: tags con alguna semana en 2 o más clanes Terna (cuentas de apoyo); Tampermonkey v3.2 puede forzar su perfil. [→ Contexto_Base_Web.md §PF164]
+    cuentasVariosClanes: cuentasVariosClanes
   };
+}
+
+/**
+ * _cuentasConVariosClanesEnOverlay_()
+ * §PF164: tags de jugador con al menos una semana con filas de 2 o más clanes Terna en Correcciones_Guerra.csv. Con los datos del 12-oct-2026
+ * son 35. Es la lista que Tampermonkey ofrece al forzar la lectura del perfil (opción «VARIOS»).
+ */
+function _cuentasConVariosClanesEnOverlay_() {
+  var mapa = _cargarOverlayCorreccionesGuerraPorClan();
+  var clanesPorSemana = {};
+  Object.keys(mapa).forEach(function (k) {
+    var p = k.split('|'); // temporada | semana | clantag | tag
+    if (p[2] === '') return;
+    var g = p[0] + '|' + p[1] + '|' + p[3];
+    clanesPorSemana[g] = (clanesPorSemana[g] || 0) + 1;
+  });
+  var tags = {};
+  Object.keys(clanesPorSemana).forEach(function (g) {
+    if (clanesPorSemana[g] >= 2) tags[g.split('|')[2]] = true;
+  });
+  return Object.keys(tags).sort();
 }
 
 /**
