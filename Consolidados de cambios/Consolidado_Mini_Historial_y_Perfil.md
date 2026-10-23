@@ -2,11 +2,17 @@
 
 # Consolidado — Mini historial, «Ingresos recientes» e historial de guerra del perfil
 
-*Creado el 22-oct-2026 (pedido de la usuaria). Estado: **tanda 1 aplicada; tandas 2 a 5 por aplicar** (ver «Estado» al final). Sigue a §PF169 (mini historial en el Directorio) y §PF172 (WhatsApp junto al 📈).*
+*Creado el 22-oct-2026 (pedido de la usuaria). Estado: **tanda 1 aplicada; tandas 2 a 6 por aplicar** (ver «Estado» al final). El 22-oct-2026 se añadió la tanda 6 (`guerra.html`) y se guardaron las respuestas de la usuaria (sección 3b). Sigue a §PF169 (mini historial en el Directorio) y §PF172 (WhatsApp junto al 📈).*
 
 ## 0. Indicaciones de la usuaria (texto literal, 22-oct-2026; regla 12)
 
 > no edites código aún, primero guarda todas estas indicaciones en el repositorio y divídelo en tandas, cuando eso ya esté listo puedes empezar a codificar lo más sencillo a más complicado. en el minihistorial, sombrea intercalado entre semanas y en la cabecera añade la información de cabecera de perfil (nivel de rey, nivel de xp, nivel de colección, victorias de guerra, copas, vigencia) y falta añadir el clan actual. todos los encabezados de la tabla se deben centrar, se debe añadir una columna de numeración automática (N°), otra de temporada y otra de semana. la columna día debe quedar como J, V, S, D. se debe agregar la columna Fecha a la derecha de numeración automática, debe mostrarse como 22/10/2026. los encabezados serían N° Fecha Temporada Semana Día Ataques Barcos Medallas con letras verdes para 4 ataques, letras amarillas para 2 y 3 ataques y rojas para 0 ataques, toda la fila comparte el color de letra. en ingresos recientes se debe agregar una pastilla que permita ocultar a los que tienen número registrado. a la derecha del ícono de wsp en ingresos recientes se debe agregar el ícono del mini historial.. el botón de historial de guerra en el perfil muestra 0 ataques mientras que el mini historial sí muestra el valor real de 4 ataques. no se debe mostrar con el selector así porque limitando a una semana solo se puede ver 4 filas. muevelo a una sección en perfil, así como batallas más recientes o cofres que tienen su sección independiente y se muestra solo a pedido. haz que muestre una cantidad razonable de filas al tocar esa pastilla y ponle la pastilla de "Ver más", revisa si está usando la misma fuente que el mini historial.
+
+### 0b. Indicaciones adicionales de la usuaria (texto literal, 22-oct-2026; regla 12)
+
+> añade a las tandas que en guerra.html se resalte o sombree la semana o día actual (columna). te confirmo que los íconos de wsp se ven bien, el tamaño está bien y la psoición también
+
+*Confirmación (sobre §PF172, que no está cambiada por esta tanda):* los íconos de WhatsApp se ven bien en tamaño y posición, vistos por la usuaria el 22-oct-2026. Eso cierra la parte «SIN PROBAR en navegador real» de §PF172 solo en lo visual; lo que dependía de Apps Script (`_webAdminTagsConWsp()`) no queda confirmado por esta frase.
 
 ## 1. Hallazgos de la lectura del código (22-oct-2026, solo lectura; sin cambios)
 
@@ -19,11 +25,13 @@
 
 ## 2. Tandas (de lo más sencillo a lo más complicado)
 
+**Orden de ejecución propuesto (22-oct-2026):** 1 (hecha) → 2 → **6** (`guerra.html`, solo `Web`, parecida en tamaño a la 2; se numera 6 para no renumerar las tandas ya citadas) → 3 → 4 → 5.
+
 Orden pedido por la usuaria. Cada tanda debe poder terminarse en una sesión (regla 6) y cerrar con pruebas y verificación (regla 8). `Contexto_Base_Web.md` se actualiza al terminar cada una (nueva sección `PFxxx`, regla 6 de `Reglas_Consolidados.md`).
 
 ### Tanda 1 — Aspecto de la tabla del mini historial (solo `Web`; sencilla)
 - **Leer y editar:** `assets/js/features/mini-historial.js` (`histPintar()`; `histFechaCorta()`), `assets/styles.css` (`.hist-tabla`, `.hist-cero`, `.hist-hoy`), pruebas `test/mini-historial-dom.test.js` y `test/guerra-historial-valores-diarios.test.js`; `sw.js`.
-- **Cambios:** (a) todos los encabezados centrados; (b) columna **N°** automática a la izquierda; (c) columna **Fecha** a su derecha, como `22/10/2026`; (d) la columna **Día** pasa a una sola letra **J, V, S, D**; (e) orden de encabezados de esta tanda: **N° · Fecha · Día · Ataques · Barcos · Medallas** (Temporada y Semana llegan en la tanda 3); (f) **color de letra de toda la fila** según los ataques: verde con 4, amarillo con 2 y 3, rojo con 0 (el 1 queda sin color propio hasta que la usuaria responda P1); (g) **sombreado alternado entre semanas** (las filas de una misma semana comparten fondo y la semana siguiente lleva otro); sin el dato de semana del backend, la semana se agrupa por el lunes que la contiene, igual que `lunesSemanaHistorialGuerra()` de `perfil.html`.
+- **Cambios:** (a) todos los encabezados centrados; (b) columna **N°** automática a la izquierda; (c) columna **Fecha** a su derecha, como `22/10/2026`; (d) la columna **Día** pasa a una sola letra **J, V, S, D**; (e) orden de encabezados de esta tanda: **N° · Fecha · Día · Ataques · Barcos · Medallas** (Temporada y Semana llegan en la tanda 3); (f) **color de letra de toda la fila** según los ataques: verde con 4, amarillo con 2 y 3, rojo con 0 (el 1 quedó sin color propio hasta que la usuaria respondiera P1). **Corrección del 22-oct-2026 (regla 9):** la usuaria respondió que **con 1 ataque también es amarillo**; la regla final es verde con 4, **amarillo con 1, 2 y 3**, rojo con 0 (ajuste en el código: ver «Estado»); (g) **sombreado alternado entre semanas** (las filas de una misma semana comparten fondo y la semana siguiente lleva otro); sin el dato de semana del backend, la semana se agrupa por el lunes que la contiene, igual que `lunesSemanaHistorialGuerra()` de `perfil.html`.
 - **Cuidar:** contraste de color (WCAG, mínimo 4,5:1) sobre el fondo oscuro y sobre el sombreado; que el sombreado de «día en curso» (`.hist-hoy`) y el de semanas se distingan; que el color no sea la única señal (el número ya está). Medir con `scripts/medicion-accesibilidad/` si es posible.
 
 ### Tanda 2 — «Ingresos recientes» (solo `Web`; sencilla)
@@ -48,6 +56,12 @@ Orden pedido por la usuaria. Cada tanda debe poder terminarse en una sesión (re
 - **Depende de:** tandas 1, 3 y 4 (la tabla y la cabecera compartidas) y de P5 a P8.
 - **Cuidar:** `webHistorialGuerraJugador` tiene el campo `comentario` y `cerrada` que el comparador no trae; si se deja de usar, anotar qué se pierde (P5).
 
+### Tanda 6 — `guerra.html`: resaltar la columna del día o de la semana actual (solo `Web`; sencilla a media; pedida el 22-oct-2026)
+- **Leer y editar:** `guerra.html` (cuadrículas **Valores diarios** y **Valores semanales**: `celdasMegacategoria()`, `celdasSemanas()`, `filaSubEncabezadosMega()`, `filaSubEncabezadosSemanas()`; el contexto de render que ya trae `ctx.diaLetra` y `ctx.esDiaGuerra`; el rótulo «HOY» de los botones Jue–Dom como referencia visual), `assets/styles.css` (`.ai-cell*`, `.ai-grp-*`), pruebas de `guerra` que construyen esas tablas, `sw.js` y `Contexto_Base_Web.md`.
+- **Cambios (pedido literal: «se resalte o sombree la semana o día actual (columna)»):** (a) en **Valores diarios**, la columna del día en curso (J, V, S o D) con un sombreado en el encabezado y en las celdas de las tres megacategorías (Ataques, Puntaje, Barcos); (b) en **Valores semanales**, la columna de la semana en curso, también en las tres megacategorías.
+- **Cuidar:** que el sombreado **no tape** los colores de celda (verde, amarillo, rojo y «opcional») ni la marca de «fila resaltada: estuvo y tiene algún 0»; que el filtro y el orden por columna (`data-col`) sigan igual; que el color no sea la única señal (añadir `aria-current` y un `title` en el encabezado); contraste mínimo 4,5:1 (WCAG); y que el estilo sea coherente con el rótulo «HOY» ya existente en la misma página.
+- **Depende de:** P9 a P11 (abajo). **Fuente del dato:** no hace falta backend si el día y la semana vigentes ya llegan al render; se confirma al leer el código al empezar la tanda (si faltara el dato de la semana en curso, se anota como pendiente de backend y no se inventa).
+
 ## 3. Preguntas pendientes de definir o contestar (regla 3)
 
 - **P1 (tanda 1).** ¿Qué color lleva una fila con **1 ataque**? La usuaria dijo verde (4), amarillo (2 y 3) y rojo (0); el 1 no se mencionó. *Mientras no se responda, queda sin color propio (texto normal).*
@@ -60,9 +74,30 @@ Orden pedido por la usuaria. Cada tanda debe poder terminarse en una sesión (re
 - **P7 (tanda 5).** ¿En qué lugar del perfil va la tarjeta? *Propuesta: justo después de «Batallas más recientes» y antes de «Ciclo de cofres».* ¿Lleva una cinta de imagen propia?
 - **P8 (tanda 5).** Para resolver el 0 contra 4: ¿qué jugador y qué día/semana mostraba 0 en el perfil y 4 en el mini historial?
 
+### 3b. Respuestas de la usuaria del 22-oct-2026 (regla 12) y lo que sigue abierto
+
+Lo que la usuaria respondió (texto literal entre comillas) y cómo lo leí:
+
+- **P1 — RESPONDIDA:** «con un ataque también es amarillo». Regla final: verde 4, amarillo 1 a 3, rojo 0.
+- **P2 — RESPONDIDA:** «temporada es el número interno. semana es solo S1 porque se está mostrando valores diarios». Leo: **Temporada = número de temporada interna** (`temporadaInterna`); **Semana = etiqueta corta S1, S2…** (no el rango de fechas). *Lectura de la frase «solo S1» (a confirmar en la tanda 3):* entiendo que se muestra «S1», «S2»… y no el rango, porque la tabla es diaria. Si quiso decir otra cosa, se corrige.
+- **P3 — RESPONDIDA a medias:** «revisa en perfil.html, es pública». La cabecera es **pública**, y los datos se toman de lo que ya muestra `perfil.html` (`webPerfilJugador`: `raw.expLevel`, `j.extendido.nivelXp`, `j.vigencia`, etc.). **Queda abierto cuál de las opciones A, B o C se usa** (ver P3 arriba) y de dónde sale el nivel de colección; se decide al empezar la tanda 4, después de leer `perfil.html`.
+- **P4 — RESPONDIDA:** «sí». Al ocultar con la pastilla se actualizan también el contador y las gráficas.
+- **P5 — RESPONDIDA a medias:** «es solo para admins». La sección nueva del perfil es **solo admin**. **Sigue abierto** si se pueden perder `comentario` y `cerrada` del historial semanal (la usuaria no lo contestó; regla 2: se vuelve a preguntar antes de la tanda 5).
+- **P6 — RESPONDIDA:** «sí». 28 filas al abrir y 28 más por «Ver más», y el mini historial cambia también «Ver todos» por «Ver más».
+- **P7 — RESPONDIDA a medias:** «sí». La tarjeta va después de «Batallas más recientes» y antes de «Ciclo de cofres». **Sigue abierto** si lleva una cinta de imagen propia.
+- **P8 — RESPONDIDA:** «#2GG8PJ8GC». Es el jugador del caso 0 contra 4. **Falta** el día o la semana exacta que mostraba 0; se revisa con los datos de ese jugador al empezar la tanda 5.
+- **P1b — SIN RESPONDER:** si los colores y el sombreado valen también para la tabla de comparación lado a lado. Se vuelve a preguntar (regla 2). Mientras tanto, solo la tabla de un jugador.
+
+**Preguntas nuevas de la tanda 6 (pendientes de definir o contestar):**
+
+- **P9.** Fuera de día de guerra (lunes a miércoles, entrenamiento), la página muestra «los valores de la última guerra jugada». ¿En **Valores diarios** se resalta entonces **ninguna** columna, o la **última jugada** (el domingo)? *Por defecto: ninguna.*
+- **P10.** En **Valores semanales**, ¿«semana actual» es la **semana de guerra en curso** (la última columna, solo cuando la temporada elegida es la vigente)? ¿Y si esa semana aún no tiene datos (por ejemplo, un jueves antes de que cargue la guerra), se resalta igual o no? *Por defecto: se resalta solo si la temporada elegida es la vigente y la columna existe.*
+- **P11.** ¿Qué estilo: **fondo tenue** en toda la columna (encabezado y celdas), **borde** a los lados, o ambos? *Propuesta: fondo tenue en toda la columna y una marca en el encabezado, sin cambiar el color de los números.* ¿Aplica solo a Valores diarios y Valores semanales, o también a otra tabla con columnas J, V, S, D?
+
 ## 4. Estado
 
 - 22-oct-2026: indicaciones guardadas y dividido en tandas.
 - 22-oct-2026: **tanda 1 aplicada** (`Web`, `sw.js` v143, §PF173): N°, Fecha, Día J/V/S/D, colores por ataques, sombreado por semana y encabezados centrados en la tabla de un jugador. Pendiente de probar en navegador real. Quedan abiertas P1 (color del 1 ataque) y P1b (tabla de comparación); un día opcional con 0 ataques no se pinta de rojo (decisión mía, por confirmar).
-- Tandas 2 a 5: por aplicar.
+- 22-oct-2026: la usuaria respondió P1 a P8 (sección 3b) y añadió la **tanda 6** (`guerra.html`: resaltar la columna del día o la semana actual). Confirmó que los **íconos de WhatsApp** se ven bien en tamaño y posición (§PF172).
+- Tandas 2 a 6: por aplicar. Abiertas: P1b, P3 (opción A, B o C), P5 (`comentario` y `cerrada`), P7 (cinta), P8 (día exacto) y P9 a P11.
 - Al terminar todas las tandas: pasar el funcionamiento y las decisiones a `Contexto_Base_Web.md`, informar y **preguntar si se borra** este consolidado (regla 1; no se borra sin un sí explícito).
