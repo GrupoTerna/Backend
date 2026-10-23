@@ -99,5 +99,6 @@ Lo que la usuaria respondió (texto literal entre comillas) y cómo lo leí:
 - 22-oct-2026: indicaciones guardadas y dividido en tandas.
 - 22-oct-2026: **tanda 1 aplicada** (`Web`, `sw.js` v143, §PF173): N°, Fecha, Día J/V/S/D, colores por ataques, sombreado por semana y encabezados centrados en la tabla de un jugador. Pendiente de probar en navegador real. Quedan abiertas P1 (color del 1 ataque) y P1b (tabla de comparación); un día opcional con 0 ataques no se pinta de rojo (decisión mía, por confirmar).
 - 22-oct-2026: la usuaria respondió P1 a P8 (sección 3b) y añadió la **tanda 6** (`guerra.html`: resaltar la columna del día o la semana actual). Confirmó que los **íconos de WhatsApp** se ven bien en tamaño y posición (§PF172).
+- 22-oct-2026: **ajuste de P1 aplicado** (`Web`, `sw.js` v144, §PF173): una fila con 1 ataque también va en amarillo (verde 4, amarillo 1 a 3, rojo 0). **Corrección a la línea de la tanda 1 de arriba**, que decía que P1 seguía abierta. 653 pruebas y lint en verde; sin ver en navegador real.
 - Tandas 2 a 6: por aplicar. Abiertas: P1b, P3 (opción A, B o C), P5 (`comentario` y `cerrada`), P7 (cinta), P8 (día exacto) y P9 a P11.
 - Al terminar todas las tandas: pasar el funcionamiento y las decisiones a `Contexto_Base_Web.md`, informar y **preguntar si se borra** este consolidado (regla 1; no se borra sin un sí explícito).
