@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 23/10/2026 18:17:10 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 23/10/2026 18:55:24 */
 
 
 
@@ -61775,13 +61775,21 @@ function _totSemanaPorDias_(aplicar) {
 // --- ARCHIVO: 58_Docs_Administracion.gs ---
 // ==============================================================================
 // 58_Docs_Administracion.gs
-// Actualiza solo, en los Google Docs de plantillas (Bienvenida y Descripción), el bloque «Líder / Colíderes / Administradores» con los datos reales de Directorio. [→ Contexto_Base_Web.md §PF186]
+// Actualiza solo, en los Google Docs de plantillas (Bienvenida y Descripción), el bloque «Líder / Colíderes / Administradores / Otros colíderes» con los datos reales de Directorio. [→ Contexto_Base_Web.md §PF186 y §PF187]
 // ==============================================================================
 
 // ----- Variables y constantes -----
 
 // Categorías (en minúsculas, sin tilde) de los Docs que llevan el bloque de administración. [→ Contexto_Base_Web.md §PF186]
 var ADMIN_DOC_CATEGORIAS = ['bienvenida', 'descripcion'];
+
+// Nombres de respaldo de los clanes oficiales (tag -> nombre tal como se escribe en los Docs de Plantillas), por si ni la API ni la hoja Clan dan el nombre. [→ Contexto_Base_Web.md §PF187]
+var ADMIN_DOC_NOMBRES_RESPALDO = {
+  '#GCRG8L00': 'Grupo乂Terna™',
+  '#GYCU9YRG': 'GrupoXTerna™2',
+  '#GQQPPJGR': 'GrupoXTerna™3',
+  '#GG99LCJY': 'Mini乂Ternas™'
+};
 
 // Caché en memoria (solo vive durante esta ejecución) del equipo leído de Directorio, para no releer la hoja por cada Doc. [→ Contexto_Base_Web.md §PF186]
 var _adminDocEquipoCache_ = null;
@@ -61803,6 +61811,9 @@ function _adminDocActualizar_(doc, categoria, clanNombre) {
     cambio = _adminDocAplicarClan_(body, equipo, tag, clanNombre);
   } else if (cat === 'descripcion') {
     cambio = _adminDocAplicarFamilia_(body, equipo, clanNombre);
+  } else {
+    // PF187: antes un Doc de Bienvenida de un clan que no se reconocía por su nombre se saltaba sin dejar rastro.
+    Logger.log('[AdminDoc] No se reconoció el clan "' + clanNombre + '" para su Doc de ' + categoria + ': no se tocó.');
   }
   if (cambio) {
     Logger.log('[AdminDoc] Actualizado el bloque de administración de "' + categoria + ' - ' + clanNombre + '".');
@@ -61833,10 +61844,22 @@ function _adminDocLeerEquipo_() {
   var porClan = {};   // tag -> { nombre, lideres: [cuenta], colideres: [cuenta] }
   var personas = {};  // clave de persona (celular o tag) -> { cuentas: [cuenta], admin: bool }
   var nombresClan = {}; // nombre normalizado -> tag
+  var nombresPorTag = {}; // tag -> [todos los nombres conocidos del clan]
+  // PF187 (23-oct-2026): el nombre ya no sale solo del caché de la API (que en la sincronización venía vacío y dejaba sin reconocer a los clanes 2, 3 y Mini): se suman la hoja Clan y los nombres de respaldo. [→ Contexto_Base_Web.md §PF187]
+  var nombresHojaClan = _adminDocNombresDeHojaClan_(ss);
   for (var t = 0; t < CFG.TERNA_TAGS.length; t++) {
     var tg = CFG.TERNA_TAGS[t];
     porClan[tg] = { nombre: _resolverNombreClan(tg), lideres: [], colideres: [] };
-    nombresClan[_adminDocNorm_(porClan[tg].nombre)] = tg;
+    var conocidos = [porClan[tg].nombre, nombresHojaClan[tg], ADMIN_DOC_NOMBRES_RESPALDO[tg]];
+    nombresPorTag[tg] = [];
+    for (var nc = 0; nc < conocidos.length; nc++) {
+      var nomC = String(conocidos[nc] || '').trim();
+      if (!nomC || nomC === tg) continue; // _resolverNombreClan devuelve el propio tag cuando no encuentra el nombre
+      nombresPorTag[tg].push(nomC);
+      var claveC = _adminDocNorm_(nomC);
+      if (!nombresClan[claveC]) nombresClan[claveC] = tg;
+    }
+    if (nombresPorTag[tg].length > 0) porClan[tg].nombre = nombresPorTag[tg][0];
   }
 
   for (var i = 0; i < data.length; i++) {
@@ -61879,13 +61902,54 @@ function _adminDocLeerEquipo_() {
     return null;
   }
 
-  _adminDocEquipoCache_ = { porClan: porClan, personas: personas, nombresClan: nombresClan };
+  _adminDocEquipoCache_ = { porClan: porClan, personas: personas, nombresClan: nombresClan, nombresPorTag: nombresPorTag };
   return _adminDocEquipoCache_;
 }
 
-// _adminDocTagDeClan_(equipo, clanNombre): tag del clan oficial cuyo nombre coincide con el del Doc, o '' si es un Doc de toda la familia. [→ Contexto_Base_Web.md §PF186]
+// _adminDocNombresDeHojaClan_(ss): tag -> nombre del clan según la hoja Clan ({} si la hoja no existe o está vacía). [→ Contexto_Base_Web.md §PF187]
+function _adminDocNombresDeHojaClan_(ss) {
+  var res = {};
+  try {
+    var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
+    if (!sh || sh.getLastRow() < 2) return res;
+    var datos = sh.getRange(2, 1, sh.getLastRow() - 1, CC.NOMBRE).getValues();
+    for (var i = 0; i < datos.length; i++) {
+      var tg = String(datos[i][CC.CLAN_TAG - 1] || '').trim();
+      var nm = String(datos[i][CC.NOMBRE - 1] || '').trim();
+      if (tg && nm && !res[tg]) res[tg] = nm;
+    }
+  } catch (e) {
+    Logger.log('[AdminDoc] No se pudo leer los nombres de la hoja Clan: ' + e.message);
+  }
+  return res;
+}
+
+// _adminDocClaveAlfa_(s): solo letras, números y 乂, en minúsculas y sin tildes; sirve para comparar nombres de clan aunque cambien los símbolos o los espacios. [→ Contexto_Base_Web.md §PF187]
+function _adminDocClaveAlfa_(s) {
+  return _adminDocNorm_(s).replace(/[^a-z0-9乂]/g, '');
+}
+
+// _adminDocTagDeClan_(equipo, clanNombre): tag del clan oficial cuyo nombre coincide con el del Doc, o '' si es un Doc de toda la familia. Si el nombre no coincide exacto, se prueba por «mini» o por el número final (por ejemplo «…Terna™2»), y solo se acepta si hay un único clan que encaje. [→ Contexto_Base_Web.md §PF187]
 function _adminDocTagDeClan_(equipo, clanNombre) {
-  return equipo.nombresClan[_adminDocNorm_(clanNombre)] || '';
+  var exacto = equipo.nombresClan[_adminDocNorm_(clanNombre)];
+  if (exacto) return exacto;
+
+  var clave = _adminDocClaveAlfa_(clanNombre);
+  if (clave.indexOf('terna') < 0) return ''; // no parece un clan Terna (por ejemplo «Familia Terna» sí lo parece, pero se descarta abajo)
+  var esMini = clave.indexOf('mini') >= 0;
+  var mDig = clave.match(/(\d)$/);
+  if (!esMini && !mDig) return '';
+
+  var candidatos = [];
+  for (var tg in equipo.nombresPorTag) {
+    var nombres = equipo.nombresPorTag[tg];
+    for (var i = 0; i < nombres.length; i++) {
+      var cn = _adminDocClaveAlfa_(nombres[i]);
+      var encaja = esMini ? (cn.indexOf('mini') >= 0) : (cn.indexOf('mini') < 0 && new RegExp(mDig[1] + '$').test(cn));
+      if (encaja) { candidatos.push(tg); break; }
+    }
+  }
+  return candidatos.length === 1 ? candidatos[0] : '';
 }
 
 // _adminDocOrdenNombres_(cuentas): nombres únicos ordenados sin distinguir mayúsculas. [→ Contexto_Base_Web.md §PF186]
@@ -61964,6 +62028,7 @@ function _adminDocEncabezado_(texto) {
   if (t === 'lider') return 'lider';
   if (t === 'colideres') return 'colideres';
   if (t === 'administradores') return 'administradores';
+  if (t === 'otroscolideres') return 'otroscolideres';
   return '';
 }
 
@@ -61975,14 +62040,25 @@ function _adminDocAplicarClan_(body, equipo, tag, clanNombre) {
     Logger.log('[AdminDoc] "' + clanNombre + '" no tiene líder activo en Directorio: no se toca su Doc.');
     return false;
   }
-  var colideres = _adminDocLineas_(clan.colideres);
-  if (colideres.length === 0) colideres = ['Sin colíderes por el momento'];
+  // PF187 (23-oct-2026, pedido de la usuaria): en «Administración del clan» van solo el líder y los colíderes que son administradores (Admin = Sí en Directorio, por persona); los demás colíderes van en un bloque aparte, «Otros colíderes», para que no parezcan administradores. [→ Contexto_Base_Web.md §PF187]
+  var colAdmin = [], colOtros = [];
+  for (var i = 0; i < clan.colideres.length; i++) {
+    var cu = clan.colideres[i];
+    var per = equipo.personas[cu.persona];
+    if (per && per.admin) colAdmin.push(cu); else colOtros.push(cu);
+  }
+  var colideres = _adminDocLineas_(colAdmin);
+  if (colideres.length === 0) colideres = ['Sin colíderes administradores por el momento'];
   var admins = _adminDocLineas_(_adminDocAdminsExtra_(equipo, tag));
+  var otros = _adminDocLineas_(colOtros);
 
   var cambio = false;
-  cambio = _adminDocGrupo_(body, 'lider', lideres, null) || cambio;
-  cambio = _adminDocGrupo_(body, 'colideres', colideres, null) || cambio;
-  cambio = _adminDocGrupo_(body, 'administradores', admins, 'colideres') || cambio;
+  cambio = _adminDocGrupo_(body, 'lider', lideres, null, 'Líder:') || cambio;
+  cambio = _adminDocGrupo_(body, 'colideres', colideres, null, 'Colíderes:') || cambio;
+  cambio = _adminDocGrupo_(body, 'administradores', admins, 'colideres', 'Administradores:') || cambio;
+  // «Otros colíderes» va después de «Administradores» si existe; si no, después de «Colíderes».
+  var anclaOtros = _adminDocBuscarGrupo_(body, 'administradores') ? 'administradores' : 'colideres';
+  cambio = _adminDocGrupo_(body, 'otroscolideres', otros, anclaOtros, 'Otros colíderes:') || cambio;
   return cambio;
 }
 
@@ -62007,6 +62083,12 @@ function _adminDocBuscarGrupo_(body, clave) {
   return null;
 }
 
+// _adminDocPrefijo_(texto): los espacios (sangría) que hay al inicio de un párrafo, o '' si no tiene. [→ Contexto_Base_Web.md §PF187]
+function _adminDocPrefijo_(texto) {
+  var m = String(texto || '').match(/^[ \t ]*/);
+  return m ? m[0] : '';
+}
+
 // _adminDocSetTexto_(par, texto): cambia el texto de un párrafo conservando el formato del primer carácter. [→ Contexto_Base_Web.md §PF186]
 function _adminDocSetTexto_(par, texto) {
   var t = par.editAsText();
@@ -62015,8 +62097,8 @@ function _adminDocSetTexto_(par, texto) {
   if (viejo > 0) t.deleteText(texto.length, texto.length + viejo - 1);
 }
 
-// _adminDocGrupo_(body, clave, nombres, despuesDe): deja el grupo con exactamente esos nombres. Si no existe y hay nombres, lo crea después del grupo «despuesDe»; si existe y no hay nombres, lo quita. Devuelve true si cambió algo. [→ Contexto_Base_Web.md §PF186]
-function _adminDocGrupo_(body, clave, nombres, despuesDe) {
+// _adminDocGrupo_(body, clave, nombres, despuesDe, titulo): deja el grupo con exactamente esos nombres. Si no existe y hay nombres, lo crea después del grupo «despuesDe» con el encabezado «titulo»; si existe y no hay nombres, lo quita. Devuelve true si cambió algo. [→ Contexto_Base_Web.md §PF186]
+function _adminDocGrupo_(body, clave, nombres, despuesDe, titulo) {
   var g = _adminDocBuscarGrupo_(body, clave);
 
   if (!g) {
@@ -62032,11 +62114,14 @@ function _adminDocGrupo_(body, clave, nombres, despuesDe) {
     var hayBlanco = !!previo && previo.getType() === DocumentApp.ElementType.PARAGRAPH &&
       previo.asParagraph().getText().trim() === '';
     if (hayBlanco) { body.insertParagraph(pos++, '').setAttributes(plantillaEnc.getAttributes()); }
+    // La sangría (espacios al inicio) se copia de las líneas modelo, para que el grupo nuevo quede alineado con los demás. [→ Contexto_Base_Web.md §PF187]
+    var prefEnc = _adminDocPrefijo_(plantillaEnc.getText());
+    var prefNom = _adminDocPrefijo_(plantillaNom.getText());
     var enc = body.insertParagraph(pos++, plantillaEnc);
-    _adminDocSetTexto_(enc, 'Administradores:');
+    _adminDocSetTexto_(enc, prefEnc + (titulo || 'Administradores:'));
     for (var a = 0; a < nombres.length; a++) {
       var np = body.insertParagraph(pos++, plantillaNom.copy());
-      _adminDocSetTexto_(np, '▫️ ' + nombres[a]);
+      _adminDocSetTexto_(np, prefNom + '▫️ ' + nombres[a]);
     }
     return true;
   }
@@ -62045,7 +62130,7 @@ function _adminDocGrupo_(body, clave, nombres, despuesDe) {
   var nuevos = nombres.map(function(x) { return x.replace(/\s+/g, ' ').trim(); });
   if (actuales.join('\u0001') === nuevos.join('\u0001')) return false;
 
-  // Quitar el grupo si ya no hay nadie que mostrar (solo se da con «Administradores»).
+  // Quitar el grupo si ya no hay nadie que mostrar (solo se da con «Administradores» y «Otros colíderes»).
   if (nombres.length === 0) {
     for (var q = g.nombres.length - 1; q >= 0; q--) body.removeChild(body.getChild(g.nombres[q].i));
     body.removeChild(body.getChild(g.iEnc));
@@ -62058,6 +62143,7 @@ function _adminDocGrupo_(body, clave, nombres, despuesDe) {
   var primero = g.nombres[0], ultimoN = g.nombres[g.nombres.length - 1];
   var conBlancos = (ultimoN.i - primero.i + 1) > g.nombres.length;
   var plantilla = primero.par.copy();
+  var prefN = _adminDocPrefijo_(primero.par.getText()); // sangría de la línea modelo (PF187)
   var plantillaBlanco = null;
   if (conBlancos) {
     for (var b = primero.i + 1; b < ultimoN.i; b++) {
@@ -62068,12 +62154,12 @@ function _adminDocGrupo_(body, clave, nombres, despuesDe) {
 
   // Se borran todas las líneas salvo la primera (de atrás hacia delante) y se reescribe.
   for (var r = ultimoN.i; r > primero.i; r--) body.removeChild(body.getChild(r));
-  _adminDocSetTexto_(primero.par, '▫️ ' + nombres[0]);
+  _adminDocSetTexto_(primero.par, prefN + '▫️ ' + nombres[0]);
   var pos2 = primero.i + 1;
   for (var k = 1; k < nombres.length; k++) {
     if (plantillaBlanco) body.insertParagraph(pos2++, plantillaBlanco.copy());
     var nl = body.insertParagraph(pos2++, plantilla.copy());
-    _adminDocSetTexto_(nl, '▫️ ' + nombres[k]);
+    _adminDocSetTexto_(nl, prefN + '▫️ ' + nombres[k]);
   }
   return true;
 }
