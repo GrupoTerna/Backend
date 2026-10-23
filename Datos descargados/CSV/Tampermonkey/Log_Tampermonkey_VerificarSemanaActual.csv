@@ -8,3 +8,4 @@ Fecha,Estado,Resultado,Error
 2026-09-22 06:23:33,OK,"{""ok"":false,""error"":""Sin participantes en el payload."",""procesados"":0,""discrepancias"":0}",
 2026-10-11 21:41:49,OK,"{""ok"":true,""procesados"":152,""discrepancias"":5,""yaResueltas"":0,""omitidos"":0}",
 2026-10-12 08:49:41,OK,"{""ok"":false,""error"":""Hoy no es día de guerra — nada que verificar."",""procesados"":0,""discrepancias"":0}",
+2026-10-22 19:14:47,OK,"{""ok"":true,""procesados"":271,""discrepancias"":5,""yaResueltas"":0,""omitidos"":0}",
