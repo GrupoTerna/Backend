@@ -75,7 +75,11 @@ function _adminDocLeerEquipo_() {
 
     var rango = _adminDocNorm_(f[IC.RANGO - 1]);
     var esAdmin = String(f[IC.ADMIN - 1] || '').trim() === 'Sí';
+    // Persona = mismo celular (prefijo + número); sin celular, la cuenta cuenta como una persona sola.
+    var cel = soloDigitos(f[IC.PREFIJO - 1]) + soloDigitos(f[IC.CELULAR - 1]);
+    var clavePersona = cel || ('tag:' + String(f[IC.TAG - 1] || '').trim());
     var cuenta = {
+      persona: clavePersona,
       nombre: nombre,
       tag: String(f[IC.TAG - 1] || '').trim(),
       clanTag: tagClan,
@@ -83,9 +87,6 @@ function _adminDocLeerEquipo_() {
       activo: estado === 'Activo'
     };
 
-    // Persona = mismo celular (prefijo + número); sin celular, la cuenta cuenta como una persona sola.
-    var cel = soloDigitos(f[IC.PREFIJO - 1]) + soloDigitos(f[IC.CELULAR - 1]);
-    var clavePersona = cel || ('tag:' + cuenta.tag);
     if (!personas[clavePersona]) personas[clavePersona] = { cuentas: [], admin: false };
     personas[clavePersona].cuentas.push(cuenta);
     if (esAdmin) personas[clavePersona].admin = true;
@@ -121,6 +122,21 @@ function _adminDocOrdenNombres_(cuentas) {
   }
   lista.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase(), 'es'); });
   return lista;
+}
+
+// _adminDocLineas_(cuentas): una línea por persona (mismo celular): si una persona tiene varias cuentas en la lista, van juntas en una sola línea separadas por « / ». Las líneas salen ordenadas sin distinguir mayúsculas. [→ Contexto_Base_Web.md §PF186]
+function _adminDocLineas_(cuentas) {
+  var porPersona = {}, claves = [];
+  for (var i = 0; i < cuentas.length; i++) {
+    var c = cuentas[i];
+    var k = c.persona || ('tag:' + c.tag);
+    if (!porPersona[k]) { porPersona[k] = []; claves.push(k); }
+    porPersona[k].push(c);
+  }
+  var lineas = [];
+  for (var j = 0; j < claves.length; j++) lineas.push(_adminDocOrdenNombres_(porPersona[claves[j]]).join(' / '));
+  lineas.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase(), 'es'); });
+  return lineas;
 }
 
 // _adminDocPersonaTieneCuenta_(persona, tagClan, rangos): true si alguna cuenta activa de la persona tiene uno de esos rangos en ese clan. [→ Contexto_Base_Web.md §PF186]
@@ -179,14 +195,14 @@ function _adminDocEncabezado_(texto) {
 // _adminDocAplicarClan_(body, equipo, tag, clanNombre): reescribe los grupos del Doc de un clan; devuelve true si cambió algo. [→ Contexto_Base_Web.md §PF186]
 function _adminDocAplicarClan_(body, equipo, tag, clanNombre) {
   var clan = equipo.porClan[tag];
-  var lideres = _adminDocOrdenNombres_(clan.lideres);
+  var lideres = _adminDocLineas_(clan.lideres);
   if (lideres.length === 0) {
     Logger.log('[AdminDoc] "' + clanNombre + '" no tiene líder activo en Directorio: no se toca su Doc.');
     return false;
   }
-  var colideres = _adminDocOrdenNombres_(clan.colideres);
+  var colideres = _adminDocLineas_(clan.colideres);
   if (colideres.length === 0) colideres = ['Sin colíderes por el momento'];
-  var admins = _adminDocOrdenNombres_(_adminDocAdminsExtra_(equipo, tag));
+  var admins = _adminDocLineas_(_adminDocAdminsExtra_(equipo, tag));
 
   var cambio = false;
   cambio = _adminDocGrupo_(body, 'lider', lideres, null) || cambio;
@@ -307,7 +323,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
     // Línea «Líder: nombre» del clan que se acaba de ver.
     var mLid = tx.match(/^(\s*L[ií]der:\s*)/);
     if (mLid && tagActual) {
-      var lideres = _adminDocOrdenNombres_(equipo.porClan[tagActual].lideres);
+      var lideres = _adminDocLineas_(equipo.porClan[tagActual].lideres);
       if (lideres.length > 0) {
         var nuevo = lideres.join(' / ');
         var actual = tx.substring(mLid[1].length).replace(/\s+/g, ' ').trim();
@@ -335,10 +351,10 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
     if (!esColider || esLider) continue;
     for (var c = 0; c < p.cuentas.length; c++) {
       var cu = p.cuentas[c];
-      if (cu.activo && cu.rango === 'colider' && equipo.porClan[cu.clanTag]) { colideres.push(cu); break; }
+      if (cu.activo && cu.rango === 'colider' && equipo.porClan[cu.clanTag]) colideres.push(cu);
     }
   }
-  var nombres = _adminDocOrdenNombres_(colideres);
+  var nombres = _adminDocLineas_(colideres);
   if (nombres.length === 0) nombres = ['Sin colíderes por el momento'];
   cambio = _adminDocGrupo_(body, 'colideres', nombres, null) || cambio;
 
