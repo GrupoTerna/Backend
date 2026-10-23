@@ -2,7 +2,7 @@
 
 # Consolidado — Mini historial, «Ingresos recientes» e historial de guerra del perfil
 
-*Creado el 22-oct-2026 (pedido de la usuaria). Estado: **tandas 1 a 5 por aplicar** (la tanda 1 se empieza el mismo día; ver «Estado» al final). Sigue a §PF169 (mini historial en el Directorio) y §PF172 (WhatsApp junto al 📈).*
+*Creado el 22-oct-2026 (pedido de la usuaria). Estado: **tanda 1 aplicada; tandas 2 a 5 por aplicar** (ver «Estado» al final). Sigue a §PF169 (mini historial en el Directorio) y §PF172 (WhatsApp junto al 📈).*
 
 ## 0. Indicaciones de la usuaria (texto literal, 22-oct-2026; regla 12)
 
@@ -62,5 +62,7 @@ Orden pedido por la usuaria. Cada tanda debe poder terminarse en una sesión (re
 
 ## 4. Estado
 
-- 22-oct-2026: indicaciones guardadas y dividido en tandas. **Tanda 1: en curso** (misma fecha). Tandas 2 a 5: por aplicar.
+- 22-oct-2026: indicaciones guardadas y dividido en tandas.
+- 22-oct-2026: **tanda 1 aplicada** (`Web`, `sw.js` v143, §PF173): N°, Fecha, Día J/V/S/D, colores por ataques, sombreado por semana y encabezados centrados en la tabla de un jugador. Pendiente de probar en navegador real. Quedan abiertas P1 (color del 1 ataque) y P1b (tabla de comparación); un día opcional con 0 ataques no se pinta de rojo (decisión mía, por confirmar).
+- Tandas 2 a 5: por aplicar.
 - Al terminar todas las tandas: pasar el funcionamiento y las decisiones a `Contexto_Base_Web.md`, informar y **preguntar si se borra** este consolidado (regla 1; no se borra sin un sí explícito).
