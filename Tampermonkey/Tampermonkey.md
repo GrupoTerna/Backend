@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Familia Terna - Corrección de Guerra + Miembros Nuevos + Verificar Semana (RoyaleAPI)
 // @namespace    familia-terna-correccion-guerra
-// @version      3.1
-// @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041]
+// @version      3.2
+// @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041] v3.2 (pedido usuaria, formato ancho de Correcciones_Guerra.csv, §PF164): cada fila del Perfil sale marcada con fuente:'perfil' (el backend guarda así de dónde salió la columna RoyaleAPI: «perfil» o «desconocido»), y al iniciar la Corrección de Guerra se puede FORZAR la lectura del perfil de ciertos jugadores (las cuentas con varios clanes o los tags que se escriban): se visita su perfil aunque Log/Analytics ya los cubrieran y se reenvían TODAS sus semanas, aunque ya estén guardadas, para llenar de verdad la columna RoyaleAPI.
 // @author       Familia Terna
 // @match        https://royaleapi.com/*
 // @icon         https://royaleapi.com/favicon.ico
@@ -598,7 +598,7 @@
    * PUNTO 2 — River Race (nuevos parámetros `temporadaRoyaleApiActual`/
    * `semanaActual`, ver comentario de la fase 'riverrace' más abajo).
    */
-  function estadoInicial(jugadores, clanesTerna, clanTagsTerna, coberturaPorTag, modoBackfill, temporadaRoyaleApiActual, semanaActual) {
+  function estadoInicial(jugadores, clanesTerna, clanTagsTerna, coberturaPorTag, modoBackfill, temporadaRoyaleApiActual, semanaActual, forzarPerfil) {
     var hayClanTags = Array.isArray(clanTagsTerna) && clanTagsTerna.length > 0;
     // River Race (Sección 2.4/3.1 del consolidado) solo se puede ejecutar si
     // el backend mandó una temporada/semana actual válida (no null — puede
@@ -693,7 +693,12 @@
       // — automatizar esa detección se deja pendiente a propósito, no hay
       // que asumir un mecanismo que no está confirmado (ver Sección 10 del
       // consolidado: "no debo asumir una respuesta por mi cuenta").
-      modoBackfill: !!modoBackfill
+      modoBackfill: !!modoBackfill,
+
+      // v3.2 (§PF164): tags (con '#') cuyo perfil se FUERZA: se visitan aunque Log/Analytics ya los cubrieran y se reenvían todas
+      // sus semanas (sin saltar las que ya están guardadas ni las que aportó Log/Analytics en esta corrida), para llenar la
+      // columna RoyaleAPI con lo que dice el perfil. Un estado guardado por la v3.1 no trae el campo: se lee como lista vacía.
+      forzarPerfil: Array.isArray(forzarPerfil) ? forzarPerfil : []
     };
   }
 
@@ -2349,12 +2354,27 @@
     var pendientesTotal = estado.modoBackfill
       ? estado.jugadoresOriginal.slice() // PUNTO 3: backfill visita el perfil de TODOS, cubiertos o no (Sección 4: "Perfil de cada miembro activo actual")
       : estado.jugadoresOriginal.filter(function (j) { return cubiertos.indexOf(j.tag) === -1; });
+    // v3.2 (§PF164): los jugadores cuyo perfil se fuerza se agregan siempre. Si no están en la lista de activos (ya no están en un clan
+    // Terna), se arma su ficha con la URL del perfil y se marca sinHistorial para no escribir su histórico con el tag como nombre.
+    var forzados = estado.forzarPerfil || [];
+    var yaPendientes = {};
+    pendientesTotal.forEach(function (j) { yaPendientes[j.tag] = true; });
+    var forzadosAgregados = 0;
+    forzados.forEach(function (t) {
+      if (yaPendientes[t]) return;
+      var ficha = (estado.jugadorPorTag && estado.jugadorPorTag[t]) ||
+        { tag: t, nombre: t, clan: '', royaleApiUrl: 'https://royaleapi.com/player/' + String(t).replace('#', '') + '/', sinHistorial: true };
+      pendientesTotal.push(ficha);
+      yaPendientes[t] = true;
+      forzadosAgregados++;
+    });
     estado.jugadores = pendientesTotal;
     estado.indice = 0;
 
     log(estado, '[Perfiles] ' + (estado.logTagsEncontrados || []).length + ' jugador(es) cubiertos por Log y ' +
       (estado.analyticsTagsEncontrados || []).length + ' por Analytics. ' + pendientesTotal.length + ' jugador(es) pasan a Perfil' +
-      (estado.modoBackfill ? ' (modo BACKFILL: se visita a TODOS, no solo a los no cubiertos).' : ' (solo los que ni Log ni Analytics cubrieron).'));
+      (estado.modoBackfill ? ' (modo BACKFILL: se visita a TODOS, no solo a los no cubiertos).' : ' (solo los que ni Log ni Analytics cubrieron).') +
+      (forzados.length ? ' Perfiles FORZADOS: ' + forzados.length + ' jugador(es) (' + forzadosAgregados + ' añadido(s) a la lista); se reenvían todas sus semanas.' : ''));
     _flushHistorialSiHaceFalta(estado, true);
     guardarEstado(estado);
 
@@ -2439,7 +2459,7 @@
     // (no solo `nuevasOActualizadas`): coberturaPorTag solo evita reenvíos a
     // Correcciones_Guerra.csv, es un concepto distinto de la cobertura del
     // histórico.
-    for (var pfHist = 0; pfHist < filas.length; pfHist++) {
+    for (var pfHist = 0; !jugador.sinHistorial && pfHist < filas.length; pfHist++) {
       _agregarRegistroHistorial(estado, jugador.tag, jugador.nombre, filas[pfHist].clan, {
         temporadaRoyaleApi: filas[pfHist].temporadaRoyaleApi,
         semana: filas[pfHist].semana,
@@ -2460,21 +2480,25 @@
     var coberturaJugador = (estado.coberturaPorTag && estado.coberturaPorTag[jugador.tag]) || [];
     // v2.9: semanas que Log/Analytics ya aportaron en ESTA corrida — el perfil no las pisa.
     var cubiertasCorrida = (estado.semanasCubiertas && estado.semanasCubiertas[jugador.tag]) || [];
+    // v3.2 (§PF164): con el perfil FORZADO no se salta ninguna semana (ni la ya guardada ni la que aportó Log/Analytics en esta corrida):
+    // la fila del perfil va a su propia columna (RoyaleAPI) y ya no pisa a la del clan.
+    var perfilForzado = (estado.forzarPerfil || []).indexOf(jugador.tag) >= 0;
     var nuevasOActualizadas = 0, yaEnCsv = 0, yaEnCorrida = 0;
     for (var i = 0; i < filas.length; i++) {
       var etiqueta = filas[i].temporadaRoyaleApi + '-' + filas[i].semana;
-      if (cubiertasCorrida.indexOf(etiqueta) >= 0) { yaEnCorrida++; continue; } // ya llegó por Log/Analytics en esta corrida
-      if (coberturaJugador.indexOf(etiqueta) >= 0) { yaEnCsv++; continue; } // ya está en el CSV: no se reenvía
+      if (!perfilForzado && cubiertasCorrida.indexOf(etiqueta) >= 0) { yaEnCorrida++; continue; } // ya llegó por Log/Analytics en esta corrida
+      if (!perfilForzado && coberturaJugador.indexOf(etiqueta) >= 0) { yaEnCsv++; continue; } // ya está en el CSV: no se reenvía
       // FIX (15-ago-2026): se agrega barcos (undefined si esa semana no
       // trae el dato) al objeto de corrección — ver comentario en
       // leerFilasClanWars2() más arriba y en _aplicarCorreccionesGuerra(),
       // 10_CorreccionGuerra.gs (barcos es opcional/preservado, nunca se
       // manda como 0 falso).
-      estado.correcciones.push({ tag: jugador.tag, temporadaRoyaleApi: filas[i].temporadaRoyaleApi, semana: filas[i].semana, ataquesSemana: filas[i].ataquesSemana, fame: filas[i].fame, barcos: filas[i].barcos });
+      // v3.2 (§PF164): fuente:'perfil' le dice al backend que esta fila (sin clanTag) es lo que dice el perfil de RoyaleAPI.
+      estado.correcciones.push({ tag: jugador.tag, temporadaRoyaleApi: filas[i].temporadaRoyaleApi, semana: filas[i].semana, ataquesSemana: filas[i].ataquesSemana, fame: filas[i].fame, barcos: filas[i].barcos, fuente: 'perfil' });
       nuevasOActualizadas++;
     }
     log(estado, '  → ' + filas.length + ' semana(s) de clanes Terna encontradas (' +
-      nuevasOActualizadas + ' nueva(s), ' + yaEnCsv + ' ya en el CSV y ' + yaEnCorrida + ' ya vinieron por Log/Analytics en esta corrida — sin reenviar).');
+      nuevasOActualizadas + ' nueva(s)' + (perfilForzado ? ' — perfil FORZADO: se reenvían todas' : '') + ', ' + yaEnCsv + ' ya en el CSV y ' + yaEnCorrida + ' ya vinieron por Log/Analytics en esta corrida — sin reenviar).');
 
     estado.indice++;
     guardarEstado(estado);
@@ -3183,6 +3207,41 @@
     };
   }
 
+  /**
+   * _pedirPerfilesForzados(cuentasVariosClanes)
+   * v3.2 (§PF164): pregunta qué perfiles FORZAR (visitar siempre y reenviar todas sus semanas). Acepta la palabra VARIOS (las cuentas con
+   * semanas en 2 o más clanes Terna que manda el backend) y/o tags escritos o pegados, separados por coma, punto y coma o espacio.
+   * Cancelar o dejarlo vacío = no forzar ninguno. Devuelve { tags: ['#ABC', ...], invalidos: ['xyz', ...], variosSinLista: bool }.
+   */
+  function _pedirPerfilesForzados(cuentasVariosClanes) {
+    var varios = Array.isArray(cuentasVariosClanes) ? cuentasVariosClanes : [];
+    var texto = prompt(
+      'PERFILES A FORZAR (opcional)\n\n' +
+      'Se vuelve a leer el perfil de estos jugadores y se reenvían TODAS sus semanas, aunque ya estén guardadas o Log/Analytics ya las hayan cubierto. ' +
+      'Sirve para llenar la columna RoyaleAPI con lo que dice el perfil.\n\n' +
+      '• Escribe VARIOS para las ' + varios.length + ' cuenta(s) con semanas en 2 o más clanes Terna.\n' +
+      '• O pega tags separados por coma o espacio (por ejemplo #ABC123, #DEF456). Puedes combinar ambas cosas.\n' +
+      '• Déjalo vacío (o pulsa Cancelar) para no forzar ninguno.',
+      ''
+    );
+    var salida = { tags: [], invalidos: [], variosSinLista: false };
+    if (texto === null || !String(texto).trim()) return salida;
+    var vistos = {};
+    String(texto).trim().split(/[\s,;]+/).forEach(function (tok) {
+      if (!tok) return;
+      if (/^(varios|auto)$/i.test(tok)) {
+        if (!varios.length) salida.variosSinLista = true;
+        varios.forEach(function (t) { if (!vistos[t]) { vistos[t] = true; salida.tags.push(t); } });
+        return;
+      }
+      var t = tok.toUpperCase();
+      if (t.charAt(0) !== '#') t = '#' + t;
+      if (!/^#[0-9A-Z]{3,}$/.test(t)) { salida.invalidos.push(tok); return; }
+      if (!vistos[t]) { vistos[t] = true; salida.tags.push(t); }
+    });
+    return salida;
+  }
+
   function iniciarProcesoCorreccion() {
     if (WEBAPP_URL.indexOf('PEGA_AQUI') >= 0) {
       alert('Antes de iniciar, edita el userscript y pega tu URL de Web App en WEBAPP_URL.');
@@ -3217,11 +3276,16 @@
             pintarPanel(); // FIX (20-sep-2026): saca el mensaje «Cargando…» y vuelve a mostrar el botón Iniciar
             return;
           }
+          // v3.2 (§PF164): se pregunta aquí (y no antes) porque la opción VARIOS usa la lista que acaba de mandar el backend.
+          var forzados = _pedirPerfilesForzados(data.cuentasVariosClanes);
           var estado = estadoInicial(data.jugadores, data.clanesTerna, data.clanTagsTerna, data.coberturaPorTag, modoBackfill,
-            data.temporadaRoyaleApiActual, data.semanaActual);
+            data.temporadaRoyaleApiActual, data.semanaActual, forzados.tags);
           guardarEstado(estado);
           log(estado, 'Lista obtenida: ' + data.jugadores.length + ' jugador(es) activo(s) en clanes Terna.' +
             (modoBackfill ? ' Modo BACKFILL activado.' : ''));
+          if (forzados.tags.length) log(estado, 'Perfiles a FORZAR: ' + forzados.tags.length + ' jugador(es) (se reenvían todas sus semanas en la fase de Perfiles).');
+          if (forzados.invalidos.length) log(estado, '⚠ Se ignoraron ' + forzados.invalidos.length + ' texto(s) que no son un tag válido: ' + forzados.invalidos.join(', '));
+          if (forzados.variosSinLista) log(estado, '⚠ Escribiste VARIOS, pero el backend no mandó la lista de cuentas con varios clanes (versión anterior de Base): no se forzó ninguna por esa vía.');
           if (estado.fase === 'riverrace') {
             log(estado, 'Empezando por la semana en curso: River Race (' + estado.clanTagsTerna.length +
               ' clan(es)) — Temporada ' + estado.temporadaRoyaleApiActual + ', Semana ' + estado.semanaActual + '.');
