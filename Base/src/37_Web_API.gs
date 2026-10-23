@@ -3289,7 +3289,7 @@ function _webIngresosRecientes(opciones) {
   copia.ingresos = ((completa && completa.ingresos) || []).map(function (ing) {
     var limpio = {};
     Object.keys(ing).forEach(function (k) {
-      if (k !== 'esRivalTemporada' && k !== 'clanRivalDetectado' && k !== 'esCuentaAdmin') limpio[k] = ing[k];
+      if (k !== 'esRivalTemporada' && k !== 'clanRivalDetectado' && k !== 'esCuentaAdmin' && k !== 'tieneWsp') limpio[k] = ing[k];
     });
     return limpio;
   });
@@ -3646,6 +3646,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
       // FASE 7 (Parte A, punto 7 del documento): ver bloque "FASE 7 (Parte A)" más arriba en este mismo archivo para el detalle del cruce (por NOMBRE de clan, no por Tag) y su limitación conocida. [→ Contexto_Base_Web.md §37B274]
       esRivalTemporada: esRivalTemporadaIR,
       esCuentaAdmin: (function () { var celIR = soloDigitos(filaDir[DC.CELULAR - 1]); return !!(celIR && celularesAdminIR[celIR]); })(),
+      // 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp en las tarjetas de ingresos recientes): solo confirma SI tenemos el celular de la cuenta (true/false). NUNCA se manda el número ni el link de WhatsApp. Igual que esCuentaAdmin, _webIngresosRecientes() lo quita de la respuesta pública: solo llega con sesión de admin.
+      tieneWsp: !!soloDigitos(filaDir[DC.CELULAR - 1]),
       clanRivalDetectado: clanRivalDetectadoIR ? {
         nombre:  clanRivalDetectadoIR.nombre || '',
         fuente:  clanRivalDetectadoIR.fuente || '',
