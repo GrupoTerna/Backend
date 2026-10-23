@@ -954,6 +954,19 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp en todas las tablas con 📈): webAdminTagsConWsp, lista de Tags con celular registrado (sin números); GET, sesión de admin. [→ Contexto_Base_Web.md §PF172]
+  if (e && e.parameter && e.parameter.accion === 'webAdminTagsConWsp') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminTagsConWsp(e.parameter.sessionToken)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('[Web] Error interno: ' + err.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // FASE 8 (30-ago-2026): webSorteoCalificados, autocompleta la Ruleta de Sorteo con los calificados según la fila más reciente de cada clan en S_Lista; GET, sesión de admin. [→ Contexto_Base_Web.md §38B063]
   if (e && e.parameter && e.parameter.accion === 'webSorteoCalificados') {
     try {
