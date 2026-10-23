@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 22/10/2026 23:20:32 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 23/10/2026 14:26:57 */
 
 
 
@@ -47079,7 +47079,7 @@ function _webHistorialGuerraComparador(tag1, tag2, opciones) {
   var tz = Session.getScriptTimeZone() || 'America/Lima';
 
   // FIX 03-sep-2026 ("Cara a cara: las gráficas deben mostrar solo los días de guerra, no de entrenamiento; agregar también Ataques y Barcos, no solo Fame"): la hoja Guerra/Backup_Guerra.csv registra TODOS los días de la temporada, incluido entrenamiento (Ataques/Fame/Barcos quedan en 0 porque no se puede atacar) y esos ceros distorsionaban la línea; se agrega GC.ETAPA ('GUERRA' o 'ENTRENAMIENTO', el mismo texto de ctx.esDiaGuerra) al registro y se filtra por él antes de devolver el arreglo; también se captura GC.BARCOS para la tercera gráfica. [→ Contexto_Base_Web.md §37B173]
-  function _registrar(tagCelda, fechaCelda, ataquesCelda, fameCelda, barcosCelda, etapaCelda, clanCelda, pIdxCelda, tempCelda) {
+  function _registrar(tagCelda, fechaCelda, ataquesCelda, fameCelda, barcosCelda, etapaCelda, clanCelda, pIdxCelda, tempCelda, semanaCelda) {
     var tagNorm = cleanTag(tagCelda);
     if (!tagNorm || !porTag.hasOwnProperty(tagNorm)) return;
     var fechaObj = (fechaCelda instanceof Date) ? fechaCelda : _parseSpanishDate(fechaCelda);
@@ -47093,7 +47093,9 @@ function _webHistorialGuerraComparador(tag1, tag2, opciones) {
       barcos:  Number(barcosCelda) || 0,
       esDiaGuerra: String(etapaCelda || '').trim().toUpperCase() === 'GUERRA',
       // NUEVO 05-oct-2026: datos para decidir si el día fue opcional (meta ya cruzada); no se mandan al frontend. [→ Contexto_Base_Web.md §37B175]
-      clan: String(clanCelda || ''), pIdx: Number(pIdxCelda), temporada: tempCelda
+      clan: String(clanCelda || ''), pIdx: Number(pIdxCelda), temporada: tempCelda,
+      // NUEVO 23-oct-2026 (tanda 3 del Consolidado_Mini_Historial_y_Perfil.md, columnas Temporada y Semana del mini historial): GC.SEMANA tal como está en la fila (1-based, sectionIndex + 1); si la celda viene vacía se deriva del periodIndex. Se mandan como campos ADITIVOS. [→ Contexto_Base_Web.md §PF178]
+      semana: semanaCelda
     };
   }
 
@@ -47104,7 +47106,7 @@ function _webHistorialGuerraComparador(tag1, tag2, opciones) {
     if (parsed && parsed.length > 1) {
       for (var i = 1; i < parsed.length; i++) {
         var f = parsed[i];
-        _registrar(f[GC.TAG - 1], f[GC.FECHA - 1], f[GC.ATAQUES_HOY - 1], f[GC.FAME - 1], f[GC.BARCOS - 1], f[GC.ETAPA - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], f[GC.TEMPORADA - 1]);
+        _registrar(f[GC.TAG - 1], f[GC.FECHA - 1], f[GC.ATAQUES_HOY - 1], f[GC.FAME - 1], f[GC.BARCOS - 1], f[GC.ETAPA - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], f[GC.TEMPORADA - 1], f[GC.SEMANA - 1]);
       }
     }
   }
@@ -47117,7 +47119,7 @@ function _webHistorialGuerraComparador(tag1, tag2, opciones) {
       var dataGuerra = shGuerra.getRange(2, 1, shGuerra.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
       for (var g = 0; g < dataGuerra.length; g++) {
         var fg = dataGuerra[g];
-        _registrar(fg[GC.TAG - 1], fg[GC.FECHA - 1], fg[GC.ATAQUES_HOY - 1], fg[GC.FAME - 1], fg[GC.BARCOS - 1], fg[GC.ETAPA - 1], fg[GC.CLAN - 1], fg[GC.PERIOD_IDX - 1], fg[GC.TEMPORADA - 1]);
+        _registrar(fg[GC.TAG - 1], fg[GC.FECHA - 1], fg[GC.ATAQUES_HOY - 1], fg[GC.FAME - 1], fg[GC.BARCOS - 1], fg[GC.ETAPA - 1], fg[GC.CLAN - 1], fg[GC.PERIOD_IDX - 1], fg[GC.TEMPORADA - 1], fg[GC.SEMANA - 1]);
       }
     }
   } catch (eGuerraViva) {
@@ -47137,6 +47139,13 @@ function _webHistorialGuerraComparador(tag1, tag2, opciones) {
       .filter(function (r) { return r.esDiaGuerra; })
       .map(function (r) {
         var o = { fecha: r.fecha, ataques: r.ataques, fame: r.fame, barcos: r.barcos };
+        // NUEVO 23-oct-2026 (tanda 3, campos ADITIVOS; ningún consumidor actual los usa): temporada interna (GC.TEMPORADA), semana 1-based (GC.SEMANA; si falta, periodIndex / 7 + 1) y clan de ese día; un dato ausente se omite en vez de mandar NaN. [→ Contexto_Base_Web.md §PF178]
+        var tInt = Number(r.temporada);
+        if (r.temporada !== '' && r.temporada !== null && isFinite(tInt) && tInt > 0) o.temporada = tInt;
+        var sNum = Number(r.semana);
+        if (r.semana !== '' && r.semana !== null && r.semana !== undefined && isFinite(sNum) && sNum > 0) o.semana = sNum;
+        else if (isFinite(r.pIdx)) o.semana = periodIdxToSectionIndex(r.pIdx) + 1;
+        if (r.clan) o.clan = r.clan;
         // NUEVO 05-oct-2026 (los días con meta ya cruzada se muestran como opcionales): campo ADITIVO opcional:true solo cuando el clan ya había cruzado la meta al empezar ese día; nunca el jueves (pIdx % 7 === 3, misma regla que _clanYaCruzoMetaEnPeriodo(), 22_ControlCalendario.gs) ni en semana de coliseo; sin dato de Guerra_Logs no se marca; ataques/fame/barcos no se alteran; usa _cruceMetaDesdeGuerraLogs_() (en memoria, Guerra_Logs leído una vez). [→ Contexto_Base_Web.md §37B179]
         try {
           // 07-oct-2026 (criterio unificado): viernes a domingo (pIdx % 7 > 3) se evalúan con Guerra_Logs; Supercell no confirma desde qué día se puede cruzar la meta. [→ Contexto_Base_Web.md §37B180]
