@@ -2,7 +2,7 @@
 
 # Consolidado — Mini historial, «Ingresos recientes» e historial de guerra del perfil
 
-*Creado el 22-oct-2026 (pedido de la usuaria). Estado: **tandas 1 y 1b aplicadas; tandas 2, 3, 4, 5, 6 y 7 por aplicar** (ver «Estado» al final). El 22-oct-2026 se añadió la tanda 6 (`guerra.html`) y se guardaron las respuestas de la usuaria (sección 3b). Sigue a §PF169 (mini historial en el Directorio) y §PF172 (WhatsApp junto al 📈).*
+*Creado el 22-oct-2026 (pedido de la usuaria). Estado: **tandas 1, 1b y 2 aplicadas; tandas 3, 4, 5, 6 y 7 por aplicar** (ver «Estado» al final). El 22-oct-2026 se añadió la tanda 6 (`guerra.html`) y se guardaron las respuestas de la usuaria (sección 3b). Sigue a §PF169 (mini historial en el Directorio) y §PF172 (WhatsApp junto al 📈).*
 
 ## 0. Indicaciones de la usuaria (texto literal, 22-oct-2026; regla 12)
 
@@ -145,5 +145,6 @@ Lo que la usuaria respondió (texto literal entre comillas) y cómo lo leí:
 - 22-oct-2026 (segunda tanda de respuestas): se guardaron las respuestas (sección 3c) y se añadieron las **tandas 1b** (comparación y enlaces) y **7** (pastilla de mensajes de guerra). **Solo se escribió el plan; no se tocó código** en esta ronda.
 - 23-oct-2026: **tanda 1b aplicada** (`Web`, commit `2c31b06`, `sw.js` v145, §PF174): la tabla «Comparar con» lleva N°, Fecha y Día, color por jugador y semanas alternadas; el título de la ventana y los encabezados de los dos jugadores enlazan a su perfil. P15 y P16 se resolvieron con el valor por defecto (por confirmar al verlo). Pendiente de probar en navegador real.
 - 23-oct-2026: se revisó por qué la fila de mensajes de guerra de `guerra.html` no aparecía (base de la tanda 7): el servidor respondía «No tienes acceso a esta categoría» porque el `Cat_disp` de la usuaria no incluye «Mensaje de Guerra» (§PF030). Se arregla en `permisos.html`, no en el código; la fila ahora muestra el motivo (`sw.js` v146 y v147). La pastilla de la tanda 7 queda a la espera de eso.
-- Tandas 2, 3, 4, 5, 6 y 7: por aplicar. Abiertas: P3 (por confirmar), P5 (reformulada en 3c), P11 (por confirmar al verlo), P12 a P16 y la hipótesis del 0 contra 4 (tanda 5).
+- 23-oct-2026: **tanda 2 aplicada** (`Web`, commit `259e679`, `sw.js` v148, §PF175): el 📈 del mini historial a la derecha del WhatsApp en las tarjetas de «Ingresos recientes» y la pastilla «📱 Ocultar con número» (solo admins; actualiza contador y gráficas, P4). Pendiente de probar en navegador real con sesión de admin.
+- Tandas 3, 4, 5, 6 y 7: por aplicar. Abiertas: P3 (por confirmar), P5 (reformulada en 3c), P11 (por confirmar al verlo), P12 a P16 y la hipótesis del 0 contra 4 (tanda 5).
 - Al terminar todas las tandas: pasar el funcionamiento y las decisiones a `Contexto_Base_Web.md`, informar y **preguntar si se borra** este consolidado (regla 1; no se borra sin un sí explícito).
