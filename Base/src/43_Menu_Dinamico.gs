@@ -409,7 +409,17 @@ function _leerEntradasEstaticasDrive(ss) {
 
     var contenido = '';
     try {
-      contenido = DocumentApp.openById(f.getId()).getBody().getText().trim();
+      var docPlantilla = DocumentApp.openById(f.getId());
+      // PF186 (23-oct-2026, pedido de la usuaria): en los Docs de Bienvenida y Descripción, el bloque Líder / Colíderes / Administradores se reescribe con los datos reales de Directorio antes de leer el texto; solo se guarda el Doc si algo cambió. [→ Contexto_Base_Web.md §PF186]
+      try {
+        if (_adminDocActualizar_(docPlantilla, categoria, clan)) {
+          docPlantilla.saveAndClose();
+          docPlantilla = DocumentApp.openById(f.getId());
+        }
+      } catch (eAdm) {
+        Logger.log('[Plantillas] No se pudo actualizar la administración de "' + nombre + '": ' + eAdm.message);
+      }
+      contenido = docPlantilla.getBody().getText().trim();
     } catch(e2) {
       Logger.log('[Plantillas] Error leyendo "' + nombre + '": ' + e2.message);
       continue;
