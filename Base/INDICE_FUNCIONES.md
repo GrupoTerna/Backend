@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2161 nombres en 58 archivos .gs.
+Código real: `Base/src/`. Total: 2179 nombres en 59 archivos .gs.
 
 ## Por archivo
 
@@ -63,6 +63,7 @@ Código real: `Base/src/`. Total: 2161 nombres en 58 archivos .gs.
 - **55_Reparar_DiasConExceso.gs** (30 funciones): _excDiasOpciones, _excDiasNum, _excDiasAgrupar, _excDiasSegmentos, _excDiasFaltanteJueves, _excDiasSoluciones, _excDiasEsCero, _excDiasResolver, _excDiasResumir, _excDiasNecesitaReparo, _excDiasClasificar, _excDiasTextoPorDia, _excDiasTextoActual, _excDiasRegistradoPorDia, _excDiasElegirSolucion, _excDiasFinalDe, _excDiasOrigenNuevo, _excDiasPlanificar, _excDiasFilaNueva, _excDiasAplicarPlan, _excDiasVerificar, repararDiasConExcesoInforme, repararDiasConExcesoAplicarUnicas, repararDiasConExcesoAplicar, _repararDiasConExceso_, informeFameCurrentRiverRace52, aplicarFameCurrentRiverRace52, _fameCrr52Planificar_, _fameCrr52_, _fameCrr52Verificar_
 - **56_CurrentRiverRace_Dias.gs** (10 funciones): _crrParsearNombre_, _crrCapturasDesdeArchivos_, _crrResolverJugador_, _crrFameDia_, _crrSubcarpeta_, _crrCapturasDeSemana_, _crrDiasDeJugador_, probarCurrentRiverRaceDias, _crrAyerParaCierre_, _crrDomingoParaTotales_
 - **57_ReconstruirSemanaPorDias.gs** (18 funciones): _rsCatalogo, _rsRegistros, _rsMapeos, _rsMenor, _rsResolverNivel, _rsResolver, _rsCrrRestricciones, _rsPlanificar, _rsClaveSem_, _rsCursorLeer_, _rsCursorGuardar_, totalesSemanaPorDiasReiniciar, _rsClavesHoja, _rsObjetivos, _rsObjetivosDeJson_, _rsObjetivosGuardarCache_, _rsObjetivosDeCache_, _totSemanaPorDias_
+- **58_Docs_Administracion.gs** (16 funciones): _adminDocActualizar_, _adminDocNorm_, _adminDocLeerEquipo_, _adminDocTagDeClan_, _adminDocOrdenNombres_, _adminDocLineas_, _adminDocPersonaTieneCuenta_, _adminDocAdminsExtra_, _adminDocCuentaPrincipal_, _adminDocQuitarVineta_, _adminDocEncabezado_, _adminDocAplicarClan_, _adminDocBuscarGrupo_, _adminDocSetTexto_, _adminDocGrupo_, _adminDocAplicarFamilia_
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
@@ -91,11 +92,28 @@ Ninguno.
 | `_actualizarSemanaActualNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 537 | Contexto_Base_Web.md §14B038 |
 | `_actualizarUnDocParticipantesCalificados` | función | 28_Torneos_Docs.gs | 794 | Contexto_Base_Web.md §28B056 |
 | `_actualizarValorLogSiCambia_` | función | 17_GuerraSheet.gs | 385 | Contexto_Base_Web.md §17B019 |
+| `_adminDocActualizar_` | función | 58_Docs_Administracion.gs | 17 | Contexto_Base_Web.md §PF186 |
+| `_adminDocAdminsExtra_` | función | 58_Docs_Administracion.gs | 152 | Contexto_Base_Web.md §PF186 |
+| `_adminDocAplicarClan_` | función | 58_Docs_Administracion.gs | 196 | Contexto_Base_Web.md §PF186 |
+| `_adminDocAplicarFamilia_` | función | 58_Docs_Administracion.gs | 309 | Contexto_Base_Web.md §PF186 |
+| `_adminDocBuscarGrupo_` | función | 58_Docs_Administracion.gs | 215 | Contexto_Base_Web.md §PF186 |
+| `_adminDocCuentaPrincipal_` | función | 58_Docs_Administracion.gs | 165 | Contexto_Base_Web.md §PF186 |
+| `_adminDocEncabezado_` | función | 58_Docs_Administracion.gs | 186 | Contexto_Base_Web.md §PF186 |
+| `_adminDocEquipoCache_` | global | 58_Docs_Administracion.gs | 12 | Contexto_Base_Web.md §PF186 |
+| `_adminDocGrupo_` | función | 58_Docs_Administracion.gs | 244 | Contexto_Base_Web.md §PF186 |
+| `_adminDocLeerEquipo_` | función | 58_Docs_Administracion.gs | 48 | Contexto_Base_Web.md §PF186 |
+| `_adminDocLineas_` | función | 58_Docs_Administracion.gs | 128 | Contexto_Base_Web.md §PF186 |
+| `_adminDocNorm_` | función | 58_Docs_Administracion.gs | 41 | Contexto_Base_Web.md §PF186 |
+| `_adminDocOrdenNombres_` | función | 58_Docs_Administracion.gs | 117 | Contexto_Base_Web.md §PF186 |
+| `_adminDocPersonaTieneCuenta_` | función | 58_Docs_Administracion.gs | 143 | Contexto_Base_Web.md §PF186 |
+| `_adminDocQuitarVineta_` | función | 58_Docs_Administracion.gs | 181 | Contexto_Base_Web.md §PF186 |
+| `_adminDocSetTexto_` | función | 58_Docs_Administracion.gs | 236 | Contexto_Base_Web.md §PF186 |
+| `_adminDocTagDeClan_` | función | 58_Docs_Administracion.gs | 112 | Contexto_Base_Web.md §PF186 |
 | `_adquirirLockEjecucion` | función | 00_Main.gs | 1570 |  |
 | `_adquirirLockPYMProgramado_` | función | 00_Main.gs | 699 |  |
 | `_agregarCartasApiAMapa` | función | 09_API_ClashRoyale.gs | 1450 | Contexto_Base_Web.md §09B077 |
 | `_agregarCategoriaAExtra` | función | 30_Mensajes.gs | 430 | Contexto_Base_Web.md §30B029 |
-| `_agregarEntradasDinamicas` | función | 43_Menu_Dinamico.gs | 431 | Contexto_Base_Web.md §43B019 |
+| `_agregarEntradasDinamicas` | función | 43_Menu_Dinamico.gs | 441 | Contexto_Base_Web.md §43B019 |
 | `_agregarSemanasTemporadaAlSelectorRecientes` | función | 37_Web_API.gs | 2790 | Contexto_Base_Web.md §37B222 |
 | `_agruparColumnasContiguas` | función | 04_Formato_Comun.gs | 1099 | Contexto_Base_Web.md §04B070 |
 | `_agruparPorClanOrdenado` | función | 30_Mensajes.gs | 595 | Contexto_Base_Web.md §30B033 |
@@ -1019,7 +1037,7 @@ Ninguno.
 | `_opcionesDesdeTorneosHoy` | función | 44_BotWhatsApp.gs | 1108 |  |
 | `_opcionesDesdeTorneosMenu` | función | 44_BotWhatsApp.gs | 1083 |  |
 | `_ordenarBloquesFechaNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1522 | Contexto_Base_Web.md §14B092 |
-| `_ordenarEntradasIndice` | función | 43_Menu_Dinamico.gs | 476 | Contexto_Base_Web.md §43B022 |
+| `_ordenarEntradasIndice` | función | 43_Menu_Dinamico.gs | 486 | Contexto_Base_Web.md §43B022 |
 | `_ordenarFilasCatalogoInsignias` | función | 32_Insignias.gs | 36 | Contexto_Base_Web.md §32B005 |
 | `_ordenarTListaPorFecha` | función | 26_Torneos_Core.gs | 2161 | Contexto_Base_Web.md §26B172 |
 | `_ordenRango` | función | 30_Mensajes.gs | 75 | Contexto_Base_Web.md §30B008 |
@@ -1511,6 +1529,7 @@ Ninguno.
 | `actualizarIndiceSheet` | función | 03_Indice_Sheet.gs | 51 | Contexto_Base_Web.md §03B003 |
 | `actualizarMenuSheet` | función | 43_Menu_Dinamico.gs | 9 | Contexto_Base_Web.md §43B002 |
 | `actualizarTablasRangosDoc` | función | 25_Doc_AscensosDescensos.gs | 125 | Contexto_Base_Web.md §25B015 |
+| `ADMIN_DOC_CATEGORIAS` | global | 58_Docs_Administracion.gs | 9 | Contexto_Base_Web.md §PF186 |
 | `ADMINISTRADORES_TOTAL_COLS` | global | 11_DirectorioSheet.gs | 44 |  |
 | `AHG` | global | 20_HistorialGuerraJugador.gs | 20 |  |
 | `AHG_ENCABEZADOS` | global | 20_HistorialGuerraJugador.gs | 31 |  |
