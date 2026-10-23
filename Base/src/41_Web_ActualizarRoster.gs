@@ -21,6 +21,7 @@ var WEB_ACTROSTER_TURNO_REINTENTO_MS = 30 * 1000;          // cada cuánto reint
 var WEB_ACTROSTER_PENDIENTE_MAX_MS = 12 * 60 * 1000;       // un 'pendiente' más viejo que esto se da por fallido (mayor que TURNO_MAX)
 var WEB_ACTROSTER_EJECUTANDO_MAX_MS = 15 * 60 * 1000;      // un 'ejecutando' más viejo que esto se da por fallido (la cadena puede usar varias tandas)
 var WEB_ACTROSTER_ARRANQUE_MS = 5 * 1000;                  // retraso del disparador de un solo uso
+var WEB_ACTROSTER_CACHES_A_BORRAR = ['web_ingresos_recientes_v1', 'web_roster_v1']; // §PF180: lo que lee Ingresos recientes de directorio.html (cacheado 60 s); se borra al terminar para que la recarga del botón «Actualizar» no reciba datos de hasta 60 s antes
 
 var WEB_ACTROSTER_NOMBRES_PASOS = [
   'Clanes básico (sin /players)',
@@ -255,6 +256,7 @@ function _webActualizarRosterContinuar() {
     // Recalentar la cache de la web ANTES de cerrar el estado (sigue en 'ejecutando'), para que cuando el frontend vea 'ok' ya encuentre los datos nuevos (AVISO 4).
     est.mensaje = 'Datos actualizados. Actualizando la web...';
     _webActRosterGuardarEstado_(est);
+    _webActRosterInvalidarCachesWeb_();
     est.webRecalentada = _webActRosterRecalentarWeb_(t0);
     _liberarLockEjecucion();
     _webActRosterCerrar_(est, 'ok', 'Clanes, Directorio, Nuevos y Guerra actualizados.' +
@@ -325,6 +327,15 @@ function _webActRosterLeerEstado_() {
 
 function _webActRosterGuardarEstado_(est) {
   PropertiesService.getScriptProperties().setProperty(WEB_ACTROSTER_PROP_ESTADO, JSON.stringify(est));
+}
+
+// §PF180: borra las cachés de 60 s que lee Ingresos recientes (webIngresosRecientes y webRoster) al terminar la cadena en 'ok'. Nunca lanza error.
+function _webActRosterInvalidarCachesWeb_() {
+  try {
+    CacheService.getScriptCache().removeAll(WEB_ACTROSTER_CACHES_A_BORRAR);
+  } catch (e) {
+    Logger.log('[ActRoster] No se pudieron borrar las caches web: ' + e.message);
+  }
 }
 
 /** Cierra la solicitud con un estado final ('ok', 'omitido', 'error'), la guarda y la deja en el registro. */
