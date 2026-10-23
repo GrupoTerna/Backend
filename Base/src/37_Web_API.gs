@@ -4271,6 +4271,33 @@ function _webAdminParticipacionHoyGuerra(token) {
   return _getParticipacionHoyGuerra(ctx);
 }
 
+// _webAdminTagsConWsp(): 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp junto al 📈 del mini historial en todas las tablas): devuelve la lista de Tags (sin #) cuyo Directorio tiene celular registrado, de cualquier Estado. NUNCA manda el número ni el enlace de WhatsApp. Solo admins: las tablas públicas (roster y guerra publicados como JSON estático) no llevan este dato; el frontend lo pide aparte y pinta el ícono por Tag. [→ Contexto_Base_Web.md §PF172]
+function _webAdminTagsConWsp(token) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+
+  var ss = _getSs();
+  var shDirWsp = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  var dataDirWsp;
+  if (shDirWsp && shDirWsp.getLastRow() >= 2) {
+    dataDirWsp = _leerDirectorioFisicoComoDC(ss);
+  } else {
+    var lecturaDirWsp = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
+    dataDirWsp = (lecturaDirWsp.origen === 'csv') ? lecturaDirWsp.filas : [];
+  }
+
+  var tagsWsp = [];
+  var vistosWsp = {};
+  for (var iw = 0; iw < dataDirWsp.length; iw++) {
+    var filaWsp = dataDirWsp[iw];
+    var tagWsp = cleanTag(filaWsp[DC.TAG - 1]);
+    if (tagWsp && !vistosWsp[tagWsp] && soloDigitos(filaWsp[DC.CELULAR - 1])) {
+      vistosWsp[tagWsp] = true;
+      tagsWsp.push(tagWsp);
+    }
+  }
+  return { ok: true, tags: tagsWsp };
+}
+
 // _webAdminOtrasCuentas(): FASE 7 (29-ago-2026, pedido del usuario — botón "Ver otras cuentas" del perfil en jugadores.html, visible SOLO para admins logueados). Dado el Tag de un jugador, busca su Celular (primero en Directorio activo; si no está ahí, en… [→ Contexto_Base_Web.md §37B307]
 function _webAdminOtrasCuentas(token, tag) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
