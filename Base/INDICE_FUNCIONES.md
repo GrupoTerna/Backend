@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2159 nombres en 58 archivos .gs.
+Código real: `Base/src/`. Total: 2161 nombres en 58 archivos .gs.
 
 ## Por archivo
 
@@ -46,7 +46,7 @@ Código real: `Base/src/`. Total: 2159 nombres en 58 archivos .gs.
 - **38_Web_Endpoints.gs** (46 funciones): _webRateLimitExcedido, _webRespuesta429, _webLoginRateLimitExcedido, _webRespuesta429Login, _webMarcarSesionVencida, doGet, testContactosEndpoint, testDashboardEndpoint, testTamanioGuerraEnVivo, _testTamanioGuerraEnVivoUna_, doPost, _normalizarClanTagContactos, _leerMapaCodigosClanContactos, _generarJsonContactos, _getDatosDashboard, _getMinGClanMapsDash_, _nombreClanDesdeHojaClanDash_, _leerDirectorioDashboard_, _dashTiempoIniciar_, _dashAcum_, _dashTiempoMarca_, _dashTiempoFin_, _diagGuerraVivo_, verDiagnosticoGuerraVivo, _getDatosDashboardCalcular_, _webAportesInactivos, _fmtFechaCortaSemana, _elegirPeriodoGuerraCongelado_, _getInfoTemporada, _getRangoFechasSemana, _getUltimaSemanaJugada, _getSemanasTemporada, _getValoresDiariosSelectores, _getParticipantesGuerraTemporada_, _getControlActivosGridPorTemporada, _getValoresDiariosPorSemana, _diasOpcionalesClanSemana_, _getControlTemporadaPorClan, _getTemporadasDisponibles, _getControlTemporadaSelectores, _getControlTemporadaPorTemporada, _getAportesInactivosSemanaActual, _escapeHtmlDash, _getNombreClanDump, _getClanTagByName, _generarDashboardHtml
 - **39_CartasWeb.gs** (4 funciones): _webCatalogoCartasPorId, _webCartaDesdeCatalogo, _webCartasCsvPrimero, _webCartaFavoritaCsvPrimero
 - **40_Web_Noticias.gs** (13 funciones): _webAdminNoticiasSemana, _noticiasSeccion_, _noticiasSumarDias_, _noticiasMesDeTemporada_, _noticiasEtiquetaSorteo_, _noticiasLimitesBarcos_, _noticiasBarcos_, _noticiasAscensos_, _noticiasPosiciones_, _noticiasNum_, _noticiasGuerra_, _noticiasMovimientos_, _noticiasPruebaManual
-- **41_Web_ActualizarRoster.gs** (18 funciones): _webAdminActualizarRoster, _webAdminEstadoActualizacion, _webActRosterPasos_, _webActualizarRosterEjecutar, _webActualizarRosterContinuar, _webActRosterRecalentarWeb_, _webActRosterExigirFuncion_, _webActRosterLeerEstado_, _webActRosterGuardarEstado_, _webActRosterCerrar_, _webActRosterLimpiarCadena_, _webActRosterEstadoVigente_, _webActRosterBloqueo_, _webActRosterInfoCandado_, _webActRosterEjecucionEnCurso_, _webActRosterNombreTarea_, _webActRosterTextoVentana_, _webActRosterFechaLima_
+- **41_Web_ActualizarRoster.gs** (19 funciones): _webAdminActualizarRoster, _webAdminEstadoActualizacion, _webActRosterPasos_, _webActualizarRosterEjecutar, _webActualizarRosterContinuar, _webActRosterRecalentarWeb_, _webActRosterExigirFuncion_, _webActRosterLeerEstado_, _webActRosterGuardarEstado_, _webActRosterInvalidarCachesWeb_, _webActRosterCerrar_, _webActRosterLimpiarCadena_, _webActRosterEstadoVigente_, _webActRosterBloqueo_, _webActRosterInfoCandado_, _webActRosterEjecucionEnCurso_, _webActRosterNombreTarea_, _webActRosterTextoVentana_, _webActRosterFechaLima_
 - **42_Web_TiemposActualizacion.gs** (9 funciones): _registrarConsultaApiClanes_, _registrarGeneracionMensajes_, _tiemposActualizacionWeb_, _tiemposApiWeb_, _tiemposMensajesWeb_, _tiemposCategoriaEsGenerada_, _tiemposLeerProp_, _tiemposFechaLima_, verTiemposActualizacion
 - **43_Menu_Dinamico.gs** (20 funciones): actualizarMenuSheet, syncPlantillasDesdeDrive, _actualizarIndiceContenido, _actualizarMenuDinamico, _renombrarDocFormatoAntiguo, _getOrdenExtra, _getOrdenClanHoja, _getIndiceContenido, _leerEntradasIndicePorTipo, _guardarIndiceContenido, _guardarIndiceContenidoEnCache, _leerIndiceContenidoDeCache, _leerIndiceContenidoDeDrive, _reconstruirIndiceContenido, _leerIndiceGuardado, _leerEntradasIndiceGuardadoPorTipo, inicializarIndiceContenido, _leerEntradasEstaticasDrive, _agregarEntradasDinamicas, _ordenarEntradasIndice
 - **44_BotWhatsApp.gs** (70 funciones): simularMensajeBot, _extraerMensajeMeta, _evitarAutoLinkWsp, _sanitizarPayloadWsp, _postWhatsApp, _enviarMensajeWhatsApp, _enviarMensajeBotones, _enviarMensajeLista, _truncarTitulo, _enviarRespuestaBot, _opcionesDesdeCuentas, _opcionesDesdeCategorias, _opcionesDesdeClanContenido, _opcionesDesdeClanInfo, _conOpciones, _avanzarEstado, _reconstruirMensajeDePaso, _procesarMensajeEntrante, _getEstadoUsuario, _setEstadoUsuario, _clearEstadoUsuario, _getFilasDirectorioPorTelefono, _esUsuarioAutorizado, _esAdministrador, _getCuentasPorTelefono, _msgRestriccion, _msgBienvenida, _getFilasCompletasDirectorioPorTelefono, _msgBienvenidaAdmin, _digitosAEmojis, _msgElegirCuenta, _leerCategoriasDeExtra, _catDispDeTelefono, _categoriasDisponibles, _msgElegirCategoria, _matchOpcion, _leerSeccionDocDrive, _iniciarRespuestaCategoria, _msgGestionAccion, _opcionesDesdeGestionAccion, _getCelularesActualesPorTag, _listarMiembrosClanParaGestion, _msgGestionElegirMiembro, _matchMiembroGestion, _msgGestionPedirNomMulti, _procesarPasoGestion, _esRespuestaVacia, _msgRegistrarPedirPrefijo, _msgRegistrarPedirCelular, _msgRegistrarPedirPrestamo, _msgElegirOpcionClan, _msgElegirClanInfo, _msgTorneosMenu, _opcionesDesdeTorneosMenu, _msgTorneosPedirLink, _msgTorneosPedirFecha, _msgTorneosPedirHora, _msgTorneosListaHoy, _opcionesDesdeTorneosHoy, _esFechaValida, _esHoraValida, _respuestaTorneosParticipantesCalificados, _respuestaTorneosGanadores, _procesarPasoTorneos, _obtenerOpcionesClanCategoria, _formatearCaminoLeyendas, _respuestaInfoMi, _respuestaInfoClan, _respuestaInfoClanPorTag, _clanTernaOpciones
@@ -1315,23 +1315,24 @@ Ninguno.
 | `_vigUrHost_` | función | 45_Vigilante_UptimeRobot.gs | 242 |  |
 | `_vigUrLeerEstado_` | función | 45_Vigilante_UptimeRobot.gs | 39 |  |
 | `_WEB_OCULTAS_IDX_` | global | 37_Web_API.gs | 3732 |  |
-| `_webActRosterBloqueo_` | función | 41_Web_ActualizarRoster.gs | 380 | Contexto_Base_Web.md §41B008, PF166 |
-| `_webActRosterCerrar_` | función | 41_Web_ActualizarRoster.gs | 331 |  |
-| `_webActRosterEjecucionEnCurso_` | función | 41_Web_ActualizarRoster.gs | 413 |  |
-| `_webActRosterEstadoVigente_` | función | 41_Web_ActualizarRoster.gs | 355 | Contexto_Base_Web.md §41B007, PF166 |
-| `_webActRosterExigirFuncion_` | función | 41_Web_ActualizarRoster.gs | 304 |  |
-| `_webActRosterFechaLima_` | función | 41_Web_ActualizarRoster.gs | 454 |  |
-| `_webActRosterGuardarEstado_` | función | 41_Web_ActualizarRoster.gs | 326 |  |
-| `_webActRosterInfoCandado_` | función | 41_Web_ActualizarRoster.gs | 402 |  |
-| `_webActRosterLeerEstado_` | función | 41_Web_ActualizarRoster.gs | 316 |  |
-| `_webActRosterLimpiarCadena_` | función | 41_Web_ActualizarRoster.gs | 340 |  |
-| `_webActRosterNombreTarea_` | función | 41_Web_ActualizarRoster.gs | 424 |  |
-| `_webActRosterPasos_` | función | 41_Web_ActualizarRoster.gs | 145 | Contexto_Base_Web.md §PF166 |
-| `_webActRosterRecalentarWeb_` | función | 41_Web_ActualizarRoster.gs | 278 | Contexto_Base_Web.md §41B006, PF166 |
-| `_webActRosterTextoVentana_` | función | 41_Web_ActualizarRoster.gs | 441 |  |
-| `_webActualizarRosterContinuar` | función | 41_Web_ActualizarRoster.gs | 220 | Contexto_Base_Web.md §PF166 |
-| `_webActualizarRosterEjecutar` | función | 41_Web_ActualizarRoster.gs | 170 | Contexto_Base_Web.md §41B005, PF166 |
-| `_webAdminActualizarRoster` | función | 41_Web_ActualizarRoster.gs | 39 | Contexto_Base_Web.md §41B003 |
+| `_webActRosterBloqueo_` | función | 41_Web_ActualizarRoster.gs | 391 | Contexto_Base_Web.md §41B008, PF166 |
+| `_webActRosterCerrar_` | función | 41_Web_ActualizarRoster.gs | 342 |  |
+| `_webActRosterEjecucionEnCurso_` | función | 41_Web_ActualizarRoster.gs | 424 |  |
+| `_webActRosterEstadoVigente_` | función | 41_Web_ActualizarRoster.gs | 366 | Contexto_Base_Web.md §41B007, PF166 |
+| `_webActRosterExigirFuncion_` | función | 41_Web_ActualizarRoster.gs | 306 |  |
+| `_webActRosterFechaLima_` | función | 41_Web_ActualizarRoster.gs | 465 |  |
+| `_webActRosterGuardarEstado_` | función | 41_Web_ActualizarRoster.gs | 328 |  |
+| `_webActRosterInfoCandado_` | función | 41_Web_ActualizarRoster.gs | 413 |  |
+| `_webActRosterInvalidarCachesWeb_` | función | 41_Web_ActualizarRoster.gs | 333 |  |
+| `_webActRosterLeerEstado_` | función | 41_Web_ActualizarRoster.gs | 318 |  |
+| `_webActRosterLimpiarCadena_` | función | 41_Web_ActualizarRoster.gs | 351 |  |
+| `_webActRosterNombreTarea_` | función | 41_Web_ActualizarRoster.gs | 435 |  |
+| `_webActRosterPasos_` | función | 41_Web_ActualizarRoster.gs | 146 | Contexto_Base_Web.md §PF166 |
+| `_webActRosterRecalentarWeb_` | función | 41_Web_ActualizarRoster.gs | 280 | Contexto_Base_Web.md §41B006, PF166 |
+| `_webActRosterTextoVentana_` | función | 41_Web_ActualizarRoster.gs | 452 |  |
+| `_webActualizarRosterContinuar` | función | 41_Web_ActualizarRoster.gs | 221 | Contexto_Base_Web.md §PF166 |
+| `_webActualizarRosterEjecutar` | función | 41_Web_ActualizarRoster.gs | 171 | Contexto_Base_Web.md §41B005, PF166 |
+| `_webAdminActualizarRoster` | función | 41_Web_ActualizarRoster.gs | 40 | Contexto_Base_Web.md §41B003 |
 | `_webAdminAscensosEditables` | función | 24_Historial_Ascensos.gs | 750 | Contexto_Base_Web.md §24B043 |
 | `_webAdminBarcosAnterior` | función | 37_Web_API.gs | 2902 | Contexto_Base_Web.md §PF105 |
 | `_webAdminBuscarInfiltrado` | función | 15_DeteccionInfiltrados.gs | 224 | Contexto_Base_Web.md §15B009 |
@@ -1345,7 +1346,7 @@ Ninguno.
 | `_webAdminCuentasInactivas` | función | 37_Web_API.gs | 4151 | Contexto_Base_Web.md §37B300 |
 | `_webAdminDocIdsValidos` | función | 37_Web_API.gs | 2711 | Contexto_Base_Web.md §37B216 |
 | `_webAdminEditarAutorAscenso` | función | 24_Historial_Ascensos.gs | 800 | Contexto_Base_Web.md §24B046 |
-| `_webAdminEstadoActualizacion` | función | 41_Web_ActualizarRoster.gs | 99 | Contexto_Base_Web.md §41B004 |
+| `_webAdminEstadoActualizacion` | función | 41_Web_ActualizarRoster.gs | 100 | Contexto_Base_Web.md §41B004 |
 | `_webAdminGanadoresTorneoDetalle` | función | 37_Web_API.gs | 3152 | Contexto_Base_Web.md §37B245 |
 | `_webAdminGuardarGestion` | función | 37_Web_API.gs | 2359 | Contexto_Base_Web.md §37B193 |
 | `_webAdminListaMiembrosClan` | función | 37_Web_API.gs | 2408 | Contexto_Base_Web.md §37B198 |
@@ -2201,12 +2202,13 @@ Ninguno.
 | `VIG_UR_ULTIMO_CHEQUEO_MAX_MS` | global | 45_Vigilante_UptimeRobot.gs | 18 |  |
 | `vigilarUptimeRobotAhora` | función | 45_Vigilante_UptimeRobot.gs | 252 |  |
 | `WEB_ACTROSTER_ARRANQUE_MS` | global | 41_Web_ActualizarRoster.gs | 23 |  |
+| `WEB_ACTROSTER_CACHES_A_BORRAR` | global | 41_Web_ActualizarRoster.gs | 24 |  |
 | `WEB_ACTROSTER_EJECUTANDO_MAX_MS` | global | 41_Web_ActualizarRoster.gs | 22 |  |
 | `WEB_ACTROSTER_ESPERA_MS` | global | 41_Web_ActualizarRoster.gs | 18 |  |
 | `WEB_ACTROSTER_HANDLER` | global | 41_Web_ActualizarRoster.gs | 15 |  |
 | `WEB_ACTROSTER_HANDLER_CONTINUAR` | global | 41_Web_ActualizarRoster.gs | 16 |  |
 | `WEB_ACTROSTER_ID_TANDAS` | global | 41_Web_ActualizarRoster.gs | 17 |  |
-| `WEB_ACTROSTER_NOMBRES_PASOS` | global | 41_Web_ActualizarRoster.gs | 25 |  |
+| `WEB_ACTROSTER_NOMBRES_PASOS` | global | 41_Web_ActualizarRoster.gs | 26 |  |
 | `WEB_ACTROSTER_PENDIENTE_MAX_MS` | global | 41_Web_ActualizarRoster.gs | 21 |  |
 | `WEB_ACTROSTER_PROP_ESTADO` | global | 41_Web_ActualizarRoster.gs | 14 |  |
 | `WEB_ACTROSTER_TURNO_MAX_MS` | global | 41_Web_ActualizarRoster.gs | 19 |  |
