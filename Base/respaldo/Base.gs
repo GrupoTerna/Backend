@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 22/10/2026 21:47:27 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 22/10/2026 23:20:32 */
 
 
 
@@ -23297,9 +23297,13 @@ function _getParticipacionHoyGuerra(ctx) {
     dataDir = (lecturaDirPartHoy.origen === 'csv') ? lecturaDirPartHoy.filas : [];
   }
   var porClan = {}; // nombreClan -> { clan, reservadas: [], disponibles: [] }
+  // 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp en «Participación de hoy»): Tag -> true si el Directorio tiene el celular de esa cuenta (cualquier Estado, para cubrir también los casos multi-clan). Solo se manda el booleano `tieneWsp`; NUNCA el número. Esta función solo la sirve `_webAdminParticipacionHoyGuerra()`, que exige sesión de admin. [→ Contexto_Base_Web.md §PF171]
+  var tieneCelPorTag = {};
 
   for (var k = 0; k < dataDir.length; k++) {
     var filaDir = dataDir[k];
+    var tagCelDir = cleanTag(filaDir[DC.TAG - 1]);
+    if (tagCelDir && soloDigitos(filaDir[DC.CELULAR - 1])) tieneCelPorTag[tagCelDir] = true;
     if (String(filaDir[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
     var clanNombreDir = String(filaDir[DC.CLAN - 1] || '');
     if (!clanNombreDir) continue;
@@ -23316,7 +23320,7 @@ function _getParticipacionHoyGuerra(ctx) {
       : 0;
 
     // FIX (11-oct-2026, pedido usuaria): cada cuenta lleva sus ataques usados hoy en ESTE clan (ataquesHoy); guerra.html lo lee en pendientesHoy(). [→ Contexto_Base_Web.md §PF030]
-    var infoCuenta = { tag: String(filaDir[DC.TAG - 1] || ''), nombre: String(filaDir[DC.NOMBRE - 1] || ''), ataquesHoy: Number(ataqHoyEnEsteClan) || 0 };
+    var infoCuenta = { tag: String(filaDir[DC.TAG - 1] || ''), nombre: String(filaDir[DC.NOMBRE - 1] || ''), ataquesHoy: Number(ataqHoyEnEsteClan) || 0, tieneWsp: !!tieneCelPorTag[tagDir] };
     if (ataqHoyEnEsteClan > 0) {
       porClan[clanNombreDir].reservadas.push(infoCuenta);
     } else {
@@ -23341,7 +23345,8 @@ function _getParticipacionHoyGuerra(ctx) {
         tag: tagKey,
         nombre: entrada.nombre,
         clanes: clanesConAtaque,
-        totalAtaquesHoy: totalAtaques
+        totalAtaquesHoy: totalAtaques,
+        tieneWsp: !!tieneCelPorTag[tagKey]
       });
     }
   }
@@ -49242,6 +49247,33 @@ function _webAdminParticipacionHoyGuerra(token) {
   return _getParticipacionHoyGuerra(ctx);
 }
 
+// _webAdminTagsConWsp(): 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp junto al 📈 del mini historial en todas las tablas): devuelve la lista de Tags (sin #) cuyo Directorio tiene celular registrado, de cualquier Estado. NUNCA manda el número ni el enlace de WhatsApp. Solo admins: las tablas públicas (roster y guerra publicados como JSON estático) no llevan este dato; el frontend lo pide aparte y pinta el ícono por Tag. [→ Contexto_Base_Web.md §PF172]
+function _webAdminTagsConWsp(token) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+
+  var ss = _getSs();
+  var shDirWsp = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  var dataDirWsp;
+  if (shDirWsp && shDirWsp.getLastRow() >= 2) {
+    dataDirWsp = _leerDirectorioFisicoComoDC(ss);
+  } else {
+    var lecturaDirWsp = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
+    dataDirWsp = (lecturaDirWsp.origen === 'csv') ? lecturaDirWsp.filas : [];
+  }
+
+  var tagsWsp = [];
+  var vistosWsp = {};
+  for (var iw = 0; iw < dataDirWsp.length; iw++) {
+    var filaWsp = dataDirWsp[iw];
+    var tagWsp = cleanTag(filaWsp[DC.TAG - 1]);
+    if (tagWsp && !vistosWsp[tagWsp] && soloDigitos(filaWsp[DC.CELULAR - 1])) {
+      vistosWsp[tagWsp] = true;
+      tagsWsp.push(tagWsp);
+    }
+  }
+  return { ok: true, tags: tagsWsp };
+}
+
 // _webAdminOtrasCuentas(): FASE 7 (29-ago-2026, pedido del usuario — botón "Ver otras cuentas" del perfil en jugadores.html, visible SOLO para admins logueados). Dado el Tag de un jugador, busca su Celular (primero en Directorio activo; si no está ahí, en… [→ Contexto_Base_Web.md §37B307]
 function _webAdminOtrasCuentas(token, tag) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
@@ -50940,6 +50972,19 @@ function doGet(e) {
     try {
       return ContentService
         .createTextOutput(JSON.stringify(_webAdminParticipacionHoyGuerra(e.parameter.sessionToken)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('[Web] Error interno: ' + err.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  // 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp en todas las tablas con 📈): webAdminTagsConWsp, lista de Tags con celular registrado (sin números); GET, sesión de admin. [→ Contexto_Base_Web.md §PF172]
+  if (e && e.parameter && e.parameter.accion === 'webAdminTagsConWsp') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminTagsConWsp(e.parameter.sessionToken)))
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       Logger.log('[Web] Error interno: ' + err.toString());
