@@ -106,7 +106,7 @@ Ninguno.
 | `_adminDocGrupo_` | función | 58_Docs_Administracion.gs | 424 | Contexto_Base_Web.md §PF186 |
 | `_adminDocLeerEquipo_` | función | 58_Docs_Administracion.gs | 66 | Contexto_Base_Web.md §PF186 |
 | `_adminDocLineas_` | función | 58_Docs_Administracion.gs | 263 | Contexto_Base_Web.md §PF189 |
-| `_adminDocMejorPorCopas_` | función | 58_Docs_Administracion.gs | 232 | Contexto_Base_Web.md §PF189 |
+| `_adminDocMejorPorCopas_` | función | 58_Docs_Administracion.gs | 232 | Contexto_Base_Web.md §PF190 |
 | `_adminDocNombresDeHojaClan_` | función | 58_Docs_Administracion.gs | 175 | Contexto_Base_Web.md §PF187 |
 | `_adminDocNorm_` | función | 58_Docs_Administracion.gs | 59 | Contexto_Base_Web.md §PF186 |
 | `_adminDocOrdenNombres_` | función | 58_Docs_Administracion.gs | 221 | Contexto_Base_Web.md §PF186 |
