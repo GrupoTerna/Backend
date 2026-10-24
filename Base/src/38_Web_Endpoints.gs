@@ -1563,7 +1563,9 @@ function doPost(e) {
     try {
       var payloadSDoc = JSON.parse(e.postData.contents);
       var resultadoSDoc = _webAdminSorteoActualizarDocGanadores(
-        payloadSDoc && payloadSDoc.sessionToken
+        payloadSDoc && payloadSDoc.sessionToken,
+        payloadSDoc && payloadSDoc.extra,
+        !!(payloadSDoc && payloadSDoc.descargar)
       );
       return ContentService
         .createTextOutput(JSON.stringify(resultadoSDoc))

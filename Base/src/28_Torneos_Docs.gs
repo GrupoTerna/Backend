@@ -266,14 +266,19 @@ function actualizarDocGanadoresTorneo(ctxParam) {
 }
 
 /**
- * actualizarDocGanadoresSorteo() [→ Contexto_Base_Web.md §28B027]
+ * actualizarDocGanadoresSorteo(extra) [→ Contexto_Base_Web.md §28B027]
+ * PF221 (24-oct-2026, pedido de la usuaria): `extra` es opcional y lo manda sorteo.html al exportar el acta: {premios, participantes, ganadores:[{nombre, hora}]}.
+ * Se guarda en ACTA_SORTEO_EXTRA (propiedades del script, con el ID del sorteo) para que la corrida diaria, que llama sin `extra`, no borre
+ * la hora ni el resumen. Devuelve el ID del documento (o '' si no se escribió) para que el endpoint pueda entregarlo como Word.
  */
-function actualizarDocGanadoresSorteo() {
+var PROP_ACTA_SORTEO_EXTRA = 'ACTA_SORTEO_EXTRA';
+
+function actualizarDocGanadoresSorteo(extra) {
   var ss = _getSs();
   var shSL = ss.getSheetByName(CFG.SHEETS.S_LISTA);
   var shSA = ss.getSheetByName(CFG.SHEETS.S_ASISTENCIA);
   // FIX (mismo criterio que actualizarDocGanadoresTorneo()): S_Lista [→ Contexto_Base_Web.md §28B028]
-  if (!shSL || shSL.getLastRow() < 3 || !shSA) return;
+  if (!shSL || shSL.getLastRow() < 3 || !shSA) return '';
 
   // 1) Sorteo puntual: prioriza el ID guardado a mano en [→ Contexto_Base_Web.md §28B029]
   var listaData = shSL.getRange(3, 1, shSL.getLastRow() - 2, SL_TOTAL_COLS).getValues();
@@ -297,8 +302,34 @@ function actualizarDocGanadoresSorteo() {
       }
     }
   }
-  if (!idMasReciente) return;
+  if (!idMasReciente) return '';
   var idMasRecienteStr = String(idMasReciente).trim();
+
+  // PF221: datos del acta que solo conoce sorteo.html (hora de cada ganador, premios, participantes). Con `extra` se guardan; sin `extra` se leen
+  // los últimos guardados, pero solo si son de este mismo sorteo.
+  var extraActa = null;
+  try {
+    var props = PropertiesService.getScriptProperties();
+    if (extra && typeof extra === 'object') {
+      extraActa = {
+        id: idMasRecienteStr,
+        premios: Number(extra.premios) > 0 ? Math.floor(Number(extra.premios)) : 0,
+        participantes: Number(extra.participantes) >= 0 ? Math.floor(Number(extra.participantes)) : -1,
+        ganadores: (Array.isArray(extra.ganadores) ? extra.ganadores : []).slice(0, 100).map(function (g) {
+          return { nombre: String((g && g.nombre) || '').slice(0, 80), hora: String((g && g.hora) || '').slice(0, 10) };
+        })
+      };
+      props.setProperty(PROP_ACTA_SORTEO_EXTRA, JSON.stringify(extraActa));
+    } else {
+      var guardado = props.getProperty(PROP_ACTA_SORTEO_EXTRA);
+      if (guardado) {
+        var obj = JSON.parse(guardado);
+        if (obj && String(obj.id) === idMasRecienteStr) extraActa = obj;
+      }
+    }
+  } catch (eExtra) {
+    Logger.log('[Ganadores-Sorteo] No se pudo leer/guardar los datos del acta: ' + eExtra.message);
+  }
 
   // 2) Filas de S_Asistencia de ESE sorteo -- ya son el resultado final,
   // no hay nada que filtrar ni recalcular (ver docblock).
@@ -312,12 +343,30 @@ function actualizarDocGanadoresSorteo() {
         nombre:  String(fila[SA.NOMBRE - 1] || ''),
         clan:    String(fila[SA.CLAN - 1] || ''),
         premio:  String(fila[SA.PREMIO - 1] || ''),
-        tickets: fila[SA.TICKETS - 1]
+        tickets: fila[SA.TICKETS - 1],
+        hora:    ''
       });
     }
   }
 
-  _escribirDocGanadoresSorteo(ganadores, idMasRecienteStr, fechaMasReciente);
+  // PF221: la hora sale del acta de sorteo.html; se une por nombre (sin tildes ni mayúsculas) y, si el nombre se editó a mano, por posición
+  // cuando hay la misma cantidad de ganadores en ambos lados.
+  var resumenActa = null;
+  if (extraActa) {
+    var norm = function (t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim(); };
+    var mismaCantidad = extraActa.ganadores.length === ganadores.length;
+    ganadores.forEach(function (gan, g) {
+      var hallado = null;
+      for (var q = 0; q < extraActa.ganadores.length; q++) {
+        if (norm(extraActa.ganadores[q].nombre) === norm(gan.nombre)) { hallado = extraActa.ganadores[q]; break; }
+      }
+      if (!hallado && mismaCantidad) hallado = extraActa.ganadores[g];
+      if (hallado) gan.hora = hallado.hora;
+    });
+    resumenActa = { premios: extraActa.premios, participantes: extraActa.participantes, ganadores: ganadores.length };
+  }
+
+  return _escribirDocGanadoresSorteo(ganadores, idMasRecienteStr, fechaMasReciente, resumenActa);
 }
 
 /**
@@ -329,7 +378,26 @@ function actualizarDocGanadoresSorteo() {
  */
 var TEXTO_SIN_GANADORES_SORTEO_DOC = 'Todavía no hay ganadores para este sorteo.';
 
-function _escribirGanadoresSorteoEnDoc_(body, ganadores) {
+var PREFIJO_RESUMEN_SORTEO_DOC = 'Resumen del sorteo:';
+
+/**
+ * PF221: línea de resumen bajo «Ganadores del sorteo:» (cantidad de premios y si está completo, ganadores registrados, participantes en la lista).
+ * `resumen` null = sin datos del acta: no hay línea. Quita siempre la línea anterior y escribe la nueva justo debajo del encabezado.
+ */
+function _textoResumenSorteoDoc_(resumen) {
+  if (!resumen) return '';
+  var partes = [];
+  if (resumen.premios > 0) {
+    partes.push('Premios del sorteo: ' + resumen.premios);
+    partes.push('Ganadores registrados: ' + resumen.ganadores + (resumen.ganadores < resumen.premios ? ' (faltan ' + (resumen.premios - resumen.ganadores) + ')' : ' (completo)'));
+  } else {
+    partes.push('Ganadores registrados: ' + resumen.ganadores + ' (cantidad de premios sin límite definido)');
+  }
+  if (resumen.participantes >= 0) partes.push('Participantes totales en la lista: ' + resumen.participantes);
+  return PREFIJO_RESUMEN_SORTEO_DOC + ' ' + partes.join(' · ');
+}
+
+function _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen) {
   var enc = body.findText('Ganadores del sorteo:');
   if (!enc) return false;
   var heading = enc.getElement();
@@ -347,10 +415,29 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores) {
     } else if (h.getType() === DocumentApp.ElementType.PARAGRAPH) {
       var tx = h.asParagraph().getText().trim();
       if (tx === TEXTO_SIN_GANADORES_SORTEO_DOC) { if (!parrafoSin) parrafoSin = h.asParagraph(); else aQuitar.push(h); }
+      else if (tx.indexOf(PREFIJO_RESUMEN_SORTEO_DOC) === 0) aQuitar.push(h); // PF221: se vuelve a escribir al final
       else if (tx !== '') break;
     }
   }
   aQuitar.forEach(function (h) { try { body.removeChild(h); } catch (e) { /* el último hijo no se puede quitar; no pasa nada */ } });
+
+  // PF221: se escribe justo debajo del encabezado, al terminar (antes de cada return true).
+  var escribirResumen = function () {
+    var texto = _textoResumenSorteoDoc_(resumen);
+    if (!texto) return;
+    var par = body.insertParagraph(body.getChildIndex(heading) + 1, texto);
+    par.setHeading(DocumentApp.ParagraphHeading.NORMAL);
+    par.setIndentStart(36);
+    par.setIndentFirstLine(36);
+    var tr = par.editAsText();
+    var fr = texto.length - 1;
+    tr.setBold(0, fr, false);
+    tr.setItalic(0, fr, false);
+    tr.setFontFamily(0, fr, 'Arial');
+    tr.setFontSize(0, fr, 12);
+    tr.setForegroundColor(0, fr, '#000000');
+    tr.setBold(0, PREFIJO_RESUMEN_SORTEO_DOC.length - 1, true);
+  };
 
   var recortarFilas = function (t) { while (t.getNumRows() > 1) t.removeRow(1); };
 
@@ -388,6 +475,7 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores) {
       if (iSin + 2 >= body.getNumChildren()) break; // el último párrafo del documento no se puede quitar
       try { body.removeChild(psig); } catch (eV) { break; }
     }
+    escribirResumen();
     return true;
   }
 
@@ -399,12 +487,13 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores) {
       String(gan.nombre || ''),
       (gan.tickets === '' || gan.tickets === null || gan.tickets === undefined) ? '' : String(gan.tickets),
       String(gan.clan || ''),
-      String(gan.premio || '')
+      String(gan.premio || ''),
+      String(gan.hora || '—') // PF221: hora del acta de sorteo.html
     ];
   });
 
   if (!tabla) {
-    var valores = [['N°', 'Nombre', 'Victorias', 'Clan', 'Premio']].concat(filas);
+    var valores = [['N°', 'Nombre', 'Victorias', 'Clan', 'Premio', 'Hora']].concat(filas);
     tabla = body.insertTable(body.getChildIndex(heading) + 1, valores);
     for (var r = 0; r < tabla.getNumRows(); r++) {
       var fila = tabla.getRow(r);
@@ -425,31 +514,48 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores) {
         if (r === 0) celda.setBackgroundColor('#B7B7B7');
       }
     }
+    escribirResumen();
     return true;
   }
 
   recortarFilas(tabla);
+  // PF221: las tablas ya creadas tienen 5 columnas; se agrega «Hora» al encabezado con el mismo estilo que la última celda.
+  var encabezado = tabla.getRow(0);
+  if (encabezado.getNumCells() === 5) {
+    var celdaHora = encabezado.appendTableCell('Hora');
+    var parHora = celdaHora.getChild(0).asParagraph();
+    parHora.setHeading(DocumentApp.ParagraphHeading.NORMAL);
+    parHora.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    var thh = parHora.editAsText();
+    thh.setFontFamily(0, 3, 'Arial');
+    thh.setFontSize(0, 3, 12);
+    thh.setBold(0, 3, true);
+    thh.setItalic(0, 3, false);
+    thh.setForegroundColor(0, 3, '#FFFFFF');
+    celdaHora.setBackgroundColor('#B7B7B7');
+  }
   filas.forEach(function (vals) {
     var nueva = tabla.appendTableRow();
     vals.forEach(function (v) { nueva.appendTableCell(v); });
   });
+  escribirResumen();
   return true;
 }
 
 /**
- * _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo) [→ Contexto_Base_Web.md §28B030]
+ * _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo, resumen) [→ Contexto_Base_Web.md §28B030]
  */
-function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo) {
+function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo, resumen) {
   var archivo;
   try {
     archivo = _buscarArchivoEnPlantillas(NOMBRE_DOC_GANADORES_SORTEO, DOC_ID_GANADORES_SORTEO);
     if (!archivo) {
       Logger.log('[Ganadores-Sorteo] No se encontró "' + NOMBRE_DOC_GANADORES_SORTEO + '" ni en la carpeta de plantillas ni en sus subcarpetas. Se omite.');
-      return;
+      return '';
     }
   } catch (e) {
     Logger.log('[Ganadores-Sorteo] Error al buscar el documento: ' + e.message);
-    return;
+    return '';
   }
 
   var doc;
@@ -457,16 +563,16 @@ function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo) {
     doc = DocumentApp.openById(archivo.getId());
   } catch (e) {
     Logger.log('[Ganadores-Sorteo] Error al abrir el documento: ' + e.message);
-    return;
+    return '';
   }
   var body = doc.getBody();
 
   // PF207 (24-oct-2026, pedido de la usuaria): sin ganadores NO se muestra la tabla, solo un texto corto; con ganadores se rehace la tabla.
-  var resTabla = _escribirGanadoresSorteoEnDoc_(body, ganadores);
+  var resTabla = _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen);
   if (!resTabla) {
     Logger.log('[Ganadores-Sorteo] No se encontró \"Ganadores del sorteo:\" en el documento. Se omite.');
     doc.saveAndClose();
-    return;
+    return '';
   }
 
   // PF206 (24-oct-2026, pedido de la usuaria): este Doc también lleva «Requisitos» y «Fecha:». Antes solo se regeneraban al correr
@@ -492,6 +598,7 @@ function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo) {
 
   doc.saveAndClose();
   Logger.log('[Ganadores-Sorteo] Sorteo ' + idSorteo + ': ' + ganadores.length + ' ganador(es) escrito(s).');
+  return archivo.getId();
 }
 
 // _tablaDeGrupoDoc() — antes vivia en el archivo del documento de mazos personalizados, ya eliminado (su unico [→ Contexto_Base_Web.md §28B033]
@@ -700,10 +807,10 @@ function _construirContenidoDocGanadoresSorteo(body) {
   _rdocParrafoRuns(body, [[' ', false], ['Ganadores del sorteo:', true]]);
   body.appendParagraph('');
   _rdocTablaConEncabezadoNegrita(body, [
-    ['N°', 'Nombre', 'Victorias', 'Clan', 'Premio'],
-    ['1', 'Nombre1', '10', 'Clan1', 'Pass Royale'],
-    ['2', 'Nombre2', '9', 'Clan1', 'Pass Royale'],
-    ['3', 'Nombre3', '8', 'Clan1', 'Pass Royale']
+    ['N°', 'Nombre', 'Victorias', 'Clan', 'Premio', 'Hora'],
+    ['1', 'Nombre1', '10', 'Clan1', 'Pass Royale', '8:05 p. m.'],
+    ['2', 'Nombre2', '9', 'Clan1', 'Pass Royale', '8:07 p. m.'],
+    ['3', 'Nombre3', '8', 'Clan1', 'Pass Royale', '8:09 p. m.']
   ]);
   body.appendParagraph('');
   _rdocBloqueRedesSocialesYPie(body);

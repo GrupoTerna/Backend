@@ -4526,11 +4526,20 @@ function _webAdminSorteoResolucionGuardar(token, datos) {
 }
 
 // _webAdminSorteoActualizarDocGanadores(): FASE (12-sep-2026, pedido del usuario -- consolidado de pendientes, punto 1 "botón Exportar de sorteo.html"): hasta este cambio, el docx real "Ganadores (sorteo)" solo se actualizaba una vez al día, dentro de procesarSorteos() ->… [→ Contexto_Base_Web.md §37B325]
-function _webAdminSorteoActualizarDocGanadores(token) {
+function _webAdminSorteoActualizarDocGanadores(token, extra, descargar) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
   try {
-    actualizarDocGanadoresSorteo();
-    return { ok: true };
+    // PF221 (24-oct-2026, pedido de la usuaria): `extra` trae los datos que solo tiene sorteo.html (hora de cada ganador, premios, participantes) y se
+    // escriben en el mismo Doc de Drive. Con `descargar` se devuelve ese Doc ya actualizado como Word (base64) para que sorteo.html lo descargue.
+    var docId = actualizarDocGanadoresSorteo(extra);
+    var resp = { ok: true };
+    if (descargar) {
+      if (!docId) return { ok: false, error: 'No se encontró el documento «Ganadores (sorteo)» en Drive.' };
+      var blobWord = DriveApp.getFileById(docId).getAs('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      resp.docxBase64 = Utilities.base64Encode(blobWord.getBytes());
+      resp.nombreArchivo = NOMBRE_DOC_GANADORES_SORTEO + '.docx';
+    }
+    return resp;
   } catch (errDocGanSorteo) {
     Logger.log('[Web] Error interno actualizando el doc de ganadores: ' + errDocGanSorteo.toString());
     return { ok: false, error: 'No se pudo actualizar el documento de ganadores. Intenta de nuevo en unos segundos.' };
