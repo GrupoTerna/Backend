@@ -232,6 +232,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF213` | **Ruleta del sorteo: el aviso de «sin semanas ni premios» ya no sale cuando el backend es el viejo (24-oct-2026, la usuaria vio ese aviso con un sorteo que sí los tiene; SIN PROBAR en navegador real):** `renderSorteoInfo()` distingue «el servidor no mandó el dato» de «el sorteo no los tiene». |
 | `PF214` | **Ruleta del sorteo: «Cantidad de premios» solo en modo manual y columna de reglas más ancha (24-oct-2026, pedido de la usuaria; SIN PROBAR en navegador real):** con un sorteo cargado la cantidad de premios sale de su lista de premios y la fila se oculta; con ingreso manual se conserva. |
 | `PF215` | **Ruleta del sorteo: cada nombre en su propia franja (24-oct-2026, pedido de la usuaria; SIN PROBAR con datos reales):** las etiquetas estaban corridas 90° respecto de sus franjas; se corrige la rotación y se ajusta la letra al ancho de cada franja. |
+| `PF216` | **Ruleta del sorteo: escudo del centro más grande (24-oct-2026, pedido de la usuaria; SIN PROBAR en móvil):** `.hub-escudo` pasa de 84 % a 100 % del círculo central. |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -5557,3 +5558,9 @@ Responde el «sí» de la usuaria a §PF158 y **corrige dos puntos de lo que ah�
 - **Causa (medida, no supuesta).** `renderWheel()` dibuja las franjas con `conic-gradient(from 0deg, …)`, que arranca en las 12 en punto, y cada etiqueta (`.wheel-label`, sin girar apunta a las 3) se rotaba `rotate(mid deg)`. Resultado: **todas** las etiquetas quedaban 90° corridas respecto de su franja. Se midió con Chromium (Playwright) y 32 participantes con tickets de 1 a 8: 0 de 32 etiquetas dentro de su franja antes; 32 de 32 después. Como las 3 franjas de color se repiten, el error parecía «a veces» y no sistemático.
 - **Qué se cambió (`sorteo.html`, `sw.js` v173).** (1) `rotate((mid - 90) deg)`. (2) Se quitan las dos reglas fijas de letra (10,5 px bajo 14° y 12 px bajo 22°): el tamaño baja de 14 hasta 7 px y el `max-width` de cada nombre se calcula con el radio real de la ruleta y el ángulo de su franja (la altura de la línea, 1,2 × la letra, debe caber en el ancho de la franja en el extremo interior del texto); si aun así no cabe se recorta con «…». (3) `renderWheel()` se vuelve a llamar con un `resize` (150 ms), porque ese cálculo depende del tamaño de la ruleta.
 - **Límites.** Con franjas de 3° o menos (1 ticket entre unos 120) el nombre queda de 7 px y recortado; es lo que cabe sin invadir a las vecinas. No se probó con los participantes reales, ni en móvil, ni durante el giro. Cuenta como lección: los dos sistemas de ángulos (conic desde las 12, `rotate` desde las 3) difieren en 90°; cualquier etiqueta nueva sobre la ruleta debe restarlos.
+
+### PF216 — Ruleta del sorteo: escudo del centro más grande (24-oct-2026, pedido de la usuaria; SIN PROBAR en móvil)
+
+- **Pedido.** «Haz el escudo un poco más grande para que no quede todo ese espacio vacío en el centro» (continúa `PF210`).
+- **Qué se cambió (`sorteo.html`, `sw.js` v174).** `.hub-escudo` de `width/height:84%` a `100%`. El PNG tiene margen transparente (contenido de 256×275 px en 320×320), así que al 84 % el escudo ocupaba solo ~70 % del círculo.
+- **Lo que se probó y no sirvió.** 112 %: las puntas del escudo se salen del círculo blanco y pisan las franjas. Con 100 % queda dentro y centrado (centro del escudo = centro del círculo, medido con Chromium en 1500×900). Si se quiere aún más grande, hay que agrandar el círculo `.hub` (19 %), no el escudo.
