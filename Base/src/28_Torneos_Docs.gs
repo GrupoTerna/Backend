@@ -420,6 +420,10 @@ var TEXTO_SIN_GANADORES_SORTEO_DOC = 'Todavía no hay ganadores para este sorteo
 
 var PREFIJO_RESUMEN_SORTEO_DOC = 'Resumen del sorteo:';
 
+// PF229 (24-oct-2026, pedido de la usuaria con captura del acta): el documento de ganadores llevaba el título de la plantilla de participantes.
+var TITULO_DOC_GANADORES_SORTEO = 'Lista de ganadores del sorteo';
+var TITULO_ANTIGUO_DOC_GANADORES_SORTEO = 'Lista de participantes calificados';
+
 /**
  * PF221: línea de resumen bajo «Ganadores del sorteo:» (cantidad de premios y si está completo, ganadores registrados, participantes en la lista).
  * `resumen` null = sin datos del acta: no hay línea. Quita siempre la línea anterior y escribe la nueva justo debajo del encabezado.
@@ -440,10 +444,14 @@ function _textoResumenSorteoDoc_(resumen) {
 function _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen) {
   var enc = body.findText('Ganadores del sorteo:');
   if (!enc) return false;
+  // PF229: los documentos ya creados conservan el título de la plantilla de participantes; se corrige aquí (replaceText respeta el formato).
+  try { body.replaceText(TITULO_ANTIGUO_DOC_GANADORES_SORTEO, TITULO_DOC_GANADORES_SORTEO); } catch (eT) { /* no es crítico */ }
   var heading = enc.getElement();
   while (heading.getParent() && heading.getParent().getType() !== DocumentApp.ElementType.BODY_SECTION) {
     heading = heading.getParent();
   }
+  // PF229: «Ganadores del sorteo:» no puede quedar solo al final de una página; se mantiene junto con el resumen y la tabla.
+  try { heading.asParagraph().setKeepWithNext(true); } catch (eK) { /* si el elemento no es párrafo o la API no lo admite, se sigue sin esto */ }
   var idxH = body.getChildIndex(heading);
 
   // Qué hay después del encabezado: tablas y la línea de «sin ganadores».
@@ -477,6 +485,7 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen) {
     tr.setFontSize(0, fr, 12);
     tr.setForegroundColor(0, fr, '#000000');
     tr.setBold(0, PREFIJO_RESUMEN_SORTEO_DOC.length - 1, true);
+    try { par.setKeepWithNext(true); } catch (eK2) { /* PF229: el resumen se mantiene junto con la tabla */ }
   };
 
   var recortarFilas = function (t) { while (t.getNumRows() > 1) t.removeRow(1); };
@@ -833,7 +842,7 @@ function _construirContenidoDocParticipantesCalificadosTorneo(body) {
  * _construirContenidoDocGanadoresSorteo(body) [→ Contexto_Base_Web.md §28B044]
  */
 function _construirContenidoDocGanadoresSorteo(body) {
-  _rdocParrafoTexto(body, 'Lista de participantes calificados', true, DocumentApp.HorizontalAlignment.CENTER);
+  _rdocParrafoTexto(body, TITULO_DOC_GANADORES_SORTEO, true, DocumentApp.HorizontalAlignment.CENTER);
   _rdocParrafoTexto(body, ' Premios:', true, DocumentApp.HorizontalAlignment.JUSTIFY);
   _rdocParrafoTexto(body, '🏆 3 ganadores', false, DocumentApp.HorizontalAlignment.JUSTIFY);
   _rdocParrafoTexto(body, '1 Pass Royale para cada ganador.', false, DocumentApp.HorizontalAlignment.JUSTIFY);
