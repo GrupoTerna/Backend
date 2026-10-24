@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 23/10/2026 18:55:24 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 23/10/2026 19:16:54 */
 
 
 
@@ -61775,7 +61775,7 @@ function _totSemanaPorDias_(aplicar) {
 // --- ARCHIVO: 58_Docs_Administracion.gs ---
 // ==============================================================================
 // 58_Docs_Administracion.gs
-// Actualiza solo, en los Google Docs de plantillas (Bienvenida y Descripción), el bloque «Líder / Colíderes / Administradores / Otros colíderes» con los datos reales de Directorio. [→ Contexto_Base_Web.md §PF186 y §PF187]
+// Actualiza solo, en los Google Docs de plantillas (Bienvenida y Descripción), el bloque «Líder / Colíderes / Veteranos / Otros administradores / Otros colíderes» con los datos reales de Directorio. [→ Contexto_Base_Web.md §PF186, §PF187 y §PF188]
 // ==============================================================================
 
 // ----- Variables y constantes -----
@@ -61849,7 +61849,7 @@ function _adminDocLeerEquipo_() {
   var nombresHojaClan = _adminDocNombresDeHojaClan_(ss);
   for (var t = 0; t < CFG.TERNA_TAGS.length; t++) {
     var tg = CFG.TERNA_TAGS[t];
-    porClan[tg] = { nombre: _resolverNombreClan(tg), lideres: [], colideres: [] };
+    porClan[tg] = { nombre: _resolverNombreClan(tg), lideres: [], colideres: [], veteranos: [] };
     var conocidos = [porClan[tg].nombre, nombresHojaClan[tg], ADMIN_DOC_NOMBRES_RESPALDO[tg]];
     nombresPorTag[tg] = [];
     for (var nc = 0; nc < conocidos.length; nc++) {
@@ -61892,6 +61892,7 @@ function _adminDocLeerEquipo_() {
     if (cuenta.activo && porClan[tagClan]) {
       if (rango === 'lider') porClan[tagClan].lideres.push(cuenta);
       else if (rango === 'colider') porClan[tagClan].colideres.push(cuenta);
+      else if (rango === 'veterano') porClan[tagClan].veteranos.push(cuenta); // PF188: se usa para la lista «Veteranos» (solo los administradores)
     }
   }
 
@@ -61993,7 +61994,7 @@ function _adminDocAdminsExtra_(equipo, tagClan) {
   for (var k in equipo.personas) {
     var p = equipo.personas[k];
     if (!p.admin) continue;
-    if (_adminDocPersonaTieneCuenta_(p, tagClan, ['lider', 'colider'])) continue;
+    if (_adminDocPersonaTieneCuenta_(p, tagClan, ['lider', 'colider', 'veterano'])) continue; // PF188: los veteranos admin ya salen en «Veteranos»
     var principal = _adminDocCuentaPrincipal_(p);
     if (principal) extra.push(principal);
   }
@@ -62027,7 +62028,9 @@ function _adminDocEncabezado_(texto) {
   var t = _adminDocNorm_(texto).replace(/^[^a-z]+/, '').replace(/:$/, '');
   if (t === 'lider') return 'lider';
   if (t === 'colideres') return 'colideres';
-  if (t === 'administradores') return 'administradores';
+  // PF188: «Administradores:» (nombre anterior) y «Otros administradores:» son el mismo grupo; al reescribir se deja el título nuevo.
+  if (t === 'administradores' || t === 'otrosadministradores') return 'otrosadministradores';
+  if (t === 'veteranos') return 'veteranos';
   if (t === 'otroscolideres') return 'otroscolideres';
   return '';
 }
@@ -62049,15 +62052,25 @@ function _adminDocAplicarClan_(body, equipo, tag, clanNombre) {
   }
   var colideres = _adminDocLineas_(colAdmin);
   if (colideres.length === 0) colideres = ['Sin colíderes administradores por el momento'];
+  // PF188 (24-oct-2026, pedido de la usuaria): los veteranos que son administradores van en su propia lista «Veteranos»; «Otros administradores» queda para los admins que no son líder, colíder ni veterano de este clan.
+  var vetAdmin = [];
+  for (var v = 0; v < clan.veteranos.length; v++) {
+    var cv = clan.veteranos[v];
+    var pv = equipo.personas[cv.persona];
+    if (pv && pv.admin) vetAdmin.push(cv);
+  }
+  var veteranos = _adminDocLineas_(vetAdmin);
   var admins = _adminDocLineas_(_adminDocAdminsExtra_(equipo, tag));
   var otros = _adminDocLineas_(colOtros);
 
+  // Orden del bloque: Líder, Colíderes, Veteranos, Otros administradores, Otros colíderes. Cada grupo nuevo se coloca tras el último de los anteriores que exista en el Doc. [→ Contexto_Base_Web.md §PF188]
   var cambio = false;
   cambio = _adminDocGrupo_(body, 'lider', lideres, null, 'Líder:') || cambio;
   cambio = _adminDocGrupo_(body, 'colideres', colideres, null, 'Colíderes:') || cambio;
-  cambio = _adminDocGrupo_(body, 'administradores', admins, 'colideres', 'Administradores:') || cambio;
-  // «Otros colíderes» va después de «Administradores» si existe; si no, después de «Colíderes».
-  var anclaOtros = _adminDocBuscarGrupo_(body, 'administradores') ? 'administradores' : 'colideres';
+  cambio = _adminDocGrupo_(body, 'veteranos', veteranos, 'colideres', 'Veteranos:') || cambio;
+  var anclaAdm = _adminDocBuscarGrupo_(body, 'veteranos') ? 'veteranos' : 'colideres';
+  cambio = _adminDocGrupo_(body, 'otrosadministradores', admins, anclaAdm, 'Otros administradores:') || cambio;
+  var anclaOtros = _adminDocBuscarGrupo_(body, 'otrosadministradores') ? 'otrosadministradores' : anclaAdm;
   cambio = _adminDocGrupo_(body, 'otroscolideres', otros, anclaOtros, 'Otros colíderes:') || cambio;
   return cambio;
 }
@@ -62089,6 +62102,16 @@ function _adminDocPrefijo_(texto) {
   return m ? m[0] : '';
 }
 
+// _adminDocPrefEncabezados_(body, textoPorDefecto): sangría del encabezado «Colíderes:» (o, si no está, el de «Líder:»), que es la que deben tener todos los encabezados del bloque; si no hay ninguno, la del texto dado. [→ Contexto_Base_Web.md §PF188]
+function _adminDocPrefEncabezados_(body, textoPorDefecto) {
+  var claves = ['colideres', 'lider'];
+  for (var c = 0; c < claves.length; c++) {
+    var g = _adminDocBuscarGrupo_(body, claves[c]);
+    if (g) return _adminDocPrefijo_(body.getChild(g.iEnc).asParagraph().getText());
+  }
+  return _adminDocPrefijo_(textoPorDefecto);
+}
+
 // _adminDocSetTexto_(par, texto): cambia el texto de un párrafo conservando el formato del primer carácter. [→ Contexto_Base_Web.md §PF186]
 function _adminDocSetTexto_(par, texto) {
   var t = par.editAsText();
@@ -62115,7 +62138,7 @@ function _adminDocGrupo_(body, clave, nombres, despuesDe, titulo) {
       previo.asParagraph().getText().trim() === '';
     if (hayBlanco) { body.insertParagraph(pos++, '').setAttributes(plantillaEnc.getAttributes()); }
     // La sangría (espacios al inicio) se copia de las líneas modelo, para que el grupo nuevo quede alineado con los demás. [→ Contexto_Base_Web.md §PF187]
-    var prefEnc = _adminDocPrefijo_(plantillaEnc.getText());
+    var prefEnc = _adminDocPrefEncabezados_(body, plantillaEnc.getText()); // PF188: todos los encabezados toman la sangría del de «Colíderes:»
     var prefNom = _adminDocPrefijo_(plantillaNom.getText());
     var enc = body.insertParagraph(pos++, plantillaEnc);
     _adminDocSetTexto_(enc, prefEnc + (titulo || 'Administradores:'));
@@ -62126,18 +62149,26 @@ function _adminDocGrupo_(body, clave, nombres, despuesDe, titulo) {
     return true;
   }
 
+  // PF188: en los grupos que maneja este archivo (no en «Líder:» ni «Colíderes:», que pueden traer un emoji propio) se deja el título exacto y la misma sangría que «Colíderes:»; así «Administradores:» pasa a «Otros administradores:» y queda alineado.
+  var cambioTitulo = false;
+  if (nombres.length > 0 && titulo && (clave === 'veteranos' || clave === 'otrosadministradores' || clave === 'otroscolideres')) {
+    var parEnc = body.getChild(g.iEnc).asParagraph();
+    var tituloDeseado = _adminDocPrefEncabezados_(body, parEnc.getText()) + titulo;
+    if (parEnc.getText() !== tituloDeseado) { _adminDocSetTexto_(parEnc, tituloDeseado); cambioTitulo = true; }
+  }
+
   var actuales = g.nombres.map(function(x) { return _adminDocQuitarVineta_(x.par.getText()); });
   var nuevos = nombres.map(function(x) { return x.replace(/\s+/g, ' ').trim(); });
-  if (actuales.join('\u0001') === nuevos.join('\u0001')) return false;
+  if (actuales.join('\u0001') === nuevos.join('\u0001')) return cambioTitulo;
 
-  // Quitar el grupo si ya no hay nadie que mostrar (solo se da con «Administradores» y «Otros colíderes»).
+  // Quitar el grupo si ya no hay nadie que mostrar (solo se da con «Veteranos», «Otros administradores» y «Otros colíderes»).
   if (nombres.length === 0) {
     for (var q = g.nombres.length - 1; q >= 0; q--) body.removeChild(body.getChild(g.nombres[q].i));
     body.removeChild(body.getChild(g.iEnc));
     return true;
   }
 
-  if (g.nombres.length === 0) return false; // el grupo no trae ninguna línea modelo: no se inventa formato
+  if (g.nombres.length === 0) return cambioTitulo; // el grupo no trae ninguna línea modelo: no se inventa formato
 
   // ¿Hay renglones en blanco entre las líneas de nombre? Se repite el mismo patrón.
   var primero = g.nombres[0], ultimoN = g.nombres[g.nombres.length - 1];
