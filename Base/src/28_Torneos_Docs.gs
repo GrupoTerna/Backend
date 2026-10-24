@@ -375,6 +375,27 @@ function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo) {
     }
   }
 
+  // PF206 (24-oct-2026, pedido de la usuaria): este Doc también lleva «Requisitos» y «Fecha:». Antes solo se regeneraban al correr
+  // sincronizarRequisitosSorteo() (dentro de procesarSorteos()); el botón Exportar y actualizarDocGanadoresSorteo() dejaban el texto viejo.
+  try {
+    var bloqueGan = _getConfigMasRecienteCategoria('Sorteo');
+    if (bloqueGan.length > 0) {
+      _reescribirRequisitosTexto(body, _resumirRequisitosBloque(bloqueGan), _MESES_ES[_calcularMesEfectivoRealDeHoy().mes], [
+        function (t) { return t.indexOf('Si se detecta trampa') !== -1; },
+        function (t) { return t.trim() === 'Participantes calificados:'; },
+        function (t) { return t.trim() === 'Ganadores:'; },
+        function (t) { return t.trim() === 'Ganadores del sorteo:'; }
+      ], '[Requisitos-Ganadores-Sorteo]', { sorteo: true });
+    }
+  } catch (eReqGan) {
+    Logger.log('[Ganadores-Sorteo] No se pudo regenerar «Requisitos»: ' + eReqGan.message);
+  }
+  try {
+    _actualizarFechaDocSorteo(body, fechaSorteo);
+  } catch (eFechaGan) {
+    Logger.log('[Ganadores-Sorteo] No se pudo actualizar la «Fecha:»: ' + eFechaGan.message);
+  }
+
   doc.saveAndClose();
   Logger.log('[Ganadores-Sorteo] Sorteo ' + idSorteo + ': ' + ganadores.length + ' ganador(es) escrito(s).');
 }
@@ -684,6 +705,56 @@ function _formatFechaHoraDocEs(fecha) {
 }
 
 /**
+ * PF206 (24-oct-2026, pedido de la usuaria). _fechaSorteoPorId_(idSorteo): Fecha (con hora) de la fila de S_Lista con ese ID, o null.
+ * El Doc de calificados del sorteo mostraba la «Fecha:» de la plantilla (06 de julio) aunque las semanas eran de la temporada 6.
+ */
+function _fechaSorteoPorId_(idSorteo) {
+  try {
+    var id = String(idSorteo || '').trim();
+    if (!id) return null;
+    var shSL = _getSs().getSheetByName(CFG.SHEETS.S_LISTA);
+    if (!shSL || shSL.getLastRow() < 3) return null;
+    var datos = shSL.getRange(3, 1, shSL.getLastRow() - 2, SL_TOTAL_COLS).getValues();
+    for (var i = 0; i < datos.length; i++) {
+      if (String(datos[i][SL.ID - 1] || '').trim() === id) {
+        var f = datos[i][SL.FECHA - 1];
+        return (f instanceof Date && !isNaN(f.getTime())) ? f : null;
+      }
+    }
+  } catch (e) {
+    Logger.log('[Fecha-Sorteo] No se pudo leer la fecha del sorteo ' + idSorteo + ': ' + e.message);
+  }
+  return null;
+}
+
+/**
+ * PF206. _actualizarFechaDocSorteo(body, fecha): escribe la fecha del sorteo (formato del Doc, «Jueves 22 de Octubre 2026 - 8:00pm»)
+ * en el párrafo que sigue a «Fecha:». Si la fecha del Doc ya es POSTERIOR a la del sorteo (edición manual), la respeta.
+ * Devuelve true si escribió.
+ */
+function _actualizarFechaDocSorteo(body, fecha) {
+  if (!(fecha instanceof Date) || isNaN(fecha.getTime())) return false;
+  var encontrado = body.findText('Fecha:');
+  if (!encontrado) return false;
+  var elHeading = encontrado.getElement();
+  while (elHeading.getParent() && elHeading.getType() !== DocumentApp.ElementType.PARAGRAPH) {
+    elHeading = elHeading.getParent();
+  }
+  var idxValor = body.getChildIndex(elHeading) + 1;
+  if (idxValor >= body.getNumChildren()) return false;
+  var hijoValor = body.getChild(idxValor);
+  if (hijoValor.getType() !== DocumentApp.ElementType.PARAGRAPH) return false;
+  var pValor = hijoValor.asParagraph();
+  var textoActual = pValor.getText();
+  var fechaDoc = _parseSpanishDate(textoActual);
+  if (fechaDoc instanceof Date && !isNaN(fechaDoc.getTime()) && fechaDoc > fecha) return false;
+  var prefijoMatch = textoActual.match(/^[\s\t]*/);
+  var prefijo = prefijoMatch ? prefijoMatch[0] : '';
+  pValor.editAsText().setText(prefijo + _formatFechaHoraDocEs(fecha));
+  return true;
+}
+
+/**
  * _actualizarFechaDocTorneo(body, ss) [→ Contexto_Base_Web.md §28B049]
  */
 function _actualizarFechaDocTorneo(body, ss) {
@@ -819,6 +890,9 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
   var nombreMes = _MESES_ES[mesEfectivo.mes];
   body.replaceText('\\[Mes\\]', nombreMes);
 
+  // 1b. PF206 (24-oct-2026): la «Fecha:» del Doc es la del sorteo en S_Lista (antes quedaba la de la plantilla: 06 de julio).
+  // Se escribe después de evaluar, con el ID del sorteo vigente; si la evaluación falla, la fecha no se toca.
+
   // 2. Evaluación (24-oct-2026, pedido de la usuaria): la MISMA que usa el doc de NO calificados del sorteo y la
   // web (_evaluarCalificacionSorteo_(), 29_Docs_NoCalificados.gs): promedio de las «Semanas» de S_Lista, ataques,
   // torneos y barcos; ya NO se leen los mínimos del texto de este documento ni se usa el acumulado de la temporada. [→ Contexto_Base_Web.md §PF202]
@@ -841,6 +915,12 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
     Logger.log('[ParticipantesCalificados] No se pudo regenerar «Requisitos» en "' + nombreDoc + '": ' + eReq.message);
   }
 
+  try {
+    _actualizarFechaDocSorteo(body, _fechaSorteoPorId_(ev.idSorteo));
+  } catch (eFecha) {
+    Logger.log('[ParticipantesCalificados] No se pudo actualizar la «Fecha:» en \"' + nombreDoc + '\": ' + eFecha.message);
+  }
+
   // 3. Un array de calificados por cada clan (mismo orden que los requisitos de S_Lista).
   var porClan = {};
   for (var ci = 0; ci < ev.ordenClanes.length; ci++) porClan[ev.ordenClanes[ci]] = [];
@@ -848,7 +928,7 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
   var totalCalificados = 0;
   ev.evaluados.forEach(function (e) {
     if (e.motivos.length > 0) return; // no calificó: va en el doc de NO calificados
-    porClan[e.clan].push({ nombre: e.nombre, puntaje: _ncFmtNum(e.trofeos) }); // puntaje = medallas de guerra (promedio semanal)
+    porClan[e.clan].push({ nombre: e.nombre, puntaje: _fmtMilesComa(e.trofeos) }); // puntaje = medallas de guerra (promedio semanal)
     totalCalificados++;
   });
 
