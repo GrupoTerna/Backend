@@ -138,7 +138,7 @@ function sincronizarRequisitosSorteo() {
     }
 
     _escribirPremiosEnDoc(doc.getBody(), bloque[0].premios, '[Premios-Sorteo]');
-    _reescribirRequisitosTexto(doc.getBody(), resumen, nombreMes, finPredicadosSorteo, '[Requisitos-Sorteo]');
+    _reescribirRequisitosTexto(doc.getBody(), resumen, nombreMes, finPredicadosSorteo, '[Requisitos-Sorteo]', { sorteo: true });
     doc.saveAndClose();
   }
 
@@ -165,8 +165,16 @@ function _REQ_DOC_TEXTO_TORNEOS_VALOR(qty) {
 /**
  * _REQ_DOC_TEXTO_BARCOS(qty) [→ Contexto_Base_Web.md §27B009]
  */
-function _REQ_DOC_TEXTO_BARCOS(qty) {
+function _REQ_DOC_TEXTO_BARCOS(qty, nSemanas) {
   if (qty <= 0) return 'No se permite ningún ataque a barcos.';
+  // PF205 (24-oct-2026, sorteo): con las semanas evaluadas conocidas, la línea dice el ACUMULADO permitido (tope semanal x semanas),
+  // que es lo mismo que pedir que el promedio semanal no pase del tope (así se evalúa en _evaluarCalificacionSorteo_()).
+  var n = Number(nSemanas) || 0;
+  if (n > 0) {
+    var total = qty * n;
+    return 'Máximo ' + total + ' ' + (total === 1 ? 'ataque' : 'ataques') + ' a barcos permitidos en total durante ' +
+      (n === 1 ? 'la semana evaluada' : 'las ' + n + ' semanas evaluadas') + ' (' + qty + ' por semana, en promedio).';
+  }
   return 'Máximo ' + qty + ' ataques a barcos permitidos, en promedio semanal.';
 }
 
@@ -187,7 +195,8 @@ function _resumirRequisitosBloque(bloqueClanes) {
     reaccionActivo: false,
     whatsappActivo: false,
     barcosActivo: false,
-    barcosQty: 0
+    barcosQty: 0,
+    semanas: (bloqueClanes[0] && bloqueClanes[0].semanas) ? bloqueClanes[0].semanas : [] // PF205: semanas evaluadas (columna Semanas de S_Lista)
   };
 
   bloqueClanes.forEach(function (b) {
@@ -244,7 +253,9 @@ function _buscarIndiceHijo(body, predicado) {
 /**
  * _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, logTag) [→ Contexto_Base_Web.md §27B014]
  */
-function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, logTag) {
+function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, logTag, opciones) {
+  var sorteo = !!(opciones && opciones.sorteo); // PF205: texto del sorteo (semanas evaluadas, barcos acumulados, «expulsados» siempre)
+  var semanasSorteo = sorteo ? (resumen.semanas || []) : [];
   var idxReq = _buscarIndiceHijo(body, function (t) { return t.trim() === 'Requisitos:'; });
   if (idxReq === -1) {
     Logger.log((logTag || '[Requisitos]') + ' No se encontró el marcador "Requisitos:" en el documento. Se omite.');
@@ -273,8 +284,12 @@ function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, log
   var insertAt = idxReq + 1;
 
   if (resumen.ordenClanesMinT.length > 0) {
+    var textoMedallas = (sorteo && semanasSorteo.length)
+      ? 'Alcanzar el promedio semanal mínimo de medallas en guerra en las semanas evaluadas (' +
+        semanasSorteo.map(function (s) { return 'T' + s.temporada + '_S' + s.semana; }).join(', ') + '):'
+      : 'Alcanzar el mínimo de medallas en guerra durante la semana actual (' + nombreMes + '):';
     insertAt = _insertarBloquePorClan(body, insertAt,
-      'Alcanzar el mínimo de medallas en guerra durante la semana actual (' + nombreMes + '):',
+      textoMedallas,
       resumen.ordenClanesMinT, resumen.minTPorClan,
       function (qty) { return String(qty); });
   }
@@ -295,10 +310,10 @@ function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, log
 
   // FIX (12-sep-2026, pedido del usuario -- requisito "Barcos", tercera [→ Contexto_Base_Web.md §27B015]
   if (resumen.barcosActivo) {
-    insertAt = _insertarBulletRequisito(body, insertAt, _REQ_DOC_TEXTO_BARCOS(resumen.barcosQty));
+    insertAt = _insertarBulletRequisito(body, insertAt, _REQ_DOC_TEXTO_BARCOS(resumen.barcosQty, sorteo ? semanasSorteo.length : 0));
   }
 
-  if (resumen.miembroActivoActivo) {
+  if (resumen.miembroActivoActivo || sorteo) { // PF205: en el sorteo «expulsados o sancionados NO participan» va siempre
     insertAt = _insertarBulletRequisito(body, insertAt, REQ_DOC_TEXTO_MIEMBRO_ACTIVO);
   }
 
