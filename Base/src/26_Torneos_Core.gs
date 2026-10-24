@@ -255,11 +255,18 @@ function _bloqueParaAutogeneracionCRLista(filaParseada) {
  * _autogenerarParCRListaSiCorrespondeInicioTemporada() [→ Contexto_Base_Web.md §26B024]
  */
 function _autogenerarParCRListaSiCorrespondeInicioTemporada() {
-  var temporadaQueArranca = _esHoyPrimerDiaDeTemporada();
-  if (!temporadaQueArranca) {
-    Logger.log('[CR_Lista][Autogeneración] Hoy no es el primer día de ninguna temporada, no hay nada que hacer.');
-    return { ok: false, motivo: 'Hoy no es primer día de temporada.' };
+  // PF208 (24-oct-2026, pedido de la usuaria): la fila planificada de Cambio de Rango se crea AL INICIAR EL MES (la temporada vigente), con
+  // Fecha = primer lunes de la temporada SIGUIENTE y Semanas = TODAS las semanas de la temporada ACTUAL. Antes solo actuaba el primer lunes
+  // de la temporada, fechaba el par con el día de la corrida y evaluaba la temporada anterior: si ese día no corría el activador, no se
+  // creaba nada. Ahora corre todos los días y crea el par si todavía no existe uno para la temporada siguiente (recupera un inicio de mes perdido).
+  var hoy = _hoyLimaSinHora();
+  var temporadaActual = _calcularTemporadaParaFecha(hoy);
+  if (!temporadaActual || temporadaActual < 1) {
+    Logger.log('[CR_Lista][Autogeneración] No se pudo calcular la temporada vigente, no se crea nada.');
+    return { ok: false, motivo: 'No se pudo calcular la temporada vigente.' };
   }
+  var temporadaQueArranca = temporadaActual + 1; // la temporada en que se aplica el cambio de rango
+  var temporadaEvaluada = temporadaActual;       // las semanas que se evalúan son las de la temporada vigente
 
   if (_existeParCRListaParaTemporada(temporadaQueArranca)) {
     Logger.log('[CR_Lista][Autogeneración] Ya existe un par CR_Lista para la Temporada ' +
@@ -267,11 +274,10 @@ function _autogenerarParCRListaSiCorrespondeInicioTemporada() {
     return { ok: false, motivo: 'Ya existe un par para la Temporada ' + temporadaQueArranca + '.' };
   }
 
-  var temporadaEvaluada = temporadaQueArranca - 1;
-  if (temporadaEvaluada < 1) {
-    Logger.log('[CR_Lista][Autogeneración] Temporada ' + temporadaQueArranca +
-      ' no tiene una temporada anterior que evaluar, no se crea nada.');
-    return { ok: false, motivo: 'No hay temporada anterior que evaluar.' };
+  var fechaCambio = primerLunesTemporada(CFG.REF_DEFAULT, temporadaQueArranca);
+  if (!(fechaCambio instanceof Date) || isNaN(fechaCambio.getTime())) {
+    Logger.log('[CR_Lista][Autogeneración] No se pudo calcular el primer lunes de la Temporada ' + temporadaQueArranca + '. No se crea nada.');
+    return { ok: false, motivo: 'No se pudo calcular el primer lunes de la Temporada ' + temporadaQueArranca + '.' };
   }
 
   var numSemanasEvaluada = _getSemanasDeTemporada(temporadaEvaluada);
@@ -293,17 +299,16 @@ function _autogenerarParCRListaSiCorrespondeInicioTemporada() {
     return { ok: false, motivo: 'La hoja CR_Lista no existe.' };
   }
 
-  var hoy = _hoyLimaSinHora();
-  var idsNuevos = _generarParIdsCRLista(hoy, ss);
+  var idsNuevos = _generarParIdsCRLista(fechaCambio, ss);
 
   var comunesAscenso = {
-    fecha: hoy, hora: '', semanas: semanasCsv, temporada: temporadaQueArranca,
+    fecha: fechaCambio, hora: '', semanas: semanasCsv, temporada: temporadaQueArranca,
     organizador: ultimoPar.ascenso ? ultimoPar.ascenso.organizador : '',
     tagOrg:      ultimoPar.ascenso ? ultimoPar.ascenso.tagOrg      : '',
     clan: '', clanTag: ''
   };
   var comunesDescenso = {
-    fecha: hoy, hora: '', semanas: semanasCsv, temporada: temporadaQueArranca,
+    fecha: fechaCambio, hora: '', semanas: semanasCsv, temporada: temporadaQueArranca,
     organizador: ultimoPar.descenso ? ultimoPar.descenso.organizador : '',
     tagOrg:      ultimoPar.descenso ? ultimoPar.descenso.tagOrg      : '',
     clan: '', clanTag: ''
@@ -317,8 +322,8 @@ function _autogenerarParCRListaSiCorrespondeInicioTemporada() {
   filaDescenso[CR.NUM - 1] = filaBaseSheet - 2;
 
   sh.getRange(filaBaseSheet, 1, 2, CR_TOTAL_COLS).setValues([filaAscenso, filaDescenso]);
-  _setDateCell(sh, filaBaseSheet,     CR.FECHA, hoy, 'dd/MM/yyyy');
-  _setDateCell(sh, filaBaseSheet + 1, CR.FECHA, hoy, 'dd/MM/yyyy');
+  _setDateCell(sh, filaBaseSheet,     CR.FECHA, fechaCambio, 'dd/MM/yyyy');
+  _setDateCell(sh, filaBaseSheet + 1, CR.FECHA, fechaCambio, 'dd/MM/yyyy');
   // Hora queda vacía en la autogeneración (comunesAscenso/comunesDescenso [→ Contexto_Base_Web.md §26B025]
   _trySetFmt(sh, filaBaseSheet,     CR.HORA, 'h:mm:ss AM/PM');
   _trySetFmt(sh, filaBaseSheet + 1, CR.HORA, 'h:mm:ss AM/PM');
@@ -336,7 +341,7 @@ function _autogenerarParCRListaSiCorrespondeInicioTemporada() {
   }
 
   Logger.log('[CR_Lista][Autogeneración] Par nuevo creado para Temporada ' + temporadaQueArranca +
-    ' (evalúa Temporada ' + temporadaEvaluada + ', ' + numSemanasEvaluada + ' semana(s)): ' +
+    ' (Planificado para el ' + Utilities.formatDate(fechaCambio, 'America/Lima', 'dd/MM/yyyy') + '; evalúa Temporada ' + temporadaEvaluada + ', ' + numSemanasEvaluada + ' semana(s)): ' +
     idsNuevos.idAscenso + ' / ' + idsNuevos.idDescenso + '. Guardado como vigente en Extra.');
 
   return { ok: true, motivo: 'Par creado.', idAscenso: idsNuevos.idAscenso, idDescenso: idsNuevos.idDescenso };
