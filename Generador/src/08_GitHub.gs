@@ -161,8 +161,10 @@ function _githubRevisarPullPendiente_(nombreBase) {
         ? 'Archivos distintos en ' + carpeta + ' (' + cambiados.length + '): ' +
           cambiados.slice(0, 10).join(', ') + (cambiados.length > 10 ? ' y ' + (cambiados.length - 10) + ' más' : '') + '.'
         : 'Hay commits nuevos en GitHub (aviso por commit, GITHUB_AVISO_SOLO_CARPETA_ = false).');
-  var forzada = nombreBase === 'Base' ? 'descargarBaseForzado()' : 'descargarGeneradorForzado()';
-  var traer   = nombreBase === 'Base' ? 'subirBaseDesdeGithub()' : 'subirGeneradorDesdeGithub()';
+  var forzada = nombreBase === 'Base' ? 'descargarBaseForzado()'
+              : (nombreBase === 'Contactos_Secundario' ? 'descargarContactosForzado()' : 'descargarGeneradorForzado()');
+  var traer   = nombreBase === 'Base' ? 'subirBaseDesdeGithub()'
+              : (nombreBase === 'Contactos_Secundario' ? 'subirContactosDesdeGithub()' : 'subirGeneradorDesdeGithub()');
   var mensaje = 'SUBIDA A GITHUB BLOQUEADA: PULL PENDIENTE. GitHub tiene cambios en ' + carpeta +
                 ' que este proyecto no ha traído (último commit traído: ' + base.substring(0, 7) +
                 ', último en GitHub: ' + cabeza.substring(0, 7) + '). ' + detalle +
@@ -182,6 +184,15 @@ function _scriptIdDeProyecto_(nombreBase) {
     var id = PropertiesService.getScriptProperties().getProperty('SCRIPT_ID_' + ssId);
     if (!id) throw 'No hay scriptId guardado para Base. Corre subirBaseDesdeZip() (o cualquier subirBaseDesdeX) primero.';
     return id;
+  }
+  if (nombreBase === 'Contactos_Secundario') {
+    // Proyecto de Apps Script de la CUENTA SECUNDARIA (sincronizador de contactos). Su ID no va en el
+    // código (es un ID de Drive y el repo es público): vive en las Propiedades del script del Generador.
+    // Requisito: ese proyecto debe estar compartido con la cuenta del Generador como editor.
+    var idContactos = PropertiesService.getScriptProperties().getProperty('SCRIPT_ID_CONTACTOS_SECUNDARIO');
+    if (!idContactos) throw 'Falta la propiedad SCRIPT_ID_CONTACTOS_SECUNDARIO en las Propiedades del script del Generador ' +
+      '(ID del proyecto de Apps Script de la cuenta secundaria; ese proyecto debe estar compartido con esta cuenta como editor).';
+    return idContactos;
   }
   throw 'Nombre de proyecto no válido: ' + nombreBase;
 }
@@ -531,7 +542,7 @@ function _githubSincronizar_(nombreBase, forzar) {
  * [→ Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse]
  */
 function _githubTraerAProyectoApps_(nombreBase, forzar) {
-  if (nombreBase !== 'Base' && nombreBase !== 'Generador') {
+  if (nombreBase !== 'Base' && nombreBase !== 'Generador' && nombreBase !== 'Contactos_Secundario') {
     throw 'Nombre de proyecto no válido para traer desde GitHub: ' + nombreBase;
   }
   if (!_githubToken_()) throw 'Falta la propiedad GITHUB_TOKEN en las propiedades del script.';
