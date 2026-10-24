@@ -127,6 +127,208 @@ function _pronosticoMapaFameHoyPorTag(clanTag, ctx) {
   return mapa;
 }
 
+// FAMA DE HOY (PF194, 23-oct-2026): `participants[].fame` de currentriverrace es el ACUMULADO de la semana de guerra, no el del día.
+// Para mostrar lo de hoy hay que restarle la fama que el clan ya traía al empezar el día (la "base"). La base sale de:
+//   1) una FOTO que guarda _pronosticoRegistrarFotoDia_() en cada captura fresca de clanes (propios y rivales); o, si no hay foto,
+//   2) solo para clanes propios, la fama de AYER de la hoja Guerra (_pronosticoBaseDesdeHoja_). Sin ninguna de las dos, la base es
+//      null y el clan queda sin fama de hoy (nunca se inventa). `periodPoints` de la API NO sirve: se probó y no es la fama del día.
+//      [→ Contexto_Base_Web.md §PF194]
+
+var PRONOSTICO_FOTO_PROP = 'PRON_FOTO_DIA_V1'; // propiedad de script: { 'TAG': { p: periodIndex, b: base|null, u: última suma vista, t: ms } }
+var PRONOSTICO_FOTO_MAX_CHARS = 8500;           // las propiedades de script admiten ~9 KB por valor
+
+/**
+ * _pronosticoTagNorm_(tag): '#abc ' -> '#ABC' (misma normalización que ya usa este archivo para comparar tags).
+ */
+function _pronosticoTagNorm_(tag) {
+  return String(tag || '').trim().toUpperCase();
+}
+
+/**
+ * _pronosticoSumaFame_(participants): suma de `fame` (medallas acumuladas de la semana) de todos los participantes listados.
+ */
+function _pronosticoSumaFame_(participants) {
+  var lista = participants || [];
+  var total = 0;
+  for (var i = 0; i < lista.length; i++) total += Number((lista[i] || {}).fame) || 0;
+  return total;
+}
+
+/**
+ * _pronosticoFotoLeer_(): lee la foto guardada. Devuelve {} si no existe o está corrupta (no rompe el pronóstico).
+ */
+function _pronosticoFotoLeer_() {
+  try {
+    var crudo = PropertiesService.getScriptProperties().getProperty(PRONOSTICO_FOTO_PROP);
+    if (crudo) {
+      var obj = JSON.parse(crudo);
+      if (obj && typeof obj === 'object') return obj;
+    }
+  } catch (e) { /* foto corrupta o propiedades no disponibles: se trata como si no hubiera */ }
+  return {};
+}
+
+/**
+ * _pronosticoBaseDeFoto_(foto, tag, periodIndex): fama acumulada que el clan traía al empezar el día `periodIndex`, o null si
+ * no se sabe. Jueves (periodIndex % 7 === 3, primer día de guerra y de coliseo): la fama arranca en 0, no hace falta foto.
+ * Con foto: si ya hay registro de hoy, su base; si el último registro es de ayer, la última suma vista ayer (la captura de las
+ * 4:xx a. m. Lima, cada 5 min, deja esa suma casi al cierre); cualquier otro caso (sin registro, salto de días) = null.
+ */
+function _pronosticoBaseDeFoto_(foto, tag, periodIndex) {
+  var p = Number(periodIndex);
+  if (!isFinite(p) || p < 0) return null;
+  if (p % 7 === 3) return 0;
+  var r = (foto || {})[_pronosticoTagNorm_(tag)];
+  if (!r) return null;
+  if (Number(r.p) === p) return (r.b === null || r.b === undefined) ? null : Number(r.b);
+  if (Number(r.p) === p - 1) return Number(r.u) || 0;
+  return null;
+}
+
+/**
+ * _pronosticoAplicarFotoARegistro_(foto, tag, periodIndex, suma, ahoraMs): actualiza el registro de un clan en la foto (en
+ * memoria) y devuelve true si algo cambió. Registro nuevo = base desconocida (null); pasar de ayer a hoy = la base de hoy es la
+ * última suma de ayer; un salto de más de un día = base desconocida; un periodIndex menor al guardado (dato viejo) se ignora.
+ */
+function _pronosticoAplicarFotoARegistro_(foto, tag, periodIndex, suma, ahoraMs) {
+  var t = _pronosticoTagNorm_(tag);
+  var p = Number(periodIndex);
+  if (!t || !isFinite(p)) return false;
+  var r = foto[t];
+  if (!r) { foto[t] = { p: p, b: null, u: suma, t: ahoraMs }; return true; }
+  var pr = Number(r.p);
+  if (pr === p) {
+    if (Number(r.u) === suma) return false; // sin cambio: no se reescribe la propiedad
+    r.u = suma; r.t = ahoraMs;
+    return true;
+  }
+  if (pr === p - 1) { foto[t] = { p: p, b: Number(r.u) || 0, u: suma, t: ahoraMs }; return true; }
+  if (pr < p) { foto[t] = { p: p, b: null, u: suma, t: ahoraMs }; return true; }
+  return false;
+}
+
+/**
+ * _pronosticoRegistrarFotoDia_(): guarda, por cada clan de las carreras de los clanes Terna (propios y rivales), la suma de fama
+ * acumulada que acaba de traer la API. La llama capturarApiClanes_() (00_Main.gs) después de cada captura, así que corre cada
+ * 5 min entre 4:00 y 4:59 a. m. Lima (cierre del día) y una vez por hora el resto del día. Solo actúa si esta ejecución pidió los
+ * clanes a la API (con datos del checkpoint no hay nada nuevo que guardar). Solo guarda días de guerra o coliseo.
+ * [→ Contexto_Base_Web.md §PF194]
+ */
+function _pronosticoRegistrarFotoDia_() {
+  if (typeof _clanesBasicoDesdeApiEnEstaEjecucion !== 'undefined' && !_clanesBasicoDesdeApiEnEstaEjecucion) return;
+  if (!CACHE_CLAN_DATA) return;
+  var foto = _pronosticoFotoLeer_();
+  var ahora = Date.now();
+  var cambio = false;
+  var vistos = {};
+  var maxP = -1;
+
+  for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
+    var d = CACHE_CLAN_DATA[CFG.CLAN_TAGS[i]];
+    var rr = d && d.riverrace;
+    if (!rr) continue;
+    var tipo = String(rr.periodType || '');
+    if (tipo !== 'warDay' && tipo !== 'colosseum') continue;
+    var pIdx = Number(rr.periodIndex);
+    if (rr.periodIndex === '' || rr.periodIndex === null || rr.periodIndex === undefined || !isFinite(pIdx)) continue;
+    if (pIdx > maxP) maxP = pIdx;
+
+    var lista = [];
+    if (rr.clan) lista.push(rr.clan);
+    var enCarrera = rr.clans || [];
+    for (var j = 0; j < enCarrera.length; j++) lista.push(enCarrera[j]);
+
+    for (var k = 0; k < lista.length; k++) {
+      var c = lista[k] || {};
+      var tagN = _pronosticoTagNorm_(c.tag);
+      if (!tagN || vistos[tagN]) continue;
+      if (!c.participants || !c.participants.length) continue; // sin lista de participantes no hay suma que guardar
+      vistos[tagN] = true;
+      if (_pronosticoAplicarFotoARegistro_(foto, tagN, pIdx, _pronosticoSumaFame_(c.participants), ahora)) cambio = true;
+    }
+  }
+
+  if (!cambio) return;
+
+  // Limpieza: fuera los clanes que no se vieron en las últimas 2 semanas de periodIndex (rivales de carreras viejas).
+  if (maxP >= 0) {
+    Object.keys(foto).forEach(function (t) {
+      if (Number((foto[t] || {}).p) < maxP - 14) delete foto[t];
+    });
+  }
+  var texto = JSON.stringify(foto);
+  if (texto.length > PRONOSTICO_FOTO_MAX_CHARS) {
+    // Tope de tamaño de la propiedad: se quitan primero los registros más viejos.
+    var tags = Object.keys(foto).sort(function (a, b) { return (Number(foto[a].t) || 0) - (Number(foto[b].t) || 0); });
+    while (texto.length > PRONOSTICO_FOTO_MAX_CHARS && tags.length) {
+      delete foto[tags.shift()];
+      texto = JSON.stringify(foto);
+    }
+  }
+  PropertiesService.getScriptProperties().setProperty(PRONOSTICO_FOTO_PROP, texto);
+}
+
+/**
+ * _pronosticoBaseDesdeHoja_(participants, clanTag, ctx): respaldo SOLO para clanes propios cuando no hay foto: suma de la fama
+ * de AYER (fila del periodIndex anterior de la hoja Guerra, acumulado al cierre) de las cuentas que figuran hoy en la carrera.
+ * Devuelve null si la hoja no tiene filas de ayer para ese clan. Mismos criterios de lectura que _pronosticoMapaFameHoyPorTag().
+ */
+function _pronosticoBaseDesdeHoja_(participants, clanTag, ctx) {
+  if (!ctx || !ctx.periodIndex) return null;
+  var clanCache  = _getClanCache(clanTag);
+  var clanNombre = (clanCache && clanCache.info && clanCache.info.name) || '';
+  if (!clanNombre) return null;
+
+  var ss = _getSs();
+  var lectura = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.GUERRA, 'Backup_Guerra.csv', GUERRA_TOTAL_COLS);
+  var datos = lectura.filas;
+  if (!datos.length) return null;
+
+  var pAyer = ctx.periodIndex - 1;
+  var fameAyerPorTag = {};
+  var hayAyer = false;
+  for (var i = 0; i < datos.length; i++) {
+    var fila = datos[i];
+    if (String(fila[GC.CLAN - 1] || '') !== clanNombre) continue;
+    if (String(fila[GC.TEMPORADA - 1] || '') !== String(ctx.temporada)) continue;
+    if ((Number(fila[GC.PERIOD_IDX - 1]) || 0) !== pAyer) continue;
+    var tagFila = _pronosticoTagNorm_(fila[GC.TAG - 1]);
+    if (!tagFila) continue;
+    fameAyerPorTag[tagFila] = Number(fila[GC.FAME - 1]) || 0;
+    hayAyer = true;
+  }
+  if (!hayAyer) return null;
+
+  var base = 0;
+  var lista = participants || [];
+  for (var j = 0; j < lista.length; j++) {
+    base += fameAyerPorTag[_pronosticoTagNorm_((lista[j] || {}).tag)] || 0;
+  }
+  return base;
+}
+
+/**
+ * _pronosticoAgregarDiario_(calc, base, origen): agrega a `calc` los campos de HOY a partir de la base del día. Con base null los
+ * campos diarios quedan en null (la web muestra «—»; nunca se mezcla un acumulado con un diario). fameTecho*Hoy nunca baja de fameHoy.
+ */
+function _pronosticoAgregarDiario_(calc, base, origen) {
+  if (base === null || base === undefined || !isFinite(Number(base))) {
+    calc.fameBase = null;
+    calc.fameHoy = null;
+    calc.fameTechoRosterHoy = null;
+    calc.fameTechoHoy = null;
+    calc.baseOrigen = '';
+    return calc;
+  }
+  var b = Number(base);
+  calc.fameBase = b;
+  calc.fameHoy = Math.max(0, calc.fameActual - b);
+  calc.fameTechoRosterHoy = Math.max(calc.fameHoy, calc.fameTechoRoster - b);
+  calc.fameTechoHoy = Math.max(calc.fameHoy, calc.fameTecho - b);
+  calc.baseOrigen = origen || '';
+  return calc;
+}
+
 // CÁLCULO POR CLAN [→ Contexto_Base_Web.md §21B011]
 
 /**
@@ -227,6 +429,8 @@ function calcularPronosticoGuerra(ctxOpcional) {
   var vistos = {};
   // Mismo cache de clanes que ya usa el resto de esta función -- no dispara [→ Contexto_Base_Web.md §21B022]
   var ctx = ctxOpcional || _getCtx();
+  // PF194: foto de la fama al empezar el día (se lee una sola vez; la escribe _pronosticoRegistrarFotoDia_() en cada captura).
+  var fotoDia = _pronosticoFotoLeer_();
 
   for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
     var clanTag = CFG.TERNA_TAGS[i];
@@ -246,6 +450,17 @@ function calcularPronosticoGuerra(ctxOpcional) {
       // FASE (16-sep-2026): refinamiento "ya hizo duelo" -- SOLO para el [→ Contexto_Base_Web.md §21B023]
       var mapaFameHoyPropio = _pronosticoMapaFameHoyPorTag(clanTag, ctx);
       var calcPropio = _pronosticoTechoClan(propios, mapaFameHoyPropio);
+      // PF194: fama de HOY. Primero la foto del día; sin foto, la hoja Guerra (fama de ayer); sin ninguna, queda en null.
+      var periodoPropio = Number(rr.periodIndex);
+      if (!isFinite(periodoPropio) || rr.periodIndex === '' || rr.periodIndex === null || rr.periodIndex === undefined) periodoPropio = ctx.periodIndex;
+      var basePropio = _pronosticoBaseDeFoto_(fotoDia, clanTag, periodoPropio);
+      var origenPropio = 'foto';
+      if (basePropio === null) {
+        try { basePropio = _pronosticoBaseDesdeHoja_(propios, clanTag, ctx); }
+        catch (eHoja) { Logger.log('[Pronóstico] Base desde la hoja Guerra falló para ' + clanTag + ': ' + eHoja.message); basePropio = null; }
+        origenPropio = 'hoja';
+      }
+      _pronosticoAgregarDiario_(calcPropio, basePropio, origenPropio);
       calcPropio.clanTag = clanTag;
       calcPropio.nombre = info.name || clanTag;
       calcPropio.esRival = false;
@@ -271,6 +486,10 @@ function calcularPronosticoGuerra(ctxOpcional) {
 
       // Sin mapaFameHoyPorTag: la hoja Guerra no registra a los rivales [→ Contexto_Base_Web.md §21B026]
       var calcRival = _pronosticoTechoClan(rival.participants || []);
+      // PF194: los rivales no están en la hoja Guerra; su base sale solo de la foto (null hasta que haya foto de ayer).
+      var periodoRival = Number(rr.periodIndex);
+      if (!isFinite(periodoRival) || rr.periodIndex === '' || rr.periodIndex === null || rr.periodIndex === undefined) periodoRival = ctx.periodIndex;
+      _pronosticoAgregarDiario_(calcRival, _pronosticoBaseDeFoto_(fotoDia, rivalTag, periodoRival), 'foto');
       calcRival.clanTag = rivalTag;
       calcRival.nombre = rival.name || rivalTag;
       calcRival.esRival = true;
@@ -287,11 +506,20 @@ function calcularPronosticoGuerra(ctxOpcional) {
 
   // Más arriba primero por techo: es el orden en que interesa leerlo (quién
   // PUEDE ganar, no quién va ganando ahora).
-  salida.sort(function (a, b) { return b.fameTecho - a.fameTecho; });
+  // PF194: con fama de hoy conocida manda el techo de HOY; los que no la tienen (rivales sin foto todavía) van al final, entre
+  // ellos por el techo acumulado de siempre.
+  salida.sort(function (a, b) {
+    var ha = (a.fameTechoHoy === null || a.fameTechoHoy === undefined) ? null : a.fameTechoHoy;
+    var hb = (b.fameTechoHoy === null || b.fameTechoHoy === undefined) ? null : b.fameTechoHoy;
+    if (ha !== null && hb !== null) return hb - ha;
+    if (ha !== null) return -1;
+    if (hb !== null) return 1;
+    return b.fameTecho - a.fameTecho;
+  });
   return { ok: true, clanes: salida };
 }
 
-var PRONOSTICO_WEB_CACHE_KEY     = 'web_pronostico_guerra_v5'; // v2: agrega puesto/clanesEnCarrera; v3: agrega clanTernaTag/clanTernaNombre a los rivales; v4: fameTechoRoster ya respeta los topes de 200 ataques / 50 cuentas; v5 (Tanda 14): agrega coliseo/estimado al clan propio
+var PRONOSTICO_WEB_CACHE_KEY     = 'web_pronostico_guerra_v6'; // v6 (PF194): agrega fameBase/fameHoy/fameTechoRosterHoy/fameTechoHoy/baseOrigen (fama del día; null si no se conoce la base); v2: agrega puesto/clanesEnCarrera; v3: agrega clanTernaTag/clanTernaNombre a los rivales; v4: fameTechoRoster ya respeta los topes de 200 ataques / 50 cuentas; v5 (Tanda 14): agrega coliseo/estimado al clan propio
 var PRONOSTICO_WEB_CACHE_TTL_SEG = 120;
 var PRONOSTICO_WEB_CHECKPOINT_MAX_EDAD_MS = 70 * 60 * 1000;
 
