@@ -3892,6 +3892,7 @@ function _buscarCorreccionDomingo_(overlay, temporada, semana, clanTag, tag) {
   (CFG.CLAN_TAGS || []).forEach(function (ct) { if (overlay[t + '|' + s + '|' + ct + '|' + tag]) hayConClan = true; });
   if (hayConClan) return { estado: 'otro_clan' };
   var sinClan = overlay[t + '|' + s + '||' + tag];
+  if (sinClan && _cgwPerfilEsExterno_(sinClan)) return { estado: 'sin_dato' }; // PF183 act. 16: la fila del perfil de un clan externo no se usa como dato Terna
   if (sinClan) return { estado: 'ok_sin_clan', e: sinClan };
   return { estado: 'sin_dato' };
 }
