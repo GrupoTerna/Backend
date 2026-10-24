@@ -178,6 +178,64 @@ function _REQ_DOC_TEXTO_BARCOS(qty, nSemanas) {
   return 'Máximo ' + qty + ' ataques a barcos permitidos, en promedio semanal.';
 }
 
+/**
+ * PF206 (24-oct-2026). _fmtMilesComa(n): número con separador de miles con coma (12345 -> «12,345»), sin depender del idioma del
+ * proyecto de Apps Script. Conserva hasta un decimal si lo trae.
+ */
+function _fmtMilesComa(n) {
+  var v = Number(n);
+  if (isNaN(v)) return String(n);
+  var r = Math.round(v * 10) / 10;
+  var partes = String(Math.abs(r)).split('.');
+  partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (r < 0 ? '-' : '') + partes.join('.');
+}
+
+/**
+ * PF206. _ordenarSemanasSorteoDoc(semanas): copia ordenada de menor a mayor (temporada y luego semana); no toca el orden de S_Lista.
+ */
+function _ordenarSemanasSorteoDoc(semanas) {
+  return (semanas || []).slice().sort(function (a, b) {
+    return (a.temporada - b.temporada) || (a.semana - b.semana);
+  });
+}
+
+/**
+ * PF206. _etiquetaSemanaSorteoDoc({temporada, semana}): «Temporada 6, semana 2 (12 oct - 18 oct)». Las fechas son el lunes y el domingo
+ * reales de esa semana (_getRangoFechasSemana); si no se pueden calcular, se omite el paréntesis.
+ */
+function _etiquetaSemanaSorteoDoc(sem) {
+  var txt = 'Temporada ' + sem.temporada + ', semana ' + sem.semana;
+  try {
+    var r = _getRangoFechasSemana(sem.temporada, Number(sem.semana) - 1);
+    if (r && r.inicio && r.fin) {
+      var f = function (d) { return d.getDate() + ' ' + _MESES_ES[d.getMonth()].substring(0, 3); };
+      txt += ' (' + f(r.inicio) + ' - ' + f(r.fin) + ')';
+    }
+  } catch (e) { /* sin fechas, la etiqueta igual sirve */ }
+  return txt;
+}
+
+/**
+ * PF206. _insertarFilaRequisito(body, insertAt, texto): fila sin viñeta, con la misma sangría y fuente que las filas por clan.
+ */
+function _insertarFilaRequisito(body, insertAt, texto) {
+  var p = body.insertParagraph(insertAt, '');
+  p.setIndentStart(72);
+  p.setIndentFirstLine(72);
+  var t = p.editAsText();
+  t.appendText(texto);
+  var fin = texto.length - 1;
+  t.setBold(0, fin, false);
+  t.setItalic(0, fin, false);
+  t.setFontFamily(0, fin, 'Arial Unicode MS');
+  t.setFontSize(0, fin, 12);
+  t.setUnderline(0, fin, false);
+  t.setForegroundColor(0, fin, '#000000');
+  t.setLinkUrl(0, fin, null);
+  return insertAt + 1;
+}
+
 // BAJA DEFINITIVA (17-sep-2026, pedido del usuario -- "borra todo el [→ Contexto_Base_Web.md §27B010]
 
 /**
@@ -283,15 +341,23 @@ function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, log
 
   var insertAt = idxReq + 1;
 
+  // PF206 (24-oct-2026, pedido de la usuaria): en el sorteo, una viñeta propia «Semanas a evaluar» y debajo una fila por semana
+  // («Temporada 6, semana 2 (12 oct - 18 oct)»), en vez de los códigos T6_S2 dentro de la línea de medallas.
+  if (sorteo && semanasSorteo.length) {
+    insertAt = _insertarBulletRequisito(body, insertAt, 'Semanas a evaluar:');
+    _ordenarSemanasSorteoDoc(semanasSorteo).forEach(function (sem) {
+      insertAt = _insertarFilaRequisito(body, insertAt, _etiquetaSemanaSorteoDoc(sem));
+    });
+  }
+
   if (resumen.ordenClanesMinT.length > 0) {
     var textoMedallas = (sorteo && semanasSorteo.length)
-      ? 'Alcanzar el promedio semanal mínimo de medallas en guerra en las semanas evaluadas (' +
-        semanasSorteo.map(function (s) { return 'T' + s.temporada + '_S' + s.semana; }).join(', ') + '):'
+      ? 'Alcanzar el promedio semanal mínimo de medallas en guerra en las semanas evaluadas:'
       : 'Alcanzar el mínimo de medallas en guerra durante la semana actual (' + nombreMes + '):';
     insertAt = _insertarBloquePorClan(body, insertAt,
       textoMedallas,
       resumen.ordenClanesMinT, resumen.minTPorClan,
-      function (qty) { return String(qty); });
+      sorteo ? _fmtMilesComa : function (qty) { return String(qty); }); // PF206: en el sorteo, separador de miles con coma
   }
 
   if (resumen.ordenClanesAtaques.length > 0) {
