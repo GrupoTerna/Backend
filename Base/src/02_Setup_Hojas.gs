@@ -991,8 +991,29 @@ function _setupSAsistencia(ss) {
     if (cambio) rngGano.setValues(valGano);
   }
 
+  _bordesDatosSAsistencia_(sh); // PF231: la columna «Ganó» (15) de las filas que ya existían no tenía bordes
+
   _protegerSoloAdvertencia(sh);
   Logger.log('[Setup] S_Asistencia OK (estructura + dropdown de Resultado y de Razón)');
+}
+
+/**
+ * PF231 (24-oct-2026, pedido de la usuaria): bordes y centrado en todas las filas de datos de S_Asistencia, columna «Ganó» incluida. Las filas nuevas ya
+ * los reciben al escribirse (applyBorderCenter sobre SA_TOTAL_COLS), pero las que existían antes de PF222 tenían solo 14 columnas con bordes.
+ */
+function _bordesDatosSAsistencia_(sh) {
+  var ultima = sh.getLastRow();
+  if (ultima >= 2) applyBorderCenter(sh.getRange(2, 1, ultima - 1, SA_TOTAL_COLS));
+}
+
+/**
+ * PF231: se puede correr sola desde el editor de Apps Script (no recibe parámetros) para corregir los bordes de S_Asistencia sin ejecutar todo el setup.
+ */
+function repararBordesSAsistencia() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.S_ASISTENCIA);
+  if (!sh) { Logger.log('[Setup] repararBordesSAsistencia: no existe la hoja ' + CFG.SHEETS.S_ASISTENCIA); return; }
+  _bordesDatosSAsistencia_(sh);
+  Logger.log('[Setup] Bordes de S_Asistencia corregidos (' + Math.max(0, sh.getLastRow() - 1) + ' filas, ' + SA_TOTAL_COLS + ' columnas).');
 }
 
 /**

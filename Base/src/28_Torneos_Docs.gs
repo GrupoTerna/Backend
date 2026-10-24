@@ -425,6 +425,41 @@ var TITULO_DOC_GANADORES_SORTEO = 'Lista de ganadores del sorteo';
 var TITULO_ANTIGUO_DOC_GANADORES_SORTEO = 'Lista de participantes calificados';
 
 /**
+ * PF231 (24-oct-2026, pedido de la usuaria con captura): «Ganadores del sorteo:» debe quedar al inicio de una hoja. En vez de depender de los
+ * párrafos vacíos de la plantilla (su efecto cambia con el largo de los requisitos y podían dejar el encabezado al final de la página anterior),
+ * se quitan los vacíos que lo preceden y se pone un salto de página al comienzo del propio párrafo del encabezado (así Word no deja una línea
+ * en blanco arriba de la página nueva). Es idempotente: si el salto ya existe, no se agrega otro.
+ */
+function _ganadoresAlInicioDePaginaDoc_(body, heading) {
+  try {
+    var par = heading.asParagraph();
+    var tieneSalto = false;
+    for (var q = 0; q < par.getNumChildren(); q++) {
+      if (par.getChild(q).getType() === DocumentApp.ElementType.PAGE_BREAK) { tieneSalto = true; break; }
+    }
+    var idx = body.getChildIndex(heading);
+    var quitados = 0;
+    while (idx - 1 >= 0 && quitados < 40) {
+      var ant = body.getChild(idx - 1);
+      if (ant.getType() !== DocumentApp.ElementType.PARAGRAPH) break;
+      var pa = ant.asParagraph();
+      if (pa.getText().trim() !== '') break;
+      var conExtra = false;
+      for (var k = 0; k < pa.getNumChildren(); k++) {
+        if (pa.getChild(k).getType() !== DocumentApp.ElementType.TEXT) { conExtra = true; break; }
+      }
+      if (conExtra) break; // un salto de página o una imagen no se tocan
+      body.removeChild(pa);
+      idx--;
+      quitados++;
+    }
+    if (!tieneSalto) par.insertPageBreak(0);
+  } catch (eSalto) {
+    Logger.log('[Ganadores-Sorteo] No se pudo dejar «Ganadores del sorteo:» al inicio de la página: ' + eSalto.message);
+  }
+}
+
+/**
  * PF221: línea de resumen bajo «Ganadores del sorteo:» (cantidad de premios y si está completo, ganadores registrados, participantes en la lista).
  * `resumen` null = sin datos del acta: no hay línea. Quita siempre la línea anterior y escribe la nueva justo debajo del encabezado.
  */
@@ -529,6 +564,7 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen) {
   }
   // PF229: «Ganadores del sorteo:» no puede quedar solo al final de una página; se mantiene junto con el resumen y la tabla.
   try { heading.asParagraph().setKeepWithNext(true); } catch (eK) { /* si el elemento no es párrafo o la API no lo admite, se sigue sin esto */ }
+  _ganadoresAlInicioDePaginaDoc_(body, heading); // PF231: antes de calcular idxH, porque quita párrafos previos
   var idxH = body.getChildIndex(heading);
 
   // Qué hay después del encabezado: tablas y la línea de «sin ganadores».
@@ -942,7 +978,7 @@ function _construirContenidoDocGanadoresSorteo(body) {
   _rdocParrafoTexto(body, 'En vivo a través del servidor de Discord del clan, mediante una ruleta.', false, DocumentApp.HorizontalAlignment.JUSTIFY);
   _rdocParrafoTexto(body, 'Requisitos:', true, DocumentApp.HorizontalAlignment.JUSTIFY);
   _rdocBloqueRequisitosSorteo(body);
-  for (var b = 0; b < 7; b++) body.appendParagraph('');
+  // PF231: ya no hay 7 párrafos vacíos antes del encabezado; _ganadoresAlInicioDePaginaDoc_() lo deja al inicio de la hoja con un salto de página.
   _rdocParrafoRuns(body, [[' ', false], ['Ganadores del sorteo:', true]]);
   body.appendParagraph('');
   _rdocTablaConEncabezadoNegrita(body, [
