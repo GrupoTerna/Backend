@@ -223,6 +223,22 @@ function _pronosticoBaseDeLogs_(rr, tag, periodIndex) {
 }
 
 /**
+ * _pronosticoBaseDePeriodPoints_(rr, calc, clanObj): base del día = fama acumulada de la semana - `periodPoints` del clan (24-oct-2026,
+ * PF198). Identidad verificada por la usuaria y repetida con las capturas: suma de participants[].fame = Σ pointsEarned de los días
+ * cerrados + clan.periodPoints (puntos de HOY, en vivo). Solo en día de guerra (`warDay`): en coliseo `periodPoints` vale 0 aunque
+ * haya ataques (§PF198). Devuelve null si falta el dato o no cuadra (periodPoints mayor que la fama acumulada).
+ * [→ Contexto_Base_Web.md §PF198]
+ */
+function _pronosticoBaseDePeriodPoints_(rr, calc, clanObj) {
+  if (!rr || String(rr.periodType || '') !== 'warDay') return null;
+  if (!clanObj || clanObj.periodPoints === undefined || clanObj.periodPoints === null || clanObj.periodPoints === '') return null;
+  var pp = Number(clanObj.periodPoints);
+  var acum = Number(calc && calc.fameActual);
+  if (!isFinite(pp) || !isFinite(acum) || pp < 0 || pp > acum) return null;
+  return acum - pp;
+}
+
+/**
  * _pronosticoAplicarFotoARegistro_(foto, tag, periodIndex, suma, ahoraMs): actualiza el registro de un clan en la foto (en
  * memoria) y devuelve true si algo cambió. Registro nuevo = base desconocida (null); pasar de ayer a hoy = la base de hoy es la
  * última suma de ayer; un salto de más de un día = base desconocida; un periodIndex menor al guardado (dato viejo) se ignora.
@@ -490,9 +506,10 @@ function calcularPronosticoGuerra(ctxOpcional) {
       // PF194: fama de HOY. Primero la foto del día; sin foto, la hoja Guerra (fama de ayer); sin ninguna, queda en null.
       var periodoPropio = Number(rr.periodIndex);
       if (!isFinite(periodoPropio) || rr.periodIndex === '' || rr.periodIndex === null || rr.periodIndex === undefined) periodoPropio = ctx.periodIndex;
-      // PF198: primero los periodLogs de la carrera (valen también para rivales y no dependen de la foto).
-      var basePropio = _pronosticoBaseDeLogs_(rr, clanTag, periodoPropio);
-      var origenPropio = 'logs';
+      // PF198: 1) periodPoints (día de guerra), 2) periodLogs de la carrera, 3) foto, 4) hoja. Valen también para rivales.
+      var basePropio = _pronosticoBaseDePeriodPoints_(rr, calcPropio, rr.clan);
+      var origenPropio = 'periodPoints';
+      if (basePropio === null) { basePropio = _pronosticoBaseDeLogs_(rr, clanTag, periodoPropio); origenPropio = 'logs'; }
       if (basePropio === null) { basePropio = _pronosticoBaseDeFoto_(fotoDia, clanTag, periodoPropio); origenPropio = 'foto'; }
       if (basePropio === null) {
         try { basePropio = _pronosticoBaseDesdeHoja_(propios, clanTag, ctx); }
@@ -529,8 +546,9 @@ function calcularPronosticoGuerra(ctxOpcional) {
       var periodoRival = Number(rr.periodIndex);
       if (!isFinite(periodoRival) || rr.periodIndex === '' || rr.periodIndex === null || rr.periodIndex === undefined) periodoRival = ctx.periodIndex;
       // PF198: base desde los periodLogs; sin ellos, la foto.
-      var baseRival = _pronosticoBaseDeLogs_(rr, rivalTag, periodoRival);
-      var origenRival = 'logs';
+      var baseRival = _pronosticoBaseDePeriodPoints_(rr, calcRival, rival);
+      var origenRival = 'periodPoints';
+      if (baseRival === null) { baseRival = _pronosticoBaseDeLogs_(rr, rivalTag, periodoRival); origenRival = 'logs'; }
       if (baseRival === null) { baseRival = _pronosticoBaseDeFoto_(fotoDia, rivalTag, periodoRival); origenRival = 'foto'; }
       _pronosticoAgregarDiario_(calcRival, baseRival, origenRival);
       calcRival.clanTag = rivalTag;
