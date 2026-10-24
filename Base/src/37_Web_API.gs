@@ -4518,11 +4518,23 @@ function _webAdminSorteoResolucionGuardar(token, datos) {
   var admin = _webAuthObtenerAdmin(token);
   var registradoPor = admin ? (admin.nombre || admin.tag || '') : '';
 
-  return _registrarResolucionSorteo(
+  var resRes = _registrarResolucionSorteo(
     datos.idSorteo, datos.tag, datos.nombre, datos.premio,
     datos.resultado, datos.razon, !!datos.permitirSinTag, registradoPor,
     datos.tickets
   );
+  // PF222 (24-oct-2026): con el ganador ya guardado, S_Asistencia completa al resto de participantes del sorteo (Ganó = No). Si esto falla no se
+  // pierde el ganador: el error solo se anota en el log y la siguiente resolución lo vuelve a intentar.
+  if (resRes && resRes.ok) {
+    try {
+      var calif = _webSorteoCalificados(token, datos.idSorteo, false);
+      if (calif && calif.ok) _sincronizarParticipantesSorteoSA(datos.idSorteo, calif.clanes);
+      else Logger.log('[Sorteos] No se listaron los participantes en S_Asistencia: ' + ((calif && calif.error) || 'sin detalle'));
+    } catch (eParts) {
+      Logger.log('[Sorteos] Error listando participantes en S_Asistencia: ' + eParts.message);
+    }
+  }
+  return resRes;
 }
 
 // _webAdminSorteoActualizarDocGanadores(): FASE (12-sep-2026, pedido del usuario -- consolidado de pendientes, punto 1 "botón Exportar de sorteo.html"): hasta este cambio, el docx real "Ganadores (sorteo)" solo se actualizaba una vez al día, dentro de procesarSorteos() ->… [→ Contexto_Base_Web.md §37B325]

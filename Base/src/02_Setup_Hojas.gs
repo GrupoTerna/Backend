@@ -957,7 +957,7 @@ function _setupTAsistencia(ss) {
 function _setupSAsistencia(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_ASISTENCIA);
   var headers = ['N°', 'Fecha', 'ID', 'Temporada', 'Tag', 'Nombre', 'Nom_Multi',
-                  'Préstamo', 'ClanTag', 'Clan', 'Tickets', 'Premio', 'Resultado', 'Razón'];
+                  'Préstamo', 'ClanTag', 'Clan', 'Tickets', 'Premio', 'Resultado', 'Razón', 'Ganó'];
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
 
@@ -976,6 +976,20 @@ function _setupSAsistencia(ss) {
   var dvRazon = SpreadsheetApp.newDataValidation().requireValueInList(valoresRazon, true).setAllowInvalid(false).build();
   sh.getRange(2, SA.RAZON, ultimaFila - 1, 1).setDataValidation(dvRazon);
   sh.getRange(1, SA.RAZON).clearNote();
+
+  // PF222 (24-oct-2026): columna «Ganó» (15). Dropdown Sí/No; las filas que ya existían eran solo de ganadores, así que su Ganó vacío pasa a «Sí» (idempotente).
+  var dvGano = SpreadsheetApp.newDataValidation().requireValueInList([SA_GANO_SI, SA_GANO_NO], true).setAllowInvalid(false).build();
+  sh.getRange(2, SA.GANO, ultimaFila - 1, 1).setDataValidation(dvGano);
+  if (sh.getLastRow() >= 2) {
+    var rngId = sh.getRange(2, SA.ID, sh.getLastRow() - 1, 1).getValues();
+    var rngGano = sh.getRange(2, SA.GANO, sh.getLastRow() - 1, 1);
+    var valGano = rngGano.getValues();
+    var cambio = false;
+    for (var g = 0; g < valGano.length; g++) {
+      if (String(valGano[g][0] || '').trim() === '' && String(rngId[g][0] || '').trim() !== '') { valGano[g][0] = SA_GANO_SI; cambio = true; }
+    }
+    if (cambio) rngGano.setValues(valGano);
+  }
 
   _protegerSoloAdvertencia(sh);
   Logger.log('[Setup] S_Asistencia OK (estructura + dropdown de Resultado y de Razón)');

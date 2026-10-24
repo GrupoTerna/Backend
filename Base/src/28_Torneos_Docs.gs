@@ -339,6 +339,9 @@ function actualizarDocGanadoresSorteo(extra) {
     for (var j = 0; j < datosSA.length; j++) {
       var fila = datosSA[j];
       if (String(fila[SA.ID - 1] || '').trim() !== idMasRecienteStr) continue;
+      // PF222: S_Asistencia ahora lista a todos los participantes; el documento solo muestra a los ganadores (Ganó = Sí; vacío = fila anterior, de ganador).
+      var ganoTxt = String(fila[SA.GANO - 1] || '').trim();
+      if (ganoTxt !== '' && ganoTxt !== SA_GANO_SI) continue;
       ganadores.push({
         nombre:  String(fila[SA.NOMBRE - 1] || ''),
         clan:    String(fila[SA.CLAN - 1] || ''),

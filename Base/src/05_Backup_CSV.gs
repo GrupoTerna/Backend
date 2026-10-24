@@ -173,7 +173,7 @@ function respaldarIndiceYProtegidasCSV(soloClave) {
 
   // RESUELTO (10-sep-2026, pedido usuario -- ver Consolidado_Cambios_ [→ Contexto_Base_Web.md §05B017]
   if (_tocaProtegida_(soloClave, 'S_ASISTENCIA')) try {
-    _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_ASISTENCIA], true, SA.ID);
+    _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_ASISTENCIA], true, SA.ID, (function () { var m = {}; m[SA.FECHA] = true; return m; })()); // PF222: Fecha como número (ms), no como texto
   } catch (eSA) {
     Logger.log('[Backup] ERROR respaldando S_Asistencia: ' + eSA.message + ' -- se continúa con el resto de hojas protegidas.');
   }

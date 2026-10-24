@@ -1127,10 +1127,15 @@ var GV_TOTAL_COLS = 4;
 // NUEVO (09-sep-2026, pedido usuario; columna Tickets agregada [→ Contexto_Base_Web.md §26B082]
 var SA = {
   NUM:1, FECHA:2, ID:3, TEMPORADA:4, TAG:5, NOMBRE:6, NOM_MULTI:7,
-  PRESTAMO:8, CLAN_TAG:9, CLAN:10, TICKETS:11, PREMIO:12, RESULTADO:13, RAZON:14
+  PRESTAMO:8, CLAN_TAG:9, CLAN:10, TICKETS:11, PREMIO:12, RESULTADO:13, RAZON:14, GANO:15
 };
 
-var SA_TOTAL_COLS = 14;
+var SA_TOTAL_COLS = 15;
+
+// PF222 (24-oct-2026, pedido de la usuaria): columna «Ganó» (15, al final para no mover Resultado ni Razón en hojas que ya tienen datos). 'Sí' = salió sorteado y tiene resolución;
+// 'No' = participó en el sorteo pero no ganó. Una fila vieja con Ganó vacío es de un ganador (antes S_Asistencia solo guardaba ganadores). [→ Contexto_Base_Web.md §PF222]
+var SA_GANO_SI = 'Sí';
+var SA_GANO_NO = 'No';
 
 // Columnas fijas de T_Control (antes de las columnas dinámicas por torneo).
 var TCC = { NUM:1, TAG:2, NOMBRE:3, NOM_MULTI:4, PRESTAMO:5, CLAN_TAG:6, CLAN:7 };
@@ -1545,6 +1550,8 @@ function importarSAsistenciaDesdeCSV() {
     // Fecha: mismo tratamiento que importarTAsistenciaDesdeCSV() le da a [→ Contexto_Base_Web.md §26B124]
     var fechaObj = _parseSpanishDate(newR[SA.FECHA - 1]);
     if (fechaObj instanceof Date && !isNaN(fechaObj.getTime())) newR[SA.FECHA - 1] = fechaObj;
+    // PF222: un CSV anterior a la columna «Ganó» solo traía ganadores.
+    if (String(newR[SA.GANO - 1] || '').trim() === '' && String(newR[SA.ID - 1] || '').trim() !== '') newR[SA.GANO - 1] = SA_GANO_SI;
     return newR;
   });
 
@@ -4198,6 +4205,7 @@ function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, ra
   fila[SA.PREMIO - 1]    = String(premio || '').trim();
   fila[SA.RESULTADO - 1] = resultado;
   fila[SA.RAZON - 1]     = razonTexto;
+  fila[SA.GANO - 1]      = SA_GANO_SI; // PF222: quien tiene resolución salió sorteado
 
   if (filaExistente > 0) {
     sh.getRange(filaExistente, 1, 1, SA_TOTAL_COLS).setValues([fila]);
@@ -4213,6 +4221,71 @@ function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, ra
              (registradoPor ? ', registrado por ' + registradoPor : '') + '.');
 
   return { ok: true };
+}
+
+/**
+ * PF222 (24-oct-2026, pedido de la usuaria). _sincronizarParticipantesSorteoSA(idSorteo, clanes): deja en S_Asistencia a TODOS los que participaron en el sorteo,
+ * no solo a los ganadores. `clanes` es la lista de calificados que arma _webSorteoCalificados() ([{nombre, calificados:[{tag, nombre, tickets}]}]).
+ * Por cada participante sin fila en este sorteo agrega una con Ganó = «No» (sin Premio, Resultado ni Razón). Las filas que ya existen (ganadores o participantes)
+ * no se tocan, así que nunca baja un «Sí» a «No». La Fecha se guarda como fecha real (número de Sheets con formato dd/mm/yyyy), no como texto. Devuelve cuántas agregó.
+ */
+function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
+  var idNorm = String(idSorteo || '').trim();
+  if (!idNorm || !Array.isArray(clanes)) return { ok: false, agregadas: 0 };
+  var ss = _getSs();
+  var filaSorteo = _getFilaSListaPorId(ss, idNorm);
+  if (!filaSorteo) return { ok: false, agregadas: 0 };
+
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_ASISTENCIA);
+  var yaEstan = {};
+  var siguienteNum = 1;
+  if (sh.getLastRow() >= 2) {
+    var existentes = sh.getRange(2, 1, sh.getLastRow() - 1, SA_TOTAL_COLS).getValues();
+    siguienteNum = existentes.length + 1;
+    for (var e = 0; e < existentes.length; e++) {
+      if (String(existentes[e][SA.ID - 1] || '').trim() !== idNorm) continue;
+      var tagEx = String(existentes[e][SA.TAG - 1] || '').trim().toUpperCase();
+      if (tagEx) yaEstan[tagEx] = true;
+    }
+  }
+
+  var mapaDir = _getDirectorioLookupPorTag(ss);
+  var filas = [];
+  clanes.forEach(function (c) {
+    (c && c.calificados || []).forEach(function (p) {
+      var tagNorm = String(p.tag || '').trim().toUpperCase();
+      if (!tagNorm) return;
+      var tagHash = tagNorm.charAt(0) === '#' ? tagNorm : '#' + tagNorm;
+      if (yaEstan[tagHash]) return;
+      yaEstan[tagHash] = true;
+      var info = mapaDir[tagHash] || { nomMulti: '', prestamo: '', clanTag: '', clan: '' };
+      var fila = [];
+      fila[SA.NUM - 1]       = siguienteNum++;
+      fila[SA.FECHA - 1]     = filaSorteo.fecha;
+      fila[SA.ID - 1]        = idNorm;
+      fila[SA.TEMPORADA - 1] = filaSorteo.temporada;
+      fila[SA.TAG - 1]       = tagHash;
+      fila[SA.NOMBRE - 1]    = String(p.nombre || '');
+      fila[SA.NOM_MULTI - 1] = info.nomMulti || '';
+      fila[SA.PRESTAMO - 1]  = info.prestamo || '';
+      fila[SA.CLAN_TAG - 1]  = info.clanTag || '';
+      fila[SA.CLAN - 1]      = info.clan || (c.nombre || '');
+      fila[SA.TICKETS - 1]   = Number(p.tickets) >= 0 ? Number(p.tickets) : '';
+      fila[SA.PREMIO - 1]    = '';
+      fila[SA.RESULTADO - 1] = '';
+      fila[SA.RAZON - 1]     = '';
+      fila[SA.GANO - 1]      = SA_GANO_NO;
+      filas.push(fila);
+    });
+  });
+  if (!filas.length) return { ok: true, agregadas: 0 };
+
+  var primera = sh.getLastRow() + 1;
+  sh.getRange(primera, 1, filas.length, SA_TOTAL_COLS).setValues(filas);
+  sh.getRange(primera, SA.FECHA, filas.length, 1).setNumberFormat('dd/mm/yyyy');
+  applyBorderCenter(sh.getRange(primera, 1, filas.length, SA_TOTAL_COLS));
+  Logger.log('[Sorteos] S_Asistencia: ' + filas.length + ' participante(s) agregado(s) con Ganó = No (sorteo ' + idNorm + ').');
+  return { ok: true, agregadas: filas.length };
 }
 
 /**
