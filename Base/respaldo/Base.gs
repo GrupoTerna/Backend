@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 16:59:42 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 17:28:08 */
 
 
 
@@ -40290,17 +40290,94 @@ var TITULO_ANTIGUO_DOC_GANADORES_SORTEO = 'Lista de participantes calificados';
  * PF221: línea de resumen bajo «Ganadores del sorteo:» (cantidad de premios y si está completo, ganadores registrados, participantes en la lista).
  * `resumen` null = sin datos del acta: no hay línea. Quita siempre la línea anterior y escribe la nueva justo debajo del encabezado.
  */
-function _textoResumenSorteoDoc_(resumen) {
-  if (!resumen) return '';
-  var partes = [];
+function _lineasResumenSorteoDoc_(resumen) {
+  if (!resumen) return [];
+  var lineas = [];
   if (resumen.premios > 0) {
-    partes.push('Premios del sorteo: ' + resumen.premios);
-    partes.push('Ganadores registrados: ' + resumen.ganadores + (resumen.ganadores < resumen.premios ? ' (faltan ' + (resumen.premios - resumen.ganadores) + ')' : ' (completo)'));
+    lineas.push('Premios del sorteo: ' + resumen.premios);
+    lineas.push('Ganadores registrados: ' + resumen.ganadores + (resumen.ganadores < resumen.premios ? ' (faltan ' + (resumen.premios - resumen.ganadores) + ')' : ' (completo)'));
   } else {
-    partes.push('Ganadores registrados: ' + resumen.ganadores + ' (cantidad de premios sin límite definido)');
+    lineas.push('Ganadores registrados: ' + resumen.ganadores + ' (cantidad de premios sin límite definido)');
   }
-  if (resumen.participantes >= 0) partes.push('Participantes totales en la lista: ' + resumen.participantes);
-  return PREFIJO_RESUMEN_SORTEO_DOC + ' ' + partes.join(' · ');
+  if (resumen.participantes >= 0) lineas.push('Participantes totales en la lista: ' + resumen.participantes);
+  return lineas;
+}
+
+// PF230 (24-oct-2026): el resumen ahora es un título («Resumen del sorteo:») con tres viñetas. Estos prefijos sirven para quitar el resumen anterior
+// (la línea única de PF221 o las viñetas de PF230) antes de escribir el nuevo.
+var PREFIJOS_LINEAS_RESUMEN_SORTEO_DOC = ['Premios del sorteo:', 'Ganadores registrados:', 'Participantes totales en la lista:'];
+
+/**
+ * PF230: deja el texto de un párrafo o de un elemento de lista en Arial 12, negro y sin cursiva (negrita según `negrita`). Se aplica también al
+ * elemento completo (setAttributes) para que la marca de párrafo y las viñetas no queden con otra fuente.
+ */
+function _estiloArialDoc_(elem, negrita, colorHex) {
+  var color = colorHex || '#000000';
+  var estilo = {};
+  estilo[DocumentApp.Attribute.FONT_FAMILY] = 'Arial';
+  estilo[DocumentApp.Attribute.FONT_SIZE] = 12;
+  estilo[DocumentApp.Attribute.BOLD] = !!negrita;
+  estilo[DocumentApp.Attribute.ITALIC] = false;
+  estilo[DocumentApp.Attribute.FOREGROUND_COLOR] = color;
+  try { elem.setAttributes(estilo); } catch (e1) { /* se sigue con el formato del texto */ }
+  var t = elem.editAsText();
+  var largo = t.getText().length;
+  if (largo > 0) {
+    t.setFontFamily(0, largo - 1, 'Arial');
+    t.setFontSize(0, largo - 1, 12);
+    t.setBold(0, largo - 1, !!negrita);
+    t.setItalic(0, largo - 1, false);
+    t.setForegroundColor(0, largo - 1, color);
+  }
+}
+
+/**
+ * PF230: formato de la tabla de ganadores. Todo el texto en Arial 12 (el encabezado en negrita blanca sobre gris), valores centrados en horizontal
+ * y en vertical, sin espacio extra entre líneas y anchos de columna ajustados al contenido (estimados por la cantidad de caracteres de cada columna
+ * y repartidos para que la tabla ocupe el ancho útil de la página; si el contenido no cabe, se reducen en proporción).
+ */
+function _formatearTablaGanadoresSorteoDoc_(tabla, body) {
+  var nFilas = tabla.getNumRows();
+  if (nFilas < 1) return;
+  var nCols = tabla.getRow(0).getNumCells();
+  var necesario = [];
+  for (var c = 0; c < nCols; c++) necesario.push(30);
+
+  for (var r = 0; r < nFilas; r++) {
+    var fila = tabla.getRow(r);
+    for (var cc = 0; cc < fila.getNumCells(); cc++) {
+      var celda = fila.getCell(cc);
+      try { celda.setVerticalAlignment(DocumentApp.VerticalAlignment.CENTER); } catch (eV) { /* sin alineación vertical */ }
+      try { celda.setPaddingTop(4); celda.setPaddingBottom(4); } catch (eP) { /* se deja el relleno de la plantilla */ }
+      for (var k = 0; k < celda.getNumChildren(); k++) {
+        var hijo = celda.getChild(k);
+        if (hijo.getType() !== DocumentApp.ElementType.PARAGRAPH) continue;
+        var par = hijo.asParagraph();
+        par.setHeading(DocumentApp.ParagraphHeading.NORMAL);
+        par.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        try { par.setSpacingBefore(0); par.setSpacingAfter(0); par.setLineSpacing(1); } catch (eS) { /* sin ajuste de interlineado */ }
+        _estiloArialDoc_(par, r === 0, r === 0 ? '#FFFFFF' : '#000000');
+      }
+      if (cc < nCols) {
+        var largoTxt = String(celda.getText() || '').length;
+        var estimado = largoTxt * (r === 0 ? 8 : 7) + 18; // Arial 12: ~7 pt por carácter (~8 en negrita) más el relleno lateral
+        if (estimado > necesario[cc]) necesario[cc] = estimado;
+      }
+    }
+  }
+
+  var ancho = 468;
+  try {
+    var pw = body.getPageWidth(), ml = body.getMarginLeft(), mr = body.getMarginRight();
+    if (pw > 0) ancho = pw - ml - mr;
+  } catch (eW) { /* se usa el ancho por defecto (carta con márgenes de 1") */ }
+  var suma = 0;
+  necesario.forEach(function (n) { suma += n; });
+  if (suma <= 0) return;
+  for (var j = 0; j < nCols; j++) {
+    var w = necesario[j] * ancho / suma; // proporcional al contenido; ocupa el ancho útil (o se reduce si no cabe)
+    try { tabla.setColumnWidth(j, Math.max(24, Math.floor(w))); } catch (eC) { /* sin ajuste de ancho */ }
+  }
 }
 
 function _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen) {
@@ -40327,27 +40404,38 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen) {
       if (tx === TEXTO_SIN_GANADORES_SORTEO_DOC) { if (!parrafoSin) parrafoSin = h.asParagraph(); else aQuitar.push(h); }
       else if (tx.indexOf(PREFIJO_RESUMEN_SORTEO_DOC) === 0) aQuitar.push(h); // PF221: se vuelve a escribir al final
       else if (tx !== '') break;
+    } else if (h.getType() === DocumentApp.ElementType.LIST_ITEM) {
+      // PF230: las viñetas del resumen anterior también se quitan; cualquier otra lista marca el fin de la zona de ganadores.
+      var txl = h.asListItem().getText().trim();
+      var esResumen = PREFIJOS_LINEAS_RESUMEN_SORTEO_DOC.some(function (pf) { return txl.indexOf(pf) === 0; });
+      if (esResumen) aQuitar.push(h); else break;
     }
   }
   aQuitar.forEach(function (h) { try { body.removeChild(h); } catch (e) { /* el último hijo no se puede quitar; no pasa nada */ } });
 
   // PF221: se escribe justo debajo del encabezado, al terminar (antes de cada return true).
   var escribirResumen = function () {
-    var texto = _textoResumenSorteoDoc_(resumen);
-    if (!texto) return;
-    var par = body.insertParagraph(body.getChildIndex(heading) + 1, texto);
-    par.setHeading(DocumentApp.ParagraphHeading.NORMAL);
-    par.setIndentStart(36);
-    par.setIndentFirstLine(36);
-    var tr = par.editAsText();
-    var fr = texto.length - 1;
-    tr.setBold(0, fr, false);
-    tr.setItalic(0, fr, false);
-    tr.setFontFamily(0, fr, 'Arial');
-    tr.setFontSize(0, fr, 12);
-    tr.setForegroundColor(0, fr, '#000000');
-    tr.setBold(0, PREFIJO_RESUMEN_SORTEO_DOC.length - 1, true);
-    try { par.setKeepWithNext(true); } catch (eK2) { /* PF229: el resumen se mantiene junto con la tabla */ }
+    var lineas = _lineasResumenSorteoDoc_(resumen);
+    if (!lineas.length) return;
+    var pos = body.getChildIndex(heading) + 1;
+    var titulo = body.insertParagraph(pos, PREFIJO_RESUMEN_SORTEO_DOC);
+    titulo.setHeading(DocumentApp.ParagraphHeading.NORMAL);
+    titulo.setIndentStart(36);
+    titulo.setIndentFirstLine(36);
+    _estiloArialDoc_(titulo, true);
+    try { titulo.setKeepWithNext(true); } catch (eK2) { /* PF229: el resumen se mantiene junto con la tabla */ }
+    var primero = null;
+    lineas.forEach(function (ln, n) {
+      var item = body.insertListItem(pos + 1 + n, ln);
+      item.setHeading(DocumentApp.ParagraphHeading.NORMAL);
+      item.setGlyphType(DocumentApp.GlyphType.BULLET);
+      item.setNestingLevel(0);
+      item.setIndentFirstLine(72);
+      item.setIndentStart(90);
+      if (primero) { try { item.setListId(primero); } catch (eL) { /* cada viñeta queda en su propia lista; se ven igual */ } } else { primero = item; }
+      _estiloArialDoc_(item, false);
+      try { item.setKeepWithNext(true); } catch (eK3) { /* PF229 */ }
+    });
   };
 
   var recortarFilas = function (t) { while (t.getNumRows() > 1) t.removeRow(1); };
@@ -40425,6 +40513,7 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen) {
         if (r === 0) celda.setBackgroundColor('#B7B7B7');
       }
     }
+    _formatearTablaGanadoresSorteoDoc_(tabla, body); // PF230
     escribirResumen();
     return true;
   }
@@ -40449,6 +40538,7 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen) {
     var nueva = tabla.appendTableRow();
     vals.forEach(function (v) { nueva.appendTableCell(v); });
   });
+  _formatearTablaGanadoresSorteoDoc_(tabla, body); // PF230
   escribirResumen();
   return true;
 }
@@ -50623,7 +50713,7 @@ function _webAdminSorteoActualizarDocGanadores(token, extra, descargar) {
       if (respWord.getResponseCode() !== 200) {
         return { ok: false, error: 'Google no devolvió el documento en Word (código ' + respWord.getResponseCode() + ').' };
       }
-      resp.docxBase64 = Utilities.base64Encode(respWord.getContent());
+      resp.docxBase64 = Utilities.base64Encode(_docxFuenteArial_(respWord.getContent())); // PF230: Google exporta «Arial Unicode MS» en algunos textos; se deja Arial
       resp.nombreArchivo = NOMBRE_DOC_GANADORES_SORTEO + '.docx';
     }
     return resp;
@@ -50631,6 +50721,34 @@ function _webAdminSorteoActualizarDocGanadores(token, extra, descargar) {
     Logger.log('[Web] Error interno actualizando el doc de ganadores: ' + errDocGanSorteo.toString());
     // PF228: endpoint solo para admins con sesión válida; se incluye el motivo para que sorteo.html lo muestre y se pueda corregir.
     return { ok: false, error: 'No se pudo actualizar el documento de ganadores (' + String((errDocGanSorteo && errDocGanSorteo.message) || errDocGanSorteo).slice(0, 160) + ').' };
+  }
+}
+
+/**
+ * PF230 (24-oct-2026, pedido de la usuaria con captura): al exportar a Word, Google escribe «Arial Unicode MS» en los textos con símbolos
+ * (°, ™, emojis, letras especiales). Se abre el .docx (es un zip), se cambia esa fuente por «Arial» en los XML de la carpeta word/ y se vuelve a
+ * comprimir. Si algo falla, devuelve el contenido original sin tocar. Los caracteres que Arial no tiene (por ejemplo 乂) los sustituye Word.
+ */
+function _docxFuenteArial_(bytes) {
+  try {
+    var blobs = Utilities.unzip(Utilities.newBlob(bytes, 'application/zip', 'acta.zip'));
+    var cambiado = false;
+    var nuevos = blobs.map(function (b) {
+      var nombre = b.getName() || '';
+      if (/^word\/[^\/]+\.xml$/.test(nombre)) {
+        var xml = b.getDataAsString('UTF-8');
+        if (xml.indexOf('Arial Unicode MS') !== -1) {
+          cambiado = true;
+          return Utilities.newBlob(xml.replace(/Arial Unicode MS/g, 'Arial'), b.getContentType() || 'application/xml', nombre);
+        }
+      }
+      return b;
+    });
+    if (!cambiado) return bytes;
+    return Utilities.zip(nuevos, 'acta.docx').getBytes();
+  } catch (e) {
+    Logger.log('[Ganadores-Sorteo] No se pudo cambiar la fuente del Word a Arial: ' + e.message);
+    return bytes;
   }
 }
 
