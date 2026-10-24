@@ -792,7 +792,7 @@ function _webUrlPerfilExterno(valorCelda, dominio, segmento) {
 }
 
 // _webPerfilExtendido(fila): FASE 1.5 (24-ago-2026), paridad de jugadores.html con _respuestaInfoMi(); fila = array DC de 60 columnas; devuelve nivel, copas máx., arena, batallas, racha, Camino de leyendas, logros, coleccionables, donaciones, ranking y enlaces externos; campos numéricos vacíos/0 se omiten. [→ Contexto_Base_Web.md §37B060]
-function _webPerfilExtendido(fila) {
+function _webPerfilExtendido(fila, esAdmin) {
   var ext = {
     nivelXp:      String(fila[DC.NIVEL      - 1] || ''),
     nivelCartas:  String(fila[DC.NIVEL2     - 1] || ''),
@@ -822,8 +822,17 @@ function _webPerfilExtendido(fila) {
   if (fila[DC.RANKING           - 1]) ext.rankingClan          = Number(fila[DC.RANKING           - 1]) || 0;
 
   var royaleApi = _webUrlPerfilExterno(fila[DC.ROYALE_API - 1], 'royaleapi.com', 'player');
-  if (royaleApi) ext.royaleApi = royaleApi;
   var cwStats = _webUrlPerfilExterno(fila[DC.CW_STATS - 1], 'cwstats.com', 'player');
+  // 24-oct-2026 (PF200, tanda 12): las filas de la hoja Inactivos casi nunca traen esas celdas (1 187 de 1 211 vacías en Backup_Inactivos.csv) y el admin no veía los botones
+  // en el perfil de un inactivo. SOLO con `esAdmin` (el visitante no ve inactivos y su respuesta no cambia) se arma el enlace desde el Tag. [→ Contexto_Base_Web.md §PF200]
+  if (esAdmin) {
+    var tagEnlaces = cleanTag(fila[DC.TAG - 1]);
+    if (tagEnlaces) {
+      if (!royaleApi) royaleApi = 'https://royaleapi.com/player/' + tagEnlaces;
+      if (!cwStats) cwStats = 'https://cwstats.com/player/' + tagEnlaces;
+    }
+  }
+  if (royaleApi) ext.royaleApi = royaleApi;
   if (cwStats) ext.cwStats = cwStats;
   if (fila[DC.DECK   - 1]) ext.deck  = String(fila[DC.DECK   - 1]);
   if (fila[DC.DECK_2 - 1]) ext.deck2 = String(fila[DC.DECK_2 - 1]);
@@ -1594,7 +1603,7 @@ function _webPerfilJugador(tagBuscado, opciones) {
 
   // FIX 27-sep-2026 (AVISO 9 RESUELTO, confirmado por el usuario): DC.V_GUERRA es "Victorias de guerra" (conteo de batallas ganadas), no trofeos/fame; la barra "Trofeos guerra" de Requisitos compara fameSemana (de GC.FAME, trofeo real de guerra acumulado hasta hoy en la semana en curso) en vez de vGuerra; ver AVISO 9 (37B056). [→ Contexto_Base_Web.md §37B128]
   var progreso = _webProgresoRequisitos(clanNombre, ataquesSemana, fameSemana, torneos, ataquesExentos);
-  var extendido = _webPerfilExtendido(fila);
+  var extendido = _webPerfilExtendido(fila, esAdminPerfil);
   if (historialRanking.length) extendido.historialRanking = historialRanking;
 
   // FIX 23-sep-2026 (perfil.html, minigráficos de ataques y Fame): arma guerraSemanaDias desde guerraSemanaDiasVals; null en un día = todavía no jugado (entrenamiento o día de guerra futuro de esta semana), el frontend lo pinta como hueco, no como 0; 'puntajeAcumulado' es la segunda serie pedida para el gráfico de Fame ("diario y acumulado semanal"): suma corriente de 'puntaje'; un día sin dato repite el acumulado del último día con dato (línea plana) y si ningún día anterior tuvo dato queda null. [→ Contexto_Base_Web.md §37B129]
