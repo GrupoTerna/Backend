@@ -974,6 +974,10 @@ function _reemplazarListaParticipantes(body, grupos) {
     for (var p = 0; p < personas.length; p++) {
       insertAt = _insertarLineaParticipante(body, insertAt, personas[p].nombre, personas[p].puntaje);
     }
+    // PF204 (24-oct-2026): un clan sin ningún calificado ya no queda en blanco; se escribe una línea que lo dice.
+    if (!personas.length) {
+      insertAt = _insertarLineaSinCalificados_(body, insertAt);
+    }
 
     // --- Párrafo vacío que cierra el grupo (idéntico a la línea " "
     // que trae la plantilla después del último bullet de cada grupo). ---
@@ -994,6 +998,26 @@ function _insertarParrafoEspaciador(body, insertAt) {
   t.setFontSize(12);
   t.setUnderline(false);
   t.setForegroundColor('#000000');
+  t.setLinkUrl(null);
+  return insertAt + 1;
+}
+
+/**
+ * _insertarLineaSinCalificados_(body, insertAt): línea de texto para un clan sin ningún participante calificado (PF204). Sin viñeta ni
+ * sangría, Arial 12 en cursiva y color gris, para que no se confunda con un nombre. Devuelve la siguiente posición de inserción.
+ * [→ Contexto_Base_Web.md §PF204]
+ */
+function _insertarLineaSinCalificados_(body, insertAt) {
+  var p = body.insertParagraph(insertAt, 'Ningún participante calificado.');
+  p.setIndentStart(0);
+  p.setIndentFirstLine(0);
+  p.setBold(false);
+  var t = p.editAsText();
+  t.setFontFamily('Arial');
+  t.setFontSize(12);
+  t.setItalic(true);
+  t.setUnderline(false);
+  t.setForegroundColor('#666666');
   t.setLinkUrl(null);
   return insertAt + 1;
 }
