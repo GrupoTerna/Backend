@@ -33,6 +33,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 ## 0.2 Entrega: se sube directo a GitHub
 
 - Para modificar o crear un archivo de los repos, Claude lo edita en el clon del repo y **lo sube directamente a `main`**, en commits pequeños y con mensaje claro. Antes de subir trae lo remoto (`fetch` y `rebase`), porque el Generador también empuja a `main`.
+- **Cada cambio se sube a GitHub en cuanto se termina, sin esperar al final de la tanda (regla de la usuaria, 24-oct-2026).** Las tandas suelen ser largas: la sesión local avanza bastante, pero se agota antes de enviar y al repositorio no llega ningún avance. Por eso, **apenas termina un cambio** (un archivo o un grupo de archivos que van juntos), Claude lo verifica, hace `fetch` y `rebase`, hace el commit y el push, y **recién entonces sigue con los otros cambios de la misma tanda**; nunca acumula varios cambios terminados para subirlos todos juntos al final. **El contexto (`Contexto_Base_Web.md`, y con él el `CHANGELOG.md` o el consolidado que corresponda) sí se edita al final de la tanda**, una sola vez y con todo lo de la tanda, y se sube en su propio commit; esa es la única excepción. Si la sesión se corta a mitad, lo ya subido queda en `main` y el contexto pendiente se rehace en la sesión siguiente a partir de los commits.
 - **No genera el archivo para descargar ni usa la herramienta de enviar archivos, a menos que la usuaria lo pida expresamente.** Si ya se envió un archivo una vez y la aplicación vuelve a mostrar su tarjeta, no es porque Claude lo haya enviado de nuevo: no debe afirmar de dónde viene la tarjeta si no lo sabe.
 - **Al terminar cada tanda da la lista de archivos modificados o creados** (ruta, estado «modificado» o «creado» y commit), y si subió cambios a un repo que la usuaria tiene en GitHub Desktop, añade «Pendiente de pull en GitHub Desktop: <repo> (commit xxxxxxx)». Claude no ve el equipo de la usuaria; solo sabe lo que él subió.
 - Si no se puede subir (por permiso o por error), lo dice y pregunta; no sustituye la subida por un archivo descargable sin avisar. Si el motivo es que la sesión no tiene permiso de escritura, ver 0.7.
@@ -555,7 +556,7 @@ No entregar los archivos como bloques de código en el chat. Tampoco se entregan
 ---
 # 16. Cambios incrementales y continuidad entre sesiones
 
-Los cambios se entregan en tandas chicas e incrementales, para evitar que la sesión se corte sin haber devuelto los archivos.
+Los cambios se entregan en tandas chicas e incrementales, para evitar que la sesión se corte sin haber devuelto los archivos. **Cada cambio se sube a GitHub apenas se termina y se continúa con los demás de la misma tanda; el contexto se edita al final de la tanda** (sección 0.2).
 
 No debe perderse información entre una conversación y la siguiente:
 
