@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 17:38:58 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 17:54:11 */
 
 
 
@@ -40203,7 +40203,7 @@ function actualizarDocGanadoresSorteo(extra) {
           var tk = Number(g && g.tickets);
           return {
             nombre: String((g && g.nombre) || '').slice(0, 80),
-            hora: String((g && g.hora) || '').slice(0, 10),
+            hora: _normalizarHoraActa_(String((g && g.hora) || '').slice(0, 20)), // PF232: dos cifras siempre (antes slice(0, 10) cortaba el punto final y cortaría los segundos)
             premio: String((g && g.premio) || '').slice(0, 80),
             clan: String((g && g.clan) || '').slice(0, 60),
             tickets: (g && g.tickets !== null && g.tickets !== undefined && g.tickets !== '' && !isNaN(tk)) ? tk : ''
@@ -40343,6 +40343,21 @@ function _ganadoresAlInicioDePaginaDoc_(body, heading) {
 }
 
 /**
+ * PF232 (24-oct-2026, pedido de la usuaria): la hora del acta siempre lleva dos cifras en hora, minutos y segundos («05:42 p. m», «09:07:05 a. m»).
+ * sorteo.html ya la manda así, pero aquí se normaliza otra vez por si llega de otra forma («5:42 p. m.», «5:7 pm»). El sufijo queda «a. m» o «p. m»
+ * (sin punto final). Si el texto no parece una hora, se devuelve recortado y sin cambios. Un texto con hora de 24 h (sin am/pm) solo se rellena con ceros.
+ */
+function _normalizarHoraActa_(texto) {
+  var t = String(texto === null || texto === undefined ? '' : texto).replace(/[\u00A0\u202F]/g, ' ').trim();
+  var m = t.match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?\s*(?:([ap])\.?\s*m\.?)?$/i);
+  if (!m) return t;
+  var dos = function (n) { n = String(parseInt(n, 10)); return n.length < 2 ? '0' + n : n; };
+  var salida = dos(m[1]) + ':' + dos(m[2]) + (m[3] !== undefined ? ':' + dos(m[3]) : '');
+  if (m[4]) salida += ' ' + (m[4].toLowerCase() === 'a' ? 'a. m' : 'p. m');
+  return salida;
+}
+
+/**
  * PF221: línea de resumen bajo «Ganadores del sorteo:» (cantidad de premios y si está completo, ganadores registrados, participantes en la lista).
  * `resumen` null = sin datos del acta: no hay línea. Quita siempre la línea anterior y escribe la nueva justo debajo del encabezado.
  */
@@ -40388,6 +40403,31 @@ function _estiloArialDoc_(elem, negrita, colorHex) {
 }
 
 /**
+ * PF232: ancho estimado, en puntos, de un texto en Arial 12 (negrita en el encabezado). Valores medios por tipo de carácter; los CJK (乂), las marcas
+ * (™) y los emojis ocupan bastante más que una letra, y por eso el cálculo anterior (7 pt por carácter) dejaba «Grupo乂Terna™» partido en dos líneas.
+ * Es una estimación: Apps Script no puede medir el texto real.
+ */
+function _anchoTextoArialDoc_(texto, negrita) {
+  var total = 0;
+  var cs = Array.from(String(texto || ''));
+  for (var i = 0; i < cs.length; i++) {
+    var cp = cs[i].codePointAt(0);
+    var w;
+    if (cp === 32) w = 3.5;
+    else if (cp >= 0x2E80 || cp >= 0x1F000) w = 13;       // CJK, emojis y símbolos anchos
+    else if (cp === 0x2122 || cp === 0x00A9 || cp === 0x00AE) w = 12; // ™ © ®
+    else if (cp > 127) w = 8;                              // otras letras o símbolos fuera de ASCII (°, £, Δ, ᴳ...)
+    else if (cp >= 65 && cp <= 90) w = 8.2;                // mayúsculas
+    else if (cp >= 48 && cp <= 57) w = 6.7;                // dígitos
+    else if (cp === 109 || cp === 119) w = 9.5;            // m, w
+    else if (cp === 105 || cp === 108 || cp === 106 || cp === 116 || cp === 102 || cp === 46 || cp === 58) w = 3.6; // i l j t f . :
+    else w = 6.8;                                          // resto de minúsculas y signos
+    total += w;
+  }
+  return negrita ? total * 1.1 : total;
+}
+
+/**
  * PF230: formato de la tabla de ganadores. Todo el texto en Arial 12 (el encabezado en negrita blanca sobre gris), valores centrados en horizontal
  * y en vertical, sin espacio extra entre líneas y anchos de columna ajustados al contenido (estimados por la cantidad de caracteres de cada columna
  * y repartidos para que la tabla ocupe el ancho útil de la página; si el contenido no cabe, se reducen en proporción).
@@ -40415,8 +40455,7 @@ function _formatearTablaGanadoresSorteoDoc_(tabla, body) {
         _estiloArialDoc_(par, r === 0, r === 0 ? '#FFFFFF' : '#000000');
       }
       if (cc < nCols) {
-        var largoTxt = String(celda.getText() || '').length;
-        var estimado = largoTxt * (r === 0 ? 8 : 7) + 18; // Arial 12: ~7 pt por carácter (~8 en negrita) más el relleno lateral
+        var estimado = _anchoTextoArialDoc_(String(celda.getText() || ''), r === 0) + 12; // + relleno lateral de la celda (5 pt a cada lado) y 2 pt de margen para que no se parta
         if (estimado > necesario[cc]) necesario[cc] = estimado;
       }
     }
@@ -40430,9 +40469,25 @@ function _formatearTablaGanadoresSorteoDoc_(tabla, body) {
   var suma = 0;
   necesario.forEach(function (n) { suma += n; });
   if (suma <= 0) return;
-  for (var j = 0; j < nCols; j++) {
-    var w = necesario[j] * ancho / suma; // proporcional al contenido; ocupa el ancho útil (o se reduce si no cabe)
-    try { tabla.setColumnWidth(j, Math.max(24, Math.floor(w))); } catch (eC) { /* sin ajuste de ancho */ }
+  var anchos = [];
+  var j;
+  if (suma <= ancho) {
+    // Cabe todo: se reparte el ancho útil en proporción al contenido.
+    for (j = 0; j < nCols; j++) anchos.push(necesario[j] * ancho / suma);
+  } else {
+    // No cabe: las columnas cortas (N.°, Victorias, Clan, Premio, Hora) conservan lo que necesitan para no partirse y «Nombre» (columna 2), que es la
+    // única de largo variable, toma el resto y es la que se parte en líneas. Si aun así no alcanza, se reducen todas en proporción.
+    var iNombre = nCols > 1 ? 1 : 0;
+    var otras = suma - necesario[iNombre];
+    var minNombre = 70;
+    if (otras + minNombre <= ancho) {
+      for (j = 0; j < nCols; j++) anchos.push(j === iNombre ? ancho - otras : necesario[j]);
+    } else {
+      for (j = 0; j < nCols; j++) anchos.push(necesario[j] * ancho / suma);
+    }
+  }
+  for (j = 0; j < nCols; j++) {
+    try { tabla.setColumnWidth(j, Math.max(24, Math.floor(anchos[j]))); } catch (eC) { /* sin ajuste de ancho */ }
   }
 }
 
@@ -40544,7 +40599,7 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen) {
       (gan.tickets === '' || gan.tickets === null || gan.tickets === undefined) ? '' : String(gan.tickets),
       String(gan.clan || ''),
       String(gan.premio || ''),
-      String(gan.hora || '—') // PF221: hora del acta de sorteo.html
+      gan.hora ? _normalizarHoraActa_(gan.hora) : '—' // PF221: hora del acta de sorteo.html; PF232: siempre con dos cifras
     ];
   });
 
@@ -40866,9 +40921,9 @@ function _construirContenidoDocGanadoresSorteo(body) {
   body.appendParagraph('');
   _rdocTablaConEncabezadoNegrita(body, [
     ['N°', 'Nombre', 'Victorias', 'Clan', 'Premio', 'Hora'],
-    ['1', 'Nombre1', '10', 'Clan1', 'Pass Royale', '8:05 p. m.'],
-    ['2', 'Nombre2', '9', 'Clan1', 'Pass Royale', '8:07 p. m.'],
-    ['3', 'Nombre3', '8', 'Clan1', 'Pass Royale', '8:09 p. m.']
+    ['1', 'Nombre1', '10', 'Clan1', 'Pass Royale', '08:05 p. m'],
+    ['2', 'Nombre2', '9', 'Clan1', 'Pass Royale', '08:07 p. m'],
+    ['3', 'Nombre3', '8', 'Clan1', 'Pass Royale', '08:09 p. m']
   ]);
   body.appendParagraph('');
   _rdocBloqueRedesSocialesYPie(body);
