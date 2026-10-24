@@ -158,3 +158,6 @@ Fecha,Estado,Resultado,Error
 2026-10-22 19:18:01,OK,"{""ok"":true,""procesados"":8,""filasNuevas"":2,""registrosOmitidos"":209,""errores"":[]}",
 2026-10-22 19:20:00,OK,"{""ok"":true,""procesados"":8,""filasNuevas"":5,""registrosOmitidos"":163,""errores"":[]}",
 2026-10-22 19:21:48,OK,"{""ok"":true,""procesados"":8,""filasNuevas"":4,""registrosOmitidos"":200,""errores"":[]}",
+2026-10-23 22:13:33,OK,"{""ok"":true,""procesados"":8,""filasNuevas"":3,""registrosOmitidos"":183,""errores"":[]}",
+2026-10-23 22:16:45,OK,"{""ok"":true,""procesados"":8,""filasNuevas"":4,""registrosOmitidos"":181,""errores"":[]}",
+2026-10-23 22:18:23,OK,"{""ok"":true,""procesados"":6,""filasNuevas"":3,""registrosOmitidos"":165,""errores"":[]}",
