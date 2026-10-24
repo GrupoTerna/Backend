@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 15:10:48 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 16:29:09 */
 
 
 
@@ -40178,7 +40178,15 @@ function actualizarDocGanadoresSorteo(extra) {
         premios: Number(extra.premios) > 0 ? Math.floor(Number(extra.premios)) : 0,
         participantes: Number(extra.participantes) >= 0 ? Math.floor(Number(extra.participantes)) : -1,
         ganadores: (Array.isArray(extra.ganadores) ? extra.ganadores : []).slice(0, 100).map(function (g) {
-          return { nombre: String((g && g.nombre) || '').slice(0, 80), hora: String((g && g.hora) || '').slice(0, 10) };
+          // PF228: además de nombre y hora, la página manda premio, tickets y clan para poder escribir en el documento a quien aún no se guardó en S_Asistencia.
+          var tk = Number(g && g.tickets);
+          return {
+            nombre: String((g && g.nombre) || '').slice(0, 80),
+            hora: String((g && g.hora) || '').slice(0, 10),
+            premio: String((g && g.premio) || '').slice(0, 80),
+            clan: String((g && g.clan) || '').slice(0, 60),
+            tickets: (g && g.tickets !== null && g.tickets !== undefined && g.tickets !== '' && !isNaN(tk)) ? tk : ''
+          };
         })
       };
       props.setProperty(PROP_ACTA_SORTEO_EXTRA, JSON.stringify(extraActa));
@@ -40218,20 +40226,49 @@ function actualizarDocGanadoresSorteo(extra) {
   // cuando hay la misma cantidad de ganadores en ambos lados.
   var resumenActa = null;
   if (extraActa) {
-    var norm = function (t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim(); };
-    var mismaCantidad = extraActa.ganadores.length === ganadores.length;
-    ganadores.forEach(function (gan, g) {
-      var hallado = null;
-      for (var q = 0; q < extraActa.ganadores.length; q++) {
-        if (norm(extraActa.ganadores[q].nombre) === norm(gan.nombre)) { hallado = extraActa.ganadores[q]; break; }
-      }
-      if (!hallado && mismaCantidad) hallado = extraActa.ganadores[g];
-      if (hallado) gan.hora = hallado.hora;
-    });
+    ganadores = _fusionarGanadoresActaSorteo_(ganadores, extraActa.ganadores);
     resumenActa = { premios: extraActa.premios, participantes: extraActa.participantes, ganadores: ganadores.length };
   }
 
   return _escribirDocGanadoresSorteo(ganadores, idMasRecienteStr, fechaMasReciente, resumenActa);
+}
+
+/**
+ * PF228 (24-oct-2026, pedido de la usuaria): el documento de Drive es el que se descarga, así que debe traer a TODOS los ganadores de la ruleta,
+ * también a quien todavía no se guardó en S_Asistencia. Une, en el orden de la ruleta, los ganadores que manda sorteo.html (`deLaPagina`: nombre, hora,
+ * premio, tickets, clan) con los ya guardados en S_Asistencia (`guardados`): por nombre (sin tildes ni mayúsculas) y, si el nombre se editó a mano, por
+ * posición cuando hay la misma cantidad en ambos lados. Los datos guardados mandan sobre los de la página; la hora sale siempre de la página. Quien está
+ * guardado y la página ya no lista se agrega al final. Sin ganadores de la página devuelve `guardados` tal cual.
+ */
+function _fusionarGanadoresActaSorteo_(guardados, deLaPagina) {
+  guardados = guardados || [];
+  deLaPagina = deLaPagina || [];
+  if (deLaPagina.length === 0) return guardados;
+  var norm = function (t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim(); };
+  var mismaCantidad = deLaPagina.length === guardados.length;
+  var usados = {};
+  var vacio = function (v) { return v === '' || v === null || v === undefined; };
+  var fusion = deLaPagina.map(function (eg, q) {
+    var idx = -1;
+    for (var j = 0; j < guardados.length; j++) {
+      if (!usados[j] && norm(guardados[j].nombre) === norm(eg.nombre)) { idx = j; break; }
+    }
+    if (idx < 0 && mismaCantidad && !usados[q]) idx = q;
+    if (idx >= 0) {
+      usados[idx] = true;
+      var s = guardados[idx];
+      return {
+        nombre: s.nombre || eg.nombre,
+        clan: s.clan || eg.clan || '',
+        premio: s.premio || eg.premio || '',
+        tickets: vacio(s.tickets) ? (vacio(eg.tickets) ? '' : eg.tickets) : s.tickets,
+        hora: eg.hora || ''
+      };
+    }
+    return { nombre: eg.nombre, clan: eg.clan || '', premio: eg.premio || '', tickets: vacio(eg.tickets) ? '' : eg.tickets, hora: eg.hora || '' };
+  }).filter(function (g) { return String(g.nombre || '').trim() !== ''; });
+  guardados.forEach(function (s, j) { if (!usados[j]) fusion.push(s); });
+  return fusion;
 }
 
 /**
@@ -50566,14 +50603,25 @@ function _webAdminSorteoActualizarDocGanadores(token, extra, descargar) {
     var resp = { ok: true };
     if (descargar) {
       if (!docId) return { ok: false, error: 'No se encontró el documento «Ganadores (sorteo)» en Drive.' };
-      var blobWord = DriveApp.getFileById(docId).getAs('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-      resp.docxBase64 = Utilities.base64Encode(blobWord.getBytes());
+      // PF228 (24-oct-2026): antes se usaba DriveApp.getAs(docx), que con un Google Doc suele fallar («Converting from ... is not supported»); se exporta con la
+      // misma URL de exportación y el mismo token que ya usa _webAdminContenidoDocHtml() (format=html).
+      var urlWord = 'https://docs.google.com/document/d/' + encodeURIComponent(docId) + '/export?format=docx';
+      var respWord = UrlFetchApp.fetch(urlWord, {
+        method: 'get',
+        headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+        muteHttpExceptions: true
+      });
+      if (respWord.getResponseCode() !== 200) {
+        return { ok: false, error: 'Google no devolvió el documento en Word (código ' + respWord.getResponseCode() + ').' };
+      }
+      resp.docxBase64 = Utilities.base64Encode(respWord.getContent());
       resp.nombreArchivo = NOMBRE_DOC_GANADORES_SORTEO + '.docx';
     }
     return resp;
   } catch (errDocGanSorteo) {
     Logger.log('[Web] Error interno actualizando el doc de ganadores: ' + errDocGanSorteo.toString());
-    return { ok: false, error: 'No se pudo actualizar el documento de ganadores. Intenta de nuevo en unos segundos.' };
+    // PF228: endpoint solo para admins con sesión válida; se incluye el motivo para que sorteo.html lo muestre y se pueda corregir.
+    return { ok: false, error: 'No se pudo actualizar el documento de ganadores (' + String((errDocGanSorteo && errDocGanSorteo.message) || errDocGanSorteo).slice(0, 160) + ').' };
   }
 }
 
