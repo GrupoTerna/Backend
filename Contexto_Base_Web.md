@@ -5650,3 +5650,10 @@ Responde el «sí» de la usuaria a §PF158 y **corrige dos puntos de lo que ah�
   - **Los tickets de los participantes** se toman de la lista calculada en ese momento y no se actualizan después.
 - **Sin probar.** No se corrió nada en Apps Script real; solo se revisó la sintaxis de los cinco archivos. No existe `Backup_S_Asistencia.csv` en `Datos descargados/`, así que el CSV lo crea el respaldo de Apps Script la primera vez que corra con la hoja; no se subió uno de ejemplo al repo (es público y trae nombres y tags).
 - **Orden de despliegue.** `subirBaseDesdeGithub()` antes de cualquier descarga; luego el setup de hojas para el encabezado y la migración.
+
+### PF223 — Banner en el título de `sorteo.html` y semanas/premios en dos columnas (24-oct-2026, pedido de la usuaria; SIN PROBAR en navegador real)
+
+- **Pedido.** (1) Mover los premios del cuadro del sorteo elegido para que, junto a las semanas, quede como una tablita de dos columnas (en la captura el espacio a la derecha de las semanas estaba vacío). (2) Ponerle un banner de color al título «ᴳ乂ᵀ ⚜️ Familia Terna - Sorteo en vivo». Antes la usuaria confirmó los dos puntos pendientes de `PF222` (participantes = calificados de la ruleta; listarlos al guardar el primer ganador).
+- **Qué se cambió en `Web` (`sorteo.html`).** `renderSorteoInfo()` arma dos `div.sorteo-info-col` dentro de `div.sorteo-info-cols` (cuadrícula de dos columnas iguales con línea divisoria); el aviso de WhatsApp sigue debajo, a todo el ancho. Por debajo de 420 px las columnas se apilan. `.stage-head` (el contenedor del título) recibe un fondo con degradado violeta, borde violeta y filo inferior dorado; el campo de texto del título sigue siendo editable y transparente. El tamaño del título se mide contra el ancho útil del banner (`cqi`), así que el relleno del banner no lo desborda.
+- **No cambia** `sw.js` (`sorteo.html` no está en `CORE_ASSETS`) ni el backend.
+
