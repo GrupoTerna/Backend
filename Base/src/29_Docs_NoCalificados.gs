@@ -165,13 +165,18 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
 // NO CALIFICADOS — SORTEO [→ Contexto_Base_Web.md §29B006]
 
 /**
- * actualizarDocNoCalificadosSorteo(ctxParam) [→ Contexto_Base_Web.md §29B007]
+ * _evaluarCalificacionSorteo_(ctxParam) [→ Contexto_Base_Web.md §PF202]
+ * (24-oct-2026, pedido de la usuaria) ÚNICA evaluación del sorteo: la usan el doc de NO calificados y el de
+ * Participantes calificados, así que un jugador sale en uno o en el otro, nunca en ninguno. Mismo criterio
+ * que _webSorteoCalificados() (37_Web_API.gs). Devuelve null si no se puede evaluar (sin filas en S_Lista o
+ * sin «Semanas»); si no, { evaluados, requisitos, ordenClanes, temporadaActual, idSorteo }, donde cada
+ * evaluado trae sus `motivos` (vacío = califica).
  */
-function actualizarDocNoCalificadosSorteo(ctxParam) {
+function _evaluarCalificacionSorteo_(ctxParam) {
   var bloque = _getConfigMasRecienteCategoria('Sorteo');
   if (bloque.length === 0) {
-    Logger.log('[NoCalificados-Sorteo] S_Lista no tiene ninguna fila con Clan asignado todavía. Se omite.');
-    return;
+    Logger.log('[CalificacionSorteo] S_Lista no tiene ninguna fila con Clan asignado todavía. Se omite.');
+    return null;
   }
 
   var ss = _getSs();
@@ -186,8 +191,8 @@ function actualizarDocNoCalificadosSorteo(ctxParam) {
   var semanas = bloque[0].semanas || [];
   var necesitaSemanas = necesitaTrofeos || necesitaAtaques || necesitaTorneos || necesitaBarcos;
   if (necesitaSemanas && semanas.length === 0) {
-    Logger.log('[NoCalificados-Sorteo] ABORT: falta configurar "Semanas" en S_Lista para este sorteo.');
-    return;
+    Logger.log('[CalificacionSorteo] ABORT: falta configurar "Semanas" en S_Lista para este sorteo.');
+    return null;
   }
 
   var semanalPorTag = (necesitaTrofeos || necesitaAtaques || necesitaBarcos)
@@ -221,8 +226,7 @@ function actualizarDocNoCalificadosSorteo(ctxParam) {
   }
 
   var dataDir = _leerDirectorioFisicoComoDC(ss);
-  var filas = [['Nombre', 'Clan', 'Medallas (prom.)', 'Ataques (prom.)', 'Torneos', 'Barcos (prom.)', 'Motivo por el que no califica']];
-  var totalEvaluados = 0, totalNoCalificados = 0;
+  var evaluados = [];
 
   for (var i = 0; i < dataDir.length; i++) {
     var fila = dataDir[i];
@@ -232,7 +236,6 @@ function actualizarDocNoCalificadosSorteo(ctxParam) {
     var req = reqPorClan[clan];
     if (!req) continue; // clan sin fila de requisitos: no participa, igual que en _webSorteoCalificados()
 
-    totalEvaluados++;
     var tag = String(fila[DC.TAG - 1] || '').trim();
     var trofeos = (semanalPorTag[tag] && semanalPorTag[tag].trofeosProm) || 0;
     var ataques = (semanalPorTag[tag] && semanalPorTag[tag].ataquesProm) || 0;
@@ -257,25 +260,56 @@ function actualizarDocNoCalificadosSorteo(ctxParam) {
     if (req.barcos.activo && barcosProm > req.barcos.qty) {
       motivos.push('Barcos: ' + _ncFmtNum(barcosProm) + ' de promedio semanal (el tope es ' + req.barcos.qty + ').');
     }
-    if (motivos.length === 0) continue;
-
-    totalNoCalificados++;
-    filas.push([
-      String(fila[DC.NOMBRE - 1] || ''),
-      clan,
-      _ncFmtNum(trofeos),
-      _ncFmtNum(ataques),
-      String(torneos),
-      (req.barcos.activo ? _ncFmtNum(barcosProm) : 'No evaluado'),
-      motivos.join(' ')
-    ]);
+    evaluados.push({
+      nombre: String(fila[DC.NOMBRE - 1] || ''),
+      clan: clan,
+      tag: tag,
+      trofeos: trofeos,
+      ataques: ataques,
+      torneos: torneos,
+      barcosProm: barcosProm,
+      barcosEvaluado: !!req.barcos.activo,
+      motivos: motivos   // vacío = CALIFICA
+    });
   }
 
-  var resumen = totalNoCalificados + ' de ' + totalEvaluados + ' cuenta(s) evaluada(s) no califican. ' +
-    'Temporada ' + temporadaActual + '. Sorteo ' + (bloque[0].idFila || 'sin ID') + '.';
+  return {
+    evaluados: evaluados,
+    requisitos: requisitos,
+    ordenClanes: ordenClanes,
+    temporadaActual: temporadaActual,
+    idSorteo: bloque[0].idFila || ''
+  };
+}
+
+/**
+ * actualizarDocNoCalificadosSorteo(ctxParam) [→ Contexto_Base_Web.md §29B007]
+ */
+function actualizarDocNoCalificadosSorteo(ctxParam) {
+  var ev = _evaluarCalificacionSorteo_(ctxParam);
+  if (!ev) return;
+
+  var filas = [['Nombre', 'Clan', 'Medallas (prom.)', 'Ataques (prom.)', 'Torneos', 'Barcos (prom.)', 'Motivo por el que no califica']];
+  var totalNoCalificados = 0;
+  ev.evaluados.forEach(function (e) {
+    if (e.motivos.length === 0) return; // calificó: va en el doc de Participantes calificados
+    totalNoCalificados++;
+    filas.push([
+      e.nombre,
+      e.clan,
+      _ncFmtNum(e.trofeos),
+      _ncFmtNum(e.ataques),
+      String(e.torneos),
+      (e.barcosEvaluado ? _ncFmtNum(e.barcosProm) : 'No evaluado'),
+      e.motivos.join(' ')
+    ]);
+  });
+
+  var resumen = totalNoCalificados + ' de ' + ev.evaluados.length + ' cuenta(s) evaluada(s) no califican. ' +
+    'Temporada ' + ev.temporadaActual + '. Sorteo ' + (ev.idSorteo || 'sin ID') + '.';
 
   _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_SORTEO, 'Participantes NO calificados (sorteo)',
-    requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
+    ev.requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
 
   Logger.log('[NoCalificados-Sorteo] ' + resumen);
 }
