@@ -321,6 +321,106 @@ function actualizarDocGanadoresSorteo() {
 }
 
 /**
+ * PF207 (24-oct-2026, pedido de la usuaria). _escribirGanadoresSorteoEnDoc_(body, ganadores): bajo «Ganadores del sorteo:»,
+ * (a) sin ganadores quita la tabla (y cualquier otra tabla que siga) y deja una línea corta (TEXTO_SIN_GANADORES_SORTEO_DOC);
+ * (b) con ganadores quita esa línea y, si la tabla no existe (porque antes no había ganadores), la crea con el mismo estilo de la plantilla
+ * (encabezado gris, texto blanco en negrita: N°, Nombre, Victorias, Clan, Premio); si existe, deja el encabezado y rehace las filas.
+ * La columna «Victorias» muestra los Tickets (igual que antes). Devuelve false si no existe el encabezado.
+ */
+var TEXTO_SIN_GANADORES_SORTEO_DOC = 'Todavía no hay ganadores para este sorteo.';
+
+function _escribirGanadoresSorteoEnDoc_(body, ganadores) {
+  var enc = body.findText('Ganadores del sorteo:');
+  if (!enc) return false;
+  var heading = enc.getElement();
+  while (heading.getParent() && heading.getParent().getType() !== DocumentApp.ElementType.BODY_SECTION) {
+    heading = heading.getParent();
+  }
+  var idxH = body.getChildIndex(heading);
+
+  // Qué hay después del encabezado: tablas y la línea de «sin ganadores».
+  var tabla = null, parrafoSin = null, aQuitar = [];
+  for (var k = idxH + 1; k < body.getNumChildren(); k++) {
+    var h = body.getChild(k);
+    if (h.getType() === DocumentApp.ElementType.TABLE) {
+      if (!tabla) tabla = h.asTable(); else aQuitar.push(h);
+    } else if (h.getType() === DocumentApp.ElementType.PARAGRAPH) {
+      var tx = h.asParagraph().getText().trim();
+      if (tx === TEXTO_SIN_GANADORES_SORTEO_DOC) { if (!parrafoSin) parrafoSin = h.asParagraph(); else aQuitar.push(h); }
+      else if (tx !== '') break;
+    }
+  }
+  aQuitar.forEach(function (h) { try { body.removeChild(h); } catch (e) { /* el último hijo no se puede quitar; no pasa nada */ } });
+
+  var recortarFilas = function (t) { while (t.getNumRows() > 1) t.removeRow(1); };
+
+  if (ganadores.length === 0) {
+    // Primero se inserta la línea y luego se quita la tabla (si la tabla fuera el último hijo, el documento no puede quedar sin párrafo final).
+    if (!parrafoSin) {
+      parrafoSin = body.insertParagraph(body.getChildIndex(heading) + 1, TEXTO_SIN_GANADORES_SORTEO_DOC);
+      parrafoSin.setHeading(DocumentApp.ParagraphHeading.NORMAL);
+      parrafoSin.setIndentStart(36);
+      parrafoSin.setIndentFirstLine(36);
+      var tt = parrafoSin.editAsText();
+      var fin = TEXTO_SIN_GANADORES_SORTEO_DOC.length - 1;
+      tt.setBold(0, fin, false);
+      tt.setItalic(0, fin, false);
+      tt.setFontFamily(0, fin, 'Arial');
+      tt.setFontSize(0, fin, 12);
+      tt.setForegroundColor(0, fin, '#000000');
+    }
+    if (tabla) {
+      try { body.removeChild(tabla); } catch (eQ) { recortarFilas(tabla); tabla.getRow(0).clear(); }
+    }
+    return true;
+  }
+
+  if (parrafoSin) { try { body.removeChild(parrafoSin); } catch (eP) { parrafoSin.setText(''); } }
+
+  var filas = ganadores.map(function (gan, g) {
+    return [
+      String(g + 1),
+      String(gan.nombre || ''),
+      (gan.tickets === '' || gan.tickets === null || gan.tickets === undefined) ? '' : String(gan.tickets),
+      String(gan.clan || ''),
+      String(gan.premio || '')
+    ];
+  });
+
+  if (!tabla) {
+    var valores = [['N°', 'Nombre', 'Victorias', 'Clan', 'Premio']].concat(filas);
+    tabla = body.insertTable(body.getChildIndex(heading) + 1, valores);
+    for (var r = 0; r < tabla.getNumRows(); r++) {
+      var fila = tabla.getRow(r);
+      for (var c = 0; c < fila.getNumCells(); c++) {
+        var celda = fila.getCell(c);
+        var par = celda.getChild(0).asParagraph();
+        par.setHeading(DocumentApp.ParagraphHeading.NORMAL);
+        par.setAlignment(r === 0 || c === 0 ? DocumentApp.HorizontalAlignment.CENTER : DocumentApp.HorizontalAlignment.LEFT);
+        var tc = par.editAsText();
+        var largo = tc.getText().length;
+        if (largo > 0) {
+          tc.setFontFamily(0, largo - 1, 'Arial');
+          tc.setFontSize(0, largo - 1, 12);
+          tc.setBold(0, largo - 1, r === 0);
+          tc.setItalic(0, largo - 1, false);
+          tc.setForegroundColor(0, largo - 1, r === 0 ? '#FFFFFF' : '#000000');
+        }
+        if (r === 0) celda.setBackgroundColor('#B7B7B7');
+      }
+    }
+    return true;
+  }
+
+  recortarFilas(tabla);
+  filas.forEach(function (vals) {
+    var nueva = tabla.appendTableRow();
+    vals.forEach(function (v) { nueva.appendTableCell(v); });
+  });
+  return true;
+}
+
+/**
  * _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo) [→ Contexto_Base_Web.md §28B030]
  */
 function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo) {
@@ -345,34 +445,12 @@ function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo) {
   }
   var body = doc.getBody();
 
-  var tabla = _tablaDeGrupoDoc(body, 'Ganadores del sorteo:');
-  if (!tabla || tabla.getNumRows() === 0) {
-    Logger.log('[Ganadores-Sorteo] No se encontró la tabla de "Ganadores del sorteo:" en el documento. Se omite.');
+  // PF207 (24-oct-2026, pedido de la usuaria): sin ganadores NO se muestra la tabla, solo un texto corto; con ganadores se rehace la tabla.
+  var resTabla = _escribirGanadoresSorteoEnDoc_(body, ganadores);
+  if (!resTabla) {
+    Logger.log('[Ganadores-Sorteo] No se encontró \"Ganadores del sorteo:\" en el documento. Se omite.');
     doc.saveAndClose();
     return;
-  }
-
-  // Conserva la fila de encabezado (fila 0, nombres de columna) y quita [→ Contexto_Base_Web.md §28B031]
-  while (tabla.getNumRows() > 1) {
-    tabla.removeRow(1);
-  }
-
-  if (ganadores.length === 0) {
-    var filaVacia = tabla.appendTableRow();
-    filaVacia.appendTableCell('(Todavía no se resolvió ningún ganador para este sorteo.)');
-    for (var v = 1; v < 5; v++) filaVacia.appendTableCell('');
-  } else {
-    for (var g = 0; g < ganadores.length; g++) {
-      var gan = ganadores[g];
-      var fila = tabla.appendTableRow();
-      fila.appendTableCell(String(g + 1));
-      fila.appendTableCell(gan.nombre);
-      // Columna "Victorias" de la plantilla -- muestra Tickets (ver [→ Contexto_Base_Web.md §28B032]
-      fila.appendTableCell(gan.tickets === '' || gan.tickets === null || gan.tickets === undefined
-        ? '' : String(gan.tickets));
-      fila.appendTableCell(gan.clan);
-      fila.appendTableCell(gan.premio);
-    }
   }
 
   // PF206 (24-oct-2026, pedido de la usuaria): este Doc también lleva «Requisitos» y «Fecha:». Antes solo se regeneraban al correr
@@ -751,6 +829,47 @@ function _actualizarFechaDocSorteo(body, fecha) {
   var prefijoMatch = textoActual.match(/^[\s\t]*/);
   var prefijo = prefijoMatch ? prefijoMatch[0] : '';
   pValor.editAsText().setText(prefijo + _formatFechaHoraDocEs(fecha));
+  // PF207 (24-oct-2026, pedido de la usuaria): el valor de la fecha copiaba el formato del subtítulo «Fecha:» (morado, negrita). Se le da
+  // el formato del texto de cuerpo: el del párrafo que sigue a «Transmisión:»; si no existe, Arial 12 negro sin negrita.
+  try {
+    var refCuerpo = null;
+    var encTr = body.findText('Transmisión:');
+    if (encTr) {
+      var hTr = encTr.getElement();
+      while (hTr.getParent() && hTr.getType() !== DocumentApp.ElementType.PARAGRAPH) hTr = hTr.getParent();
+      var iTr = body.getChildIndex(hTr) + 1;
+      if (iTr < body.getNumChildren() && body.getChild(iTr).getType() === DocumentApp.ElementType.PARAGRAPH) {
+        refCuerpo = body.getChild(iTr).asParagraph();
+      }
+    }
+    if (refCuerpo && refCuerpo.getText().trim() !== '') {
+      var attrs = refCuerpo.getAttributes();
+      delete attrs[DocumentApp.Attribute.INDENT_START];
+      delete attrs[DocumentApp.Attribute.INDENT_FIRST_LINE];
+      delete attrs[DocumentApp.Attribute.INDENT_END];
+      pValor.setHeading(DocumentApp.ParagraphHeading.NORMAL);
+      pValor.setAttributes(attrs);
+      var tF = pValor.editAsText();
+      var lF = tF.getText().length;
+      if (lF > 0) {
+        var aT = refCuerpo.editAsText().getAttributes(0);
+        tF.setAttributes(0, lF - 1, aT);
+      }
+    } else {
+      pValor.setHeading(DocumentApp.ParagraphHeading.NORMAL);
+      var tG = pValor.editAsText();
+      var lG = tG.getText().length;
+      if (lG > 0) {
+        tG.setBold(0, lG - 1, false);
+        tG.setItalic(0, lG - 1, false);
+        tG.setFontFamily(0, lG - 1, 'Arial');
+        tG.setFontSize(0, lG - 1, 12);
+        tG.setForegroundColor(0, lG - 1, '#000000');
+      }
+    }
+  } catch (eFmt) {
+    Logger.log('[Fecha-Sorteo] No se pudo dar formato de cuerpo a la fecha: ' + eFmt.message);
+  }
   return true;
 }
 
