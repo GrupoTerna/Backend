@@ -4558,7 +4558,7 @@ function _webAdminSorteoActualizarDocGanadores(token, extra, descargar) {
       if (respWord.getResponseCode() !== 200) {
         return { ok: false, error: 'Google no devolvió el documento en Word (código ' + respWord.getResponseCode() + ').' };
       }
-      resp.docxBase64 = Utilities.base64Encode(respWord.getContent());
+      resp.docxBase64 = Utilities.base64Encode(_docxFuenteArial_(respWord.getContent())); // PF230: Google exporta «Arial Unicode MS» en algunos textos; se deja Arial
       resp.nombreArchivo = NOMBRE_DOC_GANADORES_SORTEO + '.docx';
     }
     return resp;
@@ -4566,6 +4566,34 @@ function _webAdminSorteoActualizarDocGanadores(token, extra, descargar) {
     Logger.log('[Web] Error interno actualizando el doc de ganadores: ' + errDocGanSorteo.toString());
     // PF228: endpoint solo para admins con sesión válida; se incluye el motivo para que sorteo.html lo muestre y se pueda corregir.
     return { ok: false, error: 'No se pudo actualizar el documento de ganadores (' + String((errDocGanSorteo && errDocGanSorteo.message) || errDocGanSorteo).slice(0, 160) + ').' };
+  }
+}
+
+/**
+ * PF230 (24-oct-2026, pedido de la usuaria con captura): al exportar a Word, Google escribe «Arial Unicode MS» en los textos con símbolos
+ * (°, ™, emojis, letras especiales). Se abre el .docx (es un zip), se cambia esa fuente por «Arial» en los XML de la carpeta word/ y se vuelve a
+ * comprimir. Si algo falla, devuelve el contenido original sin tocar. Los caracteres que Arial no tiene (por ejemplo 乂) los sustituye Word.
+ */
+function _docxFuenteArial_(bytes) {
+  try {
+    var blobs = Utilities.unzip(Utilities.newBlob(bytes, 'application/zip', 'acta.zip'));
+    var cambiado = false;
+    var nuevos = blobs.map(function (b) {
+      var nombre = b.getName() || '';
+      if (/^word\/[^\/]+\.xml$/.test(nombre)) {
+        var xml = b.getDataAsString('UTF-8');
+        if (xml.indexOf('Arial Unicode MS') !== -1) {
+          cambiado = true;
+          return Utilities.newBlob(xml.replace(/Arial Unicode MS/g, 'Arial'), b.getContentType() || 'application/xml', nombre);
+        }
+      }
+      return b;
+    });
+    if (!cambiado) return bytes;
+    return Utilities.zip(nuevos, 'acta.docx').getBytes();
+  } catch (e) {
+    Logger.log('[Ganadores-Sorteo] No se pudo cambiar la fuente del Word a Arial: ' + e.message);
+    return bytes;
   }
 }
 
