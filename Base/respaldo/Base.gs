@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 02:37:24 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 02:58:54 */
 
 
 
@@ -29679,6 +29679,38 @@ function _pronosticoBaseDeLogs_(rr, tag, periodIndex) {
 }
 
 /**
+ * _pronosticoPuntosDiasCerrados_(rr, tag, periodIndex): medallas que el clan ganó en cada día YA CERRADO de la semana de guerra en
+ * curso, por letra de día (J, V, S, D), a partir de `rr.periodLogs[].items[].pointsEarned` (PF203, 24-oct-2026). Sirve para que
+ * guerra.html, al elegir un día ya jugado, muestre el resultado de ese día de cada clan (también rivales). Devuelve un objeto
+ * solo con los días que tienen registro: `{}` en entrenamiento, en jueves (aún no hay días cerrados) y en coliseo (los logs no
+ * traen días de coliseo, §PF198); un día sin registro para ese clan simplemente no aparece (la web muestra «—», nunca un 0 inventado).
+ * [→ Contexto_Base_Web.md §PF203]
+ */
+function _pronosticoPuntosDiasCerrados_(rr, tag, periodIndex) {
+  var salida = {};
+  var p = Number(periodIndex);
+  if (!isFinite(p) || p < 0) return salida;
+  var dia = p % 7;
+  if (dia <= 3) return salida;
+  var logs = (rr && rr.periodLogs) ? rr.periodLogs : [];
+  if (!logs.length) return salida;
+  var t = _pronosticoTagNorm_(tag);
+  var inicio = p - (dia - 3);
+  var letras = { 3: 'J', 4: 'V', 5: 'S', 6: 'D' };
+  for (var i = 0; i < logs.length; i++) {
+    var lg = logs[i] || {};
+    var q = Number(lg.periodIndex);
+    if (!isFinite(q) || q < inicio || q >= p) continue;
+    var items = lg.items || [];
+    for (var j = 0; j < items.length; j++) {
+      var it = items[j] || {};
+      if (_pronosticoTagNorm_((it.clan || {}).tag) === t) { salida[letras[q % 7]] = Number(it.pointsEarned) || 0; break; }
+    }
+  }
+  return salida;
+}
+
+/**
  * _pronosticoBaseDePeriodPoints_(rr, calc, clanObj): base del día = fama acumulada de la semana - `periodPoints` del clan (24-oct-2026,
  * PF198). Identidad verificada por la usuaria y repetida con las capturas: suma de participants[].fame = Σ pointsEarned de los días
  * cerrados + clan.periodPoints (puntos de HOY, en vivo). Solo en día de guerra (`warDay`): en coliseo `periodPoints` vale 0 aunque
@@ -29973,6 +30005,7 @@ function calcularPronosticoGuerra(ctxOpcional) {
         origenPropio = 'hoja';
       }
       _pronosticoAgregarDiario_(calcPropio, basePropio, origenPropio);
+      calcPropio.diasCerrados = _pronosticoPuntosDiasCerrados_(rr, clanTag, periodoPropio); // PF203
       calcPropio.clanTag = clanTag;
       calcPropio.nombre = info.name || clanTag;
       calcPropio.esRival = false;
@@ -30007,6 +30040,7 @@ function calcularPronosticoGuerra(ctxOpcional) {
       if (baseRival === null) { baseRival = _pronosticoBaseDeLogs_(rr, rivalTag, periodoRival); origenRival = 'logs'; }
       if (baseRival === null) { baseRival = _pronosticoBaseDeFoto_(fotoDia, rivalTag, periodoRival); origenRival = 'foto'; }
       _pronosticoAgregarDiario_(calcRival, baseRival, origenRival);
+      calcRival.diasCerrados = _pronosticoPuntosDiasCerrados_(rr, rivalTag, periodoRival); // PF203
       calcRival.clanTag = rivalTag;
       calcRival.nombre = rival.name || rivalTag;
       calcRival.esRival = true;
@@ -30036,7 +30070,7 @@ function calcularPronosticoGuerra(ctxOpcional) {
   return { ok: true, clanes: salida };
 }
 
-var PRONOSTICO_WEB_CACHE_KEY     = 'web_pronostico_guerra_v6'; // v6 (PF194): agrega fameBase/fameHoy/fameTechoRosterHoy/fameTechoHoy/baseOrigen (fama del día; null si no se conoce la base); v2: agrega puesto/clanesEnCarrera; v3: agrega clanTernaTag/clanTernaNombre a los rivales; v4: fameTechoRoster ya respeta los topes de 200 ataques / 50 cuentas; v5 (Tanda 14): agrega coliseo/estimado al clan propio
+var PRONOSTICO_WEB_CACHE_KEY     = 'web_pronostico_guerra_v7'; // v7 (PF203): agrega diasCerrados ({J,V,S,D: medallas del día ya cerrado de la semana, por clan}); v6 (PF194): agrega fameBase/fameHoy/fameTechoRosterHoy/fameTechoHoy/baseOrigen (fama del día; null si no se conoce la base); v2: agrega puesto/clanesEnCarrera; v3: agrega clanTernaTag/clanTernaNombre a los rivales; v4: fameTechoRoster ya respeta los topes de 200 ataques / 50 cuentas; v5 (Tanda 14): agrega coliseo/estimado al clan propio
 var PRONOSTICO_WEB_CACHE_TTL_SEG = 120;
 var PRONOSTICO_WEB_CHECKPOINT_MAX_EDAD_MS = 70 * 60 * 1000;
 
@@ -40553,6 +40587,10 @@ function _reemplazarListaParticipantes(body, grupos) {
     for (var p = 0; p < personas.length; p++) {
       insertAt = _insertarLineaParticipante(body, insertAt, personas[p].nombre, personas[p].puntaje);
     }
+    // PF204 (24-oct-2026): un clan sin ningún calificado ya no queda en blanco; se escribe una línea que lo dice.
+    if (!personas.length) {
+      insertAt = _insertarLineaSinCalificados_(body, insertAt);
+    }
 
     // --- Párrafo vacío que cierra el grupo (idéntico a la línea " "
     // que trae la plantilla después del último bullet de cada grupo). ---
@@ -40573,6 +40611,26 @@ function _insertarParrafoEspaciador(body, insertAt) {
   t.setFontSize(12);
   t.setUnderline(false);
   t.setForegroundColor('#000000');
+  t.setLinkUrl(null);
+  return insertAt + 1;
+}
+
+/**
+ * _insertarLineaSinCalificados_(body, insertAt): línea de texto para un clan sin ningún participante calificado (PF204). Sin viñeta ni
+ * sangría, Arial 12 en cursiva y color gris, para que no se confunda con un nombre. Devuelve la siguiente posición de inserción.
+ * [→ Contexto_Base_Web.md §PF204]
+ */
+function _insertarLineaSinCalificados_(body, insertAt) {
+  var p = body.insertParagraph(insertAt, 'Ningún participante calificado.');
+  p.setIndentStart(0);
+  p.setIndentFirstLine(0);
+  p.setBold(false);
+  var t = p.editAsText();
+  t.setFontFamily('Arial');
+  t.setFontSize(12);
+  t.setItalic(true);
+  t.setUnderline(false);
+  t.setForegroundColor('#666666');
   t.setLinkUrl(null);
   return insertAt + 1;
 }
