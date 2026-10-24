@@ -1,3 +1,46 @@
+/*
+AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
+1) NO metas los archivos dentro de una carpeta al armar el ZIP. Cada
+   archivo .gs debe quedar SUELTO en la raíz del .zip.
+   Correcto:   01_Principal.gs
+   Incorrecto: Base/01_Principal.gs  (esto pega el nombre de la carpeta
+   al del archivo y crea un duplicado en vez de actualizar el original).
+2) Al subir de vuelta, usa el MISMO nombre exacto de archivo que bajaste,
+   sin prefijos ni sufijos. Si agregas un archivo nuevo, dale un nombre
+   distinto; nunca dupliques uno existente con otro nombre.
+3) NO leas, edites, generes ni actualices "Script consolidado.gs". Ese
+   archivo es un respaldo generado 100% automáticamente por las propias
+   funciones del Generador (_descargarProyectoAArchivos) cada vez que se
+   sube o descarga cualquier formato. Cualquier IA o persona que edite
+   este proyecto debe ignorarlo por completo: no es código fuente real,
+   es solo un resumen legible; editarlo a mano no tiene efecto (se
+   sobrescribe automáticamente) y leerlo para entender el código es
+   redundante, ya que su contenido es idéntico a la suma de los demás
+   archivos .gs del proyecto.
+4) Cuando una IA edite este proyecto a pedido del usuario, NO debe
+   reempaquetar ni entregar el .zip completo del proyecto por defecto.
+   Debe entregar el CONTENIDO COMPLETO (no fragmentos ni parches) de
+   cada archivo NUMERADO que haya modificado (01_Principal.gs,
+   02_Backstage.gs, etc.), listo para copiar/pegar y reemplazar el
+   archivo entero en el editor; y el manifiesto "appsscript.json"
+   completo también, solo si ese archivo cambió. Nunca entregar
+   "Script consolidado.gs" ni este mismo LEEME como parte de una
+   edición (ver punto 3). Esto ahorra tokens y tiempo frente a
+   regenerar y comprimir todos los archivos cada vez, incluidos los
+   que no cambiaron. Solo generar el .zip completo si el usuario lo
+   pide explícitamente.
+5) Los archivos modificados (punto 4) se deben ENTREGAR COMO ARCHIVO
+   DESCARGABLE/ABRIBLE, nunca pegados como bloque de código dentro del
+   chat. Un archivo real se puede abrir, copiar y guardar directamente;
+   un bloque de código en el chat obliga a seleccionar y copiar a mano,
+   y es más difícil de manejar en archivos largos.
+*/
+
+/* CÓDIGO CONSOLIDADO GENERADO EL 23/10/2026 21:28:41 */
+
+
+
+// --- ARCHIVO: Código.gs ---
 // =============================================================================
 // Sincronizador_Correo_Secundario.gs
 // Se ejecuta en la cuenta secundaria para jalar y guardar los contactos.
@@ -307,3 +350,4 @@ function SincronizarDesdeWebAPI() {
   Logger.log('[SecundarioSync] Proceso terminado con éxito.');
   Logger.log('[SecundarioSync] Resultados -> Creados: ' + creados + ', Actualizados: ' + actualizados + ', Eliminados obsoletos: ' + eliminados);
 }
+
