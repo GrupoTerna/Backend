@@ -971,7 +971,7 @@ function doGet(e) {
   if (e && e.parameter && e.parameter.accion === 'webSorteoCalificados') {
     try {
       return ContentService
-        .createTextOutput(JSON.stringify(_webSorteoCalificados(e.parameter.sessionToken)))
+        .createTextOutput(JSON.stringify(_webSorteoCalificados(e.parameter.sessionToken, e.parameter.idSorteo, e.parameter.soloInfo === '1')))
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       Logger.log('[Web] Error interno: ' + err.toString());

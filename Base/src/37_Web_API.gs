@@ -4392,12 +4392,15 @@ function _webAdminOtrasCuentas(token, tag) {
   return { ok: true, cuentas: cuentas };
 }
 // _webSorteoCalificados(): FASE 8 (30-ago-2026, pedido del usuario — la Ruleta de Sorteo del panel admin [sorteo.html] captaba participantes de forma 100% manual/genérica; este endpoint la autocompleta con los miembros que CALIFICAN según la fuente oficial… [→ Contexto_Base_Web.md §37B311]
-function _webSorteoCalificados(token) {
+function _webSorteoCalificados(token, idSorteoElegido, soloInfo) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
 
-  var bloque = _getConfigMasRecienteCategoria('Sorteo');
+  // PF211 (24-oct-2026): idSorteoElegido (opcional) = el sorteo que eligió el admin en el desplegable de sorteo.html; vacío = el vigente/más reciente, como antes. soloInfo = true devuelve solo los datos del sorteo (premios, semanas, WhatsApp) sin calcular quién califica. [→ Contexto_Base_Web.md §PF211]
+  var idElegido = String(idSorteoElegido || '').trim();
+  var bloque = _getConfigMasRecienteCategoria('Sorteo', idElegido || undefined);
   if (bloque.length === 0) {
-    return { ok: false, error: 'S_Lista no tiene ninguna fila con Clan asignado todavía. Agrega participantes a mano mientras tanto.' };
+    if (idElegido) return { ok: false, error: 'No se encontró el sorteo ' + idElegido + ' en la lista de sorteos. Elige otro del desplegable.' };
+    return { ok: false, error: 'La lista de sorteos no tiene ninguna fila con Clan asignado todavía. Agrega participantes a mano mientras tanto.' };
   }
 
   var ss = _getSs();
@@ -4413,10 +4416,18 @@ function _webSorteoCalificados(token) {
 
   // Semanas (FIX 11-sep-2026, pedido del usuario): mismo valor para los 4 clanes de `bloque` (ver docblock de _getConfigMasRecienteCategoria(), 26_Torneos_Core.gs) -- se toma de cualquiera de sus elementos, igual que `idFila`. Si… [→ Contexto_Base_Web.md §37B313]
   var semanas = bloque[0].semanas || [];
+
+  // PF211: datos del sorteo para mostrarlos en sorteo.html. Premios = la columna Premios de S_Lista separada por comas (el premio N va al ganador N); semanas = «Temporada 6, semana 2 (12 oct - 18 oct)», de menor a mayor; exigeWhatsapp = algún clan del sorteo pide estar en el grupo (no se puede verificar solo: el admin lo coteja a mano).
+  var premiosLista = String(bloque[0].premios || '').split(',').map(function (p) { return p.trim(); }).filter(Boolean);
+  var semanasEtiquetas = _ordenarSemanasSorteoDoc(semanas).map(_etiquetaSemanaSorteoDoc);
+  var exigeWhatsapp = bloque.some(function (b) { return b.whatsapp && b.whatsapp.activo; });
+  if (soloInfo) {
+    return { ok: true, idSorteo: bloque[0].idFila, premios: premiosLista, semanas: semanasEtiquetas, exigeWhatsapp: exigeWhatsapp };
+  }
   // FIX (12-sep-2026): se agrega necesitaBarcos -- Barcos también se promedia sobre las mismas semanas puntuales (ver `barcosProm`, mismo criterio que `ataquesProm`), así que también depende de que Semanas esté configurada. [→ Contexto_Base_Web.md §37B314]
   var necesitaSemanas = necesitaTrofeos || necesitaAtaques || necesitaTorneos || necesitaBarcos;
   if (necesitaSemanas && semanas.length === 0) {
-    return { ok: false, error: 'Falta configurar "Semanas" en S_Lista para este sorteo (formato "T{temporada}_S{semana}", separadas por coma).' };
+    return { ok: false, error: 'Falta configurar "Semanas" para este sorteo en la lista de sorteos (formato "T{temporada}_S{semana}", separadas por coma).' };
   }
 
   // Trofeos/Ataques/Barcos: PROMEDIO entre las semanas puntuales configuradas (ver _getTrofeosYAtaquesSemanalesPorTag(), 28_Torneos_Docs.gs). Ya NO se usa el acumulado de toda la temporada… [→ Contexto_Base_Web.md §37B315]
@@ -4495,7 +4506,7 @@ function _webSorteoCalificados(token) {
   // idSorteo (FASE 10-sep-2026, consolidado sección 1, puntos 4 y 6): mismo valor para los 4 clanes de `bloque` (ver docblock de _getConfigMasRecienteCategoria(), 26_Torneos_Core.gs) -- se toma de cualquiera de sus elementos.… [→ Contexto_Base_Web.md §37B323]
   var idSorteo = bloque[0].idFila;
 
-  return { ok: true, clanes: clanes, avisoReaccion: avisoReaccion, temporada: temporadaActual, idSorteo: idSorteo };
+  return { ok: true, clanes: clanes, avisoReaccion: avisoReaccion, temporada: temporadaActual, idSorteo: idSorteo, premios: premiosLista, semanas: semanasEtiquetas, exigeWhatsapp: exigeWhatsapp };
 }
 
 // _webAdminSorteoResolucionGuardar(): FASE (10-sep-2026, pedido del usuario -- ver consolidado de pendientes, sección 1, puntos 4 y 6 del "resumen de lo que falta construir"). Envuelve TAL CUAL _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado… [→ Contexto_Base_Web.md §37B324]
