@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Familia Terna - Corrección de Guerra + Miembros Nuevos + Verificar Semana (RoyaleAPI)
 // @namespace    familia-terna-correccion-guerra
-// @version      3.2
+// @version      3.3
 // @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041] v3.2 (pedido usuaria, formato ancho de Correcciones_Guerra.csv, §PF164): cada fila del Perfil sale marcada con fuente:'perfil' (el backend guarda así de dónde salió la columna RoyaleAPI: «perfil» o «desconocido»), y al iniciar la Corrección de Guerra se puede FORZAR la lectura del perfil de ciertos jugadores (las cuentas con varios clanes o los tags que se escriban): se visita su perfil aunque Log/Analytics ya los cubrieran y se reenvían TODAS sus semanas, aunque ya estén guardadas, para llenar de verdad la columna RoyaleAPI.
 // @author       Familia Terna
 // @match        https://royaleapi.com/*
@@ -1351,7 +1351,16 @@
         var norm = function (s) { return s.toLowerCase().replace(/[^a-z0-9]/g, ''); };
         return norm(clanTexto).indexOf(norm(nombreTerna)) >= 0 || norm(nombreTerna).indexOf(norm(clanTexto)) >= 0;
       });
-      if (!esTerna) continue;
+      // v3.3 (§PF183 act. 15 a 17): el tag del clan de la fila sale del enlace de la celda del clan (href «/clan/QJJCYP2P/war/analytics»).
+      // Con tag, la fila se lee aunque el clan no sea Terna (el backend decide por tag con CFG.TERNA_TAGS y la guarda en Externo).
+      // Sin tag NO se adivina por el nombre: pasa solo si el nombre coincide con un clan Terna (como antes) y viaja sin clanPerfil.
+      var clanTag = '';
+      var enlaceClan = celdas[4].querySelector ? celdas[4].querySelector('a[href*="/clan/"]') : null;
+      if (enlaceClan) {
+        var mTagClan = /\/clan\/([0-9A-Za-z]+)/.exec(enlaceClan.getAttribute('href') || '');
+        if (mTagClan) clanTag = '#' + mTagClan[1].toUpperCase();
+      }
+      if (!esTerna && !clanTag) continue;
       var ataques = parseInt((celdas[cols.decksUsedIdx] && celdas[cols.decksUsedIdx].textContent || '').trim(), 10);
       var fame = parseInt((celdas[cols.fameIdx] && celdas[cols.fameIdx].textContent || '').trim(), 10);
       if (isNaN(ataques) || isNaN(fame)) continue;
@@ -1363,7 +1372,7 @@
       var barcosTxt = (celdas[cols.barcosIdx] && celdas[cols.barcosIdx].textContent || '').trim();
       var barcos = barcosTxt === '' ? undefined : parseInt(barcosTxt, 10);
       if (barcos !== undefined && isNaN(barcos)) barcos = undefined;
-      resultado.push({ temporadaRoyaleApi: temporadaRoyaleApi, semana: semana, clan: clanTexto, ataquesSemana: ataques, fame: fame, barcos: barcos });
+      resultado.push({ temporadaRoyaleApi: temporadaRoyaleApi, semana: semana, clan: clanTexto, clanTag: clanTag, esTerna: esTerna, ataquesSemana: ataques, fame: fame, barcos: barcos });
     }
     return resultado;
   }
@@ -2460,6 +2469,7 @@
     // Correcciones_Guerra.csv, es un concepto distinto de la cobertura del
     // histórico.
     for (var pfHist = 0; !jugador.sinHistorial && pfHist < filas.length; pfHist++) {
+      if (!filas[pfHist].esTerna) continue; // v3.3: el historial sigue recibiendo solo filas de clan Terna; las de clan externo van solo a la corrección
       _agregarRegistroHistorial(estado, jugador.tag, jugador.nombre, filas[pfHist].clan, {
         temporadaRoyaleApi: filas[pfHist].temporadaRoyaleApi,
         semana: filas[pfHist].semana,
@@ -2494,10 +2504,12 @@
       // 10_CorreccionGuerra.gs (barcos es opcional/preservado, nunca se
       // manda como 0 falso).
       // v3.2 (§PF164): fuente:'perfil' le dice al backend que esta fila (sin clanTag) es lo que dice el perfil de RoyaleAPI.
-      estado.correcciones.push({ tag: jugador.tag, temporadaRoyaleApi: filas[i].temporadaRoyaleApi, semana: filas[i].semana, ataquesSemana: filas[i].ataquesSemana, fame: filas[i].fame, barcos: filas[i].barcos, fuente: 'perfil' });
+      // v3.3: clanPerfil = tag del clan de ESA fila (leído del enlace); el backend lo guarda en «Clan RoyaleAPI» y, si no es un clan Terna, lo cuenta como Externo.
+      estado.correcciones.push({ tag: jugador.tag, temporadaRoyaleApi: filas[i].temporadaRoyaleApi, semana: filas[i].semana, ataquesSemana: filas[i].ataquesSemana, fame: filas[i].fame, barcos: filas[i].barcos, fuente: 'perfil', clanPerfil: filas[i].clanTag || undefined });
       nuevasOActualizadas++;
     }
-    log(estado, '  → ' + filas.length + ' semana(s) de clanes Terna encontradas (' +
+    var filasExternas = filas.filter(function (fx) { return fx.clanTag && !fx.esTerna; }).length;
+    log(estado, '  → ' + filas.length + ' semana(s) del perfil leídas (' + filasExternas + ' de clan que no es Terna por nombre; el backend decide por tag) (' +
       nuevasOActualizadas + ' nueva(s)' + (perfilForzado ? ' — perfil FORZADO: se reenvían todas' : '') + ', ' + yaEnCsv + ' ya en el CSV y ' + yaEnCorrida + ' ya vinieron por Log/Analytics en esta corrida — sin reenviar).');
 
     estado.indice++;
