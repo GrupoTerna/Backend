@@ -16,6 +16,13 @@ var ADMIN_DOC_NOMBRES_RESPALDO = {
   '#GG99LCJY': 'Mini乂Ternas™'
 };
 
+// PF189 (24-oct-2026, pedido de la usuaria): cuentas que se muestran para estas personas cuando no tienen ninguna cuenta presente en el clan del Doc (se ubica a la persona por su celular, a partir de la fila de Directorio de ese tag). Si Directorio no trae el tag, se usa el nombre indicado. [→ Contexto_Base_Web.md §PF189]
+var ADMIN_DOC_CUENTAS_PREFERIDAS = {
+  '#2GG8PJ8GC': 'chistris',
+  '#V20GJRC9Y': 'caandre',
+  '#QRQULCCV8': 'ᴳ乂ᵀ ⚜️ Maikel'
+};
+
 // Caché en memoria (solo vive durante esta ejecución) del equipo leído de Directorio, para no releer la hoja por cada Doc. [→ Contexto_Base_Web.md §PF186]
 var _adminDocEquipoCache_ = null;
 
@@ -65,6 +72,8 @@ function _adminDocLeerEquipo_() {
     return null;
   }
   var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  var copasPorTag = _adminDocCopasPorTag_(ss); // PF189: copas actuales de cada cuenta (hoja Players)
+  var cuentaPorTag = {}; // PF189: tag -> cuenta (cualquier estado), para ubicar las cuentas preferidas
 
   var porClan = {};   // tag -> { nombre, lideres: [cuenta], colideres: [cuenta] }
   var personas = {};  // clave de persona (celular o tag) -> { cuentas: [cuenta], admin: bool }
@@ -107,8 +116,10 @@ function _adminDocLeerEquipo_() {
       tag: String(f[IC.TAG - 1] || '').trim(),
       clanTag: tagClan,
       rango: rango,
-      activo: estado === 'Activo'
+      activo: estado === 'Activo',
+      copas: copasPorTag[String(f[IC.TAG - 1] || '').trim()] || 0
     };
+    if (cuenta.tag) cuentaPorTag[cuenta.tag] = cuenta;
 
     if (!personas[clavePersona]) personas[clavePersona] = { cuentas: [], admin: false };
     personas[clavePersona].cuentas.push(cuenta);
@@ -128,8 +139,36 @@ function _adminDocLeerEquipo_() {
     return null;
   }
 
-  _adminDocEquipoCache_ = { porClan: porClan, personas: personas, nombresClan: nombresClan, nombresPorTag: nombresPorTag };
+  // PF189: persona (por celular) -> cuenta que se muestra si no tiene ninguna cuenta presente en el clan.
+  var preferidas = {};
+  for (var tp in ADMIN_DOC_CUENTAS_PREFERIDAS) {
+    var cp = cuentaPorTag[tp];
+    if (cp) {
+      preferidas[cp.persona] = cp;
+    } else {
+      Logger.log('[AdminDoc] La cuenta indicada ' + tp + ' (' + ADMIN_DOC_CUENTAS_PREFERIDAS[tp] + ') no está en Directorio: no se puede ubicar a su persona por celular.');
+    }
+  }
+
+  _adminDocEquipoCache_ = { porClan: porClan, personas: personas, nombresClan: nombresClan, nombresPorTag: nombresPorTag, preferidas: preferidas };
   return _adminDocEquipoCache_;
+}
+
+// _adminDocCopasPorTag_(ss): tag -> copas actuales según la hoja Players ({} si no se puede leer; entonces todas cuentan 0 y desempata el nombre). [→ Contexto_Base_Web.md §PF189]
+function _adminDocCopasPorTag_(ss) {
+  var res = {};
+  try {
+    var sh = ss.getSheetByName(CFG.SHEETS.PLAYERS);
+    if (!sh || sh.getLastRow() < 2) return res;
+    var datos = sh.getRange(2, 1, sh.getLastRow() - 1, PC.COPAS).getValues();
+    for (var i = 0; i < datos.length; i++) {
+      var tg = String(datos[i][PC.TAG - 1] || '').trim();
+      if (tg) res[tg] = Number(datos[i][PC.COPAS - 1]) || 0;
+    }
+  } catch (e) {
+    Logger.log('[AdminDoc] No se pudieron leer las copas de la hoja Players: ' + e.message);
+  }
+  return res;
 }
 
 // _adminDocNombresDeHojaClan_(ss): tag -> nombre del clan según la hoja Clan ({} si la hoja no existe o está vacía). [→ Contexto_Base_Web.md §PF187]
@@ -189,17 +228,48 @@ function _adminDocOrdenNombres_(cuentas) {
   return lista;
 }
 
-// _adminDocLineas_(cuentas): una línea por persona (mismo celular): si una persona tiene varias cuentas en la lista, van juntas en una sola línea separadas por « / ». Las líneas salen ordenadas sin distinguir mayúsculas. [→ Contexto_Base_Web.md §PF186]
-function _adminDocLineas_(cuentas) {
-  var porPersona = {}, claves = [];
+// _adminDocMejorPorCopas_(cuentas): la cuenta con más copas; si empatan, la de mayor rango y, luego, la de nombre menor. [→ Contexto_Base_Web.md §PF189]
+function _adminDocMejorPorCopas_(cuentas) {
+  var orden = { lider: 1, colider: 2, veterano: 3, miembro: 4 };
+  var mejor = null;
+  for (var i = 0; i < cuentas.length; i++) {
+    var c = cuentas[i];
+    if (!mejor) { mejor = c; continue; }
+    var cc = c.copas || 0, cm = mejor.copas || 0;
+    if (cc > cm) { mejor = c; continue; }
+    if (cc < cm) continue;
+    var oc = orden[c.rango] || 5, om = orden[mejor.rango] || 5;
+    if (oc < om || (oc === om && c.nombre.toLowerCase() < mejor.nombre.toLowerCase())) mejor = c;
+  }
+  return mejor;
+}
+
+// _adminDocCuentaAMostrar_(equipo, personaKey, tagClan): la única cuenta que se muestra de una persona. 1.º la cuenta activa presente en ese clan con más copas (con tagClan vacío, en cualquiera de los clanes oficiales); 2.º si no tiene ninguna, la cuenta indicada para esa persona (ADMIN_DOC_CUENTAS_PREFERIDAS); 3.º si tampoco, su cuenta principal (la de mayor rango). Devuelve null si no hay nada que mostrar. [→ Contexto_Base_Web.md §PF189]
+function _adminDocCuentaAMostrar_(equipo, personaKey, tagClan) {
+  var p = equipo.personas[personaKey];
+  if (!p) return null;
+  var presentes = [];
+  for (var i = 0; i < p.cuentas.length; i++) {
+    var c = p.cuentas[i];
+    if (!c.activo) continue;
+    if (tagClan ? c.clanTag === tagClan : !!equipo.porClan[c.clanTag]) presentes.push(c);
+  }
+  if (presentes.length > 0) return _adminDocMejorPorCopas_(presentes);
+  if (equipo.preferidas && equipo.preferidas[personaKey]) return equipo.preferidas[personaKey];
+  return _adminDocCuentaPrincipal_(p);
+}
+
+// _adminDocLineas_(cuentas, equipo, tagClan): una línea por persona (mismo celular), con una sola cuenta (ver _adminDocCuentaAMostrar_). Las líneas salen ordenadas sin distinguir mayúsculas. [→ Contexto_Base_Web.md §PF189]
+function _adminDocLineas_(cuentas, equipo, tagClan) {
+  var vistos = {}, lineas = [];
   for (var i = 0; i < cuentas.length; i++) {
     var c = cuentas[i];
     var k = c.persona || ('tag:' + c.tag);
-    if (!porPersona[k]) { porPersona[k] = []; claves.push(k); }
-    porPersona[k].push(c);
+    if (vistos[k]) continue;
+    vistos[k] = true;
+    var mostrar = _adminDocCuentaAMostrar_(equipo, k, tagClan) || c;
+    lineas.push(mostrar.nombre);
   }
-  var lineas = [];
-  for (var j = 0; j < claves.length; j++) lineas.push(_adminDocOrdenNombres_(porPersona[claves[j]]).join(' / '));
   lineas.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase(), 'es'); });
   return lineas;
 }
@@ -213,15 +283,15 @@ function _adminDocPersonaTieneCuenta_(persona, tagClan, rangos) {
   return false;
 }
 
-// _adminDocAdminsExtra_(equipo, tagClan): cuenta principal de cada administrador real (Admin = Sí) que NO es líder ni colíder de ese clan. [→ Contexto_Base_Web.md §PF186]
+// _adminDocAdminsExtra_(equipo, tagClan): una cuenta de cada administrador real (Admin = Sí) que NO es líder, colíder ni veterano de ese clan. [→ Contexto_Base_Web.md §PF186]
 function _adminDocAdminsExtra_(equipo, tagClan) {
   var extra = [];
   for (var k in equipo.personas) {
     var p = equipo.personas[k];
     if (!p.admin) continue;
     if (_adminDocPersonaTieneCuenta_(p, tagClan, ['lider', 'colider', 'veterano'])) continue; // PF188: los veteranos admin ya salen en «Veteranos»
-    var principal = _adminDocCuentaPrincipal_(p);
-    if (principal) extra.push(principal);
+    var mostrar = _adminDocCuentaAMostrar_(equipo, k, tagClan);
+    if (mostrar) extra.push({ persona: k, nombre: mostrar.nombre, tag: mostrar.tag }); // PF189: la cuenta final se vuelve a elegir en _adminDocLineas_
   }
   return extra;
 }
@@ -263,7 +333,7 @@ function _adminDocEncabezado_(texto) {
 // _adminDocAplicarClan_(body, equipo, tag, clanNombre): reescribe los grupos del Doc de un clan; devuelve true si cambió algo. [→ Contexto_Base_Web.md §PF186]
 function _adminDocAplicarClan_(body, equipo, tag, clanNombre) {
   var clan = equipo.porClan[tag];
-  var lideres = _adminDocLineas_(clan.lideres);
+  var lideres = _adminDocLineas_(clan.lideres, equipo, tag);
   if (lideres.length === 0) {
     Logger.log('[AdminDoc] "' + clanNombre + '" no tiene líder activo en Directorio: no se toca su Doc.');
     return false;
@@ -275,7 +345,7 @@ function _adminDocAplicarClan_(body, equipo, tag, clanNombre) {
     var per = equipo.personas[cu.persona];
     if (per && per.admin) colAdmin.push(cu); else colOtros.push(cu);
   }
-  var colideres = _adminDocLineas_(colAdmin);
+  var colideres = _adminDocLineas_(colAdmin, equipo, tag);
   if (colideres.length === 0) colideres = ['Sin colíderes administradores por el momento'];
   // PF188 (24-oct-2026, pedido de la usuaria): los veteranos que son administradores van en su propia lista «Veteranos»; «Otros administradores» queda para los admins que no son líder, colíder ni veterano de este clan.
   var vetAdmin = [];
@@ -284,9 +354,9 @@ function _adminDocAplicarClan_(body, equipo, tag, clanNombre) {
     var pv = equipo.personas[cv.persona];
     if (pv && pv.admin) vetAdmin.push(cv);
   }
-  var veteranos = _adminDocLineas_(vetAdmin);
-  var admins = _adminDocLineas_(_adminDocAdminsExtra_(equipo, tag));
-  var otros = _adminDocLineas_(colOtros);
+  var veteranos = _adminDocLineas_(vetAdmin, equipo, tag);
+  var admins = _adminDocLineas_(_adminDocAdminsExtra_(equipo, tag), equipo, tag);
+  var otros = _adminDocLineas_(colOtros, equipo, tag);
 
   // Orden del bloque: Líder, Colíderes, Veteranos, Otros administradores, Otros colíderes. Cada grupo nuevo se coloca tras el último de los anteriores que exista en el Doc. [→ Contexto_Base_Web.md §PF188]
   var cambio = false;
@@ -337,12 +407,17 @@ function _adminDocPrefEncabezados_(body, textoPorDefecto) {
   return _adminDocPrefijo_(textoPorDefecto);
 }
 
-// _adminDocSetTexto_(par, texto): cambia el texto de un párrafo conservando el formato del primer carácter. [→ Contexto_Base_Web.md §PF186]
+// _adminDocSetTexto_(par, texto): cambia el texto de un párrafo conservando el formato (negrita, tamaño, color…) del primer carácter que no sea espacio; así la sangría no hace perder la negrita que la usuaria haya puesto a mano. [→ Contexto_Base_Web.md §PF189]
 function _adminDocSetTexto_(par, texto) {
   var t = par.editAsText();
-  var viejo = t.getText().length;
+  var previo = t.getText();
+  var viejo = previo.length;
+  var idx = 0;
+  while (idx < viejo - 1 && /\s/.test(previo.charAt(idx))) idx++;
+  var atributos = viejo > 0 ? t.getAttributes(idx) : null;
   t.insertText(0, texto);
   if (viejo > 0) t.deleteText(texto.length, texto.length + viejo - 1);
+  if (atributos && texto.length > 0) t.setAttributes(0, texto.length - 1, atributos);
 }
 
 // _adminDocGrupo_(body, clave, nombres, despuesDe, titulo): deja el grupo con exactamente esos nombres. Si no existe y hay nombres, lo crea después del grupo «despuesDe» con el encabezado «titulo»; si existe y no hay nombres, lo quita. Devuelve true si cambió algo. [→ Contexto_Base_Web.md §PF186]
@@ -440,7 +515,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
     // Línea «Líder: nombre» del clan que se acaba de ver.
     var mLid = tx.match(/^(\s*L[ií]der:\s*)/);
     if (mLid && tagActual) {
-      var lideres = _adminDocLineas_(equipo.porClan[tagActual].lideres);
+      var lideres = _adminDocLineas_(equipo.porClan[tagActual].lideres, equipo, tagActual);
       if (lideres.length > 0) {
         var nuevo = lideres.join(' / ');
         var actual = tx.substring(mLid[1].length).replace(/\s+/g, ' ').trim();
@@ -471,7 +546,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
       if (cu.activo && cu.rango === 'colider' && equipo.porClan[cu.clanTag]) colideres.push(cu);
     }
   }
-  var nombres = _adminDocLineas_(colideres);
+  var nombres = _adminDocLineas_(colideres, equipo, '');
   if (nombres.length === 0) nombres = ['Sin colíderes por el momento'];
   cambio = _adminDocGrupo_(body, 'colideres', nombres, null) || cambio;
 
