@@ -233,6 +233,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF214` | **Ruleta del sorteo: «Cantidad de premios» solo en modo manual y columna de reglas más ancha (24-oct-2026, pedido de la usuaria; SIN PROBAR en navegador real):** con un sorteo cargado la cantidad de premios sale de su lista de premios y la fila se oculta; con ingreso manual se conserva. |
 | `PF215` | **Ruleta del sorteo: cada nombre en su propia franja (24-oct-2026, pedido de la usuaria; SIN PROBAR con datos reales):** las etiquetas estaban corridas 90° respecto de sus franjas; se corrige la rotación y se ajusta la letra al ancho de cada franja. |
 | `PF216` | **Ruleta del sorteo: escudo del centro más grande (24-oct-2026, pedido de la usuaria; SIN PROBAR en móvil):** `.hub-escudo` pasa de 84 % a 100 % del círculo central. |
+| `PF217` | **Ruleta del sorteo: cabecera con un solo título (24-oct-2026, pedido de la usuaria; SIN PROBAR en navegador real):** se quitan «Volver al panel admin», «Sorteo en vivo» y «Se transmite en vivo»; el título queda «ᴳ乂ᵀ ⚜️ Familia Terna - Sorteo en vivo». |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -5564,3 +5565,9 @@ Responde el «sí» de la usuaria a §PF158 y **corrige dos puntos de lo que ah�
 - **Pedido.** «Haz el escudo un poco más grande para que no quede todo ese espacio vacío en el centro» (continúa `PF210`).
 - **Qué se cambió (`sorteo.html`, `sw.js` v174).** `.hub-escudo` de `width/height:84%` a `100%`. El PNG tiene margen transparente (contenido de 256×275 px en 320×320), así que al 84 % el escudo ocupaba solo ~70 % del círculo.
 - **Lo que se probó y no sirvió.** 112 %: las puntas del escudo se salen del círculo blanco y pisan las franjas. Con 100 % queda dentro y centrado (centro del escudo = centro del círculo, medido con Chromium en 1500×900). Si se quiere aún más grande, hay que agrandar el círculo `.hub` (19 %), no el escudo.
+
+### PF217 — Ruleta del sorteo: cabecera con un solo título (24-oct-2026, pedido de la usuaria; SIN PROBAR en navegador real)
+
+- **Pedido.** Quitar el botón «Volver al panel admin», el rótulo «Sorteo en vivo» y la descripción «Se transmite en vivo»; dejar solo «ᴳ乂ᵀ ⚜️ Familia Terna - Sorteo en vivo».
+- **Qué se cambió (`sorteo.html`, `sw.js` v175).** Se borran el enlace a `admin.html`, `<p class="eyebrow">` y `<input id="descInput">`, y las reglas CSS `.eyebrow` y `.desc-input` de esa página (sin uso). `#titleInput` sigue siendo editable y trae el nuevo texto de partida. En `exportDoc()` la descripción pasa a ser `''` (leía `#descInput`, que ya no existe); el acta no lleva subtítulo. Con `max-width:560px` el título baja a `clamp(12px,3.8vw,22px)` para caber en una línea (medido en 320, 390, 560, 960 y 1500 px).
+- **Consecuencia a tener en cuenta.** La página ya no tiene enlace de regreso al panel: se vuelve con el botón «atrás» del navegador o abriendo `admin.html`. El título (con el texto nuevo) es también el que aparece en el acta Word.
