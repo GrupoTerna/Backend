@@ -972,6 +972,7 @@ function _reemplazarListaParticipantes(body, grupos) {
     textoHeader.setFontSize(12);
     // El texto nuevo podía heredar subrayado y color azul/morado (estilo [→ Contexto_Base_Web.md §28B072]
     textoHeader.setUnderline(false);
+    textoHeader.setItalic(false); // PF204: no hereda la cursiva de la línea «Ningún participante calificado.» del clan anterior
     textoHeader.setForegroundColor('#000000');
     textoHeader.setLinkUrl(null);
 
@@ -1009,6 +1010,7 @@ function _insertarParrafoEspaciador(body, insertAt) {
   t.setFontFamily('Arial');
   t.setFontSize(12);
   t.setUnderline(false);
+  t.setItalic(false); // PF204: ver el encabezado de clan
   t.setForegroundColor('#000000');
   t.setLinkUrl(null);
   return insertAt + 1;
@@ -1057,6 +1059,7 @@ function _insertarLineaParticipante(body, insertAt, nombre, puntaje) {
   t.setFontSize(0, fin, 12);
   t.setBold(0, fin, false);
   t.setUnderline(0, fin, false);
+  t.setItalic(0, fin, false); // PF204: ver el encabezado de clan
   t.setForegroundColor(0, fin, '#000000');
   t.setLinkUrl(0, fin, null);
 
