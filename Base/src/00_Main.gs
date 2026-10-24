@@ -1267,6 +1267,9 @@ function capturarApiClanes_(maxEdadMs, origen) {
   // PF091 (17-oct-2026): primera consulta de cada clan y periodo (todas las corridas, tambien la ventana: solo una propiedad
   // de script) y, FUERA de la ventana, los JSON de clans y currentriverrace con las mismas respuestas (sin API).
   _registrarPrimeraConsultaDesdeCaptura_();
+  // PF194 (23-oct-2026): foto de la fama acumulada de cada clan (propios y rivales) para poder mostrar la fama de HOY en el pronóstico de guerra. Solo una propiedad de script; si falla, la captura sigue. [→ Contexto_Base_Web.md §PF194]
+  try { _pronosticoRegistrarFotoDia_(); }
+  catch (eFotoDia) { Logger.log('[Captura] No se pudo guardar la foto diaria de fama: ' + eFotoDia.message); }
   if (origen !== 'ventana') _guardarJsonClanesDesdeCaptura_();
   Logger.log('[Captura] FIN (' + (origen || 'sin origen') + ', ' + Math.round((Date.now() - t0) / 1000) + ' s)');
   return datos;
