@@ -228,23 +228,23 @@ function _adminDocOrdenNombres_(cuentas) {
   return lista;
 }
 
-// _adminDocMejorPorCopas_(cuentas): primero el criterio de mayor rango (líder, colíder, veterano, miembro) y, entre las cuentas de ese rango, la que tenga más copas; si siguen empatadas, la de nombre menor. [→ Contexto_Base_Web.md §PF190]
+// _adminDocMejorPorCopas_(cuentas): la cuenta con más copas; si empatan, la de mayor rango y, luego, la de nombre menor. [→ Contexto_Base_Web.md §PF189]
 function _adminDocMejorPorCopas_(cuentas) {
   var orden = { lider: 1, colider: 2, veterano: 3, miembro: 4 };
   var mejor = null;
   for (var i = 0; i < cuentas.length; i++) {
     var c = cuentas[i];
     if (!mejor) { mejor = c; continue; }
-    var oc = orden[c.rango] || 5, om = orden[mejor.rango] || 5;
-    if (oc < om) { mejor = c; continue; }
-    if (oc > om) continue;
     var cc = c.copas || 0, cm = mejor.copas || 0;
-    if (cc > cm || (cc === cm && c.nombre.toLowerCase() < mejor.nombre.toLowerCase())) mejor = c;
+    if (cc > cm) { mejor = c; continue; }
+    if (cc < cm) continue;
+    var oc = orden[c.rango] || 5, om = orden[mejor.rango] || 5;
+    if (oc < om || (oc === om && c.nombre.toLowerCase() < mejor.nombre.toLowerCase())) mejor = c;
   }
   return mejor;
 }
 
-// _adminDocCuentaAMostrar_(equipo, personaKey, tagClan): la única cuenta que se muestra de una persona. 1.º entre las cuentas activas presentes en ese clan (con tagClan vacío, en cualquiera de los clanes oficiales), la de mayor rango y, entre las de ese rango, la de más copas; 2.º si no tiene ninguna, la cuenta indicada para esa persona (ADMIN_DOC_CUENTAS_PREFERIDAS); 3.º si tampoco, su cuenta principal (la de mayor rango). Devuelve null si no hay nada que mostrar. [→ Contexto_Base_Web.md §PF189]
+// _adminDocCuentaAMostrar_(equipo, personaKey, tagClan): la única cuenta que se muestra de una persona. 1.º la cuenta activa presente en ese clan con más copas (con tagClan vacío, en cualquiera de los clanes oficiales); 2.º si no tiene ninguna, la cuenta indicada para esa persona (ADMIN_DOC_CUENTAS_PREFERIDAS); 3.º si tampoco, su cuenta principal (la de mayor rango). Devuelve null si no hay nada que mostrar. [→ Contexto_Base_Web.md §PF189]
 function _adminDocCuentaAMostrar_(equipo, personaKey, tagClan) {
   var p = equipo.personas[personaKey];
   if (!p) return null;
