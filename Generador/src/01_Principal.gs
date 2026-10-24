@@ -157,6 +157,67 @@ function subirGeneradorDesdeGithubForzado() {
 
 
 // ------------------------------------------------------------------
+// CONTACTOS_SECUNDARIO (proyecto de Apps Script de la cuenta secundaria, 23-oct-2026)
+// Mismas funciones que Base y Generador: descargar (Apps Script -> Drive + GitHub),
+// subir desde zip/txt/gs/md y subir desde GitHub. Carpeta en GitHub: Contactos_Secundario/src/.
+// REQUISITOS: (1) propiedad SCRIPT_ID_CONTACTOS_SECUNDARIO en las Propiedades del script de
+// este proyecto (el ID no va en el código); (2) el proyecto secundario compartido con la cuenta
+// del Generador como editor. La PRIMERA vez corre descargarContactos(), para que GitHub traiga
+// también el appsscript.json real (servicio People) antes de usar subirContactosDesdeGithub().
+// ------------------------------------------------------------------
+
+/** Descarga el código del proyecto secundario y crea Contactos_Secundario.zip/.gs/.txt/.md (y sincroniza GitHub) */
+function descargarContactos() {
+  _descargarProyectoAArchivos('Contactos_Secundario');
+  _githubSincronizar_('Contactos_Secundario');
+}
+
+/** Igual que descargarContactos(), pero escribe en GitHub aunque haya un "pull pendiente" (lo de GitHub se pierde). */
+function descargarContactosForzado() {
+  _descargarProyectoAArchivos('Contactos_Secundario');
+  _githubSincronizar_('Contactos_Secundario', true);
+}
+
+function subirContactosDesdeZip() {
+  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'zip');
+  _githubSincronizar_('Contactos_Secundario');
+  return reporte;
+}
+
+function subirContactosDesdeTxt() {
+  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'txt');
+  _githubSincronizar_('Contactos_Secundario');
+  return reporte;
+}
+
+function subirContactosDesdeGs() {
+  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'gs');
+  _githubSincronizar_('Contactos_Secundario');
+  return reporte;
+}
+
+function subirContactosDesdeMd() {
+  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'md');
+  _githubSincronizar_('Contactos_Secundario');
+  return reporte;
+}
+
+/**
+ * Sube Contactos_Secundario/src/ de GitHub: deja el proyecto de Apps Script de la cuenta secundaria
+ * EXACTAMENTE igual (lo que no esté en GitHub se elimina del proyecto). Antes guarda en Drive
+ * "Contactos_Secundario_antes_de_GitHub.zip" y al terminar regenera los respaldos.
+ */
+function subirContactosDesdeGithub() {
+  return _githubTraerAProyectoApps_('Contactos_Secundario', false);
+}
+
+/** Igual que subirContactosDesdeGithub(), pero sin la salvaguarda de "src/ incompleta". */
+function subirContactosDesdeGithubForzado() {
+  return _githubTraerAProyectoApps_('Contactos_Secundario', true);
+}
+
+
+// ------------------------------------------------------------------
 // MANTENIMIENTO (uso ocasional / peligroso)
 // ------------------------------------------------------------------
 

@@ -296,6 +296,8 @@ function _descargarProyectoAArchivos(nombreBase) {
     if (!scriptId) throw 'No hay scriptId guardado para Base. Corre subirBaseDesdeZip() (o cualquier subirBaseDesdeX) primero.';
   } else if (nombreBase === 'Generador') {
     scriptId = ScriptApp.getScriptId(); 
+  } else if (nombreBase === 'Contactos_Secundario') {
+    scriptId = _scriptIdDeProyecto_(nombreBase); // propiedad SCRIPT_ID_CONTACTOS_SECUNDARIO (ver 08_GitHub.gs)
   } else {
     throw 'Nombre de proyecto no válido: ' + nombreBase;
   }
@@ -554,6 +556,8 @@ function actualizarScriptDeHoja(ssId, archivosNuevos, nombreBase) {
   var scriptId;
   if (nombreBase && nombreBase === 'Generador') {
     scriptId = ScriptApp.getScriptId();
+  } else if (nombreBase && nombreBase === 'Contactos_Secundario') {
+    scriptId = _scriptIdDeProyecto_(nombreBase);
   } else {
     var props = PropertiesService.getScriptProperties();
     var clavePropiedad = 'SCRIPT_ID_' + ssId;
