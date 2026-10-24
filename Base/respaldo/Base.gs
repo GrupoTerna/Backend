@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 15:02:57 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 15:10:48 */
 
 
 
@@ -4179,7 +4179,7 @@ function _setupTAsistencia(ss) {
 function _setupSAsistencia(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_ASISTENCIA);
   var headers = ['N°', 'Fecha', 'ID', 'Temporada', 'Tag', 'Nombre', 'Nom_Multi',
-                  'Préstamo', 'ClanTag', 'Clan', 'Tickets', 'Premio', 'Resultado', 'Razón'];
+                  'Préstamo', 'ClanTag', 'Clan', 'Tickets', 'Premio', 'Resultado', 'Razón', 'Ganó'];
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
 
@@ -4198,6 +4198,20 @@ function _setupSAsistencia(ss) {
   var dvRazon = SpreadsheetApp.newDataValidation().requireValueInList(valoresRazon, true).setAllowInvalid(false).build();
   sh.getRange(2, SA.RAZON, ultimaFila - 1, 1).setDataValidation(dvRazon);
   sh.getRange(1, SA.RAZON).clearNote();
+
+  // PF222 (24-oct-2026): columna «Ganó» (15). Dropdown Sí/No; las filas que ya existían eran solo de ganadores, así que su Ganó vacío pasa a «Sí» (idempotente).
+  var dvGano = SpreadsheetApp.newDataValidation().requireValueInList([SA_GANO_SI, SA_GANO_NO], true).setAllowInvalid(false).build();
+  sh.getRange(2, SA.GANO, ultimaFila - 1, 1).setDataValidation(dvGano);
+  if (sh.getLastRow() >= 2) {
+    var rngId = sh.getRange(2, SA.ID, sh.getLastRow() - 1, 1).getValues();
+    var rngGano = sh.getRange(2, SA.GANO, sh.getLastRow() - 1, 1);
+    var valGano = rngGano.getValues();
+    var cambio = false;
+    for (var g = 0; g < valGano.length; g++) {
+      if (String(valGano[g][0] || '').trim() === '' && String(rngId[g][0] || '').trim() !== '') { valGano[g][0] = SA_GANO_SI; cambio = true; }
+    }
+    if (cambio) rngGano.setValues(valGano);
+  }
 
   _protegerSoloAdvertencia(sh);
   Logger.log('[Setup] S_Asistencia OK (estructura + dropdown de Resultado y de Razón)');
@@ -5967,7 +5981,7 @@ function respaldarIndiceYProtegidasCSV(soloClave) {
 
   // RESUELTO (10-sep-2026, pedido usuario -- ver Consolidado_Cambios_ [→ Contexto_Base_Web.md §05B017]
   if (_tocaProtegida_(soloClave, 'S_ASISTENCIA')) try {
-    _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_ASISTENCIA], true, SA.ID);
+    _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_ASISTENCIA], true, SA.ID, (function () { var m = {}; m[SA.FECHA] = true; return m; })()); // PF222: Fecha como número (ms), no como texto
   } catch (eSA) {
     Logger.log('[Backup] ERROR respaldando S_Asistencia: ' + eSA.message + ' -- se continúa con el resto de hojas protegidas.');
   }
@@ -35098,10 +35112,15 @@ var GV_TOTAL_COLS = 4;
 // NUEVO (09-sep-2026, pedido usuario; columna Tickets agregada [→ Contexto_Base_Web.md §26B082]
 var SA = {
   NUM:1, FECHA:2, ID:3, TEMPORADA:4, TAG:5, NOMBRE:6, NOM_MULTI:7,
-  PRESTAMO:8, CLAN_TAG:9, CLAN:10, TICKETS:11, PREMIO:12, RESULTADO:13, RAZON:14
+  PRESTAMO:8, CLAN_TAG:9, CLAN:10, TICKETS:11, PREMIO:12, RESULTADO:13, RAZON:14, GANO:15
 };
 
-var SA_TOTAL_COLS = 14;
+var SA_TOTAL_COLS = 15;
+
+// PF222 (24-oct-2026, pedido de la usuaria): columna «Ganó» (15, al final para no mover Resultado ni Razón en hojas que ya tienen datos). 'Sí' = salió sorteado y tiene resolución;
+// 'No' = participó en el sorteo pero no ganó. Una fila vieja con Ganó vacío es de un ganador (antes S_Asistencia solo guardaba ganadores). [→ Contexto_Base_Web.md §PF222]
+var SA_GANO_SI = 'Sí';
+var SA_GANO_NO = 'No';
 
 // Columnas fijas de T_Control (antes de las columnas dinámicas por torneo).
 var TCC = { NUM:1, TAG:2, NOMBRE:3, NOM_MULTI:4, PRESTAMO:5, CLAN_TAG:6, CLAN:7 };
@@ -35516,6 +35535,8 @@ function importarSAsistenciaDesdeCSV() {
     // Fecha: mismo tratamiento que importarTAsistenciaDesdeCSV() le da a [→ Contexto_Base_Web.md §26B124]
     var fechaObj = _parseSpanishDate(newR[SA.FECHA - 1]);
     if (fechaObj instanceof Date && !isNaN(fechaObj.getTime())) newR[SA.FECHA - 1] = fechaObj;
+    // PF222: un CSV anterior a la columna «Ganó» solo traía ganadores.
+    if (String(newR[SA.GANO - 1] || '').trim() === '' && String(newR[SA.ID - 1] || '').trim() !== '') newR[SA.GANO - 1] = SA_GANO_SI;
     return newR;
   });
 
@@ -38169,6 +38190,7 @@ function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, ra
   fila[SA.PREMIO - 1]    = String(premio || '').trim();
   fila[SA.RESULTADO - 1] = resultado;
   fila[SA.RAZON - 1]     = razonTexto;
+  fila[SA.GANO - 1]      = SA_GANO_SI; // PF222: quien tiene resolución salió sorteado
 
   if (filaExistente > 0) {
     sh.getRange(filaExistente, 1, 1, SA_TOTAL_COLS).setValues([fila]);
@@ -38184,6 +38206,71 @@ function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, ra
              (registradoPor ? ', registrado por ' + registradoPor : '') + '.');
 
   return { ok: true };
+}
+
+/**
+ * PF222 (24-oct-2026, pedido de la usuaria). _sincronizarParticipantesSorteoSA(idSorteo, clanes): deja en S_Asistencia a TODOS los que participaron en el sorteo,
+ * no solo a los ganadores. `clanes` es la lista de calificados que arma _webSorteoCalificados() ([{nombre, calificados:[{tag, nombre, tickets}]}]).
+ * Por cada participante sin fila en este sorteo agrega una con Ganó = «No» (sin Premio, Resultado ni Razón). Las filas que ya existen (ganadores o participantes)
+ * no se tocan, así que nunca baja un «Sí» a «No». La Fecha se guarda como fecha real (número de Sheets con formato dd/mm/yyyy), no como texto. Devuelve cuántas agregó.
+ */
+function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
+  var idNorm = String(idSorteo || '').trim();
+  if (!idNorm || !Array.isArray(clanes)) return { ok: false, agregadas: 0 };
+  var ss = _getSs();
+  var filaSorteo = _getFilaSListaPorId(ss, idNorm);
+  if (!filaSorteo) return { ok: false, agregadas: 0 };
+
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_ASISTENCIA);
+  var yaEstan = {};
+  var siguienteNum = 1;
+  if (sh.getLastRow() >= 2) {
+    var existentes = sh.getRange(2, 1, sh.getLastRow() - 1, SA_TOTAL_COLS).getValues();
+    siguienteNum = existentes.length + 1;
+    for (var e = 0; e < existentes.length; e++) {
+      if (String(existentes[e][SA.ID - 1] || '').trim() !== idNorm) continue;
+      var tagEx = String(existentes[e][SA.TAG - 1] || '').trim().toUpperCase();
+      if (tagEx) yaEstan[tagEx] = true;
+    }
+  }
+
+  var mapaDir = _getDirectorioLookupPorTag(ss);
+  var filas = [];
+  clanes.forEach(function (c) {
+    (c && c.calificados || []).forEach(function (p) {
+      var tagNorm = String(p.tag || '').trim().toUpperCase();
+      if (!tagNorm) return;
+      var tagHash = tagNorm.charAt(0) === '#' ? tagNorm : '#' + tagNorm;
+      if (yaEstan[tagHash]) return;
+      yaEstan[tagHash] = true;
+      var info = mapaDir[tagHash] || { nomMulti: '', prestamo: '', clanTag: '', clan: '' };
+      var fila = [];
+      fila[SA.NUM - 1]       = siguienteNum++;
+      fila[SA.FECHA - 1]     = filaSorteo.fecha;
+      fila[SA.ID - 1]        = idNorm;
+      fila[SA.TEMPORADA - 1] = filaSorteo.temporada;
+      fila[SA.TAG - 1]       = tagHash;
+      fila[SA.NOMBRE - 1]    = String(p.nombre || '');
+      fila[SA.NOM_MULTI - 1] = info.nomMulti || '';
+      fila[SA.PRESTAMO - 1]  = info.prestamo || '';
+      fila[SA.CLAN_TAG - 1]  = info.clanTag || '';
+      fila[SA.CLAN - 1]      = info.clan || (c.nombre || '');
+      fila[SA.TICKETS - 1]   = Number(p.tickets) >= 0 ? Number(p.tickets) : '';
+      fila[SA.PREMIO - 1]    = '';
+      fila[SA.RESULTADO - 1] = '';
+      fila[SA.RAZON - 1]     = '';
+      fila[SA.GANO - 1]      = SA_GANO_NO;
+      filas.push(fila);
+    });
+  });
+  if (!filas.length) return { ok: true, agregadas: 0 };
+
+  var primera = sh.getLastRow() + 1;
+  sh.getRange(primera, 1, filas.length, SA_TOTAL_COLS).setValues(filas);
+  sh.getRange(primera, SA.FECHA, filas.length, 1).setNumberFormat('dd/mm/yyyy');
+  applyBorderCenter(sh.getRange(primera, 1, filas.length, SA_TOTAL_COLS));
+  Logger.log('[Sorteos] S_Asistencia: ' + filas.length + ' participante(s) agregado(s) con Ganó = No (sorteo ' + idNorm + ').');
+  return { ok: true, agregadas: filas.length };
 }
 
 /**
@@ -40114,6 +40201,9 @@ function actualizarDocGanadoresSorteo(extra) {
     for (var j = 0; j < datosSA.length; j++) {
       var fila = datosSA[j];
       if (String(fila[SA.ID - 1] || '').trim() !== idMasRecienteStr) continue;
+      // PF222: S_Asistencia ahora lista a todos los participantes; el documento solo muestra a los ganadores (Ganó = Sí; vacío = fila anterior, de ganador).
+      var ganoTxt = String(fila[SA.GANO - 1] || '').trim();
+      if (ganoTxt !== '' && ganoTxt !== SA_GANO_SI) continue;
       ganadores.push({
         nombre:  String(fila[SA.NOMBRE - 1] || ''),
         clan:    String(fila[SA.CLAN - 1] || ''),
@@ -50447,11 +50537,23 @@ function _webAdminSorteoResolucionGuardar(token, datos) {
   var admin = _webAuthObtenerAdmin(token);
   var registradoPor = admin ? (admin.nombre || admin.tag || '') : '';
 
-  return _registrarResolucionSorteo(
+  var resRes = _registrarResolucionSorteo(
     datos.idSorteo, datos.tag, datos.nombre, datos.premio,
     datos.resultado, datos.razon, !!datos.permitirSinTag, registradoPor,
     datos.tickets
   );
+  // PF222 (24-oct-2026): con el ganador ya guardado, S_Asistencia completa al resto de participantes del sorteo (Ganó = No). Si esto falla no se
+  // pierde el ganador: el error solo se anota en el log y la siguiente resolución lo vuelve a intentar.
+  if (resRes && resRes.ok) {
+    try {
+      var calif = _webSorteoCalificados(token, datos.idSorteo, false);
+      if (calif && calif.ok) _sincronizarParticipantesSorteoSA(datos.idSorteo, calif.clanes);
+      else Logger.log('[Sorteos] No se listaron los participantes en S_Asistencia: ' + ((calif && calif.error) || 'sin detalle'));
+    } catch (eParts) {
+      Logger.log('[Sorteos] Error listando participantes en S_Asistencia: ' + eParts.message);
+    }
+  }
+  return resRes;
 }
 
 // _webAdminSorteoActualizarDocGanadores(): FASE (12-sep-2026, pedido del usuario -- consolidado de pendientes, punto 1 "botón Exportar de sorteo.html"): hasta este cambio, el docx real "Ganadores (sorteo)" solo se actualizaba una vez al día, dentro de procesarSorteos() ->… [→ Contexto_Base_Web.md §37B325]
