@@ -819,79 +819,37 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
   var nombreMes = _MESES_ES[mesEfectivo.mes];
   body.replaceText('\\[Mes\\]', nombreMes);
 
-  // 2. Requisitos leídos del propio documento. El mínimo de trofeos por [→ Contexto_Base_Web.md §28B058]
-  var requisitos = _parseRequisitosParticipantes(body);
-  if (Object.keys(requisitos.minTrofeosPorClan).length === 0) {
-    Logger.log('[ParticipantesCalificados] "' + nombreDoc + '": no se pudo leer el mínimo de trofeos por clan. Se omite la lista, solo se actualizó "[Mes]".');
+  // 2. Evaluación (24-oct-2026, pedido de la usuaria): la MISMA que usa el doc de NO calificados del sorteo y la
+  // web (_evaluarCalificacionSorteo_(), 29_Docs_NoCalificados.gs): promedio de las «Semanas» de S_Lista, ataques,
+  // torneos y barcos; ya NO se leen los mínimos del texto de este documento ni se usa el acumulado de la temporada. [→ Contexto_Base_Web.md §PF202]
+  var ev = _evaluarCalificacionSorteo_(ctxParam);
+  if (!ev) {
+    Logger.log('[ParticipantesCalificados] "' + nombreDoc + '": no se pudo evaluar el sorteo (ver el motivo en el registro [CalificacionSorteo]). Se deja la lista como estaba; solo se actualizó "[Mes]".');
     doc.saveAndClose();
     return;
   }
 
-  // 3. Cruce de datos.
-  var ss = _getSs();
-  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!shDir || shDir.getLastRow() < 2) { doc.saveAndClose(); return; }
-
-  // FIX (05-ago-2026) — mismo pedido que en los docs de torneo: la [→ Contexto_Base_Web.md §28B059]
-  var ctxReal = ctxParam || _getCtx();
-  var temporadaActual = _getTemporadaMostrarExtra(ss, ctxReal);
-  var ctxAtaques = _clonarCtxParaTemporada(ctxReal, temporadaActual);
-  // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers; ctxAtaques es el mismo ctx que arma por dentro el helper de trofeos; [→ Contexto_Base_Web.md §PF091]
-  var guerraDataUnica = _getDatosGuerraParaControl(ctxAtaques, ctxReal.temporada);
-  var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaActual, ctxReal, guerraDataUnica);
-  var torneosPorTag = requisitos.minTorneos ? _contarTorneosPorTagEnTemporada(ss, temporadaActual) : null;
-
-  // NUEVO (19-sep-2026, pedido del usuario): ataques + exonerados de la [→ Contexto_Base_Web.md §28B060]
-  var ataquesSemanaPorTag = (Object.keys(requisitos.minAtaquesPorClan).length > 0)
-    ? _getAtaquesYExentosSemanaActualPorTag(ctxAtaques, ctxReal.temporada, guerraDataUnica)
-    : {};
-
-  var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-
-  // Un array de calificados por cada clan (mismo orden que requisitos.ordenClanes).
+  // 3. Un array de calificados por cada clan (mismo orden que los requisitos de S_Lista).
   var porClan = {};
-  for (var ci = 0; ci < requisitos.ordenClanes.length; ci++) porClan[requisitos.ordenClanes[ci]] = [];
+  for (var ci = 0; ci < ev.ordenClanes.length; ci++) porClan[ev.ordenClanes[ci]] = [];
 
   var totalCalificados = 0;
-  for (var i = 0; i < dirData.length; i++) {
-    var r = dirData[i];
-    if (String(r[IC.ESTADO - 1]) !== 'Activo') continue;
-    if (CFG.TERNA_TAGS.indexOf(String(r[IC.CLAN_TAG - 1])) < 0) continue;
-    // Fase 10 (17/07/2026): se quita el `if (Vetado === 'Si') continue` — [→ Contexto_Base_Web.md §28B061]
-
-    var clan = String(r[IC.CLAN - 1] || '').trim();
-    if (!(clan in requisitos.minTrofeosPorClan)) continue; // Si el clan no está en los requisitos, no califica
-
-    var tag = String(r[IC.TAG - 1] || '').trim();
-    var trofeos = trofeosPorTag[tag] || 0;
-    if (trofeos < requisitos.minTrofeosPorClan[clan]) continue;
-
-    // NUEVO (19-sep-2026, pedido del usuario): ataques semanales mínimos por [→ Contexto_Base_Web.md §28B062]
-    if (requisitos.minAtaquesPorClan.hasOwnProperty(clan)) {
-      if (!_cumpleAtaquesSemanaActual(ataquesSemanaPorTag[tag], requisitos.minAtaquesPorClan[clan])) continue;
-    }
-
-    if (requisitos.minTorneos) {
-      var torneos = torneosPorTag[tag] || 0;
-      if (torneos < requisitos.minTorneos) continue;
-    }
-
-    porClan[clan].push({ nombre: String(r[IC.NOMBRE - 1] || ''), puntaje: trofeos });
+  ev.evaluados.forEach(function (e) {
+    if (e.motivos.length > 0) return; // no calificó: va en el doc de NO calificados
+    porClan[e.clan].push({ nombre: e.nombre, puntaje: _ncFmtNum(e.trofeos) }); // puntaje = medallas de guerra (promedio semanal)
     totalCalificados++;
-  }
+  });
 
-  // Armar los grupos en el mismo orden en que los clanes aparecen en los [→ Contexto_Base_Web.md §28B063]
   var grupos = [];
-  for (var gi = 0; gi < requisitos.ordenClanes.length; gi++) {
-    grupos.push({ clan: requisitos.ordenClanes[gi], personas: porClan[requisitos.ordenClanes[gi]] });
+  for (var gi = 0; gi < ev.ordenClanes.length; gi++) {
+    grupos.push({ clan: ev.ordenClanes[gi], personas: porClan[ev.ordenClanes[gi]] });
   }
 
   _reemplazarListaParticipantes(body, grupos);
 
   doc.saveAndClose();
   Logger.log('[ParticipantesCalificados] "' + nombreDoc + '": "[Mes]" -> "' + nombreMes + '". ' +
-    totalCalificados + ' cuenta(s) calificada(s) (temporada ' + temporadaActual +
-    (requisitos.minTorneos ? ', mínimo ' + requisitos.minTorneos + ' torneos).' : ', sin requisito de mínimo de torneos).'));
+    totalCalificados + ' de ' + ev.evaluados.length + ' cuenta(s) calificada(s) (temporada ' + ev.temporadaActual + ', sorteo ' + (ev.idSorteo || 'sin ID') + ').');
 }
 
 /**
