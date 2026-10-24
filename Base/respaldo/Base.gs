@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 02:58:54 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 03:10:50 */
 
 
 
@@ -39146,7 +39146,7 @@ function sincronizarRequisitosSorteo() {
     }
 
     _escribirPremiosEnDoc(doc.getBody(), bloque[0].premios, '[Premios-Sorteo]');
-    _reescribirRequisitosTexto(doc.getBody(), resumen, nombreMes, finPredicadosSorteo, '[Requisitos-Sorteo]');
+    _reescribirRequisitosTexto(doc.getBody(), resumen, nombreMes, finPredicadosSorteo, '[Requisitos-Sorteo]', { sorteo: true });
     doc.saveAndClose();
   }
 
@@ -39173,8 +39173,16 @@ function _REQ_DOC_TEXTO_TORNEOS_VALOR(qty) {
 /**
  * _REQ_DOC_TEXTO_BARCOS(qty) [→ Contexto_Base_Web.md §27B009]
  */
-function _REQ_DOC_TEXTO_BARCOS(qty) {
+function _REQ_DOC_TEXTO_BARCOS(qty, nSemanas) {
   if (qty <= 0) return 'No se permite ningún ataque a barcos.';
+  // PF205 (24-oct-2026, sorteo): con las semanas evaluadas conocidas, la línea dice el ACUMULADO permitido (tope semanal x semanas),
+  // que es lo mismo que pedir que el promedio semanal no pase del tope (así se evalúa en _evaluarCalificacionSorteo_()).
+  var n = Number(nSemanas) || 0;
+  if (n > 0) {
+    var total = qty * n;
+    return 'Máximo ' + total + ' ' + (total === 1 ? 'ataque' : 'ataques') + ' a barcos permitidos en total durante ' +
+      (n === 1 ? 'la semana evaluada' : 'las ' + n + ' semanas evaluadas') + ' (' + qty + ' por semana, en promedio).';
+  }
   return 'Máximo ' + qty + ' ataques a barcos permitidos, en promedio semanal.';
 }
 
@@ -39195,7 +39203,8 @@ function _resumirRequisitosBloque(bloqueClanes) {
     reaccionActivo: false,
     whatsappActivo: false,
     barcosActivo: false,
-    barcosQty: 0
+    barcosQty: 0,
+    semanas: (bloqueClanes[0] && bloqueClanes[0].semanas) ? bloqueClanes[0].semanas : [] // PF205: semanas evaluadas (columna Semanas de S_Lista)
   };
 
   bloqueClanes.forEach(function (b) {
@@ -39252,7 +39261,9 @@ function _buscarIndiceHijo(body, predicado) {
 /**
  * _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, logTag) [→ Contexto_Base_Web.md §27B014]
  */
-function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, logTag) {
+function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, logTag, opciones) {
+  var sorteo = !!(opciones && opciones.sorteo); // PF205: texto del sorteo (semanas evaluadas, barcos acumulados, «expulsados» siempre)
+  var semanasSorteo = sorteo ? (resumen.semanas || []) : [];
   var idxReq = _buscarIndiceHijo(body, function (t) { return t.trim() === 'Requisitos:'; });
   if (idxReq === -1) {
     Logger.log((logTag || '[Requisitos]') + ' No se encontró el marcador "Requisitos:" en el documento. Se omite.');
@@ -39281,8 +39292,12 @@ function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, log
   var insertAt = idxReq + 1;
 
   if (resumen.ordenClanesMinT.length > 0) {
+    var textoMedallas = (sorteo && semanasSorteo.length)
+      ? 'Alcanzar el promedio semanal mínimo de medallas en guerra en las semanas evaluadas (' +
+        semanasSorteo.map(function (s) { return 'T' + s.temporada + '_S' + s.semana; }).join(', ') + '):'
+      : 'Alcanzar el mínimo de medallas en guerra durante la semana actual (' + nombreMes + '):';
     insertAt = _insertarBloquePorClan(body, insertAt,
-      'Alcanzar el mínimo de medallas en guerra durante la semana actual (' + nombreMes + '):',
+      textoMedallas,
       resumen.ordenClanesMinT, resumen.minTPorClan,
       function (qty) { return String(qty); });
   }
@@ -39303,10 +39318,10 @@ function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, log
 
   // FIX (12-sep-2026, pedido del usuario -- requisito "Barcos", tercera [→ Contexto_Base_Web.md §27B015]
   if (resumen.barcosActivo) {
-    insertAt = _insertarBulletRequisito(body, insertAt, _REQ_DOC_TEXTO_BARCOS(resumen.barcosQty));
+    insertAt = _insertarBulletRequisito(body, insertAt, _REQ_DOC_TEXTO_BARCOS(resumen.barcosQty, sorteo ? semanasSorteo.length : 0));
   }
 
-  if (resumen.miembroActivoActivo) {
+  if (resumen.miembroActivoActivo || sorteo) { // PF205: en el sorteo «expulsados o sancionados NO participan» va siempre
     insertAt = _insertarBulletRequisito(body, insertAt, REQ_DOC_TEXTO_MIEMBRO_ACTIVO);
   }
 
@@ -40442,6 +40457,18 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
     return;
   }
 
+  // 2b. PF205 (24-oct-2026, pedido de la usuaria): el texto de «Requisitos» se regenera desde S_Lista cada vez que se actualiza este
+  // Doc (WhatsApp solo si está activo; barcos: «ningún ataque» si el tope es 0 o el acumulado permitido; «expulsados o sancionados» siempre).
+  // Si falla, la lista se actualiza igual. [→ Contexto_Base_Web.md §PF205]
+  try {
+    _reescribirRequisitosTexto(body, _resumirRequisitosBloque(ev.bloque), nombreMes, [
+      function (t) { return t.trim() === 'Participantes calificados:'; },
+      function (t) { return t.indexOf('Si se detecta trampa') !== -1; }
+    ], '[Requisitos-Sorteo]', { sorteo: true });
+  } catch (eReq) {
+    Logger.log('[ParticipantesCalificados] No se pudo regenerar «Requisitos» en "' + nombreDoc + '": ' + eReq.message);
+  }
+
   // 3. Un array de calificados por cada clan (mismo orden que los requisitos de S_Lista).
   var porClan = {};
   for (var ci = 0; ci < ev.ordenClanes.length; ci++) porClan[ev.ordenClanes[ci]] = [];
@@ -41289,7 +41316,8 @@ function _evaluarCalificacionSorteo_(ctxParam) {
     requisitos: requisitos,
     ordenClanes: ordenClanes,
     temporadaActual: temporadaActual,
-    idSorteo: bloque[0].idFila || ''
+    idSorteo: bloque[0].idFila || '',
+    bloque: bloque // PF205: configuración de S_Lista, para regenerar el texto de «Requisitos» del Doc de calificados
   };
 }
 
