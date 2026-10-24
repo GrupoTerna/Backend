@@ -186,6 +186,43 @@ function _pronosticoBaseDeFoto_(foto, tag, periodIndex) {
 }
 
 /**
+ * _pronosticoBaseDeLogs_(rr, tag, periodIndex): base del día sacada de `rr.periodLogs` (24-oct-2026, PF198). Cada log trae, por
+ * clan de la carrera y por día ya cerrado, `pointsEarned` (medallas ganadas ese día; también de los rivales). La fama acumulada de
+ * los participantes es la de la semana, así que la base de hoy = suma de `pointsEarned` de los días anteriores de ESTA semana.
+ * Semana de guerra: periodIndex % 7 === 3 es el jueves (primer día). Jueves: base 0. Devuelve null si falta el log de algún día
+ * anterior de la semana para ese clan (no se inventa). Comprobado con las capturas de `Datos descargados/` (165 de 185 casos
+ * exactos; el resto, capturas tomadas antes del cierre del día). [→ Contexto_Base_Web.md §PF198]
+ */
+function _pronosticoBaseDeLogs_(rr, tag, periodIndex) {
+  var p = Number(periodIndex);
+  if (!isFinite(p) || p < 0) return null;
+  var dia = p % 7;
+  if (dia < 3) return null;            // entrenamiento: no hay fama de guerra
+  if (dia === 3) return 0;
+  var logs = (rr && rr.periodLogs) ? rr.periodLogs : [];
+  if (!logs.length) return null;
+  var t = _pronosticoTagNorm_(tag);
+  var inicio = p - (dia - 3);
+  var puntos = {};
+  for (var i = 0; i < logs.length; i++) {
+    var lg = logs[i] || {};
+    var q = Number(lg.periodIndex);
+    if (!isFinite(q) || q < inicio || q >= p) continue;
+    var items = lg.items || [];
+    for (var j = 0; j < items.length; j++) {
+      var it = items[j] || {};
+      if (_pronosticoTagNorm_((it.clan || {}).tag) === t) { puntos[q] = Number(it.pointsEarned) || 0; break; }
+    }
+  }
+  var total = 0;
+  for (var d = inicio; d < p; d++) {
+    if (puntos[d] === undefined) return null;
+    total += puntos[d];
+  }
+  return total;
+}
+
+/**
  * _pronosticoAplicarFotoARegistro_(foto, tag, periodIndex, suma, ahoraMs): actualiza el registro de un clan en la foto (en
  * memoria) y devuelve true si algo cambió. Registro nuevo = base desconocida (null); pasar de ayer a hoy = la base de hoy es la
  * última suma de ayer; un salto de más de un día = base desconocida; un periodIndex menor al guardado (dato viejo) se ignora.
@@ -453,8 +490,10 @@ function calcularPronosticoGuerra(ctxOpcional) {
       // PF194: fama de HOY. Primero la foto del día; sin foto, la hoja Guerra (fama de ayer); sin ninguna, queda en null.
       var periodoPropio = Number(rr.periodIndex);
       if (!isFinite(periodoPropio) || rr.periodIndex === '' || rr.periodIndex === null || rr.periodIndex === undefined) periodoPropio = ctx.periodIndex;
-      var basePropio = _pronosticoBaseDeFoto_(fotoDia, clanTag, periodoPropio);
-      var origenPropio = 'foto';
+      // PF198: primero los periodLogs de la carrera (valen también para rivales y no dependen de la foto).
+      var basePropio = _pronosticoBaseDeLogs_(rr, clanTag, periodoPropio);
+      var origenPropio = 'logs';
+      if (basePropio === null) { basePropio = _pronosticoBaseDeFoto_(fotoDia, clanTag, periodoPropio); origenPropio = 'foto'; }
       if (basePropio === null) {
         try { basePropio = _pronosticoBaseDesdeHoja_(propios, clanTag, ctx); }
         catch (eHoja) { Logger.log('[Pronóstico] Base desde la hoja Guerra falló para ' + clanTag + ': ' + eHoja.message); basePropio = null; }
@@ -489,7 +528,11 @@ function calcularPronosticoGuerra(ctxOpcional) {
       // PF194: los rivales no están en la hoja Guerra; su base sale solo de la foto (null hasta que haya foto de ayer).
       var periodoRival = Number(rr.periodIndex);
       if (!isFinite(periodoRival) || rr.periodIndex === '' || rr.periodIndex === null || rr.periodIndex === undefined) periodoRival = ctx.periodIndex;
-      _pronosticoAgregarDiario_(calcRival, _pronosticoBaseDeFoto_(fotoDia, rivalTag, periodoRival), 'foto');
+      // PF198: base desde los periodLogs; sin ellos, la foto.
+      var baseRival = _pronosticoBaseDeLogs_(rr, rivalTag, periodoRival);
+      var origenRival = 'logs';
+      if (baseRival === null) { baseRival = _pronosticoBaseDeFoto_(fotoDia, rivalTag, periodoRival); origenRival = 'foto'; }
+      _pronosticoAgregarDiario_(calcRival, baseRival, origenRival);
       calcRival.clanTag = rivalTag;
       calcRival.nombre = rival.name || rivalTag;
       calcRival.esRival = true;
