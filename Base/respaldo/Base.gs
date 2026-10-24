@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 23/10/2026 19:43:55 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 23/10/2026 20:31:59 */
 
 
 
@@ -40766,22 +40766,23 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
   var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
 
   // --- Requisitos, al INICIO del documento ---
+  // 23-oct-2026: mismo estilo que el documento del sorteo: una viñeta por clan con sus
+  // requisitos separados por «;», y luego las viñetas generales (antes eran viñetas con
+  // sangrías de espacios y subviñetas, con formatos distintos entre sí).
   var requisitos = [];
-  // 19-sep-2026: ya no es un 16 fijo -- cada clan con su Ataques de T_Lista, y se
-  // avisa la exención por día opcional (clan ya cruzó la meta: se descuentan 4 por día).
-  requisitos.push('Ataques de guerra en la semana evaluada (se descuentan 4 por cada día opcional, cuando el clan ya cruzó la meta):');
-  for (var rai = 0; rai < clanesOrden.length; rai++) {
-    var ataquesReqClan = ataquesMinPorClan.hasOwnProperty(clanesOrden[rai]) ? ataquesMinPorClan[clanesOrden[rai]] : 16;
-    requisitos.push('  ' + clanesOrden[rai] + ': ' + (ataquesReqClan > 0 ? 'mínimo ' + ataquesReqClan : 'no exigido') + '.');
-  }
   for (var ri = 0; ri < clanesOrden.length; ri++) {
-    requisitos.push('Medallas de guerra acumuladas (temporada ' + temporadaMostrar + ') — ' +
-      clanesOrden[ri] + ': mínimo ' + minTPorNombreClan[clanesOrden[ri]] + '.');
+    var clanReq = clanesOrden[ri];
+    var ataquesReqClan = ataquesMinPorClan.hasOwnProperty(clanReq) ? ataquesMinPorClan[clanReq] : 16; // 19-sep-2026: Ataques de T_Lista por clan
+    requisitos.push(clanReq + ' — Ataques de guerra en la semana evaluada: ' +
+      (ataquesReqClan > 0 ? 'mínimo ' + ataquesReqClan : 'no exigido') +
+      '; Medallas de guerra acumuladas (temporada ' + temporadaMostrar + '): mínimo ' + minTPorNombreClan[clanReq] + '.');
   }
   if (reqBarcos.activo) {
-    requisitos.push('Ataques a barcos (promedio semanal): máximo ' + reqBarcos.qty +
-      ' (es un TOPE, superarlo descalifica; un promedio igual al tope NO descalifica).');
+    requisitos.push('Barcos (promedio semanal): máximo ' + reqBarcos.qty +
+      ' (tope, superarlo descalifica; un promedio igual al tope no descalifica).');
   }
+  // 19-sep-2026: exención por día opcional (el clan ya cruzó la meta: se descuentan 4 por día).
+  requisitos.push('Ataques de guerra: se descuentan 4 por cada día opcional, cuando el clan ya cruzó la meta.');
 
   // --- Recorrido del padrón ---
   var filas = [['Nombre', 'Clan', 'Ataques semana', 'Medallas de guerra', 'Barcos (prom.)', 'Motivo por el que no califica']];
@@ -40837,7 +40838,7 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
     (String(temporadaMostrar) === String(ctxReal.temporada) ? ' (real vigente)' : ' (vía Extra!Mostrar)') + '.';
 
   _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_TORNEO, 'Participantes NO calificados (torneo)',
-    requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.');
+    requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
 
   Logger.log('[NoCalificados-Torneo] ' + resumen);
 }
@@ -40955,7 +40956,7 @@ function actualizarDocNoCalificadosSorteo(ctxParam) {
     'Temporada ' + temporadaActual + '. Sorteo ' + (bloque[0].idFila || 'sin ID') + '.';
 
   _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_SORTEO, 'Participantes NO calificados (sorteo)',
-    requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.');
+    requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
 
   Logger.log('[NoCalificados-Sorteo] ' + resumen);
 }
@@ -41240,7 +41241,7 @@ function _ncVeredictoCambioRango(rolKey, bloqueAsc, bloqueDesc, promAsc, promDes
 /**
  * _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas) [→ Contexto_Base_Web.md §29B021]
  */
-function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas) {
+function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas, estiloUniforme) {
   var archivo;
   try {
     // Busca el documento existente (caché de ID -> nombre en las 6 carpetas de [→ Contexto_Base_Web.md §29B022]
@@ -41284,13 +41285,101 @@ function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, tex
   _rdocParrafoTexto(body, resumen, false, DocumentApp.HorizontalAlignment.JUSTIFY);
   _rdocParrafoTexto(body, '', false);
 
-  if (filas && filas.length > 1) {
-    _rdocTablaConEncabezadoNegrita(body, filas);
+  var hayTabla = !!(filas && filas.length > 1);
+  if (hayTabla) {
+    // 23-oct-2026: los dos «No calificados» (torneo y sorteo) usan la tabla de encabezado negro;
+    // el de Cambio de rango sigue con la tabla de siempre (estiloUniforme no se le pasa).
+    if (estiloUniforme) _ncTablaEstiloOscuro(body, filas);
+    else _rdocTablaConEncabezadoNegrita(body, filas);
   } else {
     _rdocParrafoTexto(body, textoSinFilas, false, DocumentApp.HorizontalAlignment.JUSTIFY);
   }
 
   doc.saveAndClose();
+
+  // Los bordes de una sola fila no se pueden fijar con DocumentApp: van aparte, con la API de Docs.
+  if (hayTabla && estiloUniforme) _ncBordesBlancosEncabezado_(archivo.getId(), filas[0].length);
+}
+
+/**
+ * _ncTablaEstiloOscuro(body, filas)
+ * Tabla de los documentos «No calificados»: todos los valores y encabezados centrados en
+ * horizontal y en vertical; fila de encabezados con letras blancas en negrita y relleno negro.
+ * Los bordes blancos del encabezado los pone _ncBordesBlancosEncabezado_() después de guardar.
+ */
+function _ncTablaEstiloOscuro(body, filas) {
+  var tabla = body.appendTable(filas);
+  for (var r = 0; r < tabla.getNumRows(); r++) {
+    var fila = tabla.getRow(r);
+    for (var c = 0; c < fila.getNumCells(); c++) {
+      var celda = fila.getCell(c);
+      celda.setVerticalAlignment(DocumentApp.VerticalAlignment.CENTER);
+      for (var k = 0; k < celda.getNumChildren(); k++) {
+        var hijo = celda.getChild(k);
+        if (hijo.getType() === DocumentApp.ElementType.PARAGRAPH) {
+          hijo.asParagraph().setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        }
+      }
+      if (r === 0) {
+        celda.setBackgroundColor('#000000');
+        celda.editAsText().setBold(true).setForegroundColor('#ffffff');
+      }
+    }
+  }
+  return tabla;
+}
+
+/**
+ * _ncBordesBlancosEncabezado_(docId, numColumnas)
+ * Pone bordes blancos a la fila de encabezados de la tabla del documento (API REST de Docs, con el
+ * token del propio script; no hace falta activar ningún servicio avanzado, pero sí que la API de
+ * Google Docs esté habilitada en el proyecto de Cloud). Si algo falla solo deja un registro: el
+ * documento ya quedó escrito, solo sin los bordes blancos. Devuelve true si se aplicaron.
+ */
+function _ncBordesBlancosEncabezado_(docId, numColumnas) {
+  try {
+    var cab = { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() };
+    var url = 'https://docs.googleapis.com/v1/documents/' + docId;
+    var resp = UrlFetchApp.fetch(url, { headers: cab, muteHttpExceptions: true });
+    if (resp.getResponseCode() !== 200) {
+      Logger.log('[DocsNoCalificados] Bordes del encabezado: no se pudo leer el documento (HTTP ' +
+        resp.getResponseCode() + '). ' + String(resp.getContentText()).substring(0, 200));
+      return false;
+    }
+    var contenido = (JSON.parse(resp.getContentText()).body || {}).content || [];
+    var inicioTabla = null;
+    for (var i = 0; i < contenido.length; i++) {
+      if (contenido[i].table) { inicioTabla = contenido[i].startIndex; break; }
+    }
+    if (inicioTabla === null) return false;
+    var borde = {
+      color: { color: { rgbColor: { red: 1, green: 1, blue: 1 } } },
+      width: { magnitude: 1, unit: 'PT' },
+      dashStyle: 'SOLID'
+    };
+    var cuerpo = { requests: [{ updateTableCellStyle: {
+      tableRange: {
+        tableCellLocation: { tableStartLocation: { index: inicioTabla }, rowIndex: 0, columnIndex: 0 },
+        rowSpan: 1,
+        columnSpan: numColumnas
+      },
+      tableCellStyle: { borderTop: borde, borderBottom: borde, borderLeft: borde, borderRight: borde },
+      fields: 'borderTop,borderBottom,borderLeft,borderRight'
+    } }] };
+    var r2 = UrlFetchApp.fetch(url + ':batchUpdate', {
+      method: 'post', contentType: 'application/json', headers: cab,
+      payload: JSON.stringify(cuerpo), muteHttpExceptions: true
+    });
+    if (r2.getResponseCode() !== 200) {
+      Logger.log('[DocsNoCalificados] Bordes del encabezado: la API de Docs respondió HTTP ' +
+        r2.getResponseCode() + '. ' + String(r2.getContentText()).substring(0, 200));
+      return false;
+    }
+    return true;
+  } catch (e) {
+    Logger.log('[DocsNoCalificados] Bordes del encabezado: ' + e.message);
+    return false;
+  }
 }
 
 /**
