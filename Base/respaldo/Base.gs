@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 03:10:50 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 03:31:54 */
 
 
 
@@ -39186,6 +39186,64 @@ function _REQ_DOC_TEXTO_BARCOS(qty, nSemanas) {
   return 'Máximo ' + qty + ' ataques a barcos permitidos, en promedio semanal.';
 }
 
+/**
+ * PF206 (24-oct-2026). _fmtMilesComa(n): número con separador de miles con coma (12345 -> «12,345»), sin depender del idioma del
+ * proyecto de Apps Script. Conserva hasta un decimal si lo trae.
+ */
+function _fmtMilesComa(n) {
+  var v = Number(n);
+  if (isNaN(v)) return String(n);
+  var r = Math.round(v * 10) / 10;
+  var partes = String(Math.abs(r)).split('.');
+  partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (r < 0 ? '-' : '') + partes.join('.');
+}
+
+/**
+ * PF206. _ordenarSemanasSorteoDoc(semanas): copia ordenada de menor a mayor (temporada y luego semana); no toca el orden de S_Lista.
+ */
+function _ordenarSemanasSorteoDoc(semanas) {
+  return (semanas || []).slice().sort(function (a, b) {
+    return (a.temporada - b.temporada) || (a.semana - b.semana);
+  });
+}
+
+/**
+ * PF206. _etiquetaSemanaSorteoDoc({temporada, semana}): «Temporada 6, semana 2 (12 oct - 18 oct)». Las fechas son el lunes y el domingo
+ * reales de esa semana (_getRangoFechasSemana); si no se pueden calcular, se omite el paréntesis.
+ */
+function _etiquetaSemanaSorteoDoc(sem) {
+  var txt = 'Temporada ' + sem.temporada + ', semana ' + sem.semana;
+  try {
+    var r = _getRangoFechasSemana(sem.temporada, Number(sem.semana) - 1);
+    if (r && r.inicio && r.fin) {
+      var f = function (d) { return d.getDate() + ' ' + _MESES_ES[d.getMonth()].substring(0, 3); };
+      txt += ' (' + f(r.inicio) + ' - ' + f(r.fin) + ')';
+    }
+  } catch (e) { /* sin fechas, la etiqueta igual sirve */ }
+  return txt;
+}
+
+/**
+ * PF206. _insertarFilaRequisito(body, insertAt, texto): fila sin viñeta, con la misma sangría y fuente que las filas por clan.
+ */
+function _insertarFilaRequisito(body, insertAt, texto) {
+  var p = body.insertParagraph(insertAt, '');
+  p.setIndentStart(72);
+  p.setIndentFirstLine(72);
+  var t = p.editAsText();
+  t.appendText(texto);
+  var fin = texto.length - 1;
+  t.setBold(0, fin, false);
+  t.setItalic(0, fin, false);
+  t.setFontFamily(0, fin, 'Arial Unicode MS');
+  t.setFontSize(0, fin, 12);
+  t.setUnderline(0, fin, false);
+  t.setForegroundColor(0, fin, '#000000');
+  t.setLinkUrl(0, fin, null);
+  return insertAt + 1;
+}
+
 // BAJA DEFINITIVA (17-sep-2026, pedido del usuario -- "borra todo el [→ Contexto_Base_Web.md §27B010]
 
 /**
@@ -39291,15 +39349,23 @@ function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, log
 
   var insertAt = idxReq + 1;
 
+  // PF206 (24-oct-2026, pedido de la usuaria): en el sorteo, una viñeta propia «Semanas a evaluar» y debajo una fila por semana
+  // («Temporada 6, semana 2 (12 oct - 18 oct)»), en vez de los códigos T6_S2 dentro de la línea de medallas.
+  if (sorteo && semanasSorteo.length) {
+    insertAt = _insertarBulletRequisito(body, insertAt, 'Semanas a evaluar:');
+    _ordenarSemanasSorteoDoc(semanasSorteo).forEach(function (sem) {
+      insertAt = _insertarFilaRequisito(body, insertAt, _etiquetaSemanaSorteoDoc(sem));
+    });
+  }
+
   if (resumen.ordenClanesMinT.length > 0) {
     var textoMedallas = (sorteo && semanasSorteo.length)
-      ? 'Alcanzar el promedio semanal mínimo de medallas en guerra en las semanas evaluadas (' +
-        semanasSorteo.map(function (s) { return 'T' + s.temporada + '_S' + s.semana; }).join(', ') + '):'
+      ? 'Alcanzar el promedio semanal mínimo de medallas en guerra en las semanas evaluadas:'
       : 'Alcanzar el mínimo de medallas en guerra durante la semana actual (' + nombreMes + '):';
     insertAt = _insertarBloquePorClan(body, insertAt,
       textoMedallas,
       resumen.ordenClanesMinT, resumen.minTPorClan,
-      function (qty) { return String(qty); });
+      sorteo ? _fmtMilesComa : function (qty) { return String(qty); }); // PF206: en el sorteo, separador de miles con coma
   }
 
   if (resumen.ordenClanesAtaques.length > 0) {
@@ -40003,6 +40069,27 @@ function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo) {
     }
   }
 
+  // PF206 (24-oct-2026, pedido de la usuaria): este Doc también lleva «Requisitos» y «Fecha:». Antes solo se regeneraban al correr
+  // sincronizarRequisitosSorteo() (dentro de procesarSorteos()); el botón Exportar y actualizarDocGanadoresSorteo() dejaban el texto viejo.
+  try {
+    var bloqueGan = _getConfigMasRecienteCategoria('Sorteo');
+    if (bloqueGan.length > 0) {
+      _reescribirRequisitosTexto(body, _resumirRequisitosBloque(bloqueGan), _MESES_ES[_calcularMesEfectivoRealDeHoy().mes], [
+        function (t) { return t.indexOf('Si se detecta trampa') !== -1; },
+        function (t) { return t.trim() === 'Participantes calificados:'; },
+        function (t) { return t.trim() === 'Ganadores:'; },
+        function (t) { return t.trim() === 'Ganadores del sorteo:'; }
+      ], '[Requisitos-Ganadores-Sorteo]', { sorteo: true });
+    }
+  } catch (eReqGan) {
+    Logger.log('[Ganadores-Sorteo] No se pudo regenerar «Requisitos»: ' + eReqGan.message);
+  }
+  try {
+    _actualizarFechaDocSorteo(body, fechaSorteo);
+  } catch (eFechaGan) {
+    Logger.log('[Ganadores-Sorteo] No se pudo actualizar la «Fecha:»: ' + eFechaGan.message);
+  }
+
   doc.saveAndClose();
   Logger.log('[Ganadores-Sorteo] Sorteo ' + idSorteo + ': ' + ganadores.length + ' ganador(es) escrito(s).');
 }
@@ -40312,6 +40399,56 @@ function _formatFechaHoraDocEs(fecha) {
 }
 
 /**
+ * PF206 (24-oct-2026, pedido de la usuaria). _fechaSorteoPorId_(idSorteo): Fecha (con hora) de la fila de S_Lista con ese ID, o null.
+ * El Doc de calificados del sorteo mostraba la «Fecha:» de la plantilla (06 de julio) aunque las semanas eran de la temporada 6.
+ */
+function _fechaSorteoPorId_(idSorteo) {
+  try {
+    var id = String(idSorteo || '').trim();
+    if (!id) return null;
+    var shSL = _getSs().getSheetByName(CFG.SHEETS.S_LISTA);
+    if (!shSL || shSL.getLastRow() < 3) return null;
+    var datos = shSL.getRange(3, 1, shSL.getLastRow() - 2, SL_TOTAL_COLS).getValues();
+    for (var i = 0; i < datos.length; i++) {
+      if (String(datos[i][SL.ID - 1] || '').trim() === id) {
+        var f = datos[i][SL.FECHA - 1];
+        return (f instanceof Date && !isNaN(f.getTime())) ? f : null;
+      }
+    }
+  } catch (e) {
+    Logger.log('[Fecha-Sorteo] No se pudo leer la fecha del sorteo ' + idSorteo + ': ' + e.message);
+  }
+  return null;
+}
+
+/**
+ * PF206. _actualizarFechaDocSorteo(body, fecha): escribe la fecha del sorteo (formato del Doc, «Jueves 22 de Octubre 2026 - 8:00pm»)
+ * en el párrafo que sigue a «Fecha:». Si la fecha del Doc ya es POSTERIOR a la del sorteo (edición manual), la respeta.
+ * Devuelve true si escribió.
+ */
+function _actualizarFechaDocSorteo(body, fecha) {
+  if (!(fecha instanceof Date) || isNaN(fecha.getTime())) return false;
+  var encontrado = body.findText('Fecha:');
+  if (!encontrado) return false;
+  var elHeading = encontrado.getElement();
+  while (elHeading.getParent() && elHeading.getType() !== DocumentApp.ElementType.PARAGRAPH) {
+    elHeading = elHeading.getParent();
+  }
+  var idxValor = body.getChildIndex(elHeading) + 1;
+  if (idxValor >= body.getNumChildren()) return false;
+  var hijoValor = body.getChild(idxValor);
+  if (hijoValor.getType() !== DocumentApp.ElementType.PARAGRAPH) return false;
+  var pValor = hijoValor.asParagraph();
+  var textoActual = pValor.getText();
+  var fechaDoc = _parseSpanishDate(textoActual);
+  if (fechaDoc instanceof Date && !isNaN(fechaDoc.getTime()) && fechaDoc > fecha) return false;
+  var prefijoMatch = textoActual.match(/^[\s\t]*/);
+  var prefijo = prefijoMatch ? prefijoMatch[0] : '';
+  pValor.editAsText().setText(prefijo + _formatFechaHoraDocEs(fecha));
+  return true;
+}
+
+/**
  * _actualizarFechaDocTorneo(body, ss) [→ Contexto_Base_Web.md §28B049]
  */
 function _actualizarFechaDocTorneo(body, ss) {
@@ -40447,6 +40584,9 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
   var nombreMes = _MESES_ES[mesEfectivo.mes];
   body.replaceText('\\[Mes\\]', nombreMes);
 
+  // 1b. PF206 (24-oct-2026): la «Fecha:» del Doc es la del sorteo en S_Lista (antes quedaba la de la plantilla: 06 de julio).
+  // Se escribe después de evaluar, con el ID del sorteo vigente; si la evaluación falla, la fecha no se toca.
+
   // 2. Evaluación (24-oct-2026, pedido de la usuaria): la MISMA que usa el doc de NO calificados del sorteo y la
   // web (_evaluarCalificacionSorteo_(), 29_Docs_NoCalificados.gs): promedio de las «Semanas» de S_Lista, ataques,
   // torneos y barcos; ya NO se leen los mínimos del texto de este documento ni se usa el acumulado de la temporada. [→ Contexto_Base_Web.md §PF202]
@@ -40469,6 +40609,12 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
     Logger.log('[ParticipantesCalificados] No se pudo regenerar «Requisitos» en "' + nombreDoc + '": ' + eReq.message);
   }
 
+  try {
+    _actualizarFechaDocSorteo(body, _fechaSorteoPorId_(ev.idSorteo));
+  } catch (eFecha) {
+    Logger.log('[ParticipantesCalificados] No se pudo actualizar la «Fecha:» en \"' + nombreDoc + '\": ' + eFecha.message);
+  }
+
   // 3. Un array de calificados por cada clan (mismo orden que los requisitos de S_Lista).
   var porClan = {};
   for (var ci = 0; ci < ev.ordenClanes.length; ci++) porClan[ev.ordenClanes[ci]] = [];
@@ -40476,7 +40622,7 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
   var totalCalificados = 0;
   ev.evaluados.forEach(function (e) {
     if (e.motivos.length > 0) return; // no calificó: va en el doc de NO calificados
-    porClan[e.clan].push({ nombre: e.nombre, puntaje: _ncFmtNum(e.trofeos) }); // puntaje = medallas de guerra (promedio semanal)
+    porClan[e.clan].push({ nombre: e.nombre, puntaje: _fmtMilesComa(e.trofeos) }); // puntaje = medallas de guerra (promedio semanal)
     totalCalificados++;
   });
 
@@ -40600,6 +40746,7 @@ function _reemplazarListaParticipantes(body, grupos) {
     textoHeader.setFontSize(12);
     // El texto nuevo podía heredar subrayado y color azul/morado (estilo [→ Contexto_Base_Web.md §28B072]
     textoHeader.setUnderline(false);
+    textoHeader.setItalic(false); // PF204: no hereda la cursiva de la línea «Ningún participante calificado.» del clan anterior
     textoHeader.setForegroundColor('#000000');
     textoHeader.setLinkUrl(null);
 
@@ -40637,6 +40784,7 @@ function _insertarParrafoEspaciador(body, insertAt) {
   t.setFontFamily('Arial');
   t.setFontSize(12);
   t.setUnderline(false);
+  t.setItalic(false); // PF204: ver el encabezado de clan
   t.setForegroundColor('#000000');
   t.setLinkUrl(null);
   return insertAt + 1;
@@ -40685,6 +40833,7 @@ function _insertarLineaParticipante(body, insertAt, nombre, puntaje) {
   t.setFontSize(0, fin, 12);
   t.setBold(0, fin, false);
   t.setUnderline(0, fin, false);
+  t.setItalic(0, fin, false); // PF204: ver el encabezado de clan
   t.setForegroundColor(0, fin, '#000000');
   t.setLinkUrl(0, fin, null);
 
