@@ -829,6 +829,18 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
     return;
   }
 
+  // 2b. PF205 (24-oct-2026, pedido de la usuaria): el texto de «Requisitos» se regenera desde S_Lista cada vez que se actualiza este
+  // Doc (WhatsApp solo si está activo; barcos: «ningún ataque» si el tope es 0 o el acumulado permitido; «expulsados o sancionados» siempre).
+  // Si falla, la lista se actualiza igual. [→ Contexto_Base_Web.md §PF205]
+  try {
+    _reescribirRequisitosTexto(body, _resumirRequisitosBloque(ev.bloque), nombreMes, [
+      function (t) { return t.trim() === 'Participantes calificados:'; },
+      function (t) { return t.indexOf('Si se detecta trampa') !== -1; }
+    ], '[Requisitos-Sorteo]', { sorteo: true });
+  } catch (eReq) {
+    Logger.log('[ParticipantesCalificados] No se pudo regenerar «Requisitos» en "' + nombreDoc + '": ' + eReq.message);
+  }
+
   // 3. Un array de calificados por cada clan (mismo orden que los requisitos de S_Lista).
   var porClan = {};
   for (var ci = 0; ci < ev.ordenClanes.length; ci++) porClan[ev.ordenClanes[ci]] = [];

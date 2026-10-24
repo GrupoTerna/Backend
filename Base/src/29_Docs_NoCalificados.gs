@@ -278,7 +278,8 @@ function _evaluarCalificacionSorteo_(ctxParam) {
     requisitos: requisitos,
     ordenClanes: ordenClanes,
     temporadaActual: temporadaActual,
-    idSorteo: bloque[0].idFila || ''
+    idSorteo: bloque[0].idFila || '',
+    bloque: bloque // PF205: configuración de S_Lista, para regenerar el texto de «Requisitos» del Doc de calificados
   };
 }
 
