@@ -372,6 +372,22 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores) {
     if (tabla) {
       try { body.removeChild(tabla); } catch (eQ) { recortarFilas(tabla); tabla.getRow(0).clear(); }
     }
+    // PF209 (24-oct-2026, pedido de la usuaria): al quitar la tabla quedaban párrafos vacíos de la plantilla entre la línea y el
+    // siguiente subtítulo («Redes sociales oficiales:»), que se veían como un hueco. Se quitan los vacíos que siguen (sin tocar saltos de página ni imágenes).
+    var iSin = body.getChildIndex(parrafoSin);
+    while (iSin + 1 < body.getNumChildren()) {
+      var sig = body.getChild(iSin + 1);
+      if (sig.getType() !== DocumentApp.ElementType.PARAGRAPH) break;
+      var psig = sig.asParagraph();
+      if (psig.getText().trim() !== '') break;
+      var tieneExtra = false;
+      for (var q = 0; q < psig.getNumChildren(); q++) {
+        if (psig.getChild(q).getType() !== DocumentApp.ElementType.TEXT) { tieneExtra = true; break; }
+      }
+      if (tieneExtra) break;
+      if (iSin + 2 >= body.getNumChildren()) break; // el último párrafo del documento no se puede quitar
+      try { body.removeChild(psig); } catch (eV) { break; }
+    }
     return true;
   }
 
