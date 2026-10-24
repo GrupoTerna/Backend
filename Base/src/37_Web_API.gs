@@ -4547,14 +4547,25 @@ function _webAdminSorteoActualizarDocGanadores(token, extra, descargar) {
     var resp = { ok: true };
     if (descargar) {
       if (!docId) return { ok: false, error: 'No se encontró el documento «Ganadores (sorteo)» en Drive.' };
-      var blobWord = DriveApp.getFileById(docId).getAs('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-      resp.docxBase64 = Utilities.base64Encode(blobWord.getBytes());
+      // PF228 (24-oct-2026): antes se usaba DriveApp.getAs(docx), que con un Google Doc suele fallar («Converting from ... is not supported»); se exporta con la
+      // misma URL de exportación y el mismo token que ya usa _webAdminContenidoDocHtml() (format=html).
+      var urlWord = 'https://docs.google.com/document/d/' + encodeURIComponent(docId) + '/export?format=docx';
+      var respWord = UrlFetchApp.fetch(urlWord, {
+        method: 'get',
+        headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+        muteHttpExceptions: true
+      });
+      if (respWord.getResponseCode() !== 200) {
+        return { ok: false, error: 'Google no devolvió el documento en Word (código ' + respWord.getResponseCode() + ').' };
+      }
+      resp.docxBase64 = Utilities.base64Encode(respWord.getContent());
       resp.nombreArchivo = NOMBRE_DOC_GANADORES_SORTEO + '.docx';
     }
     return resp;
   } catch (errDocGanSorteo) {
     Logger.log('[Web] Error interno actualizando el doc de ganadores: ' + errDocGanSorteo.toString());
-    return { ok: false, error: 'No se pudo actualizar el documento de ganadores. Intenta de nuevo en unos segundos.' };
+    // PF228: endpoint solo para admins con sesión válida; se incluye el motivo para que sorteo.html lo muestre y se pueda corregir.
+    return { ok: false, error: 'No se pudo actualizar el documento de ganadores (' + String((errDocGanSorteo && errDocGanSorteo.message) || errDocGanSorteo).slice(0, 160) + ').' };
   }
 }
 
