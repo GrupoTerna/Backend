@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 03:56:42 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 04:07:16 */
 
 
 
@@ -34223,6 +34223,73 @@ function _bloqueParaAutogeneracionCRLista(filaParseada) {
 }
 
 /**
+ * PF209 (24-oct-2026). _leerDirectorioParaOrganizadorCR_(ss): filas del Directorio con lo mínimo para resolver al organizador:
+ * { tag, nombre, nomMulti, clan, clanTag, rango, activo }. Lista vacía si la hoja no existe.
+ */
+function _leerDirectorioParaOrganizadorCR_(ss) {
+  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!shDir || shDir.getLastRow() < 2) return [];
+  var datos = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  var out = [];
+  for (var i = 0; i < datos.length; i++) {
+    var tag = String(datos[i][IC.TAG - 1] || '').trim();
+    if (!tag) continue;
+    var estado = String(datos[i][IC.ESTADO - 1] || '').trim();
+    out.push({
+      tag: tag,
+      nombre: String(datos[i][IC.NOMBRE - 1] || '').trim(),
+      nomMulti: String(datos[i][IC.NOM_MULTI - 1] || '').trim(),
+      clan: String(datos[i][IC.CLAN - 1] || '').trim(),
+      clanTag: String(datos[i][IC.CLAN_TAG - 1] || '').trim(),
+      rango: String(datos[i][IC.RANGO - 1] || '').trim(),
+      activo: (estado === '' || estado === 'Activo')
+    });
+  }
+  return out;
+}
+
+/**
+ * PF209. _resolverOrganizadorCRAutogenerado_(organizador, tagOrg, dir): { organizador, tagOrg, clan, clanTag, reemplazado }.
+ * (1) Si el organizador por defecto (el del registro anterior) está en un clan Terna (CFG.TERNA_TAGS), se conserva y su Clan/ClanTag salen
+ * de ese clan. (2) Si no está, se toma como organizador al LÍDER del clan principal (CFG.TERNA_TAGS[0]). (3) Si tampoco se encuentra al líder,
+ * se deja el organizador por defecto y Clan/ClanTag quedan vacíos.
+ */
+function _resolverOrganizadorCRAutogenerado_(organizador, tagOrg, dir) {
+  var norm = function (t) { return String(t || '').trim().toUpperCase().replace(/^#/, ''); };
+  var ternaNorm = CFG.TERNA_TAGS.map(norm);
+  var tagN = norm(tagOrg);
+  var i, f;
+  if (tagN) {
+    for (i = 0; i < dir.length; i++) {
+      f = dir[i];
+      if (norm(f.tag) === tagN && f.activo && ternaNorm.indexOf(norm(f.clanTag)) >= 0) {
+        return { organizador: organizador || f.nomMulti || f.nombre, tagOrg: tagOrg || f.tag, clan: f.clan, clanTag: f.clanTag, reemplazado: false };
+      }
+    }
+  }
+  var principal = norm(CFG.TERNA_TAGS[0]);
+  for (i = 0; i < dir.length; i++) {
+    f = dir[i];
+    if (f.activo && norm(f.clanTag) === principal && f.rango === 'Líder') {
+      Logger.log('[CR_Lista][Autogeneración] El organizador por defecto (' + (organizador || tagOrg || 'vacío') +
+        ') no está en un clan Terna; se asigna al líder del clan principal: ' + (f.nomMulti || f.nombre) + ' (' + f.tag + ').');
+      return { organizador: f.nomMulti || f.nombre, tagOrg: f.tag, clan: f.clan, clanTag: f.clanTag, reemplazado: true };
+    }
+  }
+  Logger.log('[CR_Lista][Autogeneración] AVISO: el organizador por defecto no está en un clan Terna y no se encontró al líder del clan principal; ' +
+    'se deja el organizador del registro anterior y Clan/ClanTag vacíos.');
+  return { organizador: organizador || '', tagOrg: tagOrg || '', clan: '', clanTag: '', reemplazado: false };
+}
+
+/**
+ * PF209. _comentarioCRAutogenerado_(org): texto de la columna Comentario de la fila autogenerada.
+ */
+function _comentarioCRAutogenerado_(org) {
+  return 'Fila autogenerada; puede modificarse manualmente.' +
+    (org && org.reemplazado ? ' El organizador anterior no estaba en un clan; se asignó al líder del clan principal.' : '');
+}
+
+/**
  * _autogenerarParCRListaSiCorrespondeInicioTemporada() [→ Contexto_Base_Web.md §26B024]
  */
 function _autogenerarParCRListaSiCorrespondeInicioTemporada() {
@@ -34272,17 +34339,26 @@ function _autogenerarParCRListaSiCorrespondeInicioTemporada() {
 
   var idsNuevos = _generarParIdsCRLista(fechaCambio, ss);
 
+  // PF209 (24-oct-2026, pedido de la usuaria): la fila autogenerada también copia la HORA del registro anterior, completa Clan y ClanTag con
+  // el clan donde está el organizador (si el organizador no está en un clan Terna, pasa a ser el líder del clan principal) y deja un
+  // Comentario que avisa que es autogenerada y que se puede modificar a mano.
+  var dirOrg = _leerDirectorioParaOrganizadorCR_(ss);
+  var orgAsc = _resolverOrganizadorCRAutogenerado_(
+    ultimoPar.ascenso ? ultimoPar.ascenso.organizador : '', ultimoPar.ascenso ? ultimoPar.ascenso.tagOrg : '', dirOrg);
+  var orgDesc = _resolverOrganizadorCRAutogenerado_(
+    ultimoPar.descenso ? ultimoPar.descenso.organizador : '', ultimoPar.descenso ? ultimoPar.descenso.tagOrg : '', dirOrg);
+  var horaAsc = (ultimoPar.ascenso && ultimoPar.ascenso.hora) ? _formatHoraCanonica(ultimoPar.ascenso.hora) : '';
+  var horaDesc = (ultimoPar.descenso && ultimoPar.descenso.hora) ? _formatHoraCanonica(ultimoPar.descenso.hora) : '';
+
   var comunesAscenso = {
-    fecha: fechaCambio, hora: '', semanas: semanasCsv, temporada: temporadaQueArranca,
-    organizador: ultimoPar.ascenso ? ultimoPar.ascenso.organizador : '',
-    tagOrg:      ultimoPar.ascenso ? ultimoPar.ascenso.tagOrg      : '',
-    clan: '', clanTag: ''
+    fecha: fechaCambio, hora: horaAsc, semanas: semanasCsv, temporada: temporadaQueArranca,
+    organizador: orgAsc.organizador, tagOrg: orgAsc.tagOrg, clan: orgAsc.clan, clanTag: orgAsc.clanTag,
+    comentario: _comentarioCRAutogenerado_(orgAsc)
   };
   var comunesDescenso = {
-    fecha: fechaCambio, hora: '', semanas: semanasCsv, temporada: temporadaQueArranca,
-    organizador: ultimoPar.descenso ? ultimoPar.descenso.organizador : '',
-    tagOrg:      ultimoPar.descenso ? ultimoPar.descenso.tagOrg      : '',
-    clan: '', clanTag: ''
+    fecha: fechaCambio, hora: horaDesc, semanas: semanasCsv, temporada: temporadaQueArranca,
+    organizador: orgDesc.organizador, tagOrg: orgDesc.tagOrg, clan: orgDesc.clan, clanTag: orgDesc.clanTag,
+    comentario: _comentarioCRAutogenerado_(orgDesc)
   };
 
   var filaAscenso  = _construirFilaCRLista(comunesAscenso,  'Ascenso',  idsNuevos.idAscenso,  _bloqueParaAutogeneracionCRLista(ultimoPar.ascenso));
@@ -40070,6 +40146,22 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores) {
     }
     if (tabla) {
       try { body.removeChild(tabla); } catch (eQ) { recortarFilas(tabla); tabla.getRow(0).clear(); }
+    }
+    // PF209 (24-oct-2026, pedido de la usuaria): al quitar la tabla quedaban párrafos vacíos de la plantilla entre la línea y el
+    // siguiente subtítulo («Redes sociales oficiales:»), que se veían como un hueco. Se quitan los vacíos que siguen (sin tocar saltos de página ni imágenes).
+    var iSin = body.getChildIndex(parrafoSin);
+    while (iSin + 1 < body.getNumChildren()) {
+      var sig = body.getChild(iSin + 1);
+      if (sig.getType() !== DocumentApp.ElementType.PARAGRAPH) break;
+      var psig = sig.asParagraph();
+      if (psig.getText().trim() !== '') break;
+      var tieneExtra = false;
+      for (var q = 0; q < psig.getNumChildren(); q++) {
+        if (psig.getChild(q).getType() !== DocumentApp.ElementType.TEXT) { tieneExtra = true; break; }
+      }
+      if (tieneExtra) break;
+      if (iSin + 2 >= body.getNumChildren()) break; // el último párrafo del documento no se puede quitar
+      try { body.removeChild(psig); } catch (eV) { break; }
     }
     return true;
   }
