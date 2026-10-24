@@ -562,6 +562,8 @@ No debe perderse información entre una conversación y la siguiente:
 - Como el trabajo avanza entre sesiones y el chat se borra antes de empezar una nueva, se busca no perder el contexto de una conversación a otra. Nada se debe perder de un chat a otro.
 - Si el usuario explica el comportamiento de algo o da alguna confirmación, eso se documenta de inmediato en el lugar que corresponda según dónde sea relevante la información: el plan de fases vigente, `Base.md`, `Web-main` o, si es funcionamiento del sistema o una decisión que sirva para prevenir errores, `Contexto_Base_Web.md` (ver sección 0.4). No debe quedar solo dicho en el chat.
 
+- **Contrastar con los datos disponibles antes de suponer o ignorar (regla de la usuaria, 23-oct-2026).** Ante una hipótesis o una duda sobre el funcionamiento del juego o de los datos, primero se busca y se contrasta con los archivos que ya hay (`Datos descargados/` del repo `Backend`: JSON, CSV; y Drive si el conector está disponible); no se supone ni se descarta sin mirar. Si los datos necesarios están en Drive y Claude no puede verlos, le dice a la usuaria que los descargue de Drive y los suba a GitHub, y no continúa sobre una suposición.
+
 ## Referencias en el changelog: archivo + función, no solo el número
 
 La regla (indicar el nombre exacto del archivo y la función o bloque editado en toda entrada de historial) está en `Consolidados de cambios/Reglas_Consolidados.md`, sección 5.
