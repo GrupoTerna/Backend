@@ -2681,7 +2681,7 @@ function _webAdminCategorias(token) {
 }
 
 // _webAdminContenido(token, categoria): FASE 2 (24-ago-2026); visor de solo lectura; reutiliza _obtenerOpcionesClanCategoria() (44_BotWhatsApp.gs) con el mismo orden de fuentes que el bot (FUENTES_CONTENIDO); NO usa _obtenerContenidoMenu()/_obtenerContenidoPlantilla() (30_Mensajes.gs) porque siguen apuntando a la hoja Plantillas, que ya no existe; DELIBERADAMENTE solo lectura: Menú y Mensajes se reconstruyen enteros en cada corrida, así que una edición manual se perdería (lo Estático se edita en los Google Docs de Plantillas en Drive); FIX 30-ago-2026 cacheada 60 s con _webCacheado() por categoría, sin el token en la clave (el contenido no depende del admin); NUEVO 19-sep-2026 valida también aquí que la categoría esté en el Cat_disp del admin de la sesión; NUEVO 05-oct-2026 suma `elaboracion` = {aplica, generadosTs, generadosLima, cantidad, origen} (aplica solo para Mensaje de Guerra, Celular y Etiqueta de miembro, ver TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS en 42_Web_TiemposActualizacion.gs), se lee fresca fuera de la caché de 60 s y puede ser null. @returns {{ok, error?, opciones?, elaboracion?}} [→ Contexto_Base_Web.md §37B214]
-function _webAdminContenido(token, categoria) {
+function _webAdminContenido(token, categoria, fresco) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
   if (!categoria) return { ok: false, error: 'Falta la categoría.' };
 
@@ -2691,6 +2691,11 @@ function _webAdminContenido(token, categoria) {
     return { ok: false, error: 'No tienes acceso a esta categoría.' };
   }
 
+  // §PF181: fresco=true (el boton «Copiar» de guerra.html lo pide al hacer clic) descarta la cache de 60 s de ESTA categoria para que el texto copiado salga de la hoja Mensajes de ese momento; la cache se vuelve a llenar con el resultado.
+  if (fresco === true) {
+    try { CacheService.getScriptCache().remove('web_admin_contenido_v1_' + categoria); }
+    catch (eFresco) { Logger.log('[WebContenido] No se pudo descartar la cache de ' + categoria + ': ' + eFresco.message); }
+  }
   var opciones = _webCacheado('web_admin_contenido_v1_' + categoria, 60, function () {
     return _obtenerOpcionesClanCategoria(categoria);
   });

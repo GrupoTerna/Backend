@@ -634,7 +634,7 @@ function doGet(e) {
   if (e && e.parameter && e.parameter.accion === 'webAdminContenido') {
     try {
       return ContentService
-        .createTextOutput(JSON.stringify(_webAdminContenido(e.parameter.sessionToken, e.parameter.categoria)))
+        .createTextOutput(JSON.stringify(_webAdminContenido(e.parameter.sessionToken, e.parameter.categoria, e.parameter.fresco === '1')))
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       Logger.log('[Web] Error interno: ' + err.toString());
@@ -1231,7 +1231,7 @@ function doPost(e) {
   if (e && e.parameter && e.parameter.accion === 'webAdminActualizarRoster') {
     try {
       var payloadActRoster = JSON.parse(e.postData.contents);
-      var resultadoActRoster = _webAdminActualizarRoster(payloadActRoster && payloadActRoster.sessionToken);
+      var resultadoActRoster = _webAdminActualizarRoster(payloadActRoster && payloadActRoster.sessionToken, payloadActRoster && payloadActRoster.tipo);
       return ContentService
         .createTextOutput(JSON.stringify(resultadoActRoster))
         .setMimeType(ContentService.MimeType.JSON);
