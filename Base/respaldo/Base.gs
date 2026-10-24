@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 00:16:59 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 01:36:09 */
 
 
 
@@ -22407,6 +22407,7 @@ function _buscarCorreccionDomingo_(overlay, temporada, semana, clanTag, tag) {
   (CFG.CLAN_TAGS || []).forEach(function (ct) { if (overlay[t + '|' + s + '|' + ct + '|' + tag]) hayConClan = true; });
   if (hayConClan) return { estado: 'otro_clan' };
   var sinClan = overlay[t + '|' + s + '||' + tag];
+  if (sinClan && _cgwPerfilEsExterno_(sinClan)) return { estado: 'sin_dato' }; // PF183 act. 16: la fila del perfil de un clan externo no se usa como dato Terna
   if (sinClan) return { estado: 'ok_sin_clan', e: sinClan };
   return { estado: 'sin_dato' };
 }
@@ -26275,7 +26276,7 @@ function _getTemporadaRoyaleApiDesdePropia(temporadaPropia) {
 // Correcciones_Guerra.csv pasa de una fila por (temporada, semana, jugador, clan) a UNA fila por (temporada, semana, jugador):
 //   N°, Actualizado, Temporada, Semana, Tag,
 //   Ataques <clan1..clanN>, Ataques Externo, Ataques RoyaleAPI, Barcos ..., Medallas ...,
-//   Aprobación, Implementación, Origen RoyaleAPI
+//   Aprobación, Implementación, Origen RoyaleAPI, Clan RoyaleAPI (PF183 act. 16)
 // En memoria NADA cambia: el mapa sigue siendo «temporada|semana|clanTag|tag» (clanTag '' = el perfil) y los consumidores
 // (17, 18, 23, 47) no se enteran; solo cambia la capa que lee y escribe el CSV (este bloque).
 // Reglas: (a) una fila por temporada, semana y jugador; (b) el Log actualiza las columnas de cada clan; (c) la columna RoyaleAPI
@@ -26289,6 +26290,9 @@ var CGW_MAGNITUDES = [
 var CGW_ORIGEN_PERFIL = 'perfil';
 var CGW_ORIGEN_DESCONOCIDO = 'desconocido';
 var CGW_ENCABEZADO_ORIGEN = 'Origen RoyaleAPI';
+// PF183 act. 15 y 16 (24-oct-2026): última columna del formato ancho. Tag del clan de la fila del perfil de RoyaleAPI (leído del enlace del clan).
+// Si ese clan no es de CFG.TERNA_TAGS, la fila es de clan externo: se guarda en RoyaleAPI y en Externo, pero NO cuenta como dato Terna. [→ Contexto_Base_Web.md §PF183]
+var CGW_ENCABEZADO_CLAN_PERFIL = 'Clan RoyaleAPI';
 // Antes de esta fecha (v2.9 de Tampermonkey) las filas sin ClanTag podían ser lo leído en un clan y no el perfil. [→ Contexto_Base_Web.md §PF164]
 var CGW_FECHA_CORTE_PERFIL = '2026-09-29 00:00:00';
 
@@ -26314,7 +26318,7 @@ function _cgwEsFormatoAncho_(encabezado) {
   return false;
 }
 
-function _cgwNuevaEntrada_(ataques, barcos, medallas, comunes, clanTag, origenPerfil) {
+function _cgwNuevaEntrada_(ataques, barcos, medallas, comunes, clanTag, origenPerfil, clanPerfil) {
   var e = {
     ataquesSemana: Number(ataques) || 0,
     // Barcos es opcional: '' = sin dato (null), nunca un 0 falso. [→ Contexto_Base_Web.md §18B094]
@@ -26325,8 +26329,20 @@ function _cgwNuevaEntrada_(ataques, barcos, medallas, comunes, clanTag, origenPe
     implementacion: comunes.implementacion,
     clanTag: clanTag
   };
-  if (clanTag === '') e.origenPerfil = origenPerfil || CGW_ORIGEN_DESCONOCIDO;
+  if (clanTag === '') {
+    e.origenPerfil = origenPerfil || CGW_ORIGEN_DESCONOCIDO;
+    e.clanPerfil = _normalizarClanTagCorreccion(clanPerfil); // '' = no se conoce el clan de la fila (formato anterior)
+  }
   return e;
+}
+
+/**
+ * _cgwPerfilEsExterno_(e)
+ * PF183 act. 16: true si la entrada es la fila del perfil (sin ClanTag) y su «Clan RoyaleAPI» es un tag que no es de CFG.TERNA_TAGS.
+ * Sin clan conocido devuelve false (se trata como antes: dato Terna).
+ */
+function _cgwPerfilEsExterno_(e) {
+  return !!e && e.clanTag === '' && !!e.clanPerfil && CFG.TERNA_TAGS.indexOf(e.clanPerfil) < 0;
 }
 
 /**
@@ -26438,7 +26454,7 @@ function _cgwFilasAnchasAMapa_(parsed) {
     var pa = cel(f, col['Ataques RoyaleAPI']), pb = cel(f, col['Barcos RoyaleAPI']), pm = cel(f, col['Medallas RoyaleAPI']);
     if (pa !== '' || pb !== '' || pm !== '') {
       var origen = cel(f, col[CGW_ENCABEZADO_ORIGEN]).toLowerCase() === CGW_ORIGEN_PERFIL ? CGW_ORIGEN_PERFIL : CGW_ORIGEN_DESCONOCIDO;
-      mapa[temporada + '|' + semana + '||' + tag] = _cgwNuevaEntrada_(pa, pb, pm, comunes, '', origen);
+      mapa[temporada + '|' + semana + '||' + tag] = _cgwNuevaEntrada_(pa, pb, pm, comunes, '', origen, cel(f, col[CGW_ENCABEZADO_CLAN_PERFIL]));
     }
   }
   return mapa;
@@ -26471,6 +26487,7 @@ function _cargarOverlayCorreccionesGuerra() {
   var grupos = {};
   var claves = Object.keys(porClan);
   for (var i = 0; i < claves.length; i++) {
+    if (_cgwPerfilEsExterno_(porClan[claves[i]])) continue; // PF183 act. 16: la fila del perfil de un clan externo no cuenta como dato Terna
     var p = claves[i].split('|'); // temporada | semana | clantag | tag
     var claveTag = p[0] + '|' + p[1] + '|' + p[3];
     if (!grupos[claveTag]) grupos[claveTag] = [];
@@ -26517,6 +26534,8 @@ function _cgwExterno_(perfil, entradasClan, campo) {
   if (!perfil || perfil.origenPerfil !== CGW_ORIGEN_PERFIL) return '';
   var pv = perfil[campo];
   if (pv === null || pv === undefined) return '';
+  // PF183 act. 16: si la fila del perfil es de un clan externo, todo el valor es Externo (no se resta la suma de los clanes Terna). Vacío si es 0.
+  if (_cgwPerfilEsExterno_(perfil)) return pv > 0 ? pv : '';
   var suma = 0, hay = false;
   for (var i = 0; i < entradasClan.length; i++) {
     var v = entradasClan[i][campo];
@@ -26533,7 +26552,7 @@ function _cgwEncabezadoAncho_(clanes) {
     enc.push(CGW_MAGNITUDES[m].nombre + ' Externo');
     enc.push(CGW_MAGNITUDES[m].nombre + ' RoyaleAPI');
   }
-  enc.push('Aprobación', 'Implementación', CGW_ENCABEZADO_ORIGEN);
+  enc.push('Aprobación', 'Implementación', CGW_ENCABEZADO_ORIGEN, CGW_ENCABEZADO_CLAN_PERFIL);
   return enc;
 }
 
@@ -26588,7 +26607,8 @@ function _cgwMapaAFilasAnchas_(mapa) {
       fila.push((g.perfil && g.perfil[campo] !== null && g.perfil[campo] !== undefined) ? g.perfil[campo] : '');
     }
     fila.push(todasAprobadas ? 'Sí' : '', todasImpl ? 'Sí' : (algunaImplNo ? 'No' : ''),
-      g.perfil ? (g.perfil.origenPerfil || CGW_ORIGEN_DESCONOCIDO) : '');
+      g.perfil ? (g.perfil.origenPerfil || CGW_ORIGEN_DESCONOCIDO) : '',
+      g.perfil ? (g.perfil.clanPerfil || '') : '');
     filas.push(fila);
   }
   return filas;
@@ -26681,6 +26701,8 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     // con fuente:'perfil'. Sin ese dato (versión anterior del script, otro origen) queda «desconocido»: no se compara con los clanes.
     if (clanTag === '') {
       mapa[clave].origenPerfil = String(c.fuente || '').trim().toLowerCase() === CGW_ORIGEN_PERFIL ? CGW_ORIGEN_PERFIL : CGW_ORIGEN_DESCONOCIDO;
+      // PF183 act. 16: Tampermonkey v3.3 manda clanPerfil = tag del clan de la fila del perfil (leído del enlace). Sin él queda '' (se trata como Terna, como antes).
+      mapa[clave].clanPerfil = _normalizarClanTagCorreccion(c.clanPerfil);
     }
     clavesTocadas.push(clave);
     aplicadas++;
