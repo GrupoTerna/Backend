@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2209 nombres en 59 archivos .gs.
+Código real: `Base/src/`. Total: 2211 nombres en 59 archivos .gs.
 
 ## Por archivo
 
@@ -26,14 +26,14 @@ Código real: `Base/src/`. Total: 2209 nombres en 59 archivos .gs.
 - **18_CorreccionGuerra.gs** (115 funciones): _fameDescomposicionesDia_, _fameTablaDia_, _fameEsPosibleDia_, _fameNPosiblesPorFame_, _fameDescomposicionesDeCifra_, _repartoDomingoSinClanTag_, _limitesFameSemanaClan_, _decidirCorreccionConClanTag_, _indexarFilasJugadorSemanaPorClan_, _resumenHojaParaReparto_, _elegirClanDestinoDomingo_, _aplicarRepartoDomingoSinClanTagAFuente_, _aplicarCorreccionOverlayAFuente_, _registrarRevisionGuerra_, informeRepartoDomingoSinClanTag, _mapaNombresClanTerna_, _evaluarCorreccionConClanTagSemana_, informeCorreccionConClanTag, _ataquesPorDiaEntreClanes_, _problemasFilasClan_, _ajustarSemanaDeUnClan_, _reconstruirSemanaDeUnClanDesdeCero_, _aplicarCorreccionConClanTagAFuente_, _blgNormalizarTag_, _blgNumero_, _blgParsearBattleTime_, _blgLimitesValidos_, _blgLimitesDiasGuerra_, _blgDiaDeBatalla_, _blgUnicosOrdenados_, _blgClasificarBatallaGuerra_, _blgBucketVacio_, _blgSumarEnBucket_, _blgSumarBuckets_, _blgBucketsDelDia_, _blgResumirBatallasJugador_, _blgInicioDelLog_, _blgCoberturaDia_, _blgDescargaMsDeNombreArchivo_, _blgMejorCobertura_, _blgEtiquetaCobertura_, _blgLeerLogsDeArchivos_, _blgDecidirAmbiguas_, _blgCompararConHoja_, _blgCompararFameBarcos_, _blgFechaIsoDeDiaGuerra_, _blgJuevesDeSemana_, informeBattlelogContraGuerra, corregirGuerraYControlDesdeControl2, aplicarCorreccionGuerraATemporadaSeleccionada, aplicarCorreccionGuerraATodasLasTemporadas, limpiarCorreccionesGuerraAprobadasImplementadas, _cargarFuenteGuerraParaTemporada, _guardarFuenteGuerra, _construirOffsetsPorClave, _reconstruirDeltaAcumulado, _aplicarPisoDiario, _marcarOrigenCorregido, _buscarDatosJugadorParaReconstruccion, _reconstruirSemanaDesdeCero, _aplicarCorreccionAGuerraConReparto, auditarPisoBarcosAtaques, _auditarPisoEnFuente, _construirVentanasMembresiaTernaPorTag, _tagEstuvoEnTernaEnFecha, _auditarReconstruccionesGuerraSospechosas, _eliminarFilasReconstruidasDeCSV, _getTemporadaOffsetRoyaleApi, _getTemporadaRoyaleApiDesdePropia, _normalizarClanTagCorreccion, _cgwQuitarBom_, _cgwEsFormatoAncho_, _cgwNuevaEntrada_, _cgwPerfilEsExterno_, _cgwFilasLargasAMapa_, _cgwAsignarOrigenMigracion_, _cgwFilasAnchasAMapa_, _cgwLeerOverlayDeTexto_, _cargarOverlayCorreccionesGuerraPorClan, _cargarOverlayCorreccionesGuerra, _cgwExterno_, _cgwEncabezadoAncho_, _cgwMapaAFilasAnchas_, _guardarOverlayCorreccionesGuerra, _aplicarCorreccionesGuerra, _aplicarCorreccionesGuerraImpl, _obtenerListaCorreccionGuerra, _cuentasConVariosClanesEnOverlay_, _construirCoberturaPorTag, _coberturaGuerraCacheGet_, _coberturaGuerraCachePut_, _corregirCampoDiarioConDistribucion, _corregirCampoAcumuladoConDistribucion, _fameCatalogoDia_, _repartoRestriccionesCrr_, _repartirSemanaConjunto_, _hccCompararHojaConCorrecciones_, _hccPisoLogDeResumen_, _hccVeredictoLog_, informeHojaContraCorrecciones, completarDomingoDesdeJsonRoyaleApiInforme, completarDomingoDesdeJsonRoyaleApiAplicar, _cdjEntero_, _cdjNormalizarClan_, _cdjEstadoDia_, _cdjIndexarRegistrosJson_, _cdjJsonDeSerie_, _calcularCompletarDomingoDesdeJson_, _cdjProcesarSemana_, _cdjRepartirSerieMenos_, _cdjCargarRegistrosJsonDrive_, _completarDomingoDesdeJsonRoyaleApi_, repararSemanaDesdeJsonRoyaleApiInforme, repararSemanaDesdeJsonRoyaleApiAplicar, _repararSemanaDesdeJsonRoyaleApi_
 - **19_CorreccionRiverRace.gs** (6 funciones): aprobarCorreccionesRiverRacePendientes, limpiarCorreccionesRiverRacePendientesAplicadas, _procesarVerificacionRiverRace, _cargarPendientesRiverRace, _guardarPendientesRiverRace, _offDiaDesdeTimestamp
 - **20_HistorialGuerraJugador.gs** (28 funciones): resolverAlertasHistorialGuerra, diagnosticoRiverRaceHTML, _actualizarFilaHistorialGuerraGrupal, _actualizarFilasHistorialGuerraGrupalLote, _aplicarRegistroEnFilasHistorialGuerraGrupal, _algunValorBajoHistorialGuerra, _aplicarHistorialGuerra, _buildHistorialGuerraFilename, _cargarHistorialGuerraIndividual, _crearHistorialGuerraVacio, _debeReemplazarRegistroHistorialGuerra, _claveClanHistorialGuerra, _buscarIndiceHistorialGuerra, _filaHistorialGuerraGrupalARegistro, _fusionarRegistroEnArrayHistorialGuerra, _getHistorialGuerraDriveIndexPorTag, _getHistorialGuerraGrupalFolder, _guardarRegistroHistorialGuerra, _guardarRegistroHistorialGuerraIndividual, _guardarRegistrosHistorialGuerraIndividual, _loadHistorialGuerraGrupalCSV, _numOrNull, _prioridadFuenteHistorialGuerra, _registrarAlertaHistorialGuerra, _registroHistorialGuerraAFilaGrupal, _saveHistorialGuerraGrupalCSV, _obtenerFechaCierrePorTemporadaSemana, _webHistorialGuerraJugador
-- **21_Pronostico_Guerra.gs** (19 funciones): pronosticoGuerraHoy, _pronosticoTechoRestante, _pronosticoYaHizoDuelo, _pronosticoMapaFameHoyPorTag, _pronosticoTagNorm_, _pronosticoSumaFame_, _pronosticoFotoLeer_, _pronosticoBaseDeFoto_, _pronosticoBaseDeLogs_, _pronosticoBaseDePeriodPoints_, _pronosticoAplicarFotoARegistro_, _pronosticoRegistrarFotoDia_, _pronosticoBaseDesdeHoja_, _pronosticoAgregarDiario_, _pronosticoTechoDePozo, _pronosticoTechoClan, _pronosticoPuestoEnCarrera, calcularPronosticoGuerra, _webPronosticoGuerra
+- **21_Pronostico_Guerra.gs** (20 funciones): pronosticoGuerraHoy, _pronosticoTechoRestante, _pronosticoYaHizoDuelo, _pronosticoMapaFameHoyPorTag, _pronosticoTagNorm_, _pronosticoSumaFame_, _pronosticoFotoLeer_, _pronosticoBaseDeFoto_, _pronosticoBaseDeLogs_, _pronosticoPuntosDiasCerrados_, _pronosticoBaseDePeriodPoints_, _pronosticoAplicarFotoARegistro_, _pronosticoRegistrarFotoDia_, _pronosticoBaseDesdeHoja_, _pronosticoAgregarDiario_, _pronosticoTechoDePozo, _pronosticoTechoClan, _pronosticoPuestoEnCarrera, calcularPronosticoGuerra, _webPronosticoGuerra
 - **22_ControlCalendario.gs** (42 funciones): updateExtraSheet, _controlNecesitaRebuildFormato, updateControlSheet, mostrarTemporadaEnControl, GenerarCalendario, resaltarDiaActual, updateCalendario2, _clonarCtxParaTemporada, _evaluarRequisitosAscenso, _aplicarVisibilidadSemanasControl, _sumaOVacio, _maxOVacio, _guerraMemoIniciar_, _guerraMemoTerminar_, _leerGuerraCsvAgrupado_, _getDatosGuerraParaControl, _getDatosGuerraDesdeHojaParaControl, _getDatosGuerraDesdeCsvParaControl, _cruceNormTemporada_, _getMapaCruceMetaGuerraLogs_, _cruceMetaDesdeGuerraLogs_, _cruceMetaDesdeJsonDrive_, _cruceMetaListarIndiceDrive_, _cruceMetaIndiceDesdeCache_, _cruceMetaAbrirArchivo_, _esPeriodoDeColiseo_, _clanYaCruzoMetaEnPeriodo, _cruceMetaDesdeCacheApi_, _procesarFilasGuerraParaControl, _sumarEntreClanesSemanaControl_, _getAgregadosAscensoPorTag, _getAtaquesHoyCache, _reglasCondFmtRango, _reglaCondFmtAscenso, _reglaCondFmtAtaquesTotalSemana, _buildMinGSwitchFormula, _aplicarFmtCondicionalControl, _leerNotasCalendario2PorSemana, _probarCentradoControl, _reglaCondFmtPuntajePct, _reglasCondFmtBarcosTotalSemana, _reglasCondFmtPuntajeTotalSemana
 - **23_Control2_GuerraSemanal.gs** (6 funciones): actualizarControl2, generarBackupGuerraSemanalCSV, _aplicarFmtCondicionalControl2, _control2ColTotales, _pintarEncabezadosControl2, _restaurarControl2SiNoExiste
 - **24_Historial_Ascensos.gs** (16 funciones): limpiarDuplicadosHistorial, updateAscensosSheet, _updateHistorial, _reaplicarFormatoAscensosExistente, _getOrdenClanAscensos, _reordenarHistorialAscensosGlobal, _crearRegistroAscenso, _generarComentarioAscensoDefault, _copiarComentarioAscensoAComentarios, _registrarPropuestasCRListaEnHistorial, _aplicarFormatoFilaAscenso, _aplicarFormatoCondicionalAscensos, _webAdminAscensosEditables, _webAdminEditarAutorAscenso, _indexarPropuestasPendientesAscensos, _resolverPropuestaCRListaComoRealizada
 - **25_Doc_AscensosDescensos.gs** (21 funciones): reconstruirDocAscensosDescensosSiFalta, actualizarDocAscensosDescensos, _bloqueCRParaContexto, actualizarTablasRangosDoc, _getExtraMostrarTemporada, _limpiarMemoSemanasTemporada_, _getSemanasDeTemporada, _getRangoClanActualPorTag, _barcosParaDocAD_, _armarListasDesdeCRLista, _insertarBulletAscDesc, _reemplazarListasPorClanYRango, _rdocADMiles, _rdocADTablaRango, _rdocADBloqueFuncion, _rdocADBloqueClanAscensoDescenso, _construirContenidoDocAscensosDescensos, _detectarContextoRango, _formatearQtyCelda, _llenarTablaRequisitos, _buscarSiguienteTabla
 - **26_Torneos_Core.gs** (134 funciones): _horaStringADate, _formatHoraCanonica, _parseHoraCanonica, _reordenarCRListaPorFecha, _generarParIdsCRLista, _contarParesCRListaEnSemana, _esHoyPrimerDiaDeTemporada, _getUltimoParCRLista, _existeParCRListaParaTemporada, _bloqueParaAutogeneracionCRLista, _autogenerarParCRListaSiCorrespondeInicioTemporada, _getFilaCRListaPorId, _getParCRListaPorId, _getRequisitosCambioRangoBloqueCategoria, _esMiembroVigenteEnClanesFamilia, _getPromediosCRParaJugador, _validarCoherenciaCRLista, _cumpleRequisitoCR, _destinoRangoCR, _unirPartesEspanol, _detalleRequisitoCR, _round1, _filtrarSemanasJugadasCR, _semanasPendientesCR, _textoSemanasPendientesCR, _fechaInicioSemanasCR, _juevesGuerraSemanaCR, _bloqueDescensoDesdeSemanasCompletas, _estuvoEnTernaEseJuevesCR_, _ventanasHistorialParaDescensoCR_, _notaSemanasContadasCR, _esAdminEnDirectorioCR, _calcularPropuestasCambioRango, iniciarActualizacionTorneoEnVivo, detenerActualizacionTorneoEnVivo, procesarTorneos, importarTListaDesdeCSV, importarSListaDesdeCSV, importarCRListaDesdeCSV, importarTAsistenciaDesdeCSV, importarTResolucionesDesdeCSV, importarSAsistenciaDesdeCSV, regenerarTControlSheet, _aplicarFormatoCondicionalTAporTorneo, _instalarActivadorTorneoEnVivo, _tickTorneoEnVivo, _tickTorneoEnVivoCuerpo_, _publicarTorneosDesdeTick_, _borrarTriggersPorHandler, procesarTListaNuevasFilas, _ordenarTListaPorFecha, repararTorneosViejosDesdeAPI, _resolverOrganizadorPorCreatorTag, _determinarOrganizador, _extraerInfoOrganizador, _buscarInfoOrganizadorPorNomMulti, _getTagsAdminPorNomMulti, _getNomMultiPorTag, _resolverTagOrgDesdeOrganizador, _derivarClanClanTagDesdeTagOrg, _aplicarDropdownAdminTLista, _aplicarDropdownTagTor2TLista, _aplicarDropdownEstadoTLista, _aplicarDropdownMiembroActivoTLista, _aplicarDropdownReaccionTLista, _aplicarDropdownWhatsappTLista, _aplicarDropdownId2SLista, _aplicarDropdownEstadoSLista, _aplicarDropdownMiembroActivoSLista, _aplicarDropdownReaccionSLista, _aplicarDropdownWhatsappSLista, _aplicarDropdownAdminSLista, _aplicarDropdownClanSLista, _normalizarHoraSLista, procesarSListaNuevasFilas, procesarSorteos, _parseSemanasSorteo, _getIdVigenteExtra, _getIdVigenteExtraCR, _valorExtraDesdeCsv_, _getConfigMasRecienteCategoria, _getUltimoRegistroTorneoOSorteo, _fetchMembersTorneo, _parseFechaApiSupercell, _leerModoCSV, _guardarModoCSV, _resolverModoDesdeCatalogo, _guardarModoCSVSiHayNuevos, _guardarJsonTorneoEnDrive, _creadorTorneoEnClanTerna_, _hoyLimaSinHora, _calcularTemporadaParaFecha, _calcularSemanaTorneo, _construirSemanasCsvDesdeIsos, _contarTorneosEnSemana, _contarSorteosEnSemana, _generarAsistenciaParaTorneo, _borrarFilasAsistenciaPorId, _getDirectorioLookupPorTag, _getInactivosLookupPorTag, _getAsistenciaTagsPorId, _getTagsConAsistencia, _resolverGruposContinuacionTorneos, _getAsistenciaFusionadaPorRaiz, _getParticipantesFusionadosPorTorneo, _aplicarResolucionesTorneo, _topNTrasResoluciones, _registrarResolucionTorneo, _marcarVistoEnGrupoVerificado, _getTagsVistosEnGrupo, _getFilaSListaPorId, _registrarResolucionSorteo, _validarTagTor2SinCoincidencia, _getMinTClanMaps, _barcosDeRequisitos_, _nombresOrganizadorTL_, _combinarFechaHora, _mismoDia, _normalizarSiNoRequisito, _valoresMinTAtaquesPorClan, _valoresMinSAtaquesTorneosPorClan, _registrarTorneoDesdeBot, _planificarTorneoDesdeBot, _listarTorneosDeHoy, _listarTorneosModificables, _extraerIsosDesdeSemanasCsv, _modificarFechaHoraTorneo, _obtenerOrganizadorFuenteTLista, _corregirLinkTorneoYaRegistrado, _listarSorteosDeHoy, _listarSorteosModificables, _registrarSorteoDesdeBot, _planificarSorteoDesdeBot, _modificarFechaHoraSorteo
 - **27_Torneos_Sorteos_Requisitos.gs** (17 funciones): sincronizarRequisitosYPremiosTorneo, sincronizarRequisitosSorteo, _REQ_DOC_TEXTO_ATAQUES_VALOR, _REQ_DOC_TEXTO_TORNEOS_VALOR, _REQ_DOC_TEXTO_BARCOS, _resumirRequisitosBloque, _getMinTPorNombreClan, _buscarIndiceHijo, _reescribirRequisitosTexto, _insertarBloquePorClan, _insertarBulletRequisito, _formatearValorPremioParaDoc, _insertarLineaPuestoPremio, _insertarBulletPremiosGanadores, _escribirPremiosEnDoc, _copiarLineaConFormato, _copiarPremiosFechaAGanadoresTorneo
-- **28_Torneos_Docs.gs** (41 funciones): reconstruirDocsTorneosSorteoFaltantes, actualizarDocParticipantesCalificados, actualizarDocParticipantesCalificadosTorneo, actualizarDocGanadoresTorneo, actualizarDocGanadoresSorteo, _escribirDocGanadoresSorteo, _tablaDeGrupoDoc, _rdocParrafoRuns, _rdocParrafoTexto, _rdocBloqueClanValor, _rdocBloqueRequisitosSorteo, _rdocBloqueRequisitosTorneo, _rdocBloqueRedesSocialesYPie, _rdocTablaConEncabezadoNegrita, _construirContenidoDocParticipantesCalificadosSorteo, _construirContenidoDocParticipantesCalificadosTorneo, _construirContenidoDocGanadoresSorteo, _construirContenidoDocGanadoresTorneo, _getFechaMasRecienteTLista, _formatFechaHoraDocEs, _actualizarFechaDocTorneo, _getAtaquesSemanaActualPorTag, _getAtaquesYExentosSemanaActualPorTag, _cumpleAtaquesSemanaActual, _ataquesMinTorneoPorNombreClan, _cumpleAtaquesTorneoClan, _actualizarUnDocParticipantesCalificados, _parseRequisitosParticipantes, _reemplazarListaParticipantes, _insertarParrafoEspaciador, _insertarLineaParticipante, _getTemporadaMostrarExtra, _getTrofeosGuerraAcumuladosPorTagParaTemporada, _contarTorneosPorTagEnTemporada, _totalesSemanaDesdeAcumulados, _getTrofeosYAtaquesSemanalesPorTag, _ataquesCumplenRequisito, _fameCumpleRequisito, _barcosCumplenRequisito, _contarTorneosPorTagEnSemanas, _escribirDocGanadores
+- **28_Torneos_Docs.gs** (42 funciones): reconstruirDocsTorneosSorteoFaltantes, actualizarDocParticipantesCalificados, actualizarDocParticipantesCalificadosTorneo, actualizarDocGanadoresTorneo, actualizarDocGanadoresSorteo, _escribirDocGanadoresSorteo, _tablaDeGrupoDoc, _rdocParrafoRuns, _rdocParrafoTexto, _rdocBloqueClanValor, _rdocBloqueRequisitosSorteo, _rdocBloqueRequisitosTorneo, _rdocBloqueRedesSocialesYPie, _rdocTablaConEncabezadoNegrita, _construirContenidoDocParticipantesCalificadosSorteo, _construirContenidoDocParticipantesCalificadosTorneo, _construirContenidoDocGanadoresSorteo, _construirContenidoDocGanadoresTorneo, _getFechaMasRecienteTLista, _formatFechaHoraDocEs, _actualizarFechaDocTorneo, _getAtaquesSemanaActualPorTag, _getAtaquesYExentosSemanaActualPorTag, _cumpleAtaquesSemanaActual, _ataquesMinTorneoPorNombreClan, _cumpleAtaquesTorneoClan, _actualizarUnDocParticipantesCalificados, _parseRequisitosParticipantes, _reemplazarListaParticipantes, _insertarParrafoEspaciador, _insertarLineaSinCalificados_, _insertarLineaParticipante, _getTemporadaMostrarExtra, _getTrofeosGuerraAcumuladosPorTagParaTemporada, _contarTorneosPorTagEnTemporada, _totalesSemanaDesdeAcumulados, _getTrofeosYAtaquesSemanalesPorTag, _ataquesCumplenRequisito, _fameCumpleRequisito, _barcosCumplenRequisito, _contarTorneosPorTagEnSemanas, _escribirDocGanadores
 - **29_Docs_NoCalificados.gs** (18 funciones): actualizarDocsNoCalificadosYCambioRango, actualizarDocNoCalificadosTorneo, _evaluarCalificacionSorteo_, actualizarDocNoCalificadosSorteo, actualizarDocCambioRango, _ncVeredictoCambioRango, _ncEscribirDocumento, _ncTablaEstiloOscuro, _ncBordesBlancosEncabezado_, _ncTextoRequisito, _ncTextoRequisitoVsReal, _ncNombreRol, _ncFmtNum, _ncFechaHoraPeru, _construirContenidoDocNoCalificadosTorneo, _construirContenidoDocNoCalificadosSorteo, _construirContenidoDocCambioRango, _ncContenidoBasePlaceholder
 - **30_Mensajes.gs** (19 funciones): _clanCruzoMetaPorNombre, _ordenRango, generarTodosMensajes, _getOrdenMensajesCategoria, _aplicarFormatoCondicionalMensajes, _agregarCategoriaAExtra, _colCategoriaExtra_, _getDatosClanHoja, _formatearInfoClan, _fmt, _getNombresClanesOrdenados, _agruparPorClanOrdenado, _obtenerCelularPorTag, _obtenerPrestamoPorTag, _sufijoPrestamo, _getPlantillasParaMensajes, _obtenerDatosPendientes, _obtenerDatosSinCelular, _obtenerDatosSinEtiqueta
 - **31_Cards_Mazos.gs** (50 funciones): updateCardsSheet, updateCards2Sheet, generarUrlMazo, generarUrlMazo2, _esCartaTorreDatos, _mapaDiferenciaNivelPorRareza, _esCartaTorre, _invalidarCacheDiferenciaNivelPorRareza, _diferenciaNivelRareza, _nivelUnificadoMaxDeCartas, _nivelUnificadoDeCarta, _avisarRarezasSinDiferencia, _leerCardsCSV, _guardarCardsCSV, _leerCards2CSV, _guardarCards2CSV, _getTodosLosCardIdsDesdeCSV, _mergearCards2CSV, _actualizarCards2SoloAdmins, _rarezaParaFila, _filasCards2DeTorre, _getTagsParaPartialMode, _getCardsFromCache, _mezclarCartasEnMapa, _refrescarCardsRows, _getTagsConPlayerCache, _cardNameToSlug, _construirCardInfoMap, _construirCards2PorTag, _construirListasMazoDesdeMapas, _ensamblarUrlMazo, _generarUrlMazoDesdeMapas, _generarUrlMazo2DesdeMapas, _construirCards2DeTag, _nivelPromedioCartas, _generarUrlMazo3DesdeMapas, generarMazo3, generarMazoPerfil, _leerCards3CSV, _construirCostosPorRareza, _nivelRarezaDesdeNivelApp, _costoSubirNivel, _construirCartaRarezaMap, _calcularCostosSubirDesdeMapas, costosSubirNivelJugador, _nivelesFaltantesEnCards3, _avisarNivelesFaltantesCards3, _avisarDiferenciasNivelCards, _avisarRevisionNivelesCards, probarCostosSubirNivel
@@ -213,7 +213,7 @@ Ninguno.
 | `_asegurarBloquesParaFechas` | función | 14_Nuevos_RoyaleAPI.gs | 865 |  |
 | `_asegurarColumnaCopasGuerra_` | función | 17_GuerraSheet.gs | 633 | Contexto_Base_Web.md §PF061 |
 | `_asegurarColumnasGuerraLogs_` | función | 17_GuerraSheet.gs | 186 | Contexto_Base_Web.md §17B012 |
-| `_ataquesCumplenRequisito` | función | 28_Torneos_Docs.gs | 1229 | Contexto_Base_Web.md §28B086 |
+| `_ataquesCumplenRequisito` | función | 28_Torneos_Docs.gs | 1253 | Contexto_Base_Web.md §28B086 |
 | `_ataquesMinTorneoPorNombreClan` | función | 28_Torneos_Docs.gs | 773 | Contexto_Base_Web.md §28B054 |
 | `_ataquesPorDiaEntreClanes_` | función | 18_CorreccionGuerra.gs | 791 | Contexto_Base_Web.md §18B029 |
 | `_auditarPisoEnFuente` | función | 18_CorreccionGuerra.gs | 2585 | Contexto_Base_Web.md §18B082 |
@@ -225,7 +225,7 @@ Ninguno.
 | `_avisarNivelesFaltantesCards3` | función | 31_Cards_Mazos.gs | 1324 | Contexto_Base_Web.md §31B060 |
 | `_avisarRarezasSinDiferencia` | función | 31_Cards_Mazos.gs | 356 | Contexto_Base_Web.md §31B023 |
 | `_avisarRevisionNivelesCards` | función | 31_Cards_Mazos.gs | 1388 | Contexto_Base_Web.md §31B062 |
-| `_barcosCumplenRequisito` | función | 28_Torneos_Docs.gs | 1251 | Contexto_Base_Web.md §28B088 |
+| `_barcosCumplenRequisito` | función | 28_Torneos_Docs.gs | 1275 | Contexto_Base_Web.md §28B088 |
 | `_barcosDeRequisitos_` | función | 26_Torneos_Core.gs | 4196 | Contexto_Base_Web.md §PF099 |
 | `_barcosParaDocAD_` | función | 25_Doc_AscensosDescensos.gs | 296 | Contexto_Base_Web.md §25B024 |
 | `_blgBucketsDelDia_` | función | 18_CorreccionGuerra.gs | 1248 |  |
@@ -441,8 +441,8 @@ Ninguno.
 | `_contarSemanasGuerraTerna` | función | 14_Nuevos_RoyaleAPI.gs | 1085 | Contexto_Base_Web.md §14B066 |
 | `_contarSorteosEnSemana` | función | 26_Torneos_Core.gs | 3540 | Contexto_Base_Web.md §26B251 |
 | `_contarTorneosEnSemana` | función | 26_Torneos_Core.gs | 3524 |  |
-| `_contarTorneosPorTagEnSemanas` | función | 28_Torneos_Docs.gs | 1262 | Contexto_Base_Web.md §28B089 |
-| `_contarTorneosPorTagEnTemporada` | función | 28_Torneos_Docs.gs | 1098 |  |
+| `_contarTorneosPorTagEnSemanas` | función | 28_Torneos_Docs.gs | 1286 | Contexto_Base_Web.md §28B089 |
+| `_contarTorneosPorTagEnTemporada` | función | 28_Torneos_Docs.gs | 1122 |  |
 | `_continuarProcesarSorteos` | función | 00_Main.gs | 986 | Contexto_Base_Web.md §B106 |
 | `_continuarReenumerarTemporadas` | función | 47_Migraciones.gs | 545 | Contexto_Base_Web.md §47B027 |
 | `_continuarRunAll` | función | 00_Main.gs | 836 | Contexto_Base_Web.md §B099 |
@@ -558,7 +558,7 @@ Ninguno.
 | `_esCartaTorreDatos` | función | 31_Cards_Mazos.gs | 257 | Contexto_Base_Web.md §31B016 |
 | `_escribirAnchosColumnasGuardados` | función | 04_Formato_Comun.gs | 1083 | Contexto_Base_Web.md §04B069 |
 | `_escribirDirectorio` | función | 11_DirectorioSheet.gs | 1340 |  |
-| `_escribirDocGanadores` | función | 28_Torneos_Docs.gs | 1288 | Contexto_Base_Web.md §28B090 |
+| `_escribirDocGanadores` | función | 28_Torneos_Docs.gs | 1312 | Contexto_Base_Web.md §28B090 |
 | `_escribirDocGanadoresSorteo` | función | 28_Torneos_Docs.gs | 326 | Contexto_Base_Web.md §28B030 |
 | `_escribirLinks` | función | 12_Players_Links.gs | 96 | Contexto_Base_Web.md §12B008 |
 | `_escribirPlayers` | función | 12_Players_Links.gs | 24 | Contexto_Base_Web.md §12B003 |
@@ -616,7 +616,7 @@ Ninguno.
 | `_fameCrr52_` | función | 55_Reparar_DiasConExceso.gs | 766 |  |
 | `_fameCrr52Planificar_` | función | 55_Reparar_DiasConExceso.gs | 719 |  |
 | `_fameCrr52Verificar_` | función | 55_Reparar_DiasConExceso.gs | 848 |  |
-| `_fameCumpleRequisito` | función | 28_Torneos_Docs.gs | 1240 | Contexto_Base_Web.md §28B087 |
+| `_fameCumpleRequisito` | función | 28_Torneos_Docs.gs | 1264 | Contexto_Base_Web.md §28B087 |
 | `_fameDescomposicionesDeCifra_` | función | 18_CorreccionGuerra.gs | 107 | Contexto_Base_Web.md §18B008 |
 | `_fameDescomposicionesDia_` | función | 18_CorreccionGuerra.gs | 41 | Contexto_Base_Web.md §18B004 |
 | `_fameEsPosibleDia_` | función | 18_CorreccionGuerra.gs | 87 | Contexto_Base_Web.md §18B006 |
@@ -766,14 +766,14 @@ Ninguno.
 | `_getTagsConVGuerraVacia` | función | 09_API_ClashRoyale.gs | 2406 | Contexto_Base_Web.md §09B129 |
 | `_getTagsParaPartialMode` | función | 31_Cards_Mazos.gs | 618 |  |
 | `_getTagsVistosEnGrupo` | función | 26_Torneos_Core.gs | 3996 | Contexto_Base_Web.md §26B273 |
-| `_getTemporadaMostrarExtra` | función | 28_Torneos_Docs.gs | 1040 | Contexto_Base_Web.md §28B076 |
+| `_getTemporadaMostrarExtra` | función | 28_Torneos_Docs.gs | 1064 | Contexto_Base_Web.md §28B076 |
 | `_getTemporadaOffsetRoyaleApi` | función | 18_CorreccionGuerra.gs | 2843 |  |
 | `_getTemporadaRoyaleApiDesdePropia` | función | 18_CorreccionGuerra.gs | 2852 | Contexto_Base_Web.md §18B091 |
 | `_getTemporadasDisponibles` | función | 38_Web_Endpoints.gs | 2706 | Contexto_Base_Web.md §38B178 |
 | `_getTodasLasSemanasTemporada` | función | 37_Web_API.gs | 2821 | Contexto_Base_Web.md §37B223 |
 | `_getTodosLosCardIdsDesdeCSV` | función | 31_Cards_Mazos.gs | 423 | Contexto_Base_Web.md §31B028 |
-| `_getTrofeosGuerraAcumuladosPorTagParaTemporada` | función | 28_Torneos_Docs.gs | 1061 | Contexto_Base_Web.md §28B077 |
-| `_getTrofeosYAtaquesSemanalesPorTag` | función | 28_Torneos_Docs.gs | 1142 |  |
+| `_getTrofeosGuerraAcumuladosPorTagParaTemporada` | función | 28_Torneos_Docs.gs | 1085 | Contexto_Base_Web.md §28B077 |
+| `_getTrofeosYAtaquesSemanalesPorTag` | función | 28_Torneos_Docs.gs | 1166 |  |
 | `_getUltimaSemanaJugada` | función | 38_Web_Endpoints.gs | 2239 | Contexto_Base_Web.md §38B150 |
 | `_getUltimoParCRLista` | función | 26_Torneos_Core.gs | 194 | Contexto_Base_Web.md §26B021 |
 | `_getUltimoRegistroTorneoOSorteo` | función | 26_Torneos_Core.gs | 3265 | Contexto_Base_Web.md §26B236 |
@@ -853,10 +853,11 @@ Ninguno.
 | `_insertarBulletPremiosGanadores` | función | 27_Torneos_Sorteos_Requisitos.gs | 420 | Contexto_Base_Web.md §27B021 |
 | `_insertarBulletRequisito` | función | 27_Torneos_Sorteos_Requisitos.gs | 347 | Contexto_Base_Web.md §27B017 |
 | `_insertarColumnaFechaIndice` | función | 05_Backup_CSV.gs | 1570 | Contexto_Base_Web.md §05B093 |
-| `_insertarLineaParticipante` | función | 28_Torneos_Docs.gs | 1004 | Contexto_Base_Web.md §28B075 |
+| `_insertarLineaParticipante` | función | 28_Torneos_Docs.gs | 1028 | Contexto_Base_Web.md §28B075 |
 | `_insertarLineaPuestoPremio` | función | 27_Torneos_Sorteos_Requisitos.gs | 389 | Contexto_Base_Web.md §27B019 |
+| `_insertarLineaSinCalificados_` | función | 28_Torneos_Docs.gs | 1010 | Contexto_Base_Web.md §PF204 |
 | `_insertarNuevosCandidatosOrdenadosPorClan` | función | 14_Nuevos_RoyaleAPI.gs | 1245 | Contexto_Base_Web.md §14B074 |
-| `_insertarParrafoEspaciador` | función | 28_Torneos_Docs.gs | 987 | Contexto_Base_Web.md §28B074 |
+| `_insertarParrafoEspaciador` | función | 28_Torneos_Docs.gs | 991 | Contexto_Base_Web.md §28B074 |
 | `_INSIGNIAS_MAPA_CARTAS_MEMO` | global | 32_Insignias.gs | 100 | Contexto_Base_Web.md §32B010 |
 | `_instalarActivadorTorneoEnVivo` | función | 26_Torneos_Core.gs | 1718 | Contexto_Base_Web.md §26B133 |
 | `_invalidarCacheDiferenciaNivelPorRareza` | función | 31_Cards_Mazos.gs | 304 | Contexto_Base_Web.md §31B019 |
@@ -1091,20 +1092,21 @@ Ninguno.
 | `_procesarVerificacionRiverRace` | función | 19_CorreccionRiverRace.gs | 239 | Contexto_Base_Web.md §19B013 |
 | `_programarContinuacion` | función | 00_Main.gs | 1627 |  |
 | `_progressEndDiaAnterior_` | función | 17_GuerraSheet.gs | 328 | Contexto_Base_Web.md §17B016 |
-| `_pronosticoAgregarDiario_` | función | 21_Pronostico_Guerra.gs | 367 |  |
-| `_pronosticoAplicarFotoARegistro_` | función | 21_Pronostico_Guerra.gs | 246 |  |
+| `_pronosticoAgregarDiario_` | función | 21_Pronostico_Guerra.gs | 399 |  |
+| `_pronosticoAplicarFotoARegistro_` | función | 21_Pronostico_Guerra.gs | 278 |  |
 | `_pronosticoBaseDeFoto_` | función | 21_Pronostico_Guerra.gs | 177 |  |
 | `_pronosticoBaseDeLogs_` | función | 21_Pronostico_Guerra.gs | 196 | Contexto_Base_Web.md §PF198 |
-| `_pronosticoBaseDePeriodPoints_` | función | 21_Pronostico_Guerra.gs | 232 | Contexto_Base_Web.md §PF198 |
-| `_pronosticoBaseDesdeHoja_` | función | 21_Pronostico_Guerra.gs | 329 |  |
+| `_pronosticoBaseDePeriodPoints_` | función | 21_Pronostico_Guerra.gs | 264 | Contexto_Base_Web.md §PF198 |
+| `_pronosticoBaseDesdeHoja_` | función | 21_Pronostico_Guerra.gs | 361 |  |
 | `_pronosticoFotoLeer_` | función | 21_Pronostico_Guerra.gs | 160 |  |
 | `_pronosticoMapaFameHoyPorTag` | función | 21_Pronostico_Guerra.gs | 89 | Contexto_Base_Web.md §21B008 |
-| `_pronosticoPuestoEnCarrera` | función | 21_Pronostico_Guerra.gs | 459 | Contexto_Base_Web.md §21B020 |
-| `_pronosticoRegistrarFotoDia_` | función | 21_Pronostico_Guerra.gs | 270 | Contexto_Base_Web.md §PF194 |
+| `_pronosticoPuestoEnCarrera` | función | 21_Pronostico_Guerra.gs | 491 | Contexto_Base_Web.md §21B020 |
+| `_pronosticoPuntosDiasCerrados_` | función | 21_Pronostico_Guerra.gs | 233 | Contexto_Base_Web.md §PF203 |
+| `_pronosticoRegistrarFotoDia_` | función | 21_Pronostico_Guerra.gs | 302 | Contexto_Base_Web.md §PF194 |
 | `_pronosticoSumaFame_` | función | 21_Pronostico_Guerra.gs | 150 |  |
 | `_pronosticoTagNorm_` | función | 21_Pronostico_Guerra.gs | 143 |  |
-| `_pronosticoTechoClan` | función | 21_Pronostico_Guerra.gs | 401 | Contexto_Base_Web.md §21B013 |
-| `_pronosticoTechoDePozo` | función | 21_Pronostico_Guerra.gs | 390 | Contexto_Base_Web.md §21B012 |
+| `_pronosticoTechoClan` | función | 21_Pronostico_Guerra.gs | 433 | Contexto_Base_Web.md §21B013 |
+| `_pronosticoTechoDePozo` | función | 21_Pronostico_Guerra.gs | 422 | Contexto_Base_Web.md §21B012 |
 | `_pronosticoTechoRestante` | función | 21_Pronostico_Guerra.gs | 53 | Contexto_Base_Web.md §21B005 |
 | `_pronosticoYaHizoDuelo` | función | 21_Pronostico_Guerra.gs | 80 | Contexto_Base_Web.md §21B007 |
 | `_propPrivadaCache_` | global | 01_Config_Global.gs | 959 | Contexto_Base_Web.md §PF048 |
@@ -1323,7 +1325,7 @@ Ninguno.
 | `_tiemposMensajesWeb_` | función | 42_Web_TiemposActualizacion.gs | 108 |  |
 | `_tocaProtegida_` | función | 05_Backup_CSV.gs | 115 |  |
 | `_topNTrasResoluciones` | función | 26_Torneos_Core.gs | 3887 | Contexto_Base_Web.md §26B269 |
-| `_totalesSemanaDesdeAcumulados` | función | 28_Torneos_Docs.gs | 1123 | Contexto_Base_Web.md §28B080 |
+| `_totalesSemanaDesdeAcumulados` | función | 28_Torneos_Docs.gs | 1147 | Contexto_Base_Web.md §28B080 |
 | `_totSemanaPorDias_` | función | 57_ReconstruirSemanaPorDias.gs | 450 |  |
 | `_tpSumarClaves_` | función | 48_Herramientas_Debug.gs | 290 |  |
 | `_traducirNombreInsignia` | función | 32_Insignias.gs | 130 | Contexto_Base_Web.md §32B013 |
@@ -1521,7 +1523,7 @@ Ninguno.
 | `_webPermisosParsearLista` | función | 37_Web_API.gs | 241 | Contexto_Base_Web.md §37B024 |
 | `_webProgresoEventosCsv` | función | 35_ProgresoEventos.gs | 160 | Contexto_Base_Web.md §35B007 |
 | `_webProgresoRequisitos` | función | 37_Web_API.gs | 733 | Contexto_Base_Web.md §37B057 |
-| `_webPronosticoGuerra` | función | 21_Pronostico_Guerra.gs | 590 | Contexto_Base_Web.md §21B028 |
+| `_webPronosticoGuerra` | función | 21_Pronostico_Guerra.gs | 624 | Contexto_Base_Web.md §21B028 |
 | `_webPuedeVerCofresBattlelog` | función | 37_Web_API.gs | 3816 | Contexto_Base_Web.md §37B280 |
 | `_webRankings` | función | 37_Web_API.gs | 2006 | Contexto_Base_Web.md §37B165 |
 | `_webRateLimitExcedido` | función | 38_Web_Endpoints.gs | 30 | Contexto_Base_Web.md §38B009 |
@@ -1634,7 +1636,7 @@ Ninguno.
 | `CACHE_ENDPOINTS` | global | 09_API_ClashRoyale.gs | 32 | Contexto_Base_Web.md §09B007 |
 | `calcDiaGuerraIdx` | función | 01_Config_Global.gs | 939 |  |
 | `calcTemporadaDesdeMesEfectivo` | función | 01_Config_Global.gs | 910 | Contexto_Base_Web.md §01B138 |
-| `calcularPronosticoGuerra` | función | 21_Pronostico_Guerra.gs | 480 | Contexto_Base_Web.md §21B021 |
+| `calcularPronosticoGuerra` | función | 21_Pronostico_Guerra.gs | 512 | Contexto_Base_Web.md §21B021 |
 | `calentarCacheGuerraEnVivo` | función | 37_Web_API.gs | 5026 | Contexto_Base_Web.md §37B363 |
 | `CAMINO_LEYENDAS_CSV` | global | 33_CaminoLeyendas.gs | 10 |  |
 | `CAMINO_LEYENDAS_HEADERS` | global | 33_CaminoLeyendas.gs | 11 |  |
@@ -2012,9 +2014,9 @@ Ninguno.
 | `PROGRESO_EVENTOS_HEADERS` | global | 35_ProgresoEventos.gs | 13 |  |
 | `PRONOSTICO_FOTO_MAX_CHARS` | global | 21_Pronostico_Guerra.gs | 138 |  |
 | `PRONOSTICO_FOTO_PROP` | global | 21_Pronostico_Guerra.gs | 137 |  |
-| `PRONOSTICO_WEB_CACHE_KEY` | global | 21_Pronostico_Guerra.gs | 583 |  |
-| `PRONOSTICO_WEB_CACHE_TTL_SEG` | global | 21_Pronostico_Guerra.gs | 584 |  |
-| `PRONOSTICO_WEB_CHECKPOINT_MAX_EDAD_MS` | global | 21_Pronostico_Guerra.gs | 585 |  |
+| `PRONOSTICO_WEB_CACHE_KEY` | global | 21_Pronostico_Guerra.gs | 617 |  |
+| `PRONOSTICO_WEB_CACHE_TTL_SEG` | global | 21_Pronostico_Guerra.gs | 618 |  |
+| `PRONOSTICO_WEB_CHECKPOINT_MAX_EDAD_MS` | global | 21_Pronostico_Guerra.gs | 619 |  |
 | `pronosticoGuerraHoy` | función | 21_Pronostico_Guerra.gs | 29 | Contexto_Base_Web.md §21B003 |
 | `PROTEGIDAS_CSV_CLAVES` | global | 05_Backup_CSV.gs | 113 |  |
 | `publicarGuerraEstatico` | función | 50_Publicar_Guerra.gs | 202 |  |
