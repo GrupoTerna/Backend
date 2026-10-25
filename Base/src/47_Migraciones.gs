@@ -354,6 +354,16 @@ function migrarFuncionActualizarRosterATodosLosAdmins() {
 
 // runReenumerarTemporadas(nuevaFechaRefStr): punto de entrada MANUAL (YYYY-MM-DD); reusa el motor de tandas de _ejecutarPorTandas(). [→ Contexto_Base_Web.md §47B021]
 function runReenumerarTemporadas(nuevaFechaRefStr) {
+  // PF258 (25-oct-2026): validar ANTES de tomar el lock. Desde el editor de Apps Script no se pueden pasar argumentos: la función llegaba con
+  // nuevaFechaRefStr undefined, guardaba REENUM_DELTA_MESES = «NaN» y fallaba en setProperty dejando el lock tomado. Desde el editor, usar iniciarReenumerarTemporadas().
+  var textoFecha = String(nuevaFechaRefStr === undefined || nuevaFechaRefStr === null ? '' : nuevaFechaRefStr).trim();
+  var mFecha = /^(\d{4})-(\d{2})-(\d{2})$/.exec(textoFecha);
+  var fechaValida = mFecha && new Date(Number(mFecha[1]), Number(mFecha[2]) - 1, Number(mFecha[3])).getMonth() === Number(mFecha[2]) - 1;
+  if (!fechaValida) {
+    Logger.log('[Reenumeración] NO se inició: falta la fecha Ref nueva o no tiene el formato AAAA-MM-DD (recibido: «' + textoFecha + '»). Desde el editor de Apps Script no se pueden pasar argumentos: escribe la fecha dentro de iniciarReenumerarTemporadas() y corre esa función. No se guardó ni se cambió nada.');
+    return;
+  }
+  nuevaFechaRefStr = textoFecha;
   if (!_adquirirLockEjecucion('runReenumerarTemporadas')) return;
 
   var refVieja = CFG.REF_DEFAULT; // getter, ya resuelve el valor activo
@@ -618,6 +628,25 @@ function _migrarColumnaPrestamoEnHoja(sh, nombreHoja, headers) {
 // ---------------------------------------------------------------------------
 // Helpers de la reenumeracion de temporadas (antes 52_ReenumerarTemporadas.gs)
 // ---------------------------------------------------------------------------
+
+// iniciarReenumerarTemporadas(): PF258; punto de entrada para correr DESDE EL EDITOR (el editor no pasa argumentos). Escribe la fecha Ref nueva en FECHA_REF_NUEVA, guarda y corre esta función.
+function iniciarReenumerarTemporadas() {
+  var FECHA_REF_NUEVA = 'AAAA-MM-DD'; // <- cambiar por la fecha Ref nueva (por ejemplo '2026-06-01'); mientras diga AAAA-MM-DD no hace nada
+  runReenumerarTemporadas(FECHA_REF_NUEVA);
+}
+
+// liberarLockEjecucionManual(): PF258; libera a mano el lock de ejecución (EJECUCION_EN_CURSO) que dejó tomado una función que falló antes de liberarlo. Si hay una reenumeración a medias (REENUM_PASO) NO toca nada.
+function liberarLockEjecucionManual() {
+  var props = PropertiesService.getScriptProperties();
+  if (props.getProperty('REENUM_PASO') !== null) {
+    Logger.log('[Lock] Hay una reenumeración a medias (REENUM_PASO = ' + props.getProperty('REENUM_PASO') + '). No se libera nada: se continúa con _continuarReenumerarTemporadas() o se revisa primero qué pasos llegaron a escribirse.');
+    return;
+  }
+  var raw = props.getProperty('EJECUCION_EN_CURSO');
+  _liberarLockEjecucion();
+  if (props.getProperty('REENUM_DELTA_MESES') === 'NaN') props.deleteProperty('REENUM_DELTA_MESES'); // basura del intento sin fecha (25-oct-2026)
+  Logger.log('[Lock] Liberado. Lo que había: ' + (raw || '(nada)'));
+}
 
 // _continuarReenumerarTemporadas(): entrada de runReenumerarTemporadas() y del trigger de continuación; no llamar para iniciar una corrida nueva (no adquiere el lock). [→ Contexto_Base_Web.md §47B027]
 function _continuarReenumerarTemporadas() {
