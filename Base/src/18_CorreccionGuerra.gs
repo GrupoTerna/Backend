@@ -2864,7 +2864,7 @@ function _getTemporadaRoyaleApiDesdePropia(temporadaPropia) {
 // (17, 18, 23, 47) no se enteran; solo cambia la capa que lee y escribe el CSV (este bloque).
 // Reglas: (a) una fila por temporada, semana y jugador; (b) el Log actualiza las columnas de cada clan; (c) la columna RoyaleAPI
 // la actualiza la visita al perfil; (d) Externo = RoyaleAPI - suma de los clanes, solo si la suma es menor; vacío en los demás casos.
-// «Origen RoyaleAPI» dice de dónde salió esa columna: «perfil» (la mandó la fase de perfiles) o «desconocido» (no se puede asegurar).
+// «Origen RoyaleAPI» dice de dónde salió esa columna: «perfil» (la mandó la fase de perfiles) o «desconocido» (no se puede asegurar). §PF244: si la fila no tiene perfil pero sí datos de un clan, dice «sin perfil: Log/Analytics».
 var CGW_MAGNITUDES = [
   { nombre: 'Ataques',  campo: 'ataquesSemana' },
   { nombre: 'Barcos',   campo: 'barcos' },
@@ -2872,6 +2872,11 @@ var CGW_MAGNITUDES = [
 ];
 var CGW_ORIGEN_PERFIL = 'perfil';
 var CGW_ORIGEN_DESCONOCIDO = 'desconocido';
+// §PF244 (punto 1 de §PF235): seña de «perfil no consultado». Solo se ESCRIBE (valor calculado, como Externo y ID): una fila sin dato
+// de perfil pero con datos de algún clan (Log/Analytics/River Race) dice por qué no tiene perfil, en vez de dejar «Origen RoyaleAPI» vacío.
+// Nunca se lee como origen: al leer, el origen solo se mira cuando hay valores en las columnas RoyaleAPI, y cualquier texto que no sea
+// «perfil» se trata como «desconocido». No distingue Log de Analytics (el mapa en memoria no guarda esa fuente).
+var CGW_ORIGEN_SIN_PERFIL = 'sin perfil: Log/Analytics';
 var CGW_ENCABEZADO_ORIGEN = 'Origen RoyaleAPI';
 // §PF238: columna «ID» (segunda columna del formato ancho): T_NN_S_NN_#TAG con la temporada propia y la semana de la fila. Es un valor
 // calculado al escribir (se ignora al leer, como Externo): no hay que migrar nada, cada escritura lo completa en todas las filas.
@@ -3222,7 +3227,7 @@ function _cgwMapaAFilasAnchas_(mapa) {
       fila.push((g.perfil && g.perfil[campo] !== null && g.perfil[campo] !== undefined) ? g.perfil[campo] : '');
     }
     fila.push(todasAprobadas ? 'Sí' : '', todasImpl ? 'Sí' : (algunaImplNo ? 'No' : ''),
-      g.perfil ? (g.perfil.origenPerfil || CGW_ORIGEN_DESCONOCIDO) : '',
+      g.perfil ? (g.perfil.origenPerfil || CGW_ORIGEN_DESCONOCIDO) : (entradasClan.length > 0 ? CGW_ORIGEN_SIN_PERFIL : ''), // §PF244
       g.perfil ? (g.perfil.clanPerfil || '') : '');
     filas.push(fila);
   }
