@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Familia Terna - Corrección de Guerra + Miembros Nuevos + Verificar Semana (RoyaleAPI)
 // @namespace    familia-terna-correccion-guerra
-// @version      3.9
+// @version      3.10
 // @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041] v3.2 (pedido usuaria, formato ancho de Correcciones_Guerra.csv, §PF164): cada fila del Perfil sale marcada con fuente:'perfil' (el backend guarda así de dónde salió la columna RoyaleAPI: «perfil» o «desconocido»), y al iniciar la Corrección de Guerra se puede FORZAR la lectura del perfil de ciertos jugadores (las cuentas con varios clanes o los tags que se escriban): se visita su perfil aunque Log/Analytics ya los cubrieran y se reenvían TODAS sus semanas, aunque ya estén guardadas, para llenar de verdad la columna RoyaleAPI. v3.4 (pedido usuaria, 24-oct-2026, §PF234): cuarto botón «Corrección de jugadores elegidos»: escribes los tags y lee la semana en curso (River Race), el Log, Analytics y el perfil, pero guarda y envía SOLO a esos jugadores; al final lista las diferencias entre fuentes. Antes, forzar perfiles solo cambiaba la fase de Perfiles y el Log y Analytics enviaban a toda la comunidad. v3.5 (pedido usuaria, 25-oct-2026, §PF236): cuando se visita un perfil se envían TODAS sus filas (ya no se descartan las semanas cubiertas por Log/Analytics ni las ya guardadas) y el backend decide qué conserva: una fila igual a la guardada no se reescribe. v3.6 (pedido usuaria, 25-oct-2026, §PF237): el panel muestra «REVISAR PERFIL» cuando el backend reemplaza un valor del perfil ya guardado por otro distinto (antes/ahora), y el perfil ya no envía la semana en curso. v3.8 (pedido usuaria, 25-oct-2026, §PF243): el botón de miembros nuevos manda TODO lo que lee de cada perfil visitado (las semanas del perfil de todos los candidatos, no solo de los que cuentan como nuevos) y el backend decide qué guarda en la hoja «Nuevos» y qué en Correcciones_Guerra.csv; el panel muestra cuántas filas del perfil se aplicaron, cuántas estaban sin cambios y los avisos «REVISAR PERFIL».
 // @author       Familia Terna
 // @match        https://royaleapi.com/*
@@ -2527,9 +2527,11 @@
     estado.fase = 'perfiles';
 
     var cubiertos = (estado.analyticsTagsEncontrados || []).concat(estado.logTagsEncontrados || []);
+    // v3.10 (§PF246, punto 2 de §PF235): los activos cubiertos por Log/Analytics que no tienen ninguna fila de perfil en el CSV también se visitan (una vez).
+    var sinPerfilCsv = (_esSolo(estado) || estado.modoBackfill) ? [] : (estado.sinPerfilEnCsv || []);
     var pendientesTotal = _esSolo(estado) ? [] : estado.modoBackfill
       ? estado.jugadoresOriginal.slice() // PUNTO 3: backfill visita el perfil de TODOS, cubiertos o no (Sección 4: "Perfil de cada miembro activo actual")
-      : estado.jugadoresOriginal.filter(function (j) { return cubiertos.indexOf(j.tag) === -1; });
+      : estado.jugadoresOriginal.filter(function (j) { return cubiertos.indexOf(j.tag) === -1 || sinPerfilCsv.indexOf(j.tag) !== -1; });
     // v3.2 (§PF164): los jugadores cuyo perfil se fuerza se agregan siempre. Si no están en la lista de activos (ya no están en un clan
     // Terna), se arma su ficha con la URL del perfil y se marca sinHistorial para no escribir su histórico con el tag como nombre.
     var forzados = estado.forzarPerfil || [];
@@ -2547,6 +2549,11 @@
     estado.jugadores = pendientesTotal;
     estado.indice = 0;
 
+    if (sinPerfilCsv.length) {
+      var gb = estado.jugadoresOriginal.filter(function (j) { return cubiertos.indexOf(j.tag) !== -1 && sinPerfilCsv.indexOf(j.tag) !== -1; }).length;
+      log(estado, '[Perfiles] ' + gb + ' jugador(es) activo(s) cubiertos por Log/Analytics pero SIN ninguna fila de perfil en Correcciones_Guerra.csv: se visita su perfil (una sola vez). ' +
+        'La lista del backend trae ' + sinPerfilCsv.length + ' tag(s) sin perfil; los que ya no están en los clanes Terna no se visitan (para esos usa «jugadores elegidos»).');
+    }
     log(estado, '[Perfiles] ' + (estado.logTagsEncontrados || []).length + ' jugador(es) cubiertos por Log y ' +
       (estado.analyticsTagsEncontrados || []).length + ' por Analytics. ' + pendientesTotal.length + ' jugador(es) pasan a Perfil' +
       (_esSolo(estado) ? ' (SOLO los jugadores elegidos, todos con perfil forzado).' : estado.modoBackfill ? ' (modo BACKFILL: se visita a TODOS, no solo a los no cubiertos).' : ' (solo los que ni Log ni Analytics cubrieron).') +
@@ -3514,6 +3521,7 @@
           var forzados = _pedirPerfilesForzados(data.cuentasVariosClanes);
           var estado = estadoInicial(data.jugadores, data.clanesTerna, data.clanTagsTerna, data.coberturaPorTag, modoBackfill,
             data.temporadaRoyaleApiActual, data.semanaActual, forzados.tags);
+          estado.sinPerfilEnCsv = Array.isArray(data.sinPerfilEnCsv) ? data.sinPerfilEnCsv : []; // v3.10 (§PF246); sin el campo (backend anterior) no se visita a nadie de más
           guardarEstado(estado);
           log(estado, 'Lista obtenida: ' + data.jugadores.length + ' jugador(es) activo(s) en clanes Terna.' +
             (modoBackfill ? ' Modo BACKFILL activado.' : ''));
