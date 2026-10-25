@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 12:32:53 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 13:47:36 */
 
 
 
@@ -16459,7 +16459,46 @@ function _aplicarImportacionNuevos(candidatosPayload) {
 }
 
 /**
+ * _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) (§PF253)
+ * ¿La fila del perfil es de un clan Terna? Con tag de clan, SOLO cuenta el tag (CFG.TERNA_TAGS). Sin tag (la celda de RoyaleAPI no traía
+ * enlace) se usa el nombre como antes (§PF248), con la misma comparación flexible de Tampermonkey (solo letras y números, minúsculas,
+ * «contiene» en cualquiera de los dos sentidos).
+ */
+function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
+  var tag = String(clanTag || '').trim().toUpperCase();
+  if (tag) {
+    if (tag.charAt(0) !== '#') tag = '#' + tag;
+    return CFG.TERNA_TAGS.indexOf(tag) >= 0;
+  }
+  var norm = function (s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); };
+  var n = norm(nombreClan);
+  for (var i = 0; i < (nombresTerna || []).length; i++) {
+    var nt = norm(nombresTerna[i]);
+    if (n.indexOf(nt) >= 0 || nt.indexOf(n) >= 0) return true;
+  }
+  return false;
+}
+
+/**
+ * _esNuevoPorTagClan_(ultimasSemanas, nombresTerna) (§PF253, 25-oct-2026)
+ * «Cuenta como nuevo» = alguna de las TRES últimas filas del historial del perfil (la más reciente primero, como las manda Tampermonkey
+ * v3.13 en cand.ultimasSemanas: [{clanTag, clan}]) es de un clan que NO es Terna (criterio de siempre; §PF249 punto 1: ahora lo calcula el
+ * backend y por tag). Sin filas devuelve false, como antes.
+ */
+function _esNuevoPorTagClan_(ultimasSemanas, nombresTerna) {
+  var n = Math.min(3, (ultimasSemanas || []).length);
+  for (var i = 0; i < n; i++) {
+    var fila = ultimasSemanas[i];
+    if (!fila) continue;
+    if (!_clanDeFilaEsTerna_(fila.clanTag, fila.clan, nombresTerna)) return true;
+  }
+  return false;
+}
+
+/**
  * _importarNuevosYPerfiles_(candidatosPayload) [→ Contexto_Base_Web.md §PF243]
+ * §PF253: desde Tampermonkey v3.13 cada candidato trae cand.ultimasSemanas (las 3 últimas filas del perfil, con clanTag) y el backend decide por tag si
+ * cuenta como nuevo (_esNuevoPorTagClan_()); sin ese campo se usa cand.esNuevo como antes.
  *
  * Punto de entrada de accion=importarNuevos desde PF243 (Tampermonkey v3.8). El botón de miembros nuevos manda TODO lo que
  * leyó de cada perfil visitado y el backend decide qué guarda y dónde:
@@ -16499,6 +16538,13 @@ function _importarNuevosYPerfiles_(candidatosPayload) {
       '); no se descarta ninguna fila de perfil por ese motivo.');
   }
 
+  var nombresTernaNv = [];
+  try {
+    nombresTernaNv = _getNombresClanesTernaOrdenados(); // solo para las filas del perfil sin enlace de clan (respaldo por nombre, §PF248)
+  } catch (eNomNv) {
+    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudieron leer los nombres de los clanes Terna (' + (eNomNv.message || eNomNv) + ').');
+  }
+
   var paraNuevos = [];
   var correcciones = [];
   var candidatosConPerfil = 0, filasEnCurso = 0;
@@ -16507,7 +16553,9 @@ function _importarNuevosYPerfiles_(candidatosPayload) {
     var tag = String(cand.tag || '').trim().toUpperCase();
     if (!tag) continue;
 
-    var cuentaComoNuevo = (tagsEnHoja === null) || (cand.esNuevo !== false) || (tagsEnHoja[tag] === true);
+    // §PF253: «cuenta como nuevo» lo decide el backend por TAG de clan con las últimas tres filas del perfil (cand.ultimasSemanas, Tampermonkey v3.13). Sin ese campo (Tampermonkey anterior) se usa el esNuevo que mandó.
+    var esNuevoCand = Array.isArray(cand.ultimasSemanas) ? _esNuevoPorTagClan_(cand.ultimasSemanas, nombresTernaNv) : (cand.esNuevo !== false);
+    var cuentaComoNuevo = (tagsEnHoja === null) || esNuevoCand || (tagsEnHoja[tag] === true);
     if (cuentaComoNuevo) paraNuevos.push(cand);
 
     var filas = (cand.filasPerfil && cand.filasPerfil.length) ? cand.filasPerfil : [];
@@ -16912,12 +16960,13 @@ function _guardarSnapshotDebugImportacionNuevos(candidatosPayload) {
     }
 
     // 3b) Guardar CSV aplanado (una fila por registro individual, para [→ Contexto_Base_Web.md §14B071]
-    var filasCsv = [['Tag', 'Temporada', 'Fecha', 'Fecha_TS', 'Clan', 'Ataques', 'Fame', 'Barcos']];
+    // §PF253 (25-oct-2026): columna 9 «ClanTag» (tag del clan del registro; vacío si la celda de RoyaleAPI no tenía enlace). Va AL FINAL para no mover las 8 que lee _restaurarNuevosDesdeCsvDebug(). La hoja «Nuevos» sigue mostrando solo el nombre del clan.
+    var filasCsv = [['Tag', 'Temporada', 'Fecha', 'Fecha_TS', 'Clan', 'Ataques', 'Fame', 'Barcos', 'ClanTag']];
     for (var t2 in mapa) {
       var entrada = mapa[t2];
       var registros = entrada.registros || [];
       if (registros.length === 0) {
-        filasCsv.push([t2, '', '', '', '', '', '', '']);
+        filasCsv.push([t2, '', '', '', '', '', '', '', '']);
         continue;
       }
       for (var r = 0; r < registros.length; r++) {
@@ -16925,7 +16974,7 @@ function _guardarSnapshotDebugImportacionNuevos(candidatosPayload) {
         var fechaAjustada = _parseFechaISONuevos(reg.fecha);
         var fechaTexto = fechaAjustada ? Utilities.formatDate(fechaAjustada, Session.getScriptTimeZone(), 'dd/MM/yyyy') : (reg.fecha || '');
         var fechaTs = fechaAjustada ? fechaAjustada.getTime() : '';
-        filasCsv.push([t2, reg.temporada || '', fechaTexto, fechaTs, reg.clan || '', reg.ataques, reg.fame, reg.barcos]);
+        filasCsv.push([t2, reg.temporada || '', fechaTexto, fechaTs, reg.clan || '', reg.ataques, reg.fame, reg.barcos, String(reg.clanTag || '').trim().toUpperCase()]);
       }
     }
     var contentCsv = filasCsv.map(function (fila) {
@@ -17610,7 +17659,7 @@ function _restaurarNuevosDesdeCsvDebug() {
   }
   var tz = Session.getScriptTimeZone() || 'GMT-5';
 
-  var filas = parsed.slice(1); // Tag, Temporada, Fecha, Fecha_TS, Clan, Ataques, Fame, Barcos
+  var filas = parsed.slice(1); // Tag, Temporada, Fecha, Fecha_TS, Clan, Ataques, Fame, Barcos, ClanTag (la 9.ª es de §PF253; los CSV anteriores no la tienen)
   var porTag = {};
   var tagsDescartadosPorMembresia = {};
 
@@ -17650,7 +17699,8 @@ function _restaurarNuevosDesdeCsvDebug() {
       clan: f[4] || '',
       ataques: Number(f[5]) || 0,
       fame: Number(f[6]) || 0,
-      barcos: Number(f[7]) || 0
+      barcos: Number(f[7]) || 0,
+      clanTag: String(f[8] || '').trim().toUpperCase() // §PF253: vacío en los CSV anteriores
     });
   }
 
@@ -59244,20 +59294,22 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
 // PUNTO 2 (Consolidado_Cambios_Pendientes_Guerra.md): detección automática SOLO SUGERENCIA de la temporada más antigua con presencia Terna; nunca dispara la reenumeración. [→ Contexto_Base_Web.md §47B022]
 // =============================================================================
 
-// detectarTemporadaMasAntiguaConPresenciaTerna(): manual, solo sugerencia; cruza Backup_Guerra.csv y la hoja Nuevos; nunca modifica datos. [→ Contexto_Base_Web.md §47B023]
+// detectarTemporadaMasAntiguaConPresenciaTerna(): manual, solo sugerencia; cruza Backup_Guerra.csv, la hoja Nuevos y (§PF253, por tag de clan) Correcciones_Guerra.csv; nunca modifica datos. [→ Contexto_Base_Web.md §47B023]
 function detectarTemporadaMasAntiguaConPresenciaTerna() {
   var nombresTerna = _getNombresClanesTernaOrdenados();
 
   var fechaGuerra = _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna);
   var fechaNuevos = _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna);
+  var fechaCorrecciones = _buscarFechaMasAntiguaTernaEnCorreccionesGuerra(); // §PF253: por TAG de clan
 
   var candidatos = [];
   if (fechaGuerra) candidatos.push({ fecha: fechaGuerra, fuente: 'Backup_Guerra.csv' });
   if (fechaNuevos) candidatos.push({ fecha: fechaNuevos, fuente: 'hoja Nuevos (historial RoyaleAPI)' });
+  if (fechaCorrecciones) candidatos.push({ fecha: fechaCorrecciones, fuente: 'Correcciones_Guerra.csv (por tag de clan)' });
 
   if (!candidatos.length) {
     Logger.log('[Detección Reenumeración] No se encontró ninguna fila/bloque con presencia confirmada ' +
-      'de un clan Terna, ni en Backup_Guerra.csv ni en la hoja Nuevos. Nada que sugerir.');
+      'de un clan Terna, ni en Backup_Guerra.csv, ni en la hoja Nuevos ni en Correcciones_Guerra.csv. Nada que sugerir.');
     return;
   }
 
@@ -59304,6 +59356,56 @@ function _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna) {
     var fechaObj = _comoFechaComparable(fila[GC.FECHA - 1]);
     if (!fechaObj) continue;
     if (!masAntigua || fechaObj < masAntigua) masAntigua = fechaObj;
+  }
+  return masAntigua;
+}
+
+// _buscarFechaMasAntiguaTernaEnCorreccionesGuerra(): fuente 3 de la detección (§PF253, 25-oct-2026); devuelve Date o null.
+// Recorre Correcciones_Guerra.csv y se queda con las filas cuyo CLAN (por TAG, no por nombre) es de los clanes Terna (CFG.TERNA_TAGS); la fila de perfil de un clan externo no cuenta (_cgwPerfilEsExterno_()).
+// La fecha de cada fila sale de su Temporada y Semana internas (Semana desde 1): primer lunes de la temporada + (semana - 1) * 7 días. Una fila sin enlace de clan (clanTag vacío) NO cuenta aquí: espera a la corrida de correcciones completas (§PF252).
+// Solo lee; si el CSV no existe o no tiene filas devuelve null.
+function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
+  var overlay;
+  try {
+    overlay = _cargarOverlayCorreccionesGuerraPorClan();
+  } catch (e) {
+    Logger.log('[Detección Reenumeración] No se pudo leer Correcciones_Guerra.csv: ' + e.message);
+    return null;
+  }
+  var claves = Object.keys(overlay || {});
+  if (!claves.length) return null;
+
+  var ternaSet = {};
+  for (var t = 0; t < CFG.TERNA_TAGS.length; t++) {
+    ternaSet[_normalizarClanTagCorreccion(CFG.TERNA_TAGS[t])] = true;
+  }
+
+  var ref = CFG.REF_DEFAULT;
+  var fechaPorSemana = {};
+  var masAntigua = null;
+  for (var i = 0; i < claves.length; i++) {
+    var p = claves[i].split('|'); // temporada | semana | clantag | tag
+    var clanTag = p[2];
+    if (!clanTag || !ternaSet[clanTag]) continue;
+    if (_cgwPerfilEsExterno_(overlay[claves[i]])) continue;
+
+    var temporada = Number(p[0]);
+    var semana = Number(p[1]);
+    if (!temporada || !semana || semana < 1) continue;
+
+    var ck = temporada + '|' + semana;
+    var fecha = fechaPorSemana[ck];
+    if (fecha === undefined) {
+      var pl = primerLunesTemporada(ref, temporada);
+      if (pl && !isNaN(pl.getTime())) {
+        fecha = new Date(pl.getTime());
+        fecha.setDate(fecha.getDate() + (semana - 1) * 7);
+      } else {
+        fecha = null;
+      }
+      fechaPorSemana[ck] = fecha;
+    }
+    if (fecha && (!masAntigua || fecha < masAntigua)) masAntigua = fecha;
   }
   return masAntigua;
 }
