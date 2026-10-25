@@ -20,13 +20,13 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   function () { _reenumerarCalendario2Hoja(); },
   function () { return _reenumerarCSV('Backup_Calendario_2.csv', null, 6, 3); }, // Calendario_2 no tiene un CC dedicado; col 3 = Temporada
   function () { return _reenumerarCorreccionesGuerraCSV(); },
-  // PF254 (25-oct-2026, etapa C, tanda 1): sorteos, asistencia de sorteos y registros de cambio de rango. S_Lista y CR_Lista tienen
-  // encabezado de 2 filas (datos desde la fila 3), como T_Lista; S_Asistencia tiene 1. Los respaldos aplanan el encabezado a 1 fila.
+  // PF254 (25-oct-2026, etapa C, tanda 1): sorteos, asistencia de sorteos y registros de cambio de rango. S_Lista tiene encabezado de
+  // 2 filas (datos desde la fila 3), como T_Lista; CR_Lista de 3 (datos desde la fila 4); S_Asistencia de 1. Los respaldos aplanan el encabezado a 1 fila.
   function () { _reenumerarHoja(CFG.SHEETS.S_LISTA, SL, SL_TOTAL_COLS, SL.TEMPORADA, 3); },
   function () { return _reenumerarCSV('Backup_S_Lista.csv', SL, SL_TOTAL_COLS, SL.TEMPORADA); },
   function () { _reenumerarHoja(CFG.SHEETS.S_ASISTENCIA, SA, SA_TOTAL_COLS, SA.TEMPORADA); },
   function () { return _reenumerarCSV('Backup_S_Asistencia.csv', SA, SA_TOTAL_COLS, SA.TEMPORADA); },
-  function () { _reenumerarHoja(CFG.SHEETS.CR_LISTA, CR, CR_TOTAL_COLS, CR.TEMPORADA, 3); },
+  function () { _reenumerarHoja(CFG.SHEETS.CR_LISTA, CR, CR_TOTAL_COLS, CR.TEMPORADA, 4); },
   function () { return _reenumerarCSV('Backup_CR_Lista.csv', CR, CR_TOTAL_COLS, CR.TEMPORADA); },
   function () { _finalizarReenumeracion(); },
 ];
