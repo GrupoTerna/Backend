@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 18:13:56 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 18:28:17 */
 
 
 
@@ -59305,6 +59305,11 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
     return;
   }
   nuevaFechaRefStr = textoFecha;
+  var pasoPendiente = PropertiesService.getScriptProperties().getProperty('REENUM_PASO');
+  if (pasoPendiente !== null) {
+    Logger.log('[Reenumeración] NO se inició: hay una reenumeración sin terminar (REENUM_PASO = ' + pasoPendiente + '). Empezar de nuevo sumaría el delta otra vez en los pasos ya hechos. Usa reanudarReenumerarTemporadas().');
+    return;
+  }
   if (!_adquirirLockEjecucion('runReenumerarTemporadas')) return;
 
   var refVieja = CFG.REF_DEFAULT; // getter, ya resuelve el valor activo
@@ -59576,6 +59581,25 @@ function iniciarReenumerarTemporadas() {
   runReenumerarTemporadas(FECHA_REF_NUEVA);
 }
 
+// reanudarReenumerarTemporadas(): PF258; sigue una reenumeración que se cortó por un error, SIN volver a sumar en los pasos ya hechos. Usa el REENUM_PASO guardado; si se perdió (versión anterior del código, que lo borraba al fallar),
+// toma PASO_DONDE_SEGUIR. Exige que sigan guardados REENUM_DELTA_MESES y REENUM_NUEVA_REF (se borran al terminar, así que una corrida completa nunca se reanuda por error).
+function reanudarReenumerarTemporadas() {
+  var PASO_DONDE_SEGUIR = 6; // 25-oct-2026: la corrida de las 6:21 p.m. terminó los pasos 0 a 5 y falló en el 6 (T_Asistencia). Solo se usa si REENUM_PASO se perdió.
+  var props = PropertiesService.getScriptProperties();
+  var delta = Number(props.getProperty('REENUM_DELTA_MESES'));
+  if (!isFinite(delta) || delta === 0 || !props.getProperty('REENUM_NUEVA_REF') || props.getProperty('REENUM_OFFSET_VIEJO') === null) {
+    Logger.log('[Reenumeración] No hay nada que reanudar (faltan REENUM_DELTA_MESES, REENUM_NUEVA_REF o REENUM_OFFSET_VIEJO). No se hizo nada.');
+    return;
+  }
+  var guardado = props.getProperty('REENUM_PASO');
+  if (guardado === null) {
+    props.setProperty('REENUM_PASO', String(PASO_DONDE_SEGUIR));
+    Logger.log('[Reenumeración] REENUM_PASO no estaba guardado; se retoma en el paso ' + PASO_DONDE_SEGUIR + '.');
+  }
+  if (!_adquirirLockEjecucion('reanudarReenumerarTemporadas')) return;
+  _continuarReenumerarTemporadas();
+}
+
 // liberarLockEjecucionManual(): PF258; libera a mano el lock de ejecución (EJECUCION_EN_CURSO) que dejó tomado una función que falló antes de liberarlo. Si hay una reenumeración a medias (REENUM_PASO) NO toca nada.
 function liberarLockEjecucionManual() {
   var props = PropertiesService.getScriptProperties();
@@ -59605,10 +59629,12 @@ function _continuarReenumerarTemporadas() {
     // Si no está completo, el lock NO se libera: _ejecutarPorTandas ya
     // refrescó su timestamp y programó la continuación automática.
   } catch (e) {
-    PropertiesService.getScriptProperties().deleteProperty('REENUM_PASO');
+    // PF258 (25-oct-2026): REENUM_PASO NO se borra. Antes se borraba y un nuevo inicio empezaba en el paso 0, sumando otra vez el delta en los pasos que ya habían terminado.
+    // Queda el índice del paso que falló (los anteriores terminaron). Para seguir: reanudarReenumerarTemporadas(). No correr iniciarReenumerarTemporadas() de nuevo.
+    var pasoFallido = PropertiesService.getScriptProperties().getProperty('REENUM_PASO');
     _borrarTriggersDeContinuacion('_continuarReenumerarTemporadas');
     _liberarLockEjecucion();
-    Logger.log('[Reenumeración] ERROR: ' + e.message + ' — lock liberado. NADA se confirmó como terminado; revisar qué pasos sí llegaron a escribirse antes de reintentar.');
+    Logger.log('[Reenumeración] ERROR en el paso ' + pasoFallido + ': ' + e.message + ' — lock liberado. Los pasos anteriores ya escribieron su parte; el paso ' + pasoFallido + ' puede haber escrito algo si hace varias escrituras. Corrige la causa y corre reanudarReenumerarTemporadas() (NO vuelvas a iniciar: sumaría el delta de nuevo).');
     throw e;
   }
 }
@@ -59883,14 +59909,18 @@ function _reenumerarHoja(sheetName, colMap, totalCols, colTemporada, filaInicio)
   if (lastRow < primeraFila) { Logger.log('[Reenumeración] Hoja ' + sheetName + ' sin filas de datos, se omite.'); return; }
 
   var numFilas = lastRow - primeraFila + 1;
-  var data = sh.getRange(primeraFila, 1, numFilas, totalCols).getValues();
-  for (var i = 0; i < data.length; i++) {
-    var actual = Number(data[i][colTemporada - 1]) || 0;
-    data[i][colTemporada - 1] = actual + deltaMeses;
+  // PF258 (25-oct-2026): se lee y se escribe SOLO la columna Temporada. Antes se reescribía la hoja entera (totalCols columnas) y una celda de otra
+  // columna con un valor fuera de su lista desplegable (T_Asistencia, U3) hacía fallar setValues por la validación de datos; además reescribir todo
+  // convertía en valores fijos cualquier fórmula de las demás columnas. totalCols se conserva en la firma, pero ya no se usa.
+  var rango = sh.getRange(primeraFila, colTemporada, numFilas, 1);
+  var columna = rango.getValues();
+  for (var i = 0; i < columna.length; i++) {
+    var actual = Number(columna[i][0]) || 0;
+    columna[i][0] = actual + deltaMeses;
   }
-  sh.getRange(primeraFila, 1, numFilas, totalCols).setValues(data);
+  rango.setValues(columna);
 
-  Logger.log('[Reenumeración] Hoja ' + sheetName + ': ' + data.length + ' fila(s) actualizadas (Temporada += ' + deltaMeses + ').');
+  Logger.log('[Reenumeración] Hoja ' + sheetName + ': ' + columna.length + ' fila(s) actualizadas (Temporada += ' + deltaMeses + ').');
 }
 
 // _reenumerarCalendario2Hoja(): caso especial de _reenumerarHoja(); Calendario_2 no tiene mapa CC; Temporada en la columna 3. [→ Contexto_Base_Web.md §47B030]
@@ -59905,12 +59935,14 @@ function _reenumerarCalendario2Hoja() {
   if (lastRow < 2) { Logger.log('[Reenumeración] Hoja ' + CFG.SHEETS.CALENDARIO2 + ' sin filas de datos, se omite.'); return; }
 
   var COL_TEMPORADA_CAL2 = 3;
-  var data = sh.getRange(2, 1, lastRow - 1, 6).getValues();
+  // PF258 (25-oct-2026): solo la columna Temporada (ver _reenumerarHoja: evita la validación de datos de otras columnas y no convierte fórmulas en valores).
+  var rangoTemp = sh.getRange(2, COL_TEMPORADA_CAL2, lastRow - 1, 1);
+  var data = rangoTemp.getValues();
   for (var i = 0; i < data.length; i++) {
-    var actual = Number(data[i][COL_TEMPORADA_CAL2 - 1]) || 0;
-    data[i][COL_TEMPORADA_CAL2 - 1] = actual + deltaMeses;
+    var actual = Number(data[i][0]) || 0;
+    data[i][0] = actual + deltaMeses;
   }
-  sh.getRange(2, 1, lastRow - 1, 6).setValues(data);
+  rangoTemp.setValues(data);
 
   Logger.log('[Reenumeración] Hoja ' + CFG.SHEETS.CALENDARIO2 + ': ' + data.length + ' fila(s) actualizadas (Temporada += ' + deltaMeses + ').');
 }
