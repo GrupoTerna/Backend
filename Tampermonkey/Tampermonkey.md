@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Familia Terna - Corrección de Guerra + Miembros Nuevos + Verificar Semana (RoyaleAPI)
 // @namespace    familia-terna-correccion-guerra
-// @version      3.3
-// @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041] v3.2 (pedido usuaria, formato ancho de Correcciones_Guerra.csv, §PF164): cada fila del Perfil sale marcada con fuente:'perfil' (el backend guarda así de dónde salió la columna RoyaleAPI: «perfil» o «desconocido»), y al iniciar la Corrección de Guerra se puede FORZAR la lectura del perfil de ciertos jugadores (las cuentas con varios clanes o los tags que se escriban): se visita su perfil aunque Log/Analytics ya los cubrieran y se reenvían TODAS sus semanas, aunque ya estén guardadas, para llenar de verdad la columna RoyaleAPI.
+// @version      3.4
+// @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041] v3.2 (pedido usuaria, formato ancho de Correcciones_Guerra.csv, §PF164): cada fila del Perfil sale marcada con fuente:'perfil' (el backend guarda así de dónde salió la columna RoyaleAPI: «perfil» o «desconocido»), y al iniciar la Corrección de Guerra se puede FORZAR la lectura del perfil de ciertos jugadores (las cuentas con varios clanes o los tags que se escriban): se visita su perfil aunque Log/Analytics ya los cubrieran y se reenvían TODAS sus semanas, aunque ya estén guardadas, para llenar de verdad la columna RoyaleAPI. v3.4 (pedido usuaria, 24-oct-2026, §PF234): cuarto botón «Corrección de jugadores elegidos»: escribes los tags y lee la semana en curso (River Race), el Log, Analytics y el perfil, pero guarda y envía SOLO a esos jugadores; al final lista las diferencias entre fuentes. Antes, forzar perfiles solo cambiaba la fase de Perfiles y el Log y Analytics enviaban a toda la comunidad.
 // @author       Familia Terna
 // @match        https://royaleapi.com/*
 // @icon         https://royaleapi.com/favicon.ico
@@ -598,7 +598,7 @@
    * PUNTO 2 — River Race (nuevos parámetros `temporadaRoyaleApiActual`/
    * `semanaActual`, ver comentario de la fase 'riverrace' más abajo).
    */
-  function estadoInicial(jugadores, clanesTerna, clanTagsTerna, coberturaPorTag, modoBackfill, temporadaRoyaleApiActual, semanaActual, forzarPerfil) {
+  function estadoInicial(jugadores, clanesTerna, clanTagsTerna, coberturaPorTag, modoBackfill, temporadaRoyaleApiActual, semanaActual, forzarPerfil, soloTags) {
     var hayClanTags = Array.isArray(clanTagsTerna) && clanTagsTerna.length > 0;
     // River Race (Sección 2.4/3.1 del consolidado) solo se puede ejecutar si
     // el backend mandó una temporada/semana actual válida (no null — puede
@@ -698,8 +698,118 @@
       // v3.2 (§PF164): tags (con '#') cuyo perfil se FUERZA: se visitan aunque Log/Analytics ya los cubrieran y se reenvían todas
       // sus semanas (sin saltar las que ya están guardadas ni las que aportó Log/Analytics en esta corrida), para llenar la
       // columna RoyaleAPI con lo que dice el perfil. Un estado guardado por la v3.1 no trae el campo: se lee como lista vacía.
-      forzarPerfil: Array.isArray(forzarPerfil) ? forzarPerfil : []
+      forzarPerfil: Array.isArray(forzarPerfil) ? forzarPerfil : [],
+
+      // v3.4 (§PF234): tags (con '#') de la «Corrección de jugadores elegidos». Si la lista no está vacía, TODO lo que se lee de River Race, Log,
+      // Analytics y Perfil se descarta salvo estos jugadores, y Analytics se lee en los 4 clanes (no solo de respaldo) para poder comparar.
+      // `comparacion` guarda lo que dijo cada fuente por jugador y semana: { 'TAG|136-3': { perfil:{clanTag:{a,f,b}}, log:{...}, analytics:{...}, riverrace:{...} } }.
+      soloTags: Array.isArray(soloTags) ? soloTags : [],
+      comparacion: {}
     };
+  }
+
+
+  // =========================================================================
+  // v3.4 (§PF234) — CORRECCIÓN DE JUGADORES ELEGIDOS: ayudas
+  // El mismo flujo de Corrección de Guerra (River Race -> Log -> Analytics -> Perfiles), pero con estado.soloTags: lo leído de otros
+  // jugadores se descarta antes de acumular, enviar o registrar el histórico. RoyaleAPI no deja pedir un solo jugador al Log ni a
+  // Analytics (son páginas del clan entero): las páginas de los 4 clanes se visitan igual, solo cambia lo que se conserva.
+  // === SOLO:INICIO ===
+  function _esSolo(estado) { return !!(estado && estado.soloTags && estado.soloTags.length); }
+
+  function _soloFiltrar(estado, lista) {
+    if (!_esSolo(estado)) return lista;
+    return lista.filter(function (r) { return estado.soloTags.indexOf(r.tag) >= 0; });
+  }
+
+  function _soloFiltrarMapa(estado, mapa) {
+    if (!_esSolo(estado)) return mapa;
+    var salida = {};
+    for (var tg in mapa) { if (estado.soloTags.indexOf(tg) >= 0) salida[tg] = mapa[tg]; }
+    return salida;
+  }
+
+  function _soloClaveFila(r) { return r.tag + '|' + r.temporadaRoyaleApi + '|' + r.semana + '|' + (r.clanTag || ''); }
+
+  function _soloAnotar(estado, fuente, tag, temporadaRoyaleApi, semana, clanTag, ataques, fame, barcos) {
+    if (!_esSolo(estado)) return;
+    if (!estado.comparacion) estado.comparacion = {};
+    var clave = tag + '|' + temporadaRoyaleApi + '-' + semana;
+    var c = estado.comparacion[clave] || (estado.comparacion[clave] = {});
+    var f = c[fuente] || (c[fuente] = {});
+    f[clanTag || '?'] = { a: ataques, f: fame, b: (barcos === undefined ? null : barcos) };
+  }
+
+  function _soloTexto(r) { return r.a + ' ataques, ' + r.f + ' fame' + (r.b !== null && r.b !== undefined ? ', ' + r.b + ' barcos' : ''); }
+
+  // Compara dos fuentes de la misma semana. Devuelve { n: clanes comparados, dif: [texto, ...] }.
+  function _soloComparar(nA, A, nB, B) {
+    var res = { n: 0, dif: [] };
+    var kB = Object.keys(B);
+    Object.keys(A).forEach(function (k) {
+      var rB = B[k];
+      if (!rB && k === '?' && kB.length === 1) rB = B[kB[0]];
+      if (!rB && kB.length === 1 && kB[0] === '?') rB = B['?'];
+      if (!rB) { res.dif.push(nA + ' ' + k + ' (' + _soloTexto(A[k]) + ') pero ' + nB + ' trae otro clan: ' + kB.join(', ')); return; }
+      var rA = A[k];
+      res.n++;
+      var difBarcos = rA.b !== null && rA.b !== undefined && rB.b !== null && rB.b !== undefined && rA.b !== rB.b;
+      if (rA.a !== rB.a || rA.f !== rB.f || difBarcos) {
+        res.dif.push(nA + ' ' + k + ' (' + _soloTexto(rA) + ') ≠ ' + nB + ' (' + _soloTexto(rB) + ')');
+      }
+    });
+    return res;
+  }
+
+  function _soloOrdenSemana(a, b) {
+    var pa = a.split('-'), pb = b.split('-');
+    return (parseInt(pa[0], 10) - parseInt(pb[0], 10)) || (parseInt(pa[1], 10) - parseInt(pb[1], 10));
+  }
+
+  // Líneas del resumen final: por jugador, cuántas semanas se leyeron, cuántas coinciden entre fuentes y cuáles difieren.
+  function _soloLineasResumen(estado) {
+    var lineas = [];
+    var comp = estado.comparacion || {};
+    var pares = [['Perfil', 'perfil', 'Log', 'log'], ['Perfil', 'perfil', 'Analytics', 'analytics'], ['Log', 'log', 'Analytics', 'analytics']];
+    (estado.soloTags || []).forEach(function (tag) {
+      var semanas = Object.keys(comp).filter(function (k) { return k.indexOf(tag + '|') === 0; })
+        .map(function (k) { return k.split('|')[1]; }).sort(_soloOrdenSemana);
+      var jug = estado.jugadorPorTag && estado.jugadorPorTag[tag];
+      var cab = tag + (jug && jug.nombre && jug.nombre !== tag ? ' (' + jug.nombre + ')' : '');
+      if (!semanas.length) { lineas.push('[Resumen] ' + cab + ': ninguna fuente trajo filas de este jugador.'); return; }
+      var coinciden = 0, conDif = 0, unaFuente = 0, detalle = [];
+      semanas.forEach(function (sem) {
+        var c = comp[tag + '|' + sem];
+        var hechas = 0, difs = [];
+        pares.forEach(function (par) {
+          if (!c[par[1]] || !c[par[3]]) return;
+          var r = _soloComparar(par[0], c[par[1]], par[2], c[par[3]]);
+          if (r.n || r.dif.length) hechas++;
+          difs = difs.concat(r.dif);
+        });
+        if (!hechas) unaFuente++;
+        else if (difs.length) { conDif++; difs.forEach(function (d) { detalle.push('  ⚠ ' + sem + ': ' + d); }); }
+        else coinciden++;
+        if (c.riverrace) {
+          Object.keys(c.riverrace).forEach(function (k) {
+            detalle.push('  ℹ ' + sem + ' (semana en curso, provisional): River Race ' + k + ' ' + _soloTexto(c.riverrace[k]));
+          });
+        }
+      });
+      lineas.push('[Resumen] ' + cab + ': ' + semanas.length + ' semana(s) leída(s); ' + coinciden + ' coinciden entre fuentes, ' +
+        conDif + ' con diferencias, ' + unaFuente + ' en una sola fuente (sin con qué compararla).');
+      detalle.slice(0, 15).forEach(function (d) { lineas.push(d); });
+      if (detalle.length > 15) lineas.push('  … y ' + (detalle.length - 15) + ' línea(s) más (están en la consola del navegador).');
+    });
+    return lineas;
+  }
+  // === SOLO:FIN ===
+
+  function _soloImprimirResumen(estado) {
+    if (!_esSolo(estado)) return;
+    var lineas = _soloLineasResumen(estado);
+    try { console.log('[CorreccionGuerra] RESUMEN DE JUGADORES ELEGIDOS\n' + lineas.join('\n')); } catch (e) {}
+    lineas.forEach(function (l) { log(estado, l); });
   }
 
   function log(estado, msg) {
@@ -1749,6 +1859,7 @@
    * entregó filas.
    */
   function _saltarClanesConLogOk(estado) {
+    if (_esSolo(estado)) return; // v3.4: en «jugadores elegidos» Analytics se lee en los 4 clanes para poder comparar
     var ok = estado.logClanesOk || [];
     while (estado.analyticsIndiceClan < estado.clanTagsTerna.length &&
            ok.indexOf(estado.clanTagsTerna[estado.analyticsIndiceClan]) !== -1) {
@@ -2025,6 +2136,13 @@
     var resultado = parsearParticipantesLog();
     // v3.0: cada fila lleva el clanTag del clan cuyo Log se está leyendo (el backend guarda una fila por clan).
     for (var ctL = 0; ctL < resultado.correcciones.length; ctL++) resultado.correcciones[ctL].clanTag = tagClan;
+    var totalFilasLog = resultado.correcciones.length; // v3.4: el criterio de «Log fallido» se mide sobre la página entera, no sobre los jugadores elegidos
+    if (_esSolo(estado)) {
+      resultado.correcciones = _soloFiltrar(estado, resultado.correcciones);
+      resultado.tagsEncontrados = _soloFiltrarMapa(estado, resultado.tagsEncontrados);
+      resultado.correcciones.forEach(function (cl) { _soloAnotar(estado, 'log', cl.tag, cl.temporadaRoyaleApi, cl.semana, tagClan, cl.ataquesSemana, cl.fame, cl.barcos); });
+      log(estado, '  [elegidos] ' + resultado.correcciones.length + ' fila(s) de los jugadores elegidos (la página trae ' + totalFilasLog + '; el resto se descarta).');
+    }
     estado.logCorrecciones = estado.logCorrecciones.concat(resultado.correcciones);
     _registrarSemanasCubiertas(estado, resultado.correcciones);
     // PUNTO 2 — mismo criterio que en Analytics, pero Log SÍ trae Barcos.
@@ -2047,7 +2165,7 @@
     for (var tagEnc in resultado.tagsEncontrados) {
       if (estado.logTagsEncontrados.indexOf(tagEnc) === -1) estado.logTagsEncontrados.push(tagEnc);
     }
-    if (resultado.correcciones.length === 0) {
+    if (totalFilasLog === 0) {
       // v2.9: una tabla sin filas legibles cuenta como fallo del Log de ese clan (Analytics lo respalda).
       estado.logTotalClanesError++;
       log(estado, '  ⚠ El Log de ' + tagClan + ' cargó pero no se pudo leer ninguna fila. Este clan pasará a Analytics de respaldo.');
@@ -2194,6 +2312,13 @@
 
     var clanNombreRiverRace = estado.clanesTerna[estado.riverraceIndiceClan] || tagClan;
     var resultadoRR = parsearParticipantesRiverRace(estado.temporadaRoyaleApiActual, estado.semanaActual, clanNombreRiverRace);
+    if (_esSolo(estado)) {
+      var totalRR = resultadoRR.registros.length;
+      resultadoRR.registros = _soloFiltrar(estado, resultadoRR.registros);
+      resultadoRR.tagsEncontrados = _soloFiltrarMapa(estado, resultadoRR.tagsEncontrados);
+      resultadoRR.registros.forEach(function (rr) { _soloAnotar(estado, 'riverrace', rr.tag, rr.temporadaRoyaleApi, rr.semana, tagClan, rr.ataques, rr.fame, rr.barcos); });
+      log(estado, '  [elegidos] ' + resultadoRR.registros.length + ' de ' + estado.soloTags.length + ' jugador(es) elegidos salen en este clan (la página trae ' + totalRR + '; los demás se descartan).');
+    }
     for (var rrHist = 0; rrHist < resultadoRR.registros.length; rrHist++) {
       var regRR = resultadoRR.registros[rrHist];
       var jInfoRR = estado.jugadorPorTag[regRR.tag];
@@ -2275,6 +2400,19 @@
     var combinado = combinarFameYAtaques(mapaFame, mapaAtaques);
     // v3.0: cada fila lleva el clanTag del clan cuyo Analytics se está leyendo.
     for (var ctA = 0; ctA < combinado.correcciones.length; ctA++) combinado.correcciones[ctA].clanTag = tagClan;
+    if (_esSolo(estado)) {
+      var totalFilasAn = combinado.correcciones.length;
+      combinado.correcciones = _soloFiltrar(estado, combinado.correcciones);
+      combinado.tagsEncontrados = _soloFiltrarMapa(estado, combinado.tagsEncontrados);
+      combinado.correcciones.forEach(function (ca) { _soloAnotar(estado, 'analytics', ca.tag, ca.temporadaRoyaleApi, ca.semana, tagClan, ca.ataquesSemana, ca.fame, undefined); });
+      // El Log tiene prioridad sobre Analytics (§PF032): de Analytics solo se guarda y envía lo que el Log no trajo para ese clan y semana.
+      var clavesLog = {};
+      (estado.logCorrecciones || []).forEach(function (lg) { clavesLog[_soloClaveFila(lg)] = true; });
+      var antesAn = combinado.correcciones.length;
+      combinado.correcciones = combinado.correcciones.filter(function (ca2) { return !clavesLog[_soloClaveFila(ca2)]; });
+      log(estado, '  [elegidos] ' + antesAn + ' fila(s) de los jugadores elegidos (la página trae ' + totalFilasAn + '); ' + (antesAn - combinado.correcciones.length) +
+        ' ya las trajo el Log y solo se comparan, ' + combinado.correcciones.length + ' se guardan porque el Log no las tenía.');
+    }
 
     estado.analyticsCorrecciones = estado.analyticsCorrecciones.concat(combinado.correcciones);
     _registrarSemanasCubiertas(estado, combinado.correcciones);
@@ -2332,6 +2470,7 @@
   function cerrarFaseLog(estado) {
     var ok = estado.logClanesOk || [];
     var sinLog = estado.clanTagsTerna.filter(function (t) { return ok.indexOf(t) === -1; });
+    if (_esSolo(estado)) sinLog = estado.clanTagsTerna.slice(); // v3.4: Analytics en todos los clanes
     log(estado, '[Log] Fase terminada: ' + estado.logTotalClanesOk + ' clan(es) OK, ' +
       estado.logTotalClanesError + ' con error. ' + (estado.logTagsEncontrados || []).length +
       ' jugador(es) cubiertos por Log.');
@@ -2343,7 +2482,9 @@
     }
     estado.fase = 'analytics';
     estado.analyticsIndiceClan = 0;
-    log(estado, '[Analytics] Respaldo para ' + sinLog.length + ' clan(es) sin datos de Log: ' + sinLog.join(', ') + '.');
+    log(estado, _esSolo(estado)
+      ? '[Analytics] Jugadores elegidos: se leen los ' + sinLog.length + ' clan(es) para comparar con el Log (solo se guarda lo que el Log no trajo).'
+      : '[Analytics] Respaldo para ' + sinLog.length + ' clan(es) sin datos de Log: ' + sinLog.join(', ') + '.');
     guardarEstado(estado);
     irAlSiguienteClanAnalytics(estado);
   }
@@ -2360,7 +2501,7 @@
     estado.fase = 'perfiles';
 
     var cubiertos = (estado.analyticsTagsEncontrados || []).concat(estado.logTagsEncontrados || []);
-    var pendientesTotal = estado.modoBackfill
+    var pendientesTotal = _esSolo(estado) ? [] : estado.modoBackfill
       ? estado.jugadoresOriginal.slice() // PUNTO 3: backfill visita el perfil de TODOS, cubiertos o no (Sección 4: "Perfil de cada miembro activo actual")
       : estado.jugadoresOriginal.filter(function (j) { return cubiertos.indexOf(j.tag) === -1; });
     // v3.2 (§PF164): los jugadores cuyo perfil se fuerza se agregan siempre. Si no están en la lista de activos (ya no están en un clan
@@ -2382,7 +2523,7 @@
 
     log(estado, '[Perfiles] ' + (estado.logTagsEncontrados || []).length + ' jugador(es) cubiertos por Log y ' +
       (estado.analyticsTagsEncontrados || []).length + ' por Analytics. ' + pendientesTotal.length + ' jugador(es) pasan a Perfil' +
-      (estado.modoBackfill ? ' (modo BACKFILL: se visita a TODOS, no solo a los no cubiertos).' : ' (solo los que ni Log ni Analytics cubrieron).') +
+      (_esSolo(estado) ? ' (SOLO los jugadores elegidos, todos con perfil forzado).' : estado.modoBackfill ? ' (modo BACKFILL: se visita a TODOS, no solo a los no cubiertos).' : ' (solo los que ni Log ni Analytics cubrieron).') +
       (forzados.length ? ' Perfiles FORZADOS: ' + forzados.length + ' jugador(es) (' + forzadosAgregados + ' añadido(s) a la lista); se reenvían todas sus semanas.' : ''));
     _flushHistorialSiHaceFalta(estado, true);
     guardarEstado(estado);
@@ -2461,6 +2602,9 @@
     }
 
     var filas = leerFilasClanWars2(tabla, estado.clanesTerna);
+    for (var cmpP = 0; cmpP < filas.length; cmpP++) { // v3.4: lo que dijo el perfil, para el resumen de «jugadores elegidos»
+      _soloAnotar(estado, 'perfil', jugador.tag, filas[cmpP].temporadaRoyaleApi, filas[cmpP].semana, filas[cmpP].clanTag, filas[cmpP].ataquesSemana, filas[cmpP].fame, filas[cmpP].barcos);
+    }
     // PUNTO 2 — a diferencia de Analytics/Log, aquí `clan` viene POR FILA
     // (leerFilasClanWars2() ya lo trae, es la única de las tres fuentes que
     // indica con certeza en qué clan estuvo el jugador esa semana puntual —
@@ -2581,6 +2725,7 @@
           estado.totalAplicadas += (resp.aplicadas || 0);
           estado.estado = 'terminado';
           log(estado, '✔ Último lote enviado (' + (resp.aplicadas || 0) + ' correcciones).');
+          _soloImprimirResumen(estado);
           log(estado, '✅ Corrección terminada. Total de correcciones aplicadas: ' + estado.totalAplicadas + '.');
           guardarEstado(estado);
           // FIX (15-ago-2026, bug: el panel se quedaba en "Corriendo" para
@@ -2590,6 +2735,7 @@
         });
       } else {
         estado.estado = 'terminado';
+        _soloImprimirResumen(estado);
         log(estado, '✅ Corrección terminada. Total de correcciones aplicadas: ' + estado.totalAplicadas + '.');
         guardarEstado(estado);
         pintarPanel(); // mismo motivo que el FIX de arriba
@@ -3064,9 +3210,10 @@
     // 'log' muestran progreso por CLAN, no por jugador — recién al pasar a
     // 'perfiles' vuelve al progreso de siempre.
     var faseActual = estado.fase; // 'analytics' | 'log' | 'perfiles' | 'race' | undefined (Nuevos)
-    var esFasePorClan = faseActual === 'analytics' || faseActual === 'log' || faseActual === 'race';
-    var indiceClanCampo = faseActual === 'analytics' ? 'analyticsIndiceClan' : faseActual === 'race' ? 'raceIndiceClan' : 'logIndiceClan';
-    var tagsEncontradosCampo = faseActual === 'analytics' ? 'analyticsTagsEncontrados' : faseActual === 'race' ? 'raceTagsEncontrados' : 'logTagsEncontrados';
+    // v3.4: 'riverrace' también avanza por clan (antes se mostraba «0 / N jugadores» durante toda esa fase).
+    var esFasePorClan = faseActual === 'analytics' || faseActual === 'log' || faseActual === 'race' || faseActual === 'riverrace';
+    var indiceClanCampo = faseActual === 'analytics' ? 'analyticsIndiceClan' : faseActual === 'race' ? 'raceIndiceClan' : faseActual === 'riverrace' ? 'riverraceIndiceClan' : 'logIndiceClan';
+    var tagsEncontradosCampo = faseActual === 'analytics' ? 'analyticsTagsEncontrados' : faseActual === 'race' ? 'raceTagsEncontrados' : faseActual === 'riverrace' ? 'riverraceTagsEncontrados' : 'logTagsEncontrados';
 
     var total = esFasePorClan
       ? estado.clanTagsTerna.length
@@ -3082,7 +3229,8 @@
       : estado.totalAplicadas !== undefined
       ? ('Correcciones aplicadas: ' + estado.totalAplicadas)
       : ('Filas nuevas: ' + (estado.totalFilasNuevas || 0) + ' (procesados: ' + estado.totalNuevosDetectados + ')');
-    var etiquetaFase = faseActual === 'analytics' ? ' — Analytics (respaldo)'
+    var etiquetaFase = faseActual === 'analytics' ? (_esSolo(estado) ? ' — Analytics' : ' — Analytics (respaldo)')
+      : faseActual === 'riverrace' ? ' — Semana en curso'
       : faseActual === 'log' ? ' — Log'
       : faseActual === 'perfiles' ? ' — Perfiles' : '';
 
@@ -3096,7 +3244,7 @@
       (esFasePorClan
         ? '<div>' + indiceActual + ' / ' + total + ' clan(es) (' + pct + '%)</div>' +
           (actual ? '<div>Actual: ' + actual + '</div>' : '') +
-          '<div>Jugadores cubiertos hasta ahora: ' + estado[tagsEncontradosCampo].length + '</div>'
+          '<div>Jugadores cubiertos hasta ahora: ' + (estado[tagsEncontradosCampo] || []).length + '</div>'
         : '<div>' + indiceActual + ' / ' + total + ' ' + itemsLabel + ' (' + pct + '%)</div>' +
           (actual ? '<div>Actual: ' + actual.nombre + ' (' + actual.tag + ')</div>' : '')
       ) +
@@ -3145,6 +3293,10 @@
   function pintarPanel() {
     var el = crearPanel();
     var estadoCG = cargarEstado();
+    // v3.4 (§PF234): «Corrección de jugadores elegidos» usa el mismo estado guardado que la Corrección de Guerra (nunca corren a la vez);
+    // según traiga o no soloTags, se muestra en su propia sección o en la de siempre.
+    var estadoCGTodos = (estadoCG && !_esSolo(estadoCG)) ? estadoCG : null;
+    var estadoSolo = (estadoCG && _esSolo(estadoCG)) ? estadoCG : null;
     var estadoNuevos = cargarEstadoNuevos();
     var estadoRace = cargarEstadoRace();
 
@@ -3161,7 +3313,8 @@
           '<button id="cg-btn-tokens" title="Actualizar los tokens guardados" style="padding:2px 8px;background:#333;color:#eee;border:1px solid #555;border-radius:4px;cursor:pointer;">🔑</button>' +
         '</span>' +
       '</div>' +
-      seccionHtml('Corrección de Guerra', estadoCG, 'cg', 'jugadores') +
+      seccionHtml('Corrección de Guerra', estadoCGTodos, 'cg', 'jugadores') +
+      seccionHtml('Corrección de jugadores elegidos', estadoSolo, 'solo', 'jugadores') +
       seccionHtml('Buscar miembros nuevos', estadoNuevos, 'nuevos', 'candidatos') +
       seccionHtml('Verificar Semana en Curso', estadoRace, 'race', 'jugadores');
 
@@ -3188,6 +3341,25 @@
     var bx = document.getElementById('cg-btn-reiniciar');
     if (bx) bx.onclick = function () {
       if (confirm('¿Reiniciar la Corrección de Guerra desde cero?')) { borrarEstado(); pintarPanel(); }
+    };
+
+    // --- Corrección de jugadores elegidos: listeners (mismo estado y mismas fases que la Corrección de Guerra) ---
+    var bs = document.getElementById('solo-btn-iniciar');
+    if (bs) bs.onclick = iniciarProcesoSolo;
+    var bsp = document.getElementById('solo-btn-pausar');
+    if (bsp) bsp.onclick = function () { estadoCG.estado = 'pausado'; guardarEstado(estadoCG); pintarPanel(); };
+    var bsr = document.getElementById('solo-btn-reanudar');
+    if (bsr) bsr.onclick = function () {
+      _reanudarPausas();
+      estadoCG.estado = 'corriendo'; guardarEstado(estadoCG);
+      if (estadoCG.fase === 'riverrace') irAlSiguienteClanRiverRace(estadoCG);
+      else if (estadoCG.fase === 'analytics') irAlSiguienteClanAnalytics(estadoCG);
+      else if (estadoCG.fase === 'log') irAlSiguienteClanLog(estadoCG);
+      else irAlSiguientePerfil(estadoCG);
+    };
+    var bsx = document.getElementById('solo-btn-reiniciar');
+    if (bsx) bsx.onclick = function () {
+      if (confirm('¿Reiniciar la Corrección de jugadores elegidos desde cero?')) { borrarEstado(); pintarPanel(); }
     };
 
     // --- Nuevos: listeners ---
@@ -3259,6 +3431,11 @@
       alert('Antes de iniciar, edita el userscript y pega tu URL de Web App en WEBAPP_URL.');
       return;
     }
+    var previoSolo = cargarEstado(); // v3.4: la Corrección de jugadores elegidos comparte el estado guardado
+    if (previoSolo && _esSolo(previoSolo) && previoSolo.estado !== 'terminado') {
+      alert('Hay una Corrección de jugadores elegidos ' + (previoSolo.estado === 'pausado' ? 'pausada' : 'en curso') + '. Termínala o reiníciala antes de empezar la Corrección de Guerra completa (comparten el mismo estado guardado).');
+      return;
+    }
     // FIX (20-sep-2026): Corrección de Guerra usa 2 tokens (CORRECCION_GUERRA_TOKEN
     // para la lista y las correcciones, HISTORIAL_GUERRA_TOKEN para el
     // histórico). Se piden ANTES de empezar, así un token faltante no
@@ -3309,6 +3486,81 @@
             irAlSiguienteClanLog(estado);
           } else {
             log(estado, 'El backend no envió clanTagsTerna (versión anterior) — se usa directo el método de perfil por perfil.');
+            irAlSiguientePerfil(estado);
+          }
+        });
+      });
+  }
+
+  /**
+   * _pedirJugadoresElegidos()
+   * v3.4 (§PF234): pide los tags de la «Corrección de jugadores elegidos». Acepta tags con o sin «#», separados por coma, punto y coma o espacio.
+   * Devuelve { tags: ['#ABC', ...], invalidos: ['xyz', ...] }; Cancelar o vacío = ningún tag.
+   */
+  function _pedirJugadoresElegidos() {
+    var texto = prompt(
+      'CORRECCIÓN DE JUGADORES ELEGIDOS\n\n' +
+      'Escribe o pega los tags (por ejemplo #ABC123, #DEF456), separados por coma o espacio.\n\n' +
+      'Se lee la semana en curso (River Race), el Log, Analytics y el perfil, pero SOLO se guarda y se envía lo de estos jugadores; ' +
+      'los demás se descartan. Las páginas de los 4 clanes se visitan igual (RoyaleAPI no permite pedir un solo jugador al Log ni a Analytics).\n\n' +
+      'Al final el panel lista las diferencias entre fuentes.',
+      ''
+    );
+    var salida = { tags: [], invalidos: [] };
+    if (texto === null || !String(texto).trim()) return salida;
+    var vistos = {};
+    String(texto).trim().split(/[\s,;]+/).forEach(function (tok) {
+      if (!tok) return;
+      var tg = tok.toUpperCase();
+      if (tg.charAt(0) !== '#') tg = '#' + tg;
+      if (!/^#[0-9A-Z]{3,}$/.test(tg)) { salida.invalidos.push(tok); return; }
+      if (!vistos[tg]) { vistos[tg] = true; salida.tags.push(tg); }
+    });
+    return salida;
+  }
+
+  function iniciarProcesoSolo() {
+    if (WEBAPP_URL.indexOf('PEGA_AQUI') >= 0) {
+      alert('Antes de iniciar, edita el userscript y pega tu URL de Web App en WEBAPP_URL.');
+      return;
+    }
+    var previo = cargarEstado();
+    if (previo && previo.estado !== 'terminado') {
+      alert('Hay una Corrección de Guerra ' + (previo.estado === 'pausado' ? 'pausada' : 'en curso') + '. Termínala o reiníciala antes de empezar esta (comparten el mismo estado guardado).');
+      return;
+    }
+    var elegidos = _pedirJugadoresElegidos();
+    if (elegidos.invalidos.length) alert('Se ignoraron estos textos porque no son un tag válido: ' + elegidos.invalidos.join(', '));
+    if (!elegidos.tags.length) { alert('No se escribió ningún tag válido: no se inició nada.'); pintarPanel(); return; }
+    asegurarTokens(['cg', 'historial'],
+      'La corrección de jugadores elegidos necesita estos tokens para pedir la lista, enviar las correcciones y el histórico.',
+      function (ok) {
+        if (!ok) {
+          alert('Falta un token: sin él el backend rechaza las solicitudes. Vuelve a pulsar Iniciar y pégalo en el formulario (o usa el botón 🔑 del panel).');
+          pintarPanel();
+          return;
+        }
+        conReintentoPorToken('cg', pedirListaJugadoresConCargando('solo', 'Corrección de jugadores elegidos'), function (err, data) {
+          if (err || !data || !data.ok) {
+            alert('No se pudo obtener la lista de jugadores: ' + (err || (data && data.error) || 'respuesta vacía'));
+            pintarPanel();
+            return;
+          }
+          // modoBackfill=false: el perfil de los elegidos va FORZADO (se reenvían todas sus semanas), no hace falta el resto.
+          var estado = estadoInicial(data.jugadores, data.clanesTerna, data.clanTagsTerna, data.coberturaPorTag, false,
+            data.temporadaRoyaleApiActual, data.semanaActual, elegidos.tags, elegidos.tags);
+          guardarEstado(estado);
+          log(estado, 'Jugadores elegidos: ' + elegidos.tags.length + ' (' + elegidos.tags.join(', ') + '). Solo se guarda y envía lo de ellos.');
+          var fuera = elegidos.tags.filter(function (tg) { return !estado.jugadorPorTag[tg]; });
+          if (fuera.length) log(estado, 'ℹ No están en la lista de activos de los clanes Terna: ' + fuera.join(', ') + '. Se leen igual si aparecen en el Log/Analytics o en su perfil (sin escribir su histórico por nombre).');
+          if (estado.fase === 'riverrace') {
+            log(estado, 'Empezando por la semana en curso: River Race (' + estado.clanTagsTerna.length + ' clan(es)) — Temporada ' + estado.temporadaRoyaleApiActual + ', Semana ' + estado.semanaActual + '.');
+            irAlSiguienteClanRiverRace(estado);
+          } else if (estado.fase === 'log') {
+            log(estado, 'Empezando por el Log: ' + estado.clanTagsTerna.length + ' página(s) de War Log (se omitió River Race: el backend no mandó temporada/semana válida).');
+            irAlSiguienteClanLog(estado);
+          } else {
+            log(estado, 'El backend no envió clanTagsTerna (versión anterior): solo se puede leer el perfil de los elegidos.');
             irAlSiguientePerfil(estado);
           }
         });
