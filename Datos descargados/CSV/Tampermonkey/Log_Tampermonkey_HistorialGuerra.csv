@@ -149,3 +149,8 @@ Fecha,Estado,Resultado,Error
 2026-10-24 17:04:23,OK,"{""ok"":true,""procesados"":4,""registrosGuardados"":252,""errores"":[],""grupalGuardado"":false,""grupalCambios"":0,""grupalIgnorados"":252,""grupalSinLock"":false}",
 2026-10-24 17:07:24,OK,"{""ok"":true,""procesados"":4,""registrosGuardados"":169,""errores"":[],""grupalGuardado"":false,""grupalCambios"":0,""grupalIgnorados"":169,""grupalSinLock"":false}",
 2026-10-24 17:11:17,OK,"{""ok"":true,""procesados"":4,""registrosGuardados"":116,""errores"":[],""grupalGuardado"":false,""grupalCambios"":0,""grupalIgnorados"":116,""grupalSinLock"":false}",
+2026-10-24 23:51:08,OK,"{""ok"":true,""procesados"":5,""registrosGuardados"":5,""errores"":[],""grupalGuardado"":true,""grupalCambios"":3,""grupalIgnorados"":2,""grupalSinLock"":false}",
+2026-10-24 23:51:33,OK,"{""ok"":true,""procesados"":1,""registrosGuardados"":1,""errores"":[],""grupalGuardado"":false,""grupalCambios"":0,""grupalIgnorados"":1,""grupalSinLock"":false}",
+2026-10-24 23:51:58,OK,"{""ok"":true,""procesados"":6,""registrosGuardados"":38,""errores"":[],""grupalGuardado"":false,""grupalCambios"":0,""grupalIgnorados"":38,""grupalSinLock"":false}",
+2026-10-24 23:52:24,OK,"{""ok"":true,""procesados"":1,""registrosGuardados"":9,""errores"":[],""grupalGuardado"":false,""grupalCambios"":0,""grupalIgnorados"":9,""grupalSinLock"":false}",
+2026-10-24 23:58:03,OK,"{""ok"":true,""procesados"":4,""registrosGuardados"":117,""errores"":[],""grupalGuardado"":false,""grupalCambios"":0,""grupalIgnorados"":117,""grupalSinLock"":false}",
