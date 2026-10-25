@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 05:16:51 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 05:54:14 */
 
 
 
@@ -16456,6 +16456,109 @@ function _aplicarImportacionNuevos(candidatosPayload) {
     ', errores individuales: ' + errores.length + '.');
 
   return { ok: true, procesados: procesados, filasNuevas: filasNuevas, registrosOmitidos: registrosOmitidos, errores: errores };
+}
+
+/**
+ * _importarNuevosYPerfiles_(candidatosPayload) [→ Contexto_Base_Web.md §PF243]
+ *
+ * Punto de entrada de accion=importarNuevos desde PF243 (Tampermonkey v3.8). El botón de miembros nuevos manda TODO lo que
+ * leyó de cada perfil visitado y el backend decide qué guarda y dónde:
+ *   - Hoja «Nuevos» (_aplicarImportacionNuevos): solo los candidatos con esNuevo distinto de false, o que ya tienen fila en
+ *     la hoja (así su cuadrícula no se congela). Un candidato que ya no cuenta como nuevo y no está en la hoja NO se agrega.
+ *   - Correcciones_Guerra.csv (_aplicarCorreccionesGuerra): las filas de cand.filasPerfil de TODOS los candidatos, como filas de
+ *     perfil (fuente 'perfil', sin ClanTag), con la misma regla de conservación de PF236 (una fila igual a la guardada no se
+ *     reescribe). La semana en curso se descarta aquí (es provisional; la cubre River Race, PF237).
+ * Compatibilidad: una versión anterior de Tampermonkey (sin esNuevo ni filasPerfil) se comporta como antes: todo va a «Nuevos»
+ * y nada a Correcciones_Guerra.csv. Un fallo al guardar las correcciones no hace fallar la importación de «Nuevos»: se informa
+ * en resultado.correcciones.error.
+ */
+function _importarNuevosYPerfiles_(candidatosPayload) {
+  if (!candidatosPayload || !candidatosPayload.length) {
+    return { ok: false, error: 'Sin candidatos en el payload.', procesados: 0 };
+  }
+
+  var tagsEnHoja = {};
+  try {
+    tagsEnHoja = _obtenerTagsEnHojaNuevos(_getSs());
+  } catch (eTags) {
+    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudo leer la lista de tags de «Nuevos» (' + (eTags.message || eTags) +
+      '); se envían a «Nuevos» todos los candidatos recibidos.');
+    tagsEnHoja = null;
+  }
+
+  // Semana en curso de RoyaleAPI (misma cuenta que _obtenerListaCorreccionGuerra()): las filas del perfil de esa semana no se guardan.
+  var temporadaEnCurso = null, semanaEnCurso = null;
+  try {
+    var ctxNv = _getCtx();
+    if (!ctxNv.periodIndexSospechoso) {
+      temporadaEnCurso = ctxNv.temporada + _getTemporadaOffsetRoyaleApi();
+      semanaEnCurso = ctxNv.sectionIndex + 1;
+    }
+  } catch (eCtxNv) {
+    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudo calcular la semana en curso (' + (eCtxNv.message || eCtxNv) +
+      '); no se descarta ninguna fila de perfil por ese motivo.');
+  }
+
+  var paraNuevos = [];
+  var correcciones = [];
+  var candidatosConPerfil = 0, filasEnCurso = 0;
+  for (var i = 0; i < candidatosPayload.length; i++) {
+    var cand = candidatosPayload[i] || {};
+    var tag = String(cand.tag || '').trim().toUpperCase();
+    if (!tag) continue;
+
+    var cuentaComoNuevo = (tagsEnHoja === null) || (cand.esNuevo !== false) || (tagsEnHoja[tag] === true);
+    if (cuentaComoNuevo) paraNuevos.push(cand);
+
+    var filas = (cand.filasPerfil && cand.filasPerfil.length) ? cand.filasPerfil : [];
+    if (filas.length) candidatosConPerfil++;
+    for (var f = 0; f < filas.length; f++) {
+      var fp = filas[f] || {};
+      if (temporadaEnCurso !== null && Number(fp.temporadaRoyaleApi) === Number(temporadaEnCurso) && Number(fp.semana) === Number(semanaEnCurso)) {
+        filasEnCurso++;
+        continue;
+      }
+      correcciones.push({
+        tag: tag,
+        temporadaRoyaleApi: fp.temporadaRoyaleApi,
+        semana: fp.semana,
+        ataquesSemana: fp.ataquesSemana,
+        fame: fp.fame,
+        barcos: fp.barcos,
+        fuente: 'perfil',
+        clanPerfil: fp.clanPerfil || undefined
+      });
+    }
+  }
+
+  var resultado = paraNuevos.length
+    ? _aplicarImportacionNuevos(paraNuevos)
+    : { ok: true, procesados: 0, filasNuevas: 0, registrosOmitidos: 0, errores: [] };
+  resultado.recibidos = candidatosPayload.length;
+  resultado.noContaronComoNuevos = candidatosPayload.length - paraNuevos.length;
+
+  if (correcciones.length) {
+    try {
+      var rc = _aplicarCorreccionesGuerra(correcciones);
+      resultado.correcciones = {
+        ok: !!(rc && rc.ok), candidatos: candidatosConPerfil, recibidas: correcciones.length, enCursoDescartadas: filasEnCurso,
+        aplicadas: (rc && rc.aplicadas) || 0, sinCambios: (rc && rc.sinCambios) || 0, omitidas: (rc && rc.omitidas) || 0
+      };
+      if (rc && rc.error) resultado.correcciones.error = rc.error;
+      if (rc && rc.cambiosPerfil) resultado.correcciones.cambiosPerfil = rc.cambiosPerfil;
+      if (rc && rc.avisoControl2) resultado.correcciones.avisoControl2 = rc.avisoControl2;
+    } catch (eCorr) {
+      Logger.log('[Nuevos-RoyaleAPI] Error guardando las filas de perfil en Correcciones_Guerra.csv: ' + (eCorr.message || eCorr));
+      resultado.correcciones = { ok: false, candidatos: candidatosConPerfil, recibidas: correcciones.length, error: (eCorr.message || String(eCorr)) };
+    }
+  } else if (filasEnCurso > 0) {
+    resultado.correcciones = { ok: true, candidatos: candidatosConPerfil, recibidas: 0, enCursoDescartadas: filasEnCurso, aplicadas: 0, sinCambios: 0, omitidas: 0 };
+  }
+
+  Logger.log('[Nuevos-RoyaleAPI] Reparto PF243: ' + candidatosPayload.length + ' candidato(s) recibido(s), ' + paraNuevos.length +
+    ' a «Nuevos»; ' + correcciones.length + ' fila(s) de perfil a Correcciones_Guerra.csv' +
+    (resultado.correcciones ? ' (aplicadas ' + resultado.correcciones.aplicadas + ', sin cambios ' + resultado.correcciones.sinCambios + ')' : '') + '.');
+  return resultado;
 }
 
 /**
@@ -53158,7 +53261,8 @@ function doPost(e) {
     }
     try {
       var payloadNuevos = JSON.parse(e.postData.contents);
-      var resultadoNuevos = _aplicarImportacionNuevos(payloadNuevos && payloadNuevos.candidatos);
+      // PF243: el backend reparte lo que manda el botón de nuevos entre la hoja Nuevos y Correcciones_Guerra.csv; ver _importarNuevosYPerfiles_() en 14_Nuevos_RoyaleAPI.gs. [→ Contexto_Base_Web.md §PF243]
+      var resultadoNuevos = _importarNuevosYPerfiles_(payloadNuevos && payloadNuevos.candidatos);
       // FIX (13-ago-2026): log en Drive por botón; ver _logTampermonkeyADrive() (05_Backup_CSV.gs). [→ Contexto_Base_Web.md §38B097]
       _logTampermonkeyADrive('ImportarNuevos', resultadoNuevos, null);
       return ContentService
