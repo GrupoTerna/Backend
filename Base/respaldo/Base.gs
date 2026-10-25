@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 05:54:14 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 06:11:45 */
 
 
 
@@ -26462,7 +26462,7 @@ function _getTemporadaRoyaleApiDesdePropia(temporadaPropia) {
 // (17, 18, 23, 47) no se enteran; solo cambia la capa que lee y escribe el CSV (este bloque).
 // Reglas: (a) una fila por temporada, semana y jugador; (b) el Log actualiza las columnas de cada clan; (c) la columna RoyaleAPI
 // la actualiza la visita al perfil; (d) Externo = RoyaleAPI - suma de los clanes, solo si la suma es menor; vacío en los demás casos.
-// «Origen RoyaleAPI» dice de dónde salió esa columna: «perfil» (la mandó la fase de perfiles) o «desconocido» (no se puede asegurar).
+// «Origen RoyaleAPI» dice de dónde salió esa columna: «perfil» (la mandó la fase de perfiles) o «desconocido» (no se puede asegurar). §PF244: si la fila no tiene perfil pero sí datos de un clan, dice «sin perfil: Log/Analytics».
 var CGW_MAGNITUDES = [
   { nombre: 'Ataques',  campo: 'ataquesSemana' },
   { nombre: 'Barcos',   campo: 'barcos' },
@@ -26470,6 +26470,32 @@ var CGW_MAGNITUDES = [
 ];
 var CGW_ORIGEN_PERFIL = 'perfil';
 var CGW_ORIGEN_DESCONOCIDO = 'desconocido';
+// §PF244 (punto 1 de §PF235): seña de «perfil no consultado». Solo se ESCRIBE (valor calculado, como Externo y ID): una fila sin dato
+// de perfil pero con datos de algún clan (Log/Analytics/River Race) dice por qué no tiene perfil, en vez de dejar «Origen RoyaleAPI» vacío.
+// Nunca se lee como origen: al leer, el origen solo se mira cuando hay valores en las columnas RoyaleAPI, y cualquier texto que no sea
+// «perfil» se trata como «desconocido». No distingue Log de Analytics (el mapa en memoria no guarda esa fuente).
+var CGW_ORIGEN_SIN_PERFIL = 'sin perfil: Log/Analytics';
+// §PF245: fuente de cada dato de clan (Log o Analytics; River Race no se guarda en este CSV). Columnas «Fuente <clanTag>», al final del encabezado
+// (el lector va por nombre, así que no mueven nada). Se guarda como texto «Log» o «Analytics»; vacío = no se sabe (filas anteriores a §PF245).
+// La seña de «sin perfil» la usa para decir de cuál vino: «sin perfil: Log», «sin perfil: Analytics» o, si hay de las dos o alguna no se sabe,
+// «sin perfil: Log/Analytics».
+var CGW_FUENTE_LOG = 'Log';
+var CGW_FUENTE_ANALYTICS = 'Analytics';
+function _cgwFuenteClanDesdeTexto_(v) {
+  var t = String(v || '').trim().toLowerCase();
+  if (t === 'log') return CGW_FUENTE_LOG;
+  if (t === 'analytics') return CGW_FUENTE_ANALYTICS;
+  return '';
+}
+function _cgwSenaSinPerfil_(entradasClan) {
+  var hayLog = false, hayAn = false, hayDesconocida = false;
+  for (var i = 0; i < entradasClan.length; i++) {
+    var f = entradasClan[i].fuenteClan || '';
+    if (f === CGW_FUENTE_LOG) hayLog = true; else if (f === CGW_FUENTE_ANALYTICS) hayAn = true; else hayDesconocida = true;
+  }
+  if (hayDesconocida || (hayLog && hayAn)) return CGW_ORIGEN_SIN_PERFIL;
+  return hayLog ? 'sin perfil: Log' : 'sin perfil: Analytics';
+}
 var CGW_ENCABEZADO_ORIGEN = 'Origen RoyaleAPI';
 // §PF238: columna «ID» (segunda columna del formato ancho): T_NN_S_NN_#TAG con la temporada propia y la semana de la fila. Es un valor
 // calculado al escribir (se ignora al leer, como Externo): no hay que migrar nada, cada escritura lo completa en todas las filas.
@@ -26529,7 +26555,7 @@ function _cgwEsFormatoAncho_(encabezado) {
   return false;
 }
 
-function _cgwNuevaEntrada_(ataques, barcos, medallas, comunes, clanTag, origenPerfil, clanPerfil) {
+function _cgwNuevaEntrada_(ataques, barcos, medallas, comunes, clanTag, origenPerfil, clanPerfil, fuenteClan) {
   var e = {
     ataquesSemana: Number(ataques) || 0,
     // Barcos es opcional: '' = sin dato (null), nunca un 0 falso. [→ Contexto_Base_Web.md §18B094]
@@ -26543,6 +26569,8 @@ function _cgwNuevaEntrada_(ataques, barcos, medallas, comunes, clanTag, origenPe
   if (clanTag === '') {
     e.origenPerfil = origenPerfil || CGW_ORIGEN_DESCONOCIDO;
     e.clanPerfil = _normalizarClanTagCorreccion(clanPerfil); // '' = no se conoce el clan de la fila (formato anterior)
+  } else {
+    e.fuenteClan = _cgwFuenteClanDesdeTexto_(fuenteClan); // §PF245: «Log», «Analytics» o '' (no se sabe)
   }
   return e;
 }
@@ -26660,7 +26688,7 @@ function _cgwFilasAnchasAMapa_(parsed) {
       var cc = colClan[clanes[c]];
       var a = cel(f, cc.Ataques), b = cel(f, cc.Barcos), md = cel(f, cc.Medallas);
       if (a === '' && b === '' && md === '') continue;
-      mapa[temporada + '|' + semana + '|' + clanes[c] + '|' + tag] = _cgwNuevaEntrada_(a, b, md, comunes, clanes[c]);
+      mapa[temporada + '|' + semana + '|' + clanes[c] + '|' + tag] = _cgwNuevaEntrada_(a, b, md, comunes, clanes[c], undefined, undefined, cel(f, col['Fuente ' + clanes[c]])); // §PF245
     }
     var pa = cel(f, col['Ataques RoyaleAPI']), pb = cel(f, col['Barcos RoyaleAPI']), pm = cel(f, col['Medallas RoyaleAPI']);
     if (pa !== '' || pb !== '' || pm !== '') {
@@ -26764,6 +26792,7 @@ function _cgwEncabezadoAncho_(clanes) {
     enc.push(CGW_MAGNITUDES[m].nombre + ' RoyaleAPI');
   }
   enc.push('Aprobación', 'Implementación', CGW_ENCABEZADO_ORIGEN, CGW_ENCABEZADO_CLAN_PERFIL);
+  for (var cf = 0; cf < clanes.length; cf++) enc.push('Fuente ' + clanes[cf]); // §PF245
   return enc;
 }
 
@@ -26820,8 +26849,9 @@ function _cgwMapaAFilasAnchas_(mapa) {
       fila.push((g.perfil && g.perfil[campo] !== null && g.perfil[campo] !== undefined) ? g.perfil[campo] : '');
     }
     fila.push(todasAprobadas ? 'Sí' : '', todasImpl ? 'Sí' : (algunaImplNo ? 'No' : ''),
-      g.perfil ? (g.perfil.origenPerfil || CGW_ORIGEN_DESCONOCIDO) : '',
+      g.perfil ? (g.perfil.origenPerfil || CGW_ORIGEN_DESCONOCIDO) : (entradasClan.length > 0 ? _cgwSenaSinPerfil_(entradasClan) : ''), // §PF244, §PF245
       g.perfil ? (g.perfil.clanPerfil || '') : '');
+    for (var cfi = 0; cfi < clanes.length; cfi++) fila.push((g.clanes[clanes[cfi]] && g.clanes[clanes[cfi]].fuenteClan) || ''); // §PF245
     filas.push(fila);
   }
   return filas;
@@ -26943,7 +26973,10 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     // reintenta. Estas filas siguen contando para el aviso «revisar a mano» de más abajo (clavesIgualesClan). [→ Contexto_Base_Web.md §PF240]
     if (clanTag !== '' && existente && existente.implementacion !== 'No') {
       var barcosExistenteClan = (existente.barcos === undefined) ? null : existente.barcos;
-      if (existente.ataquesSemana === ataquesSemana && existente.fame === fame && barcosExistenteClan === barcosFinal) {
+      // §PF245: si la fuente guardada ya está, no se cambia (Log y Analytics pueden traer lo mismo y no deben alternarla en cada corrida);
+      // si no se sabía y ahora llega, se completa (se reescribe esa fila una vez).
+      if (existente.ataquesSemana === ataquesSemana && existente.fame === fame && barcosExistenteClan === barcosFinal &&
+          (existente.fuenteClan || !_cgwFuenteClanDesdeTexto_(c.fuente))) {
         sinCambios++;
         clavesIgualesClan.push(clave);
         continue;
@@ -26970,6 +27003,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       aprobacion: existente ? (existente.aprobacion || '') : '',
       clanTag: clanTag
     };
+    if (clanTag !== '') mapa[clave].fuenteClan = _cgwFuenteClanDesdeTexto_(c.fuente); // §PF245: el valor se reescribió, así que la fuente es la de este envío ('' si no la trae)
     // §PF164: la fila sin ClanTag es la columna RoyaleAPI; su origen es «perfil» solo si Tampermonkey (v3.2 o posterior) lo dice
     // con fuente:'perfil'. Sin ese dato (versión anterior del script, otro origen) queda «desconocido»: no se compara con los clanes.
     if (clanTag === '') {
@@ -27106,7 +27140,9 @@ function _obtenerListaCorreccionGuerra(opciones) {
   }
 
   var coberturaPorTag = soloClanes ? {} : _construirCoberturaPorTag();
-  var cuentasVariosClanes = soloClanes ? [] : _cuentasConVariosClanesEnOverlay_(); // §PF164: para forzar su perfil desde Tampermonkey (v3.2)
+  var mapaOverlayLista = soloClanes ? null : _cargarOverlayCorreccionesGuerraPorClan(); // §PF246: una sola lectura del CSV para las dos listas de abajo
+  var cuentasVariosClanes = soloClanes ? [] : _cuentasConVariosClanesEnOverlay_(mapaOverlayLista); // §PF164: para forzar su perfil desde Tampermonkey (v3.2)
+  var sinPerfilEnCsv = soloClanes ? [] : _tagsSinPerfilEnOverlay_(mapaOverlayLista); // §PF246 (punto 2 de §PF235)
   Logger.log('[CorreccionGuerra][Lista] modo=' + (soloClanes ? 'clanes' : 'completo') +
              ' · directorio ' + (tDirectorio - tInicio) + ' ms · cobertura ' + (Date.now() - tDirectorio) + ' ms · ' +
              jugadores.length + ' jugador(es) · total ' + (Date.now() - tInicio) + ' ms');
@@ -27122,8 +27158,27 @@ function _obtenerListaCorreccionGuerra(opciones) {
     // FASE 10 (Consolidado_Cambios_Pendientes_Guerra.md, punto 3.1, pregunta [→ Contexto_Base_Web.md §18B110]
     coberturaPorTag: coberturaPorTag,
     // §PF164: tags con alguna semana en 2 o más clanes Terna (cuentas de apoyo); Tampermonkey v3.2 puede forzar su perfil. [→ Contexto_Base_Web.md §PF164]
-    cuentasVariosClanes: cuentasVariosClanes
+    cuentasVariosClanes: cuentasVariosClanes,
+    // §PF246: tags con datos de algún clan (Log/Analytics) en Correcciones_Guerra.csv y NINGUNA fila de perfil con origen «perfil» (el «Grupo B» de §PF235).
+    // Tampermonkey v3.10 visita su perfil aunque Log/Analytics los hayan cubierto, una sola vez: al guardarse su perfil salen de esta lista.
+    sinPerfilEnCsv: sinPerfilEnCsv
   };
+}
+
+/**
+ * _tagsSinPerfilEnOverlay_(mapa)  (§PF246)
+ * Tags de jugador que tienen alguna fila de clan en el mapa de Correcciones_Guerra.csv y ninguna fila de perfil con origen «perfil»
+ * (una fila de perfil «desconocido» no cuenta como perfil: no se sabe de dónde salió). Con el CSV del 25-oct-2026 son 152 tags (241 filas de clan).
+ * Incluye jugadores que ya no están en los clanes: Tampermonkey solo visita los que están en la lista de activos.
+ */
+function _tagsSinPerfilEnOverlay_(mapa) {
+  var conPerfil = {}, conClan = {};
+  Object.keys(mapa || {}).forEach(function (k) {
+    var p = k.split('|'); // temporada | semana | clantag | tag
+    if (p[2] === '') { if (mapa[k].origenPerfil === CGW_ORIGEN_PERFIL) conPerfil[p[3]] = true; }
+    else conClan[p[3]] = true;
+  });
+  return Object.keys(conClan).filter(function (t) { return !conPerfil[t]; }).sort();
 }
 
 /**
@@ -27131,8 +27186,8 @@ function _obtenerListaCorreccionGuerra(opciones) {
  * §PF164: tags de jugador con al menos una semana con filas de 2 o más clanes Terna en Correcciones_Guerra.csv. Con los datos del 12-oct-2026
  * son 35. Es la lista que Tampermonkey ofrece al forzar la lectura del perfil (opción «VARIOS»).
  */
-function _cuentasConVariosClanesEnOverlay_() {
-  var mapa = _cargarOverlayCorreccionesGuerraPorClan();
+function _cuentasConVariosClanesEnOverlay_(mapaOpc) {
+  var mapa = mapaOpc || _cargarOverlayCorreccionesGuerraPorClan(); // §PF246: la lista de correcciones lee el CSV una sola vez y se lo pasa
   var clanesPorSemana = {};
   Object.keys(mapa).forEach(function (k) {
     var p = k.split('|'); // temporada | semana | clantag | tag
