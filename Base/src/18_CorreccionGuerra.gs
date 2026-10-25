@@ -2877,6 +2877,27 @@ var CGW_ORIGEN_DESCONOCIDO = 'desconocido';
 // Nunca se lee como origen: al leer, el origen solo se mira cuando hay valores en las columnas RoyaleAPI, y cualquier texto que no sea
 // «perfil» se trata como «desconocido». No distingue Log de Analytics (el mapa en memoria no guarda esa fuente).
 var CGW_ORIGEN_SIN_PERFIL = 'sin perfil: Log/Analytics';
+// §PF245: fuente de cada dato de clan (Log o Analytics; River Race no se guarda en este CSV). Columnas «Fuente <clanTag>», al final del encabezado
+// (el lector va por nombre, así que no mueven nada). Se guarda como texto «Log» o «Analytics»; vacío = no se sabe (filas anteriores a §PF245).
+// La seña de «sin perfil» la usa para decir de cuál vino: «sin perfil: Log», «sin perfil: Analytics» o, si hay de las dos o alguna no se sabe,
+// «sin perfil: Log/Analytics».
+var CGW_FUENTE_LOG = 'Log';
+var CGW_FUENTE_ANALYTICS = 'Analytics';
+function _cgwFuenteClanDesdeTexto_(v) {
+  var t = String(v || '').trim().toLowerCase();
+  if (t === 'log') return CGW_FUENTE_LOG;
+  if (t === 'analytics') return CGW_FUENTE_ANALYTICS;
+  return '';
+}
+function _cgwSenaSinPerfil_(entradasClan) {
+  var hayLog = false, hayAn = false, hayDesconocida = false;
+  for (var i = 0; i < entradasClan.length; i++) {
+    var f = entradasClan[i].fuenteClan || '';
+    if (f === CGW_FUENTE_LOG) hayLog = true; else if (f === CGW_FUENTE_ANALYTICS) hayAn = true; else hayDesconocida = true;
+  }
+  if (hayDesconocida || (hayLog && hayAn)) return CGW_ORIGEN_SIN_PERFIL;
+  return hayLog ? 'sin perfil: Log' : 'sin perfil: Analytics';
+}
 var CGW_ENCABEZADO_ORIGEN = 'Origen RoyaleAPI';
 // §PF238: columna «ID» (segunda columna del formato ancho): T_NN_S_NN_#TAG con la temporada propia y la semana de la fila. Es un valor
 // calculado al escribir (se ignora al leer, como Externo): no hay que migrar nada, cada escritura lo completa en todas las filas.
@@ -2936,7 +2957,7 @@ function _cgwEsFormatoAncho_(encabezado) {
   return false;
 }
 
-function _cgwNuevaEntrada_(ataques, barcos, medallas, comunes, clanTag, origenPerfil, clanPerfil) {
+function _cgwNuevaEntrada_(ataques, barcos, medallas, comunes, clanTag, origenPerfil, clanPerfil, fuenteClan) {
   var e = {
     ataquesSemana: Number(ataques) || 0,
     // Barcos es opcional: '' = sin dato (null), nunca un 0 falso. [→ Contexto_Base_Web.md §18B094]
@@ -2950,6 +2971,8 @@ function _cgwNuevaEntrada_(ataques, barcos, medallas, comunes, clanTag, origenPe
   if (clanTag === '') {
     e.origenPerfil = origenPerfil || CGW_ORIGEN_DESCONOCIDO;
     e.clanPerfil = _normalizarClanTagCorreccion(clanPerfil); // '' = no se conoce el clan de la fila (formato anterior)
+  } else {
+    e.fuenteClan = _cgwFuenteClanDesdeTexto_(fuenteClan); // §PF245: «Log», «Analytics» o '' (no se sabe)
   }
   return e;
 }
@@ -3067,7 +3090,7 @@ function _cgwFilasAnchasAMapa_(parsed) {
       var cc = colClan[clanes[c]];
       var a = cel(f, cc.Ataques), b = cel(f, cc.Barcos), md = cel(f, cc.Medallas);
       if (a === '' && b === '' && md === '') continue;
-      mapa[temporada + '|' + semana + '|' + clanes[c] + '|' + tag] = _cgwNuevaEntrada_(a, b, md, comunes, clanes[c]);
+      mapa[temporada + '|' + semana + '|' + clanes[c] + '|' + tag] = _cgwNuevaEntrada_(a, b, md, comunes, clanes[c], undefined, undefined, cel(f, col['Fuente ' + clanes[c]])); // §PF245
     }
     var pa = cel(f, col['Ataques RoyaleAPI']), pb = cel(f, col['Barcos RoyaleAPI']), pm = cel(f, col['Medallas RoyaleAPI']);
     if (pa !== '' || pb !== '' || pm !== '') {
@@ -3171,6 +3194,7 @@ function _cgwEncabezadoAncho_(clanes) {
     enc.push(CGW_MAGNITUDES[m].nombre + ' RoyaleAPI');
   }
   enc.push('Aprobación', 'Implementación', CGW_ENCABEZADO_ORIGEN, CGW_ENCABEZADO_CLAN_PERFIL);
+  for (var cf = 0; cf < clanes.length; cf++) enc.push('Fuente ' + clanes[cf]); // §PF245
   return enc;
 }
 
@@ -3227,8 +3251,9 @@ function _cgwMapaAFilasAnchas_(mapa) {
       fila.push((g.perfil && g.perfil[campo] !== null && g.perfil[campo] !== undefined) ? g.perfil[campo] : '');
     }
     fila.push(todasAprobadas ? 'Sí' : '', todasImpl ? 'Sí' : (algunaImplNo ? 'No' : ''),
-      g.perfil ? (g.perfil.origenPerfil || CGW_ORIGEN_DESCONOCIDO) : (entradasClan.length > 0 ? CGW_ORIGEN_SIN_PERFIL : ''), // §PF244
+      g.perfil ? (g.perfil.origenPerfil || CGW_ORIGEN_DESCONOCIDO) : (entradasClan.length > 0 ? _cgwSenaSinPerfil_(entradasClan) : ''), // §PF244, §PF245
       g.perfil ? (g.perfil.clanPerfil || '') : '');
+    for (var cfi = 0; cfi < clanes.length; cfi++) fila.push((g.clanes[clanes[cfi]] && g.clanes[clanes[cfi]].fuenteClan) || ''); // §PF245
     filas.push(fila);
   }
   return filas;
@@ -3350,7 +3375,10 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     // reintenta. Estas filas siguen contando para el aviso «revisar a mano» de más abajo (clavesIgualesClan). [→ Contexto_Base_Web.md §PF240]
     if (clanTag !== '' && existente && existente.implementacion !== 'No') {
       var barcosExistenteClan = (existente.barcos === undefined) ? null : existente.barcos;
-      if (existente.ataquesSemana === ataquesSemana && existente.fame === fame && barcosExistenteClan === barcosFinal) {
+      // §PF245: si la fuente guardada ya está, no se cambia (Log y Analytics pueden traer lo mismo y no deben alternarla en cada corrida);
+      // si no se sabía y ahora llega, se completa (se reescribe esa fila una vez).
+      if (existente.ataquesSemana === ataquesSemana && existente.fame === fame && barcosExistenteClan === barcosFinal &&
+          (existente.fuenteClan || !_cgwFuenteClanDesdeTexto_(c.fuente))) {
         sinCambios++;
         clavesIgualesClan.push(clave);
         continue;
@@ -3377,6 +3405,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       aprobacion: existente ? (existente.aprobacion || '') : '',
       clanTag: clanTag
     };
+    if (clanTag !== '') mapa[clave].fuenteClan = _cgwFuenteClanDesdeTexto_(c.fuente); // §PF245: el valor se reescribió, así que la fuente es la de este envío ('' si no la trae)
     // §PF164: la fila sin ClanTag es la columna RoyaleAPI; su origen es «perfil» solo si Tampermonkey (v3.2 o posterior) lo dice
     // con fuente:'perfil'. Sin ese dato (versión anterior del script, otro origen) queda «desconocido»: no se compara con los clanes.
     if (clanTag === '') {
