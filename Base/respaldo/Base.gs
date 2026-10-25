@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 04:22:57 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 05:06:13 */
 
 
 
@@ -6862,6 +6862,49 @@ function _encodeCSV(rows) {
       return s;
     }).join(',');
   }).join('\r\n');
+}
+
+/**
+ * _informeConIdSemana_(filas)  [→ Contexto_Base_Web.md §PF242]
+ * Devuelve una COPIA de la tabla de un informe con la columna «ID» como primera columna: T_NN_S_NN con la temporada propia y la
+ * semana de la fila, y _#TAG añadido cuando la tabla tiene columna «Tag» con valor (misma forma que Correcciones_Guerra.csv, §PF238).
+ * Se busca por el NOMBRE de las columnas «Temporada», «Semana» y «Tag» (sin importar mayúsculas). Si falta Temporada o Semana, o si
+ * la primera columna ya es «ID», devuelve la tabla tal cual. Una fila sin temporada o semana numéricas queda con ID vacío.
+ * Solo para informes (los lectores de informes buscan columnas por nombre); NO usar en espejos de hojas como Backup_Guerra.csv,
+ * cuyas columnas se leen por posición.
+ */
+function _informeConIdSemana_(filas) {
+  if (!filas || filas.length < 2 || !filas[0]) return filas;
+  var enc = filas[0];
+  if (String(enc[0]).trim() === 'ID') return filas;
+  var iT = -1, iS = -1, iG = -1;
+  for (var c = 0; c < enc.length; c++) {
+    var h = String(enc[c]).trim().toLowerCase();
+    if (h === 'temporada' && iT < 0) iT = c;
+    else if (h === 'semana' && iS < 0) iS = c;
+    else if (h === 'tag' && iG < 0) iG = c;
+  }
+  if (iT < 0 || iS < 0) return filas;
+  var dos = function(n) { return (n < 10 ? '0' : '') + n; };
+  var salida = [['ID'].concat(enc)];
+  for (var r = 1; r < filas.length; r++) {
+    var fila = filas[r] || [];
+    var tTxt = String(fila[iT] === undefined ? '' : fila[iT]).trim();
+    var sTxt = String(fila[iS] === undefined ? '' : fila[iS]).trim();
+    var t = Number(tTxt), s = Number(sTxt), id = '';
+    if (tTxt !== '' && sTxt !== '' && isFinite(t) && isFinite(s) && t > 0 && s > 0) {
+      id = 'T_' + dos(t) + '_S_' + dos(s);
+      var tag = iG >= 0 ? String(fila[iG] === undefined ? '' : fila[iG]).trim() : '';
+      if (tag) id += '_' + (tag.charAt(0) === '#' ? tag : '#' + tag);
+    }
+    salida.push([id].concat(fila));
+  }
+  return salida;
+}
+
+/** _encodeCSV de un informe, con la columna «ID» al principio (ver _informeConIdSemana_). */
+function _encodeCSVInforme(filas) {
+  return _encodeCSV(_informeConIdSemana_(filas));
 }
 
 /**
@@ -21460,7 +21503,7 @@ function _corregirFechaGuerraLogs_(aplicar) {
   }
   var total = cambiosLog.length - 1;
   if (aplicar && total > 0) {
-    _saveCSVToDrive('Correccion_Fecha_Guerra_Logs ' + marca + '.csv', _encodeCSV(cambiosLog));
+    _saveCSVToDrive('Correccion_Fecha_Guerra_Logs ' + marca + '.csv', _encodeCSVInforme(cambiosLog));
     sh.getRange(2, GLC.FECHA, n, 1).setValues(nuevaCol);
     sh.getRange(2, GLC.FECHA, n, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
     _syncUnaAcumulativaCSV(
@@ -21888,7 +21931,7 @@ function _repararAtaquesHoyGuerra_(aplicar) {
     }
 
     var nombreInforme = 'Reparacion_AtaquesHoy_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     if (aplicar && (resumen.csvCambios > 0 || resumen.hojaCambios > 0)) {
       // Respaldo previo del CSV completo, ANTES de escribir nada.
@@ -22160,7 +22203,7 @@ function _repararAtaquesHoyGuerraDesdeJSON_(aplicar) {
     }
 
     var nombreInforme = 'Reparacion_AtaquesHoy_Guerra_JSON ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     if (aplicar && (resumen.csvCambios > 0 || resumen.hojaCambios > 0)) {
       // Respaldo previo del CSV completo, ANTES de escribir nada.
@@ -22366,7 +22409,7 @@ function _repararFamaDomingoDesdeJSON_(aplicar, objetivos) {
     }
 
     var nombreInforme = 'Reparacion_FamaDomingo' + (anteriores ? 'Anteriores_' : '_') + etiquetaObjetivos + ' ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     if (aplicar && (resumen.csvCambios > 0 || resumen.hojaCambios > 0)) {
       // Respaldo previo del CSV completo, ANTES de escribir nada.
@@ -22555,7 +22598,7 @@ function _repararDomingosDesdeCorrecciones_(aplicar) {
     }
 
     var nombreInforme = 'Reparacion_DomingosDesdeLog ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     if (aplicar && (resumen.csvCambios > 0 || resumen.hojaCambios > 0)) {
       // Respaldo previo del CSV completo, ANTES de escribir nada.
@@ -26332,6 +26375,26 @@ function _cgwIdFila_(temporada, semana, tag) {
   function dos(n) { var v = Number(n); return (v < 10 ? '0' : '') + v; }
   return 'T_' + dos(temporada) + '_S_' + dos(semana) + '_' + tag;
 }
+// §PF242: columnas «Temporada RoyaleAPI» y «Temporada Supercell» (junto a «Temporada», que es la propia). También son calculadas al escribir y
+// se ignoran al leer. RoyaleAPI = propia + offset (_getTemporadaOffsetRoyaleApi, hoy 131: T6 = 137). Supercell es el id «AAAA-MM» del endpoint
+// /locations/global/seasons (Backup_Seasons.csv, §PF239): un mes por temporada, con el ancla 2026-05 = RoyaleAPI 132 (= T1). Se calcula con la
+// misma ancla que descargarSeasons() y no con el N° del arreglo; si la numeración propia se reenumera, el offset cambia y el id sigue siendo el mismo.
+var CGW_ENCABEZADO_TEMP_ROYALEAPI = 'Temporada RoyaleAPI';
+var CGW_ENCABEZADO_TEMP_SUPERCELL = 'Temporada Supercell';
+var CGW_SUPERCELL_ANCLA_ROYALEAPI = 132;
+var CGW_SUPERCELL_ANCLA_ANIO = 2026;
+var CGW_SUPERCELL_ANCLA_MES = 5;
+function _cgwTemporadaRoyaleApiTexto_(temporadaPropia) {
+  var t = Number(temporadaPropia);
+  return (isNaN(t) || t < 1) ? '' : t + _getTemporadaOffsetRoyaleApi();
+}
+function _cgwTemporadaSupercellTexto_(temporadaPropia) {
+  var r = _cgwTemporadaRoyaleApiTexto_(temporadaPropia);
+  if (r === '') return '';
+  var meses = CGW_SUPERCELL_ANCLA_ANIO * 12 + (CGW_SUPERCELL_ANCLA_MES - 1) + (r - CGW_SUPERCELL_ANCLA_ROYALEAPI);
+  var anio = Math.floor(meses / 12), mes = (meses % 12) + 1;
+  return anio + '-' + (mes < 10 ? '0' : '') + mes;
+}
 // PF183 act. 15 y 16 (24-oct-2026): última columna del formato ancho. Tag del clan de la fila del perfil de RoyaleAPI (leído del enlace del clan).
 // Si ese clan no es de CFG.TERNA_TAGS, la fila es de clan externo: se guarda en RoyaleAPI y en Externo, pero NO cuenta como dato Terna. [→ Contexto_Base_Web.md §PF183]
 var CGW_ENCABEZADO_CLAN_PERFIL = 'Clan RoyaleAPI';
@@ -26588,7 +26651,7 @@ function _cgwExterno_(perfil, entradasClan, campo) {
 }
 
 function _cgwEncabezadoAncho_(clanes) {
-  var enc = ['N°', CGW_ENCABEZADO_ID, 'Actualizado', 'Temporada', 'Semana', 'Tag'];
+  var enc = ['N°', CGW_ENCABEZADO_ID, 'Actualizado', 'Temporada', CGW_ENCABEZADO_TEMP_ROYALEAPI, CGW_ENCABEZADO_TEMP_SUPERCELL, 'Semana', 'Tag'];
   for (var m = 0; m < CGW_MAGNITUDES.length; m++) {
     for (var c = 0; c < clanes.length; c++) enc.push(CGW_MAGNITUDES[m].nombre + ' ' + clanes[c]);
     enc.push(CGW_MAGNITUDES[m].nombre + ' Externo');
@@ -26638,7 +26701,8 @@ function _cgwMapaAFilasAnchas_(mapa) {
       if (r.implementacion === 'No') algunaImplNo = true;
     }
     var entradasClan = Object.keys(g.clanes).map(function (x) { return g.clanes[x]; });
-    var fila = [n + 1, _cgwIdFila_(g.temporada, g.semana, g.tag), actualizado, g.temporada, g.semana, g.tag];
+    var fila = [n + 1, _cgwIdFila_(g.temporada, g.semana, g.tag), actualizado, g.temporada,
+      _cgwTemporadaRoyaleApiTexto_(g.temporada), _cgwTemporadaSupercellTexto_(g.temporada), g.semana, g.tag];
     for (var m = 0; m < CGW_MAGNITUDES.length; m++) {
       var campo = CGW_MAGNITUDES[m].campo;
       for (var c = 0; c < clanes.length; c++) {
@@ -26676,8 +26740,8 @@ function _guardarOverlayCorreccionesGuerra(mapa) {
 }
 
 /**
- * agregarIdCorreccionesGuerraCSV()  (§PF238; se corre a mano desde el editor, una sola vez)
- * Vuelve a escribir Correcciones_Guerra.csv tal como está para que la columna ID aparezca en todas las filas sin esperar a la
+ * agregarIdCorreccionesGuerraCSV()  (§PF238; §PF242 añade las columnas de temporada RoyaleAPI y Supercell; se corre a mano desde el editor)
+ * Vuelve a escribir Correcciones_Guerra.csv tal como está para que las columnas calculadas (ID y temporadas) aparezcan en todas las filas sin esperar a la
  * próxima corrección. No cambia ningún dato: lee y escribe con las mismas funciones de siempre. Usa el mismo candado que las correcciones.
  */
 function agregarIdCorreccionesGuerraCSV() {
@@ -26688,7 +26752,7 @@ function agregarIdCorreccionesGuerraCSV() {
     var n = Object.keys(mapa).length;
     if (!n) { Logger.log('[CorreccionGuerra] ' + CORRECCIONES_GUERRA_CSV + ' no existe o está vacío: nada que hacer.'); return; }
     _guardarOverlayCorreccionesGuerra(mapa);
-    Logger.log('[CorreccionGuerra] Columna ID agregada a ' + CORRECCIONES_GUERRA_CSV + ' (' + n + ' entradas reescritas sin cambiar datos).');
+    Logger.log('[CorreccionGuerra] Columnas calculadas (ID y temporadas RoyaleAPI y Supercell) agregadas a ' + CORRECCIONES_GUERRA_CSV + ' (' + n + ' entradas reescritas sin cambiar datos).');
   } finally {
     lock.releaseLock();
   }
@@ -28124,7 +28188,7 @@ function _completarDomingoDesdeJsonRoyaleApi_(aplicar) {
     agregarInforme('Backup_Guerra.csv', resCsv);
     agregarInforme('Hoja Guerra', resHoja);
     var nombreInforme = 'Completar_DomingoDesdeJsonRoyaleApi ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     var nCsv = resCsv ? resCsv.cambios.length : 0, nHoja = resHoja ? resHoja.cambios.length : 0;
     if (aplicar && (nCsv > 0 || nHoja > 0)) {
@@ -28254,7 +28318,7 @@ function _repararSemanaDesdeJsonRoyaleApi_(aplicar) {
     agregarInforme('Backup_Guerra.csv', resCsv);
     agregarInforme('Hoja Guerra', resHoja);
     var nombreInforme = 'Reparar_SemanaDesdeJsonRoyaleApi ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     var nCsv = resCsv ? resCsv.repartos.length : 0, nHoja = resHoja ? resHoja.repartos.length : 0;
     if (aplicar && (nCsv > 0 || nHoja > 0)) {
@@ -59940,7 +60004,7 @@ function cruzarSinResolverConHistorialInforme() {
   var zona = Session.getScriptTimeZone();
   var nombre = 'Cruce_SinResolver_Historial ' +
     Utilities.formatDate(new Date(), zona, 'yyyy-MM-dd HH.mm.ss') + ' (informe).csv';
-  var csv = salida.map(function (fila) {
+  var csv = _informeConIdSemana_(salida).map(function (fila) {
     return fila.map(cruce_csvCelda_).join(',');
   }).join('\r\n');
   DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID).createFile(nombre, csv, MimeType.CSV);
@@ -60334,7 +60398,7 @@ function tot_serializar_(filas, eol) {
 }
 
 function tot_guardarCsv_(carpeta, nombre, filas) {
-  carpeta.createFile(nombre, tot_serializar_(filas, '\r\n'), MimeType.CSV);
+  carpeta.createFile(nombre, tot_serializar_(_informeConIdSemana_(filas), '\r\n'), MimeType.CSV);
 }
 
 /**
@@ -60602,7 +60666,7 @@ function ano_csvCelda_(v) {
 }
 
 function ano_guardarCsv_(carpeta, nombre, filas) {
-  var texto = filas.map(function (fila) { return fila.map(ano_csvCelda_).join(','); }).join('\r\n');
+  var texto = _informeConIdSemana_(filas).map(function (fila) { return fila.map(ano_csvCelda_).join(','); }).join('\r\n');
   carpeta.createFile(nombre, texto, MimeType.CSV);
 }
 
@@ -60680,7 +60744,7 @@ function _repararDomingoT5S4_(aplicar) {
     }
 
     var nombreInforme = 'Reparacion_Domingo_T5S4 ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     if (aplicar && cambios.length) {
       _saveCSVToDrive('Backup_Guerra ANTES de reparar Domingo T5S4 ' + marca + '.csv', csvText); // respaldo previo
@@ -61548,7 +61612,7 @@ function _corregirAnomaliasAtaquesSemana_(aplicar) {
     var nPendientes = (evCsv ? evCsv.pendientes.length : 0);
 
     var nombreInforme = 'Reparacion_AtaquesSemanaAnomalias ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     var verificacion = '';
     if (aplicar && (nCsv > 0 || nHoja > 0)) {
@@ -62176,7 +62240,7 @@ function _repararDiasConExceso_(aplicar, clases) {
           r.ataquesCoinciden, _excDiasTextoPorDia(r.porDia, 'n'), _excDiasTextoPorDia(r.porDia, 'f'), _excDiasTextoPorDia(r.porDia, 'b'), r.notas]);
       });
       var nomClasif = 'Reparacion_DiasConExceso ' + marca + ' (informe).csv';
-      if (clasif.length > 1) { _saveCSVToDrive(nomClasif, _encodeCSV(clasif)); nombresCsv.push(nomClasif); }
+      if (clasif.length > 1) { _saveCSVToDrive(nomClasif, _encodeCSVInforme(clasif)); nombresCsv.push(nomClasif); }
     }
 
     // CSV del plan / de lo aplicado: una fila por dia escrito.
@@ -62201,7 +62265,7 @@ function _repararDiasConExceso_(aplicar, clases) {
       detalle.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, o.clase, '', '', 'OMITIDO: ' + o.motivo, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
     });
     var nomDetalle = 'Reparacion_DiasConExceso ' + marca + ' (' + (aplicar ? 'aplicado' : 'plan') + ').csv';
-    if (detalle.length > 1) { _saveCSVToDrive(nomDetalle, _encodeCSV(detalle)); nombresCsv.push(nomDetalle); }
+    if (detalle.length > 1) { _saveCSVToDrive(nomDetalle, _encodeCSVInforme(detalle)); nombresCsv.push(nomDetalle); }
 
     var verificacion = '', revisionTxt = '';
     if (aplicar && plan.casos.length > 0) {
@@ -62414,7 +62478,7 @@ function _fameCrr52_(aplicar) {
       detalle.push(['', '', o.etq, '', '', '', '', 'OMITIDO: ' + o.motivo, '', '', '', '', '', '', '']);
     });
     var nomDetalle = 'Reparacion_FameCurrentRiverRace52 ' + marca + ' (' + (aplicar ? 'aplicado' : 'plan') + ').csv';
-    if (detalle.length > 1) _saveCSVToDrive(nomDetalle, _encodeCSV(detalle));
+    if (detalle.length > 1) _saveCSVToDrive(nomDetalle, _encodeCSVInforme(detalle));
 
     var verificacion = '';
     if (aplicar && plan.casos.length > 0) {
@@ -63205,7 +63269,7 @@ function _totSemanaPorDias_(aplicar) {
     });
     if (!aplicar && series.length > 1) {
       var nomSeries = 'AplicarTotalesSemana_Historial ' + marca + ' (informe).csv';
-      _saveCSVToDrive(nomSeries, _encodeCSV(series)); nombresCsv.push(nomSeries);
+      _saveCSVToDrive(nomSeries, _encodeCSVInforme(series)); nombresCsv.push(nomSeries);
     }
     var detalle = [['Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Clase', 'Dia', 'PeriodIndex', 'Accion',
       'AtaquesHoy anterior', 'AtaquesHoy nuevo', 'AtaquesSemana anterior (acumulado)', 'AtaquesSemana nueva (acumulado)',
@@ -63224,7 +63288,7 @@ function _totSemanaPorDias_(aplicar) {
       });
     });
     var nomDetalle = 'AplicarTotalesSemana_Historial ' + marca + ' (' + (aplicar ? 'aplicado' : 'plan') + ').csv';
-    if (detalle.length > 1) { _saveCSVToDrive(nomDetalle, _encodeCSV(detalle)); nombresCsv.push(nomDetalle); }
+    if (detalle.length > 1) { _saveCSVToDrive(nomDetalle, _encodeCSVInforme(detalle)); nombresCsv.push(nomDetalle); }
 
     var verificacion = '', revisionTxt = '', avanzar = true;
     if (aplicar && (nCrear + nModificar) > RS_MAX_FILAS) {
