@@ -364,20 +364,22 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
 // PUNTO 2 (Consolidado_Cambios_Pendientes_Guerra.md): detección automática SOLO SUGERENCIA de la temporada más antigua con presencia Terna; nunca dispara la reenumeración. [→ Contexto_Base_Web.md §47B022]
 // =============================================================================
 
-// detectarTemporadaMasAntiguaConPresenciaTerna(): manual, solo sugerencia; cruza Backup_Guerra.csv y la hoja Nuevos; nunca modifica datos. [→ Contexto_Base_Web.md §47B023]
+// detectarTemporadaMasAntiguaConPresenciaTerna(): manual, solo sugerencia; cruza Backup_Guerra.csv, la hoja Nuevos y (§PF253, por tag de clan) Correcciones_Guerra.csv; nunca modifica datos. [→ Contexto_Base_Web.md §47B023]
 function detectarTemporadaMasAntiguaConPresenciaTerna() {
   var nombresTerna = _getNombresClanesTernaOrdenados();
 
   var fechaGuerra = _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna);
   var fechaNuevos = _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna);
+  var fechaCorrecciones = _buscarFechaMasAntiguaTernaEnCorreccionesGuerra(); // §PF253: por TAG de clan
 
   var candidatos = [];
   if (fechaGuerra) candidatos.push({ fecha: fechaGuerra, fuente: 'Backup_Guerra.csv' });
   if (fechaNuevos) candidatos.push({ fecha: fechaNuevos, fuente: 'hoja Nuevos (historial RoyaleAPI)' });
+  if (fechaCorrecciones) candidatos.push({ fecha: fechaCorrecciones, fuente: 'Correcciones_Guerra.csv (por tag de clan)' });
 
   if (!candidatos.length) {
     Logger.log('[Detección Reenumeración] No se encontró ninguna fila/bloque con presencia confirmada ' +
-      'de un clan Terna, ni en Backup_Guerra.csv ni en la hoja Nuevos. Nada que sugerir.');
+      'de un clan Terna, ni en Backup_Guerra.csv, ni en la hoja Nuevos ni en Correcciones_Guerra.csv. Nada que sugerir.');
     return;
   }
 
@@ -424,6 +426,56 @@ function _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna) {
     var fechaObj = _comoFechaComparable(fila[GC.FECHA - 1]);
     if (!fechaObj) continue;
     if (!masAntigua || fechaObj < masAntigua) masAntigua = fechaObj;
+  }
+  return masAntigua;
+}
+
+// _buscarFechaMasAntiguaTernaEnCorreccionesGuerra(): fuente 3 de la detección (§PF253, 25-oct-2026); devuelve Date o null.
+// Recorre Correcciones_Guerra.csv y se queda con las filas cuyo CLAN (por TAG, no por nombre) es de los clanes Terna (CFG.TERNA_TAGS); la fila de perfil de un clan externo no cuenta (_cgwPerfilEsExterno_()).
+// La fecha de cada fila sale de su Temporada y Semana internas (Semana desde 1): primer lunes de la temporada + (semana - 1) * 7 días. Una fila sin enlace de clan (clanTag vacío) NO cuenta aquí: espera a la corrida de correcciones completas (§PF252).
+// Solo lee; si el CSV no existe o no tiene filas devuelve null.
+function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
+  var overlay;
+  try {
+    overlay = _cargarOverlayCorreccionesGuerraPorClan();
+  } catch (e) {
+    Logger.log('[Detección Reenumeración] No se pudo leer Correcciones_Guerra.csv: ' + e.message);
+    return null;
+  }
+  var claves = Object.keys(overlay || {});
+  if (!claves.length) return null;
+
+  var ternaSet = {};
+  for (var t = 0; t < CFG.TERNA_TAGS.length; t++) {
+    ternaSet[_normalizarClanTagCorreccion(CFG.TERNA_TAGS[t])] = true;
+  }
+
+  var ref = CFG.REF_DEFAULT;
+  var fechaPorSemana = {};
+  var masAntigua = null;
+  for (var i = 0; i < claves.length; i++) {
+    var p = claves[i].split('|'); // temporada | semana | clantag | tag
+    var clanTag = p[2];
+    if (!clanTag || !ternaSet[clanTag]) continue;
+    if (_cgwPerfilEsExterno_(overlay[claves[i]])) continue;
+
+    var temporada = Number(p[0]);
+    var semana = Number(p[1]);
+    if (!temporada || !semana || semana < 1) continue;
+
+    var ck = temporada + '|' + semana;
+    var fecha = fechaPorSemana[ck];
+    if (fecha === undefined) {
+      var pl = primerLunesTemporada(ref, temporada);
+      if (pl && !isNaN(pl.getTime())) {
+        fecha = new Date(pl.getTime());
+        fecha.setDate(fecha.getDate() + (semana - 1) * 7);
+      } else {
+        fecha = null;
+      }
+      fechaPorSemana[ck] = fecha;
+    }
+    if (fecha && (!masAntigua || fecha < masAntigua)) masAntigua = fecha;
   }
   return masAntigua;
 }
