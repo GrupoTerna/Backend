@@ -1036,6 +1036,49 @@ function _encodeCSV(rows) {
 }
 
 /**
+ * _informeConIdSemana_(filas)  [→ Contexto_Base_Web.md §PF242]
+ * Devuelve una COPIA de la tabla de un informe con la columna «ID» como primera columna: T_NN_S_NN con la temporada propia y la
+ * semana de la fila, y _#TAG añadido cuando la tabla tiene columna «Tag» con valor (misma forma que Correcciones_Guerra.csv, §PF238).
+ * Se busca por el NOMBRE de las columnas «Temporada», «Semana» y «Tag» (sin importar mayúsculas). Si falta Temporada o Semana, o si
+ * la primera columna ya es «ID», devuelve la tabla tal cual. Una fila sin temporada o semana numéricas queda con ID vacío.
+ * Solo para informes (los lectores de informes buscan columnas por nombre); NO usar en espejos de hojas como Backup_Guerra.csv,
+ * cuyas columnas se leen por posición.
+ */
+function _informeConIdSemana_(filas) {
+  if (!filas || filas.length < 2 || !filas[0]) return filas;
+  var enc = filas[0];
+  if (String(enc[0]).trim() === 'ID') return filas;
+  var iT = -1, iS = -1, iG = -1;
+  for (var c = 0; c < enc.length; c++) {
+    var h = String(enc[c]).trim().toLowerCase();
+    if (h === 'temporada' && iT < 0) iT = c;
+    else if (h === 'semana' && iS < 0) iS = c;
+    else if (h === 'tag' && iG < 0) iG = c;
+  }
+  if (iT < 0 || iS < 0) return filas;
+  var dos = function(n) { return (n < 10 ? '0' : '') + n; };
+  var salida = [['ID'].concat(enc)];
+  for (var r = 1; r < filas.length; r++) {
+    var fila = filas[r] || [];
+    var tTxt = String(fila[iT] === undefined ? '' : fila[iT]).trim();
+    var sTxt = String(fila[iS] === undefined ? '' : fila[iS]).trim();
+    var t = Number(tTxt), s = Number(sTxt), id = '';
+    if (tTxt !== '' && sTxt !== '' && isFinite(t) && isFinite(s) && t > 0 && s > 0) {
+      id = 'T_' + dos(t) + '_S_' + dos(s);
+      var tag = iG >= 0 ? String(fila[iG] === undefined ? '' : fila[iG]).trim() : '';
+      if (tag) id += '_' + (tag.charAt(0) === '#' ? tag : '#' + tag);
+    }
+    salida.push([id].concat(fila));
+  }
+  return salida;
+}
+
+/** _encodeCSV de un informe, con la columna «ID» al principio (ver _informeConIdSemana_). */
+function _encodeCSVInforme(filas) {
+  return _encodeCSV(_informeConIdSemana_(filas));
+}
+
+/**
  * _cargarExtraColsInactivos() [→ Contexto_Base_Web.md §05B059]
  */
 function _cargarExtraColsInactivos() {

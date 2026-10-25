@@ -210,7 +210,7 @@ function _corregirAnomaliasAtaquesSemana_(aplicar) {
     var nPendientes = (evCsv ? evCsv.pendientes.length : 0);
 
     var nombreInforme = 'Reparacion_AtaquesSemanaAnomalias ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     var verificacion = '';
     if (aplicar && (nCsv > 0 || nHoja > 0)) {

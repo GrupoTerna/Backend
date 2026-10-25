@@ -560,7 +560,7 @@ function _repararDiasConExceso_(aplicar, clases) {
           r.ataquesCoinciden, _excDiasTextoPorDia(r.porDia, 'n'), _excDiasTextoPorDia(r.porDia, 'f'), _excDiasTextoPorDia(r.porDia, 'b'), r.notas]);
       });
       var nomClasif = 'Reparacion_DiasConExceso ' + marca + ' (informe).csv';
-      if (clasif.length > 1) { _saveCSVToDrive(nomClasif, _encodeCSV(clasif)); nombresCsv.push(nomClasif); }
+      if (clasif.length > 1) { _saveCSVToDrive(nomClasif, _encodeCSVInforme(clasif)); nombresCsv.push(nomClasif); }
     }
 
     // CSV del plan / de lo aplicado: una fila por dia escrito.
@@ -585,7 +585,7 @@ function _repararDiasConExceso_(aplicar, clases) {
       detalle.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, o.clase, '', '', 'OMITIDO: ' + o.motivo, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
     });
     var nomDetalle = 'Reparacion_DiasConExceso ' + marca + ' (' + (aplicar ? 'aplicado' : 'plan') + ').csv';
-    if (detalle.length > 1) { _saveCSVToDrive(nomDetalle, _encodeCSV(detalle)); nombresCsv.push(nomDetalle); }
+    if (detalle.length > 1) { _saveCSVToDrive(nomDetalle, _encodeCSVInforme(detalle)); nombresCsv.push(nomDetalle); }
 
     var verificacion = '', revisionTxt = '';
     if (aplicar && plan.casos.length > 0) {
@@ -798,7 +798,7 @@ function _fameCrr52_(aplicar) {
       detalle.push(['', '', o.etq, '', '', '', '', 'OMITIDO: ' + o.motivo, '', '', '', '', '', '', '']);
     });
     var nomDetalle = 'Reparacion_FameCurrentRiverRace52 ' + marca + ' (' + (aplicar ? 'aplicado' : 'plan') + ').csv';
-    if (detalle.length > 1) _saveCSVToDrive(nomDetalle, _encodeCSV(detalle));
+    if (detalle.length > 1) _saveCSVToDrive(nomDetalle, _encodeCSVInforme(detalle));
 
     var verificacion = '';
     if (aplicar && plan.casos.length > 0) {

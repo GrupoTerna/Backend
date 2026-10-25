@@ -480,7 +480,7 @@ function _totSemanaPorDias_(aplicar) {
     });
     if (!aplicar && series.length > 1) {
       var nomSeries = 'AplicarTotalesSemana_Historial ' + marca + ' (informe).csv';
-      _saveCSVToDrive(nomSeries, _encodeCSV(series)); nombresCsv.push(nomSeries);
+      _saveCSVToDrive(nomSeries, _encodeCSVInforme(series)); nombresCsv.push(nomSeries);
     }
     var detalle = [['Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Clase', 'Dia', 'PeriodIndex', 'Accion',
       'AtaquesHoy anterior', 'AtaquesHoy nuevo', 'AtaquesSemana anterior (acumulado)', 'AtaquesSemana nueva (acumulado)',
@@ -499,7 +499,7 @@ function _totSemanaPorDias_(aplicar) {
       });
     });
     var nomDetalle = 'AplicarTotalesSemana_Historial ' + marca + ' (' + (aplicar ? 'aplicado' : 'plan') + ').csv';
-    if (detalle.length > 1) { _saveCSVToDrive(nomDetalle, _encodeCSV(detalle)); nombresCsv.push(nomDetalle); }
+    if (detalle.length > 1) { _saveCSVToDrive(nomDetalle, _encodeCSVInforme(detalle)); nombresCsv.push(nomDetalle); }
 
     var verificacion = '', revisionTxt = '', avanzar = true;
     if (aplicar && (nCrear + nModificar) > RS_MAX_FILAS) {

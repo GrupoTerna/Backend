@@ -2910,7 +2910,7 @@ function _corregirFechaGuerraLogs_(aplicar) {
   }
   var total = cambiosLog.length - 1;
   if (aplicar && total > 0) {
-    _saveCSVToDrive('Correccion_Fecha_Guerra_Logs ' + marca + '.csv', _encodeCSV(cambiosLog));
+    _saveCSVToDrive('Correccion_Fecha_Guerra_Logs ' + marca + '.csv', _encodeCSVInforme(cambiosLog));
     sh.getRange(2, GLC.FECHA, n, 1).setValues(nuevaCol);
     sh.getRange(2, GLC.FECHA, n, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
     _syncUnaAcumulativaCSV(
@@ -3338,7 +3338,7 @@ function _repararAtaquesHoyGuerra_(aplicar) {
     }
 
     var nombreInforme = 'Reparacion_AtaquesHoy_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     if (aplicar && (resumen.csvCambios > 0 || resumen.hojaCambios > 0)) {
       // Respaldo previo del CSV completo, ANTES de escribir nada.
@@ -3610,7 +3610,7 @@ function _repararAtaquesHoyGuerraDesdeJSON_(aplicar) {
     }
 
     var nombreInforme = 'Reparacion_AtaquesHoy_Guerra_JSON ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     if (aplicar && (resumen.csvCambios > 0 || resumen.hojaCambios > 0)) {
       // Respaldo previo del CSV completo, ANTES de escribir nada.
@@ -3816,7 +3816,7 @@ function _repararFamaDomingoDesdeJSON_(aplicar, objetivos) {
     }
 
     var nombreInforme = 'Reparacion_FamaDomingo' + (anteriores ? 'Anteriores_' : '_') + etiquetaObjetivos + ' ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     if (aplicar && (resumen.csvCambios > 0 || resumen.hojaCambios > 0)) {
       // Respaldo previo del CSV completo, ANTES de escribir nada.
@@ -4005,7 +4005,7 @@ function _repararDomingosDesdeCorrecciones_(aplicar) {
     }
 
     var nombreInforme = 'Reparacion_DomingosDesdeLog ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     if (aplicar && (resumen.csvCambios > 0 || resumen.hojaCambios > 0)) {
       // Respaldo previo del CSV completo, ANTES de escribir nada.

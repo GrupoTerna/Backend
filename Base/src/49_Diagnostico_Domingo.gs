@@ -71,7 +71,7 @@ function _repararDomingoT5S4_(aplicar) {
     }
 
     var nombreInforme = 'Reparacion_Domingo_T5S4 ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     if (aplicar && cambios.length) {
       _saveCSVToDrive('Backup_Guerra ANTES de reparar Domingo T5S4 ' + marca + '.csv', csvText); // respaldo previo

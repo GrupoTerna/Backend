@@ -587,7 +587,7 @@ function cruzarSinResolverConHistorialInforme() {
   var zona = Session.getScriptTimeZone();
   var nombre = 'Cruce_SinResolver_Historial ' +
     Utilities.formatDate(new Date(), zona, 'yyyy-MM-dd HH.mm.ss') + ' (informe).csv';
-  var csv = salida.map(function (fila) {
+  var csv = _informeConIdSemana_(salida).map(function (fila) {
     return fila.map(cruce_csvCelda_).join(',');
   }).join('\r\n');
   DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID).createFile(nombre, csv, MimeType.CSV);
@@ -981,7 +981,7 @@ function tot_serializar_(filas, eol) {
 }
 
 function tot_guardarCsv_(carpeta, nombre, filas) {
-  carpeta.createFile(nombre, tot_serializar_(filas, '\r\n'), MimeType.CSV);
+  carpeta.createFile(nombre, tot_serializar_(_informeConIdSemana_(filas), '\r\n'), MimeType.CSV);
 }
 
 /**
@@ -1249,6 +1249,6 @@ function ano_csvCelda_(v) {
 }
 
 function ano_guardarCsv_(carpeta, nombre, filas) {
-  var texto = filas.map(function (fila) { return fila.map(ano_csvCelda_).join(','); }).join('\r\n');
+  var texto = _informeConIdSemana_(filas).map(function (fila) { return fila.map(ano_csvCelda_).join(','); }).join('\r\n');
   carpeta.createFile(nombre, texto, MimeType.CSV);
 }

@@ -4672,7 +4672,7 @@ function _completarDomingoDesdeJsonRoyaleApi_(aplicar) {
     agregarInforme('Backup_Guerra.csv', resCsv);
     agregarInforme('Hoja Guerra', resHoja);
     var nombreInforme = 'Completar_DomingoDesdeJsonRoyaleApi ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     var nCsv = resCsv ? resCsv.cambios.length : 0, nHoja = resHoja ? resHoja.cambios.length : 0;
     if (aplicar && (nCsv > 0 || nHoja > 0)) {
@@ -4802,7 +4802,7 @@ function _repararSemanaDesdeJsonRoyaleApi_(aplicar) {
     agregarInforme('Backup_Guerra.csv', resCsv);
     agregarInforme('Hoja Guerra', resHoja);
     var nombreInforme = 'Reparar_SemanaDesdeJsonRoyaleApi ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
-    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSV(informe));
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     var nCsv = resCsv ? resCsv.repartos.length : 0, nHoja = resHoja ? resHoja.repartos.length : 0;
     if (aplicar && (nCsv > 0 || nHoja > 0)) {
