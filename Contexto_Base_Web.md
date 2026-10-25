@@ -266,6 +266,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF248` | **Tampermonkey v3.12: el clan de cada fila (Terna o no, y «cuenta como nuevo») se decide por el TAG del enlace de la celda del clan, no por el nombre** (`_tagClanDeCelda()`, `_esClanTernaPorTag()`, `leerFilasClanWars2()`, `leerHistorialCompleto()`; el backend manda `clanTagsTerna` en `_obtenerListaCandidatosNuevos()`; 25-oct-2026; pedido de la usuaria; probado con jsdom, **sin probar en RoyaleAPI real**). |
 | `PF249` | **Decisiones de la usuaria del 25-oct-2026 sobre «Nuevos», `Correcciones_Guerra.csv` y la reenumeración de temporadas; todo queda como PENDIENTE, nada implementado** (el cálculo de «cuenta como nuevo» pasa al backend por tag; cada botón de correcciones también alimenta «Nuevos» y viceversa; `currentriverrace` de RoyaleAPI como posible fuente; la reenumeración se extiende a más hojas; 25-oct-2026; solo documentación). |
 | `PF250` | **Respuestas de la usuaria a las preguntas de `§PF249` y hallazgos de la revisión del código (qué es `Correcciones_Nuevos.csv` y cuándo se purga, qué hace River Race, qué hojas tienen temporada); todo PENDIENTE, nada implementado** (25-oct-2026; solo documentación). |
+| `PF251` | **Idea de la usuaria: separar `Correcciones_Guerra.csv` en activos e inactivos (como Directorio/Inactivos) con un archivo aparte de tags, y evaluar un archivo de tags también para Directorio e Inactivos; solo evaluación y pendientes, nada implementado** (25-oct-2026). |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -534,6 +535,8 @@ Lista única de lo que quedó «pendiente de definir o contestar» (regla 3) en 
 | `PF250` | **Etapa B (detalle):** River Race (`procesarClanRiverRaceActual()`) hoy alimenta solo el histórico de guerra por jugador (`historialGuerra`); decidir con la usuaria si además alimenta «Nuevos» o `Correcciones_Guerra.csv` (`§PF250`, «River Race»). | Abierto (25-oct-2026). |
 | `PF250` | **Etapa C (detalle):** reenumerar **todo lo que tenga columna de temporada interna** (fechas sin cambiar; lo que solo tiene fecha no se toca) y **arreglar `detectarTemporadaMasAntiguaConPresenciaTerna()`** (por tag; que mire también `Correcciones_Guerra.csv`). Inventario de hojas y preguntas en `§PF250`. | Abierto (25-oct-2026). Primero el inventario completo, después las hojas de a pocas por tanda. |
 | `PF250` | **Hallazgo a decidir:** `Correcciones_Nuevos.csv` conserva a quienes salieron del clan (solo se borran al llegar a 3 semanas de guerra Terna). Decidir si debe purgarse también al salir (`§PF250`). | Abierto (25-oct-2026). |
+| `PF251` | **Evaluar** si conviene separar `Correcciones_Guerra.csv` en un archivo de activos y otro de inactivos (moviendo las filas cuando el jugador sale de los clanes Terna, según el Directorio) con un archivo aparte que guarde solo los tags. **Medir antes** (tiempo real de lectura del CSV) y hacerlo **después** de las etapas A y C de `§PF249`/`§PF250`. | Abierto (25-oct-2026). Opinión de Claude y preguntas en `§PF251`. |
+| `PF251` | **Evaluar** si conviene un archivo de tags también para el Directorio y para Inactivos (hoy 129 y 1 211 filas). | Abierto (25-oct-2026). Se evalúa junto con el punto anterior. |
 
 **Secciones con «sin probar» o «sin verificar»** (95 menciones, contadas el 17-oct-2026 con «sin probar» y «sin verificar» en cada `PF`; el detalle está en cada una): `PF016` (5), `PF017` (5), `PF018` (5), `PF027` (1), `PF028` (1), `PF030` (2), `PF031` (2), `PF032` (1), `PF033` (1), `PF034` (1), `PF035` (2), `PF036` (1), `PF037` (1), `PF039` (1), `PF040` (1), `PF041` (1), `PF042` (1), `PF043` (1), `PF044` (1), `PF045` (2), `PF049` (1), `PF050` (3), `PF051` (1), `PF052` (1), `PF053` (2), `PF055` (1), `PF056` (1), `PF058` (1), `PF059` (1), `PF060` (1), `PF061` (1), `PF062` (1), `PF063` (1), `PF064` (1), `PF065` (6), `PF067` (3), `PF070` (1), `PF073` (6), `PF080` (1), `PF081` (2), `PF082` (1), `PF083` (1), `PF084` (1), `PF085` (1), `PF086` (2), `PF088` (1), `PF089` (2), `PF090` (1), `PF091` (6), `PF092` (1), `PF093` (1), `PF094` (2), `PF095` (1), `PF096` (2). Casi todas significan «no se ejecutó en Apps Script real ni en un navegador real».
 
@@ -6198,3 +6201,37 @@ Cómo funciona hoy (`47_Migraciones.gs`): suma `REENUM_DELTA_MESES` al número d
 - **¿El CSV debe borrar a quien sale del clan**, como la hoja (hoy no lo hace)?
 - **River Race:** ¿alimenta «Nuevos», `Correcciones_Guerra.csv`, ambos o ninguno?
 - **Reenumeración:** ¿confirma que `Historial_A/D` y `Comentarios` (sin columna de temporada) **no** se tocan?, ¿se reenumeran los nombres de archivos y carpetas de Drive con `T-05 S-02 …`?, ¿y los `Backup_*.csv` de cada hoja (hoy sí se hace con los ya cubiertos)?
+
+
+### PF251 — ¿Separar `Correcciones_Guerra.csv` en activos e inactivos, con un archivo de tags? (25-oct-2026, Lima; idea de la usuaria; **solo evaluación; nada implementado**)
+
+*No reemplaza nada anterior. La usuaria pidió dejar como pendiente evaluar un archivo de tags para Directorio e Inactivos, y recordó que «en alguna parte del código ya se hacía esto para optimizar y no revisar todas las filas de un archivo».*
+
+**Lo que propone la usuaria.** (1) Partir `Correcciones_Guerra.csv` como se separó Directorio de Inactivos, para que el CSV de consulta sea más chico. (2) Mover las filas de un jugador al CSV de inactivos cuando sale de los clanes Terna y devolverlas si regresa, imitando la lógica del Directorio. (3) Un archivo aparte solo con los tags, para saber si un tag está en el CSV de inactivos sin recorrerlo. (4) Dejar pendiente evaluar un archivo de tags también para Directorio e Inactivos.
+
+**Lo que ya existe en el código (verificado con `grep`; lo que la usuaria recordaba).** No hay hoy un índice de «qué tags están en tal CSV», pero sí el mismo patrón en otros sitios:
+- **Índice `tag → archivo de Drive` en caché:** `construirIndicePlayers()` (`48_Herramientas_Debug.gs`) y `_playersIndiceIdsGuardar_()` / `_getPlayersDriveIndexPorTag()` (`09_API_ClashRoyale.gs`) para los JSON de Players; `_getHistorialGuerraDriveIndexPorTag()` (`20_HistorialGuerraJugador.gs`) para el histórico por jugador. Evitan listar la carpeta de Drive.
+- **Índice de ocultas de la web (`§PF091`):** `_webOcultasIndice_()` (`37_Web_API.gs`) arma una sola vez `{dir: {tag: estado}, inact: {tag: true}}`.
+- **Conjuntos de tags para filtrar** en las lecturas de JSON de guerra (`_cdjCargarRegistrosJsonDrive_(tagsSet, …)`, `18_CorreccionGuerra.gs`).
+- **Caché de resultado** de cobertura de guerra, invalidada al guardar el CSV (`§PF042`; `_csvCacheBorrar_()`, `05_Backup_CSV.gs`).
+- Aviso: `Inactivos` **no** es un archivo aparte del Directorio en el sentido de «dos mitades»: es una **vista derivada** del Directorio (`13_Inactivos_Vetados.gs`, `_updateInactivos()`; reactivación en `_retirarDeInactivosPorReactivacion()`), con su respaldo `Backup_Inactivos.csv`.
+
+**Evidencia con los datos del repo (`Datos descargados/CSV/`; copias de fecha no verificada).**
+- `Correcciones_Guerra.csv`: **705 KB, 6 218 filas, 1 007 tags**. Comparación: `Backup_Guerra.csv` pesa 2,3 MB.
+- Según `Backup_Directorio.csv` (117 `Activo` y 12 `Inactivo`) y `Backup_Inactivos.csv` (1 211 filas): **117 tags activos con 2 062 filas (33 %)**; **578 tags en Inactivos con 2 624 filas (42 %)**; **312 tags con 1 532 filas (25 %) no están ni en Directorio-Activo ni en Inactivos** (jugadores de otros clanes, o ex-miembros que no quedaron en esos archivos).
+- Es decir, **dos tercios de las filas son de gente que no está activa**: un CSV de activos pesaría cerca de un tercio (unos 230 KB).
+
+**Opinión de Claude (no es decisión de la usuaria; sin probar en Apps Script).** *Es razonable, pero no conviene hacerlo todavía y no sin medir.*
+1. **No hay una medición de que el tamaño sea un cuello de botella.** 705 KB no es grande para el proyecto. `_loadCSVFromDrive()` tiene caché de 10 minutos (`05_Backup_CSV.gs`), pero el propio código indica un tope de 100 KB por valor de `CacheService` (`18_CorreccionGuerra.gs`, cobertura), así que **no se verificó si este CSV cabe en esa caché**. Primero hay que medir cuánto tarda de verdad leer y parsear el archivo en una corrida.
+2. **Hay lectores y escritores de ambos lados.** El overlay se lee en **17 sitios** (13 en `18_CorreccionGuerra.gs`, 2 en `23_Control2_GuerraSemanal.gs`, 1 en `17_GuerraSheet.gs`, 1 en `47_Migraciones.gs`; sin contar las definiciones). Y **las escrituras a inactivos son frecuentes**: los perfiles de ex-miembros que se visitan («jugadores elegidos», `§PF246`: 135 de los 152 tags sin perfil ya no están en los clanes) escriben justo en el archivo de inactivos, y la regla de no reescribir filas iguales (`§PF236`, `§PF240`, `§PF245`) necesita leer lo ya guardado antes de decidir. Por eso no basta con «mover cuando sale del clan»: hay que leer y escribir en dos archivos según el tag.
+3. **El movimiento no es atómico.** Pasar filas de un CSV a otro en Drive puede cortarse a mitad (límite de tiempo de Apps Script) y dejar filas duplicadas o perdidas; hay que diseñar una forma resumible, como las de `47_Migraciones.gs` (`REENUM_CSV_IDX_…`).
+4. **Los 312 tags «sin ubicar» necesitan una regla** (por defecto, ¿van a inactivos?) y los 12 `Inactivo` del Directorio también.
+5. **El archivo está en movimiento.** Las etapas A y C de `§PF249` y `§PF250` lo tocan (columna `ClanTag` de Nuevos, tag en vez de nombre, reenumeración de temporadas, detección de la temporada más antigua). Partirlo ahora obligaría a hacer todo eso sobre **dos** archivos. Mejor terminar esas etapas y después partir.
+6. **Alternativa barata a medir antes:** dejar un solo CSV y añadir solo el archivo de tags (con la ubicación de cada tag) o un caché del mapa ya parseado de los activos; ganaría poco si el costo está en leer el CSV completo. Se decide con la medición del punto 1.
+
+**Sobre el archivo de tags para Directorio e Inactivos (pendiente).** Hoy Directorio tiene 129 filas y Inactivos 1 211 (`Backup_Inactivos.csv`: 135 KB): son chicos, y `_webOcultasIndice_()` ya arma un índice en memoria una vez por corrida. A primera vista **el beneficio sería menor** que en `Correcciones_Guerra.csv`; se evalúa con los mismos criterios (medir, quién lee, costo de mantenerlo sincronizado).
+
+**Preguntas abiertas (regla 3).**
+- ¿Los jugadores que ya no están en ningún clan Terna deben conservar **todas** sus filas de correcciones para siempre (como hoy), o hay un plazo para archivarlas?
+- ¿Las filas de perfil de **clanes externos** (jugadores que nunca estuvieron en Terna, los 312 tags) van con los inactivos o en un tercer archivo?
+- ¿Se mide primero (propuesta de Claude) o se decide por criterio y se mide después?
