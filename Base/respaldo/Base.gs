@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 06:11:45 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 12:32:53 */
 
 
 
@@ -16542,7 +16542,8 @@ function _importarNuevosYPerfiles_(candidatosPayload) {
       var rc = _aplicarCorreccionesGuerra(correcciones);
       resultado.correcciones = {
         ok: !!(rc && rc.ok), candidatos: candidatosConPerfil, recibidas: correcciones.length, enCursoDescartadas: filasEnCurso,
-        aplicadas: (rc && rc.aplicadas) || 0, sinCambios: (rc && rc.sinCambios) || 0, omitidas: (rc && rc.omitidas) || 0
+        aplicadas: (rc && rc.aplicadas) || 0, sinCambios: (rc && rc.sinCambios) || 0, omitidas: (rc && rc.omitidas) || 0,
+        anterioresT1: (rc && rc.anterioresT1) || 0 // §PF247
       };
       if (rc && rc.error) resultado.correcciones.error = rc.error;
       if (rc && rc.cambiosPerfil) resultado.correcciones.cambiosPerfil = rc.cambiosPerfil;
@@ -17115,6 +17116,7 @@ function _obtenerListaCandidatosNuevos() {
   return {
     ok: true,
     clanesTerna: _getNombresClanesTernaOrdenados(),
+    clanTagsTerna: CFG.TERNA_TAGS.slice(), // v3.12 de Tampermonkey: «cuenta como nuevo» se decide por tag de clan, no por nombre
     candidatos: candidatos,
     // FIX (11-sep-2026, pedido usuario): objeto vacío a propósito — ver [→ Contexto_Base_Web.md §14B087]
     coberturaPorTag: {}
@@ -25770,6 +25772,10 @@ function aplicarCorreccionGuerraATodasLasTemporadas() {
   for (var t = 0; t < temporadas.length; t++) {
     var temporadaPropia = Number(temporadas[t]);
     var clavesTemporada = porTemporada[temporadas[t]];
+    if (temporadaPropia < 1) { // §PF247: anteriores a T1; no existen en Guerra y no se crean filas con temporada 0 o negativa hasta la reenumeración
+      Logger.log('[Corregir Guerra<-RoyaleAPI] Temporada ' + temporadaPropia + ': ' + clavesTemporada.length + ' clave(s) anteriores a T1, se dejan en el CSV hasta la reenumeración.');
+      continue;
+    }
 
     var fuente = _cargarFuenteGuerraParaTemporada(temporadaPropia, ctxReal.temporada);
     if (!fuente) {
@@ -26501,7 +26507,7 @@ var CGW_ENCABEZADO_ORIGEN = 'Origen RoyaleAPI';
 // calculado al escribir (se ignora al leer, como Externo): no hay que migrar nada, cada escritura lo completa en todas las filas.
 var CGW_ENCABEZADO_ID = 'ID';
 function _cgwIdFila_(temporada, semana, tag) {
-  function dos(n) { var v = Number(n); return (v < 10 ? '0' : '') + v; }
+  function dos(n) { var v = Number(n); return v < 0 ? '-' + (v > -10 ? '0' : '') + (-v) : (v < 10 ? '0' : '') + v; } // §PF247: antes de la reenumeración la temporada puede ser 0 o negativa: T_00, T_-05
   return 'T_' + dos(temporada) + '_S_' + dos(semana) + '_' + tag;
 }
 // §PF242: columnas «Temporada RoyaleAPI» y «Temporada Supercell» (junto a «Temporada», que es la propia). También son calculadas al escribir y
@@ -26517,8 +26523,9 @@ var CGW_SUPERCELL_ANCLA_MES = 5;
 // agregarIdCorreccionesGuerraCSV() con las miles de filas del archivo (25-oct-2026, §PF242).
 function _cgwTemporadaRoyaleApiTexto_(temporadaPropia, offset) {
   var t = Number(temporadaPropia);
-  if (isNaN(t) || t < 1) return '';
-  return t + (offset === undefined ? _getTemporadaOffsetRoyaleApi() : offset);
+  if (isNaN(t)) return '';
+  var r = t + (offset === undefined ? _getTemporadaOffsetRoyaleApi() : offset); // §PF247: también para temporadas propias 0 o negativas
+  return r < 1 ? '' : r;
 }
 function _cgwTemporadaSupercellTexto_(temporadaPropia, offset) {
   var r = _cgwTemporadaRoyaleApiTexto_(temporadaPropia, offset);
@@ -26922,6 +26929,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var ahora = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT-5', 'yyyy-MM-dd HH:mm:ss');
 
   var aplicadas = 0, omitidas = 0, sinCambios = 0;
+  var anterioresT1 = 0; // §PF247: filas de este envío con temporada propia menor que 1 (se guardan igual)
   var cambiosPerfil = []; // §PF237: filas del perfil que reemplazan un dato del perfil ya guardado y distinto
   var clavesTocadas = []; // FIX (27-ago-2026, pregunta 4): claves de ESTE lote, para completar Implementación más abajo sin tocar correcciones de corridas anteriores.
   var clavesIgualesClan = []; // §PF240: filas de Log/Analytics (con ClanTag) iguales a las ya guardadas: no se reescriben, pero cuentan para el aviso «revisar a mano»
@@ -26939,7 +26947,11 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     }
 
     var temporadaPropia = temporadaRoyale - _getTemporadaOffsetRoyaleApi();
-    if (temporadaPropia < 1) { omitidas++; continue; } // fuera del rango registrado
+    // §PF247: ya NO se descartan las temporadas propias menores que 1. El sistema registra desde mayo de 2026 (T1), pero los clanes existen desde antes;
+    // el plan (pendiente de la reenumeración de temporadas) es traer ese historial de RoyaleAPI y, cuando se conozca la más antigua con un clan Terna,
+    // correr runReenumerarTemporadas(): suma el mismo delta a toda «Temporada» (también a Correcciones_Guerra.csv) y esas filas pasan a ser T1 en adelante.
+    // Mientras tanto se guardan con temporada 0 o negativa (RoyaleAPI - 131). Los módulos que escriben en la hoja Guerra las saltan hasta la reenumeración.
+    if (temporadaPropia < 1) anterioresT1++;
 
     var clanTag = _normalizarClanTagCorreccion(c.clanTag);
     var clave = temporadaPropia + '|' + semana + '|' + clanTag + '|' + tag;
@@ -27071,9 +27083,10 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   }
 
   Logger.log('[CorreccionGuerra] Aplicadas: ' + aplicadas + ', sin cambios: ' + sinCambios + ', omitidas: ' + omitidas +
-    ' (de ' + correcciones.length + ' recibidas).');
+    ' (de ' + correcciones.length + ' recibidas)' + (anterioresT1 ? '; ' + anterioresT1 + ' anterior(es) a T1 (temporada 0 o negativa, a la espera de la reenumeración)' : '') + '.');
 
   var resultado = { ok: true, aplicadas: aplicadas, omitidas: omitidas, sinCambios: sinCambios, total: correcciones.length };
+  if (anterioresT1) resultado.anterioresT1 = anterioresT1; // §PF247
   if (revisarManual.length) resultado.revisarManual = revisarManual; // FIX 29-sep-2026 (Fase 15 tanda 1)
   if (cambiosPerfil.length) resultado.cambiosPerfil = cambiosPerfil; // §PF237
   if (avisos.length) {
