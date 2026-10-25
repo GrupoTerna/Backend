@@ -3542,7 +3542,9 @@ function _obtenerListaCorreccionGuerra(opciones) {
   }
 
   var coberturaPorTag = soloClanes ? {} : _construirCoberturaPorTag();
-  var cuentasVariosClanes = soloClanes ? [] : _cuentasConVariosClanesEnOverlay_(); // §PF164: para forzar su perfil desde Tampermonkey (v3.2)
+  var mapaOverlayLista = soloClanes ? null : _cargarOverlayCorreccionesGuerraPorClan(); // §PF246: una sola lectura del CSV para las dos listas de abajo
+  var cuentasVariosClanes = soloClanes ? [] : _cuentasConVariosClanesEnOverlay_(mapaOverlayLista); // §PF164: para forzar su perfil desde Tampermonkey (v3.2)
+  var sinPerfilEnCsv = soloClanes ? [] : _tagsSinPerfilEnOverlay_(mapaOverlayLista); // §PF246 (punto 2 de §PF235)
   Logger.log('[CorreccionGuerra][Lista] modo=' + (soloClanes ? 'clanes' : 'completo') +
              ' · directorio ' + (tDirectorio - tInicio) + ' ms · cobertura ' + (Date.now() - tDirectorio) + ' ms · ' +
              jugadores.length + ' jugador(es) · total ' + (Date.now() - tInicio) + ' ms');
@@ -3558,8 +3560,27 @@ function _obtenerListaCorreccionGuerra(opciones) {
     // FASE 10 (Consolidado_Cambios_Pendientes_Guerra.md, punto 3.1, pregunta [→ Contexto_Base_Web.md §18B110]
     coberturaPorTag: coberturaPorTag,
     // §PF164: tags con alguna semana en 2 o más clanes Terna (cuentas de apoyo); Tampermonkey v3.2 puede forzar su perfil. [→ Contexto_Base_Web.md §PF164]
-    cuentasVariosClanes: cuentasVariosClanes
+    cuentasVariosClanes: cuentasVariosClanes,
+    // §PF246: tags con datos de algún clan (Log/Analytics) en Correcciones_Guerra.csv y NINGUNA fila de perfil con origen «perfil» (el «Grupo B» de §PF235).
+    // Tampermonkey v3.10 visita su perfil aunque Log/Analytics los hayan cubierto, una sola vez: al guardarse su perfil salen de esta lista.
+    sinPerfilEnCsv: sinPerfilEnCsv
   };
+}
+
+/**
+ * _tagsSinPerfilEnOverlay_(mapa)  (§PF246)
+ * Tags de jugador que tienen alguna fila de clan en el mapa de Correcciones_Guerra.csv y ninguna fila de perfil con origen «perfil»
+ * (una fila de perfil «desconocido» no cuenta como perfil: no se sabe de dónde salió). Con el CSV del 25-oct-2026 son 152 tags (241 filas de clan).
+ * Incluye jugadores que ya no están en los clanes: Tampermonkey solo visita los que están en la lista de activos.
+ */
+function _tagsSinPerfilEnOverlay_(mapa) {
+  var conPerfil = {}, conClan = {};
+  Object.keys(mapa || {}).forEach(function (k) {
+    var p = k.split('|'); // temporada | semana | clantag | tag
+    if (p[2] === '') { if (mapa[k].origenPerfil === CGW_ORIGEN_PERFIL) conPerfil[p[3]] = true; }
+    else conClan[p[3]] = true;
+  });
+  return Object.keys(conClan).filter(function (t) { return !conPerfil[t]; }).sort();
 }
 
 /**
@@ -3567,8 +3588,8 @@ function _obtenerListaCorreccionGuerra(opciones) {
  * §PF164: tags de jugador con al menos una semana con filas de 2 o más clanes Terna en Correcciones_Guerra.csv. Con los datos del 12-oct-2026
  * son 35. Es la lista que Tampermonkey ofrece al forzar la lectura del perfil (opción «VARIOS»).
  */
-function _cuentasConVariosClanesEnOverlay_() {
-  var mapa = _cargarOverlayCorreccionesGuerraPorClan();
+function _cuentasConVariosClanesEnOverlay_(mapaOpc) {
+  var mapa = mapaOpc || _cargarOverlayCorreccionesGuerraPorClan(); // §PF246: la lista de correcciones lee el CSV una sola vez y se lo pasa
   var clanesPorSemana = {};
   Object.keys(mapa).forEach(function (k) {
     var p = k.split('|'); // temporada | semana | clantag | tag
