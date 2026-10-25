@@ -2880,6 +2880,26 @@ function _cgwIdFila_(temporada, semana, tag) {
   function dos(n) { var v = Number(n); return (v < 10 ? '0' : '') + v; }
   return 'T_' + dos(temporada) + '_S_' + dos(semana) + '_' + tag;
 }
+// §PF242: columnas «Temporada RoyaleAPI» y «Temporada Supercell» (junto a «Temporada», que es la propia). También son calculadas al escribir y
+// se ignoran al leer. RoyaleAPI = propia + offset (_getTemporadaOffsetRoyaleApi, hoy 131: T6 = 137). Supercell es el id «AAAA-MM» del endpoint
+// /locations/global/seasons (Backup_Seasons.csv, §PF239): un mes por temporada, con el ancla 2026-05 = RoyaleAPI 132 (= T1). Se calcula con la
+// misma ancla que descargarSeasons() y no con el N° del arreglo; si la numeración propia se reenumera, el offset cambia y el id sigue siendo el mismo.
+var CGW_ENCABEZADO_TEMP_ROYALEAPI = 'Temporada RoyaleAPI';
+var CGW_ENCABEZADO_TEMP_SUPERCELL = 'Temporada Supercell';
+var CGW_SUPERCELL_ANCLA_ROYALEAPI = 132;
+var CGW_SUPERCELL_ANCLA_ANIO = 2026;
+var CGW_SUPERCELL_ANCLA_MES = 5;
+function _cgwTemporadaRoyaleApiTexto_(temporadaPropia) {
+  var t = Number(temporadaPropia);
+  return (isNaN(t) || t < 1) ? '' : t + _getTemporadaOffsetRoyaleApi();
+}
+function _cgwTemporadaSupercellTexto_(temporadaPropia) {
+  var r = _cgwTemporadaRoyaleApiTexto_(temporadaPropia);
+  if (r === '') return '';
+  var meses = CGW_SUPERCELL_ANCLA_ANIO * 12 + (CGW_SUPERCELL_ANCLA_MES - 1) + (r - CGW_SUPERCELL_ANCLA_ROYALEAPI);
+  var anio = Math.floor(meses / 12), mes = (meses % 12) + 1;
+  return anio + '-' + (mes < 10 ? '0' : '') + mes;
+}
 // PF183 act. 15 y 16 (24-oct-2026): última columna del formato ancho. Tag del clan de la fila del perfil de RoyaleAPI (leído del enlace del clan).
 // Si ese clan no es de CFG.TERNA_TAGS, la fila es de clan externo: se guarda en RoyaleAPI y en Externo, pero NO cuenta como dato Terna. [→ Contexto_Base_Web.md §PF183]
 var CGW_ENCABEZADO_CLAN_PERFIL = 'Clan RoyaleAPI';
@@ -3136,7 +3156,7 @@ function _cgwExterno_(perfil, entradasClan, campo) {
 }
 
 function _cgwEncabezadoAncho_(clanes) {
-  var enc = ['N°', CGW_ENCABEZADO_ID, 'Actualizado', 'Temporada', 'Semana', 'Tag'];
+  var enc = ['N°', CGW_ENCABEZADO_ID, 'Actualizado', 'Temporada', CGW_ENCABEZADO_TEMP_ROYALEAPI, CGW_ENCABEZADO_TEMP_SUPERCELL, 'Semana', 'Tag'];
   for (var m = 0; m < CGW_MAGNITUDES.length; m++) {
     for (var c = 0; c < clanes.length; c++) enc.push(CGW_MAGNITUDES[m].nombre + ' ' + clanes[c]);
     enc.push(CGW_MAGNITUDES[m].nombre + ' Externo');
@@ -3186,7 +3206,8 @@ function _cgwMapaAFilasAnchas_(mapa) {
       if (r.implementacion === 'No') algunaImplNo = true;
     }
     var entradasClan = Object.keys(g.clanes).map(function (x) { return g.clanes[x]; });
-    var fila = [n + 1, _cgwIdFila_(g.temporada, g.semana, g.tag), actualizado, g.temporada, g.semana, g.tag];
+    var fila = [n + 1, _cgwIdFila_(g.temporada, g.semana, g.tag), actualizado, g.temporada,
+      _cgwTemporadaRoyaleApiTexto_(g.temporada), _cgwTemporadaSupercellTexto_(g.temporada), g.semana, g.tag];
     for (var m = 0; m < CGW_MAGNITUDES.length; m++) {
       var campo = CGW_MAGNITUDES[m].campo;
       for (var c = 0; c < clanes.length; c++) {
@@ -3224,8 +3245,8 @@ function _guardarOverlayCorreccionesGuerra(mapa) {
 }
 
 /**
- * agregarIdCorreccionesGuerraCSV()  (§PF238; se corre a mano desde el editor, una sola vez)
- * Vuelve a escribir Correcciones_Guerra.csv tal como está para que la columna ID aparezca en todas las filas sin esperar a la
+ * agregarIdCorreccionesGuerraCSV()  (§PF238; §PF242 añade las columnas de temporada RoyaleAPI y Supercell; se corre a mano desde el editor)
+ * Vuelve a escribir Correcciones_Guerra.csv tal como está para que las columnas calculadas (ID y temporadas) aparezcan en todas las filas sin esperar a la
  * próxima corrección. No cambia ningún dato: lee y escribe con las mismas funciones de siempre. Usa el mismo candado que las correcciones.
  */
 function agregarIdCorreccionesGuerraCSV() {
@@ -3236,7 +3257,7 @@ function agregarIdCorreccionesGuerraCSV() {
     var n = Object.keys(mapa).length;
     if (!n) { Logger.log('[CorreccionGuerra] ' + CORRECCIONES_GUERRA_CSV + ' no existe o está vacío: nada que hacer.'); return; }
     _guardarOverlayCorreccionesGuerra(mapa);
-    Logger.log('[CorreccionGuerra] Columna ID agregada a ' + CORRECCIONES_GUERRA_CSV + ' (' + n + ' entradas reescritas sin cambiar datos).');
+    Logger.log('[CorreccionGuerra] Columnas calculadas (ID y temporadas RoyaleAPI y Supercell) agregadas a ' + CORRECCIONES_GUERRA_CSV + ' (' + n + ' entradas reescritas sin cambiar datos).');
   } finally {
     lock.releaseLock();
   }
