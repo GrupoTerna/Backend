@@ -1610,7 +1610,8 @@ function doPost(e) {
     }
     try {
       var payloadNuevos = JSON.parse(e.postData.contents);
-      var resultadoNuevos = _aplicarImportacionNuevos(payloadNuevos && payloadNuevos.candidatos);
+      // PF243: el backend reparte lo que manda el botón de nuevos entre la hoja Nuevos y Correcciones_Guerra.csv; ver _importarNuevosYPerfiles_() en 14_Nuevos_RoyaleAPI.gs. [→ Contexto_Base_Web.md §PF243]
+      var resultadoNuevos = _importarNuevosYPerfiles_(payloadNuevos && payloadNuevos.candidatos);
       // FIX (13-ago-2026): log en Drive por botón; ver _logTampermonkeyADrive() (05_Backup_CSV.gs). [→ Contexto_Base_Web.md §38B097]
       _logTampermonkeyADrive('ImportarNuevos', resultadoNuevos, null);
       return ContentService
