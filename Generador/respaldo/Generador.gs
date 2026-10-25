@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 05:04:43 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 05:32:01 */
 
 
 
@@ -5246,6 +5246,8 @@ function _imgApiCommit_(ctx, entradas, mensaje) {
 //     Desde el 25-oct-2026 (§PF241, decisión de la usuaria) también, de esa misma
 //     carpeta, Correcciones_RiverRace_Pendientes.csv y los Log_Tampermonkey_*.csv
 //     (se buscan con el filtro «solo»; si no existen no es un error).
+//   - Carpeta Seasons: Cache_Seasons.json (respuesta cruda de descargarSeasons(), ids de
+//     temporada de Supercell)  → Datos descargados/JSON/Endpoints/Seasons/
 //   - Backup_Guerra.csv y Backup_Guerra_Logs.csv → Datos descargados/CSV/Hojas/
 //   - Carpeta de informes: TODOS los archivos de texto que haya (CSV, TXT, JSON,
 //     MD, PY), también los que cree una función nueva, porque se recorre la
@@ -5272,6 +5274,7 @@ function _imgApiCommit_(ctx, entradas, mensaje) {
 var DATOS_GH_CARPETA_TAMPERMONKEY_ = '1rYAHT0dCpAPFT6BYXDncpuo9ZY780LFt';
 var DATOS_GH_CARPETA_HOJAS_        = '1emYkDZMEzYgO5lwmtY-NMhFc5JJd2I3R';
 var DATOS_GH_CARPETA_INFORMES_     = '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X';
+var DATOS_GH_CARPETA_SEASONS_      = '1oIMkaJS6ElqXD9Z8xRA5jn0YVaz3l01d';   // = DRIVE_FOLDER_ID_SEASONS de Base (01_Config_Global.gs)
 
 var DATOS_GH_FUENTES_ = [
   { carpetaId: DATOS_GH_CARPETA_TAMPERMONKEY_,
@@ -5281,6 +5284,9 @@ var DATOS_GH_FUENTES_ = [
     todos: true,
     solo: /^(Correcciones_RiverRace_Pendientes\.csv|Log_Tampermonkey_.*\.csv)$/i,
     destino: 'Datos descargados/CSV/Tampermonkey/', maxBytes: 8 * 1024 * 1024 },
+  { carpetaId: DATOS_GH_CARPETA_SEASONS_,
+    nombres: ['Cache_Seasons.json'],
+    destino: 'Datos descargados/JSON/Endpoints/Seasons/', maxBytes: 1 * 1024 * 1024 },
   { carpetaId: DATOS_GH_CARPETA_HOJAS_,
     nombres: ['Backup_Guerra.csv', 'Backup_Guerra_Logs.csv'],
     destino: 'Datos descargados/CSV/Hojas/', maxBytes: 8 * 1024 * 1024 },

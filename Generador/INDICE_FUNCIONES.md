@@ -1,7 +1,7 @@
 # Índice de funciones — Generador
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Generador/src/`. Total: 265 nombres en 12 archivos .gs.
+Código real: `Generador/src/`. Total: 266 nombres en 12 archivos .gs.
 
 ## Por archivo
 
@@ -43,10 +43,10 @@ Ninguno.
 | `_carpetaSemanaJSON_` | función | 04_Organizador_JSON.gs | 356 |  |
 | `_carpetaViejaDeClan_` | función | 04_Organizador_JSON.gs | 279 |  |
 | `_conAviso_` | función | 02_Backstage.gs | 103 |  |
-| `_datosDriveAGithub_` | función | 12_Datos_Drive_GitHub.gs | 196 |  |
-| `_datosGhBuscarTelefonos_` | función | 12_Datos_Drive_GitHub.gs | 136 |  |
-| `_datosGhListarCandidatos_` | función | 12_Datos_Drive_GitHub.gs | 164 |  |
-| `_datosGhQuitarActivadores_` | función | 12_Datos_Drive_GitHub.gs | 116 |  |
+| `_datosDriveAGithub_` | función | 12_Datos_Drive_GitHub.gs | 202 |  |
+| `_datosGhBuscarTelefonos_` | función | 12_Datos_Drive_GitHub.gs | 142 |  |
+| `_datosGhListarCandidatos_` | función | 12_Datos_Drive_GitHub.gs | 170 |  |
+| `_datosGhQuitarActivadores_` | función | 12_Datos_Drive_GitHub.gs | 122 |  |
 | `_descargarProyectoAArchivos` | función | 02_Backstage.gs | 287 |  |
 | `_diaJuegoAnclaEnVentana_` | función | 06_Limpieza_Duplicados_JSON.gs | 587 |  |
 | `_diaJuegoFecha_` | función | 06_Limpieza_Duplicados_JSON.gs | 567 |  |
@@ -176,15 +176,16 @@ Ninguno.
 | `CORTE_MIN_PARES_` | global | 06_Limpieza_Duplicados_JSON.gs | 447 |  |
 | `CREAR_O_ACTUALIZAR_HOJA_SISTEMA` | global | 02_Backstage.gs | 15 |  |
 | `crearProyectoVinculado_` | función | 02_Backstage.gs | 714 |  |
-| `DATOS_GH_CARPETA_HOJAS_` | global | 12_Datos_Drive_GitHub.gs | 38 |  |
-| `DATOS_GH_CARPETA_INFORMES_` | global | 12_Datos_Drive_GitHub.gs | 39 |  |
-| `DATOS_GH_CARPETA_TAMPERMONKEY_` | global | 12_Datos_Drive_GitHub.gs | 37 |  |
-| `DATOS_GH_FUENTES_` | global | 12_Datos_Drive_GitHub.gs | 41 |  |
-| `DATOS_GH_HANDLER_AUTO_` | global | 12_Datos_Drive_GitHub.gs | 59 |  |
-| `DATOS_GH_HANDLER_SEGUIR_` | global | 12_Datos_Drive_GitHub.gs | 60 |  |
-| `DATOS_GH_LOTE_BYTES_` | global | 12_Datos_Drive_GitHub.gs | 61 |  |
-| `DATOS_GH_PREFIJO_ESTADO_` | global | 12_Datos_Drive_GitHub.gs | 58 |  |
-| `DATOS_GH_TIEMPO_MAX_MS_` | global | 12_Datos_Drive_GitHub.gs | 62 |  |
+| `DATOS_GH_CARPETA_HOJAS_` | global | 12_Datos_Drive_GitHub.gs | 40 |  |
+| `DATOS_GH_CARPETA_INFORMES_` | global | 12_Datos_Drive_GitHub.gs | 41 |  |
+| `DATOS_GH_CARPETA_SEASONS_` | global | 12_Datos_Drive_GitHub.gs | 42 |  |
+| `DATOS_GH_CARPETA_TAMPERMONKEY_` | global | 12_Datos_Drive_GitHub.gs | 39 |  |
+| `DATOS_GH_FUENTES_` | global | 12_Datos_Drive_GitHub.gs | 44 |  |
+| `DATOS_GH_HANDLER_AUTO_` | global | 12_Datos_Drive_GitHub.gs | 65 |  |
+| `DATOS_GH_HANDLER_SEGUIR_` | global | 12_Datos_Drive_GitHub.gs | 66 |  |
+| `DATOS_GH_LOTE_BYTES_` | global | 12_Datos_Drive_GitHub.gs | 67 |  |
+| `DATOS_GH_PREFIJO_ESTADO_` | global | 12_Datos_Drive_GitHub.gs | 64 |  |
+| `DATOS_GH_TIEMPO_MAX_MS_` | global | 12_Datos_Drive_GitHub.gs | 68 |  |
 | `descargarBase` | función | 01_Principal.gs | 15 |  |
 | `descargarBaseForzado` | función | 01_Principal.gs | 25 |  |
 | `descargarContactos` | función | 01_Principal.gs | 170 |  |
@@ -231,7 +232,7 @@ Ninguno.
 | `IMGAPI_REGEX_URL_` | global | 11_Imagenes_API.gs | 77 |  |
 | `IMGAPI_REPO_` | global | 11_Imagenes_API.gs | 72 |  |
 | `INDICE_ARCHIVOS_RE_HUELLAS_` | global | 02_Backstage.gs | 397 |  |
-| `instalarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 103 |  |
+| `instalarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 109 |  |
 | `LETRAS_DIA_GUERRA_` | global | 05_Migrador_Formato.gs | 441 |  |
 | `limpiarDuplicadosJSON` | función | 06_Limpieza_Duplicados_JSON.gs | 73 |  |
 | `LIMPIEZA_DRY_RUN_` | global | 06_Limpieza_Duplicados_JSON.gs | 66 |  |
@@ -253,13 +254,13 @@ Ninguno.
 | `organizarArchivosJSON` | función | 04_Organizador_JSON.gs | 100 |  |
 | `PAREO_TOLERANCIA_MS_` | global | 06_Limpieza_Duplicados_JSON.gs | 417 |  |
 | `probarConexionGithub` | función | 01_Principal.gs | 225 |  |
-| `quitarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 111 |  |
+| `quitarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 117 |  |
 | `README_GENERADOR_NOMBRE_` | global | 09_ReadmeGenerador.gs | 19 |  |
 | `README_LINEA_INICIO_` | global | 09_ReadmeGenerador.gs | 22 |  |
 | `README_MARCA_FIN_` | global | 09_ReadmeGenerador.gs | 21 |  |
 | `README_MARCA_INICIO_` | global | 09_ReadmeGenerador.gs | 20 |  |
 | `reiniciarCachePeriodosJSON` | función | 07_Cache_Periodos_JSON.gs | 77 |  |
-| `revisarDatosDriveAGithubSinSubir` | función | 12_Datos_Drive_GitHub.gs | 79 |  |
+| `revisarDatosDriveAGithubSinSubir` | función | 12_Datos_Drive_GitHub.gs | 85 |  |
 | `subirBaseDesdeGithub` | función | 01_Principal.gs | 76 |  |
 | `subirBaseDesdeGithubForzado` | función | 01_Principal.gs | 81 |  |
 | `subirBaseDesdeGs` | función | 01_Principal.gs | 56 |  |
@@ -272,10 +273,10 @@ Ninguno.
 | `subirContactosDesdeMd` | función | 01_Principal.gs | 199 |  |
 | `subirContactosDesdeTxt` | función | 01_Principal.gs | 187 |  |
 | `subirContactosDesdeZip` | función | 01_Principal.gs | 181 |  |
-| `subirDatosDriveAGithub` | función | 12_Datos_Drive_GitHub.gs | 69 |  |
-| `subirDatosDriveAGithubAuto` | función | 12_Datos_Drive_GitHub.gs | 84 |  |
-| `subirDatosDriveAGithubContinuar` | función | 12_Datos_Drive_GitHub.gs | 93 |  |
-| `subirDatosDriveAGithubForzado` | función | 12_Datos_Drive_GitHub.gs | 74 |  |
+| `subirDatosDriveAGithub` | función | 12_Datos_Drive_GitHub.gs | 75 |  |
+| `subirDatosDriveAGithubAuto` | función | 12_Datos_Drive_GitHub.gs | 90 |  |
+| `subirDatosDriveAGithubContinuar` | función | 12_Datos_Drive_GitHub.gs | 99 |  |
+| `subirDatosDriveAGithubForzado` | función | 12_Datos_Drive_GitHub.gs | 80 |  |
 | `subirEvidenciaT05AGithub` | función | 08_GitHub.gs | 710 |  |
 | `subirGeneradorDesdeGithub` | función | 01_Principal.gs | 149 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
 | `subirGeneradorDesdeGithubForzado` | función | 01_Principal.gs | 154 |  |
