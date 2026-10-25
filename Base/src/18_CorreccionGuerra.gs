@@ -3271,6 +3271,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var aplicadas = 0, omitidas = 0, sinCambios = 0;
   var cambiosPerfil = []; // §PF237: filas del perfil que reemplazan un dato del perfil ya guardado y distinto
   var clavesTocadas = []; // FIX (27-ago-2026, pregunta 4): claves de ESTE lote, para completar Implementación más abajo sin tocar correcciones de corridas anteriores.
+  var clavesIgualesClan = []; // §PF240: filas de Log/Analytics (con ClanTag) iguales a las ya guardadas: no se reescriben, pero cuentan para el aviso «revisar a mano»
   for (var i = 0; i < correcciones.length; i++) {
     var c = correcciones[i] || {};
     var tag = String(c.tag || '').trim();
@@ -3314,6 +3315,18 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       }
     }
 
+    // §PF240: la misma conservación para las filas de Log y Analytics (con ClanTag). Una fila igual a la ya guardada (ataques, fame y
+    // barcos) no se reescribe ni toca «Actualizado»: se cuenta en «sinCambios». Si la guardada quedó con Implementación «No», se
+    // reintenta. Estas filas siguen contando para el aviso «revisar a mano» de más abajo (clavesIgualesClan). [→ Contexto_Base_Web.md §PF240]
+    if (clanTag !== '' && existente && existente.implementacion !== 'No') {
+      var barcosExistenteClan = (existente.barcos === undefined) ? null : existente.barcos;
+      if (existente.ataquesSemana === ataquesSemana && existente.fame === fame && barcosExistenteClan === barcosFinal) {
+        sinCambios++;
+        clavesIgualesClan.push(clave);
+        continue;
+      }
+    }
+
     // §PF237: si la fila del perfil reemplaza un valor del perfil ya guardado y distinto, se aplica igual (el perfil es la
     // fuente de esa columna) pero se avisa «antes / ahora», para detectar una lectura mala (tabla a medias, ceros) o una
     // semana que cambia en cada corrida. No avisa si lo guardado era «desconocido» (llenarlo es justo lo esperado).
@@ -3348,8 +3361,9 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   // FIX (29-sep-2026, Fase 15 tanda 1, AVISO 4): jugador-semana del lote con [→ Contexto_Base_Web.md §18B101]
   var revisarManual = [];
   var triples = {};
-  for (var kt = 0; kt < clavesTocadas.length; kt++) {
-    var pcl = clavesTocadas[kt].split('|'); // temporada | semana | clantag | tag
+  var clavesParaAviso = clavesTocadas.concat(clavesIgualesClan); // §PF240: el aviso no depende de que la fila se haya reescrito
+  for (var kt = 0; kt < clavesParaAviso.length; kt++) {
+    var pcl = clavesParaAviso[kt].split('|'); // temporada | semana | clantag | tag
     if (pcl[2] === '') continue;
     triples[pcl[0] + '|' + pcl[1] + '|' + pcl[3]] = true;
   }
