@@ -76,6 +76,15 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 - La plantilla con los pasos y el bloque de repositorios está en **`Claude/Plantilla_Token_GitHub.txt`** del repo `Backend` (público; solo trae marcadores, nunca un token). Claude la lee de `https://raw.githubusercontent.com/GrupoTerna/Backend/main/Claude/Plantilla_Token_GitHub.txt` y **se la entrega a la usuaria para descargar**; esta es una excepción a 0.2 porque es lo que ella necesita para poder seguir. Si Claude no logra leerla, le dice a la usuaria que la descargue de GitHub. No se copia aquí su contenido, para que viva en un solo lugar.
 - **El token nunca se sube a un repo ni se escribe en commits, documentos o respuestas** (los repos son públicos). Claude lo lee del archivo adjunto sin mostrarlo; la usuaria lo borra y lo revoca después.
 
+## 0.8 Al pedir que se ejecute una función de Apps Script: decir en qué archivo y en qué proyecto está (dictada por la usuaria el 25-oct-2026)
+
+*Esta sección no reemplaza ni corrige nada anterior; añade una regla.*
+
+- **Cada vez que Claude le pida a la usuaria que ejecute una función en Apps Script** (incluidos los recordatorios de 0.3: `subirBaseDesdeGithub()`, `subirGeneradorDesdeGithub()`, `descargarBase()`, `descargarGenerador()`, etc.), **dice en qué archivo `.gs` está la función y en qué proyecto: `Base` o `Generador`**, para que ella sepa qué editor de Apps Script abrir. Formato: «corre `subirBaseDesdeGithub()` (proyecto **Generador**, archivo `01_Principal.gs`)».
+- **Se verifica, no se dice de memoria.** Antes de nombrar el archivo, buscar la función en el clon actualizado: `grep -rn --include=*.gs -E "function +nombre\b" Base/src Generador/src`. El `INDICE_FUNCIONES.md` de cada carpeta sirve para orientarse, pero es generado y puede ir por detrás de lo último que se subió. Se da el nombre **actual** del archivo (los `.gs` se han renumerado; ver «Equivalencias de nombres de archivo `.gs`» en `Contexto_Base_Web.md`).
+- **El nombre de la función no dice el proyecto.** Por ejemplo, `subirBaseDesdeGithub()` y `descargarBase()` trabajan sobre `Base`, pero están en el **Generador** (`01_Principal.gs`); `agregarIdCorreccionesGuerraCSV()` sí está en **Base** (`18_CorreccionGuerra.gs`).
+- Si la función existe en los dos proyectos, se indican ambos. Si no se encuentra en ninguno (nombre mal escrito, o función que aún no está subida), Claude lo dice y no inventa el archivo. Si la función la creó o la movió Claude en esa tanda, indica el archivo donde la dejó.
+
 ## Objetivo
 
 Este proyecto tiene un ecosistema de fuentes de código recurrentes que el usuario sube en distintos momentos, no necesariamente juntas. Por el momento son estas cuatro (puede ampliarse si el usuario incorpora más adelante):
