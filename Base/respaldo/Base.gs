@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 05:06:13 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 05:16:51 */
 
 
 
@@ -26384,12 +26384,15 @@ var CGW_ENCABEZADO_TEMP_SUPERCELL = 'Temporada Supercell';
 var CGW_SUPERCELL_ANCLA_ROYALEAPI = 132;
 var CGW_SUPERCELL_ANCLA_ANIO = 2026;
 var CGW_SUPERCELL_ANCLA_MES = 5;
-function _cgwTemporadaRoyaleApiTexto_(temporadaPropia) {
+// El offset se lee UNA vez por escritura y se pasa como segundo parámetro: leerlo por fila (PropertiesService) agotó los 6 minutos en
+// agregarIdCorreccionesGuerraCSV() con las miles de filas del archivo (25-oct-2026, §PF242).
+function _cgwTemporadaRoyaleApiTexto_(temporadaPropia, offset) {
   var t = Number(temporadaPropia);
-  return (isNaN(t) || t < 1) ? '' : t + _getTemporadaOffsetRoyaleApi();
+  if (isNaN(t) || t < 1) return '';
+  return t + (offset === undefined ? _getTemporadaOffsetRoyaleApi() : offset);
 }
-function _cgwTemporadaSupercellTexto_(temporadaPropia) {
-  var r = _cgwTemporadaRoyaleApiTexto_(temporadaPropia);
+function _cgwTemporadaSupercellTexto_(temporadaPropia, offset) {
+  var r = _cgwTemporadaRoyaleApiTexto_(temporadaPropia, offset);
   if (r === '') return '';
   var meses = CGW_SUPERCELL_ANCLA_ANIO * 12 + (CGW_SUPERCELL_ANCLA_MES - 1) + (r - CGW_SUPERCELL_ANCLA_ROYALEAPI);
   var anio = Math.floor(meses / 12), mes = (meses % 12) + 1;
@@ -26690,6 +26693,7 @@ function _cgwMapaAFilasAnchas_(mapa) {
   });
 
   var filas = [_cgwEncabezadoAncho_(clanes)];
+  var offsetRoyaleApi = _getTemporadaOffsetRoyaleApi();
   for (var n = 0; n < gks.length; n++) {
     var g = grupos[gks[n]];
     var actualizado = '', todasAprobadas = true, todasImpl = true, algunaImplNo = false;
@@ -26702,7 +26706,7 @@ function _cgwMapaAFilasAnchas_(mapa) {
     }
     var entradasClan = Object.keys(g.clanes).map(function (x) { return g.clanes[x]; });
     var fila = [n + 1, _cgwIdFila_(g.temporada, g.semana, g.tag), actualizado, g.temporada,
-      _cgwTemporadaRoyaleApiTexto_(g.temporada), _cgwTemporadaSupercellTexto_(g.temporada), g.semana, g.tag];
+      _cgwTemporadaRoyaleApiTexto_(g.temporada, offsetRoyaleApi), _cgwTemporadaSupercellTexto_(g.temporada, offsetRoyaleApi), g.semana, g.tag];
     for (var m = 0; m < CGW_MAGNITUDES.length; m++) {
       var campo = CGW_MAGNITUDES[m].campo;
       for (var c = 0; c < clanes.length; c++) {
