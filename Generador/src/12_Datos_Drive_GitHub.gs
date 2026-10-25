@@ -11,6 +11,8 @@
 //     Desde el 25-oct-2026 (§PF241, decisión de la usuaria) también, de esa misma
 //     carpeta, Correcciones_RiverRace_Pendientes.csv y los Log_Tampermonkey_*.csv
 //     (se buscan con el filtro «solo»; si no existen no es un error).
+//   - Background/: Backup_Seasons.csv (ids de temporada de Supercell) → Datos descargados/CSV/Background/.
+//     La carpeta Background se busca por nombre junto a la de Tampermonkey (misma carpeta padre).
 //   - Backup_Guerra.csv y Backup_Guerra_Logs.csv → Datos descargados/CSV/Hojas/
 //   - Carpeta de informes: TODOS los archivos de texto que haya (CSV, TXT, JSON,
 //     MD, PY), también los que cree una función nueva, porque se recorre la
@@ -46,6 +48,9 @@ var DATOS_GH_FUENTES_ = [
     todos: true,
     solo: /^(Correcciones_RiverRace_Pendientes\.csv|Log_Tampermonkey_.*\.csv)$/i,
     destino: 'Datos descargados/CSV/Tampermonkey/', maxBytes: 8 * 1024 * 1024 },
+  { carpetaHermanaDe: DATOS_GH_CARPETA_TAMPERMONKEY_, carpetaNombre: 'Background',
+    nombres: ['Backup_Seasons.csv'],
+    destino: 'Datos descargados/CSV/Background/', maxBytes: 1 * 1024 * 1024 },
   { carpetaId: DATOS_GH_CARPETA_HOJAS_,
     nombres: ['Backup_Guerra.csv', 'Backup_Guerra_Logs.csv'],
     destino: 'Datos descargados/CSV/Hojas/', maxBytes: 8 * 1024 * 1024 },
@@ -166,7 +171,21 @@ function _datosGhListarCandidatos_() {
   var problemas = [];
   DATOS_GH_FUENTES_.forEach(function(fuente) {
     var carpeta;
-    try { carpeta = DriveApp.getFolderById(fuente.carpetaId); }
+    try {
+      if (fuente.carpetaHermanaDe) {
+        // Carpeta hermana de otra (misma carpeta padre), buscada por nombre: no hace falta conocer su ID.
+        var padres = DriveApp.getFolderById(fuente.carpetaHermanaDe).getParents();
+        if (!padres.hasNext()) { problemas.push('carpeta ' + fuente.destino + ' → la carpeta de referencia no tiene carpeta padre'); return; }
+        var hermanas = padres.next().getFoldersByName(fuente.carpetaNombre);
+        var lista = [];
+        while (hermanas.hasNext()) lista.push(hermanas.next());
+        if (lista.length === 0) { problemas.push('carpeta ' + fuente.destino + ' → no existe una carpeta «' + fuente.carpetaNombre + '» junto a la de referencia'); return; }
+        if (lista.length > 1) { problemas.push('carpeta ' + fuente.destino + ' → hay ' + lista.length + ' carpetas «' + fuente.carpetaNombre + '» junto a la de referencia; no sé cuál usar'); return; }
+        carpeta = lista[0];
+      } else {
+        carpeta = DriveApp.getFolderById(fuente.carpetaId);
+      }
+    }
     catch (e) { problemas.push('carpeta ' + fuente.destino + ' → no se pudo abrir en Drive'); return; }
 
     if (fuente.nombres) {
