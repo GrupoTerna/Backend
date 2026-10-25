@@ -3243,6 +3243,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var ahora = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT-5', 'yyyy-MM-dd HH:mm:ss');
 
   var aplicadas = 0, omitidas = 0, sinCambios = 0;
+  var cambiosPerfil = []; // §PF237: filas del perfil que reemplazan un dato del perfil ya guardado y distinto
   var clavesTocadas = []; // FIX (27-ago-2026, pregunta 4): claves de ESTE lote, para completar Implementación más abajo sin tocar correcciones de corridas anteriores.
   for (var i = 0; i < correcciones.length; i++) {
     var c = correcciones[i] || {};
@@ -3285,6 +3286,20 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
         sinCambios++;
         continue;
       }
+    }
+
+    // §PF237: si la fila del perfil reemplaza un valor del perfil ya guardado y distinto, se aplica igual (el perfil es la
+    // fuente de esa columna) pero se avisa «antes / ahora», para detectar una lectura mala (tabla a medias, ceros) o una
+    // semana que cambia en cada corrida. No avisa si lo guardado era «desconocido» (llenarlo es justo lo esperado).
+    var valoresDistintos = existente && (existente.ataquesSemana !== ataquesSemana || existente.fame !== fame ||
+      (existente.barcos !== null && existente.barcos !== undefined && barcosFinal !== null && existente.barcos !== barcosFinal));
+    if (clanTag === '' && valoresDistintos && existente.origenPerfil === CGW_ORIGEN_PERFIL) {
+      var baja0 = (ataquesSemana === 0 && fame === 0 && (existente.ataquesSemana > 0 || existente.fame > 0));
+      var etiquetaCambio = 'T' + temporadaPropia + ' semana ' + semana + ' ' + tag + ': perfil antes ' + existente.ataquesSemana + ' ataques / ' +
+        existente.fame + ' fame' + (existente.barcos !== null && existente.barcos !== undefined ? ' / ' + existente.barcos + ' barcos' : '') +
+        ', ahora ' + ataquesSemana + ' ataques / ' + fame + ' fame' + (barcosFinal !== null ? ' / ' + barcosFinal + ' barcos' : '') +
+        (baja0 ? '  BAJA A 0, REVISAR' : '');
+      if (cambiosPerfil.length < 200) cambiosPerfil.push(etiquetaCambio);
     }
 
     // Aprobación/Implementación (pregunta 4, FIX 27-ago-2026, ver comentario [→ Contexto_Base_Web.md §18B100]
@@ -3363,6 +3378,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
 
   var resultado = { ok: true, aplicadas: aplicadas, omitidas: omitidas, sinCambios: sinCambios, total: correcciones.length };
   if (revisarManual.length) resultado.revisarManual = revisarManual; // FIX 29-sep-2026 (Fase 15 tanda 1)
+  if (cambiosPerfil.length) resultado.cambiosPerfil = cambiosPerfil; // §PF237
   if (avisos.length) {
     // avisoControl2: se mantiene este nombre de campo (aunque ahora puede [→ Contexto_Base_Web.md §18B104]
     resultado.avisoControl2 = avisos.join(' | ');
