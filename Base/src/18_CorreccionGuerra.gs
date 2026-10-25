@@ -3242,7 +3242,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var mapa = _cargarOverlayCorreccionesGuerraPorClan(); // FIX 29-sep-2026: una fila por clan, no la vista sumada
   var ahora = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT-5', 'yyyy-MM-dd HH:mm:ss');
 
-  var aplicadas = 0, omitidas = 0;
+  var aplicadas = 0, omitidas = 0, sinCambios = 0;
   var clavesTocadas = []; // FIX (27-ago-2026, pregunta 4): claves de ESTE lote, para completar Implementación más abajo sin tocar correcciones de corridas anteriores.
   for (var i = 0; i < correcciones.length; i++) {
     var c = correcciones[i] || {};
@@ -3273,6 +3273,19 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     }
     var barcosFinal = (barcosNuevo !== null) ? barcosNuevo :
       (existente && existente.barcos !== undefined ? existente.barcos : null);
+
+    // §PF236: Tampermonkey v3.5 manda TODAS las filas de un perfil visitado y el backend decide qué conserva.
+    // Una fila del perfil (sin ClanTag) igual a la ya guardada (ataques, fame, barcos, origen y clan) no se reescribe:
+    // se cuenta en «sinCambios» y no toca «Actualizado». Si la guardada quedó con Implementación «No», se reintenta.
+    if (clanTag === '' && existente && existente.implementacion !== 'No') {
+      var origenEntrante = String(c.fuente || '').trim().toLowerCase() === CGW_ORIGEN_PERFIL ? CGW_ORIGEN_PERFIL : CGW_ORIGEN_DESCONOCIDO;
+      var barcosExistente = (existente.barcos === undefined) ? null : existente.barcos;
+      if (existente.ataquesSemana === ataquesSemana && existente.fame === fame && barcosExistente === barcosFinal &&
+          existente.origenPerfil === origenEntrante && (existente.clanPerfil || '') === _normalizarClanTagCorreccion(c.clanPerfil)) {
+        sinCambios++;
+        continue;
+      }
+    }
 
     // Aprobación/Implementación (pregunta 4, FIX 27-ago-2026, ver comentario [→ Contexto_Base_Web.md §18B100]
     mapa[clave] = {
@@ -3345,10 +3358,10 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     _guardarOverlayCorreccionesGuerra(mapa);
   }
 
-  Logger.log('[CorreccionGuerra] Aplicadas: ' + aplicadas + ', omitidas: ' + omitidas +
+  Logger.log('[CorreccionGuerra] Aplicadas: ' + aplicadas + ', sin cambios: ' + sinCambios + ', omitidas: ' + omitidas +
     ' (de ' + correcciones.length + ' recibidas).');
 
-  var resultado = { ok: true, aplicadas: aplicadas, omitidas: omitidas, total: correcciones.length };
+  var resultado = { ok: true, aplicadas: aplicadas, omitidas: omitidas, sinCambios: sinCambios, total: correcciones.length };
   if (revisarManual.length) resultado.revisarManual = revisarManual; // FIX 29-sep-2026 (Fase 15 tanda 1)
   if (avisos.length) {
     // avisoControl2: se mantiene este nombre de campo (aunque ahora puede [→ Contexto_Base_Web.md §18B104]
