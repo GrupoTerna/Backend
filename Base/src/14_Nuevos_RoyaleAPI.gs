@@ -1507,6 +1507,7 @@ function _obtenerListaCandidatosNuevos() {
   return {
     ok: true,
     clanesTerna: _getNombresClanesTernaOrdenados(),
+    clanTagsTerna: CFG.TERNA_TAGS.slice(), // v3.12 de Tampermonkey: «cuenta como nuevo» se decide por tag de clan, no por nombre
     candidatos: candidatos,
     // FIX (11-sep-2026, pedido usuario): objeto vacío a propósito — ver [→ Contexto_Base_Web.md §14B087]
     coberturaPorTag: {}
