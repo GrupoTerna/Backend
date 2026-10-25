@@ -265,6 +265,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF247` | **Las semanas anteriores a T1 ya no se descartan: se guardan en `Correcciones_Guerra.csv` con temporada propia 0 o negativa hasta la reenumeración de temporadas** (`_aplicarCorreccionesGuerraImpl()` y `_cgwIdFila_()` en `18_CorreccionGuerra.gs`, Tampermonkey v3.11; 25-oct-2026; corrección de la usuaria; probado en node, **sin probar en Apps Script**). |
 | `PF248` | **Tampermonkey v3.12: el clan de cada fila (Terna o no, y «cuenta como nuevo») se decide por el TAG del enlace de la celda del clan, no por el nombre** (`_tagClanDeCelda()`, `_esClanTernaPorTag()`, `leerFilasClanWars2()`, `leerHistorialCompleto()`; el backend manda `clanTagsTerna` en `_obtenerListaCandidatosNuevos()`; 25-oct-2026; pedido de la usuaria; probado con jsdom, **sin probar en RoyaleAPI real**). |
 | `PF249` | **Decisiones de la usuaria del 25-oct-2026 sobre «Nuevos», `Correcciones_Guerra.csv` y la reenumeración de temporadas; todo queda como PENDIENTE, nada implementado** (el cálculo de «cuenta como nuevo» pasa al backend por tag; cada botón de correcciones también alimenta «Nuevos» y viceversa; `currentriverrace` de RoyaleAPI como posible fuente; la reenumeración se extiende a más hojas; 25-oct-2026; solo documentación). |
+| `PF250` | **Respuestas de la usuaria a las preguntas de `§PF249` y hallazgos de la revisión del código (qué es `Correcciones_Nuevos.csv` y cuándo se purga, qué hace River Race, qué hojas tienen temporada); todo PENDIENTE, nada implementado** (25-oct-2026; solo documentación). |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -529,6 +530,10 @@ Lista única de lo que quedó «pendiente de definir o contestar» (regla 3) en 
 | `PF249` | **Etapa A (pendiente, sin empezar):** pasar al backend el cálculo de «cuenta como nuevo», decidido por **tag** (`CFG.TERNA_TAGS`), y que el botón de `Correcciones_Guerra` (cuentas completas y jugadores elegidos) alimente también la hoja «Nuevos» cuando un miembro califique como nuevo. Antes hay que definir las preguntas abiertas de `§PF249`. | Abierto (25-oct-2026). Primero pendiente; no se hace en una sola tanda. |
 | `PF249` | **Etapa B (pendiente, sin empezar):** investigar cómo aporta hoy `currentriverrace` de RoyaleAPI (Tampermonkey, `procesarClanRiverRaceActual()`) y, si ayuda y no perjudica, usarlo para alimentar «Nuevos» y/o `Correcciones_Guerra.csv` (hoy alimenta solo el acumulador de histórico, con dato provisional de la semana en curso). | Abierto (25-oct-2026). La usuaria no recuerda cómo aporta: se lee el código y el contexto antes de decidir (regla 14). |
 | `PF249` | **Etapa C (pendiente, sin empezar):** extender `runReenumerarTemporadas()` (`47_Migraciones.gs`, `PASOS_REENUMERAR_TEMPORADAS`) a las demás hojas con temporada o con fechas ligadas a una temporada: registros de torneos, sorteos, cambios de rango, comentarios, registros de guerra, etc. Lista candidata y preguntas en `§PF249`. | Abierto (25-oct-2026). Se hace por tandas chicas; cada hoja se verifica antes de añadirla. |
+| `PF250` | **Etapa A (detalle):** (1) `Correcciones_Nuevos.csv` guarda también el `ClanTag` de cada registro (columna nueva **al final**; la hoja «Nuevos» sigue mostrando solo el nombre del clan); (2) el backend calcula «cuenta como nuevo» por tag; (3) el botón de `Correcciones_Guerra` alimenta «Nuevos»; (4) contradicciones entre filas: se escriben logs; (5) al terminar el código, correr las correcciones completas para reemplazar las filas sin enlace; lo que quede con nombre de clan pero sin enlace pasa a revisión manual. | Abierto (25-oct-2026). Preguntas pendientes en `§PF250`. |
+| `PF250` | **Etapa B (detalle):** River Race (`procesarClanRiverRaceActual()`) hoy alimenta solo el histórico de guerra por jugador (`historialGuerra`); decidir con la usuaria si además alimenta «Nuevos» o `Correcciones_Guerra.csv` (`§PF250`, «River Race»). | Abierto (25-oct-2026). |
+| `PF250` | **Etapa C (detalle):** reenumerar **todo lo que tenga columna de temporada interna** (fechas sin cambiar; lo que solo tiene fecha no se toca) y **arreglar `detectarTemporadaMasAntiguaConPresenciaTerna()`** (por tag; que mire también `Correcciones_Guerra.csv`). Inventario de hojas y preguntas en `§PF250`. | Abierto (25-oct-2026). Primero el inventario completo, después las hojas de a pocas por tanda. |
+| `PF250` | **Hallazgo a decidir:** `Correcciones_Nuevos.csv` conserva a quienes salieron del clan (solo se borran al llegar a 3 semanas de guerra Terna). Decidir si debe purgarse también al salir (`§PF250`). | Abierto (25-oct-2026). |
 
 **Secciones con «sin probar» o «sin verificar»** (95 menciones, contadas el 17-oct-2026 con «sin probar» y «sin verificar» en cada `PF`; el detalle está en cada una): `PF016` (5), `PF017` (5), `PF018` (5), `PF027` (1), `PF028` (1), `PF030` (2), `PF031` (2), `PF032` (1), `PF033` (1), `PF034` (1), `PF035` (2), `PF036` (1), `PF037` (1), `PF039` (1), `PF040` (1), `PF041` (1), `PF042` (1), `PF043` (1), `PF044` (1), `PF045` (2), `PF049` (1), `PF050` (3), `PF051` (1), `PF052` (1), `PF053` (2), `PF055` (1), `PF056` (1), `PF058` (1), `PF059` (1), `PF060` (1), `PF061` (1), `PF062` (1), `PF063` (1), `PF064` (1), `PF065` (6), `PF067` (3), `PF070` (1), `PF073` (6), `PF080` (1), `PF081` (2), `PF082` (1), `PF083` (1), `PF084` (1), `PF085` (1), `PF086` (2), `PF088` (1), `PF089` (2), `PF090` (1), `PF091` (6), `PF092` (1), `PF093` (1), `PF094` (2), `PF095` (1), `PF096` (2). Casi todas significan «no se ejecutó en Apps Script real ni en un navegador real».
 
@@ -6125,3 +6130,71 @@ Responde el «sí» de la usuaria a §PF158 y **corrige dos puntos de lo que ah�
 - **Antes de reenumerar:** repetir los perfiles visitados antes de `§PF247` (pendiente de la usuaria, `§PF247` en «Abiertos»).
 
 **Confirmado por la usuaria el 25-oct-2026 (para que no se vuelva a preguntar):** los nombres de encabezado `Fuente <clan>` están bien (`§PF245`); los jugadores sin perfil que ya no están en los clanes pasan por «jugadores elegidos» y no se suman a la visita automática (`§PF246`).
+
+**Actualizado el mismo día:** las preguntas abiertas de arriba se contestaron en parte en `§PF250` (fila sin enlace, contradicciones, `Correcciones_Nuevos.csv` con tag, reenumeración).
+
+
+### PF250 — Respuestas de la usuaria a `§PF249` y revisión del código (25-oct-2026, Lima; **nada implementado**; la usuaria pidió guardar todo en el contexto o en pendientes **antes** de editar código)
+
+*Responde las preguntas abiertas de `§PF249`; no reemplaza nada anterior salvo lo marcado. Regla 14: lo que sigue sale de leer el código y de contrastar con `Datos descargados/`, no de suposiciones.*
+
+**1. Decisiones dictadas por la usuaria**
+
+- **Fila de clan sin enlace (pregunta de `§PF248`).** No se resuelve con una regla nueva: se correrán **las correcciones completas** cuando el código esté terminado y las condiciones sean suficientes para **reemplazar las filas sin enlace** por filas con tag. Si después de esa corrida queda una fila con el nombre de un clan pero **sin enlace**, **pasa a revisión manual** (la lista de revisión manual que ya existe es `Revision_Guerra.csv`, `18_CorreccionGuerra.gs`, `REVISION_GUERRA_ENCABEZADO`; falta confirmar que sea ahí). Mientras tanto sigue el respaldo por nombre de `§PF248`.
+- **Filas que se contradicen: se mandan logs** (no se descarta ni se pisa en silencio). El orden de confianza entre fuentes de guerra ya está escrito en `§PF239`; falta decir **dónde** salen esos logs (ver preguntas).
+- **`Correcciones_Nuevos.csv` guarda también el `ClanTag`;** la hoja «Nuevos» de Sheets **sigue mostrando el clan sin tag**.
+- **Reenumeración:** se reenumera **todo lo que indique temporada**; **las fechas no se cambian**; solo se reenumera lo que tenga registros de la **temporada interna**.
+- **`detectarTemporadaMasAntiguaConPresenciaTerna()` se debe arreglar** (47_Migraciones.gs): hoy compara por nombre y solo mira `Backup_Guerra.csv` y la hoja «Nuevos» (`§PF247`).
+- **Primero todo al contexto y a pendientes; después se edita código** (este apartado y las filas `PF250` de «Abiertos»).
+
+**2. Corrección a lo que creía la usuaria: qué es `Correcciones_Nuevos.csv` (leído en `14_Nuevos_RoyaleAPI.gs`)**
+
+- **No guarda las filas de todos los nuevos que ha habido.** Es el **respaldo de los candidatos vigentes de la hoja «Nuevos»** (`NOMBRE_CSV_DEBUG_NUEVOS`, `_guardarSnapshotDebugImportacionNuevos()`; junto al JSON `ClanSystem_Debug_ImportNuevos.json`). Se escribe en cada importación del botón de nuevos. Columnas: `Tag, Temporada, Fecha, Fecha_TS, Clan, Ataques, Fame, Barcos` (una fila por registro semanal; `Clan` es el **nombre**, no el tag; `Temporada` trae el formato de RoyaleAPI, por ejemplo `136-2`). **Sirve para restaurar la hoja** (`_restaurarNuevosDesdeCsvDebug()`, por ejemplo tras Demoler + `runAll()`); el lector usa posiciones 0 a 7.
+- **Cuándo salen las filas (3 semanas).** La hoja y el CSV usan el mismo criterio: llegar a **`SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS` = 3 semanas de guerra real en un clan Terna** (no necesariamente el mismo; `_contarSemanasGuerraTerna()`), **no** tres semanas de calendario. La hoja lo aplica en `_purgarNuevosEstablecidos()` y el CSV en el paso 2 del snapshot (borra el tag del mapa).
+- **Cuándo salen al dejar el clan.** `_purgarNuevosExpulsados()` borra la fila **de la hoja** si el jugador ya no es `Activo` en un clan Terna del Directorio (se llama desde `_refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado()` y desde `17_GuerraSheet.gs`). **El CSV no se purga por salida**: la restauración solo los **omite** (`tagsDescartadosPorMembresia`), pero el tag sigue en el archivo hasta que sume 3 semanas de guerra Terna, cosa que alguien que salió normalmente no logra.
+- **Evidencia con datos (`Datos descargados/CSV/Tampermonkey/Correcciones_Nuevos.csv`, 7 491 filas):** 131 tags distintos; contra `Datos descargados/CSV/Hojas/Backup_Directorio.csv` (129 filas; no se verificó la fecha de esa copia), solo **20** figuran `Activo` y **111** no (salieron o no están en el directorio). Es coherente con lo leído, **sin ejecutar nada en Apps Script**.
+- **Dónde queda el historial permanente de un nuevo:** no en este CSV. `_migrarNuevosAHistorico()` copia sus semanas en clanes Terna a la hoja `Guerra` (y de ahí a `Backup_Guerra.csv`) con la regla de no pisar lo que ya existe.
+- **Pendiente derivado (a decidir):** si el CSV debe purgar también a quien sale del clan (hoy no lo hace). **Cambio previsto por la usuaria:** añadir `ClanTag`; propuesta de Claude (**sin confirmar**): columna nueva **al final** (posición 9), para no mover las 8 que lee el restaurador. **El payload ya trae `clanTag` por registro** desde Tampermonkey v3.12 (`leerHistorialCompleto()`), así que el cambio sería solo del backend; el valor queda vacío si la celda no tenía enlace.
+
+**3. Diferencia entre `Correcciones_Guerra.csv` y `Correcciones_Nuevos.csv` (lo que la usuaria no recordaba)**
+
+| | `Correcciones_Guerra.csv` | `Correcciones_Nuevos.csv` |
+|---|---|---|
+| Qué es | Overlay de **correcciones de guerra** por jugador y semana: `Ataques`, `Barcos` y `Medallas` por clan (`#TAG`), `Externo`, `RoyaleAPI`, `Fuente <clan>`, `Origen RoyaleAPI`, `ID`, aprobación e implementación. Corrige la hoja `Guerra` (`18_CorreccionGuerra.gs`). | Respaldo de la hoja **«Nuevos»**: por candidato, sus registros semanales (clan por nombre, ataques, fame, barcos). Restaura la hoja y alimenta `_migrarNuevosAHistorico()` (`14_Nuevos_RoyaleAPI.gs`). |
+| Quién entra | Todo jugador del que haya fila de perfil, Log o Analytics (más de 6 000 filas). | Solo candidatos vigentes de «Nuevos» (131 tags en la copia del repo). |
+| Clan | Por tag en las columnas por clan; las filas de perfil llevan además el nombre en `Clan RoyaleAPI`. | Por **nombre** (`Clan`); `ClanTag` es lo que se añadirá. |
+| Purga | No se borra por salir ni por antigüedad. | Sí, al llegar a 3 semanas de guerra Terna (y la hoja, además, al salir del clan). |
+
+Desde `§PF243` el botón de nuevos ya manda las `filasPerfil` de **todos** los candidatos a `Correcciones_Guerra.csv`; lo que falta es el sentido contrario (punto 2 de `§PF249`).
+
+**4. River Race (`currentriverrace` de RoyaleAPI) — qué hace hoy (leído en `Tampermonkey.md`, `procesarClanRiverRaceActual()`, `parsearParticipantesRiverRace()`)**
+
+- Es la **primera fase** de la corrida (`'riverrace'`, antes del Log). Para cada clan Terna abre la tabla de River Race y lee, por jugador, `ataques` (`decks_used`), `fame` y `barcos`: es la **semana en curso, dato provisional**.
+- Cada fila va a `_agregarRegistroHistorial()` y se envía en lotes por `accion=historialGuerra` a `_aplicarHistorialGuerra()` (`20_HistorialGuerraJugador.gs`): alimenta el **histórico de guerra por jugador**. **No** va a `Correcciones_Guerra.csv` ni a «Nuevos». No filtra por `not_current_member`: quien dejó el clan a mitad de semana igual tiene acumulado válido.
+- **Qué aportaría a Nuevos / Correcciones_Guerra, y si perjudicaría, sigue sin decidirse.** Riesgo a considerar: es provisional (la semana no ha cerrado) y `Correcciones_Guerra.csv` descarta la semana en curso a propósito (`§PF243`).
+
+**5. Reenumeración de temporadas: inventario hecho por lectura (no es exhaustivo)**
+
+Cómo funciona hoy (`47_Migraciones.gs`): suma `REENUM_DELTA_MESES` al número de **Temporada** de cada fila (`_reenumerarHoja()`, `_reenumerarCSV()`), sin tocar fechas; `_finalizarReenumeracion()` cambia a la vez la Ref y el offset de RoyaleAPI, así que el Id de RoyaleAPI de una semana no cambia (`offsetNuevo = offsetViejo − deltaMeses` en `_finalizarReenumeracion()`, `47_Migraciones.gs`).
+
+- **Ya cubiertas:** `Guerra`, `Guerra_Logs`, `T_Lista`, `T_Asistencia`, `Calendario_2`, sus `Backup_*.csv` y `Correcciones_Guerra.csv`.
+- **Con columna `Temporada` y sin paso de reenumeración (por añadir, verificar una por una):** `S_Lista`, `CR_Lista` (sorteos y registros de torneos: `26_Torneos_Core.gs`, mapas con `TEMPORADA`), `S_Asistencia`, `Mensajes` (`MC.TEMPORADA`, `30_Mensajes.gs`), `Correcciones_RiverRace_Pendientes.csv` (`19_CorreccionRiverRace.gs`), `Revision_Guerra.csv` (`18_CorreccionGuerra.gs`), los informes con columna `Temporada` de `17_GuerraSheet.gs` y `29_Docs_NoCalificados.gs`, y los `Backup_*.csv` de las hojas anteriores.
+- **Sin columna de temporada (según los encabezados de `02_Setup_Hojas.gs`), por tanto fuera de la regla de la usuaria:** `Historial_A/D` (cambios de rango: `N°, Fecha, Tag, Nombre, Movimiento, Clan, ClanTag`) y `Comentarios` (`N°, Fecha, Tag, …, Comentario`). La usuaria los nombró; con su regla («solo lo que tenga registros de la temporada interna») **no se tocarían**, salvo que descubra que guardan temporada en otra parte.
+- **No se debe reenumerar sin decidir:** la columna `Temporada` de `Correcciones_Nuevos.csv` (formato `136-2`, es el Id de RoyaleAPI, que no cambia al reenumerar) y los nombres de archivos y carpetas de Drive que llevan la temporada interna (por ejemplo `T-05 S-02 …`).
+
+**6. Pendientes de Claude, por orden propuesto (sin confirmar; ninguno empezado)**
+
+1. **Etapa C-0:** inventario exhaustivo de todo lo que guarda temporada interna (hojas, CSV, JSON, nombres de archivos), contrastado con los datos de `Datos descargados/`.
+2. **Etapa A:** `ClanTag` en `Correcciones_Nuevos.csv`; «cuenta como nuevo» en el backend por tag; `Correcciones_Guerra` → «Nuevos»; logs de contradicciones; al final, correr las correcciones completas y llevar a revisión manual lo que siga sin enlace.
+3. **Etapa C:** arreglar `detectarTemporadaMasAntiguaConPresenciaTerna()` (por tag, mirando también `Correcciones_Guerra.csv`) y añadir de a pocas las hojas que falten a `PASOS_REENUMERAR_TEMPORADAS`.
+4. **Etapa B** (River Race), cuando la usuaria decida qué debe aportar.
+
+**7. Preguntas que siguen abiertas (regla 3)**
+
+- **«Condiciones suficientes» para correr las correcciones completas:** ¿cuáles son? (propuesta de Claude, sin confirmar: que todo envío de perfil, Log y Analytics lleve el tag del clan y que el panel no reporte filas sin enlace).
+- **Dónde salen los logs de contradicciones:** ¿Logger de Apps Script, panel de Tampermonkey, o una lista como `Revision_Guerra.csv`? ¿Y qué cuenta como contradicción (mismo jugador y semana, valores distintos entre fuentes, aplicando el orden de `§PF239`)?
+- **¿La revisión manual de filas sin enlace va a `Revision_Guerra.csv`?**
+- **«Más de 3 semanas»:** la usuaria dijo «más de 3 semanas»; el código usa **3 o más semanas de guerra en un clan Terna** (no de calendario). ¿Está bien así?
+- **¿El CSV debe borrar a quien sale del clan**, como la hoja (hoy no lo hace)?
+- **River Race:** ¿alimenta «Nuevos», `Correcciones_Guerra.csv`, ambos o ninguno?
+- **Reenumeración:** ¿confirma que `Historial_A/D` y `Comentarios` (sin columna de temporada) **no** se tocan?, ¿se reenumeran los nombres de archivos y carpetas de Drive con `T-05 S-02 …`?, ¿y los `Backup_*.csv` de cada hoja (hoy sí se hace con los ya cubiertos)?
