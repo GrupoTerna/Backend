@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 13:47:36 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 18:01:10 */
 
 
 
@@ -58950,6 +58950,26 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   function () { _reenumerarCalendario2Hoja(); },
   function () { return _reenumerarCSV('Backup_Calendario_2.csv', null, 6, 3); }, // Calendario_2 no tiene un CC dedicado; col 3 = Temporada
   function () { return _reenumerarCorreccionesGuerraCSV(); },
+  // PF254 (25-oct-2026, etapa C, tanda 1): sorteos, asistencia de sorteos y registros de cambio de rango. S_Lista tiene encabezado de
+  // 2 filas (datos desde la fila 3), como T_Lista; CR_Lista de 3 (datos desde la fila 4); S_Asistencia de 1. Los respaldos aplanan el encabezado a 1 fila.
+  function () { _reenumerarHoja(CFG.SHEETS.S_LISTA, SL, SL_TOTAL_COLS, SL.TEMPORADA, 3); },
+  function () { return _reenumerarCSV('Backup_S_Lista.csv', SL, SL_TOTAL_COLS, SL.TEMPORADA); },
+  function () { _reenumerarHoja(CFG.SHEETS.S_ASISTENCIA, SA, SA_TOTAL_COLS, SA.TEMPORADA); },
+  function () { return _reenumerarCSV('Backup_S_Asistencia.csv', SA, SA_TOTAL_COLS, SA.TEMPORADA); },
+  function () { _reenumerarHoja(CFG.SHEETS.CR_LISTA, CR, CR_TOTAL_COLS, CR.TEMPORADA, 4); },
+  function () { return _reenumerarCSV('Backup_CR_Lista.csv', CR, CR_TOTAL_COLS, CR.TEMPORADA); },
+  // PF255 (25-oct-2026, etapa C, tanda 2): Revision_Guerra.csv acumula filas con Temporada interna (col. 3) y su clave de deduplicación
+  // (_registrarRevisionGuerra_) incluye la temporada; sin reenumerarla se duplicarían las revisiones. Sin mapa de columnas propio: col. 3, 10 columnas.
+  function () { return _reenumerarCSV(REVISION_GUERRA_CSV, null, REVISION_GUERRA_ENCABEZADO.length, 3); },
+  // PF255: Correcciones_RiverRace_Pendientes.csv es una cola con Temporada interna (col. 2) que se cruza con Guerra por la clave
+  // temporada|semana|tag (19_CorreccionRiverRace.gs); si Guerra se reenumera y la cola no, una aprobación apuntaría a otra semana.
+  function () { return _reenumerarCSV(CORRECCIONES_RIVERRACE_PENDIENTES_CSV, null, CRC_TOTAL_COLS, CRC.TEMPORADA); },
+  // PF257 (25-oct-2026, etapa C, tanda 3): histórico de guerra por jugador (20_HistorialGuerraJugador.gs), reenumerado como UNA unidad: JSON individuales,
+  // CSV grupal (carpeta Grupal, no CSV/Informes) y la hoja Alertas_HistorialGuerra con su CSV. TemporadaRoyaleAPI no cambia.
+  function () { return _reenumerarHistorialGuerraIndividual(); },
+  function () { return _reenumerarHistorialGuerraGrupalCSV(); },
+  function () { _reenumerarHoja(CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA, AHG, AHG_TOTAL_COLS, AHG.TEMPORADA_INTERNA); },
+  function () { return _reenumerarCSV('Alertas_HistorialGuerra.csv', AHG, AHG_TOTAL_COLS, AHG.TEMPORADA_INTERNA); },
   function () { _finalizarReenumeracion(); },
 ];
 
@@ -59281,6 +59301,8 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
   props.setProperty('REENUM_NUEVA_REF', nuevaFechaRefStr);
   props.setProperty('REENUM_OFFSET_VIEJO', String(_getTemporadaOffsetRoyaleApi()));
   props.setProperty('REENUM_PASO', '0');
+  props.setProperty('REENUM_RUN_ID', String(Date.now())); // PF257: marca de esta corrida dentro de los JSON de HistorialGuerra (evita sumar dos veces)
+  props.deleteProperty('REENUM_HG_IDX');
 
   Logger.log('[Reenumeración] Ref vieja: ' + refVieja.toDateString() +
              ' | Ref nueva: ' + refNueva.toDateString() +
@@ -59597,6 +59619,95 @@ function _reenumerarCSV(filename, colMap, totalCols, colTemporada) {
   props.deleteProperty(claveIdx);
   Logger.log('[Reenumeración] ' + filename + ': ' + filas.length + ' fila(s) actualizadas (Temporada += ' + deltaMeses + ').');
   return true;
+}
+
+// _reenumerarHistorialGuerraIndividual(): PF257; suma REENUM_DELTA_MESES a registros[].temporadaInterna de cada JSON de la carpeta individual de HistorialGuerra; reanudable (índice + marca de corrida); devuelve false si queda incompleto.
+function _reenumerarHistorialGuerraIndividual() {
+  var props = PropertiesService.getScriptProperties();
+  var deltaMeses = Number(props.getProperty('REENUM_DELTA_MESES'));
+  var runId = props.getProperty('REENUM_RUN_ID') ||
+    (props.getProperty('REENUM_NUEVA_REF') + '|' + props.getProperty('REENUM_OFFSET_VIEJO') + '|' + deltaMeses);
+  var claveIdx = 'REENUM_HG_IDX';
+
+  var folder;
+  try { folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL); }
+  catch (e) { Logger.log('[Reenumeración] HistorialGuerra individual: carpeta no accesible (' + e.message + '), se omite.'); return true; }
+
+  var archivos = [];
+  var it = folder.getFiles();
+  while (it.hasNext()) {
+    var f = it.next();
+    if (/\.json$/i.test(f.getName())) archivos.push(f);
+  }
+  archivos.sort(function (a, b) { return a.getName() < b.getName() ? -1 : (a.getName() > b.getName() ? 1 : 0); });
+
+  var idxInicio = parseInt(props.getProperty(claveIdx) || '0', 10);
+  if (idxInicio >= archivos.length) idxInicio = 0; // por si la carpeta cambió de tamaño entre corridas
+  var inicio = Date.now();
+  var cambiados = 0, yaHechos = 0, omitidos = 0;
+
+  for (var i = idxInicio; i < archivos.length; i++) {
+    var archivo = archivos[i];
+    try {
+      var obj = JSON.parse(archivo.getBlob().getDataAsString('UTF-8'));
+      if (!obj || !Array.isArray(obj.registros)) { omitidos++; }
+      else if (obj.reenumeracionId === runId) { yaHechos++; }
+      else {
+        for (var r = 0; r < obj.registros.length; r++) {
+          var reg = obj.registros[r];
+          if (!reg || reg.temporadaInterna === null || reg.temporadaInterna === undefined || reg.temporadaInterna === '') continue;
+          var n = Number(reg.temporadaInterna);
+          if (isFinite(n)) reg.temporadaInterna = n + deltaMeses;
+        }
+        if (obj.ultimaTemporadaCubierta !== null && obj.ultimaTemporadaCubierta !== undefined && obj.ultimaTemporadaCubierta !== '' &&
+            isFinite(Number(obj.ultimaTemporadaCubierta))) {
+          obj.ultimaTemporadaCubierta = Number(obj.ultimaTemporadaCubierta) + deltaMeses;
+        }
+        obj.reenumeracionId = runId;
+        archivo.setContent(JSON.stringify(obj, null, 2));
+        cambiados++;
+      }
+    } catch (eArch) {
+      Logger.log('[Reenumeración] HistorialGuerra individual: error en ' + archivo.getName() + ' (' + eArch.message + '); se omite.');
+      omitidos++;
+    }
+    props.setProperty(claveIdx, String(i + 1));
+    if ((i + 1) < archivos.length && (Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
+      Logger.log('[Reenumeración] HistorialGuerra individual: presupuesto agotado tras ' + (i + 1) + '/' + archivos.length + ' archivo(s). Se reintenta en la próxima continuación.');
+      return false;
+    }
+  }
+  props.deleteProperty(claveIdx);
+  Logger.log('[Reenumeración] HistorialGuerra individual: ' + archivos.length + ' archivo(s) revisados en esta corrida de la carpeta (cambiados en esta pasada: ' + cambiados +
+             ', ya hechos: ' + yaHechos + ', omitidos: ' + omitidos + ') (temporadaInterna += ' + deltaMeses + ').');
+  return true;
+}
+
+// _reenumerarHistorialGuerraGrupalCSV(): PF257; suma REENUM_DELTA_MESES a TemporadaInterna (columna 3) de HistorialGuerra_Grupal.csv, que vive en la carpeta Grupal (no en CSV/Informes); lectura y escritura con las funciones de 20_HistorialGuerraJugador.gs.
+function _reenumerarHistorialGuerraGrupalCSV() {
+  var deltaMeses = Number(PropertiesService.getScriptProperties().getProperty('REENUM_DELTA_MESES'));
+  var colTemp = HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS.indexOf('TemporadaInterna');
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[Reenumeración] HistorialGuerra_Grupal.csv: no se obtuvo el lock; se reintenta en la próxima continuación.'); return false; }
+  try {
+    var texto = _loadHistorialGuerraGrupalCSV();
+    if (!texto) { Logger.log('[Reenumeración] HistorialGuerra_Grupal.csv: no existe todavía, se omite.'); return true; }
+    var filas = _parseCSV(texto);
+    if (!filas || filas.length < 2) { Logger.log('[Reenumeración] HistorialGuerra_Grupal.csv: vacío, se omite.'); return true; }
+    var n = 0;
+    for (var i = 1; i < filas.length; i++) {
+      if (filas[i].length <= colTemp) continue;
+      var v = String(filas[i][colTemp]).trim();
+      if (v === '' || !isFinite(Number(v))) continue;
+      filas[i][colTemp] = Number(v) + deltaMeses;
+      n++;
+    }
+    _saveHistorialGuerraGrupalCSV(_encodeCSV(filas));
+    Logger.log('[Reenumeración] HistorialGuerra_Grupal.csv: ' + n + ' fila(s) actualizadas (TemporadaInterna += ' + deltaMeses + ').');
+    return true;
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // _reenumerarHoja(...): suma REENUM_DELTA_MESES a Temporada en la hoja; filaInicio (FIX 09-sep-2026: T_Lista tiene datos desde la fila 3); sin presupuesto propio. [→ Contexto_Base_Web.md §47B029]
