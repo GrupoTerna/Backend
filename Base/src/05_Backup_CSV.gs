@@ -1056,21 +1056,32 @@ function _informeConIdSemana_(filas) {
     else if (h === 'tag' && iG < 0) iG = c;
   }
   if (iT < 0 || iS < 0) return filas;
-  var dos = function(n) { return (n < 10 ? '0' : '') + n; };
   var salida = [['ID'].concat(enc)];
   for (var r = 1; r < filas.length; r++) {
     var fila = filas[r] || [];
     var tTxt = String(fila[iT] === undefined ? '' : fila[iT]).trim();
     var sTxt = String(fila[iS] === undefined ? '' : fila[iS]).trim();
-    var t = Number(tTxt), s = Number(sTxt), id = '';
-    if (tTxt !== '' && sTxt !== '' && isFinite(t) && isFinite(s) && t > 0 && s > 0) {
-      id = 'T_' + dos(t) + '_S_' + dos(s);
-      var tag = iG >= 0 ? String(fila[iG] === undefined ? '' : fila[iG]).trim() : '';
-      if (tag) id += '_' + (tag.charAt(0) === '#' ? tag : '#' + tag);
-    }
-    salida.push([id].concat(fila));
+    var tagTxt = iG >= 0 ? String(fila[iG] === undefined ? '' : fila[iG]).trim() : '';
+    salida.push([_idSemanaInforme_(tTxt, sTxt, tagTxt)].concat(fila));
   }
   return salida;
+}
+
+/**
+ * _idSemanaInforme_(tTxt, sTxt, tagTxt)  [→ Contexto_Base_Web.md §PF242, §PF258]
+ * Arma el «ID» de una fila de informe: T_NN_S_NN (+ _#TAG si hay tag). Vacío si la temporada o la semana no son números mayores que 0.
+ * Extraída de _informeConIdSemana_ el 25-oct-2026 para que la reenumeración de temporadas (47_Migraciones.gs, _reenumerarTextoInformeCSV_) recalcule el ID con la MISMA regla.
+ */
+function _idSemanaInforme_(tTxt, sTxt, tagTxt) {
+  tTxt = String(tTxt === undefined || tTxt === null ? '' : tTxt).trim();
+  sTxt = String(sTxt === undefined || sTxt === null ? '' : sTxt).trim();
+  var tag = String(tagTxt === undefined || tagTxt === null ? '' : tagTxt).trim();
+  var t = Number(tTxt), s = Number(sTxt);
+  if (tTxt === '' || sTxt === '' || !isFinite(t) || !isFinite(s) || t <= 0 || s <= 0) return '';
+  var dos = function(n) { return (n < 10 ? '0' : '') + n; };
+  var id = 'T_' + dos(t) + '_S_' + dos(s);
+  if (tag) id += '_' + (tag.charAt(0) === '#' ? tag : '#' + tag);
+  return id;
 }
 
 /** _encodeCSV de un informe, con la columna «ID» al principio (ver _informeConIdSemana_). */

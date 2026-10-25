@@ -40,6 +40,9 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   function () { return _reenumerarHistorialGuerraGrupalCSV(); },
   function () { _reenumerarHoja(CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA, AHG, AHG_TOTAL_COLS, AHG.TEMPORADA_INTERNA); },
   function () { return _reenumerarCSV('Alertas_HistorialGuerra.csv', AHG, AHG_TOTAL_COLS, AHG.TEMPORADA_INTERNA); },
+  // PF258 (25-oct-2026, etapa C, tanda 4): informes y respaldos con fecha en CSV/Informes y CSV/Tampermonkey. Se detecta la columna por encabezado EXACTO
+  // «Temporada»/«temporada» (no toca Temporada_2, Temporada RoyaleAPI, Temporada Supercell ni Id_RoyaleAPI); si el informe trae la columna ID, se recalcula.
+  function () { return _reenumerarInformesCSV(); },
   function () { _finalizarReenumeracion(); },
 ];
 
@@ -373,6 +376,7 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
   props.setProperty('REENUM_PASO', '0');
   props.setProperty('REENUM_RUN_ID', String(Date.now())); // PF257: marca de esta corrida dentro de los JSON de HistorialGuerra (evita sumar dos veces)
   props.deleteProperty('REENUM_HG_IDX');
+  props.deleteProperty('REENUM_INF_IDX'); // PF258: índice del paso de informes
 
   Logger.log('[Reenumeración] Ref vieja: ' + refVieja.toDateString() +
              ' | Ref nueva: ' + refNueva.toDateString() +
@@ -688,6 +692,122 @@ function _reenumerarCSV(filename, colMap, totalCols, colTemporada) {
   _saveCSVToDrive(filename, _encodeCSV([encabezado].concat(filas)));
   props.deleteProperty(claveIdx);
   Logger.log('[Reenumeración] ' + filename + ': ' + filas.length + ' fila(s) actualizadas (Temporada += ' + deltaMeses + ').');
+  return true;
+}
+
+// _nombreInformeExcluidoReenum_(nombre): PF258; true si un CSV de CSV/Informes o CSV/Tampermonkey NO debe pasar por _reenumerarInformesCSV (tiene su propio paso, es derivado o usa otra numeración).
+function _nombreInformeExcluidoReenum_(nombre) {
+  var n = String(nombre || '');
+  // Espejos de hoja (Backup_Guerra.csv, etc.): tienen su paso propio. Los «Backup_Guerra ANTES de …» son fotos con fecha y SÍ se reenumeran (decisión de la usuaria, §PF257 punto 1).
+  if (/^Backup_/.test(n) && !/^Backup_Guerra ANTES de /.test(n)) return true;
+  if (/^Log_Tampermonkey_/.test(n)) return true;
+  var exactos = [
+    REVISION_GUERRA_CSV,                       // paso propio (PF255)
+    CORRECCIONES_RIVERRACE_PENDIENTES_CSV,     // paso propio (PF255)
+    CORRECCIONES_GUERRA_CSV,                   // paso propio (_reenumerarCorreccionesGuerraCSV): reconstruye también ID y las columnas de RoyaleAPI y Supercell
+    'Alertas_HistorialGuerra.csv',             // paso propio (PF257)
+    'HistorialGuerra_Grupal.csv',              // paso propio (PF257), vive en la carpeta Grupal
+    'Correcciones_Nuevos.csv',                 // su Temporada es la de RoyaleAPI («136-2»), no cambia
+    'Cache_TotalesSemana_Objetivos.csv'        // caché que se regenera (57_ReconstruirSemanaPorDias.gs)
+  ];
+  return exactos.indexOf(n) >= 0;
+}
+
+// _reenumerarTextoInformeCSV_(texto, deltaMeses): PF258; función pura (sin Drive). Suma deltaMeses a la columna de encabezado exacto «Temporada»/«temporada» (solo celdas enteras),
+// recalcula «ID» (T_NN_S_NN_#TAG) en las filas cambiadas si la primera columna es «ID», y conserva el fin de línea y el salto final del archivo. Devuelve {texto, cambiado, filas, cambiadas, saltadas, motivo}.
+function _reenumerarTextoInformeCSV_(texto, deltaMeses) {
+  var res = { texto: texto, cambiado: false, filas: 0, cambiadas: 0, saltadas: 0, motivo: '' };
+  var finLinea = texto.indexOf('\r\n') >= 0 ? '\r\n' : '\n';
+  var terminaEnSalto = /\n$/.test(texto);
+  var filas = _parseCSV(texto);
+  if (!filas || filas.length < 2) { res.motivo = 'vacío'; return res; }
+
+  var enc = filas[0], iT = -1, iS = -1, iG = -1;
+  for (var c = 0; c < enc.length; c++) {
+    var h = String(enc[c]).trim();
+    if ((h === 'Temporada' || h === 'temporada') && iT < 0) iT = c;
+    else if (h.toLowerCase() === 'semana' && iS < 0) iS = c;
+    else if (h.toLowerCase() === 'tag' && iG < 0) iG = c;
+  }
+  if (iT < 0) { res.motivo = 'sin columna Temporada'; return res; }
+  var conId = String(enc[0]).trim() === 'ID' && iS >= 0;
+
+  for (var r = 1; r < filas.length; r++) {
+    var fila = filas[r];
+    res.filas++;
+    if (!fila || fila.length <= iT) { res.saltadas++; continue; }
+    var celda = String(fila[iT]).trim();
+    if (!/^-?\d+$/.test(celda)) { if (celda !== '') res.saltadas++; continue; }
+    fila[iT] = String(Number(celda) + deltaMeses);
+    res.cambiadas++;
+    if (conId) fila[0] = _idSemanaInforme_(fila[iT], fila[iS], iG >= 0 ? fila[iG] : '');
+  }
+  if (!res.cambiadas) { res.motivo = 'ninguna fila con Temporada entera'; return res; }
+
+  res.texto = filas.map(function (fila) { return _encodeCSV([fila]); }).join(finLinea) + (terminaEnSalto ? finLinea : '');
+  res.cambiado = true;
+  return res;
+}
+
+// _reenumerarInformesCSV(): PF258; recorre los .csv de CSV/Informes y CSV/Tampermonkey (menos los de _nombreInformeExcluidoReenum_) y les suma REENUM_DELTA_MESES a «Temporada».
+// Reanudable: guarda el índice en REENUM_INF_IDX y NO suma dos veces porque un archivo modificado después del inicio de la corrida (REENUM_RUN_ID) se salta. Devuelve false si queda incompleto.
+function _reenumerarInformesCSV() {
+  var props = PropertiesService.getScriptProperties();
+  var deltaMeses = Number(props.getProperty('REENUM_DELTA_MESES'));
+  var inicioCorrida = Number(props.getProperty('REENUM_RUN_ID'));
+  var hayMarca = isFinite(inicioCorrida) && inicioCorrida > 0;
+  if (!hayMarca) Logger.log('[Reenumeración] Informes: no hay REENUM_RUN_ID; solo se evita sumar dos veces con el índice (REENUM_INF_IDX).');
+  var claveIdx = 'REENUM_INF_IDX';
+
+  var lista = [];
+  var subcarpetas = ['Informes', 'Tampermonkey'];
+  for (var s = 0; s < subcarpetas.length; s++) {
+    var carpeta = _getCsvSubcarpeta_(subcarpetas[s], false);
+    if (!carpeta) { Logger.log('[Reenumeración] Informes: no existe CSV/' + subcarpetas[s] + ', se omite.'); continue; }
+    var it = carpeta.getFiles();
+    while (it.hasNext()) {
+      var f = it.next(), nombre = f.getName();
+      if (!/\.csv$/i.test(nombre) || _nombreInformeExcluidoReenum_(nombre)) continue;
+      lista.push({ clave: subcarpetas[s] + '/' + nombre, nombre: nombre, file: f });
+    }
+  }
+  lista.sort(function (a, b) { return a.clave < b.clave ? -1 : (a.clave > b.clave ? 1 : 0); });
+
+  var idxInicio = parseInt(props.getProperty(claveIdx) || '0', 10);
+  if (idxInicio >= lista.length) idxInicio = 0; // por si las carpetas cambiaron de tamaño entre corridas
+  var inicio = Date.now();
+  var cambiados = 0, yaHechos = 0, sinColumna = 0, errores = 0, filasSumadas = 0;
+
+  for (var i = idxInicio; i < lista.length; i++) {
+    var item = lista[i];
+    try {
+      if (hayMarca && item.file.getLastUpdated().getTime() >= inicioCorrida) { yaHechos++; }
+      else {
+        var blob = item.file.getBlob();
+        var bytes = blob.getBytes();
+        var tieneBom = bytes.length >= 3 && bytes[0] === -17 && bytes[1] === -69 && bytes[2] === -65;
+        var texto = blob.getDataAsString('UTF-8');
+        if (texto.charCodeAt(0) === 0xFEFF) texto = texto.slice(1);
+        var res = _reenumerarTextoInformeCSV_(texto, deltaMeses);
+        if (res.cambiado) {
+          item.file.setContent((tieneBom ? '\uFEFF' : '') + res.texto);
+          try { _csvCacheBorrar_(item.nombre); } catch (eCache) { /* sin caché que borrar */ }
+          cambiados++; filasSumadas += res.cambiadas;
+        } else { sinColumna++; }
+      }
+    } catch (eArch) {
+      Logger.log('[Reenumeración] Informes: error en ' + item.clave + ' (' + eArch.message + '); se omite.');
+      errores++;
+    }
+    props.setProperty(claveIdx, String(i + 1));
+    if ((i + 1) < lista.length && (Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
+      Logger.log('[Reenumeración] Informes: presupuesto agotado tras ' + (i + 1) + '/' + lista.length + ' archivo(s). Se reintenta en la próxima continuación.');
+      return false;
+    }
+  }
+  props.deleteProperty(claveIdx);
+  Logger.log('[Reenumeración] Informes: ' + lista.length + ' archivo(s) en la carpeta (cambiados en esta pasada: ' + cambiados + ' con ' + filasSumadas + ' fila(s), ya hechos: ' + yaHechos +
+             ', sin columna Temporada o sin filas enteras: ' + sinColumna + ', con error: ' + errores + ') (Temporada += ' + deltaMeses + ').');
   return true;
 }
 
