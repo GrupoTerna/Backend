@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 04:46:39 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 05:04:43 */
 
 
 
@@ -5243,6 +5243,9 @@ function _imgApiCommit_(ctx, entradas, mensaje) {
 // QUÉ COPIA (ver DATOS_GH_FUENTES_):
 //   - Tampermonkey/: Correcciones_Guerra.csv, Correcciones_Nuevos.csv y
 //     Backup_Guerra_Semanal.csv        → Datos descargados/CSV/Tampermonkey/
+//     Desde el 25-oct-2026 (§PF241, decisión de la usuaria) también, de esa misma
+//     carpeta, Correcciones_RiverRace_Pendientes.csv y los Log_Tampermonkey_*.csv
+//     (se buscan con el filtro «solo»; si no existen no es un error).
 //   - Backup_Guerra.csv y Backup_Guerra_Logs.csv → Datos descargados/CSV/Hojas/
 //   - Carpeta de informes: TODOS los archivos de texto que haya (CSV, TXT, JSON,
 //     MD, PY), también los que cree una función nueva, porque se recorre la
@@ -5273,6 +5276,10 @@ var DATOS_GH_CARPETA_INFORMES_     = '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X';
 var DATOS_GH_FUENTES_ = [
   { carpetaId: DATOS_GH_CARPETA_TAMPERMONKEY_,
     nombres: ['Correcciones_Guerra.csv', 'Correcciones_Nuevos.csv', 'Backup_Guerra_Semanal.csv'],
+    destino: 'Datos descargados/CSV/Tampermonkey/', maxBytes: 8 * 1024 * 1024 },
+  { carpetaId: DATOS_GH_CARPETA_TAMPERMONKEY_,
+    todos: true,
+    solo: /^(Correcciones_RiverRace_Pendientes\.csv|Log_Tampermonkey_.*\.csv)$/i,
     destino: 'Datos descargados/CSV/Tampermonkey/', maxBytes: 8 * 1024 * 1024 },
   { carpetaId: DATOS_GH_CARPETA_HOJAS_,
     nombres: ['Backup_Guerra.csv', 'Backup_Guerra_Logs.csv'],
@@ -5411,6 +5418,7 @@ function _datosGhListarCandidatos_() {
       while (it2.hasNext()) {
         var f = it2.next();
         if (fuente.omitir && fuente.omitir.test(f.getName())) continue;
+        if (fuente.solo && !fuente.solo.test(f.getName())) continue;
         var mime = f.getMimeType();
         if (mime.indexOf('text/') !== 0 && mime !== 'application/json') continue;
         candidatos.push({ archivo: f, destino: fuente.destino, maxBytes: fuente.maxBytes });
