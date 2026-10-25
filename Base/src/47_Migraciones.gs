@@ -31,6 +31,9 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   // PF255 (25-oct-2026, etapa C, tanda 2): Revision_Guerra.csv acumula filas con Temporada interna (col. 3) y su clave de deduplicación
   // (_registrarRevisionGuerra_) incluye la temporada; sin reenumerarla se duplicarían las revisiones. Sin mapa de columnas propio: col. 3, 10 columnas.
   function () { return _reenumerarCSV(REVISION_GUERRA_CSV, null, REVISION_GUERRA_ENCABEZADO.length, 3); },
+  // PF255: Correcciones_RiverRace_Pendientes.csv es una cola con Temporada interna (col. 2) que se cruza con Guerra por la clave
+  // temporada|semana|tag (19_CorreccionRiverRace.gs); si Guerra se reenumera y la cola no, una aprobación apuntaría a otra semana.
+  function () { return _reenumerarCSV(CORRECCIONES_RIVERRACE_PENDIENTES_CSV, null, CRC_TOTAL_COLS, CRC.TEMPORADA); },
   function () { _finalizarReenumeracion(); },
 ];
 
