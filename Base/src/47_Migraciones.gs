@@ -28,6 +28,9 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   function () { return _reenumerarCSV('Backup_S_Asistencia.csv', SA, SA_TOTAL_COLS, SA.TEMPORADA); },
   function () { _reenumerarHoja(CFG.SHEETS.CR_LISTA, CR, CR_TOTAL_COLS, CR.TEMPORADA, 4); },
   function () { return _reenumerarCSV('Backup_CR_Lista.csv', CR, CR_TOTAL_COLS, CR.TEMPORADA); },
+  // PF255 (25-oct-2026, etapa C, tanda 2): Revision_Guerra.csv acumula filas con Temporada interna (col. 3) y su clave de deduplicación
+  // (_registrarRevisionGuerra_) incluye la temporada; sin reenumerarla se duplicarían las revisiones. Sin mapa de columnas propio: col. 3, 10 columnas.
+  function () { return _reenumerarCSV(REVISION_GUERRA_CSV, null, REVISION_GUERRA_ENCABEZADO.length, 3); },
   function () { _finalizarReenumeracion(); },
 ];
 
