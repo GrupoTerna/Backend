@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/10/2026 17:54:11 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 04:22:57 */
 
 
 
@@ -26325,6 +26325,13 @@ var CGW_MAGNITUDES = [
 var CGW_ORIGEN_PERFIL = 'perfil';
 var CGW_ORIGEN_DESCONOCIDO = 'desconocido';
 var CGW_ENCABEZADO_ORIGEN = 'Origen RoyaleAPI';
+// §PF238: columna «ID» (segunda columna del formato ancho): T_NN_S_NN_#TAG con la temporada propia y la semana de la fila. Es un valor
+// calculado al escribir (se ignora al leer, como Externo): no hay que migrar nada, cada escritura lo completa en todas las filas.
+var CGW_ENCABEZADO_ID = 'ID';
+function _cgwIdFila_(temporada, semana, tag) {
+  function dos(n) { var v = Number(n); return (v < 10 ? '0' : '') + v; }
+  return 'T_' + dos(temporada) + '_S_' + dos(semana) + '_' + tag;
+}
 // PF183 act. 15 y 16 (24-oct-2026): última columna del formato ancho. Tag del clan de la fila del perfil de RoyaleAPI (leído del enlace del clan).
 // Si ese clan no es de CFG.TERNA_TAGS, la fila es de clan externo: se guarda en RoyaleAPI y en Externo, pero NO cuenta como dato Terna. [→ Contexto_Base_Web.md §PF183]
 var CGW_ENCABEZADO_CLAN_PERFIL = 'Clan RoyaleAPI';
@@ -26581,7 +26588,7 @@ function _cgwExterno_(perfil, entradasClan, campo) {
 }
 
 function _cgwEncabezadoAncho_(clanes) {
-  var enc = ['N°', 'Actualizado', 'Temporada', 'Semana', 'Tag'];
+  var enc = ['N°', CGW_ENCABEZADO_ID, 'Actualizado', 'Temporada', 'Semana', 'Tag'];
   for (var m = 0; m < CGW_MAGNITUDES.length; m++) {
     for (var c = 0; c < clanes.length; c++) enc.push(CGW_MAGNITUDES[m].nombre + ' ' + clanes[c]);
     enc.push(CGW_MAGNITUDES[m].nombre + ' Externo');
@@ -26631,7 +26638,7 @@ function _cgwMapaAFilasAnchas_(mapa) {
       if (r.implementacion === 'No') algunaImplNo = true;
     }
     var entradasClan = Object.keys(g.clanes).map(function (x) { return g.clanes[x]; });
-    var fila = [n + 1, actualizado, g.temporada, g.semana, g.tag];
+    var fila = [n + 1, _cgwIdFila_(g.temporada, g.semana, g.tag), actualizado, g.temporada, g.semana, g.tag];
     for (var m = 0; m < CGW_MAGNITUDES.length; m++) {
       var campo = CGW_MAGNITUDES[m].campo;
       for (var c = 0; c < clanes.length; c++) {
@@ -26669,6 +26676,25 @@ function _guardarOverlayCorreccionesGuerra(mapa) {
 }
 
 /**
+ * agregarIdCorreccionesGuerraCSV()  (§PF238; se corre a mano desde el editor, una sola vez)
+ * Vuelve a escribir Correcciones_Guerra.csv tal como está para que la columna ID aparezca en todas las filas sin esperar a la
+ * próxima corrección. No cambia ningún dato: lee y escribe con las mismas funciones de siempre. Usa el mismo candado que las correcciones.
+ */
+function agregarIdCorreccionesGuerraCSV() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[CorreccionGuerra] Ocupado guardando otra corrección; intenta de nuevo en unos segundos.'); return; }
+  try {
+    var mapa = _cargarOverlayCorreccionesGuerraPorClan();
+    var n = Object.keys(mapa).length;
+    if (!n) { Logger.log('[CorreccionGuerra] ' + CORRECCIONES_GUERRA_CSV + ' no existe o está vacío: nada que hacer.'); return; }
+    _guardarOverlayCorreccionesGuerra(mapa);
+    Logger.log('[CorreccionGuerra] Columna ID agregada a ' + CORRECCIONES_GUERRA_CSV + ' (' + n + ' entradas reescritas sin cambiar datos).');
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
  * _aplicarCorreccionesGuerra(correcciones) [→ Contexto_Base_Web.md §18B098]
  */
 /**
@@ -26694,8 +26720,10 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var mapa = _cargarOverlayCorreccionesGuerraPorClan(); // FIX 29-sep-2026: una fila por clan, no la vista sumada
   var ahora = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT-5', 'yyyy-MM-dd HH:mm:ss');
 
-  var aplicadas = 0, omitidas = 0;
+  var aplicadas = 0, omitidas = 0, sinCambios = 0;
+  var cambiosPerfil = []; // §PF237: filas del perfil que reemplazan un dato del perfil ya guardado y distinto
   var clavesTocadas = []; // FIX (27-ago-2026, pregunta 4): claves de ESTE lote, para completar Implementación más abajo sin tocar correcciones de corridas anteriores.
+  var clavesIgualesClan = []; // §PF240: filas de Log/Analytics (con ClanTag) iguales a las ya guardadas: no se reescriben, pero cuentan para el aviso «revisar a mano»
   for (var i = 0; i < correcciones.length; i++) {
     var c = correcciones[i] || {};
     var tag = String(c.tag || '').trim();
@@ -26726,6 +26754,45 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     var barcosFinal = (barcosNuevo !== null) ? barcosNuevo :
       (existente && existente.barcos !== undefined ? existente.barcos : null);
 
+    // §PF236: Tampermonkey v3.5 manda TODAS las filas de un perfil visitado y el backend decide qué conserva.
+    // Una fila del perfil (sin ClanTag) igual a la ya guardada (ataques, fame, barcos, origen y clan) no se reescribe:
+    // se cuenta en «sinCambios» y no toca «Actualizado». Si la guardada quedó con Implementación «No», se reintenta.
+    if (clanTag === '' && existente && existente.implementacion !== 'No') {
+      var origenEntrante = String(c.fuente || '').trim().toLowerCase() === CGW_ORIGEN_PERFIL ? CGW_ORIGEN_PERFIL : CGW_ORIGEN_DESCONOCIDO;
+      var barcosExistente = (existente.barcos === undefined) ? null : existente.barcos;
+      if (existente.ataquesSemana === ataquesSemana && existente.fame === fame && barcosExistente === barcosFinal &&
+          existente.origenPerfil === origenEntrante && (existente.clanPerfil || '') === _normalizarClanTagCorreccion(c.clanPerfil)) {
+        sinCambios++;
+        continue;
+      }
+    }
+
+    // §PF240: la misma conservación para las filas de Log y Analytics (con ClanTag). Una fila igual a la ya guardada (ataques, fame y
+    // barcos) no se reescribe ni toca «Actualizado»: se cuenta en «sinCambios». Si la guardada quedó con Implementación «No», se
+    // reintenta. Estas filas siguen contando para el aviso «revisar a mano» de más abajo (clavesIgualesClan). [→ Contexto_Base_Web.md §PF240]
+    if (clanTag !== '' && existente && existente.implementacion !== 'No') {
+      var barcosExistenteClan = (existente.barcos === undefined) ? null : existente.barcos;
+      if (existente.ataquesSemana === ataquesSemana && existente.fame === fame && barcosExistenteClan === barcosFinal) {
+        sinCambios++;
+        clavesIgualesClan.push(clave);
+        continue;
+      }
+    }
+
+    // §PF237: si la fila del perfil reemplaza un valor del perfil ya guardado y distinto, se aplica igual (el perfil es la
+    // fuente de esa columna) pero se avisa «antes / ahora», para detectar una lectura mala (tabla a medias, ceros) o una
+    // semana que cambia en cada corrida. No avisa si lo guardado era «desconocido» (llenarlo es justo lo esperado).
+    var valoresDistintos = existente && (existente.ataquesSemana !== ataquesSemana || existente.fame !== fame ||
+      (existente.barcos !== null && existente.barcos !== undefined && barcosFinal !== null && existente.barcos !== barcosFinal));
+    if (clanTag === '' && valoresDistintos && existente.origenPerfil === CGW_ORIGEN_PERFIL) {
+      var baja0 = (ataquesSemana === 0 && fame === 0 && (existente.ataquesSemana > 0 || existente.fame > 0));
+      var etiquetaCambio = 'T' + temporadaPropia + ' semana ' + semana + ' ' + tag + ': perfil antes ' + existente.ataquesSemana + ' ataques / ' +
+        existente.fame + ' fame' + (existente.barcos !== null && existente.barcos !== undefined ? ' / ' + existente.barcos + ' barcos' : '') +
+        ', ahora ' + ataquesSemana + ' ataques / ' + fame + ' fame' + (barcosFinal !== null ? ' / ' + barcosFinal + ' barcos' : '') +
+        (baja0 ? '  BAJA A 0, REVISAR' : '');
+      if (cambiosPerfil.length < 200) cambiosPerfil.push(etiquetaCambio);
+    }
+
     // Aprobación/Implementación (pregunta 4, FIX 27-ago-2026, ver comentario [→ Contexto_Base_Web.md §18B100]
     mapa[clave] = {
       ataquesSemana: ataquesSemana, barcos: barcosFinal, fame: fame, actualizado: ahora,
@@ -26746,8 +26813,9 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   // FIX (29-sep-2026, Fase 15 tanda 1, AVISO 4): jugador-semana del lote con [→ Contexto_Base_Web.md §18B101]
   var revisarManual = [];
   var triples = {};
-  for (var kt = 0; kt < clavesTocadas.length; kt++) {
-    var pcl = clavesTocadas[kt].split('|'); // temporada | semana | clantag | tag
+  var clavesParaAviso = clavesTocadas.concat(clavesIgualesClan); // §PF240: el aviso no depende de que la fila se haya reescrito
+  for (var kt = 0; kt < clavesParaAviso.length; kt++) {
+    var pcl = clavesParaAviso[kt].split('|'); // temporada | semana | clantag | tag
     if (pcl[2] === '') continue;
     triples[pcl[0] + '|' + pcl[1] + '|' + pcl[3]] = true;
   }
@@ -26797,11 +26865,12 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     _guardarOverlayCorreccionesGuerra(mapa);
   }
 
-  Logger.log('[CorreccionGuerra] Aplicadas: ' + aplicadas + ', omitidas: ' + omitidas +
+  Logger.log('[CorreccionGuerra] Aplicadas: ' + aplicadas + ', sin cambios: ' + sinCambios + ', omitidas: ' + omitidas +
     ' (de ' + correcciones.length + ' recibidas).');
 
-  var resultado = { ok: true, aplicadas: aplicadas, omitidas: omitidas, total: correcciones.length };
+  var resultado = { ok: true, aplicadas: aplicadas, omitidas: omitidas, sinCambios: sinCambios, total: correcciones.length };
   if (revisarManual.length) resultado.revisarManual = revisarManual; // FIX 29-sep-2026 (Fase 15 tanda 1)
+  if (cambiosPerfil.length) resultado.cambiosPerfil = cambiosPerfil; // §PF237
   if (avisos.length) {
     // avisoControl2: se mantiene este nombre de campo (aunque ahora puede [→ Contexto_Base_Web.md §18B104]
     resultado.avisoControl2 = avisos.join(' | ');
