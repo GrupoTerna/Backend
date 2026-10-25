@@ -1303,12 +1303,13 @@ function _guardarSnapshotDebugImportacionNuevos(candidatosPayload) {
     }
 
     // 3b) Guardar CSV aplanado (una fila por registro individual, para [→ Contexto_Base_Web.md §14B071]
-    var filasCsv = [['Tag', 'Temporada', 'Fecha', 'Fecha_TS', 'Clan', 'Ataques', 'Fame', 'Barcos']];
+    // §PF253 (25-oct-2026): columna 9 «ClanTag» (tag del clan del registro; vacío si la celda de RoyaleAPI no tenía enlace). Va AL FINAL para no mover las 8 que lee _restaurarNuevosDesdeCsvDebug(). La hoja «Nuevos» sigue mostrando solo el nombre del clan.
+    var filasCsv = [['Tag', 'Temporada', 'Fecha', 'Fecha_TS', 'Clan', 'Ataques', 'Fame', 'Barcos', 'ClanTag']];
     for (var t2 in mapa) {
       var entrada = mapa[t2];
       var registros = entrada.registros || [];
       if (registros.length === 0) {
-        filasCsv.push([t2, '', '', '', '', '', '', '']);
+        filasCsv.push([t2, '', '', '', '', '', '', '', '']);
         continue;
       }
       for (var r = 0; r < registros.length; r++) {
@@ -1316,7 +1317,7 @@ function _guardarSnapshotDebugImportacionNuevos(candidatosPayload) {
         var fechaAjustada = _parseFechaISONuevos(reg.fecha);
         var fechaTexto = fechaAjustada ? Utilities.formatDate(fechaAjustada, Session.getScriptTimeZone(), 'dd/MM/yyyy') : (reg.fecha || '');
         var fechaTs = fechaAjustada ? fechaAjustada.getTime() : '';
-        filasCsv.push([t2, reg.temporada || '', fechaTexto, fechaTs, reg.clan || '', reg.ataques, reg.fame, reg.barcos]);
+        filasCsv.push([t2, reg.temporada || '', fechaTexto, fechaTs, reg.clan || '', reg.ataques, reg.fame, reg.barcos, String(reg.clanTag || '').trim().toUpperCase()]);
       }
     }
     var contentCsv = filasCsv.map(function (fila) {
@@ -2001,7 +2002,7 @@ function _restaurarNuevosDesdeCsvDebug() {
   }
   var tz = Session.getScriptTimeZone() || 'GMT-5';
 
-  var filas = parsed.slice(1); // Tag, Temporada, Fecha, Fecha_TS, Clan, Ataques, Fame, Barcos
+  var filas = parsed.slice(1); // Tag, Temporada, Fecha, Fecha_TS, Clan, Ataques, Fame, Barcos, ClanTag (la 9.ª es de §PF253; los CSV anteriores no la tienen)
   var porTag = {};
   var tagsDescartadosPorMembresia = {};
 
@@ -2041,7 +2042,8 @@ function _restaurarNuevosDesdeCsvDebug() {
       clan: f[4] || '',
       ataques: Number(f[5]) || 0,
       fame: Number(f[6]) || 0,
-      barcos: Number(f[7]) || 0
+      barcos: Number(f[7]) || 0,
+      clanTag: String(f[8] || '').trim().toUpperCase() // §PF253: vacío en los CSV anteriores
     });
   }
 
