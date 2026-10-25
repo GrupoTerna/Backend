@@ -1,7 +1,7 @@
 # Índice de funciones — Generador
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Generador/src/`. Total: 245 nombres en 11 archivos .gs.
+Código real: `Generador/src/`. Total: 265 nombres en 12 archivos .gs.
 
 ## Por archivo
 
@@ -16,6 +16,7 @@ Código real: `Generador/src/`. Total: 245 nombres en 11 archivos .gs.
 - **09_ReadmeGenerador.gs** (4 funciones): _readmeFuncionesManuales_, _readmeGrupo_, _readmeAplicarBloque_, _actualizarReadmeGenerador_
 - **10_Verificar_PeriodIndex_JSON.gs** (7 funciones): _verif_esExcepcionFecha_, verificarPeriodIndexJSON, _verif_periodoDeArchivo_, _verif_indiceDiaLima_, _verif_enVentanaCambio_, _verif_comparar_, _verif_imprimirResumen_
 - **11_Imagenes_API.gs** (39 funciones): imagenesApiProbar, imagenesApiCartasAGithub, imagenesApiInsigniasAGithub, imagenesApiAGithub, carpetasApiJuntoAFankit, imagenesApiReintentarNoDisponibles, _imgApiEjecutar_, _imgApiLeerNoDisponibles_, _imgApiGuardarNoDisponibles_, _imgApiArchivoUrls_, imagenesApiEscanearJsonPlayers, imagenesApiReiniciarEscaneoJson, _imgApiArchivoMasReciente_, _imgApiArchivoTipos_, _imgApiDestinoInsignia_, _imgApiNormalizarCabecera_, _imgApiTiposInsignias_, _imgApiRecolectarUrls_, _imgApiAU8_, _imgApiAConSigno_, _imgApiCrc32_, _imgApiAdler32_, _imgApiHuffman_, _imgApiInflate_, _imgApiDeflateAlmacenado_, _imgApiZlib_, _imgApiLeeU32_, _imgApiTrozoPng_, _imgApiQuitarFiltros_, _imgApiRectanguloVisible_, _imgApiFiltrarFila_, _imgApiFiltrarRecorte_, _imgApiRecortarPng_, _imgApiToken_, _imgApiReq_, _imgApiJson_, _imgApiContexto_, _imgApiCarpetasApiFaltantes_, _imgApiCommit_
+- **12_Datos_Drive_GitHub.gs** (11 funciones): subirDatosDriveAGithub, subirDatosDriveAGithubForzado, revisarDatosDriveAGithubSinSubir, subirDatosDriveAGithubAuto, subirDatosDriveAGithubContinuar, instalarActivadorDatosDriveGithub, quitarActivadorDatosDriveGithub, _datosGhQuitarActivadores_, _datosGhBuscarTelefonos_, _datosGhListarCandidatos_, _datosDriveAGithub_
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
@@ -42,6 +43,10 @@ Ninguno.
 | `_carpetaSemanaJSON_` | función | 04_Organizador_JSON.gs | 356 |  |
 | `_carpetaViejaDeClan_` | función | 04_Organizador_JSON.gs | 279 |  |
 | `_conAviso_` | función | 02_Backstage.gs | 103 |  |
+| `_datosDriveAGithub_` | función | 12_Datos_Drive_GitHub.gs | 188 |  |
+| `_datosGhBuscarTelefonos_` | función | 12_Datos_Drive_GitHub.gs | 129 |  |
+| `_datosGhListarCandidatos_` | función | 12_Datos_Drive_GitHub.gs | 157 |  |
+| `_datosGhQuitarActivadores_` | función | 12_Datos_Drive_GitHub.gs | 109 |  |
 | `_descargarProyectoAArchivos` | función | 02_Backstage.gs | 287 |  |
 | `_diaJuegoAnclaEnVentana_` | función | 06_Limpieza_Duplicados_JSON.gs | 587 |  |
 | `_diaJuegoFecha_` | función | 06_Limpieza_Duplicados_JSON.gs | 567 |  |
@@ -171,6 +176,15 @@ Ninguno.
 | `CORTE_MIN_PARES_` | global | 06_Limpieza_Duplicados_JSON.gs | 447 |  |
 | `CREAR_O_ACTUALIZAR_HOJA_SISTEMA` | global | 02_Backstage.gs | 15 |  |
 | `crearProyectoVinculado_` | función | 02_Backstage.gs | 714 |  |
+| `DATOS_GH_CARPETA_HOJAS_` | global | 12_Datos_Drive_GitHub.gs | 35 |  |
+| `DATOS_GH_CARPETA_INFORMES_` | global | 12_Datos_Drive_GitHub.gs | 36 |  |
+| `DATOS_GH_CARPETA_TAMPERMONKEY_` | global | 12_Datos_Drive_GitHub.gs | 34 |  |
+| `DATOS_GH_FUENTES_` | global | 12_Datos_Drive_GitHub.gs | 38 |  |
+| `DATOS_GH_HANDLER_AUTO_` | global | 12_Datos_Drive_GitHub.gs | 52 |  |
+| `DATOS_GH_HANDLER_SEGUIR_` | global | 12_Datos_Drive_GitHub.gs | 53 |  |
+| `DATOS_GH_LOTE_BYTES_` | global | 12_Datos_Drive_GitHub.gs | 54 |  |
+| `DATOS_GH_PREFIJO_ESTADO_` | global | 12_Datos_Drive_GitHub.gs | 51 |  |
+| `DATOS_GH_TIEMPO_MAX_MS_` | global | 12_Datos_Drive_GitHub.gs | 55 |  |
 | `descargarBase` | función | 01_Principal.gs | 15 |  |
 | `descargarBaseForzado` | función | 01_Principal.gs | 25 |  |
 | `descargarContactos` | función | 01_Principal.gs | 170 |  |
@@ -217,6 +231,7 @@ Ninguno.
 | `IMGAPI_REGEX_URL_` | global | 11_Imagenes_API.gs | 77 |  |
 | `IMGAPI_REPO_` | global | 11_Imagenes_API.gs | 72 |  |
 | `INDICE_ARCHIVOS_RE_HUELLAS_` | global | 02_Backstage.gs | 397 |  |
+| `instalarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 96 |  |
 | `LETRAS_DIA_GUERRA_` | global | 05_Migrador_Formato.gs | 441 |  |
 | `limpiarDuplicadosJSON` | función | 06_Limpieza_Duplicados_JSON.gs | 73 |  |
 | `LIMPIEZA_DRY_RUN_` | global | 06_Limpieza_Duplicados_JSON.gs | 66 |  |
@@ -238,11 +253,13 @@ Ninguno.
 | `organizarArchivosJSON` | función | 04_Organizador_JSON.gs | 100 |  |
 | `PAREO_TOLERANCIA_MS_` | global | 06_Limpieza_Duplicados_JSON.gs | 417 |  |
 | `probarConexionGithub` | función | 01_Principal.gs | 225 |  |
+| `quitarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 104 |  |
 | `README_GENERADOR_NOMBRE_` | global | 09_ReadmeGenerador.gs | 19 |  |
 | `README_LINEA_INICIO_` | global | 09_ReadmeGenerador.gs | 22 |  |
 | `README_MARCA_FIN_` | global | 09_ReadmeGenerador.gs | 21 |  |
 | `README_MARCA_INICIO_` | global | 09_ReadmeGenerador.gs | 20 |  |
 | `reiniciarCachePeriodosJSON` | función | 07_Cache_Periodos_JSON.gs | 77 |  |
+| `revisarDatosDriveAGithubSinSubir` | función | 12_Datos_Drive_GitHub.gs | 72 |  |
 | `subirBaseDesdeGithub` | función | 01_Principal.gs | 76 |  |
 | `subirBaseDesdeGithubForzado` | función | 01_Principal.gs | 81 |  |
 | `subirBaseDesdeGs` | función | 01_Principal.gs | 56 |  |
@@ -255,6 +272,10 @@ Ninguno.
 | `subirContactosDesdeMd` | función | 01_Principal.gs | 199 |  |
 | `subirContactosDesdeTxt` | función | 01_Principal.gs | 187 |  |
 | `subirContactosDesdeZip` | función | 01_Principal.gs | 181 |  |
+| `subirDatosDriveAGithub` | función | 12_Datos_Drive_GitHub.gs | 62 |  |
+| `subirDatosDriveAGithubAuto` | función | 12_Datos_Drive_GitHub.gs | 77 |  |
+| `subirDatosDriveAGithubContinuar` | función | 12_Datos_Drive_GitHub.gs | 86 |  |
+| `subirDatosDriveAGithubForzado` | función | 12_Datos_Drive_GitHub.gs | 67 |  |
 | `subirEvidenciaT05AGithub` | función | 08_GitHub.gs | 710 |  |
 | `subirGeneradorDesdeGithub` | función | 01_Principal.gs | 149 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
 | `subirGeneradorDesdeGithubForzado` | función | 01_Principal.gs | 154 |  |
