@@ -933,7 +933,8 @@ function _importarNuevosYPerfiles_(candidatosPayload) {
       var rc = _aplicarCorreccionesGuerra(correcciones);
       resultado.correcciones = {
         ok: !!(rc && rc.ok), candidatos: candidatosConPerfil, recibidas: correcciones.length, enCursoDescartadas: filasEnCurso,
-        aplicadas: (rc && rc.aplicadas) || 0, sinCambios: (rc && rc.sinCambios) || 0, omitidas: (rc && rc.omitidas) || 0
+        aplicadas: (rc && rc.aplicadas) || 0, sinCambios: (rc && rc.sinCambios) || 0, omitidas: (rc && rc.omitidas) || 0,
+        anterioresT1: (rc && rc.anterioresT1) || 0 // §PF247
       };
       if (rc && rc.error) resultado.correcciones.error = rc.error;
       if (rc && rc.cambiosPerfil) resultado.correcciones.cambiosPerfil = rc.cambiosPerfil;
