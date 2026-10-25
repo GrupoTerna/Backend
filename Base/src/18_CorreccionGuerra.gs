@@ -2873,6 +2873,13 @@ var CGW_MAGNITUDES = [
 var CGW_ORIGEN_PERFIL = 'perfil';
 var CGW_ORIGEN_DESCONOCIDO = 'desconocido';
 var CGW_ENCABEZADO_ORIGEN = 'Origen RoyaleAPI';
+// §PF238: columna «ID» (segunda columna del formato ancho): T_NN_S_NN_#TAG con la temporada propia y la semana de la fila. Es un valor
+// calculado al escribir (se ignora al leer, como Externo): no hay que migrar nada, cada escritura lo completa en todas las filas.
+var CGW_ENCABEZADO_ID = 'ID';
+function _cgwIdFila_(temporada, semana, tag) {
+  function dos(n) { var v = Number(n); return (v < 10 ? '0' : '') + v; }
+  return 'T_' + dos(temporada) + '_S_' + dos(semana) + '_' + tag;
+}
 // PF183 act. 15 y 16 (24-oct-2026): última columna del formato ancho. Tag del clan de la fila del perfil de RoyaleAPI (leído del enlace del clan).
 // Si ese clan no es de CFG.TERNA_TAGS, la fila es de clan externo: se guarda en RoyaleAPI y en Externo, pero NO cuenta como dato Terna. [→ Contexto_Base_Web.md §PF183]
 var CGW_ENCABEZADO_CLAN_PERFIL = 'Clan RoyaleAPI';
@@ -3129,7 +3136,7 @@ function _cgwExterno_(perfil, entradasClan, campo) {
 }
 
 function _cgwEncabezadoAncho_(clanes) {
-  var enc = ['N°', 'Actualizado', 'Temporada', 'Semana', 'Tag'];
+  var enc = ['N°', CGW_ENCABEZADO_ID, 'Actualizado', 'Temporada', 'Semana', 'Tag'];
   for (var m = 0; m < CGW_MAGNITUDES.length; m++) {
     for (var c = 0; c < clanes.length; c++) enc.push(CGW_MAGNITUDES[m].nombre + ' ' + clanes[c]);
     enc.push(CGW_MAGNITUDES[m].nombre + ' Externo');
@@ -3179,7 +3186,7 @@ function _cgwMapaAFilasAnchas_(mapa) {
       if (r.implementacion === 'No') algunaImplNo = true;
     }
     var entradasClan = Object.keys(g.clanes).map(function (x) { return g.clanes[x]; });
-    var fila = [n + 1, actualizado, g.temporada, g.semana, g.tag];
+    var fila = [n + 1, _cgwIdFila_(g.temporada, g.semana, g.tag), actualizado, g.temporada, g.semana, g.tag];
     for (var m = 0; m < CGW_MAGNITUDES.length; m++) {
       var campo = CGW_MAGNITUDES[m].campo;
       for (var c = 0; c < clanes.length; c++) {
@@ -3214,6 +3221,25 @@ function _guardarOverlayCorreccionesGuerra(mapa) {
     }
   }
   _saveCSVToDrive(CORRECCIONES_GUERRA_CSV, '﻿' + _encodeCSV(_cgwMapaAFilasAnchas_(mapa)));
+}
+
+/**
+ * agregarIdCorreccionesGuerraCSV()  (§PF238; se corre a mano desde el editor, una sola vez)
+ * Vuelve a escribir Correcciones_Guerra.csv tal como está para que la columna ID aparezca en todas las filas sin esperar a la
+ * próxima corrección. No cambia ningún dato: lee y escribe con las mismas funciones de siempre. Usa el mismo candado que las correcciones.
+ */
+function agregarIdCorreccionesGuerraCSV() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[CorreccionGuerra] Ocupado guardando otra corrección; intenta de nuevo en unos segundos.'); return; }
+  try {
+    var mapa = _cargarOverlayCorreccionesGuerraPorClan();
+    var n = Object.keys(mapa).length;
+    if (!n) { Logger.log('[CorreccionGuerra] ' + CORRECCIONES_GUERRA_CSV + ' no existe o está vacío: nada que hacer.'); return; }
+    _guardarOverlayCorreccionesGuerra(mapa);
+    Logger.log('[CorreccionGuerra] Columna ID agregada a ' + CORRECCIONES_GUERRA_CSV + ' (' + n + ' entradas reescritas sin cambiar datos).');
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /**
