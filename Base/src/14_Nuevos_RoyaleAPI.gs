@@ -850,7 +850,46 @@ function _aplicarImportacionNuevos(candidatosPayload) {
 }
 
 /**
+ * _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) (§PF253)
+ * ¿La fila del perfil es de un clan Terna? Con tag de clan, SOLO cuenta el tag (CFG.TERNA_TAGS). Sin tag (la celda de RoyaleAPI no traía
+ * enlace) se usa el nombre como antes (§PF248), con la misma comparación flexible de Tampermonkey (solo letras y números, minúsculas,
+ * «contiene» en cualquiera de los dos sentidos).
+ */
+function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
+  var tag = String(clanTag || '').trim().toUpperCase();
+  if (tag) {
+    if (tag.charAt(0) !== '#') tag = '#' + tag;
+    return CFG.TERNA_TAGS.indexOf(tag) >= 0;
+  }
+  var norm = function (s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); };
+  var n = norm(nombreClan);
+  for (var i = 0; i < (nombresTerna || []).length; i++) {
+    var nt = norm(nombresTerna[i]);
+    if (n.indexOf(nt) >= 0 || nt.indexOf(n) >= 0) return true;
+  }
+  return false;
+}
+
+/**
+ * _esNuevoPorTagClan_(ultimasSemanas, nombresTerna) (§PF253, 25-oct-2026)
+ * «Cuenta como nuevo» = alguna de las TRES últimas filas del historial del perfil (la más reciente primero, como las manda Tampermonkey
+ * v3.13 en cand.ultimasSemanas: [{clanTag, clan}]) es de un clan que NO es Terna (criterio de siempre; §PF249 punto 1: ahora lo calcula el
+ * backend y por tag). Sin filas devuelve false, como antes.
+ */
+function _esNuevoPorTagClan_(ultimasSemanas, nombresTerna) {
+  var n = Math.min(3, (ultimasSemanas || []).length);
+  for (var i = 0; i < n; i++) {
+    var fila = ultimasSemanas[i];
+    if (!fila) continue;
+    if (!_clanDeFilaEsTerna_(fila.clanTag, fila.clan, nombresTerna)) return true;
+  }
+  return false;
+}
+
+/**
  * _importarNuevosYPerfiles_(candidatosPayload) [→ Contexto_Base_Web.md §PF243]
+ * §PF253: desde Tampermonkey v3.13 cada candidato trae cand.ultimasSemanas (las 3 últimas filas del perfil, con clanTag) y el backend decide por tag si
+ * cuenta como nuevo (_esNuevoPorTagClan_()); sin ese campo se usa cand.esNuevo como antes.
  *
  * Punto de entrada de accion=importarNuevos desde PF243 (Tampermonkey v3.8). El botón de miembros nuevos manda TODO lo que
  * leyó de cada perfil visitado y el backend decide qué guarda y dónde:
@@ -890,6 +929,13 @@ function _importarNuevosYPerfiles_(candidatosPayload) {
       '); no se descarta ninguna fila de perfil por ese motivo.');
   }
 
+  var nombresTernaNv = [];
+  try {
+    nombresTernaNv = _getNombresClanesTernaOrdenados(); // solo para las filas del perfil sin enlace de clan (respaldo por nombre, §PF248)
+  } catch (eNomNv) {
+    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudieron leer los nombres de los clanes Terna (' + (eNomNv.message || eNomNv) + ').');
+  }
+
   var paraNuevos = [];
   var correcciones = [];
   var candidatosConPerfil = 0, filasEnCurso = 0;
@@ -898,7 +944,9 @@ function _importarNuevosYPerfiles_(candidatosPayload) {
     var tag = String(cand.tag || '').trim().toUpperCase();
     if (!tag) continue;
 
-    var cuentaComoNuevo = (tagsEnHoja === null) || (cand.esNuevo !== false) || (tagsEnHoja[tag] === true);
+    // §PF253: «cuenta como nuevo» lo decide el backend por TAG de clan con las últimas tres filas del perfil (cand.ultimasSemanas, Tampermonkey v3.13). Sin ese campo (Tampermonkey anterior) se usa el esNuevo que mandó.
+    var esNuevoCand = Array.isArray(cand.ultimasSemanas) ? _esNuevoPorTagClan_(cand.ultimasSemanas, nombresTernaNv) : (cand.esNuevo !== false);
+    var cuentaComoNuevo = (tagsEnHoja === null) || esNuevoCand || (tagsEnHoja[tag] === true);
     if (cuentaComoNuevo) paraNuevos.push(cand);
 
     var filas = (cand.filasPerfil && cand.filasPerfil.length) ? cand.filasPerfil : [];
