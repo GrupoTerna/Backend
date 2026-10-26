@@ -1,6 +1,6 @@
 # JSON de guerra por semana
 
-Generado el 2026-10-25 por `generar_json_guerra.py` a partir de `CSV/Hojas/Backup_Guerra.csv` (Contexto_Base_Web.md §PF123).
+Generado el 2026-10-26 por `generar_json_guerra.py` a partir de `CSV/Hojas/Backup_Guerra.csv` (Contexto_Base_Web.md §PF123).
 
 Un archivo por semana: `T<temporada>/T<temporada>_S<semana> - <dd-mm-aaaa> <HH.MM>.json`. La fecha y hora del nombre son la **primera hora de registro** de la semana y **no cambian** después (se busca el archivo por el prefijo `T<t>_S<s> - `). Cuando la primera fecha no trae hora, el nombre lleva `00.00`.
 
