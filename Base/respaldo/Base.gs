@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 19:22:59 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 19:38:55 */
 
 
 
@@ -1694,7 +1694,9 @@ function _programarContinuacion(nombreHandler) {
 /**
  * _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, props) [→ Contexto_Base_Web.md §B135]
  */
+var INICIO_TANDA_MS_ = 0; // PF263: instante en que empezó la ejecución actual de _ejecutarPorTandas(); lo usa _reenumSinTiempo_() (47_Migraciones.gs) para repartir los 6 min entre los pasos de una misma tanda
 function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerContinuacion, nombresPasos) {
+  INICIO_TANDA_MS_ = Date.now();
   var props = PropertiesService.getScriptProperties();
 
   // VENTANA DE GUERRA PROTEGIDA (05-oct-2026): una continuacion programada antes de la ventana no debe [→ Contexto_Base_Web.md §B136]
@@ -2109,6 +2111,9 @@ var CFG = {
 
   // Presupuesto interno SOLO para el bucle de respaldarHojasDerivadasCSV() [→ Contexto_Base_Web.md §01B047]
   RESPALDO_DERIVADAS_BUDGET_MS: 60 * 1000, // 1m
+  REENUM_PRESUPUESTO_PASO_MS: 5 * 60 * 1000, // PF262/PF263: tope de cada paso de reenumeración que va archivo por archivo (informes, JSON de HistorialGuerra, nombres de JSON de Drive); el tope real de la tanda es REENUM_VENTANA_MS
+  REENUM_VENTANA_MS: 5 * 60 * 1000, // PF263: tiempo total desde que empieza la ejecución hasta que los pasos archivo por archivo dejan de abrir archivos nuevos; el límite de Apps Script es 6 min y el minuto restante cubre el último archivo, el guardado del avance y programar la continuación
+  REENUM_TANDA_PRESUPUESTO_MS: 4 * 60 * 1000, // PF263: pasado el minuto 4 de la tanda, la reenumeración ya no empieza un paso nuevo (lo retoma la continuación)
 
   // FIX (16-ago-2026): presupuesto interno SOLO para el bucle de [→ Contexto_Base_Web.md §01B048]
   AUTOAJUSTE_ANCHO_BUDGET_MS: 60 * 1000, // 1m
@@ -31586,17 +31591,24 @@ function _cruceMetaListarIndiceDrive_(nombreClan, nombre) {
   Logger.log('[TorneosMed] listado Drive currentriverrace de "' + nombre + '": ' + _medN + ' archivo(s) en ' + (Date.now() - _medT) + 'ms');
   var ent = { t: Date.now(), fresco: true, ids: ids };
   try {
-    CacheService.getScriptCache().put('CRUCE_META_IDX_' + nombre, JSON.stringify({ t: ent.t, ids: ids }), CFG.CRUCE_META_IDX_TTL_SEG);
+    CacheService.getScriptCache().put(_cruceMetaPrefijoCache_() + nombre, JSON.stringify({ t: ent.t, ids: ids }), CFG.CRUCE_META_IDX_TTL_SEG);
   } catch (eCache) {
     Logger.log('[TorneosMed] No se pudo guardar el índice de currentriverrace de "' + nombre + '" en la caché (se vuelve a listar la próxima vez): ' + eCache.message);
   }
   return ent;
 }
 
+/** PF264: prefijo de la clave de caché del índice de currentriverrace; lleva una versión (propiedad CRUCE_META_IDX_V) que _finalizarReenumeracion() sube para descartar los índices con la numeración vieja. */
+function _cruceMetaPrefijoCache_() {
+  var v = '0';
+  try { v = PropertiesService.getScriptProperties().getProperty('CRUCE_META_IDX_V') || '0'; } catch (e) { /* sin propiedad: versión 0 */ }
+  return 'CRUCE_META_IDX_' + v + '_';
+}
+
 /** PF144: índice guardado en la caché del script, o null si no hay (nunca guardado, vencido o evicto). Devuelve { t, fresco: false, ids }. */
 function _cruceMetaIndiceDesdeCache_(nombre) {
   try {
-    var raw = CacheService.getScriptCache().get('CRUCE_META_IDX_' + nombre);
+    var raw = CacheService.getScriptCache().get(_cruceMetaPrefijoCache_() + nombre);
     if (!raw) return null;
     var o = JSON.parse(raw);
     if (!o || !o.ids || !isFinite(Number(o.t))) return null;
@@ -59714,7 +59726,7 @@ function _continuarReenumerarTemporadas() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('REENUM_PASO') || '0', 10);
   Logger.log(paso === 0 ? '[Reenumeración] INICIO' : '[Reenumeración] CONTINÚA desde el paso ' + paso + '/' + PASOS_REENUMERAR_TEMPORADAS.length);
   try {
-    var completo = _ejecutarPorTandas('REENUM', PASOS_REENUMERAR_TEMPORADAS, CFG.RUNUPDATE_PRESUPUESTO_MS, '_continuarReenumerarTemporadas');
+    var completo = _ejecutarPorTandas('REENUM', PASOS_REENUMERAR_TEMPORADAS, CFG.REENUM_TANDA_PRESUPUESTO_MS, '_continuarReenumerarTemporadas');
     if (completo) {
       PropertiesService.getScriptProperties().deleteProperty('REENUM_DELTA_MESES');
       PropertiesService.getScriptProperties().deleteProperty('REENUM_NUEVA_REF');
@@ -59841,6 +59853,15 @@ function _reenumerarTextoInformeCSV_(texto, deltaMeses) {
   return res;
 }
 
+// _reenumSinTiempo_(inicioPaso): PF263; true si el paso ya gastó CFG.REENUM_PRESUPUESTO_PASO_MS o si la ejecución completa (INICIO_TANDA_MS_, fijado en _ejecutarPorTandas) pasó de CFG.REENUM_VENTANA_MS.
+// Así un paso que arranca tarde dentro de la tanda recibe solo el tiempo que queda y nunca se pasa de los 6 min de Apps Script; un paso que arranca primero puede usar toda la ventana.
+function _reenumSinTiempo_(inicioPaso) {
+  var ahora = Date.now();
+  if (ahora - inicioPaso > CFG.REENUM_PRESUPUESTO_PASO_MS) return true;
+  if (INICIO_TANDA_MS_ > 0 && ahora - INICIO_TANDA_MS_ > CFG.REENUM_VENTANA_MS) return true;
+  return false;
+}
+
 // _reenumerarInformesCSV(): PF258; recorre los .csv de CSV/Informes y CSV/Tampermonkey (menos los de _nombreInformeExcluidoReenum_) y les suma REENUM_DELTA_MESES a «Temporada».
 // Reanudable: guarda el índice en REENUM_INF_IDX y NO suma dos veces porque un archivo modificado después del inicio de la corrida (REENUM_RUN_ID) se salta. Devuelve false si queda incompleto.
 function _reenumerarInformesCSV() {
@@ -59892,7 +59913,7 @@ function _reenumerarInformesCSV() {
       errores++;
     }
     props.setProperty(claveIdx, String(i + 1));
-    if ((i + 1) < lista.length && (Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
+    if ((i + 1) < lista.length && _reenumSinTiempo_(inicio)) {
       Logger.log('[Reenumeración] Informes: presupuesto agotado tras ' + (i + 1) + '/' + lista.length + ' archivo(s). Se reintenta en la próxima continuación.');
       return false;
     }
@@ -59954,7 +59975,7 @@ function _reenumerarHistorialGuerraIndividual() {
       omitidos++;
     }
     props.setProperty(claveIdx, String(i + 1));
-    if ((i + 1) < archivos.length && (Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
+    if ((i + 1) < archivos.length && _reenumSinTiempo_(inicio)) {
       Logger.log('[Reenumeración] HistorialGuerra individual: presupuesto agotado tras ' + (i + 1) + '/' + archivos.length + ' archivo(s). Se reintenta en la próxima continuación.');
       return false;
     }
@@ -60006,7 +60027,7 @@ function _reenumerarNombresJsonDrive() {
       if (!reRaiz.test(f.getName())) continue;
       var rf = _reenumRenombrarItem_(f, reRaiz, delta, runId);
       if (rf === 1) cambiados++; else if (rf === -1) saltadosNegativo++;
-      if ((Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
+      if (_reenumSinTiempo_(inicio)) {
         Logger.log('[Reenumeración] JSON Drive: presupuesto agotado en la carpeta ' + (i + 1) + '/' + carpetas.length + ' (renombrados en esta pasada: ' + cambiados + '). Se reintenta en la próxima continuación.');
         props.setProperty(claveIdx, String(i)); // esta carpeta se vuelve a mirar; los ya marcados se saltan
         return false;
@@ -60171,6 +60192,23 @@ function _finalizarReenumeracion() {
   props.setProperty('CFG_REF_ACTIVO', nuevaRefStr);
   _limpiarMemoSemanasTemporada_(); // PF091: la Ref cambió; se descarta el memo de semanas por temporada
   props.setProperty('CFG_OFFSET_ROYALEAPI', String(offsetNuevo));
+
+  // PF264: lo que guarda la numeración vieja y no es hoja ni archivo. Se hace una sola vez por corrida (marca REENUM_PROPS_NUMERACION_HECHO), por si este paso se reintenta.
+  var runIdFin = props.getProperty('REENUM_RUN_ID') || (nuevaRefStr + '|' + offsetViejo + '|' + deltaMeses);
+  if (props.getProperty('REENUM_PROPS_NUMERACION_HECHO') !== runIdFin) {
+    // (a) Índice en caché del cruce de meta (22_ControlCalendario.gs, PF144): sus claves 'T|S|P' apuntan a archivos que acaban de cambiar de nombre; subir la versión lo descarta.
+    props.setProperty('CRUCE_META_IDX_V', String((Number(props.getProperty('CRUCE_META_IDX_V')) || 0) + 1));
+    // (b) NUEVOS_CIERRE_SEMANA_T<n> (14_Nuevos_RoyaleAPI.gs): la semana cerrada de cada temporada; pasa a la temporada con el número nuevo para no cerrarla otra vez.
+    var todas = props.getProperties(), movidas = [];
+    Object.keys(todas).forEach(function (k) {
+      var m = /^NUEVOS_CIERRE_SEMANA_T(\d+)$/.exec(k);
+      if (m) movidas.push({ viejo: k, nuevo: 'NUEVOS_CIERRE_SEMANA_T' + (Number(m[1]) + deltaMeses), valor: todas[k] });
+    });
+    movidas.forEach(function (x) { props.deleteProperty(x.viejo); });
+    movidas.forEach(function (x) { props.setProperty(x.nuevo, x.valor); });
+    props.setProperty('REENUM_PROPS_NUMERACION_HECHO', runIdFin);
+    Logger.log('[Reenumeración] Índice de cruce de meta descartado y ' + movidas.length + ' marca(s) NUEVOS_CIERRE_SEMANA_T<n> pasadas a la numeración nueva (T += ' + deltaMeses + ').');
+  }
 
   // Refresco inmediato en pantalla, sin esperar el próximo runAll/runUpdate.
   updateExtraSheet();
