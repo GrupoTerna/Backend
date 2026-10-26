@@ -1651,7 +1651,9 @@ function _programarContinuacion(nombreHandler) {
 /**
  * _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, props) [→ Contexto_Base_Web.md §B135]
  */
+var INICIO_TANDA_MS_ = 0; // PF263: instante en que empezó la ejecución actual de _ejecutarPorTandas(); lo usa _reenumSinTiempo_() (47_Migraciones.gs) para repartir los 6 min entre los pasos de una misma tanda
 function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerContinuacion, nombresPasos) {
+  INICIO_TANDA_MS_ = Date.now();
   var props = PropertiesService.getScriptProperties();
 
   // VENTANA DE GUERRA PROTEGIDA (05-oct-2026): una continuacion programada antes de la ventana no debe [→ Contexto_Base_Web.md §B136]

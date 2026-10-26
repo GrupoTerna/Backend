@@ -288,7 +288,9 @@ var CFG = {
 
   // Presupuesto interno SOLO para el bucle de respaldarHojasDerivadasCSV() [→ Contexto_Base_Web.md §01B047]
   RESPALDO_DERIVADAS_BUDGET_MS: 60 * 1000, // 1m
-  REENUM_PRESUPUESTO_PASO_MS: 4 * 60 * 1000, // PF262: presupuesto de cada pasada de los pasos de reenumeración que van archivo por archivo (informes, JSON de HistorialGuerra, nombres de JSON de Drive); el límite de Apps Script es 6 min
+  REENUM_PRESUPUESTO_PASO_MS: 5 * 60 * 1000, // PF262/PF263: tope de cada paso de reenumeración que va archivo por archivo (informes, JSON de HistorialGuerra, nombres de JSON de Drive); el tope real de la tanda es REENUM_VENTANA_MS
+  REENUM_VENTANA_MS: 5 * 60 * 1000, // PF263: tiempo total desde que empieza la ejecución hasta que los pasos archivo por archivo dejan de abrir archivos nuevos; el límite de Apps Script es 6 min y el minuto restante cubre el último archivo, el guardado del avance y programar la continuación
+  REENUM_TANDA_PRESUPUESTO_MS: 4 * 60 * 1000, // PF263: pasado el minuto 4 de la tanda, la reenumeración ya no empieza un paso nuevo (lo retoma la continuación)
 
   // FIX (16-ago-2026): presupuesto interno SOLO para el bucle de [→ Contexto_Base_Web.md §01B048]
   AUTOAJUSTE_ANCHO_BUDGET_MS: 60 * 1000, // 1m
