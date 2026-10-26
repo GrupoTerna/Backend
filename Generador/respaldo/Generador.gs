@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 26/10/2026 00:08:07 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 26/10/2026 00:27:50 */
 
 
 
@@ -5520,12 +5520,12 @@ function subirDatosDriveAGithubContinuar() {
   }
 }
 
-/** Crea el activador diario (4:00 a 5:00, hora de Lima). Se corre una sola vez. */
+/** Crea el activador diario (5:00 a 6:00, hora de Lima; antes 4:00 a 5:00, cambiado el 26-oct-2026, §PF279). Se corre una sola vez. */
 function instalarActivadorDatosDriveGithub() {
   _datosGhQuitarActivadores_(DATOS_GH_HANDLER_AUTO_);
   ScriptApp.newTrigger(DATOS_GH_HANDLER_AUTO_)
-    .timeBased().everyDays(1).atHour(4).inTimezone('America/Lima').create();
-  console.log('Activador diario creado: ' + DATOS_GH_HANDLER_AUTO_ + ' (entre las 4:00 y las 5:00, hora de Lima).');
+    .timeBased().everyDays(1).atHour(5).inTimezone('America/Lima').create();
+  console.log('Activador diario creado: ' + DATOS_GH_HANDLER_AUTO_ + ' (entre las 5:00 y las 6:00, hora de Lima).');
 }
 
 /** Quita el activador diario y cualquier continuación pendiente. */
