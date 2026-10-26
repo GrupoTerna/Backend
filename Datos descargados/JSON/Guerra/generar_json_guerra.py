@@ -315,8 +315,8 @@ def generar(raiz, fecha):
             huerfanos.append(os.path.relpath(a, raiz))
     if huerfanos:
         sys.exit('Hay %d archivo(s) en %s cuya temporada y semana no existen en el CSV (¿se reenumeraron las temporadas?). '
-                 'No se escribió nada. Mueve o borra esos archivos (o renombra las carpetas y los archivos con la numeración nueva) '
-                 'y vuelve a correr. Primero: %s' % (len(huerfanos), CARPETA, huerfanos[0]))
+                 'No se escribió nada. Corre primero renombrar_json_guerra.py (renombra las carpetas y los archivos y corrige su contenido con la numeración nueva; Contexto_Base_Web.md §PF271) '
+                 'o mueve o borra esos archivos, y vuelve a correr. Primero: %s' % (len(huerfanos), CARPETA, huerfanos[0]))
     informe, resumen = [], []
     for (T, S) in sorted(grupos):
         fs = grupos[(T, S)]
