@@ -435,8 +435,8 @@ var PASOS_RUNSYNCCSV = [
   function () { respaldarIndiceYProtegidasCSV('T_ASISTENCIA'); },
   function () { respaldarIndiceYProtegidasCSV('S_ASISTENCIA'); },
   function () { respaldarIndiceYProtegidasCSV('EXTRA'); },
-  // PF282 (26-oct-2026): presupuesto 0 = una hoja derivada por ejecucion (antes hasta 60 s de hojas por tanda; el 25-oct Links tardo ~299 s). [→ Contexto_Base_Web.md §PF282]
-  function () { return respaldarHojasDerivadasCSV(0); },
+  // PF282 (26-oct-2026): presupuesto de 15 s por ejecucion (antes 60 s; el 25-oct Links sola tardo ~299 s). Con 0 (una hoja por ejecucion) la prueba del 26-oct mostro ~2 min de espera entre continuaciones. [→ Contexto_Base_Web.md §PF282]
+  function () { return respaldarHojasDerivadasCSV(CFG.RESPALDO_DERIVADAS_SYNC_BUDGET_MS); },
   // NUEVO (2-oct-2026, pregunta 51, hoja Battlelogs; decision de la usuaria): [→ Contexto_Base_Web.md §B074]
   function () {
     if (typeof actualizarHojaBattlelogs !== 'function') {
