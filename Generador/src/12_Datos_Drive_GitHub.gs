@@ -39,6 +39,8 @@
 // TOKEN: el mismo GITHUB_TOKEN del Generador (repo Backend, Contents: Read and write).
 // Desde el 25-oct-2026 (§PF272, pedido de la usuaria) el registro de la corrida lista los archivos subidos agrupados por carpeta de destino,
 // con el total por carpeta (_datosGhLineasPorCarpeta_); el modo revisión lo muestra igual.
+// Desde el 25-oct-2026 (§PF276) si una corrida se queda sin tiempo, la continuación se programa sola (un activador a 1 minuto, que se repite hasta terminar),
+// también cuando se corre a mano o forzada; antes solo lo hacía el activador diario.
 // Sin probar en Apps Script real al escribir este archivo.
 // =============================================================================
 
@@ -251,6 +253,7 @@ function _datosDriveAGithub_(op) {
     var porSubir = [];            // { entrada, clave, huella, bytes }
     var pendientes = 0;
     var revisados = [];
+    var olvidar = [];             // claves de huella que se borran para que la continuación retome esos archivos
 
     for (var i = 0; i < lista.candidatos.length; i++) {
       var c = lista.candidatos[i];
@@ -260,7 +263,12 @@ function _datosDriveAGithub_(op) {
       var clave = DATOS_GH_PREFIJO_ESTADO_ + f.getId();
 
       if (!op.forzar && estado[clave] === huella) { sinCambios++; continue; }
-      if (Date.now() - t0 > DATOS_GH_TIEMPO_MAX_MS_) { pendientes++; continue; }
+      if (Date.now() - t0 > DATOS_GH_TIEMPO_MAX_MS_) {
+        pendientes++;
+        // En una corrida forzada la huella guardada ya coincide, y la continuación (no forzada) lo saltaría: se olvida para que lo retome.
+        if (op.forzar && estado[clave] === huella) olvidar.push(clave);
+        continue;
+      }
 
       var bytesDrive = f.getSize();
       if (bytesDrive > c.maxBytes) {
@@ -335,10 +343,12 @@ function _datosDriveAGithub_(op) {
     }
     if (subidos) console.log('Falta hacer pull de Backend en GitHub Desktop para verlos en tu equipo.');
 
-    if (pendientes && op.auto) {
+    // Si falta algo por falta de tiempo, se programa sola la continuación (también en corridas a mano o forzadas; no en la revisión).
+    if (pendientes && !op.soloRevisar) {
+      olvidar.forEach(function(k) { props.deleteProperty(k); });
       _datosGhQuitarActivadores_(DATOS_GH_HANDLER_SEGUIR_);
       ScriptApp.newTrigger(DATOS_GH_HANDLER_SEGUIR_).timeBased().after(60 * 1000).create();
-      console.log('Quedaron ' + pendientes + ' archivos por falta de tiempo; se continúa en 1 minuto.');
+      console.log('Quedaron ' + pendientes + ' archivos por falta de tiempo; se continúa sola en 1 minuto (no hace falta volver a correrla).');
     }
     return texto;
   } finally {
