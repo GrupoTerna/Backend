@@ -1,0 +1,69 @@
+{
+  "tag": "#CVRURQYQ0",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "22/10/2026",
+  "registros": [
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 2,
+      "clan": "GrupoXTerna™2",
+      "ataques": 16,
+      "fame": 2500,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 1,
+      "clan": "GrupoXTerna™2\n                2026-08-10",
+      "ataques": 8,
+      "fame": 1100,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true
+    },
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 4,
+      "clan": "GrupoXTerna™2",
+      "ataques": 12,
+      "fame": 1875,
+      "barcos": 1,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 3,
+      "clan": "GrupoXTerna™2",
+      "ataques": 16,
+      "fame": 2300,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 5,
+      "clan": "GrupoXTerna™2",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    }
+  ],
+  "reenumeracionId": "1792970500096"
+}
