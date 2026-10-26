@@ -1,0 +1,22 @@
+{
+  "tag": "#8008CRLJU",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "22/10/2026",
+  "registros": [
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 5,
+      "clan": "Grupo乂Terna™",
+      "ataques": 3,
+      "fame": 600,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    }
+  ],
+  "reenumeracionId": "1792970500096"
+}
