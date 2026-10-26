@@ -86,6 +86,26 @@ function _ghJson_(req) {
   return JSON.parse(_ghRespuesta_(resp, req).getContentText());
 }
 
+// Desde el 25-oct-2026 (§PF278): GitHub frena con HTTP 403 («secondary rate limit») o 429 si se hacen demasiadas
+// escrituras seguidas. _ghJsonReintento_ espera y repite (hasta 3 intentos en total) antes de dejar pasar el error.
+function _ghEsLimiteDeGithub_(e) {
+  var t = String(e);
+  return /HTTP 429/.test(t) || (/HTTP 403/.test(t) && /rate limit/i.test(t));
+}
+function _ghJsonReintento_(req) {
+  for (var intento = 1; ; intento++) {
+    try {
+      return _ghJson_(req);
+    } catch (e) {
+      if (!_ghEsLimiteDeGithub_(e) || intento >= 3) throw e;
+      console.warn('[GitHub] Límite de escrituras; se espera 45 s y se reintenta (intento ' + (intento + 1) + ' de 3).');
+      Utilities.sleep(45000);
+    }
+  }
+}
+// Con más de este número de archivos no se crea un blob por archivo: el contenido va dentro de los árboles, de a este tanto por llamada.
+var GITHUB_ENTRADAS_BLOB_MAX_ = 40;
+
 // -----------------------------------------------------------------------------
 // Aviso de "pull pendiente": no escribir encima de cambios que el Generador no trajo
 // -----------------------------------------------------------------------------
@@ -445,24 +465,39 @@ function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje
     if (viejo.replace(reFechaConsolidado, '') === e.content.replace(reFechaConsolidado, '')) e.content = viejo;
   });
 
-  // Un blob por archivo, en lotes paralelos. Si el contenido no cambió,
+  // Pocos archivos: un blob por archivo, en lotes paralelos. Si el contenido no cambió,
   // GitHub devuelve el mismo SHA y ese archivo no figura en el commit.
+  // Muchos archivos (más de GITHUB_ENTRADAS_BLOB_MAX_): el contenido va dentro de los árboles, encadenados
+  // con base_tree, para no pasar del límite de escrituras de GitHub (§PF278).
   var shas = [];
-  for (var i = 0; i < entradas.length; i += 20) {
-    var lote = entradas.slice(i, i + 20);
-    var reqs = lote.map(function(e) {
-      return _ghReq_('post', '/git/blobs', { content: e.content, encoding: 'utf-8' });
-    });
-    var resps = UrlFetchApp.fetchAll(reqs);
-    for (var k = 0; k < resps.length; k++) {
-      shas.push(JSON.parse(_ghRespuesta_(resps[k], reqs[k]).getContentText()).sha);
+  var inline = entradas.length > GITHUB_ENTRADAS_BLOB_MAX_;
+  var baseIntermedia = treeBaseSha;
+  if (inline) {
+    for (var ii = 0; ii < entradas.length; ii += GITHUB_ENTRADAS_BLOB_MAX_) {
+      var trozo = entradas.slice(ii, ii + GITHUB_ENTRADAS_BLOB_MAX_).map(function(e) {
+        return { path: e.path, mode: '100644', type: 'blob', content: e.content };
+      });
+      baseIntermedia = _ghJsonReintento_(_ghReq_('post', '/git/trees', { base_tree: baseIntermedia, tree: trozo })).sha;
+      Utilities.sleep(1000);
+    }
+  } else {
+    for (var i = 0; i < entradas.length; i += 20) {
+      var lote = entradas.slice(i, i + 20);
+      var reqs = lote.map(function(e) {
+        return _ghReq_('post', '/git/blobs', { content: e.content, encoding: 'utf-8' });
+      });
+      var resps = UrlFetchApp.fetchAll(reqs);
+      for (var k = 0; k < resps.length; k++) {
+        shas.push(JSON.parse(_ghRespuesta_(resps[k], reqs[k]).getContentText()).sha);
+      }
     }
   }
 
   var nuevas = {};
-  var items = entradas.map(function(e, idx) {
+  var items = [];
+  entradas.forEach(function(e, idx) {
     nuevas[e.path] = true;
-    return { path: e.path, mode: '100644', type: 'blob', sha: shas[idx] };
+    if (!inline) items.push({ path: e.path, mode: '100644', type: 'blob', sha: shas[idx] });
   });
 
   var borrados = [];
@@ -480,7 +515,9 @@ function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje
     });
   }
 
-  var arbolNuevo  = _ghJson_(_ghReq_('post', '/git/trees', { base_tree: treeBaseSha, tree: items }));
+  var arbolNuevo = (inline && !items.length)
+    ? { sha: baseIntermedia }
+    : _ghJsonReintento_(_ghReq_('post', '/git/trees', { base_tree: baseIntermedia, tree: items }));
   if (arbolNuevo.sha === treeBaseSha) {
     return { commit: null, sinCambios: true, archivos: entradas.length, borrados: [] };
   }
