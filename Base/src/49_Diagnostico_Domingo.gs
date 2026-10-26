@@ -73,11 +73,11 @@ function _repararDomingoT5S4_(aplicar) {
       informe.push([tag, nom, clan, 'CAMBIO', hAnt, hNuevo, sAnt, sNuevo, nota]);
     }
 
-    var nombreInforme = 'Reparacion_Domingo_T' + TEMP_OBJ + 'S' + SEM_OBJ + ' ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    var nombreInforme = 'Reparacion_Domingo_T5S4 ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
     if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
 
     if (aplicar && cambios.length) {
-      _saveCSVToDrive('Backup_Guerra ANTES de reparar Domingo T' + TEMP_OBJ + 'S' + SEM_OBJ + ' ' + marca + '.csv', csvText); // respaldo previo
+      _saveCSVToDrive('Backup_Guerra ANTES de reparar Domingo T5S4 ' + marca + '.csv', csvText); // respaldo previo
       cambios.forEach(function (c) {
         var fila = filas[c.idx];
         fila[iHoy] = String(c.h);
