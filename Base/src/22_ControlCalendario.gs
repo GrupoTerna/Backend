@@ -1050,17 +1050,24 @@ function _cruceMetaListarIndiceDrive_(nombreClan, nombre) {
   Logger.log('[TorneosMed] listado Drive currentriverrace de "' + nombre + '": ' + _medN + ' archivo(s) en ' + (Date.now() - _medT) + 'ms');
   var ent = { t: Date.now(), fresco: true, ids: ids };
   try {
-    CacheService.getScriptCache().put('CRUCE_META_IDX_' + nombre, JSON.stringify({ t: ent.t, ids: ids }), CFG.CRUCE_META_IDX_TTL_SEG);
+    CacheService.getScriptCache().put(_cruceMetaPrefijoCache_() + nombre, JSON.stringify({ t: ent.t, ids: ids }), CFG.CRUCE_META_IDX_TTL_SEG);
   } catch (eCache) {
     Logger.log('[TorneosMed] No se pudo guardar el índice de currentriverrace de "' + nombre + '" en la caché (se vuelve a listar la próxima vez): ' + eCache.message);
   }
   return ent;
 }
 
+/** PF264: prefijo de la clave de caché del índice de currentriverrace; lleva una versión (propiedad CRUCE_META_IDX_V) que _finalizarReenumeracion() sube para descartar los índices con la numeración vieja. */
+function _cruceMetaPrefijoCache_() {
+  var v = '0';
+  try { v = PropertiesService.getScriptProperties().getProperty('CRUCE_META_IDX_V') || '0'; } catch (e) { /* sin propiedad: versión 0 */ }
+  return 'CRUCE_META_IDX_' + v + '_';
+}
+
 /** PF144: índice guardado en la caché del script, o null si no hay (nunca guardado, vencido o evicto). Devuelve { t, fresco: false, ids }. */
 function _cruceMetaIndiceDesdeCache_(nombre) {
   try {
-    var raw = CacheService.getScriptCache().get('CRUCE_META_IDX_' + nombre);
+    var raw = CacheService.getScriptCache().get(_cruceMetaPrefijoCache_() + nombre);
     if (!raw) return null;
     var o = JSON.parse(raw);
     if (!o || !o.ids || !isFinite(Number(o.t))) return null;

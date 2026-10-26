@@ -1202,6 +1202,23 @@ function _finalizarReenumeracion() {
   _limpiarMemoSemanasTemporada_(); // PF091: la Ref cambió; se descarta el memo de semanas por temporada
   props.setProperty('CFG_OFFSET_ROYALEAPI', String(offsetNuevo));
 
+  // PF264: lo que guarda la numeración vieja y no es hoja ni archivo. Se hace una sola vez por corrida (marca REENUM_PROPS_NUMERACION_HECHO), por si este paso se reintenta.
+  var runIdFin = props.getProperty('REENUM_RUN_ID') || (nuevaRefStr + '|' + offsetViejo + '|' + deltaMeses);
+  if (props.getProperty('REENUM_PROPS_NUMERACION_HECHO') !== runIdFin) {
+    // (a) Índice en caché del cruce de meta (22_ControlCalendario.gs, PF144): sus claves 'T|S|P' apuntan a archivos que acaban de cambiar de nombre; subir la versión lo descarta.
+    props.setProperty('CRUCE_META_IDX_V', String((Number(props.getProperty('CRUCE_META_IDX_V')) || 0) + 1));
+    // (b) NUEVOS_CIERRE_SEMANA_T<n> (14_Nuevos_RoyaleAPI.gs): la semana cerrada de cada temporada; pasa a la temporada con el número nuevo para no cerrarla otra vez.
+    var todas = props.getProperties(), movidas = [];
+    Object.keys(todas).forEach(function (k) {
+      var m = /^NUEVOS_CIERRE_SEMANA_T(\d+)$/.exec(k);
+      if (m) movidas.push({ viejo: k, nuevo: 'NUEVOS_CIERRE_SEMANA_T' + (Number(m[1]) + deltaMeses), valor: todas[k] });
+    });
+    movidas.forEach(function (x) { props.deleteProperty(x.viejo); });
+    movidas.forEach(function (x) { props.setProperty(x.nuevo, x.valor); });
+    props.setProperty('REENUM_PROPS_NUMERACION_HECHO', runIdFin);
+    Logger.log('[Reenumeración] Índice de cruce de meta descartado y ' + movidas.length + ' marca(s) NUEVOS_CIERRE_SEMANA_T<n> pasadas a la numeración nueva (T += ' + deltaMeses + ').');
+  }
+
   // Refresco inmediato en pantalla, sin esperar el próximo runAll/runUpdate.
   updateExtraSheet();
   runCalendario(); // ya llama a updateCalendario2() y resaltarDiaActual() internamente
