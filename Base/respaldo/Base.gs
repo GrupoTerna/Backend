@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 23:13:04 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 26/10/2026 00:53:28 */
 
 
 
@@ -933,7 +933,7 @@ function runUpdateProgramado() {
   }
 
   // 3) Candado global (esta cadena escribe casi todas las hojas): bloqueado en la ventana protegida.
-  if (!_adquirirLockEjecucion('runUpdate')) return;
+  if (!_adquirirLockEjecucion('runUpdate')) { _reintentarDiarioSiCandadoOcupado_('_reintentarRunUpdateProgramado'); return; } // PF281
   props.setProperty('RUNUPDATE_SIN_API', '1');
   props.setProperty('RUNUPDATE_SIN_API_TS', String(tsCaptura));
   props.setProperty('RUNUPDATE_PASO', '0');
@@ -1065,7 +1065,7 @@ function runSincronizarContactos() {
  * runSyncCSV() - Sincroniza todos los CSV con Drive. [→ Contexto_Base_Web.md §B108]
  */
 function runSyncCSV() {
-  if (!_adquirirLockEjecucion('runSyncCSV')) return;
+  if (!_adquirirLockEjecucion('runSyncCSV')) { _reintentarDiarioSiCandadoOcupado_('_reintentarRunSyncCSV'); return; } // PF281
   PropertiesService.getScriptProperties().setProperty('RUNSYNCCSV_PASO', '0');
   _continuarRunSyncCSV();
 }
@@ -1630,9 +1630,13 @@ function _bloquearSiReenumerando_(nombreFn) {
   return true;
 }
 
+// PF281 (26-oct-2026): motivo por el que _adquirirLockEjecucion() devolvió false en ESTA ejecución: 'ocupado' (lock corto ocupado u otra ejecución en curso: vale la pena reintentar) o 'otro' (reenumeración o ventana de guerra: no se reintenta). Vacío si no fue rechazada.
+var LOCK_ULTIMO_RECHAZO_ = '';
+
 function _adquirirLockEjecucion(nombreFn) {
+  LOCK_ULTIMO_RECHAZO_ = '';
   // PF260: con una reenumeración en curso solo pueden tomar el lock las funciones de la propia reenumeración (runGuerra incluida: escribiría con numeración mezclada).
-  if (nombreFn !== 'runReenumerarTemporadas' && nombreFn !== 'reanudarReenumerarTemporadas' && _bloquearSiReenumerando_(nombreFn)) return false;
+  if (nombreFn !== 'runReenumerarTemporadas' && nombreFn !== 'reanudarReenumerarTemporadas' && _bloquearSiReenumerando_(nombreFn)) { LOCK_ULTIMO_RECHAZO_ = 'otro'; return false; }
   // VENTANA DE GUERRA PROTEGIDA (05-oct-2026): fuera de runGuerra() nada puede empezar desde
   // CFG.VENTANA_GUERRA_PRE_MARGEN_MIN minutos antes de las 4:00 a.m. Lima hasta las 5:00 a.m.
   if (nombreFn !== 'runGuerra' && CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
@@ -1640,11 +1644,13 @@ function _adquirirLockEjecucion(nombreFn) {
       Math.floor(CFG.VENTANA_GUERRA_INI_UTC_MIN / 60 - 5) + ':00-' + Math.floor(CFG.VENTANA_GUERRA_FIN_UTC_MIN / 60 - 5) +
       ':00 Lima, mas ' + CFG.VENTANA_GUERRA_PRE_MARGEN_MIN + ' min de margen previo). Solo runGuerra() puede correr ahora; ' +
       'reintentar despues de las 5:00 a.m.');
+    LOCK_ULTIMO_RECHAZO_ = 'otro';
     return false;
   }
   var miniLock = LockService.getScriptLock();
   if (!miniLock.tryLock(5000)) {
     Logger.log('[Lock] ' + nombreFn + '(): no se pudo verificar el estado de ejecución (lock corto ocupado). Se cancela esta ejecución.');
+    LOCK_ULTIMO_RECHAZO_ = 'ocupado';
     return false;
   }
   try {
@@ -1657,6 +1663,7 @@ function _adquirirLockEjecucion(nombreFn) {
         var antiguedad = ahora - info.inicio;
         if (antiguedad < CFG.LOCK_MAX_DURACION_MS) {
           Logger.log('[Lock] ' + nombreFn + '(): ya hay otra ejecución en curso (' + info.fn + ', iniciada hace ' + Math.round(antiguedad / 1000) + 's). Se cancela esta ejecución para evitar duplicados.');
+          LOCK_ULTIMO_RECHAZO_ = 'ocupado';
           return false;
         }
         Logger.log('[Lock] ' + nombreFn + '(): se encontró un lock vencido de ' + info.fn + ' (iniciado hace ' + Math.round(antiguedad / 1000) + 's, > ' + (CFG.LOCK_MAX_DURACION_MS / 1000) + 's). Se asume una ejecución colgada/cortada por timeout y se libera automáticamente.');
@@ -1689,6 +1696,50 @@ function _borrarTriggersDeContinuacion(nombreHandler) {
 function _programarContinuacion(nombreHandler) {
   _borrarTriggersDeContinuacion(nombreHandler);
   ScriptApp.newTrigger(nombreHandler).timeBased().after(10 * 1000).create();
+}
+
+/**
+ * _reintentarDiarioSiCandadoOcupado_(handlerReintento) - PF281 (26-oct-2026). Los diarios que toman el candado (runUpdateProgramado, runSyncCSV)
+ * se cancelaban sin reintento si el candado estaba ocupado (el 25-oct runUpdateProgramado perdió su corrida porque una ráfaga de doPost de correcciones
+ * tenía el candado de script). Si el rechazo fue por candado ocupado (LOCK_ULTIMO_RECHAZO_ === 'ocupado'), programa UNA ejecución única a
+ * CFG.DIARIO_REINTENTO_MS por medio de un handler propio (_reintentarRunUpdateProgramado / _reintentarRunSyncCSV; nunca el mismo handler del
+ * activador diario, porque _borrarTriggersDeContinuacion() lo borraría). Máximo CFG.DIARIO_REINTENTO_MAX intentos por día (Lima) y por handler.
+ * No reintenta si el rechazo fue por reenumeración o ventana de guerra. Nunca lanza error. [→ Contexto_Base_Web.md §PF281]
+ */
+function _reintentarDiarioSiCandadoOcupado_(handlerReintento) {
+  try {
+    if (LOCK_ULTIMO_RECHAZO_ !== 'ocupado') return;
+    var props = PropertiesService.getScriptProperties();
+    var clave = 'REINTENTO_DIARIO_' + handlerReintento;
+    var hoy = Utilities.formatDate(new Date(), 'America/Lima', 'yyyyMMdd');
+    var n = 0;
+    try {
+      var g = JSON.parse(props.getProperty(clave) || 'null');
+      if (g && g.dia === hoy) n = Number(g.n) || 0;
+    } catch (eJson) { n = 0; }
+    if (n >= CFG.DIARIO_REINTENTO_MAX) {
+      Logger.log('[Reintento diario] ' + handlerReintento + ': se agotaron los ' + CFG.DIARIO_REINTENTO_MAX + ' reintentos de hoy con el candado ocupado. Se vuelve a intentar en el próximo horario.');
+      return;
+    }
+    props.setProperty(clave, JSON.stringify({ dia: hoy, n: n + 1 }));
+    _borrarTriggersDeContinuacion(handlerReintento);
+    ScriptApp.newTrigger(handlerReintento).timeBased().after(CFG.DIARIO_REINTENTO_MS).create();
+    Logger.log('[Reintento diario] ' + handlerReintento + ': el candado estaba ocupado; se reintenta en ' + Math.round(CFG.DIARIO_REINTENTO_MS / 60000) + ' min (intento ' + (n + 1) + ' de ' + CFG.DIARIO_REINTENTO_MAX + ').');
+  } catch (e) {
+    Logger.log('[Reintento diario] ' + handlerReintento + ': no se pudo programar el reintento: ' + e.message);
+  }
+}
+
+/** Handler del reintento de runUpdateProgramado (PF281). Borra su propio activador y vuelve a llamar a la función diaria. */
+function _reintentarRunUpdateProgramado() {
+  _borrarTriggersDeContinuacion('_reintentarRunUpdateProgramado');
+  runUpdateProgramado();
+}
+
+/** Handler del reintento de runSyncCSV (PF281). Borra su propio activador y vuelve a llamar a la función diaria. */
+function _reintentarRunSyncCSV() {
+  _borrarTriggersDeContinuacion('_reintentarRunSyncCSV');
+  runSyncCSV();
 }
 
 /**
@@ -2051,6 +2102,12 @@ var CFG = {
 
   // --- Control de ejecución (locks auto-expirables, ver 00_Main.gs) --- [→ Contexto_Base_Web.md §01B029]
   LOCK_MAX_DURACION_MS: 6 * 60 * 1000 + 30 * 1000, // 6m30s
+
+  // 26-oct-2026 (PF281): reintento de los diarios que toman el candado (runUpdateProgramado, runSyncCSV) cuando se cancelan porque el candado
+  // estaba ocupado (lock corto de _adquirirLockEjecucion u otra ejecución en curso). Hasta DIARIO_REINTENTO_MAX intentos por día, uno cada
+  // DIARIO_REINTENTO_MS. [→ Contexto_Base_Web.md §PF281]
+  DIARIO_REINTENTO_MS: 10 * 60 * 1000,
+  DIARIO_REINTENTO_MAX: 3,
 
   // 17-oct-2026 (PF091, decisión A): límite REAL de una ejecución de Apps Script (360 s; lo midió el registro de runGuerra de las 12:43,
   // cortado a los 361 s). LOCK_MAX_DURACION_MS (6m30s) sigue siendo solo la vigencia del candado; los márgenes de tiempo de
