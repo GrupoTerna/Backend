@@ -1,7 +1,7 @@
 # Índice de funciones — Generador
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Generador/src/`. Total: 272 nombres en 12 archivos .gs.
+Código real: `Generador/src/`. Total: 275 nombres en 12 archivos .gs.
 
 ## Por archivo
 
@@ -12,7 +12,7 @@ Código real: `Generador/src/`. Total: 272 nombres en 12 archivos .gs.
 - **05_Migrador_Formato.gs** (22 funciones): migrarFormatoJSON, _mig_ejecutarMigracion_, migrarFormatoJSON_reiniciarEstado, _mig_etiquetarCarpetaClan, _mig_yaEstaEnCarpeta_, _mig_estaBajoCarpeta_, _migrarCarpetaPlayers, _mig_nombrePlayerPorCreacion_, _mig_renombrarSeguro, _letraDiaGuerra_, _pad2_, _mig_fechaHoraStr, _mig_soloHora, _mig_horaLima, _mig_tiempoAgotado_, _mig_estadoInicial_, _mig_guardarEstado_, _mig_borrarEstado_, _mig_pausarYContinuar_, _mig_programarContinuacion_, _mig_borrarTriggersPendientes_, _mig_finalizar_
 - **06_Limpieza_Duplicados_JSON.gs** (19 funciones): limpiarDuplicadosJSON, _limpiarCarpeta_, _analizarCarpetaJSON_, _anclaMasCercana_, _textoCorteDiario_, _fmtHoraH_, _horaLimaDecimal_, _enVentanaCorte_, _estimarCorteDiario_, _diaJuegoNum_, _diaJuegoFecha_, _esInicioDeTemporada_, _diaJuegoAnclaEnVentana_, _ajustarPeriodoPrestado_, _temporadaDeFecha_, _primerLunesDia_, _quitarTagExistente_, _leerPeriodo_, _primeraMencionNumerica_
 - **07_Cache_Periodos_JSON.gs** (3 funciones): _cache_cargar_, _cache_guardar_, reiniciarCachePeriodosJSON
-- **08_GitHub.gs** (23 funciones): _githubToken_, _ghReq_, _ghRespuesta_, _ghJson_, _githubLeerUltimoCommit_, _githubGuardarUltimoCommit_, _githubCabezaRemota_, _githubRevisarPullPendiente_, _githubCambiosEnCarpeta_, _githubFuncionesDeAccion_, _scriptIdDeProyecto_, _extDeTipo_, _archivosDelProyecto_, _githubRevisarSecretos_, _githubGenerarIndice_, _githubGenerarLeeme_, _githubCommitArchivos_, _githubSincronizar_, _githubTraerAProyectoAppsUnaVez_, _githubTraerAProyectoApps_, _githubProbar_, subirEvidenciaT05AGithub, _githubSubirArchivosDeDrive_
+- **08_GitHub.gs** (25 funciones): _githubToken_, _ghReq_, _ghRespuesta_, _ghJson_, _ghEsLimiteDeGithub_, _ghJsonReintento_, _githubLeerUltimoCommit_, _githubGuardarUltimoCommit_, _githubCabezaRemota_, _githubRevisarPullPendiente_, _githubCambiosEnCarpeta_, _githubFuncionesDeAccion_, _scriptIdDeProyecto_, _extDeTipo_, _archivosDelProyecto_, _githubRevisarSecretos_, _githubGenerarIndice_, _githubGenerarLeeme_, _githubCommitArchivos_, _githubSincronizar_, _githubTraerAProyectoAppsUnaVez_, _githubTraerAProyectoApps_, _githubProbar_, subirEvidenciaT05AGithub, _githubSubirArchivosDeDrive_
 - **09_ReadmeGenerador.gs** (4 funciones): _readmeFuncionesManuales_, _readmeGrupo_, _readmeAplicarBloque_, _actualizarReadmeGenerador_
 - **10_Verificar_PeriodIndex_JSON.gs** (7 funciones): _verif_esExcepcionFecha_, verificarPeriodIndexJSON, _verif_periodoDeArchivo_, _verif_indiceDiaLima_, _verif_enVentanaCambio_, _verif_comparar_, _verif_imprimirResumen_
 - **11_Imagenes_API.gs** (39 funciones): imagenesApiProbar, imagenesApiCartasAGithub, imagenesApiInsigniasAGithub, imagenesApiAGithub, carpetasApiJuntoAFankit, imagenesApiReintentarNoDisponibles, _imgApiEjecutar_, _imgApiLeerNoDisponibles_, _imgApiGuardarNoDisponibles_, _imgApiArchivoUrls_, imagenesApiEscanearJsonPlayers, imagenesApiReiniciarEscaneoJson, _imgApiArchivoMasReciente_, _imgApiArchivoTipos_, _imgApiDestinoInsignia_, _imgApiNormalizarCabecera_, _imgApiTiposInsignias_, _imgApiRecolectarUrls_, _imgApiAU8_, _imgApiAConSigno_, _imgApiCrc32_, _imgApiAdler32_, _imgApiHuffman_, _imgApiInflate_, _imgApiDeflateAlmacenado_, _imgApiZlib_, _imgApiLeeU32_, _imgApiTrozoPng_, _imgApiQuitarFiltros_, _imgApiRectanguloVisible_, _imgApiFiltrarFila_, _imgApiFiltrarRecorte_, _imgApiRecortarPng_, _imgApiToken_, _imgApiReq_, _imgApiJson_, _imgApiContexto_, _imgApiCarpetasApiFaltantes_, _imgApiCommit_
@@ -32,7 +32,7 @@ Ninguno.
 | `_anclaMasCercana_` | función | 06_Limpieza_Duplicados_JSON.gs | 426 |  |
 | `_archivosDeCarpetaClan_` | función | 04_Organizador_JSON.gs | 233 |  |
 | `_archivosDeClan_` | función | 04_Organizador_JSON.gs | 321 |  |
-| `_archivosDelProyecto_` | función | 08_GitHub.gs | 249 |  |
+| `_archivosDelProyecto_` | función | 08_GitHub.gs | 269 |  |
 | `_archivosRecursivo_` | función | 04_Organizador_JSON.gs | 300 |  |
 | `_cache_cargar_` | función | 07_Cache_Periodos_JSON.gs | 33 |  |
 | `_cache_guardar_` | función | 07_Cache_Periodos_JSON.gs | 54 |  |
@@ -43,11 +43,11 @@ Ninguno.
 | `_carpetaSemanaJSON_` | función | 04_Organizador_JSON.gs | 356 |  |
 | `_carpetaViejaDeClan_` | función | 04_Organizador_JSON.gs | 279 |  |
 | `_conAviso_` | función | 02_Backstage.gs | 103 |  |
-| `_datosDriveAGithub_` | función | 12_Datos_Drive_GitHub.gs | 237 |  |
-| `_datosGhBuscarTelefonos_` | función | 12_Datos_Drive_GitHub.gs | 155 |  |
-| `_datosGhLineasPorCarpeta_` | función | 12_Datos_Drive_GitHub.gs | 220 |  |
-| `_datosGhListarCandidatos_` | función | 12_Datos_Drive_GitHub.gs | 183 |  |
-| `_datosGhQuitarActivadores_` | función | 12_Datos_Drive_GitHub.gs | 135 |  |
+| `_datosDriveAGithub_` | función | 12_Datos_Drive_GitHub.gs | 239 |  |
+| `_datosGhBuscarTelefonos_` | función | 12_Datos_Drive_GitHub.gs | 157 |  |
+| `_datosGhLineasPorCarpeta_` | función | 12_Datos_Drive_GitHub.gs | 222 |  |
+| `_datosGhListarCandidatos_` | función | 12_Datos_Drive_GitHub.gs | 185 |  |
+| `_datosGhQuitarActivadores_` | función | 12_Datos_Drive_GitHub.gs | 137 |  |
 | `_descargarProyectoAArchivos` | función | 02_Backstage.gs | 287 |  |
 | `_diaJuegoAnclaEnVentana_` | función | 06_Limpieza_Duplicados_JSON.gs | 587 |  |
 | `_diaJuegoFecha_` | función | 06_Limpieza_Duplicados_JSON.gs | 567 |  |
@@ -56,31 +56,33 @@ Ninguno.
 | `_enVentanaCorte_` | función | 06_Limpieza_Duplicados_JSON.gs | 473 |  |
 | `_esInicioDeTemporada_` | función | 06_Limpieza_Duplicados_JSON.gs | 573 |  |
 | `_estimarCorteDiario_` | función | 06_Limpieza_Duplicados_JSON.gs | 496 |  |
-| `_extDeTipo_` | función | 08_GitHub.gs | 244 |  |
+| `_extDeTipo_` | función | 08_GitHub.gs | 264 |  |
 | `_extraerArchivosDeMarkdown_` | función | 02_Backstage.gs | 242 |  |
 | `_extraerArchivosDeTexto` | función | 02_Backstage.gs | 184 |  |
 | `_fmtHoraH_` | función | 06_Limpieza_Duplicados_JSON.gs | 453 |  |
 | `_generarIndiceArchivos_` | función | 02_Backstage.gs | 415 |  |
 | `_generarMarkdownLegible_` | función | 02_Backstage.gs | 220 |  |
+| `_ghEsLimiteDeGithub_` | función | 08_GitHub.gs | 91 |  |
 | `_ghJson_` | función | 08_GitHub.gs | 84 |  |
+| `_ghJsonReintento_` | función | 08_GitHub.gs | 95 |  |
 | `_ghReq_` | función | 08_GitHub.gs | 54 |  |
 | `_ghRespuesta_` | función | 08_GitHub.gs | 73 |  |
-| `_githubCabezaRemota_` | función | 08_GitHub.gs | 122 |  |
-| `_githubCambiosEnCarpeta_` | función | 08_GitHub.gs | 188 | Contexto_Base_Web.md §PF273 |
-| `_githubCommitArchivos_` | función | 08_GitHub.gs | 410 | Contexto_Base_Web.md §PF273 |
-| `_githubFuncionesDeAccion_` | función | 08_GitHub.gs | 211 |  |
-| `_githubGenerarIndice_` | función | 08_GitHub.gs | 287 |  |
-| `_githubGenerarLeeme_` | función | 08_GitHub.gs | 356 |  |
-| `_githubGuardarUltimoCommit_` | función | 08_GitHub.gs | 116 |  |
-| `_githubLeerUltimoCommit_` | función | 08_GitHub.gs | 112 |  |
-| `_githubProbar_` | función | 08_GitHub.gs | 809 |  |
-| `_githubRevisarPullPendiente_` | función | 08_GitHub.gs | 133 |  |
-| `_githubRevisarSecretos_` | función | 08_GitHub.gs | 263 |  |
-| `_githubSincronizar_` | función | 08_GitHub.gs | 510 |  |
-| `_githubSubirArchivosDeDrive_` | función | 08_GitHub.gs | 852 |  |
+| `_githubCabezaRemota_` | función | 08_GitHub.gs | 142 |  |
+| `_githubCambiosEnCarpeta_` | función | 08_GitHub.gs | 208 | Contexto_Base_Web.md §PF273 |
+| `_githubCommitArchivos_` | función | 08_GitHub.gs | 430 | Contexto_Base_Web.md §PF273 |
+| `_githubFuncionesDeAccion_` | función | 08_GitHub.gs | 231 |  |
+| `_githubGenerarIndice_` | función | 08_GitHub.gs | 307 |  |
+| `_githubGenerarLeeme_` | función | 08_GitHub.gs | 376 |  |
+| `_githubGuardarUltimoCommit_` | función | 08_GitHub.gs | 136 |  |
+| `_githubLeerUltimoCommit_` | función | 08_GitHub.gs | 132 |  |
+| `_githubProbar_` | función | 08_GitHub.gs | 846 |  |
+| `_githubRevisarPullPendiente_` | función | 08_GitHub.gs | 153 |  |
+| `_githubRevisarSecretos_` | función | 08_GitHub.gs | 283 |  |
+| `_githubSincronizar_` | función | 08_GitHub.gs | 547 |  |
+| `_githubSubirArchivosDeDrive_` | función | 08_GitHub.gs | 889 |  |
 | `_githubToken_` | función | 08_GitHub.gs | 49 |  |
-| `_githubTraerAProyectoApps_` | función | 08_GitHub.gs | 778 | Contexto_Base_Web.md §PF273 |
-| `_githubTraerAProyectoAppsUnaVez_` | función | 08_GitHub.gs | 633 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
+| `_githubTraerAProyectoApps_` | función | 08_GitHub.gs | 815 | Contexto_Base_Web.md §PF273 |
+| `_githubTraerAProyectoAppsUnaVez_` | función | 08_GitHub.gs | 670 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
 | `_guardarIndiceArchivos_` | función | 02_Backstage.gs | 466 |  |
 | `_horaLimaDecimal_` | función | 06_Limpieza_Duplicados_JSON.gs | 460 |  |
 | `_huellaArchivo_` | función | 02_Backstage.gs | 400 |  |
@@ -153,7 +155,7 @@ Ninguno.
 | `_readmeFuncionesManuales_` | función | 09_ReadmeGenerador.gs | 28 |  |
 | `_readmeGrupo_` | función | 09_ReadmeGenerador.gs | 55 |  |
 | `_registrarLogGenerador` | función | 02_Backstage.gs | 112 |  |
-| `_scriptIdDeProyecto_` | función | 08_GitHub.gs | 224 |  |
+| `_scriptIdDeProyecto_` | función | 08_GitHub.gs | 244 |  |
 | `_SEMANA_MEM_` | global | 04_Organizador_JSON.gs | 348 |  |
 | `_subirArchivosAProyecto` | función | 02_Backstage.gs | 477 |  |
 | `_temporadaDeFecha_` | función | 06_Limpieza_Duplicados_JSON.gs | 701 |  |
@@ -180,17 +182,17 @@ Ninguno.
 | `CORTE_MIN_PARES_` | global | 06_Limpieza_Duplicados_JSON.gs | 447 |  |
 | `CREAR_O_ACTUALIZAR_HOJA_SISTEMA` | global | 02_Backstage.gs | 15 |  |
 | `crearProyectoVinculado_` | función | 02_Backstage.gs | 714 |  |
-| `DATOS_GH_CARPETA_HOJAS_` | global | 12_Datos_Drive_GitHub.gs | 48 |  |
-| `DATOS_GH_CARPETA_INDIVIDUAL_` | global | 12_Datos_Drive_GitHub.gs | 50 |  |
-| `DATOS_GH_CARPETA_INFORMES_` | global | 12_Datos_Drive_GitHub.gs | 49 |  |
-| `DATOS_GH_CARPETA_SEASONS_` | global | 12_Datos_Drive_GitHub.gs | 51 |  |
-| `DATOS_GH_CARPETA_TAMPERMONKEY_` | global | 12_Datos_Drive_GitHub.gs | 47 |  |
-| `DATOS_GH_FUENTES_` | global | 12_Datos_Drive_GitHub.gs | 53 |  |
-| `DATOS_GH_HANDLER_AUTO_` | global | 12_Datos_Drive_GitHub.gs | 78 |  |
-| `DATOS_GH_HANDLER_SEGUIR_` | global | 12_Datos_Drive_GitHub.gs | 79 |  |
-| `DATOS_GH_LOTE_BYTES_` | global | 12_Datos_Drive_GitHub.gs | 80 |  |
-| `DATOS_GH_PREFIJO_ESTADO_` | global | 12_Datos_Drive_GitHub.gs | 77 |  |
-| `DATOS_GH_TIEMPO_MAX_MS_` | global | 12_Datos_Drive_GitHub.gs | 81 |  |
+| `DATOS_GH_CARPETA_HOJAS_` | global | 12_Datos_Drive_GitHub.gs | 50 |  |
+| `DATOS_GH_CARPETA_INDIVIDUAL_` | global | 12_Datos_Drive_GitHub.gs | 52 |  |
+| `DATOS_GH_CARPETA_INFORMES_` | global | 12_Datos_Drive_GitHub.gs | 51 |  |
+| `DATOS_GH_CARPETA_SEASONS_` | global | 12_Datos_Drive_GitHub.gs | 53 |  |
+| `DATOS_GH_CARPETA_TAMPERMONKEY_` | global | 12_Datos_Drive_GitHub.gs | 49 |  |
+| `DATOS_GH_FUENTES_` | global | 12_Datos_Drive_GitHub.gs | 55 |  |
+| `DATOS_GH_HANDLER_AUTO_` | global | 12_Datos_Drive_GitHub.gs | 80 |  |
+| `DATOS_GH_HANDLER_SEGUIR_` | global | 12_Datos_Drive_GitHub.gs | 81 |  |
+| `DATOS_GH_LOTE_BYTES_` | global | 12_Datos_Drive_GitHub.gs | 82 |  |
+| `DATOS_GH_PREFIJO_ESTADO_` | global | 12_Datos_Drive_GitHub.gs | 79 |  |
+| `DATOS_GH_TIEMPO_MAX_MS_` | global | 12_Datos_Drive_GitHub.gs | 83 |  |
 | `descargarBase` | función | 01_Principal.gs | 15 |  |
 | `descargarBaseForzado` | función | 01_Principal.gs | 25 |  |
 | `descargarContactos` | función | 01_Principal.gs | 170 |  |
@@ -198,15 +200,16 @@ Ninguno.
 | `descargarGenerador` | función | 01_Principal.gs | 91 |  |
 | `descargarGeneradorForzado` | función | 01_Principal.gs | 101 |  |
 | `eliminarTodosLosArchivosDeBase` | función | 01_Principal.gs | 234 |  |
-| `EVIDENCIA_T05_CARPETA_GITHUB_` | global | 08_GitHub.gs | 825 |  |
-| `EVIDENCIA_T05_NOMBRES_` | global | 08_GitHub.gs | 826 |  |
-| `GITHUB_AVISO_SOLO_CARPETA_` | global | 08_GitHub.gs | 104 |  |
+| `EVIDENCIA_T05_CARPETA_GITHUB_` | global | 08_GitHub.gs | 862 |  |
+| `EVIDENCIA_T05_NOMBRES_` | global | 08_GitHub.gs | 863 |  |
+| `GITHUB_AVISO_SOLO_CARPETA_` | global | 08_GitHub.gs | 124 |  |
 | `GITHUB_BORRAR_FORMATOS_ANTIGUOS_` | global | 08_GitHub.gs | 27 |  |
 | `GITHUB_BRANCH_` | global | 08_GitHub.gs | 23 |  |
-| `GITHUB_INTENTOS_TRAER_` | global | 08_GitHub.gs | 110 | Contexto_Base_Web.md §PF273 |
+| `GITHUB_ENTRADAS_BLOB_MAX_` | global | 08_GitHub.gs | 107 |  |
+| `GITHUB_INTENTOS_TRAER_` | global | 08_GitHub.gs | 130 | Contexto_Base_Web.md §PF273 |
 | `GITHUB_OWNER_` | global | 08_GitHub.gs | 21 |  |
 | `GITHUB_PATRONES_SECRETOS_` | global | 08_GitHub.gs | 30 |  |
-| `GITHUB_PROP_ULTIMO_COMMIT_` | global | 08_GitHub.gs | 99 |  |
+| `GITHUB_PROP_ULTIMO_COMMIT_` | global | 08_GitHub.gs | 119 |  |
 | `GITHUB_REGEX_ID_DRIVE_` | global | 08_GitHub.gs | 43 |  |
 | `GITHUB_REPO_` | global | 08_GitHub.gs | 22 |  |
 | `imagenesApiAGithub` | función | 11_Imagenes_API.gs | 136 |  |
@@ -238,7 +241,7 @@ Ninguno.
 | `IMGAPI_REGEX_URL_` | global | 11_Imagenes_API.gs | 77 |  |
 | `IMGAPI_REPO_` | global | 11_Imagenes_API.gs | 72 |  |
 | `INDICE_ARCHIVOS_RE_HUELLAS_` | global | 02_Backstage.gs | 397 |  |
-| `instalarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 122 |  |
+| `instalarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 124 |  |
 | `LETRAS_DIA_GUERRA_` | global | 05_Migrador_Formato.gs | 441 |  |
 | `limpiarDuplicadosJSON` | función | 06_Limpieza_Duplicados_JSON.gs | 73 |  |
 | `LIMPIEZA_DRY_RUN_` | global | 06_Limpieza_Duplicados_JSON.gs | 66 |  |
@@ -260,13 +263,13 @@ Ninguno.
 | `organizarArchivosJSON` | función | 04_Organizador_JSON.gs | 100 |  |
 | `PAREO_TOLERANCIA_MS_` | global | 06_Limpieza_Duplicados_JSON.gs | 417 |  |
 | `probarConexionGithub` | función | 01_Principal.gs | 225 |  |
-| `quitarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 130 |  |
+| `quitarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 132 |  |
 | `README_GENERADOR_NOMBRE_` | global | 09_ReadmeGenerador.gs | 19 |  |
 | `README_LINEA_INICIO_` | global | 09_ReadmeGenerador.gs | 22 |  |
 | `README_MARCA_FIN_` | global | 09_ReadmeGenerador.gs | 21 |  |
 | `README_MARCA_INICIO_` | global | 09_ReadmeGenerador.gs | 20 |  |
 | `reiniciarCachePeriodosJSON` | función | 07_Cache_Periodos_JSON.gs | 77 |  |
-| `revisarDatosDriveAGithubSinSubir` | función | 12_Datos_Drive_GitHub.gs | 98 |  |
+| `revisarDatosDriveAGithubSinSubir` | función | 12_Datos_Drive_GitHub.gs | 100 |  |
 | `subirBaseDesdeGithub` | función | 01_Principal.gs | 76 |  |
 | `subirBaseDesdeGithubForzado` | función | 01_Principal.gs | 81 |  |
 | `subirBaseDesdeGs` | función | 01_Principal.gs | 56 |  |
@@ -279,11 +282,11 @@ Ninguno.
 | `subirContactosDesdeMd` | función | 01_Principal.gs | 199 |  |
 | `subirContactosDesdeTxt` | función | 01_Principal.gs | 187 |  |
 | `subirContactosDesdeZip` | función | 01_Principal.gs | 181 |  |
-| `subirDatosDriveAGithub` | función | 12_Datos_Drive_GitHub.gs | 88 |  |
-| `subirDatosDriveAGithubAuto` | función | 12_Datos_Drive_GitHub.gs | 103 |  |
-| `subirDatosDriveAGithubContinuar` | función | 12_Datos_Drive_GitHub.gs | 112 |  |
-| `subirDatosDriveAGithubForzado` | función | 12_Datos_Drive_GitHub.gs | 93 |  |
-| `subirEvidenciaT05AGithub` | función | 08_GitHub.gs | 838 |  |
+| `subirDatosDriveAGithub` | función | 12_Datos_Drive_GitHub.gs | 90 |  |
+| `subirDatosDriveAGithubAuto` | función | 12_Datos_Drive_GitHub.gs | 105 |  |
+| `subirDatosDriveAGithubContinuar` | función | 12_Datos_Drive_GitHub.gs | 114 |  |
+| `subirDatosDriveAGithubForzado` | función | 12_Datos_Drive_GitHub.gs | 95 |  |
+| `subirEvidenciaT05AGithub` | función | 08_GitHub.gs | 875 |  |
 | `subirGeneradorDesdeGithub` | función | 01_Principal.gs | 149 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
 | `subirGeneradorDesdeGithubForzado` | función | 01_Principal.gs | 154 |  |
 | `subirGeneradorDesdeGs` | función | 01_Principal.gs | 128 |  |

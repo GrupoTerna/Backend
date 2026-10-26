@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 23:44:54 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 26/10/2026 00:08:07 */
 
 
 
@@ -2965,6 +2965,26 @@ function _ghJson_(req) {
   return JSON.parse(_ghRespuesta_(resp, req).getContentText());
 }
 
+// Desde el 25-oct-2026 (§PF278): GitHub frena con HTTP 403 («secondary rate limit») o 429 si se hacen demasiadas
+// escrituras seguidas. _ghJsonReintento_ espera y repite (hasta 3 intentos en total) antes de dejar pasar el error.
+function _ghEsLimiteDeGithub_(e) {
+  var t = String(e);
+  return /HTTP 429/.test(t) || (/HTTP 403/.test(t) && /rate limit/i.test(t));
+}
+function _ghJsonReintento_(req) {
+  for (var intento = 1; ; intento++) {
+    try {
+      return _ghJson_(req);
+    } catch (e) {
+      if (!_ghEsLimiteDeGithub_(e) || intento >= 3) throw e;
+      console.warn('[GitHub] Límite de escrituras; se espera 45 s y se reintenta (intento ' + (intento + 1) + ' de 3).');
+      Utilities.sleep(45000);
+    }
+  }
+}
+// Con más de este número de archivos no se crea un blob por archivo: el contenido va dentro de los árboles, de a este tanto por llamada.
+var GITHUB_ENTRADAS_BLOB_MAX_ = 40;
+
 // -----------------------------------------------------------------------------
 // Aviso de "pull pendiente": no escribir encima de cambios que el Generador no trajo
 // -----------------------------------------------------------------------------
@@ -3324,24 +3344,39 @@ function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje
     if (viejo.replace(reFechaConsolidado, '') === e.content.replace(reFechaConsolidado, '')) e.content = viejo;
   });
 
-  // Un blob por archivo, en lotes paralelos. Si el contenido no cambió,
+  // Pocos archivos: un blob por archivo, en lotes paralelos. Si el contenido no cambió,
   // GitHub devuelve el mismo SHA y ese archivo no figura en el commit.
+  // Muchos archivos (más de GITHUB_ENTRADAS_BLOB_MAX_): el contenido va dentro de los árboles, encadenados
+  // con base_tree, para no pasar del límite de escrituras de GitHub (§PF278).
   var shas = [];
-  for (var i = 0; i < entradas.length; i += 20) {
-    var lote = entradas.slice(i, i + 20);
-    var reqs = lote.map(function(e) {
-      return _ghReq_('post', '/git/blobs', { content: e.content, encoding: 'utf-8' });
-    });
-    var resps = UrlFetchApp.fetchAll(reqs);
-    for (var k = 0; k < resps.length; k++) {
-      shas.push(JSON.parse(_ghRespuesta_(resps[k], reqs[k]).getContentText()).sha);
+  var inline = entradas.length > GITHUB_ENTRADAS_BLOB_MAX_;
+  var baseIntermedia = treeBaseSha;
+  if (inline) {
+    for (var ii = 0; ii < entradas.length; ii += GITHUB_ENTRADAS_BLOB_MAX_) {
+      var trozo = entradas.slice(ii, ii + GITHUB_ENTRADAS_BLOB_MAX_).map(function(e) {
+        return { path: e.path, mode: '100644', type: 'blob', content: e.content };
+      });
+      baseIntermedia = _ghJsonReintento_(_ghReq_('post', '/git/trees', { base_tree: baseIntermedia, tree: trozo })).sha;
+      Utilities.sleep(1000);
+    }
+  } else {
+    for (var i = 0; i < entradas.length; i += 20) {
+      var lote = entradas.slice(i, i + 20);
+      var reqs = lote.map(function(e) {
+        return _ghReq_('post', '/git/blobs', { content: e.content, encoding: 'utf-8' });
+      });
+      var resps = UrlFetchApp.fetchAll(reqs);
+      for (var k = 0; k < resps.length; k++) {
+        shas.push(JSON.parse(_ghRespuesta_(resps[k], reqs[k]).getContentText()).sha);
+      }
     }
   }
 
   var nuevas = {};
-  var items = entradas.map(function(e, idx) {
+  var items = [];
+  entradas.forEach(function(e, idx) {
     nuevas[e.path] = true;
-    return { path: e.path, mode: '100644', type: 'blob', sha: shas[idx] };
+    if (!inline) items.push({ path: e.path, mode: '100644', type: 'blob', sha: shas[idx] });
   });
 
   var borrados = [];
@@ -3359,7 +3394,9 @@ function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje
     });
   }
 
-  var arbolNuevo  = _ghJson_(_ghReq_('post', '/git/trees', { base_tree: treeBaseSha, tree: items }));
+  var arbolNuevo = (inline && !items.length)
+    ? { sha: baseIntermedia }
+    : _ghJsonReintento_(_ghReq_('post', '/git/trees', { base_tree: baseIntermedia, tree: items }));
   if (arbolNuevo.sha === treeBaseSha) {
     return { commit: null, sinCambios: true, archivos: entradas.length, borrados: [] };
   }
@@ -5404,6 +5441,8 @@ function _imgApiCommit_(ctx, entradas, mensaje) {
 // con el total por carpeta (_datosGhLineasPorCarpeta_); el modo revisión lo muestra igual.
 // Desde el 25-oct-2026 (§PF276) si una corrida se queda sin tiempo, la continuación se programa sola (un activador a 1 minuto, que se repite hasta terminar),
 // también cuando se corre a mano o forzada; antes solo lo hacía el activador diario.
+// Desde el 25-oct-2026 (§PF278) si GitHub frena por exceso de escrituras (HTTP 403 «rate limit»/429) la continuación se programa a 10 minutos; y
+// _githubCommitArchivos_ sube el contenido dentro de los árboles cuando son muchos archivos (no un blob por archivo).
 // Sin probar en Apps Script real al escribir este archivo.
 // =============================================================================
 
@@ -5690,11 +5729,21 @@ function _datosDriveAGithub_(op) {
       props.setProperties(nuevas);
       lote = []; bytesLote = 0;
     };
-    porSubir.forEach(function(x) {
-      if (bytesLote + x.bytes > DATOS_GH_LOTE_BYTES_ && lote.length) vaciar();
-      lote.push(x); bytesLote += x.bytes;
-    });
-    vaciar();
+    // §PF278: si GitHub frena por exceso de escrituras (HTTP 403 «rate limit» o 429), no se termina con error:
+    // lo que ya se subió queda hecho, lo del lote que falló no guardó su huella (se repite) y se programa la continuación a 10 minutos.
+    var frenoGithub = false;
+    try {
+      porSubir.forEach(function(x) {
+        if (bytesLote + x.bytes > DATOS_GH_LOTE_BYTES_ && lote.length) vaciar();
+        lote.push(x); bytesLote += x.bytes;
+      });
+      vaciar();
+    } catch (eSubida) {
+      if (!_ghEsLimiteDeGithub_(eSubida)) throw eSubida;
+      frenoGithub = true;
+      pendientes += porSubir.length - subidos - sinCambioGit;   // incluye el lote que falló
+      console.log('GitHub frenó las escrituras por exceso de peticiones: ' + String(eSubida).substring(0, 120));
+    }
 
     var texto = 'Copia a GitHub: ' + subidos + ' archivos subidos' + (commits.length ? ' (commit ' + commits.join(', ') + ')' : '') +
                 ', ' + sinCambioGit + ' ya estaban idénticos en GitHub, ' + sinCambios + ' sin cambios en Drive, ' +
@@ -5710,8 +5759,10 @@ function _datosDriveAGithub_(op) {
     if (pendientes && !op.soloRevisar) {
       olvidar.forEach(function(k) { props.deleteProperty(k); });
       _datosGhQuitarActivadores_(DATOS_GH_HANDLER_SEGUIR_);
-      ScriptApp.newTrigger(DATOS_GH_HANDLER_SEGUIR_).timeBased().after(60 * 1000).create();
-      console.log('Quedaron ' + pendientes + ' archivos por falta de tiempo; se continúa sola en 1 minuto (no hace falta volver a correrla).');
+      var esperaMin = frenoGithub ? 10 : 1;
+      ScriptApp.newTrigger(DATOS_GH_HANDLER_SEGUIR_).timeBased().after(esperaMin * 60 * 1000).create();
+      console.log('Quedaron ' + pendientes + ' archivos ' + (frenoGithub ? 'porque GitHub frenó las escrituras' : 'por falta de tiempo') +
+                  '; se continúa sola en ' + esperaMin + (esperaMin === 1 ? ' minuto' : ' minutos') + ' (no hace falta volver a correrla).');
     }
     return texto;
   } finally {
