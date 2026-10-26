@@ -14,6 +14,10 @@
 //   - Carpeta Seasons: Cache_Seasons.json (respuesta cruda de descargarSeasons(), ids de
 //     temporada de Supercell)  → Datos descargados/JSON/Endpoints/Seasons/
 //   - Backup_Guerra.csv y Backup_Guerra_Logs.csv → Datos descargados/CSV/Hojas/
+//   - Carpeta Individual de RoyaleAPI (JSON por jugador; desde el 25-oct-2026, §PF276): todos los .json
+//     → Datos descargados/JSON/RoyaleAPI/Individual/. Se omiten los nombres con una fecha AAAA-MM-DD pegada
+//     antes del tag (el defecto que corrige _buildHistorialGuerraFilename, §PF275): el repo ya tiene esos
+//     archivos con el nombre limpio y no se quiere repetirlos.
 //   - Carpeta de informes: TODOS los archivos de texto que haya (CSV, TXT, JSON,
 //     MD, PY), también los que cree una función nueva, porque se recorre la
 //     carpeta y no una lista de nombres  → Datos descargados/CSV/Informes/
@@ -41,6 +45,7 @@
 var DATOS_GH_CARPETA_TAMPERMONKEY_ = '1rYAHT0dCpAPFT6BYXDncpuo9ZY780LFt';
 var DATOS_GH_CARPETA_HOJAS_        = '1emYkDZMEzYgO5lwmtY-NMhFc5JJd2I3R';
 var DATOS_GH_CARPETA_INFORMES_     = '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X';
+var DATOS_GH_CARPETA_INDIVIDUAL_   = '1U11RBaJJLdqJST9wJF4z_ExcLE92TjO7';   // = DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL de Base (01_Config_Global.gs)
 var DATOS_GH_CARPETA_SEASONS_      = '1oIMkaJS6ElqXD9Z8xRA5jn0YVaz3l01d';   // = DRIVE_FOLDER_ID_SEASONS de Base (01_Config_Global.gs)
 
 var DATOS_GH_FUENTES_ = [
@@ -57,6 +62,10 @@ var DATOS_GH_FUENTES_ = [
   { carpetaId: DATOS_GH_CARPETA_HOJAS_,
     nombres: ['Backup_Guerra.csv', 'Backup_Guerra_Logs.csv'],
     destino: 'Datos descargados/CSV/Hojas/', maxBytes: 8 * 1024 * 1024 },
+  { carpetaId: DATOS_GH_CARPETA_INDIVIDUAL_,
+    todos: true,
+    omitir: /\d{4}-\d{2}-\d{2} - #/,
+    destino: 'Datos descargados/JSON/RoyaleAPI/Individual/', maxBytes: 1 * 1024 * 1024 },
   { carpetaId: DATOS_GH_CARPETA_INFORMES_,
     todos: true,
     omitir: /^Backup_Guerra ANTES de /i,
