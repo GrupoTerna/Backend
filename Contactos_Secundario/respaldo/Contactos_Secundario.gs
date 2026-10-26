@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 23/10/2026 21:28:41 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 23:46:35 */
 
 
 
@@ -71,6 +71,14 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
 // Motivo: desde sep-2026 el token de Base vive solo en sus Propiedades del
 // script; un token escrito aquí dejó de coincidir y el Web App respondía
 // {"error":"No autorizado"}. Ver LEEME.md de esta carpeta.
+//
+// MODIFICACIÓN (25-oct-2026, hora de Lima; pedido de la usuaria): el registro ahora
+// tiene el mismo nivel de detalle que SincronizarContactosNube() de Base
+// (16_ContactsSync.gs): al final lista, AGRUPADO POR CLAN, quiénes se agregaron y
+// quiénes se eliminaron (con el clan que traía su biografía), y explica en lenguaje
+// simple los contactos que no se pudieron guardar (cuota u otro motivo). También
+// muestra el resumen si la corrida se corta por tiempo (en ese caso NO se borra nada).
+// Ver Contexto_Base_Web.md §PF277.
 // =============================================================================
 
 // _urlContactos_(): arma la URL del Web App con el token, ambos desde las
@@ -84,6 +92,85 @@ function _urlContactos_() {
       '(Configuración del proyecto > Propiedades del script).');
   }
   return base + '?token=' + encodeURIComponent(token);
+}
+
+// _agruparPorClanSec_(lista): agrupa [{nombre, clan}] por clan. Sin clan o 'Sin Clan' van a '__SIN_CLAN__'.
+function _agruparPorClanSec_(lista) {
+  var mapa = {};
+  var orden = [];
+  for (var idx = 0; idx < lista.length; idx++) {
+    var item = lista[idx];
+    var clanKey = (item.clan && String(item.clan).trim() && String(item.clan).trim() !== 'Sin Clan')
+      ? String(item.clan).trim()
+      : '__SIN_CLAN__';
+    if (!mapa[clanKey]) {
+      mapa[clanKey] = [];
+      orden.push(clanKey);
+    }
+    mapa[clanKey].push(item.nombre);
+  }
+  return { mapa: mapa, orden: orden };
+}
+
+// _logResumenSecundario_(resumen): escribe el resumen por clan (agregados y eliminados) y, si hubo fallos, su explicación.
+// resumen = { creados: [{nombre, clan}], eliminados: [{nombre, clan}], fallidos: [{nombre, clan, motivo}], noEliminados: [..] }
+function _logResumenSecundario_(resumen) {
+  var aGrp = _agruparPorClanSec_(resumen.creados);
+  var eGrp = _agruparPorClanSec_(resumen.eliminados);
+
+  // Unión de clanes reales (sin duplicar), en orden alfabético.
+  var clanesReales = [];
+  var vistos = {};
+  [aGrp.orden, eGrp.orden].forEach(function(orden) {
+    orden.forEach(function(c) {
+      if (c !== '__SIN_CLAN__' && !vistos[c]) {
+        vistos[c] = true;
+        clanesReales.push(c);
+      }
+    });
+  });
+  clanesReales.sort();
+
+  var agSinClan = aGrp.mapa['__SIN_CLAN__'] || [];
+  var elSinClan = eGrp.mapa['__SIN_CLAN__'] || [];
+
+  Logger.log('--- Resumen de cambios por clan ---');
+  if (clanesReales.length === 0 && agSinClan.length === 0 && elSinClan.length === 0) {
+    Logger.log('No hubo contactos agregados ni eliminados en esta ejecución.');
+  } else {
+    clanesReales.forEach(function(clan) {
+      var ag = aGrp.mapa[clan] || [];
+      var el = eGrp.mapa[clan] || [];
+      if (ag.length > 0) Logger.log('[' + clan + '] Agregados: ' + ag.join(', '));
+      if (el.length > 0) Logger.log('[' + clan + '] Eliminados: ' + el.join(', '));
+    });
+    if (agSinClan.length > 0) Logger.log('[Sin clan identificado] Agregados: ' + agSinClan.join(', '));
+    if (elSinClan.length > 0) Logger.log('[Sin clan identificado] Eliminados: ' + elSinClan.join(', '));
+  }
+
+  if (resumen.noEliminados && resumen.noEliminados.length > 0) {
+    Logger.log('--- Contactos obsoletos que NO se pudieron eliminar ---');
+    Logger.log('Google no dejó borrar ' + resumen.noEliminados.length + ' contacto(s) que ya no vienen de la Web App: ' +
+      resumen.noEliminados.join(', ') + '. Siguen en la cuenta; se reintenta en la próxima sincronización.');
+  }
+
+  if (resumen.fallidos.length > 0) {
+    Logger.log('--- Por qué algunos contactos no se pudieron sincronizar ---');
+    Logger.log('Hubo ' + resumen.fallidos.length + ' contacto(s) que no se pudieron guardar en Google Contacts ' +
+      'en esta ejecución: ' + resumen.fallidos.map(function(f) { return f.nombre; }).join(', ') + '.');
+    var porCuota = resumen.fallidos.filter(function(f) { return f.motivo === 'cuota'; }).length;
+    var porOtro = resumen.fallidos.length - porCuota;
+    if (porCuota > 0) {
+      Logger.log(porCuota + ' por la cuota de Google: la cuenta solo puede crear o modificar una cierta cantidad de ' +
+        'contactos por minuto, y con muchos jugadores sincronizándose de una vez es normal alcanzar ese límite.');
+    }
+    if (porOtro > 0) {
+      Logger.log(porOtro + ' por otro motivo (no fue la cuota): puede ser un dato con formato que Google Contacts no acepta, ' +
+        'o un problema temporal de Google. El motivo exacto está en la línea «No se pudo sincronizar el contacto» de más arriba.');
+    }
+    Logger.log('Estos jugadores NO se eliminan ni se pierden por este motivo: solo quedaron pendientes de ' +
+      'actualizar y se corrigen solos en la próxima sincronización.');
+  }
 }
 
 function SincronizarDesdeWebAPI() {
@@ -151,6 +238,8 @@ function SincronizarDesdeWebAPI() {
     if (tagItem && g.tags.indexOf(tagItem) < 0) g.tags.push(tagItem);
     if (codigoClanItem !== null && g.codigosClan.indexOf(codigoClanItem) < 0) g.codigosClan.push(codigoClanItem);
   }
+
+  Logger.log('[SecundarioSync] Total números de teléfono únicos a procesar: ' + Object.keys(grupos).length);
 
   // 3. Caché de Etiquetas (ContactGroups) en el Correo Secundario
   var groupMap = {};
@@ -223,11 +312,15 @@ function SincronizarDesdeWebAPI() {
   // 5. Crear o Actualizar en la cuenta secundaria
   var creados = 0;
   var actualizados = 0;
-  var fallidos = [];
+  // Acumuladores para el resumen por clan del final (mismo esquema que Base).
+  var resumen = { creados: [], actualizados: [], eliminados: [], fallidos: [], noEliminados: [] };
 
   for (var phone in grupos) {
     if (Date.now() - startTime > MAX_TIME) {
-      Logger.log('[SecundarioSync] Tiempo límite alcanzado. Guardando lo avanzado.');
+      Logger.log('[SecundarioSync] Tiempo límite alcanzado. Guardando lo avanzado. No se elimina ningún contacto en esta ejecución.');
+      Logger.log('[SecundarioSync] Procesados -> Creados: ' + creados + ', Actualizados: ' + actualizados);
+      _logResumenSecundario_(resumen);
+      Logger.log('[SecundarioSync] Sincronización incompleta (por tiempo) tras ' + (Date.now() - startTime) + ' ms.');
       return;
     }
 
@@ -266,6 +359,7 @@ function SincronizarDesdeWebAPI() {
         personObj.etag = etag;
         People.People.updateContact(personObj, resourceName, { updatePersonFields: 'names,phoneNumbers,biographies,memberships' });
         actualizados++;
+        resumen.actualizados.push({ nombre: contactName, clan: g.clan });
         // NOTA: ya NO se borra "existingContacts[phone]" aquí a propósito.
         // Antes se hacía para poder detectar huérfanos más adelante, pero
         // eso es justo lo que causaba que un fallo de escritura terminara
@@ -276,6 +370,7 @@ function SincronizarDesdeWebAPI() {
       } else {
         People.People.createContact(personObj);
         creados++;
+        resumen.creados.push({ nombre: contactName, clan: g.clan });
       }
     } catch(e) {
       // Detecta cualquier variante de error de cuota, no solo '429' literal:
@@ -294,9 +389,11 @@ function SincronizarDesdeWebAPI() {
             if (existingContacts[phone]) {
               People.People.updateContact(personObj, existingContacts[phone].resourceName, { updatePersonFields: 'names,phoneNumbers,biographies,memberships' });
               actualizados++;
+              resumen.actualizados.push({ nombre: contactName, clan: g.clan });
             } else {
               People.People.createContact(personObj);
               creados++;
+              resumen.creados.push({ nombre: contactName, clan: g.clan });
             }
             reintentoOk = true;
           } catch(e2) {
@@ -307,7 +404,7 @@ function SincronizarDesdeWebAPI() {
                 'actualizar por minuto (cuota de escritura), y ese límite se alcanzó. Esto NO ' +
                 'significa que el jugador se haya perdido: solo quedó pendiente de actualizar y ' +
                 'debería corregirse solo en la próxima sincronización. No se elimina por este motivo.');
-              fallidos.push(contactName);
+              resumen.fallidos.push({ nombre: contactName, clan: g.clan, motivo: 'cuota' });
             }
           }
         }
@@ -315,7 +412,7 @@ function SincronizarDesdeWebAPI() {
         Logger.log('[SecundarioSync] No se pudo sincronizar el contacto "' + contactName + '". Motivo: ' + msg +
           '. No fue un problema de cuota: puede ser un dato con formato inválido o un problema ' +
           'temporal de Google. Tampoco se elimina por este motivo.');
-        fallidos.push(contactName);
+        resumen.fallidos.push({ nombre: contactName, clan: g.clan, motivo: 'otro' });
       }
     }
   }
@@ -336,18 +433,32 @@ function SincronizarDesdeWebAPI() {
 
   var eliminados = 0;
   for (var oi = 0; oi < orphanPhones.length; oi++) {
+    var orphanPhone = orphanPhones[oi];
+    var personOrfano = existingContacts[orphanPhone];
+    var nombreOrfano = (personOrfano.names && personOrfano.names[0] &&
+      (personOrfano.names[0].displayName || personOrfano.names[0].givenName)) || orphanPhone;
+    var bioOrfano = (personOrfano.biographies && personOrfano.biographies[0]) ? personOrfano.biographies[0].value : '';
+    var clanMatch = bioOrfano.match(/CLAN:\s*(.+)/);
+    var clanOrfano = clanMatch ? clanMatch[1].trim() : '';
+
     try {
-      People.People.deleteContact(existingContacts[orphanPhones[oi]].resourceName);
+      People.People.deleteContact(personOrfano.resourceName);
       eliminados++;
-    } catch(e) {}
+      resumen.eliminados.push({ nombre: nombreOrfano, clan: clanOrfano });
+    } catch(e) {
+      resumen.noEliminados.push(nombreOrfano + (clanOrfano ? ' (' + clanOrfano + ')' : ''));
+    }
   }
 
-  if (fallidos.length > 0) {
-    Logger.log('[SecundarioSync] ' + fallidos.length + ' contacto(s) no se pudieron sincronizar en esta ' +
-      'ejecución (ver detalle arriba). No fueron eliminados: ' + fallidos.join(', ') + '.');
+  if (eliminados > 0) {
+    Logger.log('[SecundarioSync] Eliminados (inactivos antiguos): ' + eliminados);
   }
 
-  Logger.log('[SecundarioSync] Proceso terminado con éxito.');
+  // Resumen amigable, agrupado por clan: qué se agregó y qué se eliminó (igual que Base).
+  _logResumenSecundario_(resumen);
+
   Logger.log('[SecundarioSync] Resultados -> Creados: ' + creados + ', Actualizados: ' + actualizados + ', Eliminados obsoletos: ' + eliminados);
+  Logger.log('[SecundarioSync] Sincronización completada en ' + (Date.now() - startTime) + ' ms.');
 }
+
 
