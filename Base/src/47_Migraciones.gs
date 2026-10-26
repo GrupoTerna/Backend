@@ -53,6 +53,46 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   function () { return _reenumerarTokensSemanasTorneos_(); },
 ];
 
+// PF269 (25-oct-2026): qué hace cada paso y qué se espera al terminarlo; _ejecutarPorTandas lo imprime («Ejecutando paso N/M: …»). MISMO ORDEN que PASOS_REENUMERAR_TEMPORADAS (si se añade un paso, añadir su texto al final).
+var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
+  'Backup_Guerra.csv: suma el delta a la columna Temporada de cada fila → todas las filas con la numeración nueva',
+  'Backup_Guerra_Logs.csv: suma el delta a Temporada → todas las filas con la numeración nueva',
+  'Hoja Guerra: suma el delta a Temporada (solo esa columna) → todas las filas con la numeración nueva',
+  'Hoja Guerra_Logs: suma el delta a Temporada → todas las filas con la numeración nueva',
+  'Hoja T_Lista (datos desde la fila 3): suma el delta a Temporada → torneos con la numeración nueva',
+  'Backup_T_Lista.csv: suma el delta a Temporada → copia igual a la hoja',
+  'Hoja T_Asistencia: suma el delta a Temporada → asistencia con la numeración nueva',
+  'Backup_T_Asistencia.csv: suma el delta a Temporada → copia igual a la hoja',
+  'Hoja Calendario_2: suma el delta a Temporada (columna 3) → calendario con la numeración nueva',
+  'Backup_Calendario_2.csv: suma el delta a Temporada → copia igual a la hoja',
+  'Correcciones_Guerra.csv: suma el delta a Temporada y reconstruye la clave, el ID y las columnas de RoyaleAPI y Supercell → overlay coherente con la hoja Guerra',
+  'Hoja S_Lista (datos desde la fila 3): suma el delta a Temporada → sorteos con la numeración nueva',
+  'Backup_S_Lista.csv: suma el delta a Temporada → copia igual a la hoja',
+  'Hoja S_Asistencia: suma el delta a Temporada → asistencia de sorteos con la numeración nueva',
+  'Backup_S_Asistencia.csv: suma el delta a Temporada → copia igual a la hoja',
+  'Hoja CR_Lista (datos desde la fila 4): suma el delta a Temporada → registros de cambio de rango con la numeración nueva',
+  'Backup_CR_Lista.csv: suma el delta a Temporada → copia igual a la hoja',
+  'Revision_Guerra.csv: suma el delta a Temporada (columna 3) → revisiones sin duplicarse',
+  'Correcciones_RiverRace_Pendientes.csv: suma el delta a Temporada → cola alineada con la hoja Guerra',
+  'HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida',
+  'HistorialGuerra_Grupal.csv: suma el delta a TemporadaInterna → todas las filas con la numeración nueva',
+  'Hoja Alertas_HistorialGuerra: suma el delta a Temporada interna → alertas con la numeración nueva',
+  'Alertas_HistorialGuerra.csv: suma el delta a Temporada interna → copia igual a la hoja',
+  'Informes CSV de CSV/Informes y CSV/Tampermonkey: suma el delta a la columna Temporada y recalcula ID → todos los informes con columna Temporada actualizados',
+  'Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados',
+  'Finalizar: cambia la Ref y el offset de RoyaleAPI, sube la versión de la caché del cruce de meta y mueve NUEVOS_CIERRE_SEMANA_T<n> → numeración nueva activa',
+  'Historial_I/S, Historial_A/D y Comentarios: recalcula Temporada, Semana y Día desde la Fecha (no suma delta) → columnas con la numeración nueva',
+  'Fichas T<n>_S<m> de la columna Semanas de T_Lista, S_Lista y CR_Lista y sus Backup_*.csv: suma el delta → fichas apuntando a la semana correcta'
+];
+
+// _reenumProgreso_(nombre, previas, estaTanda, total, unidad): PF269; dos líneas de progreso al estilo de /players: acumulado (tandas anteriores + esta) de total, y lo hecho en esta tanda.
+function _reenumProgreso_(nombre, previas, estaTanda, total, unidad) {
+  var acum = previas + estaTanda;
+  var pct = total > 0 ? Math.round(acum * 100 / total) : 100;
+  Logger.log('[Reenumeración]   ' + nombre + ': acumulado ' + acum + ' de ' + total + ' ' + unidad + ' (' + pct + ' %); en tandas anteriores: ' + previas + '; faltan ' + Math.max(total - acum, 0) + '.');
+  Logger.log('[Reenumeración]   ' + nombre + ': en esta tanda: ' + estaTanda + ' ' + unidad + '.');
+}
+
 // ----- Funciones manuales / punto de entrada -----
 
 // =============================================================================
@@ -741,7 +781,7 @@ function _continuarReenumerarTemporadas() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('REENUM_PASO') || '0', 10);
   Logger.log(paso === 0 ? '[Reenumeración] INICIO' : '[Reenumeración] CONTINÚA desde el paso ' + paso + '/' + PASOS_REENUMERAR_TEMPORADAS.length);
   try {
-    var completo = _ejecutarPorTandas('REENUM', PASOS_REENUMERAR_TEMPORADAS, CFG.REENUM_TANDA_PRESUPUESTO_MS, '_continuarReenumerarTemporadas');
+    var completo = _ejecutarPorTandas('REENUM', PASOS_REENUMERAR_TEMPORADAS, CFG.REENUM_TANDA_PRESUPUESTO_MS, '_continuarReenumerarTemporadas', NOMBRES_PASOS_REENUMERAR_TEMPORADAS);
     if (completo) {
       PropertiesService.getScriptProperties().deleteProperty('REENUM_DELTA_MESES');
       PropertiesService.getScriptProperties().deleteProperty('REENUM_NUEVA_REF');
@@ -802,15 +842,16 @@ function _reenumerarCSV(filename, colMap, totalCols, colTemporada) {
       // progreso ni tener que recalcular desde cero en la continuación.
       _saveCSVToDrive(filename, _encodeCSV([encabezado].concat(filas)));
       props.setProperty(claveIdx, String(i + 1));
-      Logger.log('[Reenumeración] ' + filename + ': presupuesto interno agotado tras la fila ' +
-                 (i + 1) + '/' + filas.length + '. Se reintenta el mismo paso en la próxima continuación.');
+      Logger.log('[Reenumeración] ' + filename + ': presupuesto interno agotado. Se reintenta el mismo paso en la próxima continuación.');
+      _reenumProgreso_(filename, idxInicio, i + 1 - idxInicio, filas.length, 'filas');
       return false;
     }
   }
 
   _saveCSVToDrive(filename, _encodeCSV([encabezado].concat(filas)));
   props.deleteProperty(claveIdx);
-  Logger.log('[Reenumeración] ' + filename + ': ' + filas.length + ' fila(s) actualizadas (Temporada += ' + deltaMeses + ').');
+  Logger.log('[Reenumeración] ' + filename + ': terminado (Temporada += ' + deltaMeses + ').');
+  _reenumProgreso_(filename, idxInicio, filas.length - idxInicio, filas.length, 'filas');
   return true;
 }
 
@@ -929,11 +970,13 @@ function _reenumerarInformesCSV() {
     }
     props.setProperty(claveIdx, String(i + 1));
     if ((i + 1) < lista.length && _reenumSinTiempo_(inicio)) {
-      Logger.log('[Reenumeración] Informes: presupuesto agotado tras ' + (i + 1) + '/' + lista.length + ' archivo(s). Se reintenta en la próxima continuación.');
+      Logger.log('[Reenumeración] Informes: presupuesto agotado. Se reintenta en la próxima continuación.');
+      _reenumProgreso_('Informes', idxInicio, i + 1 - idxInicio, lista.length, 'archivos');
       return false;
     }
   }
   props.deleteProperty(claveIdx);
+  _reenumProgreso_('Informes', idxInicio, lista.length - idxInicio, lista.length, 'archivos');
   Logger.log('[Reenumeración] Informes: ' + lista.length + ' archivo(s) en la carpeta (cambiados en esta pasada: ' + cambiados + ' con ' + filasSumadas + ' fila(s), ya hechos: ' + yaHechos +
              ', sin columna Temporada o sin filas enteras: ' + sinColumna + ', con error: ' + errores + ') (Temporada += ' + deltaMeses + ').');
   return true;
@@ -991,11 +1034,13 @@ function _reenumerarHistorialGuerraIndividual() {
     }
     props.setProperty(claveIdx, String(i + 1));
     if ((i + 1) < archivos.length && _reenumSinTiempo_(inicio)) {
-      Logger.log('[Reenumeración] HistorialGuerra individual: presupuesto agotado tras ' + (i + 1) + '/' + archivos.length + ' archivo(s). Se reintenta en la próxima continuación.');
+      Logger.log('[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.');
+      _reenumProgreso_('HistorialGuerra individual', idxInicio, i + 1 - idxInicio, archivos.length, 'archivos');
       return false;
     }
   }
   props.deleteProperty(claveIdx);
+  _reenumProgreso_('HistorialGuerra individual', idxInicio, archivos.length - idxInicio, archivos.length, 'archivos');
   Logger.log('[Reenumeración] HistorialGuerra individual: ' + archivos.length + ' archivo(s) revisados en esta corrida de la carpeta (cambiados en esta pasada: ' + cambiados +
              ', ya hechos: ' + yaHechos + ', omitidos: ' + omitidos + ') (temporadaInterna += ' + deltaMeses + ').');
   return true;
@@ -1043,7 +1088,8 @@ function _reenumerarNombresJsonDrive() {
       var rf = _reenumRenombrarItem_(f, reRaiz, delta, runId);
       if (rf === 1) cambiados++; else if (rf === -1) saltadosNegativo++;
       if (_reenumSinTiempo_(inicio)) {
-        Logger.log('[Reenumeración] JSON Drive: presupuesto agotado en la carpeta ' + (i + 1) + '/' + carpetas.length + ' (renombrados en esta pasada: ' + cambiados + '). Se reintenta en la próxima continuación.');
+        Logger.log('[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: ' + cambiados + '). Se reintenta en la próxima continuación.');
+        _reenumProgreso_('JSON Drive', idxInicio, i - idxInicio, carpetas.length, 'carpetas');
         props.setProperty(claveIdx, String(i)); // esta carpeta se vuelve a mirar; los ya marcados se saltan
         return false;
       }
@@ -1055,6 +1101,7 @@ function _reenumerarNombresJsonDrive() {
     props.setProperty(claveIdx, String(i + 1));
   }
   props.deleteProperty(claveIdx);
+  _reenumProgreso_('JSON Drive', idxInicio, carpetas.length - idxInicio, carpetas.length, 'carpetas');
   Logger.log('[Reenumeración] JSON Drive: ' + carpetas.length + ' carpeta(s) recorridas (renombrados en esta pasada: ' + cambiados + ', sin renombrar por quedar negativos: ' + saltadosNegativo + ') (T-NN += ' + delta + ').');
   return true;
 }
@@ -1111,7 +1158,8 @@ function _reenumerarHistorialGuerraGrupalCSV() {
       n++;
     }
     _saveHistorialGuerraGrupalCSV(_encodeCSV(filas));
-    Logger.log('[Reenumeración] HistorialGuerra_Grupal.csv: ' + n + ' fila(s) actualizadas (TemporadaInterna += ' + deltaMeses + ').');
+    Logger.log('[Reenumeración] HistorialGuerra_Grupal.csv: terminado (TemporadaInterna += ' + deltaMeses + ').');
+    _reenumProgreso_('HistorialGuerra_Grupal.csv', 0, n, filas.length - 1, 'filas');
     return true;
   } finally {
     lock.releaseLock();
@@ -1142,7 +1190,8 @@ function _reenumerarHoja(sheetName, colMap, totalCols, colTemporada, filaInicio)
   }
   rango.setValues(columna);
 
-  Logger.log('[Reenumeración] Hoja ' + sheetName + ': ' + columna.length + ' fila(s) actualizadas (Temporada += ' + deltaMeses + ').');
+  Logger.log('[Reenumeración] Hoja ' + sheetName + ': terminado (Temporada += ' + deltaMeses + ').');
+  _reenumProgreso_('Hoja ' + sheetName, 0, columna.length, columna.length, 'filas');
 }
 
 // _reenumerarCalendario2Hoja(): caso especial de _reenumerarHoja(); Calendario_2 no tiene mapa CC; Temporada en la columna 3. [→ Contexto_Base_Web.md §47B030]
@@ -1166,7 +1215,8 @@ function _reenumerarCalendario2Hoja() {
   }
   rangoTemp.setValues(data);
 
-  Logger.log('[Reenumeración] Hoja ' + CFG.SHEETS.CALENDARIO2 + ': ' + data.length + ' fila(s) actualizadas (Temporada += ' + deltaMeses + ').');
+  Logger.log('[Reenumeración] Hoja ' + CFG.SHEETS.CALENDARIO2 + ': terminado (Temporada += ' + deltaMeses + ').');
+  _reenumProgreso_('Hoja ' + CFG.SHEETS.CALENDARIO2, 0, data.length, data.length, 'filas');
 }
 
 // _reenumerarTokensSemanasTexto_(texto, deltaMeses): PF268; función pura. En una lista «T3_S1,T3_S2» suma deltaMeses al número de temporada de cada ficha; lo que no tenga esa forma queda igual. Devuelve {texto, cambiados, saltados} (saltados = fichas que quedarían con temporada negativa).
@@ -1237,7 +1287,8 @@ function _reenumerarTokensSemanasTorneos_() {
       }
     }
     props.setProperty(clave, runId);
-    Logger.log('[Reenumeración] Fichas «Semanas» de ' + dest.nombre + ': ' + cambiados + ' ficha(s) actualizada(s) (T += ' + delta + ')' + (saltados ? ', ' + saltados + ' sin tocar por quedar negativas' : '') + '.');
+    Logger.log('[Reenumeración] Fichas «Semanas» de ' + dest.nombre + ': terminado (T += ' + delta + ')' + (saltados ? ', ' + saltados + ' sin tocar por quedar negativas' : '') + '.');
+    _reenumProgreso_('Fichas «Semanas» de ' + dest.nombre + ' (destino ' + (d + 1) + ' de ' + destinos.length + ')', 0, cambiados, cambiados, 'fichas');
   }
   return true;
 }
@@ -1265,7 +1316,8 @@ function _reenumerarCorreccionesGuerraCSV() {
   }
 
   _guardarOverlayCorreccionesGuerra(mapaNuevo);
-  Logger.log('[Reenumeración] Correcciones_Guerra.csv: ' + claves.length + ' clave(s) reenumeradas (Temporada += ' + deltaMeses + ').');
+  Logger.log('[Reenumeración] Correcciones_Guerra.csv: terminado (Temporada += ' + deltaMeses + ').');
+  _reenumProgreso_('Correcciones_Guerra.csv (claves)', 0, claves.length, claves.length, 'claves');
   return true;
 }
 
