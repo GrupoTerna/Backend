@@ -1,0 +1,58 @@
+{
+  "tag": "#VCGPQQGR2",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "22/10/2026",
+  "registros": [
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 5,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 4,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 3,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 2,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    }
+  ],
+  "reenumeracionId": "1792970500096"
+}
