@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 18:28:17 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 19:18:46 */
 
 
 
@@ -1050,6 +1050,7 @@ function _continuarProcesarSorteos() {
  * runSincronizarContactos() - Sincroniza Google Contacts con el Directorio.
  */
 function runSincronizarContactos() {
+  if (_bloquearSiReenumerando_('runSincronizarContactos')) return; // PF260
   // VENTANA DE GUERRA PROTEGIDA (05-oct-2026): se penso que este disparo diario caia a las 4:xx a.m. Lima (atHour(9) [→ Contexto_Base_Web.md §B107]
   if (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
     Logger.log('[Contactos] OMITIDO: ventana de guerra protegida (4:00-5:00 a.m. Lima). Se ejecuta en su proximo horario.');
@@ -1255,6 +1256,7 @@ function _runGuerraColaHoraria_(t0) {
  * [→ Contexto_Base_Web.md §PF143]
  */
 function _continuarRunGuerraCola() {
+  if (_bloquearSiReenumerando_('_continuarRunGuerraCola')) return; // PF260
   var props = PropertiesService.getScriptProperties();
   _borrarTriggersDeContinuacion('_continuarRunGuerraCola');
   if (!props.getProperty('RUNGUERRA_COLA_PENDIENTE')) {
@@ -1374,6 +1376,7 @@ function runCalendario() {
  * runResaltarDia() - Resalta el día actual en el Calendario.
  */
 function runResaltarDia() {
+  if (_bloquearSiReenumerando_('runResaltarDia')) return; // PF260
   Logger.log('[Calendario] Resaltando día actual...');
 
   // FIX (13-ago-2026, pedido del usuario): "el calendario trae la fecha [→ Contexto_Base_Web.md §B119]
@@ -1395,6 +1398,7 @@ function runSyncPlantillas() {
  * runFormato() - Aplica formato global bajo demanda o por trigger diario.
  */
 function runFormato() {
+  if (_bloquearSiReenumerando_('runFormato')) return; // PF260
   Logger.log('[Formato] Ejecutando aplicarFormatoGlobal...');
   aplicarFormatoGlobal();
   Logger.log('[Formato] Completado.');
@@ -1613,7 +1617,22 @@ function _liberarLockSiNoEsRunGuerra_() {
   } catch (e) { /* propiedad corrupta: se deja como esta */ }
 }
 
+// _reenumeracionEnCurso_(): PF260 (25-oct-2026); true si hay una reenumeración de temporadas sin terminar (REENUM_PASO guardado). Mientras sea true NO debe correr nada que lea o escriba numeración propia: una corrida a medias mezclaría la numeración vieja y la nueva.
+function _reenumeracionEnCurso_() {
+  return PropertiesService.getScriptProperties().getProperty('REENUM_PASO') !== null;
+}
+
+// _bloquearSiReenumerando_(nombreFn): PF260; devuelve true (y lo anota en el log) si hay reenumeración en curso; el llamador debe salir sin hacer nada. No toma ni libera ningún lock.
+function _bloquearSiReenumerando_(nombreFn) {
+  if (!_reenumeracionEnCurso_()) return false;
+  Logger.log('[Reenumeración] ' + nombreFn + '(): NO se ejecuta, hay una reenumeración de temporadas en curso (REENUM_PASO = ' +
+    PropertiesService.getScriptProperties().getProperty('REENUM_PASO') + '). Se retoma sola cuando termine.');
+  return true;
+}
+
 function _adquirirLockEjecucion(nombreFn) {
+  // PF260: con una reenumeración en curso solo pueden tomar el lock las funciones de la propia reenumeración (runGuerra incluida: escribiría con numeración mezclada).
+  if (nombreFn !== 'runReenumerarTemporadas' && nombreFn !== 'reanudarReenumerarTemporadas' && _bloquearSiReenumerando_(nombreFn)) return false;
   // VENTANA DE GUERRA PROTEGIDA (05-oct-2026): fuera de runGuerra() nada puede empezar desde
   // CFG.VENTANA_GUERRA_PRE_MARGEN_MIN minutos antes de las 4:00 a.m. Lima hasta las 5:00 a.m.
   if (nombreFn !== 'runGuerra' && CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
@@ -1679,7 +1698,18 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   var props = PropertiesService.getScriptProperties();
 
   // VENTANA DE GUERRA PROTEGIDA (05-oct-2026): una continuacion programada antes de la ventana no debe [→ Contexto_Base_Web.md §B136]
-  if (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
+  // PF260: una cadena que NO es la reenumeración se descarta mientras haya reenumeración en curso; y la reenumeración NUNCA se aborta por la ventana de guerra
+  // (abortar borraba REENUM_PASO y obligaba a empezar de cero, sumando el delta dos veces).
+  if (idEjecucion !== 'REENUM' && _reenumeracionEnCurso_()) {
+    Logger.log('[' + idEjecucion + '] DESCARTADA: hay una reenumeración de temporadas en curso. La próxima corrida normal empieza de cero cuando termine.');
+    props.deleteProperty(idEjecucion + '_PASO');
+    props.deleteProperty(idEjecucion + '_REINTENTO');
+    props.deleteProperty(idEjecucion + '_SIN_API');
+    props.deleteProperty(idEjecucion + '_SIN_API_TS');
+    _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
+    return false;
+  }
+  if (idEjecucion !== 'REENUM' && CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
     Logger.log('[' + idEjecucion + '] ABORTADA: la ventana de guerra protegida (4:00-5:00 a.m. Lima, mas ' +
       CFG.VENTANA_GUERRA_PRE_MARGEN_MIN + ' min previos) esta activa. Se descarta el avance y la continuacion ' +
       'pendiente; la proxima corrida normal empieza de cero despues de las 5:00 a.m.');
@@ -29105,6 +29135,7 @@ var _HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG = null;
  * resolverAlertasHistorialGuerra() [→ Contexto_Base_Web.md §20B010]
  */
 function resolverAlertasHistorialGuerra() {
+  if (_bloquearSiReenumerando_('resolverAlertasHistorialGuerra')) return; // PF260
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA);
   if (!sh) {
@@ -34697,6 +34728,7 @@ function _comentarioCRAutogenerado_(org) {
  * _autogenerarParCRListaSiCorrespondeInicioTemporada() [→ Contexto_Base_Web.md §26B024]
  */
 function _autogenerarParCRListaSiCorrespondeInicioTemporada() {
+  if (_bloquearSiReenumerando_('_autogenerarParCRListaSiCorrespondeInicioTemporada')) return; // PF260
   // PF208 (24-oct-2026, pedido de la usuaria): la fila planificada de Cambio de Rango se crea AL INICIAR EL MES (la temporada vigente), con
   // Fecha = primer lunes de la temporada SIGUIENTE y Semanas = TODAS las semanas de la temporada ACTUAL. Antes solo actuaba el primer lunes
   // de la temporada, fechaba el par con el día de la corrida y evaluaba la temporada anterior: si ese día no corría el activador, no se
@@ -52919,6 +52951,12 @@ function _testTamanioGuerraEnVivoUna_(admin) {
 
 // doPost(e): router POST del Web App (webhook de Cloud API de WhatsApp, acciones web* del portal y endpoints Tampermonkey); el envío real a graph.facebook.com necesita token y Phone Number ID. El bot hoy está inactivo (sin chip), código conservado. [→ Contexto_Base_Web.md §38B070]
 function doPost(e) {
+  // PF260 (25-oct-2026): con una reenumeración de temporadas en curso, doPost no escribe nada (Tampermonkey, correcciones, administración web): grabaría con numeración mezclada. Login y logout siguen.
+  if (_reenumeracionEnCurso_() && !(e && e.parameter && (e.parameter.accion === 'webLogin' || e.parameter.accion === 'webAuthLogout'))) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: false, error: 'Se están reenumerando las temporadas del sistema. Vuelve a intentarlo en unos minutos.', reenumeracion: true, code: 503 }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   // Portal web público (login, gestión de miembro; ver 37_Web_API.gs) se resuelve ANTES que los demás accion=. Rate limit de POST web* (30-ago-2026; FIX B-30, 18-sep-2026): se aplica antes de cualquier webXxx; el sessionToken viaja en el body JSON, se intenta parsear para contar en el bucket admin; si no es JSON (ej. webLogin) cuenta como público. [→ Contexto_Base_Web.md §38B071]
   if (e && e.parameter && typeof e.parameter.accion === 'string' && e.parameter.accion.indexOf('web') === 0) {
     var esAdminValidoPost = false;
@@ -58984,6 +59022,8 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   // PF258 (25-oct-2026, etapa C, tanda 4): informes y respaldos con fecha en CSV/Informes y CSV/Tampermonkey. Se detecta la columna por encabezado EXACTO
   // «Temporada»/«temporada» (no toca Temporada_2, Temporada RoyaleAPI, Temporada Supercell ni Id_RoyaleAPI); si el informe trae la columna ID, se recalcula.
   function () { return _reenumerarInformesCSV(); },
+  // PF260 (25-oct-2026): nombres de los JSON de Drive (Endpoints, Anomalías, Otros; incluye los clanes bloqueados como NARANJA x). Va ANTES de _finalizarReenumeracion() para no mover los índices de los pasos anteriores.
+  function () { return _reenumerarNombresJsonDrive(); },
   function () { _finalizarReenumeracion(); },
 ];
 
@@ -59333,6 +59373,7 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
   props.setProperty('REENUM_RUN_ID', String(Date.now())); // PF257: marca de esta corrida dentro de los JSON de HistorialGuerra (evita sumar dos veces)
   props.deleteProperty('REENUM_HG_IDX');
   props.deleteProperty('REENUM_INF_IDX'); // PF258: índice del paso de informes
+  props.deleteProperty('REENUM_JSON_IDX'); // PF260: índice del paso de nombres de JSON
 
   Logger.log('[Reenumeración] Ref vieja: ' + refVieja.toDateString() +
              ' | Ref nueva: ' + refNueva.toDateString() +
@@ -59412,11 +59453,11 @@ function _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna) {
   return masAntigua;
 }
 
-// _buscarFechaMasAntiguaTernaEnCorreccionesGuerra(): fuente 3 de la detección (§PF253, 25-oct-2026); devuelve Date o null.
-// Recorre Correcciones_Guerra.csv y se queda con las filas cuyo CLAN (por TAG, no por nombre) es de los clanes Terna (CFG.TERNA_TAGS); la fila de perfil de un clan externo no cuenta (_cgwPerfilEsExterno_()).
-// La fecha de cada fila sale de su Temporada y Semana internas (Semana desde 1): primer lunes de la temporada + (semana - 1) * 7 días. Una fila sin enlace de clan (clanTag vacío) NO cuenta aquí: espera a la corrida de correcciones completas (§PF252).
-// Solo lee; si el CSV no existe o no tiene filas devuelve null.
-function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
+// _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_(): §PF259 (25-oct-2026); semana más antigua de Correcciones_Guerra.csv con un clan Terna CONFIRMADO. Devuelve { temporada, semana, clanTag, via, fecha, filasTerna, perfilesSinClan } o null.
+// Cuenta (1) una fila con ClanTag de CFG.TERNA_TAGS (Log o Analytics) y (2) la fila del perfil de RoyaleAPI (sin ClanTag) cuyo «Clan RoyaleAPI» es de CFG.TERNA_TAGS (via = 'perfil'): es el caso de las semanas
+// anteriores al sistema, que solo se conocen por el perfil del jugador. NO cuenta la fila de perfil de un clan externo ni la de perfil sin clan conocido (se informa en perfilesSinClan). «fecha» = lunes de esa semana (primer lunes de la
+// temporada + (semana - 1) * 7). Compara por (temporada, semana) propias, que son las que usa el overlay. Solo lee.
+function _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_() {
   var overlay;
   try {
     overlay = _cargarOverlayCorreccionesGuerraPorClan();
@@ -59432,34 +59473,82 @@ function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
     ternaSet[_normalizarClanTagCorreccion(CFG.TERNA_TAGS[t])] = true;
   }
 
-  var ref = CFG.REF_DEFAULT;
-  var fechaPorSemana = {};
-  var masAntigua = null;
+  var mejor = null, filasTerna = 0, perfilesSinClan = 0;
   for (var i = 0; i < claves.length; i++) {
     var p = claves[i].split('|'); // temporada | semana | clantag | tag
-    var clanTag = p[2];
-    if (!clanTag || !ternaSet[clanTag]) continue;
-    if (_cgwPerfilEsExterno_(overlay[claves[i]])) continue;
-
+    var e = overlay[claves[i]];
     var temporada = Number(p[0]);
     var semana = Number(p[1]);
-    if (!temporada || !semana || semana < 1) continue;
+    if (isNaN(temporada) || !semana || semana < 1) continue;
 
-    var ck = temporada + '|' + semana;
-    var fecha = fechaPorSemana[ck];
-    if (fecha === undefined) {
-      var pl = primerLunesTemporada(ref, temporada);
-      if (pl && !isNaN(pl.getTime())) {
-        fecha = new Date(pl.getTime());
-        fecha.setDate(fecha.getDate() + (semana - 1) * 7);
-      } else {
-        fecha = null;
-      }
-      fechaPorSemana[ck] = fecha;
+    var clanTag = p[2], via = '';
+    if (clanTag) {
+      if (!ternaSet[clanTag]) continue;
+      via = 'clan';
+    } else {
+      var clanPerfil = e && e.clanPerfil ? _normalizarClanTagCorreccion(e.clanPerfil) : '';
+      if (!clanPerfil) { perfilesSinClan++; continue; }
+      if (!ternaSet[clanPerfil]) continue; // perfil de clan externo
+      clanTag = clanPerfil;
+      via = 'perfil';
     }
-    if (fecha && (!masAntigua || fecha < masAntigua)) masAntigua = fecha;
+    filasTerna++;
+    if (!mejor || temporada < mejor.temporada || (temporada === mejor.temporada && semana < mejor.semana)) {
+      mejor = { temporada: temporada, semana: semana, clanTag: clanTag, via: via };
+    }
   }
-  return masAntigua;
+  if (!mejor) return null;
+
+  var pl = primerLunesTemporada(CFG.REF_DEFAULT, mejor.temporada);
+  mejor.fecha = (pl && !isNaN(pl.getTime())) ? new Date(pl.getTime()) : null;
+  if (mejor.fecha) mejor.fecha.setDate(mejor.fecha.getDate() + (mejor.semana - 1) * 7);
+  mejor.filasTerna = filasTerna;
+  mejor.perfilesSinClan = perfilesSinClan;
+  return mejor;
+}
+
+// _buscarFechaMasAntiguaTernaEnCorreccionesGuerra(): fuente 3 de la detección (§PF253, 25-oct-2026; §PF259: ahora cuenta también el perfil con clan Terna); devuelve Date o null. Usa _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_().
+function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
+  var r = _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_();
+  return r && r.fecha ? r.fecha : null;
+}
+
+// sugerirFechaRefDesdeCorreccionesGuerra(): §PF259 (25-oct-2026); MANUAL, solo sugiere (no reenumera). Lee la semana más antigua con clan Terna de Correcciones_Guerra.csv y dice la fecha EXACTA que se escribe en iniciarReenumerarTemporadas().
+// La fecha es el primer lunes del mes Supercell de esa temporada: T1 pasa a ser esa temporada. Si ya hay una reenumeración a medias (REENUM_PASO) NO calcula: el CSV puede estar a medias y la fecha saldría mal.
+// Si después aparece un registro más antiguo, se vuelve a correr y da la fecha nueva; la reenumeración suma meses hacia atrás a toda Temporada guardada. Guarda la sugerencia para ejecutarReenumeracionSugerida().
+function sugerirFechaRefDesdeCorreccionesGuerra() {
+  var props = PropertiesService.getScriptProperties();
+  var pasoPendiente = props.getProperty('REENUM_PASO');
+  if (pasoPendiente !== null) {
+    Logger.log('[Sugerir fecha Ref] NO se calculó: hay una reenumeración sin terminar (REENUM_PASO = ' + pasoPendiente + '). Termínala con reanudarReenumerarTemporadas() y vuelve a correr esta función.');
+    return;
+  }
+  var r = _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_();
+  if (!r || !r.fecha) {
+    Logger.log('[Sugerir fecha Ref] No hay ninguna fila de Correcciones_Guerra.csv con un clan Terna confirmado (por ClanTag o por «Clan RoyaleAPI» del perfil). Nada que sugerir.');
+    return;
+  }
+  var tz = Session.getScriptTimeZone() || 'GMT-5';
+  var ref = CFG.REF_DEFAULT;
+  var offset = _getTemporadaOffsetRoyaleApi();
+  var plTemporada = primerLunesTemporada(ref, r.temporada);
+  var fechaStr = Utilities.formatDate(plTemporada, tz, 'yyyy-MM-dd');
+  var supercell = Utilities.formatDate(plTemporada, tz, 'yyyy-MM');
+  var royaleApi = r.temporada + offset;
+  var deltaMeses = (ref.getFullYear() * 12 + ref.getMonth()) - (plTemporada.getFullYear() * 12 + plTemporada.getMonth());
+  var resumen = 'Registro más antiguo con clan Terna: semana RoyaleAPI ' + royaleApi + '-' + r.semana + ' (temporada Supercell ' + supercell + '; propia hoy T' + r.temporada + ' S' + r.semana +
+    '), clan ' + r.clanTag + ', leído del ' + (r.via === 'perfil' ? 'perfil del jugador' : 'log/analytics del clan') + '. Filas con clan Terna: ' + r.filasTerna +
+    (r.perfilesSinClan ? '. Perfiles sin clan conocido (no cuentan): ' + r.perfilesSinClan : '') + '. ';
+
+  if (deltaMeses <= 0) {
+    Logger.log('[Sugerir fecha Ref] ' + resumen + 'La Ref actual (' + Utilities.formatDate(ref, tz, 'yyyy-MM-dd') + ') ya es igual o más antigua: no hace falta reenumerar por este archivo.');
+    return;
+  }
+  props.setProperty('REENUM_SUGERENCIA_FECHA', fechaStr);
+  props.setProperty('REENUM_SUGERENCIA_FUENTE', 'Correcciones_Guerra.csv, semana RoyaleAPI ' + royaleApi + '-' + r.semana);
+  Logger.log('[Sugerir fecha Ref] ' + resumen + 'FECHA A ESCRIBIR en iniciarReenumerarTemporadas(): ' + fechaStr + ' (primer lunes del mes de la temporada ' + supercell + '). Suma ' + deltaMeses +
+    ' mes(es) a toda Temporada guardada; el offset de RoyaleAPI pasa de ' + offset + ' a ' + (offset - deltaMeses) + ' (T1 = RoyaleAPI ' + royaleApi + '). ' +
+    'Esta función SOLO sugiere. Sugerencia guardada: también sirve ejecutarReenumeracionSugerida().');
 }
 
 // _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna): fuente 2 de la detección; recorre los bloques de fecha de la hoja Nuevos. [→ Contexto_Base_Web.md §47B025]
@@ -59867,6 +59956,96 @@ function _reenumerarHistorialGuerraIndividual() {
   Logger.log('[Reenumeración] HistorialGuerra individual: ' + archivos.length + ' archivo(s) revisados en esta corrida de la carpeta (cambiados en esta pasada: ' + cambiados +
              ', ya hechos: ' + yaHechos + ', omitidos: ' + omitidos + ') (temporadaInterna += ' + deltaMeses + ').');
   return true;
+}
+
+// _reenumerarNombresJsonDrive(): PF260 (25-oct-2026); suma REENUM_DELTA_MESES al número de temporada que llevan en el NOMBRE los archivos y carpetas de JSON de Drive: archivos «T-NN  S-NN P.I-NN… - clans.json» (y currentriverrace) y carpetas «T-NN» de cada clan, incluidos los clanes
+// bloqueados (por ejemplo NARANJA x: se recorren todas las subcarpetas, no solo CFG.TERNA_TAGS). Raíces: DRIVE_FOLDER_ID_ENDPOINTS y, dentro de DRIVE_FOLDER_ID_JSON, las carpetas «Anomalías» y «Otros». Solo cambia el número; fecha, hora, semana y P.I. quedan igual.
+// Reanudable y sin sumar dos veces: recorre las carpetas en un orden fijo (por ID) y guarda en REENUM_JSON_IDX cuántas ya terminó; cada archivo o carpeta lleva en su descripción una marca por corrida (ANTES:<nombre viejo> y luego OK), así que un corte entre renombrar y marcar no duplica la suma.
+// Devuelve false si se agotó el presupuesto (se reintenta). Las descripciones que tuvieran esos archivos se reemplazan por la marca. Sin probar en Apps Script real.
+function _reenumerarNombresJsonDrive() {
+  var props = PropertiesService.getScriptProperties();
+  var delta = Number(props.getProperty('REENUM_DELTA_MESES'));
+  var runId = props.getProperty('REENUM_RUN_ID') ||
+    (props.getProperty('REENUM_NUEVA_REF') + '|' + props.getProperty('REENUM_OFFSET_VIEJO') + '|' + delta);
+  var claveIdx = 'REENUM_JSON_IDX';
+
+  var raices = [];
+  try { raices.push(DriveApp.getFolderById(DRIVE_FOLDER_ID_ENDPOINTS)); }
+  catch (e) { Logger.log('[Reenumeración] JSON Drive: carpeta Endpoints no accesible (' + e.message + ').'); }
+  try {
+    var jsonRaiz = DriveApp.getFolderById(DRIVE_FOLDER_ID_JSON);
+    var nombresExtra = ['Anomalías', 'Otros'];
+    for (var n = 0; n < nombresExtra.length; n++) {
+      var itN = jsonRaiz.getFoldersByName(nombresExtra[n]);
+      if (itN.hasNext()) raices.push(itN.next());
+    }
+  } catch (e2) { Logger.log('[Reenumeración] JSON Drive: carpeta JSON no accesible (' + e2.message + ').'); }
+
+  var carpetas = [];
+  for (var r = 0; r < raices.length; r++) _listarCarpetasOrdenadas_(raices[r], carpetas);
+
+  var idxInicio = parseInt(props.getProperty(claveIdx) || '0', 10);
+  if (idxInicio >= carpetas.length) idxInicio = 0;
+  var inicio = Date.now();
+  var reRaiz = /^T-(\d+)(\s[\s\S]*)$/;  // archivos: «T-05  S-02 P.I-07-L 13-09-2026 12.26 - Clan - clans.json»
+  var reCarpeta = /^T-(\d+)$/;           // carpetas de temporada dentro de la carpeta del clan
+  var cambiados = 0, saltadosNegativo = 0;
+
+  for (var i = idxInicio; i < carpetas.length; i++) {
+    var carpeta = carpetas[i];
+    var it = carpeta.getFiles();
+    while (it.hasNext()) {
+      var f = it.next();
+      if (!reRaiz.test(f.getName())) continue;
+      var rf = _reenumRenombrarItem_(f, reRaiz, delta, runId);
+      if (rf === 1) cambiados++; else if (rf === -1) saltadosNegativo++;
+      if ((Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
+        Logger.log('[Reenumeración] JSON Drive: presupuesto agotado en la carpeta ' + (i + 1) + '/' + carpetas.length + ' (renombrados en esta pasada: ' + cambiados + '). Se reintenta en la próxima continuación.');
+        props.setProperty(claveIdx, String(i)); // esta carpeta se vuelve a mirar; los ya marcados se saltan
+        return false;
+      }
+    }
+    if (reCarpeta.test(carpeta.getName())) {
+      var rc = _reenumRenombrarItem_(carpeta, reCarpeta, delta, runId);
+      if (rc === 1) cambiados++; else if (rc === -1) saltadosNegativo++;
+    }
+    props.setProperty(claveIdx, String(i + 1));
+  }
+  props.deleteProperty(claveIdx);
+  Logger.log('[Reenumeración] JSON Drive: ' + carpetas.length + ' carpeta(s) recorridas (renombrados en esta pasada: ' + cambiados + ', sin renombrar por quedar negativos: ' + saltadosNegativo + ') (T-NN += ' + delta + ').');
+  return true;
+}
+
+// _listarCarpetasOrdenadas_(carpeta, salida): PF260; agrega la carpeta y, en profundidad, sus subcarpetas ordenadas por ID (el orden no cambia al renombrar).
+function _listarCarpetasOrdenadas_(carpeta, salida) {
+  salida.push(carpeta);
+  var hijas = [];
+  var it = carpeta.getFolders();
+  while (it.hasNext()) hijas.push(it.next());
+  hijas.sort(function (a, b) { var x = a.getId(), y = b.getId(); return x < y ? -1 : (x > y ? 1 : 0); });
+  for (var i = 0; i < hijas.length; i++) _listarCarpetasOrdenadas_(hijas[i], salida);
+}
+
+// _reenumRenombrarItem_(item, regex, delta, runId): PF260; renombra un archivo o carpeta sumando delta al número de temporada (grupo 1 de regex; grupo 2 = resto del nombre). Devuelve 1 si lo renombró, 0 si ya estaba hecho, -1 si el número quedaría negativo.
+function _reenumRenombrarItem_(item, regex, delta, runId) {
+  var nombre = item.getName();
+  var m = regex.exec(nombre);
+  if (!m) return 0;
+  var ok = 'REENUM:' + runId + ':OK';
+  var pre = 'REENUM:' + runId + ':ANTES:';
+  var desc = item.getDescription() || '';
+  if (desc === ok) return 0;
+  if (desc.indexOf(pre) === 0) {
+    // Se cortó entre renombrar y marcar: si el nombre ya no es el que se anotó, ya estaba renombrado.
+    if (nombre !== desc.substring(pre.length)) { item.setDescription(ok); return 0; }
+  } else {
+    item.setDescription(pre + nombre);
+  }
+  var nuevoNumero = Number(m[1]) + delta;
+  if (nuevoNumero < 0) { item.setDescription(''); return -1; }
+  item.setName('T-' + _pad2_(nuevoNumero) + (m[2] || ''));
+  item.setDescription(ok);
+  return 1;
 }
 
 // _reenumerarHistorialGuerraGrupalCSV(): PF257; suma REENUM_DELTA_MESES a TemporadaInterna (columna 3) de HistorialGuerra_Grupal.csv, que vive en la carpeta Grupal (no en CSV/Informes); lectura y escritura con las funciones de 20_HistorialGuerraJugador.gs.
