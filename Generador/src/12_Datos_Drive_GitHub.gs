@@ -41,6 +41,8 @@
 // con el total por carpeta (_datosGhLineasPorCarpeta_); el modo revisión lo muestra igual.
 // Desde el 25-oct-2026 (§PF276) si una corrida se queda sin tiempo, la continuación se programa sola (un activador a 1 minuto, que se repite hasta terminar),
 // también cuando se corre a mano o forzada; antes solo lo hacía el activador diario.
+// Desde el 25-oct-2026 (§PF278) si GitHub frena por exceso de escrituras (HTTP 403 «rate limit»/429) la continuación se programa a 10 minutos; y
+// _githubCommitArchivos_ sube el contenido dentro de los árboles cuando son muchos archivos (no un blob por archivo).
 // Sin probar en Apps Script real al escribir este archivo.
 // =============================================================================
 
@@ -327,11 +329,21 @@ function _datosDriveAGithub_(op) {
       props.setProperties(nuevas);
       lote = []; bytesLote = 0;
     };
-    porSubir.forEach(function(x) {
-      if (bytesLote + x.bytes > DATOS_GH_LOTE_BYTES_ && lote.length) vaciar();
-      lote.push(x); bytesLote += x.bytes;
-    });
-    vaciar();
+    // §PF278: si GitHub frena por exceso de escrituras (HTTP 403 «rate limit» o 429), no se termina con error:
+    // lo que ya se subió queda hecho, lo del lote que falló no guardó su huella (se repite) y se programa la continuación a 10 minutos.
+    var frenoGithub = false;
+    try {
+      porSubir.forEach(function(x) {
+        if (bytesLote + x.bytes > DATOS_GH_LOTE_BYTES_ && lote.length) vaciar();
+        lote.push(x); bytesLote += x.bytes;
+      });
+      vaciar();
+    } catch (eSubida) {
+      if (!_ghEsLimiteDeGithub_(eSubida)) throw eSubida;
+      frenoGithub = true;
+      pendientes += porSubir.length - subidos - sinCambioGit;   // incluye el lote que falló
+      console.log('GitHub frenó las escrituras por exceso de peticiones: ' + String(eSubida).substring(0, 120));
+    }
 
     var texto = 'Copia a GitHub: ' + subidos + ' archivos subidos' + (commits.length ? ' (commit ' + commits.join(', ') + ')' : '') +
                 ', ' + sinCambioGit + ' ya estaban idénticos en GitHub, ' + sinCambios + ' sin cambios en Drive, ' +
@@ -347,8 +359,10 @@ function _datosDriveAGithub_(op) {
     if (pendientes && !op.soloRevisar) {
       olvidar.forEach(function(k) { props.deleteProperty(k); });
       _datosGhQuitarActivadores_(DATOS_GH_HANDLER_SEGUIR_);
-      ScriptApp.newTrigger(DATOS_GH_HANDLER_SEGUIR_).timeBased().after(60 * 1000).create();
-      console.log('Quedaron ' + pendientes + ' archivos por falta de tiempo; se continúa sola en 1 minuto (no hace falta volver a correrla).');
+      var esperaMin = frenoGithub ? 10 : 1;
+      ScriptApp.newTrigger(DATOS_GH_HANDLER_SEGUIR_).timeBased().after(esperaMin * 60 * 1000).create();
+      console.log('Quedaron ' + pendientes + ' archivos ' + (frenoGithub ? 'porque GitHub frenó las escrituras' : 'por falta de tiempo') +
+                  '; se continúa sola en ' + esperaMin + (esperaMin === 1 ? ' minuto' : ' minutos') + ' (no hace falta volver a correrla).');
     }
     return texto;
   } finally {
