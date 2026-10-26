@@ -467,11 +467,11 @@ function diagnosticoInactivosVsCSV() {
 function syncAcumulativosCSV() {
   // FASE 6 (05-ago-2026, cierre del plan de migración Plantillas -> Menú): [→ Contexto_Base_Web.md §05B035]
   var acumulativos = [
-    { sheetName: CFG.SHEETS.COMENTARIOS,  fileName: 'Backup_Comentarios.csv',   numCols: 10, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
+    { sheetName: CFG.SHEETS.COMENTARIOS,  fileName: 'Backup_Comentarios.csv',   numCols: COMENTARIOS_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
     { sheetName: CFG.SHEETS.CALENDARIO2,  fileName: 'Backup_Calendario_2.csv',  numCols: 6,  hasFecha: true,  fechaCol: 2, protegerFechas: true },
     { sheetName: CFG.SHEETS.GUERRA_LOGS,  fileName: 'Backup_Guerra_Logs.csv',   numCols: GUERRA_LOGS_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: GLC.FECHA, protegerFechas: true }, // TANDA 1 (20-sep-2026): 22 -> 25 (ProgressEarned/NumOfDefensesRemaining/ProgressEarnedFromDefenses). Antes de FASE 13: 21 -> 22 (EndOfDayRank). Con numCols fijo el CSV NO guardaría las columnas nuevas: ahora sigue a la constante
     // protegerFechas:true (28-sep-2026, extendido a todas las hojas con Fecha): no se [→ Contexto_Base_Web.md §05B036]
-    { sheetName: CFG.SHEETS.HISTORIAL,    fileName: 'Backup_Historial_I-S.csv',     numCols: 7,  hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
+    { sheetName: CFG.SHEETS.HISTORIAL,    fileName: 'Backup_Historial_I-S.csv',     numCols: HISTORIAL_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
     { sheetName: CFG.SHEETS.ASCENSOS,     fileName: 'Backup_Historial_A-D.csv',      numCols: ASCENSOS_TOTAL_COLS, hasFecha: true, fechaCol: ASC.FECHA, fechaColConHoraForzada: ASC.FECHA, protegerFechas: true },
     // Histórico de Guerra por jugador (20_HistorialGuerraJugador.gs) — [→ Contexto_Base_Web.md §05B037]
     { sheetName: CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA, fileName: 'Alertas_HistorialGuerra.csv',
@@ -523,10 +523,10 @@ function importarAcumulativosDesdeCSV() {
   var ss = _getSs();
   var acumulativos = [
     // FASE 6 (05-ago-2026): ver comentario equivalente en syncAcumulativosCSV() [→ Contexto_Base_Web.md §05B040]
-    { sheetName: CFG.SHEETS.COMENTARIOS,  fileName: 'Backup_Comentarios.csv',   numCols: 10, hasFecha: true,  fechaCol: 2 },
+    { sheetName: CFG.SHEETS.COMENTARIOS,  fileName: 'Backup_Comentarios.csv',   numCols: COMENTARIOS_TOTAL_COLS, hasFecha: true,  fechaCol: 2 },
     { sheetName: CFG.SHEETS.CALENDARIO2,  fileName: 'Backup_Calendario_2.csv',  numCols: 6,  hasFecha: true,  fechaCol: 2 },
     { sheetName: CFG.SHEETS.GUERRA_LOGS,  fileName: 'Backup_Guerra_Logs.csv',   numCols: GUERRA_LOGS_TOTAL_COLS, hasFecha: true,  fechaCol: 2 }, // TANDA 1 (20-sep-2026): 22 -> 25 (ver syncAcumulativosCSV); un CSV viejo de 22 columnas se restaura por NOMBRE de encabezado y las 3 nuevas quedan vacías
-    { sheetName: CFG.SHEETS.HISTORIAL,    fileName: 'Backup_Historial_I-S.csv',     numCols: 7,  hasFecha: true,  fechaCol: 2 },
+    { sheetName: CFG.SHEETS.HISTORIAL,    fileName: 'Backup_Historial_I-S.csv',     numCols: HISTORIAL_TOTAL_COLS, hasFecha: true,  fechaCol: 2 },
     { sheetName: CFG.SHEETS.ASCENSOS,     fileName: 'Backup_Historial_A-D.csv',      numCols: ASCENSOS_TOTAL_COLS, hasFecha: true, fechaCol: ASC.FECHA },
      // FASE 4 (25-ago-2026, corrige interpretación anterior): Vetados ahora [→ Contexto_Base_Web.md §05B041]
      { sheetName: CFG.SHEETS.VETADOS,      fileName: 'Backup_Vetados.csv',       numCols: VETADOS_TOTAL_COLS, hasFecha: true, fechaCol: VC.FECHA },

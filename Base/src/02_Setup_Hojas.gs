@@ -424,7 +424,7 @@ function _pintarEncabezadosControl(sh) {
   sh.getRange(1, 1, 2, 3).setBorder(false, false, false, false, false, false);
 }
 
-// Historial: N°|Fecha|Tag|Nombre|Movimiento|Clan|ClanTag (7 columnas) - Nombre = nombre en juego del jugador [→ Contexto_Base_Web.md §02B038]
+// Historial: N°|Fecha|Tag|Nombre|Movimiento|Clan|ClanTag (7 columnas propias + 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267) - Nombre = nombre en juego del jugador [→ Contexto_Base_Web.md §02B038]
 function _setupHistorial(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.HISTORIAL);
   var headers = ['N°','Fecha','Tag','Nombre','Movimiento','Clan','ClanTag'];
@@ -432,7 +432,10 @@ function _setupHistorial(ss) {
     sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   }
   applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Historial OK');
+  // 26-oct-2026 (pedido de la usuaria, §PF267): 5 columnas más al final (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día), calculadas desde Fecha.
+  // Se completan también las filas que ya existían (la hoja puede venir de antes de este cambio).
+  _completarTSDEnHoja_(sh, 2, HISTORIAL_TSD_COL);
+  Logger.log('[Setup] Historial OK (12 cols)');
 }
 
 function _setupPendientes(ss) {
@@ -501,7 +504,9 @@ function _setupComentarios(ss) {
   var headers = ['N°','Fecha','Tag','Nombre','Nom_Multi','ClanTag','Clan','Rango','Líder','Comentario'];
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Comentarios OK (10 cols)');
+  // 26-oct-2026 (pedido de la usuaria, §PF267): 5 columnas más al final (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día), calculadas desde Fecha.
+  _completarTSDEnHoja_(sh, CMC.FECHA, CMC.TSD);
+  Logger.log('[Setup] Comentarios OK (15 cols)');
 }
 
 function _setupInactivos(ss) {
@@ -589,7 +594,7 @@ function _setupLinks(ss) {
   Logger.log('[Setup] Links OK (14 cols)');
 }
 
-// Ascensos (hoja física "Historial_A/D", ver CFG.SHEETS.ASCENSOS): 18 [→ Contexto_Base_Web.md §02B052]
+// Ascensos (hoja física "Historial_A/D", ver CFG.SHEETS.ASCENSOS): 18 (más 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267) [→ Contexto_Base_Web.md §02B052]
 function _setupAscensosSheet(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.ASCENSOS);
   // FASE 5 (13-sep-2026, pedido del usuario, plan de Cambio de Rango): se [→ Contexto_Base_Web.md §02B053]
@@ -600,7 +605,9 @@ function _setupAscensosSheet(ss) {
   applyHeaderStyle(sh, headers.length);
   sh.setColumnWidth(8, 180);   // Fecha
   sh.setColumnWidth(17, 260);  // Comentario
-  Logger.log('[Setup] Ascensos OK (18 cols)');
+  // 26-oct-2026 (pedido de la usuaria, §PF267): 5 columnas más al final (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día), calculadas desde Fecha.
+  _completarTSDEnHoja_(sh, ASC.FECHA, ASC.TSD);
+  Logger.log('[Setup] Ascensos OK (23 cols)');
 }
 
 function _setupAdministradores(ss) {

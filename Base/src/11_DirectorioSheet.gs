@@ -57,10 +57,12 @@ var VETADOS_COLS_AUTOSYNC = VC.RAZON; // hasta esta columna inclusive (1..10)
 // Índices de columna (1-based) de la hoja "Comentarios" — ver [→ Contexto_Base_Web.md §11B006]
 var CMC = {
   NUM:1, FECHA:2, TAG:3, NOMBRE:4, NOM_MULTI:5, CLAN_TAG:6, CLAN:7, RANGO:8,
-  LIDER:9, COMENTARIO:10
+  LIDER:9, COMENTARIO:10,
+  // 26-oct-2026 (pedido de la usuaria, §PF267): primera de las 5 columnas calculadas desde Fecha (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día); ver _completarTSDEnHoja_() en 24_Historial_Ascensos.gs.
+  TSD:11
 };
 
-var COMENTARIOS_TOTAL_COLS = 10;
+var COMENTARIOS_TOTAL_COLS = 15;
 
 // ----- Funciones manuales / punto de entrada -----
 
@@ -448,6 +450,7 @@ function moverComentarioFila(sh, row) {
   filaCMC[CMC.COMENTARIO - 1] = comentario;
   shCom.appendRow(filaCMC);
   _setDateCell(shCom, shCom.getLastRow(), CMC.FECHA, now, 'dddd, d "de" mmmm"," yyyy h:mm:ss am/pm');
+  _escribirTSDEnFilaHoja_(shCom, shCom.getLastRow(), CMC.TSD, now); // 26-oct-2026 (§PF267)
   sh.getRange(row, IC.COMENTARIO).clearContent();
 }
 

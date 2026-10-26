@@ -10,9 +10,34 @@
 // Orden jerárquico de rangos (usa la MISMA ortografía que mapRol() en [→ Contexto_Base_Web.md §24B002]
 var RANGO_ORDEN = ['Miembro', 'Veterano', 'Colíder', 'Líder'];
 
-
+// COLUMNAS Temporada / Semana / Día EN Historial_I/S, Historial_A/D Y Comentarios (26-oct-2026, pedido de la usuaria; [→ Contexto_Base_Web.md §PF267]).
+// Son 5 columnas AL FINAL de cada hoja (no se mueven las existentes, que se leen por posición), calculadas SIEMPRE desde la columna Fecha:
+// Temporada (interna), Temporada RoyaleAPI, Temporada Supercell (AAAA-MM), Semana y Día (nombre del día de la semana).
+var TSD_ENCABEZADOS = ['Temporada', 'Temporada RoyaleAPI', 'Temporada Supercell', 'Semana', 'Día'];
+var TSD_DIAS_ES_ = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']; // índice = Date.getDay()
+var HISTORIAL_TOTAL_COLS = 12; // Historial_I/S: 7 columnas propias + 5 de TSD
+var HISTORIAL_TSD_COL = 8;     // primera columna de TSD en Historial_I/S
 
 // ----- Funciones manuales / punto de entrada -----
+
+/**
+ * completarTemporadaSemanaDiaHojas() — proyecto Base. Rellena (o recalcula) las 5 columnas Temporada / Temporada RoyaleAPI / Temporada Supercell / Semana / Día
+ * en Historial_I/S, Historial_A/D y Comentarios a partir de la Fecha de cada fila. Se puede correr las veces que haga falta (es idempotente). [→ Contexto_Base_Web.md §PF267]
+ */
+function completarTemporadaSemanaDiaHojas() {
+  var ss = _getSs();
+  var plan = [
+    { nombre: CFG.SHEETS.HISTORIAL,   colFecha: 2,          colTsd: HISTORIAL_TSD_COL },
+    { nombre: CFG.SHEETS.ASCENSOS,    colFecha: ASC.FECHA,  colTsd: ASC.TSD },
+    { nombre: CFG.SHEETS.COMENTARIOS, colFecha: CMC.FECHA,  colTsd: CMC.TSD }
+  ];
+  for (var i = 0; i < plan.length; i++) {
+    var sh = ss.getSheetByName(plan[i].nombre);
+    if (!sh) { Logger.log('[TSD] La hoja "' + plan[i].nombre + '" no existe, se omite.'); continue; }
+    var r = _completarTSDEnHoja_(sh, plan[i].colFecha, plan[i].colTsd);
+    Logger.log('[TSD] ' + plan[i].nombre + ': ' + r.filas + ' fila(s) revisadas, ' + r.sinFecha + ' sin Fecha válida, ' + r.sinTemporada + ' sin temporada calculable.');
+  }
+}
 
 /**
  * limpiarDuplicadosHistorial() [→ Contexto_Base_Web.md §24B003]
@@ -111,6 +136,9 @@ function limpiarDuplicadosHistorial() {
         .setBackground(null);
     } catch(e) {}
   }
+
+  // 26-oct-2026 (§PF267): la reescritura solo cubre las 7 columnas propias; Temporada / Semana / Día se recalculan desde Fecha (también limpia las de las filas que sobraron).
+  _completarTSDEnHoja_(sh, 2, HISTORIAL_TSD_COL);
 
   Logger.log('[Limpieza Historial] Eliminados ' + eliminados + ' registros duplicados (sin cambio real de estado entre medio).');
 }
@@ -211,6 +239,99 @@ function updateAscensosSheet(ss, dirData) {
 }
 
 // ----- Funciones internas / helpers -----
+
+/**
+ * _tsdDesdeFecha_(fecha, offset, ref) [→ Contexto_Base_Web.md §PF267]
+ * Devuelve [temporada interna, temporada RoyaleAPI, temporada Supercell, semana, día] para una Fecha, o 5 vacíos si la fecha no es válida.
+ * Usa el DÍA CALENDARIO (se descarta la hora): así un registro del lunes a las 15:00 sigue siendo lunes. Misma cuenta que _fechaATemporadaSemana()
+ * (14_Nuevos_RoyaleAPI.gs: mes efectivo, primer lunes de la temporada, semana = día desde ese lunes / 7 + 1), pero SIN descartar las fechas anteriores a T1:
+ * dan temporada 0 o negativa, igual que Correcciones_Guerra.csv (§PF247). `offset` (RoyaleAPI - propia) se puede pasar ya leído para no leer
+ * PropertiesService por fila (§PF242); lo mismo vale para `ref` (CFG.REF_DEFAULT también lee PropertiesService en cada acceso): en un bucle por filas se leen
+ * una vez y se pasan los dos.
+ */
+function _tsdDesdeFecha_(fecha, offset, ref) {
+  var vacio = ['', '', '', '', ''];
+  if (!(fecha instanceof Date) || isNaN(fecha.getTime())) return vacio;
+  if (ref === undefined) ref = CFG.REF_DEFAULT;
+  if (!ref || isNaN(ref.getTime())) return vacio;
+
+  var dia = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+  var anio = dia.getFullYear();
+  var mes  = dia.getMonth();
+  if (dia < primerLunesDelMes(anio, mes)) { // antes del primer lunes del mes: pertenece a la temporada del mes anterior
+    mes--;
+    if (mes < 0) { mes = 11; anio--; }
+  }
+  var temporada = calcTemporadaDesdeMesEfectivo(ref, { anio: anio, mes: mes });
+  var pl = primerLunesTemporada(ref, temporada); // con temporada <= 0 el mes sale negativo y Date lo normaliza al año anterior
+  if (!pl || isNaN(pl.getTime())) return vacio;
+  var periodIndex = Math.round((dia.getTime() - pl.getTime()) / 86400000);
+  if (periodIndex < 0) return vacio; // red de seguridad, no debería pasar tras el ajuste de mes efectivo
+
+  var off = (offset === undefined) ? _getTemporadaOffsetRoyaleApi() : offset;
+  return [
+    temporada,
+    _cgwTemporadaRoyaleApiTexto_(temporada, off),
+    _cgwTemporadaSupercellTexto_(temporada, off),
+    Math.floor(periodIndex / 7) + 1,
+    TSD_DIAS_ES_[dia.getDay()]
+  ];
+}
+
+/**
+ * _completarTSDEnHoja_(sh, colFecha, colTsd) [→ Contexto_Base_Web.md §PF267]
+ * Asegura los 5 encabezados en colTsd..colTsd+4 y recalcula TODAS las filas de datos desde la Fecha (columna colFecha) en una sola escritura.
+ * Es idempotente: sirve igual después de reordenar la hoja, de reenumerar temporadas (cambia la Ref y el offset) o de editar una Fecha a mano.
+ * La columna de Temporada Supercell se fuerza a texto ('@'): sin eso Sheets convierte "2026-05" en una fecha.
+ * Devuelve { filas, sinFecha, sinTemporada }.
+ */
+function _completarTSDEnHoja_(sh, colFecha, colTsd) {
+  var n = TSD_ENCABEZADOS.length;
+  var res = { filas: 0, sinFecha: 0, sinTemporada: 0 };
+  if (!sh) return res;
+
+  var ultimaCol = colTsd + n - 1;
+  if (sh.getMaxColumns() < ultimaCol) sh.insertColumnsAfter(sh.getMaxColumns(), ultimaCol - sh.getMaxColumns());
+  sh.getRange(1, colTsd, 1, n).setValues([TSD_ENCABEZADOS]);
+  applyHeaderStyle(sh, ultimaCol);
+
+  var lastRow = sh.getLastRow();
+  if (lastRow < 2) return res;
+
+  var numFilas = lastRow - 1;
+  var fechas = sh.getRange(2, colFecha, numFilas, 1).getValues();
+  var offset = _getTemporadaOffsetRoyaleApi(); // una sola lectura (§PF242)
+  var refTemporadas = CFG.REF_DEFAULT;         // idem: el getter lee PropertiesService en cada acceso
+  var valores = [];
+  for (var i = 0; i < numFilas; i++) {
+    var f = fechas[i][0];
+    var v = _tsdDesdeFecha_(f, offset, refTemporadas);
+    if (!(f instanceof Date) || isNaN(f.getTime())) res.sinFecha++;
+    else if (v[0] === '') res.sinTemporada++;
+    valores.push(v);
+  }
+
+  try { sh.getRange(2, colTsd + 2, Math.max(sh.getMaxRows() - 1, numFilas), 1).setNumberFormat('@'); } catch (eFmt) {}
+  var rng = sh.getRange(2, colTsd, numFilas, n);
+  rng.setValues(valores);
+  applyBorderCenter(rng);
+  res.filas = numFilas;
+  return res;
+}
+
+/**
+ * _escribirTSDEnFilaHoja_(sh, fila, colTsd, fecha) [→ Contexto_Base_Web.md §PF267]
+ * Escribe las 5 columnas de una sola fila (las hojas a las que solo se agregan filas al final: Comentarios). La de Supercell se pone como texto antes de escribir.
+ */
+function _escribirTSDEnFilaHoja_(sh, fila, colTsd, fecha) {
+  try {
+    var v = _tsdDesdeFecha_(fecha);
+    try { sh.getRange(fila, colTsd + 2).setNumberFormat('@'); } catch (eFmt) {}
+    sh.getRange(fila, colTsd, 1, v.length).setValues([v]);
+  } catch (e) {
+    Logger.log('[TSD] No se pudieron escribir Temporada/Semana/Día en la fila ' + fila + ' de "' + sh.getName() + '": ' + e.message);
+  }
+}
 
 /**
  * _updateHistorial [→ Contexto_Base_Web.md §24B010]
@@ -408,7 +529,7 @@ function _updateHistorial(ss, dirData) {
       Logger.log('[Historial][ALERTA] Tras reescribir la hoja, ' + perdidas + ' filas quedaron sin Fecha válida.');
     }
     // Centrado + bordes en TODAS las filas con datos (antes no se aplicaba [→ Contexto_Base_Web.md §24B020]
-    applyBorderCenter(sh.getRange(2, 1, allHist.length, 7));
+    applyBorderCenter(sh.getRange(2, 1, allHist.length, HISTORIAL_TOTAL_COLS));
 
     // Bordes por bloque de clan: dado que allHist queda ordenado primero por [→ Contexto_Base_Web.md §24B021]
     var blockStart = 0;
@@ -417,7 +538,7 @@ function _updateHistorial(ss, dirData) {
       var clanPrevBlk = String(allHist[blockStart][5] || '');
       if (i === allHist.length || clanActualBlk !== clanPrevBlk) {
         var blockRows = i - blockStart;
-        sh.getRange(blockStart + 2, 1, blockRows, 7)
+        sh.getRange(blockStart + 2, 1, blockRows, HISTORIAL_TOTAL_COLS)
           .setBorder(true, true, true, true, false, false,
                      '#000000', SpreadsheetApp.BorderStyle.SOLID_THICK);
         blockStart = i;
@@ -429,7 +550,7 @@ function _updateHistorial(ss, dirData) {
     var maxRowsHist = sh.getMaxRows();
     if (maxRowsHist > allHist.length + 1) {
       try {
-        sh.getRange(allHist.length + 2, 1, maxRowsHist - allHist.length - 1, 7)
+        sh.getRange(allHist.length + 2, 1, maxRowsHist - allHist.length - 1, HISTORIAL_TOTAL_COLS)
           .setBorder(false, false, false, false, false, false)
           .setBackground(null);
       } catch(e) {}
@@ -438,7 +559,7 @@ function _updateHistorial(ss, dirData) {
 
   // Formato condicional por Movimiento (col 5 = colLetter(5))
   if (sh.getLastRow() >= 2) {
-    var dataRange = sh.getRange(2, 1, sh.getLastRow() - 1, 7), colMov = colLetter(5);
+    var dataRange = sh.getRange(2, 1, sh.getLastRow() - 1, HISTORIAL_TOTAL_COLS), colMov = colLetter(5);
     var rules = [
       SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=$' + colMov + '2="Ingreso"').setBackground(CFG.COLORES.HIST_INGRESO_BG).setRanges([dataRange]).build(),
       SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=$' + colMov + '2="Reingreso"').setBackground(CFG.COLORES.HIST_REINGRESO_BG).setRanges([dataRange]).build(),
@@ -447,6 +568,9 @@ function _updateHistorial(ss, dirData) {
     ];
     _tryCondFmt(sh, rules);
   }
+
+  // 26-oct-2026 (§PF267): Temporada / Semana / Día se recalculan desde Fecha DESPUÉS de ordenar y escribir (las filas se reordenan por Clan y Fecha, y las filas nuevas entran sin estas columnas).
+  _completarTSDEnHoja_(sh, 2, HISTORIAL_TSD_COL);
 }
 
 // HOJA ASCENSOS [→ Contexto_Base_Web.md §24B022]
@@ -519,6 +643,9 @@ function _reordenarHistorialAscensosGlobal(ss, sh, registrosNuevos) {
   applyBorderCenter(sh.getRange(2, 1, todos.length, ASCENSOS_TOTAL_COLS));
   _aplicarFormatoCondicionalAscensos(sh);
 
+  // 26-oct-2026 (§PF267): Temporada / Semana / Día se recalculan desde Fecha para TODAS las filas (las nuevas entran con esas columnas vacías y el reorden las movió de lugar).
+  _completarTSDEnHoja_(sh, ASC.FECHA, ASC.TSD);
+
   Logger.log('[Ascensos] Hoja reordenada globalmente por Clan > Fecha (' + todos.length + ' fila(s) totales).');
 }
 
@@ -579,6 +706,7 @@ function _copiarComentarioAscensoAComentarios(shCom, registro) {
   filaCMC[CMC.COMENTARIO - 1] = registro[ASC.COMENTARIO - 1];
   shCom.appendRow(filaCMC);
   _setDateCell(shCom, shCom.getLastRow(), CMC.FECHA, now, 'dddd, d "de" mmmm"," yyyy h:mm:ss am/pm');
+  _escribirTSDEnFilaHoja_(shCom, shCom.getLastRow(), CMC.TSD, now); // 26-oct-2026 (§PF267)
 }
 
 // CR_Lista — escritura de propuestas en Historial_A/D (FASE 5, 13-sep-2026, [→ Contexto_Base_Web.md §24B032]

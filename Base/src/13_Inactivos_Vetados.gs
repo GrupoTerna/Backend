@@ -10,10 +10,12 @@ var ASC = {
   NUM:1, TAG:2, NOMBRE:3, NOM_MULTI:4, INICIALES:5, PERMISO:6, INACTIVIDAD:7,
   FECHA:8, CLAN:9, CLAN_TAG:10, LIDER:11, AUTOR:12, RANGO:13, RANGO_2:14,
   TIPO:15, ESTADO:16, COMENTARIO:17,
-  ESTADO_PROPUESTA:18
+  ESTADO_PROPUESTA:18,
+  // 26-oct-2026 (pedido de la usuaria, §PF267): primera de las 5 columnas calculadas desde Fecha (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día); ver _completarTSDEnHoja_() en 24_Historial_Ascensos.gs.
+  TSD:19
 };
 
-var ASCENSOS_TOTAL_COLS = 18;
+var ASCENSOS_TOTAL_COLS = 23;
 
 // Valores válidos de ASC.ESTADO_PROPUESTA -- ver dropdown en
 // _aplicarFormatoFilaAscenso() (24_Historial_Ascensos.gs).
@@ -897,6 +899,7 @@ function _webAgregarComentarioVeto(filaOrigenIC, autor, fecha, razon, comentario
   filaCMC[CMC.COMENTARIO - 1] = texto;
   shCom.appendRow(filaCMC);
   _setDateCell(shCom, shCom.getLastRow(), CMC.FECHA, fecha, 'dddd, d "de" mmmm"," yyyy h:mm:ss am/pm');
+  _escribirTSDEnFilaHoja_(shCom, shCom.getLastRow(), CMC.TSD, fecha); // 26-oct-2026 (§PF267); si `fecha` no es Date las 5 columnas quedan vacías
 }
 
 // =============================================================================
