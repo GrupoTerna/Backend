@@ -370,7 +370,9 @@ function _aplicarHistorialGuerra(candidatosPayload) {
  */
 function _buildHistorialGuerraFilename(tag, clanActual) {
   var fechaHora = Utilities.formatDate(new Date(), 'America/Lima', 'dd-MM-yyyy HH.mm');
-  var clan = (clanActual && String(clanActual).trim()) ? String(clanActual).trim() : 'Sin clan';
+  // FIX (25-oct-2026): la celda de clan de RoyaleAPI trae pegada la fecha de la semana (tooltip oculto, ver limpiarTextoClan() de Tampermonkey.md) y el nombre del archivo salia como "Clan   2026-02-16". Solo se limpia el NOMBRE DEL ARCHIVO: el campo clan de cada registro no se toca (forma parte de su identidad).
+  var clanLimpio = String(clanActual || '').split(/\r?\n/)[0].replace(/\s+\d{4}-\d{2}-\d{2}[\s\S]*$/, '').trim();
+  var clan = clanLimpio ? clanLimpio : 'Sin clan';
   return fechaHora + ' - ' + clan + ' - ' + String(tag || '').trim() + '.json';
 }
 
