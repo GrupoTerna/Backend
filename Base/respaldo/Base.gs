@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 20:28:52 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 20:33:37 */
 
 
 
@@ -59178,6 +59178,9 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   // PF260 (25-oct-2026): nombres de los JSON de Drive (Endpoints, Anomalías, Otros; incluye los clanes bloqueados como NARANJA x). Va ANTES de _finalizarReenumeracion() para no mover los índices de los pasos anteriores.
   function () { return _reenumerarNombresJsonDrive(); },
   function () { _finalizarReenumeracion(); },
+  // PF267 (26-oct-2026): Historial_I/S, Historial_A/D y Comentarios llevan Temporada/Semana/Día calculadas desde Fecha. Se recalculan DESPUÉS de _finalizarReenumeracion(),
+  // porque ahí cambian CFG_REF_ACTIVO y CFG_OFFSET_ROYALEAPI; antes saldría la numeración vieja. No se les suma el delta. Va al FINAL para no mover los índices de los pasos anteriores.
+  function () { completarTemporadaSemanaDiaHojas(); },
 ];
 
 // ----- Funciones manuales / punto de entrada -----
