@@ -782,7 +782,7 @@ function liberarLockEjecucionManual() {
 // _continuarReenumerarTemporadas(): entrada de runReenumerarTemporadas() y del trigger de continuación; no llamar para iniciar una corrida nueva (no adquiere el lock). [→ Contexto_Base_Web.md §47B027]
 function _continuarReenumerarTemporadas() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('REENUM_PASO') || '0', 10);
-  Logger.log(paso === 0 ? '[Reenumeración] INICIO' : '[Reenumeración] CONTINÚA desde el paso ' + paso + '/' + PASOS_REENUMERAR_TEMPORADAS.length);
+  Logger.log(paso === 0 ? '[Reenumeración] INICIO' : '[Reenumeración] CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_REENUMERAR_TEMPORADAS.length);
   try {
     var completo = _ejecutarPorTandas('REENUM', PASOS_REENUMERAR_TEMPORADAS, CFG.REENUM_TANDA_PRESUPUESTO_MS, '_continuarReenumerarTemporadas', NOMBRES_PASOS_REENUMERAR_TEMPORADAS);
     if (completo) {
@@ -800,7 +800,8 @@ function _continuarReenumerarTemporadas() {
     var pasoFallido = PropertiesService.getScriptProperties().getProperty('REENUM_PASO');
     _borrarTriggersDeContinuacion('_continuarReenumerarTemporadas');
     _liberarLockEjecucion();
-    Logger.log('[Reenumeración] ERROR en el paso ' + pasoFallido + ': ' + e.message + ' — lock liberado. Los pasos anteriores ya escribieron su parte; el paso ' + pasoFallido + ' puede haber escrito algo si hace varias escrituras. Corrige la causa y corre reanudarReenumerarTemporadas() (NO vuelvas a iniciar: sumaría el delta de nuevo).');
+    var numFallido = isNaN(parseInt(pasoFallido, 10)) ? pasoFallido : (parseInt(pasoFallido, 10) + 1); // PF274: el registro muestra el número (índice + 1); REENUM_PASO guarda el índice
+    Logger.log('[Reenumeración] ERROR en el paso ' + numFallido + ': ' + e.message + ' — lock liberado. Los pasos anteriores ya escribieron su parte; el paso ' + numFallido + ' puede haber escrito algo si hace varias escrituras. Corrige la causa y corre reanudarReenumerarTemporadas() (NO vuelvas a iniciar: sumaría el delta de nuevo).');
     throw e;
   }
 }

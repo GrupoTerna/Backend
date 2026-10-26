@@ -510,7 +510,7 @@ function demolerTodoElSpreadsheet() {
 
   // FIX (11-sep-2026, pedido del usuario -- "T_Lista/S_Lista quedan vacías [→ Contexto_Base_Web.md §B084]
   try {
-    Logger.log('[Demoler] Borrando checkpoint de continuación de runAll()/runUpdate() (forzar que la próxima corrida empiece desde el paso 0)...');
+    Logger.log('[Demoler] Borrando checkpoint de continuación de runAll()/runUpdate() (forzar que la próxima corrida empiece desde el primer paso)...');
     var propsCheckpoint = PropertiesService.getScriptProperties();
     propsCheckpoint.deleteProperty('RUNALL_PASO');
     propsCheckpoint.deleteProperty('RUNALL_REINTENTO');
@@ -784,7 +784,7 @@ function _continuarRunGuerraRapido() {
   var props = PropertiesService.getScriptProperties();
   var paso = parseInt(props.getProperty('RUNGUERRARAPIDO_PASO') || '0', 10);
   var sinApi = props.getProperty('RUNGUERRARAPIDO_SIN_API') === '1';
-  Logger.log((paso === 0 ? '=== runGuerraRapido INICIO' : '=== runGuerraRapido CONTINÚA desde el paso ' + paso + '/' + PASOS_RUNGUERRARAPIDO.length) +
+  Logger.log((paso === 0 ? '=== runGuerraRapido INICIO' : '=== runGuerraRapido CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNGUERRARAPIDO.length) +
     (sinApi ? ' [programada, sin API]' : ' [manual, roster fresco]') + ' ===');
   // SUPRIMIR_PLAYERS_TEMPORAL es una variable global en memoria (no se [→ Contexto_Base_Web.md §B096]
   SUPRIMIR_PLAYERS_TEMPORAL = true;
@@ -835,7 +835,7 @@ function runAll() {
  */
 function _continuarRunAll() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('RUNALL_PASO') || '0', 10);
-  Logger.log(paso === 0 ? '=== Sistema Clanes INICIO ===' : '=== Sistema Clanes CONTINÚA desde el paso ' + paso + '/' + PASOS_RUNALL.length + ' ===');
+  Logger.log(paso === 0 ? '=== Sistema Clanes INICIO ===' : '=== Sistema Clanes CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNALL.length + ' ===');
   try {
     var completo = _ejecutarPorTandas('RUNALL', PASOS_RUNALL, CFG.RUNALL_PRESUPUESTO_MS, '_continuarRunAll', NOMBRES_PASOS_RUNALL);
     if (completo) {
@@ -921,7 +921,7 @@ function _continuarRunUpdate() {
   var props = PropertiesService.getScriptProperties();
   var paso = parseInt(props.getProperty('RUNUPDATE_PASO') || '0', 10);
   var sinApi = props.getProperty('RUNUPDATE_SIN_API') === '1';
-  Logger.log((paso === 0 ? '=== Actualización periódica INICIO' : '=== Actualización periódica CONTINÚA desde el paso ' + paso + '/' + PASOS_RUNUPDATE.length) +
+  Logger.log((paso === 0 ? '=== Actualización periódica INICIO' : '=== Actualización periódica CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNUPDATE.length) +
     (sinApi ? ' [programada, sin /clans ni /currentriverrace]' : ' [manual, roster fresco]') + ' ===');
   try {
     var completo = _ejecutarPorTandas('RUNUPDATE', PASOS_RUNUPDATE, CFG.RUNUPDATE_PRESUPUESTO_MS, '_continuarRunUpdate');
@@ -985,7 +985,7 @@ function runSorteos() {
  */
 function _continuarProcesarSorteos() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('RUNSORTEOS_PASO') || '0', 10);
-  Logger.log(paso === 0 ? '=== Sorteos INICIO ===' : '=== Sorteos CONTINÚA desde el paso ' + paso + '/' + PASOS_RUNSORTEOS.length + ' ===');
+  Logger.log(paso === 0 ? '=== Sorteos INICIO ===' : '=== Sorteos CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNSORTEOS.length + ' ===');
   try {
     var completo = _ejecutarPorTandas('RUNSORTEOS', PASOS_RUNSORTEOS, CFG.RUNSORTEOS_PRESUPUESTO_MS, '_continuarProcesarSorteos', NOMBRES_PASOS_RUNSORTEOS);
     if (completo) {
@@ -1032,7 +1032,7 @@ function runSyncCSV() {
  */
 function _continuarRunSyncCSV() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('RUNSYNCCSV_PASO') || '0', 10);
-  Logger.log(paso === 0 ? '[CSV] Iniciando sincronización...' : '[CSV] CONTINÚA desde el paso ' + paso + '/' + PASOS_RUNSYNCCSV.length);
+  Logger.log(paso === 0 ? '[CSV] Iniciando sincronización...' : '[CSV] CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNSYNCCSV.length);
   try {
     var completo = _ejecutarPorTandas('RUNSYNCCSV', PASOS_RUNSYNCCSV, CFG.RUNSYNCCSV_PRESUPUESTO_MS, '_continuarRunSyncCSV');
     if (completo) {
@@ -1693,7 +1693,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       (typeof CACHE_CLAN_DATA === 'undefined' || CACHE_CLAN_DATA === null)) {
     // CAMBIO (05-oct-2026): si la cadena es de una version PROGRAMADA (bandera <ID>_SIN_API = 1), el cache se [→ Contexto_Base_Web.md §B138]
     if (props.getProperty(idEjecucion + '_SIN_API') === '1') {
-      Logger.log('[' + idEjecucion + '] Reanudando en el paso ' + paso + ' (version programada): se reconstruye el cache de clanes desde el checkpoint de Drive, SIN API.');
+      Logger.log('[' + idEjecucion + '] Reanudando en el paso ' + (paso + 1) + ' (version programada): se reconstruye el cache de clanes desde el checkpoint de Drive, SIN API.');
       if (!_fetchClanesBasicoSinApi()) {
         Logger.log('[' + idEjecucion + '] ABORTADA: ya no hay un checkpoint de clanes utilizable para reanudar sin API. ' +
           'Se descarta el avance; la proxima corrida programada empieza de cero.');
@@ -1706,18 +1706,20 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
         return false;
       }
     } else {
-      Logger.log('[' + idEjecucion + '] Reanudando en el paso ' + paso + ': cache de clanes vacío (ejecución nueva), se reconstruye la parte básica antes de continuar.');
+      Logger.log('[' + idEjecucion + '] Reanudando en el paso ' + (paso + 1) + ': cache de clanes vacío (ejecución nueva), se reconstruye la parte básica antes de continuar.');
       capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'tandas');
     }
   }
 
+  // PF274 (25-oct-2026): internamente `paso` es el ÍNDICE (desde 0) y es lo que se guarda en <ID>_PASO; en los textos del registro se muestra el NÚMERO (paso + 1),
+  // así «paso 29/29» es el último. Tras completar el paso `paso` (índice), quedan hechos `paso` pasos. [→ Contexto_Base_Web.md §PF274]
   while (paso < pasos.length) {
-  Logger.log('[' + idEjecucion + '] Ejecutando paso ' + paso + '/' + pasos.length +
+  Logger.log('[' + idEjecucion + '] Ejecutando paso ' + (paso + 1) + '/' + pasos.length +
     (nombresPasos && nombresPasos[paso] ? ': ' + nombresPasos[paso] : ''));
   var resultado = pasos[paso]();
 
     if (resultado === false) {
-      Logger.log('[' + idEjecucion + '] Paso ' + paso + '/' + pasos.length + ' quedó incompleto (presupuesto interno agotado, ej. /players). ' +
+      Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ' quedó incompleto (presupuesto interno agotado, ej. /players). ' +
                  'Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.');
       props.setProperty(idEjecucion + '_PASO', String(paso));
       props.setProperty(idEjecucion + '_REINTENTO', '1');
@@ -1732,7 +1734,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
     _refrescarLockEjecucion(idEjecucion);
 
     if (paso < pasos.length && (Date.now() - inicioTanda) > presupuestoMs) {
-      Logger.log('[' + idEjecucion + '] Presupuesto de tiempo agotado en el paso ' + paso + '/' + pasos.length + '. Se programa continuación automática en 10s.');
+      Logger.log('[' + idEjecucion + '] Presupuesto de tiempo agotado tras completar el paso ' + paso + '/' + pasos.length + '. Se programa continuación automática en 10s.');
       _programarContinuacion(nombreHandlerContinuacion);
       return false;
     }
