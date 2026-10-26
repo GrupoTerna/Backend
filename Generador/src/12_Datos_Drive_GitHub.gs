@@ -33,6 +33,8 @@
 // tamaño cambió desde la última copia (propiedades del script DATOS_GH_...).
 //
 // TOKEN: el mismo GITHUB_TOKEN del Generador (repo Backend, Contents: Read and write).
+// Desde el 25-oct-2026 (§PF272, pedido de la usuaria) el registro de la corrida lista los archivos subidos agrupados por carpeta de destino,
+// con el total por carpeta (_datosGhLineasPorCarpeta_); el modo revisión lo muestra igual.
 // Sin probar en Apps Script real al escribir este archivo.
 // =============================================================================
 
@@ -199,6 +201,28 @@ function _datosGhListarCandidatos_() {
   return { candidatos: candidatos, problemas: problemas };
 }
 
+/**
+ * _datosGhLineasPorCarpeta_(rutas): PF272 (25-oct-2026). Agrupa rutas «carpeta/archivo» por carpeta de destino y devuelve las líneas
+ * del registro: una por carpeta con su total y debajo sus archivos. Función pura (sin Drive ni GitHub); carpetas y archivos en orden alfabético.
+ * Una ruta sin «/» se agrupa bajo «(raíz)».
+ */
+function _datosGhLineasPorCarpeta_(rutas) {
+  var grupos = {};
+  (rutas || []).forEach(function(r) {
+    var k = String(r).lastIndexOf('/');
+    var carpeta = k >= 0 ? String(r).substring(0, k + 1) : '(raíz)';
+    var nombre = k >= 0 ? String(r).substring(k + 1) : String(r);
+    (grupos[carpeta] = grupos[carpeta] || []).push(nombre);
+  });
+  var lineas = [];
+  Object.keys(grupos).sort().forEach(function(carpeta) {
+    var nombres = grupos[carpeta].sort();
+    lineas.push('  ▸ ' + carpeta + ' → ' + nombres.length + (nombres.length === 1 ? ' archivo' : ' archivos'));
+    nombres.forEach(function(n) { lineas.push('      · ' + n); });
+  });
+  return lineas;
+}
+
 function _datosDriveAGithub_(op) {
   var t0 = Date.now();
   if (!_githubToken_()) throw 'Falta GITHUB_TOKEN: Configuración del proyecto → Propiedades del script.';
@@ -263,20 +287,23 @@ function _datosDriveAGithub_(op) {
     omitidos.forEach(function(o) { console.log('  ✗ ' + o); });
 
     if (op.soloRevisar) {
-      revisados.forEach(function(r) { console.log('  · subiría: ' + r); });
+      if (revisados.length) console.log('Subiría, por carpeta (' + revisados.length + ' archivos):');
+      _datosGhLineasPorCarpeta_(revisados).forEach(function(l) { console.log(l); });
       console.log('Modo revisión: no se escribió nada en GitHub.');
       return 'Revisión: ' + porSubir.length + ' por subir, ' + omitidos.length + ' omitidos.';
     }
 
     // Se sube en lotes para no pasar de unos 8 MB de contenido por commit.
     var subidos = 0, commits = [], sinCambioGit = 0;
+    var rutasSubidas = [];      // PF272: rutas que de verdad entraron en un commit
     var lote = [], bytesLote = 0;
     var marca = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm:ss');
     var vaciar = function() {
       if (!lote.length) return;
       var mensaje = 'Datos descargados: copia automática desde Drive - ' + marca + ' (Lima) - ' + lote.length + ' archivos';
       var res = _githubCommitArchivos_(lote.map(function(x) { return x.entrada; }), '(sin borrar)/', [], mensaje);
-      if (res.sinCambios) sinCambioGit += lote.length; else { subidos += lote.length; commits.push(res.commit.substring(0, 7)); }
+      if (res.sinCambios) sinCambioGit += lote.length;
+      else { subidos += lote.length; commits.push(res.commit.substring(0, 7)); lote.forEach(function(x) { rutasSubidas.push(x.entrada.path); }); }
       // Recién ahora, con el commit hecho (o GitHub ya igual), se recuerda la huella.
       var nuevas = {};
       lote.forEach(function(x) { nuevas[x.clave] = x.huella; });
@@ -293,6 +320,10 @@ function _datosDriveAGithub_(op) {
                 ', ' + sinCambioGit + ' ya estaban idénticos en GitHub, ' + sinCambios + ' sin cambios en Drive, ' +
                 omitidos.length + ' omitidos, ' + pendientes + ' pendientes.';
     console.log(texto);
+    if (rutasSubidas.length) {
+      console.log('Archivos subidos, por carpeta de Datos descargados (' + rutasSubidas.length + '):');
+      _datosGhLineasPorCarpeta_(rutasSubidas).forEach(function(l) { console.log(l); });
+    }
     if (subidos) console.log('Falta hacer pull de Backend en GitHub Desktop para verlos en tu equipo.');
 
     if (pendientes && op.auto) {
