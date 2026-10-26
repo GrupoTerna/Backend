@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 26/10/2026 00:53:28 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 26/10/2026 01:11:05 */
 
 
 
@@ -478,7 +478,8 @@ var PASOS_RUNSYNCCSV = [
   function () { respaldarIndiceYProtegidasCSV('T_ASISTENCIA'); },
   function () { respaldarIndiceYProtegidasCSV('S_ASISTENCIA'); },
   function () { respaldarIndiceYProtegidasCSV('EXTRA'); },
-  function () { return respaldarHojasDerivadasCSV(); },
+  // PF282 (26-oct-2026): presupuesto 0 = una hoja derivada por ejecucion (antes hasta 60 s de hojas por tanda; el 25-oct Links tardo ~299 s). [→ Contexto_Base_Web.md §PF282]
+  function () { return respaldarHojasDerivadasCSV(0); },
   // NUEVO (2-oct-2026, pregunta 51, hoja Battlelogs; decision de la usuaria): [→ Contexto_Base_Web.md §B074]
   function () {
     if (typeof actualizarHojaBattlelogs !== 'function') {
@@ -6119,7 +6120,11 @@ function respaldarIndiceYProtegidasCSV(soloClave) {
 /**
  * respaldarHojasDerivadasCSV() [→ Contexto_Base_Web.md §05B019]
  */
-function respaldarHojasDerivadasCSV() {
+function respaldarHojasDerivadasCSV(presupuestoMs) {
+  // PF282 (26-oct-2026): parametro opcional. Sin argumento usa CFG.RESPALDO_DERIVADAS_BUDGET_MS (60 s), igual que antes.
+  // Con 0 hace UNA sola hoja por llamada y devuelve false mientras queden (PASOS_RUNSYNCCSV lo usa asi: cada hoja corre en su
+  // propia ejecucion, porque el 25-oct la hoja Links sola tardo ~299 s y la tanda murio justo despues). [→ Contexto_Base_Web.md §PF282]
+  var presupuesto = (typeof presupuestoMs === 'number') ? presupuestoMs : CFG.RESPALDO_DERIVADAS_BUDGET_MS;
   var ss = _getSs();
 
   // Hojas protegidas: excluidas de "derivadas" (se respaldan aparte, en [→ Contexto_Base_Web.md §05B020]
@@ -6149,10 +6154,13 @@ function respaldarHojasDerivadasCSV() {
   var inicio = Date.now();
   var i;
   for (i = idxInicio; i < hojasDerivadas.length; i++) {
+    var inicioHoja = Date.now();
     _respaldarListaHojasCSV(ss, [hojasDerivadas[i]], false);
+    Logger.log('[Backup] respaldarHojasDerivadasCSV: hoja ' + (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + ') en ' +
+               Math.round((Date.now() - inicioHoja) / 1000) + ' s.'); // PF282: tiempo por hoja, para ubicar la lenta
 
     var quedanHojas = (i + 1) < hojasDerivadas.length;
-    if (quedanHojas && (Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
+    if (quedanHojas && (presupuesto === 0 || (Date.now() - inicio) > presupuesto)) {
       props.setProperty(claveIdx, String(i + 1));
       Logger.log('[Backup] respaldarHojasDerivadasCSV: presupuesto interno agotado tras la hoja ' +
                  (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + '). ' +
