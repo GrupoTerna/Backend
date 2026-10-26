@@ -662,7 +662,7 @@ Ninguno.
 | `_filasCards2DeTorre` | función | 31_Cards_Mazos.gs | 580 | Contexto_Base_Web.md §31B035 |
 | `_filtrarSemanasJugadasCR` | función | 26_Torneos_Core.gs | 733 | Contexto_Base_Web.md §26B052 |
 | `_finalizarFormatoPendientes` | función | 17_GuerraSheet.gs | 4454 | Contexto_Base_Web.md §17B183 |
-| `_finalizarReenumeracion` | función | 47_Migraciones.gs | 1375 | Contexto_Base_Web.md §47B032 |
+| `_finalizarReenumeracion` | función | 47_Migraciones.gs | 1376 | Contexto_Base_Web.md §47B032 |
 | `_fmt` | función | 30_Mensajes.gs | 575 |  |
 | `_fmtDiaGuerraLog_` | función | 09_API_ClashRoyale.gs | 2986 |  |
 | `_fmtFechaCortaSemana` | función | 38_Web_Endpoints.gs | 2184 | Contexto_Base_Web.md §38B146 |
@@ -954,7 +954,7 @@ Ninguno.
 | `_limpiarValidacionesFilasVaciasDirectorio` | función | 11_DirectorioSheet.gs | 1405 | Contexto_Base_Web.md §11B098 |
 | `_lineaPeriodoClan_` | función | 09_API_ClashRoyale.gs | 2994 | Contexto_Base_Web.md §09B155 |
 | `_lineasResumenSorteoDoc_` | función | 28_Torneos_Docs.gs | 481 |  |
-| `_listarCarpetasOrdenadas_` | función | 47_Migraciones.gs | 1113 |  |
+| `_listarCarpetasOrdenadas_` | función | 47_Migraciones.gs | 1114 |  |
 | `_listarMiembrosClanParaGestion` | función | 44_BotWhatsApp.gs | 909 | Contexto_Base_Web.md §44B037 |
 | `_listarSorteosDeHoy` | función | 26_Torneos_Core.gs | 4916 | Contexto_Base_Web.md §26B308 |
 | `_listarSorteosModificables` | función | 26_Torneos_Core.gs | 4940 | Contexto_Base_Web.md §PF108 |
@@ -1027,7 +1027,7 @@ Ninguno.
 | `_nivelUnificadoDeCarta` | función | 31_Cards_Mazos.gs | 341 | Contexto_Base_Web.md §31B022 |
 | `_nivelUnificadoMaxDeCartas` | función | 31_Cards_Mazos.gs | 321 | Contexto_Base_Web.md §31B021 |
 | `_nombreClanDesdeHojaClanDash_` | función | 38_Web_Endpoints.gs | 1794 | Contexto_Base_Web.md §38B110 |
-| `_nombreInformeExcluidoReenum_` | función | 47_Migraciones.gs | 862 |  |
+| `_nombreInformeExcluidoReenum_` | función | 47_Migraciones.gs | 863 |  |
 | `_NOMBRES_CLAN_CHECKPOINT` | global | 38_Web_Endpoints.gs | 2946 |  |
 | `_nombresOrganizadorTL_` | función | 26_Torneos_Core.gs | 4361 | Contexto_Base_Web.md §PF099 |
 | `_normalizarClanTagContactos` | función | 38_Web_Endpoints.gs | 1693 | Contexto_Base_Web.md §38B100 |
@@ -1191,22 +1191,22 @@ Ninguno.
 | `_reemplazarListaParticipantes` | función | 28_Torneos_Docs.gs | 1475 | Contexto_Base_Web.md §28B067 |
 | `_reemplazarListasPorClanYRango` | función | 25_Doc_AscensosDescensos.gs | 387 | Contexto_Base_Web.md §25B032 |
 | `_reenumeracionEnCurso_` | función | 00_Main.gs | 1578 |  |
-| `_reenumerarCalendario2Hoja` | función | 47_Migraciones.gs | 1201 | Contexto_Base_Web.md §47B030 |
-| `_reenumerarCorreccionesGuerraCSV` | función | 47_Migraciones.gs | 1347 | Contexto_Base_Web.md §47B031 |
-| `_reenumerarCSV` | función | 47_Migraciones.gs | 814 | Contexto_Base_Web.md §47B028 |
-| `_reenumerarHistorialGuerraGrupalCSV` | función | 47_Migraciones.gs | 1145 |  |
-| `_reenumerarHistorialGuerraIndividual` | función | 47_Migraciones.gs | 989 |  |
-| `_reenumerarHoja` | función | 47_Migraciones.gs | 1173 | Contexto_Base_Web.md §47B029 |
-| `_reenumerarInformesCSV` | función | 47_Migraciones.gs | 926 |  |
-| `_reenumerarNombreInformeTexto_` | función | 47_Migraciones.gs | 1226 |  |
-| `_reenumerarNombresInformes_` | función | 47_Migraciones.gs | 1239 |  |
-| `_reenumerarNombresJsonDrive` | función | 47_Migraciones.gs | 1056 |  |
-| `_reenumerarTextoInformeCSV_` | función | 47_Migraciones.gs | 881 |  |
-| `_reenumerarTokensSemanasTexto_` | función | 47_Migraciones.gs | 1273 |  |
-| `_reenumerarTokensSemanasTorneos_` | función | 47_Migraciones.gs | 1292 |  |
+| `_reenumerarCalendario2Hoja` | función | 47_Migraciones.gs | 1202 | Contexto_Base_Web.md §47B030 |
+| `_reenumerarCorreccionesGuerraCSV` | función | 47_Migraciones.gs | 1348 | Contexto_Base_Web.md §47B031 |
+| `_reenumerarCSV` | función | 47_Migraciones.gs | 815 | Contexto_Base_Web.md §47B028 |
+| `_reenumerarHistorialGuerraGrupalCSV` | función | 47_Migraciones.gs | 1146 |  |
+| `_reenumerarHistorialGuerraIndividual` | función | 47_Migraciones.gs | 990 |  |
+| `_reenumerarHoja` | función | 47_Migraciones.gs | 1174 | Contexto_Base_Web.md §47B029 |
+| `_reenumerarInformesCSV` | función | 47_Migraciones.gs | 927 |  |
+| `_reenumerarNombreInformeTexto_` | función | 47_Migraciones.gs | 1227 |  |
+| `_reenumerarNombresInformes_` | función | 47_Migraciones.gs | 1240 |  |
+| `_reenumerarNombresJsonDrive` | función | 47_Migraciones.gs | 1057 |  |
+| `_reenumerarTextoInformeCSV_` | función | 47_Migraciones.gs | 882 |  |
+| `_reenumerarTokensSemanasTexto_` | función | 47_Migraciones.gs | 1274 |  |
+| `_reenumerarTokensSemanasTorneos_` | función | 47_Migraciones.gs | 1293 |  |
 | `_reenumProgreso_` | función | 47_Migraciones.gs | 92 |  |
-| `_reenumRenombrarItem_` | función | 47_Migraciones.gs | 1123 |  |
-| `_reenumSinTiempo_` | función | 47_Migraciones.gs | 917 |  |
+| `_reenumRenombrarItem_` | función | 47_Migraciones.gs | 1124 |  |
+| `_reenumSinTiempo_` | función | 47_Migraciones.gs | 918 |  |
 | `_reescribirRequisitosTexto` | función | 27_Torneos_Sorteos_Requisitos.gs | 314 | Contexto_Base_Web.md §27B014 |
 | `_refrescarCardsRows` | función | 31_Cards_Mazos.gs | 752 | Contexto_Base_Web.md §31B040 |
 | `_refrescarColumnasFijasNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1850 | Contexto_Base_Web.md §14B103 |
@@ -2048,7 +2048,7 @@ Ninguno.
 | `OFF2` | global | 23_Control2_GuerraSemanal.gs | 23 | Contexto_Base_Web.md §23B003 |
 | `OFFN` | global | 14_Nuevos_RoyaleAPI.gs | 42 |  |
 | `OFFSEM` | global | 14_Nuevos_RoyaleAPI.gs | 31 |  |
-| `onEditTrigger` | función | 00_Main.gs | 1747 |  |
+| `onEditTrigger` | función | 00_Main.gs | 1749 |  |
 | `OPCION_VACIA_REGISTRO` | global | 44_BotWhatsApp.gs | 31 | Contexto_Base_Web.md §44B005 |
 | `PASOS_REENUMERAR_TEMPORADAS` | global | 47_Migraciones.gs | 9 |  |
 | `PASOS_RUNALL` | global | 00_Main.gs | 68 |  |
