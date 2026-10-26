@@ -103,6 +103,12 @@ var GITHUB_PROP_ULTIMO_COMMIT_ = 'GITHUB_ULTIMO_COMMIT_';
 // false: bloquea con cualquier commit nuevo en la rama.
 var GITHUB_AVISO_SOLO_CARPETA_ = true;
 
+// Intentos totales de subirBaseDesdeGithub() y subirGeneradorDesdeGithub() (y las forzadas) cuando,
+// justo antes de escribir su commit de cierre, GitHub recibió cambios nuevos en <Nombre>/: traen lo
+// nuevo y reintentan. Si tras el último intento la rama sigue moviéndose, NO escriben el commit de cierre.
+// [→ Contexto_Base_Web.md §PF273]
+var GITHUB_INTENTOS_TRAER_ = 3;
+
 function _githubLeerUltimoCommit_(nombreBase) {
   return PropertiesService.getScriptProperties().getProperty(GITHUB_PROP_ULTIMO_COMMIT_ + nombreBase) || '';
 }
@@ -171,6 +177,44 @@ function _githubRevisarPullPendiente_(nombreBase) {
                 ' Si quieres quedarte con lo de GitHub, corre ' + traer + ' (reemplaza lo que haya en Apps Script). ' +
                 'Si quieres que lo de Apps Script pise lo de GitHub, corre ' + forzada + '.';
   return { bloquear: true, cabeza: cabeza, mensaje: mensaje };
+}
+
+/**
+ * Lista los archivos de <carpeta> (por ejemplo 'Base/') que cambiaron entre dos commits de la rama.
+ * Devuelve { cambiados: [rutas], noComparable: 'motivo' o '' }. Es la misma comparación de
+ * _githubRevisarPullPendiente_, pero para usarla justo antes de escribir (parámetro guardia de
+ * _githubCommitArchivos_). [→ Contexto_Base_Web.md §PF273]
+ */
+function _githubCambiosEnCarpeta_(desde, hasta, carpeta) {
+  var cambiados = [];
+  var noComparable = '';
+  var rq = _ghReq_('get', '/compare/' + desde + '...' + hasta);
+  var resp = UrlFetchApp.fetchAll([rq])[0];
+  var code = resp.getResponseCode();
+  if (code === 404 || code === 422) {
+    noComparable = 'el commit esperado (' + desde.substring(0, 7) + ') ya no existe en GitHub';
+  } else {
+    var cmp = JSON.parse(_ghRespuesta_(resp, rq).getContentText());
+    var archivos = cmp.files || [];
+    if (archivos.length >= 300) noComparable = 'hay 300 archivos o más distintos y no se puede listar todos';
+    archivos.forEach(function(f) {
+      if (f.filename.indexOf(carpeta) === 0 ||
+          (f.previous_filename && f.previous_filename.indexOf(carpeta) === 0)) {
+        cambiados.push(f.filename);
+      }
+    });
+  }
+  return { cambiados: cambiados, noComparable: noComparable };
+}
+
+/** Nombres de las funciones que traen GitHub o lo pisan, según el proyecto (para los mensajes). */
+function _githubFuncionesDeAccion_(nombreBase) {
+  return {
+    traer:   nombreBase === 'Base' ? 'subirBaseDesdeGithub()'
+           : (nombreBase === 'Contactos_Secundario' ? 'subirContactosDesdeGithub()' : 'subirGeneradorDesdeGithub()'),
+    forzada: nombreBase === 'Base' ? 'descargarBaseForzado()'
+           : (nombreBase === 'Contactos_Secundario' ? 'descargarContactosForzado()' : 'descargarGeneradorForzado()')
+  };
 }
 
 // -----------------------------------------------------------------------------
@@ -353,10 +397,26 @@ function _githubGenerarLeeme_(nombreBase, nArchivos) {
  * (respaldo/<Nombre>.gs) trae en su primera línea la fecha de generación, que cambia en cada
  * ejecución, se compara sin esa línea; si es lo único distinto, se conserva el archivo remoto.
  * Quien llama debe informar el caso en el log (ver _githubSincronizar_).
+ *
+ * GUARDIA (opcional, { cabeza, carpeta }): es el último commit de la rama que el que llama revisó
+ * (_githubRevisarPullPendiente_) y la carpeta que va a reemplazar (por ejemplo 'Base/'). Si al
+ * leer la rama ya no es ese commit y lo nuevo toca la carpeta (o no se puede comparar), NO escribe:
+ * devuelve { commit: null, desfasado: true, cabezaNueva, cambiados, motivo }. Si lo nuevo no toca
+ * la carpeta (solo contexto, consolidados u otra carpeta), sigue: el árbol nuevo parte del último
+ * commit y lo conserva. El PATCH final no fuerza: si la rama se movió entre medias, GitHub
+ * responde 422 y con guardia también se devuelve desfasado. Sin guardia, todo se comporta como antes.
+ * [→ Contexto_Base_Web.md §PF273]
  */
-function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje) {
+function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje, guardia) {
   var ref = _ghJson_(_ghReq_('get', '/git/ref/heads/' + GITHUB_BRANCH_));
   var commitSha = ref.object.sha;
+  if (guardia && guardia.cabeza && guardia.cabeza !== commitSha) {
+    var dif = _githubCambiosEnCarpeta_(guardia.cabeza, commitSha, guardia.carpeta);
+    if (dif.noComparable || dif.cambiados.length) {
+      return { commit: null, desfasado: true, cabezaNueva: commitSha, cambiados: dif.cambiados,
+               motivo: dif.noComparable, archivos: entradas.length, borrados: [] };
+    }
+  }
   var commit = _ghJson_(_ghReq_('get', '/git/commits/' + commitSha));
   var treeBaseSha = commit.tree.sha;
   var arbol = _ghJson_(_ghReq_('get', '/git/trees/' + treeBaseSha + '?recursive=1'));
@@ -426,7 +486,15 @@ function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje
   }
   var commitNuevo = _ghJson_(_ghReq_('post', '/git/commits',
                       { message: mensaje, tree: arbolNuevo.sha, parents: [commitSha] }));
-  _ghJson_(_ghReq_('patch', '/git/refs/heads/' + GITHUB_BRANCH_, { sha: commitNuevo.sha }));
+  try {
+    _ghJson_(_ghReq_('patch', '/git/refs/heads/' + GITHUB_BRANCH_, { sha: commitNuevo.sha }));
+  } catch (ePatch) {
+    if (guardia && String(ePatch).indexOf('HTTP 422') !== -1) {
+      return { commit: null, desfasado: true, cabezaNueva: '', cambiados: [],
+               motivo: 'la rama se movió mientras se escribía el commit', archivos: entradas.length, borrados: [] };
+    }
+    throw ePatch;
+  }
   return { commit: commitNuevo.sha, archivos: entradas.length, borrados: borrados };
 }
 
@@ -492,10 +560,31 @@ function _githubSincronizar_(nombreBase, forzar) {
 
     var antiguos = ['.md', '.txt', '.zip', '.gs'].map(function(e) { return nombreBase + '/' + nombreBase + e; });
     var fecha = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm:ss');
+    // Con forzar no hay guardia: se escribe aunque GitHub haya cambiado. Sin forzar, si entre la revisión
+    // de arriba y este commit GitHub recibió cambios en <Nombre>/, no se escribe (ver _githubCommitArchivos_).
+    var guardia = forzar ? null : { cabeza: pull.cabeza, carpeta: nombreBase + '/' };
     var res = _githubCommitArchivos_(
       entradas, nombreBase + '/src/', antiguos,
-      'Descarga ' + nombreBase + ' - ' + fecha + ' (Lima) - ' + archivos.length + ' archivos'
+      'Descarga ' + nombreBase + ' - ' + fecha + ' (Lima) - ' + archivos.length + ' archivos',
+      guardia
     );
+
+    if (res.desfasado) {
+      var acc = _githubFuncionesDeAccion_(nombreBase);
+      var queCambio = res.motivo
+        ? 'No se pudo comparar: ' + res.motivo + '.'
+        : (res.cambiados.length
+            ? 'Archivos distintos en ' + nombreBase + '/ (' + res.cambiados.length + '): ' +
+              res.cambiados.slice(0, 10).join(', ') + (res.cambiados.length > 10 ? ' y ' + (res.cambiados.length - 10) + ' más' : '') + '.'
+            : '');
+      var msgD = 'COMMIT NO ESCRITO: GitHub recibió cambios en ' + nombreBase + '/ mientras se preparaba la subida' +
+                 (res.cabezaNueva ? ' (último revisado: ' + (pull.cabeza || '').substring(0, 7) + ', ahora: ' + res.cabezaNueva.substring(0, 7) + ')' : '') +
+                 '. ' + queCambio + ' No se escribió nada para no pisarlos. Si quieres quedarte con lo de GitHub, corre ' +
+                 acc.traer + '. Si quieres que lo de Apps Script pise lo de GitHub, corre ' + acc.forzada + '.';
+      console.error('[GitHub] ' + msgD);
+      try { _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, 'BLOQUEADO: ' + msgD, [msgD]); } catch (e1) {}
+      return { ok: false, desfasado: true, bloqueado: true, error: msgD };
+    }
 
     if (res.sinCambios) {
       var detalleSin = 'Sin cambios: GitHub ya estaba igual a ' + nombreBase + ' (' + res.archivos +
@@ -541,7 +630,7 @@ function _githubSincronizar_(nombreBase, forzar) {
  * Generador puede quedar sin correr: se repara pegando a mano desde el respaldo de Drive.
  * [→ Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse]
  */
-function _githubTraerAProyectoApps_(nombreBase, forzar) {
+function _githubTraerAProyectoAppsUnaVez_(nombreBase, forzar, esReintento) {
   if (nombreBase !== 'Base' && nombreBase !== 'Generador' && nombreBase !== 'Contactos_Secundario') {
     throw 'Nombre de proyecto no válido para traer desde GitHub: ' + nombreBase;
   }
@@ -553,11 +642,13 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
   // 1. Respaldo previo en Drive: UN solo archivo, "Base_antes_de_GitHub.zip", que se
   //    reemplaza en cada ejecución (la fecha queda en su descripción). Se crea la copia
   //    nueva primero y solo después se mandan a la papelera las anteriores.
-  _descargarProyectoAArchivos(nombreBase);
+  //    En un REINTENTO (esReintento) no se toca: el respaldo debe seguir siendo el estado de
+  //    Apps Script anterior a la primera vez que se trajo GitHub, no el del intento anterior.
   var carpeta = _carpetaDeRespaldos_(nombreBase);
   var nombreRespaldo = nombreBase + '_antes_de_GitHub.zip';
   var sello = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm:ss');
-  var zips = carpeta.getFilesByName(nombreBase + '.zip');
+  if (!esReintento) _descargarProyectoAArchivos(nombreBase);
+  var zips = esReintento ? { hasNext: function() { return false; } } : carpeta.getFilesByName(nombreBase + '.zip');
   if (zips.hasNext()) {
     var copia = zips.next().makeCopy(nombreRespaldo + '.tmp', carpeta);
     var anteriores = carpeta.getFilesByName(nombreRespaldo);
@@ -667,10 +758,47 @@ function _githubTraerAProyectoApps_(nombreBase, forzar) {
   );
 
   // 7. Regenerar respaldos de Drive y dejar GitHub al día (consolidado + índice).
+  //    Si justo antes del commit de cierre GitHub recibió cambios en <Nombre>/, _githubSincronizar_ no
+  //    escribe y devuelve desfasado: el que llama (_githubTraerAProyectoApps_) trae lo nuevo y reintenta.
   _descargarProyectoAArchivos(nombreBase);
-  _githubSincronizar_(nombreBase);
+  var sync = _githubSincronizar_(nombreBase);
 
-  return { modificados: modificados, agregados: agregados, eliminados: eliminados, sinCambios: iguales };
+  return { modificados: modificados, agregados: agregados, eliminados: eliminados, sinCambios: iguales, sync: sync };
+}
+
+/**
+ * Trae <Nombre>/src/ de GitHub al proyecto de Apps Script (ver _githubTraerAProyectoAppsUnaVez_) y,
+ * si mientras corría GitHub recibió cambios en <Nombre>/ y por eso no se pudo escribir el commit de
+ * cierre, TRAE LO NUEVO Y REINTENTA, hasta GITHUB_INTENTOS_TRAER_ intentos en total. El respaldo
+ * "<Nombre>_antes_de_GitHub.zip" se hace solo en el primer intento. Si tras el último intento la rama
+ * sigue moviéndose, no escribe el commit de cierre (no pisa nada) y lo deja en el log: GitHub queda
+ * con lo suyo y el proyecto de Apps Script con lo último que alcanzó a traer. El reporte devuelto
+ * junta lo hecho en todos los intentos. [→ Contexto_Base_Web.md §PF273]
+ */
+function _githubTraerAProyectoApps_(nombreBase, forzar) {
+  var mod = [], agr = [], eli = [], ultimo = null;
+  function sumar(lista, nuevos) { nuevos.forEach(function(n) { if (lista.indexOf(n) === -1) lista.push(n); }); }
+  for (var intento = 1; intento <= GITHUB_INTENTOS_TRAER_; intento++) {
+    ultimo = _githubTraerAProyectoAppsUnaVez_(nombreBase, forzar, intento > 1);
+    // Un archivo agregado en un intento y modificado en el siguiente sigue contando como agregado.
+    sumar(agr, ultimo.agregados);
+    sumar(mod, ultimo.modificados.filter(function(n) { return agr.indexOf(n) === -1; }));
+    sumar(eli, ultimo.eliminados);
+    if (!(ultimo.sync && ultimo.sync.desfasado)) break;
+    var aviso = intento < GITHUB_INTENTOS_TRAER_
+      ? 'Intento ' + intento + ' de ' + GITHUB_INTENTOS_TRAER_ + ': GitHub recibió cambios en ' + nombreBase +
+        '/ antes del commit de cierre. Traigo lo nuevo y reintento.'
+      : 'Intento ' + intento + ' de ' + GITHUB_INTENTOS_TRAER_ + ': GitHub sigue recibiendo cambios en ' + nombreBase +
+        '/. NO se escribió el commit de cierre (no se pisó nada). Espera a que terminen los cambios y vuelve a correr ' +
+        _githubFuncionesDeAccion_(nombreBase).traer + '.';
+    console.warn('[GitHub] ' + aviso);
+    try { _registrarLogGenerador('_githubTraerAProyectoApps_() / ' + nombreBase, aviso, [aviso]); } catch (e) {}
+  }
+  var total = ultimo.modificados.length + ultimo.agregados.length + ultimo.sinCambios;
+  return { modificados: mod, agregados: agr, eliminados: eli,
+           sinCambios: Math.max(0, total - mod.length - agr.length),
+           intentos: intento > GITHUB_INTENTOS_TRAER_ ? GITHUB_INTENTOS_TRAER_ : intento,
+           cierreEscrito: !(ultimo.sync && ultimo.sync.desfasado) };
 }
 
 // -----------------------------------------------------------------------------
