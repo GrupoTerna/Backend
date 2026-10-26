@@ -913,7 +913,7 @@ function _reenumerarInformesCSV() {
       errores++;
     }
     props.setProperty(claveIdx, String(i + 1));
-    if ((i + 1) < lista.length && (Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
+    if ((i + 1) < lista.length && (Date.now() - inicio) > CFG.REENUM_PRESUPUESTO_PASO_MS) {
       Logger.log('[Reenumeración] Informes: presupuesto agotado tras ' + (i + 1) + '/' + lista.length + ' archivo(s). Se reintenta en la próxima continuación.');
       return false;
     }
@@ -975,7 +975,7 @@ function _reenumerarHistorialGuerraIndividual() {
       omitidos++;
     }
     props.setProperty(claveIdx, String(i + 1));
-    if ((i + 1) < archivos.length && (Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
+    if ((i + 1) < archivos.length && (Date.now() - inicio) > CFG.REENUM_PRESUPUESTO_PASO_MS) {
       Logger.log('[Reenumeración] HistorialGuerra individual: presupuesto agotado tras ' + (i + 1) + '/' + archivos.length + ' archivo(s). Se reintenta en la próxima continuación.');
       return false;
     }
@@ -1027,7 +1027,7 @@ function _reenumerarNombresJsonDrive() {
       if (!reRaiz.test(f.getName())) continue;
       var rf = _reenumRenombrarItem_(f, reRaiz, delta, runId);
       if (rf === 1) cambiados++; else if (rf === -1) saltadosNegativo++;
-      if ((Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
+      if ((Date.now() - inicio) > CFG.REENUM_PRESUPUESTO_PASO_MS) {
         Logger.log('[Reenumeración] JSON Drive: presupuesto agotado en la carpeta ' + (i + 1) + '/' + carpetas.length + ' (renombrados en esta pasada: ' + cambiados + '). Se reintenta en la próxima continuación.');
         props.setProperty(claveIdx, String(i)); // esta carpeta se vuelve a mirar; los ya marcados se saltan
         return false;

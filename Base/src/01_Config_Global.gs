@@ -288,6 +288,7 @@ var CFG = {
 
   // Presupuesto interno SOLO para el bucle de respaldarHojasDerivadasCSV() [→ Contexto_Base_Web.md §01B047]
   RESPALDO_DERIVADAS_BUDGET_MS: 60 * 1000, // 1m
+  REENUM_PRESUPUESTO_PASO_MS: 4 * 60 * 1000, // PF262: presupuesto de cada pasada de los pasos de reenumeración que van archivo por archivo (informes, JSON de HistorialGuerra, nombres de JSON de Drive); el límite de Apps Script es 6 min
 
   // FIX (16-ago-2026): presupuesto interno SOLO para el bucle de [→ Contexto_Base_Web.md §01B048]
   AUTOAJUSTE_ANCHO_BUDGET_MS: 60 * 1000, // 1m
