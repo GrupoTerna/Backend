@@ -51,6 +51,8 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   function () { completarTemporadaSemanaDiaHojas(); },
   // PF268 (26-oct-2026): fichas «T<n>_S<m>» de las columnas «Semanas» de T_Lista, S_Lista y CR_Lista (y sus Backup_*.csv). Al FINAL por el mismo motivo que el paso anterior (no mover índices).
   function () { return _reenumerarTokensSemanasTorneos_(); },
+  // PF270 (25-oct-2026): nombres de los informes históricos con la temporada interna («…_T5S4 …», «…_T2_PI34_T3_PI27 …») en CSV/Informes y CSV/Tampermonkey. Al FINAL para no mover índices.
+  function () { return _reenumerarNombresInformes_(); },
 ];
 
 // PF269 (25-oct-2026): qué hace cada paso y qué se espera al terminarlo; _ejecutarPorTandas lo imprime («Ejecutando paso N/M: …»). MISMO ORDEN que PASOS_REENUMERAR_TEMPORADAS (si se añade un paso, añadir su texto al final).
@@ -82,7 +84,8 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
   'Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados',
   'Finalizar: cambia la Ref y el offset de RoyaleAPI, sube la versión de la caché del cruce de meta y mueve NUEVOS_CIERRE_SEMANA_T<n> → numeración nueva activa',
   'Historial_I/S, Historial_A/D y Comentarios: recalcula Temporada, Semana y Día desde la Fecha (no suma delta) → columnas con la numeración nueva',
-  'Fichas T<n>_S<m> de la columna Semanas de T_Lista, S_Lista y CR_Lista y sus Backup_*.csv: suma el delta → fichas apuntando a la semana correcta'
+  'Fichas T<n>_S<m> de la columna Semanas de T_Lista, S_Lista y CR_Lista y sus Backup_*.csv: suma el delta → fichas apuntando a la semana correcta',
+  'Nombres de informes históricos con T<n>S<m> o T<n>_PI<m> (CSV/Informes y CSV/Tampermonkey): suma el delta al número de temporada del nombre → nombres con la numeración nueva'
 ];
 
 // _reenumProgreso_(nombre, previas, estaTanda, total, unidad): PF269; dos líneas de progreso al estilo de /players: acumulado (tandas anteriores + esta) de total, y lo hecho en esta tanda.
@@ -1217,6 +1220,53 @@ function _reenumerarCalendario2Hoja() {
 
   Logger.log('[Reenumeración] Hoja ' + CFG.SHEETS.CALENDARIO2 + ': terminado (Temporada += ' + deltaMeses + ').');
   _reenumProgreso_('Hoja ' + CFG.SHEETS.CALENDARIO2, 0, data.length, data.length, 'filas');
+}
+
+// _reenumerarNombreInformeTexto_(nombre, deltaMeses): PF270; función pura. Suma deltaMeses al número de temporada de cada ficha «T<n>» que va seguida de «S<m>» o «_PI<m>» y precedida por inicio, espacio o «_» (por ejemplo «Reparacion_Domingo_T5S4 …» o «…_T2_PI34_T3_PI27 …»). No toca fechas ni otros números. Devuelve {nombre, cambios, negativos}.
+function _reenumerarNombreInformeTexto_(nombre, deltaMeses) {
+  var cambios = 0, negativos = 0;
+  var nuevo = String(nombre || '').replace(/(^|[ _])T(\d+)(?=S\d|_PI\d)/g, function (todo, pre, num) {
+    var n = Number(num) + deltaMeses;
+    if (n < 0) { negativos++; return todo; }
+    cambios++;
+    return pre + 'T' + n;
+  });
+  return { nombre: nuevo, cambios: cambios, negativos: negativos };
+}
+
+// _reenumerarNombresInformes_(): PF270; renombra los archivos de CSV/Informes y CSV/Tampermonkey cuyo nombre lleva la temporada interna (informes de reparación de domingo y sus respaldos). El contenido no cambia.
+// Sin sumar dos veces: marca en la descripción del archivo («REENUM:<corrida>:ANTES:<nombre viejo>» y luego «…:OK»), igual que _reenumRenombrarItem_ (PF260). Son pocos archivos, se hace entero en una pasada.
+function _reenumerarNombresInformes_() {
+  var props = PropertiesService.getScriptProperties();
+  var delta = Number(props.getProperty('REENUM_DELTA_MESES'));
+  var runId = props.getProperty('REENUM_RUN_ID') ||
+    (props.getProperty('REENUM_NUEVA_REF') + '|' + props.getProperty('REENUM_OFFSET_VIEJO') + '|' + delta);
+  var ok = 'REENUM:' + runId + ':OK', pre = 'REENUM:' + runId + ':ANTES:';
+  var subcarpetas = ['Informes', 'Tampermonkey'];
+  var vistos = 0, renombrados = 0, yaHechos = 0, negativos = 0;
+  for (var s = 0; s < subcarpetas.length; s++) {
+    var carpeta = _getCsvSubcarpeta_(subcarpetas[s], false);
+    if (!carpeta) { Logger.log('[Reenumeración] Nombres de informes: no existe CSV/' + subcarpetas[s] + ', se omite.'); continue; }
+    var it = carpeta.getFiles();
+    while (it.hasNext()) {
+      var f = it.next(), nombre = f.getName();
+      var desc = f.getDescription() || '';
+      if (desc === ok) { vistos++; yaHechos++; continue; }
+      if (desc.indexOf(pre) === 0 && nombre !== desc.substring(pre.length)) { f.setDescription(ok); vistos++; yaHechos++; continue; } // se cortó entre renombrar y marcar
+      var r = _reenumerarNombreInformeTexto_(nombre, delta);
+      if (r.cambios === 0 && r.negativos === 0) continue;
+      vistos++;
+      if (r.negativos > 0) { negativos++; continue; }
+      if (desc.indexOf(pre) !== 0) f.setDescription(pre + nombre);
+      f.setName(r.nombre);
+      f.setDescription(ok);
+      try { _csvCacheBorrar_(nombre); } catch (eCache) { /* sin caché que borrar */ }
+      renombrados++;
+    }
+  }
+  Logger.log('[Reenumeración] Nombres de informes: ' + vistos + ' archivo(s) con temporada en el nombre (renombrados ahora: ' + renombrados + ', ya hechos: ' + yaHechos + ', sin tocar por quedar negativos: ' + negativos + ') (T += ' + delta + ').');
+  _reenumProgreso_('Nombres de informes', yaHechos, renombrados, vistos, 'archivos');
+  return true;
 }
 
 // _reenumerarTokensSemanasTexto_(texto, deltaMeses): PF268; función pura. En una lista «T3_S1,T3_S2» suma deltaMeses al número de temporada de cada ficha; lo que no tenga esa forma queda igual. Devuelve {texto, cambiados, saltados} (saltados = fichas que quedarían con temporada negativa).
