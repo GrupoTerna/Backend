@@ -471,11 +471,11 @@ function _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna) {
   return masAntigua;
 }
 
-// _buscarFechaMasAntiguaTernaEnCorreccionesGuerra(): fuente 3 de la detección (§PF253, 25-oct-2026); devuelve Date o null.
-// Recorre Correcciones_Guerra.csv y se queda con las filas cuyo CLAN (por TAG, no por nombre) es de los clanes Terna (CFG.TERNA_TAGS); la fila de perfil de un clan externo no cuenta (_cgwPerfilEsExterno_()).
-// La fecha de cada fila sale de su Temporada y Semana internas (Semana desde 1): primer lunes de la temporada + (semana - 1) * 7 días. Una fila sin enlace de clan (clanTag vacío) NO cuenta aquí: espera a la corrida de correcciones completas (§PF252).
-// Solo lee; si el CSV no existe o no tiene filas devuelve null.
-function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
+// _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_(): §PF259 (25-oct-2026); semana más antigua de Correcciones_Guerra.csv con un clan Terna CONFIRMADO. Devuelve { temporada, semana, clanTag, via, fecha, filasTerna, perfilesSinClan } o null.
+// Cuenta (1) una fila con ClanTag de CFG.TERNA_TAGS (Log o Analytics) y (2) la fila del perfil de RoyaleAPI (sin ClanTag) cuyo «Clan RoyaleAPI» es de CFG.TERNA_TAGS (via = 'perfil'): es el caso de las semanas
+// anteriores al sistema, que solo se conocen por el perfil del jugador. NO cuenta la fila de perfil de un clan externo ni la de perfil sin clan conocido (se informa en perfilesSinClan). «fecha» = lunes de esa semana (primer lunes de la
+// temporada + (semana - 1) * 7). Compara por (temporada, semana) propias, que son las que usa el overlay. Solo lee.
+function _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_() {
   var overlay;
   try {
     overlay = _cargarOverlayCorreccionesGuerraPorClan();
@@ -491,34 +491,82 @@ function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
     ternaSet[_normalizarClanTagCorreccion(CFG.TERNA_TAGS[t])] = true;
   }
 
-  var ref = CFG.REF_DEFAULT;
-  var fechaPorSemana = {};
-  var masAntigua = null;
+  var mejor = null, filasTerna = 0, perfilesSinClan = 0;
   for (var i = 0; i < claves.length; i++) {
     var p = claves[i].split('|'); // temporada | semana | clantag | tag
-    var clanTag = p[2];
-    if (!clanTag || !ternaSet[clanTag]) continue;
-    if (_cgwPerfilEsExterno_(overlay[claves[i]])) continue;
-
+    var e = overlay[claves[i]];
     var temporada = Number(p[0]);
     var semana = Number(p[1]);
-    if (!temporada || !semana || semana < 1) continue;
+    if (isNaN(temporada) || !semana || semana < 1) continue;
 
-    var ck = temporada + '|' + semana;
-    var fecha = fechaPorSemana[ck];
-    if (fecha === undefined) {
-      var pl = primerLunesTemporada(ref, temporada);
-      if (pl && !isNaN(pl.getTime())) {
-        fecha = new Date(pl.getTime());
-        fecha.setDate(fecha.getDate() + (semana - 1) * 7);
-      } else {
-        fecha = null;
-      }
-      fechaPorSemana[ck] = fecha;
+    var clanTag = p[2], via = '';
+    if (clanTag) {
+      if (!ternaSet[clanTag]) continue;
+      via = 'clan';
+    } else {
+      var clanPerfil = e && e.clanPerfil ? _normalizarClanTagCorreccion(e.clanPerfil) : '';
+      if (!clanPerfil) { perfilesSinClan++; continue; }
+      if (!ternaSet[clanPerfil]) continue; // perfil de clan externo
+      clanTag = clanPerfil;
+      via = 'perfil';
     }
-    if (fecha && (!masAntigua || fecha < masAntigua)) masAntigua = fecha;
+    filasTerna++;
+    if (!mejor || temporada < mejor.temporada || (temporada === mejor.temporada && semana < mejor.semana)) {
+      mejor = { temporada: temporada, semana: semana, clanTag: clanTag, via: via };
+    }
   }
-  return masAntigua;
+  if (!mejor) return null;
+
+  var pl = primerLunesTemporada(CFG.REF_DEFAULT, mejor.temporada);
+  mejor.fecha = (pl && !isNaN(pl.getTime())) ? new Date(pl.getTime()) : null;
+  if (mejor.fecha) mejor.fecha.setDate(mejor.fecha.getDate() + (mejor.semana - 1) * 7);
+  mejor.filasTerna = filasTerna;
+  mejor.perfilesSinClan = perfilesSinClan;
+  return mejor;
+}
+
+// _buscarFechaMasAntiguaTernaEnCorreccionesGuerra(): fuente 3 de la detección (§PF253, 25-oct-2026; §PF259: ahora cuenta también el perfil con clan Terna); devuelve Date o null. Usa _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_().
+function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
+  var r = _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_();
+  return r && r.fecha ? r.fecha : null;
+}
+
+// sugerirFechaRefDesdeCorreccionesGuerra(): §PF259 (25-oct-2026); MANUAL, solo sugiere (no reenumera). Lee la semana más antigua con clan Terna de Correcciones_Guerra.csv y dice la fecha EXACTA que se escribe en iniciarReenumerarTemporadas().
+// La fecha es el primer lunes del mes Supercell de esa temporada: T1 pasa a ser esa temporada. Si ya hay una reenumeración a medias (REENUM_PASO) NO calcula: el CSV puede estar a medias y la fecha saldría mal.
+// Si después aparece un registro más antiguo, se vuelve a correr y da la fecha nueva; la reenumeración suma meses hacia atrás a toda Temporada guardada. Guarda la sugerencia para ejecutarReenumeracionSugerida().
+function sugerirFechaRefDesdeCorreccionesGuerra() {
+  var props = PropertiesService.getScriptProperties();
+  var pasoPendiente = props.getProperty('REENUM_PASO');
+  if (pasoPendiente !== null) {
+    Logger.log('[Sugerir fecha Ref] NO se calculó: hay una reenumeración sin terminar (REENUM_PASO = ' + pasoPendiente + '). Termínala con reanudarReenumerarTemporadas() y vuelve a correr esta función.');
+    return;
+  }
+  var r = _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_();
+  if (!r || !r.fecha) {
+    Logger.log('[Sugerir fecha Ref] No hay ninguna fila de Correcciones_Guerra.csv con un clan Terna confirmado (por ClanTag o por «Clan RoyaleAPI» del perfil). Nada que sugerir.');
+    return;
+  }
+  var tz = Session.getScriptTimeZone() || 'GMT-5';
+  var ref = CFG.REF_DEFAULT;
+  var offset = _getTemporadaOffsetRoyaleApi();
+  var plTemporada = primerLunesTemporada(ref, r.temporada);
+  var fechaStr = Utilities.formatDate(plTemporada, tz, 'yyyy-MM-dd');
+  var supercell = Utilities.formatDate(plTemporada, tz, 'yyyy-MM');
+  var royaleApi = r.temporada + offset;
+  var deltaMeses = (ref.getFullYear() * 12 + ref.getMonth()) - (plTemporada.getFullYear() * 12 + plTemporada.getMonth());
+  var resumen = 'Registro más antiguo con clan Terna: semana RoyaleAPI ' + royaleApi + '-' + r.semana + ' (temporada Supercell ' + supercell + '; propia hoy T' + r.temporada + ' S' + r.semana +
+    '), clan ' + r.clanTag + ', leído del ' + (r.via === 'perfil' ? 'perfil del jugador' : 'log/analytics del clan') + '. Filas con clan Terna: ' + r.filasTerna +
+    (r.perfilesSinClan ? '. Perfiles sin clan conocido (no cuentan): ' + r.perfilesSinClan : '') + '. ';
+
+  if (deltaMeses <= 0) {
+    Logger.log('[Sugerir fecha Ref] ' + resumen + 'La Ref actual (' + Utilities.formatDate(ref, tz, 'yyyy-MM-dd') + ') ya es igual o más antigua: no hace falta reenumerar por este archivo.');
+    return;
+  }
+  props.setProperty('REENUM_SUGERENCIA_FECHA', fechaStr);
+  props.setProperty('REENUM_SUGERENCIA_FUENTE', 'Correcciones_Guerra.csv, semana RoyaleAPI ' + royaleApi + '-' + r.semana);
+  Logger.log('[Sugerir fecha Ref] ' + resumen + 'FECHA A ESCRIBIR en iniciarReenumerarTemporadas(): ' + fechaStr + ' (primer lunes del mes de la temporada ' + supercell + '). Suma ' + deltaMeses +
+    ' mes(es) a toda Temporada guardada; el offset de RoyaleAPI pasa de ' + offset + ' a ' + (offset - deltaMeses) + ' (T1 = RoyaleAPI ' + royaleApi + '). ' +
+    'Esta función SOLO sugiere. Sugerencia guardada: también sirve ejecutarReenumeracionSugerida().');
 }
 
 // _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna): fuente 2 de la detección; recorre los bloques de fecha de la hoja Nuevos. [→ Contexto_Base_Web.md §47B025]
