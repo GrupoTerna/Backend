@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 26/10/2026 01:11:05 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 26/10/2026 01:35:31 */
 
 
 
@@ -478,8 +478,8 @@ var PASOS_RUNSYNCCSV = [
   function () { respaldarIndiceYProtegidasCSV('T_ASISTENCIA'); },
   function () { respaldarIndiceYProtegidasCSV('S_ASISTENCIA'); },
   function () { respaldarIndiceYProtegidasCSV('EXTRA'); },
-  // PF282 (26-oct-2026): presupuesto 0 = una hoja derivada por ejecucion (antes hasta 60 s de hojas por tanda; el 25-oct Links tardo ~299 s). [→ Contexto_Base_Web.md §PF282]
-  function () { return respaldarHojasDerivadasCSV(0); },
+  // PF282 (26-oct-2026): presupuesto de 15 s por ejecucion (antes 60 s; el 25-oct Links sola tardo ~299 s). Con 0 (una hoja por ejecucion) la prueba del 26-oct mostro ~2 min de espera entre continuaciones. [→ Contexto_Base_Web.md §PF282]
+  function () { return respaldarHojasDerivadasCSV(CFG.RESPALDO_DERIVADAS_SYNC_BUDGET_MS); },
   // NUEVO (2-oct-2026, pregunta 51, hoja Battlelogs; decision de la usuaria): [→ Contexto_Base_Web.md §B074]
   function () {
     if (typeof actualizarHojaBattlelogs !== 'function') {
@@ -2171,6 +2171,7 @@ var CFG = {
 
   // Presupuesto interno SOLO para el bucle de respaldarHojasDerivadasCSV() [→ Contexto_Base_Web.md §01B047]
   RESPALDO_DERIVADAS_BUDGET_MS: 60 * 1000, // 1m
+  RESPALDO_DERIVADAS_SYNC_BUDGET_MS: 15 * 1000, // 15s. PF282: presupuesto del paso 12 de runSyncCSV (agrupa hojas rapidas; una lenta como Links queda sola). Con 0 era una hoja por ejecucion y la cadena tardaba ~2 min por hoja
   REENUM_PRESUPUESTO_PASO_MS: 5 * 60 * 1000, // PF262/PF263: tope de cada paso de reenumeración que va archivo por archivo (informes, JSON de HistorialGuerra, nombres de JSON de Drive); el tope real de la tanda es REENUM_VENTANA_MS
   REENUM_VENTANA_MS: 5 * 60 * 1000, // PF263: tiempo total desde que empieza la ejecución hasta que los pasos archivo por archivo dejan de abrir archivos nuevos; el límite de Apps Script es 6 min y el minuto restante cubre el último archivo, el guardado del avance y programar la continuación
   REENUM_TANDA_PRESUPUESTO_MS: 4 * 60 * 1000, // PF263: pasado el minuto 4 de la tanda, la reenumeración ya no empieza un paso nuevo (lo retoma la continuación)
