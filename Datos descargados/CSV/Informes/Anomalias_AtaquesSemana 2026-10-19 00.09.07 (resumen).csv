@@ -1,8 +1,8 @@
 Temporada,Semana,Tag,Nombre,Clan,Tipo de anomalia,Filas,Max AtaquesSemana,AtaquesSemana final,Suma de clanes (final),Suma AtaquesHoy,Max AtaquesHoy,Filas con Origen,Fame final,Barcos final,Historial ataques,Historial fame,Historial barcos,Historial cerrada,Historial fuente,Propuesta,Valor propuesto AtaquesSemana final
-2,2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,6,16,11,22,11,4,1,1200,0,11,1200,0,true,perfil,CONFIABLE (Historial = suma de AtaquesHoy),11
-2,2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,1,11,11,22,4,4,0,1200,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),4
-2,3,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,1,11,11,27,4,4,0,1200,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),4
-2,3,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,6,16,16,27,16,4,0,2300,0,16,2300,0,true,perfil,CONFIABLE (Historial = suma de AtaquesHoy),16
-4,1,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,1,4,4,20,0,0,0,400,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),0
-4,1,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™3,SUMA_CLANES_MAYOR_16,1,4,4,20,0,0,0,400,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),0
-4,1,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,2,12,12,20,8,4,0,1600,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),8
+6,2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,6,16,11,22,11,4,1,1200,0,11,1200,0,true,perfil,CONFIABLE (Historial = suma de AtaquesHoy),11
+6,2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,1,11,11,22,4,4,0,1200,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),4
+6,3,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,1,11,11,27,4,4,0,1200,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),4
+6,3,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,6,16,16,27,16,4,0,2300,0,16,2300,0,true,perfil,CONFIABLE (Historial = suma de AtaquesHoy),16
+8,1,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,1,4,4,20,0,0,0,400,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),0
+8,1,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™3,SUMA_CLANES_MAYOR_16,1,4,4,20,0,0,0,400,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),0
+8,1,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,2,12,12,20,8,4,0,1600,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),8
