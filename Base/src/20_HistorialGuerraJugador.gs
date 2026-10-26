@@ -817,3 +817,65 @@ function _webHistorialGuerraJugador(token, tagBuscado, limite) {
 
   return { ok: true, tag: tagNorm, total: total, truncado: recortar, registros: salida };
 }
+// LIMPIEZA DE ARCHIVOS REPETIDOS EN LA CARPETA INDIVIDUAL (25-oct-2026)
+
+/**
+ * limpiarDuplicadosHistorialGuerraIndividual(aplicar) (25-oct-2026; sin probar en Apps Script real)
+ * Busca en la carpeta de JSON individuales de RoyaleAPI los archivos con EXACTAMENTE el mismo nombre (el caso de las copias que el navegador
+ * bajaba como «(1)»). Solo toca grupos de nombre idéntico. Si el contenido es igual byte a byte, conserva el más antiguo y manda los demás a la papelera
+ * (se recuperan desde ahí); si el contenido difiere, no toca nada y lo deja en el registro. Por defecto SOLO SIMULA: con aplicar=true recién envía a la papelera.
+ * Lee el contenido solo de los grupos repetidos y se detiene antes de pasar de unos 5 minutos (la corrida siguiente continúa donde quedó, porque lo ya borrado no vuelve a aparecer).
+ * @param {boolean=} aplicar
+ * @returns {{aplicado:boolean, gruposRepetidos:number, identicos:number, distintos:number, enviadosAPapelera:number, incompleto:boolean}}
+ */
+function limpiarDuplicadosHistorialGuerraIndividual(aplicar) {
+  var inicio = Date.now();
+  var LIMITE_MS = 5 * 60 * 1000;
+  var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL);
+  var porNombre = {};
+  var it = folder.getFiles();
+  while (it.hasNext()) {
+    var f = it.next();
+    var n = f.getName();
+    if (!porNombre[n]) porNombre[n] = [];
+    porNombre[n].push(f);
+  }
+
+  var res = { aplicado: !!aplicar, gruposRepetidos: 0, identicos: 0, distintos: 0, enviadosAPapelera: 0, incompleto: false };
+  var detalle = [];
+  var nombres = Object.keys(porNombre);
+  for (var i = 0; i < nombres.length; i++) {
+    var lista = porNombre[nombres[i]];
+    if (lista.length < 2) continue;
+    res.gruposRepetidos++;
+    if (Date.now() - inicio > LIMITE_MS) { res.incompleto = true; continue; }
+
+    lista.sort(function (a, b) { return a.getDateCreated().getTime() - b.getDateCreated().getTime(); });
+    var conservado = lista[0];
+    var base = conservado.getBlob().getDataAsString();
+    for (var j = 1; j < lista.length; j++) {
+      var otro = lista[j];
+      if (otro.getBlob().getDataAsString() === base) {
+        res.identicos++;
+        if (aplicar) { otro.setTrashed(true); res.enviadosAPapelera++; }
+        detalle.push((aplicar ? 'PAPELERA' : 'SE ENVIARIA') + ' ' + nombres[i] + ' (id ' + otro.getId() + ')');
+      } else {
+        res.distintos++;
+        detalle.push('NO SE TOCA (contenido distinto) ' + nombres[i] + ' (ids ' + conservado.getId() + ' y ' + otro.getId() + ')');
+      }
+    }
+  }
+
+  Logger.log('[Limpieza] Individual — ' + (aplicar ? 'APLICADO' : 'SIMULACION') + ': grupos con nombre repetido ' + res.gruposRepetidos +
+             ' | identicos ' + res.identicos + ' | distintos ' + res.distintos + ' | enviados a la papelera ' + res.enviadosAPapelera +
+             (res.incompleto ? ' | INCOMPLETO por tiempo: vuelve a correrla' : ''));
+  if (detalle.length) Logger.log(detalle.join('\n'));
+  _registrarLogScriptTerna('limpiarDuplicadosHistorialGuerraIndividual(' + (aplicar ? 'true' : '') + ')',
+    (aplicar ? 'Aplicado. ' : 'Simulacion. ') + 'Grupos repetidos: ' + res.gruposRepetidos + ', identicos: ' + res.identicos +
+    ', distintos: ' + res.distintos + ', enviados a la papelera: ' + res.enviadosAPapelera + (res.incompleto ? ' (incompleto por tiempo)' : ''), []);
+  return res;
+}
+
+/** Atajos para el editor de Apps Script (sin parámetros): simula / aplica la limpieza de la carpeta Individual. */
+function limpiarDuplicadosHistorialGuerraIndividualSimular() { return limpiarDuplicadosHistorialGuerraIndividual(false); }
+function limpiarDuplicadosHistorialGuerraIndividualAplicar() { return limpiarDuplicadosHistorialGuerraIndividual(true); }
