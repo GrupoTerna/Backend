@@ -1,0 +1,22 @@
+{
+  "tag": "#V9CJPC2PC",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "24/10/2026",
+  "registros": [
+    {
+      "temporadaInterna": 10,
+      "temporadaRoyaleAPI": 137,
+      "semana": 3,
+      "clan": "Grupo乂Terna™",
+      "ataques": 8,
+      "fame": 1000,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    }
+  ],
+  "reenumeracionId": "1792970500096"
+}

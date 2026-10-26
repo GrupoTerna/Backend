@@ -1,0 +1,22 @@
+{
+  "tag": "#8CY9QYPRU",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "24/10/2026",
+  "registros": [
+    {
+      "temporadaInterna": 10,
+      "temporadaRoyaleAPI": 137,
+      "semana": 3,
+      "clan": "GrupoXTerna™2",
+      "ataques": 2,
+      "fame": 250,
+      "barcos": 2,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    }
+  ],
+  "reenumeracionId": "1792970500096"
+}

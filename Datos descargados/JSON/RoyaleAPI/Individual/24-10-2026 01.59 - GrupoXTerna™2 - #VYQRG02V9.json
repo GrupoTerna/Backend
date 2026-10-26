@@ -1,0 +1,46 @@
+{
+  "tag": "#VYQRG02V9",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "24/10/2026",
+  "registros": [
+    {
+      "temporadaInterna": 10,
+      "temporadaRoyaleAPI": 137,
+      "semana": 3,
+      "clan": "GrupoXTerna™2",
+      "ataques": 8,
+      "fame": 1000,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 10,
+      "temporadaRoyaleAPI": 137,
+      "semana": 2,
+      "clan": "GrupoXTerna™2",
+      "ataques": 16,
+      "fame": 2300,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 10,
+      "temporadaRoyaleAPI": 137,
+      "semana": 1,
+      "clan": "GrupoXTerna™2",
+      "ataques": 16,
+      "fame": 2400,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    }
+  ],
+  "reenumeracionId": "1792970500096"
+}

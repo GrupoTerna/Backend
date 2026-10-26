@@ -1,0 +1,142 @@
+{
+  "tag": "#9G80CLJ08",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "24/10/2026",
+  "registros": [
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 3,
+      "clan": "Grupo乂Terna™",
+      "ataques": 16,
+      "fame": 2100,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 4,
+      "clan": "Grupo乂Terna™",
+      "ataques": 16,
+      "fame": 2400,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 9,
+      "temporadaRoyaleAPI": 136,
+      "semana": 2,
+      "clan": "Grupo乂Terna™",
+      "ataques": 16,
+      "fame": 2950,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 9,
+      "temporadaRoyaleAPI": 136,
+      "semana": 1,
+      "clan": "Grupo乂Terna™",
+      "ataques": 16,
+      "fame": 2800,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 5,
+      "clan": "Grupo乂Terna™",
+      "ataques": 16,
+      "fame": 3050,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 9,
+      "temporadaRoyaleAPI": 136,
+      "semana": 3,
+      "clan": "Grupo乂Terna™",
+      "ataques": 15,
+      "fame": 2500,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 10,
+      "temporadaRoyaleAPI": 137,
+      "semana": 1,
+      "clan": "Grupo乂Terna™",
+      "ataques": 16,
+      "fame": 2400,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 10,
+      "temporadaRoyaleAPI": 137,
+      "semana": 2,
+      "clan": "Grupo乂Terna™",
+      "ataques": 16,
+      "fame": 2700,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 9,
+      "temporadaRoyaleAPI": 136,
+      "semana": 4,
+      "clan": "Grupo乂Terna™",
+      "ataques": 16,
+      "fame": 2050,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 8,
+      "temporadaRoyaleAPI": 135,
+      "semana": 2,
+      "clan": "Grupo乂Terna™",
+      "ataques": 4,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 10,
+      "temporadaRoyaleAPI": 137,
+      "semana": 3,
+      "clan": "Grupo乂Terna™",
+      "ataques": 8,
+      "fame": 1100,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "comentario": ""
+    }
+  ],
+  "reenumeracionId": "1792970500096"
+}
