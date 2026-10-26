@@ -435,7 +435,8 @@ var PASOS_RUNSYNCCSV = [
   function () { respaldarIndiceYProtegidasCSV('T_ASISTENCIA'); },
   function () { respaldarIndiceYProtegidasCSV('S_ASISTENCIA'); },
   function () { respaldarIndiceYProtegidasCSV('EXTRA'); },
-  function () { return respaldarHojasDerivadasCSV(); },
+  // PF282 (26-oct-2026): presupuesto 0 = una hoja derivada por ejecucion (antes hasta 60 s de hojas por tanda; el 25-oct Links tardo ~299 s). [→ Contexto_Base_Web.md §PF282]
+  function () { return respaldarHojasDerivadasCSV(0); },
   // NUEVO (2-oct-2026, pregunta 51, hoja Battlelogs; decision de la usuaria): [→ Contexto_Base_Web.md §B074]
   function () {
     if (typeof actualizarHojaBattlelogs !== 'function') {
