@@ -227,6 +227,12 @@ var CFG = {
   // --- Control de ejecución (locks auto-expirables, ver 00_Main.gs) --- [→ Contexto_Base_Web.md §01B029]
   LOCK_MAX_DURACION_MS: 6 * 60 * 1000 + 30 * 1000, // 6m30s
 
+  // 26-oct-2026 (PF281): reintento de los diarios que toman el candado (runUpdateProgramado, runSyncCSV) cuando se cancelan porque el candado
+  // estaba ocupado (lock corto de _adquirirLockEjecucion u otra ejecución en curso). Hasta DIARIO_REINTENTO_MAX intentos por día, uno cada
+  // DIARIO_REINTENTO_MS. [→ Contexto_Base_Web.md §PF281]
+  DIARIO_REINTENTO_MS: 10 * 60 * 1000,
+  DIARIO_REINTENTO_MAX: 3,
+
   // 17-oct-2026 (PF091, decisión A): límite REAL de una ejecución de Apps Script (360 s; lo midió el registro de runGuerra de las 12:43,
   // cortado a los 361 s). LOCK_MAX_DURACION_MS (6m30s) sigue siendo solo la vigencia del candado; los márgenes de tiempo de
   // runGuerra() y de su calentamiento se calculan contra ESTE valor. [→ Contexto_Base_Web.md §PF091]
