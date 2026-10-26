@@ -49,6 +49,8 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   // PF267 (26-oct-2026): Historial_I/S, Historial_A/D y Comentarios llevan Temporada/Semana/Día calculadas desde Fecha. Se recalculan DESPUÉS de _finalizarReenumeracion(),
   // porque ahí cambian CFG_REF_ACTIVO y CFG_OFFSET_ROYALEAPI; antes saldría la numeración vieja. No se les suma el delta. Va al FINAL para no mover los índices de los pasos anteriores.
   function () { completarTemporadaSemanaDiaHojas(); },
+  // PF268 (26-oct-2026): fichas «T<n>_S<m>» de las columnas «Semanas» de T_Lista, S_Lista y CR_Lista (y sus Backup_*.csv). Al FINAL por el mismo motivo que el paso anterior (no mover índices).
+  function () { return _reenumerarTokensSemanasTorneos_(); },
 ];
 
 // ----- Funciones manuales / punto de entrada -----
@@ -398,6 +400,7 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
   props.deleteProperty('REENUM_HG_IDX');
   props.deleteProperty('REENUM_INF_IDX'); // PF258: índice del paso de informes
   props.deleteProperty('REENUM_JSON_IDX'); // PF260: índice del paso de nombres de JSON
+  Object.keys(props.getProperties()).forEach(function (k) { if (k.indexOf('REENUM_TOK_') === 0) props.deleteProperty(k); }); // PF268: marcas del paso de fichas «Semanas»
 
   Logger.log('[Reenumeración] Ref vieja: ' + refVieja.toDateString() +
              ' | Ref nueva: ' + refNueva.toDateString() +
@@ -1164,6 +1167,79 @@ function _reenumerarCalendario2Hoja() {
   rangoTemp.setValues(data);
 
   Logger.log('[Reenumeración] Hoja ' + CFG.SHEETS.CALENDARIO2 + ': ' + data.length + ' fila(s) actualizadas (Temporada += ' + deltaMeses + ').');
+}
+
+// _reenumerarTokensSemanasTexto_(texto, deltaMeses): PF268; función pura. En una lista «T3_S1,T3_S2» suma deltaMeses al número de temporada de cada ficha; lo que no tenga esa forma queda igual. Devuelve {texto, cambiados, saltados} (saltados = fichas que quedarían con temporada negativa).
+function _reenumerarTokensSemanasTexto_(texto, deltaMeses) {
+  var s = String(texto === null || texto === undefined ? '' : texto);
+  var cambiados = 0, saltados = 0;
+  if (s === '') return { texto: s, cambiados: 0, saltados: 0 };
+  var partes = s.split(',').map(function (tok) {
+    var t = tok.trim();
+    var m = /^T(\d+)_S(\d+)$/i.exec(t);
+    if (!m) return tok;
+    var nuevo = Number(m[1]) + deltaMeses;
+    if (nuevo < 0) { saltados++; return tok; }
+    cambiados++;
+    return tok.replace(t, 'T' + nuevo + '_S' + m[2]);
+  });
+  return { texto: partes.join(','), cambiados: cambiados, saltados: saltados };
+}
+
+// _reenumerarTokensSemanasTorneos_(): PF268; las columnas «Semanas» de T_Lista, S_Lista y CR_Lista (y sus Backup_*.csv) guardan fichas «T<n>_S<m>» con la temporada INTERNA
+// (_parseSemanasSorteo, _extraerIsosDesdeSemanasCsv en 26_Torneos_Core.gs). Sin sumarles el delta, esas fichas apuntarían a otra semana con la numeración nueva. Reanudable: marca por destino
+// (REENUM_TOK_<nombre> = id de la corrida), así que un reintento no suma dos veces. Va al FINAL de PASOS_REENUMERAR_TEMPORADAS para no mover los índices de los pasos anteriores.
+function _reenumerarTokensSemanasTorneos_() {
+  var props = PropertiesService.getScriptProperties();
+  var delta = Number(props.getProperty('REENUM_DELTA_MESES'));
+  var runId = props.getProperty('REENUM_RUN_ID') ||
+    (props.getProperty('REENUM_NUEVA_REF') + '|' + props.getProperty('REENUM_OFFSET_VIEJO') + '|' + delta);
+  var destinos = [
+    { tipo: 'hoja', nombre: CFG.SHEETS.T_LISTA,  col: TL.SEMANAS, fila: 3 },
+    { tipo: 'csv',  nombre: 'Backup_T_Lista.csv',  col: TL.SEMANAS },
+    { tipo: 'hoja', nombre: CFG.SHEETS.S_LISTA,  col: SL.SEMANAS, fila: 3 },
+    { tipo: 'csv',  nombre: 'Backup_S_Lista.csv',  col: SL.SEMANAS },
+    { tipo: 'hoja', nombre: CFG.SHEETS.CR_LISTA, col: CR.SEMANAS, fila: 4 },
+    { tipo: 'csv',  nombre: 'Backup_CR_Lista.csv', col: CR.SEMANAS }
+  ];
+  for (var d = 0; d < destinos.length; d++) {
+    var dest = destinos[d];
+    var clave = 'REENUM_TOK_' + dest.nombre;
+    if (props.getProperty(clave) === runId) continue; // ya hecho en esta corrida
+    var cambiados = 0, saltados = 0;
+    if (dest.tipo === 'hoja') {
+      var sh = _getSs().getSheetByName(dest.nombre);
+      if (!sh || sh.getLastRow() < dest.fila) {
+        Logger.log('[Reenumeración] Fichas «Semanas» de ' + dest.nombre + ': hoja ausente o sin datos, se omite.');
+      } else {
+        var rango = sh.getRange(dest.fila, dest.col, sh.getLastRow() - dest.fila + 1, 1);
+        var valores = rango.getValues();
+        for (var i = 0; i < valores.length; i++) {
+          var r = _reenumerarTokensSemanasTexto_(valores[i][0], delta);
+          if (r.cambiados > 0) { valores[i][0] = r.texto; cambiados += r.cambiados; }
+          saltados += r.saltados;
+        }
+        if (cambiados > 0) rango.setValues(valores); // solo esta columna (PF258: no se reescribe el resto de la hoja)
+      }
+    } else {
+      var csvText = _loadCSVFromDrive(dest.nombre);
+      var parsed = csvText ? _parseCSV(csvText) : null;
+      if (!parsed || parsed.length < 2) {
+        Logger.log('[Reenumeración] Fichas «Semanas» de ' + dest.nombre + ': no existe o está vacío, se omite.');
+      } else {
+        for (var j = 1; j < parsed.length; j++) {
+          if (parsed[j].length < dest.col) continue;
+          var rc = _reenumerarTokensSemanasTexto_(parsed[j][dest.col - 1], delta);
+          if (rc.cambiados > 0) { parsed[j][dest.col - 1] = rc.texto; cambiados += rc.cambiados; }
+          saltados += rc.saltados;
+        }
+        if (cambiados > 0) _saveCSVToDrive(dest.nombre, _encodeCSV(parsed));
+      }
+    }
+    props.setProperty(clave, runId);
+    Logger.log('[Reenumeración] Fichas «Semanas» de ' + dest.nombre + ': ' + cambiados + ' ficha(s) actualizada(s) (T += ' + delta + ')' + (saltados ? ', ' + saltados + ' sin tocar por quedar negativas' : '') + '.');
+  }
+  return true;
 }
 
 // _reenumerarCorreccionesGuerraCSV(): en Correcciones_Guerra.csv Temporada es parte de la clave del overlay (desde 29-sep-2026); reconstruye cada clave. [→ Contexto_Base_Web.md §47B031]
