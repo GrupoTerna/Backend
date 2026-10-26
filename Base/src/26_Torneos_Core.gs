@@ -322,6 +322,7 @@ function _comentarioCRAutogenerado_(org) {
  * _autogenerarParCRListaSiCorrespondeInicioTemporada() [→ Contexto_Base_Web.md §26B024]
  */
 function _autogenerarParCRListaSiCorrespondeInicioTemporada() {
+  if (_bloquearSiReenumerando_('_autogenerarParCRListaSiCorrespondeInicioTemporada')) return; // PF260
   // PF208 (24-oct-2026, pedido de la usuaria): la fila planificada de Cambio de Rango se crea AL INICIAR EL MES (la temporada vigente), con
   // Fecha = primer lunes de la temporada SIGUIENTE y Semanas = TODAS las semanas de la temporada ACTUAL. Antes solo actuaba el primer lunes
   // de la temporada, fechaba el par con el día de la corrida y evaluaba la temporada anterior: si ese día no corría el activador, no se

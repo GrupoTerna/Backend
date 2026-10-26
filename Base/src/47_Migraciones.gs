@@ -43,6 +43,8 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   // PF258 (25-oct-2026, etapa C, tanda 4): informes y respaldos con fecha en CSV/Informes y CSV/Tampermonkey. Se detecta la columna por encabezado EXACTO
   // «Temporada»/«temporada» (no toca Temporada_2, Temporada RoyaleAPI, Temporada Supercell ni Id_RoyaleAPI); si el informe trae la columna ID, se recalcula.
   function () { return _reenumerarInformesCSV(); },
+  // PF260 (25-oct-2026): nombres de los JSON de Drive (Endpoints, Anomalías, Otros; incluye los clanes bloqueados como NARANJA x). Va ANTES de _finalizarReenumeracion() para no mover los índices de los pasos anteriores.
+  function () { return _reenumerarNombresJsonDrive(); },
   function () { _finalizarReenumeracion(); },
 ];
 
@@ -392,6 +394,7 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
   props.setProperty('REENUM_RUN_ID', String(Date.now())); // PF257: marca de esta corrida dentro de los JSON de HistorialGuerra (evita sumar dos veces)
   props.deleteProperty('REENUM_HG_IDX');
   props.deleteProperty('REENUM_INF_IDX'); // PF258: índice del paso de informes
+  props.deleteProperty('REENUM_JSON_IDX'); // PF260: índice del paso de nombres de JSON
 
   Logger.log('[Reenumeración] Ref vieja: ' + refVieja.toDateString() +
              ' | Ref nueva: ' + refNueva.toDateString() +
@@ -974,6 +977,96 @@ function _reenumerarHistorialGuerraIndividual() {
   Logger.log('[Reenumeración] HistorialGuerra individual: ' + archivos.length + ' archivo(s) revisados en esta corrida de la carpeta (cambiados en esta pasada: ' + cambiados +
              ', ya hechos: ' + yaHechos + ', omitidos: ' + omitidos + ') (temporadaInterna += ' + deltaMeses + ').');
   return true;
+}
+
+// _reenumerarNombresJsonDrive(): PF260 (25-oct-2026); suma REENUM_DELTA_MESES al número de temporada que llevan en el NOMBRE los archivos y carpetas de JSON de Drive: archivos «T-NN  S-NN P.I-NN… - clans.json» (y currentriverrace) y carpetas «T-NN» de cada clan, incluidos los clanes
+// bloqueados (por ejemplo NARANJA x: se recorren todas las subcarpetas, no solo CFG.TERNA_TAGS). Raíces: DRIVE_FOLDER_ID_ENDPOINTS y, dentro de DRIVE_FOLDER_ID_JSON, las carpetas «Anomalías» y «Otros». Solo cambia el número; fecha, hora, semana y P.I. quedan igual.
+// Reanudable y sin sumar dos veces: recorre las carpetas en un orden fijo (por ID) y guarda en REENUM_JSON_IDX cuántas ya terminó; cada archivo o carpeta lleva en su descripción una marca por corrida (ANTES:<nombre viejo> y luego OK), así que un corte entre renombrar y marcar no duplica la suma.
+// Devuelve false si se agotó el presupuesto (se reintenta). Las descripciones que tuvieran esos archivos se reemplazan por la marca. Sin probar en Apps Script real.
+function _reenumerarNombresJsonDrive() {
+  var props = PropertiesService.getScriptProperties();
+  var delta = Number(props.getProperty('REENUM_DELTA_MESES'));
+  var runId = props.getProperty('REENUM_RUN_ID') ||
+    (props.getProperty('REENUM_NUEVA_REF') + '|' + props.getProperty('REENUM_OFFSET_VIEJO') + '|' + delta);
+  var claveIdx = 'REENUM_JSON_IDX';
+
+  var raices = [];
+  try { raices.push(DriveApp.getFolderById(DRIVE_FOLDER_ID_ENDPOINTS)); }
+  catch (e) { Logger.log('[Reenumeración] JSON Drive: carpeta Endpoints no accesible (' + e.message + ').'); }
+  try {
+    var jsonRaiz = DriveApp.getFolderById(DRIVE_FOLDER_ID_JSON);
+    var nombresExtra = ['Anomalías', 'Otros'];
+    for (var n = 0; n < nombresExtra.length; n++) {
+      var itN = jsonRaiz.getFoldersByName(nombresExtra[n]);
+      if (itN.hasNext()) raices.push(itN.next());
+    }
+  } catch (e2) { Logger.log('[Reenumeración] JSON Drive: carpeta JSON no accesible (' + e2.message + ').'); }
+
+  var carpetas = [];
+  for (var r = 0; r < raices.length; r++) _listarCarpetasOrdenadas_(raices[r], carpetas);
+
+  var idxInicio = parseInt(props.getProperty(claveIdx) || '0', 10);
+  if (idxInicio >= carpetas.length) idxInicio = 0;
+  var inicio = Date.now();
+  var reRaiz = /^T-(\d+)(\s[\s\S]*)$/;  // archivos: «T-05  S-02 P.I-07-L 13-09-2026 12.26 - Clan - clans.json»
+  var reCarpeta = /^T-(\d+)$/;           // carpetas de temporada dentro de la carpeta del clan
+  var cambiados = 0, saltadosNegativo = 0;
+
+  for (var i = idxInicio; i < carpetas.length; i++) {
+    var carpeta = carpetas[i];
+    var it = carpeta.getFiles();
+    while (it.hasNext()) {
+      var f = it.next();
+      if (!reRaiz.test(f.getName())) continue;
+      var rf = _reenumRenombrarItem_(f, reRaiz, delta, runId);
+      if (rf === 1) cambiados++; else if (rf === -1) saltadosNegativo++;
+      if ((Date.now() - inicio) > CFG.RESPALDO_DERIVADAS_BUDGET_MS) {
+        Logger.log('[Reenumeración] JSON Drive: presupuesto agotado en la carpeta ' + (i + 1) + '/' + carpetas.length + ' (renombrados en esta pasada: ' + cambiados + '). Se reintenta en la próxima continuación.');
+        props.setProperty(claveIdx, String(i)); // esta carpeta se vuelve a mirar; los ya marcados se saltan
+        return false;
+      }
+    }
+    if (reCarpeta.test(carpeta.getName())) {
+      var rc = _reenumRenombrarItem_(carpeta, reCarpeta, delta, runId);
+      if (rc === 1) cambiados++; else if (rc === -1) saltadosNegativo++;
+    }
+    props.setProperty(claveIdx, String(i + 1));
+  }
+  props.deleteProperty(claveIdx);
+  Logger.log('[Reenumeración] JSON Drive: ' + carpetas.length + ' carpeta(s) recorridas (renombrados en esta pasada: ' + cambiados + ', sin renombrar por quedar negativos: ' + saltadosNegativo + ') (T-NN += ' + delta + ').');
+  return true;
+}
+
+// _listarCarpetasOrdenadas_(carpeta, salida): PF260; agrega la carpeta y, en profundidad, sus subcarpetas ordenadas por ID (el orden no cambia al renombrar).
+function _listarCarpetasOrdenadas_(carpeta, salida) {
+  salida.push(carpeta);
+  var hijas = [];
+  var it = carpeta.getFolders();
+  while (it.hasNext()) hijas.push(it.next());
+  hijas.sort(function (a, b) { var x = a.getId(), y = b.getId(); return x < y ? -1 : (x > y ? 1 : 0); });
+  for (var i = 0; i < hijas.length; i++) _listarCarpetasOrdenadas_(hijas[i], salida);
+}
+
+// _reenumRenombrarItem_(item, regex, delta, runId): PF260; renombra un archivo o carpeta sumando delta al número de temporada (grupo 1 de regex; grupo 2 = resto del nombre). Devuelve 1 si lo renombró, 0 si ya estaba hecho, -1 si el número quedaría negativo.
+function _reenumRenombrarItem_(item, regex, delta, runId) {
+  var nombre = item.getName();
+  var m = regex.exec(nombre);
+  if (!m) return 0;
+  var ok = 'REENUM:' + runId + ':OK';
+  var pre = 'REENUM:' + runId + ':ANTES:';
+  var desc = item.getDescription() || '';
+  if (desc === ok) return 0;
+  if (desc.indexOf(pre) === 0) {
+    // Se cortó entre renombrar y marcar: si el nombre ya no es el que se anotó, ya estaba renombrado.
+    if (nombre !== desc.substring(pre.length)) { item.setDescription(ok); return 0; }
+  } else {
+    item.setDescription(pre + nombre);
+  }
+  var nuevoNumero = Number(m[1]) + delta;
+  if (nuevoNumero < 0) { item.setDescription(''); return -1; }
+  item.setName('T-' + _pad2_(nuevoNumero) + (m[2] || ''));
+  item.setDescription(ok);
+  return 1;
 }
 
 // _reenumerarHistorialGuerraGrupalCSV(): PF257; suma REENUM_DELTA_MESES a TemporadaInterna (columna 3) de HistorialGuerra_Grupal.csv, que vive en la carpeta Grupal (no en CSV/Informes); lectura y escritura con las funciones de 20_HistorialGuerraJugador.gs.

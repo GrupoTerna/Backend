@@ -63,6 +63,7 @@ var _HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG = null;
  * resolverAlertasHistorialGuerra() [→ Contexto_Base_Web.md §20B010]
  */
 function resolverAlertasHistorialGuerra() {
+  if (_bloquearSiReenumerando_('resolverAlertasHistorialGuerra')) return; // PF260
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA);
   if (!sh) {

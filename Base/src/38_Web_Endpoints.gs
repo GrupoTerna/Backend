@@ -1139,6 +1139,12 @@ function _testTamanioGuerraEnVivoUna_(admin) {
 
 // doPost(e): router POST del Web App (webhook de Cloud API de WhatsApp, acciones web* del portal y endpoints Tampermonkey); el envío real a graph.facebook.com necesita token y Phone Number ID. El bot hoy está inactivo (sin chip), código conservado. [→ Contexto_Base_Web.md §38B070]
 function doPost(e) {
+  // PF260 (25-oct-2026): con una reenumeración de temporadas en curso, doPost no escribe nada (Tampermonkey, correcciones, administración web): grabaría con numeración mezclada. Login y logout siguen.
+  if (_reenumeracionEnCurso_() && !(e && e.parameter && (e.parameter.accion === 'webLogin' || e.parameter.accion === 'webAuthLogout'))) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: false, error: 'Se están reenumerando las temporadas del sistema. Vuelve a intentarlo en unos minutos.', reenumeracion: true, code: 503 }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   // Portal web público (login, gestión de miembro; ver 37_Web_API.gs) se resuelve ANTES que los demás accion=. Rate limit de POST web* (30-ago-2026; FIX B-30, 18-sep-2026): se aplica antes de cualquier webXxx; el sessionToken viaja en el body JSON, se intenta parsear para contar en el bucket admin; si no es JSON (ej. webLogin) cuenta como público. [→ Contexto_Base_Web.md §38B071]
   if (e && e.parameter && typeof e.parameter.accion === 'string' && e.parameter.accion.indexOf('web') === 0) {
     var esAdminValidoPost = false;

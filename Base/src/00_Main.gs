@@ -1007,6 +1007,7 @@ function _continuarProcesarSorteos() {
  * runSincronizarContactos() - Sincroniza Google Contacts con el Directorio.
  */
 function runSincronizarContactos() {
+  if (_bloquearSiReenumerando_('runSincronizarContactos')) return; // PF260
   // VENTANA DE GUERRA PROTEGIDA (05-oct-2026): se penso que este disparo diario caia a las 4:xx a.m. Lima (atHour(9) [→ Contexto_Base_Web.md §B107]
   if (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
     Logger.log('[Contactos] OMITIDO: ventana de guerra protegida (4:00-5:00 a.m. Lima). Se ejecuta en su proximo horario.');
@@ -1212,6 +1213,7 @@ function _runGuerraColaHoraria_(t0) {
  * [→ Contexto_Base_Web.md §PF143]
  */
 function _continuarRunGuerraCola() {
+  if (_bloquearSiReenumerando_('_continuarRunGuerraCola')) return; // PF260
   var props = PropertiesService.getScriptProperties();
   _borrarTriggersDeContinuacion('_continuarRunGuerraCola');
   if (!props.getProperty('RUNGUERRA_COLA_PENDIENTE')) {
@@ -1331,6 +1333,7 @@ function runCalendario() {
  * runResaltarDia() - Resalta el día actual en el Calendario.
  */
 function runResaltarDia() {
+  if (_bloquearSiReenumerando_('runResaltarDia')) return; // PF260
   Logger.log('[Calendario] Resaltando día actual...');
 
   // FIX (13-ago-2026, pedido del usuario): "el calendario trae la fecha [→ Contexto_Base_Web.md §B119]
@@ -1352,6 +1355,7 @@ function runSyncPlantillas() {
  * runFormato() - Aplica formato global bajo demanda o por trigger diario.
  */
 function runFormato() {
+  if (_bloquearSiReenumerando_('runFormato')) return; // PF260
   Logger.log('[Formato] Ejecutando aplicarFormatoGlobal...');
   aplicarFormatoGlobal();
   Logger.log('[Formato] Completado.');
@@ -1570,7 +1574,22 @@ function _liberarLockSiNoEsRunGuerra_() {
   } catch (e) { /* propiedad corrupta: se deja como esta */ }
 }
 
+// _reenumeracionEnCurso_(): PF260 (25-oct-2026); true si hay una reenumeración de temporadas sin terminar (REENUM_PASO guardado). Mientras sea true NO debe correr nada que lea o escriba numeración propia: una corrida a medias mezclaría la numeración vieja y la nueva.
+function _reenumeracionEnCurso_() {
+  return PropertiesService.getScriptProperties().getProperty('REENUM_PASO') !== null;
+}
+
+// _bloquearSiReenumerando_(nombreFn): PF260; devuelve true (y lo anota en el log) si hay reenumeración en curso; el llamador debe salir sin hacer nada. No toma ni libera ningún lock.
+function _bloquearSiReenumerando_(nombreFn) {
+  if (!_reenumeracionEnCurso_()) return false;
+  Logger.log('[Reenumeración] ' + nombreFn + '(): NO se ejecuta, hay una reenumeración de temporadas en curso (REENUM_PASO = ' +
+    PropertiesService.getScriptProperties().getProperty('REENUM_PASO') + '). Se retoma sola cuando termine.');
+  return true;
+}
+
 function _adquirirLockEjecucion(nombreFn) {
+  // PF260: con una reenumeración en curso solo pueden tomar el lock las funciones de la propia reenumeración (runGuerra incluida: escribiría con numeración mezclada).
+  if (nombreFn !== 'runReenumerarTemporadas' && nombreFn !== 'reanudarReenumerarTemporadas' && _bloquearSiReenumerando_(nombreFn)) return false;
   // VENTANA DE GUERRA PROTEGIDA (05-oct-2026): fuera de runGuerra() nada puede empezar desde
   // CFG.VENTANA_GUERRA_PRE_MARGEN_MIN minutos antes de las 4:00 a.m. Lima hasta las 5:00 a.m.
   if (nombreFn !== 'runGuerra' && CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
@@ -1636,7 +1655,18 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   var props = PropertiesService.getScriptProperties();
 
   // VENTANA DE GUERRA PROTEGIDA (05-oct-2026): una continuacion programada antes de la ventana no debe [→ Contexto_Base_Web.md §B136]
-  if (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
+  // PF260: una cadena que NO es la reenumeración se descarta mientras haya reenumeración en curso; y la reenumeración NUNCA se aborta por la ventana de guerra
+  // (abortar borraba REENUM_PASO y obligaba a empezar de cero, sumando el delta dos veces).
+  if (idEjecucion !== 'REENUM' && _reenumeracionEnCurso_()) {
+    Logger.log('[' + idEjecucion + '] DESCARTADA: hay una reenumeración de temporadas en curso. La próxima corrida normal empieza de cero cuando termine.');
+    props.deleteProperty(idEjecucion + '_PASO');
+    props.deleteProperty(idEjecucion + '_REINTENTO');
+    props.deleteProperty(idEjecucion + '_SIN_API');
+    props.deleteProperty(idEjecucion + '_SIN_API_TS');
+    _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
+    return false;
+  }
+  if (idEjecucion !== 'REENUM' && CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
     Logger.log('[' + idEjecucion + '] ABORTADA: la ventana de guerra protegida (4:00-5:00 a.m. Lima, mas ' +
       CFG.VENTANA_GUERRA_PRE_MARGEN_MIN + ' min previos) esta activa. Se descarta el avance y la continuacion ' +
       'pendiente; la proxima corrida normal empieza de cero despues de las 5:00 a.m.');
