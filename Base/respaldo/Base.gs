@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 19:38:55 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 20:28:52 */
 
 
 
@@ -3681,7 +3681,7 @@ function _pintarEncabezadosControl(sh) {
   sh.getRange(1, 1, 2, 3).setBorder(false, false, false, false, false, false);
 }
 
-// Historial: N°|Fecha|Tag|Nombre|Movimiento|Clan|ClanTag (7 columnas) - Nombre = nombre en juego del jugador [→ Contexto_Base_Web.md §02B038]
+// Historial: N°|Fecha|Tag|Nombre|Movimiento|Clan|ClanTag (7 columnas propias + 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267) - Nombre = nombre en juego del jugador [→ Contexto_Base_Web.md §02B038]
 function _setupHistorial(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.HISTORIAL);
   var headers = ['N°','Fecha','Tag','Nombre','Movimiento','Clan','ClanTag'];
@@ -3689,7 +3689,10 @@ function _setupHistorial(ss) {
     sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   }
   applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Historial OK');
+  // 26-oct-2026 (pedido de la usuaria, §PF267): 5 columnas más al final (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día), calculadas desde Fecha.
+  // Se completan también las filas que ya existían (la hoja puede venir de antes de este cambio).
+  _completarTSDEnHoja_(sh, 2, HISTORIAL_TSD_COL);
+  Logger.log('[Setup] Historial OK (12 cols)');
 }
 
 function _setupPendientes(ss) {
@@ -3758,7 +3761,9 @@ function _setupComentarios(ss) {
   var headers = ['N°','Fecha','Tag','Nombre','Nom_Multi','ClanTag','Clan','Rango','Líder','Comentario'];
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Comentarios OK (10 cols)');
+  // 26-oct-2026 (pedido de la usuaria, §PF267): 5 columnas más al final (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día), calculadas desde Fecha.
+  _completarTSDEnHoja_(sh, CMC.FECHA, CMC.TSD);
+  Logger.log('[Setup] Comentarios OK (15 cols)');
 }
 
 function _setupInactivos(ss) {
@@ -3846,7 +3851,7 @@ function _setupLinks(ss) {
   Logger.log('[Setup] Links OK (14 cols)');
 }
 
-// Ascensos (hoja física "Historial_A/D", ver CFG.SHEETS.ASCENSOS): 18 [→ Contexto_Base_Web.md §02B052]
+// Ascensos (hoja física "Historial_A/D", ver CFG.SHEETS.ASCENSOS): 18 (más 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267) [→ Contexto_Base_Web.md §02B052]
 function _setupAscensosSheet(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.ASCENSOS);
   // FASE 5 (13-sep-2026, pedido del usuario, plan de Cambio de Rango): se [→ Contexto_Base_Web.md §02B053]
@@ -3857,7 +3862,9 @@ function _setupAscensosSheet(ss) {
   applyHeaderStyle(sh, headers.length);
   sh.setColumnWidth(8, 180);   // Fecha
   sh.setColumnWidth(17, 260);  // Comentario
-  Logger.log('[Setup] Ascensos OK (18 cols)');
+  // 26-oct-2026 (pedido de la usuaria, §PF267): 5 columnas más al final (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día), calculadas desde Fecha.
+  _completarTSDEnHoja_(sh, ASC.FECHA, ASC.TSD);
+  Logger.log('[Setup] Ascensos OK (23 cols)');
 }
 
 function _setupAdministradores(ss) {
@@ -6331,11 +6338,11 @@ function diagnosticoInactivosVsCSV() {
 function syncAcumulativosCSV() {
   // FASE 6 (05-ago-2026, cierre del plan de migración Plantillas -> Menú): [→ Contexto_Base_Web.md §05B035]
   var acumulativos = [
-    { sheetName: CFG.SHEETS.COMENTARIOS,  fileName: 'Backup_Comentarios.csv',   numCols: 10, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
+    { sheetName: CFG.SHEETS.COMENTARIOS,  fileName: 'Backup_Comentarios.csv',   numCols: COMENTARIOS_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
     { sheetName: CFG.SHEETS.CALENDARIO2,  fileName: 'Backup_Calendario_2.csv',  numCols: 6,  hasFecha: true,  fechaCol: 2, protegerFechas: true },
     { sheetName: CFG.SHEETS.GUERRA_LOGS,  fileName: 'Backup_Guerra_Logs.csv',   numCols: GUERRA_LOGS_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: GLC.FECHA, protegerFechas: true }, // TANDA 1 (20-sep-2026): 22 -> 25 (ProgressEarned/NumOfDefensesRemaining/ProgressEarnedFromDefenses). Antes de FASE 13: 21 -> 22 (EndOfDayRank). Con numCols fijo el CSV NO guardaría las columnas nuevas: ahora sigue a la constante
     // protegerFechas:true (28-sep-2026, extendido a todas las hojas con Fecha): no se [→ Contexto_Base_Web.md §05B036]
-    { sheetName: CFG.SHEETS.HISTORIAL,    fileName: 'Backup_Historial_I-S.csv',     numCols: 7,  hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
+    { sheetName: CFG.SHEETS.HISTORIAL,    fileName: 'Backup_Historial_I-S.csv',     numCols: HISTORIAL_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
     { sheetName: CFG.SHEETS.ASCENSOS,     fileName: 'Backup_Historial_A-D.csv',      numCols: ASCENSOS_TOTAL_COLS, hasFecha: true, fechaCol: ASC.FECHA, fechaColConHoraForzada: ASC.FECHA, protegerFechas: true },
     // Histórico de Guerra por jugador (20_HistorialGuerraJugador.gs) — [→ Contexto_Base_Web.md §05B037]
     { sheetName: CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA, fileName: 'Alertas_HistorialGuerra.csv',
@@ -6387,10 +6394,10 @@ function importarAcumulativosDesdeCSV() {
   var ss = _getSs();
   var acumulativos = [
     // FASE 6 (05-ago-2026): ver comentario equivalente en syncAcumulativosCSV() [→ Contexto_Base_Web.md §05B040]
-    { sheetName: CFG.SHEETS.COMENTARIOS,  fileName: 'Backup_Comentarios.csv',   numCols: 10, hasFecha: true,  fechaCol: 2 },
+    { sheetName: CFG.SHEETS.COMENTARIOS,  fileName: 'Backup_Comentarios.csv',   numCols: COMENTARIOS_TOTAL_COLS, hasFecha: true,  fechaCol: 2 },
     { sheetName: CFG.SHEETS.CALENDARIO2,  fileName: 'Backup_Calendario_2.csv',  numCols: 6,  hasFecha: true,  fechaCol: 2 },
     { sheetName: CFG.SHEETS.GUERRA_LOGS,  fileName: 'Backup_Guerra_Logs.csv',   numCols: GUERRA_LOGS_TOTAL_COLS, hasFecha: true,  fechaCol: 2 }, // TANDA 1 (20-sep-2026): 22 -> 25 (ver syncAcumulativosCSV); un CSV viejo de 22 columnas se restaura por NOMBRE de encabezado y las 3 nuevas quedan vacías
-    { sheetName: CFG.SHEETS.HISTORIAL,    fileName: 'Backup_Historial_I-S.csv',     numCols: 7,  hasFecha: true,  fechaCol: 2 },
+    { sheetName: CFG.SHEETS.HISTORIAL,    fileName: 'Backup_Historial_I-S.csv',     numCols: HISTORIAL_TOTAL_COLS, hasFecha: true,  fechaCol: 2 },
     { sheetName: CFG.SHEETS.ASCENSOS,     fileName: 'Backup_Historial_A-D.csv',      numCols: ASCENSOS_TOTAL_COLS, hasFecha: true, fechaCol: ASC.FECHA },
      // FASE 4 (25-ago-2026, corrige interpretación anterior): Vetados ahora [→ Contexto_Base_Web.md §05B041]
      { sheetName: CFG.SHEETS.VETADOS,      fileName: 'Backup_Vetados.csv',       numCols: VETADOS_TOTAL_COLS, hasFecha: true, fechaCol: VC.FECHA },
@@ -12647,10 +12654,12 @@ var VETADOS_COLS_AUTOSYNC = VC.RAZON; // hasta esta columna inclusive (1..10)
 // Índices de columna (1-based) de la hoja "Comentarios" — ver [→ Contexto_Base_Web.md §11B006]
 var CMC = {
   NUM:1, FECHA:2, TAG:3, NOMBRE:4, NOM_MULTI:5, CLAN_TAG:6, CLAN:7, RANGO:8,
-  LIDER:9, COMENTARIO:10
+  LIDER:9, COMENTARIO:10,
+  // 26-oct-2026 (pedido de la usuaria, §PF267): primera de las 5 columnas calculadas desde Fecha (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día); ver _completarTSDEnHoja_() en 24_Historial_Ascensos.gs.
+  TSD:11
 };
 
-var COMENTARIOS_TOTAL_COLS = 10;
+var COMENTARIOS_TOTAL_COLS = 15;
 
 // ----- Funciones manuales / punto de entrada -----
 
@@ -13038,6 +13047,7 @@ function moverComentarioFila(sh, row) {
   filaCMC[CMC.COMENTARIO - 1] = comentario;
   shCom.appendRow(filaCMC);
   _setDateCell(shCom, shCom.getLastRow(), CMC.FECHA, now, 'dddd, d "de" mmmm"," yyyy h:mm:ss am/pm');
+  _escribirTSDEnFilaHoja_(shCom, shCom.getLastRow(), CMC.TSD, now); // 26-oct-2026 (§PF267)
   sh.getRange(row, IC.COMENTARIO).clearContent();
 }
 
@@ -14644,10 +14654,12 @@ var ASC = {
   NUM:1, TAG:2, NOMBRE:3, NOM_MULTI:4, INICIALES:5, PERMISO:6, INACTIVIDAD:7,
   FECHA:8, CLAN:9, CLAN_TAG:10, LIDER:11, AUTOR:12, RANGO:13, RANGO_2:14,
   TIPO:15, ESTADO:16, COMENTARIO:17,
-  ESTADO_PROPUESTA:18
+  ESTADO_PROPUESTA:18,
+  // 26-oct-2026 (pedido de la usuaria, §PF267): primera de las 5 columnas calculadas desde Fecha (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día); ver _completarTSDEnHoja_() en 24_Historial_Ascensos.gs.
+  TSD:19
 };
 
-var ASCENSOS_TOTAL_COLS = 18;
+var ASCENSOS_TOTAL_COLS = 23;
 
 // Valores válidos de ASC.ESTADO_PROPUESTA -- ver dropdown en
 // _aplicarFormatoFilaAscenso() (24_Historial_Ascensos.gs).
@@ -15531,6 +15543,7 @@ function _webAgregarComentarioVeto(filaOrigenIC, autor, fecha, razon, comentario
   filaCMC[CMC.COMENTARIO - 1] = texto;
   shCom.appendRow(filaCMC);
   _setDateCell(shCom, shCom.getLastRow(), CMC.FECHA, fecha, 'dddd, d "de" mmmm"," yyyy h:mm:ss am/pm');
+  _escribirTSDEnFilaHoja_(shCom, shCom.getLastRow(), CMC.TSD, fecha); // 26-oct-2026 (§PF267); si `fecha` no es Date las 5 columnas quedan vacías
 }
 
 // =============================================================================
@@ -32804,9 +32817,34 @@ function _restaurarControl2SiNoExiste() {
 // Orden jerárquico de rangos (usa la MISMA ortografía que mapRol() en [→ Contexto_Base_Web.md §24B002]
 var RANGO_ORDEN = ['Miembro', 'Veterano', 'Colíder', 'Líder'];
 
-
+// COLUMNAS Temporada / Semana / Día EN Historial_I/S, Historial_A/D Y Comentarios (26-oct-2026, pedido de la usuaria; [→ Contexto_Base_Web.md §PF267]).
+// Son 5 columnas AL FINAL de cada hoja (no se mueven las existentes, que se leen por posición), calculadas SIEMPRE desde la columna Fecha:
+// Temporada (interna), Temporada RoyaleAPI, Temporada Supercell (AAAA-MM), Semana y Día (nombre del día de la semana).
+var TSD_ENCABEZADOS = ['Temporada', 'Temporada RoyaleAPI', 'Temporada Supercell', 'Semana', 'Día'];
+var TSD_DIAS_ES_ = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']; // índice = Date.getDay()
+var HISTORIAL_TOTAL_COLS = 12; // Historial_I/S: 7 columnas propias + 5 de TSD
+var HISTORIAL_TSD_COL = 8;     // primera columna de TSD en Historial_I/S
 
 // ----- Funciones manuales / punto de entrada -----
+
+/**
+ * completarTemporadaSemanaDiaHojas() — proyecto Base. Rellena (o recalcula) las 5 columnas Temporada / Temporada RoyaleAPI / Temporada Supercell / Semana / Día
+ * en Historial_I/S, Historial_A/D y Comentarios a partir de la Fecha de cada fila. Se puede correr las veces que haga falta (es idempotente). [→ Contexto_Base_Web.md §PF267]
+ */
+function completarTemporadaSemanaDiaHojas() {
+  var ss = _getSs();
+  var plan = [
+    { nombre: CFG.SHEETS.HISTORIAL,   colFecha: 2,          colTsd: HISTORIAL_TSD_COL },
+    { nombre: CFG.SHEETS.ASCENSOS,    colFecha: ASC.FECHA,  colTsd: ASC.TSD },
+    { nombre: CFG.SHEETS.COMENTARIOS, colFecha: CMC.FECHA,  colTsd: CMC.TSD }
+  ];
+  for (var i = 0; i < plan.length; i++) {
+    var sh = ss.getSheetByName(plan[i].nombre);
+    if (!sh) { Logger.log('[TSD] La hoja "' + plan[i].nombre + '" no existe, se omite.'); continue; }
+    var r = _completarTSDEnHoja_(sh, plan[i].colFecha, plan[i].colTsd);
+    Logger.log('[TSD] ' + plan[i].nombre + ': ' + r.filas + ' fila(s) revisadas, ' + r.sinFecha + ' sin Fecha válida, ' + r.sinTemporada + ' sin temporada calculable.');
+  }
+}
 
 /**
  * limpiarDuplicadosHistorial() [→ Contexto_Base_Web.md §24B003]
@@ -32905,6 +32943,9 @@ function limpiarDuplicadosHistorial() {
         .setBackground(null);
     } catch(e) {}
   }
+
+  // 26-oct-2026 (§PF267): la reescritura solo cubre las 7 columnas propias; Temporada / Semana / Día se recalculan desde Fecha (también limpia las de las filas que sobraron).
+  _completarTSDEnHoja_(sh, 2, HISTORIAL_TSD_COL);
 
   Logger.log('[Limpieza Historial] Eliminados ' + eliminados + ' registros duplicados (sin cambio real de estado entre medio).');
 }
@@ -33005,6 +33046,99 @@ function updateAscensosSheet(ss, dirData) {
 }
 
 // ----- Funciones internas / helpers -----
+
+/**
+ * _tsdDesdeFecha_(fecha, offset, ref) [→ Contexto_Base_Web.md §PF267]
+ * Devuelve [temporada interna, temporada RoyaleAPI, temporada Supercell, semana, día] para una Fecha, o 5 vacíos si la fecha no es válida.
+ * Usa el DÍA CALENDARIO (se descarta la hora): así un registro del lunes a las 15:00 sigue siendo lunes. Misma cuenta que _fechaATemporadaSemana()
+ * (14_Nuevos_RoyaleAPI.gs: mes efectivo, primer lunes de la temporada, semana = día desde ese lunes / 7 + 1), pero SIN descartar las fechas anteriores a T1:
+ * dan temporada 0 o negativa, igual que Correcciones_Guerra.csv (§PF247). `offset` (RoyaleAPI - propia) se puede pasar ya leído para no leer
+ * PropertiesService por fila (§PF242); lo mismo vale para `ref` (CFG.REF_DEFAULT también lee PropertiesService en cada acceso): en un bucle por filas se leen
+ * una vez y se pasan los dos.
+ */
+function _tsdDesdeFecha_(fecha, offset, ref) {
+  var vacio = ['', '', '', '', ''];
+  if (!(fecha instanceof Date) || isNaN(fecha.getTime())) return vacio;
+  if (ref === undefined) ref = CFG.REF_DEFAULT;
+  if (!ref || isNaN(ref.getTime())) return vacio;
+
+  var dia = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+  var anio = dia.getFullYear();
+  var mes  = dia.getMonth();
+  if (dia < primerLunesDelMes(anio, mes)) { // antes del primer lunes del mes: pertenece a la temporada del mes anterior
+    mes--;
+    if (mes < 0) { mes = 11; anio--; }
+  }
+  var temporada = calcTemporadaDesdeMesEfectivo(ref, { anio: anio, mes: mes });
+  var pl = primerLunesTemporada(ref, temporada); // con temporada <= 0 el mes sale negativo y Date lo normaliza al año anterior
+  if (!pl || isNaN(pl.getTime())) return vacio;
+  var periodIndex = Math.round((dia.getTime() - pl.getTime()) / 86400000);
+  if (periodIndex < 0) return vacio; // red de seguridad, no debería pasar tras el ajuste de mes efectivo
+
+  var off = (offset === undefined) ? _getTemporadaOffsetRoyaleApi() : offset;
+  return [
+    temporada,
+    _cgwTemporadaRoyaleApiTexto_(temporada, off),
+    _cgwTemporadaSupercellTexto_(temporada, off),
+    Math.floor(periodIndex / 7) + 1,
+    TSD_DIAS_ES_[dia.getDay()]
+  ];
+}
+
+/**
+ * _completarTSDEnHoja_(sh, colFecha, colTsd) [→ Contexto_Base_Web.md §PF267]
+ * Asegura los 5 encabezados en colTsd..colTsd+4 y recalcula TODAS las filas de datos desde la Fecha (columna colFecha) en una sola escritura.
+ * Es idempotente: sirve igual después de reordenar la hoja, de reenumerar temporadas (cambia la Ref y el offset) o de editar una Fecha a mano.
+ * La columna de Temporada Supercell se fuerza a texto ('@'): sin eso Sheets convierte "2026-05" en una fecha.
+ * Devuelve { filas, sinFecha, sinTemporada }.
+ */
+function _completarTSDEnHoja_(sh, colFecha, colTsd) {
+  var n = TSD_ENCABEZADOS.length;
+  var res = { filas: 0, sinFecha: 0, sinTemporada: 0 };
+  if (!sh) return res;
+
+  var ultimaCol = colTsd + n - 1;
+  if (sh.getMaxColumns() < ultimaCol) sh.insertColumnsAfter(sh.getMaxColumns(), ultimaCol - sh.getMaxColumns());
+  sh.getRange(1, colTsd, 1, n).setValues([TSD_ENCABEZADOS]);
+  applyHeaderStyle(sh, ultimaCol);
+
+  var lastRow = sh.getLastRow();
+  if (lastRow < 2) return res;
+
+  var numFilas = lastRow - 1;
+  var fechas = sh.getRange(2, colFecha, numFilas, 1).getValues();
+  var offset = _getTemporadaOffsetRoyaleApi(); // una sola lectura (§PF242)
+  var refTemporadas = CFG.REF_DEFAULT;         // idem: el getter lee PropertiesService en cada acceso
+  var valores = [];
+  for (var i = 0; i < numFilas; i++) {
+    var f = fechas[i][0];
+    var v = _tsdDesdeFecha_(f, offset, refTemporadas);
+    if (!(f instanceof Date) || isNaN(f.getTime())) res.sinFecha++;
+    else if (v[0] === '') res.sinTemporada++;
+    valores.push(v);
+  }
+
+  try { sh.getRange(2, colTsd + 2, Math.max(sh.getMaxRows() - 1, numFilas), 1).setNumberFormat('@'); } catch (eFmt) {}
+  var rng = sh.getRange(2, colTsd, numFilas, n);
+  rng.setValues(valores);
+  applyBorderCenter(rng);
+  res.filas = numFilas;
+  return res;
+}
+
+/**
+ * _escribirTSDEnFilaHoja_(sh, fila, colTsd, fecha) [→ Contexto_Base_Web.md §PF267]
+ * Escribe las 5 columnas de una sola fila (las hojas a las que solo se agregan filas al final: Comentarios). La de Supercell se pone como texto antes de escribir.
+ */
+function _escribirTSDEnFilaHoja_(sh, fila, colTsd, fecha) {
+  try {
+    var v = _tsdDesdeFecha_(fecha);
+    try { sh.getRange(fila, colTsd + 2).setNumberFormat('@'); } catch (eFmt) {}
+    sh.getRange(fila, colTsd, 1, v.length).setValues([v]);
+  } catch (e) {
+    Logger.log('[TSD] No se pudieron escribir Temporada/Semana/Día en la fila ' + fila + ' de "' + sh.getName() + '": ' + e.message);
+  }
+}
 
 /**
  * _updateHistorial [→ Contexto_Base_Web.md §24B010]
@@ -33202,7 +33336,7 @@ function _updateHistorial(ss, dirData) {
       Logger.log('[Historial][ALERTA] Tras reescribir la hoja, ' + perdidas + ' filas quedaron sin Fecha válida.');
     }
     // Centrado + bordes en TODAS las filas con datos (antes no se aplicaba [→ Contexto_Base_Web.md §24B020]
-    applyBorderCenter(sh.getRange(2, 1, allHist.length, 7));
+    applyBorderCenter(sh.getRange(2, 1, allHist.length, HISTORIAL_TOTAL_COLS));
 
     // Bordes por bloque de clan: dado que allHist queda ordenado primero por [→ Contexto_Base_Web.md §24B021]
     var blockStart = 0;
@@ -33211,7 +33345,7 @@ function _updateHistorial(ss, dirData) {
       var clanPrevBlk = String(allHist[blockStart][5] || '');
       if (i === allHist.length || clanActualBlk !== clanPrevBlk) {
         var blockRows = i - blockStart;
-        sh.getRange(blockStart + 2, 1, blockRows, 7)
+        sh.getRange(blockStart + 2, 1, blockRows, HISTORIAL_TOTAL_COLS)
           .setBorder(true, true, true, true, false, false,
                      '#000000', SpreadsheetApp.BorderStyle.SOLID_THICK);
         blockStart = i;
@@ -33223,7 +33357,7 @@ function _updateHistorial(ss, dirData) {
     var maxRowsHist = sh.getMaxRows();
     if (maxRowsHist > allHist.length + 1) {
       try {
-        sh.getRange(allHist.length + 2, 1, maxRowsHist - allHist.length - 1, 7)
+        sh.getRange(allHist.length + 2, 1, maxRowsHist - allHist.length - 1, HISTORIAL_TOTAL_COLS)
           .setBorder(false, false, false, false, false, false)
           .setBackground(null);
       } catch(e) {}
@@ -33232,7 +33366,7 @@ function _updateHistorial(ss, dirData) {
 
   // Formato condicional por Movimiento (col 5 = colLetter(5))
   if (sh.getLastRow() >= 2) {
-    var dataRange = sh.getRange(2, 1, sh.getLastRow() - 1, 7), colMov = colLetter(5);
+    var dataRange = sh.getRange(2, 1, sh.getLastRow() - 1, HISTORIAL_TOTAL_COLS), colMov = colLetter(5);
     var rules = [
       SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=$' + colMov + '2="Ingreso"').setBackground(CFG.COLORES.HIST_INGRESO_BG).setRanges([dataRange]).build(),
       SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=$' + colMov + '2="Reingreso"').setBackground(CFG.COLORES.HIST_REINGRESO_BG).setRanges([dataRange]).build(),
@@ -33241,6 +33375,9 @@ function _updateHistorial(ss, dirData) {
     ];
     _tryCondFmt(sh, rules);
   }
+
+  // 26-oct-2026 (§PF267): Temporada / Semana / Día se recalculan desde Fecha DESPUÉS de ordenar y escribir (las filas se reordenan por Clan y Fecha, y las filas nuevas entran sin estas columnas).
+  _completarTSDEnHoja_(sh, 2, HISTORIAL_TSD_COL);
 }
 
 // HOJA ASCENSOS [→ Contexto_Base_Web.md §24B022]
@@ -33313,6 +33450,9 @@ function _reordenarHistorialAscensosGlobal(ss, sh, registrosNuevos) {
   applyBorderCenter(sh.getRange(2, 1, todos.length, ASCENSOS_TOTAL_COLS));
   _aplicarFormatoCondicionalAscensos(sh);
 
+  // 26-oct-2026 (§PF267): Temporada / Semana / Día se recalculan desde Fecha para TODAS las filas (las nuevas entran con esas columnas vacías y el reorden las movió de lugar).
+  _completarTSDEnHoja_(sh, ASC.FECHA, ASC.TSD);
+
   Logger.log('[Ascensos] Hoja reordenada globalmente por Clan > Fecha (' + todos.length + ' fila(s) totales).');
 }
 
@@ -33373,6 +33513,7 @@ function _copiarComentarioAscensoAComentarios(shCom, registro) {
   filaCMC[CMC.COMENTARIO - 1] = registro[ASC.COMENTARIO - 1];
   shCom.appendRow(filaCMC);
   _setDateCell(shCom, shCom.getLastRow(), CMC.FECHA, now, 'dddd, d "de" mmmm"," yyyy h:mm:ss am/pm');
+  _escribirTSDEnFilaHoja_(shCom, shCom.getLastRow(), CMC.TSD, now); // 26-oct-2026 (§PF267)
 }
 
 // CR_Lista — escritura de propuestas en Historial_A/D (FASE 5, 13-sep-2026, [→ Contexto_Base_Web.md §24B032]
@@ -61485,7 +61626,10 @@ function repararDomingoT5S4Informe() { _repararDomingoT5S4_(false); }
 function repararDomingoT5S4Aplicar() { _repararDomingoT5S4_(true); }
 
 function _repararDomingoT5S4_(aplicar) {
-  var TEMP_OBJ = 5, SEM_OBJ = 4, P_SAB = 26, P_DOM = 27;
+  // 26-oct-2026: la temporada objetivo ya no es el 5 fijo. El domingo 04-oct-2026 es la temporada 136 de RoyaleAPI, que no cambia al reenumerar;
+  // la numeración propia sí (RoyaleAPI = propia + offset, y la reenumeración resta el delta al offset). Con el offset de arranque (131) da 5, igual que antes.
+  var TEMP_ROYALEAPI_OBJ = 136;
+  var TEMP_OBJ = TEMP_ROYALEAPI_OBJ - _getTemporadaOffsetRoyaleApi(), SEM_OBJ = 4, P_SAB = 26, P_DOM = 27; // semana y periodIndex no cambian al reenumerar
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) { Logger.log('[ReparoDomT5S4] Hay otra ejecucion en curso; se cancela. Reintentar en unos minutos.'); return; }
   try {
@@ -61563,7 +61707,7 @@ function _repararDomingoT5S4_(aplicar) {
       _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
     }
 
-    Logger.log('[ReparoDomT5S4] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Filas del domingo T5 S4: ' + res.filas +
+    Logger.log('[ReparoDomT5S4] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Filas del domingo 04-oct-2026 (T' + TEMP_OBJ + ' S' + SEM_OBJ + ', RoyaleAPI ' + TEMP_ROYALEAPI_OBJ + '): ' + res.filas +
       ' | a cambiar: ' + res.cambian + ' (ataques recuperados: ' + res.ataquesRecuperados + ') | ya correctas: ' + res.igual + ' | sin resolver: ' + res.sinResolver +
       (informe.length > 1 ? ' | Detalle en Drive: ' + nombreInforme : ' | Nada que reparar.') +
       (lector.agotado() ? ' | SE ACABO EL TIEMPO: volver a correr.' : '') +
@@ -61579,7 +61723,7 @@ function _repararDomingoT5S4_(aplicar) {
 // =============================================================================
 
 function _diagnosticoGuerraDia(temporada, semana, offsetDia) {
-  var temp = String(temporada === undefined ? 5 : temporada);
+  var temp = String(temporada === undefined ? (136 - _getTemporadaOffsetRoyaleApi()) : temporada); // 26-oct-2026: 136 = RoyaleAPI del 04-oct-2026; sigue la reenumeración (antes 5 fijo)
   var sem = Number(semana === undefined ? 4 : semana);
   var off = Number(offsetDia === undefined ? 3 : offsetDia); // 0=jue, 1=vie, 2=sáb, 3=dom
   var pIdxBuscado = (sem - 1) * 7 + 3 + off;
