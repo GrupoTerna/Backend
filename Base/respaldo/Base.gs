@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 19:18:46 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/10/2026 19:22:59 */
 
 
 
@@ -59513,7 +59513,7 @@ function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
   return r && r.fecha ? r.fecha : null;
 }
 
-// sugerirFechaRefDesdeCorreccionesGuerra(): §PF259 (25-oct-2026); MANUAL, solo sugiere (no reenumera). Lee la semana más antigua con clan Terna de Correcciones_Guerra.csv y dice la fecha EXACTA que se escribe en iniciarReenumerarTemporadas().
+// sugerirFechaRefDesdeCorreccionesGuerra(): devuelve la fecha 'AAAA-MM-DD' sugerida, o '' si no hay nada que hacer (PF261). §PF259 (25-oct-2026); MANUAL, solo sugiere (no reenumera). Lee la semana más antigua con clan Terna de Correcciones_Guerra.csv y dice la fecha EXACTA que se escribe en iniciarReenumerarTemporadas().
 // La fecha es el primer lunes del mes Supercell de esa temporada: T1 pasa a ser esa temporada. Si ya hay una reenumeración a medias (REENUM_PASO) NO calcula: el CSV puede estar a medias y la fecha saldría mal.
 // Si después aparece un registro más antiguo, se vuelve a correr y da la fecha nueva; la reenumeración suma meses hacia atrás a toda Temporada guardada. Guarda la sugerencia para ejecutarReenumeracionSugerida().
 function sugerirFechaRefDesdeCorreccionesGuerra() {
@@ -59521,12 +59521,12 @@ function sugerirFechaRefDesdeCorreccionesGuerra() {
   var pasoPendiente = props.getProperty('REENUM_PASO');
   if (pasoPendiente !== null) {
     Logger.log('[Sugerir fecha Ref] NO se calculó: hay una reenumeración sin terminar (REENUM_PASO = ' + pasoPendiente + '). Termínala con reanudarReenumerarTemporadas() y vuelve a correr esta función.');
-    return;
+    return '';
   }
   var r = _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_();
   if (!r || !r.fecha) {
     Logger.log('[Sugerir fecha Ref] No hay ninguna fila de Correcciones_Guerra.csv con un clan Terna confirmado (por ClanTag o por «Clan RoyaleAPI» del perfil). Nada que sugerir.');
-    return;
+    return '';
   }
   var tz = Session.getScriptTimeZone() || 'GMT-5';
   var ref = CFG.REF_DEFAULT;
@@ -59542,13 +59542,14 @@ function sugerirFechaRefDesdeCorreccionesGuerra() {
 
   if (deltaMeses <= 0) {
     Logger.log('[Sugerir fecha Ref] ' + resumen + 'La Ref actual (' + Utilities.formatDate(ref, tz, 'yyyy-MM-dd') + ') ya es igual o más antigua: no hace falta reenumerar por este archivo.');
-    return;
+    return '';
   }
   props.setProperty('REENUM_SUGERENCIA_FECHA', fechaStr);
   props.setProperty('REENUM_SUGERENCIA_FUENTE', 'Correcciones_Guerra.csv, semana RoyaleAPI ' + royaleApi + '-' + r.semana);
   Logger.log('[Sugerir fecha Ref] ' + resumen + 'FECHA A ESCRIBIR en iniciarReenumerarTemporadas(): ' + fechaStr + ' (primer lunes del mes de la temporada ' + supercell + '). Suma ' + deltaMeses +
     ' mes(es) a toda Temporada guardada; el offset de RoyaleAPI pasa de ' + offset + ' a ' + (offset - deltaMeses) + ' (T1 = RoyaleAPI ' + royaleApi + '). ' +
     'Esta función SOLO sugiere. Sugerencia guardada: también sirve ejecutarReenumeracionSugerida().');
+  return fechaStr; // PF261: iniciarReenumerarTemporadas() la usa
 }
 
 // _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna): fuente 2 de la detección; recorre los bloques de fecha de la hoja Nuevos. [→ Contexto_Base_Web.md §47B025]
@@ -59666,8 +59667,14 @@ function _migrarColumnaPrestamoEnHoja(sh, nombreHoja, headers) {
 
 // iniciarReenumerarTemporadas(): PF258; punto de entrada para correr DESDE EL EDITOR (el editor no pasa argumentos). Escribe la fecha Ref nueva en FECHA_REF_NUEVA, guarda y corre esta función.
 function iniciarReenumerarTemporadas() {
-  var FECHA_REF_NUEVA = 'AAAA-MM-DD'; // <- cambiar por la fecha Ref nueva (por ejemplo '2026-06-01'); mientras diga AAAA-MM-DD no hace nada
-  runReenumerarTemporadas(FECHA_REF_NUEVA);
+  var FECHA_REF_NUEVA = 'AAAA-MM-DD'; // <- déjala así para usar la fecha que calcula sugerirFechaRefDesdeCorreccionesGuerra() (semana más antigua con clan Terna), o escribe una fecha (por ejemplo '2024-09-02') para forzarla
+  var fecha = FECHA_REF_NUEVA;
+  if (fecha === 'AAAA-MM-DD') {
+    fecha = sugerirFechaRefDesdeCorreccionesGuerra(); // PF261: calcula y registra en el log la fecha y por qué; '' si no hay nada que reenumerar
+    if (!fecha) { Logger.log('[Reenumeración] NO se inició: no hay una fecha Ref más antigua que sugerir (ver el mensaje de arriba).'); return; }
+    Logger.log('[Reenumeración] Se usa la fecha sugerida ' + fecha + '.');
+  }
+  runReenumerarTemporadas(fecha);
 }
 
 // reanudarReenumerarTemporadas(): PF258; sigue una reenumeración que se cortó por un error, SIN volver a sumar en los pasos ya hechos. Usa el REENUM_PASO guardado; si se perdió (versión anterior del código, que lo borraba al fallar),
