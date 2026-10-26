@@ -7,7 +7,10 @@ function repararDomingoT5S4Informe() { _repararDomingoT5S4_(false); }
 function repararDomingoT5S4Aplicar() { _repararDomingoT5S4_(true); }
 
 function _repararDomingoT5S4_(aplicar) {
-  var TEMP_OBJ = 5, SEM_OBJ = 4, P_SAB = 26, P_DOM = 27;
+  // 26-oct-2026: la temporada objetivo ya no es el 5 fijo. El domingo 04-oct-2026 es la temporada 136 de RoyaleAPI, que no cambia al reenumerar;
+  // la numeración propia sí (RoyaleAPI = propia + offset, y la reenumeración resta el delta al offset). Con el offset de arranque (131) da 5, igual que antes.
+  var TEMP_ROYALEAPI_OBJ = 136;
+  var TEMP_OBJ = TEMP_ROYALEAPI_OBJ - _getTemporadaOffsetRoyaleApi(), SEM_OBJ = 4, P_SAB = 26, P_DOM = 27; // semana y periodIndex no cambian al reenumerar
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) { Logger.log('[ReparoDomT5S4] Hay otra ejecucion en curso; se cancela. Reintentar en unos minutos.'); return; }
   try {
@@ -85,7 +88,7 @@ function _repararDomingoT5S4_(aplicar) {
       _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
     }
 
-    Logger.log('[ReparoDomT5S4] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Filas del domingo T5 S4: ' + res.filas +
+    Logger.log('[ReparoDomT5S4] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Filas del domingo 04-oct-2026 (T' + TEMP_OBJ + ' S' + SEM_OBJ + ', RoyaleAPI ' + TEMP_ROYALEAPI_OBJ + '): ' + res.filas +
       ' | a cambiar: ' + res.cambian + ' (ataques recuperados: ' + res.ataquesRecuperados + ') | ya correctas: ' + res.igual + ' | sin resolver: ' + res.sinResolver +
       (informe.length > 1 ? ' | Detalle en Drive: ' + nombreInforme : ' | Nada que reparar.') +
       (lector.agotado() ? ' | SE ACABO EL TIEMPO: volver a correr.' : '') +
@@ -101,7 +104,7 @@ function _repararDomingoT5S4_(aplicar) {
 // =============================================================================
 
 function _diagnosticoGuerraDia(temporada, semana, offsetDia) {
-  var temp = String(temporada === undefined ? 5 : temporada);
+  var temp = String(temporada === undefined ? (136 - _getTemporadaOffsetRoyaleApi()) : temporada); // 26-oct-2026: 136 = RoyaleAPI del 04-oct-2026; sigue la reenumeración (antes 5 fijo)
   var sem = Number(semana === undefined ? 4 : semana);
   var off = Number(offsetDia === undefined ? 3 : offsetDia); // 0=jue, 1=vie, 2=sáb, 3=dom
   var pIdxBuscado = (sem - 1) * 7 + 3 + off;
