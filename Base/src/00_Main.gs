@@ -402,6 +402,53 @@ var PASOS_RUNUPDATE = [
   function () { _aplicarBordesComentarios(); },
 ];
 
+// PF285 (27-oct-2026, pedido de la usuaria): nombres de los pasos de RUNUPDATE, en el mismo orden que PASOS_RUNUPDATE (42 pasos). Cada texto dice objeto: acción → resultado esperado
+// (regla 0.10 de la skill). Si se agrega, quita o mueve un paso de PASOS_RUNUPDATE, se hace lo mismo aquí. [→ Contexto_Base_Web.md §PF285]
+var NOMBRES_PASOS_RUNUPDATE = [
+  'Clanes: pedir a la API los datos de todos los clanes (y /players si está activo) → datos de clanes y jugadores cargados',
+  'Dump de API: guardar los JSON de clanes y currentriverrace (se omite en la versión programada) → JSON guardados en Drive',
+  'Hoja Extra: actualizar → hoja Extra al día',
+  'Hoja Clan: actualizar → hoja Clan al día',
+  'Hoja Cards: actualizar → hoja Cards al día',
+  'Hoja Cards_2: actualizar → hoja Cards_2 al día',
+  'Hoja Insignias: actualizar → hoja Insignias al día',
+  'Hoja Insignias_2: actualizar → hoja Insignias_2 al día',
+  'CSV Camino de Leyendas: actualizar → CSV al día',
+  'CSV Logros (catálogo): actualizar → CSV al día',
+  'CSV Logros_2 (por jugador): actualizar → CSV al día',
+  'CSV Perfil (XP y torre del rey): actualizar → CSV al día',
+  'CSV Progreso en eventos rotativos: actualizar → CSV al día',
+  'Hoja Directorio: actualizar → hoja Directorio al día',
+  'Nuevos (formato y purgado): aplicar → hoja Nuevos con su formato y purgada',
+  'Nuevos (columnas fijas): refrescar → columnas fijas de Nuevos al día',
+  'Nuevos (orden y formato condicional): aplicar → hoja Nuevos ordenada y con su formato condicional',
+  'Torneos: procesar T_Lista, T_Asistencia y T_Control → torneos procesados (puede necesitar varias tandas)',
+  'Sorteos: procesar S_Lista, requisitos y participantes calificados → sorteos procesados',
+  'Hoja Guerra: actualizar (antes restaura desde el CSV si está vacía) → hoja Guerra al día (puede necesitar varias tandas)',
+  'Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día',
+  'Nuevos (cierre semanal): pasar la semana actual al histórico → histórico de Nuevos al día',
+  'Hoja Control: actualizar → hoja Control al día',
+  'Hoja Control_2: actualizar → hoja Control_2 al día',
+  'Plantillas: sincronizar desde Drive → índice de plantillas al día',
+  'Pendientes y Mensajes: generar (sin nueva captura de la API en la versión programada) → hojas Pendientes y Mensajes al día',
+  'Hoja Calendario_2: actualizar → hoja Calendario_2 al día',
+  'Menú dinámico: actualizar las entradas Dinámico → menú al día',
+  'Administradores: sincronizar → lista de administradores al día',
+  'Desplegable Cat_disp: actualizar → desplegable al día',
+  'Hoja Índice: actualizar → hoja Índice al día',
+  'Hojas: reordenar y ocultar según el Índice → hojas con el orden y la visibilidad del Índice',
+  'Vistas derivadas (Inactivos, Vetados, Multicuentas, Historial, Ascensos): actualizar → vistas al día',
+  'Nombres: quitar enlaces accidentales, hoja por hoja → ninguna hoja con enlaces accidentales (puede necesitar varias tandas)',
+  'Backup CSV Directorio y Clan: sincronizar → CSV en Drive al día',
+  'Backup CSV Acumulativos: sincronizar Inactivos y hojas acumulativas → CSV al día (puede necesitar varias tandas)',
+  'Backup CSV Guerra: sincronizar → CSV al día',
+  'Backup de celulares: exportar el JSON → JSON en Drive al día',
+  'Formato: aplicar CLIP global → texto recortado según la configuración',
+  'Filtros: restaurar → filtros de las hojas restaurados',
+  'Bordes: limpiar los de filas vacías → sin bordes en filas vacías',
+  'Bordes de comentarios: aplicar → bordes de comentarios aplicados',
+];
+
 /**
  * runSyncCSV() - Sincroniza todos los CSV con Drive.
  */
@@ -446,6 +493,25 @@ var PASOS_RUNSYNCCSV = [
     try { actualizarHojaBattlelogs(); }
     catch (eBlh) { Logger.log('[PASOS_RUNSYNCCSV] actualizarHojaBattlelogs() falló: ' + eBlh.message); }
   },
+];
+
+// PF285 (27-oct-2026, pedido de la usuaria): nombres de los pasos de RUNSYNCCSV, en el mismo orden que PASOS_RUNSYNCCSV (14 pasos). Cada texto dice objeto: acción → resultado esperado
+// (regla 0.10 de la skill). Si se agrega, quita o mueve un paso de PASOS_RUNSYNCCSV, se hace lo mismo aquí. [→ Contexto_Base_Web.md §PF285]
+var NOMBRES_PASOS_RUNSYNCCSV = [
+  'Backup CSV Directorio y Clan: sincronizar → CSV en Drive al día',
+  'Backup CSV Acumulativos: sincronizar Inactivos y hojas acumulativas → CSV al día (puede necesitar varias tandas)',
+  'Backup CSV Guerra: sincronizar → CSV al día',
+  'Backup de celulares: exportar el JSON → JSON en Drive al día',
+  'Respaldo de Índice: guardar INDICE → copia en Drive',
+  'Respaldo de Vetados: guardar VETADOS → copia en Drive',
+  'Respaldo de T_Lista: guardar T_LISTA → copia en Drive',
+  'Respaldo de S_Lista: guardar S_LISTA → copia en Drive',
+  'Respaldo de CR_Lista: guardar CR_LISTA → copia en Drive',
+  'Respaldo de T_Asistencia: guardar T_ASISTENCIA → copia en Drive',
+  'Respaldo de S_Asistencia: guardar S_ASISTENCIA → copia en Drive',
+  'Respaldo de Extra: guardar EXTRA → copia en Drive',
+  'Respaldo de hojas derivadas: guardar de una en una → CSV de cada hoja derivada en Drive (puede necesitar varias tandas)',
+  'Hoja Battlelogs: actualizar (se omite si falta 07_Battlelogs_Hoja.gs) → hoja Battlelogs al día',
 ];
 
 // ----- Funciones manuales / punto de entrada -----
@@ -925,7 +991,7 @@ function _continuarRunUpdate() {
   Logger.log((paso === 0 ? '=== Actualización periódica INICIO' : '=== Actualización periódica CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNUPDATE.length) +
     (sinApi ? ' [programada, sin /clans ni /currentriverrace]' : ' [manual, roster fresco]') + ' ===');
   try {
-    var completo = _ejecutarPorTandas('RUNUPDATE', PASOS_RUNUPDATE, CFG.RUNUPDATE_PRESUPUESTO_MS, '_continuarRunUpdate');
+    var completo = _ejecutarPorTandas('RUNUPDATE', PASOS_RUNUPDATE, CFG.RUNUPDATE_PRESUPUESTO_MS, '_continuarRunUpdate', NOMBRES_PASOS_RUNUPDATE);
     if (completo) {
       // Ver comentario equivalente en _continuarRunAll(): el progreso de [→ Contexto_Base_Web.md §B104]
       _borrarProgresoPlayers();
@@ -1035,7 +1101,7 @@ function _continuarRunSyncCSV() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('RUNSYNCCSV_PASO') || '0', 10);
   Logger.log(paso === 0 ? '[CSV] Iniciando sincronización...' : '[CSV] CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNSYNCCSV.length);
   try {
-    var completo = _ejecutarPorTandas('RUNSYNCCSV', PASOS_RUNSYNCCSV, CFG.RUNSYNCCSV_PRESUPUESTO_MS, '_continuarRunSyncCSV');
+    var completo = _ejecutarPorTandas('RUNSYNCCSV', PASOS_RUNSYNCCSV, CFG.RUNSYNCCSV_PRESUPUESTO_MS, '_continuarRunSyncCSV', NOMBRES_PASOS_RUNSYNCCSV);
     if (completo) {
       _liberarLockEjecucion();
       Logger.log('[CSV] Completado.');
