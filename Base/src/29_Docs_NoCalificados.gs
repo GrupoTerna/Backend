@@ -24,6 +24,12 @@ var NOMBRE_DOC_NO_CALIFICADOS_SORTEO = 'No calificados (sorteo) - Comunidad - �
 
 var NOMBRE_DOC_CAMBIO_RANGO = 'Cambio de rango - Comunidad - ᴳ乂ᵀ ⚜️ Familia Terna';
 
+// NUEVO (28-oct-2026, PF286 punto 12): ids fijos de los tres documentos, para no depender de la búsqueda por nombre ni de la caché de Script Properties cuando se mueven de carpeta.
+// El de «Cambio de rango» es el mismo archivo que DOC_ID_ASCENSOS_DESCENSOS (25_Doc_AscensosDescensos.gs), que ya figura en Drive con el título «Cambio de rango». Se repite aquí el valor (no se referencia la constante de 25) para no depender del orden de carga de los archivos.
+var DOC_ID_NO_CALIFICADOS_TORNEO = '1wBJWDE8Jy1IbO7UljZwJl_PMzXU7n3qJZtg2GtHsmIQ';
+var DOC_ID_NO_CALIFICADOS_SORTEO = '1arA22oL2lmJplWc-EHbibHAVkAWsE8Vkby_W2kCec1g';
+var DOC_ID_CAMBIO_RANGO = '1jkUntN6esvkNvHosYesDQwlU33BfPr1I_wyyYueMxWo';
+
 // Veredictos posibles del documento de Cambio de rango (ver
 // _ncVeredictoCambioRango() más abajo para la regla exacta de cada uno).
 var NC_VEREDICTO = {
@@ -169,7 +175,7 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
     (String(temporadaMostrar) === String(ctxReal.temporada) ? ' (real vigente)' : ' (vía Extra!Mostrar)') + '.';
 
   _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_TORNEO, 'Participantes NO calificados (torneo)',
-    requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
+    requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true, DOC_ID_NO_CALIFICADOS_TORNEO);
 
   Logger.log('[NoCalificados-Torneo] ' + resumen);
 }
@@ -203,7 +209,7 @@ function actualizarDocNoCalificadosSorteo(ctxParam) {
     'Temporada ' + ev.temporadaActual + '. Sorteo ' + (ev.idSorteo || 'sin ID') + '.';
 
   _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_SORTEO, 'Participantes NO calificados (sorteo)',
-    ev.requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
+    ev.requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true, DOC_ID_NO_CALIFICADOS_SORTEO);
 
   Logger.log('[NoCalificados-Sorteo] ' + resumen);
 }
@@ -509,7 +515,7 @@ function actualizarDocCambioRango(idAscenso, idDescenso) {
     (partesResumen.length ? partesResumen.join(' | ') + '.' : 'Ninguna con veredicto.');
 
   _ncEscribirDocumento(NOMBRE_DOC_CAMBIO_RANGO, 'Cambio de rango',
-    requisitos, filas, resumen, 'No hay ninguna cuenta evaluable con este par de CR_Lista.');
+    requisitos, filas, resumen, 'No hay ninguna cuenta evaluable con este par de CR_Lista.', false, DOC_ID_CAMBIO_RANGO);
 
   Logger.log('[CambioRango-Doc] ' + resumen);
 }
@@ -656,11 +662,11 @@ function _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) {
 /**
  * _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas) [→ Contexto_Base_Web.md §29B021]
  */
-function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas, estiloUniforme) {
+function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas, estiloUniforme, idDoc) {
   var archivo;
   try {
     // Busca el documento existente (caché de ID -> nombre en las 6 carpetas de [→ Contexto_Base_Web.md §29B022]
-    archivo = _buscarArchivoEnPlantillas(nombreDoc);
+    archivo = _buscarArchivoEnPlantillas(nombreDoc, idDoc); // idDoc (PF286): primero por id; si falla, por nombre como antes
   } catch (e) {
     Logger.log('[DocsNoCalificados] Error al buscar "' + nombreDoc + '": ' + e.message);
     return;
