@@ -46,6 +46,15 @@
 // Sin probar en Apps Script real al escribir este archivo.
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Copia de Drive a GitHub: ejecución (subir, forzado, revisar sin subir; la que lanza el activador y su continuación)
+//    - Activador diario: instalar y quitar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Copia de Drive a GitHub: lógica y ayudas (en el orden en que las llama _datosDriveAGithub_)
+//    - Activador diario: ayuda
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var DATOS_GH_CARPETA_TAMPERMONKEY_ = '1rYAHT0dCpAPFT6BYXDncpuo9ZY780LFt';
 var DATOS_GH_CARPETA_HOJAS_        = '1emYkDZMEzYgO5lwmtY-NMhFc5JJd2I3R';
 var DATOS_GH_CARPETA_INFORMES_     = '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X';
@@ -82,9 +91,11 @@ var DATOS_GH_HANDLER_SEGUIR_   = 'subirDatosDriveAGithubContinuar';
 var DATOS_GH_LOTE_BYTES_       = 8 * 1024 * 1024;   // tamaño máximo de contenido por commit
 var DATOS_GH_TIEMPO_MAX_MS_    = 4 * 60 * 1000;     // a los 4 min deja lo que falte para la corrida siguiente
 
-// -----------------------------------------------------------------------------
-// Puntos de entrada
-// -----------------------------------------------------------------------------
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Copia de Drive a GitHub: ejecución -----
 
 /** Sube lo que cambió en Drive desde la última copia. Para correr a mano. */
 function subirDatosDriveAGithub() {
@@ -120,6 +131,8 @@ function subirDatosDriveAGithubContinuar() {
   }
 }
 
+// ----- Activador diario: instalar y quitar -----
+
 /** Crea el activador diario (hora de Lima): atHour(5) + nearMinute(30) = entre las 5:15 y las 5:45; antes 4:00 a 5:00 (§PF279) y 5:00 a 5:59 (§PF279), cambiado el 26-oct-2026 (§PF280) para que no caiga mientras Base hace su primera corrida completa y la cola del respaldo CSV (5:00 a ~5:12). Se corre una sola vez. */
 function instalarActivadorDatosDriveGithub() {
   _datosGhQuitarActivadores_(DATOS_GH_HANDLER_AUTO_);
@@ -134,107 +147,11 @@ function quitarActivadorDatosDriveGithub() {
   console.log('Activadores eliminados: ' + n + '.');
 }
 
-function _datosGhQuitarActivadores_(handler) {
-  var n = 0;
-  ScriptApp.getProjectTriggers().forEach(function(t) {
-    if (t.getHandlerFunction() === handler) { ScriptApp.deleteTrigger(t); n++; }
-  });
-  return n;
-}
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
 
-// -----------------------------------------------------------------------------
-// Revisiones de seguridad
-// -----------------------------------------------------------------------------
-
-/**
- * Devuelve una lista de textos tipo «línea 12 (teléfono con +)». Nunca incluye el valor.
- * Reglas (probadas contra 99 CSV del repo sin falsos positivos):
- *   A) «+» seguido de 8 o más cifras (con espacios, guiones o paréntesis);
- *   B) tres grupos de cifras separados por espacio o guion (999 999 999);
- *   C) 9 a 15 cifras seguidas, salvo marcas de tiempo (13 cifras que empiezan con 15 a 19,
- *      o 10 cifras que empiezan con 15 a 19).
- */
-function _datosGhBuscarTelefonos_(texto) {
-  var lineas = String(texto).split('\n');
-  var hallazgos = [];
-  var reA = /\+\d[\d ()-]{7,}\d/;
-  var reB = /(^|[^\d-])\d{3}[ -]\d{3}[ -]\d{3,4}(?![\d-])/;
-  for (var i = 0; i < lineas.length; i++) {
-    var l = lineas[i];
-    if (reA.test(l)) { hallazgos.push('línea ' + (i + 1) + ' (teléfono con +)'); }
-    else if (reB.test(l)) { hallazgos.push('línea ' + (i + 1) + ' (cifras separadas)'); }
-    else {
-      var reC = /(^|\D)(\d{9,15})(?!\d)/g;
-      var m;
-      while ((m = reC.exec(l)) !== null) {
-        var d = m[2];
-        var marcaTiempo = /^1[5-9]/.test(d) && (d.length === 13 || d.length === 10);
-        if (!marcaTiempo) { hallazgos.push('línea ' + (i + 1) + ' (' + d.length + ' cifras seguidas)'); break; }
-      }
-    }
-    if (hallazgos.length >= 5) break;
-  }
-  return hallazgos;
-}
-
-// -----------------------------------------------------------------------------
-// Lógica principal
-// -----------------------------------------------------------------------------
-
-/** Lista los archivos candidatos: { archivo, destino, maxBytes } o { problema }. */
-function _datosGhListarCandidatos_() {
-  var candidatos = [];
-  var problemas = [];
-  DATOS_GH_FUENTES_.forEach(function(fuente) {
-    var carpeta;
-    try { carpeta = DriveApp.getFolderById(fuente.carpetaId); }
-    catch (e) { problemas.push('carpeta ' + fuente.destino + ' → no se pudo abrir en Drive'); return; }
-
-    if (fuente.nombres) {
-      fuente.nombres.forEach(function(nombre) {
-        var it = carpeta.getFilesByName(nombre);
-        var encontrados = [];
-        while (it.hasNext()) encontrados.push(it.next());
-        if (encontrados.length === 0) { problemas.push(nombre + ' → no está en la carpeta de Drive'); return; }
-        if (encontrados.length > 1) { problemas.push(nombre + ' → hay ' + encontrados.length + ' archivos con ese nombre en la carpeta; no sé cuál copiar'); return; }
-        candidatos.push({ archivo: encontrados[0], destino: fuente.destino, maxBytes: fuente.maxBytes });
-      });
-    } else if (fuente.todos) {
-      var it2 = carpeta.getFiles();
-      while (it2.hasNext()) {
-        var f = it2.next();
-        if (fuente.omitir && fuente.omitir.test(f.getName())) continue;
-        if (fuente.solo && !fuente.solo.test(f.getName())) continue;
-        var mime = f.getMimeType();
-        if (mime.indexOf('text/') !== 0 && mime !== 'application/json') continue;
-        candidatos.push({ archivo: f, destino: fuente.destino, maxBytes: fuente.maxBytes });
-      }
-    }
-  });
-  return { candidatos: candidatos, problemas: problemas };
-}
-
-/**
- * _datosGhLineasPorCarpeta_(rutas): PF272 (25-oct-2026). Agrupa rutas «carpeta/archivo» por carpeta de destino y devuelve las líneas
- * del registro: una por carpeta con su total y debajo sus archivos. Función pura (sin Drive ni GitHub); carpetas y archivos en orden alfabético.
- * Una ruta sin «/» se agrupa bajo «(raíz)».
- */
-function _datosGhLineasPorCarpeta_(rutas) {
-  var grupos = {};
-  (rutas || []).forEach(function(r) {
-    var k = String(r).lastIndexOf('/');
-    var carpeta = k >= 0 ? String(r).substring(0, k + 1) : '(raíz)';
-    var nombre = k >= 0 ? String(r).substring(k + 1) : String(r);
-    (grupos[carpeta] = grupos[carpeta] || []).push(nombre);
-  });
-  var lineas = [];
-  Object.keys(grupos).sort().forEach(function(carpeta) {
-    var nombres = grupos[carpeta].sort();
-    lineas.push('  ▸ ' + carpeta + ' → ' + nombres.length + (nombres.length === 1 ? ' archivo' : ' archivos'));
-    nombres.forEach(function(n) { lineas.push('      · ' + n); });
-  });
-  return lineas;
-}
+// ----- Copia de Drive a GitHub: lógica y ayudas -----
 
 function _datosDriveAGithub_(op) {
   var t0 = Date.now();
@@ -368,4 +285,100 @@ function _datosDriveAGithub_(op) {
   } finally {
     lock.releaseLock();
   }
+}
+
+/** Lista los archivos candidatos: { archivo, destino, maxBytes } o { problema }. */
+function _datosGhListarCandidatos_() {
+  var candidatos = [];
+  var problemas = [];
+  DATOS_GH_FUENTES_.forEach(function(fuente) {
+    var carpeta;
+    try { carpeta = DriveApp.getFolderById(fuente.carpetaId); }
+    catch (e) { problemas.push('carpeta ' + fuente.destino + ' → no se pudo abrir en Drive'); return; }
+
+    if (fuente.nombres) {
+      fuente.nombres.forEach(function(nombre) {
+        var it = carpeta.getFilesByName(nombre);
+        var encontrados = [];
+        while (it.hasNext()) encontrados.push(it.next());
+        if (encontrados.length === 0) { problemas.push(nombre + ' → no está en la carpeta de Drive'); return; }
+        if (encontrados.length > 1) { problemas.push(nombre + ' → hay ' + encontrados.length + ' archivos con ese nombre en la carpeta; no sé cuál copiar'); return; }
+        candidatos.push({ archivo: encontrados[0], destino: fuente.destino, maxBytes: fuente.maxBytes });
+      });
+    } else if (fuente.todos) {
+      var it2 = carpeta.getFiles();
+      while (it2.hasNext()) {
+        var f = it2.next();
+        if (fuente.omitir && fuente.omitir.test(f.getName())) continue;
+        if (fuente.solo && !fuente.solo.test(f.getName())) continue;
+        var mime = f.getMimeType();
+        if (mime.indexOf('text/') !== 0 && mime !== 'application/json') continue;
+        candidatos.push({ archivo: f, destino: fuente.destino, maxBytes: fuente.maxBytes });
+      }
+    }
+  });
+  return { candidatos: candidatos, problemas: problemas };
+}
+
+/**
+ * Devuelve una lista de textos tipo «línea 12 (teléfono con +)». Nunca incluye el valor.
+ * Reglas (probadas contra 99 CSV del repo sin falsos positivos):
+ *   A) «+» seguido de 8 o más cifras (con espacios, guiones o paréntesis);
+ *   B) tres grupos de cifras separados por espacio o guion (999 999 999);
+ *   C) 9 a 15 cifras seguidas, salvo marcas de tiempo (13 cifras que empiezan con 15 a 19,
+ *      o 10 cifras que empiezan con 15 a 19).
+ */
+function _datosGhBuscarTelefonos_(texto) {
+  var lineas = String(texto).split('\n');
+  var hallazgos = [];
+  var reA = /\+\d[\d ()-]{7,}\d/;
+  var reB = /(^|[^\d-])\d{3}[ -]\d{3}[ -]\d{3,4}(?![\d-])/;
+  for (var i = 0; i < lineas.length; i++) {
+    var l = lineas[i];
+    if (reA.test(l)) { hallazgos.push('línea ' + (i + 1) + ' (teléfono con +)'); }
+    else if (reB.test(l)) { hallazgos.push('línea ' + (i + 1) + ' (cifras separadas)'); }
+    else {
+      var reC = /(^|\D)(\d{9,15})(?!\d)/g;
+      var m;
+      while ((m = reC.exec(l)) !== null) {
+        var d = m[2];
+        var marcaTiempo = /^1[5-9]/.test(d) && (d.length === 13 || d.length === 10);
+        if (!marcaTiempo) { hallazgos.push('línea ' + (i + 1) + ' (' + d.length + ' cifras seguidas)'); break; }
+      }
+    }
+    if (hallazgos.length >= 5) break;
+  }
+  return hallazgos;
+}
+
+/**
+ * _datosGhLineasPorCarpeta_(rutas): PF272 (25-oct-2026). Agrupa rutas «carpeta/archivo» por carpeta de destino y devuelve las líneas
+ * del registro: una por carpeta con su total y debajo sus archivos. Función pura (sin Drive ni GitHub); carpetas y archivos en orden alfabético.
+ * Una ruta sin «/» se agrupa bajo «(raíz)».
+ */
+function _datosGhLineasPorCarpeta_(rutas) {
+  var grupos = {};
+  (rutas || []).forEach(function(r) {
+    var k = String(r).lastIndexOf('/');
+    var carpeta = k >= 0 ? String(r).substring(0, k + 1) : '(raíz)';
+    var nombre = k >= 0 ? String(r).substring(k + 1) : String(r);
+    (grupos[carpeta] = grupos[carpeta] || []).push(nombre);
+  });
+  var lineas = [];
+  Object.keys(grupos).sort().forEach(function(carpeta) {
+    var nombres = grupos[carpeta].sort();
+    lineas.push('  ▸ ' + carpeta + ' → ' + nombres.length + (nombres.length === 1 ? ' archivo' : ' archivos'));
+    nombres.forEach(function(n) { lineas.push('      · ' + n); });
+  });
+  return lineas;
+}
+
+// ----- Activador diario: ayuda -----
+
+function _datosGhQuitarActivadores_(handler) {
+  var n = 0;
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === handler) { ScriptApp.deleteTrigger(t); n++; }
+  });
+  return n;
 }
