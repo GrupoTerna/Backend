@@ -1,57 +1,86 @@
-// ==============================================================================
 // 45_Vigilante_UptimeRobot.gs
 // Vigilante de UptimeRobot con respaldo automático: activa pingProxyRender solo mientras UptimeRobot siga caído (creado 05-oct-2026). [→ Contexto_Base_Web.md §45B001]
-// ==============================================================================
-
 // Cómo funciona (enganche en runGuerra(), chequeo cada 10 min, histéresis), propiedades de configuración, funciones manuales y AVISOS 1-3 (sin probar contra la API real; docblock de pingProxyRender() desactualizado). [→ Contexto_Base_Web.md §45B002]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Vigilante de UptimeRobot: configurar, vigilar, ver estado y reiniciar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Vigilante de UptimeRobot: lógica (en el orden de la llamada desde runGuerra)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var VIG_UR_API_URL = 'https://api.uptimerobot.com/v2/getMonitors';
+
 var VIG_UR_PROP_ESTADO = 'UPTIMEROBOT_VIG_ESTADO';
+
 var VIG_UR_PROP_API_KEY = 'UPTIMEROBOT_API_KEY';
+
 var VIG_UR_PROP_MONITOR_ID = 'UPTIMEROBOT_MONITOR_ID';
 
 var VIG_UR_CHECK_CADA_MS = 10 * 60 * 1000;        // cada cuanto se consulta la API de UptimeRobot
+
 var VIG_UR_PING_CADA_MS = 9 * 60 * 1000;          // cada cuanto se pingea el proxy mientras el respaldo esta activo (< 15 min de Render)
+
 var VIG_UR_OK_PARA_DESACTIVAR = 2;                // chequeos buenos seguidos para apagar el respaldo
+
 var VIG_UR_FALLOS_API_MAX = 3;                    // fallos seguidos de la API de UptimeRobot para activar el respaldo por precaucion
+
 var VIG_UR_ULTIMO_CHEQUEO_MAX_MS = 15 * 60 * 1000; // si el ultimo chequeo de UptimeRobot es mas viejo que esto (o 3x su intervalo), se considera caido
+
 var VIG_UR_PING_LENTO_MS = 8000;                  // un ping que tarda mas que esto indica que Render estaba dormido
 
-// Valor inicial del estado guardado. [→ Contexto_Base_Web.md §45B003]
-function _vigUrEstadoInicial_() {
-  return {
-    fallbackActivo: false,   // true = el vigilante esta pingeando el proxy
-    desde: 0,                // ms epoch desde que el respaldo esta activo (0 si no lo esta)
-    motivo: '',              // texto corto de por que esta activo / ultimo resultado
-    urStatus: null,          // ultimo status de UptimeRobot visto (0,1,2,8,9) o null
-    ultimoChequeo: 0,        // ms epoch del ultimo intento de chequeo a UptimeRobot
-    ultimoChequeoOk: 0,      // ms epoch del ultimo chequeo que SI consiguio respuesta valida
-    chequeosBuenos: 0,       // chequeos buenos seguidos (para la histeresis)
-    fallosApi: 0,            // fallos seguidos al consultar la API de UptimeRobot
-    ultimoPing: 0,           // ms epoch del ultimo ping de respaldo
-    ultimoPingMs: 0,         // duracion del ultimo ping de respaldo
-    ultimoPingDormido: false,// true si ese ping tardo tanto que Render estaba dormido
-    avisoSinClave: false     // para avisar solo una vez que falta UPTIMEROBOT_API_KEY
-  };
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Vigilante de UptimeRobot: configurar, vigilar, ver estado y reiniciar -----
+
+// ---------------------------------------------------------------------------
+// FUNCIÓN TEMPORAL: pegar la clave en API_KEY, ejecutar UNA vez y BORRAR esta función (o vaciar las comillas) para no dejar la clave escrita en el código. [→ Contexto_Base_Web.md §45B009]
+// ---------------------------------------------------------------------------
+function configurarUptimeRobotTemporal() {
+  var API_KEY = '';      // <- pegar aqui la clave de UptimeRobot (read-only o de monitor especifico)
+  var MONITOR_ID = '';   // <- opcional: id numerico del monitor del proxy. Dejar vacio para buscarlo por la URL.
+
+  var props = PropertiesService.getScriptProperties();
+  if (!API_KEY) { Logger.log('[VigUR] Falta pegar la clave en API_KEY dentro de configurarUptimeRobotTemporal().'); return; }
+  props.setProperty(VIG_UR_PROP_API_KEY, API_KEY.trim());
+  if (MONITOR_ID) props.setProperty(VIG_UR_PROP_MONITOR_ID, String(MONITOR_ID).trim());
+  else props.deleteProperty(VIG_UR_PROP_MONITOR_ID);
+  props.deleteProperty(VIG_UR_PROP_ESTADO); // empezar de cero
+
+  var leida = props.getProperty(VIG_UR_PROP_API_KEY) || '';
+  Logger.log('[VigUR] Guardada. Clave leida de vuelta: ' + (leida ? leida.substring(0, 4) + '...' + leida.substring(leida.length - 3) +
+    ' (' + leida.length + ' caracteres)' : 'VACIA (no se guardo)') +
+    ' | monitor id: ' + (props.getProperty(VIG_UR_PROP_MONITOR_ID) || '(se buscara por URL)') +
+    '. Ahora ejecuta vigilarUptimeRobotAhora() y despues borra esta funcion.');
 }
 
-function _vigUrLeerEstado_() {
-  var base = _vigUrEstadoInicial_();
-  try {
-    var raw = PropertiesService.getScriptProperties().getProperty(VIG_UR_PROP_ESTADO);
-    if (!raw) return base;
-    var guardado = JSON.parse(raw);
-    for (var k in guardado) { if (guardado.hasOwnProperty(k)) base[k] = guardado[k]; }
-  } catch (e) {
-    Logger.log('[VigUR] Estado guardado ilegible, se reinicia: ' + e.message);
-  }
-  return base;
+// Funciones manuales y de lectura
+
+/** Fuerza un chequeo ahora mismo (e, si el respaldo queda activo, un ping) y deja el resultado en el log. */
+function vigilarUptimeRobotAhora() {
+  var est = _vigilarUptimeRobot_(true);
+  Logger.log('[VigUR] Resultado manual: respaldo ' + (est.fallbackActivo ? 'ACTIVO' : 'inactivo') +
+    ' | status UptimeRobot=' + est.urStatus + ' | ' + est.motivo);
 }
 
-function _vigUrGuardarEstado_(est) {
-  PropertiesService.getScriptProperties().setProperty(VIG_UR_PROP_ESTADO, JSON.stringify(est));
+/** Imprime el estado guardado. */
+function estadoVigilanteUptimeRobot() {
+  Logger.log('[VigUR] Estado: ' + JSON.stringify(getEstadoVigilanteUptimeRobot_(), null, 2));
 }
+
+/** Borra el estado guardado (el siguiente disparo de runGuerra vuelve a chequear de cero). */
+function reiniciarVigilanteUptimeRobot() {
+  PropertiesService.getScriptProperties().deleteProperty(VIG_UR_PROP_ESTADO);
+  Logger.log('[VigUR] Estado borrado.');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Vigilante de UptimeRobot: lógica (en el orden de la llamada desde runGuerra) -----
 
 // Punto de enganche para runGuerra(); nunca lanza; no hace nada dentro de la ventana protegida 4:00-4:59 a.m. Lima. [→ Contexto_Base_Web.md §45B004]
 function _vigilarUptimeRobotSeguro_() {
@@ -98,6 +127,37 @@ function _vigilarUptimeRobot_(forzar) {
 
   _vigUrGuardarEstado_(est);
   return est;
+}
+
+function _vigUrLeerEstado_() {
+  var base = _vigUrEstadoInicial_();
+  try {
+    var raw = PropertiesService.getScriptProperties().getProperty(VIG_UR_PROP_ESTADO);
+    if (!raw) return base;
+    var guardado = JSON.parse(raw);
+    for (var k in guardado) { if (guardado.hasOwnProperty(k)) base[k] = guardado[k]; }
+  } catch (e) {
+    Logger.log('[VigUR] Estado guardado ilegible, se reinicia: ' + e.message);
+  }
+  return base;
+}
+
+// Valor inicial del estado guardado. [→ Contexto_Base_Web.md §45B003]
+function _vigUrEstadoInicial_() {
+  return {
+    fallbackActivo: false,   // true = el vigilante esta pingeando el proxy
+    desde: 0,                // ms epoch desde que el respaldo esta activo (0 si no lo esta)
+    motivo: '',              // texto corto de por que esta activo / ultimo resultado
+    urStatus: null,          // ultimo status de UptimeRobot visto (0,1,2,8,9) o null
+    ultimoChequeo: 0,        // ms epoch del ultimo intento de chequeo a UptimeRobot
+    ultimoChequeoOk: 0,      // ms epoch del ultimo chequeo que SI consiguio respuesta valida
+    chequeosBuenos: 0,       // chequeos buenos seguidos (para la histeresis)
+    fallosApi: 0,            // fallos seguidos al consultar la API de UptimeRobot
+    ultimoPing: 0,           // ms epoch del ultimo ping de respaldo
+    ultimoPingMs: 0,         // duracion del ultimo ping de respaldo
+    ultimoPingDormido: false,// true si ese ping tardo tanto que Render estaba dormido
+    avisoSinClave: false     // para avisar solo una vez que falta UPTIMEROBOT_API_KEY
+  };
 }
 
 // Consulta la API de UptimeRobot y actualiza el estado (activa/desactiva el respaldo); devuelve el estado. [→ Contexto_Base_Web.md §45B006]
@@ -244,26 +304,8 @@ function _vigUrHost_(url) {
   return m ? m[1] : '';
 }
 
-// ---------------------------------------------------------------------------
-// Funciones manuales y de lectura
-// ---------------------------------------------------------------------------
-
-/** Fuerza un chequeo ahora mismo (e, si el respaldo queda activo, un ping) y deja el resultado en el log. */
-function vigilarUptimeRobotAhora() {
-  var est = _vigilarUptimeRobot_(true);
-  Logger.log('[VigUR] Resultado manual: respaldo ' + (est.fallbackActivo ? 'ACTIVO' : 'inactivo') +
-    ' | status UptimeRobot=' + est.urStatus + ' | ' + est.motivo);
-}
-
-/** Imprime el estado guardado. */
-function estadoVigilanteUptimeRobot() {
-  Logger.log('[VigUR] Estado: ' + JSON.stringify(getEstadoVigilanteUptimeRobot_(), null, 2));
-}
-
-/** Borra el estado guardado (el siguiente disparo de runGuerra vuelve a chequear de cero). */
-function reiniciarVigilanteUptimeRobot() {
-  PropertiesService.getScriptProperties().deleteProperty(VIG_UR_PROP_ESTADO);
-  Logger.log('[VigUR] Estado borrado.');
+function _vigUrGuardarEstado_(est) {
+  PropertiesService.getScriptProperties().setProperty(VIG_UR_PROP_ESTADO, JSON.stringify(est));
 }
 
 // Estado del vigilante como objeto simple con fechas ISO (para el panel admin). [→ Contexto_Base_Web.md §45B008]
@@ -283,25 +325,4 @@ function getEstadoVigilanteUptimeRobot_() {
     ultimoPingMs: est.ultimoPingMs || 0,
     ultimoPingDormido: !!est.ultimoPingDormido
   };
-}
-
-// ---------------------------------------------------------------------------
-// FUNCIÓN TEMPORAL: pegar la clave en API_KEY, ejecutar UNA vez y BORRAR esta función (o vaciar las comillas) para no dejar la clave escrita en el código. [→ Contexto_Base_Web.md §45B009]
-// ---------------------------------------------------------------------------
-function configurarUptimeRobotTemporal() {
-  var API_KEY = '';      // <- pegar aqui la clave de UptimeRobot (read-only o de monitor especifico)
-  var MONITOR_ID = '';   // <- opcional: id numerico del monitor del proxy. Dejar vacio para buscarlo por la URL.
-
-  var props = PropertiesService.getScriptProperties();
-  if (!API_KEY) { Logger.log('[VigUR] Falta pegar la clave en API_KEY dentro de configurarUptimeRobotTemporal().'); return; }
-  props.setProperty(VIG_UR_PROP_API_KEY, API_KEY.trim());
-  if (MONITOR_ID) props.setProperty(VIG_UR_PROP_MONITOR_ID, String(MONITOR_ID).trim());
-  else props.deleteProperty(VIG_UR_PROP_MONITOR_ID);
-  props.deleteProperty(VIG_UR_PROP_ESTADO); // empezar de cero
-
-  var leida = props.getProperty(VIG_UR_PROP_API_KEY) || '';
-  Logger.log('[VigUR] Guardada. Clave leida de vuelta: ' + (leida ? leida.substring(0, 4) + '...' + leida.substring(leida.length - 3) +
-    ' (' + leida.length + ' caracteres)' : 'VACIA (no se guardo)') +
-    ' | monitor id: ' + (props.getProperty(VIG_UR_PROP_MONITOR_ID) || '(se buscara por URL)') +
-    '. Ahora ejecuta vigilarUptimeRobotAhora() y despues borra esta funcion.');
 }
