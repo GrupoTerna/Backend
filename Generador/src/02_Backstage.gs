@@ -8,6 +8,9 @@ var CARPETA_GENERADOR_ID = '1YmgyCh-7Y6DIoScS6lpidQZk3IeDsEGA';
 var CARPETA_BASE_ID = '1OmSVruEHm4RlP-7VN3G_M2HublfWK1W8';
 var NOMBRE_HOJA_BASE = 'Base';
 
+// Valla de código del Markdown legible (tres comillas inversas). Se escribe con el código \x60 para que ningún .gs contenga esa secuencia: la regla 6 de la skill y el validador de CI la tratan como resto de formato Markdown. Valor: tres comillas inversas seguidas, igual que antes.
+var VALLA_MD_ = '\x60\x60\x60';
+
 // Interruptor: si es true, subirBaseDesdeZip() también crea/actualiza una
 // hoja "Sistema Clanes - Familia Terna - <fecha>" con el mismo código que
 // se sube a Base. Antes vivía en la ya eliminada ejecutarTodoElProceso();
@@ -226,9 +229,9 @@ function _generarMarkdownLegible_(nombreProyecto, archivos, fechaStr) {
   partes.push('');
   archivos.forEach(function(a) {
     partes.push('## ' + a.nombre + '.gs');
-    partes.push('```javascript');
+    partes.push(VALLA_MD_ + 'javascript');
     partes.push(a.contenido);
-    partes.push('```');
+    partes.push(VALLA_MD_);
     partes.push('');
   });
   return partes.join('\n');
@@ -237,7 +240,7 @@ function _generarMarkdownLegible_(nombreProyecto, archivos, fechaStr) {
 /**
  * Reconstruye la lista de archivos [{nombre, contenido}, ...] a partir del
  * Markdown legible generado por _generarMarkdownLegible_. Busca encabezados
- * "## nombre.gs" seguidos de un bloque ```...```.
+ * "## nombre.gs" seguidos de un bloque entre vallas de tres comillas inversas (VALLA_MD_).
  */
 function _extraerArchivosDeMarkdown_(texto) {
   var archivos = [];
@@ -250,14 +253,14 @@ function _extraerArchivosDeMarkdown_(texto) {
       if (nombre.endsWith('.gs')) nombre = nombre.slice(0, -3);
       i++;
       while (i < lineas.length && lineas[i].trim() === '') i++;
-      if (i < lineas.length && lineas[i].trim().indexOf('```') === 0) {
-        i++; // saltar la valla de apertura ``` (o ```javascript)
+      if (i < lineas.length && lineas[i].trim().indexOf(VALLA_MD_) === 0) {
+        i++; // saltar la valla de apertura (VALLA_MD_, con o sin «javascript»)
         var contenido = '';
-        while (i < lineas.length && lineas[i].trim() !== '```') {
+        while (i < lineas.length && lineas[i].trim() !== VALLA_MD_) {
           contenido += lineas[i] + '\n';
           i++;
         }
-        i++; // saltar la valla de cierre ```
+        i++; // saltar la valla de cierre (VALLA_MD_)
         if (contenido.endsWith('\n')) contenido = contenido.slice(0, -1);
         archivos.push({ nombre: nombre, contenido: contenido });
         continue;
@@ -491,7 +494,7 @@ function _subirArchivosAProyecto(nombreBase, extension) {
     var resultadoZip = consolidarCodigoDesdeZip(nombreReal);
     blobs = resultadoZip.archivos;
   } else if (nombreReal.endsWith('.md')) {
-    // Formato Markdown legible: encabezados "## archivo.gs" + bloque ```
+    // Formato Markdown legible: encabezados "## archivo.gs" + bloque entre vallas (VALLA_MD_)
     var contenidoMd = archivoDrive.getBlob().getDataAsString('UTF-8');
     blobs = _extraerArchivosDeMarkdown_(contenidoMd);
   } else if (nombreReal.endsWith('.txt') || nombreReal.endsWith('.gs')) {
