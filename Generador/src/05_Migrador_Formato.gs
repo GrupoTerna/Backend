@@ -58,6 +58,15 @@
 // quiera.
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Migración de formato de los respaldos JSON
+//  Parte 2 — Funciones que no se corren a mano
+//    - Migración de formato: pasos (en el orden en que los llama migrarFormatoJSON)
+//    - Migración de formato: fechas y letra del día (las usan también 06 y 10)
+//    - Presupuesto de tiempo, estado persistente y continuación automática
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 /** @const {number} Presupuesto de tiempo por ejecución, en ms.
  *  Deja margen bajo el límite real de Apps Script (~6 min en cuentas
  *  gratuitas/Gmail normales). Si el proyecto es de Google Workspace con
@@ -69,6 +78,15 @@ var MIG_PROP_ESTADO_ = 'MIG_FORMATO_ESTADO_V1';
 
 /** @const {string} Nombre del handler que se re-programa como trigger. */
 var MIG_TRIGGER_HANDLER_ = 'migrarFormatoJSON';
+
+/** @const {string} Letras del día de la semana, índice 0 = lunes … 6 = domingo (L M X J V S D). */
+var LETRAS_DIA_GUERRA_ = 'LMXJVSD';
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Migración de formato de los respaldos JSON -----
 
 /**
  * migrarFormatoJSON()
@@ -102,6 +120,25 @@ function migrarFormatoJSON() {
     candado.releaseLock();
   }
 }
+
+/**
+ * Utilidad manual: descarta cualquier estado/pausa guardada de una
+ * ejecución anterior y borra el trigger de continuación pendiente, sin
+ * tocar el cache de periodos (que sigue siendo válido). Usar si se quiere
+ * forzar que la próxima llamada a migrarFormatoJSON() empiece las 3 fases
+ * desde el Paso 1 (por ejemplo, si el estado guardado quedó inconsistente).
+ */
+function migrarFormatoJSON_reiniciarEstado() {
+  _mig_borrarEstado_();
+  _mig_borrarTriggersPendientes_();
+  console.log('Estado de migrarFormatoJSON() reiniciado. El cache de periodos NO se tocó (usa reiniciarCachePeriodosJSON() para eso).');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Migración de formato: pasos (en el orden en que los llama migrarFormatoJSON) -----
 
 /** Cuerpo de migrarFormatoJSON() (ver el candado arriba). */
 function _mig_ejecutarMigracion_() {
@@ -183,19 +220,6 @@ function _mig_ejecutarMigracion_() {
   }
 
   _mig_finalizar_(estado, cache);
-}
-
-/**
- * Utilidad manual: descarta cualquier estado/pausa guardada de una
- * ejecución anterior y borra el trigger de continuación pendiente, sin
- * tocar el cache de periodos (que sigue siendo válido). Usar si se quiere
- * forzar que la próxima llamada a migrarFormatoJSON() empiece las 3 fases
- * desde el Paso 1 (por ejemplo, si el estado guardado quedó inconsistente).
- */
-function migrarFormatoJSON_reiniciarEstado() {
-  _mig_borrarEstado_();
-  _mig_borrarTriggersPendientes_();
-  console.log('Estado de migrarFormatoJSON() reiniciado. El cache de periodos NO se tocó (usa reiniciarCachePeriodosJSON() para eso).');
 }
 
 /**
@@ -437,8 +461,19 @@ function _mig_renombrarSeguro(archivo, nombreNuevo, resumen) {
   return nombreNuevo;
 }
 
-/** @const {string} Letras del día de la semana, índice 0 = lunes … 6 = domingo (L M X J V S D). */
-var LETRAS_DIA_GUERRA_ = 'LMXJVSD';
+// ----- Migración de formato: fechas y letra del día (las usan también 06 y 10) -----
+
+function _mig_fechaHoraStr(d) {
+  return Utilities.formatDate(d, 'America/Lima', 'dd-MM-yyyy HH.mm');
+}
+
+function _mig_soloHora(d) {
+  return Utilities.formatDate(d, 'America/Lima', 'HH.mm');
+}
+
+function _mig_horaLima(d) {
+  return Utilities.formatDate(d, 'America/Lima', 'dd/MM/yyyy HH:mm:ss') + ' (Lima)';
+}
 
 /**
  * Letra del día de la semana al que corresponde un periodIndex:
@@ -461,18 +496,7 @@ function _pad2_(n) {
   return (n < 0 ? '-' : '') + (s.length < 2 ? '0' + s : s);
 }
 
-function _mig_fechaHoraStr(d) {
-  return Utilities.formatDate(d, 'America/Lima', 'dd-MM-yyyy HH.mm');
-}
-
-function _mig_soloHora(d) {
-  return Utilities.formatDate(d, 'America/Lima', 'HH.mm');
-}
-
-function _mig_horaLima(d) {
-  return Utilities.formatDate(d, 'America/Lima', 'dd/MM/yyyy HH:mm:ss') + ' (Lima)';
-}
-
+// ----- Presupuesto de tiempo, estado persistente y continuación automática -----
 // -----------------------------------------------------------------------
 // Presupuesto de tiempo, estado persistente y continuación automática
 // -----------------------------------------------------------------------
