@@ -62,8 +62,39 @@
 // simulación (LIMPIEZA_DRY_RUN_ = true) y revisa el log antes de aplicar.
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Limpieza de duplicados de los respaldos JSON
+//  Parte 2 — Funciones que no se corren a mano
+//    - Limpieza de duplicados: motor (en el orden en que lo llama limpiarDuplicadosJSON)
+//    - Lectura del periodo de cada archivo (la usa también 10)
+//    - Corte diario y día de juego
+//    - Temporada de una fecha (la usa también 10)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 /** @const {boolean} true = solo reporta en el log, no borra nada. */
 var LIMPIEZA_DRY_RUN_ = true;
+
+/** @const {number} Margen máximo para prestar identidad a una captura sin
+ *  currentriverrace.json propio, en ms. Si la ancla más cercana en el
+ *  tiempo real queda más lejos que esto, se prefiere dejarla sin resolver
+ *  (ver Paso B en _analizarCarpetaJSON_) antes que adivinar mal. */
+var PAREO_TOLERANCIA_MS_ = 6 * 60 * 60 * 1000; // 6 horas
+
+/** @const {number} PF080: minimo de pares de anclas consecutivas (p -> p+1) para dar por medido el corte diario. */
+var CORTE_MIN_PARES_ = 3;
+
+/** @const {number} PF080: fraccion minima de esos pares que debe coincidir en el rango medido (tolera anclas raras). */
+var CORTE_MIN_FRACCION_ = 0.9;
+
+/** @const Ancla: Temporada 1 (numeración interna) = primer lunes de mayo de 2026. */
+var MIG_TEMPORADA_ANCLA_ = { temporada: 1, anio: 2026, mes0: 4 };
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Limpieza de duplicados de los respaldos JSON -----
 
 /**
  * Punto de entrada manual. Revisa la carpeta raíz de JSON y cada carpeta de
@@ -97,6 +128,12 @@ function limpiarDuplicadosJSON() {
     ? 'Fin de la simulación. Si el reporte se ve correcto, cambia LIMPIEZA_DRY_RUN_ a false y vuelve a ejecutar.'
     : 'Limpieza aplicada.');
 }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Limpieza de duplicados: motor (en el orden en que lo llama limpiarDuplicadosJSON) -----
 
 /**
  * Procesa una carpeta: usa _analizarCarpetaJSON_ para resolver identidad y
@@ -410,71 +447,63 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
   return { resueltas: resueltas, sinResolver: sinResolver, aRevision: aRevision, corteDiario: corteDiario };
 }
 
-/** @const {number} Margen máximo para prestar identidad a una captura sin
- *  currentriverrace.json propio, en ms. Si la ancla más cercana en el
- *  tiempo real queda más lejos que esto, se prefiere dejarla sin resolver
- *  (ver Paso B en _analizarCarpetaJSON_) antes que adivinar mal. */
-var PAREO_TOLERANCIA_MS_ = 6 * 60 * 60 * 1000; // 6 horas
+/**
+ * Quita un tag "T-<n> S-<n> P.I-<n> " o "T-<n> S-<n> P.I-<n>-<letra> "
+ * existente al inicio de un segmento de nombre, si lo trae (para poder
+ * re-analizar/re-etiquetar archivos que ya pasaron por migrarFormatoJSON()
+ * en una ejecución anterior sin apilar tags ni romper el agrupamiento por
+ * captura). La letra opcional es la del día de guerra (L M X J V S D, ver
+ * _letraDiaGuerra_ en 05_Migrador_Formato.gs). [→ Contexto_Base_Web.md §PF074]
+ * @param {string} segmento
+ * @return {string}
+ */
+function _quitarTagExistente_(segmento) {
+  return segmento.replace(/^T-\d+\s+S-\d+\s+P\.I-\d+(?:-[LMXJVSD])?\s+/, '');
+}
+
+// ----- Lectura del periodo de cada archivo (la usa también 10) -----
 
 /**
- * Busca, dentro de una lista de anclas ordenada por fecha, la más cercana
- * en el tiempo real a "fecha" (puede quedar antes o después).
- * @param {Array<{real:Date}>} anclas
- * @param {Date} fecha
- * @return {?Object}
+ * Lee sectionIndex y periodIndex de un currentriverrace.json tomando la
+ * PRIMERA mención de cada campo en el orden en que aparece escrito en el
+ * archivo (no un campo fijo de nivel superior por nombre de propiedad,
+ * porque "periodIndex" vuelve a aparecer más adentro del documento, p. ej.
+ * dentro de cada entrada de "periodLogs", y esas menciones posteriores
+ * deben ignorarse).
+ * @param {File} archivo
+ * @return {?{sectionIndex:number, periodIndex:number}} null si no se pudo leer.
  */
-function _anclaMasCercana_(anclas, fecha) {
-  var mejor = null;
-  var mejorDiferencia = Infinity;
-  for (var i = 0; i < anclas.length; i++) {
-    var diferencia = Math.abs(anclas[i].real.getTime() - fecha.getTime());
-    if (diferencia < mejorDiferencia) {
-      mejorDiferencia = diferencia;
-      mejor = anclas[i];
-    }
+function _leerPeriodo_(archivo) {
+  try {
+    var texto = archivo.getBlob().getDataAsString();
+    JSON.parse(texto); // valida que sea JSON antes de confiar en el texto crudo
+
+    var periodIndex = _primeraMencionNumerica_(texto, 'periodIndex');
+    var sectionIndex = _primeraMencionNumerica_(texto, 'sectionIndex');
+
+    if (periodIndex === null || sectionIndex === null) return null;
+    return { sectionIndex: sectionIndex, periodIndex: periodIndex };
+  } catch (e) {
+    return null;
   }
-  return mejor;
-}
-
-/** @return {string} PF080: linea de log con el corte diario medido (o por que se uso la ventana 04:00-05:00). */
-function _textoCorteDiario_(c) {
-  if (!c) return 'Corte diario: sin pares de anclas seguidas, se usa la ventana 04:00-05:00.';
-  if (!c.ok) return 'Corte diario: no se pudo medir (' + c.motivo + '), se usa la ventana 04:00-05:00.';
-  return 'Corte diario medido: ' + _fmtHoraH_(c.desdeH) + '-' + _fmtHoraH_(c.hastaH) + ' (Lima), con ' + c.coinciden + ' de ' + c.pares + ' pares de anclas.';
-}
-
-/** @const {number} PF080: minimo de pares de anclas consecutivas (p -> p+1) para dar por medido el corte diario. */
-var CORTE_MIN_PARES_ = 3;
-
-/** @const {number} PF080: fraccion minima de esos pares que debe coincidir en el rango medido (tolera anclas raras). */
-var CORTE_MIN_FRACCION_ = 0.9;
-
-/** @return {string} Hora decimal (0-24) como "HH:MM". */
-function _fmtHoraH_(h) {
-  var min = Math.round(h * 60);
-  var hh = Math.floor(min / 60) % 24, mm = min % 60;
-  return (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
-}
-
-/** @return {number} Hora de Lima de un instante, decimal en [0, 24). */
-function _horaLimaDecimal_(fecha) {
-  var d = new Date(fecha.getTime() - VERIF_LIMA_OFFSET_H_ * 3600 * 1000);
-  return d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600 + d.getUTCMilliseconds() / 3600000;
 }
 
 /**
- * PF080: true si la hora de Lima de "fecha" cae estrictamente dentro de (corte.desdeH, corte.hastaH), o, sin "corte",
- * dentro de la ventana fija [04:00, 05:00) (_verif_enVentanaCambio_). Los extremos del rango medido son las horas de las
- * propias anclas que lo fijan, y esas anclas ya traen su periodIndex: no se las marca como dudosas.
- * @param {Date} fecha
- * @param {?{desdeH:number, hastaH:number}} corte
- * @return {boolean}
+ * Busca la primera aparición de "<clave>": <numero> en un texto JSON crudo,
+ * en el orden en que está escrito el archivo, ignorando las que aparezcan
+ * después.
+ * @param {string} texto
+ * @param {string} clave
+ * @return {?number} null si no se encontró ninguna mención.
  */
-function _enVentanaCorte_(fecha, corte) {
-  if (!corte) return _verif_enVentanaCambio_(fecha);
-  var h = _horaLimaDecimal_(fecha);
-  return h > corte.desdeH && h < corte.hastaH;
+function _primeraMencionNumerica_(texto, clave) {
+  var patron = new RegExp('"' + clave + '"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)');
+  var m = patron.exec(texto);
+  if (!m) return null;
+  return Number(m[1]);
 }
+
+// ----- Corte diario y día de juego -----
 
 /**
  * PF080 (regla nueva, decidida por la usuaria el 14-oct-2026): mide la hora REAL del corte diario de un clan en lugar de
@@ -547,50 +576,30 @@ function _estimarCorteDiario_(anclas) {
   return res;
 }
 
+/** @return {number} Hora de Lima de un instante, decimal en [0, 24). */
+function _horaLimaDecimal_(fecha) {
+  var d = new Date(fecha.getTime() - VERIF_LIMA_OFFSET_H_ * 3600 * 1000);
+  return d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600 + d.getUTCMilliseconds() / 3600000;
+}
+
 /**
- * PF077: numero de DIA DE JUEGO de un instante: dias enteros desde 1970 contados en hora de Lima con el cambio de dia
- * a las 04:00. Dos instantes con el mismo numero estan en el mismo dia de juego; la resta de dos numeros es la cantidad
- * de cortes de las 04:00 que los separan. Usa las constantes de 10_Verificar_PeriodIndex_JSON.gs (Lima = UTC-5, corte 04:00).
+ * Busca, dentro de una lista de anclas ordenada por fecha, la más cercana
+ * en el tiempo real a "fecha" (puede quedar antes o después).
+ * @param {Array<{real:Date}>} anclas
  * @param {Date} fecha
- * @return {number}
+ * @return {?Object}
  */
-function _diaJuegoNum_(fecha, corteH) {
-  var c = (corteH == null) ? VERIF_CAMBIO_DESDE_H_ : corteH; // PF080: hora de corte opcional (por defecto 04:00)
-  return Math.floor((fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + c) * 3600 * 1000) / 86400000);
-}
-
-/**
- * PF077: fecha de calendario (UTC, solo para leer anio/mes/dia/dia de semana) del DIA DE JUEGO de un instante.
- * @param {Date} fecha
- * @return {Date}
- */
-function _diaJuegoFecha_(fecha, corteH) {
-  var c = (corteH == null) ? VERIF_CAMBIO_DESDE_H_ : corteH; // PF080
-  return new Date(fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + c) * 3600 * 1000);
-}
-
-/** @return {boolean} true si el dia de juego de "fecha" es el primer lunes de su mes, o sea el dia 0 de una temporada. */
-function _esInicioDeTemporada_(fecha, corteH) {
-  var d = _diaJuegoFecha_(fecha, corteH);
-  return d.getUTCDay() === 1 && d.getUTCDate() === _primerLunesDia_(d.getUTCFullYear(), d.getUTCMonth());
-}
-
-/**
- * PF080 (15-oct-2026): dia de juego de una ancla guardada DENTRO de la ventana de corte, deducido de su propio periodIndex.
- * El periodIndex da el dia de la semana (0 = lunes ... 6 = domingo): si coincide con el dia de calendario de Lima de la
- * captura, el servidor ya estaba en el dia nuevo; si coincide con el anterior, todavia estaba en el viejo. Cualquier otro
- * valor (por ejemplo la T-05 con periodIndex 7 un domingo) no se puede interpretar y devuelve null.
- * Funcion pura (no toca Drive).
- * @param {{real:Date, periodIndex:number}} ancla
- * @return {?number} Numero de dia de calendario de Lima (dias enteros desde 1970) del dia de juego, o null.
- */
-function _diaJuegoAnclaEnVentana_(ancla) {
-  var calNum = _diaJuegoNum_(ancla.real, 0); // dia de calendario de Lima (corte a las 00:00)
-  var diaSemanaCal = (((calNum + 3) % 7) + 7) % 7; // 1970-01-01 fue jueves = 3 (0 = lunes)
-  var diaSemanaP = (((Math.round(Number(ancla.periodIndex)) % 7) + 7) % 7);
-  if (diaSemanaP === diaSemanaCal) return calNum;
-  if (diaSemanaP === (diaSemanaCal + 6) % 7) return calNum - 1;
-  return null;
+function _anclaMasCercana_(anclas, fecha) {
+  var mejor = null;
+  var mejorDiferencia = Infinity;
+  for (var i = 0; i < anclas.length; i++) {
+    var diferencia = Math.abs(anclas[i].real.getTime() - fecha.getTime());
+    if (diferencia < mejorDiferencia) {
+      mejorDiferencia = diferencia;
+      mejor = anclas[i];
+    }
+  }
+  return mejor;
 }
 
 /**
@@ -672,6 +681,98 @@ function _ajustarPeriodoPrestado_(ancla, fecha, corte) {
   return { sectionIndex: nuevoS, periodIndex: nuevoP, cortes: cortes, temporada: temporada };
 }
 
+/** @return {string} Hora decimal (0-24) como "HH:MM". */
+function _fmtHoraH_(h) {
+  var min = Math.round(h * 60);
+  var hh = Math.floor(min / 60) % 24, mm = min % 60;
+  return (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
+}
+
+/**
+ * PF080: true si la hora de Lima de "fecha" cae estrictamente dentro de (corte.desdeH, corte.hastaH), o, sin "corte",
+ * dentro de la ventana fija [04:00, 05:00) (_verif_enVentanaCambio_). Los extremos del rango medido son las horas de las
+ * propias anclas que lo fijan, y esas anclas ya traen su periodIndex: no se las marca como dudosas.
+ * @param {Date} fecha
+ * @param {?{desdeH:number, hastaH:number}} corte
+ * @return {boolean}
+ */
+function _enVentanaCorte_(fecha, corte) {
+  if (!corte) return _verif_enVentanaCambio_(fecha);
+  var h = _horaLimaDecimal_(fecha);
+  return h > corte.desdeH && h < corte.hastaH;
+}
+
+/**
+ * PF080 (15-oct-2026): dia de juego de una ancla guardada DENTRO de la ventana de corte, deducido de su propio periodIndex.
+ * El periodIndex da el dia de la semana (0 = lunes ... 6 = domingo): si coincide con el dia de calendario de Lima de la
+ * captura, el servidor ya estaba en el dia nuevo; si coincide con el anterior, todavia estaba en el viejo. Cualquier otro
+ * valor (por ejemplo la T-05 con periodIndex 7 un domingo) no se puede interpretar y devuelve null.
+ * Funcion pura (no toca Drive).
+ * @param {{real:Date, periodIndex:number}} ancla
+ * @return {?number} Numero de dia de calendario de Lima (dias enteros desde 1970) del dia de juego, o null.
+ */
+function _diaJuegoAnclaEnVentana_(ancla) {
+  var calNum = _diaJuegoNum_(ancla.real, 0); // dia de calendario de Lima (corte a las 00:00)
+  var diaSemanaCal = (((calNum + 3) % 7) + 7) % 7; // 1970-01-01 fue jueves = 3 (0 = lunes)
+  var diaSemanaP = (((Math.round(Number(ancla.periodIndex)) % 7) + 7) % 7);
+  if (diaSemanaP === diaSemanaCal) return calNum;
+  if (diaSemanaP === (diaSemanaCal + 6) % 7) return calNum - 1;
+  return null;
+}
+
+/**
+ * PF077: numero de DIA DE JUEGO de un instante: dias enteros desde 1970 contados en hora de Lima con el cambio de dia
+ * a las 04:00. Dos instantes con el mismo numero estan en el mismo dia de juego; la resta de dos numeros es la cantidad
+ * de cortes de las 04:00 que los separan. Usa las constantes de 10_Verificar_PeriodIndex_JSON.gs (Lima = UTC-5, corte 04:00).
+ * @param {Date} fecha
+ * @return {number}
+ */
+function _diaJuegoNum_(fecha, corteH) {
+  var c = (corteH == null) ? VERIF_CAMBIO_DESDE_H_ : corteH; // PF080: hora de corte opcional (por defecto 04:00)
+  return Math.floor((fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + c) * 3600 * 1000) / 86400000);
+}
+
+/** @return {boolean} true si el dia de juego de "fecha" es el primer lunes de su mes, o sea el dia 0 de una temporada. */
+function _esInicioDeTemporada_(fecha, corteH) {
+  var d = _diaJuegoFecha_(fecha, corteH);
+  return d.getUTCDay() === 1 && d.getUTCDate() === _primerLunesDia_(d.getUTCFullYear(), d.getUTCMonth());
+}
+
+/**
+ * PF077: fecha de calendario (UTC, solo para leer anio/mes/dia/dia de semana) del DIA DE JUEGO de un instante.
+ * @param {Date} fecha
+ * @return {Date}
+ */
+function _diaJuegoFecha_(fecha, corteH) {
+  var c = (corteH == null) ? VERIF_CAMBIO_DESDE_H_ : corteH; // PF080
+  return new Date(fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + c) * 3600 * 1000);
+}
+
+/** @return {string} PF080: linea de log con el corte diario medido (o por que se uso la ventana 04:00-05:00). */
+function _textoCorteDiario_(c) {
+  if (!c) return 'Corte diario: sin pares de anclas seguidas, se usa la ventana 04:00-05:00.';
+  if (!c.ok) return 'Corte diario: no se pudo medir (' + c.motivo + '), se usa la ventana 04:00-05:00.';
+  return 'Corte diario medido: ' + _fmtHoraH_(c.desdeH) + '-' + _fmtHoraH_(c.hastaH) + ' (Lima), con ' + c.coinciden + ' de ' + c.pares + ' pares de anclas.';
+}
+
+// ----- Temporada de una fecha (la usa también 10) -----
+
+/**
+ * Día del mes (1-31) en que cae el primer lunes de un mes dado. Cálculo de
+ * calendario puro (no depende de zona horaria real: el día de la semana
+ * del día 1 de un mes es el mismo en cualquier zona horaria mientras no
+ * se cruce medianoche UTC de forma ambigua, por eso se puede usar
+ * Date.UTC de forma segura solo para esta cuenta de día-de-semana).
+ * @param {number} anio
+ * @param {number} mes0 0 = enero … 11 = diciembre
+ * @return {number}
+ */
+function _primerLunesDia_(anio, mes0) {
+  var diaSemanaDel1 = new Date(Date.UTC(anio, mes0, 1)).getUTCDay(); // 0=domingo … 6=sábado
+  var offset = (8 - diaSemanaDel1) % 7;
+  return 1 + offset;
+}
+
 /**
  * Calcula el número de temporada de Clash Royale al que pertenece una
  * fecha, usando la regla de calendario real: la temporada reinicia el
@@ -714,77 +815,4 @@ function _temporadaDeFecha_(fechaReal) {
 
   var mesesDesdeAncla = (anio - MIG_TEMPORADA_ANCLA_.anio) * 12 + (mes0 - MIG_TEMPORADA_ANCLA_.mes0);
   return MIG_TEMPORADA_ANCLA_.temporada + mesesDesdeAncla;
-}
-
-/** @const Ancla: Temporada 1 (numeración interna) = primer lunes de mayo de 2026. */
-var MIG_TEMPORADA_ANCLA_ = { temporada: 1, anio: 2026, mes0: 4 };
-
-/**
- * Día del mes (1-31) en que cae el primer lunes de un mes dado. Cálculo de
- * calendario puro (no depende de zona horaria real: el día de la semana
- * del día 1 de un mes es el mismo en cualquier zona horaria mientras no
- * se cruce medianoche UTC de forma ambigua, por eso se puede usar
- * Date.UTC de forma segura solo para esta cuenta de día-de-semana).
- * @param {number} anio
- * @param {number} mes0 0 = enero … 11 = diciembre
- * @return {number}
- */
-function _primerLunesDia_(anio, mes0) {
-  var diaSemanaDel1 = new Date(Date.UTC(anio, mes0, 1)).getUTCDay(); // 0=domingo … 6=sábado
-  var offset = (8 - diaSemanaDel1) % 7;
-  return 1 + offset;
-}
-
-/**
- * Quita un tag "T-<n> S-<n> P.I-<n> " o "T-<n> S-<n> P.I-<n>-<letra> "
- * existente al inicio de un segmento de nombre, si lo trae (para poder
- * re-analizar/re-etiquetar archivos que ya pasaron por migrarFormatoJSON()
- * en una ejecución anterior sin apilar tags ni romper el agrupamiento por
- * captura). La letra opcional es la del día de guerra (L M X J V S D, ver
- * _letraDiaGuerra_ en 05_Migrador_Formato.gs). [→ Contexto_Base_Web.md §PF074]
- * @param {string} segmento
- * @return {string}
- */
-function _quitarTagExistente_(segmento) {
-  return segmento.replace(/^T-\d+\s+S-\d+\s+P\.I-\d+(?:-[LMXJVSD])?\s+/, '');
-}
-
-/**
- * Lee sectionIndex y periodIndex de un currentriverrace.json tomando la
- * PRIMERA mención de cada campo en el orden en que aparece escrito en el
- * archivo (no un campo fijo de nivel superior por nombre de propiedad,
- * porque "periodIndex" vuelve a aparecer más adentro del documento, p. ej.
- * dentro de cada entrada de "periodLogs", y esas menciones posteriores
- * deben ignorarse).
- * @param {File} archivo
- * @return {?{sectionIndex:number, periodIndex:number}} null si no se pudo leer.
- */
-function _leerPeriodo_(archivo) {
-  try {
-    var texto = archivo.getBlob().getDataAsString();
-    JSON.parse(texto); // valida que sea JSON antes de confiar en el texto crudo
-
-    var periodIndex = _primeraMencionNumerica_(texto, 'periodIndex');
-    var sectionIndex = _primeraMencionNumerica_(texto, 'sectionIndex');
-
-    if (periodIndex === null || sectionIndex === null) return null;
-    return { sectionIndex: sectionIndex, periodIndex: periodIndex };
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * Busca la primera aparición de "<clave>": <numero> en un texto JSON crudo,
- * en el orden en que está escrito el archivo, ignorando las que aparezcan
- * después.
- * @param {string} texto
- * @param {string} clave
- * @return {?number} null si no se encontró ninguna mención.
- */
-function _primeraMencionNumerica_(texto, clave) {
-  var patron = new RegExp('"' + clave + '"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)');
-  var m = patron.exec(texto);
-  if (!m) return null;
-  return Number(m[1]);
 }
