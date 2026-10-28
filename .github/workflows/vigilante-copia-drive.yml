@@ -1,0 +1,74 @@
+name: Vigilante - Copia de Drive a GitHub
+
+# Avisa si la copia automática de Drive a GitHub (Generador/src/12_Datos_Drive_GitHub.gs) se detiene.
+# Solo lee el historial de commits; nunca escribe en el repositorio (solo abre, comenta y cierra un issue).
+# La copia corre cada día entre las 5:15 y las 5:45 (Lima) y solo sube lo que cambió en Drive.
+# Esta revisión corre a las 15:00 (Lima): si hoy ya hubo copia, la última tiene menos de 10 h; si falló hoy,
+# la última es de ayer (unas 33 h) y supera el umbral de 30 h.
+on:
+  schedule:
+    - cron: "0 20 * * *"   # 20:00 UTC = 15:00 en Lima
+  workflow_dispatch:
+    inputs:
+      umbral_horas:
+        description: "Horas máximas sin copia antes de avisar"
+        default: "30"
+  push:
+    paths:
+      - ".github/workflows/vigilante-copia-drive.yml"
+      - ".github/scripts/vigilar_copia_drive.py"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: vigilante-copia-drive
+  cancel-in-progress: false
+
+env:
+  TITULO_ISSUE: "Alerta: la copia de Drive a GitHub no se está actualizando"
+
+jobs:
+  vigilar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Revisar la última copia automática
+        id: revisar
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UMBRAL: ${{ github.event.inputs.umbral_horas || '30' }}
+        run: python3 -I .github/scripts/vigilar_copia_drive.py --repo "${{ github.repository }}" --umbral-horas "$UMBRAL"
+
+      - name: Abrir o actualizar el issue de alerta
+        if: steps.revisar.outputs.estado == 'vieja'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DETALLE: ${{ steps.revisar.outputs.detalle }}
+        run: |
+          numero="$(gh issue list --repo "${{ github.repository }}" --state open --search "in:title \"$TITULO_ISSUE\"" --json number --jq '.[0].number // empty')"
+          if [ -z "$numero" ]; then
+            gh issue create --repo "${{ github.repository }}" --title "$TITULO_ISSUE" --body "$DETALLE"
+          else
+            gh issue comment "$numero" --repo "${{ github.repository }}" --body "Sigue sin actualizarse. $DETALLE"
+          fi
+
+      - name: Cerrar el issue de alerta si la copia ya está al día
+        if: steps.revisar.outputs.estado == 'ok'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          numero="$(gh issue list --repo "${{ github.repository }}" --state open --search "in:title \"$TITULO_ISSUE\"" --json number --jq '.[0].number // empty')"
+          if [ -n "$numero" ]; then
+            gh issue close "$numero" --repo "${{ github.repository }}" --comment "La copia volvió a actualizarse; se cierra la alerta."
+          fi
+
+      - name: Fallar si la copia está vieja o no se pudo revisar
+        if: steps.revisar.outcome == 'failure'
+        run: exit 1
