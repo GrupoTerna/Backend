@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 18:14:25 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 18:19:39 */
 
 
 
@@ -4136,7 +4136,7 @@ function _setupLinks(ss) {
   Logger.log('[Setup] Links OK (14 cols)');
 }
 
-// Ascensos (hoja física "Historial_A/D", ver CFG.SHEETS.ASCENSOS): 18 (más 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267) [→ Contexto_Base_Web.md §02B052]
+// Ascensos (hoja física "Historial_A/D", ver CFG.SHEETS.ASCENSOS): 18 (más 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267, y la columna 24 Par_CR desde el 28-oct-2026, §PF286) [→ Contexto_Base_Web.md §02B052]
 function _setupAscensosSheet(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.ASCENSOS);
   // FASE 5 (13-sep-2026, pedido del usuario, plan de Cambio de Rango): se [→ Contexto_Base_Web.md §02B053]
@@ -4149,7 +4149,9 @@ function _setupAscensosSheet(ss) {
   sh.setColumnWidth(17, 260);  // Comentario
   // 26-oct-2026 (pedido de la usuaria, §PF267): 5 columnas más al final (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día), calculadas desde Fecha.
   _completarTSDEnHoja_(sh, ASC.FECHA, ASC.TSD);
-  Logger.log('[Setup] Ascensos OK (23 cols)');
+  // 28-oct-2026 (PF286): columna 24 con el id del par de CR_Lista que generó cada propuesta.
+  _asegurarColumnaParCRAscensos_(sh);
+  Logger.log('[Setup] Ascensos OK (24 cols)');
 }
 
 function _setupAdministradores(ss) {
@@ -8228,6 +8230,8 @@ function _syncUnaAcumulativaCSV(item, forzar) {
   var ss = _getSs();
   var sh = ss.getSheetByName(item.sheetName);
   if (!sh) return;
+  // PF286: Historial_A/D pasó a 24 columnas; si la hoja aún tiene 23, se agrega la columna antes de leer numCols columnas (si no, getRange falla y el respaldo no se guarda).
+  if (item.sheetName === CFG.SHEETS.ASCENSOS) _asegurarColumnaParCRAscensos_(sh);
 
   var sheetRows = sh.getLastRow();
 
@@ -15059,10 +15063,14 @@ var ASC = {
   TIPO:15, ESTADO:16, COMENTARIO:17,
   ESTADO_PROPUESTA:18,
   // 26-oct-2026 (pedido de la usuaria, §PF267): primera de las 5 columnas calculadas desde Fecha (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día); ver _completarTSDEnHoja_() en 24_Historial_Ascensos.gs.
-  TSD:19
+  TSD:19,
+  // 28-oct-2026 (PF286): id del par de CR_Lista (el id del Ascenso, «A_…») que generó la propuesta; en las filas que no son propuestas queda vacío. Va después de las 5 de TSD (19 a 23). Ver _asegurarColumnaParCRAscensos_() en 24_Historial_Ascensos.gs.
+  PAR_ID:24
 };
 
-var ASCENSOS_TOTAL_COLS = 23;
+var ASCENSOS_TOTAL_COLS = 24;
+// Ancho que tenía la hoja antes de la columna PAR_ID: lo usan los lectores que no necesitan esa columna y no deben fallar si la hoja aún no la tiene (PF286).
+var ASCENSOS_COLS_SIN_PAR = 23;
 
 // Valores válidos de ASC.ESTADO_PROPUESTA -- ver dropdown en
 // _aplicarFormatoFilaAscenso() (24_Historial_Ascensos.gs).
@@ -33449,6 +33457,7 @@ var TSD_ENCABEZADOS = ['Temporada', 'Temporada RoyaleAPI', 'Temporada Supercell'
 var TSD_DIAS_ES_ = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']; // índice = Date.getDay()
 var HISTORIAL_TOTAL_COLS = 12; // Historial_I/S: 7 columnas propias + 5 de TSD
 var HISTORIAL_TSD_COL = 8;     // primera columna de TSD en Historial_I/S
+var ASC_PAR_ENCABEZADO = 'Par_CR'; // encabezado de la columna ASC.PAR_ID de Historial_A/D (PF286)
 
 // ----- Funciones manuales / punto de entrada -----
 
@@ -33469,6 +33478,16 @@ function completarTemporadaSemanaDiaHojas() {
     var r = _completarTSDEnHoja_(sh, plan[i].colFecha, plan[i].colTsd);
     Logger.log('[TSD] ' + plan[i].nombre + ': ' + r.filas + ' fila(s) revisadas, ' + r.sinFecha + ' sin Fecha válida, ' + r.sinTemporada + ' sin temporada calculable.');
   }
+}
+
+/**
+ * agregarColumnaParCRHistorialAD() — proyecto Base. Agrega a Historial_A/D la columna 24 «Par_CR» (id del par de CR_Lista que generó cada propuesta) si aún no existe. Es idempotente y no toca ninguna otra celda. Córrela una vez después de subir este cambio; si no la corres, las funciones que escriben en la hoja la agregan solas antes de escribir. [→ Contexto_Base_Web.md §PF286]
+ */
+function agregarColumnaParCRHistorialAD() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.ASCENSOS);
+  if (!sh) { Logger.log('[Par_CR] La hoja "' + CFG.SHEETS.ASCENSOS + '" no existe.'); return; }
+  var agregada = _asegurarColumnaParCRAscensos_(sh);
+  Logger.log('[Par_CR] ' + (agregada ? 'Columna ' + ASC.PAR_ID + ' (' + ASC_PAR_ENCABEZADO + ') agregada a ' : 'La columna ya existía en ') + CFG.SHEETS.ASCENSOS + '.');
 }
 
 /**
@@ -33752,6 +33771,41 @@ function _completarTSDEnHoja_(sh, colFecha, colTsd) {
 }
 
 /**
+ * _asegurarColumnaParCRAscensos_(sh) [→ Contexto_Base_Web.md §PF286]
+ * Deja en Historial_A/D la columna ASC.PAR_ID (24) con su encabezado: inserta las columnas que falten al final y escribe el encabezado si está vacío. Devuelve true si tuvo que agregar columnas o el encabezado. Idempotente; no toca datos. Las funciones que escriben en la hoja la llaman antes de leer ASCENSOS_TOTAL_COLS columnas, porque getRange falla si la hoja es más angosta.
+ */
+function _asegurarColumnaParCRAscensos_(sh) {
+  if (!sh) return false;
+  var cambio = false;
+  if (sh.getMaxColumns() < ASC.PAR_ID) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), ASC.PAR_ID - sh.getMaxColumns());
+    cambio = true;
+  }
+  var celda = sh.getRange(1, ASC.PAR_ID);
+  if (String(celda.getValue() || '').trim() !== ASC_PAR_ENCABEZADO) {
+    celda.setValue(ASC_PAR_ENCABEZADO);
+    applyHeaderStyle(sh, ASC.PAR_ID);
+    sh.setColumnWidth(ASC.PAR_ID, 110);
+    cambio = true;
+  }
+  return cambio;
+}
+
+/**
+ * _leerFilasAscensosHoja_(sh) [→ Contexto_Base_Web.md §PF286]
+ * Lee todas las filas de datos de Historial_A/D como matriz de ASCENSOS_TOTAL_COLS columnas, sin escribir nada: si la hoja todavía no tiene la columna ASC.PAR_ID, lee lo que haya y completa con '' (así los lectores no fallan antes de que se agregue la columna). Devuelve [] si no hay filas.
+ */
+function _leerFilasAscensosHoja_(sh) {
+  if (!sh || sh.getLastRow() < 2) return [];
+  var ancho = Math.min(ASCENSOS_TOTAL_COLS, sh.getLastColumn());
+  var filas = sh.getRange(2, 1, sh.getLastRow() - 1, ancho).getValues();
+  if (ancho < ASCENSOS_TOTAL_COLS) {
+    filas = filas.map(function (f) { while (f.length < ASCENSOS_TOTAL_COLS) f.push(''); return f; });
+  }
+  return filas;
+}
+
+/**
  * _escribirTSDEnFilaHoja_(sh, fila, colTsd, fecha) [→ Contexto_Base_Web.md §PF267]
  * Escribe las 5 columnas de una sola fila (las hojas a las que solo se agregan filas al final: Comentarios). La de Supercell se pone como texto antes de escribir.
  */
@@ -34013,6 +34067,7 @@ function _updateHistorial(ss, dirData) {
  * _reaplicarFormatoAscensosExistente(sh) [→ Contexto_Base_Web.md §24B024]
  */
 function _reaplicarFormatoAscensosExistente(sh) {
+  _asegurarColumnaParCRAscensos_(sh); // PF286
   var lastRow = sh.getLastRow();
   if (lastRow < 2) return;
   applyBorderCenter(sh.getRange(2, 1, lastRow - 1, ASCENSOS_TOTAL_COLS));
@@ -34039,6 +34094,7 @@ function _getOrdenClanAscensos(ss) {
  * _reordenarHistorialAscensosGlobal(ss, sh, registrosNuevos) [→ Contexto_Base_Web.md §24B026]
  */
 function _reordenarHistorialAscensosGlobal(ss, sh, registrosNuevos) {
+  _asegurarColumnaParCRAscensos_(sh); // PF286: la hoja debe tener la columna 24 antes de leer y escribir ASCENSOS_TOTAL_COLS
   var lastRow = sh.getLastRow();
   var existentes = (lastRow >= 2) ? sh.getRange(2, 1, lastRow - 1, ASCENSOS_TOTAL_COLS).getValues() : [];
 
@@ -34158,6 +34214,7 @@ function _registrarPropuestasCRListaEnHistorial(idAscenso, idDescenso) {
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.ASCENSOS);
   if (!sh) return { ok: false, error: 'La hoja Historial_A/D (Ascensos) no existe.', agregadas: 0, saltadas: 0 };
+  _asegurarColumnaParCRAscensos_(sh); // PF286
 
   // Directorio completo, para poder rellenar los campos que Historial_A/D [→ Contexto_Base_Web.md §24B034]
   var dataDir = _leerDirectorioFisicoComoDC(ss);
@@ -34236,6 +34293,8 @@ function _registrarPropuestasCRListaEnHistorial(idAscenso, idDescenso) {
     // FIX (17-sep-2026, pedido del usuario -- "a Historial_A/D en la [→ Contexto_Base_Web.md §24B038]
     registro[ASC.COMENTARIO - 1]  = p.detalle;
     registro[ASC.ESTADO_PROPUESTA - 1] = 'Planificado';
+    // PF286: id del par de CR_Lista (el del Ascenso, «A_…») que generó la propuesta; sin él no se sabe contra qué requisitos evaluarla ni a qué corrida pertenece.
+    registro[ASC.PAR_ID - 1]      = String(idAscenso || '').trim();
 
     if (shCom && registro[ASC.COMENTARIO - 1]) _copiarComentarioAscensoAComentarios(shCom, registro);
     var categoria = p.tipoPropuesta === 'EligibleAdmin' ? 'Admin' : p.tipoPropuesta;
@@ -34278,7 +34337,7 @@ function _aplicarFormatoFilaAscenso(sh, fila) {
 function _aplicarFormatoCondicionalAscensos(sh) {
   var lastRow = sh.getLastRow();
   if (lastRow < 2) return;
-  var dataRange = sh.getRange(2, 1, lastRow - 1, ASCENSOS_TOTAL_COLS);
+  var dataRange = sh.getRange(2, 1, lastRow - 1, Math.min(ASCENSOS_TOTAL_COLS, sh.getMaxColumns()));
   var colEstado = colLetter(ASC.ESTADO), colRango2 = colLetter(ASC.RANGO_2), colTipo = colLetter(ASC.TIPO);
   var rules = [
     SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=$' + colEstado + '2="Inactivo"')
@@ -34312,7 +34371,7 @@ function _webAdminAscensosEditables(token) {
 
   var ss = _getSs();
   // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §24B044]
-  var lecturaAsc = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_TOTAL_COLS);
+  var lecturaAsc = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_COLS_SIN_PAR);
   if (lecturaAsc.origen === 'vacio') return { ok: true, ascensos: [] };
 
   var dataAsc = lecturaAsc.filas;
@@ -34382,7 +34441,7 @@ function _webAdminEditarAutorAscenso(token, datos) {
   if (!shAsc || shAsc.getLastRow() < 2) return { ok: false, error: 'No encontré el historial de ascensos.' };
 
   var lastRow = shAsc.getLastRow();
-  var dataAsc = shAsc.getRange(2, 1, lastRow - 1, ASCENSOS_TOTAL_COLS).getValues();
+  var dataAsc = _leerFilasAscensosHoja_(shAsc);
   var filaEncontrada = -1;
   for (var i = 0; i < dataAsc.length; i++) {
     var fechaCelda = dataAsc[i][ASC.FECHA - 1];
@@ -34425,7 +34484,7 @@ function _indexarPropuestasPendientesAscensos(sh) {
   var lastRow = sh.getLastRow();
   if (lastRow < 2) return mapa;
 
-  var datos = sh.getRange(2, 1, lastRow - 1, ASCENSOS_TOTAL_COLS).getValues();
+  var datos = _leerFilasAscensosHoja_(sh);
   for (var i = 0; i < datos.length; i++) {
     var f = datos[i];
     if (String(f[ASC.ESTADO_PROPUESTA - 1] || '').trim() !== 'Planificado') continue;
@@ -34504,7 +34563,7 @@ function _claveDiaLimaCR_(ms) {
 function _leerRegistrosHistorialAscensos_() {
   var sh = _getSs().getSheetByName(CFG.SHEETS.ASCENSOS);
   if (!sh || sh.getLastRow() < 2) return null;
-  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, ASCENSOS_TOTAL_COLS).getValues();
+  var datos = _leerFilasAscensosHoja_(sh);
   var offset = _getTemporadaOffsetRoyaleApi(); // una sola lectura, igual que _completarTSDEnHoja_()
   var refTemporadas = CFG.REF_DEFAULT;
   return datos.map(function (f) {
@@ -51660,7 +51719,7 @@ function _webBattlelogJugador(tagBuscado, opciones) {
 function _webAscensosRecientes() {
   var ss = _getSs();
   // FASE (15-sep-2026, pedido del usuario -- fallback web->CSV, continuación de las funciones de Torneos más arriba en este archivo): Ascensos ya no se lee con shAsc.getRange() directo -- se usa _obtenerFilasConFallbackCSV()… [→ Contexto_Base_Web.md §37B296]
-  var lecturaAsc = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_TOTAL_COLS);
+  var lecturaAsc = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_COLS_SIN_PAR);
   if (lecturaAsc.origen === 'vacio') return { ascensos: [] };
 
   var dataAsc = lecturaAsc.filas;
@@ -56335,7 +56394,7 @@ function _noticiasBarcos_(semana) {
 // Cambios de rango de la semana desde Historial_A/D (fecha en hora de Lima); omite los 'Planificado'. [→ Contexto_Base_Web.md §40B008]
 function _noticiasAscensos_(semana) {
   var ss = _getSs();
-  var lectura = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_TOTAL_COLS);
+  var lectura = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_COLS_SIN_PAR);
   if (lectura.origen === 'vacio') return { ok: true, cambios: [] };
 
   var filas = lectura.filas;
