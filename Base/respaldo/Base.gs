@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 26/10/2026 01:35:31 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 27/10/2026 19:07:05 */
 
 
 
@@ -1743,6 +1743,49 @@ function _reintentarRunSyncCSV() {
   runSyncCSV();
 }
 
+// PF283 (26-oct-2026): progreso por tanda en las cadenas de _ejecutarPorTandas. Un paso que puede necesitar varias tandas (hojas derivadas, /players, reenumeración)
+// anota su avance con _anotarProgresoPaso_(texto, acumulado) justo antes de devolver false; el motor lo guarda en <ID>_PROGRESO_PASO y en la tanda siguiente dice
+// si AVANZÓ o hubo SIN AVANCE. Al empezar cada tanda el motor escribe una línea «ESTADO al empezar» (paso por empezar o en curso). [→ Contexto_Base_Web.md §PF283]
+var PROGRESO_PASO_ = null;
+function _anotarProgresoPaso_(texto, acumulado) {
+  PROGRESO_PASO_ = { texto: String(texto || ''), acum: Number(acumulado) };
+}
+
+function _logEstadoTanda_(id, paso, total, reintento, tandasPaso, progPrevio, nombresPasos) {
+  var etiq = '[' + id + '] ';
+  var nombre = (nombresPasos && nombresPasos[paso]) ? ': ' + nombresPasos[paso] : '';
+  if (paso === 0 && !reintento) {
+    Logger.log(etiq + 'ESTADO al empezar: cadena nueva. Ningún paso cerrado; paso 1/' + total + ' POR EMPEZAR' + nombre + '.');
+  } else if (reintento) {
+    Logger.log(etiq + 'ESTADO al empezar: pasos cerrados ' + paso + '/' + total + '; paso ' + (paso + 1) + '/' + total + ' EN CURSO' + nombre +
+      ' (la tanda anterior lo dejó incompleto; esta es la tanda ' + (tandasPaso + 1) + ' de este paso).' +
+      (progPrevio && progPrevio.texto ? ' Progreso guardado al cierre de la tanda anterior: ' + progPrevio.texto + '.' : ' Ese paso no informa su avance interno.'));
+  } else {
+    Logger.log(etiq + 'ESTADO al empezar: pasos cerrados ' + paso + '/' + total + '; paso ' + (paso + 1) + '/' + total + ' POR EMPEZAR' + nombre +
+      ' (la tanda anterior cerró el paso ' + paso + ' y se quedó sin tiempo).');
+  }
+}
+
+function _logAvanceTanda_(id, paso, total, tandaDelPaso, progPrevio, prog) {
+  var etiq = '[' + id + ']   Avance del paso ' + (paso + 1) + '/' + total + ' (tanda ' + tandaDelPaso + ' de este paso): ';
+  if (!prog || !prog.texto) {
+    Logger.log(etiq + 'este paso no informa su avance interno, así que no se puede saber si avanzó respecto a la tanda anterior; revisa las líneas del paso más arriba.');
+    return;
+  }
+  if (!progPrevio || progPrevio.acum === null || progPrevio.acum === undefined || isNaN(Number(progPrevio.acum)) || isNaN(prog.acum)) {
+    Logger.log(etiq + 'al cierre: ' + prog.texto + '. (Sin tanda anterior comparable de este paso.)');
+    return;
+  }
+  var previo = Number(progPrevio.acum);
+  if (prog.acum > previo) {
+    Logger.log(etiq + 'AVANZÓ. Tanda anterior: ' + progPrevio.texto + '. Ahora: ' + prog.texto + '.');
+  } else if (prog.acum === previo) {
+    Logger.log(etiq + 'SIN AVANCE respecto a la tanda anterior (sigue en: ' + prog.texto + '). Si se repite en la tanda siguiente, hay algo que impide avanzar.');
+  } else {
+    Logger.log(etiq + 'RETROCEDIÓ. Tanda anterior: ' + progPrevio.texto + '. Ahora: ' + prog.texto + '.');
+  }
+}
+
 /**
  * _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, props) [→ Contexto_Base_Web.md §B135]
  */
@@ -1780,6 +1823,19 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   var paso = parseInt(props.getProperty(idEjecucion + '_PASO') || '0', 10);
   var reintentoMismoPaso = props.getProperty(idEjecucion + '_REINTENTO') === '1';
 
+  // PF283: contador de tandas del paso en curso y progreso que dejó la tanda anterior.
+  var tandasPaso = parseInt(props.getProperty(idEjecucion + '_TANDAS_PASO') || '0', 10);
+  var progPrevio = null;
+  try { progPrevio = JSON.parse(props.getProperty(idEjecucion + '_PROGRESO_PASO') || 'null'); } catch (eProgPrevio) { progPrevio = null; }
+  if (paso === 0 && !reintentoMismoPaso) { // cadena nueva: no heredar contadores de una cadena que se abortó
+    tandasPaso = 0;
+    progPrevio = null;
+    props.deleteProperty(idEjecucion + '_TANDAS_PASO');
+    props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
+  }
+  if (progPrevio && progPrevio.paso !== paso) progPrevio = null;
+  _logEstadoTanda_(idEjecucion, paso, pasos.length, reintentoMismoPaso, tandasPaso, progPrevio, nombresPasos);
+
   // IMPORTANTE: CACHE_CLAN_DATA es una variable global en memoria (no se [→ Contexto_Base_Web.md §B137]
   // PF091 (17-oct-2026): en una cadena PROGRAMADA (bandera <ID>_SIN_API) el cache se reconstruye del checkpoint aunque el paso se
   // reintente o sea el 0 (runUpdateProgramado: su primer paso, _fetchAllClanData(), pediria la API si el checkpoint tiene mas de 45 min).
@@ -1811,11 +1867,16 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   while (paso < pasos.length) {
   Logger.log('[' + idEjecucion + '] Ejecutando paso ' + (paso + 1) + '/' + pasos.length +
     (nombresPasos && nombresPasos[paso] ? ': ' + nombresPasos[paso] : ''));
+  PROGRESO_PASO_ = null;
   var resultado = pasos[paso]();
 
     if (resultado === false) {
       Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ' quedó incompleto (presupuesto interno agotado, ej. /players). ' +
                  'Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.');
+      tandasPaso++;
+      _logAvanceTanda_(idEjecucion, paso, pasos.length, tandasPaso, progPrevio, PROGRESO_PASO_);
+      props.setProperty(idEjecucion + '_TANDAS_PASO', String(tandasPaso));
+      props.setProperty(idEjecucion + '_PROGRESO_PASO', JSON.stringify({ paso: paso, texto: PROGRESO_PASO_ ? PROGRESO_PASO_.texto : '', acum: PROGRESO_PASO_ ? PROGRESO_PASO_.acum : null }));
       props.setProperty(idEjecucion + '_PASO', String(paso));
       props.setProperty(idEjecucion + '_REINTENTO', '1');
       _refrescarLockEjecucion(idEjecucion);
@@ -1823,13 +1884,18 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       return false;
     }
 
+    if (tandasPaso > 0) Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ' COMPLETO tras ' + (tandasPaso + 1) + ' tandas.');
+    tandasPaso = 0;
+    progPrevio = null;
+    props.deleteProperty(idEjecucion + '_TANDAS_PASO');
+    props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
     props.deleteProperty(idEjecucion + '_REINTENTO');
     paso++;
     props.setProperty(idEjecucion + '_PASO', String(paso));
     _refrescarLockEjecucion(idEjecucion);
 
     if (paso < pasos.length && (Date.now() - inicioTanda) > presupuestoMs) {
-      Logger.log('[' + idEjecucion + '] Presupuesto de tiempo agotado tras completar el paso ' + paso + '/' + pasos.length + '. Se programa continuación automática en 10s.');
+      Logger.log('[' + idEjecucion + '] Presupuesto de tiempo agotado tras completar el paso ' + paso + '/' + pasos.length + '. Queda: paso ' + (paso + 1) + '/' + pasos.length + ' POR EMPEZAR. Se programa continuación automática en 10s.');
       _programarContinuacion(nombreHandlerContinuacion);
       return false;
     }
@@ -1837,6 +1903,8 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
 
   props.deleteProperty(idEjecucion + '_PASO');
   props.deleteProperty(idEjecucion + '_REINTENTO');
+  props.deleteProperty(idEjecucion + '_TANDAS_PASO');
+  props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
   _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
   return true;
 }
@@ -6159,6 +6227,7 @@ function respaldarHojasDerivadasCSV(presupuestoMs) {
     _respaldarListaHojasCSV(ss, [hojasDerivadas[i]], false);
     Logger.log('[Backup] respaldarHojasDerivadasCSV: hoja ' + (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + ') en ' +
                Math.round((Date.now() - inicioHoja) / 1000) + ' s.'); // PF282: tiempo por hoja, para ubicar la lenta
+    _anotarProgresoPaso_('hoja ' + (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + ')', i + 1); // PF283
 
     var quedanHojas = (i + 1) < hojasDerivadas.length;
     if (quedanHojas && (presupuesto === 0 || (Date.now() - inicio) > presupuesto)) {
@@ -10298,6 +10367,7 @@ function _descargarBattlelogYCofresParaTodos() {
     Logger.log('[Battlelog/UpcomingChests] INCOMPLETO. Procesados hasta el corte: ' + Object.keys(hechos).length +
       '/' + tags.length + ' | Pendientes para la próxima continuación: ' + (pendientes.length - m) +
       ' | En esta tanda: ' + okBattlelog + ' battlelog(s) OK, ' + okChests + ' upcomingchest(s) OK.');
+    _anotarProgresoPaso_('battlelog/upcomingchests: ' + Object.keys(hechos).length + '/' + tags.length + ' hechos', Object.keys(hechos).length); // PF283
     return false;
   }
 
@@ -11220,6 +11290,7 @@ function _fetchPlayersData() {
     _guardarProgresoPlayers(CACHE_CLAN_DATA._players);
     Logger.log('[API] /players INCOMPLETO. Jugadores obtenidos hasta el corte: ' + Object.keys(CACHE_CLAN_DATA._players).length +
                ' | Pendientes para la próxima continuación: ' + (pendientes.length - m) + resumenErrores);
+    _anotarProgresoPaso_('/players: ' + Object.keys(CACHE_CLAN_DATA._players).length + ' obtenidos, ' + (pendientes.length - m) + ' pendientes', Object.keys(CACHE_CLAN_DATA._players).length); // PF283
     return false;
   }
 
@@ -21803,6 +21874,91 @@ function _corregirFechaGuerraLogs_(aplicar) {
     (aplicar && total > 0 ? ' | valores anteriores guardados en Drive: "Correccion_Fecha_Guerra_Logs ' + marca + '.csv"; Backup_Guerra_Logs.csv resincronizado' : '');
   Logger.log(msg);
   _registrarLogScriptTerna('corregirFechaGuerraLogs' + (aplicar ? 'Aplicar' : 'Informe') + '()', msg, []);
+}
+
+// completarFechaGuerraSinFechaInforme() / completarFechaGuerraSinFechaAplicar(): PF284 (26-oct-2026; pedido de la usuaria). Las 30 filas de entrenamiento T10 S1 día L (05/10/2026) nacieron sin Fecha
+// ni DiaGuerra la madrugada del 05-oct. Completa SOLO la fecha del DiaGuerra, sin hora (00:00:00), como las filas de T2 a T4 de PF063: la hora real de captura se desconoce y no se inventa.
+// Solo toca filas con Fecha vacía y DiaGuerra válido; escribe solo la columna Fecha, por tramos; guarda en Drive el antes y el después. [→ Contexto_Base_Web.md §PF284]
+function completarFechaGuerraSinFechaInforme() { _completarFechaGuerraSinFecha_(false); }
+function completarFechaGuerraSinFechaAplicar() { _completarFechaGuerraSinFecha_(true); }
+
+function _completarFechaGuerraSinFecha_(aplicar) {
+  var etiqueta = aplicar ? 'APLICAR' : 'SOLO INFORMAR';
+  var ss = _getSs();
+  var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+  var informe = [['Fuente', 'N°', 'Temporada', 'Semana', 'Día', 'Clan', 'Tag', 'DiaGuerra', 'Fecha anterior', 'Fecha nueva']];
+  var enHoja = 0, enCsv = 0, sinDia = 0;
+  var idsHoja = {}; // filas de la hoja que se completan: en el CSV no se cuentan dos veces (la fusión ya las actualiza desde la hoja)
+  var fechaSoloDia = function (dia) {
+    var d = _diaLimaDe_(dia); // yyyyMMdd o ''
+    if (!d) return null;
+    try { return Utilities.parseDate(d + ' 00:00:00', 'America/Lima', 'yyyyMMdd HH:mm:ss'); } catch (e) { return null; }
+  };
+  var txtFecha = function (dt) { return Utilities.formatDate(dt, 'America/Lima', 'dd/MM/yyyy HH:mm:ss'); };
+
+  // 1) Hoja Guerra
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  if (sh && sh.getLastRow() >= 2) {
+    var n = sh.getLastRow() - 1;
+    var datos = sh.getRange(2, 1, n, GUERRA_TOTAL_COLS).getValues();
+    var corr = [];
+    for (var i = 0; i < n; i++) {
+      var f = datos[i];
+      if (!String(f[GC.TAG - 1] || '').trim()) continue;
+      if (!_celdaVaciaGuerra_(f[GC.FECHA - 1])) continue;
+      var nueva = fechaSoloDia(f[GC.DIA_GUERRA - 1]);
+      if (!nueva) { sinDia++; continue; }
+      corr.push({ i: i, fecha: nueva });
+      idsHoja[_idFilaGuerraCSV(f)] = true;
+      informe.push(['Hoja Guerra', f[GC.NUM - 1] || '', f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.DIA - 1], f[GC.CLAN - 1], f[GC.TAG - 1], _diaLimaDe_(f[GC.DIA_GUERRA - 1]), '', txtFecha(nueva)]);
+    }
+    enHoja = corr.length;
+    if (aplicar && corr.length) {
+      var k = 0;
+      while (k < corr.length) {
+        var j = k;
+        while (j + 1 < corr.length && corr[j + 1].i === corr[j].i + 1) j++;
+        var vals = [];
+        for (var q = k; q <= j; q++) vals.push([corr[q].fecha]);
+        var rng = sh.getRange(2 + corr[k].i, GC.FECHA, vals.length, 1);
+        rng.setValues(vals);
+        rng.setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
+        k = j + 1;
+      }
+      SpreadsheetApp.flush();
+      _syncGuerraCSV(sh, false); // la hoja manda sobre el CSV por ID
+    }
+  }
+
+  // 2) Backup_Guerra.csv: filas que sigan sin Fecha (por ejemplo, si no estaban en la hoja)
+  var filasCsvCambiadas = 0;
+  try {
+    var txt = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (txt) {
+      var parsed = _parseCSV(txt);
+      for (var r = 1; r < parsed.length; r++) {
+        var fr = parsed[r];
+        if (!String(fr[GC.TAG - 1] || '').trim() || String(fr[GC.FECHA - 1] || '').trim() !== '') continue;
+        if (idsHoja[_idFilaGuerraCSV(fr)]) continue;
+        var dgCsv = _diaLimaDe_(fr[GC.DIA_GUERRA - 1]);
+        var nuevaCsv = dgCsv ? fechaSoloDia(fr[GC.DIA_GUERRA - 1]) : null;
+        if (!nuevaCsv) { sinDia++; continue; }
+        enCsv++;
+        informe.push(['Backup_Guerra.csv', fr[GC.NUM - 1] || '', fr[GC.TEMPORADA - 1], fr[GC.SEMANA - 1], fr[GC.DIA - 1], fr[GC.CLAN - 1], fr[GC.TAG - 1], dgCsv, '', txtFecha(nuevaCsv)]);
+        if (aplicar) { fr[GC.FECHA - 1] = txtFecha(nuevaCsv); filasCsvCambiadas++; }
+      }
+      if (aplicar && filasCsvCambiadas > 0) _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV(parsed));
+    }
+  } catch (eCsv) { Logger.log('[CompletarFechaGuerra] No se pudo revisar Backup_Guerra.csv: ' + eCsv.message); }
+
+  if (aplicar && informe.length > 1) _saveCSVToDrive('Correccion_Fecha_Guerra_SinFecha ' + marca + '.csv', _encodeCSVInforme(informe));
+  var msg = '[CompletarFechaGuerra] ' + etiqueta + ' | filas sin Fecha en la hoja Guerra que ' + (aplicar ? 'se completaron' : 'se completarían') + ': ' + enHoja +
+    ' | en Backup_Guerra.csv (tras la fusión) que ' + (aplicar ? 'se completaron' : 'se completarían') + ': ' + enCsv +
+    ' | sin DiaGuerra válido (no se tocan): ' + sinDia +
+    ' | valor puesto: la fecha del DiaGuerra, sin hora (00:00:00)' +
+    (aplicar && informe.length > 1 ? ' | detalle guardado en Drive: "Correccion_Fecha_Guerra_SinFecha ' + marca + '.csv"' : '');
+  Logger.log(msg);
+  _registrarLogScriptTerna('completarFechaGuerraSinFecha' + (aplicar ? 'Aplicar' : 'Informe') + '()', msg, []);
 }
 
 
@@ -59359,6 +59515,7 @@ function _reenumProgreso_(nombre, previas, estaTanda, total, unidad) {
   var pct = total > 0 ? Math.round(acum * 100 / total) : 100;
   Logger.log('[Reenumeración]   ' + nombre + ': acumulado ' + acum + ' de ' + total + ' ' + unidad + ' (' + pct + ' %); en tandas anteriores: ' + previas + '; faltan ' + Math.max(total - acum, 0) + '.');
   Logger.log('[Reenumeración]   ' + nombre + ': en esta tanda: ' + estaTanda + ' ' + unidad + '.');
+  _anotarProgresoPaso_(nombre + ': ' + acum + ' de ' + total + ' ' + unidad, acum); // PF283
 }
 
 // ----- Funciones manuales / punto de entrada -----
