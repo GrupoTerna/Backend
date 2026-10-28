@@ -1,6 +1,11 @@
 ---
 name: md
-description: "Trabajo con el ecosistema de código del clan: backend Apps Script (Base y Generador), frontend Web, script de Tampermonkey y consolidados de fases. El código vive en los repos de GitHub GrupoTerna (Backend, Web, Script) y los cambios se suben directo a main. Usar al leer, corregir o ampliar esos archivos, o al editar el contexto, los consolidados o esta skill. Responde en español de Perú."
+description: >-
+  Trabajo con el ecosistema de código del clan: backend Apps Script (Base y Generador),
+  frontend Web, script de Tampermonkey y consolidados de fases. El código vive en los repos
+  de GitHub GrupoTerna (Backend, Web, Script) y los cambios se suben directo a main. Usar al
+  leer, corregir o ampliar esos archivos, o al editar el contexto, los consolidados o esta
+  skill. Responde en español de Perú.
 ---
 
 # Skill: `md` — lectura, corrección y consolidados de fases de proyectos en .md/.zip
@@ -599,6 +604,8 @@ Las reglas de trabajo de los consolidados (ciclo de vida, reglas 1 a 14, nota de
 **Dónde se registra cada cambio nuevo** (código del frontend a `Web`, de Apps Script y Tampermonkey a `Backend`, funcionamiento al contexto, historial al `CHANGELOG.md`) y el formato del `CHANGELOG.md`: sección 6 del mismo archivo. **Al terminar de aplicar un consolidado, Claude informa y pregunta si se borra** (sección 1); no lo borra sin un sí explícito.
 
 Esas mismas reglas rigen al editar esta skill. Regla propia de la skill: cuando se modifica, se actualiza el `SKILL.md` completo y se sube a `Claude/SKILL.md` del repo `Backend`; la skill que usa la aplicación es la instalada, así que la usuaria debe volver a instalarla desde ese archivo (Claude solo entrega el archivo para descargar si ella lo pide, o si la cuenta no puede escribir en GitHub).
+
+**Antes de subir la skill se valida el frontmatter** (el bloque `---` del inicio). Desde la raíz del repo: `python3 -c "import yaml; t=open('Claude/SKILL.md',encoding='utf-8').read(); d=yaml.safe_load(t.split('---')[1]); assert d['name']=='md' and d['description']; print('OK', len(d['description']))"`. Debe imprimir «OK» y el largo del `description`, que se mantiene por debajo de 1024 caracteres. El `description` va **siempre en bloque `>-`**, con sangría de 2 espacios y sin comillas: una sola comilla sobrante lo rompe y la aplicación rechaza el archivo con «malformed YAML frontmatter». Si el comando falla, no se sube.
 
 # 17. Regla de oro
 
