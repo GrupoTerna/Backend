@@ -1,11 +1,18 @@
-// ==============================================================================
 // 12_Players_Links.gs
 // Vistas derivadas del Directorio: hojas Players y Links.
-// ==============================================================================
-
-// ----- Funciones internas / helpers -----
-
 // FASE B3 (16/07/2026) — Población de las hojas Players y Links. [→ Contexto_Base_Web.md §12B001]
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que no se corren a mano
+//    - Hoja Players: proyectar, escribir y dar formato
+//    - Hoja Links: proyectar, escribir y leer
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Players: proyectar, escribir y dar formato -----
 
 /**
  * _proyectarPlayers(r) [→ Contexto_Base_Web.md §12B002]
@@ -76,6 +83,8 @@ function _aplicarFormatoCondicionalPlayers(sh, numFilas, totalCols, colRangoNum)
   ];
   _tryCondFmt(sh, rules);
 }
+
+// ----- Hoja Links: proyectar, escribir y leer -----
 
 /**
  * _proyectarLinksIdentidad(r) [→ Contexto_Base_Web.md §12B007]
