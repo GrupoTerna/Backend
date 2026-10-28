@@ -9,6 +9,13 @@
  *   rankings           <- _webRankings()            (webRankings)
  *   estadisticasCartas <- _webEstadisticasCartas()  (webEstadisticasCartas)
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Home estático: publicar ahora
+//  Parte 2 — Funciones que no se corren a mano
+//    - Home estático: armar y publicar
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
  *   ascensos           <- _webAscensosRecientes()   (webAscensosRecientes, para comunidad.html; NUEVO 08-oct-2026)
  * más `_publicadoEn` (ISO). Todas son lecturas públicas con WEB_MEMBER_TOKEN, sin sesión de admin ni
  * campos de admin, así que el archivo contiene lo mismo que ya ve cualquier visitante.
@@ -25,7 +32,31 @@
  * archivo si tiene más de 3 h).
  */
 var HOME_ESTATICO_ARCHIVO = 'home.json';
+
 var HOME_ESTATICO_REPUBLICAR_MIN = 50;
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Home estático: publicar ahora -----
+
+/**
+ * publicarHomeEstatico()
+ * Atajo manual (ejecutar desde el editor): publica ya home.json. El resultado queda en
+ * verDiagnosticoGuerraVivo() y en el log.
+ */
+function publicarHomeEstatico() {
+  PropertiesService.getScriptProperties().deleteProperty('HOME_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
+  var ok = _publicarHomeEstatico_();
+  Logger.log('[HomeEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Home estático: armar y publicar -----
 
 function _publicarHomeEstatico_() {
   var t0 = Date.now();
@@ -81,15 +112,4 @@ function _publicarHomeEstatico_() {
     _diagGuerraVivo_('[HomeEstatico] error al publicar (el bot sigue igual): ' + e);
     return false;
   }
-}
-
-/**
- * publicarHomeEstatico()
- * Atajo manual (ejecutar desde el editor): publica ya home.json. El resultado queda en
- * verDiagnosticoGuerraVivo() y en el log.
- */
-function publicarHomeEstatico() {
-  PropertiesService.getScriptProperties().deleteProperty('HOME_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
-  var ok = _publicarHomeEstatico_();
-  Logger.log('[HomeEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
 }
