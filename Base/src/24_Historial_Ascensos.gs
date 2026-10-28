@@ -1054,8 +1054,12 @@ function _leerCorridaCambioRangoHistorial_(desdeMs) {
   var sh = _getSs().getSheetByName(CFG.SHEETS.ASCENSOS);
   if (!sh || sh.getLastRow() < 2) return _corridaCambioRangoVacia_();
   var datos = sh.getRange(2, 1, sh.getLastRow() - 1, ASCENSOS_TOTAL_COLS).getValues();
+  var offset = _getTemporadaOffsetRoyaleApi(); // una sola lectura, igual que _completarTSDEnHoja_()
+  var refTemporadas = CFG.REF_DEFAULT;
   var registros = datos.map(function (f) {
     var fecha = f[ASC.FECHA - 1];
+    // Temporada, Semana y Día salen de la Fecha con la misma función que llena esas columnas de la hoja (_tsdDesdeFecha_): [temporada, RoyaleAPI, Supercell, semana, día].
+    var tsd = _tsdDesdeFecha_(fecha, offset, refTemporadas);
     return {
       tag: String(f[ASC.TAG - 1] || '').trim(),
       nombre: String(f[ASC.NOMBRE - 1] || '').trim(),
@@ -1064,7 +1068,10 @@ function _leerCorridaCambioRangoHistorial_(desdeMs) {
       rango2: String(f[ASC.RANGO_2 - 1] || '').trim(),
       tipo: String(f[ASC.TIPO - 1] || '').trim(),
       estadoProp: String(f[ASC.ESTADO_PROPUESTA - 1] || '').trim(),
-      fechaMs: (fecha instanceof Date && !isNaN(fecha.getTime())) ? fecha.getTime() : NaN
+      fechaMs: (fecha instanceof Date && !isNaN(fecha.getTime())) ? fecha.getTime() : NaN,
+      temporada: tsd[0],
+      semana: tsd[3],
+      dia: tsd[4]
     };
   });
   return _corridaCambioRangoDesdeRegistros_(registros, desdeMs, function (ms) {
