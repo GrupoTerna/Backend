@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 01:42:39 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 02:04:20 */
 
 
 
@@ -1908,6 +1908,36 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   var paso = parseInt(props.getProperty(idEjecucion + '_PASO') || '0', 10);
   var reintentoMismoPaso = props.getProperty(idEjecucion + '_REINTENTO') === '1';
 
+  // PF286 punto 14: si se subió una versión nueva de Base con la lista de pasos cambiada mientras la cadena estaba a medias, el número guardado ya no
+  // apunta al mismo paso. Junto al número se guarda el nombre del paso pendiente (<ID>_PASO_NOMBRE); si no coincide con el de la lista actual, se sigue en el
+  // paso con ese nombre, o se descarta el avance si ya no existe. Una cadena iniciada antes de esta versión no trae nombre guardado y sigue como siempre.
+  // REENUM queda fuera: se retoma desde un índice que se puede fijar a mano y nunca se aborta (PF260).
+  if (idEjecucion !== 'REENUM' && (paso > 0 || reintentoMismoPaso)) {
+    var marcaGuardada = props.getProperty(idEjecucion + '_PASO_NOMBRE');
+    var marcaActual = _marcaDePasoDeCadena_(pasos, nombresPasos, paso);
+    if (marcaGuardada !== null && marcaGuardada !== marcaActual) {
+      var pasoNuevo = _buscarPasoDeCadenaPorMarca_(nombresPasos, marcaGuardada, paso);
+      if (pasoNuevo < 0) {
+        Logger.log('[' + idEjecucion + '] DESCARTADA: la lista de pasos cambió y el paso que quedaba pendiente' +
+          (marcaGuardada.charAt(0) === '#' ? '' : ' («' + marcaGuardada + '»)') + ' ya no está. Se descarta el avance y la continuación pendiente; la próxima corrida normal empieza de cero.');
+        props.deleteProperty(idEjecucion + '_PASO');
+        props.deleteProperty(idEjecucion + '_PASO_NOMBRE');
+        props.deleteProperty(idEjecucion + '_REINTENTO');
+        props.deleteProperty(idEjecucion + '_TANDAS_PASO');
+        props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
+        props.deleteProperty(idEjecucion + '_SIN_API');
+        props.deleteProperty(idEjecucion + '_SIN_API_TS');
+        _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
+        _liberarLockSiNoEsRunGuerra_();
+        return false;
+      }
+      Logger.log('[' + idEjecucion + '] La lista de pasos cambió desde la tanda anterior: el paso pendiente «' + marcaGuardada + '» pasó del lugar ' + (paso + 1) +
+        ' al ' + (pasoNuevo + 1) + ' de ' + pasos.length + '. Se retoma ahí.');
+      paso = pasoNuevo;
+      props.setProperty(idEjecucion + '_PASO', String(paso));
+    }
+  }
+
   // PF283: contador de tandas del paso en curso y progreso que dejó la tanda anterior.
   var tandasPaso = parseInt(props.getProperty(idEjecucion + '_TANDAS_PASO') || '0', 10);
   var progPrevio = null;
@@ -1962,7 +1992,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       _logAvanceTanda_(idEjecucion, paso, pasos.length, tandasPaso, progPrevio, PROGRESO_PASO_);
       props.setProperty(idEjecucion + '_TANDAS_PASO', String(tandasPaso));
       props.setProperty(idEjecucion + '_PROGRESO_PASO', JSON.stringify({ paso: paso, texto: PROGRESO_PASO_ ? PROGRESO_PASO_.texto : '', acum: PROGRESO_PASO_ ? PROGRESO_PASO_.acum : null }));
-      props.setProperty(idEjecucion + '_PASO', String(paso));
+      _guardarPasoDeCadena_(props, idEjecucion, paso, pasos, nombresPasos);
       props.setProperty(idEjecucion + '_REINTENTO', '1');
       _refrescarLockEjecucion(idEjecucion);
       _programarContinuacion(nombreHandlerContinuacion);
@@ -1976,7 +2006,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
     props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
     props.deleteProperty(idEjecucion + '_REINTENTO');
     paso++;
-    props.setProperty(idEjecucion + '_PASO', String(paso));
+    _guardarPasoDeCadena_(props, idEjecucion, paso, pasos, nombresPasos);
     _refrescarLockEjecucion(idEjecucion);
 
     if (paso < pasos.length && (Date.now() - inicioTanda) > presupuestoMs) {
@@ -1987,11 +2017,38 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   }
 
   props.deleteProperty(idEjecucion + '_PASO');
+  props.deleteProperty(idEjecucion + '_PASO_NOMBRE');
   props.deleteProperty(idEjecucion + '_REINTENTO');
   props.deleteProperty(idEjecucion + '_TANDAS_PASO');
   props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
   _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
   return true;
+}
+
+// PF286 punto 14: ayudas de _ejecutarPorTandas() para reconocer el paso pendiente aunque la lista de pasos cambie entre tandas (la pareja principal-continuación no aplica: no son continuaciones).
+
+// Marca que identifica el paso en la posición `paso`: su nombre; si la cadena no tiene nombres, la cantidad de pasos de la lista (empieza con «#»).
+function _marcaDePasoDeCadena_(pasos, nombresPasos, paso) {
+  if (nombresPasos && nombresPasos[paso]) return String(nombresPasos[paso]);
+  return '#' + pasos.length;
+}
+
+// Guarda el índice del paso pendiente y su marca. Si ya no queda ningún paso pendiente, borra la marca.
+function _guardarPasoDeCadena_(props, idEjecucion, paso, pasos, nombresPasos) {
+  props.setProperty(idEjecucion + '_PASO', String(paso));
+  if (paso < pasos.length) props.setProperty(idEjecucion + '_PASO_NOMBRE', _marcaDePasoDeCadena_(pasos, nombresPasos, paso));
+  else props.deleteProperty(idEjecucion + '_PASO_NOMBRE');
+}
+
+// Índice, en la lista actual, del paso con esa marca (si hay varios con el mismo nombre, el más cercano a `cercaDe`). -1 si no está o si la marca es solo una cantidad.
+function _buscarPasoDeCadenaPorMarca_(nombresPasos, marca, cercaDe) {
+  if (!nombresPasos || !marca || marca.charAt(0) === '#') return -1;
+  var mejor = -1;
+  for (var i = 0; i < nombresPasos.length; i++) {
+    if (String(nombresPasos[i]) !== marca) continue;
+    if (mejor < 0 || Math.abs(i - cercaDe) < Math.abs(mejor - cercaDe)) mejor = i;
+  }
+  return mejor;
 }
 
 function onEditTrigger(e) {
@@ -2523,13 +2580,24 @@ var DRIVE_FOLDER_ID_PLANTILLAS_DESCRIPCIONES = '1Sm3c_O1MwSd29kX_n3PW1v0jjdyD0r8
 // 5) "Bienvenidas" — ID: 1z5Gs3lDn1lxjbKB4dSRLbN6kfdY66AhB [→ Contexto_Base_Web.md §01B087]
 var DRIVE_FOLDER_ID_PLANTILLAS_BIENVENIDAS = '1z5Gs3lDn1lxjbKB4dSRLbN6kfdY66AhB'; // FIX (02-ago-2026): el ID guardado tenía 32 caracteres (le faltaba uno) en vez de los 33 normales — confirmado contra el ID real de la carpeta.
 
-// Array de conveniencia con las 5 subcarpetas de arriba, para recorrerlas [→ Contexto_Base_Web.md §01B088]
+// NUEVO (28-oct-2026, PF286): tres subcarpetas que la usuaria creó DENTRO de "Torneos y sorteos" (la de TORNEOS_SORTEOS de arriba) y a las que movió los documentos de cada proceso. [→ Contexto_Base_Web.md §PF286]
+// A) "Cambio de rango" — ID: 1sAKp4oiN-V3T7lzWMfNyDx9OVJkUdOy4
+var DRIVE_FOLDER_ID_PLANTILLAS_CAMBIO_RANGO = '1sAKp4oiN-V3T7lzWMfNyDx9OVJkUdOy4';
+// B) "Torneos" — ID: 1qlyMI2Zcx9bIcFed1OHVYusjtUNGWpfd
+var DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS = '1qlyMI2Zcx9bIcFed1OHVYusjtUNGWpfd';
+// C) "Sorteos" — ID: 1VxAaKMz9hQbK2SsUv8TRdcomImssqTud
+var DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS = '1VxAaKMz9hQbK2SsUv8TRdcomImssqTud';
+
+// Array de conveniencia con las subcarpetas de arriba (las 5 de "Plantillas" y, desde el 28-oct-2026, las 3 de "Torneos y sorteos"), para recorrerlas [→ Contexto_Base_Web.md §01B088]
 var DRIVE_FOLDERS_PLANTILLAS_SUB = [
   DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS_SORTEOS,
   DRIVE_FOLDER_ID_PLANTILLAS_OTRAS,
   DRIVE_FOLDER_ID_PLANTILLAS_MAZOS,
   DRIVE_FOLDER_ID_PLANTILLAS_DESCRIPCIONES,
-  DRIVE_FOLDER_ID_PLANTILLAS_BIENVENIDAS
+  DRIVE_FOLDER_ID_PLANTILLAS_BIENVENIDAS,
+  DRIVE_FOLDER_ID_PLANTILLAS_CAMBIO_RANGO,
+  DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS,
+  DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS
 ];
 
 // Carpeta raíz. Nombre en Drive: "Respaldo" (padre de "CSV", "JSON" y [→ Contexto_Base_Web.md §01B089]
@@ -2730,15 +2798,16 @@ function _getMapaDocsReconstruibles() {
  */
 function _getMapaCarpetaDestinoDocsReconstruibles() {
   var mapa = {};
-  mapa[NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_SORTEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS_SORTEOS;
-  mapa[NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS_SORTEOS;
-  mapa[NOMBRE_DOC_GANADORES_SORTEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS_SORTEOS;
-  mapa[NOMBRE_DOC_GANADORES_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS_SORTEOS;
-  mapa[NOMBRE_DOC_ASCENSOS_DESCENSOS] = DRIVE_FOLDER_ID_PLANTILLAS_OTRAS;
+  // 28-oct-2026 (PF286): cada documento se crea en la subcarpeta de su proceso.
+  mapa[NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_SORTEO] = DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS;
+  mapa[NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS;
+  mapa[NOMBRE_DOC_GANADORES_SORTEO] = DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS;
+  mapa[NOMBRE_DOC_GANADORES_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS;
+  mapa[NOMBRE_DOC_ASCENSOS_DESCENSOS] = DRIVE_FOLDER_ID_PLANTILLAS_CAMBIO_RANGO;
   // NUEVO (15-sep-2026): "se deben generar en la misma carpeta de sus [→ Contexto_Base_Web.md §01B124]
-  mapa[NOMBRE_DOC_NO_CALIFICADOS_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS_SORTEOS;
-  mapa[NOMBRE_DOC_NO_CALIFICADOS_SORTEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS_SORTEOS;
-  mapa[NOMBRE_DOC_CAMBIO_RANGO] = DRIVE_FOLDER_ID_PLANTILLAS_OTRAS;
+  mapa[NOMBRE_DOC_NO_CALIFICADOS_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS;
+  mapa[NOMBRE_DOC_NO_CALIFICADOS_SORTEO] = DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS;
+  mapa[NOMBRE_DOC_CAMBIO_RANGO] = DRIVE_FOLDER_ID_PLANTILLAS_CAMBIO_RANGO;
   return mapa;
 }
 
@@ -38310,17 +38379,10 @@ function procesarCambioRango() {
     Logger.log('[CambioRango] actualizarDocCambioRango() falló (se continúa): ' + eDocCR.message);
   }
 
-  // Documento «Ascensos y descensos»: tablas de requisitos de la sección «Rangos» y listas por clan.
-  try {
-    actualizarTablasRangosDoc(idA, idD);
-  } catch (eTablasCR) {
-    Logger.log('[CambioRango] actualizarTablasRangosDoc() falló (se continúa): ' + eTablasCR.message);
-  }
-  try {
-    actualizarDocAscensosDescensos(idA, idD);
-  } catch (eDocAD) {
-    Logger.log('[CambioRango] actualizarDocAscensosDescensos() falló (se continúa): ' + eDocAD.message);
-  }
+  // 28-oct-2026 (PF286 punto 12): aquí se llamaban también actualizarTablasRangosDoc() y actualizarDocAscensosDescensos() (25),
+  // pero abren por id el MISMO archivo que escribe actualizarDocCambioRango() (ahora titulado «Cambio de rango») y buscan en él los
+  // encabezados «Ascensos:» y «Descensos:» del diseño viejo, que ese documento borra al reescribirse entero. Quedan solo como funciones
+  // manuales (25) hasta el rediseño de los documentos (PF286 punto 11).
 
   return true;
 }
@@ -43057,6 +43119,12 @@ var NOMBRE_DOC_NO_CALIFICADOS_SORTEO = 'No calificados (sorteo) - Comunidad - �
 
 var NOMBRE_DOC_CAMBIO_RANGO = 'Cambio de rango - Comunidad - ᴳ乂ᵀ ⚜️ Familia Terna';
 
+// NUEVO (28-oct-2026, PF286 punto 12): ids fijos de los tres documentos, para no depender de la búsqueda por nombre ni de la caché de Script Properties cuando se mueven de carpeta.
+// El de «Cambio de rango» es el mismo archivo que DOC_ID_ASCENSOS_DESCENSOS (25_Doc_AscensosDescensos.gs), que ya figura en Drive con el título «Cambio de rango». Se repite aquí el valor (no se referencia la constante de 25) para no depender del orden de carga de los archivos.
+var DOC_ID_NO_CALIFICADOS_TORNEO = '1wBJWDE8Jy1IbO7UljZwJl_PMzXU7n3qJZtg2GtHsmIQ';
+var DOC_ID_NO_CALIFICADOS_SORTEO = '1arA22oL2lmJplWc-EHbibHAVkAWsE8Vkby_W2kCec1g';
+var DOC_ID_CAMBIO_RANGO = '1jkUntN6esvkNvHosYesDQwlU33BfPr1I_wyyYueMxWo';
+
 // Veredictos posibles del documento de Cambio de rango (ver
 // _ncVeredictoCambioRango() más abajo para la regla exacta de cada uno).
 var NC_VEREDICTO = {
@@ -43202,7 +43270,7 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
     (String(temporadaMostrar) === String(ctxReal.temporada) ? ' (real vigente)' : ' (vía Extra!Mostrar)') + '.';
 
   _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_TORNEO, 'Participantes NO calificados (torneo)',
-    requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
+    requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true, DOC_ID_NO_CALIFICADOS_TORNEO);
 
   Logger.log('[NoCalificados-Torneo] ' + resumen);
 }
@@ -43236,7 +43304,7 @@ function actualizarDocNoCalificadosSorteo(ctxParam) {
     'Temporada ' + ev.temporadaActual + '. Sorteo ' + (ev.idSorteo || 'sin ID') + '.';
 
   _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_SORTEO, 'Participantes NO calificados (sorteo)',
-    ev.requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
+    ev.requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true, DOC_ID_NO_CALIFICADOS_SORTEO);
 
   Logger.log('[NoCalificados-Sorteo] ' + resumen);
 }
@@ -43542,7 +43610,7 @@ function actualizarDocCambioRango(idAscenso, idDescenso) {
     (partesResumen.length ? partesResumen.join(' | ') + '.' : 'Ninguna con veredicto.');
 
   _ncEscribirDocumento(NOMBRE_DOC_CAMBIO_RANGO, 'Cambio de rango',
-    requisitos, filas, resumen, 'No hay ninguna cuenta evaluable con este par de CR_Lista.');
+    requisitos, filas, resumen, 'No hay ninguna cuenta evaluable con este par de CR_Lista.', false, DOC_ID_CAMBIO_RANGO);
 
   Logger.log('[CambioRango-Doc] ' + resumen);
 }
@@ -43689,11 +43757,11 @@ function _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) {
 /**
  * _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas) [→ Contexto_Base_Web.md §29B021]
  */
-function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas, estiloUniforme) {
+function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas, estiloUniforme, idDoc) {
   var archivo;
   try {
     // Busca el documento existente (caché de ID -> nombre en las 6 carpetas de [→ Contexto_Base_Web.md §29B022]
-    archivo = _buscarArchivoEnPlantillas(nombreDoc);
+    archivo = _buscarArchivoEnPlantillas(nombreDoc, idDoc); // idDoc (PF286): primero por id; si falla, por nombre como antes
   } catch (e) {
     Logger.log('[DocsNoCalificados] Error al buscar "' + nombreDoc + '": ' + e.message);
     return;
