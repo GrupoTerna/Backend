@@ -1774,6 +1774,17 @@ function _anotarProgresoPaso_(texto, acumulado) {
   PROGRESO_PASO_ = { texto: String(texto || ''), acum: Number(acumulado) };
 }
 
+// PF285 (27-oct-2026): ayuda genérica del detalle de avance de un paso (regla 0.10 de la skill), con el mismo patrón de _reenumProgreso_() (47_Migraciones.gs).
+// Escribe dos líneas en el registro (acumulado de un total con porcentaje, tandas anteriores y lo que falta; y lo hecho en esta tanda) y anota el avance para el motor.
+// Se llama justo antes de devolver false. etiqueta: tag del registro (sin corchetes); nombre: qué se cuenta; previas: hecho en tandas anteriores; estaTanda: hecho en esta; unidad: p. ej. 'hojas'. [→ Contexto_Base_Web.md §PF285]
+function _logProgresoPaso_(etiqueta, nombre, previas, estaTanda, total, unidad) {
+  var acum = previas + estaTanda;
+  var pct = total > 0 ? Math.round(acum * 100 / total) : 100;
+  Logger.log('[' + etiqueta + ']   ' + nombre + ': acumulado ' + acum + ' de ' + total + ' ' + unidad + ' (' + pct + ' %); en tandas anteriores: ' + previas + '; faltan ' + Math.max(total - acum, 0) + '.');
+  Logger.log('[' + etiqueta + ']   ' + nombre + ': en esta tanda: ' + estaTanda + ' ' + unidad + '.');
+  _anotarProgresoPaso_(nombre + ': ' + acum + ' de ' + total + ' ' + unidad, acum);
+}
+
 function _logEstadoTanda_(id, paso, total, reintento, tandasPaso, progPrevio, nombresPasos) {
   var etiq = '[' + id + '] ';
   var nombre = (nombresPasos && nombresPasos[paso]) ? ': ' + nombresPasos[paso] : '';

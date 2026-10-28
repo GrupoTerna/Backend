@@ -483,6 +483,7 @@ function limpiarLinksAccidentalesDeNombres() {
                  (i + 1) + '/' + hojas.length + ' ("' + hojas[i].getName() + '"). ' +
                  (totalCorregidas > 0 ? totalCorregidas + ' enlace(s) accidental(es) quitado(s) hasta ahora. ' : '') +
                  'Se reintenta el mismo paso en la próxima continuación.');
+      _logProgresoPaso_('LinksNombres', 'enlaces accidentales en nombres', idxInicio, (i + 1) - idxInicio, hojas.length, 'hojas'); // PF285
       return false;
     }
   }
