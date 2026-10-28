@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 00:10:01 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 00:24:22 */
 
 
 
@@ -310,6 +310,16 @@ function eliminarTodosLosArchivosDeBase() {
 // Nombres de archivo estandarizados a "Base" y "Generador" con su extensión.
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: ninguna (las que se corren a mano, subirBaseDesdeZip() y las demás, están en 01_Principal.gs y llaman a las de este archivo)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Subida desde zip, txt, gs o md: entrada y lectura de los archivos (en el orden en que las llama _subirArchivosAProyecto)
+//    - Subida: escritura en el proyecto de Apps Script (API; obtenerArchivosProyecto_ la usan también 08, la descarga y el vaciado)
+//    - Descarga: respaldos .zip/.txt/.gs/.md e Indice_<Nombre>.md (en el orden en que los arma _descargarProyectoAArchivos)
+//    - Vaciado del proyecto de Base
+//    - Utilidades compartidas: carpeta de respaldos, hoja de Base, aviso y registro
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var CARPETA_GENERADOR_ID = '1YmgyCh-7Y6DIoScS6lpidQZk3IeDsEGA';
 var CARPETA_BASE_ID = '1OmSVruEHm4RlP-7VN3G_M2HublfWK1W8';
 var NOMBRE_HOJA_BASE = 'Base';
@@ -322,22 +332,6 @@ var VALLA_MD_ = '\x60\x60\x60';
 // se sube a Base. Antes vivía en la ya eliminada ejecutarTodoElProceso();
 // se conserva aquí con el mismo comportamiento y apagado por defecto.
 var CREAR_O_ACTUALIZAR_HOJA_SISTEMA = false;
-
-/**
- * Devuelve la subcarpeta de respaldos correspondiente ("Generador" o "Base"),
- * dentro de la carpeta principal del Generador (CARPETA_GENERADOR_ID). Si la
- * subcarpeta no existe todavía, la crea. Así los archivos de cada proyecto
- * (zip/txt/gs/md/log) quedan organizados cada uno en su propia carpeta, en
- * vez de todos sueltos en la raíz.
- * @param {string} nombreBase 'Base' | 'Generador'
- * @return {Folder}
- */
-function _carpetaDeRespaldos_(nombreBase) {
-  var carpetaPadre = DriveApp.getFolderById(CARPETA_GENERADOR_ID);
-  var subcarpetas = carpetaPadre.getFoldersByName(nombreBase);
-  if (subcarpetas.hasNext()) return subcarpetas.next();
-  return carpetaPadre.createFolder(nombreBase);
-}
 
 var MANIFIESTO_CANONICO_ = {
   timeZone: "America/Lima",
@@ -408,56 +402,98 @@ var AVISO_ANTI_CARPETAS_ =
   '   un bloque de código en el chat obliga a seleccionar y copiar a mano,\n' +
   '   y es más difícil de manejar en archivos largos.';
 
-/** Antepone el aviso a un texto, solo si todavía no está presente. */
-function _conAviso_(texto) {
-  if (texto.indexOf(AVISO_ANTI_CARPETAS_) !== -1) return texto;
-  return '/*\n' + AVISO_ANTI_CARPETAS_ + '\n*/\n\n' + texto;
-}
+// -----------------------------------------------------------------------------
+// Indice_Base.md / Indice_Generador.md
+// Se REEMPLAZAN en cada descarga o subida (también en GitHub: <Nombre>/Indice_<Nombre>.md).
+// Tabla con N.º automático, nombre del archivo y estado respecto de la descarga anterior:
+// «permanece igual», «modificado» (solo los que no se crearon ni eliminaron en esa tanda),
+// «creado» o «eliminado». Para saber qué cambió, el propio archivo guarda al final la huella
+// de cada archivo en un comentario <!-- HUELLAS {...} -->; la siguiente descarga lo lee.
+// Los eliminados figuran solo en la tanda en que desaparecen.
+// [→ Contexto_Base_Web.md §PF151]
+// -----------------------------------------------------------------------------
+
+var INDICE_ARCHIVOS_RE_HUELLAS_ = /<!--\s*HUELLAS\s+(\{[\s\S]*?\})\s*-->/;
 
 // =============================================================================
-// UTILIDADES DE DRIVE Y LOG
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
 // =============================================================================
 
-function _registrarLogGenerador(funcion, descripcion, advertencias) {
-  try {
-    var carpeta = _carpetaDeRespaldos_('Generador');
-    var filename = 'Log_Generador.json';
-    var nuevaEntrada = {
-      fecha: Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm:ss') + ' (Lima)',
-      autor: 'Claude (Anthropic)',
-      funcion: funcion || '',
-      descripcion: descripcion || '',
-      advertencias: advertencias || []
-    };
-    var archivos = carpeta.getFilesByName(filename);
-    if (archivos.hasNext()) {
-      var archivoLog = archivos.next();
-      var contenidoActual = archivoLog.getBlob().getDataAsString('UTF-8');
-      var logArray = [];
-      try { logArray = JSON.parse(contenidoActual); } catch(e) { logArray = []; }
-      if (!Array.isArray(logArray)) logArray = [];
-      logArray.push(nuevaEntrada);
-      archivoLog.setContent(JSON.stringify(logArray, null, 2));
+// ----- Subida desde zip, txt, gs o md: entrada y lectura de los archivos -----
+
+function _subirArchivosAProyecto(nombreBase, extension) {
+  var carpeta = _carpetaDeRespaldos_(nombreBase);
+  
+  // Búsqueda estricta por nombre base + extensión automática
+  var nombreArchivo = nombreBase + '.' + extension;
+  var archivosDrive = carpeta.getFilesByName(nombreArchivo);
+  if (!archivosDrive.hasNext()) throw 'No encontré el archivo "' + nombreArchivo + '" en la carpeta "' + nombreBase + '".';
+
+  var archivoDrive = archivosDrive.next();
+  var nombreReal = archivoDrive.getName();
+  var blobs = [];
+
+  // Extraer archivos internos
+  if (nombreReal.endsWith('.zip')) {
+    var resultadoZip = consolidarCodigoDesdeZip(nombreReal);
+    blobs = resultadoZip.archivos;
+  } else if (nombreReal.endsWith('.md')) {
+    // Formato Markdown legible: encabezados "## archivo.gs" + bloque entre vallas (VALLA_MD_)
+    var contenidoMd = archivoDrive.getBlob().getDataAsString('UTF-8');
+    blobs = _extraerArchivosDeMarkdown_(contenidoMd);
+  } else if (nombreReal.endsWith('.txt') || nombreReal.endsWith('.gs')) {
+    // Formato clásico: "// --- ARCHIVO: nombre.gs ---"
+    var contenido = archivoDrive.getBlob().getDataAsString('UTF-8');
+    blobs = _extraerArchivosDeTexto(contenido);
+  } else {
+    throw 'Formato de archivo no soportado: ' + nombreReal;
+  }
+
+  // (Opcional, solo Base.zip) Crear/actualizar la hoja "Sistema" con el
+  // mismo código, tal como hacía la antigua ejecutarTodoElProceso().
+  if (nombreBase === 'Base' && extension === 'zip' && CREAR_O_ACTUALIZAR_HOJA_SISTEMA) {
+    var carpetaPrincipal = DriveApp.getFolderById(CARPETA_GENERADOR_ID);
+    var fechaFormateada = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
+    var nombreHojaSistema = 'Sistema Clanes - Familia Terna - ' + fechaFormateada;
+    var archivosExistentes = carpetaPrincipal.getFilesByName(nombreHojaSistema);
+    var nuevoSs;
+    if (archivosExistentes.hasNext()) {
+      nuevoSs = SpreadsheetApp.openById(archivosExistentes.next().getId());
     } else {
-      carpeta.createFile(filename, JSON.stringify([nuevaEntrada], null, 2), MimeType.PLAIN_TEXT);
+      nuevoSs = SpreadsheetApp.create(nombreHojaSistema);
+      DriveApp.getFileById(nuevoSs.getId()).moveTo(carpetaPrincipal);
+      nuevoSs.getSheets()[0].setName('Terreno_Limpio');
     }
-  } catch(e) {
-    console.log('[Log] Error escribiendo Log_Generador.json: ' + e.message);
+    var ssIdSistema = nuevoSs.getId();
+    PropertiesService.getScriptProperties().setProperty('HOJA_ACTIVA_ID', ssIdSistema);
+    actualizarScriptDeHoja(ssIdSistema, blobs);
   }
-}
 
-function obtenerSpreadsheetPorNombreEnCarpeta_(folderId, nombreHoja) {
-  var carpeta = DriveApp.getFolderById(folderId);
-  var archivos = carpeta.getFilesByName(nombreHoja);
-  if (!archivos.hasNext()) {
-    throw 'No se encontró la hoja "' + nombreHoja + '" en la carpeta ' + folderId;
+  // Destino: Base o Generador
+  var ssId = null;
+  if (nombreBase === 'Base') {
+    ssId = obtenerSpreadsheetPorNombreEnCarpeta_(CARPETA_BASE_ID, NOMBRE_HOJA_BASE);
   }
-  return archivos.next().getId();
-}
+  var reporte = actualizarScriptDeHoja(ssId, blobs, nombreBase);
 
-// =============================================================================
-// CONSOLIDACIÓN: LECTURA DE ZIP Y TXT/GS
-// =============================================================================
+  // A partir de aquí, subir SIEMPRE deja los 4 formatos (.zip/.txt/.gs/.md)
+  // sincronizados con lo que se acaba de subir, sin importar desde cuál de
+  // los 4 se subió ni si el destino es "Base" o "Generador". Así no hace
+  // falta una función "actualizar" separada: subir YA actualiza todo.
+  _descargarProyectoAArchivos(nombreBase);
+
+  _registrarLogGenerador(
+    '_subirArchivosAProyecto() / ' + nombreBase,
+    nombreArchivo + ' subido al proyecto "' + nombreBase + '" y los 4 respaldos (' +
+    nombreBase + '.zip/.gs/.txt/.md) regenerados a partir del código recién subido. ' +
+    'Actualizados: ' + (reporte.actualizados ? reporte.actualizados.length : 0) +
+    ' | Agregados: ' + (reporte.agregados ? reporte.agregados.length : 0) +
+    ' | Sin tocar: ' + (reporte.sinTocar ? reporte.sinTocar.length : 0),
+    []
+  );
+
+  return reporte;
+}
 
 function consolidarCodigoDesdeZip(nombreZip) {
   if (!nombreZip) nombreZip = 'Base.zip'; // Fallback estándar
@@ -490,57 +526,12 @@ function consolidarCodigoDesdeZip(nombreZip) {
   return { textoConsolidado: textoConsolidado, archivos: archivos };
 }
 
-function _extraerArchivosDeTexto(texto) {
-  var archivos = [];
-  var lineas = texto.split('\n');
-  var i = 0;
-  while (i < lineas.length) {
-    var lineaTrim = lineas[i].trim();
-    if (lineaTrim.startsWith('// --- ARCHIVO: ')) {
-      var nombre = lineaTrim.replace('// --- ARCHIVO: ', '').replace(' ---', '');
-      if (nombre.endsWith('.gs')) nombre = nombre.slice(0, -3);
-      if (nombre.endsWith('.js')) nombre = nombre.slice(0, -3);
-      var contenido = '';
-      i++;
-      while (i < lineas.length && !lineas[i].trim().startsWith('// --- ARCHIVO: ')) {
-        contenido += lineas[i] + '\n';
-        i++;
-      }
-      if (contenido.endsWith('\n')) contenido = contenido.slice(0, -1);
-      archivos.push({ nombre: nombre, contenido: contenido });
-    } else {
-      i++;
-    }
+function nombreBaseDesdeArchivo_(nombreCompleto) {
+  var nombre = nombreCompleto;
+  while (/\.(gs|js)$/i.test(nombre)) {
+    nombre = nombre.replace(/\.(gs|js)$/i, '');
   }
-  return archivos;
-}
-
-// =============================================================================
-// FORMATO MARKDOWN LEGIBLE (solo para .md — pensado para que una IA lo lea
-// directo, sin descomprimir el ZIP: encabezados "## archivo.gs" + bloque de
-// código, en vez del formato "// --- ARCHIVO: ... ---" usado en .txt/.gs.
-// =============================================================================
-
-/**
- * Genera el Markdown legible a partir de una lista de archivos
- * [{nombre, contenido}, ...]. Es más liviano de leer para una IA porque
- * no repite comentarios de separación dentro del propio código.
- */
-function _generarMarkdownLegible_(nombreProyecto, archivos, fechaStr) {
-  var partes = [];
-  partes.push('# ' + nombreProyecto + ' — código consolidado');
-  partes.push('_Generado: ' + fechaStr + ' (Lima)_');
-  partes.push('');
-  partes.push('> ' + AVISO_ANTI_CARPETAS_.split('\n').join('\n> '));
-  partes.push('');
-  archivos.forEach(function(a) {
-    partes.push('## ' + a.nombre + '.gs');
-    partes.push(VALLA_MD_ + 'javascript');
-    partes.push(a.contenido);
-    partes.push(VALLA_MD_);
-    partes.push('');
-  });
-  return partes.join('\n');
+  return nombre;
 }
 
 /**
@@ -577,21 +568,156 @@ function _extraerArchivosDeMarkdown_(texto) {
   return archivos;
 }
 
-function nombreBaseDesdeArchivo_(nombreCompleto) {
-  var nombre = nombreCompleto;
-  while (/\.(gs|js)$/i.test(nombre)) {
-    nombre = nombre.replace(/\.(gs|js)$/i, '');
+function _extraerArchivosDeTexto(texto) {
+  var archivos = [];
+  var lineas = texto.split('\n');
+  var i = 0;
+  while (i < lineas.length) {
+    var lineaTrim = lineas[i].trim();
+    if (lineaTrim.startsWith('// --- ARCHIVO: ')) {
+      var nombre = lineaTrim.replace('// --- ARCHIVO: ', '').replace(' ---', '');
+      if (nombre.endsWith('.gs')) nombre = nombre.slice(0, -3);
+      if (nombre.endsWith('.js')) nombre = nombre.slice(0, -3);
+      var contenido = '';
+      i++;
+      while (i < lineas.length && !lineas[i].trim().startsWith('// --- ARCHIVO: ')) {
+        contenido += lineas[i] + '\n';
+        i++;
+      }
+      if (contenido.endsWith('\n')) contenido = contenido.slice(0, -1);
+      archivos.push({ nombre: nombre, contenido: contenido });
+    } else {
+      i++;
+    }
   }
-  return nombre;
+  return archivos;
 }
 
-// =============================================================================
-// DESCARGA Y SUBIDA (BASE Y GENERADOR)
-// =============================================================================
+// ----- Subida: escritura en el proyecto de Apps Script (API) -----
 
-// =============================================================================
-// CORRECCIÓN EN LA FUNCIÓN DE DESCARGA
-// =============================================================================
+function actualizarScriptDeHoja(ssId, archivosNuevos, nombreBase) {
+  var scriptId;
+  if (nombreBase && nombreBase === 'Generador') {
+    scriptId = ScriptApp.getScriptId();
+  } else if (nombreBase && nombreBase === 'Contactos_Secundario') {
+    scriptId = _scriptIdDeProyecto_(nombreBase);
+  } else {
+    var props = PropertiesService.getScriptProperties();
+    var clavePropiedad = 'SCRIPT_ID_' + ssId;
+    scriptId = props.getProperty(clavePropiedad);
+    if (!scriptId) {
+      scriptId = crearProyectoVinculado_(ssId);
+      props.setProperty(clavePropiedad, scriptId);
+      console.log('Proyecto de Apps Script vinculado creado para ' + ssId + '. scriptId: ' + scriptId);
+    }
+  }
+
+  var archivosExistentes = obtenerArchivosProyecto_(scriptId);
+  var mapaExistentes = {};
+  archivosExistentes.forEach(function(a){ mapaExistentes[a.name] = a; });
+
+  var actualizados = [], agregados = [], archivosFinales = [], nombresDelZip = {};
+
+  // El manifiesto NUNCA se pisa a la fuerza. Si el proyecto ya tiene un
+  // "appsscript.json" (caso normal: Base ya existe), se conserva tal cual
+  // está — subir código no debe tocar scopes ni configuración del
+  // manifiesto. MANIFIESTO_CANONICO_ solo se usa como valor por defecto la
+  // PRIMERA vez que se crea un proyecto vinculado nuevo (todavía no tiene
+  // ningún appsscript.json propio).
+  if (mapaExistentes['appsscript']) {
+    archivosFinales.push(mapaExistentes['appsscript']);
+  } else {
+    archivosFinales.push({
+      name: 'appsscript',
+      type: 'JSON',
+      source: JSON.stringify(MANIFIESTO_CANONICO_)
+    });
+  }
+
+  archivosNuevos.forEach(function(archivo) {
+    nombresDelZip[archivo.nombre] = true;
+    if (mapaExistentes[archivo.nombre]) {
+      actualizados.push(archivo.nombre);
+    } else {
+      agregados.push(archivo.nombre);
+    }
+    archivosFinales.push({
+      name: archivo.nombre,
+      type: 'SERVER_JS',
+      source: archivo.contenido
+    });
+  });
+
+  var sinTocar = [];
+  archivosExistentes.forEach(function(a) {
+    if (a.name === 'appsscript') return;
+    if (!nombresDelZip[a.name]) {
+      archivosFinales.push(a);
+      sinTocar.push(a.name);
+    }
+  });
+
+  var opciones = {
+    method: 'put',
+    contentType: 'application/json',
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    payload: JSON.stringify({ files: archivosFinales }),
+    muteHttpExceptions: true
+  };
+  var url = 'https://script.googleapis.com/v1/projects/' + scriptId + '/content';
+  var respuesta = UrlFetchApp.fetch(url, opciones);
+  var codigoHttp = respuesta.getResponseCode();
+
+  if (codigoHttp !== 200) {
+    throw 'Error al actualizar el script (' + codigoHttp + '): ' + respuesta.getContentText();
+  }
+
+  console.log('--- Reporte de actualización (' + (nombreBase || 'Base') + ') ---');
+  console.log('Actualizados (' + actualizados.length + '): ' + (actualizados.length ? actualizados.join(', ') : 'ninguno'));
+  console.log('Agregados (' + agregados.length + '): ' + (agregados.length ? agregados.join(', ') : 'ninguno'));
+  console.log('Sin tocar (' + sinTocar.length + '): ' + (sinTocar.length ? sinTocar.join(', ') : 'ninguno'));
+  return { 
+    todosYaExistian: (agregados.length === 0), 
+    actualizados: actualizados, 
+    agregados: agregados, 
+    sinTocar: sinTocar 
+  };
+}
+
+function crearProyectoVinculado_(ssId) {
+  var url = 'https://script.googleapis.com/v1/projects';
+  var opciones = {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    payload: JSON.stringify({ title: 'Código del sistema (auto)', parentId: ssId }),
+    muteHttpExceptions: true
+  };
+  var respuesta = UrlFetchApp.fetch(url, opciones);
+  if (respuesta.getResponseCode() !== 200) {
+    throw 'No se pudo crear el proyecto de Apps Script vinculado (' + respuesta.getResponseCode() + '): ' + respuesta.getContentText();
+  }
+  var data = JSON.parse(respuesta.getContentText());
+  if (!data.scriptId) throw 'La API no devolvió scriptId al crear el proyecto: ' + respuesta.getContentText();
+  return data.scriptId;
+}
+
+function obtenerArchivosProyecto_(scriptId) {
+  var url = 'https://script.googleapis.com/v1/projects/' + scriptId + '/content';
+  var opciones = {
+    method: 'get',
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    muteHttpExceptions: true
+  };
+  var respuesta = UrlFetchApp.fetch(url, opciones);
+  if (respuesta.getResponseCode() !== 200) {
+    throw 'No se pudo leer el contenido del proyecto (' + respuesta.getResponseCode() + '): ' + respuesta.getContentText();
+  }
+  var data = JSON.parse(respuesta.getContentText());
+  return data.files || [];
+}
+
+// ----- Descarga: respaldos .zip/.txt/.gs/.md e Indice_<Nombre>.md -----
 
 function _descargarProyectoAArchivos(nombreBase) {
   var ssId = null;
@@ -696,29 +822,41 @@ function _descargarProyectoAArchivos(nombreBase) {
   if (nombreBase === 'Generador') _actualizarReadmeGenerador_();
 }
 
-// -----------------------------------------------------------------------------
-// Indice_Base.md / Indice_Generador.md
-// Se REEMPLAZAN en cada descarga o subida (también en GitHub: <Nombre>/Indice_<Nombre>.md).
-// Tabla con N.º automático, nombre del archivo y estado respecto de la descarga anterior:
-// «permanece igual», «modificado» (solo los que no se crearon ni eliminaron en esa tanda),
-// «creado» o «eliminado». Para saber qué cambió, el propio archivo guarda al final la huella
-// de cada archivo en un comentario <!-- HUELLAS {...} -->; la siguiente descarga lo lee.
-// Los eliminados figuran solo en la tanda en que desaparecen.
-// [→ Contexto_Base_Web.md §PF151]
-// -----------------------------------------------------------------------------
+// FORMATO MARKDOWN LEGIBLE (solo para .md — pensado para que una IA lo lea
+// directo, sin descomprimir el ZIP: encabezados "## archivo.gs" + bloque de
+// código, en vez del formato "// --- ARCHIVO: ... ---" usado en .txt/.gs.
+/**
+ * Genera el Markdown legible a partir de una lista de archivos
+ * [{nombre, contenido}, ...]. Es más liviano de leer para una IA porque
+ * no repite comentarios de separación dentro del propio código.
+ */
+function _generarMarkdownLegible_(nombreProyecto, archivos, fechaStr) {
+  var partes = [];
+  partes.push('# ' + nombreProyecto + ' — código consolidado');
+  partes.push('_Generado: ' + fechaStr + ' (Lima)_');
+  partes.push('');
+  partes.push('> ' + AVISO_ANTI_CARPETAS_.split('\n').join('\n> '));
+  partes.push('');
+  archivos.forEach(function(a) {
+    partes.push('## ' + a.nombre + '.gs');
+    partes.push(VALLA_MD_ + 'javascript');
+    partes.push(a.contenido);
+    partes.push(VALLA_MD_);
+    partes.push('');
+  });
+  return partes.join('\n');
+}
 
-var INDICE_ARCHIVOS_RE_HUELLAS_ = /<!--\s*HUELLAS\s+(\{[\s\S]*?\})\s*-->/;
-
-/** Huella corta (MD5, 12 caracteres) del tipo y del contenido de un archivo del proyecto. */
-function _huellaArchivo_(a) {
-  var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5,
-                                      String(a.type) + '\n' + String(a.source || ''),
-                                      Utilities.Charset.UTF_8);
-  var hex = '';
-  for (var i = 0; i < bytes.length; i++) {
-    hex += ('0' + (bytes[i] < 0 ? bytes[i] + 256 : bytes[i]).toString(16)).slice(-2);
-  }
-  return hex.substring(0, 12);
+/** Crea o reemplaza (setContent, para conservar las versiones de Drive) Indice_<Nombre>.md en la carpeta de respaldos. */
+function _guardarIndiceArchivos_(nombreBase, carpeta, archivos, fechaStr) {
+  var nombreIndice = 'Indice_' + nombreBase + '.md';
+  var it = carpeta.getFilesByName(nombreIndice);
+  var archivoIndice = it.hasNext() ? it.next() : null;
+  var previo = archivoIndice ? archivoIndice.getBlob().getDataAsString('UTF-8') : '';
+  var texto = _generarIndiceArchivos_(nombreBase, archivos, previo, fechaStr);
+  if (archivoIndice) archivoIndice.setContent(texto);
+  else carpeta.createFile(nombreIndice, texto, MimeType.PLAIN_TEXT);
+  return texto;
 }
 
 /**
@@ -775,188 +913,19 @@ function _generarIndiceArchivos_(nombreBase, archivos, indicePrevio, fechaStr) {
   return out.join('\n');
 }
 
-/** Crea o reemplaza (setContent, para conservar las versiones de Drive) Indice_<Nombre>.md en la carpeta de respaldos. */
-function _guardarIndiceArchivos_(nombreBase, carpeta, archivos, fechaStr) {
-  var nombreIndice = 'Indice_' + nombreBase + '.md';
-  var it = carpeta.getFilesByName(nombreIndice);
-  var archivoIndice = it.hasNext() ? it.next() : null;
-  var previo = archivoIndice ? archivoIndice.getBlob().getDataAsString('UTF-8') : '';
-  var texto = _generarIndiceArchivos_(nombreBase, archivos, previo, fechaStr);
-  if (archivoIndice) archivoIndice.setContent(texto);
-  else carpeta.createFile(nombreIndice, texto, MimeType.PLAIN_TEXT);
-  return texto;
+/** Huella corta (MD5, 12 caracteres) del tipo y del contenido de un archivo del proyecto. */
+function _huellaArchivo_(a) {
+  var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5,
+                                      String(a.type) + '\n' + String(a.source || ''),
+                                      Utilities.Charset.UTF_8);
+  var hex = '';
+  for (var i = 0; i < bytes.length; i++) {
+    hex += ('0' + (bytes[i] < 0 ? bytes[i] + 256 : bytes[i]).toString(16)).slice(-2);
+  }
+  return hex.substring(0, 12);
 }
 
-function _subirArchivosAProyecto(nombreBase, extension) {
-  var carpeta = _carpetaDeRespaldos_(nombreBase);
-  
-  // Búsqueda estricta por nombre base + extensión automática
-  var nombreArchivo = nombreBase + '.' + extension;
-  var archivosDrive = carpeta.getFilesByName(nombreArchivo);
-  if (!archivosDrive.hasNext()) throw 'No encontré el archivo "' + nombreArchivo + '" en la carpeta "' + nombreBase + '".';
-
-  var archivoDrive = archivosDrive.next();
-  var nombreReal = archivoDrive.getName();
-  var blobs = [];
-
-  // Extraer archivos internos
-  if (nombreReal.endsWith('.zip')) {
-    var resultadoZip = consolidarCodigoDesdeZip(nombreReal);
-    blobs = resultadoZip.archivos;
-  } else if (nombreReal.endsWith('.md')) {
-    // Formato Markdown legible: encabezados "## archivo.gs" + bloque entre vallas (VALLA_MD_)
-    var contenidoMd = archivoDrive.getBlob().getDataAsString('UTF-8');
-    blobs = _extraerArchivosDeMarkdown_(contenidoMd);
-  } else if (nombreReal.endsWith('.txt') || nombreReal.endsWith('.gs')) {
-    // Formato clásico: "// --- ARCHIVO: nombre.gs ---"
-    var contenido = archivoDrive.getBlob().getDataAsString('UTF-8');
-    blobs = _extraerArchivosDeTexto(contenido);
-  } else {
-    throw 'Formato de archivo no soportado: ' + nombreReal;
-  }
-
-  // (Opcional, solo Base.zip) Crear/actualizar la hoja "Sistema" con el
-  // mismo código, tal como hacía la antigua ejecutarTodoElProceso().
-  if (nombreBase === 'Base' && extension === 'zip' && CREAR_O_ACTUALIZAR_HOJA_SISTEMA) {
-    var carpetaPrincipal = DriveApp.getFolderById(CARPETA_GENERADOR_ID);
-    var fechaFormateada = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
-    var nombreHojaSistema = 'Sistema Clanes - Familia Terna - ' + fechaFormateada;
-    var archivosExistentes = carpetaPrincipal.getFilesByName(nombreHojaSistema);
-    var nuevoSs;
-    if (archivosExistentes.hasNext()) {
-      nuevoSs = SpreadsheetApp.openById(archivosExistentes.next().getId());
-    } else {
-      nuevoSs = SpreadsheetApp.create(nombreHojaSistema);
-      DriveApp.getFileById(nuevoSs.getId()).moveTo(carpetaPrincipal);
-      nuevoSs.getSheets()[0].setName('Terreno_Limpio');
-    }
-    var ssIdSistema = nuevoSs.getId();
-    PropertiesService.getScriptProperties().setProperty('HOJA_ACTIVA_ID', ssIdSistema);
-    actualizarScriptDeHoja(ssIdSistema, blobs);
-  }
-
-  // Destino: Base o Generador
-  var ssId = null;
-  if (nombreBase === 'Base') {
-    ssId = obtenerSpreadsheetPorNombreEnCarpeta_(CARPETA_BASE_ID, NOMBRE_HOJA_BASE);
-  }
-  var reporte = actualizarScriptDeHoja(ssId, blobs, nombreBase);
-
-  // A partir de aquí, subir SIEMPRE deja los 4 formatos (.zip/.txt/.gs/.md)
-  // sincronizados con lo que se acaba de subir, sin importar desde cuál de
-  // los 4 se subió ni si el destino es "Base" o "Generador". Así no hace
-  // falta una función "actualizar" separada: subir YA actualiza todo.
-  _descargarProyectoAArchivos(nombreBase);
-
-  _registrarLogGenerador(
-    '_subirArchivosAProyecto() / ' + nombreBase,
-    nombreArchivo + ' subido al proyecto "' + nombreBase + '" y los 4 respaldos (' +
-    nombreBase + '.zip/.gs/.txt/.md) regenerados a partir del código recién subido. ' +
-    'Actualizados: ' + (reporte.actualizados ? reporte.actualizados.length : 0) +
-    ' | Agregados: ' + (reporte.agregados ? reporte.agregados.length : 0) +
-    ' | Sin tocar: ' + (reporte.sinTocar ? reporte.sinTocar.length : 0),
-    []
-  );
-
-  return reporte;
-}
-
-// =============================================================================
-// INYECCIÓN APPS SCRIPT API
-// =============================================================================
-
-function actualizarScriptDeHoja(ssId, archivosNuevos, nombreBase) {
-  var scriptId;
-  if (nombreBase && nombreBase === 'Generador') {
-    scriptId = ScriptApp.getScriptId();
-  } else if (nombreBase && nombreBase === 'Contactos_Secundario') {
-    scriptId = _scriptIdDeProyecto_(nombreBase);
-  } else {
-    var props = PropertiesService.getScriptProperties();
-    var clavePropiedad = 'SCRIPT_ID_' + ssId;
-    scriptId = props.getProperty(clavePropiedad);
-    if (!scriptId) {
-      scriptId = crearProyectoVinculado_(ssId);
-      props.setProperty(clavePropiedad, scriptId);
-      console.log('Proyecto de Apps Script vinculado creado para ' + ssId + '. scriptId: ' + scriptId);
-    }
-  }
-
-  var archivosExistentes = obtenerArchivosProyecto_(scriptId);
-  var mapaExistentes = {};
-  archivosExistentes.forEach(function(a){ mapaExistentes[a.name] = a; });
-
-  var actualizados = [], agregados = [], archivosFinales = [], nombresDelZip = {};
-
-  // El manifiesto NUNCA se pisa a la fuerza. Si el proyecto ya tiene un
-  // "appsscript.json" (caso normal: Base ya existe), se conserva tal cual
-  // está — subir código no debe tocar scopes ni configuración del
-  // manifiesto. MANIFIESTO_CANONICO_ solo se usa como valor por defecto la
-  // PRIMERA vez que se crea un proyecto vinculado nuevo (todavía no tiene
-  // ningún appsscript.json propio).
-  if (mapaExistentes['appsscript']) {
-    archivosFinales.push(mapaExistentes['appsscript']);
-  } else {
-    archivosFinales.push({
-      name: 'appsscript',
-      type: 'JSON',
-      source: JSON.stringify(MANIFIESTO_CANONICO_)
-    });
-  }
-
-  archivosNuevos.forEach(function(archivo) {
-    nombresDelZip[archivo.nombre] = true;
-    if (mapaExistentes[archivo.nombre]) {
-      actualizados.push(archivo.nombre);
-    } else {
-      agregados.push(archivo.nombre);
-    }
-    archivosFinales.push({
-      name: archivo.nombre,
-      type: 'SERVER_JS',
-      source: archivo.contenido
-    });
-  });
-
-  var sinTocar = [];
-  archivosExistentes.forEach(function(a) {
-    if (a.name === 'appsscript') return;
-    if (!nombresDelZip[a.name]) {
-      archivosFinales.push(a);
-      sinTocar.push(a.name);
-    }
-  });
-
-  var opciones = {
-    method: 'put',
-    contentType: 'application/json',
-    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
-    payload: JSON.stringify({ files: archivosFinales }),
-    muteHttpExceptions: true
-  };
-  var url = 'https://script.googleapis.com/v1/projects/' + scriptId + '/content';
-  var respuesta = UrlFetchApp.fetch(url, opciones);
-  var codigoHttp = respuesta.getResponseCode();
-
-  if (codigoHttp !== 200) {
-    throw 'Error al actualizar el script (' + codigoHttp + '): ' + respuesta.getContentText();
-  }
-
-  console.log('--- Reporte de actualización (' + (nombreBase || 'Base') + ') ---');
-  console.log('Actualizados (' + actualizados.length + '): ' + (actualizados.length ? actualizados.join(', ') : 'ninguno'));
-  console.log('Agregados (' + agregados.length + '): ' + (agregados.length ? agregados.join(', ') : 'ninguno'));
-  console.log('Sin tocar (' + sinTocar.length + '): ' + (sinTocar.length ? sinTocar.join(', ') : 'ninguno'));
-  return { 
-    todosYaExistian: (agregados.length === 0), 
-    actualizados: actualizados, 
-    agregados: agregados, 
-    sinTocar: sinTocar 
-  };
-}
-
-// =============================================================================
-// MANTENIMIENTO: VACIAR PROYECTO DE APPS SCRIPT
-// =============================================================================
+// ----- Vaciado del proyecto de Base -----
 
 /**
  * Elimina TODOS los archivos de código del proyecto de Apps Script indicado,
@@ -1009,38 +978,67 @@ function _eliminarTodosLosArchivosDeProyecto(nombreBase) {
   return { eliminados: nombresEliminados };
 }
 
-function obtenerArchivosProyecto_(scriptId) {
-  var url = 'https://script.googleapis.com/v1/projects/' + scriptId + '/content';
-  var opciones = {
-    method: 'get',
-    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
-    muteHttpExceptions: true
-  };
-  var respuesta = UrlFetchApp.fetch(url, opciones);
-  if (respuesta.getResponseCode() !== 200) {
-    throw 'No se pudo leer el contenido del proyecto (' + respuesta.getResponseCode() + '): ' + respuesta.getContentText();
-  }
-  var data = JSON.parse(respuesta.getContentText());
-  return data.files || [];
+// ----- Utilidades compartidas: carpeta de respaldos, hoja de Base, aviso y registro -----
+
+/**
+ * Devuelve la subcarpeta de respaldos correspondiente ("Generador" o "Base"),
+ * dentro de la carpeta principal del Generador (CARPETA_GENERADOR_ID). Si la
+ * subcarpeta no existe todavía, la crea. Así los archivos de cada proyecto
+ * (zip/txt/gs/md/log) quedan organizados cada uno en su propia carpeta, en
+ * vez de todos sueltos en la raíz.
+ * @param {string} nombreBase 'Base' | 'Generador'
+ * @return {Folder}
+ */
+function _carpetaDeRespaldos_(nombreBase) {
+  var carpetaPadre = DriveApp.getFolderById(CARPETA_GENERADOR_ID);
+  var subcarpetas = carpetaPadre.getFoldersByName(nombreBase);
+  if (subcarpetas.hasNext()) return subcarpetas.next();
+  return carpetaPadre.createFolder(nombreBase);
 }
 
-function crearProyectoVinculado_(ssId) {
-  var url = 'https://script.googleapis.com/v1/projects';
-  var opciones = {
-    method: 'post',
-    contentType: 'application/json',
-    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
-    payload: JSON.stringify({ title: 'Código del sistema (auto)', parentId: ssId }),
-    muteHttpExceptions: true
-  };
-  var respuesta = UrlFetchApp.fetch(url, opciones);
-  if (respuesta.getResponseCode() !== 200) {
-    throw 'No se pudo crear el proyecto de Apps Script vinculado (' + respuesta.getResponseCode() + '): ' + respuesta.getContentText();
+function obtenerSpreadsheetPorNombreEnCarpeta_(folderId, nombreHoja) {
+  var carpeta = DriveApp.getFolderById(folderId);
+  var archivos = carpeta.getFilesByName(nombreHoja);
+  if (!archivos.hasNext()) {
+    throw 'No se encontró la hoja "' + nombreHoja + '" en la carpeta ' + folderId;
   }
-  var data = JSON.parse(respuesta.getContentText());
-  if (!data.scriptId) throw 'La API no devolvió scriptId al crear el proyecto: ' + respuesta.getContentText();
-  return data.scriptId;
+  return archivos.next().getId();
 }
+
+/** Antepone el aviso a un texto, solo si todavía no está presente. */
+function _conAviso_(texto) {
+  if (texto.indexOf(AVISO_ANTI_CARPETAS_) !== -1) return texto;
+  return '/*\n' + AVISO_ANTI_CARPETAS_ + '\n*/\n\n' + texto;
+}
+
+function _registrarLogGenerador(funcion, descripcion, advertencias) {
+  try {
+    var carpeta = _carpetaDeRespaldos_('Generador');
+    var filename = 'Log_Generador.json';
+    var nuevaEntrada = {
+      fecha: Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm:ss') + ' (Lima)',
+      autor: 'Claude (Anthropic)',
+      funcion: funcion || '',
+      descripcion: descripcion || '',
+      advertencias: advertencias || []
+    };
+    var archivos = carpeta.getFilesByName(filename);
+    if (archivos.hasNext()) {
+      var archivoLog = archivos.next();
+      var contenidoActual = archivoLog.getBlob().getDataAsString('UTF-8');
+      var logArray = [];
+      try { logArray = JSON.parse(contenidoActual); } catch(e) { logArray = []; }
+      if (!Array.isArray(logArray)) logArray = [];
+      logArray.push(nuevaEntrada);
+      archivoLog.setContent(JSON.stringify(logArray, null, 2));
+    } else {
+      carpeta.createFile(filename, JSON.stringify([nuevaEntrada], null, 2), MimeType.PLAIN_TEXT);
+    }
+  } catch(e) {
+    console.log('[Log] Error escribiendo Log_Generador.json: ' + e.message);
+  }
+}
+
 
 // --- ARCHIVO: 03_RoyaleAPI_Torneos.gs ---
 // 03_RoyaleAPI_Torneos.gs
@@ -1118,6 +1116,13 @@ function tryAlternativeProxy() {
 //                                       llamarse desde 06 si hiciera falta).
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Organización de respaldos JSON: drenar la raíz
+//  Parte 2 — Funciones que no se corren a mano
+//    - Organización de respaldos JSON: motor y ayudas (en el orden en que las llama organizarArchivosJSON; el motor lo usa también 05)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 /** @const {string} ID de la carpeta raíz que contiene los respaldos JSON. */
 var CARPETA_JSON_RAIZ_ID_ = '1fe_z2gahCDeVrYEbG8B2ts-XDJzbNBu8';
 
@@ -1188,6 +1193,18 @@ var ORGANIZAR_PROP_ESTADO_ = 'ORGANIZAR_JSON_ESTADO_V1';
 /** @const {string} Nombre del handler que se re-programa como trigger. */
 var ORGANIZAR_TRIGGER_HANDLER_ = 'organizarArchivosJSON';
 
+/** Clanes para los que ya se aviso que su carpeta vieja no se puede abrir (un solo aviso por ejecucion). */
+var _CARPETA_VIEJA_AVISADA_ = {};
+
+/** Memoria de las carpetas de temporada/semana ya resueltas en esta ejecucion (evita repetir getFoldersByName). */
+var _SEMANA_MEM_ = {};
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Organización de respaldos JSON: drenar la raíz -----
+
 /**
  * Punto de entrada MANUAL. Ejecutar directamente desde el editor cuando se
  * quiera drenar la raíz sin correr la migración completa de 05.
@@ -1230,6 +1247,12 @@ function organizarArchivosJSON() {
     resumen.ignorados.forEach(function(linea) { console.log('  · ' + linea); });
   }
 }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Organización de respaldos JSON: motor y ayudas (en el orden en que las llama organizarArchivosJSON; el motor lo usa también 05) -----
 
 /**
  * Motor reutilizable: recorre la carpeta raíz de JSON y mueve cada archivo
@@ -1304,6 +1327,53 @@ function _organizarJSON_procesarRaiz_(resumen, inicio) {
   return true;
 }
 
+function _organizarJSON_tiempoAgotado_(inicio) {
+  return (new Date().getTime() - inicio) > ORGANIZAR_LIMITE_MS_;
+}
+
+/**
+ * PF074: carpeta donde debe vivir un JSON de un clan y un endpoint: la del esquema ACTUAL (endpoint -> clan) si ese
+ * endpoint esta en CARPETAS_CLAN_POR_ENDPOINT_; si no, la carpeta vieja del clan (CARPETAS_CLAN_).
+ * @param {string} clanClave Clave de clan en minusculas (como en CARPETAS_CLAN_).
+ * @param {string} endpointKey 'currentriverrace' | 'clans' | otro.
+ * @return {Folder}
+ */
+function _carpetaDestinoJSON_(clanClave, endpointKey) {
+  var porClan = CARPETAS_CLAN_POR_ENDPOINT_[endpointKey];
+  if (porClan && porClan[clanClave]) return DriveApp.getFolderById(porClan[clanClave]);
+  return _carpetaViejaDeClan_(clanClave); // puede ser null si la carpeta vieja ya no existe
+}
+
+/**
+ * PF074: carpeta VIEJA del clan (esquema JSON/<clan>/...). Devuelve null, y avisa una vez en el registro, si ya no
+ * existe o la cuenta no tiene acceso (el 14-oct-2026 la del clan "grupo乂terna™" daba "No item with the given ID could be
+ * found"). Todo lo que depende de la carpeta vieja debe tolerar el null.
+ * @param {string} clanClave
+ * @return {?Folder}
+ */
+function _carpetaViejaDeClan_(clanClave) {
+  var id = CARPETAS_CLAN_[clanClave];
+  if (!id) return null;
+  try {
+    return DriveApp.getFolderById(id);
+  } catch (e) {
+    if (!_CARPETA_VIEJA_AVISADA_[clanClave]) {
+      _CARPETA_VIEJA_AVISADA_[clanClave] = true;
+      console.log('    ⚠ La carpeta VIEJA del clan "' + clanClave + '" no se puede abrir (ID ' + id +
+        '): se omite y se sigue con las carpetas actuales. (' + e.message + ')');
+    }
+    return null;
+  }
+}
+
+function _organizarJSON_borrarTriggersPendientes_() {
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === ORGANIZAR_TRIGGER_HANDLER_) {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+}
+
 /**
  * Devuelve la subcarpeta "nombre" dentro de "carpetaPadre", creándola si
  * todavía no existe. Idempotente: si dos ejecuciones la buscan a la vez,
@@ -1352,44 +1422,6 @@ function _archivosDeCarpetaClan_(carpetaClan) {
   });
 
   return lista;
-}
-
-/**
- * PF074: carpeta donde debe vivir un JSON de un clan y un endpoint: la del esquema ACTUAL (endpoint -> clan) si ese
- * endpoint esta en CARPETAS_CLAN_POR_ENDPOINT_; si no, la carpeta vieja del clan (CARPETAS_CLAN_).
- * @param {string} clanClave Clave de clan en minusculas (como en CARPETAS_CLAN_).
- * @param {string} endpointKey 'currentriverrace' | 'clans' | otro.
- * @return {Folder}
- */
-function _carpetaDestinoJSON_(clanClave, endpointKey) {
-  var porClan = CARPETAS_CLAN_POR_ENDPOINT_[endpointKey];
-  if (porClan && porClan[clanClave]) return DriveApp.getFolderById(porClan[clanClave]);
-  return _carpetaViejaDeClan_(clanClave); // puede ser null si la carpeta vieja ya no existe
-}
-
-/** Clanes para los que ya se aviso que su carpeta vieja no se puede abrir (un solo aviso por ejecucion). */
-var _CARPETA_VIEJA_AVISADA_ = {};
-
-/**
- * PF074: carpeta VIEJA del clan (esquema JSON/<clan>/...). Devuelve null, y avisa una vez en el registro, si ya no
- * existe o la cuenta no tiene acceso (el 14-oct-2026 la del clan "grupo乂terna™" daba "No item with the given ID could be
- * found"). Todo lo que depende de la carpeta vieja debe tolerar el null.
- * @param {string} clanClave
- * @return {?Folder}
- */
-function _carpetaViejaDeClan_(clanClave) {
-  var id = CARPETAS_CLAN_[clanClave];
-  if (!id) return null;
-  try {
-    return DriveApp.getFolderById(id);
-  } catch (e) {
-    if (!_CARPETA_VIEJA_AVISADA_[clanClave]) {
-      _CARPETA_VIEJA_AVISADA_[clanClave] = true;
-      console.log('    ⚠ La carpeta VIEJA del clan "' + clanClave + '" no se puede abrir (ID ' + id +
-        '): se omite y se sigue con las carpetas actuales. (' + e.message + ')');
-    }
-    return null;
-  }
 }
 
 /**
@@ -1445,9 +1477,6 @@ function _archivosDeClan_(clanClave) {
   return lista;
 }
 
-/** Memoria de las carpetas de temporada/semana ya resueltas en esta ejecucion (evita repetir getFoldersByName). */
-var _SEMANA_MEM_ = {};
-
 /**
  * PF074: carpeta de la TEMPORADA y la SEMANA de un clan y un endpoint, dentro de la carpeta actual de ese endpoint:
  * CurrentRiverRace|Clans / <clan> / T-02 / S-01. La crea si no existe. Los nombres (T-02, S-01, con cero a la izquierda)
@@ -1466,17 +1495,6 @@ function _carpetaSemanaJSON_(clanClave, endpointKey, temporada, sectionIndex) {
   return cS;
 }
 
-function _organizarJSON_tiempoAgotado_(inicio) {
-  return (new Date().getTime() - inicio) > ORGANIZAR_LIMITE_MS_;
-}
-
-function _organizarJSON_borrarTriggersPendientes_() {
-  ScriptApp.getProjectTriggers().forEach(function(t) {
-    if (t.getHandlerFunction() === ORGANIZAR_TRIGGER_HANDLER_) {
-      ScriptApp.deleteTrigger(t);
-    }
-  });
-}
 
 // --- ARCHIVO: 05_Migrador_Formato.gs ---
 // =============================================================================
@@ -1539,6 +1557,15 @@ function _organizarJSON_borrarTriggersPendientes_() {
 // quiera.
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Migración de formato de los respaldos JSON
+//  Parte 2 — Funciones que no se corren a mano
+//    - Migración de formato: pasos (en el orden en que los llama migrarFormatoJSON)
+//    - Migración de formato: fechas y letra del día (las usan también 06 y 10)
+//    - Presupuesto de tiempo, estado persistente y continuación automática
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 /** @const {number} Presupuesto de tiempo por ejecución, en ms.
  *  Deja margen bajo el límite real de Apps Script (~6 min en cuentas
  *  gratuitas/Gmail normales). Si el proyecto es de Google Workspace con
@@ -1550,6 +1577,15 @@ var MIG_PROP_ESTADO_ = 'MIG_FORMATO_ESTADO_V1';
 
 /** @const {string} Nombre del handler que se re-programa como trigger. */
 var MIG_TRIGGER_HANDLER_ = 'migrarFormatoJSON';
+
+/** @const {string} Letras del día de la semana, índice 0 = lunes … 6 = domingo (L M X J V S D). */
+var LETRAS_DIA_GUERRA_ = 'LMXJVSD';
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Migración de formato de los respaldos JSON -----
 
 /**
  * migrarFormatoJSON()
@@ -1583,6 +1619,25 @@ function migrarFormatoJSON() {
     candado.releaseLock();
   }
 }
+
+/**
+ * Utilidad manual: descarta cualquier estado/pausa guardada de una
+ * ejecución anterior y borra el trigger de continuación pendiente, sin
+ * tocar el cache de periodos (que sigue siendo válido). Usar si se quiere
+ * forzar que la próxima llamada a migrarFormatoJSON() empiece las 3 fases
+ * desde el Paso 1 (por ejemplo, si el estado guardado quedó inconsistente).
+ */
+function migrarFormatoJSON_reiniciarEstado() {
+  _mig_borrarEstado_();
+  _mig_borrarTriggersPendientes_();
+  console.log('Estado de migrarFormatoJSON() reiniciado. El cache de periodos NO se tocó (usa reiniciarCachePeriodosJSON() para eso).');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Migración de formato: pasos (en el orden en que los llama migrarFormatoJSON) -----
 
 /** Cuerpo de migrarFormatoJSON() (ver el candado arriba). */
 function _mig_ejecutarMigracion_() {
@@ -1664,19 +1719,6 @@ function _mig_ejecutarMigracion_() {
   }
 
   _mig_finalizar_(estado, cache);
-}
-
-/**
- * Utilidad manual: descarta cualquier estado/pausa guardada de una
- * ejecución anterior y borra el trigger de continuación pendiente, sin
- * tocar el cache de periodos (que sigue siendo válido). Usar si se quiere
- * forzar que la próxima llamada a migrarFormatoJSON() empiece las 3 fases
- * desde el Paso 1 (por ejemplo, si el estado guardado quedó inconsistente).
- */
-function migrarFormatoJSON_reiniciarEstado() {
-  _mig_borrarEstado_();
-  _mig_borrarTriggersPendientes_();
-  console.log('Estado de migrarFormatoJSON() reiniciado. El cache de periodos NO se tocó (usa reiniciarCachePeriodosJSON() para eso).');
 }
 
 /**
@@ -1918,8 +1960,19 @@ function _mig_renombrarSeguro(archivo, nombreNuevo, resumen) {
   return nombreNuevo;
 }
 
-/** @const {string} Letras del día de la semana, índice 0 = lunes … 6 = domingo (L M X J V S D). */
-var LETRAS_DIA_GUERRA_ = 'LMXJVSD';
+// ----- Migración de formato: fechas y letra del día (las usan también 06 y 10) -----
+
+function _mig_fechaHoraStr(d) {
+  return Utilities.formatDate(d, 'America/Lima', 'dd-MM-yyyy HH.mm');
+}
+
+function _mig_soloHora(d) {
+  return Utilities.formatDate(d, 'America/Lima', 'HH.mm');
+}
+
+function _mig_horaLima(d) {
+  return Utilities.formatDate(d, 'America/Lima', 'dd/MM/yyyy HH:mm:ss') + ' (Lima)';
+}
 
 /**
  * Letra del día de la semana al que corresponde un periodIndex:
@@ -1942,18 +1995,7 @@ function _pad2_(n) {
   return (n < 0 ? '-' : '') + (s.length < 2 ? '0' + s : s);
 }
 
-function _mig_fechaHoraStr(d) {
-  return Utilities.formatDate(d, 'America/Lima', 'dd-MM-yyyy HH.mm');
-}
-
-function _mig_soloHora(d) {
-  return Utilities.formatDate(d, 'America/Lima', 'HH.mm');
-}
-
-function _mig_horaLima(d) {
-  return Utilities.formatDate(d, 'America/Lima', 'dd/MM/yyyy HH:mm:ss') + ' (Lima)';
-}
-
+// ----- Presupuesto de tiempo, estado persistente y continuación automática -----
 // -----------------------------------------------------------------------
 // Presupuesto de tiempo, estado persistente y continuación automática
 // -----------------------------------------------------------------------
@@ -2044,6 +2086,7 @@ function _mig_finalizar_(estado, cache) {
   console.log('migrarFormatoJSON() completado.');
 }
 
+
 // --- ARCHIVO: 06_Limpieza_Duplicados_JSON.gs ---
 // =============================================================================
 // 06_Limpieza_Duplicados_JSON.gs
@@ -2109,8 +2152,39 @@ function _mig_finalizar_(estado, cache) {
 // simulación (LIMPIEZA_DRY_RUN_ = true) y revisa el log antes de aplicar.
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Limpieza de duplicados de los respaldos JSON
+//  Parte 2 — Funciones que no se corren a mano
+//    - Limpieza de duplicados: motor (en el orden en que lo llama limpiarDuplicadosJSON)
+//    - Lectura del periodo de cada archivo (la usa también 10)
+//    - Corte diario y día de juego
+//    - Temporada de una fecha (la usa también 10)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 /** @const {boolean} true = solo reporta en el log, no borra nada. */
 var LIMPIEZA_DRY_RUN_ = true;
+
+/** @const {number} Margen máximo para prestar identidad a una captura sin
+ *  currentriverrace.json propio, en ms. Si la ancla más cercana en el
+ *  tiempo real queda más lejos que esto, se prefiere dejarla sin resolver
+ *  (ver Paso B en _analizarCarpetaJSON_) antes que adivinar mal. */
+var PAREO_TOLERANCIA_MS_ = 6 * 60 * 60 * 1000; // 6 horas
+
+/** @const {number} PF080: minimo de pares de anclas consecutivas (p -> p+1) para dar por medido el corte diario. */
+var CORTE_MIN_PARES_ = 3;
+
+/** @const {number} PF080: fraccion minima de esos pares que debe coincidir en el rango medido (tolera anclas raras). */
+var CORTE_MIN_FRACCION_ = 0.9;
+
+/** @const Ancla: Temporada 1 (numeración interna) = primer lunes de mayo de 2026. */
+var MIG_TEMPORADA_ANCLA_ = { temporada: 1, anio: 2026, mes0: 4 };
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Limpieza de duplicados de los respaldos JSON -----
 
 /**
  * Punto de entrada manual. Revisa la carpeta raíz de JSON y cada carpeta de
@@ -2144,6 +2218,12 @@ function limpiarDuplicadosJSON() {
     ? 'Fin de la simulación. Si el reporte se ve correcto, cambia LIMPIEZA_DRY_RUN_ a false y vuelve a ejecutar.'
     : 'Limpieza aplicada.');
 }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Limpieza de duplicados: motor (en el orden en que lo llama limpiarDuplicadosJSON) -----
 
 /**
  * Procesa una carpeta: usa _analizarCarpetaJSON_ para resolver identidad y
@@ -2457,71 +2537,63 @@ function _analizarCarpetaJSON_(carpeta, cache) { // PF074: `carpeta` puede ser u
   return { resueltas: resueltas, sinResolver: sinResolver, aRevision: aRevision, corteDiario: corteDiario };
 }
 
-/** @const {number} Margen máximo para prestar identidad a una captura sin
- *  currentriverrace.json propio, en ms. Si la ancla más cercana en el
- *  tiempo real queda más lejos que esto, se prefiere dejarla sin resolver
- *  (ver Paso B en _analizarCarpetaJSON_) antes que adivinar mal. */
-var PAREO_TOLERANCIA_MS_ = 6 * 60 * 60 * 1000; // 6 horas
+/**
+ * Quita un tag "T-<n> S-<n> P.I-<n> " o "T-<n> S-<n> P.I-<n>-<letra> "
+ * existente al inicio de un segmento de nombre, si lo trae (para poder
+ * re-analizar/re-etiquetar archivos que ya pasaron por migrarFormatoJSON()
+ * en una ejecución anterior sin apilar tags ni romper el agrupamiento por
+ * captura). La letra opcional es la del día de guerra (L M X J V S D, ver
+ * _letraDiaGuerra_ en 05_Migrador_Formato.gs). [→ Contexto_Base_Web.md §PF074]
+ * @param {string} segmento
+ * @return {string}
+ */
+function _quitarTagExistente_(segmento) {
+  return segmento.replace(/^T-\d+\s+S-\d+\s+P\.I-\d+(?:-[LMXJVSD])?\s+/, '');
+}
+
+// ----- Lectura del periodo de cada archivo (la usa también 10) -----
 
 /**
- * Busca, dentro de una lista de anclas ordenada por fecha, la más cercana
- * en el tiempo real a "fecha" (puede quedar antes o después).
- * @param {Array<{real:Date}>} anclas
- * @param {Date} fecha
- * @return {?Object}
+ * Lee sectionIndex y periodIndex de un currentriverrace.json tomando la
+ * PRIMERA mención de cada campo en el orden en que aparece escrito en el
+ * archivo (no un campo fijo de nivel superior por nombre de propiedad,
+ * porque "periodIndex" vuelve a aparecer más adentro del documento, p. ej.
+ * dentro de cada entrada de "periodLogs", y esas menciones posteriores
+ * deben ignorarse).
+ * @param {File} archivo
+ * @return {?{sectionIndex:number, periodIndex:number}} null si no se pudo leer.
  */
-function _anclaMasCercana_(anclas, fecha) {
-  var mejor = null;
-  var mejorDiferencia = Infinity;
-  for (var i = 0; i < anclas.length; i++) {
-    var diferencia = Math.abs(anclas[i].real.getTime() - fecha.getTime());
-    if (diferencia < mejorDiferencia) {
-      mejorDiferencia = diferencia;
-      mejor = anclas[i];
-    }
+function _leerPeriodo_(archivo) {
+  try {
+    var texto = archivo.getBlob().getDataAsString();
+    JSON.parse(texto); // valida que sea JSON antes de confiar en el texto crudo
+
+    var periodIndex = _primeraMencionNumerica_(texto, 'periodIndex');
+    var sectionIndex = _primeraMencionNumerica_(texto, 'sectionIndex');
+
+    if (periodIndex === null || sectionIndex === null) return null;
+    return { sectionIndex: sectionIndex, periodIndex: periodIndex };
+  } catch (e) {
+    return null;
   }
-  return mejor;
-}
-
-/** @return {string} PF080: linea de log con el corte diario medido (o por que se uso la ventana 04:00-05:00). */
-function _textoCorteDiario_(c) {
-  if (!c) return 'Corte diario: sin pares de anclas seguidas, se usa la ventana 04:00-05:00.';
-  if (!c.ok) return 'Corte diario: no se pudo medir (' + c.motivo + '), se usa la ventana 04:00-05:00.';
-  return 'Corte diario medido: ' + _fmtHoraH_(c.desdeH) + '-' + _fmtHoraH_(c.hastaH) + ' (Lima), con ' + c.coinciden + ' de ' + c.pares + ' pares de anclas.';
-}
-
-/** @const {number} PF080: minimo de pares de anclas consecutivas (p -> p+1) para dar por medido el corte diario. */
-var CORTE_MIN_PARES_ = 3;
-
-/** @const {number} PF080: fraccion minima de esos pares que debe coincidir en el rango medido (tolera anclas raras). */
-var CORTE_MIN_FRACCION_ = 0.9;
-
-/** @return {string} Hora decimal (0-24) como "HH:MM". */
-function _fmtHoraH_(h) {
-  var min = Math.round(h * 60);
-  var hh = Math.floor(min / 60) % 24, mm = min % 60;
-  return (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
-}
-
-/** @return {number} Hora de Lima de un instante, decimal en [0, 24). */
-function _horaLimaDecimal_(fecha) {
-  var d = new Date(fecha.getTime() - VERIF_LIMA_OFFSET_H_ * 3600 * 1000);
-  return d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600 + d.getUTCMilliseconds() / 3600000;
 }
 
 /**
- * PF080: true si la hora de Lima de "fecha" cae estrictamente dentro de (corte.desdeH, corte.hastaH), o, sin "corte",
- * dentro de la ventana fija [04:00, 05:00) (_verif_enVentanaCambio_). Los extremos del rango medido son las horas de las
- * propias anclas que lo fijan, y esas anclas ya traen su periodIndex: no se las marca como dudosas.
- * @param {Date} fecha
- * @param {?{desdeH:number, hastaH:number}} corte
- * @return {boolean}
+ * Busca la primera aparición de "<clave>": <numero> en un texto JSON crudo,
+ * en el orden en que está escrito el archivo, ignorando las que aparezcan
+ * después.
+ * @param {string} texto
+ * @param {string} clave
+ * @return {?number} null si no se encontró ninguna mención.
  */
-function _enVentanaCorte_(fecha, corte) {
-  if (!corte) return _verif_enVentanaCambio_(fecha);
-  var h = _horaLimaDecimal_(fecha);
-  return h > corte.desdeH && h < corte.hastaH;
+function _primeraMencionNumerica_(texto, clave) {
+  var patron = new RegExp('"' + clave + '"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)');
+  var m = patron.exec(texto);
+  if (!m) return null;
+  return Number(m[1]);
 }
+
+// ----- Corte diario y día de juego -----
 
 /**
  * PF080 (regla nueva, decidida por la usuaria el 14-oct-2026): mide la hora REAL del corte diario de un clan en lugar de
@@ -2594,50 +2666,30 @@ function _estimarCorteDiario_(anclas) {
   return res;
 }
 
+/** @return {number} Hora de Lima de un instante, decimal en [0, 24). */
+function _horaLimaDecimal_(fecha) {
+  var d = new Date(fecha.getTime() - VERIF_LIMA_OFFSET_H_ * 3600 * 1000);
+  return d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600 + d.getUTCMilliseconds() / 3600000;
+}
+
 /**
- * PF077: numero de DIA DE JUEGO de un instante: dias enteros desde 1970 contados en hora de Lima con el cambio de dia
- * a las 04:00. Dos instantes con el mismo numero estan en el mismo dia de juego; la resta de dos numeros es la cantidad
- * de cortes de las 04:00 que los separan. Usa las constantes de 10_Verificar_PeriodIndex_JSON.gs (Lima = UTC-5, corte 04:00).
+ * Busca, dentro de una lista de anclas ordenada por fecha, la más cercana
+ * en el tiempo real a "fecha" (puede quedar antes o después).
+ * @param {Array<{real:Date}>} anclas
  * @param {Date} fecha
- * @return {number}
+ * @return {?Object}
  */
-function _diaJuegoNum_(fecha, corteH) {
-  var c = (corteH == null) ? VERIF_CAMBIO_DESDE_H_ : corteH; // PF080: hora de corte opcional (por defecto 04:00)
-  return Math.floor((fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + c) * 3600 * 1000) / 86400000);
-}
-
-/**
- * PF077: fecha de calendario (UTC, solo para leer anio/mes/dia/dia de semana) del DIA DE JUEGO de un instante.
- * @param {Date} fecha
- * @return {Date}
- */
-function _diaJuegoFecha_(fecha, corteH) {
-  var c = (corteH == null) ? VERIF_CAMBIO_DESDE_H_ : corteH; // PF080
-  return new Date(fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + c) * 3600 * 1000);
-}
-
-/** @return {boolean} true si el dia de juego de "fecha" es el primer lunes de su mes, o sea el dia 0 de una temporada. */
-function _esInicioDeTemporada_(fecha, corteH) {
-  var d = _diaJuegoFecha_(fecha, corteH);
-  return d.getUTCDay() === 1 && d.getUTCDate() === _primerLunesDia_(d.getUTCFullYear(), d.getUTCMonth());
-}
-
-/**
- * PF080 (15-oct-2026): dia de juego de una ancla guardada DENTRO de la ventana de corte, deducido de su propio periodIndex.
- * El periodIndex da el dia de la semana (0 = lunes ... 6 = domingo): si coincide con el dia de calendario de Lima de la
- * captura, el servidor ya estaba en el dia nuevo; si coincide con el anterior, todavia estaba en el viejo. Cualquier otro
- * valor (por ejemplo la T-05 con periodIndex 7 un domingo) no se puede interpretar y devuelve null.
- * Funcion pura (no toca Drive).
- * @param {{real:Date, periodIndex:number}} ancla
- * @return {?number} Numero de dia de calendario de Lima (dias enteros desde 1970) del dia de juego, o null.
- */
-function _diaJuegoAnclaEnVentana_(ancla) {
-  var calNum = _diaJuegoNum_(ancla.real, 0); // dia de calendario de Lima (corte a las 00:00)
-  var diaSemanaCal = (((calNum + 3) % 7) + 7) % 7; // 1970-01-01 fue jueves = 3 (0 = lunes)
-  var diaSemanaP = (((Math.round(Number(ancla.periodIndex)) % 7) + 7) % 7);
-  if (diaSemanaP === diaSemanaCal) return calNum;
-  if (diaSemanaP === (diaSemanaCal + 6) % 7) return calNum - 1;
-  return null;
+function _anclaMasCercana_(anclas, fecha) {
+  var mejor = null;
+  var mejorDiferencia = Infinity;
+  for (var i = 0; i < anclas.length; i++) {
+    var diferencia = Math.abs(anclas[i].real.getTime() - fecha.getTime());
+    if (diferencia < mejorDiferencia) {
+      mejorDiferencia = diferencia;
+      mejor = anclas[i];
+    }
+  }
+  return mejor;
 }
 
 /**
@@ -2719,6 +2771,98 @@ function _ajustarPeriodoPrestado_(ancla, fecha, corte) {
   return { sectionIndex: nuevoS, periodIndex: nuevoP, cortes: cortes, temporada: temporada };
 }
 
+/** @return {string} Hora decimal (0-24) como "HH:MM". */
+function _fmtHoraH_(h) {
+  var min = Math.round(h * 60);
+  var hh = Math.floor(min / 60) % 24, mm = min % 60;
+  return (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
+}
+
+/**
+ * PF080: true si la hora de Lima de "fecha" cae estrictamente dentro de (corte.desdeH, corte.hastaH), o, sin "corte",
+ * dentro de la ventana fija [04:00, 05:00) (_verif_enVentanaCambio_). Los extremos del rango medido son las horas de las
+ * propias anclas que lo fijan, y esas anclas ya traen su periodIndex: no se las marca como dudosas.
+ * @param {Date} fecha
+ * @param {?{desdeH:number, hastaH:number}} corte
+ * @return {boolean}
+ */
+function _enVentanaCorte_(fecha, corte) {
+  if (!corte) return _verif_enVentanaCambio_(fecha);
+  var h = _horaLimaDecimal_(fecha);
+  return h > corte.desdeH && h < corte.hastaH;
+}
+
+/**
+ * PF080 (15-oct-2026): dia de juego de una ancla guardada DENTRO de la ventana de corte, deducido de su propio periodIndex.
+ * El periodIndex da el dia de la semana (0 = lunes ... 6 = domingo): si coincide con el dia de calendario de Lima de la
+ * captura, el servidor ya estaba en el dia nuevo; si coincide con el anterior, todavia estaba en el viejo. Cualquier otro
+ * valor (por ejemplo la T-05 con periodIndex 7 un domingo) no se puede interpretar y devuelve null.
+ * Funcion pura (no toca Drive).
+ * @param {{real:Date, periodIndex:number}} ancla
+ * @return {?number} Numero de dia de calendario de Lima (dias enteros desde 1970) del dia de juego, o null.
+ */
+function _diaJuegoAnclaEnVentana_(ancla) {
+  var calNum = _diaJuegoNum_(ancla.real, 0); // dia de calendario de Lima (corte a las 00:00)
+  var diaSemanaCal = (((calNum + 3) % 7) + 7) % 7; // 1970-01-01 fue jueves = 3 (0 = lunes)
+  var diaSemanaP = (((Math.round(Number(ancla.periodIndex)) % 7) + 7) % 7);
+  if (diaSemanaP === diaSemanaCal) return calNum;
+  if (diaSemanaP === (diaSemanaCal + 6) % 7) return calNum - 1;
+  return null;
+}
+
+/**
+ * PF077: numero de DIA DE JUEGO de un instante: dias enteros desde 1970 contados en hora de Lima con el cambio de dia
+ * a las 04:00. Dos instantes con el mismo numero estan en el mismo dia de juego; la resta de dos numeros es la cantidad
+ * de cortes de las 04:00 que los separan. Usa las constantes de 10_Verificar_PeriodIndex_JSON.gs (Lima = UTC-5, corte 04:00).
+ * @param {Date} fecha
+ * @return {number}
+ */
+function _diaJuegoNum_(fecha, corteH) {
+  var c = (corteH == null) ? VERIF_CAMBIO_DESDE_H_ : corteH; // PF080: hora de corte opcional (por defecto 04:00)
+  return Math.floor((fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + c) * 3600 * 1000) / 86400000);
+}
+
+/** @return {boolean} true si el dia de juego de "fecha" es el primer lunes de su mes, o sea el dia 0 de una temporada. */
+function _esInicioDeTemporada_(fecha, corteH) {
+  var d = _diaJuegoFecha_(fecha, corteH);
+  return d.getUTCDay() === 1 && d.getUTCDate() === _primerLunesDia_(d.getUTCFullYear(), d.getUTCMonth());
+}
+
+/**
+ * PF077: fecha de calendario (UTC, solo para leer anio/mes/dia/dia de semana) del DIA DE JUEGO de un instante.
+ * @param {Date} fecha
+ * @return {Date}
+ */
+function _diaJuegoFecha_(fecha, corteH) {
+  var c = (corteH == null) ? VERIF_CAMBIO_DESDE_H_ : corteH; // PF080
+  return new Date(fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + c) * 3600 * 1000);
+}
+
+/** @return {string} PF080: linea de log con el corte diario medido (o por que se uso la ventana 04:00-05:00). */
+function _textoCorteDiario_(c) {
+  if (!c) return 'Corte diario: sin pares de anclas seguidas, se usa la ventana 04:00-05:00.';
+  if (!c.ok) return 'Corte diario: no se pudo medir (' + c.motivo + '), se usa la ventana 04:00-05:00.';
+  return 'Corte diario medido: ' + _fmtHoraH_(c.desdeH) + '-' + _fmtHoraH_(c.hastaH) + ' (Lima), con ' + c.coinciden + ' de ' + c.pares + ' pares de anclas.';
+}
+
+// ----- Temporada de una fecha (la usa también 10) -----
+
+/**
+ * Día del mes (1-31) en que cae el primer lunes de un mes dado. Cálculo de
+ * calendario puro (no depende de zona horaria real: el día de la semana
+ * del día 1 de un mes es el mismo en cualquier zona horaria mientras no
+ * se cruce medianoche UTC de forma ambigua, por eso se puede usar
+ * Date.UTC de forma segura solo para esta cuenta de día-de-semana).
+ * @param {number} anio
+ * @param {number} mes0 0 = enero … 11 = diciembre
+ * @return {number}
+ */
+function _primerLunesDia_(anio, mes0) {
+  var diaSemanaDel1 = new Date(Date.UTC(anio, mes0, 1)).getUTCDay(); // 0=domingo … 6=sábado
+  var offset = (8 - diaSemanaDel1) % 7;
+  return 1 + offset;
+}
+
 /**
  * Calcula el número de temporada de Clash Royale al que pertenece una
  * fecha, usando la regla de calendario real: la temporada reinicia el
@@ -2763,78 +2907,6 @@ function _temporadaDeFecha_(fechaReal) {
   return MIG_TEMPORADA_ANCLA_.temporada + mesesDesdeAncla;
 }
 
-/** @const Ancla: Temporada 1 (numeración interna) = primer lunes de mayo de 2026. */
-var MIG_TEMPORADA_ANCLA_ = { temporada: 1, anio: 2026, mes0: 4 };
-
-/**
- * Día del mes (1-31) en que cae el primer lunes de un mes dado. Cálculo de
- * calendario puro (no depende de zona horaria real: el día de la semana
- * del día 1 de un mes es el mismo en cualquier zona horaria mientras no
- * se cruce medianoche UTC de forma ambigua, por eso se puede usar
- * Date.UTC de forma segura solo para esta cuenta de día-de-semana).
- * @param {number} anio
- * @param {number} mes0 0 = enero … 11 = diciembre
- * @return {number}
- */
-function _primerLunesDia_(anio, mes0) {
-  var diaSemanaDel1 = new Date(Date.UTC(anio, mes0, 1)).getUTCDay(); // 0=domingo … 6=sábado
-  var offset = (8 - diaSemanaDel1) % 7;
-  return 1 + offset;
-}
-
-/**
- * Quita un tag "T-<n> S-<n> P.I-<n> " o "T-<n> S-<n> P.I-<n>-<letra> "
- * existente al inicio de un segmento de nombre, si lo trae (para poder
- * re-analizar/re-etiquetar archivos que ya pasaron por migrarFormatoJSON()
- * en una ejecución anterior sin apilar tags ni romper el agrupamiento por
- * captura). La letra opcional es la del día de guerra (L M X J V S D, ver
- * _letraDiaGuerra_ en 05_Migrador_Formato.gs). [→ Contexto_Base_Web.md §PF074]
- * @param {string} segmento
- * @return {string}
- */
-function _quitarTagExistente_(segmento) {
-  return segmento.replace(/^T-\d+\s+S-\d+\s+P\.I-\d+(?:-[LMXJVSD])?\s+/, '');
-}
-
-/**
- * Lee sectionIndex y periodIndex de un currentriverrace.json tomando la
- * PRIMERA mención de cada campo en el orden en que aparece escrito en el
- * archivo (no un campo fijo de nivel superior por nombre de propiedad,
- * porque "periodIndex" vuelve a aparecer más adentro del documento, p. ej.
- * dentro de cada entrada de "periodLogs", y esas menciones posteriores
- * deben ignorarse).
- * @param {File} archivo
- * @return {?{sectionIndex:number, periodIndex:number}} null si no se pudo leer.
- */
-function _leerPeriodo_(archivo) {
-  try {
-    var texto = archivo.getBlob().getDataAsString();
-    JSON.parse(texto); // valida que sea JSON antes de confiar en el texto crudo
-
-    var periodIndex = _primeraMencionNumerica_(texto, 'periodIndex');
-    var sectionIndex = _primeraMencionNumerica_(texto, 'sectionIndex');
-
-    if (periodIndex === null || sectionIndex === null) return null;
-    return { sectionIndex: sectionIndex, periodIndex: periodIndex };
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * Busca la primera aparición de "<clave>": <numero> en un texto JSON crudo,
- * en el orden en que está escrito el archivo, ignorando las que aparezcan
- * después.
- * @param {string} texto
- * @param {string} clave
- * @return {?number} null si no se encontró ninguna mención.
- */
-function _primeraMencionNumerica_(texto, clave) {
-  var patron = new RegExp('"' + clave + '"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)');
-  var m = patron.exec(texto);
-  if (!m) return null;
-  return Number(m[1]);
-}
 
 // --- ARCHIVO: 07_Cache_Periodos_JSON.gs ---
 // =============================================================================
@@ -2967,6 +3039,19 @@ function _cache_guardar_(cache) {
 // Si GITHUB_TOKEN no existe, la sincronización se omite sin romper nada.
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Subida puntual de archivos de Drive a GitHub: ejecución (subirEvidenciaT05AGithub)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Bajada desde GitHub al proyecto de Apps Script (entrada y reintentos, luego el trabajo de cada intento)
+//    - Subida a GitHub en un solo commit (_githubSincronizar_, y en el orden en que la llama: aviso de pull pendiente, revisión de secretos,
+//      documentos generados, commit y, después del commit, mensajes y commit de referencia)
+//    - Diagnóstico (_githubProbar_; la llama un envoltorio de 01_Principal.gs)
+//    - Subida puntual de archivos de Drive a GitHub: ayuda
+//    - HTTP con la API de GitHub (las usan todos los temas anteriores)
+//    - Utilidades del proyecto de Apps Script
+// Dentro de cada tema, en el orden en que se espera ejecutarlas (deducido del código: la usuaria no lo ha confirmado). Al reordenar no se cambió el código de ninguna función.
+
 var GITHUB_OWNER_  = 'GrupoTerna';
 var GITHUB_REPO_   = 'Backend';
 var GITHUB_BRANCH_ = 'main';
@@ -2991,73 +3076,9 @@ var GITHUB_PATRONES_SECRETOS_ = [
 // Solo AVISO (no bloquea): cadenas que parecen ID de carpeta/hoja de Drive.
 var GITHUB_REGEX_ID_DRIVE_ = /['"]1[A-Za-z0-9_-]{32,43}['"]/;
 
-// -----------------------------------------------------------------------------
-// HTTP con la API de GitHub
-// -----------------------------------------------------------------------------
-
-function _githubToken_() {
-  return PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN') || '';
-}
-
-/** Arma una petición (objeto compatible con UrlFetchApp.fetchAll). */
-function _ghReq_(metodo, ruta, payload, accept) {
-  var req = {
-    url: 'https://api.github.com/repos/' + GITHUB_OWNER_ + '/' + GITHUB_REPO_ + ruta,
-    method: metodo,
-    muteHttpExceptions: true,
-    headers: {
-      Authorization: 'Bearer ' + _githubToken_(),
-      Accept: accept || 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28'
-    }
-  };
-  if (payload !== undefined && payload !== null) {
-    req.contentType = 'application/json';
-    req.payload = JSON.stringify(payload);
-  }
-  return req;
-}
-
-/** Valida el código HTTP; si no es 2xx lanza un error SIN incluir el token. */
-function _ghRespuesta_(resp, req) {
-  var code = resp.getResponseCode();
-  if (code < 200 || code >= 300) {
-    var msg = resp.getContentText();
-    if (msg.length > 300) msg = msg.substring(0, 300);
-    throw 'GitHub ' + req.method + ' ' + req.url.replace('https://api.github.com', '') +
-          ' → HTTP ' + code + ': ' + msg;
-  }
-  return resp;
-}
-
-function _ghJson_(req) {
-  var resp = UrlFetchApp.fetchAll([req])[0];
-  return JSON.parse(_ghRespuesta_(resp, req).getContentText());
-}
-
-// Desde el 25-oct-2026 (§PF278): GitHub frena con HTTP 403 («secondary rate limit») o 429 si se hacen demasiadas
-// escrituras seguidas. _ghJsonReintento_ espera y repite (hasta 3 intentos en total) antes de dejar pasar el error.
-function _ghEsLimiteDeGithub_(e) {
-  var t = String(e);
-  return /HTTP 429/.test(t) || (/HTTP 403/.test(t) && /rate limit/i.test(t));
-}
-function _ghJsonReintento_(req) {
-  for (var intento = 1; ; intento++) {
-    try {
-      return _ghJson_(req);
-    } catch (e) {
-      if (!_ghEsLimiteDeGithub_(e) || intento >= 3) throw e;
-      console.warn('[GitHub] Límite de escrituras; se espera 45 s y se reintenta (intento ' + (intento + 1) + ' de 3).');
-      Utilities.sleep(45000);
-    }
-  }
-}
 // Con más de este número de archivos no se crea un blob por archivo: el contenido va dentro de los árboles, de a este tanto por llamada.
 var GITHUB_ENTRADAS_BLOB_MAX_ = 40;
 
-// -----------------------------------------------------------------------------
-// Aviso de "pull pendiente": no escribir encima de cambios que el Generador no trajo
-// -----------------------------------------------------------------------------
 // El Generador recuerda (en las propiedades del script) el último commit de GitHub que él
 // mismo trajo o escribió, uno por proyecto: GITHUB_ULTIMO_COMMIT_Base y GITHUB_ULTIMO_COMMIT_Generador.
 // Antes de escribir en GitHub compara ese commit con el último de la rama. Si hay cambios nuevos
@@ -3078,531 +3099,75 @@ var GITHUB_AVISO_SOLO_CARPETA_ = true;
 // [→ Contexto_Base_Web.md §PF273]
 var GITHUB_INTENTOS_TRAER_ = 3;
 
-function _githubLeerUltimoCommit_(nombreBase) {
-  return PropertiesService.getScriptProperties().getProperty(GITHUB_PROP_ULTIMO_COMMIT_ + nombreBase) || '';
-}
+// Subida puntual de archivos de Drive a GitHub (solo AGREGA, nunca borra)
+// [→ Contexto_Base_Web.md §PF080]
+var EVIDENCIA_T05_CARPETA_GITHUB_ = 'Datos descargados/JSON/Anomalías/';
+var EVIDENCIA_T05_NOMBRES_ = [
+  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - currentriverrace.json',
+  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - clans.json',
+  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - currentriverrace.json',
+  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - clans.json'
+];
 
-function _githubGuardarUltimoCommit_(nombreBase, sha) {
-  if (!sha) return;
-  PropertiesService.getScriptProperties().setProperty(GITHUB_PROP_ULTIMO_COMMIT_ + nombreBase, sha);
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-/** SHA del último commit de la rama. */
-function _githubCabezaRemota_() {
-  return _ghJson_(_ghReq_('get', '/git/ref/heads/' + GITHUB_BRANCH_)).object.sha;
-}
-
-/**
- * Compara el último commit que el Generador trajo (o escribió) de <nombreBase> con el de GitHub.
- * Devuelve { bloquear, cabeza, sinBase, mensaje }.
- *  - Sin commit recordado (primera vez): no bloquea, porque no hay con qué comparar; avisa con sinBase.
- *  - Si no se puede comparar (commit recordado ya no existe, o hay 300 archivos o más distintos):
- *    se bloquea, por precaución.
- */
-function _githubRevisarPullPendiente_(nombreBase) {
-  var cabeza = _githubCabezaRemota_();
-  var base = _githubLeerUltimoCommit_(nombreBase);
-  if (!base) return { bloquear: false, cabeza: cabeza, sinBase: true };
-  if (base === cabeza) return { bloquear: false, cabeza: cabeza };
-
-  var carpeta = nombreBase + '/';
-  var cambiados = [];
-  var noComparable = '';
-
-  var rq = _ghReq_('get', '/compare/' + base + '...' + cabeza);
-  var resp = UrlFetchApp.fetchAll([rq])[0];
-  var code = resp.getResponseCode();
-  if (code === 404 || code === 422) {
-    noComparable = 'el commit que recordaba (' + base.substring(0, 7) + ') ya no existe en GitHub';
-  } else {
-    var cmp = JSON.parse(_ghRespuesta_(resp, rq).getContentText());
-    var archivos = cmp.files || [];
-    if (archivos.length >= 300) noComparable = 'hay 300 archivos o más distintos y no se puede listar todos';
-    archivos.forEach(function(f) {
-      if (f.filename.indexOf(carpeta) === 0 ||
-          (f.previous_filename && f.previous_filename.indexOf(carpeta) === 0)) {
-        cambiados.push(f.filename);
-      }
-    });
-  }
-
-  if (!noComparable && GITHUB_AVISO_SOLO_CARPETA_ && !cambiados.length) {
-    return { bloquear: false, cabeza: cabeza, soloOtrosArchivos: true };
-  }
-
-  var detalle = noComparable
-    ? 'No se pudo comparar: ' + noComparable + '.'
-    : (cambiados.length
-        ? 'Archivos distintos en ' + carpeta + ' (' + cambiados.length + '): ' +
-          cambiados.slice(0, 10).join(', ') + (cambiados.length > 10 ? ' y ' + (cambiados.length - 10) + ' más' : '') + '.'
-        : 'Hay commits nuevos en GitHub (aviso por commit, GITHUB_AVISO_SOLO_CARPETA_ = false).');
-  var forzada = nombreBase === 'Base' ? 'descargarBaseForzado()'
-              : (nombreBase === 'Contactos_Secundario' ? 'descargarContactosForzado()' : 'descargarGeneradorForzado()');
-  var traer   = nombreBase === 'Base' ? 'subirBaseDesdeGithub()'
-              : (nombreBase === 'Contactos_Secundario' ? 'subirContactosDesdeGithub()' : 'subirGeneradorDesdeGithub()');
-  var mensaje = 'SUBIDA A GITHUB BLOQUEADA: PULL PENDIENTE. GitHub tiene cambios en ' + carpeta +
-                ' que este proyecto no ha traído (último commit traído: ' + base.substring(0, 7) +
-                ', último en GitHub: ' + cabeza.substring(0, 7) + '). ' + detalle +
-                ' Si quieres quedarte con lo de GitHub, corre ' + traer + ' (reemplaza lo que haya en Apps Script). ' +
-                'Si quieres que lo de Apps Script pise lo de GitHub, corre ' + forzada + '.';
-  return { bloquear: true, cabeza: cabeza, mensaje: mensaje };
-}
+// ----- Subida puntual de archivos de Drive a GitHub: ejecución (solo AGREGA, nunca borra) -----
 
 /**
- * Lista los archivos de <carpeta> (por ejemplo 'Base/') que cambiaron entre dos commits de la rama.
- * Devuelve { cambiados: [rutas], noComparable: 'motivo' o '' }. Es la misma comparación de
- * _githubRevisarPullPendiente_, pero para usarla justo antes de escribir (parámetro guardia de
- * _githubCommitArchivos_). [→ Contexto_Base_Web.md §PF273]
+ * Copia a GitHub (Datos descargados/JSON/Anomalías/) los 4 archivos de T-05 del 13-09 12.26 que
+ * limpiarDuplicadosJSON() mandaría a la papelera. Correrla ANTES del borrado real: una vez en la
+ * papelera, getFilesByName() ya no los encuentra. No toca nada en Drive.
  */
-function _githubCambiosEnCarpeta_(desde, hasta, carpeta) {
-  var cambiados = [];
-  var noComparable = '';
-  var rq = _ghReq_('get', '/compare/' + desde + '...' + hasta);
-  var resp = UrlFetchApp.fetchAll([rq])[0];
-  var code = resp.getResponseCode();
-  if (code === 404 || code === 422) {
-    noComparable = 'el commit esperado (' + desde.substring(0, 7) + ') ya no existe en GitHub';
-  } else {
-    var cmp = JSON.parse(_ghRespuesta_(resp, rq).getContentText());
-    var archivos = cmp.files || [];
-    if (archivos.length >= 300) noComparable = 'hay 300 archivos o más distintos y no se puede listar todos';
-    archivos.forEach(function(f) {
-      if (f.filename.indexOf(carpeta) === 0 ||
-          (f.previous_filename && f.previous_filename.indexOf(carpeta) === 0)) {
-        cambiados.push(f.filename);
-      }
-    });
-  }
-  return { cambiados: cambiados, noComparable: noComparable };
+function subirEvidenciaT05AGithub() {
+  return _githubSubirArchivosDeDrive_(
+    EVIDENCIA_T05_NOMBRES_,
+    EVIDENCIA_T05_CARPETA_GITHUB_,
+    'Datos descargados: T-05 del 13-09 12.26 (grupo乂terna™ y mini乂ternas™), copiados de Drive antes de borrar duplicados'
+  );
 }
 
-/** Nombres de las funciones que traen GitHub o lo pisan, según el proyecto (para los mensajes). */
-function _githubFuncionesDeAccion_(nombreBase) {
-  return {
-    traer:   nombreBase === 'Base' ? 'subirBaseDesdeGithub()'
-           : (nombreBase === 'Contactos_Secundario' ? 'subirContactosDesdeGithub()' : 'subirGeneradorDesdeGithub()'),
-    forzada: nombreBase === 'Base' ? 'descargarBaseForzado()'
-           : (nombreBase === 'Contactos_Secundario' ? 'descargarContactosForzado()' : 'descargarGeneradorForzado()')
-  };
-}
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
 
-// -----------------------------------------------------------------------------
-// Utilidades del proyecto de Apps Script
-// -----------------------------------------------------------------------------
-
-function _scriptIdDeProyecto_(nombreBase) {
-  if (nombreBase === 'Generador') return ScriptApp.getScriptId();
-  if (nombreBase === 'Base') {
-    var ssId = obtenerSpreadsheetPorNombreEnCarpeta_(CARPETA_BASE_ID, NOMBRE_HOJA_BASE);
-    var id = PropertiesService.getScriptProperties().getProperty('SCRIPT_ID_' + ssId);
-    if (!id) throw 'No hay scriptId guardado para Base. Corre subirBaseDesdeZip() (o cualquier subirBaseDesdeX) primero.';
-    return id;
-  }
-  if (nombreBase === 'Contactos_Secundario') {
-    // Proyecto de Apps Script de la CUENTA SECUNDARIA (sincronizador de contactos). Su ID no va en el
-    // código (es un ID de Drive y el repo es público): vive en las Propiedades del script del Generador.
-    // Requisito: ese proyecto debe estar compartido con la cuenta del Generador como editor.
-    var idContactos = PropertiesService.getScriptProperties().getProperty('SCRIPT_ID_CONTACTOS_SECUNDARIO');
-    if (!idContactos) throw 'Falta la propiedad SCRIPT_ID_CONTACTOS_SECUNDARIO en las Propiedades del script del Generador ' +
-      '(ID del proyecto de Apps Script de la cuenta secundaria; ese proyecto debe estar compartido con esta cuenta como editor).';
-    return idContactos;
-  }
-  throw 'Nombre de proyecto no válido: ' + nombreBase;
-}
-
-function _extDeTipo_(tipo) {
-  return tipo === 'HTML' ? '.html' : (tipo === 'JSON' ? '.json' : '.gs');
-}
-
-/** Archivos reales del proyecto (sin "Script consolidado"), leídos de la API. */
-function _archivosDelProyecto_(nombreBase) {
-  return obtenerArchivosProyecto_(_scriptIdDeProyecto_(nombreBase)).filter(function(a) {
-    return a.name.indexOf('Script consolidado') !== 0;
-  });
-}
-
-// -----------------------------------------------------------------------------
-// Revisión de secretos
-// -----------------------------------------------------------------------------
+// ----- Bajada desde GitHub al proyecto de Apps Script (Base, Generador o Contactos_Secundario) -----
 
 /**
- * Devuelve { bloqueos: [...], idsDrive: n }. Nunca incluye el valor encontrado,
- * solo archivo, línea y tipo de patrón.
+ * Trae <Nombre>/src/ de GitHub al proyecto de Apps Script (ver _githubTraerAProyectoAppsUnaVez_) y,
+ * si mientras corría GitHub recibió cambios en <Nombre>/ y por eso no se pudo escribir el commit de
+ * cierre, TRAE LO NUEVO Y REINTENTA, hasta GITHUB_INTENTOS_TRAER_ intentos en total. El respaldo
+ * "<Nombre>_antes_de_GitHub.zip" se hace solo en el primer intento. Si tras el último intento la rama
+ * sigue moviéndose, no escribe el commit de cierre (no pisa nada) y lo deja en el log: GitHub queda
+ * con lo suyo y el proyecto de Apps Script con lo último que alcanzó a traer. El reporte devuelto
+ * junta lo hecho en todos los intentos. [→ Contexto_Base_Web.md §PF273]
  */
-function _githubRevisarSecretos_(archivos) {
-  var bloqueos = [];
-  var idsDrive = 0;
-  archivos.forEach(function(a) {
-    var lineas = String(a.source || '').split('\n');
-    for (var i = 0; i < lineas.length; i++) {
-      var l = lineas[i];
-      for (var p = 0; p < GITHUB_PATRONES_SECRETOS_.length; p++) {
-        var pat = GITHUB_PATRONES_SECRETOS_[p];
-        var m = pat.re.exec(l);
-        if (m && (!pat.valida || pat.valida(m[1]))) {
-          bloqueos.push(a.name + ' línea ' + (i + 1) + ' (' + pat.nombre + ')');
-        }
-      }
-      if (GITHUB_REGEX_ID_DRIVE_.test(l)) idsDrive++;
-    }
-  });
-  return { bloqueos: bloqueos, idsDrive: idsDrive };
+function _githubTraerAProyectoApps_(nombreBase, forzar) {
+  var mod = [], agr = [], eli = [], ultimo = null;
+  function sumar(lista, nuevos) { nuevos.forEach(function(n) { if (lista.indexOf(n) === -1) lista.push(n); }); }
+  for (var intento = 1; intento <= GITHUB_INTENTOS_TRAER_; intento++) {
+    ultimo = _githubTraerAProyectoAppsUnaVez_(nombreBase, forzar, intento > 1);
+    // Un archivo agregado en un intento y modificado en el siguiente sigue contando como agregado.
+    sumar(agr, ultimo.agregados);
+    sumar(mod, ultimo.modificados.filter(function(n) { return agr.indexOf(n) === -1; }));
+    sumar(eli, ultimo.eliminados);
+    if (!(ultimo.sync && ultimo.sync.desfasado)) break;
+    var aviso = intento < GITHUB_INTENTOS_TRAER_
+      ? 'Intento ' + intento + ' de ' + GITHUB_INTENTOS_TRAER_ + ': GitHub recibió cambios en ' + nombreBase +
+        '/ antes del commit de cierre. Traigo lo nuevo y reintento.'
+      : 'Intento ' + intento + ' de ' + GITHUB_INTENTOS_TRAER_ + ': GitHub sigue recibiendo cambios en ' + nombreBase +
+        '/. NO se escribió el commit de cierre (no se pisó nada). Espera a que terminen los cambios y vuelve a correr ' +
+        _githubFuncionesDeAccion_(nombreBase).traer + '.';
+    console.warn('[GitHub] ' + aviso);
+    try { _registrarLogGenerador('_githubTraerAProyectoApps_() / ' + nombreBase, aviso, [aviso]); } catch (e) {}
+  }
+  var total = ultimo.modificados.length + ultimo.agregados.length + ultimo.sinCambios;
+  return { modificados: mod, agregados: agr, eliminados: eli,
+           sinCambios: Math.max(0, total - mod.length - agr.length),
+           intentos: intento > GITHUB_INTENTOS_TRAER_ ? GITHUB_INTENTOS_TRAER_ : intento,
+           cierreEscrito: !(ultimo.sync && ultimo.sync.desfasado) };
 }
-
-// -----------------------------------------------------------------------------
-// Documentos generados: INDICE_FUNCIONES.md y LEEME_IA.md
-// -----------------------------------------------------------------------------
-
-function _githubGenerarIndice_(nombreBase, archivos) {
-  var reFn  = /^(?:async\s+)?function\s+([A-Za-z0-9_$]+)\s*\(/;
-  var reVar = /^(?:var|let|const)\s+([A-Za-z0-9_$]+)\s*=/;
-  var gs = archivos.filter(function(a) { return a.type === 'SERVER_JS'; })
-                   .sort(function(a, b) { return a.name < b.name ? -1 : (a.name > b.name ? 1 : 0); });
-  var filas = [];
-
-  gs.forEach(function(a) {
-    var lineas = String(a.source || '').split('\n');
-    for (var i = 0; i < lineas.length; i++) {
-      var tipo = 'función';
-      var m = reFn.exec(lineas[i]);
-      if (!m) { m = reVar.exec(lineas[i]); tipo = 'global'; }
-      if (!m) continue;
-      // Referencia "[→ Contexto_Base_Web.md §...]" del comentario que lo precede.
-      var ref = '';
-      for (var j = i - 1; j >= 0 && j >= i - 15; j--) {
-        if (!/^\s*(?:\/\*|\*|\/\/)/.test(lineas[j])) break;
-        var r = /\[→\s*([^\]]+)\]/.exec(lineas[j]);
-        if (r) { ref = r[1]; break; }
-      }
-      filas.push({ nombre: m[1], archivo: a.name + '.gs', linea: i + 1, tipo: tipo, ref: ref });
-    }
-  });
-
-  var out = [];
-  out.push('# Índice de funciones — ' + nombreBase);
-  out.push('');
-  out.push('Generado automáticamente por el Generador. No editar a mano.');
-  out.push('Código real: `' + nombreBase + '/src/`. Total: ' + filas.length + ' nombres en ' + gs.length + ' archivos .gs.');
-  out.push('');
-
-  out.push('## Por archivo');
-  out.push('');
-  gs.forEach(function(a) {
-    var nombres = filas.filter(function(f) { return f.archivo === a.name + '.gs' && f.tipo === 'función'; })
-                       .map(function(f) { return f.nombre; });
-    out.push('- **' + a.name + '.gs** (' + nombres.length + ' funciones): ' + (nombres.length ? nombres.join(', ') : '—'));
-  });
-  out.push('');
-
-  var porNombre = {};
-  filas.forEach(function(f) { (porNombre[f.nombre] = porNombre[f.nombre] || []).push(f); });
-  var repetidos = Object.keys(porNombre).filter(function(n) { return porNombre[n].length > 1; }).sort();
-  out.push('## Nombres repetidos (en Apps Script el último que carga pisa a los demás)');
-  out.push('');
-  if (!repetidos.length) {
-    out.push('Ninguno.');
-  } else {
-    repetidos.forEach(function(n) {
-      out.push('- `' + n + '`: ' + porNombre[n].map(function(f) { return f.archivo + ':' + f.linea; }).join(', '));
-    });
-  }
-  out.push('');
-
-  out.push('## Orden alfabético');
-  out.push('');
-  out.push('| Nombre | Tipo | Archivo | Línea | Ref. contexto |');
-  out.push('|---|---|---|---|---|');
-  filas.slice().sort(function(a, b) {
-    var x = a.nombre.toLowerCase(), y = b.nombre.toLowerCase();
-    return x < y ? -1 : (x > y ? 1 : 0);
-  }).forEach(function(f) {
-    out.push('| `' + f.nombre + '` | ' + f.tipo + ' | ' + f.archivo + ' | ' + f.linea + ' | ' + f.ref + ' |');
-  });
-  out.push('');
-  return out.join('\n');
-}
-
-function _githubGenerarLeeme_(nombreBase, nArchivos) {
-  return [
-    '# ' + nombreBase + ' — guía para IA y personas',
-    '',
-    'Esta carpeta la escribe automáticamente el Generador (08_GitHub.gs) cada vez que se',
-    'descarga o se sube el proyecto "' + nombreBase + '". No edites estos archivos a mano.',
-    '',
-    '## Qué leer',
-    '',
-    '- `src/` — el código real: ' + nArchivos + ' archivos sueltos, uno por archivo de Apps Script.',
-    '  **Lee solo esta carpeta.**',
-    '- `INDICE_FUNCIONES.md` — en qué archivo y línea vive cada función. Búscala aquí',
-    '  primero (con grep o con la búsqueda del repo) y abre solo el archivo que toque.',
-    '- `Indice_' + nombreBase + '.md` — lista numerada de los archivos del proyecto y su estado en la última',
-    '  tanda (permanece igual, modificado, creado o eliminado).',
-    '',
-    '## Qué ignorar',
-    '',
-    '- `respaldo/' + nombreBase + '.gs` — consolidado de todo el código en un solo archivo.',
-    '  Es una copia de seguridad que solo usa el Generador. **No lo leas, no lo cites y no',
-    '  lo edites**: repite el contenido de `src/` y es larguísimo.',
-    '',
-    '## Reglas al proponer cambios',
-    '',
-    '- Entrega el archivo numerado completo que cambió (por ejemplo `01_Principal.gs`),',
-    '  no fragmentos ni el consolidado.',
-    '- Usa el mismo nombre exacto de archivo; no crees duplicados.',
-    ''
-  ].join('\n');
-}
-
-// -----------------------------------------------------------------------------
-// Subida a GitHub (un solo commit)
-// -----------------------------------------------------------------------------
-
-/**
- * entradas: [{path, content}]. Reemplaza por completo prefijoCarpeta (borra lo
- * que ya no existe) y, opcionalmente, rutas de formatos antiguos.
- *
- * SIN CAMBIOS = SIN COMMIT: si lo que se iba a escribir es idéntico a lo que ya hay en GitHub,
- * NO crea el commit y devuelve { commit: null, sinCambios: true }. Como el consolidado
- * (respaldo/<Nombre>.gs) trae en su primera línea la fecha de generación, que cambia en cada
- * ejecución, se compara sin esa línea; si es lo único distinto, se conserva el archivo remoto.
- * Quien llama debe informar el caso en el log (ver _githubSincronizar_).
- *
- * GUARDIA (opcional, { cabeza, carpeta }): es el último commit de la rama que el que llama revisó
- * (_githubRevisarPullPendiente_) y la carpeta que va a reemplazar (por ejemplo 'Base/'). Si al
- * leer la rama ya no es ese commit y lo nuevo toca la carpeta (o no se puede comparar), NO escribe:
- * devuelve { commit: null, desfasado: true, cabezaNueva, cambiados, motivo }. Si lo nuevo no toca
- * la carpeta (solo contexto, consolidados u otra carpeta), sigue: el árbol nuevo parte del último
- * commit y lo conserva. El PATCH final no fuerza: si la rama se movió entre medias, GitHub
- * responde 422 y con guardia también se devuelve desfasado. Sin guardia, todo se comporta como antes.
- * [→ Contexto_Base_Web.md §PF273]
- */
-function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje, guardia) {
-  var ref = _ghJson_(_ghReq_('get', '/git/ref/heads/' + GITHUB_BRANCH_));
-  var commitSha = ref.object.sha;
-  if (guardia && guardia.cabeza && guardia.cabeza !== commitSha) {
-    var dif = _githubCambiosEnCarpeta_(guardia.cabeza, commitSha, guardia.carpeta);
-    if (dif.noComparable || dif.cambiados.length) {
-      return { commit: null, desfasado: true, cabezaNueva: commitSha, cambiados: dif.cambiados,
-               motivo: dif.noComparable, archivos: entradas.length, borrados: [] };
-    }
-  }
-  var commit = _ghJson_(_ghReq_('get', '/git/commits/' + commitSha));
-  var treeBaseSha = commit.tree.sha;
-  var arbol = _ghJson_(_ghReq_('get', '/git/trees/' + treeBaseSha + '?recursive=1'));
-
-  // El consolidado trae la fecha de generación en su primera línea: si es lo único que cambió,
-  // se reutiliza el contenido que ya está en GitHub para que no cuente como cambio.
-  var reFechaConsolidado = /\/\* CÓDIGO CONSOLIDADO GENERADO EL [^*]*\*\//;
-  // Indice_<Nombre>.md lleva la fecha y los estados de la última tanda: si las huellas de los archivos
-  // son las mismas que las del que ya está en GitHub, no hubo cambios de código y se conserva el remoto.
-  var reHuellas = /<!--\s*HUELLAS\s+(\{[\s\S]*?\})\s*-->/;
-  entradas.forEach(function(e) {
-    if (!/\/Indice_[^\/]+\.md$/.test(e.path)) return;
-    var nodoI = (arbol.tree || []).filter(function(n) { return n.type === 'blob' && n.path === e.path; })[0];
-    if (!nodoI) return;
-    var rqI = _ghReq_('get', '/git/blobs/' + nodoI.sha, null, 'application/vnd.github.raw+json');
-    var viejoI = _ghRespuesta_(UrlFetchApp.fetchAll([rqI])[0], rqI).getContentText('UTF-8');
-    var hv = reHuellas.exec(viejoI), hn = reHuellas.exec(e.content);
-    if (hv && hn && hv[1] === hn[1]) e.content = viejoI;
-  });
-  entradas.forEach(function(e) {
-    if (!/\/respaldo\/[^\/]+\.gs$/.test(e.path)) return;
-    var nodo = (arbol.tree || []).filter(function(n) { return n.type === 'blob' && n.path === e.path; })[0];
-    if (!nodo) return;
-    var rq = _ghReq_('get', '/git/blobs/' + nodo.sha, null, 'application/vnd.github.raw+json');
-    var viejo = _ghRespuesta_(UrlFetchApp.fetchAll([rq])[0], rq).getContentText('UTF-8');
-    if (viejo.replace(reFechaConsolidado, '') === e.content.replace(reFechaConsolidado, '')) e.content = viejo;
-  });
-
-  // Pocos archivos: un blob por archivo, en lotes paralelos. Si el contenido no cambió,
-  // GitHub devuelve el mismo SHA y ese archivo no figura en el commit.
-  // Muchos archivos (más de GITHUB_ENTRADAS_BLOB_MAX_): el contenido va dentro de los árboles, encadenados
-  // con base_tree, para no pasar del límite de escrituras de GitHub (§PF278).
-  var shas = [];
-  var inline = entradas.length > GITHUB_ENTRADAS_BLOB_MAX_;
-  var baseIntermedia = treeBaseSha;
-  if (inline) {
-    for (var ii = 0; ii < entradas.length; ii += GITHUB_ENTRADAS_BLOB_MAX_) {
-      var trozo = entradas.slice(ii, ii + GITHUB_ENTRADAS_BLOB_MAX_).map(function(e) {
-        return { path: e.path, mode: '100644', type: 'blob', content: e.content };
-      });
-      baseIntermedia = _ghJsonReintento_(_ghReq_('post', '/git/trees', { base_tree: baseIntermedia, tree: trozo })).sha;
-      Utilities.sleep(1000);
-    }
-  } else {
-    for (var i = 0; i < entradas.length; i += 20) {
-      var lote = entradas.slice(i, i + 20);
-      var reqs = lote.map(function(e) {
-        return _ghReq_('post', '/git/blobs', { content: e.content, encoding: 'utf-8' });
-      });
-      var resps = UrlFetchApp.fetchAll(reqs);
-      for (var k = 0; k < resps.length; k++) {
-        shas.push(JSON.parse(_ghRespuesta_(resps[k], reqs[k]).getContentText()).sha);
-      }
-    }
-  }
-
-  var nuevas = {};
-  var items = [];
-  entradas.forEach(function(e, idx) {
-    nuevas[e.path] = true;
-    if (!inline) items.push({ path: e.path, mode: '100644', type: 'blob', sha: shas[idx] });
-  });
-
-  var borrados = [];
-  if (arbol.truncated) {
-    console.warn('[GitHub] El árbol del repo vino truncado: no se detectaron archivos a borrar.');
-  } else {
-    (arbol.tree || []).forEach(function(n) {
-      if (n.type !== 'blob') return;
-      var sobraEnSrc = n.path.indexOf(prefijoCarpeta) === 0 && !nuevas[n.path];
-      var antiguo = GITHUB_BORRAR_FORMATOS_ANTIGUOS_ && rutasAntiguas.indexOf(n.path) !== -1;
-      if (sobraEnSrc || antiguo) {
-        items.push({ path: n.path, mode: '100644', type: 'blob', sha: null });
-        borrados.push(n.path);
-      }
-    });
-  }
-
-  var arbolNuevo = (inline && !items.length)
-    ? { sha: baseIntermedia }
-    : _ghJsonReintento_(_ghReq_('post', '/git/trees', { base_tree: baseIntermedia, tree: items }));
-  if (arbolNuevo.sha === treeBaseSha) {
-    return { commit: null, sinCambios: true, archivos: entradas.length, borrados: [] };
-  }
-  var commitNuevo = _ghJson_(_ghReq_('post', '/git/commits',
-                      { message: mensaje, tree: arbolNuevo.sha, parents: [commitSha] }));
-  try {
-    _ghJson_(_ghReq_('patch', '/git/refs/heads/' + GITHUB_BRANCH_, { sha: commitNuevo.sha }));
-  } catch (ePatch) {
-    if (guardia && String(ePatch).indexOf('HTTP 422') !== -1) {
-      return { commit: null, desfasado: true, cabezaNueva: '', cambiados: [],
-               motivo: 'la rama se movió mientras se escribía el commit', archivos: entradas.length, borrados: [] };
-    }
-    throw ePatch;
-  }
-  return { commit: commitNuevo.sha, archivos: entradas.length, borrados: borrados };
-}
-
-/**
- * Sincroniza GitHub con el estado actual del proyecto de Apps Script.
- * NUNCA lanza error: si algo falla lo deja en el log y devuelve { ok:false }.
- * Así una falla de GitHub no rompe las descargas/subidas a Drive.
- *
- * PULL PENDIENTE: antes de escribir compara el último commit que el Generador trajo con el de
- * GitHub (_githubRevisarPullPendiente_). Si GitHub tiene cambios nuevos en <nombreBase>/, NO escribe
- * y devuelve { ok:false, bloqueado:true }. Con forzar=true escribe igual y lo deja en el aviso del log.
- */
-function _githubSincronizar_(nombreBase, forzar) {
-  try {
-    if (!_githubToken_()) {
-      console.log('[GitHub] No hay GITHUB_TOKEN en las propiedades del script: se omite la sincronización.');
-      return { ok: false, omitido: true };
-    }
-
-    var pull = _githubRevisarPullPendiente_(nombreBase);
-    var avisoForzado = [];
-    if (pull.bloquear && !forzar) {
-      console.error('[GitHub] ' + pull.mensaje);
-      try { _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, 'BLOQUEADO: ' + pull.mensaje, [pull.mensaje]); } catch (e0) {}
-      return { ok: false, bloqueado: true, error: pull.mensaje };
-    }
-    if (pull.bloquear && forzar) {
-      var avisoF = 'FORZADO: se escribe en GitHub aunque había cambios nuevos en ' + nombreBase + '/ que no se habían traído.';
-      console.warn('[GitHub] ' + avisoF + ' ' + pull.mensaje);
-      avisoForzado.push(avisoF);
-    }
-    if (pull.sinBase) {
-      console.log('[GitHub] Aún no hay commit de referencia para ' + nombreBase + ' (primera vez): no se pudo comprobar si había un pull pendiente.');
-    }
-
-    var archivos = _archivosDelProyecto_(nombreBase);
-
-    var rev = _githubRevisarSecretos_(archivos);
-    if (rev.bloqueos.length) {
-      throw 'SUBIDA BLOQUEADA: posibles secretos en el código (repo público). Quítalos del código y ' +
-            'guárdalos en Propiedades del script. Hallazgos (' + rev.bloqueos.length + '): ' +
-            rev.bloqueos.slice(0, 20).join(' | ');
-    }
-
-    // El consolidado ya lo regeneró _descargarProyectoAArchivos() en Drive.
-    var it = _carpetaDeRespaldos_(nombreBase).getFilesByName(nombreBase + '.gs');
-    if (!it.hasNext()) throw 'No encontré ' + nombreBase + '.gs en Drive para usarlo de respaldo.';
-    var consolidado = it.next().getBlob().getDataAsString('UTF-8');
-
-    var entradas = archivos.map(function(a) {
-      return { path: nombreBase + '/src/' + a.name + _extDeTipo_(a.type), content: a.source || '' };
-    });
-    entradas.push({ path: nombreBase + '/respaldo/' + nombreBase + '.gs', content: consolidado });
-    entradas.push({ path: nombreBase + '/INDICE_FUNCIONES.md', content: _githubGenerarIndice_(nombreBase, archivos) });
-    // Indice_<Nombre>.md (N.º / archivo / estado): lo generó _descargarProyectoAArchivos() en Drive.
-    var itIndice = _carpetaDeRespaldos_(nombreBase).getFilesByName('Indice_' + nombreBase + '.md');
-    if (itIndice.hasNext()) {
-      entradas.push({ path: nombreBase + '/Indice_' + nombreBase + '.md', content: itIndice.next().getBlob().getDataAsString('UTF-8') });
-    } else {
-      console.warn('[GitHub] No encontré Indice_' + nombreBase + '.md en Drive: no se escribe en GitHub.');
-    }
-    entradas.push({ path: nombreBase + '/LEEME_IA.md', content: _githubGenerarLeeme_(nombreBase, archivos.length) });
-
-    var antiguos = ['.md', '.txt', '.zip', '.gs'].map(function(e) { return nombreBase + '/' + nombreBase + e; });
-    var fecha = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm:ss');
-    // Con forzar no hay guardia: se escribe aunque GitHub haya cambiado. Sin forzar, si entre la revisión
-    // de arriba y este commit GitHub recibió cambios en <Nombre>/, no se escribe (ver _githubCommitArchivos_).
-    var guardia = forzar ? null : { cabeza: pull.cabeza, carpeta: nombreBase + '/' };
-    var res = _githubCommitArchivos_(
-      entradas, nombreBase + '/src/', antiguos,
-      'Descarga ' + nombreBase + ' - ' + fecha + ' (Lima) - ' + archivos.length + ' archivos',
-      guardia
-    );
-
-    if (res.desfasado) {
-      var acc = _githubFuncionesDeAccion_(nombreBase);
-      var queCambio = res.motivo
-        ? 'No se pudo comparar: ' + res.motivo + '.'
-        : (res.cambiados.length
-            ? 'Archivos distintos en ' + nombreBase + '/ (' + res.cambiados.length + '): ' +
-              res.cambiados.slice(0, 10).join(', ') + (res.cambiados.length > 10 ? ' y ' + (res.cambiados.length - 10) + ' más' : '') + '.'
-            : '');
-      var msgD = 'COMMIT NO ESCRITO: GitHub recibió cambios en ' + nombreBase + '/ mientras se preparaba la subida' +
-                 (res.cabezaNueva ? ' (último revisado: ' + (pull.cabeza || '').substring(0, 7) + ', ahora: ' + res.cabezaNueva.substring(0, 7) + ')' : '') +
-                 '. ' + queCambio + ' No se escribió nada para no pisarlos. Si quieres quedarte con lo de GitHub, corre ' +
-                 acc.traer + '. Si quieres que lo de Apps Script pise lo de GitHub, corre ' + acc.forzada + '.';
-      console.error('[GitHub] ' + msgD);
-      try { _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, 'BLOQUEADO: ' + msgD, [msgD]); } catch (e1) {}
-      return { ok: false, desfasado: true, bloqueado: true, error: msgD };
-    }
-
-    if (res.sinCambios) {
-      var detalleSin = 'Sin cambios: GitHub ya estaba igual a ' + nombreBase + ' (' + res.archivos +
-                       ' archivos revisados). No se creó commit.';
-      console.log('[GitHub] ' + detalleSin);
-      _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, detalleSin, avisoForzado);
-      // GitHub ya es igual a este proyecto: el último commit de la rama pasa a ser el de referencia.
-      _githubGuardarUltimoCommit_(nombreBase, pull.cabeza);
-      return { ok: true, commit: null, sinCambios: true, borrados: [] };
-    }
-    _githubGuardarUltimoCommit_(nombreBase, res.commit);
-
-    var detalle = 'Commit ' + res.commit.substring(0, 7) + ' en ' + GITHUB_OWNER_ + '/' + GITHUB_REPO_ +
-                  ' (' + res.archivos + ' archivos escritos, ' + res.borrados.length + ' borrados' +
-                  (res.borrados.length ? ': ' + res.borrados.join(', ') : '') + ').';
-    var avisos = avisoForzado.slice();
-    if (rev.idsDrive) avisos.push(rev.idsDrive + ' línea(s) con cadenas que parecen IDs de Drive/Hojas (visibles en el repo público).');
-    console.log('[GitHub] ' + detalle);
-    _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, detalle, avisos);
-    return { ok: true, commit: res.commit, borrados: res.borrados };
-
-  } catch (e) {
-    var msg = (e && e.message) ? e.message : String(e);
-    console.error('[GitHub] ' + msg);
-    try { _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, 'ERROR: ' + msg, [msg]); } catch (e2) {}
-    return { ok: false, error: msg };
-  }
-}
-
-// -----------------------------------------------------------------------------
-// Bajada desde GitHub al proyecto de Apps Script de Base
-// -----------------------------------------------------------------------------
 
 /**
  * Deja el proyecto de Apps Script de "Base" o del propio "Generador" exactamente
@@ -3752,44 +3317,495 @@ function _githubTraerAProyectoAppsUnaVez_(nombreBase, forzar, esReintento) {
   return { modificados: modificados, agregados: agregados, eliminados: eliminados, sinCambios: iguales, sync: sync };
 }
 
+// ----- Subida a GitHub (un solo commit): entrada -----
+
 /**
- * Trae <Nombre>/src/ de GitHub al proyecto de Apps Script (ver _githubTraerAProyectoAppsUnaVez_) y,
- * si mientras corría GitHub recibió cambios en <Nombre>/ y por eso no se pudo escribir el commit de
- * cierre, TRAE LO NUEVO Y REINTENTA, hasta GITHUB_INTENTOS_TRAER_ intentos en total. El respaldo
- * "<Nombre>_antes_de_GitHub.zip" se hace solo en el primer intento. Si tras el último intento la rama
- * sigue moviéndose, no escribe el commit de cierre (no pisa nada) y lo deja en el log: GitHub queda
- * con lo suyo y el proyecto de Apps Script con lo último que alcanzó a traer. El reporte devuelto
- * junta lo hecho en todos los intentos. [→ Contexto_Base_Web.md §PF273]
+ * Sincroniza GitHub con el estado actual del proyecto de Apps Script.
+ * NUNCA lanza error: si algo falla lo deja en el log y devuelve { ok:false }.
+ * Así una falla de GitHub no rompe las descargas/subidas a Drive.
+ *
+ * PULL PENDIENTE: antes de escribir compara el último commit que el Generador trajo con el de
+ * GitHub (_githubRevisarPullPendiente_). Si GitHub tiene cambios nuevos en <nombreBase>/, NO escribe
+ * y devuelve { ok:false, bloqueado:true }. Con forzar=true escribe igual y lo deja en el aviso del log.
  */
-function _githubTraerAProyectoApps_(nombreBase, forzar) {
-  var mod = [], agr = [], eli = [], ultimo = null;
-  function sumar(lista, nuevos) { nuevos.forEach(function(n) { if (lista.indexOf(n) === -1) lista.push(n); }); }
-  for (var intento = 1; intento <= GITHUB_INTENTOS_TRAER_; intento++) {
-    ultimo = _githubTraerAProyectoAppsUnaVez_(nombreBase, forzar, intento > 1);
-    // Un archivo agregado en un intento y modificado en el siguiente sigue contando como agregado.
-    sumar(agr, ultimo.agregados);
-    sumar(mod, ultimo.modificados.filter(function(n) { return agr.indexOf(n) === -1; }));
-    sumar(eli, ultimo.eliminados);
-    if (!(ultimo.sync && ultimo.sync.desfasado)) break;
-    var aviso = intento < GITHUB_INTENTOS_TRAER_
-      ? 'Intento ' + intento + ' de ' + GITHUB_INTENTOS_TRAER_ + ': GitHub recibió cambios en ' + nombreBase +
-        '/ antes del commit de cierre. Traigo lo nuevo y reintento.'
-      : 'Intento ' + intento + ' de ' + GITHUB_INTENTOS_TRAER_ + ': GitHub sigue recibiendo cambios en ' + nombreBase +
-        '/. NO se escribió el commit de cierre (no se pisó nada). Espera a que terminen los cambios y vuelve a correr ' +
-        _githubFuncionesDeAccion_(nombreBase).traer + '.';
-    console.warn('[GitHub] ' + aviso);
-    try { _registrarLogGenerador('_githubTraerAProyectoApps_() / ' + nombreBase, aviso, [aviso]); } catch (e) {}
+function _githubSincronizar_(nombreBase, forzar) {
+  try {
+    if (!_githubToken_()) {
+      console.log('[GitHub] No hay GITHUB_TOKEN en las propiedades del script: se omite la sincronización.');
+      return { ok: false, omitido: true };
+    }
+
+    var pull = _githubRevisarPullPendiente_(nombreBase);
+    var avisoForzado = [];
+    if (pull.bloquear && !forzar) {
+      console.error('[GitHub] ' + pull.mensaje);
+      try { _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, 'BLOQUEADO: ' + pull.mensaje, [pull.mensaje]); } catch (e0) {}
+      return { ok: false, bloqueado: true, error: pull.mensaje };
+    }
+    if (pull.bloquear && forzar) {
+      var avisoF = 'FORZADO: se escribe en GitHub aunque había cambios nuevos en ' + nombreBase + '/ que no se habían traído.';
+      console.warn('[GitHub] ' + avisoF + ' ' + pull.mensaje);
+      avisoForzado.push(avisoF);
+    }
+    if (pull.sinBase) {
+      console.log('[GitHub] Aún no hay commit de referencia para ' + nombreBase + ' (primera vez): no se pudo comprobar si había un pull pendiente.');
+    }
+
+    var archivos = _archivosDelProyecto_(nombreBase);
+
+    var rev = _githubRevisarSecretos_(archivos);
+    if (rev.bloqueos.length) {
+      throw 'SUBIDA BLOQUEADA: posibles secretos en el código (repo público). Quítalos del código y ' +
+            'guárdalos en Propiedades del script. Hallazgos (' + rev.bloqueos.length + '): ' +
+            rev.bloqueos.slice(0, 20).join(' | ');
+    }
+
+    // El consolidado ya lo regeneró _descargarProyectoAArchivos() en Drive.
+    var it = _carpetaDeRespaldos_(nombreBase).getFilesByName(nombreBase + '.gs');
+    if (!it.hasNext()) throw 'No encontré ' + nombreBase + '.gs en Drive para usarlo de respaldo.';
+    var consolidado = it.next().getBlob().getDataAsString('UTF-8');
+
+    var entradas = archivos.map(function(a) {
+      return { path: nombreBase + '/src/' + a.name + _extDeTipo_(a.type), content: a.source || '' };
+    });
+    entradas.push({ path: nombreBase + '/respaldo/' + nombreBase + '.gs', content: consolidado });
+    entradas.push({ path: nombreBase + '/INDICE_FUNCIONES.md', content: _githubGenerarIndice_(nombreBase, archivos) });
+    // Indice_<Nombre>.md (N.º / archivo / estado): lo generó _descargarProyectoAArchivos() en Drive.
+    var itIndice = _carpetaDeRespaldos_(nombreBase).getFilesByName('Indice_' + nombreBase + '.md');
+    if (itIndice.hasNext()) {
+      entradas.push({ path: nombreBase + '/Indice_' + nombreBase + '.md', content: itIndice.next().getBlob().getDataAsString('UTF-8') });
+    } else {
+      console.warn('[GitHub] No encontré Indice_' + nombreBase + '.md en Drive: no se escribe en GitHub.');
+    }
+    entradas.push({ path: nombreBase + '/LEEME_IA.md', content: _githubGenerarLeeme_(nombreBase, archivos.length) });
+
+    var antiguos = ['.md', '.txt', '.zip', '.gs'].map(function(e) { return nombreBase + '/' + nombreBase + e; });
+    var fecha = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm:ss');
+    // Con forzar no hay guardia: se escribe aunque GitHub haya cambiado. Sin forzar, si entre la revisión
+    // de arriba y este commit GitHub recibió cambios en <Nombre>/, no se escribe (ver _githubCommitArchivos_).
+    var guardia = forzar ? null : { cabeza: pull.cabeza, carpeta: nombreBase + '/' };
+    var res = _githubCommitArchivos_(
+      entradas, nombreBase + '/src/', antiguos,
+      'Descarga ' + nombreBase + ' - ' + fecha + ' (Lima) - ' + archivos.length + ' archivos',
+      guardia
+    );
+
+    if (res.desfasado) {
+      var acc = _githubFuncionesDeAccion_(nombreBase);
+      var queCambio = res.motivo
+        ? 'No se pudo comparar: ' + res.motivo + '.'
+        : (res.cambiados.length
+            ? 'Archivos distintos en ' + nombreBase + '/ (' + res.cambiados.length + '): ' +
+              res.cambiados.slice(0, 10).join(', ') + (res.cambiados.length > 10 ? ' y ' + (res.cambiados.length - 10) + ' más' : '') + '.'
+            : '');
+      var msgD = 'COMMIT NO ESCRITO: GitHub recibió cambios en ' + nombreBase + '/ mientras se preparaba la subida' +
+                 (res.cabezaNueva ? ' (último revisado: ' + (pull.cabeza || '').substring(0, 7) + ', ahora: ' + res.cabezaNueva.substring(0, 7) + ')' : '') +
+                 '. ' + queCambio + ' No se escribió nada para no pisarlos. Si quieres quedarte con lo de GitHub, corre ' +
+                 acc.traer + '. Si quieres que lo de Apps Script pise lo de GitHub, corre ' + acc.forzada + '.';
+      console.error('[GitHub] ' + msgD);
+      try { _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, 'BLOQUEADO: ' + msgD, [msgD]); } catch (e1) {}
+      return { ok: false, desfasado: true, bloqueado: true, error: msgD };
+    }
+
+    if (res.sinCambios) {
+      var detalleSin = 'Sin cambios: GitHub ya estaba igual a ' + nombreBase + ' (' + res.archivos +
+                       ' archivos revisados). No se creó commit.';
+      console.log('[GitHub] ' + detalleSin);
+      _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, detalleSin, avisoForzado);
+      // GitHub ya es igual a este proyecto: el último commit de la rama pasa a ser el de referencia.
+      _githubGuardarUltimoCommit_(nombreBase, pull.cabeza);
+      return { ok: true, commit: null, sinCambios: true, borrados: [] };
+    }
+    _githubGuardarUltimoCommit_(nombreBase, res.commit);
+
+    var detalle = 'Commit ' + res.commit.substring(0, 7) + ' en ' + GITHUB_OWNER_ + '/' + GITHUB_REPO_ +
+                  ' (' + res.archivos + ' archivos escritos, ' + res.borrados.length + ' borrados' +
+                  (res.borrados.length ? ': ' + res.borrados.join(', ') : '') + ').';
+    var avisos = avisoForzado.slice();
+    if (rev.idsDrive) avisos.push(rev.idsDrive + ' línea(s) con cadenas que parecen IDs de Drive/Hojas (visibles en el repo público).');
+    console.log('[GitHub] ' + detalle);
+    _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, detalle, avisos);
+    return { ok: true, commit: res.commit, borrados: res.borrados };
+
+  } catch (e) {
+    var msg = (e && e.message) ? e.message : String(e);
+    console.error('[GitHub] ' + msg);
+    try { _registrarLogGenerador('_githubSincronizar_() / ' + nombreBase, 'ERROR: ' + msg, [msg]); } catch (e2) {}
+    return { ok: false, error: msg };
   }
-  var total = ultimo.modificados.length + ultimo.agregados.length + ultimo.sinCambios;
-  return { modificados: mod, agregados: agr, eliminados: eli,
-           sinCambios: Math.max(0, total - mod.length - agr.length),
-           intentos: intento > GITHUB_INTENTOS_TRAER_ ? GITHUB_INTENTOS_TRAER_ : intento,
-           cierreEscrito: !(ultimo.sync && ultimo.sync.desfasado) };
 }
 
-// -----------------------------------------------------------------------------
-// Diagnóstico
-// -----------------------------------------------------------------------------
+// ----- Subida a GitHub: aviso de "pull pendiente" (no escribir encima de cambios que el Generador no trajo), comprobación antes de escribir -----
+// (La explicación del aviso y sus constantes GITHUB_PROP_ULTIMO_COMMIT_, GITHUB_AVISO_SOLO_CARPETA_ y GITHUB_INTENTOS_TRAER_ están arriba, con las demás variables globales.)
+
+/** SHA del último commit de la rama. */
+function _githubCabezaRemota_() {
+  return _ghJson_(_ghReq_('get', '/git/ref/heads/' + GITHUB_BRANCH_)).object.sha;
+}
+
+function _githubLeerUltimoCommit_(nombreBase) {
+  return PropertiesService.getScriptProperties().getProperty(GITHUB_PROP_ULTIMO_COMMIT_ + nombreBase) || '';
+}
+
+/**
+ * Compara el último commit que el Generador trajo (o escribió) de <nombreBase> con el de GitHub.
+ * Devuelve { bloquear, cabeza, sinBase, mensaje }.
+ *  - Sin commit recordado (primera vez): no bloquea, porque no hay con qué comparar; avisa con sinBase.
+ *  - Si no se puede comparar (commit recordado ya no existe, o hay 300 archivos o más distintos):
+ *    se bloquea, por precaución.
+ */
+function _githubRevisarPullPendiente_(nombreBase) {
+  var cabeza = _githubCabezaRemota_();
+  var base = _githubLeerUltimoCommit_(nombreBase);
+  if (!base) return { bloquear: false, cabeza: cabeza, sinBase: true };
+  if (base === cabeza) return { bloquear: false, cabeza: cabeza };
+
+  var carpeta = nombreBase + '/';
+  var cambiados = [];
+  var noComparable = '';
+
+  var rq = _ghReq_('get', '/compare/' + base + '...' + cabeza);
+  var resp = UrlFetchApp.fetchAll([rq])[0];
+  var code = resp.getResponseCode();
+  if (code === 404 || code === 422) {
+    noComparable = 'el commit que recordaba (' + base.substring(0, 7) + ') ya no existe en GitHub';
+  } else {
+    var cmp = JSON.parse(_ghRespuesta_(resp, rq).getContentText());
+    var archivos = cmp.files || [];
+    if (archivos.length >= 300) noComparable = 'hay 300 archivos o más distintos y no se puede listar todos';
+    archivos.forEach(function(f) {
+      if (f.filename.indexOf(carpeta) === 0 ||
+          (f.previous_filename && f.previous_filename.indexOf(carpeta) === 0)) {
+        cambiados.push(f.filename);
+      }
+    });
+  }
+
+  if (!noComparable && GITHUB_AVISO_SOLO_CARPETA_ && !cambiados.length) {
+    return { bloquear: false, cabeza: cabeza, soloOtrosArchivos: true };
+  }
+
+  var detalle = noComparable
+    ? 'No se pudo comparar: ' + noComparable + '.'
+    : (cambiados.length
+        ? 'Archivos distintos en ' + carpeta + ' (' + cambiados.length + '): ' +
+          cambiados.slice(0, 10).join(', ') + (cambiados.length > 10 ? ' y ' + (cambiados.length - 10) + ' más' : '') + '.'
+        : 'Hay commits nuevos en GitHub (aviso por commit, GITHUB_AVISO_SOLO_CARPETA_ = false).');
+  var forzada = nombreBase === 'Base' ? 'descargarBaseForzado()'
+              : (nombreBase === 'Contactos_Secundario' ? 'descargarContactosForzado()' : 'descargarGeneradorForzado()');
+  var traer   = nombreBase === 'Base' ? 'subirBaseDesdeGithub()'
+              : (nombreBase === 'Contactos_Secundario' ? 'subirContactosDesdeGithub()' : 'subirGeneradorDesdeGithub()');
+  var mensaje = 'SUBIDA A GITHUB BLOQUEADA: PULL PENDIENTE. GitHub tiene cambios en ' + carpeta +
+                ' que este proyecto no ha traído (último commit traído: ' + base.substring(0, 7) +
+                ', último en GitHub: ' + cabeza.substring(0, 7) + '). ' + detalle +
+                ' Si quieres quedarte con lo de GitHub, corre ' + traer + ' (reemplaza lo que haya en Apps Script). ' +
+                'Si quieres que lo de Apps Script pise lo de GitHub, corre ' + forzada + '.';
+  return { bloquear: true, cabeza: cabeza, mensaje: mensaje };
+}
+
+// ----- Subida a GitHub: revisión de secretos -----
+
+/**
+ * Devuelve { bloqueos: [...], idsDrive: n }. Nunca incluye el valor encontrado,
+ * solo archivo, línea y tipo de patrón.
+ */
+function _githubRevisarSecretos_(archivos) {
+  var bloqueos = [];
+  var idsDrive = 0;
+  archivos.forEach(function(a) {
+    var lineas = String(a.source || '').split('\n');
+    for (var i = 0; i < lineas.length; i++) {
+      var l = lineas[i];
+      for (var p = 0; p < GITHUB_PATRONES_SECRETOS_.length; p++) {
+        var pat = GITHUB_PATRONES_SECRETOS_[p];
+        var m = pat.re.exec(l);
+        if (m && (!pat.valida || pat.valida(m[1]))) {
+          bloqueos.push(a.name + ' línea ' + (i + 1) + ' (' + pat.nombre + ')');
+        }
+      }
+      if (GITHUB_REGEX_ID_DRIVE_.test(l)) idsDrive++;
+    }
+  });
+  return { bloqueos: bloqueos, idsDrive: idsDrive };
+}
+
+// ----- Subida a GitHub: documentos generados (INDICE_FUNCIONES.md y LEEME_IA.md) -----
+
+function _githubGenerarIndice_(nombreBase, archivos) {
+  var reFn  = /^(?:async\s+)?function\s+([A-Za-z0-9_$]+)\s*\(/;
+  var reVar = /^(?:var|let|const)\s+([A-Za-z0-9_$]+)\s*=/;
+  var gs = archivos.filter(function(a) { return a.type === 'SERVER_JS'; })
+                   .sort(function(a, b) { return a.name < b.name ? -1 : (a.name > b.name ? 1 : 0); });
+  var filas = [];
+
+  gs.forEach(function(a) {
+    var lineas = String(a.source || '').split('\n');
+    for (var i = 0; i < lineas.length; i++) {
+      var tipo = 'función';
+      var m = reFn.exec(lineas[i]);
+      if (!m) { m = reVar.exec(lineas[i]); tipo = 'global'; }
+      if (!m) continue;
+      // Referencia "[→ Contexto_Base_Web.md §...]" del comentario que lo precede.
+      var ref = '';
+      for (var j = i - 1; j >= 0 && j >= i - 15; j--) {
+        if (!/^\s*(?:\/\*|\*|\/\/)/.test(lineas[j])) break;
+        var r = /\[→\s*([^\]]+)\]/.exec(lineas[j]);
+        if (r) { ref = r[1]; break; }
+      }
+      filas.push({ nombre: m[1], archivo: a.name + '.gs', linea: i + 1, tipo: tipo, ref: ref });
+    }
+  });
+
+  var out = [];
+  out.push('# Índice de funciones — ' + nombreBase);
+  out.push('');
+  out.push('Generado automáticamente por el Generador. No editar a mano.');
+  out.push('Código real: `' + nombreBase + '/src/`. Total: ' + filas.length + ' nombres en ' + gs.length + ' archivos .gs.');
+  out.push('');
+
+  out.push('## Por archivo');
+  out.push('');
+  gs.forEach(function(a) {
+    var nombres = filas.filter(function(f) { return f.archivo === a.name + '.gs' && f.tipo === 'función'; })
+                       .map(function(f) { return f.nombre; });
+    out.push('- **' + a.name + '.gs** (' + nombres.length + ' funciones): ' + (nombres.length ? nombres.join(', ') : '—'));
+  });
+  out.push('');
+
+  var porNombre = {};
+  filas.forEach(function(f) { (porNombre[f.nombre] = porNombre[f.nombre] || []).push(f); });
+  var repetidos = Object.keys(porNombre).filter(function(n) { return porNombre[n].length > 1; }).sort();
+  out.push('## Nombres repetidos (en Apps Script el último que carga pisa a los demás)');
+  out.push('');
+  if (!repetidos.length) {
+    out.push('Ninguno.');
+  } else {
+    repetidos.forEach(function(n) {
+      out.push('- `' + n + '`: ' + porNombre[n].map(function(f) { return f.archivo + ':' + f.linea; }).join(', '));
+    });
+  }
+  out.push('');
+
+  out.push('## Orden alfabético');
+  out.push('');
+  out.push('| Nombre | Tipo | Archivo | Línea | Ref. contexto |');
+  out.push('|---|---|---|---|---|');
+  filas.slice().sort(function(a, b) {
+    var x = a.nombre.toLowerCase(), y = b.nombre.toLowerCase();
+    return x < y ? -1 : (x > y ? 1 : 0);
+  }).forEach(function(f) {
+    out.push('| `' + f.nombre + '` | ' + f.tipo + ' | ' + f.archivo + ' | ' + f.linea + ' | ' + f.ref + ' |');
+  });
+  out.push('');
+  return out.join('\n');
+}
+
+function _githubGenerarLeeme_(nombreBase, nArchivos) {
+  return [
+    '# ' + nombreBase + ' — guía para IA y personas',
+    '',
+    'Esta carpeta la escribe automáticamente el Generador (08_GitHub.gs) cada vez que se',
+    'descarga o se sube el proyecto "' + nombreBase + '". No edites estos archivos a mano.',
+    '',
+    '## Qué leer',
+    '',
+    '- `src/` — el código real: ' + nArchivos + ' archivos sueltos, uno por archivo de Apps Script.',
+    '  **Lee solo esta carpeta.**',
+    '- `INDICE_FUNCIONES.md` — en qué archivo y línea vive cada función. Búscala aquí',
+    '  primero (con grep o con la búsqueda del repo) y abre solo el archivo que toque.',
+    '- `Indice_' + nombreBase + '.md` — lista numerada de los archivos del proyecto y su estado en la última',
+    '  tanda (permanece igual, modificado, creado o eliminado).',
+    '',
+    '## Qué ignorar',
+    '',
+    '- `respaldo/' + nombreBase + '.gs` — consolidado de todo el código en un solo archivo.',
+    '  Es una copia de seguridad que solo usa el Generador. **No lo leas, no lo cites y no',
+    '  lo edites**: repite el contenido de `src/` y es larguísimo.',
+    '',
+    '## Reglas al proponer cambios',
+    '',
+    '- Entrega el archivo numerado completo que cambió (por ejemplo `01_Principal.gs`),',
+    '  no fragmentos ni el consolidado.',
+    '- Usa el mismo nombre exacto de archivo; no crees duplicados.',
+    ''
+  ].join('\n');
+}
+
+// ----- Subida a GitHub: commit -----
+
+/**
+ * entradas: [{path, content}]. Reemplaza por completo prefijoCarpeta (borra lo
+ * que ya no existe) y, opcionalmente, rutas de formatos antiguos.
+ *
+ * SIN CAMBIOS = SIN COMMIT: si lo que se iba a escribir es idéntico a lo que ya hay en GitHub,
+ * NO crea el commit y devuelve { commit: null, sinCambios: true }. Como el consolidado
+ * (respaldo/<Nombre>.gs) trae en su primera línea la fecha de generación, que cambia en cada
+ * ejecución, se compara sin esa línea; si es lo único distinto, se conserva el archivo remoto.
+ * Quien llama debe informar el caso en el log (ver _githubSincronizar_).
+ *
+ * GUARDIA (opcional, { cabeza, carpeta }): es el último commit de la rama que el que llama revisó
+ * (_githubRevisarPullPendiente_) y la carpeta que va a reemplazar (por ejemplo 'Base/'). Si al
+ * leer la rama ya no es ese commit y lo nuevo toca la carpeta (o no se puede comparar), NO escribe:
+ * devuelve { commit: null, desfasado: true, cabezaNueva, cambiados, motivo }. Si lo nuevo no toca
+ * la carpeta (solo contexto, consolidados u otra carpeta), sigue: el árbol nuevo parte del último
+ * commit y lo conserva. El PATCH final no fuerza: si la rama se movió entre medias, GitHub
+ * responde 422 y con guardia también se devuelve desfasado. Sin guardia, todo se comporta como antes.
+ * [→ Contexto_Base_Web.md §PF273]
+ */
+function _githubCommitArchivos_(entradas, prefijoCarpeta, rutasAntiguas, mensaje, guardia) {
+  var ref = _ghJson_(_ghReq_('get', '/git/ref/heads/' + GITHUB_BRANCH_));
+  var commitSha = ref.object.sha;
+  if (guardia && guardia.cabeza && guardia.cabeza !== commitSha) {
+    var dif = _githubCambiosEnCarpeta_(guardia.cabeza, commitSha, guardia.carpeta);
+    if (dif.noComparable || dif.cambiados.length) {
+      return { commit: null, desfasado: true, cabezaNueva: commitSha, cambiados: dif.cambiados,
+               motivo: dif.noComparable, archivos: entradas.length, borrados: [] };
+    }
+  }
+  var commit = _ghJson_(_ghReq_('get', '/git/commits/' + commitSha));
+  var treeBaseSha = commit.tree.sha;
+  var arbol = _ghJson_(_ghReq_('get', '/git/trees/' + treeBaseSha + '?recursive=1'));
+
+  // El consolidado trae la fecha de generación en su primera línea: si es lo único que cambió,
+  // se reutiliza el contenido que ya está en GitHub para que no cuente como cambio.
+  var reFechaConsolidado = /\/\* CÓDIGO CONSOLIDADO GENERADO EL [^*]*\*\//;
+  // Indice_<Nombre>.md lleva la fecha y los estados de la última tanda: si las huellas de los archivos
+  // son las mismas que las del que ya está en GitHub, no hubo cambios de código y se conserva el remoto.
+  var reHuellas = /<!--\s*HUELLAS\s+(\{[\s\S]*?\})\s*-->/;
+  entradas.forEach(function(e) {
+    if (!/\/Indice_[^\/]+\.md$/.test(e.path)) return;
+    var nodoI = (arbol.tree || []).filter(function(n) { return n.type === 'blob' && n.path === e.path; })[0];
+    if (!nodoI) return;
+    var rqI = _ghReq_('get', '/git/blobs/' + nodoI.sha, null, 'application/vnd.github.raw+json');
+    var viejoI = _ghRespuesta_(UrlFetchApp.fetchAll([rqI])[0], rqI).getContentText('UTF-8');
+    var hv = reHuellas.exec(viejoI), hn = reHuellas.exec(e.content);
+    if (hv && hn && hv[1] === hn[1]) e.content = viejoI;
+  });
+  entradas.forEach(function(e) {
+    if (!/\/respaldo\/[^\/]+\.gs$/.test(e.path)) return;
+    var nodo = (arbol.tree || []).filter(function(n) { return n.type === 'blob' && n.path === e.path; })[0];
+    if (!nodo) return;
+    var rq = _ghReq_('get', '/git/blobs/' + nodo.sha, null, 'application/vnd.github.raw+json');
+    var viejo = _ghRespuesta_(UrlFetchApp.fetchAll([rq])[0], rq).getContentText('UTF-8');
+    if (viejo.replace(reFechaConsolidado, '') === e.content.replace(reFechaConsolidado, '')) e.content = viejo;
+  });
+
+  // Pocos archivos: un blob por archivo, en lotes paralelos. Si el contenido no cambió,
+  // GitHub devuelve el mismo SHA y ese archivo no figura en el commit.
+  // Muchos archivos (más de GITHUB_ENTRADAS_BLOB_MAX_): el contenido va dentro de los árboles, encadenados
+  // con base_tree, para no pasar del límite de escrituras de GitHub (§PF278).
+  var shas = [];
+  var inline = entradas.length > GITHUB_ENTRADAS_BLOB_MAX_;
+  var baseIntermedia = treeBaseSha;
+  if (inline) {
+    for (var ii = 0; ii < entradas.length; ii += GITHUB_ENTRADAS_BLOB_MAX_) {
+      var trozo = entradas.slice(ii, ii + GITHUB_ENTRADAS_BLOB_MAX_).map(function(e) {
+        return { path: e.path, mode: '100644', type: 'blob', content: e.content };
+      });
+      baseIntermedia = _ghJsonReintento_(_ghReq_('post', '/git/trees', { base_tree: baseIntermedia, tree: trozo })).sha;
+      Utilities.sleep(1000);
+    }
+  } else {
+    for (var i = 0; i < entradas.length; i += 20) {
+      var lote = entradas.slice(i, i + 20);
+      var reqs = lote.map(function(e) {
+        return _ghReq_('post', '/git/blobs', { content: e.content, encoding: 'utf-8' });
+      });
+      var resps = UrlFetchApp.fetchAll(reqs);
+      for (var k = 0; k < resps.length; k++) {
+        shas.push(JSON.parse(_ghRespuesta_(resps[k], reqs[k]).getContentText()).sha);
+      }
+    }
+  }
+
+  var nuevas = {};
+  var items = [];
+  entradas.forEach(function(e, idx) {
+    nuevas[e.path] = true;
+    if (!inline) items.push({ path: e.path, mode: '100644', type: 'blob', sha: shas[idx] });
+  });
+
+  var borrados = [];
+  if (arbol.truncated) {
+    console.warn('[GitHub] El árbol del repo vino truncado: no se detectaron archivos a borrar.');
+  } else {
+    (arbol.tree || []).forEach(function(n) {
+      if (n.type !== 'blob') return;
+      var sobraEnSrc = n.path.indexOf(prefijoCarpeta) === 0 && !nuevas[n.path];
+      var antiguo = GITHUB_BORRAR_FORMATOS_ANTIGUOS_ && rutasAntiguas.indexOf(n.path) !== -1;
+      if (sobraEnSrc || antiguo) {
+        items.push({ path: n.path, mode: '100644', type: 'blob', sha: null });
+        borrados.push(n.path);
+      }
+    });
+  }
+
+  var arbolNuevo = (inline && !items.length)
+    ? { sha: baseIntermedia }
+    : _ghJsonReintento_(_ghReq_('post', '/git/trees', { base_tree: baseIntermedia, tree: items }));
+  if (arbolNuevo.sha === treeBaseSha) {
+    return { commit: null, sinCambios: true, archivos: entradas.length, borrados: [] };
+  }
+  var commitNuevo = _ghJson_(_ghReq_('post', '/git/commits',
+                      { message: mensaje, tree: arbolNuevo.sha, parents: [commitSha] }));
+  try {
+    _ghJson_(_ghReq_('patch', '/git/refs/heads/' + GITHUB_BRANCH_, { sha: commitNuevo.sha }));
+  } catch (ePatch) {
+    if (guardia && String(ePatch).indexOf('HTTP 422') !== -1) {
+      return { commit: null, desfasado: true, cabezaNueva: '', cambiados: [],
+               motivo: 'la rama se movió mientras se escribía el commit', archivos: entradas.length, borrados: [] };
+    }
+    throw ePatch;
+  }
+  return { commit: commitNuevo.sha, archivos: entradas.length, borrados: borrados };
+}
+
+/**
+ * Lista los archivos de <carpeta> (por ejemplo 'Base/') que cambiaron entre dos commits de la rama.
+ * Devuelve { cambiados: [rutas], noComparable: 'motivo' o '' }. Es la misma comparación de
+ * _githubRevisarPullPendiente_, pero para usarla justo antes de escribir (parámetro guardia de
+ * _githubCommitArchivos_). [→ Contexto_Base_Web.md §PF273]
+ */
+function _githubCambiosEnCarpeta_(desde, hasta, carpeta) {
+  var cambiados = [];
+  var noComparable = '';
+  var rq = _ghReq_('get', '/compare/' + desde + '...' + hasta);
+  var resp = UrlFetchApp.fetchAll([rq])[0];
+  var code = resp.getResponseCode();
+  if (code === 404 || code === 422) {
+    noComparable = 'el commit esperado (' + desde.substring(0, 7) + ') ya no existe en GitHub';
+  } else {
+    var cmp = JSON.parse(_ghRespuesta_(resp, rq).getContentText());
+    var archivos = cmp.files || [];
+    if (archivos.length >= 300) noComparable = 'hay 300 archivos o más distintos y no se puede listar todos';
+    archivos.forEach(function(f) {
+      if (f.filename.indexOf(carpeta) === 0 ||
+          (f.previous_filename && f.previous_filename.indexOf(carpeta) === 0)) {
+        cambiados.push(f.filename);
+      }
+    });
+  }
+  return { cambiados: cambiados, noComparable: noComparable };
+}
+
+// ----- Subida a GitHub: aviso de pull pendiente, mensajes y commit de referencia (después del commit) -----
+
+/** Nombres de las funciones que traen GitHub o lo pisan, según el proyecto (para los mensajes). */
+function _githubFuncionesDeAccion_(nombreBase) {
+  return {
+    traer:   nombreBase === 'Base' ? 'subirBaseDesdeGithub()'
+           : (nombreBase === 'Contactos_Secundario' ? 'subirContactosDesdeGithub()' : 'subirGeneradorDesdeGithub()'),
+    forzada: nombreBase === 'Base' ? 'descargarBaseForzado()'
+           : (nombreBase === 'Contactos_Secundario' ? 'descargarContactosForzado()' : 'descargarGeneradorForzado()')
+  };
+}
+
+function _githubGuardarUltimoCommit_(nombreBase, sha) {
+  if (!sha) return;
+  PropertiesService.getScriptProperties().setProperty(GITHUB_PROP_ULTIMO_COMMIT_ + nombreBase, sha);
+}
+
+// ----- Diagnóstico -----
 
 /** Comprueba token, acceso al repo, permiso de escritura y rama. */
 function _githubProbar_() {
@@ -3803,31 +3819,7 @@ function _githubProbar_() {
   return texto;
 }
 
-// -----------------------------------------------------------------------------
-// Subida puntual de archivos de Drive a GitHub (solo AGREGA, nunca borra)
-// [→ Contexto_Base_Web.md §PF080]
-// -----------------------------------------------------------------------------
-
-var EVIDENCIA_T05_CARPETA_GITHUB_ = 'Datos descargados/JSON/Anomalías/';
-var EVIDENCIA_T05_NOMBRES_ = [
-  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - currentriverrace.json',
-  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Grupo乂Terna™ - clans.json',
-  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - currentriverrace.json',
-  'T-05  S-02 P.I-07-L 13-09-2026 12.26 - Mini乂Ternas™ - clans.json'
-];
-
-/**
- * Copia a GitHub (Datos descargados/JSON/Anomalías/) los 4 archivos de T-05 del 13-09 12.26 que
- * limpiarDuplicadosJSON() mandaría a la papelera. Correrla ANTES del borrado real: una vez en la
- * papelera, getFilesByName() ya no los encuentra. No toca nada en Drive.
- */
-function subirEvidenciaT05AGithub() {
-  return _githubSubirArchivosDeDrive_(
-    EVIDENCIA_T05_NOMBRES_,
-    EVIDENCIA_T05_CARPETA_GITHUB_,
-    'Datos descargados: T-05 del 13-09 12.26 (grupo乂terna™ y mini乂ternas™), copiados de Drive antes de borrar duplicados'
-  );
-}
+// ----- Subida puntual de archivos de Drive a GitHub: ayuda -----
 
 /**
  * Busca cada archivo por nombre exacto en Drive (fuera de la papelera), comprueba que se lee
@@ -3903,6 +3895,101 @@ function _githubSubirArchivosDeDrive_(nombres, carpetaDestino, mensaje) {
   console.log('Falta hacer pull de Backend en GitHub Desktop para verlos en tu equipo.');
   return texto;
 }
+
+// ----- HTTP con la API de GitHub (las usan todos los temas anteriores) -----
+
+function _githubToken_() {
+  return PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN') || '';
+}
+
+/** Arma una petición (objeto compatible con UrlFetchApp.fetchAll). */
+function _ghReq_(metodo, ruta, payload, accept) {
+  var req = {
+    url: 'https://api.github.com/repos/' + GITHUB_OWNER_ + '/' + GITHUB_REPO_ + ruta,
+    method: metodo,
+    muteHttpExceptions: true,
+    headers: {
+      Authorization: 'Bearer ' + _githubToken_(),
+      Accept: accept || 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    }
+  };
+  if (payload !== undefined && payload !== null) {
+    req.contentType = 'application/json';
+    req.payload = JSON.stringify(payload);
+  }
+  return req;
+}
+
+/** Valida el código HTTP; si no es 2xx lanza un error SIN incluir el token. */
+function _ghRespuesta_(resp, req) {
+  var code = resp.getResponseCode();
+  if (code < 200 || code >= 300) {
+    var msg = resp.getContentText();
+    if (msg.length > 300) msg = msg.substring(0, 300);
+    throw 'GitHub ' + req.method + ' ' + req.url.replace('https://api.github.com', '') +
+          ' → HTTP ' + code + ': ' + msg;
+  }
+  return resp;
+}
+
+function _ghJson_(req) {
+  var resp = UrlFetchApp.fetchAll([req])[0];
+  return JSON.parse(_ghRespuesta_(resp, req).getContentText());
+}
+
+// Desde el 25-oct-2026 (§PF278): GitHub frena con HTTP 403 («secondary rate limit») o 429 si se hacen demasiadas
+// escrituras seguidas. _ghJsonReintento_ espera y repite (hasta 3 intentos en total) antes de dejar pasar el error.
+function _ghEsLimiteDeGithub_(e) {
+  var t = String(e);
+  return /HTTP 429/.test(t) || (/HTTP 403/.test(t) && /rate limit/i.test(t));
+}
+
+function _ghJsonReintento_(req) {
+  for (var intento = 1; ; intento++) {
+    try {
+      return _ghJson_(req);
+    } catch (e) {
+      if (!_ghEsLimiteDeGithub_(e) || intento >= 3) throw e;
+      console.warn('[GitHub] Límite de escrituras; se espera 45 s y se reintenta (intento ' + (intento + 1) + ' de 3).');
+      Utilities.sleep(45000);
+    }
+  }
+}
+
+// ----- Utilidades del proyecto de Apps Script -----
+
+/** Archivos reales del proyecto (sin "Script consolidado"), leídos de la API. */
+function _archivosDelProyecto_(nombreBase) {
+  return obtenerArchivosProyecto_(_scriptIdDeProyecto_(nombreBase)).filter(function(a) {
+    return a.name.indexOf('Script consolidado') !== 0;
+  });
+}
+
+function _scriptIdDeProyecto_(nombreBase) {
+  if (nombreBase === 'Generador') return ScriptApp.getScriptId();
+  if (nombreBase === 'Base') {
+    var ssId = obtenerSpreadsheetPorNombreEnCarpeta_(CARPETA_BASE_ID, NOMBRE_HOJA_BASE);
+    var id = PropertiesService.getScriptProperties().getProperty('SCRIPT_ID_' + ssId);
+    if (!id) throw 'No hay scriptId guardado para Base. Corre subirBaseDesdeZip() (o cualquier subirBaseDesdeX) primero.';
+    return id;
+  }
+  if (nombreBase === 'Contactos_Secundario') {
+    // Proyecto de Apps Script de la CUENTA SECUNDARIA (sincronizador de contactos). Su ID no va en el
+    // código (es un ID de Drive y el repo es público): vive en las Propiedades del script del Generador.
+    // Requisito: ese proyecto debe estar compartido con la cuenta del Generador como editor.
+    var idContactos = PropertiesService.getScriptProperties().getProperty('SCRIPT_ID_CONTACTOS_SECUNDARIO');
+    if (!idContactos) throw 'Falta la propiedad SCRIPT_ID_CONTACTOS_SECUNDARIO en las Propiedades del script del Generador ' +
+      '(ID del proyecto de Apps Script de la cuenta secundaria; ese proyecto debe estar compartido con esta cuenta como editor).';
+    return idContactos;
+  }
+  throw 'Nombre de proyecto no válido: ' + nombreBase;
+}
+
+function _extDeTipo_(tipo) {
+  return tipo === 'HTML' ? '.html' : (tipo === 'JSON' ? '.json' : '.gs');
+}
+
 
 // --- ARCHIVO: 09_ReadmeGenerador.gs ---
 // =============================================================================
@@ -4468,6 +4555,21 @@ function _verif_imprimirResumen_(r) {
 //  GITHUB_TOKEN_WEB y tiene prioridad.
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Escaneo de los JSON de players: reiniciar el avance y escanear (se escanea ANTES de subir)
+//    - Descarga de imágenes de la API a GitHub (repo Web): probar, cartas, insignias y las dos categorías
+//    - Carpetas API junto a Fankit
+//    - Lista de direcciones no disponibles (HTTP 404): vaciarla para reintentar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Descarga de imágenes: flujo principal (_imgApiEjecutar_)
+//    - Direcciones desde los CSV de Drive y tipo de las insignias (en el orden en que las llama _imgApiEjecutar_)
+//    - Lista de direcciones no disponibles: lectura y escritura
+//    - Recorte del margen transparente de las insignias (lector y escritor de PNG; en el orden en que los llama _imgApiRecortarPng_)
+//    - GitHub (repo Web): contexto, carpetas API y commit (solo agrega archivos), y el nivel bajo (token, petición, JSON)
+//    - Escaneo de los JSON de players: ayudas
+// Dentro de cada tema, en el orden en que se espera ejecutarlas (deducido del código: la usuaria no lo ha confirmado). Al reordenar no se cambió el código de ninguna función.
+
 var IMGAPI_REPO_   = 'Web';
 var IMGAPI_BRANCH_ = 'main';
 
@@ -4516,9 +4618,117 @@ var IMGAPI_MAX_BYTES_    = 12 * 1024 * 1024;
 var IMGAPI_MAX_MS_       = 2 * 60 * 1000;
 var IMGAPI_LOTE_         = 15;
 
-// -----------------------------------------------------------------------------
-// Puntos de entrada
-// -----------------------------------------------------------------------------
+// Recorte del margen transparente de las insignias (22-oct-2026, pedido de la usuaria)
+// [→ Contexto_Base_Web.md §PF162]
+//
+// Las copias locales de badges/API/ se suben SIN el margen transparente que traen los PNG de
+// Supercell (512x512 con el dibujo en ~58 % del ancho), igual que las 1 079 que ya se recortaron
+// a mano (PF161). Apps Script no trae librería de imágenes, así que aquí hay un lector y escritor
+// de PNG en JavaScript puro:
+//   - Solo PNG RGBA de 8 bits, sin entrelazado (el formato de todas las insignias vistas). Otro
+//     formato NO se sube y queda como fallo que se reintenta; un archivo que ni siquiera es PNG
+//     se sube tal cual y se avisa en el registro.
+//   - Criterio: rectángulo mínimo con los píxeles de alfa >= 8 (el mismo de PF161). No se reescala
+//     ni se cambia ningún píxel; solo se corta. Si no hay nada que cortar, el archivo no se toca.
+//   - Descomprime con un inflate propio (se evita Utilities.ungzip porque, por lo que se sabe,
+//     valida el CRC del resultado, que aquí no se conoce; no se probó en Apps Script) y comprime
+//     con Utilities.gzip, cuyo deflate se envuelve como zlib. Si ese
+//     deflate no se puede descomprimir de vuelta igual, se usa compresión «almacenada» (sin
+//     comprimir pero válida).
+
+var IMGAPI_ALFA_MIN_ = 8;
+var _IMGAPI_TABLA_CRC_ = null;
+var _IMGAPI_LONG_BASE_ = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+var _IMGAPI_LONG_EXTRA_ = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+var _IMGAPI_DIST_BASE_ = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
+var _IMGAPI_DIST_EXTRA_ = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+var _IMGAPI_ORDEN_CL_ = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Escaneo de los JSON de players (reanudable): reiniciar el avance y escanear -----
+
+/** Olvida el avance del escaneo para volver a empezar desde el primer archivo. No borra Imagenes_API_Urls.txt. */
+function imagenesApiReiniciarEscaneoJson() {
+  PropertiesService.getScriptProperties().deleteProperty(IMGAPI_PROP_ESCANEO_);
+  console.log('Avance del escaneo borrado.');
+}
+
+/**
+ * Recorre la carpeta «players» (los .json de jugadores) y suma al archivo Imagenes_API_Urls.txt
+ * todas las direcciones de imágenes de la API que encuentre (se leen con una expresión regular,
+ * sin interpretar el JSON). Solo lee Drive; no toca GitHub. Se corta a los 4 minutos y guarda el
+ * punto de avance: se vuelve a correr hasta que el registro diga «TERMINADO».
+ */
+function imagenesApiEscanearJsonPlayers() {
+  var inicio = Date.now();
+  var props = PropertiesService.getScriptProperties();
+  var estado = {};
+  try { estado = JSON.parse(props.getProperty(IMGAPI_PROP_ESCANEO_) || '{}'); } catch (e) { estado = {}; }
+  var escaneados = estado.escaneados || 0;
+
+  var archivoUrls = _imgApiArchivoUrls_();
+  var conocidas = {};
+  archivoUrls.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) { l = l.trim(); if (l) conocidas[l] = true; });
+  var antes = Object.keys(conocidas).length;
+
+  // Tipo de cada insignia (M = maestría, I = insignia), por nombre de archivo.
+  var archivoTipos = _imgApiArchivoTipos_();
+  var tiposConocidos = {};
+  archivoTipos.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) {
+    var partes = l.trim().split('\t');
+    if (partes.length === 2 && (partes[0] === 'M' || partes[0] === 'I')) tiposConocidos[partes[1]] = partes[0];
+  });
+  var antesTipos = Object.keys(tiposConocidos).length;
+
+  var it;
+  if (estado.token) {
+    try { it = DriveApp.continueFileIterator(estado.token); }
+    catch (e) { console.log('No se pudo retomar el avance guardado (' + e + '); se empieza de nuevo.'); estado = {}; escaneados = 0; }
+  }
+  if (!it) it = DriveApp.getFolderById(CARPETA_PLAYERS_ID_).getFiles();
+
+  var terminado = true;
+  var hechosEstaVez = 0;
+  while (it.hasNext()) {
+    if (Date.now() - inicio > IMGAPI_ESCANEO_MS_) { terminado = false; break; }
+    var archivo = it.next();
+    if (archivo.getName().slice(-5).toLowerCase() !== '.json') continue;
+    var texto = archivo.getBlob().getDataAsString('UTF-8');
+    var m;
+    IMGAPI_REGEX_URL_.lastIndex = 0;
+    while ((m = IMGAPI_REGEX_URL_.exec(texto)) !== null) conocidas[m[0]] = true;
+    IMGAPI_REGEX_INSIGNIA_.lastIndex = 0;
+    while ((m = IMGAPI_REGEX_INSIGNIA_.exec(texto)) !== null) {
+      tiposConocidos[m[2]] = m[1].indexOf(IMGAPI_PREFIJO_MAESTRIA_) === 0 ? 'M' : 'I';
+    }
+    escaneados++;
+    hechosEstaVez++;
+  }
+
+  var lista = Object.keys(conocidas).sort();
+  archivoUrls.setContent(lista.join('\n') + '\n');
+  var nuevas = lista.length - antes;
+
+  var archivosConTipo = Object.keys(tiposConocidos).sort();
+  archivoTipos.setContent(archivosConTipo.map(function(a) { return tiposConocidos[a] + '\t' + a; }).join('\n') + '\n');
+  var nMaestrias = archivosConTipo.filter(function(a) { return tiposConocidos[a] === 'M'; }).length;
+
+  if (terminado) props.deleteProperty(IMGAPI_PROP_ESCANEO_);
+  else props.setProperty(IMGAPI_PROP_ESCANEO_, JSON.stringify({ token: it.getContinuationToken(), escaneados: escaneados }));
+
+  var texto2 = (terminado ? 'TERMINADO. ' : 'Falta recorrer más archivos: vuelve a correr la función. ') +
+               'Esta vez se leyeron ' + hechosEstaVez + ' JSON (' + escaneados + ' en total) y se sumaron ' + nuevas +
+               ' direcciones nuevas; ' + lista.length + ' en ' + IMGAPI_ARCHIVO_URLS_ + '. Tipos de insignia anotados: ' +
+               archivosConTipo.length + ' (' + nMaestrias + ' maestrías y ' + (archivosConTipo.length - nMaestrias) +
+               ' insignias; ' + (archivosConTipo.length - antesTipos) + ' nuevos) en ' + IMGAPI_ARCHIVO_TIPOS_ + '.';
+  console.log(texto2);
+  return texto2;
+}
+
+// ----- Descarga de imágenes de la API a GitHub (repo Web): probar, cartas, insignias y las dos categorías -----
 
 function imagenesApiProbar() {
   return _imgApiEjecutar_(['cartas', 'insignias'], true);
@@ -4536,6 +4746,8 @@ function imagenesApiAGithub() {
   return _imgApiEjecutar_(['cartas', 'insignias'], false);
 }
 
+// ----- Carpetas API junto a Fankit -----
+
 /** Crea API/LEEME.txt junto a cada carpeta Fankit que no tenga su carpeta API al lado. */
 function carpetasApiJuntoAFankit() {
   var ctx = _imgApiContexto_();
@@ -4551,6 +4763,8 @@ function carpetasApiJuntoAFankit() {
   console.log('Falta hacer pull de Web en GitHub Desktop.');
   return texto;
 }
+
+// ----- Lista de direcciones no disponibles en el CDN (HTTP 404): vaciarla para reintentar -----
 
 /**
  * Vacía la lista de direcciones no disponibles (manda a la papelera de Drive el archivo
@@ -4568,9 +4782,11 @@ function imagenesApiReintentarNoDisponibles() {
   return texto;
 }
 
-// -----------------------------------------------------------------------------
-// Flujo principal
-// -----------------------------------------------------------------------------
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Descarga de imágenes: flujo principal -----
 
 function _imgApiEjecutar_(grupos, soloProbar) {
   var inicio = Date.now();
@@ -4700,205 +4916,7 @@ function _imgApiEjecutar_(grupos, soloProbar) {
   return texto;
 }
 
-// -----------------------------------------------------------------------------
-// Lista de direcciones no disponibles en el CDN (HTTP 404)
-// -----------------------------------------------------------------------------
-
-/** Lee Imagenes_API_No_Disponibles.txt (si hay varios, el más reciente). No lo crea. Devuelve { archivo: File|null, mapa: {url: true} }. */
-function _imgApiLeerNoDisponibles_() {
-  var it = DriveApp.getFilesByName(IMGAPI_ARCHIVO_404_);
-  var archivos = [];
-  while (it.hasNext()) archivos.push(it.next());
-  var mapa = {};
-  if (!archivos.length) return { archivo: null, mapa: mapa };
-  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
-  archivos[0].getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) { l = l.trim(); if (l) mapa[l] = true; });
-  return { archivo: archivos[0], mapa: mapa };
-}
-
-/** Suma las direcciones nuevas a la lista (ordenada, una por línea) y la guarda; crea el archivo si no existía. Solo agrega. */
-function _imgApiGuardarNoDisponibles_(actual, nuevas) {
-  var mapa = actual.mapa;
-  nuevas.forEach(function(u) { mapa[u] = true; });
-  var texto = Object.keys(mapa).sort().join('\n') + '\n';
-  if (actual.archivo) actual.archivo.setContent(texto);
-  else actual.archivo = DriveApp.createFile(IMGAPI_ARCHIVO_404_, texto, 'text/plain');
-}
-
-// -----------------------------------------------------------------------------
-// Escaneo de los JSON de players (reanudable)
-// -----------------------------------------------------------------------------
-
-/** Archivo acumulador en Drive (raíz); lo crea vacío si no existe. Si hay varios con el mismo nombre usa el más reciente. */
-function _imgApiArchivoUrls_() {
-  var it = DriveApp.getFilesByName(IMGAPI_ARCHIVO_URLS_);
-  var archivos = [];
-  while (it.hasNext()) archivos.push(it.next());
-  if (!archivos.length) return DriveApp.createFile(IMGAPI_ARCHIVO_URLS_, '', 'text/plain');
-  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
-  return archivos[0];
-}
-
-/**
- * Recorre la carpeta «players» (los .json de jugadores) y suma al archivo Imagenes_API_Urls.txt
- * todas las direcciones de imágenes de la API que encuentre (se leen con una expresión regular,
- * sin interpretar el JSON). Solo lee Drive; no toca GitHub. Se corta a los 4 minutos y guarda el
- * punto de avance: se vuelve a correr hasta que el registro diga «TERMINADO».
- */
-function imagenesApiEscanearJsonPlayers() {
-  var inicio = Date.now();
-  var props = PropertiesService.getScriptProperties();
-  var estado = {};
-  try { estado = JSON.parse(props.getProperty(IMGAPI_PROP_ESCANEO_) || '{}'); } catch (e) { estado = {}; }
-  var escaneados = estado.escaneados || 0;
-
-  var archivoUrls = _imgApiArchivoUrls_();
-  var conocidas = {};
-  archivoUrls.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) { l = l.trim(); if (l) conocidas[l] = true; });
-  var antes = Object.keys(conocidas).length;
-
-  // Tipo de cada insignia (M = maestría, I = insignia), por nombre de archivo.
-  var archivoTipos = _imgApiArchivoTipos_();
-  var tiposConocidos = {};
-  archivoTipos.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) {
-    var partes = l.trim().split('\t');
-    if (partes.length === 2 && (partes[0] === 'M' || partes[0] === 'I')) tiposConocidos[partes[1]] = partes[0];
-  });
-  var antesTipos = Object.keys(tiposConocidos).length;
-
-  var it;
-  if (estado.token) {
-    try { it = DriveApp.continueFileIterator(estado.token); }
-    catch (e) { console.log('No se pudo retomar el avance guardado (' + e + '); se empieza de nuevo.'); estado = {}; escaneados = 0; }
-  }
-  if (!it) it = DriveApp.getFolderById(CARPETA_PLAYERS_ID_).getFiles();
-
-  var terminado = true;
-  var hechosEstaVez = 0;
-  while (it.hasNext()) {
-    if (Date.now() - inicio > IMGAPI_ESCANEO_MS_) { terminado = false; break; }
-    var archivo = it.next();
-    if (archivo.getName().slice(-5).toLowerCase() !== '.json') continue;
-    var texto = archivo.getBlob().getDataAsString('UTF-8');
-    var m;
-    IMGAPI_REGEX_URL_.lastIndex = 0;
-    while ((m = IMGAPI_REGEX_URL_.exec(texto)) !== null) conocidas[m[0]] = true;
-    IMGAPI_REGEX_INSIGNIA_.lastIndex = 0;
-    while ((m = IMGAPI_REGEX_INSIGNIA_.exec(texto)) !== null) {
-      tiposConocidos[m[2]] = m[1].indexOf(IMGAPI_PREFIJO_MAESTRIA_) === 0 ? 'M' : 'I';
-    }
-    escaneados++;
-    hechosEstaVez++;
-  }
-
-  var lista = Object.keys(conocidas).sort();
-  archivoUrls.setContent(lista.join('\n') + '\n');
-  var nuevas = lista.length - antes;
-
-  var archivosConTipo = Object.keys(tiposConocidos).sort();
-  archivoTipos.setContent(archivosConTipo.map(function(a) { return tiposConocidos[a] + '\t' + a; }).join('\n') + '\n');
-  var nMaestrias = archivosConTipo.filter(function(a) { return tiposConocidos[a] === 'M'; }).length;
-
-  if (terminado) props.deleteProperty(IMGAPI_PROP_ESCANEO_);
-  else props.setProperty(IMGAPI_PROP_ESCANEO_, JSON.stringify({ token: it.getContinuationToken(), escaneados: escaneados }));
-
-  var texto2 = (terminado ? 'TERMINADO. ' : 'Falta recorrer más archivos: vuelve a correr la función. ') +
-               'Esta vez se leyeron ' + hechosEstaVez + ' JSON (' + escaneados + ' en total) y se sumaron ' + nuevas +
-               ' direcciones nuevas; ' + lista.length + ' en ' + IMGAPI_ARCHIVO_URLS_ + '. Tipos de insignia anotados: ' +
-               archivosConTipo.length + ' (' + nMaestrias + ' maestrías y ' + (archivosConTipo.length - nMaestrias) +
-               ' insignias; ' + (archivosConTipo.length - antesTipos) + ' nuevos) en ' + IMGAPI_ARCHIVO_TIPOS_ + '.';
-  console.log(texto2);
-  return texto2;
-}
-
-/** Olvida el avance del escaneo para volver a empezar desde el primer archivo. No borra Imagenes_API_Urls.txt. */
-function imagenesApiReiniciarEscaneoJson() {
-  PropertiesService.getScriptProperties().deleteProperty(IMGAPI_PROP_ESCANEO_);
-  console.log('Avance del escaneo borrado.');
-}
-
-// -----------------------------------------------------------------------------
-// Tipo de las insignias de jugador: maestría o insignia (20-oct-2026)
-// -----------------------------------------------------------------------------
-
-/** El archivo de Drive con ese nombre (si hay varios, el más reciente), o null si no existe. No lo crea. */
-function _imgApiArchivoMasReciente_(nombre) {
-  var it = DriveApp.getFilesByName(nombre);
-  var archivos = [];
-  while (it.hasNext()) archivos.push(it.next());
-  if (!archivos.length) return null;
-  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
-  return archivos[0];
-}
-
-/** Archivo de tipos de insignia en Drive (raíz); lo crea vacío si no existe. */
-function _imgApiArchivoTipos_() {
-  return _imgApiArchivoMasReciente_(IMGAPI_ARCHIVO_TIPOS_) || DriveApp.createFile(IMGAPI_ARCHIVO_TIPOS_, '', 'text/plain');
-}
-
-/** Ruta destino de una insignia de jugador según su tipo. */
-function _imgApiDestinoInsignia_(esMaestria, archivo) {
-  return (esMaestria ? IMGAPI_DESTINO_MAESTRIAS_ : IMGAPI_DESTINO_INSIGNIAS_) + archivo;
-}
-
-function _imgApiNormalizarCabecera_(texto) {
-  return String(texto || '').replace(/^\uFEFF/, '').trim().toLowerCase();
-}
-
-/**
- * Devuelve { archivo: true|false } para las insignias de jugador: true si es maestría (el nombre
- * empieza con Mastery), false si es una insignia común. Fuentes: la columna Name de
- * Backup_Insignias.csv (y su segunda parte) junto a la columna Ícono, y el archivo
- * Imagenes_API_Insignias_Tipos.txt que llena el escaneo de los JSON de players. Si las dos fuentes
- * dicen cosas distintas para el mismo archivo, manda el CSV y se avisa en el registro.
- */
-function _imgApiTiposInsignias_() {
-  var tipos = {};
-  var deCsv = 0, deJson = 0, conflictos = 0;
-  var reArchivo = /playerbadges\/\d+\/([A-Za-z0-9_-]+\.(?:png|webp|jpg))/;
-
-  IMGAPI_CSV_INSIGNIAS_.forEach(function(nombre) {
-    var archivo = _imgApiArchivoMasReciente_(nombre);
-    if (!archivo) return;
-    var filas = Utilities.parseCsv(archivo.getBlob().getDataAsString('UTF-8'));
-    if (!filas.length) return;
-    var cab = filas[0].map(_imgApiNormalizarCabecera_);
-    var iNombre = cab.indexOf('name');
-    var iIcono = cab.indexOf('ícono');
-    if (iIcono === -1) iIcono = cab.indexOf('icono');
-    if (iNombre === -1 || iIcono === -1) {
-      console.log('  · ' + nombre + ': no tiene las columnas Name e Ícono; no sirve para saber el tipo de las insignias.');
-      return;
-    }
-    for (var i = 1; i < filas.length; i++) {
-      var m = reArchivo.exec(String(filas[i][iIcono] || ''));
-      if (!m) continue;
-      var esMaestria = String(filas[i][iNombre] || '').trim().indexOf(IMGAPI_PREFIJO_MAESTRIA_) === 0;
-      if (tipos[m[1]] === undefined) { tipos[m[1]] = esMaestria; deCsv++; }
-      else if (tipos[m[1]] !== esMaestria) conflictos++;
-    }
-  });
-
-  var archivoTipos = _imgApiArchivoMasReciente_(IMGAPI_ARCHIVO_TIPOS_);
-  if (archivoTipos) {
-    archivoTipos.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(linea) {
-      var partes = linea.trim().split('\t');
-      if (partes.length !== 2 || (partes[0] !== 'M' && partes[0] !== 'I')) return;
-      var esMaestria = partes[0] === 'M';
-      if (tipos[partes[1]] === undefined) { tipos[partes[1]] = esMaestria; deJson++; }
-      else if (tipos[partes[1]] !== esMaestria) conflictos++;
-    });
-  }
-
-  console.log('  · Tipo de insignias: ' + deCsv + ' desde Backup_Insignias.csv y ' + deJson + ' más desde ' + IMGAPI_ARCHIVO_TIPOS_ +
-              (archivoTipos ? '' : ' (no existe todavía; se crea al correr imagenesApiEscanearJsonPlayers())') + '.');
-  if (conflictos) console.log('  · Aviso: ' + conflictos + ' insignias con tipo distinto entre el CSV y los JSON; se usó el del CSV.');
-  return tipos;
-}
-
-// -----------------------------------------------------------------------------
-// Lectura de los CSV de Drive
-// -----------------------------------------------------------------------------
+// ----- Descarga de imágenes: direcciones desde los CSV de Drive y tipo de las insignias de jugador (maestría o insignia, 20-oct-2026) -----
 
 /** Busca cada CSV por nombre (si hay varios, usa el más reciente) y junta las direcciones únicas. */
 function _imgApiRecolectarUrls_(nombresCsv) {
@@ -4960,27 +4978,173 @@ function _imgApiRecolectarUrls_(nombresCsv) {
   return lista;
 }
 
-// -----------------------------------------------------------------------------
-// Recorte del margen transparente de las insignias (22-oct-2026, pedido de la usuaria)
-// [→ Contexto_Base_Web.md §PF162]
-//
-// Las copias locales de badges/API/ se suben SIN el margen transparente que traen los PNG de
-// Supercell (512x512 con el dibujo en ~58 % del ancho), igual que las 1 079 que ya se recortaron
-// a mano (PF161). Apps Script no trae librería de imágenes, así que aquí hay un lector y escritor
-// de PNG en JavaScript puro:
-//   - Solo PNG RGBA de 8 bits, sin entrelazado (el formato de todas las insignias vistas). Otro
-//     formato NO se sube y queda como fallo que se reintenta; un archivo que ni siquiera es PNG
-//     se sube tal cual y se avisa en el registro.
-//   - Criterio: rectángulo mínimo con los píxeles de alfa >= 8 (el mismo de PF161). No se reescala
-//     ni se cambia ningún píxel; solo se corta. Si no hay nada que cortar, el archivo no se toca.
-//   - Descomprime con un inflate propio (se evita Utilities.ungzip porque, por lo que se sabe,
-//     valida el CRC del resultado, que aquí no se conoce; no se probó en Apps Script) y comprime
-//     con Utilities.gzip, cuyo deflate se envuelve como zlib. Si ese
-//     deflate no se puede descomprimir de vuelta igual, se usa compresión «almacenada» (sin
-//     comprimir pero válida).
-// -----------------------------------------------------------------------------
+/**
+ * Devuelve { archivo: true|false } para las insignias de jugador: true si es maestría (el nombre
+ * empieza con Mastery), false si es una insignia común. Fuentes: la columna Name de
+ * Backup_Insignias.csv (y su segunda parte) junto a la columna Ícono, y el archivo
+ * Imagenes_API_Insignias_Tipos.txt que llena el escaneo de los JSON de players. Si las dos fuentes
+ * dicen cosas distintas para el mismo archivo, manda el CSV y se avisa en el registro.
+ */
+function _imgApiTiposInsignias_() {
+  var tipos = {};
+  var deCsv = 0, deJson = 0, conflictos = 0;
+  var reArchivo = /playerbadges\/\d+\/([A-Za-z0-9_-]+\.(?:png|webp|jpg))/;
 
-var IMGAPI_ALFA_MIN_ = 8;
+  IMGAPI_CSV_INSIGNIAS_.forEach(function(nombre) {
+    var archivo = _imgApiArchivoMasReciente_(nombre);
+    if (!archivo) return;
+    var filas = Utilities.parseCsv(archivo.getBlob().getDataAsString('UTF-8'));
+    if (!filas.length) return;
+    var cab = filas[0].map(_imgApiNormalizarCabecera_);
+    var iNombre = cab.indexOf('name');
+    var iIcono = cab.indexOf('ícono');
+    if (iIcono === -1) iIcono = cab.indexOf('icono');
+    if (iNombre === -1 || iIcono === -1) {
+      console.log('  · ' + nombre + ': no tiene las columnas Name e Ícono; no sirve para saber el tipo de las insignias.');
+      return;
+    }
+    for (var i = 1; i < filas.length; i++) {
+      var m = reArchivo.exec(String(filas[i][iIcono] || ''));
+      if (!m) continue;
+      var esMaestria = String(filas[i][iNombre] || '').trim().indexOf(IMGAPI_PREFIJO_MAESTRIA_) === 0;
+      if (tipos[m[1]] === undefined) { tipos[m[1]] = esMaestria; deCsv++; }
+      else if (tipos[m[1]] !== esMaestria) conflictos++;
+    }
+  });
+
+  var archivoTipos = _imgApiArchivoMasReciente_(IMGAPI_ARCHIVO_TIPOS_);
+  if (archivoTipos) {
+    archivoTipos.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(linea) {
+      var partes = linea.trim().split('\t');
+      if (partes.length !== 2 || (partes[0] !== 'M' && partes[0] !== 'I')) return;
+      var esMaestria = partes[0] === 'M';
+      if (tipos[partes[1]] === undefined) { tipos[partes[1]] = esMaestria; deJson++; }
+      else if (tipos[partes[1]] !== esMaestria) conflictos++;
+    });
+  }
+
+  console.log('  · Tipo de insignias: ' + deCsv + ' desde Backup_Insignias.csv y ' + deJson + ' más desde ' + IMGAPI_ARCHIVO_TIPOS_ +
+              (archivoTipos ? '' : ' (no existe todavía; se crea al correr imagenesApiEscanearJsonPlayers())') + '.');
+  if (conflictos) console.log('  · Aviso: ' + conflictos + ' insignias con tipo distinto entre el CSV y los JSON; se usó el del CSV.');
+  return tipos;
+}
+
+/** El archivo de Drive con ese nombre (si hay varios, el más reciente), o null si no existe. No lo crea. */
+function _imgApiArchivoMasReciente_(nombre) {
+  var it = DriveApp.getFilesByName(nombre);
+  var archivos = [];
+  while (it.hasNext()) archivos.push(it.next());
+  if (!archivos.length) return null;
+  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
+  return archivos[0];
+}
+
+function _imgApiNormalizarCabecera_(texto) {
+  return String(texto || '').replace(/^\uFEFF/, '').trim().toLowerCase();
+}
+
+/** Ruta destino de una insignia de jugador según su tipo. */
+function _imgApiDestinoInsignia_(esMaestria, archivo) {
+  return (esMaestria ? IMGAPI_DESTINO_MAESTRIAS_ : IMGAPI_DESTINO_INSIGNIAS_) + archivo;
+}
+
+// ----- Lista de direcciones no disponibles en el CDN (HTTP 404): lectura y escritura -----
+
+/** Lee Imagenes_API_No_Disponibles.txt (si hay varios, el más reciente). No lo crea. Devuelve { archivo: File|null, mapa: {url: true} }. */
+function _imgApiLeerNoDisponibles_() {
+  var it = DriveApp.getFilesByName(IMGAPI_ARCHIVO_404_);
+  var archivos = [];
+  while (it.hasNext()) archivos.push(it.next());
+  var mapa = {};
+  if (!archivos.length) return { archivo: null, mapa: mapa };
+  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
+  archivos[0].getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) { l = l.trim(); if (l) mapa[l] = true; });
+  return { archivo: archivos[0], mapa: mapa };
+}
+
+/** Suma las direcciones nuevas a la lista (ordenada, una por línea) y la guarda; crea el archivo si no existía. Solo agrega. */
+function _imgApiGuardarNoDisponibles_(actual, nuevas) {
+  var mapa = actual.mapa;
+  nuevas.forEach(function(u) { mapa[u] = true; });
+  var texto = Object.keys(mapa).sort().join('\n') + '\n';
+  if (actual.archivo) actual.archivo.setContent(texto);
+  else actual.archivo = DriveApp.createFile(IMGAPI_ARCHIVO_404_, texto, 'text/plain');
+}
+
+// ----- Recorte del margen transparente de las insignias (22-oct-2026; la explicación y las constantes están arriba, con las variables globales) -----
+
+/**
+ * Recorta el margen transparente de un PNG RGBA de 8 bits.
+ * bytes: contenido con signo, tal como lo da UrlFetchApp. Devuelve:
+ *   { ok: true,  bytes: <con signo>, recortado: true|false, ancho, alto, anchoOrig, altoOrig, modo }
+ *   { ok: false, esPng: true|false, motivo: '...' }
+ * Sin recortar (recortado:false) devuelve los mismos bytes: ya no tenía margen.
+ */
+function _imgApiRecortarPng_(bytes) {
+  var src;
+  try { src = _imgApiAU8_(bytes); } catch (e0) { return { ok: false, esPng: false, motivo: 'no se pudo leer el contenido' }; }
+  var firma = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+  if (src.length < 33) return { ok: false, esPng: false, motivo: 'archivo demasiado corto' };
+  for (var f = 0; f < 8; f++) if (src[f] !== firma[f]) return { ok: false, esPng: false, motivo: 'no tiene la firma de un PNG' };
+  try {
+    var p = 8, ancho = 0, alto = 0, idats = [], totalIdat = 0, visto = false;
+    while (p + 12 <= src.length) {
+      var n = _imgApiLeeU32_(src, p);
+      var tipo = String.fromCharCode(src[p + 4], src[p + 5], src[p + 6], src[p + 7]);
+      if (p + 12 + n > src.length) return { ok: false, esPng: true, motivo: 'PNG truncado' };
+      if (tipo === 'IHDR') {
+        if (n !== 13) return { ok: false, esPng: true, motivo: 'IHDR inválido' };
+        ancho = _imgApiLeeU32_(src, p + 8); alto = _imgApiLeeU32_(src, p + 12);
+        var prof = src[p + 16], color = src[p + 17], compr = src[p + 18], filtro = src[p + 19], entrel = src[p + 20];
+        if (prof !== 8 || color !== 6 || compr !== 0 || filtro !== 0 || entrel !== 0) {
+          return { ok: false, esPng: true, motivo: 'no es PNG RGBA de 8 bits sin entrelazado (profundidad ' + prof + ', color ' + color + ', entrelazado ' + entrel + ')' };
+        }
+        visto = true;
+      } else if (tipo === 'IDAT') {
+        idats.push(src.subarray(p + 8, p + 8 + n)); totalIdat += n;
+      } else if (tipo === 'IEND') {
+        break;
+      }
+      p += 12 + n;
+    }
+    if (!visto || !idats.length) return { ok: false, esPng: true, motivo: 'faltan IHDR o IDAT' };
+    if (ancho < 1 || alto < 1 || ancho > 4096 || alto > 4096) return { ok: false, esPng: true, motivo: 'tamaño fuera de lo esperado (' + ancho + 'x' + alto + ')' };
+
+    var comp = new Uint8Array(totalIdat), q = 0;
+    idats.forEach(function(t) { comp.set(t, q); q += t.length; });
+    if ((comp[0] & 15) !== 8 || ((comp[0] << 8) | comp[1]) % 31 !== 0 || (comp[1] & 32)) return { ok: false, esPng: true, motivo: 'cabecera zlib inválida' };
+
+    var crudo = _imgApiInflate_(comp, 2, alto * (ancho * 4 + 1));
+
+    var pix = _imgApiQuitarFiltros_(crudo, ancho, alto);
+    if (!pix) return { ok: false, esPng: true, motivo: 'filtro de fila inválido' };
+
+    var rect = _imgApiRectanguloVisible_(pix, ancho, alto);
+    var x0 = rect[0], y0 = rect[1], x1 = rect[2], y1 = rect[3];
+    if (x1 < 0) return { ok: false, esPng: true, motivo: 'no tiene ningún píxel visible (alfa >= ' + IMGAPI_ALFA_MIN_ + ')' };
+    if (x0 === 0 && y0 === 0 && x1 === ancho - 1 && y1 === alto - 1) {
+      return { ok: true, bytes: bytes, recortado: false, ancho: ancho, alto: alto, anchoOrig: ancho, altoOrig: alto, modo: 'sin cambios' };
+    }
+
+    var w2 = x1 - x0 + 1, h2 = y1 - y0 + 1;
+    var salida = _imgApiFiltrarRecorte_(pix, ancho, x0, y0, w2, h2);
+
+    var z = _imgApiZlib_(salida);
+    var ihdr = new Uint8Array(13);
+    ihdr[0] = (w2 >>> 24) & 255; ihdr[1] = (w2 >>> 16) & 255; ihdr[2] = (w2 >>> 8) & 255; ihdr[3] = w2 & 255;
+    ihdr[4] = (h2 >>> 24) & 255; ihdr[5] = (h2 >>> 16) & 255; ihdr[6] = (h2 >>> 8) & 255; ihdr[7] = h2 & 255;
+    ihdr[8] = 8; ihdr[9] = 6; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
+    var png = new Uint8Array(8 + (12 + 13) + (12 + z.zlib.length) + 12);
+    png.set(firma, 0);
+    var pos = 8;
+    pos = _imgApiTrozoPng_(png, pos, 'IHDR', ihdr);
+    pos = _imgApiTrozoPng_(png, pos, 'IDAT', z.zlib);
+    _imgApiTrozoPng_(png, pos, 'IEND', new Uint8Array(0));
+    return { ok: true, bytes: _imgApiAConSigno_(png), recortado: true, ancho: w2, alto: h2, anchoOrig: ancho, altoOrig: alto, modo: z.modo };
+  } catch (e) {
+    return { ok: false, esPng: true, motivo: 'error al recortar: ' + e };
+  }
+}
 
 /** Bytes con signo de Apps Script (-128..127) a Uint8Array. */
 function _imgApiAU8_(bytes) {
@@ -4989,54 +5153,7 @@ function _imgApiAU8_(bytes) {
   return u;
 }
 
-/** Uint8Array a bytes con signo, que es lo que esperan Utilities.base64Encode y newBlob. */
-function _imgApiAConSigno_(u8) {
-  var n = u8.length, a = new Array(n);
-  for (var i = 0; i < n; i++) { var v = u8[i]; a[i] = v > 127 ? v - 256 : v; }
-  return a;
-}
-
-var _IMGAPI_TABLA_CRC_ = null;
-function _imgApiCrc32_(u8, ini, fin) {
-  if (!_IMGAPI_TABLA_CRC_) {
-    _IMGAPI_TABLA_CRC_ = new Uint32Array(256);
-    for (var n = 0; n < 256; n++) {
-      var c = n;
-      for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-      _IMGAPI_TABLA_CRC_[n] = c >>> 0;
-    }
-  }
-  var crc = 0xFFFFFFFF;
-  for (var i = ini; i < fin; i++) crc = _IMGAPI_TABLA_CRC_[(crc ^ u8[i]) & 255] ^ (crc >>> 8);
-  return (crc ^ 0xFFFFFFFF) >>> 0;
-}
-
-function _imgApiAdler32_(u8) {
-  var a = 1, b = 0, n = u8.length, i = 0;
-  while (i < n) {
-    var tope = Math.min(i + 3800, n);
-    for (; i < tope; i++) { a += u8[i]; b += a; }
-    a %= 65521; b %= 65521;
-  }
-  return ((b << 16) | a) >>> 0;
-}
-
-var _IMGAPI_LONG_BASE_ = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
-var _IMGAPI_LONG_EXTRA_ = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
-var _IMGAPI_DIST_BASE_ = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
-var _IMGAPI_DIST_EXTRA_ = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
-var _IMGAPI_ORDEN_CL_ = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
-
-/** Tabla de Huffman canónica a partir de las longitudes de código (algoritmo de puff.c). */
-function _imgApiHuffman_(longitudes, n) {
-  var cuenta = new Array(16), simbolo = new Array(n), desp = new Array(16), i;
-  for (i = 0; i < 16; i++) cuenta[i] = 0;
-  for (i = 0; i < n; i++) cuenta[longitudes[i]]++;
-  desp[1] = 0;
-  for (i = 1; i < 15; i++) desp[i + 1] = desp[i] + cuenta[i];
-  for (i = 0; i < n; i++) if (longitudes[i] !== 0) simbolo[desp[longitudes[i]]++] = i;
-  return { cuenta: cuenta, simbolo: simbolo };
-}
+function _imgApiLeeU32_(u8, p) { return ((u8[p] << 24) | (u8[p + 1] << 16) | (u8[p + 2] << 8) | u8[p + 3]) >>> 0; }
 
 /**
  * Inflate (deflate crudo, RFC 1951) de src desde pos. Devuelve un Uint8Array de exactamente
@@ -5141,64 +5258,15 @@ function _imgApiInflate_(src, pos, tam) {
   return out;
 }
 
-/** Deflate crudo «almacenado» (sin comprimir, pero válido). */
-function _imgApiDeflateAlmacenado_(datos) {
-  var n = datos.length, bloques = Math.max(1, Math.ceil(n / 65535));
-  var out = new Uint8Array(n + bloques * 5), op = 0;
-  for (var b = 0; b < bloques; b++) {
-    var ini = b * 65535, len = Math.min(65535, n - ini);
-    out[op++] = (b === bloques - 1) ? 1 : 0;
-    out[op++] = len & 255; out[op++] = len >>> 8;
-    out[op++] = (~len) & 255; out[op++] = ((~len) >>> 8) & 255;
-    for (var i = 0; i < len; i++) out[op++] = datos[ini + i];
-  }
-  return out;
-}
-
-/**
- * Comprime datos como flujo zlib. Usa Utilities.gzip y le quita la cabecera y el cierre de gzip
- * (RFC 1952). Se comprueba descomprimiéndolo de vuelta con el inflate propio; si no coincide
- * (o algo falla), cae a la compresión almacenada. Devuelve { zlib: Uint8Array, modo: 'deflate'|'almacenado' }.
- */
-function _imgApiZlib_(datos) {
-  var crudo = null;
-  try {
-    var gz = _imgApiAU8_(Utilities.gzip(Utilities.newBlob(_imgApiAConSigno_(datos), 'application/octet-stream', 'x')).getBytes());
-    if (gz.length > 18 && gz[0] === 0x1f && gz[1] === 0x8b && gz[2] === 8) {
-      var flg = gz[3], p = 10;
-      if (flg & 4) p += 2 + (gz[p] | (gz[p + 1] << 8));
-      if (flg & 8) { while (gz[p] !== 0) p++; p++; }
-      if (flg & 16) { while (gz[p] !== 0) p++; p++; }
-      if (flg & 2) p += 2;
-      var candidato = gz.subarray(p, gz.length - 8);
-      var vuelta = _imgApiInflate_(candidato, 0, datos.length);
-      var igual = true;
-      for (var i = 0; i < datos.length; i++) { if (vuelta[i] !== datos[i]) { igual = false; break; } }
-      if (igual) crudo = candidato;
-    }
-  } catch (e) { crudo = null; }
-  var modo = 'deflate';
-  if (!crudo) { crudo = _imgApiDeflateAlmacenado_(datos); modo = 'almacenado'; }
-  var z = new Uint8Array(crudo.length + 6);
-  z[0] = 0x78; z[1] = 0x9c;
-  z.set(crudo, 2);
-  var ad = _imgApiAdler32_(datos), f = crudo.length + 2;
-  z[f] = (ad >>> 24) & 255; z[f + 1] = (ad >>> 16) & 255; z[f + 2] = (ad >>> 8) & 255; z[f + 3] = ad & 255;
-  return { zlib: z, modo: modo };
-}
-
-function _imgApiLeeU32_(u8, p) { return ((u8[p] << 24) | (u8[p + 1] << 16) | (u8[p + 2] << 8) | u8[p + 3]) >>> 0; }
-
-/** Escribe un trozo PNG (longitud, tipo, datos, CRC) en out desde p; devuelve la posición siguiente. */
-function _imgApiTrozoPng_(out, p, tipo, datos) {
-  var n = datos.length;
-  out[p] = (n >>> 24) & 255; out[p + 1] = (n >>> 16) & 255; out[p + 2] = (n >>> 8) & 255; out[p + 3] = n & 255;
-  for (var i = 0; i < 4; i++) out[p + 4 + i] = tipo.charCodeAt(i);
-  out.set(datos, p + 8);
-  var crc = _imgApiCrc32_(out, p + 4, p + 8 + n);
-  var q = p + 8 + n;
-  out[q] = (crc >>> 24) & 255; out[q + 1] = (crc >>> 16) & 255; out[q + 2] = (crc >>> 8) & 255; out[q + 3] = crc & 255;
-  return q + 4;
+/** Tabla de Huffman canónica a partir de las longitudes de código (algoritmo de puff.c). */
+function _imgApiHuffman_(longitudes, n) {
+  var cuenta = new Array(16), simbolo = new Array(n), desp = new Array(16), i;
+  for (i = 0; i < 16; i++) cuenta[i] = 0;
+  for (i = 0; i < n; i++) cuenta[longitudes[i]]++;
+  desp[1] = 0;
+  for (i = 1; i < 15; i++) desp[i + 1] = desp[i] + cuenta[i];
+  for (i = 0; i < n; i++) if (longitudes[i] !== 0) simbolo[desp[longitudes[i]]++] = i;
+  return { cuenta: cuenta, simbolo: simbolo };
 }
 
 /**
@@ -5256,6 +5324,27 @@ function _imgApiRectanguloVisible_(pix, ancho, alto) {
   return [x0, y0, x1, y1];
 }
 
+/** Vuelve a filtrar el recorte (x0, y0, w2, h2) de pix; por fila elige el filtro de menor suma de valores absolutos. */
+function _imgApiFiltrarRecorte_(pix, ancho, x0, y0, w2, h2) {
+  var fila = ancho * 4, n = w2 * 4;
+  var salida = new Uint8Array(h2 * (n + 1));
+  var cand = [new Uint8Array(n), new Uint8Array(n), new Uint8Array(n), new Uint8Array(n), new Uint8Array(n)];
+  for (var r = 0; r < h2; r++) {
+    var bo = (y0 + r) * fila + x0 * 4, mejor = 0, mejorSuma = -1;
+    for (var t = 0; t < 5; t++) {
+      var dst = cand[t];
+      _imgApiFiltrarFila_(t, pix, bo, r > 0, fila, n, dst);
+      var suma = 0;
+      for (var k = 0; k < n; k++) { var v = dst[k]; suma += v < 128 ? v : 256 - v; }
+      if (mejorSuma < 0 || suma < mejorSuma) { mejorSuma = suma; mejor = t; }
+    }
+    var so = r * (n + 1);
+    salida[so] = mejor;
+    salida.set(cand[mejor], so + 1);
+  }
+  return salida;
+}
+
 /**
  * Filtra una fila del recorte con el filtro t (0..4) y la deja en dst. La fila empieza en pix[bo]
  * y mide n bytes; la anterior, si hay, empieza en pix[bo - fila] (las filas del recorte son
@@ -5288,138 +5377,96 @@ function _imgApiFiltrarFila_(t, pix, bo, hayPrevia, fila, n, dst) {
   }
 }
 
-/** Vuelve a filtrar el recorte (x0, y0, w2, h2) de pix; por fila elige el filtro de menor suma de valores absolutos. */
-function _imgApiFiltrarRecorte_(pix, ancho, x0, y0, w2, h2) {
-  var fila = ancho * 4, n = w2 * 4;
-  var salida = new Uint8Array(h2 * (n + 1));
-  var cand = [new Uint8Array(n), new Uint8Array(n), new Uint8Array(n), new Uint8Array(n), new Uint8Array(n)];
-  for (var r = 0; r < h2; r++) {
-    var bo = (y0 + r) * fila + x0 * 4, mejor = 0, mejorSuma = -1;
-    for (var t = 0; t < 5; t++) {
-      var dst = cand[t];
-      _imgApiFiltrarFila_(t, pix, bo, r > 0, fila, n, dst);
-      var suma = 0;
-      for (var k = 0; k < n; k++) { var v = dst[k]; suma += v < 128 ? v : 256 - v; }
-      if (mejorSuma < 0 || suma < mejorSuma) { mejorSuma = suma; mejor = t; }
-    }
-    var so = r * (n + 1);
-    salida[so] = mejor;
-    salida.set(cand[mejor], so + 1);
-  }
-  return salida;
-}
-
 /**
- * Recorta el margen transparente de un PNG RGBA de 8 bits.
- * bytes: contenido con signo, tal como lo da UrlFetchApp. Devuelve:
- *   { ok: true,  bytes: <con signo>, recortado: true|false, ancho, alto, anchoOrig, altoOrig, modo }
- *   { ok: false, esPng: true|false, motivo: '...' }
- * Sin recortar (recortado:false) devuelve los mismos bytes: ya no tenía margen.
+ * Comprime datos como flujo zlib. Usa Utilities.gzip y le quita la cabecera y el cierre de gzip
+ * (RFC 1952). Se comprueba descomprimiéndolo de vuelta con el inflate propio; si no coincide
+ * (o algo falla), cae a la compresión almacenada. Devuelve { zlib: Uint8Array, modo: 'deflate'|'almacenado' }.
  */
-function _imgApiRecortarPng_(bytes) {
-  var src;
-  try { src = _imgApiAU8_(bytes); } catch (e0) { return { ok: false, esPng: false, motivo: 'no se pudo leer el contenido' }; }
-  var firma = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
-  if (src.length < 33) return { ok: false, esPng: false, motivo: 'archivo demasiado corto' };
-  for (var f = 0; f < 8; f++) if (src[f] !== firma[f]) return { ok: false, esPng: false, motivo: 'no tiene la firma de un PNG' };
+function _imgApiZlib_(datos) {
+  var crudo = null;
   try {
-    var p = 8, ancho = 0, alto = 0, idats = [], totalIdat = 0, visto = false;
-    while (p + 12 <= src.length) {
-      var n = _imgApiLeeU32_(src, p);
-      var tipo = String.fromCharCode(src[p + 4], src[p + 5], src[p + 6], src[p + 7]);
-      if (p + 12 + n > src.length) return { ok: false, esPng: true, motivo: 'PNG truncado' };
-      if (tipo === 'IHDR') {
-        if (n !== 13) return { ok: false, esPng: true, motivo: 'IHDR inválido' };
-        ancho = _imgApiLeeU32_(src, p + 8); alto = _imgApiLeeU32_(src, p + 12);
-        var prof = src[p + 16], color = src[p + 17], compr = src[p + 18], filtro = src[p + 19], entrel = src[p + 20];
-        if (prof !== 8 || color !== 6 || compr !== 0 || filtro !== 0 || entrel !== 0) {
-          return { ok: false, esPng: true, motivo: 'no es PNG RGBA de 8 bits sin entrelazado (profundidad ' + prof + ', color ' + color + ', entrelazado ' + entrel + ')' };
-        }
-        visto = true;
-      } else if (tipo === 'IDAT') {
-        idats.push(src.subarray(p + 8, p + 8 + n)); totalIdat += n;
-      } else if (tipo === 'IEND') {
-        break;
-      }
-      p += 12 + n;
+    var gz = _imgApiAU8_(Utilities.gzip(Utilities.newBlob(_imgApiAConSigno_(datos), 'application/octet-stream', 'x')).getBytes());
+    if (gz.length > 18 && gz[0] === 0x1f && gz[1] === 0x8b && gz[2] === 8) {
+      var flg = gz[3], p = 10;
+      if (flg & 4) p += 2 + (gz[p] | (gz[p + 1] << 8));
+      if (flg & 8) { while (gz[p] !== 0) p++; p++; }
+      if (flg & 16) { while (gz[p] !== 0) p++; p++; }
+      if (flg & 2) p += 2;
+      var candidato = gz.subarray(p, gz.length - 8);
+      var vuelta = _imgApiInflate_(candidato, 0, datos.length);
+      var igual = true;
+      for (var i = 0; i < datos.length; i++) { if (vuelta[i] !== datos[i]) { igual = false; break; } }
+      if (igual) crudo = candidato;
     }
-    if (!visto || !idats.length) return { ok: false, esPng: true, motivo: 'faltan IHDR o IDAT' };
-    if (ancho < 1 || alto < 1 || ancho > 4096 || alto > 4096) return { ok: false, esPng: true, motivo: 'tamaño fuera de lo esperado (' + ancho + 'x' + alto + ')' };
+  } catch (e) { crudo = null; }
+  var modo = 'deflate';
+  if (!crudo) { crudo = _imgApiDeflateAlmacenado_(datos); modo = 'almacenado'; }
+  var z = new Uint8Array(crudo.length + 6);
+  z[0] = 0x78; z[1] = 0x9c;
+  z.set(crudo, 2);
+  var ad = _imgApiAdler32_(datos), f = crudo.length + 2;
+  z[f] = (ad >>> 24) & 255; z[f + 1] = (ad >>> 16) & 255; z[f + 2] = (ad >>> 8) & 255; z[f + 3] = ad & 255;
+  return { zlib: z, modo: modo };
+}
 
-    var comp = new Uint8Array(totalIdat), q = 0;
-    idats.forEach(function(t) { comp.set(t, q); q += t.length; });
-    if ((comp[0] & 15) !== 8 || ((comp[0] << 8) | comp[1]) % 31 !== 0 || (comp[1] & 32)) return { ok: false, esPng: true, motivo: 'cabecera zlib inválida' };
+/** Deflate crudo «almacenado» (sin comprimir, pero válido). */
+function _imgApiDeflateAlmacenado_(datos) {
+  var n = datos.length, bloques = Math.max(1, Math.ceil(n / 65535));
+  var out = new Uint8Array(n + bloques * 5), op = 0;
+  for (var b = 0; b < bloques; b++) {
+    var ini = b * 65535, len = Math.min(65535, n - ini);
+    out[op++] = (b === bloques - 1) ? 1 : 0;
+    out[op++] = len & 255; out[op++] = len >>> 8;
+    out[op++] = (~len) & 255; out[op++] = ((~len) >>> 8) & 255;
+    for (var i = 0; i < len; i++) out[op++] = datos[ini + i];
+  }
+  return out;
+}
 
-    var crudo = _imgApiInflate_(comp, 2, alto * (ancho * 4 + 1));
+function _imgApiAdler32_(u8) {
+  var a = 1, b = 0, n = u8.length, i = 0;
+  while (i < n) {
+    var tope = Math.min(i + 3800, n);
+    for (; i < tope; i++) { a += u8[i]; b += a; }
+    a %= 65521; b %= 65521;
+  }
+  return ((b << 16) | a) >>> 0;
+}
 
-    var pix = _imgApiQuitarFiltros_(crudo, ancho, alto);
-    if (!pix) return { ok: false, esPng: true, motivo: 'filtro de fila inválido' };
+/** Escribe un trozo PNG (longitud, tipo, datos, CRC) en out desde p; devuelve la posición siguiente. */
+function _imgApiTrozoPng_(out, p, tipo, datos) {
+  var n = datos.length;
+  out[p] = (n >>> 24) & 255; out[p + 1] = (n >>> 16) & 255; out[p + 2] = (n >>> 8) & 255; out[p + 3] = n & 255;
+  for (var i = 0; i < 4; i++) out[p + 4 + i] = tipo.charCodeAt(i);
+  out.set(datos, p + 8);
+  var crc = _imgApiCrc32_(out, p + 4, p + 8 + n);
+  var q = p + 8 + n;
+  out[q] = (crc >>> 24) & 255; out[q + 1] = (crc >>> 16) & 255; out[q + 2] = (crc >>> 8) & 255; out[q + 3] = crc & 255;
+  return q + 4;
+}
 
-    var rect = _imgApiRectanguloVisible_(pix, ancho, alto);
-    var x0 = rect[0], y0 = rect[1], x1 = rect[2], y1 = rect[3];
-    if (x1 < 0) return { ok: false, esPng: true, motivo: 'no tiene ningún píxel visible (alfa >= ' + IMGAPI_ALFA_MIN_ + ')' };
-    if (x0 === 0 && y0 === 0 && x1 === ancho - 1 && y1 === alto - 1) {
-      return { ok: true, bytes: bytes, recortado: false, ancho: ancho, alto: alto, anchoOrig: ancho, altoOrig: alto, modo: 'sin cambios' };
+function _imgApiCrc32_(u8, ini, fin) {
+  if (!_IMGAPI_TABLA_CRC_) {
+    _IMGAPI_TABLA_CRC_ = new Uint32Array(256);
+    for (var n = 0; n < 256; n++) {
+      var c = n;
+      for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      _IMGAPI_TABLA_CRC_[n] = c >>> 0;
     }
-
-    var w2 = x1 - x0 + 1, h2 = y1 - y0 + 1;
-    var salida = _imgApiFiltrarRecorte_(pix, ancho, x0, y0, w2, h2);
-
-    var z = _imgApiZlib_(salida);
-    var ihdr = new Uint8Array(13);
-    ihdr[0] = (w2 >>> 24) & 255; ihdr[1] = (w2 >>> 16) & 255; ihdr[2] = (w2 >>> 8) & 255; ihdr[3] = w2 & 255;
-    ihdr[4] = (h2 >>> 24) & 255; ihdr[5] = (h2 >>> 16) & 255; ihdr[6] = (h2 >>> 8) & 255; ihdr[7] = h2 & 255;
-    ihdr[8] = 8; ihdr[9] = 6; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
-    var png = new Uint8Array(8 + (12 + 13) + (12 + z.zlib.length) + 12);
-    png.set(firma, 0);
-    var pos = 8;
-    pos = _imgApiTrozoPng_(png, pos, 'IHDR', ihdr);
-    pos = _imgApiTrozoPng_(png, pos, 'IDAT', z.zlib);
-    _imgApiTrozoPng_(png, pos, 'IEND', new Uint8Array(0));
-    return { ok: true, bytes: _imgApiAConSigno_(png), recortado: true, ancho: w2, alto: h2, anchoOrig: ancho, altoOrig: alto, modo: z.modo };
-  } catch (e) {
-    return { ok: false, esPng: true, motivo: 'error al recortar: ' + e };
   }
+  var crc = 0xFFFFFFFF;
+  for (var i = ini; i < fin; i++) crc = _IMGAPI_TABLA_CRC_[(crc ^ u8[i]) & 255] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
 }
 
-// -----------------------------------------------------------------------------
-// GitHub (repo Web): solo agrega archivos
-// -----------------------------------------------------------------------------
-
-function _imgApiToken_() {
-  var p = PropertiesService.getScriptProperties();
-  return p.getProperty('GITHUB_TOKEN_WEB') || p.getProperty('GITHUB_TOKEN') || '';
+/** Uint8Array a bytes con signo, que es lo que esperan Utilities.base64Encode y newBlob. */
+function _imgApiAConSigno_(u8) {
+  var n = u8.length, a = new Array(n);
+  for (var i = 0; i < n; i++) { var v = u8[i]; a[i] = v > 127 ? v - 256 : v; }
+  return a;
 }
 
-function _imgApiReq_(metodo, ruta, payload, accept) {
-  var req = {
-    url: 'https://api.github.com/repos/' + GITHUB_OWNER_ + '/' + IMGAPI_REPO_ + ruta,
-    method: metodo,
-    muteHttpExceptions: true,
-    headers: {
-      Authorization: 'Bearer ' + _imgApiToken_(),
-      Accept: accept || 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28'
-    }
-  };
-  if (payload !== undefined && payload !== null) {
-    req.contentType = 'application/json';
-    req.payload = JSON.stringify(payload);
-  }
-  return req;
-}
-
-function _imgApiJson_(req) {
-  var resp = UrlFetchApp.fetchAll([req])[0];
-  var code = resp.getResponseCode();
-  if (code < 200 || code >= 300) {
-    var msg = resp.getContentText();
-    if (msg.length > 300) msg = msg.substring(0, 300);
-    throw 'GitHub (Web) ' + req.method + ' ' + req.url.replace('https://api.github.com', '') + ' → HTTP ' + code +
-          ': ' + msg + (code === 404 || code === 403 ? ' (¿el token tiene acceso al repo Web con Contents: Read and write?)' : '');
-  }
-  return JSON.parse(resp.getContentText());
-}
+// ----- GitHub (repo Web): contexto, carpetas API y commit (solo agrega archivos) -----
 
 /** Lee la rama y el árbol completo de Web. Devuelve { commitSha, treeSha, rutas: {ruta: true}, carpetas: [...] }. */
 function _imgApiContexto_() {
@@ -5497,6 +5544,60 @@ function _imgApiCommit_(ctx, entradas, mensaje) {
       console.log('La rama de Web cambió mientras se subía; se reintenta una vez sobre lo más reciente.');
     }
   }
+}
+
+// ----- GitHub (repo Web): nivel bajo (token, petición y respuesta JSON) -----
+
+function _imgApiToken_() {
+  var p = PropertiesService.getScriptProperties();
+  return p.getProperty('GITHUB_TOKEN_WEB') || p.getProperty('GITHUB_TOKEN') || '';
+}
+
+function _imgApiReq_(metodo, ruta, payload, accept) {
+  var req = {
+    url: 'https://api.github.com/repos/' + GITHUB_OWNER_ + '/' + IMGAPI_REPO_ + ruta,
+    method: metodo,
+    muteHttpExceptions: true,
+    headers: {
+      Authorization: 'Bearer ' + _imgApiToken_(),
+      Accept: accept || 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    }
+  };
+  if (payload !== undefined && payload !== null) {
+    req.contentType = 'application/json';
+    req.payload = JSON.stringify(payload);
+  }
+  return req;
+}
+
+function _imgApiJson_(req) {
+  var resp = UrlFetchApp.fetchAll([req])[0];
+  var code = resp.getResponseCode();
+  if (code < 200 || code >= 300) {
+    var msg = resp.getContentText();
+    if (msg.length > 300) msg = msg.substring(0, 300);
+    throw 'GitHub (Web) ' + req.method + ' ' + req.url.replace('https://api.github.com', '') + ' → HTTP ' + code +
+          ': ' + msg + (code === 404 || code === 403 ? ' (¿el token tiene acceso al repo Web con Contents: Read and write?)' : '');
+  }
+  return JSON.parse(resp.getContentText());
+}
+
+// ----- Escaneo de los JSON de players: ayudas (las llama imagenesApiEscanearJsonPlayers) -----
+
+/** Archivo acumulador en Drive (raíz); lo crea vacío si no existe. Si hay varios con el mismo nombre usa el más reciente. */
+function _imgApiArchivoUrls_() {
+  var it = DriveApp.getFilesByName(IMGAPI_ARCHIVO_URLS_);
+  var archivos = [];
+  while (it.hasNext()) archivos.push(it.next());
+  if (!archivos.length) return DriveApp.createFile(IMGAPI_ARCHIVO_URLS_, '', 'text/plain');
+  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
+  return archivos[0];
+}
+
+/** Archivo de tipos de insignia en Drive (raíz); lo crea vacío si no existe. */
+function _imgApiArchivoTipos_() {
+  return _imgApiArchivoMasReciente_(IMGAPI_ARCHIVO_TIPOS_) || DriveApp.createFile(IMGAPI_ARCHIVO_TIPOS_, '', 'text/plain');
 }
 
 
