@@ -1479,6 +1479,7 @@ function doPost(e) {
         payloadCRG && payloadCRG.sessionToken,
         payloadCRG && payloadCRG.datos
       );
+      if (resultadoCRG && resultadoCRG.ok) _webCRListaRefrescarDocs_(resultadoCRG.idAscenso, resultadoCRG.idDescenso); // PF286
       return ContentService
         .createTextOutput(JSON.stringify(resultadoCRG))
         .setMimeType(ContentService.MimeType.JSON);
@@ -1498,6 +1499,7 @@ function doPost(e) {
         payloadCRGP && payloadCRGP.idAscenso,
         payloadCRGP && payloadCRGP.idDescenso
       );
+      if (resultadoCRGP && resultadoCRGP.ok) _webCRListaRefrescarDocs_(payloadCRGP.idAscenso, payloadCRGP.idDescenso); // PF286
       return ContentService
         .createTextOutput(JSON.stringify(resultadoCRGP))
         .setMimeType(ContentService.MimeType.JSON);

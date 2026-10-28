@@ -4746,6 +4746,27 @@ function _webCRListaGenerarPropuestas(token, idAscenso, idDescenso) {
   return _registrarPropuestasCRListaEnHistorial(idAscenso, idDescenso);
 }
 
+/**
+ * _webCRListaRefrescarDocs_(idAscenso, idDescenso) [→ Contexto_Base_Web.md §PF286]
+ * Después de guardar un par de CR_Lista o de generar sus propuestas desde la web, actualiza los documentos de
+ * cambio de rango (procesarCambioRango(), 26_Torneos_Core.gs) solo si ese par es el vigente de Extra: los
+ * documentos siempre muestran el vigente, así que con otro par no habría nada que cambiar. Nunca corta la respuesta
+ * de la web: si algo falla, lo deja en el registro y sigue.
+ */
+function _webCRListaRefrescarDocs_(idAscenso, idDescenso) {
+  try {
+    var vigenteAscenso  = _getIdVigenteExtraCR('Ascenso');
+    var vigenteDescenso = _getIdVigenteExtraCR('Descenso');
+    if (!vigenteAscenso || !vigenteDescenso) return;
+    var esVigente = (idAscenso && String(idAscenso) === String(vigenteAscenso)) ||
+                    (idDescenso && String(idDescenso) === String(vigenteDescenso));
+    if (!esVigente) return;
+    procesarCambioRango();
+  } catch (eRefrescar) {
+    Logger.log('[Web][CR_Lista] No se pudieron actualizar los documentos de cambio de rango (se continúa): ' + eRefrescar.message);
+  }
+}
+
 // _construirFilaCRLista(): Helper interno de _webCRListaGuardar() (justo abajo): arma UN array de CR_TOTAL_COLS elementos (formato CR.*, 26_Torneos_Core.gs) para una sola mitad del par (Ascenso o Descenso) a partir del payload recibido desde la web -- ver… [→ Contexto_Base_Web.md §37B339]
 function _construirFilaCRLista(comunes, tipo, id, bloque) {
   var fila = new Array(CR_TOTAL_COLS).fill('');
