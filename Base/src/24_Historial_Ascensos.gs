@@ -1146,7 +1146,7 @@ function _leerRegistrosHistorialAscensos_() {
   var datos = _leerFilasAscensosHoja_(sh);
   var offset = _getTemporadaOffsetRoyaleApi(); // una sola lectura, igual que _completarTSDEnHoja_()
   var refTemporadas = CFG.REF_DEFAULT;
-  return datos.map(function (f) {
+  return datos.map(function (f, i) {
     var fecha = f[ASC.FECHA - 1];
     // Temporada, Semana y Día salen de la Fecha con la misma función que llena esas columnas de la hoja (_tsdDesdeFecha_): [temporada, RoyaleAPI, Supercell, semana, día].
     var tsd = _tsdDesdeFecha_(fecha, offset, refTemporadas);
@@ -1158,6 +1158,8 @@ function _leerRegistrosHistorialAscensos_() {
       rango2: String(f[ASC.RANGO_2 - 1] || '').trim(),
       tipo: String(f[ASC.TIPO - 1] || '').trim(),
       estadoProp: String(f[ASC.ESTADO_PROPUESTA - 1] || '').trim(),
+      fila: i + 2, // fila de la hoja (la 1 es el encabezado): la usa el marcado automático de «Realizado» (PF286)
+      comentario: String(f[ASC.COMENTARIO - 1] || '').trim(),
       parId: String(f[ASC.PAR_ID - 1] || '').trim(), // PF286: id del Ascenso del par de CR_Lista; vacío en filas sin propuesta y en propuestas anteriores a la columna (ver _asignarParesAPropuestas_())
       fechaMs: (fecha instanceof Date && !isNaN(fecha.getTime())) ? fecha.getTime() : NaN,
       temporada: tsd[0],
@@ -1238,6 +1240,15 @@ var CR_TIPOS_CAMBIO_REAL_ = { 'Ascenso': true, 'Degradación': true, 'Expulsión
  * Lee Historial_A/D y compara las propuestas de la corrida más reciente con lo realmente aplicado (ver _verificarCambioRangoDesdeRegistros_()). Solo lee la hoja; no escribe nada.
  */
 function _leerVerificacionCambioRangoHistorial_(parId) {
+  var prep = _prepararVerificacionCR_(parId);
+  return _verificarCambioRangoDesdeRegistros_(prep.registros, _claveDiaLimaCR_, prep.opciones);
+}
+
+/**
+ * _prepararVerificacionCR_(parId) [→ Contexto_Base_Web.md §PF286]
+ * Lee Historial_A/D y los pares de CR_Lista y deja listos los argumentos de _verificarCambioRangoDesdeRegistros_(): { registros (con el par deducido por fecha donde falta), opciones { parId, hastaDia } }. Solo lee.
+ */
+function _prepararVerificacionCR_(parId) {
   var registros = _leerRegistrosHistorialAscensos_() || [];
   var pares = _leerParesCRListaParaHistorial_();
   // Las propuestas anteriores a la columna Par_CR se enlazan en memoria por fecha (no escribe nada en la hoja; enlazarPropuestasConParCRHistorialAD() deja ese enlace guardado).
@@ -1249,7 +1260,137 @@ function _leerVerificacionCambioRangoHistorial_(parId) {
     var siguiente = propio ? pares.filter(function (p) { return p.dia > propio.dia; })[0] : null;
     if (siguiente) opciones.hastaDia = siguiente.dia;
   }
-  return _verificarCambioRangoDesdeRegistros_(registros, _claveDiaLimaCR_, opciones);
+  return { registros: registros, opciones: opciones };
+}
+
+/**
+ * _verificarYMarcarCambioRangoHistorial_(parId) [→ Contexto_Base_Web.md §PF286]
+ * Verifica la corrida (igual que _leerVerificacionCambioRangoHistorial_()) y, ANTES, marca «Realizado» en Historial_A/D las propuestas «Planificado» de esa corrida que el Directorio ya muestra cumplidas (ver _decidirPropuestaCRRealizada_()); después vuelve a verificar para que el resultado ya refleje el marcado. ESCRIBE en la hoja (Estado de propuesta y Comentario de esas filas, con una línea de auditoría). Agrega al resultado `marcadas` ({ tag, nombre, tipo, rango, rango2, motivo }) y, en los pendientes que no se pudieron decidir, `nota`.
+ */
+function _verificarYMarcarCambioRangoHistorial_(parId) {
+  var prep = _prepararVerificacionCR_(parId);
+  var v = _verificarCambioRangoDesdeRegistros_(prep.registros, _claveDiaLimaCR_, prep.opciones);
+  var marcadas = [];
+  var notas = {};
+  if (v.parId && v.pendientes.length) {
+    var tags = {};
+    prep.registros.forEach(function (r) { if (r.parId === v.parId && r.estadoProp === 'Planificado' && r.tag) tags[r.tag] = true; });
+    var plan = _planificarMarcadoRealizadoCR_(prep.registros, v.parId, _leerCuentasDirectorioParaCR_(tags));
+    notas = plan.notas;
+    if (plan.marcar.length) {
+      var sh = _getSs().getSheetByName(CFG.SHEETS.ASCENSOS);
+      _asegurarColumnaParCRAscensos_(sh);
+      marcadas = _aplicarMarcadoRealizadoCR_(sh, plan.marcar);
+      if (marcadas.length) {
+        prep = _prepararVerificacionCR_(v.parId);
+        v = _verificarCambioRangoDesdeRegistros_(prep.registros, _claveDiaLimaCR_, prep.opciones);
+      }
+    }
+  }
+  v.marcadas = marcadas.map(function (m) { return { tag: m.tag, nombre: m.nombre, tipo: m.tipo, rango: m.rango, rango2: m.rango2, motivo: m.motivo }; });
+  v.pendientes.forEach(function (x) {
+    var n = notas[x.tag + '|' + x.tipo + '|' + x.rango2];
+    if (n) x.nota = n;
+  });
+  return v;
+}
+
+/**
+ * _leerCuentasDirectorioParaCR_(tags) [→ Contexto_Base_Web.md §PF286]
+ * De las cuentas del conjunto `tags` ({ '#TAG': true }), lo que el Directorio muestra hoy: { '#TAG': { activo, clan, rango, admin } }. Una cuenta que no figura en el Directorio no aparece en el resultado. Solo lee.
+ */
+function _leerCuentasDirectorioParaCR_(tags) {
+  var out = {};
+  _leerDirectorioFisicoComoDC(_getSs()).forEach(function (fila) {
+    var tag = String(fila[DC.TAG - 1] || '').trim();
+    if (!tag || !tags[tag]) return;
+    out[tag] = {
+      activo: String(fila[DC.ESTADO - 1] || '').trim() === 'Activo',
+      clan: String(fila[DC.CLAN - 1] || '').trim(),
+      rango: String(fila[DC.RANGO - 1] || '').trim(),
+      admin: _esAdminEnDirectorioCR(fila[DC.ADMIN - 1])
+    };
+  });
+  return out;
+}
+
+/**
+ * _decidirPropuestaCRRealizada_(prop, cuenta) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
+ * Decide si una propuesta ya se aplicó, mirando lo que el Directorio muestra hoy de la cuenta (`cuenta` = { activo, clan, rango, admin } o null si no figura):
+ *  - Expulsión: realizada si la cuenta ya no está activa en el clan de la propuesta (o ya no figura).
+ *  - Ascenso: realizado si su rango actual es el propuesto o uno más alto.
+ *  - Degradación: realizada si su rango actual es el propuesto.
+ *  - Elegible Admin: realizada si ya es admin.
+ *  - Ascenso de clan: realizado si ya está activa en el clan de destino (se lee del Comentario: «Sube al clan X como miembro.»).
+ * Si la cuenta ya no está activa en el clan y la propuesta era Ascenso o Degradación, NO se marca y se devuelve una nota para que se revise a mano.
+ * Devuelve { realizada, motivo ('' si no), nota ('' si no hay) }.
+ */
+function _decidirPropuestaCRRealizada_(prop, cuenta) {
+  function norm(t) { return String(t || '').trim().toLowerCase(); }
+  var activaEnClan = !!(cuenta && cuenta.activo && norm(cuenta.clan) === norm(prop.clan));
+  var idxActual = cuenta ? RANGO_ORDEN.indexOf(cuenta.rango) : -1;
+  var idxPropuesto = RANGO_ORDEN.indexOf(prop.rango2);
+  var no = { realizada: false, motivo: '', nota: '' };
+
+  if (prop.tipo === 'Expulsión') {
+    if (activaEnClan) return no;
+    return { realizada: true, motivo: cuenta ? 'la cuenta ya no está activa en el clan ' + prop.clan : 'la cuenta ya no figura en el Directorio', nota: '' };
+  }
+  if (prop.tipo === 'Ascenso' || prop.tipo === 'Degradación') {
+    if (!activaEnClan) {
+      no.nota = 'La cuenta ya no está en el clan ' + prop.clan + ': revisa a mano si el cambio se aplicó.';
+      return no;
+    }
+    if (idxActual < 0 || idxPropuesto < 0) return no;
+    var cumple = (prop.tipo === 'Ascenso') ? (idxActual >= idxPropuesto) : (idxActual === idxPropuesto);
+    if (!cumple) return no;
+    return { realizada: true, motivo: 'su rango actual es ' + cuenta.rango + ' (propuesto: ' + prop.rango2 + ')', nota: '' };
+  }
+  if (prop.tipo === 'Elegible Admin') {
+    return (cuenta && cuenta.admin) ? { realizada: true, motivo: 'la cuenta ya es admin', nota: '' } : no;
+  }
+  if (prop.tipo === 'Ascenso de clan') {
+    var m = String(prop.comentario || '').match(/Sube al clan (.+?) como miembro\./);
+    if (!m) { no.nota = 'No pude leer el clan de destino del comentario: marca a mano cuando se aplique.'; return no; }
+    var destino = m[1];
+    return (cuenta && cuenta.activo && norm(cuenta.clan) === norm(destino)) ? { realizada: true, motivo: 'la cuenta ya está en el clan ' + destino, nota: '' } : no;
+  }
+  return no;
+}
+
+/**
+ * _planificarMarcadoRealizadoCR_(registros, parId, cuentasPorTag) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
+ * Recorre las propuestas «Planificado» del par y aplica _decidirPropuestaCRRealizada_() con la cuenta de cada una. Devuelve { marcar: [{ fila, tag, nombre, tipo, rango, rango2, motivo }], notas: { 'tag|tipo|rango2': nota } }. No modifica nada.
+ */
+function _planificarMarcadoRealizadoCR_(registros, parId, cuentasPorTag) {
+  var plan = { marcar: [], notas: {} };
+  (registros || []).forEach(function (r) {
+    if (r.parId !== parId || r.estadoProp !== 'Planificado' || !r.tag || !r.fila) return;
+    var d = _decidirPropuestaCRRealizada_(r, (cuentasPorTag || {})[r.tag] || null);
+    if (d.realizada) plan.marcar.push({ fila: r.fila, tag: r.tag, nombre: r.nombre, tipo: r.tipo, rango: r.rango, rango2: r.rango2, motivo: d.motivo });
+    else if (d.nota) plan.notas[r.tag + '|' + r.tipo + '|' + r.rango2] = d.nota;
+  });
+  return plan;
+}
+
+/**
+ * _aplicarMarcadoRealizadoCR_(sh, marcar) [→ Contexto_Base_Web.md §PF286]
+ * Escribe «Realizado» en Estado de propuesta de cada fila del plan y agrega al Comentario una línea de auditoría con la fecha de Lima y el motivo. Antes de escribir comprueba que la fila siga siendo la misma cuenta y siga «Planificado» (si no, la salta). Devuelve las filas que sí marcó.
+ */
+function _aplicarMarcadoRealizadoCR_(sh, marcar) {
+  var hoy = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
+  var hechas = [];
+  marcar.forEach(function (m) {
+    var tag = String(sh.getRange(m.fila, ASC.TAG).getValue() || '').trim();
+    var estado = String(sh.getRange(m.fila, ASC.ESTADO_PROPUESTA).getValue() || '').trim();
+    if (tag !== m.tag || estado !== 'Planificado') return;
+    sh.getRange(m.fila, ASC.ESTADO_PROPUESTA).setValue('Realizado');
+    var celda = sh.getRange(m.fila, ASC.COMENTARIO);
+    var previo = String(celda.getValue() || '').trim();
+    celda.setValue((previo ? previo + ' ' : '') + 'Marcado «Realizado» al verificar (' + hoy + '): ' + m.motivo + '.');
+    hechas.push(m);
+  });
+  return hechas;
 }
 
 /**

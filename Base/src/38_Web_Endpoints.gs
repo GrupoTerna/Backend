@@ -1503,6 +1503,25 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // NUEVO 28-oct-2026 (PF286): webCRListaVerificarYMarcar es POST porque marca «Realizado» en Historial_A/D las propuestas ya cumplidas (webCRListaVerificar, GET, solo lee); sessionToken/idAscenso en el body. [→ Contexto_Base_Web.md §PF286]
+  if (e && e.parameter && e.parameter.accion === 'webCRListaVerificarYMarcar') {
+    try {
+      var payloadCRVM = JSON.parse(e.postData.contents);
+      var resultadoCRVM = _webCRListaVerificarYMarcar(payloadCRVM && payloadCRVM.sessionToken, payloadCRVM && payloadCRVM.idAscenso);
+      // Los documentos de cambio de rango leen los «Realizado»: si se marcó algo y la corrida es la del par vigente, se actualizan.
+      if (resultadoCRVM && resultadoCRVM.ok && resultadoCRVM.marcadas && resultadoCRVM.marcadas.length && resultadoCRVM.parId) {
+        _webCRListaRefrescarDocs_(resultadoCRVM.parId, 'D_' + String(resultadoCRVM.parId).slice(2));
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify(resultadoCRVM))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errCRVM) {
+      Logger.log('[Web] Error interno: ' + errCRVM.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ ok: false, error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // webCRListaGenerarPropuestas es POST porque escribe (Historial_A/D), a diferencia de webCRListaPropuestas (GET, solo calcula); sessionToken/idAscenso/idDescenso en el body. [→ Contexto_Base_Web.md §38B089]
   if (e && e.parameter && e.parameter.accion === 'webCRListaGenerarPropuestas') {
     try {

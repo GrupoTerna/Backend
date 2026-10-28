@@ -4781,6 +4781,16 @@ function _webCRListaVerificar(token, idAscenso) {
   return verificacion;
 }
 
+// _webCRListaVerificarYMarcar(): versión de la rama «verificar» que ESCRIBE (por eso es POST): igual que _webCRListaVerificar(), pero antes marca «Realizado» en Historial_A/D las propuestas que el Directorio ya muestra cumplidas (_verificarYMarcarCambioRangoHistorial_(), 24_Historial_Ascensos.gs; PF286). Devuelve además `marcadas` y los `pares` para el selector.
+function _webCRListaVerificarYMarcar(token, idAscenso) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  var verificacion = _verificarYMarcarCambioRangoHistorial_(idAscenso);
+  verificacion.ok = true;
+  var lista = _webCRListaListar(token);
+  verificacion.pares = (lista && lista.ok) ? lista.pares : [];
+  return verificacion;
+}
+
 /**
  * _webCRListaRefrescarDocs_(idAscenso, idDescenso) [→ Contexto_Base_Web.md §PF286]
  * Después de guardar un par de CR_Lista o de generar sus propuestas desde la web, actualiza los documentos de
