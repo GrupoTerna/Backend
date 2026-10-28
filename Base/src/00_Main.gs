@@ -156,6 +156,9 @@ var PASOS_RUNALL = [
   function () { return procesarTorneos(); },
   // FIX (09-sep-2026, pedido usuario -- "_continuarRunSorteos() / [→ Contexto_Base_Web.md §B026]
   function () { return procesarSorteos(); },
+  // PF286 (28-oct-2026, pedido de la usuaria): Cambio de rango, igual que Torneos y Sorteos: actualiza con el par vigente de Extra los documentos
+  // «Cambio de rango» y «Ascensos y descensos» (ver procesarCambioRango(), 26_Torneos_Core.gs). [→ Contexto_Base_Web.md §PF286]
+  function () { return procesarCambioRango(); },
   // Guerra y Guerra_Logs van en pasos SEPARADOS (mismo motivo que [→ Contexto_Base_Web.md §B027]
   function () { return updateGuerraSheet(); },
   function () { updateGuerraLogsSheet(); },
@@ -259,6 +262,7 @@ var NOMBRES_PASOS_RUNALL = [
   'Torneos: procesar T_Lista, T_Asistencia y T_Control → torneos procesados (puede necesitar varias tandas)',
   // FIX (09-sep-2026): antes 2 entradas sueltas ('Sincronizar requisitos de [→ Contexto_Base_Web.md §B045]
   'Sorteos: procesar S_Lista, requisitos y participantes calificados → sorteos procesados',
+  'Cambio de rango: actualizar los documentos del par vigente → documentos de cambio de rango y de ascensos y descensos al día',
   'Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)',
   'Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día',
   // FASE 11 (punto 4 del Consolidado): entrada nueva, corresponde al paso [→ Contexto_Base_Web.md §B046]
@@ -347,6 +351,9 @@ var PASOS_RUNUPDATE = [
   function () { return procesarTorneos(); },
   // FIX (09-sep-2026): ver el comentario FIX completo en PASOS_RUNALL, mismo [→ Contexto_Base_Web.md §B060]
   function () { return procesarSorteos(); },
+  // PF286 (28-oct-2026, pedido de la usuaria): Cambio de rango, igual que Torneos y Sorteos: actualiza con el par vigente de Extra los documentos
+  // «Cambio de rango» y «Ascensos y descensos» (ver procesarCambioRango(), 26_Torneos_Core.gs). [→ Contexto_Base_Web.md §PF286]
+  function () { return procesarCambioRango(); },
   // Ver comentario equivalente en PASOS_RUNALL: Guerra y Guerra_Logs van [→ Contexto_Base_Web.md §B061]
   function () { return updateGuerraSheet(); },
   function () { updateGuerraLogsSheet(); },
@@ -424,6 +431,7 @@ var NOMBRES_PASOS_RUNUPDATE = [
   'Nuevos (orden y formato condicional): aplicar → hoja Nuevos ordenada y con su formato condicional',
   'Torneos: procesar T_Lista, T_Asistencia y T_Control → torneos procesados (puede necesitar varias tandas)',
   'Sorteos: procesar S_Lista, requisitos y participantes calificados → sorteos procesados',
+  'Cambio de rango: actualizar los documentos del par vigente → documentos de cambio de rango y de ascensos y descensos al día',
   'Hoja Guerra: actualizar (antes restaura desde el CSV si está vacía) → hoja Guerra al día (puede necesitar varias tandas)',
   'Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día',
   'Nuevos (cierre semanal): pasar la semana actual al histórico → histórico de Nuevos al día',
