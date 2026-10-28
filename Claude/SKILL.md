@@ -10,7 +10,7 @@ description: >-
 
 # Skill: `md` — código del clan en GitHub: lectura, corrección y consolidados de fases
 
-**Versión de esta skill: 27-oct-2026, rev. 1.** Cada cambio de `SKILL.md` sube el número de revisión (el workflow `skill-ci.yml` lo exige). Al empezar la tanda, después de clonar, Claude compara esta línea con la de `Claude/SKILL.md` del repo; si difieren, avisa a la usuaria que hay que reinstalar la skill desde ese archivo y toma el repo como referencia.
+**Versión de esta skill: 27-oct-2026, rev. 2.** Cada cambio de `SKILL.md` sube el número de revisión (el workflow `skill-ci.yml` lo exige). Al empezar la tanda, después de clonar, Claude compara esta línea con la de `Claude/SKILL.md` del repo; si difieren, avisa a la usuaria que hay que reinstalar la skill desde ese archivo y toma el repo como referencia.
 
 ## Idioma
 
@@ -75,24 +75,13 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 - Cuando se contraste un pendiente contra el código, **el registro de la contrastación queda en `Contexto_Base_Web.md`** (qué se verificó, contra qué archivo y versión, en qué fecha y qué se encontró), y en el consolidado se marca lo ya hecho.
 - **Migración al contexto del funcionamiento que está en `Web` y en su `CHANGELOG.md`:** primero se mueve y después se recorta. El `CHANGELOG.md` **conserva el historial de cambios como checklist corto, ordenado por fecha**; solo sale de él el funcionamiento y lo que sirva para decidir y prevenir errores. **Dónde se registra cada cambio nuevo** (código por repo, funcionamiento al contexto, historial al `CHANGELOG.md`): `Consolidados de cambios/Reglas_Consolidados.md`, sección 6. Cómo va la migración se lleva en el contexto (párrafo «Frontend — traslado desde `CHANGELOG.md` de `Web`»), no aquí.
 
-- **Cómo editar el contexto sin fallar (receta).** El archivo pesa más de 2 MB y una herramienta de reemplazo exacto falla si el texto buscado no coincide por completo (tildes, comillas, un salto de línea): la edición se pierde sin dejar rastro y el archivo queda como estaba. Pasos:
-  1. Ubicar el lugar con `grep -n "PFnnn" Contexto_Base_Web.md` y leer esas líneas con `sed -n`, **sin escribir de memoria** el texto a reemplazar.
-  2. Editar con un script de Python que busque con `s.index(...)` un fragmento corto y único y compruebe con `assert` que aparece **una sola vez**; para agregar un punto a una sección PF, insertarlo justo después del punto anterior.
-  3. Correr `Consolidados de cambios/verificar_contexto.py` (debe decir «OK»).
-  4. Recién entonces hacer el commit.
-  - Si el `assert` falla, se vuelve a ubicar el texto en vez de insistir con otra variante.
-  - La fila de «Abiertos» que ya se resolvió se **quita** (no se deja tachada) y su resultado va como punto de la sección PF.
+- **Cómo editar el contexto sin fallar.** El archivo pesa más de 2 MB y una herramienta de reemplazo exacto falla en silencio si el texto buscado no coincide por completo. **Receta completa en `Claude/referencias/editar_contexto.md`: léela antes de editar el contexto.** En resumen: ubicar con `grep -n`, editar con un script de Python con `assert` de coincidencia única, y correr `Consolidados de cambios/verificar_contexto.py` (debe decir «OK») antes del commit.
 
 ## 0.5 Consolidados de fases y carpeta `Datos descargados`
 
 - **Todo consolidado de fases se guarda en `Consolidados de cambios/` del repo `Backend`** y se actualiza ahí, no se entrega para descargar. **Sus reglas están en `Consolidados de cambios/Reglas_Consolidados.md`: léelas ahí.**
 - **`Datos descargados/`** tiene subcarpetas con archivos de Drive o logs que la usuaria sube para que Claude contraste los JSON, CSV u otros archivos (la evidencia) contra el código. **Regla urgente:** si en un archivo de esa carpeta Claude **ve teléfonos o celulares**, lo trata como urgente: **avisa de inmediato que se quite el archivo del repo, o pide autorización para eliminarlo**, y no copia ese contenido. El repo es público.
-- **Si el archivo de datos más reciente no está en GitHub, o la copia de `Datos descargados/` es más vieja, se busca en Drive** (regla dictada por la usuaria el 18-oct-2026). Por ejemplo, para `Backup_Guerra.csv` o `Correcciones_Guerra.csv`:
-  1. Buscar el archivo con el conector de Google Drive.
-  2. Comparar su fecha de modificación y su tamaño con la copia del repo **antes** de trabajar con la copia vieja.
-  3. Si el conector no está habilitado, pedirle a la usuaria que lo habilite y no seguir sin el dato.
-  4. Si el archivo es grande (el CSV de guerra pasa de 1,9 MB), no cabe: el conector entrega el contenido al chat, no al contenedor donde corren los scripts. Claude lo dice y le pide a la usuaria que suba el archivo al chat o que reemplace el de `Datos descargados/`. *(Se deduce de cómo trabaja el conector; la descarga no se probó.)*
-  5. Lo leído de Drive se trata como lo de `Datos descargados/`: si trae teléfonos o celulares, no se copia y se avisa de inmediato; y no se copia a los repos (públicos) por iniciativa propia.
+- **Si el archivo de datos más reciente no está en GitHub, o la copia de `Datos descargados/` es más vieja, se busca en Drive** (regla de la usuaria, 18-oct-2026). **Procedimiento en `Claude/referencias/datos_drive.md`: léelo antes de trabajar con una copia que pueda estar vieja.** En resumen: buscar con el conector de Drive, comparar fecha y tamaño con la copia del repo **antes** de usar la vieja, y no seguir sin el dato; lo leído de Drive no se copia a los repos, y si trae teléfonos o celulares se avisa de inmediato.
 
 ## 0.6 La fuente del código es el repositorio
 
@@ -238,12 +227,13 @@ La usuaria puede pegar conversaciones con otras IAs, logs, errores, código anti
 
 Los cambios se entregan en tandas chicas e incrementales, para evitar que la sesión se corte sin haber devuelto los archivos. La subida de cada cambio y la excepción del contexto están en 0.2.
 
-No debe perderse información entre una conversación y la siguiente:
+No debe perderse información entre una conversación y la siguiente.
 
-- Como el trabajo avanza entre sesiones y el chat se borra antes de empezar una nueva, nada se debe perder de un chat a otro.
-- Si la usuaria explica el comportamiento de algo o da alguna confirmación, eso se documenta de inmediato en el lugar que corresponda: el plan de fases vigente, el código del repo o, si es funcionamiento del sistema o una decisión que sirva para prevenir errores, `Contexto_Base_Web.md` (0.4). No debe quedar solo dicho en el chat.
-- **Buscar lo ya escrito antes de preguntar o suponer, y cruzar todas las fuentes antes de decir «no es concluyente»** (reglas 13 y 14 de `Consolidados de cambios/Reglas_Consolidados.md`; la lista de palabras de guerra para buscar y el mapa de fuentes están ahí y en `Contexto_Base_Web.md §PF239`). Vale para cualquier tema, no solo guerra: lo documentado y validado se usa y se cita, no se vuelve a preguntar.
-- **Contrastar con los datos disponibles antes de suponer o ignorar (regla de la usuaria, 23-oct-2026).** Ante una hipótesis o una duda sobre el funcionamiento del juego o de los datos, primero se busca y se contrasta con los archivos que ya hay (`Datos descargados/` del repo `Backend`: JSON, CSV; y Drive si el conector está disponible); no se supone ni se descarta sin mirar. Si los datos necesarios están en Drive y Claude no puede verlos, le dice a la usuaria que los descargue de Drive y los suba a GitHub, y no continúa sobre una suposición.
+**Detalle en `Claude/referencias/continuidad_sesiones.md`.** Léelo antes de preguntar, suponer o descartar algo sobre el funcionamiento del juego o de los datos, y cuando la usuaria explique o confirme un comportamiento. En resumen:
+
+- Lo que la usuaria explique o confirme se documenta **de inmediato** en el lugar que corresponde (plan de fases, código o `Contexto_Base_Web.md`, 0.4); no queda solo en el chat.
+- **Se busca lo ya escrito antes de preguntar o suponer**, y se cruzan todas las fuentes antes de decir «no es concluyente» (reglas 13 y 14 de `Consolidados de cambios/Reglas_Consolidados.md`).
+- **Se contrasta con los datos disponibles** (`Datos descargados/` y Drive) antes de suponer o ignorar; si los datos están en Drive y Claude no los ve, se le pide a la usuaria que los suba a GitHub y no se sigue sobre una suposición.
 
 ## Referencias en el changelog: archivo + función, no solo el número
 
