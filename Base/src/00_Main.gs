@@ -1865,6 +1865,36 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   var paso = parseInt(props.getProperty(idEjecucion + '_PASO') || '0', 10);
   var reintentoMismoPaso = props.getProperty(idEjecucion + '_REINTENTO') === '1';
 
+  // PF286 punto 14: si se subió una versión nueva de Base con la lista de pasos cambiada mientras la cadena estaba a medias, el número guardado ya no
+  // apunta al mismo paso. Junto al número se guarda el nombre del paso pendiente (<ID>_PASO_NOMBRE); si no coincide con el de la lista actual, se sigue en el
+  // paso con ese nombre, o se descarta el avance si ya no existe. Una cadena iniciada antes de esta versión no trae nombre guardado y sigue como siempre.
+  // REENUM queda fuera: se retoma desde un índice que se puede fijar a mano y nunca se aborta (PF260).
+  if (idEjecucion !== 'REENUM' && (paso > 0 || reintentoMismoPaso)) {
+    var marcaGuardada = props.getProperty(idEjecucion + '_PASO_NOMBRE');
+    var marcaActual = _marcaDePasoDeCadena_(pasos, nombresPasos, paso);
+    if (marcaGuardada !== null && marcaGuardada !== marcaActual) {
+      var pasoNuevo = _buscarPasoDeCadenaPorMarca_(nombresPasos, marcaGuardada, paso);
+      if (pasoNuevo < 0) {
+        Logger.log('[' + idEjecucion + '] DESCARTADA: la lista de pasos cambió y el paso que quedaba pendiente' +
+          (marcaGuardada.charAt(0) === '#' ? '' : ' («' + marcaGuardada + '»)') + ' ya no está. Se descarta el avance y la continuación pendiente; la próxima corrida normal empieza de cero.');
+        props.deleteProperty(idEjecucion + '_PASO');
+        props.deleteProperty(idEjecucion + '_PASO_NOMBRE');
+        props.deleteProperty(idEjecucion + '_REINTENTO');
+        props.deleteProperty(idEjecucion + '_TANDAS_PASO');
+        props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
+        props.deleteProperty(idEjecucion + '_SIN_API');
+        props.deleteProperty(idEjecucion + '_SIN_API_TS');
+        _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
+        _liberarLockSiNoEsRunGuerra_();
+        return false;
+      }
+      Logger.log('[' + idEjecucion + '] La lista de pasos cambió desde la tanda anterior: el paso pendiente «' + marcaGuardada + '» pasó del lugar ' + (paso + 1) +
+        ' al ' + (pasoNuevo + 1) + ' de ' + pasos.length + '. Se retoma ahí.');
+      paso = pasoNuevo;
+      props.setProperty(idEjecucion + '_PASO', String(paso));
+    }
+  }
+
   // PF283: contador de tandas del paso en curso y progreso que dejó la tanda anterior.
   var tandasPaso = parseInt(props.getProperty(idEjecucion + '_TANDAS_PASO') || '0', 10);
   var progPrevio = null;
@@ -1919,7 +1949,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       _logAvanceTanda_(idEjecucion, paso, pasos.length, tandasPaso, progPrevio, PROGRESO_PASO_);
       props.setProperty(idEjecucion + '_TANDAS_PASO', String(tandasPaso));
       props.setProperty(idEjecucion + '_PROGRESO_PASO', JSON.stringify({ paso: paso, texto: PROGRESO_PASO_ ? PROGRESO_PASO_.texto : '', acum: PROGRESO_PASO_ ? PROGRESO_PASO_.acum : null }));
-      props.setProperty(idEjecucion + '_PASO', String(paso));
+      _guardarPasoDeCadena_(props, idEjecucion, paso, pasos, nombresPasos);
       props.setProperty(idEjecucion + '_REINTENTO', '1');
       _refrescarLockEjecucion(idEjecucion);
       _programarContinuacion(nombreHandlerContinuacion);
@@ -1933,7 +1963,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
     props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
     props.deleteProperty(idEjecucion + '_REINTENTO');
     paso++;
-    props.setProperty(idEjecucion + '_PASO', String(paso));
+    _guardarPasoDeCadena_(props, idEjecucion, paso, pasos, nombresPasos);
     _refrescarLockEjecucion(idEjecucion);
 
     if (paso < pasos.length && (Date.now() - inicioTanda) > presupuestoMs) {
@@ -1944,11 +1974,38 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   }
 
   props.deleteProperty(idEjecucion + '_PASO');
+  props.deleteProperty(idEjecucion + '_PASO_NOMBRE');
   props.deleteProperty(idEjecucion + '_REINTENTO');
   props.deleteProperty(idEjecucion + '_TANDAS_PASO');
   props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
   _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
   return true;
+}
+
+// PF286 punto 14: ayudas de _ejecutarPorTandas() para reconocer el paso pendiente aunque la lista de pasos cambie entre tandas (la pareja principal-continuación no aplica: no son continuaciones).
+
+// Marca que identifica el paso en la posición `paso`: su nombre; si la cadena no tiene nombres, la cantidad de pasos de la lista (empieza con «#»).
+function _marcaDePasoDeCadena_(pasos, nombresPasos, paso) {
+  if (nombresPasos && nombresPasos[paso]) return String(nombresPasos[paso]);
+  return '#' + pasos.length;
+}
+
+// Guarda el índice del paso pendiente y su marca. Si ya no queda ningún paso pendiente, borra la marca.
+function _guardarPasoDeCadena_(props, idEjecucion, paso, pasos, nombresPasos) {
+  props.setProperty(idEjecucion + '_PASO', String(paso));
+  if (paso < pasos.length) props.setProperty(idEjecucion + '_PASO_NOMBRE', _marcaDePasoDeCadena_(pasos, nombresPasos, paso));
+  else props.deleteProperty(idEjecucion + '_PASO_NOMBRE');
+}
+
+// Índice, en la lista actual, del paso con esa marca (si hay varios con el mismo nombre, el más cercano a `cercaDe`). -1 si no está o si la marca es solo una cantidad.
+function _buscarPasoDeCadenaPorMarca_(nombresPasos, marca, cercaDe) {
+  if (!nombresPasos || !marca || marca.charAt(0) === '#') return -1;
+  var mejor = -1;
+  for (var i = 0; i < nombresPasos.length; i++) {
+    if (String(nombresPasos[i]) !== marca) continue;
+    if (mejor < 0 || Math.abs(i - cercaDe) < Math.abs(mejor - cercaDe)) mejor = i;
+  }
+  return mejor;
 }
 
 function onEditTrigger(e) {
