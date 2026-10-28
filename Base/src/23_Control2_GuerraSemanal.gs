@@ -1,11 +1,14 @@
-// ==============================================================================
 // 23_Control2_GuerraSemanal.gs
 // Hoja Control_2: resumen semanal de guerra por miembro.
-// ==============================================================================
-
-// ----- Variables y constantes -----
-
 // 23_Control2_GuerraSemanal.gs [→ Contexto_Base_Web.md §23B001]
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Control2: actualizar y respaldar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Control2: formato (lo usa actualizarControl2)
+//    - Control2: restaurar la hoja si no existe (lo usa RUNALL)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Índices de columna (1-based) — Control_2. [→ Contexto_Base_Web.md §23B002]
 var CC2 = {
@@ -35,7 +38,11 @@ var CONTROL2_METRICAS = [
   { nombre: 'Barcos',  ancho: 6, extras: ['Total'] }
 ];
 
-// ----- Funciones manuales / punto de entrada -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Control2: actualizar y respaldar -----
 
 /**
  * actualizarControl2() [→ Contexto_Base_Web.md §23B006]
@@ -359,7 +366,11 @@ function generarBackupGuerraSemanalCSV() {
     ' registro(s) semanal(es) a partir de ' + filas.length + ' fila(s) diaria(s) de Backup_Guerra.csv.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Control2: formato (lo usa actualizarControl2) -----
 
 /**
  * _aplicarFmtCondicionalControl2(sh, numJugadores) [→ Contexto_Base_Web.md §23B021]
@@ -404,14 +415,33 @@ function _aplicarFmtCondicionalControl2(sh, numJugadores) {
   _tryCondFmt(sh, rules);
 }
 
+// ----- Control2: restaurar la hoja si no existe (lo usa RUNALL) -----
+
 /**
- * _control2ColTotales() [→ Contexto_Base_Web.md §23B022]
+ * _restaurarControl2SiNoExiste() [→ Contexto_Base_Web.md §23B027]
  */
-function _control2ColTotales() {
-  var total = COL_INICIO_GRID2 - 1;
-  for (var m = 0; m < CONTROL2_METRICAS.length; m++) total += CONTROL2_METRICAS[m].ancho;
-  return total;
-}
+function _restaurarControl2SiNoExiste() {
+  var ss = _getSs();
+  if (ss.getSheetByName('Control_2')) return; // ya existe: nunca se toca
+
+  var sh = ss.insertSheet('Control_2');
+  var COL_TOTALES = _control2ColTotales();
+  if (sh.getMaxColumns() < COL_TOTALES) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), COL_TOTALES - sh.getMaxColumns());
+  }
+
+  _pintarEncabezadosControl2(sh);
+
+  Logger.log('[Control_2] Hoja recreada desde cero (no existía — probable Demoler previo). ' +
+    'Repoblando con actualizarControl2()...');
+
+  try {
+    actualizarControl2();
+  } catch (e) {
+    Logger.log('[Control_2] Encabezados creados, pero actualizarControl2() falló en el primer ' +
+      'intento (' + e.message + '); se reintentará en la próxima corrida normal.');
+  }
+   }
 
 /**
  * _pintarEncabezadosControl2(sh) [→ Contexto_Base_Web.md §23B023]
@@ -524,27 +554,10 @@ function _pintarEncabezadosControl2(sh) {
 }
 
 /**
- * _restaurarControl2SiNoExiste() [→ Contexto_Base_Web.md §23B027]
+ * _control2ColTotales() [→ Contexto_Base_Web.md §23B022]
  */
-function _restaurarControl2SiNoExiste() {
-  var ss = _getSs();
-  if (ss.getSheetByName('Control_2')) return; // ya existe: nunca se toca
-
-  var sh = ss.insertSheet('Control_2');
-  var COL_TOTALES = _control2ColTotales();
-  if (sh.getMaxColumns() < COL_TOTALES) {
-    sh.insertColumnsAfter(sh.getMaxColumns(), COL_TOTALES - sh.getMaxColumns());
-  }
-
-  _pintarEncabezadosControl2(sh);
-
-  Logger.log('[Control_2] Hoja recreada desde cero (no existía — probable Demoler previo). ' +
-    'Repoblando con actualizarControl2()...');
-
-  try {
-    actualizarControl2();
-  } catch (e) {
-    Logger.log('[Control_2] Encabezados creados, pero actualizarControl2() falló en el primer ' +
-      'intento (' + e.message + '); se reintentará en la próxima corrida normal.');
-  }
-   }
+function _control2ColTotales() {
+  var total = COL_INICIO_GRID2 - 1;
+  for (var m = 0; m < CONTROL2_METRICAS.length; m++) total += CONTROL2_METRICAS[m].ancho;
+  return total;
+}
