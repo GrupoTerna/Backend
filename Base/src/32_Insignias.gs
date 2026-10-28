@@ -1,163 +1,26 @@
-// ==============================================================================
 // 32_Insignias.gs
 // Datos de insignias/badges de jugador (Backup_Insignias.csv y Backup_Insignias_2.csv).
-// ==============================================================================
-
 // Mismo patrón de almacenamiento que Backup_Cards.csv/Backup_Cards_2.csv [→ Contexto_Base_Web.md §32B001]
-
 // A) DATOS DE INSIGNIAS: Backup_Insignias.csv (catálogo) y Backup_Insignias_2.csv (por jugador) [→ Contexto_Base_Web.md §32B002]
 
-/**
- * _leerInsigniasCSV() [→ Contexto_Base_Web.md §32B003]
- */
-function _leerInsigniasCSV() {
-  var headersDefault = ['N°', 'Name', 'Nombre', 'Nivel', 'Nivel_max', 'Objetivo', 'Ícono'];
-  var csvText = _loadCSVFromDrive('Backup_Insignias.csv');
-  if (!csvText) return { headers: headersDefault, rows: [] };
-
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
-
-  return { headers: parsed[0], rows: parsed.slice(1) };
-}
-
-/**
- * _guardarInsigniasCSV(headers, rows) [→ Contexto_Base_Web.md §32B004]
- */
-function _guardarInsigniasCSV(headers, rows) {
-  rows = _ordenarFilasCatalogoInsignias(rows);
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive('Backup_Insignias.csv', _encodeCSV([headers].concat(rows)));
-}
-
-/**
- * _ordenarFilasCatalogoInsignias(rows) [→ Contexto_Base_Web.md §32B005]
- */
-function _ordenarFilasCatalogoInsignias(rows) {
-  var ordenInsignia = {};
-  var siguiente = 0;
-  var conPos = [];
-  for (var i = 0; i < rows.length; i++) {
-    var n = String(rows[i][1] || '').trim();
-    if (!Object.prototype.hasOwnProperty.call(ordenInsignia, n)) ordenInsignia[n] = siguiente++;
-    conPos.push({ fila: rows[i], pos: i, nombre: n });
-  }
-  conPos.sort(function (a, b) {
-    if (ordenInsignia[a.nombre] !== ordenInsignia[b.nombre]) return ordenInsignia[a.nombre] - ordenInsignia[b.nombre];
-    var la = Number(a.fila[3]) || 0;
-    var lb = Number(b.fila[3]) || 0;
-    if (la !== lb) return la - lb;
-    return a.pos - b.pos;
-  });
-  var salida = [];
-  for (var k = 0; k < conPos.length; k++) salida.push(conPos[k].fila);
-  return salida;
-}
-
-/**
- * _leerInsignias2CSV() [→ Contexto_Base_Web.md §32B006]
- */
-function _leerInsignias2CSV() {
-  var headersDefault = ['N°', 'Tag', 'Name', 'Nombre', 'Progreso', 'Nivel'];
-  var csvText = _loadCSVFromDrive('Backup_Insignias_2.csv');
-  if (!csvText) return { headers: headersDefault, rows: [] };
-
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
-
-  return { headers: parsed[0], rows: parsed.slice(1) };
-}
-
-/**
- * _guardarInsignias2CSV(headers, rows)
- * Renumera la columna N° (índice 0) y guarda Backup_Insignias_2.csv completo.
- */
-function _guardarInsignias2CSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive('Backup_Insignias_2.csv', _encodeCSV([headers].concat(rows)));
-}
-
-// TRADUCCIÓN AUTOMÁTICA DE INSIGNIAS DE MAESTRÍA (contra Backup_Cards.csv) [→ Contexto_Base_Web.md §32B007]
-
-/**
- * _extraerNombreCartaDeInsigniaMastery(nombreInsignia) [→ Contexto_Base_Web.md §32B008]
- */
-function _extraerNombreCartaDeInsigniaMastery(nombreInsignia) {
-  var n = String(nombreInsignia || '').trim();
-  if (n.indexOf('Mastery') !== 0) return null; // no es una insignia de maestría
-  var resto = n.substring('Mastery'.length).trim();
-  return resto || null; // "Mastery" solo, sin nombre de carta detrás -> null
-}
-
-/**
- * _normalizarClaveInsignia(texto) [→ Contexto_Base_Web.md §32B009]
- */
-function _normalizarClaveInsignia(texto) {
-  return String(texto || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-}
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hojas Insignias e Insignias2: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Insignias: leer, nombrar y guardar el CSV (lo usa updateInsigniasSheet)
+//    - Insignias2: leer, armar y guardar el CSV (lo usa updateInsignias2Sheet)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Memo por ejecución del mapa nombre-de-carta -> Nombre en español (ver [→ Contexto_Base_Web.md §32B010]
 var _INSIGNIAS_MAPA_CARTAS_MEMO = null;
 
-/**
- * _getMapaCartasEs() [→ Contexto_Base_Web.md §32B011]
- */
-function _getMapaCartasEs() {
-  if (_INSIGNIAS_MAPA_CARTAS_MEMO) return _INSIGNIAS_MAPA_CARTAS_MEMO;
-  var mapa = {};
-  var csv = _leerCardsCSV(); // definida en 31_Cards_Mazos.gs
-  for (var i = 0; i < csv.rows.length; i++) {
-    var clave = _normalizarClaveInsignia(csv.rows[i][2]);
-    var es = String(csv.rows[i][3] || '').trim();
-    if (clave && es && !mapa[clave]) mapa[clave] = es;
-  }
-  _INSIGNIAS_MAPA_CARTAS_MEMO = mapa;
-  return mapa;
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-/**
- * _buscarTraduccionCartaPorNombre(nombreCartaIngles) [→ Contexto_Base_Web.md §32B012]
- */
-function _buscarTraduccionCartaPorNombre(nombreCartaIngles) {
-  var clave = _normalizarClaveInsignia(nombreCartaIngles);
-  if (!clave) return '';
-  return _getMapaCartasEs()[clave] || '';
-}
-
-/**
- * _traducirNombreInsignia(nombreInsignia) [→ Contexto_Base_Web.md §32B013]
- */
-function _traducirNombreInsignia(nombreInsignia) {
-  var nombreCarta = _extraerNombreCartaDeInsigniaMastery(nombreInsignia);
-  if (!nombreCarta) return ''; // insignia particular, no genérica de maestría
-  return _buscarTraduccionCartaPorNombre(nombreCarta);
-}
-
-/**
- * _construirMapaNombresCatalogo(rows) [→ Contexto_Base_Web.md §32B014]
- */
-function _construirMapaNombresCatalogo(rows) {
-  var mapa = {};
-  for (var i = 0; i < rows.length; i++) {
-    var nm = String(rows[i][1] || '').trim();
-    var es = String(rows[i][2] || '').trim();
-    if (nm && es && !Object.prototype.hasOwnProperty.call(mapa, nm)) mapa[nm] = es;
-  }
-  return mapa;
-}
-
-/**
- * _resolverNombreInsignia(nombreInsignia, mapaCatalogo) [→ Contexto_Base_Web.md §32B015]
- */
-function _resolverNombreInsignia(nombreInsignia, mapaCatalogo) {
-  var n = String(nombreInsignia || '').trim();
-  if (mapaCatalogo && Object.prototype.hasOwnProperty.call(mapaCatalogo, n)) return mapaCatalogo[n];
-  return _traducirNombreInsignia(n);
-}
+// ----- Hojas Insignias e Insignias2: actualizar -----
 
 // SINCRONIZACIÓN REAL DESDE EL CACHE DE /players [→ Contexto_Base_Web.md §32B016]
-
-// ----- Funciones manuales / punto de entrada -----
 
 /**
  * updateInsigniasSheet() [→ Contexto_Base_Web.md §32B017]
@@ -295,7 +158,25 @@ function updateInsignias2Sheet() {
     (PLAYERS_API_ENABLED === true ? 'TRUE' : 'PARTIAL') + '). Nunca se vacía: el resto de tags conserva su fila anterior.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Insignias: leer, nombrar y guardar el CSV (lo usa updateInsigniasSheet) -----
+
+/**
+ * _leerInsigniasCSV() [→ Contexto_Base_Web.md §32B003]
+ */
+function _leerInsigniasCSV() {
+  var headersDefault = ['N°', 'Name', 'Nombre', 'Nivel', 'Nivel_max', 'Objetivo', 'Ícono'];
+  var csvText = _loadCSVFromDrive('Backup_Insignias.csv');
+  if (!csvText) return { headers: headersDefault, rows: [] };
+
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
+
+  return { headers: parsed[0], rows: parsed.slice(1) };
+}
 
 /**
  * _getInsigniasDesdeCache() [→ Contexto_Base_Web.md §32B020]
@@ -338,6 +219,130 @@ function _getInsigniasDesdeCache() {
     }
   }
   return map;
+}
+
+/**
+ * _construirMapaNombresCatalogo(rows) [→ Contexto_Base_Web.md §32B014]
+ */
+function _construirMapaNombresCatalogo(rows) {
+  var mapa = {};
+  for (var i = 0; i < rows.length; i++) {
+    var nm = String(rows[i][1] || '').trim();
+    var es = String(rows[i][2] || '').trim();
+    if (nm && es && !Object.prototype.hasOwnProperty.call(mapa, nm)) mapa[nm] = es;
+  }
+  return mapa;
+}
+
+/**
+ * _resolverNombreInsignia(nombreInsignia, mapaCatalogo) [→ Contexto_Base_Web.md §32B015]
+ */
+function _resolverNombreInsignia(nombreInsignia, mapaCatalogo) {
+  var n = String(nombreInsignia || '').trim();
+  if (mapaCatalogo && Object.prototype.hasOwnProperty.call(mapaCatalogo, n)) return mapaCatalogo[n];
+  return _traducirNombreInsignia(n);
+}
+
+/**
+ * _traducirNombreInsignia(nombreInsignia) [→ Contexto_Base_Web.md §32B013]
+ */
+function _traducirNombreInsignia(nombreInsignia) {
+  var nombreCarta = _extraerNombreCartaDeInsigniaMastery(nombreInsignia);
+  if (!nombreCarta) return ''; // insignia particular, no genérica de maestría
+  return _buscarTraduccionCartaPorNombre(nombreCarta);
+}
+
+// TRADUCCIÓN AUTOMÁTICA DE INSIGNIAS DE MAESTRÍA (contra Backup_Cards.csv) [→ Contexto_Base_Web.md §32B007]
+
+/**
+ * _extraerNombreCartaDeInsigniaMastery(nombreInsignia) [→ Contexto_Base_Web.md §32B008]
+ */
+function _extraerNombreCartaDeInsigniaMastery(nombreInsignia) {
+  var n = String(nombreInsignia || '').trim();
+  if (n.indexOf('Mastery') !== 0) return null; // no es una insignia de maestría
+  var resto = n.substring('Mastery'.length).trim();
+  return resto || null; // "Mastery" solo, sin nombre de carta detrás -> null
+}
+
+/**
+ * _buscarTraduccionCartaPorNombre(nombreCartaIngles) [→ Contexto_Base_Web.md §32B012]
+ */
+function _buscarTraduccionCartaPorNombre(nombreCartaIngles) {
+  var clave = _normalizarClaveInsignia(nombreCartaIngles);
+  if (!clave) return '';
+  return _getMapaCartasEs()[clave] || '';
+}
+
+/**
+ * _getMapaCartasEs() [→ Contexto_Base_Web.md §32B011]
+ */
+function _getMapaCartasEs() {
+  if (_INSIGNIAS_MAPA_CARTAS_MEMO) return _INSIGNIAS_MAPA_CARTAS_MEMO;
+  var mapa = {};
+  var csv = _leerCardsCSV(); // definida en 31_Cards_Mazos.gs
+  for (var i = 0; i < csv.rows.length; i++) {
+    var clave = _normalizarClaveInsignia(csv.rows[i][2]);
+    var es = String(csv.rows[i][3] || '').trim();
+    if (clave && es && !mapa[clave]) mapa[clave] = es;
+  }
+  _INSIGNIAS_MAPA_CARTAS_MEMO = mapa;
+  return mapa;
+}
+
+/**
+ * _normalizarClaveInsignia(texto) [→ Contexto_Base_Web.md §32B009]
+ */
+function _normalizarClaveInsignia(texto) {
+  return String(texto || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/**
+ * _ordenarFilasCatalogoInsignias(rows) [→ Contexto_Base_Web.md §32B005]
+ */
+function _ordenarFilasCatalogoInsignias(rows) {
+  var ordenInsignia = {};
+  var siguiente = 0;
+  var conPos = [];
+  for (var i = 0; i < rows.length; i++) {
+    var n = String(rows[i][1] || '').trim();
+    if (!Object.prototype.hasOwnProperty.call(ordenInsignia, n)) ordenInsignia[n] = siguiente++;
+    conPos.push({ fila: rows[i], pos: i, nombre: n });
+  }
+  conPos.sort(function (a, b) {
+    if (ordenInsignia[a.nombre] !== ordenInsignia[b.nombre]) return ordenInsignia[a.nombre] - ordenInsignia[b.nombre];
+    var la = Number(a.fila[3]) || 0;
+    var lb = Number(b.fila[3]) || 0;
+    if (la !== lb) return la - lb;
+    return a.pos - b.pos;
+  });
+  var salida = [];
+  for (var k = 0; k < conPos.length; k++) salida.push(conPos[k].fila);
+  return salida;
+}
+
+/**
+ * _guardarInsigniasCSV(headers, rows) [→ Contexto_Base_Web.md §32B004]
+ */
+function _guardarInsigniasCSV(headers, rows) {
+  rows = _ordenarFilasCatalogoInsignias(rows);
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive('Backup_Insignias.csv', _encodeCSV([headers].concat(rows)));
+}
+
+// ----- Insignias2: leer, armar y guardar el CSV (lo usa updateInsignias2Sheet) -----
+
+/**
+ * _leerInsignias2CSV() [→ Contexto_Base_Web.md §32B006]
+ */
+function _leerInsignias2CSV() {
+  var headersDefault = ['N°', 'Tag', 'Name', 'Nombre', 'Progreso', 'Nivel'];
+  var csvText = _loadCSVFromDrive('Backup_Insignias_2.csv');
+  if (!csvText) return { headers: headersDefault, rows: [] };
+
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
+
+  return { headers: parsed[0], rows: parsed.slice(1) };
 }
 
 /**
@@ -412,6 +417,15 @@ function _armarFilasInsignias2ParaTags(tags) {
     }
   }
   return todasFilas;
+}
+
+/**
+ * _guardarInsignias2CSV(headers, rows)
+ * Renumera la columna N° (índice 0) y guarda Backup_Insignias_2.csv completo.
+ */
+function _guardarInsignias2CSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive('Backup_Insignias_2.csv', _encodeCSV([headers].concat(rows)));
 }
 
 /**
