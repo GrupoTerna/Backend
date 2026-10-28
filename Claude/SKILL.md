@@ -1,6 +1,6 @@
 ---
 name: md
-description: "Trabajo con el ecosistema de código del clan: backend Apps Script (Base y Generador), frontend Web, script de Tampermonkey y consolidados de fases. El código vive en los repos de GitHub GrupoTerna (Backend, Web, Script) y los cambios se suben directo a main. Usar al leer, corregir o ampliar esos archivos, o al editar el contexto, los consolidados o esta skill. Responde en español de Perú.""
+description: "Trabajo con el ecosistema de código del clan: backend Apps Script (Base y Generador), frontend Web, script de Tampermonkey y consolidados de fases. El código vive en los repos de GitHub GrupoTerna (Backend, Web, Script) y los cambios se suben directo a main. Usar al leer, corregir o ampliar esos archivos, o al editar el contexto, los consolidados o esta skill. Responde en español de Perú."
 ---
 
 # Skill: `md` — lectura, corrección y consolidados de fases de proyectos en .md/.zip
