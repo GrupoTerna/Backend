@@ -594,7 +594,7 @@ function _setupLinks(ss) {
   Logger.log('[Setup] Links OK (14 cols)');
 }
 
-// Ascensos (hoja física "Historial_A/D", ver CFG.SHEETS.ASCENSOS): 18 (más 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267) [→ Contexto_Base_Web.md §02B052]
+// Ascensos (hoja física "Historial_A/D", ver CFG.SHEETS.ASCENSOS): 18 (más 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267, y la columna 24 Par_CR desde el 28-oct-2026, §PF286) [→ Contexto_Base_Web.md §02B052]
 function _setupAscensosSheet(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.ASCENSOS);
   // FASE 5 (13-sep-2026, pedido del usuario, plan de Cambio de Rango): se [→ Contexto_Base_Web.md §02B053]
@@ -607,7 +607,9 @@ function _setupAscensosSheet(ss) {
   sh.setColumnWidth(17, 260);  // Comentario
   // 26-oct-2026 (pedido de la usuaria, §PF267): 5 columnas más al final (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día), calculadas desde Fecha.
   _completarTSDEnHoja_(sh, ASC.FECHA, ASC.TSD);
-  Logger.log('[Setup] Ascensos OK (23 cols)');
+  // 28-oct-2026 (PF286): columna 24 con el id del par de CR_Lista que generó cada propuesta.
+  _asegurarColumnaParCRAscensos_(sh);
+  Logger.log('[Setup] Ascensos OK (24 cols)');
 }
 
 function _setupAdministradores(ss) {

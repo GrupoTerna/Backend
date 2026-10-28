@@ -278,7 +278,7 @@ function _noticiasBarcos_(semana) {
 // Cambios de rango de la semana desde Historial_A/D (fecha en hora de Lima); omite los 'Planificado'. [→ Contexto_Base_Web.md §40B008]
 function _noticiasAscensos_(semana) {
   var ss = _getSs();
-  var lectura = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_TOTAL_COLS);
+  var lectura = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_COLS_SIN_PAR);
   if (lectura.origen === 'vacio') return { ok: true, cambios: [] };
 
   var filas = lectura.filas;

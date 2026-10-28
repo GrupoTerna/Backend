@@ -4098,7 +4098,7 @@ function _webBattlelogJugador(tagBuscado, opciones) {
 function _webAscensosRecientes() {
   var ss = _getSs();
   // FASE (15-sep-2026, pedido del usuario -- fallback web->CSV, continuación de las funciones de Torneos más arriba en este archivo): Ascensos ya no se lee con shAsc.getRange() directo -- se usa _obtenerFilasConFallbackCSV()… [→ Contexto_Base_Web.md §37B296]
-  var lecturaAsc = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_TOTAL_COLS);
+  var lecturaAsc = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_COLS_SIN_PAR);
   if (lecturaAsc.origen === 'vacio') return { ascensos: [] };
 
   var dataAsc = lecturaAsc.filas;

@@ -2051,6 +2051,8 @@ function _syncUnaAcumulativaCSV(item, forzar) {
   var ss = _getSs();
   var sh = ss.getSheetByName(item.sheetName);
   if (!sh) return;
+  // PF286: Historial_A/D pasó a 24 columnas; si la hoja aún tiene 23, se agrega la columna antes de leer numCols columnas (si no, getRange falla y el respaldo no se guarda).
+  if (item.sheetName === CFG.SHEETS.ASCENSOS) _asegurarColumnaParCRAscensos_(sh);
 
   var sheetRows = sh.getLastRow();
 

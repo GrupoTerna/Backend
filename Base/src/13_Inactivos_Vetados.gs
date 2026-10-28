@@ -12,10 +12,14 @@ var ASC = {
   TIPO:15, ESTADO:16, COMENTARIO:17,
   ESTADO_PROPUESTA:18,
   // 26-oct-2026 (pedido de la usuaria, §PF267): primera de las 5 columnas calculadas desde Fecha (Temporada, Temporada RoyaleAPI, Temporada Supercell, Semana, Día); ver _completarTSDEnHoja_() en 24_Historial_Ascensos.gs.
-  TSD:19
+  TSD:19,
+  // 28-oct-2026 (PF286): id del par de CR_Lista (el id del Ascenso, «A_…») que generó la propuesta; en las filas que no son propuestas queda vacío. Va después de las 5 de TSD (19 a 23). Ver _asegurarColumnaParCRAscensos_() en 24_Historial_Ascensos.gs.
+  PAR_ID:24
 };
 
-var ASCENSOS_TOTAL_COLS = 23;
+var ASCENSOS_TOTAL_COLS = 24;
+// Ancho que tenía la hoja antes de la columna PAR_ID: lo usan los lectores que no necesitan esa columna y no deben fallar si la hoja aún no la tiene (PF286).
+var ASCENSOS_COLS_SIN_PAR = 23;
 
 // Valores válidos de ASC.ESTADO_PROPUESTA -- ver dropdown en
 // _aplicarFormatoFilaAscenso() (24_Historial_Ascensos.gs).
