@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 18:19:39 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 18:46:33 */
 
 
 
@@ -17940,7 +17940,7 @@ function _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado() {
   _ordenarBloquesFechaNuevos(sh);
   repararFormatoEncabezadosNuevos();
 
-  // FIX (20-ago-2026, pedido usuario): dirPorTag se construye ACÁ ARRIBA [→ Contexto_Base_Web.md §14B104]
+  // FIX (20-ago-2026, pedido usuario): dirPorTag se construye AQUÍ ARRIBA [→ Contexto_Base_Web.md §14B104]
   var dirData = _leerDirectorioFisicoComoDC(ss);
   var dirPorTag = {};
   for (var j = 0; j < dirData.length; j++) {
@@ -33491,6 +33491,26 @@ function agregarColumnaParCRHistorialAD() {
 }
 
 /**
+ * enlazarPropuestasConParCRHistorialAD() — proyecto Base. Escribe en la columna Par_CR de Historial_A/D el par de CR_Lista de cada propuesta que aún no lo tiene, deducido por fecha (par de fecha anterior más cercana; ver _asignarParesAPropuestas_()). Solo escribe esa columna y solo en filas con Estado de propuesta; las que ya tienen par no se tocan. La deducción puede equivocarse en propuestas viejas: revisa el registro. [→ Contexto_Base_Web.md §PF286]
+ */
+function enlazarPropuestasConParCRHistorialAD() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.ASCENSOS);
+  if (!sh || sh.getLastRow() < 2) { Logger.log('[Par_CR] No hay filas en Historial_A/D.'); return; }
+  _asegurarColumnaParCRAscensos_(sh);
+  var registros = _leerRegistrosHistorialAscensos_() || [];
+  var pares = _leerParesCRListaParaHistorial_();
+  if (!pares.length) { Logger.log('[Par_CR] CR_Lista no tiene pares con Fecha válida; no se enlazó nada.'); return; }
+  var asignaciones = _asignarParesAPropuestas_(registros, pares, _claveDiaLimaCR_);
+  var propuestasN = registros.filter(function (r) { return r.estadoProp === 'Planificado' || r.estadoProp === 'Realizado'; }).length;
+  if (!asignaciones.length) { Logger.log('[Par_CR] Nada que enlazar (' + propuestasN + ' propuesta(s), todas con par o sin par anterior).'); return; }
+  var col = sh.getRange(2, ASC.PAR_ID, registros.length, 1).getValues();
+  var porPar = {};
+  asignaciones.forEach(function (a) { col[a.indice][0] = a.parId; porPar[a.parId] = (porPar[a.parId] || 0) + 1; });
+  sh.getRange(2, ASC.PAR_ID, registros.length, 1).setValues(col);
+  Logger.log('[Par_CR] ' + asignaciones.length + ' propuesta(s) enlazada(s) por fecha de ' + propuestasN + '. Por par: ' + JSON.stringify(porPar));
+}
+
+/**
  * limpiarDuplicadosHistorial() [→ Contexto_Base_Web.md §24B003]
  */
 function limpiarDuplicadosHistorial() {
@@ -34557,7 +34577,7 @@ function _claveDiaLimaCR_(ms) {
 
 /**
  * _leerRegistrosHistorialAscensos_()
- * Lee Historial_A/D completo y devuelve una lista de registros { tag, nombre, clan, rango, rango2, tipo, estadoProp, fechaMs, temporada, semana, dia }, o null si la hoja no existe o está vacía.
+ * Lee Historial_A/D completo y devuelve una lista de registros { tag, nombre, clan, rango, rango2, tipo, estadoProp, parId, fechaMs, temporada, semana, dia }, o null si la hoja no existe o está vacía.
  * Lo comparten la corrida más reciente (_leerCorridaCambioRangoHistorial_()) y la verificación (_leerVerificacionCambioRangoHistorial_()). Solo lee la hoja; no escribe nada.
  */
 function _leerRegistrosHistorialAscensos_() {
@@ -34566,7 +34586,7 @@ function _leerRegistrosHistorialAscensos_() {
   var datos = _leerFilasAscensosHoja_(sh);
   var offset = _getTemporadaOffsetRoyaleApi(); // una sola lectura, igual que _completarTSDEnHoja_()
   var refTemporadas = CFG.REF_DEFAULT;
-  return datos.map(function (f) {
+  return datos.map(function (f, i) {
     var fecha = f[ASC.FECHA - 1];
     // Temporada, Semana y Día salen de la Fecha con la misma función que llena esas columnas de la hoja (_tsdDesdeFecha_): [temporada, RoyaleAPI, Supercell, semana, día].
     var tsd = _tsdDesdeFecha_(fecha, offset, refTemporadas);
@@ -34578,6 +34598,9 @@ function _leerRegistrosHistorialAscensos_() {
       rango2: String(f[ASC.RANGO_2 - 1] || '').trim(),
       tipo: String(f[ASC.TIPO - 1] || '').trim(),
       estadoProp: String(f[ASC.ESTADO_PROPUESTA - 1] || '').trim(),
+      fila: i + 2, // fila de la hoja (la 1 es el encabezado): la usa el marcado automático de «Realizado» (PF286)
+      comentario: String(f[ASC.COMENTARIO - 1] || '').trim(),
+      parId: String(f[ASC.PAR_ID - 1] || '').trim(), // PF286: id del Ascenso del par de CR_Lista; vacío en filas sin propuesta y en propuestas anteriores a la columna (ver _asignarParesAPropuestas_())
       fechaMs: (fecha instanceof Date && !isNaN(fecha.getTime())) ? fecha.getTime() : NaN,
       temporada: tsd[0],
       semana: tsd[3],
@@ -34626,6 +34649,27 @@ function _corridaCambioRangoDesdeRegistros_(registros, desdeMs, claveDia) {
   return res;
 }
 
+/**
+ * _corridaDePar_(registros, parId, claveDia) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
+ * Corrida de un par: todas las propuestas (Planificado o Realizado) con ese parId, aunque se hayan generado en días distintos. `diaTxt` es el día de la más antigua (desde ahí se buscan los cambios reales); temporada, semana y día salen de esa misma propuesta.
+ * Devuelve { hayCorrida, diaTxt, temporada, semana, dia, total }.
+ */
+function _corridaDePar_(registros, parId, claveDia) {
+  var propias = (registros || []).filter(function (r) {
+    return r.parId === parId && (r.estadoProp === 'Planificado' || r.estadoProp === 'Realizado') && isFinite(r.fechaMs);
+  });
+  if (!propias.length) return { hayCorrida: false, diaTxt: '', temporada: '', semana: '', dia: '', total: 0 };
+  var primera = propias.reduce(function (m, r) { return r.fechaMs < m.fechaMs ? r : m; });
+  return {
+    hayCorrida: true,
+    diaTxt: claveDia(primera.fechaMs).split('-').reverse().join('/'),
+    temporada: primera.temporada === undefined ? '' : primera.temporada,
+    semana: primera.semana === undefined ? '' : primera.semana,
+    dia: primera.dia === undefined ? '' : primera.dia,
+    total: propias.length
+  };
+}
+
 // --- Verificar un cambio de rango: propuestas de la corrida más reciente contra lo realmente aplicado (PF286 punto 11 (c), 28-oct-2026; la usa la rama «verificar» de la web) [→ Contexto_Base_Web.md §PF286] ---
 
 // Tipos de Historial_A/D que son un cambio real de la cuenta (los que la rama «verificar» busca cuando no hay propuesta). «Elegible Admin» no lo es: solo se propone, no cambia el rango.
@@ -34635,9 +34679,343 @@ var CR_TIPOS_CAMBIO_REAL_ = { 'Ascenso': true, 'Degradación': true, 'Expulsión
  * _leerVerificacionCambioRangoHistorial_()
  * Lee Historial_A/D y compara las propuestas de la corrida más reciente con lo realmente aplicado (ver _verificarCambioRangoDesdeRegistros_()). Solo lee la hoja; no escribe nada.
  */
-function _leerVerificacionCambioRangoHistorial_() {
-  var registros = _leerRegistrosHistorialAscensos_();
-  return _verificarCambioRangoDesdeRegistros_(registros || [], _claveDiaLimaCR_);
+function _leerVerificacionCambioRangoHistorial_(parId) {
+  var prep = _prepararVerificacionCR_(parId);
+  var v = _verificarCambioRangoDesdeRegistros_(prep.registros, _claveDiaLimaCR_, prep.opciones);
+  _explicarExcepcionalesCR_(v);
+  return v;
+}
+
+/**
+ * _prepararVerificacionCR_(parId) [→ Contexto_Base_Web.md §PF286]
+ * Lee Historial_A/D y los pares de CR_Lista y deja listos los argumentos de _verificarCambioRangoDesdeRegistros_(): { registros (con el par deducido por fecha donde falta), opciones { parId, hastaDia } }. Solo lee.
+ */
+function _prepararVerificacionCR_(parId) {
+  var registros = _leerRegistrosHistorialAscensos_() || [];
+  var pares = _leerParesCRListaParaHistorial_();
+  // Las propuestas anteriores a la columna Par_CR se enlazan en memoria por fecha (no escribe nada en la hoja; enlazarPropuestasConParCRHistorialAD() deja ese enlace guardado).
+  _asignarParesAPropuestas_(registros, pares, _claveDiaLimaCR_).forEach(function (a) { registros[a.indice].parId = a.parId; });
+  var opciones = { parId: String(parId || '').trim() };
+  if (opciones.parId) {
+    // Cota superior de los cambios «excepcionales»: el día del par siguiente (por fecha), porque desde ahí los cambios son de la corrida siguiente.
+    var propio = pares.filter(function (p) { return p.idAscenso === opciones.parId; })[0];
+    var siguiente = propio ? pares.filter(function (p) { return p.dia > propio.dia; })[0] : null;
+    if (siguiente) opciones.hastaDia = siguiente.dia;
+  }
+  return { registros: registros, opciones: opciones };
+}
+
+/**
+ * _verificarYMarcarCambioRangoHistorial_(parId) [→ Contexto_Base_Web.md §PF286]
+ * Verifica la corrida (igual que _leerVerificacionCambioRangoHistorial_()) y, ANTES, marca «Realizado» en Historial_A/D las propuestas «Planificado» de esa corrida que el Directorio ya muestra cumplidas (ver _decidirPropuestaCRRealizada_()); después vuelve a verificar para que el resultado ya refleje el marcado. ESCRIBE en la hoja (Estado de propuesta y Comentario de esas filas, con una línea de auditoría). Agrega al resultado `marcadas` ({ tag, nombre, tipo, rango, rango2, motivo }) y, en los pendientes que no se pudieron decidir, `nota`.
+ */
+function _verificarYMarcarCambioRangoHistorial_(parId) {
+  var prep = _prepararVerificacionCR_(parId);
+  var v = _verificarCambioRangoDesdeRegistros_(prep.registros, _claveDiaLimaCR_, prep.opciones);
+  var marcadas = [];
+  var notas = {};
+  if (v.parId && v.pendientes.length) {
+    var tags = {};
+    prep.registros.forEach(function (r) { if (r.parId === v.parId && r.estadoProp === 'Planificado' && r.tag) tags[r.tag] = true; });
+    var plan = _planificarMarcadoRealizadoCR_(prep.registros, v.parId, _leerCuentasDirectorioParaCR_(tags));
+    notas = plan.notas;
+    if (plan.marcar.length) {
+      var sh = _getSs().getSheetByName(CFG.SHEETS.ASCENSOS);
+      _asegurarColumnaParCRAscensos_(sh);
+      marcadas = _aplicarMarcadoRealizadoCR_(sh, plan.marcar);
+      if (marcadas.length) {
+        prep = _prepararVerificacionCR_(v.parId);
+        v = _verificarCambioRangoDesdeRegistros_(prep.registros, _claveDiaLimaCR_, prep.opciones);
+      }
+    }
+  }
+  v.marcadas = marcadas.map(function (m) { return { tag: m.tag, nombre: m.nombre, tipo: m.tipo, rango: m.rango, rango2: m.rango2, motivo: m.motivo }; });
+  v.pendientes.forEach(function (x) {
+    var n = notas[x.tag + '|' + x.tipo + '|' + x.rango2];
+    if (n) x.nota = n;
+  });
+  _explicarExcepcionalesCR_(v);
+  return v;
+}
+
+/**
+ * _requisitosIncumplidosCR_(bloque, rolKey, glob, prom, miembroVigente, wspG) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
+ * De los requisitos (de Ascenso o de Descenso, según el `bloque` que se pase) de un rol y un clan (`bloque` = fila por clan de CR_Lista con minCR[rol] y ataques[rol]; `glob` = { barcos, miembroActivo, whatsapp }), devuelve los que la cuenta NO cumplió con sus promedios `prom`
+ * (lo que devuelve _getPromediosCRParaJugador()). Mismo criterio que _cumpleRequisitoCR() (26_Torneos_Core.gs) y mismo texto que _ncTextoRequisitoVsReal() (29_Docs_NoCalificados.gs).
+ * Devuelve un arreglo de textos, p. ej. ['Medallas 850 (se pide 1000)', 'Ataques 12 (se pide 16)']; vacío si cumple todos.
+ */
+function _requisitosIncumplidosCR_(bloque, rolKey, glob, prom, miembroVigente, wspG) {
+  var out = [];
+  var minCR = bloque.minCR[rolKey], atq = bloque.ataques[rolKey];
+  glob = glob || {};
+  function num(n) { return String(Math.round((Number(n) || 0) * 10) / 10); }
+  if (minCR && minCR.activo && !_fameCumpleRequisito(prom, minCR.qty)) {
+    out.push('Medallas ' + num(prom.fameProm) + ' (se pide ' + minCR.qty + ')');
+  }
+  if (atq && atq.activo && !_ataquesCumplenRequisito(prom, atq.qty)) {
+    var exentos = Number(prom.ataquesExentos) > 0 ? ', ' + prom.ataquesExentos + ' exonerados por domingo opcional' : '';
+    out.push('Ataques ' + num(prom.ataquesProm) + ' (se pide ' + atq.qty + exentos + ')');
+  }
+  if (glob.barcos && glob.barcos.activo && !_barcosCumplenRequisito(prom, glob.barcos.qty)) {
+    var barcos = (prom.barcosSuma !== undefined && prom.barcosSuma !== null) ? prom.barcosSuma : prom.barcosProm;
+    out.push('Barcos ' + num(barcos) + ' (máximo ' + glob.barcos.qty + ')');
+  }
+  if (glob.miembroActivo && glob.miembroActivo.activo && !miembroVigente) {
+    out.push('Miembro activo (no figura en un clan de la familia)');
+  }
+  if (glob.whatsapp && glob.whatsapp.activo && String(wspG || '').trim() !== 'Sí') {
+    out.push('WhatsApp (se exige «Sí» y figura «' + (String(wspG || '').trim() || 'vacío') + '»)');
+  }
+  return out;
+}
+
+/**
+ * _explicarExcepcionalesCR_(v) [→ Contexto_Base_Web.md §PF286]
+ * A cada cambio aplicado SIN propuesta en la corrida (`v.excepcionales` con `sinPropuesta`) le agrega contra qué requisitos del par de la corrida se lo compara: `incumple` (arreglo de textos; vacío si cumplía todos), `evaluadoContra` (par, rol y clan) y, cuando no se pudo evaluar
+ * o hay algo que aclarar, `requisitoNota`. Siempre con el rango que la cuenta tenía ANTES del cambio (el del registro) y con los promedios de las semanas del par; solo lee.
+ *  - Ascenso y Ascenso de clan: requisitos de Ascenso (_explicarAltasCR_()).
+ *  - Degradación y Expulsión: requisitos de Descenso con solo las semanas completas de la cuenta, y en la Expulsión además Min_G del clan (_explicarBajasCR_()).
+ * Nunca corta la verificación: si algo falla, lo deja en `requisitoNota`.
+ */
+function _explicarExcepcionalesCR_(v) {
+  var TIPOS = { 'Ascenso': true, 'Ascenso de clan': true, 'Degradación': true, 'Expulsión': true };
+  var cand = (v.excepcionales || []).filter(function (x) { return x.sinPropuesta && x.tag && TIPOS[x.tipo]; });
+  if (!cand.length) return;
+  function nota(lista, txt) { lista.forEach(function (x) { if (!x.incumple) x.requisitoNota = txt; }); }
+  try {
+    if (!/^A_/.test(String(v.parId || ''))) { nota(cand, 'No se pudo evaluar: la corrida no tiene un par de CR_Lista identificado.'); return; }
+    var idD = 'D_' + String(v.parId).slice(2);
+    var par = _cargarParCambioRango_(v.parId, idD);
+    if (!par.ok) { nota(cand, 'No se pudo evaluar contra el par ' + v.parId + ': ' + par.error); return; }
+    var ctxReal = _getCtx();
+    // Datos del Directorio que piden los requisitos: WhatsApp y fecha de ingreso (solo lee; una cuenta que ya no figura queda sin ellos).
+    var dir = {};
+    _leerDirectorioFisicoComoDC(_getSs()).forEach(function (fila) {
+      var f = fila[DC.FECHA_ING - 1];
+      dir[String(fila[DC.TAG - 1] || '').trim()] = { wsp: String(fila[DC.WSP_G - 1] || '').trim(), ing: (f instanceof Date && !isNaN(f.getTime())) ? f : null };
+    });
+    var altas = cand.filter(function (x) { return x.tipo === 'Ascenso' || x.tipo === 'Ascenso de clan'; });
+    var bajas = cand.filter(function (x) { return x.tipo === 'Degradación' || x.tipo === 'Expulsión'; });
+    [[altas, _explicarAltasCR_], [bajas, _explicarBajasCR_]].forEach(function (g) {
+      if (!g[0].length) return;
+      try { g[1](g[0], v, par, ctxReal, dir); } catch (eg) {
+        Logger.log('[CambioRango-Verificar] No se pudo explicar los cambios sin propuesta: ' + eg.message);
+        nota(g[0], 'No se pudo evaluar: ' + eg.message);
+      }
+    });
+  } catch (e) {
+    Logger.log('[CambioRango-Verificar] No se pudo explicar los cambios sin propuesta: ' + e.message);
+    nota(cand, 'No se pudo evaluar: ' + e.message);
+  }
+}
+
+/**
+ * _rolDeRangoCR_(rango) — función pura. 'Miembro'|'Veterano'|'Colíder' (con o sin tilde, en cualquier caja) a 'miembro'|'veterano'|'colider'; '' si no se reconoce.
+ */
+function _rolDeRangoCR_(rango) {
+  var r = String(rango || '').trim().toLowerCase().replace('í', 'i').replace('é', 'e');
+  return (r === 'miembro' || r === 'veterano' || r === 'colider') ? r : '';
+}
+
+/**
+ * _explicarAltasCR_(altas, v, par, ctxReal, dir) [→ Contexto_Base_Web.md §PF286]
+ * Parte de _explicarExcepcionalesCR_() para Ascenso y Ascenso de clan: contra los requisitos de Ascenso del par. `Miembro activo` y `WhatsApp` se miden con el dato de hoy.
+ */
+function _explicarAltasCR_(altas, v, par, ctxReal, dir) {
+  function nota(txt) { altas.forEach(function (x) { if (!x.incumple) x.requisitoNota = txt; }); }
+  var semanas = par.filaAscenso.semanas;
+  if (!semanas || !semanas.length) { nota('No se pudo evaluar: el par ' + v.parId + ' no tiene semanas.'); return; }
+  if (_semanasPendientesCR(semanas, ctxReal).length) { nota('No se pudo evaluar: las semanas del par ' + v.parId + ' todavía no terminan.'); return; }
+  var porTag = _getTrofeosYAtaquesSemanalesPorTag(semanas, ctxReal, true, false);
+  var glob = { barcos: par.filaAscenso.barcos, miembroActivo: par.filaAscenso.miembroActivo, whatsapp: par.filaAscenso.whatsapp };
+  var porClan = {};
+  par.filaAscenso.porClan.forEach(function (b) { porClan[b.clan] = b; });
+  altas.forEach(function (x) {
+    var rolKey = _rolDeRangoCR_(x.rango);
+    var bloque = porClan[x.clan];
+    if (!rolKey) { x.requisitoNota = 'No se pudo evaluar: el registro no trae el rango que tenía la cuenta antes del cambio.'; return; }
+    if (!bloque) { x.requisitoNota = 'No se pudo evaluar: el clan «' + x.clan + '» no figura en el par ' + v.parId + '.'; return; }
+    var prom = _getPromediosCRParaJugador(x.tag, semanas, ctxReal, porTag);
+    var mv = (glob.miembroActivo && glob.miembroActivo.activo) ? _esMiembroVigenteEnClanesFamilia(x.tag) : false;
+    x.incumple = _requisitosIncumplidosCR_(bloque, rolKey, glob, prom, mv, (dir[x.tag] || {}).wsp);
+    x.evaluadoContra = 'Ascenso ' + v.parId + ', ' + _ncNombreRol(rolKey) + ' de ' + x.clan;
+    if (!x.incumple.length) x.requisitoNota = 'Con los datos de hoy cumplía todos los requisitos de Ascenso del par; revisa por qué la evaluación no lo propuso.';
+  });
+}
+
+/**
+ * _explicarBajasCR_(bajas, v, par, ctxReal, dir) [→ Contexto_Base_Web.md §PF286]
+ * Parte de _explicarExcepcionalesCR_() para Degradación y Expulsión: contra los requisitos de Descenso del par (id D_ del mismo par), contando solo las semanas completas de la cuenta (_bloqueDescensoDesdeSemanasCompletas()), igual que _evaluarCambioRango_()
+ * (29_Docs_NoCalificados.gs). En la Expulsión suma la comparación con Min_G del clan. Si ninguna semana cuenta para Descenso, no hay nada que evaluar y lo dice.
+ */
+function _explicarBajasCR_(bajas, v, par, ctxReal, dir) {
+  function nota(txt) { bajas.forEach(function (x) { if (!x.incumple) x.requisitoNota = txt; }); }
+  var semanas = par.filaDescenso.semanas;
+  if (!semanas || !semanas.length) { nota('No se pudo evaluar: el par ' + par.idD + ' no tiene semanas.'); return; }
+  if (_semanasPendientesCR(semanas, ctxReal).length) { nota('No se pudo evaluar: las semanas del par ' + par.idD + ' todavía no terminan.'); return; }
+  var porTag = _getTrofeosYAtaquesSemanalesPorTag(semanas, ctxReal, true, true);
+  var ventanas = _ventanasHistorialParaDescensoCR_();
+  var minG = _getMinGClanMaps().byNombre;
+  var glob = { barcos: par.filaDescenso.barcos, miembroActivo: par.filaDescenso.miembroActivo, whatsapp: par.filaDescenso.whatsapp };
+  var porClan = {};
+  par.filaDescenso.porClan.forEach(function (b) { porClan[b.clan] = b; });
+  bajas.forEach(function (x) {
+    var rolKey = _rolDeRangoCR_(x.rango);
+    var bloque = porClan[x.clan];
+    if (!rolKey) { x.requisitoNota = 'No se pudo evaluar: el registro no trae el rango que tenía la cuenta antes del cambio.'; return; }
+    if (!bloque) { x.requisitoNota = 'No se pudo evaluar: el clan «' + x.clan + '» no figura en el par ' + par.idD + '.'; return; }
+    var d = dir[x.tag] || {};
+    var blq = _bloqueDescensoDesdeSemanasCompletas((porTag[x.tag] || {}).semanasCompletas, d.ing || null, x.tag, ventanas);
+    if (!blq) { x.requisitoNota = 'Ninguna de sus semanas cuenta para Descenso (no tuvo la semana completa): con los datos del par no había nada que evaluar.'; return; }
+    var prom = _getPromediosCRParaJugador(x.tag, semanas, ctxReal, porTag, blq);
+    var mv = (glob.miembroActivo && glob.miembroActivo.activo) ? _esMiembroVigenteEnClanesFamilia(x.tag) : false;
+    x.incumple = _requisitosIncumplidosCR_(bloque, rolKey, glob, prom, mv, d.wsp);
+    x.evaluadoContra = 'Descenso ' + par.idD + ', ' + _ncNombreRol(rolKey) + ' de ' + x.clan;
+    if (x.tipo === 'Expulsión') {
+      var mg = (minG[x.clan] !== undefined) ? minG[x.clan] : CFG.MIN_G_DEFAULT;
+      if (prom.fameProm < mg) x.incumple.push('Medallas promedio ' + _ncFmtNum(prom.fameProm) + ', por debajo de Min_G (' + mg + ')');
+      else x.requisitoNota = 'Alcanzaba Min_G (' + mg + ', con ' + _ncFmtNum(prom.fameProm) + ' medallas promedio): con los datos del par correspondía Descenso, no Expulsión.';
+    }
+    if (!x.incumple.length && !x.requisitoNota) {
+      x.requisitoNota = 'Con los datos del par cumplía los requisitos de Descenso: no correspondía ' + (x.tipo === 'Expulsión' ? 'expulsar' : 'degradar') + '.';
+    }
+  });
+}
+
+/**
+ * _leerCuentasDirectorioParaCR_(tags) [→ Contexto_Base_Web.md §PF286]
+ * De las cuentas del conjunto `tags` ({ '#TAG': true }), lo que el Directorio muestra hoy: { '#TAG': { activo, clan, rango, admin } }. Una cuenta que no figura en el Directorio no aparece en el resultado. Solo lee.
+ */
+function _leerCuentasDirectorioParaCR_(tags) {
+  var out = {};
+  _leerDirectorioFisicoComoDC(_getSs()).forEach(function (fila) {
+    var tag = String(fila[DC.TAG - 1] || '').trim();
+    if (!tag || !tags[tag]) return;
+    out[tag] = {
+      activo: String(fila[DC.ESTADO - 1] || '').trim() === 'Activo',
+      clan: String(fila[DC.CLAN - 1] || '').trim(),
+      rango: String(fila[DC.RANGO - 1] || '').trim(),
+      admin: _esAdminEnDirectorioCR(fila[DC.ADMIN - 1])
+    };
+  });
+  return out;
+}
+
+/**
+ * _decidirPropuestaCRRealizada_(prop, cuenta) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
+ * Decide si una propuesta ya se aplicó, mirando lo que el Directorio muestra hoy de la cuenta (`cuenta` = { activo, clan, rango, admin } o null si no figura):
+ *  - Expulsión: realizada si la cuenta ya no está activa en el clan de la propuesta (o ya no figura).
+ *  - Ascenso: realizado si su rango actual es el propuesto o uno más alto.
+ *  - Degradación: realizada si su rango actual es el propuesto.
+ *  - Elegible Admin: realizada si ya es admin.
+ *  - Ascenso de clan: realizado si ya está activa en el clan de destino (se lee del Comentario: «Sube al clan X como miembro.»).
+ * Si la cuenta ya no está activa en el clan y la propuesta era Ascenso o Degradación, NO se marca y se devuelve una nota para que se revise a mano.
+ * Devuelve { realizada, motivo ('' si no), nota ('' si no hay) }.
+ */
+function _decidirPropuestaCRRealizada_(prop, cuenta) {
+  function norm(t) { return String(t || '').trim().toLowerCase(); }
+  var activaEnClan = !!(cuenta && cuenta.activo && norm(cuenta.clan) === norm(prop.clan));
+  var idxActual = cuenta ? RANGO_ORDEN.indexOf(cuenta.rango) : -1;
+  var idxPropuesto = RANGO_ORDEN.indexOf(prop.rango2);
+  var no = { realizada: false, motivo: '', nota: '' };
+
+  if (prop.tipo === 'Expulsión') {
+    if (activaEnClan) return no;
+    return { realizada: true, motivo: cuenta ? 'la cuenta ya no está activa en el clan ' + prop.clan : 'la cuenta ya no figura en el Directorio', nota: '' };
+  }
+  if (prop.tipo === 'Ascenso' || prop.tipo === 'Degradación') {
+    if (!activaEnClan) {
+      no.nota = 'La cuenta ya no está en el clan ' + prop.clan + ': revisa a mano si el cambio se aplicó.';
+      return no;
+    }
+    if (idxActual < 0 || idxPropuesto < 0) return no;
+    var cumple = (prop.tipo === 'Ascenso') ? (idxActual >= idxPropuesto) : (idxActual === idxPropuesto);
+    if (!cumple) return no;
+    return { realizada: true, motivo: 'su rango actual es ' + cuenta.rango + ' (propuesto: ' + prop.rango2 + ')', nota: '' };
+  }
+  if (prop.tipo === 'Elegible Admin') {
+    return (cuenta && cuenta.admin) ? { realizada: true, motivo: 'la cuenta ya es admin', nota: '' } : no;
+  }
+  if (prop.tipo === 'Ascenso de clan') {
+    var m = String(prop.comentario || '').match(/Sube al clan (.+?) como miembro\./);
+    if (!m) { no.nota = 'No pude leer el clan de destino del comentario: marca a mano cuando se aplique.'; return no; }
+    var destino = m[1];
+    return (cuenta && cuenta.activo && norm(cuenta.clan) === norm(destino)) ? { realizada: true, motivo: 'la cuenta ya está en el clan ' + destino, nota: '' } : no;
+  }
+  return no;
+}
+
+/**
+ * _planificarMarcadoRealizadoCR_(registros, parId, cuentasPorTag) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
+ * Recorre las propuestas «Planificado» del par y aplica _decidirPropuestaCRRealizada_() con la cuenta de cada una. Devuelve { marcar: [{ fila, tag, nombre, tipo, rango, rango2, motivo }], notas: { 'tag|tipo|rango2': nota } }. No modifica nada.
+ */
+function _planificarMarcadoRealizadoCR_(registros, parId, cuentasPorTag) {
+  var plan = { marcar: [], notas: {} };
+  (registros || []).forEach(function (r) {
+    if (r.parId !== parId || r.estadoProp !== 'Planificado' || !r.tag || !r.fila) return;
+    var d = _decidirPropuestaCRRealizada_(r, (cuentasPorTag || {})[r.tag] || null);
+    if (d.realizada) plan.marcar.push({ fila: r.fila, tag: r.tag, nombre: r.nombre, tipo: r.tipo, rango: r.rango, rango2: r.rango2, motivo: d.motivo });
+    else if (d.nota) plan.notas[r.tag + '|' + r.tipo + '|' + r.rango2] = d.nota;
+  });
+  return plan;
+}
+
+/**
+ * _aplicarMarcadoRealizadoCR_(sh, marcar) [→ Contexto_Base_Web.md §PF286]
+ * Escribe «Realizado» en Estado de propuesta de cada fila del plan y agrega al Comentario una línea de auditoría con la fecha de Lima y el motivo. Antes de escribir comprueba que la fila siga siendo la misma cuenta y siga «Planificado» (si no, la salta). Devuelve las filas que sí marcó.
+ */
+function _aplicarMarcadoRealizadoCR_(sh, marcar) {
+  var hoy = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
+  var hechas = [];
+  marcar.forEach(function (m) {
+    var tag = String(sh.getRange(m.fila, ASC.TAG).getValue() || '').trim();
+    var estado = String(sh.getRange(m.fila, ASC.ESTADO_PROPUESTA).getValue() || '').trim();
+    if (tag !== m.tag || estado !== 'Planificado') return;
+    sh.getRange(m.fila, ASC.ESTADO_PROPUESTA).setValue('Realizado');
+    var celda = sh.getRange(m.fila, ASC.COMENTARIO);
+    var previo = String(celda.getValue() || '').trim();
+    celda.setValue((previo ? previo + ' ' : '') + 'Marcado «Realizado» al verificar (' + hoy + '): ' + m.motivo + '.');
+    hechas.push(m);
+  });
+  return hechas;
+}
+
+/**
+ * _leerParesCRListaParaHistorial_() [→ Contexto_Base_Web.md §PF286]
+ * Pares Ascenso de CR_Lista como [{ idAscenso, dia ('aaaa-mm-dd', día de Lima de su Fecha) }], del más antiguo al más reciente. Los que no tienen una Fecha válida se omiten. Solo lee.
+ */
+function _leerParesCRListaParaHistorial_() {
+  var lectura = _obtenerFilasConFallbackCSV(_getSs(), CFG.SHEETS.CR_LISTA, 'Backup_CR_Lista.csv', CR_TOTAL_COLS, 3);
+  var pares = [];
+  (lectura.filas || []).forEach(function (f) {
+    var id = String(f[CR.ID - 1] || '').trim();
+    if (!/^A_/.test(id)) return;
+    var celda = f[CR.FECHA - 1];
+    var fecha = (celda instanceof Date) ? celda : _parseSpanishDate(celda);
+    if (!(fecha instanceof Date) || isNaN(fecha.getTime())) return;
+    pares.push({ idAscenso: id, dia: _claveDiaLimaCR_(fecha.getTime()) });
+  });
+  pares.sort(function (a, b) { return a.dia < b.dia ? -1 : (a.dia > b.dia ? 1 : 0); });
+  return pares;
+}
+
+/**
+ * _asignarParesAPropuestas_(registros, pares, claveDia) — función pura (se prueba en Node, sin hojas).
+ * Para cada propuesta (Estado de propuesta «Planificado» o «Realizado») sin parId, deduce su par: el de fecha anterior más cercana (o del mismo día) a la Fecha de la propuesta; `pares` va del más antiguo al más reciente. Es una DEDUCCIÓN: se puede equivocar en propuestas viejas (p. ej. si se generaron con un par que no era el último registrado). Si ningún par es anterior, la propuesta queda sin par y no se incluye.
+ * Devuelve [{ indice (posición en `registros`), parId }]; no modifica `registros`.
+ */
+function _asignarParesAPropuestas_(registros, pares, claveDia) {
+  var out = [];
+  (registros || []).forEach(function (r, i) {
+    if (r.estadoProp !== 'Planificado' && r.estadoProp !== 'Realizado') return;
+    if (r.parId || !isFinite(r.fechaMs)) return;
+    var dia = claveDia(r.fechaMs), elegido = '';
+    for (var k = 0; k < pares.length; k++) {
+      if (pares[k].dia <= dia) elegido = pares[k].idAscenso; else break;
+    }
+    if (elegido) out.push({ indice: i, parId: elegido });
+  });
+  return out;
 }
 
 /**
@@ -34651,10 +35029,26 @@ function _leerVerificacionCambioRangoHistorial_() {
  * No vuelve a evaluar los requisitos: usa lo que quedó registrado cuando se generaron las propuestas. Devuelve { hayCorrida, diaTxt, temporada, semana, dia, propuestasN, aplicadas, pendientes, excepcionales }; cada elemento trae
  * { tag, nombre, clan, tipo, rango, rango2, fechaTxt } y los excepcionales además `motivo`, los pendientes `confirmaManual`.
  */
-function _verificarCambioRangoDesdeRegistros_(registros, claveDia) {
-  var corrida = _corridaCambioRangoDesdeRegistros_(registros, null, claveDia);
+function _verificarCambioRangoDesdeRegistros_(registros, claveDia, opciones) {
+  opciones = opciones || {};
+  var parId = String(opciones.parId || '').trim();
+  // Sin par pedido: el par de la propuesta más reciente que tenga uno; si ninguna lo tiene, la corrida por día de siempre.
+  if (!parId) {
+    var masReciente = null;
+    (registros || []).forEach(function (r) {
+      if (!r.parId || !isFinite(r.fechaMs) || (r.estadoProp !== 'Planificado' && r.estadoProp !== 'Realizado')) return;
+      if (!masReciente || r.fechaMs > masReciente.fechaMs) masReciente = r;
+    });
+    if (masReciente) parId = masReciente.parId;
+  }
+  var corrida;
+  if (parId) {
+    corrida = _corridaDePar_(registros, parId, claveDia);
+  } else {
+    corrida = _corridaCambioRangoDesdeRegistros_(registros, null, claveDia);
+  }
   var res = {
-    hayCorrida: corrida.hayCorrida, diaTxt: corrida.diaTxt, temporada: corrida.temporada, semana: corrida.semana, dia: corrida.dia,
+    parId: parId, hayCorrida: corrida.hayCorrida, diaTxt: corrida.diaTxt, temporada: corrida.temporada, semana: corrida.semana, dia: corrida.dia,
     propuestasN: corrida.total, aplicadas: [], pendientes: [], excepcionales: []
   };
   if (!corrida.hayCorrida) return res;
@@ -34673,7 +35067,9 @@ function _verificarCambioRangoDesdeRegistros_(registros, claveDia) {
     if (!isFinite(r.fechaMs)) return;
     var dia = claveDia(r.fechaMs);
     if (dia < diaCorrida) return;
-    if ((r.estadoProp === 'Planificado' || r.estadoProp === 'Realizado') && dia === diaCorrida) {
+    if (opciones.hastaDia && dia >= opciones.hastaDia) return; // PF286: cambios de la corrida siguiente
+    var esDeLaCorrida = parId ? (r.parId === parId) : (dia === diaCorrida);
+    if ((r.estadoProp === 'Planificado' || r.estadoProp === 'Realizado') && esDeLaCorrida) {
       var it = item(r, dia);
       if (r.estadoProp === 'Realizado') {
         res.aplicadas.push(it);
@@ -34695,6 +35091,7 @@ function _verificarCambioRangoDesdeRegistros_(registros, claveDia) {
         propias.map(describir).join(' o ') + '.';
     } else {
       it.motivo = 'No tenía propuesta en la corrida: la evaluación no la dio por calificada para este cambio.';
+      it.sinPropuesta = true; // PF286: _explicarExcepcionalesCR_() solo explica estos
     }
     res.excepcionales.push(it);
   });
@@ -52391,10 +52788,24 @@ function _webCRListaGenerarPropuestas(token, idAscenso, idDescenso) {
 }
 
 // _webCRListaVerificar(): rama «verificar» de Cambio de Rango (PF286 punto 11 (c)): GET que solo lee Historial_A/D y compara las propuestas de la corrida más reciente con lo realmente aplicado (_leerVerificacionCambioRangoHistorial_(), 24_Historial_Ascensos.gs). No escribe nada ni pide el par: la corrida sale de las fechas del historial. [→ Contexto_Base_Web.md §PF286]
-function _webCRListaVerificar(token) {
+function _webCRListaVerificar(token, idAscenso) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  var verificacion = _leerVerificacionCambioRangoHistorial_();
+  // PF286: `idAscenso` (opcional) elige la corrida; sin él se verifica la del par de la propuesta más reciente.
+  var verificacion = _leerVerificacionCambioRangoHistorial_(idAscenso);
   verificacion.ok = true;
+  // Los pares de CR_Lista (los mismos de «Ver propuestas», del más reciente al más antiguo) para llenar el selector de corrida sin otro pedido.
+  var lista = _webCRListaListar(token);
+  verificacion.pares = (lista && lista.ok) ? lista.pares : [];
+  return verificacion;
+}
+
+// _webCRListaVerificarYMarcar(): versión de la rama «verificar» que ESCRIBE (por eso es POST): igual que _webCRListaVerificar(), pero antes marca «Realizado» en Historial_A/D las propuestas que el Directorio ya muestra cumplidas (_verificarYMarcarCambioRangoHistorial_(), 24_Historial_Ascensos.gs; PF286). Devuelve además `marcadas` y los `pares` para el selector.
+function _webCRListaVerificarYMarcar(token, idAscenso) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  var verificacion = _verificarYMarcarCambioRangoHistorial_(idAscenso);
+  verificacion.ok = true;
+  var lista = _webCRListaListar(token);
+  verificacion.pares = (lista && lista.ok) ? lista.pares : [];
   return verificacion;
 }
 
@@ -53620,7 +54031,7 @@ function doGet(e) {
   if (e && e.parameter && e.parameter.accion === 'webCRListaVerificar') {
     try {
       return ContentService
-        .createTextOutput(JSON.stringify(_webCRListaVerificar(e.parameter.sessionToken)))
+        .createTextOutput(JSON.stringify(_webCRListaVerificar(e.parameter.sessionToken, e.parameter.idAscenso)))
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       Logger.log('[Web] Error interno: ' + err.toString());
@@ -54317,6 +54728,25 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     } catch (errCRG) {
       Logger.log('[Web] Error interno: ' + errCRG.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ ok: false, error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  // NUEVO 28-oct-2026 (PF286): webCRListaVerificarYMarcar es POST porque marca «Realizado» en Historial_A/D las propuestas ya cumplidas (webCRListaVerificar, GET, solo lee); sessionToken/idAscenso en el body. [→ Contexto_Base_Web.md §PF286]
+  if (e && e.parameter && e.parameter.accion === 'webCRListaVerificarYMarcar') {
+    try {
+      var payloadCRVM = JSON.parse(e.postData.contents);
+      var resultadoCRVM = _webCRListaVerificarYMarcar(payloadCRVM && payloadCRVM.sessionToken, payloadCRVM && payloadCRVM.idAscenso);
+      // Los documentos de cambio de rango leen los «Realizado»: si se marcó algo y la corrida es la del par vigente, se actualizan.
+      if (resultadoCRVM && resultadoCRVM.ok && resultadoCRVM.marcadas && resultadoCRVM.marcadas.length && resultadoCRVM.parId) {
+        _webCRListaRefrescarDocs_(resultadoCRVM.parId, 'D_' + String(resultadoCRVM.parId).slice(2));
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify(resultadoCRVM))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errCRVM) {
+      Logger.log('[Web] Error interno: ' + errCRVM.toString());
       return ContentService
         .createTextOutput(JSON.stringify({ ok: false, error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.' }))
         .setMimeType(ContentService.MimeType.JSON);
