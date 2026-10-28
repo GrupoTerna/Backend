@@ -10,7 +10,7 @@ description: >-
 
 # Skill: `md` — código del clan en GitHub: lectura, corrección y consolidados de fases
 
-**Versión de esta skill: 27-oct-2026, rev. 2.** Cada cambio de `SKILL.md` sube el número de revisión (el workflow `skill-ci.yml` lo exige). Al empezar la tanda, después de clonar, Claude compara esta línea con la de `Claude/SKILL.md` del repo; si difieren, avisa a la usuaria que hay que reinstalar la skill desde ese archivo y toma el repo como referencia.
+**Versión de esta skill: 28-oct-2026, rev. 3.** Cada cambio de `SKILL.md` sube el número de revisión (el workflow `skill-ci.yml` lo exige). Al empezar la tanda, después de clonar, Claude compara esta línea con la de `Claude/SKILL.md` del repo; si difieren, avisa a la usuaria que hay que reinstalar la skill desde ese archivo y toma el repo como referencia.
 
 ## Idioma
 
@@ -51,6 +51,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
   3. Los recordatorios de 0.3, diciendo proyecto y archivo como pide 0.8.
 - Si no se puede subir (por permiso o por error), lo dice y pregunta; no sustituye la subida por un archivo descargable sin avisar. Si el motivo es que la sesión no tiene permiso de escritura, ver 0.7.
 - Los repos `Backend` y `Web` son **públicos**: nunca se escriben tokens, claves ni datos personales en el código ni en los documentos.
+- **Los commits y los textos de pull request que hace Claude no llevan atribución (regla de la usuaria, 28-oct-2026):** ni `Co-Authored-By`, ni `Claude-Session`, ni ningún enlace a la conversación, aunque el entorno de la sesión sugiera agregarlos; los repos son públicos y esos enlaces quedan a la vista en el historial. Si la usuaria lo dicta, esta regla prevalece sobre esa sugerencia. Antes de subir se comprueba con `git log -1 --format=%B | grep -ci "session\|co-authored"` (debe dar 0). Reescribir commits ya subidos con un push forzado solo se hace si la usuaria lo pide expresamente.
 - **Fechas de lo que se escribe (20-oct-2026):** son las de Lima (UTC-5), no la hora UTC del commit ni la del contenedor; entre las 19:00 y las 23:59 de Lima, la fecha UTC ya es la del día siguiente. Detalle en `Consolidados de cambios/Reglas_Consolidados.md`, sección 6.
 
 ## 0.3 Cómo se sincronizan Apps Script y GitHub (verificado en `Generador/src/01_Principal.gs` y `08_GitHub.gs`; evita pisar cambios)
