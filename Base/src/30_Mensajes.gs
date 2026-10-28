@@ -3,6 +3,15 @@
 // Hoja Mensajes: generacion de contenido para difundir por categoria/clan.
 // ==============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: generarTodosMensajes()
+//  Parte 2 — Funciones que no se corren a mano
+//    - Datos de entrada de los mensajes (pendientes, sin celular, sin etiqueta, celular y préstamo por tag)
+//    - Agrupar y ordenar por clan (agrupar, rango, sufijo de préstamo, clan que cruzó la meta)
+//    - Hoja Mensajes: orden de categorías, plantillas, categoría nueva en Extra y formato condicional
+//    - Datos de clan para el menú dinámico (los usa 43_Menu_Dinamico.gs)
+// Dentro de cada tema, en el orden en que generarTodosMensajes() los llama. Al reordenar no se cambió el código de ninguna función.
+
 // ----- Variables y constantes -----
 
 // 30_Mensajes.gs [→ Contexto_Base_Web.md §30B001]
@@ -38,44 +47,12 @@ var CATEGORIAS_ANCLA_EXTRA = {
   ]
 };
 
-// ----- Funciones manuales / punto de entrada -----
-
 /**
  * META_GUERRA_PROGRESO [→ Contexto_Base_Web.md §30B005]
  */
 var META_GUERRA_PROGRESO = 10000;
 
-/**
- * _clanCruzoMetaPorNombre(nombreClan) [→ Contexto_Base_Web.md §30B006]
- */
-function _clanCruzoMetaPorNombre(nombreClan) {
-  try {
-    var buscado = String(nombreClan || '').trim();
-    if (!buscado) return false;
-    for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
-      var clanData = _getClanCache(CFG.TERNA_TAGS[i]);
-      if (!clanData || !clanData.info) continue;
-      if (String(clanData.info.name || '').trim() !== buscado) continue;
-      var rr = clanData.riverrace;
-      if (!rr || !rr.clan) return false;
-      // TANDA 9 (21-sep-2026): en la semana de COLISEO los barcos no avanzan y [→ Contexto_Base_Web.md §30B007]
-      if (String(rr.periodType || '') === 'colosseum') return false;
-      var progreso = Number(rr.clan.fame);
-      return isFinite(progreso) && progreso >= META_GUERRA_PROGRESO;
-    }
-  } catch (e) {
-    Logger.log('[Mensajes] No se pudo evaluar si el clan cruzó la meta (' + nombreClan + '): ' + e.message);
-  }
-  return false;
-}
-
-/**
- * _ordenRango(rango) [→ Contexto_Base_Web.md §30B008]
- */
-function _ordenRango(rango) {
-  var key = String(rango || '').toLowerCase().replace('í', 'i').replace('é', 'e');
-  return CFG.RANGO_ORDEN[key] || 4;
-}
+// ----- Parte 1: funciones que se corren a mano -----
 
 function generarTodosMensajes() {
   var ss = _getSs();
@@ -389,9 +366,163 @@ function generarTodosMensajes() {
   catch (eRegMsj) { Logger.log('[Mensajes] No se pudo registrar la hora de elaboracion: ' + eRegMsj.message); }
 }
 
-// ----- Funciones internas / helpers -----
+// ----- Parte 2: funciones que no se corren a mano -----
 
 // SECCIÓN 2: RESTO DE FUNCIONES (mensajes, helpers internos) — sin cambios de [→ Contexto_Base_Web.md §30B028]
+
+// --- Tema: datos de entrada de los mensajes ---
+
+function _obtenerDatosPendientes(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.PENDIENTES);
+  if (!sh || sh.getLastRow() < 2) return [];
+  // 9 columnas: N°|Tag|Nombre|Nom_Multi|Préstamo|Clan|Faltantes|Celular|WSP [→ Contexto_Base_Web.md §30B038]
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues();
+  var pendientes = data.map(function(r) { return { tag: r[1], nombre: r[2], nomMulti: r[3], prestamo: r[4], clan: r[5], faltantes: r[6] }; });
+
+  // NUEVO (pedido usuario): se agrega `rango` a cada pendiente, cruzado por [→ Contexto_Base_Web.md §30B039]
+  var dirPorTagRango = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS);
+  pendientes.forEach(function(p) {
+    var filaDirP = dirPorTagRango[String(p.tag || '').trim().toUpperCase()];
+    p.rango = filaDirP ? String(filaDirP[IC.RANGO - 1] || '') : '';
+  });
+
+  return pendientes;
+}
+
+function _obtenerDatosSinCelular(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!sh || sh.getLastRow() < 2) return [];
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  var filtrado = [];
+  for (var i = 0; i < data.length; i++) {
+    if (String(data[i][IC.ESTADO    - 1]) === 'Activo' &&
+        String(data[i][IC.CELULAR   - 1] || '').trim() === '' &&
+        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
+      filtrado.push({ nombre: data[i][IC.NOMBRE - 1], clan: data[i][IC.CLAN - 1] });
+    }
+  }
+  return filtrado;
+}
+
+function _obtenerDatosSinEtiqueta(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!sh || sh.getLastRow() < 2) return [];
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  var filtrado = [];
+  for (var i = 0; i < data.length; i++) {
+    // NOTA: "Iniciales" ya NO se exige aquí. Es un campo distinto (identificación/ [→ Contexto_Base_Web.md §30B040]
+    if (String(data[i][IC.ESTADO    - 1]) === 'Activo' &&
+        String(data[i][IC.ETIQUETA  - 1]) !== 'Sí' &&
+        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
+      filtrado.push({ nombre: data[i][IC.NOMBRE - 1], clan: data[i][IC.CLAN - 1] });
+    }
+  }
+  return filtrado;
+}
+
+/**
+ * _obtenerCelularPorTag()
+ * Devuelve un mapa { tag -> true } para jugadores activos Terna con celular.
+ */
+/**
+ * _obtenerCelularPorTag(ss) [→ Contexto_Base_Web.md §30B034]
+ */
+function _obtenerCelularPorTag(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!sh || sh.getLastRow() < 2) return {};
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  var mapa = {};
+  for (var i = 0; i < data.length; i++) {
+    if (String(data[i][IC.ESTADO - 1]) === 'Activo' &&
+        String(data[i][IC.CELULAR - 1] || '').trim() !== '' &&
+        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
+      mapa[String(data[i][IC.TAG - 1])] = String(data[i][IC.CELULAR - 1]).trim();
+    }
+  }
+  return mapa;
+}
+
+/**
+ * _obtenerPrestamoPorTag(ss) [→ Contexto_Base_Web.md §30B035]
+ */
+function _obtenerPrestamoPorTag(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!sh || sh.getLastRow() < 2) return {};
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  var mapa = {};
+  for (var i = 0; i < data.length; i++) {
+    var tag = String(data[i][DC.TAG - 1] || '').trim();
+    var prestamo = String(data[i][DC.PRESTAMO - 1] || '').trim();
+    if (tag && prestamo) {
+      mapa[tag] = prestamo;
+    }
+  }
+  return mapa;
+}
+
+// --- Tema: agrupar y ordenar por clan ---
+
+/**
+ * _agruparPorClanOrdenado(lista, clanOrden) [→ Contexto_Base_Web.md §30B033]
+ */
+function _agruparPorClanOrdenado(lista, clanOrden) {
+  var grupos = {};
+  var clanes  = [];
+  for (var i = 0; i < lista.length; i++) {
+    var cn = lista[i].clan;
+    if (!grupos[cn]) { grupos[cn] = []; clanes.push(cn); }
+    grupos[cn].push(lista[i]);
+  }
+  clanes.sort(function(a, b) {
+    var oa = clanOrden[a.toLowerCase()]; if (oa === undefined) oa = 9999;
+    var ob = clanOrden[b.toLowerCase()]; if (ob === undefined) ob = 9999;
+    return oa - ob;
+  });
+  return clanes.map(function(cn) { return { clan: cn, lista: grupos[cn] }; });
+}
+
+/**
+ * _ordenRango(rango) [→ Contexto_Base_Web.md §30B008]
+ */
+function _ordenRango(rango) {
+  var key = String(rango || '').toLowerCase().replace('í', 'i').replace('é', 'e');
+  return CFG.RANGO_ORDEN[key] || 4;
+}
+
+/**
+ * _sufijoPrestamo(nombrePrestamo) [→ Contexto_Base_Web.md §30B036]
+ */
+function _sufijoPrestamo(nombrePrestamo) {
+  var n = String(nombrePrestamo || '').trim();
+  if (!n) return '';
+  return ' (' + n.charAt(0).toUpperCase() + ')';
+}
+
+/**
+ * _clanCruzoMetaPorNombre(nombreClan) [→ Contexto_Base_Web.md §30B006]
+ */
+function _clanCruzoMetaPorNombre(nombreClan) {
+  try {
+    var buscado = String(nombreClan || '').trim();
+    if (!buscado) return false;
+    for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
+      var clanData = _getClanCache(CFG.TERNA_TAGS[i]);
+      if (!clanData || !clanData.info) continue;
+      if (String(clanData.info.name || '').trim() !== buscado) continue;
+      var rr = clanData.riverrace;
+      if (!rr || !rr.clan) return false;
+      // TANDA 9 (21-sep-2026): en la semana de COLISEO los barcos no avanzan y [→ Contexto_Base_Web.md §30B007]
+      if (String(rr.periodType || '') === 'colosseum') return false;
+      var progreso = Number(rr.clan.fame);
+      return isFinite(progreso) && progreso >= META_GUERRA_PROGRESO;
+    }
+  } catch (e) {
+    Logger.log('[Mensajes] No se pudo evaluar si el clan cruzó la meta (' + nombreClan + '): ' + e.message);
+  }
+  return false;
+}
+
+// --- Tema: hoja Mensajes (categorías, plantillas y formato) ---
 
 function _getOrdenMensajesCategoria() {
   var mapa = {};
@@ -403,25 +534,20 @@ function _getOrdenMensajesCategoria() {
 }
 
 /**
- * _aplicarFormatoCondicionalMensajes(sh, numFilas)
- * Aplica color de fondo por Categoría (columna 8 = Categoría).
+ * _getPlantillasParaMensajes(ss) [→ Contexto_Base_Web.md §30B037]
  */
-function _aplicarFormatoCondicionalMensajes(sh, numFilas) {
-  if (numFilas === 0) return;
-  var dataRange = sh.getRange(2, 1, numFilas, MENSAJES_TOTAL_COLS);
-  var colCat = colLetter(MC.CATEGORIA); // columna Categoría
-
-  var rules = [];
-  for (var cat in CFG.MENSAJES_TIPO_BG) {
-    rules.push(
-      SpreadsheetApp.newConditionalFormatRule()
-        .whenFormulaSatisfied('=$' + colCat + '2="' + cat + '"')
-        .setBackground(CFG.MENSAJES_TIPO_BG[cat])
-        .setRanges([dataRange])
-        .build()
-    );
+function _getPlantillasParaMensajes(ss) {
+  var estaticas = _leerEntradasIndicePorTipo('Estático');
+  var out = [];
+  for (var i = 0; i < estaticas.length; i++) {
+    var categoria    = String(estaticas[i].categoria    || '').trim();
+    var subcategoria = String(estaticas[i].subcategoria || '').trim();
+    var clan         = String(estaticas[i].clan         || '').trim();
+    var contenido    = String(estaticas[i].contenido    || '');
+    if (!categoria || !contenido) continue;
+    out.push({ categoria: categoria, subcategoria: subcategoria, clan: clan, contenido: contenido });
   }
-  _tryCondFmt(sh, rules);
+  return out;
 }
 
 /**
@@ -495,7 +621,41 @@ function _colCategoriaExtra_(sh) {
   return respaldo;
 }
 
+/**
+ * _aplicarFormatoCondicionalMensajes(sh, numFilas)
+ * Aplica color de fondo por Categoría (columna 8 = Categoría).
+ */
+function _aplicarFormatoCondicionalMensajes(sh, numFilas) {
+  if (numFilas === 0) return;
+  var dataRange = sh.getRange(2, 1, numFilas, MENSAJES_TOTAL_COLS);
+  var colCat = colLetter(MC.CATEGORIA); // columna Categoría
+
+  var rules = [];
+  for (var cat in CFG.MENSAJES_TIPO_BG) {
+    rules.push(
+      SpreadsheetApp.newConditionalFormatRule()
+        .whenFormulaSatisfied('=$' + colCat + '2="' + cat + '"')
+        .setBackground(CFG.MENSAJES_TIPO_BG[cat])
+        .setRanges([dataRange])
+        .build()
+    );
+  }
+  _tryCondFmt(sh, rules);
+}
+
+// --- Tema: datos de clan para el menú dinámico ---
+
 // Helpers de datos [→ Contexto_Base_Web.md §30B030]
+
+/**
+ * _getNombresClanesOrdenados(ss, clanOrden) [→ Contexto_Base_Web.md §30B032]
+ */
+function _getNombresClanesOrdenados(ss, clanOrden) {
+  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
+  if (!sh || sh.getLastRow() < 2) return [];
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues();
+  return data.map(function(r) { return String(r[2] || '').trim(); }).filter(Boolean);
+}
 
 /**
  * _getDatosClanHoja(ss) [→ Contexto_Base_Web.md §30B031]
@@ -577,147 +737,4 @@ function _fmt(v) {
   var n = Number(v);
   if (isNaN(n)) return String(v);
   return n.toLocaleString('es-PE');
-}
-
-/**
- * _getNombresClanesOrdenados(ss, clanOrden) [→ Contexto_Base_Web.md §30B032]
- */
-function _getNombresClanesOrdenados(ss, clanOrden) {
-  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
-  if (!sh || sh.getLastRow() < 2) return [];
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues();
-  return data.map(function(r) { return String(r[2] || '').trim(); }).filter(Boolean);
-}
-
-/**
- * _agruparPorClanOrdenado(lista, clanOrden) [→ Contexto_Base_Web.md §30B033]
- */
-function _agruparPorClanOrdenado(lista, clanOrden) {
-  var grupos = {};
-  var clanes  = [];
-  for (var i = 0; i < lista.length; i++) {
-    var cn = lista[i].clan;
-    if (!grupos[cn]) { grupos[cn] = []; clanes.push(cn); }
-    grupos[cn].push(lista[i]);
-  }
-  clanes.sort(function(a, b) {
-    var oa = clanOrden[a.toLowerCase()]; if (oa === undefined) oa = 9999;
-    var ob = clanOrden[b.toLowerCase()]; if (ob === undefined) ob = 9999;
-    return oa - ob;
-  });
-  return clanes.map(function(cn) { return { clan: cn, lista: grupos[cn] }; });
-}
-
-/**
- * _obtenerCelularPorTag()
- * Devuelve un mapa { tag -> true } para jugadores activos Terna con celular.
- */
-/**
- * _obtenerCelularPorTag(ss) [→ Contexto_Base_Web.md §30B034]
- */
-function _obtenerCelularPorTag(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!sh || sh.getLastRow() < 2) return {};
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-  var mapa = {};
-  for (var i = 0; i < data.length; i++) {
-    if (String(data[i][IC.ESTADO - 1]) === 'Activo' &&
-        String(data[i][IC.CELULAR - 1] || '').trim() !== '' &&
-        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
-      mapa[String(data[i][IC.TAG - 1])] = String(data[i][IC.CELULAR - 1]).trim();
-    }
-  }
-  return mapa;
-}
-
-/**
- * _obtenerPrestamoPorTag(ss) [→ Contexto_Base_Web.md §30B035]
- */
-function _obtenerPrestamoPorTag(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!sh || sh.getLastRow() < 2) return {};
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-  var mapa = {};
-  for (var i = 0; i < data.length; i++) {
-    var tag = String(data[i][DC.TAG - 1] || '').trim();
-    var prestamo = String(data[i][DC.PRESTAMO - 1] || '').trim();
-    if (tag && prestamo) {
-      mapa[tag] = prestamo;
-    }
-  }
-  return mapa;
-}
-
-/**
- * _sufijoPrestamo(nombrePrestamo) [→ Contexto_Base_Web.md §30B036]
- */
-function _sufijoPrestamo(nombrePrestamo) {
-  var n = String(nombrePrestamo || '').trim();
-  if (!n) return '';
-  return ' (' + n.charAt(0).toUpperCase() + ')';
-}
-
-/**
- * _getPlantillasParaMensajes(ss) [→ Contexto_Base_Web.md §30B037]
- */
-function _getPlantillasParaMensajes(ss) {
-  var estaticas = _leerEntradasIndicePorTipo('Estático');
-  var out = [];
-  for (var i = 0; i < estaticas.length; i++) {
-    var categoria    = String(estaticas[i].categoria    || '').trim();
-    var subcategoria = String(estaticas[i].subcategoria || '').trim();
-    var clan         = String(estaticas[i].clan         || '').trim();
-    var contenido    = String(estaticas[i].contenido    || '');
-    if (!categoria || !contenido) continue;
-    out.push({ categoria: categoria, subcategoria: subcategoria, clan: clan, contenido: contenido });
-  }
-  return out;
-}
-
-function _obtenerDatosPendientes(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.PENDIENTES);
-  if (!sh || sh.getLastRow() < 2) return [];
-  // 9 columnas: N°|Tag|Nombre|Nom_Multi|Préstamo|Clan|Faltantes|Celular|WSP [→ Contexto_Base_Web.md §30B038]
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues();
-  var pendientes = data.map(function(r) { return { tag: r[1], nombre: r[2], nomMulti: r[3], prestamo: r[4], clan: r[5], faltantes: r[6] }; });
-
-  // NUEVO (pedido usuario): se agrega `rango` a cada pendiente, cruzado por [→ Contexto_Base_Web.md §30B039]
-  var dirPorTagRango = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS);
-  pendientes.forEach(function(p) {
-    var filaDirP = dirPorTagRango[String(p.tag || '').trim().toUpperCase()];
-    p.rango = filaDirP ? String(filaDirP[IC.RANGO - 1] || '') : '';
-  });
-
-  return pendientes;
-}
-
-function _obtenerDatosSinCelular(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!sh || sh.getLastRow() < 2) return [];
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-  var filtrado = [];
-  for (var i = 0; i < data.length; i++) {
-    if (String(data[i][IC.ESTADO    - 1]) === 'Activo' &&
-        String(data[i][IC.CELULAR   - 1] || '').trim() === '' &&
-        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
-      filtrado.push({ nombre: data[i][IC.NOMBRE - 1], clan: data[i][IC.CLAN - 1] });
-    }
-  }
-  return filtrado;
-}
-
-function _obtenerDatosSinEtiqueta(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!sh || sh.getLastRow() < 2) return [];
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-  var filtrado = [];
-  for (var i = 0; i < data.length; i++) {
-    // NOTA: "Iniciales" ya NO se exige aquí. Es un campo distinto (identificación/ [→ Contexto_Base_Web.md §30B040]
-    if (String(data[i][IC.ESTADO    - 1]) === 'Activo' &&
-        String(data[i][IC.ETIQUETA  - 1]) !== 'Sí' &&
-        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
-      filtrado.push({ nombre: data[i][IC.NOMBRE - 1], clan: data[i][IC.CLAN - 1] });
-    }
-  }
-  return filtrado;
 }
