@@ -1,14 +1,14 @@
 // ==============================================================================
 // 29_Docs_NoCalificados.gs
-// Documento en Drive que muestra a quienes no calificaron para un torneo, sorteo o cambio de rango.
+// Documentos en Drive de quienes no calificaron para un torneo o sorteo, y los tres de Cambio de rango (cambios aplicados, calificados y no calificados).
 // ==============================================================================
 
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
 //  Parte 1 — Funciones que se corren a mano: actualizarDocsNoCalificadosYCambioRango()
-//  Parte 2 — Funciones que no se corren a mano (las tres de documento las llama 26_Torneos_Core.gs; también aceptan correrse sin argumentos)
+//  Parte 2 — Funciones que no se corren a mano (las de documento las llama 26_Torneos_Core.gs; también aceptan correrse sin argumentos)
 //    - No calificados del torneo
 //    - No calificados del sorteo (y su evaluación)
-//    - Cambio de rango (y su veredicto)
+//    - Cambio de rango: documento de cambios aplicados, documentos de calificados y no calificados, su evaluación y su veredicto
 //    - Ayudas compartidas (texto de requisitos, escritura del documento y su formato)
 //    - Contenido base para la reconstrucción automática de los documentos
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
@@ -24,13 +24,24 @@ var NOMBRE_DOC_NO_CALIFICADOS_SORTEO = 'No calificados (sorteo) - Comunidad - �
 
 var NOMBRE_DOC_CAMBIO_RANGO = 'Cambio de rango - Comunidad - ᴳ乂ᵀ ⚜️ Familia Terna';
 
+// NUEVO (28-oct-2026, PF286 punto 11): los dos documentos de calificados y no calificados de Cambio de rango, en la carpeta «Cambio de rango» de Drive. Mismo patrón de nombre que los de torneos y sorteos.
+var NOMBRE_DOC_CALIFICADOS_CAMBIO_RANGO = 'Participantes calificados (cambio de rango) - Comunidad - ᴳ乂ᵀ ⚜️ Familia Terna';
+
+var NOMBRE_DOC_NO_CALIFICADOS_CAMBIO_RANGO = 'No calificados (cambio de rango) - Comunidad - ᴳ乂ᵀ ⚜️ Familia Terna';
+
 // NUEVO (28-oct-2026, PF286 punto 12): ids fijos de los tres documentos, para no depender de la búsqueda por nombre ni de la caché de Script Properties cuando se mueven de carpeta.
 // El de «Cambio de rango» es el mismo archivo que DOC_ID_ASCENSOS_DESCENSOS (25_Doc_AscensosDescensos.gs), que ya figura en Drive con el título «Cambio de rango». Se repite aquí el valor (no se referencia la constante de 25) para no depender del orden de carga de los archivos.
 var DOC_ID_NO_CALIFICADOS_TORNEO = '1wBJWDE8Jy1IbO7UljZwJl_PMzXU7n3qJZtg2GtHsmIQ';
 var DOC_ID_NO_CALIFICADOS_SORTEO = '1arA22oL2lmJplWc-EHbibHAVkAWsE8Vkby_W2kCec1g';
 var DOC_ID_CAMBIO_RANGO = '1jkUntN6esvkNvHosYesDQwlU33BfPr1I_wyyYueMxWo';
+// Los dos documentos nuevos todavía no existen en Drive: la primera corrida los crea por nombre (_crearDocReconstruibleSiFalta(), 01_Config_Global.gs) y deja el id en el registro. Cuando existan, pegar aquí su id para que dejen de buscarse por nombre.
+var DOC_ID_CALIFICADOS_CAMBIO_RANGO = '';
+var DOC_ID_NO_CALIFICADOS_CAMBIO_RANGO = '';
 
-// Veredictos posibles del documento de Cambio de rango (ver
+// Encabezado de la tabla de los documentos de calificados y no calificados de Cambio de rango.
+var NC_ENCABEZADO_TABLA_CAMBIO_RANGO = ['Nombre', 'Clan', 'Rango actual', 'Medallas (prom.)', 'Ataques (prom.)', 'Veredicto', 'Detalle'];
+
+// Veredictos posibles de la evaluación de Cambio de rango (ver
 // _ncVeredictoCambioRango() más abajo para la regla exacta de cada uno).
 var NC_VEREDICTO = {
   ASCENSO:   'Ascenso',
@@ -49,6 +60,7 @@ function actualizarDocsNoCalificadosYCambioRango() {
   actualizarDocNoCalificadosTorneo();
   actualizarDocNoCalificadosSorteo();
   actualizarDocCambioRango();
+  actualizarDocsCalificadosYNoCalificadosCambioRango();
 }
 
 // ----- Parte 2: funciones que no se corren a mano -----
@@ -333,35 +345,199 @@ function _evaluarCalificacionSorteo_(ctxParam) {
   };
 }
 
-// CAMBIO DE RANGO — documento general [→ Contexto_Base_Web.md §29B009]
+// CAMBIO DE RANGO — tres documentos (PF286 punto 11, 28-oct-2026) [→ Contexto_Base_Web.md §29B009]
+//  «Cambio de rango»: los cambios realmente aplicados de la corrida más reciente (leídos de Historial_A/D), con los requisitos que regían, las listas por clan y las tablas de requisitos por rango.
+//  «Participantes calificados (cambio de rango)»: quienes cumplen los requisitos de Ascenso del par vigente de CR_Lista.
+//  «No calificados (cambio de rango)»: todos los demás evaluados, con su veredicto y el detalle.
 
 /**
  * actualizarDocCambioRango(idAscenso, idDescenso) [→ Contexto_Base_Web.md §29B010]
+ * Documento «Cambio de rango». Ya no da un veredicto por jugador (eso pasó a los documentos de calificados y no calificados): indica los cambios de rango
+ * realmente aplicados de la corrida más reciente (_leerCorridaCambioRangoHistorial_(), 24_Historial_Ascensos.gs), con los requisitos del par de CR_Lista,
+ * la temporada y la semana, las listas por clan y las tablas de requisitos por rango (25_Doc_AscensosDescensos.gs). No evalúa a nadie, así que es barato.
+ * Sin ids usa el par vigente de Extra.
  */
 function actualizarDocCambioRango(idAscenso, idDescenso) {
+  var par = _cargarParCambioRango_(idAscenso, idDescenso);
+  if (!par.ok) {
+    Logger.log('[CambioRango-Doc] ABORT: ' + par.error);
+    return;
+  }
+
+  var minGPorNombreClan = _getMinGClanMaps().byNombre;
+  var corrida = _leerCorridaCambioRangoHistorial_(null);
+  var requisitos = _requisitosCambioRango_(par, minGPorNombreClan, { detallePorRol: false, reglasVeredicto: false });
+  var resumen = _resumenCorridaCambioRango_(corrida);
+  var ordenClanes = par.filaAscenso.porClan.map(function (b) { return b.clan; });
+  var grupos = _agruparCambiosAplicadosPorClan_(corrida.aplicados, ordenClanes);
+
+  _ncEscribirDocumento(NOMBRE_DOC_CAMBIO_RANGO, 'Cambio de rango',
+    requisitos, null, resumen, '', false, DOC_ID_CAMBIO_RANGO,
+    function (body) {
+      if (corrida.hayCorrida) {
+        _agregarListasCambiosAplicadosADoc_(body, grupos);
+        _rdocParrafoTexto(body, '', false);
+      }
+      _agregarTablasRequisitosRangoADoc_(body, par.filaAscenso, par.filaDescenso);
+      _rdocParrafoTexto(body, '', false);
+      _agregarReglasCambioRangoADoc_(body);
+      _rdocParrafoTexto(body, '', false);
+      _rdocBloqueRedesSocialesYPie(body);
+    });
+
+  Logger.log('[CambioRango-Doc] ' + resumen);
+}
+
+/**
+ * actualizarDocsCalificadosYNoCalificadosCambioRango(idAscenso, idDescenso)
+ * Documentos «Participantes calificados (cambio de rango)» y «No calificados (cambio de rango)». Evalúa UNA vez a todo el padrón (_evaluarCambioRango_()) y
+ * reparte a cada cuenta en uno u otro: califica quien cumple los requisitos de Ascenso de su rango y clan; todos los demás van en «No calificados», con su
+ * veredicto (Mantener rango, Descenso o Expulsión) y el detalle. Una cuenta sale en uno de los dos documentos, nunca en ninguno ni en los dos.
+ * Sin ids usa el par vigente de Extra.
+ */
+function actualizarDocsCalificadosYNoCalificadosCambioRango(idAscenso, idDescenso) {
+  var ev = _evaluarCambioRango_(idAscenso, idDescenso);
+  if (!ev) return;
+
+  var rep = _repartirEvaluadosCambioRango_(ev.evaluados, ev.ordenClanes);
+  var total = ev.evaluados.length;
+  var conteoCal = _conteoVeredictosTexto_(rep.calificados);
+  var conteoNo = _conteoVeredictosTexto_(rep.noCalificados);
+
+  var resumenCal = rep.calificados.length + ' de ' + total + ' cuenta(s) evaluada(s) cumplen los requisitos de Ascenso' +
+    (conteoCal ? ' (' + conteoCal + ')' : '') + '.';
+  var resumenNo = rep.noCalificados.length + ' de ' + total + ' cuenta(s) evaluada(s) no cumplen los requisitos de Ascenso' +
+    (conteoNo ? ' (' + conteoNo + ')' : '') + '.';
+
+  var notaCal = 'Califican los jugadores que cumplen los requisitos de Ascenso de su rango y de su clan; los demás figuran en el documento «No calificados (cambio de rango)».';
+  var notaNo = 'No califican los jugadores que no cumplen los requisitos de Ascenso de su rango y de su clan; los que sí los cumplen figuran en el documento «Participantes calificados (cambio de rango)».';
+
+  _ncEscribirDocumento(NOMBRE_DOC_CALIFICADOS_CAMBIO_RANGO, 'Participantes calificados (cambio de rango)',
+    ev.requisitos.concat([notaCal]), _filasEvaluadosCambioRango_(rep.calificados), resumenCal,
+    'Ningún jugador cumple los requisitos de Ascenso en esta corrida.', true, DOC_ID_CALIFICADOS_CAMBIO_RANGO);
+
+  _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_CAMBIO_RANGO, 'Participantes NO calificados (cambio de rango)',
+    ev.requisitos.concat([notaNo]), _filasEvaluadosCambioRango_(rep.noCalificados), resumenNo,
+    'Todas las cuentas evaluadas cumplen los requisitos de Ascenso: no hay nadie que listar en esta corrida.', true, DOC_ID_NO_CALIFICADOS_CAMBIO_RANGO);
+
+  Logger.log('[CambioRango-Doc] Calificados: ' + resumenCal + ' | No calificados: ' + resumenNo);
+}
+
+/**
+ * _cargarParCambioRango_(idAscenso, idDescenso)
+ * Lee y valida el par de CR_Lista que evalúan los documentos de Cambio de rango. Sin ids usa el par vigente de Extra (Ascenso_Vigente_ID y Descenso_Vigente_ID).
+ * Devuelve { ok: true, idA, idD, filaAscenso, filaDescenso } o { ok: false, error }.
+ */
+function _cargarParCambioRango_(idAscenso, idDescenso) {
   var idA = idAscenso || _getIdVigenteExtraCR('Ascenso');
   var idD = idDescenso || _getIdVigenteExtraCR('Descenso');
   if (!idA || !idD) {
-    Logger.log('[CambioRango-Doc] ABORT: falta el par de CR_Lista (Ascenso=' + (idA || 'vacío') +
+    return { ok: false, error: 'falta el par de CR_Lista (Ascenso=' + (idA || 'vacío') +
       ', Descenso=' + (idD || 'vacío') + '). Configurar Extra!Ascenso_Vigente_ID/Descenso_Vigente_ID ' +
-      'o pasar ambos IDs a mano.');
-    return;
+      'o pasar ambos IDs a mano.' };
   }
 
   var filaAscenso  = _getFilaCRListaPorId(idA);
   var filaDescenso = _getFilaCRListaPorId(idD);
   if (!filaAscenso || !filaDescenso) {
-    Logger.log('[CambioRango-Doc] ABORT: no encontré una o ambas filas de CR_Lista (' + idA + ' / ' + idD + ').');
-    return;
+    return { ok: false, error: 'no encontré una o ambas filas de CR_Lista (' + idA + ' / ' + idD + ').' };
   }
 
   // Misma validación que _calcularPropuestasCambioRango(): si Ascenso y [→ Contexto_Base_Web.md §29B011]
   var coherencia = _validarCoherenciaCRLista(filaAscenso, filaDescenso);
   if (!coherencia.ok) {
-    Logger.log('[CambioRango-Doc] ABORT: CR_Lista tiene requisitos incoherentes entre Ascenso y Descenso (' +
-      idA + ' / ' + idD + '): ' + coherencia.errores.join(' | '));
-    return;
+    return { ok: false, error: 'CR_Lista tiene requisitos incoherentes entre Ascenso y Descenso (' +
+      idA + ' / ' + idD + '): ' + coherencia.errores.join(' | ') };
   }
+
+  return { ok: true, idA: idA, idD: idD, filaAscenso: filaAscenso, filaDescenso: filaDescenso };
+}
+
+/**
+ * _requisitosCambioRango_(par, minGPorNombreClan, opciones)
+ * Líneas de «Requisitos evaluados» de los documentos de Cambio de rango (`par` es lo que devuelve _cargarParCambioRango_()).
+ * opciones.detallePorRol: agrega, por clan y rol, los requisitos de Ascenso y de Descenso (los documentos de calificados y no calificados; «Cambio de rango» no los
+ * pone porque ya lleva las tablas de requisitos por rango). opciones.reglasVeredicto: agrega la línea que explica cómo se decide el veredicto.
+ */
+function _requisitosCambioRango_(par, minGPorNombreClan, opciones) {
+  opciones = opciones || {};
+  var filaAscenso = par.filaAscenso;
+  var filaDescenso = par.filaDescenso;
+  var porClanDescenso = {};
+  filaDescenso.porClan.forEach(function (b) { porClanDescenso[b.clan] = b; });
+
+  var requisitos = [];
+  requisitos.push('Par de CR_Lista evaluado: Ascenso ' + par.idA + ' / Descenso ' + par.idD + '.');
+  if (filaAscenso.semanas && filaAscenso.semanas.length) {
+    requisitos.push('Semanas evaluadas (Ascenso): ' + filaAscenso.semanas.map(function (s) {
+      return 'T' + s.temporada + '_S' + s.semana;
+    }).join(', ') + '.');
+  }
+  if (filaDescenso.semanas && filaDescenso.semanas.length) {
+    requisitos.push('Semanas evaluadas (Descenso): ' + filaDescenso.semanas.map(function (s) {
+      return 'T' + s.temporada + '_S' + s.semana;
+    }).join(', ') + '.');
+  }
+  filaAscenso.porClan.forEach(function (b) {
+    var bd = porClanDescenso[b.clan];
+    if (opciones.detallePorRol) {
+      ['miembro', 'veterano', 'colider'].forEach(function (rol) {
+        requisitos.push(b.clan + ' — ' + _ncNombreRol(rol) + ': ' +
+          'ASCENSO ' + _ncTextoRequisito(b.minCR[rol], b.ataques[rol]) + ' | ' +
+          'DESCENSO ' + (bd ? _ncTextoRequisito(bd.minCR[rol], bd.ataques[rol]) : 'sin fila de Descenso para este clan') + '.');
+      });
+    }
+    requisitos.push(b.clan + ' — Min_G (umbral de expulsión, sobre medallas promedio): ' +
+      (minGPorNombreClan[b.clan] !== undefined ? minGPorNombreClan[b.clan] : CFG.MIN_G_DEFAULT) + '.');
+  });
+  requisitos.push('Descenso: solo cuentan las semanas completas de cada jugador (con fila el primer día de ' +
+    'guerra); si ninguna cuenta, no se evalúa el Descenso y queda en Mantener rango. Ascenso: todas las semanas evaluadas.');
+  if (opciones.reglasVeredicto) {
+    requisitos.push('Veredictos: ASCENSO si cumple los requisitos de Ascenso; MANTENER RANGO si supera ' +
+      'los de Descenso pero no llega a los de Ascenso; DESCENSO si queda por debajo de los de Descenso ' +
+      'pero alcanza Min_G; EXPULSIÓN si queda por debajo de Min_G. Se evalúan en ese orden y el primero ' +
+      'que coincide es el veredicto. Un Colíder que cumple los requisitos de Ascenso no sube de rango: ' +
+      'queda marcado como elegible para administración.');
+  }
+  return requisitos;
+}
+
+/**
+ * _resumenCorridaCambioRango_(corrida) — función pura (se prueba en Node, sin hojas).
+ * Texto de «Resumen» del documento «Cambio de rango», a partir de lo que devuelve _leerCorridaCambioRangoHistorial_() (24_Historial_Ascensos.gs).
+ */
+function _resumenCorridaCambioRango_(corrida) {
+  if (!corrida || !corrida.hayCorrida) {
+    return 'Todavía no se ha registrado ninguna propuesta de cambio de rango, así que no hay cambios aplicados que mostrar.';
+  }
+  var partes = [];
+  if (corrida.temporada !== '' && corrida.temporada !== undefined && corrida.temporada !== null) partes.push('temporada ' + corrida.temporada);
+  if (corrida.semana !== '' && corrida.semana !== undefined && corrida.semana !== null) partes.push('semana ' + corrida.semana);
+  if (corrida.dia) partes.push(corrida.dia);
+  var cuando = partes.length ? ' (' + partes.join(', ') + ')' : '';
+  return 'Corrida del ' + corrida.diaTxt + cuando + ': ' + corrida.total + ' cambio(s) propuesto(s), ' +
+    corrida.aplicadosN + ' aplicado(s)' +
+    (corrida.pendientesN > 0 ? ' y ' + corrida.pendientesN + ' pendiente(s) de aplicar.' : '; no queda ninguno pendiente.');
+}
+
+/**
+ * _evaluarCambioRango_(idAscenso, idDescenso)
+ * ÚNICA evaluación del padrón para Cambio de rango (antes estaba dentro de actualizarDocCambioRango()): la usan los documentos de calificados y no calificados,
+ * así que una cuenta sale en uno o en el otro, nunca en ninguno. Mismo criterio que _calcularPropuestasCambioRango() (26_Torneos_Core.gs).
+ * Devuelve null si no se puede evaluar (sin par, par incoherente, semanas que todavía no terminan o sin semanas); si no,
+ * { idA, idD, filaAscenso, filaDescenso, requisitos, ordenClanes, evaluados }, donde cada evaluado trae { nombre, clan, tag, rangoActual, rolKey, fame, ataques,
+ * veredicto, detalle, cumpleAscenso }.
+ */
+function _evaluarCambioRango_(idAscenso, idDescenso) {
+  var par = _cargarParCambioRango_(idAscenso, idDescenso);
+  if (!par.ok) {
+    Logger.log('[CambioRango-Doc] ABORT: ' + par.error);
+    return null;
+  }
+  var idA = par.idA;
+  var idD = par.idD;
+  var filaAscenso = par.filaAscenso;
+  var filaDescenso = par.filaDescenso;
 
   var ss = _getSs();
   var ctxReal = _getCtx();
@@ -372,11 +548,11 @@ function actualizarDocCambioRango(idAscenso, idDescenso) {
   if (pendientesAsc.length || pendientesDesc.length) {
     Logger.log('[CambioRango-Doc] ABORT: la corrida evalúa semanas que todavía no terminan: ' +
       _textoSemanasPendientesCR(pendientesAsc.length ? pendientesAsc : pendientesDesc));
-    return;
+    return null;
   }
   if (!filaAscenso.semanas.length || !filaDescenso.semanas.length) {
     Logger.log('[CambioRango-Doc] ABORT: la corrida no tiene semanas que evaluar.');
-    return;
+    return null;
   }
 
   var porClanAscenso = {};
@@ -417,41 +593,11 @@ function actualizarDocCambioRango(idAscenso, idDescenso) {
   var ordenClanesCR = filaAscenso.porClan.map(function (b) { return b.clan; });
 
   // --- Requisitos, al INICIO del documento ---
-  var requisitos = [];
-  requisitos.push('Par de CR_Lista evaluado: Ascenso ' + idA + ' / Descenso ' + idD + '.');
-  if (filaAscenso.semanas && filaAscenso.semanas.length) {
-    requisitos.push('Semanas evaluadas (Ascenso): ' + filaAscenso.semanas.map(function (s) {
-      return 'T' + s.temporada + '_S' + s.semana;
-    }).join(', ') + '.');
-  }
-  if (filaDescenso.semanas && filaDescenso.semanas.length) {
-    requisitos.push('Semanas evaluadas (Descenso): ' + filaDescenso.semanas.map(function (s) {
-      return 'T' + s.temporada + '_S' + s.semana;
-    }).join(', ') + '.');
-  }
-  filaAscenso.porClan.forEach(function (b) {
-    var bd = porClanDescenso[b.clan];
-    ['miembro', 'veterano', 'colider'].forEach(function (rol) {
-      requisitos.push(b.clan + ' — ' + _ncNombreRol(rol) + ': ' +
-        'ASCENSO ' + _ncTextoRequisito(b.minCR[rol], b.ataques[rol]) + ' | ' +
-        'DESCENSO ' + (bd ? _ncTextoRequisito(bd.minCR[rol], bd.ataques[rol]) : 'sin fila de Descenso para este clan') + '.');
-    });
-    requisitos.push(b.clan + ' — Min_G (umbral de expulsión, sobre medallas promedio): ' +
-      (minGPorNombreClan[b.clan] !== undefined ? minGPorNombreClan[b.clan] : CFG.MIN_G_DEFAULT) + '.');
-  });
-  requisitos.push('Descenso: solo cuentan las semanas completas de cada jugador (con fila el primer día de ' +
-    'guerra); si ninguna cuenta, no se evalúa el Descenso y queda en Mantener rango. Ascenso: todas las semanas evaluadas.');
-  requisitos.push('Veredictos: ASCENSO si cumple los requisitos de Ascenso; MANTENER RANGO si supera ' +
-    'los de Descenso pero no llega a los de Ascenso; DESCENSO si queda por debajo de los de Descenso ' +
-    'pero alcanza Min_G; EXPULSIÓN si queda por debajo de Min_G. Se evalúan en ese orden y el primero ' +
-    'que coincide es el veredicto. Un Colíder que cumple los requisitos de Ascenso no sube de rango: ' +
-    'queda marcado como elegible para administración.');
+  var requisitos = _requisitosCambioRango_(par, minGPorNombreClan, { detallePorRol: true, reglasVeredicto: true });
 
   // --- Recorrido del padrón (mismo criterio que _calcularPropuestasCambioRango) ---
   var dataDir = _leerDirectorioFisicoComoDC(ss);
-  var filas = [['Nombre', 'Clan', 'Rango actual', 'Medallas (prom.)', 'Ataques (prom.)', 'Veredicto', 'Detalle']];
-  var conteo = {};
-  var totalEvaluados = 0;
+  var evaluados = [];
 
   for (var i = 0; i < dataDir.length; i++) {
     var fila = dataDir[i];
@@ -472,7 +618,6 @@ function actualizarDocCambioRango(idAscenso, idDescenso) {
     else if (rangoNorm === 'colider')  rolKey = 'colider';
     if (!rolKey) continue; // Rango no reconocido (dato sucio)
 
-    totalEvaluados++;
     var tag = String(fila[DC.TAG - 1] || '').trim();
 
     var promAsc  = bloqueAsc  ? promediosCache(tag, filaAscenso.semanas,  'A') : null;
@@ -497,27 +642,81 @@ function actualizarDocCambioRango(idAscenso, idDescenso) {
     var minGClan = (minGPorNombreClan[clan] !== undefined) ? minGPorNombreClan[clan] : CFG.MIN_G_DEFAULT;
     var veredicto = _ncVeredictoCambioRango(rolKey, bloqueAsc, bloqueDesc, promAsc, promDesc, minGClan, ctxVeredicto);
 
-    conteo[veredicto.veredicto] = (conteo[veredicto.veredicto] || 0) + 1;
-    filas.push([
-      String(fila[DC.NOMBRE - 1] || ''),
-      clan,
-      rangoActual,
-      _ncFmtNum(promMostrado ? promMostrado.fameProm : 0),
-      _ncFmtNum(promMostrado ? promMostrado.ataquesProm : 0),
-      veredicto.veredicto,
-      veredicto.detalle
-    ]);
+    evaluados.push({
+      nombre: String(fila[DC.NOMBRE - 1] || ''),
+      clan: clan,
+      tag: tag,
+      rangoActual: rangoActual,
+      rolKey: rolKey,
+      fame: promMostrado ? promMostrado.fameProm : 0,
+      ataques: promMostrado ? promMostrado.ataquesProm : 0,
+      veredicto: veredicto.veredicto,
+      detalle: veredicto.detalle,
+      cumpleAscenso: !!veredicto.cumpleAscenso
+    });
   }
 
-  var partesResumen = [];
-  Object.keys(conteo).forEach(function (k) { partesResumen.push(k + ': ' + conteo[k]); });
-  var resumen = totalEvaluados + ' cuenta(s) evaluada(s). ' +
-    (partesResumen.length ? partesResumen.join(' | ') + '.' : 'Ninguna con veredicto.');
+  return {
+    idA: idA,
+    idD: idD,
+    filaAscenso: filaAscenso,
+    filaDescenso: filaDescenso,
+    requisitos: requisitos,
+    ordenClanes: ordenClanesCR,
+    evaluados: evaluados
+  };
+}
 
-  _ncEscribirDocumento(NOMBRE_DOC_CAMBIO_RANGO, 'Cambio de rango',
-    requisitos, filas, resumen, 'No hay ninguna cuenta evaluable con este par de CR_Lista.', false, DOC_ID_CAMBIO_RANGO);
+/**
+ * _repartirEvaluadosCambioRango_(evaluados, ordenClanes) — función pura (se prueba en Node, sin hojas).
+ * Reparte a los evaluados en { calificados (cumplen el Ascenso), noCalificados (todos los demás) }. Cada lista sale ordenada por clan (en el orden de `ordenClanes`),
+ * luego por rango (Colíder, Veterano, Miembro) y luego por nombre.
+ */
+function _repartirEvaluadosCambioRango_(evaluados, ordenClanes) {
+  var calificados = [];
+  var noCalificados = [];
+  (evaluados || []).forEach(function (e) {
+    (e.cumpleAscenso ? calificados : noCalificados).push(e);
+  });
+  var ordenRol = { colider: 0, veterano: 1, miembro: 2 };
+  function posClan(c) {
+    var i = (ordenClanes || []).indexOf(c);
+    return i < 0 ? 9999 : i;
+  }
+  function comparar(a, b) {
+    var dc = posClan(a.clan) - posClan(b.clan);
+    if (dc !== 0) return dc;
+    var ra = (ordenRol[a.rolKey] === undefined) ? 9 : ordenRol[a.rolKey];
+    var rb = (ordenRol[b.rolKey] === undefined) ? 9 : ordenRol[b.rolKey];
+    if (ra !== rb) return ra - rb;
+    return String(a.nombre).localeCompare(String(b.nombre), 'es', { sensitivity: 'base' });
+  }
+  calificados.sort(comparar);
+  noCalificados.sort(comparar);
+  return { calificados: calificados, noCalificados: noCalificados };
+}
 
-  Logger.log('[CambioRango-Doc] ' + resumen);
+/**
+ * _filasEvaluadosCambioRango_(lista) — función pura. Filas de la tabla de los documentos de calificados y no calificados (encabezado + una fila por cuenta).
+ */
+function _filasEvaluadosCambioRango_(lista) {
+  var filas = [NC_ENCABEZADO_TABLA_CAMBIO_RANGO.slice()];
+  (lista || []).forEach(function (e) {
+    filas.push([e.nombre, e.clan, e.rangoActual, _ncFmtNum(e.fame), _ncFmtNum(e.ataques), e.veredicto, e.detalle]);
+  });
+  return filas;
+}
+
+/**
+ * _conteoVeredictosTexto_(lista) — función pura. «Ascenso: 5 | Elegible para administración: 1», en el orden fijo de NC_VEREDICTO y sin los que no tienen ninguna cuenta.
+ */
+function _conteoVeredictosTexto_(lista) {
+  var orden = [NC_VEREDICTO.ASCENSO, NC_VEREDICTO.ELEGIBLE, NC_VEREDICTO.MANTENER, NC_VEREDICTO.DESCENSO, NC_VEREDICTO.EXPULSION];
+  var conteo = {};
+  (lista || []).forEach(function (e) { conteo[e.veredicto] = (conteo[e.veredicto] || 0) + 1; });
+  var partes = [];
+  orden.forEach(function (v) { if (conteo[v]) partes.push(v + ': ' + conteo[v]); });
+  return partes.join(' | ');
 }
 
 /**
@@ -540,24 +739,27 @@ function _ncVeredictoCambioRango(rolKey, bloqueAsc, bloqueDesc, promAsc, promDes
     var textoAsc = 'Cumple Ascenso — ' +
       _ncTextoRequisitoVsReal(bloqueAsc.minCR[rolKey], bloqueAsc.ataques[rolKey], promAsc);
     if (rolKey !== 'colider') {
-      return { veredicto: NC_VEREDICTO.ASCENSO, detalle: textoAsc + '.' };
+      return { veredicto: NC_VEREDICTO.ASCENSO, cumpleAscenso: true, detalle: textoAsc + '.' };
     }
     // Colider (28-sep-2026, igual que _calcularPropuestasCambioRango()): de una cantera sube de clan y
     // llega como Miembro; el del clan principal solo es elegible para admin, salvo que ya lo sea.
     if (ctx.clanDestinoColider) {
       return {
         veredicto: NC_VEREDICTO.ASCENSO,
+        cumpleAscenso: true,
         detalle: textoAsc + '. Colíder de cantera: sube al clan ' + ctx.clanDestinoColider + ' y llega como Miembro.'
       };
     }
     if (ctx.yaEsAdmin) {
       return {
         veredicto: NC_VEREDICTO.MANTENER,
+        cumpleAscenso: true,
         detalle: textoAsc + '. Colíder del clan principal que ya es admin: no se propone nada.'
       };
     }
     return {
       veredicto: NC_VEREDICTO.ELEGIBLE,
+      cumpleAscenso: true,
       detalle: textoAsc + '. Colíder: no sube de rango, queda elegible para administración.'
     };
   }
@@ -662,7 +864,7 @@ function _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) {
 /**
  * _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas) [→ Contexto_Base_Web.md §29B021]
  */
-function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas, estiloUniforme, idDoc) {
+function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas, estiloUniforme, idDoc, alAgregarSecciones) {
   var archivo;
   try {
     // Busca el documento existente (caché de ID -> nombre en las 6 carpetas de [→ Contexto_Base_Web.md §29B022]
@@ -712,8 +914,14 @@ function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, tex
     // el de Cambio de rango sigue con la tabla de siempre (estiloUniforme no se le pasa).
     if (estiloUniforme) _ncTablaEstiloOscuro(body, filas);
     else _rdocTablaConEncabezadoNegrita(body, filas);
-  } else {
+  } else if (textoSinFilas) {
     _rdocParrafoTexto(body, textoSinFilas, false, DocumentApp.HorizontalAlignment.JUSTIFY);
+  }
+
+  // NUEVO (28-oct-2026, PF286): secciones propias de un documento (listas, tablas de requisitos, reglas) que se escriben después de la tabla o del texto de «sin filas».
+  if (typeof alAgregarSecciones === 'function') {
+    _rdocParrafoTexto(body, '', false);
+    alAgregarSecciones(body);
   }
 
   doc.saveAndClose();
@@ -829,6 +1037,14 @@ function _construirContenidoDocNoCalificadosSorteo(body) {
 
 function _construirContenidoDocCambioRango(body) {
   _ncContenidoBasePlaceholder(body, 'Cambio de rango');
+}
+
+function _construirContenidoDocCalificadosCambioRango(body) {
+  _ncContenidoBasePlaceholder(body, 'Participantes calificados (cambio de rango)');
+}
+
+function _construirContenidoDocNoCalificadosCambioRango(body) {
+  _ncContenidoBasePlaceholder(body, 'Participantes NO calificados (cambio de rango)');
 }
 
 function _ncContenidoBasePlaceholder(body, titulo) {

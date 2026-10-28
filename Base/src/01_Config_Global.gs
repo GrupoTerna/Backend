@@ -702,6 +702,8 @@ function _getMapaDocsReconstruibles() {
   mapa[NOMBRE_DOC_NO_CALIFICADOS_TORNEO] = _construirContenidoDocNoCalificadosTorneo;
   mapa[NOMBRE_DOC_NO_CALIFICADOS_SORTEO] = _construirContenidoDocNoCalificadosSorteo;
   mapa[NOMBRE_DOC_CAMBIO_RANGO] = _construirContenidoDocCambioRango;
+  mapa[NOMBRE_DOC_CALIFICADOS_CAMBIO_RANGO] = _construirContenidoDocCalificadosCambioRango; // PF286 punto 11 (28-oct-2026)
+  mapa[NOMBRE_DOC_NO_CALIFICADOS_CAMBIO_RANGO] = _construirContenidoDocNoCalificadosCambioRango; // PF286 punto 11 (28-oct-2026)
   _DOCS_TORNEOS_SORTEOS_RECONSTRUIBLES = mapa;
   return mapa;
 }
@@ -721,6 +723,8 @@ function _getMapaCarpetaDestinoDocsReconstruibles() {
   mapa[NOMBRE_DOC_NO_CALIFICADOS_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS;
   mapa[NOMBRE_DOC_NO_CALIFICADOS_SORTEO] = DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS;
   mapa[NOMBRE_DOC_CAMBIO_RANGO] = DRIVE_FOLDER_ID_PLANTILLAS_CAMBIO_RANGO;
+  mapa[NOMBRE_DOC_CALIFICADOS_CAMBIO_RANGO] = DRIVE_FOLDER_ID_PLANTILLAS_CAMBIO_RANGO; // PF286 punto 11 (28-oct-2026)
+  mapa[NOMBRE_DOC_NO_CALIFICADOS_CAMBIO_RANGO] = DRIVE_FOLDER_ID_PLANTILLAS_CAMBIO_RANGO; // PF286 punto 11 (28-oct-2026)
   return mapa;
 }
 

@@ -3189,7 +3189,7 @@ function procesarSorteos() {
 /**
  * procesarCambioRango() [→ Contexto_Base_Web.md §PF286]
  * Equivalente de procesarSorteos() y procesarTorneos() para Cambio de rango: con el par vigente de
- * Extra (Ascenso_Vigente_ID / Descenso_Vigente_ID) actualiza los dos documentos que salen de ese par.
+ * Extra (Ascenso_Vigente_ID / Descenso_Vigente_ID) actualiza los tres documentos que salen de ese par: «Cambio de rango», «Participantes calificados (cambio de rango)» y «No calificados (cambio de rango)».
  * Cada paso va en su propio try/catch para que uno que falle no corte a los demás.
  * Lo llaman PASOS_RUNALL y PASOS_RUNUPDATE (00_Main.gs) y la web al guardar el par o generar propuestas.
  */
@@ -3202,17 +3202,19 @@ function procesarCambioRango() {
     return true;
   }
 
-  // Documento «Cambio de rango»: veredicto por jugador.
+  // Documento «Cambio de rango»: los cambios realmente aplicados de la corrida más reciente, con los requisitos, las listas por clan y las tablas por rango.
   try {
     actualizarDocCambioRango(idA, idD);
   } catch (eDocCR) {
     Logger.log('[CambioRango] actualizarDocCambioRango() falló (se continúa): ' + eDocCR.message);
   }
 
-  // 28-oct-2026 (PF286 punto 12): aquí se llamaban también actualizarTablasRangosDoc() y actualizarDocAscensosDescensos() (25),
-  // pero abren por id el MISMO archivo que escribe actualizarDocCambioRango() (ahora titulado «Cambio de rango») y buscan en él los
-  // encabezados «Ascensos:» y «Descensos:» del diseño viejo, que ese documento borra al reescribirse entero. Quedan solo como funciones
-  // manuales (25) hasta el rediseño de los documentos (PF286 punto 11).
+  // Documentos «Participantes calificados» y «No calificados» de Cambio de rango: se evalúa una sola vez a todo el padrón y se reparte entre los dos.
+  try {
+    actualizarDocsCalificadosYNoCalificadosCambioRango(idA, idD);
+  } catch (eDocCal) {
+    Logger.log('[CambioRango] actualizarDocsCalificadosYNoCalificadosCambioRango() falló (se continúa): ' + eDocCal.message);
+  }
 
   return true;
 }

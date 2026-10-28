@@ -1041,7 +1041,7 @@ function _resolverPropuestaCRListaComoRealizada(sh, propuestaPendiente, filaDire
  * Resultado de «no hay corrida»: los documentos de Cambio de rango lo usan cuando todavía no se registró ninguna propuesta del par evaluado.
  */
 function _corridaCambioRangoVacia_() {
-  return { hayCorrida: false, diaTxt: '', total: 0, aplicadosN: 0, pendientesN: 0, aplicados: [], rangoPrevioPorTag: {} };
+  return { hayCorrida: false, diaTxt: '', temporada: '', semana: '', dia: '', total: 0, aplicadosN: 0, pendientesN: 0, aplicados: [], rangoPrevioPorTag: {} };
 }
 
 /**
@@ -1084,7 +1084,7 @@ function _leerCorridaCambioRangoHistorial_(desdeMs) {
  * Una «corrida» son las propuestas (Estado de propuesta «Planificado» o «Realizado») cuya Fecha cae en el mismo día de Lima que la propuesta más reciente: la Fecha
  * es la de creación de la propuesta y no cambia al pasar a «Realizado» (_resolverPropuestaCRListaComoRealizada()), así que todas las de una corrida comparten día.
  * Las filas sin Estado de propuesta (cambios reales sin propuesta) no cuentan. `claveDia(ms)` devuelve el día como 'aaaa-mm-dd'.
- * Devuelve { hayCorrida, diaTxt ('dd/mm/aaaa'), total, aplicadosN, pendientesN, aplicados (los «Realizado»), rangoPrevioPorTag ({ tag: { rango, rango2 } } solo de Ascenso y Degradación realizados) }.
+ * Devuelve { hayCorrida, diaTxt ('dd/mm/aaaa'), temporada, semana, dia, total, aplicadosN, pendientesN, aplicados (los «Realizado»), rangoPrevioPorTag ({ tag: { rango, rango2 } } solo de Ascenso y Degradación realizados) }.
  */
 function _corridaCambioRangoDesdeRegistros_(registros, desdeMs, claveDia) {
   var res = _corridaCambioRangoVacia_();
@@ -1102,6 +1102,10 @@ function _corridaCambioRangoDesdeRegistros_(registros, desdeMs, claveDia) {
 
   res.hayCorrida = true;
   res.diaTxt = ultimoDia.split('-').reverse().join('/');
+  // Temporada, semana y día de la corrida: son los de cualquiera de sus propuestas (todas comparten día; vacíos si el registro no los trae).
+  res.temporada = (corrida[0].temporada === undefined) ? '' : corrida[0].temporada;
+  res.semana = (corrida[0].semana === undefined) ? '' : corrida[0].semana;
+  res.dia = (corrida[0].dia === undefined) ? '' : corrida[0].dia;
   res.total = corrida.length;
   corrida.forEach(function (r) {
     if (r.estadoProp !== 'Realizado') return;
