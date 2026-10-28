@@ -1,9 +1,20 @@
-// ==============================================================================
 // 46_Test.gs
 // Tests de endpoints disponibles, también se documentan cuáles no están disponibles por fallas desde Supercell o faltas de permisos (funciones pagadas)
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Pruebas manuales de la API
+//  Parte 2 — Funciones que no se corren a mano
+//    - Pruebas manuales de la API: ayuda
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var TAG_PRUEBA = '#9LCJ2JQ08'; // <-- REEMPLAZAR por un tag real
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Pruebas manuales de la API -----
 
 // Prueba /players/{tag}/upcomingchests y /battlelog; imprime un resumen legible en el log. [→ Contexto_Base_Web.md §46B001]
 function testCofresYBatallas() {
@@ -79,11 +90,9 @@ function testCofresYBatallasTodos() {
   }
 }
 
-// =============================================================================
 // TEST — Endpoints viables de la API de Clash Royale (temporal)
-// =============================================================================
+
 // Endpoints MUERTOS/REMOVIDOS por Supercell (no se prueban a propósito), VIVOS que suelen devolver {items:[]} y los que sí se prueban; archivo temporal. [→ Contexto_Base_Web.md §46B003]
-// =============================================================================
 
 function testTodosLosEndpoints() {
   var clanTag = CFG.TERNA_TAGS[0]; // '#GCRG8L00'
@@ -331,6 +340,12 @@ function testTodosLosEndpoints() {
   }
   Logger.log('===== FIN TEST =====');
 }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Pruebas manuales de la API: ayuda -----
 
 // Helper: prueba UN endpoint con _apiGet() y devuelve una línea de resumen; no lanza. [→ Contexto_Base_Web.md §46B005]
 function _probarEp(nombre, path, analizar) {
