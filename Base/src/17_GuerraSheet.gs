@@ -2930,6 +2930,91 @@ function _corregirFechaGuerraLogs_(aplicar) {
   _registrarLogScriptTerna('corregirFechaGuerraLogs' + (aplicar ? 'Aplicar' : 'Informe') + '()', msg, []);
 }
 
+// completarFechaGuerraSinFechaInforme() / completarFechaGuerraSinFechaAplicar(): PF284 (26-oct-2026; pedido de la usuaria). Las 30 filas de entrenamiento T10 S1 día L (05/10/2026) nacieron sin Fecha
+// ni DiaGuerra la madrugada del 05-oct. Completa SOLO la fecha del DiaGuerra, sin hora (00:00:00), como las filas de T2 a T4 de PF063: la hora real de captura se desconoce y no se inventa.
+// Solo toca filas con Fecha vacía y DiaGuerra válido; escribe solo la columna Fecha, por tramos; guarda en Drive el antes y el después. [→ Contexto_Base_Web.md §PF284]
+function completarFechaGuerraSinFechaInforme() { _completarFechaGuerraSinFecha_(false); }
+function completarFechaGuerraSinFechaAplicar() { _completarFechaGuerraSinFecha_(true); }
+
+function _completarFechaGuerraSinFecha_(aplicar) {
+  var etiqueta = aplicar ? 'APLICAR' : 'SOLO INFORMAR';
+  var ss = _getSs();
+  var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+  var informe = [['Fuente', 'N°', 'Temporada', 'Semana', 'Día', 'Clan', 'Tag', 'DiaGuerra', 'Fecha anterior', 'Fecha nueva']];
+  var enHoja = 0, enCsv = 0, sinDia = 0;
+  var idsHoja = {}; // filas de la hoja que se completan: en el CSV no se cuentan dos veces (la fusión ya las actualiza desde la hoja)
+  var fechaSoloDia = function (dia) {
+    var d = _diaLimaDe_(dia); // yyyyMMdd o ''
+    if (!d) return null;
+    try { return Utilities.parseDate(d + ' 00:00:00', 'America/Lima', 'yyyyMMdd HH:mm:ss'); } catch (e) { return null; }
+  };
+  var txtFecha = function (dt) { return Utilities.formatDate(dt, 'America/Lima', 'dd/MM/yyyy HH:mm:ss'); };
+
+  // 1) Hoja Guerra
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  if (sh && sh.getLastRow() >= 2) {
+    var n = sh.getLastRow() - 1;
+    var datos = sh.getRange(2, 1, n, GUERRA_TOTAL_COLS).getValues();
+    var corr = [];
+    for (var i = 0; i < n; i++) {
+      var f = datos[i];
+      if (!String(f[GC.TAG - 1] || '').trim()) continue;
+      if (!_celdaVaciaGuerra_(f[GC.FECHA - 1])) continue;
+      var nueva = fechaSoloDia(f[GC.DIA_GUERRA - 1]);
+      if (!nueva) { sinDia++; continue; }
+      corr.push({ i: i, fecha: nueva });
+      idsHoja[_idFilaGuerraCSV(f)] = true;
+      informe.push(['Hoja Guerra', f[GC.NUM - 1] || '', f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.DIA - 1], f[GC.CLAN - 1], f[GC.TAG - 1], _diaLimaDe_(f[GC.DIA_GUERRA - 1]), '', txtFecha(nueva)]);
+    }
+    enHoja = corr.length;
+    if (aplicar && corr.length) {
+      var k = 0;
+      while (k < corr.length) {
+        var j = k;
+        while (j + 1 < corr.length && corr[j + 1].i === corr[j].i + 1) j++;
+        var vals = [];
+        for (var q = k; q <= j; q++) vals.push([corr[q].fecha]);
+        var rng = sh.getRange(2 + corr[k].i, GC.FECHA, vals.length, 1);
+        rng.setValues(vals);
+        rng.setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
+        k = j + 1;
+      }
+      SpreadsheetApp.flush();
+      _syncGuerraCSV(sh, false); // la hoja manda sobre el CSV por ID
+    }
+  }
+
+  // 2) Backup_Guerra.csv: filas que sigan sin Fecha (por ejemplo, si no estaban en la hoja)
+  var filasCsvCambiadas = 0;
+  try {
+    var txt = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (txt) {
+      var parsed = _parseCSV(txt);
+      for (var r = 1; r < parsed.length; r++) {
+        var fr = parsed[r];
+        if (!String(fr[GC.TAG - 1] || '').trim() || String(fr[GC.FECHA - 1] || '').trim() !== '') continue;
+        if (idsHoja[_idFilaGuerraCSV(fr)]) continue;
+        var dgCsv = _diaLimaDe_(fr[GC.DIA_GUERRA - 1]);
+        var nuevaCsv = dgCsv ? fechaSoloDia(fr[GC.DIA_GUERRA - 1]) : null;
+        if (!nuevaCsv) { sinDia++; continue; }
+        enCsv++;
+        informe.push(['Backup_Guerra.csv', fr[GC.NUM - 1] || '', fr[GC.TEMPORADA - 1], fr[GC.SEMANA - 1], fr[GC.DIA - 1], fr[GC.CLAN - 1], fr[GC.TAG - 1], dgCsv, '', txtFecha(nuevaCsv)]);
+        if (aplicar) { fr[GC.FECHA - 1] = txtFecha(nuevaCsv); filasCsvCambiadas++; }
+      }
+      if (aplicar && filasCsvCambiadas > 0) _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV(parsed));
+    }
+  } catch (eCsv) { Logger.log('[CompletarFechaGuerra] No se pudo revisar Backup_Guerra.csv: ' + eCsv.message); }
+
+  if (aplicar && informe.length > 1) _saveCSVToDrive('Correccion_Fecha_Guerra_SinFecha ' + marca + '.csv', _encodeCSVInforme(informe));
+  var msg = '[CompletarFechaGuerra] ' + etiqueta + ' | filas sin Fecha en la hoja Guerra que ' + (aplicar ? 'se completaron' : 'se completarían') + ': ' + enHoja +
+    ' | en Backup_Guerra.csv (tras la fusión) que ' + (aplicar ? 'se completaron' : 'se completarían') + ': ' + enCsv +
+    ' | sin DiaGuerra válido (no se tocan): ' + sinDia +
+    ' | valor puesto: la fecha del DiaGuerra, sin hora (00:00:00)' +
+    (aplicar && informe.length > 1 ? ' | detalle guardado en Drive: "Correccion_Fecha_Guerra_SinFecha ' + marca + '.csv"' : '');
+  Logger.log(msg);
+  _registrarLogScriptTerna('completarFechaGuerraSinFecha' + (aplicar ? 'Aplicar' : 'Informe') + '()', msg, []);
+}
+
 
 
 
