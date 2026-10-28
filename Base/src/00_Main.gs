@@ -154,7 +154,7 @@ var PASOS_RUNALL = [
   },
   // Torneos (T_Lista/T_Asistencia/T_Control, ver 26_Torneos_Core.gs): va después [→ Contexto_Base_Web.md §B025]
   function () { return procesarTorneos(); },
-  // FIX (09-sep-2026, pedido usuario -- "_continuarProcesarSorteos() / [→ Contexto_Base_Web.md §B026]
+  // FIX (09-sep-2026, pedido usuario -- "_continuarRunSorteos() / [→ Contexto_Base_Web.md §B026]
   function () { return procesarSorteos(); },
   // Guerra y Guerra_Logs van en pasos SEPARADOS (mismo motivo que [→ Contexto_Base_Web.md §B027]
   function () { return updateGuerraSheet(); },
@@ -978,17 +978,17 @@ var NOMBRES_PASOS_RUNSORTEOS = [
 function runSorteos() {
   if (!_adquirirLockEjecucion('runSorteos')) return;
   PropertiesService.getScriptProperties().setProperty('RUNSORTEOS_PASO', '0');
-  _continuarProcesarSorteos();
+  _continuarRunSorteos();
 }
 
 /**
- * _continuarProcesarSorteos() - punto de entrada tanto de runSorteos() como [→ Contexto_Base_Web.md §B106]
+ * _continuarRunSorteos() - punto de entrada tanto de runSorteos() como [→ Contexto_Base_Web.md §B106]
  */
-function _continuarProcesarSorteos() {
+function _continuarRunSorteos() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('RUNSORTEOS_PASO') || '0', 10);
   Logger.log(paso === 0 ? '=== Sorteos INICIO ===' : '=== Sorteos CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNSORTEOS.length + ' ===');
   try {
-    var completo = _ejecutarPorTandas('RUNSORTEOS', PASOS_RUNSORTEOS, CFG.RUNSORTEOS_PRESUPUESTO_MS, '_continuarProcesarSorteos', NOMBRES_PASOS_RUNSORTEOS);
+    var completo = _ejecutarPorTandas('RUNSORTEOS', PASOS_RUNSORTEOS, CFG.RUNSORTEOS_PRESUPUESTO_MS, '_continuarRunSorteos', NOMBRES_PASOS_RUNSORTEOS);
     if (completo) {
       _liberarLockEjecucion();
       Logger.log('=== Sorteos FIN ===');
@@ -997,7 +997,7 @@ function _continuarProcesarSorteos() {
     // refrescó su timestamp y programó la continuación automática.
   } catch (e) {
     PropertiesService.getScriptProperties().deleteProperty('RUNSORTEOS_PASO');
-    _borrarTriggersDeContinuacion('_continuarProcesarSorteos');
+    _borrarTriggersDeContinuacion('_continuarRunSorteos');
     _liberarLockEjecucion();
     Logger.log('[runSorteos] ERROR: ' + e.message + ' — lock liberado.');
     throw e;
@@ -1143,11 +1143,11 @@ function runGuerra() {
     try {
       props.setProperty('RUNGUERRA_COLA_PENDIENTE', claveHora);
       props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
-      _programarContinuacion('_continuarRunGuerraCola');
+      _programarContinuacion('_continuarRunGuerra');
       _colaProgramada = true;
-      Logger.log('[runGuerra] Respaldo CSV y calentamiento del caché pasan a la continuación _continuarRunGuerraCola (arranca en ~10 s, con su propio presupuesto).');
+      Logger.log('[runGuerra] Respaldo CSV y calentamiento del caché pasan a la continuación _continuarRunGuerra (arranca en ~10 s, con su propio presupuesto).');
     } catch (eCola) {
-      Logger.log('[runGuerra] No se pudo programar _continuarRunGuerraCola: ' + eCola.message + '. Se hace el respaldo y el calentamiento aquí, como antes.');
+      Logger.log('[runGuerra] No se pudo programar _continuarRunGuerra: ' + eCola.message + '. Se hace el respaldo y el calentamiento aquí, como antes.');
     }
     if (!_colaProgramada) {
       try { _runGuerraColaHoraria_(_tRunGuerra0); }
@@ -1173,7 +1173,7 @@ function runGuerra() {
 /**
  * _runGuerraColaHoraria_(t0) - Tramo final de la actualización horaria de guerra (PF143, 21-oct-2026): respaldo a Backup_Guerra.csv y
  * calentamiento del caché de guerra.html (Dashboard y publicaciones estáticas). Antes estaba al final de runGuerra(); ahora lo ejecuta
- * _continuarRunGuerraCola() en una ejecución nueva (o runGuerra(), solo si no pudo programar la continuación). t0 = inicio de la
+ * _continuarRunGuerra() en una ejecución nueva (o runGuerra(), solo si no pudo programar la continuación). t0 = inicio de la
  * ejecución que lo llama, para respetar el margen contra el límite duro de la plataforma. No depende de variables en memoria de
  * runGuerra(): _syncGuerraCSV() recibe la hoja y _calentarCacheGuerraEnVivo_() lee todo por su cuenta. [→ Contexto_Base_Web.md §PF143]
  */
@@ -1204,7 +1204,7 @@ function _runGuerraColaHoraria_(t0) {
 }
 
 /**
- * _continuarRunGuerraCola() - Handler de la continuación que programa runGuerra() al terminar Pendientes (PF143, 21-oct-2026).
+ * _continuarRunGuerra() - Handler de la continuación que programa runGuerra() al terminar Pendientes (PF143, 21-oct-2026).
  * Corre _runGuerraColaHoraria_() en una ejecución nueva de 6 min. Reglas:
  *  - Una sola vez por programación: borra su propio activador al empezar, así que si la plataforma la corta no se repite en bucle;
  *    el siguiente runGuerra() horario vuelve a programarla.
@@ -1213,10 +1213,10 @@ function _runGuerraColaHoraria_(t0) {
  *    y luego se descarta (la próxima hora vuelve a intentarlo).
  * [→ Contexto_Base_Web.md §PF143]
  */
-function _continuarRunGuerraCola() {
-  if (_bloquearSiReenumerando_('_continuarRunGuerraCola')) return; // PF260
+function _continuarRunGuerra() {
+  if (_bloquearSiReenumerando_('_continuarRunGuerra')) return; // PF260
   var props = PropertiesService.getScriptProperties();
-  _borrarTriggersDeContinuacion('_continuarRunGuerraCola');
+  _borrarTriggersDeContinuacion('_continuarRunGuerra');
   if (!props.getProperty('RUNGUERRA_COLA_PENDIENTE')) {
     Logger.log('[runGuerraCola] Sin tarea pendiente (ya se hizo o se descartó). No se hace nada.');
     return;
@@ -1231,7 +1231,7 @@ function _continuarRunGuerraCola() {
     var intentos = Number(props.getProperty('RUNGUERRA_COLA_INTENTOS')) || 0;
     if (intentos < CFG.RUNGUERRA_COLA_REINTENTOS_MAX) {
       props.setProperty('RUNGUERRA_COLA_INTENTOS', String(intentos + 1));
-      ScriptApp.newTrigger('_continuarRunGuerraCola').timeBased().after(CFG.RUNGUERRA_COLA_REINTENTO_MS).create();
+      ScriptApp.newTrigger('_continuarRunGuerra').timeBased().after(CFG.RUNGUERRA_COLA_REINTENTO_MS).create();
       Logger.log('[runGuerraCola] Hay otra ejecución en curso: se reintenta en ' + Math.round(CFG.RUNGUERRA_COLA_REINTENTO_MS / 1000) +
         ' s (intento ' + (intentos + 1) + ' de ' + CFG.RUNGUERRA_COLA_REINTENTOS_MAX + ').');
     } else {

@@ -214,14 +214,14 @@ function reanudarReenumerarTemporadas() {
     Logger.log('[Reenumeración] REENUM_PASO no estaba guardado; se retoma en el paso ' + PASO_DONDE_SEGUIR + '.');
   }
   if (!_adquirirLockEjecucion('reanudarReenumerarTemporadas')) return;
-  _continuarReenumerarTemporadas();
+  _continuarRunReenumerarTemporadas();
 }
 
 // liberarLockEjecucionManual(): PF258; libera a mano el lock de ejecución (EJECUCION_EN_CURSO) que dejó tomado una función que falló antes de liberarlo. Si hay una reenumeración a medias (REENUM_PASO) NO toca nada.
 function liberarLockEjecucionManual() {
   var props = PropertiesService.getScriptProperties();
   if (props.getProperty('REENUM_PASO') !== null) {
-    Logger.log('[Lock] Hay una reenumeración a medias (REENUM_PASO = ' + props.getProperty('REENUM_PASO') + '). No se libera nada: se continúa con _continuarReenumerarTemporadas() o se revisa primero qué pasos llegaron a escribirse.');
+    Logger.log('[Lock] Hay una reenumeración a medias (REENUM_PASO = ' + props.getProperty('REENUM_PASO') + '). No se libera nada: se continúa con _continuarRunReenumerarTemporadas() o se revisa primero qué pasos llegaron a escribirse.');
     return;
   }
   var raw = props.getProperty('EJECUCION_EN_CURSO');
@@ -639,15 +639,15 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
              ' | deltaMeses: ' + deltaMeses +
              ' (se sumará a toda Temporada guardada; offset RoyaleAPI se ajustará en -' + deltaMeses + ').');
 
-  _continuarReenumerarTemporadas();
+  _continuarRunReenumerarTemporadas();
 }
 
-// _continuarReenumerarTemporadas(): entrada de runReenumerarTemporadas() y del trigger de continuación; no llamar para iniciar una corrida nueva (no adquiere el lock). [→ Contexto_Base_Web.md §47B027]
-function _continuarReenumerarTemporadas() {
+// _continuarRunReenumerarTemporadas(): entrada de runReenumerarTemporadas() y del trigger de continuación; no llamar para iniciar una corrida nueva (no adquiere el lock). [→ Contexto_Base_Web.md §47B027]
+function _continuarRunReenumerarTemporadas() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('REENUM_PASO') || '0', 10);
   Logger.log(paso === 0 ? '[Reenumeración] INICIO' : '[Reenumeración] CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_REENUMERAR_TEMPORADAS.length);
   try {
-    var completo = _ejecutarPorTandas('REENUM', PASOS_REENUMERAR_TEMPORADAS, CFG.REENUM_TANDA_PRESUPUESTO_MS, '_continuarReenumerarTemporadas', NOMBRES_PASOS_REENUMERAR_TEMPORADAS);
+    var completo = _ejecutarPorTandas('REENUM', PASOS_REENUMERAR_TEMPORADAS, CFG.REENUM_TANDA_PRESUPUESTO_MS, '_continuarRunReenumerarTemporadas', NOMBRES_PASOS_REENUMERAR_TEMPORADAS);
     if (completo) {
       PropertiesService.getScriptProperties().deleteProperty('REENUM_DELTA_MESES');
       PropertiesService.getScriptProperties().deleteProperty('REENUM_NUEVA_REF');
@@ -661,7 +661,7 @@ function _continuarReenumerarTemporadas() {
     // PF258 (25-oct-2026): REENUM_PASO NO se borra. Antes se borraba y un nuevo inicio empezaba en el paso 0, sumando otra vez el delta en los pasos que ya habían terminado.
     // Queda el índice del paso que falló (los anteriores terminaron). Para seguir: reanudarReenumerarTemporadas(). No correr iniciarReenumerarTemporadas() de nuevo.
     var pasoFallido = PropertiesService.getScriptProperties().getProperty('REENUM_PASO');
-    _borrarTriggersDeContinuacion('_continuarReenumerarTemporadas');
+    _borrarTriggersDeContinuacion('_continuarRunReenumerarTemporadas');
     _liberarLockEjecucion();
     var numFallido = isNaN(parseInt(pasoFallido, 10)) ? pasoFallido : (parseInt(pasoFallido, 10) + 1); // PF274: el registro muestra el número (índice + 1); REENUM_PASO guarda el índice
     Logger.log('[Reenumeración] ERROR en el paso ' + numFallido + ': ' + e.message + ' — lock liberado. Los pasos anteriores ya escribieron su parte; el paso ' + numFallido + ' puede haber escrito algo si hace varias escrituras. Corrige la causa y corre reanudarReenumerarTemporadas() (NO vuelvas a iniciar: sumaría el delta de nuevo).');

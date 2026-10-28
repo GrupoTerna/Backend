@@ -245,7 +245,7 @@ var CFG = {
   RUNSYNCCSV_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
   // FIX (22-ago-2026): runGuerraRapido() se cancelaba por exceder el límite [→ Contexto_Base_Web.md §01B032]
   RUNGUERRARAPIDO_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
-  // NUEVO (09-sep-2026, pedido usuario -- "_continuarProcesarSorteos() / [→ Contexto_Base_Web.md §01B033]
+  // NUEVO (09-sep-2026, pedido usuario -- "_continuarRunSorteos() / [→ Contexto_Base_Web.md §01B033]
   RUNSORTEOS_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
   // Presupuesto interno SOLO para el bucle de /players dentro de [→ Contexto_Base_Web.md §01B034]
   PLAYERS_FETCH_BUDGET_MS: 3 * 60 * 1000 + 30 * 1000,  // 3m30s
@@ -320,7 +320,7 @@ var CFG = {
   // FIX (02-sep-2026): runGuerra() (00_Main.gs) es monolítica — a diferencia [→ Contexto_Base_Web.md §01B054]
   RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS: 90 * 1000, // 1m30s de margen mínimo antes del límite duro
 
-  // PF143 (21-oct-2026): el respaldo CSV y el calentamiento del caché de runGuerra() corren en la continuación _continuarRunGuerraCola(). [→ Contexto_Base_Web.md §PF143]
+  // PF143 (21-oct-2026): el respaldo CSV y el calentamiento del caché de runGuerra() corren en la continuación _continuarRunGuerra(). [→ Contexto_Base_Web.md §PF143]
   RUNGUERRA_COLA_REINTENTOS_MAX: 5,
   RUNGUERRA_COLA_REINTENTO_MS: 60 * 1000, // 1 min entre reintentos si el candado está ocupado
 
