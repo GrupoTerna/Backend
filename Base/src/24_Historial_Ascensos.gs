@@ -1034,3 +1034,76 @@ function _resolverPropuestaCRListaComoRealizada(sh, propuestaPendiente, filaDire
   Logger.log('[CR_Lista->Historial] Fila ' + propuestaPendiente.filaSheet +
     ': propuesta resuelta como Realizado (confirmada por cambio de rango real detectado en el Directorio).');
 }
+// --- Corrida más reciente de propuestas de cambio de rango (PF286, 28-oct-2026; la usan los documentos de Cambio de rango, 25 y 29) [→ Contexto_Base_Web.md §PF286] ---
+
+/**
+ * _corridaCambioRangoVacia_()
+ * Resultado de «no hay corrida»: los documentos de Cambio de rango lo usan cuando todavía no se registró ninguna propuesta del par evaluado.
+ */
+function _corridaCambioRangoVacia_() {
+  return { hayCorrida: false, diaTxt: '', total: 0, aplicadosN: 0, pendientesN: 0, aplicados: [], rangoPrevioPorTag: {} };
+}
+
+/**
+ * _leerCorridaCambioRangoHistorial_(desdeMs)
+ * Lee Historial_A/D y devuelve la corrida más reciente de propuestas (ver _corridaCambioRangoDesdeRegistros_()).
+ * `desdeMs` (opcional) deja fuera las propuestas anteriores a esa marca de tiempo: sirve para no confundir la corrida de un par anterior con la del par que se evalúa.
+ * Solo lee la hoja; no escribe nada.
+ */
+function _leerCorridaCambioRangoHistorial_(desdeMs) {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.ASCENSOS);
+  if (!sh || sh.getLastRow() < 2) return _corridaCambioRangoVacia_();
+  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, ASCENSOS_TOTAL_COLS).getValues();
+  var registros = datos.map(function (f) {
+    var fecha = f[ASC.FECHA - 1];
+    return {
+      tag: String(f[ASC.TAG - 1] || '').trim(),
+      nombre: String(f[ASC.NOMBRE - 1] || '').trim(),
+      clan: String(f[ASC.CLAN - 1] || '').trim(),
+      rango: String(f[ASC.RANGO - 1] || '').trim(),
+      rango2: String(f[ASC.RANGO_2 - 1] || '').trim(),
+      tipo: String(f[ASC.TIPO - 1] || '').trim(),
+      estadoProp: String(f[ASC.ESTADO_PROPUESTA - 1] || '').trim(),
+      fechaMs: (fecha instanceof Date && !isNaN(fecha.getTime())) ? fecha.getTime() : NaN
+    };
+  });
+  return _corridaCambioRangoDesdeRegistros_(registros, desdeMs, function (ms) {
+    return Utilities.formatDate(new Date(ms), 'America/Lima', 'yyyy-MM-dd');
+  });
+}
+
+/**
+ * _corridaCambioRangoDesdeRegistros_(registros, desdeMs, claveDia) — función pura (se prueba en Node, sin hojas).
+ * Una «corrida» son las propuestas (Estado de propuesta «Planificado» o «Realizado») cuya Fecha cae en el mismo día de Lima que la propuesta más reciente: la Fecha
+ * es la de creación de la propuesta y no cambia al pasar a «Realizado» (_resolverPropuestaCRListaComoRealizada()), así que todas las de una corrida comparten día.
+ * Las filas sin Estado de propuesta (cambios reales sin propuesta) no cuentan. `claveDia(ms)` devuelve el día como 'aaaa-mm-dd'.
+ * Devuelve { hayCorrida, diaTxt ('dd/mm/aaaa'), total, aplicadosN, pendientesN, aplicados (los «Realizado»), rangoPrevioPorTag ({ tag: { rango, rango2 } } solo de Ascenso y Degradación realizados) }.
+ */
+function _corridaCambioRangoDesdeRegistros_(registros, desdeMs, claveDia) {
+  var res = _corridaCambioRangoVacia_();
+  var conDia = [];
+  (registros || []).forEach(function (r) {
+    if (r.estadoProp !== 'Planificado' && r.estadoProp !== 'Realizado') return;
+    if (!isFinite(r.fechaMs)) return;
+    if (desdeMs !== null && desdeMs !== undefined && r.fechaMs < desdeMs) return;
+    conDia.push({ r: r, dia: claveDia(r.fechaMs) });
+  });
+  if (!conDia.length) return res;
+
+  var ultimoDia = conDia.reduce(function (m, x) { return x.dia > m ? x.dia : m; }, '');
+  var corrida = conDia.filter(function (x) { return x.dia === ultimoDia; }).map(function (x) { return x.r; });
+
+  res.hayCorrida = true;
+  res.diaTxt = ultimoDia.split('-').reverse().join('/');
+  res.total = corrida.length;
+  corrida.forEach(function (r) {
+    if (r.estadoProp !== 'Realizado') return;
+    res.aplicados.push(r);
+    if ((r.tipo === 'Ascenso' || r.tipo === 'Degradación') && r.tag) {
+      res.rangoPrevioPorTag[r.tag] = { rango: r.rango, rango2: r.rango2 };
+    }
+  });
+  res.aplicadosN = res.aplicados.length;
+  res.pendientesN = res.total - res.aplicadosN;
+  return res;
+}
