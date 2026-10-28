@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 02:04:20 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 02:37:47 */
 
 
 
@@ -35329,6 +35329,32 @@ function _reordenarCRListaPorFecha(ss) {
   Logger.log('[CR_Lista] Hoja reordenada por Fecha (más reciente primero, ' + datos.length + ' fila(s)).');
 }
 
+// IDs de evento (torneo, sorteo, ascenso, descenso) — formato L_TT_S_SS_N_NN (PF286, 28-oct-2026, pedido de la usuaria) [→ Contexto_Base_Web.md §PF286]
+// L = letra de la hoja (T torneo, S sorteo, A ascenso, D descenso); TT = temporada; la «S» es literal y SS = semana; la «N» es literal y NN = número de evento en la semana.
+// Cada cifra se escribe con dos dígitos como mínimo y pasa a tres solo al llegar a 100. Ejemplo: T_27_S_01_N_01. El formato anterior era T_027_1_01 (temporada de tres cifras, semana sin relleno).
+// Mientras queden ids antiguos en las hojas, todo lo que lee ids usa _idEventoParsear_(), que reconoce los dos formatos.
+var ID_EVENTO_REGEX_NUEVO_ = /^([TSAD])_(\d{2,})_S_(\d{2,})_N_(\d{2,})$/;
+var ID_EVENTO_REGEX_VIEJO_ = /^([TSAD])_(\d{3})_(\d+)_(\d{2,})$/;
+
+function _idEventoCifras_(n) {
+  var t = String(Math.floor(Number(n)));
+  return t.length < 2 ? '0' + t : t;
+}
+
+function _idEventoConstruir_(letra, temporada, semana, numero) {
+  return letra + '_' + _idEventoCifras_(temporada) + '_S_' + _idEventoCifras_(semana) + '_N_' + _idEventoCifras_(numero);
+}
+
+// Devuelve { letra, temporada, semana, numero, nuevo } (números como Number; nuevo = true si usa el formato L_TT_S_SS_N_NN), o null si el texto no es un id de evento.
+function _idEventoParsear_(id) {
+  var texto = String(id || '').trim();
+  var m = texto.match(ID_EVENTO_REGEX_NUEVO_);
+  if (m) return { letra: m[1], temporada: Number(m[2]), semana: Number(m[3]), numero: Number(m[4]), nuevo: true };
+  m = texto.match(ID_EVENTO_REGEX_VIEJO_);
+  if (m) return { letra: m[1], temporada: Number(m[2]), semana: Number(m[3]), numero: Number(m[4]), nuevo: false };
+  return null;
+}
+
 // CR_Lista — generación de ID (FASE 1, 13-sep-2026, pedido del usuario, plan [→ Contexto_Base_Web.md §26B015]
 
 /**
@@ -35342,11 +35368,10 @@ function _generarParIdsCRLista(fecha, ss) {
   var lecturaCRIds = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CR_LISTA, 'Backup_CR_Lista.csv', CR_TOTAL_COLS, 3);
   var datos = lecturaCRIds.filas;
   var numeroEnSemana = _contarParesCRListaEnSemana(datos, temporada, semana);
-  var sufijo = Utilities.formatString('%03d', temporada) + '_' + semana + '_' + Utilities.formatString('%02d', numeroEnSemana);
 
   return {
-    idAscenso: 'A_' + sufijo,
-    idDescenso: 'D_' + sufijo,
+    idAscenso: _idEventoConstruir_('A', temporada, semana, numeroEnSemana),
+    idDescenso: _idEventoConstruir_('D', temporada, semana, numeroEnSemana),
     temporada: temporada,
     semana: semana
   };
@@ -35360,10 +35385,10 @@ function _contarParesCRListaEnSemana(datos, temporada, semana) {
   for (var i = 0; i < datos.length; i++) {
     var id = String(datos[i][CR.ID - 1] || '').trim();
     if (!id) continue;
-    var m = id.match(/^A_(\d{3})_(\d+)_(\d{2})$/);
-    if (!m) continue; // solo cuenta Ascenso -- ver docblock de arriba
-    if (Number(m[1]) !== temporada) continue;
-    if (Number(m[2]) !== semana) continue;
+    var p = _idEventoParsear_(id);
+    if (!p || p.letra !== 'A') continue; // solo cuenta Ascenso -- ver docblock de arriba
+    if (p.temporada !== temporada) continue;
+    if (p.semana !== semana) continue;
     count++;
   }
   return count + 1;
@@ -35699,11 +35724,11 @@ function _getFilaCRListaPorId(id) {
  */
 function _getParCRListaPorId(idCualquiera) {
   var id = String(idCualquiera || '').trim();
-  var m = id.match(/^[AD]_(\d{3}_\d+_\d{2})$/);
-  if (!m) return { ascenso: null, descenso: null };
+  var p = _idEventoParsear_(id);
+  if (!p || (p.letra !== 'A' && p.letra !== 'D')) return { ascenso: null, descenso: null };
   return {
-    ascenso: _getFilaCRListaPorId('A_' + m[1]),
-    descenso: _getFilaCRListaPorId('D_' + m[1])
+    ascenso: _getFilaCRListaPorId('A' + id.slice(1)),
+    descenso: _getFilaCRListaPorId('D' + id.slice(1))
   };
 }
 
@@ -37181,7 +37206,7 @@ function procesarTListaNuevasFilas(ss) {
             : _calcularTemporadaParaFecha(fechaPlan);
           var semanaPlan = _calcularSemanaTorneo(fechaPlan, temporadaPlan);
           var numTorneoEnSemanaPlan = _contarTorneosEnSemana(datos, temporadaPlan, semanaPlan, i);
-          var idReserva = 'T_' + Utilities.formatString('%03d', temporadaPlan) + '_' + semanaPlan + '_' + Utilities.formatString('%02d', numTorneoEnSemanaPlan);
+          var idReserva = _idEventoConstruir_('T', temporadaPlan, semanaPlan, numTorneoEnSemanaPlan);
           sh.getRange(filaHoja, TL.TEMPORADA).setValue(temporadaPlan);
           sh.getRange(filaHoja, TL.ID).setValue(idReserva);
           sh.getRange(filaHoja, TL.NUM).setValue(filaHoja - 2);
@@ -37341,7 +37366,7 @@ function procesarTListaNuevasFilas(ss) {
 
       var semana = _calcularSemanaTorneo(fecha, temporada);
       var numTorneoEnSemana = _contarTorneosEnSemana(datos, temporada, semana, i);
-      id = 'T_' + Utilities.formatString('%03d', temporada) + '_' + semana + '_' + Utilities.formatString('%02d', numTorneoEnSemana);
+      id = _idEventoConstruir_('T', temporada, semana, numTorneoEnSemana);
       sh.getRange(filaHoja, TL.ID).setValue(id);
 
       // FIX (08-sep-2026): N° = fila de hoja menos 2 filas de header (antes
@@ -38253,7 +38278,7 @@ function procesarSListaNuevasFilas(ss) {
           : _calcularTemporadaParaFecha(fechaFila);
         var semanaFila = _calcularSemanaTorneo(fechaFila, temporadaFila);
         var numSorteoEnSemana = _contarSorteosEnSemana(datos, temporadaFila, semanaFila, i);
-        var idReserva = 'S_' + Utilities.formatString('%03d', temporadaFila) + '_' + semanaFila + '_' + Utilities.formatString('%02d', numSorteoEnSemana);
+        var idReserva = _idEventoConstruir_('S', temporadaFila, semanaFila, numSorteoEnSemana);
         sh.getRange(filaHoja, SL.TEMPORADA).setValue(temporadaFila);
         sh.getRange(filaHoja, SL.ID).setValue(idReserva);
         sh.getRange(filaHoja, SL.NUM).setValue(filaHoja - 2);
@@ -38850,8 +38875,8 @@ function _contarTorneosEnSemana(datos, temporada, semana, hastaIndice) {
     if (!id) continue;
     var temp = Number(datos[i][TL.TEMPORADA - 1]) || 0;
     if (temp !== temporada) continue;
-    var m = id.match(/^T_\d{3}_(\d+)_(\d{2})$/);
-    if (m && Number(m[1]) === semana) count++;
+    var p = _idEventoParsear_(id);
+    if (p && p.letra === 'T' && p.semana === semana) count++;
   }
   return count + 1;
 }
@@ -38866,8 +38891,8 @@ function _contarSorteosEnSemana(datos, temporada, semana, hastaIndice) {
     if (!id) continue;
     var temp = Number(datos[i][SL.TEMPORADA - 1]) || 0;
     if (temp !== temporada) continue;
-    var m = id.match(/^S_\d{3}_(\d+)_(\d{2})$/);
-    if (m && Number(m[1]) === semana) count++;
+    var p = _idEventoParsear_(id);
+    if (p && p.letra === 'S' && p.semana === semana) count++;
   }
   return count + 1;
 }
@@ -60166,8 +60191,8 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
 
 // =============================================================================
 // ORDEN DEL ARCHIVO: 1) funciones que se corren a mano; 2) funciones que NO se ejecutan a mano. En cada grupo, primero por temática y luego en el orden en que se ejecutarían.
-// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permisos.
-// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo).
+// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible)s.
+// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura).
 // =============================================================================
 
 // =============================================================================
@@ -60658,6 +60683,20 @@ function migrarFuncionActualizarRosterATodosLosAdmins() {
 // =============================================================================
 
 // BAJA DEFINITIVA 14-sep-2026: se quitó migrarOrdenCategoriasTRequisitos() (migración ya ejecutada; operaba sobre T_Requisitos, dada de baja). [→ Contexto_Base_Web.md §47B017]
+
+// ----- 1.3 Ids de eventos L_TT_S_SS_N_NN (PF286, 28-oct-2026): herramienta MANUAL y repetible, no es una migración de una sola vez -----
+
+// migrarIdsEventoRevisar(): NO escribe nada. Deja en el registro qué ids cambiarían (viejo → nuevo), cuáles se renumerarían por choque y qué celdas de otras hojas los citan. Córrela primero. [→ Contexto_Base_Web.md §PF286]
+function migrarIdsEventoRevisar() {
+  _correrMigracionIdsEvento_('migrarIdsEventoRevisar', false);
+}
+
+// migrarIdsEvento(): reescribe los ids de T_Lista, S_Lista y CR_Lista al formato L_TT_S_SS_N_NN (temporada tomada de la columna Temporada de cada fila) y actualiza lo que los cita: T_Asistencia, S_Asistencia, T_Resoluciones,
+// S_Lista!ID_2 y Extra (los cuatro *_Vigente_ID). Después rehace los respaldos CSV de las hojas protegidas. Es REPETIBLE: con los ids ya al día no cambia nada, y sirve después de una reenumeración de temporadas. [→ Contexto_Base_Web.md §PF286]
+// Córrela con ninguna cadena en curso (el registro dice «Completada»). Los ids de un par de CR_Lista (A y D) conservan el mismo sufijo.
+function migrarIdsEvento() {
+  _correrMigracionIdsEvento_('migrarIdsEvento', true);
+}
 
 // =============================================================================
 // PARTE 2 — FUNCIONES QUE NO SE EJECUTAN A MANO (las llaman las anteriores o el activador)
@@ -61591,6 +61630,226 @@ function _migrarColumnaPrestamoEnHoja(sh, nombreHoja, headers) {
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
 }
+
+// ----- 2.3 Ids de eventos L_TT_S_SS_N_NN: plan (función pura) y escritura -----
+
+// _marcaTiempoEvento_(fecha, hora): PURA. Devuelve los milisegundos (UTC) de fecha + hora para ordenar eventos, o NaN si la fecha no sirve. La hora que falta o no sirve cuenta como 00:00.
+// Acepta fecha como Date o texto dd/mm/aaaa o aaaa-mm-dd, y hora como Date, fracción del día (hora real de la hoja) o texto HH:mm. [→ Contexto_Base_Web.md §PF286]
+function _marcaTiempoEvento_(fecha, hora) {
+  var ms = NaN, m;
+  if (fecha instanceof Date && !isNaN(fecha.getTime())) {
+    ms = Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+  } else if (typeof fecha === 'string') {
+    var tf = fecha.trim();
+    if ((m = tf.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/))) ms = Date.UTC(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+    else if ((m = tf.match(/^(\d{4})-(\d{2})-(\d{2})/))) ms = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+  if (isNaN(ms)) return NaN;
+  var minutos = 0;
+  if (hora instanceof Date && !isNaN(hora.getTime())) minutos = hora.getHours() * 60 + hora.getMinutes();
+  else if (typeof hora === 'number' && hora >= 0 && hora < 1) minutos = Math.round(hora * 1440);
+  else if (typeof hora === 'string' && (m = hora.trim().match(/(\d{1,2}):(\d{2})/))) minutos = Number(m[1]) * 60 + Number(m[2]);
+  return ms + minutos * 60000;
+}
+
+// _planIdsEventoLista_(filas): PURA (no lee ni escribe hojas). filas = [{ indice: fila de la hoja, id: 'T_027_1_01', temporada: valor de la columna Temporada, fecha, hora }, ...] de UNA hoja, en el orden de la hoja.
+// Devuelve { cambios: [{ indice, viejo, nuevo, renumerado }], avisos: [texto] }. Reglas (PF286, decisión de la usuaria del 28-oct-2026): la temporada del id sale de la columna Temporada (si está vacía o no es positiva se conserva la del id);
+// la semana y el número salen del id; un par A/D de CR_Lista (misma temporada, semana y número en el id) es UN evento y SIEMPRE conserva el mismo sufijo: si un lado choca con otro evento, se renumera el par entero aunque el otro lado no choque, y si solo existe una fila del par se cambia esa y se avisa;
+// si dos eventos distintos quedan con la misma temporada, semana y número, el que ya tiene el formato nuevo conserva su número y, entre los demás, cede (recibe el siguiente número libre de ese grupo) el de fecha y hora más recientes (de un par cuenta su fila más reciente); si falta la fecha, cede el que está más abajo.
+// Ids repetidos en la misma hoja o que no son ids de evento no se tocan. [→ Contexto_Base_Web.md §PF286]
+function _planIdsEventoLista_(filas) {
+  var avisos = [], cambios = [];
+  var cuenta = {};
+  for (var i = 0; i < filas.length; i++) {
+    var idI = String(filas[i].id === undefined || filas[i].id === null ? '' : filas[i].id).trim();
+    if (idI) cuenta[idI] = (cuenta[idI] || 0) + 1;
+  }
+  var eventos = {}, listaEventos = [], avisadoDuplicado = {};
+  for (var j = 0; j < filas.length; j++) {
+    var f = filas[j];
+    var idTxt = String(f.id === undefined || f.id === null ? '' : f.id).trim();
+    if (!idTxt) continue;
+    var p = _idEventoParsear_(idTxt);
+    if (!p) { avisos.push('fila ' + f.indice + ': «' + idTxt + '» no es un id de evento; se deja igual'); continue; }
+    if (cuenta[idTxt] > 1) {
+      if (!avisadoDuplicado[idTxt]) { avisos.push('el id ' + idTxt + ' está repetido en la hoja; no se reescribe ninguna de sus filas'); avisadoDuplicado[idTxt] = true; }
+      continue;
+    }
+    var tTxt = String(f.temporada === undefined || f.temporada === null ? '' : f.temporada).trim();
+    var t = Number(tTxt);
+    if (tTxt === '' || !isFinite(t) || t <= 0) { t = p.temporada; avisos.push('fila ' + f.indice + ' (' + idTxt + '): la columna Temporada no sirve («' + tTxt + '»); se conserva la temporada del id'); }
+    var clave = p.temporada + '|' + p.semana + '|' + p.numero;
+    var ev = eventos[clave];
+    var k = 0;
+    while (ev && ev.letras[p.letra] !== undefined) { k++; ev = eventos[clave + '#' + k]; }
+    var claveFinal = k ? clave + '#' + k : clave;
+    if (!ev) { ev = { t: t, semana: p.semana, numero: p.numero, primeraFila: f.indice, yaNuevo: p.nuevo, tiempo: NaN, letras: {}, filas: [] }; eventos[claveFinal] = ev; listaEventos.push(ev); }
+    else if (ev.t !== t) avisos.push('fila ' + f.indice + ' (' + idTxt + '): la columna Temporada (' + t + ') difiere de la de su pareja (' + ev.t + '); el par usa la temporada ' + ev.t);
+    if (p.nuevo) ev.yaNuevo = true;
+    var tiempoFila = _marcaTiempoEvento_(f.fecha, f.hora);
+    if (isFinite(tiempoFila) && (!isFinite(ev.tiempo) || tiempoFila > ev.tiempo)) ev.tiempo = tiempoFila;
+    ev.letras[p.letra] = f.indice;
+    ev.filas.push({ indice: f.indice, letra: p.letra, viejo: idTxt });
+  }
+  var grupos = {}, ordenGrupos = [];
+  listaEventos.forEach(function (ev) {
+    var g = ev.t + '|' + ev.semana;
+    if (!grupos[g]) { grupos[g] = []; ordenGrupos.push(g); }
+    grupos[g].push(ev);
+  });
+  ordenGrupos.forEach(function (g) {
+    var evs = grupos[g];
+    // Primero los eventos que ya tienen el formato nuevo (su id puede estar citado y conservan su número), luego por número; con el mismo número conserva el de fecha y hora más antiguas (cede el más reciente) y, sin fecha, el que está más arriba.
+    evs.sort(function (a, b) {
+      var porTiempo = (isFinite(a.tiempo) && isFinite(b.tiempo)) ? (a.tiempo - b.tiempo) : 0;
+      return (Number(b.yaNuevo) - Number(a.yaNuevo)) || (a.numero - b.numero) || porTiempo || (a.primeraFila - b.primeraFila);
+    });
+    var max = 0;
+    evs.forEach(function (ev) { if (ev.numero > max) max = ev.numero; });
+    var usados = {};
+    evs.forEach(function (ev) {
+      ev.nuevoNumero = ev.numero;
+      ev.renumerado = false;
+      if (usados[ev.nuevoNumero]) { max++; ev.nuevoNumero = max; ev.renumerado = true; }
+      usados[ev.nuevoNumero] = true;
+      if (ev.renumerado && ev.filas.length === 1 && (ev.filas[0].letra === 'A' || ev.filas[0].letra === 'D')) {
+        avisos.push('el par ' + ev.filas[0].viejo + ' está incompleto (solo la fila ' + ev.filas[0].indice + '); se cambió esa fila al número ' + ev.nuevoNumero);
+      }
+      ev.filas.forEach(function (fi) {
+        var nuevo = _idEventoConstruir_(fi.letra, ev.t, ev.semana, ev.nuevoNumero);
+        if (nuevo !== fi.viejo) cambios.push({ indice: fi.indice, viejo: fi.viejo, nuevo: nuevo, renumerado: ev.renumerado });
+      });
+    });
+  });
+  cambios.sort(function (a, b) { return a.indice - b.indice; });
+  return { cambios: cambios, avisos: avisos };
+}
+
+// _correrMigracionIdsEvento_(nombreFn, aplicar): envoltorio de migrarIdsEventoRevisar() y migrarIdsEvento(). Solo la versión que escribe toma el candado de ejecución. [→ Contexto_Base_Web.md §PF286]
+function _correrMigracionIdsEvento_(nombreFn, aplicar) {
+  if (aplicar && !_adquirirLockEjecucion(nombreFn)) {
+    Logger.log('[Ids evento] ' + nombreFn + '(): NO se inicia (hay otra ejecución en curso o una reenumeración). Reintenta cuando el registro diga «Completada».');
+    return;
+  }
+  try {
+    _migrarIdsEvento_(aplicar);
+  } catch (e) {
+    Logger.log('[Ids evento] ERROR en ' + nombreFn + '(): ' + e.message + (aplicar ? ' — puede haber quedado a medias: vuelve a correr migrarIdsEventoRevisar() para ver qué falta (la herramienta es repetible).' : ''));
+  } finally {
+    if (aplicar) _liberarLockEjecucion();
+  }
+}
+
+// _migrarIdsEvento_(aplicar): lee los ids de las tres listas, arma el plan con _planIdsEventoLista_(), y con aplicar = true escribe SOLO la columna de ids de cada hoja (nunca la hoja entera), actualiza las citas y rehace los respaldos. [→ Contexto_Base_Web.md §PF286]
+function _migrarIdsEvento_(aplicar) {
+  var ss = _getSs();
+  var tag = aplicar ? '[Ids evento]' : '[Ids evento · solo revisar]';
+  var listas = [
+    { nombre: CFG.SHEETS.T_LISTA,  primera: 3, colId: TL.ID, colTemp: TL.TEMPORADA, colFecha: TL.FECHA, colHora: TL.HORA },
+    { nombre: CFG.SHEETS.S_LISTA,  primera: 3, colId: SL.ID, colTemp: SL.TEMPORADA, colFecha: SL.FECHA, colHora: SL.HORA },
+    { nombre: CFG.SHEETS.CR_LISTA, primera: 4, colId: CR.ID, colTemp: CR.TEMPORADA, colFecha: CR.FECHA, colHora: CR.HORA }
+  ];
+  var mapa = {}, planes = [], totalCambios = 0;
+  listas.forEach(function (l) {
+    var sh = ss.getSheetByName(l.nombre);
+    if (!sh) { Logger.log(tag + ' Hoja ' + l.nombre + ' no encontrada; se omite.'); return; }
+    var ultima = sh.getLastRow();
+    if (ultima < l.primera) { Logger.log(tag + ' ' + l.nombre + ': sin filas de datos.'); return; }
+    var n = ultima - l.primera + 1;
+    var ids = sh.getRange(l.primera, l.colId, n, 1).getValues();
+    var temps = sh.getRange(l.primera, l.colTemp, n, 1).getValues();
+    var fechas = sh.getRange(l.primera, l.colFecha, n, 1).getValues();
+    var horas = sh.getRange(l.primera, l.colHora, n, 1).getValues();
+    var filas = [];
+    for (var i = 0; i < n; i++) filas.push({ indice: l.primera + i, id: ids[i][0], temporada: temps[i][0], fecha: fechas[i][0], hora: horas[i][0] });
+    var plan = _planIdsEventoLista_(filas);
+    plan.cambios.forEach(function (c) { mapa[c.viejo] = c.nuevo; });
+    totalCambios += plan.cambios.length;
+    var renum = plan.cambios.filter(function (c) { return c.renumerado; }).length;
+    Logger.log(tag + ' ' + l.nombre + ': ' + n + ' fila(s), ' + plan.cambios.length + ' id(s) a reescribir (' + renum + ' con número nuevo por choque), ' + plan.avisos.length + ' aviso(s).');
+    plan.cambios.slice(0, 15).forEach(function (c) { Logger.log(tag + '   fila ' + c.indice + ': ' + c.viejo + ' → ' + c.nuevo + (c.renumerado ? ' (número nuevo por choque)' : '')); });
+    if (plan.cambios.length > 15) Logger.log(tag + '   … y ' + (plan.cambios.length - 15) + ' más.');
+    plan.avisos.slice(0, 15).forEach(function (a) { Logger.log(tag + '   AVISO: ' + a); });
+    planes.push({ lista: l, sh: sh, ids: ids, plan: plan });
+  });
+
+  // Citas en otras hojas (se leen y, si aplica, se escriben SOLO esas columnas).
+  var citas = [
+    { nombre: CFG.SHEETS.T_ASISTENCIA,  primera: 2, col: TA.ID },
+    { nombre: CFG.SHEETS.S_ASISTENCIA,  primera: 2, col: SA.ID },
+    { nombre: CFG.SHEETS.T_RESOLUCIONES, primera: 2, col: TR.ID_TORNEO },
+    { nombre: CFG.SHEETS.S_LISTA,        primera: 3, col: SL.ID_2 }
+  ];
+
+  var tocadas = totalCambios > 0;
+  citas.forEach(function (c) {
+    try {
+      var sh = ss.getSheetByName(c.nombre);
+      if (!sh) { Logger.log(tag + ' Hoja ' + c.nombre + ' no encontrada; se omiten sus citas.'); return; }
+      var ultima = sh.getLastRow();
+      if (ultima < c.primera) return;
+      var rango = sh.getRange(c.primera, c.col, ultima - c.primera + 1, 1);
+      var vals = rango.getValues();
+      var r = _aplicarMapaIdsEnColumna_(vals, mapa);
+      Logger.log(tag + ' ' + c.nombre + ' (columna ' + c.col + '): ' + r.cambiadas + ' cita(s) a reescribir, ' + r.huerfanas.length + ' sin id correspondiente.');
+      r.huerfanas.slice(0, 10).forEach(function (h) { Logger.log(tag + '   AVISO: «' + h + '» no coincide con ningún id de la lista; se deja igual'); });
+      if (aplicar && r.cambiadas) { rango.setValues(vals); }
+    } catch (e) {
+      Logger.log(tag + ' ERROR en las citas de ' + c.nombre + ': ' + e.message);
+    }
+  });
+
+  try {
+    var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
+    if (shExtra && shExtra.getLastRow() >= 2) {
+      var rangoE = shExtra.getRange(2, 20, 1, 4); // Torneo/Sorteo/Ascenso/Descenso _Vigente_ID (ver _getIdVigenteExtra y _getIdVigenteExtraCR)
+      var valsE = rangoE.getValues();
+      var rE = _aplicarMapaIdsEnColumna_([[valsE[0][0]], [valsE[0][1]], [valsE[0][2]], [valsE[0][3]]], mapa, true);
+      for (var q = 0; q < 4; q++) valsE[0][q] = rE.valores[q][0];
+      Logger.log(tag + ' Extra (Vigente_ID): ' + rE.cambiadas + ' valor(es) a reescribir.');
+      if (aplicar && rE.cambiadas) rangoE.setValues(valsE);
+    }
+  } catch (eE) {
+    Logger.log(tag + ' ERROR en Extra: ' + eE.message);
+  }
+
+  // Las listas se escriben AL FINAL: son el punto de confirmación. Si la ejecución se corta antes, las listas siguen con los ids viejos, el plan se recalcula igual al repetir
+  // y las citas que ya estaban reescritas no se tocan (ya tienen el formato nuevo). Escribirlas primero dejaría citas viejas sin mapa para corregirlas.
+  if (aplicar) {
+    planes.forEach(function (pl) {
+      if (!pl.plan.cambios.length) return;
+      pl.plan.cambios.forEach(function (c) { pl.ids[c.indice - pl.lista.primera][0] = c.nuevo; });
+      pl.sh.getRange(pl.lista.primera, pl.lista.colId, pl.ids.length, 1).setValues(pl.ids);
+      Logger.log(tag + ' ' + pl.lista.nombre + ': columna de ids reescrita (' + pl.plan.cambios.length + ' celda(s)).');
+    });
+  }
+
+  if (!aplicar) {
+    Logger.log(tag + ' Fin de la revisión: no se escribió nada. Si el plan es correcto, corre migrarIdsEvento().');
+    return;
+  }
+  ['T_LISTA', 'S_LISTA', 'CR_LISTA', 'T_ASISTENCIA', 'S_ASISTENCIA', 'EXTRA'].forEach(function (clave) {
+    try { respaldarIndiceYProtegidasCSV(clave); }
+    catch (eB) { Logger.log(tag + ' ERROR rehaciendo el respaldo ' + clave + ': ' + eB.message + ' (se rehará con la sincronización diaria).'); }
+  });
+  Logger.log(tag + ' Terminado: ' + totalCambios + ' id(s) reescrito(s). Backup_T_Resoluciones.csv se rehace con la sincronización diaria de respaldos.');
+}
+
+// _aplicarMapaIdsEnColumna_(vals, mapa, sinHuerfanas): PURA. vals = [[valor], ...] (se modifica en sitio con los ids nuevos). Devuelve { cambiadas, huerfanas, valores }.
+// Un valor es «huérfano» si no está vacío, no está en el mapa y no tiene ya el formato nuevo (puede ser el id de un evento borrado de la lista). [→ Contexto_Base_Web.md §PF286]
+function _aplicarMapaIdsEnColumna_(vals, mapa, sinHuerfanas) {
+  var cambiadas = 0, huerfanas = [];
+  for (var i = 0; i < vals.length; i++) {
+    var v = String(vals[i][0] === undefined || vals[i][0] === null ? '' : vals[i][0]).trim();
+    if (!v) continue;
+    if (Object.prototype.hasOwnProperty.call(mapa, v)) { vals[i][0] = mapa[v]; cambiadas++; continue; }
+    if (sinHuerfanas) continue;
+    var p = _idEventoParsear_(v);
+    if (p && !p.nuevo) huerfanas.push(v);
+  }
+  return { cambiadas: cambiadas, huerfanas: huerfanas, valores: vals };
+}
+
 
 // --- ARCHIVO: 48_Herramientas_Debug.gs ---
 // ==============================================================================
