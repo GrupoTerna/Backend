@@ -19,6 +19,14 @@
  *  2) corregirAnomaliasAtaquesSemanaAplicar()  -> respalda Backup_Guerra.csv, aplica y verifica.
  */
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Anomalías de ataques por semana: informe y aplicar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Anomalías de ataques por semana: motor común y evaluación
+//    - Anomalías de ataques por semana: lectores pequeños
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // Solo se corrigen filas que tengan los valores "esperado". Los nombres de clan usan escapes Unicode:
 //   乂 = el caracter chino del clan principal   ™ = el simbolo de marca registrada
 var ANOM_ATQSEM_CORRECCIONES = [
@@ -53,99 +61,21 @@ var ANOM_ATQSEM_PENDIENTES = [];
 
 var ANOM_ATQSEM_TOPE_SEMANA = 16;
 
-function _anomAtqSemNum_(v) {
-  var n = Number(String(v === null || v === undefined ? '' : v).replace(',', '.'));
-  return isNaN(n) ? 0 : n;
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-// Misma normalizacion que usa informeAnomaliasAtaquesSemana() (48_Herramientas_Debug.gs).
-function _anomAtqSemTag_(v) { return String(v === null || v === undefined ? '' : v).trim().toUpperCase(); }
-function _anomAtqSemClan_(v) { return String(v === null || v === undefined ? '' : v).split(/\r?\n/)[0].trim(); }
-
-function _anomAtqSemCoincide_(f, c) {
-  return _anomAtqSemTag_(f[GC.TAG - 1]) === c.tag &&
-    _anomAtqSemNum_(f[GC.TEMPORADA - 1]) === c.temporada &&
-    _anomAtqSemNum_(f[GC.SEMANA - 1]) === c.semana &&
-    _anomAtqSemNum_(f[GC.PERIOD_IDX - 1]) === c.periodIndex &&
-    _anomAtqSemClan_(f[GC.CLAN - 1]) === c.clan;
-}
-
-function _anomAtqSemValores_(f) {
-  return {
-    hoy: _anomAtqSemNum_(f[GC.ATAQUES_HOY - 1]),
-    sem: _anomAtqSemNum_(f[GC.ATAQUES_SEM - 1]),
-    fame: _anomAtqSemNum_(f[GC.FAME - 1]),
-    barcos: _anomAtqSemNum_(f[GC.BARCOS - 1])
-  };
-}
-
-function _anomAtqSemIguales_(a, b) {
-  return a.hoy === b.hoy && a.sem === b.sem && a.fame === b.fame && a.barcos === b.barcos;
-}
-
-/**
- * Suma, por clan, el AtaquesSemana de la ultima fila (mayor PeriodIndex) de la persona en la semana.
- * Devuelve { total: N, porClan: { clan: N } }.
- */
-function _anomAtqSemSumaClanes_(filas, tag, temporada, semana) {
-  var ultimo = {};
-  for (var i = 0; i < filas.length; i++) {
-    var f = filas[i];
-    if (_anomAtqSemTag_(f[GC.TAG - 1]) !== tag) continue;
-    if (_anomAtqSemNum_(f[GC.TEMPORADA - 1]) !== temporada) continue;
-    if (_anomAtqSemNum_(f[GC.SEMANA - 1]) !== semana) continue;
-    var clan = _anomAtqSemClan_(f[GC.CLAN - 1]);
-    var p = _anomAtqSemNum_(f[GC.PERIOD_IDX - 1]);
-    if (!ultimo[clan] || p >= ultimo[clan].p) ultimo[clan] = { p: p, sem: _anomAtqSemNum_(f[GC.ATAQUES_SEM - 1]) };
-  }
-  var res = { total: 0, porClan: {} };
-  Object.keys(ultimo).forEach(function (c) { res.porClan[c] = ultimo[c].sem; res.total += ultimo[c].sem; });
-  return res;
-}
-
-/**
- * Evalua las correcciones sobre un conjunto de filas (CSV u hoja). No modifica nada.
- * Devuelve { cambios: [{idx, corr}], yaAplicados: [corr], sinResolver: [{corr, motivo}], pendientes: [{idx, pend}] }.
- */
-function _anomAtqSemEvaluar_(filas) {
-  var res = { cambios: [], yaAplicados: [], sinResolver: [], pendientes: [] };
-  ANOM_ATQSEM_CORRECCIONES.forEach(function (c) {
-    var idxs = [];
-    for (var i = 0; i < filas.length; i++) { if (_anomAtqSemCoincide_(filas[i], c)) idxs.push(i); }
-    if (idxs.length === 0) { res.sinResolver.push({ corr: c, motivo: 'No se encontro la fila (T' + c.temporada + ' S' + c.semana + ' ' + c.tag + ' PI' + c.periodIndex + ')' }); return; }
-    if (idxs.length > 1) { res.sinResolver.push({ corr: c, motivo: 'Hay ' + idxs.length + ' filas que coinciden; no se toca ninguna' }); return; }
-    var actual = _anomAtqSemValores_(filas[idxs[0]]);
-    if (_anomAtqSemIguales_(actual, c.nuevo)) { res.yaAplicados.push(c); return; }
-    if (!_anomAtqSemIguales_(actual, c.esperado)) {
-      res.sinResolver.push({ corr: c, motivo: 'La fila ya no tiene los valores esperados (hoy ' + actual.hoy + ', sem ' + actual.sem + ', fame ' + actual.fame + ', barcos ' + actual.barcos + '); no se toca' });
-      return;
-    }
-    res.cambios.push({ idx: idxs[0], corr: c });
-  });
-  ANOM_ATQSEM_PENDIENTES.forEach(function (p) {
-    for (var i = 0; i < filas.length; i++) { if (_anomAtqSemCoincide_(filas[i], p)) { res.pendientes.push({ idx: i, pend: p }); break; } }
-  });
-  return res;
-}
-
-function _anomAtqSemSeriesAfectadas_() {
-  var vistas = {}, lista = [];
-  ANOM_ATQSEM_CORRECCIONES.concat(ANOM_ATQSEM_PENDIENTES).forEach(function (c) {
-    var k = c.tag + '|' + c.temporada + '|' + c.semana;
-    if (!vistas[k]) { vistas[k] = true; lista.push({ tag: c.tag, temporada: c.temporada, semana: c.semana }); }
-  });
-  return lista;
-}
-
-function _anomAtqSemTextoSumas_(filas) {
-  return _anomAtqSemSeriesAfectadas_().map(function (s) {
-    var r = _anomAtqSemSumaClanes_(filas, s.tag, s.temporada, s.semana);
-    return 'T' + s.temporada + 'S' + s.semana + ' ' + s.tag + ': ' + r.total + (r.total > ANOM_ATQSEM_TOPE_SEMANA ? ' (> ' + ANOM_ATQSEM_TOPE_SEMANA + ')' : '');
-  }).join(' | ');
-}
+// ----- Anomalías de ataques por semana: informe y aplicar -----
 
 function corregirAnomaliasAtaquesSemanaInforme() { _corregirAnomaliasAtaquesSemana_(false); }
+
 function corregirAnomaliasAtaquesSemanaAplicar() { _corregirAnomaliasAtaquesSemana_(true); }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Anomalías de ataques por semana: motor común y evaluación -----
 
 function _corregirAnomaliasAtaquesSemana_(aplicar) {
   var lock = LockService.getScriptLock();
@@ -273,3 +203,97 @@ function _corregirAnomaliasAtaquesSemana_(aplicar) {
     lock.releaseLock();
   }
 }
+
+/**
+ * Evalua las correcciones sobre un conjunto de filas (CSV u hoja). No modifica nada.
+ * Devuelve { cambios: [{idx, corr}], yaAplicados: [corr], sinResolver: [{corr, motivo}], pendientes: [{idx, pend}] }.
+ */
+function _anomAtqSemEvaluar_(filas) {
+  var res = { cambios: [], yaAplicados: [], sinResolver: [], pendientes: [] };
+  ANOM_ATQSEM_CORRECCIONES.forEach(function (c) {
+    var idxs = [];
+    for (var i = 0; i < filas.length; i++) { if (_anomAtqSemCoincide_(filas[i], c)) idxs.push(i); }
+    if (idxs.length === 0) { res.sinResolver.push({ corr: c, motivo: 'No se encontro la fila (T' + c.temporada + ' S' + c.semana + ' ' + c.tag + ' PI' + c.periodIndex + ')' }); return; }
+    if (idxs.length > 1) { res.sinResolver.push({ corr: c, motivo: 'Hay ' + idxs.length + ' filas que coinciden; no se toca ninguna' }); return; }
+    var actual = _anomAtqSemValores_(filas[idxs[0]]);
+    if (_anomAtqSemIguales_(actual, c.nuevo)) { res.yaAplicados.push(c); return; }
+    if (!_anomAtqSemIguales_(actual, c.esperado)) {
+      res.sinResolver.push({ corr: c, motivo: 'La fila ya no tiene los valores esperados (hoy ' + actual.hoy + ', sem ' + actual.sem + ', fame ' + actual.fame + ', barcos ' + actual.barcos + '); no se toca' });
+      return;
+    }
+    res.cambios.push({ idx: idxs[0], corr: c });
+  });
+  ANOM_ATQSEM_PENDIENTES.forEach(function (p) {
+    for (var i = 0; i < filas.length; i++) { if (_anomAtqSemCoincide_(filas[i], p)) { res.pendientes.push({ idx: i, pend: p }); break; } }
+  });
+  return res;
+}
+
+function _anomAtqSemCoincide_(f, c) {
+  return _anomAtqSemTag_(f[GC.TAG - 1]) === c.tag &&
+    _anomAtqSemNum_(f[GC.TEMPORADA - 1]) === c.temporada &&
+    _anomAtqSemNum_(f[GC.SEMANA - 1]) === c.semana &&
+    _anomAtqSemNum_(f[GC.PERIOD_IDX - 1]) === c.periodIndex &&
+    _anomAtqSemClan_(f[GC.CLAN - 1]) === c.clan;
+}
+
+function _anomAtqSemValores_(f) {
+  return {
+    hoy: _anomAtqSemNum_(f[GC.ATAQUES_HOY - 1]),
+    sem: _anomAtqSemNum_(f[GC.ATAQUES_SEM - 1]),
+    fame: _anomAtqSemNum_(f[GC.FAME - 1]),
+    barcos: _anomAtqSemNum_(f[GC.BARCOS - 1])
+  };
+}
+
+function _anomAtqSemIguales_(a, b) {
+  return a.hoy === b.hoy && a.sem === b.sem && a.fame === b.fame && a.barcos === b.barcos;
+}
+
+function _anomAtqSemTextoSumas_(filas) {
+  return _anomAtqSemSeriesAfectadas_().map(function (s) {
+    var r = _anomAtqSemSumaClanes_(filas, s.tag, s.temporada, s.semana);
+    return 'T' + s.temporada + 'S' + s.semana + ' ' + s.tag + ': ' + r.total + (r.total > ANOM_ATQSEM_TOPE_SEMANA ? ' (> ' + ANOM_ATQSEM_TOPE_SEMANA + ')' : '');
+  }).join(' | ');
+}
+
+/**
+ * Suma, por clan, el AtaquesSemana de la ultima fila (mayor PeriodIndex) de la persona en la semana.
+ * Devuelve { total: N, porClan: { clan: N } }.
+ */
+function _anomAtqSemSumaClanes_(filas, tag, temporada, semana) {
+  var ultimo = {};
+  for (var i = 0; i < filas.length; i++) {
+    var f = filas[i];
+    if (_anomAtqSemTag_(f[GC.TAG - 1]) !== tag) continue;
+    if (_anomAtqSemNum_(f[GC.TEMPORADA - 1]) !== temporada) continue;
+    if (_anomAtqSemNum_(f[GC.SEMANA - 1]) !== semana) continue;
+    var clan = _anomAtqSemClan_(f[GC.CLAN - 1]);
+    var p = _anomAtqSemNum_(f[GC.PERIOD_IDX - 1]);
+    if (!ultimo[clan] || p >= ultimo[clan].p) ultimo[clan] = { p: p, sem: _anomAtqSemNum_(f[GC.ATAQUES_SEM - 1]) };
+  }
+  var res = { total: 0, porClan: {} };
+  Object.keys(ultimo).forEach(function (c) { res.porClan[c] = ultimo[c].sem; res.total += ultimo[c].sem; });
+  return res;
+}
+
+function _anomAtqSemSeriesAfectadas_() {
+  var vistas = {}, lista = [];
+  ANOM_ATQSEM_CORRECCIONES.concat(ANOM_ATQSEM_PENDIENTES).forEach(function (c) {
+    var k = c.tag + '|' + c.temporada + '|' + c.semana;
+    if (!vistas[k]) { vistas[k] = true; lista.push({ tag: c.tag, temporada: c.temporada, semana: c.semana }); }
+  });
+  return lista;
+}
+
+// ----- Anomalías de ataques por semana: lectores pequeños -----
+
+function _anomAtqSemNum_(v) {
+  var n = Number(String(v === null || v === undefined ? '' : v).replace(',', '.'));
+  return isNaN(n) ? 0 : n;
+}
+
+// Misma normalizacion que usa informeAnomaliasAtaquesSemana() (48_Herramientas_Debug.gs).
+function _anomAtqSemTag_(v) { return String(v === null || v === undefined ? '' : v).trim().toUpperCase(); }
+
+function _anomAtqSemClan_(v) { return String(v === null || v === undefined ? '' : v).split(/\r?\n/)[0].trim(); }
