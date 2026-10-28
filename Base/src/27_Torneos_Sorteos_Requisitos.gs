@@ -7,6 +7,14 @@
 
 // Ya NO depende de la hoja T_Requisitos (dada de baja el 14-sep-2026) — la [→ Contexto_Base_Web.md §27B001]
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: ninguna (sincronizarRequisitosYPremiosTorneo() y sincronizarRequisitosSorteo() las llaman 26_Torneos_Core.gs y 00_Main.gs)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Puntos de entrada: sincronización de requisitos y premios del torneo y del sorteo
+//    - Funciones internas: requisitos (resumen, texto del documento y sus ayudas, en el orden en que se llaman)
+//    - Premios en el documento
+//    - Copia de los premios de la fecha a Ganadores (torneo)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // ----- Variables y constantes -----
 
@@ -25,6 +33,18 @@ var REQ_DOC_TEXTO_WHATSAPP = 'Formar parte del grupo de WhatsApp del clan.';
 var REQ_DOC_TEXTO_TORNEOS_HEADER = 'Haber participado, al menos, en la siguiente cantidad de torneos de la temporada (por clan):';
 
 // FIX (12-sep-2026, pedido del usuario -- requisito "Barcos", tercera [→ Contexto_Base_Web.md §27B005]
+
+// Ordinales usados para las líneas de puesto -- en la práctica, hasta hoy, [→ Contexto_Base_Web.md §27B020]
+var _ORDINALES_PUESTO_PREMIO = [
+  'Primer', 'Segundo', 'Tercer', 'Cuarto', 'Quinto',
+  'Sexto', 'Séptimo', 'Octavo', 'Noveno', 'Décimo'
+];
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Puntos de entrada: sincronización de requisitos y premios -----
 
 /**
  * sincronizarRequisitosYPremiosTorneo() [→ Contexto_Base_Web.md §27B006]
@@ -154,88 +174,6 @@ function sincronizarRequisitosSorteo() {
 
 // ----- Funciones internas / helpers -----
 
-function _REQ_DOC_TEXTO_ATAQUES_VALOR(qty) {
-  return qty + ' ataques semanales';
-}
-
-function _REQ_DOC_TEXTO_TORNEOS_VALOR(qty) {
-  return 'al menos ' + qty + ' torneos';
-}
-
-/**
- * _REQ_DOC_TEXTO_BARCOS(qty) [→ Contexto_Base_Web.md §27B009]
- */
-function _REQ_DOC_TEXTO_BARCOS(qty, nSemanas) {
-  if (qty <= 0) return 'No se permite ningún ataque a barcos.';
-  // PF205 (24-oct-2026, sorteo): con las semanas evaluadas conocidas, la línea dice el ACUMULADO permitido (tope semanal x semanas),
-  // que es lo mismo que pedir que el promedio semanal no pase del tope (así se evalúa en _evaluarCalificacionSorteo_()).
-  var n = Number(nSemanas) || 0;
-  if (n > 0) {
-    var total = qty * n;
-    return 'Máximo ' + total + ' ' + (total === 1 ? 'ataque' : 'ataques') + ' a barcos permitidos en total durante ' +
-      (n === 1 ? 'la semana evaluada' : 'las ' + n + ' semanas evaluadas') + ' (' + qty + ' por semana, en promedio).';
-  }
-  return 'Máximo ' + qty + ' ataques a barcos permitidos, en promedio semanal.';
-}
-
-/**
- * PF206 (24-oct-2026). _fmtMilesComa(n): número con separador de miles con coma (12345 -> «12,345»), sin depender del idioma del
- * proyecto de Apps Script. Conserva hasta un decimal si lo trae.
- */
-function _fmtMilesComa(n) {
-  var v = Number(n);
-  if (isNaN(v)) return String(n);
-  var r = Math.round(v * 10) / 10;
-  var partes = String(Math.abs(r)).split('.');
-  partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return (r < 0 ? '-' : '') + partes.join('.');
-}
-
-/**
- * PF206. _ordenarSemanasSorteoDoc(semanas): copia ordenada de menor a mayor (temporada y luego semana); no toca el orden de S_Lista.
- */
-function _ordenarSemanasSorteoDoc(semanas) {
-  return (semanas || []).slice().sort(function (a, b) {
-    return (a.temporada - b.temporada) || (a.semana - b.semana);
-  });
-}
-
-/**
- * PF206. _etiquetaSemanaSorteoDoc({temporada, semana}): «Temporada 6, semana 2 (12 oct - 18 oct)». Las fechas son el lunes y el domingo
- * reales de esa semana (_getRangoFechasSemana); si no se pueden calcular, se omite el paréntesis.
- */
-function _etiquetaSemanaSorteoDoc(sem) {
-  var txt = 'Temporada ' + sem.temporada + ', semana ' + sem.semana;
-  try {
-    var r = _getRangoFechasSemana(sem.temporada, Number(sem.semana) - 1);
-    if (r && r.inicio && r.fin) {
-      var f = function (d) { return d.getDate() + ' ' + _MESES_ES[d.getMonth()].substring(0, 3); };
-      txt += ' (' + f(r.inicio) + ' - ' + f(r.fin) + ')';
-    }
-  } catch (e) { /* sin fechas, la etiqueta igual sirve */ }
-  return txt;
-}
-
-/**
- * PF206. _insertarFilaRequisito(body, insertAt, texto): fila sin viñeta, con la misma sangría y fuente que las filas por clan.
- */
-function _insertarFilaRequisito(body, insertAt, texto) {
-  var p = body.insertParagraph(insertAt, '');
-  p.setIndentStart(72);
-  p.setIndentFirstLine(72);
-  var t = p.editAsText();
-  t.appendText(texto);
-  var fin = texto.length - 1;
-  t.setBold(0, fin, false);
-  t.setItalic(0, fin, false);
-  t.setFontFamily(0, fin, 'Arial Unicode MS');
-  t.setFontSize(0, fin, 12);
-  t.setUnderline(0, fin, false);
-  t.setForegroundColor(0, fin, '#000000');
-  t.setLinkUrl(0, fin, null);
-  return insertAt + 1;
-}
-
 // BAJA DEFINITIVA (17-sep-2026, pedido del usuario -- "borra todo el [→ Contexto_Base_Web.md §27B010]
 
 /**
@@ -295,17 +233,6 @@ function _getMinTPorNombreClan(nombreCategoria) {
     clanesOrden.push(b.clan);
   });
   return { clanesOrden: clanesOrden, minTPorNombreClan: minTPorNombreClan };
-}
-
-/**
- * _buscarIndiceHijo(body, predicado) [→ Contexto_Base_Web.md §27B013]
- */
-function _buscarIndiceHijo(body, predicado) {
-  var n = body.getNumChildren();
-  for (var i = 0; i < n; i++) {
-    if (predicado(body.getChild(i).getText())) return i;
-  }
-  return -1;
 }
 
 /**
@@ -395,31 +322,14 @@ function _reescribirRequisitosTexto(body, resumen, nombreMes, finPredicados, log
 }
 
 /**
- * _insertarBloquePorClan(body, insertAt, textoHeader, ordenClanes, valoresPorClan, formatearValor) [→ Contexto_Base_Web.md §27B016]
+ * _buscarIndiceHijo(body, predicado) [→ Contexto_Base_Web.md §27B013]
  */
-function _insertarBloquePorClan(body, insertAt, textoHeader, ordenClanes, valoresPorClan, formatearValor) {
-  insertAt = _insertarBulletRequisito(body, insertAt, textoHeader);
-
-  for (var c = 0; c < ordenClanes.length; c++) {
-    var nombreClan = ordenClanes[c];
-    var etiqueta = nombreClan + ': ';
-    var p = body.insertParagraph(insertAt++, '');
-    p.setIndentStart(72);
-    p.setIndentFirstLine(72);
-    var texto = p.editAsText();
-    texto.appendText(etiqueta);
-    texto.appendText('\t' + formatearValor(valoresPorClan[nombreClan]));
-    var fin = texto.getText().length - 1;
-    texto.setBold(0, etiqueta.length - 1, true);
-    texto.setBold(etiqueta.length, fin, false);
-    texto.setFontFamily(0, fin, 'Arial Unicode MS');
-    texto.setFontSize(0, fin, 12);
-    texto.setUnderline(0, fin, false);
-    texto.setForegroundColor(0, fin, '#000000');
-    texto.setLinkUrl(0, fin, null);
+function _buscarIndiceHijo(body, predicado) {
+  var n = body.getNumChildren();
+  for (var i = 0; i < n; i++) {
+    if (predicado(body.getChild(i).getText())) return i;
   }
-
-  return insertAt;
+  return -1;
 }
 
 /**
@@ -455,52 +365,116 @@ function _insertarBulletRequisito(body, insertAt, texto) {
 }
 
 /**
- * _formatearValorPremioParaDoc(item) [→ Contexto_Base_Web.md §27B018]
+ * PF206. _ordenarSemanasSorteoDoc(semanas): copia ordenada de menor a mayor (temporada y luego semana); no toca el orden de S_Lista.
  */
-function _formatearValorPremioParaDoc(item) {
-  var texto = String(item || '').trim();
-  var dinero = texto.match(/^S\/\s*([\d.,]+)$/i);
-  if (dinero) return 'S/.' + dinero[1] + '.';
-  return texto + '.';
+function _ordenarSemanasSorteoDoc(semanas) {
+  return (semanas || []).slice().sort(function (a, b) {
+    return (a.temporada - b.temporada) || (a.semana - b.semana);
+  });
 }
 
 /**
- * _insertarLineaPuestoPremio(body, insertAt, etiqueta, valorCrudo) [→ Contexto_Base_Web.md §27B019]
+ * PF206. _insertarFilaRequisito(body, insertAt, texto): fila sin viñeta, con la misma sangría y fuente que las filas por clan.
  */
-function _insertarLineaPuestoPremio(body, insertAt, etiqueta, valorCrudo) {
-  var etiquetaConEspacio = etiqueta + ' ';
-  var valor = _formatearValorPremioParaDoc(valorCrudo);
-
+function _insertarFilaRequisito(body, insertAt, texto) {
   var p = body.insertParagraph(insertAt, '');
   p.setIndentStart(72);
   p.setIndentFirstLine(72);
-  var texto = p.editAsText();
-  texto.appendText(etiquetaConEspacio);
-  texto.appendText('\t' + valor);
-  var fin = texto.getText().length - 1;
-  texto.setBold(0, etiquetaConEspacio.length - 1, true);
-  texto.setBold(etiquetaConEspacio.length, fin, false);
-  texto.setFontFamily(0, fin, 'Arial Unicode MS');
-  texto.setFontSize(0, fin, 12);
-  texto.setUnderline(0, fin, false);
-  texto.setForegroundColor(0, fin, '#000000');
-  texto.setLinkUrl(0, fin, null);
-
+  var t = p.editAsText();
+  t.appendText(texto);
+  var fin = texto.length - 1;
+  t.setBold(0, fin, false);
+  t.setItalic(0, fin, false);
+  t.setFontFamily(0, fin, 'Arial Unicode MS');
+  t.setFontSize(0, fin, 12);
+  t.setUnderline(0, fin, false);
+  t.setForegroundColor(0, fin, '#000000');
+  t.setLinkUrl(0, fin, null);
   return insertAt + 1;
 }
 
-// Ordinales usados para las líneas de puesto -- en la práctica, hasta hoy, [→ Contexto_Base_Web.md §27B020]
-var _ORDINALES_PUESTO_PREMIO = [
-  'Primer', 'Segundo', 'Tercer', 'Cuarto', 'Quinto',
-  'Sexto', 'Séptimo', 'Octavo', 'Noveno', 'Décimo'
-];
+/**
+ * PF206. _etiquetaSemanaSorteoDoc({temporada, semana}): «Temporada 6, semana 2 (12 oct - 18 oct)». Las fechas son el lunes y el domingo
+ * reales de esa semana (_getRangoFechasSemana); si no se pueden calcular, se omite el paréntesis.
+ */
+function _etiquetaSemanaSorteoDoc(sem) {
+  var txt = 'Temporada ' + sem.temporada + ', semana ' + sem.semana;
+  try {
+    var r = _getRangoFechasSemana(sem.temporada, Number(sem.semana) - 1);
+    if (r && r.inicio && r.fin) {
+      var f = function (d) { return d.getDate() + ' ' + _MESES_ES[d.getMonth()].substring(0, 3); };
+      txt += ' (' + f(r.inicio) + ' - ' + f(r.fin) + ')';
+    }
+  } catch (e) { /* sin fechas, la etiqueta igual sirve */ }
+  return txt;
+}
 
 /**
- * _insertarBulletPremiosGanadores(body, insertAt, cantidadGanadores) [→ Contexto_Base_Web.md §27B021]
+ * _insertarBloquePorClan(body, insertAt, textoHeader, ordenClanes, valoresPorClan, formatearValor) [→ Contexto_Base_Web.md §27B016]
  */
-function _insertarBulletPremiosGanadores(body, insertAt, cantidadGanadores) {
-  return _insertarBulletRequisito(body, insertAt, '🏆 ' + cantidadGanadores + ' ganadores');
+function _insertarBloquePorClan(body, insertAt, textoHeader, ordenClanes, valoresPorClan, formatearValor) {
+  insertAt = _insertarBulletRequisito(body, insertAt, textoHeader);
+
+  for (var c = 0; c < ordenClanes.length; c++) {
+    var nombreClan = ordenClanes[c];
+    var etiqueta = nombreClan + ': ';
+    var p = body.insertParagraph(insertAt++, '');
+    p.setIndentStart(72);
+    p.setIndentFirstLine(72);
+    var texto = p.editAsText();
+    texto.appendText(etiqueta);
+    texto.appendText('\t' + formatearValor(valoresPorClan[nombreClan]));
+    var fin = texto.getText().length - 1;
+    texto.setBold(0, etiqueta.length - 1, true);
+    texto.setBold(etiqueta.length, fin, false);
+    texto.setFontFamily(0, fin, 'Arial Unicode MS');
+    texto.setFontSize(0, fin, 12);
+    texto.setUnderline(0, fin, false);
+    texto.setForegroundColor(0, fin, '#000000');
+    texto.setLinkUrl(0, fin, null);
+  }
+
+  return insertAt;
 }
+
+/**
+ * PF206 (24-oct-2026). _fmtMilesComa(n): número con separador de miles con coma (12345 -> «12,345»), sin depender del idioma del
+ * proyecto de Apps Script. Conserva hasta un decimal si lo trae.
+ */
+function _fmtMilesComa(n) {
+  var v = Number(n);
+  if (isNaN(v)) return String(n);
+  var r = Math.round(v * 10) / 10;
+  var partes = String(Math.abs(r)).split('.');
+  partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (r < 0 ? '-' : '') + partes.join('.');
+}
+
+function _REQ_DOC_TEXTO_ATAQUES_VALOR(qty) {
+  return qty + ' ataques semanales';
+}
+
+function _REQ_DOC_TEXTO_TORNEOS_VALOR(qty) {
+  return 'al menos ' + qty + ' torneos';
+}
+
+/**
+ * _REQ_DOC_TEXTO_BARCOS(qty) [→ Contexto_Base_Web.md §27B009]
+ */
+function _REQ_DOC_TEXTO_BARCOS(qty, nSemanas) {
+  if (qty <= 0) return 'No se permite ningún ataque a barcos.';
+  // PF205 (24-oct-2026, sorteo): con las semanas evaluadas conocidas, la línea dice el ACUMULADO permitido (tope semanal x semanas),
+  // que es lo mismo que pedir que el promedio semanal no pase del tope (así se evalúa en _evaluarCalificacionSorteo_()).
+  var n = Number(nSemanas) || 0;
+  if (n > 0) {
+    var total = qty * n;
+    return 'Máximo ' + total + ' ' + (total === 1 ? 'ataque' : 'ataques') + ' a barcos permitidos en total durante ' +
+      (n === 1 ? 'la semana evaluada' : 'las ' + n + ' semanas evaluadas') + ' (' + qty + ' por semana, en promedio).';
+  }
+  return 'Máximo ' + qty + ' ataques a barcos permitidos, en promedio semanal.';
+}
+
+// ----- Premios en el documento -----
 
 /**
  * _escribirPremiosEnDoc(body, premiosStr, logTag) [→ Contexto_Base_Web.md §27B022]
@@ -563,61 +537,48 @@ function _escribirPremiosEnDoc(body, premiosStr, logTag) {
 }
 
 /**
- * _copiarLineaConFormato(bodyDestino, insertAt, hijoOrigen, esListItem, nesting) [→ Contexto_Base_Web.md §27B023]
+ * _insertarLineaPuestoPremio(body, insertAt, etiqueta, valorCrudo) [→ Contexto_Base_Web.md §27B019]
  */
-function _copiarLineaConFormato(bodyDestino, insertAt, hijoOrigen, esListItem, nesting) {
-  var textoOrigen = hijoOrigen.editAsText();
-  var contenido = textoOrigen.getText();
+function _insertarLineaPuestoPremio(body, insertAt, etiqueta, valorCrudo) {
+  var etiquetaConEspacio = etiqueta + ' ';
+  var valor = _formatearValorPremioParaDoc(valorCrudo);
 
-  var elemento;
-  if (esListItem) {
-    elemento = bodyDestino.insertListItem(insertAt, contenido).setGlyphType(DocumentApp.GlyphType.BULLET);
-    try { elemento.setNestingLevel(nesting); } catch (e) { /* ignora si falla */ }
-  } else {
-    elemento = bodyDestino.insertParagraph(insertAt, contenido);
-  }
-
-  // 2) Sangría — clave para que una línea larga que envuelve (ej. el [→ Contexto_Base_Web.md §27B024]
-  try {
-    if (typeof hijoOrigen.getIndentStart === 'function') {
-      var indentStart = hijoOrigen.getIndentStart();
-      if (indentStart !== null && indentStart !== undefined) elemento.setIndentStart(indentStart);
-    }
-    if (typeof hijoOrigen.getIndentFirstLine === 'function') {
-      var indentFirst = hijoOrigen.getIndentFirstLine();
-      if (indentFirst !== null && indentFirst !== undefined) elemento.setIndentFirstLine(indentFirst);
-    }
-  } catch (e) { /* ignora si este elemento no soporta sangría */ }
-
-  // 3) Espaciado — esto es lo que da el "aire" entre bloques (ej. antes de [→ Contexto_Base_Web.md §27B025]
-  try {
-    if (typeof hijoOrigen.getSpacingBefore === 'function') {
-      elemento.setSpacingBefore(hijoOrigen.getSpacingBefore());
-    }
-    if (typeof hijoOrigen.getSpacingAfter === 'function') {
-      elemento.setSpacingAfter(hijoOrigen.getSpacingAfter());
-    }
-    if (typeof hijoOrigen.getLineSpacing === 'function') {
-      elemento.setLineSpacing(hijoOrigen.getLineSpacing());
-    }
-  } catch (e) { /* ignora si este elemento no soporta espaciado */ }
-
-  // 1) Negrita tramo por tramo — reaplica el mismo patrón de negrita que [→ Contexto_Base_Web.md §27B026]
-  if (contenido.length > 0) {
-    var indices = textoOrigen.getTextAttributeIndices();
-    var textoDestino = elemento.editAsText();
-    var finTexto = contenido.length - 1;
-    for (var idx = 0; idx < indices.length; idx++) {
-      var desde = indices[idx];
-      var hasta = (idx + 1 < indices.length) ? indices[idx + 1] - 1 : finTexto;
-      if (hasta < desde) continue;
-      var negrita = !!textoOrigen.isBold(desde);
-      try { textoDestino.setBold(desde, hasta, negrita); } catch (e) { /* tramo puntual, se omite */ }
-    }
-  }
+  var p = body.insertParagraph(insertAt, '');
+  p.setIndentStart(72);
+  p.setIndentFirstLine(72);
+  var texto = p.editAsText();
+  texto.appendText(etiquetaConEspacio);
+  texto.appendText('\t' + valor);
+  var fin = texto.getText().length - 1;
+  texto.setBold(0, etiquetaConEspacio.length - 1, true);
+  texto.setBold(etiquetaConEspacio.length, fin, false);
+  texto.setFontFamily(0, fin, 'Arial Unicode MS');
+  texto.setFontSize(0, fin, 12);
+  texto.setUnderline(0, fin, false);
+  texto.setForegroundColor(0, fin, '#000000');
+  texto.setLinkUrl(0, fin, null);
 
   return insertAt + 1;
 }
+
+/**
+ * _formatearValorPremioParaDoc(item) [→ Contexto_Base_Web.md §27B018]
+ */
+function _formatearValorPremioParaDoc(item) {
+  var texto = String(item || '').trim();
+  var dinero = texto.match(/^S\/\s*([\d.,]+)$/i);
+  if (dinero) return 'S/.' + dinero[1] + '.';
+  return texto + '.';
+}
+
+/**
+ * _insertarBulletPremiosGanadores(body, insertAt, cantidadGanadores) [→ Contexto_Base_Web.md §27B021]
+ */
+function _insertarBulletPremiosGanadores(body, insertAt, cantidadGanadores) {
+  return _insertarBulletRequisito(body, insertAt, '🏆 ' + cantidadGanadores + ' ganadores');
+}
+
+// ----- Copia de premios de la fecha a Ganadores (torneo) -----
 
 /**
  * _copiarPremiosFechaAGanadoresTorneo() [→ Contexto_Base_Web.md §27B027]
@@ -681,4 +642,61 @@ function _copiarPremiosFechaAGanadoresTorneo() {
 
   docDestino.saveAndClose();
   Logger.log('[Premios-Torneo] Premios/Fecha/ADICIONAL copiados a "Ganadores (torneo)" (' + lineas.length + ' línea(s)).');
+}
+
+/**
+ * _copiarLineaConFormato(bodyDestino, insertAt, hijoOrigen, esListItem, nesting) [→ Contexto_Base_Web.md §27B023]
+ */
+function _copiarLineaConFormato(bodyDestino, insertAt, hijoOrigen, esListItem, nesting) {
+  var textoOrigen = hijoOrigen.editAsText();
+  var contenido = textoOrigen.getText();
+
+  var elemento;
+  if (esListItem) {
+    elemento = bodyDestino.insertListItem(insertAt, contenido).setGlyphType(DocumentApp.GlyphType.BULLET);
+    try { elemento.setNestingLevel(nesting); } catch (e) { /* ignora si falla */ }
+  } else {
+    elemento = bodyDestino.insertParagraph(insertAt, contenido);
+  }
+
+  // 2) Sangría — clave para que una línea larga que envuelve (ej. el [→ Contexto_Base_Web.md §27B024]
+  try {
+    if (typeof hijoOrigen.getIndentStart === 'function') {
+      var indentStart = hijoOrigen.getIndentStart();
+      if (indentStart !== null && indentStart !== undefined) elemento.setIndentStart(indentStart);
+    }
+    if (typeof hijoOrigen.getIndentFirstLine === 'function') {
+      var indentFirst = hijoOrigen.getIndentFirstLine();
+      if (indentFirst !== null && indentFirst !== undefined) elemento.setIndentFirstLine(indentFirst);
+    }
+  } catch (e) { /* ignora si este elemento no soporta sangría */ }
+
+  // 3) Espaciado — esto es lo que da el "aire" entre bloques (ej. antes de [→ Contexto_Base_Web.md §27B025]
+  try {
+    if (typeof hijoOrigen.getSpacingBefore === 'function') {
+      elemento.setSpacingBefore(hijoOrigen.getSpacingBefore());
+    }
+    if (typeof hijoOrigen.getSpacingAfter === 'function') {
+      elemento.setSpacingAfter(hijoOrigen.getSpacingAfter());
+    }
+    if (typeof hijoOrigen.getLineSpacing === 'function') {
+      elemento.setLineSpacing(hijoOrigen.getLineSpacing());
+    }
+  } catch (e) { /* ignora si este elemento no soporta espaciado */ }
+
+  // 1) Negrita tramo por tramo — reaplica el mismo patrón de negrita que [→ Contexto_Base_Web.md §27B026]
+  if (contenido.length > 0) {
+    var indices = textoOrigen.getTextAttributeIndices();
+    var textoDestino = elemento.editAsText();
+    var finTexto = contenido.length - 1;
+    for (var idx = 0; idx < indices.length; idx++) {
+      var desde = indices[idx];
+      var hasta = (idx + 1 < indices.length) ? indices[idx + 1] - 1 : finTexto;
+      if (hasta < desde) continue;
+      var negrita = !!textoOrigen.isBold(desde);
+      try { textoDestino.setBold(desde, hasta, negrita); } catch (e) { /* tramo puntual, se omite */ }
+    }
+  }
+
+  return insertAt + 1;
 }
