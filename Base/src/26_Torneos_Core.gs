@@ -3162,6 +3162,44 @@ function procesarSorteos() {
 }
 
 /**
+ * procesarCambioRango() [→ Contexto_Base_Web.md §PF286]
+ * Equivalente de procesarSorteos() y procesarTorneos() para Cambio de rango: con el par vigente de
+ * Extra (Ascenso_Vigente_ID / Descenso_Vigente_ID) actualiza los dos documentos que salen de ese par.
+ * Cada paso va en su propio try/catch para que uno que falle no corte a los demás.
+ * Lo llaman PASOS_RUNALL y PASOS_RUNUPDATE (00_Main.gs) y la web al guardar el par o generar propuestas.
+ */
+function procesarCambioRango() {
+  var idA = _getIdVigenteExtraCR('Ascenso');
+  var idD = _getIdVigenteExtraCR('Descenso');
+  if (!idA || !idD) {
+    Logger.log('[CambioRango] Falta el par vigente en Extra (Ascenso=' + (idA || 'vacío') + ', Descenso=' +
+      (idD || 'vacío') + '): no se actualizan los documentos.');
+    return true;
+  }
+
+  // Documento «Cambio de rango»: veredicto por jugador.
+  try {
+    actualizarDocCambioRango(idA, idD);
+  } catch (eDocCR) {
+    Logger.log('[CambioRango] actualizarDocCambioRango() falló (se continúa): ' + eDocCR.message);
+  }
+
+  // Documento «Ascensos y descensos»: tablas de requisitos de la sección «Rangos» y listas por clan.
+  try {
+    actualizarTablasRangosDoc(idA, idD);
+  } catch (eTablasCR) {
+    Logger.log('[CambioRango] actualizarTablasRangosDoc() falló (se continúa): ' + eTablasCR.message);
+  }
+  try {
+    actualizarDocAscensosDescensos(idA, idD);
+  } catch (eDocAD) {
+    Logger.log('[CambioRango] actualizarDocAscensosDescensos() falló (se continúa): ' + eDocAD.message);
+  }
+
+  return true;
+}
+
+/**
  * _getConfigMasRecienteCategoria(nombreCategoria) [→ Contexto_Base_Web.md §26B220]
  */
 
