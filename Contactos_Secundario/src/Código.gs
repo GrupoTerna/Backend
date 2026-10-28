@@ -38,97 +38,18 @@
 // Ver Contexto_Base_Web.md §PF277.
 // =============================================================================
 
-// _urlContactos_(): arma la URL del Web App con el token, ambos desde las
-// Propiedades del script. Corta con un mensaje claro si falta alguna.
-function _urlContactos_() {
-  var p = PropertiesService.getScriptProperties();
-  var base = p.getProperty('URL_CONTACTOS_BASE');
-  var token = p.getProperty('CONTACTOS_TOKEN');
-  if (!base || !token) {
-    throw new Error('Faltan URL_CONTACTOS_BASE o CONTACTOS_TOKEN en Propiedades del script ' +
-      '(Configuración del proyecto > Propiedades del script).');
-  }
-  return base + '?token=' + encodeURIComponent(token);
-}
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): este archivo no tiene constantes ni variables globales; por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Sincronización de contactos desde el Web App (SincronizarDesdeWebAPI)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Sincronización de contactos: ayudas (en el orden en que las llama SincronizarDesdeWebAPI: URL del Web App, resumen por clan y su agrupación)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas (deducido del código: la usuaria no lo ha confirmado). Al reordenar no se cambió el código de ninguna función.
 
-// _agruparPorClanSec_(lista): agrupa [{nombre, clan}] por clan. Sin clan o 'Sin Clan' van a '__SIN_CLAN__'.
-function _agruparPorClanSec_(lista) {
-  var mapa = {};
-  var orden = [];
-  for (var idx = 0; idx < lista.length; idx++) {
-    var item = lista[idx];
-    var clanKey = (item.clan && String(item.clan).trim() && String(item.clan).trim() !== 'Sin Clan')
-      ? String(item.clan).trim()
-      : '__SIN_CLAN__';
-    if (!mapa[clanKey]) {
-      mapa[clanKey] = [];
-      orden.push(clanKey);
-    }
-    mapa[clanKey].push(item.nombre);
-  }
-  return { mapa: mapa, orden: orden };
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-// _logResumenSecundario_(resumen): escribe el resumen por clan (agregados y eliminados) y, si hubo fallos, su explicación.
-// resumen = { creados: [{nombre, clan}], eliminados: [{nombre, clan}], fallidos: [{nombre, clan, motivo}], noEliminados: [..] }
-function _logResumenSecundario_(resumen) {
-  var aGrp = _agruparPorClanSec_(resumen.creados);
-  var eGrp = _agruparPorClanSec_(resumen.eliminados);
-
-  // Unión de clanes reales (sin duplicar), en orden alfabético.
-  var clanesReales = [];
-  var vistos = {};
-  [aGrp.orden, eGrp.orden].forEach(function(orden) {
-    orden.forEach(function(c) {
-      if (c !== '__SIN_CLAN__' && !vistos[c]) {
-        vistos[c] = true;
-        clanesReales.push(c);
-      }
-    });
-  });
-  clanesReales.sort();
-
-  var agSinClan = aGrp.mapa['__SIN_CLAN__'] || [];
-  var elSinClan = eGrp.mapa['__SIN_CLAN__'] || [];
-
-  Logger.log('--- Resumen de cambios por clan ---');
-  if (clanesReales.length === 0 && agSinClan.length === 0 && elSinClan.length === 0) {
-    Logger.log('No hubo contactos agregados ni eliminados en esta ejecución.');
-  } else {
-    clanesReales.forEach(function(clan) {
-      var ag = aGrp.mapa[clan] || [];
-      var el = eGrp.mapa[clan] || [];
-      if (ag.length > 0) Logger.log('[' + clan + '] Agregados: ' + ag.join(', '));
-      if (el.length > 0) Logger.log('[' + clan + '] Eliminados: ' + el.join(', '));
-    });
-    if (agSinClan.length > 0) Logger.log('[Sin clan identificado] Agregados: ' + agSinClan.join(', '));
-    if (elSinClan.length > 0) Logger.log('[Sin clan identificado] Eliminados: ' + elSinClan.join(', '));
-  }
-
-  if (resumen.noEliminados && resumen.noEliminados.length > 0) {
-    Logger.log('--- Contactos obsoletos que NO se pudieron eliminar ---');
-    Logger.log('Google no dejó borrar ' + resumen.noEliminados.length + ' contacto(s) que ya no vienen de la Web App: ' +
-      resumen.noEliminados.join(', ') + '. Siguen en la cuenta; se reintenta en la próxima sincronización.');
-  }
-
-  if (resumen.fallidos.length > 0) {
-    Logger.log('--- Por qué algunos contactos no se pudieron sincronizar ---');
-    Logger.log('Hubo ' + resumen.fallidos.length + ' contacto(s) que no se pudieron guardar en Google Contacts ' +
-      'en esta ejecución: ' + resumen.fallidos.map(function(f) { return f.nombre; }).join(', ') + '.');
-    var porCuota = resumen.fallidos.filter(function(f) { return f.motivo === 'cuota'; }).length;
-    var porOtro = resumen.fallidos.length - porCuota;
-    if (porCuota > 0) {
-      Logger.log(porCuota + ' por la cuota de Google: la cuenta solo puede crear o modificar una cierta cantidad de ' +
-        'contactos por minuto, y con muchos jugadores sincronizándose de una vez es normal alcanzar ese límite.');
-    }
-    if (porOtro > 0) {
-      Logger.log(porOtro + ' por otro motivo (no fue la cuota): puede ser un dato con formato que Google Contacts no acepta, ' +
-        'o un problema temporal de Google. El motivo exacto está en la línea «No se pudo sincronizar el contacto» de más arriba.');
-    }
-    Logger.log('Estos jugadores NO se eliminan ni se pierden por este motivo: solo quedaron pendientes de ' +
-      'actualizar y se corrigen solos en la próxima sincronización.');
-  }
-}
+// ----- Sincronización de contactos desde el Web App -----
 
 function SincronizarDesdeWebAPI() {
   Logger.log('[SecundarioSync] Iniciando descarga de contactos desde el Web App...');
@@ -416,4 +337,102 @@ function SincronizarDesdeWebAPI() {
 
   Logger.log('[SecundarioSync] Resultados -> Creados: ' + creados + ', Actualizados: ' + actualizados + ', Eliminados obsoletos: ' + eliminados);
   Logger.log('[SecundarioSync] Sincronización completada en ' + (Date.now() - startTime) + ' ms.');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Sincronización de contactos: ayudas -----
+
+// _urlContactos_(): arma la URL del Web App con el token, ambos desde las
+// Propiedades del script. Corta con un mensaje claro si falta alguna.
+function _urlContactos_() {
+  var p = PropertiesService.getScriptProperties();
+  var base = p.getProperty('URL_CONTACTOS_BASE');
+  var token = p.getProperty('CONTACTOS_TOKEN');
+  if (!base || !token) {
+    throw new Error('Faltan URL_CONTACTOS_BASE o CONTACTOS_TOKEN en Propiedades del script ' +
+      '(Configuración del proyecto > Propiedades del script).');
+  }
+  return base + '?token=' + encodeURIComponent(token);
+}
+
+// _logResumenSecundario_(resumen): escribe el resumen por clan (agregados y eliminados) y, si hubo fallos, su explicación.
+// resumen = { creados: [{nombre, clan}], eliminados: [{nombre, clan}], fallidos: [{nombre, clan, motivo}], noEliminados: [..] }
+function _logResumenSecundario_(resumen) {
+  var aGrp = _agruparPorClanSec_(resumen.creados);
+  var eGrp = _agruparPorClanSec_(resumen.eliminados);
+
+  // Unión de clanes reales (sin duplicar), en orden alfabético.
+  var clanesReales = [];
+  var vistos = {};
+  [aGrp.orden, eGrp.orden].forEach(function(orden) {
+    orden.forEach(function(c) {
+      if (c !== '__SIN_CLAN__' && !vistos[c]) {
+        vistos[c] = true;
+        clanesReales.push(c);
+      }
+    });
+  });
+  clanesReales.sort();
+
+  var agSinClan = aGrp.mapa['__SIN_CLAN__'] || [];
+  var elSinClan = eGrp.mapa['__SIN_CLAN__'] || [];
+
+  Logger.log('--- Resumen de cambios por clan ---');
+  if (clanesReales.length === 0 && agSinClan.length === 0 && elSinClan.length === 0) {
+    Logger.log('No hubo contactos agregados ni eliminados en esta ejecución.');
+  } else {
+    clanesReales.forEach(function(clan) {
+      var ag = aGrp.mapa[clan] || [];
+      var el = eGrp.mapa[clan] || [];
+      if (ag.length > 0) Logger.log('[' + clan + '] Agregados: ' + ag.join(', '));
+      if (el.length > 0) Logger.log('[' + clan + '] Eliminados: ' + el.join(', '));
+    });
+    if (agSinClan.length > 0) Logger.log('[Sin clan identificado] Agregados: ' + agSinClan.join(', '));
+    if (elSinClan.length > 0) Logger.log('[Sin clan identificado] Eliminados: ' + elSinClan.join(', '));
+  }
+
+  if (resumen.noEliminados && resumen.noEliminados.length > 0) {
+    Logger.log('--- Contactos obsoletos que NO se pudieron eliminar ---');
+    Logger.log('Google no dejó borrar ' + resumen.noEliminados.length + ' contacto(s) que ya no vienen de la Web App: ' +
+      resumen.noEliminados.join(', ') + '. Siguen en la cuenta; se reintenta en la próxima sincronización.');
+  }
+
+  if (resumen.fallidos.length > 0) {
+    Logger.log('--- Por qué algunos contactos no se pudieron sincronizar ---');
+    Logger.log('Hubo ' + resumen.fallidos.length + ' contacto(s) que no se pudieron guardar en Google Contacts ' +
+      'en esta ejecución: ' + resumen.fallidos.map(function(f) { return f.nombre; }).join(', ') + '.');
+    var porCuota = resumen.fallidos.filter(function(f) { return f.motivo === 'cuota'; }).length;
+    var porOtro = resumen.fallidos.length - porCuota;
+    if (porCuota > 0) {
+      Logger.log(porCuota + ' por la cuota de Google: la cuenta solo puede crear o modificar una cierta cantidad de ' +
+        'contactos por minuto, y con muchos jugadores sincronizándose de una vez es normal alcanzar ese límite.');
+    }
+    if (porOtro > 0) {
+      Logger.log(porOtro + ' por otro motivo (no fue la cuota): puede ser un dato con formato que Google Contacts no acepta, ' +
+        'o un problema temporal de Google. El motivo exacto está en la línea «No se pudo sincronizar el contacto» de más arriba.');
+    }
+    Logger.log('Estos jugadores NO se eliminan ni se pierden por este motivo: solo quedaron pendientes de ' +
+      'actualizar y se corrigen solos en la próxima sincronización.');
+  }
+}
+
+// _agruparPorClanSec_(lista): agrupa [{nombre, clan}] por clan. Sin clan o 'Sin Clan' van a '__SIN_CLAN__'.
+function _agruparPorClanSec_(lista) {
+  var mapa = {};
+  var orden = [];
+  for (var idx = 0; idx < lista.length; idx++) {
+    var item = lista[idx];
+    var clanKey = (item.clan && String(item.clan).trim() && String(item.clan).trim() !== 'Sin Clan')
+      ? String(item.clan).trim()
+      : '__SIN_CLAN__';
+    if (!mapa[clanKey]) {
+      mapa[clanKey] = [];
+      orden.push(clanKey);
+    }
+    mapa[clanKey].push(item.nombre);
+  }
+  return { mapa: mapa, orden: orden };
 }
