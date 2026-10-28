@@ -1861,7 +1861,7 @@ function _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado() {
   _ordenarBloquesFechaNuevos(sh);
   repararFormatoEncabezadosNuevos();
 
-  // FIX (20-ago-2026, pedido usuario): dirPorTag se construye ACÁ ARRIBA [→ Contexto_Base_Web.md §14B104]
+  // FIX (20-ago-2026, pedido usuario): dirPorTag se construye AQUÍ ARRIBA [→ Contexto_Base_Web.md §14B104]
   var dirData = _leerDirectorioFisicoComoDC(ss);
   var dirPorTag = {};
   for (var j = 0; j < dirData.length; j++) {
