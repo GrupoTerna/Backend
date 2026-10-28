@@ -4,13 +4,20 @@
 // y las tablas de requisitos (seccion Rangos del mismo documento).
 // ==============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: reconstruirDocAscensosDescensosSiFalta(), actualizarDocAscensosDescensos(idAscenso, idDescenso), actualizarTablasRangosDoc(idAscenso, idDescenso)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Listas de ascensos y descensos del documento (rango actual de cada jugador, armado de las listas, escritura en el Doc)
+//    - Tablas de requisitos por rango (actualizarTablasRangosDoc y sus ayudas)
+//    - Contenido del documento al reconstruirlo desde cero (_construirContenidoDocAscensosDescensos y sus ayudas)
+//    - Semanas de la temporada (ayuda que usan otros archivos)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // ----- Variables y constantes -----
 
 // 25_Doc_AscensosDescensos.gs [→ Contexto_Base_Web.md §25B001]
 
-
 // 1) T_REQ_CATEGORIAS — HISTÓRICO, ya no aplica [→ Contexto_Base_Web.md §25B002]
-
 
 // 2) IDs/nombres del documento (confirmados por el usuario, 10/08/2026) [→ Contexto_Base_Web.md §25B003]
 var NOMBRE_DOC_ASCENSOS_DESCENSOS = 'Ascensos y descensos - Comunidad - ᴳ乂ᵀ ⚜️ Familia Terna';
@@ -25,14 +32,20 @@ var RT_ENCABEZADO_PERMANECER = 'Condición para permanecer en el clan';
 
 var RT_ENCABEZADO_CONSERVAR  = 'Condición para conservar el rango';
 
-// ----- Funciones manuales / punto de entrada -----
+/**
+ * _getSemanasDeTemporada(temporada) [→ Contexto_Base_Web.md §25B017]
+ */
+// 17-oct-2026 (PF091): memo por ejecución. CFG.REF_DEFAULT lee Propiedades del script en cada acceso y _esPeriodoDeColiseo_() llama a esta función en cada fila de guerra. [→ Contexto_Base_Web.md §PF091]
+var _SEMANAS_TEMPORADA_MEMO = {};
 
-// 3) Temporada a mostrar (Extra!Mostrar, buscada por NOMBRE de columna, [→ Contexto_Base_Web.md §25B005]
+// ----- Parte 1: funciones que se corren a mano -----
 
 /**
  * FASE 8 (13-sep-2026, pedido del usuario, plan de Cambio de Rango): desde [→ Contexto_Base_Web.md §25B006]
  */
 // SECCIÓN 1: FUNCIONES MANUALES (entry points de mantenimiento, ejecutar a mano [→ Contexto_Base_Web.md §25B007]
+
+// 9) Reconstrucción desde cero si el documento se borra de Drive. [→ Contexto_Base_Web.md §25B035]
 
 /**
  * reconstruirDocAscensosDescensosSiFalta() [→ Contexto_Base_Web.md §25B008]
@@ -105,18 +118,6 @@ function actualizarDocAscensosDescensos(idAscenso, idDescenso) {
   doc.saveAndClose();
   Logger.log('[AscensosDescensos] Documento actualizado desde CR_Lista (' + idAscenso + ' / ' + idDescenso + '), ' +
     resultado.propuestas.length + ' propuesta(s) evaluada(s) en total.');
-}
-
-// NOTA DE REORDEN (23-ago-2026, pedido usuario): actualizarTablasRangosDoc() -- [→ Contexto_Base_Web.md §25B013]
-/**
- * _bloqueCRParaContexto(filaCRLista, rolOrigen, campoQty) [→ Contexto_Base_Web.md §25B014]
- */
-function _bloqueCRParaContexto(filaCRLista, rolOrigen, campoQty) {
-  return filaCRLista.porClan.map(function (b) {
-    var obj = { clan: b.clan, ataques: b.ataques[rolOrigen] };
-    obj[campoQty] = b.minCR[rolOrigen];
-    return obj;
-  });
 }
 
 /**
@@ -196,45 +197,11 @@ function actualizarTablasRangosDoc(idAscenso, idDescenso) {
     tablasActualizadas + ' tabla(s) de la sección "Rangos" completadas.');
 }
 
-// ----- Funciones internas / helpers -----
+// ----- Parte 2: funciones que no se corren a mano -----
 
 // SECCIÓN 2: RESTO DE FUNCIONES (ascensos/descensos, doc automatizado, helpers [→ Contexto_Base_Web.md §25B016]
 
-function _getExtraMostrarTemporada(ss, ctxReal) {
-  var temporadaMostrar = ctxReal.temporada;
-  var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
-  if (!shExtra || shExtra.getLastRow() < 2) return temporadaMostrar;
-
-  var headers = shExtra.getRange(1, 1, 1, shExtra.getLastColumn()).getValues()[0];
-  var colMostrar = -1;
-  for (var i = 0; i < headers.length; i++) {
-    if (String(headers[i]).trim() === 'Mostrar_T') { colMostrar = i + 1; break; }
-  }
-  if (colMostrar === -1) {
-    Logger.log('[AscensosDescensos] No se encontró la columna "Mostrar_T" en Extra; se usa la temporada real (' + ctxReal.temporada + ').');
-    return temporadaMostrar;
-  }
-
-  var mostrarVal = shExtra.getRange(2, colMostrar).getValue();
-  var temporadaExtra = Number(mostrarVal);
-  if (temporadaExtra) temporadaMostrar = temporadaExtra;
-  return temporadaMostrar;
-}
-
-/**
- * _getSemanasDeTemporada(temporada) [→ Contexto_Base_Web.md §25B017]
- */
-// 17-oct-2026 (PF091): memo por ejecución. CFG.REF_DEFAULT lee Propiedades del script en cada acceso y _esPeriodoDeColiseo_() llama a esta función en cada fila de guerra. [→ Contexto_Base_Web.md §PF091]
-var _SEMANAS_TEMPORADA_MEMO = {};
-function _limpiarMemoSemanasTemporada_() { _SEMANAS_TEMPORADA_MEMO = {}; }
-function _getSemanasDeTemporada(temporada) {
-  var clave = String(temporada);
-  if (Object.prototype.hasOwnProperty.call(_SEMANAS_TEMPORADA_MEMO, clave)) return _SEMANAS_TEMPORADA_MEMO[clave];
-  var pl = primerLunesTemporada(CFG.REF_DEFAULT, temporada);
-  var n = lunesEnMes(pl.getFullYear(), pl.getMonth());
-  _SEMANAS_TEMPORADA_MEMO[clave] = n;
-  return n;
-}
+// --- Tema: listas de ascensos y descensos del documento ---
 
 // 5) Rango/clan ACTUAL de cada jugador (hoja Directorio, mapeo dinámico de [→ Contexto_Base_Web.md §25B018]
 
@@ -287,16 +254,6 @@ function _getRangoClanActualPorTag(ss) {
 }
 
 // 6) Armado de las listas (Ascensos y Descensos), a partir de [→ Contexto_Base_Web.md §25B022]
-
-// FASE 9 (17-sep-2026, limpieza de T_Requisitos -- hoja ya dada de baja): [→ Contexto_Base_Web.md §25B023]
-
-/**
- * _barcosParaDocAD_(p) [→ Contexto_Base_Web.md §25B024]
- */
-function _barcosParaDocAD_(p) {
-  var v = (p.barcosSuma !== undefined && p.barcosSuma !== null) ? p.barcosSuma : p.barcosProm;
-  return Math.round((Number(v) || 0) * 10) / 10;
-}
 
 /**
  * _armarListasDesdeCRLista(propuestas, modo) [→ Contexto_Base_Web.md §25B025]
@@ -355,31 +312,17 @@ function _armarListasDesdeCRLista(propuestas, modo) {
   return resultado;
 }
 
-// 7) Escritura en el Google Doc — reusa el mismo patrón visual que [→ Contexto_Base_Web.md §25B030]
+// FASE 9 (17-sep-2026, limpieza de T_Requisitos -- hoja ya dada de baja): [→ Contexto_Base_Web.md §25B023]
 
 /**
- * _insertarBulletAscDesc(body, insertAt, nombre, ataques, fame, barcos) [→ Contexto_Base_Web.md §25B031]
+ * _barcosParaDocAD_(p) [→ Contexto_Base_Web.md §25B024]
  */
-function _insertarBulletAscDesc(body, insertAt, nombre, ataques, fame, barcos, clanDestino) {
-  var texto = nombre + ' (' + ataques + ' - ' + fame + ' - ' + barcos + ')';
-  // 4-oct-2026: solo para 'Ascenso de clan' -- agrega a que clan sube.
-  if (clanDestino) texto += ' \u2192 ' + clanDestino;
-  var li = body.insertListItem(insertAt, texto);
-  li.setGlyphType(DocumentApp.GlyphType.BULLET);
-  li.setIndentStart(36);
-  li.setIndentFirstLine(18);
-
-  var t = li.editAsText();
-  var fin = texto.length - 1;
-  t.setFontFamily(0, fin, 'Arial');
-  t.setFontSize(0, fin, 12);
-  t.setBold(0, fin, false);
-  t.setUnderline(0, fin, false);
-  t.setForegroundColor(0, fin, '#000000');
-  t.setLinkUrl(0, fin, null);
-
-  return insertAt + 1;
+function _barcosParaDocAD_(p) {
+  var v = (p.barcosSuma !== undefined && p.barcosSuma !== null) ? p.barcosSuma : p.barcosProm;
+  return Math.round((Number(v) || 0) * 10) / 10;
 }
+
+// 7) Escritura en el Google Doc — reusa el mismo patrón visual que [→ Contexto_Base_Web.md §25B030]
 
 /**
  * _reemplazarListasPorClanYRango(body, tituloSeccion, tituloSeccionSiguiente, listasPorClanYRango) [→ Contexto_Base_Web.md §25B032]
@@ -491,55 +434,103 @@ function _reemplazarListasPorClanYRango(body, tituloSeccion, tituloSeccionSiguie
   }
 }
 
-// 9) Reconstrucción desde cero si el documento se borra de Drive. [→ Contexto_Base_Web.md §25B035]
+/**
+ * _insertarBulletAscDesc(body, insertAt, nombre, ataques, fame, barcos) [→ Contexto_Base_Web.md §25B031]
+ */
+function _insertarBulletAscDesc(body, insertAt, nombre, ataques, fame, barcos, clanDestino) {
+  var texto = nombre + ' (' + ataques + ' - ' + fame + ' - ' + barcos + ')';
+  // 4-oct-2026: solo para 'Ascenso de clan' -- agrega a que clan sube.
+  if (clanDestino) texto += ' \u2192 ' + clanDestino;
+  var li = body.insertListItem(insertAt, texto);
+  li.setGlyphType(DocumentApp.GlyphType.BULLET);
+  li.setIndentStart(36);
+  li.setIndentFirstLine(18);
+
+  var t = li.editAsText();
+  var fin = texto.length - 1;
+  t.setFontFamily(0, fin, 'Arial');
+  t.setFontSize(0, fin, 12);
+  t.setBold(0, fin, false);
+  t.setUnderline(0, fin, false);
+  t.setForegroundColor(0, fin, '#000000');
+  t.setLinkUrl(0, fin, null);
+
+  return insertAt + 1;
+}
+
+// --- Tema: tablas de requisitos por rango (las usa actualizarTablasRangosDoc) ---
 
 /**
- * _rdocADMiles(n) [→ Contexto_Base_Web.md §25B036]
+ * _detectarContextoRango(textoParrafo) [→ Contexto_Base_Web.md §25B044]
  */
-function _rdocADMiles(n) {
-  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+function _detectarContextoRango(textoParrafo) {
+  var t = String(textoParrafo || '').trim();
+  if (/^1[.\s]+Miembro\s*$/.test(t)) return 'Miembro';
+  if (/^2[.\s]+Veterano\s*$/.test(t)) return 'Veterano';
+  if (t.indexOf('Tipo A: Colíder de juego') !== -1) return 'ColiderA';
+  if (t.indexOf('Tipo B: Colíder colaborador') !== -1) return 'ColiderB';
+  return null;
 }
 
 /**
- * _rdocADTablaRango(body, trofeos, ataques) [→ Contexto_Base_Web.md §25B037]
+ * _buscarSiguienteTabla(body, idxDesde, idxLimite) [→ Contexto_Base_Web.md §25B047]
  */
-function _rdocADTablaRango(body, trofeos, ataques) {
-  var filas = [
-    [''].concat(_CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION),
-    ['Medallas', _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos)],
-    ['Ataques', String(ataques), String(ataques), String(ataques), String(ataques)]
-  ];
-  return _rdocTablaConEncabezadoNegrita(body, filas);
-}
-
-/**
- * _rdocADBloqueFuncion(body, items) [→ Contexto_Base_Web.md §25B038]
- */
-function _rdocADBloqueFuncion(body, items) {
-  _rdocParrafoTexto(body, 'Función', true);
-  for (var i = 0; i < items.length; i++) {
-    body.appendListItem(items[i]).setGlyphType(DocumentApp.GlyphType.BULLET);
+function _buscarSiguienteTabla(body, idxDesde, idxLimite) {
+  for (var i = idxDesde; i < idxLimite; i++) {
+    var hijo = body.getChild(i);
+    if (hijo.getType() === DocumentApp.ElementType.TABLE) return hijo.asTable();
   }
+  return null;
+}
+
+// NOTA DE REORDEN (23-ago-2026, pedido usuario): actualizarTablasRangosDoc() -- [→ Contexto_Base_Web.md §25B013]
+/**
+ * _bloqueCRParaContexto(filaCRLista, rolOrigen, campoQty) [→ Contexto_Base_Web.md §25B014]
+ */
+function _bloqueCRParaContexto(filaCRLista, rolOrigen, campoQty) {
+  return filaCRLista.porClan.map(function (b) {
+    var obj = { clan: b.clan, ataques: b.ataques[rolOrigen] };
+    obj[campoQty] = b.minCR[rolOrigen];
+    return obj;
+  });
 }
 
 /**
- * _rdocADBloqueClanAscensoDescenso(body, etiquetaSubA, etiquetaSubB) [→ Contexto_Base_Web.md §25B039]
+ * _llenarTablaRequisitos(tabla, reqPorClan, campoQty) [→ Contexto_Base_Web.md §25B046]
  */
-function _rdocADBloqueClanAscensoDescenso(body, etiquetaSubA, etiquetaSubB, etiquetaSubClan) {
-  for (var i = 0; i < _CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION.length; i++) {
-    _rdocParrafoTexto(body, _CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION[i] + ':', true);
-    _rdocParrafoTexto(body, etiquetaSubA, false);
-    body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
-    _rdocParrafoTexto(body, etiquetaSubB, false);
-    body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
-    // 4-oct-2026: 'Ascenso de clan' (opcional, solo en 'Ascensos:'). Se omite en el primer clan
-    // de la lista (el principal): ahi el Colider nunca sube de clan.
-    if (etiquetaSubClan && i > 0) {
-      _rdocParrafoTexto(body, etiquetaSubClan, false);
-      body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
+function _llenarTablaRequisitos(tabla, reqPorClan, campoQty) {
+  if (!tabla || tabla.getNumRows() < 2) return;
+
+  for (var f = tabla.getNumRows() - 1; f >= 1; f--) {
+    var fila = tabla.getRow(f);
+    var etiqueta = fila.getCell(0).getText().trim().toLowerCase();
+    var esTrofeos = (etiqueta.indexOf('trofeo') !== -1 || etiqueta.indexOf('medalla') !== -1); // 11-oct-2026: la fila se llama «Medallas» (antes «Trofeos»); se reconocen ambos para no romper Docs ya creados
+    var esAtaques = (etiqueta.indexOf('ataque') !== -1);
+    if (!esTrofeos && !esAtaques) continue; // fila que no reconocemos: se deja intacta
+
+    var algunoActivo = false;
+    for (var col = 1; col < fila.getNumCells(); col++) {
+      var req = reqPorClan[col - 1];
+      var campo = esTrofeos ? (req && req[campoQty]) : (req && req.ataques);
+      if (campo && campo.activo) algunoActivo = true;
+      fila.getCell(col).setText(_formatearQtyCelda(campo, esTrofeos));
     }
+
+    if (!algunoActivo) tabla.removeRow(f); // los 4 clanes en "No" para este requisito: la fila desaparece
   }
 }
+
+/**
+ * _formatearQtyCelda(requisito, esTrofeos) [→ Contexto_Base_Web.md §25B045]
+ */
+function _formatearQtyCelda(requisito, esTrofeos) {
+  if (!requisito || !requisito.activo) return '-';
+  var texto = String(requisito.qty);
+  if (esTrofeos) texto = texto.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return texto;
+}
+
+// --- Tema: contenido del documento al reconstruirlo desde cero ---
 
 /**
  * _construirContenidoDocAscensosDescensos(body) [→ Contexto_Base_Web.md §25B040]
@@ -653,60 +644,86 @@ function _construirContenidoDocAscensosDescensos(body) {
   _rdocBloqueRedesSocialesYPie(body);
 }
 
-/**
- * _detectarContextoRango(textoParrafo) [→ Contexto_Base_Web.md §25B044]
- */
-function _detectarContextoRango(textoParrafo) {
-  var t = String(textoParrafo || '').trim();
-  if (/^1[.\s]+Miembro\s*$/.test(t)) return 'Miembro';
-  if (/^2[.\s]+Veterano\s*$/.test(t)) return 'Veterano';
-  if (t.indexOf('Tipo A: Colíder de juego') !== -1) return 'ColiderA';
-  if (t.indexOf('Tipo B: Colíder colaborador') !== -1) return 'ColiderB';
-  return null;
+// 3) Temporada a mostrar (Extra!Mostrar, buscada por NOMBRE de columna, [→ Contexto_Base_Web.md §25B005]
+
+function _getExtraMostrarTemporada(ss, ctxReal) {
+  var temporadaMostrar = ctxReal.temporada;
+  var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
+  if (!shExtra || shExtra.getLastRow() < 2) return temporadaMostrar;
+
+  var headers = shExtra.getRange(1, 1, 1, shExtra.getLastColumn()).getValues()[0];
+  var colMostrar = -1;
+  for (var i = 0; i < headers.length; i++) {
+    if (String(headers[i]).trim() === 'Mostrar_T') { colMostrar = i + 1; break; }
+  }
+  if (colMostrar === -1) {
+    Logger.log('[AscensosDescensos] No se encontró la columna "Mostrar_T" en Extra; se usa la temporada real (' + ctxReal.temporada + ').');
+    return temporadaMostrar;
+  }
+
+  var mostrarVal = shExtra.getRange(2, colMostrar).getValue();
+  var temporadaExtra = Number(mostrarVal);
+  if (temporadaExtra) temporadaMostrar = temporadaExtra;
+  return temporadaMostrar;
 }
 
 /**
- * _formatearQtyCelda(requisito, esTrofeos) [→ Contexto_Base_Web.md §25B045]
+ * _rdocADTablaRango(body, trofeos, ataques) [→ Contexto_Base_Web.md §25B037]
  */
-function _formatearQtyCelda(requisito, esTrofeos) {
-  if (!requisito || !requisito.activo) return '-';
-  var texto = String(requisito.qty);
-  if (esTrofeos) texto = texto.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return texto;
+function _rdocADTablaRango(body, trofeos, ataques) {
+  var filas = [
+    [''].concat(_CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION),
+    ['Medallas', _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos)],
+    ['Ataques', String(ataques), String(ataques), String(ataques), String(ataques)]
+  ];
+  return _rdocTablaConEncabezadoNegrita(body, filas);
 }
 
 /**
- * _llenarTablaRequisitos(tabla, reqPorClan, campoQty) [→ Contexto_Base_Web.md §25B046]
+ * _rdocADMiles(n) [→ Contexto_Base_Web.md §25B036]
  */
-function _llenarTablaRequisitos(tabla, reqPorClan, campoQty) {
-  if (!tabla || tabla.getNumRows() < 2) return;
+function _rdocADMiles(n) {
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
 
-  for (var f = tabla.getNumRows() - 1; f >= 1; f--) {
-    var fila = tabla.getRow(f);
-    var etiqueta = fila.getCell(0).getText().trim().toLowerCase();
-    var esTrofeos = (etiqueta.indexOf('trofeo') !== -1 || etiqueta.indexOf('medalla') !== -1); // 11-oct-2026: la fila se llama «Medallas» (antes «Trofeos»); se reconocen ambos para no romper Docs ya creados
-    var esAtaques = (etiqueta.indexOf('ataque') !== -1);
-    if (!esTrofeos && !esAtaques) continue; // fila que no reconocemos: se deja intacta
+/**
+ * _rdocADBloqueFuncion(body, items) [→ Contexto_Base_Web.md §25B038]
+ */
+function _rdocADBloqueFuncion(body, items) {
+  _rdocParrafoTexto(body, 'Función', true);
+  for (var i = 0; i < items.length; i++) {
+    body.appendListItem(items[i]).setGlyphType(DocumentApp.GlyphType.BULLET);
+  }
+}
 
-    var algunoActivo = false;
-    for (var col = 1; col < fila.getNumCells(); col++) {
-      var req = reqPorClan[col - 1];
-      var campo = esTrofeos ? (req && req[campoQty]) : (req && req.ataques);
-      if (campo && campo.activo) algunoActivo = true;
-      fila.getCell(col).setText(_formatearQtyCelda(campo, esTrofeos));
+/**
+ * _rdocADBloqueClanAscensoDescenso(body, etiquetaSubA, etiquetaSubB) [→ Contexto_Base_Web.md §25B039]
+ */
+function _rdocADBloqueClanAscensoDescenso(body, etiquetaSubA, etiquetaSubB, etiquetaSubClan) {
+  for (var i = 0; i < _CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION.length; i++) {
+    _rdocParrafoTexto(body, _CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION[i] + ':', true);
+    _rdocParrafoTexto(body, etiquetaSubA, false);
+    body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
+    _rdocParrafoTexto(body, etiquetaSubB, false);
+    body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
+    // 4-oct-2026: 'Ascenso de clan' (opcional, solo en 'Ascensos:'). Se omite en el primer clan
+    // de la lista (el principal): ahi el Colider nunca sube de clan.
+    if (etiquetaSubClan && i > 0) {
+      _rdocParrafoTexto(body, etiquetaSubClan, false);
+      body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
     }
-
-    if (!algunoActivo) tabla.removeRow(f); // los 4 clanes en "No" para este requisito: la fila desaparece
   }
 }
 
-/**
- * _buscarSiguienteTabla(body, idxDesde, idxLimite) [→ Contexto_Base_Web.md §25B047]
- */
-function _buscarSiguienteTabla(body, idxDesde, idxLimite) {
-  for (var i = idxDesde; i < idxLimite; i++) {
-    var hijo = body.getChild(i);
-    if (hijo.getType() === DocumentApp.ElementType.TABLE) return hijo.asTable();
-  }
-  return null;
+// --- Tema: semanas de la temporada (las usan otros archivos) ---
+
+function _limpiarMemoSemanasTemporada_() { _SEMANAS_TEMPORADA_MEMO = {}; }
+
+function _getSemanasDeTemporada(temporada) {
+  var clave = String(temporada);
+  if (Object.prototype.hasOwnProperty.call(_SEMANAS_TEMPORADA_MEMO, clave)) return _SEMANAS_TEMPORADA_MEMO[clave];
+  var pl = primerLunesTemporada(CFG.REF_DEFAULT, temporada);
+  var n = lunesEnMes(pl.getFullYear(), pl.getMonth());
+  _SEMANAS_TEMPORADA_MEMO[clave] = n;
+  return n;
 }
