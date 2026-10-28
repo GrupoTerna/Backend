@@ -658,6 +658,7 @@ function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
   return r && r.fecha ? r.fecha : null;
 }
 
+// AUTÓNOMA (PF285, 27-oct-2026): NO forma parte de ningún proceso ni la llama otra función; solo se corre a mano desde el editor. Útil para verificar únicamente lo que dice Correcciones_Guerra.csv. iniciarReenumerarTemporadas() ya no la usa: usa detectarTemporadaMasAntiguaConPresenciaTerna(), que cruza las tres fuentes.
 // sugerirFechaRefDesdeCorreccionesGuerra(): devuelve la fecha 'AAAA-MM-DD' sugerida, o '' si no hay nada que hacer (PF261). §PF259 (25-oct-2026); MANUAL, solo sugiere (no reenumera). Lee la semana más antigua con clan Terna de Correcciones_Guerra.csv y dice la fecha EXACTA que se escribe en iniciarReenumerarTemporadas().
 // La fecha es el primer lunes del mes Supercell de esa temporada: T1 pasa a ser esa temporada. Si ya hay una reenumeración a medias (REENUM_PASO) NO calcula: el CSV puede estar a medias y la fecha saldría mal.
 // Si después aparece un registro más antiguo, se vuelve a correr y da la fecha nueva; la reenumeración suma meses hacia atrás a toda Temporada guardada. Guarda la sugerencia para ejecutarReenumeracionSugerida().
