@@ -8,14 +8,6 @@
  *   aniversarios       <- _webAniversarios()        (webAniversarios)
  *   rankings           <- _webRankings()            (webRankings)
  *   estadisticasCartas <- _webEstadisticasCartas()  (webEstadisticasCartas)
-
-// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
-//  Parte 1 — Funciones que se corren a mano
-//    - Home estático: publicar ahora
-//  Parte 2 — Funciones que no se corren a mano
-//    - Home estático: armar y publicar
-// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
-
  *   ascensos           <- _webAscensosRecientes()   (webAscensosRecientes, para comunidad.html; NUEVO 08-oct-2026)
  * más `_publicadoEn` (ISO). Todas son lecturas públicas con WEB_MEMBER_TOKEN, sin sesión de admin ni
  * campos de admin, así que el archivo contiene lo mismo que ya ve cualquier visitante.
@@ -31,6 +23,14 @@
  * Si nada cambió se omite, salvo que pasen HOME_ESTATICO_REPUBLICAR_MIN minutos (index.html descarta el
  * archivo si tiene más de 3 h).
  */
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Home estático: publicar ahora
+//  Parte 2 — Funciones que no se corren a mano
+//    - Home estático: armar y publicar
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var HOME_ESTATICO_ARCHIVO = 'home.json';
 
 var HOME_ESTATICO_REPUBLICAR_MIN = 50;
