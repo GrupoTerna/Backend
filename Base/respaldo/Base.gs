@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 27/10/2026 19:53:55 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 27/10/2026 22:08:55 */
 
 
 
@@ -95,17 +95,17 @@ var PASOS_RUNGUERRARAPIDO = [
 ];
 
 var NOMBRES_PASOS_RUNGUERRARAPIDO = [
-  'Clanes básico (sin /players)',
-  'Directorio',
-  'Nuevos (formato y purgado)',
-  'Nuevos (columnas fijas)',
-  'Nuevos (orden y formato condicional)',
-  'Guerra',
-  'Control',
-  'Control_2',
-  'Pendientes',
-  'Mensajes',
-  'Índice de contenido (mensajes dinámicos)',
+  'Clanes: cargar los datos básicos de los clanes, sin /players (de la API, o de lo ya guardado si se corre sin API) → datos de clanes cargados',
+  'Hoja Directorio: actualizar → hoja Directorio al día',
+  'Nuevos (formato y purgado): aplicar → hoja Nuevos con su formato y purgada',
+  'Nuevos (columnas fijas): refrescar → columnas fijas de Nuevos al día',
+  'Nuevos (orden y formato condicional): aplicar → hoja Nuevos ordenada y con su formato condicional',
+  'Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)',
+  'Hoja Control: actualizar → hoja Control al día',
+  'Hoja Control_2: actualizar → hoja Control_2 al día',
+  'Hoja Pendientes: actualizar → hoja Pendientes al día',
+  'Hoja Mensajes: generar a partir de Pendientes → hoja Mensajes al día',
+  'Menú dinámico: actualizar las entradas Dinámico → menú al día',
 ];
 
 var PASOS_RUNALL = [
@@ -197,7 +197,7 @@ var PASOS_RUNALL = [
   },
   // Torneos (T_Lista/T_Asistencia/T_Control, ver 26_Torneos_Core.gs): va después [→ Contexto_Base_Web.md §B025]
   function () { return procesarTorneos(); },
-  // FIX (09-sep-2026, pedido usuario -- "_continuarProcesarSorteos() / [→ Contexto_Base_Web.md §B026]
+  // FIX (09-sep-2026, pedido usuario -- "_continuarRunSorteos() / [→ Contexto_Base_Web.md §B026]
   function () { return procesarSorteos(); },
   // Guerra y Guerra_Logs van en pasos SEPARADOS (mismo motivo que [→ Contexto_Base_Web.md §B027]
   function () { return updateGuerraSheet(); },
@@ -259,80 +259,80 @@ var PASOS_RUNALL = [
 
 // Descripciones cortas alineadas 1 a 1 con PASOS_RUNALL (mismo orden, 42 [→ Contexto_Base_Web.md §B041]
 var NOMBRES_PASOS_RUNALL = [
-  'Renombrar hojas de historial legacy',
-  'Setup de todas las hojas',
-  'Limpiar hojas obsoletas (Terreno limpio / Cards)',
-  'Importar CSV (Directorio, Acumulativos, celulares, Clan, Índice, T_Lista)',
+  'Hojas de historial: renombrar las de versiones anteriores → hojas con los nombres actuales',
+  'Hojas: crear o completar todas con su estructura → todas las hojas listas',
+  'Hojas obsoletas (Terreno limpio, Cards, Menú, T_Requisitos): borrar → ninguna hoja obsoleta',
+  'CSV de respaldo: importar Directorio, Acumulativos, celulares, Índice, listas de Torneos y Sorteos, CR_Lista, Extra, asistencias y resoluciones → hojas cargadas desde Drive',
   // FIX (22-ago-2026): esta entrada ya NO incluye "columnas fijas" — [→ Contexto_Base_Web.md §B042]
-  'Restaurar hojas manuales (Nuevos)',
+  'Hoja Nuevos: restaurar si no existe → hoja Nuevos presente',
   // FIX (22-ago-2026): 3 entradas nuevas, corresponden a las 3 partes en [→ Contexto_Base_Web.md §B043]
-  'Nuevos: formato y purgado',
-  'Nuevos: columnas fijas',
-  'Nuevos: orden y formato condicional',
-  'Fetch de datos de la API de clanes',
+  'Nuevos (formato y purgado): aplicar → hoja Nuevos con su formato y purgada',
+  'Nuevos (columnas fijas): refrescar → columnas fijas de Nuevos al día',
+  'Nuevos (orden y formato condicional): aplicar → hoja Nuevos ordenada y con su formato condicional',
+  'Clanes: pedir a la API los datos de todos los clanes (y /players si está activo) → datos de clanes y jugadores cargados',
   // FIX (15-ago-2026): nombre nuevo, corresponde al paso de guardarApiDump()
   // recién separado del fetch de arriba (ver PASOS_RUNALL).
-  'Guardar dump de API (ApiDump)',
-  'Restaurar Control_2 si no existe',
-  'Actualizar hoja Extra',
-  'Actualizar hoja Clan',
-  'Actualizar hoja Cards',
-  'Actualizar hoja Cards_2',
+  'Dump de API: guardar los JSON de clanes y currentriverrace → JSON guardados en Drive',
+  'Hoja Control_2: restaurar si no existe → hoja Control_2 presente',
+  'Hoja Extra: actualizar → hoja Extra al día',
+  'Hoja Clan: actualizar → hoja Clan al día',
+  'Hoja Cards: actualizar → hoja Cards al día',
+  'Hoja Cards_2: actualizar → hoja Cards_2 al día',
   // 27-sep-2026: corresponde al paso _descargarBattlelogYCofresParaTodos()
   // de PASOS_RUNALL, recién agregado (ver comentario FIX ahí).
-  'Battlelog + UpcomingChests (por jugador, atado al interruptor de players)',
+  'Battlelog y UpcomingChests: descargar por jugador (atado al interruptor de /players) → datos por jugador descargados (puede necesitar varias tandas)',
   // FASE 5(a) del plan de fases (23-sep-2026): 2 entradas nuevas, [→ Contexto_Base_Web.md §B044]
-  'Actualizar hoja Insignias',
-  'Actualizar hoja Insignias_2',
+  'Hoja Insignias: actualizar → hoja Insignias al día',
+  'Hoja Insignias_2: actualizar → hoja Insignias_2 al día',
   // 24-sep-2026: corresponde al paso updateCaminoLeyendasSheet() de PASOS_RUNALL.
-  'Actualizar CSV Camino de Leyendas',
+  'CSV Camino de Leyendas: actualizar → CSV al día',
   // 24-sep-2026: corresponden a updateLogrosSheet()/updateLogros2Sheet() de PASOS_RUNALL.
-  'Actualizar CSV Logros',
-  'Actualizar CSV Logros_2',
+  'CSV Logros (catálogo): actualizar → CSV al día',
+  'CSV Logros_2 (por jugador): actualizar → CSV al día',
   // 24-sep-2026: corresponde al paso updatePerfilWebSheet() de PASOS_RUNALL.
-  'Actualizar CSV Perfil (XP y torre del rey)',
+  'CSV Perfil (XP y torre del rey): actualizar → CSV al día',
   // 24-sep-2026: corresponde al paso updateProgresoEventosSheet() de PASOS_RUNALL.
-  'Actualizar CSV Progreso en eventos rotativos',
-  'Actualizar hoja Directorio',
+  'CSV Progreso en eventos rotativos: actualizar → CSV al día',
+  'Hoja Directorio: actualizar → hoja Directorio al día',
   // FIX (22-ago-2026): 3 entradas nuevas (segunda vez que se divide
   // _refrescarColumnasFijasNuevos() en PASOS_RUNALL, ver arriba).
-  'Nuevos: formato y purgado (2da pasada)',
-  'Nuevos: columnas fijas (2da pasada)',
-  'Nuevos: orden y formato condicional (2da pasada)',
-  'Procesar Torneos (T_Lista/T_Asistencia/T_Control)',
+  'Nuevos (formato y purgado, 2.ª pasada): aplicar → hoja Nuevos con su formato y purgada',
+  'Nuevos (columnas fijas, 2.ª pasada): refrescar → columnas fijas de Nuevos al día',
+  'Nuevos (orden y formato condicional, 2.ª pasada): aplicar → hoja Nuevos ordenada y con su formato condicional',
+  'Torneos: procesar T_Lista, T_Asistencia y T_Control → torneos procesados (puede necesitar varias tandas)',
   // FIX (09-sep-2026): antes 2 entradas sueltas ('Sincronizar requisitos de [→ Contexto_Base_Web.md §B045]
-  'Procesar Sorteos (S_Lista + requisitos + participantes calificados)',
-  'Actualizar hoja Guerra',
-  'Actualizar hoja Guerra_Logs',
+  'Sorteos: procesar S_Lista, requisitos y participantes calificados → sorteos procesados',
+  'Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)',
+  'Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día',
   // FASE 11 (punto 4 del Consolidado): entrada nueva, corresponde al paso [→ Contexto_Base_Web.md §B046]
-  'Nuevos: cierre semanal hacia el histórico',
+  'Nuevos (cierre semanal): pasar la semana actual al histórico → histórico de Nuevos al día',
   // FIX (22-ago-2026): entradas separadas en 3 (antes una sola "Actualizar [→ Contexto_Base_Web.md §B047]
-  'Actualizar hoja Control',
-  'Actualizar vistas derivadas (Inactivos/Vetados/Multicuentas/Historial/Ascensos)',
-  'Actualizar hoja Control_2',
-  'Sincronizar Plantillas desde Drive',
-  'Pendientes y Mensajes',
-  'Actualizar Calendario',
-  'Actualizar índice de contenido (dinámico)',
-  'Actualizar dropdown Cat_disp',
-  'Sincronizar Administradores',
-  'Actualizar hoja Índice',
-  'Reordenar y ocultar hojas según Índice',
-  'Limpiar enlaces accidentales en nombres',
-  'Backup CSV: Directorio + Clan',
-  'Backup CSV: Acumulativos',
+  'Hoja Control: actualizar → hoja Control al día',
+  'Vistas derivadas (Inactivos, Vetados, Multicuentas, Historial, Ascensos): actualizar → vistas al día',
+  'Hoja Control_2: actualizar → hoja Control_2 al día',
+  'Plantillas: sincronizar desde Drive → índice de plantillas al día',
+  'Pendientes y Mensajes: generar → hojas Pendientes y Mensajes al día',
+  'Calendario: generar el calendario del mes actual → calendario del mes al día',
+  'Menú dinámico: actualizar las entradas Dinámico → menú al día',
+  'Administradores: sincronizar → lista de administradores al día',
+  'Desplegable Cat_disp: actualizar → desplegable al día',
+  'Hoja Índice: actualizar → hoja Índice al día',
+  'Hojas: reordenar y ocultar según el Índice → hojas con el orden y la visibilidad del Índice',
+  'Nombres: quitar enlaces accidentales, hoja por hoja → ninguna hoja con enlaces accidentales (puede necesitar varias tandas)',
+  'Backup CSV Directorio y Clan: sincronizar → CSV en Drive al día',
+  'Backup CSV Acumulativos: sincronizar Inactivos y hojas acumulativas → CSV al día (puede necesitar varias tandas)',
   // FIX (16-ago-2026): entrada nueva, corresponde al paso de [→ Contexto_Base_Web.md §B048]
-  'Backup CSV: Guerra',
-  'Backup CSV: celulares',
-  'Backup CSV: Índice y protegidas',
-  'Backup CSV: hojas derivadas',
-  'Aplicar formato global',
-  'Aplicar CLIP global',
-  'Aplicar tablas y gridlines',
+  'Backup CSV Guerra: sincronizar → CSV al día',
+  'Backup de celulares: exportar el JSON → JSON en Drive al día',
+  'Backup CSV Índice y protegidas: sincronizar → CSV en Drive al día',
+  'Backup CSV de hojas derivadas: guardar de una en una → CSV de cada hoja derivada en Drive (puede necesitar varias tandas)',
+  'Formato global: aplicar → formato de todas las hojas aplicado',
+  'Formato: aplicar CLIP global → texto recortado según la configuración',
+  'Tablas y líneas de cuadrícula: aplicar → tablas y gridlines aplicados',
   // FIX (20-ago-2026): entrada actualizada -- este paso ahora llama a [→ Contexto_Base_Web.md §B049]
-  'Restaurar anchos de columna fijos',
+  'Anchos de columna: restaurar los fijos → hojas con sus anchos fijos',
   // FIX (18-sep-2026): entrada nueva, corresponde al paso de [→ Contexto_Base_Web.md §B050]
-  'Autoajustar hojas sin anchos guardados',
+  'Anchos de columna: autoajustar las hojas sin anchos guardados → hojas sin anchos guardados autoajustadas (puede necesitar varias tandas)',
 ];
 
 var PASOS_RUNUPDATE = [
@@ -445,6 +445,53 @@ var PASOS_RUNUPDATE = [
   function () { _aplicarBordesComentarios(); },
 ];
 
+// PF285 (27-oct-2026, pedido de la usuaria): nombres de los pasos de RUNUPDATE, en el mismo orden que PASOS_RUNUPDATE (42 pasos). Cada texto dice objeto: acción → resultado esperado
+// (regla 0.10 de la skill). Si se agrega, quita o mueve un paso de PASOS_RUNUPDATE, se hace lo mismo aquí. [→ Contexto_Base_Web.md §PF285]
+var NOMBRES_PASOS_RUNUPDATE = [
+  'Clanes: pedir a la API los datos de todos los clanes (y /players si está activo) → datos de clanes y jugadores cargados',
+  'Dump de API: guardar los JSON de clanes y currentriverrace (se omite en la versión programada) → JSON guardados en Drive',
+  'Hoja Extra: actualizar → hoja Extra al día',
+  'Hoja Clan: actualizar → hoja Clan al día',
+  'Hoja Cards: actualizar → hoja Cards al día',
+  'Hoja Cards_2: actualizar → hoja Cards_2 al día',
+  'Hoja Insignias: actualizar → hoja Insignias al día',
+  'Hoja Insignias_2: actualizar → hoja Insignias_2 al día',
+  'CSV Camino de Leyendas: actualizar → CSV al día',
+  'CSV Logros (catálogo): actualizar → CSV al día',
+  'CSV Logros_2 (por jugador): actualizar → CSV al día',
+  'CSV Perfil (XP y torre del rey): actualizar → CSV al día',
+  'CSV Progreso en eventos rotativos: actualizar → CSV al día',
+  'Hoja Directorio: actualizar → hoja Directorio al día',
+  'Nuevos (formato y purgado): aplicar → hoja Nuevos con su formato y purgada',
+  'Nuevos (columnas fijas): refrescar → columnas fijas de Nuevos al día',
+  'Nuevos (orden y formato condicional): aplicar → hoja Nuevos ordenada y con su formato condicional',
+  'Torneos: procesar T_Lista, T_Asistencia y T_Control → torneos procesados (puede necesitar varias tandas)',
+  'Sorteos: procesar S_Lista, requisitos y participantes calificados → sorteos procesados',
+  'Hoja Guerra: actualizar (antes restaura desde el CSV si está vacía) → hoja Guerra al día (puede necesitar varias tandas)',
+  'Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día',
+  'Nuevos (cierre semanal): pasar la semana actual al histórico → histórico de Nuevos al día',
+  'Hoja Control: actualizar → hoja Control al día',
+  'Hoja Control_2: actualizar → hoja Control_2 al día',
+  'Plantillas: sincronizar desde Drive → índice de plantillas al día',
+  'Pendientes y Mensajes: generar (sin nueva captura de la API en la versión programada) → hojas Pendientes y Mensajes al día',
+  'Hoja Calendario_2: actualizar → hoja Calendario_2 al día',
+  'Menú dinámico: actualizar las entradas Dinámico → menú al día',
+  'Administradores: sincronizar → lista de administradores al día',
+  'Desplegable Cat_disp: actualizar → desplegable al día',
+  'Hoja Índice: actualizar → hoja Índice al día',
+  'Hojas: reordenar y ocultar según el Índice → hojas con el orden y la visibilidad del Índice',
+  'Vistas derivadas (Inactivos, Vetados, Multicuentas, Historial, Ascensos): actualizar → vistas al día',
+  'Nombres: quitar enlaces accidentales, hoja por hoja → ninguna hoja con enlaces accidentales (puede necesitar varias tandas)',
+  'Backup CSV Directorio y Clan: sincronizar → CSV en Drive al día',
+  'Backup CSV Acumulativos: sincronizar Inactivos y hojas acumulativas → CSV al día (puede necesitar varias tandas)',
+  'Backup CSV Guerra: sincronizar → CSV al día',
+  'Backup de celulares: exportar el JSON → JSON en Drive al día',
+  'Formato: aplicar CLIP global → texto recortado según la configuración',
+  'Filtros: restaurar → filtros de las hojas restaurados',
+  'Bordes: limpiar los de filas vacías → sin bordes en filas vacías',
+  'Bordes de comentarios: aplicar → bordes de comentarios aplicados',
+];
+
 /**
  * runSyncCSV() - Sincroniza todos los CSV con Drive.
  */
@@ -489,6 +536,25 @@ var PASOS_RUNSYNCCSV = [
     try { actualizarHojaBattlelogs(); }
     catch (eBlh) { Logger.log('[PASOS_RUNSYNCCSV] actualizarHojaBattlelogs() falló: ' + eBlh.message); }
   },
+];
+
+// PF285 (27-oct-2026, pedido de la usuaria): nombres de los pasos de RUNSYNCCSV, en el mismo orden que PASOS_RUNSYNCCSV (14 pasos). Cada texto dice objeto: acción → resultado esperado
+// (regla 0.10 de la skill). Si se agrega, quita o mueve un paso de PASOS_RUNSYNCCSV, se hace lo mismo aquí. [→ Contexto_Base_Web.md §PF285]
+var NOMBRES_PASOS_RUNSYNCCSV = [
+  'Backup CSV Directorio y Clan: sincronizar → CSV en Drive al día',
+  'Backup CSV Acumulativos: sincronizar Inactivos y hojas acumulativas → CSV al día (puede necesitar varias tandas)',
+  'Backup CSV Guerra: sincronizar → CSV al día',
+  'Backup de celulares: exportar el JSON → JSON en Drive al día',
+  'Respaldo de Índice: guardar INDICE → copia en Drive',
+  'Respaldo de Vetados: guardar VETADOS → copia en Drive',
+  'Respaldo de T_Lista: guardar T_LISTA → copia en Drive',
+  'Respaldo de S_Lista: guardar S_LISTA → copia en Drive',
+  'Respaldo de CR_Lista: guardar CR_LISTA → copia en Drive',
+  'Respaldo de T_Asistencia: guardar T_ASISTENCIA → copia en Drive',
+  'Respaldo de S_Asistencia: guardar S_ASISTENCIA → copia en Drive',
+  'Respaldo de Extra: guardar EXTRA → copia en Drive',
+  'Respaldo de hojas derivadas: guardar de una en una → CSV de cada hoja derivada en Drive (puede necesitar varias tandas)',
+  'Hoja Battlelogs: actualizar (se omite si falta 07_Battlelogs_Hoja.gs) → hoja Battlelogs al día',
 ];
 
 // ----- Funciones manuales / punto de entrada -----
@@ -968,7 +1034,7 @@ function _continuarRunUpdate() {
   Logger.log((paso === 0 ? '=== Actualización periódica INICIO' : '=== Actualización periódica CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNUPDATE.length) +
     (sinApi ? ' [programada, sin /clans ni /currentriverrace]' : ' [manual, roster fresco]') + ' ===');
   try {
-    var completo = _ejecutarPorTandas('RUNUPDATE', PASOS_RUNUPDATE, CFG.RUNUPDATE_PRESUPUESTO_MS, '_continuarRunUpdate');
+    var completo = _ejecutarPorTandas('RUNUPDATE', PASOS_RUNUPDATE, CFG.RUNUPDATE_PRESUPUESTO_MS, '_continuarRunUpdate', NOMBRES_PASOS_RUNUPDATE);
     if (completo) {
       // Ver comentario equivalente en _continuarRunAll(): el progreso de [→ Contexto_Base_Web.md §B104]
       _borrarProgresoPlayers();
@@ -1013,25 +1079,25 @@ var PASOS_RUNSORTEOS = [
 ];
 
 var NOMBRES_PASOS_RUNSORTEOS = [
-  'Resolver Organizador/Tag_org/Clan/ClanTag en S_Lista',
-  'Sincronizar requisitos de sorteo',
-  'Actualizar Doc de participantes calificados',
+  'S_Lista: resolver Organizador, Tag_org, Clan y ClanTag de las filas nuevas → filas nuevas de S_Lista con esos datos',
+  'Requisitos de sorteo: sincronizar → requisitos al día',
+  'Doc de participantes calificados: actualizar → Doc al día',
 ];
 
 function runSorteos() {
   if (!_adquirirLockEjecucion('runSorteos')) return;
   PropertiesService.getScriptProperties().setProperty('RUNSORTEOS_PASO', '0');
-  _continuarProcesarSorteos();
+  _continuarRunSorteos();
 }
 
 /**
- * _continuarProcesarSorteos() - punto de entrada tanto de runSorteos() como [→ Contexto_Base_Web.md §B106]
+ * _continuarRunSorteos() - punto de entrada tanto de runSorteos() como [→ Contexto_Base_Web.md §B106]
  */
-function _continuarProcesarSorteos() {
+function _continuarRunSorteos() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('RUNSORTEOS_PASO') || '0', 10);
   Logger.log(paso === 0 ? '=== Sorteos INICIO ===' : '=== Sorteos CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNSORTEOS.length + ' ===');
   try {
-    var completo = _ejecutarPorTandas('RUNSORTEOS', PASOS_RUNSORTEOS, CFG.RUNSORTEOS_PRESUPUESTO_MS, '_continuarProcesarSorteos', NOMBRES_PASOS_RUNSORTEOS);
+    var completo = _ejecutarPorTandas('RUNSORTEOS', PASOS_RUNSORTEOS, CFG.RUNSORTEOS_PRESUPUESTO_MS, '_continuarRunSorteos', NOMBRES_PASOS_RUNSORTEOS);
     if (completo) {
       _liberarLockEjecucion();
       Logger.log('=== Sorteos FIN ===');
@@ -1040,7 +1106,7 @@ function _continuarProcesarSorteos() {
     // refrescó su timestamp y programó la continuación automática.
   } catch (e) {
     PropertiesService.getScriptProperties().deleteProperty('RUNSORTEOS_PASO');
-    _borrarTriggersDeContinuacion('_continuarProcesarSorteos');
+    _borrarTriggersDeContinuacion('_continuarRunSorteos');
     _liberarLockEjecucion();
     Logger.log('[runSorteos] ERROR: ' + e.message + ' — lock liberado.');
     throw e;
@@ -1078,7 +1144,7 @@ function _continuarRunSyncCSV() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('RUNSYNCCSV_PASO') || '0', 10);
   Logger.log(paso === 0 ? '[CSV] Iniciando sincronización...' : '[CSV] CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNSYNCCSV.length);
   try {
-    var completo = _ejecutarPorTandas('RUNSYNCCSV', PASOS_RUNSYNCCSV, CFG.RUNSYNCCSV_PRESUPUESTO_MS, '_continuarRunSyncCSV');
+    var completo = _ejecutarPorTandas('RUNSYNCCSV', PASOS_RUNSYNCCSV, CFG.RUNSYNCCSV_PRESUPUESTO_MS, '_continuarRunSyncCSV', NOMBRES_PASOS_RUNSYNCCSV);
     if (completo) {
       _liberarLockEjecucion();
       Logger.log('[CSV] Completado.');
@@ -1186,11 +1252,11 @@ function runGuerra() {
     try {
       props.setProperty('RUNGUERRA_COLA_PENDIENTE', claveHora);
       props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
-      _programarContinuacion('_continuarRunGuerraCola');
+      _programarContinuacion('_continuarRunGuerra');
       _colaProgramada = true;
-      Logger.log('[runGuerra] Respaldo CSV y calentamiento del caché pasan a la continuación _continuarRunGuerraCola (arranca en ~10 s, con su propio presupuesto).');
+      Logger.log('[runGuerra] Respaldo CSV y calentamiento del caché pasan a la continuación _continuarRunGuerra (arranca en ~10 s, con su propio presupuesto).');
     } catch (eCola) {
-      Logger.log('[runGuerra] No se pudo programar _continuarRunGuerraCola: ' + eCola.message + '. Se hace el respaldo y el calentamiento aquí, como antes.');
+      Logger.log('[runGuerra] No se pudo programar _continuarRunGuerra: ' + eCola.message + '. Se hace el respaldo y el calentamiento aquí, como antes.');
     }
     if (!_colaProgramada) {
       try { _runGuerraColaHoraria_(_tRunGuerra0); }
@@ -1216,7 +1282,7 @@ function runGuerra() {
 /**
  * _runGuerraColaHoraria_(t0) - Tramo final de la actualización horaria de guerra (PF143, 21-oct-2026): respaldo a Backup_Guerra.csv y
  * calentamiento del caché de guerra.html (Dashboard y publicaciones estáticas). Antes estaba al final de runGuerra(); ahora lo ejecuta
- * _continuarRunGuerraCola() en una ejecución nueva (o runGuerra(), solo si no pudo programar la continuación). t0 = inicio de la
+ * _continuarRunGuerra() en una ejecución nueva (o runGuerra(), solo si no pudo programar la continuación). t0 = inicio de la
  * ejecución que lo llama, para respetar el margen contra el límite duro de la plataforma. No depende de variables en memoria de
  * runGuerra(): _syncGuerraCSV() recibe la hoja y _calentarCacheGuerraEnVivo_() lee todo por su cuenta. [→ Contexto_Base_Web.md §PF143]
  */
@@ -1247,7 +1313,7 @@ function _runGuerraColaHoraria_(t0) {
 }
 
 /**
- * _continuarRunGuerraCola() - Handler de la continuación que programa runGuerra() al terminar Pendientes (PF143, 21-oct-2026).
+ * _continuarRunGuerra() - Handler de la continuación que programa runGuerra() al terminar Pendientes (PF143, 21-oct-2026).
  * Corre _runGuerraColaHoraria_() en una ejecución nueva de 6 min. Reglas:
  *  - Una sola vez por programación: borra su propio activador al empezar, así que si la plataforma la corta no se repite en bucle;
  *    el siguiente runGuerra() horario vuelve a programarla.
@@ -1256,10 +1322,10 @@ function _runGuerraColaHoraria_(t0) {
  *    y luego se descarta (la próxima hora vuelve a intentarlo).
  * [→ Contexto_Base_Web.md §PF143]
  */
-function _continuarRunGuerraCola() {
-  if (_bloquearSiReenumerando_('_continuarRunGuerraCola')) return; // PF260
+function _continuarRunGuerra() {
+  if (_bloquearSiReenumerando_('_continuarRunGuerra')) return; // PF260
   var props = PropertiesService.getScriptProperties();
-  _borrarTriggersDeContinuacion('_continuarRunGuerraCola');
+  _borrarTriggersDeContinuacion('_continuarRunGuerra');
   if (!props.getProperty('RUNGUERRA_COLA_PENDIENTE')) {
     Logger.log('[runGuerraCola] Sin tarea pendiente (ya se hizo o se descartó). No se hace nada.');
     return;
@@ -1274,7 +1340,7 @@ function _continuarRunGuerraCola() {
     var intentos = Number(props.getProperty('RUNGUERRA_COLA_INTENTOS')) || 0;
     if (intentos < CFG.RUNGUERRA_COLA_REINTENTOS_MAX) {
       props.setProperty('RUNGUERRA_COLA_INTENTOS', String(intentos + 1));
-      ScriptApp.newTrigger('_continuarRunGuerraCola').timeBased().after(CFG.RUNGUERRA_COLA_REINTENTO_MS).create();
+      ScriptApp.newTrigger('_continuarRunGuerra').timeBased().after(CFG.RUNGUERRA_COLA_REINTENTO_MS).create();
       Logger.log('[runGuerraCola] Hay otra ejecución en curso: se reintenta en ' + Math.round(CFG.RUNGUERRA_COLA_REINTENTO_MS / 1000) +
         ' s (intento ' + (intentos + 1) + ' de ' + CFG.RUNGUERRA_COLA_REINTENTOS_MAX + ').');
     } else {
@@ -1751,6 +1817,17 @@ function _anotarProgresoPaso_(texto, acumulado) {
   PROGRESO_PASO_ = { texto: String(texto || ''), acum: Number(acumulado) };
 }
 
+// PF285 (27-oct-2026): ayuda genérica del detalle de avance de un paso (regla 0.10 de la skill), con el mismo patrón de _reenumProgreso_() (47_Migraciones.gs).
+// Escribe dos líneas en el registro (acumulado de un total con porcentaje, tandas anteriores y lo que falta; y lo hecho en esta tanda) y anota el avance para el motor.
+// Se llama justo antes de devolver false. etiqueta: tag del registro (sin corchetes); nombre: qué se cuenta; previas: hecho en tandas anteriores; estaTanda: hecho en esta; unidad: p. ej. 'hojas'. [→ Contexto_Base_Web.md §PF285]
+function _logProgresoPaso_(etiqueta, nombre, previas, estaTanda, total, unidad) {
+  var acum = previas + estaTanda;
+  var pct = total > 0 ? Math.round(acum * 100 / total) : 100;
+  Logger.log('[' + etiqueta + ']   ' + nombre + ': acumulado ' + acum + ' de ' + total + ' ' + unidad + ' (' + pct + ' %); en tandas anteriores: ' + previas + '; faltan ' + Math.max(total - acum, 0) + '.');
+  Logger.log('[' + etiqueta + ']   ' + nombre + ': en esta tanda: ' + estaTanda + ' ' + unidad + '.');
+  _anotarProgresoPaso_(nombre + ': ' + acum + ' de ' + total + ' ' + unidad, acum);
+}
+
 function _logEstadoTanda_(id, paso, total, reintento, tandasPaso, progPrevio, nombresPasos) {
   var etiq = '[' + id + '] ';
   var nombre = (nombresPasos && nombresPasos[paso]) ? ': ' + nombresPasos[paso] : '';
@@ -1871,7 +1948,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   var resultado = pasos[paso]();
 
     if (resultado === false) {
-      Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ' quedó incompleto (presupuesto interno agotado, ej. /players). ' +
+      Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ' quedó incompleto (presupuesto interno agotado). ' +
                  'Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.');
       tandasPaso++;
       _logAvanceTanda_(idEjecucion, paso, pasos.length, tandasPaso, progPrevio, PROGRESO_PASO_);
@@ -2190,7 +2267,7 @@ var CFG = {
   RUNSYNCCSV_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
   // FIX (22-ago-2026): runGuerraRapido() se cancelaba por exceder el límite [→ Contexto_Base_Web.md §01B032]
   RUNGUERRARAPIDO_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
-  // NUEVO (09-sep-2026, pedido usuario -- "_continuarProcesarSorteos() / [→ Contexto_Base_Web.md §01B033]
+  // NUEVO (09-sep-2026, pedido usuario -- "_continuarRunSorteos() / [→ Contexto_Base_Web.md §01B033]
   RUNSORTEOS_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
   // Presupuesto interno SOLO para el bucle de /players dentro de [→ Contexto_Base_Web.md §01B034]
   PLAYERS_FETCH_BUDGET_MS: 3 * 60 * 1000 + 30 * 1000,  // 3m30s
@@ -2265,7 +2342,7 @@ var CFG = {
   // FIX (02-sep-2026): runGuerra() (00_Main.gs) es monolítica — a diferencia [→ Contexto_Base_Web.md §01B054]
   RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS: 90 * 1000, // 1m30s de margen mínimo antes del límite duro
 
-  // PF143 (21-oct-2026): el respaldo CSV y el calentamiento del caché de runGuerra() corren en la continuación _continuarRunGuerraCola(). [→ Contexto_Base_Web.md §PF143]
+  // PF143 (21-oct-2026): el respaldo CSV y el calentamiento del caché de runGuerra() corren en la continuación _continuarRunGuerra(). [→ Contexto_Base_Web.md §PF143]
   RUNGUERRA_COLA_REINTENTOS_MAX: 5,
   RUNGUERRA_COLA_REINTENTO_MS: 60 * 1000, // 1 min entre reintentos si el candado está ocupado
 
@@ -5698,6 +5775,7 @@ function autoajustarHojasSinAnchosGuardados() {
       props.setProperty(claveIdx, String(i + 1));
       Logger.log('[AutoAjuste] Presupuesto interno agotado tras ' + (i + 1) + '/' + pendientes.length +
                  ' hojas sin anchos guardados. Se reintenta el mismo paso en la próxima continuación.');
+      _logProgresoPaso_('AutoAjuste', 'hojas sin anchos guardados autoajustadas', idxInicio, (i + 1) - idxInicio, pendientes.length, 'hojas'); // PF285
       return false;
     }
   }
@@ -6516,6 +6594,7 @@ function syncAcumulativosCSV() {
       Logger.log('[Backup] syncAcumulativosCSV: presupuesto interno agotado tras el trabajo ' +
                  (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '). ' +
                  'Se reintenta el mismo paso en la próxima continuación.');
+      _logProgresoPaso_('Backup', 'respaldo CSV de acumulativos', idxInicio, (i + 1) - idxInicio, totalTrabajos, 'trabajos'); // PF285
       return false;
     }
   }
@@ -13219,6 +13298,7 @@ function limpiarLinksAccidentalesDeNombres() {
                  (i + 1) + '/' + hojas.length + ' ("' + hojas[i].getName() + '"). ' +
                  (totalCorregidas > 0 ? totalCorregidas + ' enlace(s) accidental(es) quitado(s) hasta ahora. ' : '') +
                  'Se reintenta el mismo paso en la próxima continuación.');
+      _logProgresoPaso_('LinksNombres', 'enlaces accidentales en nombres', idxInicio, (i + 1) - idxInicio, hojas.length, 'hojas'); // PF285
       return false;
     }
   }
@@ -23216,7 +23296,11 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
     }
     if (!seCortoPorTiempo) _volcarLote();
 
-    if (seCortoPorTiempo) return false;
+    if (seCortoPorTiempo) {
+      // PF285: filas del CSV (temporada actual) ya presentes en la hoja antes de esta tanda = filasTemporada - filasFaltantes; esta tanda = escritasEnEstaCorrida.
+      _logProgresoPaso_('Guerra', 'restauración de Guerra desde Backup_Guerra.csv', filasTemporada.length - filasFaltantes.length, escritasEnEstaCorrida, filasTemporada.length, 'filas');
+      return false;
+    }
 
     Logger.log('[Guerra] Restauración completada: ' + escritasEnEstaCorrida + ' fila(s) agregada(s) (semana(s) [' +
       Object.keys(semanasFaltantesSet).join(', ') + ']).');
@@ -36064,6 +36148,10 @@ function procesarTorneos() {
     Logger.log('[Torneos] procesarTListaNuevasFilas() quedó incompleta por presupuesto/tanda de ' +
                'RoyaleAPI -- se corta procesarTorneos() aquí, sin tocar Participantes calificados/' +
                'T_Control todavía, para que la próxima continuación retome el refetch pendiente.');
+    if (idsNuevos.progresoRefetch) { // PF285: filas de T_Lista resueltas hasta el corte; «en esta tanda» = torneos consultados a RoyaleAPI en esta tanda
+      _logProgresoPaso_('Torneos', 'T_Lista, filas resueltas', Math.max(idsNuevos.progresoRefetch.resueltas - idsNuevos.progresoRefetch.consultas, 0),
+                        idsNuevos.progresoRefetch.consultas, idsNuevos.progresoRefetch.total, 'filas');
+    }
     return false;
   }
 
@@ -36808,6 +36896,7 @@ function procesarTListaNuevasFilas(ss) {
   var _inicioRefetchTorneos = Date.now();
   var _consultasRefetchEnEstaTanda = 0;
   var _cortadoPorPresupuestoRefetch = false;
+  var _progresoRefetch = null; // PF285: filas resueltas al cortar, consultas de esta tanda y total; lo usa procesarTorneos() para anotar el avance del paso
 
   for (var i = 0; i < datos.length; i++) {
     var fila = datos[i];
@@ -36880,6 +36969,7 @@ function procesarTListaNuevasFilas(ss) {
                  filaHoja + ' (' + _consultasRefetchEnEstaTanda + ' consulta(s) ya hechas en ' +
                  'esta tanda). Se corta aquí; la próxima continuación retoma los torneos que falten.');
       _cortadoPorPresupuestoRefetch = true;
+      _progresoRefetch = { resueltas: i, consultas: _consultasRefetchEnEstaTanda, total: numFilas }; // PF285: las filas 0..i-1 ya quedaron resueltas
       break;
     }
     _consultasRefetchEnEstaTanda++;
@@ -37091,6 +37181,7 @@ function procesarTListaNuevasFilas(ss) {
 
   idsProcesados.nuevosGenuinos = idsGenuinosNuevos;
   idsProcesados.cortadoPorPresupuesto = _cortadoPorPresupuestoRefetch;
+  idsProcesados.progresoRefetch = _progresoRefetch; // PF285
   return idsProcesados;
 }
 
@@ -56079,19 +56170,19 @@ var WEB_ACTROSTER_CACHES_A_BORRAR = ['web_ingresos_recientes_v1', 'web_roster_v1
 
 // §PF181: la misma cola de turno sirve para regenerar solo Pendientes y Mensajes de guerra (boton «Regenerar ahora» de guerra.html): tipo 'mensajes' = los mismos pasos que runPendientesYMensajes() manual (clanes frescos de la API, Pendientes, Mensajes, indice).
 var WEB_ACTROSTER_NOMBRES_PASOS_MENSAJES = [
-  'Clanes (API fresca)',
-  'Pendientes',
-  'Mensajes',
-  'Índice'
+  'Clanes: pedir a la API datos frescos → datos de clanes cargados',
+  'Hoja Pendientes: actualizar → hoja Pendientes al día',
+  'Hoja Mensajes: generar a partir de Pendientes → hoja Mensajes al día',
+  'Índice de contenido: actualizar tras Pendientes → índice al día'
 ];
 
 var WEB_ACTROSTER_NOMBRES_PASOS = [
-  'Clanes básico (sin /players)',
-  'Directorio',
-  'Nuevos (formato y purgado)',
-  'Nuevos (columnas fijas)',
-  'Nuevos (orden y formato condicional)',
-  'Guerra'
+  'Clanes: pedir a la API los datos básicos de los clanes, sin /players → datos de clanes cargados',
+  'Hoja Directorio: actualizar → hoja Directorio al día',
+  'Nuevos (formato y purgado): aplicar → hoja Nuevos con su formato y purgada',
+  'Nuevos (columnas fijas): refrescar → columnas fijas de Nuevos al día',
+  'Nuevos (orden y formato condicional): aplicar → hoja Nuevos ordenada y con su formato condicional',
+  'Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)'
 ];
 
 // ---------------------------------------------------------------------------
@@ -59635,14 +59726,14 @@ function reanudarReenumerarTemporadas() {
     Logger.log('[Reenumeración] REENUM_PASO no estaba guardado; se retoma en el paso ' + PASO_DONDE_SEGUIR + '.');
   }
   if (!_adquirirLockEjecucion('reanudarReenumerarTemporadas')) return;
-  _continuarReenumerarTemporadas();
+  _continuarRunReenumerarTemporadas();
 }
 
 // liberarLockEjecucionManual(): PF258; libera a mano el lock de ejecución (EJECUCION_EN_CURSO) que dejó tomado una función que falló antes de liberarlo. Si hay una reenumeración a medias (REENUM_PASO) NO toca nada.
 function liberarLockEjecucionManual() {
   var props = PropertiesService.getScriptProperties();
   if (props.getProperty('REENUM_PASO') !== null) {
-    Logger.log('[Lock] Hay una reenumeración a medias (REENUM_PASO = ' + props.getProperty('REENUM_PASO') + '). No se libera nada: se continúa con _continuarReenumerarTemporadas() o se revisa primero qué pasos llegaron a escribirse.');
+    Logger.log('[Lock] Hay una reenumeración a medias (REENUM_PASO = ' + props.getProperty('REENUM_PASO') + '). No se libera nada: se continúa con _continuarRunReenumerarTemporadas() o se revisa primero qué pasos llegaron a escribirse.');
     return;
   }
   var raw = props.getProperty('EJECUCION_EN_CURSO');
@@ -60060,15 +60151,15 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
              ' | deltaMeses: ' + deltaMeses +
              ' (se sumará a toda Temporada guardada; offset RoyaleAPI se ajustará en -' + deltaMeses + ').');
 
-  _continuarReenumerarTemporadas();
+  _continuarRunReenumerarTemporadas();
 }
 
-// _continuarReenumerarTemporadas(): entrada de runReenumerarTemporadas() y del trigger de continuación; no llamar para iniciar una corrida nueva (no adquiere el lock). [→ Contexto_Base_Web.md §47B027]
-function _continuarReenumerarTemporadas() {
+// _continuarRunReenumerarTemporadas(): entrada de runReenumerarTemporadas() y del trigger de continuación; no llamar para iniciar una corrida nueva (no adquiere el lock). [→ Contexto_Base_Web.md §47B027]
+function _continuarRunReenumerarTemporadas() {
   var paso = parseInt(PropertiesService.getScriptProperties().getProperty('REENUM_PASO') || '0', 10);
   Logger.log(paso === 0 ? '[Reenumeración] INICIO' : '[Reenumeración] CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_REENUMERAR_TEMPORADAS.length);
   try {
-    var completo = _ejecutarPorTandas('REENUM', PASOS_REENUMERAR_TEMPORADAS, CFG.REENUM_TANDA_PRESUPUESTO_MS, '_continuarReenumerarTemporadas', NOMBRES_PASOS_REENUMERAR_TEMPORADAS);
+    var completo = _ejecutarPorTandas('REENUM', PASOS_REENUMERAR_TEMPORADAS, CFG.REENUM_TANDA_PRESUPUESTO_MS, '_continuarRunReenumerarTemporadas', NOMBRES_PASOS_REENUMERAR_TEMPORADAS);
     if (completo) {
       PropertiesService.getScriptProperties().deleteProperty('REENUM_DELTA_MESES');
       PropertiesService.getScriptProperties().deleteProperty('REENUM_NUEVA_REF');
@@ -60082,7 +60173,7 @@ function _continuarReenumerarTemporadas() {
     // PF258 (25-oct-2026): REENUM_PASO NO se borra. Antes se borraba y un nuevo inicio empezaba en el paso 0, sumando otra vez el delta en los pasos que ya habían terminado.
     // Queda el índice del paso que falló (los anteriores terminaron). Para seguir: reanudarReenumerarTemporadas(). No correr iniciarReenumerarTemporadas() de nuevo.
     var pasoFallido = PropertiesService.getScriptProperties().getProperty('REENUM_PASO');
-    _borrarTriggersDeContinuacion('_continuarReenumerarTemporadas');
+    _borrarTriggersDeContinuacion('_continuarRunReenumerarTemporadas');
     _liberarLockEjecucion();
     var numFallido = isNaN(parseInt(pasoFallido, 10)) ? pasoFallido : (parseInt(pasoFallido, 10) + 1); // PF274: el registro muestra el número (índice + 1); REENUM_PASO guarda el índice
     Logger.log('[Reenumeración] ERROR en el paso ' + numFallido + ': ' + e.message + ' — lock liberado. Los pasos anteriores ya escribieron su parte; el paso ' + numFallido + ' puede haber escrito algo si hace varias escrituras. Corrige la causa y corre reanudarReenumerarTemporadas() (NO vuelvas a iniciar: sumaría el delta de nuevo).');
