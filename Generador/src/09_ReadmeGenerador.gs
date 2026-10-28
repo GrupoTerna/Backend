@@ -88,7 +88,7 @@ function _readmeAplicarBloque_(texto, archivos, fuente01, fechaHora) {
   b.push('### Funciones que se ejecutan manualmente (`01_Principal.gs`)');
   b.push('');
   var funciones = _readmeFuncionesManuales_(fuente01);
-  var ordenGrupos = ['Subir (Base)', 'Subir (Generador)', 'Descargar', 'Mantenimiento y otras'];
+  var ordenGrupos = ['Subir (Base)', 'Subir (Generador)', 'Subir (Contactos_Secundario)', 'Descargar', 'Mantenimiento y otras'];
   ordenGrupos.forEach(function(g) {
     var del = funciones.filter(function(f) { return _readmeGrupo_(f.nombre) === g; });
     if (!del.length) return;
@@ -165,6 +165,7 @@ function _readmeFuncionesManuales_(fuente) {
 function _readmeGrupo_(nombre) {
   if (/^subirBase/.test(nombre))      return 'Subir (Base)';
   if (/^subirGenerador/.test(nombre)) return 'Subir (Generador)';
+  if (/^subirContactos/.test(nombre)) return 'Subir (Contactos_Secundario)';
   if (/^descargar/.test(nombre))      return 'Descargar';
   return 'Mantenimiento y otras';
 }
