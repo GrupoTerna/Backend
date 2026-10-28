@@ -4,6 +4,16 @@
 // Nombres de archivo estandarizados a "Base" y "Generador" con su extensión.
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: ninguna (las que se corren a mano, subirBaseDesdeZip() y las demás, están en 01_Principal.gs y llaman a las de este archivo)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Subida desde zip, txt, gs o md: entrada y lectura de los archivos (en el orden en que las llama _subirArchivosAProyecto)
+//    - Subida: escritura en el proyecto de Apps Script (API; obtenerArchivosProyecto_ la usan también 08, la descarga y el vaciado)
+//    - Descarga: respaldos .zip/.txt/.gs/.md e Indice_<Nombre>.md (en el orden en que los arma _descargarProyectoAArchivos)
+//    - Vaciado del proyecto de Base
+//    - Utilidades compartidas: carpeta de respaldos, hoja de Base, aviso y registro
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var CARPETA_GENERADOR_ID = '1YmgyCh-7Y6DIoScS6lpidQZk3IeDsEGA';
 var CARPETA_BASE_ID = '1OmSVruEHm4RlP-7VN3G_M2HublfWK1W8';
 var NOMBRE_HOJA_BASE = 'Base';
@@ -16,22 +26,6 @@ var VALLA_MD_ = '\x60\x60\x60';
 // se sube a Base. Antes vivía en la ya eliminada ejecutarTodoElProceso();
 // se conserva aquí con el mismo comportamiento y apagado por defecto.
 var CREAR_O_ACTUALIZAR_HOJA_SISTEMA = false;
-
-/**
- * Devuelve la subcarpeta de respaldos correspondiente ("Generador" o "Base"),
- * dentro de la carpeta principal del Generador (CARPETA_GENERADOR_ID). Si la
- * subcarpeta no existe todavía, la crea. Así los archivos de cada proyecto
- * (zip/txt/gs/md/log) quedan organizados cada uno en su propia carpeta, en
- * vez de todos sueltos en la raíz.
- * @param {string} nombreBase 'Base' | 'Generador'
- * @return {Folder}
- */
-function _carpetaDeRespaldos_(nombreBase) {
-  var carpetaPadre = DriveApp.getFolderById(CARPETA_GENERADOR_ID);
-  var subcarpetas = carpetaPadre.getFoldersByName(nombreBase);
-  if (subcarpetas.hasNext()) return subcarpetas.next();
-  return carpetaPadre.createFolder(nombreBase);
-}
 
 var MANIFIESTO_CANONICO_ = {
   timeZone: "America/Lima",
@@ -102,56 +96,98 @@ var AVISO_ANTI_CARPETAS_ =
   '   un bloque de código en el chat obliga a seleccionar y copiar a mano,\n' +
   '   y es más difícil de manejar en archivos largos.';
 
-/** Antepone el aviso a un texto, solo si todavía no está presente. */
-function _conAviso_(texto) {
-  if (texto.indexOf(AVISO_ANTI_CARPETAS_) !== -1) return texto;
-  return '/*\n' + AVISO_ANTI_CARPETAS_ + '\n*/\n\n' + texto;
-}
+// -----------------------------------------------------------------------------
+// Indice_Base.md / Indice_Generador.md
+// Se REEMPLAZAN en cada descarga o subida (también en GitHub: <Nombre>/Indice_<Nombre>.md).
+// Tabla con N.º automático, nombre del archivo y estado respecto de la descarga anterior:
+// «permanece igual», «modificado» (solo los que no se crearon ni eliminaron en esa tanda),
+// «creado» o «eliminado». Para saber qué cambió, el propio archivo guarda al final la huella
+// de cada archivo en un comentario <!-- HUELLAS {...} -->; la siguiente descarga lo lee.
+// Los eliminados figuran solo en la tanda en que desaparecen.
+// [→ Contexto_Base_Web.md §PF151]
+// -----------------------------------------------------------------------------
+
+var INDICE_ARCHIVOS_RE_HUELLAS_ = /<!--\s*HUELLAS\s+(\{[\s\S]*?\})\s*-->/;
 
 // =============================================================================
-// UTILIDADES DE DRIVE Y LOG
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
 // =============================================================================
 
-function _registrarLogGenerador(funcion, descripcion, advertencias) {
-  try {
-    var carpeta = _carpetaDeRespaldos_('Generador');
-    var filename = 'Log_Generador.json';
-    var nuevaEntrada = {
-      fecha: Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm:ss') + ' (Lima)',
-      autor: 'Claude (Anthropic)',
-      funcion: funcion || '',
-      descripcion: descripcion || '',
-      advertencias: advertencias || []
-    };
-    var archivos = carpeta.getFilesByName(filename);
-    if (archivos.hasNext()) {
-      var archivoLog = archivos.next();
-      var contenidoActual = archivoLog.getBlob().getDataAsString('UTF-8');
-      var logArray = [];
-      try { logArray = JSON.parse(contenidoActual); } catch(e) { logArray = []; }
-      if (!Array.isArray(logArray)) logArray = [];
-      logArray.push(nuevaEntrada);
-      archivoLog.setContent(JSON.stringify(logArray, null, 2));
+// ----- Subida desde zip, txt, gs o md: entrada y lectura de los archivos -----
+
+function _subirArchivosAProyecto(nombreBase, extension) {
+  var carpeta = _carpetaDeRespaldos_(nombreBase);
+  
+  // Búsqueda estricta por nombre base + extensión automática
+  var nombreArchivo = nombreBase + '.' + extension;
+  var archivosDrive = carpeta.getFilesByName(nombreArchivo);
+  if (!archivosDrive.hasNext()) throw 'No encontré el archivo "' + nombreArchivo + '" en la carpeta "' + nombreBase + '".';
+
+  var archivoDrive = archivosDrive.next();
+  var nombreReal = archivoDrive.getName();
+  var blobs = [];
+
+  // Extraer archivos internos
+  if (nombreReal.endsWith('.zip')) {
+    var resultadoZip = consolidarCodigoDesdeZip(nombreReal);
+    blobs = resultadoZip.archivos;
+  } else if (nombreReal.endsWith('.md')) {
+    // Formato Markdown legible: encabezados "## archivo.gs" + bloque entre vallas (VALLA_MD_)
+    var contenidoMd = archivoDrive.getBlob().getDataAsString('UTF-8');
+    blobs = _extraerArchivosDeMarkdown_(contenidoMd);
+  } else if (nombreReal.endsWith('.txt') || nombreReal.endsWith('.gs')) {
+    // Formato clásico: "// --- ARCHIVO: nombre.gs ---"
+    var contenido = archivoDrive.getBlob().getDataAsString('UTF-8');
+    blobs = _extraerArchivosDeTexto(contenido);
+  } else {
+    throw 'Formato de archivo no soportado: ' + nombreReal;
+  }
+
+  // (Opcional, solo Base.zip) Crear/actualizar la hoja "Sistema" con el
+  // mismo código, tal como hacía la antigua ejecutarTodoElProceso().
+  if (nombreBase === 'Base' && extension === 'zip' && CREAR_O_ACTUALIZAR_HOJA_SISTEMA) {
+    var carpetaPrincipal = DriveApp.getFolderById(CARPETA_GENERADOR_ID);
+    var fechaFormateada = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
+    var nombreHojaSistema = 'Sistema Clanes - Familia Terna - ' + fechaFormateada;
+    var archivosExistentes = carpetaPrincipal.getFilesByName(nombreHojaSistema);
+    var nuevoSs;
+    if (archivosExistentes.hasNext()) {
+      nuevoSs = SpreadsheetApp.openById(archivosExistentes.next().getId());
     } else {
-      carpeta.createFile(filename, JSON.stringify([nuevaEntrada], null, 2), MimeType.PLAIN_TEXT);
+      nuevoSs = SpreadsheetApp.create(nombreHojaSistema);
+      DriveApp.getFileById(nuevoSs.getId()).moveTo(carpetaPrincipal);
+      nuevoSs.getSheets()[0].setName('Terreno_Limpio');
     }
-  } catch(e) {
-    console.log('[Log] Error escribiendo Log_Generador.json: ' + e.message);
+    var ssIdSistema = nuevoSs.getId();
+    PropertiesService.getScriptProperties().setProperty('HOJA_ACTIVA_ID', ssIdSistema);
+    actualizarScriptDeHoja(ssIdSistema, blobs);
   }
-}
 
-function obtenerSpreadsheetPorNombreEnCarpeta_(folderId, nombreHoja) {
-  var carpeta = DriveApp.getFolderById(folderId);
-  var archivos = carpeta.getFilesByName(nombreHoja);
-  if (!archivos.hasNext()) {
-    throw 'No se encontró la hoja "' + nombreHoja + '" en la carpeta ' + folderId;
+  // Destino: Base o Generador
+  var ssId = null;
+  if (nombreBase === 'Base') {
+    ssId = obtenerSpreadsheetPorNombreEnCarpeta_(CARPETA_BASE_ID, NOMBRE_HOJA_BASE);
   }
-  return archivos.next().getId();
-}
+  var reporte = actualizarScriptDeHoja(ssId, blobs, nombreBase);
 
-// =============================================================================
-// CONSOLIDACIÓN: LECTURA DE ZIP Y TXT/GS
-// =============================================================================
+  // A partir de aquí, subir SIEMPRE deja los 4 formatos (.zip/.txt/.gs/.md)
+  // sincronizados con lo que se acaba de subir, sin importar desde cuál de
+  // los 4 se subió ni si el destino es "Base" o "Generador". Así no hace
+  // falta una función "actualizar" separada: subir YA actualiza todo.
+  _descargarProyectoAArchivos(nombreBase);
+
+  _registrarLogGenerador(
+    '_subirArchivosAProyecto() / ' + nombreBase,
+    nombreArchivo + ' subido al proyecto "' + nombreBase + '" y los 4 respaldos (' +
+    nombreBase + '.zip/.gs/.txt/.md) regenerados a partir del código recién subido. ' +
+    'Actualizados: ' + (reporte.actualizados ? reporte.actualizados.length : 0) +
+    ' | Agregados: ' + (reporte.agregados ? reporte.agregados.length : 0) +
+    ' | Sin tocar: ' + (reporte.sinTocar ? reporte.sinTocar.length : 0),
+    []
+  );
+
+  return reporte;
+}
 
 function consolidarCodigoDesdeZip(nombreZip) {
   if (!nombreZip) nombreZip = 'Base.zip'; // Fallback estándar
@@ -184,57 +220,12 @@ function consolidarCodigoDesdeZip(nombreZip) {
   return { textoConsolidado: textoConsolidado, archivos: archivos };
 }
 
-function _extraerArchivosDeTexto(texto) {
-  var archivos = [];
-  var lineas = texto.split('\n');
-  var i = 0;
-  while (i < lineas.length) {
-    var lineaTrim = lineas[i].trim();
-    if (lineaTrim.startsWith('// --- ARCHIVO: ')) {
-      var nombre = lineaTrim.replace('// --- ARCHIVO: ', '').replace(' ---', '');
-      if (nombre.endsWith('.gs')) nombre = nombre.slice(0, -3);
-      if (nombre.endsWith('.js')) nombre = nombre.slice(0, -3);
-      var contenido = '';
-      i++;
-      while (i < lineas.length && !lineas[i].trim().startsWith('// --- ARCHIVO: ')) {
-        contenido += lineas[i] + '\n';
-        i++;
-      }
-      if (contenido.endsWith('\n')) contenido = contenido.slice(0, -1);
-      archivos.push({ nombre: nombre, contenido: contenido });
-    } else {
-      i++;
-    }
+function nombreBaseDesdeArchivo_(nombreCompleto) {
+  var nombre = nombreCompleto;
+  while (/\.(gs|js)$/i.test(nombre)) {
+    nombre = nombre.replace(/\.(gs|js)$/i, '');
   }
-  return archivos;
-}
-
-// =============================================================================
-// FORMATO MARKDOWN LEGIBLE (solo para .md — pensado para que una IA lo lea
-// directo, sin descomprimir el ZIP: encabezados "## archivo.gs" + bloque de
-// código, en vez del formato "// --- ARCHIVO: ... ---" usado en .txt/.gs.
-// =============================================================================
-
-/**
- * Genera el Markdown legible a partir de una lista de archivos
- * [{nombre, contenido}, ...]. Es más liviano de leer para una IA porque
- * no repite comentarios de separación dentro del propio código.
- */
-function _generarMarkdownLegible_(nombreProyecto, archivos, fechaStr) {
-  var partes = [];
-  partes.push('# ' + nombreProyecto + ' — código consolidado');
-  partes.push('_Generado: ' + fechaStr + ' (Lima)_');
-  partes.push('');
-  partes.push('> ' + AVISO_ANTI_CARPETAS_.split('\n').join('\n> '));
-  partes.push('');
-  archivos.forEach(function(a) {
-    partes.push('## ' + a.nombre + '.gs');
-    partes.push(VALLA_MD_ + 'javascript');
-    partes.push(a.contenido);
-    partes.push(VALLA_MD_);
-    partes.push('');
-  });
-  return partes.join('\n');
+  return nombre;
 }
 
 /**
@@ -271,21 +262,156 @@ function _extraerArchivosDeMarkdown_(texto) {
   return archivos;
 }
 
-function nombreBaseDesdeArchivo_(nombreCompleto) {
-  var nombre = nombreCompleto;
-  while (/\.(gs|js)$/i.test(nombre)) {
-    nombre = nombre.replace(/\.(gs|js)$/i, '');
+function _extraerArchivosDeTexto(texto) {
+  var archivos = [];
+  var lineas = texto.split('\n');
+  var i = 0;
+  while (i < lineas.length) {
+    var lineaTrim = lineas[i].trim();
+    if (lineaTrim.startsWith('// --- ARCHIVO: ')) {
+      var nombre = lineaTrim.replace('// --- ARCHIVO: ', '').replace(' ---', '');
+      if (nombre.endsWith('.gs')) nombre = nombre.slice(0, -3);
+      if (nombre.endsWith('.js')) nombre = nombre.slice(0, -3);
+      var contenido = '';
+      i++;
+      while (i < lineas.length && !lineas[i].trim().startsWith('// --- ARCHIVO: ')) {
+        contenido += lineas[i] + '\n';
+        i++;
+      }
+      if (contenido.endsWith('\n')) contenido = contenido.slice(0, -1);
+      archivos.push({ nombre: nombre, contenido: contenido });
+    } else {
+      i++;
+    }
   }
-  return nombre;
+  return archivos;
 }
 
-// =============================================================================
-// DESCARGA Y SUBIDA (BASE Y GENERADOR)
-// =============================================================================
+// ----- Subida: escritura en el proyecto de Apps Script (API) -----
 
-// =============================================================================
-// CORRECCIÓN EN LA FUNCIÓN DE DESCARGA
-// =============================================================================
+function actualizarScriptDeHoja(ssId, archivosNuevos, nombreBase) {
+  var scriptId;
+  if (nombreBase && nombreBase === 'Generador') {
+    scriptId = ScriptApp.getScriptId();
+  } else if (nombreBase && nombreBase === 'Contactos_Secundario') {
+    scriptId = _scriptIdDeProyecto_(nombreBase);
+  } else {
+    var props = PropertiesService.getScriptProperties();
+    var clavePropiedad = 'SCRIPT_ID_' + ssId;
+    scriptId = props.getProperty(clavePropiedad);
+    if (!scriptId) {
+      scriptId = crearProyectoVinculado_(ssId);
+      props.setProperty(clavePropiedad, scriptId);
+      console.log('Proyecto de Apps Script vinculado creado para ' + ssId + '. scriptId: ' + scriptId);
+    }
+  }
+
+  var archivosExistentes = obtenerArchivosProyecto_(scriptId);
+  var mapaExistentes = {};
+  archivosExistentes.forEach(function(a){ mapaExistentes[a.name] = a; });
+
+  var actualizados = [], agregados = [], archivosFinales = [], nombresDelZip = {};
+
+  // El manifiesto NUNCA se pisa a la fuerza. Si el proyecto ya tiene un
+  // "appsscript.json" (caso normal: Base ya existe), se conserva tal cual
+  // está — subir código no debe tocar scopes ni configuración del
+  // manifiesto. MANIFIESTO_CANONICO_ solo se usa como valor por defecto la
+  // PRIMERA vez que se crea un proyecto vinculado nuevo (todavía no tiene
+  // ningún appsscript.json propio).
+  if (mapaExistentes['appsscript']) {
+    archivosFinales.push(mapaExistentes['appsscript']);
+  } else {
+    archivosFinales.push({
+      name: 'appsscript',
+      type: 'JSON',
+      source: JSON.stringify(MANIFIESTO_CANONICO_)
+    });
+  }
+
+  archivosNuevos.forEach(function(archivo) {
+    nombresDelZip[archivo.nombre] = true;
+    if (mapaExistentes[archivo.nombre]) {
+      actualizados.push(archivo.nombre);
+    } else {
+      agregados.push(archivo.nombre);
+    }
+    archivosFinales.push({
+      name: archivo.nombre,
+      type: 'SERVER_JS',
+      source: archivo.contenido
+    });
+  });
+
+  var sinTocar = [];
+  archivosExistentes.forEach(function(a) {
+    if (a.name === 'appsscript') return;
+    if (!nombresDelZip[a.name]) {
+      archivosFinales.push(a);
+      sinTocar.push(a.name);
+    }
+  });
+
+  var opciones = {
+    method: 'put',
+    contentType: 'application/json',
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    payload: JSON.stringify({ files: archivosFinales }),
+    muteHttpExceptions: true
+  };
+  var url = 'https://script.googleapis.com/v1/projects/' + scriptId + '/content';
+  var respuesta = UrlFetchApp.fetch(url, opciones);
+  var codigoHttp = respuesta.getResponseCode();
+
+  if (codigoHttp !== 200) {
+    throw 'Error al actualizar el script (' + codigoHttp + '): ' + respuesta.getContentText();
+  }
+
+  console.log('--- Reporte de actualización (' + (nombreBase || 'Base') + ') ---');
+  console.log('Actualizados (' + actualizados.length + '): ' + (actualizados.length ? actualizados.join(', ') : 'ninguno'));
+  console.log('Agregados (' + agregados.length + '): ' + (agregados.length ? agregados.join(', ') : 'ninguno'));
+  console.log('Sin tocar (' + sinTocar.length + '): ' + (sinTocar.length ? sinTocar.join(', ') : 'ninguno'));
+  return { 
+    todosYaExistian: (agregados.length === 0), 
+    actualizados: actualizados, 
+    agregados: agregados, 
+    sinTocar: sinTocar 
+  };
+}
+
+function crearProyectoVinculado_(ssId) {
+  var url = 'https://script.googleapis.com/v1/projects';
+  var opciones = {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    payload: JSON.stringify({ title: 'Código del sistema (auto)', parentId: ssId }),
+    muteHttpExceptions: true
+  };
+  var respuesta = UrlFetchApp.fetch(url, opciones);
+  if (respuesta.getResponseCode() !== 200) {
+    throw 'No se pudo crear el proyecto de Apps Script vinculado (' + respuesta.getResponseCode() + '): ' + respuesta.getContentText();
+  }
+  var data = JSON.parse(respuesta.getContentText());
+  if (!data.scriptId) throw 'La API no devolvió scriptId al crear el proyecto: ' + respuesta.getContentText();
+  return data.scriptId;
+}
+
+function obtenerArchivosProyecto_(scriptId) {
+  var url = 'https://script.googleapis.com/v1/projects/' + scriptId + '/content';
+  var opciones = {
+    method: 'get',
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    muteHttpExceptions: true
+  };
+  var respuesta = UrlFetchApp.fetch(url, opciones);
+  if (respuesta.getResponseCode() !== 200) {
+    throw 'No se pudo leer el contenido del proyecto (' + respuesta.getResponseCode() + '): ' + respuesta.getContentText();
+  }
+  var data = JSON.parse(respuesta.getContentText());
+  return data.files || [];
+}
+
+// ----- Descarga: respaldos .zip/.txt/.gs/.md e Indice_<Nombre>.md -----
 
 function _descargarProyectoAArchivos(nombreBase) {
   var ssId = null;
@@ -390,29 +516,41 @@ function _descargarProyectoAArchivos(nombreBase) {
   if (nombreBase === 'Generador') _actualizarReadmeGenerador_();
 }
 
-// -----------------------------------------------------------------------------
-// Indice_Base.md / Indice_Generador.md
-// Se REEMPLAZAN en cada descarga o subida (también en GitHub: <Nombre>/Indice_<Nombre>.md).
-// Tabla con N.º automático, nombre del archivo y estado respecto de la descarga anterior:
-// «permanece igual», «modificado» (solo los que no se crearon ni eliminaron en esa tanda),
-// «creado» o «eliminado». Para saber qué cambió, el propio archivo guarda al final la huella
-// de cada archivo en un comentario <!-- HUELLAS {...} -->; la siguiente descarga lo lee.
-// Los eliminados figuran solo en la tanda en que desaparecen.
-// [→ Contexto_Base_Web.md §PF151]
-// -----------------------------------------------------------------------------
+// FORMATO MARKDOWN LEGIBLE (solo para .md — pensado para que una IA lo lea
+// directo, sin descomprimir el ZIP: encabezados "## archivo.gs" + bloque de
+// código, en vez del formato "// --- ARCHIVO: ... ---" usado en .txt/.gs.
+/**
+ * Genera el Markdown legible a partir de una lista de archivos
+ * [{nombre, contenido}, ...]. Es más liviano de leer para una IA porque
+ * no repite comentarios de separación dentro del propio código.
+ */
+function _generarMarkdownLegible_(nombreProyecto, archivos, fechaStr) {
+  var partes = [];
+  partes.push('# ' + nombreProyecto + ' — código consolidado');
+  partes.push('_Generado: ' + fechaStr + ' (Lima)_');
+  partes.push('');
+  partes.push('> ' + AVISO_ANTI_CARPETAS_.split('\n').join('\n> '));
+  partes.push('');
+  archivos.forEach(function(a) {
+    partes.push('## ' + a.nombre + '.gs');
+    partes.push(VALLA_MD_ + 'javascript');
+    partes.push(a.contenido);
+    partes.push(VALLA_MD_);
+    partes.push('');
+  });
+  return partes.join('\n');
+}
 
-var INDICE_ARCHIVOS_RE_HUELLAS_ = /<!--\s*HUELLAS\s+(\{[\s\S]*?\})\s*-->/;
-
-/** Huella corta (MD5, 12 caracteres) del tipo y del contenido de un archivo del proyecto. */
-function _huellaArchivo_(a) {
-  var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5,
-                                      String(a.type) + '\n' + String(a.source || ''),
-                                      Utilities.Charset.UTF_8);
-  var hex = '';
-  for (var i = 0; i < bytes.length; i++) {
-    hex += ('0' + (bytes[i] < 0 ? bytes[i] + 256 : bytes[i]).toString(16)).slice(-2);
-  }
-  return hex.substring(0, 12);
+/** Crea o reemplaza (setContent, para conservar las versiones de Drive) Indice_<Nombre>.md en la carpeta de respaldos. */
+function _guardarIndiceArchivos_(nombreBase, carpeta, archivos, fechaStr) {
+  var nombreIndice = 'Indice_' + nombreBase + '.md';
+  var it = carpeta.getFilesByName(nombreIndice);
+  var archivoIndice = it.hasNext() ? it.next() : null;
+  var previo = archivoIndice ? archivoIndice.getBlob().getDataAsString('UTF-8') : '';
+  var texto = _generarIndiceArchivos_(nombreBase, archivos, previo, fechaStr);
+  if (archivoIndice) archivoIndice.setContent(texto);
+  else carpeta.createFile(nombreIndice, texto, MimeType.PLAIN_TEXT);
+  return texto;
 }
 
 /**
@@ -469,188 +607,19 @@ function _generarIndiceArchivos_(nombreBase, archivos, indicePrevio, fechaStr) {
   return out.join('\n');
 }
 
-/** Crea o reemplaza (setContent, para conservar las versiones de Drive) Indice_<Nombre>.md en la carpeta de respaldos. */
-function _guardarIndiceArchivos_(nombreBase, carpeta, archivos, fechaStr) {
-  var nombreIndice = 'Indice_' + nombreBase + '.md';
-  var it = carpeta.getFilesByName(nombreIndice);
-  var archivoIndice = it.hasNext() ? it.next() : null;
-  var previo = archivoIndice ? archivoIndice.getBlob().getDataAsString('UTF-8') : '';
-  var texto = _generarIndiceArchivos_(nombreBase, archivos, previo, fechaStr);
-  if (archivoIndice) archivoIndice.setContent(texto);
-  else carpeta.createFile(nombreIndice, texto, MimeType.PLAIN_TEXT);
-  return texto;
+/** Huella corta (MD5, 12 caracteres) del tipo y del contenido de un archivo del proyecto. */
+function _huellaArchivo_(a) {
+  var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5,
+                                      String(a.type) + '\n' + String(a.source || ''),
+                                      Utilities.Charset.UTF_8);
+  var hex = '';
+  for (var i = 0; i < bytes.length; i++) {
+    hex += ('0' + (bytes[i] < 0 ? bytes[i] + 256 : bytes[i]).toString(16)).slice(-2);
+  }
+  return hex.substring(0, 12);
 }
 
-function _subirArchivosAProyecto(nombreBase, extension) {
-  var carpeta = _carpetaDeRespaldos_(nombreBase);
-  
-  // Búsqueda estricta por nombre base + extensión automática
-  var nombreArchivo = nombreBase + '.' + extension;
-  var archivosDrive = carpeta.getFilesByName(nombreArchivo);
-  if (!archivosDrive.hasNext()) throw 'No encontré el archivo "' + nombreArchivo + '" en la carpeta "' + nombreBase + '".';
-
-  var archivoDrive = archivosDrive.next();
-  var nombreReal = archivoDrive.getName();
-  var blobs = [];
-
-  // Extraer archivos internos
-  if (nombreReal.endsWith('.zip')) {
-    var resultadoZip = consolidarCodigoDesdeZip(nombreReal);
-    blobs = resultadoZip.archivos;
-  } else if (nombreReal.endsWith('.md')) {
-    // Formato Markdown legible: encabezados "## archivo.gs" + bloque entre vallas (VALLA_MD_)
-    var contenidoMd = archivoDrive.getBlob().getDataAsString('UTF-8');
-    blobs = _extraerArchivosDeMarkdown_(contenidoMd);
-  } else if (nombreReal.endsWith('.txt') || nombreReal.endsWith('.gs')) {
-    // Formato clásico: "// --- ARCHIVO: nombre.gs ---"
-    var contenido = archivoDrive.getBlob().getDataAsString('UTF-8');
-    blobs = _extraerArchivosDeTexto(contenido);
-  } else {
-    throw 'Formato de archivo no soportado: ' + nombreReal;
-  }
-
-  // (Opcional, solo Base.zip) Crear/actualizar la hoja "Sistema" con el
-  // mismo código, tal como hacía la antigua ejecutarTodoElProceso().
-  if (nombreBase === 'Base' && extension === 'zip' && CREAR_O_ACTUALIZAR_HOJA_SISTEMA) {
-    var carpetaPrincipal = DriveApp.getFolderById(CARPETA_GENERADOR_ID);
-    var fechaFormateada = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
-    var nombreHojaSistema = 'Sistema Clanes - Familia Terna - ' + fechaFormateada;
-    var archivosExistentes = carpetaPrincipal.getFilesByName(nombreHojaSistema);
-    var nuevoSs;
-    if (archivosExistentes.hasNext()) {
-      nuevoSs = SpreadsheetApp.openById(archivosExistentes.next().getId());
-    } else {
-      nuevoSs = SpreadsheetApp.create(nombreHojaSistema);
-      DriveApp.getFileById(nuevoSs.getId()).moveTo(carpetaPrincipal);
-      nuevoSs.getSheets()[0].setName('Terreno_Limpio');
-    }
-    var ssIdSistema = nuevoSs.getId();
-    PropertiesService.getScriptProperties().setProperty('HOJA_ACTIVA_ID', ssIdSistema);
-    actualizarScriptDeHoja(ssIdSistema, blobs);
-  }
-
-  // Destino: Base o Generador
-  var ssId = null;
-  if (nombreBase === 'Base') {
-    ssId = obtenerSpreadsheetPorNombreEnCarpeta_(CARPETA_BASE_ID, NOMBRE_HOJA_BASE);
-  }
-  var reporte = actualizarScriptDeHoja(ssId, blobs, nombreBase);
-
-  // A partir de aquí, subir SIEMPRE deja los 4 formatos (.zip/.txt/.gs/.md)
-  // sincronizados con lo que se acaba de subir, sin importar desde cuál de
-  // los 4 se subió ni si el destino es "Base" o "Generador". Así no hace
-  // falta una función "actualizar" separada: subir YA actualiza todo.
-  _descargarProyectoAArchivos(nombreBase);
-
-  _registrarLogGenerador(
-    '_subirArchivosAProyecto() / ' + nombreBase,
-    nombreArchivo + ' subido al proyecto "' + nombreBase + '" y los 4 respaldos (' +
-    nombreBase + '.zip/.gs/.txt/.md) regenerados a partir del código recién subido. ' +
-    'Actualizados: ' + (reporte.actualizados ? reporte.actualizados.length : 0) +
-    ' | Agregados: ' + (reporte.agregados ? reporte.agregados.length : 0) +
-    ' | Sin tocar: ' + (reporte.sinTocar ? reporte.sinTocar.length : 0),
-    []
-  );
-
-  return reporte;
-}
-
-// =============================================================================
-// INYECCIÓN APPS SCRIPT API
-// =============================================================================
-
-function actualizarScriptDeHoja(ssId, archivosNuevos, nombreBase) {
-  var scriptId;
-  if (nombreBase && nombreBase === 'Generador') {
-    scriptId = ScriptApp.getScriptId();
-  } else if (nombreBase && nombreBase === 'Contactos_Secundario') {
-    scriptId = _scriptIdDeProyecto_(nombreBase);
-  } else {
-    var props = PropertiesService.getScriptProperties();
-    var clavePropiedad = 'SCRIPT_ID_' + ssId;
-    scriptId = props.getProperty(clavePropiedad);
-    if (!scriptId) {
-      scriptId = crearProyectoVinculado_(ssId);
-      props.setProperty(clavePropiedad, scriptId);
-      console.log('Proyecto de Apps Script vinculado creado para ' + ssId + '. scriptId: ' + scriptId);
-    }
-  }
-
-  var archivosExistentes = obtenerArchivosProyecto_(scriptId);
-  var mapaExistentes = {};
-  archivosExistentes.forEach(function(a){ mapaExistentes[a.name] = a; });
-
-  var actualizados = [], agregados = [], archivosFinales = [], nombresDelZip = {};
-
-  // El manifiesto NUNCA se pisa a la fuerza. Si el proyecto ya tiene un
-  // "appsscript.json" (caso normal: Base ya existe), se conserva tal cual
-  // está — subir código no debe tocar scopes ni configuración del
-  // manifiesto. MANIFIESTO_CANONICO_ solo se usa como valor por defecto la
-  // PRIMERA vez que se crea un proyecto vinculado nuevo (todavía no tiene
-  // ningún appsscript.json propio).
-  if (mapaExistentes['appsscript']) {
-    archivosFinales.push(mapaExistentes['appsscript']);
-  } else {
-    archivosFinales.push({
-      name: 'appsscript',
-      type: 'JSON',
-      source: JSON.stringify(MANIFIESTO_CANONICO_)
-    });
-  }
-
-  archivosNuevos.forEach(function(archivo) {
-    nombresDelZip[archivo.nombre] = true;
-    if (mapaExistentes[archivo.nombre]) {
-      actualizados.push(archivo.nombre);
-    } else {
-      agregados.push(archivo.nombre);
-    }
-    archivosFinales.push({
-      name: archivo.nombre,
-      type: 'SERVER_JS',
-      source: archivo.contenido
-    });
-  });
-
-  var sinTocar = [];
-  archivosExistentes.forEach(function(a) {
-    if (a.name === 'appsscript') return;
-    if (!nombresDelZip[a.name]) {
-      archivosFinales.push(a);
-      sinTocar.push(a.name);
-    }
-  });
-
-  var opciones = {
-    method: 'put',
-    contentType: 'application/json',
-    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
-    payload: JSON.stringify({ files: archivosFinales }),
-    muteHttpExceptions: true
-  };
-  var url = 'https://script.googleapis.com/v1/projects/' + scriptId + '/content';
-  var respuesta = UrlFetchApp.fetch(url, opciones);
-  var codigoHttp = respuesta.getResponseCode();
-
-  if (codigoHttp !== 200) {
-    throw 'Error al actualizar el script (' + codigoHttp + '): ' + respuesta.getContentText();
-  }
-
-  console.log('--- Reporte de actualización (' + (nombreBase || 'Base') + ') ---');
-  console.log('Actualizados (' + actualizados.length + '): ' + (actualizados.length ? actualizados.join(', ') : 'ninguno'));
-  console.log('Agregados (' + agregados.length + '): ' + (agregados.length ? agregados.join(', ') : 'ninguno'));
-  console.log('Sin tocar (' + sinTocar.length + '): ' + (sinTocar.length ? sinTocar.join(', ') : 'ninguno'));
-  return { 
-    todosYaExistian: (agregados.length === 0), 
-    actualizados: actualizados, 
-    agregados: agregados, 
-    sinTocar: sinTocar 
-  };
-}
-
-// =============================================================================
-// MANTENIMIENTO: VACIAR PROYECTO DE APPS SCRIPT
-// =============================================================================
+// ----- Vaciado del proyecto de Base -----
 
 /**
  * Elimina TODOS los archivos de código del proyecto de Apps Script indicado,
@@ -703,35 +672,63 @@ function _eliminarTodosLosArchivosDeProyecto(nombreBase) {
   return { eliminados: nombresEliminados };
 }
 
-function obtenerArchivosProyecto_(scriptId) {
-  var url = 'https://script.googleapis.com/v1/projects/' + scriptId + '/content';
-  var opciones = {
-    method: 'get',
-    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
-    muteHttpExceptions: true
-  };
-  var respuesta = UrlFetchApp.fetch(url, opciones);
-  if (respuesta.getResponseCode() !== 200) {
-    throw 'No se pudo leer el contenido del proyecto (' + respuesta.getResponseCode() + '): ' + respuesta.getContentText();
-  }
-  var data = JSON.parse(respuesta.getContentText());
-  return data.files || [];
+// ----- Utilidades compartidas: carpeta de respaldos, hoja de Base, aviso y registro -----
+
+/**
+ * Devuelve la subcarpeta de respaldos correspondiente ("Generador" o "Base"),
+ * dentro de la carpeta principal del Generador (CARPETA_GENERADOR_ID). Si la
+ * subcarpeta no existe todavía, la crea. Así los archivos de cada proyecto
+ * (zip/txt/gs/md/log) quedan organizados cada uno en su propia carpeta, en
+ * vez de todos sueltos en la raíz.
+ * @param {string} nombreBase 'Base' | 'Generador'
+ * @return {Folder}
+ */
+function _carpetaDeRespaldos_(nombreBase) {
+  var carpetaPadre = DriveApp.getFolderById(CARPETA_GENERADOR_ID);
+  var subcarpetas = carpetaPadre.getFoldersByName(nombreBase);
+  if (subcarpetas.hasNext()) return subcarpetas.next();
+  return carpetaPadre.createFolder(nombreBase);
 }
 
-function crearProyectoVinculado_(ssId) {
-  var url = 'https://script.googleapis.com/v1/projects';
-  var opciones = {
-    method: 'post',
-    contentType: 'application/json',
-    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
-    payload: JSON.stringify({ title: 'Código del sistema (auto)', parentId: ssId }),
-    muteHttpExceptions: true
-  };
-  var respuesta = UrlFetchApp.fetch(url, opciones);
-  if (respuesta.getResponseCode() !== 200) {
-    throw 'No se pudo crear el proyecto de Apps Script vinculado (' + respuesta.getResponseCode() + '): ' + respuesta.getContentText();
+function obtenerSpreadsheetPorNombreEnCarpeta_(folderId, nombreHoja) {
+  var carpeta = DriveApp.getFolderById(folderId);
+  var archivos = carpeta.getFilesByName(nombreHoja);
+  if (!archivos.hasNext()) {
+    throw 'No se encontró la hoja "' + nombreHoja + '" en la carpeta ' + folderId;
   }
-  var data = JSON.parse(respuesta.getContentText());
-  if (!data.scriptId) throw 'La API no devolvió scriptId al crear el proyecto: ' + respuesta.getContentText();
-  return data.scriptId;
+  return archivos.next().getId();
+}
+
+/** Antepone el aviso a un texto, solo si todavía no está presente. */
+function _conAviso_(texto) {
+  if (texto.indexOf(AVISO_ANTI_CARPETAS_) !== -1) return texto;
+  return '/*\n' + AVISO_ANTI_CARPETAS_ + '\n*/\n\n' + texto;
+}
+
+function _registrarLogGenerador(funcion, descripcion, advertencias) {
+  try {
+    var carpeta = _carpetaDeRespaldos_('Generador');
+    var filename = 'Log_Generador.json';
+    var nuevaEntrada = {
+      fecha: Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm:ss') + ' (Lima)',
+      autor: 'Claude (Anthropic)',
+      funcion: funcion || '',
+      descripcion: descripcion || '',
+      advertencias: advertencias || []
+    };
+    var archivos = carpeta.getFilesByName(filename);
+    if (archivos.hasNext()) {
+      var archivoLog = archivos.next();
+      var contenidoActual = archivoLog.getBlob().getDataAsString('UTF-8');
+      var logArray = [];
+      try { logArray = JSON.parse(contenidoActual); } catch(e) { logArray = []; }
+      if (!Array.isArray(logArray)) logArray = [];
+      logArray.push(nuevaEntrada);
+      archivoLog.setContent(JSON.stringify(logArray, null, 2));
+    } else {
+      carpeta.createFile(filename, JSON.stringify([nuevaEntrada], null, 2), MimeType.PLAIN_TEXT);
+    }
+  } catch(e) {
+    console.log('[Log] Error escribiendo Log_Generador.json: ' + e.message);
+  }
 }
