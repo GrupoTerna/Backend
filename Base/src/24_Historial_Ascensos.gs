@@ -51,6 +51,26 @@ function agregarColumnaParCRHistorialAD() {
 }
 
 /**
+ * enlazarPropuestasConParCRHistorialAD() — proyecto Base. Escribe en la columna Par_CR de Historial_A/D el par de CR_Lista de cada propuesta que aún no lo tiene, deducido por fecha (par de fecha anterior más cercana; ver _asignarParesAPropuestas_()). Solo escribe esa columna y solo en filas con Estado de propuesta; las que ya tienen par no se tocan. La deducción puede equivocarse en propuestas viejas: revisa el registro. [→ Contexto_Base_Web.md §PF286]
+ */
+function enlazarPropuestasConParCRHistorialAD() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.ASCENSOS);
+  if (!sh || sh.getLastRow() < 2) { Logger.log('[Par_CR] No hay filas en Historial_A/D.'); return; }
+  _asegurarColumnaParCRAscensos_(sh);
+  var registros = _leerRegistrosHistorialAscensos_() || [];
+  var pares = _leerParesCRListaParaHistorial_();
+  if (!pares.length) { Logger.log('[Par_CR] CR_Lista no tiene pares con Fecha válida; no se enlazó nada.'); return; }
+  var asignaciones = _asignarParesAPropuestas_(registros, pares, _claveDiaLimaCR_);
+  var propuestasN = registros.filter(function (r) { return r.estadoProp === 'Planificado' || r.estadoProp === 'Realizado'; }).length;
+  if (!asignaciones.length) { Logger.log('[Par_CR] Nada que enlazar (' + propuestasN + ' propuesta(s), todas con par o sin par anterior).'); return; }
+  var col = sh.getRange(2, ASC.PAR_ID, registros.length, 1).getValues();
+  var porPar = {};
+  asignaciones.forEach(function (a) { col[a.indice][0] = a.parId; porPar[a.parId] = (porPar[a.parId] || 0) + 1; });
+  sh.getRange(2, ASC.PAR_ID, registros.length, 1).setValues(col);
+  Logger.log('[Par_CR] ' + asignaciones.length + ' propuesta(s) enlazada(s) por fecha de ' + propuestasN + '. Por par: ' + JSON.stringify(porPar));
+}
+
+/**
  * limpiarDuplicadosHistorial() [→ Contexto_Base_Web.md §24B003]
  */
 function limpiarDuplicadosHistorial() {
@@ -1117,7 +1137,7 @@ function _claveDiaLimaCR_(ms) {
 
 /**
  * _leerRegistrosHistorialAscensos_()
- * Lee Historial_A/D completo y devuelve una lista de registros { tag, nombre, clan, rango, rango2, tipo, estadoProp, fechaMs, temporada, semana, dia }, o null si la hoja no existe o está vacía.
+ * Lee Historial_A/D completo y devuelve una lista de registros { tag, nombre, clan, rango, rango2, tipo, estadoProp, parId, fechaMs, temporada, semana, dia }, o null si la hoja no existe o está vacía.
  * Lo comparten la corrida más reciente (_leerCorridaCambioRangoHistorial_()) y la verificación (_leerVerificacionCambioRangoHistorial_()). Solo lee la hoja; no escribe nada.
  */
 function _leerRegistrosHistorialAscensos_() {
@@ -1138,6 +1158,7 @@ function _leerRegistrosHistorialAscensos_() {
       rango2: String(f[ASC.RANGO_2 - 1] || '').trim(),
       tipo: String(f[ASC.TIPO - 1] || '').trim(),
       estadoProp: String(f[ASC.ESTADO_PROPUESTA - 1] || '').trim(),
+      parId: String(f[ASC.PAR_ID - 1] || '').trim(), // PF286: id del Ascenso del par de CR_Lista; vacío en filas sin propuesta y en propuestas anteriores a la columna (ver _asignarParesAPropuestas_())
       fechaMs: (fecha instanceof Date && !isNaN(fecha.getTime())) ? fecha.getTime() : NaN,
       temporada: tsd[0],
       semana: tsd[3],
@@ -1186,6 +1207,27 @@ function _corridaCambioRangoDesdeRegistros_(registros, desdeMs, claveDia) {
   return res;
 }
 
+/**
+ * _corridaDePar_(registros, parId, claveDia) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
+ * Corrida de un par: todas las propuestas (Planificado o Realizado) con ese parId, aunque se hayan generado en días distintos. `diaTxt` es el día de la más antigua (desde ahí se buscan los cambios reales); temporada, semana y día salen de esa misma propuesta.
+ * Devuelve { hayCorrida, diaTxt, temporada, semana, dia, total }.
+ */
+function _corridaDePar_(registros, parId, claveDia) {
+  var propias = (registros || []).filter(function (r) {
+    return r.parId === parId && (r.estadoProp === 'Planificado' || r.estadoProp === 'Realizado') && isFinite(r.fechaMs);
+  });
+  if (!propias.length) return { hayCorrida: false, diaTxt: '', temporada: '', semana: '', dia: '', total: 0 };
+  var primera = propias.reduce(function (m, r) { return r.fechaMs < m.fechaMs ? r : m; });
+  return {
+    hayCorrida: true,
+    diaTxt: claveDia(primera.fechaMs).split('-').reverse().join('/'),
+    temporada: primera.temporada === undefined ? '' : primera.temporada,
+    semana: primera.semana === undefined ? '' : primera.semana,
+    dia: primera.dia === undefined ? '' : primera.dia,
+    total: propias.length
+  };
+}
+
 // --- Verificar un cambio de rango: propuestas de la corrida más reciente contra lo realmente aplicado (PF286 punto 11 (c), 28-oct-2026; la usa la rama «verificar» de la web) [→ Contexto_Base_Web.md §PF286] ---
 
 // Tipos de Historial_A/D que son un cambio real de la cuenta (los que la rama «verificar» busca cuando no hay propuesta). «Elegible Admin» no lo es: solo se propone, no cambia el rango.
@@ -1195,9 +1237,57 @@ var CR_TIPOS_CAMBIO_REAL_ = { 'Ascenso': true, 'Degradación': true, 'Expulsión
  * _leerVerificacionCambioRangoHistorial_()
  * Lee Historial_A/D y compara las propuestas de la corrida más reciente con lo realmente aplicado (ver _verificarCambioRangoDesdeRegistros_()). Solo lee la hoja; no escribe nada.
  */
-function _leerVerificacionCambioRangoHistorial_() {
-  var registros = _leerRegistrosHistorialAscensos_();
-  return _verificarCambioRangoDesdeRegistros_(registros || [], _claveDiaLimaCR_);
+function _leerVerificacionCambioRangoHistorial_(parId) {
+  var registros = _leerRegistrosHistorialAscensos_() || [];
+  var pares = _leerParesCRListaParaHistorial_();
+  // Las propuestas anteriores a la columna Par_CR se enlazan en memoria por fecha (no escribe nada en la hoja; enlazarPropuestasConParCRHistorialAD() deja ese enlace guardado).
+  _asignarParesAPropuestas_(registros, pares, _claveDiaLimaCR_).forEach(function (a) { registros[a.indice].parId = a.parId; });
+  var opciones = { parId: String(parId || '').trim() };
+  if (opciones.parId) {
+    // Cota superior de los cambios «excepcionales»: el día del par siguiente (por fecha), porque desde ahí los cambios son de la corrida siguiente.
+    var propio = pares.filter(function (p) { return p.idAscenso === opciones.parId; })[0];
+    var siguiente = propio ? pares.filter(function (p) { return p.dia > propio.dia; })[0] : null;
+    if (siguiente) opciones.hastaDia = siguiente.dia;
+  }
+  return _verificarCambioRangoDesdeRegistros_(registros, _claveDiaLimaCR_, opciones);
+}
+
+/**
+ * _leerParesCRListaParaHistorial_() [→ Contexto_Base_Web.md §PF286]
+ * Pares Ascenso de CR_Lista como [{ idAscenso, dia ('aaaa-mm-dd', día de Lima de su Fecha) }], del más antiguo al más reciente. Los que no tienen una Fecha válida se omiten. Solo lee.
+ */
+function _leerParesCRListaParaHistorial_() {
+  var lectura = _obtenerFilasConFallbackCSV(_getSs(), CFG.SHEETS.CR_LISTA, 'Backup_CR_Lista.csv', CR_TOTAL_COLS, 3);
+  var pares = [];
+  (lectura.filas || []).forEach(function (f) {
+    var id = String(f[CR.ID - 1] || '').trim();
+    if (!/^A_/.test(id)) return;
+    var celda = f[CR.FECHA - 1];
+    var fecha = (celda instanceof Date) ? celda : _parseSpanishDate(celda);
+    if (!(fecha instanceof Date) || isNaN(fecha.getTime())) return;
+    pares.push({ idAscenso: id, dia: _claveDiaLimaCR_(fecha.getTime()) });
+  });
+  pares.sort(function (a, b) { return a.dia < b.dia ? -1 : (a.dia > b.dia ? 1 : 0); });
+  return pares;
+}
+
+/**
+ * _asignarParesAPropuestas_(registros, pares, claveDia) — función pura (se prueba en Node, sin hojas).
+ * Para cada propuesta (Estado de propuesta «Planificado» o «Realizado») sin parId, deduce su par: el de fecha anterior más cercana (o del mismo día) a la Fecha de la propuesta; `pares` va del más antiguo al más reciente. Es una DEDUCCIÓN: se puede equivocar en propuestas viejas (p. ej. si se generaron con un par que no era el último registrado). Si ningún par es anterior, la propuesta queda sin par y no se incluye.
+ * Devuelve [{ indice (posición en `registros`), parId }]; no modifica `registros`.
+ */
+function _asignarParesAPropuestas_(registros, pares, claveDia) {
+  var out = [];
+  (registros || []).forEach(function (r, i) {
+    if (r.estadoProp !== 'Planificado' && r.estadoProp !== 'Realizado') return;
+    if (r.parId || !isFinite(r.fechaMs)) return;
+    var dia = claveDia(r.fechaMs), elegido = '';
+    for (var k = 0; k < pares.length; k++) {
+      if (pares[k].dia <= dia) elegido = pares[k].idAscenso; else break;
+    }
+    if (elegido) out.push({ indice: i, parId: elegido });
+  });
+  return out;
 }
 
 /**
@@ -1211,10 +1301,26 @@ function _leerVerificacionCambioRangoHistorial_() {
  * No vuelve a evaluar los requisitos: usa lo que quedó registrado cuando se generaron las propuestas. Devuelve { hayCorrida, diaTxt, temporada, semana, dia, propuestasN, aplicadas, pendientes, excepcionales }; cada elemento trae
  * { tag, nombre, clan, tipo, rango, rango2, fechaTxt } y los excepcionales además `motivo`, los pendientes `confirmaManual`.
  */
-function _verificarCambioRangoDesdeRegistros_(registros, claveDia) {
-  var corrida = _corridaCambioRangoDesdeRegistros_(registros, null, claveDia);
+function _verificarCambioRangoDesdeRegistros_(registros, claveDia, opciones) {
+  opciones = opciones || {};
+  var parId = String(opciones.parId || '').trim();
+  // Sin par pedido: el par de la propuesta más reciente que tenga uno; si ninguna lo tiene, la corrida por día de siempre.
+  if (!parId) {
+    var masReciente = null;
+    (registros || []).forEach(function (r) {
+      if (!r.parId || !isFinite(r.fechaMs) || (r.estadoProp !== 'Planificado' && r.estadoProp !== 'Realizado')) return;
+      if (!masReciente || r.fechaMs > masReciente.fechaMs) masReciente = r;
+    });
+    if (masReciente) parId = masReciente.parId;
+  }
+  var corrida;
+  if (parId) {
+    corrida = _corridaDePar_(registros, parId, claveDia);
+  } else {
+    corrida = _corridaCambioRangoDesdeRegistros_(registros, null, claveDia);
+  }
   var res = {
-    hayCorrida: corrida.hayCorrida, diaTxt: corrida.diaTxt, temporada: corrida.temporada, semana: corrida.semana, dia: corrida.dia,
+    parId: parId, hayCorrida: corrida.hayCorrida, diaTxt: corrida.diaTxt, temporada: corrida.temporada, semana: corrida.semana, dia: corrida.dia,
     propuestasN: corrida.total, aplicadas: [], pendientes: [], excepcionales: []
   };
   if (!corrida.hayCorrida) return res;
@@ -1233,7 +1339,9 @@ function _verificarCambioRangoDesdeRegistros_(registros, claveDia) {
     if (!isFinite(r.fechaMs)) return;
     var dia = claveDia(r.fechaMs);
     if (dia < diaCorrida) return;
-    if ((r.estadoProp === 'Planificado' || r.estadoProp === 'Realizado') && dia === diaCorrida) {
+    if (opciones.hastaDia && dia >= opciones.hastaDia) return; // PF286: cambios de la corrida siguiente
+    var esDeLaCorrida = parId ? (r.parId === parId) : (dia === diaCorrida);
+    if ((r.estadoProp === 'Planificado' || r.estadoProp === 'Realizado') && esDeLaCorrida) {
       var it = item(r, dia);
       if (r.estadoProp === 'Realizado') {
         res.aplicadas.push(it);

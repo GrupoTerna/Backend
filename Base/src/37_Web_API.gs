@@ -4770,9 +4770,10 @@ function _webCRListaGenerarPropuestas(token, idAscenso, idDescenso) {
 }
 
 // _webCRListaVerificar(): rama «verificar» de Cambio de Rango (PF286 punto 11 (c)): GET que solo lee Historial_A/D y compara las propuestas de la corrida más reciente con lo realmente aplicado (_leerVerificacionCambioRangoHistorial_(), 24_Historial_Ascensos.gs). No escribe nada ni pide el par: la corrida sale de las fechas del historial. [→ Contexto_Base_Web.md §PF286]
-function _webCRListaVerificar(token) {
+function _webCRListaVerificar(token, idAscenso) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  var verificacion = _leerVerificacionCambioRangoHistorial_();
+  // PF286: `idAscenso` (opcional) elige la corrida; sin él se verifica la del par de la propuesta más reciente.
+  var verificacion = _leerVerificacionCambioRangoHistorial_(idAscenso);
   verificacion.ok = true;
   return verificacion;
 }

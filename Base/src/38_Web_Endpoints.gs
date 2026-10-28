@@ -801,7 +801,7 @@ function doGet(e) {
   if (e && e.parameter && e.parameter.accion === 'webCRListaVerificar') {
     try {
       return ContentService
-        .createTextOutput(JSON.stringify(_webCRListaVerificar(e.parameter.sessionToken)))
+        .createTextOutput(JSON.stringify(_webCRListaVerificar(e.parameter.sessionToken, e.parameter.idAscenso)))
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       Logger.log('[Web] Error interno: ' + err.toString());
