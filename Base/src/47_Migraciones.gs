@@ -53,6 +53,8 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   function () { return _reenumerarTokensSemanasTorneos_(); },
   // PF270 (25-oct-2026): nombres de los informes históricos con la temporada interna («…_T5S4 …», «…_T2_PI34_T3_PI27 …») en CSV/Informes y CSV/Tampermonkey. Al FINAL para no mover índices.
   function () { return _reenumerarNombresInformes_(); },
+  // PF286 (28-oct-2026): los ids de evento L_TT_S_SS_N_NN llevan la temporada y la suma del delta solo toca la columna Temporada. Se rehacen DESPUÉS de todos los pasos anteriores, con las listas ya reenumeradas. Al FINAL para no mover índices.
+  function () { _migrarIdsEventoPaso_(); },
 ];
 
 // PF269 (25-oct-2026): qué hace cada paso y qué se espera al terminarlo; _ejecutarPorTandas lo imprime («Ejecutando paso N/M: …»). MISMO ORDEN que PASOS_REENUMERAR_TEMPORADAS (si se añade un paso, añadir su texto al final).
@@ -85,7 +87,8 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
   'Finalizar: cambia la Ref y el offset de RoyaleAPI, sube la versión de la caché del cruce de meta y mueve NUEVOS_CIERRE_SEMANA_T<n> → numeración nueva activa',
   'Historial_I/S, Historial_A/D y Comentarios: recalcula Temporada, Semana y Día desde la Fecha (no suma delta) → columnas con la numeración nueva',
   'Fichas T<n>_S<m> de la columna Semanas de T_Lista, S_Lista y CR_Lista y sus Backup_*.csv: suma el delta → fichas apuntando a la semana correcta',
-  'Nombres de informes históricos con T<n>S<m> o T<n>_PI<m> (CSV/Informes y CSV/Tampermonkey): suma el delta al número de temporada del nombre → nombres con la numeración nueva'
+  'Nombres de informes históricos con T<n>S<m> o T<n>_PI<m> (CSV/Informes y CSV/Tampermonkey): suma el delta al número de temporada del nombre → nombres con la numeración nueva',
+  'Ids de evento de T_Lista, S_Lista y CR_Lista: rehace cada id con la temporada de su fila y reescribe las citas en T_Asistencia, S_Asistencia, T_Resoluciones y Extra, y sus respaldos → ids con la numeración nueva en todas las hojas'
 ];
 
 // =============================================================================
@@ -591,7 +594,7 @@ function migrarIdsEventoRevisar() {
 }
 
 // migrarIdsEvento(): reescribe los ids de T_Lista, S_Lista y CR_Lista al formato L_TT_S_SS_N_NN (temporada tomada de la columna Temporada de cada fila) y actualiza lo que los cita: T_Asistencia, S_Asistencia, T_Resoluciones,
-// S_Lista!ID_2 y Extra (los cuatro *_Vigente_ID). Después rehace los respaldos CSV de las hojas protegidas. Es REPETIBLE: con los ids ya al día no cambia nada, y sirve después de una reenumeración de temporadas. [→ Contexto_Base_Web.md §PF286]
+// S_Lista!ID_2 y Extra (los cuatro *_Vigente_ID). Después rehace los respaldos CSV de las hojas protegidas. Es REPETIBLE: con los ids ya al día no cambia nada (y rehace los respaldos). La reenumeración de temporadas la corre sola como último paso (_migrarIdsEventoPaso_); a mano solo hace falta para ids que no pasaron por una reenumeración. [→ Contexto_Base_Web.md §PF286]
 // Córrela con ninguna cadena en curso (el registro dice «Completada»). Los ids de un par de CR_Lista (A y D) conservan el mismo sufijo.
 function migrarIdsEvento() {
   _correrMigracionIdsEvento_('migrarIdsEvento', true);
@@ -1639,7 +1642,7 @@ function _correrMigracionIdsEvento_(nombreFn, aplicar) {
   }
 }
 
-// _migrarIdsEvento_(aplicar): lee los ids de las tres listas, arma el plan con _planIdsEventoLista_(), y con aplicar = true escribe SOLO la columna de ids de cada hoja (nunca la hoja entera), actualiza las citas y rehace los respaldos. [→ Contexto_Base_Web.md §PF286]
+// _migrarIdsEvento_(aplicar): devuelve la cantidad de errores (0 = todo bien). Lee los ids de las tres listas, arma el plan con _planIdsEventoLista_(), y con aplicar = true escribe SOLO la columna de ids de cada hoja (nunca la hoja entera), actualiza las citas y rehace los respaldos. [→ Contexto_Base_Web.md §PF286]
 function _migrarIdsEvento_(aplicar) {
   var ss = _getSs();
   var tag = aplicar ? '[Ids evento]' : '[Ids evento · solo revisar]';
@@ -1648,7 +1651,7 @@ function _migrarIdsEvento_(aplicar) {
     { nombre: CFG.SHEETS.S_LISTA,  primera: 3, colId: SL.ID, colTemp: SL.TEMPORADA, colFecha: SL.FECHA, colHora: SL.HORA },
     { nombre: CFG.SHEETS.CR_LISTA, primera: 4, colId: CR.ID, colTemp: CR.TEMPORADA, colFecha: CR.FECHA, colHora: CR.HORA }
   ];
-  var mapa = {}, planes = [], totalCambios = 0;
+  var mapa = {}, planes = [], totalCambios = 0, errores = 0;
   listas.forEach(function (l) {
     var sh = ss.getSheetByName(l.nombre);
     if (!sh) { Logger.log(tag + ' Hoja ' + l.nombre + ' no encontrada; se omite.'); return; }
@@ -1694,6 +1697,7 @@ function _migrarIdsEvento_(aplicar) {
       r.huerfanas.slice(0, 10).forEach(function (h) { Logger.log(tag + '   AVISO: «' + h + '» no coincide con ningún id de la lista; se deja igual'); });
       if (aplicar && r.cambiadas) { rango.setValues(vals); }
     } catch (e) {
+      errores++;
       Logger.log(tag + ' ERROR en las citas de ' + c.nombre + ': ' + e.message);
     }
   });
@@ -1709,11 +1713,16 @@ function _migrarIdsEvento_(aplicar) {
       if (aplicar && rE.cambiadas) rangoE.setValues(valsE);
     }
   } catch (eE) {
+    errores++;
     Logger.log(tag + ' ERROR en Extra: ' + eE.message);
   }
 
   // Las listas se escriben AL FINAL: son el punto de confirmación. Si la ejecución se corta antes, las listas siguen con los ids viejos, el plan se recalcula igual al repetir
   // y las citas que ya estaban reescritas no se tocan (ya tienen el formato nuevo). Escribirlas primero dejaría citas viejas sin mapa para corregirlas.
+  if (aplicar && errores > 0) {
+    Logger.log(tag + ' NO se reescriben las listas porque falló la escritura de ' + errores + ' cita(s) o de Extra; las listas siguen con los ids viejos. Repite la migración.');
+    return errores;
+  }
   if (aplicar) {
     planes.forEach(function (pl) {
       if (!pl.plan.cambios.length) return;
@@ -1725,13 +1734,26 @@ function _migrarIdsEvento_(aplicar) {
 
   if (!aplicar) {
     Logger.log(tag + ' Fin de la revisión: no se escribió nada. Si el plan es correcto, corre migrarIdsEvento().');
-    return;
+    return errores;
   }
-  ['T_LISTA', 'S_LISTA', 'CR_LISTA', 'T_ASISTENCIA', 'S_ASISTENCIA', 'EXTRA'].forEach(function (clave) {
-    try { respaldarIndiceYProtegidasCSV(clave); }
-    catch (eB) { Logger.log(tag + ' ERROR rehaciendo el respaldo ' + clave + ': ' + eB.message + ' (se rehará con la sincronización diaria).'); }
-  });
-  Logger.log(tag + ' Terminado: ' + totalCambios + ' id(s) reescrito(s). Backup_T_Resoluciones.csv se rehace con la sincronización diaria de respaldos.');
+  // La protección por claves de los respaldos de asistencia bloquearía este caso (las claves viejas ya no están en la hoja): se omite SOLO durante estos respaldos.
+  _BACKUP_OMITIR_CHECK_CLAVES_ = true;
+  try {
+    ['T_LISTA', 'S_LISTA', 'CR_LISTA', 'T_ASISTENCIA', 'S_ASISTENCIA', 'EXTRA'].forEach(function (clave) {
+      try { respaldarIndiceYProtegidasCSV(clave); }
+      catch (eB) { errores++; Logger.log(tag + ' ERROR rehaciendo el respaldo ' + clave + ': ' + eB.message + ' (repite la migración).'); }
+    });
+  } finally {
+    _BACKUP_OMITIR_CHECK_CLAVES_ = false;
+  }
+  Logger.log(tag + ' Terminado: ' + totalCambios + ' id(s) reescrito(s)' + (errores ? ' con ' + errores + ' error(es)' : '') + '. Backup_T_Resoluciones.csv se rehace con la sincronización diaria de respaldos.');
+  return errores;
+}
+
+// _migrarIdsEventoPaso_(): último paso de la reenumeración de temporadas (PASOS_REENUMERAR_TEMPORADAS). La reenumeración ya tiene el candado de ejecución, así que no lo pide; si algo falla lanza el error para que la cadena no se dé por completa con ids viejos (la migración es repetible). [→ Contexto_Base_Web.md §PF286]
+function _migrarIdsEventoPaso_() {
+  var errores = _migrarIdsEvento_(true);
+  if (errores > 0) throw new Error('[Ids evento] la migración de ids terminó con ' + errores + ' error(es); repite la reenumeración o corre migrarIdsEvento() cuando el registro diga «Completada».');
 }
 
 // _aplicarMapaIdsEnColumna_(vals, mapa, sinHuerfanas): PURA. vals = [[valor], ...] (se modifica en sitio con los ids nuevos). Devuelve { cambiadas, huerfanas, valores }.

@@ -3,6 +3,11 @@
 // Sistema de respaldo y sincronizacion CSV <-> hojas, para todas las hojas del proyecto.
 // ==============================================================================
 
+// ----- Variables y constantes -----
+
+// _BACKUP_OMITIR_CHECK_CLAVES_: solo la migración de ids de evento (47_Migraciones.gs) la pone en true, mientras rehace los respaldos de las listas y la asistencia, para que la protección por claves no bloquee un cambio de ids intencional. Siempre vuelve a false. [→ Contexto_Base_Web.md §PF286]
+var _BACKUP_OMITIR_CHECK_CLAVES_ = false;
+
 // ----- Funciones manuales / punto de entrada -----
 
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS [→ Contexto_Base_Web.md §05B001]
@@ -1976,7 +1981,7 @@ function _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx
       }
 
       // Chequeo adicional por CLAVE (ver comentario del parámetro arriba): [→ Contexto_Base_Web.md §05B108]
-      if (colClaveIdx && csvParseado && csvParseado.length > 1) {
+      if (colClaveIdx && !_BACKUP_OMITIR_CHECK_CLAVES_ && csvParseado && csvParseado.length > 1) {
         var clavesCSV = {};
         for (var rc = 1; rc < csvParseado.length; rc++) {
           var claveCsv = String(csvParseado[rc][colClaveIdx - 1] || '').trim();
