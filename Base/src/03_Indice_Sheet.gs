@@ -1,9 +1,20 @@
-// ==============================================================================
 // 03_Indice_Sheet.gs
 // Todo lo relativo a la hoja Indice (orden y visibilidad de hojas).
-// ==============================================================================
 
-// ----- Funciones manuales / punto de entrada -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Índice: importar y actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Índice: crear y preparar la hoja (lo usa setupAllSheets)
+//    - Hoja Índice: ayudas de importar y actualizar
+//    - Hoja Índice: ayuda general de columnas (la usan varios archivos)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Índice: importar y actualizar -----
 
 /**
  * importarIndiceDesdeCSV() [→ Contexto_Base_Web.md §03B001]
@@ -187,7 +198,11 @@ var numFilas = sh.getLastRow() - 1;
   Logger.log('[Índice] Actualizado con ' + salida.length + ' hojas.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Índice: crear y preparar la hoja (lo usa setupAllSheets) -----
 
 function _setupIndice(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.INDICE);
@@ -198,20 +213,6 @@ function _setupIndice(ss) {
   applyHeaderStyle(sh, headers.length);
   _aplicarFormatoCondicionalIndice(sh, headers.length);
   Logger.log('[Setup] Índice OK');
-}
-
-/**
- * _setupIndice(ss) [→ Contexto_Base_Web.md §03B011]
- */
-/**
- * _colIndiceFor(campo) [→ Contexto_Base_Web.md §03B012]
- */
-function _colIndiceFor(campo) {
-  if (campo === 'N°') return 1;
-  if (campo === 'Nombre') return 2;
-  if (campo === 'ID') return 3;
-  var idx = CFG.INDICE_COLUMNAS.indexOf(campo);
-  return idx === -1 ? -1 : idx + 4;
 }
 
 /**
@@ -249,14 +250,6 @@ function _migrarOrdenColumnasIndiceSiHaceFalta(sh) {
   });
   sh.getRange(2, 1, numFilas, totalColsViejo).setValues(reordenado);
   Logger.log('[Índice] Migradas ' + numFilas + ' fila(s) al nuevo orden de columnas (Nombre/ID después de N°).');
-}
-
-/**
- * _indiceTotalCols()
- * Número total de columnas de la hoja Índice: N° + INDICE_COLUMNAS + Nombre + ID.
- */
-function _indiceTotalCols() {
-  return CFG.INDICE_COLUMNAS.length + 3;
 }
 
 /**
@@ -307,6 +300,16 @@ function _colLetra(n) {
     n = Math.floor((n - 1) / 26);
   }
   return s;
+}
+
+// ----- Hoja Índice: ayudas de importar y actualizar -----
+
+/**
+ * _indiceTotalCols()
+ * Número total de columnas de la hoja Índice: N° + INDICE_COLUMNAS + Nombre + ID.
+ */
+function _indiceTotalCols() {
+  return CFG.INDICE_COLUMNAS.length + 3;
 }
 
 /**
@@ -403,4 +406,20 @@ function _reordenarYOcultarHojasSegunIndice() {
   }
 
   Logger.log('[Índice] Pestañas reordenadas/ocultadas (' + posicion + ' hojas vigentes).');
+}
+
+// ----- Hoja Índice: ayuda general de columnas (la usan varios archivos) -----
+
+/**
+ * _setupIndice(ss) [→ Contexto_Base_Web.md §03B011]
+ */
+/**
+ * _colIndiceFor(campo) [→ Contexto_Base_Web.md §03B012]
+ */
+function _colIndiceFor(campo) {
+  if (campo === 'N°') return 1;
+  if (campo === 'Nombre') return 2;
+  if (campo === 'ID') return 3;
+  var idx = CFG.INDICE_COLUMNAS.indexOf(campo);
+  return idx === -1 ? -1 : idx + 4;
 }
