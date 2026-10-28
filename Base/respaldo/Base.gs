@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 27/10/2026 19:07:05 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 27/10/2026 19:44:54 */
 
 
 
@@ -59879,8 +59879,74 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
 // PUNTO 2 (Consolidado_Cambios_Pendientes_Guerra.md): detección automática SOLO SUGERENCIA de la temporada más antigua con presencia Terna; nunca dispara la reenumeración. [→ Contexto_Base_Web.md §47B022]
 // =============================================================================
 
-// detectarTemporadaMasAntiguaConPresenciaTerna(): manual, solo sugerencia; cruza Backup_Guerra.csv, la hoja Nuevos y (§PF253, por tag de clan) Correcciones_Guerra.csv; nunca modifica datos. [→ Contexto_Base_Web.md §47B023]
+// _primerLunesDelMesEfectivoDe_(fecha): PF285 (27-oct-2026); primer lunes del mes Supercell al que pertenece una fecha real (si cae antes del primer lunes de su mes, cuenta como el mes anterior; mismo criterio que _fechaATemporadaSemana()). Es la fecha Ref que deja esa fecha dentro de la T1.
+function _primerLunesDelMesEfectivoDe_(fecha) {
+  var anio = fecha.getFullYear();
+  var mes = fecha.getMonth();
+  if (fecha < primerLunesDelMes(anio, mes)) {
+    mes--;
+    if (mes < 0) { mes = 11; anio--; }
+  }
+  return primerLunesDelMes(anio, mes);
+}
+
+// _etiquetaMesTemporada_(d): PF285; id de temporada Supercell ('AAAA-MM', un mes por temporada) de una fecha Ref, sin pasar por la zona horaria.
+function _etiquetaMesTemporada_(d) {
+  return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
+}
+
+// _variacionTemporadas_(fechaRefNueva): PF285; compara la T1 actual, la T1 sugerida y la temporada actual (la de hoy). Solo calcula, no escribe nada.
+// deltaMeses > 0: la sugerida es más antigua (hay que reenumerar); 0: es la misma; < 0: es más reciente (no hace falta). El Id de RoyaleAPI de una semana no cambia al reenumerar: cambian Ref y offset a la vez.
+function _variacionTemporadas_(fechaRefNueva) {
+  var ref = CFG.REF_DEFAULT;
+  var offset = _getTemporadaOffsetRoyaleApi();
+  var refNueva = _primerLunesDelMesEfectivoDe_(fechaRefNueva);
+  var deltaMeses = (ref.getFullYear() * 12 + ref.getMonth()) - (refNueva.getFullYear() * 12 + refNueva.getMonth());
+  var mesHoy = _calcularMesEfectivoRealDeHoy();
+  var tHoy = calcTemporadaDesdeMesEfectivo(ref, mesHoy);
+  return {
+    refNueva: refNueva,
+    deltaMeses: deltaMeses,
+    t1ActualMes: _etiquetaMesTemporada_(ref),
+    t1ActualRoyale: 1 + offset,
+    t1SugeridaMes: _etiquetaMesTemporada_(refNueva),
+    t1SugeridaRoyale: 1 + offset - deltaMeses,
+    mesHoy: mesHoy.anio + '-' + ('0' + (mesHoy.mes + 1)).slice(-2),
+    tHoyAntes: tHoy,
+    tHoyDespues: tHoy + deltaMeses,
+    hoyRoyale: tHoy + offset
+  };
+}
+
+// _textoVariacionTemporadas_(v): PF285; frase para el registro con la variación de la T1 actual, la T1 sugerida y la temporada actual (v sale de _variacionTemporadas_()).
+function _textoVariacionTemporadas_(v) {
+  var n = Math.abs(v.deltaMeses);
+  var plural = (n === 1) ? 'temporada' : 'temporadas';
+  var comparacion;
+  if (v.deltaMeses === 0) {
+    comparacion = 'La temporada detectada es la MISMA que la T1 actual: 0 temporadas de diferencia, no hay nada que reenumerar.';
+  } else if (v.deltaMeses > 0) {
+    comparacion = 'La temporada detectada es ' + n + ' ' + plural + ' MÁS ANTIGUA que la T1 actual: se suman ' + n + ' a toda Temporada guardada.';
+  } else {
+    comparacion = 'La temporada detectada es ' + n + ' ' + plural + ' MÁS RECIENTE que la T1 actual: la T1 actual ya la cubre, no hace falta reenumerar.';
+  }
+  var actual = 'Temporada actual (Supercell ' + v.mesHoy + ', RoyaleAPI ' + v.hoyRoyale + '): hoy es T' + v.tHoyAntes +
+    (v.deltaMeses > 0 ? ' y pasaría a ser T' + v.tHoyDespues : ' y seguiría siendo T' + v.tHoyAntes) + '.';
+  var relacion = (v.deltaMeses > 0 && v.tHoyDespues === 1)
+    ? ' La temporada detectada es también la temporada actual.'
+    : (v.deltaMeses > 0 ? ' La temporada actual quedaría a ' + (v.tHoyDespues - 1) + ' ' + ((v.tHoyDespues - 1) === 1 ? 'temporada' : 'temporadas') + ' de la nueva T1.' : '');
+  return 'VARIACIÓN: T1 actual = Supercell ' + v.t1ActualMes + ' (RoyaleAPI ' + v.t1ActualRoyale + '); T1 sugerida = Supercell ' + v.t1SugeridaMes + ' (RoyaleAPI ' + v.t1SugeridaRoyale + '). ' +
+    comparacion + ' ' + actual + relacion;
+}
+
+// detectarTemporadaMasAntiguaConPresenciaTerna(): manual, solo sugerencia; cruza Backup_Guerra.csv, la hoja Nuevos y (§PF253, por tag de clan) Correcciones_Guerra.csv; nunca modifica datos. PF285 (27-oct-2026): devuelve la fecha Ref 'AAAA-MM-DD' (primer lunes del mes Supercell más antiguo) o '' si no hay nada que reenumerar, e indica la variación de la T1 actual, la T1 sugerida y la temporada actual; la usa iniciarReenumerarTemporadas(). [→ Contexto_Base_Web.md §47B023]
 function detectarTemporadaMasAntiguaConPresenciaTerna() {
+  var props = PropertiesService.getScriptProperties();
+  var pasoPendiente = props.getProperty('REENUM_PASO');
+  if (pasoPendiente !== null) {
+    Logger.log('[Detección Reenumeración] NO se calculó: hay una reenumeración sin terminar (REENUM_PASO = ' + pasoPendiente + '). Termínala con reanudarReenumerarTemporadas() y vuelve a correr esta función.');
+    return '';
+  }
   var nombresTerna = _getNombresClanesTernaOrdenados();
 
   var fechaGuerra = _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna);
@@ -59895,30 +59961,38 @@ function detectarTemporadaMasAntiguaConPresenciaTerna() {
   if (!candidatos.length) {
     Logger.log('[Detección Reenumeración] No se encontró ninguna fila/bloque con presencia confirmada ' +
       'de un clan Terna, ni en Backup_Guerra.csv, ni en la hoja Nuevos ni en Correcciones_Guerra.csv. Nada que sugerir.');
-    return;
+    return '';
   }
 
   candidatos.sort(function (a, b) { return a.fecha.getTime() - b.fecha.getTime(); });
   var elegido = candidatos[0];
   var tz = Session.getScriptTimeZone() || 'GMT-5';
-  var fechaStr = Utilities.formatDate(elegido.fecha, tz, 'yyyy-MM-dd');
-
-  var props = PropertiesService.getScriptProperties();
-  props.setProperty('REENUM_SUGERENCIA_FECHA', fechaStr);
-  props.setProperty('REENUM_SUGERENCIA_FUENTE', elegido.fuente);
+  var v = _variacionTemporadas_(elegido.fecha); // PF285: la fecha Ref es el primer lunes del mes Supercell de la fecha más antigua
+  var fechaStr = Utilities.formatDate(v.refNueva, tz, 'yyyy-MM-dd');
 
   var detalleOtras = '';
   if (candidatos.length > 1) {
     detalleOtras = ' Otra(s) fuente(s) evaluada(s): ' + candidatos.slice(1).map(function (c) {
-      return c.fuente + ' (' + Utilities.formatDate(c.fecha, tz, 'yyyy-MM-dd') + ')';
+      return c.fuente + ' (' + Utilities.formatDate(c.fecha, tz, 'yyyy-MM-dd') + ', Supercell ' + _etiquetaMesTemporada_(_primerLunesDelMesEfectivoDe_(c.fecha)) + ')';
     }).join(', ') + '.';
   }
+  var cabecera = '[Detección Reenumeración] Fecha más antigua con presencia Terna: ' + Utilities.formatDate(elegido.fecha, tz, 'yyyy-MM-dd') +
+    ' (determinada por: ' + elegido.fuente + ').' + detalleOtras + ' ' + _textoVariacionTemporadas_(v) + ' ';
 
-  Logger.log('[Detección Reenumeración] Fecha más antigua con presencia Terna: ' + fechaStr +
-    ' (determinada por: ' + elegido.fuente + ').' + detalleOtras +
-    ' Esta función SOLO sugiere -- no reenumera nada. Para aplicar, correr ' +
-    'ejecutarReenumeracionSugerida() (usa esta fecha automáticamente) o ' +
+  if (v.deltaMeses <= 0) {
+    // Una fecha igual o más reciente que la Ref actual nunca se guarda ni se devuelve: reenumerar con ella correría las temporadas hacia el otro lado.
+    props.deleteProperty('REENUM_SUGERENCIA_FECHA');
+    props.deleteProperty('REENUM_SUGERENCIA_FUENTE');
+    Logger.log(cabecera + 'Esta función SOLO sugiere. No se guardó ninguna sugerencia.');
+    return '';
+  }
+
+  props.setProperty('REENUM_SUGERENCIA_FECHA', fechaStr);
+  props.setProperty('REENUM_SUGERENCIA_FUENTE', elegido.fuente);
+  Logger.log(cabecera + 'FECHA REF A USAR: ' + fechaStr + '. Esta función SOLO sugiere -- no reenumera nada. Para aplicar, correr ' +
+    'iniciarReenumerarTemporadas() (la usa), ejecutarReenumeracionSugerida() (usa esta fecha) o ' +
     'runReenumerarTemporadas(\'YYYY-MM-DD\') con la fecha que prefieras.');
+  return fechaStr;
 }
 
 // _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna): fuente 1 de la detección; devuelve Date o null. [→ Contexto_Base_Web.md §47B024]
@@ -60005,6 +60079,7 @@ function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
   return r && r.fecha ? r.fecha : null;
 }
 
+// AUTÓNOMA (PF285, 27-oct-2026): NO forma parte de ningún proceso ni la llama otra función; solo se corre a mano desde el editor. Útil para verificar únicamente lo que dice Correcciones_Guerra.csv. iniciarReenumerarTemporadas() ya no la usa: usa detectarTemporadaMasAntiguaConPresenciaTerna(), que cruza las tres fuentes.
 // sugerirFechaRefDesdeCorreccionesGuerra(): devuelve la fecha 'AAAA-MM-DD' sugerida, o '' si no hay nada que hacer (PF261). §PF259 (25-oct-2026); MANUAL, solo sugiere (no reenumera). Lee la semana más antigua con clan Terna de Correcciones_Guerra.csv y dice la fecha EXACTA que se escribe en iniciarReenumerarTemporadas().
 // La fecha es el primer lunes del mes Supercell de esa temporada: T1 pasa a ser esa temporada. Si ya hay una reenumeración a medias (REENUM_PASO) NO calcula: el CSV puede estar a medias y la fecha saldría mal.
 // Si después aparece un registro más antiguo, se vuelve a correr y da la fecha nueva; la reenumeración suma meses hacia atrás a toda Temporada guardada. Guarda la sugerencia para ejecutarReenumeracionSugerida().
@@ -60032,14 +60107,15 @@ function sugerirFechaRefDesdeCorreccionesGuerra() {
     '), clan ' + r.clanTag + ', leído del ' + (r.via === 'perfil' ? 'perfil del jugador' : 'log/analytics del clan') + '. Filas con clan Terna: ' + r.filasTerna +
     (r.perfilesSinClan ? '. Perfiles sin clan conocido (no cuentan): ' + r.perfilesSinClan : '') + '. ';
 
+  var variacion = _textoVariacionTemporadas_(_variacionTemporadas_(plTemporada)); // PF285: T1 actual, T1 sugerida y temporada actual
   if (deltaMeses <= 0) {
-    Logger.log('[Sugerir fecha Ref] ' + resumen + 'La Ref actual (' + Utilities.formatDate(ref, tz, 'yyyy-MM-dd') + ') ya es igual o más antigua: no hace falta reenumerar por este archivo.');
+    Logger.log('[Sugerir fecha Ref] ' + resumen + variacion + ' La Ref actual (' + Utilities.formatDate(ref, tz, 'yyyy-MM-dd') + ') ya es igual o más antigua: no hace falta reenumerar por este archivo.');
     return '';
   }
   props.setProperty('REENUM_SUGERENCIA_FECHA', fechaStr);
   props.setProperty('REENUM_SUGERENCIA_FUENTE', 'Correcciones_Guerra.csv, semana RoyaleAPI ' + royaleApi + '-' + r.semana);
   Logger.log('[Sugerir fecha Ref] ' + resumen + 'FECHA A ESCRIBIR en iniciarReenumerarTemporadas(): ' + fechaStr + ' (primer lunes del mes de la temporada ' + supercell + '). Suma ' + deltaMeses +
-    ' mes(es) a toda Temporada guardada; el offset de RoyaleAPI pasa de ' + offset + ' a ' + (offset - deltaMeses) + ' (T1 = RoyaleAPI ' + royaleApi + '). ' +
+    ' mes(es) a toda Temporada guardada; el offset de RoyaleAPI pasa de ' + offset + ' a ' + (offset - deltaMeses) + ' (T1 = RoyaleAPI ' + royaleApi + '). ' + variacion + ' ' +
     'Esta función SOLO sugiere. Sugerencia guardada: también sirve ejecutarReenumeracionSugerida().');
   return fechaStr; // PF261: iniciarReenumerarTemporadas() la usa
 }
@@ -60159,10 +60235,10 @@ function _migrarColumnaPrestamoEnHoja(sh, nombreHoja, headers) {
 
 // iniciarReenumerarTemporadas(): PF258; punto de entrada para correr DESDE EL EDITOR (el editor no pasa argumentos). Escribe la fecha Ref nueva en FECHA_REF_NUEVA, guarda y corre esta función.
 function iniciarReenumerarTemporadas() {
-  var FECHA_REF_NUEVA = 'AAAA-MM-DD'; // <- déjala así para usar la fecha que calcula sugerirFechaRefDesdeCorreccionesGuerra() (semana más antigua con clan Terna), o escribe una fecha (por ejemplo '2024-09-02') para forzarla
+  var FECHA_REF_NUEVA = 'AAAA-MM-DD'; // <- déjala así para usar la fecha que calcula detectarTemporadaMasAntiguaConPresenciaTerna() (la más antigua entre Backup_Guerra.csv, la hoja Nuevos y Correcciones_Guerra.csv), o escribe una fecha (por ejemplo '2024-09-02') para forzarla
   var fecha = FECHA_REF_NUEVA;
   if (fecha === 'AAAA-MM-DD') {
-    fecha = sugerirFechaRefDesdeCorreccionesGuerra(); // PF261: calcula y registra en el log la fecha y por qué; '' si no hay nada que reenumerar
+    fecha = detectarTemporadaMasAntiguaConPresenciaTerna(); // PF285 (antes PF261 usaba solo Correcciones_Guerra.csv): calcula y registra en el log la fecha, la fuente y la variación; '' si no hay nada que reenumerar
     if (!fecha) { Logger.log('[Reenumeración] NO se inició: no hay una fecha Ref más antigua que sugerir (ver el mensaje de arriba).'); return; }
     Logger.log('[Reenumeración] Se usa la fecha sugerida ' + fecha + '.');
   }
