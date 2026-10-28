@@ -26,9 +26,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 
 ---
 
-# 0. Repositorios, entrega por GitHub y reglas nuevas (actualizado el 10-oct-2026; tiene precedencia sobre lo que contradiga más abajo)
-
-> **Entrega de archivos:** los archivos modificados se **suben directo a GitHub** y se da la lista de archivos tocados; solo se entregan como archivo descargable si el usuario lo pide expresamente (nunca como bloque de código en el chat). Esto manda sobre cualquier mención de «archivo descargable» en el resto de la skill. **Sigue vigente todo lo demás:** archivo completo, sin parches, nombre exacto, solo los archivos realmente modificados, sin comillas inversas en los `.gs`, español de Perú.
+# 0. Repositorios, entrega por GitHub y reglas de trabajo (esta sección manda sobre lo que contradiga más abajo)
 
 ## 0.1 Los tres repositorios (GitHub, `GrupoTerna`)
 
@@ -344,14 +342,6 @@ Sin importar cuántos archivos contenga `Base.md` o `Web-main.zip`, **nunca** en
 - todos los archivos del proyecto cuando solo algunos fueron modificados.
 
 Modificar y subir **exclusivamente** los archivos puntuales que hayan sido efectivamente editados, salvo que el usuario pida explícitamente el proyecto completo. Se suben a GitHub (sección 0.2); solo se entregan para descargar si el usuario lo pide expresamente.
-
----
-
-# 7. Archivos modificados: siempre como archivos reales
-
-Los archivos modificados **se suben directo a GitHub** (sección 0.2). Si el usuario pide el archivo para descargar, se entrega como **archivo real descargable y abrible** (con la herramienta de enviar archivos), nunca solo como bloque de código dentro del chat: el usuario debe poder descargarlo, abrirlo, copiarlo y reemplazar el archivo correspondiente en su proyecto. Esto importa sobre todo en archivos largos.
-
-**Archivo modificado = archivo real (subido a GitHub; descargable solo si se pide), nunca un bloque de código en el chat.**
 
 ---
 
