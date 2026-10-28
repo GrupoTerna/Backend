@@ -25,19 +25,19 @@ var WEB_ACTROSTER_CACHES_A_BORRAR = ['web_ingresos_recientes_v1', 'web_roster_v1
 
 // §PF181: la misma cola de turno sirve para regenerar solo Pendientes y Mensajes de guerra (boton «Regenerar ahora» de guerra.html): tipo 'mensajes' = los mismos pasos que runPendientesYMensajes() manual (clanes frescos de la API, Pendientes, Mensajes, indice).
 var WEB_ACTROSTER_NOMBRES_PASOS_MENSAJES = [
-  'Clanes (API fresca)',
-  'Pendientes',
-  'Mensajes',
-  'Índice'
+  'Clanes: pedir a la API datos frescos → datos de clanes cargados',
+  'Hoja Pendientes: actualizar → hoja Pendientes al día',
+  'Hoja Mensajes: generar a partir de Pendientes → hoja Mensajes al día',
+  'Índice de contenido: actualizar tras Pendientes → índice al día'
 ];
 
 var WEB_ACTROSTER_NOMBRES_PASOS = [
-  'Clanes básico (sin /players)',
-  'Directorio',
-  'Nuevos (formato y purgado)',
-  'Nuevos (columnas fijas)',
-  'Nuevos (orden y formato condicional)',
-  'Guerra'
+  'Clanes: pedir a la API los datos básicos de los clanes, sin /players → datos de clanes cargados',
+  'Hoja Directorio: actualizar → hoja Directorio al día',
+  'Nuevos (formato y purgado): aplicar → hoja Nuevos con su formato y purgada',
+  'Nuevos (columnas fijas): refrescar → columnas fijas de Nuevos al día',
+  'Nuevos (orden y formato condicional): aplicar → hoja Nuevos ordenada y con su formato condicional',
+  'Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)'
 ];
 
 // ---------------------------------------------------------------------------

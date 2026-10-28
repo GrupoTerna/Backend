@@ -52,17 +52,17 @@ var PASOS_RUNGUERRARAPIDO = [
 ];
 
 var NOMBRES_PASOS_RUNGUERRARAPIDO = [
-  'Clanes básico (sin /players)',
-  'Directorio',
-  'Nuevos (formato y purgado)',
-  'Nuevos (columnas fijas)',
-  'Nuevos (orden y formato condicional)',
-  'Guerra',
-  'Control',
-  'Control_2',
-  'Pendientes',
-  'Mensajes',
-  'Índice de contenido (mensajes dinámicos)',
+  'Clanes: cargar los datos básicos de los clanes, sin /players (de la API, o de lo ya guardado si se corre sin API) → datos de clanes cargados',
+  'Hoja Directorio: actualizar → hoja Directorio al día',
+  'Nuevos (formato y purgado): aplicar → hoja Nuevos con su formato y purgada',
+  'Nuevos (columnas fijas): refrescar → columnas fijas de Nuevos al día',
+  'Nuevos (orden y formato condicional): aplicar → hoja Nuevos ordenada y con su formato condicional',
+  'Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)',
+  'Hoja Control: actualizar → hoja Control al día',
+  'Hoja Control_2: actualizar → hoja Control_2 al día',
+  'Hoja Pendientes: actualizar → hoja Pendientes al día',
+  'Hoja Mensajes: generar a partir de Pendientes → hoja Mensajes al día',
+  'Menú dinámico: actualizar las entradas Dinámico → menú al día',
 ];
 
 var PASOS_RUNALL = [
@@ -216,80 +216,80 @@ var PASOS_RUNALL = [
 
 // Descripciones cortas alineadas 1 a 1 con PASOS_RUNALL (mismo orden, 42 [→ Contexto_Base_Web.md §B041]
 var NOMBRES_PASOS_RUNALL = [
-  'Renombrar hojas de historial legacy',
-  'Setup de todas las hojas',
-  'Limpiar hojas obsoletas (Terreno limpio / Cards)',
-  'Importar CSV (Directorio, Acumulativos, celulares, Clan, Índice, T_Lista)',
+  'Hojas de historial: renombrar las de versiones anteriores → hojas con los nombres actuales',
+  'Hojas: crear o completar todas con su estructura → todas las hojas listas',
+  'Hojas obsoletas (Terreno limpio, Cards, Menú, T_Requisitos): borrar → ninguna hoja obsoleta',
+  'CSV de respaldo: importar Directorio, Acumulativos, celulares, Índice, listas de Torneos y Sorteos, CR_Lista, Extra, asistencias y resoluciones → hojas cargadas desde Drive',
   // FIX (22-ago-2026): esta entrada ya NO incluye "columnas fijas" — [→ Contexto_Base_Web.md §B042]
-  'Restaurar hojas manuales (Nuevos)',
+  'Hoja Nuevos: restaurar si no existe → hoja Nuevos presente',
   // FIX (22-ago-2026): 3 entradas nuevas, corresponden a las 3 partes en [→ Contexto_Base_Web.md §B043]
-  'Nuevos: formato y purgado',
-  'Nuevos: columnas fijas',
-  'Nuevos: orden y formato condicional',
-  'Fetch de datos de la API de clanes',
+  'Nuevos (formato y purgado): aplicar → hoja Nuevos con su formato y purgada',
+  'Nuevos (columnas fijas): refrescar → columnas fijas de Nuevos al día',
+  'Nuevos (orden y formato condicional): aplicar → hoja Nuevos ordenada y con su formato condicional',
+  'Clanes: pedir a la API los datos de todos los clanes (y /players si está activo) → datos de clanes y jugadores cargados',
   // FIX (15-ago-2026): nombre nuevo, corresponde al paso de guardarApiDump()
   // recién separado del fetch de arriba (ver PASOS_RUNALL).
-  'Guardar dump de API (ApiDump)',
-  'Restaurar Control_2 si no existe',
-  'Actualizar hoja Extra',
-  'Actualizar hoja Clan',
-  'Actualizar hoja Cards',
-  'Actualizar hoja Cards_2',
+  'Dump de API: guardar los JSON de clanes y currentriverrace → JSON guardados en Drive',
+  'Hoja Control_2: restaurar si no existe → hoja Control_2 presente',
+  'Hoja Extra: actualizar → hoja Extra al día',
+  'Hoja Clan: actualizar → hoja Clan al día',
+  'Hoja Cards: actualizar → hoja Cards al día',
+  'Hoja Cards_2: actualizar → hoja Cards_2 al día',
   // 27-sep-2026: corresponde al paso _descargarBattlelogYCofresParaTodos()
   // de PASOS_RUNALL, recién agregado (ver comentario FIX ahí).
-  'Battlelog + UpcomingChests (por jugador, atado al interruptor de players)',
+  'Battlelog y UpcomingChests: descargar por jugador (atado al interruptor de /players) → datos por jugador descargados (puede necesitar varias tandas)',
   // FASE 5(a) del plan de fases (23-sep-2026): 2 entradas nuevas, [→ Contexto_Base_Web.md §B044]
-  'Actualizar hoja Insignias',
-  'Actualizar hoja Insignias_2',
+  'Hoja Insignias: actualizar → hoja Insignias al día',
+  'Hoja Insignias_2: actualizar → hoja Insignias_2 al día',
   // 24-sep-2026: corresponde al paso updateCaminoLeyendasSheet() de PASOS_RUNALL.
-  'Actualizar CSV Camino de Leyendas',
+  'CSV Camino de Leyendas: actualizar → CSV al día',
   // 24-sep-2026: corresponden a updateLogrosSheet()/updateLogros2Sheet() de PASOS_RUNALL.
-  'Actualizar CSV Logros',
-  'Actualizar CSV Logros_2',
+  'CSV Logros (catálogo): actualizar → CSV al día',
+  'CSV Logros_2 (por jugador): actualizar → CSV al día',
   // 24-sep-2026: corresponde al paso updatePerfilWebSheet() de PASOS_RUNALL.
-  'Actualizar CSV Perfil (XP y torre del rey)',
+  'CSV Perfil (XP y torre del rey): actualizar → CSV al día',
   // 24-sep-2026: corresponde al paso updateProgresoEventosSheet() de PASOS_RUNALL.
-  'Actualizar CSV Progreso en eventos rotativos',
-  'Actualizar hoja Directorio',
+  'CSV Progreso en eventos rotativos: actualizar → CSV al día',
+  'Hoja Directorio: actualizar → hoja Directorio al día',
   // FIX (22-ago-2026): 3 entradas nuevas (segunda vez que se divide
   // _refrescarColumnasFijasNuevos() en PASOS_RUNALL, ver arriba).
-  'Nuevos: formato y purgado (2da pasada)',
-  'Nuevos: columnas fijas (2da pasada)',
-  'Nuevos: orden y formato condicional (2da pasada)',
-  'Procesar Torneos (T_Lista/T_Asistencia/T_Control)',
+  'Nuevos (formato y purgado, 2.ª pasada): aplicar → hoja Nuevos con su formato y purgada',
+  'Nuevos (columnas fijas, 2.ª pasada): refrescar → columnas fijas de Nuevos al día',
+  'Nuevos (orden y formato condicional, 2.ª pasada): aplicar → hoja Nuevos ordenada y con su formato condicional',
+  'Torneos: procesar T_Lista, T_Asistencia y T_Control → torneos procesados (puede necesitar varias tandas)',
   // FIX (09-sep-2026): antes 2 entradas sueltas ('Sincronizar requisitos de [→ Contexto_Base_Web.md §B045]
-  'Procesar Sorteos (S_Lista + requisitos + participantes calificados)',
-  'Actualizar hoja Guerra',
-  'Actualizar hoja Guerra_Logs',
+  'Sorteos: procesar S_Lista, requisitos y participantes calificados → sorteos procesados',
+  'Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)',
+  'Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día',
   // FASE 11 (punto 4 del Consolidado): entrada nueva, corresponde al paso [→ Contexto_Base_Web.md §B046]
-  'Nuevos: cierre semanal hacia el histórico',
+  'Nuevos (cierre semanal): pasar la semana actual al histórico → histórico de Nuevos al día',
   // FIX (22-ago-2026): entradas separadas en 3 (antes una sola "Actualizar [→ Contexto_Base_Web.md §B047]
-  'Actualizar hoja Control',
-  'Actualizar vistas derivadas (Inactivos/Vetados/Multicuentas/Historial/Ascensos)',
-  'Actualizar hoja Control_2',
-  'Sincronizar Plantillas desde Drive',
-  'Pendientes y Mensajes',
-  'Actualizar Calendario',
-  'Actualizar índice de contenido (dinámico)',
-  'Actualizar dropdown Cat_disp',
-  'Sincronizar Administradores',
-  'Actualizar hoja Índice',
-  'Reordenar y ocultar hojas según Índice',
-  'Limpiar enlaces accidentales en nombres',
-  'Backup CSV: Directorio + Clan',
-  'Backup CSV: Acumulativos',
+  'Hoja Control: actualizar → hoja Control al día',
+  'Vistas derivadas (Inactivos, Vetados, Multicuentas, Historial, Ascensos): actualizar → vistas al día',
+  'Hoja Control_2: actualizar → hoja Control_2 al día',
+  'Plantillas: sincronizar desde Drive → índice de plantillas al día',
+  'Pendientes y Mensajes: generar → hojas Pendientes y Mensajes al día',
+  'Calendario: generar el calendario del mes actual → calendario del mes al día',
+  'Menú dinámico: actualizar las entradas Dinámico → menú al día',
+  'Administradores: sincronizar → lista de administradores al día',
+  'Desplegable Cat_disp: actualizar → desplegable al día',
+  'Hoja Índice: actualizar → hoja Índice al día',
+  'Hojas: reordenar y ocultar según el Índice → hojas con el orden y la visibilidad del Índice',
+  'Nombres: quitar enlaces accidentales, hoja por hoja → ninguna hoja con enlaces accidentales (puede necesitar varias tandas)',
+  'Backup CSV Directorio y Clan: sincronizar → CSV en Drive al día',
+  'Backup CSV Acumulativos: sincronizar Inactivos y hojas acumulativas → CSV al día (puede necesitar varias tandas)',
   // FIX (16-ago-2026): entrada nueva, corresponde al paso de [→ Contexto_Base_Web.md §B048]
-  'Backup CSV: Guerra',
-  'Backup CSV: celulares',
-  'Backup CSV: Índice y protegidas',
-  'Backup CSV: hojas derivadas',
-  'Aplicar formato global',
-  'Aplicar CLIP global',
-  'Aplicar tablas y gridlines',
+  'Backup CSV Guerra: sincronizar → CSV al día',
+  'Backup de celulares: exportar el JSON → JSON en Drive al día',
+  'Backup CSV Índice y protegidas: sincronizar → CSV en Drive al día',
+  'Backup CSV de hojas derivadas: guardar de una en una → CSV de cada hoja derivada en Drive (puede necesitar varias tandas)',
+  'Formato global: aplicar → formato de todas las hojas aplicado',
+  'Formato: aplicar CLIP global → texto recortado según la configuración',
+  'Tablas y líneas de cuadrícula: aplicar → tablas y gridlines aplicados',
   // FIX (20-ago-2026): entrada actualizada -- este paso ahora llama a [→ Contexto_Base_Web.md §B049]
-  'Restaurar anchos de columna fijos',
+  'Anchos de columna: restaurar los fijos → hojas con sus anchos fijos',
   // FIX (18-sep-2026): entrada nueva, corresponde al paso de [→ Contexto_Base_Web.md §B050]
-  'Autoajustar hojas sin anchos guardados',
+  'Anchos de columna: autoajustar las hojas sin anchos guardados → hojas sin anchos guardados autoajustadas (puede necesitar varias tandas)',
 ];
 
 var PASOS_RUNUPDATE = [
@@ -1036,9 +1036,9 @@ var PASOS_RUNSORTEOS = [
 ];
 
 var NOMBRES_PASOS_RUNSORTEOS = [
-  'Resolver Organizador/Tag_org/Clan/ClanTag en S_Lista',
-  'Sincronizar requisitos de sorteo',
-  'Actualizar Doc de participantes calificados',
+  'S_Lista: resolver Organizador, Tag_org, Clan y ClanTag de las filas nuevas → filas nuevas de S_Lista con esos datos',
+  'Requisitos de sorteo: sincronizar → requisitos al día',
+  'Doc de participantes calificados: actualizar → Doc al día',
 ];
 
 function runSorteos() {
