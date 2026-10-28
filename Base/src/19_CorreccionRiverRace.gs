@@ -1,11 +1,13 @@
-// ==============================================================================
 // 19_CorreccionRiverRace.gs
 // Correcciones pendientes de RiverRace verificadas externamente (Tampermonkey).
-// ==============================================================================
-
-// ----- Variables y constantes -----
-
 // 19_CorreccionRiverRace.gs [→ Contexto_Base_Web.md §19B001]
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Correcciones de River Race: aprobar y limpiar pendientes
+//  Parte 2 — Funciones que no se corren a mano
+//    - Correcciones de River Race: recibir la verificación web y guardar pendientes
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Índices de columna (1-based) — Correcciones_RiverRace_Pendientes.csv. [→ Contexto_Base_Web.md §19B002]
 var CRC = {
@@ -37,10 +39,13 @@ var CORRECCIONES_RIVERRACE_PENDIENTES_CSV = 'Correcciones_RiverRace_Pendientes.c
 // Token propio del endpoint accion=verificarSemanaActual (ver doPost(), [→ Contexto_Base_Web.md §19B004]
 var VERIFICAR_RIVERRACE_TOKEN = _scriptToken('VERIFICAR_RIVERRACE_TOKEN');
 
-// ----- Funciones manuales / punto de entrada -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Correcciones de River Race: aprobar y limpiar pendientes -----
 
 // DETECCIÓN — recibe el payload del userscript, compara contra Guerra, y [→ Contexto_Base_Web.md §19B005]
-
 
 // NOTA DE REORDEN (23-ago-2026, pedido usuario): las funciones manuales [→ Contexto_Base_Web.md §19B006]
 
@@ -231,7 +236,11 @@ function limpiarCorreccionesRiverRacePendientesAplicadas() {
     'Quedan ' + conservadas.length + ' fila(s) en el CSV.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Correcciones de River Race: recibir la verificación web y guardar pendientes -----
 
 /**
  * _procesarVerificacionRiverRace(participantesPayload) [→ Contexto_Base_Web.md §19B013]
