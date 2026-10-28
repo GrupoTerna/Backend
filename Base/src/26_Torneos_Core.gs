@@ -3184,17 +3184,10 @@ function procesarCambioRango() {
     Logger.log('[CambioRango] actualizarDocCambioRango() falló (se continúa): ' + eDocCR.message);
   }
 
-  // Documento «Ascensos y descensos»: tablas de requisitos de la sección «Rangos» y listas por clan.
-  try {
-    actualizarTablasRangosDoc(idA, idD);
-  } catch (eTablasCR) {
-    Logger.log('[CambioRango] actualizarTablasRangosDoc() falló (se continúa): ' + eTablasCR.message);
-  }
-  try {
-    actualizarDocAscensosDescensos(idA, idD);
-  } catch (eDocAD) {
-    Logger.log('[CambioRango] actualizarDocAscensosDescensos() falló (se continúa): ' + eDocAD.message);
-  }
+  // 28-oct-2026 (PF286 punto 12): aquí se llamaban también actualizarTablasRangosDoc() y actualizarDocAscensosDescensos() (25),
+  // pero abren por id el MISMO archivo que escribe actualizarDocCambioRango() (ahora titulado «Cambio de rango») y buscan en él los
+  // encabezados «Ascensos:» y «Descensos:» del diseño viejo, que ese documento borra al reescribirse entero. Quedan solo como funciones
+  // manuales (25) hasta el rediseño de los documentos (PF286 punto 11).
 
   return true;
 }
