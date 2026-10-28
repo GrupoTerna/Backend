@@ -5,6 +5,16 @@
 // =============================================================================
 // Vuelca a Backup_Battlelogs.csv los JSON ya existentes en la carpeta Battlelog (pedido 1-oct-2026, preg. 51), con avisos abiertos [1]-[6]. Archivo autónomo. [→ Contexto_Base_Web.md §06B001]
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Puntos de entrada: sembrar de verdad y sembrar de prueba
+//  Parte 2 — Funciones que no se corren a mano
+//    - Núcleo de la siembra (en el orden en que se llaman)
+//    - Lectura de la carpeta y de las batallas
+//    - Comparación y claves
+//    - CSV y punto de control
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var BLS_CSV_NOMBRE = 'Backup_Battlelogs.csv';
 var BLS_REVISION_CSV_NOMBRE = 'Revision_Guerra.csv';
 var BLS_PROGRESO_FILE = 'Cache_Battlelogs_Siembra_Progreso.json';
@@ -22,6 +32,10 @@ var BLS_REVISION_HEADERS = ['N°', 'Registrado', 'Origen', 'Tag', 'Motivo', 'Det
 var BLS_COL = { TAG: 1, NOMBRE: 2, BATTLETIME: 3, TIPO: 4, CLAN_TAG: 5, CLAN_NOMBRE: 6,
   PRIMERA_COMPARABLE: 5, ULTIMA_COMPARABLE: 14, ARCHIVO: 15, DESCARGADO: 16, LADO: 17 };
 
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
 // PUNTOS DE ENTRADA [→ Contexto_Base_Web.md §06B002]
 
 /**
@@ -38,6 +52,10 @@ function sembrarBattlelogsDesdeCarpeta() {
 function sembrarBattlelogsDesdeCarpetaPrueba() {
   return _blsSembrar_(true);
 }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
 
 // NUCLEO [→ Contexto_Base_Web.md §06B004]
 
@@ -254,36 +272,6 @@ function _blsEsBatallaGuerra_(tipo) {
   return t.indexOf('riverRace') === 0 || t === 'boatBattle';
 }
 
-/**
- * _blsClanDeBatalla_(equipo0) [→ Contexto_Base_Web.md §06B007]
- */
-function _blsClanDeBatalla_(equipo0) {
-  var clan = (equipo0 && equipo0.clan) || {};
-  return { tag: String(clan.tag || '').toUpperCase(), nombre: String(clan.name || '') };
-}
-
-/**
- * _blsRondasDuelo_(equipo0, rival0) [→ Contexto_Base_Web.md §06B008]
- */
-function _blsRondasDuelo_(equipo0, rival0) {
-  var propias = (equipo0 && Array.isArray(equipo0.rounds)) ? equipo0.rounds : [];
-  if (!propias.length) return '';
-  var rivales = (rival0 && Array.isArray(rival0.rounds)) ? rival0.rounds : [];
-  var partes = [];
-  for (var i = 0; i < propias.length; i++) {
-    var c1 = (propias[i] && propias[i].crowns !== undefined && propias[i].crowns !== null) ? propias[i].crowns : '?';
-    var c2 = (rivales[i] && rivales[i].crowns !== undefined && rivales[i].crowns !== null) ? rivales[i].crowns : '?';
-    partes.push(c1 + ' vs ' + c2);
-  }
-  return partes.join(' / ');
-}
-
-function _blsNumeroOVacio_(valor) {
-  if (valor === undefined || valor === null || valor === '') return '';
-  var n = Number(valor);
-  return isNaN(n) ? '' : n;
-}
-
 function _blsFilaDeBatalla_(bat, tag, archivo) {
   var eq = (bat.team && bat.team[0]) || {};
   var ri = (bat.opponent && bat.opponent[0]) || {};
@@ -318,6 +306,36 @@ function _blsFilaDeBatalla_(bat, tag, archivo) {
 }
 
 /**
+ * _blsClanDeBatalla_(equipo0) [→ Contexto_Base_Web.md §06B007]
+ */
+function _blsClanDeBatalla_(equipo0) {
+  var clan = (equipo0 && equipo0.clan) || {};
+  return { tag: String(clan.tag || '').toUpperCase(), nombre: String(clan.name || '') };
+}
+
+/**
+ * _blsRondasDuelo_(equipo0, rival0) [→ Contexto_Base_Web.md §06B008]
+ */
+function _blsRondasDuelo_(equipo0, rival0) {
+  var propias = (equipo0 && Array.isArray(equipo0.rounds)) ? equipo0.rounds : [];
+  if (!propias.length) return '';
+  var rivales = (rival0 && Array.isArray(rival0.rounds)) ? rival0.rounds : [];
+  var partes = [];
+  for (var i = 0; i < propias.length; i++) {
+    var c1 = (propias[i] && propias[i].crowns !== undefined && propias[i].crowns !== null) ? propias[i].crowns : '?';
+    var c2 = (rivales[i] && rivales[i].crowns !== undefined && rivales[i].crowns !== null) ? rivales[i].crowns : '?';
+    partes.push(c1 + ' vs ' + c2);
+  }
+  return partes.join(' / ');
+}
+
+function _blsNumeroOVacio_(valor) {
+  if (valor === undefined || valor === null || valor === '') return '';
+  var n = Number(valor);
+  return isNaN(n) ? '' : n;
+}
+
+/**
  * _blsCompletarLado_(previa, nueva) [→ Contexto_Base_Web.md §06B009]
  */
 function _blsCompletarLado_(previa, nueva) {
@@ -341,22 +359,6 @@ function _blsClaveRevision_(tag, motivo, detalle) {
   return String(tag || '').toUpperCase() + '|' + String(motivo || '') + '|' + String(detalle || '');
 }
 
-function _blsCelda_(fila, idx) {
-  var v = fila[idx];
-  return (v === undefined || v === null) ? '' : String(v).trim();
-}
-
-/**
- * _blsFirma_(fila) [→ Contexto_Base_Web.md §06B011]
- */
-function _blsFirma_(fila) {
-  var partes = [];
-  for (var i = BLS_COL.PRIMERA_COMPARABLE; i <= BLS_COL.ULTIMA_COMPARABLE; i++) {
-    partes.push(_blsCelda_(fila, i));
-  }
-  return partes.join(',');
-}
-
 /**
  * _blsComparar_(previa, nueva)
  * Devuelve 'igual', 'clan' (difieren SOLO ClanTag/ClanNombre) o 'otros'.
@@ -372,6 +374,22 @@ function _blsComparar_(previa, nueva) {
   }
   if (difiereOtro) return 'otros';
   return difiereClan ? 'clan' : 'igual';
+}
+
+function _blsCelda_(fila, idx) {
+  var v = fila[idx];
+  return (v === undefined || v === null) ? '' : String(v).trim();
+}
+
+/**
+ * _blsFirma_(fila) [→ Contexto_Base_Web.md §06B011]
+ */
+function _blsFirma_(fila) {
+  var partes = [];
+  for (var i = BLS_COL.PRIMERA_COMPARABLE; i <= BLS_COL.ULTIMA_COMPARABLE; i++) {
+    partes.push(_blsCelda_(fila, i));
+  }
+  return partes.join(',');
 }
 
 // CSV Y PUNTO DE CONTROL [→ Contexto_Base_Web.md §06B012]
@@ -403,8 +421,24 @@ function _blsLeerCsv_(nombre, headersEsperados) {
   return { ok: true, rows: filas };
 }
 
-function _blsRenumerar_(filas) {
-  for (var i = 0; i < filas.length; i++) filas[i][0] = i + 1;
+function _blsCargarProgreso_() {
+  var hechos = {};
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var it = folder.getFilesByName(BLS_PROGRESO_FILE);
+    if (!it.hasNext()) return hechos;
+    var file = it.next();
+    var parsed = JSON.parse(file.getBlob().getDataAsString('UTF-8'));
+    if (!parsed || !parsed._ts || Date.now() - Number(parsed._ts) > BLS_PROGRESO_MAX_EDAD_MS) {
+      file.setTrashed(true);
+      return hechos;
+    }
+    var lista = parsed.tags || [];
+    for (var i = 0; i < lista.length; i++) hechos[lista[i]] = true;
+  } catch (e) {
+    Logger.log('[Battlelogs/Siembra] Error leyendo el punto de control (se empieza desde cero; el CSV evita duplicados): ' + e.message);
+  }
+  return hechos;
 }
 
 /**
@@ -429,6 +463,10 @@ function _blsGuardarTodo_(filas, revFilas, revNuevas, hechos, revisionDisponible
   _blsGuardarProgreso_(hechos);
 }
 
+function _blsRenumerar_(filas) {
+  for (var i = 0; i < filas.length; i++) filas[i][0] = i + 1;
+}
+
 function _blsGuardarProgreso_(hechos) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
@@ -439,26 +477,6 @@ function _blsGuardarProgreso_(hechos) {
   } catch (e) {
     Logger.log('[Battlelogs/Siembra] Error guardando el punto de control: ' + e.message);
   }
-}
-
-function _blsCargarProgreso_() {
-  var hechos = {};
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var it = folder.getFilesByName(BLS_PROGRESO_FILE);
-    if (!it.hasNext()) return hechos;
-    var file = it.next();
-    var parsed = JSON.parse(file.getBlob().getDataAsString('UTF-8'));
-    if (!parsed || !parsed._ts || Date.now() - Number(parsed._ts) > BLS_PROGRESO_MAX_EDAD_MS) {
-      file.setTrashed(true);
-      return hechos;
-    }
-    var lista = parsed.tags || [];
-    for (var i = 0; i < lista.length; i++) hechos[lista[i]] = true;
-  } catch (e) {
-    Logger.log('[Battlelogs/Siembra] Error leyendo el punto de control (se empieza desde cero; el CSV evita duplicados): ' + e.message);
-  }
-  return hechos;
 }
 
 function _blsBorrarProgreso_() {
