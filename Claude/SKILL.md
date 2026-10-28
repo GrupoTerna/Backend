@@ -1,9 +1,11 @@
 ---
 name: md
-description: "Lectura de Base.md (backend Apps Script), Web-main.zip (frontend JS del repo GrupoTerna/Web), Tampermonkey.md (script de Tampermonkey) y Generador.md (proyecto que genera/sincroniza Base). Desde el 10-oct-2026 el código vive en tres repos de GitHub (Backend, Web, Script) y los cambios se suben directo a GitHub (ver sección 0)"
+description: "Trabajo con el ecosistema de código del clan: backend Apps Script (Base y Generador), frontend Web, script de Tampermonkey y consolidados de fases. El código vive en los repos de GitHub GrupoTerna (Backend, Web, Script) y los cambios se suben directo a main. Usar al leer, corregir o ampliar esos archivos, o al editar el contexto, los consolidados o esta skill. Responde en español de Perú.""
 ---
 
 # Skill: `md` — lectura, corrección y consolidados de fases de proyectos en .md/.zip
+
+**Versión de esta skill: 27-oct-2026 (commit en `Claude/SKILL.md` del repo `Backend`).** Si la copia instalada muestra una fecha anterior, hay que reinstalarla desde ese archivo. Al editar la skill, se actualiza esta fecha.
 
 ## Idioma
 
