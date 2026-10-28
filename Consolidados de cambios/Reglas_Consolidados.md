@@ -109,7 +109,7 @@ Las secciones anteriores dicen cómo se trabaja un consolidado. Esta dice dónde
 2. Escribir en el contexto el funcionamiento, las decisiones y lo probado.
 3. Añadir la viñeta al `CHANGELOG.md` (si es frontend) en su fecha y archivo, correr `npm run check-changelog` y actualizar «Abiertos».
 4. Marcar lo hecho en el consolidado del que salió el cambio, si lo hay.
-5. Dar la lista de archivos modificados o creados (con su commit) y los recordatorios que apliquen: pull en GitHub Desktop, `subirBaseDesdeGithub()`, pasar el `Generador` a mano.
+5. Dar la lista de archivos modificados o creados (con su commit) y los recordatorios que apliquen: `subirBaseDesdeGithub()`, pasar el `Generador` a mano.
 6. Si con esto el consolidado queda aplicado por completo, informarlo y preguntar si se borra (sección 1).
 
 *Pendiente de definir:* el repo `Backend` no tiene `CHANGELOG.md`. Hoy su historial es el de git (mensajes de commit claros), los `AVISOS ABIERTOS` del `.gs` y el contexto. Falta que la usuaria diga si quiere uno.

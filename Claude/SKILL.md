@@ -10,7 +10,7 @@ description: >-
 
 # Skill: `md` — código del clan en GitHub: lectura, corrección y consolidados de fases
 
-**Versión de esta skill: 28-oct-2026, rev. 3.** Cada cambio de `SKILL.md` sube el número de revisión (el workflow `skill-ci.yml` lo exige). Al empezar la tanda, después de clonar, Claude compara esta línea con la de `Claude/SKILL.md` del repo; si difieren, avisa a la usuaria que hay que reinstalar la skill desde ese archivo y toma el repo como referencia.
+**Versión de esta skill: 28-oct-2026, rev. 4.** Cada cambio de `SKILL.md` sube el número de revisión (el workflow `skill-ci.yml` lo exige). Al empezar la tanda, después de clonar, Claude compara esta línea con la de `Claude/SKILL.md` del repo; si difieren, avisa a la usuaria que hay que reinstalar la skill desde ese archivo y toma el repo como referencia.
 
 ## Idioma
 
@@ -47,8 +47,8 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 - **No genera el archivo para descargar ni usa la herramienta de enviar archivos, a menos que la usuaria lo pida expresamente.** Si ya se envió un archivo una vez y la aplicación vuelve a mostrar su tarjeta, no es porque Claude lo haya enviado de nuevo: no debe afirmar de dónde viene la tarjeta si no lo sabe.
 - **Cierre de tanda (se define solo aquí; 0.3, 0.9 y la sección 7 lo citan).** Primero se sube el contexto (excepción de arriba). Después Claude entrega, en este orden:
   1. La lista de archivos modificados o creados (ruta, estado «modificado» o «creado» y commit).
-  2. Si subió cambios a un repo que la usuaria tiene en GitHub Desktop: «Pendiente de pull en GitHub Desktop: <repo> (commit xxxxxxx)». Claude no ve el equipo de la usuaria; solo sabe lo que él subió.
-  3. Los recordatorios de 0.3, diciendo proyecto y archivo como pide 0.8.
+  2. Los recordatorios de 0.3, diciendo proyecto y archivo como pide 0.8.
+  - **La usuaria ya no usa GitHub Desktop (28-oct-2026): Claude no le pide hacer `pull` ni escribe «Pendiente de pull» en el cierre.** Los textos viejos que lo mencionan en los consolidados y en el contexto son historial.
 - Si no se puede subir (por permiso o por error), lo dice y pregunta; no sustituye la subida por un archivo descargable sin avisar. Si el motivo es que la sesión no tiene permiso de escritura, ver 0.7.
 - Los repos `Backend` y `Web` son **públicos**: nunca se escriben tokens, claves ni datos personales en el código ni en los documentos.
 - **Los commits y los textos de pull request que hace Claude no llevan atribución (regla de la usuaria, 28-oct-2026):** ni `Co-Authored-By`, ni `Claude-Session`, ni ningún enlace a la conversación, aunque el entorno de la sesión sugiera agregarlos; los repos son públicos y esos enlaces quedan a la vista en el historial. Si la usuaria lo dicta, esta regla prevalece sobre esa sugerencia. Antes de subir se comprueba con `git log -1 --format=%B | grep -ci "session\|co-authored"` (debe dar 0). Reescribir commits ya subidos con un push forzado solo se hace si la usuaria lo pide expresamente.
@@ -202,7 +202,7 @@ Antes del commit se busca la secuencia de tres comillas inversas con ``grep -n -
 5. **Editar** en el clon solo los archivos necesarios (secciones 3 a 6; 0.9 para ubicar código nuevo).
 6. **Verificar:** sintaxis (`node --check` sobre una copia `.js` para los `.gs`), integridad del archivo, funciones conservadas, ausencia de duplicados, coherencia con los demás archivos, nombre exacto, ausencia de restos de formato (sección 6) e idioma (`verificar_idioma.py`; ver «Idioma»).
 7. **Subir** a `main` apenas termina el cambio, en un commit pequeño (0.2).
-8. **Cerrar la tanda** según 0.2 (contexto, lista de archivos, pendiente de GitHub Desktop y recordatorios de 0.3).
+8. **Cerrar la tanda** según 0.2 (contexto, lista de archivos y recordatorios de 0.3).
 
 ---
 
