@@ -23,7 +23,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 
 # 0. Repositorios, entrega por GitHub y reglas nuevas (actualizado el 10-oct-2026; tiene precedencia sobre lo que contradiga más abajo)
 
-> **Esta sección REEMPLAZA, en lo que se refiere a la forma de entregar los archivos:** el último párrafo de «Objetivo», la «Regla adicional» de la sección 6 (la frase «cada uno como archivo individual descargable»), la sección 7 completa, los pasos 10 y 11 de la sección 10, la sección 15, la regla 5 de las reglas de trabajo (hoy en `Consolidados de cambios/Reglas_Consolidados.md`) y las líneas de «archivo descargable» de la regla de oro (17). **Corrección explícita (regla 9):** hasta el 10-oct-2026 esta skill decía que todo archivo modificado debía entregarse como archivo descargable; la usuaria cambió el flujo y esa instrucción ya no rige. **Sigue vigente todo lo demás** (archivo completo, sin parches, nombre exacto, solo los archivos realmente modificados, sin comillas inversas en los `.gs`, español de Perú).
+> **Entrega de archivos:** los archivos modificados se **suben directo a GitHub** y se da la lista de archivos tocados; solo se entregan como archivo descargable si el usuario lo pide expresamente (nunca como bloque de código en el chat). Esto manda sobre cualquier mención de «archivo descargable» en el resto de la skill. **Sigue vigente todo lo demás:** archivo completo, sin parches, nombre exacto, solo los archivos realmente modificados, sin comillas inversas en los `.gs`, español de Perú.
 
 ## 0.1 Los tres repositorios (GitHub, `GrupoTerna`)
 
@@ -130,7 +130,7 @@ Este proyecto tiene un ecosistema de fuentes de código recurrentes que el usuar
 3. **`Tampermonkey.md`** — el **script de Tampermonkey**. Tampermonkey no permite subir archivos, así que el usuario usa `.md` únicamente como formato de conveniencia para poder descargar y compartir el código. Esto **no lo convierte en texto libre ni en algo ignorable**: es el código real del script.
 4. **`Generador.md`** (o `.gs`/`.zip`/`.txt`) — es el **proyecto Apps Script que genera y sincroniza `Base`**. No es parte del backend de `Base` en sí, sino la herramienta que lo produce. Ver sección "El Generador" más abajo para el detalle de qué es y cuándo se necesita.
 
-La skill debe trabajar sobre el contenido real de estos archivos y modificar **únicamente los archivos puntuales que haga falta**, nunca carpetas, zips ni el consolidado completo. **Corrección (10-oct-2026, ver sección 0):** esos archivos ya no se devuelven «listos para descargar»; se suben directo a GitHub y se da la lista de archivos tocados.
+La skill debe trabajar sobre el contenido real de estos archivos y modificar **únicamente los archivos puntuales que haga falta**, nunca carpetas, zips ni el consolidado completo. Esos archivos se suben directo a GitHub y se da la lista de archivos tocados (sección 0.2).
 
 ## El Generador
 
@@ -340,33 +340,15 @@ Sin importar cuántos archivos contenga `Base.md` o `Web-main.zip`, **nunca** en
 - el archivo `Base.md` completo reescrito;
 - todos los archivos del proyecto cuando solo algunos fueron modificados.
 
-Modificar y subir **exclusivamente** los archivos puntuales que hayan sido efectivamente editados, salvo que el usuario pida explícitamente el proyecto completo. **Corrección (10-oct-2026):** antes decía «cada uno como archivo individual descargable»; ahora se suben a GitHub (sección 0.2) y solo se entregan para descargar si el usuario lo pide expresamente.
+Modificar y subir **exclusivamente** los archivos puntuales que hayan sido efectivamente editados, salvo que el usuario pida explícitamente el proyecto completo. Se suben a GitHub (sección 0.2); solo se entregan para descargar si el usuario lo pide expresamente.
 
 ---
 
 # 7. Archivos modificados: siempre como archivos reales
 
-> **REEMPLAZADA el 10-oct-2026 en lo que se refiere a la entrega (ver sección 0.2):** los archivos modificados se **suben directo a GitHub**; solo se entregan como archivo descargable **si el usuario lo pide expresamente**. Lo que sigue se conserva solo para ese caso, y porque **nunca** se entrega un archivo modificado únicamente como bloque de código en el chat.
-
-Cuando el usuario pida el archivo para descargar, todo archivo `.gs` modificado debe entregarse como **archivo real descargable y abrible**.
-
-Nunca entregar un archivo modificado únicamente como bloque de código dentro del chat.
-
-El usuario debe poder:
-
-1. descargar el archivo;
-2. abrirlo;
-3. copiarlo directamente;
-4. guardarlo;
-5. reemplazar el archivo correspondiente en su proyecto.
-
-Esto es especialmente importante para archivos largos.
-
-## Regla absoluta
+Los archivos modificados **se suben directo a GitHub** (sección 0.2). Si el usuario pide el archivo para descargar, se entrega como **archivo real descargable y abrible** (con la herramienta de enviar archivos), nunca solo como bloque de código dentro del chat: el usuario debe poder descargarlo, abrirlo, copiarlo y reemplazar el archivo correspondiente en su proyecto. Esto importa sobre todo en archivos largos.
 
 **Archivo modificado = archivo real (subido a GitHub; descargable solo si se pide), nunca un bloque de código en el chat.**
-
-No sustituir el archivo por un bloque de código Markdown.
 
 ---
 
@@ -491,7 +473,7 @@ Comprobar:
 
 ## Paso 10 — Modificar los archivos en el repo
 
-**Corrección (10-oct-2026, ver sección 0.2):** antes este paso decía «crear archivos descargables». Ahora se editan físicamente solo los archivos individuales modificados (`.gs`, `.js`, `.md`, etc., según corresponda) en el clon del repo.
+Se editan físicamente solo los archivos individuales modificados (`.gs`, `.js`, `.md`, etc., según corresponda) en el clon del repo.
 
 Cada archivo debe conservar exactamente su nombre original. Nunca generar un `.zip` ni una carpeta con el proyecto completo.
 
@@ -565,7 +547,7 @@ Si realmente se necesita un archivo nuevo:
 
 # 15. Resultado final esperado
 
-**Corrección (10-oct-2026, ver sección 0.2):** antes esta sección decía que el usuario debía recibir los archivos corregidos como archivos descargables. Ahora los archivos corregidos **se suben a GitHub, uno por uno** (nunca como carpeta o zip) y el usuario recibe la lista de archivos tocados; solo se entregan para descargar si los pide. Los ejemplos de abajo sirven para saber **qué archivos** se tocan y con qué nombre.
+Los archivos corregidos **se suben a GitHub, uno por uno** (nunca como carpeta o zip) y el usuario recibe la lista de archivos tocados; solo se entregan para descargar si los pide. Los ejemplos de abajo sirven para saber **qué archivos** se tocan y con qué nombre.
 
 Ejemplo (backend, desde `Base.md`):
 
