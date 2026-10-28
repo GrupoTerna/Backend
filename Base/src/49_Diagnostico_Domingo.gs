@@ -1,10 +1,102 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Reparar el domingo T5 S4 (primero el informe, luego aplicar)
+//    - Diagnóstico de guerra de un día (solo lectura)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Reparar el domingo T5 S4: motor común
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Reparar el domingo T5 S4 (primero el informe, luego aplicar) -----
+
 // ==============================================================================
 //49_Diagnostico_Domingo.gs
 // Repara los ataques del domingo 04-oct-2026 (T5 S4, periodIndex 27) que quedaron en 0 por sobrescritura sin ratchet en updateGuerraSheet(). [→ Contexto_Base_Web.md §49B001]
 // ==============================================================================
 // (05-oct-2026) Fuente JSON de currentriverrace, reglas de seguridad, límite, ESTADO de la corrida (5 SIN RESOLVER) y fuentes pendientes. Uso: Informe y luego Aplicar. [→ Contexto_Base_Web.md §49B002]
 function repararDomingoT5S4Informe() { _repararDomingoT5S4_(false); }
+
 function repararDomingoT5S4Aplicar() { _repararDomingoT5S4_(true); }
+
+// ----- Diagnóstico de guerra de un día (solo lectura) -----
+
+// =============================================================================
+// Diagnostico_Guerra
+// =============================================================================
+// Diagnóstico de solo lectura (06-oct-2026): confirma por qué el domingo 4-oct no tiene filas en Guerra (hipótesis: purga de temporada antes del respaldo CSV). [→ Contexto_Base_Web.md §49B003]
+// =============================================================================
+
+function _diagnosticoGuerraDia(temporada, semana, offsetDia) {
+  var temp = String(temporada === undefined ? (136 - _getTemporadaOffsetRoyaleApi()) : temporada); // 26-oct-2026: 136 = RoyaleAPI del 04-oct-2026; sigue la reenumeración (antes 5 fijo)
+  var sem = Number(semana === undefined ? 4 : semana);
+  var off = Number(offsetDia === undefined ? 3 : offsetDia); // 0=jue, 1=vie, 2=sáb, 3=dom
+  var pIdxBuscado = (sem - 1) * 7 + 3 + off;
+
+  function resumir(filas, etiqueta) {
+    var porDia = {};   // PeriodIndex -> { filas, clanes:{}, maxAtaques }
+    var ultimaFecha = null;
+    for (var i = 0; i < filas.length; i++) {
+      var f = filas[i];
+      if (String(f[GC.TEMPORADA - 1] || '') !== temp) continue;
+      if (Number(f[GC.SEMANA - 1]) !== sem) continue;
+      var p = Number(f[GC.PERIOD_IDX - 1]);
+      var d = porDia[p] || (porDia[p] = { filas: 0, clanes: {}, maxAtaques: 0 });
+      d.filas++;
+      d.clanes[String(f[GC.CLAN - 1] || '').trim()] = true;
+      d.maxAtaques = Math.max(d.maxAtaques, Number(f[GC.ATAQUES_HOY - 1]) || 0);
+      var fe = f[GC.FECHA - 1];
+      if (fe) ultimaFecha = fe;
+    }
+    Logger.log('--- ' + etiqueta + ': temporada ' + temp + ', semana ' + sem + ' ---');
+    var claves = Object.keys(porDia).map(Number).sort(function (a, b) { return a - b; });
+    if (!claves.length) Logger.log('   (sin ninguna fila de esa temporada y semana)');
+    claves.forEach(function (p) {
+      var d = porDia[p];
+      Logger.log('   PeriodIndex ' + p + (p === pIdxBuscado ? '  <== día buscado' : '') + ': ' + d.filas + ' fila(s), ' +
+        Object.keys(d.clanes).length + ' clan(es), máx. AtaquesHoy visto = ' + d.maxAtaques);
+    });
+    Logger.log('   ¿Hay filas del día buscado (PeriodIndex ' + pIdxBuscado + ')? ' + (porDia[pIdxBuscado] ? 'SÍ' : 'NO'));
+    return !!porDia[pIdxBuscado];
+  }
+
+  var enHoja = false, enCsv = false;
+
+  try {
+    var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+    if (sh && sh.getLastRow() >= 2) {
+      var dataHoja = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+      enHoja = resumir(dataHoja, 'Hoja Guerra (' + dataHoja.length + ' filas en total)');
+    } else {
+      Logger.log('--- Hoja Guerra: vacía o inexistente ---');
+    }
+  } catch (e1) { Logger.log('No pude leer la hoja Guerra: ' + e1.message); }
+
+  try {
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (csvText) {
+      var parsed = _parseCSV(csvText);
+      var dataCsv = (parsed && parsed.length > 1) ? parsed.slice(1) : [];
+      enCsv = resumir(dataCsv, 'Backup_Guerra.csv (' + dataCsv.length + ' filas en total)');
+    } else {
+      Logger.log('--- Backup_Guerra.csv: no encontrado o vacío ---');
+    }
+  } catch (e2) { Logger.log('No pude leer Backup_Guerra.csv: ' + e2.message); }
+
+  var veredicto;
+  if (enHoja || enCsv) veredicto = 'El día SÍ tiene filas (' + (enHoja ? 'hoja' : '') + (enHoja && enCsv ? ' y ' : '') + (enCsv ? 'CSV' : '') + '): el problema no es que falten, revisar cómo se leen.';
+  else veredicto = 'El día NO tiene filas ni en la hoja ni en el CSV: se perdieron antes de respaldarse (compatible con la hipótesis de la purga del cambio de temporada). Las filas de Guerra_Logs y el JSON de Drive pueden servir para reconstruirlas.';
+  Logger.log('VEREDICTO: ' + veredicto);
+  return veredicto;
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Reparar el domingo T5 S4: motor común -----
 
 function _repararDomingoT5S4_(aplicar) {
   // 26-oct-2026: la temporada objetivo ya no es el 5 fijo. El domingo 04-oct-2026 es la temporada 136 de RoyaleAPI, que no cambia al reenumerar;
@@ -96,72 +188,4 @@ function _repararDomingoT5S4_(aplicar) {
   } finally {
     lock.releaseLock();
   }
-}
-// =============================================================================
-// Diagnostico_Guerra
-// =============================================================================
-// Diagnóstico de solo lectura (06-oct-2026): confirma por qué el domingo 4-oct no tiene filas en Guerra (hipótesis: purga de temporada antes del respaldo CSV). [→ Contexto_Base_Web.md §49B003]
-// =============================================================================
-
-function _diagnosticoGuerraDia(temporada, semana, offsetDia) {
-  var temp = String(temporada === undefined ? (136 - _getTemporadaOffsetRoyaleApi()) : temporada); // 26-oct-2026: 136 = RoyaleAPI del 04-oct-2026; sigue la reenumeración (antes 5 fijo)
-  var sem = Number(semana === undefined ? 4 : semana);
-  var off = Number(offsetDia === undefined ? 3 : offsetDia); // 0=jue, 1=vie, 2=sáb, 3=dom
-  var pIdxBuscado = (sem - 1) * 7 + 3 + off;
-
-  function resumir(filas, etiqueta) {
-    var porDia = {};   // PeriodIndex -> { filas, clanes:{}, maxAtaques }
-    var ultimaFecha = null;
-    for (var i = 0; i < filas.length; i++) {
-      var f = filas[i];
-      if (String(f[GC.TEMPORADA - 1] || '') !== temp) continue;
-      if (Number(f[GC.SEMANA - 1]) !== sem) continue;
-      var p = Number(f[GC.PERIOD_IDX - 1]);
-      var d = porDia[p] || (porDia[p] = { filas: 0, clanes: {}, maxAtaques: 0 });
-      d.filas++;
-      d.clanes[String(f[GC.CLAN - 1] || '').trim()] = true;
-      d.maxAtaques = Math.max(d.maxAtaques, Number(f[GC.ATAQUES_HOY - 1]) || 0);
-      var fe = f[GC.FECHA - 1];
-      if (fe) ultimaFecha = fe;
-    }
-    Logger.log('--- ' + etiqueta + ': temporada ' + temp + ', semana ' + sem + ' ---');
-    var claves = Object.keys(porDia).map(Number).sort(function (a, b) { return a - b; });
-    if (!claves.length) Logger.log('   (sin ninguna fila de esa temporada y semana)');
-    claves.forEach(function (p) {
-      var d = porDia[p];
-      Logger.log('   PeriodIndex ' + p + (p === pIdxBuscado ? '  <== día buscado' : '') + ': ' + d.filas + ' fila(s), ' +
-        Object.keys(d.clanes).length + ' clan(es), máx. AtaquesHoy visto = ' + d.maxAtaques);
-    });
-    Logger.log('   ¿Hay filas del día buscado (PeriodIndex ' + pIdxBuscado + ')? ' + (porDia[pIdxBuscado] ? 'SÍ' : 'NO'));
-    return !!porDia[pIdxBuscado];
-  }
-
-  var enHoja = false, enCsv = false;
-
-  try {
-    var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
-    if (sh && sh.getLastRow() >= 2) {
-      var dataHoja = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
-      enHoja = resumir(dataHoja, 'Hoja Guerra (' + dataHoja.length + ' filas en total)');
-    } else {
-      Logger.log('--- Hoja Guerra: vacía o inexistente ---');
-    }
-  } catch (e1) { Logger.log('No pude leer la hoja Guerra: ' + e1.message); }
-
-  try {
-    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
-    if (csvText) {
-      var parsed = _parseCSV(csvText);
-      var dataCsv = (parsed && parsed.length > 1) ? parsed.slice(1) : [];
-      enCsv = resumir(dataCsv, 'Backup_Guerra.csv (' + dataCsv.length + ' filas en total)');
-    } else {
-      Logger.log('--- Backup_Guerra.csv: no encontrado o vacío ---');
-    }
-  } catch (e2) { Logger.log('No pude leer Backup_Guerra.csv: ' + e2.message); }
-
-  var veredicto;
-  if (enHoja || enCsv) veredicto = 'El día SÍ tiene filas (' + (enHoja ? 'hoja' : '') + (enHoja && enCsv ? ' y ' : '') + (enCsv ? 'CSV' : '') + '): el problema no es que falten, revisar cómo se leen.';
-  else veredicto = 'El día NO tiene filas ni en la hoja ni en el CSV: se perdieron antes de respaldarse (compatible con la hipótesis de la purga del cambio de temporada). Las filas de Guerra_Logs y el JSON de Drive pueden servir para reconstruirlas.';
-  Logger.log('VEREDICTO: ' + veredicto);
-  return veredicto;
 }
