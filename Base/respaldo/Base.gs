@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 00:44:55 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 01:42:39 */
 
 
 
@@ -199,6 +199,9 @@ var PASOS_RUNALL = [
   function () { return procesarTorneos(); },
   // FIX (09-sep-2026, pedido usuario -- "_continuarRunSorteos() / [→ Contexto_Base_Web.md §B026]
   function () { return procesarSorteos(); },
+  // PF286 (28-oct-2026, pedido de la usuaria): Cambio de rango, igual que Torneos y Sorteos: actualiza con el par vigente de Extra los documentos
+  // «Cambio de rango» y «Ascensos y descensos» (ver procesarCambioRango(), 26_Torneos_Core.gs). [→ Contexto_Base_Web.md §PF286]
+  function () { return procesarCambioRango(); },
   // Guerra y Guerra_Logs van en pasos SEPARADOS (mismo motivo que [→ Contexto_Base_Web.md §B027]
   function () { return updateGuerraSheet(); },
   function () { updateGuerraLogsSheet(); },
@@ -302,6 +305,7 @@ var NOMBRES_PASOS_RUNALL = [
   'Torneos: procesar T_Lista, T_Asistencia y T_Control → torneos procesados (puede necesitar varias tandas)',
   // FIX (09-sep-2026): antes 2 entradas sueltas ('Sincronizar requisitos de [→ Contexto_Base_Web.md §B045]
   'Sorteos: procesar S_Lista, requisitos y participantes calificados → sorteos procesados',
+  'Cambio de rango: actualizar los documentos del par vigente → documentos de cambio de rango y de ascensos y descensos al día',
   'Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)',
   'Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día',
   // FASE 11 (punto 4 del Consolidado): entrada nueva, corresponde al paso [→ Contexto_Base_Web.md §B046]
@@ -390,6 +394,9 @@ var PASOS_RUNUPDATE = [
   function () { return procesarTorneos(); },
   // FIX (09-sep-2026): ver el comentario FIX completo en PASOS_RUNALL, mismo [→ Contexto_Base_Web.md §B060]
   function () { return procesarSorteos(); },
+  // PF286 (28-oct-2026, pedido de la usuaria): Cambio de rango, igual que Torneos y Sorteos: actualiza con el par vigente de Extra los documentos
+  // «Cambio de rango» y «Ascensos y descensos» (ver procesarCambioRango(), 26_Torneos_Core.gs). [→ Contexto_Base_Web.md §PF286]
+  function () { return procesarCambioRango(); },
   // Ver comentario equivalente en PASOS_RUNALL: Guerra y Guerra_Logs van [→ Contexto_Base_Web.md §B061]
   function () { return updateGuerraSheet(); },
   function () { updateGuerraLogsSheet(); },
@@ -467,6 +474,7 @@ var NOMBRES_PASOS_RUNUPDATE = [
   'Nuevos (orden y formato condicional): aplicar → hoja Nuevos ordenada y con su formato condicional',
   'Torneos: procesar T_Lista, T_Asistencia y T_Control → torneos procesados (puede necesitar varias tandas)',
   'Sorteos: procesar S_Lista, requisitos y participantes calificados → sorteos procesados',
+  'Cambio de rango: actualizar los documentos del par vigente → documentos de cambio de rango y de ascensos y descensos al día',
   'Hoja Guerra: actualizar (antes restaura desde el CSV si está vacía) → hoja Guerra al día (puede necesitar varias tandas)',
   'Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día',
   'Nuevos (cierre semanal): pasar la semana actual al histórico → histórico de Nuevos al día',
@@ -34390,13 +34398,20 @@ function _resolverPropuestaCRListaComoRealizada(sh, propuestaPendiente, filaDire
 // y las tablas de requisitos (seccion Rangos del mismo documento).
 // ==============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: reconstruirDocAscensosDescensosSiFalta(), actualizarDocAscensosDescensos(idAscenso, idDescenso), actualizarTablasRangosDoc(idAscenso, idDescenso)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Listas de ascensos y descensos del documento (rango actual de cada jugador, armado de las listas, escritura en el Doc)
+//    - Tablas de requisitos por rango (actualizarTablasRangosDoc y sus ayudas)
+//    - Contenido del documento al reconstruirlo desde cero (_construirContenidoDocAscensosDescensos y sus ayudas)
+//    - Semanas de la temporada (ayuda que usan otros archivos)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // ----- Variables y constantes -----
 
 // 25_Doc_AscensosDescensos.gs [→ Contexto_Base_Web.md §25B001]
 
-
 // 1) T_REQ_CATEGORIAS — HISTÓRICO, ya no aplica [→ Contexto_Base_Web.md §25B002]
-
 
 // 2) IDs/nombres del documento (confirmados por el usuario, 10/08/2026) [→ Contexto_Base_Web.md §25B003]
 var NOMBRE_DOC_ASCENSOS_DESCENSOS = 'Ascensos y descensos - Comunidad - ᴳ乂ᵀ ⚜️ Familia Terna';
@@ -34411,14 +34426,20 @@ var RT_ENCABEZADO_PERMANECER = 'Condición para permanecer en el clan';
 
 var RT_ENCABEZADO_CONSERVAR  = 'Condición para conservar el rango';
 
-// ----- Funciones manuales / punto de entrada -----
+/**
+ * _getSemanasDeTemporada(temporada) [→ Contexto_Base_Web.md §25B017]
+ */
+// 17-oct-2026 (PF091): memo por ejecución. CFG.REF_DEFAULT lee Propiedades del script en cada acceso y _esPeriodoDeColiseo_() llama a esta función en cada fila de guerra. [→ Contexto_Base_Web.md §PF091]
+var _SEMANAS_TEMPORADA_MEMO = {};
 
-// 3) Temporada a mostrar (Extra!Mostrar, buscada por NOMBRE de columna, [→ Contexto_Base_Web.md §25B005]
+// ----- Parte 1: funciones que se corren a mano -----
 
 /**
  * FASE 8 (13-sep-2026, pedido del usuario, plan de Cambio de Rango): desde [→ Contexto_Base_Web.md §25B006]
  */
 // SECCIÓN 1: FUNCIONES MANUALES (entry points de mantenimiento, ejecutar a mano [→ Contexto_Base_Web.md §25B007]
+
+// 9) Reconstrucción desde cero si el documento se borra de Drive. [→ Contexto_Base_Web.md §25B035]
 
 /**
  * reconstruirDocAscensosDescensosSiFalta() [→ Contexto_Base_Web.md §25B008]
@@ -34491,18 +34512,6 @@ function actualizarDocAscensosDescensos(idAscenso, idDescenso) {
   doc.saveAndClose();
   Logger.log('[AscensosDescensos] Documento actualizado desde CR_Lista (' + idAscenso + ' / ' + idDescenso + '), ' +
     resultado.propuestas.length + ' propuesta(s) evaluada(s) en total.');
-}
-
-// NOTA DE REORDEN (23-ago-2026, pedido usuario): actualizarTablasRangosDoc() -- [→ Contexto_Base_Web.md §25B013]
-/**
- * _bloqueCRParaContexto(filaCRLista, rolOrigen, campoQty) [→ Contexto_Base_Web.md §25B014]
- */
-function _bloqueCRParaContexto(filaCRLista, rolOrigen, campoQty) {
-  return filaCRLista.porClan.map(function (b) {
-    var obj = { clan: b.clan, ataques: b.ataques[rolOrigen] };
-    obj[campoQty] = b.minCR[rolOrigen];
-    return obj;
-  });
 }
 
 /**
@@ -34582,45 +34591,11 @@ function actualizarTablasRangosDoc(idAscenso, idDescenso) {
     tablasActualizadas + ' tabla(s) de la sección "Rangos" completadas.');
 }
 
-// ----- Funciones internas / helpers -----
+// ----- Parte 2: funciones que no se corren a mano -----
 
 // SECCIÓN 2: RESTO DE FUNCIONES (ascensos/descensos, doc automatizado, helpers [→ Contexto_Base_Web.md §25B016]
 
-function _getExtraMostrarTemporada(ss, ctxReal) {
-  var temporadaMostrar = ctxReal.temporada;
-  var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
-  if (!shExtra || shExtra.getLastRow() < 2) return temporadaMostrar;
-
-  var headers = shExtra.getRange(1, 1, 1, shExtra.getLastColumn()).getValues()[0];
-  var colMostrar = -1;
-  for (var i = 0; i < headers.length; i++) {
-    if (String(headers[i]).trim() === 'Mostrar_T') { colMostrar = i + 1; break; }
-  }
-  if (colMostrar === -1) {
-    Logger.log('[AscensosDescensos] No se encontró la columna "Mostrar_T" en Extra; se usa la temporada real (' + ctxReal.temporada + ').');
-    return temporadaMostrar;
-  }
-
-  var mostrarVal = shExtra.getRange(2, colMostrar).getValue();
-  var temporadaExtra = Number(mostrarVal);
-  if (temporadaExtra) temporadaMostrar = temporadaExtra;
-  return temporadaMostrar;
-}
-
-/**
- * _getSemanasDeTemporada(temporada) [→ Contexto_Base_Web.md §25B017]
- */
-// 17-oct-2026 (PF091): memo por ejecución. CFG.REF_DEFAULT lee Propiedades del script en cada acceso y _esPeriodoDeColiseo_() llama a esta función en cada fila de guerra. [→ Contexto_Base_Web.md §PF091]
-var _SEMANAS_TEMPORADA_MEMO = {};
-function _limpiarMemoSemanasTemporada_() { _SEMANAS_TEMPORADA_MEMO = {}; }
-function _getSemanasDeTemporada(temporada) {
-  var clave = String(temporada);
-  if (Object.prototype.hasOwnProperty.call(_SEMANAS_TEMPORADA_MEMO, clave)) return _SEMANAS_TEMPORADA_MEMO[clave];
-  var pl = primerLunesTemporada(CFG.REF_DEFAULT, temporada);
-  var n = lunesEnMes(pl.getFullYear(), pl.getMonth());
-  _SEMANAS_TEMPORADA_MEMO[clave] = n;
-  return n;
-}
+// --- Tema: listas de ascensos y descensos del documento ---
 
 // 5) Rango/clan ACTUAL de cada jugador (hoja Directorio, mapeo dinámico de [→ Contexto_Base_Web.md §25B018]
 
@@ -34673,16 +34648,6 @@ function _getRangoClanActualPorTag(ss) {
 }
 
 // 6) Armado de las listas (Ascensos y Descensos), a partir de [→ Contexto_Base_Web.md §25B022]
-
-// FASE 9 (17-sep-2026, limpieza de T_Requisitos -- hoja ya dada de baja): [→ Contexto_Base_Web.md §25B023]
-
-/**
- * _barcosParaDocAD_(p) [→ Contexto_Base_Web.md §25B024]
- */
-function _barcosParaDocAD_(p) {
-  var v = (p.barcosSuma !== undefined && p.barcosSuma !== null) ? p.barcosSuma : p.barcosProm;
-  return Math.round((Number(v) || 0) * 10) / 10;
-}
 
 /**
  * _armarListasDesdeCRLista(propuestas, modo) [→ Contexto_Base_Web.md §25B025]
@@ -34741,31 +34706,17 @@ function _armarListasDesdeCRLista(propuestas, modo) {
   return resultado;
 }
 
-// 7) Escritura en el Google Doc — reusa el mismo patrón visual que [→ Contexto_Base_Web.md §25B030]
+// FASE 9 (17-sep-2026, limpieza de T_Requisitos -- hoja ya dada de baja): [→ Contexto_Base_Web.md §25B023]
 
 /**
- * _insertarBulletAscDesc(body, insertAt, nombre, ataques, fame, barcos) [→ Contexto_Base_Web.md §25B031]
+ * _barcosParaDocAD_(p) [→ Contexto_Base_Web.md §25B024]
  */
-function _insertarBulletAscDesc(body, insertAt, nombre, ataques, fame, barcos, clanDestino) {
-  var texto = nombre + ' (' + ataques + ' - ' + fame + ' - ' + barcos + ')';
-  // 4-oct-2026: solo para 'Ascenso de clan' -- agrega a que clan sube.
-  if (clanDestino) texto += ' \u2192 ' + clanDestino;
-  var li = body.insertListItem(insertAt, texto);
-  li.setGlyphType(DocumentApp.GlyphType.BULLET);
-  li.setIndentStart(36);
-  li.setIndentFirstLine(18);
-
-  var t = li.editAsText();
-  var fin = texto.length - 1;
-  t.setFontFamily(0, fin, 'Arial');
-  t.setFontSize(0, fin, 12);
-  t.setBold(0, fin, false);
-  t.setUnderline(0, fin, false);
-  t.setForegroundColor(0, fin, '#000000');
-  t.setLinkUrl(0, fin, null);
-
-  return insertAt + 1;
+function _barcosParaDocAD_(p) {
+  var v = (p.barcosSuma !== undefined && p.barcosSuma !== null) ? p.barcosSuma : p.barcosProm;
+  return Math.round((Number(v) || 0) * 10) / 10;
 }
+
+// 7) Escritura en el Google Doc — reusa el mismo patrón visual que [→ Contexto_Base_Web.md §25B030]
 
 /**
  * _reemplazarListasPorClanYRango(body, tituloSeccion, tituloSeccionSiguiente, listasPorClanYRango) [→ Contexto_Base_Web.md §25B032]
@@ -34877,55 +34828,103 @@ function _reemplazarListasPorClanYRango(body, tituloSeccion, tituloSeccionSiguie
   }
 }
 
-// 9) Reconstrucción desde cero si el documento se borra de Drive. [→ Contexto_Base_Web.md §25B035]
+/**
+ * _insertarBulletAscDesc(body, insertAt, nombre, ataques, fame, barcos) [→ Contexto_Base_Web.md §25B031]
+ */
+function _insertarBulletAscDesc(body, insertAt, nombre, ataques, fame, barcos, clanDestino) {
+  var texto = nombre + ' (' + ataques + ' - ' + fame + ' - ' + barcos + ')';
+  // 4-oct-2026: solo para 'Ascenso de clan' -- agrega a que clan sube.
+  if (clanDestino) texto += ' \u2192 ' + clanDestino;
+  var li = body.insertListItem(insertAt, texto);
+  li.setGlyphType(DocumentApp.GlyphType.BULLET);
+  li.setIndentStart(36);
+  li.setIndentFirstLine(18);
+
+  var t = li.editAsText();
+  var fin = texto.length - 1;
+  t.setFontFamily(0, fin, 'Arial');
+  t.setFontSize(0, fin, 12);
+  t.setBold(0, fin, false);
+  t.setUnderline(0, fin, false);
+  t.setForegroundColor(0, fin, '#000000');
+  t.setLinkUrl(0, fin, null);
+
+  return insertAt + 1;
+}
+
+// --- Tema: tablas de requisitos por rango (las usa actualizarTablasRangosDoc) ---
 
 /**
- * _rdocADMiles(n) [→ Contexto_Base_Web.md §25B036]
+ * _detectarContextoRango(textoParrafo) [→ Contexto_Base_Web.md §25B044]
  */
-function _rdocADMiles(n) {
-  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+function _detectarContextoRango(textoParrafo) {
+  var t = String(textoParrafo || '').trim();
+  if (/^1[.\s]+Miembro\s*$/.test(t)) return 'Miembro';
+  if (/^2[.\s]+Veterano\s*$/.test(t)) return 'Veterano';
+  if (t.indexOf('Tipo A: Colíder de juego') !== -1) return 'ColiderA';
+  if (t.indexOf('Tipo B: Colíder colaborador') !== -1) return 'ColiderB';
+  return null;
 }
 
 /**
- * _rdocADTablaRango(body, trofeos, ataques) [→ Contexto_Base_Web.md §25B037]
+ * _buscarSiguienteTabla(body, idxDesde, idxLimite) [→ Contexto_Base_Web.md §25B047]
  */
-function _rdocADTablaRango(body, trofeos, ataques) {
-  var filas = [
-    [''].concat(_CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION),
-    ['Medallas', _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos)],
-    ['Ataques', String(ataques), String(ataques), String(ataques), String(ataques)]
-  ];
-  return _rdocTablaConEncabezadoNegrita(body, filas);
-}
-
-/**
- * _rdocADBloqueFuncion(body, items) [→ Contexto_Base_Web.md §25B038]
- */
-function _rdocADBloqueFuncion(body, items) {
-  _rdocParrafoTexto(body, 'Función', true);
-  for (var i = 0; i < items.length; i++) {
-    body.appendListItem(items[i]).setGlyphType(DocumentApp.GlyphType.BULLET);
+function _buscarSiguienteTabla(body, idxDesde, idxLimite) {
+  for (var i = idxDesde; i < idxLimite; i++) {
+    var hijo = body.getChild(i);
+    if (hijo.getType() === DocumentApp.ElementType.TABLE) return hijo.asTable();
   }
+  return null;
+}
+
+// NOTA DE REORDEN (23-ago-2026, pedido usuario): actualizarTablasRangosDoc() -- [→ Contexto_Base_Web.md §25B013]
+/**
+ * _bloqueCRParaContexto(filaCRLista, rolOrigen, campoQty) [→ Contexto_Base_Web.md §25B014]
+ */
+function _bloqueCRParaContexto(filaCRLista, rolOrigen, campoQty) {
+  return filaCRLista.porClan.map(function (b) {
+    var obj = { clan: b.clan, ataques: b.ataques[rolOrigen] };
+    obj[campoQty] = b.minCR[rolOrigen];
+    return obj;
+  });
 }
 
 /**
- * _rdocADBloqueClanAscensoDescenso(body, etiquetaSubA, etiquetaSubB) [→ Contexto_Base_Web.md §25B039]
+ * _llenarTablaRequisitos(tabla, reqPorClan, campoQty) [→ Contexto_Base_Web.md §25B046]
  */
-function _rdocADBloqueClanAscensoDescenso(body, etiquetaSubA, etiquetaSubB, etiquetaSubClan) {
-  for (var i = 0; i < _CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION.length; i++) {
-    _rdocParrafoTexto(body, _CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION[i] + ':', true);
-    _rdocParrafoTexto(body, etiquetaSubA, false);
-    body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
-    _rdocParrafoTexto(body, etiquetaSubB, false);
-    body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
-    // 4-oct-2026: 'Ascenso de clan' (opcional, solo en 'Ascensos:'). Se omite en el primer clan
-    // de la lista (el principal): ahi el Colider nunca sube de clan.
-    if (etiquetaSubClan && i > 0) {
-      _rdocParrafoTexto(body, etiquetaSubClan, false);
-      body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
+function _llenarTablaRequisitos(tabla, reqPorClan, campoQty) {
+  if (!tabla || tabla.getNumRows() < 2) return;
+
+  for (var f = tabla.getNumRows() - 1; f >= 1; f--) {
+    var fila = tabla.getRow(f);
+    var etiqueta = fila.getCell(0).getText().trim().toLowerCase();
+    var esTrofeos = (etiqueta.indexOf('trofeo') !== -1 || etiqueta.indexOf('medalla') !== -1); // 11-oct-2026: la fila se llama «Medallas» (antes «Trofeos»); se reconocen ambos para no romper Docs ya creados
+    var esAtaques = (etiqueta.indexOf('ataque') !== -1);
+    if (!esTrofeos && !esAtaques) continue; // fila que no reconocemos: se deja intacta
+
+    var algunoActivo = false;
+    for (var col = 1; col < fila.getNumCells(); col++) {
+      var req = reqPorClan[col - 1];
+      var campo = esTrofeos ? (req && req[campoQty]) : (req && req.ataques);
+      if (campo && campo.activo) algunoActivo = true;
+      fila.getCell(col).setText(_formatearQtyCelda(campo, esTrofeos));
     }
+
+    if (!algunoActivo) tabla.removeRow(f); // los 4 clanes en "No" para este requisito: la fila desaparece
   }
 }
+
+/**
+ * _formatearQtyCelda(requisito, esTrofeos) [→ Contexto_Base_Web.md §25B045]
+ */
+function _formatearQtyCelda(requisito, esTrofeos) {
+  if (!requisito || !requisito.activo) return '-';
+  var texto = String(requisito.qty);
+  if (esTrofeos) texto = texto.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return texto;
+}
+
+// --- Tema: contenido del documento al reconstruirlo desde cero ---
 
 /**
  * _construirContenidoDocAscensosDescensos(body) [→ Contexto_Base_Web.md §25B040]
@@ -35039,63 +35038,90 @@ function _construirContenidoDocAscensosDescensos(body) {
   _rdocBloqueRedesSocialesYPie(body);
 }
 
-/**
- * _detectarContextoRango(textoParrafo) [→ Contexto_Base_Web.md §25B044]
- */
-function _detectarContextoRango(textoParrafo) {
-  var t = String(textoParrafo || '').trim();
-  if (/^1[.\s]+Miembro\s*$/.test(t)) return 'Miembro';
-  if (/^2[.\s]+Veterano\s*$/.test(t)) return 'Veterano';
-  if (t.indexOf('Tipo A: Colíder de juego') !== -1) return 'ColiderA';
-  if (t.indexOf('Tipo B: Colíder colaborador') !== -1) return 'ColiderB';
-  return null;
+// 3) Temporada a mostrar (Extra!Mostrar, buscada por NOMBRE de columna, [→ Contexto_Base_Web.md §25B005]
+
+function _getExtraMostrarTemporada(ss, ctxReal) {
+  var temporadaMostrar = ctxReal.temporada;
+  var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
+  if (!shExtra || shExtra.getLastRow() < 2) return temporadaMostrar;
+
+  var headers = shExtra.getRange(1, 1, 1, shExtra.getLastColumn()).getValues()[0];
+  var colMostrar = -1;
+  for (var i = 0; i < headers.length; i++) {
+    if (String(headers[i]).trim() === 'Mostrar_T') { colMostrar = i + 1; break; }
+  }
+  if (colMostrar === -1) {
+    Logger.log('[AscensosDescensos] No se encontró la columna "Mostrar_T" en Extra; se usa la temporada real (' + ctxReal.temporada + ').');
+    return temporadaMostrar;
+  }
+
+  var mostrarVal = shExtra.getRange(2, colMostrar).getValue();
+  var temporadaExtra = Number(mostrarVal);
+  if (temporadaExtra) temporadaMostrar = temporadaExtra;
+  return temporadaMostrar;
 }
 
 /**
- * _formatearQtyCelda(requisito, esTrofeos) [→ Contexto_Base_Web.md §25B045]
+ * _rdocADTablaRango(body, trofeos, ataques) [→ Contexto_Base_Web.md §25B037]
  */
-function _formatearQtyCelda(requisito, esTrofeos) {
-  if (!requisito || !requisito.activo) return '-';
-  var texto = String(requisito.qty);
-  if (esTrofeos) texto = texto.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return texto;
+function _rdocADTablaRango(body, trofeos, ataques) {
+  var filas = [
+    [''].concat(_CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION),
+    ['Medallas', _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos)],
+    ['Ataques', String(ataques), String(ataques), String(ataques), String(ataques)]
+  ];
+  return _rdocTablaConEncabezadoNegrita(body, filas);
 }
 
 /**
- * _llenarTablaRequisitos(tabla, reqPorClan, campoQty) [→ Contexto_Base_Web.md §25B046]
+ * _rdocADMiles(n) [→ Contexto_Base_Web.md §25B036]
  */
-function _llenarTablaRequisitos(tabla, reqPorClan, campoQty) {
-  if (!tabla || tabla.getNumRows() < 2) return;
+function _rdocADMiles(n) {
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
 
-  for (var f = tabla.getNumRows() - 1; f >= 1; f--) {
-    var fila = tabla.getRow(f);
-    var etiqueta = fila.getCell(0).getText().trim().toLowerCase();
-    var esTrofeos = (etiqueta.indexOf('trofeo') !== -1 || etiqueta.indexOf('medalla') !== -1); // 11-oct-2026: la fila se llama «Medallas» (antes «Trofeos»); se reconocen ambos para no romper Docs ya creados
-    var esAtaques = (etiqueta.indexOf('ataque') !== -1);
-    if (!esTrofeos && !esAtaques) continue; // fila que no reconocemos: se deja intacta
+/**
+ * _rdocADBloqueFuncion(body, items) [→ Contexto_Base_Web.md §25B038]
+ */
+function _rdocADBloqueFuncion(body, items) {
+  _rdocParrafoTexto(body, 'Función', true);
+  for (var i = 0; i < items.length; i++) {
+    body.appendListItem(items[i]).setGlyphType(DocumentApp.GlyphType.BULLET);
+  }
+}
 
-    var algunoActivo = false;
-    for (var col = 1; col < fila.getNumCells(); col++) {
-      var req = reqPorClan[col - 1];
-      var campo = esTrofeos ? (req && req[campoQty]) : (req && req.ataques);
-      if (campo && campo.activo) algunoActivo = true;
-      fila.getCell(col).setText(_formatearQtyCelda(campo, esTrofeos));
+/**
+ * _rdocADBloqueClanAscensoDescenso(body, etiquetaSubA, etiquetaSubB) [→ Contexto_Base_Web.md §25B039]
+ */
+function _rdocADBloqueClanAscensoDescenso(body, etiquetaSubA, etiquetaSubB, etiquetaSubClan) {
+  for (var i = 0; i < _CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION.length; i++) {
+    _rdocParrafoTexto(body, _CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION[i] + ':', true);
+    _rdocParrafoTexto(body, etiquetaSubA, false);
+    body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
+    _rdocParrafoTexto(body, etiquetaSubB, false);
+    body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
+    // 4-oct-2026: 'Ascenso de clan' (opcional, solo en 'Ascensos:'). Se omite en el primer clan
+    // de la lista (el principal): ahi el Colider nunca sube de clan.
+    if (etiquetaSubClan && i > 0) {
+      _rdocParrafoTexto(body, etiquetaSubClan, false);
+      body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
     }
-
-    if (!algunoActivo) tabla.removeRow(f); // los 4 clanes en "No" para este requisito: la fila desaparece
   }
 }
 
-/**
- * _buscarSiguienteTabla(body, idxDesde, idxLimite) [→ Contexto_Base_Web.md §25B047]
- */
-function _buscarSiguienteTabla(body, idxDesde, idxLimite) {
-  for (var i = idxDesde; i < idxLimite; i++) {
-    var hijo = body.getChild(i);
-    if (hijo.getType() === DocumentApp.ElementType.TABLE) return hijo.asTable();
-  }
-  return null;
+// --- Tema: semanas de la temporada (las usan otros archivos) ---
+
+function _limpiarMemoSemanasTemporada_() { _SEMANAS_TEMPORADA_MEMO = {}; }
+
+function _getSemanasDeTemporada(temporada) {
+  var clave = String(temporada);
+  if (Object.prototype.hasOwnProperty.call(_SEMANAS_TEMPORADA_MEMO, clave)) return _SEMANAS_TEMPORADA_MEMO[clave];
+  var pl = primerLunesTemporada(CFG.REF_DEFAULT, temporada);
+  var n = lunesEnMes(pl.getFullYear(), pl.getMonth());
+  _SEMANAS_TEMPORADA_MEMO[clave] = n;
+  return n;
 }
+
 
 // --- ARCHIVO: 26_Torneos_Core.gs ---
 // ==============================================================================
@@ -38256,6 +38282,44 @@ function procesarSorteos() {
     actualizarDocNoCalificadosSorteo();
   } catch (eNCS2) {
     Logger.log('[Sorteos] actualizarDocNoCalificadosSorteo() falló (se continúa): ' + eNCS2.message);
+  }
+
+  return true;
+}
+
+/**
+ * procesarCambioRango() [→ Contexto_Base_Web.md §PF286]
+ * Equivalente de procesarSorteos() y procesarTorneos() para Cambio de rango: con el par vigente de
+ * Extra (Ascenso_Vigente_ID / Descenso_Vigente_ID) actualiza los dos documentos que salen de ese par.
+ * Cada paso va en su propio try/catch para que uno que falle no corte a los demás.
+ * Lo llaman PASOS_RUNALL y PASOS_RUNUPDATE (00_Main.gs) y la web al guardar el par o generar propuestas.
+ */
+function procesarCambioRango() {
+  var idA = _getIdVigenteExtraCR('Ascenso');
+  var idD = _getIdVigenteExtraCR('Descenso');
+  if (!idA || !idD) {
+    Logger.log('[CambioRango] Falta el par vigente en Extra (Ascenso=' + (idA || 'vacío') + ', Descenso=' +
+      (idD || 'vacío') + '): no se actualizan los documentos.');
+    return true;
+  }
+
+  // Documento «Cambio de rango»: veredicto por jugador.
+  try {
+    actualizarDocCambioRango(idA, idD);
+  } catch (eDocCR) {
+    Logger.log('[CambioRango] actualizarDocCambioRango() falló (se continúa): ' + eDocCR.message);
+  }
+
+  // Documento «Ascensos y descensos»: tablas de requisitos de la sección «Rangos» y listas por clan.
+  try {
+    actualizarTablasRangosDoc(idA, idD);
+  } catch (eTablasCR) {
+    Logger.log('[CambioRango] actualizarTablasRangosDoc() falló (se continúa): ' + eTablasCR.message);
+  }
+  try {
+    actualizarDocAscensosDescensos(idA, idD);
+  } catch (eDocAD) {
+    Logger.log('[CambioRango] actualizarDocAscensosDescensos() falló (se continúa): ' + eDocAD.message);
   }
 
   return true;
@@ -42972,6 +43036,16 @@ function _escribirDocGanadores(nombreDoc, idDoc, ganadores, idTorneo, fechaTorne
 // Documento en Drive que muestra a quienes no calificaron para un torneo, sorteo o cambio de rango.
 // ==============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: actualizarDocsNoCalificadosYCambioRango()
+//  Parte 2 — Funciones que no se corren a mano (las tres de documento las llama 26_Torneos_Core.gs; también aceptan correrse sin argumentos)
+//    - No calificados del torneo
+//    - No calificados del sorteo (y su evaluación)
+//    - Cambio de rango (y su veredicto)
+//    - Ayudas compartidas (texto de requisitos, escritura del documento y su formato)
+//    - Contenido base para la reconstrucción automática de los documentos
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // NUEVO (15-sep-2026, pedido del usuario): [→ Contexto_Base_Web.md §29B001]
 
 // ----- Variables y constantes -----
@@ -42993,7 +43067,7 @@ var NC_VEREDICTO = {
   EXPULSION: 'Expulsión'
 };
 
-// ----- Funciones manuales / punto de entrada -----
+// ----- Parte 1: funciones que se corren a mano -----
 
 /**
  * actualizarDocsNoCalificadosYCambioRango() [→ Contexto_Base_Web.md §29B003]
@@ -43003,6 +43077,8 @@ function actualizarDocsNoCalificadosYCambioRango() {
   actualizarDocNoCalificadosSorteo();
   actualizarDocCambioRango();
 }
+
+// ----- Parte 2: funciones que no se corren a mano -----
 
 // NO CALIFICADOS — TORNEO [→ Contexto_Base_Web.md §29B004]
 
@@ -43134,6 +43210,38 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
 // NO CALIFICADOS — SORTEO [→ Contexto_Base_Web.md §29B006]
 
 /**
+ * actualizarDocNoCalificadosSorteo(ctxParam) [→ Contexto_Base_Web.md §29B007]
+ */
+function actualizarDocNoCalificadosSorteo(ctxParam) {
+  var ev = _evaluarCalificacionSorteo_(ctxParam);
+  if (!ev) return;
+
+  var filas = [['Nombre', 'Clan', 'Medallas (prom.)', 'Ataques (prom.)', 'Torneos', 'Barcos (prom.)', 'Motivo por el que no califica']];
+  var totalNoCalificados = 0;
+  ev.evaluados.forEach(function (e) {
+    if (e.motivos.length === 0) return; // calificó: va en el doc de Participantes calificados
+    totalNoCalificados++;
+    filas.push([
+      e.nombre,
+      e.clan,
+      _ncFmtNum(e.trofeos),
+      _ncFmtNum(e.ataques),
+      String(e.torneos),
+      (e.barcosEvaluado ? _ncFmtNum(e.barcosProm) : 'No evaluado'),
+      e.motivos.join(' ')
+    ]);
+  });
+
+  var resumen = totalNoCalificados + ' de ' + ev.evaluados.length + ' cuenta(s) evaluada(s) no califican. ' +
+    'Temporada ' + ev.temporadaActual + '. Sorteo ' + (ev.idSorteo || 'sin ID') + '.';
+
+  _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_SORTEO, 'Participantes NO calificados (sorteo)',
+    ev.requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
+
+  Logger.log('[NoCalificados-Sorteo] ' + resumen);
+}
+
+/**
  * _evaluarCalificacionSorteo_(ctxParam) [→ Contexto_Base_Web.md §PF202]
  * (24-oct-2026, pedido de la usuaria) ÚNICA evaluación del sorteo: la usan el doc de NO calificados y el de
  * Participantes calificados, así que un jugador sale en uno o en el otro, nunca en ninguno. Mismo criterio
@@ -43250,38 +43358,6 @@ function _evaluarCalificacionSorteo_(ctxParam) {
     idSorteo: bloque[0].idFila || '',
     bloque: bloque // PF205: configuración de S_Lista, para regenerar el texto de «Requisitos» del Doc de calificados
   };
-}
-
-/**
- * actualizarDocNoCalificadosSorteo(ctxParam) [→ Contexto_Base_Web.md §29B007]
- */
-function actualizarDocNoCalificadosSorteo(ctxParam) {
-  var ev = _evaluarCalificacionSorteo_(ctxParam);
-  if (!ev) return;
-
-  var filas = [['Nombre', 'Clan', 'Medallas (prom.)', 'Ataques (prom.)', 'Torneos', 'Barcos (prom.)', 'Motivo por el que no califica']];
-  var totalNoCalificados = 0;
-  ev.evaluados.forEach(function (e) {
-    if (e.motivos.length === 0) return; // calificó: va en el doc de Participantes calificados
-    totalNoCalificados++;
-    filas.push([
-      e.nombre,
-      e.clan,
-      _ncFmtNum(e.trofeos),
-      _ncFmtNum(e.ataques),
-      String(e.torneos),
-      (e.barcosEvaluado ? _ncFmtNum(e.barcosProm) : 'No evaluado'),
-      e.motivos.join(' ')
-    ]);
-  });
-
-  var resumen = totalNoCalificados + ' de ' + ev.evaluados.length + ' cuenta(s) evaluada(s) no califican. ' +
-    'Temporada ' + ev.temporadaActual + '. Sorteo ' + (ev.idSorteo || 'sin ID') + '.';
-
-  _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_SORTEO, 'Participantes NO calificados (sorteo)',
-    ev.requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
-
-  Logger.log('[NoCalificados-Sorteo] ' + resumen);
 }
 
 // CAMBIO DE RANGO — documento general [→ Contexto_Base_Web.md §29B009]
@@ -43562,6 +43638,55 @@ function _ncVeredictoCambioRango(rolKey, bloqueAsc, bloqueDesc, promAsc, promDes
 // HELPERS COMPARTIDOS DE ESTE ARCHIVO [→ Contexto_Base_Web.md §29B020]
 
 /**
+ * _ncFmtNum(n) [→ Contexto_Base_Web.md §29B026]
+ */
+function _ncFmtNum(n) {
+  var v = Number(n) || 0;
+  var r = Math.round(v * 10) / 10;
+  return String(r);
+}
+
+/**
+ * _ncNombreRol(rolKey)
+ * 'miembro'|'veterano'|'colider' -> etiqueta legible para el documento.
+ */
+function _ncNombreRol(rolKey) {
+  if (rolKey === 'miembro')  return 'Miembro';
+  if (rolKey === 'veterano') return 'Veterano';
+  if (rolKey === 'colider')  return 'Colíder';
+  return rolKey;
+}
+
+/**
+ * _ncTextoRequisito(reqMinCR, reqAtaques) [→ Contexto_Base_Web.md §29B023]
+ */
+function _ncTextoRequisito(reqMinCR, reqAtaques) {
+  var partes = [];
+  partes.push('Medallas ' + (reqMinCR && reqMinCR.activo ? '>= ' + reqMinCR.qty : 'no exigido'));
+  partes.push('Ataques ' + (reqAtaques && reqAtaques.activo ? '>= ' + reqAtaques.qty : 'no exigido'));
+  return partes.join(', ');
+}
+
+/**
+ * _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) [→ Contexto_Base_Web.md §29B024]
+ */
+function _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) {
+  var partes = [];
+  if (reqMinCR && reqMinCR.activo) {
+    partes.push('Medallas ' + _ncFmtNum(promedios.fameProm) + ' (se pide ' + reqMinCR.qty + ')');
+  }
+  if (reqAtaques && reqAtaques.activo) {
+    // 19-sep-2026: aviso de exoneración por domingo opcional, mismo criterio y [→ Contexto_Base_Web.md §29B025]
+    var exentosTxt = (promedios && Number(promedios.ataquesExentos) > 0)
+      ? ', ' + promedios.ataquesExentos + ' exonerados por domingo opcional'
+      : '';
+    partes.push('Ataques ' + _ncFmtNum(promedios.ataquesProm) + ' (se pide ' + reqAtaques.qty + exentosTxt + ')');
+  }
+  if (!partes.length) partes.push('sin requisitos activos para este rol/clan');
+  return partes.join(', ');
+}
+
+/**
  * _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas) [→ Contexto_Base_Web.md §29B021]
  */
 function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas, estiloUniforme) {
@@ -43622,6 +43747,20 @@ function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, tex
 
   // Los bordes de una sola fila no se pueden fijar con DocumentApp: van aparte, con la API de Docs.
   if (hayTabla && estiloUniforme) _ncBordesBlancosEncabezado_(archivo.getId(), filas[0].length);
+}
+
+/**
+ * _ncFechaHoraPeru() [→ Contexto_Base_Web.md §29B027]
+ */
+function _ncFechaHoraPeru() {
+  var tz = 'America/Lima';
+  try {
+    var tzSs = _getSs().getSpreadsheetTimeZone();
+    if (tzSs) tz = tzSs;
+  } catch (e) {
+    // Sin acceso al spreadsheet: se queda con America/Lima.
+  }
+  return Utilities.formatDate(new Date(), tz, 'dd/MM/yyyy HH:mm');
 }
 
 /**
@@ -43705,69 +43844,6 @@ function _ncBordesBlancosEncabezado_(docId, numColumnas) {
   }
 }
 
-/**
- * _ncTextoRequisito(reqMinCR, reqAtaques) [→ Contexto_Base_Web.md §29B023]
- */
-function _ncTextoRequisito(reqMinCR, reqAtaques) {
-  var partes = [];
-  partes.push('Medallas ' + (reqMinCR && reqMinCR.activo ? '>= ' + reqMinCR.qty : 'no exigido'));
-  partes.push('Ataques ' + (reqAtaques && reqAtaques.activo ? '>= ' + reqAtaques.qty : 'no exigido'));
-  return partes.join(', ');
-}
-
-/**
- * _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) [→ Contexto_Base_Web.md §29B024]
- */
-function _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) {
-  var partes = [];
-  if (reqMinCR && reqMinCR.activo) {
-    partes.push('Medallas ' + _ncFmtNum(promedios.fameProm) + ' (se pide ' + reqMinCR.qty + ')');
-  }
-  if (reqAtaques && reqAtaques.activo) {
-    // 19-sep-2026: aviso de exoneración por domingo opcional, mismo criterio y [→ Contexto_Base_Web.md §29B025]
-    var exentosTxt = (promedios && Number(promedios.ataquesExentos) > 0)
-      ? ', ' + promedios.ataquesExentos + ' exonerados por domingo opcional'
-      : '';
-    partes.push('Ataques ' + _ncFmtNum(promedios.ataquesProm) + ' (se pide ' + reqAtaques.qty + exentosTxt + ')');
-  }
-  if (!partes.length) partes.push('sin requisitos activos para este rol/clan');
-  return partes.join(', ');
-}
-
-/**
- * _ncNombreRol(rolKey)
- * 'miembro'|'veterano'|'colider' -> etiqueta legible para el documento.
- */
-function _ncNombreRol(rolKey) {
-  if (rolKey === 'miembro')  return 'Miembro';
-  if (rolKey === 'veterano') return 'Veterano';
-  if (rolKey === 'colider')  return 'Colíder';
-  return rolKey;
-}
-
-/**
- * _ncFmtNum(n) [→ Contexto_Base_Web.md §29B026]
- */
-function _ncFmtNum(n) {
-  var v = Number(n) || 0;
-  var r = Math.round(v * 10) / 10;
-  return String(r);
-}
-
-/**
- * _ncFechaHoraPeru() [→ Contexto_Base_Web.md §29B027]
- */
-function _ncFechaHoraPeru() {
-  var tz = 'America/Lima';
-  try {
-    var tzSs = _getSs().getSpreadsheetTimeZone();
-    if (tzSs) tz = tzSs;
-  } catch (e) {
-    // Sin acceso al spreadsheet: se queda con America/Lima.
-  }
-  return Utilities.formatDate(new Date(), tz, 'dd/MM/yyyy HH:mm');
-}
-
 // CONTENIDO BASE (solo para la reconstrucción automática) [→ Contexto_Base_Web.md §29B028]
 
 function _construirContenidoDocNoCalificadosTorneo(body) {
@@ -43789,11 +43865,21 @@ function _ncContenidoBasePlaceholder(body, titulo) {
     'función correspondiente de 29_Docs_NoCalificados.gs.', false, DocumentApp.HorizontalAlignment.JUSTIFY);
 }
 
+
 // --- ARCHIVO: 30_Mensajes.gs ---
 // ==============================================================================
 // 30_Mensajes.gs
 // Hoja Mensajes: generacion de contenido para difundir por categoria/clan.
 // ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: generarTodosMensajes()
+//  Parte 2 — Funciones que no se corren a mano
+//    - Datos de entrada de los mensajes (pendientes, sin celular, sin etiqueta, celular y préstamo por tag)
+//    - Agrupar y ordenar por clan (agrupar, rango, sufijo de préstamo, clan que cruzó la meta)
+//    - Hoja Mensajes: orden de categorías, plantillas, categoría nueva en Extra y formato condicional
+//    - Datos de clan para el menú dinámico (los usa 43_Menu_Dinamico.gs)
+// Dentro de cada tema, en el orden en que generarTodosMensajes() los llama. Al reordenar no se cambió el código de ninguna función.
 
 // ----- Variables y constantes -----
 
@@ -43830,44 +43916,12 @@ var CATEGORIAS_ANCLA_EXTRA = {
   ]
 };
 
-// ----- Funciones manuales / punto de entrada -----
-
 /**
  * META_GUERRA_PROGRESO [→ Contexto_Base_Web.md §30B005]
  */
 var META_GUERRA_PROGRESO = 10000;
 
-/**
- * _clanCruzoMetaPorNombre(nombreClan) [→ Contexto_Base_Web.md §30B006]
- */
-function _clanCruzoMetaPorNombre(nombreClan) {
-  try {
-    var buscado = String(nombreClan || '').trim();
-    if (!buscado) return false;
-    for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
-      var clanData = _getClanCache(CFG.TERNA_TAGS[i]);
-      if (!clanData || !clanData.info) continue;
-      if (String(clanData.info.name || '').trim() !== buscado) continue;
-      var rr = clanData.riverrace;
-      if (!rr || !rr.clan) return false;
-      // TANDA 9 (21-sep-2026): en la semana de COLISEO los barcos no avanzan y [→ Contexto_Base_Web.md §30B007]
-      if (String(rr.periodType || '') === 'colosseum') return false;
-      var progreso = Number(rr.clan.fame);
-      return isFinite(progreso) && progreso >= META_GUERRA_PROGRESO;
-    }
-  } catch (e) {
-    Logger.log('[Mensajes] No se pudo evaluar si el clan cruzó la meta (' + nombreClan + '): ' + e.message);
-  }
-  return false;
-}
-
-/**
- * _ordenRango(rango) [→ Contexto_Base_Web.md §30B008]
- */
-function _ordenRango(rango) {
-  var key = String(rango || '').toLowerCase().replace('í', 'i').replace('é', 'e');
-  return CFG.RANGO_ORDEN[key] || 4;
-}
+// ----- Parte 1: funciones que se corren a mano -----
 
 function generarTodosMensajes() {
   var ss = _getSs();
@@ -44181,9 +44235,163 @@ function generarTodosMensajes() {
   catch (eRegMsj) { Logger.log('[Mensajes] No se pudo registrar la hora de elaboracion: ' + eRegMsj.message); }
 }
 
-// ----- Funciones internas / helpers -----
+// ----- Parte 2: funciones que no se corren a mano -----
 
 // SECCIÓN 2: RESTO DE FUNCIONES (mensajes, helpers internos) — sin cambios de [→ Contexto_Base_Web.md §30B028]
+
+// --- Tema: datos de entrada de los mensajes ---
+
+function _obtenerDatosPendientes(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.PENDIENTES);
+  if (!sh || sh.getLastRow() < 2) return [];
+  // 9 columnas: N°|Tag|Nombre|Nom_Multi|Préstamo|Clan|Faltantes|Celular|WSP [→ Contexto_Base_Web.md §30B038]
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues();
+  var pendientes = data.map(function(r) { return { tag: r[1], nombre: r[2], nomMulti: r[3], prestamo: r[4], clan: r[5], faltantes: r[6] }; });
+
+  // NUEVO (pedido usuario): se agrega `rango` a cada pendiente, cruzado por [→ Contexto_Base_Web.md §30B039]
+  var dirPorTagRango = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS);
+  pendientes.forEach(function(p) {
+    var filaDirP = dirPorTagRango[String(p.tag || '').trim().toUpperCase()];
+    p.rango = filaDirP ? String(filaDirP[IC.RANGO - 1] || '') : '';
+  });
+
+  return pendientes;
+}
+
+function _obtenerDatosSinCelular(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!sh || sh.getLastRow() < 2) return [];
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  var filtrado = [];
+  for (var i = 0; i < data.length; i++) {
+    if (String(data[i][IC.ESTADO    - 1]) === 'Activo' &&
+        String(data[i][IC.CELULAR   - 1] || '').trim() === '' &&
+        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
+      filtrado.push({ nombre: data[i][IC.NOMBRE - 1], clan: data[i][IC.CLAN - 1] });
+    }
+  }
+  return filtrado;
+}
+
+function _obtenerDatosSinEtiqueta(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!sh || sh.getLastRow() < 2) return [];
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  var filtrado = [];
+  for (var i = 0; i < data.length; i++) {
+    // NOTA: "Iniciales" ya NO se exige aquí. Es un campo distinto (identificación/ [→ Contexto_Base_Web.md §30B040]
+    if (String(data[i][IC.ESTADO    - 1]) === 'Activo' &&
+        String(data[i][IC.ETIQUETA  - 1]) !== 'Sí' &&
+        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
+      filtrado.push({ nombre: data[i][IC.NOMBRE - 1], clan: data[i][IC.CLAN - 1] });
+    }
+  }
+  return filtrado;
+}
+
+/**
+ * _obtenerCelularPorTag()
+ * Devuelve un mapa { tag -> true } para jugadores activos Terna con celular.
+ */
+/**
+ * _obtenerCelularPorTag(ss) [→ Contexto_Base_Web.md §30B034]
+ */
+function _obtenerCelularPorTag(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!sh || sh.getLastRow() < 2) return {};
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  var mapa = {};
+  for (var i = 0; i < data.length; i++) {
+    if (String(data[i][IC.ESTADO - 1]) === 'Activo' &&
+        String(data[i][IC.CELULAR - 1] || '').trim() !== '' &&
+        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
+      mapa[String(data[i][IC.TAG - 1])] = String(data[i][IC.CELULAR - 1]).trim();
+    }
+  }
+  return mapa;
+}
+
+/**
+ * _obtenerPrestamoPorTag(ss) [→ Contexto_Base_Web.md §30B035]
+ */
+function _obtenerPrestamoPorTag(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!sh || sh.getLastRow() < 2) return {};
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  var mapa = {};
+  for (var i = 0; i < data.length; i++) {
+    var tag = String(data[i][DC.TAG - 1] || '').trim();
+    var prestamo = String(data[i][DC.PRESTAMO - 1] || '').trim();
+    if (tag && prestamo) {
+      mapa[tag] = prestamo;
+    }
+  }
+  return mapa;
+}
+
+// --- Tema: agrupar y ordenar por clan ---
+
+/**
+ * _agruparPorClanOrdenado(lista, clanOrden) [→ Contexto_Base_Web.md §30B033]
+ */
+function _agruparPorClanOrdenado(lista, clanOrden) {
+  var grupos = {};
+  var clanes  = [];
+  for (var i = 0; i < lista.length; i++) {
+    var cn = lista[i].clan;
+    if (!grupos[cn]) { grupos[cn] = []; clanes.push(cn); }
+    grupos[cn].push(lista[i]);
+  }
+  clanes.sort(function(a, b) {
+    var oa = clanOrden[a.toLowerCase()]; if (oa === undefined) oa = 9999;
+    var ob = clanOrden[b.toLowerCase()]; if (ob === undefined) ob = 9999;
+    return oa - ob;
+  });
+  return clanes.map(function(cn) { return { clan: cn, lista: grupos[cn] }; });
+}
+
+/**
+ * _ordenRango(rango) [→ Contexto_Base_Web.md §30B008]
+ */
+function _ordenRango(rango) {
+  var key = String(rango || '').toLowerCase().replace('í', 'i').replace('é', 'e');
+  return CFG.RANGO_ORDEN[key] || 4;
+}
+
+/**
+ * _sufijoPrestamo(nombrePrestamo) [→ Contexto_Base_Web.md §30B036]
+ */
+function _sufijoPrestamo(nombrePrestamo) {
+  var n = String(nombrePrestamo || '').trim();
+  if (!n) return '';
+  return ' (' + n.charAt(0).toUpperCase() + ')';
+}
+
+/**
+ * _clanCruzoMetaPorNombre(nombreClan) [→ Contexto_Base_Web.md §30B006]
+ */
+function _clanCruzoMetaPorNombre(nombreClan) {
+  try {
+    var buscado = String(nombreClan || '').trim();
+    if (!buscado) return false;
+    for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
+      var clanData = _getClanCache(CFG.TERNA_TAGS[i]);
+      if (!clanData || !clanData.info) continue;
+      if (String(clanData.info.name || '').trim() !== buscado) continue;
+      var rr = clanData.riverrace;
+      if (!rr || !rr.clan) return false;
+      // TANDA 9 (21-sep-2026): en la semana de COLISEO los barcos no avanzan y [→ Contexto_Base_Web.md §30B007]
+      if (String(rr.periodType || '') === 'colosseum') return false;
+      var progreso = Number(rr.clan.fame);
+      return isFinite(progreso) && progreso >= META_GUERRA_PROGRESO;
+    }
+  } catch (e) {
+    Logger.log('[Mensajes] No se pudo evaluar si el clan cruzó la meta (' + nombreClan + '): ' + e.message);
+  }
+  return false;
+}
+
+// --- Tema: hoja Mensajes (categorías, plantillas y formato) ---
 
 function _getOrdenMensajesCategoria() {
   var mapa = {};
@@ -44195,25 +44403,20 @@ function _getOrdenMensajesCategoria() {
 }
 
 /**
- * _aplicarFormatoCondicionalMensajes(sh, numFilas)
- * Aplica color de fondo por Categoría (columna 8 = Categoría).
+ * _getPlantillasParaMensajes(ss) [→ Contexto_Base_Web.md §30B037]
  */
-function _aplicarFormatoCondicionalMensajes(sh, numFilas) {
-  if (numFilas === 0) return;
-  var dataRange = sh.getRange(2, 1, numFilas, MENSAJES_TOTAL_COLS);
-  var colCat = colLetter(MC.CATEGORIA); // columna Categoría
-
-  var rules = [];
-  for (var cat in CFG.MENSAJES_TIPO_BG) {
-    rules.push(
-      SpreadsheetApp.newConditionalFormatRule()
-        .whenFormulaSatisfied('=$' + colCat + '2="' + cat + '"')
-        .setBackground(CFG.MENSAJES_TIPO_BG[cat])
-        .setRanges([dataRange])
-        .build()
-    );
+function _getPlantillasParaMensajes(ss) {
+  var estaticas = _leerEntradasIndicePorTipo('Estático');
+  var out = [];
+  for (var i = 0; i < estaticas.length; i++) {
+    var categoria    = String(estaticas[i].categoria    || '').trim();
+    var subcategoria = String(estaticas[i].subcategoria || '').trim();
+    var clan         = String(estaticas[i].clan         || '').trim();
+    var contenido    = String(estaticas[i].contenido    || '');
+    if (!categoria || !contenido) continue;
+    out.push({ categoria: categoria, subcategoria: subcategoria, clan: clan, contenido: contenido });
   }
-  _tryCondFmt(sh, rules);
+  return out;
 }
 
 /**
@@ -44287,7 +44490,41 @@ function _colCategoriaExtra_(sh) {
   return respaldo;
 }
 
+/**
+ * _aplicarFormatoCondicionalMensajes(sh, numFilas)
+ * Aplica color de fondo por Categoría (columna 8 = Categoría).
+ */
+function _aplicarFormatoCondicionalMensajes(sh, numFilas) {
+  if (numFilas === 0) return;
+  var dataRange = sh.getRange(2, 1, numFilas, MENSAJES_TOTAL_COLS);
+  var colCat = colLetter(MC.CATEGORIA); // columna Categoría
+
+  var rules = [];
+  for (var cat in CFG.MENSAJES_TIPO_BG) {
+    rules.push(
+      SpreadsheetApp.newConditionalFormatRule()
+        .whenFormulaSatisfied('=$' + colCat + '2="' + cat + '"')
+        .setBackground(CFG.MENSAJES_TIPO_BG[cat])
+        .setRanges([dataRange])
+        .build()
+    );
+  }
+  _tryCondFmt(sh, rules);
+}
+
+// --- Tema: datos de clan para el menú dinámico ---
+
 // Helpers de datos [→ Contexto_Base_Web.md §30B030]
+
+/**
+ * _getNombresClanesOrdenados(ss, clanOrden) [→ Contexto_Base_Web.md §30B032]
+ */
+function _getNombresClanesOrdenados(ss, clanOrden) {
+  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
+  if (!sh || sh.getLastRow() < 2) return [];
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues();
+  return data.map(function(r) { return String(r[2] || '').trim(); }).filter(Boolean);
+}
 
 /**
  * _getDatosClanHoja(ss) [→ Contexto_Base_Web.md §30B031]
@@ -44371,148 +44608,6 @@ function _fmt(v) {
   return n.toLocaleString('es-PE');
 }
 
-/**
- * _getNombresClanesOrdenados(ss, clanOrden) [→ Contexto_Base_Web.md §30B032]
- */
-function _getNombresClanesOrdenados(ss, clanOrden) {
-  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
-  if (!sh || sh.getLastRow() < 2) return [];
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues();
-  return data.map(function(r) { return String(r[2] || '').trim(); }).filter(Boolean);
-}
-
-/**
- * _agruparPorClanOrdenado(lista, clanOrden) [→ Contexto_Base_Web.md §30B033]
- */
-function _agruparPorClanOrdenado(lista, clanOrden) {
-  var grupos = {};
-  var clanes  = [];
-  for (var i = 0; i < lista.length; i++) {
-    var cn = lista[i].clan;
-    if (!grupos[cn]) { grupos[cn] = []; clanes.push(cn); }
-    grupos[cn].push(lista[i]);
-  }
-  clanes.sort(function(a, b) {
-    var oa = clanOrden[a.toLowerCase()]; if (oa === undefined) oa = 9999;
-    var ob = clanOrden[b.toLowerCase()]; if (ob === undefined) ob = 9999;
-    return oa - ob;
-  });
-  return clanes.map(function(cn) { return { clan: cn, lista: grupos[cn] }; });
-}
-
-/**
- * _obtenerCelularPorTag()
- * Devuelve un mapa { tag -> true } para jugadores activos Terna con celular.
- */
-/**
- * _obtenerCelularPorTag(ss) [→ Contexto_Base_Web.md §30B034]
- */
-function _obtenerCelularPorTag(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!sh || sh.getLastRow() < 2) return {};
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-  var mapa = {};
-  for (var i = 0; i < data.length; i++) {
-    if (String(data[i][IC.ESTADO - 1]) === 'Activo' &&
-        String(data[i][IC.CELULAR - 1] || '').trim() !== '' &&
-        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
-      mapa[String(data[i][IC.TAG - 1])] = String(data[i][IC.CELULAR - 1]).trim();
-    }
-  }
-  return mapa;
-}
-
-/**
- * _obtenerPrestamoPorTag(ss) [→ Contexto_Base_Web.md §30B035]
- */
-function _obtenerPrestamoPorTag(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!sh || sh.getLastRow() < 2) return {};
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-  var mapa = {};
-  for (var i = 0; i < data.length; i++) {
-    var tag = String(data[i][DC.TAG - 1] || '').trim();
-    var prestamo = String(data[i][DC.PRESTAMO - 1] || '').trim();
-    if (tag && prestamo) {
-      mapa[tag] = prestamo;
-    }
-  }
-  return mapa;
-}
-
-/**
- * _sufijoPrestamo(nombrePrestamo) [→ Contexto_Base_Web.md §30B036]
- */
-function _sufijoPrestamo(nombrePrestamo) {
-  var n = String(nombrePrestamo || '').trim();
-  if (!n) return '';
-  return ' (' + n.charAt(0).toUpperCase() + ')';
-}
-
-/**
- * _getPlantillasParaMensajes(ss) [→ Contexto_Base_Web.md §30B037]
- */
-function _getPlantillasParaMensajes(ss) {
-  var estaticas = _leerEntradasIndicePorTipo('Estático');
-  var out = [];
-  for (var i = 0; i < estaticas.length; i++) {
-    var categoria    = String(estaticas[i].categoria    || '').trim();
-    var subcategoria = String(estaticas[i].subcategoria || '').trim();
-    var clan         = String(estaticas[i].clan         || '').trim();
-    var contenido    = String(estaticas[i].contenido    || '');
-    if (!categoria || !contenido) continue;
-    out.push({ categoria: categoria, subcategoria: subcategoria, clan: clan, contenido: contenido });
-  }
-  return out;
-}
-
-function _obtenerDatosPendientes(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.PENDIENTES);
-  if (!sh || sh.getLastRow() < 2) return [];
-  // 9 columnas: N°|Tag|Nombre|Nom_Multi|Préstamo|Clan|Faltantes|Celular|WSP [→ Contexto_Base_Web.md §30B038]
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues();
-  var pendientes = data.map(function(r) { return { tag: r[1], nombre: r[2], nomMulti: r[3], prestamo: r[4], clan: r[5], faltantes: r[6] }; });
-
-  // NUEVO (pedido usuario): se agrega `rango` a cada pendiente, cruzado por [→ Contexto_Base_Web.md §30B039]
-  var dirPorTagRango = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS);
-  pendientes.forEach(function(p) {
-    var filaDirP = dirPorTagRango[String(p.tag || '').trim().toUpperCase()];
-    p.rango = filaDirP ? String(filaDirP[IC.RANGO - 1] || '') : '';
-  });
-
-  return pendientes;
-}
-
-function _obtenerDatosSinCelular(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!sh || sh.getLastRow() < 2) return [];
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-  var filtrado = [];
-  for (var i = 0; i < data.length; i++) {
-    if (String(data[i][IC.ESTADO    - 1]) === 'Activo' &&
-        String(data[i][IC.CELULAR   - 1] || '').trim() === '' &&
-        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
-      filtrado.push({ nombre: data[i][IC.NOMBRE - 1], clan: data[i][IC.CLAN - 1] });
-    }
-  }
-  return filtrado;
-}
-
-function _obtenerDatosSinEtiqueta(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!sh || sh.getLastRow() < 2) return [];
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-  var filtrado = [];
-  for (var i = 0; i < data.length; i++) {
-    // NOTA: "Iniciales" ya NO se exige aquí. Es un campo distinto (identificación/ [→ Contexto_Base_Web.md §30B040]
-    if (String(data[i][IC.ESTADO    - 1]) === 'Activo' &&
-        String(data[i][IC.ETIQUETA  - 1]) !== 'Sí' &&
-        CFG.TERNA_TAGS.indexOf(String(data[i][IC.CLAN_TAG - 1])) >= 0) {
-      filtrado.push({ nombre: data[i][IC.NOMBRE - 1], clan: data[i][IC.CLAN - 1] });
-    }
-  }
-  return filtrado;
-}
 
 // --- ARCHIVO: 31_Cards_Mazos.gs ---
 // ==============================================================================
@@ -52207,6 +52302,27 @@ function _webCRListaGenerarPropuestas(token, idAscenso, idDescenso) {
   return _registrarPropuestasCRListaEnHistorial(idAscenso, idDescenso);
 }
 
+/**
+ * _webCRListaRefrescarDocs_(idAscenso, idDescenso) [→ Contexto_Base_Web.md §PF286]
+ * Después de guardar un par de CR_Lista o de generar sus propuestas desde la web, actualiza los documentos de
+ * cambio de rango (procesarCambioRango(), 26_Torneos_Core.gs) solo si ese par es el vigente de Extra: los
+ * documentos siempre muestran el vigente, así que con otro par no habría nada que cambiar. Nunca corta la respuesta
+ * de la web: si algo falla, lo deja en el registro y sigue.
+ */
+function _webCRListaRefrescarDocs_(idAscenso, idDescenso) {
+  try {
+    var vigenteAscenso  = _getIdVigenteExtraCR('Ascenso');
+    var vigenteDescenso = _getIdVigenteExtraCR('Descenso');
+    if (!vigenteAscenso || !vigenteDescenso) return;
+    var esVigente = (idAscenso && String(idAscenso) === String(vigenteAscenso)) ||
+                    (idDescenso && String(idDescenso) === String(vigenteDescenso));
+    if (!esVigente) return;
+    procesarCambioRango();
+  } catch (eRefrescar) {
+    Logger.log('[Web][CR_Lista] No se pudieron actualizar los documentos de cambio de rango (se continúa): ' + eRefrescar.message);
+  }
+}
+
 // _construirFilaCRLista(): Helper interno de _webCRListaGuardar() (justo abajo): arma UN array de CR_TOTAL_COLS elementos (formato CR.*, 26_Torneos_Core.gs) para una sola mitad del par (Ascenso o Descenso) a partir del payload recibido desde la web -- ver… [→ Contexto_Base_Web.md §37B339]
 function _construirFilaCRLista(comunes, tipo, id, bloque) {
   var fila = new Array(CR_TOTAL_COLS).fill('');
@@ -54084,6 +54200,7 @@ function doPost(e) {
         payloadCRG && payloadCRG.sessionToken,
         payloadCRG && payloadCRG.datos
       );
+      if (resultadoCRG && resultadoCRG.ok) _webCRListaRefrescarDocs_(resultadoCRG.idAscenso, resultadoCRG.idDescenso); // PF286
       return ContentService
         .createTextOutput(JSON.stringify(resultadoCRG))
         .setMimeType(ContentService.MimeType.JSON);
@@ -54103,6 +54220,7 @@ function doPost(e) {
         payloadCRGP && payloadCRGP.idAscenso,
         payloadCRGP && payloadCRGP.idDescenso
       );
+      if (resultadoCRGP && resultadoCRGP.ok) _webCRListaRefrescarDocs_(payloadCRGP.idAscenso, payloadCRGP.idDescenso); // PF286
       return ContentService
         .createTextOutput(JSON.stringify(resultadoCRGP))
         .setMimeType(ContentService.MimeType.JSON);
@@ -63845,477 +63963,93 @@ function _anomAtqSemClan_(v) { return String(v === null || v === undefined ? '' 
  * La tabla de fame de un día es la de _fameTablaDia_() (18_CorreccionGuerra.gs).
  */
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: repararDiasConExcesoInforme(), repararDiasConExcesoAplicarUnicas(), repararDiasConExcesoAplicar(), informeFameCurrentRiverRace52(), aplicarFameCurrentRiverRace52()
+//  Parte 2 — Funciones que no se corren a mano
+//    - Reparar días con exceso: función principal, clasificación, plan de escritura, aplicación y verificación
+//    - Fame por día real de los 52 casos con CurrentRiverRace
+// Dentro de cada tema, de la función principal a sus ayudas, en el orden en que las llama. Al reordenar no se cambió el código de ninguna función.
+
 var EXC_DIAS_CAP = 5000;          // tope de soluciones por tramo (si se pasa, el caso queda marcado como truncado)
+
 var EXC_DIAS_LETRAS = 'JVSD';     // desplazamiento 0..3 = jueves a domingo
 
 var _excDiasOpciones_ = null;
-function _excDiasOpciones() {
-  if (_excDiasOpciones_) return _excDiasOpciones_;
-  var lista = [];
-  for (var n = 0; n <= 4; n++) {
-    for (var b = 0; b <= n; b++) {
-      var tabla = _fameTablaDia_(n, b);
-      for (var i = 0; i < tabla.length; i++) lista.push([n, b, tabla[i]]);
-    }
-  }
-  _excDiasOpciones_ = lista;
-  return lista;
-}
-
-function _excDiasNum(v) {
-  var n = Number(String(v === null || v === undefined ? '' : v).replace(/,/g, '').trim());
-  return isNaN(n) ? 0 : Math.trunc(n);
-}
-
-/**
- * Agrupa las filas de guerra por (temporada, semana, tag, clan): { clave: { info:{...}, dias:{ off: fila } } }.
- * Por cada día se queda con la fila de mayor PeriodIndex. filas = arreglo de arreglos (sin encabezado).
- */
-function _excDiasAgrupar(filas) {
-  var grupos = {};
-  for (var i = 0; i < filas.length; i++) {
-    var r = filas[i];
-    if (String(r[GC.ETAPA - 1]) !== 'Guerra') continue;
-    var pi = _excDiasNum(r[GC.PERIOD_IDX - 1]);
-    var off = (pi % 7) - 3;
-    if (off < 0 || off > 3) continue;
-    var tag = String(r[GC.TAG - 1]).trim();
-    var clave = [String(r[GC.TEMPORADA - 1]), String(r[GC.SEMANA - 1]), tag, String(r[GC.CLAN - 1])].join('|');
-    var g = grupos[clave];
-    if (!g) {
-      g = { temporada: String(r[GC.TEMPORADA - 1]), semana: String(r[GC.SEMANA - 1]), tag: tag, clan: String(r[GC.CLAN - 1]), nombre: String(r[GC.NOMBRE - 1] || ''), dias: {} };
-      grupos[clave] = g;
-    }
-    var previa = g.dias[off];
-    if (!previa || pi > _excDiasNum(previa[GC.PERIOD_IDX - 1])) g.dias[off] = r;
-    if (!g.nombre) g.nombre = String(r[GC.NOMBRE - 1] || '');
-  }
-  return grupos;
-}
-
-/** Tramos entre filas consecutivas: cada fila cubre los días desde la anterior hasta ella (deltas de los acumulados). */
-function _excDiasSegmentos(dias) {
-  var offs = Object.keys(dias).map(Number).sort(function (a, b) { return a - b; });
-  var segs = [], pa = 0, pb = 0, pf = 0, po = -1;
-  for (var i = 0; i < offs.length; i++) {
-    var o = offs[i], r = dias[o];
-    var a = _excDiasNum(r[GC.ATAQUES_SEM - 1]), b = _excDiasNum(r[GC.BARCOS - 1]), f = _excDiasNum(r[GC.FAME - 1]);
-    var cubre = [];
-    for (var d = po + 1; d <= o; d++) cubre.push(d);
-    segs.push({ dias: cubre, A: a - pa, B: b - pb, F: f - pf, hoy: _excDiasNum(r[GC.ATAQUES_HOY - 1]), offFila: o });
-    pa = a; pb = b; pf = f; po = o;
-  }
-  return segs;
-}
-
-/** Si falta el jueves y la primera fila es la del viernes: jueves = acumulado del viernes - ataques de hoy del viernes. */
-function _excDiasFaltanteJueves(segs) {
-  var s0 = segs[0];
-  if (s0 && s0.dias.length === 2 && s0.dias[0] === 0 && s0.dias[1] === 1 && s0.offFila === 1) {
-    var nJue = s0.A - s0.hoy;
-    return (nJue >= 0 && nJue <= 4) ? nJue : null;
-  }
-  return null;
-}
-
-/** Todas las (n, b, f) por día para k días con sumas exactas A, B y F. fijoN0: ataques del primer día fijados (o null). */
-function _excDiasSoluciones(k, A, B, F, fijoN0) {
-  var opts = _excDiasOpciones();
-  var sols = [];
-  function dfs(i, a, b, f, acc) {
-    if (sols.length > EXC_DIAS_CAP) return;
-    if (i === k) {
-      if (a === A && b === B && f === F) sols.push(acc.slice());
-      return;
-    }
-    var resto = k - i - 1;
-    for (var j = 0; j < opts.length; j++) {
-      var o = opts[j];
-      if (i === 0 && fijoN0 !== null && o[0] !== fijoN0) continue;
-      var na = a + o[0], nb = b + o[1], nf = f + o[2];
-      if (na > A || nb > B || nf > F) continue;
-      if (na + 4 * resto < A) continue;
-      acc.push(o); dfs(i + 1, na, nb, nf, acc); acc.pop();
-    }
-  }
-  dfs(0, 0, 0, 0, []);
-  return sols;
-}
-
-function _excDiasEsCero(s) { return s.A === 0 && s.B === 0 && s.F === 0; }
-
-/** Devuelve { clase: 'imposible'|'ok', notas: [...], hechos: [{ dias, sols }] }. */
-function _excDiasResolver(dias) {
-  var segs = _excDiasSegmentos(dias);
-  var nj = _excDiasFaltanteJueves(segs);
-  var out = [], notas = [], i = 0;
-  while (i < segs.length) {
-    var s = segs[i];
-    var fijo = (i === 0 && nj !== null && s.dias[0] === 0) ? nj : null;
-    var sols = _excDiasSoluciones(s.dias.length, s.A, s.B, s.F, fijo);
-    if (sols.length) {
-      out.push({ dias: s.dias.slice(), sols: sols, zero: _excDiasEsCero(s) });
-      i++;
-      continue;
-    }
-    var backMax = 0;
-    while (backMax < out.length && out[out.length - 1 - backMax].zero) backMax++;
-    var sig = 0;
-    while (i + 1 + sig < segs.length && _excDiasEsCero(segs[i + 1 + sig])) sig++;
-    var finOk = (i + 1 + sig === segs.length);
-    var cands = [];
-    for (var m = 0; m <= backMax; m++) {
-      for (var f = 0; f <= sig; f++) {
-        var doms = (finOk && f === sig) ? [false, true] : [false];
-        for (var di = 0; di < doms.length; di++) {
-          var dom = doms[di];
-          var dd = [];
-          var previos = out.slice(out.length - m);
-          for (var p = 0; p < previos.length; p++) dd = dd.concat(previos[p].dias);
-          dd = dd.concat(s.dias);
-          var siguientes = segs.slice(i + 1, i + 1 + f);
-          for (var q = 0; q < siguientes.length; q++) dd = dd.concat(siguientes[q].dias);
-          if (dom && dd[dd.length - 1] < 3) {
-            for (var x = dd[dd.length - 1] + 1; x <= 3; x++) dd.push(x);
-          } else if (dom) {
-            continue;
-          }
-          cands.push({ extra: dd.length - s.dias.length, m: m, f: f, dom: dom, dd: dd });
-        }
-      }
-    }
-    var extras = [];
-    cands.forEach(function (c) { if (extras.indexOf(c.extra) < 0) extras.push(c.extra); });
-    extras.sort(function (u, v) { return u - v; });
-    var elegido = null;
-    for (var ei = 0; ei < extras.length && !elegido; ei++) {
-      var fact = [];
-      var delExtra = cands.filter(function (c) { return c.extra === extras[ei]; });
-      for (var ci = 0; ci < delExtra.length; ci++) {
-        var c = delExtra[ci];
-        var fijo2 = (c.dd[0] === 0 && nj !== null) ? nj : null;
-        var ss = _excDiasSoluciones(c.dd.length, s.A, s.B, s.F, fijo2);
-        if (ss.length) fact.push({ m: c.m, f: c.f, dom: c.dom, dd: c.dd, ss: ss });
-      }
-      if (fact.length) elegido = fact;
-    }
-    if (!elegido) return { clase: 'imposible', notas: notas, hechos: [] };
-    if (elegido.length > 1) notas.push('cobertura_ambigua');
-    if (elegido.some(function (x) { return x.m > 0; })) notas.push('absorbe_fila_vieja');
-    if (elegido.some(function (x) { return x.dom || x.f > 0; })) notas.push('extiende_adelante');
-    var spanSet = {};
-    elegido.forEach(function (x) { x.dd.forEach(function (d) { spanSet[d] = true; }); });
-    var span = Object.keys(spanSet).map(Number).sort(function (u, v) { return u - v; });
-    var uni = {};
-    elegido.forEach(function (x) {
-      x.ss.forEach(function (z) {
-        var mp = {};
-        for (var k = 0; k < x.dd.length; k++) mp[x.dd[k]] = z[k];
-        var tupla = span.map(function (d) { return mp[d] !== undefined ? mp[d] : [0, 0, 0]; });
-        uni[JSON.stringify(tupla)] = tupla;
-      });
-    });
-    var unicas = Object.keys(uni).sort().map(function (k2) { return uni[k2]; });
-    var mmax = Math.max.apply(null, elegido.map(function (x) { return x.m; }));
-    var fmax = Math.max.apply(null, elegido.map(function (x) { return x.f; }));
-    for (var z2 = 0; z2 < mmax; z2++) out.pop();
-    out.push({ dias: span, sols: unicas, zero: false });
-    i += 1 + fmax;
-  }
-  // Notas sin repetir y ordenadas, como en el modelo de Python.
-  var vistas = {}, notasU = [];
-  notas.forEach(function (n) { if (!vistas[n]) { vistas[n] = true; notasU.push(n); } });
-  notasU.sort();
-  return { clase: 'ok', notas: notasU, hechos: out };
-}
-
-/**
- * Clasifica un caso ya resuelto y resume, por día, lo que coincide en todas las soluciones.
- * Devuelve { clase, soluciones, ataquesCoinciden, notas, porDia: { off: { n, b, f } } } donde cada cifra es un número
- * (igual en todas las soluciones), '?' (varía) o falta el día (sin dato: ningún tramo lo cubre).
- */
-function _excDiasResumir(res) {
-  if (res.clase === 'imposible') return { clase: 'imposible', soluciones: '', ataquesCoinciden: '', notas: res.notas.join('|'), porDia: {} };
-  var total = 1, ataquesUnicos = true, unico = true, truncado = false;
-  var porDia = {};
-  res.hechos.forEach(function (h) {
-    total *= h.sols.length;
-    if (h.sols.length > EXC_DIAS_CAP) truncado = true;
-    if (h.sols.length > 1) unico = false;
-    var distintosN = {};
-    h.sols.forEach(function (z) { distintosN[z.map(function (x) { return x[0]; }).join(',')] = true; });
-    if (Object.keys(distintosN).length > 1) ataquesUnicos = false;
-    h.dias.forEach(function (d, idx) {
-      var vn = {}, vb = {}, vf = {};
-      h.sols.forEach(function (z) { vn[z[idx][0]] = true; vb[z[idx][1]] = true; vf[z[idx][2]] = true; });
-      var uno = function (set) { var ks = Object.keys(set); return ks.length === 1 ? Number(ks[0]) : '?'; };
-      porDia[d] = { n: uno(vn), b: uno(vb), f: uno(vf) };
-    });
-  });
-  var clase = unico ? 'unica' : (ataquesUnicos ? 'ambigua_ataques_coinciden' : 'ambigua');
-  var notas = res.notas.slice();
-  if (truncado) notas.push('truncado');
-  return { clase: clase, soluciones: total, ataquesCoinciden: ataquesUnicos ? 'si' : 'no', notas: notas.join('|'), porDia: porDia };
-}
-
-/**
- * ¿Esta serie (jugador, clan, semana) necesita reparo? [→ Contexto_Base_Web.md §PF160, criterio 1]
- * Se parte de los ACUMULADOS, no de AtaquesHoy (que es de la última captura y puede quedarse atrás). Necesita reparo si:
- *  - algún AtaquesHoy pasa de 4 (selector de siempre), o
- *  - algún tramo trae más ataques de los que caben en los días que cubre (4 por día): el acumulado salta de más, o
- *  - falta la fila de un día anterior y el tramo que lo absorbe trae más de 4 ataques (ejemplo: primera fila el viernes con 8 acumulados;
- *    el jueves sale de AtaquesSemana - AtaquesHoy del viernes, ver _excDiasFaltanteJueves()).
- * Antes solo se miraba el primer punto, y los jueves que faltan con AtaquesHoy de 4 o menos quedaban fuera aunque el perfil los mostrara con 8.
- */
-function _excDiasNecesitaReparo(dias) {
-  var offs = Object.keys(dias);
-  for (var i = 0; i < offs.length; i++) {
-    if (_excDiasNum(dias[offs[i]][GC.ATAQUES_HOY - 1]) > 4) return true;
-  }
-  var segs = _excDiasSegmentos(dias);
-  for (var j = 0; j < segs.length; j++) {
-    var s = segs[j];
-    if (s.A > 4 * s.dias.length) return true;
-    if (s.dias.length > 1 && s.A > 4) return true;
-  }
-  return false;
-}
-
-/**
- * Clasifica todos los casos de un conjunto de filas (sin encabezado). Devuelve un arreglo de
- * { grupo, patron, resumen } ordenado por temporada, semana, tag y clan.
- */
-function _excDiasClasificar(filas) {
-  var grupos = _excDiasAgrupar(filas);
-  var claves = Object.keys(grupos).filter(function (k) { return _excDiasNecesitaReparo(grupos[k].dias); }).sort();
-  return claves.map(function (k) {
-    var g = grupos[k];
-    var patron = Object.keys(g.dias).map(Number).sort(function (a, b) { return a - b; }).map(function (o) { return EXC_DIAS_LETRAS.charAt(o); }).join('');
-    return { grupo: g, patron: patron, resumen: _excDiasResumir(_excDiasResolver(g.dias)) };
-  });
-}
-
-function _excDiasTextoPorDia(porDia, campo) {
-  var partes = [];
-  for (var d = 0; d <= 3; d++) partes.push(porDia[d] ? String(porDia[d][campo]) : '-');
-  return partes.join('|');
-}
-
-function _excDiasTextoActual(dias) {
-  var partes = [];
-  for (var d = 0; d <= 3; d++) partes.push(dias[d] ? String(_excDiasNum(dias[d][GC.ATAQUES_HOY - 1])) : '-');
-  return partes.join('|');
-}
-
-// ---------------------------------------------------------------------------------------------------------------
-// PLAN DE ESCRITURA (funciones puras: no tocan las filas; se prueban en node)
-// ---------------------------------------------------------------------------------------------------------------
 
 var EXC_DIAS_CLASES_UNICAS = ['unica'];
+
 var EXC_DIAS_CLASES_TODAS = ['unica', 'ambigua_ataques_coinciden'];
 
-/** Lo registrado hoy por día (ataques de la fila y delta de barcos y fame de los acumulados), para elegir la solución más cercana. */
-function _excDiasRegistradoPorDia(dias) {
-  var reg = {}, pb = 0, pf = 0;
-  Object.keys(dias).map(Number).sort(function (a, b) { return a - b; }).forEach(function (o) {
-    var r = dias[o];
-    var b = _excDiasNum(r[GC.BARCOS - 1]), f = _excDiasNum(r[GC.FAME - 1]);
-    reg[o] = { n: _excDiasNum(r[GC.ATAQUES_HOY - 1]), b: Math.max(0, b - pb), f: Math.max(0, f - pf) };
-    pb = b; pf = f;
-  });
-  return reg;
-}
+// ============================================================================================================
+// FAME POR DÍA REAL DE LOS 52 CASOS CON CurrentRiverRace (20-oct-2026; Contexto_Base_Web.md §PF139)
+// Cruce hecho en solo lectura (Datos descargados/CSV/Informes/Informe_52_CurrentRiverRace_vs_Hoja 2026-10-20.csv):
+// en estos casos los ataques por día ya coinciden con CurrentRiverRace y la fame de la semana también; solo cambia
+// cómo se reparte la fame entre los días. Cada fila: [temporada, semana, tag, ataques J|V|S|D, fame por día HOY,
+// fame por día REAL]. La fame por día real sale de los JSON de CurrentRiverRace (cierre de cada día) y del total semanal.
+//   informeFameCurrentRiverRace52()  -> SOLO INFORMA: CSV con lo que escribiría. No toca nada.
+//   aplicarFameCurrentRiverRace52()  -> respaldo previo de Backup_Guerra.csv, escribe la Fame acumulada de J, V y S
+//                                       (el domingo conserva el total semanal), Origen 'Corregido - CurrentRiverRace',
+//                                       y verifica releyendo el CSV.
+// Solo escribe un caso si TODO coincide con lo medido: las cuatro filas existen, AtaquesHoy y AtaquesSemana son los del
+// informe, Barcos acumulados = 0 y la fame por día de hoy es exactamente la del informe. Si no, lo omite y dice por qué
+// (si ya tiene la fame real, dice «ya aplicado»). No toca ataques, barcos ni el total semanal.
+// ============================================================================================================
+var FAME_CRR52_ORIGEN = 'Corregido - CurrentRiverRace';
 
-/** Entre las soluciones de un tramo elige UNA terna completa: la que cambia menos lo registrado (empate: la primera, orden fijo). */
-function _excDiasElegirSolucion(item, regPorDia) {
-  var mejor = null, mejorD = Infinity;
-  item.sols.forEach(function (z) {
-    var d = 0;
-    item.dias.forEach(function (dia, i) {
-      var r = regPorDia[dia] || { n: 0, b: 0, f: 0 };
-      d += (z[i][0] !== r.n ? 1 : 0) + (z[i][1] !== r.b ? 1 : 0) + (z[i][2] !== r.f ? 1 : 0);
-    });
-    if (d < mejorD) { mejorD = d; mejor = z; }
-  });
-  return mejor;
-}
-
-/** Acumulados (ataques, barcos, fame) de la fila de mayor día de un grupo. */
-function _excDiasFinalDe(dias) {
-  var offs = Object.keys(dias).map(Number).sort(function (a, b) { return a - b; });
-  if (!offs.length) return { a: 0, b: 0, f: 0 };
-  var r = dias[offs[offs.length - 1]];
-  return { a: _excDiasNum(r[GC.ATAQUES_SEM - 1]), b: _excDiasNum(r[GC.BARCOS - 1]), f: _excDiasNum(r[GC.FAME - 1]) };
-}
-
-/**
- * Origen nuevo de una fila: 'Corregido' (la fila ya existia) o 'Reconstruido' (la fila se crea), mas el sufijo
- * ' - Solución única' (una sola terna posible en el tramo) o ' - Solución estimada' (varias ternas válidas; se eligió una).
- * Una fila que ya era 'Reconstruido' sigue siendo 'Reconstruido'. Cualquier otro origen distinto de vacío, 'Original' o
- * 'Corregido' no se toca.
- */
-function _excDiasOrigenNuevo(origenActual, existe, estimado) {
-  var sufijo = estimado ? ' - Solución estimada' : ' - Solución única';
-  if (!existe) return 'Reconstruido' + sufijo;
-  var o = String(origenActual || '').trim();
-  if (_origenGuerraEs_(o, 'Reconstruido')) return 'Reconstruido' + sufijo;
-  if (o === '' || _origenGuerraEs_(o, 'Original') || _origenGuerraEs_(o, 'Corregido')) return 'Corregido' + sufijo;
-  return o;
-}
-
-/**
- * Planifica la escritura de los casos cuya clase esté en clases. NO modifica `filas`.
- * Devuelve { casos: [{ grupo, clase, estimado, ops: [{ dia, existe, fila, ant, nuevo }] }], omitidos: [{ grupo, clase, motivo }] }.
- * Cada op lleva los valores del día: nuevo = { hoy, sem, fame, barcos, origen }. Las ternas salen de UNA solución completa
- * por tramo (ataques, barcos y fame del día en la tabla y con las sumas de los acumulados de las filas reales).
- */
-function _excDiasPlanificar(filas, clases) {
-  var grupos = _excDiasAgrupar(filas);
-  var porSemana = {};
-  Object.keys(grupos).forEach(function (k) {
-    var g = grupos[k], ks = g.temporada + '|' + g.semana + '|' + g.tag;
-    if (!porSemana[ks]) porSemana[ks] = [];
-    porSemana[ks].push(g);
-  });
-  var plan = { casos: [], omitidos: [] };
-  _excDiasClasificar(filas).forEach(function (c) {
-    var g = c.grupo, clase = c.resumen.clase;
-    if (clases.indexOf(clase) < 0) return;
-    var res = _excDiasResolver(g.dias);
-    if (res.clase !== 'ok') { plan.omitidos.push({ grupo: g, clase: clase, motivo: 'sin solucion' }); return; }
-    var reg = _excDiasRegistradoPorDia(g.dias);
-    var finalAntes = _excDiasFinalDe(g.dias);
-    var ops = [], estimado = false, cumA = 0, cumB = 0, cumF = 0, cubiertos = {};
-    res.hechos.forEach(function (item) {
-      var z = _excDiasElegirSolucion(item, reg);
-      if (item.sols.length > 1) estimado = true;
-      item.dias.forEach(function (d, i) {
-        cumA += z[i][0]; cumB += z[i][1]; cumF += z[i][2];
-        var fila = g.dias[d] || null;
-        cubiertos[d] = true;
-        ops.push({ dia: d, existe: !!fila, fila: fila, estimadoDia: item.sols.length > 1,
-          ant: fila ? { hoy: _excDiasNum(fila[GC.ATAQUES_HOY - 1]), sem: _excDiasNum(fila[GC.ATAQUES_SEM - 1]), fame: _excDiasNum(fila[GC.FAME - 1]), barcos: _excDiasNum(fila[GC.BARCOS - 1]), origen: String(fila[GC.ORIGEN - 1] || '') } : null,
-          antDia: reg[d] || null,
-          nuevo: { hoy: z[i][0], sem: cumA, fame: cumF, barcos: cumB, fameDia: z[i][2], barcosDia: z[i][1], origen: '' } });
-      });
-    });
-    // Toda fila existente tiene que quedar cubierta por algun tramo.
-    var sinCubrir = Object.keys(g.dias).map(Number).filter(function (d) { return !cubiertos[d]; });
-    if (sinCubrir.length) { plan.omitidos.push({ grupo: g, clase: clase, motivo: 'filas existentes sin cubrir por el modelo' }); return; }
-    // El total de la semana no cambia.
-    if (cumA !== finalAntes.a || cumB !== finalAntes.b || cumF !== finalAntes.f) {
-      plan.omitidos.push({ grupo: g, clase: clase, motivo: 'el total de la semana no cuadra (' + cumA + '/' + cumB + '/' + cumF + ' contra ' + finalAntes.a + '/' + finalAntes.b + '/' + finalAntes.f + ')' }); return;
-    }
-    // Comprobacion entre clanes: tope de 4 por dia y de 16 por semana sumando los demas clanes del jugador.
-    var otros = (porSemana[g.temporada + '|' + g.semana + '|' + g.tag] || []).filter(function (o) { return o.clan !== g.clan; });
-    var excede = '';
-    ops.forEach(function (op) {
-      var suma = op.nuevo.hoy;
-      otros.forEach(function (o) { if (o.dias[op.dia]) suma += _excDiasNum(o.dias[op.dia][GC.ATAQUES_HOY - 1]); });
-      if (suma > 4) excede = 'dia ' + EXC_DIAS_LETRAS.charAt(op.dia) + ' quedaria con ' + suma + ' ataques sumando clanes';
-    });
-    var semanaOtros = 0;
-    otros.forEach(function (o) { semanaOtros += _excDiasFinalDe(o.dias).a; });
-    if (!excede && cumA + semanaOtros > 16) excede = 'la semana quedaria con ' + (cumA + semanaOtros) + ' ataques sumando clanes';
-    if (excede) { plan.omitidos.push({ grupo: g, clase: clase, motivo: excede }); return; }
-    ops.forEach(function (op) {
-      op.nuevo.origen = _excDiasOrigenNuevo(op.existe ? op.ant.origen : '', op.existe, op.estimadoDia);
-      // Una fila que ya tenia exactamente esos valores no cambia: se deja con su Origen (no se marca 'Corregido' sin haberla corregido).
-      if (op.existe && op.ant.hoy === op.nuevo.hoy && op.ant.sem === op.nuevo.sem && op.ant.fame === op.nuevo.fame && op.ant.barcos === op.nuevo.barcos) {
-        op.sinCambio = true; op.nuevo.origen = op.ant.origen;
-      }
-    });
-    plan.casos.push({ grupo: g, clase: clase, estimado: estimado, ops: ops });
-  });
-  return plan;
-}
-
-/** Fila nueva (reconstruida) de un dia que no tiene fila, con los datos del propio jugador y clan. */
-function _excDiasFilaNueva(g, op) {
-  var temporada = Number(g.temporada), semana = Number(g.semana);
-  var pIdx = (semana - 1) * 7 + 3 + op.dia;
-  var diaGuerraObj = calcDiaGuerraIdx(CFG.REF_DEFAULT, temporada, pIdx);
-  var f = new Array(GUERRA_TOTAL_COLS).fill('');
-  var modelo = null;
-  Object.keys(g.dias).forEach(function (o) { if (!modelo) modelo = g.dias[o]; });
-  f[GC.TEMPORADA - 1] = String(g.temporada);
-  f[GC.SEMANA - 1] = String(g.semana);
-  f[GC.DIA - 1] = periodIdxToLetra(pIdx);
-  f[GC.PERIOD_IDX - 1] = String(pIdx);
-  f[GC.ETAPA - 1] = 'Guerra';
-  f[GC.CLAN - 1] = g.clan;
-  f[GC.TAG - 1] = g.tag;
-  f[GC.NOMBRE - 1] = g.nombre;
-  f[GC.TEMPORADA_2 - 1] = (modelo && String(modelo[GC.TEMPORADA_2 - 1] || '') !== '') ? String(modelo[GC.TEMPORADA_2 - 1]) : String(_getTemporadaRoyaleApiDesdePropia(temporada));
-  f[GC.FECHA - 1] = (diaGuerraObj instanceof Date) ? _formatFechaCanonica(diaGuerraObj, true) : '';
-  f[GC.DIA_GUERRA - 1] = (diaGuerraObj instanceof Date) ? _formatFechaCanonica(diaGuerraObj) : '';
-  return f;
-}
-
-/** Aplica el plan sobre `filas` (modifica las filas existentes y agrega al final las nuevas). Devuelve cuantas modifico y cuantas creo. */
-function _excDiasAplicarPlan(filas, plan) {
-  var modificadas = 0, creadas = 0;
-  plan.casos.forEach(function (c) {
-    c.ops.forEach(function (op) {
-      var fila = op.fila;
-      if (!op.existe) {
-        fila = _excDiasFilaNueva(c.grupo, op);
-        filas.push(fila);
-        op.filaNueva = fila;
-        creadas++;
-      } else if (!op.sinCambio) {
-        modificadas++;
-      }
-      fila[GC.ATAQUES_HOY - 1] = String(op.nuevo.hoy);
-      fila[GC.ATAQUES_SEM - 1] = String(op.nuevo.sem);
-      fila[GC.FAME - 1] = String(op.nuevo.fame);
-      fila[GC.BARCOS - 1] = String(op.nuevo.barcos);
-      fila[GC.ORIGEN - 1] = op.nuevo.origen;
-    });
-  });
-  return { modificadas: modificadas, creadas: creadas };
-}
-
-/**
- * Verifica, sobre las filas ya leidas de nuevo desde Drive, que:
- *  (1) el numero de filas es el de antes mas las creadas; (2) las filas que el plan no toca son identicas a las de antes;
- *  (3) cada fila del plan quedo con los valores planeados; (4) en cada caso, cada dia esta en la tabla de fame (ataques, barcos y fame del dia),
- *      ninguno pasa de 4 ataques y el total de la semana es el mismo de antes. Devuelve la lista de problemas (vacia = todo bien).
- */
-function _excDiasVerificar(filasAntes, filasDespues, plan, creadasEsperadas) {
-  var problemas = [];
-  if (filasDespues.length !== filasAntes.length + creadasEsperadas) problemas.push('numero de filas ' + filasDespues.length + ' en vez de ' + (filasAntes.length + creadasEsperadas));
-  var tocadas = {};
-  plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.existe) tocadas[op.idxAntes] = true; }); });
-  for (var i = 0; i < filasAntes.length && i < filasDespues.length; i++) {
-    if (tocadas[i]) continue;
-    if (filasAntes[i].join('\u0001') !== filasDespues[i].slice(0, filasAntes[i].length).join('\u0001')) { problemas.push('cambio una fila no planeada (linea ' + (i + 2) + ')'); if (problemas.length > 10) break; }
-  }
-  var grupos = _excDiasAgrupar(filasDespues);
-  plan.casos.forEach(function (c) {
-    var g = c.grupo, k = [g.temporada, g.semana, g.tag, g.clan].join('|'), gd = grupos[k];
-    var etq = 'T' + g.temporada + ' S' + g.semana + ' ' + g.tag + ' ' + g.clan + ': ';
-    if (!gd) { problemas.push(etq + 'no se encuentra la serie'); return; }
-    c.ops.forEach(function (op) {
-      var f = gd.dias[op.dia];
-      if (!f) { problemas.push(etq + 'falta la fila del dia ' + EXC_DIAS_LETRAS.charAt(op.dia)); return; }
-      var v = { hoy: _excDiasNum(f[GC.ATAQUES_HOY - 1]), sem: _excDiasNum(f[GC.ATAQUES_SEM - 1]), fame: _excDiasNum(f[GC.FAME - 1]), barcos: _excDiasNum(f[GC.BARCOS - 1]) };
-      if (v.hoy !== op.nuevo.hoy || v.sem !== op.nuevo.sem || v.fame !== op.nuevo.fame || v.barcos !== op.nuevo.barcos || String(f[GC.ORIGEN - 1]) !== op.nuevo.origen) problemas.push(etq + 'la fila del dia ' + EXC_DIAS_LETRAS.charAt(op.dia) + ' no quedo como se planeo');
-    });
-    var pb = 0, pf = 0, pa = 0;
-    Object.keys(gd.dias).map(Number).sort(function (a, b) { return a - b; }).forEach(function (o) {
-      var f = gd.dias[o];
-      var n = _excDiasNum(f[GC.ATAQUES_HOY - 1]), b = _excDiasNum(f[GC.BARCOS - 1]), fm = _excDiasNum(f[GC.FAME - 1]), a = _excDiasNum(f[GC.ATAQUES_SEM - 1]);
-      if (n > 4) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ' con mas de 4 ataques');
-      if (a - pa !== n) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ': AtaquesSemana no sube lo que dice AtaquesHoy');
-      if (_fameTablaDia_(n, b - pb).indexOf(fm - pf) < 0) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ': ' + n + ' ataques, ' + (b - pb) + ' barcos y ' + (fm - pf) + ' de fame no estan en la tabla');
-      pa = a; pb = b; pf = fm;
-    });
-    var fin = _excDiasFinalDe(gd.dias), antes = c.finalAntes;
-    if (antes && (fin.a !== antes.a || fin.b !== antes.b || fin.f !== antes.f)) problemas.push(etq + 'el total de la semana cambio (' + fin.a + '/' + fin.b + '/' + fin.f + ' contra ' + antes.a + '/' + antes.b + '/' + antes.f + ')');
-  });
-  return problemas;
-}
+var FAME_CRR52_CASOS = [
+  ['3', '1', '#20YVVYCU2', '4|4|4|4', '800|500|400|500', '800|500|500|400'],
+  ['3', '1', '#22C090RVJ', '4|4|4|4', '600|600|400|800', '600|600|500|700'],
+  ['3', '1', '#2GG8PJ8GC', '4|4|4|4', '600|800|600|900', '600|800|800|700'],
+  ['3', '1', '#2LCJLUC9J', '4|4|4|4', '550|550|400|900', '550|550|600|700'],
+  ['3', '1', '#80PPY9R9G', '4|4|4|4', '700|800|400|700', '700|800|600|500'],
+  ['3', '1', '#829GQP0JL', '4|4|4|4', '600|500|400|800', '600|500|600|600'],
+  ['3', '1', '#8C0PQ9PR9', '4|4|4|4', '800|800|400|900', '800|800|500|800'],
+  ['3', '1', '#8VU0Y9LJ0', '4|4|4|4', '700|700|500|900', '700|700|600|800'],
+  ['3', '1', '#9G0RQR2GV', '4|4|4|4', '800|650|500|900', '800|650|700|700'],
+  ['3', '1', '#9LCJ2JQ08', '4|4|4|4', '900|900|700|900', '900|900|800|800'],
+  ['3', '1', '#C0PGPR90U', '4|4|4|4', '800|700|400|600', '800|700|500|500'],
+  ['3', '1', '#C0YVCRPY2', '4|4|4|4', '800|700|400|700', '800|700|500|600'],
+  ['3', '1', '#CGGGR82PJ', '4|4|4|4', '550|800|600|900', '550|800|800|700'],
+  ['3', '1', '#CPRQG82L', '4|4|4|4', '700|500|400|600', '700|500|600|400'],
+  ['3', '1', '#CUQG9CJUG', '4|4|4|4', '800|500|400|800', '800|500|500|700'],
+  ['3', '1', '#GVVPJ8CLG', '4|4|4|4', '500|700|600|900', '500|700|800|700'],
+  ['3', '1', '#J2JJ8LGV9', '4|4|4|4', '900|400|550|800', '900|400|650|700'],
+  ['3', '1', '#J8V9PQJP9', '4|4|4|4', '500|400|400|800', '500|400|600|600'],
+  ['3', '1', '#JV08RQU2Y', '4|4|4|4', '800|400|400|650', '800|400|500|550'],
+  ['3', '1', '#LRQ8YJRCU', '4|4|4|4', '400|400|400|600', '400|400|500|500'],
+  ['3', '1', '#LRR2RGCCV', '4|4|4|4', '650|700|600|900', '650|700|800|700'],
+  ['3', '1', '#PJL9GL8U2', '4|4|4|4', '600|600|400|800', '600|600|600|600'],
+  ['3', '1', '#Q98RGPGCU', '4|4|4|4', '500|600|500|900', '500|600|600|800'],
+  ['3', '1', '#QR8JGLC9Q', '4|4|4|4', '800|700|400|800', '800|700|700|500'],
+  ['3', '1', '#R98JQRU99', '4|4|4|4', '500|600|500|900', '500|600|700|700'],
+  ['3', '1', '#RGQUGU0CU', '4|4|4|4', '550|650|400|650', '550|650|500|550'],
+  ['3', '1', '#U9L82V28P', '4|4|4|4', '500|700|500|900', '500|700|800|600'],
+  ['3', '1', '#U9P0PYQQ2', '4|4|4|4', '500|500|400|800', '500|500|500|700'],
+  ['3', '1', '#UG90QUU0P', '4|4|4|4', '700|700|400|800', '700|700|600|600'],
+  ['3', '1', '#UJUGRYY9C', '4|4|4|4', '800|700|700|900', '800|700|800|800'],
+  ['3', '1', '#UR902UV8L', '4|4|4|4', '600|700|600|900', '600|700|700|800'],
+  ['3', '1', '#V0UJ0RPVP', '4|4|4|4', '500|500|400|800', '500|500|700|500'],
+  ['3', '1', '#VLU8GLL09', '4|4|4|4', '700|700|600|900', '700|700|700|800'],
+  ['3', '1', '#VPRGY9YGG', '4|4|4|4', '700|700|400|800', '700|700|600|600'],
+  ['3', '1', '#VQCG0G09G', '4|4|4|4', '500|800|400|650', '500|800|500|550'],
+  ['3', '1', '#VR92C8LYU', '4|4|4|4', '500|700|400|700', '500|700|550|550'],
+  ['3', '1', '#YGL2QV8LG', '0|4|4|4', '0|650|700|900', '0|650|900|700'],
+  ['3', '2', '#20YVVYCU2', '4|4|4|4', '800|400|550|700', '800|550|700|400'],
+  ['3', '2', '#8J9PL92GU', '4|4|4|4', '650|400|400|700', '650|400|500|600'],
+  ['3', '2', '#8PYCU9U9Q', '4|4|4|4', '700|400|500|900', '700|600|600|600'],
+  ['3', '2', '#8Q92GV08U', '4|4|4|4', '600|400|600|900', '600|700|500|700'],
+  ['3', '2', '#8VU0Y9LJ0', '4|4|4|4', '500|400|600|900', '500|500|600|800'],
+  ['3', '2', '#92YRUUV9P', '4|4|4|4', '400|500|400|500', '400|500|500|400'],
+  ['3', '2', '#C8Q0C88UL', '4|4|4|4', '500|700|400|500', '500|700|500|400'],
+  ['3', '2', '#CGGGR82PJ', '4|4|4|4', '800|700|550|800', '800|700|650|700'],
+  ['3', '2', '#CYR2PVLLY', '4|4|4|4', '650|400|650|900', '650|500|800|650'],
+  ['3', '2', '#Q98RGPGCU', '4|4|4|4', '600|400|600|900', '600|600|800|500'],
+  ['3', '2', '#RGQUGU0CU', '4|4|4|4', '900|400|400|900', '900|550|650|500'],
+  ['3', '2', '#U8CJG9JQ0', '4|4|4|4', '600|400|800|900', '600|800|700|600'],
+  ['3', '2', '#V929CC8CC', '4|4|4|4', '550|550|700|900', '550|650|800|700'],
+  ['3', '2', '#VLU8GLL09', '4|4|4|4', '800|500|900|900', '800|600|800|900'],
+  ['3', '2', '#VY0UJ82PV', '4|4|4|4', '700|400|400|900', '700|600|600|500']
+];
 
 // ---------------------------------------------------------------------------------------------------------------
 // ENTRADAS (Drive)
@@ -64329,6 +64063,13 @@ function repararDiasConExcesoAplicarUnicas() { _repararDiasConExceso_(true, EXC_
 
 /** Aplica los casos 'unica' y 'ambigua_ataques_coinciden'; los 'ambigua' y los 'imposible' van a Revision_Guerra.csv. */
 function repararDiasConExcesoAplicar() { _repararDiasConExceso_(true, EXC_DIAS_CLASES_TODAS); }
+
+function informeFameCurrentRiverRace52() { _fameCrr52_(false); }
+
+function aplicarFameCurrentRiverRace52() { _fameCrr52_(true); }
+
+// ----- Parte 2: funciones que no se corren a mano -----
+// --- Tema: reparar días con exceso ---
 
 function _repararDiasConExceso_(aplicar, clases) {
   var lock = LockService.getScriptLock();
@@ -64460,127 +64201,472 @@ function _repararDiasConExceso_(aplicar, clases) {
   }
 }
 
-
-// ============================================================================================================
-// FAME POR DÍA REAL DE LOS 52 CASOS CON CurrentRiverRace (20-oct-2026; Contexto_Base_Web.md §PF139)
-// Cruce hecho en solo lectura (Datos descargados/CSV/Informes/Informe_52_CurrentRiverRace_vs_Hoja 2026-10-20.csv):
-// en estos casos los ataques por día ya coinciden con CurrentRiverRace y la fame de la semana también; solo cambia
-// cómo se reparte la fame entre los días. Cada fila: [temporada, semana, tag, ataques J|V|S|D, fame por día HOY,
-// fame por día REAL]. La fame por día real sale de los JSON de CurrentRiverRace (cierre de cada día) y del total semanal.
-//   informeFameCurrentRiverRace52()  -> SOLO INFORMA: CSV con lo que escribiría. No toca nada.
-//   aplicarFameCurrentRiverRace52()  -> respaldo previo de Backup_Guerra.csv, escribe la Fame acumulada de J, V y S
-//                                       (el domingo conserva el total semanal), Origen 'Corregido - CurrentRiverRace',
-//                                       y verifica releyendo el CSV.
-// Solo escribe un caso si TODO coincide con lo medido: las cuatro filas existen, AtaquesHoy y AtaquesSemana son los del
-// informe, Barcos acumulados = 0 y la fame por día de hoy es exactamente la del informe. Si no, lo omite y dice por qué
-// (si ya tiene la fame real, dice «ya aplicado»). No toca ataques, barcos ni el total semanal.
-// ============================================================================================================
-var FAME_CRR52_ORIGEN = 'Corregido - CurrentRiverRace';
-var FAME_CRR52_CASOS = [
-  ['3', '1', '#20YVVYCU2', '4|4|4|4', '800|500|400|500', '800|500|500|400'],
-  ['3', '1', '#22C090RVJ', '4|4|4|4', '600|600|400|800', '600|600|500|700'],
-  ['3', '1', '#2GG8PJ8GC', '4|4|4|4', '600|800|600|900', '600|800|800|700'],
-  ['3', '1', '#2LCJLUC9J', '4|4|4|4', '550|550|400|900', '550|550|600|700'],
-  ['3', '1', '#80PPY9R9G', '4|4|4|4', '700|800|400|700', '700|800|600|500'],
-  ['3', '1', '#829GQP0JL', '4|4|4|4', '600|500|400|800', '600|500|600|600'],
-  ['3', '1', '#8C0PQ9PR9', '4|4|4|4', '800|800|400|900', '800|800|500|800'],
-  ['3', '1', '#8VU0Y9LJ0', '4|4|4|4', '700|700|500|900', '700|700|600|800'],
-  ['3', '1', '#9G0RQR2GV', '4|4|4|4', '800|650|500|900', '800|650|700|700'],
-  ['3', '1', '#9LCJ2JQ08', '4|4|4|4', '900|900|700|900', '900|900|800|800'],
-  ['3', '1', '#C0PGPR90U', '4|4|4|4', '800|700|400|600', '800|700|500|500'],
-  ['3', '1', '#C0YVCRPY2', '4|4|4|4', '800|700|400|700', '800|700|500|600'],
-  ['3', '1', '#CGGGR82PJ', '4|4|4|4', '550|800|600|900', '550|800|800|700'],
-  ['3', '1', '#CPRQG82L', '4|4|4|4', '700|500|400|600', '700|500|600|400'],
-  ['3', '1', '#CUQG9CJUG', '4|4|4|4', '800|500|400|800', '800|500|500|700'],
-  ['3', '1', '#GVVPJ8CLG', '4|4|4|4', '500|700|600|900', '500|700|800|700'],
-  ['3', '1', '#J2JJ8LGV9', '4|4|4|4', '900|400|550|800', '900|400|650|700'],
-  ['3', '1', '#J8V9PQJP9', '4|4|4|4', '500|400|400|800', '500|400|600|600'],
-  ['3', '1', '#JV08RQU2Y', '4|4|4|4', '800|400|400|650', '800|400|500|550'],
-  ['3', '1', '#LRQ8YJRCU', '4|4|4|4', '400|400|400|600', '400|400|500|500'],
-  ['3', '1', '#LRR2RGCCV', '4|4|4|4', '650|700|600|900', '650|700|800|700'],
-  ['3', '1', '#PJL9GL8U2', '4|4|4|4', '600|600|400|800', '600|600|600|600'],
-  ['3', '1', '#Q98RGPGCU', '4|4|4|4', '500|600|500|900', '500|600|600|800'],
-  ['3', '1', '#QR8JGLC9Q', '4|4|4|4', '800|700|400|800', '800|700|700|500'],
-  ['3', '1', '#R98JQRU99', '4|4|4|4', '500|600|500|900', '500|600|700|700'],
-  ['3', '1', '#RGQUGU0CU', '4|4|4|4', '550|650|400|650', '550|650|500|550'],
-  ['3', '1', '#U9L82V28P', '4|4|4|4', '500|700|500|900', '500|700|800|600'],
-  ['3', '1', '#U9P0PYQQ2', '4|4|4|4', '500|500|400|800', '500|500|500|700'],
-  ['3', '1', '#UG90QUU0P', '4|4|4|4', '700|700|400|800', '700|700|600|600'],
-  ['3', '1', '#UJUGRYY9C', '4|4|4|4', '800|700|700|900', '800|700|800|800'],
-  ['3', '1', '#UR902UV8L', '4|4|4|4', '600|700|600|900', '600|700|700|800'],
-  ['3', '1', '#V0UJ0RPVP', '4|4|4|4', '500|500|400|800', '500|500|700|500'],
-  ['3', '1', '#VLU8GLL09', '4|4|4|4', '700|700|600|900', '700|700|700|800'],
-  ['3', '1', '#VPRGY9YGG', '4|4|4|4', '700|700|400|800', '700|700|600|600'],
-  ['3', '1', '#VQCG0G09G', '4|4|4|4', '500|800|400|650', '500|800|500|550'],
-  ['3', '1', '#VR92C8LYU', '4|4|4|4', '500|700|400|700', '500|700|550|550'],
-  ['3', '1', '#YGL2QV8LG', '0|4|4|4', '0|650|700|900', '0|650|900|700'],
-  ['3', '2', '#20YVVYCU2', '4|4|4|4', '800|400|550|700', '800|550|700|400'],
-  ['3', '2', '#8J9PL92GU', '4|4|4|4', '650|400|400|700', '650|400|500|600'],
-  ['3', '2', '#8PYCU9U9Q', '4|4|4|4', '700|400|500|900', '700|600|600|600'],
-  ['3', '2', '#8Q92GV08U', '4|4|4|4', '600|400|600|900', '600|700|500|700'],
-  ['3', '2', '#8VU0Y9LJ0', '4|4|4|4', '500|400|600|900', '500|500|600|800'],
-  ['3', '2', '#92YRUUV9P', '4|4|4|4', '400|500|400|500', '400|500|500|400'],
-  ['3', '2', '#C8Q0C88UL', '4|4|4|4', '500|700|400|500', '500|700|500|400'],
-  ['3', '2', '#CGGGR82PJ', '4|4|4|4', '800|700|550|800', '800|700|650|700'],
-  ['3', '2', '#CYR2PVLLY', '4|4|4|4', '650|400|650|900', '650|500|800|650'],
-  ['3', '2', '#Q98RGPGCU', '4|4|4|4', '600|400|600|900', '600|600|800|500'],
-  ['3', '2', '#RGQUGU0CU', '4|4|4|4', '900|400|400|900', '900|550|650|500'],
-  ['3', '2', '#U8CJG9JQ0', '4|4|4|4', '600|400|800|900', '600|800|700|600'],
-  ['3', '2', '#V929CC8CC', '4|4|4|4', '550|550|700|900', '550|650|800|700'],
-  ['3', '2', '#VLU8GLL09', '4|4|4|4', '800|500|900|900', '800|600|800|900'],
-  ['3', '2', '#VY0UJ82PV', '4|4|4|4', '700|400|400|900', '700|600|600|500']
-];
-
-function informeFameCurrentRiverRace52() { _fameCrr52_(false); }
-function aplicarFameCurrentRiverRace52() { _fameCrr52_(true); }
-
-/** Arma el plan sobre filas (arreglo de arreglos sin encabezado). No modifica filas. */
-function _fameCrr52Planificar_(filas) {
+/**
+ * Clasifica todos los casos de un conjunto de filas (sin encabezado). Devuelve un arreglo de
+ * { grupo, patron, resumen } ordenado por temporada, semana, tag y clan.
+ */
+function _excDiasClasificar(filas) {
   var grupos = _excDiasAgrupar(filas);
-  var porClave = {};
-  Object.keys(grupos).forEach(function (k) {
-    var g = grupos[k], c = [g.temporada, g.semana, g.tag].join('|');
-    if (!porClave[c]) porClave[c] = [];
-    porClave[c].push(g);
+  var claves = Object.keys(grupos).filter(function (k) { return _excDiasNecesitaReparo(grupos[k].dias); }).sort();
+  return claves.map(function (k) {
+    var g = grupos[k];
+    var patron = Object.keys(g.dias).map(Number).sort(function (a, b) { return a - b; }).map(function (o) { return EXC_DIAS_LETRAS.charAt(o); }).join('');
+    return { grupo: g, patron: patron, resumen: _excDiasResumir(_excDiasResolver(g.dias)) };
   });
-  var casos = [], omitidos = [], yaAplicados = [];
-  FAME_CRR52_CASOS.forEach(function (e) {
-    var etq = 'T' + e[0] + ' S' + e[1] + ' ' + e[2];
-    var lista = porClave[[e[0], e[1], e[2]].join('|')] || [];
-    if (lista.length !== 1) { omitidos.push({ etq: etq, motivo: lista.length ? 'el jugador aparece en ' + lista.length + ' clanes esa semana' : 'no se encuentra la serie en Backup_Guerra.csv' }); return; }
-    var g = lista[0];
-    var ata = e[3].split('|').map(Number), fh = e[4].split('|').map(Number), fr = e[5].split('|').map(Number);
-    var motivo = '', cur = [], ops = [], acumAnt = 0, acumNue = 0, acumAtaques = 0;
-    for (var d = 0; d < 4 && !motivo; d++) {
-      var f = g.dias[d];
-      if (!f) { motivo = 'falta la fila del dia ' + EXC_DIAS_LETRAS.charAt(d); break; }
-      var hoy = _excDiasNum(f[GC.ATAQUES_HOY - 1]), sem = _excDiasNum(f[GC.ATAQUES_SEM - 1]), fame = _excDiasNum(f[GC.FAME - 1]), barcos = _excDiasNum(f[GC.BARCOS - 1]);
-      acumAtaques += ata[d];
-      if (hoy !== ata[d] || sem !== acumAtaques) { motivo = 'los ataques del dia ' + EXC_DIAS_LETRAS.charAt(d) + ' ya no son los del informe (' + hoy + ' hoy y ' + sem + ' acumulados)'; break; }
-      if (barcos !== 0) { motivo = 'el dia ' + EXC_DIAS_LETRAS.charAt(d) + ' tiene barcos acumulados (' + barcos + ')'; break; }
-      cur.push(fame - acumAnt);
-      acumNue += fr[d];
-      ops.push({ dia: d, fila: f, acumAnt: fame, acumNue: acumNue, deltaAnt: fame - acumAnt, deltaNue: fr[d], origenAnt: String(f[GC.ORIGEN - 1] || '') });
-      acumAnt = fame;
+}
+
+/**
+ * Agrupa las filas de guerra por (temporada, semana, tag, clan): { clave: { info:{...}, dias:{ off: fila } } }.
+ * Por cada día se queda con la fila de mayor PeriodIndex. filas = arreglo de arreglos (sin encabezado).
+ */
+function _excDiasAgrupar(filas) {
+  var grupos = {};
+  for (var i = 0; i < filas.length; i++) {
+    var r = filas[i];
+    if (String(r[GC.ETAPA - 1]) !== 'Guerra') continue;
+    var pi = _excDiasNum(r[GC.PERIOD_IDX - 1]);
+    var off = (pi % 7) - 3;
+    if (off < 0 || off > 3) continue;
+    var tag = String(r[GC.TAG - 1]).trim();
+    var clave = [String(r[GC.TEMPORADA - 1]), String(r[GC.SEMANA - 1]), tag, String(r[GC.CLAN - 1])].join('|');
+    var g = grupos[clave];
+    if (!g) {
+      g = { temporada: String(r[GC.TEMPORADA - 1]), semana: String(r[GC.SEMANA - 1]), tag: tag, clan: String(r[GC.CLAN - 1]), nombre: String(r[GC.NOMBRE - 1] || ''), dias: {} };
+      grupos[clave] = g;
     }
-    if (!motivo) {
-      var igualHoy = cur.every(function (v, i) { return v === fh[i]; });
-      var igualReal = cur.every(function (v, i) { return v === fr[i]; });
-      var sumH = fh.reduce(function (a, b) { return a + b; }, 0), sumR = fr.reduce(function (a, b) { return a + b; }, 0);
-      if (sumH !== sumR) motivo = 'el informe no conserva el total semanal (' + sumH + ' contra ' + sumR + ')';
-      else if (igualReal) { yaAplicados.push({ etq: etq, motivo: 'ya aplicado: la fame por dia ya es la de CurrentRiverRace' }); return; }
-      else if (!igualHoy) motivo = 'la fame por dia de hoy (' + cur.join('|') + ') no es la del informe (' + fh.join('|') + ')';
-      else {
-        for (var q = 0; q < 4; q++) {
-          if (_fameTablaDia_(ata[q], 0).indexOf(fr[q]) < 0) { motivo = 'la fame real del dia ' + EXC_DIAS_LETRAS.charAt(q) + ' (' + fr[q] + ') no esta en la tabla para ' + ata[q] + ' ataques'; break; }
+    var previa = g.dias[off];
+    if (!previa || pi > _excDiasNum(previa[GC.PERIOD_IDX - 1])) g.dias[off] = r;
+    if (!g.nombre) g.nombre = String(r[GC.NOMBRE - 1] || '');
+  }
+  return grupos;
+}
+
+function _excDiasNum(v) {
+  var n = Number(String(v === null || v === undefined ? '' : v).replace(/,/g, '').trim());
+  return isNaN(n) ? 0 : Math.trunc(n);
+}
+
+/**
+ * ¿Esta serie (jugador, clan, semana) necesita reparo? [→ Contexto_Base_Web.md §PF160, criterio 1]
+ * Se parte de los ACUMULADOS, no de AtaquesHoy (que es de la última captura y puede quedarse atrás). Necesita reparo si:
+ *  - algún AtaquesHoy pasa de 4 (selector de siempre), o
+ *  - algún tramo trae más ataques de los que caben en los días que cubre (4 por día): el acumulado salta de más, o
+ *  - falta la fila de un día anterior y el tramo que lo absorbe trae más de 4 ataques (ejemplo: primera fila el viernes con 8 acumulados;
+ *    el jueves sale de AtaquesSemana - AtaquesHoy del viernes, ver _excDiasFaltanteJueves()).
+ * Antes solo se miraba el primer punto, y los jueves que faltan con AtaquesHoy de 4 o menos quedaban fuera aunque el perfil los mostrara con 8.
+ */
+function _excDiasNecesitaReparo(dias) {
+  var offs = Object.keys(dias);
+  for (var i = 0; i < offs.length; i++) {
+    if (_excDiasNum(dias[offs[i]][GC.ATAQUES_HOY - 1]) > 4) return true;
+  }
+  var segs = _excDiasSegmentos(dias);
+  for (var j = 0; j < segs.length; j++) {
+    var s = segs[j];
+    if (s.A > 4 * s.dias.length) return true;
+    if (s.dias.length > 1 && s.A > 4) return true;
+  }
+  return false;
+}
+
+/** Tramos entre filas consecutivas: cada fila cubre los días desde la anterior hasta ella (deltas de los acumulados). */
+function _excDiasSegmentos(dias) {
+  var offs = Object.keys(dias).map(Number).sort(function (a, b) { return a - b; });
+  var segs = [], pa = 0, pb = 0, pf = 0, po = -1;
+  for (var i = 0; i < offs.length; i++) {
+    var o = offs[i], r = dias[o];
+    var a = _excDiasNum(r[GC.ATAQUES_SEM - 1]), b = _excDiasNum(r[GC.BARCOS - 1]), f = _excDiasNum(r[GC.FAME - 1]);
+    var cubre = [];
+    for (var d = po + 1; d <= o; d++) cubre.push(d);
+    segs.push({ dias: cubre, A: a - pa, B: b - pb, F: f - pf, hoy: _excDiasNum(r[GC.ATAQUES_HOY - 1]), offFila: o });
+    pa = a; pb = b; pf = f; po = o;
+  }
+  return segs;
+}
+
+/**
+ * Clasifica un caso ya resuelto y resume, por día, lo que coincide en todas las soluciones.
+ * Devuelve { clase, soluciones, ataquesCoinciden, notas, porDia: { off: { n, b, f } } } donde cada cifra es un número
+ * (igual en todas las soluciones), '?' (varía) o falta el día (sin dato: ningún tramo lo cubre).
+ */
+function _excDiasResumir(res) {
+  if (res.clase === 'imposible') return { clase: 'imposible', soluciones: '', ataquesCoinciden: '', notas: res.notas.join('|'), porDia: {} };
+  var total = 1, ataquesUnicos = true, unico = true, truncado = false;
+  var porDia = {};
+  res.hechos.forEach(function (h) {
+    total *= h.sols.length;
+    if (h.sols.length > EXC_DIAS_CAP) truncado = true;
+    if (h.sols.length > 1) unico = false;
+    var distintosN = {};
+    h.sols.forEach(function (z) { distintosN[z.map(function (x) { return x[0]; }).join(',')] = true; });
+    if (Object.keys(distintosN).length > 1) ataquesUnicos = false;
+    h.dias.forEach(function (d, idx) {
+      var vn = {}, vb = {}, vf = {};
+      h.sols.forEach(function (z) { vn[z[idx][0]] = true; vb[z[idx][1]] = true; vf[z[idx][2]] = true; });
+      var uno = function (set) { var ks = Object.keys(set); return ks.length === 1 ? Number(ks[0]) : '?'; };
+      porDia[d] = { n: uno(vn), b: uno(vb), f: uno(vf) };
+    });
+  });
+  var clase = unico ? 'unica' : (ataquesUnicos ? 'ambigua_ataques_coinciden' : 'ambigua');
+  var notas = res.notas.slice();
+  if (truncado) notas.push('truncado');
+  return { clase: clase, soluciones: total, ataquesCoinciden: ataquesUnicos ? 'si' : 'no', notas: notas.join('|'), porDia: porDia };
+}
+
+/** Devuelve { clase: 'imposible'|'ok', notas: [...], hechos: [{ dias, sols }] }. */
+function _excDiasResolver(dias) {
+  var segs = _excDiasSegmentos(dias);
+  var nj = _excDiasFaltanteJueves(segs);
+  var out = [], notas = [], i = 0;
+  while (i < segs.length) {
+    var s = segs[i];
+    var fijo = (i === 0 && nj !== null && s.dias[0] === 0) ? nj : null;
+    var sols = _excDiasSoluciones(s.dias.length, s.A, s.B, s.F, fijo);
+    if (sols.length) {
+      out.push({ dias: s.dias.slice(), sols: sols, zero: _excDiasEsCero(s) });
+      i++;
+      continue;
+    }
+    var backMax = 0;
+    while (backMax < out.length && out[out.length - 1 - backMax].zero) backMax++;
+    var sig = 0;
+    while (i + 1 + sig < segs.length && _excDiasEsCero(segs[i + 1 + sig])) sig++;
+    var finOk = (i + 1 + sig === segs.length);
+    var cands = [];
+    for (var m = 0; m <= backMax; m++) {
+      for (var f = 0; f <= sig; f++) {
+        var doms = (finOk && f === sig) ? [false, true] : [false];
+        for (var di = 0; di < doms.length; di++) {
+          var dom = doms[di];
+          var dd = [];
+          var previos = out.slice(out.length - m);
+          for (var p = 0; p < previos.length; p++) dd = dd.concat(previos[p].dias);
+          dd = dd.concat(s.dias);
+          var siguientes = segs.slice(i + 1, i + 1 + f);
+          for (var q = 0; q < siguientes.length; q++) dd = dd.concat(siguientes[q].dias);
+          if (dom && dd[dd.length - 1] < 3) {
+            for (var x = dd[dd.length - 1] + 1; x <= 3; x++) dd.push(x);
+          } else if (dom) {
+            continue;
+          }
+          cands.push({ extra: dd.length - s.dias.length, m: m, f: f, dom: dom, dd: dd });
         }
       }
     }
-    if (motivo) { omitidos.push({ etq: etq, motivo: motivo }); return; }
-    casos.push({ grupo: g, etq: etq, ops: ops, ata: ata, fh: fh, fr: fr, totalFame: ops[3].acumAnt });
-  });
-  return { casos: casos, omitidos: omitidos, yaAplicados: yaAplicados };
+    var extras = [];
+    cands.forEach(function (c) { if (extras.indexOf(c.extra) < 0) extras.push(c.extra); });
+    extras.sort(function (u, v) { return u - v; });
+    var elegido = null;
+    for (var ei = 0; ei < extras.length && !elegido; ei++) {
+      var fact = [];
+      var delExtra = cands.filter(function (c) { return c.extra === extras[ei]; });
+      for (var ci = 0; ci < delExtra.length; ci++) {
+        var c = delExtra[ci];
+        var fijo2 = (c.dd[0] === 0 && nj !== null) ? nj : null;
+        var ss = _excDiasSoluciones(c.dd.length, s.A, s.B, s.F, fijo2);
+        if (ss.length) fact.push({ m: c.m, f: c.f, dom: c.dom, dd: c.dd, ss: ss });
+      }
+      if (fact.length) elegido = fact;
+    }
+    if (!elegido) return { clase: 'imposible', notas: notas, hechos: [] };
+    if (elegido.length > 1) notas.push('cobertura_ambigua');
+    if (elegido.some(function (x) { return x.m > 0; })) notas.push('absorbe_fila_vieja');
+    if (elegido.some(function (x) { return x.dom || x.f > 0; })) notas.push('extiende_adelante');
+    var spanSet = {};
+    elegido.forEach(function (x) { x.dd.forEach(function (d) { spanSet[d] = true; }); });
+    var span = Object.keys(spanSet).map(Number).sort(function (u, v) { return u - v; });
+    var uni = {};
+    elegido.forEach(function (x) {
+      x.ss.forEach(function (z) {
+        var mp = {};
+        for (var k = 0; k < x.dd.length; k++) mp[x.dd[k]] = z[k];
+        var tupla = span.map(function (d) { return mp[d] !== undefined ? mp[d] : [0, 0, 0]; });
+        uni[JSON.stringify(tupla)] = tupla;
+      });
+    });
+    var unicas = Object.keys(uni).sort().map(function (k2) { return uni[k2]; });
+    var mmax = Math.max.apply(null, elegido.map(function (x) { return x.m; }));
+    var fmax = Math.max.apply(null, elegido.map(function (x) { return x.f; }));
+    for (var z2 = 0; z2 < mmax; z2++) out.pop();
+    out.push({ dias: span, sols: unicas, zero: false });
+    i += 1 + fmax;
+  }
+  // Notas sin repetir y ordenadas, como en el modelo de Python.
+  var vistas = {}, notasU = [];
+  notas.forEach(function (n) { if (!vistas[n]) { vistas[n] = true; notasU.push(n); } });
+  notasU.sort();
+  return { clase: 'ok', notas: notasU, hechos: out };
 }
+
+/** Si falta el jueves y la primera fila es la del viernes: jueves = acumulado del viernes - ataques de hoy del viernes. */
+function _excDiasFaltanteJueves(segs) {
+  var s0 = segs[0];
+  if (s0 && s0.dias.length === 2 && s0.dias[0] === 0 && s0.dias[1] === 1 && s0.offFila === 1) {
+    var nJue = s0.A - s0.hoy;
+    return (nJue >= 0 && nJue <= 4) ? nJue : null;
+  }
+  return null;
+}
+
+/** Todas las (n, b, f) por día para k días con sumas exactas A, B y F. fijoN0: ataques del primer día fijados (o null). */
+function _excDiasSoluciones(k, A, B, F, fijoN0) {
+  var opts = _excDiasOpciones();
+  var sols = [];
+  function dfs(i, a, b, f, acc) {
+    if (sols.length > EXC_DIAS_CAP) return;
+    if (i === k) {
+      if (a === A && b === B && f === F) sols.push(acc.slice());
+      return;
+    }
+    var resto = k - i - 1;
+    for (var j = 0; j < opts.length; j++) {
+      var o = opts[j];
+      if (i === 0 && fijoN0 !== null && o[0] !== fijoN0) continue;
+      var na = a + o[0], nb = b + o[1], nf = f + o[2];
+      if (na > A || nb > B || nf > F) continue;
+      if (na + 4 * resto < A) continue;
+      acc.push(o); dfs(i + 1, na, nb, nf, acc); acc.pop();
+    }
+  }
+  dfs(0, 0, 0, 0, []);
+  return sols;
+}
+
+function _excDiasOpciones() {
+  if (_excDiasOpciones_) return _excDiasOpciones_;
+  var lista = [];
+  for (var n = 0; n <= 4; n++) {
+    for (var b = 0; b <= n; b++) {
+      var tabla = _fameTablaDia_(n, b);
+      for (var i = 0; i < tabla.length; i++) lista.push([n, b, tabla[i]]);
+    }
+  }
+  _excDiasOpciones_ = lista;
+  return lista;
+}
+
+function _excDiasEsCero(s) { return s.A === 0 && s.B === 0 && s.F === 0; }
+
+// ---------------------------------------------------------------------------------------------------------------
+// PLAN DE ESCRITURA (funciones puras: no tocan las filas; se prueban en node)
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * Planifica la escritura de los casos cuya clase esté en clases. NO modifica `filas`.
+ * Devuelve { casos: [{ grupo, clase, estimado, ops: [{ dia, existe, fila, ant, nuevo }] }], omitidos: [{ grupo, clase, motivo }] }.
+ * Cada op lleva los valores del día: nuevo = { hoy, sem, fame, barcos, origen }. Las ternas salen de UNA solución completa
+ * por tramo (ataques, barcos y fame del día en la tabla y con las sumas de los acumulados de las filas reales).
+ */
+function _excDiasPlanificar(filas, clases) {
+  var grupos = _excDiasAgrupar(filas);
+  var porSemana = {};
+  Object.keys(grupos).forEach(function (k) {
+    var g = grupos[k], ks = g.temporada + '|' + g.semana + '|' + g.tag;
+    if (!porSemana[ks]) porSemana[ks] = [];
+    porSemana[ks].push(g);
+  });
+  var plan = { casos: [], omitidos: [] };
+  _excDiasClasificar(filas).forEach(function (c) {
+    var g = c.grupo, clase = c.resumen.clase;
+    if (clases.indexOf(clase) < 0) return;
+    var res = _excDiasResolver(g.dias);
+    if (res.clase !== 'ok') { plan.omitidos.push({ grupo: g, clase: clase, motivo: 'sin solucion' }); return; }
+    var reg = _excDiasRegistradoPorDia(g.dias);
+    var finalAntes = _excDiasFinalDe(g.dias);
+    var ops = [], estimado = false, cumA = 0, cumB = 0, cumF = 0, cubiertos = {};
+    res.hechos.forEach(function (item) {
+      var z = _excDiasElegirSolucion(item, reg);
+      if (item.sols.length > 1) estimado = true;
+      item.dias.forEach(function (d, i) {
+        cumA += z[i][0]; cumB += z[i][1]; cumF += z[i][2];
+        var fila = g.dias[d] || null;
+        cubiertos[d] = true;
+        ops.push({ dia: d, existe: !!fila, fila: fila, estimadoDia: item.sols.length > 1,
+          ant: fila ? { hoy: _excDiasNum(fila[GC.ATAQUES_HOY - 1]), sem: _excDiasNum(fila[GC.ATAQUES_SEM - 1]), fame: _excDiasNum(fila[GC.FAME - 1]), barcos: _excDiasNum(fila[GC.BARCOS - 1]), origen: String(fila[GC.ORIGEN - 1] || '') } : null,
+          antDia: reg[d] || null,
+          nuevo: { hoy: z[i][0], sem: cumA, fame: cumF, barcos: cumB, fameDia: z[i][2], barcosDia: z[i][1], origen: '' } });
+      });
+    });
+    // Toda fila existente tiene que quedar cubierta por algun tramo.
+    var sinCubrir = Object.keys(g.dias).map(Number).filter(function (d) { return !cubiertos[d]; });
+    if (sinCubrir.length) { plan.omitidos.push({ grupo: g, clase: clase, motivo: 'filas existentes sin cubrir por el modelo' }); return; }
+    // El total de la semana no cambia.
+    if (cumA !== finalAntes.a || cumB !== finalAntes.b || cumF !== finalAntes.f) {
+      plan.omitidos.push({ grupo: g, clase: clase, motivo: 'el total de la semana no cuadra (' + cumA + '/' + cumB + '/' + cumF + ' contra ' + finalAntes.a + '/' + finalAntes.b + '/' + finalAntes.f + ')' }); return;
+    }
+    // Comprobacion entre clanes: tope de 4 por dia y de 16 por semana sumando los demas clanes del jugador.
+    var otros = (porSemana[g.temporada + '|' + g.semana + '|' + g.tag] || []).filter(function (o) { return o.clan !== g.clan; });
+    var excede = '';
+    ops.forEach(function (op) {
+      var suma = op.nuevo.hoy;
+      otros.forEach(function (o) { if (o.dias[op.dia]) suma += _excDiasNum(o.dias[op.dia][GC.ATAQUES_HOY - 1]); });
+      if (suma > 4) excede = 'dia ' + EXC_DIAS_LETRAS.charAt(op.dia) + ' quedaria con ' + suma + ' ataques sumando clanes';
+    });
+    var semanaOtros = 0;
+    otros.forEach(function (o) { semanaOtros += _excDiasFinalDe(o.dias).a; });
+    if (!excede && cumA + semanaOtros > 16) excede = 'la semana quedaria con ' + (cumA + semanaOtros) + ' ataques sumando clanes';
+    if (excede) { plan.omitidos.push({ grupo: g, clase: clase, motivo: excede }); return; }
+    ops.forEach(function (op) {
+      op.nuevo.origen = _excDiasOrigenNuevo(op.existe ? op.ant.origen : '', op.existe, op.estimadoDia);
+      // Una fila que ya tenia exactamente esos valores no cambia: se deja con su Origen (no se marca 'Corregido' sin haberla corregido).
+      if (op.existe && op.ant.hoy === op.nuevo.hoy && op.ant.sem === op.nuevo.sem && op.ant.fame === op.nuevo.fame && op.ant.barcos === op.nuevo.barcos) {
+        op.sinCambio = true; op.nuevo.origen = op.ant.origen;
+      }
+    });
+    plan.casos.push({ grupo: g, clase: clase, estimado: estimado, ops: ops });
+  });
+  return plan;
+}
+
+/** Lo registrado hoy por día (ataques de la fila y delta de barcos y fame de los acumulados), para elegir la solución más cercana. */
+function _excDiasRegistradoPorDia(dias) {
+  var reg = {}, pb = 0, pf = 0;
+  Object.keys(dias).map(Number).sort(function (a, b) { return a - b; }).forEach(function (o) {
+    var r = dias[o];
+    var b = _excDiasNum(r[GC.BARCOS - 1]), f = _excDiasNum(r[GC.FAME - 1]);
+    reg[o] = { n: _excDiasNum(r[GC.ATAQUES_HOY - 1]), b: Math.max(0, b - pb), f: Math.max(0, f - pf) };
+    pb = b; pf = f;
+  });
+  return reg;
+}
+
+/** Acumulados (ataques, barcos, fame) de la fila de mayor día de un grupo. */
+function _excDiasFinalDe(dias) {
+  var offs = Object.keys(dias).map(Number).sort(function (a, b) { return a - b; });
+  if (!offs.length) return { a: 0, b: 0, f: 0 };
+  var r = dias[offs[offs.length - 1]];
+  return { a: _excDiasNum(r[GC.ATAQUES_SEM - 1]), b: _excDiasNum(r[GC.BARCOS - 1]), f: _excDiasNum(r[GC.FAME - 1]) };
+}
+
+/** Entre las soluciones de un tramo elige UNA terna completa: la que cambia menos lo registrado (empate: la primera, orden fijo). */
+function _excDiasElegirSolucion(item, regPorDia) {
+  var mejor = null, mejorD = Infinity;
+  item.sols.forEach(function (z) {
+    var d = 0;
+    item.dias.forEach(function (dia, i) {
+      var r = regPorDia[dia] || { n: 0, b: 0, f: 0 };
+      d += (z[i][0] !== r.n ? 1 : 0) + (z[i][1] !== r.b ? 1 : 0) + (z[i][2] !== r.f ? 1 : 0);
+    });
+    if (d < mejorD) { mejorD = d; mejor = z; }
+  });
+  return mejor;
+}
+
+/**
+ * Origen nuevo de una fila: 'Corregido' (la fila ya existia) o 'Reconstruido' (la fila se crea), mas el sufijo
+ * ' - Solución única' (una sola terna posible en el tramo) o ' - Solución estimada' (varias ternas válidas; se eligió una).
+ * Una fila que ya era 'Reconstruido' sigue siendo 'Reconstruido'. Cualquier otro origen distinto de vacío, 'Original' o
+ * 'Corregido' no se toca.
+ */
+function _excDiasOrigenNuevo(origenActual, existe, estimado) {
+  var sufijo = estimado ? ' - Solución estimada' : ' - Solución única';
+  if (!existe) return 'Reconstruido' + sufijo;
+  var o = String(origenActual || '').trim();
+  if (_origenGuerraEs_(o, 'Reconstruido')) return 'Reconstruido' + sufijo;
+  if (o === '' || _origenGuerraEs_(o, 'Original') || _origenGuerraEs_(o, 'Corregido')) return 'Corregido' + sufijo;
+  return o;
+}
+
+function _excDiasTextoActual(dias) {
+  var partes = [];
+  for (var d = 0; d <= 3; d++) partes.push(dias[d] ? String(_excDiasNum(dias[d][GC.ATAQUES_HOY - 1])) : '-');
+  return partes.join('|');
+}
+
+function _excDiasTextoPorDia(porDia, campo) {
+  var partes = [];
+  for (var d = 0; d <= 3; d++) partes.push(porDia[d] ? String(porDia[d][campo]) : '-');
+  return partes.join('|');
+}
+
+/** Aplica el plan sobre `filas` (modifica las filas existentes y agrega al final las nuevas). Devuelve cuantas modifico y cuantas creo. */
+function _excDiasAplicarPlan(filas, plan) {
+  var modificadas = 0, creadas = 0;
+  plan.casos.forEach(function (c) {
+    c.ops.forEach(function (op) {
+      var fila = op.fila;
+      if (!op.existe) {
+        fila = _excDiasFilaNueva(c.grupo, op);
+        filas.push(fila);
+        op.filaNueva = fila;
+        creadas++;
+      } else if (!op.sinCambio) {
+        modificadas++;
+      }
+      fila[GC.ATAQUES_HOY - 1] = String(op.nuevo.hoy);
+      fila[GC.ATAQUES_SEM - 1] = String(op.nuevo.sem);
+      fila[GC.FAME - 1] = String(op.nuevo.fame);
+      fila[GC.BARCOS - 1] = String(op.nuevo.barcos);
+      fila[GC.ORIGEN - 1] = op.nuevo.origen;
+    });
+  });
+  return { modificadas: modificadas, creadas: creadas };
+}
+
+/** Fila nueva (reconstruida) de un dia que no tiene fila, con los datos del propio jugador y clan. */
+function _excDiasFilaNueva(g, op) {
+  var temporada = Number(g.temporada), semana = Number(g.semana);
+  var pIdx = (semana - 1) * 7 + 3 + op.dia;
+  var diaGuerraObj = calcDiaGuerraIdx(CFG.REF_DEFAULT, temporada, pIdx);
+  var f = new Array(GUERRA_TOTAL_COLS).fill('');
+  var modelo = null;
+  Object.keys(g.dias).forEach(function (o) { if (!modelo) modelo = g.dias[o]; });
+  f[GC.TEMPORADA - 1] = String(g.temporada);
+  f[GC.SEMANA - 1] = String(g.semana);
+  f[GC.DIA - 1] = periodIdxToLetra(pIdx);
+  f[GC.PERIOD_IDX - 1] = String(pIdx);
+  f[GC.ETAPA - 1] = 'Guerra';
+  f[GC.CLAN - 1] = g.clan;
+  f[GC.TAG - 1] = g.tag;
+  f[GC.NOMBRE - 1] = g.nombre;
+  f[GC.TEMPORADA_2 - 1] = (modelo && String(modelo[GC.TEMPORADA_2 - 1] || '') !== '') ? String(modelo[GC.TEMPORADA_2 - 1]) : String(_getTemporadaRoyaleApiDesdePropia(temporada));
+  f[GC.FECHA - 1] = (diaGuerraObj instanceof Date) ? _formatFechaCanonica(diaGuerraObj, true) : '';
+  f[GC.DIA_GUERRA - 1] = (diaGuerraObj instanceof Date) ? _formatFechaCanonica(diaGuerraObj) : '';
+  return f;
+}
+
+/**
+ * Verifica, sobre las filas ya leidas de nuevo desde Drive, que:
+ *  (1) el numero de filas es el de antes mas las creadas; (2) las filas que el plan no toca son identicas a las de antes;
+ *  (3) cada fila del plan quedo con los valores planeados; (4) en cada caso, cada dia esta en la tabla de fame (ataques, barcos y fame del dia),
+ *      ninguno pasa de 4 ataques y el total de la semana es el mismo de antes. Devuelve la lista de problemas (vacia = todo bien).
+ */
+function _excDiasVerificar(filasAntes, filasDespues, plan, creadasEsperadas) {
+  var problemas = [];
+  if (filasDespues.length !== filasAntes.length + creadasEsperadas) problemas.push('numero de filas ' + filasDespues.length + ' en vez de ' + (filasAntes.length + creadasEsperadas));
+  var tocadas = {};
+  plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.existe) tocadas[op.idxAntes] = true; }); });
+  for (var i = 0; i < filasAntes.length && i < filasDespues.length; i++) {
+    if (tocadas[i]) continue;
+    if (filasAntes[i].join('\u0001') !== filasDespues[i].slice(0, filasAntes[i].length).join('\u0001')) { problemas.push('cambio una fila no planeada (linea ' + (i + 2) + ')'); if (problemas.length > 10) break; }
+  }
+  var grupos = _excDiasAgrupar(filasDespues);
+  plan.casos.forEach(function (c) {
+    var g = c.grupo, k = [g.temporada, g.semana, g.tag, g.clan].join('|'), gd = grupos[k];
+    var etq = 'T' + g.temporada + ' S' + g.semana + ' ' + g.tag + ' ' + g.clan + ': ';
+    if (!gd) { problemas.push(etq + 'no se encuentra la serie'); return; }
+    c.ops.forEach(function (op) {
+      var f = gd.dias[op.dia];
+      if (!f) { problemas.push(etq + 'falta la fila del dia ' + EXC_DIAS_LETRAS.charAt(op.dia)); return; }
+      var v = { hoy: _excDiasNum(f[GC.ATAQUES_HOY - 1]), sem: _excDiasNum(f[GC.ATAQUES_SEM - 1]), fame: _excDiasNum(f[GC.FAME - 1]), barcos: _excDiasNum(f[GC.BARCOS - 1]) };
+      if (v.hoy !== op.nuevo.hoy || v.sem !== op.nuevo.sem || v.fame !== op.nuevo.fame || v.barcos !== op.nuevo.barcos || String(f[GC.ORIGEN - 1]) !== op.nuevo.origen) problemas.push(etq + 'la fila del dia ' + EXC_DIAS_LETRAS.charAt(op.dia) + ' no quedo como se planeo');
+    });
+    var pb = 0, pf = 0, pa = 0;
+    Object.keys(gd.dias).map(Number).sort(function (a, b) { return a - b; }).forEach(function (o) {
+      var f = gd.dias[o];
+      var n = _excDiasNum(f[GC.ATAQUES_HOY - 1]), b = _excDiasNum(f[GC.BARCOS - 1]), fm = _excDiasNum(f[GC.FAME - 1]), a = _excDiasNum(f[GC.ATAQUES_SEM - 1]);
+      if (n > 4) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ' con mas de 4 ataques');
+      if (a - pa !== n) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ': AtaquesSemana no sube lo que dice AtaquesHoy');
+      if (_fameTablaDia_(n, b - pb).indexOf(fm - pf) < 0) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ': ' + n + ' ataques, ' + (b - pb) + ' barcos y ' + (fm - pf) + ' de fame no estan en la tabla');
+      pa = a; pb = b; pf = fm;
+    });
+    var fin = _excDiasFinalDe(gd.dias), antes = c.finalAntes;
+    if (antes && (fin.a !== antes.a || fin.b !== antes.b || fin.f !== antes.f)) problemas.push(etq + 'el total de la semana cambio (' + fin.a + '/' + fin.b + '/' + fin.f + ' contra ' + antes.a + '/' + antes.b + '/' + antes.f + ')');
+  });
+  return problemas;
+}
+
+// --- Tema: fame por día real de los 52 casos con CurrentRiverRace ---
 
 function _fameCrr52_(aplicar) {
   var lock = LockService.getScriptLock();
@@ -64662,6 +64748,54 @@ function _fameCrr52_(aplicar) {
   } finally {
     lock.releaseLock();
   }
+}
+
+/** Arma el plan sobre filas (arreglo de arreglos sin encabezado). No modifica filas. */
+function _fameCrr52Planificar_(filas) {
+  var grupos = _excDiasAgrupar(filas);
+  var porClave = {};
+  Object.keys(grupos).forEach(function (k) {
+    var g = grupos[k], c = [g.temporada, g.semana, g.tag].join('|');
+    if (!porClave[c]) porClave[c] = [];
+    porClave[c].push(g);
+  });
+  var casos = [], omitidos = [], yaAplicados = [];
+  FAME_CRR52_CASOS.forEach(function (e) {
+    var etq = 'T' + e[0] + ' S' + e[1] + ' ' + e[2];
+    var lista = porClave[[e[0], e[1], e[2]].join('|')] || [];
+    if (lista.length !== 1) { omitidos.push({ etq: etq, motivo: lista.length ? 'el jugador aparece en ' + lista.length + ' clanes esa semana' : 'no se encuentra la serie en Backup_Guerra.csv' }); return; }
+    var g = lista[0];
+    var ata = e[3].split('|').map(Number), fh = e[4].split('|').map(Number), fr = e[5].split('|').map(Number);
+    var motivo = '', cur = [], ops = [], acumAnt = 0, acumNue = 0, acumAtaques = 0;
+    for (var d = 0; d < 4 && !motivo; d++) {
+      var f = g.dias[d];
+      if (!f) { motivo = 'falta la fila del dia ' + EXC_DIAS_LETRAS.charAt(d); break; }
+      var hoy = _excDiasNum(f[GC.ATAQUES_HOY - 1]), sem = _excDiasNum(f[GC.ATAQUES_SEM - 1]), fame = _excDiasNum(f[GC.FAME - 1]), barcos = _excDiasNum(f[GC.BARCOS - 1]);
+      acumAtaques += ata[d];
+      if (hoy !== ata[d] || sem !== acumAtaques) { motivo = 'los ataques del dia ' + EXC_DIAS_LETRAS.charAt(d) + ' ya no son los del informe (' + hoy + ' hoy y ' + sem + ' acumulados)'; break; }
+      if (barcos !== 0) { motivo = 'el dia ' + EXC_DIAS_LETRAS.charAt(d) + ' tiene barcos acumulados (' + barcos + ')'; break; }
+      cur.push(fame - acumAnt);
+      acumNue += fr[d];
+      ops.push({ dia: d, fila: f, acumAnt: fame, acumNue: acumNue, deltaAnt: fame - acumAnt, deltaNue: fr[d], origenAnt: String(f[GC.ORIGEN - 1] || '') });
+      acumAnt = fame;
+    }
+    if (!motivo) {
+      var igualHoy = cur.every(function (v, i) { return v === fh[i]; });
+      var igualReal = cur.every(function (v, i) { return v === fr[i]; });
+      var sumH = fh.reduce(function (a, b) { return a + b; }, 0), sumR = fr.reduce(function (a, b) { return a + b; }, 0);
+      if (sumH !== sumR) motivo = 'el informe no conserva el total semanal (' + sumH + ' contra ' + sumR + ')';
+      else if (igualReal) { yaAplicados.push({ etq: etq, motivo: 'ya aplicado: la fame por dia ya es la de CurrentRiverRace' }); return; }
+      else if (!igualHoy) motivo = 'la fame por dia de hoy (' + cur.join('|') + ') no es la del informe (' + fh.join('|') + ')';
+      else {
+        for (var q = 0; q < 4; q++) {
+          if (_fameTablaDia_(ata[q], 0).indexOf(fr[q]) < 0) { motivo = 'la fame real del dia ' + EXC_DIAS_LETRAS.charAt(q) + ' (' + fr[q] + ') no esta en la tabla para ' + ata[q] + ' ataques'; break; }
+        }
+      }
+    }
+    if (motivo) { omitidos.push({ etq: etq, motivo: motivo }); return; }
+    casos.push({ grupo: g, etq: etq, ops: ops, ata: ata, fh: fh, fr: fr, totalFame: ops[3].acumAnt });
+  });
+  return { casos: casos, omitidos: omitidos, yaAplicados: yaAplicados };
 }
 
 function _fameCrr52Verificar_(filasAntes, filasDespues, plan) {
