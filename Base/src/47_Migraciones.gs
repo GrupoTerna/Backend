@@ -469,7 +469,7 @@ function _primerLunesDelMesEfectivoDe_(fecha) {
   return primerLunesDelMes(anio, mes);
 }
 
-// _etiquetaMesTemporada_(d): PF285; 'AAAA-MM' del mes Supercell de una fecha Ref (sin pasar por la zona horaria).
+// _etiquetaMesTemporada_(d): PF285; id de temporada Supercell ('AAAA-MM', un mes por temporada) de una fecha Ref, sin pasar por la zona horaria.
 function _etiquetaMesTemporada_(d) {
   return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
 }
@@ -509,12 +509,12 @@ function _textoVariacionTemporadas_(v) {
   } else {
     comparacion = 'La temporada detectada es ' + n + ' ' + plural + ' MÁS RECIENTE que la T1 actual: la T1 actual ya la cubre, no hace falta reenumerar.';
   }
-  var actual = 'Temporada actual (' + v.mesHoy + ', RoyaleAPI ' + v.hoyRoyale + '): hoy es T' + v.tHoyAntes +
+  var actual = 'Temporada actual (Supercell ' + v.mesHoy + ', RoyaleAPI ' + v.hoyRoyale + '): hoy es T' + v.tHoyAntes +
     (v.deltaMeses > 0 ? ' y pasaría a ser T' + v.tHoyDespues : ' y seguiría siendo T' + v.tHoyAntes) + '.';
   var relacion = (v.deltaMeses > 0 && v.tHoyDespues === 1)
     ? ' La temporada detectada es también la temporada actual.'
     : (v.deltaMeses > 0 ? ' La temporada actual quedaría a ' + (v.tHoyDespues - 1) + ' ' + ((v.tHoyDespues - 1) === 1 ? 'temporada' : 'temporadas') + ' de la nueva T1.' : '');
-  return 'VARIACIÓN: T1 actual = ' + v.t1ActualMes + ' (RoyaleAPI ' + v.t1ActualRoyale + '); T1 sugerida = ' + v.t1SugeridaMes + ' (RoyaleAPI ' + v.t1SugeridaRoyale + '). ' +
+  return 'VARIACIÓN: T1 actual = Supercell ' + v.t1ActualMes + ' (RoyaleAPI ' + v.t1ActualRoyale + '); T1 sugerida = Supercell ' + v.t1SugeridaMes + ' (RoyaleAPI ' + v.t1SugeridaRoyale + '). ' +
     comparacion + ' ' + actual + relacion;
 }
 
@@ -552,7 +552,7 @@ function detectarTemporadaMasAntiguaConPresenciaTerna() {
   var detalleOtras = '';
   if (candidatos.length > 1) {
     detalleOtras = ' Otra(s) fuente(s) evaluada(s): ' + candidatos.slice(1).map(function (c) {
-      return c.fuente + ' (' + Utilities.formatDate(c.fecha, tz, 'yyyy-MM-dd') + ', ' + _etiquetaMesTemporada_(_primerLunesDelMesEfectivoDe_(c.fecha)) + ')';
+      return c.fuente + ' (' + Utilities.formatDate(c.fecha, tz, 'yyyy-MM-dd') + ', Supercell ' + _etiquetaMesTemporada_(_primerLunesDelMesEfectivoDe_(c.fecha)) + ')';
     }).join(', ') + '.';
   }
   var cabecera = '[Detección Reenumeración] Fecha más antigua con presencia Terna: ' + Utilities.formatDate(elegido.fecha, tz, 'yyyy-MM-dd') +
