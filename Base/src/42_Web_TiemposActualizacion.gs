@@ -1,21 +1,42 @@
-// ==============================================================================
 // 42_Web_TiemposActualizacion.gs
 // Horas de actualización que debe mostrar la web (creado 05-oct-2026, pedido del usuario). [→ Contexto_Base_Web.md §42B001]
-// ==============================================================================
 //
 // Qué horas hay (web, API de clanes, mensajes), objeto de _tiemposActualizacionWeb_(), función manual y AVISOS ABIERTOS (4 pendientes de definir). [→ Contexto_Base_Web.md §42B002]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Tiempos de actualización: ver en el registro
+//  Parte 2 — Funciones que no se corren a mano
+//    - Tiempos de actualización: registrar (los llaman la API de clanes y los mensajes)
+//    - Tiempos de actualización: armar el objeto para la web
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var TIEMPOS_PROP_API = 'TIEMPOS_API_CLANES';
+
 var TIEMPOS_PROP_MENSAJES = 'TIEMPOS_MENSAJES';
 
 // Categorias de la hoja Mensajes que reconstruye generarTodosMensajes() (el resto sale de plantillas de Drive y su
 // "hora de elaboracion" no aplica). El frontend las usa para decidir si muestra la hora junto al contenido.
 var TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS = ['Mensaje de Guerra', 'Celular', 'Etiqueta de miembro'];
 
-// ---------------------------------------------------------------------------
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Tiempos de actualización: ver en el registro -----
+
+/** Manual: imprime el objeto completo en el log. */
+function verTiemposActualizacion() {
+  Logger.log(JSON.stringify(_tiemposActualizacionWeb_(), null, 2));
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Tiempos de actualización: registrar (los llaman la API de clanes y los mensajes) -----
+
 // Registro (lo llaman el bot, nunca la web)
-// ---------------------------------------------------------------------------
 
 // Registra la consulta a la API de clanes; nunca lanza error. [→ Contexto_Base_Web.md §42B003]
 function _registrarConsultaApiClanes_(completa) {
@@ -46,9 +67,9 @@ function _registrarGeneracionMensajes_(ts, cantidad) {
   }
 }
 
-// ---------------------------------------------------------------------------
+// ----- Tiempos de actualización: armar el objeto para la web -----
+
 // Lectura (la usan los endpoints web)
-// ---------------------------------------------------------------------------
 
 // Arma el objeto completo de horas; nunca lanza error, deja en null lo que no pudo armar. [→ Contexto_Base_Web.md §42B005]
 function _tiemposActualizacionWeb_(generadoTs) {
@@ -143,9 +164,7 @@ function _tiemposCategoriaEsGenerada_(categoria) {
   return TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS.indexOf(String(categoria || '').trim()) !== -1;
 }
 
-// ---------------------------------------------------------------------------
 // Helpers internos
-// ---------------------------------------------------------------------------
 
 function _tiemposLeerProp_(nombre) {
   try {
@@ -162,9 +181,4 @@ function _tiemposFechaLima_(ms) {
   var n = Number(ms);
   if (!n || n <= 0) return null;
   return Utilities.formatDate(new Date(n), 'America/Lima', 'dd/MM/yyyy HH:mm:ss');
-}
-
-/** Manual: imprime el objeto completo en el log. */
-function verTiemposActualizacion() {
-  Logger.log(JSON.stringify(_tiemposActualizacionWeb_(), null, 2));
 }
