@@ -20,8 +20,46 @@
 // este archivo esté en el mismo proyecto de Apps Script que 05 y 06.
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Cache de periodos: reinicio
+//  Parte 2 — Funciones que no se corren a mano
+//    - Cache de periodos: lectura y escritura (las llaman 05, 06 y 10)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 /** @const {string} Nombre del archivo de cache dentro de la carpeta del Generador. */
 var CACHE_PERIODOS_NOMBRE_ = '_cache_periodos_json.json';
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Cache de periodos: reinicio -----
+
+/**
+ * Utilidad manual: borra el archivo de cache de Drive por si alguna vez se
+ * necesita forzar una relectura completa de todos los currentriverrace.json
+ * (por ejemplo, si se sospecha que quedó una entrada mala en el cache).
+ * No es necesaria en el uso normal.
+ */
+function reiniciarCachePeriodosJSON() {
+  var carpeta = DriveApp.getFolderById(CARPETA_GENERADOR_ID);
+  var it = carpeta.getFilesByName(CACHE_PERIODOS_NOMBRE_);
+  var borrados = 0;
+  while (it.hasNext()) {
+    it.next().setTrashed(true);
+    borrados++;
+  }
+  console.log(borrados
+    ? 'Cache de periodos borrado (' + borrados + ' archivo(s) enviado(s) a la papelera).'
+    : 'No había cache de periodos que borrar.');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Cache de periodos: lectura y escritura (cargar y luego guardar) -----
 
 /**
  * Carga el cache desde Drive. Si no existe o está corrupto, devuelve un
@@ -66,23 +104,4 @@ function _cache_guardar_(cache) {
     // avance de cache de ESTA ejecución y la próxima relee un poco más.
     console.log('  ⚠ No se pudo guardar el cache de periodos: ' + e);
   }
-}
-
-/**
- * Utilidad manual: borra el archivo de cache de Drive por si alguna vez se
- * necesita forzar una relectura completa de todos los currentriverrace.json
- * (por ejemplo, si se sospecha que quedó una entrada mala en el cache).
- * No es necesaria en el uso normal.
- */
-function reiniciarCachePeriodosJSON() {
-  var carpeta = DriveApp.getFolderById(CARPETA_GENERADOR_ID);
-  var it = carpeta.getFilesByName(CACHE_PERIODOS_NOMBRE_);
-  var borrados = 0;
-  while (it.hasNext()) {
-    it.next().setTrashed(true);
-    borrados++;
-  }
-  console.log(borrados
-    ? 'Cache de periodos borrado (' + borrados + ' archivo(s) enviado(s) a la papelera).'
-    : 'No había cache de periodos que borrar.');
 }
