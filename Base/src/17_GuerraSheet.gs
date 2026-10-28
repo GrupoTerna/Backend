@@ -4270,7 +4270,11 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
     }
     if (!seCortoPorTiempo) _volcarLote();
 
-    if (seCortoPorTiempo) return false;
+    if (seCortoPorTiempo) {
+      // PF285: filas del CSV (temporada actual) ya presentes en la hoja antes de esta tanda = filasTemporada - filasFaltantes; esta tanda = escritasEnEstaCorrida.
+      _logProgresoPaso_('Guerra', 'restauración de Guerra desde Backup_Guerra.csv', filasTemporada.length - filasFaltantes.length, escritasEnEstaCorrida, filasTemporada.length, 'filas');
+      return false;
+    }
 
     Logger.log('[Guerra] Restauración completada: ' + escritasEnEstaCorrida + ' fila(s) agregada(s) (semana(s) [' +
       Object.keys(semanasFaltantesSet).join(', ') + ']).');
