@@ -82,7 +82,7 @@
 //    - Recorte del margen transparente de las insignias (lector y escritor de PNG; en el orden en que los llama _imgApiRecortarPng_)
 //    - GitHub (repo Web): contexto, carpetas API y commit (solo agrega archivos), y el nivel bajo (token, petición, JSON)
 //    - Escaneo de los JSON de players: ayudas
-// Dentro de cada tema, en el orden en que se espera ejecutarlas (deducido del código: la usuaria no lo ha confirmado). Al reordenar no se cambió el código de ninguna función.
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var IMGAPI_REPO_   = 'Web';
 var IMGAPI_BRANCH_ = 'main';
