@@ -10,12 +10,51 @@
 // AVISOS [1]-[10]: sin probar en Apps Script real; reglas de barcos, guerra, posiciones y movimientos. PENDIENTE DE VERIFICAR (3 puntos del aviso [8]); ideas opcionales en [10]. [→ Contexto_Base_Web.md §40B002]
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Prueba manual desde el editor (solo log; no escribe nada)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Punto de entrada web (GET) y ayudas comunes de las cinco noticias
+//    - Las cinco noticias en el orden en que se arman: ataques a barcos, ascensos y descensos, posiciones finales, participación y fame de guerra, ingresos y salidas
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var NOTICIAS_TZ = 'America/Lima';
 var NOTICIAS_MAX_ASCENSOS = 300; // tope de seguridad de filas devueltas
 var NOTICIAS_SEMANAS_TENDENCIA = 6;       // semanas del gráfico de tendencia de Posiciones
 var NOTICIAS_ATAQUES_MAX_SEMANA = 16;     // 4 días de guerra x 4 mazos: tope de ataques por jugador y semana
 var NOTICIAS_TOP_FAME = 5;                // jugadores del ranking de fame
 var NOTICIAS_MAX_NOMBRES_LISTA = 60;      // tope de nombres devueltos en listas (sin ataques, movimientos)
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// PRUEBA MANUAL (solo log; no escribe nada)
+// -----------------------------------------------------------------------------
+
+// Prueba manual desde el editor: cambiar LUNES_PRUEBA por el lunes de una semana ya jugada y revisar el log (sin sesión). [→ Contexto_Base_Web.md §40B012]
+function _noticiasPruebaManual() {
+  var LUNES_PRUEBA = '2026-09-28';
+  var lista = [];
+  var ctx = _getCtx();
+  var tmp = [];
+  _agregarSemanasTemporadaAlSelectorRecientes(tmp, ctx, ctx.temporada, true);
+  _agregarSemanasTemporadaAlSelectorRecientes(tmp, ctx, Number(ctx.temporada) - 1, false);
+  lista = tmp;
+  var semana = null;
+  for (var i = 0; i < lista.length; i++) if (lista[i].lunesIso === LUNES_PRUEBA) { semana = lista[i]; break; }
+  if (!semana) { Logger.log('[Noticias/Prueba] ' + LUNES_PRUEBA + ' no está en las semanas disponibles: ' + JSON.stringify(lista)); return; }
+  Logger.log('[Noticias/Prueba] Barcos: ' + JSON.stringify(_noticiasSeccion_(function () { return _noticiasBarcos_(semana); })));
+  Logger.log('[Noticias/Prueba] Ascensos: ' + JSON.stringify(_noticiasSeccion_(function () { return _noticiasAscensos_(semana); })));
+  Logger.log('[Noticias/Prueba] Posiciones: ' + JSON.stringify(_noticiasSeccion_(function () { return _noticiasPosiciones_(semana); })));
+  Logger.log('[Noticias/Prueba] Guerra: ' + JSON.stringify(_noticiasSeccion_(function () { return _noticiasGuerra_(semana); })));
+  Logger.log('[Noticias/Prueba] Movimientos: ' + JSON.stringify(_noticiasSeccion_(function () { return _noticiasMovimientos_(semana); })));
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
 
 // Punto de entrada web (GET, solo lectura) del resumen semanal; cada sección devuelve su propio {ok, ...}. [→ Contexto_Base_Web.md §40B003]
 function _webAdminNoticiasSemana(token, lunesIso) {
@@ -498,27 +537,4 @@ function _noticiasMovimientos_(semana) {
   var total = lista.length;
   lista = lista.slice(0, NOTICIAS_MAX_NOMBRES_LISTA).map(function (m) { delete m._orden; return m; });
   return { ok: true, clanes: salida, lista: lista, total: total };
-}
-
-// -----------------------------------------------------------------------------
-// PRUEBA MANUAL (solo log; no escribe nada)
-// -----------------------------------------------------------------------------
-
-// Prueba manual desde el editor: cambiar LUNES_PRUEBA por el lunes de una semana ya jugada y revisar el log (sin sesión). [→ Contexto_Base_Web.md §40B012]
-function _noticiasPruebaManual() {
-  var LUNES_PRUEBA = '2026-09-28';
-  var lista = [];
-  var ctx = _getCtx();
-  var tmp = [];
-  _agregarSemanasTemporadaAlSelectorRecientes(tmp, ctx, ctx.temporada, true);
-  _agregarSemanasTemporadaAlSelectorRecientes(tmp, ctx, Number(ctx.temporada) - 1, false);
-  lista = tmp;
-  var semana = null;
-  for (var i = 0; i < lista.length; i++) if (lista[i].lunesIso === LUNES_PRUEBA) { semana = lista[i]; break; }
-  if (!semana) { Logger.log('[Noticias/Prueba] ' + LUNES_PRUEBA + ' no está en las semanas disponibles: ' + JSON.stringify(lista)); return; }
-  Logger.log('[Noticias/Prueba] Barcos: ' + JSON.stringify(_noticiasSeccion_(function () { return _noticiasBarcos_(semana); })));
-  Logger.log('[Noticias/Prueba] Ascensos: ' + JSON.stringify(_noticiasSeccion_(function () { return _noticiasAscensos_(semana); })));
-  Logger.log('[Noticias/Prueba] Posiciones: ' + JSON.stringify(_noticiasSeccion_(function () { return _noticiasPosiciones_(semana); })));
-  Logger.log('[Noticias/Prueba] Guerra: ' + JSON.stringify(_noticiasSeccion_(function () { return _noticiasGuerra_(semana); })));
-  Logger.log('[Noticias/Prueba] Movimientos: ' + JSON.stringify(_noticiasSeccion_(function () { return _noticiasMovimientos_(semana); })));
 }
