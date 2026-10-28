@@ -1,65 +1,31 @@
-// ==============================================================================
 // 36_PerfilWeb.gs
 // CSV exclusivo de los 5 contadores de la cabecera de estadísticas avanzadas del perfil (CSV primero, JSON de respaldo). [→ Contexto_Base_Web.md §36B001]
-// ==============================================================================
 // NUEVO (24-sep-2026, pedido del usuario)
-
 //
 // Fuente cache /players: ExpLevel, KingTowerLevel, StarPoints, ExpPoints, TotalExpPoints; una fila por jugador; no toca la columna Nivel de Directorio/Inactivos; progress{} quedó fuera (ver 35). [→ Contexto_Base_Web.md §36B002]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Perfil web: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Perfil web: leer, armar y guardar el CSV (lo usa updatePerfilWebSheet)
+//    - Perfil web: respuestas web (CSV primero)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var PERFIL_WEB_CSV = 'Backup_PerfilWeb.csv';
+
 var PERFIL_WEB_HEADERS = [
   'N°', 'Tag',
   'ExpLevel', 'KingTowerLevel', 'StarPoints', 'ExpPoints', 'TotalExpPoints'
 ];
 
-// ----- Lectura / escritura del CSV -----
+var _PW_CSV_MEMO = null; // memo por ejecución: la misma petición web lo usa 1 sola vez por tag, pero el CSV se lee 1 sola vez
 
-// Lee Backup_PerfilWeb.csv como {headers, rows}; si no existe, devuelve encabezados por defecto. [→ Contexto_Base_Web.md §36B003]
-function _leerPerfilWebCSV() {
-  var csvText = _loadCSVFromDrive(PERFIL_WEB_CSV);
-  if (!csvText) return { headers: PERFIL_WEB_HEADERS.slice(), rows: [] };
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: PERFIL_WEB_HEADERS.slice(), rows: [] };
-  var headers = parsed[0], rows = parsed.slice(1);
-  for (var h = headers.length; h < PERFIL_WEB_HEADERS.length; h++) headers.push(PERFIL_WEB_HEADERS[h]);
-  for (var r = 0; r < rows.length; r++) {
-    while (rows[r].length < PERFIL_WEB_HEADERS.length) rows[r].push('');
-  }
-  return { headers: headers, rows: rows };
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
-function _guardarPerfilWebCSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive(PERFIL_WEB_CSV, _encodeCSV([headers].concat(rows)));
-}
-
-// ----- Sincronización (JSON de /players -> CSV) -----
-
-function _pwCelda(v) {
-  return (v === undefined || v === null) ? '' : v;
-}
-
-// Arma la fila del CSV de un jugador a partir de su JSON de /players. [→ Contexto_Base_Web.md §36B004]
-function _armarFilaPerfilWeb(tag, pd) {
-  return [
-    '', tag,
-    _pwCelda(pd.expLevel), _pwCelda(pd.kingTowerLevel), _pwCelda(pd.starPoints),
-    _pwCelda(pd.expPoints), _pwCelda(pd.totalExpPoints)
-  ];
-}
-
-function _armarFilasPerfilWebParaTags(tags) {
-  var filas = [];
-  for (var i = 0; i < tags.length; i++) {
-    var pd = _getPlayerCache(tags[i]);
-    if (!pd) continue;
-    filas.push(_armarFilaPerfilWeb(tags[i], pd));
-  }
-  return filas;
-}
+// ----- Hoja Perfil web: actualizar -----
 
 // Actualiza el CSV según PLAYERS_API_ENABLED; reusa _mergearCards2CSV() (merge por Tag, nunca vacía). [→ Contexto_Base_Web.md §36B005]
 function updatePerfilWebSheet() {
@@ -100,6 +66,55 @@ function updatePerfilWebSheet() {
     ' jugador(es). Nunca se vacía: el resto de tags conserva su fila anterior.');
 }
 
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Perfil web: leer, armar y guardar el CSV (lo usa updatePerfilWebSheet) -----
+
+// Lee Backup_PerfilWeb.csv como {headers, rows}; si no existe, devuelve encabezados por defecto. [→ Contexto_Base_Web.md §36B003]
+function _leerPerfilWebCSV() {
+  var csvText = _loadCSVFromDrive(PERFIL_WEB_CSV);
+  if (!csvText) return { headers: PERFIL_WEB_HEADERS.slice(), rows: [] };
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: PERFIL_WEB_HEADERS.slice(), rows: [] };
+  var headers = parsed[0], rows = parsed.slice(1);
+  for (var h = headers.length; h < PERFIL_WEB_HEADERS.length; h++) headers.push(PERFIL_WEB_HEADERS[h]);
+  for (var r = 0; r < rows.length; r++) {
+    while (rows[r].length < PERFIL_WEB_HEADERS.length) rows[r].push('');
+  }
+  return { headers: headers, rows: rows };
+}
+
+function _pwCelda(v) {
+  return (v === undefined || v === null) ? '' : v;
+}
+
+// Arma la fila del CSV de un jugador a partir de su JSON de /players. [→ Contexto_Base_Web.md §36B004]
+function _armarFilaPerfilWeb(tag, pd) {
+  return [
+    '', tag,
+    _pwCelda(pd.expLevel), _pwCelda(pd.kingTowerLevel), _pwCelda(pd.starPoints),
+    _pwCelda(pd.expPoints), _pwCelda(pd.totalExpPoints)
+  ];
+}
+
+function _armarFilasPerfilWebParaTags(tags) {
+  var filas = [];
+  for (var i = 0; i < tags.length; i++) {
+    var pd = _getPlayerCache(tags[i]);
+    if (!pd) continue;
+    filas.push(_armarFilaPerfilWeb(tags[i], pd));
+  }
+  return filas;
+}
+
+/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
+function _guardarPerfilWebCSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive(PERFIL_WEB_CSV, _encodeCSV([headers].concat(rows)));
+}
+
 // Modo 'admin': actualiza solo filas de admins y preserva el resto. [→ Contexto_Base_Web.md §36B006]
 function _actualizarPerfilWebSoloAdmins() {
   var ss = _getSs();
@@ -135,9 +150,7 @@ function _actualizarPerfilWebSoloAdmins() {
   Logger.log('[PerfilWeb] ' + PERFIL_WEB_CSV + ' actualizado: ' + nuevas.length + ' admin(es) (modo ADMIN, preservando no-admins).');
 }
 
-// ----- Lectura para la web (CSV primero, JSON de respaldo) -----
-
-var _PW_CSV_MEMO = null; // memo por ejecución: la misma petición web lo usa 1 sola vez por tag, pero el CSV se lee 1 sola vez
+// ----- Perfil web: respuestas web (CSV primero) -----
 
 function _pwCsvMemo() {
   if (!_PW_CSV_MEMO) _PW_CSV_MEMO = _leerPerfilWebCSV();
