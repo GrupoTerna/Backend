@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 17:31:35 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 17:40:04 */
 
 
 
@@ -2784,7 +2784,6 @@ function _getMapaDocsReconstruibles() {
   mapa[NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_TORNEO] = _construirContenidoDocParticipantesCalificadosTorneo;
   mapa[NOMBRE_DOC_GANADORES_SORTEO] = _construirContenidoDocGanadoresSorteo;
   mapa[NOMBRE_DOC_GANADORES_TORNEO] = _construirContenidoDocGanadoresTorneo;
-  mapa[NOMBRE_DOC_ASCENSOS_DESCENSOS] = _construirContenidoDocAscensosDescensos; // FASE (11/08/2026)
   // NUEVO (15-sep-2026, pedido del usuario -- ver 29_Docs_NoCalificados.gs). [→ Contexto_Base_Web.md §01B122]
   mapa[NOMBRE_DOC_NO_CALIFICADOS_TORNEO] = _construirContenidoDocNoCalificadosTorneo;
   mapa[NOMBRE_DOC_NO_CALIFICADOS_SORTEO] = _construirContenidoDocNoCalificadosSorteo;
@@ -2805,7 +2804,6 @@ function _getMapaCarpetaDestinoDocsReconstruibles() {
   mapa[NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS;
   mapa[NOMBRE_DOC_GANADORES_SORTEO] = DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS;
   mapa[NOMBRE_DOC_GANADORES_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS;
-  mapa[NOMBRE_DOC_ASCENSOS_DESCENSOS] = DRIVE_FOLDER_ID_PLANTILLAS_CAMBIO_RANGO;
   // NUEVO (15-sep-2026): "se deben generar en la misma carpeta de sus [→ Contexto_Base_Web.md §01B124]
   mapa[NOMBRE_DOC_NO_CALIFICADOS_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS;
   mapa[NOMBRE_DOC_NO_CALIFICADOS_SORTEO] = DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS;
@@ -34559,7 +34557,7 @@ function _corridaCambioRangoDesdeRegistros_(registros, desdeMs, claveDia) {
 // 25_Doc_AscensosDescensos.gs
 // Documento 'Ascensos y descensos' (hoy «Cambio de rango»): ayudas para escribir en él las listas por clan de los
 // cambios aplicados, las tablas de requisitos por rango y las reglas (las llama actualizarDocCambioRango() de 29_Docs_NoCalificados.gs).
-// 28-oct-2026 (PF286 punto 23): se quitaron actualizarDocAscensosDescensos(), actualizarTablasRangosDoc() y sus ayudas (nadie las llamaba y escribían en el mismo documento con otro diseño).
+// 28-oct-2026 (PF286 punto 23): se quitaron actualizarDocAscensosDescensos(), actualizarTablasRangosDoc() y sus ayudas (nadie las llamaba y escribían en el mismo documento con otro diseño); también el constructor viejo de reconstrucción (_construirContenidoDocAscensosDescensos y ayudas) y las constantes NOMBRE_DOC_ASCENSOS_DESCENSOS / DOC_ID_ASCENSOS_DESCENSOS (el documento es el de NOMBRE_DOC_CAMBIO_RANGO / DOC_ID_CAMBIO_RANGO, 29_Docs_NoCalificados.gs).
 // ==============================================================================
 
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
@@ -34567,7 +34565,6 @@ function _corridaCambioRangoDesdeRegistros_(registros, desdeMs, claveDia) {
 //  Parte 2 — Funciones que no se corren a mano
 //    - Listas por clan, tablas de requisitos y reglas del documento «Cambio de rango» (al final del archivo)
 //    - Tablas de requisitos por rango (_formatearQtyCelda)
-//    - Contenido del documento al reconstruirlo desde cero (_construirContenidoDocAscensosDescensos y sus ayudas)
 //    - Semanas de la temporada (ayuda que usan otros archivos)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
@@ -34576,11 +34573,6 @@ function _corridaCambioRangoDesdeRegistros_(registros, desdeMs, claveDia) {
 // 25_Doc_AscensosDescensos.gs [→ Contexto_Base_Web.md §25B001]
 
 // 1) T_REQ_CATEGORIAS — HISTÓRICO, ya no aplica [→ Contexto_Base_Web.md §25B002]
-
-// 2) IDs/nombres del documento (confirmados por el usuario, 10/08/2026) [→ Contexto_Base_Web.md §25B003]
-var NOMBRE_DOC_ASCENSOS_DESCENSOS = 'Ascensos y descensos - Comunidad - ᴳ乂ᵀ ⚜️ Familia Terna';
-
-var DOC_ID_ASCENSOS_DESCENSOS     = '1jkUntN6esvkNvHosYesDQwlU33BfPr1I_wyyYueMxWo';
 
 // 25_Doc_AscensosDescensos.gs [→ Contexto_Base_Web.md §25B004]
 
@@ -34618,11 +34610,11 @@ var _SEMANAS_TEMPORADA_MEMO = {};
  * reconstruirDocAscensosDescensosSiFalta() [→ Contexto_Base_Web.md §25B008]
  */
 function reconstruirDocAscensosDescensosSiFalta() {
-  var archivo = _buscarArchivoEnPlantillas(NOMBRE_DOC_ASCENSOS_DESCENSOS, DOC_ID_ASCENSOS_DESCENSOS);
+  var archivo = _buscarArchivoEnPlantillas(NOMBRE_DOC_CAMBIO_RANGO, DOC_ID_CAMBIO_RANGO);
   if (archivo) {
-    Logger.log('[ReconstruirDocs] "' + NOMBRE_DOC_ASCENSOS_DESCENSOS + '" OK (existe, ID: ' + archivo.getId() + ').');
+    Logger.log('[ReconstruirDocs] "' + NOMBRE_DOC_CAMBIO_RANGO + '" OK (existe, ID: ' + archivo.getId() + ').');
   } else {
-    Logger.log('[ReconstruirDocs] "' + NOMBRE_DOC_ASCENSOS_DESCENSOS + '" NO se pudo encontrar NI recrear. Revisar permisos de Drive / DRIVE_FOLDER_ID_PLANTILLAS_OTRAS.');
+    Logger.log('[ReconstruirDocs] "' + NOMBRE_DOC_CAMBIO_RANGO + '" NO se pudo encontrar NI recrear. Revisar permisos de Drive / DRIVE_FOLDER_ID_PLANTILLAS_OTRAS.');
   }
 }
 
@@ -34640,191 +34632,6 @@ function _formatearQtyCelda(requisito, esTrofeos) {
   var texto = String(requisito.qty);
   if (esTrofeos) texto = texto.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return texto;
-}
-
-// --- Tema: contenido del documento al reconstruirlo desde cero ---
-
-/**
- * _construirContenidoDocAscensosDescensos(body) [→ Contexto_Base_Web.md §25B040]
- */
-function _construirContenidoDocAscensosDescensos(body) {
-  // --- Título + Temporada -------------------------------------------
-  _rdocParrafoTexto(body, 'Ascensos y descensos', true, DocumentApp.HorizontalAlignment.CENTER);
-  _rdocParrafoTexto(body, 'Temporada', true);
-
-  var temporadaTexto;
-  try {
-    var ctxReal = _getCtx();
-    var temporadaMostrar = _getExtraMostrarTemporada(_getSs(), ctxReal);
-    var primerLunes = primerLunesTemporada(CFG.REF_DEFAULT, temporadaMostrar);
-    temporadaTexto = 'Mes de ' + _MESES_ES[primerLunes.getMonth()] + ' del ' + primerLunes.getFullYear() + '.';
-  } catch (e) {
-    // Si algo falla (hoja Extra sin datos, etc.) no se corta la [→ Contexto_Base_Web.md §25B041]
-    temporadaTexto = 'Mes de [mes] del [año].';
-  }
-  _rdocParrafoTexto(body, temporadaTexto, false);
-
-  // --- Rangos ----------------------------------------------------------
-  _rdocParrafoTexto(body, 'Rangos', true);
-
-  // 1. Miembro
-  _rdocParrafoTexto(body, '1.     Miembro', true);
-  _rdocParrafoTexto(body, 'Condición para permanecer en el clan', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
-  _rdocADTablaRango(body, 2000, 16);
-  _rdocADBloqueFuncion(body, ['Donar y participar en guerras.']);
-
-  // 2. Veterano
-  _rdocParrafoTexto(body, '2.     Veterano', true);
-  _rdocParrafoTexto(body, 'Requisito para ascender a este rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
-  _rdocADTablaRango(body, 2500, 16);
-  _rdocParrafoTexto(body, 'Condición para conservar el rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
-  _rdocADTablaRango(body, 2000, 16);
-  _rdocADBloqueFuncion(body, [
-    'Donar y participar en guerras.',
-    'Incentivar en las guerras',
-    'Puede aceptar solicitudes de miembros nuevos.'
-  ]);
-
-  // 3. Colíder
-  _rdocParrafoTexto(body, '3.     Colíder', true);
-
-  // 3.1. Tipo A: Colíder de juego
-  _rdocParrafoTexto(body, '3.1.   Tipo A: Colíder de juego', true);
-  _rdocParrafoTexto(body, 'Requisito para ascender a este rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
-  _rdocADTablaRango(body, 3000, 16);
-  _rdocParrafoTexto(body, 'Condición para conservar el rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece.', false);
-  _rdocADTablaRango(body, 2600, 16);
-  _rdocADBloqueFuncion(body, [
-    'Donar y participar en guerras.',
-    'Incentivar en las guerras',
-    'Puede aceptar solicitudes de miembros nuevos.',
-    'Ayudar en el juego.'
-  ]);
-
-  // 3.2. Tipo B: Colíder colaborador
-  _rdocParrafoTexto(body, '3.2.   Tipo B: Colíder colaborador', true);
-  _rdocParrafoTexto(body, 'Los Colíderes colaboradores son elegidos por el líder por su compromiso con el clan.', false);
-  _rdocParrafoTexto(body, 'Requisito para ascender a este rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el mínimo promedio de medallas de guerra requerido durante la temporada actual, según el clan al que pertenece, para poder ascender.', false);
-  _rdocADTablaRango(body, 3000, 16);
-  _rdocParrafoTexto(body, 'Condición para conservar el rango', true);
-  _rdocParrafoTexto(body, 'Alcanzar el promedio mínimo requerido de medallas de guerra y ataques durante la temporada actual, según el clan al que pertenece. Sin embargo, tiene prioridad de no descender por medallas.', false);
-  _rdocADTablaRango(body, 2600, 16);
-  _rdocADBloqueFuncion(body, [
-    'Donar y participar en guerras.',
-    'Incentivar en las guerras',
-    'Puede aceptar solicitudes de miembros nuevos.',
-    'Apoyar en la administración del clan, organización, reclutamiento, eventos y decisiones importantes.'
-  ]);
-
-  // 4. Líder
-  _rdocParrafoTexto(body, '4.     Líder', true);
-  body.appendListItem('Toma de decisiones finales del clan.').setGlyphType(DocumentApp.GlyphType.BULLET);
-
-  // --- Reglas ------------------------------------------------------------
-  _rdocParrafoTexto(body, 'Reglas', true);
-  [
-    'Las listas de ascensos y descensos se publicarán al terminar cada coliseo (aproximadamente a fin de mes).',
-    'Se hace solo un cambio de rango por temporada para cada persona, entonces; si ya fuiste ascendido o degradado esta temporada, debes esperar hasta el siguiente fin de coliseo para volver a cambiar de rango.',
-    'Para ser elegible para un ascenso, el integrante debe haber participado en guerra como mínimo una temporada completa.',
-    'La participación en guerras continúa siendo obligatoria para todos los integrantes de los clanes terna, independientemente del rango que tengan.',
-    'El respeto hacia los demás jugadores es obligatorio y será un factor determinante al momento de evaluar los ascensos. Se podrá perder el derecho a ser ascendido si se detectan abusos de poder, abuso de autoridad o conductas inapropiadas relacionadas con el rango.',
-    'Cualquier jugador que cometa una falta podrá ser sancionado, según la gravedad de la misma, con degradación de rango, suspensión o prohibición permanente de recibir ascensos o participar en los clanes TERNA.',
-    'Los jugadores expulsados o sancionados NO serán ascendidos.'
-  ].forEach(function (texto) {
-    body.appendListItem(texto).setGlyphType(DocumentApp.GlyphType.BULLET);
-  });
-
-  // --- Aviso sobre reclamos ----------------------------------------------
-  _rdocParrafoTexto(body, 'Aviso sobre reclamos', true);
-  _rdocParrafoTexto(body, 'Si consideras que existe un error en las listas publicadas, ya sea porque deberías figurar en la lista de ascensos y no apareces, o porque figuras en la lista de descensos y consideras que no corresponde, deberás presentar tu reclamo ante la administración, etiquetando a los líderes o colíderes de tu respectivo clan, dentro de las 24 horas posteriores a la publicación de estas listas.', false);
-  _rdocParrafoTexto(body, 'Una vez transcurrido dicho plazo, se perderá el derecho a presentar reclamos o solicitar modificaciones. Por ello, es responsabilidad de cada participante revisar las listas con atención y presentar cualquier reclamo dentro del plazo establecido.', false);
-
-  // --- Ascensos / Descensos ----------------------------------------------- [→ Contexto_Base_Web.md §25B042]
-  _rdocParrafoTexto(body, 'Ascensos:', true);
-  _rdocADBloqueClanAscensoDescenso(body, 'Veterano', 'Colíder', 'Ascenso de clan');
-
-  _rdocParrafoTexto(body, 'Descensos:', true);
-  _rdocADBloqueClanAscensoDescenso(body, 'Miembro', 'Veterano');
-
-  // --- Redes sociales oficiales + pie -------------------------------------- [→ Contexto_Base_Web.md §25B043]
-  _rdocBloqueRedesSocialesYPie(body);
-}
-
-// 3) Temporada a mostrar (Extra!Mostrar, buscada por NOMBRE de columna, [→ Contexto_Base_Web.md §25B005]
-
-function _getExtraMostrarTemporada(ss, ctxReal) {
-  var temporadaMostrar = ctxReal.temporada;
-  var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
-  if (!shExtra || shExtra.getLastRow() < 2) return temporadaMostrar;
-
-  var headers = shExtra.getRange(1, 1, 1, shExtra.getLastColumn()).getValues()[0];
-  var colMostrar = -1;
-  for (var i = 0; i < headers.length; i++) {
-    if (String(headers[i]).trim() === 'Mostrar_T') { colMostrar = i + 1; break; }
-  }
-  if (colMostrar === -1) {
-    Logger.log('[AscensosDescensos] No se encontró la columna "Mostrar_T" en Extra; se usa la temporada real (' + ctxReal.temporada + ').');
-    return temporadaMostrar;
-  }
-
-  var mostrarVal = shExtra.getRange(2, colMostrar).getValue();
-  var temporadaExtra = Number(mostrarVal);
-  if (temporadaExtra) temporadaMostrar = temporadaExtra;
-  return temporadaMostrar;
-}
-
-/**
- * _rdocADTablaRango(body, trofeos, ataques) [→ Contexto_Base_Web.md §25B037]
- */
-function _rdocADTablaRango(body, trofeos, ataques) {
-  var filas = [
-    [''].concat(_CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION),
-    ['Medallas', _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos), _rdocADMiles(trofeos)],
-    ['Ataques', String(ataques), String(ataques), String(ataques), String(ataques)]
-  ];
-  return _rdocTablaConEncabezadoNegrita(body, filas);
-}
-
-/**
- * _rdocADMiles(n) [→ Contexto_Base_Web.md §25B036]
- */
-function _rdocADMiles(n) {
-  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
-/**
- * _rdocADBloqueFuncion(body, items) [→ Contexto_Base_Web.md §25B038]
- */
-function _rdocADBloqueFuncion(body, items) {
-  _rdocParrafoTexto(body, 'Función', true);
-  for (var i = 0; i < items.length; i++) {
-    body.appendListItem(items[i]).setGlyphType(DocumentApp.GlyphType.BULLET);
-  }
-}
-
-/**
- * _rdocADBloqueClanAscensoDescenso(body, etiquetaSubA, etiquetaSubB) [→ Contexto_Base_Web.md §25B039]
- */
-function _rdocADBloqueClanAscensoDescenso(body, etiquetaSubA, etiquetaSubB, etiquetaSubClan) {
-  for (var i = 0; i < _CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION.length; i++) {
-    _rdocParrafoTexto(body, _CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION[i] + ':', true);
-    _rdocParrafoTexto(body, etiquetaSubA, false);
-    body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
-    _rdocParrafoTexto(body, etiquetaSubB, false);
-    body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
-    // 4-oct-2026: 'Ascenso de clan' (opcional, solo en 'Ascensos:'). Se omite en el primer clan
-    // de la lista (el principal): ahi el Colider nunca sube de clan.
-    if (etiquetaSubClan && i > 0) {
-      _rdocParrafoTexto(body, etiquetaSubClan, false);
-      body.appendListItem('').setGlyphType(DocumentApp.GlyphType.BULLET);
-    }
-  }
 }
 
 // --- Tema: documento «Cambio de rango» (PF286, 28-oct-2026): listas por clan, tablas de requisitos por rango y reglas; las usa actualizarDocCambioRango() (29_Docs_NoCalificados.gs) [→ Contexto_Base_Web.md §PF286] ---
