@@ -69,6 +69,21 @@
 //  GITHUB_TOKEN_WEB y tiene prioridad.
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Escaneo de los JSON de players: reiniciar el avance y escanear (se escanea ANTES de subir)
+//    - Descarga de imágenes de la API a GitHub (repo Web): probar, cartas, insignias y las dos categorías
+//    - Carpetas API junto a Fankit
+//    - Lista de direcciones no disponibles (HTTP 404): vaciarla para reintentar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Descarga de imágenes: flujo principal (_imgApiEjecutar_)
+//    - Direcciones desde los CSV de Drive y tipo de las insignias (en el orden en que las llama _imgApiEjecutar_)
+//    - Lista de direcciones no disponibles: lectura y escritura
+//    - Recorte del margen transparente de las insignias (lector y escritor de PNG; en el orden en que los llama _imgApiRecortarPng_)
+//    - GitHub (repo Web): contexto, carpetas API y commit (solo agrega archivos), y el nivel bajo (token, petición, JSON)
+//    - Escaneo de los JSON de players: ayudas
+// Dentro de cada tema, en el orden en que se espera ejecutarlas (deducido del código: la usuaria no lo ha confirmado). Al reordenar no se cambió el código de ninguna función.
+
 var IMGAPI_REPO_   = 'Web';
 var IMGAPI_BRANCH_ = 'main';
 
@@ -117,9 +132,117 @@ var IMGAPI_MAX_BYTES_    = 12 * 1024 * 1024;
 var IMGAPI_MAX_MS_       = 2 * 60 * 1000;
 var IMGAPI_LOTE_         = 15;
 
-// -----------------------------------------------------------------------------
-// Puntos de entrada
-// -----------------------------------------------------------------------------
+// Recorte del margen transparente de las insignias (22-oct-2026, pedido de la usuaria)
+// [→ Contexto_Base_Web.md §PF162]
+//
+// Las copias locales de badges/API/ se suben SIN el margen transparente que traen los PNG de
+// Supercell (512x512 con el dibujo en ~58 % del ancho), igual que las 1 079 que ya se recortaron
+// a mano (PF161). Apps Script no trae librería de imágenes, así que aquí hay un lector y escritor
+// de PNG en JavaScript puro:
+//   - Solo PNG RGBA de 8 bits, sin entrelazado (el formato de todas las insignias vistas). Otro
+//     formato NO se sube y queda como fallo que se reintenta; un archivo que ni siquiera es PNG
+//     se sube tal cual y se avisa en el registro.
+//   - Criterio: rectángulo mínimo con los píxeles de alfa >= 8 (el mismo de PF161). No se reescala
+//     ni se cambia ningún píxel; solo se corta. Si no hay nada que cortar, el archivo no se toca.
+//   - Descomprime con un inflate propio (se evita Utilities.ungzip porque, por lo que se sabe,
+//     valida el CRC del resultado, que aquí no se conoce; no se probó en Apps Script) y comprime
+//     con Utilities.gzip, cuyo deflate se envuelve como zlib. Si ese
+//     deflate no se puede descomprimir de vuelta igual, se usa compresión «almacenada» (sin
+//     comprimir pero válida).
+
+var IMGAPI_ALFA_MIN_ = 8;
+var _IMGAPI_TABLA_CRC_ = null;
+var _IMGAPI_LONG_BASE_ = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+var _IMGAPI_LONG_EXTRA_ = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+var _IMGAPI_DIST_BASE_ = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
+var _IMGAPI_DIST_EXTRA_ = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+var _IMGAPI_ORDEN_CL_ = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Escaneo de los JSON de players (reanudable): reiniciar el avance y escanear -----
+
+/** Olvida el avance del escaneo para volver a empezar desde el primer archivo. No borra Imagenes_API_Urls.txt. */
+function imagenesApiReiniciarEscaneoJson() {
+  PropertiesService.getScriptProperties().deleteProperty(IMGAPI_PROP_ESCANEO_);
+  console.log('Avance del escaneo borrado.');
+}
+
+/**
+ * Recorre la carpeta «players» (los .json de jugadores) y suma al archivo Imagenes_API_Urls.txt
+ * todas las direcciones de imágenes de la API que encuentre (se leen con una expresión regular,
+ * sin interpretar el JSON). Solo lee Drive; no toca GitHub. Se corta a los 4 minutos y guarda el
+ * punto de avance: se vuelve a correr hasta que el registro diga «TERMINADO».
+ */
+function imagenesApiEscanearJsonPlayers() {
+  var inicio = Date.now();
+  var props = PropertiesService.getScriptProperties();
+  var estado = {};
+  try { estado = JSON.parse(props.getProperty(IMGAPI_PROP_ESCANEO_) || '{}'); } catch (e) { estado = {}; }
+  var escaneados = estado.escaneados || 0;
+
+  var archivoUrls = _imgApiArchivoUrls_();
+  var conocidas = {};
+  archivoUrls.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) { l = l.trim(); if (l) conocidas[l] = true; });
+  var antes = Object.keys(conocidas).length;
+
+  // Tipo de cada insignia (M = maestría, I = insignia), por nombre de archivo.
+  var archivoTipos = _imgApiArchivoTipos_();
+  var tiposConocidos = {};
+  archivoTipos.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) {
+    var partes = l.trim().split('\t');
+    if (partes.length === 2 && (partes[0] === 'M' || partes[0] === 'I')) tiposConocidos[partes[1]] = partes[0];
+  });
+  var antesTipos = Object.keys(tiposConocidos).length;
+
+  var it;
+  if (estado.token) {
+    try { it = DriveApp.continueFileIterator(estado.token); }
+    catch (e) { console.log('No se pudo retomar el avance guardado (' + e + '); se empieza de nuevo.'); estado = {}; escaneados = 0; }
+  }
+  if (!it) it = DriveApp.getFolderById(CARPETA_PLAYERS_ID_).getFiles();
+
+  var terminado = true;
+  var hechosEstaVez = 0;
+  while (it.hasNext()) {
+    if (Date.now() - inicio > IMGAPI_ESCANEO_MS_) { terminado = false; break; }
+    var archivo = it.next();
+    if (archivo.getName().slice(-5).toLowerCase() !== '.json') continue;
+    var texto = archivo.getBlob().getDataAsString('UTF-8');
+    var m;
+    IMGAPI_REGEX_URL_.lastIndex = 0;
+    while ((m = IMGAPI_REGEX_URL_.exec(texto)) !== null) conocidas[m[0]] = true;
+    IMGAPI_REGEX_INSIGNIA_.lastIndex = 0;
+    while ((m = IMGAPI_REGEX_INSIGNIA_.exec(texto)) !== null) {
+      tiposConocidos[m[2]] = m[1].indexOf(IMGAPI_PREFIJO_MAESTRIA_) === 0 ? 'M' : 'I';
+    }
+    escaneados++;
+    hechosEstaVez++;
+  }
+
+  var lista = Object.keys(conocidas).sort();
+  archivoUrls.setContent(lista.join('\n') + '\n');
+  var nuevas = lista.length - antes;
+
+  var archivosConTipo = Object.keys(tiposConocidos).sort();
+  archivoTipos.setContent(archivosConTipo.map(function(a) { return tiposConocidos[a] + '\t' + a; }).join('\n') + '\n');
+  var nMaestrias = archivosConTipo.filter(function(a) { return tiposConocidos[a] === 'M'; }).length;
+
+  if (terminado) props.deleteProperty(IMGAPI_PROP_ESCANEO_);
+  else props.setProperty(IMGAPI_PROP_ESCANEO_, JSON.stringify({ token: it.getContinuationToken(), escaneados: escaneados }));
+
+  var texto2 = (terminado ? 'TERMINADO. ' : 'Falta recorrer más archivos: vuelve a correr la función. ') +
+               'Esta vez se leyeron ' + hechosEstaVez + ' JSON (' + escaneados + ' en total) y se sumaron ' + nuevas +
+               ' direcciones nuevas; ' + lista.length + ' en ' + IMGAPI_ARCHIVO_URLS_ + '. Tipos de insignia anotados: ' +
+               archivosConTipo.length + ' (' + nMaestrias + ' maestrías y ' + (archivosConTipo.length - nMaestrias) +
+               ' insignias; ' + (archivosConTipo.length - antesTipos) + ' nuevos) en ' + IMGAPI_ARCHIVO_TIPOS_ + '.';
+  console.log(texto2);
+  return texto2;
+}
+
+// ----- Descarga de imágenes de la API a GitHub (repo Web): probar, cartas, insignias y las dos categorías -----
 
 function imagenesApiProbar() {
   return _imgApiEjecutar_(['cartas', 'insignias'], true);
@@ -137,6 +260,8 @@ function imagenesApiAGithub() {
   return _imgApiEjecutar_(['cartas', 'insignias'], false);
 }
 
+// ----- Carpetas API junto a Fankit -----
+
 /** Crea API/LEEME.txt junto a cada carpeta Fankit que no tenga su carpeta API al lado. */
 function carpetasApiJuntoAFankit() {
   var ctx = _imgApiContexto_();
@@ -152,6 +277,8 @@ function carpetasApiJuntoAFankit() {
   console.log('Falta hacer pull de Web en GitHub Desktop.');
   return texto;
 }
+
+// ----- Lista de direcciones no disponibles en el CDN (HTTP 404): vaciarla para reintentar -----
 
 /**
  * Vacía la lista de direcciones no disponibles (manda a la papelera de Drive el archivo
@@ -169,9 +296,11 @@ function imagenesApiReintentarNoDisponibles() {
   return texto;
 }
 
-// -----------------------------------------------------------------------------
-// Flujo principal
-// -----------------------------------------------------------------------------
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Descarga de imágenes: flujo principal -----
 
 function _imgApiEjecutar_(grupos, soloProbar) {
   var inicio = Date.now();
@@ -301,205 +430,7 @@ function _imgApiEjecutar_(grupos, soloProbar) {
   return texto;
 }
 
-// -----------------------------------------------------------------------------
-// Lista de direcciones no disponibles en el CDN (HTTP 404)
-// -----------------------------------------------------------------------------
-
-/** Lee Imagenes_API_No_Disponibles.txt (si hay varios, el más reciente). No lo crea. Devuelve { archivo: File|null, mapa: {url: true} }. */
-function _imgApiLeerNoDisponibles_() {
-  var it = DriveApp.getFilesByName(IMGAPI_ARCHIVO_404_);
-  var archivos = [];
-  while (it.hasNext()) archivos.push(it.next());
-  var mapa = {};
-  if (!archivos.length) return { archivo: null, mapa: mapa };
-  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
-  archivos[0].getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) { l = l.trim(); if (l) mapa[l] = true; });
-  return { archivo: archivos[0], mapa: mapa };
-}
-
-/** Suma las direcciones nuevas a la lista (ordenada, una por línea) y la guarda; crea el archivo si no existía. Solo agrega. */
-function _imgApiGuardarNoDisponibles_(actual, nuevas) {
-  var mapa = actual.mapa;
-  nuevas.forEach(function(u) { mapa[u] = true; });
-  var texto = Object.keys(mapa).sort().join('\n') + '\n';
-  if (actual.archivo) actual.archivo.setContent(texto);
-  else actual.archivo = DriveApp.createFile(IMGAPI_ARCHIVO_404_, texto, 'text/plain');
-}
-
-// -----------------------------------------------------------------------------
-// Escaneo de los JSON de players (reanudable)
-// -----------------------------------------------------------------------------
-
-/** Archivo acumulador en Drive (raíz); lo crea vacío si no existe. Si hay varios con el mismo nombre usa el más reciente. */
-function _imgApiArchivoUrls_() {
-  var it = DriveApp.getFilesByName(IMGAPI_ARCHIVO_URLS_);
-  var archivos = [];
-  while (it.hasNext()) archivos.push(it.next());
-  if (!archivos.length) return DriveApp.createFile(IMGAPI_ARCHIVO_URLS_, '', 'text/plain');
-  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
-  return archivos[0];
-}
-
-/**
- * Recorre la carpeta «players» (los .json de jugadores) y suma al archivo Imagenes_API_Urls.txt
- * todas las direcciones de imágenes de la API que encuentre (se leen con una expresión regular,
- * sin interpretar el JSON). Solo lee Drive; no toca GitHub. Se corta a los 4 minutos y guarda el
- * punto de avance: se vuelve a correr hasta que el registro diga «TERMINADO».
- */
-function imagenesApiEscanearJsonPlayers() {
-  var inicio = Date.now();
-  var props = PropertiesService.getScriptProperties();
-  var estado = {};
-  try { estado = JSON.parse(props.getProperty(IMGAPI_PROP_ESCANEO_) || '{}'); } catch (e) { estado = {}; }
-  var escaneados = estado.escaneados || 0;
-
-  var archivoUrls = _imgApiArchivoUrls_();
-  var conocidas = {};
-  archivoUrls.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) { l = l.trim(); if (l) conocidas[l] = true; });
-  var antes = Object.keys(conocidas).length;
-
-  // Tipo de cada insignia (M = maestría, I = insignia), por nombre de archivo.
-  var archivoTipos = _imgApiArchivoTipos_();
-  var tiposConocidos = {};
-  archivoTipos.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) {
-    var partes = l.trim().split('\t');
-    if (partes.length === 2 && (partes[0] === 'M' || partes[0] === 'I')) tiposConocidos[partes[1]] = partes[0];
-  });
-  var antesTipos = Object.keys(tiposConocidos).length;
-
-  var it;
-  if (estado.token) {
-    try { it = DriveApp.continueFileIterator(estado.token); }
-    catch (e) { console.log('No se pudo retomar el avance guardado (' + e + '); se empieza de nuevo.'); estado = {}; escaneados = 0; }
-  }
-  if (!it) it = DriveApp.getFolderById(CARPETA_PLAYERS_ID_).getFiles();
-
-  var terminado = true;
-  var hechosEstaVez = 0;
-  while (it.hasNext()) {
-    if (Date.now() - inicio > IMGAPI_ESCANEO_MS_) { terminado = false; break; }
-    var archivo = it.next();
-    if (archivo.getName().slice(-5).toLowerCase() !== '.json') continue;
-    var texto = archivo.getBlob().getDataAsString('UTF-8');
-    var m;
-    IMGAPI_REGEX_URL_.lastIndex = 0;
-    while ((m = IMGAPI_REGEX_URL_.exec(texto)) !== null) conocidas[m[0]] = true;
-    IMGAPI_REGEX_INSIGNIA_.lastIndex = 0;
-    while ((m = IMGAPI_REGEX_INSIGNIA_.exec(texto)) !== null) {
-      tiposConocidos[m[2]] = m[1].indexOf(IMGAPI_PREFIJO_MAESTRIA_) === 0 ? 'M' : 'I';
-    }
-    escaneados++;
-    hechosEstaVez++;
-  }
-
-  var lista = Object.keys(conocidas).sort();
-  archivoUrls.setContent(lista.join('\n') + '\n');
-  var nuevas = lista.length - antes;
-
-  var archivosConTipo = Object.keys(tiposConocidos).sort();
-  archivoTipos.setContent(archivosConTipo.map(function(a) { return tiposConocidos[a] + '\t' + a; }).join('\n') + '\n');
-  var nMaestrias = archivosConTipo.filter(function(a) { return tiposConocidos[a] === 'M'; }).length;
-
-  if (terminado) props.deleteProperty(IMGAPI_PROP_ESCANEO_);
-  else props.setProperty(IMGAPI_PROP_ESCANEO_, JSON.stringify({ token: it.getContinuationToken(), escaneados: escaneados }));
-
-  var texto2 = (terminado ? 'TERMINADO. ' : 'Falta recorrer más archivos: vuelve a correr la función. ') +
-               'Esta vez se leyeron ' + hechosEstaVez + ' JSON (' + escaneados + ' en total) y se sumaron ' + nuevas +
-               ' direcciones nuevas; ' + lista.length + ' en ' + IMGAPI_ARCHIVO_URLS_ + '. Tipos de insignia anotados: ' +
-               archivosConTipo.length + ' (' + nMaestrias + ' maestrías y ' + (archivosConTipo.length - nMaestrias) +
-               ' insignias; ' + (archivosConTipo.length - antesTipos) + ' nuevos) en ' + IMGAPI_ARCHIVO_TIPOS_ + '.';
-  console.log(texto2);
-  return texto2;
-}
-
-/** Olvida el avance del escaneo para volver a empezar desde el primer archivo. No borra Imagenes_API_Urls.txt. */
-function imagenesApiReiniciarEscaneoJson() {
-  PropertiesService.getScriptProperties().deleteProperty(IMGAPI_PROP_ESCANEO_);
-  console.log('Avance del escaneo borrado.');
-}
-
-// -----------------------------------------------------------------------------
-// Tipo de las insignias de jugador: maestría o insignia (20-oct-2026)
-// -----------------------------------------------------------------------------
-
-/** El archivo de Drive con ese nombre (si hay varios, el más reciente), o null si no existe. No lo crea. */
-function _imgApiArchivoMasReciente_(nombre) {
-  var it = DriveApp.getFilesByName(nombre);
-  var archivos = [];
-  while (it.hasNext()) archivos.push(it.next());
-  if (!archivos.length) return null;
-  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
-  return archivos[0];
-}
-
-/** Archivo de tipos de insignia en Drive (raíz); lo crea vacío si no existe. */
-function _imgApiArchivoTipos_() {
-  return _imgApiArchivoMasReciente_(IMGAPI_ARCHIVO_TIPOS_) || DriveApp.createFile(IMGAPI_ARCHIVO_TIPOS_, '', 'text/plain');
-}
-
-/** Ruta destino de una insignia de jugador según su tipo. */
-function _imgApiDestinoInsignia_(esMaestria, archivo) {
-  return (esMaestria ? IMGAPI_DESTINO_MAESTRIAS_ : IMGAPI_DESTINO_INSIGNIAS_) + archivo;
-}
-
-function _imgApiNormalizarCabecera_(texto) {
-  return String(texto || '').replace(/^\uFEFF/, '').trim().toLowerCase();
-}
-
-/**
- * Devuelve { archivo: true|false } para las insignias de jugador: true si es maestría (el nombre
- * empieza con Mastery), false si es una insignia común. Fuentes: la columna Name de
- * Backup_Insignias.csv (y su segunda parte) junto a la columna Ícono, y el archivo
- * Imagenes_API_Insignias_Tipos.txt que llena el escaneo de los JSON de players. Si las dos fuentes
- * dicen cosas distintas para el mismo archivo, manda el CSV y se avisa en el registro.
- */
-function _imgApiTiposInsignias_() {
-  var tipos = {};
-  var deCsv = 0, deJson = 0, conflictos = 0;
-  var reArchivo = /playerbadges\/\d+\/([A-Za-z0-9_-]+\.(?:png|webp|jpg))/;
-
-  IMGAPI_CSV_INSIGNIAS_.forEach(function(nombre) {
-    var archivo = _imgApiArchivoMasReciente_(nombre);
-    if (!archivo) return;
-    var filas = Utilities.parseCsv(archivo.getBlob().getDataAsString('UTF-8'));
-    if (!filas.length) return;
-    var cab = filas[0].map(_imgApiNormalizarCabecera_);
-    var iNombre = cab.indexOf('name');
-    var iIcono = cab.indexOf('ícono');
-    if (iIcono === -1) iIcono = cab.indexOf('icono');
-    if (iNombre === -1 || iIcono === -1) {
-      console.log('  · ' + nombre + ': no tiene las columnas Name e Ícono; no sirve para saber el tipo de las insignias.');
-      return;
-    }
-    for (var i = 1; i < filas.length; i++) {
-      var m = reArchivo.exec(String(filas[i][iIcono] || ''));
-      if (!m) continue;
-      var esMaestria = String(filas[i][iNombre] || '').trim().indexOf(IMGAPI_PREFIJO_MAESTRIA_) === 0;
-      if (tipos[m[1]] === undefined) { tipos[m[1]] = esMaestria; deCsv++; }
-      else if (tipos[m[1]] !== esMaestria) conflictos++;
-    }
-  });
-
-  var archivoTipos = _imgApiArchivoMasReciente_(IMGAPI_ARCHIVO_TIPOS_);
-  if (archivoTipos) {
-    archivoTipos.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(linea) {
-      var partes = linea.trim().split('\t');
-      if (partes.length !== 2 || (partes[0] !== 'M' && partes[0] !== 'I')) return;
-      var esMaestria = partes[0] === 'M';
-      if (tipos[partes[1]] === undefined) { tipos[partes[1]] = esMaestria; deJson++; }
-      else if (tipos[partes[1]] !== esMaestria) conflictos++;
-    });
-  }
-
-  console.log('  · Tipo de insignias: ' + deCsv + ' desde Backup_Insignias.csv y ' + deJson + ' más desde ' + IMGAPI_ARCHIVO_TIPOS_ +
-              (archivoTipos ? '' : ' (no existe todavía; se crea al correr imagenesApiEscanearJsonPlayers())') + '.');
-  if (conflictos) console.log('  · Aviso: ' + conflictos + ' insignias con tipo distinto entre el CSV y los JSON; se usó el del CSV.');
-  return tipos;
-}
-
-// -----------------------------------------------------------------------------
-// Lectura de los CSV de Drive
-// -----------------------------------------------------------------------------
+// ----- Descarga de imágenes: direcciones desde los CSV de Drive y tipo de las insignias de jugador (maestría o insignia, 20-oct-2026) -----
 
 /** Busca cada CSV por nombre (si hay varios, usa el más reciente) y junta las direcciones únicas. */
 function _imgApiRecolectarUrls_(nombresCsv) {
@@ -561,27 +492,173 @@ function _imgApiRecolectarUrls_(nombresCsv) {
   return lista;
 }
 
-// -----------------------------------------------------------------------------
-// Recorte del margen transparente de las insignias (22-oct-2026, pedido de la usuaria)
-// [→ Contexto_Base_Web.md §PF162]
-//
-// Las copias locales de badges/API/ se suben SIN el margen transparente que traen los PNG de
-// Supercell (512x512 con el dibujo en ~58 % del ancho), igual que las 1 079 que ya se recortaron
-// a mano (PF161). Apps Script no trae librería de imágenes, así que aquí hay un lector y escritor
-// de PNG en JavaScript puro:
-//   - Solo PNG RGBA de 8 bits, sin entrelazado (el formato de todas las insignias vistas). Otro
-//     formato NO se sube y queda como fallo que se reintenta; un archivo que ni siquiera es PNG
-//     se sube tal cual y se avisa en el registro.
-//   - Criterio: rectángulo mínimo con los píxeles de alfa >= 8 (el mismo de PF161). No se reescala
-//     ni se cambia ningún píxel; solo se corta. Si no hay nada que cortar, el archivo no se toca.
-//   - Descomprime con un inflate propio (se evita Utilities.ungzip porque, por lo que se sabe,
-//     valida el CRC del resultado, que aquí no se conoce; no se probó en Apps Script) y comprime
-//     con Utilities.gzip, cuyo deflate se envuelve como zlib. Si ese
-//     deflate no se puede descomprimir de vuelta igual, se usa compresión «almacenada» (sin
-//     comprimir pero válida).
-// -----------------------------------------------------------------------------
+/**
+ * Devuelve { archivo: true|false } para las insignias de jugador: true si es maestría (el nombre
+ * empieza con Mastery), false si es una insignia común. Fuentes: la columna Name de
+ * Backup_Insignias.csv (y su segunda parte) junto a la columna Ícono, y el archivo
+ * Imagenes_API_Insignias_Tipos.txt que llena el escaneo de los JSON de players. Si las dos fuentes
+ * dicen cosas distintas para el mismo archivo, manda el CSV y se avisa en el registro.
+ */
+function _imgApiTiposInsignias_() {
+  var tipos = {};
+  var deCsv = 0, deJson = 0, conflictos = 0;
+  var reArchivo = /playerbadges\/\d+\/([A-Za-z0-9_-]+\.(?:png|webp|jpg))/;
 
-var IMGAPI_ALFA_MIN_ = 8;
+  IMGAPI_CSV_INSIGNIAS_.forEach(function(nombre) {
+    var archivo = _imgApiArchivoMasReciente_(nombre);
+    if (!archivo) return;
+    var filas = Utilities.parseCsv(archivo.getBlob().getDataAsString('UTF-8'));
+    if (!filas.length) return;
+    var cab = filas[0].map(_imgApiNormalizarCabecera_);
+    var iNombre = cab.indexOf('name');
+    var iIcono = cab.indexOf('ícono');
+    if (iIcono === -1) iIcono = cab.indexOf('icono');
+    if (iNombre === -1 || iIcono === -1) {
+      console.log('  · ' + nombre + ': no tiene las columnas Name e Ícono; no sirve para saber el tipo de las insignias.');
+      return;
+    }
+    for (var i = 1; i < filas.length; i++) {
+      var m = reArchivo.exec(String(filas[i][iIcono] || ''));
+      if (!m) continue;
+      var esMaestria = String(filas[i][iNombre] || '').trim().indexOf(IMGAPI_PREFIJO_MAESTRIA_) === 0;
+      if (tipos[m[1]] === undefined) { tipos[m[1]] = esMaestria; deCsv++; }
+      else if (tipos[m[1]] !== esMaestria) conflictos++;
+    }
+  });
+
+  var archivoTipos = _imgApiArchivoMasReciente_(IMGAPI_ARCHIVO_TIPOS_);
+  if (archivoTipos) {
+    archivoTipos.getBlob().getDataAsString('UTF-8').split('\n').forEach(function(linea) {
+      var partes = linea.trim().split('\t');
+      if (partes.length !== 2 || (partes[0] !== 'M' && partes[0] !== 'I')) return;
+      var esMaestria = partes[0] === 'M';
+      if (tipos[partes[1]] === undefined) { tipos[partes[1]] = esMaestria; deJson++; }
+      else if (tipos[partes[1]] !== esMaestria) conflictos++;
+    });
+  }
+
+  console.log('  · Tipo de insignias: ' + deCsv + ' desde Backup_Insignias.csv y ' + deJson + ' más desde ' + IMGAPI_ARCHIVO_TIPOS_ +
+              (archivoTipos ? '' : ' (no existe todavía; se crea al correr imagenesApiEscanearJsonPlayers())') + '.');
+  if (conflictos) console.log('  · Aviso: ' + conflictos + ' insignias con tipo distinto entre el CSV y los JSON; se usó el del CSV.');
+  return tipos;
+}
+
+/** El archivo de Drive con ese nombre (si hay varios, el más reciente), o null si no existe. No lo crea. */
+function _imgApiArchivoMasReciente_(nombre) {
+  var it = DriveApp.getFilesByName(nombre);
+  var archivos = [];
+  while (it.hasNext()) archivos.push(it.next());
+  if (!archivos.length) return null;
+  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
+  return archivos[0];
+}
+
+function _imgApiNormalizarCabecera_(texto) {
+  return String(texto || '').replace(/^\uFEFF/, '').trim().toLowerCase();
+}
+
+/** Ruta destino de una insignia de jugador según su tipo. */
+function _imgApiDestinoInsignia_(esMaestria, archivo) {
+  return (esMaestria ? IMGAPI_DESTINO_MAESTRIAS_ : IMGAPI_DESTINO_INSIGNIAS_) + archivo;
+}
+
+// ----- Lista de direcciones no disponibles en el CDN (HTTP 404): lectura y escritura -----
+
+/** Lee Imagenes_API_No_Disponibles.txt (si hay varios, el más reciente). No lo crea. Devuelve { archivo: File|null, mapa: {url: true} }. */
+function _imgApiLeerNoDisponibles_() {
+  var it = DriveApp.getFilesByName(IMGAPI_ARCHIVO_404_);
+  var archivos = [];
+  while (it.hasNext()) archivos.push(it.next());
+  var mapa = {};
+  if (!archivos.length) return { archivo: null, mapa: mapa };
+  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
+  archivos[0].getBlob().getDataAsString('UTF-8').split('\n').forEach(function(l) { l = l.trim(); if (l) mapa[l] = true; });
+  return { archivo: archivos[0], mapa: mapa };
+}
+
+/** Suma las direcciones nuevas a la lista (ordenada, una por línea) y la guarda; crea el archivo si no existía. Solo agrega. */
+function _imgApiGuardarNoDisponibles_(actual, nuevas) {
+  var mapa = actual.mapa;
+  nuevas.forEach(function(u) { mapa[u] = true; });
+  var texto = Object.keys(mapa).sort().join('\n') + '\n';
+  if (actual.archivo) actual.archivo.setContent(texto);
+  else actual.archivo = DriveApp.createFile(IMGAPI_ARCHIVO_404_, texto, 'text/plain');
+}
+
+// ----- Recorte del margen transparente de las insignias (22-oct-2026; la explicación y las constantes están arriba, con las variables globales) -----
+
+/**
+ * Recorta el margen transparente de un PNG RGBA de 8 bits.
+ * bytes: contenido con signo, tal como lo da UrlFetchApp. Devuelve:
+ *   { ok: true,  bytes: <con signo>, recortado: true|false, ancho, alto, anchoOrig, altoOrig, modo }
+ *   { ok: false, esPng: true|false, motivo: '...' }
+ * Sin recortar (recortado:false) devuelve los mismos bytes: ya no tenía margen.
+ */
+function _imgApiRecortarPng_(bytes) {
+  var src;
+  try { src = _imgApiAU8_(bytes); } catch (e0) { return { ok: false, esPng: false, motivo: 'no se pudo leer el contenido' }; }
+  var firma = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+  if (src.length < 33) return { ok: false, esPng: false, motivo: 'archivo demasiado corto' };
+  for (var f = 0; f < 8; f++) if (src[f] !== firma[f]) return { ok: false, esPng: false, motivo: 'no tiene la firma de un PNG' };
+  try {
+    var p = 8, ancho = 0, alto = 0, idats = [], totalIdat = 0, visto = false;
+    while (p + 12 <= src.length) {
+      var n = _imgApiLeeU32_(src, p);
+      var tipo = String.fromCharCode(src[p + 4], src[p + 5], src[p + 6], src[p + 7]);
+      if (p + 12 + n > src.length) return { ok: false, esPng: true, motivo: 'PNG truncado' };
+      if (tipo === 'IHDR') {
+        if (n !== 13) return { ok: false, esPng: true, motivo: 'IHDR inválido' };
+        ancho = _imgApiLeeU32_(src, p + 8); alto = _imgApiLeeU32_(src, p + 12);
+        var prof = src[p + 16], color = src[p + 17], compr = src[p + 18], filtro = src[p + 19], entrel = src[p + 20];
+        if (prof !== 8 || color !== 6 || compr !== 0 || filtro !== 0 || entrel !== 0) {
+          return { ok: false, esPng: true, motivo: 'no es PNG RGBA de 8 bits sin entrelazado (profundidad ' + prof + ', color ' + color + ', entrelazado ' + entrel + ')' };
+        }
+        visto = true;
+      } else if (tipo === 'IDAT') {
+        idats.push(src.subarray(p + 8, p + 8 + n)); totalIdat += n;
+      } else if (tipo === 'IEND') {
+        break;
+      }
+      p += 12 + n;
+    }
+    if (!visto || !idats.length) return { ok: false, esPng: true, motivo: 'faltan IHDR o IDAT' };
+    if (ancho < 1 || alto < 1 || ancho > 4096 || alto > 4096) return { ok: false, esPng: true, motivo: 'tamaño fuera de lo esperado (' + ancho + 'x' + alto + ')' };
+
+    var comp = new Uint8Array(totalIdat), q = 0;
+    idats.forEach(function(t) { comp.set(t, q); q += t.length; });
+    if ((comp[0] & 15) !== 8 || ((comp[0] << 8) | comp[1]) % 31 !== 0 || (comp[1] & 32)) return { ok: false, esPng: true, motivo: 'cabecera zlib inválida' };
+
+    var crudo = _imgApiInflate_(comp, 2, alto * (ancho * 4 + 1));
+
+    var pix = _imgApiQuitarFiltros_(crudo, ancho, alto);
+    if (!pix) return { ok: false, esPng: true, motivo: 'filtro de fila inválido' };
+
+    var rect = _imgApiRectanguloVisible_(pix, ancho, alto);
+    var x0 = rect[0], y0 = rect[1], x1 = rect[2], y1 = rect[3];
+    if (x1 < 0) return { ok: false, esPng: true, motivo: 'no tiene ningún píxel visible (alfa >= ' + IMGAPI_ALFA_MIN_ + ')' };
+    if (x0 === 0 && y0 === 0 && x1 === ancho - 1 && y1 === alto - 1) {
+      return { ok: true, bytes: bytes, recortado: false, ancho: ancho, alto: alto, anchoOrig: ancho, altoOrig: alto, modo: 'sin cambios' };
+    }
+
+    var w2 = x1 - x0 + 1, h2 = y1 - y0 + 1;
+    var salida = _imgApiFiltrarRecorte_(pix, ancho, x0, y0, w2, h2);
+
+    var z = _imgApiZlib_(salida);
+    var ihdr = new Uint8Array(13);
+    ihdr[0] = (w2 >>> 24) & 255; ihdr[1] = (w2 >>> 16) & 255; ihdr[2] = (w2 >>> 8) & 255; ihdr[3] = w2 & 255;
+    ihdr[4] = (h2 >>> 24) & 255; ihdr[5] = (h2 >>> 16) & 255; ihdr[6] = (h2 >>> 8) & 255; ihdr[7] = h2 & 255;
+    ihdr[8] = 8; ihdr[9] = 6; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
+    var png = new Uint8Array(8 + (12 + 13) + (12 + z.zlib.length) + 12);
+    png.set(firma, 0);
+    var pos = 8;
+    pos = _imgApiTrozoPng_(png, pos, 'IHDR', ihdr);
+    pos = _imgApiTrozoPng_(png, pos, 'IDAT', z.zlib);
+    _imgApiTrozoPng_(png, pos, 'IEND', new Uint8Array(0));
+    return { ok: true, bytes: _imgApiAConSigno_(png), recortado: true, ancho: w2, alto: h2, anchoOrig: ancho, altoOrig: alto, modo: z.modo };
+  } catch (e) {
+    return { ok: false, esPng: true, motivo: 'error al recortar: ' + e };
+  }
+}
 
 /** Bytes con signo de Apps Script (-128..127) a Uint8Array. */
 function _imgApiAU8_(bytes) {
@@ -590,54 +667,7 @@ function _imgApiAU8_(bytes) {
   return u;
 }
 
-/** Uint8Array a bytes con signo, que es lo que esperan Utilities.base64Encode y newBlob. */
-function _imgApiAConSigno_(u8) {
-  var n = u8.length, a = new Array(n);
-  for (var i = 0; i < n; i++) { var v = u8[i]; a[i] = v > 127 ? v - 256 : v; }
-  return a;
-}
-
-var _IMGAPI_TABLA_CRC_ = null;
-function _imgApiCrc32_(u8, ini, fin) {
-  if (!_IMGAPI_TABLA_CRC_) {
-    _IMGAPI_TABLA_CRC_ = new Uint32Array(256);
-    for (var n = 0; n < 256; n++) {
-      var c = n;
-      for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-      _IMGAPI_TABLA_CRC_[n] = c >>> 0;
-    }
-  }
-  var crc = 0xFFFFFFFF;
-  for (var i = ini; i < fin; i++) crc = _IMGAPI_TABLA_CRC_[(crc ^ u8[i]) & 255] ^ (crc >>> 8);
-  return (crc ^ 0xFFFFFFFF) >>> 0;
-}
-
-function _imgApiAdler32_(u8) {
-  var a = 1, b = 0, n = u8.length, i = 0;
-  while (i < n) {
-    var tope = Math.min(i + 3800, n);
-    for (; i < tope; i++) { a += u8[i]; b += a; }
-    a %= 65521; b %= 65521;
-  }
-  return ((b << 16) | a) >>> 0;
-}
-
-var _IMGAPI_LONG_BASE_ = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
-var _IMGAPI_LONG_EXTRA_ = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
-var _IMGAPI_DIST_BASE_ = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
-var _IMGAPI_DIST_EXTRA_ = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
-var _IMGAPI_ORDEN_CL_ = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
-
-/** Tabla de Huffman canónica a partir de las longitudes de código (algoritmo de puff.c). */
-function _imgApiHuffman_(longitudes, n) {
-  var cuenta = new Array(16), simbolo = new Array(n), desp = new Array(16), i;
-  for (i = 0; i < 16; i++) cuenta[i] = 0;
-  for (i = 0; i < n; i++) cuenta[longitudes[i]]++;
-  desp[1] = 0;
-  for (i = 1; i < 15; i++) desp[i + 1] = desp[i] + cuenta[i];
-  for (i = 0; i < n; i++) if (longitudes[i] !== 0) simbolo[desp[longitudes[i]]++] = i;
-  return { cuenta: cuenta, simbolo: simbolo };
-}
+function _imgApiLeeU32_(u8, p) { return ((u8[p] << 24) | (u8[p + 1] << 16) | (u8[p + 2] << 8) | u8[p + 3]) >>> 0; }
 
 /**
  * Inflate (deflate crudo, RFC 1951) de src desde pos. Devuelve un Uint8Array de exactamente
@@ -742,64 +772,15 @@ function _imgApiInflate_(src, pos, tam) {
   return out;
 }
 
-/** Deflate crudo «almacenado» (sin comprimir, pero válido). */
-function _imgApiDeflateAlmacenado_(datos) {
-  var n = datos.length, bloques = Math.max(1, Math.ceil(n / 65535));
-  var out = new Uint8Array(n + bloques * 5), op = 0;
-  for (var b = 0; b < bloques; b++) {
-    var ini = b * 65535, len = Math.min(65535, n - ini);
-    out[op++] = (b === bloques - 1) ? 1 : 0;
-    out[op++] = len & 255; out[op++] = len >>> 8;
-    out[op++] = (~len) & 255; out[op++] = ((~len) >>> 8) & 255;
-    for (var i = 0; i < len; i++) out[op++] = datos[ini + i];
-  }
-  return out;
-}
-
-/**
- * Comprime datos como flujo zlib. Usa Utilities.gzip y le quita la cabecera y el cierre de gzip
- * (RFC 1952). Se comprueba descomprimiéndolo de vuelta con el inflate propio; si no coincide
- * (o algo falla), cae a la compresión almacenada. Devuelve { zlib: Uint8Array, modo: 'deflate'|'almacenado' }.
- */
-function _imgApiZlib_(datos) {
-  var crudo = null;
-  try {
-    var gz = _imgApiAU8_(Utilities.gzip(Utilities.newBlob(_imgApiAConSigno_(datos), 'application/octet-stream', 'x')).getBytes());
-    if (gz.length > 18 && gz[0] === 0x1f && gz[1] === 0x8b && gz[2] === 8) {
-      var flg = gz[3], p = 10;
-      if (flg & 4) p += 2 + (gz[p] | (gz[p + 1] << 8));
-      if (flg & 8) { while (gz[p] !== 0) p++; p++; }
-      if (flg & 16) { while (gz[p] !== 0) p++; p++; }
-      if (flg & 2) p += 2;
-      var candidato = gz.subarray(p, gz.length - 8);
-      var vuelta = _imgApiInflate_(candidato, 0, datos.length);
-      var igual = true;
-      for (var i = 0; i < datos.length; i++) { if (vuelta[i] !== datos[i]) { igual = false; break; } }
-      if (igual) crudo = candidato;
-    }
-  } catch (e) { crudo = null; }
-  var modo = 'deflate';
-  if (!crudo) { crudo = _imgApiDeflateAlmacenado_(datos); modo = 'almacenado'; }
-  var z = new Uint8Array(crudo.length + 6);
-  z[0] = 0x78; z[1] = 0x9c;
-  z.set(crudo, 2);
-  var ad = _imgApiAdler32_(datos), f = crudo.length + 2;
-  z[f] = (ad >>> 24) & 255; z[f + 1] = (ad >>> 16) & 255; z[f + 2] = (ad >>> 8) & 255; z[f + 3] = ad & 255;
-  return { zlib: z, modo: modo };
-}
-
-function _imgApiLeeU32_(u8, p) { return ((u8[p] << 24) | (u8[p + 1] << 16) | (u8[p + 2] << 8) | u8[p + 3]) >>> 0; }
-
-/** Escribe un trozo PNG (longitud, tipo, datos, CRC) en out desde p; devuelve la posición siguiente. */
-function _imgApiTrozoPng_(out, p, tipo, datos) {
-  var n = datos.length;
-  out[p] = (n >>> 24) & 255; out[p + 1] = (n >>> 16) & 255; out[p + 2] = (n >>> 8) & 255; out[p + 3] = n & 255;
-  for (var i = 0; i < 4; i++) out[p + 4 + i] = tipo.charCodeAt(i);
-  out.set(datos, p + 8);
-  var crc = _imgApiCrc32_(out, p + 4, p + 8 + n);
-  var q = p + 8 + n;
-  out[q] = (crc >>> 24) & 255; out[q + 1] = (crc >>> 16) & 255; out[q + 2] = (crc >>> 8) & 255; out[q + 3] = crc & 255;
-  return q + 4;
+/** Tabla de Huffman canónica a partir de las longitudes de código (algoritmo de puff.c). */
+function _imgApiHuffman_(longitudes, n) {
+  var cuenta = new Array(16), simbolo = new Array(n), desp = new Array(16), i;
+  for (i = 0; i < 16; i++) cuenta[i] = 0;
+  for (i = 0; i < n; i++) cuenta[longitudes[i]]++;
+  desp[1] = 0;
+  for (i = 1; i < 15; i++) desp[i + 1] = desp[i] + cuenta[i];
+  for (i = 0; i < n; i++) if (longitudes[i] !== 0) simbolo[desp[longitudes[i]]++] = i;
+  return { cuenta: cuenta, simbolo: simbolo };
 }
 
 /**
@@ -857,6 +838,27 @@ function _imgApiRectanguloVisible_(pix, ancho, alto) {
   return [x0, y0, x1, y1];
 }
 
+/** Vuelve a filtrar el recorte (x0, y0, w2, h2) de pix; por fila elige el filtro de menor suma de valores absolutos. */
+function _imgApiFiltrarRecorte_(pix, ancho, x0, y0, w2, h2) {
+  var fila = ancho * 4, n = w2 * 4;
+  var salida = new Uint8Array(h2 * (n + 1));
+  var cand = [new Uint8Array(n), new Uint8Array(n), new Uint8Array(n), new Uint8Array(n), new Uint8Array(n)];
+  for (var r = 0; r < h2; r++) {
+    var bo = (y0 + r) * fila + x0 * 4, mejor = 0, mejorSuma = -1;
+    for (var t = 0; t < 5; t++) {
+      var dst = cand[t];
+      _imgApiFiltrarFila_(t, pix, bo, r > 0, fila, n, dst);
+      var suma = 0;
+      for (var k = 0; k < n; k++) { var v = dst[k]; suma += v < 128 ? v : 256 - v; }
+      if (mejorSuma < 0 || suma < mejorSuma) { mejorSuma = suma; mejor = t; }
+    }
+    var so = r * (n + 1);
+    salida[so] = mejor;
+    salida.set(cand[mejor], so + 1);
+  }
+  return salida;
+}
+
 /**
  * Filtra una fila del recorte con el filtro t (0..4) y la deja en dst. La fila empieza en pix[bo]
  * y mide n bytes; la anterior, si hay, empieza en pix[bo - fila] (las filas del recorte son
@@ -889,138 +891,96 @@ function _imgApiFiltrarFila_(t, pix, bo, hayPrevia, fila, n, dst) {
   }
 }
 
-/** Vuelve a filtrar el recorte (x0, y0, w2, h2) de pix; por fila elige el filtro de menor suma de valores absolutos. */
-function _imgApiFiltrarRecorte_(pix, ancho, x0, y0, w2, h2) {
-  var fila = ancho * 4, n = w2 * 4;
-  var salida = new Uint8Array(h2 * (n + 1));
-  var cand = [new Uint8Array(n), new Uint8Array(n), new Uint8Array(n), new Uint8Array(n), new Uint8Array(n)];
-  for (var r = 0; r < h2; r++) {
-    var bo = (y0 + r) * fila + x0 * 4, mejor = 0, mejorSuma = -1;
-    for (var t = 0; t < 5; t++) {
-      var dst = cand[t];
-      _imgApiFiltrarFila_(t, pix, bo, r > 0, fila, n, dst);
-      var suma = 0;
-      for (var k = 0; k < n; k++) { var v = dst[k]; suma += v < 128 ? v : 256 - v; }
-      if (mejorSuma < 0 || suma < mejorSuma) { mejorSuma = suma; mejor = t; }
-    }
-    var so = r * (n + 1);
-    salida[so] = mejor;
-    salida.set(cand[mejor], so + 1);
-  }
-  return salida;
-}
-
 /**
- * Recorta el margen transparente de un PNG RGBA de 8 bits.
- * bytes: contenido con signo, tal como lo da UrlFetchApp. Devuelve:
- *   { ok: true,  bytes: <con signo>, recortado: true|false, ancho, alto, anchoOrig, altoOrig, modo }
- *   { ok: false, esPng: true|false, motivo: '...' }
- * Sin recortar (recortado:false) devuelve los mismos bytes: ya no tenía margen.
+ * Comprime datos como flujo zlib. Usa Utilities.gzip y le quita la cabecera y el cierre de gzip
+ * (RFC 1952). Se comprueba descomprimiéndolo de vuelta con el inflate propio; si no coincide
+ * (o algo falla), cae a la compresión almacenada. Devuelve { zlib: Uint8Array, modo: 'deflate'|'almacenado' }.
  */
-function _imgApiRecortarPng_(bytes) {
-  var src;
-  try { src = _imgApiAU8_(bytes); } catch (e0) { return { ok: false, esPng: false, motivo: 'no se pudo leer el contenido' }; }
-  var firma = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
-  if (src.length < 33) return { ok: false, esPng: false, motivo: 'archivo demasiado corto' };
-  for (var f = 0; f < 8; f++) if (src[f] !== firma[f]) return { ok: false, esPng: false, motivo: 'no tiene la firma de un PNG' };
+function _imgApiZlib_(datos) {
+  var crudo = null;
   try {
-    var p = 8, ancho = 0, alto = 0, idats = [], totalIdat = 0, visto = false;
-    while (p + 12 <= src.length) {
-      var n = _imgApiLeeU32_(src, p);
-      var tipo = String.fromCharCode(src[p + 4], src[p + 5], src[p + 6], src[p + 7]);
-      if (p + 12 + n > src.length) return { ok: false, esPng: true, motivo: 'PNG truncado' };
-      if (tipo === 'IHDR') {
-        if (n !== 13) return { ok: false, esPng: true, motivo: 'IHDR inválido' };
-        ancho = _imgApiLeeU32_(src, p + 8); alto = _imgApiLeeU32_(src, p + 12);
-        var prof = src[p + 16], color = src[p + 17], compr = src[p + 18], filtro = src[p + 19], entrel = src[p + 20];
-        if (prof !== 8 || color !== 6 || compr !== 0 || filtro !== 0 || entrel !== 0) {
-          return { ok: false, esPng: true, motivo: 'no es PNG RGBA de 8 bits sin entrelazado (profundidad ' + prof + ', color ' + color + ', entrelazado ' + entrel + ')' };
-        }
-        visto = true;
-      } else if (tipo === 'IDAT') {
-        idats.push(src.subarray(p + 8, p + 8 + n)); totalIdat += n;
-      } else if (tipo === 'IEND') {
-        break;
-      }
-      p += 12 + n;
+    var gz = _imgApiAU8_(Utilities.gzip(Utilities.newBlob(_imgApiAConSigno_(datos), 'application/octet-stream', 'x')).getBytes());
+    if (gz.length > 18 && gz[0] === 0x1f && gz[1] === 0x8b && gz[2] === 8) {
+      var flg = gz[3], p = 10;
+      if (flg & 4) p += 2 + (gz[p] | (gz[p + 1] << 8));
+      if (flg & 8) { while (gz[p] !== 0) p++; p++; }
+      if (flg & 16) { while (gz[p] !== 0) p++; p++; }
+      if (flg & 2) p += 2;
+      var candidato = gz.subarray(p, gz.length - 8);
+      var vuelta = _imgApiInflate_(candidato, 0, datos.length);
+      var igual = true;
+      for (var i = 0; i < datos.length; i++) { if (vuelta[i] !== datos[i]) { igual = false; break; } }
+      if (igual) crudo = candidato;
     }
-    if (!visto || !idats.length) return { ok: false, esPng: true, motivo: 'faltan IHDR o IDAT' };
-    if (ancho < 1 || alto < 1 || ancho > 4096 || alto > 4096) return { ok: false, esPng: true, motivo: 'tamaño fuera de lo esperado (' + ancho + 'x' + alto + ')' };
+  } catch (e) { crudo = null; }
+  var modo = 'deflate';
+  if (!crudo) { crudo = _imgApiDeflateAlmacenado_(datos); modo = 'almacenado'; }
+  var z = new Uint8Array(crudo.length + 6);
+  z[0] = 0x78; z[1] = 0x9c;
+  z.set(crudo, 2);
+  var ad = _imgApiAdler32_(datos), f = crudo.length + 2;
+  z[f] = (ad >>> 24) & 255; z[f + 1] = (ad >>> 16) & 255; z[f + 2] = (ad >>> 8) & 255; z[f + 3] = ad & 255;
+  return { zlib: z, modo: modo };
+}
 
-    var comp = new Uint8Array(totalIdat), q = 0;
-    idats.forEach(function(t) { comp.set(t, q); q += t.length; });
-    if ((comp[0] & 15) !== 8 || ((comp[0] << 8) | comp[1]) % 31 !== 0 || (comp[1] & 32)) return { ok: false, esPng: true, motivo: 'cabecera zlib inválida' };
+/** Deflate crudo «almacenado» (sin comprimir, pero válido). */
+function _imgApiDeflateAlmacenado_(datos) {
+  var n = datos.length, bloques = Math.max(1, Math.ceil(n / 65535));
+  var out = new Uint8Array(n + bloques * 5), op = 0;
+  for (var b = 0; b < bloques; b++) {
+    var ini = b * 65535, len = Math.min(65535, n - ini);
+    out[op++] = (b === bloques - 1) ? 1 : 0;
+    out[op++] = len & 255; out[op++] = len >>> 8;
+    out[op++] = (~len) & 255; out[op++] = ((~len) >>> 8) & 255;
+    for (var i = 0; i < len; i++) out[op++] = datos[ini + i];
+  }
+  return out;
+}
 
-    var crudo = _imgApiInflate_(comp, 2, alto * (ancho * 4 + 1));
+function _imgApiAdler32_(u8) {
+  var a = 1, b = 0, n = u8.length, i = 0;
+  while (i < n) {
+    var tope = Math.min(i + 3800, n);
+    for (; i < tope; i++) { a += u8[i]; b += a; }
+    a %= 65521; b %= 65521;
+  }
+  return ((b << 16) | a) >>> 0;
+}
 
-    var pix = _imgApiQuitarFiltros_(crudo, ancho, alto);
-    if (!pix) return { ok: false, esPng: true, motivo: 'filtro de fila inválido' };
+/** Escribe un trozo PNG (longitud, tipo, datos, CRC) en out desde p; devuelve la posición siguiente. */
+function _imgApiTrozoPng_(out, p, tipo, datos) {
+  var n = datos.length;
+  out[p] = (n >>> 24) & 255; out[p + 1] = (n >>> 16) & 255; out[p + 2] = (n >>> 8) & 255; out[p + 3] = n & 255;
+  for (var i = 0; i < 4; i++) out[p + 4 + i] = tipo.charCodeAt(i);
+  out.set(datos, p + 8);
+  var crc = _imgApiCrc32_(out, p + 4, p + 8 + n);
+  var q = p + 8 + n;
+  out[q] = (crc >>> 24) & 255; out[q + 1] = (crc >>> 16) & 255; out[q + 2] = (crc >>> 8) & 255; out[q + 3] = crc & 255;
+  return q + 4;
+}
 
-    var rect = _imgApiRectanguloVisible_(pix, ancho, alto);
-    var x0 = rect[0], y0 = rect[1], x1 = rect[2], y1 = rect[3];
-    if (x1 < 0) return { ok: false, esPng: true, motivo: 'no tiene ningún píxel visible (alfa >= ' + IMGAPI_ALFA_MIN_ + ')' };
-    if (x0 === 0 && y0 === 0 && x1 === ancho - 1 && y1 === alto - 1) {
-      return { ok: true, bytes: bytes, recortado: false, ancho: ancho, alto: alto, anchoOrig: ancho, altoOrig: alto, modo: 'sin cambios' };
+function _imgApiCrc32_(u8, ini, fin) {
+  if (!_IMGAPI_TABLA_CRC_) {
+    _IMGAPI_TABLA_CRC_ = new Uint32Array(256);
+    for (var n = 0; n < 256; n++) {
+      var c = n;
+      for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      _IMGAPI_TABLA_CRC_[n] = c >>> 0;
     }
-
-    var w2 = x1 - x0 + 1, h2 = y1 - y0 + 1;
-    var salida = _imgApiFiltrarRecorte_(pix, ancho, x0, y0, w2, h2);
-
-    var z = _imgApiZlib_(salida);
-    var ihdr = new Uint8Array(13);
-    ihdr[0] = (w2 >>> 24) & 255; ihdr[1] = (w2 >>> 16) & 255; ihdr[2] = (w2 >>> 8) & 255; ihdr[3] = w2 & 255;
-    ihdr[4] = (h2 >>> 24) & 255; ihdr[5] = (h2 >>> 16) & 255; ihdr[6] = (h2 >>> 8) & 255; ihdr[7] = h2 & 255;
-    ihdr[8] = 8; ihdr[9] = 6; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
-    var png = new Uint8Array(8 + (12 + 13) + (12 + z.zlib.length) + 12);
-    png.set(firma, 0);
-    var pos = 8;
-    pos = _imgApiTrozoPng_(png, pos, 'IHDR', ihdr);
-    pos = _imgApiTrozoPng_(png, pos, 'IDAT', z.zlib);
-    _imgApiTrozoPng_(png, pos, 'IEND', new Uint8Array(0));
-    return { ok: true, bytes: _imgApiAConSigno_(png), recortado: true, ancho: w2, alto: h2, anchoOrig: ancho, altoOrig: alto, modo: z.modo };
-  } catch (e) {
-    return { ok: false, esPng: true, motivo: 'error al recortar: ' + e };
   }
+  var crc = 0xFFFFFFFF;
+  for (var i = ini; i < fin; i++) crc = _IMGAPI_TABLA_CRC_[(crc ^ u8[i]) & 255] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
 }
 
-// -----------------------------------------------------------------------------
-// GitHub (repo Web): solo agrega archivos
-// -----------------------------------------------------------------------------
-
-function _imgApiToken_() {
-  var p = PropertiesService.getScriptProperties();
-  return p.getProperty('GITHUB_TOKEN_WEB') || p.getProperty('GITHUB_TOKEN') || '';
+/** Uint8Array a bytes con signo, que es lo que esperan Utilities.base64Encode y newBlob. */
+function _imgApiAConSigno_(u8) {
+  var n = u8.length, a = new Array(n);
+  for (var i = 0; i < n; i++) { var v = u8[i]; a[i] = v > 127 ? v - 256 : v; }
+  return a;
 }
 
-function _imgApiReq_(metodo, ruta, payload, accept) {
-  var req = {
-    url: 'https://api.github.com/repos/' + GITHUB_OWNER_ + '/' + IMGAPI_REPO_ + ruta,
-    method: metodo,
-    muteHttpExceptions: true,
-    headers: {
-      Authorization: 'Bearer ' + _imgApiToken_(),
-      Accept: accept || 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28'
-    }
-  };
-  if (payload !== undefined && payload !== null) {
-    req.contentType = 'application/json';
-    req.payload = JSON.stringify(payload);
-  }
-  return req;
-}
-
-function _imgApiJson_(req) {
-  var resp = UrlFetchApp.fetchAll([req])[0];
-  var code = resp.getResponseCode();
-  if (code < 200 || code >= 300) {
-    var msg = resp.getContentText();
-    if (msg.length > 300) msg = msg.substring(0, 300);
-    throw 'GitHub (Web) ' + req.method + ' ' + req.url.replace('https://api.github.com', '') + ' → HTTP ' + code +
-          ': ' + msg + (code === 404 || code === 403 ? ' (¿el token tiene acceso al repo Web con Contents: Read and write?)' : '');
-  }
-  return JSON.parse(resp.getContentText());
-}
+// ----- GitHub (repo Web): contexto, carpetas API y commit (solo agrega archivos) -----
 
 /** Lee la rama y el árbol completo de Web. Devuelve { commitSha, treeSha, rutas: {ruta: true}, carpetas: [...] }. */
 function _imgApiContexto_() {
@@ -1098,4 +1058,58 @@ function _imgApiCommit_(ctx, entradas, mensaje) {
       console.log('La rama de Web cambió mientras se subía; se reintenta una vez sobre lo más reciente.');
     }
   }
+}
+
+// ----- GitHub (repo Web): nivel bajo (token, petición y respuesta JSON) -----
+
+function _imgApiToken_() {
+  var p = PropertiesService.getScriptProperties();
+  return p.getProperty('GITHUB_TOKEN_WEB') || p.getProperty('GITHUB_TOKEN') || '';
+}
+
+function _imgApiReq_(metodo, ruta, payload, accept) {
+  var req = {
+    url: 'https://api.github.com/repos/' + GITHUB_OWNER_ + '/' + IMGAPI_REPO_ + ruta,
+    method: metodo,
+    muteHttpExceptions: true,
+    headers: {
+      Authorization: 'Bearer ' + _imgApiToken_(),
+      Accept: accept || 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    }
+  };
+  if (payload !== undefined && payload !== null) {
+    req.contentType = 'application/json';
+    req.payload = JSON.stringify(payload);
+  }
+  return req;
+}
+
+function _imgApiJson_(req) {
+  var resp = UrlFetchApp.fetchAll([req])[0];
+  var code = resp.getResponseCode();
+  if (code < 200 || code >= 300) {
+    var msg = resp.getContentText();
+    if (msg.length > 300) msg = msg.substring(0, 300);
+    throw 'GitHub (Web) ' + req.method + ' ' + req.url.replace('https://api.github.com', '') + ' → HTTP ' + code +
+          ': ' + msg + (code === 404 || code === 403 ? ' (¿el token tiene acceso al repo Web con Contents: Read and write?)' : '');
+  }
+  return JSON.parse(resp.getContentText());
+}
+
+// ----- Escaneo de los JSON de players: ayudas (las llama imagenesApiEscanearJsonPlayers) -----
+
+/** Archivo acumulador en Drive (raíz); lo crea vacío si no existe. Si hay varios con el mismo nombre usa el más reciente. */
+function _imgApiArchivoUrls_() {
+  var it = DriveApp.getFilesByName(IMGAPI_ARCHIVO_URLS_);
+  var archivos = [];
+  while (it.hasNext()) archivos.push(it.next());
+  if (!archivos.length) return DriveApp.createFile(IMGAPI_ARCHIVO_URLS_, '', 'text/plain');
+  archivos.sort(function(a, b) { return b.getLastUpdated().getTime() - a.getLastUpdated().getTime(); });
+  return archivos[0];
+}
+
+/** Archivo de tipos de insignia en Drive (raíz); lo crea vacío si no existe. */
+function _imgApiArchivoTipos_() {
+  return _imgApiArchivoMasReciente_(IMGAPI_ARCHIVO_TIPOS_) || DriveApp.createFile(IMGAPI_ARCHIVO_TIPOS_, '', 'text/plain');
 }
