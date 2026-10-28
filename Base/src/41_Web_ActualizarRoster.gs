@@ -11,6 +11,17 @@
 // corre los pasos de _webActRosterPasos_() con _ejecutarPorTandas() (continuaciones en WEB_ACTROSTER_HANDLER_CONTINUAR).
 // ==============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: ninguna (la actualización la pide un admin desde la web y la corre un disparador de un solo uso)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Acciones web: iniciar la actualización y consultar su estado
+//    - Ejecución por disparador: arranque con reintentos de turno, tandas de la cadena (_webActualizarRosterContinuar justo después de su principal) y recalentado de la web
+//    - Pasos de la cadena: tipo de actualización, lista de pasos y sus nombres
+//    - Permiso y estado de la solicitud
+//    - Bloqueo, candado y textos para el admin
+//    - Cierre de la solicitud: cachés, estado final y limpieza de la cadena
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var WEB_ACTROSTER_PROP_ESTADO = 'WEB_ACTROSTER_ESTADO';
 var WEB_ACTROSTER_HANDLER = '_webActualizarRosterEjecutar';             // arranque y reintentos de turno
 var WEB_ACTROSTER_HANDLER_CONTINUAR = '_webActualizarRosterContinuar';  // tandas de la cadena (las programa _ejecutarPorTandas)
@@ -39,6 +50,10 @@ var WEB_ACTROSTER_NOMBRES_PASOS = [
   'Nuevos (orden y formato condicional): aplicar → hoja Nuevos ordenada y con su formato condicional',
   'Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)'
 ];
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
 
 // ---------------------------------------------------------------------------
 // Acciones web
@@ -154,54 +169,6 @@ function _webAdminEstadoActualizacion(token) {
 // ---------------------------------------------------------------------------
 // Ejecucion (la dispara el activador de un solo uso)
 // ---------------------------------------------------------------------------
-
-// Pasos de la cadena corta (PF166): los mismos 6 primeros de runGuerraRapido (Clanes, Directorio, Nuevos x3, Guerra) y NADA más: sin Control, Control_2, Pendientes, Mensajes ni Índice. Se arma al llamarla (no al cargar el archivo) para no depender del orden de carga de los .gs. [→ Contexto_Base_Web.md §PF166]
-// §PF181: 'mensajes' solo si se pidió exactamente así; cualquier otro valor (o ninguno) es la cadena corta de roster de siempre.
-function _webActRosterTipo_(valor) {
-  return String(valor || '').trim() === 'mensajes' ? 'mensajes' : 'roster';
-}
-
-function _webActRosterNombresPasos_(tipo) {
-  return _webActRosterTipo_(tipo) === 'mensajes' ? WEB_ACTROSTER_NOMBRES_PASOS_MENSAJES : WEB_ACTROSTER_NOMBRES_PASOS;
-}
-
-// §PF181: pasos de la regeneracion de Pendientes y Mensajes (mismos cuerpos que runPendientesYMensajes() manual y _pendientesYMensajesNucleo_(false)); NO toca Directorio, Nuevos ni Guerra.
-function _webActRosterPasosMensajes_() {
-  return [
-    function () {
-      forzarRosterFrescoAhora();
-      capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'regenerarMensajesWeb paso 0');
-    },
-    function () { updatePendientesSheet(); },
-    function () { runGenerarMensajes(); },
-    function () { _actualizarIndiceTrasPendientes_(); }
-  ];
-}
-
-function _webActRosterPasos_(tipo) {
-  if (_webActRosterTipo_(tipo) === 'mensajes') return _webActRosterPasosMensajes_();
-  return [
-    function () {
-      SUPRIMIR_PLAYERS_TEMPORAL = true; // el Directorio de esta cadena no pide /players (igual que runGuerraRapido)
-      forzarRosterFrescoAhora();
-      capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'actualizarRosterWeb paso 0');
-    },
-    function () { updateDirectorioSheet(); },
-    function () {
-      try { _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado(); }
-      catch (eNuevos1) { Logger.log('[ActRoster] _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado() falló: ' + eNuevos1.message); }
-    },
-    function () {
-      try { _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas(); }
-      catch (eNuevos2) { Logger.log('[ActRoster] _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas() falló: ' + eNuevos2.message); }
-    },
-    function () {
-      try { _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato(); }
-      catch (eNuevos3) { Logger.log('[ActRoster] _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato() falló: ' + eNuevos3.message); }
-    },
-    function () { return updateGuerraSheet(); } // false = incompleta: _ejecutarPorTandas() reintenta el mismo paso en la continuación
-  ];
-}
 
 // Handler del disparador de un solo uso (arranque y reintentos de turno): toma el candado global o, si está ocupado, se reprograma; al tomarlo lanza la cadena. [→ Contexto_Base_Web.md §41B005, PF166]
 function _webActualizarRosterEjecutar() {
@@ -352,7 +319,59 @@ function _webActRosterRecalentarWeb_(inicioEjecucionTs) {
 }
 
 // ---------------------------------------------------------------------------
-// Helpers internos
+// Pasos de la cadena
+// ---------------------------------------------------------------------------
+
+// §PF181: 'mensajes' solo si se pidió exactamente así; cualquier otro valor (o ninguno) es la cadena corta de roster de siempre.
+function _webActRosterTipo_(valor) {
+  return String(valor || '').trim() === 'mensajes' ? 'mensajes' : 'roster';
+}
+
+// Pasos de la cadena corta (PF166): los mismos 6 primeros de runGuerraRapido (Clanes, Directorio, Nuevos x3, Guerra) y NADA más: sin Control, Control_2, Pendientes, Mensajes ni Índice. Se arma al llamarla (no al cargar el archivo) para no depender del orden de carga de los .gs. [→ Contexto_Base_Web.md §PF166]
+function _webActRosterPasos_(tipo) {
+  if (_webActRosterTipo_(tipo) === 'mensajes') return _webActRosterPasosMensajes_();
+  return [
+    function () {
+      SUPRIMIR_PLAYERS_TEMPORAL = true; // el Directorio de esta cadena no pide /players (igual que runGuerraRapido)
+      forzarRosterFrescoAhora();
+      capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'actualizarRosterWeb paso 0');
+    },
+    function () { updateDirectorioSheet(); },
+    function () {
+      try { _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado(); }
+      catch (eNuevos1) { Logger.log('[ActRoster] _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado() falló: ' + eNuevos1.message); }
+    },
+    function () {
+      try { _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas(); }
+      catch (eNuevos2) { Logger.log('[ActRoster] _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas() falló: ' + eNuevos2.message); }
+    },
+    function () {
+      try { _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato(); }
+      catch (eNuevos3) { Logger.log('[ActRoster] _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato() falló: ' + eNuevos3.message); }
+    },
+    function () { return updateGuerraSheet(); } // false = incompleta: _ejecutarPorTandas() reintenta el mismo paso en la continuación
+  ];
+}
+
+// §PF181: pasos de la regeneracion de Pendientes y Mensajes (mismos cuerpos que runPendientesYMensajes() manual y _pendientesYMensajesNucleo_(false)); NO toca Directorio, Nuevos ni Guerra.
+function _webActRosterPasosMensajes_() {
+  return [
+    function () {
+      forzarRosterFrescoAhora();
+      capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'regenerarMensajesWeb paso 0');
+    },
+    function () { updatePendientesSheet(); },
+    function () { runGenerarMensajes(); },
+    function () { _actualizarIndiceTrasPendientes_(); }
+  ];
+}
+
+function _webActRosterNombresPasos_(tipo) {
+  return _webActRosterTipo_(tipo) === 'mensajes' ? WEB_ACTROSTER_NOMBRES_PASOS_MENSAJES : WEB_ACTROSTER_NOMBRES_PASOS;
+}
+
+// ---------------------------------------------------------------------------
+// Permiso y estado de la solicitud
 // ---------------------------------------------------------------------------
 
 /** Sesion valida + Funcion 'Actualizar roster' (releida de la hoja). Devuelve { ok:true, admin } o { ok:false, error }. */
@@ -366,57 +385,6 @@ function _webActRosterExigirFuncion_(token) {
     return { ok: false, error: 'No tienes permiso para actualizar el roster.' };
   }
   return { ok: true, admin: admin };
-}
-
-function _webActRosterLeerEstado_() {
-  try {
-    var raw = PropertiesService.getScriptProperties().getProperty(WEB_ACTROSTER_PROP_ESTADO);
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    Logger.log('[ActRoster] Estado guardado ilegible, se ignora: ' + e.message);
-    return null;
-  }
-}
-
-function _webActRosterGuardarEstado_(est) {
-  PropertiesService.getScriptProperties().setProperty(WEB_ACTROSTER_PROP_ESTADO, JSON.stringify(est));
-}
-
-// §PF180: borra las cachés de 60 s que lee Ingresos recientes (webIngresosRecientes y webRoster) al terminar la cadena en 'ok'. §PF181: con tipo 'mensajes' borra en cambio las de webAdminContenido de las categorías generadas (Mensaje de Guerra, Celular, Etiqueta de miembro). Nunca lanza error.
-function _webActRosterInvalidarCachesWeb_(tipo) {
-  try {
-    var claves = WEB_ACTROSTER_CACHES_A_BORRAR;
-    if (_webActRosterTipo_(tipo) === 'mensajes') {
-      claves = TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS.map(function (c) { return 'web_admin_contenido_v1_' + c; });
-    }
-    CacheService.getScriptCache().removeAll(claves);
-  } catch (e) {
-    Logger.log('[ActRoster] No se pudieron borrar las caches web: ' + e.message);
-  }
-}
-
-/** Cierra la solicitud con un estado final ('ok', 'omitido', 'error'), la guarda y la deja en el registro. */
-function _webActRosterCerrar_(est, estado, mensaje) {
-  est.finTs = Date.now();
-  est.estado = estado;
-  est.mensaje = mensaje;
-  _webActRosterGuardarEstado_(est);
-  Logger.log('[ActRoster] FIN de la solicitud ' + est.id + ' -> ' + estado + (est.inicioTs ? ' (' + Math.round((est.finTs - est.inicioTs) / 1000) + ' s).' : ' (no llegó a ejecutarse).'));
-}
-
-/** Borra el avance y los disparadores de la cadena; con liberarCandado=true libera también el candado global, pero SOLO si es de esta cadena. */
-function _webActRosterLimpiarCadena_(liberarCandado) {
-  var props = PropertiesService.getScriptProperties();
-  props.deleteProperty(WEB_ACTROSTER_ID_TANDAS + '_PASO');
-  props.deleteProperty(WEB_ACTROSTER_ID_TANDAS + '_REINTENTO');
-  try {
-    _borrarTriggersDeContinuacion(WEB_ACTROSTER_HANDLER);
-    _borrarTriggersDeContinuacion(WEB_ACTROSTER_HANDLER_CONTINUAR);
-  } catch (e) { /* sin accion */ }
-  if (liberarCandado) {
-    var info = _webActRosterInfoCandado_();
-    if (info && info.fn === WEB_ACTROSTER_ID_TANDAS) _liberarLockEjecucion();
-  }
 }
 
 // Lee el estado y pasa a 'error' el que quedó trabado ('pendiente' más allá de la espera de turno o 'ejecutando' más allá del máximo de la cadena). [→ Contexto_Base_Web.md §41B007, PF166]
@@ -444,6 +412,24 @@ function _webActRosterEstadoVigente_(ahora) {
   return est;
 }
 
+function _webActRosterLeerEstado_() {
+  try {
+    var raw = PropertiesService.getScriptProperties().getProperty(WEB_ACTROSTER_PROP_ESTADO);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    Logger.log('[ActRoster] Estado guardado ilegible, se ignora: ' + e.message);
+    return null;
+  }
+}
+
+function _webActRosterGuardarEstado_(est) {
+  PropertiesService.getScriptProperties().setProperty(WEB_ACTROSTER_PROP_ESTADO, JSON.stringify(est));
+}
+
+// ---------------------------------------------------------------------------
+// Bloqueo, candado y textos para el admin
+// ---------------------------------------------------------------------------
+
 // Decide si se puede iniciar ahora: devuelve {bloqueado, motivo, esperaSeg}; orden: ventana protegida, otra solicitud propia, tiempo de espera. PF166: que OTRA tarea tenga el candado YA NO bloquea (la solicitud espera su turno). [→ Contexto_Base_Web.md §41B008, PF166]
 function _webActRosterBloqueo_(est, ahora) {
   if (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_(new Date(ahora)).protegida) {
@@ -464,6 +450,19 @@ function _webActRosterBloqueo_(est, ahora) {
     }
   }
   return { bloqueado: false, motivo: '', esperaSeg: 0 };
+}
+
+/** Texto para cuando la cadena no empezó o se cortó por la ventana protegida. */
+function _webActRosterTextoVentana_() {
+  var fmt = function (minUtc) {
+    var m = (((minUtc - 300) % 1440) + 1440) % 1440; // Lima = UTC-5
+    var h = Math.floor(m / 60), mm = m % 60;
+    var h12 = h % 12 === 0 ? 12 : h % 12;
+    return h12 + ':' + (mm < 10 ? '0' + mm : mm) + (h < 12 ? ' a.m.' : ' p.m.');
+  };
+  var ini = CFG.VENTANA_GUERRA_INI_UTC_MIN - (CFG.VENTANA_GUERRA_PRE_MARGEN_MIN || 0);
+  return 'No disponible entre las ' + fmt(ini) + ' y las ' + fmt(CFG.VENTANA_GUERRA_FIN_UTC_MIN) +
+    ' (hora Lima): en ese rato el sistema solo captura la guerra.';
 }
 
 /** Datos del candado global vigente ({fn, inicio}) o null si no hay ninguno o ya venció. */
@@ -505,20 +504,48 @@ function _webActRosterNombreTarea_(fn) {
   return nombres[fn] || ('otra tarea (' + String(fn) + ')');
 }
 
-/** Texto para cuando la cadena no empezó o se cortó por la ventana protegida. */
-function _webActRosterTextoVentana_() {
-  var fmt = function (minUtc) {
-    var m = (((minUtc - 300) % 1440) + 1440) % 1440; // Lima = UTC-5
-    var h = Math.floor(m / 60), mm = m % 60;
-    var h12 = h % 12 === 0 ? 12 : h % 12;
-    return h12 + ':' + (mm < 10 ? '0' + mm : mm) + (h < 12 ? ' a.m.' : ' p.m.');
-  };
-  var ini = CFG.VENTANA_GUERRA_INI_UTC_MIN - (CFG.VENTANA_GUERRA_PRE_MARGEN_MIN || 0);
-  return 'No disponible entre las ' + fmt(ini) + ' y las ' + fmt(CFG.VENTANA_GUERRA_FIN_UTC_MIN) +
-    ' (hora Lima): en ese rato el sistema solo captura la guerra.';
-}
-
 /** 'dd/MM/yyyy HH:mm:ss' en hora de Lima. */
 function _webActRosterFechaLima_(ms) {
   return Utilities.formatDate(new Date(ms), 'America/Lima', 'dd/MM/yyyy HH:mm:ss');
+}
+
+// ---------------------------------------------------------------------------
+// Cierre de la solicitud
+// ---------------------------------------------------------------------------
+
+// §PF180: borra las cachés de 60 s que lee Ingresos recientes (webIngresosRecientes y webRoster) al terminar la cadena en 'ok'. §PF181: con tipo 'mensajes' borra en cambio las de webAdminContenido de las categorías generadas (Mensaje de Guerra, Celular, Etiqueta de miembro). Nunca lanza error.
+function _webActRosterInvalidarCachesWeb_(tipo) {
+  try {
+    var claves = WEB_ACTROSTER_CACHES_A_BORRAR;
+    if (_webActRosterTipo_(tipo) === 'mensajes') {
+      claves = TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS.map(function (c) { return 'web_admin_contenido_v1_' + c; });
+    }
+    CacheService.getScriptCache().removeAll(claves);
+  } catch (e) {
+    Logger.log('[ActRoster] No se pudieron borrar las caches web: ' + e.message);
+  }
+}
+
+/** Cierra la solicitud con un estado final ('ok', 'omitido', 'error'), la guarda y la deja en el registro. */
+function _webActRosterCerrar_(est, estado, mensaje) {
+  est.finTs = Date.now();
+  est.estado = estado;
+  est.mensaje = mensaje;
+  _webActRosterGuardarEstado_(est);
+  Logger.log('[ActRoster] FIN de la solicitud ' + est.id + ' -> ' + estado + (est.inicioTs ? ' (' + Math.round((est.finTs - est.inicioTs) / 1000) + ' s).' : ' (no llegó a ejecutarse).'));
+}
+
+/** Borra el avance y los disparadores de la cadena; con liberarCandado=true libera también el candado global, pero SOLO si es de esta cadena. */
+function _webActRosterLimpiarCadena_(liberarCandado) {
+  var props = PropertiesService.getScriptProperties();
+  props.deleteProperty(WEB_ACTROSTER_ID_TANDAS + '_PASO');
+  props.deleteProperty(WEB_ACTROSTER_ID_TANDAS + '_REINTENTO');
+  try {
+    _borrarTriggersDeContinuacion(WEB_ACTROSTER_HANDLER);
+    _borrarTriggersDeContinuacion(WEB_ACTROSTER_HANDLER_CONTINUAR);
+  } catch (e) { /* sin accion */ }
+  if (liberarCandado) {
+    var info = _webActRosterInfoCandado_();
+    if (info && info.fn === WEB_ACTROSTER_ID_TANDAS) _liberarLockEjecucion();
+  }
 }
