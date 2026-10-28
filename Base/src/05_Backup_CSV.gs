@@ -227,6 +227,7 @@ function respaldarHojasDerivadasCSV(presupuestoMs) {
     _respaldarListaHojasCSV(ss, [hojasDerivadas[i]], false);
     Logger.log('[Backup] respaldarHojasDerivadasCSV: hoja ' + (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + ') en ' +
                Math.round((Date.now() - inicioHoja) / 1000) + ' s.'); // PF282: tiempo por hoja, para ubicar la lenta
+    _anotarProgresoPaso_('hoja ' + (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + ')', i + 1); // PF283
 
     var quedanHojas = (i + 1) < hojasDerivadas.length;
     if (quedanHojas && (presupuesto === 0 || (Date.now() - inicio) > presupuesto)) {

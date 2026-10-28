@@ -94,6 +94,7 @@ function _reenumProgreso_(nombre, previas, estaTanda, total, unidad) {
   var pct = total > 0 ? Math.round(acum * 100 / total) : 100;
   Logger.log('[Reenumeración]   ' + nombre + ': acumulado ' + acum + ' de ' + total + ' ' + unidad + ' (' + pct + ' %); en tandas anteriores: ' + previas + '; faltan ' + Math.max(total - acum, 0) + '.');
   Logger.log('[Reenumeración]   ' + nombre + ': en esta tanda: ' + estaTanda + ' ' + unidad + '.');
+  _anotarProgresoPaso_(nombre + ': ' + acum + ' de ' + total + ' ' + unidad, acum); // PF283
 }
 
 // ----- Funciones manuales / punto de entrada -----

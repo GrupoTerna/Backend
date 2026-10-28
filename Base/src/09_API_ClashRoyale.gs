@@ -1370,6 +1370,7 @@ function _descargarBattlelogYCofresParaTodos() {
     Logger.log('[Battlelog/UpcomingChests] INCOMPLETO. Procesados hasta el corte: ' + Object.keys(hechos).length +
       '/' + tags.length + ' | Pendientes para la próxima continuación: ' + (pendientes.length - m) +
       ' | En esta tanda: ' + okBattlelog + ' battlelog(s) OK, ' + okChests + ' upcomingchest(s) OK.');
+    _anotarProgresoPaso_('battlelog/upcomingchests: ' + Object.keys(hechos).length + '/' + tags.length + ' hechos', Object.keys(hechos).length); // PF283
     return false;
   }
 
@@ -2292,6 +2293,7 @@ function _fetchPlayersData() {
     _guardarProgresoPlayers(CACHE_CLAN_DATA._players);
     Logger.log('[API] /players INCOMPLETO. Jugadores obtenidos hasta el corte: ' + Object.keys(CACHE_CLAN_DATA._players).length +
                ' | Pendientes para la próxima continuación: ' + (pendientes.length - m) + resumenErrores);
+    _anotarProgresoPaso_('/players: ' + Object.keys(CACHE_CLAN_DATA._players).length + ' obtenidos, ' + (pendientes.length - m) + ' pendientes', Object.keys(CACHE_CLAN_DATA._players).length); // PF283
     return false;
   }
 

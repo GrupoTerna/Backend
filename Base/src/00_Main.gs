@@ -1700,6 +1700,49 @@ function _reintentarRunSyncCSV() {
   runSyncCSV();
 }
 
+// PF283 (26-oct-2026): progreso por tanda en las cadenas de _ejecutarPorTandas. Un paso que puede necesitar varias tandas (hojas derivadas, /players, reenumeración)
+// anota su avance con _anotarProgresoPaso_(texto, acumulado) justo antes de devolver false; el motor lo guarda en <ID>_PROGRESO_PASO y en la tanda siguiente dice
+// si AVANZÓ o hubo SIN AVANCE. Al empezar cada tanda el motor escribe una línea «ESTADO al empezar» (paso por empezar o en curso). [→ Contexto_Base_Web.md §PF283]
+var PROGRESO_PASO_ = null;
+function _anotarProgresoPaso_(texto, acumulado) {
+  PROGRESO_PASO_ = { texto: String(texto || ''), acum: Number(acumulado) };
+}
+
+function _logEstadoTanda_(id, paso, total, reintento, tandasPaso, progPrevio, nombresPasos) {
+  var etiq = '[' + id + '] ';
+  var nombre = (nombresPasos && nombresPasos[paso]) ? ': ' + nombresPasos[paso] : '';
+  if (paso === 0 && !reintento) {
+    Logger.log(etiq + 'ESTADO al empezar: cadena nueva. Ningún paso cerrado; paso 1/' + total + ' POR EMPEZAR' + nombre + '.');
+  } else if (reintento) {
+    Logger.log(etiq + 'ESTADO al empezar: pasos cerrados ' + paso + '/' + total + '; paso ' + (paso + 1) + '/' + total + ' EN CURSO' + nombre +
+      ' (la tanda anterior lo dejó incompleto; esta es la tanda ' + (tandasPaso + 1) + ' de este paso).' +
+      (progPrevio && progPrevio.texto ? ' Progreso guardado al cierre de la tanda anterior: ' + progPrevio.texto + '.' : ' Ese paso no informa su avance interno.'));
+  } else {
+    Logger.log(etiq + 'ESTADO al empezar: pasos cerrados ' + paso + '/' + total + '; paso ' + (paso + 1) + '/' + total + ' POR EMPEZAR' + nombre +
+      ' (la tanda anterior cerró el paso ' + paso + ' y se quedó sin tiempo).');
+  }
+}
+
+function _logAvanceTanda_(id, paso, total, tandaDelPaso, progPrevio, prog) {
+  var etiq = '[' + id + ']   Avance del paso ' + (paso + 1) + '/' + total + ' (tanda ' + tandaDelPaso + ' de este paso): ';
+  if (!prog || !prog.texto) {
+    Logger.log(etiq + 'este paso no informa su avance interno, así que no se puede saber si avanzó respecto a la tanda anterior; revisa las líneas del paso más arriba.');
+    return;
+  }
+  if (!progPrevio || progPrevio.acum === null || progPrevio.acum === undefined || isNaN(Number(progPrevio.acum)) || isNaN(prog.acum)) {
+    Logger.log(etiq + 'al cierre: ' + prog.texto + '. (Sin tanda anterior comparable de este paso.)');
+    return;
+  }
+  var previo = Number(progPrevio.acum);
+  if (prog.acum > previo) {
+    Logger.log(etiq + 'AVANZÓ. Tanda anterior: ' + progPrevio.texto + '. Ahora: ' + prog.texto + '.');
+  } else if (prog.acum === previo) {
+    Logger.log(etiq + 'SIN AVANCE respecto a la tanda anterior (sigue en: ' + prog.texto + '). Si se repite en la tanda siguiente, hay algo que impide avanzar.');
+  } else {
+    Logger.log(etiq + 'RETROCEDIÓ. Tanda anterior: ' + progPrevio.texto + '. Ahora: ' + prog.texto + '.');
+  }
+}
+
 /**
  * _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, props) [→ Contexto_Base_Web.md §B135]
  */
@@ -1737,6 +1780,19 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   var paso = parseInt(props.getProperty(idEjecucion + '_PASO') || '0', 10);
   var reintentoMismoPaso = props.getProperty(idEjecucion + '_REINTENTO') === '1';
 
+  // PF283: contador de tandas del paso en curso y progreso que dejó la tanda anterior.
+  var tandasPaso = parseInt(props.getProperty(idEjecucion + '_TANDAS_PASO') || '0', 10);
+  var progPrevio = null;
+  try { progPrevio = JSON.parse(props.getProperty(idEjecucion + '_PROGRESO_PASO') || 'null'); } catch (eProgPrevio) { progPrevio = null; }
+  if (paso === 0 && !reintentoMismoPaso) { // cadena nueva: no heredar contadores de una cadena que se abortó
+    tandasPaso = 0;
+    progPrevio = null;
+    props.deleteProperty(idEjecucion + '_TANDAS_PASO');
+    props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
+  }
+  if (progPrevio && progPrevio.paso !== paso) progPrevio = null;
+  _logEstadoTanda_(idEjecucion, paso, pasos.length, reintentoMismoPaso, tandasPaso, progPrevio, nombresPasos);
+
   // IMPORTANTE: CACHE_CLAN_DATA es una variable global en memoria (no se [→ Contexto_Base_Web.md §B137]
   // PF091 (17-oct-2026): en una cadena PROGRAMADA (bandera <ID>_SIN_API) el cache se reconstruye del checkpoint aunque el paso se
   // reintente o sea el 0 (runUpdateProgramado: su primer paso, _fetchAllClanData(), pediria la API si el checkpoint tiene mas de 45 min).
@@ -1768,11 +1824,16 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   while (paso < pasos.length) {
   Logger.log('[' + idEjecucion + '] Ejecutando paso ' + (paso + 1) + '/' + pasos.length +
     (nombresPasos && nombresPasos[paso] ? ': ' + nombresPasos[paso] : ''));
+  PROGRESO_PASO_ = null;
   var resultado = pasos[paso]();
 
     if (resultado === false) {
       Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ' quedó incompleto (presupuesto interno agotado, ej. /players). ' +
                  'Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.');
+      tandasPaso++;
+      _logAvanceTanda_(idEjecucion, paso, pasos.length, tandasPaso, progPrevio, PROGRESO_PASO_);
+      props.setProperty(idEjecucion + '_TANDAS_PASO', String(tandasPaso));
+      props.setProperty(idEjecucion + '_PROGRESO_PASO', JSON.stringify({ paso: paso, texto: PROGRESO_PASO_ ? PROGRESO_PASO_.texto : '', acum: PROGRESO_PASO_ ? PROGRESO_PASO_.acum : null }));
       props.setProperty(idEjecucion + '_PASO', String(paso));
       props.setProperty(idEjecucion + '_REINTENTO', '1');
       _refrescarLockEjecucion(idEjecucion);
@@ -1780,13 +1841,18 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       return false;
     }
 
+    if (tandasPaso > 0) Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ' COMPLETO tras ' + (tandasPaso + 1) + ' tandas.');
+    tandasPaso = 0;
+    progPrevio = null;
+    props.deleteProperty(idEjecucion + '_TANDAS_PASO');
+    props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
     props.deleteProperty(idEjecucion + '_REINTENTO');
     paso++;
     props.setProperty(idEjecucion + '_PASO', String(paso));
     _refrescarLockEjecucion(idEjecucion);
 
     if (paso < pasos.length && (Date.now() - inicioTanda) > presupuestoMs) {
-      Logger.log('[' + idEjecucion + '] Presupuesto de tiempo agotado tras completar el paso ' + paso + '/' + pasos.length + '. Se programa continuación automática en 10s.');
+      Logger.log('[' + idEjecucion + '] Presupuesto de tiempo agotado tras completar el paso ' + paso + '/' + pasos.length + '. Queda: paso ' + (paso + 1) + '/' + pasos.length + ' POR EMPEZAR. Se programa continuación automática en 10s.');
       _programarContinuacion(nombreHandlerContinuacion);
       return false;
     }
@@ -1794,6 +1860,8 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
 
   props.deleteProperty(idEjecucion + '_PASO');
   props.deleteProperty(idEjecucion + '_REINTENTO');
+  props.deleteProperty(idEjecucion + '_TANDAS_PASO');
+  props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
   _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
   return true;
 }
