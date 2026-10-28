@@ -1,0 +1,42 @@
+name: Backend - Validación de Base y Contactos_Secundario
+
+# Solo valida; nunca hace commits (el Generador ya escribe en este repo
+# y un workflow que commitee crearía bucles). El Generador tiene su propio workflow.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Base/**"
+      - "Contactos_Secundario/**"
+      - ".github/scripts/validar_proyecto_gs.js"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "Base/**"
+      - "Contactos_Secundario/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        proyecto: [Base, Contactos_Secundario]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validar ${{ matrix.proyecto }}
+        run: node .github/scripts/validar_proyecto_gs.js "${{ matrix.proyecto }}"
