@@ -4775,6 +4775,9 @@ function _webCRListaVerificar(token, idAscenso) {
   // PF286: `idAscenso` (opcional) elige la corrida; sin él se verifica la del par de la propuesta más reciente.
   var verificacion = _leerVerificacionCambioRangoHistorial_(idAscenso);
   verificacion.ok = true;
+  // Los pares de CR_Lista (los mismos de «Ver propuestas», del más reciente al más antiguo) para llenar el selector de corrida sin otro pedido.
+  var lista = _webCRListaListar(token);
+  verificacion.pares = (lista && lista.ok) ? lista.pares : [];
   return verificacion;
 }
 
