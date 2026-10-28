@@ -3,7 +3,17 @@
 // Sincronizacion del Directorio con Google Contacts.
 // ==============================================================================
 
-// ----- Funciones manuales / punto de entrada -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): este archivo no tiene constantes ni variables globales y tiene una sola función; por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Sincronización del Directorio con Google Contacts
+//  Parte 2 — Funciones que no se corren a mano: ninguna
+// Al reordenar no se cambió el código de ninguna función.
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Sincronización del Directorio con Google Contacts -----
 
 // 16_ContactsSync.gs [→ Contexto_Base_Web.md §16B001]
 
