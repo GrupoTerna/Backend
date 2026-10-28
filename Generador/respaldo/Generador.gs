@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 00:24:22 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 17:33:29 */
 
 
 
@@ -3050,7 +3050,7 @@ function _cache_guardar_(cache) {
 //    - Subida puntual de archivos de Drive a GitHub: ayuda
 //    - HTTP con la API de GitHub (las usan todos los temas anteriores)
 //    - Utilidades del proyecto de Apps Script
-// Dentro de cada tema, en el orden en que se espera ejecutarlas (deducido del código: la usuaria no lo ha confirmado). Al reordenar no se cambió el código de ninguna función.
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var GITHUB_OWNER_  = 'GrupoTerna';
 var GITHUB_REPO_   = 'Backend';
@@ -3892,7 +3892,6 @@ function _githubSubirArchivosDeDrive_(nombres, carpetaDestino, mensaje) {
     ? 'Sin cambios: GitHub ya tenía estos ' + entradas.length + ' archivos idénticos (no se creó commit).'
     : 'Subidos ' + entradas.length + ' archivos en el commit ' + res.commit.substring(0, 7) + '.';
   console.log(texto);
-  console.log('Falta hacer pull de Backend en GitHub Desktop para verlos en tu equipo.');
   return texto;
 }
 
@@ -4568,7 +4567,7 @@ function _verif_imprimirResumen_(r) {
 //    - Recorte del margen transparente de las insignias (lector y escritor de PNG; en el orden en que los llama _imgApiRecortarPng_)
 //    - GitHub (repo Web): contexto, carpetas API y commit (solo agrega archivos), y el nivel bajo (token, petición, JSON)
 //    - Escaneo de los JSON de players: ayudas
-// Dentro de cada tema, en el orden en que se espera ejecutarlas (deducido del código: la usuaria no lo ha confirmado). Al reordenar no se cambió el código de ninguna función.
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var IMGAPI_REPO_   = 'Web';
 var IMGAPI_BRANCH_ = 'main';
@@ -4760,7 +4759,6 @@ function carpetasApiJuntoAFankit() {
   var texto = 'Se crearon ' + entradas.length + ' carpetas API (commit ' + res.commit.substring(0, 7) + '): ' +
               entradas.map(function(e) { return e.path.replace('/LEEME.txt', ''); }).join(', ');
   console.log(texto);
-  console.log('Falta hacer pull de Web en GitHub Desktop.');
   return texto;
 }
 
@@ -4912,7 +4910,6 @@ function _imgApiEjecutar_(grupos, soloProbar) {
     fallos.slice(0, 10).forEach(function(f) { console.log('  ✗ ' + f); });
   }
   console.log(texto);
-  console.log('Falta hacer pull de Web en GitHub Desktop.');
   return texto;
 }
 
@@ -5874,7 +5871,6 @@ function _datosDriveAGithub_(op) {
       console.log('Archivos subidos, por carpeta de Datos descargados (' + rutasSubidas.length + '):');
       _datosGhLineasPorCarpeta_(rutasSubidas).forEach(function(l) { console.log(l); });
     }
-    if (subidos) console.log('Falta hacer pull de Backend en GitHub Desktop para verlos en tu equipo.');
 
     // Si falta algo por falta de tiempo, se programa sola la continuación (también en corridas a mano o forzadas; no en la revisión).
     if (pendientes && !op.soloRevisar) {
