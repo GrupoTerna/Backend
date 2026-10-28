@@ -1051,12 +1051,31 @@ function _corridaCambioRangoVacia_() {
  * Solo lee la hoja; no escribe nada.
  */
 function _leerCorridaCambioRangoHistorial_(desdeMs) {
+  var registros = _leerRegistrosHistorialAscensos_();
+  if (registros === null) return _corridaCambioRangoVacia_();
+  return _corridaCambioRangoDesdeRegistros_(registros, desdeMs, _claveDiaLimaCR_);
+}
+
+/**
+ * _claveDiaLimaCR_(ms)
+ * Día de Lima ('aaaa-mm-dd') de una marca de tiempo: la «clave de día» con la que se agrupan las corridas de propuestas (_corridaCambioRangoDesdeRegistros_()) y se verifican (_verificarCambioRangoDesdeRegistros_()).
+ */
+function _claveDiaLimaCR_(ms) {
+  return Utilities.formatDate(new Date(ms), 'America/Lima', 'yyyy-MM-dd');
+}
+
+/**
+ * _leerRegistrosHistorialAscensos_()
+ * Lee Historial_A/D completo y devuelve una lista de registros { tag, nombre, clan, rango, rango2, tipo, estadoProp, fechaMs, temporada, semana, dia }, o null si la hoja no existe o está vacía.
+ * Lo comparten la corrida más reciente (_leerCorridaCambioRangoHistorial_()) y la verificación (_leerVerificacionCambioRangoHistorial_()). Solo lee la hoja; no escribe nada.
+ */
+function _leerRegistrosHistorialAscensos_() {
   var sh = _getSs().getSheetByName(CFG.SHEETS.ASCENSOS);
-  if (!sh || sh.getLastRow() < 2) return _corridaCambioRangoVacia_();
+  if (!sh || sh.getLastRow() < 2) return null;
   var datos = sh.getRange(2, 1, sh.getLastRow() - 1, ASCENSOS_TOTAL_COLS).getValues();
   var offset = _getTemporadaOffsetRoyaleApi(); // una sola lectura, igual que _completarTSDEnHoja_()
   var refTemporadas = CFG.REF_DEFAULT;
-  var registros = datos.map(function (f) {
+  return datos.map(function (f) {
     var fecha = f[ASC.FECHA - 1];
     // Temporada, Semana y Día salen de la Fecha con la misma función que llena esas columnas de la hoja (_tsdDesdeFecha_): [temporada, RoyaleAPI, Supercell, semana, día].
     var tsd = _tsdDesdeFecha_(fecha, offset, refTemporadas);
@@ -1073,9 +1092,6 @@ function _leerCorridaCambioRangoHistorial_(desdeMs) {
       semana: tsd[3],
       dia: tsd[4]
     };
-  });
-  return _corridaCambioRangoDesdeRegistros_(registros, desdeMs, function (ms) {
-    return Utilities.formatDate(new Date(ms), 'America/Lima', 'yyyy-MM-dd');
   });
 }
 
@@ -1116,5 +1132,80 @@ function _corridaCambioRangoDesdeRegistros_(registros, desdeMs, claveDia) {
   });
   res.aplicadosN = res.aplicados.length;
   res.pendientesN = res.total - res.aplicadosN;
+  return res;
+}
+
+// --- Verificar un cambio de rango: propuestas de la corrida más reciente contra lo realmente aplicado (PF286 punto 11 (c), 28-oct-2026; la usa la rama «verificar» de la web) [→ Contexto_Base_Web.md §PF286] ---
+
+// Tipos de Historial_A/D que son un cambio real de la cuenta (los que la rama «verificar» busca cuando no hay propuesta). «Elegible Admin» no lo es: solo se propone, no cambia el rango.
+var CR_TIPOS_CAMBIO_REAL_ = { 'Ascenso': true, 'Degradación': true, 'Expulsión': true, 'Ascenso de clan': true };
+
+/**
+ * _leerVerificacionCambioRangoHistorial_()
+ * Lee Historial_A/D y compara las propuestas de la corrida más reciente con lo realmente aplicado (ver _verificarCambioRangoDesdeRegistros_()). Solo lee la hoja; no escribe nada.
+ */
+function _leerVerificacionCambioRangoHistorial_() {
+  var registros = _leerRegistrosHistorialAscensos_();
+  return _verificarCambioRangoDesdeRegistros_(registros || [], _claveDiaLimaCR_);
+}
+
+/**
+ * _verificarCambioRangoDesdeRegistros_(registros, claveDia) — función pura (se prueba en Node, sin hojas).
+ * Compara, con lo que ya está escrito en Historial_A/D, las propuestas de la corrida más reciente (las mismas que usan los documentos de Cambio de rango, ver _corridaCambioRangoDesdeRegistros_()) con lo realmente aplicado:
+ *  - aplicadas: propuestas de la corrida con Estado de propuesta «Realizado».
+ *  - pendientes: propuestas de la corrida todavía «Planificado» (falta aplicarlas). Las que no tienen Rango ni Rango 2 (Expulsión, Elegible Admin y Ascenso de clan) no se resuelven solas
+ *    (_indexarPropuestasPendientesAscensos()): `confirmaManual` es true y hay que marcarlas «Realizado» a mano cuando se apliquen.
+ *  - excepcionales: cambios reales (Ascenso, Degradación, Expulsión o Ascenso de clan, sin Estado de propuesta) con Fecha desde el día de la corrida; son los que no coincidieron con ninguna propuesta pendiente. Si la cuenta tenía otra propuesta
+ *    en la corrida, el motivo lo dice; si no tenía ninguna, la evaluación de la corrida no la dio por calificada para ese cambio.
+ * No vuelve a evaluar los requisitos: usa lo que quedó registrado cuando se generaron las propuestas. Devuelve { hayCorrida, diaTxt, temporada, semana, dia, propuestasN, aplicadas, pendientes, excepcionales }; cada elemento trae
+ * { tag, nombre, clan, tipo, rango, rango2, fechaTxt } y los excepcionales además `motivo`, los pendientes `confirmaManual`.
+ */
+function _verificarCambioRangoDesdeRegistros_(registros, claveDia) {
+  var corrida = _corridaCambioRangoDesdeRegistros_(registros, null, claveDia);
+  var res = {
+    hayCorrida: corrida.hayCorrida, diaTxt: corrida.diaTxt, temporada: corrida.temporada, semana: corrida.semana, dia: corrida.dia,
+    propuestasN: corrida.total, aplicadas: [], pendientes: [], excepcionales: []
+  };
+  if (!corrida.hayCorrida) return res;
+
+  var diaCorrida = corrida.diaTxt.split('/').reverse().join('-'); // 'aaaa-mm-dd'
+  function item(r, dia) {
+    return { tag: r.tag, nombre: r.nombre, clan: r.clan, tipo: r.tipo, rango: r.rango, rango2: r.rango2, fechaTxt: dia.split('-').reverse().join('/') };
+  }
+  function describir(x) {
+    return x.tipo + ((x.rango && x.rango2) ? ' de ' + x.rango + ' a ' + x.rango2 : '');
+  }
+
+  var propuestasPorTag = {};
+  var reales = [];
+  (registros || []).forEach(function (r) {
+    if (!isFinite(r.fechaMs)) return;
+    var dia = claveDia(r.fechaMs);
+    if (dia < diaCorrida) return;
+    if ((r.estadoProp === 'Planificado' || r.estadoProp === 'Realizado') && dia === diaCorrida) {
+      var it = item(r, dia);
+      if (r.estadoProp === 'Realizado') {
+        res.aplicadas.push(it);
+      } else {
+        it.confirmaManual = !(r.rango && r.rango2);
+        res.pendientes.push(it);
+      }
+      if (r.tag) (propuestasPorTag[r.tag] = propuestasPorTag[r.tag] || []).push(it);
+    } else if (!r.estadoProp && CR_TIPOS_CAMBIO_REAL_[r.tipo]) {
+      reales.push({ r: r, dia: dia });
+    }
+  });
+
+  reales.forEach(function (x) {
+    var it = item(x.r, x.dia);
+    var propias = x.r.tag ? propuestasPorTag[x.r.tag] : null;
+    if (propias && propias.length) {
+      it.motivo = 'Se aplicó ' + describir(it) + ', pero la propuesta de la corrida para esta cuenta era ' +
+        propias.map(describir).join(' o ') + '.';
+    } else {
+      it.motivo = 'No tenía propuesta en la corrida: la evaluación no la dio por calificada para este cambio.';
+    }
+    res.excepcionales.push(it);
+  });
   return res;
 }

@@ -797,6 +797,19 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // NUEVO 28-oct-2026 (PF286 punto 11 (c)): rama «verificar» de Cambio de Rango; solo lee Historial_A/D, por eso es GET. [→ Contexto_Base_Web.md §PF286]
+  if (e && e.parameter && e.parameter.accion === 'webCRListaVerificar') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webCRListaVerificar(e.parameter.sessionToken)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('[Web] Error interno: ' + err.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // NUEVO 13-sep-2026: webAdminVigenteListar, parámetro categoria 'Torneo'|'Sorteo' en el query string. [→ Contexto_Base_Web.md §38B053]
   if (e && e.parameter && e.parameter.accion === 'webAdminVigenteListar') {
     try {
