@@ -59,10 +59,12 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 
 - **Apps Script → GitHub:** `descargarBase()` y `descargarGenerador()` (y las `subir…` desde zip, txt, gs o md) escriben el código en `<Nombre>/src/` y los archivos generados.
 - **GitHub → Apps Script:** `subirBaseDesdeGithub()` y `subirGeneradorDesdeGithub()` dejan el proyecto **exactamente igual a `<Nombre>/src/`**; lo que no esté en GitHub se elimina del proyecto. «Subir» significa subir a Apps Script.
+- **`Contactos_Secundario`** es un tercer proyecto de Apps Script (el de la **cuenta secundaria**) que el Generador maneja igual, con las mismas salvaguardas: `descargarContactos()` (Apps Script → GitHub) y `subirContactosDesdeGithub()` (GitHub → Apps Script, deja el proyecto igual a `Contactos_Secundario/src/`). Como las de `Base`, **están en el Generador** (`01_Principal.gs`). Detalle y requisitos en `Claude/referencias/sincronizacion.md`.
 - **Claude no sube a `<Nombre>/src/` mientras corre una de estas funciones.**
 - **Riesgo que Claude debe prevenir:** si Claude sube un cambio a `Base/src/` y, antes de correr `subirBaseDesdeGithub()`, la usuaria corre `descargarBase()` u otra función `subirBase…`, **el estado viejo de Apps Script se escribe encima del cambio en GitHub**. Por eso, en el cierre de tanda (0.2) Claude recuerda, con proyecto y archivo (0.8):
   1. Si cambió algo en `Base/src/`: **«corre `subirBaseDesdeGithub()` antes de cualquier descarga»**.
   2. Si cambió algo en `Generador/src/`: **«corre `subirGeneradorDesdeGithub()` antes de correr `descargarGenerador()`»**. Ya no hay que pasar los archivos a mano; solo se pasan a mano si esa función falla.
+  3. Si cambió algo en `Contactos_Secundario/src/`: **«corre `subirContactosDesdeGithub()` antes de correr `descargarContactos()`»** (proyecto **Generador**, archivo `01_Principal.gs`).
 
 ## 0.4 El archivo de contexto: `Contexto_Base_Web.md`
 
