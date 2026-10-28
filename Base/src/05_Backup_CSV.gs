@@ -516,6 +516,7 @@ function syncAcumulativosCSV() {
       Logger.log('[Backup] syncAcumulativosCSV: presupuesto interno agotado tras el trabajo ' +
                  (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '). ' +
                  'Se reintenta el mismo paso en la próxima continuación.');
+      _logProgresoPaso_('Backup', 'respaldo CSV de acumulativos', idxInicio, (i + 1) - idxInicio, totalTrabajos, 'trabajos'); // PF285
       return false;
     }
   }
