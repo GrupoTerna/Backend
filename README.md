@@ -52,4 +52,4 @@ El repo es público: se puede clonar sin credenciales. Para subir cambios hace f
 ## Otros repositorios
 
 - `GrupoTerna/Web` (público): frontend en GitHub Pages. Tiene su propio `README.md` y su `CHANGELOG.md` (checklist corto de lo hecho, por fecha y archivo).
-- `GrupoTerna/Script` (privado): dos archivos, `package.json` y `server.js`, que se usan en Render. No se toca salvo que haga falta cambiar algo de Render, y se avisa antes de subir porque un push puede redesplegar el servidor. Todavía no tiene `README.md`.
+- `GrupoTerna/Script` (privado): el proxy de Clash Royale que se usa en Render (`package.json` y `server.js`), con su propio `README.md`. No se toca salvo que haga falta cambiar algo de Render, y se avisa antes de subir porque un push puede redesplegar el servidor.
