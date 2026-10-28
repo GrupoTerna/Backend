@@ -274,7 +274,6 @@ function carpetasApiJuntoAFankit() {
   var texto = 'Se crearon ' + entradas.length + ' carpetas API (commit ' + res.commit.substring(0, 7) + '): ' +
               entradas.map(function(e) { return e.path.replace('/LEEME.txt', ''); }).join(', ');
   console.log(texto);
-  console.log('Falta hacer pull de Web en GitHub Desktop.');
   return texto;
 }
 
@@ -426,7 +425,6 @@ function _imgApiEjecutar_(grupos, soloProbar) {
     fallos.slice(0, 10).forEach(function(f) { console.log('  ✗ ' + f); });
   }
   console.log(texto);
-  console.log('Falta hacer pull de Web en GitHub Desktop.');
   return texto;
 }
 

@@ -871,7 +871,6 @@ function _githubSubirArchivosDeDrive_(nombres, carpetaDestino, mensaje) {
     ? 'Sin cambios: GitHub ya tenía estos ' + entradas.length + ' archivos idénticos (no se creó commit).'
     : 'Subidos ' + entradas.length + ' archivos en el commit ' + res.commit.substring(0, 7) + '.';
   console.log(texto);
-  console.log('Falta hacer pull de Backend en GitHub Desktop para verlos en tu equipo.');
   return texto;
 }
 

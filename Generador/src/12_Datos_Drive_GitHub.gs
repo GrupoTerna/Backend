@@ -270,7 +270,6 @@ function _datosDriveAGithub_(op) {
       console.log('Archivos subidos, por carpeta de Datos descargados (' + rutasSubidas.length + '):');
       _datosGhLineasPorCarpeta_(rutasSubidas).forEach(function(l) { console.log(l); });
     }
-    if (subidos) console.log('Falta hacer pull de Backend en GitHub Desktop para verlos en tu equipo.');
 
     // Si falta algo por falta de tiempo, se programa sola la continuación (también en corridas a mano o forzadas; no en la revisión).
     if (pendientes && !op.soloRevisar) {
