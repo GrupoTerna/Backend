@@ -20,7 +20,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 
 - **Tuteo, nunca voseo:** «gira», «usa», «agrega», «vuelve», «revisa», «inténtalo», «puedes», «tienes», «quieres», «sigue», «marca», «abre». Nada de «girá», «usá», «agregá», «podés», «tenés», «querés», «seguí», «sos», «vos».
 - **Imperativo con pronombre: también tuteo y con la tilde que corresponde** («agrégalo», «déjalo», «revísalo»). Las formas voseantes («agregalo», «dejalo», «revisalo», «fijate», «avisame») **no llevan tilde**, así que una búsqueda solo por vocales acentuadas **no las encuentra**.
-- **Léxico:** «aquí» en vez de «acá» en textos nuevos; sin «che», «dale», «laburo», «plata» (por dinero), «pibe», «boludo» ni similares.
+- **Léxico:** «aquí» en vez de «acá» en textos nuevos; sin «che», «dale», «laburo», «plata» (por dinero), «pibe», «boludo» ni similares. «Recién» como adverbio de pasado inmediato es de uso normal en Perú y no se cambia.
 - **Antes de entregar un archivo con texto nuevo**, buscar en él formas terminadas en `-ás`, `-és`, `-ís`, imperativos con tilde final (`-á`, `-é`, `-í`), verbo + `lo/la/los/las/me/te/se` sin tilde, y el léxico anterior. Ojo con falsos positivos como `'activate'` de `sw.js`. **Se automatiza con `python3 -I "Consolidados de cambios/verificar_idioma.py"` (desde la raíz del repo, antes del commit): revisa solo las líneas agregadas respecto de `HEAD` (o de `--base origin/main`) y lista las candidatas; hay que mirarlas a mano, porque formas como «estás» son tuteo válido. Con rutas como argumento revisa archivos completos.**
 - **Si una frase ya existente tiene voseo y no es parte del pedido, se avisa** en lugar de dejarla; si es un texto de interfaz, se corrige en la misma tanda y se anota en el `CHANGELOG.md`.
 
@@ -32,7 +32,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 
 - **`GrupoTerna/Backend`** (público). Carpetas: `Base/`, `Generador/` y `Contactos_Secundario/` (cada una con `src/` = los `.gs` individuales, que son **lo único que Claude edita**; y `respaldo/`, `INDICE_FUNCIONES.md`, `Indice_<Nombre>.md`, `LEEME_IA.md` = archivos **generados por Apps Script** al descargar, que **Claude nunca edita**); `Tampermonkey/Tampermonkey.md`; `Claude/SKILL.md` (copia de esta skill); `Consolidados de cambios/` (consolidados de fases); `Contexto_Base_Web.md` (contexto unificado del sistema); `Datos descargados/` (subcarpetas con archivos de Drive o logs que la usuaria sube para contrastarlos con el código).
 - **`GrupoTerna/Web`** (público): el frontend, publicado en GitHub Pages. Tiene su propio `CHANGELOG.md`.
-- **`GrupoTerna/Script`** (privado): **exclusivo de Render**; contiene solo `package.json` y `server.js`. **No se usa**, salvo que (1) haya que modificar algo relacionado con Render, (2) haya que modificar necesariamente uno de esos dos archivos o (3) falte agregar un archivo al repo para Render. Claude **no lo toca por iniciativa propia**, y **avisa antes de subir** porque un push puede redesplegar el servidor. No tiene README todavía.
+- **`GrupoTerna/Script`** (privado): **exclusivo de Render**; contiene `package.json`, `server.js` y `README.md` (este último, desde el 27-oct-2026). **No se usa**, salvo que (1) haya que modificar algo relacionado con Render, (2) haya que modificar necesariamente `package.json` o `server.js` o (3) falte agregar un archivo al repo para Render. Claude **no lo toca por iniciativa propia**, y **avisa antes de subir** porque un push puede redesplegar el servidor.
 - Cada repo se adjunta a la sesión por separado y **con permiso de escritura** para poder subir; sin eso solo se puede leer (si falta, ver 0.7). El repo `Backend` figura a veces como `backend`: GitHub redirige.
 
 ## 0.2 Entrega: se sube directo a GitHub
@@ -45,7 +45,10 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
   4. **Recién entonces** sigue con los otros cambios de la misma tanda; nunca acumula varios cambios terminados para subirlos todos juntos al final.
 - **Única excepción: el contexto.** `Contexto_Base_Web.md` (y con él el `CHANGELOG.md` o el consolidado que corresponda) se edita **al final de la tanda**, una sola vez y con todo lo de la tanda, y se sube en su propio commit. Si la sesión se corta a mitad, lo ya subido queda en `main` y el contexto pendiente se rehace en la sesión siguiente a partir de los commits.
 - **No genera el archivo para descargar ni usa la herramienta de enviar archivos, a menos que la usuaria lo pida expresamente.** Si ya se envió un archivo una vez y la aplicación vuelve a mostrar su tarjeta, no es porque Claude lo haya enviado de nuevo: no debe afirmar de dónde viene la tarjeta si no lo sabe.
-- **Al terminar cada tanda da la lista de archivos modificados o creados** (ruta, estado «modificado» o «creado» y commit), y si subió cambios a un repo que la usuaria tiene en GitHub Desktop, añade «Pendiente de pull en GitHub Desktop: <repo> (commit xxxxxxx)». Claude no ve el equipo de la usuaria; solo sabe lo que él subió.
+- **Cierre de tanda (se define solo aquí; 0.3, 0.9 y la sección 7 lo citan).** Primero se sube el contexto (excepción de arriba). Después Claude entrega, en este orden:
+  1. La lista de archivos modificados o creados (ruta, estado «modificado» o «creado» y commit).
+  2. Si subió cambios a un repo que la usuaria tiene en GitHub Desktop: «Pendiente de pull en GitHub Desktop: <repo> (commit xxxxxxx)». Claude no ve el equipo de la usuaria; solo sabe lo que él subió.
+  3. Los recordatorios de 0.3, diciendo proyecto y archivo como pide 0.8.
 - Si no se puede subir (por permiso o por error), lo dice y pregunta; no sustituye la subida por un archivo descargable sin avisar. Si el motivo es que la sesión no tiene permiso de escritura, ver 0.7.
 - Los repos `Backend` y `Web` son **públicos**: nunca se escriben tokens, claves ni datos personales en el código ni en los documentos.
 - **Fechas de lo que se escribe (20-oct-2026):** son las de Lima (UTC-5), no la hora UTC del commit ni la del contenedor; entre las 19:00 y las 23:59 de Lima, la fecha UTC ya es la del día siguiente. Detalle en `Consolidados de cambios/Reglas_Consolidados.md`, sección 6.
@@ -69,7 +72,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
   - **Las funciones `…Forzado` no son todas iguales (verificado en `01_Principal.gs` y `08_GitHub.gs`):** `descargarBaseForzado()`, `descargarGeneradorForzado()` y `descargarContactosForzado()` (Apps Script → GitHub) **no tienen guardia ni aviso de «pull pendiente»**: escriben aunque GitHub tenga cambios que no se trajeron, y esos cambios se pierden (quedan solo en el historial de git). `subirBaseDesdeGithubForzado()` y `subirGeneradorDesdeGithubForzado()` (GitHub → Apps Script) solo saltan las salvaguardas de «src/ incompleta» y, en el Generador, la de la función de bajada; **la guardia y los reintentos de arriba siguen funcionando** igual que en las normales.
   - **Claude no sube a `<Nombre>/src/` mientras corre una de estas funciones**, aunque la guardia ya evite el pisado.
 - **`Indice_Base.md` e `Indice_Generador.md` (desde el 21-oct-2026, `02_Backstage.gs`, `_guardarIndiceArchivos_`):** en cada descarga o subida el Generador los reemplaza en la carpeta de respaldos de Drive de cada proyecto y en GitHub (`Base/Indice_Base.md`, `Generador/Indice_Generador.md`). Traen una tabla con N.º automático, nombre del archivo y estado respecto de la tanda anterior (permanece igual, modificado, creado o eliminado; «modificado» solo para los que no se crearon ni eliminaron en esa tanda). Claude **no los edita** (son generados) y los puede leer para saber qué cambió en la última tanda; en GitHub solo se reescriben cuando cambió el código, así que el estado que muestran es el de la última tanda con cambios. Detalle: `Contexto_Base_Web.md §PF151`.
-- **Riesgo que Claude debe prevenir:** si Claude sube un cambio a `Base/src/` y, antes de correr `subirBaseDesdeGithub()`, la usuaria corre `descargarBase()` u otra función `subirBase…`, **el estado viejo de Apps Script se escribe encima del cambio en GitHub**. Por eso, al final de la tanda Claude recuerda (diciendo proyecto y archivo, como pide 0.8):
+- **Riesgo que Claude debe prevenir:** si Claude sube un cambio a `Base/src/` y, antes de correr `subirBaseDesdeGithub()`, la usuaria corre `descargarBase()` u otra función `subirBase…`, **el estado viejo de Apps Script se escribe encima del cambio en GitHub**. Por eso, en el cierre de tanda (0.2) Claude recuerda, con proyecto y archivo (0.8):
   1. Si cambió algo en `Base/src/`: **«corre `subirBaseDesdeGithub()` antes de cualquier descarga»**.
   2. Si cambió algo en `Generador/src/`: **«corre `subirGeneradorDesdeGithub()` antes de correr `descargarGenerador()`»**. Ya no hay que pasar los archivos a mano; solo se pasan a mano si esa función falla.
 
@@ -96,7 +99,12 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 
 - **Todo consolidado de fases se guarda en `Consolidados de cambios/` del repo `Backend`** y se actualiza ahí, no se entrega para descargar. **Sus reglas están en `Consolidados de cambios/Reglas_Consolidados.md`: léelas ahí.**
 - **`Datos descargados/`** tiene subcarpetas con archivos de Drive o logs que la usuaria sube para que Claude contraste los JSON, CSV u otros archivos (la evidencia) contra el código. **Regla urgente:** si en un archivo de esa carpeta Claude **ve teléfonos o celulares**, lo trata como urgente: **avisa de inmediato que se quite el archivo del repo, o pide autorización para eliminarlo**, y no copia ese contenido. El repo es público.
-- **Si el archivo de datos más reciente no está en GitHub, o la copia de `Datos descargados/` es más vieja, se busca en Drive** (regla dictada por la usuaria el 18-oct-2026). Cuando haga falta un archivo de datos (por ejemplo `Backup_Guerra.csv` o `Correcciones_Guerra.csv`), Claude lo busca con el conector de Google Drive y compara su fecha de modificación y su tamaño con la copia del repo **antes** de trabajar con la copia vieja. **Si el conector no está habilitado, le pide a la usuaria que lo habilite y no sigue sin el dato.** Lo que lea de Drive se trata igual que lo de `Datos descargados/`: si trae teléfonos o celulares, no copia ese contenido y avisa de inmediato; y no copia a los repos (que son públicos) lo que lee de Drive por iniciativa propia. **Límite práctico:** el conector entrega el contenido al chat, no al contenedor donde corren los scripts, así que un CSV grande (el de guerra pasa de 1,9 MB) no cabe; en ese caso Claude lo dice y le pide a la usuaria que suba el archivo al chat o que reemplace el de `Datos descargados/`. *(Esto último se deduce de cómo trabaja el conector; no se probó la descarga.)*
+- **Si el archivo de datos más reciente no está en GitHub, o la copia de `Datos descargados/` es más vieja, se busca en Drive** (regla dictada por la usuaria el 18-oct-2026). Por ejemplo, para `Backup_Guerra.csv` o `Correcciones_Guerra.csv`:
+  1. Buscar el archivo con el conector de Google Drive.
+  2. Comparar su fecha de modificación y su tamaño con la copia del repo **antes** de trabajar con la copia vieja.
+  3. Si el conector no está habilitado, pedirle a la usuaria que lo habilite y no seguir sin el dato.
+  4. Si el archivo es grande (el CSV de guerra pasa de 1,9 MB), no cabe: el conector entrega el contenido al chat, no al contenedor donde corren los scripts. Claude lo dice y le pide a la usuaria que suba el archivo al chat o que reemplace el de `Datos descargados/`. *(Se deduce de cómo trabaja el conector; la descarga no se probó.)*
+  5. Lo leído de Drive se trata como lo de `Datos descargados/`: si trae teléfonos o celulares, no se copia y se avisa de inmediato; y no se copia a los repos (públicos) por iniciativa propia.
 
 ## 0.6 La fuente del código es el repositorio
 
@@ -130,7 +138,7 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 - **Los rangos de líneas** de la tabla «Mapa de bloques por .gs» de `Contexto_Base_Web.md` quedan desactualizados al reordenar; los ids `§Bxxx` de los comentarios siguen resolviendo. Se deja constancia en el contexto, pero no se rehacen los rangos.
 - **Cómo se aplica este orden a los `.gs` que ya existen** (el avance y lo que falta están en el pendiente `PF285` de «Abiertos» de `Contexto_Base_Web.md`):
   1. **Por partes pequeñas, ejecutables dentro de una sesión gratuita:** un archivo por parte; si es muy grande, un tramo.
-  2. **Al terminar cada parte** se verifica, se hace el commit y el push a `main` y solo entonces se sigue con la siguiente, como pide 0.2: la sesión puede cortarse y lo que no se subió se pierde, así que **nunca se acumulan varias partes sin subir, aunque se pueda hacer más trabajo**.
+  2. **Cada parte se sube al terminar, según 0.2** (verificar, commit y push antes de seguir con la siguiente); nunca se acumulan varias partes sin subir, aunque se pueda hacer más trabajo.
   3. **Un commit por cada parte de trabajo** (nunca una sola subida para varias partes).
   4. El contexto y el `CHANGELOG.md` se editan **una sola vez por tanda**, al final, en su propio commit (0.2). No hace falta detenerse a informar después de cada parte.
   5. El avance queda en los mensajes de commit (empiezan con «Orden de archivo:») y el pendiente del contexto se actualiza al final de la tanda; si la sesión se corta, se retoma con `git log` y la lista de archivos hechos.
@@ -238,7 +246,7 @@ Antes del commit se busca la secuencia de tres comillas inversas con ``grep -n -
 5. **Editar** en el clon solo los archivos necesarios (secciones 3 a 6; 0.9 para ubicar código nuevo).
 6. **Verificar:** sintaxis (`node --check` sobre una copia `.js` para los `.gs`), integridad del archivo, funciones conservadas, ausencia de duplicados, coherencia con los demás archivos, nombre exacto, ausencia de restos de formato (sección 6) e idioma (`verificar_idioma.py`; ver «Idioma»).
 7. **Subir** a `main` apenas termina el cambio, en un commit pequeño (0.2).
-8. **Al terminar la tanda:** lista de archivos modificados o creados con su commit (0.2), recordatorios de 0.3 (diciendo proyecto y archivo, como pide 0.8) y, al final, el contexto (0.4).
+8. **Cerrar la tanda** según 0.2 (contexto, lista de archivos, pendiente de GitHub Desktop y recordatorios de 0.3).
 
 ---
 
@@ -262,7 +270,7 @@ La usuaria puede pegar conversaciones con otras IAs, logs, errores, código anti
 
 # 9. Cambios incrementales y continuidad entre sesiones
 
-Los cambios se entregan en tandas chicas e incrementales, para evitar que la sesión se corte sin haber devuelto los archivos. **Cada cambio se sube a GitHub apenas se termina y se continúa con los demás de la misma tanda; el contexto se edita al final de la tanda** (0.2).
+Los cambios se entregan en tandas chicas e incrementales, para evitar que la sesión se corte sin haber devuelto los archivos. La subida de cada cambio y la excepción del contexto están en 0.2.
 
 No debe perderse información entre una conversación y la siguiente:
 
