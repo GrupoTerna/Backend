@@ -30,10 +30,46 @@
  * GUERRA_ESTATICO_REPUBLICAR_MIN minutos (para que `_publicadoEn` no envejezca: guerra.html descarta
  * el archivo si tiene más de 3 h).
  */
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Guerra estático: publicar ahora
+//  Parte 2 — Funciones que no se corren a mano
+//    - Guerra estático: armar y publicar
+//    - Publicar archivos en la rama de datos (ayudas comunes con roster, home y torneos)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var GUERRA_ESTATICO_ARCHIVO = 'guerra.json';
+
 var GUERRA_TOP_ESTATICO_ARCHIVO = 'guerra_top.json'; // NUEVO 08-oct-2026: solo lo que usa el top semanal de index.html, recortado (ver _guerraTopRecortado_)
+
 var GUERRA_CTX_ESTATICO_ARCHIVO = 'guerra_ctx.json'; // NUEVO 08-oct-2026: solo {ctx, _publicadoEn} (~1 KB) para perfil.html, que de guerra solo necesita ctx
+
 var GUERRA_ESTATICO_REPUBLICAR_MIN = 50;
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Guerra estático: publicar ahora -----
+
+/**
+ * publicarGuerraEstatico()
+ * Atajo manual (ejecutar desde el editor): publica ya el archivo, sin esperar al bot. Úsalo la primera
+ * vez para comprobar el token y el repo; el resultado queda en verDiagnosticoGuerraVivo() y en el log.
+ */
+function publicarGuerraEstatico() {
+  var datos = _webGuerraEnVivoCompleta_();
+  PropertiesService.getScriptProperties().deleteProperty('GUERRA_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
+  var ok = _publicarGuerraEstatico_(datos);
+  Logger.log('[GuerraEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Guerra estático: armar y publicar -----
 
 function _publicarGuerraEstatico_(datos) {
   var t0 = Date.now();
@@ -87,11 +123,6 @@ function _publicarGuerraEstatico_(datos) {
   }
 }
 
-function _guerraEstaticoFallo_(paso, r) {
-  _diagGuerraVivo_('[GuerraEstatico] falló el paso ' + paso + ': HTTP ' + r.code + ' ' + String(r.text || '').substr(0, 300));
-  return false;
-}
-
 /**
  * _guerraTopRecortado_(publica)
  * Arma el contenido de guerra_top.json para el top semanal de index.html (cargarTopSemana()):
@@ -112,6 +143,13 @@ function _guerraTopRecortado_(publica) {
   }
   return { valoresDiariosSelectores: sel, valoresDiariosPorSemana: reducido };
 }
+
+function _guerraEstaticoFallo_(paso, r) {
+  _diagGuerraVivo_('[GuerraEstatico] falló el paso ' + paso + ': HTTP ' + r.code + ' ' + String(r.text || '').substr(0, 300));
+  return false;
+}
+
+// ----- Publicar archivos en la rama de datos (ayudas comunes con roster, home y torneos) -----
 
 /**
  * _ghPublicarArchivo_(token, repo, rama, archivo, b64, mensaje)
@@ -192,16 +230,4 @@ function _ghFetch_(token, metodo, ruta, cuerpo) {
   var obj = null;
   try { obj = JSON.parse(texto); } catch (e) { /* respuesta no JSON */ }
   return { code: resp.getResponseCode(), body: obj, text: texto };
-}
-
-/**
- * publicarGuerraEstatico()
- * Atajo manual (ejecutar desde el editor): publica ya el archivo, sin esperar al bot. Úsalo la primera
- * vez para comprobar el token y el repo; el resultado queda en verDiagnosticoGuerraVivo() y en el log.
- */
-function publicarGuerraEstatico() {
-  var datos = _webGuerraEnVivoCompleta_();
-  PropertiesService.getScriptProperties().deleteProperty('GUERRA_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
-  var ok = _publicarGuerraEstatico_(datos);
-  Logger.log('[GuerraEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
 }
