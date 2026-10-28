@@ -1241,7 +1241,9 @@ var CR_TIPOS_CAMBIO_REAL_ = { 'Ascenso': true, 'Degradación': true, 'Expulsión
  */
 function _leerVerificacionCambioRangoHistorial_(parId) {
   var prep = _prepararVerificacionCR_(parId);
-  return _verificarCambioRangoDesdeRegistros_(prep.registros, _claveDiaLimaCR_, prep.opciones);
+  var v = _verificarCambioRangoDesdeRegistros_(prep.registros, _claveDiaLimaCR_, prep.opciones);
+  _explicarExcepcionalesCR_(v);
+  return v;
 }
 
 /**
@@ -1292,7 +1294,84 @@ function _verificarYMarcarCambioRangoHistorial_(parId) {
     var n = notas[x.tag + '|' + x.tipo + '|' + x.rango2];
     if (n) x.nota = n;
   });
+  _explicarExcepcionalesCR_(v);
   return v;
+}
+
+/**
+ * _requisitosIncumplidosAscensoCR_(bloque, rolKey, glob, prom, miembroVigente, wspG) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
+ * De los requisitos de Ascenso de un rol y un clan (`bloque` = fila por clan de CR_Lista con minCR[rol] y ataques[rol]; `glob` = { barcos, miembroActivo, whatsapp }), devuelve los que la cuenta NO cumplió con sus promedios `prom`
+ * (lo que devuelve _getPromediosCRParaJugador()). Mismo criterio que _cumpleRequisitoCR() (26_Torneos_Core.gs) y mismo texto que _ncTextoRequisitoVsReal() (29_Docs_NoCalificados.gs).
+ * Devuelve un arreglo de textos, p. ej. ['Medallas 850 (se pide 1000)', 'Ataques 12 (se pide 16)']; vacío si cumple todos.
+ */
+function _requisitosIncumplidosAscensoCR_(bloque, rolKey, glob, prom, miembroVigente, wspG) {
+  var out = [];
+  var minCR = bloque.minCR[rolKey], atq = bloque.ataques[rolKey];
+  glob = glob || {};
+  function num(n) { return String(Math.round((Number(n) || 0) * 10) / 10); }
+  if (minCR && minCR.activo && !_fameCumpleRequisito(prom, minCR.qty)) {
+    out.push('Medallas ' + num(prom.fameProm) + ' (se pide ' + minCR.qty + ')');
+  }
+  if (atq && atq.activo && !_ataquesCumplenRequisito(prom, atq.qty)) {
+    var exentos = Number(prom.ataquesExentos) > 0 ? ', ' + prom.ataquesExentos + ' exonerados por domingo opcional' : '';
+    out.push('Ataques ' + num(prom.ataquesProm) + ' (se pide ' + atq.qty + exentos + ')');
+  }
+  if (glob.barcos && glob.barcos.activo && !_barcosCumplenRequisito(prom, glob.barcos.qty)) {
+    var barcos = (prom.barcosSuma !== undefined && prom.barcosSuma !== null) ? prom.barcosSuma : prom.barcosProm;
+    out.push('Barcos ' + num(barcos) + ' (máximo ' + glob.barcos.qty + ')');
+  }
+  if (glob.miembroActivo && glob.miembroActivo.activo && !miembroVigente) {
+    out.push('Miembro activo (no figura en un clan de la familia)');
+  }
+  if (glob.whatsapp && glob.whatsapp.activo && String(wspG || '').trim() !== 'Sí') {
+    out.push('WhatsApp (se exige «Sí» y figura «' + (String(wspG || '').trim() || 'vacío') + '»)');
+  }
+  return out;
+}
+
+/**
+ * _explicarExcepcionalesCR_(v) [→ Contexto_Base_Web.md §PF286]
+ * A cada cambio aplicado SIN propuesta en la corrida (`v.excepcionales` con `sinPropuesta`) que sea un Ascenso o un Ascenso de clan, le agrega qué requisito de Ascenso del par de la corrida no cumplió la cuenta:
+ * `incumple` (arreglo de textos, vacío si cumplía todos), `evaluadoContra` (par, rol y clan) y, cuando no se pudo evaluar o no hay nada que mostrar, `requisitoNota`. Evalúa con el rango que la cuenta tenía ANTES del cambio (el del registro) y con los
+ * promedios de las semanas del par; solo lee. Degradación y Expulsión no se explican aquí: sus requisitos son los de Descenso, que dependen de las semanas completas de cada cuenta. Nunca corta la verificación: si algo falla, lo deja en `requisitoNota`.
+ */
+function _explicarExcepcionalesCR_(v) {
+  var cand = (v.excepcionales || []).filter(function (x) { return x.sinPropuesta && x.tag && (x.tipo === 'Ascenso' || x.tipo === 'Ascenso de clan'); });
+  if (!cand.length) return;
+  function nota(txt) { cand.forEach(function (x) { if (!x.incumple) x.requisitoNota = txt; }); }
+  try {
+    if (!/^A_/.test(String(v.parId || ''))) { nota('No se pudo evaluar: la corrida no tiene un par de CR_Lista identificado.'); return; }
+    var par = _cargarParCambioRango_(v.parId, 'D_' + String(v.parId).slice(2));
+    if (!par.ok) { nota('No se pudo evaluar contra el par ' + v.parId + ': ' + par.error); return; }
+    var ctxReal = _getCtx();
+    var semanas = par.filaAscenso.semanas;
+    if (!semanas || !semanas.length) { nota('No se pudo evaluar: el par ' + v.parId + ' no tiene semanas.'); return; }
+    if (_semanasPendientesCR(semanas, ctxReal).length) { nota('No se pudo evaluar: las semanas del par ' + v.parId + ' todavía no terminan.'); return; }
+
+    var porTag = _getTrofeosYAtaquesSemanalesPorTag(semanas, ctxReal, true, false);
+    var glob = { barcos: par.filaAscenso.barcos, miembroActivo: par.filaAscenso.miembroActivo, whatsapp: par.filaAscenso.whatsapp };
+    var porClan = {};
+    par.filaAscenso.porClan.forEach(function (b) { porClan[b.clan] = b; });
+    var wspPorTag = {};
+    if (glob.whatsapp && glob.whatsapp.activo) {
+      _leerDirectorioFisicoComoDC(_getSs()).forEach(function (fila) { wspPorTag[String(fila[DC.TAG - 1] || '').trim()] = String(fila[DC.WSP_G - 1] || '').trim(); });
+    }
+    var roles = { 'miembro': 'miembro', 'veterano': 'veterano', 'colider': 'colider' };
+    cand.forEach(function (x) {
+      var rolKey = roles[String(x.rango || '').trim().toLowerCase().replace('í', 'i').replace('é', 'e')];
+      var bloque = porClan[x.clan];
+      if (!rolKey) { x.requisitoNota = 'No se pudo evaluar: el registro no trae el rango que tenía la cuenta antes del cambio.'; return; }
+      if (!bloque) { x.requisitoNota = 'No se pudo evaluar: el clan «' + x.clan + '» no figura en el par ' + v.parId + '.'; return; }
+      var prom = _getPromediosCRParaJugador(x.tag, semanas, ctxReal, porTag);
+      var mv = (glob.miembroActivo && glob.miembroActivo.activo) ? _esMiembroVigenteEnClanesFamilia(x.tag) : false;
+      x.incumple = _requisitosIncumplidosAscensoCR_(bloque, rolKey, glob, prom, mv, wspPorTag[x.tag]);
+      x.evaluadoContra = 'Ascenso ' + v.parId + ', ' + _ncNombreRol(rolKey) + ' de ' + x.clan;
+      if (!x.incumple.length) x.requisitoNota = 'Con los datos de hoy cumplía todos los requisitos de Ascenso del par; revisa por qué la evaluación no lo propuso.';
+    });
+  } catch (e) {
+    Logger.log('[CambioRango-Verificar] No se pudo explicar los cambios sin propuesta: ' + e.message);
+    nota('No se pudo evaluar: ' + e.message);
+  }
 }
 
 /**
@@ -1504,6 +1583,7 @@ function _verificarCambioRangoDesdeRegistros_(registros, claveDia, opciones) {
         propias.map(describir).join(' o ') + '.';
     } else {
       it.motivo = 'No tenía propuesta en la corrida: la evaluación no la dio por calificada para este cambio.';
+      it.sinPropuesta = true; // PF286: _explicarExcepcionalesCR_() solo explica estos
     }
     res.excepcionales.push(it);
   });
