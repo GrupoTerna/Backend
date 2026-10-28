@@ -38,17 +38,53 @@
  * solo «torneos» y conserva el `historial` ya publicado (_leerHistorialTorneosPublicado_); con `completo` (publicarTorneosEstatico() manual)
  * recalcula las dos. El historial, por tanto, solo se renueva con la manual, y esa podría no terminar. [→ Contexto_Base_Web.md §PF091]
  */
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Torneos estático: publicar ahora
+//  Parte 2 — Funciones que no se corren a mano
+//    - Torneos estático: armar y publicar
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var TORNEOS_ESTATICO_ARCHIVO = 'torneos.json';
+
 var TORNEOS_ESTATICO_REPUBLICAR_MIN = 50;
+
 var TORNEOS_ESTATICO_CALCULAR_CADA_MIN = 90;
+
 // 17-oct-2026 (PF091, decisión B): desde el bot no se calcula si a la ejecución le quedan menos de esto antes del límite de la plataforma
 // (CFG.PLATAFORMA_LIMITE_EJECUCION_MS). Estimación (calcular las dos secciones tardó ~4 min en la primera corrida manual); no medida con exactitud.
 var TORNEOS_ESTATICO_MIN_RESTANTE_MS = 250 * 1000;
+
 // 17-oct-2026: modo SIN historial (el de Torneo en vivo y el del bot). Con «torneos» (≈ 83-87 s en el registro) más la publicación (no medida)
 // bastan ~150 s: estimación, no medida con exactitud. [→ Contexto_Base_Web.md §PF091]
 var TORNEOS_ESTATICO_MIN_RESTANTE_SOLO_TORNEOS_MS = 150 * 1000;
+
 // Marca de inicio de la ejecución: el código global se evalúa al arrancar cada ejecución de Apps Script.
 var TORNEOS_ESTATICO_EJEC_INICIO_MS_ = Date.now();
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Torneos estático: publicar ahora -----
+
+/**
+ * publicarTorneosEstatico()
+ * Atajo manual (ejecutar desde el editor): publica ya torneos.json. El resultado queda en
+ * verDiagnosticoGuerraVivo() y en el log. Útil justo después de registrar o corregir un torneo.
+ */
+function publicarTorneosEstatico() {
+  PropertiesService.getScriptProperties().deleteProperty('TORNEOS_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
+  var ok = _publicarTorneosEstatico_(true, true); // 1.º true: calcula aunque se haya calculado hace poco; 2.º true: recalcula también el historial
+  Logger.log('[TorneosEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Torneos estático: armar y publicar -----
 
 function _publicarTorneosEstatico_(forzar, completo) {
   var t0 = Date.now();
@@ -156,15 +192,4 @@ function _leerHistorialTorneosPublicado_(token, repo, rama) {
     var obj = JSON.parse(txt);
     return (obj && obj.historial) ? obj.historial : null;
   } catch (e) { return null; }
-}
-
-/**
- * publicarTorneosEstatico()
- * Atajo manual (ejecutar desde el editor): publica ya torneos.json. El resultado queda en
- * verDiagnosticoGuerraVivo() y en el log. Útil justo después de registrar o corregir un torneo.
- */
-function publicarTorneosEstatico() {
-  PropertiesService.getScriptProperties().deleteProperty('TORNEOS_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
-  var ok = _publicarTorneosEstatico_(true, true); // 1.º true: calcula aunque se haya calculado hace poco; 2.º true: recalcula también el historial
-  Logger.log('[TorneosEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
 }
