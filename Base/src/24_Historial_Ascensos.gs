@@ -1152,7 +1152,7 @@ function _leerRegistrosHistorialAscensos_() {
     var tsd = _tsdDesdeFecha_(fecha, offset, refTemporadas);
     return {
       tag: String(f[ASC.TAG - 1] || '').trim(),
-      nombre: String(f[ASC.NOMBRE - 1] || '').trim(),
+      nombre: (f[ASC.NOMBRE - 1] instanceof Date) ? String(sh.getRange(i + 2, ASC.NOMBRE).getDisplayValue() || '').trim() : String(f[ASC.NOMBRE - 1] || '').trim(), // un nombre como «15/8/2002» lo convierte Sheets en fecha: se usa el texto que muestra la celda
       clan: String(f[ASC.CLAN - 1] || '').trim(),
       rango: String(f[ASC.RANGO - 1] || '').trim(),
       rango2: String(f[ASC.RANGO_2 - 1] || '').trim(),
@@ -1289,7 +1289,9 @@ function _verificarYMarcarCambioRangoHistorial_(parId) {
       }
     }
   }
-  v.marcadas = marcadas.map(function (m) { return { tag: m.tag, nombre: m.nombre, tipo: m.tipo, rango: m.rango, rango2: m.rango2, motivo: m.motivo }; });
+  v.marcadas = marcadas.map(function (m) {
+    return { tag: m.tag, nombre: m.nombre, clan: m.clan, fechaTxt: isFinite(m.fechaMs) ? _claveDiaLimaCR_(m.fechaMs).split('-').reverse().join('/') : '', tipo: m.tipo, rango: m.rango, rango2: m.rango2, motivo: m.motivo };
+  });
   v.pendientes.forEach(function (x) {
     var n = notas[x.tag + '|' + x.tipo + '|' + x.rango2];
     if (n) x.nota = n;
@@ -1507,14 +1509,14 @@ function _decidirPropuestaCRRealizada_(prop, cuenta) {
 
 /**
  * _planificarMarcadoRealizadoCR_(registros, parId, cuentasPorTag) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
- * Recorre las propuestas «Planificado» del par y aplica _decidirPropuestaCRRealizada_() con la cuenta de cada una. Devuelve { marcar: [{ fila, tag, nombre, tipo, rango, rango2, motivo }], notas: { 'tag|tipo|rango2': nota } }. No modifica nada.
+ * Recorre las propuestas «Planificado» del par y aplica _decidirPropuestaCRRealizada_() con la cuenta de cada una. Devuelve { marcar: [{ fila, tag, nombre, clan, fechaMs, tipo, rango, rango2, motivo }], notas: { 'tag|tipo|rango2': nota } }. No modifica nada.
  */
 function _planificarMarcadoRealizadoCR_(registros, parId, cuentasPorTag) {
   var plan = { marcar: [], notas: {} };
   (registros || []).forEach(function (r) {
     if (r.parId !== parId || r.estadoProp !== 'Planificado' || !r.tag || !r.fila) return;
     var d = _decidirPropuestaCRRealizada_(r, (cuentasPorTag || {})[r.tag] || null);
-    if (d.realizada) plan.marcar.push({ fila: r.fila, tag: r.tag, nombre: r.nombre, tipo: r.tipo, rango: r.rango, rango2: r.rango2, motivo: d.motivo });
+    if (d.realizada) plan.marcar.push({ fila: r.fila, tag: r.tag, nombre: r.nombre, clan: r.clan, fechaMs: r.fechaMs, tipo: r.tipo, rango: r.rango, rango2: r.rango2, motivo: d.motivo });
     else if (d.nota) plan.notas[r.tag + '|' + r.tipo + '|' + r.rango2] = d.nota;
   });
   return plan;
