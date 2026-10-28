@@ -1,13 +1,19 @@
-// ==============================================================================
 // 33_CaminoLeyendas.gs
 // Backup_CaminoLeyendas.csv, un CSV EXCLUSIVO de Camino de Leyendas por jugador, 
 // del que la web (perfil.html) lee PRIMERO; el JSON de Drive queda solo como respaldo.
-// ==============================================================================
 //
 // NUEVO 24-sep-2026: CSV exclusivo de Camino de Leyendas + leagueStatistics (21 columnas, una fila por jugador); fuente = cache /players; modos PLAYERS_API_ENABLED; merge por Tag sin vaciar el CSV. [→ Contexto_Base_Web.md §33B001]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Camino de Leyendas: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Camino de Leyendas: leer, armar y guardar el CSV (lo usa updateCaminoLeyendasSheet)
+//    - Camino de Leyendas: respuestas web (CSV primero)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var CAMINO_LEYENDAS_CSV = 'Backup_CaminoLeyendas.csv';
+
 var CAMINO_LEYENDAS_HEADERS = [
   'N°', 'Tag',
   'Actual_Liga', 'Actual_Trofeos', 'Actual_Rango',
@@ -19,66 +25,13 @@ var CAMINO_LEYENDAS_HEADERS = [
   'Liga_Mejor_Id', 'Liga_Mejor_Trofeos', 'Liga_Mejor_Mejor'
 ];
 
-// ----- Lectura / escritura del CSV -----
+var _CL_CSV_MEMO = null; // memo por ejecución: la misma petición web lo usa 2 veces
 
-// Lee Backup_CaminoLeyendas.csv como {headers, rows}; si no existe, devuelve encabezados por defecto. [→ Contexto_Base_Web.md §33B002]
-function _leerCaminoLeyendasCSV() {
-  var csvText = _loadCSVFromDrive(CAMINO_LEYENDAS_CSV);
-  if (!csvText) return { headers: CAMINO_LEYENDAS_HEADERS.slice(), rows: [] };
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: CAMINO_LEYENDAS_HEADERS.slice(), rows: [] };
-  var headers = parsed[0], rows = parsed.slice(1);
-  // CSV creado antes de las columnas de leagueStatistics: se completan
-  // encabezado y filas (se guarda en la próxima corrida del sync).
-  for (var h = headers.length; h < CAMINO_LEYENDAS_HEADERS.length; h++) headers.push(CAMINO_LEYENDAS_HEADERS[h]);
-  for (var r = 0; r < rows.length; r++) {
-    while (rows[r].length < CAMINO_LEYENDAS_HEADERS.length) rows[r].push('');
-  }
-  return { headers: headers, rows: rows };
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
-function _guardarCaminoLeyendasCSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive(CAMINO_LEYENDAS_CSV, _encodeCSV([headers].concat(rows)));
-}
-
-// ----- Sincronización (JSON de /players -> CSV) -----
-
-function _clCelda(v) {
-  return (v === undefined || v === null) ? '' : v;
-}
-
-// Arma la fila del CSV de un jugador a partir de su JSON de /players (pd). [→ Contexto_Base_Web.md §33B003]
-function _armarFilaCaminoLeyendas(tag, pd) {
-  var act = pd.currentPathOfLegendSeasonResult || {};
-  var ant = pd.lastPathOfLegendSeasonResult    || {};
-  var mej = pd.bestPathOfLegendSeasonResult    || {};
-  var ls  = pd.leagueStatistics || {};
-  var lsAct = ls.currentSeason  || {};
-  var lsAnt = ls.previousSeason || {};
-  var lsMej = ls.bestSeason     || {};
-  return [
-    '', tag,
-    _clCelda(act.leagueNumber), _clCelda(act.trophies), _clCelda(act.rank),
-    _clCelda(ant.leagueNumber), _clCelda(ant.trophies), _clCelda(ant.rank),
-    _clCelda(mej.leagueNumber), _clCelda(mej.trophies), _clCelda(mej.rank),
-    _clCelda(pd.legacyTrophyRoadHighScore),
-    _clCelda(lsAct.id), _clCelda(lsAct.trophies), _clCelda(lsAct.bestTrophies),
-    _clCelda(lsAnt.id), _clCelda(lsAnt.trophies), _clCelda(lsAnt.bestTrophies),
-    _clCelda(lsMej.id), _clCelda(lsMej.trophies), _clCelda(lsMej.bestTrophies)
-  ];
-}
-
-function _armarFilasCaminoLeyendasParaTags(tags) {
-  var filas = [];
-  for (var i = 0; i < tags.length; i++) {
-    var pd = _getPlayerCache(tags[i]);
-    if (!pd) continue;
-    filas.push(_armarFilaCaminoLeyendas(tags[i], pd));
-  }
-  return filas;
-}
+// ----- Hoja Camino de Leyendas: actualizar -----
 
 // Actualiza el CSV según PLAYERS_API_ENABLED; reusa _mergearCards2CSV() (merge por Tag, nunca vacía). [→ Contexto_Base_Web.md §33B004]
 function updateCaminoLeyendasSheet() {
@@ -119,6 +72,69 @@ function updateCaminoLeyendasSheet() {
     ' jugador(es). Nunca se vacía: el resto de tags conserva su fila anterior.');
 }
 
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Camino de Leyendas: leer, armar y guardar el CSV (lo usa updateCaminoLeyendasSheet) -----
+
+// Lee Backup_CaminoLeyendas.csv como {headers, rows}; si no existe, devuelve encabezados por defecto. [→ Contexto_Base_Web.md §33B002]
+function _leerCaminoLeyendasCSV() {
+  var csvText = _loadCSVFromDrive(CAMINO_LEYENDAS_CSV);
+  if (!csvText) return { headers: CAMINO_LEYENDAS_HEADERS.slice(), rows: [] };
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: CAMINO_LEYENDAS_HEADERS.slice(), rows: [] };
+  var headers = parsed[0], rows = parsed.slice(1);
+  // CSV creado antes de las columnas de leagueStatistics: se completan
+  // encabezado y filas (se guarda en la próxima corrida del sync).
+  for (var h = headers.length; h < CAMINO_LEYENDAS_HEADERS.length; h++) headers.push(CAMINO_LEYENDAS_HEADERS[h]);
+  for (var r = 0; r < rows.length; r++) {
+    while (rows[r].length < CAMINO_LEYENDAS_HEADERS.length) rows[r].push('');
+  }
+  return { headers: headers, rows: rows };
+}
+
+function _clCelda(v) {
+  return (v === undefined || v === null) ? '' : v;
+}
+
+// Arma la fila del CSV de un jugador a partir de su JSON de /players (pd). [→ Contexto_Base_Web.md §33B003]
+function _armarFilaCaminoLeyendas(tag, pd) {
+  var act = pd.currentPathOfLegendSeasonResult || {};
+  var ant = pd.lastPathOfLegendSeasonResult    || {};
+  var mej = pd.bestPathOfLegendSeasonResult    || {};
+  var ls  = pd.leagueStatistics || {};
+  var lsAct = ls.currentSeason  || {};
+  var lsAnt = ls.previousSeason || {};
+  var lsMej = ls.bestSeason     || {};
+  return [
+    '', tag,
+    _clCelda(act.leagueNumber), _clCelda(act.trophies), _clCelda(act.rank),
+    _clCelda(ant.leagueNumber), _clCelda(ant.trophies), _clCelda(ant.rank),
+    _clCelda(mej.leagueNumber), _clCelda(mej.trophies), _clCelda(mej.rank),
+    _clCelda(pd.legacyTrophyRoadHighScore),
+    _clCelda(lsAct.id), _clCelda(lsAct.trophies), _clCelda(lsAct.bestTrophies),
+    _clCelda(lsAnt.id), _clCelda(lsAnt.trophies), _clCelda(lsAnt.bestTrophies),
+    _clCelda(lsMej.id), _clCelda(lsMej.trophies), _clCelda(lsMej.bestTrophies)
+  ];
+}
+
+function _armarFilasCaminoLeyendasParaTags(tags) {
+  var filas = [];
+  for (var i = 0; i < tags.length; i++) {
+    var pd = _getPlayerCache(tags[i]);
+    if (!pd) continue;
+    filas.push(_armarFilaCaminoLeyendas(tags[i], pd));
+  }
+  return filas;
+}
+
+/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
+function _guardarCaminoLeyendasCSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive(CAMINO_LEYENDAS_CSV, _encodeCSV([headers].concat(rows)));
+}
+
 // Modo 'admin': actualiza solo filas de admins y preserva el resto. [→ Contexto_Base_Web.md §33B005]
 function _actualizarCaminoLeyendasSoloAdmins() {
   var ss = _getSs();
@@ -154,9 +170,7 @@ function _actualizarCaminoLeyendasSoloAdmins() {
   Logger.log('[CaminoLeyendas] ' + CAMINO_LEYENDAS_CSV + ' actualizado: ' + nuevas.length + ' admin(es) (modo ADMIN, preservando no-admins).');
 }
 
-// ----- Lectura para la web (CSV primero, JSON de respaldo) -----
-
-var _CL_CSV_MEMO = null; // memo por ejecución: la misma petición web lo usa 2 veces
+// ----- Camino de Leyendas: respuestas web (CSV primero) -----
 
 function _clCsvMemo() {
   if (!_CL_CSV_MEMO) _CL_CSV_MEMO = _leerCaminoLeyendasCSV();
