@@ -1216,6 +1216,10 @@ function procesarTorneos() {
     Logger.log('[Torneos] procesarTListaNuevasFilas() quedó incompleta por presupuesto/tanda de ' +
                'RoyaleAPI -- se corta procesarTorneos() aquí, sin tocar Participantes calificados/' +
                'T_Control todavía, para que la próxima continuación retome el refetch pendiente.');
+    if (idsNuevos.progresoRefetch) { // PF285: filas de T_Lista resueltas hasta el corte; «en esta tanda» = torneos consultados a RoyaleAPI en esta tanda
+      _logProgresoPaso_('Torneos', 'T_Lista, filas resueltas', Math.max(idsNuevos.progresoRefetch.resueltas - idsNuevos.progresoRefetch.consultas, 0),
+                        idsNuevos.progresoRefetch.consultas, idsNuevos.progresoRefetch.total, 'filas');
+    }
     return false;
   }
 
@@ -1960,6 +1964,7 @@ function procesarTListaNuevasFilas(ss) {
   var _inicioRefetchTorneos = Date.now();
   var _consultasRefetchEnEstaTanda = 0;
   var _cortadoPorPresupuestoRefetch = false;
+  var _progresoRefetch = null; // PF285: filas resueltas al cortar, consultas de esta tanda y total; lo usa procesarTorneos() para anotar el avance del paso
 
   for (var i = 0; i < datos.length; i++) {
     var fila = datos[i];
@@ -2032,6 +2037,7 @@ function procesarTListaNuevasFilas(ss) {
                  filaHoja + ' (' + _consultasRefetchEnEstaTanda + ' consulta(s) ya hechas en ' +
                  'esta tanda). Se corta aquí; la próxima continuación retoma los torneos que falten.');
       _cortadoPorPresupuestoRefetch = true;
+      _progresoRefetch = { resueltas: i, consultas: _consultasRefetchEnEstaTanda, total: numFilas }; // PF285: las filas 0..i-1 ya quedaron resueltas
       break;
     }
     _consultasRefetchEnEstaTanda++;
@@ -2243,6 +2249,7 @@ function procesarTListaNuevasFilas(ss) {
 
   idsProcesados.nuevosGenuinos = idsGenuinosNuevos;
   idsProcesados.cortadoPorPresupuesto = _cortadoPorPresupuestoRefetch;
+  idsProcesados.progresoRefetch = _progresoRefetch; // PF285
   return idsProcesados;
 }
 
