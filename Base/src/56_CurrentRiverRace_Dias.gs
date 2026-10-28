@@ -1,4 +1,3 @@
-// ==============================================================================
 // 56_CurrentRiverRace_Dias.gs
 // Ataques y fame por día de cada jugador, leídos de las capturas de CurrentRiverRace guardadas en Drive
 // (21-oct-2026; Contexto_Base_Web.md §PF139, regla 1: «lo más confiable son los CurrentRiverRace»).
@@ -20,17 +19,91 @@
 //     decksUsedToday = 0. Si no hay ninguna de las dos, el día queda en null (no se estima aquí).
 //   - Fame del domingo: el total semanal que pasa quien llama.
 // Con la tabla de fame (_fameTablaDia_) quien llama completa los días en null.
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - CurrentRiverRace por días: prueba de solo lectura
+//  Parte 2 — Funciones que no se corren a mano
+//    - CurrentRiverRace por días: capturas de Drive y días del jugador
+//    - CurrentRiverRace por días: usos de otras cadenas (cierre y totales)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var CRR_DIAS_LETRAS = 'JVSD';   // desplazamiento 0..3 = jueves a domingo (PeriodIndex % 7 - 3)
 
-/** Nombre del archivo -> { temporada, semana, periodIndex, letra, off } o null. Ej.: 'T-03  S-02 P.I-11-V 17-07-2026 11.35 - Clan - currentriverrace.json'. Los días de entrenamiento (L, M, X) devuelven null. */
-function _crrParsearNombre_(nombre) {
-  var m = /^T-(\d+)\s+S-(\d+) P\.I-(\d+)-([LMXJVSD]) /.exec(String(nombre || ''));
-  if (!m) return null;
-  var off = CRR_DIAS_LETRAS.indexOf(m[4]);
-  if (off < 0) return null;
-  return { temporada: Number(m[1]), semana: Number(m[2]), periodIndex: Number(m[3]), letra: m[4], off: off };
+var _CRR_CACHE_SEMANA_ = {};
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- CurrentRiverRace por días: prueba de solo lectura -----
+
+/**
+ * Prueba manual SOLO LECTURA: lee T3 S1 desde Drive y revisa a Chistris (#2GG8PJ8GC), cuyo valor real ya se comprobó a mano:
+ * ataques 4|4|4|4 y fame por día 600|800|800|700 (total semanal 16 ataques y 2900 de fame). No escribe nada.
+ */
+function probarCurrentRiverRaceDias() {
+  var mapa = _crrCapturasDeSemana_(3, 1);
+  var tags = Object.keys(mapa);
+  var r = _crrDiasDeJugador_(3, 1, '#2GG8PJ8GC', 16, 2900);
+  var ata = r.ataques.join('|'), fame = _crrFameDia_(r.fameAcum).join('|');
+  var ok = ata === '4|4|4|4' && fame === '600|800|800|700';
+  Logger.log('[CRR] T3 S1: ' + tags.length + ' jugador(es) con capturas. Chistris: ataques ' + ata + ', fame ' + fame + ' -> ' +
+    (ok ? 'OK (coincide con lo comprobado a mano).' : 'DIFIERE de lo esperado (4|4|4|4 y 600|800|800|700).') + ' (No se escribio nada.)');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- CurrentRiverRace por días: capturas de Drive y días del jugador -----
+
+/**
+ * Punto de entrada para las demás funciones: ataques y fame por día de UN jugador en una semana, según CurrentRiverRace.
+ * totA y totF = totales de la semana (null si no se conocen). Devuelve { ataques, fameAcum, inicio, notas, hayCapturas }.
+ */
+function _crrDiasDeJugador_(temporada, semana, tag, totA, totF) {
+  var caps = _crrCapturasDeSemana_(temporada, semana)[String(tag || '').trim()];
+  var r = _crrResolverJugador_(caps || null, totA, totF);
+  r.hayCapturas = !!caps;
+  return r;
+}
+
+/**
+ * Lee los JSON de CurrentRiverRace de una semana en los clanes Terna (CurrentRiverRace/<clan>/T-xx/S-xx) y devuelve
+ * { tag: { J: [captura], ... } } (ver _crrCapturasDesdeArchivos_). Se guarda en memoria por ejecución. Solo lee.
+ * Solo mira la carpeta de la semana: un archivo que siga suelto en la carpeta del clan (sin mover) no se lee.
+ */
+function _crrCapturasDeSemana_(temporada, semana) {
+  var clave = Number(temporada) + '|' + Number(semana);
+  if (_CRR_CACHE_SEMANA_[clave]) return _CRR_CACHE_SEMANA_[clave];
+  var archivos = [];
+  var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(semana);
+  Object.keys(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_).forEach(function (k) {
+    try {
+      var carpetaClan = DriveApp.getFolderById(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_[k]);
+      var cT = _crrSubcarpeta_(carpetaClan, nT);
+      var cS = cT ? _crrSubcarpeta_(cT, nS) : null;
+      if (!cS) return;
+      var it = cS.getFiles();
+      while (it.hasNext()) {
+        var f = it.next();
+        var nombre = f.getName();
+        if (!_crrParsearNombre_(nombre)) continue;
+        try { archivos.push({ nombre: nombre, datos: JSON.parse(f.getBlob().getDataAsString()) }); }
+        catch (eJson) { Logger.log('[CRR] No se pudo leer ' + nombre + ': ' + eJson.message); }
+      }
+    } catch (eClan) {
+      Logger.log('[CRR] No se pudo leer la carpeta de ' + k + ' (' + nT + ' ' + nS + '): ' + eClan.message);
+    }
+  });
+  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(archivos);
+  return _CRR_CACHE_SEMANA_[clave];
+}
+
+function _crrSubcarpeta_(padre, nombre) {
+  var it = padre.getFoldersByName(nombre);
+  return it.hasNext() ? it.next() : null;
 }
 
 /**
@@ -53,6 +126,15 @@ function _crrCapturasDesdeArchivos_(archivos) {
     });
   });
   return porTag;
+}
+
+/** Nombre del archivo -> { temporada, semana, periodIndex, letra, off } o null. Ej.: 'T-03  S-02 P.I-11-V 17-07-2026 11.35 - Clan - currentriverrace.json'. Los días de entrenamiento (L, M, X) devuelven null. */
+function _crrParsearNombre_(nombre) {
+  var m = /^T-(\d+)\s+S-(\d+) P\.I-(\d+)-([LMXJVSD]) /.exec(String(nombre || ''));
+  if (!m) return null;
+  var off = CRR_DIAS_LETRAS.indexOf(m[4]);
+  if (off < 0) return null;
+  return { temporada: Number(m[1]), semana: Number(m[2]), periodIndex: Number(m[3]), letra: m[4], off: off };
 }
 
 /**
@@ -113,71 +195,7 @@ function _crrFameDia_(fameAcum) {
   return out;
 }
 
-// ----- Lectura de Drive -----
-
-var _CRR_CACHE_SEMANA_ = {};
-
-function _crrSubcarpeta_(padre, nombre) {
-  var it = padre.getFoldersByName(nombre);
-  return it.hasNext() ? it.next() : null;
-}
-
-/**
- * Lee los JSON de CurrentRiverRace de una semana en los clanes Terna (CurrentRiverRace/<clan>/T-xx/S-xx) y devuelve
- * { tag: { J: [captura], ... } } (ver _crrCapturasDesdeArchivos_). Se guarda en memoria por ejecución. Solo lee.
- * Solo mira la carpeta de la semana: un archivo que siga suelto en la carpeta del clan (sin mover) no se lee.
- */
-function _crrCapturasDeSemana_(temporada, semana) {
-  var clave = Number(temporada) + '|' + Number(semana);
-  if (_CRR_CACHE_SEMANA_[clave]) return _CRR_CACHE_SEMANA_[clave];
-  var archivos = [];
-  var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(semana);
-  Object.keys(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_).forEach(function (k) {
-    try {
-      var carpetaClan = DriveApp.getFolderById(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_[k]);
-      var cT = _crrSubcarpeta_(carpetaClan, nT);
-      var cS = cT ? _crrSubcarpeta_(cT, nS) : null;
-      if (!cS) return;
-      var it = cS.getFiles();
-      while (it.hasNext()) {
-        var f = it.next();
-        var nombre = f.getName();
-        if (!_crrParsearNombre_(nombre)) continue;
-        try { archivos.push({ nombre: nombre, datos: JSON.parse(f.getBlob().getDataAsString()) }); }
-        catch (eJson) { Logger.log('[CRR] No se pudo leer ' + nombre + ': ' + eJson.message); }
-      }
-    } catch (eClan) {
-      Logger.log('[CRR] No se pudo leer la carpeta de ' + k + ' (' + nT + ' ' + nS + '): ' + eClan.message);
-    }
-  });
-  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(archivos);
-  return _CRR_CACHE_SEMANA_[clave];
-}
-
-/**
- * Punto de entrada para las demás funciones: ataques y fame por día de UN jugador en una semana, según CurrentRiverRace.
- * totA y totF = totales de la semana (null si no se conocen). Devuelve { ataques, fameAcum, inicio, notas, hayCapturas }.
- */
-function _crrDiasDeJugador_(temporada, semana, tag, totA, totF) {
-  var caps = _crrCapturasDeSemana_(temporada, semana)[String(tag || '').trim()];
-  var r = _crrResolverJugador_(caps || null, totA, totF);
-  r.hayCapturas = !!caps;
-  return r;
-}
-
-/**
- * Prueba manual SOLO LECTURA: lee T3 S1 desde Drive y revisa a Chistris (#2GG8PJ8GC), cuyo valor real ya se comprobó a mano:
- * ataques 4|4|4|4 y fame por día 600|800|800|700 (total semanal 16 ataques y 2900 de fame). No escribe nada.
- */
-function probarCurrentRiverRaceDias() {
-  var mapa = _crrCapturasDeSemana_(3, 1);
-  var tags = Object.keys(mapa);
-  var r = _crrDiasDeJugador_(3, 1, '#2GG8PJ8GC', 16, 2900);
-  var ata = r.ataques.join('|'), fame = _crrFameDia_(r.fameAcum).join('|');
-  var ok = ata === '4|4|4|4' && fame === '600|800|800|700';
-  Logger.log('[CRR] T3 S1: ' + tags.length + ' jugador(es) con capturas. Chistris: ataques ' + ata + ', fame ' + fame + ' -> ' +
-    (ok ? 'OK (coincide con lo comprobado a mano).' : 'DIFIERE de lo esperado (4|4|4|4 y 600|800|800|700).') + ' (No se escribio nada.)');
-}
+// ----- CurrentRiverRace por días: usos de otras cadenas (cierre y totales) -----
 
 /**
  * Para la corrección al cerrar el día (17_GuerraSheet.gs, §PF139): ataques de AYER y fame acumulada al cierre de ayer de un jugador, según
