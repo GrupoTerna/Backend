@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 00:00:25 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 00:10:01 */
 
 
 
@@ -47,29 +47,24 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
 // Orden: 1) subidas, 2) descargas, 3) mantenimiento.
 // Comentario de prueba para obtener el archivo modificado desde Github
 // =============================================================================
-// ------------------------------------------------------------------
-// DESCARGA (zip + txt + gs + md, siempre los 4 a la vez)
-// Además sincroniza GitHub (08_GitHub.gs): .gs sueltos en <Nombre>/src/,
-// consolidado en <Nombre>/respaldo/, INDICE_FUNCIONES.md, Indice_<Nombre>.md y LEEME_IA.md.
-// Si no hay GITHUB_TOKEN en las propiedades del script, GitHub se omite.
-// ------------------------------------------------------------------
 
-/** Descarga el código de la hoja "Base" y crea Base.zip, Base.gs, Base.txt y Base.md (y sincroniza GitHub) */
-function descargarBase() {
-  _descargarProyectoAArchivos('Base');
-  _githubSincronizar_('Base');
-}
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): este archivo no tiene constantes ni variables globales; por partes:
+//  Parte 1 — Funciones que se corren a mano (todas las de este archivo), en este orden, y en cada grupo Base, Generador y Contactos_Secundario:
+//    1) Subidas: primero las de GitHub (normal y forzada), luego zip, txt, gs y md
+//    2) Descargas: normal y forzada
+//    3) Mantenimiento (uso ocasional / peligroso)
+//  Parte 2 — Funciones que no se corren a mano: ninguna
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
-/**
- * Igual que descargarBase(), pero escribe en GitHub aunque haya un "pull pendiente": cambios nuevos
- * en Base/ de GitHub que este proyecto no trajo. Esos cambios de GitHub SE PIERDEN (quedan solo en
- * el historial de git). Úsala solo si quieres que lo de Apps Script pise lo de GitHub.
- */
-function descargarBaseForzado() {
-  _descargarProyectoAArchivos('Base');
-  _githubSincronizar_('Base', true);
-}
-// ------------------------------------------------------------------
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// =============================================================================
+// 1) SUBIDAS (primero las de GitHub)
+// =============================================================================
+
+// ----- Subidas a Base (primero GitHub, luego zip, txt, gs y md) -----
 // SUBIDA A BASE (Funciones independientes por tipo de archivo)
 // "Subir" y "actualizar" ya NO son cosas distintas: cada función de
 // aquí sube el formato indicado al proyecto real de "Base" Y, en el
@@ -79,7 +74,22 @@ function descargarBaseForzado() {
 // conserva el paso opcional de crear/actualizar la hoja "Sistema"
 // (ver el interruptor CREAR_O_ACTUALIZAR_HOJA_SISTEMA en 02_Backstage.gs),
 // que antes vivía en la ya eliminada ejecutarTodoElProceso().
-// ------------------------------------------------------------------
+
+/**
+ * Sube Base/src/ de GitHub: deja el proyecto de Apps Script de "Base"
+ * EXACTAMENTE igual (lo que no esté en GitHub se elimina del proyecto).
+ * Antes guarda en Drive "Base_antes_de_GitHub.zip" (uno solo, se reemplaza) y al terminar
+ * regenera Base.zip/.gs/.txt/.md y el consolidado/índice de GitHub.
+ * Se detiene si src/ parece incompleta (menos de la mitad de los .gs).
+ */
+function subirBaseDesdeGithub() {
+  return _githubTraerAProyectoApps_('Base', false);
+}
+
+/** Igual que subirBaseDesdeGithub(), pero sin la salvaguarda de "src/ incompleta". */
+function subirBaseDesdeGithubForzado() {
+  return _githubTraerAProyectoApps_('Base', true);
+}
 
 /** Sube Base.zip y sincroniza Base.zip/.gs/.txt/.md */
 function subirBaseDesdeZip() {
@@ -109,49 +119,28 @@ function subirBaseDesdeMd() {
   return reporte;
 }
 
-/**
- * Sube Base/src/ de GitHub: deja el proyecto de Apps Script de "Base"
- * EXACTAMENTE igual (lo que no esté en GitHub se elimina del proyecto).
- * Antes guarda en Drive "Base_antes_de_GitHub.zip" (uno solo, se reemplaza) y al terminar
- * regenera Base.zip/.gs/.txt/.md y el consolidado/índice de GitHub.
- * Se detiene si src/ parece incompleta (menos de la mitad de los .gs).
- */
-function subirBaseDesdeGithub() {
-  return _githubTraerAProyectoApps_('Base', false);
-}
-
-/** Igual que subirBaseDesdeGithub(), pero sin la salvaguarda de "src/ incompleta". */
-function subirBaseDesdeGithubForzado() {
-  return _githubTraerAProyectoApps_('Base', true);
-}
-
-// ------------------------------------------------------------------
-// DESCARGA (zip + txt + gs + md, siempre los 4 a la vez)
-// ------------------------------------------------------------------
-
-
-/** Descarga el código del propio "Generador" y crea Generador.zip, Generador.gs, Generador.txt y Generador.md */
-function descargarGenerador() {
-  _descargarProyectoAArchivos('Generador');
-  _githubSincronizar_('Generador');
-}
-
-/**
- * Igual que descargarGenerador(), pero escribe en GitHub aunque haya un "pull pendiente": cambios
- * nuevos en Generador/ de GitHub que este proyecto no trajo. Esos cambios de GitHub SE PIERDEN
- * (quedan solo en el historial de git). Úsala solo si quieres que lo de Apps Script pise lo de GitHub.
- */
-function descargarGeneradorForzado() {
-  _descargarProyectoAArchivos('Generador');
-  _githubSincronizar_('Generador', true);
-}
-
-// ------------------------------------------------------------------
+// ----- Subidas al Generador (primero GitHub, luego zip, txt, gs y md) -----
 // SUBIDA AL GENERADOR (Funciones independientes por tipo de archivo)
 // Mismo comportamiento que arriba: subir cualquier formato del
 // Generador sincroniza automáticamente los otros 3 (Generador.zip/
 // .gs/.txt/.md), sin pasos adicionales.
-// ------------------------------------------------------------------
+
+/**
+ * Sube Generador/src/ de GitHub: deja el proyecto de Apps Script del propio Generador
+ * EXACTAMENTE igual (lo que no esté en GitHub se elimina del proyecto).
+ * Antes guarda en Drive "Generador_antes_de_GitHub.zip" (uno solo, se reemplaza) y al terminar
+ * regenera Generador.zip/.gs/.txt/.md y el consolidado/índice de GitHub.
+ * Se detiene si src/ parece incompleta o si no trae la función de bajada.
+ * [→ Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse]
+ */
+function subirGeneradorDesdeGithub() {
+  return _githubTraerAProyectoApps_('Generador', false);
+}
+
+/** Igual que subirGeneradorDesdeGithub(), pero sin las salvaguardas de src/ incompleta ni de función de bajada. */
+function subirGeneradorDesdeGithubForzado() {
+  return _githubTraerAProyectoApps_('Generador', true);
+}
 
 /** Sube Generador.zip y sincroniza Generador.zip/.gs/.txt/.md */
 function subirGeneradorDesdeZip() {
@@ -181,25 +170,7 @@ function subirGeneradorDesdeMd() {
   return reporte;
 }
 
-/**
- * Sube Generador/src/ de GitHub: deja el proyecto de Apps Script del propio Generador
- * EXACTAMENTE igual (lo que no esté en GitHub se elimina del proyecto).
- * Antes guarda en Drive "Generador_antes_de_GitHub.zip" (uno solo, se reemplaza) y al terminar
- * regenera Generador.zip/.gs/.txt/.md y el consolidado/índice de GitHub.
- * Se detiene si src/ parece incompleta o si no trae la función de bajada.
- * [→ Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse]
- */
-function subirGeneradorDesdeGithub() {
-  return _githubTraerAProyectoApps_('Generador', false);
-}
-
-/** Igual que subirGeneradorDesdeGithub(), pero sin las salvaguardas de src/ incompleta ni de función de bajada. */
-function subirGeneradorDesdeGithubForzado() {
-  return _githubTraerAProyectoApps_('Generador', true);
-}
-
-
-// ------------------------------------------------------------------
+// ----- Subidas a Contactos_Secundario (primero GitHub, luego zip, txt, gs y md) -----
 // CONTACTOS_SECUNDARIO (proyecto de Apps Script de la cuenta secundaria, 23-oct-2026)
 // Mismas funciones que Base y Generador: descargar (Apps Script -> Drive + GitHub),
 // subir desde zip/txt/gs/md y subir desde GitHub. Carpeta en GitHub: Contactos_Secundario/src/.
@@ -207,43 +178,6 @@ function subirGeneradorDesdeGithubForzado() {
 // este proyecto (el ID no va en el código); (2) el proyecto secundario compartido con la cuenta
 // del Generador como editor. La PRIMERA vez corre descargarContactos(), para que GitHub traiga
 // también el appsscript.json real (servicio People) antes de usar subirContactosDesdeGithub().
-// ------------------------------------------------------------------
-
-/** Descarga el código del proyecto secundario y crea Contactos_Secundario.zip/.gs/.txt/.md (y sincroniza GitHub) */
-function descargarContactos() {
-  _descargarProyectoAArchivos('Contactos_Secundario');
-  _githubSincronizar_('Contactos_Secundario');
-}
-
-/** Igual que descargarContactos(), pero escribe en GitHub aunque haya un "pull pendiente" (lo de GitHub se pierde). */
-function descargarContactosForzado() {
-  _descargarProyectoAArchivos('Contactos_Secundario');
-  _githubSincronizar_('Contactos_Secundario', true);
-}
-
-function subirContactosDesdeZip() {
-  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'zip');
-  _githubSincronizar_('Contactos_Secundario');
-  return reporte;
-}
-
-function subirContactosDesdeTxt() {
-  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'txt');
-  _githubSincronizar_('Contactos_Secundario');
-  return reporte;
-}
-
-function subirContactosDesdeGs() {
-  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'gs');
-  _githubSincronizar_('Contactos_Secundario');
-  return reporte;
-}
-
-function subirContactosDesdeMd() {
-  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'md');
-  _githubSincronizar_('Contactos_Secundario');
-  return reporte;
-}
 
 /**
  * Sube Contactos_Secundario/src/ de GitHub: deja el proyecto de Apps Script de la cuenta secundaria
@@ -259,10 +193,100 @@ function subirContactosDesdeGithubForzado() {
   return _githubTraerAProyectoApps_('Contactos_Secundario', true);
 }
 
+/** Sube Contactos_Secundario.zip y sincroniza Contactos_Secundario.zip/.gs/.txt/.md */
+function subirContactosDesdeZip() {
+  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'zip');
+  _githubSincronizar_('Contactos_Secundario');
+  return reporte;
+}
 
-// ------------------------------------------------------------------
+/** Sube Contactos_Secundario.txt y sincroniza Contactos_Secundario.zip/.gs/.txt/.md */
+function subirContactosDesdeTxt() {
+  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'txt');
+  _githubSincronizar_('Contactos_Secundario');
+  return reporte;
+}
+
+/** Sube Contactos_Secundario.gs y sincroniza Contactos_Secundario.zip/.gs/.txt/.md */
+function subirContactosDesdeGs() {
+  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'gs');
+  _githubSincronizar_('Contactos_Secundario');
+  return reporte;
+}
+
+/** Sube Contactos_Secundario.md y sincroniza Contactos_Secundario.zip/.gs/.txt/.md */
+function subirContactosDesdeMd() {
+  var reporte = _subirArchivosAProyecto('Contactos_Secundario', 'md');
+  _githubSincronizar_('Contactos_Secundario');
+  return reporte;
+}
+
+// =============================================================================
+// 2) DESCARGAS
+// =============================================================================
+
+// ----- Descargas de Base -----
+// DESCARGA (zip + txt + gs + md, siempre los 4 a la vez)
+// Además sincroniza GitHub (08_GitHub.gs): .gs sueltos en <Nombre>/src/,
+// consolidado en <Nombre>/respaldo/, INDICE_FUNCIONES.md, Indice_<Nombre>.md y LEEME_IA.md.
+// Si no hay GITHUB_TOKEN en las propiedades del script, GitHub se omite.
+
+/** Descarga el código de la hoja "Base" y crea Base.zip, Base.gs, Base.txt y Base.md (y sincroniza GitHub) */
+function descargarBase() {
+  _descargarProyectoAArchivos('Base');
+  _githubSincronizar_('Base');
+}
+
+/**
+ * Igual que descargarBase(), pero escribe en GitHub aunque haya un "pull pendiente": cambios nuevos
+ * en Base/ de GitHub que este proyecto no trajo. Esos cambios de GitHub SE PIERDEN (quedan solo en
+ * el historial de git). Úsala solo si quieres que lo de Apps Script pise lo de GitHub.
+ */
+function descargarBaseForzado() {
+  _descargarProyectoAArchivos('Base');
+  _githubSincronizar_('Base', true);
+}
+
+// ----- Descargas del Generador -----
+// DESCARGA (zip + txt + gs + md, siempre los 4 a la vez)
+
+/** Descarga el código del propio "Generador" y crea Generador.zip, Generador.gs, Generador.txt y Generador.md (y actualiza el README y GitHub) */
+function descargarGenerador() {
+  _descargarProyectoAArchivos('Generador');
+  _githubSincronizar_('Generador');
+}
+
+/**
+ * Igual que descargarGenerador(), pero escribe en GitHub aunque haya un "pull pendiente": cambios
+ * nuevos en Generador/ de GitHub que este proyecto no trajo. Esos cambios de GitHub SE PIERDEN
+ * (quedan solo en el historial de git). Úsala solo si quieres que lo de Apps Script pise lo de GitHub.
+ */
+function descargarGeneradorForzado() {
+  _descargarProyectoAArchivos('Generador');
+  _githubSincronizar_('Generador', true);
+}
+
+// ----- Descargas de Contactos_Secundario -----
+// Requisitos de Contactos_Secundario: ver el tema de subidas, arriba.
+
+/** Descarga el código del proyecto secundario y crea Contactos_Secundario.zip/.gs/.txt/.md (y sincroniza GitHub) */
+function descargarContactos() {
+  _descargarProyectoAArchivos('Contactos_Secundario');
+  _githubSincronizar_('Contactos_Secundario');
+}
+
+/** Igual que descargarContactos(), pero escribe en GitHub aunque haya un "pull pendiente" (lo de GitHub se pierde). */
+function descargarContactosForzado() {
+  _descargarProyectoAArchivos('Contactos_Secundario');
+  _githubSincronizar_('Contactos_Secundario', true);
+}
+
+// =============================================================================
+// 3) MANTENIMIENTO (uso ocasional / peligroso)
+// =============================================================================
+
+// ----- Mantenimiento -----
 // MANTENIMIENTO (uso ocasional / peligroso)
-// ------------------------------------------------------------------
 
 /** Comprueba GITHUB_TOKEN, acceso al repo, permiso de escritura y rama. */
 function probarConexionGithub() {
@@ -289,6 +313,9 @@ function eliminarTodosLosArchivosDeBase() {
 var CARPETA_GENERADOR_ID = '1YmgyCh-7Y6DIoScS6lpidQZk3IeDsEGA';
 var CARPETA_BASE_ID = '1OmSVruEHm4RlP-7VN3G_M2HublfWK1W8';
 var NOMBRE_HOJA_BASE = 'Base';
+
+// Valla de código del Markdown legible (tres comillas inversas). Se escribe con el código \x60 para que ningún .gs contenga esa secuencia: la regla 6 de la skill y el validador de CI la tratan como resto de formato Markdown. Valor: tres comillas inversas seguidas, igual que antes.
+var VALLA_MD_ = '\x60\x60\x60';
 
 // Interruptor: si es true, subirBaseDesdeZip() también crea/actualiza una
 // hoja "Sistema Clanes - Familia Terna - <fecha>" con el mismo código que
@@ -508,9 +535,9 @@ function _generarMarkdownLegible_(nombreProyecto, archivos, fechaStr) {
   partes.push('');
   archivos.forEach(function(a) {
     partes.push('## ' + a.nombre + '.gs');
-    partes.push('```javascript');
+    partes.push(VALLA_MD_ + 'javascript');
     partes.push(a.contenido);
-    partes.push('```');
+    partes.push(VALLA_MD_);
     partes.push('');
   });
   return partes.join('\n');
@@ -519,7 +546,7 @@ function _generarMarkdownLegible_(nombreProyecto, archivos, fechaStr) {
 /**
  * Reconstruye la lista de archivos [{nombre, contenido}, ...] a partir del
  * Markdown legible generado por _generarMarkdownLegible_. Busca encabezados
- * "## nombre.gs" seguidos de un bloque ```...```.
+ * "## nombre.gs" seguidos de un bloque entre vallas de tres comillas inversas (VALLA_MD_).
  */
 function _extraerArchivosDeMarkdown_(texto) {
   var archivos = [];
@@ -532,14 +559,14 @@ function _extraerArchivosDeMarkdown_(texto) {
       if (nombre.endsWith('.gs')) nombre = nombre.slice(0, -3);
       i++;
       while (i < lineas.length && lineas[i].trim() === '') i++;
-      if (i < lineas.length && lineas[i].trim().indexOf('```') === 0) {
-        i++; // saltar la valla de apertura ``` (o ```javascript)
+      if (i < lineas.length && lineas[i].trim().indexOf(VALLA_MD_) === 0) {
+        i++; // saltar la valla de apertura (VALLA_MD_, con o sin «javascript»)
         var contenido = '';
-        while (i < lineas.length && lineas[i].trim() !== '```') {
+        while (i < lineas.length && lineas[i].trim() !== VALLA_MD_) {
           contenido += lineas[i] + '\n';
           i++;
         }
-        i++; // saltar la valla de cierre ```
+        i++; // saltar la valla de cierre (VALLA_MD_)
         if (contenido.endsWith('\n')) contenido = contenido.slice(0, -1);
         archivos.push({ nombre: nombre, contenido: contenido });
         continue;
@@ -663,6 +690,10 @@ function _descargarProyectoAArchivos(nombreBase) {
   carpeta.createFile(Utilities.zip(blobs, nombreZip)); // Crea el nuevo reemplazándolo
 
   _registrarLogGenerador('_descargarProyectoAArchivos() / ' + nombreBase, 'Proyecto descargado a ' + nombreZip + ', ' + nombreTxt + ', ' + nombreGs + ' y ' + nombreMd + ' con ' + archivos.length + ' archivos.', []);
+
+  // Desde el 28-oct-2026: cada descarga o subida del Generador actualiza el bloque automático de ReadMe_Generador.md
+  // (09_ReadmeGenerador.gs). Nunca lanza error y, si el README no existe en Drive, no lo crea. [→ Contexto_Base_Web.md §PF285]
+  if (nombreBase === 'Generador') _actualizarReadmeGenerador_();
 }
 
 // -----------------------------------------------------------------------------
@@ -773,7 +804,7 @@ function _subirArchivosAProyecto(nombreBase, extension) {
     var resultadoZip = consolidarCodigoDesdeZip(nombreReal);
     blobs = resultadoZip.archivos;
   } else if (nombreReal.endsWith('.md')) {
-    // Formato Markdown legible: encabezados "## archivo.gs" + bloque ```
+    // Formato Markdown legible: encabezados "## archivo.gs" + bloque entre vallas (VALLA_MD_)
     var contenidoMd = archivoDrive.getBlob().getDataAsString('UTF-8');
     blobs = _extraerArchivosDeMarkdown_(contenidoMd);
   } else if (nombreReal.endsWith('.txt') || nombreReal.endsWith('.gs')) {
@@ -3964,7 +3995,7 @@ function _readmeAplicarBloque_(texto, archivos, fuente01, fechaHora) {
   b.push('### Funciones que se ejecutan manualmente (`01_Principal.gs`)');
   b.push('');
   var funciones = _readmeFuncionesManuales_(fuente01);
-  var ordenGrupos = ['Subir (Base)', 'Subir (Generador)', 'Descargar', 'Mantenimiento y otras'];
+  var ordenGrupos = ['Subir (Base)', 'Subir (Generador)', 'Subir (Contactos_Secundario)', 'Descargar', 'Mantenimiento y otras'];
   ordenGrupos.forEach(function(g) {
     var del = funciones.filter(function(f) { return _readmeGrupo_(f.nombre) === g; });
     if (!del.length) return;
@@ -4041,6 +4072,7 @@ function _readmeFuncionesManuales_(fuente) {
 function _readmeGrupo_(nombre) {
   if (/^subirBase/.test(nombre))      return 'Subir (Base)';
   if (/^subirGenerador/.test(nombre)) return 'Subir (Generador)';
+  if (/^subirContactos/.test(nombre)) return 'Subir (Contactos_Secundario)';
   if (/^descargar/.test(nombre))      return 'Descargar';
   return 'Mantenimiento y otras';
 }

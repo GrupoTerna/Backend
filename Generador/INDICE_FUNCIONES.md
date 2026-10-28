@@ -1,11 +1,11 @@
 # Índice de funciones — Generador
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Generador/src/`. Total: 275 nombres en 12 archivos .gs.
+Código real: `Generador/src/`. Total: 276 nombres en 12 archivos .gs.
 
 ## Por archivo
 
-- **01_Principal.gs** (26 funciones): descargarBase, descargarBaseForzado, subirBaseDesdeZip, subirBaseDesdeTxt, subirBaseDesdeGs, subirBaseDesdeMd, subirBaseDesdeGithub, subirBaseDesdeGithubForzado, descargarGenerador, descargarGeneradorForzado, subirGeneradorDesdeZip, subirGeneradorDesdeTxt, subirGeneradorDesdeGs, subirGeneradorDesdeMd, subirGeneradorDesdeGithub, subirGeneradorDesdeGithubForzado, descargarContactos, descargarContactosForzado, subirContactosDesdeZip, subirContactosDesdeTxt, subirContactosDesdeGs, subirContactosDesdeMd, subirContactosDesdeGithub, subirContactosDesdeGithubForzado, probarConexionGithub, eliminarTodosLosArchivosDeBase
+- **01_Principal.gs** (26 funciones): subirBaseDesdeGithub, subirBaseDesdeGithubForzado, subirBaseDesdeZip, subirBaseDesdeTxt, subirBaseDesdeGs, subirBaseDesdeMd, subirGeneradorDesdeGithub, subirGeneradorDesdeGithubForzado, subirGeneradorDesdeZip, subirGeneradorDesdeTxt, subirGeneradorDesdeGs, subirGeneradorDesdeMd, subirContactosDesdeGithub, subirContactosDesdeGithubForzado, subirContactosDesdeZip, subirContactosDesdeTxt, subirContactosDesdeGs, subirContactosDesdeMd, descargarBase, descargarBaseForzado, descargarGenerador, descargarGeneradorForzado, descargarContactos, descargarContactosForzado, probarConexionGithub, eliminarTodosLosArchivosDeBase
 - **02_Backstage.gs** (18 funciones): _carpetaDeRespaldos_, _conAviso_, _registrarLogGenerador, obtenerSpreadsheetPorNombreEnCarpeta_, consolidarCodigoDesdeZip, _extraerArchivosDeTexto, _generarMarkdownLegible_, _extraerArchivosDeMarkdown_, nombreBaseDesdeArchivo_, _descargarProyectoAArchivos, _huellaArchivo_, _generarIndiceArchivos_, _guardarIndiceArchivos_, _subirArchivosAProyecto, actualizarScriptDeHoja, _eliminarTodosLosArchivosDeProyecto, obtenerArchivosProyecto_, crearProyectoVinculado_
 - **03_RoyaleAPI_Torneos.gs** (2 funciones): obtenerJSON_viaProxy, tryAlternativeProxy
 - **04_Organizador_JSON.gs** (11 funciones): organizarArchivosJSON, _organizarJSON_procesarRaiz_, _carpetaHijaOCrear_, _archivosDeCarpetaClan_, _carpetaDestinoJSON_, _carpetaViejaDeClan_, _archivosRecursivo_, _archivosDeClan_, _carpetaSemanaJSON_, _organizarJSON_tiempoAgotado_, _organizarJSON_borrarTriggersPendientes_
@@ -37,31 +37,31 @@ Ninguno.
 | `_cache_cargar_` | función | 07_Cache_Periodos_JSON.gs | 71 |  |
 | `_cache_guardar_` | función | 07_Cache_Periodos_JSON.gs | 92 |  |
 | `_CARPETA_VIEJA_AVISADA_` | global | 04_Organizador_JSON.gs | 270 |  |
-| `_carpetaDeRespaldos_` | función | 02_Backstage.gs | 26 |  |
+| `_carpetaDeRespaldos_` | función | 02_Backstage.gs | 29 |  |
 | `_carpetaDestinoJSON_` | función | 04_Organizador_JSON.gs | 263 |  |
 | `_carpetaHijaOCrear_` | función | 04_Organizador_JSON.gs | 215 |  |
 | `_carpetaSemanaJSON_` | función | 04_Organizador_JSON.gs | 356 |  |
 | `_carpetaViejaDeClan_` | función | 04_Organizador_JSON.gs | 279 |  |
-| `_conAviso_` | función | 02_Backstage.gs | 103 |  |
+| `_conAviso_` | función | 02_Backstage.gs | 106 |  |
 | `_datosDriveAGithub_` | función | 12_Datos_Drive_GitHub.gs | 156 |  |
 | `_datosGhBuscarTelefonos_` | función | 12_Datos_Drive_GitHub.gs | 331 |  |
 | `_datosGhLineasPorCarpeta_` | función | 12_Datos_Drive_GitHub.gs | 359 |  |
 | `_datosGhListarCandidatos_` | función | 12_Datos_Drive_GitHub.gs | 291 |  |
 | `_datosGhQuitarActivadores_` | función | 12_Datos_Drive_GitHub.gs | 378 |  |
-| `_descargarProyectoAArchivos` | función | 02_Backstage.gs | 287 |  |
+| `_descargarProyectoAArchivos` | función | 02_Backstage.gs | 290 |  |
 | `_diaJuegoAnclaEnVentana_` | función | 06_Limpieza_Duplicados_JSON.gs | 587 |  |
 | `_diaJuegoFecha_` | función | 06_Limpieza_Duplicados_JSON.gs | 567 |  |
 | `_diaJuegoNum_` | función | 06_Limpieza_Duplicados_JSON.gs | 557 |  |
-| `_eliminarTodosLosArchivosDeProyecto` | función | 02_Backstage.gs | 653 |  |
+| `_eliminarTodosLosArchivosDeProyecto` | función | 02_Backstage.gs | 660 |  |
 | `_enVentanaCorte_` | función | 06_Limpieza_Duplicados_JSON.gs | 473 |  |
 | `_esInicioDeTemporada_` | función | 06_Limpieza_Duplicados_JSON.gs | 573 |  |
 | `_estimarCorteDiario_` | función | 06_Limpieza_Duplicados_JSON.gs | 496 |  |
 | `_extDeTipo_` | función | 08_GitHub.gs | 264 |  |
-| `_extraerArchivosDeMarkdown_` | función | 02_Backstage.gs | 242 |  |
-| `_extraerArchivosDeTexto` | función | 02_Backstage.gs | 184 |  |
+| `_extraerArchivosDeMarkdown_` | función | 02_Backstage.gs | 245 |  |
+| `_extraerArchivosDeTexto` | función | 02_Backstage.gs | 187 |  |
 | `_fmtHoraH_` | función | 06_Limpieza_Duplicados_JSON.gs | 453 |  |
-| `_generarIndiceArchivos_` | función | 02_Backstage.gs | 415 |  |
-| `_generarMarkdownLegible_` | función | 02_Backstage.gs | 220 |  |
+| `_generarIndiceArchivos_` | función | 02_Backstage.gs | 422 |  |
+| `_generarMarkdownLegible_` | función | 02_Backstage.gs | 223 |  |
 | `_ghEsLimiteDeGithub_` | función | 08_GitHub.gs | 91 |  |
 | `_ghJson_` | función | 08_GitHub.gs | 84 |  |
 | `_ghJsonReintento_` | función | 08_GitHub.gs | 95 |  |
@@ -83,9 +83,9 @@ Ninguno.
 | `_githubToken_` | función | 08_GitHub.gs | 49 |  |
 | `_githubTraerAProyectoApps_` | función | 08_GitHub.gs | 815 | Contexto_Base_Web.md §PF273 |
 | `_githubTraerAProyectoAppsUnaVez_` | función | 08_GitHub.gs | 670 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
-| `_guardarIndiceArchivos_` | función | 02_Backstage.gs | 466 |  |
+| `_guardarIndiceArchivos_` | función | 02_Backstage.gs | 473 |  |
 | `_horaLimaDecimal_` | función | 06_Limpieza_Duplicados_JSON.gs | 460 |  |
-| `_huellaArchivo_` | función | 02_Backstage.gs | 400 |  |
+| `_huellaArchivo_` | función | 02_Backstage.gs | 407 |  |
 | `_IMGAPI_DIST_BASE_` | global | 11_Imagenes_API.gs | 627 |  |
 | `_IMGAPI_DIST_EXTRA_` | global | 11_Imagenes_API.gs | 628 |  |
 | `_IMGAPI_LONG_BASE_` | global | 11_Imagenes_API.gs | 625 |  |
@@ -154,10 +154,10 @@ Ninguno.
 | `_readmeAplicarBloque_` | función | 09_ReadmeGenerador.gs | 76 |  |
 | `_readmeFuncionesManuales_` | función | 09_ReadmeGenerador.gs | 138 |  |
 | `_readmeGrupo_` | función | 09_ReadmeGenerador.gs | 165 |  |
-| `_registrarLogGenerador` | función | 02_Backstage.gs | 112 |  |
+| `_registrarLogGenerador` | función | 02_Backstage.gs | 115 |  |
 | `_scriptIdDeProyecto_` | función | 08_GitHub.gs | 244 |  |
 | `_SEMANA_MEM_` | global | 04_Organizador_JSON.gs | 348 |  |
-| `_subirArchivosAProyecto` | función | 02_Backstage.gs | 477 |  |
+| `_subirArchivosAProyecto` | función | 02_Backstage.gs | 484 |  |
 | `_temporadaDeFecha_` | función | 06_Limpieza_Duplicados_JSON.gs | 701 |  |
 | `_textoCorteDiario_` | función | 06_Limpieza_Duplicados_JSON.gs | 440 |  |
 | `_verif_comparar_` | función | 10_Verificar_PeriodIndex_JSON.gs | 182 |  |
@@ -166,8 +166,8 @@ Ninguno.
 | `_verif_imprimirResumen_` | función | 10_Verificar_PeriodIndex_JSON.gs | 285 |  |
 | `_verif_indiceDiaLima_` | función | 10_Verificar_PeriodIndex_JSON.gs | 267 |  |
 | `_verif_periodoDeArchivo_` | función | 10_Verificar_PeriodIndex_JSON.gs | 156 |  |
-| `actualizarScriptDeHoja` | función | 02_Backstage.gs | 555 |  |
-| `AVISO_ANTI_CARPETAS_` | global | 02_Backstage.gs | 65 |  |
+| `actualizarScriptDeHoja` | función | 02_Backstage.gs | 562 |  |
+| `AVISO_ANTI_CARPETAS_` | global | 02_Backstage.gs | 68 |  |
 | `CACHE_PERIODOS_NOMBRE_` | global | 07_Cache_Periodos_JSON.gs | 31 |  |
 | `CARPETA_BASE_ID` | global | 02_Backstage.gs | 8 |  |
 | `CARPETA_GENERADOR_ID` | global | 02_Backstage.gs | 7 |  |
@@ -177,11 +177,11 @@ Ninguno.
 | `CARPETAS_CLAN_POR_ENDPOINT_` | global | 04_Organizador_JSON.gs | 48 | Contexto_Base_Web.md §PF074 |
 | `CARPETAS_JSON_POR_ENDPOINT_` | global | 04_Organizador_JSON.gs | 76 |  |
 | `carpetasApiJuntoAFankit` | función | 11_Imagenes_API.gs | 141 |  |
-| `consolidarCodigoDesdeZip` | función | 02_Backstage.gs | 153 |  |
+| `consolidarCodigoDesdeZip` | función | 02_Backstage.gs | 156 |  |
 | `CORTE_MIN_FRACCION_` | global | 06_Limpieza_Duplicados_JSON.gs | 450 |  |
 | `CORTE_MIN_PARES_` | global | 06_Limpieza_Duplicados_JSON.gs | 447 |  |
-| `CREAR_O_ACTUALIZAR_HOJA_SISTEMA` | global | 02_Backstage.gs | 15 |  |
-| `crearProyectoVinculado_` | función | 02_Backstage.gs | 714 |  |
+| `CREAR_O_ACTUALIZAR_HOJA_SISTEMA` | global | 02_Backstage.gs | 18 |  |
+| `crearProyectoVinculado_` | función | 02_Backstage.gs | 721 |  |
 | `DATOS_GH_CARPETA_HOJAS_` | global | 12_Datos_Drive_GitHub.gs | 59 |  |
 | `DATOS_GH_CARPETA_INDIVIDUAL_` | global | 12_Datos_Drive_GitHub.gs | 61 |  |
 | `DATOS_GH_CARPETA_INFORMES_` | global | 12_Datos_Drive_GitHub.gs | 60 |  |
@@ -193,13 +193,13 @@ Ninguno.
 | `DATOS_GH_LOTE_BYTES_` | global | 12_Datos_Drive_GitHub.gs | 91 |  |
 | `DATOS_GH_PREFIJO_ESTADO_` | global | 12_Datos_Drive_GitHub.gs | 88 |  |
 | `DATOS_GH_TIEMPO_MAX_MS_` | global | 12_Datos_Drive_GitHub.gs | 92 |  |
-| `descargarBase` | función | 01_Principal.gs | 15 |  |
-| `descargarBaseForzado` | función | 01_Principal.gs | 25 |  |
-| `descargarContactos` | función | 01_Principal.gs | 170 |  |
-| `descargarContactosForzado` | función | 01_Principal.gs | 176 |  |
-| `descargarGenerador` | función | 01_Principal.gs | 91 |  |
-| `descargarGeneradorForzado` | función | 01_Principal.gs | 101 |  |
-| `eliminarTodosLosArchivosDeBase` | función | 01_Principal.gs | 234 |  |
+| `descargarBase` | función | 01_Principal.gs | 192 |  |
+| `descargarBaseForzado` | función | 01_Principal.gs | 202 |  |
+| `descargarContactos` | función | 01_Principal.gs | 230 |  |
+| `descargarContactosForzado` | función | 01_Principal.gs | 236 |  |
+| `descargarGenerador` | función | 01_Principal.gs | 211 |  |
+| `descargarGeneradorForzado` | función | 01_Principal.gs | 221 |  |
+| `eliminarTodosLosArchivosDeBase` | función | 01_Principal.gs | 258 |  |
 | `EVIDENCIA_T05_CARPETA_GITHUB_` | global | 08_GitHub.gs | 862 |  |
 | `EVIDENCIA_T05_NOMBRES_` | global | 08_GitHub.gs | 863 |  |
 | `GITHUB_AVISO_SOLO_CARPETA_` | global | 08_GitHub.gs | 124 |  |
@@ -240,12 +240,12 @@ Ninguno.
 | `IMGAPI_REGEX_INSIGNIA_` | global | 11_Imagenes_API.gs | 93 |  |
 | `IMGAPI_REGEX_URL_` | global | 11_Imagenes_API.gs | 77 |  |
 | `IMGAPI_REPO_` | global | 11_Imagenes_API.gs | 72 |  |
-| `INDICE_ARCHIVOS_RE_HUELLAS_` | global | 02_Backstage.gs | 397 |  |
+| `INDICE_ARCHIVOS_RE_HUELLAS_` | global | 02_Backstage.gs | 404 |  |
 | `instalarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 137 |  |
 | `LETRAS_DIA_GUERRA_` | global | 05_Migrador_Formato.gs | 441 |  |
 | `limpiarDuplicadosJSON` | función | 06_Limpieza_Duplicados_JSON.gs | 73 |  |
 | `LIMPIEZA_DRY_RUN_` | global | 06_Limpieza_Duplicados_JSON.gs | 66 |  |
-| `MANIFIESTO_CANONICO_` | global | 02_Backstage.gs | 33 |  |
+| `MANIFIESTO_CANONICO_` | global | 02_Backstage.gs | 36 |  |
 | `MIG_LIMITE_MS_` | global | 05_Migrador_Formato.gs | 65 |  |
 | `MIG_PROP_ESTADO_` | global | 05_Migrador_Formato.gs | 68 |  |
 | `MIG_TEMPORADA_ANCLA_` | global | 06_Limpieza_Duplicados_JSON.gs | 720 |  |
@@ -253,16 +253,16 @@ Ninguno.
 | `migrarFormatoJSON` | función | 05_Migrador_Formato.gs | 90 |  |
 | `migrarFormatoJSON_reiniciarEstado` | función | 05_Migrador_Formato.gs | 195 |  |
 | `NOMBRE_HOJA_BASE` | global | 02_Backstage.gs | 9 |  |
-| `nombreBaseDesdeArchivo_` | función | 02_Backstage.gs | 271 |  |
-| `obtenerArchivosProyecto_` | función | 02_Backstage.gs | 699 |  |
+| `nombreBaseDesdeArchivo_` | función | 02_Backstage.gs | 274 |  |
+| `obtenerArchivosProyecto_` | función | 02_Backstage.gs | 706 |  |
 | `obtenerJSON_viaProxy` | función | 03_RoyaleAPI_Torneos.gs | 17 |  |
-| `obtenerSpreadsheetPorNombreEnCarpeta_` | función | 02_Backstage.gs | 140 |  |
+| `obtenerSpreadsheetPorNombreEnCarpeta_` | función | 02_Backstage.gs | 143 |  |
 | `ORGANIZAR_LIMITE_MS_` | global | 04_Organizador_JSON.gs | 82 |  |
 | `ORGANIZAR_PROP_ESTADO_` | global | 04_Organizador_JSON.gs | 85 |  |
 | `ORGANIZAR_TRIGGER_HANDLER_` | global | 04_Organizador_JSON.gs | 88 |  |
 | `organizarArchivosJSON` | función | 04_Organizador_JSON.gs | 100 |  |
 | `PAREO_TOLERANCIA_MS_` | global | 06_Limpieza_Duplicados_JSON.gs | 417 |  |
-| `probarConexionGithub` | función | 01_Principal.gs | 225 |  |
+| `probarConexionGithub` | función | 01_Principal.gs | 249 |  |
 | `quitarActivadorDatosDriveGithub` | función | 12_Datos_Drive_GitHub.gs | 145 |  |
 | `README_GENERADOR_NOMBRE_` | global | 09_ReadmeGenerador.gs | 25 |  |
 | `README_LINEA_INICIO_` | global | 09_ReadmeGenerador.gs | 28 |  |
@@ -270,30 +270,31 @@ Ninguno.
 | `README_MARCA_INICIO_` | global | 09_ReadmeGenerador.gs | 26 |  |
 | `reiniciarCachePeriodosJSON` | función | 07_Cache_Periodos_JSON.gs | 45 |  |
 | `revisarDatosDriveAGithubSinSubir` | función | 12_Datos_Drive_GitHub.gs | 111 |  |
-| `subirBaseDesdeGithub` | función | 01_Principal.gs | 76 |  |
-| `subirBaseDesdeGithubForzado` | función | 01_Principal.gs | 81 |  |
-| `subirBaseDesdeGs` | función | 01_Principal.gs | 56 |  |
-| `subirBaseDesdeMd` | función | 01_Principal.gs | 63 |  |
-| `subirBaseDesdeTxt` | función | 01_Principal.gs | 49 |  |
-| `subirBaseDesdeZip` | función | 01_Principal.gs | 42 |  |
-| `subirContactosDesdeGithub` | función | 01_Principal.gs | 210 |  |
-| `subirContactosDesdeGithubForzado` | función | 01_Principal.gs | 215 |  |
-| `subirContactosDesdeGs` | función | 01_Principal.gs | 193 |  |
-| `subirContactosDesdeMd` | función | 01_Principal.gs | 199 |  |
-| `subirContactosDesdeTxt` | función | 01_Principal.gs | 187 |  |
-| `subirContactosDesdeZip` | función | 01_Principal.gs | 181 |  |
+| `subirBaseDesdeGithub` | función | 01_Principal.gs | 42 |  |
+| `subirBaseDesdeGithubForzado` | función | 01_Principal.gs | 47 |  |
+| `subirBaseDesdeGs` | función | 01_Principal.gs | 66 |  |
+| `subirBaseDesdeMd` | función | 01_Principal.gs | 73 |  |
+| `subirBaseDesdeTxt` | función | 01_Principal.gs | 59 |  |
+| `subirBaseDesdeZip` | función | 01_Principal.gs | 52 |  |
+| `subirContactosDesdeGithub` | función | 01_Principal.gs | 144 |  |
+| `subirContactosDesdeGithubForzado` | función | 01_Principal.gs | 149 |  |
+| `subirContactosDesdeGs` | función | 01_Principal.gs | 168 |  |
+| `subirContactosDesdeMd` | función | 01_Principal.gs | 175 |  |
+| `subirContactosDesdeTxt` | función | 01_Principal.gs | 161 |  |
+| `subirContactosDesdeZip` | función | 01_Principal.gs | 154 |  |
 | `subirDatosDriveAGithub` | función | 12_Datos_Drive_GitHub.gs | 101 |  |
 | `subirDatosDriveAGithubAuto` | función | 12_Datos_Drive_GitHub.gs | 116 |  |
 | `subirDatosDriveAGithubContinuar` | función | 12_Datos_Drive_GitHub.gs | 125 |  |
 | `subirDatosDriveAGithubForzado` | función | 12_Datos_Drive_GitHub.gs | 106 |  |
 | `subirEvidenciaT05AGithub` | función | 08_GitHub.gs | 875 |  |
-| `subirGeneradorDesdeGithub` | función | 01_Principal.gs | 149 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
-| `subirGeneradorDesdeGithubForzado` | función | 01_Principal.gs | 154 |  |
-| `subirGeneradorDesdeGs` | función | 01_Principal.gs | 128 |  |
-| `subirGeneradorDesdeMd` | función | 01_Principal.gs | 135 |  |
-| `subirGeneradorDesdeTxt` | función | 01_Principal.gs | 121 |  |
-| `subirGeneradorDesdeZip` | función | 01_Principal.gs | 114 |  |
+| `subirGeneradorDesdeGithub` | función | 01_Principal.gs | 93 | Contexto_Base_Web.md: pendiente de registrar el comportamiento real al autoreemplazarse |
+| `subirGeneradorDesdeGithubForzado` | función | 01_Principal.gs | 98 |  |
+| `subirGeneradorDesdeGs` | función | 01_Principal.gs | 117 |  |
+| `subirGeneradorDesdeMd` | función | 01_Principal.gs | 124 |  |
+| `subirGeneradorDesdeTxt` | función | 01_Principal.gs | 110 |  |
+| `subirGeneradorDesdeZip` | función | 01_Principal.gs | 103 |  |
 | `tryAlternativeProxy` | función | 03_RoyaleAPI_Torneos.gs | 41 |  |
+| `VALLA_MD_` | global | 02_Backstage.gs | 12 |  |
 | `VERIF_CAMBIO_DESDE_H_` | global | 10_Verificar_PeriodIndex_JSON.gs | 47 |  |
 | `VERIF_CAMBIO_HASTA_H_` | global | 10_Verificar_PeriodIndex_JSON.gs | 50 |  |
 | `VERIF_EXCEPCIONES_FECHA_` | global | 10_Verificar_PeriodIndex_JSON.gs | 64 | Contexto_Base_Web.md §PF080 |
