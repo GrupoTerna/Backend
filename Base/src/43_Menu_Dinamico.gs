@@ -1,9 +1,33 @@
-// ==============================================================================
 // 43_Menu_Dinamico.gs
 // Índice de contenido del bot y del panel web (reemplaza la hoja Menú): Docs de Drive (Estático) + Información sobre el clan y Mensajes (Dinámico); se guarda en Drive y caché. [→ Contexto_Base_Web.md §43B001]
-// ==============================================================================
 
-// ----- Funciones manuales / punto de entrada -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Menú dinámico: refrescar, sincronizar plantillas y reconstruir el índice
+//  Parte 2 — Funciones que no se corren a mano
+//    - Menú dinámico: actualizar
+//    - Índice de contenido: actualizar, reconstruir, leer y guardar
+//    - Índice de contenido: entradas estáticas, dinámicas y orden
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
+// ==============================================================================
+// ÍNDICE DE CONTENIDO
+// ------------------------------------------------------------------------------
+// Dónde vive el índice (caché 6 h → Indice_Contenido.json en Drive → reconstrucción) y qué entradas guarda; ver AVISOS ABIERTOS / FASE B en 09_API_ClashRoyale.gs. [→ Contexto_Base_Web.md §43B009]
+// ==============================================================================
+var INDICE_CONTENIDO_FILE       = 'Indice_Contenido.json';
+
+var INDICE_CONTENIDO_CACHE_META = 'IDX_CONT_META';
+
+var INDICE_CONTENIDO_CACHE_TTL  = 21600; // 6 h, máximo de CacheService
+
+var INDICE_CONTENIDO_CHUNK      = 24000; // caracteres por parte (peor caso UTF-8: 96 KB)
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Menú dinámico: refrescar, sincronizar plantillas y reconstruir el índice -----
 
 // Wrapper manual: refresca el índice con syncPlantillasDesdeDrive() y _actualizarMenuDinamico(); ya no escribe ninguna hoja. [→ Contexto_Base_Web.md §43B002]
 function actualizarMenuSheet() {
@@ -44,34 +68,17 @@ function syncPlantillasDesdeDrive() {
   Logger.log('[Plantillas] Sincronizados ' + totalDocsValidos + ' documentos desde Drive hacia el índice de contenido.');
 }
 
-// ----- Funciones internas / helpers -----
-
-
-
-
-// Núcleo compartido: ordena las entradas ya resueltas por Extra y hoja Clan y las guarda como índice (Drive + caché). [→ Contexto_Base_Web.md §43B004]
-function _actualizarIndiceContenido(ss, entradas, orden) {
-  if (orden.length === 0) {
-    Logger.log('[Índice] Sin datos — índice sin cambios.');
-    return [];
-  }
-  var lista = _ordenarEntradasIndice(ss, orden.map(function(k) { return entradas[k]; }));
-  var indice = [];
-  for (var i = 0; i < lista.length; i++) {
-    var e = lista[i];
-    indice.push({
-      categoria:    e.categoria,
-      subcategoria: e.subcategoria,
-      clan:         e.clan,
-      tipo:         e.tipo,
-      contenido:    (e.contenido !== undefined) ? e.contenido : '',
-      docId:        e.docId || ''
-    });
-  }
-  _guardarIndiceContenido(indice);
-  Logger.log('[Índice] Guardado con ' + indice.length + ' entradas.');
-  return indice;
+// Manual: fuerza la reconstrucción del índice desde Drive, Clan y Mensajes (ejecutar una vez tras instalar esta versión). [→ Contexto_Base_Web.md §43B016]
+function inicializarIndiceContenido() {
+  var idx = _reconstruirIndiceContenido();
+  Logger.log('[Índice] Listo: ' + idx.length + ' entradas.');
 }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Menú dinámico: actualizar -----
 
 // Refresca las entradas Dinámico (Mensajes + hoja Clan) preservando las Estático; se ejecuta tras runPendientesYMensajes(). [→ Contexto_Base_Web.md §43B005]
 function _actualizarMenuDinamico() {
@@ -104,120 +111,45 @@ function _actualizarMenuDinamico() {
   _actualizarIndiceContenido(ss, entradas, orden);
 }
 
-// Intenta renombrar un Doc de formato antiguo "Clan - Categoría" a "Categoría - Subcategoría - Clan"; devuelve el nombre nuevo o null. [→ Contexto_Base_Web.md §43B006]
-function _renombrarDocFormatoAntiguo(ss, file, clan, categoria) {
-  var catNorm  = categoria.trim().toLowerCase();
-  var clanNorm = clan.trim().toLowerCase();
-  var subcategoria = null;
+// ----- Índice de contenido: actualizar, reconstruir, leer y guardar -----
 
-  // 1. Intentar buscar en el índice guardado (sin reconstruir: esta función corre DENTRO de la lectura
-  // de Drive que usa la reconstrucción del índice).
-  var guardado = _leerIndiceGuardado() || [];
-  for (var i = 0; i < guardado.length; i++) {
-    if (String(guardado[i].categoria || '').trim().toLowerCase() === catNorm &&
-        String(guardado[i].clan || '').trim().toLowerCase() === clanNorm) {
-      subcategoria = String(guardado[i].subcategoria || '').trim();
-      break;
-    }
+// Núcleo compartido: ordena las entradas ya resueltas por Extra y hoja Clan y las guarda como índice (Drive + caché). [→ Contexto_Base_Web.md §43B004]
+function _actualizarIndiceContenido(ss, entradas, orden) {
+  if (orden.length === 0) {
+    Logger.log('[Índice] Sin datos — índice sin cambios.');
+    return [];
   }
-
-  // 2. Fallback: mapa estático basado en la estructura conocida del sistema
-  //    Clan específico → Subcategoría = 'Particular'
-  //    Clan familia/comunidad → Subcategoría según Categoría
-  if (!subcategoria) {
-    var CLANES_PARTICULARES = [
-      'grupo乂terna™', 'grupoxterna™2', 'grupoxterna™3', 'mini乂ternas™'
-    ];
-    var CLANES_COMUNIDAD = [
-      'ᴳ乂ᵀ ⚜️ familia terna', 'familia terna'
-    ];
-    var MAPA_SUBCATEGORIA_FALLBACK = {
-      'bienvenida':          { particular: 'Particular', comunidad: 'Particular' },
-      'descripción':         { particular: 'Particular', comunidad: 'Chat General',
-                               comunidades: { 'Comunidad': true, 'Detectives': true, 'RoyaleAPI': true } },
-      'defensas de barcos':  { particular: 'Comunidad', comunidad: 'Comunidad' },
-      'día de guerra':       { particular: 'Comunidad', comunidad: 'Comunidad' },
-      'etiqueta de miembro': { particular: 'Particular', comunidad: 'Comunidad' },
-      'celular':             { particular: 'Particular', comunidad: 'Chat General' },
-      'mensaje de guerra':   { particular: 'Particular', comunidad: 'Chat General' },
-      'información del clan':{ particular: 'Terna',      comunidad: 'Vetado' },
-      'información sobre mí':{ particular: 'Terna',      comunidad: 'Terna' },
-    };
-
-    var esParticular = CLANES_PARTICULARES.indexOf(clanNorm) >= 0;
-    var entrada = MAPA_SUBCATEGORIA_FALLBACK[catNorm];
-    if (entrada) {
-      subcategoria = esParticular ? entrada.particular : entrada.comunidad;
-    }
-    // Para Descripción con subcategorías múltiples, intentar inferir por nombre del clan
-    if (catNorm === 'descripción' && !esParticular) {
-      var clanLow = clanNorm;
-      if (clanLow.indexOf('detective') >= 0)      subcategoria = 'Detectives';
-      else if (clanLow.indexOf('royale') >= 0)    subcategoria = 'RoyaleAPI';
-      else if (clanLow.indexOf('comunidad') >= 0) subcategoria = 'Comunidad';
-      else                                         subcategoria = 'Chat General';
-    }
+  var lista = _ordenarEntradasIndice(ss, orden.map(function(k) { return entradas[k]; }));
+  var indice = [];
+  for (var i = 0; i < lista.length; i++) {
+    var e = lista[i];
+    indice.push({
+      categoria:    e.categoria,
+      subcategoria: e.subcategoria,
+      clan:         e.clan,
+      tipo:         e.tipo,
+      contenido:    (e.contenido !== undefined) ? e.contenido : '',
+      docId:        e.docId || ''
+    });
   }
-
-  if (!subcategoria) {
-    Logger.log('[Plantillas] No se pudo determinar subcategoría para renombrar: "' + clan + ' - ' + categoria + '"');
-    return null;
-  }
-
-  var nuevoNombre = categoria + ' - ' + subcategoria + ' - ' + clan;
-  try {
-    file.setName(nuevoNombre);
-    Logger.log('[Plantillas] Renombrado: "' + clan + ' - ' + categoria + '" → "' + nuevoNombre + '"');
-    return nuevoNombre;
-  } catch(e) {
-    Logger.log('[Plantillas] Error al renombrar "' + file.getName() + '": ' + e.message);
-    return null;
-  }
+  _guardarIndiceContenido(indice);
+  Logger.log('[Índice] Guardado con ' + indice.length + ' entradas.');
+  return indice;
 }
 
-// Lee la hoja Extra y devuelve { valorLower -> índice } para 'categoria' o 'subcategoria'. [→ Contexto_Base_Web.md §43B007]
-function _getOrdenExtra(ss, tipo) {
-  var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
-  var mapa = {};
-  if (!sh || sh.getLastRow() < 2) return mapa;
-  var colIdx = (tipo === 'subcategoria') ? 12 : 11; // 0-based
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 13).getValues();
-  var orden = 0;
-  for (var i = 0; i < data.length; i++) {
-    var v = String(data[i][colIdx] || '').trim();
-    if (v && mapa[v.toLowerCase()] === undefined) {
-      mapa[v.toLowerCase()] = orden++;
-    }
+// Reconstruye el índice desde las fuentes reales; prioridad Estático > Información sobre el clan > Mensajes. [→ Contexto_Base_Web.md §43B013]
+function _reconstruirIndiceContenido() {
+  var ss = _getSs();
+  var est = _leerEntradasEstaticasDrive(ss);
+  if (!est) {
+    Logger.log('[Índice] Sin acceso a las carpetas de Drive: no se reconstruye el índice.');
+    return _leerIndiceGuardado() || [];
   }
-  return mapa;
+  var entradas = est.entradas;
+  var orden    = est.orden;
+  _agregarEntradasDinamicas(ss, entradas, orden);
+  return _actualizarIndiceContenido(ss, entradas, orden);
 }
-
-// Lee la hoja Clan y devuelve { nombreClanLower -> índice } según el orden de filas. [→ Contexto_Base_Web.md §43B008]
-function _getOrdenClanHoja(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
-  var mapa = {};
-  if (!sh || sh.getLastRow() < 2) return mapa;
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues();
-  for (var i = 0; i < data.length; i++) {
-    var v = String(data[i][2] || '').trim();
-    if (v) mapa[v.toLowerCase()] = i;
-  }
-  return mapa;
-}
-
-
-
-
-
-// ==============================================================================
-// ÍNDICE DE CONTENIDO
-// ------------------------------------------------------------------------------
-// Dónde vive el índice (caché 6 h → Indice_Contenido.json en Drive → reconstrucción) y qué entradas guarda; ver AVISOS ABIERTOS / FASE B en 09_API_ClashRoyale.gs. [→ Contexto_Base_Web.md §43B009]
-// ==============================================================================
-var INDICE_CONTENIDO_FILE       = 'Indice_Contenido.json';
-var INDICE_CONTENIDO_CACHE_META = 'IDX_CONT_META';
-var INDICE_CONTENIDO_CACHE_TTL  = 21600; // 6 h, máximo de CacheService
-var INDICE_CONTENIDO_CHUNK      = 24000; // caracteres por parte (peor caso UTF-8: 96 KB)
 
 // Devuelve el índice completo: caché → Drive → reconstrucción desde las fuentes. [→ Contexto_Base_Web.md §43B010]
 function _getIndiceContenido() {
@@ -232,50 +164,6 @@ function _getIndiceContenido() {
 
   Logger.log('[Índice] No hay índice en caché ni en Drive: se reconstruye desde las fuentes.');
   return _reconstruirIndiceContenido();
-}
-
-// Entradas del índice de un tipo ('Estático' o 'Dinámico'); reconstruye el índice si no existe. [→ Contexto_Base_Web.md §43B011]
-function _leerEntradasIndicePorTipo(tipo) {
-  var todo = _getIndiceContenido();
-  var out = [];
-  for (var i = 0; i < todo.length; i++) {
-    if (todo[i].tipo === tipo) out.push(todo[i]);
-  }
-  return out;
-}
-
-// Persiste el índice en Drive y caché; nunca lanza error. [→ Contexto_Base_Web.md §43B012]
-function _guardarIndiceContenido(lista) {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(INDICE_CONTENIDO_FILE);
-    var contenido = JSON.stringify({ _ts: Date.now(), entradas: lista });
-    if (files.hasNext()) {
-      files.next().setContent(contenido);
-      while (files.hasNext()) files.next().setTrashed(true); // duplicados
-    } else {
-      folder.createFile(INDICE_CONTENIDO_FILE, contenido, MimeType.PLAIN_TEXT);
-    }
-  } catch (e) {
-    Logger.log('[Índice] Error guardando el índice en Drive: ' + e.message);
-  }
-  _guardarIndiceContenidoEnCache(JSON.stringify(lista));
-}
-
-function _guardarIndiceContenidoEnCache(json) {
-  try {
-    var cache = CacheService.getScriptCache();
-    var ts = String(Date.now());
-    var n = Math.max(1, Math.ceil(json.length / INDICE_CONTENIDO_CHUNK));
-    var partes = {};
-    for (var i = 0; i < n; i++) {
-      partes['IDX_CONT_' + ts + '_' + i] = json.substr(i * INDICE_CONTENIDO_CHUNK, INDICE_CONTENIDO_CHUNK);
-    }
-    cache.putAll(partes, INDICE_CONTENIDO_CACHE_TTL);
-    cache.put(INDICE_CONTENIDO_CACHE_META, JSON.stringify({ ts: ts, n: n }), INDICE_CONTENIDO_CACHE_TTL);
-  } catch (e) {
-    Logger.log('[Índice] No se pudo guardar el índice en caché: ' + e.message);
-  }
 }
 
 function _leerIndiceContenidoDeCache() {
@@ -312,20 +200,6 @@ function _leerIndiceContenidoDeDrive() {
   }
 }
 
-// Reconstruye el índice desde las fuentes reales; prioridad Estático > Información sobre el clan > Mensajes. [→ Contexto_Base_Web.md §43B013]
-function _reconstruirIndiceContenido() {
-  var ss = _getSs();
-  var est = _leerEntradasEstaticasDrive(ss);
-  if (!est) {
-    Logger.log('[Índice] Sin acceso a las carpetas de Drive: no se reconstruye el índice.');
-    return _leerIndiceGuardado() || [];
-  }
-  var entradas = est.entradas;
-  var orden    = est.orden;
-  _agregarEntradasDinamicas(ss, entradas, orden);
-  return _actualizarIndiceContenido(ss, entradas, orden);
-}
-
 // Devuelve el índice guardado (caché → Drive) sin reconstruir; null si no existe. [→ Contexto_Base_Web.md §43B014]
 function _leerIndiceGuardado() {
   var idx = _leerIndiceContenidoDeCache();
@@ -333,6 +207,50 @@ function _leerIndiceGuardado() {
   idx = _leerIndiceContenidoDeDrive();
   if (idx && idx.length) return idx;
   return null;
+}
+
+// Persiste el índice en Drive y caché; nunca lanza error. [→ Contexto_Base_Web.md §43B012]
+function _guardarIndiceContenido(lista) {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(INDICE_CONTENIDO_FILE);
+    var contenido = JSON.stringify({ _ts: Date.now(), entradas: lista });
+    if (files.hasNext()) {
+      files.next().setContent(contenido);
+      while (files.hasNext()) files.next().setTrashed(true); // duplicados
+    } else {
+      folder.createFile(INDICE_CONTENIDO_FILE, contenido, MimeType.PLAIN_TEXT);
+    }
+  } catch (e) {
+    Logger.log('[Índice] Error guardando el índice en Drive: ' + e.message);
+  }
+  _guardarIndiceContenidoEnCache(JSON.stringify(lista));
+}
+
+function _guardarIndiceContenidoEnCache(json) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var ts = String(Date.now());
+    var n = Math.max(1, Math.ceil(json.length / INDICE_CONTENIDO_CHUNK));
+    var partes = {};
+    for (var i = 0; i < n; i++) {
+      partes['IDX_CONT_' + ts + '_' + i] = json.substr(i * INDICE_CONTENIDO_CHUNK, INDICE_CONTENIDO_CHUNK);
+    }
+    cache.putAll(partes, INDICE_CONTENIDO_CACHE_TTL);
+    cache.put(INDICE_CONTENIDO_CACHE_META, JSON.stringify({ ts: ts, n: n }), INDICE_CONTENIDO_CACHE_TTL);
+  } catch (e) {
+    Logger.log('[Índice] No se pudo guardar el índice en caché: ' + e.message);
+  }
+}
+
+// Entradas del índice de un tipo ('Estático' o 'Dinámico'); reconstruye el índice si no existe. [→ Contexto_Base_Web.md §43B011]
+function _leerEntradasIndicePorTipo(tipo) {
+  var todo = _getIndiceContenido();
+  var out = [];
+  for (var i = 0; i < todo.length; i++) {
+    if (todo[i].tipo === tipo) out.push(todo[i]);
+  }
+  return out;
 }
 
 // Como _leerEntradasIndicePorTipo() pero sin reconstruir: devuelve [] si no hay índice guardado. [→ Contexto_Base_Web.md §43B015]
@@ -345,13 +263,7 @@ function _leerEntradasIndiceGuardadoPorTipo(tipo) {
   return out;
 }
 
-// Manual: fuerza la reconstrucción del índice desde Drive, Clan y Mensajes (ejecutar una vez tras instalar esta versión). [→ Contexto_Base_Web.md §43B016]
-function inicializarIndiceContenido() {
-  var idx = _reconstruirIndiceContenido();
-  Logger.log('[Índice] Listo: ' + idx.length + ' entradas.');
-}
-
-// ----- Helpers extraídos (antes vivían dentro de otras funciones) -----
+// ----- Índice de contenido: entradas estáticas, dinámicas y orden -----
 
 // Lee los Docs de la carpeta raíz de plantillas y subcarpetas; devuelve {entradas, orden} o null si no pudo abrir ninguna carpeta. [→ Contexto_Base_Web.md §43B017]
 function _leerEntradasEstaticasDrive(ss) {
@@ -437,6 +349,77 @@ function _leerEntradasEstaticasDrive(ss) {
   return { entradas: entradas, orden: orden };
 }
 
+// Intenta renombrar un Doc de formato antiguo "Clan - Categoría" a "Categoría - Subcategoría - Clan"; devuelve el nombre nuevo o null. [→ Contexto_Base_Web.md §43B006]
+function _renombrarDocFormatoAntiguo(ss, file, clan, categoria) {
+  var catNorm  = categoria.trim().toLowerCase();
+  var clanNorm = clan.trim().toLowerCase();
+  var subcategoria = null;
+
+  // 1. Intentar buscar en el índice guardado (sin reconstruir: esta función corre DENTRO de la lectura
+  // de Drive que usa la reconstrucción del índice).
+  var guardado = _leerIndiceGuardado() || [];
+  for (var i = 0; i < guardado.length; i++) {
+    if (String(guardado[i].categoria || '').trim().toLowerCase() === catNorm &&
+        String(guardado[i].clan || '').trim().toLowerCase() === clanNorm) {
+      subcategoria = String(guardado[i].subcategoria || '').trim();
+      break;
+    }
+  }
+
+  // 2. Fallback: mapa estático basado en la estructura conocida del sistema
+  //    Clan específico → Subcategoría = 'Particular'
+  //    Clan familia/comunidad → Subcategoría según Categoría
+  if (!subcategoria) {
+    var CLANES_PARTICULARES = [
+      'grupo乂terna™', 'grupoxterna™2', 'grupoxterna™3', 'mini乂ternas™'
+    ];
+    var CLANES_COMUNIDAD = [
+      'ᴳ乂ᵀ ⚜️ familia terna', 'familia terna'
+    ];
+    var MAPA_SUBCATEGORIA_FALLBACK = {
+      'bienvenida':          { particular: 'Particular', comunidad: 'Particular' },
+      'descripción':         { particular: 'Particular', comunidad: 'Chat General',
+                               comunidades: { 'Comunidad': true, 'Detectives': true, 'RoyaleAPI': true } },
+      'defensas de barcos':  { particular: 'Comunidad', comunidad: 'Comunidad' },
+      'día de guerra':       { particular: 'Comunidad', comunidad: 'Comunidad' },
+      'etiqueta de miembro': { particular: 'Particular', comunidad: 'Comunidad' },
+      'celular':             { particular: 'Particular', comunidad: 'Chat General' },
+      'mensaje de guerra':   { particular: 'Particular', comunidad: 'Chat General' },
+      'información del clan':{ particular: 'Terna',      comunidad: 'Vetado' },
+      'información sobre mí':{ particular: 'Terna',      comunidad: 'Terna' },
+    };
+
+    var esParticular = CLANES_PARTICULARES.indexOf(clanNorm) >= 0;
+    var entrada = MAPA_SUBCATEGORIA_FALLBACK[catNorm];
+    if (entrada) {
+      subcategoria = esParticular ? entrada.particular : entrada.comunidad;
+    }
+    // Para Descripción con subcategorías múltiples, intentar inferir por nombre del clan
+    if (catNorm === 'descripción' && !esParticular) {
+      var clanLow = clanNorm;
+      if (clanLow.indexOf('detective') >= 0)      subcategoria = 'Detectives';
+      else if (clanLow.indexOf('royale') >= 0)    subcategoria = 'RoyaleAPI';
+      else if (clanLow.indexOf('comunidad') >= 0) subcategoria = 'Comunidad';
+      else                                         subcategoria = 'Chat General';
+    }
+  }
+
+  if (!subcategoria) {
+    Logger.log('[Plantillas] No se pudo determinar subcategoría para renombrar: "' + clan + ' - ' + categoria + '"');
+    return null;
+  }
+
+  var nuevoNombre = categoria + ' - ' + subcategoria + ' - ' + clan;
+  try {
+    file.setName(nuevoNombre);
+    Logger.log('[Plantillas] Renombrado: "' + clan + ' - ' + categoria + '" → "' + nuevoNombre + '"');
+    return nuevoNombre;
+  } catch(e) {
+    Logger.log('[Plantillas] Error al renombrar "' + file.getName() + '": ' + e.message);
+    return null;
+  }
+}
+
 // Agrega las entradas Dinámico (Información sobre el clan y Mensajes) a entradas/orden sin pisar claves ya presentes. [→ Contexto_Base_Web.md §43B019]
 function _agregarEntradasDinamicas(ss, entradas, orden) {
   function clave(cat, sub, clan) { return cat + '||' + sub + '||' + clan; }
@@ -509,4 +492,34 @@ function _ordenarEntradasIndice(ss, lista) {
     return oClanA - oClanB;
   });
   return lista;
+}
+
+// Lee la hoja Extra y devuelve { valorLower -> índice } para 'categoria' o 'subcategoria'. [→ Contexto_Base_Web.md §43B007]
+function _getOrdenExtra(ss, tipo) {
+  var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
+  var mapa = {};
+  if (!sh || sh.getLastRow() < 2) return mapa;
+  var colIdx = (tipo === 'subcategoria') ? 12 : 11; // 0-based
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 13).getValues();
+  var orden = 0;
+  for (var i = 0; i < data.length; i++) {
+    var v = String(data[i][colIdx] || '').trim();
+    if (v && mapa[v.toLowerCase()] === undefined) {
+      mapa[v.toLowerCase()] = orden++;
+    }
+  }
+  return mapa;
+}
+
+// Lee la hoja Clan y devuelve { nombreClanLower -> índice } según el orden de filas. [→ Contexto_Base_Web.md §43B008]
+function _getOrdenClanHoja(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
+  var mapa = {};
+  if (!sh || sh.getLastRow() < 2) return mapa;
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues();
+  for (var i = 0; i < data.length; i++) {
+    var v = String(data[i][2] || '').trim();
+    if (v) mapa[v.toLowerCase()] = i;
+  }
+  return mapa;
 }
