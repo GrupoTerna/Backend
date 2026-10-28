@@ -5,6 +5,13 @@
 // Cada activador lleva su propio horario en ACTIVADORES_CONFIG.
 // ==============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Activadores: instalar y quitar todos
+//  Parte 2 — Funciones que no se corren a mano
+//    - Activadores: ayudas (en el orden en que las usa activarTodosLosActivadores)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // EXCEPCIONES (torneo en vivo, continuaciones de tandas) y AVISOS ABIERTOS 1-8 (frecuencias, cuota diaria, colisiones, UptimeRobot) [→ Contexto_Base_Web.md §08B001]
 
 // Tipos admitidos: [→ Contexto_Base_Web.md §08B002]
@@ -38,6 +45,14 @@ var ACTIVADORES_CONFIG = [
 // anteriores del proyecto). [-> Contexto_Base_Web.md §PF091]
 var ACTIVADORES_HANDLERS_LEGADOS_ = ['runGuerraRapido', 'runPendientesYMensajes', 'runUpdate'];
 
+var _ACTIVADORES_DIAS_ = null;
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Activadores: instalar y quitar todos -----
+
 /**
  * activarTodosLosActivadores() [→ Contexto_Base_Web.md §08B004]
  */
@@ -66,6 +81,12 @@ function desactivarTodosLosActivadores() {
     (quedan.length ? quedan.join(', ') : 'ninguno') + '.');
 }
 
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Activadores: ayudas (en el orden en que las usa activarTodosLosActivadores) -----
+
 // Helpers internos [→ Contexto_Base_Web.md §08B006]
 
 /** Borra los activadores cuyo handler esta en ACTIVADORES_CONFIG o en los legados. Devuelve cuantos borro. */
@@ -82,8 +103,6 @@ function _retirarActivadoresAdministrados_() {
   }
   return borrados;
 }
-
-var _ACTIVADORES_DIAS_ = null;
 
 /** Crea un activador segun su entrada de ACTIVADORES_CONFIG. */
 function _crearActivador_(c) {
