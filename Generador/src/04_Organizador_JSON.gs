@@ -17,6 +17,13 @@
 //                                       llamarse desde 06 si hiciera falta).
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Organización de respaldos JSON: drenar la raíz
+//  Parte 2 — Funciones que no se corren a mano
+//    - Organización de respaldos JSON: motor y ayudas (en el orden en que las llama organizarArchivosJSON; el motor lo usa también 05)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 /** @const {string} ID de la carpeta raíz que contiene los respaldos JSON. */
 var CARPETA_JSON_RAIZ_ID_ = '1fe_z2gahCDeVrYEbG8B2ts-XDJzbNBu8';
 
@@ -87,6 +94,18 @@ var ORGANIZAR_PROP_ESTADO_ = 'ORGANIZAR_JSON_ESTADO_V1';
 /** @const {string} Nombre del handler que se re-programa como trigger. */
 var ORGANIZAR_TRIGGER_HANDLER_ = 'organizarArchivosJSON';
 
+/** Clanes para los que ya se aviso que su carpeta vieja no se puede abrir (un solo aviso por ejecucion). */
+var _CARPETA_VIEJA_AVISADA_ = {};
+
+/** Memoria de las carpetas de temporada/semana ya resueltas en esta ejecucion (evita repetir getFoldersByName). */
+var _SEMANA_MEM_ = {};
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Organización de respaldos JSON: drenar la raíz -----
+
 /**
  * Punto de entrada MANUAL. Ejecutar directamente desde el editor cuando se
  * quiera drenar la raíz sin correr la migración completa de 05.
@@ -129,6 +148,12 @@ function organizarArchivosJSON() {
     resumen.ignorados.forEach(function(linea) { console.log('  · ' + linea); });
   }
 }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Organización de respaldos JSON: motor y ayudas (en el orden en que las llama organizarArchivosJSON; el motor lo usa también 05) -----
 
 /**
  * Motor reutilizable: recorre la carpeta raíz de JSON y mueve cada archivo
@@ -203,6 +228,53 @@ function _organizarJSON_procesarRaiz_(resumen, inicio) {
   return true;
 }
 
+function _organizarJSON_tiempoAgotado_(inicio) {
+  return (new Date().getTime() - inicio) > ORGANIZAR_LIMITE_MS_;
+}
+
+/**
+ * PF074: carpeta donde debe vivir un JSON de un clan y un endpoint: la del esquema ACTUAL (endpoint -> clan) si ese
+ * endpoint esta en CARPETAS_CLAN_POR_ENDPOINT_; si no, la carpeta vieja del clan (CARPETAS_CLAN_).
+ * @param {string} clanClave Clave de clan en minusculas (como en CARPETAS_CLAN_).
+ * @param {string} endpointKey 'currentriverrace' | 'clans' | otro.
+ * @return {Folder}
+ */
+function _carpetaDestinoJSON_(clanClave, endpointKey) {
+  var porClan = CARPETAS_CLAN_POR_ENDPOINT_[endpointKey];
+  if (porClan && porClan[clanClave]) return DriveApp.getFolderById(porClan[clanClave]);
+  return _carpetaViejaDeClan_(clanClave); // puede ser null si la carpeta vieja ya no existe
+}
+
+/**
+ * PF074: carpeta VIEJA del clan (esquema JSON/<clan>/...). Devuelve null, y avisa una vez en el registro, si ya no
+ * existe o la cuenta no tiene acceso (el 14-oct-2026 la del clan "grupo乂terna™" daba "No item with the given ID could be
+ * found"). Todo lo que depende de la carpeta vieja debe tolerar el null.
+ * @param {string} clanClave
+ * @return {?Folder}
+ */
+function _carpetaViejaDeClan_(clanClave) {
+  var id = CARPETAS_CLAN_[clanClave];
+  if (!id) return null;
+  try {
+    return DriveApp.getFolderById(id);
+  } catch (e) {
+    if (!_CARPETA_VIEJA_AVISADA_[clanClave]) {
+      _CARPETA_VIEJA_AVISADA_[clanClave] = true;
+      console.log('    ⚠ La carpeta VIEJA del clan "' + clanClave + '" no se puede abrir (ID ' + id +
+        '): se omite y se sigue con las carpetas actuales. (' + e.message + ')');
+    }
+    return null;
+  }
+}
+
+function _organizarJSON_borrarTriggersPendientes_() {
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === ORGANIZAR_TRIGGER_HANDLER_) {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+}
+
 /**
  * Devuelve la subcarpeta "nombre" dentro de "carpetaPadre", creándola si
  * todavía no existe. Idempotente: si dos ejecuciones la buscan a la vez,
@@ -251,44 +323,6 @@ function _archivosDeCarpetaClan_(carpetaClan) {
   });
 
   return lista;
-}
-
-/**
- * PF074: carpeta donde debe vivir un JSON de un clan y un endpoint: la del esquema ACTUAL (endpoint -> clan) si ese
- * endpoint esta en CARPETAS_CLAN_POR_ENDPOINT_; si no, la carpeta vieja del clan (CARPETAS_CLAN_).
- * @param {string} clanClave Clave de clan en minusculas (como en CARPETAS_CLAN_).
- * @param {string} endpointKey 'currentriverrace' | 'clans' | otro.
- * @return {Folder}
- */
-function _carpetaDestinoJSON_(clanClave, endpointKey) {
-  var porClan = CARPETAS_CLAN_POR_ENDPOINT_[endpointKey];
-  if (porClan && porClan[clanClave]) return DriveApp.getFolderById(porClan[clanClave]);
-  return _carpetaViejaDeClan_(clanClave); // puede ser null si la carpeta vieja ya no existe
-}
-
-/** Clanes para los que ya se aviso que su carpeta vieja no se puede abrir (un solo aviso por ejecucion). */
-var _CARPETA_VIEJA_AVISADA_ = {};
-
-/**
- * PF074: carpeta VIEJA del clan (esquema JSON/<clan>/...). Devuelve null, y avisa una vez en el registro, si ya no
- * existe o la cuenta no tiene acceso (el 14-oct-2026 la del clan "grupo乂terna™" daba "No item with the given ID could be
- * found"). Todo lo que depende de la carpeta vieja debe tolerar el null.
- * @param {string} clanClave
- * @return {?Folder}
- */
-function _carpetaViejaDeClan_(clanClave) {
-  var id = CARPETAS_CLAN_[clanClave];
-  if (!id) return null;
-  try {
-    return DriveApp.getFolderById(id);
-  } catch (e) {
-    if (!_CARPETA_VIEJA_AVISADA_[clanClave]) {
-      _CARPETA_VIEJA_AVISADA_[clanClave] = true;
-      console.log('    ⚠ La carpeta VIEJA del clan "' + clanClave + '" no se puede abrir (ID ' + id +
-        '): se omite y se sigue con las carpetas actuales. (' + e.message + ')');
-    }
-    return null;
-  }
 }
 
 /**
@@ -344,9 +378,6 @@ function _archivosDeClan_(clanClave) {
   return lista;
 }
 
-/** Memoria de las carpetas de temporada/semana ya resueltas en esta ejecucion (evita repetir getFoldersByName). */
-var _SEMANA_MEM_ = {};
-
 /**
  * PF074: carpeta de la TEMPORADA y la SEMANA de un clan y un endpoint, dentro de la carpeta actual de ese endpoint:
  * CurrentRiverRace|Clans / <clan> / T-02 / S-01. La crea si no existe. Los nombres (T-02, S-01, con cero a la izquierda)
@@ -363,16 +394,4 @@ function _carpetaSemanaJSON_(clanClave, endpointKey, temporada, sectionIndex) {
   var cS = _carpetaHijaOCrear_(cT, nS);
   _SEMANA_MEM_[k] = cS;
   return cS;
-}
-
-function _organizarJSON_tiempoAgotado_(inicio) {
-  return (new Date().getTime() - inicio) > ORGANIZAR_LIMITE_MS_;
-}
-
-function _organizarJSON_borrarTriggersPendientes_() {
-  ScriptApp.getProjectTriggers().forEach(function(t) {
-    if (t.getHandlerFunction() === ORGANIZAR_TRIGGER_HANDLER_) {
-      ScriptApp.deleteTrigger(t);
-    }
-  });
 }
