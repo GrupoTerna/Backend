@@ -33,6 +33,13 @@
 // comprobado: [→ Contexto_Base_Web.md §PF074].
 // =============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Verificación de los respaldos JSON (solo lectura)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Verificación de los respaldos JSON: ayudas (en el orden en que las llama verificarPeriodIndexJSON)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 /** @const {number} Lima es UTC-5 fijo. */
 var VERIF_LIMA_OFFSET_H_ = 5;
 
@@ -56,14 +63,14 @@ var VERIF_REGEX_TAG_ = /^T-(\d+)\s+S-(\d+)\s+P\.I-(\d+)(?:-([LMXJVSD]))?\s/;
  */
 var VERIF_EXCEPCIONES_FECHA_ = [];
 
-/** @return {boolean} true si el nombre está en VERIF_EXCEPCIONES_FECHA_ (ignorando espacios repetidos). */
-function _verif_esExcepcionFecha_(nombre) {
-  var n = String(nombre).replace(/\s+/g, ' ').trim();
-  return VERIF_EXCEPCIONES_FECHA_.indexOf(n) !== -1;
-}
-
 /** @const {number} Máximo de líneas de detalle que se escriben en el log del Generador. */
 var VERIF_MAX_LINEAS_LOG_ = 60;
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Verificación de los respaldos JSON (solo lectura) -----
 
 /**
  * Punto de entrada manual. Recorre cada carpeta de clan (sueltos y
@@ -132,6 +139,12 @@ function verificarPeriodIndexJSON() {
   return r;
 }
 
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Verificación de los respaldos JSON: ayudas -----
+
 /**
  * Lee (o toma del cache de 07) el sectionIndex/periodIndex de un
  * currentriverrace.json. Misma lógica y misma forma de cache que
@@ -150,25 +163,6 @@ function _verif_periodoDeArchivo_(archivo, cache) {
     cache[id] = { s: idPeriodo.sectionIndex, p: idPeriodo.periodIndex, t: archivo.getSize() };
   }
   return idPeriodo;
-}
-
-/**
- * Índice del día de la semana (0 = lunes … 6 = domingo) de un instante, en
- * hora de Lima, restándole "desplazH" horas antes de mirar el día (el día de
- * guerra empieza a las 04:00-05:00 Lima, no a medianoche).
- * @param {Date} fecha
- * @param {number} desplazH
- * @return {number}
- */
-function _verif_indiceDiaLima_(fecha, desplazH) {
-  var ms = fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + desplazH) * 3600 * 1000;
-  return (new Date(ms).getUTCDay() + 6) % 7; // getUTCDay: 0 = domingo
-}
-
-/** @return {boolean} true si la hora de Lima de "fecha" cae dentro de [04:00, 05:00). */
-function _verif_enVentanaCambio_(fecha) {
-  var h = new Date(fecha.getTime() - VERIF_LIMA_OFFSET_H_ * 3600 * 1000).getUTCHours();
-  return h >= VERIF_CAMBIO_DESDE_H_ && h < VERIF_CAMBIO_HASTA_H_;
 }
 
 /**
@@ -260,6 +254,31 @@ function _verif_comparar_(nombre, idPeriodo, creada, ahora) {
   else estado = 'ok';
 
   return { estado: estado, problemas: problemas, avisos: avisos, exceptuado: exceptuado };
+}
+
+/**
+ * Índice del día de la semana (0 = lunes … 6 = domingo) de un instante, en
+ * hora de Lima, restándole "desplazH" horas antes de mirar el día (el día de
+ * guerra empieza a las 04:00-05:00 Lima, no a medianoche).
+ * @param {Date} fecha
+ * @param {number} desplazH
+ * @return {number}
+ */
+function _verif_indiceDiaLima_(fecha, desplazH) {
+  var ms = fecha.getTime() - (VERIF_LIMA_OFFSET_H_ + desplazH) * 3600 * 1000;
+  return (new Date(ms).getUTCDay() + 6) % 7; // getUTCDay: 0 = domingo
+}
+
+/** @return {boolean} true si la hora de Lima de "fecha" cae dentro de [04:00, 05:00). */
+function _verif_enVentanaCambio_(fecha) {
+  var h = new Date(fecha.getTime() - VERIF_LIMA_OFFSET_H_ * 3600 * 1000).getUTCHours();
+  return h >= VERIF_CAMBIO_DESDE_H_ && h < VERIF_CAMBIO_HASTA_H_;
+}
+
+/** @return {boolean} true si el nombre está en VERIF_EXCEPCIONES_FECHA_ (ignorando espacios repetidos). */
+function _verif_esExcepcionFecha_(nombre) {
+  var n = String(nombre).replace(/\s+/g, ' ').trim();
+  return VERIF_EXCEPCIONES_FECHA_.indexOf(n) !== -1;
 }
 
 /** Escribe el resumen en la consola y deja una entrada en el log del Generador. */
