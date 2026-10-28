@@ -3,6 +3,16 @@
 // Documento en Drive que muestra a quienes no calificaron para un torneo, sorteo o cambio de rango.
 // ==============================================================================
 
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 28-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: actualizarDocsNoCalificadosYCambioRango()
+//  Parte 2 — Funciones que no se corren a mano (las tres de documento las llama 26_Torneos_Core.gs; también aceptan correrse sin argumentos)
+//    - No calificados del torneo
+//    - No calificados del sorteo (y su evaluación)
+//    - Cambio de rango (y su veredicto)
+//    - Ayudas compartidas (texto de requisitos, escritura del documento y su formato)
+//    - Contenido base para la reconstrucción automática de los documentos
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // NUEVO (15-sep-2026, pedido del usuario): [→ Contexto_Base_Web.md §29B001]
 
 // ----- Variables y constantes -----
@@ -24,7 +34,7 @@ var NC_VEREDICTO = {
   EXPULSION: 'Expulsión'
 };
 
-// ----- Funciones manuales / punto de entrada -----
+// ----- Parte 1: funciones que se corren a mano -----
 
 /**
  * actualizarDocsNoCalificadosYCambioRango() [→ Contexto_Base_Web.md §29B003]
@@ -34,6 +44,8 @@ function actualizarDocsNoCalificadosYCambioRango() {
   actualizarDocNoCalificadosSorteo();
   actualizarDocCambioRango();
 }
+
+// ----- Parte 2: funciones que no se corren a mano -----
 
 // NO CALIFICADOS — TORNEO [→ Contexto_Base_Web.md §29B004]
 
@@ -165,6 +177,38 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
 // NO CALIFICADOS — SORTEO [→ Contexto_Base_Web.md §29B006]
 
 /**
+ * actualizarDocNoCalificadosSorteo(ctxParam) [→ Contexto_Base_Web.md §29B007]
+ */
+function actualizarDocNoCalificadosSorteo(ctxParam) {
+  var ev = _evaluarCalificacionSorteo_(ctxParam);
+  if (!ev) return;
+
+  var filas = [['Nombre', 'Clan', 'Medallas (prom.)', 'Ataques (prom.)', 'Torneos', 'Barcos (prom.)', 'Motivo por el que no califica']];
+  var totalNoCalificados = 0;
+  ev.evaluados.forEach(function (e) {
+    if (e.motivos.length === 0) return; // calificó: va en el doc de Participantes calificados
+    totalNoCalificados++;
+    filas.push([
+      e.nombre,
+      e.clan,
+      _ncFmtNum(e.trofeos),
+      _ncFmtNum(e.ataques),
+      String(e.torneos),
+      (e.barcosEvaluado ? _ncFmtNum(e.barcosProm) : 'No evaluado'),
+      e.motivos.join(' ')
+    ]);
+  });
+
+  var resumen = totalNoCalificados + ' de ' + ev.evaluados.length + ' cuenta(s) evaluada(s) no califican. ' +
+    'Temporada ' + ev.temporadaActual + '. Sorteo ' + (ev.idSorteo || 'sin ID') + '.';
+
+  _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_SORTEO, 'Participantes NO calificados (sorteo)',
+    ev.requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
+
+  Logger.log('[NoCalificados-Sorteo] ' + resumen);
+}
+
+/**
  * _evaluarCalificacionSorteo_(ctxParam) [→ Contexto_Base_Web.md §PF202]
  * (24-oct-2026, pedido de la usuaria) ÚNICA evaluación del sorteo: la usan el doc de NO calificados y el de
  * Participantes calificados, así que un jugador sale en uno o en el otro, nunca en ninguno. Mismo criterio
@@ -281,38 +325,6 @@ function _evaluarCalificacionSorteo_(ctxParam) {
     idSorteo: bloque[0].idFila || '',
     bloque: bloque // PF205: configuración de S_Lista, para regenerar el texto de «Requisitos» del Doc de calificados
   };
-}
-
-/**
- * actualizarDocNoCalificadosSorteo(ctxParam) [→ Contexto_Base_Web.md §29B007]
- */
-function actualizarDocNoCalificadosSorteo(ctxParam) {
-  var ev = _evaluarCalificacionSorteo_(ctxParam);
-  if (!ev) return;
-
-  var filas = [['Nombre', 'Clan', 'Medallas (prom.)', 'Ataques (prom.)', 'Torneos', 'Barcos (prom.)', 'Motivo por el que no califica']];
-  var totalNoCalificados = 0;
-  ev.evaluados.forEach(function (e) {
-    if (e.motivos.length === 0) return; // calificó: va en el doc de Participantes calificados
-    totalNoCalificados++;
-    filas.push([
-      e.nombre,
-      e.clan,
-      _ncFmtNum(e.trofeos),
-      _ncFmtNum(e.ataques),
-      String(e.torneos),
-      (e.barcosEvaluado ? _ncFmtNum(e.barcosProm) : 'No evaluado'),
-      e.motivos.join(' ')
-    ]);
-  });
-
-  var resumen = totalNoCalificados + ' de ' + ev.evaluados.length + ' cuenta(s) evaluada(s) no califican. ' +
-    'Temporada ' + ev.temporadaActual + '. Sorteo ' + (ev.idSorteo || 'sin ID') + '.';
-
-  _ncEscribirDocumento(NOMBRE_DOC_NO_CALIFICADOS_SORTEO, 'Participantes NO calificados (sorteo)',
-    ev.requisitos, filas, resumen, 'Todas las cuentas evaluadas calificaron: no hay nadie que listar en esta corrida.', true);
-
-  Logger.log('[NoCalificados-Sorteo] ' + resumen);
 }
 
 // CAMBIO DE RANGO — documento general [→ Contexto_Base_Web.md §29B009]
@@ -593,6 +605,55 @@ function _ncVeredictoCambioRango(rolKey, bloqueAsc, bloqueDesc, promAsc, promDes
 // HELPERS COMPARTIDOS DE ESTE ARCHIVO [→ Contexto_Base_Web.md §29B020]
 
 /**
+ * _ncFmtNum(n) [→ Contexto_Base_Web.md §29B026]
+ */
+function _ncFmtNum(n) {
+  var v = Number(n) || 0;
+  var r = Math.round(v * 10) / 10;
+  return String(r);
+}
+
+/**
+ * _ncNombreRol(rolKey)
+ * 'miembro'|'veterano'|'colider' -> etiqueta legible para el documento.
+ */
+function _ncNombreRol(rolKey) {
+  if (rolKey === 'miembro')  return 'Miembro';
+  if (rolKey === 'veterano') return 'Veterano';
+  if (rolKey === 'colider')  return 'Colíder';
+  return rolKey;
+}
+
+/**
+ * _ncTextoRequisito(reqMinCR, reqAtaques) [→ Contexto_Base_Web.md §29B023]
+ */
+function _ncTextoRequisito(reqMinCR, reqAtaques) {
+  var partes = [];
+  partes.push('Medallas ' + (reqMinCR && reqMinCR.activo ? '>= ' + reqMinCR.qty : 'no exigido'));
+  partes.push('Ataques ' + (reqAtaques && reqAtaques.activo ? '>= ' + reqAtaques.qty : 'no exigido'));
+  return partes.join(', ');
+}
+
+/**
+ * _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) [→ Contexto_Base_Web.md §29B024]
+ */
+function _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) {
+  var partes = [];
+  if (reqMinCR && reqMinCR.activo) {
+    partes.push('Medallas ' + _ncFmtNum(promedios.fameProm) + ' (se pide ' + reqMinCR.qty + ')');
+  }
+  if (reqAtaques && reqAtaques.activo) {
+    // 19-sep-2026: aviso de exoneración por domingo opcional, mismo criterio y [→ Contexto_Base_Web.md §29B025]
+    var exentosTxt = (promedios && Number(promedios.ataquesExentos) > 0)
+      ? ', ' + promedios.ataquesExentos + ' exonerados por domingo opcional'
+      : '';
+    partes.push('Ataques ' + _ncFmtNum(promedios.ataquesProm) + ' (se pide ' + reqAtaques.qty + exentosTxt + ')');
+  }
+  if (!partes.length) partes.push('sin requisitos activos para este rol/clan');
+  return partes.join(', ');
+}
+
+/**
  * _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas) [→ Contexto_Base_Web.md §29B021]
  */
 function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, textoSinFilas, estiloUniforme) {
@@ -653,6 +714,20 @@ function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, tex
 
   // Los bordes de una sola fila no se pueden fijar con DocumentApp: van aparte, con la API de Docs.
   if (hayTabla && estiloUniforme) _ncBordesBlancosEncabezado_(archivo.getId(), filas[0].length);
+}
+
+/**
+ * _ncFechaHoraPeru() [→ Contexto_Base_Web.md §29B027]
+ */
+function _ncFechaHoraPeru() {
+  var tz = 'America/Lima';
+  try {
+    var tzSs = _getSs().getSpreadsheetTimeZone();
+    if (tzSs) tz = tzSs;
+  } catch (e) {
+    // Sin acceso al spreadsheet: se queda con America/Lima.
+  }
+  return Utilities.formatDate(new Date(), tz, 'dd/MM/yyyy HH:mm');
 }
 
 /**
@@ -734,69 +809,6 @@ function _ncBordesBlancosEncabezado_(docId, numColumnas) {
     Logger.log('[DocsNoCalificados] Bordes del encabezado: ' + e.message);
     return false;
   }
-}
-
-/**
- * _ncTextoRequisito(reqMinCR, reqAtaques) [→ Contexto_Base_Web.md §29B023]
- */
-function _ncTextoRequisito(reqMinCR, reqAtaques) {
-  var partes = [];
-  partes.push('Medallas ' + (reqMinCR && reqMinCR.activo ? '>= ' + reqMinCR.qty : 'no exigido'));
-  partes.push('Ataques ' + (reqAtaques && reqAtaques.activo ? '>= ' + reqAtaques.qty : 'no exigido'));
-  return partes.join(', ');
-}
-
-/**
- * _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) [→ Contexto_Base_Web.md §29B024]
- */
-function _ncTextoRequisitoVsReal(reqMinCR, reqAtaques, promedios) {
-  var partes = [];
-  if (reqMinCR && reqMinCR.activo) {
-    partes.push('Medallas ' + _ncFmtNum(promedios.fameProm) + ' (se pide ' + reqMinCR.qty + ')');
-  }
-  if (reqAtaques && reqAtaques.activo) {
-    // 19-sep-2026: aviso de exoneración por domingo opcional, mismo criterio y [→ Contexto_Base_Web.md §29B025]
-    var exentosTxt = (promedios && Number(promedios.ataquesExentos) > 0)
-      ? ', ' + promedios.ataquesExentos + ' exonerados por domingo opcional'
-      : '';
-    partes.push('Ataques ' + _ncFmtNum(promedios.ataquesProm) + ' (se pide ' + reqAtaques.qty + exentosTxt + ')');
-  }
-  if (!partes.length) partes.push('sin requisitos activos para este rol/clan');
-  return partes.join(', ');
-}
-
-/**
- * _ncNombreRol(rolKey)
- * 'miembro'|'veterano'|'colider' -> etiqueta legible para el documento.
- */
-function _ncNombreRol(rolKey) {
-  if (rolKey === 'miembro')  return 'Miembro';
-  if (rolKey === 'veterano') return 'Veterano';
-  if (rolKey === 'colider')  return 'Colíder';
-  return rolKey;
-}
-
-/**
- * _ncFmtNum(n) [→ Contexto_Base_Web.md §29B026]
- */
-function _ncFmtNum(n) {
-  var v = Number(n) || 0;
-  var r = Math.round(v * 10) / 10;
-  return String(r);
-}
-
-/**
- * _ncFechaHoraPeru() [→ Contexto_Base_Web.md §29B027]
- */
-function _ncFechaHoraPeru() {
-  var tz = 'America/Lima';
-  try {
-    var tzSs = _getSs().getSpreadsheetTimeZone();
-    if (tzSs) tz = tzSs;
-  } catch (e) {
-    // Sin acceso al spreadsheet: se queda con America/Lima.
-  }
-  return Utilities.formatDate(new Date(), tz, 'dd/MM/yyyy HH:mm');
 }
 
 // CONTENIDO BASE (solo para la reconstrucción automática) [→ Contexto_Base_Web.md §29B028]
