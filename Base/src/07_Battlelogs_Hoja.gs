@@ -1,9 +1,13 @@
-// =============================================================================
 // 07_Battlelogs_Hoja.gs
 // HOJA "Battlelogs": VISTA DE SOLO LECTURA de Backup_Battlelogs.csv.
-// =============================================================================
-
 // Hoja 'Battlelogs' = vista de solo lectura, reconstruida desde el CSV (nunca al revés); avisos abiertos [1]-[7]. [→ Contexto_Base_Web.md §07B001]
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Battlelogs: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Battlelogs: ayudas (en el orden en que las usa actualizarHojaBattlelogs)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var BLH_SHEET_NAME = 'Battlelogs';
 
@@ -12,8 +16,11 @@ var BLH_COLS_NUMERICAS = [0, 7, 9, 10, 13, 14]; // N°, ModoId, CoronasPropias, 
 
 // Columna extra que existe SOLO en la hoja (no en el CSV). true = se agrega.
 var BLH_AGREGAR_HORA_LIMA = true;
+
 var BLH_HEADER_HORA_LIMA = 'Hora Lima';
+
 var BLH_TZ = 'America/Lima';
+
 var BLH_FORMATO_HORA_LIMA = 'yyyy-MM-dd HH:mm:ss';
 
 var BLH_NOTA_A1 =
@@ -22,6 +29,12 @@ var BLH_NOTA_A1 =
   'runSyncCSV()). No editar aqui: lo que se cambie se pierde en la proxima ' +
   'actualizacion. El registro real es el CSV. La columna "' + BLH_HEADER_HORA_LIMA + '" solo existe ' +
   'en esta hoja: es battleTime (UTC) convertido a hora de Lima.';
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Battlelogs: actualizar -----
 
 // PUNTO DE ENTRADA [→ Contexto_Base_Web.md §07B002]
 
@@ -104,6 +117,12 @@ function actualizarHojaBattlelogs() {
       : ''));
   return { filas: nFilas, creada: !existia, sinHoraLima: conv.sinHoraLima };
 }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Battlelogs: ayudas (en el orden en que las usa actualizarHojaBattlelogs) -----
 
 // AUXILIARES [→ Contexto_Base_Web.md §07B005]
 
