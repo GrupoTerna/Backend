@@ -1,78 +1,32 @@
-// ==============================================================================
 // 34_Logros.gs
 // Logros (achievements de /players) en dos CSV, 
 // con la misma dinámica que Cards/Cards_2 e Insignias/Insignias_2
-// ==============================================================================
-
 // NUEVO (24-sep-2026, pedido del usuario)
-
 //
 // NUEVO 24-sep-2026: Logros en dos CSV (catálogo con Nombre/Info_es semi-manuales y marcador {objetivo}; por jugador, con relleno = Objetivo vacío). Mismos modos y merge que Cards_2/Insignias_2. [→ Contexto_Base_Web.md §34B001]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Logros y Logros2: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Logros: leer, guardar y tomar de la caché (lo usa updateLogrosSheet)
+//    - Logros2: leer, armar y guardar el CSV (lo usa updateLogros2Sheet)
+//    - Logros: respuestas web (CSV primero)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var LOGROS_CSV   = 'Backup_Logros.csv';
+
 var LOGROS2_CSV  = 'Backup_Logros_2.csv';
+
 var LOGROS_HEADERS  = ['N°', 'Name', 'Nombre', 'Info', 'Info_es'];
+
 var LOGROS2_HEADERS = ['N°', 'Tag', 'Name', 'Nombre', 'Estrellas', 'Progreso', 'Objetivo', 'Info', 'Completado'];
 
-// ----- Lectura / escritura de los CSV -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-function _leerLogrosCSV() {
-  var t = _loadCSVFromDrive(LOGROS_CSV);
-  if (!t) return { headers: LOGROS_HEADERS.slice(), rows: [] };
-  var p = _parseCSV(t);
-  if (!p || p.length === 0) return { headers: LOGROS_HEADERS.slice(), rows: [] };
-  var headers = p[0], rows = p.slice(1);
-  // CSV creado antes de la columna Info_es: se completa el encabezado y las filas
-  // (queda guardado en la próxima corrida de updateLogrosSheet()).
-  for (var h = headers.length; h < LOGROS_HEADERS.length; h++) headers.push(LOGROS_HEADERS[h]);
-  for (var r = 0; r < rows.length; r++) {
-    while (rows[r].length < LOGROS_HEADERS.length) rows[r].push('');
-  }
-  return { headers: headers, rows: rows };
-}
-
-function _guardarLogrosCSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive(LOGROS_CSV, _encodeCSV([headers].concat(rows)));
-}
-
-function _leerLogros2CSV() {
-  var t = _loadCSVFromDrive(LOGROS2_CSV);
-  if (!t) return { headers: LOGROS2_HEADERS.slice(), rows: [] };
-  var p = _parseCSV(t);
-  if (!p || p.length === 0) return { headers: LOGROS2_HEADERS.slice(), rows: [] };
-  return { headers: p[0], rows: p.slice(1) };
-}
-
-function _guardarLogros2CSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive(LOGROS2_CSV, _encodeCSV([headers].concat(rows)));
-}
-
-function _lgCelda(v) {
-  return (v === undefined || v === null) ? '' : v;
-}
-
-// ----- Catálogo (Backup_Logros.csv) -----
-
-// Mapa name -> info (primera descripción no vacía) recorriendo el cache de /players de todos los jugadores. [→ Contexto_Base_Web.md §34B002]
-function _getLogrosDesdeCache() {
-  var mapa = {};
-  var cache = (CACHE_CLAN_DATA && CACHE_CLAN_DATA._players) ? CACHE_CLAN_DATA._players : {};
-  for (var tag in cache) {
-    if (!Object.prototype.hasOwnProperty.call(cache, tag)) continue;
-    var lista = (cache[tag] && cache[tag].achievements) || [];
-    for (var k = 0; k < lista.length; k++) {
-      var a = lista[k];
-      var nm = a && a.name ? String(a.name).trim() : '';
-      if (!nm) continue;
-      if (!Object.prototype.hasOwnProperty.call(mapa, nm)) mapa[nm] = '';
-      if (!mapa[nm] && a.info) mapa[nm] = String(a.info);
-    }
-  }
-  return mapa;
-}
+// ----- Hoja Logros y Logros2: actualizar -----
 
 // Agrega al catálogo los logros nuevos (alfabético, al final) y completa Info si estaba vacía; nunca pisa Nombre ni borra filas. [→ Contexto_Base_Web.md §34B003]
 function updateLogrosSheet() {
@@ -105,6 +59,86 @@ function updateLogrosSheet() {
   Logger.log('[Logros] ' + LOGROS_CSV + ': ' + nuevas + ' logro(s) nuevo(s), ' + actualizadas + ' Info completada(s).');
 }
 
+function updateLogros2Sheet() {
+  if (PLAYERS_API_ENABLED === false) {
+    Logger.log('[Logros2] PLAYERS_API_ENABLED=false: no se actualiza ' + LOGROS2_CSV + '.');
+    return;
+  }
+  var tags = _logrosTagsAActualizar();
+  if (!tags || tags.length === 0) {
+    Logger.log('[Logros2] Sin jugadores para actualizar');
+    return;
+  }
+  var nuevas = _armarFilasLogros2ParaTags(tags);
+  if (nuevas.length === 0) {
+    Logger.log('[Logros2] Sin datos para escribir');
+    return;
+  }
+  var csv = _leerLogros2CSV();
+  var finales = _mergearCards2CSV(csv.rows, nuevas);
+  _guardarLogros2CSV(csv.headers, finales);
+  Logger.log('[Logros2] ' + LOGROS2_CSV + ' actualizado con merge para ' + tags.length +
+    ' jugador(es). Nunca se vacía: el resto de tags conserva su fila anterior.');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Logros: leer, guardar y tomar de la caché (lo usa updateLogrosSheet) -----
+
+function _leerLogrosCSV() {
+  var t = _loadCSVFromDrive(LOGROS_CSV);
+  if (!t) return { headers: LOGROS_HEADERS.slice(), rows: [] };
+  var p = _parseCSV(t);
+  if (!p || p.length === 0) return { headers: LOGROS_HEADERS.slice(), rows: [] };
+  var headers = p[0], rows = p.slice(1);
+  // CSV creado antes de la columna Info_es: se completa el encabezado y las filas
+  // (queda guardado en la próxima corrida de updateLogrosSheet()).
+  for (var h = headers.length; h < LOGROS_HEADERS.length; h++) headers.push(LOGROS_HEADERS[h]);
+  for (var r = 0; r < rows.length; r++) {
+    while (rows[r].length < LOGROS_HEADERS.length) rows[r].push('');
+  }
+  return { headers: headers, rows: rows };
+}
+
+// Mapa name -> info (primera descripción no vacía) recorriendo el cache de /players de todos los jugadores. [→ Contexto_Base_Web.md §34B002]
+function _getLogrosDesdeCache() {
+  var mapa = {};
+  var cache = (CACHE_CLAN_DATA && CACHE_CLAN_DATA._players) ? CACHE_CLAN_DATA._players : {};
+  for (var tag in cache) {
+    if (!Object.prototype.hasOwnProperty.call(cache, tag)) continue;
+    var lista = (cache[tag] && cache[tag].achievements) || [];
+    for (var k = 0; k < lista.length; k++) {
+      var a = lista[k];
+      var nm = a && a.name ? String(a.name).trim() : '';
+      if (!nm) continue;
+      if (!Object.prototype.hasOwnProperty.call(mapa, nm)) mapa[nm] = '';
+      if (!mapa[nm] && a.info) mapa[nm] = String(a.info);
+    }
+  }
+  return mapa;
+}
+
+function _guardarLogrosCSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive(LOGROS_CSV, _encodeCSV([headers].concat(rows)));
+}
+
+// ----- Logros2: leer, armar y guardar el CSV (lo usa updateLogros2Sheet) -----
+
+function _leerLogros2CSV() {
+  var t = _loadCSVFromDrive(LOGROS2_CSV);
+  if (!t) return { headers: LOGROS2_HEADERS.slice(), rows: [] };
+  var p = _parseCSV(t);
+  if (!p || p.length === 0) return { headers: LOGROS2_HEADERS.slice(), rows: [] };
+  return { headers: p[0], rows: p.slice(1) };
+}
+
+function _lgCelda(v) {
+  return (v === undefined || v === null) ? '' : v;
+}
+
 function _getNombresLogrosConocidos() {
   var vistos = {}, lista = [];
   var cat = _leerLogrosCSV().rows;
@@ -135,8 +169,6 @@ function _mapaNombresLogrosCatalogo(rows) {
   }
   return mapa;
 }
-
-// ----- Por jugador (Backup_Logros_2.csv) -----
 
 // Una fila por CADA logro conocido: el real del jugador o relleno (0/0/vacío). [→ Contexto_Base_Web.md §34B004]
 function _armarFilasLogros2ParaTags(tags) {
@@ -192,29 +224,12 @@ function _logrosTagsAActualizar() {
   return _getTagsConPlayerCache();
 }
 
-function updateLogros2Sheet() {
-  if (PLAYERS_API_ENABLED === false) {
-    Logger.log('[Logros2] PLAYERS_API_ENABLED=false: no se actualiza ' + LOGROS2_CSV + '.');
-    return;
-  }
-  var tags = _logrosTagsAActualizar();
-  if (!tags || tags.length === 0) {
-    Logger.log('[Logros2] Sin jugadores para actualizar');
-    return;
-  }
-  var nuevas = _armarFilasLogros2ParaTags(tags);
-  if (nuevas.length === 0) {
-    Logger.log('[Logros2] Sin datos para escribir');
-    return;
-  }
-  var csv = _leerLogros2CSV();
-  var finales = _mergearCards2CSV(csv.rows, nuevas);
-  _guardarLogros2CSV(csv.headers, finales);
-  Logger.log('[Logros2] ' + LOGROS2_CSV + ' actualizado con merge para ' + tags.length +
-    ' jugador(es). Nunca se vacía: el resto de tags conserva su fila anterior.');
+function _guardarLogros2CSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive(LOGROS2_CSV, _encodeCSV([headers].concat(rows)));
 }
 
-// ----- Lectura para la web (CSV primero, JSON de respaldo) -----
+// ----- Logros: respuestas web (CSV primero) -----
 
 // Catálogo para la web { name: { nombre, infoEs } } desde Backup_Logros.csv; si no se puede leer devuelve {}. [→ Contexto_Base_Web.md §34B006]
 function _webMapaNombreLogroPorName() {
