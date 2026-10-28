@@ -1,11 +1,13 @@
-// ==============================================================================
 // 10_ClanSheet.gs
 // Hoja Clan: resumen agregado por clan.
-// ==============================================================================
-
-// ----- Variables y constantes -----
-
 // 10_ClanSheet.gs [→ Contexto_Base_Web.md §10B001]
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Clan: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Clan: ayudas
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Índices de columna en la hoja Clan (1-based) [→ Contexto_Base_Web.md §10B002]
 var CC = {
@@ -19,7 +21,11 @@ var CC = {
   CONDICION:24
 };
 
-// ----- Funciones manuales / punto de entrada -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Clan: actualizar -----
 
 /**
  * Actualiza la hoja Clan con los datos de cada clan desde CACHE_CLAN_DATA.
@@ -132,7 +138,36 @@ function updateClanSheet() {
   Logger.log('[Clan] updateClanSheet completado.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Clan: ayudas -----
+
+/**
+ * Aplica formato condicional a la hoja Clan según la columna Condición.
+ */
+function _aplicarFormatoCondicionalClan(sh, lastRow) {
+  if (lastRow < 2) return;
+
+  var dataRange = sh.getRange(2, 1, lastRow - 1, CC.CONDICION);
+  var colCond   = colLetter(CC.CONDICION);
+
+  var rules = [
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied('=$' + colCond + '2="Terna"')
+      .setBackground(CFG.COLORES.TERNA_BG)
+      .setRanges([dataRange])
+      .build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied('=$' + colCond + '2="Vetado"')
+      .setBackground(CFG.COLORES.VETADO_CLAN_ROW_BG)
+      .setRanges([dataRange])
+      .build(),
+  ];
+
+  _tryCondFmt(sh, rules);
+}
 
 /**
  * _getMinGClanMaps() [→ Contexto_Base_Web.md §10B009]
@@ -170,29 +205,4 @@ function _getMinGClanMaps() {
   }
 
   return { byTag: byTag, byNombre: byNombre };
-}
-
-/**
- * Aplica formato condicional a la hoja Clan según la columna Condición.
- */
-function _aplicarFormatoCondicionalClan(sh, lastRow) {
-  if (lastRow < 2) return;
-
-  var dataRange = sh.getRange(2, 1, lastRow - 1, CC.CONDICION);
-  var colCond   = colLetter(CC.CONDICION);
-
-  var rules = [
-    SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied('=$' + colCond + '2="Terna"')
-      .setBackground(CFG.COLORES.TERNA_BG)
-      .setRanges([dataRange])
-      .build(),
-    SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied('=$' + colCond + '2="Vetado"')
-      .setBackground(CFG.COLORES.VETADO_CLAN_ROW_BG)
-      .setRanges([dataRange])
-      .build(),
-  ];
-
-  _tryCondFmt(sh, rules);
 }
