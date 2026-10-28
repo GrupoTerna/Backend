@@ -88,378 +88,26 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
   'Nombres de informes históricos con T<n>S<m> o T<n>_PI<m> (CSV/Informes y CSV/Tampermonkey): suma el delta al número de temporada del nombre → nombres con la numeración nueva'
 ];
 
-// _reenumProgreso_(nombre, previas, estaTanda, total, unidad): PF269; dos líneas de progreso al estilo de /players: acumulado (tandas anteriores + esta) de total, y lo hecho en esta tanda.
-function _reenumProgreso_(nombre, previas, estaTanda, total, unidad) {
-  var acum = previas + estaTanda;
-  var pct = total > 0 ? Math.round(acum * 100 / total) : 100;
-  Logger.log('[Reenumeración]   ' + nombre + ': acumulado ' + acum + ' de ' + total + ' ' + unidad + ' (' + pct + ' %); en tandas anteriores: ' + previas + '; faltan ' + Math.max(total - acum, 0) + '.');
-  Logger.log('[Reenumeración]   ' + nombre + ': en esta tanda: ' + estaTanda + ' ' + unidad + '.');
-  _anotarProgresoPaso_(nombre + ': ' + acum + ' de ' + total + ' ' + unidad, acum); // PF283
-}
-
-// ----- Funciones manuales / punto de entrada -----
-
 // =============================================================================
-// SECCIÓN 1: funciones manuales de mantenimiento (ejecutar a mano), reordenadas el 23-ago-2026; ninguna tiene _continuarX. [→ Contexto_Base_Web.md §47B003]
+// ORDEN DEL ARCHIVO: 1) funciones que se corren a mano; 2) funciones que NO se ejecutan a mano. En cada grupo, primero por temática y luego en el orden en que se ejecutarían.
+// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permisos.
+// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo).
 // =============================================================================
 
-// migrarQuitarCatDispClanesAdminDeDirectorio(): UNA vez (12/07/2026); Cat_disp y Clanes_Admin dejan Directorio (queda en 58 columnas). [→ Contexto_Base_Web.md §47B004]
-function migrarQuitarCatDispClanesAdminDeDirectorio() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!sh) { Logger.log('[Migración Cat_disp/Clanes_Admin] Directorio no encontrado.'); return; }
-
-  var lastCol = sh.getLastColumn();
-  if (lastCol < 59) {
-    Logger.log('[Migración Cat_disp/Clanes_Admin] Directorio ya tiene ' + lastCol + ' columnas (<59), no hay nada que borrar.');
-    return;
-  }
-  var h59 = String(sh.getRange(1, 59).getValue() || '').trim();
-  var h60 = lastCol >= 60 ? String(sh.getRange(1, 60).getValue() || '').trim() : '';
-  if (h59 !== 'Cat_disp') {
-    Logger.log('[Migración Cat_disp/Clanes_Admin] ABORT: la columna 59 no dice "Cat_disp" (dice "' + h59 + '"). No se reconoce el layout esperado, no se borra nada.');
-    return;
-  }
-  var numABorrar = (h60 === 'Clanes_Admin') ? 2 : 1;
-  sh.deleteColumns(59, numABorrar);
-  Logger.log('[Migración Cat_disp/Clanes_Admin] Directorio: ' + numABorrar + ' columna(s) borrada(s) desde la posición 59. Directorio ahora tiene ' + sh.getLastColumn() + ' columnas.');
-}
-
-// migrarLinksQuitarJugador(): UNA vez (12/07/2026); borra la columna "Jugador" de Links si tiene el layout viejo (15 columnas). [→ Contexto_Base_Web.md §47B005]
-function migrarLinksQuitarJugador() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.LINKS);
-  if (!sh) { Logger.log('[Migración Links] Hoja no encontrada.'); return; }
-
-  var h4 = String(sh.getRange(1, 4).getValue() || '').trim();
-  if (h4 !== 'Jugador') {
-    Logger.log('[Migración Links] La columna 4 no dice "Jugador" (dice "' + h4 + '"), no hay nada que migrar.');
-    return;
-  }
-  sh.deleteColumn(4);
-  Logger.log('[Migración Links] Columna "Jugador" eliminada. Links ahora tiene ' + sh.getLastColumn() + ' columnas.');
-}
-
-// migrarDirectorioColumnaPrestamo(): UNA vez; mueve Préstamo (col. 59) a la posición 6 en Directorio y Administradores con layout viejo y reescribe los encabezados. [→ Contexto_Base_Web.md §47B006]
-function migrarDirectorioColumnaPrestamo() {
-  var ss = _getSs();
-  var headers = [
-    'N°','Tag','Nombre','Jugador','Nom_Multi','Préstamo','Multicuenta','Permiso',
-    'Antigüedad','Nivel','Nivel2','Copas','Copas_max','Arena','V_Guerra',
-    'Victorias','Derrotas','Batallas','Racha',
-    'Camino de leyendas_Liga','Camino de leyendas_Trofeos','Camino de leyendas_Rango',
-    'Victorias de tres coronas','Max_victorias_desafíos','Torneos','Emotes','Banners',
-    'Cartas_desafíos','Cartas_torneos',
-    'Donaciones_r','Donaciones_d',
-    'Ranking','Ranking_p','Rango','Clan','ClanTag','Líder',
-    'Iniciales','Prefijo','Celular','WSP(G)','Etiqueta',
-    'WSP','RoyaleAPI','Mazo','Mazo2','CWStats','Render',
-    'Fecha_ing','Fecha_lim','Vigencia','Inactividad(d)',
-    'Alerta','Estado','Comentario','Vetado','Razón','Admin','Cat_disp',
-    'Clanes_Admin'
-  ];
-  _migrarColumnaPrestamoEnHoja(ss.getSheetByName(CFG.SHEETS.DIRECTORIO), 'Directorio', headers);
-  _migrarColumnaPrestamoEnHoja(ss.getSheetByName(CFG.SHEETS.ADMINISTRADORES), 'Administradores', headers);
-}
-
-function _migrarColumnaPrestamoEnHoja(sh, nombreHoja, headers) {
-  if (!sh) { Logger.log('[Migración Préstamo] Hoja ' + nombreHoja + ' no encontrada, se omite.'); return; }
-
-  var totalCols = 60;
-  var lastCol = sh.getLastColumn();
-
-  // Si la col 6 YA dice "Préstamo", asumir que esta hoja ya fue migrada
-  // (evita mover los datos dos veces si se corre por accidente otra vez).
-  var headerCol6 = String(sh.getRange(1, 6).getValue() || '').trim();
-  if (headerCol6 === 'Préstamo') {
-    Logger.log('[Migración Préstamo] ' + nombreHoja + ' ya migrada (col 6 = "Préstamo"), se omite.');
-    return;
-  }
-
-  var lastRow = sh.getLastRow();
-  if (lastRow >= 2) {
-    // Verificar que la columna 59 (posición vieja) efectivamente diga
-    // "Préstamo" antes de mover nada — si no coincide, la hoja no tiene el
-    // layout esperado y es más seguro abortar que mover datos a ciegas.
-    var headerCol59 = lastCol >= 59 ? String(sh.getRange(1, 59).getValue() || '').trim() : '';
-    if (headerCol59 !== 'Préstamo') {
-      Logger.log('[Migración Préstamo] ABORT en ' + nombreHoja + ': la columna 59 no dice ' +
-        '"Préstamo" (dice "' + headerCol59 + '"). No se reconoce el layout esperado, no se mueve nada.');
-      return;
-    }
-
-    var data = sh.getRange(2, 1, lastRow - 1, totalCols).getValues();
-    var nuevaData = new Array(data.length);
-    for (var i = 0; i < data.length; i++) {
-      var old = data[i];
-      // old (0-indexed): [0..4]=Num..Nom_Multi (5) | [5..57]=Multicuenta..Cat_disp (53) |
-      //                  [58]=Préstamo (1) | [59]=Clanes_Admin (1)  →  total 60
-      nuevaData[i] = old.slice(0, 5)          // col 1-5, sin cambios
-        .concat([old[58]])                    // col 6 = Préstamo (antes col 59)
-        .concat(old.slice(5, 58))             // col 7-59 = antes col 6-58 (Multicuenta..Cat_disp)
-        .concat([old[59]]);                   // col 60 = Clanes_Admin, sin cambios
-    }
-    sh.getRange(2, 1, nuevaData.length, totalCols).setValues(nuevaData);
-    Logger.log('[Migración Préstamo] ' + nombreHoja + ': ' + nuevaData.length + ' filas reordenadas.');
-  } else {
-    Logger.log('[Migración Préstamo] ' + nombreHoja + ' sin filas de datos, solo se reescribe el encabezado.');
-  }
-
-  // Reescribir encabezados YA (Administradores solo los reescribe si la
-  // celda A1 está vacía — aquí se fuerza para no depender de eso).
-  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
-  applyHeaderStyle(sh, headers.length);
-}
-
 // =============================================================================
-// SECCIÓN 1: funciones manuales (reordenado 23-ago-2026); sin _continuarX. [→ Contexto_Base_Web.md §47B009]
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO (proyecto Base)
 // =============================================================================
 
-// migrarControlColumnasExtra(): UNA vez; inserta en la hoja Control existente (116 columnas) las columnas nuevas Total/%/Prom sin perder datos. [→ Contexto_Base_Web.md §47B010]
-function migrarControlColumnasExtra() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.CONTROL);
-  if (!sh) { Logger.log('[Migración Control] Hoja no encontrada'); return; }
-
-  if (sh.getMaxColumns() < 116) {
-    Logger.log('[Migración Control] ABORT: la hoja tiene menos de 116 columnas; ' +
-      'no parece tener el layout viejo esperado (4 métricas x 25 columnas). ' +
-      'Si la hoja ya tiene el layout nuevo, no ejecutes esta función de nuevo.');
-    return;
-  }
-
-  // Layout ANTES de la migración: COL_INICIO_GRID=17, 4 métricas x 25 columnas (Ataques 17-41, Puntaje 42-66, Acumulado 67-91, Barcos 92-116). [→ Contexto_Base_Web.md §47B011]
-
-  // 1) Total y % de Ataques, a la derecha de la col 41 (Tsem5 de Ataques).
-  sh.insertColumnsAfter(41, 2);
-
-  // 2) Prom y % de Puntaje: el Tsem5 de Puntaje, que estaba en 66, ahora
-  //    está en 68 (+2 por la inserción anterior).
-  sh.insertColumnsAfter(68, 2);
-
-  // 3) Total de Barcos: el Tsem5 de Barcos, que estaba en 116, ahora está
-  //    en 120 (+4 por las dos inserciones anteriores).
-  sh.insertColumnsAfter(120, 1);
-
-  _pintarEncabezadosControl(sh);
-
-  Logger.log('[Migración Control] Columnas insertadas (Ataques +2, Puntaje +2, ' +
-    'Barcos +1) y encabezados repintados. Ejecuta updateControlSheet() para ' +
-    'repoblar los valores de las columnas nuevas.');
-}
-
-// migrarControlColumnaAscenso(): UNA vez; inserta la columna "Ascenso" en la posición 17 de Control (layout de 16 columnas fijas) sin perder datos. [→ Contexto_Base_Web.md §47B012]
-function migrarControlColumnaAscenso() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.CONTROL);
-  if (!sh) { Logger.log('[Migración Ascenso] Hoja Control no encontrada'); return; }
-
-  var encabezadoCol16 = String(sh.getRange(3, 16).getValue() || '').trim();
-  var encabezadoCol17 = String(sh.getRange(3, 17).getValue() || '').trim();
-  if (encabezadoCol16 !== 'Ataques pendientes') {
-    Logger.log('[Migración Ascenso] ABORT: la columna 16 no dice "Ataques pendientes" ' +
-      '(dice "' + encabezadoCol16 + '"); la hoja no parece tener el layout de 16 ' +
-      'columnas fijas esperado.');
-    return;
-  }
-  if (encabezadoCol17 === 'Ascenso') {
-    Logger.log('[Migración Ascenso] ABORT: la columna 17 ya dice "Ascenso"; ' +
-      'esta migración ya se aplicó antes, no ejecutar de nuevo.');
-    return;
-  }
-
-  sh.insertColumnsAfter(16, 1);
-  _pintarEncabezadosControl(sh);
-
-  Logger.log('[Migración Ascenso] Columna "Ascenso" insertada en la posición 17 y ' +
-    'encabezados repintados. Ejecuta updateControlSheet() para repoblar sus valores.');
-}
-
-// migrarControlQuitarJugador(): UNA vez (03-ago-2026); borra la columna "Jugador" de Control con layout viejo (17 fijas); mismo patrón que migrarLinksQuitarJugador(). [→ Contexto_Base_Web.md §47B013]
-function migrarControlQuitarJugador() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.CONTROL);
-  if (!sh) { Logger.log('[Migración Control] Hoja Control no encontrada.'); return; }
-
-  var h4 = String(sh.getRange(3, 4).getValue() || '').trim();
-  if (h4 !== 'Jugador') {
-    Logger.log('[Migración Control] La columna 4 (fila 3) no dice "Jugador" ' +
-      '(dice "' + h4 + '"), no hay nada que migrar.');
-    return;
-  }
-
-  sh.deleteColumn(4);
-  _pintarEncabezadosControl(sh);
-
-  var numJugadores = Math.max(0, sh.getLastRow() - 3);
-  _aplicarFmtCondicionalControl(sh, numJugadores);
-
-  Logger.log('[Migración Control] Columna "Jugador" eliminada, encabezados ' +
-    'repintados y formato condicional reaplicado. Control ahora tiene ' +
-    sh.getLastColumn() + ' columnas. No hace falta correr updateControlSheet() ' +
-    'aparte — los datos y la cuadrícula ya quedaron corridos junto con la columna.');
-}
-
-// _getOrdenMensajesCategoria(): FIX 19-ago-2026; orden de categorías EXCLUSIVO de generarTodosMensajes(), desde CFG.MENSAJES_ORDEN_CATEGORIAS (ya no de la hoja Extra). [→ Contexto_Base_Web.md §47B014]
-// =============================================================================
-// SECCIÓN 1: funciones manuales (reordenado 23-ago-2026); sin _continuarX. [→ Contexto_Base_Web.md §47B015]
-// =============================================================================
-
-// migrarAgregarCopasAGuerra(): UNA vez (12-oct-2026, pedido usuario: gráfica de copas en perfil y clan). Agrega la columna «Copas» (col. 21, GC.COPAS) a la hoja Guerra y al encabezado de Backup_Guerra.csv; las filas viejas quedan con la celda vacía (no hay historial anterior de copas). Idempotente. Ejecutar a mano justo después de subirBaseDesdeGithub(). [→ Contexto_Base_Web.md §PF061]
-function migrarAgregarCopasAGuerra() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
-  if (!sh) { Logger.log('[Migración Copas Guerra] Hoja Guerra no encontrada.'); return; }
-  _asegurarColumnaCopasGuerra_(sh);
-  Logger.log('[Migración Copas Guerra] Hoja Guerra con ' + sh.getMaxColumns() + ' columnas y encabezado «Copas» en la columna ' + GC.COPAS + '.');
-
-  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
-  if (!csvText) { Logger.log('[Migración Copas Guerra] Backup_Guerra.csv no existe todavía; se creará con la columna en la próxima fusión.'); return; }
-  var parsed = _parseCSV(csvText);
-  if (!parsed || !parsed.length) return;
-  if (parsed[0].length >= GUERRA_TOTAL_COLS) { Logger.log('[Migración Copas Guerra] Backup_Guerra.csv ya tiene ' + parsed[0].length + ' columnas; nada que hacer.'); return; }
-  for (var i = 0; i < parsed.length; i++) {
-    while (parsed[i].length < GUERRA_TOTAL_COLS) parsed[i].push(i === 0 ? 'Copas' : '');
-  }
-  _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV(parsed));
-  Logger.log('[Migración Copas Guerra] Backup_Guerra.csv actualizado a ' + GUERRA_TOTAL_COLS + ' columnas (' + (parsed.length - 1) + ' filas).');
-}
-
-// migrarPosicionCategoriaAscensosDescensosEnExtra(): UNA vez; corrige la posición de "Ascensos y descensos" en la columna Categoría de Extra (justo después de los torneos). [→ Contexto_Base_Web.md §47B016]
-function migrarPosicionCategoriaAscensosDescensosEnExtra() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
-  if (!sh) { Logger.log('[Migración Extra] Hoja Extra no encontrada.'); return; }
-
-  var COL_CATEGORIA = _colCategoriaExtra_(sh); // PF141 (21-oct-2026): antes fija en 12 (L = Rangos); ver 30_Mensajes.gs
-  var categoria = 'Ascensos y descensos';
-  var categoriaLower = categoria.toLowerCase();
-
-  var lastRowSheet = sh.getLastRow();
-  var valoresActuales = [];
-  if (lastRowSheet >= 2) {
-    var colVals = sh.getRange(2, COL_CATEGORIA, lastRowSheet - 1, 1).getValues();
-    for (var k = 0; k < colVals.length; k++) {
-      var vv = String(colVals[k][0] || '').trim();
-      if (vv !== '') valoresActuales.push(vv);
-    }
-  }
-
-  var posActual = -1;
-  for (var i = 0; i < valoresActuales.length; i++) {
-    if (valoresActuales[i].toLowerCase() === categoriaLower) { posActual = i; break; }
-  }
-  if (posActual === -1) {
-    Logger.log('[Migración Extra] "Ascensos y descensos" no está en la columna L de Extra todavía. Nada que migrar (se agregará en su posición correcta la próxima vez que generarTodosMensajes() la encuentre).');
-    return;
-  }
-
-  // Quitarla de su posición actual para calcular dónde debería ir SIN
-  // contarse a sí misma como ancla (por si acaso).
-  valoresActuales.splice(posActual, 1);
-
-  var posDeseada = valoresActuales.length; // fallback: al final
-  var anclas = CATEGORIAS_ANCLA_EXTRA[categoriaLower];
-  if (anclas) {
-    for (var ai = 0; ai < valoresActuales.length; ai++) {
-      if (anclas.indexOf(valoresActuales[ai].toLowerCase()) >= 0) posDeseada = ai + 1;
-    }
-  }
-
-  if (posDeseada === posActual) {
-    Logger.log('[Migración Extra] "Ascensos y descensos" ya está en la posición correcta (justo después de los torneos). No se toca nada.');
-    return;
-  }
-
-  valoresActuales.splice(posDeseada, 0, categoria);
-
-  var nuevaColumna = valoresActuales.map(function (v) { return [v]; });
-  sh.getRange(2, COL_CATEGORIA, nuevaColumna.length, 1).setValues(nuevaColumna);
-  Logger.log('[Migración Extra] "Ascensos y descensos" movida de la posición ' + (posActual + 1) + ' a la ' + (posDeseada + 1) + ' (justo después de los torneos) en la columna L de Extra.');
-}
-
-// BAJA DEFINITIVA 14-sep-2026: se quitó migrarOrdenCategoriasTRequisitos() (migración ya ejecutada; operaba sobre T_Requisitos, dada de baja). [→ Contexto_Base_Web.md §47B017]
-
-// ---------------------------------------------------------------------------
-// Permisos: activar la Funcion para todos los admin (ejecutar UNA vez a mano)
-// ---------------------------------------------------------------------------
-
-// (Antes en 37_Web_API.gs)
-// migrarFuncionCorregirAutorATodosLosAdmins(): UNA vez, antes de abrir el panel de permisos; agrega la Función 'Corregir autor' a todos los admins que ya tienen alguna Función. [→ Contexto_Base_Web.md §47B018]
-function migrarFuncionCorregirAutorATodosLosAdmins() {
-  var hoja = _webPermisosLeerHoja();
-  if (!hoja) { Logger.log('[Permisos] ' + WEB_PERMISOS_MSG_HOJA_NO_DISPONIBLE); return; }
-  // FIX (24-sep-2026): ver docblock de _webPermisosLeerHoja() -- si los datos
-  // vinieron del respaldo CSV (hoja.sh === null), esta migración manual no
-  // tiene dónde escribir. Se aborta con un mensaje claro en vez de reventar
-  // con un TypeError al llamar hoja.sh.getRange(...).
-  if (hoja.origen !== 'sheet') {
-    Logger.log('[Permisos] La hoja Administradores no está disponible en este momento (se está leyendo desde el respaldo). Reintenta esta migración más tarde.');
-    return;
-  }
-
-  var rango = hoja.sh.getRange(2, AC.FUNCIONES, hoja.data.length, 1);
-  var valores = rango.getValues();
-  var agregadas = 0, yaLaTenian = 0, vacias = 0, sinNada = 0;
-
-  for (var i = 0; i < valores.length; i++) {
-    var actual = String(valores[i][0] || '').trim();
-    if (!actual) { vacias++; continue; }
-    if (actual === WEB_PERMISOS_SIN_NADA) { sinNada++; continue; }
-    if (_webPermisosParsearLista(actual).indexOf(WEB_FUNCION_CORREGIR_AUTOR) !== -1) { yaLaTenian++; continue; }
-    valores[i][0] = actual + ', ' + WEB_FUNCION_CORREGIR_AUTOR;
-    agregadas++;
-  }
-  if (agregadas > 0) rango.setValues(valores);
-
-  Logger.log('[Permisos] "' + WEB_FUNCION_CORREGIR_AUTOR + '" agregada en ' + agregadas + ' fila(s). ' +
-    'Ya la tenían: ' + yaLaTenian + '. Celdas vacías (sin tocar): ' + vacias + '. En "' + WEB_PERMISOS_SIN_NADA + '" (sin tocar): ' + sinNada + '.');
-}
-
-// (Antes en 41_Web_ActualizarRoster.gs)
-// migrarFuncionActualizarRosterATodosLosAdmins(): UNA vez; agrega 'Actualizar roster' a los admins con Función escrita; no toca '(ninguna)'; idempotente. [→ Contexto_Base_Web.md §47B019]
-function migrarFuncionActualizarRosterATodosLosAdmins() {
-  var hoja = _webPermisosLeerHoja();
-  if (!hoja) { Logger.log('[Permisos] ' + WEB_PERMISOS_MSG_HOJA_NO_DISPONIBLE); return; }
-  if (hoja.origen !== 'sheet') {
-    Logger.log('[Permisos] La hoja Administradores no esta disponible en este momento (se esta leyendo desde el respaldo). Reintenta mas tarde.');
-    return;
-  }
-
-  var rango = hoja.sh.getRange(2, AC.FUNCIONES, hoja.data.length, 1);
-  var valores = rango.getValues();
-  var agregadas = 0, yaLaTenian = 0, vacias = 0, sinNada = 0;
-
-  for (var i = 0; i < valores.length; i++) {
-    var actual = String(valores[i][0] || '').trim();
-    if (!actual) { vacias++; continue; }
-    if (actual === WEB_PERMISOS_SIN_NADA) { sinNada++; continue; }
-    if (_webPermisosParsearLista(actual).indexOf(WEB_FUNCION_ACTUALIZAR_ROSTER) !== -1) { yaLaTenian++; continue; }
-    valores[i][0] = actual + ', ' + WEB_FUNCION_ACTUALIZAR_ROSTER;
-    agregadas++;
-  }
-  if (agregadas > 0) rango.setValues(valores);
-
-  Logger.log('[Permisos] "' + WEB_FUNCION_ACTUALIZAR_ROSTER + '" agregada en ' + agregadas + ' fila(s). Ya la tenian: ' + yaLaTenian +
-    '. Celdas vacias (se llenan solas con la lista por defecto): ' + vacias + '. En "' + WEB_PERMISOS_SIN_NADA + '" (sin tocar): ' + sinNada + '.');
-}
-
-// ---------------------------------------------------------------------------
-// Reenumeración de temporadas (antes 52_ReenumerarTemporadas.gs). Herramienta MANUAL,
-// de uso ocasional; no es una migración de una sola vez.
-// ---------------------------------------------------------------------------
-
-// Sistema de reenumeración de temporadas: cambia UNA fecha Ref (y el Offset de RoyaleAPI) y propaga el delta de meses a toda "Temporada" guardada; manual; incluye qué no se toca. [→ Contexto_Base_Web.md §47B020]
-
-// =============================================================================
-// PARTE 1 — FUNCIONES QUE SE CORREN A MANO (proyecto Base), en el orden en que se espera usarlas:
+// ----- 1.1 Reenumeración de temporadas (antes 52_ReenumerarTemporadas.gs): herramienta MANUAL de uso ocasional, no es una migración de una sola vez -----
+// En el orden en que se espera usarlas:
 // 1) detectarTemporadaMasAntiguaConPresenciaTerna(): revisar (no cambia datos).
 // 2) iniciarReenumerarTemporadas(): arrancar la reenumeración (usa el detector del punto 1).
 // 3) ejecutarReenumeracionSugerida(): alternativa a 2) con la última sugerencia guardada.
 // 4) reanudarReenumerarTemporadas(): solo si una corrida quedó a medias.
 // 5) liberarLockEjecucionManual(): solo si una función falló sin soltar el candado.
 // 6) sugerirFechaRefDesdeCorreccionesGuerra(): autónoma, solo para ver lo de Correcciones_Guerra.csv.
-// =============================================================================
+
+// Sistema de reenumeración de temporadas: cambia UNA fecha Ref (y el Offset de RoyaleAPI) y propaga el delta de meses a toda "Temporada" guardada; manual; incluye qué no se toca. [→ Contexto_Base_Web.md §47B020]
 
 // detectarTemporadaMasAntiguaConPresenciaTerna(): manual, solo sugerencia; cruza Backup_Guerra.csv, la hoja Nuevos y (§PF253, por tag de clan) Correcciones_Guerra.csv; nunca modifica datos. PF285 (27-oct-2026): devuelve la fecha Ref 'AAAA-MM-DD' (primer lunes del mes Supercell más antiguo) o '' si no hay nada que reenumerar, e indica la variación de la T1 actual, la T1 sugerida y la temporada actual; la usa iniciarReenumerarTemporadas(). [→ Contexto_Base_Web.md §47B023]
 function detectarTemporadaMasAntiguaConPresenciaTerna() {
@@ -623,10 +271,323 @@ function sugerirFechaRefDesdeCorreccionesGuerra() {
   return fechaStr; // PF261: iniciarReenumerarTemporadas() la usa
 }
 
+// ----- 1.2 Migraciones de una sola vez (conservadas por trazabilidad), por hoja y en orden de ejecución -----
+
+// ----- Tema: Directorio y Administradores -----
+// Orden deducido del layout: Préstamo parte del Directorio de 60 columnas (Préstamo en la 59); luego se borran Cat_disp y Clanes_Admin (12/07/2026) y quedan 58.
+
+// migrarDirectorioColumnaPrestamo(): UNA vez; mueve Préstamo (col. 59) a la posición 6 en Directorio y Administradores con layout viejo y reescribe los encabezados. [→ Contexto_Base_Web.md §47B006]
+function migrarDirectorioColumnaPrestamo() {
+  var ss = _getSs();
+  var headers = [
+    'N°','Tag','Nombre','Jugador','Nom_Multi','Préstamo','Multicuenta','Permiso',
+    'Antigüedad','Nivel','Nivel2','Copas','Copas_max','Arena','V_Guerra',
+    'Victorias','Derrotas','Batallas','Racha',
+    'Camino de leyendas_Liga','Camino de leyendas_Trofeos','Camino de leyendas_Rango',
+    'Victorias de tres coronas','Max_victorias_desafíos','Torneos','Emotes','Banners',
+    'Cartas_desafíos','Cartas_torneos',
+    'Donaciones_r','Donaciones_d',
+    'Ranking','Ranking_p','Rango','Clan','ClanTag','Líder',
+    'Iniciales','Prefijo','Celular','WSP(G)','Etiqueta',
+    'WSP','RoyaleAPI','Mazo','Mazo2','CWStats','Render',
+    'Fecha_ing','Fecha_lim','Vigencia','Inactividad(d)',
+    'Alerta','Estado','Comentario','Vetado','Razón','Admin','Cat_disp',
+    'Clanes_Admin'
+  ];
+  _migrarColumnaPrestamoEnHoja(ss.getSheetByName(CFG.SHEETS.DIRECTORIO), 'Directorio', headers);
+  _migrarColumnaPrestamoEnHoja(ss.getSheetByName(CFG.SHEETS.ADMINISTRADORES), 'Administradores', headers);
+}
+
+// migrarQuitarCatDispClanesAdminDeDirectorio(): UNA vez (12/07/2026); Cat_disp y Clanes_Admin dejan Directorio (queda en 58 columnas). [→ Contexto_Base_Web.md §47B004]
+function migrarQuitarCatDispClanesAdminDeDirectorio() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!sh) { Logger.log('[Migración Cat_disp/Clanes_Admin] Directorio no encontrado.'); return; }
+
+  var lastCol = sh.getLastColumn();
+  if (lastCol < 59) {
+    Logger.log('[Migración Cat_disp/Clanes_Admin] Directorio ya tiene ' + lastCol + ' columnas (<59), no hay nada que borrar.');
+    return;
+  }
+  var h59 = String(sh.getRange(1, 59).getValue() || '').trim();
+  var h60 = lastCol >= 60 ? String(sh.getRange(1, 60).getValue() || '').trim() : '';
+  if (h59 !== 'Cat_disp') {
+    Logger.log('[Migración Cat_disp/Clanes_Admin] ABORT: la columna 59 no dice "Cat_disp" (dice "' + h59 + '"). No se reconoce el layout esperado, no se borra nada.');
+    return;
+  }
+  var numABorrar = (h60 === 'Clanes_Admin') ? 2 : 1;
+  sh.deleteColumns(59, numABorrar);
+  Logger.log('[Migración Cat_disp/Clanes_Admin] Directorio: ' + numABorrar + ' columna(s) borrada(s) desde la posición 59. Directorio ahora tiene ' + sh.getLastColumn() + ' columnas.');
+}
+
+// ----- Tema: Links -----
+// 12/07/2026.
+
+// migrarLinksQuitarJugador(): UNA vez (12/07/2026); borra la columna "Jugador" de Links si tiene el layout viejo (15 columnas). [→ Contexto_Base_Web.md §47B005]
+function migrarLinksQuitarJugador() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.LINKS);
+  if (!sh) { Logger.log('[Migración Links] Hoja no encontrada.'); return; }
+
+  var h4 = String(sh.getRange(1, 4).getValue() || '').trim();
+  if (h4 !== 'Jugador') {
+    Logger.log('[Migración Links] La columna 4 no dice "Jugador" (dice "' + h4 + '"), no hay nada que migrar.');
+    return;
+  }
+  sh.deleteColumn(4);
+  Logger.log('[Migración Links] Columna "Jugador" eliminada. Links ahora tiene ' + sh.getLastColumn() + ' columnas.');
+}
+
+// ----- Tema: Control -----
+// Orden deducido del layout: 116 columnas sin Total/%/Prom, luego 16 fijas sin Ascenso, luego 17 fijas con Jugador (03-ago-2026).
+
+// migrarControlColumnasExtra(): UNA vez; inserta en la hoja Control existente (116 columnas) las columnas nuevas Total/%/Prom sin perder datos. [→ Contexto_Base_Web.md §47B010]
+function migrarControlColumnasExtra() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.CONTROL);
+  if (!sh) { Logger.log('[Migración Control] Hoja no encontrada'); return; }
+
+  if (sh.getMaxColumns() < 116) {
+    Logger.log('[Migración Control] ABORT: la hoja tiene menos de 116 columnas; ' +
+      'no parece tener el layout viejo esperado (4 métricas x 25 columnas). ' +
+      'Si la hoja ya tiene el layout nuevo, no ejecutes esta función de nuevo.');
+    return;
+  }
+
+  // Layout ANTES de la migración: COL_INICIO_GRID=17, 4 métricas x 25 columnas (Ataques 17-41, Puntaje 42-66, Acumulado 67-91, Barcos 92-116). [→ Contexto_Base_Web.md §47B011]
+
+  // 1) Total y % de Ataques, a la derecha de la col 41 (Tsem5 de Ataques).
+  sh.insertColumnsAfter(41, 2);
+
+  // 2) Prom y % de Puntaje: el Tsem5 de Puntaje, que estaba en 66, ahora
+  //    está en 68 (+2 por la inserción anterior).
+  sh.insertColumnsAfter(68, 2);
+
+  // 3) Total de Barcos: el Tsem5 de Barcos, que estaba en 116, ahora está
+  //    en 120 (+4 por las dos inserciones anteriores).
+  sh.insertColumnsAfter(120, 1);
+
+  _pintarEncabezadosControl(sh);
+
+  Logger.log('[Migración Control] Columnas insertadas (Ataques +2, Puntaje +2, ' +
+    'Barcos +1) y encabezados repintados. Ejecuta updateControlSheet() para ' +
+    'repoblar los valores de las columnas nuevas.');
+}
+
+// migrarControlColumnaAscenso(): UNA vez; inserta la columna "Ascenso" en la posición 17 de Control (layout de 16 columnas fijas) sin perder datos. [→ Contexto_Base_Web.md §47B012]
+function migrarControlColumnaAscenso() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.CONTROL);
+  if (!sh) { Logger.log('[Migración Ascenso] Hoja Control no encontrada'); return; }
+
+  var encabezadoCol16 = String(sh.getRange(3, 16).getValue() || '').trim();
+  var encabezadoCol17 = String(sh.getRange(3, 17).getValue() || '').trim();
+  if (encabezadoCol16 !== 'Ataques pendientes') {
+    Logger.log('[Migración Ascenso] ABORT: la columna 16 no dice "Ataques pendientes" ' +
+      '(dice "' + encabezadoCol16 + '"); la hoja no parece tener el layout de 16 ' +
+      'columnas fijas esperado.');
+    return;
+  }
+  if (encabezadoCol17 === 'Ascenso') {
+    Logger.log('[Migración Ascenso] ABORT: la columna 17 ya dice "Ascenso"; ' +
+      'esta migración ya se aplicó antes, no ejecutar de nuevo.');
+    return;
+  }
+
+  sh.insertColumnsAfter(16, 1);
+  _pintarEncabezadosControl(sh);
+
+  Logger.log('[Migración Ascenso] Columna "Ascenso" insertada en la posición 17 y ' +
+    'encabezados repintados. Ejecuta updateControlSheet() para repoblar sus valores.');
+}
+
+// migrarControlQuitarJugador(): UNA vez (03-ago-2026); borra la columna "Jugador" de Control con layout viejo (17 fijas); mismo patrón que migrarLinksQuitarJugador(). [→ Contexto_Base_Web.md §47B013]
+function migrarControlQuitarJugador() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.CONTROL);
+  if (!sh) { Logger.log('[Migración Control] Hoja Control no encontrada.'); return; }
+
+  var h4 = String(sh.getRange(3, 4).getValue() || '').trim();
+  if (h4 !== 'Jugador') {
+    Logger.log('[Migración Control] La columna 4 (fila 3) no dice "Jugador" ' +
+      '(dice "' + h4 + '"), no hay nada que migrar.');
+    return;
+  }
+
+  sh.deleteColumn(4);
+  _pintarEncabezadosControl(sh);
+
+  var numJugadores = Math.max(0, sh.getLastRow() - 3);
+  _aplicarFmtCondicionalControl(sh, numJugadores);
+
+  Logger.log('[Migración Control] Columna "Jugador" eliminada, encabezados ' +
+    'repintados y formato condicional reaplicado. Control ahora tiene ' +
+    sh.getLastColumn() + ' columnas. No hace falta correr updateControlSheet() ' +
+    'aparte — los datos y la cuadrícula ya quedaron corridos junto con la columna.');
+}
+
+// ----- Tema: Extra -----
+
+// migrarPosicionCategoriaAscensosDescensosEnExtra(): UNA vez; corrige la posición de "Ascensos y descensos" en la columna Categoría de Extra (justo después de los torneos). [→ Contexto_Base_Web.md §47B016]
+function migrarPosicionCategoriaAscensosDescensosEnExtra() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
+  if (!sh) { Logger.log('[Migración Extra] Hoja Extra no encontrada.'); return; }
+
+  var COL_CATEGORIA = _colCategoriaExtra_(sh); // PF141 (21-oct-2026): antes fija en 12 (L = Rangos); ver 30_Mensajes.gs
+  var categoria = 'Ascensos y descensos';
+  var categoriaLower = categoria.toLowerCase();
+
+  var lastRowSheet = sh.getLastRow();
+  var valoresActuales = [];
+  if (lastRowSheet >= 2) {
+    var colVals = sh.getRange(2, COL_CATEGORIA, lastRowSheet - 1, 1).getValues();
+    for (var k = 0; k < colVals.length; k++) {
+      var vv = String(colVals[k][0] || '').trim();
+      if (vv !== '') valoresActuales.push(vv);
+    }
+  }
+
+  var posActual = -1;
+  for (var i = 0; i < valoresActuales.length; i++) {
+    if (valoresActuales[i].toLowerCase() === categoriaLower) { posActual = i; break; }
+  }
+  if (posActual === -1) {
+    Logger.log('[Migración Extra] "Ascensos y descensos" no está en la columna L de Extra todavía. Nada que migrar (se agregará en su posición correcta la próxima vez que generarTodosMensajes() la encuentre).');
+    return;
+  }
+
+  // Quitarla de su posición actual para calcular dónde debería ir SIN
+  // contarse a sí misma como ancla (por si acaso).
+  valoresActuales.splice(posActual, 1);
+
+  var posDeseada = valoresActuales.length; // fallback: al final
+  var anclas = CATEGORIAS_ANCLA_EXTRA[categoriaLower];
+  if (anclas) {
+    for (var ai = 0; ai < valoresActuales.length; ai++) {
+      if (anclas.indexOf(valoresActuales[ai].toLowerCase()) >= 0) posDeseada = ai + 1;
+    }
+  }
+
+  if (posDeseada === posActual) {
+    Logger.log('[Migración Extra] "Ascensos y descensos" ya está en la posición correcta (justo después de los torneos). No se toca nada.');
+    return;
+  }
+
+  valoresActuales.splice(posDeseada, 0, categoria);
+
+  var nuevaColumna = valoresActuales.map(function (v) { return [v]; });
+  sh.getRange(2, COL_CATEGORIA, nuevaColumna.length, 1).setValues(nuevaColumna);
+  Logger.log('[Migración Extra] "Ascensos y descensos" movida de la posición ' + (posActual + 1) + ' a la ' + (posDeseada + 1) + ' (justo después de los torneos) en la columna L de Extra.');
+}
+
+// ----- Tema: Guerra -----
+// 12-oct-2026.
+
+// migrarAgregarCopasAGuerra(): UNA vez (12-oct-2026, pedido usuario: gráfica de copas en perfil y clan). Agrega la columna «Copas» (col. 21, GC.COPAS) a la hoja Guerra y al encabezado de Backup_Guerra.csv; las filas viejas quedan con la celda vacía (no hay historial anterior de copas). Idempotente. Ejecutar a mano justo después de subirBaseDesdeGithub(). [→ Contexto_Base_Web.md §PF061]
+function migrarAgregarCopasAGuerra() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  if (!sh) { Logger.log('[Migración Copas Guerra] Hoja Guerra no encontrada.'); return; }
+  _asegurarColumnaCopasGuerra_(sh);
+  Logger.log('[Migración Copas Guerra] Hoja Guerra con ' + sh.getMaxColumns() + ' columnas y encabezado «Copas» en la columna ' + GC.COPAS + '.');
+
+  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+  if (!csvText) { Logger.log('[Migración Copas Guerra] Backup_Guerra.csv no existe todavía; se creará con la columna en la próxima fusión.'); return; }
+  var parsed = _parseCSV(csvText);
+  if (!parsed || !parsed.length) return;
+  if (parsed[0].length >= GUERRA_TOTAL_COLS) { Logger.log('[Migración Copas Guerra] Backup_Guerra.csv ya tiene ' + parsed[0].length + ' columnas; nada que hacer.'); return; }
+  for (var i = 0; i < parsed.length; i++) {
+    while (parsed[i].length < GUERRA_TOTAL_COLS) parsed[i].push(i === 0 ? 'Copas' : '');
+  }
+  _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV(parsed));
+  Logger.log('[Migración Copas Guerra] Backup_Guerra.csv actualizado a ' + GUERRA_TOTAL_COLS + ' columnas (' + (parsed.length - 1) + ' filas).');
+}
+
+// ----- Tema: Permisos de administradores (ejecutar UNA vez a mano; Corregir autor antes de abrir el panel de permisos) -----
+
+// (Antes en 37_Web_API.gs)
+// migrarFuncionCorregirAutorATodosLosAdmins(): UNA vez, antes de abrir el panel de permisos; agrega la Función 'Corregir autor' a todos los admins que ya tienen alguna Función. [→ Contexto_Base_Web.md §47B018]
+function migrarFuncionCorregirAutorATodosLosAdmins() {
+  var hoja = _webPermisosLeerHoja();
+  if (!hoja) { Logger.log('[Permisos] ' + WEB_PERMISOS_MSG_HOJA_NO_DISPONIBLE); return; }
+  // FIX (24-sep-2026): ver docblock de _webPermisosLeerHoja() -- si los datos
+  // vinieron del respaldo CSV (hoja.sh === null), esta migración manual no
+  // tiene dónde escribir. Se aborta con un mensaje claro en vez de reventar
+  // con un TypeError al llamar hoja.sh.getRange(...).
+  if (hoja.origen !== 'sheet') {
+    Logger.log('[Permisos] La hoja Administradores no está disponible en este momento (se está leyendo desde el respaldo). Reintenta esta migración más tarde.');
+    return;
+  }
+
+  var rango = hoja.sh.getRange(2, AC.FUNCIONES, hoja.data.length, 1);
+  var valores = rango.getValues();
+  var agregadas = 0, yaLaTenian = 0, vacias = 0, sinNada = 0;
+
+  for (var i = 0; i < valores.length; i++) {
+    var actual = String(valores[i][0] || '').trim();
+    if (!actual) { vacias++; continue; }
+    if (actual === WEB_PERMISOS_SIN_NADA) { sinNada++; continue; }
+    if (_webPermisosParsearLista(actual).indexOf(WEB_FUNCION_CORREGIR_AUTOR) !== -1) { yaLaTenian++; continue; }
+    valores[i][0] = actual + ', ' + WEB_FUNCION_CORREGIR_AUTOR;
+    agregadas++;
+  }
+  if (agregadas > 0) rango.setValues(valores);
+
+  Logger.log('[Permisos] "' + WEB_FUNCION_CORREGIR_AUTOR + '" agregada en ' + agregadas + ' fila(s). ' +
+    'Ya la tenían: ' + yaLaTenian + '. Celdas vacías (sin tocar): ' + vacias + '. En "' + WEB_PERMISOS_SIN_NADA + '" (sin tocar): ' + sinNada + '.');
+}
+
+// (Antes en 41_Web_ActualizarRoster.gs)
+// migrarFuncionActualizarRosterATodosLosAdmins(): UNA vez; agrega 'Actualizar roster' a los admins con Función escrita; no toca '(ninguna)'; idempotente. [→ Contexto_Base_Web.md §47B019]
+function migrarFuncionActualizarRosterATodosLosAdmins() {
+  var hoja = _webPermisosLeerHoja();
+  if (!hoja) { Logger.log('[Permisos] ' + WEB_PERMISOS_MSG_HOJA_NO_DISPONIBLE); return; }
+  if (hoja.origen !== 'sheet') {
+    Logger.log('[Permisos] La hoja Administradores no esta disponible en este momento (se esta leyendo desde el respaldo). Reintenta mas tarde.');
+    return;
+  }
+
+  var rango = hoja.sh.getRange(2, AC.FUNCIONES, hoja.data.length, 1);
+  var valores = rango.getValues();
+  var agregadas = 0, yaLaTenian = 0, vacias = 0, sinNada = 0;
+
+  for (var i = 0; i < valores.length; i++) {
+    var actual = String(valores[i][0] || '').trim();
+    if (!actual) { vacias++; continue; }
+    if (actual === WEB_PERMISOS_SIN_NADA) { sinNada++; continue; }
+    if (_webPermisosParsearLista(actual).indexOf(WEB_FUNCION_ACTUALIZAR_ROSTER) !== -1) { yaLaTenian++; continue; }
+    valores[i][0] = actual + ', ' + WEB_FUNCION_ACTUALIZAR_ROSTER;
+    agregadas++;
+  }
+  if (agregadas > 0) rango.setValues(valores);
+
+  Logger.log('[Permisos] "' + WEB_FUNCION_ACTUALIZAR_ROSTER + '" agregada en ' + agregadas + ' fila(s). Ya la tenian: ' + yaLaTenian +
+    '. Celdas vacias (se llenan solas con la lista por defecto): ' + vacias + '. En "' + WEB_PERMISOS_SIN_NADA + '" (sin tocar): ' + sinNada + '.');
+}
+
+// ----- Notas históricas de las migraciones (con sus referencias al contexto) -----
+
+// =============================================================================
+// SECCIÓN 1: funciones manuales de mantenimiento (ejecutar a mano), reordenadas el 23-ago-2026; ninguna tiene _continuarX. [→ Contexto_Base_Web.md §47B003]
+// =============================================================================
+
+// =============================================================================
+// SECCIÓN 1: funciones manuales (reordenado 23-ago-2026); sin _continuarX. [→ Contexto_Base_Web.md §47B009]
+// =============================================================================
+
+// _getOrdenMensajesCategoria(): FIX 19-ago-2026; orden de categorías EXCLUSIVO de generarTodosMensajes(), desde CFG.MENSAJES_ORDEN_CATEGORIAS (ya no de la hoja Extra). [→ Contexto_Base_Web.md §47B014]
+// =============================================================================
+// SECCIÓN 1: funciones manuales (reordenado 23-ago-2026); sin _continuarX. [→ Contexto_Base_Web.md §47B015]
+// =============================================================================
+
+// BAJA DEFINITIVA 14-sep-2026: se quitó migrarOrdenCategoriasTRequisitos() (migración ya ejecutada; operaba sobre T_Requisitos, dada de baja). [→ Contexto_Base_Web.md §47B017]
+
 // =============================================================================
 // PARTE 2 — FUNCIONES QUE NO SE EJECUTAN A MANO (las llaman las anteriores o el activador)
-// Motor y continuación, ayudas del detector y pasos de la reenumeración (en el orden de PASOS_REENUMERAR_TEMPORADAS).
 // =============================================================================
+
+// ----- 2.1 Reenumeración de temporadas: motor, ayudas del detector y pasos -----
 
 // ----- Motor: arranque con fecha y continuación por tandas -----
 
@@ -892,9 +853,18 @@ function _buscarFechaMasAntiguaTernaEnCorreccionesGuerra() {
   return r && r.fecha ? r.fecha : null;
 }
 
-// ----- Pasos de la reenumeración (orden de PASOS_REENUMERAR_TEMPORADAS) -----
+// ----- Pasos de la reenumeración (orden de PASOS_REENUMERAR_TEMPORADAS) y su ayuda de progreso -----
 // HELPERS GENÉRICOS — suman/restan deltaMeses a UNA columna "Temporada",
 // nunca tocan DiaGuerra, Fecha ni PeriodIndex.
+
+// _reenumProgreso_(nombre, previas, estaTanda, total, unidad): PF269; dos líneas de progreso al estilo de /players: acumulado (tandas anteriores + esta) de total, y lo hecho en esta tanda.
+function _reenumProgreso_(nombre, previas, estaTanda, total, unidad) {
+  var acum = previas + estaTanda;
+  var pct = total > 0 ? Math.round(acum * 100 / total) : 100;
+  Logger.log('[Reenumeración]   ' + nombre + ': acumulado ' + acum + ' de ' + total + ' ' + unidad + ' (' + pct + ' %); en tandas anteriores: ' + previas + '; faltan ' + Math.max(total - acum, 0) + '.');
+  Logger.log('[Reenumeración]   ' + nombre + ': en esta tanda: ' + estaTanda + ' ' + unidad + '.');
+  _anotarProgresoPaso_(nombre + ': ' + acum + ' de ' + total + ' ' + unidad, acum); // PF283
+}
 
 // _reenumerarCSV(filename, colMap, totalCols, colTemporada): suma REENUM_DELTA_MESES a Temporada en todas las filas del CSV; reanudable con presupuesto interno; devuelve false si queda incompleto. [→ Contexto_Base_Web.md §47B028]
 function _reenumerarCSV(filename, colMap, totalCols, colTemporada) {
@@ -1493,4 +1463,55 @@ function _reenumerarNombreInformeTexto_(nombre, deltaMeses) {
     return pre + 'T' + n;
   });
   return { nombre: nuevo, cambios: cambios, negativos: negativos };
+}
+
+// ----- 2.2 Directorio: ayuda de migrarDirectorioColumnaPrestamo() -----
+
+function _migrarColumnaPrestamoEnHoja(sh, nombreHoja, headers) {
+  if (!sh) { Logger.log('[Migración Préstamo] Hoja ' + nombreHoja + ' no encontrada, se omite.'); return; }
+
+  var totalCols = 60;
+  var lastCol = sh.getLastColumn();
+
+  // Si la col 6 YA dice "Préstamo", asumir que esta hoja ya fue migrada
+  // (evita mover los datos dos veces si se corre por accidente otra vez).
+  var headerCol6 = String(sh.getRange(1, 6).getValue() || '').trim();
+  if (headerCol6 === 'Préstamo') {
+    Logger.log('[Migración Préstamo] ' + nombreHoja + ' ya migrada (col 6 = "Préstamo"), se omite.');
+    return;
+  }
+
+  var lastRow = sh.getLastRow();
+  if (lastRow >= 2) {
+    // Verificar que la columna 59 (posición vieja) efectivamente diga
+    // "Préstamo" antes de mover nada — si no coincide, la hoja no tiene el
+    // layout esperado y es más seguro abortar que mover datos a ciegas.
+    var headerCol59 = lastCol >= 59 ? String(sh.getRange(1, 59).getValue() || '').trim() : '';
+    if (headerCol59 !== 'Préstamo') {
+      Logger.log('[Migración Préstamo] ABORT en ' + nombreHoja + ': la columna 59 no dice ' +
+        '"Préstamo" (dice "' + headerCol59 + '"). No se reconoce el layout esperado, no se mueve nada.');
+      return;
+    }
+
+    var data = sh.getRange(2, 1, lastRow - 1, totalCols).getValues();
+    var nuevaData = new Array(data.length);
+    for (var i = 0; i < data.length; i++) {
+      var old = data[i];
+      // old (0-indexed): [0..4]=Num..Nom_Multi (5) | [5..57]=Multicuenta..Cat_disp (53) |
+      //                  [58]=Préstamo (1) | [59]=Clanes_Admin (1)  →  total 60
+      nuevaData[i] = old.slice(0, 5)          // col 1-5, sin cambios
+        .concat([old[58]])                    // col 6 = Préstamo (antes col 59)
+        .concat(old.slice(5, 58))             // col 7-59 = antes col 6-58 (Multicuenta..Cat_disp)
+        .concat([old[59]]);                   // col 60 = Clanes_Admin, sin cambios
+    }
+    sh.getRange(2, 1, nuevaData.length, totalCols).setValues(nuevaData);
+    Logger.log('[Migración Préstamo] ' + nombreHoja + ': ' + nuevaData.length + ' filas reordenadas.');
+  } else {
+    Logger.log('[Migración Préstamo] ' + nombreHoja + ' sin filas de datos, solo se reescribe el encabezado.');
+  }
+
+  // Reescribir encabezados YA (Administradores solo los reescribe si la
+  // celda A1 está vacía — aquí se fuerza para no depender de eso).
+  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  applyHeaderStyle(sh, headers.length);
 }
