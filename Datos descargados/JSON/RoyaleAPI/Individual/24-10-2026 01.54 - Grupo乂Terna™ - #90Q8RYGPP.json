@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "24/10/2026",
   "registros": [
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 2,
       "clan": "Grupo乂Terna™",
@@ -18,7 +18,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 3,
       "clan": "Grupo乂Terna™",
@@ -30,7 +30,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 4,
       "clan": "Grupo乂Terna™",
@@ -42,7 +42,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 9,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 136,
       "semana": 2,
       "clan": "Grupo乂Terna™",
@@ -54,7 +54,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 9,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 136,
       "semana": 3,
       "clan": "Grupo乂Terna™",
@@ -66,7 +66,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 9,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 136,
       "semana": 1,
       "clan": "Grupo乂Terna™",
@@ -78,7 +78,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "Grupo乂Terna™",
@@ -90,7 +90,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 10,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 137,
       "semana": 1,
       "clan": "Grupo乂Terna™",
@@ -102,7 +102,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 10,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 137,
       "semana": 2,
       "clan": "Grupo乂Terna™",
@@ -114,7 +114,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 9,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 136,
       "semana": 4,
       "clan": "Grupo乂Terna™",
@@ -126,7 +126,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 10,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 137,
       "semana": 3,
       "clan": "Grupo乂Terna™",
@@ -138,5 +138,5 @@
       "comentario": ""
     }
   ],
-  "reenumeracionId": "1792970500096"
+  "reenumeracionId": "1793146932920"
 }

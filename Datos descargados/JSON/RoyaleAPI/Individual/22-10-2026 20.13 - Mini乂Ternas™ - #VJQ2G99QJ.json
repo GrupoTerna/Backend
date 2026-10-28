@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "22/10/2026",
   "registros": [
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 3,
       "clan": "Mini乂Ternas™",
@@ -18,7 +18,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 2,
       "clan": "Mini乂Ternas™",
@@ -30,7 +30,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 1,
       "clan": "Mini乂Ternas™",
@@ -41,7 +41,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "Mini乂Ternas™",
@@ -53,7 +53,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 4,
       "clan": "Mini乂Ternas™",
@@ -65,5 +65,5 @@
       "comentario": ""
     }
   ],
-  "reenumeracionId": "1792970500096"
+  "reenumeracionId": "1793146932920"
 }

@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "22/10/2026",
   "registros": [
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 2,
       "clan": "GrupoXTerna™3",
@@ -18,7 +18,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 1,
       "clan": "GrupoXTerna™3\n                2026-08-10",
@@ -29,7 +29,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": 7,
+      "temporadaInterna": 23,
       "temporadaRoyaleAPI": 134,
       "semana": 4,
       "clan": "GrupoXTerna™3\n                2026-08-03",
@@ -40,7 +40,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": 7,
+      "temporadaInterna": 23,
       "temporadaRoyaleAPI": 134,
       "semana": 3,
       "clan": "GrupoXTerna™3\n                2026-07-27",
@@ -51,7 +51,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -8,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 119,
       "semana": 4,
       "clan": "Grupo乂Terna™\n                2025-05-05",
@@ -62,7 +62,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -8,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 119,
       "semana": 3,
       "clan": "GrupoXTerna™2\n                2025-04-28",
@@ -73,7 +73,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -14,
+      "temporadaInterna": 2,
       "temporadaRoyaleAPI": 113,
       "semana": 3,
       "clan": "GrupoXTerna™2\n                2024-10-28",
@@ -84,7 +84,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -14,
+      "temporadaInterna": 2,
       "temporadaRoyaleAPI": 113,
       "semana": 1,
       "clan": "Grupo乂Terna™\n                2024-10-14",
@@ -95,7 +95,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": 1,
       "temporadaRoyaleAPI": 112,
       "semana": 5,
       "clan": "Grupo乂Terna™\n                2024-10-07",
@@ -106,7 +106,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": 1,
       "temporadaRoyaleAPI": 112,
       "semana": 4,
       "clan": "Grupo乂Terna™\n                2024-09-30",
@@ -117,7 +117,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": 1,
       "temporadaRoyaleAPI": 112,
       "semana": 3,
       "clan": "Grupo乂Terna™\n                2024-09-23",
@@ -128,7 +128,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": 1,
       "temporadaRoyaleAPI": 112,
       "semana": 2,
       "clan": "Grupo乂Terna™\n                2024-09-16",
@@ -139,7 +139,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": 1,
       "temporadaRoyaleAPI": 112,
       "semana": 1,
       "clan": "Grupo乂Terna™\n                2024-09-09",
@@ -150,7 +150,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": 0,
       "temporadaRoyaleAPI": 111,
       "semana": 4,
       "clan": "Grupo乂Terna™\n                2024-09-02",
@@ -161,7 +161,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": 0,
       "temporadaRoyaleAPI": 111,
       "semana": 3,
       "clan": "Grupo乂Terna™\n                2024-08-26",
@@ -172,7 +172,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": 0,
       "temporadaRoyaleAPI": 111,
       "semana": 2,
       "clan": "Grupo乂Terna™\n                2024-08-19",
@@ -183,7 +183,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": 0,
       "temporadaRoyaleAPI": 111,
       "semana": 1,
       "clan": "Grupo乂Terna™\n                2024-08-12",
@@ -194,7 +194,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -1,
       "temporadaRoyaleAPI": 110,
       "semana": 5,
       "clan": "Grupo乂Terna™\n                2024-08-05",
@@ -205,7 +205,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -1,
       "temporadaRoyaleAPI": 110,
       "semana": 4,
       "clan": "Grupo乂Terna™\n                2024-07-29",
@@ -216,7 +216,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -1,
       "temporadaRoyaleAPI": 110,
       "semana": 3,
       "clan": "Grupo乂Terna™\n                2024-07-22",
@@ -227,7 +227,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -1,
       "temporadaRoyaleAPI": 110,
       "semana": 2,
       "clan": "Grupo乂Terna™\n                2024-07-15",
@@ -238,7 +238,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -1,
       "temporadaRoyaleAPI": 110,
       "semana": 1,
       "clan": "Grupo乂Terna™\n                2024-07-08",
@@ -249,7 +249,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -18,
+      "temporadaInterna": -2,
       "temporadaRoyaleAPI": 109,
       "semana": 4,
       "clan": "Grupo乂Terna™\n                2024-07-01",
@@ -260,7 +260,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -18,
+      "temporadaInterna": -2,
       "temporadaRoyaleAPI": 109,
       "semana": 3,
       "clan": "Grupo乂Terna™\n                2024-06-24",
@@ -271,7 +271,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -18,
+      "temporadaInterna": -2,
       "temporadaRoyaleAPI": 109,
       "semana": 2,
       "clan": "Grupo乂Terna™\n                2024-06-17",
@@ -282,7 +282,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -18,
+      "temporadaInterna": -2,
       "temporadaRoyaleAPI": 109,
       "semana": 1,
       "clan": "Grupo乂Terna™\n                2024-06-10",
@@ -293,7 +293,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -19,
+      "temporadaInterna": -3,
       "temporadaRoyaleAPI": 108,
       "semana": 4,
       "clan": "Grupo乂Terna™\n                2024-06-03",
@@ -304,7 +304,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": -19,
+      "temporadaInterna": -3,
       "temporadaRoyaleAPI": 108,
       "semana": 3,
       "clan": "Grupo乂Terna™\n                2024-05-27",
@@ -315,7 +315,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 3,
       "clan": "GrupoXTerna™3",
@@ -327,7 +327,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "GrupoXTerna™3",
@@ -339,7 +339,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 4,
       "clan": "GrupoXTerna™3",
@@ -351,5 +351,5 @@
       "comentario": ""
     }
   ],
-  "reenumeracionId": "1792970500096"
+  "reenumeracionId": "1793146932920"
 }

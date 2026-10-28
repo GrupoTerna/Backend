@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "22/10/2026",
   "registros": [
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 18,
       "temporadaRoyaleAPI": 129,
       "semana": 4,
       "clan": "Grupo乂Terna™\n                2026-03-02",
@@ -17,7 +17,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 18,
       "temporadaRoyaleAPI": 129,
       "semana": 3,
       "clan": "Grupo乂Terna™\n                2026-02-23",
@@ -28,7 +28,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 18,
       "temporadaRoyaleAPI": 129,
       "semana": 2,
       "clan": "Grupo乂Terna™\n                2026-02-16",
@@ -39,7 +39,7 @@
       "cerrada": true
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "GrupoXTerna™2",
@@ -51,7 +51,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 4,
       "clan": "GrupoXTerna™2",
@@ -63,7 +63,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 135,
       "semana": 3,
       "clan": "GrupoXTerna™2",
@@ -75,5 +75,5 @@
       "comentario": ""
     }
   ],
-  "reenumeracionId": "1792970500096"
+  "reenumeracionId": "1793146932920"
 }
