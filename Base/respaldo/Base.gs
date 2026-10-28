@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 27/10/2026 22:08:55 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 00:02:19 */
 
 
 
@@ -4556,12 +4556,23 @@ function _setupGrupoVerificado(ss) {
 }
 
 // --- ARCHIVO: 03_Indice_Sheet.gs ---
-// ==============================================================================
 // 03_Indice_Sheet.gs
 // Todo lo relativo a la hoja Indice (orden y visibilidad de hojas).
-// ==============================================================================
 
-// ----- Funciones manuales / punto de entrada -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Índice: importar y actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Índice: crear y preparar la hoja (lo usa setupAllSheets)
+//    - Hoja Índice: ayudas de importar y actualizar
+//    - Hoja Índice: ayuda general de columnas (la usan varios archivos)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Índice: importar y actualizar -----
 
 /**
  * importarIndiceDesdeCSV() [→ Contexto_Base_Web.md §03B001]
@@ -4745,7 +4756,11 @@ var numFilas = sh.getLastRow() - 1;
   Logger.log('[Índice] Actualizado con ' + salida.length + ' hojas.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Índice: crear y preparar la hoja (lo usa setupAllSheets) -----
 
 function _setupIndice(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.INDICE);
@@ -4756,20 +4771,6 @@ function _setupIndice(ss) {
   applyHeaderStyle(sh, headers.length);
   _aplicarFormatoCondicionalIndice(sh, headers.length);
   Logger.log('[Setup] Índice OK');
-}
-
-/**
- * _setupIndice(ss) [→ Contexto_Base_Web.md §03B011]
- */
-/**
- * _colIndiceFor(campo) [→ Contexto_Base_Web.md §03B012]
- */
-function _colIndiceFor(campo) {
-  if (campo === 'N°') return 1;
-  if (campo === 'Nombre') return 2;
-  if (campo === 'ID') return 3;
-  var idx = CFG.INDICE_COLUMNAS.indexOf(campo);
-  return idx === -1 ? -1 : idx + 4;
 }
 
 /**
@@ -4807,14 +4808,6 @@ function _migrarOrdenColumnasIndiceSiHaceFalta(sh) {
   });
   sh.getRange(2, 1, numFilas, totalColsViejo).setValues(reordenado);
   Logger.log('[Índice] Migradas ' + numFilas + ' fila(s) al nuevo orden de columnas (Nombre/ID después de N°).');
-}
-
-/**
- * _indiceTotalCols()
- * Número total de columnas de la hoja Índice: N° + INDICE_COLUMNAS + Nombre + ID.
- */
-function _indiceTotalCols() {
-  return CFG.INDICE_COLUMNAS.length + 3;
 }
 
 /**
@@ -4865,6 +4858,16 @@ function _colLetra(n) {
     n = Math.floor((n - 1) / 26);
   }
   return s;
+}
+
+// ----- Hoja Índice: ayudas de importar y actualizar -----
+
+/**
+ * _indiceTotalCols()
+ * Número total de columnas de la hoja Índice: N° + INDICE_COLUMNAS + Nombre + ID.
+ */
+function _indiceTotalCols() {
+  return CFG.INDICE_COLUMNAS.length + 3;
 }
 
 /**
@@ -4962,6 +4965,23 @@ function _reordenarYOcultarHojasSegunIndice() {
 
   Logger.log('[Índice] Pestañas reordenadas/ocultadas (' + posicion + ' hojas vigentes).');
 }
+
+// ----- Hoja Índice: ayuda general de columnas (la usan varios archivos) -----
+
+/**
+ * _setupIndice(ss) [→ Contexto_Base_Web.md §03B011]
+ */
+/**
+ * _colIndiceFor(campo) [→ Contexto_Base_Web.md §03B012]
+ */
+function _colIndiceFor(campo) {
+  if (campo === 'N°') return 1;
+  if (campo === 'Nombre') return 2;
+  if (campo === 'ID') return 3;
+  var idx = CFG.INDICE_COLUMNAS.indexOf(campo);
+  return idx === -1 ? -1 : idx + 4;
+}
+
 
 // --- ARCHIVO: 04_Formato_Comun.gs ---
 // ==============================================================================
@@ -8779,12 +8799,16 @@ function _blsBorrarProgreso_() {
 }
 
 // --- ARCHIVO: 07_Battlelogs_Hoja.gs ---
-// =============================================================================
 // 07_Battlelogs_Hoja.gs
 // HOJA "Battlelogs": VISTA DE SOLO LECTURA de Backup_Battlelogs.csv.
-// =============================================================================
-
 // Hoja 'Battlelogs' = vista de solo lectura, reconstruida desde el CSV (nunca al revés); avisos abiertos [1]-[7]. [→ Contexto_Base_Web.md §07B001]
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Battlelogs: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Battlelogs: ayudas (en el orden en que las usa actualizarHojaBattlelogs)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var BLH_SHEET_NAME = 'Battlelogs';
 
@@ -8793,8 +8817,11 @@ var BLH_COLS_NUMERICAS = [0, 7, 9, 10, 13, 14]; // N°, ModoId, CoronasPropias, 
 
 // Columna extra que existe SOLO en la hoja (no en el CSV). true = se agrega.
 var BLH_AGREGAR_HORA_LIMA = true;
+
 var BLH_HEADER_HORA_LIMA = 'Hora Lima';
+
 var BLH_TZ = 'America/Lima';
+
 var BLH_FORMATO_HORA_LIMA = 'yyyy-MM-dd HH:mm:ss';
 
 var BLH_NOTA_A1 =
@@ -8803,6 +8830,12 @@ var BLH_NOTA_A1 =
   'runSyncCSV()). No editar aqui: lo que se cambie se pierde en la proxima ' +
   'actualizacion. El registro real es el CSV. La columna "' + BLH_HEADER_HORA_LIMA + '" solo existe ' +
   'en esta hoja: es battleTime (UTC) convertido a hora de Lima.';
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Battlelogs: actualizar -----
 
 // PUNTO DE ENTRADA [→ Contexto_Base_Web.md §07B002]
 
@@ -8886,6 +8919,12 @@ function actualizarHojaBattlelogs() {
   return { filas: nFilas, creada: !existia, sinHoraLima: conv.sinHoraLima };
 }
 
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Battlelogs: ayudas (en el orden en que las usa actualizarHojaBattlelogs) -----
+
 // AUXILIARES [→ Contexto_Base_Web.md §07B005]
 
 /**
@@ -8954,6 +8993,7 @@ function _blhHoraLima_(battleTime) {
   return Utilities.formatDate(fecha, BLH_TZ, BLH_FORMATO_HORA_LIMA);
 }
 
+
 // --- ARCHIVO: 08_Activadores.gs ---
 // ==============================================================================
 // 08_Activadores.gs
@@ -8961,6 +9001,13 @@ function _blhHoraLima_(battleTime) {
 // (activarTodosLosActivadores) y una sola para desactivarlos (desactivarTodosLosActivadores).
 // Cada activador lleva su propio horario en ACTIVADORES_CONFIG.
 // ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Activadores: instalar y quitar todos
+//  Parte 2 — Funciones que no se corren a mano
+//    - Activadores: ayudas (en el orden en que las usa activarTodosLosActivadores)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // EXCEPCIONES (torneo en vivo, continuaciones de tandas) y AVISOS ABIERTOS 1-8 (frecuencias, cuota diaria, colisiones, UptimeRobot) [→ Contexto_Base_Web.md §08B001]
 
@@ -8995,6 +9042,14 @@ var ACTIVADORES_CONFIG = [
 // anteriores del proyecto). [-> Contexto_Base_Web.md §PF091]
 var ACTIVADORES_HANDLERS_LEGADOS_ = ['runGuerraRapido', 'runPendientesYMensajes', 'runUpdate'];
 
+var _ACTIVADORES_DIAS_ = null;
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Activadores: instalar y quitar todos -----
+
 /**
  * activarTodosLosActivadores() [→ Contexto_Base_Web.md §08B004]
  */
@@ -9023,6 +9078,12 @@ function desactivarTodosLosActivadores() {
     (quedan.length ? quedan.join(', ') : 'ninguno') + '.');
 }
 
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Activadores: ayudas (en el orden en que las usa activarTodosLosActivadores) -----
+
 // Helpers internos [→ Contexto_Base_Web.md §08B006]
 
 /** Borra los activadores cuyo handler esta en ACTIVADORES_CONFIG o en los legados. Devuelve cuantos borro. */
@@ -9039,8 +9100,6 @@ function _retirarActivadoresAdministrados_() {
   }
   return borrados;
 }
-
-var _ACTIVADORES_DIAS_ = null;
 
 /** Crea un activador segun su entrada de ACTIVADORES_CONFIG. */
 function _crearActivador_(c) {
@@ -9072,6 +9131,7 @@ function _describirActivador_(c) {
     default:        return c.tipo;
   }
 }
+
 
 // --- ARCHIVO: 09_API_ClashRoyale.gs ---
 // ==============================================================================
@@ -12613,14 +12673,16 @@ function _registrarLogScriptTerna(funcion, descripcion, advertencias) {
 }
 
 // --- ARCHIVO: 10_ClanSheet.gs ---
-// ==============================================================================
 // 10_ClanSheet.gs
 // Hoja Clan: resumen agregado por clan.
-// ==============================================================================
-
-// ----- Variables y constantes -----
-
 // 10_ClanSheet.gs [→ Contexto_Base_Web.md §10B001]
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Clan: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Clan: ayudas
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Índices de columna en la hoja Clan (1-based) [→ Contexto_Base_Web.md §10B002]
 var CC = {
@@ -12634,7 +12696,11 @@ var CC = {
   CONDICION:24
 };
 
-// ----- Funciones manuales / punto de entrada -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Clan: actualizar -----
 
 /**
  * Actualiza la hoja Clan con los datos de cada clan desde CACHE_CLAN_DATA.
@@ -12747,7 +12813,36 @@ function updateClanSheet() {
   Logger.log('[Clan] updateClanSheet completado.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Clan: ayudas -----
+
+/**
+ * Aplica formato condicional a la hoja Clan según la columna Condición.
+ */
+function _aplicarFormatoCondicionalClan(sh, lastRow) {
+  if (lastRow < 2) return;
+
+  var dataRange = sh.getRange(2, 1, lastRow - 1, CC.CONDICION);
+  var colCond   = colLetter(CC.CONDICION);
+
+  var rules = [
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied('=$' + colCond + '2="Terna"')
+      .setBackground(CFG.COLORES.TERNA_BG)
+      .setRanges([dataRange])
+      .build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied('=$' + colCond + '2="Vetado"')
+      .setBackground(CFG.COLORES.VETADO_CLAN_ROW_BG)
+      .setRanges([dataRange])
+      .build(),
+  ];
+
+  _tryCondFmt(sh, rules);
+}
 
 /**
  * _getMinGClanMaps() [→ Contexto_Base_Web.md §10B009]
@@ -12787,30 +12882,6 @@ function _getMinGClanMaps() {
   return { byTag: byTag, byNombre: byNombre };
 }
 
-/**
- * Aplica formato condicional a la hoja Clan según la columna Condición.
- */
-function _aplicarFormatoCondicionalClan(sh, lastRow) {
-  if (lastRow < 2) return;
-
-  var dataRange = sh.getRange(2, 1, lastRow - 1, CC.CONDICION);
-  var colCond   = colLetter(CC.CONDICION);
-
-  var rules = [
-    SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied('=$' + colCond + '2="Terna"')
-      .setBackground(CFG.COLORES.TERNA_BG)
-      .setRanges([dataRange])
-      .build(),
-    SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied('=$' + colCond + '2="Vetado"')
-      .setBackground(CFG.COLORES.VETADO_CLAN_ROW_BG)
-      .setRanges([dataRange])
-      .build(),
-  ];
-
-  _tryCondFmt(sh, rules);
-}
 
 // --- ARCHIVO: 11_DirectorioSheet.gs ---
 // ==============================================================================
@@ -14658,14 +14729,21 @@ function _leerDirectorioFisicoComoDC(ss) {
 }
 
 // --- ARCHIVO: 12_Players_Links.gs ---
-// ==============================================================================
 // 12_Players_Links.gs
 // Vistas derivadas del Directorio: hojas Players y Links.
-// ==============================================================================
-
-// ----- Funciones internas / helpers -----
-
 // FASE B3 (16/07/2026) — Población de las hojas Players y Links. [→ Contexto_Base_Web.md §12B001]
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que no se corren a mano
+//    - Hoja Players: proyectar, escribir y dar formato
+//    - Hoja Links: proyectar, escribir y leer
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Players: proyectar, escribir y dar formato -----
 
 /**
  * _proyectarPlayers(r) [→ Contexto_Base_Web.md §12B002]
@@ -14736,6 +14814,8 @@ function _aplicarFormatoCondicionalPlayers(sh, numFilas, totalCols, colRangoNum)
   ];
   _tryCondFmt(sh, rules);
 }
+
+// ----- Hoja Links: proyectar, escribir y leer -----
 
 /**
  * _proyectarLinksIdentidad(r) [→ Contexto_Base_Web.md §12B007]
@@ -14859,6 +14939,7 @@ function _leerLinksComoMapaPorTagConUrls(ss) {
   }
   return mapa;
 }
+
 
 // --- ARCHIVO: 13_Inactivos_Vetados.gs ---
 // ==============================================================================
@@ -18329,149 +18410,36 @@ function _migrarNuevosAHistorico(candidatosPayload) {
 }
 
 // --- ARCHIVO: 15_DeteccionInfiltrados.gs ---
-// ==============================================================================
 // 15_DeteccionInfiltrados.gs
 // Cruza miembros ACTUALES de los 4 clanes Terna contra los clanes rivales
 // de la temporada de guerra vigente (currentriverrace, 09_API_ClashRoyale.gs)
 // más una lista MANUAL de clanes en conflicto, mantenida en la hoja
 // CFG.SHEETS.CONFLICTOS ('Conflictos', ver _setupConflictos() en
 // 02_Setup_Hojas.gs).
-// ==============================================================================
-
 // FASE 6 (punto 6 del documento — Detección de infiltrados/sabotaje). [→ Contexto_Base_Web.md §15B001]
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que no se corren a mano
+//    - Infiltrados: búsqueda desde la web de admin (en el orden de la llamada)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Columnas de la hoja 'Conflictos' (ver _setupConflictos(), 02_Setup_Hojas.gs). [→ Contexto_Base_Web.md §15B002]
 var CFC = { TAG:1, NOMBRE:2, MOTIVO:3 };
+
 var CFC_TOTAL_COLS = 3;
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Infiltrados: búsqueda desde la web de admin (en el orden de la llamada) -----
 
 /**
- * _getClanesRivalesTemporadaActual() [→ Contexto_Base_Web.md §15B003]
+ * _webAdminBuscarInfiltrado(token, tag) [→ Contexto_Base_Web.md §15B009]
  */
-function _getClanesRivalesTemporadaActual() {
-  var rivales = {};
-  var propiosNorm = {};
-  for (var p = 0; p < CFG.CLAN_TAGS.length; p++) {
-    propiosNorm[cleanTag(CFG.CLAN_TAGS[p])] = true;
-  }
-
-  for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
-    var clanTagPropio = CFG.TERNA_TAGS[i];
-    var clanData = _getClanCache(clanTagPropio);
-    if (!clanData || !clanData.riverrace) continue;
-
-    var rr = clanData.riverrace;
-    var clansRivales = rr.clans; // ver docblock: campo NUEVO, sin uso previo en el proyecto
-    if (!clansRivales || !clansRivales.length) continue;
-
-    var nombreClanPropio = (clanData.info && clanData.info.name) || '';
-
-    for (var j = 0; j < clansRivales.length; j++) {
-      var rival = clansRivales[j];
-      var tagRival = cleanTag(rival && rival.tag);
-      if (!tagRival || propiosNorm[tagRival]) continue;
-      rivales[tagRival] = {
-        tag: '#' + tagRival,
-        nombre: (rival && rival.name) || '',
-        fuente: 'currentriverrace',
-        clanTernaTag: clanTagPropio,
-        clanTernaNombre: nombreClanPropio
-      };
-    }
-  }
-  return rivales;
-}
-
-/**
- * _getClanesConflictoManual() [→ Contexto_Base_Web.md §15B004]
- */
-function _getClanesConflictoManual() {
-  var manual = {};
-  var ss = _getSs();
-  var mapaHoja = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.CONFLICTOS, CFC.TAG - 1, CFC_TOTAL_COLS);
-  // _leerHojaComoMapaPorTag() solo hace trim()+toUpperCase() sobre la [→ Contexto_Base_Web.md §15B005]
-  for (var tagCrudo in mapaHoja) {
-    var fila = mapaHoja[tagCrudo];
-    var tagNorm = cleanTag(tagCrudo);
-    if (!tagNorm) continue;
-    manual[tagNorm] = {
-      tag: '#' + tagNorm,
-      nombre: String(fila[CFC.NOMBRE - 1] || ''),
-      fuente: 'manual',
-      motivo: String(fila[CFC.MOTIVO - 1] || '')
-    };
-  }
-  return manual;
-}
-
-/**
- * _getRivalesYConflicto() [→ Contexto_Base_Web.md §15B006]
- */
-function _getRivalesYConflicto() {
-  var automatico = _getClanesRivalesTemporadaActual();
-  var manual = _getClanesConflictoManual();
-
-  var combinado = {};
-  for (var tagM in manual) combinado[tagM] = manual[tagM];
-  for (var tagA in automatico) {
-    if (combinado[tagA] && combinado[tagA].fuente === 'manual') {
-      combinado[tagA].fuente = 'currentriverrace+manual';
-      combinado[tagA].clanTernaTag    = automatico[tagA].clanTernaTag;
-      combinado[tagA].clanTernaNombre = automatico[tagA].clanTernaNombre;
-      // motivo manual se conserva tal cual ya estaba en combinado[tagA]
-    } else {
-      combinado[tagA] = automatico[tagA];
-    }
-  }
-  return combinado;
-}
-
-/**
- * _buscarEnRosterTerna(tagNorm) [→ Contexto_Base_Web.md §15B007]
- */
-function _buscarEnRosterTerna(tagNorm) {
-  if (!tagNorm) return [];
-  var ss = _getSs();
-  var resultado = [];
-
-  var mapaDirectorio = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS);
-  if (mapaDirectorio[tagNorm]) {
-    var filaDir = mapaDirectorio[tagNorm];
-    resultado.push({
-      origen: 'Directorio',
-      tag:    '#' + tagNorm,
-      nombre: String(filaDir[IC.NOMBRE - 1] || ''),
-      clan:   String(filaDir[IC.CLAN   - 1] || ''),
-      razon:  ''
-    });
-  }
-
-  var mapaInactivos = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.INACTIVOS, IC.TAG - 1, INACTIVOS_TOTAL_COLS);
-  if (mapaInactivos[tagNorm]) {
-    var filaInact = mapaInactivos[tagNorm];
-    resultado.push({
-      origen: 'Inactivos',
-      tag:    '#' + tagNorm,
-      nombre: String(filaInact[IC.NOMBRE - 1] || ''),
-      clan:   String(filaInact[IC.CLAN   - 1] || ''),
-      razon:  String(filaInact[IC.RAZON  - 1] || '')
-    });
-  }
-
-  var mapaVetados = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.VETADOS, VC.TAG - 1, VETADOS_TOTAL_COLS);
-  if (mapaVetados[tagNorm]) {
-    var filaVet = mapaVetados[tagNorm];
-    resultado.push({
-      origen: 'Vetados',
-      tag:    '#' + tagNorm,
-      nombre: String(filaVet[VC.NOMBRE - 1] || ''),
-      clan:   String(filaVet[VC.CLAN   - 1] || ''),
-      razon:  String(filaVet[VC.RAZON  - 1] || '')
-    });
-  }
-
-  return resultado;
+function _webAdminBuscarInfiltrado(token, tag) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  return _buscarInfiltrado(tag);
 }
 
 /**
@@ -18550,12 +18518,133 @@ function _buscarInfiltrado(query) {
 }
 
 /**
- * _webAdminBuscarInfiltrado(token, tag) [→ Contexto_Base_Web.md §15B009]
+ * _getRivalesYConflicto() [→ Contexto_Base_Web.md §15B006]
  */
-function _webAdminBuscarInfiltrado(token, tag) {
-  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  return _buscarInfiltrado(tag);
+function _getRivalesYConflicto() {
+  var automatico = _getClanesRivalesTemporadaActual();
+  var manual = _getClanesConflictoManual();
+
+  var combinado = {};
+  for (var tagM in manual) combinado[tagM] = manual[tagM];
+  for (var tagA in automatico) {
+    if (combinado[tagA] && combinado[tagA].fuente === 'manual') {
+      combinado[tagA].fuente = 'currentriverrace+manual';
+      combinado[tagA].clanTernaTag    = automatico[tagA].clanTernaTag;
+      combinado[tagA].clanTernaNombre = automatico[tagA].clanTernaNombre;
+      // motivo manual se conserva tal cual ya estaba en combinado[tagA]
+    } else {
+      combinado[tagA] = automatico[tagA];
+    }
+  }
+  return combinado;
 }
+
+/**
+ * _getClanesRivalesTemporadaActual() [→ Contexto_Base_Web.md §15B003]
+ */
+function _getClanesRivalesTemporadaActual() {
+  var rivales = {};
+  var propiosNorm = {};
+  for (var p = 0; p < CFG.CLAN_TAGS.length; p++) {
+    propiosNorm[cleanTag(CFG.CLAN_TAGS[p])] = true;
+  }
+
+  for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
+    var clanTagPropio = CFG.TERNA_TAGS[i];
+    var clanData = _getClanCache(clanTagPropio);
+    if (!clanData || !clanData.riverrace) continue;
+
+    var rr = clanData.riverrace;
+    var clansRivales = rr.clans; // ver docblock: campo NUEVO, sin uso previo en el proyecto
+    if (!clansRivales || !clansRivales.length) continue;
+
+    var nombreClanPropio = (clanData.info && clanData.info.name) || '';
+
+    for (var j = 0; j < clansRivales.length; j++) {
+      var rival = clansRivales[j];
+      var tagRival = cleanTag(rival && rival.tag);
+      if (!tagRival || propiosNorm[tagRival]) continue;
+      rivales[tagRival] = {
+        tag: '#' + tagRival,
+        nombre: (rival && rival.name) || '',
+        fuente: 'currentriverrace',
+        clanTernaTag: clanTagPropio,
+        clanTernaNombre: nombreClanPropio
+      };
+    }
+  }
+  return rivales;
+}
+
+/**
+ * _getClanesConflictoManual() [→ Contexto_Base_Web.md §15B004]
+ */
+function _getClanesConflictoManual() {
+  var manual = {};
+  var ss = _getSs();
+  var mapaHoja = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.CONFLICTOS, CFC.TAG - 1, CFC_TOTAL_COLS);
+  // _leerHojaComoMapaPorTag() solo hace trim()+toUpperCase() sobre la [→ Contexto_Base_Web.md §15B005]
+  for (var tagCrudo in mapaHoja) {
+    var fila = mapaHoja[tagCrudo];
+    var tagNorm = cleanTag(tagCrudo);
+    if (!tagNorm) continue;
+    manual[tagNorm] = {
+      tag: '#' + tagNorm,
+      nombre: String(fila[CFC.NOMBRE - 1] || ''),
+      fuente: 'manual',
+      motivo: String(fila[CFC.MOTIVO - 1] || '')
+    };
+  }
+  return manual;
+}
+
+/**
+ * _buscarEnRosterTerna(tagNorm) [→ Contexto_Base_Web.md §15B007]
+ */
+function _buscarEnRosterTerna(tagNorm) {
+  if (!tagNorm) return [];
+  var ss = _getSs();
+  var resultado = [];
+
+  var mapaDirectorio = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS);
+  if (mapaDirectorio[tagNorm]) {
+    var filaDir = mapaDirectorio[tagNorm];
+    resultado.push({
+      origen: 'Directorio',
+      tag:    '#' + tagNorm,
+      nombre: String(filaDir[IC.NOMBRE - 1] || ''),
+      clan:   String(filaDir[IC.CLAN   - 1] || ''),
+      razon:  ''
+    });
+  }
+
+  var mapaInactivos = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.INACTIVOS, IC.TAG - 1, INACTIVOS_TOTAL_COLS);
+  if (mapaInactivos[tagNorm]) {
+    var filaInact = mapaInactivos[tagNorm];
+    resultado.push({
+      origen: 'Inactivos',
+      tag:    '#' + tagNorm,
+      nombre: String(filaInact[IC.NOMBRE - 1] || ''),
+      clan:   String(filaInact[IC.CLAN   - 1] || ''),
+      razon:  String(filaInact[IC.RAZON  - 1] || '')
+    });
+  }
+
+  var mapaVetados = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.VETADOS, VC.TAG - 1, VETADOS_TOTAL_COLS);
+  if (mapaVetados[tagNorm]) {
+    var filaVet = mapaVetados[tagNorm];
+    resultado.push({
+      origen: 'Vetados',
+      tag:    '#' + tagNorm,
+      nombre: String(filaVet[VC.NOMBRE - 1] || ''),
+      clan:   String(filaVet[VC.CLAN   - 1] || ''),
+      razon:  String(filaVet[VC.RAZON  - 1] || '')
+    });
+  }
+
+  return resultado;
+}
+
 
 // --- ARCHIVO: 16_ContactsSync.gs ---
 // ==============================================================================
@@ -28962,14 +29051,16 @@ function _repararSemanaDesdeJsonRoyaleApi_(aplicar) {
 
 
 // --- ARCHIVO: 19_CorreccionRiverRace.gs ---
-// ==============================================================================
 // 19_CorreccionRiverRace.gs
 // Correcciones pendientes de RiverRace verificadas externamente (Tampermonkey).
-// ==============================================================================
-
-// ----- Variables y constantes -----
-
 // 19_CorreccionRiverRace.gs [→ Contexto_Base_Web.md §19B001]
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Correcciones de River Race: aprobar y limpiar pendientes
+//  Parte 2 — Funciones que no se corren a mano
+//    - Correcciones de River Race: recibir la verificación web y guardar pendientes
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Índices de columna (1-based) — Correcciones_RiverRace_Pendientes.csv. [→ Contexto_Base_Web.md §19B002]
 var CRC = {
@@ -29001,10 +29092,13 @@ var CORRECCIONES_RIVERRACE_PENDIENTES_CSV = 'Correcciones_RiverRace_Pendientes.c
 // Token propio del endpoint accion=verificarSemanaActual (ver doPost(), [→ Contexto_Base_Web.md §19B004]
 var VERIFICAR_RIVERRACE_TOKEN = _scriptToken('VERIFICAR_RIVERRACE_TOKEN');
 
-// ----- Funciones manuales / punto de entrada -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Correcciones de River Race: aprobar y limpiar pendientes -----
 
 // DETECCIÓN — recibe el payload del userscript, compara contra Guerra, y [→ Contexto_Base_Web.md §19B005]
-
 
 // NOTA DE REORDEN (23-ago-2026, pedido usuario): las funciones manuales [→ Contexto_Base_Web.md §19B006]
 
@@ -29195,7 +29289,11 @@ function limpiarCorreccionesRiverRacePendientesAplicadas() {
     'Quedan ' + conservadas.length + ' fila(s) en el CSV.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Correcciones de River Race: recibir la verificación web y guardar pendientes -----
 
 /**
  * _procesarVerificacionRiverRace(participantesPayload) [→ Contexto_Base_Web.md §19B013]
@@ -29394,6 +29492,7 @@ function _offDiaDesdeTimestamp(ts) {
   var MAPA_ISO_A_OFFDIA = { 4: 0, 5: 1, 6: 2, 7: 3 }; // Jueves..Domingo -> 0..3
   return MAPA_ISO_A_OFFDIA.hasOwnProperty(isoDow) ? MAPA_ISO_A_OFFDIA[isoDow] : -1;
 }
+
 
 // --- ARCHIVO: 20_HistorialGuerraJugador.gs ---
 // ==============================================================================
@@ -32626,14 +32725,17 @@ function _reglasCondFmtPuntajeTotalSemana(rangoPunt, letr, colClanL) {
 }
 
 // --- ARCHIVO: 23_Control2_GuerraSemanal.gs ---
-// ==============================================================================
 // 23_Control2_GuerraSemanal.gs
 // Hoja Control_2: resumen semanal de guerra por miembro.
-// ==============================================================================
-
-// ----- Variables y constantes -----
-
 // 23_Control2_GuerraSemanal.gs [→ Contexto_Base_Web.md §23B001]
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Control2: actualizar y respaldar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Control2: formato (lo usa actualizarControl2)
+//    - Control2: restaurar la hoja si no existe (lo usa RUNALL)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Índices de columna (1-based) — Control_2. [→ Contexto_Base_Web.md §23B002]
 var CC2 = {
@@ -32663,7 +32765,11 @@ var CONTROL2_METRICAS = [
   { nombre: 'Barcos',  ancho: 6, extras: ['Total'] }
 ];
 
-// ----- Funciones manuales / punto de entrada -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Control2: actualizar y respaldar -----
 
 /**
  * actualizarControl2() [→ Contexto_Base_Web.md §23B006]
@@ -32987,7 +33093,11 @@ function generarBackupGuerraSemanalCSV() {
     ' registro(s) semanal(es) a partir de ' + filas.length + ' fila(s) diaria(s) de Backup_Guerra.csv.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Control2: formato (lo usa actualizarControl2) -----
 
 /**
  * _aplicarFmtCondicionalControl2(sh, numJugadores) [→ Contexto_Base_Web.md §23B021]
@@ -33032,14 +33142,33 @@ function _aplicarFmtCondicionalControl2(sh, numJugadores) {
   _tryCondFmt(sh, rules);
 }
 
+// ----- Control2: restaurar la hoja si no existe (lo usa RUNALL) -----
+
 /**
- * _control2ColTotales() [→ Contexto_Base_Web.md §23B022]
+ * _restaurarControl2SiNoExiste() [→ Contexto_Base_Web.md §23B027]
  */
-function _control2ColTotales() {
-  var total = COL_INICIO_GRID2 - 1;
-  for (var m = 0; m < CONTROL2_METRICAS.length; m++) total += CONTROL2_METRICAS[m].ancho;
-  return total;
-}
+function _restaurarControl2SiNoExiste() {
+  var ss = _getSs();
+  if (ss.getSheetByName('Control_2')) return; // ya existe: nunca se toca
+
+  var sh = ss.insertSheet('Control_2');
+  var COL_TOTALES = _control2ColTotales();
+  if (sh.getMaxColumns() < COL_TOTALES) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), COL_TOTALES - sh.getMaxColumns());
+  }
+
+  _pintarEncabezadosControl2(sh);
+
+  Logger.log('[Control_2] Hoja recreada desde cero (no existía — probable Demoler previo). ' +
+    'Repoblando con actualizarControl2()...');
+
+  try {
+    actualizarControl2();
+  } catch (e) {
+    Logger.log('[Control_2] Encabezados creados, pero actualizarControl2() falló en el primer ' +
+      'intento (' + e.message + '); se reintentará en la próxima corrida normal.');
+  }
+   }
 
 /**
  * _pintarEncabezadosControl2(sh) [→ Contexto_Base_Web.md §23B023]
@@ -33152,30 +33281,14 @@ function _pintarEncabezadosControl2(sh) {
 }
 
 /**
- * _restaurarControl2SiNoExiste() [→ Contexto_Base_Web.md §23B027]
+ * _control2ColTotales() [→ Contexto_Base_Web.md §23B022]
  */
-function _restaurarControl2SiNoExiste() {
-  var ss = _getSs();
-  if (ss.getSheetByName('Control_2')) return; // ya existe: nunca se toca
+function _control2ColTotales() {
+  var total = COL_INICIO_GRID2 - 1;
+  for (var m = 0; m < CONTROL2_METRICAS.length; m++) total += CONTROL2_METRICAS[m].ancho;
+  return total;
+}
 
-  var sh = ss.insertSheet('Control_2');
-  var COL_TOTALES = _control2ColTotales();
-  if (sh.getMaxColumns() < COL_TOTALES) {
-    sh.insertColumnsAfter(sh.getMaxColumns(), COL_TOTALES - sh.getMaxColumns());
-  }
-
-  _pintarEncabezadosControl2(sh);
-
-  Logger.log('[Control_2] Hoja recreada desde cero (no existía — probable Demoler previo). ' +
-    'Repoblando con actualizarControl2()...');
-
-  try {
-    actualizarControl2();
-  } catch (e) {
-    Logger.log('[Control_2] Encabezados creados, pero actualizarControl2() falló en el primer ' +
-      'intento (' + e.message + '); se reintentará en la próxima corrida normal.');
-  }
-   }
 
 // --- ARCHIVO: 24_Historial_Ascensos.gs ---
 // ==============================================================================
@@ -45767,166 +45880,29 @@ function probarCostosSubirNivel() {
 }
 
 // --- ARCHIVO: 32_Insignias.gs ---
-// ==============================================================================
 // 32_Insignias.gs
 // Datos de insignias/badges de jugador (Backup_Insignias.csv y Backup_Insignias_2.csv).
-// ==============================================================================
-
 // Mismo patrón de almacenamiento que Backup_Cards.csv/Backup_Cards_2.csv [→ Contexto_Base_Web.md §32B001]
-
 // A) DATOS DE INSIGNIAS: Backup_Insignias.csv (catálogo) y Backup_Insignias_2.csv (por jugador) [→ Contexto_Base_Web.md §32B002]
 
-/**
- * _leerInsigniasCSV() [→ Contexto_Base_Web.md §32B003]
- */
-function _leerInsigniasCSV() {
-  var headersDefault = ['N°', 'Name', 'Nombre', 'Nivel', 'Nivel_max', 'Objetivo', 'Ícono'];
-  var csvText = _loadCSVFromDrive('Backup_Insignias.csv');
-  if (!csvText) return { headers: headersDefault, rows: [] };
-
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
-
-  return { headers: parsed[0], rows: parsed.slice(1) };
-}
-
-/**
- * _guardarInsigniasCSV(headers, rows) [→ Contexto_Base_Web.md §32B004]
- */
-function _guardarInsigniasCSV(headers, rows) {
-  rows = _ordenarFilasCatalogoInsignias(rows);
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive('Backup_Insignias.csv', _encodeCSV([headers].concat(rows)));
-}
-
-/**
- * _ordenarFilasCatalogoInsignias(rows) [→ Contexto_Base_Web.md §32B005]
- */
-function _ordenarFilasCatalogoInsignias(rows) {
-  var ordenInsignia = {};
-  var siguiente = 0;
-  var conPos = [];
-  for (var i = 0; i < rows.length; i++) {
-    var n = String(rows[i][1] || '').trim();
-    if (!Object.prototype.hasOwnProperty.call(ordenInsignia, n)) ordenInsignia[n] = siguiente++;
-    conPos.push({ fila: rows[i], pos: i, nombre: n });
-  }
-  conPos.sort(function (a, b) {
-    if (ordenInsignia[a.nombre] !== ordenInsignia[b.nombre]) return ordenInsignia[a.nombre] - ordenInsignia[b.nombre];
-    var la = Number(a.fila[3]) || 0;
-    var lb = Number(b.fila[3]) || 0;
-    if (la !== lb) return la - lb;
-    return a.pos - b.pos;
-  });
-  var salida = [];
-  for (var k = 0; k < conPos.length; k++) salida.push(conPos[k].fila);
-  return salida;
-}
-
-/**
- * _leerInsignias2CSV() [→ Contexto_Base_Web.md §32B006]
- */
-function _leerInsignias2CSV() {
-  var headersDefault = ['N°', 'Tag', 'Name', 'Nombre', 'Progreso', 'Nivel'];
-  var csvText = _loadCSVFromDrive('Backup_Insignias_2.csv');
-  if (!csvText) return { headers: headersDefault, rows: [] };
-
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
-
-  return { headers: parsed[0], rows: parsed.slice(1) };
-}
-
-/**
- * _guardarInsignias2CSV(headers, rows)
- * Renumera la columna N° (índice 0) y guarda Backup_Insignias_2.csv completo.
- */
-function _guardarInsignias2CSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive('Backup_Insignias_2.csv', _encodeCSV([headers].concat(rows)));
-}
-
-// TRADUCCIÓN AUTOMÁTICA DE INSIGNIAS DE MAESTRÍA (contra Backup_Cards.csv) [→ Contexto_Base_Web.md §32B007]
-
-/**
- * _extraerNombreCartaDeInsigniaMastery(nombreInsignia) [→ Contexto_Base_Web.md §32B008]
- */
-function _extraerNombreCartaDeInsigniaMastery(nombreInsignia) {
-  var n = String(nombreInsignia || '').trim();
-  if (n.indexOf('Mastery') !== 0) return null; // no es una insignia de maestría
-  var resto = n.substring('Mastery'.length).trim();
-  return resto || null; // "Mastery" solo, sin nombre de carta detrás -> null
-}
-
-/**
- * _normalizarClaveInsignia(texto) [→ Contexto_Base_Web.md §32B009]
- */
-function _normalizarClaveInsignia(texto) {
-  return String(texto || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-}
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hojas Insignias e Insignias2: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Insignias: leer, nombrar y guardar el CSV (lo usa updateInsigniasSheet)
+//    - Insignias2: leer, armar y guardar el CSV (lo usa updateInsignias2Sheet)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Memo por ejecución del mapa nombre-de-carta -> Nombre en español (ver [→ Contexto_Base_Web.md §32B010]
 var _INSIGNIAS_MAPA_CARTAS_MEMO = null;
 
-/**
- * _getMapaCartasEs() [→ Contexto_Base_Web.md §32B011]
- */
-function _getMapaCartasEs() {
-  if (_INSIGNIAS_MAPA_CARTAS_MEMO) return _INSIGNIAS_MAPA_CARTAS_MEMO;
-  var mapa = {};
-  var csv = _leerCardsCSV(); // definida en 31_Cards_Mazos.gs
-  for (var i = 0; i < csv.rows.length; i++) {
-    var clave = _normalizarClaveInsignia(csv.rows[i][2]);
-    var es = String(csv.rows[i][3] || '').trim();
-    if (clave && es && !mapa[clave]) mapa[clave] = es;
-  }
-  _INSIGNIAS_MAPA_CARTAS_MEMO = mapa;
-  return mapa;
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-/**
- * _buscarTraduccionCartaPorNombre(nombreCartaIngles) [→ Contexto_Base_Web.md §32B012]
- */
-function _buscarTraduccionCartaPorNombre(nombreCartaIngles) {
-  var clave = _normalizarClaveInsignia(nombreCartaIngles);
-  if (!clave) return '';
-  return _getMapaCartasEs()[clave] || '';
-}
-
-/**
- * _traducirNombreInsignia(nombreInsignia) [→ Contexto_Base_Web.md §32B013]
- */
-function _traducirNombreInsignia(nombreInsignia) {
-  var nombreCarta = _extraerNombreCartaDeInsigniaMastery(nombreInsignia);
-  if (!nombreCarta) return ''; // insignia particular, no genérica de maestría
-  return _buscarTraduccionCartaPorNombre(nombreCarta);
-}
-
-/**
- * _construirMapaNombresCatalogo(rows) [→ Contexto_Base_Web.md §32B014]
- */
-function _construirMapaNombresCatalogo(rows) {
-  var mapa = {};
-  for (var i = 0; i < rows.length; i++) {
-    var nm = String(rows[i][1] || '').trim();
-    var es = String(rows[i][2] || '').trim();
-    if (nm && es && !Object.prototype.hasOwnProperty.call(mapa, nm)) mapa[nm] = es;
-  }
-  return mapa;
-}
-
-/**
- * _resolverNombreInsignia(nombreInsignia, mapaCatalogo) [→ Contexto_Base_Web.md §32B015]
- */
-function _resolverNombreInsignia(nombreInsignia, mapaCatalogo) {
-  var n = String(nombreInsignia || '').trim();
-  if (mapaCatalogo && Object.prototype.hasOwnProperty.call(mapaCatalogo, n)) return mapaCatalogo[n];
-  return _traducirNombreInsignia(n);
-}
+// ----- Hojas Insignias e Insignias2: actualizar -----
 
 // SINCRONIZACIÓN REAL DESDE EL CACHE DE /players [→ Contexto_Base_Web.md §32B016]
-
-// ----- Funciones manuales / punto de entrada -----
 
 /**
  * updateInsigniasSheet() [→ Contexto_Base_Web.md §32B017]
@@ -46064,7 +46040,25 @@ function updateInsignias2Sheet() {
     (PLAYERS_API_ENABLED === true ? 'TRUE' : 'PARTIAL') + '). Nunca se vacía: el resto de tags conserva su fila anterior.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Insignias: leer, nombrar y guardar el CSV (lo usa updateInsigniasSheet) -----
+
+/**
+ * _leerInsigniasCSV() [→ Contexto_Base_Web.md §32B003]
+ */
+function _leerInsigniasCSV() {
+  var headersDefault = ['N°', 'Name', 'Nombre', 'Nivel', 'Nivel_max', 'Objetivo', 'Ícono'];
+  var csvText = _loadCSVFromDrive('Backup_Insignias.csv');
+  if (!csvText) return { headers: headersDefault, rows: [] };
+
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
+
+  return { headers: parsed[0], rows: parsed.slice(1) };
+}
 
 /**
  * _getInsigniasDesdeCache() [→ Contexto_Base_Web.md §32B020]
@@ -46107,6 +46101,130 @@ function _getInsigniasDesdeCache() {
     }
   }
   return map;
+}
+
+/**
+ * _construirMapaNombresCatalogo(rows) [→ Contexto_Base_Web.md §32B014]
+ */
+function _construirMapaNombresCatalogo(rows) {
+  var mapa = {};
+  for (var i = 0; i < rows.length; i++) {
+    var nm = String(rows[i][1] || '').trim();
+    var es = String(rows[i][2] || '').trim();
+    if (nm && es && !Object.prototype.hasOwnProperty.call(mapa, nm)) mapa[nm] = es;
+  }
+  return mapa;
+}
+
+/**
+ * _resolverNombreInsignia(nombreInsignia, mapaCatalogo) [→ Contexto_Base_Web.md §32B015]
+ */
+function _resolverNombreInsignia(nombreInsignia, mapaCatalogo) {
+  var n = String(nombreInsignia || '').trim();
+  if (mapaCatalogo && Object.prototype.hasOwnProperty.call(mapaCatalogo, n)) return mapaCatalogo[n];
+  return _traducirNombreInsignia(n);
+}
+
+/**
+ * _traducirNombreInsignia(nombreInsignia) [→ Contexto_Base_Web.md §32B013]
+ */
+function _traducirNombreInsignia(nombreInsignia) {
+  var nombreCarta = _extraerNombreCartaDeInsigniaMastery(nombreInsignia);
+  if (!nombreCarta) return ''; // insignia particular, no genérica de maestría
+  return _buscarTraduccionCartaPorNombre(nombreCarta);
+}
+
+// TRADUCCIÓN AUTOMÁTICA DE INSIGNIAS DE MAESTRÍA (contra Backup_Cards.csv) [→ Contexto_Base_Web.md §32B007]
+
+/**
+ * _extraerNombreCartaDeInsigniaMastery(nombreInsignia) [→ Contexto_Base_Web.md §32B008]
+ */
+function _extraerNombreCartaDeInsigniaMastery(nombreInsignia) {
+  var n = String(nombreInsignia || '').trim();
+  if (n.indexOf('Mastery') !== 0) return null; // no es una insignia de maestría
+  var resto = n.substring('Mastery'.length).trim();
+  return resto || null; // "Mastery" solo, sin nombre de carta detrás -> null
+}
+
+/**
+ * _buscarTraduccionCartaPorNombre(nombreCartaIngles) [→ Contexto_Base_Web.md §32B012]
+ */
+function _buscarTraduccionCartaPorNombre(nombreCartaIngles) {
+  var clave = _normalizarClaveInsignia(nombreCartaIngles);
+  if (!clave) return '';
+  return _getMapaCartasEs()[clave] || '';
+}
+
+/**
+ * _getMapaCartasEs() [→ Contexto_Base_Web.md §32B011]
+ */
+function _getMapaCartasEs() {
+  if (_INSIGNIAS_MAPA_CARTAS_MEMO) return _INSIGNIAS_MAPA_CARTAS_MEMO;
+  var mapa = {};
+  var csv = _leerCardsCSV(); // definida en 31_Cards_Mazos.gs
+  for (var i = 0; i < csv.rows.length; i++) {
+    var clave = _normalizarClaveInsignia(csv.rows[i][2]);
+    var es = String(csv.rows[i][3] || '').trim();
+    if (clave && es && !mapa[clave]) mapa[clave] = es;
+  }
+  _INSIGNIAS_MAPA_CARTAS_MEMO = mapa;
+  return mapa;
+}
+
+/**
+ * _normalizarClaveInsignia(texto) [→ Contexto_Base_Web.md §32B009]
+ */
+function _normalizarClaveInsignia(texto) {
+  return String(texto || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/**
+ * _ordenarFilasCatalogoInsignias(rows) [→ Contexto_Base_Web.md §32B005]
+ */
+function _ordenarFilasCatalogoInsignias(rows) {
+  var ordenInsignia = {};
+  var siguiente = 0;
+  var conPos = [];
+  for (var i = 0; i < rows.length; i++) {
+    var n = String(rows[i][1] || '').trim();
+    if (!Object.prototype.hasOwnProperty.call(ordenInsignia, n)) ordenInsignia[n] = siguiente++;
+    conPos.push({ fila: rows[i], pos: i, nombre: n });
+  }
+  conPos.sort(function (a, b) {
+    if (ordenInsignia[a.nombre] !== ordenInsignia[b.nombre]) return ordenInsignia[a.nombre] - ordenInsignia[b.nombre];
+    var la = Number(a.fila[3]) || 0;
+    var lb = Number(b.fila[3]) || 0;
+    if (la !== lb) return la - lb;
+    return a.pos - b.pos;
+  });
+  var salida = [];
+  for (var k = 0; k < conPos.length; k++) salida.push(conPos[k].fila);
+  return salida;
+}
+
+/**
+ * _guardarInsigniasCSV(headers, rows) [→ Contexto_Base_Web.md §32B004]
+ */
+function _guardarInsigniasCSV(headers, rows) {
+  rows = _ordenarFilasCatalogoInsignias(rows);
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive('Backup_Insignias.csv', _encodeCSV([headers].concat(rows)));
+}
+
+// ----- Insignias2: leer, armar y guardar el CSV (lo usa updateInsignias2Sheet) -----
+
+/**
+ * _leerInsignias2CSV() [→ Contexto_Base_Web.md §32B006]
+ */
+function _leerInsignias2CSV() {
+  var headersDefault = ['N°', 'Tag', 'Name', 'Nombre', 'Progreso', 'Nivel'];
+  var csvText = _loadCSVFromDrive('Backup_Insignias_2.csv');
+  if (!csvText) return { headers: headersDefault, rows: [] };
+
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
+
+  return { headers: parsed[0], rows: parsed.slice(1) };
 }
 
 /**
@@ -46184,6 +46302,15 @@ function _armarFilasInsignias2ParaTags(tags) {
 }
 
 /**
+ * _guardarInsignias2CSV(headers, rows)
+ * Renumera la columna N° (índice 0) y guarda Backup_Insignias_2.csv completo.
+ */
+function _guardarInsignias2CSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive('Backup_Insignias_2.csv', _encodeCSV([headers].concat(rows)));
+}
+
+/**
  * _actualizarInsignias2SoloAdmins() [→ Contexto_Base_Web.md §32B026]
  */
 function _actualizarInsignias2SoloAdmins() {
@@ -46236,17 +46363,24 @@ function _actualizarInsignias2SoloAdmins() {
   Logger.log('[Insignias2] Backup_Insignias_2.csv actualizado: ' + adminsConDatos.length + ' admin(es) (modo ADMIN, preservando no-admins).');
 }
 
+
 // --- ARCHIVO: 33_CaminoLeyendas.gs ---
-// ==============================================================================
 // 33_CaminoLeyendas.gs
 // Backup_CaminoLeyendas.csv, un CSV EXCLUSIVO de Camino de Leyendas por jugador, 
 // del que la web (perfil.html) lee PRIMERO; el JSON de Drive queda solo como respaldo.
-// ==============================================================================
 //
 // NUEVO 24-sep-2026: CSV exclusivo de Camino de Leyendas + leagueStatistics (21 columnas, una fila por jugador); fuente = cache /players; modos PLAYERS_API_ENABLED; merge por Tag sin vaciar el CSV. [→ Contexto_Base_Web.md §33B001]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Camino de Leyendas: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Camino de Leyendas: leer, armar y guardar el CSV (lo usa updateCaminoLeyendasSheet)
+//    - Camino de Leyendas: respuestas web (CSV primero)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var CAMINO_LEYENDAS_CSV = 'Backup_CaminoLeyendas.csv';
+
 var CAMINO_LEYENDAS_HEADERS = [
   'N°', 'Tag',
   'Actual_Liga', 'Actual_Trofeos', 'Actual_Rango',
@@ -46258,66 +46392,13 @@ var CAMINO_LEYENDAS_HEADERS = [
   'Liga_Mejor_Id', 'Liga_Mejor_Trofeos', 'Liga_Mejor_Mejor'
 ];
 
-// ----- Lectura / escritura del CSV -----
+var _CL_CSV_MEMO = null; // memo por ejecución: la misma petición web lo usa 2 veces
 
-// Lee Backup_CaminoLeyendas.csv como {headers, rows}; si no existe, devuelve encabezados por defecto. [→ Contexto_Base_Web.md §33B002]
-function _leerCaminoLeyendasCSV() {
-  var csvText = _loadCSVFromDrive(CAMINO_LEYENDAS_CSV);
-  if (!csvText) return { headers: CAMINO_LEYENDAS_HEADERS.slice(), rows: [] };
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: CAMINO_LEYENDAS_HEADERS.slice(), rows: [] };
-  var headers = parsed[0], rows = parsed.slice(1);
-  // CSV creado antes de las columnas de leagueStatistics: se completan
-  // encabezado y filas (se guarda en la próxima corrida del sync).
-  for (var h = headers.length; h < CAMINO_LEYENDAS_HEADERS.length; h++) headers.push(CAMINO_LEYENDAS_HEADERS[h]);
-  for (var r = 0; r < rows.length; r++) {
-    while (rows[r].length < CAMINO_LEYENDAS_HEADERS.length) rows[r].push('');
-  }
-  return { headers: headers, rows: rows };
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
-function _guardarCaminoLeyendasCSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive(CAMINO_LEYENDAS_CSV, _encodeCSV([headers].concat(rows)));
-}
-
-// ----- Sincronización (JSON de /players -> CSV) -----
-
-function _clCelda(v) {
-  return (v === undefined || v === null) ? '' : v;
-}
-
-// Arma la fila del CSV de un jugador a partir de su JSON de /players (pd). [→ Contexto_Base_Web.md §33B003]
-function _armarFilaCaminoLeyendas(tag, pd) {
-  var act = pd.currentPathOfLegendSeasonResult || {};
-  var ant = pd.lastPathOfLegendSeasonResult    || {};
-  var mej = pd.bestPathOfLegendSeasonResult    || {};
-  var ls  = pd.leagueStatistics || {};
-  var lsAct = ls.currentSeason  || {};
-  var lsAnt = ls.previousSeason || {};
-  var lsMej = ls.bestSeason     || {};
-  return [
-    '', tag,
-    _clCelda(act.leagueNumber), _clCelda(act.trophies), _clCelda(act.rank),
-    _clCelda(ant.leagueNumber), _clCelda(ant.trophies), _clCelda(ant.rank),
-    _clCelda(mej.leagueNumber), _clCelda(mej.trophies), _clCelda(mej.rank),
-    _clCelda(pd.legacyTrophyRoadHighScore),
-    _clCelda(lsAct.id), _clCelda(lsAct.trophies), _clCelda(lsAct.bestTrophies),
-    _clCelda(lsAnt.id), _clCelda(lsAnt.trophies), _clCelda(lsAnt.bestTrophies),
-    _clCelda(lsMej.id), _clCelda(lsMej.trophies), _clCelda(lsMej.bestTrophies)
-  ];
-}
-
-function _armarFilasCaminoLeyendasParaTags(tags) {
-  var filas = [];
-  for (var i = 0; i < tags.length; i++) {
-    var pd = _getPlayerCache(tags[i]);
-    if (!pd) continue;
-    filas.push(_armarFilaCaminoLeyendas(tags[i], pd));
-  }
-  return filas;
-}
+// ----- Hoja Camino de Leyendas: actualizar -----
 
 // Actualiza el CSV según PLAYERS_API_ENABLED; reusa _mergearCards2CSV() (merge por Tag, nunca vacía). [→ Contexto_Base_Web.md §33B004]
 function updateCaminoLeyendasSheet() {
@@ -46358,6 +46439,69 @@ function updateCaminoLeyendasSheet() {
     ' jugador(es). Nunca se vacía: el resto de tags conserva su fila anterior.');
 }
 
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Camino de Leyendas: leer, armar y guardar el CSV (lo usa updateCaminoLeyendasSheet) -----
+
+// Lee Backup_CaminoLeyendas.csv como {headers, rows}; si no existe, devuelve encabezados por defecto. [→ Contexto_Base_Web.md §33B002]
+function _leerCaminoLeyendasCSV() {
+  var csvText = _loadCSVFromDrive(CAMINO_LEYENDAS_CSV);
+  if (!csvText) return { headers: CAMINO_LEYENDAS_HEADERS.slice(), rows: [] };
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: CAMINO_LEYENDAS_HEADERS.slice(), rows: [] };
+  var headers = parsed[0], rows = parsed.slice(1);
+  // CSV creado antes de las columnas de leagueStatistics: se completan
+  // encabezado y filas (se guarda en la próxima corrida del sync).
+  for (var h = headers.length; h < CAMINO_LEYENDAS_HEADERS.length; h++) headers.push(CAMINO_LEYENDAS_HEADERS[h]);
+  for (var r = 0; r < rows.length; r++) {
+    while (rows[r].length < CAMINO_LEYENDAS_HEADERS.length) rows[r].push('');
+  }
+  return { headers: headers, rows: rows };
+}
+
+function _clCelda(v) {
+  return (v === undefined || v === null) ? '' : v;
+}
+
+// Arma la fila del CSV de un jugador a partir de su JSON de /players (pd). [→ Contexto_Base_Web.md §33B003]
+function _armarFilaCaminoLeyendas(tag, pd) {
+  var act = pd.currentPathOfLegendSeasonResult || {};
+  var ant = pd.lastPathOfLegendSeasonResult    || {};
+  var mej = pd.bestPathOfLegendSeasonResult    || {};
+  var ls  = pd.leagueStatistics || {};
+  var lsAct = ls.currentSeason  || {};
+  var lsAnt = ls.previousSeason || {};
+  var lsMej = ls.bestSeason     || {};
+  return [
+    '', tag,
+    _clCelda(act.leagueNumber), _clCelda(act.trophies), _clCelda(act.rank),
+    _clCelda(ant.leagueNumber), _clCelda(ant.trophies), _clCelda(ant.rank),
+    _clCelda(mej.leagueNumber), _clCelda(mej.trophies), _clCelda(mej.rank),
+    _clCelda(pd.legacyTrophyRoadHighScore),
+    _clCelda(lsAct.id), _clCelda(lsAct.trophies), _clCelda(lsAct.bestTrophies),
+    _clCelda(lsAnt.id), _clCelda(lsAnt.trophies), _clCelda(lsAnt.bestTrophies),
+    _clCelda(lsMej.id), _clCelda(lsMej.trophies), _clCelda(lsMej.bestTrophies)
+  ];
+}
+
+function _armarFilasCaminoLeyendasParaTags(tags) {
+  var filas = [];
+  for (var i = 0; i < tags.length; i++) {
+    var pd = _getPlayerCache(tags[i]);
+    if (!pd) continue;
+    filas.push(_armarFilaCaminoLeyendas(tags[i], pd));
+  }
+  return filas;
+}
+
+/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
+function _guardarCaminoLeyendasCSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive(CAMINO_LEYENDAS_CSV, _encodeCSV([headers].concat(rows)));
+}
+
 // Modo 'admin': actualiza solo filas de admins y preserva el resto. [→ Contexto_Base_Web.md §33B005]
 function _actualizarCaminoLeyendasSoloAdmins() {
   var ss = _getSs();
@@ -46393,9 +46537,7 @@ function _actualizarCaminoLeyendasSoloAdmins() {
   Logger.log('[CaminoLeyendas] ' + CAMINO_LEYENDAS_CSV + ' actualizado: ' + nuevas.length + ' admin(es) (modo ADMIN, preservando no-admins).');
 }
 
-// ----- Lectura para la web (CSV primero, JSON de respaldo) -----
-
-var _CL_CSV_MEMO = null; // memo por ejecución: la misma petición web lo usa 2 veces
+// ----- Camino de Leyendas: respuestas web (CSV primero) -----
 
 function _clCsvMemo() {
   if (!_CL_CSV_MEMO) _CL_CSV_MEMO = _leerCaminoLeyendasCSV();
@@ -46485,82 +46627,37 @@ function _webAplicarCaminoLeyendasCsv(extra, csv) {
   }
 }
 
+
 // --- ARCHIVO: 34_Logros.gs ---
-// ==============================================================================
 // 34_Logros.gs
 // Logros (achievements de /players) en dos CSV, 
 // con la misma dinámica que Cards/Cards_2 e Insignias/Insignias_2
-// ==============================================================================
-
 // NUEVO (24-sep-2026, pedido del usuario)
-
 //
 // NUEVO 24-sep-2026: Logros en dos CSV (catálogo con Nombre/Info_es semi-manuales y marcador {objetivo}; por jugador, con relleno = Objetivo vacío). Mismos modos y merge que Cards_2/Insignias_2. [→ Contexto_Base_Web.md §34B001]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Logros y Logros2: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Logros: leer, guardar y tomar de la caché (lo usa updateLogrosSheet)
+//    - Logros2: leer, armar y guardar el CSV (lo usa updateLogros2Sheet)
+//    - Logros: respuestas web (CSV primero)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var LOGROS_CSV   = 'Backup_Logros.csv';
+
 var LOGROS2_CSV  = 'Backup_Logros_2.csv';
+
 var LOGROS_HEADERS  = ['N°', 'Name', 'Nombre', 'Info', 'Info_es'];
+
 var LOGROS2_HEADERS = ['N°', 'Tag', 'Name', 'Nombre', 'Estrellas', 'Progreso', 'Objetivo', 'Info', 'Completado'];
 
-// ----- Lectura / escritura de los CSV -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-function _leerLogrosCSV() {
-  var t = _loadCSVFromDrive(LOGROS_CSV);
-  if (!t) return { headers: LOGROS_HEADERS.slice(), rows: [] };
-  var p = _parseCSV(t);
-  if (!p || p.length === 0) return { headers: LOGROS_HEADERS.slice(), rows: [] };
-  var headers = p[0], rows = p.slice(1);
-  // CSV creado antes de la columna Info_es: se completa el encabezado y las filas
-  // (queda guardado en la próxima corrida de updateLogrosSheet()).
-  for (var h = headers.length; h < LOGROS_HEADERS.length; h++) headers.push(LOGROS_HEADERS[h]);
-  for (var r = 0; r < rows.length; r++) {
-    while (rows[r].length < LOGROS_HEADERS.length) rows[r].push('');
-  }
-  return { headers: headers, rows: rows };
-}
-
-function _guardarLogrosCSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive(LOGROS_CSV, _encodeCSV([headers].concat(rows)));
-}
-
-function _leerLogros2CSV() {
-  var t = _loadCSVFromDrive(LOGROS2_CSV);
-  if (!t) return { headers: LOGROS2_HEADERS.slice(), rows: [] };
-  var p = _parseCSV(t);
-  if (!p || p.length === 0) return { headers: LOGROS2_HEADERS.slice(), rows: [] };
-  return { headers: p[0], rows: p.slice(1) };
-}
-
-function _guardarLogros2CSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive(LOGROS2_CSV, _encodeCSV([headers].concat(rows)));
-}
-
-function _lgCelda(v) {
-  return (v === undefined || v === null) ? '' : v;
-}
-
-// ----- Catálogo (Backup_Logros.csv) -----
-
-// Mapa name -> info (primera descripción no vacía) recorriendo el cache de /players de todos los jugadores. [→ Contexto_Base_Web.md §34B002]
-function _getLogrosDesdeCache() {
-  var mapa = {};
-  var cache = (CACHE_CLAN_DATA && CACHE_CLAN_DATA._players) ? CACHE_CLAN_DATA._players : {};
-  for (var tag in cache) {
-    if (!Object.prototype.hasOwnProperty.call(cache, tag)) continue;
-    var lista = (cache[tag] && cache[tag].achievements) || [];
-    for (var k = 0; k < lista.length; k++) {
-      var a = lista[k];
-      var nm = a && a.name ? String(a.name).trim() : '';
-      if (!nm) continue;
-      if (!Object.prototype.hasOwnProperty.call(mapa, nm)) mapa[nm] = '';
-      if (!mapa[nm] && a.info) mapa[nm] = String(a.info);
-    }
-  }
-  return mapa;
-}
+// ----- Hoja Logros y Logros2: actualizar -----
 
 // Agrega al catálogo los logros nuevos (alfabético, al final) y completa Info si estaba vacía; nunca pisa Nombre ni borra filas. [→ Contexto_Base_Web.md §34B003]
 function updateLogrosSheet() {
@@ -46593,6 +46690,86 @@ function updateLogrosSheet() {
   Logger.log('[Logros] ' + LOGROS_CSV + ': ' + nuevas + ' logro(s) nuevo(s), ' + actualizadas + ' Info completada(s).');
 }
 
+function updateLogros2Sheet() {
+  if (PLAYERS_API_ENABLED === false) {
+    Logger.log('[Logros2] PLAYERS_API_ENABLED=false: no se actualiza ' + LOGROS2_CSV + '.');
+    return;
+  }
+  var tags = _logrosTagsAActualizar();
+  if (!tags || tags.length === 0) {
+    Logger.log('[Logros2] Sin jugadores para actualizar');
+    return;
+  }
+  var nuevas = _armarFilasLogros2ParaTags(tags);
+  if (nuevas.length === 0) {
+    Logger.log('[Logros2] Sin datos para escribir');
+    return;
+  }
+  var csv = _leerLogros2CSV();
+  var finales = _mergearCards2CSV(csv.rows, nuevas);
+  _guardarLogros2CSV(csv.headers, finales);
+  Logger.log('[Logros2] ' + LOGROS2_CSV + ' actualizado con merge para ' + tags.length +
+    ' jugador(es). Nunca se vacía: el resto de tags conserva su fila anterior.');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Logros: leer, guardar y tomar de la caché (lo usa updateLogrosSheet) -----
+
+function _leerLogrosCSV() {
+  var t = _loadCSVFromDrive(LOGROS_CSV);
+  if (!t) return { headers: LOGROS_HEADERS.slice(), rows: [] };
+  var p = _parseCSV(t);
+  if (!p || p.length === 0) return { headers: LOGROS_HEADERS.slice(), rows: [] };
+  var headers = p[0], rows = p.slice(1);
+  // CSV creado antes de la columna Info_es: se completa el encabezado y las filas
+  // (queda guardado en la próxima corrida de updateLogrosSheet()).
+  for (var h = headers.length; h < LOGROS_HEADERS.length; h++) headers.push(LOGROS_HEADERS[h]);
+  for (var r = 0; r < rows.length; r++) {
+    while (rows[r].length < LOGROS_HEADERS.length) rows[r].push('');
+  }
+  return { headers: headers, rows: rows };
+}
+
+// Mapa name -> info (primera descripción no vacía) recorriendo el cache de /players de todos los jugadores. [→ Contexto_Base_Web.md §34B002]
+function _getLogrosDesdeCache() {
+  var mapa = {};
+  var cache = (CACHE_CLAN_DATA && CACHE_CLAN_DATA._players) ? CACHE_CLAN_DATA._players : {};
+  for (var tag in cache) {
+    if (!Object.prototype.hasOwnProperty.call(cache, tag)) continue;
+    var lista = (cache[tag] && cache[tag].achievements) || [];
+    for (var k = 0; k < lista.length; k++) {
+      var a = lista[k];
+      var nm = a && a.name ? String(a.name).trim() : '';
+      if (!nm) continue;
+      if (!Object.prototype.hasOwnProperty.call(mapa, nm)) mapa[nm] = '';
+      if (!mapa[nm] && a.info) mapa[nm] = String(a.info);
+    }
+  }
+  return mapa;
+}
+
+function _guardarLogrosCSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive(LOGROS_CSV, _encodeCSV([headers].concat(rows)));
+}
+
+// ----- Logros2: leer, armar y guardar el CSV (lo usa updateLogros2Sheet) -----
+
+function _leerLogros2CSV() {
+  var t = _loadCSVFromDrive(LOGROS2_CSV);
+  if (!t) return { headers: LOGROS2_HEADERS.slice(), rows: [] };
+  var p = _parseCSV(t);
+  if (!p || p.length === 0) return { headers: LOGROS2_HEADERS.slice(), rows: [] };
+  return { headers: p[0], rows: p.slice(1) };
+}
+
+function _lgCelda(v) {
+  return (v === undefined || v === null) ? '' : v;
+}
+
 function _getNombresLogrosConocidos() {
   var vistos = {}, lista = [];
   var cat = _leerLogrosCSV().rows;
@@ -46623,8 +46800,6 @@ function _mapaNombresLogrosCatalogo(rows) {
   }
   return mapa;
 }
-
-// ----- Por jugador (Backup_Logros_2.csv) -----
 
 // Una fila por CADA logro conocido: el real del jugador o relleno (0/0/vacío). [→ Contexto_Base_Web.md §34B004]
 function _armarFilasLogros2ParaTags(tags) {
@@ -46680,29 +46855,12 @@ function _logrosTagsAActualizar() {
   return _getTagsConPlayerCache();
 }
 
-function updateLogros2Sheet() {
-  if (PLAYERS_API_ENABLED === false) {
-    Logger.log('[Logros2] PLAYERS_API_ENABLED=false: no se actualiza ' + LOGROS2_CSV + '.');
-    return;
-  }
-  var tags = _logrosTagsAActualizar();
-  if (!tags || tags.length === 0) {
-    Logger.log('[Logros2] Sin jugadores para actualizar');
-    return;
-  }
-  var nuevas = _armarFilasLogros2ParaTags(tags);
-  if (nuevas.length === 0) {
-    Logger.log('[Logros2] Sin datos para escribir');
-    return;
-  }
-  var csv = _leerLogros2CSV();
-  var finales = _mergearCards2CSV(csv.rows, nuevas);
-  _guardarLogros2CSV(csv.headers, finales);
-  Logger.log('[Logros2] ' + LOGROS2_CSV + ' actualizado con merge para ' + tags.length +
-    ' jugador(es). Nunca se vacía: el resto de tags conserva su fila anterior.');
+function _guardarLogros2CSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive(LOGROS2_CSV, _encodeCSV([headers].concat(rows)));
 }
 
-// ----- Lectura para la web (CSV primero, JSON de respaldo) -----
+// ----- Logros: respuestas web (CSV primero) -----
 
 // Catálogo para la web { name: { nombre, infoEs } } desde Backup_Logros.csv; si no se puede leer devuelve {}. [→ Contexto_Base_Web.md §34B006]
 function _webMapaNombreLogroPorName() {
@@ -46794,79 +46952,37 @@ function _webLogrosCsvPrimero(tag, logrosJson) {
   return salida;
 }
 
+
 // --- ARCHIVO: 35_ProgresoEventos.gs ---
-// ==============================================================================
 // 35_ProgresoEventos.gs
 // CSV exclusivo de progress{} (modos rotativos: Táctica Royale, Princesa Sorpresa, etc.); no toca Camino de trofeos ni Camino de Leyendas (ver 33). [→ Contexto_Base_Web.md §35B001]
-// ==============================================================================
-
 // NUEVO (24-sep-2026, pedido del usuario)
-
 //
 // progress{} no tiene columnas fijas: una fila por jugador + clave de evento (8 columnas, patrón de Logros_2); merge reemplaza TODAS las filas de cada tag actualizado; modos como el resto. [→ Contexto_Base_Web.md §35B002]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Progreso de eventos: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Progreso de eventos: leer, armar y guardar el CSV (lo usa updateProgresoEventosSheet)
+//    - Progreso de eventos: respuestas web (CSV primero)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var PROGRESO_EVENTOS_CSV = 'Backup_ProgresoEventos.csv';
+
 var PROGRESO_EVENTOS_HEADERS = [
   'N°', 'Tag', 'Clave',
   'Arena_Id', 'Arena_Nombre', 'Arena_RawName',
   'Trofeos', 'Mejor_Trofeos'
 ];
 
-// ----- Lectura / escritura del CSV -----
+var _PE_CSV_MEMO = null; // memo por ejecución: el CSV se lee 1 sola vez
 
-function _leerProgresoEventosCSV() {
-  var csvText = _loadCSVFromDrive(PROGRESO_EVENTOS_CSV);
-  if (!csvText) return { headers: PROGRESO_EVENTOS_HEADERS.slice(), rows: [] };
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: PROGRESO_EVENTOS_HEADERS.slice(), rows: [] };
-  var headers = parsed[0], rows = parsed.slice(1);
-  for (var h = headers.length; h < PROGRESO_EVENTOS_HEADERS.length; h++) headers.push(PROGRESO_EVENTOS_HEADERS[h]);
-  for (var r = 0; r < rows.length; r++) {
-    while (rows[r].length < PROGRESO_EVENTOS_HEADERS.length) rows[r].push('');
-  }
-  return { headers: headers, rows: rows };
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
-function _guardarProgresoEventosCSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive(PROGRESO_EVENTOS_CSV, _encodeCSV([headers].concat(rows)));
-}
-
-// ----- Sincronización (JSON de /players -> CSV) -----
-
-function _peCelda(v) {
-  return (v === undefined || v === null) ? '' : v;
-}
-
-// Una fila por cada clave de pd.progress; sin relleno (clave ausente = el jugador no participó). [→ Contexto_Base_Web.md §35B003]
-function _armarFilasProgresoEventos(tag, pd) {
-  var filas = [];
-  var prog = pd.progress;
-  if (!prog || typeof prog !== 'object') return filas;
-  for (var clave in prog) {
-    if (!Object.prototype.hasOwnProperty.call(prog, clave)) continue;
-    var ev = prog[clave] || {};
-    var arena = ev.arena || {};
-    filas.push([
-      '', tag, clave,
-      _peCelda(arena.id), _peCelda(arena.name), _peCelda(arena.rawName),
-      _peCelda(ev.trophies), _peCelda(ev.bestTrophies)
-    ]);
-  }
-  return filas;
-}
-
-function _armarFilasProgresoEventosParaTags(tags) {
-  var filas = [];
-  for (var i = 0; i < tags.length; i++) {
-    var pd = _getPlayerCache(tags[i]);
-    if (!pd) continue;
-    filas = filas.concat(_armarFilasProgresoEventos(tags[i], pd));
-  }
-  return filas;
-}
+// ----- Hoja Progreso de eventos: actualizar -----
 
 // Actualiza el CSV según PLAYERS_API_ENABLED; el merge reemplaza todas las filas de cada tag actualizado. [→ Contexto_Base_Web.md §35B004]
 function updateProgresoEventosSheet() {
@@ -46904,6 +47020,63 @@ function updateProgresoEventosSheet() {
     ' jugador(es) (' + nuevas.length + ' fila(s) de eventos). Nunca se vacía: el resto de tags conserva sus filas anteriores.');
 }
 
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Progreso de eventos: leer, armar y guardar el CSV (lo usa updateProgresoEventosSheet) -----
+
+function _leerProgresoEventosCSV() {
+  var csvText = _loadCSVFromDrive(PROGRESO_EVENTOS_CSV);
+  if (!csvText) return { headers: PROGRESO_EVENTOS_HEADERS.slice(), rows: [] };
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: PROGRESO_EVENTOS_HEADERS.slice(), rows: [] };
+  var headers = parsed[0], rows = parsed.slice(1);
+  for (var h = headers.length; h < PROGRESO_EVENTOS_HEADERS.length; h++) headers.push(PROGRESO_EVENTOS_HEADERS[h]);
+  for (var r = 0; r < rows.length; r++) {
+    while (rows[r].length < PROGRESO_EVENTOS_HEADERS.length) rows[r].push('');
+  }
+  return { headers: headers, rows: rows };
+}
+
+function _peCelda(v) {
+  return (v === undefined || v === null) ? '' : v;
+}
+
+// Una fila por cada clave de pd.progress; sin relleno (clave ausente = el jugador no participó). [→ Contexto_Base_Web.md §35B003]
+function _armarFilasProgresoEventos(tag, pd) {
+  var filas = [];
+  var prog = pd.progress;
+  if (!prog || typeof prog !== 'object') return filas;
+  for (var clave in prog) {
+    if (!Object.prototype.hasOwnProperty.call(prog, clave)) continue;
+    var ev = prog[clave] || {};
+    var arena = ev.arena || {};
+    filas.push([
+      '', tag, clave,
+      _peCelda(arena.id), _peCelda(arena.name), _peCelda(arena.rawName),
+      _peCelda(ev.trophies), _peCelda(ev.bestTrophies)
+    ]);
+  }
+  return filas;
+}
+
+function _armarFilasProgresoEventosParaTags(tags) {
+  var filas = [];
+  for (var i = 0; i < tags.length; i++) {
+    var pd = _getPlayerCache(tags[i]);
+    if (!pd) continue;
+    filas = filas.concat(_armarFilasProgresoEventos(tags[i], pd));
+  }
+  return filas;
+}
+
+/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
+function _guardarProgresoEventosCSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive(PROGRESO_EVENTOS_CSV, _encodeCSV([headers].concat(rows)));
+}
+
 // Modo 'admin': actualiza solo filas de admins y preserva el resto. [→ Contexto_Base_Web.md §35B006]
 function _actualizarProgresoEventosSoloAdmins() {
   var ss = _getSs();
@@ -46936,9 +47109,7 @@ function _actualizarProgresoEventosSoloAdmins() {
     ' admin(es) revisado(s), ' + nuevas.length + ' fila(s) de eventos (modo ADMIN, preservando no-admins).');
 }
 
-// ----- Lectura para la web (CSV primero, JSON de respaldo) -----
-
-var _PE_CSV_MEMO = null; // memo por ejecución: el CSV se lee 1 sola vez
+// ----- Progreso de eventos: respuestas web (CSV primero) -----
 
 function _peCsvMemo() {
   if (!_PE_CSV_MEMO) _PE_CSV_MEMO = _leerProgresoEventosCSV();
@@ -47005,69 +47176,36 @@ function _webAplicarProgresoEventosCsv(extra, csv) {
   _webResolverArenaEsEnProgreso(extra);
 }
 
+
 // --- ARCHIVO: 36_PerfilWeb.gs ---
-// ==============================================================================
 // 36_PerfilWeb.gs
 // CSV exclusivo de los 5 contadores de la cabecera de estadísticas avanzadas del perfil (CSV primero, JSON de respaldo). [→ Contexto_Base_Web.md §36B001]
-// ==============================================================================
 // NUEVO (24-sep-2026, pedido del usuario)
-
 //
 // Fuente cache /players: ExpLevel, KingTowerLevel, StarPoints, ExpPoints, TotalExpPoints; una fila por jugador; no toca la columna Nivel de Directorio/Inactivos; progress{} quedó fuera (ver 35). [→ Contexto_Base_Web.md §36B002]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Perfil web: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Perfil web: leer, armar y guardar el CSV (lo usa updatePerfilWebSheet)
+//    - Perfil web: respuestas web (CSV primero)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var PERFIL_WEB_CSV = 'Backup_PerfilWeb.csv';
+
 var PERFIL_WEB_HEADERS = [
   'N°', 'Tag',
   'ExpLevel', 'KingTowerLevel', 'StarPoints', 'ExpPoints', 'TotalExpPoints'
 ];
 
-// ----- Lectura / escritura del CSV -----
+var _PW_CSV_MEMO = null; // memo por ejecución: la misma petición web lo usa 1 sola vez por tag, pero el CSV se lee 1 sola vez
 
-// Lee Backup_PerfilWeb.csv como {headers, rows}; si no existe, devuelve encabezados por defecto. [→ Contexto_Base_Web.md §36B003]
-function _leerPerfilWebCSV() {
-  var csvText = _loadCSVFromDrive(PERFIL_WEB_CSV);
-  if (!csvText) return { headers: PERFIL_WEB_HEADERS.slice(), rows: [] };
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: PERFIL_WEB_HEADERS.slice(), rows: [] };
-  var headers = parsed[0], rows = parsed.slice(1);
-  for (var h = headers.length; h < PERFIL_WEB_HEADERS.length; h++) headers.push(PERFIL_WEB_HEADERS[h]);
-  for (var r = 0; r < rows.length; r++) {
-    while (rows[r].length < PERFIL_WEB_HEADERS.length) rows[r].push('');
-  }
-  return { headers: headers, rows: rows };
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
-function _guardarPerfilWebCSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive(PERFIL_WEB_CSV, _encodeCSV([headers].concat(rows)));
-}
-
-// ----- Sincronización (JSON de /players -> CSV) -----
-
-function _pwCelda(v) {
-  return (v === undefined || v === null) ? '' : v;
-}
-
-// Arma la fila del CSV de un jugador a partir de su JSON de /players. [→ Contexto_Base_Web.md §36B004]
-function _armarFilaPerfilWeb(tag, pd) {
-  return [
-    '', tag,
-    _pwCelda(pd.expLevel), _pwCelda(pd.kingTowerLevel), _pwCelda(pd.starPoints),
-    _pwCelda(pd.expPoints), _pwCelda(pd.totalExpPoints)
-  ];
-}
-
-function _armarFilasPerfilWebParaTags(tags) {
-  var filas = [];
-  for (var i = 0; i < tags.length; i++) {
-    var pd = _getPlayerCache(tags[i]);
-    if (!pd) continue;
-    filas.push(_armarFilaPerfilWeb(tags[i], pd));
-  }
-  return filas;
-}
+// ----- Hoja Perfil web: actualizar -----
 
 // Actualiza el CSV según PLAYERS_API_ENABLED; reusa _mergearCards2CSV() (merge por Tag, nunca vacía). [→ Contexto_Base_Web.md §36B005]
 function updatePerfilWebSheet() {
@@ -47108,6 +47246,55 @@ function updatePerfilWebSheet() {
     ' jugador(es). Nunca se vacía: el resto de tags conserva su fila anterior.');
 }
 
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Perfil web: leer, armar y guardar el CSV (lo usa updatePerfilWebSheet) -----
+
+// Lee Backup_PerfilWeb.csv como {headers, rows}; si no existe, devuelve encabezados por defecto. [→ Contexto_Base_Web.md §36B003]
+function _leerPerfilWebCSV() {
+  var csvText = _loadCSVFromDrive(PERFIL_WEB_CSV);
+  if (!csvText) return { headers: PERFIL_WEB_HEADERS.slice(), rows: [] };
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: PERFIL_WEB_HEADERS.slice(), rows: [] };
+  var headers = parsed[0], rows = parsed.slice(1);
+  for (var h = headers.length; h < PERFIL_WEB_HEADERS.length; h++) headers.push(PERFIL_WEB_HEADERS[h]);
+  for (var r = 0; r < rows.length; r++) {
+    while (rows[r].length < PERFIL_WEB_HEADERS.length) rows[r].push('');
+  }
+  return { headers: headers, rows: rows };
+}
+
+function _pwCelda(v) {
+  return (v === undefined || v === null) ? '' : v;
+}
+
+// Arma la fila del CSV de un jugador a partir de su JSON de /players. [→ Contexto_Base_Web.md §36B004]
+function _armarFilaPerfilWeb(tag, pd) {
+  return [
+    '', tag,
+    _pwCelda(pd.expLevel), _pwCelda(pd.kingTowerLevel), _pwCelda(pd.starPoints),
+    _pwCelda(pd.expPoints), _pwCelda(pd.totalExpPoints)
+  ];
+}
+
+function _armarFilasPerfilWebParaTags(tags) {
+  var filas = [];
+  for (var i = 0; i < tags.length; i++) {
+    var pd = _getPlayerCache(tags[i]);
+    if (!pd) continue;
+    filas.push(_armarFilaPerfilWeb(tags[i], pd));
+  }
+  return filas;
+}
+
+/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
+function _guardarPerfilWebCSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive(PERFIL_WEB_CSV, _encodeCSV([headers].concat(rows)));
+}
+
 // Modo 'admin': actualiza solo filas de admins y preserva el resto. [→ Contexto_Base_Web.md §36B006]
 function _actualizarPerfilWebSoloAdmins() {
   var ss = _getSs();
@@ -47143,9 +47330,7 @@ function _actualizarPerfilWebSoloAdmins() {
   Logger.log('[PerfilWeb] ' + PERFIL_WEB_CSV + ' actualizado: ' + nuevas.length + ' admin(es) (modo ADMIN, preservando no-admins).');
 }
 
-// ----- Lectura para la web (CSV primero, JSON de respaldo) -----
-
-var _PW_CSV_MEMO = null; // memo por ejecución: la misma petición web lo usa 1 sola vez por tag, pero el CSV se lee 1 sola vez
+// ----- Perfil web: respuestas web (CSV primero) -----
 
 function _pwCsvMemo() {
   if (!_PW_CSV_MEMO) _PW_CSV_MEMO = _leerPerfilWebCSV();
@@ -47197,6 +47382,7 @@ function _webAplicarPerfilWebCsv(extra, csv) {
   if (csv.expPoints      !== null) extra.expPoints      = csv.expPoints;
   if (csv.totalExpPoints !== null) extra.totalExpPoints = csv.totalExpPoints;
 }
+
 
 // --- ARCHIVO: 37_Web_API.gs ---
 // 37_Web_API.gs: API del sitio web público de la comunidad (grupoterna.github.io/Web); distinto del dashboard interno (38_Web_Endpoints.gs) y del bot (44_BotWhatsApp.gs), aunque reutiliza funciones de ambos. [→ Contexto_Base_Web.md §37B001]
@@ -55433,16 +55619,23 @@ function _generarDashboardHtml() {
 }
 
 // --- ARCHIVO: 39_CartasWeb.gs ---
-// ==============================================================================
 // 39_CartasWeb.gs
 // lectura CSV-primero de TODOS los
 // datos de cartas de perfil.html, con el JSON de Drive solo como respaldo.
-// ==============================================================================
-
 // NUEVO 24-sep-2026: lectura CSV-primero de todos los datos de cartas (Cards, Cards_2, Cards_3); JSON solo de respaldo. CORRECCIÓN 24-sep-2026: la carta favorita ahora también sale de Cards_2. [→ Contexto_Base_Web.md §39B001]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que no se corren a mano
+//    - Cartas web: catálogo y respuestas (CSV primero)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var _CW_CATALOGO_MEMO = null; // memo por ejecución (una consulta web = una ejecución)
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Cartas web: catálogo y respuestas (CSV primero) -----
 
 // Backup_Cards.csv como { id: {name, nombre, maxLevel, ...} } (columnas por índice); {} si no se puede leer. [→ Contexto_Base_Web.md §39B002]
 function _webCatalogoCartasPorId() {
@@ -55615,6 +55808,7 @@ function _webCartaFavoritaCsvPrimero(tag, datos) {
 
   return porId[idFav] || { id: Number(idFav) };
 }
+
 
 // --- ARCHIVO: 40_Web_Noticias.gs ---
 // =============================================================================
@@ -56670,24 +56864,45 @@ function _webActRosterFechaLima_(ms) {
 
 
 // --- ARCHIVO: 42_Web_TiemposActualizacion.gs ---
-// ==============================================================================
 // 42_Web_TiemposActualizacion.gs
 // Horas de actualización que debe mostrar la web (creado 05-oct-2026, pedido del usuario). [→ Contexto_Base_Web.md §42B001]
-// ==============================================================================
 //
 // Qué horas hay (web, API de clanes, mensajes), objeto de _tiemposActualizacionWeb_(), función manual y AVISOS ABIERTOS (4 pendientes de definir). [→ Contexto_Base_Web.md §42B002]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Tiempos de actualización: ver en el registro
+//  Parte 2 — Funciones que no se corren a mano
+//    - Tiempos de actualización: registrar (los llaman la API de clanes y los mensajes)
+//    - Tiempos de actualización: armar el objeto para la web
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var TIEMPOS_PROP_API = 'TIEMPOS_API_CLANES';
+
 var TIEMPOS_PROP_MENSAJES = 'TIEMPOS_MENSAJES';
 
 // Categorias de la hoja Mensajes que reconstruye generarTodosMensajes() (el resto sale de plantillas de Drive y su
 // "hora de elaboracion" no aplica). El frontend las usa para decidir si muestra la hora junto al contenido.
 var TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS = ['Mensaje de Guerra', 'Celular', 'Etiqueta de miembro'];
 
-// ---------------------------------------------------------------------------
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Tiempos de actualización: ver en el registro -----
+
+/** Manual: imprime el objeto completo en el log. */
+function verTiemposActualizacion() {
+  Logger.log(JSON.stringify(_tiemposActualizacionWeb_(), null, 2));
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Tiempos de actualización: registrar (los llaman la API de clanes y los mensajes) -----
+
 // Registro (lo llaman el bot, nunca la web)
-// ---------------------------------------------------------------------------
 
 // Registra la consulta a la API de clanes; nunca lanza error. [→ Contexto_Base_Web.md §42B003]
 function _registrarConsultaApiClanes_(completa) {
@@ -56718,9 +56933,9 @@ function _registrarGeneracionMensajes_(ts, cantidad) {
   }
 }
 
-// ---------------------------------------------------------------------------
+// ----- Tiempos de actualización: armar el objeto para la web -----
+
 // Lectura (la usan los endpoints web)
-// ---------------------------------------------------------------------------
 
 // Arma el objeto completo de horas; nunca lanza error, deja en null lo que no pudo armar. [→ Contexto_Base_Web.md §42B005]
 function _tiemposActualizacionWeb_(generadoTs) {
@@ -56815,9 +57030,7 @@ function _tiemposCategoriaEsGenerada_(categoria) {
   return TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS.indexOf(String(categoria || '').trim()) !== -1;
 }
 
-// ---------------------------------------------------------------------------
 // Helpers internos
-// ---------------------------------------------------------------------------
 
 function _tiemposLeerProp_(nombre) {
   try {
@@ -56836,18 +57049,38 @@ function _tiemposFechaLima_(ms) {
   return Utilities.formatDate(new Date(n), 'America/Lima', 'dd/MM/yyyy HH:mm:ss');
 }
 
-/** Manual: imprime el objeto completo en el log. */
-function verTiemposActualizacion() {
-  Logger.log(JSON.stringify(_tiemposActualizacionWeb_(), null, 2));
-}
 
 // --- ARCHIVO: 43_Menu_Dinamico.gs ---
-// ==============================================================================
 // 43_Menu_Dinamico.gs
 // Índice de contenido del bot y del panel web (reemplaza la hoja Menú): Docs de Drive (Estático) + Información sobre el clan y Mensajes (Dinámico); se guarda en Drive y caché. [→ Contexto_Base_Web.md §43B001]
-// ==============================================================================
 
-// ----- Funciones manuales / punto de entrada -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Menú dinámico: refrescar, sincronizar plantillas y reconstruir el índice
+//  Parte 2 — Funciones que no se corren a mano
+//    - Menú dinámico: actualizar
+//    - Índice de contenido: actualizar, reconstruir, leer y guardar
+//    - Índice de contenido: entradas estáticas, dinámicas y orden
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
+// ==============================================================================
+// ÍNDICE DE CONTENIDO
+// ------------------------------------------------------------------------------
+// Dónde vive el índice (caché 6 h → Indice_Contenido.json en Drive → reconstrucción) y qué entradas guarda; ver AVISOS ABIERTOS / FASE B en 09_API_ClashRoyale.gs. [→ Contexto_Base_Web.md §43B009]
+// ==============================================================================
+var INDICE_CONTENIDO_FILE       = 'Indice_Contenido.json';
+
+var INDICE_CONTENIDO_CACHE_META = 'IDX_CONT_META';
+
+var INDICE_CONTENIDO_CACHE_TTL  = 21600; // 6 h, máximo de CacheService
+
+var INDICE_CONTENIDO_CHUNK      = 24000; // caracteres por parte (peor caso UTF-8: 96 KB)
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Menú dinámico: refrescar, sincronizar plantillas y reconstruir el índice -----
 
 // Wrapper manual: refresca el índice con syncPlantillasDesdeDrive() y _actualizarMenuDinamico(); ya no escribe ninguna hoja. [→ Contexto_Base_Web.md §43B002]
 function actualizarMenuSheet() {
@@ -56888,34 +57121,17 @@ function syncPlantillasDesdeDrive() {
   Logger.log('[Plantillas] Sincronizados ' + totalDocsValidos + ' documentos desde Drive hacia el índice de contenido.');
 }
 
-// ----- Funciones internas / helpers -----
-
-
-
-
-// Núcleo compartido: ordena las entradas ya resueltas por Extra y hoja Clan y las guarda como índice (Drive + caché). [→ Contexto_Base_Web.md §43B004]
-function _actualizarIndiceContenido(ss, entradas, orden) {
-  if (orden.length === 0) {
-    Logger.log('[Índice] Sin datos — índice sin cambios.');
-    return [];
-  }
-  var lista = _ordenarEntradasIndice(ss, orden.map(function(k) { return entradas[k]; }));
-  var indice = [];
-  for (var i = 0; i < lista.length; i++) {
-    var e = lista[i];
-    indice.push({
-      categoria:    e.categoria,
-      subcategoria: e.subcategoria,
-      clan:         e.clan,
-      tipo:         e.tipo,
-      contenido:    (e.contenido !== undefined) ? e.contenido : '',
-      docId:        e.docId || ''
-    });
-  }
-  _guardarIndiceContenido(indice);
-  Logger.log('[Índice] Guardado con ' + indice.length + ' entradas.');
-  return indice;
+// Manual: fuerza la reconstrucción del índice desde Drive, Clan y Mensajes (ejecutar una vez tras instalar esta versión). [→ Contexto_Base_Web.md §43B016]
+function inicializarIndiceContenido() {
+  var idx = _reconstruirIndiceContenido();
+  Logger.log('[Índice] Listo: ' + idx.length + ' entradas.');
 }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Menú dinámico: actualizar -----
 
 // Refresca las entradas Dinámico (Mensajes + hoja Clan) preservando las Estático; se ejecuta tras runPendientesYMensajes(). [→ Contexto_Base_Web.md §43B005]
 function _actualizarMenuDinamico() {
@@ -56948,120 +57164,45 @@ function _actualizarMenuDinamico() {
   _actualizarIndiceContenido(ss, entradas, orden);
 }
 
-// Intenta renombrar un Doc de formato antiguo "Clan - Categoría" a "Categoría - Subcategoría - Clan"; devuelve el nombre nuevo o null. [→ Contexto_Base_Web.md §43B006]
-function _renombrarDocFormatoAntiguo(ss, file, clan, categoria) {
-  var catNorm  = categoria.trim().toLowerCase();
-  var clanNorm = clan.trim().toLowerCase();
-  var subcategoria = null;
+// ----- Índice de contenido: actualizar, reconstruir, leer y guardar -----
 
-  // 1. Intentar buscar en el índice guardado (sin reconstruir: esta función corre DENTRO de la lectura
-  // de Drive que usa la reconstrucción del índice).
-  var guardado = _leerIndiceGuardado() || [];
-  for (var i = 0; i < guardado.length; i++) {
-    if (String(guardado[i].categoria || '').trim().toLowerCase() === catNorm &&
-        String(guardado[i].clan || '').trim().toLowerCase() === clanNorm) {
-      subcategoria = String(guardado[i].subcategoria || '').trim();
-      break;
-    }
+// Núcleo compartido: ordena las entradas ya resueltas por Extra y hoja Clan y las guarda como índice (Drive + caché). [→ Contexto_Base_Web.md §43B004]
+function _actualizarIndiceContenido(ss, entradas, orden) {
+  if (orden.length === 0) {
+    Logger.log('[Índice] Sin datos — índice sin cambios.');
+    return [];
   }
-
-  // 2. Fallback: mapa estático basado en la estructura conocida del sistema
-  //    Clan específico → Subcategoría = 'Particular'
-  //    Clan familia/comunidad → Subcategoría según Categoría
-  if (!subcategoria) {
-    var CLANES_PARTICULARES = [
-      'grupo乂terna™', 'grupoxterna™2', 'grupoxterna™3', 'mini乂ternas™'
-    ];
-    var CLANES_COMUNIDAD = [
-      'ᴳ乂ᵀ ⚜️ familia terna', 'familia terna'
-    ];
-    var MAPA_SUBCATEGORIA_FALLBACK = {
-      'bienvenida':          { particular: 'Particular', comunidad: 'Particular' },
-      'descripción':         { particular: 'Particular', comunidad: 'Chat General',
-                               comunidades: { 'Comunidad': true, 'Detectives': true, 'RoyaleAPI': true } },
-      'defensas de barcos':  { particular: 'Comunidad', comunidad: 'Comunidad' },
-      'día de guerra':       { particular: 'Comunidad', comunidad: 'Comunidad' },
-      'etiqueta de miembro': { particular: 'Particular', comunidad: 'Comunidad' },
-      'celular':             { particular: 'Particular', comunidad: 'Chat General' },
-      'mensaje de guerra':   { particular: 'Particular', comunidad: 'Chat General' },
-      'información del clan':{ particular: 'Terna',      comunidad: 'Vetado' },
-      'información sobre mí':{ particular: 'Terna',      comunidad: 'Terna' },
-    };
-
-    var esParticular = CLANES_PARTICULARES.indexOf(clanNorm) >= 0;
-    var entrada = MAPA_SUBCATEGORIA_FALLBACK[catNorm];
-    if (entrada) {
-      subcategoria = esParticular ? entrada.particular : entrada.comunidad;
-    }
-    // Para Descripción con subcategorías múltiples, intentar inferir por nombre del clan
-    if (catNorm === 'descripción' && !esParticular) {
-      var clanLow = clanNorm;
-      if (clanLow.indexOf('detective') >= 0)      subcategoria = 'Detectives';
-      else if (clanLow.indexOf('royale') >= 0)    subcategoria = 'RoyaleAPI';
-      else if (clanLow.indexOf('comunidad') >= 0) subcategoria = 'Comunidad';
-      else                                         subcategoria = 'Chat General';
-    }
+  var lista = _ordenarEntradasIndice(ss, orden.map(function(k) { return entradas[k]; }));
+  var indice = [];
+  for (var i = 0; i < lista.length; i++) {
+    var e = lista[i];
+    indice.push({
+      categoria:    e.categoria,
+      subcategoria: e.subcategoria,
+      clan:         e.clan,
+      tipo:         e.tipo,
+      contenido:    (e.contenido !== undefined) ? e.contenido : '',
+      docId:        e.docId || ''
+    });
   }
-
-  if (!subcategoria) {
-    Logger.log('[Plantillas] No se pudo determinar subcategoría para renombrar: "' + clan + ' - ' + categoria + '"');
-    return null;
-  }
-
-  var nuevoNombre = categoria + ' - ' + subcategoria + ' - ' + clan;
-  try {
-    file.setName(nuevoNombre);
-    Logger.log('[Plantillas] Renombrado: "' + clan + ' - ' + categoria + '" → "' + nuevoNombre + '"');
-    return nuevoNombre;
-  } catch(e) {
-    Logger.log('[Plantillas] Error al renombrar "' + file.getName() + '": ' + e.message);
-    return null;
-  }
+  _guardarIndiceContenido(indice);
+  Logger.log('[Índice] Guardado con ' + indice.length + ' entradas.');
+  return indice;
 }
 
-// Lee la hoja Extra y devuelve { valorLower -> índice } para 'categoria' o 'subcategoria'. [→ Contexto_Base_Web.md §43B007]
-function _getOrdenExtra(ss, tipo) {
-  var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
-  var mapa = {};
-  if (!sh || sh.getLastRow() < 2) return mapa;
-  var colIdx = (tipo === 'subcategoria') ? 12 : 11; // 0-based
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 13).getValues();
-  var orden = 0;
-  for (var i = 0; i < data.length; i++) {
-    var v = String(data[i][colIdx] || '').trim();
-    if (v && mapa[v.toLowerCase()] === undefined) {
-      mapa[v.toLowerCase()] = orden++;
-    }
+// Reconstruye el índice desde las fuentes reales; prioridad Estático > Información sobre el clan > Mensajes. [→ Contexto_Base_Web.md §43B013]
+function _reconstruirIndiceContenido() {
+  var ss = _getSs();
+  var est = _leerEntradasEstaticasDrive(ss);
+  if (!est) {
+    Logger.log('[Índice] Sin acceso a las carpetas de Drive: no se reconstruye el índice.');
+    return _leerIndiceGuardado() || [];
   }
-  return mapa;
+  var entradas = est.entradas;
+  var orden    = est.orden;
+  _agregarEntradasDinamicas(ss, entradas, orden);
+  return _actualizarIndiceContenido(ss, entradas, orden);
 }
-
-// Lee la hoja Clan y devuelve { nombreClanLower -> índice } según el orden de filas. [→ Contexto_Base_Web.md §43B008]
-function _getOrdenClanHoja(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
-  var mapa = {};
-  if (!sh || sh.getLastRow() < 2) return mapa;
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues();
-  for (var i = 0; i < data.length; i++) {
-    var v = String(data[i][2] || '').trim();
-    if (v) mapa[v.toLowerCase()] = i;
-  }
-  return mapa;
-}
-
-
-
-
-
-// ==============================================================================
-// ÍNDICE DE CONTENIDO
-// ------------------------------------------------------------------------------
-// Dónde vive el índice (caché 6 h → Indice_Contenido.json en Drive → reconstrucción) y qué entradas guarda; ver AVISOS ABIERTOS / FASE B en 09_API_ClashRoyale.gs. [→ Contexto_Base_Web.md §43B009]
-// ==============================================================================
-var INDICE_CONTENIDO_FILE       = 'Indice_Contenido.json';
-var INDICE_CONTENIDO_CACHE_META = 'IDX_CONT_META';
-var INDICE_CONTENIDO_CACHE_TTL  = 21600; // 6 h, máximo de CacheService
-var INDICE_CONTENIDO_CHUNK      = 24000; // caracteres por parte (peor caso UTF-8: 96 KB)
 
 // Devuelve el índice completo: caché → Drive → reconstrucción desde las fuentes. [→ Contexto_Base_Web.md §43B010]
 function _getIndiceContenido() {
@@ -57076,50 +57217,6 @@ function _getIndiceContenido() {
 
   Logger.log('[Índice] No hay índice en caché ni en Drive: se reconstruye desde las fuentes.');
   return _reconstruirIndiceContenido();
-}
-
-// Entradas del índice de un tipo ('Estático' o 'Dinámico'); reconstruye el índice si no existe. [→ Contexto_Base_Web.md §43B011]
-function _leerEntradasIndicePorTipo(tipo) {
-  var todo = _getIndiceContenido();
-  var out = [];
-  for (var i = 0; i < todo.length; i++) {
-    if (todo[i].tipo === tipo) out.push(todo[i]);
-  }
-  return out;
-}
-
-// Persiste el índice en Drive y caché; nunca lanza error. [→ Contexto_Base_Web.md §43B012]
-function _guardarIndiceContenido(lista) {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(INDICE_CONTENIDO_FILE);
-    var contenido = JSON.stringify({ _ts: Date.now(), entradas: lista });
-    if (files.hasNext()) {
-      files.next().setContent(contenido);
-      while (files.hasNext()) files.next().setTrashed(true); // duplicados
-    } else {
-      folder.createFile(INDICE_CONTENIDO_FILE, contenido, MimeType.PLAIN_TEXT);
-    }
-  } catch (e) {
-    Logger.log('[Índice] Error guardando el índice en Drive: ' + e.message);
-  }
-  _guardarIndiceContenidoEnCache(JSON.stringify(lista));
-}
-
-function _guardarIndiceContenidoEnCache(json) {
-  try {
-    var cache = CacheService.getScriptCache();
-    var ts = String(Date.now());
-    var n = Math.max(1, Math.ceil(json.length / INDICE_CONTENIDO_CHUNK));
-    var partes = {};
-    for (var i = 0; i < n; i++) {
-      partes['IDX_CONT_' + ts + '_' + i] = json.substr(i * INDICE_CONTENIDO_CHUNK, INDICE_CONTENIDO_CHUNK);
-    }
-    cache.putAll(partes, INDICE_CONTENIDO_CACHE_TTL);
-    cache.put(INDICE_CONTENIDO_CACHE_META, JSON.stringify({ ts: ts, n: n }), INDICE_CONTENIDO_CACHE_TTL);
-  } catch (e) {
-    Logger.log('[Índice] No se pudo guardar el índice en caché: ' + e.message);
-  }
 }
 
 function _leerIndiceContenidoDeCache() {
@@ -57156,20 +57253,6 @@ function _leerIndiceContenidoDeDrive() {
   }
 }
 
-// Reconstruye el índice desde las fuentes reales; prioridad Estático > Información sobre el clan > Mensajes. [→ Contexto_Base_Web.md §43B013]
-function _reconstruirIndiceContenido() {
-  var ss = _getSs();
-  var est = _leerEntradasEstaticasDrive(ss);
-  if (!est) {
-    Logger.log('[Índice] Sin acceso a las carpetas de Drive: no se reconstruye el índice.');
-    return _leerIndiceGuardado() || [];
-  }
-  var entradas = est.entradas;
-  var orden    = est.orden;
-  _agregarEntradasDinamicas(ss, entradas, orden);
-  return _actualizarIndiceContenido(ss, entradas, orden);
-}
-
 // Devuelve el índice guardado (caché → Drive) sin reconstruir; null si no existe. [→ Contexto_Base_Web.md §43B014]
 function _leerIndiceGuardado() {
   var idx = _leerIndiceContenidoDeCache();
@@ -57177,6 +57260,50 @@ function _leerIndiceGuardado() {
   idx = _leerIndiceContenidoDeDrive();
   if (idx && idx.length) return idx;
   return null;
+}
+
+// Persiste el índice en Drive y caché; nunca lanza error. [→ Contexto_Base_Web.md §43B012]
+function _guardarIndiceContenido(lista) {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(INDICE_CONTENIDO_FILE);
+    var contenido = JSON.stringify({ _ts: Date.now(), entradas: lista });
+    if (files.hasNext()) {
+      files.next().setContent(contenido);
+      while (files.hasNext()) files.next().setTrashed(true); // duplicados
+    } else {
+      folder.createFile(INDICE_CONTENIDO_FILE, contenido, MimeType.PLAIN_TEXT);
+    }
+  } catch (e) {
+    Logger.log('[Índice] Error guardando el índice en Drive: ' + e.message);
+  }
+  _guardarIndiceContenidoEnCache(JSON.stringify(lista));
+}
+
+function _guardarIndiceContenidoEnCache(json) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var ts = String(Date.now());
+    var n = Math.max(1, Math.ceil(json.length / INDICE_CONTENIDO_CHUNK));
+    var partes = {};
+    for (var i = 0; i < n; i++) {
+      partes['IDX_CONT_' + ts + '_' + i] = json.substr(i * INDICE_CONTENIDO_CHUNK, INDICE_CONTENIDO_CHUNK);
+    }
+    cache.putAll(partes, INDICE_CONTENIDO_CACHE_TTL);
+    cache.put(INDICE_CONTENIDO_CACHE_META, JSON.stringify({ ts: ts, n: n }), INDICE_CONTENIDO_CACHE_TTL);
+  } catch (e) {
+    Logger.log('[Índice] No se pudo guardar el índice en caché: ' + e.message);
+  }
+}
+
+// Entradas del índice de un tipo ('Estático' o 'Dinámico'); reconstruye el índice si no existe. [→ Contexto_Base_Web.md §43B011]
+function _leerEntradasIndicePorTipo(tipo) {
+  var todo = _getIndiceContenido();
+  var out = [];
+  for (var i = 0; i < todo.length; i++) {
+    if (todo[i].tipo === tipo) out.push(todo[i]);
+  }
+  return out;
 }
 
 // Como _leerEntradasIndicePorTipo() pero sin reconstruir: devuelve [] si no hay índice guardado. [→ Contexto_Base_Web.md §43B015]
@@ -57189,13 +57316,7 @@ function _leerEntradasIndiceGuardadoPorTipo(tipo) {
   return out;
 }
 
-// Manual: fuerza la reconstrucción del índice desde Drive, Clan y Mensajes (ejecutar una vez tras instalar esta versión). [→ Contexto_Base_Web.md §43B016]
-function inicializarIndiceContenido() {
-  var idx = _reconstruirIndiceContenido();
-  Logger.log('[Índice] Listo: ' + idx.length + ' entradas.');
-}
-
-// ----- Helpers extraídos (antes vivían dentro de otras funciones) -----
+// ----- Índice de contenido: entradas estáticas, dinámicas y orden -----
 
 // Lee los Docs de la carpeta raíz de plantillas y subcarpetas; devuelve {entradas, orden} o null si no pudo abrir ninguna carpeta. [→ Contexto_Base_Web.md §43B017]
 function _leerEntradasEstaticasDrive(ss) {
@@ -57281,6 +57402,77 @@ function _leerEntradasEstaticasDrive(ss) {
   return { entradas: entradas, orden: orden };
 }
 
+// Intenta renombrar un Doc de formato antiguo "Clan - Categoría" a "Categoría - Subcategoría - Clan"; devuelve el nombre nuevo o null. [→ Contexto_Base_Web.md §43B006]
+function _renombrarDocFormatoAntiguo(ss, file, clan, categoria) {
+  var catNorm  = categoria.trim().toLowerCase();
+  var clanNorm = clan.trim().toLowerCase();
+  var subcategoria = null;
+
+  // 1. Intentar buscar en el índice guardado (sin reconstruir: esta función corre DENTRO de la lectura
+  // de Drive que usa la reconstrucción del índice).
+  var guardado = _leerIndiceGuardado() || [];
+  for (var i = 0; i < guardado.length; i++) {
+    if (String(guardado[i].categoria || '').trim().toLowerCase() === catNorm &&
+        String(guardado[i].clan || '').trim().toLowerCase() === clanNorm) {
+      subcategoria = String(guardado[i].subcategoria || '').trim();
+      break;
+    }
+  }
+
+  // 2. Fallback: mapa estático basado en la estructura conocida del sistema
+  //    Clan específico → Subcategoría = 'Particular'
+  //    Clan familia/comunidad → Subcategoría según Categoría
+  if (!subcategoria) {
+    var CLANES_PARTICULARES = [
+      'grupo乂terna™', 'grupoxterna™2', 'grupoxterna™3', 'mini乂ternas™'
+    ];
+    var CLANES_COMUNIDAD = [
+      'ᴳ乂ᵀ ⚜️ familia terna', 'familia terna'
+    ];
+    var MAPA_SUBCATEGORIA_FALLBACK = {
+      'bienvenida':          { particular: 'Particular', comunidad: 'Particular' },
+      'descripción':         { particular: 'Particular', comunidad: 'Chat General',
+                               comunidades: { 'Comunidad': true, 'Detectives': true, 'RoyaleAPI': true } },
+      'defensas de barcos':  { particular: 'Comunidad', comunidad: 'Comunidad' },
+      'día de guerra':       { particular: 'Comunidad', comunidad: 'Comunidad' },
+      'etiqueta de miembro': { particular: 'Particular', comunidad: 'Comunidad' },
+      'celular':             { particular: 'Particular', comunidad: 'Chat General' },
+      'mensaje de guerra':   { particular: 'Particular', comunidad: 'Chat General' },
+      'información del clan':{ particular: 'Terna',      comunidad: 'Vetado' },
+      'información sobre mí':{ particular: 'Terna',      comunidad: 'Terna' },
+    };
+
+    var esParticular = CLANES_PARTICULARES.indexOf(clanNorm) >= 0;
+    var entrada = MAPA_SUBCATEGORIA_FALLBACK[catNorm];
+    if (entrada) {
+      subcategoria = esParticular ? entrada.particular : entrada.comunidad;
+    }
+    // Para Descripción con subcategorías múltiples, intentar inferir por nombre del clan
+    if (catNorm === 'descripción' && !esParticular) {
+      var clanLow = clanNorm;
+      if (clanLow.indexOf('detective') >= 0)      subcategoria = 'Detectives';
+      else if (clanLow.indexOf('royale') >= 0)    subcategoria = 'RoyaleAPI';
+      else if (clanLow.indexOf('comunidad') >= 0) subcategoria = 'Comunidad';
+      else                                         subcategoria = 'Chat General';
+    }
+  }
+
+  if (!subcategoria) {
+    Logger.log('[Plantillas] No se pudo determinar subcategoría para renombrar: "' + clan + ' - ' + categoria + '"');
+    return null;
+  }
+
+  var nuevoNombre = categoria + ' - ' + subcategoria + ' - ' + clan;
+  try {
+    file.setName(nuevoNombre);
+    Logger.log('[Plantillas] Renombrado: "' + clan + ' - ' + categoria + '" → "' + nuevoNombre + '"');
+    return nuevoNombre;
+  } catch(e) {
+    Logger.log('[Plantillas] Error al renombrar "' + file.getName() + '": ' + e.message);
+    return null;
+  }
+}
+
 // Agrega las entradas Dinámico (Información sobre el clan y Mensajes) a entradas/orden sin pisar claves ya presentes. [→ Contexto_Base_Web.md §43B019]
 function _agregarEntradasDinamicas(ss, entradas, orden) {
   function clave(cat, sub, clan) { return cat + '||' + sub + '||' + clan; }
@@ -57354,6 +57546,37 @@ function _ordenarEntradasIndice(ss, lista) {
   });
   return lista;
 }
+
+// Lee la hoja Extra y devuelve { valorLower -> índice } para 'categoria' o 'subcategoria'. [→ Contexto_Base_Web.md §43B007]
+function _getOrdenExtra(ss, tipo) {
+  var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
+  var mapa = {};
+  if (!sh || sh.getLastRow() < 2) return mapa;
+  var colIdx = (tipo === 'subcategoria') ? 12 : 11; // 0-based
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 13).getValues();
+  var orden = 0;
+  for (var i = 0; i < data.length; i++) {
+    var v = String(data[i][colIdx] || '').trim();
+    if (v && mapa[v.toLowerCase()] === undefined) {
+      mapa[v.toLowerCase()] = orden++;
+    }
+  }
+  return mapa;
+}
+
+// Lee la hoja Clan y devuelve { nombreClanLower -> índice } según el orden de filas. [→ Contexto_Base_Web.md §43B008]
+function _getOrdenClanHoja(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
+  var mapa = {};
+  if (!sh || sh.getLastRow() < 2) return mapa;
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues();
+  for (var i = 0; i < data.length; i++) {
+    var v = String(data[i][2] || '').trim();
+    if (v) mapa[v.toLowerCase()] = i;
+  }
+  return mapa;
+}
+
 
 // --- ARCHIVO: 44_BotWhatsApp.gs ---
 // ==============================================================================
@@ -58847,60 +59070,89 @@ function _clanTernaOpciones() {
 }
 
 // --- ARCHIVO: 45_Vigilante_UptimeRobot.gs ---
-// ==============================================================================
 // 45_Vigilante_UptimeRobot.gs
 // Vigilante de UptimeRobot con respaldo automático: activa pingProxyRender solo mientras UptimeRobot siga caído (creado 05-oct-2026). [→ Contexto_Base_Web.md §45B001]
-// ==============================================================================
-
 // Cómo funciona (enganche en runGuerra(), chequeo cada 10 min, histéresis), propiedades de configuración, funciones manuales y AVISOS 1-3 (sin probar contra la API real; docblock de pingProxyRender() desactualizado). [→ Contexto_Base_Web.md §45B002]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Vigilante de UptimeRobot: configurar, vigilar, ver estado y reiniciar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Vigilante de UptimeRobot: lógica (en el orden de la llamada desde runGuerra)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var VIG_UR_API_URL = 'https://api.uptimerobot.com/v2/getMonitors';
+
 var VIG_UR_PROP_ESTADO = 'UPTIMEROBOT_VIG_ESTADO';
+
 var VIG_UR_PROP_API_KEY = 'UPTIMEROBOT_API_KEY';
+
 var VIG_UR_PROP_MONITOR_ID = 'UPTIMEROBOT_MONITOR_ID';
 
 var VIG_UR_CHECK_CADA_MS = 10 * 60 * 1000;        // cada cuanto se consulta la API de UptimeRobot
+
 var VIG_UR_PING_CADA_MS = 9 * 60 * 1000;          // cada cuanto se pingea el proxy mientras el respaldo esta activo (< 15 min de Render)
+
 var VIG_UR_OK_PARA_DESACTIVAR = 2;                // chequeos buenos seguidos para apagar el respaldo
+
 var VIG_UR_FALLOS_API_MAX = 3;                    // fallos seguidos de la API de UptimeRobot para activar el respaldo por precaucion
+
 var VIG_UR_ULTIMO_CHEQUEO_MAX_MS = 15 * 60 * 1000; // si el ultimo chequeo de UptimeRobot es mas viejo que esto (o 3x su intervalo), se considera caido
+
 var VIG_UR_PING_LENTO_MS = 8000;                  // un ping que tarda mas que esto indica que Render estaba dormido
 
-// Valor inicial del estado guardado. [→ Contexto_Base_Web.md §45B003]
-function _vigUrEstadoInicial_() {
-  return {
-    fallbackActivo: false,   // true = el vigilante esta pingeando el proxy
-    desde: 0,                // ms epoch desde que el respaldo esta activo (0 si no lo esta)
-    motivo: '',              // texto corto de por que esta activo / ultimo resultado
-    urStatus: null,          // ultimo status de UptimeRobot visto (0,1,2,8,9) o null
-    ultimoChequeo: 0,        // ms epoch del ultimo intento de chequeo a UptimeRobot
-    ultimoChequeoOk: 0,      // ms epoch del ultimo chequeo que SI consiguio respuesta valida
-    chequeosBuenos: 0,       // chequeos buenos seguidos (para la histeresis)
-    fallosApi: 0,            // fallos seguidos al consultar la API de UptimeRobot
-    ultimoPing: 0,           // ms epoch del ultimo ping de respaldo
-    ultimoPingMs: 0,         // duracion del ultimo ping de respaldo
-    ultimoPingDormido: false,// true si ese ping tardo tanto que Render estaba dormido
-    avisoSinClave: false     // para avisar solo una vez que falta UPTIMEROBOT_API_KEY
-  };
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Vigilante de UptimeRobot: configurar, vigilar, ver estado y reiniciar -----
+
+// ---------------------------------------------------------------------------
+// FUNCIÓN TEMPORAL: pegar la clave en API_KEY, ejecutar UNA vez y BORRAR esta función (o vaciar las comillas) para no dejar la clave escrita en el código. [→ Contexto_Base_Web.md §45B009]
+// ---------------------------------------------------------------------------
+function configurarUptimeRobotTemporal() {
+  var API_KEY = '';      // <- pegar aqui la clave de UptimeRobot (read-only o de monitor especifico)
+  var MONITOR_ID = '';   // <- opcional: id numerico del monitor del proxy. Dejar vacio para buscarlo por la URL.
+
+  var props = PropertiesService.getScriptProperties();
+  if (!API_KEY) { Logger.log('[VigUR] Falta pegar la clave en API_KEY dentro de configurarUptimeRobotTemporal().'); return; }
+  props.setProperty(VIG_UR_PROP_API_KEY, API_KEY.trim());
+  if (MONITOR_ID) props.setProperty(VIG_UR_PROP_MONITOR_ID, String(MONITOR_ID).trim());
+  else props.deleteProperty(VIG_UR_PROP_MONITOR_ID);
+  props.deleteProperty(VIG_UR_PROP_ESTADO); // empezar de cero
+
+  var leida = props.getProperty(VIG_UR_PROP_API_KEY) || '';
+  Logger.log('[VigUR] Guardada. Clave leida de vuelta: ' + (leida ? leida.substring(0, 4) + '...' + leida.substring(leida.length - 3) +
+    ' (' + leida.length + ' caracteres)' : 'VACIA (no se guardo)') +
+    ' | monitor id: ' + (props.getProperty(VIG_UR_PROP_MONITOR_ID) || '(se buscara por URL)') +
+    '. Ahora ejecuta vigilarUptimeRobotAhora() y despues borra esta funcion.');
 }
 
-function _vigUrLeerEstado_() {
-  var base = _vigUrEstadoInicial_();
-  try {
-    var raw = PropertiesService.getScriptProperties().getProperty(VIG_UR_PROP_ESTADO);
-    if (!raw) return base;
-    var guardado = JSON.parse(raw);
-    for (var k in guardado) { if (guardado.hasOwnProperty(k)) base[k] = guardado[k]; }
-  } catch (e) {
-    Logger.log('[VigUR] Estado guardado ilegible, se reinicia: ' + e.message);
-  }
-  return base;
+// Funciones manuales y de lectura
+
+/** Fuerza un chequeo ahora mismo (e, si el respaldo queda activo, un ping) y deja el resultado en el log. */
+function vigilarUptimeRobotAhora() {
+  var est = _vigilarUptimeRobot_(true);
+  Logger.log('[VigUR] Resultado manual: respaldo ' + (est.fallbackActivo ? 'ACTIVO' : 'inactivo') +
+    ' | status UptimeRobot=' + est.urStatus + ' | ' + est.motivo);
 }
 
-function _vigUrGuardarEstado_(est) {
-  PropertiesService.getScriptProperties().setProperty(VIG_UR_PROP_ESTADO, JSON.stringify(est));
+/** Imprime el estado guardado. */
+function estadoVigilanteUptimeRobot() {
+  Logger.log('[VigUR] Estado: ' + JSON.stringify(getEstadoVigilanteUptimeRobot_(), null, 2));
 }
+
+/** Borra el estado guardado (el siguiente disparo de runGuerra vuelve a chequear de cero). */
+function reiniciarVigilanteUptimeRobot() {
+  PropertiesService.getScriptProperties().deleteProperty(VIG_UR_PROP_ESTADO);
+  Logger.log('[VigUR] Estado borrado.');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Vigilante de UptimeRobot: lógica (en el orden de la llamada desde runGuerra) -----
 
 // Punto de enganche para runGuerra(); nunca lanza; no hace nada dentro de la ventana protegida 4:00-4:59 a.m. Lima. [→ Contexto_Base_Web.md §45B004]
 function _vigilarUptimeRobotSeguro_() {
@@ -58947,6 +59199,37 @@ function _vigilarUptimeRobot_(forzar) {
 
   _vigUrGuardarEstado_(est);
   return est;
+}
+
+function _vigUrLeerEstado_() {
+  var base = _vigUrEstadoInicial_();
+  try {
+    var raw = PropertiesService.getScriptProperties().getProperty(VIG_UR_PROP_ESTADO);
+    if (!raw) return base;
+    var guardado = JSON.parse(raw);
+    for (var k in guardado) { if (guardado.hasOwnProperty(k)) base[k] = guardado[k]; }
+  } catch (e) {
+    Logger.log('[VigUR] Estado guardado ilegible, se reinicia: ' + e.message);
+  }
+  return base;
+}
+
+// Valor inicial del estado guardado. [→ Contexto_Base_Web.md §45B003]
+function _vigUrEstadoInicial_() {
+  return {
+    fallbackActivo: false,   // true = el vigilante esta pingeando el proxy
+    desde: 0,                // ms epoch desde que el respaldo esta activo (0 si no lo esta)
+    motivo: '',              // texto corto de por que esta activo / ultimo resultado
+    urStatus: null,          // ultimo status de UptimeRobot visto (0,1,2,8,9) o null
+    ultimoChequeo: 0,        // ms epoch del ultimo intento de chequeo a UptimeRobot
+    ultimoChequeoOk: 0,      // ms epoch del ultimo chequeo que SI consiguio respuesta valida
+    chequeosBuenos: 0,       // chequeos buenos seguidos (para la histeresis)
+    fallosApi: 0,            // fallos seguidos al consultar la API de UptimeRobot
+    ultimoPing: 0,           // ms epoch del ultimo ping de respaldo
+    ultimoPingMs: 0,         // duracion del ultimo ping de respaldo
+    ultimoPingDormido: false,// true si ese ping tardo tanto que Render estaba dormido
+    avisoSinClave: false     // para avisar solo una vez que falta UPTIMEROBOT_API_KEY
+  };
 }
 
 // Consulta la API de UptimeRobot y actualiza el estado (activa/desactiva el respaldo); devuelve el estado. [→ Contexto_Base_Web.md §45B006]
@@ -59093,26 +59376,8 @@ function _vigUrHost_(url) {
   return m ? m[1] : '';
 }
 
-// ---------------------------------------------------------------------------
-// Funciones manuales y de lectura
-// ---------------------------------------------------------------------------
-
-/** Fuerza un chequeo ahora mismo (e, si el respaldo queda activo, un ping) y deja el resultado en el log. */
-function vigilarUptimeRobotAhora() {
-  var est = _vigilarUptimeRobot_(true);
-  Logger.log('[VigUR] Resultado manual: respaldo ' + (est.fallbackActivo ? 'ACTIVO' : 'inactivo') +
-    ' | status UptimeRobot=' + est.urStatus + ' | ' + est.motivo);
-}
-
-/** Imprime el estado guardado. */
-function estadoVigilanteUptimeRobot() {
-  Logger.log('[VigUR] Estado: ' + JSON.stringify(getEstadoVigilanteUptimeRobot_(), null, 2));
-}
-
-/** Borra el estado guardado (el siguiente disparo de runGuerra vuelve a chequear de cero). */
-function reiniciarVigilanteUptimeRobot() {
-  PropertiesService.getScriptProperties().deleteProperty(VIG_UR_PROP_ESTADO);
-  Logger.log('[VigUR] Estado borrado.');
+function _vigUrGuardarEstado_(est) {
+  PropertiesService.getScriptProperties().setProperty(VIG_UR_PROP_ESTADO, JSON.stringify(est));
 }
 
 // Estado del vigilante como objeto simple con fechas ISO (para el panel admin). [→ Contexto_Base_Web.md §45B008]
@@ -59134,34 +59399,25 @@ function getEstadoVigilanteUptimeRobot_() {
   };
 }
 
-// ---------------------------------------------------------------------------
-// FUNCIÓN TEMPORAL: pegar la clave en API_KEY, ejecutar UNA vez y BORRAR esta función (o vaciar las comillas) para no dejar la clave escrita en el código. [→ Contexto_Base_Web.md §45B009]
-// ---------------------------------------------------------------------------
-function configurarUptimeRobotTemporal() {
-  var API_KEY = '';      // <- pegar aqui la clave de UptimeRobot (read-only o de monitor especifico)
-  var MONITOR_ID = '';   // <- opcional: id numerico del monitor del proxy. Dejar vacio para buscarlo por la URL.
-
-  var props = PropertiesService.getScriptProperties();
-  if (!API_KEY) { Logger.log('[VigUR] Falta pegar la clave en API_KEY dentro de configurarUptimeRobotTemporal().'); return; }
-  props.setProperty(VIG_UR_PROP_API_KEY, API_KEY.trim());
-  if (MONITOR_ID) props.setProperty(VIG_UR_PROP_MONITOR_ID, String(MONITOR_ID).trim());
-  else props.deleteProperty(VIG_UR_PROP_MONITOR_ID);
-  props.deleteProperty(VIG_UR_PROP_ESTADO); // empezar de cero
-
-  var leida = props.getProperty(VIG_UR_PROP_API_KEY) || '';
-  Logger.log('[VigUR] Guardada. Clave leida de vuelta: ' + (leida ? leida.substring(0, 4) + '...' + leida.substring(leida.length - 3) +
-    ' (' + leida.length + ' caracteres)' : 'VACIA (no se guardo)') +
-    ' | monitor id: ' + (props.getProperty(VIG_UR_PROP_MONITOR_ID) || '(se buscara por URL)') +
-    '. Ahora ejecuta vigilarUptimeRobotAhora() y despues borra esta funcion.');
-}
 
 // --- ARCHIVO: 46_Test.gs ---
-// ==============================================================================
 // 46_Test.gs
 // Tests de endpoints disponibles, también se documentan cuáles no están disponibles por fallas desde Supercell o faltas de permisos (funciones pagadas)
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Pruebas manuales de la API
+//  Parte 2 — Funciones que no se corren a mano
+//    - Pruebas manuales de la API: ayuda
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var TAG_PRUEBA = '#9LCJ2JQ08'; // <-- REEMPLAZAR por un tag real
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Pruebas manuales de la API -----
 
 // Prueba /players/{tag}/upcomingchests y /battlelog; imprime un resumen legible en el log. [→ Contexto_Base_Web.md §46B001]
 function testCofresYBatallas() {
@@ -59237,11 +59493,9 @@ function testCofresYBatallasTodos() {
   }
 }
 
-// =============================================================================
 // TEST — Endpoints viables de la API de Clash Royale (temporal)
-// =============================================================================
+
 // Endpoints MUERTOS/REMOVIDOS por Supercell (no se prueban a propósito), VIVOS que suelen devolver {items:[]} y los que sí se prueban; archivo temporal. [→ Contexto_Base_Web.md §46B003]
-// =============================================================================
 
 function testTodosLosEndpoints() {
   var clanTag = CFG.TERNA_TAGS[0]; // '#GCRG8L00'
@@ -59490,6 +59744,12 @@ function testTodosLosEndpoints() {
   Logger.log('===== FIN TEST =====');
 }
 
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Pruebas manuales de la API: ayuda -----
+
 // Helper: prueba UN endpoint con _apiGet() y devuelve una línea de resumen; no lanza. [→ Contexto_Base_Web.md §46B005]
 function _probarEp(nombre, path, analizar) {
   try {
@@ -59508,6 +59768,7 @@ function _probarEp(nombre, path, analizar) {
 }
 
 // _guardarJsonBusquedaNombreEnDrive() vive en 09_API_ClashRoyale.gs; se llama tal cual (mismo proyecto). [→ Contexto_Base_Web.md §46B006]
+
 
 // --- ARCHIVO: 47_Migraciones.gs ---
 // ==============================================================================
@@ -62285,13 +62546,105 @@ function ano_guardarCsv_(carpeta, nombre, filas) {
 }
 
 // --- ARCHIVO: 49_Diagnostico_Domingo.gs ---
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Reparar el domingo T5 S4 (primero el informe, luego aplicar)
+//    - Diagnóstico de guerra de un día (solo lectura)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Reparar el domingo T5 S4: motor común
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Reparar el domingo T5 S4 (primero el informe, luego aplicar) -----
+
 // ==============================================================================
 //49_Diagnostico_Domingo.gs
 // Repara los ataques del domingo 04-oct-2026 (T5 S4, periodIndex 27) que quedaron en 0 por sobrescritura sin ratchet en updateGuerraSheet(). [→ Contexto_Base_Web.md §49B001]
 // ==============================================================================
 // (05-oct-2026) Fuente JSON de currentriverrace, reglas de seguridad, límite, ESTADO de la corrida (5 SIN RESOLVER) y fuentes pendientes. Uso: Informe y luego Aplicar. [→ Contexto_Base_Web.md §49B002]
 function repararDomingoT5S4Informe() { _repararDomingoT5S4_(false); }
+
 function repararDomingoT5S4Aplicar() { _repararDomingoT5S4_(true); }
+
+// ----- Diagnóstico de guerra de un día (solo lectura) -----
+
+// =============================================================================
+// Diagnostico_Guerra
+// =============================================================================
+// Diagnóstico de solo lectura (06-oct-2026): confirma por qué el domingo 4-oct no tiene filas en Guerra (hipótesis: purga de temporada antes del respaldo CSV). [→ Contexto_Base_Web.md §49B003]
+// =============================================================================
+
+function _diagnosticoGuerraDia(temporada, semana, offsetDia) {
+  var temp = String(temporada === undefined ? (136 - _getTemporadaOffsetRoyaleApi()) : temporada); // 26-oct-2026: 136 = RoyaleAPI del 04-oct-2026; sigue la reenumeración (antes 5 fijo)
+  var sem = Number(semana === undefined ? 4 : semana);
+  var off = Number(offsetDia === undefined ? 3 : offsetDia); // 0=jue, 1=vie, 2=sáb, 3=dom
+  var pIdxBuscado = (sem - 1) * 7 + 3 + off;
+
+  function resumir(filas, etiqueta) {
+    var porDia = {};   // PeriodIndex -> { filas, clanes:{}, maxAtaques }
+    var ultimaFecha = null;
+    for (var i = 0; i < filas.length; i++) {
+      var f = filas[i];
+      if (String(f[GC.TEMPORADA - 1] || '') !== temp) continue;
+      if (Number(f[GC.SEMANA - 1]) !== sem) continue;
+      var p = Number(f[GC.PERIOD_IDX - 1]);
+      var d = porDia[p] || (porDia[p] = { filas: 0, clanes: {}, maxAtaques: 0 });
+      d.filas++;
+      d.clanes[String(f[GC.CLAN - 1] || '').trim()] = true;
+      d.maxAtaques = Math.max(d.maxAtaques, Number(f[GC.ATAQUES_HOY - 1]) || 0);
+      var fe = f[GC.FECHA - 1];
+      if (fe) ultimaFecha = fe;
+    }
+    Logger.log('--- ' + etiqueta + ': temporada ' + temp + ', semana ' + sem + ' ---');
+    var claves = Object.keys(porDia).map(Number).sort(function (a, b) { return a - b; });
+    if (!claves.length) Logger.log('   (sin ninguna fila de esa temporada y semana)');
+    claves.forEach(function (p) {
+      var d = porDia[p];
+      Logger.log('   PeriodIndex ' + p + (p === pIdxBuscado ? '  <== día buscado' : '') + ': ' + d.filas + ' fila(s), ' +
+        Object.keys(d.clanes).length + ' clan(es), máx. AtaquesHoy visto = ' + d.maxAtaques);
+    });
+    Logger.log('   ¿Hay filas del día buscado (PeriodIndex ' + pIdxBuscado + ')? ' + (porDia[pIdxBuscado] ? 'SÍ' : 'NO'));
+    return !!porDia[pIdxBuscado];
+  }
+
+  var enHoja = false, enCsv = false;
+
+  try {
+    var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+    if (sh && sh.getLastRow() >= 2) {
+      var dataHoja = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+      enHoja = resumir(dataHoja, 'Hoja Guerra (' + dataHoja.length + ' filas en total)');
+    } else {
+      Logger.log('--- Hoja Guerra: vacía o inexistente ---');
+    }
+  } catch (e1) { Logger.log('No pude leer la hoja Guerra: ' + e1.message); }
+
+  try {
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (csvText) {
+      var parsed = _parseCSV(csvText);
+      var dataCsv = (parsed && parsed.length > 1) ? parsed.slice(1) : [];
+      enCsv = resumir(dataCsv, 'Backup_Guerra.csv (' + dataCsv.length + ' filas en total)');
+    } else {
+      Logger.log('--- Backup_Guerra.csv: no encontrado o vacío ---');
+    }
+  } catch (e2) { Logger.log('No pude leer Backup_Guerra.csv: ' + e2.message); }
+
+  var veredicto;
+  if (enHoja || enCsv) veredicto = 'El día SÍ tiene filas (' + (enHoja ? 'hoja' : '') + (enHoja && enCsv ? ' y ' : '') + (enCsv ? 'CSV' : '') + '): el problema no es que falten, revisar cómo se leen.';
+  else veredicto = 'El día NO tiene filas ni en la hoja ni en el CSV: se perdieron antes de respaldarse (compatible con la hipótesis de la purga del cambio de temporada). Las filas de Guerra_Logs y el JSON de Drive pueden servir para reconstruirlas.';
+  Logger.log('VEREDICTO: ' + veredicto);
+  return veredicto;
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Reparar el domingo T5 S4: motor común -----
 
 function _repararDomingoT5S4_(aplicar) {
   // 26-oct-2026: la temporada objetivo ya no es el 5 fijo. El domingo 04-oct-2026 es la temporada 136 de RoyaleAPI, que no cambia al reenumerar;
@@ -62384,74 +62737,7 @@ function _repararDomingoT5S4_(aplicar) {
     lock.releaseLock();
   }
 }
-// =============================================================================
-// Diagnostico_Guerra
-// =============================================================================
-// Diagnóstico de solo lectura (06-oct-2026): confirma por qué el domingo 4-oct no tiene filas en Guerra (hipótesis: purga de temporada antes del respaldo CSV). [→ Contexto_Base_Web.md §49B003]
-// =============================================================================
 
-function _diagnosticoGuerraDia(temporada, semana, offsetDia) {
-  var temp = String(temporada === undefined ? (136 - _getTemporadaOffsetRoyaleApi()) : temporada); // 26-oct-2026: 136 = RoyaleAPI del 04-oct-2026; sigue la reenumeración (antes 5 fijo)
-  var sem = Number(semana === undefined ? 4 : semana);
-  var off = Number(offsetDia === undefined ? 3 : offsetDia); // 0=jue, 1=vie, 2=sáb, 3=dom
-  var pIdxBuscado = (sem - 1) * 7 + 3 + off;
-
-  function resumir(filas, etiqueta) {
-    var porDia = {};   // PeriodIndex -> { filas, clanes:{}, maxAtaques }
-    var ultimaFecha = null;
-    for (var i = 0; i < filas.length; i++) {
-      var f = filas[i];
-      if (String(f[GC.TEMPORADA - 1] || '') !== temp) continue;
-      if (Number(f[GC.SEMANA - 1]) !== sem) continue;
-      var p = Number(f[GC.PERIOD_IDX - 1]);
-      var d = porDia[p] || (porDia[p] = { filas: 0, clanes: {}, maxAtaques: 0 });
-      d.filas++;
-      d.clanes[String(f[GC.CLAN - 1] || '').trim()] = true;
-      d.maxAtaques = Math.max(d.maxAtaques, Number(f[GC.ATAQUES_HOY - 1]) || 0);
-      var fe = f[GC.FECHA - 1];
-      if (fe) ultimaFecha = fe;
-    }
-    Logger.log('--- ' + etiqueta + ': temporada ' + temp + ', semana ' + sem + ' ---');
-    var claves = Object.keys(porDia).map(Number).sort(function (a, b) { return a - b; });
-    if (!claves.length) Logger.log('   (sin ninguna fila de esa temporada y semana)');
-    claves.forEach(function (p) {
-      var d = porDia[p];
-      Logger.log('   PeriodIndex ' + p + (p === pIdxBuscado ? '  <== día buscado' : '') + ': ' + d.filas + ' fila(s), ' +
-        Object.keys(d.clanes).length + ' clan(es), máx. AtaquesHoy visto = ' + d.maxAtaques);
-    });
-    Logger.log('   ¿Hay filas del día buscado (PeriodIndex ' + pIdxBuscado + ')? ' + (porDia[pIdxBuscado] ? 'SÍ' : 'NO'));
-    return !!porDia[pIdxBuscado];
-  }
-
-  var enHoja = false, enCsv = false;
-
-  try {
-    var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
-    if (sh && sh.getLastRow() >= 2) {
-      var dataHoja = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
-      enHoja = resumir(dataHoja, 'Hoja Guerra (' + dataHoja.length + ' filas en total)');
-    } else {
-      Logger.log('--- Hoja Guerra: vacía o inexistente ---');
-    }
-  } catch (e1) { Logger.log('No pude leer la hoja Guerra: ' + e1.message); }
-
-  try {
-    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
-    if (csvText) {
-      var parsed = _parseCSV(csvText);
-      var dataCsv = (parsed && parsed.length > 1) ? parsed.slice(1) : [];
-      enCsv = resumir(dataCsv, 'Backup_Guerra.csv (' + dataCsv.length + ' filas en total)');
-    } else {
-      Logger.log('--- Backup_Guerra.csv: no encontrado o vacío ---');
-    }
-  } catch (e2) { Logger.log('No pude leer Backup_Guerra.csv: ' + e2.message); }
-
-  var veredicto;
-  if (enHoja || enCsv) veredicto = 'El día SÍ tiene filas (' + (enHoja ? 'hoja' : '') + (enHoja && enCsv ? ' y ' : '') + (enCsv ? 'CSV' : '') + '): el problema no es que falten, revisar cómo se leen.';
-  else veredicto = 'El día NO tiene filas ni en la hoja ni en el CSV: se perdieron antes de respaldarse (compatible con la hipótesis de la purga del cambio de temporada). Las filas de Guerra_Logs y el JSON de Drive pueden servir para reconstruirlas.';
-  Logger.log('VEREDICTO: ' + veredicto);
-  return veredicto;
-}
 
 // --- ARCHIVO: 50_Publicar_Guerra.gs ---
 /**
@@ -62486,10 +62772,46 @@ function _diagnosticoGuerraDia(temporada, semana, offsetDia) {
  * GUERRA_ESTATICO_REPUBLICAR_MIN minutos (para que `_publicadoEn` no envejezca: guerra.html descarta
  * el archivo si tiene más de 3 h).
  */
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Guerra estático: publicar ahora
+//  Parte 2 — Funciones que no se corren a mano
+//    - Guerra estático: armar y publicar
+//    - Publicar archivos en la rama de datos (ayudas comunes con roster, home y torneos)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var GUERRA_ESTATICO_ARCHIVO = 'guerra.json';
+
 var GUERRA_TOP_ESTATICO_ARCHIVO = 'guerra_top.json'; // NUEVO 08-oct-2026: solo lo que usa el top semanal de index.html, recortado (ver _guerraTopRecortado_)
+
 var GUERRA_CTX_ESTATICO_ARCHIVO = 'guerra_ctx.json'; // NUEVO 08-oct-2026: solo {ctx, _publicadoEn} (~1 KB) para perfil.html, que de guerra solo necesita ctx
+
 var GUERRA_ESTATICO_REPUBLICAR_MIN = 50;
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Guerra estático: publicar ahora -----
+
+/**
+ * publicarGuerraEstatico()
+ * Atajo manual (ejecutar desde el editor): publica ya el archivo, sin esperar al bot. Úsalo la primera
+ * vez para comprobar el token y el repo; el resultado queda en verDiagnosticoGuerraVivo() y en el log.
+ */
+function publicarGuerraEstatico() {
+  var datos = _webGuerraEnVivoCompleta_();
+  PropertiesService.getScriptProperties().deleteProperty('GUERRA_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
+  var ok = _publicarGuerraEstatico_(datos);
+  Logger.log('[GuerraEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Guerra estático: armar y publicar -----
 
 function _publicarGuerraEstatico_(datos) {
   var t0 = Date.now();
@@ -62543,11 +62865,6 @@ function _publicarGuerraEstatico_(datos) {
   }
 }
 
-function _guerraEstaticoFallo_(paso, r) {
-  _diagGuerraVivo_('[GuerraEstatico] falló el paso ' + paso + ': HTTP ' + r.code + ' ' + String(r.text || '').substr(0, 300));
-  return false;
-}
-
 /**
  * _guerraTopRecortado_(publica)
  * Arma el contenido de guerra_top.json para el top semanal de index.html (cargarTopSemana()):
@@ -62568,6 +62885,13 @@ function _guerraTopRecortado_(publica) {
   }
   return { valoresDiariosSelectores: sel, valoresDiariosPorSemana: reducido };
 }
+
+function _guerraEstaticoFallo_(paso, r) {
+  _diagGuerraVivo_('[GuerraEstatico] falló el paso ' + paso + ': HTTP ' + r.code + ' ' + String(r.text || '').substr(0, 300));
+  return false;
+}
+
+// ----- Publicar archivos en la rama de datos (ayudas comunes con roster, home y torneos) -----
 
 /**
  * _ghPublicarArchivo_(token, repo, rama, archivo, b64, mensaje)
@@ -62650,19 +62974,15 @@ function _ghFetch_(token, metodo, ruta, cuerpo) {
   return { code: resp.getResponseCode(), body: obj, text: texto };
 }
 
-/**
- * publicarGuerraEstatico()
- * Atajo manual (ejecutar desde el editor): publica ya el archivo, sin esperar al bot. Úsalo la primera
- * vez para comprobar el token y el repo; el resultado queda en verDiagnosticoGuerraVivo() y en el log.
- */
-function publicarGuerraEstatico() {
-  var datos = _webGuerraEnVivoCompleta_();
-  PropertiesService.getScriptProperties().deleteProperty('GUERRA_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
-  var ok = _publicarGuerraEstatico_(datos);
-  Logger.log('[GuerraEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
-}
 
 // --- ARCHIVO: 51_Publicar_Roster.gs ---
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Roster estático: publicar ahora
+//  Parte 2 — Funciones que no se corren a mano
+//    - Roster estático: armar y publicar
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 /**
  * 51_Publicar_Roster.gs  (NUEVO 08-oct-2026)
  *
@@ -62685,7 +63005,32 @@ function publicarGuerraEstatico() {
  * rama y usa un lock para no pisarse con la publicación de guerra.
  */
 var ROSTER_ESTATICO_ARCHIVO = 'roster.json';
+
 var ROSTER_ESTATICO_REPUBLICAR_MIN = 50;
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Roster estático: publicar ahora -----
+
+/**
+ * publicarRosterEstatico()
+ * Atajo manual (ejecutar desde el editor): publica ya roster.json. Úsalo la primera vez; el resultado
+ * queda en verDiagnosticoGuerraVivo() y en el log. Después ejecuta publicarGuerraEstatico() y comprueba
+ * que en la rama `data` aparezcan los DOS archivos.
+ */
+function publicarRosterEstatico() {
+  PropertiesService.getScriptProperties().deleteProperty('ROSTER_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
+  var ok = _publicarRosterEstatico_();
+  Logger.log('[RosterEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Roster estático: armar y publicar -----
 
 function _publicarRosterEstatico_() {
   var t0 = Date.now();
@@ -62735,17 +63080,6 @@ function _publicarRosterEstatico_() {
   }
 }
 
-/**
- * publicarRosterEstatico()
- * Atajo manual (ejecutar desde el editor): publica ya roster.json. Úsalo la primera vez; el resultado
- * queda en verDiagnosticoGuerraVivo() y en el log. Después ejecuta publicarGuerraEstatico() y comprueba
- * que en la rama `data` aparezcan los DOS archivos.
- */
-function publicarRosterEstatico() {
-  PropertiesService.getScriptProperties().deleteProperty('ROSTER_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
-  var ok = _publicarRosterEstatico_();
-  Logger.log('[RosterEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
-}
 
 // --- ARCHIVO: 52_Publicar_Home.gs ---
 /**
@@ -62758,7 +63092,6 @@ function publicarRosterEstatico() {
  *   aniversarios       <- _webAniversarios()        (webAniversarios)
  *   rankings           <- _webRankings()            (webRankings)
  *   estadisticasCartas <- _webEstadisticasCartas()  (webEstadisticasCartas)
-
  *   ascensos           <- _webAscensosRecientes()   (webAscensosRecientes, para comunidad.html; NUEVO 08-oct-2026)
  * más `_publicadoEn` (ISO). Todas son lecturas públicas con WEB_MEMBER_TOKEN, sin sesión de admin ni
  * campos de admin, así que el archivo contiene lo mismo que ya ve cualquier visitante.
@@ -62774,8 +63107,40 @@ function publicarRosterEstatico() {
  * Si nada cambió se omite, salvo que pasen HOME_ESTATICO_REPUBLICAR_MIN minutos (index.html descarta el
  * archivo si tiene más de 3 h).
  */
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Home estático: publicar ahora
+//  Parte 2 — Funciones que no se corren a mano
+//    - Home estático: armar y publicar
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var HOME_ESTATICO_ARCHIVO = 'home.json';
+
 var HOME_ESTATICO_REPUBLICAR_MIN = 50;
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Home estático: publicar ahora -----
+
+/**
+ * publicarHomeEstatico()
+ * Atajo manual (ejecutar desde el editor): publica ya home.json. El resultado queda en
+ * verDiagnosticoGuerraVivo() y en el log.
+ */
+function publicarHomeEstatico() {
+  PropertiesService.getScriptProperties().deleteProperty('HOME_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
+  var ok = _publicarHomeEstatico_();
+  Logger.log('[HomeEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Home estático: armar y publicar -----
 
 function _publicarHomeEstatico_() {
   var t0 = Date.now();
@@ -62833,16 +63198,6 @@ function _publicarHomeEstatico_() {
   }
 }
 
-/**
- * publicarHomeEstatico()
- * Atajo manual (ejecutar desde el editor): publica ya home.json. El resultado queda en
- * verDiagnosticoGuerraVivo() y en el log.
- */
-function publicarHomeEstatico() {
-  PropertiesService.getScriptProperties().deleteProperty('HOME_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
-  var ok = _publicarHomeEstatico_();
-  Logger.log('[HomeEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
-}
 
 // --- ARCHIVO: 53_Publicar_Torneos.gs ---
 /**
@@ -62885,17 +63240,53 @@ function publicarHomeEstatico() {
  * solo «torneos» y conserva el `historial` ya publicado (_leerHistorialTorneosPublicado_); con `completo` (publicarTorneosEstatico() manual)
  * recalcula las dos. El historial, por tanto, solo se renueva con la manual, y esa podría no terminar. [→ Contexto_Base_Web.md §PF091]
  */
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Torneos estático: publicar ahora
+//  Parte 2 — Funciones que no se corren a mano
+//    - Torneos estático: armar y publicar
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 var TORNEOS_ESTATICO_ARCHIVO = 'torneos.json';
+
 var TORNEOS_ESTATICO_REPUBLICAR_MIN = 50;
+
 var TORNEOS_ESTATICO_CALCULAR_CADA_MIN = 90;
+
 // 17-oct-2026 (PF091, decisión B): desde el bot no se calcula si a la ejecución le quedan menos de esto antes del límite de la plataforma
 // (CFG.PLATAFORMA_LIMITE_EJECUCION_MS). Estimación (calcular las dos secciones tardó ~4 min en la primera corrida manual); no medida con exactitud.
 var TORNEOS_ESTATICO_MIN_RESTANTE_MS = 250 * 1000;
+
 // 17-oct-2026: modo SIN historial (el de Torneo en vivo y el del bot). Con «torneos» (≈ 83-87 s en el registro) más la publicación (no medida)
 // bastan ~150 s: estimación, no medida con exactitud. [→ Contexto_Base_Web.md §PF091]
 var TORNEOS_ESTATICO_MIN_RESTANTE_SOLO_TORNEOS_MS = 150 * 1000;
+
 // Marca de inicio de la ejecución: el código global se evalúa al arrancar cada ejecución de Apps Script.
 var TORNEOS_ESTATICO_EJEC_INICIO_MS_ = Date.now();
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Torneos estático: publicar ahora -----
+
+/**
+ * publicarTorneosEstatico()
+ * Atajo manual (ejecutar desde el editor): publica ya torneos.json. El resultado queda en
+ * verDiagnosticoGuerraVivo() y en el log. Útil justo después de registrar o corregir un torneo.
+ */
+function publicarTorneosEstatico() {
+  PropertiesService.getScriptProperties().deleteProperty('TORNEOS_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
+  var ok = _publicarTorneosEstatico_(true, true); // 1.º true: calcula aunque se haya calculado hace poco; 2.º true: recalcula también el historial
+  Logger.log('[TorneosEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Torneos estático: armar y publicar -----
 
 function _publicarTorneosEstatico_(forzar, completo) {
   var t0 = Date.now();
@@ -63005,16 +63396,6 @@ function _leerHistorialTorneosPublicado_(token, repo, rama) {
   } catch (e) { return null; }
 }
 
-/**
- * publicarTorneosEstatico()
- * Atajo manual (ejecutar desde el editor): publica ya torneos.json. El resultado queda en
- * verDiagnosticoGuerraVivo() y en el log. Útil justo después de registrar o corregir un torneo.
- */
-function publicarTorneosEstatico() {
-  PropertiesService.getScriptProperties().deleteProperty('TORNEOS_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
-  var ok = _publicarTorneosEstatico_(true, true); // 1.º true: calcula aunque se haya calculado hace poco; 2.º true: recalcula también el historial
-  Logger.log('[TorneosEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
-}
 
 // --- ARCHIVO: 54_Correccion_AtaquesSemana_Anomalias.gs ---
 /**
@@ -63037,6 +63418,14 @@ function publicarTorneosEstatico() {
  *  1) corregirAnomaliasAtaquesSemanaInforme()  -> no escribe nada; deja un CSV en Informes.
  *  2) corregirAnomaliasAtaquesSemanaAplicar()  -> respalda Backup_Guerra.csv, aplica y verifica.
  */
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Anomalías de ataques por semana: informe y aplicar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Anomalías de ataques por semana: motor común y evaluación
+//    - Anomalías de ataques por semana: lectores pequeños
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Solo se corrigen filas que tengan los valores "esperado". Los nombres de clan usan escapes Unicode:
 //   乂 = el caracter chino del clan principal   ™ = el simbolo de marca registrada
@@ -63072,99 +63461,21 @@ var ANOM_ATQSEM_PENDIENTES = [];
 
 var ANOM_ATQSEM_TOPE_SEMANA = 16;
 
-function _anomAtqSemNum_(v) {
-  var n = Number(String(v === null || v === undefined ? '' : v).replace(',', '.'));
-  return isNaN(n) ? 0 : n;
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-// Misma normalizacion que usa informeAnomaliasAtaquesSemana() (48_Herramientas_Debug.gs).
-function _anomAtqSemTag_(v) { return String(v === null || v === undefined ? '' : v).trim().toUpperCase(); }
-function _anomAtqSemClan_(v) { return String(v === null || v === undefined ? '' : v).split(/\r?\n/)[0].trim(); }
-
-function _anomAtqSemCoincide_(f, c) {
-  return _anomAtqSemTag_(f[GC.TAG - 1]) === c.tag &&
-    _anomAtqSemNum_(f[GC.TEMPORADA - 1]) === c.temporada &&
-    _anomAtqSemNum_(f[GC.SEMANA - 1]) === c.semana &&
-    _anomAtqSemNum_(f[GC.PERIOD_IDX - 1]) === c.periodIndex &&
-    _anomAtqSemClan_(f[GC.CLAN - 1]) === c.clan;
-}
-
-function _anomAtqSemValores_(f) {
-  return {
-    hoy: _anomAtqSemNum_(f[GC.ATAQUES_HOY - 1]),
-    sem: _anomAtqSemNum_(f[GC.ATAQUES_SEM - 1]),
-    fame: _anomAtqSemNum_(f[GC.FAME - 1]),
-    barcos: _anomAtqSemNum_(f[GC.BARCOS - 1])
-  };
-}
-
-function _anomAtqSemIguales_(a, b) {
-  return a.hoy === b.hoy && a.sem === b.sem && a.fame === b.fame && a.barcos === b.barcos;
-}
-
-/**
- * Suma, por clan, el AtaquesSemana de la ultima fila (mayor PeriodIndex) de la persona en la semana.
- * Devuelve { total: N, porClan: { clan: N } }.
- */
-function _anomAtqSemSumaClanes_(filas, tag, temporada, semana) {
-  var ultimo = {};
-  for (var i = 0; i < filas.length; i++) {
-    var f = filas[i];
-    if (_anomAtqSemTag_(f[GC.TAG - 1]) !== tag) continue;
-    if (_anomAtqSemNum_(f[GC.TEMPORADA - 1]) !== temporada) continue;
-    if (_anomAtqSemNum_(f[GC.SEMANA - 1]) !== semana) continue;
-    var clan = _anomAtqSemClan_(f[GC.CLAN - 1]);
-    var p = _anomAtqSemNum_(f[GC.PERIOD_IDX - 1]);
-    if (!ultimo[clan] || p >= ultimo[clan].p) ultimo[clan] = { p: p, sem: _anomAtqSemNum_(f[GC.ATAQUES_SEM - 1]) };
-  }
-  var res = { total: 0, porClan: {} };
-  Object.keys(ultimo).forEach(function (c) { res.porClan[c] = ultimo[c].sem; res.total += ultimo[c].sem; });
-  return res;
-}
-
-/**
- * Evalua las correcciones sobre un conjunto de filas (CSV u hoja). No modifica nada.
- * Devuelve { cambios: [{idx, corr}], yaAplicados: [corr], sinResolver: [{corr, motivo}], pendientes: [{idx, pend}] }.
- */
-function _anomAtqSemEvaluar_(filas) {
-  var res = { cambios: [], yaAplicados: [], sinResolver: [], pendientes: [] };
-  ANOM_ATQSEM_CORRECCIONES.forEach(function (c) {
-    var idxs = [];
-    for (var i = 0; i < filas.length; i++) { if (_anomAtqSemCoincide_(filas[i], c)) idxs.push(i); }
-    if (idxs.length === 0) { res.sinResolver.push({ corr: c, motivo: 'No se encontro la fila (T' + c.temporada + ' S' + c.semana + ' ' + c.tag + ' PI' + c.periodIndex + ')' }); return; }
-    if (idxs.length > 1) { res.sinResolver.push({ corr: c, motivo: 'Hay ' + idxs.length + ' filas que coinciden; no se toca ninguna' }); return; }
-    var actual = _anomAtqSemValores_(filas[idxs[0]]);
-    if (_anomAtqSemIguales_(actual, c.nuevo)) { res.yaAplicados.push(c); return; }
-    if (!_anomAtqSemIguales_(actual, c.esperado)) {
-      res.sinResolver.push({ corr: c, motivo: 'La fila ya no tiene los valores esperados (hoy ' + actual.hoy + ', sem ' + actual.sem + ', fame ' + actual.fame + ', barcos ' + actual.barcos + '); no se toca' });
-      return;
-    }
-    res.cambios.push({ idx: idxs[0], corr: c });
-  });
-  ANOM_ATQSEM_PENDIENTES.forEach(function (p) {
-    for (var i = 0; i < filas.length; i++) { if (_anomAtqSemCoincide_(filas[i], p)) { res.pendientes.push({ idx: i, pend: p }); break; } }
-  });
-  return res;
-}
-
-function _anomAtqSemSeriesAfectadas_() {
-  var vistas = {}, lista = [];
-  ANOM_ATQSEM_CORRECCIONES.concat(ANOM_ATQSEM_PENDIENTES).forEach(function (c) {
-    var k = c.tag + '|' + c.temporada + '|' + c.semana;
-    if (!vistas[k]) { vistas[k] = true; lista.push({ tag: c.tag, temporada: c.temporada, semana: c.semana }); }
-  });
-  return lista;
-}
-
-function _anomAtqSemTextoSumas_(filas) {
-  return _anomAtqSemSeriesAfectadas_().map(function (s) {
-    var r = _anomAtqSemSumaClanes_(filas, s.tag, s.temporada, s.semana);
-    return 'T' + s.temporada + 'S' + s.semana + ' ' + s.tag + ': ' + r.total + (r.total > ANOM_ATQSEM_TOPE_SEMANA ? ' (> ' + ANOM_ATQSEM_TOPE_SEMANA + ')' : '');
-  }).join(' | ');
-}
+// ----- Anomalías de ataques por semana: informe y aplicar -----
 
 function corregirAnomaliasAtaquesSemanaInforme() { _corregirAnomaliasAtaquesSemana_(false); }
+
 function corregirAnomaliasAtaquesSemanaAplicar() { _corregirAnomaliasAtaquesSemana_(true); }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Anomalías de ataques por semana: motor común y evaluación -----
 
 function _corregirAnomaliasAtaquesSemana_(aplicar) {
   var lock = LockService.getScriptLock();
@@ -63292,6 +63603,100 @@ function _corregirAnomaliasAtaquesSemana_(aplicar) {
     lock.releaseLock();
   }
 }
+
+/**
+ * Evalua las correcciones sobre un conjunto de filas (CSV u hoja). No modifica nada.
+ * Devuelve { cambios: [{idx, corr}], yaAplicados: [corr], sinResolver: [{corr, motivo}], pendientes: [{idx, pend}] }.
+ */
+function _anomAtqSemEvaluar_(filas) {
+  var res = { cambios: [], yaAplicados: [], sinResolver: [], pendientes: [] };
+  ANOM_ATQSEM_CORRECCIONES.forEach(function (c) {
+    var idxs = [];
+    for (var i = 0; i < filas.length; i++) { if (_anomAtqSemCoincide_(filas[i], c)) idxs.push(i); }
+    if (idxs.length === 0) { res.sinResolver.push({ corr: c, motivo: 'No se encontro la fila (T' + c.temporada + ' S' + c.semana + ' ' + c.tag + ' PI' + c.periodIndex + ')' }); return; }
+    if (idxs.length > 1) { res.sinResolver.push({ corr: c, motivo: 'Hay ' + idxs.length + ' filas que coinciden; no se toca ninguna' }); return; }
+    var actual = _anomAtqSemValores_(filas[idxs[0]]);
+    if (_anomAtqSemIguales_(actual, c.nuevo)) { res.yaAplicados.push(c); return; }
+    if (!_anomAtqSemIguales_(actual, c.esperado)) {
+      res.sinResolver.push({ corr: c, motivo: 'La fila ya no tiene los valores esperados (hoy ' + actual.hoy + ', sem ' + actual.sem + ', fame ' + actual.fame + ', barcos ' + actual.barcos + '); no se toca' });
+      return;
+    }
+    res.cambios.push({ idx: idxs[0], corr: c });
+  });
+  ANOM_ATQSEM_PENDIENTES.forEach(function (p) {
+    for (var i = 0; i < filas.length; i++) { if (_anomAtqSemCoincide_(filas[i], p)) { res.pendientes.push({ idx: i, pend: p }); break; } }
+  });
+  return res;
+}
+
+function _anomAtqSemCoincide_(f, c) {
+  return _anomAtqSemTag_(f[GC.TAG - 1]) === c.tag &&
+    _anomAtqSemNum_(f[GC.TEMPORADA - 1]) === c.temporada &&
+    _anomAtqSemNum_(f[GC.SEMANA - 1]) === c.semana &&
+    _anomAtqSemNum_(f[GC.PERIOD_IDX - 1]) === c.periodIndex &&
+    _anomAtqSemClan_(f[GC.CLAN - 1]) === c.clan;
+}
+
+function _anomAtqSemValores_(f) {
+  return {
+    hoy: _anomAtqSemNum_(f[GC.ATAQUES_HOY - 1]),
+    sem: _anomAtqSemNum_(f[GC.ATAQUES_SEM - 1]),
+    fame: _anomAtqSemNum_(f[GC.FAME - 1]),
+    barcos: _anomAtqSemNum_(f[GC.BARCOS - 1])
+  };
+}
+
+function _anomAtqSemIguales_(a, b) {
+  return a.hoy === b.hoy && a.sem === b.sem && a.fame === b.fame && a.barcos === b.barcos;
+}
+
+function _anomAtqSemTextoSumas_(filas) {
+  return _anomAtqSemSeriesAfectadas_().map(function (s) {
+    var r = _anomAtqSemSumaClanes_(filas, s.tag, s.temporada, s.semana);
+    return 'T' + s.temporada + 'S' + s.semana + ' ' + s.tag + ': ' + r.total + (r.total > ANOM_ATQSEM_TOPE_SEMANA ? ' (> ' + ANOM_ATQSEM_TOPE_SEMANA + ')' : '');
+  }).join(' | ');
+}
+
+/**
+ * Suma, por clan, el AtaquesSemana de la ultima fila (mayor PeriodIndex) de la persona en la semana.
+ * Devuelve { total: N, porClan: { clan: N } }.
+ */
+function _anomAtqSemSumaClanes_(filas, tag, temporada, semana) {
+  var ultimo = {};
+  for (var i = 0; i < filas.length; i++) {
+    var f = filas[i];
+    if (_anomAtqSemTag_(f[GC.TAG - 1]) !== tag) continue;
+    if (_anomAtqSemNum_(f[GC.TEMPORADA - 1]) !== temporada) continue;
+    if (_anomAtqSemNum_(f[GC.SEMANA - 1]) !== semana) continue;
+    var clan = _anomAtqSemClan_(f[GC.CLAN - 1]);
+    var p = _anomAtqSemNum_(f[GC.PERIOD_IDX - 1]);
+    if (!ultimo[clan] || p >= ultimo[clan].p) ultimo[clan] = { p: p, sem: _anomAtqSemNum_(f[GC.ATAQUES_SEM - 1]) };
+  }
+  var res = { total: 0, porClan: {} };
+  Object.keys(ultimo).forEach(function (c) { res.porClan[c] = ultimo[c].sem; res.total += ultimo[c].sem; });
+  return res;
+}
+
+function _anomAtqSemSeriesAfectadas_() {
+  var vistas = {}, lista = [];
+  ANOM_ATQSEM_CORRECCIONES.concat(ANOM_ATQSEM_PENDIENTES).forEach(function (c) {
+    var k = c.tag + '|' + c.temporada + '|' + c.semana;
+    if (!vistas[k]) { vistas[k] = true; lista.push({ tag: c.tag, temporada: c.temporada, semana: c.semana }); }
+  });
+  return lista;
+}
+
+// ----- Anomalías de ataques por semana: lectores pequeños -----
+
+function _anomAtqSemNum_(v) {
+  var n = Number(String(v === null || v === undefined ? '' : v).replace(',', '.'));
+  return isNaN(n) ? 0 : n;
+}
+
+// Misma normalizacion que usa informeAnomaliasAtaquesSemana() (48_Herramientas_Debug.gs).
+function _anomAtqSemTag_(v) { return String(v === null || v === undefined ? '' : v).trim().toUpperCase(); }
+
+function _anomAtqSemClan_(v) { return String(v === null || v === undefined ? '' : v).split(/\r?\n/)[0].trim(); }
 
 
 // --- ARCHIVO: 55_Reparar_DiasConExceso.gs ---
@@ -64175,7 +64580,6 @@ function _fameCrr52Verificar_(filasAntes, filasDespues, plan) {
 
 
 // --- ARCHIVO: 56_CurrentRiverRace_Dias.gs ---
-// ==============================================================================
 // 56_CurrentRiverRace_Dias.gs
 // Ataques y fame por día de cada jugador, leídos de las capturas de CurrentRiverRace guardadas en Drive
 // (21-oct-2026; Contexto_Base_Web.md §PF139, regla 1: «lo más confiable son los CurrentRiverRace»).
@@ -64197,17 +64601,91 @@ function _fameCrr52Verificar_(filasAntes, filasDespues, plan) {
 //     decksUsedToday = 0. Si no hay ninguna de las dos, el día queda en null (no se estima aquí).
 //   - Fame del domingo: el total semanal que pasa quien llama.
 // Con la tabla de fame (_fameTablaDia_) quien llama completa los días en null.
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - CurrentRiverRace por días: prueba de solo lectura
+//  Parte 2 — Funciones que no se corren a mano
+//    - CurrentRiverRace por días: capturas de Drive y días del jugador
+//    - CurrentRiverRace por días: usos de otras cadenas (cierre y totales)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var CRR_DIAS_LETRAS = 'JVSD';   // desplazamiento 0..3 = jueves a domingo (PeriodIndex % 7 - 3)
 
-/** Nombre del archivo -> { temporada, semana, periodIndex, letra, off } o null. Ej.: 'T-03  S-02 P.I-11-V 17-07-2026 11.35 - Clan - currentriverrace.json'. Los días de entrenamiento (L, M, X) devuelven null. */
-function _crrParsearNombre_(nombre) {
-  var m = /^T-(\d+)\s+S-(\d+) P\.I-(\d+)-([LMXJVSD]) /.exec(String(nombre || ''));
-  if (!m) return null;
-  var off = CRR_DIAS_LETRAS.indexOf(m[4]);
-  if (off < 0) return null;
-  return { temporada: Number(m[1]), semana: Number(m[2]), periodIndex: Number(m[3]), letra: m[4], off: off };
+var _CRR_CACHE_SEMANA_ = {};
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- CurrentRiverRace por días: prueba de solo lectura -----
+
+/**
+ * Prueba manual SOLO LECTURA: lee T3 S1 desde Drive y revisa a Chistris (#2GG8PJ8GC), cuyo valor real ya se comprobó a mano:
+ * ataques 4|4|4|4 y fame por día 600|800|800|700 (total semanal 16 ataques y 2900 de fame). No escribe nada.
+ */
+function probarCurrentRiverRaceDias() {
+  var mapa = _crrCapturasDeSemana_(3, 1);
+  var tags = Object.keys(mapa);
+  var r = _crrDiasDeJugador_(3, 1, '#2GG8PJ8GC', 16, 2900);
+  var ata = r.ataques.join('|'), fame = _crrFameDia_(r.fameAcum).join('|');
+  var ok = ata === '4|4|4|4' && fame === '600|800|800|700';
+  Logger.log('[CRR] T3 S1: ' + tags.length + ' jugador(es) con capturas. Chistris: ataques ' + ata + ', fame ' + fame + ' -> ' +
+    (ok ? 'OK (coincide con lo comprobado a mano).' : 'DIFIERE de lo esperado (4|4|4|4 y 600|800|800|700).') + ' (No se escribio nada.)');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- CurrentRiverRace por días: capturas de Drive y días del jugador -----
+
+/**
+ * Punto de entrada para las demás funciones: ataques y fame por día de UN jugador en una semana, según CurrentRiverRace.
+ * totA y totF = totales de la semana (null si no se conocen). Devuelve { ataques, fameAcum, inicio, notas, hayCapturas }.
+ */
+function _crrDiasDeJugador_(temporada, semana, tag, totA, totF) {
+  var caps = _crrCapturasDeSemana_(temporada, semana)[String(tag || '').trim()];
+  var r = _crrResolverJugador_(caps || null, totA, totF);
+  r.hayCapturas = !!caps;
+  return r;
+}
+
+/**
+ * Lee los JSON de CurrentRiverRace de una semana en los clanes Terna (CurrentRiverRace/<clan>/T-xx/S-xx) y devuelve
+ * { tag: { J: [captura], ... } } (ver _crrCapturasDesdeArchivos_). Se guarda en memoria por ejecución. Solo lee.
+ * Solo mira la carpeta de la semana: un archivo que siga suelto en la carpeta del clan (sin mover) no se lee.
+ */
+function _crrCapturasDeSemana_(temporada, semana) {
+  var clave = Number(temporada) + '|' + Number(semana);
+  if (_CRR_CACHE_SEMANA_[clave]) return _CRR_CACHE_SEMANA_[clave];
+  var archivos = [];
+  var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(semana);
+  Object.keys(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_).forEach(function (k) {
+    try {
+      var carpetaClan = DriveApp.getFolderById(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_[k]);
+      var cT = _crrSubcarpeta_(carpetaClan, nT);
+      var cS = cT ? _crrSubcarpeta_(cT, nS) : null;
+      if (!cS) return;
+      var it = cS.getFiles();
+      while (it.hasNext()) {
+        var f = it.next();
+        var nombre = f.getName();
+        if (!_crrParsearNombre_(nombre)) continue;
+        try { archivos.push({ nombre: nombre, datos: JSON.parse(f.getBlob().getDataAsString()) }); }
+        catch (eJson) { Logger.log('[CRR] No se pudo leer ' + nombre + ': ' + eJson.message); }
+      }
+    } catch (eClan) {
+      Logger.log('[CRR] No se pudo leer la carpeta de ' + k + ' (' + nT + ' ' + nS + '): ' + eClan.message);
+    }
+  });
+  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(archivos);
+  return _CRR_CACHE_SEMANA_[clave];
+}
+
+function _crrSubcarpeta_(padre, nombre) {
+  var it = padre.getFoldersByName(nombre);
+  return it.hasNext() ? it.next() : null;
 }
 
 /**
@@ -64230,6 +64708,15 @@ function _crrCapturasDesdeArchivos_(archivos) {
     });
   });
   return porTag;
+}
+
+/** Nombre del archivo -> { temporada, semana, periodIndex, letra, off } o null. Ej.: 'T-03  S-02 P.I-11-V 17-07-2026 11.35 - Clan - currentriverrace.json'. Los días de entrenamiento (L, M, X) devuelven null. */
+function _crrParsearNombre_(nombre) {
+  var m = /^T-(\d+)\s+S-(\d+) P\.I-(\d+)-([LMXJVSD]) /.exec(String(nombre || ''));
+  if (!m) return null;
+  var off = CRR_DIAS_LETRAS.indexOf(m[4]);
+  if (off < 0) return null;
+  return { temporada: Number(m[1]), semana: Number(m[2]), periodIndex: Number(m[3]), letra: m[4], off: off };
 }
 
 /**
@@ -64290,71 +64777,7 @@ function _crrFameDia_(fameAcum) {
   return out;
 }
 
-// ----- Lectura de Drive -----
-
-var _CRR_CACHE_SEMANA_ = {};
-
-function _crrSubcarpeta_(padre, nombre) {
-  var it = padre.getFoldersByName(nombre);
-  return it.hasNext() ? it.next() : null;
-}
-
-/**
- * Lee los JSON de CurrentRiverRace de una semana en los clanes Terna (CurrentRiverRace/<clan>/T-xx/S-xx) y devuelve
- * { tag: { J: [captura], ... } } (ver _crrCapturasDesdeArchivos_). Se guarda en memoria por ejecución. Solo lee.
- * Solo mira la carpeta de la semana: un archivo que siga suelto en la carpeta del clan (sin mover) no se lee.
- */
-function _crrCapturasDeSemana_(temporada, semana) {
-  var clave = Number(temporada) + '|' + Number(semana);
-  if (_CRR_CACHE_SEMANA_[clave]) return _CRR_CACHE_SEMANA_[clave];
-  var archivos = [];
-  var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(semana);
-  Object.keys(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_).forEach(function (k) {
-    try {
-      var carpetaClan = DriveApp.getFolderById(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_[k]);
-      var cT = _crrSubcarpeta_(carpetaClan, nT);
-      var cS = cT ? _crrSubcarpeta_(cT, nS) : null;
-      if (!cS) return;
-      var it = cS.getFiles();
-      while (it.hasNext()) {
-        var f = it.next();
-        var nombre = f.getName();
-        if (!_crrParsearNombre_(nombre)) continue;
-        try { archivos.push({ nombre: nombre, datos: JSON.parse(f.getBlob().getDataAsString()) }); }
-        catch (eJson) { Logger.log('[CRR] No se pudo leer ' + nombre + ': ' + eJson.message); }
-      }
-    } catch (eClan) {
-      Logger.log('[CRR] No se pudo leer la carpeta de ' + k + ' (' + nT + ' ' + nS + '): ' + eClan.message);
-    }
-  });
-  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(archivos);
-  return _CRR_CACHE_SEMANA_[clave];
-}
-
-/**
- * Punto de entrada para las demás funciones: ataques y fame por día de UN jugador en una semana, según CurrentRiverRace.
- * totA y totF = totales de la semana (null si no se conocen). Devuelve { ataques, fameAcum, inicio, notas, hayCapturas }.
- */
-function _crrDiasDeJugador_(temporada, semana, tag, totA, totF) {
-  var caps = _crrCapturasDeSemana_(temporada, semana)[String(tag || '').trim()];
-  var r = _crrResolverJugador_(caps || null, totA, totF);
-  r.hayCapturas = !!caps;
-  return r;
-}
-
-/**
- * Prueba manual SOLO LECTURA: lee T3 S1 desde Drive y revisa a Chistris (#2GG8PJ8GC), cuyo valor real ya se comprobó a mano:
- * ataques 4|4|4|4 y fame por día 600|800|800|700 (total semanal 16 ataques y 2900 de fame). No escribe nada.
- */
-function probarCurrentRiverRaceDias() {
-  var mapa = _crrCapturasDeSemana_(3, 1);
-  var tags = Object.keys(mapa);
-  var r = _crrDiasDeJugador_(3, 1, '#2GG8PJ8GC', 16, 2900);
-  var ata = r.ataques.join('|'), fame = _crrFameDia_(r.fameAcum).join('|');
-  var ok = ata === '4|4|4|4' && fame === '600|800|800|700';
-  Logger.log('[CRR] T3 S1: ' + tags.length + ' jugador(es) con capturas. Chistris: ataques ' + ata + ', fame ' + fame + ' -> ' +
-    (ok ? 'OK (coincide con lo comprobado a mano).' : 'DIFIERE de lo esperado (4|4|4|4 y 600|800|800|700).') + ' (No se escribio nada.)');
-}
+// ----- CurrentRiverRace por días: usos de otras cadenas (cierre y totales) -----
 
 /**
  * Para la corrección al cerrar el día (17_GuerraSheet.gs, §PF139): ataques de AYER y fame acumulada al cierre de ayer de un jugador, según
