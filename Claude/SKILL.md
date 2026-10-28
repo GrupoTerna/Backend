@@ -10,7 +10,7 @@ description: >-
 
 # Skill: `md` — código del clan en GitHub: lectura, corrección y consolidados de fases
 
-**Versión de esta skill: 27-oct-2026 (commit en `Claude/SKILL.md` del repo `Backend`).** Si la copia instalada muestra una fecha anterior, hay que reinstalarla desde ese archivo. Al editar la skill, se actualiza esta fecha.
+**Versión de esta skill: 27-oct-2026, rev. 1.** Cada cambio de `SKILL.md` sube el número de revisión (el workflow `skill-ci.yml` lo exige). Al empezar la tanda, después de clonar, Claude compara esta línea con la de `Claude/SKILL.md` del repo; si difieren, avisa a la usuaria que hay que reinstalar la skill desde ese archivo y toma el repo como referencia.
 
 ## Idioma
 
@@ -96,13 +96,14 @@ Responder siempre en **español de Perú**. Evitar modismos, léxico o entonaci�
 
 ## 0.6 La fuente del código es el repositorio
 
-- **La fuente del código es el repo** (confirmado por la usuaria): el código está en GitHub, Claude lo lee y lo edita ahí, y la usuaria lo trae después a Apps Script con el Generador (0.3). Los archivos `Base.md`, `Web-main.zip`, `Tampermonkey.md` y `Generador.md`, que antes se subían al chat, ya no se usan como fuente.
+- **La fuente del código es el repo** (sección 1; la usuaria lo trae después a Apps Script con el Generador, 0.3). Los archivos `Base.md`, `Web-main.zip`, `Tampermonkey.md` y `Generador.md`, que antes se subían al chat, ya no se usan como fuente.
 - Si la usuaria sube al chat alguno de esos archivos u otro con código, se lee como instantánea y, si difiere del repo, se avisa antes de editar.
 - El estado y los pendientes (README, piezas del Generador, contraste de pendientes) **viven en `Contexto_Base_Web.md`, sección «Abiertos»**, no en la skill.
 
 ## 0.7 Si la sesión no puede escribir en GitHub: sugerir un token fine-grained (definido el 11-oct-2026)
 
-- Cuando Claude **no tiene el comando de añadir repositorios**, o los repos llegan **sin permiso de escritura**, lo dice y **sugiere generar un token fine-grained** (permisos mínimos, vida corta) en lugar de seguir sin poder subir. Como la usuaria suele borrar los chats, el token se guarda **temporalmente** en un `.txt`, se adjunta al chat y se borra y revoca al terminar.
+- **Primero se intenta añadir el repo con la herramienta de la sesión, con acceso de escritura.** Suele bastar y entonces **no hace falta ningún token**. Solo si esa herramienta no existe, o el repo llega **sin permiso de escritura**, Claude lo dice y **sugiere generar un token fine-grained** (permisos mínimos, vida corta) en lugar de seguir sin poder subir. Como la usuaria suele borrar los chats, el token se guarda **temporalmente** en un `.txt`, se adjunta al chat y se borra y revoca al terminar.
+- **Un token pegado o adjuntado queda escrito en la conversación.** Si la usuaria pega o adjunta uno y el repo ya se pudo añadir sin él, Claude no lo usa y le recuerda que lo revoque en GitHub.
 - La plantilla con los pasos y el bloque de repositorios está en **`Claude/Plantilla_Token_GitHub.txt`** del repo `Backend` (público; solo trae marcadores, nunca un token). Claude la lee de `https://raw.githubusercontent.com/GrupoTerna/Backend/main/Claude/Plantilla_Token_GitHub.txt` y **se la entrega a la usuaria para descargar**; esta es una excepción a 0.2 porque es lo que ella necesita para poder seguir. Si Claude no logra leerla, le dice a la usuaria que la descargue de GitHub. No se copia aquí su contenido, para que viva en un solo lugar.
 - **El token nunca se sube a un repo ni se escribe en commits, documentos o respuestas** (los repos son públicos). Claude lo lee del archivo adjunto sin mostrarlo; la usuaria lo borra y lo revoca después.
 
@@ -144,8 +145,7 @@ Se le aplican las mismas reglas que a `Base`: se edita en el repo, archivo por a
 # 1. Fuente de verdad: el repositorio
 
 - **El código actual es lo que está en `main`.** Al empezar la tanda Claude trae lo último (clona o hace `git pull`) y trabaja sobre ese clon. Los repos cambian constantemente (el Generador también empuja a `main`): no se apoya en la memoria de versiones o sesiones anteriores, y ante la duda vuelve a leer el archivo real.
-- **El texto pegado en el chat** (conversaciones, logs, errores, código antiguo) son instrucciones y contexto; **nunca sustituye a un archivo del repo**, aunque se pegue en el mismo mensaje que un adjunto. Si hay adjunto y texto, se verifica cada uno por separado.
-- **Los archivos adjuntos** con código se leen como instantánea; si difieren del repo, se avisa antes de editar (0.6).
+- **Texto pegado en el chat y archivos adjuntos:** nunca sustituyen a un archivo del repo. Qué hacer con cada uno: sección 8 y 0.6.
 - **Consolidados de fases:** son de uso temporal; se guardan y se leen en `Consolidados de cambios/` del repo (0.5), nunca desde el texto pegado. Sus reglas (ciclo de vida, compactación, referencias, nota de autoinvocación y reglas de trabajo 1 a 14) están en `Consolidados de cambios/Reglas_Consolidados.md`.
 
 ---
@@ -205,7 +205,7 @@ Antes del commit se busca la secuencia de tres comillas inversas con ``grep -n -
 
 # 7. Flujo de trabajo
 
-1. **Traer el repo actualizado** (clonar si hace falta; `fetch` y `rebase`).
+1. **Traer el repo actualizado** (clonar si hace falta; `fetch` y `rebase`) y comprobar la versión de la skill (línea «Versión» del inicio).
 2. **Ubicar** los archivos que importan con `ls` y `grep`. Si hay que pedirle a la usuaria que ejecute una función, se verifica en qué proyecto y archivo está (0.8).
 3. **Leer el archivo real** y las funciones relacionadas, sin apoyarse en la memoria ni en código pegado en el chat.
 4. **Analizar la solicitud** con las instrucciones actuales, los errores y los logs, y buscar primero lo ya escrito en el contexto (sección 9).
@@ -242,8 +242,7 @@ No debe perderse información entre una conversación y la siguiente:
 
 - Como el trabajo avanza entre sesiones y el chat se borra antes de empezar una nueva, nada se debe perder de un chat a otro.
 - Si la usuaria explica el comportamiento de algo o da alguna confirmación, eso se documenta de inmediato en el lugar que corresponda: el plan de fases vigente, el código del repo o, si es funcionamiento del sistema o una decisión que sirva para prevenir errores, `Contexto_Base_Web.md` (0.4). No debe quedar solo dicho en el chat.
-- **Buscar primero en el contexto lo de guerra (regla 13 de `Consolidados de cambios/Reglas_Consolidados.md`, 24-oct-2026).** Antes de preguntar o suponer algo sobre `currentriverrace`, `periodLogs`, `periodPoints`, `pointsEarned`, `periodIndex`, barcos, cruce de meta, coliseo o correcciones de guerra, hacer `grep -n` de esas palabras en `Contexto_Base_Web.md` y `Contexto_Base_Web_Detalle.md` (sobre todo el bloque `17B004`, «DOCUMENTACIÓN DEL FUNCIONAMIENTO DE LA GUERRA», y §PF185, §PF183, §PF139, §PF160, §PF198). La usuaria ya lo explicó y lo verificó con datos; no se le vuelve a pedir. Sirve también para contrastar hipótesis de las correcciones de guerra.
-- **Buscar lo ya escrito antes de suponer, y cruzar todas las fuentes antes de decir «no es concluyente» (regla 14 de `Consolidados de cambios/Reglas_Consolidados.md`, 25-oct-2026; amplía la 13).** Vale para cualquier tema, no solo guerra. Antes de suponer cómo funciona algo, buscar en el contexto, el código, los consolidados y `Datos descargados/`; lo que ya está documentado y validado se usa y se cita, no se vuelve a preguntar. Ante una falla, no responder «no es concluyente» mirando una sola fuente: revisar las fuentes pertinentes y responder con la lista de lo revisado, lo que no se pudo mirar y lo que falta. Para guerra, el mapa de las fuentes (los JSON guardados tal cual son los más confiables; hoja y CSV de guerra son una sola cadena; cuál consultar según la pregunta) está en `Contexto_Base_Web.md §PF239`. La regla vive en un solo lugar: léela ahí.
+- **Buscar lo ya escrito antes de preguntar o suponer, y cruzar todas las fuentes antes de decir «no es concluyente»** (reglas 13 y 14 de `Consolidados de cambios/Reglas_Consolidados.md`; la lista de palabras de guerra para buscar y el mapa de fuentes están ahí y en `Contexto_Base_Web.md §PF239`). Vale para cualquier tema, no solo guerra: lo documentado y validado se usa y se cita, no se vuelve a preguntar.
 - **Contrastar con los datos disponibles antes de suponer o ignorar (regla de la usuaria, 23-oct-2026).** Ante una hipótesis o una duda sobre el funcionamiento del juego o de los datos, primero se busca y se contrasta con los archivos que ya hay (`Datos descargados/` del repo `Backend`: JSON, CSV; y Drive si el conector está disponible); no se supone ni se descarta sin mirar. Si los datos necesarios están en Drive y Claude no puede verlos, le dice a la usuaria que los descargue de Drive y los suba a GitHub, y no continúa sobre una suposición.
 
 ## Referencias en el changelog: archivo + función, no solo el número
@@ -264,14 +263,4 @@ Esas mismas reglas rigen al editar esta skill. Regla propia de la skill: cuando 
 
 # 10. Regla de oro
 
-**El código actual está en los repos de GitHub (`main`): Claude lo lee y lo edita ahí.**
-
-**El chat = instrucciones y contexto. El texto pegado en el chat nunca sustituye un archivo del repo, aunque se pegue junto con un adjunto.**
-
-**Los nombres reales (`01_Principal.gs`, `04_Setup.gs`, etc.) se conservan exactamente.**
-
-**Archivo modificado = archivo completo, editado en el repo y subido a GitHub** (descargable solo si la usuaria lo pide; ver 0.2).
-
-**Nunca un parche como sustituto del archivo completo, ni una carpeta ni un zip: solo los archivos puntuales modificados.**
-
-**Ningún `.gs` debe contener comillas inversas, etiquetas de lenguaje ni restos de formato Markdown o HTML: solo código Apps Script válido.**
+**El código actual está en `main` de los repos de GitHub: Claude lo lee y lo edita ahí (sección 1). El chat da instrucciones y contexto, nunca sustituye un archivo del repo (sección 8). Se conservan los nombres reales (sección 3), se entrega el archivo completo y puntual, sin parches (sección 5), y un `.gs` solo contiene código Apps Script válido (sección 6).**

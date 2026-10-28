@@ -26,9 +26,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Instalar PyYAML
         run: python3 -m pip install --quiet pyyaml
 
-      - name: Frontmatter de Claude/SKILL.md
-        run: python3 -I .github/scripts/validar_skill.py Claude/SKILL.md
+      - name: Frontmatter, versión y archivos citados de Claude/SKILL.md
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python3 -I .github/scripts/validar_skill.py Claude/SKILL.md --base "$BASE_SHA"
