@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 17:40:04 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 17:50:15 */
 
 
 
@@ -52075,6 +52075,12 @@ function _docxFuenteArial_(bytes) {
 // _webAdminVigenteListar(): Lista TODOS los registros de T_Lista ('Torneo') o S_Lista ('Sorteo'), del más reciente al más antiguo por Fecha, para poblar el selector de "cuál es el vigente" -- misma idea que _webCRListaListar() (justo abajo), pero para… [→ Contexto_Base_Web.md §37B328]
 function _webAdminVigenteListar(token, categoria) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  // NUEVO (28-oct-2026, PF286 punto 11 (d)): categoría 'CambioRango' = el par vigente de CR_Lista (Extra!Ascenso_Vigente_ID y Descenso_Vigente_ID). Devuelve los pares (los mismos de _webCRListaListar()) y el id del Ascenso vigente. [→ Contexto_Base_Web.md §PF286]
+  if (categoria === 'CambioRango') {
+    var listaCRVig = _webCRListaListar(token);
+    if (!listaCRVig.ok) return listaCRVig;
+    return { ok: true, pares: listaCRVig.pares, vigenteActual: _getIdVigenteExtraCR('Ascenso') };
+  }
   var esTorneo = (categoria === 'Torneo');
   if (!esTorneo && categoria !== 'Sorteo') return { ok: false, error: 'Categoría inválida (debe ser Torneo o Sorteo).' };
 
@@ -52124,6 +52130,23 @@ function _webAdminVigenteListar(token, categoria) {
 // _webAdminVigenteGuardar(): Guarda (o limpia) el ID "vigente" de Torneo/Sorteo en Extra!Torneo_Vigente_ID / Sorteo_Vigente_ID (fila 2, columnas 20/21 -- ver _setupExtra(), 02_Setup_Hojas.gs). `id` vacío = limpiar la celda, con lo que… [→ Contexto_Base_Web.md §37B331]
 function _webAdminVigenteGuardar(token, categoria, id) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  // NUEVO (28-oct-2026, PF286 punto 11 (d)): categoría 'CambioRango'. `id` es el de la fila de Ascenso («A_…»); el del Descenso se deduce igual que en _webCRListaListar() («D_» más el resto del id). Vacío = limpiar el par vigente (los documentos de cambio de rango dejan de actualizarse hasta que haya otro). Escribe Extra!Ascenso_Vigente_ID y Descenso_Vigente_ID (columnas 22 y 23, como _autogenerarParCRListaSiCorrespondeInicioTemporada()) y, si el par se fija, actualiza los documentos con _webCRListaRefrescarDocs_(). [→ Contexto_Base_Web.md §PF286]
+  if (categoria === 'CambioRango') {
+    var idAscVig = String(id || '').trim();
+    var idDescVig = '';
+    if (idAscVig) {
+      if (!/^A_/.test(idAscVig)) return { ok: false, error: 'El id del par debe ser el de la fila de Ascenso (empieza con A_).' };
+      idDescVig = 'D_' + idAscVig.slice(2);
+      if (!_getFilaCRListaPorId(idAscVig) || !_getFilaCRListaPorId(idDescVig)) {
+        return { ok: false, error: 'El par ' + idAscVig + ' / ' + idDescVig + ' está incompleto en CR_Lista (falta la fila de Ascenso o la de Descenso). Complétalo antes de fijarlo como vigente.' };
+      }
+    }
+    var shExtraCRVig = _getSs().getSheetByName(CFG.SHEETS.EXTRA);
+    if (!shExtraCRVig) return { ok: false, error: 'La hoja Extra no existe.' };
+    shExtraCRVig.getRange(2, 22, 1, 2).setValues([[idAscVig, idDescVig]]); // Ascenso_Vigente_ID / Descenso_Vigente_ID, ver _setupExtra()
+    var docsOk = idAscVig ? _webCRListaRefrescarDocs_(idAscVig, idDescVig) : false;
+    return { ok: true, idAscenso: idAscVig, idDescenso: idDescVig, docsActualizados: docsOk === true };
+  }
   if (categoria !== 'Torneo' && categoria !== 'Sorteo') return { ok: false, error: 'Categoría inválida (debe ser Torneo o Sorteo).' };
 
   var ss = _getSs();
@@ -52228,13 +52251,15 @@ function _webCRListaRefrescarDocs_(idAscenso, idDescenso) {
   try {
     var vigenteAscenso  = _getIdVigenteExtraCR('Ascenso');
     var vigenteDescenso = _getIdVigenteExtraCR('Descenso');
-    if (!vigenteAscenso || !vigenteDescenso) return;
+    if (!vigenteAscenso || !vigenteDescenso) return false;
     var esVigente = (idAscenso && String(idAscenso) === String(vigenteAscenso)) ||
                     (idDescenso && String(idDescenso) === String(vigenteDescenso));
-    if (!esVigente) return;
+    if (!esVigente) return false;
     procesarCambioRango();
+    return true; // 28-oct-2026 (PF286 punto 11 (d)): devuelve true solo si llegó a correr procesarCambioRango(); los demás llamadores lo ignoran.
   } catch (eRefrescar) {
     Logger.log('[Web][CR_Lista] No se pudieron actualizar los documentos de cambio de rango (se continúa): ' + eRefrescar.message);
+    return false;
   }
 }
 
