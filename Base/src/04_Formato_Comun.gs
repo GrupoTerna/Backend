@@ -809,6 +809,7 @@ function autoajustarHojasSinAnchosGuardados() {
       props.setProperty(claveIdx, String(i + 1));
       Logger.log('[AutoAjuste] Presupuesto interno agotado tras ' + (i + 1) + '/' + pendientes.length +
                  ' hojas sin anchos guardados. Se reintenta el mismo paso en la próxima continuación.');
+      _logProgresoPaso_('AutoAjuste', 'hojas sin anchos guardados autoajustadas', idxInicio, (i + 1) - idxInicio, pendientes.length, 'hojas'); // PF285
       return false;
     }
   }
