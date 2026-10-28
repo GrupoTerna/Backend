@@ -697,7 +697,6 @@ function _getMapaDocsReconstruibles() {
   mapa[NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_TORNEO] = _construirContenidoDocParticipantesCalificadosTorneo;
   mapa[NOMBRE_DOC_GANADORES_SORTEO] = _construirContenidoDocGanadoresSorteo;
   mapa[NOMBRE_DOC_GANADORES_TORNEO] = _construirContenidoDocGanadoresTorneo;
-  mapa[NOMBRE_DOC_ASCENSOS_DESCENSOS] = _construirContenidoDocAscensosDescensos; // FASE (11/08/2026)
   // NUEVO (15-sep-2026, pedido del usuario -- ver 29_Docs_NoCalificados.gs). [→ Contexto_Base_Web.md §01B122]
   mapa[NOMBRE_DOC_NO_CALIFICADOS_TORNEO] = _construirContenidoDocNoCalificadosTorneo;
   mapa[NOMBRE_DOC_NO_CALIFICADOS_SORTEO] = _construirContenidoDocNoCalificadosSorteo;
@@ -718,7 +717,6 @@ function _getMapaCarpetaDestinoDocsReconstruibles() {
   mapa[NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS;
   mapa[NOMBRE_DOC_GANADORES_SORTEO] = DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS;
   mapa[NOMBRE_DOC_GANADORES_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS;
-  mapa[NOMBRE_DOC_ASCENSOS_DESCENSOS] = DRIVE_FOLDER_ID_PLANTILLAS_CAMBIO_RANGO;
   // NUEVO (15-sep-2026): "se deben generar en la misma carpeta de sus [→ Contexto_Base_Web.md §01B124]
   mapa[NOMBRE_DOC_NO_CALIFICADOS_TORNEO] = DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS;
   mapa[NOMBRE_DOC_NO_CALIFICADOS_SORTEO] = DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS;
