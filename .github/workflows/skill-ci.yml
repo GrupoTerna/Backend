@@ -1,0 +1,34 @@
+name: Skill - Validación del frontmatter
+
+# Solo valida; nunca hace commits.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Claude/SKILL.md"
+      - ".github/scripts/validar_skill.py"
+      - ".github/workflows/skill-ci.yml"
+  pull_request:
+    paths:
+      - "Claude/SKILL.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skill-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar PyYAML
+        run: python3 -m pip install --quiet pyyaml
+
+      - name: Frontmatter de Claude/SKILL.md
+        run: python3 -I .github/scripts/validar_skill.py Claude/SKILL.md
