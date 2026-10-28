@@ -1532,10 +1532,30 @@ function _migrarColumnaPrestamoEnHoja(sh, nombreHoja, headers) {
 
 // ----- 2.3 Ids de eventos L_TT_S_SS_N_NN: plan (función pura) y escritura -----
 
-// _planIdsEventoLista_(filas): PURA (no lee ni escribe hojas). filas = [{ indice: fila de la hoja, id: 'T_027_1_01', temporada: valor de la columna Temporada }, ...] de UNA hoja, en el orden de la hoja.
+// _marcaTiempoEvento_(fecha, hora): PURA. Devuelve los milisegundos (UTC) de fecha + hora para ordenar eventos, o NaN si la fecha no sirve. La hora que falta o no sirve cuenta como 00:00.
+// Acepta fecha como Date o texto dd/mm/aaaa o aaaa-mm-dd, y hora como Date, fracción del día (hora real de la hoja) o texto HH:mm. [→ Contexto_Base_Web.md §PF286]
+function _marcaTiempoEvento_(fecha, hora) {
+  var ms = NaN, m;
+  if (fecha instanceof Date && !isNaN(fecha.getTime())) {
+    ms = Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+  } else if (typeof fecha === 'string') {
+    var tf = fecha.trim();
+    if ((m = tf.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/))) ms = Date.UTC(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+    else if ((m = tf.match(/^(\d{4})-(\d{2})-(\d{2})/))) ms = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+  if (isNaN(ms)) return NaN;
+  var minutos = 0;
+  if (hora instanceof Date && !isNaN(hora.getTime())) minutos = hora.getHours() * 60 + hora.getMinutes();
+  else if (typeof hora === 'number' && hora >= 0 && hora < 1) minutos = Math.round(hora * 1440);
+  else if (typeof hora === 'string' && (m = hora.trim().match(/(\d{1,2}):(\d{2})/))) minutos = Number(m[1]) * 60 + Number(m[2]);
+  return ms + minutos * 60000;
+}
+
+// _planIdsEventoLista_(filas): PURA (no lee ni escribe hojas). filas = [{ indice: fila de la hoja, id: 'T_027_1_01', temporada: valor de la columna Temporada, fecha, hora }, ...] de UNA hoja, en el orden de la hoja.
 // Devuelve { cambios: [{ indice, viejo, nuevo, renumerado }], avisos: [texto] }. Reglas (PF286, decisión de la usuaria del 28-oct-2026): la temporada del id sale de la columna Temporada (si está vacía o no es positiva se conserva la del id);
-// la semana y el número salen del id; un par A/D de CR_Lista (misma temporada, semana y número en el id) es UN evento y conserva el mismo sufijo; si dos eventos distintos quedan con la misma temporada, semana y número,
-// el que ya tiene el formato nuevo conserva su número y, entre los demás, el que está más abajo recibe el siguiente número libre de ese grupo (la usuaria aceptó que el NN cambie en esos casos); ids repetidos en la misma hoja o que no son ids de evento no se tocan. [→ Contexto_Base_Web.md §PF286]
+// la semana y el número salen del id; un par A/D de CR_Lista (misma temporada, semana y número en el id) es UN evento y SIEMPRE conserva el mismo sufijo: si un lado choca con otro evento, se renumera el par entero aunque el otro lado no choque, y si solo existe una fila del par se cambia esa y se avisa;
+// si dos eventos distintos quedan con la misma temporada, semana y número, el que ya tiene el formato nuevo conserva su número y, entre los demás, cede (recibe el siguiente número libre de ese grupo) el de fecha y hora más recientes (de un par cuenta su fila más reciente); si falta la fecha, cede el que está más abajo.
+// Ids repetidos en la misma hoja o que no son ids de evento no se tocan. [→ Contexto_Base_Web.md §PF286]
 function _planIdsEventoLista_(filas) {
   var avisos = [], cambios = [];
   var cuenta = {};
@@ -1562,7 +1582,11 @@ function _planIdsEventoLista_(filas) {
     var k = 0;
     while (ev && ev.letras[p.letra] !== undefined) { k++; ev = eventos[clave + '#' + k]; }
     var claveFinal = k ? clave + '#' + k : clave;
-    if (!ev) { ev = { t: t, semana: p.semana, numero: p.numero, primeraFila: f.indice, yaNuevo: p.nuevo, letras: {}, filas: [] }; eventos[claveFinal] = ev; listaEventos.push(ev); }
+    if (!ev) { ev = { t: t, semana: p.semana, numero: p.numero, primeraFila: f.indice, yaNuevo: p.nuevo, tiempo: NaN, letras: {}, filas: [] }; eventos[claveFinal] = ev; listaEventos.push(ev); }
+    else if (ev.t !== t) avisos.push('fila ' + f.indice + ' (' + idTxt + '): la columna Temporada (' + t + ') difiere de la de su pareja (' + ev.t + '); el par usa la temporada ' + ev.t);
+    if (p.nuevo) ev.yaNuevo = true;
+    var tiempoFila = _marcaTiempoEvento_(f.fecha, f.hora);
+    if (isFinite(tiempoFila) && (!isFinite(ev.tiempo) || tiempoFila > ev.tiempo)) ev.tiempo = tiempoFila;
     ev.letras[p.letra] = f.indice;
     ev.filas.push({ indice: f.indice, letra: p.letra, viejo: idTxt });
   }
@@ -1574,8 +1598,11 @@ function _planIdsEventoLista_(filas) {
   });
   ordenGrupos.forEach(function (g) {
     var evs = grupos[g];
-    // Primero los eventos que ya tienen el formato nuevo (su id puede estar citado y conservan su número), luego por número y por fila.
-    evs.sort(function (a, b) { return (Number(b.yaNuevo) - Number(a.yaNuevo)) || (a.numero - b.numero) || (a.primeraFila - b.primeraFila); });
+    // Primero los eventos que ya tienen el formato nuevo (su id puede estar citado y conservan su número), luego por número; con el mismo número conserva el de fecha y hora más antiguas (cede el más reciente) y, sin fecha, el que está más arriba.
+    evs.sort(function (a, b) {
+      var porTiempo = (isFinite(a.tiempo) && isFinite(b.tiempo)) ? (a.tiempo - b.tiempo) : 0;
+      return (Number(b.yaNuevo) - Number(a.yaNuevo)) || (a.numero - b.numero) || porTiempo || (a.primeraFila - b.primeraFila);
+    });
     var max = 0;
     evs.forEach(function (ev) { if (ev.numero > max) max = ev.numero; });
     var usados = {};
@@ -1584,6 +1611,9 @@ function _planIdsEventoLista_(filas) {
       ev.renumerado = false;
       if (usados[ev.nuevoNumero]) { max++; ev.nuevoNumero = max; ev.renumerado = true; }
       usados[ev.nuevoNumero] = true;
+      if (ev.renumerado && ev.filas.length === 1 && (ev.filas[0].letra === 'A' || ev.filas[0].letra === 'D')) {
+        avisos.push('el par ' + ev.filas[0].viejo + ' está incompleto (solo la fila ' + ev.filas[0].indice + '); se cambió esa fila al número ' + ev.nuevoNumero);
+      }
       ev.filas.forEach(function (fi) {
         var nuevo = _idEventoConstruir_(fi.letra, ev.t, ev.semana, ev.nuevoNumero);
         if (nuevo !== fi.viejo) cambios.push({ indice: fi.indice, viejo: fi.viejo, nuevo: nuevo, renumerado: ev.renumerado });
@@ -1614,9 +1644,9 @@ function _migrarIdsEvento_(aplicar) {
   var ss = _getSs();
   var tag = aplicar ? '[Ids evento]' : '[Ids evento · solo revisar]';
   var listas = [
-    { nombre: CFG.SHEETS.T_LISTA,  primera: 3, colId: TL.ID, colTemp: TL.TEMPORADA },
-    { nombre: CFG.SHEETS.S_LISTA,  primera: 3, colId: SL.ID, colTemp: SL.TEMPORADA },
-    { nombre: CFG.SHEETS.CR_LISTA, primera: 4, colId: CR.ID, colTemp: CR.TEMPORADA }
+    { nombre: CFG.SHEETS.T_LISTA,  primera: 3, colId: TL.ID, colTemp: TL.TEMPORADA, colFecha: TL.FECHA, colHora: TL.HORA },
+    { nombre: CFG.SHEETS.S_LISTA,  primera: 3, colId: SL.ID, colTemp: SL.TEMPORADA, colFecha: SL.FECHA, colHora: SL.HORA },
+    { nombre: CFG.SHEETS.CR_LISTA, primera: 4, colId: CR.ID, colTemp: CR.TEMPORADA, colFecha: CR.FECHA, colHora: CR.HORA }
   ];
   var mapa = {}, planes = [], totalCambios = 0;
   listas.forEach(function (l) {
@@ -1627,8 +1657,10 @@ function _migrarIdsEvento_(aplicar) {
     var n = ultima - l.primera + 1;
     var ids = sh.getRange(l.primera, l.colId, n, 1).getValues();
     var temps = sh.getRange(l.primera, l.colTemp, n, 1).getValues();
+    var fechas = sh.getRange(l.primera, l.colFecha, n, 1).getValues();
+    var horas = sh.getRange(l.primera, l.colHora, n, 1).getValues();
     var filas = [];
-    for (var i = 0; i < n; i++) filas.push({ indice: l.primera + i, id: ids[i][0], temporada: temps[i][0] });
+    for (var i = 0; i < n; i++) filas.push({ indice: l.primera + i, id: ids[i][0], temporada: temps[i][0], fecha: fechas[i][0], hora: horas[i][0] });
     var plan = _planIdsEventoLista_(filas);
     plan.cambios.forEach(function (c) { mapa[c.viejo] = c.nuevo; });
     totalCambios += plan.cambios.length;
