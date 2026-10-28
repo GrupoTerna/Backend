@@ -384,6 +384,10 @@ function _descargarProyectoAArchivos(nombreBase) {
   carpeta.createFile(Utilities.zip(blobs, nombreZip)); // Crea el nuevo reemplazándolo
 
   _registrarLogGenerador('_descargarProyectoAArchivos() / ' + nombreBase, 'Proyecto descargado a ' + nombreZip + ', ' + nombreTxt + ', ' + nombreGs + ' y ' + nombreMd + ' con ' + archivos.length + ' archivos.', []);
+
+  // Desde el 28-oct-2026: cada descarga o subida del Generador actualiza el bloque automático de ReadMe_Generador.md
+  // (09_ReadmeGenerador.gs). Nunca lanza error y, si el README no existe en Drive, no lo crea. [→ Contexto_Base_Web.md §PF285]
+  if (nombreBase === 'Generador') _actualizarReadmeGenerador_();
 }
 
 // -----------------------------------------------------------------------------
