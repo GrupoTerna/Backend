@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 00:25:34 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 17:34:41 */
 
 
 
@@ -86,7 +86,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
 //    - Sincronización de contactos desde el Web App (SincronizarDesdeWebAPI)
 //  Parte 2 — Funciones que no se corren a mano
 //    - Sincronización de contactos: ayudas (en el orden en que las llama SincronizarDesdeWebAPI: URL del Web App, resumen por clan y su agrupación)
-// Dentro de cada tema, en el orden en que se espera ejecutarlas (deducido del código: la usuaria no lo ha confirmado). Al reordenar no se cambió el código de ninguna función.
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
