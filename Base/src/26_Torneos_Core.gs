@@ -134,6 +134,32 @@ function _reordenarCRListaPorFecha(ss) {
   Logger.log('[CR_Lista] Hoja reordenada por Fecha (más reciente primero, ' + datos.length + ' fila(s)).');
 }
 
+// IDs de evento (torneo, sorteo, ascenso, descenso) — formato L_TT_S_SS_N_NN (PF286, 28-oct-2026, pedido de la usuaria) [→ Contexto_Base_Web.md §PF286]
+// L = letra de la hoja (T torneo, S sorteo, A ascenso, D descenso); TT = temporada; la «S» es literal y SS = semana; la «N» es literal y NN = número de evento en la semana.
+// Cada cifra se escribe con dos dígitos como mínimo y pasa a tres solo al llegar a 100. Ejemplo: T_27_S_01_N_01. El formato anterior era T_027_1_01 (temporada de tres cifras, semana sin relleno).
+// Mientras queden ids antiguos en las hojas, todo lo que lee ids usa _idEventoParsear_(), que reconoce los dos formatos.
+var ID_EVENTO_REGEX_NUEVO_ = /^([TSAD])_(\d{2,})_S_(\d{2,})_N_(\d{2,})$/;
+var ID_EVENTO_REGEX_VIEJO_ = /^([TSAD])_(\d{3})_(\d+)_(\d{2,})$/;
+
+function _idEventoCifras_(n) {
+  var t = String(Math.floor(Number(n)));
+  return t.length < 2 ? '0' + t : t;
+}
+
+function _idEventoConstruir_(letra, temporada, semana, numero) {
+  return letra + '_' + _idEventoCifras_(temporada) + '_S_' + _idEventoCifras_(semana) + '_N_' + _idEventoCifras_(numero);
+}
+
+// Devuelve { letra, temporada, semana, numero, nuevo } (números como Number; nuevo = true si usa el formato L_TT_S_SS_N_NN), o null si el texto no es un id de evento.
+function _idEventoParsear_(id) {
+  var texto = String(id || '').trim();
+  var m = texto.match(ID_EVENTO_REGEX_NUEVO_);
+  if (m) return { letra: m[1], temporada: Number(m[2]), semana: Number(m[3]), numero: Number(m[4]), nuevo: true };
+  m = texto.match(ID_EVENTO_REGEX_VIEJO_);
+  if (m) return { letra: m[1], temporada: Number(m[2]), semana: Number(m[3]), numero: Number(m[4]), nuevo: false };
+  return null;
+}
+
 // CR_Lista — generación de ID (FASE 1, 13-sep-2026, pedido del usuario, plan [→ Contexto_Base_Web.md §26B015]
 
 /**
@@ -147,11 +173,10 @@ function _generarParIdsCRLista(fecha, ss) {
   var lecturaCRIds = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CR_LISTA, 'Backup_CR_Lista.csv', CR_TOTAL_COLS, 3);
   var datos = lecturaCRIds.filas;
   var numeroEnSemana = _contarParesCRListaEnSemana(datos, temporada, semana);
-  var sufijo = Utilities.formatString('%03d', temporada) + '_' + semana + '_' + Utilities.formatString('%02d', numeroEnSemana);
 
   return {
-    idAscenso: 'A_' + sufijo,
-    idDescenso: 'D_' + sufijo,
+    idAscenso: _idEventoConstruir_('A', temporada, semana, numeroEnSemana),
+    idDescenso: _idEventoConstruir_('D', temporada, semana, numeroEnSemana),
     temporada: temporada,
     semana: semana
   };
@@ -165,10 +190,10 @@ function _contarParesCRListaEnSemana(datos, temporada, semana) {
   for (var i = 0; i < datos.length; i++) {
     var id = String(datos[i][CR.ID - 1] || '').trim();
     if (!id) continue;
-    var m = id.match(/^A_(\d{3})_(\d+)_(\d{2})$/);
-    if (!m) continue; // solo cuenta Ascenso -- ver docblock de arriba
-    if (Number(m[1]) !== temporada) continue;
-    if (Number(m[2]) !== semana) continue;
+    var p = _idEventoParsear_(id);
+    if (!p || p.letra !== 'A') continue; // solo cuenta Ascenso -- ver docblock de arriba
+    if (p.temporada !== temporada) continue;
+    if (p.semana !== semana) continue;
     count++;
   }
   return count + 1;
@@ -504,11 +529,11 @@ function _getFilaCRListaPorId(id) {
  */
 function _getParCRListaPorId(idCualquiera) {
   var id = String(idCualquiera || '').trim();
-  var m = id.match(/^[AD]_(\d{3}_\d+_\d{2})$/);
-  if (!m) return { ascenso: null, descenso: null };
+  var p = _idEventoParsear_(id);
+  if (!p || (p.letra !== 'A' && p.letra !== 'D')) return { ascenso: null, descenso: null };
   return {
-    ascenso: _getFilaCRListaPorId('A_' + m[1]),
-    descenso: _getFilaCRListaPorId('D_' + m[1])
+    ascenso: _getFilaCRListaPorId('A' + id.slice(1)),
+    descenso: _getFilaCRListaPorId('D' + id.slice(1))
   };
 }
 
@@ -1986,7 +2011,7 @@ function procesarTListaNuevasFilas(ss) {
             : _calcularTemporadaParaFecha(fechaPlan);
           var semanaPlan = _calcularSemanaTorneo(fechaPlan, temporadaPlan);
           var numTorneoEnSemanaPlan = _contarTorneosEnSemana(datos, temporadaPlan, semanaPlan, i);
-          var idReserva = 'T_' + Utilities.formatString('%03d', temporadaPlan) + '_' + semanaPlan + '_' + Utilities.formatString('%02d', numTorneoEnSemanaPlan);
+          var idReserva = _idEventoConstruir_('T', temporadaPlan, semanaPlan, numTorneoEnSemanaPlan);
           sh.getRange(filaHoja, TL.TEMPORADA).setValue(temporadaPlan);
           sh.getRange(filaHoja, TL.ID).setValue(idReserva);
           sh.getRange(filaHoja, TL.NUM).setValue(filaHoja - 2);
@@ -2146,7 +2171,7 @@ function procesarTListaNuevasFilas(ss) {
 
       var semana = _calcularSemanaTorneo(fecha, temporada);
       var numTorneoEnSemana = _contarTorneosEnSemana(datos, temporada, semana, i);
-      id = 'T_' + Utilities.formatString('%03d', temporada) + '_' + semana + '_' + Utilities.formatString('%02d', numTorneoEnSemana);
+      id = _idEventoConstruir_('T', temporada, semana, numTorneoEnSemana);
       sh.getRange(filaHoja, TL.ID).setValue(id);
 
       // FIX (08-sep-2026): N° = fila de hoja menos 2 filas de header (antes
@@ -3058,7 +3083,7 @@ function procesarSListaNuevasFilas(ss) {
           : _calcularTemporadaParaFecha(fechaFila);
         var semanaFila = _calcularSemanaTorneo(fechaFila, temporadaFila);
         var numSorteoEnSemana = _contarSorteosEnSemana(datos, temporadaFila, semanaFila, i);
-        var idReserva = 'S_' + Utilities.formatString('%03d', temporadaFila) + '_' + semanaFila + '_' + Utilities.formatString('%02d', numSorteoEnSemana);
+        var idReserva = _idEventoConstruir_('S', temporadaFila, semanaFila, numSorteoEnSemana);
         sh.getRange(filaHoja, SL.TEMPORADA).setValue(temporadaFila);
         sh.getRange(filaHoja, SL.ID).setValue(idReserva);
         sh.getRange(filaHoja, SL.NUM).setValue(filaHoja - 2);
@@ -3655,8 +3680,8 @@ function _contarTorneosEnSemana(datos, temporada, semana, hastaIndice) {
     if (!id) continue;
     var temp = Number(datos[i][TL.TEMPORADA - 1]) || 0;
     if (temp !== temporada) continue;
-    var m = id.match(/^T_\d{3}_(\d+)_(\d{2})$/);
-    if (m && Number(m[1]) === semana) count++;
+    var p = _idEventoParsear_(id);
+    if (p && p.letra === 'T' && p.semana === semana) count++;
   }
   return count + 1;
 }
@@ -3671,8 +3696,8 @@ function _contarSorteosEnSemana(datos, temporada, semana, hastaIndice) {
     if (!id) continue;
     var temp = Number(datos[i][SL.TEMPORADA - 1]) || 0;
     if (temp !== temporada) continue;
-    var m = id.match(/^S_\d{3}_(\d+)_(\d{2})$/);
-    if (m && Number(m[1]) === semana) count++;
+    var p = _idEventoParsear_(id);
+    if (p && p.letra === 'S' && p.semana === semana) count++;
   }
   return count + 1;
 }
