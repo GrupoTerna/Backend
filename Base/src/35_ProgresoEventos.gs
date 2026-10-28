@@ -1,75 +1,32 @@
-// ==============================================================================
 // 35_ProgresoEventos.gs
 // CSV exclusivo de progress{} (modos rotativos: Táctica Royale, Princesa Sorpresa, etc.); no toca Camino de trofeos ni Camino de Leyendas (ver 33). [→ Contexto_Base_Web.md §35B001]
-// ==============================================================================
-
 // NUEVO (24-sep-2026, pedido del usuario)
-
 //
 // progress{} no tiene columnas fijas: una fila por jugador + clave de evento (8 columnas, patrón de Logros_2); merge reemplaza TODAS las filas de cada tag actualizado; modos como el resto. [→ Contexto_Base_Web.md §35B002]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Progreso de eventos: actualizar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Progreso de eventos: leer, armar y guardar el CSV (lo usa updateProgresoEventosSheet)
+//    - Progreso de eventos: respuestas web (CSV primero)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var PROGRESO_EVENTOS_CSV = 'Backup_ProgresoEventos.csv';
+
 var PROGRESO_EVENTOS_HEADERS = [
   'N°', 'Tag', 'Clave',
   'Arena_Id', 'Arena_Nombre', 'Arena_RawName',
   'Trofeos', 'Mejor_Trofeos'
 ];
 
-// ----- Lectura / escritura del CSV -----
+var _PE_CSV_MEMO = null; // memo por ejecución: el CSV se lee 1 sola vez
 
-function _leerProgresoEventosCSV() {
-  var csvText = _loadCSVFromDrive(PROGRESO_EVENTOS_CSV);
-  if (!csvText) return { headers: PROGRESO_EVENTOS_HEADERS.slice(), rows: [] };
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: PROGRESO_EVENTOS_HEADERS.slice(), rows: [] };
-  var headers = parsed[0], rows = parsed.slice(1);
-  for (var h = headers.length; h < PROGRESO_EVENTOS_HEADERS.length; h++) headers.push(PROGRESO_EVENTOS_HEADERS[h]);
-  for (var r = 0; r < rows.length; r++) {
-    while (rows[r].length < PROGRESO_EVENTOS_HEADERS.length) rows[r].push('');
-  }
-  return { headers: headers, rows: rows };
-}
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
 
-/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
-function _guardarProgresoEventosCSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive(PROGRESO_EVENTOS_CSV, _encodeCSV([headers].concat(rows)));
-}
-
-// ----- Sincronización (JSON de /players -> CSV) -----
-
-function _peCelda(v) {
-  return (v === undefined || v === null) ? '' : v;
-}
-
-// Una fila por cada clave de pd.progress; sin relleno (clave ausente = el jugador no participó). [→ Contexto_Base_Web.md §35B003]
-function _armarFilasProgresoEventos(tag, pd) {
-  var filas = [];
-  var prog = pd.progress;
-  if (!prog || typeof prog !== 'object') return filas;
-  for (var clave in prog) {
-    if (!Object.prototype.hasOwnProperty.call(prog, clave)) continue;
-    var ev = prog[clave] || {};
-    var arena = ev.arena || {};
-    filas.push([
-      '', tag, clave,
-      _peCelda(arena.id), _peCelda(arena.name), _peCelda(arena.rawName),
-      _peCelda(ev.trophies), _peCelda(ev.bestTrophies)
-    ]);
-  }
-  return filas;
-}
-
-function _armarFilasProgresoEventosParaTags(tags) {
-  var filas = [];
-  for (var i = 0; i < tags.length; i++) {
-    var pd = _getPlayerCache(tags[i]);
-    if (!pd) continue;
-    filas = filas.concat(_armarFilasProgresoEventos(tags[i], pd));
-  }
-  return filas;
-}
+// ----- Hoja Progreso de eventos: actualizar -----
 
 // Actualiza el CSV según PLAYERS_API_ENABLED; el merge reemplaza todas las filas de cada tag actualizado. [→ Contexto_Base_Web.md §35B004]
 function updateProgresoEventosSheet() {
@@ -107,6 +64,63 @@ function updateProgresoEventosSheet() {
     ' jugador(es) (' + nuevas.length + ' fila(s) de eventos). Nunca se vacía: el resto de tags conserva sus filas anteriores.');
 }
 
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Progreso de eventos: leer, armar y guardar el CSV (lo usa updateProgresoEventosSheet) -----
+
+function _leerProgresoEventosCSV() {
+  var csvText = _loadCSVFromDrive(PROGRESO_EVENTOS_CSV);
+  if (!csvText) return { headers: PROGRESO_EVENTOS_HEADERS.slice(), rows: [] };
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: PROGRESO_EVENTOS_HEADERS.slice(), rows: [] };
+  var headers = parsed[0], rows = parsed.slice(1);
+  for (var h = headers.length; h < PROGRESO_EVENTOS_HEADERS.length; h++) headers.push(PROGRESO_EVENTOS_HEADERS[h]);
+  for (var r = 0; r < rows.length; r++) {
+    while (rows[r].length < PROGRESO_EVENTOS_HEADERS.length) rows[r].push('');
+  }
+  return { headers: headers, rows: rows };
+}
+
+function _peCelda(v) {
+  return (v === undefined || v === null) ? '' : v;
+}
+
+// Una fila por cada clave de pd.progress; sin relleno (clave ausente = el jugador no participó). [→ Contexto_Base_Web.md §35B003]
+function _armarFilasProgresoEventos(tag, pd) {
+  var filas = [];
+  var prog = pd.progress;
+  if (!prog || typeof prog !== 'object') return filas;
+  for (var clave in prog) {
+    if (!Object.prototype.hasOwnProperty.call(prog, clave)) continue;
+    var ev = prog[clave] || {};
+    var arena = ev.arena || {};
+    filas.push([
+      '', tag, clave,
+      _peCelda(arena.id), _peCelda(arena.name), _peCelda(arena.rawName),
+      _peCelda(ev.trophies), _peCelda(ev.bestTrophies)
+    ]);
+  }
+  return filas;
+}
+
+function _armarFilasProgresoEventosParaTags(tags) {
+  var filas = [];
+  for (var i = 0; i < tags.length; i++) {
+    var pd = _getPlayerCache(tags[i]);
+    if (!pd) continue;
+    filas = filas.concat(_armarFilasProgresoEventos(tags[i], pd));
+  }
+  return filas;
+}
+
+/** Renumera la columna N° (índice 0) y guarda el CSV completo. */
+function _guardarProgresoEventosCSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive(PROGRESO_EVENTOS_CSV, _encodeCSV([headers].concat(rows)));
+}
+
 // Modo 'admin': actualiza solo filas de admins y preserva el resto. [→ Contexto_Base_Web.md §35B006]
 function _actualizarProgresoEventosSoloAdmins() {
   var ss = _getSs();
@@ -139,9 +153,7 @@ function _actualizarProgresoEventosSoloAdmins() {
     ' admin(es) revisado(s), ' + nuevas.length + ' fila(s) de eventos (modo ADMIN, preservando no-admins).');
 }
 
-// ----- Lectura para la web (CSV primero, JSON de respaldo) -----
-
-var _PE_CSV_MEMO = null; // memo por ejecución: el CSV se lee 1 sola vez
+// ----- Progreso de eventos: respuestas web (CSV primero) -----
 
 function _peCsvMemo() {
   if (!_PE_CSV_MEMO) _PE_CSV_MEMO = _leerProgresoEventosCSV();
