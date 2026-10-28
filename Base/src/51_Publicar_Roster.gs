@@ -1,3 +1,10 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Roster estático: publicar ahora
+//  Parte 2 — Funciones que no se corren a mano
+//    - Roster estático: armar y publicar
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 /**
  * 51_Publicar_Roster.gs  (NUEVO 08-oct-2026)
  *
@@ -20,7 +27,32 @@
  * rama y usa un lock para no pisarse con la publicación de guerra.
  */
 var ROSTER_ESTATICO_ARCHIVO = 'roster.json';
+
 var ROSTER_ESTATICO_REPUBLICAR_MIN = 50;
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Roster estático: publicar ahora -----
+
+/**
+ * publicarRosterEstatico()
+ * Atajo manual (ejecutar desde el editor): publica ya roster.json. Úsalo la primera vez; el resultado
+ * queda en verDiagnosticoGuerraVivo() y en el log. Después ejecuta publicarGuerraEstatico() y comprueba
+ * que en la rama `data` aparezcan los DOS archivos.
+ */
+function publicarRosterEstatico() {
+  PropertiesService.getScriptProperties().deleteProperty('ROSTER_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
+  var ok = _publicarRosterEstatico_();
+  Logger.log('[RosterEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Roster estático: armar y publicar -----
 
 function _publicarRosterEstatico_() {
   var t0 = Date.now();
@@ -68,16 +100,4 @@ function _publicarRosterEstatico_() {
     _diagGuerraVivo_('[RosterEstatico] error al publicar (el bot sigue igual): ' + e);
     return false;
   }
-}
-
-/**
- * publicarRosterEstatico()
- * Atajo manual (ejecutar desde el editor): publica ya roster.json. Úsalo la primera vez; el resultado
- * queda en verDiagnosticoGuerraVivo() y en el log. Después ejecuta publicarGuerraEstatico() y comprueba
- * que en la rama `data` aparezcan los DOS archivos.
- */
-function publicarRosterEstatico() {
-  PropertiesService.getScriptProperties().deleteProperty('ROSTER_ESTATICO_HASH'); // fuerza publicar aunque no haya cambios
-  var ok = _publicarRosterEstatico_();
-  Logger.log('[RosterEstatico] ' + (ok ? 'OK' : 'NO se publicó, mira verDiagnosticoGuerraVivo()'));
 }
