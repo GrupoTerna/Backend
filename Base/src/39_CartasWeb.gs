@@ -1,13 +1,20 @@
-// ==============================================================================
 // 39_CartasWeb.gs
 // lectura CSV-primero de TODOS los
 // datos de cartas de perfil.html, con el JSON de Drive solo como respaldo.
-// ==============================================================================
-
 // NUEVO 24-sep-2026: lectura CSV-primero de todos los datos de cartas (Cards, Cards_2, Cards_3); JSON solo de respaldo. CORRECCIÓN 24-sep-2026: la carta favorita ahora también sale de Cards_2. [→ Contexto_Base_Web.md §39B001]
-// ==============================================================================
+
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que no se corren a mano
+//    - Cartas web: catálogo y respuestas (CSV primero)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var _CW_CATALOGO_MEMO = null; // memo por ejecución (una consulta web = una ejecución)
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Cartas web: catálogo y respuestas (CSV primero) -----
 
 // Backup_Cards.csv como { id: {name, nombre, maxLevel, ...} } (columnas por índice); {} si no se puede leer. [→ Contexto_Base_Web.md §39B002]
 function _webCatalogoCartasPorId() {
