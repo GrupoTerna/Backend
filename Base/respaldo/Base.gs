@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 18:10:48 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 18:19:51 */
 
 
 
@@ -61039,8 +61039,13 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   function () { return _reenumerarTokensSemanasTorneos_(); },
   // PF270 (25-oct-2026): nombres de los informes históricos con la temporada interna («…_T5S4 …», «…_T2_PI34_T3_PI27 …») en CSV/Informes y CSV/Tampermonkey. Al FINAL para no mover índices.
   function () { return _reenumerarNombresInformes_(); },
+  // PF286b (29-oct-2026): lo que ya venía desfasado antes de la reenumeración (la suma del delta conserva el desfase). Se recalcula por fecha la Temporada de T_Lista, S_Lista y CR_Lista (y la ficha de Semanas si repetía el mismo valor equivocado),
+  // con la referencia nueva ya fijada por _finalizarReenumeracion(); omite la guarda de «mayo = T21». VA ANTES de los ids porque estos toman la temporada de la fila.
+  function () { _corregirTemporadaListas_(true, true); },
   // PF286 (28-oct-2026): los ids de evento L_TT_S_SS_N_NN llevan la temporada y la suma del delta solo toca la columna Temporada. Se rehacen DESPUÉS de todos los pasos anteriores, con las listas ya reenumeradas. Al FINAL para no mover índices.
   function () { _migrarIdsEventoPaso_(); },
+  // PF286b (29-oct-2026): DESPUÉS de los ids (sirven de llave): T_Asistencia y S_Asistencia toman Temporada y Fecha de su torneo o sorteo.
+  function () { _alinearAsistencias_(true); }
 ];
 
 // PF269 (25-oct-2026): qué hace cada paso y qué se espera al terminarlo; _ejecutarPorTandas lo imprime («Ejecutando paso N/M: …»). MISMO ORDEN que PASOS_REENUMERAR_TEMPORADAS (si se añade un paso, añadir su texto al final).
@@ -61074,13 +61079,15 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
   'Historial_I/S, Historial_A/D y Comentarios: recalcula Temporada, Semana y Día desde la Fecha (no suma delta) → columnas con la numeración nueva',
   'Fichas T<n>_S<m> de la columna Semanas de T_Lista, S_Lista y CR_Lista y sus Backup_*.csv: suma el delta → fichas apuntando a la semana correcta',
   'Nombres de informes históricos con T<n>S<m> o T<n>_PI<m> (CSV/Informes y CSV/Tampermonkey): suma el delta al número de temporada del nombre → nombres con la numeración nueva',
-  'Ids de evento de T_Lista, S_Lista y CR_Lista: rehace cada id con la temporada de su fila y reescribe las citas en T_Asistencia, S_Asistencia, T_Resoluciones y Extra, y sus respaldos → ids con la numeración nueva en todas las hojas'
+  'Temporada de T_Lista, S_Lista y CR_Lista recalculada por fecha (y ficha de Semanas si repetía el valor equivocado) y sus respaldos → filas que ya venían desfasadas quedan con la temporada de su fecha',
+  'Ids de evento de T_Lista, S_Lista y CR_Lista: rehace cada id con la temporada de su fila y reescribe las citas en T_Asistencia, S_Asistencia, T_Resoluciones y Extra, y sus respaldos → ids con la numeración nueva en todas las hojas',
+  'Temporada y Fecha de T_Asistencia y S_Asistencia tomadas de su torneo o sorteo (el id es la llave) y sus respaldos → asistencias coherentes con sus listas'
 ];
 
 // =============================================================================
 // ORDEN DEL ARCHIVO: 1) funciones que se corren a mano; 2) funciones que NO se ejecutan a mano. En cada grupo, primero por temática y luego en el orden en que se ejecutarían.
-// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento); 1.5 T_Asistencia alineada con T_Lista (repetible).
-// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda); 2.6 T_Asistencia alineada con T_Lista (plan, envoltorio y escritura).
+// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento); 1.5 T_Asistencia alineada con T_Lista (repetible); 1.6 lo mismo para T, S, CR y sus asistencias (repetible; lo usa la reenumeración).
+// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda); 2.6 T_Asistencia alineada con T_Lista (plan, envoltorio y escritura; ahora para T, S y CR); 2.7 envoltorio de las herramientas 1.6.
 // =============================================================================
 
 // =============================================================================
@@ -61623,6 +61630,25 @@ function alinearTAsistenciaConTListaRevisar() {
 
 function alinearTAsistenciaConTLista() {
   _correrAlinearTAsistencia_('alinearTAsistenciaConTLista', true);
+}
+
+// ----- 1.6 Todas las listas y asistencias (29-oct-2026): lo mismo que 1.4 y 1.5, sobre T_Lista, S_Lista, CR_Lista y sus asistencias; son las que usa la reenumeración -----
+// corregirTemporadaListasPorFechaRevisar() / corregirTemporadaListasPorFecha(): Temporada (y ficha de Semanas) de T_Lista, S_Lista y CR_Lista según la fecha de cada fila. Corre antes migrarIdsEvento().
+// alinearAsistenciasConListasRevisar() / alinearAsistenciasConListas(): Temporada y Fecha de T_Asistencia y S_Asistencia según su torneo o sorteo (el id es la llave). Corre después de migrarIdsEvento(). [→ Contexto_Base_Web.md §PF286]
+function corregirTemporadaListasPorFechaRevisar() {
+  _correrHerramientaTemporada_('corregirTemporadaListasPorFechaRevisar', false, function (aplicar) { return _corregirTemporadaListas_(aplicar, false); });
+}
+
+function corregirTemporadaListasPorFecha() {
+  _correrHerramientaTemporada_('corregirTemporadaListasPorFecha', true, function (aplicar) { return _corregirTemporadaListas_(aplicar, false); });
+}
+
+function alinearAsistenciasConListasRevisar() {
+  _correrHerramientaTemporada_('alinearAsistenciasConListasRevisar', false, _alinearAsistencias_);
+}
+
+function alinearAsistenciasConListas() {
+  _correrHerramientaTemporada_('alinearAsistenciasConListas', true, _alinearAsistencias_);
 }
 
 // =============================================================================
@@ -62844,30 +62870,61 @@ function _corregirTemporadaFichaSemanas_(texto, actual, esperada) {
   return { texto: original.replace(/T\d+_S(\d+)/g, 'T' + esperada + '_S$1'), cambiado: true };
 }
 
-// _corregirTemporadaTLista_(aplicar): devuelve la cantidad de errores (0 = todo bien). Lee Temporada, Fecha, Semanas e ID de T_Lista (datos desde la fila 3), calcula la temporada de cada fecha con
-// _calcularTemporadaParaFecha() y, con aplicar = true, escribe solo las columnas Temporada y Semanas (nunca la hoja entera) y rehace Backup_T_Lista.csv.
-function _corregirTemporadaTLista_(aplicar) {
-  var tag = aplicar ? '[Temporada T_Lista]' : '[Temporada T_Lista · solo revisar]';
-  var errores = 0;
+// _cfgListasTemporada_(): las tres listas de eventos cuya Temporada debe salir de la fecha de cada fila (primera = primera fila de datos). T_Lista y S_Lista tienen encabezado de 2 filas; CR_Lista, de 3.
+function _cfgListasTemporada_() {
+  return [
+    { clave: 'T_LISTA',  etiqueta: 'T_Lista',  hoja: CFG.SHEETS.T_LISTA,  M: TL, primera: 3 },
+    { clave: 'S_LISTA',  etiqueta: 'S_Lista',  hoja: CFG.SHEETS.S_LISTA,  M: SL, primera: 3 },
+    { clave: 'CR_LISTA', etiqueta: 'CR_Lista', hoja: CFG.SHEETS.CR_LISTA, M: CR, primera: 4 }
+  ];
+}
 
+// _guardaReferenciaTemporadas_(tag): true si la referencia actual de temporadas (CFG_REF_ACTIVO) da T21 para el 04/05/2026 (mayo = 21 … octubre = 26). OJO: este control describe la numeración vigente al 29-oct-2026;
+// después de la próxima reenumeración habrá que actualizar la fecha y la temporada de control (por eso la reenumeración, que acaba de fijar la referencia, la omite).
+function _guardaReferenciaTemporadas_(tag) {
   var controlMayo = _calcularTemporadaParaFecha(new Date(2026, 4, 4));
   if (controlMayo !== 21) {
     Logger.log(tag + ' ERROR: con la referencia actual (CFG_REF_ACTIVO), el 04/05/2026 da T' + controlMayo + ' y debería dar T21 (mayo = 21 … octubre = 26). No se escribe nada: revisa esa propiedad.');
-    return 1;
+    return false;
   }
+  return true;
+}
 
-  var sh = _getSs().getSheetByName(CFG.SHEETS.T_LISTA);
-  if (!sh) { Logger.log(tag + ' Hoja ' + CFG.SHEETS.T_LISTA + ' no encontrada.'); return 1; }
-  var primera = 3;
+// _corregirTemporadaTLista_(aplicar): T_Lista sola (herramienta manual corregirTemporadaTLista*). Devuelve la cantidad de errores (0 = todo bien).
+function _corregirTemporadaTLista_(aplicar) {
+  var tag = aplicar ? '[Temporada T_Lista]' : '[Temporada T_Lista · solo revisar]';
+  if (!_guardaReferenciaTemporadas_(tag)) return 1;
+  return _corregirTemporadaListaPorFecha_(aplicar, _cfgListasTemporada_()[0]);
+}
+
+// _corregirTemporadaListas_(aplicar, omitirGuarda): T_Lista, S_Lista y CR_Lista (herramienta manual corregirTemporadaListasPorFecha* y paso de la reenumeración, que omite la guarda). Devuelve la cantidad de errores.
+function _corregirTemporadaListas_(aplicar, omitirGuarda) {
+  var tag = aplicar ? '[Temporada listas]' : '[Temporada listas · solo revisar]';
+  if (!omitirGuarda && !_guardaReferenciaTemporadas_(tag)) return 1;
+  var errores = 0;
+  _cfgListasTemporada_().forEach(function (cfg) { errores += _corregirTemporadaListaPorFecha_(aplicar, cfg); });
+  return errores;
+}
+
+// _corregirTemporadaListaPorFecha_(aplicar, cfg): devuelve la cantidad de errores (0 = todo bien). Lee Temporada, Fecha, Semanas e ID de UNA lista (cfg de _cfgListasTemporada_()), calcula la temporada de cada fecha con
+// _calcularTemporadaParaFecha() y, con aplicar = true, escribe solo las columnas Temporada y Semanas (nunca la hoja entera) y rehace el respaldo CSV de esa lista.
+function _corregirTemporadaListaPorFecha_(aplicar, cfg) {
+  var M = cfg.M;
+  var tag = (aplicar ? '[Temporada ' : '[Temporada ') + cfg.etiqueta + (aplicar ? ']' : ' · solo revisar]');
+  var errores = 0;
+
+  var sh = _getSs().getSheetByName(cfg.hoja);
+  if (!sh) { Logger.log(tag + ' Hoja ' + cfg.hoja + ' no encontrada.'); return 1; }
+  var primera = cfg.primera;
   var ultima = sh.getLastRow();
-  if (ultima < primera) { Logger.log(tag + ' T_Lista sin filas de datos.'); return 0; }
+  if (ultima < primera) { Logger.log(tag + ' ' + cfg.etiqueta + ' sin filas de datos.'); return 0; }
   var n = ultima - primera + 1;
-  var rTemp = sh.getRange(primera, TL.TEMPORADA, n, 1);
-  var rSem = sh.getRange(primera, TL.SEMANAS, n, 1);
+  var rTemp = sh.getRange(primera, M.TEMPORADA, n, 1);
+  var rSem = sh.getRange(primera, M.SEMANAS, n, 1);
   var temps = rTemp.getValues();
   var sems = rSem.getValues();
-  var fechas = sh.getRange(primera, TL.FECHA, n, 1).getValues();
-  var ids = sh.getRange(primera, TL.ID, n, 1).getValues();
+  var fechas = sh.getRange(primera, M.FECHA, n, 1).getValues();
+  var ids = sh.getRange(primera, M.ID, n, 1).getValues();
 
   var cambiosTemp = 0, cambiosSem = 0, avisos = 0;
   for (var i = 0; i < n; i++) {
@@ -62901,7 +62958,7 @@ function _corregirTemporadaTLista_(aplicar) {
 
   Logger.log(tag + ' Resumen: ' + cambiosTemp + ' temporada(s) por corregir, ' + cambiosSem + ' ficha(s) de Semanas, ' + avisos + ' aviso(s).');
   if (!aplicar) {
-    Logger.log(tag + ' Fin de la revisión: no se escribió nada. Si el plan es correcto, corre corregirTemporadaTLista().');
+    Logger.log(tag + ' Fin de la revisión: no se escribió nada.');
     return errores;
   }
   if (cambiosTemp > 0) {
@@ -62909,9 +62966,9 @@ function _corregirTemporadaTLista_(aplicar) {
     if (cambiosSem > 0) rSem.setValues(sems);
     Logger.log(tag + ' Escrito: ' + cambiosTemp + ' temporada(s) y ' + cambiosSem + ' ficha(s) de Semanas.');
   }
-  try { respaldarIndiceYProtegidasCSV('T_LISTA'); Logger.log(tag + ' Backup_T_Lista.csv rehecho desde la hoja.'); }
-  catch (eB) { errores++; Logger.log(tag + ' ERROR rehaciendo Backup_T_Lista.csv: ' + eB.message + ' (repite la herramienta).'); }
-  Logger.log(tag + ' Terminado. Siguiente paso: migrarIdsEventoRevisar() y, si el plan es correcto, migrarIdsEvento().');
+  try { respaldarIndiceYProtegidasCSV(cfg.clave); Logger.log(tag + ' Respaldo CSV de ' + cfg.etiqueta + ' rehecho desde la hoja.'); }
+  catch (eB) { errores++; Logger.log(tag + ' ERROR rehaciendo el respaldo de ' + cfg.etiqueta + ': ' + eB.message + ' (repite la herramienta).'); }
+  Logger.log(tag + ' Terminado.');
   return errores;
 }
 
@@ -62982,22 +63039,44 @@ function _correrAlinearTAsistencia_(nombreFn, aplicar) {
   }
 }
 
-// _alinearTAsistenciaConTLista_(aplicar): devuelve la cantidad de errores (0 = todo bien). Lee T_Lista (id, Temporada, Fecha; datos desde la fila 3) y T_Asistencia (datos desde la fila 2) y, con aplicar = true,
-// escribe SOLO las columnas Temporada y Fecha de T_Asistencia (nunca la hoja entera) y rehace Backup_T_Asistencia.csv.
+// _cfgAsistenciasTemporada_(): las asistencias que citan un evento por id (T_Asistencia y S_Asistencia, encabezado de 1 fila); lista = lista de _cfgListasTemporada_() de donde sale la Temporada y la Fecha de cada id.
+function _cfgAsistenciasTemporada_() {
+  var listas = _cfgListasTemporada_();
+  return [
+    { clave: 'T_ASISTENCIA', etiqueta: 'T_Asistencia', hoja: CFG.SHEETS.T_ASISTENCIA, M: TA, lista: listas[0] },
+    { clave: 'S_ASISTENCIA', etiqueta: 'S_Asistencia', hoja: CFG.SHEETS.S_ASISTENCIA, M: SA, lista: listas[1] }
+  ];
+}
+
+// _alinearTAsistenciaConTLista_(aplicar): T_Asistencia sola (herramienta manual alinearTAsistenciaConTLista*). Devuelve la cantidad de errores.
 function _alinearTAsistenciaConTLista_(aplicar) {
-  var tag = aplicar ? '[Asistencia T]' : '[Asistencia T · solo revisar]';
+  return _alinearAsistenciaConLista_(aplicar, _cfgAsistenciasTemporada_()[0]);
+}
+
+// _alinearAsistencias_(aplicar): T_Asistencia y S_Asistencia (herramienta manual alinearAsistenciasConListas* y paso de la reenumeración). Devuelve la cantidad de errores.
+function _alinearAsistencias_(aplicar) {
+  var errores = 0;
+  _cfgAsistenciasTemporada_().forEach(function (cfg) { errores += _alinearAsistenciaConLista_(aplicar, cfg); });
+  return errores;
+}
+
+// _alinearAsistenciaConLista_(aplicar, cfg): devuelve la cantidad de errores (0 = todo bien). Lee la lista (id, Temporada, Fecha) y la asistencia de cfg y, con aplicar = true, escribe SOLO las columnas Temporada y Fecha de la asistencia
+// (nunca la hoja entera) y rehace su respaldo CSV.
+function _alinearAsistenciaConLista_(aplicar, cfg) {
+  var tag = '[Asistencia ' + cfg.etiqueta + (aplicar ? ']' : ' · solo revisar]');
   var errores = 0;
   var ss = _getSs();
-  var shL = ss.getSheetByName(CFG.SHEETS.T_LISTA);
-  var shA = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
-  if (!shL || !shA) { Logger.log(tag + ' Falta la hoja T_Lista o T_Asistencia.'); return 1; }
+  var L = cfg.lista, ML = L.M, MA = cfg.M;
+  var shL = ss.getSheetByName(L.hoja);
+  var shA = ss.getSheetByName(cfg.hoja);
+  if (!shL || !shA) { Logger.log(tag + ' Falta la hoja ' + L.hoja + ' o ' + cfg.hoja + '.'); return 1; }
   var ultL = shL.getLastRow(), ultA = shA.getLastRow();
-  if (ultL < 3 || ultA < 2) { Logger.log(tag + ' T_Lista o T_Asistencia sin filas de datos.'); return 0; }
+  if (ultL < L.primera || ultA < 2) { Logger.log(tag + ' ' + L.etiqueta + ' o ' + cfg.etiqueta + ' sin filas de datos.'); return 0; }
 
-  var nL = ultL - 2;
-  var idsL = shL.getRange(3, TL.ID, nL, 1).getValues();
-  var tempsL = shL.getRange(3, TL.TEMPORADA, nL, 1).getValues();
-  var fechasL = shL.getRange(3, TL.FECHA, nL, 1).getValues();
+  var nL = ultL - L.primera + 1;
+  var idsL = shL.getRange(L.primera, ML.ID, nL, 1).getValues();
+  var tempsL = shL.getRange(L.primera, ML.TEMPORADA, nL, 1).getValues();
+  var fechasL = shL.getRange(L.primera, ML.FECHA, nL, 1).getValues();
   var torneos = {}, fechaValor = {};
   for (var i = 0; i < nL; i++) {
     var id = String(idsL[i][0] || '').trim();
@@ -63008,9 +63087,9 @@ function _alinearTAsistenciaConTLista_(aplicar) {
   }
 
   var nA = ultA - 1;
-  var rTemp = shA.getRange(2, TA.TEMPORADA, nA, 1), rFecha = shA.getRange(2, TA.FECHA, nA, 1);
+  var rTemp = shA.getRange(2, MA.TEMPORADA, nA, 1), rFecha = shA.getRange(2, MA.FECHA, nA, 1);
   var temps = rTemp.getValues(), fechas = rFecha.getValues();
-  var idsA = shA.getRange(2, TA.ID, nA, 1).getValues();
+  var idsA = shA.getRange(2, MA.ID, nA, 1).getValues();
   var filas = [];
   for (var j = 0; j < nA; j++) filas.push({ indice: 2 + j, id: idsA[j][0], temporada: temps[j][0], dia: _claveDiaCelda_(fechas[j][0]) });
 
@@ -63021,12 +63100,12 @@ function _alinearTAsistenciaConTLista_(aplicar) {
     if (r.cambiaFecha) partes.push('Fecha ' + r.diaViejo + ' → ' + r.diaNuevo + ' (' + r.cambiaFecha + ' fila(s))');
     Logger.log(tag + ' ' + id + ': ' + r.filas + ' fila(s) por corregir: ' + partes.join('; '));
   });
-  plan.sinTorneo.forEach(function (id) { Logger.log(tag + ' AVISO: el id ' + id + ' de T_Asistencia no está en T_Lista; no se toca.'); });
-  plan.repetidos.forEach(function (id) { Logger.log(tag + ' AVISO: el id ' + id + ' está repetido en T_Lista; no se toca.'); });
-  Logger.log(tag + ' Resumen: ' + plan.cambios.length + ' fila(s) de T_Asistencia por corregir en ' + Object.keys(plan.resumen).length + ' torneo(s), ' + plan.sinTorneo.length + ' id(s) sin torneo, ' + plan.repetidos.length + ' repetido(s).');
+  plan.sinTorneo.forEach(function (id) { Logger.log(tag + ' AVISO: el id ' + id + ' de ' + cfg.etiqueta + ' no está en ' + L.etiqueta + '; no se toca.'); });
+  plan.repetidos.forEach(function (id) { Logger.log(tag + ' AVISO: el id ' + id + ' está repetido en ' + L.etiqueta + '; no se toca.'); });
+  Logger.log(tag + ' Resumen: ' + plan.cambios.length + ' fila(s) de ' + cfg.etiqueta + ' por corregir en ' + Object.keys(plan.resumen).length + ' torneo(s), ' + plan.sinTorneo.length + ' id(s) sin torneo, ' + plan.repetidos.length + ' repetido(s).');
 
   if (!aplicar) {
-    Logger.log(tag + ' Fin de la revisión: no se escribió nada. Si el plan es correcto, corre alinearTAsistenciaConTLista().');
+    Logger.log(tag + ' Fin de la revisión: no se escribió nada.');
     return errores;
   }
   if (plan.cambios.length) {
@@ -63042,12 +63121,29 @@ function _alinearTAsistenciaConTLista_(aplicar) {
     });
     if (cambiaT) rTemp.setValues(temps); // solo esa columna (PF258: nunca la hoja entera)
     if (cambiaF) rFecha.setValues(fechas);
-    Logger.log(tag + ' Escrito: ' + plan.cambios.length + ' fila(s) de T_Asistencia.');
+    Logger.log(tag + ' Escrito: ' + plan.cambios.length + ' fila(s) de ' + cfg.etiqueta + '.');
   }
-  try { respaldarIndiceYProtegidasCSV('T_ASISTENCIA'); Logger.log(tag + ' Backup_T_Asistencia.csv rehecho desde la hoja.'); }
-  catch (eB) { errores++; Logger.log(tag + ' ERROR rehaciendo Backup_T_Asistencia.csv: ' + eB.message + ' (repite la herramienta).'); }
+  try { respaldarIndiceYProtegidasCSV(cfg.clave); Logger.log(tag + ' Respaldo CSV de ' + cfg.etiqueta + ' rehecho desde la hoja.'); }
+  catch (eB) { errores++; Logger.log(tag + ' ERROR rehaciendo el respaldo de ' + cfg.etiqueta + ': ' + eB.message + ' (repite la herramienta).'); }
   Logger.log(tag + ' Terminado.');
   return errores;
+}
+
+
+// _correrHerramientaTemporada_(nombreFn, aplicar, fn): envoltorio de las herramientas 1.6; solo la versión que escribe toma el candado de ejecución. fn(aplicar) devuelve la cantidad de errores.
+function _correrHerramientaTemporada_(nombreFn, aplicar, fn) {
+  if (aplicar && !_adquirirLockEjecucion(nombreFn)) {
+    Logger.log('[Temporada] ' + nombreFn + '(): NO se inicia (hay otra ejecución en curso o una reenumeración). Reintenta cuando el registro diga «Completada».');
+    return;
+  }
+  try {
+    var errores = fn(aplicar);
+    Logger.log('[Temporada] ' + nombreFn + '(): ' + (errores ? 'terminó con ' + errores + ' error(es); revisa el registro.' : 'terminó sin errores.') + (aplicar ? '' : ' No se escribió nada.'));
+  } catch (e) {
+    Logger.log('[Temporada] ERROR en ' + nombreFn + '(): ' + e.message + (aplicar ? ' — vuelve a correr la versión «Revisar» para ver qué falta (la herramienta es repetible).' : ''));
+  } finally {
+    if (aplicar) _liberarLockEjecucion();
+  }
 }
 
 
