@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 19:28:34 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 20:02:54 */
 
 
 
@@ -34929,7 +34929,7 @@ function _leerCuentasDirectorioParaCR_(tags) {
  *  - Degradación: realizada si su rango actual es el propuesto.
  *  - Elegible Admin: realizada si ya es admin.
  *  - Ascenso de clan: realizado si ya está activa en el clan de destino (se lee del Comentario: «Sube al clan X como miembro.»).
- * Si la cuenta ya no está activa en el clan y la propuesta era Ascenso o Degradación, NO se marca y se devuelve una nota para que se revise a mano.
+ * Si la cuenta ya no está activa en el clan y la propuesta era Ascenso o Degradación, NO se marca y se devuelve una nota para que se revise a mano; si el Directorio la muestra activa en otro clan Terna, la nota dice «La cuenta se movió del clan A al clan B» (28-oct-2026).
  * Devuelve { realizada, motivo ('' si no), nota ('' si no hay) }.
  */
 function _decidirPropuestaCRRealizada_(prop, cuenta) {
@@ -34942,14 +34942,17 @@ function _decidirPropuestaCRRealizada_(prop, cuenta) {
   if (prop.tipo === 'Expulsión') {
     if (!cuenta) { no.nota = 'La cuenta no figura en el Directorio ni en Inactivos: revisa a mano si se expulsó.'; return no; }
     if (cuenta.activo) {
-      if (!activaEnClan) no.nota = 'La cuenta sigue activa en el clan ' + cuenta.clan + ': revisa a mano si se expulsó del clan ' + prop.clan + '.';
+      if (!activaEnClan) no.nota = 'La cuenta se movió del clan ' + prop.clan + ' al clan ' + cuenta.clan + ': revisa a mano si se expulsó.';
       return no;
     }
     return { realizada: true, motivo: cuenta.enInactivos ? 'la cuenta figura en la hoja Inactivos' : 'la cuenta figura como inactiva en el Directorio', nota: '' };
   }
   if (prop.tipo === 'Ascenso' || prop.tipo === 'Degradación') {
     if (!activaEnClan) {
-      no.nota = 'La cuenta ya no está en el clan ' + prop.clan + ': revisa a mano si el cambio se aplicó.';
+      // Si el Directorio la muestra activa en otro clan Terna, se dice a cuál se movió; si no (sin clan o en un clan externo), la nota de siempre.
+      no.nota = (cuenta && cuenta.activo && cuenta.clan)
+        ? 'La cuenta se movió del clan ' + prop.clan + ' al clan ' + cuenta.clan + ': revisa a mano si el cambio se aplicó.'
+        : 'La cuenta ya no está en el clan ' + prop.clan + ': revisa a mano si el cambio se aplicó.';
       return no;
     }
     if (idxActual < 0 || idxPropuesto < 0) return no;
