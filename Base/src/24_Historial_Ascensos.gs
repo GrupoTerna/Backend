@@ -1372,6 +1372,20 @@ function _explicarExcepcionalesCR_(v) {
 }
 
 /**
+ * _notaSinDatosGuerraCR_(porTag, tag, semanas) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
+ * Si no hay datos de guerra con los que evaluar a la cuenta en las semanas del par (`porTag` es lo que devuelve _getTrofeosYAtaquesSemanalesPorTag()), devuelve el texto de por qué no se pudo evaluar; si los hay, ''.
+ * Sin esto, una cuenta sin filas en esas semanas salía como «Medallas 0 (se pide 2500); Ataques 0 (se pide 16)», que parece un dato real y es solo la ausencia de datos (28-oct-2026: el Backup_Guerra.csv de Drive ya no traía la temporada 24).
+ */
+function _notaSinDatosGuerraCR_(porTag, tag, semanas) {
+  if (porTag && porTag[tag]) return '';
+  var etiqueta = (semanas || []).map(function (s) { return 'T' + s.temporada + '_S' + s.semana; }).join(', ');
+  if (!porTag || !Object.keys(porTag).length) {
+    return 'No se pudo evaluar: no hay datos de guerra de las semanas del par (' + etiqueta + ') en Backup_Guerra.csv ni en la hoja Guerra; los ceros serían falta de datos, no medallas ni ataques reales.';
+  }
+  return 'No se pudo evaluar: la cuenta no tiene filas de guerra en las semanas del par (' + etiqueta + ').';
+}
+
+/**
  * _rolDeRangoCR_(rango) — función pura. 'Miembro'|'Veterano'|'Colíder' (con o sin tilde, en cualquier caja) a 'miembro'|'veterano'|'colider'; '' si no se reconoce.
  */
 function _rolDeRangoCR_(rango) {
@@ -1397,6 +1411,8 @@ function _explicarAltasCR_(altas, v, par, ctxReal, dir) {
     var bloque = porClan[x.clan];
     if (!rolKey) { x.requisitoNota = 'No se pudo evaluar: el registro no trae el rango que tenía la cuenta antes del cambio.'; return; }
     if (!bloque) { x.requisitoNota = 'No se pudo evaluar: el clan «' + x.clan + '» no figura en el par ' + v.parId + '.'; return; }
+    var sinDatos = _notaSinDatosGuerraCR_(porTag, x.tag, semanas);
+    if (sinDatos) { x.requisitoNota = sinDatos; return; }
     var prom = _getPromediosCRParaJugador(x.tag, semanas, ctxReal, porTag);
     var mv = (glob.miembroActivo && glob.miembroActivo.activo) ? _esMiembroVigenteEnClanesFamilia(x.tag) : false;
     x.incumple = _requisitosIncumplidosCR_(bloque, rolKey, glob, prom, mv, (dir[x.tag] || {}).wsp);
@@ -1426,6 +1442,8 @@ function _explicarBajasCR_(bajas, v, par, ctxReal, dir) {
     var bloque = porClan[x.clan];
     if (!rolKey) { x.requisitoNota = 'No se pudo evaluar: el registro no trae el rango que tenía la cuenta antes del cambio.'; return; }
     if (!bloque) { x.requisitoNota = 'No se pudo evaluar: el clan «' + x.clan + '» no figura en el par ' + par.idD + '.'; return; }
+    var sinDatos = _notaSinDatosGuerraCR_(porTag, x.tag, semanas);
+    if (sinDatos) { x.requisitoNota = sinDatos; return; }
     var d = dir[x.tag] || {};
     var blq = _bloqueDescensoDesdeSemanasCompletas((porTag[x.tag] || {}).semanasCompletas, d.ing || null, x.tag, ventanas);
     if (!blq) { x.requisitoNota = 'Ninguna de sus semanas cuenta para Descenso (no tuvo la semana completa): con los datos del par no había nada que evaluar.'; return; }
