@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 20:23:58 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 20:27:30 */
 
 
 
@@ -35067,8 +35067,8 @@ function _asignarParesAPropuestas_(registros, pares, claveDia) {
  * _verificarCambioRangoDesdeRegistros_(registros, claveDia) — función pura (se prueba en Node, sin hojas).
  * Compara, con lo que ya está escrito en Historial_A/D, las propuestas de la corrida más reciente (las mismas que usan los documentos de Cambio de rango, ver _corridaCambioRangoDesdeRegistros_()) con lo realmente aplicado:
  *  - aplicadas: propuestas de la corrida con Estado de propuesta «Realizado».
- *  - pendientes: propuestas de la corrida todavía «Planificado» (falta aplicarlas). Las que no tienen Rango ni Rango 2 (Expulsión, Elegible Admin y Ascenso de clan) no se resuelven solas
- *    (_indexarPropuestasPendientesAscensos()): `confirmaManual` es true y hay que marcarlas «Realizado» a mano cuando se apliquen.
+ *  - pendientes: propuestas de la corrida todavía «Planificado» (falta aplicarlas). Desde el 28-oct-2026 todas se marcan «Realizado» solas al verificar, también Expulsión, Elegible Admin y Ascenso de clan
+ *    (_decidirPropuestaCRRealizada_()). `confirmaManual` (true en las que no tienen Rango ni Rango 2) se conserva por compatibilidad, pero la web ya no lo usa: no significa que haya que marcarlas a mano.
  *  - excepcionales: cambios reales (Ascenso, Degradación, Expulsión o Ascenso de clan, sin Estado de propuesta) con Fecha desde el día de la corrida; son los que no coincidieron con ninguna propuesta pendiente. Si la cuenta tenía otra propuesta
  *    en la corrida, el motivo lo dice; si no tenía ninguna, la evaluación de la corrida no la dio por calificada para ese cambio.
  * No vuelve a evaluar los requisitos: usa lo que quedó registrado cuando se generaron las propuestas. Devuelve { hayCorrida, diaTxt, temporada, semana, dia, propuestasN, aplicadas, pendientes, excepcionales }; cada elemento trae
