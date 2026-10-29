@@ -4299,6 +4299,7 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
  */
 function _syncGuerraCSV(sh, forzar) {
   try {
+    var tIniSync = Date.now(); // PF289 punto 5: tiempos por tramo, se imprimen junto a «CSV leído»
     var lastRow = sh.getLastRow();
     if (lastRow < 1) {
       Logger.log('[Guerra] _syncGuerraCSV: hoja sin encabezado, nada que fusionar.');
@@ -4323,15 +4324,21 @@ function _syncGuerraCSV(sh, forzar) {
     }
 
     // --- FUSIÓN con el CSV existente ---
+    var tHojaFin = Date.now();
     var csvExistente  = _loadCSVFromDrive('Backup_Guerra.csv');
+    var tCsvFin = Date.now();
     // PF289: tamaño de referencia = el mayor entre el peso real del archivo en Drive y el último tamaño que esta función dejó escrito. Si la lectura (memoria, caché o Drive) vino vacía o mucho más chica, se relee directo de Drive; si sigue chica, no se escribe nada.
     var refTam = forzar ? null : _guerraCsvTamRef_();
+    var tRefFin = Date.now();
+    var msRelectura = 0;
     if (refTam && refTam.ref > GUERRA_CSV_BLINDAJE_MIN_BYTES) {
       var largoLeido = csvExistente ? csvExistente.length : 0;
       if (largoLeido < refTam.ref * GUERRA_CSV_BLINDAJE_RATIO) {
         Logger.log('[ALERTA PROTECCIÓN] Backup_Guerra.csv se leyó con ' + largoLeido + ' caracteres y la referencia es de ' + refTam.ref +
                    ' bytes (Drive: ' + refTam.tamDrive + ', último bueno: ' + refTam.tamBueno + '). Se relee directo de Drive, sin caché.');
+        var tRelIni = Date.now();
         csvExistente = _guerraCsvRelecturaDirecta_();
+        msRelectura = Date.now() - tRelIni;
         largoLeido = csvExistente ? csvExistente.length : 0;
         if (largoLeido < refTam.ref * GUERRA_CSV_BLINDAJE_RATIO) {
           Logger.log('[ALERTA PROTECCIÓN] SKIP fusión de Backup_Guerra.csv: tras releer sigue con ' + largoLeido + ' caracteres (referencia ' + refTam.ref +
@@ -4365,8 +4372,12 @@ function _syncGuerraCSV(sh, forzar) {
 
     var csvRowsAntes = filasFusion.length;
     var nuevasDesdeHoja = 0;
+    var tParseFin = Date.now();
     // PF289: deja a la vista qué se leyó, para ubicar la primera escritura que recorte el CSV.
     Logger.log('[Guerra] _syncGuerraCSV: CSV leído con ' + csvRowsAntes + ' fila(s) y ' + (csvExistente ? csvExistente.length : 0) + ' caracteres; hoja con ' + (data.length - 1) + ' fila(s); referencia ' + (refTam ? refTam.ref : 0) + ' bytes.');
+    Logger.log('[Guerra] _syncGuerraCSV: tiempos hasta aquí: leer hoja ' + Math.round((tHojaFin - tIniSync) / 100) / 10 + ' s; leer CSV ' + Math.round((tCsvFin - tHojaFin) / 100) / 10 +
+               ' s; tamaño de referencia ' + Math.round((tRefFin - tCsvFin) / 100) / 10 + ' s; relectura directa ' + Math.round(msRelectura / 100) / 10 +
+               ' s; armar filas ' + Math.round((tParseFin - tRefFin - msRelectura) / 100) / 10 + ' s; total ' + Math.round((tParseFin - tIniSync) / 100) / 10 + ' s.');
 
     for (var si = 1; si < data.length; si++) {
       var filaHoja = data[si];
