@@ -4365,6 +4365,8 @@ function _syncGuerraCSV(sh, forzar) {
 
     var csvRowsAntes = filasFusion.length;
     var nuevasDesdeHoja = 0;
+    // PF289: deja a la vista qué se leyó, para ubicar la primera escritura que recorte el CSV.
+    Logger.log('[Guerra] _syncGuerraCSV: CSV leído con ' + csvRowsAntes + ' fila(s) y ' + (csvExistente ? csvExistente.length : 0) + ' caracteres; hoja con ' + (data.length - 1) + ' fila(s); referencia ' + (refTam ? refTam.ref : 0) + ' bytes.');
 
     for (var si = 1; si < data.length; si++) {
       var filaHoja = data[si];
