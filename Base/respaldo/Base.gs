@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 01:11:44 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 01:22:26 */
 
 
 
@@ -32372,6 +32372,12 @@ function _getDatosGuerraParaControl(ctx, temporadaReal) {
   if (String(ctx.temporada) === String(temporadaReal)) {
     // PF073: si la hoja Guerra no se puede leer, cae a Backup_Guerra.csv (sin el marcado de días opcionales por cruce de meta, que solo existe en la ruta de la hoja). [→ Contexto_Base_Web.md §PF073]
     try {
+      // PF073 (29-oct-2026): hoja Guerra vacía o ausente también cae a Backup_Guerra.csv (antes solo cuando la lectura lanzaba error y devolvía {} sin respaldo). _getDatosGuerraDesdeHojaParaControl() se deja igual porque 19_CorreccionRiverRace.gs la llama directo sobre la hoja.
+      var shGuerraCtl = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+      if (!shGuerraCtl || shGuerraCtl.getLastRow() < 2) {
+        Logger.log('[Control] Guerra vacía o ausente en la hoja, se usa Backup_Guerra.csv.');
+        return _getDatosGuerraDesdeCsvParaControl(ctx);
+      }
       return _getDatosGuerraDesdeHojaParaControl(ctx);
     } catch (eHojaG) {
       Logger.log('[Control] Guerra no disponible, se usa Backup_Guerra.csv: ' + eHojaG);
@@ -39061,12 +39067,22 @@ function _valorExtraDesdeCsv_(nombres) {
 function _getConfigMasRecienteCategoria(nombreCategoria, id) {
   var esTorneo = (nombreCategoria === 'Torneo');
   var ss = _getSs();
-  // PF073: si Sheets falla se trata como hoja vacía (devuelve []), igual que cuando la hoja no existe. [→ Contexto_Base_Web.md §PF073]
-  var sh = _hojaConFilas_(ss, esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA, 3);
-  if (!sh) return [];
-
+  // PF073 (29-oct-2026): hoja viva o, si no está disponible, Backup_T_Lista.csv / Backup_S_Lista.csv (encabezado de 2 filas, datos desde la fila 3). Solo devuelve [] si tampoco hay CSV. [→ Contexto_Base_Web.md §PF073]
   var totalCols = esTorneo ? TL_TOTAL_COLS : SL_TOTAL_COLS;
-  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, totalCols).getValues();
+  var lecturaLista = _obtenerFilasConFallbackCSV(ss, esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA, esTorneo ? 'Backup_T_Lista.csv' : 'Backup_S_Lista.csv', totalCols, 2);
+  if (lecturaLista.origen === 'vacio') return [];
+  var datos = lecturaLista.filas;
+  if (lecturaLista.origen === 'csv') {
+    // El CSV trae la Fecha como texto: se pasa a Date igual que en _webTorneos() y _resolverGruposContinuacionTorneos(), porque el criterio histórico de más abajo exige instanceof Date.
+    var colFechaCsv = esTorneo ? TL.FECHA : SL.FECHA;
+    datos = datos.map(function (f) {
+      var nueva = f.slice();
+      var fechaObj = _parseSpanishDate(nueva[colFechaCsv - 1]);
+      if (fechaObj instanceof Date && !isNaN(fechaObj.getTime())) nueva[colFechaCsv - 1] = fechaObj;
+      return nueva;
+    });
+  }
+  if (!datos.length) return [];
 
   var COL_FECHA     = esTorneo ? TL.FECHA : SL.FECHA;
   var COL_ID        = esTorneo ? TL.ID : SL.ID;
