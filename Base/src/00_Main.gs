@@ -1973,7 +1973,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       rellamadasPaso++;
       acumBasePaso = PROGRESO_PASO_.acum;
       Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ' incompleto tras la llamada ' + rellamadasPaso + ' de esta tanda (' + PROGRESO_PASO_.texto + '). La tanda lleva ' +
-        Math.round((Date.now() - inicioTanda) / 1000) + ' s de ' + Math.round(presupuestoMs / 1000) + ' s.');
+        Math.round((Date.now() - inicioTanda) / 1000) + ' s de ' + Math.round(presupuestoMs / 1000) + ' s: se vuelve a llamar al mismo paso.');
       _refrescarLockEjecucion(idEjecucion);
       PROGRESO_PASO_ = null;
       tInicioLlamada = Date.now();
