@@ -1446,7 +1446,7 @@ function _explicarBajasCR_(bajas, v, par, ctxReal, dir) {
 
 /**
  * _leerCuentasDirectorioParaCR_(tags) [→ Contexto_Base_Web.md §PF286]
- * De las cuentas del conjunto `tags` ({ '#TAG': true }), lo que el Directorio muestra hoy: { '#TAG': { activo, clan, rango, admin } }. Una cuenta que no figura en el Directorio no aparece en el resultado. Solo lee.
+ * De las cuentas del conjunto `tags` ({ '#TAG': true }), lo que el Directorio muestra hoy: { '#TAG': { activo, clan, rango, admin, enInactivos } }. En el Directorio solo se conservan los admins inactivos; el resto de las cuentas inactivas está en la hoja Inactivos, así que lo que no figura en el Directorio se busca ahí (activo:false, enInactivos:true, clan = el último que tuvo). Una cuenta que no figura en ninguna de las dos no aparece en el resultado; si la hoja Inactivos no se puede leer, tampoco aparece (no se marca nada por una lectura fallida). Solo lee.
  */
 function _leerCuentasDirectorioParaCR_(tags) {
   var out = {};
@@ -1457,16 +1457,34 @@ function _leerCuentasDirectorioParaCR_(tags) {
       activo: String(fila[DC.ESTADO - 1] || '').trim() === 'Activo',
       clan: String(fila[DC.CLAN - 1] || '').trim(),
       rango: String(fila[DC.RANGO - 1] || '').trim(),
-      admin: _esAdminEnDirectorioCR(fila[DC.ADMIN - 1])
+      admin: _esAdminEnDirectorioCR(fila[DC.ADMIN - 1]),
+      enInactivos: false
     };
   });
+  // Lo que no está en el Directorio puede estar en Inactivos (hoja de 29 columnas, IC; encabezado en la fila 1).
+  var faltan = {};
+  Object.keys(tags || {}).forEach(function (t) { if (!out[t]) faltan[cleanTag(t)] = t; });
+  if (Object.keys(faltan).length) {
+    try {
+      var shInact = _getSs().getSheetByName(CFG.SHEETS.INACTIVOS);
+      if (shInact && shInact.getLastRow() >= 2) {
+        shInact.getRange(2, 1, shInact.getLastRow() - 1, INACTIVOS_TOTAL_COLS).getValues().forEach(function (fila) {
+          var clave = faltan[cleanTag(String(fila[IC.TAG - 1] || '').trim())];
+          if (!clave || out[clave]) return;
+          out[clave] = { activo: false, clan: String(fila[IC.CLAN - 1] || '').trim(), rango: '', admin: false, enInactivos: true };
+        });
+      }
+    } catch (eInact) {
+      Logger.log('[CR] _leerCuentasDirectorioParaCR_: no se pudo leer la hoja Inactivos (' + eInact.message + '); las Expulsiones de esas cuentas no se marcan.');
+    }
+  }
   return out;
 }
 
 /**
  * _decidirPropuestaCRRealizada_(prop, cuenta) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
  * Decide si una propuesta ya se aplicó, mirando lo que el Directorio muestra hoy de la cuenta (`cuenta` = { activo, clan, rango, admin } o null si no figura):
- *  - Expulsión: realizada solo si la cuenta figura en el Directorio con Estado distinto de «Activo» (regla más estricta, 28-oct-2026). Si no figura en el Directorio, o figura activa en otro clan, NO se marca y se devuelve una nota para revisar a mano.
+ *  - Expulsión: realizada solo si la cuenta figura como inactiva: en el Directorio con Estado distinto de «Activo» (los admins inactivos se conservan ahí) o en la hoja Inactivos (donde pasan los demás; llega como `enInactivos`). Regla más estricta, 28-oct-2026. Si no figura en ninguna de las dos, o figura activa en otro clan, NO se marca y se devuelve una nota para revisar a mano.
  *  - Ascenso: realizado si su rango actual es el propuesto o uno más alto.
  *  - Degradación: realizada si su rango actual es el propuesto.
  *  - Elegible Admin: realizada si ya es admin.
@@ -1482,12 +1500,12 @@ function _decidirPropuestaCRRealizada_(prop, cuenta) {
   var no = { realizada: false, motivo: '', nota: '' };
 
   if (prop.tipo === 'Expulsión') {
-    if (!cuenta) { no.nota = 'La cuenta no figura en el Directorio: revisa a mano si se expulsó.'; return no; }
+    if (!cuenta) { no.nota = 'La cuenta no figura en el Directorio ni en Inactivos: revisa a mano si se expulsó.'; return no; }
     if (cuenta.activo) {
       if (!activaEnClan) no.nota = 'La cuenta sigue activa en el clan ' + cuenta.clan + ': revisa a mano si se expulsó del clan ' + prop.clan + '.';
       return no;
     }
-    return { realizada: true, motivo: 'la cuenta figura como inactiva en el Directorio', nota: '' };
+    return { realizada: true, motivo: cuenta.enInactivos ? 'la cuenta figura en la hoja Inactivos' : 'la cuenta figura como inactiva en el Directorio', nota: '' };
   }
   if (prop.tipo === 'Ascenso' || prop.tipo === 'Degradación') {
     if (!activaEnClan) {
