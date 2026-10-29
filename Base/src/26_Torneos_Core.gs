@@ -76,6 +76,52 @@ var CR_ATAQUES_COLS = {
   COLIDER:  [CR.ATAQUES_COLIDER_C1,  CR.ATAQUES_COLIDER_C2,  CR.ATAQUES_COLIDER_C3,  CR.ATAQUES_COLIDER_C4]
 };
 
+// Separador de miles SOLO de visualización (29-oct-2026, pedido de la usuaria): Min (medallas), Ataques y Barcos de T_Lista, S_Lista y CR_Lista se muestran con coma de miles mediante el formato de número `#,##0`.
+// El valor guardado en la celda sigue siendo el número sin coma; el respaldo CSV de estas hojas también lo guarda sin coma (ver _colsMilesDeHoja_() en 05_Backup_CSV.gs). [→ Contexto_Base_Web.md §PF286]
+var FORMATO_MILES_ = '#,##0';
+var TL_COLS_MILES = TL_MIN_T_COLS.concat(TL_ATAQUES_COLS, [TL.BARCOS]);
+var SL_COLS_MILES = SL_MIN_S_COLS.concat([SL.MIN_S_DELTA], SL_ATAQUES_COLS, [SL.BARCOS]);
+var CR_COLS_MILES = CR_MIN_CR_COLS.MIEMBRO.concat(CR_MIN_CR_COLS.VETERANO, CR_MIN_CR_COLS.COLIDER, CR_ATAQUES_COLS.MIEMBRO, CR_ATAQUES_COLS.VETERANO, CR_ATAQUES_COLS.COLIDER, [CR.BARCOS]);
+
+/**
+ * _aplicarFormatoMilesHoja_(sh, primera, cols, hastaFila): pone el formato `#,##0` en las columnas `cols` (índices 1-based) desde la fila `primera` hasta `hastaFila` (por omisión, el final de la hoja, para que las filas nuevas ya lo traigan).
+ * Solo cambia cómo se ve el número; no toca el valor. Agrupa las columnas contiguas en un solo rango. Idempotente.
+ */
+function _aplicarFormatoMilesHoja_(sh, primera, cols, hastaFila) {
+  if (!sh) return;
+  var ultima = hastaFila || sh.getMaxRows();
+  if (ultima < primera) return;
+  var n = ultima - primera + 1;
+  var orden = cols.slice().sort(function (a, b) { return a - b; });
+  var i = 0;
+  while (i < orden.length) {
+    var j = i;
+    while (j + 1 < orden.length && orden[j + 1] === orden[j] + 1) j++;
+    sh.getRange(primera, orden[i], n, orden[j] - orden[i] + 1).setNumberFormat(FORMATO_MILES_);
+    i = j + 1;
+  }
+}
+
+// _aplicarFormatoMilesListas_(ss): aplica el formato de miles a T_Lista, S_Lista y CR_Lista (hasta el final de cada hoja). Devuelve cuántas hojas tocó; un error en una hoja no frena a las otras.
+function _aplicarFormatoMilesListas_(ss) {
+  var tocadas = 0;
+  [
+    { hoja: CFG.SHEETS.T_LISTA,  primera: 3, cols: TL_COLS_MILES },
+    { hoja: CFG.SHEETS.S_LISTA,  primera: 3, cols: SL_COLS_MILES },
+    { hoja: CFG.SHEETS.CR_LISTA, primera: 4, cols: CR_COLS_MILES }
+  ].forEach(function (c) {
+    try {
+      var sh = ss.getSheetByName(c.hoja);
+      if (!sh) return;
+      _aplicarFormatoMilesHoja_(sh, c.primera, c.cols);
+      tocadas++;
+    } catch (e) {
+      Logger.log('[Miles] No se pudo aplicar el formato en ' + c.hoja + ': ' + e.message);
+    }
+  });
+  return tocadas;
+}
+
 // CR_Lista — CR.HORA como HORA REAL, no texto (16-sep-2026, pedido del [→ Contexto_Base_Web.md §26B010]
 
 /**
@@ -1374,6 +1420,7 @@ function importarTListaDesdeCSV() {
     _trySetFmt(sh, i + 3, TL.HORA, 'h:mm:ss AM/PM');
   }
   applyBorderCenter(sh.getRange(3, 1, filas.length, TL_TOTAL_COLS));
+  _aplicarFormatoMilesHoja_(sh, 3, TL_COLS_MILES);
   _aplicarDropdownAdminTLista(ss);
   _aplicarDropdownTagTor2TLista(ss);
   _aplicarDropdownEstadoTLista(ss);
@@ -1428,6 +1475,7 @@ function importarSListaDesdeCSV() {
   // PF118: Hora como hora de verdad y con formato de solo hora, no «30/12/1899 20:00:00».
   _normalizarHoraSLista(sh);
   applyBorderCenter(sh.getRange(3, 1, filas.length, SL_TOTAL_COLS));
+  _aplicarFormatoMilesHoja_(sh, 3, SL_COLS_MILES);
   _aplicarDropdownId2SLista(ss);
   _aplicarDropdownEstadoSLista(ss);
   // FIX (07-sep-2026, pedido del usuario): reaplica también los [→ Contexto_Base_Web.md §26B111]
@@ -1479,6 +1527,7 @@ function importarCRListaDesdeCSV() {
     _trySetFmt(sh, i + 4, CR.HORA, 'h:mm:ss AM/PM');
   }
   applyBorderCenter(sh.getRange(4, 1, filas.length, CR_TOTAL_COLS));
+  _aplicarFormatoMilesHoja_(sh, 4, CR_COLS_MILES);
   _aplicarDropdownTipoCRLista(ss);
   _aplicarDropdownEstadoCRLista(ss);
   _reordenarCRListaPorFecha(ss);
@@ -2269,6 +2318,7 @@ function procesarTListaNuevasFilas(ss) {
   // FIX (16-ago-2026): reportado por el usuario -- la última fila de [→ Contexto_Base_Web.md §26B171]
   if (sh.getLastRow() >= 3) {
     applyBorderCenter(sh.getRange(3, 1, sh.getLastRow() - 2, TL_TOTAL_COLS));
+    _aplicarFormatoMilesHoja_(sh, 3, TL_COLS_MILES, sh.getLastRow()); // separador de miles solo de visualización
   }
 
   idsProcesados.nuevosGenuinos = idsGenuinosNuevos;
@@ -3154,6 +3204,7 @@ function procesarSListaNuevasFilas(ss) {
 
   if (sh.getLastRow() >= 3) {
     applyBorderCenter(sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS));
+    _aplicarFormatoMilesHoja_(sh, 3, SL_COLS_MILES, sh.getLastRow()); // separador de miles solo de visualización
   }
 
   return idsResueltos;

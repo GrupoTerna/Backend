@@ -838,6 +838,7 @@ function _setupTLista(ss) {
   // FIX (09-sep-2026, pedido usuario): filtro nativo en fila 2 (nunca en
   // la 1) -- ver _aplicarFiltroFila2() más arriba en este archivo.
   _aplicarFiltroFila2(sh, 'T_Lista');
+  _aplicarFormatoMilesHoja_(sh, 3, TL_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
   Logger.log('[Setup] T_Lista OK (' + totalCols + ' columnas, header 2 filas, filtro en fila 2)');
 }
 
@@ -873,6 +874,7 @@ function _setupSLista(ss) {
   // FIX (09-sep-2026, pedido usuario): filtro nativo en fila 2 (nunca en
   // la 1) -- ver _aplicarFiltroFila2() más arriba en este archivo.
   _aplicarFiltroFila2(sh, 'S_Lista');
+  _aplicarFormatoMilesHoja_(sh, 3, SL_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
   Logger.log('[Setup] S_Lista OK (' + totalCols + ' columnas, header 2 filas, filtro en fila 2)');
 }
 
@@ -905,6 +907,7 @@ function _setupCRLista(ss) {
   _aplicarDropdownTipoCRLista(ss);
   _aplicarDropdownEstadoCRLista(ss);
   _aplicarFiltroFila3(sh, 'CR_Lista');
+  _aplicarFormatoMilesHoja_(sh, 4, CR_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
   Logger.log('[Setup] CR_Lista OK (' + totalCols + ' columnas, header 3 filas, filtro en fila 3)');
 }
 

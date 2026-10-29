@@ -1294,7 +1294,8 @@ function _eliminarExtraColsInactivosPorTags(tags) {
 /**
  * _extraerValoresConLinksReales(sh, numRows, numCols, colConHoraForzada, colsFormatoNumerico, headerRows,… [→ Contexto_Base_Web.md §05B071]
  */
-function _extraerValoresConLinksReales(sh, numRows, numCols, colConHoraForzada, colsFormatoNumerico, headerRows, colsMinutosASegundos) {
+// 29-oct-2026: 8.º parámetro `colsSinSeparadorMiles` ({col: true}, 1-based). Esas columnas se muestran con coma de miles (`#,##0`), pero el CSV guarda el número crudo, sin coma (ver _colsMilesDeHoja_()).
+function _extraerValoresConLinksReales(sh, numRows, numCols, colConHoraForzada, colsFormatoNumerico, headerRows, colsMinutosASegundos, colsSinSeparadorMiles) {
   headerRows = headerRows || 1;
   var valores = sh.getRange(1, 1, numRows, numCols).getDisplayValues();
   if (headerRows === 2) {
@@ -1364,6 +1365,18 @@ function _extraerValoresConLinksReales(sh, numRows, numCols, colConHoraForzada, 
         if (typeof valMinutos === 'number' && !isNaN(valMinutos)) {
           valores[rmn + 1][cm] = String(valMinutos * 60);
         }
+      }
+    }
+  }
+
+  // 29-oct-2026: columnas con separador de miles solo de visualización: getDisplayValues() trae «1,000»; el respaldo guarda el número crudo («1000»), y también los decimales que el formato redondea al mostrarlos.
+  if (colsSinSeparadorMiles) {
+    for (var cs = 0; cs < numCols; cs++) {
+      if (!colsSinSeparadorMiles[cs + 1]) continue;
+      var colNumeros = sh.getRange(primeraFilaDatos, cs + 1, filasDatos, 1).getValues();
+      for (var rnum = 0; rnum < colNumeros.length; rnum++) {
+        var valNumero = colNumeros[rnum][0];
+        if (typeof valNumero === 'number' && !isNaN(valNumero)) valores[rnum + 1][cs] = String(valNumero);
       }
     }
   }
@@ -1969,6 +1982,14 @@ function _colSet() {
 /**
  * _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx, colsFormatoNumerico, colsMinutosASegundos) [→ Contexto_Base_Web.md §05B106]
  */
+// _colsMilesDeHoja_(nombreHoja): columnas con separador de miles solo de visualización de T_Lista, S_Lista y CR_Lista ({col: true}); null en las demás hojas. [→ Contexto_Base_Web.md §PF286]
+function _colsMilesDeHoja_(nombreHoja) {
+  if (nombreHoja === CFG.SHEETS.T_LISTA)  return _colSet.apply(null, TL_COLS_MILES);
+  if (nombreHoja === CFG.SHEETS.S_LISTA)  return _colSet.apply(null, SL_COLS_MILES);
+  if (nombreHoja === CFG.SHEETS.CR_LISTA) return _colSet.apply(null, CR_COLS_MILES);
+  return null;
+}
+
 function _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx, colsFormatoNumerico, colsMinutosASegundos) {
   for (var i = 0; i < hojas.length; i++) {
     var sh = ss.getSheetByName(hojas[i]);
@@ -2028,7 +2049,7 @@ function _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx
     }
 
     // Detección automática de texto enriquecido (RichText) con enlaces: [→ Contexto_Base_Web.md §05B109]
-    var valores = _extraerValoresConLinksReales(sh, lastRow, lastCol, null, colsFormatoNumerico, headerRows, colsMinutosASegundos);
+    var valores = _extraerValoresConLinksReales(sh, lastRow, lastCol, null, colsFormatoNumerico, headerRows, colsMinutosASegundos, _colsMilesDeHoja_(hojas[i]));
 
     _saveCSVToDrive(fileName, _encodeCSV(valores));
     Logger.log('[Backup] ' + fileName + ' sincronizado (' + filasDatosHoja + ' filas de dato).');
