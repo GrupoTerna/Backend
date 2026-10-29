@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 28/10/2026 20:27:30 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 00:07:51 */
 
 
 
@@ -6155,9 +6155,9 @@ function _escribirAnchosColumnasGuardados(datos) {
   var contenido = JSON.stringify(datos, null, 2);
   var files = folder.getFilesByName(ANCHOS_COLUMNAS_ARCHIVO);
   if (files.hasNext()) {
-    files.next().setContent(contenido);
+    _setContentConConteo_(files.next(), contenido);
   } else {
-    folder.createFile(ANCHOS_COLUMNAS_ARCHIVO, contenido, MimeType.PLAIN_TEXT);
+    _createFileConConteo_(folder, ANCHOS_COLUMNAS_ARCHIVO, contenido, MimeType.PLAIN_TEXT);
   }
 }
 
@@ -6266,9 +6266,9 @@ function exportarBackupCelulares() {
     var content = JSON.stringify(backupData, null, 2);
 
     if (files.hasNext()) {
-      files.next().setContent(content);
+      _setContentConConteo_(files.next(), content);
     } else {
-      folder.createFile(filename, content, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Backup] JSON celulares guardado exitosamente (' + backupData.length + ' registros).');
   } catch(e) {
@@ -7117,7 +7117,7 @@ function repararRazonInvalida() {
       for (var i = 0; i < jsonObj.length; i++) {
         if (jsonObj[i].razon && !esRazonValida(jsonObj[i].razon)) jsonObj[i].razon = '';
       }
-      fileJson.setContent(JSON.stringify(jsonObj, null, 2));
+      _setContentConConteo_(fileJson, JSON.stringify(jsonObj, null, 2));
       Logger.log('[Reparación] ClanSystem_Backup_Celulares.json: campo razon limpiado.');
     }
   } catch(e) { Logger.log('[Reparación] Error limpiando JSON de celulares: ' + e.message); }
@@ -7200,7 +7200,7 @@ function repararFormatoTelefonos() {
         if (jsonObj[i].prefijo !== undefined) jsonObj[i].prefijo = soloDigitos(jsonObj[i].prefijo);
         if (jsonObj[i].celular !== undefined) jsonObj[i].celular = soloDigitos(jsonObj[i].celular);
       }
-      fileJson.setContent(JSON.stringify(jsonObj, null, 2));
+      _setContentConConteo_(fileJson, JSON.stringify(jsonObj, null, 2));
       Logger.log('[Reparación] ClanSystem_Backup_Celulares.json: prefijo/celular limpiados.');
     }
   } catch(e) { Logger.log('[Reparación] Error limpiando JSON de celulares: ' + e.message); }
@@ -7445,9 +7445,9 @@ function _eliminarExtraColsInactivosPorTags(tags) {
     var files = folder.getFilesByName(filename);
     var content = JSON.stringify(mapa, null, 2);
     if (files.hasNext()) {
-      files.next().setContent(content);
+      _setContentConConteo_(files.next(), content);
     } else {
-      folder.createFile(filename, content, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Backup] ClanSystem_Backup_InactivosExtra.json: ' + borrados + ' tag(s) eliminados (reactivados en un clan Terna).');
   } catch(e) {
@@ -7706,9 +7706,9 @@ function _guardarExtraColsInactivosBatch(nuevosPorTag) {
     var files = folder.getFilesByName(filename);
     var content = JSON.stringify(mapa, null, 2);
     if (files.hasNext()) {
-      files.next().setContent(content);
+      _setContentConConteo_(files.next(), content);
     } else {
-      folder.createFile(filename, content, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Backup] ClanSystem_Backup_InactivosExtra.json actualizado (' + Object.keys(nuevosPorTag).length + ' tag(s) frescos).');
   } catch(e) {
@@ -7830,6 +7830,11 @@ var CSV_CACHE_TTL_SEG   = 600;     // 10 min
 var CSV_CACHE_CHUNK     = 90000;   // CacheService: máx 100 KB por valor
 var CSV_CACHE_MAX_CHUNK = 40;      // si el CSV comprimido pasa de ~3.5 MB, no se cachea
 var _CSV_MEM_ = {};                // memoria por ejecución: filename -> texto
+
+// PF290 (28-oct-2026): conteo de filas o elementos antes y después de cada escritura de un CSV o JSON en Drive. Para no alargar las corridas con muchos archivos, el tiempo gastado en leer y contar tiene un tope por ejecución; al pasarlo, los archivos siguientes se escriben sin conteo. [→ Contexto_Base_Web.md §PF290]
+var CONTEO_ARCHIVOS_PRESUPUESTO_MS = 20000;
+var _conteoArchivosMs_ = 0;           // tiempo acumulado de conteo en esta ejecución
+var _conteoArchivosAgotadoAvisado_ = false;
 
 function _csvCacheKey_(filename) { return 'CSVDRV_' + filename; }
 
@@ -8203,7 +8208,7 @@ function _saveCSVToDrive(filename, content) {
   var hit = _csvBuscarArchivo_(filename); // nunca crea una copia si el archivo ya existe en alguna subcarpeta [→ Contexto_Base_Web.md §01B158]
   var destino = _csvSubcarpetaDe_(filename);
   if (hit) {
-    hit.file.setContent(content);
+    _setContentConConteo_(hit.file, content);
     if (CSV_MOVER_A_SUBCARPETA && destino && hit.carpetaNombre !== destino) {
       try {
         hit.file.moveTo(_getCsvSubcarpeta_(destino, true));
@@ -8213,11 +8218,108 @@ function _saveCSVToDrive(filename, content) {
       }
     }
   } else {
-    _getCsvSubcarpeta_(destino, true).createFile(filename, content, MimeType.CSV);
+    _createFileConConteo_(_getCsvSubcarpeta_(destino, true), filename, content, MimeType.CSV);
   }
   // Invalida la caché compartida y deja el texto nuevo en memoria de esta ejecución.
   _csvCacheBorrar_(filename);
   _CSV_MEM_[filename] = content;
+}
+
+/**
+ * _contarRegistrosTexto_(texto, nombre) - Cuenta los registros de un CSV o JSON para el log de cambios (PF290).
+ * Devuelve { n, txt }: n = número principal (-1 si no se pudo contar) y txt = descripción legible. CSV o texto: filas de dato (sin la
+ * primera línea, contando solo saltos fuera de comillas). JSON arreglo: elementos. JSON objeto: claves, más el tamaño de hasta tres claves
+ * que sean arreglos u objetos. [→ Contexto_Base_Web.md §PF290]
+ */
+function _contarRegistrosTexto_(texto, nombre) {
+  if (texto === null || texto === undefined) return { n: -1, txt: 'sin lectura' };
+  if (texto === '') return { n: 0, txt: '0 (vacío)' };
+  if (texto.length > 12000000) return { n: -1, txt: 'demasiado grande para contar' };
+  if (/\.json$/i.test(nombre || '')) {
+    try {
+      var o = JSON.parse(texto.charAt(0) === '\uFEFF' ? texto.slice(1) : texto);
+      if (Array.isArray(o)) return { n: o.length, txt: o.length + ' elemento(s)' };
+      if (o && typeof o === 'object') {
+        var ks = Object.keys(o), partes = [];
+        for (var i = 0; i < ks.length && partes.length < 3; i++) {
+          var v = o[ks[i]];
+          if (v && typeof v === 'object') partes.push(ks[i] + ':' + (Array.isArray(v) ? v.length : Object.keys(v).length));
+        }
+        return { n: ks.length, txt: ks.length + ' clave(s)' + (partes.length ? ' [' + partes.join(', ') + ']' : '') };
+      }
+      return { n: 1, txt: '1 valor' };
+    } catch (eJson) { return { n: -1, txt: 'JSON ilegible' }; }
+  }
+  var lineas = 0, enComillas = false;
+  for (var j = 0; j < texto.length; j++) {
+    var c = texto.charAt(j);
+    if (c === '"') enComillas = !enComillas;
+    else if (c === '\n' && !enComillas) lineas++;
+  }
+  if (texto.charAt(texto.length - 1) !== '\n') lineas++;
+  var datos = Math.max(0, lineas - 1);
+  return { n: datos, txt: datos + ' fila(s)' };
+}
+
+/**
+ * _logCambioArchivo_(nombre, textoAntes, textoDespues, esNuevo) - Escribe en el log «[Archivo] nombre: antes → después» (PF290).
+ * Si el conteo baja, agrega «[BAJA n]». Nunca lanza error. [→ Contexto_Base_Web.md §PF290]
+ */
+function _logCambioArchivo_(nombre, textoAntes, textoDespues, esNuevo) {
+  try {
+    var a = esNuevo ? { n: 0, txt: 'archivo nuevo' } : (textoAntes === undefined ? { n: -1, txt: 'antes sin contar' } : _contarRegistrosTexto_(textoAntes, nombre));
+    var d = _contarRegistrosTexto_(textoDespues, nombre);
+    var marca = (a.n >= 0 && d.n >= 0 && d.n < a.n) ? ' [BAJA ' + (a.n - d.n) + ']' : '';
+    Logger.log('[Archivo] ' + nombre + ': ' + a.txt + ' → ' + d.txt + marca);
+  } catch (eLog) { /* el conteo nunca debe romper una escritura */ }
+}
+
+/**
+ * _conteoArchivosDisponible_() - true mientras el tiempo de conteo de esta ejecución no pase de CONTEO_ARCHIVOS_PRESUPUESTO_MS (PF290).
+ * Avisa una sola vez en el log cuando se agota. [→ Contexto_Base_Web.md §PF290]
+ */
+function _conteoArchivosDisponible_() {
+  if (_conteoArchivosMs_ <= CONTEO_ARCHIVOS_PRESUPUESTO_MS) return true;
+  if (!_conteoArchivosAgotadoAvisado_) {
+    _conteoArchivosAgotadoAvisado_ = true;
+    Logger.log('[Archivo] Se agotó el tiempo de conteo de esta ejecución (' + Math.round(CONTEO_ARCHIVOS_PRESUPUESTO_MS / 1000) + ' s): los archivos que se escriban después no registran filas antes y después.');
+  }
+  return false;
+}
+
+/**
+ * _setContentConConteo_(file, contenido) - Igual que file.setContent(contenido), pero lee antes el contenido actual y deja en el log las
+ * filas o elementos antes y después (PF290). No cuenta los archivos Log_*, que ya se leen enteros al escribirse. Los errores de
+ * setContent se propagan igual que antes. [→ Contexto_Base_Web.md §PF290]
+ */
+function _setContentConConteo_(file, contenido) {
+  var nombre = '', antes;
+  var contar = _conteoArchivosDisponible_();
+  var t0 = Date.now();
+  try { nombre = file.getName(); } catch (eNombre) { contar = false; }
+  if (contar && /^Log_/i.test(nombre)) contar = false;
+  if (contar) {
+    try { antes = file.getBlob().getDataAsString('UTF-8'); } catch (eLeer) { antes = null; }
+  }
+  file.setContent(contenido);
+  if (contar) {
+    _logCambioArchivo_(nombre, antes, contenido, false);
+    _conteoArchivosMs_ += Date.now() - t0;
+  }
+}
+
+/**
+ * _createFileConConteo_(folder, nombre, contenido, mime) - Igual que folder.createFile(...) y devuelve el archivo; deja en el log el
+ * conteo del archivo nuevo (PF290). [→ Contexto_Base_Web.md §PF290]
+ */
+function _createFileConConteo_(folder, nombre, contenido, mime) {
+  var archivo = folder.createFile(nombre, contenido, mime);
+  if (!/^Log_/i.test(String(nombre)) && _conteoArchivosDisponible_()) {
+    var t0 = Date.now();
+    _logCambioArchivo_(String(nombre), null, contenido, true);
+    _conteoArchivosMs_ += Date.now() - t0;
+  }
+  return archivo;
 }
 
 /**
@@ -8390,9 +8492,9 @@ function _logTampermonkeyADrive(boton, resultado, errorTexto) {
     var contenidoFinal = lineas.join('\n') + '\n';
 
     if (file) {
-      file.setContent(contenidoFinal);
+      _setContentConConteo_(file, contenidoFinal);
     } else {
-      _getCsvSubcarpeta_(_csvSubcarpetaDe_(nombreArchivo), true).createFile(nombreArchivo, contenidoFinal, MimeType.CSV);
+      _createFileConConteo_(_getCsvSubcarpeta_(_csvSubcarpetaDe_(nombreArchivo), true), nombreArchivo, contenidoFinal, MimeType.CSV);
     }
   } catch (eLog) {
     // Nunca debe romper el flujo del botón -- solo se registra en el log
@@ -9510,9 +9612,9 @@ function descargarCards() {
       var contenidoJson = JSON.stringify(data, null, 2);
       var filesJson = folderJson.getFilesByName(nombreJson);
       if (filesJson.hasNext()) {
-        filesJson.next().setContent(contenidoJson);
+        _setContentConConteo_(filesJson.next(), contenidoJson);
       } else {
-        folderJson.createFile(nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
+        _createFileConConteo_(folderJson, nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
       }
       Logger.log('[Cards] ' + nombreJson + ' guardado (' + data.items.length + ' cartas' +
                  (Array.isArray(data.supportItems) ? ' + ' + data.supportItems.length + ' de torre' : '') + ').');
@@ -9744,9 +9846,9 @@ function descargarGlobalTournaments() {
     var contenidoJson = JSON.stringify(data, null, 2);
     var filesJson = folderJson.getFilesByName(nombreJson);
     if (filesJson.hasNext()) {
-      filesJson.next().setContent(contenidoJson);
+      _setContentConConteo_(filesJson.next(), contenidoJson);
     } else {
-      folderJson.createFile(nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folderJson, nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
     }
     Logger.log('[GlobalTournaments] ' + nombreJson + ' guardado (' +
                (data.items ? data.items.length + ' torneo(s) global(es)' : 'sin "items"') + ').');
@@ -9776,9 +9878,9 @@ function descargarLocations() {
     var contenidoJson = JSON.stringify(data, null, 2);
     var filesJson = folderJson.getFilesByName(nombreJson);
     if (filesJson.hasNext()) {
-      filesJson.next().setContent(contenidoJson);
+      _setContentConConteo_(filesJson.next(), contenidoJson);
     } else {
-      folderJson.createFile(nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folderJson, nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Locations] ' + nombreJson + ' guardado (' + items.length + ' locations).');
   } catch (eJson) {
@@ -9834,9 +9936,9 @@ function descargarLocationPorId(id) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Locations] ' + filename + ' guardado (' + path + ').');
     return true;
@@ -9876,9 +9978,9 @@ function descargarRankingClanesPorUbicacion(locationId, limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingClanesPorUbicacion] ' + filename + ' guardado (' + cantidad + ' clan(es), ' + path + ').');
@@ -9919,9 +10021,9 @@ function descargarRankingJugadoresPorUbicacion(locationId, limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingJugadoresPorUbicacion] ' + filename + ' guardado (' + cantidad + ' jugador(es), ' + path + ').');
@@ -9962,9 +10064,9 @@ function descargarRankingClanesGuerraPorUbicacion(locationId, limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingGuerraClanesPorUbicacion] ' + filename + ' guardado (' + cantidad + ' clan(es), ' + path + ').');
@@ -10005,9 +10107,9 @@ function descargarRankingJugadoresCaminoLeyendasPorUbicacion(locationId, limit) 
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingCaminoLeyendasPorUbicacion] ' + filename + ' guardado (' + cantidad + ' jugador(es), ' + path + ').');
@@ -10039,9 +10141,9 @@ function descargarRankingGlobalClanes(limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     // La respuesta es un array plano (a diferencia de otros endpoints que [→ Contexto_Base_Web.md §09B053]
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
@@ -10074,9 +10176,9 @@ function descargarRankingGlobalJugadores(limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingGlobalJugadores] ' + filename + ' guardado (' + cantidad + ' jugador(es), ' + path +
@@ -10109,9 +10211,9 @@ function descargarRankingGlobalGuerraClanes(limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingGlobalGuerraClanes] ' + filename + ' guardado (' + cantidad + ' clan(es), ' + path + ').');
@@ -10156,9 +10258,9 @@ function descargarRankingGlobalJugadoresCaminoLeyendasPorTemporada(seasonId, lim
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingGlobalCaminoLeyendas] ' + filename + ' guardado (' + cantidad + ' jugador(es), ' + path + ').');
@@ -10187,9 +10289,9 @@ function descargarSeasons() {
     var contenidoJson = JSON.stringify(data, null, 2);
     var filesJson = folderJson.getFilesByName(nombreJson);
     if (filesJson.hasNext()) {
-      filesJson.next().setContent(contenidoJson);
+      _setContentConConteo_(filesJson.next(), contenidoJson);
     } else {
-      folderJson.createFile(nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folderJson, nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Seasons] ' + nombreJson + ' guardado (' + items.length + ' temporadas).');
   } catch (eJson) {
@@ -10284,10 +10386,10 @@ function descargarBattlelogJugador(playerTag) {
       if (archivoExistente.getName() !== filename) {
         archivoExistente.setName(filename);
       }
-      archivoExistente.setContent(contenido);
+      _setContentConConteo_(archivoExistente, contenido);
       Logger.log('[Battlelog] ' + filename + ' actualizado (' + data.length + ' batallas).');
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
       Logger.log('[Battlelog] ' + filename + ' creado (' + data.length + ' batallas).');
     }
   } catch (e) {
@@ -10496,10 +10598,10 @@ function descargarUpcomingChestsJugador(playerTag) {
       if (archivoExistente.getName() !== filename) {
         archivoExistente.setName(filename);
       }
-      archivoExistente.setContent(contenido);
+      _setContentConConteo_(archivoExistente, contenido);
       Logger.log('[UpcomingChests] ' + filename + ' actualizado (' + data.items.length + ' cofres).');
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
       Logger.log('[UpcomingChests] ' + filename + ' creado (' + data.items.length + ' cofres).');
     }
     guardadoOk = true;
@@ -10949,9 +11051,9 @@ function _guardarJsonClanesConsultaTemporalEnDrive(datos) {
     var contenido = JSON.stringify(datos, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     return true;
   } catch (e) {
@@ -10970,9 +11072,9 @@ function _guardarJsonBusquedaNombreEnDrive(nombreBuscado, datos) {
     var contenido = JSON.stringify(datos, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
   } catch(e) {
     Logger.log('[Torneos] Error guardando JSON de búsqueda "' + nombreBuscado + '": ' + e.message);
@@ -11284,7 +11386,7 @@ function _invalidarProgresoClanes() {
         // NUEVO (05-oct-2026): se conserva la hora real de captura en _tsReal (solo la primera vez) para que [→ Contexto_Base_Web.md §09B105]
         if (!parsed._tsReal && parsed._ts) parsed._tsReal = parsed._ts;
         parsed._ts = 0;
-        f.setContent(JSON.stringify(parsed));
+        _setContentConConteo_(f, JSON.stringify(parsed));
       }
     }
   } catch (e) {
@@ -12417,12 +12519,12 @@ function _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) {
       if (endpointKey !== 'currentriverrace' && archivoExistente.getName() !== filename) {
         archivoExistente.setName(filename);
       }
-      archivoExistente.setContent(contenido);
+      _setContentConConteo_(archivoExistente, contenido);
       Logger.log('[Cache] Actualizado en Drive (mismo archivo, ' + tagPrefijo + '): ' + filename);
     } else {
       // Solo se crea un archivo nuevo cuando cambia el periodo.
       // Los archivos de periodos anteriores se conservan siempre como histórico.
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
       Logger.log('[Cache] Creado en Drive (nuevo periodo ' + tagPrefijo + '): ' + filename);
     }
 
@@ -12585,9 +12687,9 @@ function _guardarPlayerEnDrive(playerTag, periodIndex, datos) {
       if (archivoExistente.getName() !== filename) {
         archivoExistente.setName(filename);
       }
-      archivoExistente.setContent(contenido);
+      _setContentConConteo_(archivoExistente, contenido);
     } else {
-      var nuevo = folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      var nuevo = _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
       indice[playerTag] = nuevo; // se agrega al índice para los siguientes jugadores de esta misma corrida
     }
     // Sin log individual por jugador a propósito: con ~150-200 jugadores por [→ Contexto_Base_Web.md §09B165]
@@ -12769,9 +12871,9 @@ function _registrarLogScriptTerna(funcion, descripcion, advertencias) {
       try { logArray = JSON.parse(contenidoActual); } catch(e) { logArray = []; }
       if (!Array.isArray(logArray)) logArray = [];
       logArray.push(nuevaEntrada);
-      archivoLog.setContent(JSON.stringify(logArray, null, 2));
+      _setContentConConteo_(archivoLog, JSON.stringify(logArray, null, 2));
     } else {
-      folder.createFile(filename, JSON.stringify([nuevaEntrada], null, 2), MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, JSON.stringify([nuevaEntrada], null, 2), MimeType.PLAIN_TEXT);
     }
     Logger.log('[Log] Entrada registrada en ' + filename + ': ' + funcion);
   } catch(e) {
@@ -15621,9 +15723,9 @@ function _guardarVetadosConfirmados_(mapa) {
     var files = folder.getFilesByName(NOMBRE_JSON_VETADOS_CONFIRMADOS_);
     var content = JSON.stringify(mapa, null, 2);
     if (files.hasNext()) {
-      files.next().setContent(content);
+      _setContentConConteo_(files.next(), content);
     } else {
-      folder.createFile(NOMBRE_JSON_VETADOS_CONFIRMADOS_, content, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, NOMBRE_JSON_VETADOS_CONFIRMADOS_, content, MimeType.PLAIN_TEXT);
     }
   } catch (e) {
     Logger.log('[Vetados-Registro] Error guardando ' + NOMBRE_JSON_VETADOS_CONFIRMADOS_ + ': ' + e.message);
@@ -17424,9 +17526,9 @@ function _guardarSnapshotDebugImportacionNuevos(candidatosPayload) {
     var filesJson = folder.getFilesByName(NOMBRE_JSON_DEBUG_NUEVOS);
     var contentJson = JSON.stringify(mapa, null, 2);
     if (filesJson.hasNext()) {
-      filesJson.next().setContent(contentJson);
+      _setContentConConteo_(filesJson.next(), contentJson);
     } else {
-      folder.createFile(NOMBRE_JSON_DEBUG_NUEVOS, contentJson, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, NOMBRE_JSON_DEBUG_NUEVOS, contentJson, MimeType.PLAIN_TEXT);
     }
 
     // 3b) Guardar CSV aplanado (una fila por registro individual, para [→ Contexto_Base_Web.md §14B071]
@@ -19278,6 +19380,11 @@ var GC = {
 };
 
 var GUERRA_TOTAL_COLS = 21;
+
+// PF289 (28-oct-2026): blindaje de _syncGuerraCSV() contra una lectura vacía o recortada de Backup_Guerra.csv. Solo se aplica si el CSV de referencia pesa más que el mínimo; el ratio es la fracción del tamaño de referencia por debajo de la cual se rechaza leer o escribir. [→ Contexto_Base_Web.md §PF289]
+var GUERRA_CSV_BLINDAJE_MIN_BYTES = 100000;
+var GUERRA_CSV_BLINDAJE_RATIO     = 0.85;
+var GUERRA_CSV_PROP_TAM_BUENO     = 'GUERRA_CSV_TAM_BUENO';
 
 // Origen de una fila de Guerra: 'Original' | 'Corregido' | 'Reconstruido', con un sufijo opcional desde el 20-oct-2026
 // (§PF132): 'Corregido - Solución única', 'Corregido - Solución estimada', 'Reconstruido - Solución única' y
@@ -23556,6 +23663,23 @@ function _syncGuerraCSV(sh, forzar) {
 
     // --- FUSIÓN con el CSV existente ---
     var csvExistente  = _loadCSVFromDrive('Backup_Guerra.csv');
+    // PF289: tamaño de referencia = el mayor entre el peso real del archivo en Drive y el último tamaño que esta función dejó escrito. Si la lectura (memoria, caché o Drive) vino vacía o mucho más chica, se relee directo de Drive; si sigue chica, no se escribe nada.
+    var refTam = forzar ? null : _guerraCsvTamRef_();
+    if (refTam && refTam.ref > GUERRA_CSV_BLINDAJE_MIN_BYTES) {
+      var largoLeido = csvExistente ? csvExistente.length : 0;
+      if (largoLeido < refTam.ref * GUERRA_CSV_BLINDAJE_RATIO) {
+        Logger.log('[ALERTA PROTECCIÓN] Backup_Guerra.csv se leyó con ' + largoLeido + ' caracteres y la referencia es de ' + refTam.ref +
+                   ' bytes (Drive: ' + refTam.tamDrive + ', último bueno: ' + refTam.tamBueno + '). Se relee directo de Drive, sin caché.');
+        csvExistente = _guerraCsvRelecturaDirecta_();
+        largoLeido = csvExistente ? csvExistente.length : 0;
+        if (largoLeido < refTam.ref * GUERRA_CSV_BLINDAJE_RATIO) {
+          Logger.log('[ALERTA PROTECCIÓN] SKIP fusión de Backup_Guerra.csv: tras releer sigue con ' + largoLeido + ' caracteres (referencia ' + refTam.ref +
+                     ' bytes). No se escribe nada. Si el archivo de Drive está recortado, restáuralo; si el recorte es intencional, usa la variante forzada.');
+          return;
+        }
+        Logger.log('[Guerra] La relectura directa de Drive trajo ' + largoLeido + ' caracteres: la lectura anterior estaba incompleta. Se sigue con la fusión.');
+      }
+    }
     var encabezado     = data[0];
     var filasFusion    = []; // array de filas (arrays de strings), sin encabezado
     var mapaFusion      = {}; // id -> índice en filasFusion
@@ -23580,6 +23704,8 @@ function _syncGuerraCSV(sh, forzar) {
 
     var csvRowsAntes = filasFusion.length;
     var nuevasDesdeHoja = 0;
+    // PF289: deja a la vista qué se leyó, para ubicar la primera escritura que recorte el CSV.
+    Logger.log('[Guerra] _syncGuerraCSV: CSV leído con ' + csvRowsAntes + ' fila(s) y ' + (csvExistente ? csvExistente.length : 0) + ' caracteres; hoja con ' + (data.length - 1) + ' fila(s); referencia ' + (refTam ? refTam.ref : 0) + ' bytes.');
 
     for (var si = 1; si < data.length; si++) {
       var filaHoja = data[si];
@@ -23609,12 +23735,65 @@ function _syncGuerraCSV(sh, forzar) {
     }
 
     var salida = [encabezado].concat(filasFusion);
-    _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV(salida));
+    var textoSalida = _encodeCSV(salida);
+    // PF289: aunque la fusión no pierda filas respecto de la lectura, el resultado no puede pesar mucho menos que el archivo real.
+    if (refTam && refTam.ref > GUERRA_CSV_BLINDAJE_MIN_BYTES && textoSalida.length < refTam.ref * GUERRA_CSV_BLINDAJE_RATIO) {
+      Logger.log('[ALERTA PROTECCIÓN] SKIP fusión de Backup_Guerra.csv: el resultado tendría ' + textoSalida.length + ' caracteres y la referencia es de ' +
+                 refTam.ref + ' bytes. No se escribe nada.');
+      return;
+    }
+    _saveCSVToDrive('Backup_Guerra.csv', textoSalida);
+    _guerraCsvRegistrarTamBueno_(textoSalida.length);
     Logger.log('[Guerra] Backup_Guerra.csv fusionado (' + (salida.length - 1) + ' filas totales; ' +
       nuevasDesdeHoja + ' nueva(s) desde la hoja, el resto actualizadas o intactas de temporadas anteriores).');
   } catch(e) {
     Logger.log('[Guerra] Error fusionando CSV: ' + e.message);
   }
+}
+
+/**
+ * _guerraCsvTamRef_() - Tamaño de referencia de Backup_Guerra.csv para el blindaje de _syncGuerraCSV() (PF289).
+ * Devuelve { tamDrive, tamBueno, ref }: peso real del archivo en Drive, último tamaño que _syncGuerraCSV() dejó escrito (propiedad de script) y el mayor de los dos.
+ * No depende de la caché ni de la memoria de la ejecución. Si no se puede leer alguno, vale 0. [→ Contexto_Base_Web.md §PF289]
+ */
+function _guerraCsvTamRef_() {
+  var tamDrive = 0, tamBueno = 0;
+  try {
+    var hit = _csvBuscarArchivo_('Backup_Guerra.csv');
+    if (hit) tamDrive = Number(hit.file.getSize()) || 0;
+  } catch (eDrive) { Logger.log('[Guerra] _guerraCsvTamRef_: no se pudo leer el tamaño en Drive: ' + eDrive.message); }
+  try {
+    tamBueno = Number(PropertiesService.getScriptProperties().getProperty(GUERRA_CSV_PROP_TAM_BUENO)) || 0;
+  } catch (eProp) { /* sin referencia previa */ }
+  return { tamDrive: tamDrive, tamBueno: tamBueno, ref: Math.max(tamDrive, tamBueno) };
+}
+
+/**
+ * _guerraCsvRelecturaDirecta_() - Lee Backup_Guerra.csv directo de Drive, ignorando la memoria de la ejecución y la caché compartida, y deja el texto leído en ambas (PF289).
+ * Devuelve null si el archivo no existe. [→ Contexto_Base_Web.md §PF289]
+ */
+function _guerraCsvRelecturaDirecta_() {
+  _csvCacheBorrar_('Backup_Guerra.csv');
+  delete _CSV_MEM_['Backup_Guerra.csv'];
+  var hit = _csvBuscarArchivo_('Backup_Guerra.csv');
+  if (!hit) return null;
+  var texto = hit.file.getBlob().getDataAsString('UTF-8');
+  _CSV_MEM_['Backup_Guerra.csv'] = texto;
+  return texto;
+}
+
+/**
+ * _guerraCsvRegistrarTamBueno_(largoTexto) - Guarda el tamaño del CSV recién escrito como referencia del blindaje (PF289).
+ * Usa el peso real del archivo en Drive; si no se puede leer, el largo del texto. [→ Contexto_Base_Web.md §PF289]
+ */
+function _guerraCsvRegistrarTamBueno_(largoTexto) {
+  try {
+    var tam = 0;
+    var hit = _csvBuscarArchivo_('Backup_Guerra.csv');
+    if (hit) tam = Number(hit.file.getSize()) || 0;
+    if (!tam) tam = largoTexto;
+    PropertiesService.getScriptProperties().setProperty(GUERRA_CSV_PROP_TAM_BUENO, String(tam));
+  } catch (eReg) { Logger.log('[Guerra] No se pudo guardar el tamaño de referencia del CSV: ' + eReg.message); }
 }
 
 /**
@@ -30235,9 +30414,9 @@ function _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanActual, reg
 
     if (archivoExistente) {
       if (archivoExistente.getName() !== filename) archivoExistente.setName(filename);
-      archivoExistente.setContent(contenido);
+      _setContentConConteo_(archivoExistente, contenido);
     } else {
-      var nuevoArchivo = folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      var nuevoArchivo = _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
       indice[String(tag).trim()] = nuevoArchivo;
     }
   } catch (e) {
@@ -30347,9 +30526,9 @@ function _saveHistorialGuerraGrupalCSV(content) {
   var folder = _getHistorialGuerraGrupalFolder();
   var files = folder.getFilesByName(HISTORIAL_GUERRA_GRUPAL_FILENAME);
   if (files.hasNext()) {
-    files.next().setContent(content);
+    _setContentConConteo_(files.next(), content);
   } else {
-    folder.createFile(HISTORIAL_GUERRA_GRUPAL_FILENAME, content, MimeType.CSV);
+    _createFileConConteo_(folder, HISTORIAL_GUERRA_GRUPAL_FILENAME, content, MimeType.CSV);
   }
 }
 
@@ -38975,14 +39154,14 @@ function _guardarJsonTorneoEnDrive(tagTorneo, datos) {
 
     if (folderTerna) {
       var enTerna = folderTerna.getFilesByName(filename);
-      if (enTerna.hasNext()) { enTerna.next().setContent(contenido); return; }
+      if (enTerna.hasNext()) { _setContentConConteo_(enTerna.next(), contenido); return; }
     }
     var enRaiz = folderRaiz.getFilesByName(filename);
-    if (enRaiz.hasNext()) { enRaiz.next().setContent(contenido); return; }
+    if (enRaiz.hasNext()) { _setContentConConteo_(enRaiz.next(), contenido); return; }
 
     // Primera vez: se decide la subcarpeta.
     var destino = (folderTerna && _creadorTorneoEnClanTerna_(datos)) ? folderTerna : folderRaiz;
-    destino.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+    _createFileConConteo_(destino, filename, contenido, MimeType.PLAIN_TEXT);
   } catch(e) {
     Logger.log('[Torneos] Error guardando JSON de ' + tagTorneo + ': ' + e.message);
   }
@@ -58090,10 +58269,10 @@ function _guardarIndiceContenido(lista) {
     var files = folder.getFilesByName(INDICE_CONTENIDO_FILE);
     var contenido = JSON.stringify({ _ts: Date.now(), entradas: lista });
     if (files.hasNext()) {
-      files.next().setContent(contenido);
+      _setContentConConteo_(files.next(), contenido);
       while (files.hasNext()) files.next().setTrashed(true); // duplicados
     } else {
-      folder.createFile(INDICE_CONTENIDO_FILE, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, INDICE_CONTENIDO_FILE, contenido, MimeType.PLAIN_TEXT);
     }
   } catch (e) {
     Logger.log('[Índice] Error guardando el índice en Drive: ' + e.message);
@@ -61649,7 +61828,7 @@ function _reenumerarHistorialGuerraIndividual() {
           obj.ultimaTemporadaCubierta = Number(obj.ultimaTemporadaCubierta) + deltaMeses;
         }
         obj.reenumeracionId = runId;
-        archivo.setContent(JSON.stringify(obj, null, 2));
+        _setContentConConteo_(archivo, JSON.stringify(obj, null, 2));
         cambiados++;
       }
     } catch (eArch) {
@@ -61739,7 +61918,7 @@ function _reenumerarInformesCSV() {
         if (texto.charCodeAt(0) === 0xFEFF) texto = texto.slice(1);
         var res = _reenumerarTextoInformeCSV_(texto, deltaMeses);
         if (res.cambiado) {
-          item.file.setContent((tieneBom ? '\uFEFF' : '') + res.texto);
+          _setContentConConteo_(item.file, (tieneBom ? '\uFEFF' : '') + res.texto);
           try { _csvCacheBorrar_(item.nombre); } catch (eCache) { /* sin caché que borrar */ }
           cambiados++; filasSumadas += res.cambiadas;
         } else { sinColumna++; }
@@ -62959,7 +63138,7 @@ function cruzarSinResolverConHistorialInforme() {
   var csv = _informeConIdSemana_(salida).map(function (fila) {
     return fila.map(cruce_csvCelda_).join(',');
   }).join('\r\n');
-  DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID).createFile(nombre, csv, MimeType.CSV);
+  _createFileConConteo_(DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID), nombre, csv, MimeType.CSV);
 
   var resumen = Object.keys(conteo).sort().map(function (c) {
     return c + ' ' + conteo[c];
@@ -63249,7 +63428,7 @@ function tot_ejecutar_(aplicar) {
     filas[cb.idx][cBar] = String(cb.barcos);
   }
   var nuevoTexto = tot_serializar_(filas, eol) + (terminaEnEol ? eol : '');
-  archivoBackup.setContent((bom ? '﻿' : '') + nuevoTexto);
+  _setContentConConteo_(archivoBackup, (bom ? '﻿' : '') + nuevoTexto);
 
   var texto2 = archivoBackup.getBlob().getDataAsString('UTF-8');
   if (texto2.charCodeAt(0) === 0xFEFF) texto2 = texto2.substring(1);
@@ -63350,7 +63529,7 @@ function tot_serializar_(filas, eol) {
 }
 
 function tot_guardarCsv_(carpeta, nombre, filas) {
-  carpeta.createFile(nombre, tot_serializar_(_informeConIdSemana_(filas), '\r\n'), MimeType.CSV);
+  _createFileConConteo_(carpeta, nombre, tot_serializar_(_informeConIdSemana_(filas), '\r\n'), MimeType.CSV);
 }
 
 /**
@@ -63619,7 +63798,7 @@ function ano_csvCelda_(v) {
 
 function ano_guardarCsv_(carpeta, nombre, filas) {
   var texto = _informeConIdSemana_(filas).map(function (fila) { return fila.map(ano_csvCelda_).join(','); }).join('\r\n');
-  carpeta.createFile(nombre, texto, MimeType.CSV);
+  _createFileConConteo_(carpeta, nombre, texto, MimeType.CSV);
 }
 
 // --- ARCHIVO: 49_Diagnostico_Domingo.gs ---
@@ -64002,6 +64181,21 @@ function _ghPublicarArchivos_(token, repo, rama, archivos, mensaje) {
       return { ok: false, paso: 'ref (leer)', r: existe };
     }
 
+    // PF290: contenido que cada archivo tiene hoy en la rama, para registrar filas o elementos antes y después de publicar. Solo si la rama ya existe y queda tiempo de conteo; nunca hace fallar la publicación.
+    var antesGh = {};
+    if (existe.code === 200) {
+      for (var ia = 0; ia < archivos.length; ia++) {
+        if (!_conteoArchivosDisponible_()) break;
+        var tAntes = Date.now();
+        try {
+          var rc = _ghFetch_(token, 'get', '/repos/' + repo + '/contents/' + encodeURI(archivos[ia].path) + '?ref=' + encodeURIComponent(rama));
+          if (rc.code === 200 && rc.body && rc.body.content) antesGh[archivos[ia].path] = Utilities.newBlob(Utilities.base64Decode(String(rc.body.content).replace(/\s/g, ''))).getDataAsString('UTF-8');
+          else if (rc.code === 404) antesGh[archivos[ia].path] = null;
+        } catch (eAntes) { /* sin conteo previo de este archivo */ }
+        _conteoArchivosMs_ += Date.now() - tAntes;
+      }
+    }
+
     var entradas = [];
     var r;
     for (var i = 0; i < archivos.length; i++) {
@@ -64025,6 +64219,15 @@ function _ghPublicarArchivos_(token, repo, rama, archivos, mensaje) {
     } else {
       r = _ghFetch_(token, 'post', base + '/refs', { ref: 'refs/heads/' + rama, sha: shaCommit });
       if (r.code !== 201) return { ok: false, paso: 'ref (crear)', r: r };
+    }
+    // PF290: registro de filas o elementos antes y después de cada archivo publicado.
+    for (var il = 0; il < archivos.length; il++) {
+      try {
+        var rutaGh = archivos[il].path;
+        var despuesGh = Utilities.newBlob(Utilities.base64Decode(archivos[il].b64)).getDataAsString('UTF-8');
+        if (antesGh.hasOwnProperty(rutaGh)) _logCambioArchivo_(repo + '@' + rama + '/' + rutaGh, antesGh[rutaGh], despuesGh, antesGh[rutaGh] === null);
+        else _logCambioArchivo_(repo + '@' + rama + '/' + rutaGh, undefined, despuesGh, false);
+      } catch (eLogGh) { /* el registro nunca debe hacer fallar la publicación */ }
     }
     return { ok: true };
   } finally {
