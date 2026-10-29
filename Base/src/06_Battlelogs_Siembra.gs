@@ -471,9 +471,7 @@ function _blsGuardarProgreso_(hechos) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
     var contenido = JSON.stringify({ _ts: Date.now(), tags: Object.keys(hechos) });
-    var it = folder.getFilesByName(BLS_PROGRESO_FILE);
-    if (it.hasNext()) it.next().setContent(contenido);
-    else folder.createFile(BLS_PROGRESO_FILE, contenido, MimeType.PLAIN_TEXT);
+    _guardarArchivoProgresoVerificado_(folder, BLS_PROGRESO_FILE, contenido); // PF291
   } catch (e) {
     Logger.log('[Battlelogs/Siembra] Error guardando el punto de control: ' + e.message);
   }

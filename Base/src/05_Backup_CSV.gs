@@ -950,6 +950,7 @@ function repararRazonInvalida() {
  * syncAllCSV() [→ Contexto_Base_Web.md §05B055]
  */
 function syncAllCSV() {
+  var t0 = Date.now();
   syncDirectorioCSV();
   syncClanCSV();
   while (!syncAcumulativosCSV()) { /* reintenta el mismo bloque de trabajos pendientes */ }
@@ -958,6 +959,7 @@ function syncAllCSV() {
   var shGuerra = ss.getSheetByName(CFG.SHEETS.GUERRA);
   if (shGuerra) _syncGuerraCSV(shGuerra);
   exportarBackupCelulares();
+  _revisarCsvAlSalir_(t0); // PF291
   Logger.log('[Backup] syncAllCSV completado: Directorio + Clan + Guerra + Acumulativos + JSON.');
 }
 
@@ -2152,6 +2154,25 @@ function _createFileConConteo_(folder, nombre, contenido, mime) {
     _logCambioArchivo_(String(nombre), null, contenido, true);
     _conteoArchivosMs_ += Date.now() - t0;
   }
+  return archivo;
+}
+
+/**
+ * _guardarArchivoProgresoVerificado_(folder, nombre, contenido) - Guarda un archivo de progreso o checkpoint (JSON) en la carpeta: si ya existe lo
+ * sobrescribe con setContent() y si no lo crea; en los dos casos comprueba que no quedó vacío o recortado con _asegurarEscrituraCompleta_() (PF291).
+ * No deja registro de filas (los archivos de progreso se guardan muchas veces por ejecución; PF290, punto 4) y devuelve el archivo. Si la comprobación
+ * lanza error, lo propaga: los cinco sitios que la llaman lo atrapan con su propio try y lo dejan en el registro. [→ Contexto_Base_Web.md §PF291]
+ */
+function _guardarArchivoProgresoVerificado_(folder, nombre, contenido) {
+  var it = folder.getFilesByName(nombre);
+  var archivo;
+  if (it.hasNext()) {
+    archivo = it.next();
+    archivo.setContent(contenido);
+  } else {
+    archivo = folder.createFile(nombre, contenido, MimeType.PLAIN_TEXT);
+  }
+  _asegurarEscrituraCompleta_(archivo, contenido, String(nombre));
   return archivo;
 }
 

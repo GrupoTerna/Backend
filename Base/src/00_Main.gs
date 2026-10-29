@@ -746,6 +746,7 @@ function runPendientesYMensajesProgramado() {
     }
     Logger.log('=== runPendientesYMensajesProgramado FIN (' + Math.round((Date.now() - t0) / 1000) + 's) ===');
   } finally {
+    try { _revisarCsvAlSalir_(t0); } catch (eRevPym) { Logger.log('[runPendientesYMensajesProgramado] Revisión posterior de los CSV falló: ' + eRevPym.message); } // PF291
     _liberarLockPYMProgramado_();
   }
 }
@@ -757,6 +758,7 @@ function runPendientesYMensajesProgramado() {
  * NO debe tener activador: el del disparador es runPendientesYMensajesProgramado(). [→ Contexto_Base_Web.md §PF091]
  */
 function runPendientesYMensajes() {
+  var t0 = Date.now();
   if (!_adquirirLockEjecucion('runPendientesYMensajes')) return false;
   try {
     Logger.log('=== runPendientesYMensajes INICIO (manual: roster fresco, con API) ===');
@@ -766,6 +768,7 @@ function runPendientesYMensajes() {
     Logger.log('=== runPendientesYMensajes FIN ===');
     return true;
   } finally {
+    try { _revisarCsvAlSalir_(t0); } catch (eRevPymM) { Logger.log('[runPendientesYMensajes] Revisión posterior de los CSV falló: ' + eRevPymM.message); } // PF291
     _liberarLockEjecucion();
   }
 }
@@ -1148,12 +1151,14 @@ function runActualizarIndiceManual() {
  * runDirectorio() - Actualización manual solo del Directorio y sus vistas.
  */
 function runDirectorio() {
+  var t0 = Date.now();
   Logger.log('=== Actualización Directorio INICIO ===');
   _fetchAllClanData();
   updateDirectorioSheet();
   updateVistasDerivadas();
   syncDirectorioCSV();
   exportarBackupCelulares();
+  _revisarCsvAlSalir_(t0); // PF291
   Logger.log('=== Actualización Directorio FIN ===');
 }
 
@@ -1239,6 +1244,11 @@ function runGuerra() {
       } catch (eMarca) {
         Logger.log('[runGuerra] No se pudo restaurar la marca de hora: ' + eMarca.message);
       }
+    }
+    // PF291: segunda revisión de los CSV que esta ejecución escribió fuera de la cola (por ejemplo, la fusión que hace la purga de temporadas anteriores). La ventana ligera ya la hace en _runGuerraVentanaLigera_().
+    if (!enVentanaGuerra) {
+      try { _revisarCsvAlSalir_(_tRunGuerra0); }
+      catch (eRevGuerra) { Logger.log('[runGuerra] Revisión posterior de los CSV falló: ' + eRevGuerra.message); }
     }
     _liberarLockEjecucion();
   }

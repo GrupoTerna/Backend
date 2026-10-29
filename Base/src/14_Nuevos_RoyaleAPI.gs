@@ -76,13 +76,8 @@ var NUEVOS_RESTORE_LOTE_MAX = 10;
 function _guardarProgresoRestaurarNuevos(tagsYaRestaurados) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(NUEVOS_RESTORE_PROGRESS_FILE);
     var content = JSON.stringify({ _ts: Date.now(), tags: tagsYaRestaurados || [] });
-    if (files.hasNext()) {
-      files.next().setContent(content);
-    } else {
-      folder.createFile(NUEVOS_RESTORE_PROGRESS_FILE, content, MimeType.PLAIN_TEXT);
-    }
+    _guardarArchivoProgresoVerificado_(folder, NUEVOS_RESTORE_PROGRESS_FILE, content); // PF291
   } catch (e) {
     Logger.log('[Nuevos-Restaurar] Error guardando progreso de restauración en Drive: ' + e.message);
   }

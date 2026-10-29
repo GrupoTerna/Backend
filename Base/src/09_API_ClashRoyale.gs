@@ -1388,13 +1388,8 @@ function _descargarBattlelogYCofresParaTodos() {
 function _guardarProgresoBattlelogChests(tagsHechos) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(BATTLELOGCHESTS_PROGRESS_FILE);
     var content = JSON.stringify({ _ts: Date.now(), tags: (tagsHechos || []) });
-    if (files.hasNext()) {
-      files.next().setContent(content);
-    } else {
-      folder.createFile(BATTLELOGCHESTS_PROGRESS_FILE, content, MimeType.PLAIN_TEXT);
-    }
+    _guardarArchivoProgresoVerificado_(folder, BATTLELOGCHESTS_PROGRESS_FILE, content); // PF291
   } catch (e) {
     Logger.log('[Battlelog/UpcomingChests] Error guardando progreso en Drive: ' + e.message);
   }
@@ -1964,8 +1959,6 @@ function _jsonClanesDeEsteCheckpointYaEscritos_() {
 function _guardarProgresoClanes(cacheClanData) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
-
     var soloClanes = {};
     for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
       var tag = CFG.CLAN_TAGS[i];
@@ -1973,11 +1966,7 @@ function _guardarProgresoClanes(cacheClanData) {
     }
 
     var content = JSON.stringify({ _ts: Date.now(), clanes: soloClanes });
-    if (files.hasNext()) {
-      files.next().setContent(content);
-    } else {
-      folder.createFile(CLANES_PROGRESO_FILE, content, MimeType.PLAIN_TEXT);
-    }
+    _guardarArchivoProgresoVerificado_(folder, CLANES_PROGRESO_FILE, content); // PF291
   } catch (e) {
     Logger.log('[API] Error guardando progreso de clanes en Drive: ' + e.message);
   }
@@ -2317,13 +2306,8 @@ function _fetchPlayersData() {
 function _guardarProgresoPlayers(playersMap) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(PLAYERS_PROGRESS_FILE);
     var content = JSON.stringify({ _ts: Date.now(), players: (playersMap || {}) });
-    if (files.hasNext()) {
-      files.next().setContent(content);
-    } else {
-      folder.createFile(PLAYERS_PROGRESS_FILE, content, MimeType.PLAIN_TEXT);
-    }
+    _guardarArchivoProgresoVerificado_(folder, PLAYERS_PROGRESS_FILE, content); // PF291
   } catch (e) {
     Logger.log('[API] Error guardando progreso de /players en Drive: ' + e.message);
   }
