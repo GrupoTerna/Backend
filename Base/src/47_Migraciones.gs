@@ -93,8 +93,8 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
 
 // =============================================================================
 // ORDEN DEL ARCHIVO: 1) funciones que se corren a mano; 2) funciones que NO se ejecutan a mano. En cada grupo, primero por temática y luego en el orden en que se ejecutarían.
-// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento).
-// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda).
+// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento); 1.5 T_Asistencia alineada con T_Lista (repetible).
+// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda); 2.6 T_Asistencia alineada con T_Lista (plan, envoltorio y escritura).
 // =============================================================================
 
 // =============================================================================
@@ -625,6 +625,18 @@ function forzarSemanaIdEvento(id, semana) {
   actual[texto] = sem;
   PropertiesService.getScriptProperties().setProperty(SEMANAS_FORZADAS_PROP_, JSON.stringify(actual));
   Logger.log('[Ids evento] Orden guardada: el id ' + texto + ' pasará a la semana ' + sem + '. Corre migrarIdsEventoRevisar() para verla y migrarIdsEvento() para aplicarla.');
+}
+
+// ----- 1.5 T_Asistencia alineada con T_Lista (29-oct-2026): herramienta MANUAL y repetible -----
+// alinearTAsistenciaConTListaRevisar(): NO escribe nada; por cada torneo (id) deja en el registro cuántas filas de T_Asistencia tienen otra Temporada o otra Fecha que la de su fila de T_Lista.
+// alinearTAsistenciaConTLista(): escribe SOLO las columnas Temporada y Fecha de T_Asistencia (el id sirve de llave y no se toca) y rehace Backup_T_Asistencia.csv. Se corre DESPUÉS de corregirTemporadaTLista() y migrarIdsEvento().
+// Los ids que no están en T_Lista (o están repetidos) no se tocan y se avisan. [→ Contexto_Base_Web.md §PF286]
+function alinearTAsistenciaConTListaRevisar() {
+  _correrAlinearTAsistencia_('alinearTAsistenciaConTListaRevisar', false);
+}
+
+function alinearTAsistenciaConTLista() {
+  _correrAlinearTAsistencia_('alinearTAsistenciaConTLista', true);
 }
 
 // =============================================================================
@@ -1934,4 +1946,120 @@ function _leerSemanasForzadasIdEvento_() {
     });
   } catch (e) { Logger.log('[Ids evento] La propiedad ' + SEMANAS_FORZADAS_PROP_ + ' está dañada; se ignora: ' + e.message); }
   return salida;
+}
+
+
+// ----- 2.6 T_Asistencia alineada con T_Lista (29-oct-2026): plan (función pura), envoltorio y escritura -----
+
+// _claveDiaCelda_(valor): PURA. 'aaaa-mm-dd' del día de una celda Date o de un texto dd/mm/aaaa o aaaa-mm-dd; '' si no sirve.
+function _claveDiaCelda_(valor) {
+  var d = _fechaLocalDeCelda_(valor);
+  if (!d) return '';
+  var dos = function (n) { return (n < 10 ? '0' : '') + n; };
+  return d.getFullYear() + '-' + dos(d.getMonth() + 1) + '-' + dos(d.getDate());
+}
+
+// _planAlinearAsistencia_(torneos, filas): PURA. torneos = { id: { temporada: Number, dia: 'aaaa-mm-dd', repetido: bool } } (de T_Lista); filas = [{ indice, id, temporada, dia }] (de T_Asistencia).
+// Devuelve { cambios: [{ indice, id, temporada (nueva o null si no cambia), dia (nuevo o null) }], resumen: { id: { filas, cambiaTemporada, cambiaFecha, temporadaVieja, temporadaNueva, diaViejo, diaNuevo } }, sinTorneo: [id], repetidos: [id] }.
+function _planAlinearAsistencia_(torneos, filas) {
+  var cambios = [], resumen = {}, sinTorneo = [], repetidos = [], visto = {};
+  filas.forEach(function (f) {
+    var id = String(f.id || '').trim();
+    if (!id) return;
+    var t = torneos[id];
+    if (!t) { if (!visto[id]) { sinTorneo.push(id); visto[id] = true; } return; }
+    if (t.repetido) { if (!visto[id]) { repetidos.push(id); visto[id] = true; } return; }
+    var nuevaTemp = (Number(f.temporada) !== t.temporada && t.temporada > 0) ? t.temporada : null;
+    var nuevoDia = (t.dia && f.dia !== t.dia) ? t.dia : null;
+    if (nuevaTemp === null && nuevoDia === null) return;
+    cambios.push({ indice: f.indice, id: id, temporada: nuevaTemp, dia: nuevoDia });
+    var r = resumen[id] || (resumen[id] = { filas: 0, cambiaTemporada: 0, cambiaFecha: 0 });
+    r.filas++;
+    if (nuevaTemp !== null) { r.cambiaTemporada++; r.temporadaVieja = f.temporada; r.temporadaNueva = nuevaTemp; }
+    if (nuevoDia !== null) { r.cambiaFecha++; r.diaViejo = f.dia || '(vacía)'; r.diaNuevo = nuevoDia; }
+  });
+  return { cambios: cambios, resumen: resumen, sinTorneo: sinTorneo, repetidos: repetidos };
+}
+
+// _correrAlinearTAsistencia_(nombreFn, aplicar): envoltorio de las dos funciones públicas; solo la que escribe toma el candado de ejecución.
+function _correrAlinearTAsistencia_(nombreFn, aplicar) {
+  if (aplicar && !_adquirirLockEjecucion(nombreFn)) {
+    Logger.log('[Asistencia T] ' + nombreFn + '(): NO se inicia (hay otra ejecución en curso o una reenumeración). Reintenta cuando el registro diga «Completada».');
+    return;
+  }
+  try {
+    _alinearTAsistenciaConTLista_(aplicar);
+  } catch (e) {
+    Logger.log('[Asistencia T] ERROR en ' + nombreFn + '(): ' + e.message + (aplicar ? ' — vuelve a correr alinearTAsistenciaConTListaRevisar() para ver qué falta (la herramienta es repetible).' : ''));
+  } finally {
+    if (aplicar) _liberarLockEjecucion();
+  }
+}
+
+// _alinearTAsistenciaConTLista_(aplicar): devuelve la cantidad de errores (0 = todo bien). Lee T_Lista (id, Temporada, Fecha; datos desde la fila 3) y T_Asistencia (datos desde la fila 2) y, con aplicar = true,
+// escribe SOLO las columnas Temporada y Fecha de T_Asistencia (nunca la hoja entera) y rehace Backup_T_Asistencia.csv.
+function _alinearTAsistenciaConTLista_(aplicar) {
+  var tag = aplicar ? '[Asistencia T]' : '[Asistencia T · solo revisar]';
+  var errores = 0;
+  var ss = _getSs();
+  var shL = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  var shA = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
+  if (!shL || !shA) { Logger.log(tag + ' Falta la hoja T_Lista o T_Asistencia.'); return 1; }
+  var ultL = shL.getLastRow(), ultA = shA.getLastRow();
+  if (ultL < 3 || ultA < 2) { Logger.log(tag + ' T_Lista o T_Asistencia sin filas de datos.'); return 0; }
+
+  var nL = ultL - 2;
+  var idsL = shL.getRange(3, TL.ID, nL, 1).getValues();
+  var tempsL = shL.getRange(3, TL.TEMPORADA, nL, 1).getValues();
+  var fechasL = shL.getRange(3, TL.FECHA, nL, 1).getValues();
+  var torneos = {}, fechaValor = {};
+  for (var i = 0; i < nL; i++) {
+    var id = String(idsL[i][0] || '').trim();
+    if (!id) continue;
+    if (torneos[id]) { torneos[id].repetido = true; continue; }
+    torneos[id] = { temporada: Number(tempsL[i][0]) || 0, dia: _claveDiaCelda_(fechasL[i][0]), repetido: false };
+    fechaValor[id] = fechasL[i][0];
+  }
+
+  var nA = ultA - 1;
+  var rTemp = shA.getRange(2, TA.TEMPORADA, nA, 1), rFecha = shA.getRange(2, TA.FECHA, nA, 1);
+  var temps = rTemp.getValues(), fechas = rFecha.getValues();
+  var idsA = shA.getRange(2, TA.ID, nA, 1).getValues();
+  var filas = [];
+  for (var j = 0; j < nA; j++) filas.push({ indice: 2 + j, id: idsA[j][0], temporada: temps[j][0], dia: _claveDiaCelda_(fechas[j][0]) });
+
+  var plan = _planAlinearAsistencia_(torneos, filas);
+  Object.keys(plan.resumen).forEach(function (id) {
+    var r = plan.resumen[id], partes = [];
+    if (r.cambiaTemporada) partes.push('Temporada ' + r.temporadaVieja + ' → ' + r.temporadaNueva + ' (' + r.cambiaTemporada + ' fila(s))');
+    if (r.cambiaFecha) partes.push('Fecha ' + r.diaViejo + ' → ' + r.diaNuevo + ' (' + r.cambiaFecha + ' fila(s))');
+    Logger.log(tag + ' ' + id + ': ' + r.filas + ' fila(s) por corregir: ' + partes.join('; '));
+  });
+  plan.sinTorneo.forEach(function (id) { Logger.log(tag + ' AVISO: el id ' + id + ' de T_Asistencia no está en T_Lista; no se toca.'); });
+  plan.repetidos.forEach(function (id) { Logger.log(tag + ' AVISO: el id ' + id + ' está repetido en T_Lista; no se toca.'); });
+  Logger.log(tag + ' Resumen: ' + plan.cambios.length + ' fila(s) de T_Asistencia por corregir en ' + Object.keys(plan.resumen).length + ' torneo(s), ' + plan.sinTorneo.length + ' id(s) sin torneo, ' + plan.repetidos.length + ' repetido(s).');
+
+  if (!aplicar) {
+    Logger.log(tag + ' Fin de la revisión: no se escribió nada. Si el plan es correcto, corre alinearTAsistenciaConTLista().');
+    return errores;
+  }
+  if (plan.cambios.length) {
+    var cambiaT = false, cambiaF = false;
+    plan.cambios.forEach(function (c) {
+      var k = c.indice - 2;
+      if (c.temporada !== null) { temps[k][0] = c.temporada; cambiaT = true; }
+      if (c.dia !== null) {
+        var v = fechaValor[c.id];
+        fechas[k][0] = (v instanceof Date) ? v : _fechaLocalDeCelda_(v);
+        cambiaF = true;
+      }
+    });
+    if (cambiaT) rTemp.setValues(temps); // solo esa columna (PF258: nunca la hoja entera)
+    if (cambiaF) rFecha.setValues(fechas);
+    Logger.log(tag + ' Escrito: ' + plan.cambios.length + ' fila(s) de T_Asistencia.');
+  }
+  try { respaldarIndiceYProtegidasCSV('T_ASISTENCIA'); Logger.log(tag + ' Backup_T_Asistencia.csv rehecho desde la hoja.'); }
+  catch (eB) { errores++; Logger.log(tag + ' ERROR rehaciendo Backup_T_Asistencia.csv: ' + eB.message + ' (repite la herramienta).'); }
+  Logger.log(tag + ' Terminado.');
+  return errores;
 }
