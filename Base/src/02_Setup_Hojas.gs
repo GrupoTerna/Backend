@@ -810,17 +810,18 @@ function _setupTLista(ss) {
   // FASE 2 (25-sep-2026, rediseño T_Lista -- ver docblock del objeto TL en [→ Contexto_Base_Web.md §02B067]
   var columnas = [
     { label: 'Planificación, registro y modificación de torneos', subs: [
-        'N°', 'Temporada', 'Semanas', 'Fecha', 'Hora', 'Creación', 'ID',
-        'Tag_Tor', 'Tag_Tor_2', 'Nombre', 'Tipo', 'Contraseña',
+        // Orden nuevo (29-oct-2026, pedido de la usuaria); debe coincidir con TL en 26_Torneos_Core.gs
+        'N°', 'Temporada', 'Fecha', 'Hora', 'ID', 'Creación', 'Semanas',
+        'Tag_Tor', 'Tag_Tor_2', 'Nombre_Org', 'Nom_Multi_Org', 'Tag_org',
+        'Clan', 'ClanTag', 'Organizador_Fuente', 'Nombre', 'Tipo', 'Contraseña',
         'Nivel_tope', 'Participantes', 'Capacidad', 'Modo_ID', 'Modo',
-        'Preparación', 'Duración', 'Nombre_Org', 'Nom_Multi_Org',
-        'Tag_org', 'Clan', 'ClanTag', 'Premios', 'Estado'
+        'Preparación', 'Duración', 'Premios', 'Estado'
     ] },
     { label: 'Min_T', subs: ['C1', 'C2', 'C3', 'C4'] },
     { label: 'Ataques', subs: ['C1', 'C2', 'C3', 'C4'] },
     { label: 'Otros requisitos', subs: [
         // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §02B068]
-        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Link_app', 'Link_json', 'Link_json_2', 'Descripción', 'Comentario', 'Organizador_Fuente'
+        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Descripción', 'Comentario', 'Link_app', 'Link_json', 'Link_json_2'
     ] }
   ];
   var totalCols = _aplicarHeaderDosFilas(sh, columnas);
