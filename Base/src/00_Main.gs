@@ -1958,7 +1958,27 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   Logger.log('[' + idEjecucion + '] Ejecutando paso ' + (paso + 1) + '/' + pasos.length +
     (nombresPasos && nombresPasos[paso] ? ': ' + nombresPasos[paso] : ''));
   PROGRESO_PASO_ = null;
+  var tInicioLlamada = Date.now();
   var resultado = pasos[paso]();
+
+    // PF292: si el paso quedó incompleto pero avanzó y a la tanda aún le sobra tiempo, se vuelve a llamar al MISMO paso en esta misma tanda (cada llamada trae su propio presupuesto interno) en vez de cortar y esperar la continuación. [→ Contexto_Base_Web.md §PF292]
+    var rellamadasPaso = 0;
+    var acumBasePaso = (progPrevio && progPrevio.acum !== null && progPrevio.acum !== undefined && !isNaN(Number(progPrevio.acum))) ? Number(progPrevio.acum) : 0;
+    while (resultado === false) {
+      var decision = _decidirRellamadaPaso_(idEjecucion, presupuestoMs, inicioTanda, Date.now() - tInicioLlamada, rellamadasPaso, acumBasePaso, PROGRESO_PASO_);
+      if (!decision.si) {
+        if (decision.motivo) Logger.log('[' + idEjecucion + '] No se vuelve a llamar al paso ' + (paso + 1) + '/' + pasos.length + ' en esta tanda: ' + decision.motivo + '.');
+        break;
+      }
+      rellamadasPaso++;
+      acumBasePaso = PROGRESO_PASO_.acum;
+      Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ' incompleto tras la llamada ' + rellamadasPaso + ' de esta tanda (' + PROGRESO_PASO_.texto + '). La tanda lleva ' +
+        Math.round((Date.now() - inicioTanda) / 1000) + ' s de ' + Math.round(presupuestoMs / 1000) + ' s: se vuelve a llamar al mismo paso.');
+      _refrescarLockEjecucion(idEjecucion);
+      PROGRESO_PASO_ = null;
+      tInicioLlamada = Date.now();
+      resultado = pasos[paso]();
+    }
 
     if (resultado === false) {
       Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ' quedó incompleto (presupuesto interno agotado). ' +
@@ -2001,6 +2021,43 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   _revisarCsvAlSalir_(INICIO_TANDA_MS_); // PF291
   _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
   return true;
+}
+
+/**
+ * _decidirRellamadaPaso_(idEjecucion, presupuestoMs, inicioTanda, duracionUltimaMs, rellamadas, acumBase, prog) - Decide si _ejecutarPorTandas() vuelve a llamar, en la misma tanda,
+ * a un paso que acaba de devolver false (PF292). Devuelve { si: boolean, motivo: string }; el motivo (vacío en la reenumeración, que reparte su propio tiempo) se imprime cuando no se vuelve a llamar.
+ * Solo vuelve a llamar si se cumplen TODAS: (1) el paso anotó su avance y este subió respecto de la llamada anterior (o, en la primera, es mayor que 0 o que lo guardado por la tanda anterior);
+ * (2) no se pasó el tope de llamadas extra por tanda (CFG.TANDA_RELLAMADAS_MAX); (3) la tanda no agotó su presupuesto (el mismo criterio con que decide empezar un paso nuevo);
+ * (4) queda tiempo seguro antes del límite de la plataforma: la duración de la llamada anterior por 1,5 (mínimo CFG.TANDA_RELLAMADA_MIN_MS) más CFG.TANDA_RELLAMADA_RESERVA_MS para el cierre;
+ * (5) no está por empezar la ventana de guerra protegida. Ante cualquier duda no vuelve a llamar y todo sigue como antes (corta y programa la continuación). [→ Contexto_Base_Web.md §PF292]
+ */
+function _decidirRellamadaPaso_(idEjecucion, presupuestoMs, inicioTanda, duracionUltimaMs, rellamadas, acumBase, prog) {
+  if (idEjecucion === 'REENUM') return { si: false, motivo: '' };
+  if (rellamadas >= CFG.TANDA_RELLAMADAS_MAX) {
+    return { si: false, motivo: 'ya se hicieron ' + rellamadas + ' llamadas extra de este paso en la tanda (tope)' };
+  }
+  if (!prog || !prog.texto || isNaN(prog.acum)) {
+    return { si: false, motivo: 'el paso no informa su avance, así que no se sabe si avanzó' };
+  }
+  if (!(prog.acum > acumBase)) {
+    return { si: false, motivo: 'el paso no avanzó en la última llamada (' + prog.texto + ')' };
+  }
+  var ahora = Date.now();
+  var usadoMs = ahora - inicioTanda;
+  if (usadoMs >= presupuestoMs) {
+    return { si: false, motivo: 'la tanda ya usó ' + Math.round(usadoMs / 1000) + ' s de los ' + Math.round(presupuestoMs / 1000) + ' s de su presupuesto' };
+  }
+  var restantePlataformaMs = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (ahora - INICIO_TANDA_MS_);
+  var necesarioMs = Math.max(Math.round(duracionUltimaMs * 1.5), CFG.TANDA_RELLAMADA_MIN_MS) + CFG.TANDA_RELLAMADA_RESERVA_MS;
+  if (restantePlataformaMs < necesarioMs) {
+    return { si: false, motivo: 'no queda tiempo seguro: faltan ' + Math.round(restantePlataformaMs / 1000) + ' s para el límite y otra llamada necesitaría unos ' + Math.round(necesarioMs / 1000) + ' s' };
+  }
+  try {
+    if (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
+      return { si: false, motivo: 'la ventana de guerra protegida está activa' };
+    }
+  } catch (eVentana) { return { si: false, motivo: 'no se pudo comprobar la ventana de guerra' }; }
+  return { si: true, motivo: '' };
 }
 
 // PF286 punto 14: ayudas de _ejecutarPorTandas() para reconocer el paso pendiente aunque la lista de pasos cambie entre tandas (la pareja principal-continuación no aplica: no son continuaciones).
