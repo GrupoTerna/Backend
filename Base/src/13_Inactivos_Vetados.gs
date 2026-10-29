@@ -570,9 +570,9 @@ function _guardarVetadosConfirmados_(mapa) {
     var files = folder.getFilesByName(NOMBRE_JSON_VETADOS_CONFIRMADOS_);
     var content = JSON.stringify(mapa, null, 2);
     if (files.hasNext()) {
-      files.next().setContent(content);
+      _setContentConConteo_(files.next(), content);
     } else {
-      folder.createFile(NOMBRE_JSON_VETADOS_CONFIRMADOS_, content, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, NOMBRE_JSON_VETADOS_CONFIRMADOS_, content, MimeType.PLAIN_TEXT);
     }
   } catch (e) {
     Logger.log('[Vetados-Registro] Error guardando ' + NOMBRE_JSON_VETADOS_CONFIRMADOS_ + ': ' + e.message);

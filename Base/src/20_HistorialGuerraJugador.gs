@@ -616,9 +616,9 @@ function _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanActual, reg
 
     if (archivoExistente) {
       if (archivoExistente.getName() !== filename) archivoExistente.setName(filename);
-      archivoExistente.setContent(contenido);
+      _setContentConConteo_(archivoExistente, contenido);
     } else {
-      var nuevoArchivo = folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      var nuevoArchivo = _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
       indice[String(tag).trim()] = nuevoArchivo;
     }
   } catch (e) {
@@ -728,9 +728,9 @@ function _saveHistorialGuerraGrupalCSV(content) {
   var folder = _getHistorialGuerraGrupalFolder();
   var files = folder.getFilesByName(HISTORIAL_GUERRA_GRUPAL_FILENAME);
   if (files.hasNext()) {
-    files.next().setContent(content);
+    _setContentConConteo_(files.next(), content);
   } else {
-    folder.createFile(HISTORIAL_GUERRA_GRUPAL_FILENAME, content, MimeType.CSV);
+    _createFileConConteo_(folder, HISTORIAL_GUERRA_GRUPAL_FILENAME, content, MimeType.CSV);
   }
 }
 

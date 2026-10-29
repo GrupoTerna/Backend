@@ -267,9 +267,9 @@ function descargarCards() {
       var contenidoJson = JSON.stringify(data, null, 2);
       var filesJson = folderJson.getFilesByName(nombreJson);
       if (filesJson.hasNext()) {
-        filesJson.next().setContent(contenidoJson);
+        _setContentConConteo_(filesJson.next(), contenidoJson);
       } else {
-        folderJson.createFile(nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
+        _createFileConConteo_(folderJson, nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
       }
       Logger.log('[Cards] ' + nombreJson + ' guardado (' + data.items.length + ' cartas' +
                  (Array.isArray(data.supportItems) ? ' + ' + data.supportItems.length + ' de torre' : '') + ').');
@@ -501,9 +501,9 @@ function descargarGlobalTournaments() {
     var contenidoJson = JSON.stringify(data, null, 2);
     var filesJson = folderJson.getFilesByName(nombreJson);
     if (filesJson.hasNext()) {
-      filesJson.next().setContent(contenidoJson);
+      _setContentConConteo_(filesJson.next(), contenidoJson);
     } else {
-      folderJson.createFile(nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folderJson, nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
     }
     Logger.log('[GlobalTournaments] ' + nombreJson + ' guardado (' +
                (data.items ? data.items.length + ' torneo(s) global(es)' : 'sin "items"') + ').');
@@ -533,9 +533,9 @@ function descargarLocations() {
     var contenidoJson = JSON.stringify(data, null, 2);
     var filesJson = folderJson.getFilesByName(nombreJson);
     if (filesJson.hasNext()) {
-      filesJson.next().setContent(contenidoJson);
+      _setContentConConteo_(filesJson.next(), contenidoJson);
     } else {
-      folderJson.createFile(nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folderJson, nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Locations] ' + nombreJson + ' guardado (' + items.length + ' locations).');
   } catch (eJson) {
@@ -591,9 +591,9 @@ function descargarLocationPorId(id) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Locations] ' + filename + ' guardado (' + path + ').');
     return true;
@@ -633,9 +633,9 @@ function descargarRankingClanesPorUbicacion(locationId, limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingClanesPorUbicacion] ' + filename + ' guardado (' + cantidad + ' clan(es), ' + path + ').');
@@ -676,9 +676,9 @@ function descargarRankingJugadoresPorUbicacion(locationId, limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingJugadoresPorUbicacion] ' + filename + ' guardado (' + cantidad + ' jugador(es), ' + path + ').');
@@ -719,9 +719,9 @@ function descargarRankingClanesGuerraPorUbicacion(locationId, limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingGuerraClanesPorUbicacion] ' + filename + ' guardado (' + cantidad + ' clan(es), ' + path + ').');
@@ -762,9 +762,9 @@ function descargarRankingJugadoresCaminoLeyendasPorUbicacion(locationId, limit) 
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingCaminoLeyendasPorUbicacion] ' + filename + ' guardado (' + cantidad + ' jugador(es), ' + path + ').');
@@ -796,9 +796,9 @@ function descargarRankingGlobalClanes(limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     // La respuesta es un array plano (a diferencia de otros endpoints que [→ Contexto_Base_Web.md §09B053]
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
@@ -831,9 +831,9 @@ function descargarRankingGlobalJugadores(limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingGlobalJugadores] ' + filename + ' guardado (' + cantidad + ' jugador(es), ' + path +
@@ -866,9 +866,9 @@ function descargarRankingGlobalGuerraClanes(limit) {
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingGlobalGuerraClanes] ' + filename + ' guardado (' + cantidad + ' clan(es), ' + path + ').');
@@ -913,9 +913,9 @@ function descargarRankingGlobalJugadoresCaminoLeyendasPorTemporada(seasonId, lim
     var contenido = JSON.stringify(data, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     var cantidad = Array.isArray(data) ? data.length : (data.items ? data.items.length : '?');
     Logger.log('[RankingGlobalCaminoLeyendas] ' + filename + ' guardado (' + cantidad + ' jugador(es), ' + path + ').');
@@ -944,9 +944,9 @@ function descargarSeasons() {
     var contenidoJson = JSON.stringify(data, null, 2);
     var filesJson = folderJson.getFilesByName(nombreJson);
     if (filesJson.hasNext()) {
-      filesJson.next().setContent(contenidoJson);
+      _setContentConConteo_(filesJson.next(), contenidoJson);
     } else {
-      folderJson.createFile(nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folderJson, nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Seasons] ' + nombreJson + ' guardado (' + items.length + ' temporadas).');
   } catch (eJson) {
@@ -1041,10 +1041,10 @@ function descargarBattlelogJugador(playerTag) {
       if (archivoExistente.getName() !== filename) {
         archivoExistente.setName(filename);
       }
-      archivoExistente.setContent(contenido);
+      _setContentConConteo_(archivoExistente, contenido);
       Logger.log('[Battlelog] ' + filename + ' actualizado (' + data.length + ' batallas).');
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
       Logger.log('[Battlelog] ' + filename + ' creado (' + data.length + ' batallas).');
     }
   } catch (e) {
@@ -1253,10 +1253,10 @@ function descargarUpcomingChestsJugador(playerTag) {
       if (archivoExistente.getName() !== filename) {
         archivoExistente.setName(filename);
       }
-      archivoExistente.setContent(contenido);
+      _setContentConConteo_(archivoExistente, contenido);
       Logger.log('[UpcomingChests] ' + filename + ' actualizado (' + data.items.length + ' cofres).');
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
       Logger.log('[UpcomingChests] ' + filename + ' creado (' + data.items.length + ' cofres).');
     }
     guardadoOk = true;
@@ -1706,9 +1706,9 @@ function _guardarJsonClanesConsultaTemporalEnDrive(datos) {
     var contenido = JSON.stringify(datos, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
     return true;
   } catch (e) {
@@ -1727,9 +1727,9 @@ function _guardarJsonBusquedaNombreEnDrive(nombreBuscado, datos) {
     var contenido = JSON.stringify(datos, null, 2);
     var existentes = folder.getFilesByName(filename);
     if (existentes.hasNext()) {
-      existentes.next().setContent(contenido);
+      _setContentConConteo_(existentes.next(), contenido);
     } else {
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
     }
   } catch(e) {
     Logger.log('[Torneos] Error guardando JSON de búsqueda "' + nombreBuscado + '": ' + e.message);
@@ -2041,7 +2041,7 @@ function _invalidarProgresoClanes() {
         // NUEVO (05-oct-2026): se conserva la hora real de captura en _tsReal (solo la primera vez) para que [→ Contexto_Base_Web.md §09B105]
         if (!parsed._tsReal && parsed._ts) parsed._tsReal = parsed._ts;
         parsed._ts = 0;
-        f.setContent(JSON.stringify(parsed));
+        _setContentConConteo_(f, JSON.stringify(parsed));
       }
     }
   } catch (e) {
@@ -3174,12 +3174,12 @@ function _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) {
       if (endpointKey !== 'currentriverrace' && archivoExistente.getName() !== filename) {
         archivoExistente.setName(filename);
       }
-      archivoExistente.setContent(contenido);
+      _setContentConConteo_(archivoExistente, contenido);
       Logger.log('[Cache] Actualizado en Drive (mismo archivo, ' + tagPrefijo + '): ' + filename);
     } else {
       // Solo se crea un archivo nuevo cuando cambia el periodo.
       // Los archivos de periodos anteriores se conservan siempre como histórico.
-      folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
       Logger.log('[Cache] Creado en Drive (nuevo periodo ' + tagPrefijo + '): ' + filename);
     }
 
@@ -3342,9 +3342,9 @@ function _guardarPlayerEnDrive(playerTag, periodIndex, datos) {
       if (archivoExistente.getName() !== filename) {
         archivoExistente.setName(filename);
       }
-      archivoExistente.setContent(contenido);
+      _setContentConConteo_(archivoExistente, contenido);
     } else {
-      var nuevo = folder.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+      var nuevo = _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
       indice[playerTag] = nuevo; // se agrega al índice para los siguientes jugadores de esta misma corrida
     }
     // Sin log individual por jugador a propósito: con ~150-200 jugadores por [→ Contexto_Base_Web.md §09B165]
@@ -3526,9 +3526,9 @@ function _registrarLogScriptTerna(funcion, descripcion, advertencias) {
       try { logArray = JSON.parse(contenidoActual); } catch(e) { logArray = []; }
       if (!Array.isArray(logArray)) logArray = [];
       logArray.push(nuevaEntrada);
-      archivoLog.setContent(JSON.stringify(logArray, null, 2));
+      _setContentConConteo_(archivoLog, JSON.stringify(logArray, null, 2));
     } else {
-      folder.createFile(filename, JSON.stringify([nuevaEntrada], null, 2), MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, JSON.stringify([nuevaEntrada], null, 2), MimeType.PLAIN_TEXT);
     }
     Logger.log('[Log] Entrada registrada en ' + filename + ': ' + funcion);
   } catch(e) {

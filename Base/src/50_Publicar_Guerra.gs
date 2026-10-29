@@ -183,6 +183,21 @@ function _ghPublicarArchivos_(token, repo, rama, archivos, mensaje) {
       return { ok: false, paso: 'ref (leer)', r: existe };
     }
 
+    // PF290: contenido que cada archivo tiene hoy en la rama, para registrar filas o elementos antes y después de publicar. Solo si la rama ya existe y queda tiempo de conteo; nunca hace fallar la publicación.
+    var antesGh = {};
+    if (existe.code === 200) {
+      for (var ia = 0; ia < archivos.length; ia++) {
+        if (!_conteoArchivosDisponible_()) break;
+        var tAntes = Date.now();
+        try {
+          var rc = _ghFetch_(token, 'get', '/repos/' + repo + '/contents/' + encodeURI(archivos[ia].path) + '?ref=' + encodeURIComponent(rama));
+          if (rc.code === 200 && rc.body && rc.body.content) antesGh[archivos[ia].path] = Utilities.newBlob(Utilities.base64Decode(String(rc.body.content).replace(/\s/g, ''))).getDataAsString('UTF-8');
+          else if (rc.code === 404) antesGh[archivos[ia].path] = null;
+        } catch (eAntes) { /* sin conteo previo de este archivo */ }
+        _conteoArchivosMs_ += Date.now() - tAntes;
+      }
+    }
+
     var entradas = [];
     var r;
     for (var i = 0; i < archivos.length; i++) {
@@ -206,6 +221,15 @@ function _ghPublicarArchivos_(token, repo, rama, archivos, mensaje) {
     } else {
       r = _ghFetch_(token, 'post', base + '/refs', { ref: 'refs/heads/' + rama, sha: shaCommit });
       if (r.code !== 201) return { ok: false, paso: 'ref (crear)', r: r };
+    }
+    // PF290: registro de filas o elementos antes y después de cada archivo publicado.
+    for (var il = 0; il < archivos.length; il++) {
+      try {
+        var rutaGh = archivos[il].path;
+        var despuesGh = Utilities.newBlob(Utilities.base64Decode(archivos[il].b64)).getDataAsString('UTF-8');
+        if (antesGh.hasOwnProperty(rutaGh)) _logCambioArchivo_(repo + '@' + rama + '/' + rutaGh, antesGh[rutaGh], despuesGh, antesGh[rutaGh] === null);
+        else _logCambioArchivo_(repo + '@' + rama + '/' + rutaGh, undefined, despuesGh, false);
+      } catch (eLogGh) { /* el registro nunca debe hacer fallar la publicación */ }
     }
     return { ok: true };
   } finally {

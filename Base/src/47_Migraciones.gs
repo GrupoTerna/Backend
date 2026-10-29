@@ -1055,7 +1055,7 @@ function _reenumerarHistorialGuerraIndividual() {
           obj.ultimaTemporadaCubierta = Number(obj.ultimaTemporadaCubierta) + deltaMeses;
         }
         obj.reenumeracionId = runId;
-        archivo.setContent(JSON.stringify(obj, null, 2));
+        _setContentConConteo_(archivo, JSON.stringify(obj, null, 2));
         cambiados++;
       }
     } catch (eArch) {
@@ -1145,7 +1145,7 @@ function _reenumerarInformesCSV() {
         if (texto.charCodeAt(0) === 0xFEFF) texto = texto.slice(1);
         var res = _reenumerarTextoInformeCSV_(texto, deltaMeses);
         if (res.cambiado) {
-          item.file.setContent((tieneBom ? '\uFEFF' : '') + res.texto);
+          _setContentConConteo_(item.file, (tieneBom ? '\uFEFF' : '') + res.texto);
           try { _csvCacheBorrar_(item.nombre); } catch (eCache) { /* sin caché que borrar */ }
           cambiados++; filasSumadas += res.cambiadas;
         } else { sinColumna++; }

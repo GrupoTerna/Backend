@@ -3584,14 +3584,14 @@ function _guardarJsonTorneoEnDrive(tagTorneo, datos) {
 
     if (folderTerna) {
       var enTerna = folderTerna.getFilesByName(filename);
-      if (enTerna.hasNext()) { enTerna.next().setContent(contenido); return; }
+      if (enTerna.hasNext()) { _setContentConConteo_(enTerna.next(), contenido); return; }
     }
     var enRaiz = folderRaiz.getFilesByName(filename);
-    if (enRaiz.hasNext()) { enRaiz.next().setContent(contenido); return; }
+    if (enRaiz.hasNext()) { _setContentConConteo_(enRaiz.next(), contenido); return; }
 
     // Primera vez: se decide la subcarpeta.
     var destino = (folderTerna && _creadorTorneoEnClanTerna_(datos)) ? folderTerna : folderRaiz;
-    destino.createFile(filename, contenido, MimeType.PLAIN_TEXT);
+    _createFileConConteo_(destino, filename, contenido, MimeType.PLAIN_TEXT);
   } catch(e) {
     Logger.log('[Torneos] Error guardando JSON de ' + tagTorneo + ': ' + e.message);
   }

@@ -590,7 +590,7 @@ function cruzarSinResolverConHistorialInforme() {
   var csv = _informeConIdSemana_(salida).map(function (fila) {
     return fila.map(cruce_csvCelda_).join(',');
   }).join('\r\n');
-  DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID).createFile(nombre, csv, MimeType.CSV);
+  _createFileConConteo_(DriveApp.getFolderById(CRUCE_CFG.CARPETA_INFORMES_ID), nombre, csv, MimeType.CSV);
 
   var resumen = Object.keys(conteo).sort().map(function (c) {
     return c + ' ' + conteo[c];
@@ -880,7 +880,7 @@ function tot_ejecutar_(aplicar) {
     filas[cb.idx][cBar] = String(cb.barcos);
   }
   var nuevoTexto = tot_serializar_(filas, eol) + (terminaEnEol ? eol : '');
-  archivoBackup.setContent((bom ? '﻿' : '') + nuevoTexto);
+  _setContentConConteo_(archivoBackup, (bom ? '﻿' : '') + nuevoTexto);
 
   var texto2 = archivoBackup.getBlob().getDataAsString('UTF-8');
   if (texto2.charCodeAt(0) === 0xFEFF) texto2 = texto2.substring(1);
@@ -981,7 +981,7 @@ function tot_serializar_(filas, eol) {
 }
 
 function tot_guardarCsv_(carpeta, nombre, filas) {
-  carpeta.createFile(nombre, tot_serializar_(_informeConIdSemana_(filas), '\r\n'), MimeType.CSV);
+  _createFileConConteo_(carpeta, nombre, tot_serializar_(_informeConIdSemana_(filas), '\r\n'), MimeType.CSV);
 }
 
 /**
@@ -1250,5 +1250,5 @@ function ano_csvCelda_(v) {
 
 function ano_guardarCsv_(carpeta, nombre, filas) {
   var texto = _informeConIdSemana_(filas).map(function (fila) { return fila.map(ano_csvCelda_).join(','); }).join('\r\n');
-  carpeta.createFile(nombre, texto, MimeType.CSV);
+  _createFileConConteo_(carpeta, nombre, texto, MimeType.CSV);
 }

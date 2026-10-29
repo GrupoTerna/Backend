@@ -1345,9 +1345,9 @@ function _guardarSnapshotDebugImportacionNuevos(candidatosPayload) {
     var filesJson = folder.getFilesByName(NOMBRE_JSON_DEBUG_NUEVOS);
     var contentJson = JSON.stringify(mapa, null, 2);
     if (filesJson.hasNext()) {
-      filesJson.next().setContent(contentJson);
+      _setContentConConteo_(filesJson.next(), contentJson);
     } else {
-      folder.createFile(NOMBRE_JSON_DEBUG_NUEVOS, contentJson, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, NOMBRE_JSON_DEBUG_NUEVOS, contentJson, MimeType.PLAIN_TEXT);
     }
 
     // 3b) Guardar CSV aplanado (una fila por registro individual, para [→ Contexto_Base_Web.md §14B071]

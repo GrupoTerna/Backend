@@ -216,10 +216,10 @@ function _guardarIndiceContenido(lista) {
     var files = folder.getFilesByName(INDICE_CONTENIDO_FILE);
     var contenido = JSON.stringify({ _ts: Date.now(), entradas: lista });
     if (files.hasNext()) {
-      files.next().setContent(contenido);
+      _setContentConConteo_(files.next(), contenido);
       while (files.hasNext()) files.next().setTrashed(true); // duplicados
     } else {
-      folder.createFile(INDICE_CONTENIDO_FILE, contenido, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, INDICE_CONTENIDO_FILE, contenido, MimeType.PLAIN_TEXT);
     }
   } catch (e) {
     Logger.log('[Índice] Error guardando el índice en Drive: ' + e.message);

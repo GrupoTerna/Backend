@@ -87,9 +87,9 @@ function exportarBackupCelulares() {
     var content = JSON.stringify(backupData, null, 2);
 
     if (files.hasNext()) {
-      files.next().setContent(content);
+      _setContentConConteo_(files.next(), content);
     } else {
-      folder.createFile(filename, content, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Backup] JSON celulares guardado exitosamente (' + backupData.length + ' registros).');
   } catch(e) {
@@ -938,7 +938,7 @@ function repararRazonInvalida() {
       for (var i = 0; i < jsonObj.length; i++) {
         if (jsonObj[i].razon && !esRazonValida(jsonObj[i].razon)) jsonObj[i].razon = '';
       }
-      fileJson.setContent(JSON.stringify(jsonObj, null, 2));
+      _setContentConConteo_(fileJson, JSON.stringify(jsonObj, null, 2));
       Logger.log('[Reparación] ClanSystem_Backup_Celulares.json: campo razon limpiado.');
     }
   } catch(e) { Logger.log('[Reparación] Error limpiando JSON de celulares: ' + e.message); }
@@ -1021,7 +1021,7 @@ function repararFormatoTelefonos() {
         if (jsonObj[i].prefijo !== undefined) jsonObj[i].prefijo = soloDigitos(jsonObj[i].prefijo);
         if (jsonObj[i].celular !== undefined) jsonObj[i].celular = soloDigitos(jsonObj[i].celular);
       }
-      fileJson.setContent(JSON.stringify(jsonObj, null, 2));
+      _setContentConConteo_(fileJson, JSON.stringify(jsonObj, null, 2));
       Logger.log('[Reparación] ClanSystem_Backup_Celulares.json: prefijo/celular limpiados.');
     }
   } catch(e) { Logger.log('[Reparación] Error limpiando JSON de celulares: ' + e.message); }
@@ -1266,9 +1266,9 @@ function _eliminarExtraColsInactivosPorTags(tags) {
     var files = folder.getFilesByName(filename);
     var content = JSON.stringify(mapa, null, 2);
     if (files.hasNext()) {
-      files.next().setContent(content);
+      _setContentConConteo_(files.next(), content);
     } else {
-      folder.createFile(filename, content, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Backup] ClanSystem_Backup_InactivosExtra.json: ' + borrados + ' tag(s) eliminados (reactivados en un clan Terna).');
   } catch(e) {
@@ -1527,9 +1527,9 @@ function _guardarExtraColsInactivosBatch(nuevosPorTag) {
     var files = folder.getFilesByName(filename);
     var content = JSON.stringify(mapa, null, 2);
     if (files.hasNext()) {
-      files.next().setContent(content);
+      _setContentConConteo_(files.next(), content);
     } else {
-      folder.createFile(filename, content, MimeType.PLAIN_TEXT);
+      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
     }
     Logger.log('[Backup] ClanSystem_Backup_InactivosExtra.json actualizado (' + Object.keys(nuevosPorTag).length + ' tag(s) frescos).');
   } catch(e) {
@@ -1651,6 +1651,11 @@ var CSV_CACHE_TTL_SEG   = 600;     // 10 min
 var CSV_CACHE_CHUNK     = 90000;   // CacheService: máx 100 KB por valor
 var CSV_CACHE_MAX_CHUNK = 40;      // si el CSV comprimido pasa de ~3.5 MB, no se cachea
 var _CSV_MEM_ = {};                // memoria por ejecución: filename -> texto
+
+// PF290 (28-oct-2026): conteo de filas o elementos antes y después de cada escritura de un CSV o JSON en Drive. Para no alargar las corridas con muchos archivos, el tiempo gastado en leer y contar tiene un tope por ejecución; al pasarlo, los archivos siguientes se escriben sin conteo. [→ Contexto_Base_Web.md §PF290]
+var CONTEO_ARCHIVOS_PRESUPUESTO_MS = 20000;
+var _conteoArchivosMs_ = 0;           // tiempo acumulado de conteo en esta ejecución
+var _conteoArchivosAgotadoAvisado_ = false;
 
 function _csvCacheKey_(filename) { return 'CSVDRV_' + filename; }
 
@@ -2024,7 +2029,7 @@ function _saveCSVToDrive(filename, content) {
   var hit = _csvBuscarArchivo_(filename); // nunca crea una copia si el archivo ya existe en alguna subcarpeta [→ Contexto_Base_Web.md §01B158]
   var destino = _csvSubcarpetaDe_(filename);
   if (hit) {
-    hit.file.setContent(content);
+    _setContentConConteo_(hit.file, content);
     if (CSV_MOVER_A_SUBCARPETA && destino && hit.carpetaNombre !== destino) {
       try {
         hit.file.moveTo(_getCsvSubcarpeta_(destino, true));
@@ -2034,11 +2039,108 @@ function _saveCSVToDrive(filename, content) {
       }
     }
   } else {
-    _getCsvSubcarpeta_(destino, true).createFile(filename, content, MimeType.CSV);
+    _createFileConConteo_(_getCsvSubcarpeta_(destino, true), filename, content, MimeType.CSV);
   }
   // Invalida la caché compartida y deja el texto nuevo en memoria de esta ejecución.
   _csvCacheBorrar_(filename);
   _CSV_MEM_[filename] = content;
+}
+
+/**
+ * _contarRegistrosTexto_(texto, nombre) - Cuenta los registros de un CSV o JSON para el log de cambios (PF290).
+ * Devuelve { n, txt }: n = número principal (-1 si no se pudo contar) y txt = descripción legible. CSV o texto: filas de dato (sin la
+ * primera línea, contando solo saltos fuera de comillas). JSON arreglo: elementos. JSON objeto: claves, más el tamaño de hasta tres claves
+ * que sean arreglos u objetos. [→ Contexto_Base_Web.md §PF290]
+ */
+function _contarRegistrosTexto_(texto, nombre) {
+  if (texto === null || texto === undefined) return { n: -1, txt: 'sin lectura' };
+  if (texto === '') return { n: 0, txt: '0 (vacío)' };
+  if (texto.length > 12000000) return { n: -1, txt: 'demasiado grande para contar' };
+  if (/\.json$/i.test(nombre || '')) {
+    try {
+      var o = JSON.parse(texto.charAt(0) === '\uFEFF' ? texto.slice(1) : texto);
+      if (Array.isArray(o)) return { n: o.length, txt: o.length + ' elemento(s)' };
+      if (o && typeof o === 'object') {
+        var ks = Object.keys(o), partes = [];
+        for (var i = 0; i < ks.length && partes.length < 3; i++) {
+          var v = o[ks[i]];
+          if (v && typeof v === 'object') partes.push(ks[i] + ':' + (Array.isArray(v) ? v.length : Object.keys(v).length));
+        }
+        return { n: ks.length, txt: ks.length + ' clave(s)' + (partes.length ? ' [' + partes.join(', ') + ']' : '') };
+      }
+      return { n: 1, txt: '1 valor' };
+    } catch (eJson) { return { n: -1, txt: 'JSON ilegible' }; }
+  }
+  var lineas = 0, enComillas = false;
+  for (var j = 0; j < texto.length; j++) {
+    var c = texto.charAt(j);
+    if (c === '"') enComillas = !enComillas;
+    else if (c === '\n' && !enComillas) lineas++;
+  }
+  if (texto.charAt(texto.length - 1) !== '\n') lineas++;
+  var datos = Math.max(0, lineas - 1);
+  return { n: datos, txt: datos + ' fila(s)' };
+}
+
+/**
+ * _logCambioArchivo_(nombre, textoAntes, textoDespues, esNuevo) - Escribe en el log «[Archivo] nombre: antes → después» (PF290).
+ * Si el conteo baja, agrega «[BAJA n]». Nunca lanza error. [→ Contexto_Base_Web.md §PF290]
+ */
+function _logCambioArchivo_(nombre, textoAntes, textoDespues, esNuevo) {
+  try {
+    var a = esNuevo ? { n: 0, txt: 'archivo nuevo' } : (textoAntes === undefined ? { n: -1, txt: 'antes sin contar' } : _contarRegistrosTexto_(textoAntes, nombre));
+    var d = _contarRegistrosTexto_(textoDespues, nombre);
+    var marca = (a.n >= 0 && d.n >= 0 && d.n < a.n) ? ' [BAJA ' + (a.n - d.n) + ']' : '';
+    Logger.log('[Archivo] ' + nombre + ': ' + a.txt + ' → ' + d.txt + marca);
+  } catch (eLog) { /* el conteo nunca debe romper una escritura */ }
+}
+
+/**
+ * _conteoArchivosDisponible_() - true mientras el tiempo de conteo de esta ejecución no pase de CONTEO_ARCHIVOS_PRESUPUESTO_MS (PF290).
+ * Avisa una sola vez en el log cuando se agota. [→ Contexto_Base_Web.md §PF290]
+ */
+function _conteoArchivosDisponible_() {
+  if (_conteoArchivosMs_ <= CONTEO_ARCHIVOS_PRESUPUESTO_MS) return true;
+  if (!_conteoArchivosAgotadoAvisado_) {
+    _conteoArchivosAgotadoAvisado_ = true;
+    Logger.log('[Archivo] Se agotó el tiempo de conteo de esta ejecución (' + Math.round(CONTEO_ARCHIVOS_PRESUPUESTO_MS / 1000) + ' s): los archivos que se escriban después no registran filas antes y después.');
+  }
+  return false;
+}
+
+/**
+ * _setContentConConteo_(file, contenido) - Igual que file.setContent(contenido), pero lee antes el contenido actual y deja en el log las
+ * filas o elementos antes y después (PF290). No cuenta los archivos Log_*, que ya se leen enteros al escribirse. Los errores de
+ * setContent se propagan igual que antes. [→ Contexto_Base_Web.md §PF290]
+ */
+function _setContentConConteo_(file, contenido) {
+  var nombre = '', antes;
+  var contar = _conteoArchivosDisponible_();
+  var t0 = Date.now();
+  try { nombre = file.getName(); } catch (eNombre) { contar = false; }
+  if (contar && /^Log_/i.test(nombre)) contar = false;
+  if (contar) {
+    try { antes = file.getBlob().getDataAsString('UTF-8'); } catch (eLeer) { antes = null; }
+  }
+  file.setContent(contenido);
+  if (contar) {
+    _logCambioArchivo_(nombre, antes, contenido, false);
+    _conteoArchivosMs_ += Date.now() - t0;
+  }
+}
+
+/**
+ * _createFileConConteo_(folder, nombre, contenido, mime) - Igual que folder.createFile(...) y devuelve el archivo; deja en el log el
+ * conteo del archivo nuevo (PF290). [→ Contexto_Base_Web.md §PF290]
+ */
+function _createFileConConteo_(folder, nombre, contenido, mime) {
+  var archivo = folder.createFile(nombre, contenido, mime);
+  if (!/^Log_/i.test(String(nombre)) && _conteoArchivosDisponible_()) {
+    var t0 = Date.now();
+    _logCambioArchivo_(String(nombre), null, contenido, true);
+    _conteoArchivosMs_ += Date.now() - t0;
+  }
+  return archivo;
 }
 
 /**
@@ -2211,9 +2313,9 @@ function _logTampermonkeyADrive(boton, resultado, errorTexto) {
     var contenidoFinal = lineas.join('\n') + '\n';
 
     if (file) {
-      file.setContent(contenidoFinal);
+      _setContentConConteo_(file, contenidoFinal);
     } else {
-      _getCsvSubcarpeta_(_csvSubcarpetaDe_(nombreArchivo), true).createFile(nombreArchivo, contenidoFinal, MimeType.CSV);
+      _createFileConConteo_(_getCsvSubcarpeta_(_csvSubcarpetaDe_(nombreArchivo), true), nombreArchivo, contenidoFinal, MimeType.CSV);
     }
   } catch (eLog) {
     // Nunca debe romper el flujo del botón -- solo se registra en el log

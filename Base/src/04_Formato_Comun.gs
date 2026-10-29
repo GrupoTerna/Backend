@@ -1088,9 +1088,9 @@ function _escribirAnchosColumnasGuardados(datos) {
   var contenido = JSON.stringify(datos, null, 2);
   var files = folder.getFilesByName(ANCHOS_COLUMNAS_ARCHIVO);
   if (files.hasNext()) {
-    files.next().setContent(contenido);
+    _setContentConConteo_(files.next(), contenido);
   } else {
-    folder.createFile(ANCHOS_COLUMNAS_ARCHIVO, contenido, MimeType.PLAIN_TEXT);
+    _createFileConConteo_(folder, ANCHOS_COLUMNAS_ARCHIVO, contenido, MimeType.PLAIN_TEXT);
   }
 }
 
