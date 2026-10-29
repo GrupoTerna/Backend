@@ -100,8 +100,8 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
 
 // =============================================================================
 // ORDEN DEL ARCHIVO: 1) funciones que se corren a mano; 2) funciones que NO se ejecutan a mano. En cada grupo, primero por temática y luego en el orden en que se ejecutarían.
-// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento); 1.5 T_Asistencia alineada con T_Lista (repetible); 1.6 lo mismo para T, S, CR y sus asistencias (repetible; lo usa la reenumeración).
-// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda); 2.6 T_Asistencia alineada con T_Lista (plan, envoltorio y escritura; ahora para T, S y CR); 2.7 envoltorio de las herramientas 1.6.
+// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento); 1.5 T_Asistencia alineada con T_Lista (repetible); 1.6 lo mismo para T, S, CR y sus asistencias (repetible; lo usa la reenumeración); 1.7 fecha, hora y fichas de Semanas limpias en las listas (repetible).
+// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda); 2.6 T_Asistencia alineada con T_Lista (plan, envoltorio y escritura; ahora para T, S y CR); 2.7 envoltorio de las herramientas 1.6; 2.8 fecha, hora y fichas de Semanas limpias (ayudas y escritura).
 // =============================================================================
 
 // =============================================================================
@@ -663,6 +663,18 @@ function alinearAsistenciasConListasRevisar() {
 
 function alinearAsistenciasConListas() {
   _correrHerramientaTemporada_('alinearAsistenciasConListas', true, _alinearAsistencias_);
+}
+
+// ----- 1.7 Fecha, Hora y fichas de Semanas limpias en T_Lista, S_Lista y CR_Lista (29-oct-2026): herramienta MANUAL y repetible -----
+// normalizarFechaHoraListasRevisar(): NO escribe nada; lista las celdas que cambiarían. normalizarFechaHoraListas(): escribe SOLO esas celdas (una por una, nunca columnas enteras) y rehace los respaldos de las listas que cambió.
+// Qué corrige: (1) Hora que trae una fecha completa (p. ej. «18/10/2026 21:00:00») → solo la hora, como las demás filas; (2) Fecha que trae hora → solo el día; (3) fichas «T<n>_S<m>» de Semanas en desorden (T26_S2,T26_S1) → en orden ascendente.
+// No toca ids, temporadas ni semanas de los ids. [→ Contexto_Base_Web.md §PF286]
+function normalizarFechaHoraListasRevisar() {
+  _correrHerramientaTemporada_('normalizarFechaHoraListasRevisar', false, _normalizarFechaHoraListas_);
+}
+
+function normalizarFechaHoraListas() {
+  _correrHerramientaTemporada_('normalizarFechaHoraListas', true, _normalizarFechaHoraListas_);
 }
 
 // =============================================================================
@@ -2158,4 +2170,71 @@ function _correrHerramientaTemporada_(nombreFn, aplicar, fn) {
   } finally {
     if (aplicar) _liberarLockEjecucion();
   }
+}
+
+
+// ----- 2.8 Fecha, Hora y fichas de Semanas limpias (29-oct-2026): ayudas puras y escritura -----
+
+// _normalizarHoraCelda_(v): PURA salvo Utilities. Si v es un Date con año distinto de 1899 (fecha completa en una columna que debería traer solo la hora), devuelve { cambia: true, valor: fracción del día (0 a <1), texto: 'HH:mm' };
+// en cualquier otro caso { cambia: false }. La fracción (21:00 = 0.875) es el valor de «solo hora» de la hoja, sin el desfase horario de 1899.
+function _normalizarHoraCelda_(v) {
+  if (!(v instanceof Date) || isNaN(v.getTime())) return { cambia: false };
+  if (Utilities.formatDate(v, 'America/Lima', 'yyyy') === '1899') return { cambia: false };
+  var h = Number(Utilities.formatDate(v, 'America/Lima', 'HH')), m = Number(Utilities.formatDate(v, 'America/Lima', 'mm')), sg = Number(Utilities.formatDate(v, 'America/Lima', 'ss'));
+  return { cambia: true, valor: (h * 3600 + m * 60 + sg) / 86400, texto: Utilities.formatDate(v, 'America/Lima', 'HH:mm') };
+}
+
+// _normalizarFechaCelda_(v): PURA salvo Utilities. Si v es un Date con hora distinta de 00:00 (en Lima), devuelve { cambia: true, valor: Date del mismo día a las 00:00 }; si no, { cambia: false }.
+function _normalizarFechaCelda_(v) {
+  if (!(v instanceof Date) || isNaN(v.getTime())) return { cambia: false };
+  if (Utilities.formatDate(v, 'America/Lima', 'HH:mm:ss') === '00:00:00') return { cambia: false };
+  return { cambia: true, valor: Utilities.parseDate(Utilities.formatDate(v, 'America/Lima', 'yyyy-MM-dd'), 'America/Lima', 'yyyy-MM-dd') }; // medianoche de Lima, sin depender de la zona del proyecto
+}
+
+// _ordenarFichasSemanas_(texto): PURA. Si el texto son solo fichas «T<n>_S<m>» separadas por coma y no están en orden ascendente (temporada y luego semana), devuelve { cambia: true, texto: ordenado }; si no, { cambia: false }.
+function _ordenarFichasSemanas_(texto) {
+  var original = String(texto || '').trim();
+  if (!original) return { cambia: false };
+  var partes = original.split(',').map(function (x) { return x.trim(); });
+  for (var i = 0; i < partes.length; i++) if (!/^T\d+_S\d+$/.test(partes[i])) return { cambia: false };
+  var ordenadas = partes.slice().sort(function (a, b) {
+    var ma = a.match(/^T(\d+)_S(\d+)$/), mb = b.match(/^T(\d+)_S(\d+)$/);
+    return (Number(ma[1]) - Number(mb[1])) || (Number(ma[2]) - Number(mb[2]));
+  });
+  var nuevo = ordenadas.join(',');
+  return (nuevo === partes.join(',')) ? { cambia: false } : { cambia: true, texto: nuevo };
+}
+
+// _normalizarFechaHoraListas_(aplicar): devuelve la cantidad de errores. Recorre T_Lista, S_Lista y CR_Lista (_cfgListasTemporada_()); con aplicar = true escribe solo las celdas que cambian y rehace el respaldo de cada lista cambiada.
+function _normalizarFechaHoraListas_(aplicar) {
+  var errores = 0;
+  _cfgListasTemporada_().forEach(function (cfg) {
+    var tag = '[Fecha/Hora ' + cfg.etiqueta + (aplicar ? ']' : ' · solo revisar]');
+    var sh = _getSs().getSheetByName(cfg.hoja);
+    if (!sh) { Logger.log(tag + ' Hoja ' + cfg.hoja + ' no encontrada.'); errores++; return; }
+    var ultima = sh.getLastRow(), primera = cfg.primera;
+    if (ultima < primera) { Logger.log(tag + ' sin filas de datos.'); return; }
+    var n = ultima - primera + 1, M = cfg.M;
+    var fechas = sh.getRange(primera, M.FECHA, n, 1).getValues();
+    var horas = sh.getRange(primera, M.HORA, n, 1).getValues();
+    var semanas = sh.getRange(primera, M.SEMANAS, n, 1).getValues();
+    var ids = sh.getRange(primera, M.ID, n, 1).getValues();
+    var cambios = [];
+    for (var i = 0; i < n; i++) {
+      var fila = primera + i, idTxt = (ids[i][0] || '—');
+      var rf = _normalizarFechaCelda_(fechas[i][0]);
+      if (rf.cambia) { cambios.push({ fila: fila, col: M.FECHA, valor: rf.valor }); Logger.log(tag + ' Fila ' + fila + ' (id ' + idTxt + '): Fecha con hora → solo el día ' + Utilities.formatDate(rf.valor, 'America/Lima', 'dd/MM/yyyy')); }
+      var rh = _normalizarHoraCelda_(horas[i][0]);
+      if (rh.cambia) { cambios.push({ fila: fila, col: M.HORA, valor: rh.valor }); Logger.log(tag + ' Fila ' + fila + ' (id ' + idTxt + '): Hora con fecha completa → solo la hora ' + rh.texto); }
+      var rs = _ordenarFichasSemanas_(semanas[i][0]);
+      if (rs.cambia) { cambios.push({ fila: fila, col: M.SEMANAS, valor: rs.texto }); Logger.log(tag + ' Fila ' + fila + ' (id ' + idTxt + '): Semanas «' + semanas[i][0] + '» → «' + rs.texto + '»'); }
+    }
+    Logger.log(tag + ' Resumen: ' + cambios.length + ' celda(s) por corregir.');
+    if (!aplicar || !cambios.length) return;
+    cambios.forEach(function (c) { sh.getRange(c.fila, c.col).setValue(c.valor); }); // celda por celda: no se reescriben columnas enteras (las horas de 1899 sufrirían desfase horario)
+    Logger.log(tag + ' Escrito: ' + cambios.length + ' celda(s).');
+    try { respaldarIndiceYProtegidasCSV(cfg.clave); Logger.log(tag + ' Respaldo CSV de ' + cfg.etiqueta + ' rehecho desde la hoja.'); }
+    catch (eB) { errores++; Logger.log(tag + ' ERROR rehaciendo el respaldo de ' + cfg.etiqueta + ': ' + eB.message + ' (repite la herramienta).'); }
+  });
+  return errores;
 }
