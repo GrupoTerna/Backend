@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 02:05:07 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 02:11:57 */
 
 
 
@@ -61079,8 +61079,8 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
 
 // =============================================================================
 // ORDEN DEL ARCHIVO: 1) funciones que se corren a mano; 2) funciones que NO se ejecutan a mano. En cada grupo, primero por temática y luego en el orden en que se ejecutarían.
-// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible).
-// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura).
+// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento).
+// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda).
 // =============================================================================
 
 // =============================================================================
@@ -61597,6 +61597,20 @@ function corregirTemporadaTListaRevisar() {
 
 function corregirTemporadaTLista() {
   _correrCorregirTemporadaTLista_('corregirTemporadaTLista', true);
+}
+
+// forzarSemanaIdEvento(id, semana): ORDEN DE UN SOLO USO para que migrarIdsEvento() ponga a ese evento otra semana en su id (por ejemplo forzarSemanaIdEvento('T_22_S_02_N_01', 3)). Solo guarda la orden en la propiedad
+// IDS_EVENTO_SEMANA_FORZADA (no escribe hojas); migrarIdsEventoRevisar() la muestra, migrarIdsEvento() la aplica junto con las citas y la borra al terminar sin errores. El id va como está en la hoja AHORA. [→ Contexto_Base_Web.md §PF286]
+function forzarSemanaIdEvento(id, semana) {
+  var texto = String(id || '').trim();
+  var p = _idEventoParsear_(texto);
+  var sem = Math.floor(Number(semana));
+  if (!p) { Logger.log('[Ids evento] forzarSemanaIdEvento(): «' + texto + '» no es un id de evento; no se guardó nada.'); return; }
+  if (!isFinite(sem) || sem < 1 || sem > 6) { Logger.log('[Ids evento] forzarSemanaIdEvento(): la semana debe ser de 1 a 6 (llegó «' + semana + '»); no se guardó nada.'); return; }
+  var actual = _leerSemanasForzadasIdEvento_();
+  actual[texto] = sem;
+  PropertiesService.getScriptProperties().setProperty(SEMANAS_FORZADAS_PROP_, JSON.stringify(actual));
+  Logger.log('[Ids evento] Orden guardada: el id ' + texto + ' pasará a la semana ' + sem + '. Corre migrarIdsEventoRevisar() para verla y migrarIdsEvento() para aplicarla.');
 }
 
 // =============================================================================
@@ -62579,12 +62593,13 @@ function _planIdsEventoLista_(filas) {
     var tTxt = String(f.temporada === undefined || f.temporada === null ? '' : f.temporada).trim();
     var t = Number(tTxt);
     if (tTxt === '' || !isFinite(t) || t <= 0) { t = p.temporada; avisos.push('fila ' + f.indice + ' (' + idTxt + '): la columna Temporada no sirve («' + tTxt + '»); se conserva la temporada del id'); }
+    var semanaEv = (Number(f.semana) > 0) ? Math.floor(Number(f.semana)) : p.semana; // semana forzada con forzarSemanaIdEvento(); sin ella, la del id
     var clave = p.temporada + '|' + p.semana + '|' + p.numero;
     var ev = eventos[clave];
     var k = 0;
     while (ev && ev.letras[p.letra] !== undefined) { k++; ev = eventos[clave + '#' + k]; }
     var claveFinal = k ? clave + '#' + k : clave;
-    if (!ev) { ev = { t: t, semana: p.semana, numero: p.numero, primeraFila: f.indice, yaNuevo: p.nuevo, tiempo: NaN, letras: {}, filas: [] }; eventos[claveFinal] = ev; listaEventos.push(ev); }
+    if (!ev) { ev = { t: t, semana: semanaEv, numero: p.numero, primeraFila: f.indice, yaNuevo: p.nuevo, tiempo: NaN, letras: {}, filas: [] }; eventos[claveFinal] = ev; listaEventos.push(ev); }
     else if (ev.t !== t) avisos.push('fila ' + f.indice + ' (' + idTxt + '): la columna Temporada (' + t + ') difiere de la de su pareja (' + ev.t + '); el par usa la temporada ' + ev.t);
     if (p.nuevo) ev.yaNuevo = true;
     var tiempoFila = _marcaTiempoEvento_(f.fecha, f.hora);
@@ -62651,6 +62666,9 @@ function _migrarIdsEvento_(aplicar) {
     { nombre: CFG.SHEETS.CR_LISTA, primera: 4, colId: CR.ID, colTemp: CR.TEMPORADA, colFecha: CR.FECHA, colHora: CR.HORA }
   ];
   var mapa = {}, planes = [], totalCambios = 0, errores = 0;
+  var forzadas = _leerSemanasForzadasIdEvento_();
+  var nForzadas = Object.keys(forzadas).length;
+  if (nForzadas) Logger.log(tag + ' Semanas forzadas pendientes: ' + JSON.stringify(forzadas));
   listas.forEach(function (l) {
     var sh = ss.getSheetByName(l.nombre);
     if (!sh) { Logger.log(tag + ' Hoja ' + l.nombre + ' no encontrada; se omite.'); return; }
@@ -62662,7 +62680,7 @@ function _migrarIdsEvento_(aplicar) {
     var fechas = sh.getRange(l.primera, l.colFecha, n, 1).getValues();
     var horas = sh.getRange(l.primera, l.colHora, n, 1).getValues();
     var filas = [];
-    for (var i = 0; i < n; i++) filas.push({ indice: l.primera + i, id: ids[i][0], temporada: temps[i][0], fecha: fechas[i][0], hora: horas[i][0] });
+    for (var i = 0; i < n; i++) filas.push({ indice: l.primera + i, id: ids[i][0], temporada: temps[i][0], fecha: fechas[i][0], hora: horas[i][0], semana: forzadas[String(ids[i][0] || '').trim()] });
     var plan = _planIdsEventoLista_(filas);
     plan.cambios.forEach(function (c) { mapa[c.viejo] = c.nuevo; });
     totalCambios += plan.cambios.length;
@@ -62744,6 +62762,12 @@ function _migrarIdsEvento_(aplicar) {
     });
   } finally {
     _BACKUP_OMITIR_CHECK_CLAVES_ = false;
+  }
+  if (errores === 0 && nForzadas) {
+    var restantes = _leerSemanasForzadasIdEvento_();
+    planes.forEach(function (pl) { pl.plan.cambios.forEach(function (c) { delete restantes[c.viejo]; }); });
+    PropertiesService.getScriptProperties().setProperty(SEMANAS_FORZADAS_PROP_, JSON.stringify(restantes));
+    Logger.log(tag + ' Semanas forzadas aplicadas y quitadas de la propiedad.');
   }
   Logger.log(tag + ' Terminado: ' + totalCambios + ' id(s) reescrito(s)' + (errores ? ' con ' + errores + ' error(es)' : '') + '. Backup_T_Resoluciones.csv se rehace con la sincronización diaria de respaldos.');
   return errores;
@@ -62857,7 +62881,7 @@ function _corregirTemporadaTLista_(aplicar) {
     var p = _idEventoParsear_(ids[i][0]);
     if (p) {
       var semanaFecha = _calcularSemanaTorneo(f, esperada);
-      if (p.semana !== semanaFecha) { avisos++; detalle += ' · AVISO: la semana del id es la ' + p.semana + ' y la de la fecha es la ' + semanaFecha + ' (no se cambia)'; }
+      if (p.semana !== semanaFecha) { avisos++; detalle += ' · AVISO: la semana del id es la ' + p.semana + ' y la de la fecha es la ' + semanaFecha + ' (no se cambia aquí; si es lo que quieres, corre forzarSemanaIdEvento(\'' + ids[i][0] + '\', ' + semanaFecha + '))'; }
       detalle += ' · id esperado con migrarIdsEvento(): ' + _idEventoConstruir_(p.letra, esperada, p.semana, p.numero);
     }
     Logger.log(detalle);
@@ -62877,6 +62901,25 @@ function _corregirTemporadaTLista_(aplicar) {
   catch (eB) { errores++; Logger.log(tag + ' ERROR rehaciendo Backup_T_Lista.csv: ' + eB.message + ' (repite la herramienta).'); }
   Logger.log(tag + ' Terminado. Siguiente paso: migrarIdsEventoRevisar() y, si el plan es correcto, migrarIdsEvento().');
   return errores;
+}
+
+
+// ----- 2.5 Semana forzada de un id de evento (29-oct-2026) -----
+var SEMANAS_FORZADAS_PROP_ = 'IDS_EVENTO_SEMANA_FORZADA';
+
+// _leerSemanasForzadasIdEvento_(): devuelve { 'T_22_S_02_N_01': 3, … } desde la propiedad (objeto vacío si no hay o está dañada). Solo cuentan los valores enteros de 1 a 6.
+function _leerSemanasForzadasIdEvento_() {
+  var crudo = PropertiesService.getScriptProperties().getProperty(SEMANAS_FORZADAS_PROP_);
+  var salida = {};
+  if (!crudo) return salida;
+  try {
+    var obj = JSON.parse(crudo);
+    Object.keys(obj || {}).forEach(function (k) {
+      var v = Math.floor(Number(obj[k]));
+      if (isFinite(v) && v >= 1 && v <= 6) salida[k] = v;
+    });
+  } catch (e) { Logger.log('[Ids evento] La propiedad ' + SEMANAS_FORZADAS_PROP_ + ' está dañada; se ignora: ' + e.message); }
+  return salida;
 }
 
 
