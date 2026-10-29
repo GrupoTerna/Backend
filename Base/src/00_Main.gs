@@ -1278,7 +1278,7 @@ function _runGuerraColaHoraria_(t0) {
 
   // PF291: segunda revisión del CSV de guerra, minutos después de escribirlo (el 28-oct quedó en 0 B a los pocos segundos de una escritura correcta).
   if (CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - t0) > 30000) { // basta con medir; reescribir 2,4 MB tarda unos segundos
-    _reverificarCsvEscritos_();
+    _reverificarCsvEscritos_(0);
   } else {
     Logger.log('[runGuerra] Revisión posterior de los CSV SALTADA: quedan menos de 30 s de presupuesto.');
   }
@@ -1378,6 +1378,7 @@ function _runGuerraVentanaLigera_(t0) {
       } else {
         var shG = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
         if (shG) _syncGuerraCSV(shG);
+        _revisarCsvAlSalir_(t0); // PF291
       }
     }
   }
@@ -1959,6 +1960,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       _guardarPasoDeCadena_(props, idEjecucion, paso, pasos, nombresPasos);
       props.setProperty(idEjecucion + '_REINTENTO', '1');
       _refrescarLockEjecucion(idEjecucion);
+      _revisarCsvAlSalir_(INICIO_TANDA_MS_); // PF291
       _programarContinuacion(nombreHandlerContinuacion);
       return false;
     }
@@ -1975,6 +1977,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
 
     if (paso < pasos.length && (Date.now() - inicioTanda) > presupuestoMs) {
       Logger.log('[' + idEjecucion + '] Presupuesto de tiempo agotado tras completar el paso ' + paso + '/' + pasos.length + '. Queda: paso ' + (paso + 1) + '/' + pasos.length + ' POR EMPEZAR. Se programa continuación automática en 10s.');
+      _revisarCsvAlSalir_(INICIO_TANDA_MS_); // PF291
       _programarContinuacion(nombreHandlerContinuacion);
       return false;
     }
@@ -1985,6 +1988,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   props.deleteProperty(idEjecucion + '_REINTENTO');
   props.deleteProperty(idEjecucion + '_TANDAS_PASO');
   props.deleteProperty(idEjecucion + '_PROGRESO_PASO');
+  _revisarCsvAlSalir_(INICIO_TANDA_MS_); // PF291
   _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
   return true;
 }

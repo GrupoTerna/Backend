@@ -1662,6 +1662,8 @@ var _conteoArchivosAgotadoAvisado_ = false;
 var ESCRITURA_VERIF_REINTENTOS = 2;    // reescrituras antes de dar la escritura por fallida
 var ESCRITURA_VERIF_ESPERA_MS  = 1500; // espera antes de volver a medir el archivo
 var _csvEscritosEnEjecucion_ = {};     // filename -> último texto que _saveCSVToDrive() dejó escrito en esta ejecución
+var _csvEscritosTs_ = {};               // filename -> hora (ms) de esa escritura
+var ESCRITURA_VERIF_ESPERA_FINAL_MS = 8000; // espera mínima desde la escritura antes de la revisión posterior al salir de una tanda
 
 function _csvCacheKey_(filename) { return 'CSVDRV_' + filename; }
 
@@ -2051,6 +2053,7 @@ function _saveCSVToDrive(filename, content) {
   _csvCacheBorrar_(filename);
   _CSV_MEM_[filename] = content;
   _csvEscritosEnEjecucion_[filename] = content; // PF291: para _reverificarCsvEscritos_()
+  _csvEscritosTs_[filename] = Date.now();
 }
 
 /**
@@ -2193,18 +2196,24 @@ function _asegurarEscrituraCompleta_(file, contenido, nombre) {
 }
 
 /**
- * _reverificarCsvEscritos_() - Segunda revisión de los CSV que _saveCSVToDrive() escribió en ESTA ejecución (PF291). Se llama al final de
- * la cola horaria de guerra, minutos después de la escritura: si el archivo de Drive pesa menos que el texto que se dejó escrito (por
- * ejemplo, una revisión vacía que Drive creó después), lo reescribe con ese texto, que sigue en memoria. Nunca lanza error. Solo cubre
- * las ejecuciones que la llaman; las demás cadenas dependen de _asegurarEscrituraCompleta_(). [→ Contexto_Base_Web.md §PF291]
+ * _reverificarCsvEscritos_(esperaMinMs) - Segunda revisión de los CSV que _saveCSVToDrive() escribió en ESTA ejecución (PF291). Si desde la
+ * escritura pasaron menos de esperaMinMs, espera lo que falta (Drive puede dejar una revisión vacía segundos después). Si el archivo de Drive
+ * pesa menos que el texto escrito (por ejemplo, una revisión vacía que Drive creó después), lo reescribe con ese texto, que sigue en memoria.
+ * Cada archivo se revisa una vez y sale del registro. Nunca lanza error. La llaman la cola horaria de guerra (_runGuerraColaHoraria_,
+ * 00_Main.gs) y, vía _revisarCsvAlSalir_(), la ventana ligera de guerra y _ejecutarPorTandas(). [→ Contexto_Base_Web.md §PF291]
  */
-function _reverificarCsvEscritos_() {
+function _reverificarCsvEscritos_(esperaMinMs) {
   var nombres = Object.keys(_csvEscritosEnEjecucion_);
   for (var i = 0; i < nombres.length; i++) {
     var nombre = nombres[i];
     try {
       var texto = _csvEscritosEnEjecucion_[nombre];
+      var ts = _csvEscritosTs_[nombre] || 0;
+      delete _csvEscritosEnEjecucion_[nombre];
+      delete _csvEscritosTs_[nombre];
       if (!texto) continue;
+      var falta = (esperaMinMs || 0) - (Date.now() - ts);
+      if (falta > 0) Utilities.sleep(falta);
       var hit = _csvBuscarArchivo_(nombre);
       if (!hit) {
         Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': no se encuentra en Drive al volver a revisarlo tras escribirlo.');
@@ -2223,6 +2232,20 @@ function _reverificarCsvEscritos_() {
       Logger.log('[ALERTA PROTECCIÓN] Revisión posterior de ' + nombre + ' falló: ' + e.message);
     }
   }
+}
+
+/**
+ * _revisarCsvAlSalir_(inicioMs) - Revisión posterior para las ejecuciones que no son la cola horaria (PF291): si esta ejecución escribió algún CSV con
+ * _saveCSVToDrive() y quedan más de 60 s antes del límite de la plataforma (inicioMs = hora de inicio de la ejecución), espera lo que falte hasta
+ * ESCRITURA_VERIF_ESPERA_FINAL_MS desde la escritura y la revisa. Sin escrituras no hace nada ni gasta tiempo. [→ Contexto_Base_Web.md §PF291]
+ */
+function _revisarCsvAlSalir_(inicioMs) {
+  if (Object.keys(_csvEscritosEnEjecucion_).length === 0) return;
+  if (CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - inicioMs) <= 60000) {
+    Logger.log('[CSV] Revisión posterior de los CSV escritos SALTADA: quedan menos de 60 s de presupuesto.');
+    return;
+  }
+  _reverificarCsvEscritos_(ESCRITURA_VERIF_ESPERA_FINAL_MS);
 }
 
 /**
