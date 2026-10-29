@@ -1275,6 +1275,13 @@ function _runGuerraColaHoraria_(t0) {
   } catch (eCalentar) {
     Logger.log('[runGuerra] _calentarCacheGuerraEnVivo_() falló: ' + eCalentar.message);
   }
+
+  // PF291: segunda revisión del CSV de guerra, minutos después de escribirlo (el 28-oct quedó en 0 B a los pocos segundos de una escritura correcta).
+  if (CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - t0) > 30000) { // basta con medir; reescribir 2,4 MB tarda unos segundos
+    _reverificarCsvEscritos_();
+  } else {
+    Logger.log('[runGuerra] Revisión posterior de los CSV SALTADA: quedan menos de 30 s de presupuesto.');
+  }
 }
 
 /**

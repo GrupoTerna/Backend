@@ -1657,6 +1657,12 @@ var CONTEO_ARCHIVOS_PRESUPUESTO_MS = 20000;
 var _conteoArchivosMs_ = 0;           // tiempo acumulado de conteo en esta ejecución
 var _conteoArchivosAgotadoAvisado_ = false;
 
+// PF291 (29-oct-2026): verificación del tamaño tras cada escritura y segunda revisión al final de la cola horaria de guerra. El 28-oct a las 8:05 a. m.
+// Backup_Guerra.csv quedó en 0 B justo después de una escritura correcta de 2,4 MB [→ Contexto_Base_Web.md §PF289 punto 10, §PF291].
+var ESCRITURA_VERIF_REINTENTOS = 2;    // reescrituras antes de dar la escritura por fallida
+var ESCRITURA_VERIF_ESPERA_MS  = 1500; // espera antes de volver a medir el archivo
+var _csvEscritosEnEjecucion_ = {};     // filename -> último texto que _saveCSVToDrive() dejó escrito en esta ejecución
+
 function _csvCacheKey_(filename) { return 'CSVDRV_' + filename; }
 
 function _csvCacheGet_(filename) {
@@ -2044,6 +2050,7 @@ function _saveCSVToDrive(filename, content) {
   // Invalida la caché compartida y deja el texto nuevo en memoria de esta ejecución.
   _csvCacheBorrar_(filename);
   _CSV_MEM_[filename] = content;
+  _csvEscritosEnEjecucion_[filename] = content; // PF291: para _reverificarCsvEscritos_()
 }
 
 /**
@@ -2123,6 +2130,7 @@ function _setContentConConteo_(file, contenido) {
     try { antes = file.getBlob().getDataAsString('UTF-8'); } catch (eLeer) { antes = null; }
   }
   file.setContent(contenido);
+  _asegurarEscrituraCompleta_(file, contenido, nombre); // PF291
   if (contar) {
     _logCambioArchivo_(nombre, antes, contenido, false);
     _conteoArchivosMs_ += Date.now() - t0;
@@ -2135,12 +2143,86 @@ function _setContentConConteo_(file, contenido) {
  */
 function _createFileConConteo_(folder, nombre, contenido, mime) {
   var archivo = folder.createFile(nombre, contenido, mime);
+  _asegurarEscrituraCompleta_(archivo, contenido, String(nombre)); // PF291
   if (!/^Log_/i.test(String(nombre)) && _conteoArchivosDisponible_()) {
     var t0 = Date.now();
     _logCambioArchivo_(String(nombre), null, contenido, true);
     _conteoArchivosMs_ += Date.now() - t0;
   }
   return archivo;
+}
+
+/**
+ * _tamanoArchivoSeguro_(file) - Peso del archivo en bytes, o null si no se pudo medir (PF291). [→ Contexto_Base_Web.md §PF291]
+ */
+function _tamanoArchivoSeguro_(file) {
+  try { return file.getSize(); } catch (e) { return null; }
+}
+
+/**
+ * _asegurarEscrituraCompleta_(file, contenido, nombre) - Comprueba que el archivo no quedó vacío o recortado tras escribirlo (PF291).
+ * Un texto de N caracteres ocupa al menos N bytes en UTF-8, así que un archivo que pesa menos que el largo del texto quedó mal escrito.
+ * Si pasa, espera y vuelve a medir (Drive puede tardar en reflejar el tamaño); si sigue corto, reescribe hasta ESCRITURA_VERIF_REINTENTOS
+ * veces dejando [ALERTA PROTECCIÓN] en el log; si no se arregla, lanza un error en vez de dejar el archivo roto sin avisar. Si no se puede
+ * medir el archivo, no hace nada. Un texto vacío no se verifica. [→ Contexto_Base_Web.md §PF291]
+ */
+function _asegurarEscrituraCompleta_(file, contenido, nombre) {
+  if (contenido === null || contenido === undefined) return;
+  var largo = String(contenido).length;
+  if (largo === 0) return;
+  var tam = _tamanoArchivoSeguro_(file);
+  if (tam === null || tam >= largo) return;
+  for (var i = 1; i <= ESCRITURA_VERIF_REINTENTOS; i++) {
+    Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': se escribieron ' + largo + ' caracteres y el archivo pesa ' + tam + ' bytes. Se espera ' +
+      ESCRITURA_VERIF_ESPERA_MS + ' ms y se vuelve a medir (intento ' + i + ' de ' + ESCRITURA_VERIF_REINTENTOS + ').');
+    Utilities.sleep(ESCRITURA_VERIF_ESPERA_MS);
+    tam = _tamanoArchivoSeguro_(file);
+    if (tam === null || tam >= largo) {
+      Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': al volver a medir el archivo pesa ' + tam + ' bytes; la escritura estaba completa.');
+      return;
+    }
+    file.setContent(contenido);
+    tam = _tamanoArchivoSeguro_(file);
+    if (tam === null || tam >= largo) {
+      Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': reescrito; ahora pesa ' + tam + ' bytes.');
+      return;
+    }
+  }
+  throw new Error('[ALERTA PROTECCIÓN] ' + nombre + ' quedó con ' + tam + ' bytes tras escribir ' + largo + ' caracteres y ' +
+    ESCRITURA_VERIF_REINTENTOS + ' reintentos. Revisar el archivo en Drive («Administrar versiones»).');
+}
+
+/**
+ * _reverificarCsvEscritos_() - Segunda revisión de los CSV que _saveCSVToDrive() escribió en ESTA ejecución (PF291). Se llama al final de
+ * la cola horaria de guerra, minutos después de la escritura: si el archivo de Drive pesa menos que el texto que se dejó escrito (por
+ * ejemplo, una revisión vacía que Drive creó después), lo reescribe con ese texto, que sigue en memoria. Nunca lanza error. Solo cubre
+ * las ejecuciones que la llaman; las demás cadenas dependen de _asegurarEscrituraCompleta_(). [→ Contexto_Base_Web.md §PF291]
+ */
+function _reverificarCsvEscritos_() {
+  var nombres = Object.keys(_csvEscritosEnEjecucion_);
+  for (var i = 0; i < nombres.length; i++) {
+    var nombre = nombres[i];
+    try {
+      var texto = _csvEscritosEnEjecucion_[nombre];
+      if (!texto) continue;
+      var hit = _csvBuscarArchivo_(nombre);
+      if (!hit) {
+        Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': no se encuentra en Drive al volver a revisarlo tras escribirlo.');
+        continue;
+      }
+      var tam = _tamanoArchivoSeguro_(hit.file);
+      if (tam === null || tam >= texto.length) {
+        Logger.log('[CSV] Revisión posterior: ' + nombre + ' pesa ' + tam + ' bytes (se escribieron ' + texto.length + ' caracteres). Sin cambios.');
+        continue;
+      }
+      Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ' pesa ' + tam + ' bytes y se había escrito con ' + texto.length + ' caracteres: se reescribe con el texto de esta ejecución.');
+      hit.file.setContent(texto);
+      _asegurarEscrituraCompleta_(hit.file, texto, nombre);
+      _csvCacheBorrar_(nombre);
+    } catch (e) {
+      Logger.log('[ALERTA PROTECCIÓN] Revisión posterior de ' + nombre + ' falló: ' + e.message);
+    }
+  }
 }
 
 /**
