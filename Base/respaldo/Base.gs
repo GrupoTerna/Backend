@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 01:22:26 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 02:05:07 */
 
 
 
@@ -4435,17 +4435,18 @@ function _setupTLista(ss) {
   // FASE 2 (25-sep-2026, rediseño T_Lista -- ver docblock del objeto TL en [→ Contexto_Base_Web.md §02B067]
   var columnas = [
     { label: 'Planificación, registro y modificación de torneos', subs: [
-        'N°', 'Temporada', 'Semanas', 'Fecha', 'Hora', 'Creación', 'ID',
-        'Tag_Tor', 'Tag_Tor_2', 'Nombre', 'Tipo', 'Contraseña',
+        // Orden nuevo (29-oct-2026, pedido de la usuaria); debe coincidir con TL en 26_Torneos_Core.gs
+        'N°', 'Temporada', 'Fecha', 'Hora', 'ID', 'Creación', 'Semanas',
+        'Tag_Tor', 'Tag_Tor_2', 'Nombre_Org', 'Nom_Multi_Org', 'Tag_org',
+        'Clan', 'ClanTag', 'Organizador_Fuente', 'Nombre', 'Tipo', 'Contraseña',
         'Nivel_tope', 'Participantes', 'Capacidad', 'Modo_ID', 'Modo',
-        'Preparación', 'Duración', 'Nombre_Org', 'Nom_Multi_Org',
-        'Tag_org', 'Clan', 'ClanTag', 'Premios', 'Estado'
+        'Preparación', 'Duración', 'Premios', 'Estado'
     ] },
     { label: 'Min_T', subs: ['C1', 'C2', 'C3', 'C4'] },
     { label: 'Ataques', subs: ['C1', 'C2', 'C3', 'C4'] },
     { label: 'Otros requisitos', subs: [
         // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §02B068]
-        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Link_app', 'Link_json', 'Link_json_2', 'Descripción', 'Comentario', 'Organizador_Fuente'
+        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Descripción', 'Comentario', 'Link_app', 'Link_json', 'Link_json_2'
     ] }
   ];
   var totalCols = _aplicarHeaderDosFilas(sh, columnas);
@@ -35788,17 +35789,16 @@ function _getSemanasDeTemporada(temporada) {
 
 // Índices de columna (1-based) — T_Lista, T_Asistencia y columnas fijas de [→ Contexto_Base_Web.md §26B004]
 var TL = {
-  NUM:1, TEMPORADA:2, SEMANAS:3, FECHA:4, HORA:5, CREACION:6, ID:7,
-  TAG_TOR:8, TAG_TOR_2:9, NOMBRE:10, TIPO:11, CONTRASENA:12,
-  NIVEL_TOPE:13, PARTICIPANTES:14, CAPACIDAD:15, MODO_ID:16, MODO:17,
-  PREPARACION:18, DURACION:19, ORGANIZADOR:20, NOM_MULTI_ORG:21,
-  TAG_ORG:22, CLAN:23, CLAN_TAG:24, PREMIOS:25, ESTADO:26,
-  MIN_T_C1:27, MIN_T_C2:28, MIN_T_C3:29, MIN_T_C4:30,
-  ATAQUES_C1:31, ATAQUES_C2:32, ATAQUES_C3:33, ATAQUES_C4:34,
-  BARCOS:35, MIEMBRO_ACTIVO:36, REACCION:37, WHATSAPP:38,
-  LINK_APP:39, LINK_JSON:40, LINK_JSON_2:41, DESCRIPCION:42, COMENTARIO:43,
-  // Fase 9 (25-sep-2026, plan T_Lista -- ver docblock "PLAN EN CURSO" más [→ Contexto_Base_Web.md §26B005]
-  ORGANIZADOR_FUENTE:44
+  // Nuevo orden de columnas (29-oct-2026, pedido de la usuaria: reordenó la hoja T_Lista; los índices se actualizan aquí y todo el código usa TL.*)
+  NUM:1, TEMPORADA:2, FECHA:3, HORA:4, ID:5, CREACION:6, SEMANAS:7,
+  TAG_TOR:8, TAG_TOR_2:9, ORGANIZADOR:10, NOM_MULTI_ORG:11, TAG_ORG:12,
+  CLAN:13, CLAN_TAG:14, ORGANIZADOR_FUENTE:15, NOMBRE:16, TIPO:17, CONTRASENA:18,
+  NIVEL_TOPE:19, PARTICIPANTES:20, CAPACIDAD:21, MODO_ID:22, MODO:23,
+  PREPARACION:24, DURACION:25, PREMIOS:26, ESTADO:27,
+  MIN_T_C1:28, MIN_T_C2:29, MIN_T_C3:30, MIN_T_C4:31,
+  ATAQUES_C1:32, ATAQUES_C2:33, ATAQUES_C3:34, ATAQUES_C4:35,
+  BARCOS:36, MIEMBRO_ACTIVO:37, REACCION:38, WHATSAPP:39,
+  DESCRIPCION:40, COMENTARIO:41, LINK_APP:42, LINK_JSON:43, LINK_JSON_2:44
 };
 
 var TL_TOTAL_COLS = 44;
@@ -61079,8 +61079,8 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
 
 // =============================================================================
 // ORDEN DEL ARCHIVO: 1) funciones que se corren a mano; 2) funciones que NO se ejecutan a mano. En cada grupo, primero por temática y luego en el orden en que se ejecutarían.
-// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible)s.
-// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura).
+// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible).
+// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura).
 // =============================================================================
 
 // =============================================================================
@@ -61584,6 +61584,19 @@ function migrarIdsEventoRevisar() {
 // Córrela con ninguna cadena en curso (el registro dice «Completada»). Los ids de un par de CR_Lista (A y D) conservan el mismo sufijo.
 function migrarIdsEvento() {
   _correrMigracionIdsEvento_('migrarIdsEvento', true);
+}
+
+// ----- 1.4 Temporada de T_Lista según la fecha (29-oct-2026): herramienta MANUAL y repetible -----
+// Orden: 1) corregirTemporadaTListaRevisar(): NO escribe nada; deja en el registro, fila por fila, la temporada actual y la que corresponde a la fecha.
+// 2) corregirTemporadaTLista(): escribe SOLO la columna Temporada de T_Lista (y la ficha «T<n>_S<m>» de Semanas cuando ella y Temporada repetían el mismo valor equivocado) y rehace Backup_T_Lista.csv.
+// 3) migrarIdsEventoRevisar() y migrarIdsEvento(): rehacen los ids con la temporada corregida y reescriben sus citas. NO cambia la semana ni el número del id (los avisos del registro dicen dónde la semana del id no coincide con la de la fecha).
+// Seguridad: se niega a escribir si la referencia de temporadas del proyecto (CFG_REF_ACTIVO) no da T21 para el 04/05/2026 (mayo = 21 … octubre = 26). Los ids de S_Lista y CR_Lista no se tocan aquí.
+function corregirTemporadaTListaRevisar() {
+  _correrCorregirTemporadaTLista_('corregirTemporadaTListaRevisar', false);
+}
+
+function corregirTemporadaTLista() {
+  _correrCorregirTemporadaTLista_('corregirTemporadaTLista', true);
 }
 
 // =============================================================================
@@ -62755,6 +62768,115 @@ function _aplicarMapaIdsEnColumna_(vals, mapa, sinHuerfanas) {
     if (p && !p.nuevo) huerfanas.push(v);
   }
   return { cambiadas: cambiadas, huerfanas: huerfanas, valores: vals };
+}
+
+
+// ----- 2.4 Temporada de T_Lista según la fecha (29-oct-2026): envoltorio y escritura -----
+
+// _correrCorregirTemporadaTLista_(nombreFn, aplicar): envoltorio de corregirTemporadaTListaRevisar() y corregirTemporadaTLista(). Solo la versión que escribe toma el candado de ejecución.
+function _correrCorregirTemporadaTLista_(nombreFn, aplicar) {
+  if (aplicar && !_adquirirLockEjecucion(nombreFn)) {
+    Logger.log('[Temporada T_Lista] ' + nombreFn + '(): NO se inicia (hay otra ejecución en curso o una reenumeración). Reintenta cuando el registro diga «Completada».');
+    return;
+  }
+  try {
+    _corregirTemporadaTLista_(aplicar);
+  } catch (e) {
+    Logger.log('[Temporada T_Lista] ERROR en ' + nombreFn + '(): ' + e.message + (aplicar ? ' — vuelve a correr corregirTemporadaTListaRevisar() para ver qué falta (la herramienta es repetible).' : ''));
+  } finally {
+    if (aplicar) _liberarLockEjecucion();
+  }
+}
+
+// _fechaLocalDeCelda_(valor): PURA. Fecha (sin hora) de una celda Date o de un texto dd/mm/aaaa o aaaa-mm-dd; null si no sirve.
+function _fechaLocalDeCelda_(valor) {
+  var ms = _marcaTiempoEvento_(valor, null);
+  if (isNaN(ms)) return null;
+  var d = new Date(ms);
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+// _corregirTemporadaFichaSemanas_(texto, actual, esperada): PURA. Cambia el número de temporada de cada ficha «T<n>_S<m>» de Semanas a `esperada`, pero SOLO si todas las fichas repiten el valor equivocado `actual`
+// (si las fichas ya tienen otra temporada, se respetan: pueden ser semanas evaluadas de la temporada anterior). Devuelve { texto, cambiado }.
+function _corregirTemporadaFichaSemanas_(texto, actual, esperada) {
+  var original = String(texto || '');
+  var fichas = original.match(/T\d+_S\d+/g);
+  if (!fichas || !fichas.length) return { texto: original, cambiado: false };
+  for (var i = 0; i < fichas.length; i++) {
+    if (Number(fichas[i].match(/^T(\d+)_/)[1]) !== actual) return { texto: original, cambiado: false };
+  }
+  return { texto: original.replace(/T\d+_S(\d+)/g, 'T' + esperada + '_S$1'), cambiado: true };
+}
+
+// _corregirTemporadaTLista_(aplicar): devuelve la cantidad de errores (0 = todo bien). Lee Temporada, Fecha, Semanas e ID de T_Lista (datos desde la fila 3), calcula la temporada de cada fecha con
+// _calcularTemporadaParaFecha() y, con aplicar = true, escribe solo las columnas Temporada y Semanas (nunca la hoja entera) y rehace Backup_T_Lista.csv.
+function _corregirTemporadaTLista_(aplicar) {
+  var tag = aplicar ? '[Temporada T_Lista]' : '[Temporada T_Lista · solo revisar]';
+  var errores = 0;
+
+  var controlMayo = _calcularTemporadaParaFecha(new Date(2026, 4, 4));
+  if (controlMayo !== 21) {
+    Logger.log(tag + ' ERROR: con la referencia actual (CFG_REF_ACTIVO), el 04/05/2026 da T' + controlMayo + ' y debería dar T21 (mayo = 21 … octubre = 26). No se escribe nada: revisa esa propiedad.');
+    return 1;
+  }
+
+  var sh = _getSs().getSheetByName(CFG.SHEETS.T_LISTA);
+  if (!sh) { Logger.log(tag + ' Hoja ' + CFG.SHEETS.T_LISTA + ' no encontrada.'); return 1; }
+  var primera = 3;
+  var ultima = sh.getLastRow();
+  if (ultima < primera) { Logger.log(tag + ' T_Lista sin filas de datos.'); return 0; }
+  var n = ultima - primera + 1;
+  var rTemp = sh.getRange(primera, TL.TEMPORADA, n, 1);
+  var rSem = sh.getRange(primera, TL.SEMANAS, n, 1);
+  var temps = rTemp.getValues();
+  var sems = rSem.getValues();
+  var fechas = sh.getRange(primera, TL.FECHA, n, 1).getValues();
+  var ids = sh.getRange(primera, TL.ID, n, 1).getValues();
+
+  var cambiosTemp = 0, cambiosSem = 0, avisos = 0;
+  for (var i = 0; i < n; i++) {
+    var fila = primera + i;
+    var f = _fechaLocalDeCelda_(fechas[i][0]);
+    if (!f) {
+      if (String(fechas[i][0] || '').trim() !== '' || String(ids[i][0] || '').trim() !== '') { avisos++; Logger.log(tag + ' Fila ' + fila + ': la fecha no sirve («' + fechas[i][0] + '»); no se toca.'); }
+      continue;
+    }
+    var esperada = _calcularTemporadaParaFecha(f);
+    var actual = Number(temps[i][0]) || 0;
+    var txt = Utilities.formatDate(f, 'America/Lima', 'dd/MM/yyyy');
+    var detalle = tag + ' Fila ' + fila + ' (' + txt + ', id ' + (ids[i][0] || '—') + '): ';
+    if (actual !== esperada) {
+      temps[i][0] = esperada;
+      cambiosTemp++;
+      detalle += 'Temporada ' + actual + ' → ' + esperada;
+      var rf = _corregirTemporadaFichaSemanas_(sems[i][0], actual, esperada);
+      if (rf.cambiado) { detalle += '; Semanas «' + sems[i][0] + '» → «' + rf.texto + '»'; sems[i][0] = rf.texto; cambiosSem++; }
+    } else {
+      detalle += 'Temporada ' + actual + ' ya correcta';
+    }
+    var p = _idEventoParsear_(ids[i][0]);
+    if (p) {
+      var semanaFecha = _calcularSemanaTorneo(f, esperada);
+      if (p.semana !== semanaFecha) { avisos++; detalle += ' · AVISO: la semana del id es la ' + p.semana + ' y la de la fecha es la ' + semanaFecha + ' (no se cambia)'; }
+      detalle += ' · id esperado con migrarIdsEvento(): ' + _idEventoConstruir_(p.letra, esperada, p.semana, p.numero);
+    }
+    Logger.log(detalle);
+  }
+
+  Logger.log(tag + ' Resumen: ' + cambiosTemp + ' temporada(s) por corregir, ' + cambiosSem + ' ficha(s) de Semanas, ' + avisos + ' aviso(s).');
+  if (!aplicar) {
+    Logger.log(tag + ' Fin de la revisión: no se escribió nada. Si el plan es correcto, corre corregirTemporadaTLista().');
+    return errores;
+  }
+  if (cambiosTemp > 0) {
+    rTemp.setValues(temps); // solo la columna Temporada (PF258: nunca la hoja entera)
+    if (cambiosSem > 0) rSem.setValues(sems);
+    Logger.log(tag + ' Escrito: ' + cambiosTemp + ' temporada(s) y ' + cambiosSem + ' ficha(s) de Semanas.');
+  }
+  try { respaldarIndiceYProtegidasCSV('T_LISTA'); Logger.log(tag + ' Backup_T_Lista.csv rehecho desde la hoja.'); }
+  catch (eB) { errores++; Logger.log(tag + ' ERROR rehaciendo Backup_T_Lista.csv: ' + eB.message + ' (repite la herramienta).'); }
+  Logger.log(tag + ' Terminado. Siguiente paso: migrarIdsEventoRevisar() y, si el plan es correcto, migrarIdsEvento().');
+  return errores;
 }
 
 
