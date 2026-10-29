@@ -42,6 +42,11 @@ var GC = {
 
 var GUERRA_TOTAL_COLS = 21;
 
+// PF289 (28-oct-2026): blindaje de _syncGuerraCSV() contra una lectura vacía o recortada de Backup_Guerra.csv. Solo se aplica si el CSV de referencia pesa más que el mínimo; el ratio es la fracción del tamaño de referencia por debajo de la cual se rechaza leer o escribir. [→ Contexto_Base_Web.md §PF289]
+var GUERRA_CSV_BLINDAJE_MIN_BYTES = 100000;
+var GUERRA_CSV_BLINDAJE_RATIO     = 0.85;
+var GUERRA_CSV_PROP_TAM_BUENO     = 'GUERRA_CSV_TAM_BUENO';
+
 // Origen de una fila de Guerra: 'Original' | 'Corregido' | 'Reconstruido', con un sufijo opcional desde el 20-oct-2026
 // (§PF132): 'Corregido - Solución única', 'Corregido - Solución estimada', 'Reconstruido - Solución única' y
 // 'Reconstruido - Solución estimada'. Para comparar el origen se usa SIEMPRE esta función, no ===.
@@ -4319,6 +4324,23 @@ function _syncGuerraCSV(sh, forzar) {
 
     // --- FUSIÓN con el CSV existente ---
     var csvExistente  = _loadCSVFromDrive('Backup_Guerra.csv');
+    // PF289: tamaño de referencia = el mayor entre el peso real del archivo en Drive y el último tamaño que esta función dejó escrito. Si la lectura (memoria, caché o Drive) vino vacía o mucho más chica, se relee directo de Drive; si sigue chica, no se escribe nada.
+    var refTam = forzar ? null : _guerraCsvTamRef_();
+    if (refTam && refTam.ref > GUERRA_CSV_BLINDAJE_MIN_BYTES) {
+      var largoLeido = csvExistente ? csvExistente.length : 0;
+      if (largoLeido < refTam.ref * GUERRA_CSV_BLINDAJE_RATIO) {
+        Logger.log('[ALERTA PROTECCIÓN] Backup_Guerra.csv se leyó con ' + largoLeido + ' caracteres y la referencia es de ' + refTam.ref +
+                   ' bytes (Drive: ' + refTam.tamDrive + ', último bueno: ' + refTam.tamBueno + '). Se relee directo de Drive, sin caché.');
+        csvExistente = _guerraCsvRelecturaDirecta_();
+        largoLeido = csvExistente ? csvExistente.length : 0;
+        if (largoLeido < refTam.ref * GUERRA_CSV_BLINDAJE_RATIO) {
+          Logger.log('[ALERTA PROTECCIÓN] SKIP fusión de Backup_Guerra.csv: tras releer sigue con ' + largoLeido + ' caracteres (referencia ' + refTam.ref +
+                     ' bytes). No se escribe nada. Si el archivo de Drive está recortado, restáuralo; si el recorte es intencional, usa la variante forzada.');
+          return;
+        }
+        Logger.log('[Guerra] La relectura directa de Drive trajo ' + largoLeido + ' caracteres: la lectura anterior estaba incompleta. Se sigue con la fusión.');
+      }
+    }
     var encabezado     = data[0];
     var filasFusion    = []; // array de filas (arrays de strings), sin encabezado
     var mapaFusion      = {}; // id -> índice en filasFusion
@@ -4372,12 +4394,65 @@ function _syncGuerraCSV(sh, forzar) {
     }
 
     var salida = [encabezado].concat(filasFusion);
-    _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV(salida));
+    var textoSalida = _encodeCSV(salida);
+    // PF289: aunque la fusión no pierda filas respecto de la lectura, el resultado no puede pesar mucho menos que el archivo real.
+    if (refTam && refTam.ref > GUERRA_CSV_BLINDAJE_MIN_BYTES && textoSalida.length < refTam.ref * GUERRA_CSV_BLINDAJE_RATIO) {
+      Logger.log('[ALERTA PROTECCIÓN] SKIP fusión de Backup_Guerra.csv: el resultado tendría ' + textoSalida.length + ' caracteres y la referencia es de ' +
+                 refTam.ref + ' bytes. No se escribe nada.');
+      return;
+    }
+    _saveCSVToDrive('Backup_Guerra.csv', textoSalida);
+    _guerraCsvRegistrarTamBueno_(textoSalida.length);
     Logger.log('[Guerra] Backup_Guerra.csv fusionado (' + (salida.length - 1) + ' filas totales; ' +
       nuevasDesdeHoja + ' nueva(s) desde la hoja, el resto actualizadas o intactas de temporadas anteriores).');
   } catch(e) {
     Logger.log('[Guerra] Error fusionando CSV: ' + e.message);
   }
+}
+
+/**
+ * _guerraCsvTamRef_() - Tamaño de referencia de Backup_Guerra.csv para el blindaje de _syncGuerraCSV() (PF289).
+ * Devuelve { tamDrive, tamBueno, ref }: peso real del archivo en Drive, último tamaño que _syncGuerraCSV() dejó escrito (propiedad de script) y el mayor de los dos.
+ * No depende de la caché ni de la memoria de la ejecución. Si no se puede leer alguno, vale 0. [→ Contexto_Base_Web.md §PF289]
+ */
+function _guerraCsvTamRef_() {
+  var tamDrive = 0, tamBueno = 0;
+  try {
+    var hit = _csvBuscarArchivo_('Backup_Guerra.csv');
+    if (hit) tamDrive = Number(hit.file.getSize()) || 0;
+  } catch (eDrive) { Logger.log('[Guerra] _guerraCsvTamRef_: no se pudo leer el tamaño en Drive: ' + eDrive.message); }
+  try {
+    tamBueno = Number(PropertiesService.getScriptProperties().getProperty(GUERRA_CSV_PROP_TAM_BUENO)) || 0;
+  } catch (eProp) { /* sin referencia previa */ }
+  return { tamDrive: tamDrive, tamBueno: tamBueno, ref: Math.max(tamDrive, tamBueno) };
+}
+
+/**
+ * _guerraCsvRelecturaDirecta_() - Lee Backup_Guerra.csv directo de Drive, ignorando la memoria de la ejecución y la caché compartida, y deja el texto leído en ambas (PF289).
+ * Devuelve null si el archivo no existe. [→ Contexto_Base_Web.md §PF289]
+ */
+function _guerraCsvRelecturaDirecta_() {
+  _csvCacheBorrar_('Backup_Guerra.csv');
+  delete _CSV_MEM_['Backup_Guerra.csv'];
+  var hit = _csvBuscarArchivo_('Backup_Guerra.csv');
+  if (!hit) return null;
+  var texto = hit.file.getBlob().getDataAsString('UTF-8');
+  _CSV_MEM_['Backup_Guerra.csv'] = texto;
+  return texto;
+}
+
+/**
+ * _guerraCsvRegistrarTamBueno_(largoTexto) - Guarda el tamaño del CSV recién escrito como referencia del blindaje (PF289).
+ * Usa el peso real del archivo en Drive; si no se puede leer, el largo del texto. [→ Contexto_Base_Web.md §PF289]
+ */
+function _guerraCsvRegistrarTamBueno_(largoTexto) {
+  try {
+    var tam = 0;
+    var hit = _csvBuscarArchivo_('Backup_Guerra.csv');
+    if (hit) tam = Number(hit.file.getSize()) || 0;
+    if (!tam) tam = largoTexto;
+    PropertiesService.getScriptProperties().setProperty(GUERRA_CSV_PROP_TAM_BUENO, String(tam));
+  } catch (eReg) { Logger.log('[Guerra] No se pudo guardar el tamaño de referencia del CSV: ' + eReg.message); }
 }
 
 /**
