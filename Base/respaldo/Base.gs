@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 00:37:45 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 00:48:08 */
 
 
 
@@ -789,6 +789,7 @@ function runPendientesYMensajesProgramado() {
     }
     Logger.log('=== runPendientesYMensajesProgramado FIN (' + Math.round((Date.now() - t0) / 1000) + 's) ===');
   } finally {
+    try { _revisarCsvAlSalir_(t0); } catch (eRevPym) { Logger.log('[runPendientesYMensajesProgramado] Revisión posterior de los CSV falló: ' + eRevPym.message); } // PF291
     _liberarLockPYMProgramado_();
   }
 }
@@ -800,6 +801,7 @@ function runPendientesYMensajesProgramado() {
  * NO debe tener activador: el del disparador es runPendientesYMensajesProgramado(). [→ Contexto_Base_Web.md §PF091]
  */
 function runPendientesYMensajes() {
+  var t0 = Date.now();
   if (!_adquirirLockEjecucion('runPendientesYMensajes')) return false;
   try {
     Logger.log('=== runPendientesYMensajes INICIO (manual: roster fresco, con API) ===');
@@ -809,6 +811,7 @@ function runPendientesYMensajes() {
     Logger.log('=== runPendientesYMensajes FIN ===');
     return true;
   } finally {
+    try { _revisarCsvAlSalir_(t0); } catch (eRevPymM) { Logger.log('[runPendientesYMensajes] Revisión posterior de los CSV falló: ' + eRevPymM.message); } // PF291
     _liberarLockEjecucion();
   }
 }
@@ -1191,12 +1194,14 @@ function runActualizarIndiceManual() {
  * runDirectorio() - Actualización manual solo del Directorio y sus vistas.
  */
 function runDirectorio() {
+  var t0 = Date.now();
   Logger.log('=== Actualización Directorio INICIO ===');
   _fetchAllClanData();
   updateDirectorioSheet();
   updateVistasDerivadas();
   syncDirectorioCSV();
   exportarBackupCelulares();
+  _revisarCsvAlSalir_(t0); // PF291
   Logger.log('=== Actualización Directorio FIN ===');
 }
 
@@ -1282,6 +1287,11 @@ function runGuerra() {
       } catch (eMarca) {
         Logger.log('[runGuerra] No se pudo restaurar la marca de hora: ' + eMarca.message);
       }
+    }
+    // PF291: segunda revisión de los CSV que esta ejecución escribió fuera de la cola (por ejemplo, la fusión que hace la purga de temporadas anteriores). La ventana ligera ya la hace en _runGuerraVentanaLigera_().
+    if (!enVentanaGuerra) {
+      try { _revisarCsvAlSalir_(_tRunGuerra0); }
+      catch (eRevGuerra) { Logger.log('[runGuerra] Revisión posterior de los CSV falló: ' + eRevGuerra.message); }
     }
     _liberarLockEjecucion();
   }
@@ -7140,6 +7150,7 @@ function repararRazonInvalida() {
  * syncAllCSV() [→ Contexto_Base_Web.md §05B055]
  */
 function syncAllCSV() {
+  var t0 = Date.now();
   syncDirectorioCSV();
   syncClanCSV();
   while (!syncAcumulativosCSV()) { /* reintenta el mismo bloque de trabajos pendientes */ }
@@ -7148,6 +7159,7 @@ function syncAllCSV() {
   var shGuerra = ss.getSheetByName(CFG.SHEETS.GUERRA);
   if (shGuerra) _syncGuerraCSV(shGuerra);
   exportarBackupCelulares();
+  _revisarCsvAlSalir_(t0); // PF291
   Logger.log('[Backup] syncAllCSV completado: Directorio + Clan + Guerra + Acumulativos + JSON.');
 }
 
@@ -8346,6 +8358,25 @@ function _createFileConConteo_(folder, nombre, contenido, mime) {
 }
 
 /**
+ * _guardarArchivoProgresoVerificado_(folder, nombre, contenido) - Guarda un archivo de progreso o checkpoint (JSON) en la carpeta: si ya existe lo
+ * sobrescribe con setContent() y si no lo crea; en los dos casos comprueba que no quedó vacío o recortado con _asegurarEscrituraCompleta_() (PF291).
+ * No deja registro de filas (los archivos de progreso se guardan muchas veces por ejecución; PF290, punto 4) y devuelve el archivo. Si la comprobación
+ * lanza error, lo propaga: los cinco sitios que la llaman lo atrapan con su propio try y lo dejan en el registro. [→ Contexto_Base_Web.md §PF291]
+ */
+function _guardarArchivoProgresoVerificado_(folder, nombre, contenido) {
+  var it = folder.getFilesByName(nombre);
+  var archivo;
+  if (it.hasNext()) {
+    archivo = it.next();
+    archivo.setContent(contenido);
+  } else {
+    archivo = folder.createFile(nombre, contenido, MimeType.PLAIN_TEXT);
+  }
+  _asegurarEscrituraCompleta_(archivo, contenido, String(nombre));
+  return archivo;
+}
+
+/**
  * _tamanoArchivoSeguro_(file) - Peso del archivo en bytes, o null si no se pudo medir (PF291). [→ Contexto_Base_Web.md §PF291]
  */
 function _tamanoArchivoSeguro_(file) {
@@ -9104,9 +9135,7 @@ function _blsGuardarProgreso_(hechos) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
     var contenido = JSON.stringify({ _ts: Date.now(), tags: Object.keys(hechos) });
-    var it = folder.getFilesByName(BLS_PROGRESO_FILE);
-    if (it.hasNext()) it.next().setContent(contenido);
-    else folder.createFile(BLS_PROGRESO_FILE, contenido, MimeType.PLAIN_TEXT);
+    _guardarArchivoProgresoVerificado_(folder, BLS_PROGRESO_FILE, contenido); // PF291
   } catch (e) {
     Logger.log('[Battlelogs/Siembra] Error guardando el punto de control: ' + e.message);
   }
@@ -10849,13 +10878,8 @@ function _descargarBattlelogYCofresParaTodos() {
 function _guardarProgresoBattlelogChests(tagsHechos) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(BATTLELOGCHESTS_PROGRESS_FILE);
     var content = JSON.stringify({ _ts: Date.now(), tags: (tagsHechos || []) });
-    if (files.hasNext()) {
-      files.next().setContent(content);
-    } else {
-      folder.createFile(BATTLELOGCHESTS_PROGRESS_FILE, content, MimeType.PLAIN_TEXT);
-    }
+    _guardarArchivoProgresoVerificado_(folder, BATTLELOGCHESTS_PROGRESS_FILE, content); // PF291
   } catch (e) {
     Logger.log('[Battlelog/UpcomingChests] Error guardando progreso en Drive: ' + e.message);
   }
@@ -11425,8 +11449,6 @@ function _jsonClanesDeEsteCheckpointYaEscritos_() {
 function _guardarProgresoClanes(cacheClanData) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
-
     var soloClanes = {};
     for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
       var tag = CFG.CLAN_TAGS[i];
@@ -11434,11 +11456,7 @@ function _guardarProgresoClanes(cacheClanData) {
     }
 
     var content = JSON.stringify({ _ts: Date.now(), clanes: soloClanes });
-    if (files.hasNext()) {
-      files.next().setContent(content);
-    } else {
-      folder.createFile(CLANES_PROGRESO_FILE, content, MimeType.PLAIN_TEXT);
-    }
+    _guardarArchivoProgresoVerificado_(folder, CLANES_PROGRESO_FILE, content); // PF291
   } catch (e) {
     Logger.log('[API] Error guardando progreso de clanes en Drive: ' + e.message);
   }
@@ -11778,13 +11796,8 @@ function _fetchPlayersData() {
 function _guardarProgresoPlayers(playersMap) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(PLAYERS_PROGRESS_FILE);
     var content = JSON.stringify({ _ts: Date.now(), players: (playersMap || {}) });
-    if (files.hasNext()) {
-      files.next().setContent(content);
-    } else {
-      folder.createFile(PLAYERS_PROGRESS_FILE, content, MimeType.PLAIN_TEXT);
-    }
+    _guardarArchivoProgresoVerificado_(folder, PLAYERS_PROGRESS_FILE, content); // PF291
   } catch (e) {
     Logger.log('[API] Error guardando progreso de /players en Drive: ' + e.message);
   }
@@ -16373,13 +16386,8 @@ var NUEVOS_RESTORE_LOTE_MAX = 10;
 function _guardarProgresoRestaurarNuevos(tagsYaRestaurados) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(NUEVOS_RESTORE_PROGRESS_FILE);
     var content = JSON.stringify({ _ts: Date.now(), tags: tagsYaRestaurados || [] });
-    if (files.hasNext()) {
-      files.next().setContent(content);
-    } else {
-      folder.createFile(NUEVOS_RESTORE_PROGRESS_FILE, content, MimeType.PLAIN_TEXT);
-    }
+    _guardarArchivoProgresoVerificado_(folder, NUEVOS_RESTORE_PROGRESS_FILE, content); // PF291
   } catch (e) {
     Logger.log('[Nuevos-Restaurar] Error guardando progreso de restauración en Drive: ' + e.message);
   }
