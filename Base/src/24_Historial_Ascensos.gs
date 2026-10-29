@@ -1466,7 +1466,7 @@ function _leerCuentasDirectorioParaCR_(tags) {
 /**
  * _decidirPropuestaCRRealizada_(prop, cuenta) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
  * Decide si una propuesta ya se aplicó, mirando lo que el Directorio muestra hoy de la cuenta (`cuenta` = { activo, clan, rango, admin } o null si no figura):
- *  - Expulsión: realizada si la cuenta ya no está activa en el clan de la propuesta (o ya no figura).
+ *  - Expulsión: realizada solo si la cuenta figura en el Directorio con Estado distinto de «Activo» (regla más estricta, 28-oct-2026). Si no figura en el Directorio, o figura activa en otro clan, NO se marca y se devuelve una nota para revisar a mano.
  *  - Ascenso: realizado si su rango actual es el propuesto o uno más alto.
  *  - Degradación: realizada si su rango actual es el propuesto.
  *  - Elegible Admin: realizada si ya es admin.
@@ -1482,8 +1482,12 @@ function _decidirPropuestaCRRealizada_(prop, cuenta) {
   var no = { realizada: false, motivo: '', nota: '' };
 
   if (prop.tipo === 'Expulsión') {
-    if (activaEnClan) return no;
-    return { realizada: true, motivo: cuenta ? 'la cuenta ya no está activa en el clan ' + prop.clan : 'la cuenta ya no figura en el Directorio', nota: '' };
+    if (!cuenta) { no.nota = 'La cuenta no figura en el Directorio: revisa a mano si se expulsó.'; return no; }
+    if (cuenta.activo) {
+      if (!activaEnClan) no.nota = 'La cuenta sigue activa en el clan ' + cuenta.clan + ': revisa a mano si se expulsó del clan ' + prop.clan + '.';
+      return no;
+    }
+    return { realizada: true, motivo: 'la cuenta figura como inactiva en el Directorio', nota: '' };
   }
   if (prop.tipo === 'Ascenso' || prop.tipo === 'Degradación') {
     if (!activaEnClan) {
