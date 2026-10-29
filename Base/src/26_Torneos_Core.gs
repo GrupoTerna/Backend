@@ -3294,12 +3294,22 @@ function _valorExtraDesdeCsv_(nombres) {
 function _getConfigMasRecienteCategoria(nombreCategoria, id) {
   var esTorneo = (nombreCategoria === 'Torneo');
   var ss = _getSs();
-  // PF073: si Sheets falla se trata como hoja vacía (devuelve []), igual que cuando la hoja no existe. [→ Contexto_Base_Web.md §PF073]
-  var sh = _hojaConFilas_(ss, esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA, 3);
-  if (!sh) return [];
-
+  // PF073 (29-oct-2026): hoja viva o, si no está disponible, Backup_T_Lista.csv / Backup_S_Lista.csv (encabezado de 2 filas, datos desde la fila 3). Solo devuelve [] si tampoco hay CSV. [→ Contexto_Base_Web.md §PF073]
   var totalCols = esTorneo ? TL_TOTAL_COLS : SL_TOTAL_COLS;
-  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, totalCols).getValues();
+  var lecturaLista = _obtenerFilasConFallbackCSV(ss, esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA, esTorneo ? 'Backup_T_Lista.csv' : 'Backup_S_Lista.csv', totalCols, 2);
+  if (lecturaLista.origen === 'vacio') return [];
+  var datos = lecturaLista.filas;
+  if (lecturaLista.origen === 'csv') {
+    // El CSV trae la Fecha como texto: se pasa a Date igual que en _webTorneos() y _resolverGruposContinuacionTorneos(), porque el criterio histórico de más abajo exige instanceof Date.
+    var colFechaCsv = esTorneo ? TL.FECHA : SL.FECHA;
+    datos = datos.map(function (f) {
+      var nueva = f.slice();
+      var fechaObj = _parseSpanishDate(nueva[colFechaCsv - 1]);
+      if (fechaObj instanceof Date && !isNaN(fechaObj.getTime())) nueva[colFechaCsv - 1] = fechaObj;
+      return nueva;
+    });
+  }
+  if (!datos.length) return [];
 
   var COL_FECHA     = esTorneo ? TL.FECHA : SL.FECHA;
   var COL_ID        = esTorneo ? TL.ID : SL.ID;

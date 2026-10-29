@@ -823,6 +823,12 @@ function _getDatosGuerraParaControl(ctx, temporadaReal) {
   if (String(ctx.temporada) === String(temporadaReal)) {
     // PF073: si la hoja Guerra no se puede leer, cae a Backup_Guerra.csv (sin el marcado de días opcionales por cruce de meta, que solo existe en la ruta de la hoja). [→ Contexto_Base_Web.md §PF073]
     try {
+      // PF073 (29-oct-2026): hoja Guerra vacía o ausente también cae a Backup_Guerra.csv (antes solo cuando la lectura lanzaba error y devolvía {} sin respaldo). _getDatosGuerraDesdeHojaParaControl() se deja igual porque 19_CorreccionRiverRace.gs la llama directo sobre la hoja.
+      var shGuerraCtl = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+      if (!shGuerraCtl || shGuerraCtl.getLastRow() < 2) {
+        Logger.log('[Control] Guerra vacía o ausente en la hoja, se usa Backup_Guerra.csv.');
+        return _getDatosGuerraDesdeCsvParaControl(ctx);
+      }
       return _getDatosGuerraDesdeHojaParaControl(ctx);
     } catch (eHojaG) {
       Logger.log('[Control] Guerra no disponible, se usa Backup_Guerra.csv: ' + eHojaG);
