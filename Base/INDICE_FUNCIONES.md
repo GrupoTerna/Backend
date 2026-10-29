@@ -198,7 +198,7 @@ Ninguno.
 | `_aplicarHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 304 | Contexto_Base_Web.md §20B019 |
 | `_aplicarImportacionNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 672 |  |
 | `_aplicarMapaIdsEnColumna_` | función | 47_Migraciones.gs | 1761 | Contexto_Base_Web.md §PF286 |
-| `_aplicarMarcadoRealizadoCR_` | función | 24_Historial_Ascensos.gs | 1527 | Contexto_Base_Web.md §PF286 |
+| `_aplicarMarcadoRealizadoCR_` | función | 24_Historial_Ascensos.gs | 1529 | Contexto_Base_Web.md §PF286 |
 | `_aplicarPisoDiario` | función | 18_CorreccionGuerra.gs | 2372 | Contexto_Base_Web.md §18B075 |
 | `_aplicarRegistroEnFilasHistorialGuerraGrupal` | función | 20_HistorialGuerraJugador.gs | 240 | Contexto_Base_Web.md §PF068 |
 | `_aplicarRepartoDomingoSinClanTagAFuente_` | función | 18_CorreccionGuerra.gs | 416 | Contexto_Base_Web.md §18B020 |
@@ -222,7 +222,7 @@ Ninguno.
 | `_asegurarColumnaCopasGuerra_` | función | 17_GuerraSheet.gs | 633 | Contexto_Base_Web.md §PF061 |
 | `_asegurarColumnaParCRAscensos_` | función | 24_Historial_Ascensos.gs | 357 | Contexto_Base_Web.md §PF286 |
 | `_asegurarColumnasGuerraLogs_` | función | 17_GuerraSheet.gs | 186 | Contexto_Base_Web.md §17B012 |
-| `_asignarParesAPropuestas_` | función | 24_Historial_Ascensos.gs | 1567 |  |
+| `_asignarParesAPropuestas_` | función | 24_Historial_Ascensos.gs | 1569 |  |
 | `_ataquesCumplenRequisito` | función | 28_Torneos_Docs.gs | 1820 | Contexto_Base_Web.md §28B086 |
 | `_ataquesMinTorneoPorNombreClan` | función | 28_Torneos_Docs.gs | 1316 | Contexto_Base_Web.md §28B054 |
 | `_ataquesPorDiaEntreClanes_` | función | 18_CorreccionGuerra.gs | 791 | Contexto_Base_Web.md §18B029 |
@@ -548,7 +548,7 @@ Ninguno.
 | `_debeReemplazarRegistroHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 420 | Contexto_Base_Web.md §20B025 |
 | `_decidirCierreFameBarcosDia_` | función | 17_GuerraSheet.gs | 3165 | Contexto_Base_Web.md §17B157 |
 | `_decidirCorreccionConClanTag_` | función | 18_CorreccionGuerra.gs | 221 | Contexto_Base_Web.md §18B016 |
-| `_decidirPropuestaCRRealizada_` | función | 24_Historial_Ascensos.gs | 1475 | Contexto_Base_Web.md §PF286 |
+| `_decidirPropuestaCRRealizada_` | función | 24_Historial_Ascensos.gs | 1477 | Contexto_Base_Web.md §PF286 |
 | `_derivarClanClanTagDesdeTagOrg` | función | 26_Torneos_Core.gs | 2756 | Contexto_Base_Web.md §26B194 |
 | `_desactivarGridlines` | función | 01_Config_Global.gs | 1312 |  |
 | `_descargarBattlelogYCofresParaTodos` | función | 09_API_ClashRoyale.gs | 1286 | Contexto_Base_Web.md §09B069 |
@@ -644,9 +644,9 @@ Ninguno.
 | `_excDiasTextoPorDia` | función | 55_Reparar_DiasConExceso.gs | 639 |  |
 | `_excDiasVerificar` | función | 55_Reparar_DiasConExceso.gs | 697 |  |
 | `_existeParCRListaParaTemporada` | función | 26_Torneos_Core.gs | 242 | Contexto_Base_Web.md §26B022 |
-| `_explicarAltasCR_` | función | 24_Historial_Ascensos.gs | 1384 | Contexto_Base_Web.md §PF286 |
-| `_explicarBajasCR_` | función | 24_Historial_Ascensos.gs | 1411 | Contexto_Base_Web.md §PF286 |
-| `_explicarExcepcionalesCR_` | función | 24_Historial_Ascensos.gs | 1340 | Contexto_Base_Web.md §PF286 |
+| `_explicarAltasCR_` | función | 24_Historial_Ascensos.gs | 1386 | Contexto_Base_Web.md §PF286 |
+| `_explicarBajasCR_` | función | 24_Historial_Ascensos.gs | 1413 | Contexto_Base_Web.md §PF286 |
+| `_explicarExcepcionalesCR_` | función | 24_Historial_Ascensos.gs | 1342 | Contexto_Base_Web.md §PF286 |
 | `_extraColsInactivosDesdeCsv` | función | 05_Backup_CSV.gs | 1125 | Contexto_Base_Web.md §05B061 |
 | `_extraerClanDeBattlelog` | función | 09_API_ClashRoyale.gs | 1482 | Contexto_Base_Web.md §09B079 |
 | `_extraerInfoOrganizador` | función | 26_Torneos_Core.gs | 2630 | Contexto_Base_Web.md §26B187 |
@@ -931,7 +931,7 @@ Ninguno.
 | `_leerCategoriasDeExtra` | función | 44_BotWhatsApp.gs | 670 |  |
 | `_leerCofresCSV` | función | 09_API_ClashRoyale.gs | 1499 | Contexto_Base_Web.md §09B080 |
 | `_leerCorridaCambioRangoHistorial_` | función | 24_Historial_Ascensos.gs | 1124 |  |
-| `_leerCuentasDirectorioParaCR_` | función | 24_Historial_Ascensos.gs | 1449 | Contexto_Base_Web.md §PF286 |
+| `_leerCuentasDirectorioParaCR_` | función | 24_Historial_Ascensos.gs | 1451 | Contexto_Base_Web.md §PF286 |
 | `_leerDirectorioDashboard_` | función | 38_Web_Endpoints.gs | 1849 | Contexto_Base_Web.md §38B111 |
 | `_leerDirectorioExistente` | función | 11_DirectorioSheet.gs | 498 |  |
 | `_leerDirectorioFisicoComoDC` | función | 11_DirectorioSheet.gs | 1830 | Contexto_Base_Web.md §11B122 |
@@ -958,7 +958,7 @@ Ninguno.
 | `_leerMapaCodigosClanContactos` | función | 38_Web_Endpoints.gs | 1732 | Contexto_Base_Web.md §38B101 |
 | `_leerModoCSV` | función | 26_Torneos_Core.gs | 3507 | Contexto_Base_Web.md §26B243 |
 | `_leerNotasCalendario2PorSemana` | función | 22_ControlCalendario.gs | 1636 | Contexto_Base_Web.md §22B083 |
-| `_leerParesCRListaParaHistorial_` | función | 24_Historial_Ascensos.gs | 1547 | Contexto_Base_Web.md §PF286 |
+| `_leerParesCRListaParaHistorial_` | función | 24_Historial_Ascensos.gs | 1549 | Contexto_Base_Web.md §PF286 |
 | `_leerPerfilWebCSV` | función | 36_PerfilWeb.gs | 76 | Contexto_Base_Web.md §36B003 |
 | `_leerPrimeraConsultaRR_` | función | 09_API_ClashRoyale.gs | 3072 |  |
 | `_leerProgresoClanesConEdad_` | función | 09_API_ClashRoyale.gs | 2064 | Contexto_Base_Web.md §09B108 |
@@ -1146,7 +1146,7 @@ Ninguno.
 | `_pintarEncabezadosControl2` | función | 23_Control2_GuerraSemanal.gs | 449 | Contexto_Base_Web.md §23B023 |
 | `_pintarEncabezadosNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 354 | Contexto_Base_Web.md §14B032 |
 | `_planIdsEventoLista_` | función | 47_Migraciones.gs | 1562 | Contexto_Base_Web.md §PF286 |
-| `_planificarMarcadoRealizadoCR_` | función | 24_Historial_Ascensos.gs | 1512 | Contexto_Base_Web.md §PF286 |
+| `_planificarMarcadoRealizadoCR_` | función | 24_Historial_Ascensos.gs | 1514 | Contexto_Base_Web.md §PF286 |
 | `_planificarSorteoDesdeBot` | función | 26_Torneos_Core.gs | 5132 | Contexto_Base_Web.md §26B312 |
 | `_planificarTorneoDesdeBot` | función | 26_Torneos_Core.gs | 4662 | Contexto_Base_Web.md §26B293 |
 | `_PLAYERS_DRIVE_INDEX_POR_TAG` | global | 09_API_ClashRoyale.gs | 122 |  |
@@ -1297,7 +1297,7 @@ Ninguno.
 | `_REQ_DOC_TEXTO_BARCOS` | función | 27_Torneos_Sorteos_Requisitos.gs | 464 | Contexto_Base_Web.md §27B009 |
 | `_REQ_DOC_TEXTO_TORNEOS_VALOR` | función | 27_Torneos_Sorteos_Requisitos.gs | 457 |  |
 | `_requisitosCambioRango_` | función | 29_Docs_NoCalificados.gs | 462 |  |
-| `_requisitosIncumplidosCR_` | función | 24_Historial_Ascensos.gs | 1307 | Contexto_Base_Web.md §PF286 |
+| `_requisitosIncumplidosCR_` | función | 24_Historial_Ascensos.gs | 1309 | Contexto_Base_Web.md §PF286 |
 | `_resolverArenaDesdeCatalogo` | función | 09_API_ClashRoyale.gs | 1632 |  |
 | `_resolverFechaIngF2` | función | 11_DirectorioSheet.gs | 888 | Contexto_Base_Web.md §11B066 |
 | `_resolverGruposContinuacionTorneos` | función | 26_Torneos_Core.gs | 3848 | Contexto_Base_Web.md §26B259 |
@@ -1325,7 +1325,7 @@ Ninguno.
 | `_resumirRequisitosBloque` | función | 27_Torneos_Sorteos_Requisitos.gs | 182 | Contexto_Base_Web.md §27B011 |
 | `_retirarActivadoresAdministrados_` | función | 08_Activadores.gs | 93 |  |
 | `_retirarDeInactivosPorReactivacion` | función | 13_Inactivos_Vetados.gs | 338 | Contexto_Base_Web.md §13B020 |
-| `_rolDeRangoCR_` | función | 24_Historial_Ascensos.gs | 1375 |  |
+| `_rolDeRangoCR_` | función | 24_Historial_Ascensos.gs | 1377 |  |
 | `_round1` | función | 26_Torneos_Core.gs | 746 | Contexto_Base_Web.md §26B050 |
 | `_rsCatalogo` | función | 57_ReconstruirSemanaPorDias.gs | 554 |  |
 | `_rsCatalogo_` | global | 57_ReconstruirSemanaPorDias.gs | 61 |  |
@@ -1446,7 +1446,7 @@ Ninguno.
 | `_valorExtraDesdeCsv_` | función | 26_Torneos_Core.gs | 3278 | Contexto_Base_Web.md §PF073 |
 | `_variacionTemporadas_` | función | 47_Migraciones.gs | 710 |  |
 | `_ventanasHistorialParaDescensoCR_` | función | 26_Torneos_Core.gs | 874 | Contexto_Base_Web.md §26B060 |
-| `_verificarCambioRangoDesdeRegistros_` | función | 24_Historial_Ascensos.gs | 1592 |  |
+| `_verificarCambioRangoDesdeRegistros_` | función | 24_Historial_Ascensos.gs | 1594 |  |
 | `_verificarYMarcarCambioRangoHistorial_` | función | 24_Historial_Ascensos.gs | 1272 | Contexto_Base_Web.md §PF286 |
 | `_vigilarUptimeRobot_` | función | 45_Vigilante_UptimeRobot.gs | 96 | Contexto_Base_Web.md §45B005 |
 | `_vigilarUptimeRobotSeguro_` | función | 45_Vigilante_UptimeRobot.gs | 86 | Contexto_Base_Web.md §45B004 |
