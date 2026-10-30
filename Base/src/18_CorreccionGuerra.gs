@@ -4514,6 +4514,9 @@ function _cdjProcesarSemana_(filas, sem, indiceJson, topeA, topeM, letraDomingo,
     if (!domEsDomingo) { motivo[sk] = 'la ultima fila de la semana no es un domingo (' + (letraDom || 'sin dia') + '): semana abierta o incompleta'; return; }
     if (!x || ultPi !== dom) { motivo[sk] = 'no hay fila de domingo para esa serie'; return; }
     if (repetidas[sk][dom]) { motivo[sk] = 'la fila del domingo esta repetida en la hoja: revisar a mano'; return; }
+    // §PF298 (30-oct-2026, criterio 1 de §PF160): si a la serie le falta una fila ENTRE su primer y su ultimo dia, lo que el JSON trae de mas puede ser de ese dia y no del domingo; no se vuelca todo al domingo, se deja a revision manual. (Una serie que empieza tarde, p. ej. un ingreso el sabado, es contigua y no cae aqui.)
+    var psSerie = ps.slice().sort(function (u, v) { return u - v; });
+    if (psSerie[psSerie.length - 1] - psSerie[0] + 1 !== psSerie.length) { motivo[sk] = 'a la serie le falta la fila de un dia intermedio (periodIndex ' + psSerie.join(', ') + '): lo que el JSON trae de mas puede no ser del domingo; revisar a mano'; return; }
     var p = { m: x.m + c.df, a: x.a + c.da, b: x.b + c.db };
     if (p.a > topeA || p.m < 0 || p.m > topeM) { motivo[sk] = 'el domingo pasaria el tope diario (' + topeA + ' ataques o ' + topeM + ' medallas)'; return; }
     prov[sk] = p;
