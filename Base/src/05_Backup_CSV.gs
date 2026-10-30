@@ -1524,6 +1524,8 @@ function _formatFechaCanonica(dateVal, forzarConHora) {
   if (!(dateVal instanceof Date) || isNaN(dateVal.getTime())) return '';
   var TZ = 'America/Lima';
   var horaStr = Utilities.formatDate(dateVal, TZ, 'HH:mm:ss');
+  // 29-oct-2026 (pedido de la usuaria): una columna de «solo hora» (Hora de T_Lista, S_Lista y CR_Lista) llega como Date con la fecha base de la hoja (30/12/1899). El respaldo guardaba «30/12/1899 21:00:00»; ahora guarda solo «21:00:00». [→ Contexto_Base_Web.md §PF286]
+  if (Utilities.formatDate(dateVal, TZ, 'yyyy') === '1899') return horaStr;
   if (!forzarConHora && horaStr === '00:00:00') return Utilities.formatDate(dateVal, TZ, 'dd/MM/yyyy');
   return Utilities.formatDate(dateVal, TZ, 'dd/MM/yyyy HH:mm:ss');
 }
