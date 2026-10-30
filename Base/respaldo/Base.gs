@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 19:06:20 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 19:16:40 */
 
 
 
@@ -38268,6 +38268,31 @@ function _ordenarSAsistenciaPorFecha(ss, soloRevisar) {
   return _ordenarHojaPorFechaDesc_(sh, 2, SA_TOTAL_COLS, { NUM: SA.NUM, FECHA: SA.FECHA, HORA: 0, ID: SA.ID }, {
     etiqueta: 'S_Asistencia', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', soloRevisar: !!soloRevisar
   });
+}
+
+// ordenarYFormatearListasYAsistenciasRevisar() / ordenarYFormatearListasYAsistencias(): manuales, sin parámetros (29-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF286]
+// Dejan T_Lista, S_Lista, CR_Lista, T_Asistencia y S_Asistencia con más reciente primero, coma de miles solo visual (T_Lista, S_Lista, CR_Lista) y un color por ID (ambas asistencias).
+// La variante «Revisar» solo registra qué cambiaría. Cada hoja falla por separado y se informa en el registro. Idempotentes.
+function ordenarYFormatearListasYAsistenciasRevisar() { return _ordenarYFormatearListasYAsistencias_(true); }
+function ordenarYFormatearListasYAsistencias() { return _ordenarYFormatearListasYAsistencias_(false); }
+function _ordenarYFormatearListasYAsistencias_(soloRevisar) {
+  var ss = _getSs();
+  [
+    ['T_Lista', _ordenarTListaPorFecha],
+    ['S_Lista', _ordenarSListaPorFecha],
+    ['CR_Lista', _reordenarCRListaPorFecha],
+    ['T_Asistencia', _ordenarTAsistenciaPorFecha],
+    ['S_Asistencia', _ordenarSAsistenciaPorFecha]
+  ].forEach(function (p) {
+    try {
+      var r = p[1](ss, soloRevisar);
+      Logger.log('[Orden manual] ' + p[0] + ': ' + (r === null ? 'no existe la hoja' : (r.ok ? (r.cambio ? 'reordenada (' + r.movidas + ' fila(s) cambian de posición)' : 'ya estaba en orden') : 'NO se reordenó (hay fórmulas)')));
+    } catch (e) { Logger.log('[Orden manual] ' + p[0] + ' falló: ' + e.message); }
+  });
+  if (soloRevisar) { Logger.log('[Orden manual] Solo revisar: no se escribió nada (ni orden, ni miles, ni colores).'); return; }
+  try { Logger.log('[Orden manual] Formato de miles aplicado en ' + _aplicarFormatoMilesListas_(ss) + ' hoja(s).'); } catch (eM) { Logger.log('[Orden manual] Miles falló: ' + eM.message); }
+  try { _aplicarFormatoCondicionalTAporTorneo(ss); } catch (eT) { Logger.log('[Orden manual] Color de T_Asistencia falló: ' + eT.message); }
+  try { _aplicarFormatoCondicionalSAporSorteo(ss); } catch (eS) { Logger.log('[Orden manual] Color de S_Asistencia falló: ' + eS.message); }
 }
 
 // FASE 13 (26-sep-2026, plan Organizador_Fuente -- ver docblock "FASES [→ Contexto_Base_Web.md §26B176]
