@@ -1381,6 +1381,18 @@ function _extraerValoresConLinksReales(sh, numRows, numCols, colConHoraForzada, 
     }
   }
 
+  // 29-oct-2026 (pedido de la usuaria): última defensa de TODO respaldo que pasa por aquí. Si una celda de hora quedó como texto con la fecha base de la hoja («30/12/1899 21:00:00», p. ej. una hora tecleada o importada como texto), se guarda solo la hora. [→ Contexto_Base_Web.md §PF286]
+  var reHoraBase1899 = /^\s*30\/12\/1899\s+(\d{1,2}:\d{2}(?::\d{2})?)\s*$/;
+  for (var rb = 1; rb < valores.length; rb++) {
+    for (var cb = 0; cb < valores[rb].length; cb++) {
+      var vb = valores[rb][cb];
+      if (typeof vb === 'string' && vb.indexOf('1899') !== -1) {
+        var mb = vb.match(reHoraBase1899);
+        if (mb) valores[rb][cb] = mb[1];
+      }
+    }
+  }
+
   return valores;
 }
 
