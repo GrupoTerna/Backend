@@ -3,6 +3,13 @@
 // Hojas Extra, Control y Calendario/Calendario2: vistas de control semanal y calendario.
 // ==============================================================================
 
+// ----- Variables y constantes -----
+
+// Control: columnas de la cuadrícula que NO deben quedar en 45 px (29-oct-2026, pedido de la usuaria; PF287). La usuaria les ensancha a mano AP (42, «Total» de Ataques), AQ (43, «%» de Ataques) y DQ (121, «Total» de Barcos),
+// y se encogían porque aplicarFormatoGlobal() (04_Formato_Comun.gs) y la reconstrucción de updateControlSheet() ponían 45 px en TODA la cuadrícula. Posiciones = COL_INICIO_GRID (17) + OFF.ATA_TOTAL (25), OFF.ATA_PCT (26) y OFF.BAR_TOTAL (104). [→ Contexto_Base_Web.md §PF287]
+var CONTROL_COLS_ANCHAS = [42, 43, 121];
+var CONTROL_ANCHO_COLS_ANCHAS_PX = 60;
+
 // ----- Funciones manuales / punto de entrada -----
 
 // SECCIÓN 2: RESTO DE FUNCIONES (Extra, Control, Calendario, helpers internos) [→ Contexto_Base_Web.md §22B001]
@@ -123,6 +130,19 @@ function _controlNecesitaRebuildFormato(ctx, numJugadores) {
     return true;
   }
   return false;
+}
+
+// _aplicarAnchosEspecialesControl_(sh): deja AP, AQ y DQ de Control con su ancho propio después de poner 45 px a toda la cuadrícula. Idempotente; un error no frena a quien la llama. [→ Contexto_Base_Web.md §PF287]
+function _aplicarAnchosEspecialesControl_(sh) {
+  if (!sh) return;
+  try {
+    var maxCol = sh.getMaxColumns();
+    CONTROL_COLS_ANCHAS.forEach(function (c) {
+      if (c <= maxCol) sh.setColumnWidth(c, CONTROL_ANCHO_COLS_ANCHAS_PX);
+    });
+  } catch (e) {
+    Logger.log('[Control] No se pudo fijar el ancho de AP, AQ y DQ: ' + e.message);
+  }
 }
 
 function updateControlSheet(ctxOverride) {
@@ -383,6 +403,7 @@ function updateControlSheet(ctxOverride) {
     var lastColCtrl = sh.getLastColumn();
     if (lastColCtrl >= COL_INICIO_GRID) {
       sh.setColumnWidths(COL_INICIO_GRID, lastColCtrl - COL_INICIO_GRID + 1, 45);
+      _aplicarAnchosEspecialesControl_(sh); // AP, AQ y DQ conservan su ancho (PF287)
     }
 
     if (jugadores.length > 0) {
