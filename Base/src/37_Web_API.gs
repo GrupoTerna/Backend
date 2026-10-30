@@ -4531,7 +4531,8 @@ function _webAdminSorteoResolucionGuardar(token, datos) {
       var manuales = [];
       (Array.isArray(datos.participantesManuales) ? datos.participantesManuales : []).slice(0, 300).forEach(function (m) {
         var nom = String((m && m.nombre) || '').trim().substring(0, 100);
-        if (nom) manuales.push({ nombre: nom, tickets: (m.tickets === '' || m.tickets === null || m.tickets === undefined) ? '' : Number(m.tickets) });
+        var tagMan = String((m && m.tag) || '').trim().toUpperCase().replace(/[^#0-9A-Z]/g, '').substring(0, 20);
+        if (nom) manuales.push({ nombre: nom, tag: tagMan, tickets: (m.tickets === '' || m.tickets === null || m.tickets === undefined) ? '' : Number(m.tickets) });
       });
       var calif = _webSorteoCalificados(token, datos.idSorteo, false);
       if (calif && calif.ok) _sincronizarParticipantesSorteoSA(datos.idSorteo, calif.clanes, manuales);

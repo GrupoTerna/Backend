@@ -4478,8 +4478,9 @@ function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, ra
  * Por cada participante sin fila en este sorteo agrega una con Ganó = «No» (sin Premio, Resultado ni Razón). Las filas que ya existen (ganadores o participantes)
  * no se tocan, así que nunca baja un «Sí» a «No». La Fecha se guarda como fecha real (número de Sheets con formato dd/mm/yyyy), no como texto. Devuelve cuántas agregó.
  * Decisión de la usuaria (29-oct-2026, §PF294 punto 9): quien salió con «No califica» no entra solo, pero si se agregó a mano en sorteo.html cuenta como participante
- * aunque no gane. `manuales` ([{nombre, tickets}], opcional) trae a esos agregados a mano: no tienen Tag, así que se evita duplicarlos comparando el nombre
- * (sin tildes ni mayúsculas) con las filas que el sorteo ya tiene (ganadores sin Tag, calificados o un manual repetido). Se guardan con Tag vacío.
+ * aunque no gane. `manuales` ([{nombre, tag, tickets}], opcional) trae a esos agregados a mano. Los elegidos de las sugerencias de sorteo.html traen Tag: se tratan
+ * como un calificado más (sin duplicar por Tag y con Clan, Nom_Multi y Préstamo del Directorio). Los «de fuera» no traen Tag: se evita duplicarlos comparando el nombre
+ * (sin tildes ni mayúsculas) con las filas que el sorteo ya tiene (ganadores sin Tag, calificados o un manual repetido) y se guardan con Tag vacío.
  */
 function _sincronizarParticipantesSorteoSA(idSorteo, clanes, manuales) {
   var idNorm = String(idSorteo || '').trim();
@@ -4540,19 +4541,28 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes, manuales) {
   (Array.isArray(manuales) ? manuales : []).forEach(function (m) {
     var nombreMan = String((m && m.nombre) || '').trim();
     var claveMan = _normalizarNombreSA_(nombreMan);
-    if (!claveMan || nombresYa[claveMan]) return;
+    var tagMan = String((m && m.tag) || '').trim().toUpperCase();
+    var tagManHash = tagMan ? (tagMan.charAt(0) === '#' ? tagMan : '#' + tagMan) : '';
+    if (!claveMan) return;
+    if (tagManHash) {
+      if (yaEstan[tagManHash]) return; // con Tag se compara por Tag: dos personas distintas pueden llamarse igual
+      yaEstan[tagManHash] = true;
+    } else if (nombresYa[claveMan]) {
+      return;
+    }
     nombresYa[claveMan] = true;
+    var infoMan = tagManHash ? (mapaDir[tagManHash] || null) : null;
     var filaMan = [];
     filaMan[SA.NUM - 1]       = siguienteNum++;
     filaMan[SA.FECHA - 1]     = filaSorteo.fecha;
     filaMan[SA.ID - 1]        = idNorm;
     filaMan[SA.TEMPORADA - 1] = filaSorteo.temporada;
-    filaMan[SA.TAG - 1]       = '';
+    filaMan[SA.TAG - 1]       = tagManHash;
     filaMan[SA.NOMBRE - 1]    = nombreMan;
-    filaMan[SA.NOM_MULTI - 1] = '';
-    filaMan[SA.PRESTAMO - 1]  = '';
-    filaMan[SA.CLAN_TAG - 1]  = '';
-    filaMan[SA.CLAN - 1]      = '';
+    filaMan[SA.NOM_MULTI - 1] = infoMan ? (infoMan.nomMulti || '') : '';
+    filaMan[SA.PRESTAMO - 1]  = infoMan ? (infoMan.prestamo || '') : '';
+    filaMan[SA.CLAN_TAG - 1]  = infoMan ? (infoMan.clanTag || '') : '';
+    filaMan[SA.CLAN - 1]      = infoMan ? (infoMan.clan || '') : '';
     filaMan[SA.TICKETS - 1]   = (m.tickets !== '' && m.tickets !== null && Number(m.tickets) >= 0) ? Number(m.tickets) : '';
     filaMan[SA.PREMIO - 1]    = '';
     filaMan[SA.RESULTADO - 1] = '';
