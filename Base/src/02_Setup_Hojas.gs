@@ -1005,6 +1005,7 @@ function _setupSAsistencia(ss) {
   }
 
   _bordesDatosSAsistencia_(sh); // PF231: la columna «Ganó» (15) de las filas que ya existían no tenía bordes
+  _ordenarYColorearSAsistencia_(ss); // 29-oct-2026: más reciente primero y un color por sorteo, como T_Asistencia
 
   _protegerSoloAdvertencia(sh);
   Logger.log('[Setup] S_Asistencia OK (estructura + dropdown de Resultado y de Razón)');

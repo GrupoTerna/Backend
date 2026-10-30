@@ -1720,6 +1720,7 @@ function importarSAsistenciaDesdeCSV() {
   }
   applyBorderCenter(sh.getRange(2, 1, filas.length, SA_TOTAL_COLS));
   Logger.log('[Sorteos] S_Asistencia restaurada desde CSV: ' + filas.length + ' fila(s).');
+  _ordenarYColorearSAsistencia_(ss);
 }
 
 // PASO 3 — T_Control: cuadrícula (una columna por torneo de T_Lista) [→ Contexto_Base_Web.md §26B125]
@@ -1913,50 +1914,70 @@ function regenerarTControlSheet(ss) {
  * _aplicarFormatoCondicionalTAporTorneo(ss) [→ Contexto_Base_Web.md §26B132]
  */
 function _aplicarFormatoCondicionalTAporTorneo(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
-  if (!sh) { Logger.log('[T_Asistencia] Hoja no encontrada, se omite formato por torneo.'); return; }
+  _aplicarFormatoCondicionalAsistenciaPorId_(ss, CFG.SHEETS.T_ASISTENCIA, TA.ID, TA.FECHA, TA_TOTAL_COLS, 'T_Asistencia');
+}
+
+// _aplicarFormatoCondicionalSAporSorteo(ss): igual que T_Asistencia pero por ID de sorteo en S_Asistencia: un color distinto para cada grupo de filas (29-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF286]
+function _aplicarFormatoCondicionalSAporSorteo(ss) {
+  _aplicarFormatoCondicionalAsistenciaPorId_(ss, CFG.SHEETS.S_ASISTENCIA, SA.ID, SA.FECHA, SA_TOTAL_COLS, 'S_Asistencia');
+}
+
+// _ordenarYColorearSAsistencia_(ss): deja S_Asistencia con el más reciente primero y con un color por sorteo; cada paso falla por separado sin romper al que llama.
+function _ordenarYColorearSAsistencia_(ss) {
+  try { _ordenarSAsistenciaPorFecha(ss); } catch (eOrd) { Logger.log('[S_Asistencia] No se pudo ordenar por fecha (se continúa): ' + eOrd.message); }
+  try { _aplicarFormatoCondicionalSAporSorteo(ss); } catch (eCol) { Logger.log('[S_Asistencia] No se pudo colorear por sorteo (se continúa): ' + eCol.message); }
+}
+
+/**
+ * _aplicarFormatoCondicionalAsistenciaPorId_(ss, nombreHoja, colId, colFecha, totalCols, etiqueta): un color de la paleta CFG.COLORES.TA_ID_PALETTE por cada ID, aplicado a toda la fila de datos con reglas condicionales (=$ID2="…").
+ * El color depende del ORDEN CRONOLÓGICO de los ID (Fecha ascendente y luego ID), no de la posición en la hoja: así, con la hoja de más reciente a más antiguo, un grupo nuevo arriba no recolorea a los demás, y los grupos vecinos siempre tienen colores distintos.
+ * Reemplaza las reglas condicionales de la hoja. Cuerpo del antiguo _aplicarFormatoCondicionalTAporTorneo() [→ Contexto_Base_Web.md §26B132]
+ */
+function _aplicarFormatoCondicionalAsistenciaPorId_(ss, nombreHoja, colId, colFecha, totalCols, etiqueta) {
+  var sh = ss.getSheetByName(nombreHoja);
+  if (!sh) { Logger.log('[' + etiqueta + '] Hoja no encontrada, se omite formato por ID.'); return; }
 
   var lastRow = sh.getLastRow();
   if (lastRow < 2) {
-    // Sin datos: no hay nada que agrupar. Se limpian reglas viejas por si
-    // quedaron de una corrida anterior con más filas.
+    // Sin datos: no hay nada que agrupar. Se limpian reglas viejas por si quedaron de una corrida anterior con más filas.
     _tryCondFmt(sh, []);
     return;
   }
 
-  var ids = sh.getRange(2, TA.ID, lastRow - 1, 1).getValues();
-  var paleta = CFG.COLORES.TA_ID_PALETTE;
-  var colorPorId = {};
-  var ordenIds = [];
+  var ids = sh.getRange(2, colId, lastRow - 1, 1).getValues();
+  var fechas = sh.getRange(2, colFecha, lastRow - 1, 1).getValues();
+  var vistos = {};
+  var lista = [];
   for (var i = 0; i < ids.length; i++) {
     var id = String(ids[i][0] || '').trim();
-    if (!id) continue;
-    if (!colorPorId.hasOwnProperty(id)) {
-      colorPorId[id] = paleta[ordenIds.length % paleta.length];
-      ordenIds.push(id);
-    }
+    if (!id || vistos.hasOwnProperty(id)) continue;
+    vistos[id] = true;
+    lista.push({ id: id, dia: _diaClaveOrden_(fechas[i][0]) });
   }
-
-  if (ordenIds.length === 0) {
+  if (lista.length === 0) {
     _tryCondFmt(sh, []);
     return;
   }
+  lista.sort(function (a, b) {
+    if (a.dia !== b.dia) return a.dia - b.dia;
+    return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
+  });
 
-  var dataRange = sh.getRange(2, 1, lastRow - 1, TA_TOTAL_COLS);
-  var colId = colLetter(TA.ID);
-  var rules = ordenIds.map(function (id) {
-    // Escapar comillas dobles por si algún ID llegara a tenerlas (no
-    // debería, pero evita fórmulas rotas).
-    var idEscapado = id.replace(/"/g, '""');
+  var paleta = CFG.COLORES.TA_ID_PALETTE;
+  var dataRange = sh.getRange(2, 1, lastRow - 1, totalCols);
+  var colIdLetra = colLetter(colId);
+  var rules = lista.map(function (it, k) {
+    // Escapar comillas dobles por si algún ID llegara a tenerlas (no debería, pero evita fórmulas rotas).
+    var idEscapado = it.id.replace(/"/g, '""');
     return SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied('=$' + colId + '2="' + idEscapado + '"')
-      .setBackground(colorPorId[id])
+      .whenFormulaSatisfied('=$' + colIdLetra + '2="' + idEscapado + '"')
+      .setBackground(paleta[k % paleta.length])
       .setRanges([dataRange])
       .build();
   });
 
   _tryCondFmt(sh, rules);
-  Logger.log('[T_Asistencia] Formato condicional por torneo aplicado: ' + ordenIds.length + ' torneo(s)/color(es).');
+  Logger.log('[' + etiqueta + '] Formato condicional por ID aplicado: ' + lista.length + ' grupo(s)/color(es).');
 }
 
 /**
@@ -4422,6 +4443,7 @@ function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, ra
              (ticketsGuardar !== '' ? ', tickets ' + ticketsGuardar : '') +
              (registradoPor ? ', registrado por ' + registradoPor : '') + '.');
 
+  _ordenarYColorearSAsistencia_(ss); // más reciente primero y un color por sorteo
   return { ok: true };
 }
 
@@ -4487,6 +4509,7 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
   sh.getRange(primera, SA.FECHA, filas.length, 1).setNumberFormat('dd/mm/yyyy');
   applyBorderCenter(sh.getRange(primera, 1, filas.length, SA_TOTAL_COLS));
   Logger.log('[Sorteos] S_Asistencia: ' + filas.length + ' participante(s) agregado(s) con Ganó = No (sorteo ' + idNorm + ').');
+  _ordenarYColorearSAsistencia_(ss); // más reciente primero y un color por sorteo
   return { ok: true, agregadas: filas.length };
 }
 
