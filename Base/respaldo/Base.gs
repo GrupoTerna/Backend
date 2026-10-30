@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 19:30:36 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 20:13:12 */
 
 
 
@@ -5242,6 +5242,7 @@ function aplicarFormatoGlobal() {
     for (var c = COL_INICIO_GRID; c <= lastColCtrl; c++) {
       shControl.setColumnWidth(c, 45);
     }
+    restaurarAnchosColumnasFijos(CFG.SHEETS.CONTROL); // PF287 (30-oct-2026): vuelven los anchos guardados con guardarAnchosColumnasFijos(), que los 45 px de arriba pisaban (AP, AQ, DQ)
     shControl.setColumnWidth(1, 35);
   }
 
@@ -31592,6 +31593,8 @@ function _pronosticoPuntosDiasCerrados_(rr, tag, periodIndex) {
 // Hojas Extra, Control y Calendario/Calendario2: vistas de control semanal y calendario.
 // ==============================================================================
 
+// ----- Variables y constantes -----
+
 // ----- Funciones manuales / punto de entrada -----
 
 // SECCIÓN 2: RESTO DE FUNCIONES (Extra, Control, Calendario, helpers internos) [→ Contexto_Base_Web.md §22B001]
@@ -31972,6 +31975,8 @@ function updateControlSheet(ctxOverride) {
     var lastColCtrl = sh.getLastColumn();
     if (lastColCtrl >= COL_INICIO_GRID) {
       sh.setColumnWidths(COL_INICIO_GRID, lastColCtrl - COL_INICIO_GRID + 1, 45);
+      // PF287 (30-oct-2026): los 45 px de arriba pisarían los anchos que la usuaria guarda con guardarAnchosColumnasFijos(); se reaplican los guardados (los de la cuadrícula siguen en 45).
+      restaurarAnchosColumnasFijos(CFG.SHEETS.CONTROL);
     }
 
     if (jugadores.length > 0) {
