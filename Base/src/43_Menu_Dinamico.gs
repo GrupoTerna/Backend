@@ -499,8 +499,11 @@ function _getOrdenExtra(ss, tipo) {
   var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
   var mapa = {};
   if (!sh || sh.getLastRow() < 2) return mapa;
-  var colIdx = (tipo === 'subcategoria') ? 12 : 11; // 0-based
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 13).getValues();
+  // PF141 (29-oct-2026): antes las columnas estaban fijas en L y M (índices 11 y 12), que desde que se agregaron Mostrar_S y
+  // Mostrar_D son Rangos y Alerta; Categoría es la N (14) y Subcategoría la O (15). Ahora se busca por el encabezado
+  // (con N y O como respaldo) y se lee hasta la columna que haga falta. [→ Contexto_Base_Web.md §PF141]
+  var colIdx = _colExtraPorEncabezado_(sh, tipo === 'subcategoria' ? 'subcategoria' : 'categoria', tipo === 'subcategoria' ? 15 : 14) - 1; // 0-based
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(colIdx + 1, 1)).getValues();
   var orden = 0;
   for (var i = 0; i < data.length; i++) {
     var v = String(data[i][colIdx] || '').trim();
@@ -509,6 +512,22 @@ function _getOrdenExtra(ss, tipo) {
     }
   }
   return mapa;
+}
+
+// Devuelve la columna (1-based) de la hoja Extra cuyo encabezado coincide con `nombre` (sin tilde ni mayúsculas); `respaldo` si no aparece o falla la lectura. [→ Contexto_Base_Web.md §PF141]
+function _colExtraPorEncabezado_(sh, nombre, respaldo) {
+  try {
+    var ultima = sh.getLastColumn();
+    if (ultima < 1) return respaldo;
+    var encabezados = sh.getRange(1, 1, 1, ultima).getValues()[0];
+    for (var c = 0; c < encabezados.length; c++) {
+      var h = String(encabezados[c] || '').trim().toLowerCase().replace(/í/g, 'i');
+      if (h === nombre) return c + 1;
+    }
+  } catch (e) {
+    Logger.log('[Menú] No se pudo leer el encabezado de Extra (' + e.message + '); se usa la columna ' + respaldo + '.');
+  }
+  return respaldo;
 }
 
 // Lee la hoja Clan y devuelve { nombreClanLower -> índice } según el orden de filas. [→ Contexto_Base_Web.md §43B008]
