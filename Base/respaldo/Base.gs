@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 30/10/2026 00:27:02 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 30/10/2026 00:32:31 */
 
 
 
@@ -51440,7 +51440,7 @@ function _webBuscarFilaVetoPorTag(tagNorm) {
   return null;
 }
 
-// _webAdminVetar(token, datos): FASE 4 web (Sección 7.5); datos = {tag, razon, comentario}; vetado de un solo sentido (no hay "desvetar" desde la web, ver 13_Inactivos_Vetados.gs); pasos: 1-2 sesión y Función "Vetar"; 3 buscar el Tag con _webBuscarFilaVetoPorTag(); 4-5 el Clan de esa fila debe estar en los Clanes_Admin del admin logueado (nunca se confía en un clan mandado por el cliente); 5b la Razón debe estar en CFG.RAZON_VALORES_VALIDOS; 6 escribir Vetado='Sí' y Razón; 7 _registrarVetadoConfirmado() (13_Inactivos_Vetados.gs); 8 upsert en Vetados con _upsertVetadoDesdeWeb(); 9 comentario automático con _webAgregarComentarioVeto(); requiere la Función "Vetar". [→ Contexto_Base_Web.md §37B205]
+// _webAdminVetar(token, datos): FASE 4 web (Sección 7.5); datos = {tag, razon, comentario}; vetado de un solo sentido (no hay "desvetar" desde la web, ver 13_Inactivos_Vetados.gs); pasos: 1-2 sesión y Función "Vetar"; 3 buscar el Tag con _webBuscarFilaVetoPorTag(); 4-5 el Clan de esa fila debe estar en los Clanes_Admin del admin logueado (nunca se confía en un clan mandado por el cliente), salvo que el jugador ya no esté en ningún clan de la Familia (Clan vacío o clan no Terna; FIX 30-oct-2026), caso en que basta la Función "Vetar"; 5b la Razón debe estar en CFG.RAZON_VALORES_VALIDOS; 6 escribir Vetado='Sí' y Razón; 7 _registrarVetadoConfirmado() (13_Inactivos_Vetados.gs); 8 upsert en Vetados con _upsertVetadoDesdeWeb(); 9 comentario automático con _webAgregarComentarioVeto(); requiere la Función "Vetar". [→ Contexto_Base_Web.md §37B205]
 function _webAdminVetar(token, datos) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
   var admin = _webAuthObtenerAdmin(token);
@@ -51465,8 +51465,11 @@ function _webAdminVetar(token, datos) {
   if (!ubicacion) return { ok: false, error: 'No encontré ese Tag en Directorio ni en Inactivos.' };
 
   var clanDelTag = String(ubicacion.sh.getRange(ubicacion.row, IC.CLAN).getValue() || '').trim();
+  var clanTagFilaVeto = String(ubicacion.sh.getRange(ubicacion.row, IC.CLAN_TAG).getValue() || '').trim();
   var clanesAdminLista = String(adminFresco.clanesAdmin || '').split(',').map(function (c) { return c.trim(); });
-  if (clanesAdminLista.indexOf(clanDelTag) === -1) {
+  // FIX 30-oct-2026 (pedido usuario: "el veto debe ser aunque haya dejado el clan, para evitar que regrese"): quien ya fue expulsado o salió queda sin clan (Clan vacío, o un clan que no es de la Familia) y antes el veto fallaba con «No administras el clan ""»; ahora, si el jugador no está en ningún clan de la Familia, basta que el admin tenga la Función "Vetar" (ya validada arriba y releída de la hoja, no de la sesión). Si sigue en un clan Terna, se exige administrar ESE clan, como antes. [→ Contexto_Base_Web.md §37B205]
+  var sinClanTerna = !clanDelTag || (clanTagFilaVeto !== '' && CFG.TERNA_TAGS.indexOf(clanTagFilaVeto) === -1);
+  if (!sinClanTerna && clanesAdminLista.indexOf(clanDelTag) === -1) {
     return { ok: false, error: 'No administras el clan "' + clanDelTag + '".' };
   }
 
