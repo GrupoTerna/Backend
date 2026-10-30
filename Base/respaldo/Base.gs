@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 20:47:19 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 21:18:59 */
 
 
 
@@ -3629,7 +3629,19 @@ function guardarTokensEnScriptProperties() {
 // proteccion). Punto de entrada: setupAllSheets().
 // ==============================================================================
 
-// ----- Variables y constantes -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 29-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Crear y preparar todas las hojas
+//    - Reparar los bordes de S_Asistencia
+//  Parte 2 — Funciones que no se corren a mano
+//    - Ayudas generales de las hojas (crear la hoja y su protección)
+//    - Hojas de clan, directorio y guerra (en el orden de setupAllSheets)
+//    - Hoja Control (grid de métricas)
+//    - Hojas de seguimiento (historial, pendientes, calendarios, inactivos, vetados, mensajes)
+//    - Torneos, sorteos y cambio de rango: listas, encabezados y filtros
+//    - Torneos y sorteos: asistencia, control y resoluciones
+//    - Hojas restantes (jugadores, enlaces, alertas, conflictos, grupo verificado)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Métricas del grid de Control: nombre, ancho TOTAL de columnas (25 de [→ Contexto_Base_Web.md §02B001]
 var CONTROL_METRICAS = [
@@ -3671,10 +3683,13 @@ var LC = {
 
 var LINKS_TOTAL_COLS = 14;
 
-// ----- Funciones manuales / punto de entrada -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Crear y preparar todas las hojas -----
 
 // SECCIÓN 2: FUNCIONES DE SETUP / INTERNAS (sin cambios de orden respecto de [→ Contexto_Base_Web.md §02B005]
-
 function setupAllSheets() {
   var ss = _getSs();
   Logger.log('[Setup] Iniciando setupAllSheets...');
@@ -3722,7 +3737,23 @@ function setupAllSheets() {
   Logger.log('[Setup] setupAllSheets completado.');
 }
 
-// ----- Funciones internas / helpers -----
+// ----- Reparar los bordes de S_Asistencia -----
+
+/**
+ * PF231: se puede correr sola desde el editor de Apps Script (no recibe parámetros) para corregir los bordes de S_Asistencia sin ejecutar todo el setup.
+ */
+function repararBordesSAsistencia() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.S_ASISTENCIA);
+  if (!sh) { Logger.log('[Setup] repararBordesSAsistencia: no existe la hoja ' + CFG.SHEETS.S_ASISTENCIA); return; }
+  _bordesDatosSAsistencia_(sh);
+  Logger.log('[Setup] Bordes de S_Asistencia corregidos (' + Math.max(0, sh.getLastRow() - 1) + ' filas, ' + SA_TOTAL_COLS + ' columnas).');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Ayudas generales de las hojas (crear la hoja y su protección) -----
 
 /**
  * _getOrCreateSheet(ss, name) [→ Contexto_Base_Web.md §02B011]
@@ -3734,47 +3765,6 @@ function _getOrCreateSheet(ss, name) {
     Logger.log('[Setup] Hoja creada: ' + name);
   }
   return sh;
-}
-
-/**
- * _setupAlertasHistorialGuerra(ss) [→ Contexto_Base_Web.md §02B012]
- */
-function _setupAlertasHistorialGuerra(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA);
-  var encabezados = AHG_ENCABEZADOS; // 20_HistorialGuerraJugador.gs
-  sh.getRange(1, 1, 1, encabezados.length).setValues([encabezados]);
-  // FIX (23-ago-2026, pedido del usuario): mismo estilo que T_Lista — antes [→ Contexto_Base_Web.md §02B013]
-  applyHeaderStyle(sh, encabezados.length);
-
-  // Bordes grises + centrado sobre las filas de datos que ya existan (p.ej. [→ Contexto_Base_Web.md §02B014]
-  if (sh.getLastRow() >= 2) {
-    applyBorderCenter(sh.getRange(2, 1, sh.getLastRow() - 1, encabezados.length));
-  }
-
-  var opsEstado = SpreadsheetApp.newDataValidation()
-    .requireValueInList(['Pendiente', 'Resuelto'], true).setAllowInvalid(false).build();
-  // Rango amplio (hasta fila 2000) para que la validación ya cubra filas que [→ Contexto_Base_Web.md §02B015]
-  sh.getRange(2, AHG.ESTADO, 1999, 1).setDataValidation(opsEstado);
-}
-
-function _setupExtra(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.EXTRA);
-  // Mostrar_T (antes "Mostrar"): SOLO cambio de nombre — mantiene exactamente [→ Contexto_Base_Web.md §02B016]
-  var headers = ['Temporada','Semana','Día','Ref','Primer lunes','# Sem','Mostrar_T',
-                 'Mostrar_S','Mostrar_D',
-                 'Trofeos','Liga','Rangos','Alerta','Categoría','Subcategoría',
-                 'Vigente','Visibilidad','Tipo','Edición',
-                 'Torneo_Vigente_ID','Sorteo_Vigente_ID',
-                 'Ascenso_Vigente_ID','Descenso_Vigente_ID'];
-  // Siempre se reescribe la fila 1 (igual que Directorio) para que columnas [→ Contexto_Base_Web.md §02B017]
-  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
-  applyHeaderStyle(sh, headers.length);
-  if (sh.getLastRow() >= 2) {
-    applyBorderCenter(sh.getRange(2, 1, 1, headers.length));
-  }
-  _protegerSoloAdvertencia(sh);
-  sh.hideSheet();
-  Logger.log('[Setup] Extra OK');
 }
 
 /**
@@ -3799,6 +3789,28 @@ function _quitarProteccionAdvertencia(sh) {
   for (var i = 0; i < protecciones.length; i++) {
     if (protecciones[i].getDescription() === DESC) protecciones[i].remove();
   }
+}
+
+// ----- Hojas de clan, directorio y guerra (en el orden de setupAllSheets) -----
+
+function _setupExtra(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.EXTRA);
+  // Mostrar_T (antes "Mostrar"): SOLO cambio de nombre — mantiene exactamente [→ Contexto_Base_Web.md §02B016]
+  var headers = ['Temporada','Semana','Día','Ref','Primer lunes','# Sem','Mostrar_T',
+                 'Mostrar_S','Mostrar_D',
+                 'Trofeos','Liga','Rangos','Alerta','Categoría','Subcategoría',
+                 'Vigente','Visibilidad','Tipo','Edición',
+                 'Torneo_Vigente_ID','Sorteo_Vigente_ID',
+                 'Ascenso_Vigente_ID','Descenso_Vigente_ID'];
+  // Siempre se reescribe la fila 1 (igual que Directorio) para que columnas [→ Contexto_Base_Web.md §02B017]
+  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  applyHeaderStyle(sh, headers.length);
+  if (sh.getLastRow() >= 2) {
+    applyBorderCenter(sh.getRange(2, 1, 1, headers.length));
+  }
+  _protegerSoloAdvertencia(sh);
+  sh.hideSheet();
+  Logger.log('[Setup] Extra OK');
 }
 
 function _setupClan(ss) {
@@ -3903,22 +3915,14 @@ function _setupGuerraLogs(ss) {
   Logger.log('[Setup] Guerra_Logs OK (' + headers.length + ' cols, incluye ProgressEarned/NumOfDefensesRemaining/ProgressEarnedFromDefenses/Tipo/Estado)');
 }
 
+// ----- Hoja Control (grid de métricas) -----
+
 function _setupControl(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.CONTROL);
   if (sh.getLastRow() === 0 || sh.getRange(1,1).getValue() === '') {
     _buildControlHeaders(sh);
   }
   Logger.log('[Setup] Control OK');
-}
-
-/**
- * _controlColTotales() [→ Contexto_Base_Web.md §02B029]
- */
-function _controlColTotales() {
-  var COL_INICIO_GRID = 17;
-  var total = COL_INICIO_GRID - 1;
-  for (var m = 0; m < CONTROL_METRICAS.length; m++) total += CONTROL_METRICAS[m].ancho;
-  return total;
 }
 
 function _buildControlHeaders(sh) {
@@ -3930,6 +3934,16 @@ function _buildControlHeaders(sh) {
   }
 
   _pintarEncabezadosControl(sh);
+}
+
+/**
+ * _controlColTotales() [→ Contexto_Base_Web.md §02B029]
+ */
+function _controlColTotales() {
+  var COL_INICIO_GRID = 17;
+  var total = COL_INICIO_GRID - 1;
+  for (var m = 0; m < CONTROL_METRICAS.length; m++) total += CONTROL_METRICAS[m].ancho;
+  return total;
 }
 
 /**
@@ -4048,6 +4062,8 @@ function _pintarEncabezadosControl(sh) {
   // aquí, después del borde general, para que no lo sobreescriba.
   sh.getRange(1, 1, 2, 3).setBorder(false, false, false, false, false, false);
 }
+
+// ----- Hojas de seguimiento (historial, pendientes, calendarios, inactivos, vetados, mensajes) -----
 
 // Historial: N°|Fecha|Tag|Nombre|Movimiento|Clan|ClanTag (7 columnas propias + 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267) - Nombre = nombre en juego del jugador [→ Contexto_Base_Web.md §02B038]
 function _setupHistorial(ss) {
@@ -4182,43 +4198,6 @@ function _setupMulticuentas(ss) {
   Logger.log('[Setup] Multicuentas OK (15 cols)');
 }
 
-/**
- * _setupPlayers(ss) [→ Contexto_Base_Web.md §02B050]
- */
-function _setupPlayers(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.PLAYERS);
-  var headers = [
-    'N°','Tag','Nombre','Nom_Multi','Préstamo','Clan','ClanTag','Rango',
-    'Antigüedad','Nivel','Nivel2','Copas','Copas_max','Arena','V_Guerra',
-    'Victorias','Derrotas','Batallas','Racha',
-    'Camino de leyendas_Liga','Camino de leyendas_Trofeos','Camino de leyendas_Rango',
-    'Victorias de tres coronas','Max_victorias_desafíos','Torneos','Emotes','Banners',
-    'Cartas_desafíos','Cartas_torneos',
-    'Donaciones_r','Donaciones_d'
-  ];
-  if (sh.getLastRow() === 0 || sh.getRange(1,1).getValue() === '') {
-    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
-  }
-  applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Players OK (31 cols)');
-}
-
-/**
- * _setupLinks(ss) [→ Contexto_Base_Web.md §02B051]
- */
-function _setupLinks(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.LINKS);
-  var headers = [
-    'N°','Tag','Nombre','Nom_Multi','Préstamo','Clan','ClanTag','Rango',
-    'WSP','RoyaleAPI','Mazo','Mazo2','CWStats','Render'
-  ];
-  if (sh.getLastRow() === 0 || sh.getRange(1,1).getValue() === '') {
-    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
-  }
-  applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Links OK (14 cols)');
-}
-
 // Ascensos (hoja física "Historial_A/D", ver CFG.SHEETS.ASCENSOS): 18 (más 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267, y la columna 24 Par_CR desde el 28-oct-2026, §PF286) [→ Contexto_Base_Web.md §02B052]
 function _setupAscensosSheet(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.ASCENSOS);
@@ -4271,6 +4250,117 @@ function _setupMensajes(ss) {
   _aplicarSubindiceEncabezados(sh);
   sh.setColumnWidth(headers.length, 428); // Contenido: ancho fijo, texto largo (428px, pedido usuario 14-ago-2026)
   Logger.log('[Setup] Mensajes OK (15 cols, encabezados al dia)');
+}
+
+// ----- Torneos, sorteos y cambio de rango: listas, encabezados y filtros -----
+
+/**
+ * _setupTLista(ss) [→ Contexto_Base_Web.md §02B066]
+ */
+function _setupTLista(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_LISTA);
+  // FASE 2 (25-sep-2026, rediseño T_Lista -- ver docblock del objeto TL en [→ Contexto_Base_Web.md §02B067]
+  var columnas = [
+    { label: 'Planificación, registro y modificación de torneos', subs: [
+        // Orden nuevo (29-oct-2026, pedido de la usuaria); debe coincidir con TL en 26_Torneos_Core.gs
+        'N°', 'Temporada', 'Fecha', 'Hora', 'ID', 'Creación', 'Semanas',
+        'Tag_Tor', 'Tag_Tor_2', 'Nombre_Org', 'Nom_Multi_Org', 'Tag_org',
+        'Clan', 'ClanTag', 'Organizador_Fuente', 'Nombre', 'Tipo', 'Contraseña',
+        'Nivel_tope', 'Participantes', 'Capacidad', 'Modo_ID', 'Modo',
+        'Preparación', 'Duración', 'Premios', 'Estado'
+    ] },
+    { label: 'Min_T', subs: ['C1', 'C2', 'C3', 'C4'] },
+    { label: 'Ataques', subs: ['C1', 'C2', 'C3', 'C4'] },
+    { label: 'Otros requisitos', subs: [
+        // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §02B068]
+        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Descripción', 'Comentario', 'Link_app', 'Link_json', 'Link_json_2'
+    ] }
+  ];
+  var totalCols = _aplicarHeaderDosFilas(sh, columnas);
+  // FIX (31/08/2026, pedido del usuario — sugerencia #1 de la lista de [→ Contexto_Base_Web.md §02B069]
+  sh.getRange(2, TL.ID).setNote('No editar a mano. El ID se genera automáticamente al procesar el torneo (ver procesarTListaNuevasFilas(), 26_Torneos_Core.gs). Al agregar un torneo nuevo, dejar esta columna en blanco — igual que Tag_Tor, Contraseña, Organizador, Tag_org, Clan, ClanTag y Link_json.');
+  _protegerSoloAdvertencia(sh);
+  // Desplegable fijo de Estado ("Planificado"/"Realizado") — ver [→ Contexto_Base_Web.md §02B070]
+  _aplicarDropdownEstadoTLista(ss);
+  // FIX (08-sep-2026, corrección de desincronización): faltaban estas 2 [→ Contexto_Base_Web.md §02B071]
+  _aplicarDropdownMiembroActivoTLista(ss);
+  _aplicarDropdownReaccionTLista(ss);
+  // FIX (12-sep-2026, pedido del usuario -- consolidado, sección 1 cierre [→ Contexto_Base_Web.md §02B072]
+  _aplicarDropdownWhatsappTLista(ss);
+  // FIX (09-sep-2026, pedido usuario): filtro nativo en fila 2 (nunca en
+  // la 1) -- ver _aplicarFiltroFila2() más arriba en este archivo.
+  _aplicarFiltroFila2(sh, 'T_Lista');
+  _aplicarFormatoMilesHoja_(sh, 3, TL_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
+  Logger.log('[Setup] T_Lista OK (' + totalCols + ' columnas, header 2 filas, filtro en fila 2)');
+}
+
+/**
+ * _setupSLista(ss) [→ Contexto_Base_Web.md §02B073]
+ */
+function _setupSLista(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_LISTA);
+  var columnas = [
+    { label: 'Planificación, registro y modificación de Sorteos', subs: [
+        'N°', 'Temporada', 'Fecha', 'Hora', 'ID', 'ID_2', 'Organizador',
+        'Tag_org', 'Clan', 'ClanTag', 'Premios', 'Semanas'
+    ] },
+    { label: 'Min_S', subs: ['C1', 'C2', 'C3', 'C4', 'Delta'] },
+    { label: 'Ataques', subs: ['C1', 'C2', 'C3', 'C4'] },
+    { label: 'Torneos', subs: ['C1', 'C2', 'C3', 'C4'] },
+    { label: 'Otros requisitos', subs: [
+        // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §02B074]
+        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Estado', 'Comentario'
+    ] }
+  ];
+  var totalCols = _aplicarHeaderDosFilas(sh, columnas);
+  _protegerSoloAdvertencia(sh);
+  // PF109 (18-oct-2026): la columna Hora de S_Lista queda como hora sin fecha (antes nadie le ponía formato y aparecía «30/12/1899 20:00:00»). [→ Contexto_Base_Web.md §PF109]
+  _normalizarHoraSLista(sh);
+  // Desplegables fijo/dinámico — ver docblocks de las 4 funciones [→ Contexto_Base_Web.md §02B075]
+  _aplicarDropdownId2SLista(ss);
+  _aplicarDropdownEstadoSLista(ss);
+  _aplicarDropdownMiembroActivoSLista(ss);
+  _aplicarDropdownReaccionSLista(ss);
+  // FIX (12-sep-2026, pedido del usuario -- consolidado, sección 1 cierre [→ Contexto_Base_Web.md §02B076]
+  _aplicarDropdownWhatsappSLista(ss);
+  // FIX (09-sep-2026, pedido usuario): filtro nativo en fila 2 (nunca en
+  // la 1) -- ver _aplicarFiltroFila2() más arriba en este archivo.
+  _aplicarFiltroFila2(sh, 'S_Lista');
+  _aplicarFormatoMilesHoja_(sh, 3, SL_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
+  Logger.log('[Setup] S_Lista OK (' + totalCols + ' columnas, header 2 filas, filtro en fila 2)');
+}
+
+/**
+ * _setupCRLista(ss) [→ Contexto_Base_Web.md §02B077]
+ */
+function _setupCRLista(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.CR_LISTA);
+  var columnas = [
+    { label: 'Planificación, registro y modificación de cambio de rango', headers: [
+        'N°', 'Temporada', 'Semanas', 'Fecha', 'Hora', 'ID', 'Organizador',
+        'Tag_org', 'Clan', 'ClanTag', 'Tipo'
+    ] },
+    { label: 'Min_CR', grupos: [
+        { sub: 'Miembro',  subs: ['C1', 'C2', 'C3', 'C4'] },
+        { sub: 'Veterano', subs: ['C1', 'C2', 'C3', 'C4'] },
+        { sub: 'Colider',  subs: ['C1', 'C2', 'C3', 'C4'] }
+    ] },
+    { label: 'Ataques', grupos: [
+        { sub: 'Miembro',  subs: ['C1', 'C2', 'C3', 'C4'] },
+        { sub: 'Veterano', subs: ['C1', 'C2', 'C3', 'C4'] },
+        { sub: 'Colider',  subs: ['C1', 'C2', 'C3', 'C4'] }
+    ] },
+    { label: 'Otros requisitos', headers: [
+        'Barcos', 'Miembro activo', 'WhatsApp', 'Estado', 'Comentario'
+    ] }
+  ];
+  var totalCols = _aplicarHeaderTresFilas(sh, columnas);
+  _protegerSoloAdvertencia(sh);
+  _aplicarDropdownTipoCRLista(ss);
+  _aplicarDropdownEstadoCRLista(ss);
+  _aplicarFiltroFila3(sh, 'CR_Lista');
+  _aplicarFormatoMilesHoja_(sh, 4, CR_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
+  Logger.log('[Setup] CR_Lista OK (' + totalCols + ' columnas, header 3 filas, filtro en fila 3)');
 }
 
 /**
@@ -4428,115 +4518,6 @@ function _aplicarFiltroFila3(sh, nombreHoja) {
 }
 
 /**
- * _setupTLista(ss) [→ Contexto_Base_Web.md §02B066]
- */
-function _setupTLista(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_LISTA);
-  // FASE 2 (25-sep-2026, rediseño T_Lista -- ver docblock del objeto TL en [→ Contexto_Base_Web.md §02B067]
-  var columnas = [
-    { label: 'Planificación, registro y modificación de torneos', subs: [
-        // Orden nuevo (29-oct-2026, pedido de la usuaria); debe coincidir con TL en 26_Torneos_Core.gs
-        'N°', 'Temporada', 'Fecha', 'Hora', 'ID', 'Creación', 'Semanas',
-        'Tag_Tor', 'Tag_Tor_2', 'Nombre_Org', 'Nom_Multi_Org', 'Tag_org',
-        'Clan', 'ClanTag', 'Organizador_Fuente', 'Nombre', 'Tipo', 'Contraseña',
-        'Nivel_tope', 'Participantes', 'Capacidad', 'Modo_ID', 'Modo',
-        'Preparación', 'Duración', 'Premios', 'Estado'
-    ] },
-    { label: 'Min_T', subs: ['C1', 'C2', 'C3', 'C4'] },
-    { label: 'Ataques', subs: ['C1', 'C2', 'C3', 'C4'] },
-    { label: 'Otros requisitos', subs: [
-        // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §02B068]
-        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Descripción', 'Comentario', 'Link_app', 'Link_json', 'Link_json_2'
-    ] }
-  ];
-  var totalCols = _aplicarHeaderDosFilas(sh, columnas);
-  // FIX (31/08/2026, pedido del usuario — sugerencia #1 de la lista de [→ Contexto_Base_Web.md §02B069]
-  sh.getRange(2, TL.ID).setNote('No editar a mano. El ID se genera automáticamente al procesar el torneo (ver procesarTListaNuevasFilas(), 26_Torneos_Core.gs). Al agregar un torneo nuevo, dejar esta columna en blanco — igual que Tag_Tor, Contraseña, Organizador, Tag_org, Clan, ClanTag y Link_json.');
-  _protegerSoloAdvertencia(sh);
-  // Desplegable fijo de Estado ("Planificado"/"Realizado") — ver [→ Contexto_Base_Web.md §02B070]
-  _aplicarDropdownEstadoTLista(ss);
-  // FIX (08-sep-2026, corrección de desincronización): faltaban estas 2 [→ Contexto_Base_Web.md §02B071]
-  _aplicarDropdownMiembroActivoTLista(ss);
-  _aplicarDropdownReaccionTLista(ss);
-  // FIX (12-sep-2026, pedido del usuario -- consolidado, sección 1 cierre [→ Contexto_Base_Web.md §02B072]
-  _aplicarDropdownWhatsappTLista(ss);
-  // FIX (09-sep-2026, pedido usuario): filtro nativo en fila 2 (nunca en
-  // la 1) -- ver _aplicarFiltroFila2() más arriba en este archivo.
-  _aplicarFiltroFila2(sh, 'T_Lista');
-  _aplicarFormatoMilesHoja_(sh, 3, TL_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
-  Logger.log('[Setup] T_Lista OK (' + totalCols + ' columnas, header 2 filas, filtro en fila 2)');
-}
-
-/**
- * _setupSLista(ss) [→ Contexto_Base_Web.md §02B073]
- */
-function _setupSLista(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_LISTA);
-  var columnas = [
-    { label: 'Planificación, registro y modificación de Sorteos', subs: [
-        'N°', 'Temporada', 'Fecha', 'Hora', 'ID', 'ID_2', 'Organizador',
-        'Tag_org', 'Clan', 'ClanTag', 'Premios', 'Semanas'
-    ] },
-    { label: 'Min_S', subs: ['C1', 'C2', 'C3', 'C4', 'Delta'] },
-    { label: 'Ataques', subs: ['C1', 'C2', 'C3', 'C4'] },
-    { label: 'Torneos', subs: ['C1', 'C2', 'C3', 'C4'] },
-    { label: 'Otros requisitos', subs: [
-        // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §02B074]
-        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Estado', 'Comentario'
-    ] }
-  ];
-  var totalCols = _aplicarHeaderDosFilas(sh, columnas);
-  _protegerSoloAdvertencia(sh);
-  // PF109 (18-oct-2026): la columna Hora de S_Lista queda como hora sin fecha (antes nadie le ponía formato y aparecía «30/12/1899 20:00:00»). [→ Contexto_Base_Web.md §PF109]
-  _normalizarHoraSLista(sh);
-  // Desplegables fijo/dinámico — ver docblocks de las 4 funciones [→ Contexto_Base_Web.md §02B075]
-  _aplicarDropdownId2SLista(ss);
-  _aplicarDropdownEstadoSLista(ss);
-  _aplicarDropdownMiembroActivoSLista(ss);
-  _aplicarDropdownReaccionSLista(ss);
-  // FIX (12-sep-2026, pedido del usuario -- consolidado, sección 1 cierre [→ Contexto_Base_Web.md §02B076]
-  _aplicarDropdownWhatsappSLista(ss);
-  // FIX (09-sep-2026, pedido usuario): filtro nativo en fila 2 (nunca en
-  // la 1) -- ver _aplicarFiltroFila2() más arriba en este archivo.
-  _aplicarFiltroFila2(sh, 'S_Lista');
-  _aplicarFormatoMilesHoja_(sh, 3, SL_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
-  Logger.log('[Setup] S_Lista OK (' + totalCols + ' columnas, header 2 filas, filtro en fila 2)');
-}
-
-/**
- * _setupCRLista(ss) [→ Contexto_Base_Web.md §02B077]
- */
-function _setupCRLista(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.CR_LISTA);
-  var columnas = [
-    { label: 'Planificación, registro y modificación de cambio de rango', headers: [
-        'N°', 'Temporada', 'Semanas', 'Fecha', 'Hora', 'ID', 'Organizador',
-        'Tag_org', 'Clan', 'ClanTag', 'Tipo'
-    ] },
-    { label: 'Min_CR', grupos: [
-        { sub: 'Miembro',  subs: ['C1', 'C2', 'C3', 'C4'] },
-        { sub: 'Veterano', subs: ['C1', 'C2', 'C3', 'C4'] },
-        { sub: 'Colider',  subs: ['C1', 'C2', 'C3', 'C4'] }
-    ] },
-    { label: 'Ataques', grupos: [
-        { sub: 'Miembro',  subs: ['C1', 'C2', 'C3', 'C4'] },
-        { sub: 'Veterano', subs: ['C1', 'C2', 'C3', 'C4'] },
-        { sub: 'Colider',  subs: ['C1', 'C2', 'C3', 'C4'] }
-    ] },
-    { label: 'Otros requisitos', headers: [
-        'Barcos', 'Miembro activo', 'WhatsApp', 'Estado', 'Comentario'
-    ] }
-  ];
-  var totalCols = _aplicarHeaderTresFilas(sh, columnas);
-  _protegerSoloAdvertencia(sh);
-  _aplicarDropdownTipoCRLista(ss);
-  _aplicarDropdownEstadoCRLista(ss);
-  _aplicarFiltroFila3(sh, 'CR_Lista');
-  _aplicarFormatoMilesHoja_(sh, 4, CR_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
-  Logger.log('[Setup] CR_Lista OK (' + totalCols + ' columnas, header 3 filas, filtro en fila 3)');
-}
-
-/**
  * _aplicarDropdownTipoCRLista(ss) [→ Contexto_Base_Web.md §02B078]
  */
 function _aplicarDropdownTipoCRLista(ss) {
@@ -4576,6 +4557,8 @@ function _aplicarDropdownEstadoCRLista(ss) {
   }
 }
 
+// ----- Torneos y sorteos: asistencia, control y resoluciones -----
+
 /**
  * _setupTAsistencia(ss) [→ Contexto_Base_Web.md §02B080]
  */
@@ -4587,6 +4570,44 @@ function _setupTAsistencia(ss) {
   applyHeaderStyle(sh, headers.length);
   _protegerSoloAdvertencia(sh);
   Logger.log('[Setup] T_Asistencia OK');
+}
+
+/**
+ * _setupTControl(ss) [→ Contexto_Base_Web.md §02B084]
+ */
+function _setupTControl(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_CONTROL);
+  sh.clearContents();
+
+  var headers = ['N°', 'Tag', 'Nombre', 'Nom_Multi', 'Préstamo', 'ClanTag', 'Clan'];
+  var rangoHeaders = sh.getRange(3, 1, 1, headers.length);
+  rangoHeaders.setValues([headers])
+    .setBackground(CFG.COLORES.HEADER_BG)
+    .setFontColor(CFG.COLORES.HEADER_FG)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+  sh.setFrozenRows(3);
+
+  // Filas 1 y 2 (supercategoría "Torneos" y categorías "T_"&Temporada) se [→ Contexto_Base_Web.md §02B085]
+
+  _protegerSoloAdvertencia(sh);
+  Logger.log('[Setup] T_Control OK');
+}
+
+/**
+ * _setupTResoluciones(ss) [→ Contexto_Base_Web.md §02B086]
+ */
+function _setupTResoluciones(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_RESOLUCIONES);
+  var headers = ['IdTorneo', 'Tag', 'Nombre', 'Puesto_Original', 'Tipo_Resolucion',
+                  'Puesto_Final', 'Motivo', 'Registrado_Por', 'Fecha_Registro'];
+  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  applyHeaderStyle(sh, headers.length);
+  sh.getRange(1, TR.NOMBRE).setNote('Informativa. Se refresca sola desde el Directorio cada vez que se guarda una resolución — no editar a mano.');
+  sh.getRange(1, TR.PUESTO_ORIGINAL).setNote('El puesto que le tocaba por Victorias crudas, antes de esta resolución. Se calcula solo, no editar a mano.');
+  _protegerSoloAdvertencia(sh);
+  Logger.log('[Setup] T_Resoluciones OK');
 }
 
 /**
@@ -4645,52 +4666,64 @@ function _bordesDatosSAsistencia_(sh) {
   if (ultima >= 2) applyBorderCenter(sh.getRange(2, 1, ultima - 1, SA_TOTAL_COLS));
 }
 
-/**
- * PF231: se puede correr sola desde el editor de Apps Script (no recibe parámetros) para corregir los bordes de S_Asistencia sin ejecutar todo el setup.
- */
-function repararBordesSAsistencia() {
-  var sh = _getSs().getSheetByName(CFG.SHEETS.S_ASISTENCIA);
-  if (!sh) { Logger.log('[Setup] repararBordesSAsistencia: no existe la hoja ' + CFG.SHEETS.S_ASISTENCIA); return; }
-  _bordesDatosSAsistencia_(sh);
-  Logger.log('[Setup] Bordes de S_Asistencia corregidos (' + Math.max(0, sh.getLastRow() - 1) + ' filas, ' + SA_TOTAL_COLS + ' columnas).');
-}
+// ----- Hojas restantes (jugadores, enlaces, alertas, conflictos, grupo verificado) -----
 
 /**
- * _setupTControl(ss) [→ Contexto_Base_Web.md §02B084]
+ * _setupPlayers(ss) [→ Contexto_Base_Web.md §02B050]
  */
-function _setupTControl(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_CONTROL);
-  sh.clearContents();
-
-  var headers = ['N°', 'Tag', 'Nombre', 'Nom_Multi', 'Préstamo', 'ClanTag', 'Clan'];
-  var rangoHeaders = sh.getRange(3, 1, 1, headers.length);
-  rangoHeaders.setValues([headers])
-    .setBackground(CFG.COLORES.HEADER_BG)
-    .setFontColor(CFG.COLORES.HEADER_FG)
-    .setFontWeight('bold')
-    .setHorizontalAlignment('center')
-    .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
-  sh.setFrozenRows(3);
-
-  // Filas 1 y 2 (supercategoría "Torneos" y categorías "T_"&Temporada) se [→ Contexto_Base_Web.md §02B085]
-
-  _protegerSoloAdvertencia(sh);
-  Logger.log('[Setup] T_Control OK');
-}
-
-/**
- * _setupTResoluciones(ss) [→ Contexto_Base_Web.md §02B086]
- */
-function _setupTResoluciones(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_RESOLUCIONES);
-  var headers = ['IdTorneo', 'Tag', 'Nombre', 'Puesto_Original', 'Tipo_Resolucion',
-                  'Puesto_Final', 'Motivo', 'Registrado_Por', 'Fecha_Registro'];
-  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+function _setupPlayers(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.PLAYERS);
+  var headers = [
+    'N°','Tag','Nombre','Nom_Multi','Préstamo','Clan','ClanTag','Rango',
+    'Antigüedad','Nivel','Nivel2','Copas','Copas_max','Arena','V_Guerra',
+    'Victorias','Derrotas','Batallas','Racha',
+    'Camino de leyendas_Liga','Camino de leyendas_Trofeos','Camino de leyendas_Rango',
+    'Victorias de tres coronas','Max_victorias_desafíos','Torneos','Emotes','Banners',
+    'Cartas_desafíos','Cartas_torneos',
+    'Donaciones_r','Donaciones_d'
+  ];
+  if (sh.getLastRow() === 0 || sh.getRange(1,1).getValue() === '') {
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
   applyHeaderStyle(sh, headers.length);
-  sh.getRange(1, TR.NOMBRE).setNote('Informativa. Se refresca sola desde el Directorio cada vez que se guarda una resolución — no editar a mano.');
-  sh.getRange(1, TR.PUESTO_ORIGINAL).setNote('El puesto que le tocaba por Victorias crudas, antes de esta resolución. Se calcula solo, no editar a mano.');
-  _protegerSoloAdvertencia(sh);
-  Logger.log('[Setup] T_Resoluciones OK');
+  Logger.log('[Setup] Players OK (31 cols)');
+}
+
+/**
+ * _setupLinks(ss) [→ Contexto_Base_Web.md §02B051]
+ */
+function _setupLinks(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.LINKS);
+  var headers = [
+    'N°','Tag','Nombre','Nom_Multi','Préstamo','Clan','ClanTag','Rango',
+    'WSP','RoyaleAPI','Mazo','Mazo2','CWStats','Render'
+  ];
+  if (sh.getLastRow() === 0 || sh.getRange(1,1).getValue() === '') {
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
+  applyHeaderStyle(sh, headers.length);
+  Logger.log('[Setup] Links OK (14 cols)');
+}
+
+/**
+ * _setupAlertasHistorialGuerra(ss) [→ Contexto_Base_Web.md §02B012]
+ */
+function _setupAlertasHistorialGuerra(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA);
+  var encabezados = AHG_ENCABEZADOS; // 20_HistorialGuerraJugador.gs
+  sh.getRange(1, 1, 1, encabezados.length).setValues([encabezados]);
+  // FIX (23-ago-2026, pedido del usuario): mismo estilo que T_Lista — antes [→ Contexto_Base_Web.md §02B013]
+  applyHeaderStyle(sh, encabezados.length);
+
+  // Bordes grises + centrado sobre las filas de datos que ya existan (p.ej. [→ Contexto_Base_Web.md §02B014]
+  if (sh.getLastRow() >= 2) {
+    applyBorderCenter(sh.getRange(2, 1, sh.getLastRow() - 1, encabezados.length));
+  }
+
+  var opsEstado = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Pendiente', 'Resuelto'], true).setAllowInvalid(false).build();
+  // Rango amplio (hasta fila 2000) para que la validación ya cubra filas que [→ Contexto_Base_Web.md §02B015]
+  sh.getRange(2, AHG.ESTADO, 1999, 1).setDataValidation(opsEstado);
 }
 
 /**
@@ -4723,6 +4756,7 @@ function _setupGrupoVerificado(ss) {
   _protegerSoloAdvertencia(sh);
   Logger.log('[Setup] Grupo_Verificado OK');
 }
+
 
 // --- ARCHIVO: 03_Indice_Sheet.gs ---
 // 03_Indice_Sheet.gs
@@ -5159,7 +5193,30 @@ function _colIndiceFor(campo) {
 // clip de columnas, limpieza de hojas obsoletas. Invocado principalmente desde runFormato() en 00_Main.gs.
 // ==============================================================================
 
-// ----- Funciones manuales / punto de entrada -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 29-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Formato general de las hojas
+//    - Anchos de columna: autoajustar, guardar y restaurar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Columna Jugador (recorte y ocultamiento)
+//    - Encabezados, tablas, filtros y bordes
+//    - Limpieza de hojas obsoletas (las llama 00_Main.gs)
+//    - Anchos de columna: ayudas
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
+// ANCHOS DE COLUMNA POR NOMBRE DE ENCABEZADO (pedido usuario, esta corrida) [→ Contexto_Base_Web.md §04B032]
+var ANCHOS_COLUMNAS_ARCHIVO = 'Anchos_Columnas_Fijos.json';
+
+// EXCEPCIÓN — hoja "Calendario", columnas B..J (pedido usuario, 16-ago-2026). [→ Contexto_Base_Web.md §04B033]
+var COL_INICIO_ANCHOS_CALENDARIO = 2;  // B
+
+var COL_FIN_ANCHOS_CALENDARIO    = 10; // J
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Formato general de las hojas -----
 
 // _setupCards()/_setupCards2() — ELIMINADAS (06-ago-2026). [→ Contexto_Base_Web.md §04B001]
 
@@ -5274,454 +5331,6 @@ function aplicarFormatoGlobal() {
   Logger.log('[Formato] aplicarFormatoGlobal completado exitosamente.');
 }
 
-// ----- Funciones internas / helpers -----
-
-/**
- * _aplicarClipColumnaJugador() [→ Contexto_Base_Web.md §04B007]
- */
-/**
- * _hojasConColumnaJugador() [→ Contexto_Base_Web.md §04B008]
- */
-function _hojasConColumnaJugador() {
-  return [
-    { name: CFG.SHEETS.DIRECTORIO,      col: DC.JUGADOR },
-    // Administradores (12/07/2026): ya no tiene columna "Jugador" — pasó a [→ Contexto_Base_Web.md §04B009]
-    { name: CFG.SHEETS.INACTIVOS,       col: 4 },
-    // Vetados (17-ago-2026): la columna 4 dejó de ser "Jugador" y pasó a [→ Contexto_Base_Web.md §04B010]
-  ];
-}
-
-function _aplicarClipColumnaJugador() {
-  var ss = _getSs();
-  var sheetConfigs = _hojasConColumnaJugador();
-  for (var i = 0; i < sheetConfigs.length; i++) {
-    var cfg = sheetConfigs[i];
-    var sh  = ss.getSheetByName(cfg.name);
-    if (!sh) continue;
-    var lastRow = sh.getLastRow();
-    if (lastRow < 2) continue;
-    try {
-      sh.getRange(2, cfg.col, lastRow - 1, 1)
-        .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
-    } catch(e) {
-      Logger.log('[Formato] Error CLIP ' + cfg.name + ': ' + e.message);
-    }
-  }
-  Logger.log('[Formato] CLIP aplicado a columna Jugador en todas las hojas.');
-  // La columna "Jugador" se oculta en todas las hojas (es un valor calculado
-  // de apoyo interno, no necesita verse).
-  _ocultarColumnaJugador();
-}
-
-/**
- * _ocultarColumnaJugador() [→ Contexto_Base_Web.md §04B011]
- */
-function _ocultarColumnaJugador() {
-  var ss = _getSs();
-  var sheetConfigs = _hojasConColumnaJugador();
-  for (var i = 0; i < sheetConfigs.length; i++) {
-    var cfg = sheetConfigs[i];
-    var sh  = ss.getSheetByName(cfg.name);
-    if (!sh) continue;
-    try {
-      sh.hideColumns(cfg.col);
-    } catch(e) {
-      Logger.log('[Formato] Error ocultando columna Jugador en ' + cfg.name + ': ' + e.message);
-    }
-  }
-  Logger.log('[Formato] Columna Jugador oculta en todas las hojas.');
-}
-
-/**
- * _aplicarSubindiceEncabezados(sh) [→ Contexto_Base_Web.md §04B012]
- */
-function _aplicarSubindiceEncabezados(sh) {
-  var lastCol = sh.getLastColumn();
-  if (lastCol < 1) return;
-  var headerRow = sh.getRange(1, 1, 1, lastCol).getValues()[0];
-  for (var c = 0; c < headerRow.length; c++) {
-    var v = String(headerRow[c] || '').trim();
-    var match = v.match(/^N(\d)°$/);
-    if (!match) continue;
-    var digit = match[1];
-    var cell = sh.getRange(1, c + 1);
-    try {
-      var rt = SpreadsheetApp.newRichTextValue()
-        .setText('N' + digit + '°')
-        .setTextStyle(0, 1, SpreadsheetApp.newTextStyle().build())         // 'N'
-        .setTextStyle(1, 2, SpreadsheetApp.newTextStyle()                  // digit en subíndice
-          .setFontSize(7)
-          .setBaselineOffset(SpreadsheetApp.TextBaselineOffset.SUBSCRIPT)
-          .build())
-        .setTextStyle(2, 3, SpreadsheetApp.newTextStyle().build())         // '°'
-        .build();
-      cell.setRichTextValue(rt);
-    } catch(e) {
-      // Fallback: dejar el texto sin formato si RichText falla
-    }
-  }
-}
-
-/**
- * _limpiarBordesFilasVacias() [→ Contexto_Base_Web.md §04B013]
- */
-function _limpiarBordesFilasVacias() {
-  var ss = _getSs();
-  var sheetNames = Object.values(CFG.SHEETS);
-  for (var i = 0; i < sheetNames.length; i++) {
-    var shName = sheetNames[i];
-    if (shName === CFG.SHEETS.CALENDARIO) continue;
-    var sh = ss.getSheetByName(shName);
-    if (!sh) continue;
-    var lastRow = sh.getLastRow();
-    var maxRows = sh.getMaxRows();
-    var lastCol = sh.getLastColumn() || 1;
-    if (maxRows > lastRow && lastRow >= 1) {
-      try {
-        sh.getRange(lastRow + 1, 1, maxRows - lastRow, lastCol)
-          .setBorder(false, false, false, false, false, false);
-      } catch(e) {}
-    }
-  }
-  Logger.log('[Formato] Bordes en filas vacías limpiados.');
-}
-
-function _crearTabla(sh, headerRow, dataEndRow, numCols, tableName) {
-  try {
-    if (dataEndRow < headerRow + 1) return;
-    var range = sh.getRange(headerRow, 1, dataEndRow - headerRow + 1, numCols);
-    if (sh.getFilter()) { sh.getFilter().remove(); }
-    range.createFilter();
-    Logger.log('[Tabla] Filtro aplicado en: ' + tableName);
-  } catch(e) {
-    Logger.log('[Tabla] Error creando filtro en ' + tableName + ': ' + e.message);
-  }
-}
-
-/**
- * _repararMergesFiltroHeader(sh, filaHeader) [→ Contexto_Base_Web.md §04B014]
- */
-function _repararMergesFiltroHeader(sh, filaHeader) {
-  var lastCol = sh.getLastColumn();
-  if (lastCol < 1 || filaHeader < 2) return;
-  var headerRange = sh.getRange(1, 1, filaHeader, lastCol);
-  var merges = headerRange.getMergedRanges();
-  var corregidas = [];
-
-  for (var i = 0; i < merges.length; i++) {
-    var m = merges[i];
-    var r0 = m.getRow();
-    var rEnd = r0 + m.getNumRows() - 1;
-    if (r0 <= filaHeader - 1 && rEnd >= filaHeader) {
-      var c0   = m.getColumn();
-      var numC = m.getNumColumns();
-      var valor = m.getValue();
-      var fmt   = m.getBackground();
-      var fontColor = m.getFontColor();
-      var fontWeight = m.getFontWeight();
-      var hAlign = m.getHorizontalAlignment();
-      var vAlign = m.getVerticalAlignment();
-
-      m.breakApart();
-
-      // La porción de arriba (fila inicio..filaHeader-1) queda EN BLANCO —
-      // el rótulo ya no vive aquí, ver comentario de la función.
-      var arriba = sh.getRange(r0, c0, filaHeader - r0, numC);
-      if (arriba.getNumRows() > 1) arriba.merge();
-      arriba.setValue('')
-        .setBackground(fmt)
-        .setFontColor(fontColor)
-        .setFontWeight(fontWeight)
-        .setHorizontalAlignment(hAlign)
-        .setVerticalAlignment(vAlign);
-
-      // filaHeader queda como celda propia CON el rótulo — es la fila que
-      // usa el desplegable del filtro y donde viven los demás encabezados.
-      sh.getRange(filaHeader, c0, 1, numC).setValue(valor)
-        .setBackground(fmt)
-        .setFontColor(fontColor)
-        .setFontWeight(fontWeight)
-        .setHorizontalAlignment(hAlign)
-        .setVerticalAlignment(vAlign);
-
-      corregidas.push(sh.getRange(filaHeader, c0).getA1Notation() + ' ("' + valor + '")');
-    }
-  }
-
-  if (corregidas.length > 0) {
-    Logger.log('[Filtros] ' + sh.getName() + ': merges de encabezado partidos en fila ' + filaHeader + ' para permitir el filtro: ' + corregidas.join(', '));
-  }
-}
-
-/**
- * _aplicarFiltroEnFilaHeader(sh, nombreHoja) [→ Contexto_Base_Web.md §04B015]
- */
-function _aplicarFiltroEnFilaHeader(sh, nombreHoja) {
-  var filaHeader = sh.getFrozenRows() || 1;
-  var lastRow = sh.getLastRow();
-  var lastCol = sh.getLastColumn();
-  if (lastCol < 1) return;
-
-  // FIX (18-sep-2026, pedido usuario -- "las hojas Conflictos, T_Resoluciones, [→ Contexto_Base_Web.md §04B016]
-  var ultimaFilaFiltro = Math.max(lastRow, filaHeader + 1);
-  if (ultimaFilaFiltro > sh.getMaxRows()) ultimaFilaFiltro = sh.getMaxRows();
-  if (ultimaFilaFiltro < filaHeader) return; // la hoja ni siquiera tiene la fila de encabezado
-  var numFilasFiltro = ultimaFilaFiltro - filaHeader + 1;
-
-  if (filaHeader > 1) {
-    // Antes de crear el filtro, partir cualquier celda combinada de [→ Contexto_Base_Web.md §04B017]
-    _repararMergesFiltroHeader(sh, filaHeader);
-  }
-
-  try {
-    if (sh.getFilter()) { sh.getFilter().remove(); }
-    sh.getRange(filaHeader, 1, numFilasFiltro, lastCol).createFilter();
-    Logger.log('[Filtros] Filtro aplicado en fila ' + filaHeader + ': ' + nombreHoja);
-  } catch (e) {
-    Logger.log('[Filtros] Error al recrear el filtro en ' + nombreHoja + ' (fila ' + filaHeader + ', intento 1): ' + e.message);
-
-    if (filaHeader > 1) {
-      // Reintento de respaldo: rompe CUALQUIER merge residual que quede [→ Contexto_Base_Web.md §04B018]
-      try {
-        var filaHeaderRange = sh.getRange(filaHeader, 1, 1, lastCol);
-        var mergesResiduales = filaHeaderRange.getMergedRanges();
-        for (var mr = 0; mr < mergesResiduales.length; mr++) {
-          try { mergesResiduales[mr].breakApart(); } catch (eBreak) {}
-        }
-        sh.getRange(filaHeader, 1, numFilasFiltro, lastCol).createFilter();
-        Logger.log('[Filtros] ' + nombreHoja + ': filtro creado en el segundo intento, tras romper merge(s) residual(es) en la fila ' + filaHeader + '.');
-      } catch (e2) {
-        Logger.log('[Filtros] Error al recrear el filtro en ' + nombreHoja + ' (fila ' + filaHeader + ', intento 2), se abandona por esta corrida: ' + e2.message);
-      }
-    }
-  }
-}
-
-/**
- * _restaurarFiltros() [→ Contexto_Base_Web.md §04B019]
- */
-function _restaurarFiltros() {
-  var ss = _getSs();
-
-  // GENERALIZADO (18-sep-2026, pedido usuario -- "no me refería solo a esas [→ Contexto_Base_Web.md §04B020]
-  var HOJAS_SIN_TABLA_ESTANDAR = [CFG.SHEETS.CALENDARIO, 'Terreno_Limpio'];
-
-  // Recorre TODAS las hojas del spreadsheet (no una lista fija), así que [→ Contexto_Base_Web.md §04B021]
-  var allSheets = ss.getSheets();
-  for (var s = 0; s < allSheets.length; s++) {
-    var sh = allSheets[s];
-    var shName = sh.getName();
-    if (HOJAS_SIN_TABLA_ESTANDAR.indexOf(shName) >= 0) continue;
-    _aplicarFiltroEnFilaHeader(sh, shName);
-  }
-
-  // Columnas congeladas: reafirmación defensiva por si alguna corrida [→ Contexto_Base_Web.md §04B022]
-  try { var shCtrl = ss.getSheetByName(CFG.SHEETS.CONTROL); if (shCtrl) shCtrl.setFrozenColumns(3); } catch(e) {}
-  try { var shCtrl2 = ss.getSheetByName('Control_2'); if (shCtrl2) shCtrl2.setFrozenColumns(3); } catch(e) {}
-  try { var shNuevos = ss.getSheetByName(CFG.SHEETS.NUEVOS); if (shNuevos) shNuevos.setFrozenColumns(3); } catch(e) {}
-  try { var shTControl = ss.getSheetByName(CFG.SHEETS.T_CONTROL); if (shTControl) shTControl.setFrozenColumns(7); } catch(e) {} // 7 = TC_FIXED_COLS
-
-  // Freeze 3 columnas en hojas cuya fila 1 empieza con N° | Tag | Nombre
-  var hojasConTagNombre = [
-    CFG.SHEETS.DIRECTORIO, CFG.SHEETS.ADMINISTRADORES,
-    CFG.SHEETS.GUERRA, CFG.SHEETS.GUERRA_LOGS,
-    CFG.SHEETS.HISTORIAL, CFG.SHEETS.PENDIENTES,
-    CFG.SHEETS.INACTIVOS, CFG.SHEETS.VETADOS,
-    CFG.SHEETS.MULTICUENTAS, CFG.SHEETS.COMENTARIOS,
-  ];
-  for (var hi = 0; hi < hojasConTagNombre.length; hi++) {
-    var shFrz = ss.getSheetByName(hojasConTagNombre[hi]);
-    if (!shFrz) continue;
-    var h1 = shFrz.getRange(1, 1, 1, Math.min(shFrz.getLastColumn(), 3)).getValues()[0];
-    if (String(h1[0]).trim() === 'N°' &&
-        String(h1[1]).trim() === 'Tag' &&
-        String(h1[2]).trim() === 'Nombre') {
-      shFrz.setFrozenColumns(3);
-    }
-  }
-
-  Logger.log('[Filtros] _restaurarFiltros completado.');
-
-  // La columna "Jugador" debe permanecer oculta en todas las hojas; si alguna [→ Contexto_Base_Web.md §04B023]
-  _ocultarColumnaJugador();
-
-  // DEFENSIVO (30/06/2026): la columna E "Movimiento" de Historial estuvo [→ Contexto_Base_Web.md §04B024]
-  try {
-    var shHist = ss.getSheetByName(CFG.SHEETS.HISTORIAL);
-    if (shHist && shHist.isColumnHiddenByUser(5)) {
-      shHist.showColumns(5);
-      Logger.log('[Filtros] Columna "Movimiento" (col 5) de Historial estaba oculta — se restauró visible.');
-    }
-  } catch(e) {
-    Logger.log('[Filtros] Error verificando visibilidad de Movimiento en Historial: ' + e.message);
-  }
-}
-
-function _aplicarTablasYGridlines() {
-  var ss = _getSs();
-  Logger.log('[Tablas] Iniciando _aplicarTablasYGridlines...');
-
-  // 1. Desactivar cuadrículas en todas las hojas (costoso: solo en runAll)
-  var allSheets = ss.getSheets();
-  for (var i = 0; i < allSheets.length; i++) {
-    _desactivarGridlines(allSheets[i]);
-  }
-
-  // 2. Filtros nativos (reutiliza la misma lógica que corre en cada runUpdate)
-  _restaurarFiltros();
-
-  Logger.log('[Tablas] _aplicarTablasYGridlines completado.');
-}
-
-function _limpiarHojaTerrenoLimpio() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName('Terreno_Limpio');
-
-  if (sh) {
-    if (ss.getSheets().length > 1) {
-      try {
-        ss.deleteSheet(sh);
-        Logger.log('[Setup] Hoja "Terreno_Limpio" eliminada con éxito.');
-      } catch(e) {
-        Logger.log('[Setup] No se pudo eliminar "Terreno_Limpio": ' + e.message);
-      }
-    } else {
-      Logger.log('[Setup] "Terreno_Limpio" es la única hoja, no se puede eliminar.');
-    }
-  }
-}
-
-/**
- * _renombrarHojasHistorialLegacy() [→ Contexto_Base_Web.md §04B025]
- */
-function _renombrarHojasHistorialLegacy() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  var migraciones = [
-    { viejo: 'Ascensos',  nuevo: CFG.SHEETS.ASCENSOS },
-    { viejo: 'Historial', nuevo: CFG.SHEETS.HISTORIAL }
-  ];
-
-  for (var i = 0; i < migraciones.length; i++) {
-    var viejo = migraciones[i].viejo;
-    var nuevo = migraciones[i].nuevo;
-    if (viejo === nuevo) continue; // sin cambio configurado
-
-    if (ss.getSheetByName(nuevo)) continue; // la pestaña nueva ya existe, no tocar nada
-
-    var shViejo = ss.getSheetByName(viejo);
-    if (!shViejo) continue; // no había pestaña vieja que migrar
-
-    try {
-      shViejo.setName(nuevo);
-      Logger.log('[Setup] Pestaña renombrada: "' + viejo + '" -> "' + nuevo + '".');
-    } catch (e) {
-      Logger.log('[Setup] No se pudo renombrar "' + viejo + '" a "' + nuevo + '": ' + e.message);
-    }
-  }
-}
-
-/**
- * _limpiarHojasCardsObsoletas() [→ Contexto_Base_Web.md §04B026]
- */
-function _limpiarHojasCardsObsoletas() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var nombres = [CFG.SHEETS.CARDS, CFG.SHEETS.CARDS_2];
-
-  for (var i = 0; i < nombres.length; i++) {
-    var nombre = nombres[i];
-    var sh = ss.getSheetByName(nombre);
-    if (!sh) continue;
-
-    try {
-      _respaldarListaHojasCSV(ss, [nombre], true);
-    } catch (e) {
-      Logger.log('[Setup] No se pudo respaldar "' + nombre + '" antes de eliminarla: ' + e.message);
-    }
-
-    if (ss.getSheets().length > 1) {
-      try {
-        ss.deleteSheet(sh);
-        Logger.log('[Setup] Hoja "' + nombre + '" (obsoleta, ahora vive solo en CSV) eliminada con éxito.');
-      } catch (e) {
-        Logger.log('[Setup] No se pudo eliminar "' + nombre + '": ' + e.message);
-      }
-    } else {
-      Logger.log('[Setup] "' + nombre + '" es la única hoja, no se puede eliminar.');
-    }
-  }
-}
-
-/**
- * _limpiarHojaTRequisitosObsoleta() [→ Contexto_Base_Web.md §04B027]
- */
-function _limpiarHojaTRequisitosObsoleta() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName('T_Requisitos');
-
-  if (sh) {
-    if (ss.getSheets().length > 1) {
-      try {
-        ss.deleteSheet(sh);
-        Logger.log('[Setup] Hoja "T_Requisitos" (obsoleta, reemplazada por CR_Lista) eliminada con éxito.');
-      } catch(e) {
-        Logger.log('[Setup] No se pudo eliminar "T_Requisitos": ' + e.message);
-      }
-    } else {
-      Logger.log('[Setup] "T_Requisitos" es la única hoja, no se puede eliminar.');
-    }
-  }
-}
-
-/**
- * _limpiarHojaMenuObsoleta() [→ Contexto_Base_Web.md §04B028]
- */
-function _limpiarHojaMenuObsoleta() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName('Menú');
-
-  if (!_leerIndiceGuardado()) {
-    if (sh) {
-      Logger.log('[Setup] Hoja "Menú" (obsoleta) NO se elimina todavía: aún no existe el índice de contenido guardado. Se reintenta en la próxima corrida (o ejecutar inicializarIndiceContenido()).');
-    }
-    return;
-  }
-
-  if (sh) {
-    if (ss.getSheets().length > 1) {
-      try {
-        ss.deleteSheet(sh);
-        Logger.log('[Setup] Hoja "Menú" (obsoleta, reemplazada por el índice de contenido) eliminada con éxito.');
-      } catch(e) {
-        Logger.log('[Setup] No se pudo eliminar "Menú": ' + e.message);
-      }
-    } else {
-      Logger.log('[Setup] "Menú" es la única hoja, no se puede eliminar.');
-    }
-  }
-
-  _enviarRespaldosMenuAPapelera();
-}
-
-/**
- * _enviarRespaldosMenuAPapelera() [→ Contexto_Base_Web.md §04B029]
- */
-function _enviarRespaldosMenuAPapelera() {
-  try {
-    var folder = _getCsvFolder();
-    var nombres = ['Backup_Menu.csv', 'Backup_Menú.csv'];
-    for (var i = 0; i < nombres.length; i++) {
-      var files = folder.getFilesByName(nombres[i]);
-      while (files.hasNext()) {
-        files.next().setTrashed(true);
-        Logger.log('[Setup] Respaldo obsoleto "' + nombres[i] + '" enviado a la papelera de Drive.');
-      }
-    }
-  } catch (e) {
-    Logger.log('[Setup] No se pudieron limpiar los respaldos de Menú: ' + e.message);
-  }
-}
-
 /**
  * aplicarClipGlobal() [→ Contexto_Base_Web.md §04B030]
  */
@@ -5766,18 +5375,8 @@ function aplicarClipGlobal() {
 
   Logger.log('[CLIP] Ajuste CLIP aplicado a todo el documento (excepto Mensajes!Contenido, que se mantiene en Ajustar/WRAP).');
 }
-// ----- Variables y constantes -----
 
-// ANCHOS DE COLUMNA POR NOMBRE DE ENCABEZADO (pedido usuario, esta corrida) [→ Contexto_Base_Web.md §04B032]
-
-var ANCHOS_COLUMNAS_ARCHIVO = 'Anchos_Columnas_Fijos.json';
-
-// EXCEPCIÓN — hoja "Calendario", columnas B..J (pedido usuario, 16-ago-2026). [→ Contexto_Base_Web.md §04B033]
-var COL_INICIO_ANCHOS_CALENDARIO = 2;  // B
-
-var COL_FIN_ANCHOS_CALENDARIO    = 10; // J
-// ----- Funciones manuales / punto de entrada -----
-
+// ----- Anchos de columna: autoajustar, guardar y restaurar -----
 
 // Fase 18 (17/07/2026): autoajuste de ancho de columna. [→ Contexto_Base_Web.md §04B034]
 
@@ -6129,7 +5728,496 @@ function restaurarAnchosColumnasFijos(nombreHoja) {
              ', columnas restauradas: ' + columnasRestauradas + '.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Columna Jugador (recorte y ocultamiento) -----
+
+function _aplicarClipColumnaJugador() {
+  var ss = _getSs();
+  var sheetConfigs = _hojasConColumnaJugador();
+  for (var i = 0; i < sheetConfigs.length; i++) {
+    var cfg = sheetConfigs[i];
+    var sh  = ss.getSheetByName(cfg.name);
+    if (!sh) continue;
+    var lastRow = sh.getLastRow();
+    if (lastRow < 2) continue;
+    try {
+      sh.getRange(2, cfg.col, lastRow - 1, 1)
+        .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
+    } catch(e) {
+      Logger.log('[Formato] Error CLIP ' + cfg.name + ': ' + e.message);
+    }
+  }
+  Logger.log('[Formato] CLIP aplicado a columna Jugador en todas las hojas.');
+  // La columna "Jugador" se oculta en todas las hojas (es un valor calculado
+  // de apoyo interno, no necesita verse).
+  _ocultarColumnaJugador();
+}
+
+/**
+ * _aplicarClipColumnaJugador() [→ Contexto_Base_Web.md §04B007]
+ */
+/**
+ * _hojasConColumnaJugador() [→ Contexto_Base_Web.md §04B008]
+ */
+function _hojasConColumnaJugador() {
+  return [
+    { name: CFG.SHEETS.DIRECTORIO,      col: DC.JUGADOR },
+    // Administradores (12/07/2026): ya no tiene columna "Jugador" — pasó a [→ Contexto_Base_Web.md §04B009]
+    { name: CFG.SHEETS.INACTIVOS,       col: 4 },
+    // Vetados (17-ago-2026): la columna 4 dejó de ser "Jugador" y pasó a [→ Contexto_Base_Web.md §04B010]
+  ];
+}
+
+/**
+ * _ocultarColumnaJugador() [→ Contexto_Base_Web.md §04B011]
+ */
+function _ocultarColumnaJugador() {
+  var ss = _getSs();
+  var sheetConfigs = _hojasConColumnaJugador();
+  for (var i = 0; i < sheetConfigs.length; i++) {
+    var cfg = sheetConfigs[i];
+    var sh  = ss.getSheetByName(cfg.name);
+    if (!sh) continue;
+    try {
+      sh.hideColumns(cfg.col);
+    } catch(e) {
+      Logger.log('[Formato] Error ocultando columna Jugador en ' + cfg.name + ': ' + e.message);
+    }
+  }
+  Logger.log('[Formato] Columna Jugador oculta en todas las hojas.');
+}
+
+// ----- Encabezados, tablas, filtros y bordes -----
+
+/**
+ * _aplicarSubindiceEncabezados(sh) [→ Contexto_Base_Web.md §04B012]
+ */
+function _aplicarSubindiceEncabezados(sh) {
+  var lastCol = sh.getLastColumn();
+  if (lastCol < 1) return;
+  var headerRow = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+  for (var c = 0; c < headerRow.length; c++) {
+    var v = String(headerRow[c] || '').trim();
+    var match = v.match(/^N(\d)°$/);
+    if (!match) continue;
+    var digit = match[1];
+    var cell = sh.getRange(1, c + 1);
+    try {
+      var rt = SpreadsheetApp.newRichTextValue()
+        .setText('N' + digit + '°')
+        .setTextStyle(0, 1, SpreadsheetApp.newTextStyle().build())         // 'N'
+        .setTextStyle(1, 2, SpreadsheetApp.newTextStyle()                  // digit en subíndice
+          .setFontSize(7)
+          .setBaselineOffset(SpreadsheetApp.TextBaselineOffset.SUBSCRIPT)
+          .build())
+        .setTextStyle(2, 3, SpreadsheetApp.newTextStyle().build())         // '°'
+        .build();
+      cell.setRichTextValue(rt);
+    } catch(e) {
+      // Fallback: dejar el texto sin formato si RichText falla
+    }
+  }
+}
+
+function _crearTabla(sh, headerRow, dataEndRow, numCols, tableName) {
+  try {
+    if (dataEndRow < headerRow + 1) return;
+    var range = sh.getRange(headerRow, 1, dataEndRow - headerRow + 1, numCols);
+    if (sh.getFilter()) { sh.getFilter().remove(); }
+    range.createFilter();
+    Logger.log('[Tabla] Filtro aplicado en: ' + tableName);
+  } catch(e) {
+    Logger.log('[Tabla] Error creando filtro en ' + tableName + ': ' + e.message);
+  }
+}
+
+function _aplicarTablasYGridlines() {
+  var ss = _getSs();
+  Logger.log('[Tablas] Iniciando _aplicarTablasYGridlines...');
+
+  // 1. Desactivar cuadrículas en todas las hojas (costoso: solo en runAll)
+  var allSheets = ss.getSheets();
+  for (var i = 0; i < allSheets.length; i++) {
+    _desactivarGridlines(allSheets[i]);
+  }
+
+  // 2. Filtros nativos (reutiliza la misma lógica que corre en cada runUpdate)
+  _restaurarFiltros();
+
+  Logger.log('[Tablas] _aplicarTablasYGridlines completado.');
+}
+
+/**
+ * _restaurarFiltros() [→ Contexto_Base_Web.md §04B019]
+ */
+function _restaurarFiltros() {
+  var ss = _getSs();
+
+  // GENERALIZADO (18-sep-2026, pedido usuario -- "no me refería solo a esas [→ Contexto_Base_Web.md §04B020]
+  var HOJAS_SIN_TABLA_ESTANDAR = [CFG.SHEETS.CALENDARIO, 'Terreno_Limpio'];
+
+  // Recorre TODAS las hojas del spreadsheet (no una lista fija), así que [→ Contexto_Base_Web.md §04B021]
+  var allSheets = ss.getSheets();
+  for (var s = 0; s < allSheets.length; s++) {
+    var sh = allSheets[s];
+    var shName = sh.getName();
+    if (HOJAS_SIN_TABLA_ESTANDAR.indexOf(shName) >= 0) continue;
+    _aplicarFiltroEnFilaHeader(sh, shName);
+  }
+
+  // Columnas congeladas: reafirmación defensiva por si alguna corrida [→ Contexto_Base_Web.md §04B022]
+  try { var shCtrl = ss.getSheetByName(CFG.SHEETS.CONTROL); if (shCtrl) shCtrl.setFrozenColumns(3); } catch(e) {}
+  try { var shCtrl2 = ss.getSheetByName('Control_2'); if (shCtrl2) shCtrl2.setFrozenColumns(3); } catch(e) {}
+  try { var shNuevos = ss.getSheetByName(CFG.SHEETS.NUEVOS); if (shNuevos) shNuevos.setFrozenColumns(3); } catch(e) {}
+  try { var shTControl = ss.getSheetByName(CFG.SHEETS.T_CONTROL); if (shTControl) shTControl.setFrozenColumns(7); } catch(e) {} // 7 = TC_FIXED_COLS
+
+  // Freeze 3 columnas en hojas cuya fila 1 empieza con N° | Tag | Nombre
+  var hojasConTagNombre = [
+    CFG.SHEETS.DIRECTORIO, CFG.SHEETS.ADMINISTRADORES,
+    CFG.SHEETS.GUERRA, CFG.SHEETS.GUERRA_LOGS,
+    CFG.SHEETS.HISTORIAL, CFG.SHEETS.PENDIENTES,
+    CFG.SHEETS.INACTIVOS, CFG.SHEETS.VETADOS,
+    CFG.SHEETS.MULTICUENTAS, CFG.SHEETS.COMENTARIOS,
+  ];
+  for (var hi = 0; hi < hojasConTagNombre.length; hi++) {
+    var shFrz = ss.getSheetByName(hojasConTagNombre[hi]);
+    if (!shFrz) continue;
+    var h1 = shFrz.getRange(1, 1, 1, Math.min(shFrz.getLastColumn(), 3)).getValues()[0];
+    if (String(h1[0]).trim() === 'N°' &&
+        String(h1[1]).trim() === 'Tag' &&
+        String(h1[2]).trim() === 'Nombre') {
+      shFrz.setFrozenColumns(3);
+    }
+  }
+
+  Logger.log('[Filtros] _restaurarFiltros completado.');
+
+  // La columna "Jugador" debe permanecer oculta en todas las hojas; si alguna [→ Contexto_Base_Web.md §04B023]
+  _ocultarColumnaJugador();
+
+  // DEFENSIVO (30/06/2026): la columna E "Movimiento" de Historial estuvo [→ Contexto_Base_Web.md §04B024]
+  try {
+    var shHist = ss.getSheetByName(CFG.SHEETS.HISTORIAL);
+    if (shHist && shHist.isColumnHiddenByUser(5)) {
+      shHist.showColumns(5);
+      Logger.log('[Filtros] Columna "Movimiento" (col 5) de Historial estaba oculta — se restauró visible.');
+    }
+  } catch(e) {
+    Logger.log('[Filtros] Error verificando visibilidad de Movimiento en Historial: ' + e.message);
+  }
+}
+
+/**
+ * _aplicarFiltroEnFilaHeader(sh, nombreHoja) [→ Contexto_Base_Web.md §04B015]
+ */
+function _aplicarFiltroEnFilaHeader(sh, nombreHoja) {
+  var filaHeader = sh.getFrozenRows() || 1;
+  var lastRow = sh.getLastRow();
+  var lastCol = sh.getLastColumn();
+  if (lastCol < 1) return;
+
+  // FIX (18-sep-2026, pedido usuario -- "las hojas Conflictos, T_Resoluciones, [→ Contexto_Base_Web.md §04B016]
+  var ultimaFilaFiltro = Math.max(lastRow, filaHeader + 1);
+  if (ultimaFilaFiltro > sh.getMaxRows()) ultimaFilaFiltro = sh.getMaxRows();
+  if (ultimaFilaFiltro < filaHeader) return; // la hoja ni siquiera tiene la fila de encabezado
+  var numFilasFiltro = ultimaFilaFiltro - filaHeader + 1;
+
+  if (filaHeader > 1) {
+    // Antes de crear el filtro, partir cualquier celda combinada de [→ Contexto_Base_Web.md §04B017]
+    _repararMergesFiltroHeader(sh, filaHeader);
+  }
+
+  try {
+    if (sh.getFilter()) { sh.getFilter().remove(); }
+    sh.getRange(filaHeader, 1, numFilasFiltro, lastCol).createFilter();
+    Logger.log('[Filtros] Filtro aplicado en fila ' + filaHeader + ': ' + nombreHoja);
+  } catch (e) {
+    Logger.log('[Filtros] Error al recrear el filtro en ' + nombreHoja + ' (fila ' + filaHeader + ', intento 1): ' + e.message);
+
+    if (filaHeader > 1) {
+      // Reintento de respaldo: rompe CUALQUIER merge residual que quede [→ Contexto_Base_Web.md §04B018]
+      try {
+        var filaHeaderRange = sh.getRange(filaHeader, 1, 1, lastCol);
+        var mergesResiduales = filaHeaderRange.getMergedRanges();
+        for (var mr = 0; mr < mergesResiduales.length; mr++) {
+          try { mergesResiduales[mr].breakApart(); } catch (eBreak) {}
+        }
+        sh.getRange(filaHeader, 1, numFilasFiltro, lastCol).createFilter();
+        Logger.log('[Filtros] ' + nombreHoja + ': filtro creado en el segundo intento, tras romper merge(s) residual(es) en la fila ' + filaHeader + '.');
+      } catch (e2) {
+        Logger.log('[Filtros] Error al recrear el filtro en ' + nombreHoja + ' (fila ' + filaHeader + ', intento 2), se abandona por esta corrida: ' + e2.message);
+      }
+    }
+  }
+}
+
+/**
+ * _repararMergesFiltroHeader(sh, filaHeader) [→ Contexto_Base_Web.md §04B014]
+ */
+function _repararMergesFiltroHeader(sh, filaHeader) {
+  var lastCol = sh.getLastColumn();
+  if (lastCol < 1 || filaHeader < 2) return;
+  var headerRange = sh.getRange(1, 1, filaHeader, lastCol);
+  var merges = headerRange.getMergedRanges();
+  var corregidas = [];
+
+  for (var i = 0; i < merges.length; i++) {
+    var m = merges[i];
+    var r0 = m.getRow();
+    var rEnd = r0 + m.getNumRows() - 1;
+    if (r0 <= filaHeader - 1 && rEnd >= filaHeader) {
+      var c0   = m.getColumn();
+      var numC = m.getNumColumns();
+      var valor = m.getValue();
+      var fmt   = m.getBackground();
+      var fontColor = m.getFontColor();
+      var fontWeight = m.getFontWeight();
+      var hAlign = m.getHorizontalAlignment();
+      var vAlign = m.getVerticalAlignment();
+
+      m.breakApart();
+
+      // La porción de arriba (fila inicio..filaHeader-1) queda EN BLANCO —
+      // el rótulo ya no vive aquí, ver comentario de la función.
+      var arriba = sh.getRange(r0, c0, filaHeader - r0, numC);
+      if (arriba.getNumRows() > 1) arriba.merge();
+      arriba.setValue('')
+        .setBackground(fmt)
+        .setFontColor(fontColor)
+        .setFontWeight(fontWeight)
+        .setHorizontalAlignment(hAlign)
+        .setVerticalAlignment(vAlign);
+
+      // filaHeader queda como celda propia CON el rótulo — es la fila que
+      // usa el desplegable del filtro y donde viven los demás encabezados.
+      sh.getRange(filaHeader, c0, 1, numC).setValue(valor)
+        .setBackground(fmt)
+        .setFontColor(fontColor)
+        .setFontWeight(fontWeight)
+        .setHorizontalAlignment(hAlign)
+        .setVerticalAlignment(vAlign);
+
+      corregidas.push(sh.getRange(filaHeader, c0).getA1Notation() + ' ("' + valor + '")');
+    }
+  }
+
+  if (corregidas.length > 0) {
+    Logger.log('[Filtros] ' + sh.getName() + ': merges de encabezado partidos en fila ' + filaHeader + ' para permitir el filtro: ' + corregidas.join(', '));
+  }
+}
+
+/**
+ * _limpiarBordesFilasVacias() [→ Contexto_Base_Web.md §04B013]
+ */
+function _limpiarBordesFilasVacias() {
+  var ss = _getSs();
+  var sheetNames = Object.values(CFG.SHEETS);
+  for (var i = 0; i < sheetNames.length; i++) {
+    var shName = sheetNames[i];
+    if (shName === CFG.SHEETS.CALENDARIO) continue;
+    var sh = ss.getSheetByName(shName);
+    if (!sh) continue;
+    var lastRow = sh.getLastRow();
+    var maxRows = sh.getMaxRows();
+    var lastCol = sh.getLastColumn() || 1;
+    if (maxRows > lastRow && lastRow >= 1) {
+      try {
+        sh.getRange(lastRow + 1, 1, maxRows - lastRow, lastCol)
+          .setBorder(false, false, false, false, false, false);
+      } catch(e) {}
+    }
+  }
+  Logger.log('[Formato] Bordes en filas vacías limpiados.');
+}
+
+// ----- Limpieza de hojas obsoletas (las llama 00_Main.gs) -----
+
+function _limpiarHojaTerrenoLimpio() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Terreno_Limpio');
+
+  if (sh) {
+    if (ss.getSheets().length > 1) {
+      try {
+        ss.deleteSheet(sh);
+        Logger.log('[Setup] Hoja "Terreno_Limpio" eliminada con éxito.');
+      } catch(e) {
+        Logger.log('[Setup] No se pudo eliminar "Terreno_Limpio": ' + e.message);
+      }
+    } else {
+      Logger.log('[Setup] "Terreno_Limpio" es la única hoja, no se puede eliminar.');
+    }
+  }
+}
+
+/**
+ * _renombrarHojasHistorialLegacy() [→ Contexto_Base_Web.md §04B025]
+ */
+function _renombrarHojasHistorialLegacy() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  var migraciones = [
+    { viejo: 'Ascensos',  nuevo: CFG.SHEETS.ASCENSOS },
+    { viejo: 'Historial', nuevo: CFG.SHEETS.HISTORIAL }
+  ];
+
+  for (var i = 0; i < migraciones.length; i++) {
+    var viejo = migraciones[i].viejo;
+    var nuevo = migraciones[i].nuevo;
+    if (viejo === nuevo) continue; // sin cambio configurado
+
+    if (ss.getSheetByName(nuevo)) continue; // la pestaña nueva ya existe, no tocar nada
+
+    var shViejo = ss.getSheetByName(viejo);
+    if (!shViejo) continue; // no había pestaña vieja que migrar
+
+    try {
+      shViejo.setName(nuevo);
+      Logger.log('[Setup] Pestaña renombrada: "' + viejo + '" -> "' + nuevo + '".');
+    } catch (e) {
+      Logger.log('[Setup] No se pudo renombrar "' + viejo + '" a "' + nuevo + '": ' + e.message);
+    }
+  }
+}
+
+/**
+ * _limpiarHojasCardsObsoletas() [→ Contexto_Base_Web.md §04B026]
+ */
+function _limpiarHojasCardsObsoletas() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var nombres = [CFG.SHEETS.CARDS, CFG.SHEETS.CARDS_2];
+
+  for (var i = 0; i < nombres.length; i++) {
+    var nombre = nombres[i];
+    var sh = ss.getSheetByName(nombre);
+    if (!sh) continue;
+
+    try {
+      _respaldarListaHojasCSV(ss, [nombre], true);
+    } catch (e) {
+      Logger.log('[Setup] No se pudo respaldar "' + nombre + '" antes de eliminarla: ' + e.message);
+    }
+
+    if (ss.getSheets().length > 1) {
+      try {
+        ss.deleteSheet(sh);
+        Logger.log('[Setup] Hoja "' + nombre + '" (obsoleta, ahora vive solo en CSV) eliminada con éxito.');
+      } catch (e) {
+        Logger.log('[Setup] No se pudo eliminar "' + nombre + '": ' + e.message);
+      }
+    } else {
+      Logger.log('[Setup] "' + nombre + '" es la única hoja, no se puede eliminar.');
+    }
+  }
+}
+
+/**
+ * _limpiarHojaTRequisitosObsoleta() [→ Contexto_Base_Web.md §04B027]
+ */
+function _limpiarHojaTRequisitosObsoleta() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('T_Requisitos');
+
+  if (sh) {
+    if (ss.getSheets().length > 1) {
+      try {
+        ss.deleteSheet(sh);
+        Logger.log('[Setup] Hoja "T_Requisitos" (obsoleta, reemplazada por CR_Lista) eliminada con éxito.');
+      } catch(e) {
+        Logger.log('[Setup] No se pudo eliminar "T_Requisitos": ' + e.message);
+      }
+    } else {
+      Logger.log('[Setup] "T_Requisitos" es la única hoja, no se puede eliminar.');
+    }
+  }
+}
+
+/**
+ * _limpiarHojaMenuObsoleta() [→ Contexto_Base_Web.md §04B028]
+ */
+function _limpiarHojaMenuObsoleta() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Menú');
+
+  if (!_leerIndiceGuardado()) {
+    if (sh) {
+      Logger.log('[Setup] Hoja "Menú" (obsoleta) NO se elimina todavía: aún no existe el índice de contenido guardado. Se reintenta en la próxima corrida (o ejecutar inicializarIndiceContenido()).');
+    }
+    return;
+  }
+
+  if (sh) {
+    if (ss.getSheets().length > 1) {
+      try {
+        ss.deleteSheet(sh);
+        Logger.log('[Setup] Hoja "Menú" (obsoleta, reemplazada por el índice de contenido) eliminada con éxito.');
+      } catch(e) {
+        Logger.log('[Setup] No se pudo eliminar "Menú": ' + e.message);
+      }
+    } else {
+      Logger.log('[Setup] "Menú" es la única hoja, no se puede eliminar.');
+    }
+  }
+
+  _enviarRespaldosMenuAPapelera();
+}
+
+/**
+ * _enviarRespaldosMenuAPapelera() [→ Contexto_Base_Web.md §04B029]
+ */
+function _enviarRespaldosMenuAPapelera() {
+  try {
+    var folder = _getCsvFolder();
+    var nombres = ['Backup_Menu.csv', 'Backup_Menú.csv'];
+    for (var i = 0; i < nombres.length; i++) {
+      var files = folder.getFilesByName(nombres[i]);
+      while (files.hasNext()) {
+        files.next().setTrashed(true);
+        Logger.log('[Setup] Respaldo obsoleto "' + nombres[i] + '" enviado a la papelera de Drive.');
+      }
+    }
+  } catch (e) {
+    Logger.log('[Setup] No se pudieron limpiar los respaldos de Menú: ' + e.message);
+  }
+}
+
+// ----- Anchos de columna: ayudas -----
+
+/**
+ * _leerAnchosColumnasGuardados() [→ Contexto_Base_Web.md §04B067]
+ */
+function _leerAnchosColumnasGuardados() {
+  // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS) — antes [→ Contexto_Base_Web.md §04B068]
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(ANCHOS_COLUMNAS_ARCHIVO);
+    if (!files.hasNext()) return {};
+    var contenido = files.next().getBlob().getDataAsString('UTF-8');
+    return contenido ? JSON.parse(contenido) : {};
+  } catch (e) {
+    Logger.log('[AnchosColumnas] No se pudo leer ' + ANCHOS_COLUMNAS_ARCHIVO + ' (' + e.message + '), se asume vacío.');
+    return {};
+  }
+}
+
+/**
+ * _escribirAnchosColumnasGuardados(datos) [→ Contexto_Base_Web.md §04B069]
+ */
+function _escribirAnchosColumnasGuardados(datos) {
+  // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS), igual
+  // que _leerAnchosColumnasGuardados() más arriba en este archivo.
+  var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+  var contenido = JSON.stringify(datos, null, 2);
+  var files = folder.getFilesByName(ANCHOS_COLUMNAS_ARCHIVO);
+  if (files.hasNext()) {
+    _setContentConConteo_(files.next(), contenido);
+  } else {
+    _createFileConConteo_(folder, ANCHOS_COLUMNAS_ARCHIVO, contenido, MimeType.PLAIN_TEXT);
+  }
+}
 
 /**
  * _clavesColumnasParaAnchos(hoja, filaHeader, limiteGenerico) [→ Contexto_Base_Web.md §04B058]
@@ -6218,39 +6306,6 @@ function _aplicarAnchosFijosGridHistorialNuevos(hoja, maxCol) {
 }
 
 /**
- * _leerAnchosColumnasGuardados() [→ Contexto_Base_Web.md §04B067]
- */
-function _leerAnchosColumnasGuardados() {
-  // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS) — antes [→ Contexto_Base_Web.md §04B068]
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(ANCHOS_COLUMNAS_ARCHIVO);
-    if (!files.hasNext()) return {};
-    var contenido = files.next().getBlob().getDataAsString('UTF-8');
-    return contenido ? JSON.parse(contenido) : {};
-  } catch (e) {
-    Logger.log('[AnchosColumnas] No se pudo leer ' + ANCHOS_COLUMNAS_ARCHIVO + ' (' + e.message + '), se asume vacío.');
-    return {};
-  }
-}
-
-/**
- * _escribirAnchosColumnasGuardados(datos) [→ Contexto_Base_Web.md §04B069]
- */
-function _escribirAnchosColumnasGuardados(datos) {
-  // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS), igual
-  // que _leerAnchosColumnasGuardados() más arriba en este archivo.
-  var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-  var contenido = JSON.stringify(datos, null, 2);
-  var files = folder.getFilesByName(ANCHOS_COLUMNAS_ARCHIVO);
-  if (files.hasNext()) {
-    _setContentConConteo_(files.next(), contenido);
-  } else {
-    _createFileConConteo_(folder, ANCHOS_COLUMNAS_ARCHIVO, contenido, MimeType.PLAIN_TEXT);
-  }
-}
-
-/**
  * _agruparColumnasContiguas(cols) [→ Contexto_Base_Web.md §04B070]
  */
 function _agruparColumnasContiguas(cols) {
@@ -6264,6 +6319,7 @@ function _agruparColumnasContiguas(cols) {
   }
   return rangos;
 }
+
 
 // --- ARCHIVO: 05_Backup_CSV.gs ---
 // ==============================================================================
@@ -15388,7 +15444,16 @@ function _leerLinksComoMapaPorTagConUrls(ss) {
 // Vistas derivadas del Directorio: hojas Inactivos, Vetados y Multicuentas.
 // ==============================================================================
 
-// ----- Variables y constantes -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 29-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: ninguna (las llaman 11_DirectorioSheet.gs, 00_Main.gs y 37_Web_API.gs; ninguna se corre desde el editor)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Inactivos
+//    - Hoja Vetados
+//    - Vetados confirmados (copia en un JSON de Drive)
+//    - Sincronizar la razón entre Vetados y Directorio (las llama 00_Main.gs)
+//    - Web: altas y comentarios de vetados
+//    - Hoja Multicuentas
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // HOJA ASCENSOS — registro histórico de cambios de rango (Miembro/Veterano/ [→ Contexto_Base_Web.md §13B001]
 var ASC = {
@@ -15403,6 +15468,7 @@ var ASC = {
 };
 
 var ASCENSOS_TOTAL_COLS = 24;
+
 // Ancho que tenía la hoja antes de la columna PAR_ID: lo usan los lectores que no necesitan esa columna y no deben fallar si la hoja aún no la tiene (PF286).
 var ASCENSOS_COLS_SIN_PAR = 23;
 
@@ -15422,7 +15488,160 @@ var NOMBRE_JSON_VETADOS_CONFIRMADOS_ = 'ClanSystem_Backup_VetadosConfirmados.jso
  */
 var _cacheVetadosConfirmados_ = null;
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Inactivos -----
+
+function _updateInactivos(ss, dirData) {
+  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+  if (!sh) return;
+
+  // Inactivos: tiene su PROPIA estructura reducida de 29 columnas (ver [→ Contexto_Base_Web.md §13B021]
+
+  // Mapa Tag -> fila de dirData, para saber qué tags siguen existiendo ahí
+  // (y por lo tanto su estado actual manda sobre Inactivos).
+  var dirPorTag = {};
+  for (var i = 0; i < dirData.length; i++) {
+    var tg = String(dirData[i][DC.TAG - 1] || '').trim();
+    if (tg) dirPorTag[tg] = dirData[i];
+  }
+
+  // Candidatas frescas según dirData, ya proyectadas a las 29 columnas de [→ Contexto_Base_Web.md §13B022]
+  var candidatas = {};
+  // extrasFrescos: { Tag -> {campo: valor} } con las 31 columnas de [→ Contexto_Base_Web.md §13B023]
+  var extrasFrescos = {};
+  var camposExtra = _camposExtraInactivos();
+  for (var i = 0; i < dirData.length; i++) {
+    var r = dirData[i];
+    var esAdmin = String(r[DC.ADMIN - 1] || '').trim().toLowerCase() === 'sí';
+    if (esAdmin) continue; // Admins: nunca en Inactivos.
+
+    var esInactivo = String(r[DC.ESTADO - 1]) === 'Inactivo';
+    var vet = String(r[DC.VETADO - 1] || '').trim().toLowerCase();
+    var esVetado = (vet === 'sí' || vet === 'si');
+    var clanTagFila = String(r[DC.CLAN_TAG - 1] || '').trim();
+    var activoEnVetado = (String(r[DC.ESTADO - 1]) === 'Activo') && (clanTagFila === CFG.VETADO_TAG);
+
+    if ((esInactivo && !esVetado) || activoEnVetado) {
+      var tg = String(r[DC.TAG - 1] || '').trim();
+      if (tg) {
+        candidatas[tg] = _proyectarInactivos(r);
+        var extraObj = {};
+        for (var ce = 0; ce < camposExtra.length; ce++) {
+          extraObj[camposExtra[ce]] = r[DC[camposExtra[ce]] - 1];
+        }
+        extrasFrescos[tg] = extraObj;
+      }
+    }
+  }
+  if (Object.keys(extrasFrescos).length > 0) {
+    _guardarExtraColsInactivosBatch(extrasFrescos);
+  }
+
+  // PROTECCIÓN ANTI-BORRADO: la hoja Inactivos se reconstruye a partir de la [→ Contexto_Base_Web.md §13B024]
+  var filasFinalesPorTag = {};
+  var huerfanosConservados = 0;
+  var lastRowSh = sh.getLastRow();
+  if (lastRowSh >= 2) {
+    var existentes = sh.getRange(2, 1, lastRowSh - 1, INACTIVOS_TOTAL_COLS).getValues();
+    for (var i = 0; i < existentes.length; i++) {
+      var tg = String(existentes[i][IC.TAG - 1] || '').trim();
+      if (!tg) continue;
+      if (dirPorTag[tg]) continue; // su estado actual lo decide 'candidatas'
+      filasFinalesPorTag[tg] = existentes[i];
+      huerfanosConservados++;
+    }
+  }
+  if (huerfanosConservados > 0) {
+    Logger.log('[Inactivos] Protección anti-borrado: se conservaron ' + huerfanosConservados + ' fila(s) huérfana(s) (tags que no aparecen en los datos actuales).');
+  }
+  for (var tg in candidatas) filasFinalesPorTag[tg] = candidatas[tg];
+
+  var filas = Object.keys(filasFinalesPorTag).map(function(tg) { return filasFinalesPorTag[tg]; });
+
+  filas.sort(function(a,b) {
+    var ja = String(a[IC.JUGADOR-1]||'').toLowerCase(), jb = String(b[IC.JUGADOR-1]||'').toLowerCase();
+    if (ja !== jb) return ja < jb ? -1 : 1;
+    return String(a[IC.NOMBRE-1]||'').toLowerCase() < String(b[IC.NOMBRE-1]||'').toLowerCase() ? -1 : 1;
+  });
+  for (var i = 0; i < filas.length; i++) filas[i][IC.NUM - 1] = i + 1;
+
+  // FIX (05-ago-2026): mismo criterio que _escribirDirectorio() — resetear [→ Contexto_Base_Web.md §13B025]
+  if (sh.getLastRow() >= 2) {
+    sh.getRange(2, 1, sh.getLastRow() - 1, INACTIVOS_TOTAL_COLS)
+      .clearContent()
+      .setFontColor(null);
+  }
+  if (filas.length > 0) {
+    sh.getRange(2, 1, filas.length, INACTIVOS_TOTAL_COLS).setValues(filas);
+    applyBorderCenter(sh.getRange(2, 1, filas.length, INACTIVOS_TOTAL_COLS));
+    // Fix: la hoja Inactivos nunca reaplicaba el formato de Celular al [→ Contexto_Base_Web.md §13B026]
+    sh.getRange(2, IC.CELULAR, filas.length, 1).setNumberFormat('### ### ### ###');
+  }
+  _aplicarDropdownsInactivos(sh, filas.length);   // 👈 NUEVO
+}
+
+/**
+ * _camposExtraInactivos() [→ Contexto_Base_Web.md §13B015]
+ */
+function _camposExtraInactivos() {
+  var extra = [];
+  for (var campo in DC) {
+    if (IC[campo] === undefined) extra.push(campo);
+  }
+  return extra;
+}
+
+/**
+ * _proyectarInactivos(r) [→ Contexto_Base_Web.md §13B016]
+ */
+function _proyectarInactivos(r) {
+  var fila = new Array(INACTIVOS_TOTAL_COLS).fill('');
+  fila[IC.NUM         - 1] = r[DC.NUM         - 1];
+  fila[IC.TAG         - 1] = r[DC.TAG         - 1];
+  fila[IC.NOMBRE      - 1] = r[DC.NOMBRE      - 1];
+  fila[IC.JUGADOR     - 1] = r[DC.JUGADOR     - 1];
+  fila[IC.NOM_MULTI   - 1] = r[DC.NOM_MULTI   - 1];
+  fila[IC.PRESTAMO    - 1] = r[DC.PRESTAMO    - 1];
+  fila[IC.MULTICUENTA - 1] = r[DC.MULTICUENTA - 1];
+  fila[IC.CLAN        - 1] = r[DC.CLAN        - 1];
+  fila[IC.CLAN_TAG    - 1] = r[DC.CLAN_TAG    - 1];
+  fila[IC.RANGO       - 1] = r[DC.RANGO       - 1];
+  fila[IC.LIDER       - 1] = r[DC.LIDER       - 1];
+  fila[IC.PREFIJO     - 1] = r[DC.PREFIJO     - 1];
+  fila[IC.CELULAR     - 1] = r[DC.CELULAR     - 1];
+  fila[IC.WSP_G       - 1] = r[DC.WSP_G       - 1];
+  fila[IC.ETIQUETA    - 1] = r[DC.ETIQUETA    - 1];
+  fila[IC.PERMISO     - 1] = r[DC.PERMISO     - 1];
+  fila[IC.INICIALES   - 1] = r[DC.INICIALES   - 1];
+  fila[IC.ESTADO      - 1] = r[DC.ESTADO      - 1];
+  fila[IC.ADMIN       - 1] = r[DC.ADMIN       - 1];
+  fila[IC.VETADO      - 1] = r[DC.VETADO      - 1];
+  fila[IC.RAZON       - 1] = r[DC.RAZON       - 1];
+  fila[IC.ALERTA      - 1] = r[DC.ALERTA      - 1];
+  fila[IC.FECHA_ING   - 1] = r[DC.FECHA_ING   - 1];
+  fila[IC.FECHA_LIM   - 1] = r[DC.FECHA_LIM   - 1];
+  fila[IC.VIGENCIA    - 1] = r[DC.VIGENCIA    - 1];
+  fila[IC.INACTIVIDAD - 1] = r[DC.INACTIVIDAD - 1];
+  fila[IC.RANKING     - 1] = r[DC.RANKING     - 1];
+  fila[IC.RANKING_P   - 1] = r[DC.RANKING_P   - 1];
+  fila[IC.COMENTARIO  - 1] = r[DC.COMENTARIO  - 1];
+  return fila;
+}
+
+function _aplicarDropdownsInactivos(sh, numFilas) {
+  if (numFilas === 0) return;
+  var opsSiNo = SpreadsheetApp.newDataValidation().requireValueInList(['Sí','No'], true).build();
+  sh.getRange(2, IC.MULTICUENTA, numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.WSP_G,       numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.ETIQUETA,    numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.PERMISO,     numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.INICIALES,   numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.ADMIN,       numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.VETADO,      numFilas, 1).setDataValidation(opsSiNo);
+}
 
 function _construirFilaInactiva(tag, existing, csvRow, tagMulticuenta, multiData, colIdxMap, playersRow, linksRow, inactivoPropio) {
   // Construye una fila para un jugador inactivo (no está en ningún clan Terna via API). [→ Contexto_Base_Web.md §13B005]
@@ -15620,101 +15839,11 @@ function _construirFilaInactiva(tag, existing, csvRow, tagMulticuenta, multiData
 }
 
 /**
- * _camposExtraInactivos() [→ Contexto_Base_Web.md §13B015]
- */
-function _camposExtraInactivos() {
-  var extra = [];
-  for (var campo in DC) {
-    if (IC[campo] === undefined) extra.push(campo);
-  }
-  return extra;
-}
-
-/**
- * _proyectarInactivos(r) [→ Contexto_Base_Web.md §13B016]
- */
-function _proyectarInactivos(r) {
-  var fila = new Array(INACTIVOS_TOTAL_COLS).fill('');
-  fila[IC.NUM         - 1] = r[DC.NUM         - 1];
-  fila[IC.TAG         - 1] = r[DC.TAG         - 1];
-  fila[IC.NOMBRE      - 1] = r[DC.NOMBRE      - 1];
-  fila[IC.JUGADOR     - 1] = r[DC.JUGADOR     - 1];
-  fila[IC.NOM_MULTI   - 1] = r[DC.NOM_MULTI   - 1];
-  fila[IC.PRESTAMO    - 1] = r[DC.PRESTAMO    - 1];
-  fila[IC.MULTICUENTA - 1] = r[DC.MULTICUENTA - 1];
-  fila[IC.CLAN        - 1] = r[DC.CLAN        - 1];
-  fila[IC.CLAN_TAG    - 1] = r[DC.CLAN_TAG    - 1];
-  fila[IC.RANGO       - 1] = r[DC.RANGO       - 1];
-  fila[IC.LIDER       - 1] = r[DC.LIDER       - 1];
-  fila[IC.PREFIJO     - 1] = r[DC.PREFIJO     - 1];
-  fila[IC.CELULAR     - 1] = r[DC.CELULAR     - 1];
-  fila[IC.WSP_G       - 1] = r[DC.WSP_G       - 1];
-  fila[IC.ETIQUETA    - 1] = r[DC.ETIQUETA    - 1];
-  fila[IC.PERMISO     - 1] = r[DC.PERMISO     - 1];
-  fila[IC.INICIALES   - 1] = r[DC.INICIALES   - 1];
-  fila[IC.ESTADO      - 1] = r[DC.ESTADO      - 1];
-  fila[IC.ADMIN       - 1] = r[DC.ADMIN       - 1];
-  fila[IC.VETADO      - 1] = r[DC.VETADO      - 1];
-  fila[IC.RAZON       - 1] = r[DC.RAZON       - 1];
-  fila[IC.ALERTA      - 1] = r[DC.ALERTA      - 1];
-  fila[IC.FECHA_ING   - 1] = r[DC.FECHA_ING   - 1];
-  fila[IC.FECHA_LIM   - 1] = r[DC.FECHA_LIM   - 1];
-  fila[IC.VIGENCIA    - 1] = r[DC.VIGENCIA    - 1];
-  fila[IC.INACTIVIDAD - 1] = r[DC.INACTIVIDAD - 1];
-  fila[IC.RANKING     - 1] = r[DC.RANKING     - 1];
-  fila[IC.RANKING_P   - 1] = r[DC.RANKING_P   - 1];
-  fila[IC.COMENTARIO  - 1] = r[DC.COMENTARIO  - 1];
-  return fila;
-}
-
-/**
- * _leerInactivosParaReactivacion(ss) [→ Contexto_Base_Web.md §13B017]
- */
-function _leerInactivosParaReactivacion(ss) {
-  var mapa = {};
-  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
-  if (!sh || sh.getLastRow() < 2) return mapa;
-
-  var lastRow = sh.getLastRow();
-  var datos = sh.getRange(2, 1, lastRow - 1, INACTIVOS_TOTAL_COLS).getValues();
-  var extraPorTag = _cargarExtraColsInactivos();
-
-  for (var i = 0; i < datos.length; i++) {
-    var tag = String(datos[i][IC.TAG - 1] || '').trim();
-    if (!tag) continue;
-    mapa[tag] = { ic: datos[i], extra: extraPorTag[tag] || null };
-  }
-  return mapa;
-}
-
-/**
  * _esSiNoOVacio(v) [→ Contexto_Base_Web.md §13B018]
  */
 function _esSiNoOVacio(v) {
   var s = String(v || '').trim().toLowerCase();
   return s === '' || s === 'sí' || s === 'si' || s === 'no';
-}
-
-/**
- * _reconstruirExistingDesdeInactivos(icRow, extraObj) [→ Contexto_Base_Web.md §13B019]
- */
-function _reconstruirExistingDesdeInactivos(icRow, extraObj) {
-  var fila = new Array(DIR_TOTAL_COLS).fill('');
-  for (var campo in IC) {
-    var valorIC = icRow[IC[campo] - 1];
-    if (campo === 'VETADO' || campo === 'PERMISO' || campo === 'ADMIN') {
-      valorIC = _esSiNoOVacio(valorIC) ? valorIC : '';
-    } else if (campo === 'RAZON') {
-      valorIC = esRazonValida(valorIC) ? valorIC : '';
-    }
-    fila[DC[campo] - 1] = valorIC;
-  }
-  if (extraObj) {
-    for (var campoExtra in extraObj) {
-      if (DC[campoExtra] !== undefined) fila[DC[campoExtra] - 1] = extraObj[campoExtra];
-    }
-  }
-  return fila;
 }
 
 /**
@@ -15748,253 +15877,7 @@ function _retirarDeInactivosPorReactivacion(ss, tags) {
   _eliminarExtraColsInactivosPorTags(tags);
 }
 
-function _updateInactivos(ss, dirData) {
-  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
-  if (!sh) return;
-
-  // Inactivos: tiene su PROPIA estructura reducida de 29 columnas (ver [→ Contexto_Base_Web.md §13B021]
-
-  // Mapa Tag -> fila de dirData, para saber qué tags siguen existiendo ahí
-  // (y por lo tanto su estado actual manda sobre Inactivos).
-  var dirPorTag = {};
-  for (var i = 0; i < dirData.length; i++) {
-    var tg = String(dirData[i][DC.TAG - 1] || '').trim();
-    if (tg) dirPorTag[tg] = dirData[i];
-  }
-
-  // Candidatas frescas según dirData, ya proyectadas a las 29 columnas de [→ Contexto_Base_Web.md §13B022]
-  var candidatas = {};
-  // extrasFrescos: { Tag -> {campo: valor} } con las 31 columnas de [→ Contexto_Base_Web.md §13B023]
-  var extrasFrescos = {};
-  var camposExtra = _camposExtraInactivos();
-  for (var i = 0; i < dirData.length; i++) {
-    var r = dirData[i];
-    var esAdmin = String(r[DC.ADMIN - 1] || '').trim().toLowerCase() === 'sí';
-    if (esAdmin) continue; // Admins: nunca en Inactivos.
-
-    var esInactivo = String(r[DC.ESTADO - 1]) === 'Inactivo';
-    var vet = String(r[DC.VETADO - 1] || '').trim().toLowerCase();
-    var esVetado = (vet === 'sí' || vet === 'si');
-    var clanTagFila = String(r[DC.CLAN_TAG - 1] || '').trim();
-    var activoEnVetado = (String(r[DC.ESTADO - 1]) === 'Activo') && (clanTagFila === CFG.VETADO_TAG);
-
-    if ((esInactivo && !esVetado) || activoEnVetado) {
-      var tg = String(r[DC.TAG - 1] || '').trim();
-      if (tg) {
-        candidatas[tg] = _proyectarInactivos(r);
-        var extraObj = {};
-        for (var ce = 0; ce < camposExtra.length; ce++) {
-          extraObj[camposExtra[ce]] = r[DC[camposExtra[ce]] - 1];
-        }
-        extrasFrescos[tg] = extraObj;
-      }
-    }
-  }
-  if (Object.keys(extrasFrescos).length > 0) {
-    _guardarExtraColsInactivosBatch(extrasFrescos);
-  }
-
-  // PROTECCIÓN ANTI-BORRADO: la hoja Inactivos se reconstruye a partir de la [→ Contexto_Base_Web.md §13B024]
-  var filasFinalesPorTag = {};
-  var huerfanosConservados = 0;
-  var lastRowSh = sh.getLastRow();
-  if (lastRowSh >= 2) {
-    var existentes = sh.getRange(2, 1, lastRowSh - 1, INACTIVOS_TOTAL_COLS).getValues();
-    for (var i = 0; i < existentes.length; i++) {
-      var tg = String(existentes[i][IC.TAG - 1] || '').trim();
-      if (!tg) continue;
-      if (dirPorTag[tg]) continue; // su estado actual lo decide 'candidatas'
-      filasFinalesPorTag[tg] = existentes[i];
-      huerfanosConservados++;
-    }
-  }
-  if (huerfanosConservados > 0) {
-    Logger.log('[Inactivos] Protección anti-borrado: se conservaron ' + huerfanosConservados + ' fila(s) huérfana(s) (tags que no aparecen en los datos actuales).');
-  }
-  for (var tg in candidatas) filasFinalesPorTag[tg] = candidatas[tg];
-
-  var filas = Object.keys(filasFinalesPorTag).map(function(tg) { return filasFinalesPorTag[tg]; });
-
-  filas.sort(function(a,b) {
-    var ja = String(a[IC.JUGADOR-1]||'').toLowerCase(), jb = String(b[IC.JUGADOR-1]||'').toLowerCase();
-    if (ja !== jb) return ja < jb ? -1 : 1;
-    return String(a[IC.NOMBRE-1]||'').toLowerCase() < String(b[IC.NOMBRE-1]||'').toLowerCase() ? -1 : 1;
-  });
-  for (var i = 0; i < filas.length; i++) filas[i][IC.NUM - 1] = i + 1;
-
-  // FIX (05-ago-2026): mismo criterio que _escribirDirectorio() — resetear [→ Contexto_Base_Web.md §13B025]
-  if (sh.getLastRow() >= 2) {
-    sh.getRange(2, 1, sh.getLastRow() - 1, INACTIVOS_TOTAL_COLS)
-      .clearContent()
-      .setFontColor(null);
-  }
-  if (filas.length > 0) {
-    sh.getRange(2, 1, filas.length, INACTIVOS_TOTAL_COLS).setValues(filas);
-    applyBorderCenter(sh.getRange(2, 1, filas.length, INACTIVOS_TOTAL_COLS));
-    // Fix: la hoja Inactivos nunca reaplicaba el formato de Celular al [→ Contexto_Base_Web.md §13B026]
-    sh.getRange(2, IC.CELULAR, filas.length, 1).setNumberFormat('### ### ### ###');
-  }
-  _aplicarDropdownsInactivos(sh, filas.length);   // 👈 NUEVO
-}
-
-function _aplicarDropdownsInactivos(sh, numFilas) {
-  if (numFilas === 0) return;
-  var opsSiNo = SpreadsheetApp.newDataValidation().requireValueInList(['Sí','No'], true).build();
-  sh.getRange(2, IC.MULTICUENTA, numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.WSP_G,       numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.ETIQUETA,    numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.PERMISO,     numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.INICIALES,   numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.ADMIN,       numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.VETADO,      numFilas, 1).setDataValidation(opsSiNo);
-}
-
-/**
- * _aplicarDropdownsVetados(sh, numFilas) [→ Contexto_Base_Web.md §13B027]
- */
-function _aplicarDropdownsVetados(sh, numFilas) {
-  if (numFilas === 0) return;
-  var opsVia = SpreadsheetApp.newDataValidation().requireValueInList(['Web','Bot','Sheet'], true).build();
-  sh.getRange(2, VC.VIA, numFilas, 1).setDataValidation(opsVia);
-}
-
-/**
- * _obtenerNomMultisAdmins() [→ Contexto_Base_Web.md §13B028]
- */
-function _obtenerNomMultisAdmins() {
-  var ss = _getSs();
-  var shAdm = ss.getSheetByName(CFG.SHEETS.ADMINISTRADORES);
-  if (!shAdm || shAdm.getLastRow() < 2) return [];
-
-  var lastRow = shAdm.getLastRow();
-  var data = shAdm.getRange(2, 1, lastRow - 1, ADMINISTRADORES_TOTAL_COLS).getValues();
-  var vistos = {};
-  var resultado = [];
-  for (var i = 0; i < data.length; i++) {
-    if (String(data[i][AC.ADMIN - 1] || '').trim() !== 'Sí') continue;
-    var nm = String(data[i][AC.NOM_MULTI - 1] || '').trim();
-    if (nm && !vistos[nm]) { vistos[nm] = true; resultado.push(nm); }
-  }
-  resultado.sort(function (a, b) { return a.localeCompare(b); });
-  return resultado;
-}
-
-/**
- * _obtenerCuentasDeNomMulti(nomMulti) [→ Contexto_Base_Web.md §13B029]
- */
-function _obtenerCuentasDeNomMulti(nomMulti) {
-  var nm = String(nomMulti || '').trim();
-  if (!nm) return [];
-
-  var ss = _getSs();
-  var hojas = [CFG.SHEETS.DIRECTORIO, CFG.SHEETS.INACTIVOS];
-  var vistos = {};
-  var resultado = [];
-
-  for (var h = 0; h < hojas.length; h++) {
-    var sh = ss.getSheetByName(hojas[h]);
-    if (!sh || sh.getLastRow() < 2) continue;
-
-    var datos = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-    for (var i = 0; i < datos.length; i++) {
-      var nomMultiFila = String(datos[i][IC.NOM_MULTI - 1] || '').trim();
-      if (nomMultiFila !== nm) continue;
-
-      var tag = String(datos[i][IC.TAG - 1] || '').trim();
-      if (!tag || vistos[tag]) continue;
-      vistos[tag] = true;
-
-      resultado.push({
-        tag:     tag,
-        nombre:  String(datos[i][IC.NOMBRE   - 1] || ''),
-        clan:    String(datos[i][IC.CLAN     - 1] || ''),
-        clanTag: String(datos[i][IC.CLAN_TAG - 1] || '')
-      });
-    }
-  }
-
-  return resultado;
-}
-
-/**
- * _aplicarDropdownAutorVetados(shVet, nomMultisAdmins) [→ Contexto_Base_Web.md §13B030]
- */
-function _aplicarDropdownAutorVetados(shVet, nomMultisAdmins) {
-  if (!shVet) return;
-  var numFilas = shVet.getLastRow() - 1;
-  if (numFilas < 1) return;
-
-  if (!nomMultisAdmins || nomMultisAdmins.length === 0) {
-    shVet.getRange(2, VC.AUTOR, numFilas, 1).clearDataValidations();
-    return;
-  }
-  var dvAutor = SpreadsheetApp.newDataValidation()
-    .requireValueInList(nomMultisAdmins, true)
-    .setAllowInvalid(true) // no bloquear si el Autor de un veto viejo ya no es admin hoy
-    .build();
-  shVet.getRange(2, VC.AUTOR, numFilas, 1).setDataValidation(dvAutor);
-}
-
-// (25-sep-2026, FASE B) ClanSystem_Backup_VetadosConfirmados.json se lee y [→ Contexto_Base_Web.md §13B031]
-function _cargarVetadosConfirmados_() {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(NOMBRE_JSON_VETADOS_CONFIRMADOS_);
-    if (files.hasNext()) {
-      return JSON.parse(files.next().getBlob().getDataAsString('UTF-8')) || {};
-    }
-  } catch (e) {
-    Logger.log('[Vetados-Registro] Error leyendo ' + NOMBRE_JSON_VETADOS_CONFIRMADOS_ + ': ' + e.message);
-  }
-  return {};
-}
-
-function _guardarVetadosConfirmados_(mapa) {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(NOMBRE_JSON_VETADOS_CONFIRMADOS_);
-    var content = JSON.stringify(mapa, null, 2);
-    if (files.hasNext()) {
-      _setContentConConteo_(files.next(), content);
-    } else {
-      _createFileConConteo_(folder, NOMBRE_JSON_VETADOS_CONFIRMADOS_, content, MimeType.PLAIN_TEXT);
-    }
-  } catch (e) {
-    Logger.log('[Vetados-Registro] Error guardando ' + NOMBRE_JSON_VETADOS_CONFIRMADOS_ + ': ' + e.message);
-  }
-}
-
-/**
- * _registrarVetadoConfirmado(tag) [→ Contexto_Base_Web.md §13B032]
- */
-function _registrarVetadoConfirmado(tag) {
-  var t = String(tag || '').trim();
-  if (!t) return;
-  var mapa = _cargarVetadosConfirmados_();
-  if (mapa[t]) return; // ya estaba, no reescribir el archivo sin necesidad
-  mapa[t] = true;
-  _guardarVetadosConfirmados_(mapa);
-}
-
-function _tagEstaVetadoConfirmado(tag) {
-  if (_cacheVetadosConfirmados_ === null) _cacheVetadosConfirmados_ = _cargarVetadosConfirmados_();
-  return !!_cacheVetadosConfirmados_[String(tag || '').trim()];
-}
-
-/**
- * _olvidarVetadoConfirmado(tag) [→ Contexto_Base_Web.md §13B033]
- */
-function _olvidarVetadoConfirmado(tag) {
-  var t = String(tag || '').trim();
-  var mapa = _cargarVetadosConfirmados_();
-  if (mapa[t]) {
-    delete mapa[t];
-    _guardarVetadosConfirmados_(mapa);
-    Logger.log('[Vetados-Registro] ' + t + ' quitado manualmente del registro de vetados confirmados.');
-  } else {
-    Logger.log('[Vetados-Registro] ' + t + ' no estaba en el registro.');
-  }
-}
+// ----- Hoja Vetados -----
 
 function _updateVetados(ss, dirData) {
   var sh = ss.getSheetByName(CFG.SHEETS.VETADOS);
@@ -16172,6 +16055,120 @@ if (tagsHuerfanos.length > 0) {
   _aplicarDropdownAutorVetados(sh, _obtenerNomMultisAdmins());
 }
 
+/**
+ * _aplicarDropdownsVetados(sh, numFilas) [→ Contexto_Base_Web.md §13B027]
+ */
+function _aplicarDropdownsVetados(sh, numFilas) {
+  if (numFilas === 0) return;
+  var opsVia = SpreadsheetApp.newDataValidation().requireValueInList(['Web','Bot','Sheet'], true).build();
+  sh.getRange(2, VC.VIA, numFilas, 1).setDataValidation(opsVia);
+}
+
+/**
+ * _aplicarDropdownAutorVetados(shVet, nomMultisAdmins) [→ Contexto_Base_Web.md §13B030]
+ */
+function _aplicarDropdownAutorVetados(shVet, nomMultisAdmins) {
+  if (!shVet) return;
+  var numFilas = shVet.getLastRow() - 1;
+  if (numFilas < 1) return;
+
+  if (!nomMultisAdmins || nomMultisAdmins.length === 0) {
+    shVet.getRange(2, VC.AUTOR, numFilas, 1).clearDataValidations();
+    return;
+  }
+  var dvAutor = SpreadsheetApp.newDataValidation()
+    .requireValueInList(nomMultisAdmins, true)
+    .setAllowInvalid(true) // no bloquear si el Autor de un veto viejo ya no es admin hoy
+    .build();
+  shVet.getRange(2, VC.AUTOR, numFilas, 1).setDataValidation(dvAutor);
+}
+
+/**
+ * _obtenerNomMultisAdmins() [→ Contexto_Base_Web.md §13B028]
+ */
+function _obtenerNomMultisAdmins() {
+  var ss = _getSs();
+  var shAdm = ss.getSheetByName(CFG.SHEETS.ADMINISTRADORES);
+  if (!shAdm || shAdm.getLastRow() < 2) return [];
+
+  var lastRow = shAdm.getLastRow();
+  var data = shAdm.getRange(2, 1, lastRow - 1, ADMINISTRADORES_TOTAL_COLS).getValues();
+  var vistos = {};
+  var resultado = [];
+  for (var i = 0; i < data.length; i++) {
+    if (String(data[i][AC.ADMIN - 1] || '').trim() !== 'Sí') continue;
+    var nm = String(data[i][AC.NOM_MULTI - 1] || '').trim();
+    if (nm && !vistos[nm]) { vistos[nm] = true; resultado.push(nm); }
+  }
+  resultado.sort(function (a, b) { return a.localeCompare(b); });
+  return resultado;
+}
+
+// ----- Vetados confirmados (copia en un JSON de Drive) -----
+
+/**
+ * _registrarVetadoConfirmado(tag) [→ Contexto_Base_Web.md §13B032]
+ */
+function _registrarVetadoConfirmado(tag) {
+  var t = String(tag || '').trim();
+  if (!t) return;
+  var mapa = _cargarVetadosConfirmados_();
+  if (mapa[t]) return; // ya estaba, no reescribir el archivo sin necesidad
+  mapa[t] = true;
+  _guardarVetadosConfirmados_(mapa);
+}
+
+// (25-sep-2026, FASE B) ClanSystem_Backup_VetadosConfirmados.json se lee y [→ Contexto_Base_Web.md §13B031]
+function _cargarVetadosConfirmados_() {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(NOMBRE_JSON_VETADOS_CONFIRMADOS_);
+    if (files.hasNext()) {
+      return JSON.parse(files.next().getBlob().getDataAsString('UTF-8')) || {};
+    }
+  } catch (e) {
+    Logger.log('[Vetados-Registro] Error leyendo ' + NOMBRE_JSON_VETADOS_CONFIRMADOS_ + ': ' + e.message);
+  }
+  return {};
+}
+
+function _guardarVetadosConfirmados_(mapa) {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(NOMBRE_JSON_VETADOS_CONFIRMADOS_);
+    var content = JSON.stringify(mapa, null, 2);
+    if (files.hasNext()) {
+      _setContentConConteo_(files.next(), content);
+    } else {
+      _createFileConConteo_(folder, NOMBRE_JSON_VETADOS_CONFIRMADOS_, content, MimeType.PLAIN_TEXT);
+    }
+  } catch (e) {
+    Logger.log('[Vetados-Registro] Error guardando ' + NOMBRE_JSON_VETADOS_CONFIRMADOS_ + ': ' + e.message);
+  }
+}
+
+function _tagEstaVetadoConfirmado(tag) {
+  if (_cacheVetadosConfirmados_ === null) _cacheVetadosConfirmados_ = _cargarVetadosConfirmados_();
+  return !!_cacheVetadosConfirmados_[String(tag || '').trim()];
+}
+
+/**
+ * _olvidarVetadoConfirmado(tag) [→ Contexto_Base_Web.md §13B033]
+ */
+function _olvidarVetadoConfirmado(tag) {
+  var t = String(tag || '').trim();
+  var mapa = _cargarVetadosConfirmados_();
+  if (mapa[t]) {
+    delete mapa[t];
+    _guardarVetadosConfirmados_(mapa);
+    Logger.log('[Vetados-Registro] ' + t + ' quitado manualmente del registro de vetados confirmados.');
+  } else {
+    Logger.log('[Vetados-Registro] ' + t + ' no estaba en el registro.');
+  }
+}
+
+// ----- Sincronizar la razón entre Vetados y Directorio (las llama 00_Main.gs) -----
+
 function sincronizarRazonHaciaVetados(shDir, row) {
   var tag = String(shDir.getRange(row, DC.TAG).getValue() || '').trim(), razon = String(shDir.getRange(row, IC.RAZON).getValue() || '').trim();
   if (!tag) return;
@@ -16226,6 +16223,8 @@ function sincronizarRazonHaciaDirectorio(shVet, row) {
     }
   }
 }
+
+// ----- Web: altas y comentarios de vetados -----
 
 /**
  * _upsertVetadoDesdeWeb(tag, filaOrigenIC, razon, autor, via, fecha) [→ Contexto_Base_Web.md §13B043]
@@ -16291,7 +16290,7 @@ function _webAgregarComentarioVeto(filaOrigenIC, autor, fecha, razon, comentario
   _escribirTSDEnFilaHoja_(shCom, shCom.getLastRow(), CMC.TSD, fecha); // 26-oct-2026 (§PF267); si `fecha` no es Date las 5 columnas quedan vacías
 }
 
-// =============================================================================
+// ----- Hoja Multicuentas -----
 
 // _updateMulticuentas(ss, dirData) [→ Contexto_Base_Web.md §13B046]
 function _updateMulticuentas(ss, dirData) {
@@ -16409,6 +16408,86 @@ function _updateMulticuentas(ss, dirData) {
     _tryCondFmt(sh, rules);
   }
 }
+
+/**
+ * _leerInactivosParaReactivacion(ss) [→ Contexto_Base_Web.md §13B017]
+ */
+function _leerInactivosParaReactivacion(ss) {
+  var mapa = {};
+  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+  if (!sh || sh.getLastRow() < 2) return mapa;
+
+  var lastRow = sh.getLastRow();
+  var datos = sh.getRange(2, 1, lastRow - 1, INACTIVOS_TOTAL_COLS).getValues();
+  var extraPorTag = _cargarExtraColsInactivos();
+
+  for (var i = 0; i < datos.length; i++) {
+    var tag = String(datos[i][IC.TAG - 1] || '').trim();
+    if (!tag) continue;
+    mapa[tag] = { ic: datos[i], extra: extraPorTag[tag] || null };
+  }
+  return mapa;
+}
+
+/**
+ * _reconstruirExistingDesdeInactivos(icRow, extraObj) [→ Contexto_Base_Web.md §13B019]
+ */
+function _reconstruirExistingDesdeInactivos(icRow, extraObj) {
+  var fila = new Array(DIR_TOTAL_COLS).fill('');
+  for (var campo in IC) {
+    var valorIC = icRow[IC[campo] - 1];
+    if (campo === 'VETADO' || campo === 'PERMISO' || campo === 'ADMIN') {
+      valorIC = _esSiNoOVacio(valorIC) ? valorIC : '';
+    } else if (campo === 'RAZON') {
+      valorIC = esRazonValida(valorIC) ? valorIC : '';
+    }
+    fila[DC[campo] - 1] = valorIC;
+  }
+  if (extraObj) {
+    for (var campoExtra in extraObj) {
+      if (DC[campoExtra] !== undefined) fila[DC[campoExtra] - 1] = extraObj[campoExtra];
+    }
+  }
+  return fila;
+}
+
+/**
+ * _obtenerCuentasDeNomMulti(nomMulti) [→ Contexto_Base_Web.md §13B029]
+ */
+function _obtenerCuentasDeNomMulti(nomMulti) {
+  var nm = String(nomMulti || '').trim();
+  if (!nm) return [];
+
+  var ss = _getSs();
+  var hojas = [CFG.SHEETS.DIRECTORIO, CFG.SHEETS.INACTIVOS];
+  var vistos = {};
+  var resultado = [];
+
+  for (var h = 0; h < hojas.length; h++) {
+    var sh = ss.getSheetByName(hojas[h]);
+    if (!sh || sh.getLastRow() < 2) continue;
+
+    var datos = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+    for (var i = 0; i < datos.length; i++) {
+      var nomMultiFila = String(datos[i][IC.NOM_MULTI - 1] || '').trim();
+      if (nomMultiFila !== nm) continue;
+
+      var tag = String(datos[i][IC.TAG - 1] || '').trim();
+      if (!tag || vistos[tag]) continue;
+      vistos[tag] = true;
+
+      resultado.push({
+        tag:     tag,
+        nombre:  String(datos[i][IC.NOMBRE   - 1] || ''),
+        clan:    String(datos[i][IC.CLAN     - 1] || ''),
+        clanTag: String(datos[i][IC.CLAN_TAG - 1] || '')
+      });
+    }
+  }
+
+  return resultado;
+}
+
 
 // --- ARCHIVO: 14_Nuevos_RoyaleAPI.gs ---
 // ==============================================================================
@@ -30041,7 +30120,20 @@ function _offDiaDesdeTimestamp(ts) {
 // Historial de guerra por jugador (grupal + individual) y alertas asociadas.
 // ==============================================================================
 
-// ----- Variables y constantes -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 29-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Alertas del historial de guerra: resolver
+//    - Diagnóstico de River Race
+//    - Limpieza de archivos repetidos de la carpeta Individual: atajos del editor
+//  Parte 2 — Funciones que no se corren a mano
+//    - Alertas del historial de guerra: ayuda
+//    - Guardar un registro (lo llaman la web y la resolución de alertas)
+//    - Historial individual (un JSON por jugador en Drive)
+//    - Historial grupal (HistorialGuerra_Grupal.csv)
+//    - Comparar y reemplazar registros (lo usan el individual y el grupal)
+//    - Web: historial por jugador (lectura)
+//    - Limpieza de archivos repetidos de la carpeta Individual: función principal
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // (ORDEN DE EJECUCIÓN: 24 — Histórico de Guerra [→ Contexto_Base_Web.md §20B001]
 
@@ -30054,7 +30146,6 @@ var FUENTE_PRIORIDAD_HISTORIAL_GUERRA = {
 };
 
 // HOJA DE ALERTAS (Sección 8 P3 del consolidado) — una fila por discrepancia [→ Contexto_Base_Web.md §20B003]
-
 var AHG = {
   TAG: 1, NOMBRE: 2, TEMPORADA_INTERNA: 3, TEMPORADA_ROYALEAPI: 4, SEMANA: 5,
   CLAN: 6, FUENTE_NUEVA: 7,
@@ -30082,7 +30173,6 @@ var HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS = [
 ];
 
 // CSV GRUPAL (carpeta DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL, Sección 6 del [→ Contexto_Base_Web.md §20B005]
-
 var HISTORIAL_GUERRA_GRUPAL_FILENAME = 'HistorialGuerra_Grupal.csv';
 
 // PUNTO 2 DE LA HOJA DE RUTA — endpoint que recibe los "registro" ya armados [→ Contexto_Base_Web.md §20B006]
@@ -30093,7 +30183,11 @@ var HISTORIAL_GUERRA_TOKEN = _scriptToken('HISTORIAL_GUERRA_TOKEN');
 // Índice en memoria { tag: DriveFile }, memoizado para el resto de la [→ Contexto_Base_Web.md §20B008]
 var _HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG = null;
 
-// ----- Funciones manuales / punto de entrada -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Alertas del historial de guerra: resolver -----
 
 // NOTA DE REORDEN (23-ago-2026, pedido usuario): las funciones manuales [→ Contexto_Base_Web.md §20B009]
 
@@ -30167,6 +30261,8 @@ function resolverAlertasHistorialGuerra() {
              (errores > 0 ? ', ' + errores + ' error(es) (ver log arriba, filas no borradas).' : '.'));
 }
 
+// ----- Diagnóstico de River Race -----
+
 // DISPARADOR AUTOMÁTICO para resolverAlertasHistorialGuerra() — pendiente [→ Contexto_Base_Web.md §20B012]
 
 // MOVIDO (05-oct-2026, pedido usuario): activarTriggerResolverAlertasHistorialGuerra()/ [→ Contexto_Base_Web.md §20B013]
@@ -30214,127 +30310,29 @@ function diagnosticoRiverRaceHTML(clanTags) {
   return resumen;
 }
 
-// ----- Funciones internas / helpers -----
+// ----- Limpieza de archivos repetidos de la carpeta Individual: atajos del editor -----
+
+/** Atajos para el editor de Apps Script (sin parámetros): simula / aplica la limpieza de la carpeta Individual. */
+function limpiarDuplicadosHistorialGuerraIndividualSimular() { return limpiarDuplicadosHistorialGuerraIndividual(false); }
+
+function limpiarDuplicadosHistorialGuerraIndividualAplicar() { return limpiarDuplicadosHistorialGuerraIndividual(true); }
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Alertas del historial de guerra: ayuda -----
+
+// RESOLUCIÓN de alertas (Sección 8 P3 del consolidado, mecanismo confirmado [→ Contexto_Base_Web.md §20B037]
 
 /**
- * _actualizarFilaHistorialGuerraGrupal(tag, nombre, registroNuevo) [→ Contexto_Base_Web.md §20B016]
+ * _numOrNull(v) [→ Contexto_Base_Web.md §20B038]
  */
-function _actualizarFilaHistorialGuerraGrupal(tag, nombre, registroNuevo) {
-  if (!tag || !registroNuevo) return;
-  // Un solo registro = lote de uno (misma lógica que el envío masivo). [→ Contexto_Base_Web.md §PF068]
-  _actualizarFilasHistorialGuerraGrupalLote([{ tag: tag, nombre: nombre, registro: registroNuevo }]);
+function _numOrNull(v) {
+  return (v === '' || v === null || v === undefined) ? null : Number(v);
 }
 
-/**
- * _actualizarFilasHistorialGuerraGrupalLote(items) [→ Contexto_Base_Web.md §PF068]
- * items: [{ tag, nombre, registro }]. Toma el lock una vez, lee el CSV grupal UNA vez,
- * aplica todos los items en memoria y lo escribe UNA vez, solo si algo cambió.
- * Devuelve { guardado: bool, cambios: n, ignorados: n }.
- */
-function _actualizarFilasHistorialGuerraGrupalLote(items) {
-  var res = { guardado: false, cambios: 0, ignorados: 0 };
-  if (!items || !items.length) return res;
-
-  var lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) {
-    Logger.log('[HistorialGuerra][Grupal] No se pudo obtener el lock — se omiten ' + items.length +
-               ' actualización(es) del CSV grupal para evitar pisar otra escritura en curso.');
-    res.sinLock = true;
-    return res;
-  }
-  try {
-    var csvText = _loadHistorialGuerraGrupalCSV();
-    var filas = csvText ? _parseCSV(csvText) : [HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS.slice()];
-    if (!filas.length) filas = [HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS.slice()];
-
-    for (var i = 0; i < items.length; i++) {
-      var it = items[i];
-      if (!it || !it.tag || !it.registro) continue;
-      try {
-        if (_aplicarRegistroEnFilasHistorialGuerraGrupal(filas, it.tag, it.nombre, it.registro)) res.cambios++;
-        else res.ignorados++;
-      } catch (eItem) {
-        Logger.log('[HistorialGuerra][Grupal] Error actualizando ' + it.tag + ': ' + eItem.message);
-      }
-    }
-
-    if (res.cambios > 0) {
-      _saveHistorialGuerraGrupalCSV(_encodeCSV(filas));
-      res.guardado = true;
-    }
-  } catch (e) {
-    Logger.log('[HistorialGuerra][Grupal] Error en el lote: ' + e.message);
-  } finally {
-    lock.releaseLock();
-  }
-  return res;
-}
-
-/**
- * _aplicarRegistroEnFilasHistorialGuerraGrupal(filas, tag, nombre, registroNuevo) [→ Contexto_Base_Web.md §PF068]
- * Función en memoria (no toca Drive): fusiona el registro en `filas` (se modifica el array).
- * Devuelve true si cambió algo, false si se ignoró por menor prioridad.
- */
-function _aplicarRegistroEnFilasHistorialGuerraGrupal(filas, tag, nombre, registroNuevo) {
-  var tagStr = String(tag).trim();
-  // PF040: la clave incluye el clan; mismas reglas que el JSON individual. [→ Contexto_Base_Web.md §PF040]
-  var regsTag = [], filaDeRegsTag = [];
-  for (var i = 1; i < filas.length; i++) { // fila 0 = encabezados
-    if (filas[i][0] === tagStr) {
-      regsTag.push(_filaHistorialGuerraGrupalARegistro(filas[i]));
-      filaDeRegsTag.push(i);
-    }
-  }
-  var posExistente = _buscarIndiceHistorialGuerra(regsTag, registroNuevo);
-  var idxExistente = (posExistente >= 0) ? filaDeRegsTag[posExistente] : -1;
-
-  var existenteObj = (idxExistente >= 0) ? _filaHistorialGuerraGrupalARegistro(filas[idxExistente]) : null;
-  var decision = _debeReemplazarRegistroHistorialGuerra(existenteObj, registroNuevo);
-
-  if (!decision.reemplazar) {
-    Logger.log('[HistorialGuerra][Grupal] Se ignora fila entrante (fuente "' + registroNuevo.fuente +
-               '" de menor prioridad) para ' + tagStr + ' Temporada ' + registroNuevo.temporadaInterna +
-               ' / Semana ' + registroNuevo.semana);
-    return false;
-  }
-
-  var registroFinal = JSON.parse(JSON.stringify(registroNuevo));
-  if (decision.alerta) {
-    registroFinal.alerta = true;
-    _registrarAlertaHistorialGuerra(tagStr, nombre, existenteObj, registroNuevo);
-  }
-  // Comentario (FASE 2, 04-sep-2026): campo manual, nunca lo manda [→ Contexto_Base_Web.md §20B017]
-  registroFinal.comentario = (existenteObj && existenteObj.comentario) || '';
-
-  var filaNueva = _registroHistorialGuerraAFilaGrupal(tagStr, nombre, registroFinal);
-  if (idxExistente >= 0) {
-    // Si la fila resultante es idéntica a la ya guardada (reenvío de lo mismo), no hay cambio que escribir.
-    var iguales = (filas[idxExistente].length === filaNueva.length);
-    for (var c = 0; iguales && c < filaNueva.length; c++) {
-      if (String(filas[idxExistente][c]) !== String(filaNueva[c])) iguales = false;
-    }
-    if (iguales) return false;
-    filas[idxExistente] = filaNueva;
-  } else {
-    filas.push(filaNueva);
-  }
-  return true;
-}
-
-/**
- * _algunValorBajoHistorialGuerra(existente, nuevo) [→ Contexto_Base_Web.md §20B018]
- */
-function _algunValorBajoHistorialGuerra(existente, nuevo) {
-  var campos = ['ataques', 'fame', 'barcos'];
-  for (var i = 0; i < campos.length; i++) {
-    var c = campos[i];
-    var vExistente = existente[c];
-    var vNuevo = nuevo[c];
-    if (vExistente == null || vNuevo == null) continue; // campo no presente en alguno de los dos, se omite
-    if (Number(vNuevo) < Number(vExistente)) return true;
-  }
-  return false;
-}
+// ----- Guardar un registro (lo llaman la web y la resolución de alertas) -----
 
 /**
  * _aplicarHistorialGuerra(candidatosPayload) [→ Contexto_Base_Web.md §20B019]
@@ -30401,209 +30399,6 @@ function _aplicarHistorialGuerra(candidatosPayload) {
   };
 }
 
-// NOMBRE DE ARCHIVO E ÍNDICE POR TAG (mismo patrón que Players, [→ Contexto_Base_Web.md §20B020]
-
-/**
- * _buildHistorialGuerraFilename(tag, clanActual) [→ Contexto_Base_Web.md §20B021]
- */
-function _buildHistorialGuerraFilename(tag, clanActual) {
-  var fechaHora = Utilities.formatDate(new Date(), 'America/Lima', 'dd-MM-yyyy HH.mm');
-  // FIX (25-oct-2026): la celda de clan de RoyaleAPI trae pegada la fecha de la semana (tooltip oculto, ver limpiarTextoClan() de Tampermonkey.md) y el nombre del archivo salia como "Clan   2026-02-16". Solo se limpia el NOMBRE DEL ARCHIVO: el campo clan de cada registro no se toca (forma parte de su identidad).
-  var clanLimpio = String(clanActual || '').split(/\r?\n/)[0].replace(/\s+\d{4}-\d{2}-\d{2}[\s\S]*$/, '').trim();
-  var clan = clanLimpio ? clanLimpio : 'Sin clan';
-  return fechaHora + ' - ' + clan + ' - ' + String(tag || '').trim() + '.json';
-}
-
-// CARGA DEL JSON INDIVIDUAL [→ Contexto_Base_Web.md §20B022]
-
-/**
- * _cargarHistorialGuerraIndividual(tag) [→ Contexto_Base_Web.md §20B023]
- */
-function _cargarHistorialGuerraIndividual(tag) {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL);
-    var indice = _getHistorialGuerraDriveIndexPorTag(folder);
-    var archivo = indice[String(tag || '').trim()] || null;
-    if (!archivo) return null;
-
-    var contenido = archivo.getBlob().getDataAsString('UTF-8');
-    if (!contenido) return null;
-    return JSON.parse(contenido);
-  } catch (e) {
-    Logger.log('[HistorialGuerra] Error cargando ' + tag + ': ' + e.message);
-    return null;
-  }
-}
-
-/**
- * _crearHistorialGuerraVacio(tag)
- * Shell inicial para un jugador que todavía no tiene archivo.
- */
-function _crearHistorialGuerraVacio(tag) {
-  return {
-    tag: String(tag || '').trim(),
-    backfillPerfilHecho: false,
-    ultimaTemporadaCubierta: null,
-    ultimaSemanaCubierta: null,
-    fechaUltimaConsulta: null,
-    registros: []
-  };
-}
-
-// NÚCLEO DE FUSIÓN (Sección 3 + Hallazgo 2 del consolidado: sin precedente [→ Contexto_Base_Web.md §20B024]
-
-/**
- * _debeReemplazarRegistroHistorialGuerra(existente, nuevo) [→ Contexto_Base_Web.md §20B025]
- */
-function _debeReemplazarRegistroHistorialGuerra(existente, nuevo) {
-  if (!existente) return { reemplazar: true, alerta: false };
-
-  var prioExistente = _prioridadFuenteHistorialGuerra(existente.fuente);
-  var prioNuevo      = _prioridadFuenteHistorialGuerra(nuevo.fuente);
-
-  var existenteEsRiverraceAbierto = (existente.fuente === 'riverrace' && existente.cerrada === false);
-
-  if (existenteEsRiverraceAbierto) {
-    if (nuevo.fuente === 'riverrace') {
-      return { reemplazar: true, alerta: false }; // actualización intradía normal
-    }
-    // Fuente cerrada reemplazando al provisional: valida que no haya bajado.
-    var bajo = _algunValorBajoHistorialGuerra(existente, nuevo);
-    return { reemplazar: true, alerta: bajo };
-  }
-
-  // existente es una fuente cerrada (log/analytics/perfil, cerrada:true).
-  if (prioNuevo >= prioExistente) {
-    return { reemplazar: true, alerta: false };
-  }
-  return { reemplazar: false, alerta: false }; // fuente de menor prioridad no pisa
-}
-
-// CLAVE POR CLAN (11-oct-2026, pedido usuaria): Log y Analytics son por clan, así que un jugador puede tener varios registros la misma semana (uno por clan) y deben coexistir. [→ Contexto_Base_Web.md §PF040]
-/**
- * _claveClanHistorialGuerra(clan) [→ Contexto_Base_Web.md §PF040]
- */
-function _claveClanHistorialGuerra(clan) {
-  return String(clan || '').replace(/\s+\d{4}-\d{2}-\d{2}\s*$/, '').trim().toLowerCase();
-}
-
-/**
- * _buscarIndiceHistorialGuerra(registros, nuevo) [→ Contexto_Base_Web.md §PF040]
- */
-function _buscarIndiceHistorialGuerra(registros, nuevo) {
-  var nuevoEsPerfil = String(nuevo.fuente || '').toLowerCase() === 'perfil';
-  var clanNuevo = _claveClanHistorialGuerra(nuevo.clan);
-  var idxMismoClan = -1, idxPerfil = -1, idxMejorNoPerfil = -1, prioMejor = -2;
-
-  for (var i = 0; i < registros.length; i++) {
-    var r = registros[i];
-    if (Number(r.temporadaInterna) !== Number(nuevo.temporadaInterna) ||
-        Number(r.semana) !== Number(nuevo.semana)) continue;
-
-    var esPerfil = String(r.fuente || '').toLowerCase() === 'perfil';
-    if (esPerfil) {
-      if (idxPerfil < 0) idxPerfil = i;
-      continue;
-    }
-    if (_claveClanHistorialGuerra(r.clan) === clanNuevo && idxMismoClan < 0) idxMismoClan = i;
-    var prio = _prioridadFuenteHistorialGuerra(r.fuente);
-    if (prio > prioMejor) { prioMejor = prio; idxMejorNoPerfil = i; }
-  }
-
-  if (nuevoEsPerfil) return (idxMejorNoPerfil >= 0) ? idxMejorNoPerfil : idxPerfil;
-  return (idxMismoClan >= 0) ? idxMismoClan : idxPerfil;
-}
-
-/**
- * _filaHistorialGuerraGrupalARegistro(fila) [→ Contexto_Base_Web.md §20B026]
- */
-function _filaHistorialGuerraGrupalARegistro(fila) {
-  return {
-    temporadaInterna:   Number(fila[2]),
-    temporadaRoyaleAPI: fila[3] === '' ? null : Number(fila[3]),
-    semana:             Number(fila[4]),
-    clan:               fila[5],
-    ataques:            fila[6] === '' ? null : Number(fila[6]),
-    fame:               fila[7] === '' ? null : Number(fila[7]),
-    barcos:             fila[8] === '' ? null : Number(fila[8]),
-    fuente:             fila[9],
-    cerrada:            fila[10] === 'true',
-    alerta:             fila[11] === 'true',
-    // Comentario (FASE 2, 04-sep-2026): columna 13, agregada al final — [→ Contexto_Base_Web.md §20B027]
-    comentario:         fila[12] || ''
-  };
-}
-
-/**
- * _fusionarRegistroEnArrayHistorialGuerra(registros, nuevo, tag, nombre) [→ Contexto_Base_Web.md §20B028]
- */
-function _fusionarRegistroEnArrayHistorialGuerra(registros, nuevo, tag, nombre) {
-  // PF040: la clave incluye el clan; registros de clanes distintos de la misma semana coexisten. [→ Contexto_Base_Web.md §PF040]
-  var idxExistente = _buscarIndiceHistorialGuerra(registros, nuevo);
-
-  var existente = (idxExistente >= 0) ? registros[idxExistente] : null;
-  var decision = _debeReemplazarRegistroHistorialGuerra(existente, nuevo);
-
-  if (!decision.reemplazar) {
-    Logger.log('[HistorialGuerra] Se ignora registro entrante (fuente "' + nuevo.fuente +
-               '" de menor prioridad que la ya guardada "' + (existente && existente.fuente) +
-               '") para Temporada ' + nuevo.temporadaInterna + ' / Semana ' + nuevo.semana);
-    return registros;
-  }
-
-  var registroFinal = JSON.parse(JSON.stringify(nuevo)); // copia, no mutar el objeto que pasó el llamador
-  if (decision.alerta) {
-    registroFinal.alerta = true;
-    _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo);
-    Logger.log('[HistorialGuerra] ALERTA: valor(es) menor(es) al cerrar Temporada ' +
-               nuevo.temporadaInterna + ' / Semana ' + nuevo.semana +
-               ' (fuente nueva "' + nuevo.fuente + '" vs. riverrace ya registrado). ' +
-               'Fila agregada a la hoja Alertas_HistorialGuerra.');
-  }
-  // Comentario (FASE 2, 04-sep-2026): mismo criterio que en el CSV grupal [→ Contexto_Base_Web.md §20B029]
-  registroFinal.comentario = (existente && existente.comentario) || '';
-
-  if (idxExistente >= 0) {
-    registros[idxExistente] = registroFinal;
-  } else {
-    registros.push(registroFinal);
-  }
-  return registros;
-}
-
-/**
- * _getHistorialGuerraDriveIndexPorTag(folder) [→ Contexto_Base_Web.md §20B030]
- */
-function _getHistorialGuerraDriveIndexPorTag(folder) {
-  if (_HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG) return _HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG;
-
-  var reTag = /-\s(#[0-9A-Z]+)\.json$/i;
-  var idx = {};
-  var todos = folder.getFiles();
-  while (todos.hasNext()) {
-    var f = todos.next();
-    var m = reTag.exec(f.getName());
-    if (!m) continue;
-    var tag = m[1];
-    // Por las dudas hubiera más de un archivo del mismo tag (no debería [→ Contexto_Base_Web.md §20B031]
-    if (!idx[tag] || f.getName() > idx[tag].getName()) idx[tag] = f;
-  }
-
-  _HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG = idx;
-  return idx;
-}
-
-/**
- * _getHistorialGuerraGrupalFolder() [→ Contexto_Base_Web.md §20B032]
- */
-function _getHistorialGuerraGrupalFolder() {
-  try { return DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL); }
-  catch (e) {
-    var folders = DriveApp.getFoldersByName('Grupal');
-    return folders.hasNext() ? folders.next() : DriveApp.createFolder('Grupal');
-  }
-}
-
 // PUNTO DE ENTRADA ÚNICO (JSON individual + CSV grupal a la vez) [→ Contexto_Base_Web.md §20B033]
 
 /**
@@ -30623,6 +30418,8 @@ function _guardarRegistroHistorialGuerraIndividual(tag, nombre, clanActual, regi
   if (!tag || !registroNuevo) return;
   _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanActual, [registroNuevo]);
 }
+
+// ----- Historial individual (un JSON por jugador en Drive) -----
 
 /**
  * _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanActual, registrosNuevos) [→ Contexto_Base_Web.md §PF068]
@@ -30664,6 +30461,170 @@ function _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanActual, reg
   }
 }
 
+// CARGA DEL JSON INDIVIDUAL [→ Contexto_Base_Web.md §20B022]
+
+/**
+ * _cargarHistorialGuerraIndividual(tag) [→ Contexto_Base_Web.md §20B023]
+ */
+function _cargarHistorialGuerraIndividual(tag) {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL);
+    var indice = _getHistorialGuerraDriveIndexPorTag(folder);
+    var archivo = indice[String(tag || '').trim()] || null;
+    if (!archivo) return null;
+
+    var contenido = archivo.getBlob().getDataAsString('UTF-8');
+    if (!contenido) return null;
+    return JSON.parse(contenido);
+  } catch (e) {
+    Logger.log('[HistorialGuerra] Error cargando ' + tag + ': ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * _getHistorialGuerraDriveIndexPorTag(folder) [→ Contexto_Base_Web.md §20B030]
+ */
+function _getHistorialGuerraDriveIndexPorTag(folder) {
+  if (_HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG) return _HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG;
+
+  var reTag = /-\s(#[0-9A-Z]+)\.json$/i;
+  var idx = {};
+  var todos = folder.getFiles();
+  while (todos.hasNext()) {
+    var f = todos.next();
+    var m = reTag.exec(f.getName());
+    if (!m) continue;
+    var tag = m[1];
+    // Por las dudas hubiera más de un archivo del mismo tag (no debería [→ Contexto_Base_Web.md §20B031]
+    if (!idx[tag] || f.getName() > idx[tag].getName()) idx[tag] = f;
+  }
+
+  _HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG = idx;
+  return idx;
+}
+
+/**
+ * _crearHistorialGuerraVacio(tag)
+ * Shell inicial para un jugador que todavía no tiene archivo.
+ */
+function _crearHistorialGuerraVacio(tag) {
+  return {
+    tag: String(tag || '').trim(),
+    backfillPerfilHecho: false,
+    ultimaTemporadaCubierta: null,
+    ultimaSemanaCubierta: null,
+    fechaUltimaConsulta: null,
+    registros: []
+  };
+}
+
+/**
+ * _fusionarRegistroEnArrayHistorialGuerra(registros, nuevo, tag, nombre) [→ Contexto_Base_Web.md §20B028]
+ */
+function _fusionarRegistroEnArrayHistorialGuerra(registros, nuevo, tag, nombre) {
+  // PF040: la clave incluye el clan; registros de clanes distintos de la misma semana coexisten. [→ Contexto_Base_Web.md §PF040]
+  var idxExistente = _buscarIndiceHistorialGuerra(registros, nuevo);
+
+  var existente = (idxExistente >= 0) ? registros[idxExistente] : null;
+  var decision = _debeReemplazarRegistroHistorialGuerra(existente, nuevo);
+
+  if (!decision.reemplazar) {
+    Logger.log('[HistorialGuerra] Se ignora registro entrante (fuente "' + nuevo.fuente +
+               '" de menor prioridad que la ya guardada "' + (existente && existente.fuente) +
+               '") para Temporada ' + nuevo.temporadaInterna + ' / Semana ' + nuevo.semana);
+    return registros;
+  }
+
+  var registroFinal = JSON.parse(JSON.stringify(nuevo)); // copia, no mutar el objeto que pasó el llamador
+  if (decision.alerta) {
+    registroFinal.alerta = true;
+    _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo);
+    Logger.log('[HistorialGuerra] ALERTA: valor(es) menor(es) al cerrar Temporada ' +
+               nuevo.temporadaInterna + ' / Semana ' + nuevo.semana +
+               ' (fuente nueva "' + nuevo.fuente + '" vs. riverrace ya registrado). ' +
+               'Fila agregada a la hoja Alertas_HistorialGuerra.');
+  }
+  // Comentario (FASE 2, 04-sep-2026): mismo criterio que en el CSV grupal [→ Contexto_Base_Web.md §20B029]
+  registroFinal.comentario = (existente && existente.comentario) || '';
+
+  if (idxExistente >= 0) {
+    registros[idxExistente] = registroFinal;
+  } else {
+    registros.push(registroFinal);
+  }
+  return registros;
+}
+
+// NOMBRE DE ARCHIVO E ÍNDICE POR TAG (mismo patrón que Players, [→ Contexto_Base_Web.md §20B020]
+
+/**
+ * _buildHistorialGuerraFilename(tag, clanActual) [→ Contexto_Base_Web.md §20B021]
+ */
+function _buildHistorialGuerraFilename(tag, clanActual) {
+  var fechaHora = Utilities.formatDate(new Date(), 'America/Lima', 'dd-MM-yyyy HH.mm');
+  // FIX (25-oct-2026): la celda de clan de RoyaleAPI trae pegada la fecha de la semana (tooltip oculto, ver limpiarTextoClan() de Tampermonkey.md) y el nombre del archivo salia como "Clan   2026-02-16". Solo se limpia el NOMBRE DEL ARCHIVO: el campo clan de cada registro no se toca (forma parte de su identidad).
+  var clanLimpio = String(clanActual || '').split(/\r?\n/)[0].replace(/\s+\d{4}-\d{2}-\d{2}[\s\S]*$/, '').trim();
+  var clan = clanLimpio ? clanLimpio : 'Sin clan';
+  return fechaHora + ' - ' + clan + ' - ' + String(tag || '').trim() + '.json';
+}
+
+// ----- Historial grupal (HistorialGuerra_Grupal.csv) -----
+
+/**
+ * _actualizarFilaHistorialGuerraGrupal(tag, nombre, registroNuevo) [→ Contexto_Base_Web.md §20B016]
+ */
+function _actualizarFilaHistorialGuerraGrupal(tag, nombre, registroNuevo) {
+  if (!tag || !registroNuevo) return;
+  // Un solo registro = lote de uno (misma lógica que el envío masivo). [→ Contexto_Base_Web.md §PF068]
+  _actualizarFilasHistorialGuerraGrupalLote([{ tag: tag, nombre: nombre, registro: registroNuevo }]);
+}
+
+/**
+ * _actualizarFilasHistorialGuerraGrupalLote(items) [→ Contexto_Base_Web.md §PF068]
+ * items: [{ tag, nombre, registro }]. Toma el lock una vez, lee el CSV grupal UNA vez,
+ * aplica todos los items en memoria y lo escribe UNA vez, solo si algo cambió.
+ * Devuelve { guardado: bool, cambios: n, ignorados: n }.
+ */
+function _actualizarFilasHistorialGuerraGrupalLote(items) {
+  var res = { guardado: false, cambios: 0, ignorados: 0 };
+  if (!items || !items.length) return res;
+
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    Logger.log('[HistorialGuerra][Grupal] No se pudo obtener el lock — se omiten ' + items.length +
+               ' actualización(es) del CSV grupal para evitar pisar otra escritura en curso.');
+    res.sinLock = true;
+    return res;
+  }
+  try {
+    var csvText = _loadHistorialGuerraGrupalCSV();
+    var filas = csvText ? _parseCSV(csvText) : [HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS.slice()];
+    if (!filas.length) filas = [HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS.slice()];
+
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (!it || !it.tag || !it.registro) continue;
+      try {
+        if (_aplicarRegistroEnFilasHistorialGuerraGrupal(filas, it.tag, it.nombre, it.registro)) res.cambios++;
+        else res.ignorados++;
+      } catch (eItem) {
+        Logger.log('[HistorialGuerra][Grupal] Error actualizando ' + it.tag + ': ' + eItem.message);
+      }
+    }
+
+    if (res.cambios > 0) {
+      _saveHistorialGuerraGrupalCSV(_encodeCSV(filas));
+      res.guardado = true;
+    }
+  } catch (e) {
+    Logger.log('[HistorialGuerra][Grupal] Error en el lote: ' + e.message);
+  } finally {
+    lock.releaseLock();
+  }
+  return res;
+}
+
 function _loadHistorialGuerraGrupalCSV() {
   var folder = _getHistorialGuerraGrupalFolder();
   var files = folder.getFilesByName(HISTORIAL_GUERRA_GRUPAL_FILENAME);
@@ -30673,13 +30634,180 @@ function _loadHistorialGuerraGrupalCSV() {
   return null;
 }
 
-// RESOLUCIÓN de alertas (Sección 8 P3 del consolidado, mecanismo confirmado [→ Contexto_Base_Web.md §20B037]
+/**
+ * _getHistorialGuerraGrupalFolder() [→ Contexto_Base_Web.md §20B032]
+ */
+function _getHistorialGuerraGrupalFolder() {
+  try { return DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL); }
+  catch (e) {
+    var folders = DriveApp.getFoldersByName('Grupal');
+    return folders.hasNext() ? folders.next() : DriveApp.createFolder('Grupal');
+  }
+}
 
 /**
- * _numOrNull(v) [→ Contexto_Base_Web.md §20B038]
+ * _aplicarRegistroEnFilasHistorialGuerraGrupal(filas, tag, nombre, registroNuevo) [→ Contexto_Base_Web.md §PF068]
+ * Función en memoria (no toca Drive): fusiona el registro en `filas` (se modifica el array).
+ * Devuelve true si cambió algo, false si se ignoró por menor prioridad.
  */
-function _numOrNull(v) {
-  return (v === '' || v === null || v === undefined) ? null : Number(v);
+function _aplicarRegistroEnFilasHistorialGuerraGrupal(filas, tag, nombre, registroNuevo) {
+  var tagStr = String(tag).trim();
+  // PF040: la clave incluye el clan; mismas reglas que el JSON individual. [→ Contexto_Base_Web.md §PF040]
+  var regsTag = [], filaDeRegsTag = [];
+  for (var i = 1; i < filas.length; i++) { // fila 0 = encabezados
+    if (filas[i][0] === tagStr) {
+      regsTag.push(_filaHistorialGuerraGrupalARegistro(filas[i]));
+      filaDeRegsTag.push(i);
+    }
+  }
+  var posExistente = _buscarIndiceHistorialGuerra(regsTag, registroNuevo);
+  var idxExistente = (posExistente >= 0) ? filaDeRegsTag[posExistente] : -1;
+
+  var existenteObj = (idxExistente >= 0) ? _filaHistorialGuerraGrupalARegistro(filas[idxExistente]) : null;
+  var decision = _debeReemplazarRegistroHistorialGuerra(existenteObj, registroNuevo);
+
+  if (!decision.reemplazar) {
+    Logger.log('[HistorialGuerra][Grupal] Se ignora fila entrante (fuente "' + registroNuevo.fuente +
+               '" de menor prioridad) para ' + tagStr + ' Temporada ' + registroNuevo.temporadaInterna +
+               ' / Semana ' + registroNuevo.semana);
+    return false;
+  }
+
+  var registroFinal = JSON.parse(JSON.stringify(registroNuevo));
+  if (decision.alerta) {
+    registroFinal.alerta = true;
+    _registrarAlertaHistorialGuerra(tagStr, nombre, existenteObj, registroNuevo);
+  }
+  // Comentario (FASE 2, 04-sep-2026): campo manual, nunca lo manda [→ Contexto_Base_Web.md §20B017]
+  registroFinal.comentario = (existenteObj && existenteObj.comentario) || '';
+
+  var filaNueva = _registroHistorialGuerraAFilaGrupal(tagStr, nombre, registroFinal);
+  if (idxExistente >= 0) {
+    // Si la fila resultante es idéntica a la ya guardada (reenvío de lo mismo), no hay cambio que escribir.
+    var iguales = (filas[idxExistente].length === filaNueva.length);
+    for (var c = 0; iguales && c < filaNueva.length; c++) {
+      if (String(filas[idxExistente][c]) !== String(filaNueva[c])) iguales = false;
+    }
+    if (iguales) return false;
+    filas[idxExistente] = filaNueva;
+  } else {
+    filas.push(filaNueva);
+  }
+  return true;
+}
+
+/**
+ * _filaHistorialGuerraGrupalARegistro(fila) [→ Contexto_Base_Web.md §20B026]
+ */
+function _filaHistorialGuerraGrupalARegistro(fila) {
+  return {
+    temporadaInterna:   Number(fila[2]),
+    temporadaRoyaleAPI: fila[3] === '' ? null : Number(fila[3]),
+    semana:             Number(fila[4]),
+    clan:               fila[5],
+    ataques:            fila[6] === '' ? null : Number(fila[6]),
+    fame:               fila[7] === '' ? null : Number(fila[7]),
+    barcos:             fila[8] === '' ? null : Number(fila[8]),
+    fuente:             fila[9],
+    cerrada:            fila[10] === 'true',
+    alerta:             fila[11] === 'true',
+    // Comentario (FASE 2, 04-sep-2026): columna 13, agregada al final — [→ Contexto_Base_Web.md §20B027]
+    comentario:         fila[12] || ''
+  };
+}
+
+/**
+ * _registroHistorialGuerraAFilaGrupal(tag, nombre, registro) [→ Contexto_Base_Web.md §20B042]
+ */
+function _registroHistorialGuerraAFilaGrupal(tag, nombre, registro) {
+  return [
+    tag, (nombre || ''),
+    registro.temporadaInterna, (registro.temporadaRoyaleAPI == null ? '' : registro.temporadaRoyaleAPI),
+    registro.semana, (registro.clan || ''),
+    (registro.ataques == null ? '' : registro.ataques),
+    (registro.fame == null ? '' : registro.fame),
+    (registro.barcos == null ? '' : registro.barcos),
+    registro.fuente,
+    registro.cerrada ? 'true' : 'false',
+    registro.alerta ? 'true' : 'false',
+    (registro.comentario || '') // FASE 2 (04-sep-2026) — columna 13, al final.
+  ];
+}
+
+function _saveHistorialGuerraGrupalCSV(content) {
+  var folder = _getHistorialGuerraGrupalFolder();
+  var files = folder.getFilesByName(HISTORIAL_GUERRA_GRUPAL_FILENAME);
+  if (files.hasNext()) {
+    _setContentConConteo_(files.next(), content);
+  } else {
+    _createFileConConteo_(folder, HISTORIAL_GUERRA_GRUPAL_FILENAME, content, MimeType.CSV);
+  }
+}
+
+// ----- Comparar y reemplazar registros (lo usan el individual y el grupal) -----
+
+/**
+ * _buscarIndiceHistorialGuerra(registros, nuevo) [→ Contexto_Base_Web.md §PF040]
+ */
+function _buscarIndiceHistorialGuerra(registros, nuevo) {
+  var nuevoEsPerfil = String(nuevo.fuente || '').toLowerCase() === 'perfil';
+  var clanNuevo = _claveClanHistorialGuerra(nuevo.clan);
+  var idxMismoClan = -1, idxPerfil = -1, idxMejorNoPerfil = -1, prioMejor = -2;
+
+  for (var i = 0; i < registros.length; i++) {
+    var r = registros[i];
+    if (Number(r.temporadaInterna) !== Number(nuevo.temporadaInterna) ||
+        Number(r.semana) !== Number(nuevo.semana)) continue;
+
+    var esPerfil = String(r.fuente || '').toLowerCase() === 'perfil';
+    if (esPerfil) {
+      if (idxPerfil < 0) idxPerfil = i;
+      continue;
+    }
+    if (_claveClanHistorialGuerra(r.clan) === clanNuevo && idxMismoClan < 0) idxMismoClan = i;
+    var prio = _prioridadFuenteHistorialGuerra(r.fuente);
+    if (prio > prioMejor) { prioMejor = prio; idxMejorNoPerfil = i; }
+  }
+
+  if (nuevoEsPerfil) return (idxMejorNoPerfil >= 0) ? idxMejorNoPerfil : idxPerfil;
+  return (idxMismoClan >= 0) ? idxMismoClan : idxPerfil;
+}
+
+// CLAVE POR CLAN (11-oct-2026, pedido usuaria): Log y Analytics son por clan, así que un jugador puede tener varios registros la misma semana (uno por clan) y deben coexistir. [→ Contexto_Base_Web.md §PF040]
+/**
+ * _claveClanHistorialGuerra(clan) [→ Contexto_Base_Web.md §PF040]
+ */
+function _claveClanHistorialGuerra(clan) {
+  return String(clan || '').replace(/\s+\d{4}-\d{2}-\d{2}\s*$/, '').trim().toLowerCase();
+}
+
+// NÚCLEO DE FUSIÓN (Sección 3 + Hallazgo 2 del consolidado: sin precedente [→ Contexto_Base_Web.md §20B024]
+
+/**
+ * _debeReemplazarRegistroHistorialGuerra(existente, nuevo) [→ Contexto_Base_Web.md §20B025]
+ */
+function _debeReemplazarRegistroHistorialGuerra(existente, nuevo) {
+  if (!existente) return { reemplazar: true, alerta: false };
+
+  var prioExistente = _prioridadFuenteHistorialGuerra(existente.fuente);
+  var prioNuevo      = _prioridadFuenteHistorialGuerra(nuevo.fuente);
+
+  var existenteEsRiverraceAbierto = (existente.fuente === 'riverrace' && existente.cerrada === false);
+
+  if (existenteEsRiverraceAbierto) {
+    if (nuevo.fuente === 'riverrace') {
+      return { reemplazar: true, alerta: false }; // actualización intradía normal
+    }
+    // Fuente cerrada reemplazando al provisional: valida que no haya bajado.
+    var bajo = _algunValorBajoHistorialGuerra(existente, nuevo);
+    return { reemplazar: true, alerta: bajo };
+  }
+
+  // existente es una fuente cerrada (log/analytics/perfil, cerrada:true).
+  if (prioNuevo >= prioExistente) {
+    return { reemplazar: true, alerta: false };
+  }
+  return { reemplazar: false, alerta: false }; // fuente de menor prioridad no pisa
 }
 
 /**
@@ -30688,6 +30816,21 @@ function _numOrNull(v) {
 function _prioridadFuenteHistorialGuerra(fuente) {
   var p = FUENTE_PRIORIDAD_HISTORIAL_GUERRA[String(fuente || '').toLowerCase()];
   return (typeof p === 'number') ? p : -1;
+}
+
+/**
+ * _algunValorBajoHistorialGuerra(existente, nuevo) [→ Contexto_Base_Web.md §20B018]
+ */
+function _algunValorBajoHistorialGuerra(existente, nuevo) {
+  var campos = ['ataques', 'fame', 'barcos'];
+  for (var i = 0; i < campos.length; i++) {
+    var c = campos[i];
+    var vExistente = existente[c];
+    var vNuevo = nuevo[c];
+    if (vExistente == null || vNuevo == null) continue; // campo no presente en alguno de los dos, se omite
+    if (Number(vNuevo) < Number(vExistente)) return true;
+  }
+  return false;
 }
 
 /**
@@ -30744,65 +30887,7 @@ function _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo) {
   }
 }
 
-/**
- * _registroHistorialGuerraAFilaGrupal(tag, nombre, registro) [→ Contexto_Base_Web.md §20B042]
- */
-function _registroHistorialGuerraAFilaGrupal(tag, nombre, registro) {
-  return [
-    tag, (nombre || ''),
-    registro.temporadaInterna, (registro.temporadaRoyaleAPI == null ? '' : registro.temporadaRoyaleAPI),
-    registro.semana, (registro.clan || ''),
-    (registro.ataques == null ? '' : registro.ataques),
-    (registro.fame == null ? '' : registro.fame),
-    (registro.barcos == null ? '' : registro.barcos),
-    registro.fuente,
-    registro.cerrada ? 'true' : 'false',
-    registro.alerta ? 'true' : 'false',
-    (registro.comentario || '') // FASE 2 (04-sep-2026) — columna 13, al final.
-  ];
-}
-
-function _saveHistorialGuerraGrupalCSV(content) {
-  var folder = _getHistorialGuerraGrupalFolder();
-  var files = folder.getFilesByName(HISTORIAL_GUERRA_GRUPAL_FILENAME);
-  if (files.hasNext()) {
-    _setContentConConteo_(files.next(), content);
-  } else {
-    _createFileConConteo_(folder, HISTORIAL_GUERRA_GRUPAL_FILENAME, content, MimeType.CSV);
-  }
-}
-
-// WEB — HISTORIAL COMPLETO POR JUGADOR (FASE 2, 04-sep-2026, punto 1 del [→ Contexto_Base_Web.md §20B043]
-
-/**
- * _obtenerFechaCierrePorTemporadaSemana(tagNorm) [→ Contexto_Base_Web.md §20B044]
- */
-function _obtenerFechaCierrePorTemporadaSemana(tagNorm) {
-  var mapa = {};
-  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
-  if (!csvText) return mapa;
-
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length < 2) return mapa;
-
-  for (var i = 1; i < parsed.length; i++) {
-    var f = parsed[i];
-    var tagFila = String(f[GC.TAG - 1] || '').trim().toUpperCase();
-    if (tagFila !== tagNorm) continue;
-
-    var temporada = Number(f[GC.TEMPORADA - 1]) || 0;
-    var semana    = Number(f[GC.SEMANA - 1]) || 0;
-    if (!temporada || !semana) continue;
-
-    var fechaFila = _comoFechaComparable(f[GC.FECHA - 1]);
-    if (!fechaFila) continue;
-
-    var clave = temporada + '|' + semana;
-    if (!mapa[clave] || fechaFila > mapa[clave]) mapa[clave] = fechaFila;
-  }
-
-  return mapa;
-}
+// ----- Web: historial por jugador (lectura) -----
 
 /**
  * _webHistorialGuerraJugador(token, tagBuscado) [→ Contexto_Base_Web.md §20B045]
@@ -30855,6 +30940,41 @@ function _webHistorialGuerraJugador(token, tagBuscado, limite) {
 
   return { ok: true, tag: tagNorm, total: total, truncado: recortar, registros: salida };
 }
+
+// WEB — HISTORIAL COMPLETO POR JUGADOR (FASE 2, 04-sep-2026, punto 1 del [→ Contexto_Base_Web.md §20B043]
+
+/**
+ * _obtenerFechaCierrePorTemporadaSemana(tagNorm) [→ Contexto_Base_Web.md §20B044]
+ */
+function _obtenerFechaCierrePorTemporadaSemana(tagNorm) {
+  var mapa = {};
+  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+  if (!csvText) return mapa;
+
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length < 2) return mapa;
+
+  for (var i = 1; i < parsed.length; i++) {
+    var f = parsed[i];
+    var tagFila = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+    if (tagFila !== tagNorm) continue;
+
+    var temporada = Number(f[GC.TEMPORADA - 1]) || 0;
+    var semana    = Number(f[GC.SEMANA - 1]) || 0;
+    if (!temporada || !semana) continue;
+
+    var fechaFila = _comoFechaComparable(f[GC.FECHA - 1]);
+    if (!fechaFila) continue;
+
+    var clave = temporada + '|' + semana;
+    if (!mapa[clave] || fechaFila > mapa[clave]) mapa[clave] = fechaFila;
+  }
+
+  return mapa;
+}
+
+// ----- Limpieza de archivos repetidos de la carpeta Individual: función principal -----
+
 // LIMPIEZA DE ARCHIVOS REPETIDOS EN LA CARPETA INDIVIDUAL (25-oct-2026)
 
 /**
@@ -30913,10 +31033,6 @@ function limpiarDuplicadosHistorialGuerraIndividual(aplicar) {
     ', distintos: ' + res.distintos + ', enviados a la papelera: ' + res.enviadosAPapelera + (res.incompleto ? ' (incompleto por tiempo)' : ''), []);
   return res;
 }
-
-/** Atajos para el editor de Apps Script (sin parámetros): simula / aplica la limpieza de la carpeta Individual. */
-function limpiarDuplicadosHistorialGuerraIndividualSimular() { return limpiarDuplicadosHistorialGuerraIndividual(false); }
-function limpiarDuplicadosHistorialGuerraIndividualAplicar() { return limpiarDuplicadosHistorialGuerraIndividual(true); }
 
 
 // --- ARCHIVO: 21_Pronostico_Guerra.gs ---
@@ -58988,8 +59104,11 @@ function _getOrdenExtra(ss, tipo) {
   var sh = ss.getSheetByName(CFG.SHEETS.EXTRA);
   var mapa = {};
   if (!sh || sh.getLastRow() < 2) return mapa;
-  var colIdx = (tipo === 'subcategoria') ? 12 : 11; // 0-based
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 13).getValues();
+  // PF141 (29-oct-2026): antes las columnas estaban fijas en L y M (índices 11 y 12), que desde que se agregaron Mostrar_S y
+  // Mostrar_D son Rangos y Alerta; Categoría es la N (14) y Subcategoría la O (15). Ahora se busca por el encabezado
+  // (con N y O como respaldo) y se lee hasta la columna que haga falta. [→ Contexto_Base_Web.md §PF141]
+  var colIdx = _colExtraPorEncabezado_(sh, tipo === 'subcategoria' ? 'subcategoria' : 'categoria', tipo === 'subcategoria' ? 15 : 14) - 1; // 0-based
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(colIdx + 1, 1)).getValues();
   var orden = 0;
   for (var i = 0; i < data.length; i++) {
     var v = String(data[i][colIdx] || '').trim();
@@ -58998,6 +59117,22 @@ function _getOrdenExtra(ss, tipo) {
     }
   }
   return mapa;
+}
+
+// Devuelve la columna (1-based) de la hoja Extra cuyo encabezado coincide con `nombre` (sin tilde ni mayúsculas); `respaldo` si no aparece o falla la lectura. [→ Contexto_Base_Web.md §PF141]
+function _colExtraPorEncabezado_(sh, nombre, respaldo) {
+  try {
+    var ultima = sh.getLastColumn();
+    if (ultima < 1) return respaldo;
+    var encabezados = sh.getRange(1, 1, 1, ultima).getValues()[0];
+    for (var c = 0; c < encabezados.length; c++) {
+      var h = String(encabezados[c] || '').trim().toLowerCase().replace(/í/g, 'i');
+      if (h === nombre) return c + 1;
+    }
+  } catch (e) {
+    Logger.log('[Menú] No se pudo leer el encabezado de Extra (' + e.message + '); se usa la columna ' + respaldo + '.');
+  }
+  return respaldo;
 }
 
 // Lee la hoja Clan y devuelve { nombreClanLower -> índice } según el orden de filas. [→ Contexto_Base_Web.md §43B008]
