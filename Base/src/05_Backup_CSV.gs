@@ -2072,6 +2072,7 @@ function _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx
 }
 
 function _saveCSVToDrive(filename, content) {
+  content = _agregarIdAInformeCSV_(filename, content); // PF238 (29-oct-2026): los informes llevan una columna ID al final; no toca respaldos ni hojas
   var hit = _csvBuscarArchivo_(filename); // nunca crea una copia si el archivo ya existe en alguna subcarpeta [→ Contexto_Base_Web.md §01B158]
   var destino = _csvSubcarpetaDe_(filename);
   if (hit) {
@@ -2092,6 +2093,64 @@ function _saveCSVToDrive(filename, content) {
   _CSV_MEM_[filename] = content;
   _csvEscritosEnEjecucion_[filename] = content; // PF291: para _reverificarCsvEscritos_()
   _csvEscritosTs_[filename] = Date.now();
+}
+
+/**
+ * _agregarIdAInformeCSV_(filename, content) - PF238 (29-oct-2026, «tú decide» de la usuaria): agrega al FINAL de un informe una columna «ID» con el formato
+ * de Correcciones_Guerra.csv (T_NN_S_NN_#TAG, o T_NN_S_NN si la fila no trae Tag), calculado con las columnas «Temporada», «Semana» y «Tag» de cada fila.
+ * Solo aplica a lo que va a la subcarpeta Informes con nombre terminado en (informe), (plan), (aplicado), (detalle) o (resumen), que no empiece por «Backup_»
+ * (los respaldos son copias de hojas y se leen por posición) y cuya primera línea traiga «Temporada» y «Semana» y todavía no tenga «ID». Va al final y no
+ * al inicio porque los lectores conocidos de informes buscan las columnas por nombre, pero no se descarta alguno que use posiciones. Conserva el BOM, el
+ * tipo de salto de línea y el texto original de cada fila. Ante cualquier error devuelve el contenido sin cambios. [→ Contexto_Base_Web.md §PF238]
+ */
+function _agregarIdAInformeCSV_(filename, content) {
+  try {
+    var nombre = String(filename || '');
+    if (typeof content !== 'string' || content === '') return content;
+    if (/^Backup_/.test(nombre) || !/\((informe|plan|aplicado|detalle|resumen)\)\.csv$/.test(nombre)) return content;
+    if (_csvSubcarpetaDe_(nombre) !== 'Informes') return content;
+    var bom = content.charAt(0) === '﻿' ? '﻿' : '';
+    var texto = bom ? content.slice(1) : content;
+    var crlf = texto.indexOf('\r\n') >= 0;
+    // Partir en registros por saltos de línea fuera de comillas.
+    var registros = [], ini = 0, enComillas = false;
+    for (var i = 0; i < texto.length; i++) {
+      var c = texto.charAt(i);
+      if (c === '"') enComillas = !enComillas;
+      else if (c === '\n' && !enComillas) { registros.push(texto.substring(ini, i)); ini = i + 1; }
+    }
+    var cola = texto.substring(ini);
+    if (cola !== '') registros.push(cola);
+    if (registros.length < 1) return content;
+    var cabecera = _parseCSV(registros[0].replace(/\r$/, ''))[0] || [];
+    var iTemp = -1, iSem = -1, iTag = -1;
+    for (var h = 0; h < cabecera.length; h++) {
+      var nh = String(cabecera[h]).trim();
+      if (nh === 'ID') return content;
+      if (nh === 'Temporada') iTemp = h; else if (nh === 'Semana') iSem = h; else if (nh === 'Tag') iTag = h;
+    }
+    if (iTemp < 0 || iSem < 0) return content;
+    var salida = [];
+    for (var r = 0; r < registros.length; r++) {
+      var reg = registros[r].replace(/\r$/, '');
+      if (r === 0) { salida.push(reg + ',ID'); continue; }
+      if (reg === '') { salida.push(reg); continue; }
+      var campos = _parseCSV(reg)[0] || [];
+      var t = String(campos[iTemp] === undefined ? '' : campos[iTemp]).trim();
+      var sm = String(campos[iSem] === undefined ? '' : campos[iSem]).trim();
+      var id = '';
+      if (t !== '' && sm !== '' && !isNaN(Number(t)) && !isNaN(Number(sm))) {
+        var tg = iTag >= 0 ? String(campos[iTag] === undefined ? '' : campos[iTag]).trim().toUpperCase() : '';
+        if (tg && tg.charAt(0) !== '#') tg = '#' + tg;
+        id = tg ? _cgwIdFila_(t, sm, tg) : _cgwIdFila_(t, sm, '').replace(/_$/, '');
+      }
+      salida.push(reg + ',' + id);
+    }
+    return bom + salida.join(crlf ? '\r\n' : '\n') + (texto.charAt(texto.length - 1) === '\n' ? (crlf ? '\r\n' : '\n') : '');
+  } catch (e) {
+    Logger.log('[CSV] No se pudo agregar la columna ID a ' + filename + ' (' + e.message + '); se guarda sin ella.');
+    return content;
+  }
 }
 
 /**
