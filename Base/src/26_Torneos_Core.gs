@@ -158,25 +158,105 @@ function _parseHoraCanonica(str, fechaBase) {
 /**
  * _reordenarCRListaPorFecha(ss) [→ Contexto_Base_Web.md §26B014]
  */
-function _reordenarCRListaPorFecha(ss) {
+function _reordenarCRListaPorFecha(ss, soloRevisar) {
   var sh = ss.getSheetByName(CFG.SHEETS.CR_LISTA);
-  if (!sh) return;
-  var lastRow = sh.getLastRow();
-  if (lastRow < 4) return; // sin datos, nada que ordenar
+  if (!sh) return null;
+  // Sin desempate por ID: el par Ascenso/Descenso del mismo día y hora conserva el orden en que se creó (primero Ascenso).
+  var res = _ordenarHojaPorFechaDesc_(sh, 4, CR_TOTAL_COLS, { NUM: CR.NUM, FECHA: CR.FECHA, HORA: CR.HORA, ID: CR.ID }, {
+    etiqueta: 'CR_Lista', fmtFecha: 'dd/mm/yyyy', fmtHora: 'h:mm:ss AM/PM', soloRevisar: !!soloRevisar
+  });
+  if (!soloRevisar) _aplicarFormatoMilesHoja_(sh, 4, CR_COLS_MILES, sh.getLastRow());
+  return res;
+}
 
-  var datos = sh.getRange(4, 1, lastRow - 3, CR_TOTAL_COLS).getValues();
-  datos.sort(function (a, b) {
-    var fA = a[CR.FECHA - 1] instanceof Date ? a[CR.FECHA - 1].getTime() : -Infinity;
-    var fB = b[CR.FECHA - 1] instanceof Date ? b[CR.FECHA - 1].getTime() : -Infinity;
-    return fB - fA; // descendente: más reciente primero
+/**
+ * Orden de las hojas de lista y de asistencia: MÁS RECIENTE PRIMERO (29-oct-2026, pedido de la usuaria: T_Lista, S_Lista, CR_Lista, T_Asistencia y S_Asistencia).
+ * Clave: día de Fecha (descendente), luego la hora (descendente; la de la columna Hora o, si no hay, la que traiga la propia Fecha), luego el ID (descendente, solo si `desempatePorId`) y por último el orden que ya tenían (estable).
+ * Las filas sin fecha válida quedan al final. N° pasa a ser la posición de la fila (1 = la más reciente), el mismo criterio que ya usaba CR_Lista. En las asistencias, desempatar por ID deja juntas las filas de cada torneo o sorteo.
+ * [→ Contexto_Base_Web.md §PF286]
+ */
+function _diaClaveOrden_(v) {
+  if (v instanceof Date && !isNaN(v.getTime())) return Number(Utilities.formatDate(v, 'America/Lima', 'yyyyMMdd'));
+  var m = String(v === null || v === undefined ? '' : v).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  return m ? Number(m[3]) * 10000 + Number(m[2]) * 100 + Number(m[1]) : -1;
+}
+
+function _horaClaveOrden_(v) {
+  function d2(n) { return (n < 10 ? '0' : '') + n; }
+  if (v instanceof Date && !isNaN(v.getTime())) return _formatHoraCanonica(v);
+  if (typeof v === 'number' && v >= 0 && v < 1) {
+    var seg = Math.round(v * 86400);
+    return d2(Math.floor(seg / 3600)) + ':' + d2(Math.floor((seg % 3600) / 60)) + ':' + d2(seg % 60);
+  }
+  var m = String(v === null || v === undefined ? '' : v).match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  return m ? d2(Number(m[1])) + ':' + m[2] + ':' + (m[3] || '00') : '';
+}
+
+// _ordenarHojaPorFechaDesc_(sh, primera, totalCols, C, opc): C = { NUM, FECHA, HORA (0 si la hoja no tiene), ID }; opc = { etiqueta, desempatePorId, fmtFecha, fmtHora, extraFmts: [{col, fmt}], soloRevisar }.
+// Devuelve { ok, filas, cambio, movidas }. Si el orden y los N° ya son correctos no escribe nada. Si hay fórmulas en el rango no reordena (mover filas rompería sus referencias) y devuelve ok = false.
+// Con soloRevisar = true calcula y registra qué pasaría, sin escribir.
+function _ordenarHojaPorFechaDesc_(sh, primera, totalCols, C, opc) {
+  opc = opc || {};
+  var etiqueta = opc.etiqueta || sh.getName();
+  var ultima = sh.getLastRow();
+  if (ultima < primera) return { ok: true, filas: 0, cambio: false, movidas: 0 };
+  var n = ultima - primera + 1;
+  var rng = sh.getRange(primera, 1, n, totalCols);
+  var datos = rng.getValues();
+
+  var items = datos.map(function (fila, idx) {
+    var f = fila[C.FECHA - 1];
+    var hora = C.HORA ? _horaClaveOrden_(fila[C.HORA - 1]) : '';
+    if (!hora && f instanceof Date && !isNaN(f.getTime())) {
+      var horaDeFecha = Utilities.formatDate(f, 'America/Lima', 'HH:mm:ss');
+      if (horaDeFecha !== '00:00:00') hora = horaDeFecha;
+    }
+    return { fila: fila, idx: idx, dia: _diaClaveOrden_(f), hora: hora, id: opc.desempatePorId ? String(fila[C.ID - 1] || '').trim() : '' };
+  });
+  items.sort(function (a, b) {
+    if (a.dia !== b.dia) return b.dia - a.dia;
+    if (a.hora !== b.hora) return a.hora < b.hora ? 1 : -1;
+    if (a.id !== b.id) return a.id < b.id ? 1 : -1;
+    return a.idx - b.idx; // estable: conserva el orden que ya tenían en los empates
   });
 
-  for (var n = 0; n < datos.length; n++) {
-    datos[n][CR.NUM - 1] = n + 1;
+  var movidas = 0, numMal = 0;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].idx !== i) movidas++;
+    if (C.NUM && Number(items[i].fila[C.NUM - 1]) !== i + 1) numMal++;
+  }
+  if (!movidas && !numMal) return { ok: true, filas: n, cambio: false, movidas: 0 };
+  if (opc.soloRevisar) {
+    Logger.log('[Orden · solo revisar] ' + etiqueta + ': ' + movidas + ' de ' + n + ' fila(s) cambiarían de posición y ' + numMal + ' N° se renumerarían.');
+    return { ok: true, filas: n, cambio: true, movidas: movidas };
   }
 
-  sh.getRange(4, 1, datos.length, CR_TOTAL_COLS).setValues(datos);
-  Logger.log('[CR_Lista] Hoja reordenada por Fecha (más reciente primero, ' + datos.length + ' fila(s)).');
+  var formulas = rng.getFormulas();
+  for (var r = 0; r < formulas.length; r++) {
+    for (var c = 0; c < totalCols; c++) {
+      if (formulas[r][c] !== '') {
+        Logger.log('[Orden] ' + etiqueta + ': hay una fórmula en la fila ' + (primera + r) + ', columna ' + (c + 1) + '; no se reordena porque mover filas rompería sus referencias.');
+        return { ok: false, filas: n, cambio: false, movidas: 0 };
+      }
+    }
+  }
+
+  var salida = items.map(function (it, i) {
+    var fila = it.fila.slice();
+    if (C.NUM) fila[C.NUM - 1] = i + 1;
+    return fila;
+  });
+  rng.setValues(salida);
+  // Reescribir fechas y horas puede dejar la celda con el formato automático (la hora salía como «30/12/1899»): se reaplican los formatos de la hoja.
+  try {
+    if (opc.fmtFecha) sh.getRange(primera, C.FECHA, n, 1).setNumberFormat(opc.fmtFecha);
+    if (C.HORA && opc.fmtHora) sh.getRange(primera, C.HORA, n, 1).setNumberFormat(opc.fmtHora);
+    (opc.extraFmts || []).forEach(function (e) { sh.getRange(primera, e.col, n, 1).setNumberFormat(e.fmt); });
+  } catch (eFmt) {
+    Logger.log('[Orden] ' + etiqueta + ': no se pudo reaplicar un formato (' + eFmt.message + ').');
+  }
+  Logger.log('[Orden] ' + etiqueta + ' reordenada por Fecha, más reciente primero (' + n + ' fila(s); ' + movidas + ' cambiaron de posición).');
+  return { ok: true, filas: n, cambio: true, movidas: movidas };
 }
 
 // IDs de evento (torneo, sorteo, ascenso, descenso) — formato L_TT_S_SS_N_NN (PF286, 28-oct-2026, pedido de la usuaria) [→ Contexto_Base_Web.md §PF286]
@@ -1354,6 +1434,7 @@ function procesarTorneos() {
   _t = Date.now();
   // Formato condicional de T_Asistencia por ID de torneo (grupos de filas [→ Contexto_Base_Web.md §26B095]
   try {
+    _ordenarTAsistenciaPorFecha(ss); // más reciente primero, antes de colorear por torneo
     _aplicarFormatoCondicionalTAporTorneo(ss);
   } catch (e) {
     Logger.log('[Torneos] _aplicarFormatoCondicionalTAporTorneo() falló: ' + e.message);
@@ -2314,6 +2395,7 @@ function procesarTListaNuevasFilas(ss) {
   _guardarModoCSVSiHayNuevos();
 
   _ordenarTListaPorFecha(ss);
+  try { _ordenarTAsistenciaPorFecha(ss); } catch (eOrdTA) { Logger.log('[T_Asistencia] No se pudo ordenar por fecha (se continúa): ' + eOrdTA.message); }
 
   // FIX (16-ago-2026): reportado por el usuario -- la última fila de [→ Contexto_Base_Web.md §26B171]
   if (sh.getLastRow() >= 3) {
@@ -2328,51 +2410,44 @@ function procesarTListaNuevasFilas(ss) {
 }
 
 // _ordenarTListaPorFecha(ss) [→ Contexto_Base_Web.md §26B172]
-function _ordenarTListaPorFecha(ss) {
+function _ordenarTListaPorFecha(ss, soloRevisar) {
   var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
   // FIX (08-sep-2026, pedido usuario): T_Lista tiene header de 2 FILAS [→ Contexto_Base_Web.md §26B173]
-  if (!sh || sh.getLastRow() < 4) return;
-
-  var numFilas = sh.getLastRow() - 2;
-  var datos = sh.getRange(3, 1, numFilas, TL_TOTAL_COLS).getValues();
-
-  var conIndice = datos.map(function (fila, idx) {
-    var fecha = fila[TL.FECHA - 1];
-    return {
-      fila: fila,
-      idx: idx,
-      tiempo: (fecha instanceof Date && !isNaN(fecha.getTime())) ? fecha.getTime() : Infinity
-    };
-  });
-
-  conIndice.sort(function (a, b) {
-    if (a.tiempo !== b.tiempo) return a.tiempo - b.tiempo;
-    return a.idx - b.idx; // estable: conserva el orden original en empates / sin fecha
-  });
-
+  if (!sh) return null;
   // FIX (pedido usuario, N° quedaba "2, 1, 3"): antes, si el ORDEN FÍSICO de [→ Contexto_Base_Web.md §26B174]
-  var yaOrdenado = true;
-  for (var i = 0; i < conIndice.length; i++) {
-    if (conIndice[i].idx !== i) { yaOrdenado = false; break; }
-    if (Number(conIndice[i].fila[TL.NUM - 1]) !== i + 1) { yaOrdenado = false; break; }
-  }
-  if (yaOrdenado) return; // nada que reescribir, evita tocar la hoja sin necesidad
-
-  var filasOrdenadas = conIndice.map(function (item, i) {
-    var fila = item.fila.slice();
-    fila[TL.NUM - 1] = i + 1;
-    return fila;
-  });
-
-  // FIX (08-sep-2026): rango de escritura y offset de fecha movidos a la
-  // fila 3 (antes fila 2) por el header de 2 filas.
-  sh.getRange(3, 1, filasOrdenadas.length, TL_TOTAL_COLS).setValues(filasOrdenadas);
+  // 29-oct-2026 (pedido de la usuaria): el orden pasa de ascendente a MÁS RECIENTE PRIMERO (ver _ordenarHojaPorFechaDesc_()). N° sigue siendo la posición de la fila.
   // FASE 1 (25-sep-2026): ESTE es el proceso identificado como causante del [→ Contexto_Base_Web.md §26B175]
-  for (var j = 0; j < filasOrdenadas.length; j++) {
-    _trySetFmt(sh, j + 3, TL.FECHA, 'dd/mm/yyyy');
-    _trySetFmt(sh, j + 3, TL.HORA, 'h:mm:ss AM/PM');
-  }
-  Logger.log('[T_Lista] Reordenada por Fecha ascendente (' + filasOrdenadas.length + ' fila(s)).');
+  // La ayuda común reaplica Fecha, Hora y Creación tras reescribir (por eso la hora ya no vuelve a «30/12/1899»).
+  return _ordenarHojaPorFechaDesc_(sh, 3, TL_TOTAL_COLS, { NUM: TL.NUM, FECHA: TL.FECHA, HORA: TL.HORA, ID: TL.ID }, {
+    etiqueta: 'T_Lista', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', fmtHora: 'h:mm:ss AM/PM',
+    extraFmts: [{ col: TL.CREACION, fmt: 'dd/mm/yyyy hh:mm:ss' }], soloRevisar: !!soloRevisar
+  });
+}
+
+// _ordenarSListaPorFecha(ss, soloRevisar): S_Lista, más reciente primero (29-oct-2026, pedido de la usuaria). Fecha en solo día; la hora va en su propia columna. [→ Contexto_Base_Web.md §PF286]
+function _ordenarSListaPorFecha(ss, soloRevisar) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh) return null;
+  return _ordenarHojaPorFechaDesc_(sh, 3, SL_TOTAL_COLS, { NUM: SL.NUM, FECHA: SL.FECHA, HORA: SL.HORA, ID: SL.ID }, {
+    etiqueta: 'S_Lista', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', fmtHora: 'h:mm:ss AM/PM', soloRevisar: !!soloRevisar
+  });
+}
+
+// _ordenarTAsistenciaPorFecha(ss, soloRevisar) y _ordenarSAsistenciaPorFecha(ss, soloRevisar): asistencias, más reciente primero; las filas de cada torneo o sorteo quedan juntas (desempate por ID) y conservan su orden interno. [→ Contexto_Base_Web.md §PF286]
+function _ordenarTAsistenciaPorFecha(ss, soloRevisar) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
+  if (!sh) return null;
+  return _ordenarHojaPorFechaDesc_(sh, 2, TA_TOTAL_COLS, { NUM: TA.NUM, FECHA: TA.FECHA, HORA: 0, ID: TA.ID }, {
+    etiqueta: 'T_Asistencia', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', soloRevisar: !!soloRevisar
+  });
+}
+
+function _ordenarSAsistenciaPorFecha(ss, soloRevisar) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_ASISTENCIA);
+  if (!sh) return null;
+  return _ordenarHojaPorFechaDesc_(sh, 2, SA_TOTAL_COLS, { NUM: SA.NUM, FECHA: SA.FECHA, HORA: 0, ID: SA.ID }, {
+    etiqueta: 'S_Asistencia', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', soloRevisar: !!soloRevisar
+  });
 }
 
 // FASE 13 (26-sep-2026, plan Organizador_Fuente -- ver docblock "FASES [→ Contexto_Base_Web.md §26B176]
@@ -3206,6 +3281,7 @@ function procesarSListaNuevasFilas(ss) {
     applyBorderCenter(sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS));
     _aplicarFormatoMilesHoja_(sh, 3, SL_COLS_MILES, sh.getLastRow()); // separador de miles solo de visualización
   }
+  try { _ordenarSListaPorFecha(ss); } catch (eOrdSL) { Logger.log('[S_Lista] No se pudo ordenar por fecha (se continúa): ' + eOrdSL.message); }
 
   return idsResueltos;
 }
@@ -4965,6 +5041,7 @@ function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasI
       // FIX (12-sep-2026, gap admin.html/btnModificarTorneo): ver docblock
       // de arriba -- '' = no tocar (mismo criterio que comentario).
       if (premios) sh.getRange(fila, TL.PREMIOS).setValue(String(premios).trim());
+      _ordenarTListaPorFecha(ss); // la Fecha pudo cambiar: la fila se reubica (más reciente primero)
       regenerarTControlSheet(ss);
       return { ok: true };
     }
@@ -5308,6 +5385,7 @@ function _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanasIs
         sh.getRange(fila, SL.CLAN_TAG).setValue(organizadorInfo.clanTag || '');
       }
       if (premios) sh.getRange(fila, SL.PREMIOS).setValue(String(premios).trim());
+      _ordenarSListaPorFecha(ss); // la Fecha pudo cambiar: la fila se reubica (más reciente primero)
       return { ok: true };
     }
   }
