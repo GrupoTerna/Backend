@@ -4,7 +4,30 @@
 // clip de columnas, limpieza de hojas obsoletas. Invocado principalmente desde runFormato() en 00_Main.gs.
 // ==============================================================================
 
-// ----- Funciones manuales / punto de entrada -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 29-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Formato general de las hojas
+//    - Anchos de columna: autoajustar, guardar y restaurar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Columna Jugador (recorte y ocultamiento)
+//    - Encabezados, tablas, filtros y bordes
+//    - Limpieza de hojas obsoletas (las llama 00_Main.gs)
+//    - Anchos de columna: ayudas
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
+// ANCHOS DE COLUMNA POR NOMBRE DE ENCABEZADO (pedido usuario, esta corrida) [→ Contexto_Base_Web.md §04B032]
+var ANCHOS_COLUMNAS_ARCHIVO = 'Anchos_Columnas_Fijos.json';
+
+// EXCEPCIÓN — hoja "Calendario", columnas B..J (pedido usuario, 16-ago-2026). [→ Contexto_Base_Web.md §04B033]
+var COL_INICIO_ANCHOS_CALENDARIO = 2;  // B
+
+var COL_FIN_ANCHOS_CALENDARIO    = 10; // J
+
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Formato general de las hojas -----
 
 // _setupCards()/_setupCards2() — ELIMINADAS (06-ago-2026). [→ Contexto_Base_Web.md §04B001]
 
@@ -119,454 +142,6 @@ function aplicarFormatoGlobal() {
   Logger.log('[Formato] aplicarFormatoGlobal completado exitosamente.');
 }
 
-// ----- Funciones internas / helpers -----
-
-/**
- * _aplicarClipColumnaJugador() [→ Contexto_Base_Web.md §04B007]
- */
-/**
- * _hojasConColumnaJugador() [→ Contexto_Base_Web.md §04B008]
- */
-function _hojasConColumnaJugador() {
-  return [
-    { name: CFG.SHEETS.DIRECTORIO,      col: DC.JUGADOR },
-    // Administradores (12/07/2026): ya no tiene columna "Jugador" — pasó a [→ Contexto_Base_Web.md §04B009]
-    { name: CFG.SHEETS.INACTIVOS,       col: 4 },
-    // Vetados (17-ago-2026): la columna 4 dejó de ser "Jugador" y pasó a [→ Contexto_Base_Web.md §04B010]
-  ];
-}
-
-function _aplicarClipColumnaJugador() {
-  var ss = _getSs();
-  var sheetConfigs = _hojasConColumnaJugador();
-  for (var i = 0; i < sheetConfigs.length; i++) {
-    var cfg = sheetConfigs[i];
-    var sh  = ss.getSheetByName(cfg.name);
-    if (!sh) continue;
-    var lastRow = sh.getLastRow();
-    if (lastRow < 2) continue;
-    try {
-      sh.getRange(2, cfg.col, lastRow - 1, 1)
-        .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
-    } catch(e) {
-      Logger.log('[Formato] Error CLIP ' + cfg.name + ': ' + e.message);
-    }
-  }
-  Logger.log('[Formato] CLIP aplicado a columna Jugador en todas las hojas.');
-  // La columna "Jugador" se oculta en todas las hojas (es un valor calculado
-  // de apoyo interno, no necesita verse).
-  _ocultarColumnaJugador();
-}
-
-/**
- * _ocultarColumnaJugador() [→ Contexto_Base_Web.md §04B011]
- */
-function _ocultarColumnaJugador() {
-  var ss = _getSs();
-  var sheetConfigs = _hojasConColumnaJugador();
-  for (var i = 0; i < sheetConfigs.length; i++) {
-    var cfg = sheetConfigs[i];
-    var sh  = ss.getSheetByName(cfg.name);
-    if (!sh) continue;
-    try {
-      sh.hideColumns(cfg.col);
-    } catch(e) {
-      Logger.log('[Formato] Error ocultando columna Jugador en ' + cfg.name + ': ' + e.message);
-    }
-  }
-  Logger.log('[Formato] Columna Jugador oculta en todas las hojas.');
-}
-
-/**
- * _aplicarSubindiceEncabezados(sh) [→ Contexto_Base_Web.md §04B012]
- */
-function _aplicarSubindiceEncabezados(sh) {
-  var lastCol = sh.getLastColumn();
-  if (lastCol < 1) return;
-  var headerRow = sh.getRange(1, 1, 1, lastCol).getValues()[0];
-  for (var c = 0; c < headerRow.length; c++) {
-    var v = String(headerRow[c] || '').trim();
-    var match = v.match(/^N(\d)°$/);
-    if (!match) continue;
-    var digit = match[1];
-    var cell = sh.getRange(1, c + 1);
-    try {
-      var rt = SpreadsheetApp.newRichTextValue()
-        .setText('N' + digit + '°')
-        .setTextStyle(0, 1, SpreadsheetApp.newTextStyle().build())         // 'N'
-        .setTextStyle(1, 2, SpreadsheetApp.newTextStyle()                  // digit en subíndice
-          .setFontSize(7)
-          .setBaselineOffset(SpreadsheetApp.TextBaselineOffset.SUBSCRIPT)
-          .build())
-        .setTextStyle(2, 3, SpreadsheetApp.newTextStyle().build())         // '°'
-        .build();
-      cell.setRichTextValue(rt);
-    } catch(e) {
-      // Fallback: dejar el texto sin formato si RichText falla
-    }
-  }
-}
-
-/**
- * _limpiarBordesFilasVacias() [→ Contexto_Base_Web.md §04B013]
- */
-function _limpiarBordesFilasVacias() {
-  var ss = _getSs();
-  var sheetNames = Object.values(CFG.SHEETS);
-  for (var i = 0; i < sheetNames.length; i++) {
-    var shName = sheetNames[i];
-    if (shName === CFG.SHEETS.CALENDARIO) continue;
-    var sh = ss.getSheetByName(shName);
-    if (!sh) continue;
-    var lastRow = sh.getLastRow();
-    var maxRows = sh.getMaxRows();
-    var lastCol = sh.getLastColumn() || 1;
-    if (maxRows > lastRow && lastRow >= 1) {
-      try {
-        sh.getRange(lastRow + 1, 1, maxRows - lastRow, lastCol)
-          .setBorder(false, false, false, false, false, false);
-      } catch(e) {}
-    }
-  }
-  Logger.log('[Formato] Bordes en filas vacías limpiados.');
-}
-
-function _crearTabla(sh, headerRow, dataEndRow, numCols, tableName) {
-  try {
-    if (dataEndRow < headerRow + 1) return;
-    var range = sh.getRange(headerRow, 1, dataEndRow - headerRow + 1, numCols);
-    if (sh.getFilter()) { sh.getFilter().remove(); }
-    range.createFilter();
-    Logger.log('[Tabla] Filtro aplicado en: ' + tableName);
-  } catch(e) {
-    Logger.log('[Tabla] Error creando filtro en ' + tableName + ': ' + e.message);
-  }
-}
-
-/**
- * _repararMergesFiltroHeader(sh, filaHeader) [→ Contexto_Base_Web.md §04B014]
- */
-function _repararMergesFiltroHeader(sh, filaHeader) {
-  var lastCol = sh.getLastColumn();
-  if (lastCol < 1 || filaHeader < 2) return;
-  var headerRange = sh.getRange(1, 1, filaHeader, lastCol);
-  var merges = headerRange.getMergedRanges();
-  var corregidas = [];
-
-  for (var i = 0; i < merges.length; i++) {
-    var m = merges[i];
-    var r0 = m.getRow();
-    var rEnd = r0 + m.getNumRows() - 1;
-    if (r0 <= filaHeader - 1 && rEnd >= filaHeader) {
-      var c0   = m.getColumn();
-      var numC = m.getNumColumns();
-      var valor = m.getValue();
-      var fmt   = m.getBackground();
-      var fontColor = m.getFontColor();
-      var fontWeight = m.getFontWeight();
-      var hAlign = m.getHorizontalAlignment();
-      var vAlign = m.getVerticalAlignment();
-
-      m.breakApart();
-
-      // La porción de arriba (fila inicio..filaHeader-1) queda EN BLANCO —
-      // el rótulo ya no vive aquí, ver comentario de la función.
-      var arriba = sh.getRange(r0, c0, filaHeader - r0, numC);
-      if (arriba.getNumRows() > 1) arriba.merge();
-      arriba.setValue('')
-        .setBackground(fmt)
-        .setFontColor(fontColor)
-        .setFontWeight(fontWeight)
-        .setHorizontalAlignment(hAlign)
-        .setVerticalAlignment(vAlign);
-
-      // filaHeader queda como celda propia CON el rótulo — es la fila que
-      // usa el desplegable del filtro y donde viven los demás encabezados.
-      sh.getRange(filaHeader, c0, 1, numC).setValue(valor)
-        .setBackground(fmt)
-        .setFontColor(fontColor)
-        .setFontWeight(fontWeight)
-        .setHorizontalAlignment(hAlign)
-        .setVerticalAlignment(vAlign);
-
-      corregidas.push(sh.getRange(filaHeader, c0).getA1Notation() + ' ("' + valor + '")');
-    }
-  }
-
-  if (corregidas.length > 0) {
-    Logger.log('[Filtros] ' + sh.getName() + ': merges de encabezado partidos en fila ' + filaHeader + ' para permitir el filtro: ' + corregidas.join(', '));
-  }
-}
-
-/**
- * _aplicarFiltroEnFilaHeader(sh, nombreHoja) [→ Contexto_Base_Web.md §04B015]
- */
-function _aplicarFiltroEnFilaHeader(sh, nombreHoja) {
-  var filaHeader = sh.getFrozenRows() || 1;
-  var lastRow = sh.getLastRow();
-  var lastCol = sh.getLastColumn();
-  if (lastCol < 1) return;
-
-  // FIX (18-sep-2026, pedido usuario -- "las hojas Conflictos, T_Resoluciones, [→ Contexto_Base_Web.md §04B016]
-  var ultimaFilaFiltro = Math.max(lastRow, filaHeader + 1);
-  if (ultimaFilaFiltro > sh.getMaxRows()) ultimaFilaFiltro = sh.getMaxRows();
-  if (ultimaFilaFiltro < filaHeader) return; // la hoja ni siquiera tiene la fila de encabezado
-  var numFilasFiltro = ultimaFilaFiltro - filaHeader + 1;
-
-  if (filaHeader > 1) {
-    // Antes de crear el filtro, partir cualquier celda combinada de [→ Contexto_Base_Web.md §04B017]
-    _repararMergesFiltroHeader(sh, filaHeader);
-  }
-
-  try {
-    if (sh.getFilter()) { sh.getFilter().remove(); }
-    sh.getRange(filaHeader, 1, numFilasFiltro, lastCol).createFilter();
-    Logger.log('[Filtros] Filtro aplicado en fila ' + filaHeader + ': ' + nombreHoja);
-  } catch (e) {
-    Logger.log('[Filtros] Error al recrear el filtro en ' + nombreHoja + ' (fila ' + filaHeader + ', intento 1): ' + e.message);
-
-    if (filaHeader > 1) {
-      // Reintento de respaldo: rompe CUALQUIER merge residual que quede [→ Contexto_Base_Web.md §04B018]
-      try {
-        var filaHeaderRange = sh.getRange(filaHeader, 1, 1, lastCol);
-        var mergesResiduales = filaHeaderRange.getMergedRanges();
-        for (var mr = 0; mr < mergesResiduales.length; mr++) {
-          try { mergesResiduales[mr].breakApart(); } catch (eBreak) {}
-        }
-        sh.getRange(filaHeader, 1, numFilasFiltro, lastCol).createFilter();
-        Logger.log('[Filtros] ' + nombreHoja + ': filtro creado en el segundo intento, tras romper merge(s) residual(es) en la fila ' + filaHeader + '.');
-      } catch (e2) {
-        Logger.log('[Filtros] Error al recrear el filtro en ' + nombreHoja + ' (fila ' + filaHeader + ', intento 2), se abandona por esta corrida: ' + e2.message);
-      }
-    }
-  }
-}
-
-/**
- * _restaurarFiltros() [→ Contexto_Base_Web.md §04B019]
- */
-function _restaurarFiltros() {
-  var ss = _getSs();
-
-  // GENERALIZADO (18-sep-2026, pedido usuario -- "no me refería solo a esas [→ Contexto_Base_Web.md §04B020]
-  var HOJAS_SIN_TABLA_ESTANDAR = [CFG.SHEETS.CALENDARIO, 'Terreno_Limpio'];
-
-  // Recorre TODAS las hojas del spreadsheet (no una lista fija), así que [→ Contexto_Base_Web.md §04B021]
-  var allSheets = ss.getSheets();
-  for (var s = 0; s < allSheets.length; s++) {
-    var sh = allSheets[s];
-    var shName = sh.getName();
-    if (HOJAS_SIN_TABLA_ESTANDAR.indexOf(shName) >= 0) continue;
-    _aplicarFiltroEnFilaHeader(sh, shName);
-  }
-
-  // Columnas congeladas: reafirmación defensiva por si alguna corrida [→ Contexto_Base_Web.md §04B022]
-  try { var shCtrl = ss.getSheetByName(CFG.SHEETS.CONTROL); if (shCtrl) shCtrl.setFrozenColumns(3); } catch(e) {}
-  try { var shCtrl2 = ss.getSheetByName('Control_2'); if (shCtrl2) shCtrl2.setFrozenColumns(3); } catch(e) {}
-  try { var shNuevos = ss.getSheetByName(CFG.SHEETS.NUEVOS); if (shNuevos) shNuevos.setFrozenColumns(3); } catch(e) {}
-  try { var shTControl = ss.getSheetByName(CFG.SHEETS.T_CONTROL); if (shTControl) shTControl.setFrozenColumns(7); } catch(e) {} // 7 = TC_FIXED_COLS
-
-  // Freeze 3 columnas en hojas cuya fila 1 empieza con N° | Tag | Nombre
-  var hojasConTagNombre = [
-    CFG.SHEETS.DIRECTORIO, CFG.SHEETS.ADMINISTRADORES,
-    CFG.SHEETS.GUERRA, CFG.SHEETS.GUERRA_LOGS,
-    CFG.SHEETS.HISTORIAL, CFG.SHEETS.PENDIENTES,
-    CFG.SHEETS.INACTIVOS, CFG.SHEETS.VETADOS,
-    CFG.SHEETS.MULTICUENTAS, CFG.SHEETS.COMENTARIOS,
-  ];
-  for (var hi = 0; hi < hojasConTagNombre.length; hi++) {
-    var shFrz = ss.getSheetByName(hojasConTagNombre[hi]);
-    if (!shFrz) continue;
-    var h1 = shFrz.getRange(1, 1, 1, Math.min(shFrz.getLastColumn(), 3)).getValues()[0];
-    if (String(h1[0]).trim() === 'N°' &&
-        String(h1[1]).trim() === 'Tag' &&
-        String(h1[2]).trim() === 'Nombre') {
-      shFrz.setFrozenColumns(3);
-    }
-  }
-
-  Logger.log('[Filtros] _restaurarFiltros completado.');
-
-  // La columna "Jugador" debe permanecer oculta en todas las hojas; si alguna [→ Contexto_Base_Web.md §04B023]
-  _ocultarColumnaJugador();
-
-  // DEFENSIVO (30/06/2026): la columna E "Movimiento" de Historial estuvo [→ Contexto_Base_Web.md §04B024]
-  try {
-    var shHist = ss.getSheetByName(CFG.SHEETS.HISTORIAL);
-    if (shHist && shHist.isColumnHiddenByUser(5)) {
-      shHist.showColumns(5);
-      Logger.log('[Filtros] Columna "Movimiento" (col 5) de Historial estaba oculta — se restauró visible.');
-    }
-  } catch(e) {
-    Logger.log('[Filtros] Error verificando visibilidad de Movimiento en Historial: ' + e.message);
-  }
-}
-
-function _aplicarTablasYGridlines() {
-  var ss = _getSs();
-  Logger.log('[Tablas] Iniciando _aplicarTablasYGridlines...');
-
-  // 1. Desactivar cuadrículas en todas las hojas (costoso: solo en runAll)
-  var allSheets = ss.getSheets();
-  for (var i = 0; i < allSheets.length; i++) {
-    _desactivarGridlines(allSheets[i]);
-  }
-
-  // 2. Filtros nativos (reutiliza la misma lógica que corre en cada runUpdate)
-  _restaurarFiltros();
-
-  Logger.log('[Tablas] _aplicarTablasYGridlines completado.');
-}
-
-function _limpiarHojaTerrenoLimpio() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName('Terreno_Limpio');
-
-  if (sh) {
-    if (ss.getSheets().length > 1) {
-      try {
-        ss.deleteSheet(sh);
-        Logger.log('[Setup] Hoja "Terreno_Limpio" eliminada con éxito.');
-      } catch(e) {
-        Logger.log('[Setup] No se pudo eliminar "Terreno_Limpio": ' + e.message);
-      }
-    } else {
-      Logger.log('[Setup] "Terreno_Limpio" es la única hoja, no se puede eliminar.');
-    }
-  }
-}
-
-/**
- * _renombrarHojasHistorialLegacy() [→ Contexto_Base_Web.md §04B025]
- */
-function _renombrarHojasHistorialLegacy() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  var migraciones = [
-    { viejo: 'Ascensos',  nuevo: CFG.SHEETS.ASCENSOS },
-    { viejo: 'Historial', nuevo: CFG.SHEETS.HISTORIAL }
-  ];
-
-  for (var i = 0; i < migraciones.length; i++) {
-    var viejo = migraciones[i].viejo;
-    var nuevo = migraciones[i].nuevo;
-    if (viejo === nuevo) continue; // sin cambio configurado
-
-    if (ss.getSheetByName(nuevo)) continue; // la pestaña nueva ya existe, no tocar nada
-
-    var shViejo = ss.getSheetByName(viejo);
-    if (!shViejo) continue; // no había pestaña vieja que migrar
-
-    try {
-      shViejo.setName(nuevo);
-      Logger.log('[Setup] Pestaña renombrada: "' + viejo + '" -> "' + nuevo + '".');
-    } catch (e) {
-      Logger.log('[Setup] No se pudo renombrar "' + viejo + '" a "' + nuevo + '": ' + e.message);
-    }
-  }
-}
-
-/**
- * _limpiarHojasCardsObsoletas() [→ Contexto_Base_Web.md §04B026]
- */
-function _limpiarHojasCardsObsoletas() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var nombres = [CFG.SHEETS.CARDS, CFG.SHEETS.CARDS_2];
-
-  for (var i = 0; i < nombres.length; i++) {
-    var nombre = nombres[i];
-    var sh = ss.getSheetByName(nombre);
-    if (!sh) continue;
-
-    try {
-      _respaldarListaHojasCSV(ss, [nombre], true);
-    } catch (e) {
-      Logger.log('[Setup] No se pudo respaldar "' + nombre + '" antes de eliminarla: ' + e.message);
-    }
-
-    if (ss.getSheets().length > 1) {
-      try {
-        ss.deleteSheet(sh);
-        Logger.log('[Setup] Hoja "' + nombre + '" (obsoleta, ahora vive solo en CSV) eliminada con éxito.');
-      } catch (e) {
-        Logger.log('[Setup] No se pudo eliminar "' + nombre + '": ' + e.message);
-      }
-    } else {
-      Logger.log('[Setup] "' + nombre + '" es la única hoja, no se puede eliminar.');
-    }
-  }
-}
-
-/**
- * _limpiarHojaTRequisitosObsoleta() [→ Contexto_Base_Web.md §04B027]
- */
-function _limpiarHojaTRequisitosObsoleta() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName('T_Requisitos');
-
-  if (sh) {
-    if (ss.getSheets().length > 1) {
-      try {
-        ss.deleteSheet(sh);
-        Logger.log('[Setup] Hoja "T_Requisitos" (obsoleta, reemplazada por CR_Lista) eliminada con éxito.');
-      } catch(e) {
-        Logger.log('[Setup] No se pudo eliminar "T_Requisitos": ' + e.message);
-      }
-    } else {
-      Logger.log('[Setup] "T_Requisitos" es la única hoja, no se puede eliminar.');
-    }
-  }
-}
-
-/**
- * _limpiarHojaMenuObsoleta() [→ Contexto_Base_Web.md §04B028]
- */
-function _limpiarHojaMenuObsoleta() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName('Menú');
-
-  if (!_leerIndiceGuardado()) {
-    if (sh) {
-      Logger.log('[Setup] Hoja "Menú" (obsoleta) NO se elimina todavía: aún no existe el índice de contenido guardado. Se reintenta en la próxima corrida (o ejecutar inicializarIndiceContenido()).');
-    }
-    return;
-  }
-
-  if (sh) {
-    if (ss.getSheets().length > 1) {
-      try {
-        ss.deleteSheet(sh);
-        Logger.log('[Setup] Hoja "Menú" (obsoleta, reemplazada por el índice de contenido) eliminada con éxito.');
-      } catch(e) {
-        Logger.log('[Setup] No se pudo eliminar "Menú": ' + e.message);
-      }
-    } else {
-      Logger.log('[Setup] "Menú" es la única hoja, no se puede eliminar.');
-    }
-  }
-
-  _enviarRespaldosMenuAPapelera();
-}
-
-/**
- * _enviarRespaldosMenuAPapelera() [→ Contexto_Base_Web.md §04B029]
- */
-function _enviarRespaldosMenuAPapelera() {
-  try {
-    var folder = _getCsvFolder();
-    var nombres = ['Backup_Menu.csv', 'Backup_Menú.csv'];
-    for (var i = 0; i < nombres.length; i++) {
-      var files = folder.getFilesByName(nombres[i]);
-      while (files.hasNext()) {
-        files.next().setTrashed(true);
-        Logger.log('[Setup] Respaldo obsoleto "' + nombres[i] + '" enviado a la papelera de Drive.');
-      }
-    }
-  } catch (e) {
-    Logger.log('[Setup] No se pudieron limpiar los respaldos de Menú: ' + e.message);
-  }
-}
-
 /**
  * aplicarClipGlobal() [→ Contexto_Base_Web.md §04B030]
  */
@@ -611,18 +186,8 @@ function aplicarClipGlobal() {
 
   Logger.log('[CLIP] Ajuste CLIP aplicado a todo el documento (excepto Mensajes!Contenido, que se mantiene en Ajustar/WRAP).');
 }
-// ----- Variables y constantes -----
 
-// ANCHOS DE COLUMNA POR NOMBRE DE ENCABEZADO (pedido usuario, esta corrida) [→ Contexto_Base_Web.md §04B032]
-
-var ANCHOS_COLUMNAS_ARCHIVO = 'Anchos_Columnas_Fijos.json';
-
-// EXCEPCIÓN — hoja "Calendario", columnas B..J (pedido usuario, 16-ago-2026). [→ Contexto_Base_Web.md §04B033]
-var COL_INICIO_ANCHOS_CALENDARIO = 2;  // B
-
-var COL_FIN_ANCHOS_CALENDARIO    = 10; // J
-// ----- Funciones manuales / punto de entrada -----
-
+// ----- Anchos de columna: autoajustar, guardar y restaurar -----
 
 // Fase 18 (17/07/2026): autoajuste de ancho de columna. [→ Contexto_Base_Web.md §04B034]
 
@@ -974,7 +539,496 @@ function restaurarAnchosColumnasFijos(nombreHoja) {
              ', columnas restauradas: ' + columnasRestauradas + '.');
 }
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Columna Jugador (recorte y ocultamiento) -----
+
+function _aplicarClipColumnaJugador() {
+  var ss = _getSs();
+  var sheetConfigs = _hojasConColumnaJugador();
+  for (var i = 0; i < sheetConfigs.length; i++) {
+    var cfg = sheetConfigs[i];
+    var sh  = ss.getSheetByName(cfg.name);
+    if (!sh) continue;
+    var lastRow = sh.getLastRow();
+    if (lastRow < 2) continue;
+    try {
+      sh.getRange(2, cfg.col, lastRow - 1, 1)
+        .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
+    } catch(e) {
+      Logger.log('[Formato] Error CLIP ' + cfg.name + ': ' + e.message);
+    }
+  }
+  Logger.log('[Formato] CLIP aplicado a columna Jugador en todas las hojas.');
+  // La columna "Jugador" se oculta en todas las hojas (es un valor calculado
+  // de apoyo interno, no necesita verse).
+  _ocultarColumnaJugador();
+}
+
+/**
+ * _aplicarClipColumnaJugador() [→ Contexto_Base_Web.md §04B007]
+ */
+/**
+ * _hojasConColumnaJugador() [→ Contexto_Base_Web.md §04B008]
+ */
+function _hojasConColumnaJugador() {
+  return [
+    { name: CFG.SHEETS.DIRECTORIO,      col: DC.JUGADOR },
+    // Administradores (12/07/2026): ya no tiene columna "Jugador" — pasó a [→ Contexto_Base_Web.md §04B009]
+    { name: CFG.SHEETS.INACTIVOS,       col: 4 },
+    // Vetados (17-ago-2026): la columna 4 dejó de ser "Jugador" y pasó a [→ Contexto_Base_Web.md §04B010]
+  ];
+}
+
+/**
+ * _ocultarColumnaJugador() [→ Contexto_Base_Web.md §04B011]
+ */
+function _ocultarColumnaJugador() {
+  var ss = _getSs();
+  var sheetConfigs = _hojasConColumnaJugador();
+  for (var i = 0; i < sheetConfigs.length; i++) {
+    var cfg = sheetConfigs[i];
+    var sh  = ss.getSheetByName(cfg.name);
+    if (!sh) continue;
+    try {
+      sh.hideColumns(cfg.col);
+    } catch(e) {
+      Logger.log('[Formato] Error ocultando columna Jugador en ' + cfg.name + ': ' + e.message);
+    }
+  }
+  Logger.log('[Formato] Columna Jugador oculta en todas las hojas.');
+}
+
+// ----- Encabezados, tablas, filtros y bordes -----
+
+/**
+ * _aplicarSubindiceEncabezados(sh) [→ Contexto_Base_Web.md §04B012]
+ */
+function _aplicarSubindiceEncabezados(sh) {
+  var lastCol = sh.getLastColumn();
+  if (lastCol < 1) return;
+  var headerRow = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+  for (var c = 0; c < headerRow.length; c++) {
+    var v = String(headerRow[c] || '').trim();
+    var match = v.match(/^N(\d)°$/);
+    if (!match) continue;
+    var digit = match[1];
+    var cell = sh.getRange(1, c + 1);
+    try {
+      var rt = SpreadsheetApp.newRichTextValue()
+        .setText('N' + digit + '°')
+        .setTextStyle(0, 1, SpreadsheetApp.newTextStyle().build())         // 'N'
+        .setTextStyle(1, 2, SpreadsheetApp.newTextStyle()                  // digit en subíndice
+          .setFontSize(7)
+          .setBaselineOffset(SpreadsheetApp.TextBaselineOffset.SUBSCRIPT)
+          .build())
+        .setTextStyle(2, 3, SpreadsheetApp.newTextStyle().build())         // '°'
+        .build();
+      cell.setRichTextValue(rt);
+    } catch(e) {
+      // Fallback: dejar el texto sin formato si RichText falla
+    }
+  }
+}
+
+function _crearTabla(sh, headerRow, dataEndRow, numCols, tableName) {
+  try {
+    if (dataEndRow < headerRow + 1) return;
+    var range = sh.getRange(headerRow, 1, dataEndRow - headerRow + 1, numCols);
+    if (sh.getFilter()) { sh.getFilter().remove(); }
+    range.createFilter();
+    Logger.log('[Tabla] Filtro aplicado en: ' + tableName);
+  } catch(e) {
+    Logger.log('[Tabla] Error creando filtro en ' + tableName + ': ' + e.message);
+  }
+}
+
+function _aplicarTablasYGridlines() {
+  var ss = _getSs();
+  Logger.log('[Tablas] Iniciando _aplicarTablasYGridlines...');
+
+  // 1. Desactivar cuadrículas en todas las hojas (costoso: solo en runAll)
+  var allSheets = ss.getSheets();
+  for (var i = 0; i < allSheets.length; i++) {
+    _desactivarGridlines(allSheets[i]);
+  }
+
+  // 2. Filtros nativos (reutiliza la misma lógica que corre en cada runUpdate)
+  _restaurarFiltros();
+
+  Logger.log('[Tablas] _aplicarTablasYGridlines completado.');
+}
+
+/**
+ * _restaurarFiltros() [→ Contexto_Base_Web.md §04B019]
+ */
+function _restaurarFiltros() {
+  var ss = _getSs();
+
+  // GENERALIZADO (18-sep-2026, pedido usuario -- "no me refería solo a esas [→ Contexto_Base_Web.md §04B020]
+  var HOJAS_SIN_TABLA_ESTANDAR = [CFG.SHEETS.CALENDARIO, 'Terreno_Limpio'];
+
+  // Recorre TODAS las hojas del spreadsheet (no una lista fija), así que [→ Contexto_Base_Web.md §04B021]
+  var allSheets = ss.getSheets();
+  for (var s = 0; s < allSheets.length; s++) {
+    var sh = allSheets[s];
+    var shName = sh.getName();
+    if (HOJAS_SIN_TABLA_ESTANDAR.indexOf(shName) >= 0) continue;
+    _aplicarFiltroEnFilaHeader(sh, shName);
+  }
+
+  // Columnas congeladas: reafirmación defensiva por si alguna corrida [→ Contexto_Base_Web.md §04B022]
+  try { var shCtrl = ss.getSheetByName(CFG.SHEETS.CONTROL); if (shCtrl) shCtrl.setFrozenColumns(3); } catch(e) {}
+  try { var shCtrl2 = ss.getSheetByName('Control_2'); if (shCtrl2) shCtrl2.setFrozenColumns(3); } catch(e) {}
+  try { var shNuevos = ss.getSheetByName(CFG.SHEETS.NUEVOS); if (shNuevos) shNuevos.setFrozenColumns(3); } catch(e) {}
+  try { var shTControl = ss.getSheetByName(CFG.SHEETS.T_CONTROL); if (shTControl) shTControl.setFrozenColumns(7); } catch(e) {} // 7 = TC_FIXED_COLS
+
+  // Freeze 3 columnas en hojas cuya fila 1 empieza con N° | Tag | Nombre
+  var hojasConTagNombre = [
+    CFG.SHEETS.DIRECTORIO, CFG.SHEETS.ADMINISTRADORES,
+    CFG.SHEETS.GUERRA, CFG.SHEETS.GUERRA_LOGS,
+    CFG.SHEETS.HISTORIAL, CFG.SHEETS.PENDIENTES,
+    CFG.SHEETS.INACTIVOS, CFG.SHEETS.VETADOS,
+    CFG.SHEETS.MULTICUENTAS, CFG.SHEETS.COMENTARIOS,
+  ];
+  for (var hi = 0; hi < hojasConTagNombre.length; hi++) {
+    var shFrz = ss.getSheetByName(hojasConTagNombre[hi]);
+    if (!shFrz) continue;
+    var h1 = shFrz.getRange(1, 1, 1, Math.min(shFrz.getLastColumn(), 3)).getValues()[0];
+    if (String(h1[0]).trim() === 'N°' &&
+        String(h1[1]).trim() === 'Tag' &&
+        String(h1[2]).trim() === 'Nombre') {
+      shFrz.setFrozenColumns(3);
+    }
+  }
+
+  Logger.log('[Filtros] _restaurarFiltros completado.');
+
+  // La columna "Jugador" debe permanecer oculta en todas las hojas; si alguna [→ Contexto_Base_Web.md §04B023]
+  _ocultarColumnaJugador();
+
+  // DEFENSIVO (30/06/2026): la columna E "Movimiento" de Historial estuvo [→ Contexto_Base_Web.md §04B024]
+  try {
+    var shHist = ss.getSheetByName(CFG.SHEETS.HISTORIAL);
+    if (shHist && shHist.isColumnHiddenByUser(5)) {
+      shHist.showColumns(5);
+      Logger.log('[Filtros] Columna "Movimiento" (col 5) de Historial estaba oculta — se restauró visible.');
+    }
+  } catch(e) {
+    Logger.log('[Filtros] Error verificando visibilidad de Movimiento en Historial: ' + e.message);
+  }
+}
+
+/**
+ * _aplicarFiltroEnFilaHeader(sh, nombreHoja) [→ Contexto_Base_Web.md §04B015]
+ */
+function _aplicarFiltroEnFilaHeader(sh, nombreHoja) {
+  var filaHeader = sh.getFrozenRows() || 1;
+  var lastRow = sh.getLastRow();
+  var lastCol = sh.getLastColumn();
+  if (lastCol < 1) return;
+
+  // FIX (18-sep-2026, pedido usuario -- "las hojas Conflictos, T_Resoluciones, [→ Contexto_Base_Web.md §04B016]
+  var ultimaFilaFiltro = Math.max(lastRow, filaHeader + 1);
+  if (ultimaFilaFiltro > sh.getMaxRows()) ultimaFilaFiltro = sh.getMaxRows();
+  if (ultimaFilaFiltro < filaHeader) return; // la hoja ni siquiera tiene la fila de encabezado
+  var numFilasFiltro = ultimaFilaFiltro - filaHeader + 1;
+
+  if (filaHeader > 1) {
+    // Antes de crear el filtro, partir cualquier celda combinada de [→ Contexto_Base_Web.md §04B017]
+    _repararMergesFiltroHeader(sh, filaHeader);
+  }
+
+  try {
+    if (sh.getFilter()) { sh.getFilter().remove(); }
+    sh.getRange(filaHeader, 1, numFilasFiltro, lastCol).createFilter();
+    Logger.log('[Filtros] Filtro aplicado en fila ' + filaHeader + ': ' + nombreHoja);
+  } catch (e) {
+    Logger.log('[Filtros] Error al recrear el filtro en ' + nombreHoja + ' (fila ' + filaHeader + ', intento 1): ' + e.message);
+
+    if (filaHeader > 1) {
+      // Reintento de respaldo: rompe CUALQUIER merge residual que quede [→ Contexto_Base_Web.md §04B018]
+      try {
+        var filaHeaderRange = sh.getRange(filaHeader, 1, 1, lastCol);
+        var mergesResiduales = filaHeaderRange.getMergedRanges();
+        for (var mr = 0; mr < mergesResiduales.length; mr++) {
+          try { mergesResiduales[mr].breakApart(); } catch (eBreak) {}
+        }
+        sh.getRange(filaHeader, 1, numFilasFiltro, lastCol).createFilter();
+        Logger.log('[Filtros] ' + nombreHoja + ': filtro creado en el segundo intento, tras romper merge(s) residual(es) en la fila ' + filaHeader + '.');
+      } catch (e2) {
+        Logger.log('[Filtros] Error al recrear el filtro en ' + nombreHoja + ' (fila ' + filaHeader + ', intento 2), se abandona por esta corrida: ' + e2.message);
+      }
+    }
+  }
+}
+
+/**
+ * _repararMergesFiltroHeader(sh, filaHeader) [→ Contexto_Base_Web.md §04B014]
+ */
+function _repararMergesFiltroHeader(sh, filaHeader) {
+  var lastCol = sh.getLastColumn();
+  if (lastCol < 1 || filaHeader < 2) return;
+  var headerRange = sh.getRange(1, 1, filaHeader, lastCol);
+  var merges = headerRange.getMergedRanges();
+  var corregidas = [];
+
+  for (var i = 0; i < merges.length; i++) {
+    var m = merges[i];
+    var r0 = m.getRow();
+    var rEnd = r0 + m.getNumRows() - 1;
+    if (r0 <= filaHeader - 1 && rEnd >= filaHeader) {
+      var c0   = m.getColumn();
+      var numC = m.getNumColumns();
+      var valor = m.getValue();
+      var fmt   = m.getBackground();
+      var fontColor = m.getFontColor();
+      var fontWeight = m.getFontWeight();
+      var hAlign = m.getHorizontalAlignment();
+      var vAlign = m.getVerticalAlignment();
+
+      m.breakApart();
+
+      // La porción de arriba (fila inicio..filaHeader-1) queda EN BLANCO —
+      // el rótulo ya no vive aquí, ver comentario de la función.
+      var arriba = sh.getRange(r0, c0, filaHeader - r0, numC);
+      if (arriba.getNumRows() > 1) arriba.merge();
+      arriba.setValue('')
+        .setBackground(fmt)
+        .setFontColor(fontColor)
+        .setFontWeight(fontWeight)
+        .setHorizontalAlignment(hAlign)
+        .setVerticalAlignment(vAlign);
+
+      // filaHeader queda como celda propia CON el rótulo — es la fila que
+      // usa el desplegable del filtro y donde viven los demás encabezados.
+      sh.getRange(filaHeader, c0, 1, numC).setValue(valor)
+        .setBackground(fmt)
+        .setFontColor(fontColor)
+        .setFontWeight(fontWeight)
+        .setHorizontalAlignment(hAlign)
+        .setVerticalAlignment(vAlign);
+
+      corregidas.push(sh.getRange(filaHeader, c0).getA1Notation() + ' ("' + valor + '")');
+    }
+  }
+
+  if (corregidas.length > 0) {
+    Logger.log('[Filtros] ' + sh.getName() + ': merges de encabezado partidos en fila ' + filaHeader + ' para permitir el filtro: ' + corregidas.join(', '));
+  }
+}
+
+/**
+ * _limpiarBordesFilasVacias() [→ Contexto_Base_Web.md §04B013]
+ */
+function _limpiarBordesFilasVacias() {
+  var ss = _getSs();
+  var sheetNames = Object.values(CFG.SHEETS);
+  for (var i = 0; i < sheetNames.length; i++) {
+    var shName = sheetNames[i];
+    if (shName === CFG.SHEETS.CALENDARIO) continue;
+    var sh = ss.getSheetByName(shName);
+    if (!sh) continue;
+    var lastRow = sh.getLastRow();
+    var maxRows = sh.getMaxRows();
+    var lastCol = sh.getLastColumn() || 1;
+    if (maxRows > lastRow && lastRow >= 1) {
+      try {
+        sh.getRange(lastRow + 1, 1, maxRows - lastRow, lastCol)
+          .setBorder(false, false, false, false, false, false);
+      } catch(e) {}
+    }
+  }
+  Logger.log('[Formato] Bordes en filas vacías limpiados.');
+}
+
+// ----- Limpieza de hojas obsoletas (las llama 00_Main.gs) -----
+
+function _limpiarHojaTerrenoLimpio() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Terreno_Limpio');
+
+  if (sh) {
+    if (ss.getSheets().length > 1) {
+      try {
+        ss.deleteSheet(sh);
+        Logger.log('[Setup] Hoja "Terreno_Limpio" eliminada con éxito.');
+      } catch(e) {
+        Logger.log('[Setup] No se pudo eliminar "Terreno_Limpio": ' + e.message);
+      }
+    } else {
+      Logger.log('[Setup] "Terreno_Limpio" es la única hoja, no se puede eliminar.');
+    }
+  }
+}
+
+/**
+ * _renombrarHojasHistorialLegacy() [→ Contexto_Base_Web.md §04B025]
+ */
+function _renombrarHojasHistorialLegacy() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  var migraciones = [
+    { viejo: 'Ascensos',  nuevo: CFG.SHEETS.ASCENSOS },
+    { viejo: 'Historial', nuevo: CFG.SHEETS.HISTORIAL }
+  ];
+
+  for (var i = 0; i < migraciones.length; i++) {
+    var viejo = migraciones[i].viejo;
+    var nuevo = migraciones[i].nuevo;
+    if (viejo === nuevo) continue; // sin cambio configurado
+
+    if (ss.getSheetByName(nuevo)) continue; // la pestaña nueva ya existe, no tocar nada
+
+    var shViejo = ss.getSheetByName(viejo);
+    if (!shViejo) continue; // no había pestaña vieja que migrar
+
+    try {
+      shViejo.setName(nuevo);
+      Logger.log('[Setup] Pestaña renombrada: "' + viejo + '" -> "' + nuevo + '".');
+    } catch (e) {
+      Logger.log('[Setup] No se pudo renombrar "' + viejo + '" a "' + nuevo + '": ' + e.message);
+    }
+  }
+}
+
+/**
+ * _limpiarHojasCardsObsoletas() [→ Contexto_Base_Web.md §04B026]
+ */
+function _limpiarHojasCardsObsoletas() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var nombres = [CFG.SHEETS.CARDS, CFG.SHEETS.CARDS_2];
+
+  for (var i = 0; i < nombres.length; i++) {
+    var nombre = nombres[i];
+    var sh = ss.getSheetByName(nombre);
+    if (!sh) continue;
+
+    try {
+      _respaldarListaHojasCSV(ss, [nombre], true);
+    } catch (e) {
+      Logger.log('[Setup] No se pudo respaldar "' + nombre + '" antes de eliminarla: ' + e.message);
+    }
+
+    if (ss.getSheets().length > 1) {
+      try {
+        ss.deleteSheet(sh);
+        Logger.log('[Setup] Hoja "' + nombre + '" (obsoleta, ahora vive solo en CSV) eliminada con éxito.');
+      } catch (e) {
+        Logger.log('[Setup] No se pudo eliminar "' + nombre + '": ' + e.message);
+      }
+    } else {
+      Logger.log('[Setup] "' + nombre + '" es la única hoja, no se puede eliminar.');
+    }
+  }
+}
+
+/**
+ * _limpiarHojaTRequisitosObsoleta() [→ Contexto_Base_Web.md §04B027]
+ */
+function _limpiarHojaTRequisitosObsoleta() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('T_Requisitos');
+
+  if (sh) {
+    if (ss.getSheets().length > 1) {
+      try {
+        ss.deleteSheet(sh);
+        Logger.log('[Setup] Hoja "T_Requisitos" (obsoleta, reemplazada por CR_Lista) eliminada con éxito.');
+      } catch(e) {
+        Logger.log('[Setup] No se pudo eliminar "T_Requisitos": ' + e.message);
+      }
+    } else {
+      Logger.log('[Setup] "T_Requisitos" es la única hoja, no se puede eliminar.');
+    }
+  }
+}
+
+/**
+ * _limpiarHojaMenuObsoleta() [→ Contexto_Base_Web.md §04B028]
+ */
+function _limpiarHojaMenuObsoleta() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Menú');
+
+  if (!_leerIndiceGuardado()) {
+    if (sh) {
+      Logger.log('[Setup] Hoja "Menú" (obsoleta) NO se elimina todavía: aún no existe el índice de contenido guardado. Se reintenta en la próxima corrida (o ejecutar inicializarIndiceContenido()).');
+    }
+    return;
+  }
+
+  if (sh) {
+    if (ss.getSheets().length > 1) {
+      try {
+        ss.deleteSheet(sh);
+        Logger.log('[Setup] Hoja "Menú" (obsoleta, reemplazada por el índice de contenido) eliminada con éxito.');
+      } catch(e) {
+        Logger.log('[Setup] No se pudo eliminar "Menú": ' + e.message);
+      }
+    } else {
+      Logger.log('[Setup] "Menú" es la única hoja, no se puede eliminar.');
+    }
+  }
+
+  _enviarRespaldosMenuAPapelera();
+}
+
+/**
+ * _enviarRespaldosMenuAPapelera() [→ Contexto_Base_Web.md §04B029]
+ */
+function _enviarRespaldosMenuAPapelera() {
+  try {
+    var folder = _getCsvFolder();
+    var nombres = ['Backup_Menu.csv', 'Backup_Menú.csv'];
+    for (var i = 0; i < nombres.length; i++) {
+      var files = folder.getFilesByName(nombres[i]);
+      while (files.hasNext()) {
+        files.next().setTrashed(true);
+        Logger.log('[Setup] Respaldo obsoleto "' + nombres[i] + '" enviado a la papelera de Drive.');
+      }
+    }
+  } catch (e) {
+    Logger.log('[Setup] No se pudieron limpiar los respaldos de Menú: ' + e.message);
+  }
+}
+
+// ----- Anchos de columna: ayudas -----
+
+/**
+ * _leerAnchosColumnasGuardados() [→ Contexto_Base_Web.md §04B067]
+ */
+function _leerAnchosColumnasGuardados() {
+  // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS) — antes [→ Contexto_Base_Web.md §04B068]
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(ANCHOS_COLUMNAS_ARCHIVO);
+    if (!files.hasNext()) return {};
+    var contenido = files.next().getBlob().getDataAsString('UTF-8');
+    return contenido ? JSON.parse(contenido) : {};
+  } catch (e) {
+    Logger.log('[AnchosColumnas] No se pudo leer ' + ANCHOS_COLUMNAS_ARCHIVO + ' (' + e.message + '), se asume vacío.');
+    return {};
+  }
+}
+
+/**
+ * _escribirAnchosColumnasGuardados(datos) [→ Contexto_Base_Web.md §04B069]
+ */
+function _escribirAnchosColumnasGuardados(datos) {
+  // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS), igual
+  // que _leerAnchosColumnasGuardados() más arriba en este archivo.
+  var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+  var contenido = JSON.stringify(datos, null, 2);
+  var files = folder.getFilesByName(ANCHOS_COLUMNAS_ARCHIVO);
+  if (files.hasNext()) {
+    _setContentConConteo_(files.next(), contenido);
+  } else {
+    _createFileConConteo_(folder, ANCHOS_COLUMNAS_ARCHIVO, contenido, MimeType.PLAIN_TEXT);
+  }
+}
 
 /**
  * _clavesColumnasParaAnchos(hoja, filaHeader, limiteGenerico) [→ Contexto_Base_Web.md §04B058]
@@ -1060,39 +1114,6 @@ function _aplicarAnchosFijosGridHistorialNuevos(hoja, maxCol) {
     ajustadas++;
   }
   return ajustadas;
-}
-
-/**
- * _leerAnchosColumnasGuardados() [→ Contexto_Base_Web.md §04B067]
- */
-function _leerAnchosColumnasGuardados() {
-  // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS) — antes [→ Contexto_Base_Web.md §04B068]
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(ANCHOS_COLUMNAS_ARCHIVO);
-    if (!files.hasNext()) return {};
-    var contenido = files.next().getBlob().getDataAsString('UTF-8');
-    return contenido ? JSON.parse(contenido) : {};
-  } catch (e) {
-    Logger.log('[AnchosColumnas] No se pudo leer ' + ANCHOS_COLUMNAS_ARCHIVO + ' (' + e.message + '), se asume vacío.');
-    return {};
-  }
-}
-
-/**
- * _escribirAnchosColumnasGuardados(datos) [→ Contexto_Base_Web.md §04B069]
- */
-function _escribirAnchosColumnasGuardados(datos) {
-  // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS), igual
-  // que _leerAnchosColumnasGuardados() más arriba en este archivo.
-  var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-  var contenido = JSON.stringify(datos, null, 2);
-  var files = folder.getFilesByName(ANCHOS_COLUMNAS_ARCHIVO);
-  if (files.hasNext()) {
-    _setContentConConteo_(files.next(), contenido);
-  } else {
-    _createFileConConteo_(folder, ANCHOS_COLUMNAS_ARCHIVO, contenido, MimeType.PLAIN_TEXT);
-  }
 }
 
 /**
