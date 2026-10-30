@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 23:09:58 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 23:43:45 */
 
 
 
@@ -40496,8 +40496,12 @@ function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, ra
  * no solo a los ganadores. `clanes` es la lista de calificados que arma _webSorteoCalificados() ([{nombre, calificados:[{tag, nombre, tickets}]}]).
  * Por cada participante sin fila en este sorteo agrega una con Ganó = «No» (sin Premio, Resultado ni Razón). Las filas que ya existen (ganadores o participantes)
  * no se tocan, así que nunca baja un «Sí» a «No». La Fecha se guarda como fecha real (número de Sheets con formato dd/mm/yyyy), no como texto. Devuelve cuántas agregó.
+ * Decisión de la usuaria (29-oct-2026, §PF294 punto 9): quien salió con «No califica» no entra solo, pero si se agregó a mano en sorteo.html cuenta como participante
+ * aunque no gane. `manuales` ([{nombre, tag, tickets}], opcional) trae a esos agregados a mano. Los elegidos de las sugerencias de sorteo.html traen Tag: se tratan
+ * como un calificado más (sin duplicar por Tag y con Clan, Nom_Multi y Préstamo del Directorio). Los «de fuera» no traen Tag: se evita duplicarlos comparando el nombre
+ * (sin tildes ni mayúsculas) con las filas que el sorteo ya tiene (ganadores sin Tag, calificados o un manual repetido) y se guardan con Tag vacío.
  */
-function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
+function _sincronizarParticipantesSorteoSA(idSorteo, clanes, manuales) {
   var idNorm = String(idSorteo || '').trim();
   if (!idNorm || !Array.isArray(clanes)) return { ok: false, agregadas: 0 };
   var ss = _getSs();
@@ -40506,6 +40510,7 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
 
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_ASISTENCIA);
   var yaEstan = {};
+  var nombresYa = {}; // nombres normalizados de este sorteo (para los agregados a mano, que no tienen Tag)
   var siguienteNum = 1;
   if (sh.getLastRow() >= 2) {
     var existentes = sh.getRange(2, 1, sh.getLastRow() - 1, SA_TOTAL_COLS).getValues();
@@ -40514,6 +40519,8 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
       if (String(existentes[e][SA.ID - 1] || '').trim() !== idNorm) continue;
       var tagEx = String(existentes[e][SA.TAG - 1] || '').trim().toUpperCase();
       if (tagEx) yaEstan[tagEx] = true;
+      var nomEx = _normalizarNombreSA_(existentes[e][SA.NOMBRE - 1]);
+      if (nomEx) nombresYa[nomEx] = true;
     }
   }
 
@@ -40526,6 +40533,8 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
       var tagHash = tagNorm.charAt(0) === '#' ? tagNorm : '#' + tagNorm;
       if (yaEstan[tagHash]) return;
       yaEstan[tagHash] = true;
+      var nomCal = _normalizarNombreSA_(p.nombre);
+      if (nomCal) nombresYa[nomCal] = true;
       var info = mapaDir[tagHash] || { nomMulti: '', prestamo: '', clanTag: '', clan: '' };
       var fila = [];
       fila[SA.NUM - 1]       = siguienteNum++;
@@ -40546,6 +40555,40 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
       filas.push(fila);
     });
   });
+
+  // Agregados a mano en sorteo.html (sin Tag): cuentan como participantes aunque no ganen. [→ Contexto_Base_Web.md §PF294]
+  (Array.isArray(manuales) ? manuales : []).forEach(function (m) {
+    var nombreMan = String((m && m.nombre) || '').trim();
+    var claveMan = _normalizarNombreSA_(nombreMan);
+    var tagMan = String((m && m.tag) || '').trim().toUpperCase();
+    var tagManHash = tagMan ? (tagMan.charAt(0) === '#' ? tagMan : '#' + tagMan) : '';
+    if (!claveMan) return;
+    if (tagManHash) {
+      if (yaEstan[tagManHash]) return; // con Tag se compara por Tag: dos personas distintas pueden llamarse igual
+      yaEstan[tagManHash] = true;
+    } else if (nombresYa[claveMan]) {
+      return;
+    }
+    nombresYa[claveMan] = true;
+    var infoMan = tagManHash ? (mapaDir[tagManHash] || null) : null;
+    var filaMan = [];
+    filaMan[SA.NUM - 1]       = siguienteNum++;
+    filaMan[SA.FECHA - 1]     = filaSorteo.fecha;
+    filaMan[SA.ID - 1]        = idNorm;
+    filaMan[SA.TEMPORADA - 1] = filaSorteo.temporada;
+    filaMan[SA.TAG - 1]       = tagManHash;
+    filaMan[SA.NOMBRE - 1]    = nombreMan;
+    filaMan[SA.NOM_MULTI - 1] = infoMan ? (infoMan.nomMulti || '') : '';
+    filaMan[SA.PRESTAMO - 1]  = infoMan ? (infoMan.prestamo || '') : '';
+    filaMan[SA.CLAN_TAG - 1]  = infoMan ? (infoMan.clanTag || '') : '';
+    filaMan[SA.CLAN - 1]      = infoMan ? (infoMan.clan || '') : '';
+    filaMan[SA.TICKETS - 1]   = (m.tickets !== '' && m.tickets !== null && Number(m.tickets) >= 0) ? Number(m.tickets) : '';
+    filaMan[SA.PREMIO - 1]    = '';
+    filaMan[SA.RESULTADO - 1] = '';
+    filaMan[SA.RAZON - 1]     = '';
+    filaMan[SA.GANO - 1]      = SA_GANO_NO;
+    filas.push(filaMan);
+  });
   if (!filas.length) return { ok: true, agregadas: 0 };
 
   var primera = sh.getLastRow() + 1;
@@ -40555,6 +40598,13 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
   Logger.log('[Sorteos] S_Asistencia: ' + filas.length + ' participante(s) agregado(s) con Ganó = No (sorteo ' + idNorm + ').');
   _ordenarYColorearSAsistencia_(ss); // más reciente primero y un color por sorteo
   return { ok: true, agregadas: filas.length };
+}
+
+/**
+ * _normalizarNombreSA_(nombre): clave para comparar nombres de S_Asistencia sin tildes, mayúsculas ni espacios de más. Ayuda de _sincronizarParticipantesSorteoSA().
+ */
+function _normalizarNombreSA_(nombre) {
+  return String(nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -53406,9 +53456,19 @@ function _webAdminSorteoResolucionGuardar(token, datos) {
   // pierde el ganador: el error solo se anota en el log y la siguiente resolución lo vuelve a intentar.
   if (resRes && resRes.ok) {
     try {
+      // 29-oct-2026 (§PF294 punto 9): los agregados a mano en sorteo.html (sin Tag) también cuentan como participantes. Se limpian aquí: máximo 300, nombre de hasta 100 caracteres.
+      var manuales = [];
+      (Array.isArray(datos.participantesManuales) ? datos.participantesManuales : []).slice(0, 300).forEach(function (m) {
+        var nom = String((m && m.nombre) || '').trim().substring(0, 100);
+        var tagMan = String((m && m.tag) || '').trim().toUpperCase().replace(/[^#0-9A-Z]/g, '').substring(0, 20);
+        if (nom) manuales.push({ nombre: nom, tag: tagMan, tickets: (m.tickets === '' || m.tickets === null || m.tickets === undefined) ? '' : Number(m.tickets) });
+      });
       var calif = _webSorteoCalificados(token, datos.idSorteo, false);
-      if (calif && calif.ok) _sincronizarParticipantesSorteoSA(datos.idSorteo, calif.clanes);
-      else Logger.log('[Sorteos] No se listaron los participantes en S_Asistencia: ' + ((calif && calif.error) || 'sin detalle'));
+      if (calif && calif.ok) _sincronizarParticipantesSorteoSA(datos.idSorteo, calif.clanes, manuales);
+      else {
+        Logger.log('[Sorteos] No se listaron los calificados en S_Asistencia: ' + ((calif && calif.error) || 'sin detalle'));
+        if (manuales.length) _sincronizarParticipantesSorteoSA(datos.idSorteo, [], manuales);
+      }
     } catch (eParts) {
       Logger.log('[Sorteos] Error listando participantes en S_Asistencia: ' + eParts.message);
     }
