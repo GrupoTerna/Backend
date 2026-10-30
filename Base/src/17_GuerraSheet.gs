@@ -4301,6 +4301,7 @@ function _syncGuerraCSV(sh, forzar) {
   try {
     var tIniSync = Date.now(); // PF289 punto 5: tiempos por tramo, se imprimen junto a «CSV leído»
     var lastRow = sh.getLastRow();
+    var tLastRowFin = Date.now(); // PF289 punto 12: subdivide «leer hoja» en getLastRow, getDisplayValues y columnas de fecha
     if (lastRow < 1) {
       Logger.log('[Guerra] _syncGuerraCSV: hoja sin encabezado, nada que fusionar.');
       return;
@@ -4308,6 +4309,7 @@ function _syncGuerraCSV(sh, forzar) {
 
     // NO se usa _extraerValoresConLinksReales() aquí (17-jul-2026): esa [→ Contexto_Base_Web.md §17B174]
     var data = sh.getRange(1, 1, lastRow, GUERRA_TOTAL_COLS).getDisplayValues();
+    var tDisplayFin = Date.now();
 
     // FASE 1 (Lista_de_cambios.md, 18-jul-2026): getDisplayValues() sobre [→ Contexto_Base_Web.md §17B175]
     if (lastRow >= 2) {
@@ -4375,7 +4377,7 @@ function _syncGuerraCSV(sh, forzar) {
     var tParseFin = Date.now();
     // PF289: deja a la vista qué se leyó, para ubicar la primera escritura que recorte el CSV.
     Logger.log('[Guerra] _syncGuerraCSV: CSV leído con ' + csvRowsAntes + ' fila(s) y ' + (csvExistente ? csvExistente.length : 0) + ' caracteres; hoja con ' + (data.length - 1) + ' fila(s); referencia ' + (refTam ? refTam.ref : 0) + ' bytes.');
-    Logger.log('[Guerra] _syncGuerraCSV: tiempos hasta aquí: leer hoja ' + Math.round((tHojaFin - tIniSync) / 100) / 10 + ' s; leer CSV ' + Math.round((tCsvFin - tHojaFin) / 100) / 10 +
+    Logger.log('[Guerra] _syncGuerraCSV: tiempos hasta aquí: leer hoja ' + Math.round((tHojaFin - tIniSync) / 100) / 10 + ' s (getLastRow ' + Math.round((tLastRowFin - tIniSync) / 100) / 10 + ' s; getDisplayValues ' + Math.round((tDisplayFin - tLastRowFin) / 100) / 10 + ' s; columnas de fecha ' + Math.round((tHojaFin - tDisplayFin) / 100) / 10 + ' s); leer CSV ' + Math.round((tCsvFin - tHojaFin) / 100) / 10 +
                ' s; tamaño de referencia ' + Math.round((tRefFin - tCsvFin) / 100) / 10 + ' s; relectura directa ' + Math.round(msRelectura / 100) / 10 +
                ' s; armar filas ' + Math.round((tParseFin - tRefFin - msRelectura) / 100) / 10 + ' s; total ' + Math.round((tParseFin - tIniSync) / 100) / 10 + ' s.');
 
