@@ -1,0 +1,19 @@
+ID,Temporada,Semana,Tag,Nombre,Clan,Tipo de anomalia,Filas,Max AtaquesSemana,AtaquesSemana final,Suma de clanes (final),Suma AtaquesHoy,Max AtaquesHoy,Filas con Origen,Fame final,Barcos final,Historial ataques,Historial fame,Historial barcos,Historial cerrada,Historial fuente,Propuesta,Valor propuesto AtaquesSemana final
+T_22_S_02_#P8Y0CQ9VR,22,2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,1,12,12,20,4,4,0,1550,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),4
+T_22_S_02_#P8Y0CQ9VR,22,2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,4,8,8,20,8,4,3,1200,0,8,1200,0,true,perfil,CONFIABLE (Historial = suma de AtaquesHoy),8
+T_22_S_03_#20P2UP80UY,22,3,#20P2UP80UY,♤FƆŔ,GrupoXTerna™3,SUMA_CLANES_MAYOR_16,7,16,16,28,24,4,0,2000,0,16,2000,0,true,perfil,USAR_HISTORIAL (AtaquesHoy no confiable),16
+T_22_S_03_#20P2UP80UY,22,3,#20P2UP80UY,ᴳ乂ᵀ ⚜️ SHAKA,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,1,12,12,28,0,0,1,1500,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),0
+T_22_S_03_#8VU0Y9LJ0,22,3,#8VU0Y9LJ0,Yisus Craiz,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,7,16,16,32,16,4,0,2700,0,16,2700,0,true,perfil,CONFIABLE (Historial = suma de AtaquesHoy),16
+T_22_S_03_#8VU0Y9LJ0,22,3,#8VU0Y9LJ0,Yisus Craiz,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,1,16,16,32,4,4,1,2400,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),4
+T_22_S_03_#JGGLGVCGU,22,3,#JGGLGVCGU,ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,7,12,12,20,14,4,0,2000,0,12,2000,0,true,perfil,USAR_HISTORIAL (suma de AtaquesHoy distinta),12
+T_22_S_03_#JGGLGVCGU,22,3,#JGGLGVCGU,ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,1,8,8,20,0,0,1,1250,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),0
+T_22_S_03_#L28JYY2J,22,3,#L28JYY2J,Gamer,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,7,16,12,28,16,4,0,2250,0,12,2250,0,true,perfil,USAR_HISTORIAL (suma de AtaquesHoy distinta),12
+T_22_S_03_#L28JYY2J,22,3,#L28JYY2J,Gamer,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,1,16,16,28,4,4,1,2400,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),4
+T_22_S_03_#LRQ8YJRCU,22,3,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,2,4,4,20,0,0,2,500,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),0
+T_22_S_03_#LRQ8YJRCU,22,3,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,6,16,16,20,16,4,0,2300,0,16,2300,0,true,perfil,CONFIABLE (Historial = suma de AtaquesHoy),16
+T_22_S_03_#QR8JGLC9Q,22,3,#QR8JGLC9Q,ᴳ乂ᵀ⚜️Bloodshot,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,7,16,16,32,16,4,0,2200,0,16,2200,0,true,perfil,CONFIABLE (Historial = suma de AtaquesHoy),16
+T_22_S_03_#QR8JGLC9Q,22,3,#QR8JGLC9Q,ᴳ乂ᵀ⚜️Bloodshot,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,1,16,16,32,4,4,1,3050,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),4
+T_22_S_03_#QRQULCCV8,22,3,#QRQULCCV8,ᴳ乂ᵀ ⚜️ Maikel,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,7,16,16,32,20,4,0,2800,0,16,2800,0,true,perfil,USAR_HISTORIAL (AtaquesHoy no confiable),16
+T_22_S_03_#QRQULCCV8,22,3,#QRQULCCV8,ᴳ乂ᵀ ⚜️ Maikel,Grupo乂Terna™,SUMA_CLANES_MAYOR_16,1,16,16,32,4,4,1,3200,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),4
+T_22_S_03_#V9P20U8RC,22,3,#V9P20U8RC,kayserleandro,Mini乂Ternas™,SUMA_CLANES_MAYOR_16,7,12,12,24,24,4,1,1900,0,12,1900,0,true,perfil,USAR_HISTORIAL (AtaquesHoy no confiable),12
+T_22_S_03_#V9P20U8RC,22,3,#V9P20U8RC,kayserleandro,GrupoXTerna™2,SUMA_CLANES_MAYOR_16,1,12,12,24,0,0,1,1600,0,,,,,,USAR_SUMA_HOY (sin respaldo del Historial),0
