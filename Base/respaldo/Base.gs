@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 21:18:59 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 29/10/2026 21:37:14 */
 
 
 
@@ -8017,6 +8017,7 @@ var ESCRITURA_VERIF_ESPERA_MS  = 1500; // espera antes de volver a medir el arch
 var _csvEscritosEnEjecucion_ = {};     // filename -> último texto que _saveCSVToDrive() dejó escrito en esta ejecución
 var _csvEscritosTs_ = {};               // filename -> hora (ms) de esa escritura
 var ESCRITURA_VERIF_ESPERA_FINAL_MS = 8000; // espera mínima desde la escritura antes de la revisión posterior al salir de una tanda
+var ESCRITURA_VERIF_TOLERANCIA_MS = 20000; // margen entre nuestra escritura y la fecha de modificación del archivo para considerar que fue otra ejecución la que lo cambió (PF292, punto 9)
 
 function _csvCacheKey_(filename) { return 'CSVDRV_' + filename; }
 
@@ -8536,6 +8537,16 @@ function _guardarArchivoProgresoVerificado_(folder, nombre, contenido) {
 }
 
 /**
+ * _archivoModificadoDespuesDe_(file, tsMs) - true si la fecha de última modificación del archivo es posterior a tsMs (PF292, punto 9). Si no se puede leer, devuelve false (se actúa como antes). [→ Contexto_Base_Web.md §PF292]
+ */
+function _archivoModificadoDespuesDe_(file, tsMs) {
+  try {
+    var f = file.getLastUpdated();
+    return !!f && f.getTime() > tsMs;
+  } catch (e) { return false; }
+}
+
+/**
  * _tamanoArchivoSeguro_(file) - Peso del archivo en bytes, o null si no se pudo medir (PF291). [→ Contexto_Base_Web.md §PF291]
  */
 function _tamanoArchivoSeguro_(file) {
@@ -8602,6 +8613,13 @@ function _reverificarCsvEscritos_(esperaMinMs) {
       var tam = _tamanoArchivoSeguro_(hit.file);
       if (tam === null || tam >= texto.length) {
         Logger.log('[CSV] Revisión posterior: ' + nombre + ' pesa ' + tam + ' bytes (se escribieron ' + texto.length + ' caracteres). Sin cambios.');
+        continue;
+      }
+      // PF292 punto 9 (29-oct-2026): si el archivo NO está vacío y otra ejecución lo modificó después de nuestra escritura, el tamaño menor puede ser
+      // una versión más nueva y legítima: no se pisa con el texto viejo. Un archivo vacío (0 B) se repara siempre; si no se puede leer la fecha, se
+      // actúa como antes. [→ Contexto_Base_Web.md §PF292]
+      if (tam > 0 && _archivoModificadoDespuesDe_(hit.file, ts + ESCRITURA_VERIF_TOLERANCIA_MS)) {
+        Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ' pesa ' + tam + ' bytes (se escribieron ' + texto.length + ' caracteres) pero fue modificado después de nuestra escritura: se deja como está para no pisar una versión más nueva.');
         continue;
       }
       Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ' pesa ' + tam + ' bytes y se había escrito con ' + texto.length + ' caracteres: se reescribe con el texto de esta ejecución.');
@@ -45142,7 +45160,9 @@ var CATEGORIAS_ESTATICO_SOLO_MENU = [
   'bienvenida',
   'participantes calificados (torneo)', 'participantes calificados (sorteo)',
   'ganadores (torneo)', 'ganadores (sorteo)',
-  'ascensos y descensos'
+  'ascensos y descensos',
+  // 29-oct-2026 (pedido de la usuaria): estas tres solo van en el menú, no se crean en la hoja Mensajes.
+  'no calificados (sorteo)', 'no calificados (torneo)', 'cambio de rango'
 ];
 
 // Anclas de posición para _agregarCategoriaAExtra(): en vez de agregar [→ Contexto_Base_Web.md §30B004]
