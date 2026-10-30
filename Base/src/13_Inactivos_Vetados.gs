@@ -3,7 +3,16 @@
 // Vistas derivadas del Directorio: hojas Inactivos, Vetados y Multicuentas.
 // ==============================================================================
 
-// ----- Variables y constantes -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 29-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano: ninguna (las llaman 11_DirectorioSheet.gs, 00_Main.gs y 37_Web_API.gs; ninguna se corre desde el editor)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Inactivos
+//    - Hoja Vetados
+//    - Vetados confirmados (copia en un JSON de Drive)
+//    - Sincronizar la razón entre Vetados y Directorio (las llama 00_Main.gs)
+//    - Web: altas y comentarios de vetados
+//    - Hoja Multicuentas
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // HOJA ASCENSOS — registro histórico de cambios de rango (Miembro/Veterano/ [→ Contexto_Base_Web.md §13B001]
 var ASC = {
@@ -18,6 +27,7 @@ var ASC = {
 };
 
 var ASCENSOS_TOTAL_COLS = 24;
+
 // Ancho que tenía la hoja antes de la columna PAR_ID: lo usan los lectores que no necesitan esa columna y no deben fallar si la hoja aún no la tiene (PF286).
 var ASCENSOS_COLS_SIN_PAR = 23;
 
@@ -37,7 +47,160 @@ var NOMBRE_JSON_VETADOS_CONFIRMADOS_ = 'ClanSystem_Backup_VetadosConfirmados.jso
  */
 var _cacheVetadosConfirmados_ = null;
 
-// ----- Funciones internas / helpers -----
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Hoja Inactivos -----
+
+function _updateInactivos(ss, dirData) {
+  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+  if (!sh) return;
+
+  // Inactivos: tiene su PROPIA estructura reducida de 29 columnas (ver [→ Contexto_Base_Web.md §13B021]
+
+  // Mapa Tag -> fila de dirData, para saber qué tags siguen existiendo ahí
+  // (y por lo tanto su estado actual manda sobre Inactivos).
+  var dirPorTag = {};
+  for (var i = 0; i < dirData.length; i++) {
+    var tg = String(dirData[i][DC.TAG - 1] || '').trim();
+    if (tg) dirPorTag[tg] = dirData[i];
+  }
+
+  // Candidatas frescas según dirData, ya proyectadas a las 29 columnas de [→ Contexto_Base_Web.md §13B022]
+  var candidatas = {};
+  // extrasFrescos: { Tag -> {campo: valor} } con las 31 columnas de [→ Contexto_Base_Web.md §13B023]
+  var extrasFrescos = {};
+  var camposExtra = _camposExtraInactivos();
+  for (var i = 0; i < dirData.length; i++) {
+    var r = dirData[i];
+    var esAdmin = String(r[DC.ADMIN - 1] || '').trim().toLowerCase() === 'sí';
+    if (esAdmin) continue; // Admins: nunca en Inactivos.
+
+    var esInactivo = String(r[DC.ESTADO - 1]) === 'Inactivo';
+    var vet = String(r[DC.VETADO - 1] || '').trim().toLowerCase();
+    var esVetado = (vet === 'sí' || vet === 'si');
+    var clanTagFila = String(r[DC.CLAN_TAG - 1] || '').trim();
+    var activoEnVetado = (String(r[DC.ESTADO - 1]) === 'Activo') && (clanTagFila === CFG.VETADO_TAG);
+
+    if ((esInactivo && !esVetado) || activoEnVetado) {
+      var tg = String(r[DC.TAG - 1] || '').trim();
+      if (tg) {
+        candidatas[tg] = _proyectarInactivos(r);
+        var extraObj = {};
+        for (var ce = 0; ce < camposExtra.length; ce++) {
+          extraObj[camposExtra[ce]] = r[DC[camposExtra[ce]] - 1];
+        }
+        extrasFrescos[tg] = extraObj;
+      }
+    }
+  }
+  if (Object.keys(extrasFrescos).length > 0) {
+    _guardarExtraColsInactivosBatch(extrasFrescos);
+  }
+
+  // PROTECCIÓN ANTI-BORRADO: la hoja Inactivos se reconstruye a partir de la [→ Contexto_Base_Web.md §13B024]
+  var filasFinalesPorTag = {};
+  var huerfanosConservados = 0;
+  var lastRowSh = sh.getLastRow();
+  if (lastRowSh >= 2) {
+    var existentes = sh.getRange(2, 1, lastRowSh - 1, INACTIVOS_TOTAL_COLS).getValues();
+    for (var i = 0; i < existentes.length; i++) {
+      var tg = String(existentes[i][IC.TAG - 1] || '').trim();
+      if (!tg) continue;
+      if (dirPorTag[tg]) continue; // su estado actual lo decide 'candidatas'
+      filasFinalesPorTag[tg] = existentes[i];
+      huerfanosConservados++;
+    }
+  }
+  if (huerfanosConservados > 0) {
+    Logger.log('[Inactivos] Protección anti-borrado: se conservaron ' + huerfanosConservados + ' fila(s) huérfana(s) (tags que no aparecen en los datos actuales).');
+  }
+  for (var tg in candidatas) filasFinalesPorTag[tg] = candidatas[tg];
+
+  var filas = Object.keys(filasFinalesPorTag).map(function(tg) { return filasFinalesPorTag[tg]; });
+
+  filas.sort(function(a,b) {
+    var ja = String(a[IC.JUGADOR-1]||'').toLowerCase(), jb = String(b[IC.JUGADOR-1]||'').toLowerCase();
+    if (ja !== jb) return ja < jb ? -1 : 1;
+    return String(a[IC.NOMBRE-1]||'').toLowerCase() < String(b[IC.NOMBRE-1]||'').toLowerCase() ? -1 : 1;
+  });
+  for (var i = 0; i < filas.length; i++) filas[i][IC.NUM - 1] = i + 1;
+
+  // FIX (05-ago-2026): mismo criterio que _escribirDirectorio() — resetear [→ Contexto_Base_Web.md §13B025]
+  if (sh.getLastRow() >= 2) {
+    sh.getRange(2, 1, sh.getLastRow() - 1, INACTIVOS_TOTAL_COLS)
+      .clearContent()
+      .setFontColor(null);
+  }
+  if (filas.length > 0) {
+    sh.getRange(2, 1, filas.length, INACTIVOS_TOTAL_COLS).setValues(filas);
+    applyBorderCenter(sh.getRange(2, 1, filas.length, INACTIVOS_TOTAL_COLS));
+    // Fix: la hoja Inactivos nunca reaplicaba el formato de Celular al [→ Contexto_Base_Web.md §13B026]
+    sh.getRange(2, IC.CELULAR, filas.length, 1).setNumberFormat('### ### ### ###');
+  }
+  _aplicarDropdownsInactivos(sh, filas.length);   // 👈 NUEVO
+}
+
+/**
+ * _camposExtraInactivos() [→ Contexto_Base_Web.md §13B015]
+ */
+function _camposExtraInactivos() {
+  var extra = [];
+  for (var campo in DC) {
+    if (IC[campo] === undefined) extra.push(campo);
+  }
+  return extra;
+}
+
+/**
+ * _proyectarInactivos(r) [→ Contexto_Base_Web.md §13B016]
+ */
+function _proyectarInactivos(r) {
+  var fila = new Array(INACTIVOS_TOTAL_COLS).fill('');
+  fila[IC.NUM         - 1] = r[DC.NUM         - 1];
+  fila[IC.TAG         - 1] = r[DC.TAG         - 1];
+  fila[IC.NOMBRE      - 1] = r[DC.NOMBRE      - 1];
+  fila[IC.JUGADOR     - 1] = r[DC.JUGADOR     - 1];
+  fila[IC.NOM_MULTI   - 1] = r[DC.NOM_MULTI   - 1];
+  fila[IC.PRESTAMO    - 1] = r[DC.PRESTAMO    - 1];
+  fila[IC.MULTICUENTA - 1] = r[DC.MULTICUENTA - 1];
+  fila[IC.CLAN        - 1] = r[DC.CLAN        - 1];
+  fila[IC.CLAN_TAG    - 1] = r[DC.CLAN_TAG    - 1];
+  fila[IC.RANGO       - 1] = r[DC.RANGO       - 1];
+  fila[IC.LIDER       - 1] = r[DC.LIDER       - 1];
+  fila[IC.PREFIJO     - 1] = r[DC.PREFIJO     - 1];
+  fila[IC.CELULAR     - 1] = r[DC.CELULAR     - 1];
+  fila[IC.WSP_G       - 1] = r[DC.WSP_G       - 1];
+  fila[IC.ETIQUETA    - 1] = r[DC.ETIQUETA    - 1];
+  fila[IC.PERMISO     - 1] = r[DC.PERMISO     - 1];
+  fila[IC.INICIALES   - 1] = r[DC.INICIALES   - 1];
+  fila[IC.ESTADO      - 1] = r[DC.ESTADO      - 1];
+  fila[IC.ADMIN       - 1] = r[DC.ADMIN       - 1];
+  fila[IC.VETADO      - 1] = r[DC.VETADO      - 1];
+  fila[IC.RAZON       - 1] = r[DC.RAZON       - 1];
+  fila[IC.ALERTA      - 1] = r[DC.ALERTA      - 1];
+  fila[IC.FECHA_ING   - 1] = r[DC.FECHA_ING   - 1];
+  fila[IC.FECHA_LIM   - 1] = r[DC.FECHA_LIM   - 1];
+  fila[IC.VIGENCIA    - 1] = r[DC.VIGENCIA    - 1];
+  fila[IC.INACTIVIDAD - 1] = r[DC.INACTIVIDAD - 1];
+  fila[IC.RANKING     - 1] = r[DC.RANKING     - 1];
+  fila[IC.RANKING_P   - 1] = r[DC.RANKING_P   - 1];
+  fila[IC.COMENTARIO  - 1] = r[DC.COMENTARIO  - 1];
+  return fila;
+}
+
+function _aplicarDropdownsInactivos(sh, numFilas) {
+  if (numFilas === 0) return;
+  var opsSiNo = SpreadsheetApp.newDataValidation().requireValueInList(['Sí','No'], true).build();
+  sh.getRange(2, IC.MULTICUENTA, numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.WSP_G,       numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.ETIQUETA,    numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.PERMISO,     numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.INICIALES,   numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.ADMIN,       numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, IC.VETADO,      numFilas, 1).setDataValidation(opsSiNo);
+}
 
 function _construirFilaInactiva(tag, existing, csvRow, tagMulticuenta, multiData, colIdxMap, playersRow, linksRow, inactivoPropio) {
   // Construye una fila para un jugador inactivo (no está en ningún clan Terna via API). [→ Contexto_Base_Web.md §13B005]
@@ -235,101 +398,11 @@ function _construirFilaInactiva(tag, existing, csvRow, tagMulticuenta, multiData
 }
 
 /**
- * _camposExtraInactivos() [→ Contexto_Base_Web.md §13B015]
- */
-function _camposExtraInactivos() {
-  var extra = [];
-  for (var campo in DC) {
-    if (IC[campo] === undefined) extra.push(campo);
-  }
-  return extra;
-}
-
-/**
- * _proyectarInactivos(r) [→ Contexto_Base_Web.md §13B016]
- */
-function _proyectarInactivos(r) {
-  var fila = new Array(INACTIVOS_TOTAL_COLS).fill('');
-  fila[IC.NUM         - 1] = r[DC.NUM         - 1];
-  fila[IC.TAG         - 1] = r[DC.TAG         - 1];
-  fila[IC.NOMBRE      - 1] = r[DC.NOMBRE      - 1];
-  fila[IC.JUGADOR     - 1] = r[DC.JUGADOR     - 1];
-  fila[IC.NOM_MULTI   - 1] = r[DC.NOM_MULTI   - 1];
-  fila[IC.PRESTAMO    - 1] = r[DC.PRESTAMO    - 1];
-  fila[IC.MULTICUENTA - 1] = r[DC.MULTICUENTA - 1];
-  fila[IC.CLAN        - 1] = r[DC.CLAN        - 1];
-  fila[IC.CLAN_TAG    - 1] = r[DC.CLAN_TAG    - 1];
-  fila[IC.RANGO       - 1] = r[DC.RANGO       - 1];
-  fila[IC.LIDER       - 1] = r[DC.LIDER       - 1];
-  fila[IC.PREFIJO     - 1] = r[DC.PREFIJO     - 1];
-  fila[IC.CELULAR     - 1] = r[DC.CELULAR     - 1];
-  fila[IC.WSP_G       - 1] = r[DC.WSP_G       - 1];
-  fila[IC.ETIQUETA    - 1] = r[DC.ETIQUETA    - 1];
-  fila[IC.PERMISO     - 1] = r[DC.PERMISO     - 1];
-  fila[IC.INICIALES   - 1] = r[DC.INICIALES   - 1];
-  fila[IC.ESTADO      - 1] = r[DC.ESTADO      - 1];
-  fila[IC.ADMIN       - 1] = r[DC.ADMIN       - 1];
-  fila[IC.VETADO      - 1] = r[DC.VETADO      - 1];
-  fila[IC.RAZON       - 1] = r[DC.RAZON       - 1];
-  fila[IC.ALERTA      - 1] = r[DC.ALERTA      - 1];
-  fila[IC.FECHA_ING   - 1] = r[DC.FECHA_ING   - 1];
-  fila[IC.FECHA_LIM   - 1] = r[DC.FECHA_LIM   - 1];
-  fila[IC.VIGENCIA    - 1] = r[DC.VIGENCIA    - 1];
-  fila[IC.INACTIVIDAD - 1] = r[DC.INACTIVIDAD - 1];
-  fila[IC.RANKING     - 1] = r[DC.RANKING     - 1];
-  fila[IC.RANKING_P   - 1] = r[DC.RANKING_P   - 1];
-  fila[IC.COMENTARIO  - 1] = r[DC.COMENTARIO  - 1];
-  return fila;
-}
-
-/**
- * _leerInactivosParaReactivacion(ss) [→ Contexto_Base_Web.md §13B017]
- */
-function _leerInactivosParaReactivacion(ss) {
-  var mapa = {};
-  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
-  if (!sh || sh.getLastRow() < 2) return mapa;
-
-  var lastRow = sh.getLastRow();
-  var datos = sh.getRange(2, 1, lastRow - 1, INACTIVOS_TOTAL_COLS).getValues();
-  var extraPorTag = _cargarExtraColsInactivos();
-
-  for (var i = 0; i < datos.length; i++) {
-    var tag = String(datos[i][IC.TAG - 1] || '').trim();
-    if (!tag) continue;
-    mapa[tag] = { ic: datos[i], extra: extraPorTag[tag] || null };
-  }
-  return mapa;
-}
-
-/**
  * _esSiNoOVacio(v) [→ Contexto_Base_Web.md §13B018]
  */
 function _esSiNoOVacio(v) {
   var s = String(v || '').trim().toLowerCase();
   return s === '' || s === 'sí' || s === 'si' || s === 'no';
-}
-
-/**
- * _reconstruirExistingDesdeInactivos(icRow, extraObj) [→ Contexto_Base_Web.md §13B019]
- */
-function _reconstruirExistingDesdeInactivos(icRow, extraObj) {
-  var fila = new Array(DIR_TOTAL_COLS).fill('');
-  for (var campo in IC) {
-    var valorIC = icRow[IC[campo] - 1];
-    if (campo === 'VETADO' || campo === 'PERMISO' || campo === 'ADMIN') {
-      valorIC = _esSiNoOVacio(valorIC) ? valorIC : '';
-    } else if (campo === 'RAZON') {
-      valorIC = esRazonValida(valorIC) ? valorIC : '';
-    }
-    fila[DC[campo] - 1] = valorIC;
-  }
-  if (extraObj) {
-    for (var campoExtra in extraObj) {
-      if (DC[campoExtra] !== undefined) fila[DC[campoExtra] - 1] = extraObj[campoExtra];
-    }
-  }
-  return fila;
 }
 
 /**
@@ -363,253 +436,7 @@ function _retirarDeInactivosPorReactivacion(ss, tags) {
   _eliminarExtraColsInactivosPorTags(tags);
 }
 
-function _updateInactivos(ss, dirData) {
-  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
-  if (!sh) return;
-
-  // Inactivos: tiene su PROPIA estructura reducida de 29 columnas (ver [→ Contexto_Base_Web.md §13B021]
-
-  // Mapa Tag -> fila de dirData, para saber qué tags siguen existiendo ahí
-  // (y por lo tanto su estado actual manda sobre Inactivos).
-  var dirPorTag = {};
-  for (var i = 0; i < dirData.length; i++) {
-    var tg = String(dirData[i][DC.TAG - 1] || '').trim();
-    if (tg) dirPorTag[tg] = dirData[i];
-  }
-
-  // Candidatas frescas según dirData, ya proyectadas a las 29 columnas de [→ Contexto_Base_Web.md §13B022]
-  var candidatas = {};
-  // extrasFrescos: { Tag -> {campo: valor} } con las 31 columnas de [→ Contexto_Base_Web.md §13B023]
-  var extrasFrescos = {};
-  var camposExtra = _camposExtraInactivos();
-  for (var i = 0; i < dirData.length; i++) {
-    var r = dirData[i];
-    var esAdmin = String(r[DC.ADMIN - 1] || '').trim().toLowerCase() === 'sí';
-    if (esAdmin) continue; // Admins: nunca en Inactivos.
-
-    var esInactivo = String(r[DC.ESTADO - 1]) === 'Inactivo';
-    var vet = String(r[DC.VETADO - 1] || '').trim().toLowerCase();
-    var esVetado = (vet === 'sí' || vet === 'si');
-    var clanTagFila = String(r[DC.CLAN_TAG - 1] || '').trim();
-    var activoEnVetado = (String(r[DC.ESTADO - 1]) === 'Activo') && (clanTagFila === CFG.VETADO_TAG);
-
-    if ((esInactivo && !esVetado) || activoEnVetado) {
-      var tg = String(r[DC.TAG - 1] || '').trim();
-      if (tg) {
-        candidatas[tg] = _proyectarInactivos(r);
-        var extraObj = {};
-        for (var ce = 0; ce < camposExtra.length; ce++) {
-          extraObj[camposExtra[ce]] = r[DC[camposExtra[ce]] - 1];
-        }
-        extrasFrescos[tg] = extraObj;
-      }
-    }
-  }
-  if (Object.keys(extrasFrescos).length > 0) {
-    _guardarExtraColsInactivosBatch(extrasFrescos);
-  }
-
-  // PROTECCIÓN ANTI-BORRADO: la hoja Inactivos se reconstruye a partir de la [→ Contexto_Base_Web.md §13B024]
-  var filasFinalesPorTag = {};
-  var huerfanosConservados = 0;
-  var lastRowSh = sh.getLastRow();
-  if (lastRowSh >= 2) {
-    var existentes = sh.getRange(2, 1, lastRowSh - 1, INACTIVOS_TOTAL_COLS).getValues();
-    for (var i = 0; i < existentes.length; i++) {
-      var tg = String(existentes[i][IC.TAG - 1] || '').trim();
-      if (!tg) continue;
-      if (dirPorTag[tg]) continue; // su estado actual lo decide 'candidatas'
-      filasFinalesPorTag[tg] = existentes[i];
-      huerfanosConservados++;
-    }
-  }
-  if (huerfanosConservados > 0) {
-    Logger.log('[Inactivos] Protección anti-borrado: se conservaron ' + huerfanosConservados + ' fila(s) huérfana(s) (tags que no aparecen en los datos actuales).');
-  }
-  for (var tg in candidatas) filasFinalesPorTag[tg] = candidatas[tg];
-
-  var filas = Object.keys(filasFinalesPorTag).map(function(tg) { return filasFinalesPorTag[tg]; });
-
-  filas.sort(function(a,b) {
-    var ja = String(a[IC.JUGADOR-1]||'').toLowerCase(), jb = String(b[IC.JUGADOR-1]||'').toLowerCase();
-    if (ja !== jb) return ja < jb ? -1 : 1;
-    return String(a[IC.NOMBRE-1]||'').toLowerCase() < String(b[IC.NOMBRE-1]||'').toLowerCase() ? -1 : 1;
-  });
-  for (var i = 0; i < filas.length; i++) filas[i][IC.NUM - 1] = i + 1;
-
-  // FIX (05-ago-2026): mismo criterio que _escribirDirectorio() — resetear [→ Contexto_Base_Web.md §13B025]
-  if (sh.getLastRow() >= 2) {
-    sh.getRange(2, 1, sh.getLastRow() - 1, INACTIVOS_TOTAL_COLS)
-      .clearContent()
-      .setFontColor(null);
-  }
-  if (filas.length > 0) {
-    sh.getRange(2, 1, filas.length, INACTIVOS_TOTAL_COLS).setValues(filas);
-    applyBorderCenter(sh.getRange(2, 1, filas.length, INACTIVOS_TOTAL_COLS));
-    // Fix: la hoja Inactivos nunca reaplicaba el formato de Celular al [→ Contexto_Base_Web.md §13B026]
-    sh.getRange(2, IC.CELULAR, filas.length, 1).setNumberFormat('### ### ### ###');
-  }
-  _aplicarDropdownsInactivos(sh, filas.length);   // 👈 NUEVO
-}
-
-function _aplicarDropdownsInactivos(sh, numFilas) {
-  if (numFilas === 0) return;
-  var opsSiNo = SpreadsheetApp.newDataValidation().requireValueInList(['Sí','No'], true).build();
-  sh.getRange(2, IC.MULTICUENTA, numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.WSP_G,       numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.ETIQUETA,    numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.PERMISO,     numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.INICIALES,   numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.ADMIN,       numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, IC.VETADO,      numFilas, 1).setDataValidation(opsSiNo);
-}
-
-/**
- * _aplicarDropdownsVetados(sh, numFilas) [→ Contexto_Base_Web.md §13B027]
- */
-function _aplicarDropdownsVetados(sh, numFilas) {
-  if (numFilas === 0) return;
-  var opsVia = SpreadsheetApp.newDataValidation().requireValueInList(['Web','Bot','Sheet'], true).build();
-  sh.getRange(2, VC.VIA, numFilas, 1).setDataValidation(opsVia);
-}
-
-/**
- * _obtenerNomMultisAdmins() [→ Contexto_Base_Web.md §13B028]
- */
-function _obtenerNomMultisAdmins() {
-  var ss = _getSs();
-  var shAdm = ss.getSheetByName(CFG.SHEETS.ADMINISTRADORES);
-  if (!shAdm || shAdm.getLastRow() < 2) return [];
-
-  var lastRow = shAdm.getLastRow();
-  var data = shAdm.getRange(2, 1, lastRow - 1, ADMINISTRADORES_TOTAL_COLS).getValues();
-  var vistos = {};
-  var resultado = [];
-  for (var i = 0; i < data.length; i++) {
-    if (String(data[i][AC.ADMIN - 1] || '').trim() !== 'Sí') continue;
-    var nm = String(data[i][AC.NOM_MULTI - 1] || '').trim();
-    if (nm && !vistos[nm]) { vistos[nm] = true; resultado.push(nm); }
-  }
-  resultado.sort(function (a, b) { return a.localeCompare(b); });
-  return resultado;
-}
-
-/**
- * _obtenerCuentasDeNomMulti(nomMulti) [→ Contexto_Base_Web.md §13B029]
- */
-function _obtenerCuentasDeNomMulti(nomMulti) {
-  var nm = String(nomMulti || '').trim();
-  if (!nm) return [];
-
-  var ss = _getSs();
-  var hojas = [CFG.SHEETS.DIRECTORIO, CFG.SHEETS.INACTIVOS];
-  var vistos = {};
-  var resultado = [];
-
-  for (var h = 0; h < hojas.length; h++) {
-    var sh = ss.getSheetByName(hojas[h]);
-    if (!sh || sh.getLastRow() < 2) continue;
-
-    var datos = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-    for (var i = 0; i < datos.length; i++) {
-      var nomMultiFila = String(datos[i][IC.NOM_MULTI - 1] || '').trim();
-      if (nomMultiFila !== nm) continue;
-
-      var tag = String(datos[i][IC.TAG - 1] || '').trim();
-      if (!tag || vistos[tag]) continue;
-      vistos[tag] = true;
-
-      resultado.push({
-        tag:     tag,
-        nombre:  String(datos[i][IC.NOMBRE   - 1] || ''),
-        clan:    String(datos[i][IC.CLAN     - 1] || ''),
-        clanTag: String(datos[i][IC.CLAN_TAG - 1] || '')
-      });
-    }
-  }
-
-  return resultado;
-}
-
-/**
- * _aplicarDropdownAutorVetados(shVet, nomMultisAdmins) [→ Contexto_Base_Web.md §13B030]
- */
-function _aplicarDropdownAutorVetados(shVet, nomMultisAdmins) {
-  if (!shVet) return;
-  var numFilas = shVet.getLastRow() - 1;
-  if (numFilas < 1) return;
-
-  if (!nomMultisAdmins || nomMultisAdmins.length === 0) {
-    shVet.getRange(2, VC.AUTOR, numFilas, 1).clearDataValidations();
-    return;
-  }
-  var dvAutor = SpreadsheetApp.newDataValidation()
-    .requireValueInList(nomMultisAdmins, true)
-    .setAllowInvalid(true) // no bloquear si el Autor de un veto viejo ya no es admin hoy
-    .build();
-  shVet.getRange(2, VC.AUTOR, numFilas, 1).setDataValidation(dvAutor);
-}
-
-// (25-sep-2026, FASE B) ClanSystem_Backup_VetadosConfirmados.json se lee y [→ Contexto_Base_Web.md §13B031]
-function _cargarVetadosConfirmados_() {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(NOMBRE_JSON_VETADOS_CONFIRMADOS_);
-    if (files.hasNext()) {
-      return JSON.parse(files.next().getBlob().getDataAsString('UTF-8')) || {};
-    }
-  } catch (e) {
-    Logger.log('[Vetados-Registro] Error leyendo ' + NOMBRE_JSON_VETADOS_CONFIRMADOS_ + ': ' + e.message);
-  }
-  return {};
-}
-
-function _guardarVetadosConfirmados_(mapa) {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(NOMBRE_JSON_VETADOS_CONFIRMADOS_);
-    var content = JSON.stringify(mapa, null, 2);
-    if (files.hasNext()) {
-      _setContentConConteo_(files.next(), content);
-    } else {
-      _createFileConConteo_(folder, NOMBRE_JSON_VETADOS_CONFIRMADOS_, content, MimeType.PLAIN_TEXT);
-    }
-  } catch (e) {
-    Logger.log('[Vetados-Registro] Error guardando ' + NOMBRE_JSON_VETADOS_CONFIRMADOS_ + ': ' + e.message);
-  }
-}
-
-/**
- * _registrarVetadoConfirmado(tag) [→ Contexto_Base_Web.md §13B032]
- */
-function _registrarVetadoConfirmado(tag) {
-  var t = String(tag || '').trim();
-  if (!t) return;
-  var mapa = _cargarVetadosConfirmados_();
-  if (mapa[t]) return; // ya estaba, no reescribir el archivo sin necesidad
-  mapa[t] = true;
-  _guardarVetadosConfirmados_(mapa);
-}
-
-function _tagEstaVetadoConfirmado(tag) {
-  if (_cacheVetadosConfirmados_ === null) _cacheVetadosConfirmados_ = _cargarVetadosConfirmados_();
-  return !!_cacheVetadosConfirmados_[String(tag || '').trim()];
-}
-
-/**
- * _olvidarVetadoConfirmado(tag) [→ Contexto_Base_Web.md §13B033]
- */
-function _olvidarVetadoConfirmado(tag) {
-  var t = String(tag || '').trim();
-  var mapa = _cargarVetadosConfirmados_();
-  if (mapa[t]) {
-    delete mapa[t];
-    _guardarVetadosConfirmados_(mapa);
-    Logger.log('[Vetados-Registro] ' + t + ' quitado manualmente del registro de vetados confirmados.');
-  } else {
-    Logger.log('[Vetados-Registro] ' + t + ' no estaba en el registro.');
-  }
-}
+// ----- Hoja Vetados -----
 
 function _updateVetados(ss, dirData) {
   var sh = ss.getSheetByName(CFG.SHEETS.VETADOS);
@@ -787,6 +614,120 @@ if (tagsHuerfanos.length > 0) {
   _aplicarDropdownAutorVetados(sh, _obtenerNomMultisAdmins());
 }
 
+/**
+ * _aplicarDropdownsVetados(sh, numFilas) [→ Contexto_Base_Web.md §13B027]
+ */
+function _aplicarDropdownsVetados(sh, numFilas) {
+  if (numFilas === 0) return;
+  var opsVia = SpreadsheetApp.newDataValidation().requireValueInList(['Web','Bot','Sheet'], true).build();
+  sh.getRange(2, VC.VIA, numFilas, 1).setDataValidation(opsVia);
+}
+
+/**
+ * _aplicarDropdownAutorVetados(shVet, nomMultisAdmins) [→ Contexto_Base_Web.md §13B030]
+ */
+function _aplicarDropdownAutorVetados(shVet, nomMultisAdmins) {
+  if (!shVet) return;
+  var numFilas = shVet.getLastRow() - 1;
+  if (numFilas < 1) return;
+
+  if (!nomMultisAdmins || nomMultisAdmins.length === 0) {
+    shVet.getRange(2, VC.AUTOR, numFilas, 1).clearDataValidations();
+    return;
+  }
+  var dvAutor = SpreadsheetApp.newDataValidation()
+    .requireValueInList(nomMultisAdmins, true)
+    .setAllowInvalid(true) // no bloquear si el Autor de un veto viejo ya no es admin hoy
+    .build();
+  shVet.getRange(2, VC.AUTOR, numFilas, 1).setDataValidation(dvAutor);
+}
+
+/**
+ * _obtenerNomMultisAdmins() [→ Contexto_Base_Web.md §13B028]
+ */
+function _obtenerNomMultisAdmins() {
+  var ss = _getSs();
+  var shAdm = ss.getSheetByName(CFG.SHEETS.ADMINISTRADORES);
+  if (!shAdm || shAdm.getLastRow() < 2) return [];
+
+  var lastRow = shAdm.getLastRow();
+  var data = shAdm.getRange(2, 1, lastRow - 1, ADMINISTRADORES_TOTAL_COLS).getValues();
+  var vistos = {};
+  var resultado = [];
+  for (var i = 0; i < data.length; i++) {
+    if (String(data[i][AC.ADMIN - 1] || '').trim() !== 'Sí') continue;
+    var nm = String(data[i][AC.NOM_MULTI - 1] || '').trim();
+    if (nm && !vistos[nm]) { vistos[nm] = true; resultado.push(nm); }
+  }
+  resultado.sort(function (a, b) { return a.localeCompare(b); });
+  return resultado;
+}
+
+// ----- Vetados confirmados (copia en un JSON de Drive) -----
+
+/**
+ * _registrarVetadoConfirmado(tag) [→ Contexto_Base_Web.md §13B032]
+ */
+function _registrarVetadoConfirmado(tag) {
+  var t = String(tag || '').trim();
+  if (!t) return;
+  var mapa = _cargarVetadosConfirmados_();
+  if (mapa[t]) return; // ya estaba, no reescribir el archivo sin necesidad
+  mapa[t] = true;
+  _guardarVetadosConfirmados_(mapa);
+}
+
+// (25-sep-2026, FASE B) ClanSystem_Backup_VetadosConfirmados.json se lee y [→ Contexto_Base_Web.md §13B031]
+function _cargarVetadosConfirmados_() {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(NOMBRE_JSON_VETADOS_CONFIRMADOS_);
+    if (files.hasNext()) {
+      return JSON.parse(files.next().getBlob().getDataAsString('UTF-8')) || {};
+    }
+  } catch (e) {
+    Logger.log('[Vetados-Registro] Error leyendo ' + NOMBRE_JSON_VETADOS_CONFIRMADOS_ + ': ' + e.message);
+  }
+  return {};
+}
+
+function _guardarVetadosConfirmados_(mapa) {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(NOMBRE_JSON_VETADOS_CONFIRMADOS_);
+    var content = JSON.stringify(mapa, null, 2);
+    if (files.hasNext()) {
+      _setContentConConteo_(files.next(), content);
+    } else {
+      _createFileConConteo_(folder, NOMBRE_JSON_VETADOS_CONFIRMADOS_, content, MimeType.PLAIN_TEXT);
+    }
+  } catch (e) {
+    Logger.log('[Vetados-Registro] Error guardando ' + NOMBRE_JSON_VETADOS_CONFIRMADOS_ + ': ' + e.message);
+  }
+}
+
+function _tagEstaVetadoConfirmado(tag) {
+  if (_cacheVetadosConfirmados_ === null) _cacheVetadosConfirmados_ = _cargarVetadosConfirmados_();
+  return !!_cacheVetadosConfirmados_[String(tag || '').trim()];
+}
+
+/**
+ * _olvidarVetadoConfirmado(tag) [→ Contexto_Base_Web.md §13B033]
+ */
+function _olvidarVetadoConfirmado(tag) {
+  var t = String(tag || '').trim();
+  var mapa = _cargarVetadosConfirmados_();
+  if (mapa[t]) {
+    delete mapa[t];
+    _guardarVetadosConfirmados_(mapa);
+    Logger.log('[Vetados-Registro] ' + t + ' quitado manualmente del registro de vetados confirmados.');
+  } else {
+    Logger.log('[Vetados-Registro] ' + t + ' no estaba en el registro.');
+  }
+}
+
+// ----- Sincronizar la razón entre Vetados y Directorio (las llama 00_Main.gs) -----
+
 function sincronizarRazonHaciaVetados(shDir, row) {
   var tag = String(shDir.getRange(row, DC.TAG).getValue() || '').trim(), razon = String(shDir.getRange(row, IC.RAZON).getValue() || '').trim();
   if (!tag) return;
@@ -841,6 +782,8 @@ function sincronizarRazonHaciaDirectorio(shVet, row) {
     }
   }
 }
+
+// ----- Web: altas y comentarios de vetados -----
 
 /**
  * _upsertVetadoDesdeWeb(tag, filaOrigenIC, razon, autor, via, fecha) [→ Contexto_Base_Web.md §13B043]
@@ -906,7 +849,7 @@ function _webAgregarComentarioVeto(filaOrigenIC, autor, fecha, razon, comentario
   _escribirTSDEnFilaHoja_(shCom, shCom.getLastRow(), CMC.TSD, fecha); // 26-oct-2026 (§PF267); si `fecha` no es Date las 5 columnas quedan vacías
 }
 
-// =============================================================================
+// ----- Hoja Multicuentas -----
 
 // _updateMulticuentas(ss, dirData) [→ Contexto_Base_Web.md §13B046]
 function _updateMulticuentas(ss, dirData) {
@@ -1023,4 +966,83 @@ function _updateMulticuentas(ss, dirData) {
     ];
     _tryCondFmt(sh, rules);
   }
+}
+
+/**
+ * _leerInactivosParaReactivacion(ss) [→ Contexto_Base_Web.md §13B017]
+ */
+function _leerInactivosParaReactivacion(ss) {
+  var mapa = {};
+  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+  if (!sh || sh.getLastRow() < 2) return mapa;
+
+  var lastRow = sh.getLastRow();
+  var datos = sh.getRange(2, 1, lastRow - 1, INACTIVOS_TOTAL_COLS).getValues();
+  var extraPorTag = _cargarExtraColsInactivos();
+
+  for (var i = 0; i < datos.length; i++) {
+    var tag = String(datos[i][IC.TAG - 1] || '').trim();
+    if (!tag) continue;
+    mapa[tag] = { ic: datos[i], extra: extraPorTag[tag] || null };
+  }
+  return mapa;
+}
+
+/**
+ * _reconstruirExistingDesdeInactivos(icRow, extraObj) [→ Contexto_Base_Web.md §13B019]
+ */
+function _reconstruirExistingDesdeInactivos(icRow, extraObj) {
+  var fila = new Array(DIR_TOTAL_COLS).fill('');
+  for (var campo in IC) {
+    var valorIC = icRow[IC[campo] - 1];
+    if (campo === 'VETADO' || campo === 'PERMISO' || campo === 'ADMIN') {
+      valorIC = _esSiNoOVacio(valorIC) ? valorIC : '';
+    } else if (campo === 'RAZON') {
+      valorIC = esRazonValida(valorIC) ? valorIC : '';
+    }
+    fila[DC[campo] - 1] = valorIC;
+  }
+  if (extraObj) {
+    for (var campoExtra in extraObj) {
+      if (DC[campoExtra] !== undefined) fila[DC[campoExtra] - 1] = extraObj[campoExtra];
+    }
+  }
+  return fila;
+}
+
+/**
+ * _obtenerCuentasDeNomMulti(nomMulti) [→ Contexto_Base_Web.md §13B029]
+ */
+function _obtenerCuentasDeNomMulti(nomMulti) {
+  var nm = String(nomMulti || '').trim();
+  if (!nm) return [];
+
+  var ss = _getSs();
+  var hojas = [CFG.SHEETS.DIRECTORIO, CFG.SHEETS.INACTIVOS];
+  var vistos = {};
+  var resultado = [];
+
+  for (var h = 0; h < hojas.length; h++) {
+    var sh = ss.getSheetByName(hojas[h]);
+    if (!sh || sh.getLastRow() < 2) continue;
+
+    var datos = sh.getRange(2, 1, sh.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+    for (var i = 0; i < datos.length; i++) {
+      var nomMultiFila = String(datos[i][IC.NOM_MULTI - 1] || '').trim();
+      if (nomMultiFila !== nm) continue;
+
+      var tag = String(datos[i][IC.TAG - 1] || '').trim();
+      if (!tag || vistos[tag]) continue;
+      vistos[tag] = true;
+
+      resultado.push({
+        tag:     tag,
+        nombre:  String(datos[i][IC.NOMBRE   - 1] || ''),
+        clan:    String(datos[i][IC.CLAN     - 1] || ''),
+        clanTag: String(datos[i][IC.CLAN_TAG - 1] || '')
+      });
+    }
+  }
+
+  return resultado;
 }
