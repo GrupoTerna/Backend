@@ -5,6 +5,7 @@
 //    - Diagnóstico de jugadores y perfiles
 //    - Informes de guerra desde Drive (cruce con el historial, totales semanales y anomalías)
 //  Parte 2 — Funciones que no se corren a mano
+//    - Sin llamadas, pendientes de decidir (obsoletas o sin conectar)
 //    - Ayuda de testTamanioPerfiles
 //    - Ayudas del cruce con el historial
 //    - Totales semanales desde el historial (versión anterior, sin uso, y ayudas)
@@ -87,28 +88,6 @@ function DIAGNOSTICO_duplicadosHoy() {
   if (duplicados.length) {
     Logger.log('Ejemplo (' + duplicados[0] + '): ' + JSON.stringify(porTag[duplicados[0]]));
   }
-}
-
-function _diagCompararTemporadaCSVvsCtx() {
-  var ctx = _getCtx();
-  Logger.log('[Diag] ctx.temporada ACTUAL: ' + ctx.temporada);
-
-  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
-  if (!csvText) { Logger.log('[Diag] No se encontró Backup_Guerra.csv.'); return; }
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length < 2) { Logger.log('[Diag] CSV vacío.'); return; }
-
-  var conteoPorTemporada = {};
-  for (var i = 1; i < parsed.length; i++) {
-    var temp = String(parsed[i][GC.TEMPORADA - 1] || '(vacío)');
-    conteoPorTemporada[temp] = (conteoPorTemporada[temp] || 0) + 1;
-  }
-
-  Logger.log('[Diag] Filas por valor de Temporada en el CSV:');
-  Object.keys(conteoPorTemporada).sort().forEach(function(t) {
-    var marca = (t === String(ctx.temporada)) ? '  <-- coincide con ctx.temporada' : '';
-    Logger.log('  Temporada=' + t + ': ' + conteoPorTemporada[t] + ' fila(s)' + marca);
-  });
 }
 
 // =============================================================================
@@ -236,14 +215,6 @@ function diagnosticoPlayersTag(tags) {
   }
 
   Logger.log('[Diag] Fin del diagnóstico. Revisa el detalle arriba para cada tag.');
-}
-
-function _testDiagnosticoCofresBattlelog() {
-  var tag = '#2GG8PJ8GC'; // pon aquí un tag real, con el # incluido
-  Logger.log('--- COFRES ---');
-  Logger.log(JSON.stringify(_webCofresJugador(tag)));
-  Logger.log('--- BATTLELOG ---');
-  Logger.log(JSON.stringify(_webBattlelogJugador(tag)));
 }
 
 /**
@@ -887,6 +858,39 @@ function informeAnomaliasAtaquesSemana() {
 // =============================================================================
 // PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
 // =============================================================================
+
+// ----- Sin llamadas, pendientes de decidir (obsoletas o sin conectar) -----
+// Ninguna función del proyecto las llama (30-oct-2026). _testDiagnosticoCofresBattlelog() no pasa `opciones` a _webCofresJugador() ni a _webBattlelogJugador() (agregadas el 29-sep-2026), así que corre como visitante.
+
+function _diagCompararTemporadaCSVvsCtx() {
+  var ctx = _getCtx();
+  Logger.log('[Diag] ctx.temporada ACTUAL: ' + ctx.temporada);
+
+  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+  if (!csvText) { Logger.log('[Diag] No se encontró Backup_Guerra.csv.'); return; }
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length < 2) { Logger.log('[Diag] CSV vacío.'); return; }
+
+  var conteoPorTemporada = {};
+  for (var i = 1; i < parsed.length; i++) {
+    var temp = String(parsed[i][GC.TEMPORADA - 1] || '(vacío)');
+    conteoPorTemporada[temp] = (conteoPorTemporada[temp] || 0) + 1;
+  }
+
+  Logger.log('[Diag] Filas por valor de Temporada en el CSV:');
+  Object.keys(conteoPorTemporada).sort().forEach(function(t) {
+    var marca = (t === String(ctx.temporada)) ? '  <-- coincide con ctx.temporada' : '';
+    Logger.log('  Temporada=' + t + ': ' + conteoPorTemporada[t] + ' fila(s)' + marca);
+  });
+}
+
+function _testDiagnosticoCofresBattlelog() {
+  var tag = '#2GG8PJ8GC'; // pon aquí un tag real, con el # incluido
+  Logger.log('--- COFRES ---');
+  Logger.log(JSON.stringify(_webCofresJugador(tag)));
+  Logger.log('--- BATTLELOG ---');
+  Logger.log(JSON.stringify(_webBattlelogJugador(tag)));
+}
 
 // ----- Ayuda de testTamanioPerfiles -----
 
