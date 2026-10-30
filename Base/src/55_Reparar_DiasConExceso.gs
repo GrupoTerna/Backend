@@ -58,6 +58,8 @@ var EXC_DIAS_CLASES_TODAS = ['unica', 'ambigua_ataques_coinciden'];
 // (si ya tiene la fame real, dice «ya aplicado»). No toca ataques, barcos ni el total semanal.
 // ============================================================================================================
 var FAME_CRR52_ORIGEN = 'Corregido - CurrentRiverRace';
+// §PF299 (30-oct-2026): los casos de abajo se midieron con la numeración de temporadas ANTERIOR a la reenumeración (T3 = hoy 23, §PF258/§PF294). Este desfase se suma al número de temporada de cada caso al buscarlo en Backup_Guerra.csv; si la numeración vuelve a cambiar, hay que actualizarlo (o reescribir la tabla). La etiqueta de los informes muestra el número actual.
+var FAME_CRR52_DESFASE_TEMPORADA = 20;
 
 var FAME_CRR52_CASOS = [
   ['3', '1', '#20YVVYCU2', '4|4|4|4', '800|500|400|500', '800|500|500|400'],
@@ -824,8 +826,9 @@ function _fameCrr52Planificar_(filas) {
   });
   var casos = [], omitidos = [], yaAplicados = [];
   FAME_CRR52_CASOS.forEach(function (e) {
-    var etq = 'T' + e[0] + ' S' + e[1] + ' ' + e[2];
-    var lista = porClave[[e[0], e[1], e[2]].join('|')] || [];
+    var tActual = String(Number(e[0]) + FAME_CRR52_DESFASE_TEMPORADA);
+    var etq = 'T' + tActual + ' S' + e[1] + ' ' + e[2];
+    var lista = porClave[[tActual, e[1], e[2]].join('|')] || [];
     if (lista.length !== 1) { omitidos.push({ etq: etq, motivo: lista.length ? 'el jugador aparece en ' + lista.length + ' clanes esa semana' : 'no se encuentra la serie en Backup_Guerra.csv' }); return; }
     var g = lista[0];
     var ata = e[3].split('|').map(Number), fh = e[4].split('|').map(Number), fr = e[5].split('|').map(Number);
