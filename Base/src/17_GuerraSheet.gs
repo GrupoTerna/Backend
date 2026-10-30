@@ -3752,6 +3752,9 @@ function _repararAtaquesHoyGuerraDesdeJSON_(aplicar) {
 // Primero correr ...Informe() (no escribe en la hoja ni en el CSV), revisar el CSV del informe en Drive y luego ...Aplicar().
 // Los domingos anteriores (05/07, 02/08 y 30/08) se reparan con las funciones repararFamaDomingosAnteriores...() de abajo [→ Contexto_Base_Web.md §PF045].
 // ==============================================================================
+// AVISO (29-oct-2026): esta funcion ya se aplico el 11-oct-2026 y la numeracion interna de temporadas cambio con la reenumeracion.
+// El domingo 04/10 hoy es la temporada 25 (no la 5) en Backup_Guerra.csv; si se vuelve a usar, hay que poner la temporada actual
+// antes de correrla (si no, busca una temporada que ya no existe) [-> Contexto_Base_Web.md §PF294].
 var REPARAR_FAMA_DOMINGO_TEMPORADA = 5;
 var REPARAR_FAMA_DOMINGO_PERIODINDEX = 27;
 
@@ -3763,6 +3766,9 @@ function repararFamaDomingoDesdeJSONAplicar() { _repararFamaDomingoDesdeJSON_(tr
 // las filas con Fame, AtaquesSemana y AtaquesHoy los tres en 0 cuyo sabado (mismo jugador y clan, periodIndex - 1) ya traia datos: la fama y los
 // ataques semanales son acumulados y no pueden bajar a 0. En esas filas repone tambien AtaquesSemana y AtaquesHoy. Las capturas JSON del
 // domingo deben estar en la carpeta de Drive de cada clan. Primero ...Informe(), revisar el CSV en Drive y luego ...Aplicar().
+// AVISO (29-oct-2026): ya se aplico el 11-oct-2026 y la numeracion interna cambio con la reenumeracion: el 05/07, el 02/08 y el 30/08
+// hoy son las temporadas 22 (periodIndex 34), 23 y 24 (periodIndex 27), no la 2, la 3 y la 4. Si se vuelve a usar, actualizar la lista
+// antes de correr ...Informe() [-> Contexto_Base_Web.md §PF294].
 var REPARAR_FAMA_DOMINGOS_ANTERIORES = [[2, 34], [3, 27], [4, 27]];
 var REPARAR_FAMA_TOPE_MEDALLAS_DIA = 900;
 
