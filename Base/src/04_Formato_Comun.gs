@@ -87,7 +87,7 @@ function aplicarFormatoGlobal() {
     for (var c = COL_INICIO_GRID; c <= lastColCtrl; c++) {
       shControl.setColumnWidth(c, 45);
     }
-    _aplicarAnchosEspecialesControl_(shControl); // AP, AQ y DQ conservan su ancho (PF287, 29-oct-2026)
+    restaurarAnchosColumnasFijos(CFG.SHEETS.CONTROL); // PF287 (30-oct-2026): vuelven los anchos guardados con guardarAnchosColumnasFijos(), que los 45 px de arriba pisaban (AP, AQ, DQ)
     shControl.setColumnWidth(1, 35);
   }
 
