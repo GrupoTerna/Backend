@@ -35,7 +35,9 @@ var CATEGORIAS_ESTATICO_SOLO_MENU = [
   'bienvenida',
   'participantes calificados (torneo)', 'participantes calificados (sorteo)',
   'ganadores (torneo)', 'ganadores (sorteo)',
-  'ascensos y descensos'
+  'ascensos y descensos',
+  // 29-oct-2026 (pedido de la usuaria): estas tres solo van en el menú, no se crean en la hoja Mensajes.
+  'no calificados (sorteo)', 'no calificados (torneo)', 'cambio de rango'
 ];
 
 // Anclas de posición para _agregarCategoriaAExtra(): en vez de agregar [→ Contexto_Base_Web.md §30B004]
