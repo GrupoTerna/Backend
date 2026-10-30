@@ -4477,8 +4477,11 @@ function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, ra
  * no solo a los ganadores. `clanes` es la lista de calificados que arma _webSorteoCalificados() ([{nombre, calificados:[{tag, nombre, tickets}]}]).
  * Por cada participante sin fila en este sorteo agrega una con Ganó = «No» (sin Premio, Resultado ni Razón). Las filas que ya existen (ganadores o participantes)
  * no se tocan, así que nunca baja un «Sí» a «No». La Fecha se guarda como fecha real (número de Sheets con formato dd/mm/yyyy), no como texto. Devuelve cuántas agregó.
+ * Decisión de la usuaria (29-oct-2026, §PF294 punto 9): quien salió con «No califica» no entra solo, pero si se agregó a mano en sorteo.html cuenta como participante
+ * aunque no gane. `manuales` ([{nombre, tickets}], opcional) trae a esos agregados a mano: no tienen Tag, así que se evita duplicarlos comparando el nombre
+ * (sin tildes ni mayúsculas) con las filas que el sorteo ya tiene (ganadores sin Tag, calificados o un manual repetido). Se guardan con Tag vacío.
  */
-function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
+function _sincronizarParticipantesSorteoSA(idSorteo, clanes, manuales) {
   var idNorm = String(idSorteo || '').trim();
   if (!idNorm || !Array.isArray(clanes)) return { ok: false, agregadas: 0 };
   var ss = _getSs();
@@ -4487,6 +4490,7 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
 
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_ASISTENCIA);
   var yaEstan = {};
+  var nombresYa = {}; // nombres normalizados de este sorteo (para los agregados a mano, que no tienen Tag)
   var siguienteNum = 1;
   if (sh.getLastRow() >= 2) {
     var existentes = sh.getRange(2, 1, sh.getLastRow() - 1, SA_TOTAL_COLS).getValues();
@@ -4495,6 +4499,8 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
       if (String(existentes[e][SA.ID - 1] || '').trim() !== idNorm) continue;
       var tagEx = String(existentes[e][SA.TAG - 1] || '').trim().toUpperCase();
       if (tagEx) yaEstan[tagEx] = true;
+      var nomEx = _normalizarNombreSA_(existentes[e][SA.NOMBRE - 1]);
+      if (nomEx) nombresYa[nomEx] = true;
     }
   }
 
@@ -4507,6 +4513,8 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
       var tagHash = tagNorm.charAt(0) === '#' ? tagNorm : '#' + tagNorm;
       if (yaEstan[tagHash]) return;
       yaEstan[tagHash] = true;
+      var nomCal = _normalizarNombreSA_(p.nombre);
+      if (nomCal) nombresYa[nomCal] = true;
       var info = mapaDir[tagHash] || { nomMulti: '', prestamo: '', clanTag: '', clan: '' };
       var fila = [];
       fila[SA.NUM - 1]       = siguienteNum++;
@@ -4527,6 +4535,31 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
       filas.push(fila);
     });
   });
+
+  // Agregados a mano en sorteo.html (sin Tag): cuentan como participantes aunque no ganen. [→ Contexto_Base_Web.md §PF294]
+  (Array.isArray(manuales) ? manuales : []).forEach(function (m) {
+    var nombreMan = String((m && m.nombre) || '').trim();
+    var claveMan = _normalizarNombreSA_(nombreMan);
+    if (!claveMan || nombresYa[claveMan]) return;
+    nombresYa[claveMan] = true;
+    var filaMan = [];
+    filaMan[SA.NUM - 1]       = siguienteNum++;
+    filaMan[SA.FECHA - 1]     = filaSorteo.fecha;
+    filaMan[SA.ID - 1]        = idNorm;
+    filaMan[SA.TEMPORADA - 1] = filaSorteo.temporada;
+    filaMan[SA.TAG - 1]       = '';
+    filaMan[SA.NOMBRE - 1]    = nombreMan;
+    filaMan[SA.NOM_MULTI - 1] = '';
+    filaMan[SA.PRESTAMO - 1]  = '';
+    filaMan[SA.CLAN_TAG - 1]  = '';
+    filaMan[SA.CLAN - 1]      = '';
+    filaMan[SA.TICKETS - 1]   = (m.tickets !== '' && m.tickets !== null && Number(m.tickets) >= 0) ? Number(m.tickets) : '';
+    filaMan[SA.PREMIO - 1]    = '';
+    filaMan[SA.RESULTADO - 1] = '';
+    filaMan[SA.RAZON - 1]     = '';
+    filaMan[SA.GANO - 1]      = SA_GANO_NO;
+    filas.push(filaMan);
+  });
   if (!filas.length) return { ok: true, agregadas: 0 };
 
   var primera = sh.getLastRow() + 1;
@@ -4536,6 +4569,13 @@ function _sincronizarParticipantesSorteoSA(idSorteo, clanes) {
   Logger.log('[Sorteos] S_Asistencia: ' + filas.length + ' participante(s) agregado(s) con Ganó = No (sorteo ' + idNorm + ').');
   _ordenarYColorearSAsistencia_(ss); // más reciente primero y un color por sorteo
   return { ok: true, agregadas: filas.length };
+}
+
+/**
+ * _normalizarNombreSA_(nombre): clave para comparar nombres de S_Asistencia sin tildes, mayúsculas ni espacios de más. Ayuda de _sincronizarParticipantesSorteoSA().
+ */
+function _normalizarNombreSA_(nombre) {
+  return String(nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 /**

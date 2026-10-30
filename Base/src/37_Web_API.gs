@@ -4527,9 +4527,18 @@ function _webAdminSorteoResolucionGuardar(token, datos) {
   // pierde el ganador: el error solo se anota en el log y la siguiente resolución lo vuelve a intentar.
   if (resRes && resRes.ok) {
     try {
+      // 29-oct-2026 (§PF294 punto 9): los agregados a mano en sorteo.html (sin Tag) también cuentan como participantes. Se limpian aquí: máximo 300, nombre de hasta 100 caracteres.
+      var manuales = [];
+      (Array.isArray(datos.participantesManuales) ? datos.participantesManuales : []).slice(0, 300).forEach(function (m) {
+        var nom = String((m && m.nombre) || '').trim().substring(0, 100);
+        if (nom) manuales.push({ nombre: nom, tickets: (m.tickets === '' || m.tickets === null || m.tickets === undefined) ? '' : Number(m.tickets) });
+      });
       var calif = _webSorteoCalificados(token, datos.idSorteo, false);
-      if (calif && calif.ok) _sincronizarParticipantesSorteoSA(datos.idSorteo, calif.clanes);
-      else Logger.log('[Sorteos] No se listaron los participantes en S_Asistencia: ' + ((calif && calif.error) || 'sin detalle'));
+      if (calif && calif.ok) _sincronizarParticipantesSorteoSA(datos.idSorteo, calif.clanes, manuales);
+      else {
+        Logger.log('[Sorteos] No se listaron los calificados en S_Asistencia: ' + ((calif && calif.error) || 'sin detalle'));
+        if (manuales.length) _sincronizarParticipantesSorteoSA(datos.idSorteo, [], manuales);
+      }
     } catch (eParts) {
       Logger.log('[Sorteos] Error listando participantes en S_Asistencia: ' + eParts.message);
     }
