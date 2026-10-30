@@ -3086,6 +3086,7 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
    * /* FIX (28-sep-2026, pedido usuario — "el sábado hizo 0 ataques pero el [→ Contexto_Base_Web.md §17B155]
    */
   var sumaAtaquesDiasPrevios = 0;
+  var diasPreviosConFila = {}; // §PF297: periodIndex de los días previos a ayer que SÍ tienen fila (para saber si la suma está completa)
   var rowIdxBase = -1; // NUEVO (sub-tanda 3.2): fila del dia D-1 (cierra la base de fame/barcos de ayer)
   for (var i = 0; i < datosGuerra.length; i++) {
     var fila = datosGuerra[i];
@@ -3097,9 +3098,21 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
     if (!esDiaGuerraIdx(pIdxFilaPrevia)) continue;
     if (pIdxFilaPrevia === periodIndexAnterior - 1) rowIdxBase = i;
     if (pIdxFilaPrevia === periodIndexAnterior) { rowIdx = i; continue; }
-    if (pIdxFilaPrevia < periodIndexAnterior) sumaAtaquesDiasPrevios += Number(fila[GC.ATAQUES_HOY - 1]) || 0;
+    if (pIdxFilaPrevia < periodIndexAnterior) {
+      sumaAtaquesDiasPrevios += Number(fila[GC.ATAQUES_HOY - 1]) || 0;
+      diasPreviosConFila[pIdxFilaPrevia] = true;
+    }
   }
   if (rowIdx < 0) return false; // el día anterior todavía no tiene fila (corrida se saltó ese periodo, o es de otro clan)
+
+  // §PF297 (30-oct-2026, criterio 1 de §PF160): la resta (decksUsed - decksUsedToday) - suma de los días previos solo vale si TODOS los días previos a ayer tienen fila; si falta alguna (por ejemplo el jueves), la suma queda corta y la resta le atribuiría a ayer los ataques del día que falta (hasta el tope de 4). En ese caso no se escribe nada: lo repara el informe manual (`55_`/`57_`) y queda un aviso en el registro.
+  var diasPreviosEsperados = offHoyDia - 1; // jueves hasta anteayer (viernes: 0, sábado: 1, domingo: 2)
+  var diasPreviosEncontrados = Object.keys(diasPreviosConFila).length;
+  if (diasPreviosEncontrados < diasPreviosEsperados) {
+    Logger.log('[Guerra][Cierre de dia] PENDIENTE: ' + tag + ' en ' + (_clanNombreAutocorregir || clanTag) + ', periodIndex ' + periodIndexAnterior +
+      ' -- faltan ' + (diasPreviosEsperados - diasPreviosEncontrados) + ' fila(s) de dias previos; con la suma incompleta no se corrige el dia anterior.');
+    return false;
+  }
 
   /**
    * /* FIX (28-sep-2026, corrección al cálculo anterior — ver comentario del [→ Contexto_Base_Web.md §17B156]
