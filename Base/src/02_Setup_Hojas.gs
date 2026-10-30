@@ -4,7 +4,19 @@
 // proteccion). Punto de entrada: setupAllSheets().
 // ==============================================================================
 
-// ----- Variables y constantes -----
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 29-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Crear y preparar todas las hojas
+//    - Reparar los bordes de S_Asistencia
+//  Parte 2 — Funciones que no se corren a mano
+//    - Ayudas generales de las hojas (crear la hoja y su protección)
+//    - Hojas de clan, directorio y guerra (en el orden de setupAllSheets)
+//    - Hoja Control (grid de métricas)
+//    - Hojas de seguimiento (historial, pendientes, calendarios, inactivos, vetados, mensajes)
+//    - Torneos, sorteos y cambio de rango: listas, encabezados y filtros
+//    - Torneos y sorteos: asistencia, control y resoluciones
+//    - Hojas restantes (jugadores, enlaces, alertas, conflictos, grupo verificado)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Métricas del grid de Control: nombre, ancho TOTAL de columnas (25 de [→ Contexto_Base_Web.md §02B001]
 var CONTROL_METRICAS = [
@@ -46,10 +58,13 @@ var LC = {
 
 var LINKS_TOTAL_COLS = 14;
 
-// ----- Funciones manuales / punto de entrada -----
+// =============================================================================
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Crear y preparar todas las hojas -----
 
 // SECCIÓN 2: FUNCIONES DE SETUP / INTERNAS (sin cambios de orden respecto de [→ Contexto_Base_Web.md §02B005]
-
 function setupAllSheets() {
   var ss = _getSs();
   Logger.log('[Setup] Iniciando setupAllSheets...');
@@ -97,7 +112,23 @@ function setupAllSheets() {
   Logger.log('[Setup] setupAllSheets completado.');
 }
 
-// ----- Funciones internas / helpers -----
+// ----- Reparar los bordes de S_Asistencia -----
+
+/**
+ * PF231: se puede correr sola desde el editor de Apps Script (no recibe parámetros) para corregir los bordes de S_Asistencia sin ejecutar todo el setup.
+ */
+function repararBordesSAsistencia() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.S_ASISTENCIA);
+  if (!sh) { Logger.log('[Setup] repararBordesSAsistencia: no existe la hoja ' + CFG.SHEETS.S_ASISTENCIA); return; }
+  _bordesDatosSAsistencia_(sh);
+  Logger.log('[Setup] Bordes de S_Asistencia corregidos (' + Math.max(0, sh.getLastRow() - 1) + ' filas, ' + SA_TOTAL_COLS + ' columnas).');
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
+// =============================================================================
+
+// ----- Ayudas generales de las hojas (crear la hoja y su protección) -----
 
 /**
  * _getOrCreateSheet(ss, name) [→ Contexto_Base_Web.md §02B011]
@@ -109,47 +140,6 @@ function _getOrCreateSheet(ss, name) {
     Logger.log('[Setup] Hoja creada: ' + name);
   }
   return sh;
-}
-
-/**
- * _setupAlertasHistorialGuerra(ss) [→ Contexto_Base_Web.md §02B012]
- */
-function _setupAlertasHistorialGuerra(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA);
-  var encabezados = AHG_ENCABEZADOS; // 20_HistorialGuerraJugador.gs
-  sh.getRange(1, 1, 1, encabezados.length).setValues([encabezados]);
-  // FIX (23-ago-2026, pedido del usuario): mismo estilo que T_Lista — antes [→ Contexto_Base_Web.md §02B013]
-  applyHeaderStyle(sh, encabezados.length);
-
-  // Bordes grises + centrado sobre las filas de datos que ya existan (p.ej. [→ Contexto_Base_Web.md §02B014]
-  if (sh.getLastRow() >= 2) {
-    applyBorderCenter(sh.getRange(2, 1, sh.getLastRow() - 1, encabezados.length));
-  }
-
-  var opsEstado = SpreadsheetApp.newDataValidation()
-    .requireValueInList(['Pendiente', 'Resuelto'], true).setAllowInvalid(false).build();
-  // Rango amplio (hasta fila 2000) para que la validación ya cubra filas que [→ Contexto_Base_Web.md §02B015]
-  sh.getRange(2, AHG.ESTADO, 1999, 1).setDataValidation(opsEstado);
-}
-
-function _setupExtra(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.EXTRA);
-  // Mostrar_T (antes "Mostrar"): SOLO cambio de nombre — mantiene exactamente [→ Contexto_Base_Web.md §02B016]
-  var headers = ['Temporada','Semana','Día','Ref','Primer lunes','# Sem','Mostrar_T',
-                 'Mostrar_S','Mostrar_D',
-                 'Trofeos','Liga','Rangos','Alerta','Categoría','Subcategoría',
-                 'Vigente','Visibilidad','Tipo','Edición',
-                 'Torneo_Vigente_ID','Sorteo_Vigente_ID',
-                 'Ascenso_Vigente_ID','Descenso_Vigente_ID'];
-  // Siempre se reescribe la fila 1 (igual que Directorio) para que columnas [→ Contexto_Base_Web.md §02B017]
-  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
-  applyHeaderStyle(sh, headers.length);
-  if (sh.getLastRow() >= 2) {
-    applyBorderCenter(sh.getRange(2, 1, 1, headers.length));
-  }
-  _protegerSoloAdvertencia(sh);
-  sh.hideSheet();
-  Logger.log('[Setup] Extra OK');
 }
 
 /**
@@ -174,6 +164,28 @@ function _quitarProteccionAdvertencia(sh) {
   for (var i = 0; i < protecciones.length; i++) {
     if (protecciones[i].getDescription() === DESC) protecciones[i].remove();
   }
+}
+
+// ----- Hojas de clan, directorio y guerra (en el orden de setupAllSheets) -----
+
+function _setupExtra(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.EXTRA);
+  // Mostrar_T (antes "Mostrar"): SOLO cambio de nombre — mantiene exactamente [→ Contexto_Base_Web.md §02B016]
+  var headers = ['Temporada','Semana','Día','Ref','Primer lunes','# Sem','Mostrar_T',
+                 'Mostrar_S','Mostrar_D',
+                 'Trofeos','Liga','Rangos','Alerta','Categoría','Subcategoría',
+                 'Vigente','Visibilidad','Tipo','Edición',
+                 'Torneo_Vigente_ID','Sorteo_Vigente_ID',
+                 'Ascenso_Vigente_ID','Descenso_Vigente_ID'];
+  // Siempre se reescribe la fila 1 (igual que Directorio) para que columnas [→ Contexto_Base_Web.md §02B017]
+  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  applyHeaderStyle(sh, headers.length);
+  if (sh.getLastRow() >= 2) {
+    applyBorderCenter(sh.getRange(2, 1, 1, headers.length));
+  }
+  _protegerSoloAdvertencia(sh);
+  sh.hideSheet();
+  Logger.log('[Setup] Extra OK');
 }
 
 function _setupClan(ss) {
@@ -278,22 +290,14 @@ function _setupGuerraLogs(ss) {
   Logger.log('[Setup] Guerra_Logs OK (' + headers.length + ' cols, incluye ProgressEarned/NumOfDefensesRemaining/ProgressEarnedFromDefenses/Tipo/Estado)');
 }
 
+// ----- Hoja Control (grid de métricas) -----
+
 function _setupControl(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.CONTROL);
   if (sh.getLastRow() === 0 || sh.getRange(1,1).getValue() === '') {
     _buildControlHeaders(sh);
   }
   Logger.log('[Setup] Control OK');
-}
-
-/**
- * _controlColTotales() [→ Contexto_Base_Web.md §02B029]
- */
-function _controlColTotales() {
-  var COL_INICIO_GRID = 17;
-  var total = COL_INICIO_GRID - 1;
-  for (var m = 0; m < CONTROL_METRICAS.length; m++) total += CONTROL_METRICAS[m].ancho;
-  return total;
 }
 
 function _buildControlHeaders(sh) {
@@ -305,6 +309,16 @@ function _buildControlHeaders(sh) {
   }
 
   _pintarEncabezadosControl(sh);
+}
+
+/**
+ * _controlColTotales() [→ Contexto_Base_Web.md §02B029]
+ */
+function _controlColTotales() {
+  var COL_INICIO_GRID = 17;
+  var total = COL_INICIO_GRID - 1;
+  for (var m = 0; m < CONTROL_METRICAS.length; m++) total += CONTROL_METRICAS[m].ancho;
+  return total;
 }
 
 /**
@@ -423,6 +437,8 @@ function _pintarEncabezadosControl(sh) {
   // aquí, después del borde general, para que no lo sobreescriba.
   sh.getRange(1, 1, 2, 3).setBorder(false, false, false, false, false, false);
 }
+
+// ----- Hojas de seguimiento (historial, pendientes, calendarios, inactivos, vetados, mensajes) -----
 
 // Historial: N°|Fecha|Tag|Nombre|Movimiento|Clan|ClanTag (7 columnas propias + 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267) - Nombre = nombre en juego del jugador [→ Contexto_Base_Web.md §02B038]
 function _setupHistorial(ss) {
@@ -557,43 +573,6 @@ function _setupMulticuentas(ss) {
   Logger.log('[Setup] Multicuentas OK (15 cols)');
 }
 
-/**
- * _setupPlayers(ss) [→ Contexto_Base_Web.md §02B050]
- */
-function _setupPlayers(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.PLAYERS);
-  var headers = [
-    'N°','Tag','Nombre','Nom_Multi','Préstamo','Clan','ClanTag','Rango',
-    'Antigüedad','Nivel','Nivel2','Copas','Copas_max','Arena','V_Guerra',
-    'Victorias','Derrotas','Batallas','Racha',
-    'Camino de leyendas_Liga','Camino de leyendas_Trofeos','Camino de leyendas_Rango',
-    'Victorias de tres coronas','Max_victorias_desafíos','Torneos','Emotes','Banners',
-    'Cartas_desafíos','Cartas_torneos',
-    'Donaciones_r','Donaciones_d'
-  ];
-  if (sh.getLastRow() === 0 || sh.getRange(1,1).getValue() === '') {
-    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
-  }
-  applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Players OK (31 cols)');
-}
-
-/**
- * _setupLinks(ss) [→ Contexto_Base_Web.md §02B051]
- */
-function _setupLinks(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.LINKS);
-  var headers = [
-    'N°','Tag','Nombre','Nom_Multi','Préstamo','Clan','ClanTag','Rango',
-    'WSP','RoyaleAPI','Mazo','Mazo2','CWStats','Render'
-  ];
-  if (sh.getLastRow() === 0 || sh.getRange(1,1).getValue() === '') {
-    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
-  }
-  applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Links OK (14 cols)');
-}
-
 // Ascensos (hoja física "Historial_A/D", ver CFG.SHEETS.ASCENSOS): 18 (más 5 de Temporada/Semana/Día desde el 26-oct-2026, §PF267, y la columna 24 Par_CR desde el 28-oct-2026, §PF286) [→ Contexto_Base_Web.md §02B052]
 function _setupAscensosSheet(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.ASCENSOS);
@@ -646,6 +625,117 @@ function _setupMensajes(ss) {
   _aplicarSubindiceEncabezados(sh);
   sh.setColumnWidth(headers.length, 428); // Contenido: ancho fijo, texto largo (428px, pedido usuario 14-ago-2026)
   Logger.log('[Setup] Mensajes OK (15 cols, encabezados al dia)');
+}
+
+// ----- Torneos, sorteos y cambio de rango: listas, encabezados y filtros -----
+
+/**
+ * _setupTLista(ss) [→ Contexto_Base_Web.md §02B066]
+ */
+function _setupTLista(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_LISTA);
+  // FASE 2 (25-sep-2026, rediseño T_Lista -- ver docblock del objeto TL en [→ Contexto_Base_Web.md §02B067]
+  var columnas = [
+    { label: 'Planificación, registro y modificación de torneos', subs: [
+        // Orden nuevo (29-oct-2026, pedido de la usuaria); debe coincidir con TL en 26_Torneos_Core.gs
+        'N°', 'Temporada', 'Fecha', 'Hora', 'ID', 'Creación', 'Semanas',
+        'Tag_Tor', 'Tag_Tor_2', 'Nombre_Org', 'Nom_Multi_Org', 'Tag_org',
+        'Clan', 'ClanTag', 'Organizador_Fuente', 'Nombre', 'Tipo', 'Contraseña',
+        'Nivel_tope', 'Participantes', 'Capacidad', 'Modo_ID', 'Modo',
+        'Preparación', 'Duración', 'Premios', 'Estado'
+    ] },
+    { label: 'Min_T', subs: ['C1', 'C2', 'C3', 'C4'] },
+    { label: 'Ataques', subs: ['C1', 'C2', 'C3', 'C4'] },
+    { label: 'Otros requisitos', subs: [
+        // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §02B068]
+        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Descripción', 'Comentario', 'Link_app', 'Link_json', 'Link_json_2'
+    ] }
+  ];
+  var totalCols = _aplicarHeaderDosFilas(sh, columnas);
+  // FIX (31/08/2026, pedido del usuario — sugerencia #1 de la lista de [→ Contexto_Base_Web.md §02B069]
+  sh.getRange(2, TL.ID).setNote('No editar a mano. El ID se genera automáticamente al procesar el torneo (ver procesarTListaNuevasFilas(), 26_Torneos_Core.gs). Al agregar un torneo nuevo, dejar esta columna en blanco — igual que Tag_Tor, Contraseña, Organizador, Tag_org, Clan, ClanTag y Link_json.');
+  _protegerSoloAdvertencia(sh);
+  // Desplegable fijo de Estado ("Planificado"/"Realizado") — ver [→ Contexto_Base_Web.md §02B070]
+  _aplicarDropdownEstadoTLista(ss);
+  // FIX (08-sep-2026, corrección de desincronización): faltaban estas 2 [→ Contexto_Base_Web.md §02B071]
+  _aplicarDropdownMiembroActivoTLista(ss);
+  _aplicarDropdownReaccionTLista(ss);
+  // FIX (12-sep-2026, pedido del usuario -- consolidado, sección 1 cierre [→ Contexto_Base_Web.md §02B072]
+  _aplicarDropdownWhatsappTLista(ss);
+  // FIX (09-sep-2026, pedido usuario): filtro nativo en fila 2 (nunca en
+  // la 1) -- ver _aplicarFiltroFila2() más arriba en este archivo.
+  _aplicarFiltroFila2(sh, 'T_Lista');
+  _aplicarFormatoMilesHoja_(sh, 3, TL_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
+  Logger.log('[Setup] T_Lista OK (' + totalCols + ' columnas, header 2 filas, filtro en fila 2)');
+}
+
+/**
+ * _setupSLista(ss) [→ Contexto_Base_Web.md §02B073]
+ */
+function _setupSLista(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_LISTA);
+  var columnas = [
+    { label: 'Planificación, registro y modificación de Sorteos', subs: [
+        'N°', 'Temporada', 'Fecha', 'Hora', 'ID', 'ID_2', 'Organizador',
+        'Tag_org', 'Clan', 'ClanTag', 'Premios', 'Semanas'
+    ] },
+    { label: 'Min_S', subs: ['C1', 'C2', 'C3', 'C4', 'Delta'] },
+    { label: 'Ataques', subs: ['C1', 'C2', 'C3', 'C4'] },
+    { label: 'Torneos', subs: ['C1', 'C2', 'C3', 'C4'] },
+    { label: 'Otros requisitos', subs: [
+        // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §02B074]
+        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Estado', 'Comentario'
+    ] }
+  ];
+  var totalCols = _aplicarHeaderDosFilas(sh, columnas);
+  _protegerSoloAdvertencia(sh);
+  // PF109 (18-oct-2026): la columna Hora de S_Lista queda como hora sin fecha (antes nadie le ponía formato y aparecía «30/12/1899 20:00:00»). [→ Contexto_Base_Web.md §PF109]
+  _normalizarHoraSLista(sh);
+  // Desplegables fijo/dinámico — ver docblocks de las 4 funciones [→ Contexto_Base_Web.md §02B075]
+  _aplicarDropdownId2SLista(ss);
+  _aplicarDropdownEstadoSLista(ss);
+  _aplicarDropdownMiembroActivoSLista(ss);
+  _aplicarDropdownReaccionSLista(ss);
+  // FIX (12-sep-2026, pedido del usuario -- consolidado, sección 1 cierre [→ Contexto_Base_Web.md §02B076]
+  _aplicarDropdownWhatsappSLista(ss);
+  // FIX (09-sep-2026, pedido usuario): filtro nativo en fila 2 (nunca en
+  // la 1) -- ver _aplicarFiltroFila2() más arriba en este archivo.
+  _aplicarFiltroFila2(sh, 'S_Lista');
+  _aplicarFormatoMilesHoja_(sh, 3, SL_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
+  Logger.log('[Setup] S_Lista OK (' + totalCols + ' columnas, header 2 filas, filtro en fila 2)');
+}
+
+/**
+ * _setupCRLista(ss) [→ Contexto_Base_Web.md §02B077]
+ */
+function _setupCRLista(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.CR_LISTA);
+  var columnas = [
+    { label: 'Planificación, registro y modificación de cambio de rango', headers: [
+        'N°', 'Temporada', 'Semanas', 'Fecha', 'Hora', 'ID', 'Organizador',
+        'Tag_org', 'Clan', 'ClanTag', 'Tipo'
+    ] },
+    { label: 'Min_CR', grupos: [
+        { sub: 'Miembro',  subs: ['C1', 'C2', 'C3', 'C4'] },
+        { sub: 'Veterano', subs: ['C1', 'C2', 'C3', 'C4'] },
+        { sub: 'Colider',  subs: ['C1', 'C2', 'C3', 'C4'] }
+    ] },
+    { label: 'Ataques', grupos: [
+        { sub: 'Miembro',  subs: ['C1', 'C2', 'C3', 'C4'] },
+        { sub: 'Veterano', subs: ['C1', 'C2', 'C3', 'C4'] },
+        { sub: 'Colider',  subs: ['C1', 'C2', 'C3', 'C4'] }
+    ] },
+    { label: 'Otros requisitos', headers: [
+        'Barcos', 'Miembro activo', 'WhatsApp', 'Estado', 'Comentario'
+    ] }
+  ];
+  var totalCols = _aplicarHeaderTresFilas(sh, columnas);
+  _protegerSoloAdvertencia(sh);
+  _aplicarDropdownTipoCRLista(ss);
+  _aplicarDropdownEstadoCRLista(ss);
+  _aplicarFiltroFila3(sh, 'CR_Lista');
+  _aplicarFormatoMilesHoja_(sh, 4, CR_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
+  Logger.log('[Setup] CR_Lista OK (' + totalCols + ' columnas, header 3 filas, filtro en fila 3)');
 }
 
 /**
@@ -803,115 +893,6 @@ function _aplicarFiltroFila3(sh, nombreHoja) {
 }
 
 /**
- * _setupTLista(ss) [→ Contexto_Base_Web.md §02B066]
- */
-function _setupTLista(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_LISTA);
-  // FASE 2 (25-sep-2026, rediseño T_Lista -- ver docblock del objeto TL en [→ Contexto_Base_Web.md §02B067]
-  var columnas = [
-    { label: 'Planificación, registro y modificación de torneos', subs: [
-        // Orden nuevo (29-oct-2026, pedido de la usuaria); debe coincidir con TL en 26_Torneos_Core.gs
-        'N°', 'Temporada', 'Fecha', 'Hora', 'ID', 'Creación', 'Semanas',
-        'Tag_Tor', 'Tag_Tor_2', 'Nombre_Org', 'Nom_Multi_Org', 'Tag_org',
-        'Clan', 'ClanTag', 'Organizador_Fuente', 'Nombre', 'Tipo', 'Contraseña',
-        'Nivel_tope', 'Participantes', 'Capacidad', 'Modo_ID', 'Modo',
-        'Preparación', 'Duración', 'Premios', 'Estado'
-    ] },
-    { label: 'Min_T', subs: ['C1', 'C2', 'C3', 'C4'] },
-    { label: 'Ataques', subs: ['C1', 'C2', 'C3', 'C4'] },
-    { label: 'Otros requisitos', subs: [
-        // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §02B068]
-        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Descripción', 'Comentario', 'Link_app', 'Link_json', 'Link_json_2'
-    ] }
-  ];
-  var totalCols = _aplicarHeaderDosFilas(sh, columnas);
-  // FIX (31/08/2026, pedido del usuario — sugerencia #1 de la lista de [→ Contexto_Base_Web.md §02B069]
-  sh.getRange(2, TL.ID).setNote('No editar a mano. El ID se genera automáticamente al procesar el torneo (ver procesarTListaNuevasFilas(), 26_Torneos_Core.gs). Al agregar un torneo nuevo, dejar esta columna en blanco — igual que Tag_Tor, Contraseña, Organizador, Tag_org, Clan, ClanTag y Link_json.');
-  _protegerSoloAdvertencia(sh);
-  // Desplegable fijo de Estado ("Planificado"/"Realizado") — ver [→ Contexto_Base_Web.md §02B070]
-  _aplicarDropdownEstadoTLista(ss);
-  // FIX (08-sep-2026, corrección de desincronización): faltaban estas 2 [→ Contexto_Base_Web.md §02B071]
-  _aplicarDropdownMiembroActivoTLista(ss);
-  _aplicarDropdownReaccionTLista(ss);
-  // FIX (12-sep-2026, pedido del usuario -- consolidado, sección 1 cierre [→ Contexto_Base_Web.md §02B072]
-  _aplicarDropdownWhatsappTLista(ss);
-  // FIX (09-sep-2026, pedido usuario): filtro nativo en fila 2 (nunca en
-  // la 1) -- ver _aplicarFiltroFila2() más arriba en este archivo.
-  _aplicarFiltroFila2(sh, 'T_Lista');
-  _aplicarFormatoMilesHoja_(sh, 3, TL_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
-  Logger.log('[Setup] T_Lista OK (' + totalCols + ' columnas, header 2 filas, filtro en fila 2)');
-}
-
-/**
- * _setupSLista(ss) [→ Contexto_Base_Web.md §02B073]
- */
-function _setupSLista(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_LISTA);
-  var columnas = [
-    { label: 'Planificación, registro y modificación de Sorteos', subs: [
-        'N°', 'Temporada', 'Fecha', 'Hora', 'ID', 'ID_2', 'Organizador',
-        'Tag_org', 'Clan', 'ClanTag', 'Premios', 'Semanas'
-    ] },
-    { label: 'Min_S', subs: ['C1', 'C2', 'C3', 'C4', 'Delta'] },
-    { label: 'Ataques', subs: ['C1', 'C2', 'C3', 'C4'] },
-    { label: 'Torneos', subs: ['C1', 'C2', 'C3', 'C4'] },
-    { label: 'Otros requisitos', subs: [
-        // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): [→ Contexto_Base_Web.md §02B074]
-        'Barcos', 'Miembro activo', 'Reacción', 'WhatsApp', 'Estado', 'Comentario'
-    ] }
-  ];
-  var totalCols = _aplicarHeaderDosFilas(sh, columnas);
-  _protegerSoloAdvertencia(sh);
-  // PF109 (18-oct-2026): la columna Hora de S_Lista queda como hora sin fecha (antes nadie le ponía formato y aparecía «30/12/1899 20:00:00»). [→ Contexto_Base_Web.md §PF109]
-  _normalizarHoraSLista(sh);
-  // Desplegables fijo/dinámico — ver docblocks de las 4 funciones [→ Contexto_Base_Web.md §02B075]
-  _aplicarDropdownId2SLista(ss);
-  _aplicarDropdownEstadoSLista(ss);
-  _aplicarDropdownMiembroActivoSLista(ss);
-  _aplicarDropdownReaccionSLista(ss);
-  // FIX (12-sep-2026, pedido del usuario -- consolidado, sección 1 cierre [→ Contexto_Base_Web.md §02B076]
-  _aplicarDropdownWhatsappSLista(ss);
-  // FIX (09-sep-2026, pedido usuario): filtro nativo en fila 2 (nunca en
-  // la 1) -- ver _aplicarFiltroFila2() más arriba en este archivo.
-  _aplicarFiltroFila2(sh, 'S_Lista');
-  _aplicarFormatoMilesHoja_(sh, 3, SL_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
-  Logger.log('[Setup] S_Lista OK (' + totalCols + ' columnas, header 2 filas, filtro en fila 2)');
-}
-
-/**
- * _setupCRLista(ss) [→ Contexto_Base_Web.md §02B077]
- */
-function _setupCRLista(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.CR_LISTA);
-  var columnas = [
-    { label: 'Planificación, registro y modificación de cambio de rango', headers: [
-        'N°', 'Temporada', 'Semanas', 'Fecha', 'Hora', 'ID', 'Organizador',
-        'Tag_org', 'Clan', 'ClanTag', 'Tipo'
-    ] },
-    { label: 'Min_CR', grupos: [
-        { sub: 'Miembro',  subs: ['C1', 'C2', 'C3', 'C4'] },
-        { sub: 'Veterano', subs: ['C1', 'C2', 'C3', 'C4'] },
-        { sub: 'Colider',  subs: ['C1', 'C2', 'C3', 'C4'] }
-    ] },
-    { label: 'Ataques', grupos: [
-        { sub: 'Miembro',  subs: ['C1', 'C2', 'C3', 'C4'] },
-        { sub: 'Veterano', subs: ['C1', 'C2', 'C3', 'C4'] },
-        { sub: 'Colider',  subs: ['C1', 'C2', 'C3', 'C4'] }
-    ] },
-    { label: 'Otros requisitos', headers: [
-        'Barcos', 'Miembro activo', 'WhatsApp', 'Estado', 'Comentario'
-    ] }
-  ];
-  var totalCols = _aplicarHeaderTresFilas(sh, columnas);
-  _protegerSoloAdvertencia(sh);
-  _aplicarDropdownTipoCRLista(ss);
-  _aplicarDropdownEstadoCRLista(ss);
-  _aplicarFiltroFila3(sh, 'CR_Lista');
-  _aplicarFormatoMilesHoja_(sh, 4, CR_COLS_MILES); // separador de miles solo de visualización (29-oct-2026)
-  Logger.log('[Setup] CR_Lista OK (' + totalCols + ' columnas, header 3 filas, filtro en fila 3)');
-}
-
-/**
  * _aplicarDropdownTipoCRLista(ss) [→ Contexto_Base_Web.md §02B078]
  */
 function _aplicarDropdownTipoCRLista(ss) {
@@ -951,6 +932,8 @@ function _aplicarDropdownEstadoCRLista(ss) {
   }
 }
 
+// ----- Torneos y sorteos: asistencia, control y resoluciones -----
+
 /**
  * _setupTAsistencia(ss) [→ Contexto_Base_Web.md §02B080]
  */
@@ -962,6 +945,44 @@ function _setupTAsistencia(ss) {
   applyHeaderStyle(sh, headers.length);
   _protegerSoloAdvertencia(sh);
   Logger.log('[Setup] T_Asistencia OK');
+}
+
+/**
+ * _setupTControl(ss) [→ Contexto_Base_Web.md §02B084]
+ */
+function _setupTControl(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_CONTROL);
+  sh.clearContents();
+
+  var headers = ['N°', 'Tag', 'Nombre', 'Nom_Multi', 'Préstamo', 'ClanTag', 'Clan'];
+  var rangoHeaders = sh.getRange(3, 1, 1, headers.length);
+  rangoHeaders.setValues([headers])
+    .setBackground(CFG.COLORES.HEADER_BG)
+    .setFontColor(CFG.COLORES.HEADER_FG)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+  sh.setFrozenRows(3);
+
+  // Filas 1 y 2 (supercategoría "Torneos" y categorías "T_"&Temporada) se [→ Contexto_Base_Web.md §02B085]
+
+  _protegerSoloAdvertencia(sh);
+  Logger.log('[Setup] T_Control OK');
+}
+
+/**
+ * _setupTResoluciones(ss) [→ Contexto_Base_Web.md §02B086]
+ */
+function _setupTResoluciones(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_RESOLUCIONES);
+  var headers = ['IdTorneo', 'Tag', 'Nombre', 'Puesto_Original', 'Tipo_Resolucion',
+                  'Puesto_Final', 'Motivo', 'Registrado_Por', 'Fecha_Registro'];
+  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  applyHeaderStyle(sh, headers.length);
+  sh.getRange(1, TR.NOMBRE).setNote('Informativa. Se refresca sola desde el Directorio cada vez que se guarda una resolución — no editar a mano.');
+  sh.getRange(1, TR.PUESTO_ORIGINAL).setNote('El puesto que le tocaba por Victorias crudas, antes de esta resolución. Se calcula solo, no editar a mano.');
+  _protegerSoloAdvertencia(sh);
+  Logger.log('[Setup] T_Resoluciones OK');
 }
 
 /**
@@ -1020,52 +1041,64 @@ function _bordesDatosSAsistencia_(sh) {
   if (ultima >= 2) applyBorderCenter(sh.getRange(2, 1, ultima - 1, SA_TOTAL_COLS));
 }
 
-/**
- * PF231: se puede correr sola desde el editor de Apps Script (no recibe parámetros) para corregir los bordes de S_Asistencia sin ejecutar todo el setup.
- */
-function repararBordesSAsistencia() {
-  var sh = _getSs().getSheetByName(CFG.SHEETS.S_ASISTENCIA);
-  if (!sh) { Logger.log('[Setup] repararBordesSAsistencia: no existe la hoja ' + CFG.SHEETS.S_ASISTENCIA); return; }
-  _bordesDatosSAsistencia_(sh);
-  Logger.log('[Setup] Bordes de S_Asistencia corregidos (' + Math.max(0, sh.getLastRow() - 1) + ' filas, ' + SA_TOTAL_COLS + ' columnas).');
-}
+// ----- Hojas restantes (jugadores, enlaces, alertas, conflictos, grupo verificado) -----
 
 /**
- * _setupTControl(ss) [→ Contexto_Base_Web.md §02B084]
+ * _setupPlayers(ss) [→ Contexto_Base_Web.md §02B050]
  */
-function _setupTControl(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_CONTROL);
-  sh.clearContents();
-
-  var headers = ['N°', 'Tag', 'Nombre', 'Nom_Multi', 'Préstamo', 'ClanTag', 'Clan'];
-  var rangoHeaders = sh.getRange(3, 1, 1, headers.length);
-  rangoHeaders.setValues([headers])
-    .setBackground(CFG.COLORES.HEADER_BG)
-    .setFontColor(CFG.COLORES.HEADER_FG)
-    .setFontWeight('bold')
-    .setHorizontalAlignment('center')
-    .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
-  sh.setFrozenRows(3);
-
-  // Filas 1 y 2 (supercategoría "Torneos" y categorías "T_"&Temporada) se [→ Contexto_Base_Web.md §02B085]
-
-  _protegerSoloAdvertencia(sh);
-  Logger.log('[Setup] T_Control OK');
-}
-
-/**
- * _setupTResoluciones(ss) [→ Contexto_Base_Web.md §02B086]
- */
-function _setupTResoluciones(ss) {
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.T_RESOLUCIONES);
-  var headers = ['IdTorneo', 'Tag', 'Nombre', 'Puesto_Original', 'Tipo_Resolucion',
-                  'Puesto_Final', 'Motivo', 'Registrado_Por', 'Fecha_Registro'];
-  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+function _setupPlayers(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.PLAYERS);
+  var headers = [
+    'N°','Tag','Nombre','Nom_Multi','Préstamo','Clan','ClanTag','Rango',
+    'Antigüedad','Nivel','Nivel2','Copas','Copas_max','Arena','V_Guerra',
+    'Victorias','Derrotas','Batallas','Racha',
+    'Camino de leyendas_Liga','Camino de leyendas_Trofeos','Camino de leyendas_Rango',
+    'Victorias de tres coronas','Max_victorias_desafíos','Torneos','Emotes','Banners',
+    'Cartas_desafíos','Cartas_torneos',
+    'Donaciones_r','Donaciones_d'
+  ];
+  if (sh.getLastRow() === 0 || sh.getRange(1,1).getValue() === '') {
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
   applyHeaderStyle(sh, headers.length);
-  sh.getRange(1, TR.NOMBRE).setNote('Informativa. Se refresca sola desde el Directorio cada vez que se guarda una resolución — no editar a mano.');
-  sh.getRange(1, TR.PUESTO_ORIGINAL).setNote('El puesto que le tocaba por Victorias crudas, antes de esta resolución. Se calcula solo, no editar a mano.');
-  _protegerSoloAdvertencia(sh);
-  Logger.log('[Setup] T_Resoluciones OK');
+  Logger.log('[Setup] Players OK (31 cols)');
+}
+
+/**
+ * _setupLinks(ss) [→ Contexto_Base_Web.md §02B051]
+ */
+function _setupLinks(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.LINKS);
+  var headers = [
+    'N°','Tag','Nombre','Nom_Multi','Préstamo','Clan','ClanTag','Rango',
+    'WSP','RoyaleAPI','Mazo','Mazo2','CWStats','Render'
+  ];
+  if (sh.getLastRow() === 0 || sh.getRange(1,1).getValue() === '') {
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
+  applyHeaderStyle(sh, headers.length);
+  Logger.log('[Setup] Links OK (14 cols)');
+}
+
+/**
+ * _setupAlertasHistorialGuerra(ss) [→ Contexto_Base_Web.md §02B012]
+ */
+function _setupAlertasHistorialGuerra(ss) {
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA);
+  var encabezados = AHG_ENCABEZADOS; // 20_HistorialGuerraJugador.gs
+  sh.getRange(1, 1, 1, encabezados.length).setValues([encabezados]);
+  // FIX (23-ago-2026, pedido del usuario): mismo estilo que T_Lista — antes [→ Contexto_Base_Web.md §02B013]
+  applyHeaderStyle(sh, encabezados.length);
+
+  // Bordes grises + centrado sobre las filas de datos que ya existan (p.ej. [→ Contexto_Base_Web.md §02B014]
+  if (sh.getLastRow() >= 2) {
+    applyBorderCenter(sh.getRange(2, 1, sh.getLastRow() - 1, encabezados.length));
+  }
+
+  var opsEstado = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Pendiente', 'Resuelto'], true).setAllowInvalid(false).build();
+  // Rango amplio (hasta fila 2000) para que la validación ya cubra filas que [→ Contexto_Base_Web.md §02B015]
+  sh.getRange(2, AHG.ESTADO, 1999, 1).setDataValidation(opsEstado);
 }
 
 /**
