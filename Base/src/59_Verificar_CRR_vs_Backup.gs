@@ -55,7 +55,9 @@ var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
 var _vcrrFameLimites_ = null;                          // caché de _vcrrFameLimitesPorAtaques_()
-var _VCRR_CACHE_RANGOS_ = {};                          // caché por ejecución de _vcrrRangosJugadorClan_(): 'temporada|semana' -> { 'clanKey|tag': serie }
+var _VCRR_CACHE_RANGOS_ = {};                          // caché por ejecución de _vcrrRangosJugadorClan_(): 'temporada|semana' -> { 'clanKey|tag': serie, '*|tag': [series del jugador en todos los clanes] }
+// Topes de un jugador en la semana SUMANDO todos sus clanes (los 4 Terna y el externo; Contexto_Base_Web.md §PF160 criterio 4 y §PF302).
+var VCRR_TOPE_ATAQUES_DIA = 4, VCRR_TOPE_ATAQUES_SEMANA = 16, VCRR_TOPE_BARCOS_SEMANA = 16, VCRR_TOPE_FAME_DIA = 900, VCRR_TOPE_FAME_SEMANA = 3600;
 
 // JSON que se sabe anómalos aunque sigan en su carpeta: claves 'temporada|semana|clan en minúsculas|letra del día', por ejemplo '23|1|grupoxterna™3|V'.
 // Un JSON movido a la carpeta Anomalías no hace falta anotarlo aquí: esa carpeta no se lee.
@@ -915,19 +917,136 @@ function _vcrrVerificarAplicado_(filasAntes, filasDespues, casos, creadasEsperad
  */
 function _vcrrRangosJugadorClan_(temporada, semana, tag, clanNombre) {
   try {
-    var clave = Number(temporada) + '|' + Number(semana);
-    if (!_VCRR_CACHE_RANGOS_[clave]) {
-      var mapa = {};
-      var archivos = _vcrrArchivosSemana_(temporada, semana);
-      if (archivos.length) {
-        var cap = _vcrrCapturasSemana_(temporada, semana, archivos);
-        _vcrrSeriesDeSemana_(temporada, semana, cap.porClan).forEach(function (x) { mapa[x.clanKey + '|' + x.tag] = x; });
-      }
-      _VCRR_CACHE_RANGOS_[clave] = mapa;
-    }
-    return _VCRR_CACHE_RANGOS_[clave][_vcrrClanNorm_(clanNombre) + '|' + String(tag || '').trim()] || null;
+    return _vcrrCacheSemana_(temporada, semana)[_vcrrClanNorm_(clanNombre) + '|' + String(tag || '').trim()] || null;
   } catch (e) {
     Logger.log('[VCRR] No se pudieron calcular los rangos de T' + temporada + ' S' + semana + ' ' + tag + ': ' + e.message);
     return null;
   }
+}
+
+/** Mapa de la semana (con caché por ejecución): 'clanKey|tag' -> serie y '*|tag' -> lista de las series de ese jugador en todos los clanes. Lee los JSON una sola vez. */
+function _vcrrCacheSemana_(temporada, semana) {
+  var clave = Number(temporada) + '|' + Number(semana);
+  if (!_VCRR_CACHE_RANGOS_[clave]) {
+    var mapa = {};
+    var archivos = _vcrrArchivosSemana_(temporada, semana);
+    if (archivos.length) {
+      var cap = _vcrrCapturasSemana_(temporada, semana, archivos);
+      _vcrrSeriesDeSemana_(temporada, semana, cap.porClan).forEach(function (x) {
+        mapa[x.clanKey + '|' + x.tag] = x;
+        if (!mapa['*|' + x.tag]) mapa['*|' + x.tag] = [];
+        mapa['*|' + x.tag].push(x);
+      });
+    }
+    _VCRR_CACHE_RANGOS_[clave] = mapa;
+  }
+  return _VCRR_CACHE_RANGOS_[clave];
+}
+
+/** Las series de un jugador en todos los clanes de la semana (una por clan que tenga JSON suyos). [] si no hay. */
+function _vcrrSeriesDeTag_(temporada, semana, tag) {
+  try { return _vcrrCacheSemana_(temporada, semana)['*|' + String(tag || '').trim()] || []; }
+  catch (e) { Logger.log('[VCRR] No se pudieron leer las series de T' + temporada + ' S' + semana + ' ' + tag + ': ' + e.message); return []; }
+}
+
+// ----- Suma de los clanes de un jugador y topes semanales (§PF302) -----
+
+/** Piso conocido (campo 'lo' o 'il') de una métrica en el día d de OTRA serie del mismo jugador; 0 si esa métrica no es utilizable (un 0 siempre es un piso válido). */
+function _vcrrPisoSerie_(serie, m, campo, d) {
+  if (!serie || !serie.r || String(serie.validos || '').indexOf(m) < 0) return 0;
+  var x = serie.r[m][campo][d];
+  return (typeof x === 'number' && isFinite(x)) ? x : 0;
+}
+
+/**
+ * Función pura. Los rangos de UNA serie (un jugador en un clan) ajustados con lo que ya muestran los JSON de sus OTROS clanes la misma semana, que se SUMAN:
+ * los topes valen para el jugador, no para cada clan (4 ataques por día y 16 por semana; 4 barcos por día y 16 por semana; 900 medallas por día y 3600 por semana).
+ * Así el máximo de este clan al cierre del día d no pasa del tope acumulado hasta ese día menos el piso que los otros clanes ya mostraban (en el domingo, el tope semanal),
+ * y su aumento de ese día no pasa del tope del día menos lo que los otros ya habían hecho ese día como mínimo. Lo que los JSON de este clan dicen por sí solos
+ * (su piso y su merma) no cambia: es la cuenta de ESE clan. Solo se ajustan las métricas utilizables (serie.validos).
+ * Devuelve { r: {A,F,B ajustados (copia)}, conflicto, sumaOtras }. conflicto = '' si los rangos siguen siendo coherentes; si no, el texto de qué tope rompe la suma
+ * de los JSON (caso del criterio 11: va a revisión manual). No modifica la serie.
+ */
+function _vcrrAjustarPorOtrosClanes_(serie, otras) {
+  var copia = {}, d, sumaOtras = { A: [0, 0, 0, 0], F: [0, 0, 0, 0], B: [0, 0, 0, 0] };
+  var validos = String((serie && serie.validos) || '');
+  ['A', 'F', 'B'].forEach(function (m) {
+    var x = serie.r[m];
+    copia[m] = { lo: x.lo.slice(), hi: x.hi.slice(), il: x.il.slice(), ih: x.ih.slice() };
+  });
+  var topeDia = { A: VCRR_TOPE_ATAQUES_DIA, F: VCRR_TOPE_FAME_DIA, B: VCRR_TOPE_ATAQUES_DIA };
+  var etiqueta = { A: 'ataques', F: 'medallas', B: 'barcos' };
+  var topeSem = { A: VCRR_TOPE_ATAQUES_SEMANA, F: VCRR_TOPE_FAME_SEMANA, B: VCRR_TOPE_BARCOS_SEMANA };
+  ['A', 'F', 'B'].forEach(function (m) {
+    if (validos.indexOf(m) < 0) return;
+    for (d = 0; d < 4; d++) {
+      var oLo = 0, oIl = 0;
+      (otras || []).forEach(function (o) { oLo += _vcrrPisoSerie_(o, m, 'lo', d); oIl += _vcrrPisoSerie_(o, m, 'il', d); });
+      sumaOtras[m][d] = oLo;
+      copia[m].hi[d] = Math.min(copia[m].hi[d], topeDia[m] * (d + 1) - oLo);
+      copia[m].ih[d] = Math.min(copia[m].ih[d], topeDia[m] - oIl);
+    }
+  });
+  // Lo que depende de los ataques del día (fame y barcos) se vuelve a acotar con los ataques ya ajustados, igual que en _vcrrRestriccionesSerie_.
+  if (validos.indexOf('A') >= 0) {
+    var lim = _vcrrFameLimitesPorAtaques_();
+    for (d = 0; d < 4; d++) {
+      var aih = Math.max(0, Math.min(4, copia.A.ih[d]));
+      if (validos.indexOf('F') >= 0) copia.F.ih[d] = Math.min(copia.F.ih[d], lim.max[aih]);
+      if (validos.indexOf('B') >= 0) { copia.B.ih[d] = Math.min(copia.B.ih[d], copia.A.ih[d]); copia.B.hi[d] = Math.min(copia.B.hi[d], copia.A.hi[d]); }
+    }
+  }
+  var conflicto = '';
+  ['A', 'F', 'B'].forEach(function (m) {
+    if (validos.indexOf(m) < 0 || conflicto) return;
+    if (!_vcrrPropagar_(copia[m])) {
+      conflicto = 'los JSON de los clanes sumados no caben en el tope semanal de ' + topeSem[m] + ' ' + etiqueta[m] + ' (los otros clanes ya muestran ' + sumaOtras[m][3] +
+        ' y este clan al menos ' + serie.r[m].lo[3] + ')';
+    }
+  });
+  return { r: copia, conflicto: conflicto, sumaOtras: sumaOtras };
+}
+
+/**
+ * Los rangos de UN jugador en UN clan y semana, ya sumados con sus otros clanes (§PF302). Para quien reparte la semana de un clan (18_CorreccionGuerra.gs,
+ * _repartoRangosCrr_). Devuelve { serie, r, validos, multiclan, otras, conflicto } o null si esa semana no tiene JSON del jugador en ese clan. Con un solo clan,
+ * r es el de la serie tal cual. conflicto != '' si los JSON de los clanes sumados rompen un tope semanal: eso no se reparte, va a revisión manual.
+ */
+function _vcrrRangosAjustadosJugadorClan_(temporada, semana, tag, clanNombre) {
+  var serie = _vcrrRangosJugadorClan_(temporada, semana, tag, clanNombre);
+  if (!serie) return null;
+  var otras = _vcrrSeriesDeTag_(temporada, semana, tag).filter(function (x) { return x.clanKey !== serie.clanKey; });
+  if (!otras.length) return { serie: serie, r: serie.r, validos: serie.validos, multiclan: false, otras: [], conflicto: '' };
+  var aj = _vcrrAjustarPorOtrosClanes_(serie, otras);
+  return { serie: serie, r: aj.r, validos: serie.validos, multiclan: true, otras: otras, conflicto: aj.conflicto };
+}
+
+/**
+ * Función pura. series = las series de UN jugador en la semana, una por clan (salida de _vcrrSeriesDeSemana_ filtrada por tag). Suma los pisos que muestran los JSON
+ * de todos sus clanes y los compara con los topes semanales (16 ataques, 16 barcos, 3600 medallas) ANTES de mirar los valores de RoyaleAPI. Devuelve
+ * { clanes: { clanKey: { nombre, estado, estricto, A, B, F, conflicto } }, suma: {A,B,F}, topes, conflicto, multiclan }, con A, B y F = [mínimo, máximo] del total semanal
+ * de ESE clan ya ajustado por los otros (null si la métrica no es utilizable en ese clan). conflicto = el primer tope que rompen los JSON sumados ('' si ninguno).
+ */
+function _vcrrResumenDeSeries_(series) {
+  var out = { clanes: {}, suma: { A: 0, B: 0, F: 0 }, topes: { A: VCRR_TOPE_ATAQUES_SEMANA, B: VCRR_TOPE_BARCOS_SEMANA, F: VCRR_TOPE_FAME_SEMANA }, conflicto: '', multiclan: (series || []).length > 1 };
+  var etiqueta = { A: 'ataques', F: 'medallas', B: 'barcos' };
+  (series || []).forEach(function (s) {
+    var otras = series.filter(function (x) { return x !== s; });
+    var aj = _vcrrAjustarPorOtrosClanes_(s, otras);
+    var v = String(s.validos || '');
+    var fin = function (m) { return v.indexOf(m) >= 0 ? [aj.r[m].lo[3], aj.r[m].hi[3]] : null; };
+    ['A', 'B', 'F'].forEach(function (m) { if (v.indexOf(m) >= 0) out.suma[m] += s.r[m].lo[3]; });
+    out.clanes[s.clanKey] = { nombre: s.nombre, estado: s.estado, estricto: v.length === 3 && (s.estado === 'ok' || s.estado === 'multiclan'), A: fin('A'), B: fin('B'), F: fin('F'), conflicto: aj.conflicto };
+    if (aj.conflicto && !out.conflicto) out.conflicto = aj.conflicto;
+  });
+  ['A', 'B', 'F'].forEach(function (m) {
+    if (!out.conflicto && out.suma[m] > out.topes[m]) out.conflicto = 'los JSON de los clanes del jugador suman ' + out.suma[m] + ' ' + etiqueta[m] + ' y el tope semanal es ' + out.topes[m];
+  });
+  return out;
+}
+
+/** El resumen de un jugador y semana con los JSON de todos sus clanes (§PF302). null si no hay JSON suyos esa semana. */
+function _vcrrResumenJugadorSemana_(temporada, semana, tag) {
+  var series = _vcrrSeriesDeTag_(temporada, semana, tag);
+  return series.length ? _vcrrResumenDeSeries_(series) : null;
 }
