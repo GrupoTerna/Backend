@@ -1425,7 +1425,11 @@ function _finalizarReenumeracion() {
     });
     movidas.forEach(function (x) { props.deleteProperty(x.viejo); });
     movidas.forEach(function (x) { props.setProperty(x.nuevo, x.valor); });
+    // (c) Avance de verificarCrrVsBackup* (59_Verificar_CRR_vs_Backup.gs): VCRR_ESTADO guarda la lista de semanas con pares temporada/semana en la numeración vieja; reanudar con ella buscaría carpetas que ya no existen.
+    // Se descarta: la próxima corrida arma la lista de nuevo y omite las semanas ya verificadas por huella del JSON.
+    props.deleteProperty('VCRR_ESTADO');
     props.setProperty('REENUM_PROPS_NUMERACION_HECHO', runIdFin);
+    Logger.log('[Reenumeración] Avance de verificarCrrVsBackup* (VCRR_ESTADO) descartado.');
     Logger.log('[Reenumeración] Índice de cruce de meta descartado y ' + movidas.length + ' marca(s) NUEVOS_CIERRE_SEMANA_T<n> pasadas a la numeración nueva (T += ' + deltaMeses + ').');
   }
 
