@@ -1586,6 +1586,17 @@ function doPost(e) {
     try {
       var payload = JSON.parse(e.postData.contents);
       var resultado = _aplicarCorreccionesGuerra(payload && payload.correcciones);
+      // §PF307 (3), pieza 1: se informa qué jugadores del lote califican como nuevos (por tag, _nuevosDesdeFilasPerfil_() en 14_Nuevos_RoyaleAPI.gs); todavía NO se escribe en «Nuevos». [→ Contexto_Base_Web.md §PF309]
+      try {
+        var detNuevosCg = _nuevosDesdeFilasPerfil_(payload && payload.correcciones);
+        if (resultado && detNuevosCg.nuevos.length) resultado.nuevosDetectados = detNuevosCg.nuevos.slice(0, 100);
+        if (detNuevosCg.evaluados) {
+          Logger.log('[CorreccionGuerra] Nuevos por tag (solo informativo): ' + detNuevosCg.nuevos.length + ' de ' + detNuevosCg.evaluados +
+            ' jugador(es) con filas de perfil' + (detNuevosCg.sinEnlace ? '; ' + detNuevosCg.sinEnlace + ' con alguna fila sin enlace de clan' : '') + '.');
+        }
+      } catch (errNuevosCg) {
+        Logger.log('[CorreccionGuerra] AVISO: no se pudo calcular quién cuenta como nuevo (' + (errNuevosCg.message || errNuevosCg) + '). La corrección ya quedó guardada.');
+      }
       // FIX (13-ago-2026): log en Drive por botón (_logTampermonkeyADrive(), 05_Backup_CSV.gs); resultado.avisoControl2 (si actualizarControl2() falló a mitad) ahora también viaja en la respuesta, antes solo quedaba en Logger.log. [→ Contexto_Base_Web.md §38B095]
       _logTampermonkeyADrive('CorreccionGuerra', resultado,
         resultado && resultado.avisoControl2 ? resultado.avisoControl2 : null);

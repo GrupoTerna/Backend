@@ -1936,6 +1936,50 @@ function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
 }
 
 /**
+ * _nuevosDesdeFilasPerfil_(correcciones) (§PF307 punto 3, pieza 1; 31-oct-2026; SOLO DECIDE, no escribe en «Nuevos»)
+ * Dada la lista de correcciones que manda el botón de Correcciones_Guerra (cuentas completas o jugadores elegidos), devuelve qué jugadores
+ * califican como nuevos, con el mismo criterio de _esNuevoPorTagClan_(): alguna de las TRES filas más recientes del perfil es de un clan
+ * que no es Terna, decidido por TAG de clan (CFG.TERNA_TAGS).
+ *   - Solo cuentan las filas del perfil (fuente 'perfil' y sin ClanTag); las de Log y Analytics no dicen en qué clan estuvo el jugador.
+ *   - Se ordenan de la más reciente a la más antigua por temporada de RoyaleAPI y semana, y una semana repetida cuenta una sola vez.
+ *   - Diferencia con el botón de Nuevos: Tampermonkey no manda la semana en curso desde el perfil (v3.6, §PF237), así que aquí las tres
+ *     filas son las tres últimas semanas CERRADAS. Para quien ya lleva la semana en curso en un clan Terna la decisión puede variar en una semana.
+ *   - Una fila sin enlace de clan (clanPerfil vacío) se trata como Terna, igual que el overlay (§PF164): no hay dato para decir otra cosa y
+ *     no debe marcar a nadie como nuevo por falta de enlace.
+ * Devuelve { nuevos: [tags], evaluados: n (jugadores con filas de perfil), sinEnlace: n (jugadores con alguna fila sin enlace entre las tres) }.
+ */
+function _nuevosDesdeFilasPerfil_(correcciones) {
+  var porTag = {};
+  for (var i = 0; i < (correcciones || []).length; i++) {
+    var c = correcciones[i] || {};
+    if (String(c.fuente || '').trim().toLowerCase() !== CGW_ORIGEN_PERFIL) continue;
+    if (String(c.clanTag || '').trim() !== '') continue; // fila de clan (Log o Analytics), no del perfil
+    var tag = String(c.tag || '').trim().toUpperCase();
+    var temporada = Number(c.temporadaRoyaleApi);
+    var semana = Number(c.semana);
+    if (!tag || !temporada || !semana) continue;
+    if (!porTag[tag]) porTag[tag] = {};
+    porTag[tag][temporada + '|' + semana] = { temporada: temporada, semana: semana, clanTag: _normalizarClanTagCorreccion(c.clanPerfil) };
+  }
+
+  var nuevos = [], evaluados = 0, sinEnlace = 0;
+  Object.keys(porTag).forEach(function (tg) {
+    var filas = Object.keys(porTag[tg]).map(function (k) { return porTag[tg][k]; });
+    filas.sort(function (a, b) { return (b.temporada - a.temporada) || (b.semana - a.semana); });
+    evaluados++;
+    var ultimas = filas.slice(0, 3);
+    var esNuevo = false, faltaEnlace = false;
+    for (var j = 0; j < ultimas.length; j++) {
+      if (ultimas[j].clanTag === '') { faltaEnlace = true; continue; }
+      if (!_clanDeFilaEsTerna_(ultimas[j].clanTag, '', [])) esNuevo = true;
+    }
+    if (faltaEnlace) sinEnlace++;
+    if (esNuevo) nuevos.push(tg);
+  });
+  return { nuevos: nuevos, evaluados: evaluados, sinEnlace: sinEnlace };
+}
+
+/**
  * _aplicarImportacionNuevos(candidatosPayload) [→ Contexto_Base_Web.md §14B073]
  */
 function _aplicarImportacionNuevos(candidatosPayload) {
