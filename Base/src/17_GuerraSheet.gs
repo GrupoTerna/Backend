@@ -3148,7 +3148,7 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
     var dec = _decidirCierreFameBarcosDia_(parCierre);
     // §PF139 (21-oct-2026): si ayer queda pendiente porque hoy ya hay ataques, se consulta CurrentRiverRace (solo en ese caso, para no leer Drive en cada corrida).
     if (dec.accion === 'pendiente' && typeof _crrAyerParaCierre_ === 'function') {
-      var crrAyer = _crrAyerParaCierre_(tag, ctx, offHoyDia - 1);
+      var crrAyer = _crrAyerParaCierre_(tag, ctx, offHoyDia - 1, _clanNombreAutocorregir); // §PF301: con el clan, primero los rangos de los JSON (piso, merma y máximo)
       if (crrAyer) {
         parCierre.crr = crrAyer;
         dec = _decidirCierreFameBarcosDia_(parCierre);
