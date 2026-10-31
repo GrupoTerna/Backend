@@ -1,10 +1,29 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Reordenar la hoja y reparar el formato de los encabezados
+//  Parte 2 — Funciones que no se corren a mano
+//    - Crear la hoja si no existe y pintar los encabezados
+//    - Refresco por pasos (lo llaman RUNALL, RUNUPDATE, RUNGUERRARAPIDO y Actualizar roster)
+//    - Restaurar desde el CSV de depuración y su punto de control (checkpoint)
+//    - Purga y renumeración
+//    - Orden y formato de la hoja
+//    - Semana actual y bloques de fechas
+//    - Importación de candidatos (la web)
+//    - Pase a histórico
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+// Las ayudas del punto de control de la restauración estaban entre las constantes; ahora están con su tema.
+
 // ==============================================================================
 // 14_Nuevos_RoyaleAPI.gs
 // Hoja Nuevos: seguimiento de candidatos externos vistos en RoyaleAPI.
 // ==============================================================================
 
-// ----- Variables y constantes ----- [→ Contexto_Base_Web.md §14B001]
 
+// ==============================================================================
+// 14_Nuevos_RoyaleAPI.gs
+// Hoja Nuevos: seguimiento de candidatos externos vistos en RoyaleAPI.
+// ==============================================================================
+// ----- Variables y constantes ----- [→ Contexto_Base_Web.md §14B001]
 // NUEVO (15-sep-2026, hallazgo B-35 de Plan_Fases.md): movido a Script [→ Contexto_Base_Web.md §14B002]
 var NUEVOS_ROYALEAPI_TOKEN = _scriptToken('NUEVOS_ROYALEAPI_TOKEN');
 
@@ -56,13 +75,13 @@ var PASTEL_CLANES_NUEVOS_ = [
 var NOMBRE_CSV_DEBUG_NUEVOS  = 'Correcciones_Nuevos.csv';
 
 // SNAPSHOT DE DEPURACIÓN DE LA IMPORTACIÓN DE NUEVOS [→ Contexto_Base_Web.md §14B007]
-
 var NOMBRE_JSON_DEBUG_NUEVOS = 'ClanSystem_Debug_ImportNuevos.json';
 
 var SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS = 3;
 
 // FIX (02-sep-2026, pedido usuario: "es un error recurrente en tampermonkey... [→ Contexto_Base_Web.md §14B008]
 var NUEVOS_RESTORE_PROGRESS_FILE = 'ClanSystem_Progreso_RestaurarNuevos.json';
+
 // Un checkpoint más viejo que esto se descarta como resto de un intento [→ Contexto_Base_Web.md §14B009]
 var NUEVOS_RESTORE_PROGRESO_MAX_EDAD_MS = 6 * 60 * 60 * 1000; // 6 horas
 // Presupuesto de tiempo PROPIO de la restauración (más chico que [→ Contexto_Base_Web.md §14B010]
@@ -71,73 +90,11 @@ var NUEVOS_RESTORE_PRESUPUESTO_MS = 90 * 1000; // 1m30s
 // PF311 parte A (31-oct-2026): de 10 a 5. El 30-oct a las 11:19 p. m. un sub-lote de 10 candidatos pasó de 107 s sin terminar y la ejecución se cortó a los 361 s; con 5 cada sub-lote dura la mitad y el paso reparte el resto en la tanda siguiente.
 var NUEVOS_RESTORE_LOTE_MAX = 5;
 
-/**
- * _guardarProgresoRestaurarNuevos(tagsYaRestaurados) [→ Contexto_Base_Web.md §14B012]
- */
-function _guardarProgresoRestaurarNuevos(tagsYaRestaurados) {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var content = JSON.stringify({ _ts: Date.now(), tags: tagsYaRestaurados || [] });
-    _guardarArchivoProgresoVerificado_(folder, NUEVOS_RESTORE_PROGRESS_FILE, content); // PF291
-  } catch (e) {
-    Logger.log('[Nuevos-Restaurar] Error guardando progreso de restauración en Drive: ' + e.message);
-  }
-}
+// ===== PARTE 1 — Funciones que se corren a mano =====
 
-/**
- * _cargarProgresoRestaurarNuevos() [→ Contexto_Base_Web.md §14B013]
- */
-function _cargarProgresoRestaurarNuevos() {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(NUEVOS_RESTORE_PROGRESS_FILE);
-    if (!files.hasNext()) return null;
-    var file = files.next();
-    var parsed = JSON.parse(file.getBlob().getDataAsString('UTF-8'));
-    if (!parsed || !parsed._ts) return null;
+// ----- Reordenar la hoja y reparar el formato de los encabezados -----
 
-    var edadMs = Date.now() - Number(parsed._ts);
-    if (edadMs > NUEVOS_RESTORE_PROGRESO_MAX_EDAD_MS) {
-      Logger.log('[Nuevos-Restaurar] Checkpoint de restauración en Drive tiene ' + Math.round(edadMs / 60000) +
-        ' min -- se descarta como resto de un intento abandonado, se reinicia desde cero.');
-      file.setTrashed(true);
-      return null;
-    }
-    return Array.isArray(parsed.tags) ? parsed.tags : null;
-  } catch (e) {
-    Logger.log('[Nuevos-Restaurar] Error cargando progreso de restauración desde Drive: ' + e.message);
-    return null;
-  }
-}
-
-/**
- * _borrarProgresoRestaurarNuevos() [→ Contexto_Base_Web.md §14B014]
- */
-function _borrarProgresoRestaurarNuevos() {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(NUEVOS_RESTORE_PROGRESS_FILE);
-    while (files.hasNext()) files.next().setTrashed(true);
-  } catch (e) {
-    Logger.log('[Nuevos-Restaurar] Error borrando progreso de restauración en Drive: ' + e.message);
-  }
-}
-
-/**
- * _hayRestauracionNuevosPendiente() [→ Contexto_Base_Web.md §14B015]
- */
-function _hayRestauracionNuevosPendiente() {
-  var tags = _cargarProgresoRestaurarNuevos();
-  return Array.isArray(tags) && tags.length > 0;
-}
-
-// ----- Funciones manuales / punto de entrada -----
-
-/**
- * _restaurarNuevosSiNoExiste() [→ Contexto_Base_Web.md §14B016]
- */
 // SECCIÓN 1: FUNCIONES MANUALES (entry points de mantenimiento, ejecutar a mano [→ Contexto_Base_Web.md §14B017]
-
 /**
  * reordenarNuevosAhora() [→ Contexto_Base_Web.md §14B018]
  */
@@ -280,10 +237,14 @@ function repararFormatoEncabezadosNuevos() {
   Logger.log('[Nuevos-RoyaleAPI] repararFormatoEncabezadosNuevos: formato reaplicado a las filas 1-3 (corner, título dinámico, Semana actual, fijos, ' + numBloques + ' bloque(s) de historial, columnas ' + COL_INICIO_GRID_NUEVOS + ' a ' + lastCol + ').');
 }
 
-// ----- Funciones internas / helpers -----
+// ===== PARTE 2 — Funciones que no se corren a mano =====
 
+// ----- Crear la hoja si no existe y pintar los encabezados -----
+
+/**
+ * _restaurarNuevosSiNoExiste() [→ Contexto_Base_Web.md §14B016]
+ */
 // SECCIÓN 2: RESTO DE FUNCIONES (helpers internos de la hoja Nuevos) — sin [→ Contexto_Base_Web.md §14B027]
-
 function _restaurarNuevosSiNoExiste() {
   var ss = _getSs();
   if (ss.getSheetByName(CFG.SHEETS.NUEVOS)) return; // ya existe: nunca se toca
@@ -477,6 +438,641 @@ function _aplicarAnchoFijoSemanaActualNuevos(sh) {
   }
 }
 
+// ----- Refresco por pasos (lo llaman RUNALL, RUNUPDATE, RUNGUERRARAPIDO y Actualizar roster) -----
+
+/**
+ * _refrescarColumnasFijasNuevos() [→ Contexto_Base_Web.md §14B103]
+ */
+function _refrescarColumnasFijasNuevos() {
+  _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado();
+  _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas();
+  _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato();
+}
+
+function _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
+  if (!sh) return;
+
+  _ordenarBloquesFechaNuevos(sh);
+  repararFormatoEncabezadosNuevos();
+
+  // FIX (20-ago-2026, pedido usuario): dirPorTag se construye AQUÍ ARRIBA [→ Contexto_Base_Web.md §14B104]
+  var dirData = _leerDirectorioFisicoComoDC(ss);
+  var dirPorTag = {};
+  for (var j = 0; j < dirData.length; j++) {
+    var tg = String(dirData[j][DC.TAG - 1] || '').trim().toUpperCase();
+    if (tg) dirPorTag[tg] = dirData[j];
+  }
+
+  // FIX (14-ago-2026, pedido usuario): autolimpieza de candidatos ya [→ Contexto_Base_Web.md §14B105]
+  var purgadosEstablecidos = _purgarNuevosEstablecidos(sh);
+  var purgadosExpulsados = _purgarNuevosExpulsados(sh, dirPorTag);
+  if (purgadosEstablecidos > 0 || purgadosExpulsados > 0) _renumerarNuevos(sh);
+
+  var lastRow = sh.getLastRow();
+  // FIX (02-sep-2026, ver docblock de NUEVOS_RESTORE_PROGRESS_FILE más [→ Contexto_Base_Web.md §14B106]
+  if (lastRow < NUEVOS_FILA_DATOS_INICIO || _hayRestauracionNuevosPendiente()) {
+    // PEDIDO DEL USUARIO (22-ago-2026): antes de rendirse por "no hay [→ Contexto_Base_Web.md §14B107]
+    try {
+      var resultadoRestauracion = _restaurarNuevosDesdeCsvDebug();
+      if (resultadoRestauracion && resultadoRestauracion.ok) {
+        Logger.log('[Nuevos-RoyaleAPI] Restauración desde ' + NOMBRE_CSV_DEBUG_NUEVOS + ': ' +
+          (resultadoRestauracion.procesados || 0) + ' candidato(s) en esta corrida' +
+          (resultadoRestauracion.completo ? ' (respaldo completo, sin pendientes).' :
+            ' (quedan ' + (resultadoRestauracion.pendientes || 0) + ' candidato(s) más -- continúa en la próxima corrida).'));
+      }
+    } catch (eRestore) {
+      Logger.log('[Nuevos-RoyaleAPI] _restaurarNuevosDesdeCsvDebug() falló: ' + eRestore.message);
+    }
+  }
+}
+
+function _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
+  if (!sh) return;
+
+  var lastRow = sh.getLastRow();
+  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return; // hoja vacía: nada que refrescar
+  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
+
+  var dirData = _leerDirectorioFisicoComoDC(ss);
+  var dirPorTag = {};
+  for (var j = 0; j < dirData.length; j++) {
+    var tg = String(dirData[j][DC.TAG - 1] || '').trim().toUpperCase();
+    if (tg) dirPorTag[tg] = dirData[j];
+  }
+
+  var tags        = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.TAG,         numFilas, 1).getValues();
+  var nombres      = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NOMBRE,      numFilas, 1).getValues();
+  var nomMultis     = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NOM_MULTI,   numFilas, 1).getValues();
+  var clanes        = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.CLAN,        numFilas, 1).getValues();
+  var niveles        = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NIVEL,       numFilas, 1).getValues();
+  var copasArr        = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.COPAS,       numFilas, 1).getValues();
+  var vGuerras          = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.V_GUERRA,    numFilas, 1).getValues();
+  var inactividades      = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.INACTIVIDAD, numFilas, 1).getValues();
+  var celulares = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.CELULAR, numFilas, 1).getValues();
+  var royaleLinks = [];
+
+  for (var i = 0; i < numFilas; i++) {
+    var tag = String(tags[i][0] || '').trim().toUpperCase();
+    if (!tag) { royaleLinks.push([makeLink('', '')]); continue; }
+
+    var dRow = dirPorTag[tag];
+    if (dRow) {
+      nombres[i][0]       = dRow[DC.NOMBRE      - 1];
+      nomMultis[i][0]     = dRow[DC.NOM_MULTI    - 1];
+      clanes[i][0]        = dRow[DC.CLAN         - 1];
+      niveles[i][0]       = dRow[DC.NIVEL        - 1];
+      copasArr[i][0]      = dRow[DC.COPAS        - 1];
+      vGuerras[i][0]      = dRow[DC.V_GUERRA     - 1];
+      inactividades[i][0] = dRow[DC.INACTIVIDAD  - 1];
+      celulares[i][0]     = dRow[DC.CELULAR      - 1];
+    }
+    royaleLinks.push([makeLink('Link', 'https://royaleapi.com/player/' + cleanTag(tag) + '/')]);
+  }
+
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NOMBRE,      numFilas, 1).setValues(nombres);
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NOM_MULTI,   numFilas, 1).setValues(nomMultis);
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.CLAN,        numFilas, 1).setValues(clanes);
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NIVEL,       numFilas, 1).setValues(niveles);
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.COPAS,       numFilas, 1).setValues(copasArr);
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.V_GUERRA,    numFilas, 1).setValues(vGuerras);
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.INACTIVIDAD, numFilas, 1).setValues(inactividades);
+  // Formato numérico consistente con el resto del proyecto (mismo criterio
+  // que ya usaba _aplicarImportacionNuevos() para estas columnas).
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NIVEL,       numFilas, 1).setNumberFormat('#,##0');
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.COPAS,       numFilas, 1).setNumberFormat('#,##0');
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.V_GUERRA,    numFilas, 1).setNumberFormat('#,##0');
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.INACTIVIDAD, numFilas, 1).setNumberFormat('#,##0');
+
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.CELULAR, numFilas, 1).setValues(celulares);
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.CELULAR, numFilas, 1).setNumberFormat('### ### ### ###');
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.ROYALE_API, numFilas, 1).setRichTextValues(royaleLinks);
+
+  Logger.log('[Nuevos-RoyaleAPI] _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas(): Nombre/Nom_Multi/Clan/Nivel/Copas/V_Guerra/Días inactivo/Celular/RoyaleAPI refrescados en ' + numFilas + ' fila(s).');
+}
+
+function _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
+  if (!sh) return;
+
+  var lastRow = sh.getLastRow();
+  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return; // hoja vacía: nada que ordenar/formatear
+
+  // FIX (09-ago-2026): ver docblock de _refrescarColumnasFijasNuevos() más [→ Contexto_Base_Web.md §14B108]
+  _actualizarSemanaActualNuevos(sh);
+  _reordenarFilasNuevosPorClanYNombre(sh);
+  _aplicarTodoFormatoCondicionalNuevos(sh);
+  _limpiarLinksAccidentalesEnHoja(sh, NUEVOS_FILA_HEADERS);
+
+  Logger.log('[Nuevos-RoyaleAPI] _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato(): semana actual/orden/formato reaplicados.');
+}
+
+// ----- Restaurar desde el CSV de depuración y su punto de control (checkpoint) -----
+
+/**
+ * _hayRestauracionNuevosPendiente() [→ Contexto_Base_Web.md §14B015]
+ */
+function _hayRestauracionNuevosPendiente() {
+  var tags = _cargarProgresoRestaurarNuevos();
+  return Array.isArray(tags) && tags.length > 0;
+}
+
+/**
+ * _restaurarNuevosDesdeCsvDebug() [→ Contexto_Base_Web.md §14B111]
+ */
+function _restaurarNuevosDesdeCsvDebug() {
+  var csvText = _loadCSVFromDrive(NOMBRE_CSV_DEBUG_NUEVOS);
+  if (!csvText) { _borrarProgresoRestaurarNuevos(); return null; }
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length < 2) { _borrarProgresoRestaurarNuevos(); return null; }
+
+  var ss = _getSs();
+  var dirData = _leerDirectorioFisicoComoDC(ss);
+  var dirPorTag = {};
+  for (var j = 0; j < dirData.length; j++) {
+    var tg = String(dirData[j][DC.TAG - 1] || '').trim().toUpperCase();
+    if (tg) dirPorTag[tg] = dirData[j];
+  }
+  var tz = Session.getScriptTimeZone() || 'GMT-5';
+
+  var filas = parsed.slice(1); // Tag, Temporada, Fecha, Fecha_TS, Clan, Ataques, Fame, Barcos, ClanTag (la 9.ª es de §PF253; los CSV anteriores no la tienen)
+  var porTag = {};
+  var tagsDescartadosPorMembresia = {};
+
+  // FIX (22-ago-2026): mapa de semanas construido UNA sola vez en vez de [→ Contexto_Base_Web.md §14B112]
+  var mapaSemanas = _construirMapaSemanasGuerraTerna();
+
+  for (var i = 0; i < filas.length; i++) {
+    var f = filas[i];
+    var tag = String(f[0] || '').trim().toUpperCase();
+    if (!tag) continue;
+
+    // Filtro de membresía -- "que siguen en el clan" (mismo criterio que
+    // _purgarNuevosExpulsados()).
+    var dRow = dirPorTag[tag];
+    var sigueActivoEnTerna = dRow &&
+      String(dRow[DC.ESTADO - 1]) === 'Activo' &&
+      CFG.TERNA_TAGS.indexOf(String(dRow[DC.CLAN_TAG - 1])) >= 0;
+    if (!sigueActivoEnTerna) { tagsDescartadosPorMembresia[tag] = true; continue; }
+
+    // Filtro de "ya establecido" -- mismo criterio que _purgarNuevosEstablecidos().
+    if (_contarSemanasGuerraTerna(tag, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS) continue;
+
+    // Fecha_TS (numérico, epoch ms) -- ver docblock de esta función. [→ Contexto_Base_Web.md §14B113]
+    var fechaTs = Number(f[3]);
+    if (!fechaTs) continue; // fila "placeholder" (tag sin registros) o Fecha_TS ausente (CSV de antes de este fix)
+
+    // Domingo (guardado en Fecha_TS) -> Lunes (formato crudo que espera
+    // _parseFechaISONuevos(), que le vuelve a restar 1 día).
+    var fechaDomingo = new Date(fechaTs);
+    fechaDomingo.setDate(fechaDomingo.getDate() + 1);
+    var fechaCruda = Utilities.formatDate(fechaDomingo, tz, 'yyyy-MM-dd');
+
+    if (!porTag[tag]) porTag[tag] = [];
+    porTag[tag].push({
+      temporada: f[1] || '',
+      fecha: fechaCruda,
+      clan: f[4] || '',
+      ataques: Number(f[5]) || 0,
+      fame: Number(f[6]) || 0,
+      barcos: Number(f[7]) || 0,
+      clanTag: String(f[8] || '').trim().toUpperCase() // §PF253: vacío en los CSV anteriores
+    });
+  }
+
+  var candidatosPayload = [];
+  for (var t in porTag) {
+    candidatosPayload.push({ tag: t, registros: porTag[t] });
+  }
+
+  var totalDescartados = Object.keys(tagsDescartadosPorMembresia).length;
+  if (totalDescartados > 0) {
+    Logger.log('[Nuevos-Restaurar] ' + totalDescartados + ' Tag(s) del respaldo NO se restauraron ' +
+      'por ya no ser miembros Activos de un clan Terna: ' + Object.keys(tagsDescartadosPorMembresia).join(', ') + '.');
+  }
+  if (!candidatosPayload.length) {
+    Logger.log('[Nuevos-Restaurar] Nada que restaurar desde ' + NOMBRE_CSV_DEBUG_NUEVOS +
+      ' (vacío, o ningún Tag califica tras el filtro de membresía/semanas).');
+    _borrarProgresoRestaurarNuevos();
+    return null;
+  }
+
+  // --- Descartar del payload los Tags que un intento anterior YA restauró
+  //     (checkpoint) -- ver docblock de esta función.
+  var tagsYaRestaurados = _cargarProgresoRestaurarNuevos() || [];
+  var yaRestauradoSet = {};
+  for (var k = 0; k < tagsYaRestaurados.length; k++) yaRestauradoSet[tagsYaRestaurados[k]] = true;
+
+  var candidatosPendientes = candidatosPayload.filter(function (c) {
+    return !yaRestauradoSet.hasOwnProperty(c.tag);
+  });
+
+  if (!candidatosPendientes.length) {
+    // Todo lo que califica del respaldo ya se restauró en un intento
+    // anterior -- checkpoint cumplido, se limpia.
+    Logger.log('[Nuevos-Restaurar] Los ' + candidatosPayload.length +
+      ' candidato(s) que califican del respaldo ya estaban restaurados (checkpoint). Nada pendiente.');
+    _borrarProgresoRestaurarNuevos();
+    return { ok: true, procesados: 0, filasNuevas: 0, filasEliminadas: 0, errores: [], completo: true, pendientes: 0 };
+  }
+
+  Logger.log('[Nuevos-Restaurar] ' + candidatosPendientes.length + ' candidato(s) pendiente(s) de restaurar desde ' +
+    NOMBRE_CSV_DEBUG_NUEVOS + (tagsYaRestaurados.length ? ' (' + tagsYaRestaurados.length + ' ya restaurado(s) en un intento anterior).' : '.'));
+
+  // --- Procesar en sub-lotes acotados por tiempo, guardando checkpoint [→ Contexto_Base_Web.md §14B114]
+  var inicio = Date.now();
+  var totalProcesados = 0, totalFilasNuevas = 0, totalFilasEliminadas = 0;
+  var erroresAcumulados = [];
+  var indice = 0;
+  var seAgotoElPresupuesto = false;
+  var msSubLoteAnterior = 0; // PF311 parte A: duración del sub-lote anterior (0 = todavía no hubo ninguno)
+
+  while (indice < candidatosPendientes.length) {
+    // PF311 parte A: además del presupuesto propio, se mira cuánto le queda a la ejecución. Un sub-lote nuevo solo empieza si le alcanza el tiempo
+    // (1,5 veces lo que tardó el anterior, o 60 s si es el primero) más 45 s para cerrar el paso; si no, lo que falta queda para la continuación.
+    var msNecesariosSubLote = Math.max(Math.round(msSubLoteAnterior * 1.5), 60000) + 45000;
+    if ((Date.now() - inicio) > NUEVOS_RESTORE_PRESUPUESTO_MS || _msRestantesDeEjecucion_() < msNecesariosSubLote) {
+      seAgotoElPresupuesto = true;
+      break;
+    }
+
+    var subLote = candidatosPendientes.slice(indice, indice + NUEVOS_RESTORE_LOTE_MAX);
+    var tSubLote = Date.now();
+    var resultadoSubLote = _aplicarImportacionNuevos(subLote);
+    msSubLoteAnterior = Date.now() - tSubLote;
+    Logger.log('[Nuevos-Restaurar] Sub-lote de ' + subLote.length + ' candidato(s) terminado en ' + Math.round(msSubLoteAnterior / 1000) + ' s (' +
+      Math.min(indice + subLote.length, candidatosPendientes.length) + ' de ' + candidatosPendientes.length + ' pendientes de esta corrida).');
+
+    if (resultadoSubLote && resultadoSubLote.ok) {
+      totalProcesados += resultadoSubLote.procesados || 0;
+      totalFilasNuevas += resultadoSubLote.filasNuevas || 0;
+      totalFilasEliminadas += resultadoSubLote.filasEliminadas || 0;
+      if (resultadoSubLote.errores && resultadoSubLote.errores.length) {
+        erroresAcumulados = erroresAcumulados.concat(resultadoSubLote.errores);
+      }
+      // Sub-lote aplicado con éxito -- sus Tags pasan a "ya restaurados", [→ Contexto_Base_Web.md §14B115]
+      for (var s = 0; s < subLote.length; s++) tagsYaRestaurados.push(subLote[s].tag);
+    } else {
+      Logger.log('[Nuevos-Restaurar] Sub-lote (' + subLote.length + ' candidato(s)) falló: ' +
+        (resultadoSubLote && resultadoSubLote.error || 'respuesta inválida de _aplicarImportacionNuevos()') +
+        ' -- se reintentará en la próxima corrida (no se marca como restaurado).');
+    }
+
+    indice += NUEVOS_RESTORE_LOTE_MAX;
+    _guardarProgresoRestaurarNuevos(tagsYaRestaurados);
+  }
+
+  // pendientesReales: cuántos Tags del payload total (que califican por [→ Contexto_Base_Web.md §14B116]
+  var pendientesReales = candidatosPayload.length - tagsYaRestaurados.length;
+  if (pendientesReales < 0) pendientesReales = 0;
+
+  if (pendientesReales === 0) {
+    Logger.log('[Nuevos-Restaurar] Restauración completa: ' + tagsYaRestaurados.length + ' candidato(s) en total.');
+    _borrarProgresoRestaurarNuevos();
+  } else {
+    Logger.log('[Nuevos-Restaurar] Presupuesto de tiempo (' + (NUEVOS_RESTORE_PRESUPUESTO_MS / 1000) +
+      's) alcanzado -- ' + tagsYaRestaurados.length + ' candidato(s) restaurado(s) hasta ahora, ' +
+      pendientesReales + ' pendiente(s) para la próxima corrida.');
+  }
+
+  return {
+    ok: true,
+    procesados: totalProcesados,
+    filasNuevas: totalFilasNuevas,
+    filasEliminadas: totalFilasEliminadas,
+    errores: erroresAcumulados,
+    completo: pendientesReales === 0,
+    pendientes: pendientesReales
+  };
+}
+
+/**
+ * _cargarProgresoRestaurarNuevos() [→ Contexto_Base_Web.md §14B013]
+ */
+function _cargarProgresoRestaurarNuevos() {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(NUEVOS_RESTORE_PROGRESS_FILE);
+    if (!files.hasNext()) return null;
+    var file = files.next();
+    var parsed = JSON.parse(file.getBlob().getDataAsString('UTF-8'));
+    if (!parsed || !parsed._ts) return null;
+
+    var edadMs = Date.now() - Number(parsed._ts);
+    if (edadMs > NUEVOS_RESTORE_PROGRESO_MAX_EDAD_MS) {
+      Logger.log('[Nuevos-Restaurar] Checkpoint de restauración en Drive tiene ' + Math.round(edadMs / 60000) +
+        ' min -- se descarta como resto de un intento abandonado, se reinicia desde cero.');
+      file.setTrashed(true);
+      return null;
+    }
+    return Array.isArray(parsed.tags) ? parsed.tags : null;
+  } catch (e) {
+    Logger.log('[Nuevos-Restaurar] Error cargando progreso de restauración desde Drive: ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * _guardarProgresoRestaurarNuevos(tagsYaRestaurados) [→ Contexto_Base_Web.md §14B012]
+ */
+function _guardarProgresoRestaurarNuevos(tagsYaRestaurados) {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var content = JSON.stringify({ _ts: Date.now(), tags: tagsYaRestaurados || [] });
+    _guardarArchivoProgresoVerificado_(folder, NUEVOS_RESTORE_PROGRESS_FILE, content); // PF291
+  } catch (e) {
+    Logger.log('[Nuevos-Restaurar] Error guardando progreso de restauración en Drive: ' + e.message);
+  }
+}
+
+/**
+ * _borrarProgresoRestaurarNuevos() [→ Contexto_Base_Web.md §14B014]
+ */
+function _borrarProgresoRestaurarNuevos() {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(NUEVOS_RESTORE_PROGRESS_FILE);
+    while (files.hasNext()) files.next().setTrashed(true);
+  } catch (e) {
+    Logger.log('[Nuevos-Restaurar] Error borrando progreso de restauración en Drive: ' + e.message);
+  }
+}
+
+// ----- Purga y renumeración -----
+
+/**
+ * _purgarNuevosEstablecidos(sh) [→ Contexto_Base_Web.md §14B096]
+ */
+function _purgarNuevosEstablecidos(sh) {
+  var lastRow = sh.getLastRow();
+  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return 0;
+  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
+  var tags = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.TAG, numFilas, 1).getValues();
+
+  // FIX (22-ago-2026): mapa de semanas construido UNA sola vez (una sola [→ Contexto_Base_Web.md §14B097]
+  var mapaSemanas = _construirMapaSemanasGuerraTerna();
+
+  var filasABorrar = [];
+  var tagsPurgados = [];
+  for (var i = 0; i < numFilas; i++) {
+    var tag = String(tags[i][0] || '').trim();
+    if (!tag) continue;
+    if (_contarSemanasGuerraTerna(tag, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS) {
+      filasABorrar.push(NUEVOS_FILA_DATOS_INICIO + i);
+      tagsPurgados.push(tag);
+    }
+  }
+  if (filasABorrar.length === 0) return 0;
+
+  // Borrar de abajo hacia arriba: borrar una fila de arriba primero [→ Contexto_Base_Web.md §14B098]
+  for (var b = filasABorrar.length - 1; b >= 0; b--) {
+    sh.deleteRow(filasABorrar[b]);
+  }
+
+  Logger.log('[Nuevos] _purgarNuevosEstablecidos(): ' + filasABorrar.length +
+    ' candidato(s) purgado(s) por alcanzar ' + SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS +
+    '+ semanas de guerra real en un clan Terna (no necesariamente el mismo clan): ' +
+    tagsPurgados.join(', ') + '.');
+  return filasABorrar.length;
+}
+
+/**
+ * _purgarNuevosExpulsados(sh, dirPorTag) [→ Contexto_Base_Web.md §14B099]
+ */
+function _purgarNuevosExpulsados(sh, dirPorTag) {
+  var lastRow = sh.getLastRow();
+  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return 0;
+  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
+  var tags = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.TAG, numFilas, 1).getValues();
+
+  var filasABorrar = [];
+  var tagsPurgados = [];
+  for (var i = 0; i < numFilas; i++) {
+    var tag = String(tags[i][0] || '').trim().toUpperCase();
+    if (!tag) continue;
+    var dRow = dirPorTag[tag];
+    var sigueActivoEnTerna = dRow &&
+      String(dRow[DC.ESTADO - 1]) === 'Activo' &&
+      CFG.TERNA_TAGS.indexOf(String(dRow[DC.CLAN_TAG - 1])) >= 0;
+    if (!sigueActivoEnTerna) {
+      filasABorrar.push(NUEVOS_FILA_DATOS_INICIO + i);
+      tagsPurgados.push(tag);
+    }
+  }
+  if (filasABorrar.length === 0) return 0;
+
+  // Borrar de abajo hacia arriba: borrar una fila de arriba primero [→ Contexto_Base_Web.md §14B100]
+  for (var b = filasABorrar.length - 1; b >= 0; b--) {
+    sh.deleteRow(filasABorrar[b]);
+  }
+
+  Logger.log('[Nuevos] _purgarNuevosExpulsados(): ' + filasABorrar.length +
+    ' candidato(s) purgado(s) por ya no ser miembro Activo de ningún clan Terna ' +
+    '(expulsado/retirado): ' + tagsPurgados.join(', ') + '.');
+
+  // FIX (20-ago-2026, pedido usuario): si la purga deja la hoja en 0 filas [→ Contexto_Base_Web.md §14B101]
+  var filasRestantes = sh.getLastRow() - NUEVOS_FILA_DATOS_INICIO + 1;
+  if (filasRestantes <= 0) {
+    Logger.log('[Nuevos] AVISO: tras la purga de arriba, "Nuevos" quedó SIN ningún candidato ' +
+      '(0 filas de datos). Es el comportamiento esperado si se purgó a TODOS los candidatos ' +
+      'existentes (revisar la lista de arriba) — si en cambio esperabas ver candidatos que no ' +
+      'están en esa lista, el problema está en otro punto (ej. _aplicarImportacionNuevos() no los ' +
+      'escribió, o el userscript de Tampermonkey no envió datos en esta corrida).');
+  }
+
+  return filasABorrar.length;
+}
+
+/**
+ * _renumerarNuevos(sh) [→ Contexto_Base_Web.md §14B109]
+ */
+function _renumerarNuevos(sh) {
+  var lastRow = sh.getLastRow();
+  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return;
+  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
+  var numCol = [];
+  for (var n = 0; n < numFilas; n++) numCol.push([n + 1]);
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NUM, numFilas, 1).setValues(numCol);
+}
+
+/**
+ * _construirMapaSemanasGuerraTerna() [→ Contexto_Base_Web.md §14B064]
+ */
+function _construirMapaSemanasGuerraTerna() {
+  var mapa = {};
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  if (!sh || sh.getLastRow() < 2) return mapa;
+
+  var nombresTerna = _getNombresClanesTernaOrdenados();
+  var lastRow = sh.getLastRow();
+  var data = sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues();
+
+  var semanasPorTag = {}; // TAG -> { 'temporada-semana': true, ... }
+  for (var i = 0; i < data.length; i++) {
+    var r = data[i];
+    var tg = String(r[GC.TAG - 1] || '').trim().toUpperCase();
+    if (!tg) continue;
+
+    var clanNombre = String(r[GC.CLAN - 1] || '').trim();
+    if (nombresTerna.indexOf(clanNombre) < 0) continue;
+
+    var ataques = Number(r[GC.ATAQUES_SEM - 1]) || 0;
+    if (ataques <= 0) continue;
+
+    var clave = String(r[GC.TEMPORADA - 1]) + '-' + String(r[GC.SEMANA - 1]);
+    if (!semanasPorTag[tg]) semanasPorTag[tg] = {};
+    semanasPorTag[tg][clave] = true;
+  }
+
+  for (var tag in semanasPorTag) {
+    mapa[tag] = Object.keys(semanasPorTag[tag]).length;
+  }
+  return mapa;
+}
+
+/**
+ * _contarSemanasGuerraTerna(tag, mapaPrecomputado) [→ Contexto_Base_Web.md §14B066]
+ */
+function _contarSemanasGuerraTerna(tag, mapaPrecomputado) {
+  var tagNorm = String(tag || '').trim().toUpperCase();
+  if (!tagNorm) return 0;
+
+  if (mapaPrecomputado) return mapaPrecomputado[tagNorm] || 0;
+
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  if (!sh || sh.getLastRow() < 2) return 0;
+
+  var nombresTerna = _getNombresClanesTernaOrdenados();
+  var lastRow = sh.getLastRow();
+  var data = sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues();
+
+  var semanas = {};
+  for (var i = 0; i < data.length; i++) {
+    var r = data[i];
+    var tg = String(r[GC.TAG - 1] || '').trim().toUpperCase();
+    if (tg !== tagNorm) continue;
+
+    var clanNombre = String(r[GC.CLAN - 1] || '').trim();
+    if (nombresTerna.indexOf(clanNombre) < 0) continue;
+
+    var ataques = Number(r[GC.ATAQUES_SEM - 1]) || 0;
+    if (ataques <= 0) continue;
+
+    var clave = String(r[GC.TEMPORADA - 1]) + '-' + String(r[GC.SEMANA - 1]);
+    semanas[clave] = true;
+  }
+  return Object.keys(semanas).length;
+}
+
+// ----- Orden y formato de la hoja -----
+
+/**
+ * _reordenarFilasNuevosPorClanYNombre(sh) [→ Contexto_Base_Web.md §14B110]
+ */
+function _reordenarFilasNuevosPorClanYNombre(sh) {
+  var lastRow = sh.getLastRow();
+  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return;
+  var lastCol = sh.getLastColumn();
+  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
+  if (numFilas < 2) return;
+
+  var rango = sh.getRange(NUEVOS_FILA_DATOS_INICIO, 1, numFilas, lastCol);
+  var valores = rango.getValues();
+  var royaleLinks = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.ROYALE_API, numFilas, 1).getRichTextValues();
+
+  var ordenClan = _getOrdenClanHoja(sh.getParent());
+
+  var indices = valores.map(function (_, i) { return i; });
+  indices.sort(function (a, b) {
+    var clanA = String(valores[a][NC.CLAN - 1] || '').trim().toLowerCase();
+    var clanB = String(valores[b][NC.CLAN - 1] || '').trim().toLowerCase();
+    var ordA = (clanA && ordenClan[clanA] !== undefined) ? ordenClan[clanA] : 999;
+    var ordB = (clanB && ordenClan[clanB] !== undefined) ? ordenClan[clanB] : 999;
+    if (ordA !== ordB) return ordA - ordB;
+
+    var nomA = String(valores[a][NC.NOM_MULTI - 1] || valores[a][NC.NOMBRE - 1] || '').trim().toLowerCase();
+    var nomB = String(valores[b][NC.NOM_MULTI - 1] || valores[b][NC.NOMBRE - 1] || '').trim().toLowerCase();
+    return nomA.localeCompare(nomB, 'es');
+  });
+
+  var yaOrdenado = indices.every(function (v, i) { return v === i; });
+  if (yaOrdenado) return;
+
+  var valoresOrdenados = indices.map(function (i) { return valores[i]; });
+  var linksOrdenados    = indices.map(function (i) { return [royaleLinks[i][0]]; });
+
+  rango.setValues(valoresOrdenados);
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.ROYALE_API, numFilas, 1).setRichTextValues(linksOrdenados);
+
+  var numCol = [];
+  for (var n = 0; n < numFilas; n++) numCol.push([n + 1]);
+  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NUM, numFilas, 1).setValues(numCol);
+
+  Logger.log('[Nuevos-RoyaleAPI] Filas reordenadas por Clan -> Nombre (' + numFilas + ' fila(s)).');
+}
+
+/**
+ * _aplicarTodoFormatoCondicionalNuevos(sh) [→ Contexto_Base_Web.md §14B057]
+ */
+function _aplicarTodoFormatoCondicionalNuevos(sh) {
+  var lastRow = sh.getLastRow();
+  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return;
+  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
+  var rules = [];
+  rules = rules.concat(_construirReglasSemanaActualNuevos(sh, numFilas));
+  rules = rules.concat(_construirReglasClanesNuevos(sh, numFilas));
+  _tryCondFmt(sh, rules);
+}
+
+/**
+ * _construirReglasSemanaActualNuevos(sh, numFilas) [→ Contexto_Base_Web.md §14B065]
+ */
+function _construirReglasSemanaActualNuevos(sh, numFilas) {
+  var rules = [];
+  var colClanL = colLetter(NC.CLAN);
+  var fila0 = NUEVOS_FILA_DATOS_INICIO;
+
+  var ctx = _getCtx();
+  var vigente = _getDiaActualYSeccionVigente(ctx);
+  if (!vigente) return rules;
+
+  var minG = _buildMinGSwitchFormula(colClanL);
+
+  for (var d = 0; d < 4; d++) {
+    if (d > vigente.diaActual) continue; // dia futuro: sin regla, queda "tal cual"
+
+    var colAta = COL_INICIO_SEMANA_ACTUAL_NUEVOS + OFFSEM.ATA + d;
+    var colPun = COL_INICIO_SEMANA_ACTUAL_NUEVOS + OFFSEM.PUN + d;
+    var colBar = COL_INICIO_SEMANA_ACTUAL_NUEVOS + OFFSEM.BAR + d;
+    var rangoAta = sh.getRange(fila0, colAta, numFilas, 1);
+    var rangoPun = sh.getRange(fila0, colPun, numFilas, 1);
+    var rangoBar = sh.getRange(fila0, colBar, numFilas, 1);
+    var lA = colLetter(colAta);
+    var lP = colLetter(colPun);
+    var lB = colLetter(colBar);
+
+    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lA+fila0+'<>"", $'+lA+fila0+'=4)').setBackground(CFG.COLORES.ATAQUE_4).setRanges([rangoAta]).build());
+    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lA+fila0+'<>"", $'+lA+fila0+'>=1, $'+lA+fila0+'<=3)').setBackground(CFG.COLORES.ATAQUE_1_3).setRanges([rangoAta]).build());
+    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lA+fila0+'<>"", $'+lA+fila0+'=0)').setBackground(CFG.COLORES.ATAQUE_0).setRanges([rangoAta]).build());
+
+    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lP+fila0+'<>"", $'+lP+fila0+'=0)').setBackground(CFG.COLORES.PUNTAJE_DIARIO_BG).setRanges([rangoPun]).build());
+    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lP+fila0+'<>"", $'+lP+fila0+'>=1, $'+lP+fila0+'<1600)').setBackground(CFG.COLORES.PUNTAJE_BAJO_BG).setRanges([rangoPun]).build());
+    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lP+fila0+'<>"", $'+lP+fila0+'>=1600, $'+lP+fila0+'<'+minG+')').setBackground(CFG.COLORES.PUNTAJE_MEDIO_BG).setRanges([rangoPun]).build());
+    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lP+fila0+'<>"", $'+lP+fila0+'>='+minG+')').setBackground(CFG.COLORES.CUMPLE_MING_BG).setFontColor(CFG.COLORES.CUMPLE_MING_FG).setBold(true).setRanges([rangoPun]).build());
+
+    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lB+fila0+'<>"", $'+lB+fila0+'>0)').setBackground(CFG.COLORES.BARCO_POS).setRanges([rangoBar]).build());
+    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lB+fila0+'<>"", $'+lB+fila0+'=0)').setBackground(CFG.COLORES.BARCO_CERO_BG).setRanges([rangoBar]).build());
+  }
+
+  return rules;
+}
+
 /**
  * _construirReglasClanesNuevos(sh, numFilas) [→ Contexto_Base_Web.md §14B036]
  */
@@ -525,6 +1121,73 @@ function _actualizarFormatoGridNuevos(sh) {
   sh.getRangeList(a1Ataques).setNumberFormat('#,##0');
   sh.getRangeList(a1Fame).setNumberFormat('#,##0');
   sh.getRangeList(a1Barcos).setNumberFormat('#,##0');
+}
+
+/**
+ * _formatearBloqueFechaNuevos(sh, col, fecha) [→ Contexto_Base_Web.md §14B067]
+ */
+function _formatearBloqueFechaNuevos(sh, col, fecha) {
+  sh.getRange(NUEVOS_FILA_FECHAS, col, 1, GRID_BLOQUE_ANCHO_NUEVOS).merge()
+    .setValue(fecha)
+    .setBackground(CFG.COLORES.HEADER_BG)
+    .setFontColor(CFG.COLORES.HEADER_FG)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+
+  var bloqueHeaders = ['Clan', 'Ataques', 'Fame', 'Barcos'];
+  sh.getRange(NUEVOS_FILA_HEADERS, col, 1, GRID_BLOQUE_ANCHO_NUEVOS).setValues([bloqueHeaders])
+    .setBackground(CFG.COLORES.HEADER_BG)
+    .setFontColor(CFG.COLORES.HEADER_FG)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center');
+
+  var COLOR_BORDE_HEADER = '#ffffff';
+  sh.getRange(1, col, NUEVOS_FILA_HEADERS, GRID_BLOQUE_ANCHO_NUEVOS)
+    .setBorder(true, true, true, true, true, true,
+               COLOR_BORDE_HEADER, SpreadsheetApp.BorderStyle.SOLID);
+}
+
+/**
+ * _reajustarTituloGridNuevos(sh) [→ Contexto_Base_Web.md §14B102]
+ */
+function _reajustarTituloGridNuevos(sh) {
+  var totalColsGrid = sh.getLastColumn() - COL_INICIO_GRID_NUEVOS + 1;
+  if (totalColsGrid < 1) return;
+
+  var numBloques = Math.round(totalColsGrid / GRID_BLOQUE_ANCHO_NUEVOS);
+  sh.getRange(1, COL_INICIO_GRID_NUEVOS, 1, totalColsGrid).merge()
+    .setValue('Historial RoyaleAPI (últimas ' + numBloques + ' fechas)')
+    .setBackground(CFG.COLORES.HEADER_BG)
+    .setFontColor(CFG.COLORES.HEADER_FG)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+
+  var filtroActual = sh.getFilter();
+  if (filtroActual) filtroActual.remove();
+  sh.getRange(NUEVOS_FILA_HEADERS, 1, 1, sh.getLastColumn()).createFilter();
+}
+
+// ----- Semana actual y bloques de fechas -----
+
+/**
+ * _getDiaActualYSeccionVigente(ctx) [→ Contexto_Base_Web.md §14B068]
+ */
+function _getDiaActualYSeccionVigente(ctx) {
+  if (ctx.periodIndexSospechoso) return null;
+
+  if (esDiaGuerraIdx(ctx.periodIndex)) {
+    return {
+      diaActual:    ctx.periodIndex - (ctx.sectionIndex * 7 + 3), // 0=J,1=V,2=S,3=D
+      sectionIndex: ctx.sectionIndex
+    };
+  }
+
+  var seccionAnterior = ctx.sectionIndex - 1;
+  if (seccionAnterior < 0) return null; // sin semana previa que mostrar
+
+  return { diaActual: 3, sectionIndex: seccionAnterior };
 }
 
 /**
@@ -665,6 +1328,622 @@ function _cerrarSemanaActualNuevos() {
     ', migrados: ' + migrados + ', ya existían (no pisados): ' + yaExistian + '.');
 }
 
+// BLOQUES DE FECHA — lectura y crecimiento dinámico de la cuadrícula [→ Contexto_Base_Web.md §14B078]
+/**
+ * _leerBloquesFechaNuevos(sh) [→ Contexto_Base_Web.md §14B079]
+ */
+function _leerBloquesFechaNuevos(sh) {
+  var lastCol = sh.getLastColumn();
+  var bloques = [];
+  for (var col = COL_INICIO_GRID_NUEVOS; col <= lastCol; col += GRID_BLOQUE_ANCHO_NUEVOS) {
+    var val = sh.getRange(NUEVOS_FILA_FECHAS, col).getValue();
+    var d = (val instanceof Date && !isNaN(val.getTime())) ? val : null;
+    bloques.push({ date: d, col: col });
+  }
+  return bloques;
+}
+
+/**
+ * _ordenarBloquesFechaNuevos(sh) [→ Contexto_Base_Web.md §14B092]
+ */
+function _ordenarBloquesFechaNuevos(sh) {
+  var lastCol = sh.getLastColumn();
+  var totalColsGrid = lastCol - COL_INICIO_GRID_NUEVOS + 1;
+  var numBloques = Math.floor(totalColsGrid / GRID_BLOQUE_ANCHO_NUEVOS);
+  if (numBloques < 2) return; // nada que reordenar con 0 o 1 bloque
+
+  var bloques = _leerBloquesFechaNuevos(sh);
+
+  var conFecha = [], sinFecha = [];
+  for (var i = 0; i < bloques.length; i++) {
+    if (bloques[i].date) conFecha.push(bloques[i]); else sinFecha.push(bloques[i]);
+  }
+  conFecha.sort(function (a, b) { return b.date.getTime() - a.date.getTime(); });
+  var ordenDeseado = conFecha.concat(sinFecha); // partición estable: los sin fecha conservan su orden relativo
+
+  // ¿Ya está en el orden correcto? Compara, posición a posición, la
+  // columna que DEBERÍA estar ahí contra la que está físicamente ahí hoy.
+  var yaOrdenado = true;
+  for (var p = 0; p < ordenDeseado.length; p++) {
+    if (ordenDeseado[p].col !== bloques[p].col) { yaOrdenado = false; break; }
+  }
+  if (yaOrdenado) return;
+
+  // FIX (11-ago-2026) — BUG REAL ENCONTRADO: la versión anterior leía y [→ Contexto_Base_Web.md §14B093]
+  var lastRowHoja = Math.max(sh.getLastRow(), NUEVOS_FILA_DATOS_INICIO - 1);
+  var filasRestoDelBloque = lastRowHoja - (NUEVOS_FILA_FECHAS + 1) + 1; // desde la fila de Headers hasta la última con datos
+
+  var fechaPorCol = {};   // fila NUEVOS_FILA_FECHAS (merge), un valor por bloque
+  var restoPorCol = {};   // filas NUEVOS_FILA_FECHAS+1 en adelante (headers + datos)
+  for (var b = 0; b < bloques.length; b++) {
+    var colB = bloques[b].col;
+    fechaPorCol[colB] = sh.getRange(NUEVOS_FILA_FECHAS, colB).getValue();
+    if (filasRestoDelBloque > 0) {
+      restoPorCol[colB] = sh.getRange(NUEVOS_FILA_FECHAS + 1, colB, filasRestoDelBloque, GRID_BLOQUE_ANCHO_NUEVOS).getValues();
+    }
+  }
+
+  for (var d = 0; d < ordenDeseado.length; d++) {
+    var colDestino = COL_INICIO_GRID_NUEVOS + d * GRID_BLOQUE_ANCHO_NUEVOS;
+    var colOrigen = ordenDeseado[d].col;
+
+    // Fila de Fecha: setValue() SOLO sobre la celda ancla del merge [→ Contexto_Base_Web.md §14B094]
+    sh.getRange(NUEVOS_FILA_FECHAS, colDestino).setValue(fechaPorCol[colOrigen]);
+
+    // Resto del bloque (headers + datos, celdas normales): setValues() en
+    // un solo llamado, como antes.
+    if (filasRestoDelBloque > 0) {
+      sh.getRange(NUEVOS_FILA_FECHAS + 1, colDestino, filasRestoDelBloque, GRID_BLOQUE_ANCHO_NUEVOS)
+        .setValues(restoPorCol[colOrigen]);
+    }
+  }
+
+  Logger.log('[Nuevos-RoyaleAPI] Cuadrícula reordenada por Fecha (más reciente a la izquierda, ' + numBloques + ' bloque(s)).');
+}
+
+/**
+ * _buscarBloquePorFechaNuevos(fechasHeader, fecha) [→ Contexto_Base_Web.md §14B062]
+ */
+function _buscarBloquePorFechaNuevos(fechasHeader, fecha) {
+  for (var i = 0; i < fechasHeader.length; i++) {
+    var h = fechasHeader[i];
+    if (!h.date) continue;
+    if (h.date.getFullYear() === fecha.getFullYear() &&
+        h.date.getMonth()    === fecha.getMonth() &&
+        h.date.getDate()     === fecha.getDate()) {
+      return h;
+    }
+  }
+  return null;
+}
+
+/**
+ * _asegurarBloquesParaFechas(sh, fechasNecesarias) [→ Contexto_Base_Web.md §14B117]
+ */
+function _asegurarBloquesParaFechas(sh, fechasNecesarias) {
+  var bloques = _leerBloquesFechaNuevos(sh);
+  var bloquesCreados = 0, bloquesReutilizados = 0;
+
+  function mismoDia(d1, d2) {
+    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+  }
+
+  // 1) Fechas realmente faltantes (sin bloque ya asignado), deduplicadas [→ Contexto_Base_Web.md §14B058]
+  var faltantes = [];
+  for (var i = 0; i < fechasNecesarias.length; i++) {
+    var fecha = fechasNecesarias[i];
+    if (!fecha) continue;
+    var yaExiste = bloques.some(function (bk) { return bk.date && mismoDia(bk.date, fecha); });
+    if (yaExiste) continue;
+    var yaEnFaltantes = faltantes.some(function (f) { return mismoDia(f, fecha); });
+    if (!yaEnFaltantes) faltantes.push(fecha);
+  }
+  if (faltantes.length === 0) return;
+
+  // 2) CASO DE ARRANQUE: si la cuadrícula todavía no tiene NINGÚN bloque [→ Contexto_Base_Web.md §14B059]
+  var hayFechaExistente = bloques.some(function (bk) { return !!bk.date; });
+  if (!hayFechaExistente) {
+    faltantes.sort(function (a, b) { return b.getTime() - a.getTime(); }); // más reciente primero
+    var quedan = [];
+    for (var q = 0; q < faltantes.length; q++) {
+      var vacioBoot = null;
+      for (var vb = 0; vb < bloques.length; vb++) {
+        if (!bloques[vb].date) { vacioBoot = bloques[vb]; break; }
+      }
+      if (vacioBoot) {
+        sh.getRange(NUEVOS_FILA_FECHAS, vacioBoot.col).setValue(faltantes[q]);
+        vacioBoot.date = faltantes[q];
+        bloquesReutilizados++;
+      } else {
+        quedan.push(faltantes[q]);
+      }
+    }
+    faltantes = quedan; // lo que no alcanzó bloque vacío sigue el flujo normal de abajo
+  }
+  if (faltantes.length === 0) {
+    Logger.log('[Nuevos-RoyaleAPI] Bloques de fecha: ' + bloquesReutilizados + ' reutilizado(s) en el arranque.');
+    return;
+  }
+
+  // 3) FIX (06-ago-2026): las fechas MÁS RECIENTES que cualquier bloque ya [→ Contexto_Base_Web.md §14B060]
+  var maxFechaExistente = null;
+  for (var m = 0; m < bloques.length; m++) {
+    if (bloques[m].date && (!maxFechaExistente || bloques[m].date.getTime() > maxFechaExistente.getTime())) {
+      maxFechaExistente = bloques[m].date;
+    }
+  }
+
+  var masRecientes = [], relleno = [];
+  for (var f = 0; f < faltantes.length; f++) {
+    if (!maxFechaExistente || faltantes[f].getTime() > maxFechaExistente.getTime()) {
+      masRecientes.push(faltantes[f]);
+    } else {
+      relleno.push(faltantes[f]);
+    }
+  }
+
+  // masRecientes se inserta de la MÁS ANTIGUA (de este lote) a la MÁS [→ Contexto_Base_Web.md §14B061]
+  masRecientes.sort(function (a, b) { return a.getTime() - b.getTime(); });
+  for (var r1 = 0; r1 < masRecientes.length; r1++) {
+    sh.insertColumnsBefore(COL_INICIO_GRID_NUEVOS, GRID_BLOQUE_ANCHO_NUEVOS);
+    _formatearBloqueFechaNuevos(sh, COL_INICIO_GRID_NUEVOS, masRecientes[r1]);
+    bloquesCreados++;
+  }
+
+  if (relleno.length > 0) {
+    // Se relee la cuadrícula: las inserciones de arriba pudieron desplazar
+    // las columnas de los bloques ya existentes.
+    var bloquesActuales = _leerBloquesFechaNuevos(sh);
+    for (var r2 = 0; r2 < relleno.length; r2++) {
+      var bloqueVacio = null;
+      for (var j = 0; j < bloquesActuales.length; j++) {
+        if (!bloquesActuales[j].date) { bloqueVacio = bloquesActuales[j]; break; }
+      }
+      if (bloqueVacio) {
+        sh.getRange(NUEVOS_FILA_FECHAS, bloqueVacio.col).setValue(relleno[r2]);
+        bloqueVacio.date = relleno[r2];
+        bloquesReutilizados++;
+        continue;
+      }
+      var ultimaColGrid = sh.getLastColumn();
+      sh.insertColumnsAfter(ultimaColGrid, GRID_BLOQUE_ANCHO_NUEVOS);
+      var colNuevoBloque = ultimaColGrid + 1;
+      _formatearBloqueFechaNuevos(sh, colNuevoBloque, relleno[r2]);
+      bloquesActuales.push({ date: relleno[r2], col: colNuevoBloque });
+      bloquesCreados++;
+    }
+  }
+
+  if (bloquesCreados > 0) {
+    _reajustarTituloGridNuevos(sh);
+  }
+
+  if (bloquesCreados > 0 || bloquesReutilizados > 0) {
+    Logger.log('[Nuevos-RoyaleAPI] Bloques de fecha: ' + bloquesReutilizados +
+      ' reutilizado(s) (vacío -> con fecha), ' + bloquesCreados +
+      ' nuevo(s) agregado(s) (más recientes a la izquierda, relleno/backfill al final).');
+  }
+}
+
+/**
+ * _seleccionarFechasNuevasNecesariasNuevos(sh, candidatosPayload) [→ Contexto_Base_Web.md §14B118]
+ */
+function _seleccionarFechasNuevasNecesariasNuevos(sh, candidatosPayload) {
+  var bloques = _leerBloquesFechaNuevos(sh);
+
+  function mismoDia(d1, d2) {
+    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+  }
+  function existeBloque(fecha) {
+    return bloques.some(function (bk) { return bk.date && mismoDia(bk.date, fecha); });
+  }
+
+  // FIX (12-ago-2026): bug reportado — "no está agregando la última semana [→ Contexto_Base_Web.md §14B119]
+  var maxFechaExistente = null;
+  for (var m = 0; m < bloques.length; m++) {
+    if (bloques[m].date && (!maxFechaExistente || bloques[m].date.getTime() > maxFechaExistente.getTime())) {
+      maxFechaExistente = bloques[m].date;
+    }
+  }
+
+  var fechasNuevasNecesarias = [];
+  function agregarSiFalta(fecha) {
+    var yaEsta = fechasNuevasNecesarias.some(function (f) { return mismoDia(f, fecha); });
+    if (!yaEsta) fechasNuevasNecesarias.push(fecha);
+  }
+
+  for (var c = 0; c < candidatosPayload.length; c++) {
+    var registros = (candidatosPayload[c] || {}).registros || [];
+
+    // Fechas del candidato, parseadas y deduplicadas por día.
+    var fechasCand = [];
+    for (var r = 0; r < registros.length; r++) {
+      var f = _parseFechaISONuevos((registros[r] || {}).fecha);
+      if (!f) continue;
+      if (!fechasCand.some(function (ff) { return mismoDia(ff, f); })) fechasCand.push(f);
+    }
+    if (fechasCand.length === 0) continue;
+
+    // a) Semana(s) nueva(s) — más reciente(s) que cualquier bloque ya
+    //    existente en la hoja: SIEMPRE se agregan, incondicionalmente.
+    var masRecientesQueTodo = fechasCand.filter(function (f) {
+      return !maxFechaExistente || f.getTime() > maxFechaExistente.getTime();
+    });
+    for (var mr = 0; mr < masRecientesQueTodo.length; mr++) {
+      agregarSiFalta(masRecientesQueTodo[mr]);
+    }
+
+    // b) Resto (nunca más nuevas que lo que ya hay en la hoja): mismo
+    //    criterio de mínimo 5 que antes, aplicado solo sobre este subgrupo.
+    var candidatasBackfill = fechasCand.filter(function (f) {
+      return maxFechaExistente && f.getTime() <= maxFechaExistente.getTime();
+    });
+
+    var coincidentes = candidatasBackfill.filter(existeBloque);
+    if (coincidentes.length >= GRID_NUM_BLOQUES_NUEVOS) continue; // ya cumple el mínimo: no crea nada más
+
+    var sinBloque = candidatasBackfill.filter(function (f) { return !existeBloque(f); });
+    sinBloque.sort(function (a, b) { return b.getTime() - a.getTime(); }); // más reciente primero
+
+    var faltan = GRID_NUM_BLOQUES_NUEVOS - coincidentes.length;
+    for (var k = 0; k < sinBloque.length && k < faltan; k++) {
+      agregarSiFalta(sinBloque[k]);
+    }
+  }
+
+  return fechasNuevasNecesarias;
+}
+
+/**
+ * _parseFechaISONuevos(texto) [→ Contexto_Base_Web.md §14B095]
+ */
+function _parseFechaISONuevos(texto) {
+  if (!texto) return null;
+  var m = String(texto).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  var fechaRoyaleApi = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  fechaRoyaleApi.setDate(fechaRoyaleApi.getDate() - 1); // Lunes (RoyaleAPI) -> Domingo (convención del proyecto)
+  return fechaRoyaleApi;
+}
+
+// ----- Importación de candidatos (la web) -----
+
+// GET — lista de candidatos para el userscript [→ Contexto_Base_Web.md §14B080]
+/**
+ * _obtenerListaCandidatosNuevos() [→ Contexto_Base_Web.md §14B081]
+ */
+function _obtenerListaCandidatosNuevos() {
+  var tIni = Date.now(); // PF043: tiempos en el log para ver dónde se va la espera [→ Contexto_Base_Web.md §PF043]
+  var ss = _getSs();
+  // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §14B082]
+  var shDirNuevos = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  var dirData;
+  var ix; // PF043: índices 0-based según el layout de las filas leídas (IC si viene de la hoja, DC si viene del CSV) [→ Contexto_Base_Web.md §PF043]
+  if (shDirNuevos && shDirNuevos.getLastRow() >= 2) {
+    // PF043: solo el rango físico del Directorio; ya no se leen Players ni Links ni se arman filas de 60 columnas. Los ocho campos que usa esta lista salen de la hoja Directorio y Players/Links no los pisan. [→ Contexto_Base_Web.md §PF043]
+    dirData = shDirNuevos.getRange(2, 1, shDirNuevos.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+    ix = { estado: IC.ESTADO - 1, clanTag: IC.CLAN_TAG - 1, rango: IC.RANGO - 1, admin: IC.ADMIN - 1, tag: IC.TAG - 1, nomMulti: IC.NOM_MULTI - 1, nombre: IC.NOMBRE - 1, clan: IC.CLAN - 1 };
+  } else {
+    var lecturaDirNuevos = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
+    dirData = (lecturaDirNuevos.origen === 'csv') ? lecturaDirNuevos.filas : [];
+    ix = { estado: DC.ESTADO - 1, clanTag: DC.CLAN_TAG - 1, rango: DC.RANGO - 1, admin: DC.ADMIN - 1, tag: DC.TAG - 1, nomMulti: DC.NOM_MULTI - 1, nombre: DC.NOMBRE - 1, clan: DC.CLAN - 1 };
+  }
+  var tDir = Date.now();
+  var candidatos = [];
+
+  // FIX (06-ago-2026): cada candidato ahora informa si YA está siendo [→ Contexto_Base_Web.md §14B083]
+  var tagsEnNuevos = _obtenerTagsEnHojaNuevos(ss);
+  var tTags = Date.now();
+
+  // FIX (29-ago-2026): mapa semanal por Tag construido SOLO desde [→ Contexto_Base_Web.md §14B084]
+  var mapaSemanalPorTag = _construirMapaSemanalPorTagDesdeSupercell();
+  var tMapa = Date.now();
+
+  // FIX (16-sep-2026): contexto vigente (temporada + semana en curso), para [→ Contexto_Base_Web.md §14B085]
+  var ctx = _getCtx();
+
+  for (var i = 0; i < dirData.length; i++) {
+    var r = dirData[i];
+    if (String(r[ix.estado]) !== 'Activo') continue;
+
+    var clanTag = String(r[ix.clanTag] || '').trim();
+    if (CFG.TERNA_TAGS.indexOf(clanTag) < 0) continue;
+
+    var rango = String(r[ix.rango] || '').trim();
+    if (rango !== 'Miembro') continue;
+
+    var esAdmin = String(r[ix.admin] || '').trim() === 'Sí';
+    if (esAdmin) continue;
+
+    var tag = String(r[ix.tag] || '').trim();
+    if (!tag) continue;
+
+    // FIX (29-ago-2026): ya tiene participación establecida en Terna [→ Contexto_Base_Web.md §14B086]
+    if (_tagTieneParticipacionEstablecidaEnTerna(tag, mapaSemanalPorTag, ctx)) continue;
+
+    candidatos.push({
+      tag: tag,
+      nombre: String(r[ix.nomMulti] || r[ix.nombre] || ''),
+      clan: String(r[ix.clan] || ''),
+      royaleApiUrl: 'https://royaleapi.com/player/' + tag.replace('#', '') + '/',
+      yaEnNuevos: tagsEnNuevos.hasOwnProperty(tag.toUpperCase())
+    });
+  }
+
+  Logger.log('[Nuevos][Lista] ' + candidatos.length + ' candidato(s) · directorio ' + (tDir - tIni) + ' ms · hoja Nuevos ' + (tTags - tDir) + ' ms · mapa semanal ' + (tMapa - tTags) + ' ms · filtrado ' + (Date.now() - tMapa) + ' ms · total ' + (Date.now() - tIni) + ' ms');
+
+  return {
+    ok: true,
+    clanesTerna: _getNombresClanesTernaOrdenados(),
+    clanTagsTerna: CFG.TERNA_TAGS.slice(), // v3.12 de Tampermonkey: «cuenta como nuevo» se decide por tag de clan, no por nombre
+    candidatos: candidatos,
+    // FIX (11-sep-2026, pedido usuario): objeto vacío a propósito — ver [→ Contexto_Base_Web.md §14B087]
+    coberturaPorTag: {}
+  };
+}
+
+/**
+ * _obtenerTagsEnHojaNuevos(ss) [→ Contexto_Base_Web.md §14B091]
+ */
+function _obtenerTagsEnHojaNuevos(ss) {
+  var mapa = {};
+  var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
+  if (!sh) return mapa;
+  var lastRow = sh.getLastRow();
+  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return mapa;
+  var tags = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.TAG, lastRow - NUEVOS_FILA_DATOS_INICIO + 1, 1).getValues();
+  for (var i = 0; i < tags.length; i++) {
+    var t = String(tags[i][0] || '').trim().toUpperCase();
+    if (t) mapa[t] = true;
+  }
+  return mapa;
+}
+
+/**
+ * _construirMapaSemanalPorTagDesdeSupercell() [→ Contexto_Base_Web.md §14B088]
+ */
+function _construirMapaSemanalPorTagDesdeSupercell() {
+  var mapa = {};
+  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+  if (!csvText) return mapa;
+
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length < 2) return mapa;
+
+  // Agrupar por Temporada|Semana|Tag (mismo criterio que
+  // generarBackupGuerraSemanalCSV(), sin el paso de overlay).
+  var grupos = {};
+  var ordenClaves = [];
+  for (var i = 1; i < parsed.length; i++) {
+    var f = parsed[i];
+    var temporada = String(f[GC.TEMPORADA - 1] || '').trim();
+    var semana    = String(f[GC.SEMANA - 1]    || '').trim();
+    var tag       = String(f[GC.TAG - 1]       || '').trim();
+    if (!temporada || !semana || !tag) continue;
+
+    var clave = temporada + '|' + semana + '|' + tag;
+    if (!grupos[clave]) { grupos[clave] = []; ordenClaves.push(clave); }
+    grupos[clave].push(f);
+  }
+
+  for (var g = 0; g < ordenClaves.length; g++) {
+    var partes = ordenClaves[g].split('|');
+    var grupo  = grupos[ordenClaves[g]];
+
+    var sumaAtaques = 0, maxFame = 0, maxBarcos = 0;
+    for (var k = 0; k < grupo.length; k++) {
+      sumaAtaques += Number(grupo[k][GC.ATAQUES_HOY - 1]) || 0;
+      var fameK   = Number(grupo[k][GC.FAME   - 1]) || 0;
+      var barcosK = Number(grupo[k][GC.BARCOS - 1]) || 0;
+      if (fameK   > maxFame)   maxFame   = fameK;
+      if (barcosK > maxBarcos) maxBarcos = barcosK;
+    }
+
+    var tagGrupo = partes[2];
+    if (!mapa[tagGrupo]) mapa[tagGrupo] = [];
+    mapa[tagGrupo].push({
+      temporada: Number(partes[0]) || 0,
+      semana:    Number(partes[1]) || 0,
+      ataques:   sumaAtaques,
+      fame:      maxFame,
+      barcos:    maxBarcos
+    });
+  }
+
+  for (var t in mapa) {
+    mapa[t].sort(function (a, b) {
+      if (a.temporada !== b.temporada) return b.temporada - a.temporada;
+      return b.semana - a.semana;
+    });
+  }
+  return mapa;
+}
+
+/**
+ * _tagTieneParticipacionEstablecidaEnTerna(tag, mapaSemanalPorTag, ctx) [→ Contexto_Base_Web.md §14B089]
+ */
+function _tagTieneParticipacionEstablecidaEnTerna(tag, mapaSemanalPorTag, ctx) {
+  var registros = mapaSemanalPorTag[tag];
+  if (!registros || !registros.length) return false;
+
+  // FIX (16-sep-2026, ver docblock arriba): descartar la semana de guerra [→ Contexto_Base_Web.md §14B090]
+  var semanaVigente = ctx ? (Number(ctx.sectionIndex) + 1) : null;
+  var temporadaVigente = ctx ? Number(ctx.temporada) : null;
+  var registrosCerrados = registros;
+  if (ctx) {
+    registrosCerrados = [];
+    for (var j = 0; j < registros.length; j++) {
+      var reg = registros[j];
+      if (reg.temporada === temporadaVigente && reg.semana === semanaVigente) continue; // semana en curso, se ignora
+      registrosCerrados.push(reg);
+    }
+  }
+
+  if (registrosCerrados.length < 3) return false;
+
+  var ultimas3 = registrosCerrados.slice(0, 3); // ya vienen ordenadas desc al construir el mapa
+  for (var i = 0; i < ultimas3.length; i++) {
+    var r = ultimas3[i];
+    if (r.ataques <= 0 || r.fame <= 0) return false;
+  }
+  return true;
+}
+
+/**
+ * _importarNuevosYPerfiles_(candidatosPayload) [→ Contexto_Base_Web.md §PF243]
+ * §PF253: desde Tampermonkey v3.13 cada candidato trae cand.ultimasSemanas (las 3 últimas filas del perfil, con clanTag) y el backend decide por tag si
+ * cuenta como nuevo (_esNuevoPorTagClan_()); sin ese campo se usa cand.esNuevo como antes.
+ *
+ * Punto de entrada de accion=importarNuevos desde PF243 (Tampermonkey v3.8). El botón de miembros nuevos manda TODO lo que
+ * leyó de cada perfil visitado y el backend decide qué guarda y dónde:
+ *   - Hoja «Nuevos» (_aplicarImportacionNuevos): solo los candidatos con esNuevo distinto de false, o que ya tienen fila en
+ *     la hoja (así su cuadrícula no se congela). Un candidato que ya no cuenta como nuevo y no está en la hoja NO se agrega.
+ *   - Correcciones_Guerra.csv (_aplicarCorreccionesGuerra): las filas de cand.filasPerfil de TODOS los candidatos, como filas de
+ *     perfil (fuente 'perfil', sin ClanTag), con la misma regla de conservación de PF236 (una fila igual a la guardada no se
+ *     reescribe). La semana en curso se descarta aquí (es provisional; la cubre River Race, PF237).
+ * Compatibilidad: una versión anterior de Tampermonkey (sin esNuevo ni filasPerfil) se comporta como antes: todo va a «Nuevos»
+ * y nada a Correcciones_Guerra.csv. Un fallo al guardar las correcciones no hace fallar la importación de «Nuevos»: se informa
+ * en resultado.correcciones.error.
+ */
+function _importarNuevosYPerfiles_(candidatosPayload) {
+  if (!candidatosPayload || !candidatosPayload.length) {
+    return { ok: false, error: 'Sin candidatos en el payload.', procesados: 0 };
+  }
+
+  var tagsEnHoja = {};
+  try {
+    tagsEnHoja = _obtenerTagsEnHojaNuevos(_getSs());
+  } catch (eTags) {
+    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudo leer la lista de tags de «Nuevos» (' + (eTags.message || eTags) +
+      '); se envían a «Nuevos» todos los candidatos recibidos.');
+    tagsEnHoja = null;
+  }
+
+  // Semana en curso de RoyaleAPI (misma cuenta que _obtenerListaCorreccionGuerra()): las filas del perfil de esa semana no se guardan.
+  var temporadaEnCurso = null, semanaEnCurso = null;
+  try {
+    var ctxNv = _getCtx();
+    if (!ctxNv.periodIndexSospechoso) {
+      temporadaEnCurso = ctxNv.temporada + _getTemporadaOffsetRoyaleApi();
+      semanaEnCurso = ctxNv.sectionIndex + 1;
+    }
+  } catch (eCtxNv) {
+    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudo calcular la semana en curso (' + (eCtxNv.message || eCtxNv) +
+      '); no se descarta ninguna fila de perfil por ese motivo.');
+  }
+
+  var nombresTernaNv = [];
+  try {
+    nombresTernaNv = _getNombresClanesTernaOrdenados(); // solo para las filas del perfil sin enlace de clan (respaldo por nombre, §PF248)
+  } catch (eNomNv) {
+    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudieron leer los nombres de los clanes Terna (' + (eNomNv.message || eNomNv) + ').');
+  }
+
+  var paraNuevos = [];
+  var correcciones = [];
+  var candidatosConPerfil = 0, filasEnCurso = 0;
+  for (var i = 0; i < candidatosPayload.length; i++) {
+    var cand = candidatosPayload[i] || {};
+    var tag = String(cand.tag || '').trim().toUpperCase();
+    if (!tag) continue;
+
+    // §PF253: «cuenta como nuevo» lo decide el backend por TAG de clan con las últimas tres filas del perfil (cand.ultimasSemanas, Tampermonkey v3.13). Sin ese campo (Tampermonkey anterior) se usa el esNuevo que mandó.
+    var esNuevoCand = Array.isArray(cand.ultimasSemanas) ? _esNuevoPorTagClan_(cand.ultimasSemanas, nombresTernaNv) : (cand.esNuevo !== false);
+    var cuentaComoNuevo = (tagsEnHoja === null) || esNuevoCand || (tagsEnHoja[tag] === true);
+    if (cuentaComoNuevo) paraNuevos.push(cand);
+
+    var filas = (cand.filasPerfil && cand.filasPerfil.length) ? cand.filasPerfil : [];
+    if (filas.length) candidatosConPerfil++;
+    for (var f = 0; f < filas.length; f++) {
+      var fp = filas[f] || {};
+      if (temporadaEnCurso !== null && Number(fp.temporadaRoyaleApi) === Number(temporadaEnCurso) && Number(fp.semana) === Number(semanaEnCurso)) {
+        filasEnCurso++;
+        continue;
+      }
+      correcciones.push({
+        tag: tag,
+        temporadaRoyaleApi: fp.temporadaRoyaleApi,
+        semana: fp.semana,
+        ataquesSemana: fp.ataquesSemana,
+        fame: fp.fame,
+        barcos: fp.barcos,
+        fuente: 'perfil',
+        clanPerfil: fp.clanPerfil || undefined
+      });
+    }
+  }
+
+  var resultado = paraNuevos.length
+    ? _aplicarImportacionNuevos(paraNuevos)
+    : { ok: true, procesados: 0, filasNuevas: 0, registrosOmitidos: 0, errores: [] };
+  resultado.recibidos = candidatosPayload.length;
+  resultado.noContaronComoNuevos = candidatosPayload.length - paraNuevos.length;
+
+  if (correcciones.length) {
+    try {
+      var rc = _aplicarCorreccionesGuerra(correcciones);
+      resultado.correcciones = {
+        ok: !!(rc && rc.ok), candidatos: candidatosConPerfil, recibidas: correcciones.length, enCursoDescartadas: filasEnCurso,
+        aplicadas: (rc && rc.aplicadas) || 0, sinCambios: (rc && rc.sinCambios) || 0, omitidas: (rc && rc.omitidas) || 0,
+        anterioresT1: (rc && rc.anterioresT1) || 0 // §PF247
+      };
+      if (rc && rc.error) resultado.correcciones.error = rc.error;
+      if (rc && rc.cambiosPerfil) resultado.correcciones.cambiosPerfil = rc.cambiosPerfil;
+      if (rc && rc.avisoControl2) resultado.correcciones.avisoControl2 = rc.avisoControl2;
+    } catch (eCorr) {
+      Logger.log('[Nuevos-RoyaleAPI] Error guardando las filas de perfil en Correcciones_Guerra.csv: ' + (eCorr.message || eCorr));
+      resultado.correcciones = { ok: false, candidatos: candidatosConPerfil, recibidas: correcciones.length, error: (eCorr.message || String(eCorr)) };
+    }
+  } else if (filasEnCurso > 0) {
+    resultado.correcciones = { ok: true, candidatos: candidatosConPerfil, recibidas: 0, enCursoDescartadas: filasEnCurso, aplicadas: 0, sinCambios: 0, omitidas: 0 };
+  }
+
+  Logger.log('[Nuevos-RoyaleAPI] Reparto PF243: ' + candidatosPayload.length + ' candidato(s) recibido(s), ' + paraNuevos.length +
+    ' a «Nuevos»; ' + correcciones.length + ' fila(s) de perfil a Correcciones_Guerra.csv' +
+    (resultado.correcciones ? ' (aplicadas ' + resultado.correcciones.aplicadas + ', sin cambios ' + resultado.correcciones.sinCambios + ')' : '') + '.');
+  return resultado;
+}
+
+/**
+ * _esNuevoPorTagClan_(ultimasSemanas, nombresTerna) (§PF253, 25-oct-2026)
+ * «Cuenta como nuevo» = alguna de las TRES últimas filas del historial del perfil (la más reciente primero, como las manda Tampermonkey
+ * v3.13 en cand.ultimasSemanas: [{clanTag, clan}]) es de un clan que NO es Terna (criterio de siempre; §PF249 punto 1: ahora lo calcula el
+ * backend y por tag). Sin filas devuelve false, como antes.
+ */
+function _esNuevoPorTagClan_(ultimasSemanas, nombresTerna) {
+  var n = Math.min(3, (ultimasSemanas || []).length);
+  for (var i = 0; i < n; i++) {
+    var fila = ultimasSemanas[i];
+    if (!fila) continue;
+    if (!_clanDeFilaEsTerna_(fila.clanTag, fila.clan, nombresTerna)) return true;
+  }
+  return false;
+}
+
+/**
+ * _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) (§PF253)
+ * ¿La fila del perfil es de un clan Terna? Con tag de clan, SOLO cuenta el tag (CFG.TERNA_TAGS). Sin tag (la celda de RoyaleAPI no traía
+ * enlace) se usa el nombre como antes (§PF248), con la misma comparación flexible de Tampermonkey (solo letras y números, minúsculas,
+ * «contiene» en cualquiera de los dos sentidos).
+ */
+function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
+  var tag = String(clanTag || '').trim().toUpperCase();
+  if (tag) {
+    if (tag.charAt(0) !== '#') tag = '#' + tag;
+    return CFG.TERNA_TAGS.indexOf(tag) >= 0;
+  }
+  var norm = function (s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); };
+  var n = norm(nombreClan);
+  for (var i = 0; i < (nombresTerna || []).length; i++) {
+    var nt = norm(nombresTerna[i]);
+    if (n.indexOf(nt) >= 0 || nt.indexOf(n) >= 0) return true;
+  }
+  return false;
+}
+
+/**
+ * _aplicarImportacionNuevos(candidatosPayload) [→ Contexto_Base_Web.md §14B073]
+ */
 function _aplicarImportacionNuevos(candidatosPayload) {
   if (!candidatosPayload || !candidatosPayload.length) {
     return { ok: false, error: 'Sin candidatos en el payload.', procesados: 0 };
@@ -846,467 +2125,6 @@ function _aplicarImportacionNuevos(candidatosPayload) {
 }
 
 /**
- * _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) (§PF253)
- * ¿La fila del perfil es de un clan Terna? Con tag de clan, SOLO cuenta el tag (CFG.TERNA_TAGS). Sin tag (la celda de RoyaleAPI no traía
- * enlace) se usa el nombre como antes (§PF248), con la misma comparación flexible de Tampermonkey (solo letras y números, minúsculas,
- * «contiene» en cualquiera de los dos sentidos).
- */
-function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
-  var tag = String(clanTag || '').trim().toUpperCase();
-  if (tag) {
-    if (tag.charAt(0) !== '#') tag = '#' + tag;
-    return CFG.TERNA_TAGS.indexOf(tag) >= 0;
-  }
-  var norm = function (s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); };
-  var n = norm(nombreClan);
-  for (var i = 0; i < (nombresTerna || []).length; i++) {
-    var nt = norm(nombresTerna[i]);
-    if (n.indexOf(nt) >= 0 || nt.indexOf(n) >= 0) return true;
-  }
-  return false;
-}
-
-/**
- * _esNuevoPorTagClan_(ultimasSemanas, nombresTerna) (§PF253, 25-oct-2026)
- * «Cuenta como nuevo» = alguna de las TRES últimas filas del historial del perfil (la más reciente primero, como las manda Tampermonkey
- * v3.13 en cand.ultimasSemanas: [{clanTag, clan}]) es de un clan que NO es Terna (criterio de siempre; §PF249 punto 1: ahora lo calcula el
- * backend y por tag). Sin filas devuelve false, como antes.
- */
-function _esNuevoPorTagClan_(ultimasSemanas, nombresTerna) {
-  var n = Math.min(3, (ultimasSemanas || []).length);
-  for (var i = 0; i < n; i++) {
-    var fila = ultimasSemanas[i];
-    if (!fila) continue;
-    if (!_clanDeFilaEsTerna_(fila.clanTag, fila.clan, nombresTerna)) return true;
-  }
-  return false;
-}
-
-/**
- * _importarNuevosYPerfiles_(candidatosPayload) [→ Contexto_Base_Web.md §PF243]
- * §PF253: desde Tampermonkey v3.13 cada candidato trae cand.ultimasSemanas (las 3 últimas filas del perfil, con clanTag) y el backend decide por tag si
- * cuenta como nuevo (_esNuevoPorTagClan_()); sin ese campo se usa cand.esNuevo como antes.
- *
- * Punto de entrada de accion=importarNuevos desde PF243 (Tampermonkey v3.8). El botón de miembros nuevos manda TODO lo que
- * leyó de cada perfil visitado y el backend decide qué guarda y dónde:
- *   - Hoja «Nuevos» (_aplicarImportacionNuevos): solo los candidatos con esNuevo distinto de false, o que ya tienen fila en
- *     la hoja (así su cuadrícula no se congela). Un candidato que ya no cuenta como nuevo y no está en la hoja NO se agrega.
- *   - Correcciones_Guerra.csv (_aplicarCorreccionesGuerra): las filas de cand.filasPerfil de TODOS los candidatos, como filas de
- *     perfil (fuente 'perfil', sin ClanTag), con la misma regla de conservación de PF236 (una fila igual a la guardada no se
- *     reescribe). La semana en curso se descarta aquí (es provisional; la cubre River Race, PF237).
- * Compatibilidad: una versión anterior de Tampermonkey (sin esNuevo ni filasPerfil) se comporta como antes: todo va a «Nuevos»
- * y nada a Correcciones_Guerra.csv. Un fallo al guardar las correcciones no hace fallar la importación de «Nuevos»: se informa
- * en resultado.correcciones.error.
- */
-function _importarNuevosYPerfiles_(candidatosPayload) {
-  if (!candidatosPayload || !candidatosPayload.length) {
-    return { ok: false, error: 'Sin candidatos en el payload.', procesados: 0 };
-  }
-
-  var tagsEnHoja = {};
-  try {
-    tagsEnHoja = _obtenerTagsEnHojaNuevos(_getSs());
-  } catch (eTags) {
-    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudo leer la lista de tags de «Nuevos» (' + (eTags.message || eTags) +
-      '); se envían a «Nuevos» todos los candidatos recibidos.');
-    tagsEnHoja = null;
-  }
-
-  // Semana en curso de RoyaleAPI (misma cuenta que _obtenerListaCorreccionGuerra()): las filas del perfil de esa semana no se guardan.
-  var temporadaEnCurso = null, semanaEnCurso = null;
-  try {
-    var ctxNv = _getCtx();
-    if (!ctxNv.periodIndexSospechoso) {
-      temporadaEnCurso = ctxNv.temporada + _getTemporadaOffsetRoyaleApi();
-      semanaEnCurso = ctxNv.sectionIndex + 1;
-    }
-  } catch (eCtxNv) {
-    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudo calcular la semana en curso (' + (eCtxNv.message || eCtxNv) +
-      '); no se descarta ninguna fila de perfil por ese motivo.');
-  }
-
-  var nombresTernaNv = [];
-  try {
-    nombresTernaNv = _getNombresClanesTernaOrdenados(); // solo para las filas del perfil sin enlace de clan (respaldo por nombre, §PF248)
-  } catch (eNomNv) {
-    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudieron leer los nombres de los clanes Terna (' + (eNomNv.message || eNomNv) + ').');
-  }
-
-  var paraNuevos = [];
-  var correcciones = [];
-  var candidatosConPerfil = 0, filasEnCurso = 0;
-  for (var i = 0; i < candidatosPayload.length; i++) {
-    var cand = candidatosPayload[i] || {};
-    var tag = String(cand.tag || '').trim().toUpperCase();
-    if (!tag) continue;
-
-    // §PF253: «cuenta como nuevo» lo decide el backend por TAG de clan con las últimas tres filas del perfil (cand.ultimasSemanas, Tampermonkey v3.13). Sin ese campo (Tampermonkey anterior) se usa el esNuevo que mandó.
-    var esNuevoCand = Array.isArray(cand.ultimasSemanas) ? _esNuevoPorTagClan_(cand.ultimasSemanas, nombresTernaNv) : (cand.esNuevo !== false);
-    var cuentaComoNuevo = (tagsEnHoja === null) || esNuevoCand || (tagsEnHoja[tag] === true);
-    if (cuentaComoNuevo) paraNuevos.push(cand);
-
-    var filas = (cand.filasPerfil && cand.filasPerfil.length) ? cand.filasPerfil : [];
-    if (filas.length) candidatosConPerfil++;
-    for (var f = 0; f < filas.length; f++) {
-      var fp = filas[f] || {};
-      if (temporadaEnCurso !== null && Number(fp.temporadaRoyaleApi) === Number(temporadaEnCurso) && Number(fp.semana) === Number(semanaEnCurso)) {
-        filasEnCurso++;
-        continue;
-      }
-      correcciones.push({
-        tag: tag,
-        temporadaRoyaleApi: fp.temporadaRoyaleApi,
-        semana: fp.semana,
-        ataquesSemana: fp.ataquesSemana,
-        fame: fp.fame,
-        barcos: fp.barcos,
-        fuente: 'perfil',
-        clanPerfil: fp.clanPerfil || undefined
-      });
-    }
-  }
-
-  var resultado = paraNuevos.length
-    ? _aplicarImportacionNuevos(paraNuevos)
-    : { ok: true, procesados: 0, filasNuevas: 0, registrosOmitidos: 0, errores: [] };
-  resultado.recibidos = candidatosPayload.length;
-  resultado.noContaronComoNuevos = candidatosPayload.length - paraNuevos.length;
-
-  if (correcciones.length) {
-    try {
-      var rc = _aplicarCorreccionesGuerra(correcciones);
-      resultado.correcciones = {
-        ok: !!(rc && rc.ok), candidatos: candidatosConPerfil, recibidas: correcciones.length, enCursoDescartadas: filasEnCurso,
-        aplicadas: (rc && rc.aplicadas) || 0, sinCambios: (rc && rc.sinCambios) || 0, omitidas: (rc && rc.omitidas) || 0,
-        anterioresT1: (rc && rc.anterioresT1) || 0 // §PF247
-      };
-      if (rc && rc.error) resultado.correcciones.error = rc.error;
-      if (rc && rc.cambiosPerfil) resultado.correcciones.cambiosPerfil = rc.cambiosPerfil;
-      if (rc && rc.avisoControl2) resultado.correcciones.avisoControl2 = rc.avisoControl2;
-    } catch (eCorr) {
-      Logger.log('[Nuevos-RoyaleAPI] Error guardando las filas de perfil en Correcciones_Guerra.csv: ' + (eCorr.message || eCorr));
-      resultado.correcciones = { ok: false, candidatos: candidatosConPerfil, recibidas: correcciones.length, error: (eCorr.message || String(eCorr)) };
-    }
-  } else if (filasEnCurso > 0) {
-    resultado.correcciones = { ok: true, candidatos: candidatosConPerfil, recibidas: 0, enCursoDescartadas: filasEnCurso, aplicadas: 0, sinCambios: 0, omitidas: 0 };
-  }
-
-  Logger.log('[Nuevos-RoyaleAPI] Reparto PF243: ' + candidatosPayload.length + ' candidato(s) recibido(s), ' + paraNuevos.length +
-    ' a «Nuevos»; ' + correcciones.length + ' fila(s) de perfil a Correcciones_Guerra.csv' +
-    (resultado.correcciones ? ' (aplicadas ' + resultado.correcciones.aplicadas + ', sin cambios ' + resultado.correcciones.sinCambios + ')' : '') + '.');
-  return resultado;
-}
-
-/**
- * _aplicarTodoFormatoCondicionalNuevos(sh) [→ Contexto_Base_Web.md §14B057]
- */
-function _aplicarTodoFormatoCondicionalNuevos(sh) {
-  var lastRow = sh.getLastRow();
-  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return;
-  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
-  var rules = [];
-  rules = rules.concat(_construirReglasSemanaActualNuevos(sh, numFilas));
-  rules = rules.concat(_construirReglasClanesNuevos(sh, numFilas));
-  _tryCondFmt(sh, rules);
-}
-
-function _asegurarBloquesParaFechas(sh, fechasNecesarias) {
-  var bloques = _leerBloquesFechaNuevos(sh);
-  var bloquesCreados = 0, bloquesReutilizados = 0;
-
-  function mismoDia(d1, d2) {
-    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
-  }
-
-  // 1) Fechas realmente faltantes (sin bloque ya asignado), deduplicadas [→ Contexto_Base_Web.md §14B058]
-  var faltantes = [];
-  for (var i = 0; i < fechasNecesarias.length; i++) {
-    var fecha = fechasNecesarias[i];
-    if (!fecha) continue;
-    var yaExiste = bloques.some(function (bk) { return bk.date && mismoDia(bk.date, fecha); });
-    if (yaExiste) continue;
-    var yaEnFaltantes = faltantes.some(function (f) { return mismoDia(f, fecha); });
-    if (!yaEnFaltantes) faltantes.push(fecha);
-  }
-  if (faltantes.length === 0) return;
-
-  // 2) CASO DE ARRANQUE: si la cuadrícula todavía no tiene NINGÚN bloque [→ Contexto_Base_Web.md §14B059]
-  var hayFechaExistente = bloques.some(function (bk) { return !!bk.date; });
-  if (!hayFechaExistente) {
-    faltantes.sort(function (a, b) { return b.getTime() - a.getTime(); }); // más reciente primero
-    var quedan = [];
-    for (var q = 0; q < faltantes.length; q++) {
-      var vacioBoot = null;
-      for (var vb = 0; vb < bloques.length; vb++) {
-        if (!bloques[vb].date) { vacioBoot = bloques[vb]; break; }
-      }
-      if (vacioBoot) {
-        sh.getRange(NUEVOS_FILA_FECHAS, vacioBoot.col).setValue(faltantes[q]);
-        vacioBoot.date = faltantes[q];
-        bloquesReutilizados++;
-      } else {
-        quedan.push(faltantes[q]);
-      }
-    }
-    faltantes = quedan; // lo que no alcanzó bloque vacío sigue el flujo normal de abajo
-  }
-  if (faltantes.length === 0) {
-    Logger.log('[Nuevos-RoyaleAPI] Bloques de fecha: ' + bloquesReutilizados + ' reutilizado(s) en el arranque.');
-    return;
-  }
-
-  // 3) FIX (06-ago-2026): las fechas MÁS RECIENTES que cualquier bloque ya [→ Contexto_Base_Web.md §14B060]
-  var maxFechaExistente = null;
-  for (var m = 0; m < bloques.length; m++) {
-    if (bloques[m].date && (!maxFechaExistente || bloques[m].date.getTime() > maxFechaExistente.getTime())) {
-      maxFechaExistente = bloques[m].date;
-    }
-  }
-
-  var masRecientes = [], relleno = [];
-  for (var f = 0; f < faltantes.length; f++) {
-    if (!maxFechaExistente || faltantes[f].getTime() > maxFechaExistente.getTime()) {
-      masRecientes.push(faltantes[f]);
-    } else {
-      relleno.push(faltantes[f]);
-    }
-  }
-
-  // masRecientes se inserta de la MÁS ANTIGUA (de este lote) a la MÁS [→ Contexto_Base_Web.md §14B061]
-  masRecientes.sort(function (a, b) { return a.getTime() - b.getTime(); });
-  for (var r1 = 0; r1 < masRecientes.length; r1++) {
-    sh.insertColumnsBefore(COL_INICIO_GRID_NUEVOS, GRID_BLOQUE_ANCHO_NUEVOS);
-    _formatearBloqueFechaNuevos(sh, COL_INICIO_GRID_NUEVOS, masRecientes[r1]);
-    bloquesCreados++;
-  }
-
-  if (relleno.length > 0) {
-    // Se relee la cuadrícula: las inserciones de arriba pudieron desplazar
-    // las columnas de los bloques ya existentes.
-    var bloquesActuales = _leerBloquesFechaNuevos(sh);
-    for (var r2 = 0; r2 < relleno.length; r2++) {
-      var bloqueVacio = null;
-      for (var j = 0; j < bloquesActuales.length; j++) {
-        if (!bloquesActuales[j].date) { bloqueVacio = bloquesActuales[j]; break; }
-      }
-      if (bloqueVacio) {
-        sh.getRange(NUEVOS_FILA_FECHAS, bloqueVacio.col).setValue(relleno[r2]);
-        bloqueVacio.date = relleno[r2];
-        bloquesReutilizados++;
-        continue;
-      }
-      var ultimaColGrid = sh.getLastColumn();
-      sh.insertColumnsAfter(ultimaColGrid, GRID_BLOQUE_ANCHO_NUEVOS);
-      var colNuevoBloque = ultimaColGrid + 1;
-      _formatearBloqueFechaNuevos(sh, colNuevoBloque, relleno[r2]);
-      bloquesActuales.push({ date: relleno[r2], col: colNuevoBloque });
-      bloquesCreados++;
-    }
-  }
-
-  if (bloquesCreados > 0) {
-    _reajustarTituloGridNuevos(sh);
-  }
-
-  if (bloquesCreados > 0 || bloquesReutilizados > 0) {
-    Logger.log('[Nuevos-RoyaleAPI] Bloques de fecha: ' + bloquesReutilizados +
-      ' reutilizado(s) (vacío -> con fecha), ' + bloquesCreados +
-      ' nuevo(s) agregado(s) (más recientes a la izquierda, relleno/backfill al final).');
-  }
-}
-
-/**
- * _buscarBloquePorFechaNuevos(fechasHeader, fecha) [→ Contexto_Base_Web.md §14B062]
- */
-function _buscarBloquePorFechaNuevos(fechasHeader, fecha) {
-  for (var i = 0; i < fechasHeader.length; i++) {
-    var h = fechasHeader[i];
-    if (!h.date) continue;
-    if (h.date.getFullYear() === fecha.getFullYear() &&
-        h.date.getMonth()    === fecha.getMonth() &&
-        h.date.getDate()     === fecha.getDate()) {
-      return h;
-    }
-  }
-  return null;
-}
-
-/**
- * _cargarSnapshotDebugNuevos() [→ Contexto_Base_Web.md §14B063]
- */
-function _cargarSnapshotDebugNuevos() {
-  var mapa = {};
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(NOMBRE_JSON_DEBUG_NUEVOS);
-    if (files.hasNext()) {
-      mapa = JSON.parse(files.next().getBlob().getDataAsString('UTF-8')) || {};
-    }
-  } catch (e) {
-    Logger.log('[Nuevos-Debug] Error leyendo ' + NOMBRE_JSON_DEBUG_NUEVOS + ': ' + e.message);
-  }
-  return mapa;
-}
-
-/**
- * _construirMapaSemanasGuerraTerna() [→ Contexto_Base_Web.md §14B064]
- */
-function _construirMapaSemanasGuerraTerna() {
-  var mapa = {};
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
-  if (!sh || sh.getLastRow() < 2) return mapa;
-
-  var nombresTerna = _getNombresClanesTernaOrdenados();
-  var lastRow = sh.getLastRow();
-  var data = sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues();
-
-  var semanasPorTag = {}; // TAG -> { 'temporada-semana': true, ... }
-  for (var i = 0; i < data.length; i++) {
-    var r = data[i];
-    var tg = String(r[GC.TAG - 1] || '').trim().toUpperCase();
-    if (!tg) continue;
-
-    var clanNombre = String(r[GC.CLAN - 1] || '').trim();
-    if (nombresTerna.indexOf(clanNombre) < 0) continue;
-
-    var ataques = Number(r[GC.ATAQUES_SEM - 1]) || 0;
-    if (ataques <= 0) continue;
-
-    var clave = String(r[GC.TEMPORADA - 1]) + '-' + String(r[GC.SEMANA - 1]);
-    if (!semanasPorTag[tg]) semanasPorTag[tg] = {};
-    semanasPorTag[tg][clave] = true;
-  }
-
-  for (var tag in semanasPorTag) {
-    mapa[tag] = Object.keys(semanasPorTag[tag]).length;
-  }
-  return mapa;
-}
-
-/**
- * _construirReglasSemanaActualNuevos(sh, numFilas) [→ Contexto_Base_Web.md §14B065]
- */
-function _construirReglasSemanaActualNuevos(sh, numFilas) {
-  var rules = [];
-  var colClanL = colLetter(NC.CLAN);
-  var fila0 = NUEVOS_FILA_DATOS_INICIO;
-
-  var ctx = _getCtx();
-  var vigente = _getDiaActualYSeccionVigente(ctx);
-  if (!vigente) return rules;
-
-  var minG = _buildMinGSwitchFormula(colClanL);
-
-  for (var d = 0; d < 4; d++) {
-    if (d > vigente.diaActual) continue; // dia futuro: sin regla, queda "tal cual"
-
-    var colAta = COL_INICIO_SEMANA_ACTUAL_NUEVOS + OFFSEM.ATA + d;
-    var colPun = COL_INICIO_SEMANA_ACTUAL_NUEVOS + OFFSEM.PUN + d;
-    var colBar = COL_INICIO_SEMANA_ACTUAL_NUEVOS + OFFSEM.BAR + d;
-    var rangoAta = sh.getRange(fila0, colAta, numFilas, 1);
-    var rangoPun = sh.getRange(fila0, colPun, numFilas, 1);
-    var rangoBar = sh.getRange(fila0, colBar, numFilas, 1);
-    var lA = colLetter(colAta);
-    var lP = colLetter(colPun);
-    var lB = colLetter(colBar);
-
-    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lA+fila0+'<>"", $'+lA+fila0+'=4)').setBackground(CFG.COLORES.ATAQUE_4).setRanges([rangoAta]).build());
-    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lA+fila0+'<>"", $'+lA+fila0+'>=1, $'+lA+fila0+'<=3)').setBackground(CFG.COLORES.ATAQUE_1_3).setRanges([rangoAta]).build());
-    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lA+fila0+'<>"", $'+lA+fila0+'=0)').setBackground(CFG.COLORES.ATAQUE_0).setRanges([rangoAta]).build());
-
-    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lP+fila0+'<>"", $'+lP+fila0+'=0)').setBackground(CFG.COLORES.PUNTAJE_DIARIO_BG).setRanges([rangoPun]).build());
-    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lP+fila0+'<>"", $'+lP+fila0+'>=1, $'+lP+fila0+'<1600)').setBackground(CFG.COLORES.PUNTAJE_BAJO_BG).setRanges([rangoPun]).build());
-    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lP+fila0+'<>"", $'+lP+fila0+'>=1600, $'+lP+fila0+'<'+minG+')').setBackground(CFG.COLORES.PUNTAJE_MEDIO_BG).setRanges([rangoPun]).build());
-    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lP+fila0+'<>"", $'+lP+fila0+'>='+minG+')').setBackground(CFG.COLORES.CUMPLE_MING_BG).setFontColor(CFG.COLORES.CUMPLE_MING_FG).setBold(true).setRanges([rangoPun]).build());
-
-    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lB+fila0+'<>"", $'+lB+fila0+'>0)').setBackground(CFG.COLORES.BARCO_POS).setRanges([rangoBar]).build());
-    rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($'+lB+fila0+'<>"", $'+lB+fila0+'=0)').setBackground(CFG.COLORES.BARCO_CERO_BG).setRanges([rangoBar]).build());
-  }
-
-  return rules;
-}
-
-/**
- * _contarSemanasGuerraTerna(tag, mapaPrecomputado) [→ Contexto_Base_Web.md §14B066]
- */
-function _contarSemanasGuerraTerna(tag, mapaPrecomputado) {
-  var tagNorm = String(tag || '').trim().toUpperCase();
-  if (!tagNorm) return 0;
-
-  if (mapaPrecomputado) return mapaPrecomputado[tagNorm] || 0;
-
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
-  if (!sh || sh.getLastRow() < 2) return 0;
-
-  var nombresTerna = _getNombresClanesTernaOrdenados();
-  var lastRow = sh.getLastRow();
-  var data = sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues();
-
-  var semanas = {};
-  for (var i = 0; i < data.length; i++) {
-    var r = data[i];
-    var tg = String(r[GC.TAG - 1] || '').trim().toUpperCase();
-    if (tg !== tagNorm) continue;
-
-    var clanNombre = String(r[GC.CLAN - 1] || '').trim();
-    if (nombresTerna.indexOf(clanNombre) < 0) continue;
-
-    var ataques = Number(r[GC.ATAQUES_SEM - 1]) || 0;
-    if (ataques <= 0) continue;
-
-    var clave = String(r[GC.TEMPORADA - 1]) + '-' + String(r[GC.SEMANA - 1]);
-    semanas[clave] = true;
-  }
-  return Object.keys(semanas).length;
-}
-
-/**
- * _formatearBloqueFechaNuevos(sh, col, fecha) [→ Contexto_Base_Web.md §14B067]
- */
-function _formatearBloqueFechaNuevos(sh, col, fecha) {
-  sh.getRange(NUEVOS_FILA_FECHAS, col, 1, GRID_BLOQUE_ANCHO_NUEVOS).merge()
-    .setValue(fecha)
-    .setBackground(CFG.COLORES.HEADER_BG)
-    .setFontColor(CFG.COLORES.HEADER_FG)
-    .setFontWeight('bold')
-    .setHorizontalAlignment('center')
-    .setVerticalAlignment('middle');
-
-  var bloqueHeaders = ['Clan', 'Ataques', 'Fame', 'Barcos'];
-  sh.getRange(NUEVOS_FILA_HEADERS, col, 1, GRID_BLOQUE_ANCHO_NUEVOS).setValues([bloqueHeaders])
-    .setBackground(CFG.COLORES.HEADER_BG)
-    .setFontColor(CFG.COLORES.HEADER_FG)
-    .setFontWeight('bold')
-    .setHorizontalAlignment('center');
-
-  var COLOR_BORDE_HEADER = '#ffffff';
-  sh.getRange(1, col, NUEVOS_FILA_HEADERS, GRID_BLOQUE_ANCHO_NUEVOS)
-    .setBorder(true, true, true, true, true, true,
-               COLOR_BORDE_HEADER, SpreadsheetApp.BorderStyle.SOLID);
-}
-
-/**
- * _getDiaActualYSeccionVigente(ctx) [→ Contexto_Base_Web.md §14B068]
- */
-function _getDiaActualYSeccionVigente(ctx) {
-  if (ctx.periodIndexSospechoso) return null;
-
-  if (esDiaGuerraIdx(ctx.periodIndex)) {
-    return {
-      diaActual:    ctx.periodIndex - (ctx.sectionIndex * 7 + 3), // 0=J,1=V,2=S,3=D
-      sectionIndex: ctx.sectionIndex
-    };
-  }
-
-  var seccionAnterior = ctx.sectionIndex - 1;
-  if (seccionAnterior < 0) return null; // sin semana previa que mostrar
-
-  return { diaActual: 3, sectionIndex: seccionAnterior };
-}
-
-/**
  * _guardarSnapshotDebugImportacionNuevos(candidatosPayload) [→ Contexto_Base_Web.md §14B069]
  */
 function _guardarSnapshotDebugImportacionNuevos(candidatosPayload) {
@@ -1383,11 +2201,24 @@ function _guardarSnapshotDebugImportacionNuevos(candidatosPayload) {
   }
 }
 
-// POST — aplicar lo que el userscript detectó como "nuevo" [→ Contexto_Base_Web.md §14B072]
-
 /**
- * _aplicarImportacionNuevos(candidatosPayload) [→ Contexto_Base_Web.md §14B073]
+ * _cargarSnapshotDebugNuevos() [→ Contexto_Base_Web.md §14B063]
  */
+function _cargarSnapshotDebugNuevos() {
+  var mapa = {};
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(NOMBRE_JSON_DEBUG_NUEVOS);
+    if (files.hasNext()) {
+      mapa = JSON.parse(files.next().getBlob().getDataAsString('UTF-8')) || {};
+    }
+  } catch (e) {
+    Logger.log('[Nuevos-Debug] Error leyendo ' + NOMBRE_JSON_DEBUG_NUEVOS + ': ' + e.message);
+  }
+  return mapa;
+}
+
+// POST — aplicar lo que el userscript detectó como "nuevo" [→ Contexto_Base_Web.md §14B072]
 /**
  * _insertarNuevosCandidatosOrdenadosPorClan(sh, candidatosPayload, tagAFila, dirPorTag) [→ Contexto_Base_Web.md §14B074]
  */
@@ -1468,867 +2299,7 @@ function _insertarNuevosCandidatosOrdenadosPorClan(sh, candidatosPayload, tagAFi
   return nuevosTags;
 }
 
-// BLOQUES DE FECHA — lectura y crecimiento dinámico de la cuadrícula [→ Contexto_Base_Web.md §14B078]
-
-/**
- * _leerBloquesFechaNuevos(sh) [→ Contexto_Base_Web.md §14B079]
- */
-function _leerBloquesFechaNuevos(sh) {
-  var lastCol = sh.getLastColumn();
-  var bloques = [];
-  for (var col = COL_INICIO_GRID_NUEVOS; col <= lastCol; col += GRID_BLOQUE_ANCHO_NUEVOS) {
-    var val = sh.getRange(NUEVOS_FILA_FECHAS, col).getValue();
-    var d = (val instanceof Date && !isNaN(val.getTime())) ? val : null;
-    bloques.push({ date: d, col: col });
-  }
-  return bloques;
-}
-
-// GET — lista de candidatos para el userscript [→ Contexto_Base_Web.md §14B080]
-
-/**
- * _obtenerListaCandidatosNuevos() [→ Contexto_Base_Web.md §14B081]
- */
-function _obtenerListaCandidatosNuevos() {
-  var tIni = Date.now(); // PF043: tiempos en el log para ver dónde se va la espera [→ Contexto_Base_Web.md §PF043]
-  var ss = _getSs();
-  // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §14B082]
-  var shDirNuevos = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  var dirData;
-  var ix; // PF043: índices 0-based según el layout de las filas leídas (IC si viene de la hoja, DC si viene del CSV) [→ Contexto_Base_Web.md §PF043]
-  if (shDirNuevos && shDirNuevos.getLastRow() >= 2) {
-    // PF043: solo el rango físico del Directorio; ya no se leen Players ni Links ni se arman filas de 60 columnas. Los ocho campos que usa esta lista salen de la hoja Directorio y Players/Links no los pisan. [→ Contexto_Base_Web.md §PF043]
-    dirData = shDirNuevos.getRange(2, 1, shDirNuevos.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-    ix = { estado: IC.ESTADO - 1, clanTag: IC.CLAN_TAG - 1, rango: IC.RANGO - 1, admin: IC.ADMIN - 1, tag: IC.TAG - 1, nomMulti: IC.NOM_MULTI - 1, nombre: IC.NOMBRE - 1, clan: IC.CLAN - 1 };
-  } else {
-    var lecturaDirNuevos = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
-    dirData = (lecturaDirNuevos.origen === 'csv') ? lecturaDirNuevos.filas : [];
-    ix = { estado: DC.ESTADO - 1, clanTag: DC.CLAN_TAG - 1, rango: DC.RANGO - 1, admin: DC.ADMIN - 1, tag: DC.TAG - 1, nomMulti: DC.NOM_MULTI - 1, nombre: DC.NOMBRE - 1, clan: DC.CLAN - 1 };
-  }
-  var tDir = Date.now();
-  var candidatos = [];
-
-  // FIX (06-ago-2026): cada candidato ahora informa si YA está siendo [→ Contexto_Base_Web.md §14B083]
-  var tagsEnNuevos = _obtenerTagsEnHojaNuevos(ss);
-  var tTags = Date.now();
-
-  // FIX (29-ago-2026): mapa semanal por Tag construido SOLO desde [→ Contexto_Base_Web.md §14B084]
-  var mapaSemanalPorTag = _construirMapaSemanalPorTagDesdeSupercell();
-  var tMapa = Date.now();
-
-  // FIX (16-sep-2026): contexto vigente (temporada + semana en curso), para [→ Contexto_Base_Web.md §14B085]
-  var ctx = _getCtx();
-
-  for (var i = 0; i < dirData.length; i++) {
-    var r = dirData[i];
-    if (String(r[ix.estado]) !== 'Activo') continue;
-
-    var clanTag = String(r[ix.clanTag] || '').trim();
-    if (CFG.TERNA_TAGS.indexOf(clanTag) < 0) continue;
-
-    var rango = String(r[ix.rango] || '').trim();
-    if (rango !== 'Miembro') continue;
-
-    var esAdmin = String(r[ix.admin] || '').trim() === 'Sí';
-    if (esAdmin) continue;
-
-    var tag = String(r[ix.tag] || '').trim();
-    if (!tag) continue;
-
-    // FIX (29-ago-2026): ya tiene participación establecida en Terna [→ Contexto_Base_Web.md §14B086]
-    if (_tagTieneParticipacionEstablecidaEnTerna(tag, mapaSemanalPorTag, ctx)) continue;
-
-    candidatos.push({
-      tag: tag,
-      nombre: String(r[ix.nomMulti] || r[ix.nombre] || ''),
-      clan: String(r[ix.clan] || ''),
-      royaleApiUrl: 'https://royaleapi.com/player/' + tag.replace('#', '') + '/',
-      yaEnNuevos: tagsEnNuevos.hasOwnProperty(tag.toUpperCase())
-    });
-  }
-
-  Logger.log('[Nuevos][Lista] ' + candidatos.length + ' candidato(s) · directorio ' + (tDir - tIni) + ' ms · hoja Nuevos ' + (tTags - tDir) + ' ms · mapa semanal ' + (tMapa - tTags) + ' ms · filtrado ' + (Date.now() - tMapa) + ' ms · total ' + (Date.now() - tIni) + ' ms');
-
-  return {
-    ok: true,
-    clanesTerna: _getNombresClanesTernaOrdenados(),
-    clanTagsTerna: CFG.TERNA_TAGS.slice(), // v3.12 de Tampermonkey: «cuenta como nuevo» se decide por tag de clan, no por nombre
-    candidatos: candidatos,
-    // FIX (11-sep-2026, pedido usuario): objeto vacío a propósito — ver [→ Contexto_Base_Web.md §14B087]
-    coberturaPorTag: {}
-  };
-}
-
-/**
- * _construirMapaSemanalPorTagDesdeSupercell() [→ Contexto_Base_Web.md §14B088]
- */
-function _construirMapaSemanalPorTagDesdeSupercell() {
-  var mapa = {};
-  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
-  if (!csvText) return mapa;
-
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length < 2) return mapa;
-
-  // Agrupar por Temporada|Semana|Tag (mismo criterio que
-  // generarBackupGuerraSemanalCSV(), sin el paso de overlay).
-  var grupos = {};
-  var ordenClaves = [];
-  for (var i = 1; i < parsed.length; i++) {
-    var f = parsed[i];
-    var temporada = String(f[GC.TEMPORADA - 1] || '').trim();
-    var semana    = String(f[GC.SEMANA - 1]    || '').trim();
-    var tag       = String(f[GC.TAG - 1]       || '').trim();
-    if (!temporada || !semana || !tag) continue;
-
-    var clave = temporada + '|' + semana + '|' + tag;
-    if (!grupos[clave]) { grupos[clave] = []; ordenClaves.push(clave); }
-    grupos[clave].push(f);
-  }
-
-  for (var g = 0; g < ordenClaves.length; g++) {
-    var partes = ordenClaves[g].split('|');
-    var grupo  = grupos[ordenClaves[g]];
-
-    var sumaAtaques = 0, maxFame = 0, maxBarcos = 0;
-    for (var k = 0; k < grupo.length; k++) {
-      sumaAtaques += Number(grupo[k][GC.ATAQUES_HOY - 1]) || 0;
-      var fameK   = Number(grupo[k][GC.FAME   - 1]) || 0;
-      var barcosK = Number(grupo[k][GC.BARCOS - 1]) || 0;
-      if (fameK   > maxFame)   maxFame   = fameK;
-      if (barcosK > maxBarcos) maxBarcos = barcosK;
-    }
-
-    var tagGrupo = partes[2];
-    if (!mapa[tagGrupo]) mapa[tagGrupo] = [];
-    mapa[tagGrupo].push({
-      temporada: Number(partes[0]) || 0,
-      semana:    Number(partes[1]) || 0,
-      ataques:   sumaAtaques,
-      fame:      maxFame,
-      barcos:    maxBarcos
-    });
-  }
-
-  for (var t in mapa) {
-    mapa[t].sort(function (a, b) {
-      if (a.temporada !== b.temporada) return b.temporada - a.temporada;
-      return b.semana - a.semana;
-    });
-  }
-  return mapa;
-}
-
-/**
- * _tagTieneParticipacionEstablecidaEnTerna(tag, mapaSemanalPorTag, ctx) [→ Contexto_Base_Web.md §14B089]
- */
-function _tagTieneParticipacionEstablecidaEnTerna(tag, mapaSemanalPorTag, ctx) {
-  var registros = mapaSemanalPorTag[tag];
-  if (!registros || !registros.length) return false;
-
-  // FIX (16-sep-2026, ver docblock arriba): descartar la semana de guerra [→ Contexto_Base_Web.md §14B090]
-  var semanaVigente = ctx ? (Number(ctx.sectionIndex) + 1) : null;
-  var temporadaVigente = ctx ? Number(ctx.temporada) : null;
-  var registrosCerrados = registros;
-  if (ctx) {
-    registrosCerrados = [];
-    for (var j = 0; j < registros.length; j++) {
-      var reg = registros[j];
-      if (reg.temporada === temporadaVigente && reg.semana === semanaVigente) continue; // semana en curso, se ignora
-      registrosCerrados.push(reg);
-    }
-  }
-
-  if (registrosCerrados.length < 3) return false;
-
-  var ultimas3 = registrosCerrados.slice(0, 3); // ya vienen ordenadas desc al construir el mapa
-  for (var i = 0; i < ultimas3.length; i++) {
-    var r = ultimas3[i];
-    if (r.ataques <= 0 || r.fame <= 0) return false;
-  }
-  return true;
-}
-
-/**
- * _obtenerTagsEnHojaNuevos(ss) [→ Contexto_Base_Web.md §14B091]
- */
-function _obtenerTagsEnHojaNuevos(ss) {
-  var mapa = {};
-  var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
-  if (!sh) return mapa;
-  var lastRow = sh.getLastRow();
-  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return mapa;
-  var tags = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.TAG, lastRow - NUEVOS_FILA_DATOS_INICIO + 1, 1).getValues();
-  for (var i = 0; i < tags.length; i++) {
-    var t = String(tags[i][0] || '').trim().toUpperCase();
-    if (t) mapa[t] = true;
-  }
-  return mapa;
-}
-
-/**
- * _ordenarBloquesFechaNuevos(sh) [→ Contexto_Base_Web.md §14B092]
- */
-function _ordenarBloquesFechaNuevos(sh) {
-  var lastCol = sh.getLastColumn();
-  var totalColsGrid = lastCol - COL_INICIO_GRID_NUEVOS + 1;
-  var numBloques = Math.floor(totalColsGrid / GRID_BLOQUE_ANCHO_NUEVOS);
-  if (numBloques < 2) return; // nada que reordenar con 0 o 1 bloque
-
-  var bloques = _leerBloquesFechaNuevos(sh);
-
-  var conFecha = [], sinFecha = [];
-  for (var i = 0; i < bloques.length; i++) {
-    if (bloques[i].date) conFecha.push(bloques[i]); else sinFecha.push(bloques[i]);
-  }
-  conFecha.sort(function (a, b) { return b.date.getTime() - a.date.getTime(); });
-  var ordenDeseado = conFecha.concat(sinFecha); // partición estable: los sin fecha conservan su orden relativo
-
-  // ¿Ya está en el orden correcto? Compara, posición a posición, la
-  // columna que DEBERÍA estar ahí contra la que está físicamente ahí hoy.
-  var yaOrdenado = true;
-  for (var p = 0; p < ordenDeseado.length; p++) {
-    if (ordenDeseado[p].col !== bloques[p].col) { yaOrdenado = false; break; }
-  }
-  if (yaOrdenado) return;
-
-  // FIX (11-ago-2026) — BUG REAL ENCONTRADO: la versión anterior leía y [→ Contexto_Base_Web.md §14B093]
-  var lastRowHoja = Math.max(sh.getLastRow(), NUEVOS_FILA_DATOS_INICIO - 1);
-  var filasRestoDelBloque = lastRowHoja - (NUEVOS_FILA_FECHAS + 1) + 1; // desde la fila de Headers hasta la última con datos
-
-  var fechaPorCol = {};   // fila NUEVOS_FILA_FECHAS (merge), un valor por bloque
-  var restoPorCol = {};   // filas NUEVOS_FILA_FECHAS+1 en adelante (headers + datos)
-  for (var b = 0; b < bloques.length; b++) {
-    var colB = bloques[b].col;
-    fechaPorCol[colB] = sh.getRange(NUEVOS_FILA_FECHAS, colB).getValue();
-    if (filasRestoDelBloque > 0) {
-      restoPorCol[colB] = sh.getRange(NUEVOS_FILA_FECHAS + 1, colB, filasRestoDelBloque, GRID_BLOQUE_ANCHO_NUEVOS).getValues();
-    }
-  }
-
-  for (var d = 0; d < ordenDeseado.length; d++) {
-    var colDestino = COL_INICIO_GRID_NUEVOS + d * GRID_BLOQUE_ANCHO_NUEVOS;
-    var colOrigen = ordenDeseado[d].col;
-
-    // Fila de Fecha: setValue() SOLO sobre la celda ancla del merge [→ Contexto_Base_Web.md §14B094]
-    sh.getRange(NUEVOS_FILA_FECHAS, colDestino).setValue(fechaPorCol[colOrigen]);
-
-    // Resto del bloque (headers + datos, celdas normales): setValues() en
-    // un solo llamado, como antes.
-    if (filasRestoDelBloque > 0) {
-      sh.getRange(NUEVOS_FILA_FECHAS + 1, colDestino, filasRestoDelBloque, GRID_BLOQUE_ANCHO_NUEVOS)
-        .setValues(restoPorCol[colOrigen]);
-    }
-  }
-
-  Logger.log('[Nuevos-RoyaleAPI] Cuadrícula reordenada por Fecha (más reciente a la izquierda, ' + numBloques + ' bloque(s)).');
-}
-
-/**
- * _parseFechaISONuevos(texto) [→ Contexto_Base_Web.md §14B095]
- */
-function _parseFechaISONuevos(texto) {
-  if (!texto) return null;
-  var m = String(texto).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!m) return null;
-  var fechaRoyaleApi = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-  fechaRoyaleApi.setDate(fechaRoyaleApi.getDate() - 1); // Lunes (RoyaleAPI) -> Domingo (convención del proyecto)
-  return fechaRoyaleApi;
-}
-
-/**
- * _purgarNuevosEstablecidos(sh) [→ Contexto_Base_Web.md §14B096]
- */
-function _purgarNuevosEstablecidos(sh) {
-  var lastRow = sh.getLastRow();
-  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return 0;
-  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
-  var tags = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.TAG, numFilas, 1).getValues();
-
-  // FIX (22-ago-2026): mapa de semanas construido UNA sola vez (una sola [→ Contexto_Base_Web.md §14B097]
-  var mapaSemanas = _construirMapaSemanasGuerraTerna();
-
-  var filasABorrar = [];
-  var tagsPurgados = [];
-  for (var i = 0; i < numFilas; i++) {
-    var tag = String(tags[i][0] || '').trim();
-    if (!tag) continue;
-    if (_contarSemanasGuerraTerna(tag, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS) {
-      filasABorrar.push(NUEVOS_FILA_DATOS_INICIO + i);
-      tagsPurgados.push(tag);
-    }
-  }
-  if (filasABorrar.length === 0) return 0;
-
-  // Borrar de abajo hacia arriba: borrar una fila de arriba primero [→ Contexto_Base_Web.md §14B098]
-  for (var b = filasABorrar.length - 1; b >= 0; b--) {
-    sh.deleteRow(filasABorrar[b]);
-  }
-
-  Logger.log('[Nuevos] _purgarNuevosEstablecidos(): ' + filasABorrar.length +
-    ' candidato(s) purgado(s) por alcanzar ' + SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS +
-    '+ semanas de guerra real en un clan Terna (no necesariamente el mismo clan): ' +
-    tagsPurgados.join(', ') + '.');
-  return filasABorrar.length;
-}
-
-/**
- * _purgarNuevosExpulsados(sh, dirPorTag) [→ Contexto_Base_Web.md §14B099]
- */
-function _purgarNuevosExpulsados(sh, dirPorTag) {
-  var lastRow = sh.getLastRow();
-  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return 0;
-  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
-  var tags = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.TAG, numFilas, 1).getValues();
-
-  var filasABorrar = [];
-  var tagsPurgados = [];
-  for (var i = 0; i < numFilas; i++) {
-    var tag = String(tags[i][0] || '').trim().toUpperCase();
-    if (!tag) continue;
-    var dRow = dirPorTag[tag];
-    var sigueActivoEnTerna = dRow &&
-      String(dRow[DC.ESTADO - 1]) === 'Activo' &&
-      CFG.TERNA_TAGS.indexOf(String(dRow[DC.CLAN_TAG - 1])) >= 0;
-    if (!sigueActivoEnTerna) {
-      filasABorrar.push(NUEVOS_FILA_DATOS_INICIO + i);
-      tagsPurgados.push(tag);
-    }
-  }
-  if (filasABorrar.length === 0) return 0;
-
-  // Borrar de abajo hacia arriba: borrar una fila de arriba primero [→ Contexto_Base_Web.md §14B100]
-  for (var b = filasABorrar.length - 1; b >= 0; b--) {
-    sh.deleteRow(filasABorrar[b]);
-  }
-
-  Logger.log('[Nuevos] _purgarNuevosExpulsados(): ' + filasABorrar.length +
-    ' candidato(s) purgado(s) por ya no ser miembro Activo de ningún clan Terna ' +
-    '(expulsado/retirado): ' + tagsPurgados.join(', ') + '.');
-
-  // FIX (20-ago-2026, pedido usuario): si la purga deja la hoja en 0 filas [→ Contexto_Base_Web.md §14B101]
-  var filasRestantes = sh.getLastRow() - NUEVOS_FILA_DATOS_INICIO + 1;
-  if (filasRestantes <= 0) {
-    Logger.log('[Nuevos] AVISO: tras la purga de arriba, "Nuevos" quedó SIN ningún candidato ' +
-      '(0 filas de datos). Es el comportamiento esperado si se purgó a TODOS los candidatos ' +
-      'existentes (revisar la lista de arriba) — si en cambio esperabas ver candidatos que no ' +
-      'están en esa lista, el problema está en otro punto (ej. _aplicarImportacionNuevos() no los ' +
-      'escribió, o el userscript de Tampermonkey no envió datos en esta corrida).');
-  }
-
-  return filasABorrar.length;
-}
-
-/**
- * _reajustarTituloGridNuevos(sh) [→ Contexto_Base_Web.md §14B102]
- */
-function _reajustarTituloGridNuevos(sh) {
-  var totalColsGrid = sh.getLastColumn() - COL_INICIO_GRID_NUEVOS + 1;
-  if (totalColsGrid < 1) return;
-
-  var numBloques = Math.round(totalColsGrid / GRID_BLOQUE_ANCHO_NUEVOS);
-  sh.getRange(1, COL_INICIO_GRID_NUEVOS, 1, totalColsGrid).merge()
-    .setValue('Historial RoyaleAPI (últimas ' + numBloques + ' fechas)')
-    .setBackground(CFG.COLORES.HEADER_BG)
-    .setFontColor(CFG.COLORES.HEADER_FG)
-    .setFontWeight('bold')
-    .setHorizontalAlignment('center')
-    .setVerticalAlignment('middle');
-
-  var filtroActual = sh.getFilter();
-  if (filtroActual) filtroActual.remove();
-  sh.getRange(NUEVOS_FILA_HEADERS, 1, 1, sh.getLastColumn()).createFilter();
-}
-
-/**
- * _refrescarColumnasFijasNuevos() [→ Contexto_Base_Web.md §14B103]
- */
-function _refrescarColumnasFijasNuevos() {
-  _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado();
-  _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas();
-  _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato();
-}
-
-function _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
-  if (!sh) return;
-
-  _ordenarBloquesFechaNuevos(sh);
-  repararFormatoEncabezadosNuevos();
-
-  // FIX (20-ago-2026, pedido usuario): dirPorTag se construye AQUÍ ARRIBA [→ Contexto_Base_Web.md §14B104]
-  var dirData = _leerDirectorioFisicoComoDC(ss);
-  var dirPorTag = {};
-  for (var j = 0; j < dirData.length; j++) {
-    var tg = String(dirData[j][DC.TAG - 1] || '').trim().toUpperCase();
-    if (tg) dirPorTag[tg] = dirData[j];
-  }
-
-  // FIX (14-ago-2026, pedido usuario): autolimpieza de candidatos ya [→ Contexto_Base_Web.md §14B105]
-  var purgadosEstablecidos = _purgarNuevosEstablecidos(sh);
-  var purgadosExpulsados = _purgarNuevosExpulsados(sh, dirPorTag);
-  if (purgadosEstablecidos > 0 || purgadosExpulsados > 0) _renumerarNuevos(sh);
-
-  var lastRow = sh.getLastRow();
-  // FIX (02-sep-2026, ver docblock de NUEVOS_RESTORE_PROGRESS_FILE más [→ Contexto_Base_Web.md §14B106]
-  if (lastRow < NUEVOS_FILA_DATOS_INICIO || _hayRestauracionNuevosPendiente()) {
-    // PEDIDO DEL USUARIO (22-ago-2026): antes de rendirse por "no hay [→ Contexto_Base_Web.md §14B107]
-    try {
-      var resultadoRestauracion = _restaurarNuevosDesdeCsvDebug();
-      if (resultadoRestauracion && resultadoRestauracion.ok) {
-        Logger.log('[Nuevos-RoyaleAPI] Restauración desde ' + NOMBRE_CSV_DEBUG_NUEVOS + ': ' +
-          (resultadoRestauracion.procesados || 0) + ' candidato(s) en esta corrida' +
-          (resultadoRestauracion.completo ? ' (respaldo completo, sin pendientes).' :
-            ' (quedan ' + (resultadoRestauracion.pendientes || 0) + ' candidato(s) más -- continúa en la próxima corrida).'));
-      }
-    } catch (eRestore) {
-      Logger.log('[Nuevos-RoyaleAPI] _restaurarNuevosDesdeCsvDebug() falló: ' + eRestore.message);
-    }
-  }
-}
-
-function _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
-  if (!sh) return;
-
-  var lastRow = sh.getLastRow();
-  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return; // hoja vacía: nada que refrescar
-  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
-
-  var dirData = _leerDirectorioFisicoComoDC(ss);
-  var dirPorTag = {};
-  for (var j = 0; j < dirData.length; j++) {
-    var tg = String(dirData[j][DC.TAG - 1] || '').trim().toUpperCase();
-    if (tg) dirPorTag[tg] = dirData[j];
-  }
-
-  var tags        = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.TAG,         numFilas, 1).getValues();
-  var nombres      = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NOMBRE,      numFilas, 1).getValues();
-  var nomMultis     = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NOM_MULTI,   numFilas, 1).getValues();
-  var clanes        = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.CLAN,        numFilas, 1).getValues();
-  var niveles        = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NIVEL,       numFilas, 1).getValues();
-  var copasArr        = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.COPAS,       numFilas, 1).getValues();
-  var vGuerras          = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.V_GUERRA,    numFilas, 1).getValues();
-  var inactividades      = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.INACTIVIDAD, numFilas, 1).getValues();
-  var celulares = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.CELULAR, numFilas, 1).getValues();
-  var royaleLinks = [];
-
-  for (var i = 0; i < numFilas; i++) {
-    var tag = String(tags[i][0] || '').trim().toUpperCase();
-    if (!tag) { royaleLinks.push([makeLink('', '')]); continue; }
-
-    var dRow = dirPorTag[tag];
-    if (dRow) {
-      nombres[i][0]       = dRow[DC.NOMBRE      - 1];
-      nomMultis[i][0]     = dRow[DC.NOM_MULTI    - 1];
-      clanes[i][0]        = dRow[DC.CLAN         - 1];
-      niveles[i][0]       = dRow[DC.NIVEL        - 1];
-      copasArr[i][0]      = dRow[DC.COPAS        - 1];
-      vGuerras[i][0]      = dRow[DC.V_GUERRA     - 1];
-      inactividades[i][0] = dRow[DC.INACTIVIDAD  - 1];
-      celulares[i][0]     = dRow[DC.CELULAR      - 1];
-    }
-    royaleLinks.push([makeLink('Link', 'https://royaleapi.com/player/' + cleanTag(tag) + '/')]);
-  }
-
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NOMBRE,      numFilas, 1).setValues(nombres);
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NOM_MULTI,   numFilas, 1).setValues(nomMultis);
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.CLAN,        numFilas, 1).setValues(clanes);
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NIVEL,       numFilas, 1).setValues(niveles);
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.COPAS,       numFilas, 1).setValues(copasArr);
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.V_GUERRA,    numFilas, 1).setValues(vGuerras);
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.INACTIVIDAD, numFilas, 1).setValues(inactividades);
-  // Formato numérico consistente con el resto del proyecto (mismo criterio
-  // que ya usaba _aplicarImportacionNuevos() para estas columnas).
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NIVEL,       numFilas, 1).setNumberFormat('#,##0');
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.COPAS,       numFilas, 1).setNumberFormat('#,##0');
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.V_GUERRA,    numFilas, 1).setNumberFormat('#,##0');
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.INACTIVIDAD, numFilas, 1).setNumberFormat('#,##0');
-
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.CELULAR, numFilas, 1).setValues(celulares);
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.CELULAR, numFilas, 1).setNumberFormat('### ### ### ###');
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.ROYALE_API, numFilas, 1).setRichTextValues(royaleLinks);
-
-  Logger.log('[Nuevos-RoyaleAPI] _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas(): Nombre/Nom_Multi/Clan/Nivel/Copas/V_Guerra/Días inactivo/Celular/RoyaleAPI refrescados en ' + numFilas + ' fila(s).');
-}
-
-function _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
-  if (!sh) return;
-
-  var lastRow = sh.getLastRow();
-  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return; // hoja vacía: nada que ordenar/formatear
-
-  // FIX (09-ago-2026): ver docblock de _refrescarColumnasFijasNuevos() más [→ Contexto_Base_Web.md §14B108]
-  _actualizarSemanaActualNuevos(sh);
-  _reordenarFilasNuevosPorClanYNombre(sh);
-  _aplicarTodoFormatoCondicionalNuevos(sh);
-  _limpiarLinksAccidentalesEnHoja(sh, NUEVOS_FILA_HEADERS);
-
-  Logger.log('[Nuevos-RoyaleAPI] _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato(): semana actual/orden/formato reaplicados.');
-}
-
-/**
- * _renumerarNuevos(sh) [→ Contexto_Base_Web.md §14B109]
- */
-function _renumerarNuevos(sh) {
-  var lastRow = sh.getLastRow();
-  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return;
-  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
-  var numCol = [];
-  for (var n = 0; n < numFilas; n++) numCol.push([n + 1]);
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NUM, numFilas, 1).setValues(numCol);
-}
-
-/**
- * _reordenarFilasNuevosPorClanYNombre(sh) [→ Contexto_Base_Web.md §14B110]
- */
-function _reordenarFilasNuevosPorClanYNombre(sh) {
-  var lastRow = sh.getLastRow();
-  if (lastRow < NUEVOS_FILA_DATOS_INICIO) return;
-  var lastCol = sh.getLastColumn();
-  var numFilas = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
-  if (numFilas < 2) return;
-
-  var rango = sh.getRange(NUEVOS_FILA_DATOS_INICIO, 1, numFilas, lastCol);
-  var valores = rango.getValues();
-  var royaleLinks = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.ROYALE_API, numFilas, 1).getRichTextValues();
-
-  var ordenClan = _getOrdenClanHoja(sh.getParent());
-
-  var indices = valores.map(function (_, i) { return i; });
-  indices.sort(function (a, b) {
-    var clanA = String(valores[a][NC.CLAN - 1] || '').trim().toLowerCase();
-    var clanB = String(valores[b][NC.CLAN - 1] || '').trim().toLowerCase();
-    var ordA = (clanA && ordenClan[clanA] !== undefined) ? ordenClan[clanA] : 999;
-    var ordB = (clanB && ordenClan[clanB] !== undefined) ? ordenClan[clanB] : 999;
-    if (ordA !== ordB) return ordA - ordB;
-
-    var nomA = String(valores[a][NC.NOM_MULTI - 1] || valores[a][NC.NOMBRE - 1] || '').trim().toLowerCase();
-    var nomB = String(valores[b][NC.NOM_MULTI - 1] || valores[b][NC.NOMBRE - 1] || '').trim().toLowerCase();
-    return nomA.localeCompare(nomB, 'es');
-  });
-
-  var yaOrdenado = indices.every(function (v, i) { return v === i; });
-  if (yaOrdenado) return;
-
-  var valoresOrdenados = indices.map(function (i) { return valores[i]; });
-  var linksOrdenados    = indices.map(function (i) { return [royaleLinks[i][0]]; });
-
-  rango.setValues(valoresOrdenados);
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.ROYALE_API, numFilas, 1).setRichTextValues(linksOrdenados);
-
-  var numCol = [];
-  for (var n = 0; n < numFilas; n++) numCol.push([n + 1]);
-  sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NUM, numFilas, 1).setValues(numCol);
-
-  Logger.log('[Nuevos-RoyaleAPI] Filas reordenadas por Clan -> Nombre (' + numFilas + ' fila(s)).');
-}
-
-/**
- * _restaurarNuevosDesdeCsvDebug() [→ Contexto_Base_Web.md §14B111]
- */
-function _restaurarNuevosDesdeCsvDebug() {
-  var csvText = _loadCSVFromDrive(NOMBRE_CSV_DEBUG_NUEVOS);
-  if (!csvText) { _borrarProgresoRestaurarNuevos(); return null; }
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length < 2) { _borrarProgresoRestaurarNuevos(); return null; }
-
-  var ss = _getSs();
-  var dirData = _leerDirectorioFisicoComoDC(ss);
-  var dirPorTag = {};
-  for (var j = 0; j < dirData.length; j++) {
-    var tg = String(dirData[j][DC.TAG - 1] || '').trim().toUpperCase();
-    if (tg) dirPorTag[tg] = dirData[j];
-  }
-  var tz = Session.getScriptTimeZone() || 'GMT-5';
-
-  var filas = parsed.slice(1); // Tag, Temporada, Fecha, Fecha_TS, Clan, Ataques, Fame, Barcos, ClanTag (la 9.ª es de §PF253; los CSV anteriores no la tienen)
-  var porTag = {};
-  var tagsDescartadosPorMembresia = {};
-
-  // FIX (22-ago-2026): mapa de semanas construido UNA sola vez en vez de [→ Contexto_Base_Web.md §14B112]
-  var mapaSemanas = _construirMapaSemanasGuerraTerna();
-
-  for (var i = 0; i < filas.length; i++) {
-    var f = filas[i];
-    var tag = String(f[0] || '').trim().toUpperCase();
-    if (!tag) continue;
-
-    // Filtro de membresía -- "que siguen en el clan" (mismo criterio que
-    // _purgarNuevosExpulsados()).
-    var dRow = dirPorTag[tag];
-    var sigueActivoEnTerna = dRow &&
-      String(dRow[DC.ESTADO - 1]) === 'Activo' &&
-      CFG.TERNA_TAGS.indexOf(String(dRow[DC.CLAN_TAG - 1])) >= 0;
-    if (!sigueActivoEnTerna) { tagsDescartadosPorMembresia[tag] = true; continue; }
-
-    // Filtro de "ya establecido" -- mismo criterio que _purgarNuevosEstablecidos().
-    if (_contarSemanasGuerraTerna(tag, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS) continue;
-
-    // Fecha_TS (numérico, epoch ms) -- ver docblock de esta función. [→ Contexto_Base_Web.md §14B113]
-    var fechaTs = Number(f[3]);
-    if (!fechaTs) continue; // fila "placeholder" (tag sin registros) o Fecha_TS ausente (CSV de antes de este fix)
-
-    // Domingo (guardado en Fecha_TS) -> Lunes (formato crudo que espera
-    // _parseFechaISONuevos(), que le vuelve a restar 1 día).
-    var fechaDomingo = new Date(fechaTs);
-    fechaDomingo.setDate(fechaDomingo.getDate() + 1);
-    var fechaCruda = Utilities.formatDate(fechaDomingo, tz, 'yyyy-MM-dd');
-
-    if (!porTag[tag]) porTag[tag] = [];
-    porTag[tag].push({
-      temporada: f[1] || '',
-      fecha: fechaCruda,
-      clan: f[4] || '',
-      ataques: Number(f[5]) || 0,
-      fame: Number(f[6]) || 0,
-      barcos: Number(f[7]) || 0,
-      clanTag: String(f[8] || '').trim().toUpperCase() // §PF253: vacío en los CSV anteriores
-    });
-  }
-
-  var candidatosPayload = [];
-  for (var t in porTag) {
-    candidatosPayload.push({ tag: t, registros: porTag[t] });
-  }
-
-  var totalDescartados = Object.keys(tagsDescartadosPorMembresia).length;
-  if (totalDescartados > 0) {
-    Logger.log('[Nuevos-Restaurar] ' + totalDescartados + ' Tag(s) del respaldo NO se restauraron ' +
-      'por ya no ser miembros Activos de un clan Terna: ' + Object.keys(tagsDescartadosPorMembresia).join(', ') + '.');
-  }
-  if (!candidatosPayload.length) {
-    Logger.log('[Nuevos-Restaurar] Nada que restaurar desde ' + NOMBRE_CSV_DEBUG_NUEVOS +
-      ' (vacío, o ningún Tag califica tras el filtro de membresía/semanas).');
-    _borrarProgresoRestaurarNuevos();
-    return null;
-  }
-
-  // --- Descartar del payload los Tags que un intento anterior YA restauró
-  //     (checkpoint) -- ver docblock de esta función.
-  var tagsYaRestaurados = _cargarProgresoRestaurarNuevos() || [];
-  var yaRestauradoSet = {};
-  for (var k = 0; k < tagsYaRestaurados.length; k++) yaRestauradoSet[tagsYaRestaurados[k]] = true;
-
-  var candidatosPendientes = candidatosPayload.filter(function (c) {
-    return !yaRestauradoSet.hasOwnProperty(c.tag);
-  });
-
-  if (!candidatosPendientes.length) {
-    // Todo lo que califica del respaldo ya se restauró en un intento
-    // anterior -- checkpoint cumplido, se limpia.
-    Logger.log('[Nuevos-Restaurar] Los ' + candidatosPayload.length +
-      ' candidato(s) que califican del respaldo ya estaban restaurados (checkpoint). Nada pendiente.');
-    _borrarProgresoRestaurarNuevos();
-    return { ok: true, procesados: 0, filasNuevas: 0, filasEliminadas: 0, errores: [], completo: true, pendientes: 0 };
-  }
-
-  Logger.log('[Nuevos-Restaurar] ' + candidatosPendientes.length + ' candidato(s) pendiente(s) de restaurar desde ' +
-    NOMBRE_CSV_DEBUG_NUEVOS + (tagsYaRestaurados.length ? ' (' + tagsYaRestaurados.length + ' ya restaurado(s) en un intento anterior).' : '.'));
-
-  // --- Procesar en sub-lotes acotados por tiempo, guardando checkpoint [→ Contexto_Base_Web.md §14B114]
-  var inicio = Date.now();
-  var totalProcesados = 0, totalFilasNuevas = 0, totalFilasEliminadas = 0;
-  var erroresAcumulados = [];
-  var indice = 0;
-  var seAgotoElPresupuesto = false;
-  var msSubLoteAnterior = 0; // PF311 parte A: duración del sub-lote anterior (0 = todavía no hubo ninguno)
-
-  while (indice < candidatosPendientes.length) {
-    // PF311 parte A: además del presupuesto propio, se mira cuánto le queda a la ejecución. Un sub-lote nuevo solo empieza si le alcanza el tiempo
-    // (1,5 veces lo que tardó el anterior, o 60 s si es el primero) más 45 s para cerrar el paso; si no, lo que falta queda para la continuación.
-    var msNecesariosSubLote = Math.max(Math.round(msSubLoteAnterior * 1.5), 60000) + 45000;
-    if ((Date.now() - inicio) > NUEVOS_RESTORE_PRESUPUESTO_MS || _msRestantesDeEjecucion_() < msNecesariosSubLote) {
-      seAgotoElPresupuesto = true;
-      break;
-    }
-
-    var subLote = candidatosPendientes.slice(indice, indice + NUEVOS_RESTORE_LOTE_MAX);
-    var tSubLote = Date.now();
-    var resultadoSubLote = _aplicarImportacionNuevos(subLote);
-    msSubLoteAnterior = Date.now() - tSubLote;
-    Logger.log('[Nuevos-Restaurar] Sub-lote de ' + subLote.length + ' candidato(s) terminado en ' + Math.round(msSubLoteAnterior / 1000) + ' s (' +
-      Math.min(indice + subLote.length, candidatosPendientes.length) + ' de ' + candidatosPendientes.length + ' pendientes de esta corrida).');
-
-    if (resultadoSubLote && resultadoSubLote.ok) {
-      totalProcesados += resultadoSubLote.procesados || 0;
-      totalFilasNuevas += resultadoSubLote.filasNuevas || 0;
-      totalFilasEliminadas += resultadoSubLote.filasEliminadas || 0;
-      if (resultadoSubLote.errores && resultadoSubLote.errores.length) {
-        erroresAcumulados = erroresAcumulados.concat(resultadoSubLote.errores);
-      }
-      // Sub-lote aplicado con éxito -- sus Tags pasan a "ya restaurados", [→ Contexto_Base_Web.md §14B115]
-      for (var s = 0; s < subLote.length; s++) tagsYaRestaurados.push(subLote[s].tag);
-    } else {
-      Logger.log('[Nuevos-Restaurar] Sub-lote (' + subLote.length + ' candidato(s)) falló: ' +
-        (resultadoSubLote && resultadoSubLote.error || 'respuesta inválida de _aplicarImportacionNuevos()') +
-        ' -- se reintentará en la próxima corrida (no se marca como restaurado).');
-    }
-
-    indice += NUEVOS_RESTORE_LOTE_MAX;
-    _guardarProgresoRestaurarNuevos(tagsYaRestaurados);
-  }
-
-  // pendientesReales: cuántos Tags del payload total (que califican por [→ Contexto_Base_Web.md §14B116]
-  var pendientesReales = candidatosPayload.length - tagsYaRestaurados.length;
-  if (pendientesReales < 0) pendientesReales = 0;
-
-  if (pendientesReales === 0) {
-    Logger.log('[Nuevos-Restaurar] Restauración completa: ' + tagsYaRestaurados.length + ' candidato(s) en total.');
-    _borrarProgresoRestaurarNuevos();
-  } else {
-    Logger.log('[Nuevos-Restaurar] Presupuesto de tiempo (' + (NUEVOS_RESTORE_PRESUPUESTO_MS / 1000) +
-      's) alcanzado -- ' + tagsYaRestaurados.length + ' candidato(s) restaurado(s) hasta ahora, ' +
-      pendientesReales + ' pendiente(s) para la próxima corrida.');
-  }
-
-  return {
-    ok: true,
-    procesados: totalProcesados,
-    filasNuevas: totalFilasNuevas,
-    filasEliminadas: totalFilasEliminadas,
-    errores: erroresAcumulados,
-    completo: pendientesReales === 0,
-    pendientes: pendientesReales
-  };
-}
-
-/**
- * _asegurarBloquesParaFechas(sh, fechasNecesarias) [→ Contexto_Base_Web.md §14B117]
- */
-/**
- * _seleccionarFechasNuevasNecesariasNuevos(sh, candidatosPayload) [→ Contexto_Base_Web.md §14B118]
- */
-function _seleccionarFechasNuevasNecesariasNuevos(sh, candidatosPayload) {
-  var bloques = _leerBloquesFechaNuevos(sh);
-
-  function mismoDia(d1, d2) {
-    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
-  }
-  function existeBloque(fecha) {
-    return bloques.some(function (bk) { return bk.date && mismoDia(bk.date, fecha); });
-  }
-
-  // FIX (12-ago-2026): bug reportado — "no está agregando la última semana [→ Contexto_Base_Web.md §14B119]
-  var maxFechaExistente = null;
-  for (var m = 0; m < bloques.length; m++) {
-    if (bloques[m].date && (!maxFechaExistente || bloques[m].date.getTime() > maxFechaExistente.getTime())) {
-      maxFechaExistente = bloques[m].date;
-    }
-  }
-
-  var fechasNuevasNecesarias = [];
-  function agregarSiFalta(fecha) {
-    var yaEsta = fechasNuevasNecesarias.some(function (f) { return mismoDia(f, fecha); });
-    if (!yaEsta) fechasNuevasNecesarias.push(fecha);
-  }
-
-  for (var c = 0; c < candidatosPayload.length; c++) {
-    var registros = (candidatosPayload[c] || {}).registros || [];
-
-    // Fechas del candidato, parseadas y deduplicadas por día.
-    var fechasCand = [];
-    for (var r = 0; r < registros.length; r++) {
-      var f = _parseFechaISONuevos((registros[r] || {}).fecha);
-      if (!f) continue;
-      if (!fechasCand.some(function (ff) { return mismoDia(ff, f); })) fechasCand.push(f);
-    }
-    if (fechasCand.length === 0) continue;
-
-    // a) Semana(s) nueva(s) — más reciente(s) que cualquier bloque ya
-    //    existente en la hoja: SIEMPRE se agregan, incondicionalmente.
-    var masRecientesQueTodo = fechasCand.filter(function (f) {
-      return !maxFechaExistente || f.getTime() > maxFechaExistente.getTime();
-    });
-    for (var mr = 0; mr < masRecientesQueTodo.length; mr++) {
-      agregarSiFalta(masRecientesQueTodo[mr]);
-    }
-
-    // b) Resto (nunca más nuevas que lo que ya hay en la hoja): mismo
-    //    criterio de mínimo 5 que antes, aplicado solo sobre este subgrupo.
-    var candidatasBackfill = fechasCand.filter(function (f) {
-      return maxFechaExistente && f.getTime() <= maxFechaExistente.getTime();
-    });
-
-    var coincidentes = candidatasBackfill.filter(existeBloque);
-    if (coincidentes.length >= GRID_NUM_BLOQUES_NUEVOS) continue; // ya cumple el mínimo: no crea nada más
-
-    var sinBloque = candidatasBackfill.filter(function (f) { return !existeBloque(f); });
-    sinBloque.sort(function (a, b) { return b.getTime() - a.getTime(); }); // más reciente primero
-
-    var faltan = GRID_NUM_BLOQUES_NUEVOS - coincidentes.length;
-    for (var k = 0; k < sinBloque.length && k < faltan; k++) {
-      agregarSiFalta(sinBloque[k]);
-    }
-  }
-
-  return fechasNuevasNecesarias;
-}
-
-// FASE 9 (Consolidado_Cambios_Pendientes_Guerra.md, punto 3): MIGRACIÓN DE [→ Contexto_Base_Web.md §14B120]
-
-/**
- * _fechaATemporadaSemana(fecha) [→ Contexto_Base_Web.md §14B121]
- */
-function _fechaATemporadaSemana(fecha) {
-  if (!(fecha instanceof Date) || isNaN(fecha.getTime())) return null;
-  var ref = CFG.REF_DEFAULT;
-  if (!ref || isNaN(ref.getTime())) return null;
-
-  // Mismo ajuste de "mes efectivo" que _calcularMesEfectivoRealDeHoy(), [→ Contexto_Base_Web.md §14B122]
-  var anio = fecha.getFullYear();
-  var mes  = fecha.getMonth();
-  var primerLunesFechaMes = primerLunesDelMes(anio, mes);
-  if (fecha < primerLunesFechaMes) {
-    mes--;
-    if (mes < 0) { mes = 11; anio--; }
-  }
-  var mesEfectivo = { anio: anio, mes: mes };
-  var temporadaPropia = calcTemporadaDesdeMesEfectivo(ref, mesEfectivo);
-  if (temporadaPropia < 1) return null; // fecha anterior a CFG.REF_DEFAULT, fuera de rango del proyecto
-
-  var pl = primerLunesTemporada(ref, temporadaPropia);
-  if (!pl || isNaN(pl.getTime())) return null;
-
-  var periodIndex = Math.round((fecha.getTime() - pl.getTime()) / 86400000);
-  if (periodIndex < 0) return null; // no debería pasar tras el ajuste de mes efectivo, red de seguridad
-  var semana = Math.floor(periodIndex / 7) + 1;
-
-  return { temporadaPropia: temporadaPropia, semana: semana, periodIndex: periodIndex };
-}
-
-/**
- * _mapaNombreClanATagTerna() [→ Contexto_Base_Web.md §14B123]
- */
-function _mapaNombreClanATagTerna() {
-  var mapa = {};
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
-  if (sh && sh.getLastRow() >= 2) {
-    var data = sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues(); // Orden, ClanTag, Nombre
-    for (var i = 0; i < data.length; i++) {
-      var tag = String(data[i][1] || '').trim();
-      var nombre = String(data[i][2] || '').trim();
-      if (nombre && CFG.TERNA_TAGS.indexOf(tag) >= 0) {
-        mapa[nombre.toLowerCase()] = tag;
-      }
-    }
-  }
-  // Respaldo (hoja Clan sin datos todavía, ej. corrida muy temprana): usa
-  // el mismo fallback que _getNombresClanesTernaOrdenados()/_resolverNombreClan().
-  if (Object.keys(mapa).length === 0) {
-    for (var j = 0; j < CFG.TERNA_TAGS.length; j++) {
-      var tagJ = CFG.TERNA_TAGS[j];
-      var nombreJ = _resolverNombreClan(tagJ);
-      if (nombreJ) mapa[String(nombreJ).trim().toLowerCase()] = tagJ;
-    }
-  }
-  return mapa;
-}
+// ----- Pase a histórico -----
 
 /**
  * _migrarNuevosAHistorico(candidatosPayload) [→ Contexto_Base_Web.md §14B124]
@@ -2464,4 +2435,64 @@ function _migrarNuevosAHistorico(candidatosPayload) {
   }
 
   return statsGlobal;
+}
+
+/**
+ * _mapaNombreClanATagTerna() [→ Contexto_Base_Web.md §14B123]
+ */
+function _mapaNombreClanATagTerna() {
+  var mapa = {};
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
+  if (sh && sh.getLastRow() >= 2) {
+    var data = sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues(); // Orden, ClanTag, Nombre
+    for (var i = 0; i < data.length; i++) {
+      var tag = String(data[i][1] || '').trim();
+      var nombre = String(data[i][2] || '').trim();
+      if (nombre && CFG.TERNA_TAGS.indexOf(tag) >= 0) {
+        mapa[nombre.toLowerCase()] = tag;
+      }
+    }
+  }
+  // Respaldo (hoja Clan sin datos todavía, ej. corrida muy temprana): usa
+  // el mismo fallback que _getNombresClanesTernaOrdenados()/_resolverNombreClan().
+  if (Object.keys(mapa).length === 0) {
+    for (var j = 0; j < CFG.TERNA_TAGS.length; j++) {
+      var tagJ = CFG.TERNA_TAGS[j];
+      var nombreJ = _resolverNombreClan(tagJ);
+      if (nombreJ) mapa[String(nombreJ).trim().toLowerCase()] = tagJ;
+    }
+  }
+  return mapa;
+}
+
+// FASE 9 (Consolidado_Cambios_Pendientes_Guerra.md, punto 3): MIGRACIÓN DE [→ Contexto_Base_Web.md §14B120]
+/**
+ * _fechaATemporadaSemana(fecha) [→ Contexto_Base_Web.md §14B121]
+ */
+function _fechaATemporadaSemana(fecha) {
+  if (!(fecha instanceof Date) || isNaN(fecha.getTime())) return null;
+  var ref = CFG.REF_DEFAULT;
+  if (!ref || isNaN(ref.getTime())) return null;
+
+  // Mismo ajuste de "mes efectivo" que _calcularMesEfectivoRealDeHoy(), [→ Contexto_Base_Web.md §14B122]
+  var anio = fecha.getFullYear();
+  var mes  = fecha.getMonth();
+  var primerLunesFechaMes = primerLunesDelMes(anio, mes);
+  if (fecha < primerLunesFechaMes) {
+    mes--;
+    if (mes < 0) { mes = 11; anio--; }
+  }
+  var mesEfectivo = { anio: anio, mes: mes };
+  var temporadaPropia = calcTemporadaDesdeMesEfectivo(ref, mesEfectivo);
+  if (temporadaPropia < 1) return null; // fecha anterior a CFG.REF_DEFAULT, fuera de rango del proyecto
+
+  var pl = primerLunesTemporada(ref, temporadaPropia);
+  if (!pl || isNaN(pl.getTime())) return null;
+
+  var periodIndex = Math.round((fecha.getTime() - pl.getTime()) / 86400000);
+  if (periodIndex < 0) return null; // no debería pasar tras el ajuste de mes efectivo, red de seguridad
+  var semana = Math.floor(periodIndex / 7) + 1;
+
+  return { temporadaPropia: temporadaPropia, semana: semana, periodIndex: periodIndex };
 }
