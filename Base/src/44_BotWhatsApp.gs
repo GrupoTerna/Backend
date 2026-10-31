@@ -1,10 +1,19 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Simulador del bot (sin WhatsApp)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Envío de mensajes por WhatsApp
+//    - Opciones interactivas, router principal y estado de conversación
+//    - Autorización, textos y respuestas por categoría
+//    - Gestión de información de miembros, torneos e información del clan (según los encabezados del archivo)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 // ==============================================================================
 // 44_BotWhatsApp.gs
 // Bot conversacional de WhatsApp (maquina de estados). El router web (doPost)
 // vive en 38_Web_Endpoints.gs; aqui solo la logica de conversacion del bot.
 // ==============================================================================
 
-// ----- Variables y constantes -----
+// ----- Constantes y variables globales -----
 
 // =============================================================================
 // Bot de WhatsApp "Sweetyuri_jj", router de intenciones: autorizado → admin → bienvenida → menú de categorías; comandos "0" y "9"; avance Fases 9-15. Estado: estuvo conectado a Meta un tiempo; hoy inactivo (sin chip). Código conservado; simularMensajeBot() prueba el flujo sin WhatsApp. [→ Contexto_Base_Web.md §44B001]
@@ -46,7 +55,7 @@ var FUENTES_CONTENIDO = [
   { sheet: CFG.SHEETS.MENSAJES,   colCategoria: 8, colSubcategoria: 10, colClan: 12, colContenido: 15, totalCols: 15, csv: 'Backup_Mensajes.csv' },
 ];
 
-// ----- Funciones manuales / punto de entrada -----
+// ===== PARTE 1 — Funciones que se corren a mano =====
 
 // =============================================================================
 // NOTA DE REORDEN 23-ago-2026: simularMensajeBot() se movió arriba, junto a doPost() (funciones manuales juntas). [→ Contexto_Base_Web.md §44B008]
@@ -67,7 +76,7 @@ function simularMensajeBot() {
   if (opciones) Logger.log('--- Opciones (' + opciones.length + ') ---\n' + JSON.stringify(opciones));
 }
 
-// ----- Funciones internas / helpers -----
+// ===== PARTE 2 — Funciones que no se corren a mano =====
 
 // _extraerMensajeMeta(body): saca {telefono, texto} del payload de Cloud API (tipos text e interactive). [→ Contexto_Base_Web.md §44B010]
 function _extraerMensajeMeta(body) {
