@@ -1816,6 +1816,52 @@ function _tagsSinPerfilEnOverlay_(mapa) {
 }
 
 /**
+ * _tagsRegresadosSinPerfilTrasRegreso_(mapa, ventanasOpc)  (§PF314, PF253 opción B; por confirmar tras la contrastación con los json)
+ * Tags de jugadores que SALIERON de los clanes Terna y REGRESARON, y cuyo perfil no se ha leído desde que regresaron. Así Tampermonkey visita su
+ * perfil (manda todas las semanas, incluidas las del lapso fuera) y el backend decide: una fila igual a la guardada no se reescribe, una distinta
+ * la reemplaza con aviso «antes / ahora» y una semana que falta se agrega (§PF236, §PF237). El backend no necesita contarle a Tampermonkey qué semanas tiene cada jugador (opción A).
+ * Regreso = la membresía en clanes Terna (ventanas de Historial, _construirVentanasMembresiaTernaPorTag()) tiene un hueco de CGW_REGRESO_HUECO_DIAS o más
+ * (un traslado entre clanes Terna con pocos días de por medio no cuenta) y el jugador está hoy en un clan Terna (última ventana abierta).
+ * «Perfil leído desde el regreso» = alguna fila del perfil (sin ClanTag, origen «perfil») con «Actualizado» igual o posterior a la fecha del regreso.
+ * Riesgo conocido: si el perfil de RoyaleAPI no trae ninguna semana nueva o distinta, «Actualizado» no cambia (§PF236) y el jugador seguiría en la lista.
+ */
+function _tagsRegresadosSinPerfilTrasRegreso_(mapa, ventanasOpc) {
+  var ventanas = ventanasOpc || _construirVentanasMembresiaTernaPorTag();
+  var tz = Session.getScriptTimeZone() || 'GMT-5';
+  var ultimaLecturaPerfil = {}; // tag -> «Actualizado» más reciente de una fila de perfil con origen «perfil»
+  Object.keys(mapa || {}).forEach(function (k) {
+    var p = k.split('|'); // temporada | semana | clantag | tag
+    if (p[2] !== '' || mapa[k].origenPerfil !== CGW_ORIGEN_PERFIL) return;
+    var tg = String(p[3] || '').trim().toUpperCase();
+    var act = String(mapa[k].actualizado || '');
+    if (act && act > (ultimaLecturaPerfil[tg] || '')) ultimaLecturaPerfil[tg] = act;
+  });
+  var margen = CGW_REGRESO_HUECO_DIAS * 24 * 3600 * 1000;
+  var salida = [];
+  Object.keys(ventanas || {}).forEach(function (t) {
+    var v = (ventanas[t] || []).slice().sort(function (a, b) { return a.desde.getTime() - b.desde.getTime(); });
+    if (v.length < 2) return;
+    // Se funden las ventanas que se tocan o se traslapan (traslado entre clanes Terna) y se busca la última interrupción.
+    var tramos = [];
+    v.forEach(function (w) {
+      var fin = (w.hasta === null) ? null : w.hasta.getTime();
+      var ult = tramos[tramos.length - 1];
+      if (ult && (ult.fin === null || w.desde.getTime() - ult.fin < margen)) {
+        if (fin === null || (ult.fin !== null && fin > ult.fin)) ult.fin = fin;
+      } else {
+        tramos.push({ desde: w.desde, fin: fin });
+      }
+    });
+    if (tramos.length < 2) return;
+    var ultimo = tramos[tramos.length - 1];
+    if (ultimo.fin !== null) return; // hoy no está en un clan Terna: Tampermonkey solo visita a los activos
+    var regreso = Utilities.formatDate(ultimo.desde, tz, 'yyyy-MM-dd HH:mm:ss');
+    if ((ultimaLecturaPerfil[t] || '') < regreso) salida.push(t);
+  });
+  return salida.sort();
+}
+
+/**
  * _cuentasConVariosClanesEnOverlay_()
  * §PF164: tags de jugador con al menos una semana con filas de 2 o más clanes Terna en Correcciones_Guerra.csv. Con los datos del 12-oct-2026
  * son 35. Es la lista que Tampermonkey ofrece al forzar la lectura del perfil (opción «VARIOS»).
@@ -2277,6 +2323,11 @@ function _obtenerListaCorreccionGuerra(opciones) {
   var mapaOverlayLista = soloClanes ? null : _cargarOverlayCorreccionesGuerraPorClan(); // §PF246: una sola lectura del CSV para las dos listas de abajo
   var cuentasVariosClanes = soloClanes ? [] : _cuentasConVariosClanesEnOverlay_(mapaOverlayLista); // §PF164: para forzar su perfil desde Tampermonkey (v3.2)
   var sinPerfilEnCsv = soloClanes ? [] : _tagsSinPerfilEnOverlay_(mapaOverlayLista); // §PF246 (punto 2 de §PF235)
+  var regresadosSinPerfil = [];
+  if (!soloClanes) { // §PF314 (PF253 opción B): quien salió y regresó se visita aunque ya tenga perfil guardado de antes; un fallo no frena la lista
+    try { regresadosSinPerfil = _tagsRegresadosSinPerfilTrasRegreso_(mapaOverlayLista); }
+    catch (eReg) { Logger.log('[CorreccionGuerra][Lista] AVISO: no se pudo calcular quién regresó (' + (eReg.message || eReg) + '); la lista sale sin ese campo.'); }
+  }
   Logger.log('[CorreccionGuerra][Lista] modo=' + (soloClanes ? 'clanes' : 'completo') +
              ' · directorio ' + (tDirectorio - tInicio) + ' ms · cobertura ' + (Date.now() - tDirectorio) + ' ms · ' +
              jugadores.length + ' jugador(es) · total ' + (Date.now() - tInicio) + ' ms');
@@ -2295,7 +2346,9 @@ function _obtenerListaCorreccionGuerra(opciones) {
     cuentasVariosClanes: cuentasVariosClanes,
     // §PF246: tags con datos de algún clan (Log/Analytics) en Correcciones_Guerra.csv y NINGUNA fila de perfil con origen «perfil» (el «Grupo B» de §PF235).
     // Tampermonkey v3.10 visita su perfil aunque Log/Analytics los hayan cubierto, una sola vez: al guardarse su perfil salen de esta lista.
-    sinPerfilEnCsv: sinPerfilEnCsv
+    sinPerfilEnCsv: sinPerfilEnCsv,
+    // §PF314 (PF253 opción B): activos que salieron de los clanes Terna y regresaron, sin perfil leído desde el regreso. Tampermonkey v3.17 visita su perfil (todas las semanas) y el backend decide qué reemplaza o agrega.
+    regresadosSinPerfil: regresadosSinPerfil
   };
 }
 
