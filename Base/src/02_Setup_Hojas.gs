@@ -266,6 +266,7 @@ function _setupGuerra(ss) {
   if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
+  _aplicarFormatoMilesGuerra_(sh); // 31-oct-2026: Fame y Copas con coma de miles, solo visual (17_GuerraSheet.gs)
   Logger.log('[Setup] Guerra OK (' + headers.length + ' cols, incluye Merma_AtaquesHoy/Merma_AtaquesSemana)');
 }
 

@@ -86,6 +86,20 @@ var GUERRA_HEADERS_V21 = ['N°','Fecha','Temporada','Semana','Día','PeriodIndex
                           'Donaciones_r','Donaciones_d','Ranking',
                           'Temporada_2','Origen','Copas'];
 
+// 31-oct-2026 (pedido de la usuaria: medallas y copas llevan coma de miles en cualquier hoja y en la web, SOLO como visualización): Fame y Copas de la hoja Guerra se muestran como «12,345», pero la celda guarda el número sin coma y Backup_Guerra.csv también (ver _syncGuerraCSV).
+var GUERRA_COLS_MILES_ = [GC.FAME, GC.COPAS];
+
+function _aplicarFormatoMilesGuerra_(sh) {
+  try {
+    var nFilasMiles = Math.max(sh.getMaxRows() - 1, 1); // toda la columna: las filas que se agreguen después ya nacen con el formato
+    for (var cmg = 0; cmg < GUERRA_COLS_MILES_.length; cmg++) {
+      sh.getRange(2, GUERRA_COLS_MILES_[cmg], nFilasMiles, 1).setNumberFormat('#,##0');
+    }
+  } catch (eMiles) {
+    Logger.log('[Guerra] _aplicarFormatoMilesGuerra_: no se pudo aplicar el formato de miles (' + eMiles.message + ').');
+  }
+}
+
 // ÍNDICES DE COLUMNA - HOJA GUERRA_LOGS (1-based) [→ Contexto_Base_Web.md §17B008]
 var GLC = {
   NUM:          1,
@@ -560,10 +574,12 @@ function updateGuerraSheet() {
     sh.getRange(startRow, 1, batchValues.length, GUERRA_TOTAL_COLS).setValues(batchValues);
     sh.getRange(startRow, GC.FECHA,      batchValues.length, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
     sh.getRange(startRow, GC.DIA_GUERRA, batchValues.length, 1).setNumberFormat('dd/mm/yyyy');
+    _aplicarFormatoMilesGuerra_(sh);
   }
 
   if (fechasReparadas > 0) {
     sh.getRange(2, GC.DIA_GUERRA, datosGuerra.length, 1).setNumberFormat('dd/mm/yyyy');
+    _aplicarFormatoMilesGuerra_(sh);
     Logger.log('[Guerra][FECHAS] Autorreparadas ' + fechasReparadas + ' celda(s) vacía(s) de DiaGuerra en filas existentes (Fecha no se modifica).');
   }
 
@@ -4675,6 +4691,7 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
       // el id de las filas restauradas no coincidía con el del CSV y la segunda tanda volvía a restaurarlas todas (filas repetidas).
       sh.getRange(proximaFila, GC.FECHA, appendData.length, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
       sh.getRange(proximaFila, GC.DIA_GUERRA, appendData.length, 1).setNumberFormat('dd/mm/yyyy');
+      _aplicarFormatoMilesGuerra_(sh);
       proximaFila += appendData.length;
       escritasEnEstaCorrida += appendData.length;
       lote = [];
@@ -4835,6 +4852,16 @@ function _syncGuerraCSV(sh, forzar) {
         }
         if (colDiaGuerraGuerra[rg][0] instanceof Date && !isNaN(colDiaGuerraGuerra[rg][0].getTime())) {
           data[rg + 1][GC.DIA_GUERRA - 1] = _formatFechaCanonica(colDiaGuerraGuerra[rg][0]);
+        }
+      }
+    }
+
+    // 31-oct-2026: Fame y Copas tienen formato «#,##0» solo de visualización; getDisplayValues() trae «12,345» y el respaldo guarda el número crudo («12345»).
+    if (lastRow >= 2) {
+      for (var cmGu = 0; cmGu < GUERRA_COLS_MILES_.length; cmGu++) {
+        var colRawGu = sh.getRange(2, GUERRA_COLS_MILES_[cmGu], lastRow - 1, 1).getValues();
+        for (var rmGu = 0; rmGu < colRawGu.length; rmGu++) {
+          if (typeof colRawGu[rmGu][0] === 'number' && !isNaN(colRawGu[rmGu][0])) data[rmGu + 1][GUERRA_COLS_MILES_[cmGu] - 1] = String(colRawGu[rmGu][0]);
         }
       }
     }
@@ -5068,6 +5095,7 @@ function _purgarTemporadasAnterioresGuerra(sh, temporadaActual) {
     sh.getRange(2, 1, filasActuales.length, GUERRA_TOTAL_COLS).setValues(filasActuales);
     sh.getRange(2, GC.FECHA,      filasActuales.length, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
     sh.getRange(2, GC.DIA_GUERRA, filasActuales.length, 1).setNumberFormat('dd/mm/yyyy');
+    _aplicarFormatoMilesGuerra_(sh);
   }
 
   Logger.log('[Guerra] Purga completada: ' + (data.length - filasActuales.length) +
@@ -5229,6 +5257,7 @@ function _corregirTemporadaEnGuerra(ss, temporadaCorrecta, fechaCorte) {
     sh.getRange(2, 1, filasFinal.length, GUERRA_TOTAL_COLS).setValues(filasFinal);
     sh.getRange(2, GC.FECHA,      filasFinal.length, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
     sh.getRange(2, GC.DIA_GUERRA, filasFinal.length, 1).setNumberFormat('dd/mm/yyyy');
+    _aplicarFormatoMilesGuerra_(sh);
   }
 
   Logger.log('[Corrección] Guerra: ' + corregidas + ' fila(s) con Temporada corregida. ' +
