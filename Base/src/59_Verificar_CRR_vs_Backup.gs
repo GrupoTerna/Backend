@@ -442,6 +442,8 @@ function _vcrrEncabezadoRestricciones_() {
     for (var d = 0; d < 4; d++) { h.push(m + ' acum ' + VCRR_DIAS.charAt(d) + ' min'); h.push(m + ' acum ' + VCRR_DIAS.charAt(d) + ' max'); }
   });
   for (var d2 = 0; d2 < 4; d2++) { h.push('Ataques del día ' + VCRR_DIAS.charAt(d2) + ' min'); h.push('Ataques del día ' + VCRR_DIAS.charAt(d2) + ' max'); }
+  // Calculadas (no se leen de vuelta): merma = ataques desperdiciados hasta el cierre del día; máximo semanal = lo más que puede llegar la semana desde ahí.
+  for (var d3 = 0; d3 < 4; d3++) { h.push('Merma acum ' + VCRR_DIAS.charAt(d3) + ' min'); h.push('Merma acum ' + VCRR_DIAS.charAt(d3) + ' max'); h.push('Máximo semanal tras ' + VCRR_DIAS.charAt(d3)); }
   return h;
 }
 
@@ -452,6 +454,7 @@ function _vcrrFilaRestriccion_(x) {
   var num = function (v) { return v === Infinity ? '' : v; };
   [x.r.A, x.r.F, x.r.B].forEach(function (m) { for (var d = 0; d < 4; d++) { fila.push(num(m.lo[d])); fila.push(num(m.hi[d])); } });
   for (var d2 = 0; d2 < 4; d2++) { fila.push(x.r.A.il[d2]); fila.push(x.r.A.ih[d2]); }
+  for (var d3 = 0; d3 < 4; d3++) { fila.push(4 * (d3 + 1) - x.r.A.hi[d3]); fila.push(4 * (d3 + 1) - x.r.A.lo[d3]); fila.push(x.r.A.hi[d3] + 4 * (3 - d3)); }
   return fila;
 }
 
@@ -466,7 +469,7 @@ function _vcrrGuardarRestricciones_(series, semanasHechas) {
     var parsed = _parseCSV(texto);
     if (parsed && parsed.length > 1) {
       var off = String(parsed[0][0]).trim() === 'ID' ? 1 : 0;
-      if (parsed[0].length - off === enc.length) {
+      if (parsed[0].length - off === enc.length) {   // si cambió el formato de columnas, se rehace el archivo con lo calculado ahora
         for (var i = 1; i < parsed.length; i++) {
           var f = parsed[i].slice(off);
           if (semanasHechas[Number(f[0]) * 1000 + Number(f[1])]) continue;
