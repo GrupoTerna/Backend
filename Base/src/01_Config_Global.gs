@@ -641,6 +641,9 @@ var _propPrivadaCache_ = {};
 // Si CSV_MOVER_A_SUBCARPETA es true, al guardar un archivo encontrado fuera de su subcarpeta se mueve a ella.
 var CSV_MOVER_A_SUBCARPETA = true;
 var CSV_SUBCARPETAS_ = ['Background', 'Hojas', 'Informes', 'Tampermonkey', 'Jugador'];
+// PF185 (31-oct-2026, «tú decide» de la usuaria): subcarpetas DENTRO de CSV/Informes, por función. Hoy solo «Cruce_Meta» (lo que sale del cruce de meta: nombres que empiezan por Cruce_ o Cotejo_). El resto de los informes se queda en la raíz de Informes
+// porque 48_Herramientas_Debug.gs los busca ahí por ID (CARPETA_INFORMES_ID). Para agregar otra subcarpeta hay que sumarla aquí y en _csvInformesSubDe_(). [→ Contexto_Base_Web.md §PF185]
+var CSV_INFORMES_SUBCARPETAS_ = ['Cruce_Meta'];
 var _CSV_SUBCARPETAS_MEM_ = {};
 
 // ===== PARTE 1 — Funciones que se corren a mano =====
@@ -1312,12 +1315,35 @@ function _csvSubcarpetaDe_(filename) {
   return ''; // sin asignar: raíz de CSV (hoy ninguno de los que usa el código)
 }
 
+/**
+ * _csvInformesSubDe_(filename) - PF185 (31-oct-2026). Subcarpeta de CSV/Informes que le toca a un archivo, o '' si va en la raíz de Informes (o no es un informe). _csvSubcarpetaDe_() sigue devolviendo
+ * 'Informes' para todos (lo usan _agregarIdAInformeCSV_() y moverInformesSueltosASubcarpeta()); esta función solo afina el destino dentro de esa carpeta. [→ Contexto_Base_Web.md §PF185]
+ */
+function _csvInformesSubDe_(filename) {
+  var n = String(filename || '');
+  if (_csvSubcarpetaDe_(n) !== 'Informes') return '';
+  if (/^(Cruce_|Cotejo_)/.test(n)) return 'Cruce_Meta';
+  return '';
+}
+
+/** _csvDestinoDe_(filename) - PF185. Ruta de destino de un CSV: 'Informes/Cruce_Meta', 'Informes', 'Hojas', etc. ('' = raíz de CSV). Las rutas con «/» las entiende _getCsvSubcarpeta_(). */
+function _csvDestinoDe_(filename) {
+  var familia = _csvSubcarpetaDe_(filename);
+  var sub = _csvInformesSubDe_(filename);
+  return sub ? (familia + '/' + sub) : familia;
+}
+
 function _getCsvSubcarpeta_(nombre, crear) {
   if (!nombre) return _getCsvFolder();
   if (_CSV_SUBCARPETAS_MEM_[nombre]) return _CSV_SUBCARPETAS_MEM_[nombre];
-  var it = _getCsvFolder().getFoldersByName(nombre);
-  var carpeta = it.hasNext() ? it.next() : (crear ? _getCsvFolder().createFolder(nombre) : null);
-  if (carpeta) _CSV_SUBCARPETAS_MEM_[nombre] = carpeta;
+  var partes = String(nombre).split('/'); // PF185: 'Informes/Cruce_Meta' = subcarpeta Cruce_Meta dentro de Informes
+  var carpeta = _getCsvFolder();
+  for (var p = 0; p < partes.length; p++) {
+    var it = carpeta.getFoldersByName(partes[p]);
+    carpeta = it.hasNext() ? it.next() : (crear ? carpeta.createFolder(partes[p]) : null);
+    if (!carpeta) return null;
+  }
+  _CSV_SUBCARPETAS_MEM_[nombre] = carpeta;
   return carpeta;
 }
 
@@ -1325,10 +1351,19 @@ function _getCsvSubcarpeta_(nombre, crear) {
 // Devuelve { file, carpetaNombre } ('' = raíz) o null si no existe.
 function _csvBuscarArchivo_(filename) {
   var asignada = _csvSubcarpetaDe_(filename);
-  var orden = [asignada];
+  var destino = _csvDestinoDe_(filename); // PF185: puede ser 'Informes/Cruce_Meta'
+  var orden = [destino];
+  if (asignada !== '' && orden.indexOf(asignada) < 0) orden.push(asignada);
   if (asignada !== '') orden.push('');
   for (var i = 0; i < CSV_SUBCARPETAS_.length; i++) {
     if (orden.indexOf(CSV_SUBCARPETAS_[i]) < 0) orden.push(CSV_SUBCARPETAS_[i]);
+  }
+  // PF185: solo un informe puede estar en una subcarpeta de Informes; así los demás archivos no pagan búsquedas de más.
+  if (asignada === 'Informes') {
+    for (var k = 0; k < CSV_INFORMES_SUBCARPETAS_.length; k++) {
+      var ruta = 'Informes/' + CSV_INFORMES_SUBCARPETAS_[k];
+      if (orden.indexOf(ruta) < 0) orden.push(ruta);
+    }
   }
   for (var j = 0; j < orden.length; j++) {
     var carpeta = _getCsvSubcarpeta_(orden[j], false);
