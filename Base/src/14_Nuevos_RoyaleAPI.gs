@@ -2385,6 +2385,7 @@ function _migrarNuevosAHistorico(candidatosPayload) {
         ataquesSemana: ataquesVal || 0,
         fame: fameVal || 0,
         barcos: barcosVal, // null se preserva tal cual -- _reconstruirSemanaDesdeCero() ya sabe tratarlo como "sin dato"
+        clanTag: clanTagReg, // 31-oct-2026: clan que reporta Nuevos; la fila de Guerra es única por día, Tag y clan
         temporadaRoyaleApi: ts.temporadaPropia + offsetRoyaleApi
       });
     }
@@ -2423,18 +2424,24 @@ function _migrarNuevosAHistorico(candidatosPayload) {
 
     for (var e = 0; e < entradas.length; e++) {
       var entrada = entradas[e];
-      var clave = entrada.tag + '|' + entrada.semana;
-
-      if (offsetsPorClave[clave]) {
+      // 31-oct-2026: la fila de Guerra es única por día, Tag y clan. La existencia se mira en el clan que reporta Nuevos: si ese
+      // jugador ya tiene filas de la semana en ese clan (reales o ya migradas), manda lo que hay en la hoja y no se escribe nada.
+      // Solo si no hay ninguna fila en ese clan se crea la semana, y con el clan de Nuevos (no el del Directorio), para que la
+      // fila coincida con el id que luego usa updateGuerraSheet() y se actualice en vez de duplicarse.
+      var clanNombreEntrada = _resolverNombreClan(entrada.clanTag) || '';
+      var porClanSemana = _indexarFilasJugadorSemanaPorClan_(fuente.filas, temporadaPropia, entrada.semana, entrada.tag);
+      if (porClanSemana[String(clanNombreEntrada).trim()]) {
         // YA existe -- regla de no pisado (ver docblock de sección arriba): [→ Contexto_Base_Web.md §14B128]
         statsGlobal.clavesYaExistian++;
         continue;
       }
 
+      var clave = entrada.tag + '|' + entrada.semana;
+      delete offsetsPorClave[clave]; // la reconstrucción es de este clan: no se ajustan filas de otro clan
       _aplicarCorreccionAGuerraConReparto(
         fuente, offsetsPorClave, temporadaPropia, entrada.semana, entrada.tag,
         { ataquesSemana: entrada.ataquesSemana, fame: entrada.fame, barcos: entrada.barcos },
-        { temporadaRoyaleApi: entrada.temporadaRoyaleApi },
+        { temporadaRoyaleApi: entrada.temporadaRoyaleApi, clanNombre: clanNombreEntrada },
         statsLocal
       );
       huboCambioTemporada = true;

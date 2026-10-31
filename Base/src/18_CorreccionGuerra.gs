@@ -2464,7 +2464,7 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
     filaNueva[GC.DIA         - 1] = periodIdxToLetra(pIdx);
     filaNueva[GC.PERIOD_IDX  - 1] = pIdx;
     filaNueva[GC.ETAPA       - 1] = 'Guerra';
-    filaNueva[GC.CLAN        - 1] = datosJugador.clan;
+    filaNueva[GC.CLAN        - 1] = opciones.clanNombre || datosJugador.clan; // 31-oct-2026: el clan que reporta Nuevos manda sobre el del Directorio
     filaNueva[GC.TAG         - 1] = tag;
     filaNueva[GC.NOMBRE      - 1] = datosJugador.nombre;
     filaNueva[GC.ATAQUES_HOY - 1] = 0;
