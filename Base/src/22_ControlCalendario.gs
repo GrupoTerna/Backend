@@ -1,13 +1,63 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Extra
+//    - Hoja Control
+//    - Calendario y Calendario_2
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Control: ayuda del formato
+//    - Calendario: generación
+//    - Hoja Control: requisitos de ascenso, lectura de guerra (hoja y CSV), cruce de meta por día y formato condicional
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // ==============================================================================
 // 22_ControlCalendario.gs
 // Hojas Extra, Control y Calendario/Calendario2: vistas de control semanal y calendario.
 // ==============================================================================
 
-// ----- Variables y constantes -----
+// ----- Constantes y variables globales -----
 
-// ----- Funciones manuales / punto de entrada -----
+// FIX (rendimiento, sept-2026 -- runGuerra() cortándose por "Exceeded maximum [→ Contexto_Base_Web.md §22B008]
+
+var CONTROL_LIMPIAR_LINKS_INTERVALO_MS = 60 * 60 * 1000; // máx. 1 vez por hora, igual criterio que Guerra
+var CONTROL_FORMATO_REBUILD_MAX_ELAPSED_MS = 6 * 60 * 60 * 1000; // respaldo: forzar rebuild al menos cada 6h
+
+// Requisitos para que la columna "Ascenso" de Control muestre "Sí" (ver [→ Contexto_Base_Web.md §22B038]
+var REQUISITOS_ASCENSO = {
+  ATAQUES_PCT: 1.0,      // Ataques.% >= 100%
+  MIEMBRO_PROM: 2500,    // Puntaje.Prom si Rango actual = "Miembro"
+  VETERANO_PROM: 3000,   // Puntaje.Prom si Rango actual = "Veterano"
+  BARCOS_TOTAL: 0        // Barcos.Total debe ser exactamente 0
+};
+
+/**
+ * _ULTIMO_DIAGNOSTICO_GUERRA_CSV [→ Contexto_Base_Web.md §22B042]
+ */
+var _ULTIMO_DIAGNOSTICO_GUERRA_CSV = null;
+
+// MEMO POR EJECUCIÓN de Backup_Guerra.csv (19-sep-2026, pedido del usuario -- [→ Contexto_Base_Web.md §22B043]
+var _GUERRA_MEMO_ACTIVO = false;
+var _GUERRA_CSV_MEMO    = null; // { diag:string|null, totalFilas:number, porTemporada:{ '7': [fila,...] } }
+var _GUERRA_MAPA_MEMO   = {};   // { '7': mapa de _procesarFilasGuerraParaControl() de esa temporada histórica }
+// 19-sep-2026 (medición real: control2Vigente=4.9 s, valoresDiarios=2.3 s): filas crudas de la hoja
+// Guerra (getValues) leídas UNA vez durante la sesión del dashboard, en vez de una por cuadrícula.
+var _GUERRA_HOJA_MEMO   = null;
+
+// CRUCE DE META POR DÍA (19-sep-2026, pedido del usuario): ¿el clan ya había [→ Contexto_Base_Web.md §22B051]
+var _CRUCE_META_LOGS_MEMO = null;   // { 'temp|clan': { periodIndex: {ini, fin} } }
+var _CRUCE_META_RES_MEMO  = {};     // { 'temp|clan|pIdx': true/false }
+var _CRUCE_META_JSON_IDX  = {};     // { 'clan': { t, fresco, ids: { 'T|S|P': idArchivoDrive } } } (PF144: ya no guarda DriveFile)
+var _CRUCE_META_JSON_RES  = {};     // { 'temp|clan|pIdx': true/false/null }
+
+/**
+ * CONTROL_SUMA_ENTRE_CLANES (3-oct-2026, parte 54, sub-tanda 3.4 de la Tanda 3, pregunta 42 y 56 del consolidado) [→ Contexto_Base_Web.md §22B060]
+ */
+var CONTROL_SUMA_ENTRE_CLANES = true;
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
 
 // SECCIÓN 2: RESTO DE FUNCIONES (Extra, Control, Calendario, helpers internos) [→ Contexto_Base_Web.md §22B001]
+
+// CONTROL [→ Contexto_Base_Web.md §22B007]
 
 function updateExtraSheet() {
   var ss  = _getSs();
@@ -97,34 +147,6 @@ function updateExtraSheet() {
   applyBorderCenter(sh.getRange(2, 1, Math.max(sh.getLastRow() - 1, 1), totalColsExtra));
 
   Logger.log('[Extra] updateExtraSheet completado. Columnas detectadas: ' + totalColsExtra);
-}
-
-// CONTROL [→ Contexto_Base_Web.md §22B007]
-
-// FIX (rendimiento, sept-2026 -- runGuerra() cortándose por "Exceeded maximum [→ Contexto_Base_Web.md §22B008]
-
-var CONTROL_LIMPIAR_LINKS_INTERVALO_MS = 60 * 60 * 1000; // máx. 1 vez por hora, igual criterio que Guerra
-var CONTROL_FORMATO_REBUILD_MAX_ELAPSED_MS = 6 * 60 * 60 * 1000; // respaldo: forzar rebuild al menos cada 6h
-
-/**
- * _controlNecesitaRebuildFormato(ctx, numJugadores) [→ Contexto_Base_Web.md §22B009]
- */
-function _controlNecesitaRebuildFormato(ctx, numJugadores) {
-  var props = PropertiesService.getScriptProperties();
-  var claveFirma   = '_controlFormatoFirma';
-  var claveUltimoMs = '_controlFormatoUltimoRebuildMs';
-
-  var firmaActual = numJugadores + '|' + ctx.temporada + '|' + ctx.sectionIndex;
-  var firmaPrev   = props.getProperty(claveFirma);
-  var ultimoMs    = Number(props.getProperty(claveUltimoMs)) || 0;
-  var pasoElRespaldo = (Date.now() - ultimoMs) >= CONTROL_FORMATO_REBUILD_MAX_ELAPSED_MS;
-
-  if (firmaActual !== firmaPrev || pasoElRespaldo) {
-    props.setProperty(claveFirma, firmaActual);
-    props.setProperty(claveUltimoMs, String(Date.now()));
-    return true;
-  }
-  return false;
 }
 
 function updateControlSheet(ctxOverride) {
@@ -458,6 +480,125 @@ function mostrarTemporadaEnControl() {
   }
 }
 
+function resaltarDiaActual() {
+  var ss  = _getSs();
+  var sh  = ss.getSheetByName(CFG.SHEETS.CALENDARIO);
+  if (!sh || sh.getLastRow() < 5) return;
+
+  // "Hoy" se calcula a partir de ctx.diaGuerra (fecha derivada de la [→ Contexto_Base_Web.md §22B036]
+  var ctx     = _getCtx();
+  var hoy     = (ctx.diaGuerra instanceof Date && !isNaN(ctx.diaGuerra.getTime())) ? ctx.diaGuerra : new Date();
+  var mesAbrevs = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  var textoHoy = String(hoy.getDate()) + '-' + mesAbrevs[hoy.getMonth()];
+
+  var lastRow = sh.getLastRow();
+  var filasFecha = [7, 11, 15, 19, 23];
+  var filasTarea = [6, 10, 14, 18, 22];
+
+  for (var i = 0; i < filasFecha.length; i++) {
+    if (filasFecha[i] > lastRow) break;
+    _clearBg(sh.getRange(filasFecha[i], 4, 1, 7));
+    if (filasTarea[i] <= lastRow) _clearBg(sh.getRange(filasTarea[i], 4, 1, 7));
+  }
+
+  for (var i = 0; i < filasFecha.length; i++) {
+    if (filasFecha[i] > lastRow) break;
+    var celdas = sh.getRange(filasFecha[i], 4, 1, 7).getDisplayValues()[0];
+    for (var d = 0; d < celdas.length; d++) {
+      if (String(celdas[d]).trim() === textoHoy) {
+        sh.getRange(filasFecha[i], 4 + d).setBackground('#FDFD96');
+        if (filasTarea[i] <= lastRow) {
+          sh.getRange(filasTarea[i], 4 + d).setBackground('#FDFD96');
+        }
+        break;
+      }
+    }
+  }
+
+  Logger.log('[Calendario] Día resaltado correctamente: ' + textoHoy);
+}
+
+function updateCalendario2() {
+  var ss  = _getSs();
+  var shCal  = ss.getSheetByName(CFG.SHEETS.CALENDARIO);
+  var shCal2 = ss.getSheetByName(CFG.SHEETS.CALENDARIO2);
+  if (!shCal || !shCal2) return;
+
+  var ctx     = _getCtx();
+  var filasTarea = [6, 10, 14, 18, 22];
+  var diasLetra  = ['L','M','X','J','V','S','D'];
+
+  var existingIds = {};
+  var last2 = shCal2.getLastRow();
+  if (last2 >= 2) {
+    var data2 = shCal2.getRange(2, 1, last2 - 1, 6).getValues();
+    for (var i = 0; i < data2.length; i++) {
+      var t = String(data2[i][2] || '');
+      var s = String(data2[i][3] || '');
+      var d = String(data2[i][4] || '');
+      existingIds[t + '|' + s + '|' + d] = i + 2;
+    }
+  }
+
+  var lastRowCal = shCal.getLastRow();
+
+  for (var sem = 0; sem < 5; sem++) {
+    var filaTarea = filasTarea[sem];
+    if (filaTarea > lastRowCal) break;
+
+    var notas = shCal.getRange(filaTarea, 4, 1, 7).getValues()[0];
+
+    for (var d = 0; d < 7; d++) {
+      var nota     = String(notas[d] || '').trim();
+      if (!nota) continue;
+
+      var diaLetra = diasLetra[d];
+      var idClave  = String(ctx.temporada) + '|' + (sem + 1) + '|' + diaLetra;
+
+      if (existingIds[idClave]) {
+        var rowToUpdate = existingIds[idClave];
+        shCal2.getRange(rowToUpdate, 6).setValue(nota);
+        continue;
+      }
+
+      var newN = shCal2.getLastRow() + 1;
+      shCal2.appendRow([newN, new Date(), ctx.temporada, sem + 1, diaLetra, nota]);
+      var newRow = shCal2.getLastRow();
+      _setDateCell(shCal2, newRow, 2, new Date(), 'dd/mm/yyyy');
+      existingIds[idClave] = newRow;
+    }
+  }
+
+  Logger.log('[Calendario_2] Sincronización completada.');
+}
+
+// ===== PARTE 2 — Funciones que no se corren a mano =====
+
+// ----- Hoja Control: ayuda del formato -----
+
+/**
+ * _controlNecesitaRebuildFormato(ctx, numJugadores) [→ Contexto_Base_Web.md §22B009]
+ */
+function _controlNecesitaRebuildFormato(ctx, numJugadores) {
+  var props = PropertiesService.getScriptProperties();
+  var claveFirma   = '_controlFormatoFirma';
+  var claveUltimoMs = '_controlFormatoUltimoRebuildMs';
+
+  var firmaActual = numJugadores + '|' + ctx.temporada + '|' + ctx.sectionIndex;
+  var firmaPrev   = props.getProperty(claveFirma);
+  var ultimoMs    = Number(props.getProperty(claveUltimoMs)) || 0;
+  var pasoElRespaldo = (Date.now() - ultimoMs) >= CONTROL_FORMATO_REBUILD_MAX_ELAPSED_MS;
+
+  if (firmaActual !== firmaPrev || pasoElRespaldo) {
+    props.setProperty(claveFirma, firmaActual);
+    props.setProperty(claveUltimoMs, String(Date.now()));
+    return true;
+  }
+  return false;
+}
+
+// ----- Calendario: generación -----
+
 function GenerarCalendario(mes, anio) {
   var ss  = _getSs();
   var sh  = ss.getSheetByName(CFG.SHEETS.CALENDARIO);
@@ -582,99 +723,7 @@ function GenerarCalendario(mes, anio) {
   Logger.log('[Calendario] Generado para ' + mesNombre + ' ' + anio + ' (' + numSem + ' semanas)');
 }
 
-function resaltarDiaActual() {
-  var ss  = _getSs();
-  var sh  = ss.getSheetByName(CFG.SHEETS.CALENDARIO);
-  if (!sh || sh.getLastRow() < 5) return;
-
-  // "Hoy" se calcula a partir de ctx.diaGuerra (fecha derivada de la [→ Contexto_Base_Web.md §22B036]
-  var ctx     = _getCtx();
-  var hoy     = (ctx.diaGuerra instanceof Date && !isNaN(ctx.diaGuerra.getTime())) ? ctx.diaGuerra : new Date();
-  var mesAbrevs = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  var textoHoy = String(hoy.getDate()) + '-' + mesAbrevs[hoy.getMonth()];
-
-  var lastRow = sh.getLastRow();
-  var filasFecha = [7, 11, 15, 19, 23];
-  var filasTarea = [6, 10, 14, 18, 22];
-
-  for (var i = 0; i < filasFecha.length; i++) {
-    if (filasFecha[i] > lastRow) break;
-    _clearBg(sh.getRange(filasFecha[i], 4, 1, 7));
-    if (filasTarea[i] <= lastRow) _clearBg(sh.getRange(filasTarea[i], 4, 1, 7));
-  }
-
-  for (var i = 0; i < filasFecha.length; i++) {
-    if (filasFecha[i] > lastRow) break;
-    var celdas = sh.getRange(filasFecha[i], 4, 1, 7).getDisplayValues()[0];
-    for (var d = 0; d < celdas.length; d++) {
-      if (String(celdas[d]).trim() === textoHoy) {
-        sh.getRange(filasFecha[i], 4 + d).setBackground('#FDFD96');
-        if (filasTarea[i] <= lastRow) {
-          sh.getRange(filasTarea[i], 4 + d).setBackground('#FDFD96');
-        }
-        break;
-      }
-    }
-  }
-
-  Logger.log('[Calendario] Día resaltado correctamente: ' + textoHoy);
-}
-
-function updateCalendario2() {
-  var ss  = _getSs();
-  var shCal  = ss.getSheetByName(CFG.SHEETS.CALENDARIO);
-  var shCal2 = ss.getSheetByName(CFG.SHEETS.CALENDARIO2);
-  if (!shCal || !shCal2) return;
-
-  var ctx     = _getCtx();
-  var filasTarea = [6, 10, 14, 18, 22];
-  var diasLetra  = ['L','M','X','J','V','S','D'];
-
-  var existingIds = {};
-  var last2 = shCal2.getLastRow();
-  if (last2 >= 2) {
-    var data2 = shCal2.getRange(2, 1, last2 - 1, 6).getValues();
-    for (var i = 0; i < data2.length; i++) {
-      var t = String(data2[i][2] || '');
-      var s = String(data2[i][3] || '');
-      var d = String(data2[i][4] || '');
-      existingIds[t + '|' + s + '|' + d] = i + 2;
-    }
-  }
-
-  var lastRowCal = shCal.getLastRow();
-
-  for (var sem = 0; sem < 5; sem++) {
-    var filaTarea = filasTarea[sem];
-    if (filaTarea > lastRowCal) break;
-
-    var notas = shCal.getRange(filaTarea, 4, 1, 7).getValues()[0];
-
-    for (var d = 0; d < 7; d++) {
-      var nota     = String(notas[d] || '').trim();
-      if (!nota) continue;
-
-      var diaLetra = diasLetra[d];
-      var idClave  = String(ctx.temporada) + '|' + (sem + 1) + '|' + diaLetra;
-
-      if (existingIds[idClave]) {
-        var rowToUpdate = existingIds[idClave];
-        shCal2.getRange(rowToUpdate, 6).setValue(nota);
-        continue;
-      }
-
-      var newN = shCal2.getLastRow() + 1;
-      shCal2.appendRow([newN, new Date(), ctx.temporada, sem + 1, diaLetra, nota]);
-      var newRow = shCal2.getLastRow();
-      _setDateCell(shCal2, newRow, 2, new Date(), 'dd/mm/yyyy');
-      existingIds[idClave] = newRow;
-    }
-  }
-
-  Logger.log('[Calendario_2] Sincronización completada.');
-}
-
-// ----- Funciones internas / helpers -----
+// ----- Hoja Control: requisitos de ascenso, lectura de guerra, cruce de meta y formato condicional -----
 
 /**
  * _clonarCtxParaTemporada(ctxReal, temporadaMostrar) [→ Contexto_Base_Web.md §22B037]
@@ -694,13 +743,6 @@ function _clonarCtxParaTemporada(ctxReal, temporadaMostrar) {
   ctx.periodIndexSospechoso = false;
   return ctx;
 }
-// Requisitos para que la columna "Ascenso" de Control muestre "Sí" (ver [→ Contexto_Base_Web.md §22B038]
-var REQUISITOS_ASCENSO = {
-  ATAQUES_PCT: 1.0,      // Ataques.% >= 100%
-  MIEMBRO_PROM: 2500,    // Puntaje.Prom si Rango actual = "Miembro"
-  VETERANO_PROM: 3000,   // Puntaje.Prom si Rango actual = "Veterano"
-  BARCOS_TOTAL: 0        // Barcos.Total debe ser exactamente 0
-};
 /**
  * _evaluarRequisitosAscenso(rango, ataqPct, puntProm, barcoTotal) [→ Contexto_Base_Web.md §22B039]
  */
@@ -760,19 +802,6 @@ function _maxOVacio(arr, base, n) {
   }
   return vals.length === 0 ? '' : Math.max.apply(null, vals);
 }
-
-/**
- * _ULTIMO_DIAGNOSTICO_GUERRA_CSV [→ Contexto_Base_Web.md §22B042]
- */
-var _ULTIMO_DIAGNOSTICO_GUERRA_CSV = null;
-
-// MEMO POR EJECUCIÓN de Backup_Guerra.csv (19-sep-2026, pedido del usuario -- [→ Contexto_Base_Web.md §22B043]
-var _GUERRA_MEMO_ACTIVO = false;
-var _GUERRA_CSV_MEMO    = null; // { diag:string|null, totalFilas:number, porTemporada:{ '7': [fila,...] } }
-var _GUERRA_MAPA_MEMO   = {};   // { '7': mapa de _procesarFilasGuerraParaControl() de esa temporada histórica }
-// 19-sep-2026 (medición real: control2Vigente=4.9 s, valoresDiarios=2.3 s): filas crudas de la hoja
-// Guerra (getValues) leídas UNA vez durante la sesión del dashboard, en vez de una por cuadrícula.
-var _GUERRA_HOJA_MEMO   = null;
 
 function _guerraMemoIniciar_() {
   _GUERRA_MEMO_ACTIVO = true;
@@ -927,12 +956,6 @@ function _getDatosGuerraDesdeCsvParaControl(ctx) {
     return {};
   }
 }
-
-// CRUCE DE META POR DÍA (19-sep-2026, pedido del usuario): ¿el clan ya había [→ Contexto_Base_Web.md §22B051]
-var _CRUCE_META_LOGS_MEMO = null;   // { 'temp|clan': { periodIndex: {ini, fin} } }
-var _CRUCE_META_RES_MEMO  = {};     // { 'temp|clan|pIdx': true/false }
-var _CRUCE_META_JSON_IDX  = {};     // { 'clan': { t, fresco, ids: { 'T|S|P': idArchivoDrive } } } (PF144: ya no guarda DriveFile)
-var _CRUCE_META_JSON_RES  = {};     // { 'temp|clan|pIdx': true/false/null }
 
 function _cruceNormTemporada_(t) {
   var n = Number(t);
@@ -1175,11 +1198,6 @@ function _cruceMetaDesdeCacheApi_(buscado, pIdx) {
   }
   return null;
 }
-
-/**
- * CONTROL_SUMA_ENTRE_CLANES (3-oct-2026, parte 54, sub-tanda 3.4 de la Tanda 3, pregunta 42 y 56 del consolidado) [→ Contexto_Base_Web.md §22B060]
- */
-var CONTROL_SUMA_ENTRE_CLANES = true;
 
 /**
  * _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) [→ Contexto_Base_Web.md §22B061]
