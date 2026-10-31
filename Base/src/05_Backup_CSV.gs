@@ -1748,6 +1748,50 @@ function _csvCacheBorrar_(filename) {
   } catch (e) { /* nada que hacer */ }
 }
 
+/**
+ * _migrarTextoGuerraCsv_(texto) — 30-oct-2026 (orden nuevo de la hoja Guerra, §PF303).
+ * Backup_Guerra.csv se lee POR POSICIÓN (GC). Si el archivo todavía trae el orden viejo de 21 columnas (encabezado GUERRA_HEADERS_V21),
+ * lo reordena en memoria al de 23 columnas, emparejando por NOMBRE de columna (no por posición), y calcula la merma de todas las filas
+ * (_recalcularMermaGuerra_). Así todos los lectores del CSV ven el orden nuevo, y la primera escritura (_saveCSVToDrive) lo deja migrado en
+ * Drive. Idempotente: si el encabezado ya es el nuevo (o es otro, desconocido), devuelve el texto tal cual. Un encabezado desconocido se
+ * deja pasar sin tocar para no destruir datos, pero se avisa en el registro.
+ */
+function _migrarTextoGuerraCsv_(texto) {
+  if (!texto) return texto;
+  var finPrimera = texto.search(/\r|\n/);
+  var primera = finPrimera < 0 ? texto : texto.substring(0, finPrimera);
+  var encabezado = _parseCSV(primera)[0] || [];
+  var norm = function (v) { return String(v === undefined || v === null ? '' : v).replace(/^﻿/, '').trim().toLowerCase(); };
+  var igualA = function (lista) {
+    if (encabezado.length !== lista.length) return false;
+    for (var i = 0; i < lista.length; i++) if (norm(encabezado[i]) !== norm(lista[i])) return false;
+    return true;
+  };
+  if (igualA(GUERRA_HEADERS)) return texto;
+  if (!igualA(GUERRA_HEADERS_V21)) {
+    Logger.log('[Guerra][CSV] Backup_Guerra.csv tiene un encabezado que no es ni el de 23 columnas ni el viejo de 21 (' + encabezado.length + ' columnas: ' + encabezado.slice(0, 6).join(' | ') + ' ...). Se deja sin migrar.');
+    return texto;
+  }
+  var filas = _parseCSV(texto);
+  var posViejo = {};
+  for (var h = 0; h < GUERRA_HEADERS_V21.length; h++) posViejo[GUERRA_HEADERS_V21[h].toLowerCase()] = h;
+  var salida = [GUERRA_HEADERS.slice()];
+  for (var r = 1; r < filas.length; r++) {
+    var vieja = filas[r];
+    if (vieja.length === 1 && String(vieja[0]).trim() === '') continue; // línea en blanco
+    var nueva = new Array(GUERRA_TOTAL_COLS);
+    for (var c = 0; c < GUERRA_TOTAL_COLS; c++) {
+      var p = posViejo[GUERRA_HEADERS[c].toLowerCase()];
+      nueva[c] = (p === undefined || vieja[p] === undefined) ? '' : vieja[p];
+    }
+    salida.push(nueva);
+  }
+  var datos = salida.slice(1);
+  _recalcularMermaGuerra_(datos);
+  Logger.log('[Guerra][CSV] Backup_Guerra.csv migrado en memoria del orden de 21 al de 23 columnas (' + datos.length + ' filas, merma calculada). Se guarda así en Drive en la próxima escritura.');
+  return _encodeCSV(salida);
+}
+
 function _loadCSVFromDrive(filename) {
   // 1) memoria de esta ejecución
   if (Object.prototype.hasOwnProperty.call(_CSV_MEM_, filename)) return _CSV_MEM_[filename];
@@ -1755,6 +1799,7 @@ function _loadCSVFromDrive(filename) {
   // 2) caché entre peticiones
   var cacheado = _csvCacheGet_(filename);
   if (cacheado !== null) {
+    if (filename === 'Backup_Guerra.csv') cacheado = _migrarTextoGuerraCsv_(cacheado); // un caché de antes del orden nuevo (TTL 10 min) puede traer 21 columnas
     _CSV_MEM_[filename] = cacheado;
     return cacheado;
   }
@@ -1763,6 +1808,7 @@ function _loadCSVFromDrive(filename) {
   var hit = _csvBuscarArchivo_(filename); // subcarpeta asignada -> raíz -> demás subcarpetas [→ Contexto_Base_Web.md §01B158]
   if (hit) {
     var texto = hit.file.getBlob().getDataAsString('UTF-8');
+    if (filename === 'Backup_Guerra.csv') texto = _migrarTextoGuerraCsv_(texto); // 30-oct-2026 (§PF303): orden viejo de 21 columnas -> 23 del orden nuevo, en memoria
     _CSV_MEM_[filename] = texto;
     _csvCachePut_(filename, texto);
     return texto;
