@@ -1,3 +1,16 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Pruebas de los endpoints (contactos y dashboard)
+//    - Diagnóstico de la guerra en vivo
+//  Parte 2 — Funciones que no se corren a mano
+//    - Puntos de entrada del Web App (doGet y doPost) y límite de peticiones
+//    - Contactos (JSON protegido por token)
+//    - Dashboard de administradores: HTML y armado de los datos
+//    - Dashboard de administradores: lectura de hojas, temporadas y semanas
+//    - Diagnóstico de la guerra en vivo: ayudas
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. doGet y doPost los llama la web, no se corren a mano (deducción de Claude, a confirmar).
+// Al reordenar no se cambió el código de ninguna función; las variables globales que estaban entre las funciones subieron a la zona de constantes y variables.
+
 // ==============================================================================
 // 38_Web_Endpoints.gs
 // Routers web globales de Apps Script (doGet/doPost). Cada accion delega a la
@@ -7,10 +20,10 @@
 
 // AVISOS ABIERTOS (28-sep-2026, Fase 3): VERIFICAR en guerra.html el orden Líder/Colíderes/Veteranos/Miembros (Fase 3b, _ordenRango); PENDIENTE DE DEFINIR Fase 3a (cuentas sin ceros); PRUEBA PENDIENTE en Apps Script real de sesionVencida:true (_webMarcarSesionVencida, 03-oct-2026). [→ Contexto_Base_Web.md §38B001]
 
+
 // ----- Variables y constantes -----
 
 // Texto de cabecera de 09_API_ClashRoyale.gs que quedó pegado aquí: cache de API en Drive (carpetas, nombre de archivo T-/S-/P.I-, un archivo vigente por /players) y endpoint seguro de contactos (doGet). [→ Contexto_Base_Web.md §38B002]
-
 // Token de seguridad del endpoint de contactos: vive en Script Properties vía _scriptToken() (B-35, 15-sep-2026); sin literal de respaldo en el código (19-sep-2026). [→ Contexto_Base_Web.md §38B003]
 var CONTACTOS_TOKEN = _scriptToken('CONTACTOS_TOKEN');
 
@@ -26,83 +39,82 @@ var WEB_RATE_LIMIT_MAX_POR_MINUTO = 180; // FIX B-30 (18-sep-2026): tope subido 
 // FIX B-30: contador aparte (tope 240/min) para pedidos con sessionToken de admin válido, para que el tráfico público no bloquee el panel. [→ Contexto_Base_Web.md §38B008]
 var WEB_RATE_LIMIT_ADMIN_MAX_POR_MINUTO = 240;
 
-// _webRateLimitExcedido(sessionTokenValido): true si se superó el tope web* en la ventana de 60 s; bucket propio 'WEBRLADM_' para admin válido; si CacheService falla, deja pasar; no valida el token. [→ Contexto_Base_Web.md §38B009]
-function _webRateLimitExcedido(sessionTokenValido) {
-  try {
-    var cache = CacheService.getScriptCache();
-    var ventana = Math.floor(Date.now() / 60000); // bucket de 60s
-    var prefijo = sessionTokenValido ? 'WEBRLADM_' : 'WEBRL_';
-    var tope = sessionTokenValido ? WEB_RATE_LIMIT_ADMIN_MAX_POR_MINUTO : WEB_RATE_LIMIT_MAX_POR_MINUTO;
-    var key = prefijo + ventana;
-    var actual = Number(cache.get(key) || 0);
-    if (actual >= tope) return true;
-    cache.put(key, String(actual + 1), 70); // TTL 70s: un poco más que la ventana, por las dudas
-    return false;
-  } catch (e) {
-    Logger.log('[WebRateLimit] Error verificando límite, se deja pasar el pedido: ' + e.message);
-    return false;
-  }
-}
-
-// _webRespuesta429(): error 429 con la misma forma que las respuestas 401/500 de doGet(). [→ Contexto_Base_Web.md §38B010]
-function _webRespuesta429() {
-  return ContentService
-    .createTextOutput(JSON.stringify({ error: 'Demasiados pedidos. Inténtalo de nuevo en un minuto.', code: 429 }))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
 // Rate limit específico del login de admin (webLogin, doPost): por Celular, no por IP, para frenar fuerza bruta dirigida (30-ago-2026). [→ Contexto_Base_Web.md §38B011]
 var WEB_LOGIN_RATE_LIMIT_MAX = 5;          // intentos máximos por celular...
+
 var WEB_LOGIN_RATE_LIMIT_VENTANA_SEG = 300; // ...en esta ventana (5 min)
 
-// _webLoginRateLimitExcedido(celular): true si se superaron los intentos de login del celular en la ventana; cuenta cada intento (exitoso o no); clave fija si el celular viene vacío; si CacheService falla, deja pasar. [→ Contexto_Base_Web.md §38B012]
-function _webLoginRateLimitExcedido(celular) {
-  try {
-    var cache = CacheService.getScriptCache();
-    var celularKey = soloDigitos(celular) || '_sin_celular_';
-    var ventana = Math.floor(Date.now() / (WEB_LOGIN_RATE_LIMIT_VENTANA_SEG * 1000));
-    var key = 'WEBLOGINRL_' + celularKey + '_' + ventana;
-    var actual = Number(cache.get(key) || 0);
-    if (actual >= WEB_LOGIN_RATE_LIMIT_MAX) return true;
-    cache.put(key, String(actual + 1), WEB_LOGIN_RATE_LIMIT_VENTANA_SEG + 10); // TTL un poco mayor que la ventana
-    return false;
-  } catch (e) {
-    Logger.log('[WebLoginRateLimit] Error verificando límite, se deja pasar el pedido: ' + e.message);
-    return false;
-  }
+// _DASH_MEMO / _getMinGClanMapsDash_(): 19-sep-2026, calcula _getMinGClanMaps() UNA vez por ejecución del dashboard (antes lo leía por cada temporada); fuera del dashboard llama directo. [→ Contexto_Base_Web.md §38B109]
+var _DASH_MEMO = null;
+
+// _DASH_T / _dashAcum_(etiqueta, desde): 19-sep-2026, suma ms y veces por etiqueta dentro de las etapas; se imprime como `detalle` en la línea [Dashboard]; solo mide. [→ Contexto_Base_Web.md §38B113]
+var _DASH_T = null;
+
+// _diagGuerraVivo_(texto) / verDiagnosticoGuerraVivo(): 19-sep-2026, diagnóstico de webGuerraEnVivo por Logger.log, console.log y lista corta en CacheService (15 líneas, 6 h); 'caché HIT' no entra a la lista; la última línea [Dashboard] tiene clave propia; nunca lanza error; no cambia resultados. [→ Contexto_Base_Web.md §38B114]
+var DIAG_GUERRA_VIVO_KEY      = 'diag_guerra_vivo_v1';
+
+var DIAG_GUERRA_VIVO_DASH_KEY = 'diag_guerra_vivo_dash_v1';
+
+// _MESES_ES_ / _MESES_ABREV_ES_ (FIX 09-sep-2026): nombres de mes en español fijos, índice 0-based, sin depender de Intl (evita el punto final de 'sept.'). [→ Contexto_Base_Web.md §38B145]
+var _MESES_ES_ = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+var _MESES_ABREV_ES_ = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+
+// FIX (02-oct-2026): memo por ejecución { tagLimpio: nombre } leído del checkpoint de clanes.
+var _NOMBRES_CLAN_CHECKPOINT = null;
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
+
+// ----- Pruebas de los endpoints (contactos y dashboard) -----
+
+// testContactosEndpoint(): prueba manual, imprime el JSON de contactos en el Logger. [→ Contexto_Base_Web.md §38B068]
+function testContactosEndpoint() {
+  var contactos = _generarJsonContactos();
+  Logger.log('[Test] Total contactos: ' + contactos.length);
+  Logger.log(JSON.stringify(contactos, null, 2));
 }
 
-// _webRespuesta429Login(): igual que _webRespuesta429() con mensaje propio de intentos de login. [→ Contexto_Base_Web.md §38B013]
-function _webRespuesta429Login() {
-  return ContentService
-    .createTextOutput(JSON.stringify({ ok: false, error: 'Demasiados intentos de inicio de sesión. Espera unos minutos e intenta de nuevo.', code: 429 }))
-    .setMimeType(ContentService.MimeType.JSON);
+// testDashboardEndpoint(): prueba manual de la generación del dashboard sin pasar por el Web App (descarta un despliegue desactualizado). [→ Contexto_Base_Web.md §38B069]
+function testDashboardEndpoint() {
+  var datos = _getDatosDashboard();
+  Logger.log('[Test] Temporada ' + datos.ctx.temporada + ' | Semana ' + (datos.ctx.sectionIndex + 1) +
+             ' | Día ' + datos.ctx.diaLetra + ' | esDiaGuerra: ' + datos.ctx.esDiaGuerra);
+  Logger.log('[Test] Clanes con datos de guerra hoy: ' + Object.keys(datos.guerraPorClan).length);
+  Logger.log('[Test] Pendientes de atacar: ' + datos.pendientes.length);
+  Logger.log('[Test] Clanes en resumen de Directorio: ' + Object.keys(datos.resumenClanes).length);
+  Logger.log('[Test] Miembros nuevos: ' + datos.nuevos.length);
+
+  var html = _generarDashboardHtml();
+  Logger.log('[Test] HTML generado OK (' + html.length + ' caracteres).');
 }
 
-// _webMarcarSesionVencida(resultado, sessionToken, esAdminValido): agrega sesionVencida:true (copia superficial) cuando llega un sessionToken no vacío e inválido; no toca errores ni no-objetos; se aplica en doGet() después de las cachés (03-oct-2026, tanda 3). [→ Contexto_Base_Web.md §38B014]
-function _webMarcarSesionVencida(resultado, sessionToken, esAdminValido) {
-  try {
-    if (!sessionToken) return resultado;
-    if (!resultado || typeof resultado !== 'object' || Array.isArray(resultado)) return resultado;
-    if (resultado.error) return resultado;
-    var valido = (typeof esAdminValido === 'boolean') ? esAdminValido : !!_webAuthValidar(sessionToken);
-    if (valido) return resultado;
-    var copia = {};
-    for (var k in resultado) {
-      if (Object.prototype.hasOwnProperty.call(resultado, k)) copia[k] = resultado[k];
-    }
-    copia.sesionVencida = true;
-    return copia;
-  } catch (err) {
-    Logger.log('[Web] _webMarcarSesionVencida: ' + err.toString());
-    return resultado;
-  }
+// ----- Diagnóstico de la guerra en vivo -----
+
+// testTamanioGuerraEnVivo(): NUEVO 08-oct-2026, diagnostico (solo Logger.log, no cambia resultados); mide cuanto tarda y cuanto pesa el JSON de webGuerraEnVivo, y cuanto aporta cada clave de primer nivel, para ver si el 404 del redirect 'echo' es por tamaño de respuesta.
+function testTamanioGuerraEnVivo() {
+  // 08-oct-2026: la pagina manda sessionToken (esAdmin puede ser true), asi que se mide tambien esa variante; la 2da pasada puede salir de cache.
+  [false, true].forEach(function (admin) {
+    Logger.log('[Tamaño] ===== esAdmin: ' + admin + ' =====');
+    _testTamanioGuerraEnVivoUna_(admin);
+  });
 }
 
-// ----- Funciones manuales / punto de entrada -----
+function verDiagnosticoGuerraVivo() {
+  var cache = CacheService.getScriptCache();
+  var dash = cache.get(DIAG_GUERRA_VIVO_DASH_KEY);
+  var txt  = cache.get(DIAG_GUERRA_VIVO_KEY);
+  var salida = [];
+  if (dash) salida.push('Última medición [Dashboard]:\n' + dash);
+  if (txt)  salida.push('Últimas líneas, sin "caché HIT" (la más reciente primero):\n' + txt);
+  Logger.log(salida.length ? salida.join('\n\n')
+                           : 'Sin registros todavía: abre guerra.html una vez (o espera a que venza la caché de 5 min) y vuelve a ejecutar esta función.');
+}
+
+// ===== PARTE 2 — Funciones que no se corren a mano =====
+
+// ----- Puntos de entrada del Web App (doGet y doPost) y límite de peticiones -----
 
 // Endpoint seguro de contactos (doGet sin ?dashboard): JSON con tag, nombre y teléfono de activos Terna con celular, protegido por CONTACTOS_TOKEN; lo consume admingrupoterna@gmail.com. [→ Contexto_Base_Web.md §38B015]
-
 // doGet(e): handler GET del Web App; sin ?dashboard=1 devuelve contactos (CONTACTOS_TOKEN), con ?dashboard=1 el dashboard HTML (DASHBOARD_TOKEN). [→ Contexto_Base_Web.md §38B016]
 function doGet(e) {
   // Verificación del webhook de WhatsApp (Meta hace este GET una vez): devuelve hub.challenge si hub.verify_token coincide con Script Properties. [→ Contexto_Base_Web.md §38B017]
@@ -1096,60 +1108,6 @@ function doGet(e) {
   }
 }
 
-// testContactosEndpoint(): prueba manual, imprime el JSON de contactos en el Logger. [→ Contexto_Base_Web.md §38B068]
-function testContactosEndpoint() {
-  var contactos = _generarJsonContactos();
-  Logger.log('[Test] Total contactos: ' + contactos.length);
-  Logger.log(JSON.stringify(contactos, null, 2));
-}
-
-// testDashboardEndpoint(): prueba manual de la generación del dashboard sin pasar por el Web App (descarta un despliegue desactualizado). [→ Contexto_Base_Web.md §38B069]
-function testDashboardEndpoint() {
-  var datos = _getDatosDashboard();
-  Logger.log('[Test] Temporada ' + datos.ctx.temporada + ' | Semana ' + (datos.ctx.sectionIndex + 1) +
-             ' | Día ' + datos.ctx.diaLetra + ' | esDiaGuerra: ' + datos.ctx.esDiaGuerra);
-  Logger.log('[Test] Clanes con datos de guerra hoy: ' + Object.keys(datos.guerraPorClan).length);
-  Logger.log('[Test] Pendientes de atacar: ' + datos.pendientes.length);
-  Logger.log('[Test] Clanes en resumen de Directorio: ' + Object.keys(datos.resumenClanes).length);
-  Logger.log('[Test] Miembros nuevos: ' + datos.nuevos.length);
-
-  var html = _generarDashboardHtml();
-  Logger.log('[Test] HTML generado OK (' + html.length + ' caracteres).');
-}
-
-// testTamanioGuerraEnVivo(): NUEVO 08-oct-2026, diagnostico (solo Logger.log, no cambia resultados); mide cuanto tarda y cuanto pesa el JSON de webGuerraEnVivo, y cuanto aporta cada clave de primer nivel, para ver si el 404 del redirect 'echo' es por tamaño de respuesta.
-function testTamanioGuerraEnVivo() {
-  // 08-oct-2026: la pagina manda sessionToken (esAdmin puede ser true), asi que se mide tambien esa variante; la 2da pasada puede salir de cache.
-  [false, true].forEach(function (admin) {
-    Logger.log('[Tamaño] ===== esAdmin: ' + admin + ' =====');
-    _testTamanioGuerraEnVivoUna_(admin);
-  });
-}
-function _testTamanioGuerraEnVivoUna_(admin) {
-  var t0 = Date.now();
-  var datos = _webGuerraEnVivo({ esAdmin: admin });
-  var ms = Date.now() - t0;
-  var json = JSON.stringify(datos);
-  Logger.log('[Tamaño] webGuerraEnVivo: ' + ms + ' ms | ' + json.length + ' caracteres (~' + Math.round(json.length / 1024) + ' KB)');
-  var partes = [];
-  Object.keys(datos || {}).forEach(function (k) {
-    var n = JSON.stringify(datos[k] === undefined ? null : datos[k]).length;
-    partes.push({ k: k, n: n });
-  });
-  partes.sort(function (a, b) { return b.n - a.n; });
-  partes.slice(0, 8).forEach(function (x) {
-    Logger.log('[Tamaño]   ' + x.k + ': ' + Math.round(x.n / 1024) + ' KB (' + Math.round(100 * x.n / json.length) + '%)');
-  });
-  var vd = datos && datos.valoresDiariosPorSemana;
-  if (vd) {
-    var inact = 0, total = 0;
-    Object.keys(vd).forEach(function (t) { Object.keys(vd[t]).forEach(function (sem) { Object.keys(vd[t][sem]).forEach(function (cl) {
-      (vd[t][sem][cl] || []).forEach(function (f) { total++; if (f && f.activo === false) inact++; });
-    }); }); });
-    Logger.log('[Tamaño] valoresDiariosPorSemana: ' + total + ' filas, ' + inact + ' de inactivos');
-  }
-}
-
 // doPost(e): router POST del Web App (webhook de Cloud API de WhatsApp, acciones web* del portal y endpoints Tampermonkey); el envío real a graph.facebook.com necesita token y Phone Number ID. El bot hoy está inactivo (sin chip), código conservado. [→ Contexto_Base_Web.md §38B070]
 function doPost(e) {
   // PF260 (25-oct-2026): con una reenumeración de temporadas en curso, doPost no escribe nada (Tampermonkey, correcciones, administración web): grabaría con numeración mezclada. Login y logout siguen.
@@ -1721,19 +1679,76 @@ function doPost(e) {
   }
 }
 
-// ----- Funciones internas / helpers -----
-
-// _normalizarClanTagContactos(tag): normaliza ClanTag (sin '#', sin espacios, mayúsculas) igual que normalizarClanTag() de 16_ContactsSync.gs; está duplicada porque la original es un closure local dentro de SincronizarContactosNube(). [→ Contexto_Base_Web.md §38B100]
-function _normalizarClanTagContactos(tag) {
-  return String(tag || '').replace(/#/g, '').trim().toUpperCase();
+// _webRateLimitExcedido(sessionTokenValido): true si se superó el tope web* en la ventana de 60 s; bucket propio 'WEBRLADM_' para admin válido; si CacheService falla, deja pasar; no valida el token. [→ Contexto_Base_Web.md §38B009]
+function _webRateLimitExcedido(sessionTokenValido) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var ventana = Math.floor(Date.now() / 60000); // bucket de 60s
+    var prefijo = sessionTokenValido ? 'WEBRLADM_' : 'WEBRL_';
+    var tope = sessionTokenValido ? WEB_RATE_LIMIT_ADMIN_MAX_POR_MINUTO : WEB_RATE_LIMIT_MAX_POR_MINUTO;
+    var key = prefijo + ventana;
+    var actual = Number(cache.get(key) || 0);
+    if (actual >= tope) return true;
+    cache.put(key, String(actual + 1), 70); // TTL 70s: un poco más que la ventana, por las dudas
+    return false;
+  } catch (e) {
+    Logger.log('[WebRateLimit] Error verificando límite, se deja pasar el pedido: ' + e.message);
+    return false;
+  }
 }
 
-// _leerMapaCodigosClanContactos(): lee (sin escribir) CLAN_CODIGOS_MAP de las Propiedades del Script, que mantiene SincronizarContactosNube() (16_ContactsSync.gs); nunca asigna códigos nuevos (evita condición de carrera); devuelve undefined para clanes aún sin código. [→ Contexto_Base_Web.md §38B101]
-function _leerMapaCodigosClanContactos() {
-  var props = PropertiesService.getScriptProperties();
-  var raw = props.getProperty('CLAN_CODIGOS_MAP');
-  return raw ? JSON.parse(raw) : {};
+// _webRespuesta429(): error 429 con la misma forma que las respuestas 401/500 de doGet(). [→ Contexto_Base_Web.md §38B010]
+function _webRespuesta429() {
+  return ContentService
+    .createTextOutput(JSON.stringify({ error: 'Demasiados pedidos. Inténtalo de nuevo en un minuto.', code: 429 }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
+
+// _webLoginRateLimitExcedido(celular): true si se superaron los intentos de login del celular en la ventana; cuenta cada intento (exitoso o no); clave fija si el celular viene vacío; si CacheService falla, deja pasar. [→ Contexto_Base_Web.md §38B012]
+function _webLoginRateLimitExcedido(celular) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var celularKey = soloDigitos(celular) || '_sin_celular_';
+    var ventana = Math.floor(Date.now() / (WEB_LOGIN_RATE_LIMIT_VENTANA_SEG * 1000));
+    var key = 'WEBLOGINRL_' + celularKey + '_' + ventana;
+    var actual = Number(cache.get(key) || 0);
+    if (actual >= WEB_LOGIN_RATE_LIMIT_MAX) return true;
+    cache.put(key, String(actual + 1), WEB_LOGIN_RATE_LIMIT_VENTANA_SEG + 10); // TTL un poco mayor que la ventana
+    return false;
+  } catch (e) {
+    Logger.log('[WebLoginRateLimit] Error verificando límite, se deja pasar el pedido: ' + e.message);
+    return false;
+  }
+}
+
+// _webRespuesta429Login(): igual que _webRespuesta429() con mensaje propio de intentos de login. [→ Contexto_Base_Web.md §38B013]
+function _webRespuesta429Login() {
+  return ContentService
+    .createTextOutput(JSON.stringify({ ok: false, error: 'Demasiados intentos de inicio de sesión. Espera unos minutos e intenta de nuevo.', code: 429 }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// _webMarcarSesionVencida(resultado, sessionToken, esAdminValido): agrega sesionVencida:true (copia superficial) cuando llega un sessionToken no vacío e inválido; no toca errores ni no-objetos; se aplica en doGet() después de las cachés (03-oct-2026, tanda 3). [→ Contexto_Base_Web.md §38B014]
+function _webMarcarSesionVencida(resultado, sessionToken, esAdminValido) {
+  try {
+    if (!sessionToken) return resultado;
+    if (!resultado || typeof resultado !== 'object' || Array.isArray(resultado)) return resultado;
+    if (resultado.error) return resultado;
+    var valido = (typeof esAdminValido === 'boolean') ? esAdminValido : !!_webAuthValidar(sessionToken);
+    if (valido) return resultado;
+    var copia = {};
+    for (var k in resultado) {
+      if (Object.prototype.hasOwnProperty.call(resultado, k)) copia[k] = resultado[k];
+    }
+    copia.sesionVencida = true;
+    return copia;
+  } catch (err) {
+    Logger.log('[Web] _webMarcarSesionVencida: ' + err.toString());
+    return resultado;
+  }
+}
+
+// ----- Contactos (JSON protegido por token) -----
 
 // _generarJsonContactos(): lista de contactos activos Terna con celular { tag, nombre, jugador, clan, clan_tag, codigo_clan, prefijo, celular, telefono_completo }; codigo_clan puede ser null; lee Directorio en formato DC (60 columnas) con _leerDirectorioFisicoComoDC() y cae a Backup_Directorio.csv (FIX 15-sep-2026, barrido web->CSV). Detalle de fixes en el .md. [→ Contexto_Base_Web.md §38B102]
 function _generarJsonContactos() {
@@ -1797,8 +1812,170 @@ function _generarJsonContactos() {
   return lista;
 }
 
-// C) DASHBOARD DE ADMINISTRADORES (doGet ?dashboard=1): HTML de solo lectura para celular, lee las hojas ya actualizadas (Guerra/Pendientes/Directorio) sin llamar a la API de Clash Royale. [→ Contexto_Base_Web.md §38B106]
+// _normalizarClanTagContactos(tag): normaliza ClanTag (sin '#', sin espacios, mayúsculas) igual que normalizarClanTag() de 16_ContactsSync.gs; está duplicada porque la original es un closure local dentro de SincronizarContactosNube(). [→ Contexto_Base_Web.md §38B100]
+function _normalizarClanTagContactos(tag) {
+  return String(tag || '').replace(/#/g, '').trim().toUpperCase();
+}
 
+// _leerMapaCodigosClanContactos(): lee (sin escribir) CLAN_CODIGOS_MAP de las Propiedades del Script, que mantiene SincronizarContactosNube() (16_ContactsSync.gs); nunca asigna códigos nuevos (evita condición de carrera); devuelve undefined para clanes aún sin código. [→ Contexto_Base_Web.md §38B101]
+function _leerMapaCodigosClanContactos() {
+  var props = PropertiesService.getScriptProperties();
+  var raw = props.getProperty('CLAN_CODIGOS_MAP');
+  return raw ? JSON.parse(raw) : {};
+}
+
+// _getClanTagByName(clanName): tag de un clan por nombre, para ordenar por TERNA_TAGS; '' si no existe. [→ Contexto_Base_Web.md §38B194]
+function _getClanTagByName(clanName) {
+  if (!CACHE_CLAN_DATA) return '';
+  for (var tag in CACHE_CLAN_DATA) {
+    var info = CACHE_CLAN_DATA[tag] && CACHE_CLAN_DATA[tag].info;
+    if (info && String(info.name || '') === clanName) return tag;
+  }
+  return '';
+}
+
+// ----- Dashboard de administradores: HTML y armado de los datos -----
+
+// _generarDashboardHtml(): arma la página HTML completa del dashboard (mobile-first, sin dependencias externas) desde _getDatosDashboard(). [→ Contexto_Base_Web.md §38B195]
+function _generarDashboardHtml() {
+  var d   = _getDatosDashboard();
+  var ctx = d.ctx;
+  var e   = _escapeHtmlDash;
+
+  var etapaTexto  = ctx.esDiaGuerra ? 'GUERRA' : 'ENTRENAMIENTO';
+  var etapaColor  = ctx.esDiaGuerra ? '#e53935' : '#1e88e5';
+  var diaNombre   = diaLetraANombre(ctx.diaLetra);
+
+  // ---- Bloque: Estado de guerra por clan ----
+  var clanesOrdenNombres = Object.keys(d.guerraPorClan).sort();
+  var htmlGuerra = '';
+  if (clanesOrdenNombres.length === 0) {
+    htmlGuerra = '<p class="vacio">Sin datos de guerra para hoy todavía.</p>';
+  } else {
+    clanesOrdenNombres.forEach(function(clanNombre) {
+      var g = d.guerraPorClan[clanNombre];
+      var barcosHtml = g.barcos > 0
+        ? '<span class="badge badge-alerta">⚠️ ' + g.barcos + ' barco(s)</span>'
+        : '';
+      htmlGuerra +=
+        '<div class="card">' +
+          '<div class="card-titulo">' + e(clanNombre) + '</div>' +
+          '<div class="card-fila"><span>Atacaron hoy</span><b>' + g.atacaron + ' / ' + g.totalHoy + '</b></div>' +
+          '<div class="card-fila"><span>Ataques usados</span><b>' + g.ataques + '</b></div>' +
+          '<div class="card-fila"><span>Medallas del día</span><b>' + g.fame.toLocaleString('es-PE') + '</b></div>' +
+          (barcosHtml ? '<div class="card-fila">' + barcosHtml + '</div>' : '') +
+        '</div>';
+    });
+  }
+
+  // ---- Bloque: Pendientes de atacar ----
+  var htmlPendientes;
+  if (!ctx.esDiaGuerra) {
+    htmlPendientes = '<p class="vacio">Hoy es día de entrenamiento — no hay ataques de guerra pendientes.</p>';
+  } else if (d.pendientes.length === 0) {
+    htmlPendientes = '<p class="vacio">🎉 Nadie tiene ataques pendientes.</p>';
+  } else {
+    var pendPorClan = {};
+    d.pendientes.forEach(function(p) {
+      if (!pendPorClan[p.clan]) pendPorClan[p.clan] = [];
+      pendPorClan[p.clan].push(p);
+    });
+    htmlPendientes = Object.keys(pendPorClan).sort().map(function(clanNombre) {
+      var filas = pendPorClan[clanNombre].map(function(p) {
+        return '<div class="lista-fila"><span>' + e(p.nombre) + '</span>' +
+               '<b class="faltan">' + p.faltantes + ' ataque(s)</b></div>';
+      }).join('');
+      return '<div class="card"><div class="card-titulo">' + e(clanNombre) + '</div>' + filas + '</div>';
+    }).join('');
+  }
+
+  // ---- Bloque: Resumen de Directorio ----
+  var clanesResumen = Object.keys(d.resumenClanes).sort();
+  var totalActivos  = clanesResumen.reduce(function(acc, c) { return acc + d.resumenClanes[c]; }, 0);
+  var htmlResumen = '<div class="card">' +
+    clanesResumen.map(function(clanNombre) {
+      return '<div class="card-fila"><span>' + e(clanNombre) + '</span><b>' + d.resumenClanes[clanNombre] + '</b></div>';
+    }).join('') +
+    '<div class="card-fila total"><span>Total activos</span><b>' + totalActivos + '</b></div>' +
+  '</div>';
+
+  // ---- Bloque: Miembros nuevos (con links RoyaleAPI / CWStats) ----
+  var htmlNuevos;
+  if (d.nuevos.length === 0) {
+    htmlNuevos = '<p class="vacio">No hay miembros nuevos por revisar.</p>';
+  } else {
+    htmlNuevos = d.nuevos.map(function(n) {
+      // FIX 08-oct-2026: n.fechaIng puede llegar como texto (lectura desde Backup_Directorio.csv) y formatDate solo acepta Date; se convierte con _parseSpanishDate() y, si no es una fecha valida, se muestra tal cual.
+      var fIngDate = (n.fechaIng instanceof Date) ? n.fechaIng : (n.fechaIng ? _parseSpanishDate(n.fechaIng) : null);
+      var fechaTxt = (fIngDate instanceof Date && !isNaN(fIngDate.getTime()))
+        ? Utilities.formatDate(fIngDate, Session.getScriptTimeZone() || 'America/Lima', 'dd/MM/yyyy')
+        : (n.fechaIng ? String(n.fechaIng) : '—');
+      return '<div class="card">' +
+        '<div class="card-titulo">' + e(n.nombre) + ' <span class="tag-chip">' + e(n.tag) + '</span></div>' +
+        '<div class="card-fila"><span>Clan</span><b>' + e(n.clan) + '</b></div>' +
+        '<div class="card-fila"><span>Ingresó</span><b>' + fechaTxt + '</b></div>' +
+        '<div class="links-fila">' +
+          '<a class="btn-link" href="' + n.royaleApi + '" target="_blank" rel="noopener">RoyaleAPI</a>' +
+          '<a class="btn-link" href="' + n.cwstats + '" target="_blank" rel="noopener">CWStats</a>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  var actualizado = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Lima', 'dd/MM/yyyy HH:mm');
+
+  return '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">' +
+'<meta name="viewport" content="width=device-width, initial-scale=1">' +
+'<title>Dashboard - Familia Terna</title>' +
+'<style>' +
+'  * { box-sizing: border-box; }' +
+'  body { margin:0; padding:0; background:#f2f2f5; font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:#222; }' +
+'  header { background:#1a1a2e; color:#fff; padding:20px 16px 24px; text-align:center; }' +
+'  header h1 { margin:0 0 6px; font-size:20px; }' +
+'  header .sub { font-size:13px; opacity:0.85; }' +
+'  .etapa-badge { display:inline-block; margin-top:10px; padding:5px 14px; border-radius:999px; font-weight:bold; font-size:13px; color:#fff; }' +
+'  main { max-width:640px; margin:-16px auto 0; padding:0 12px 32px; }' +
+'  section { margin-top:20px; }' +
+'  section h2 { font-size:15px; text-transform:uppercase; letter-spacing:0.5px; color:#555; margin:0 0 10px 4px; }' +
+'  .card { background:#fff; border-radius:12px; padding:14px 16px; margin-bottom:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }' +
+'  .card-titulo { font-weight:bold; font-size:15px; margin-bottom:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }' +
+'  .card-fila { display:flex; justify-content:space-between; padding:4px 0; font-size:14px; border-bottom:1px solid #f0f0f0; }' +
+'  .card-fila:last-child { border-bottom:none; }' +
+'  .card-fila.total { font-weight:bold; border-top:2px solid #eee; margin-top:4px; padding-top:8px; }' +
+'  .lista-fila { display:flex; justify-content:space-between; padding:6px 0; font-size:14px; border-bottom:1px solid #f5f5f5; }' +
+'  .lista-fila:last-child { border-bottom:none; }' +
+'  .faltan { color:#e53935; }' +
+'  .badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:bold; }' +
+'  .badge-alerta { background:#ffebee; color:#c62828; }' +
+'  .tag-chip { font-weight:normal; font-size:12px; color:#777; background:#f0f0f0; padding:2px 8px; border-radius:999px; }' +
+'  .links-fila { display:flex; gap:8px; margin-top:10px; }' +
+'  .btn-link { flex:1; text-align:center; padding:8px 0; border-radius:8px; background:#1a1a2e; color:#fff; text-decoration:none; font-size:13px; font-weight:bold; }' +
+'  .vacio { color:#777; font-size:14px; background:#fff; border-radius:12px; padding:16px; text-align:center; }' +
+'  footer { text-align:center; font-size:12px; color:#999; padding:20px 0 8px; }' +
+'</style></head><body>' +
+'<header>' +
+  '<h1>👑 Dashboard Familia Terna</h1>' +
+  '<div class="sub">Temporada ' + ctx.temporada + ' · Semana ' + (ctx.sectionIndex + 1) + ' · ' + diaNombre + '</div>' +
+  '<span class="etapa-badge" style="background:' + etapaColor + '">' + etapaTexto + '</span>' +
+'</header>' +
+'<main>' +
+  '<section><h2>⚔️ Estado de guerra hoy</h2>' + htmlGuerra + '</section>' +
+  '<section><h2>⏳ Pendientes de atacar</h2>' + htmlPendientes + '</section>' +
+  '<section><h2>👥 Miembros activos por clan</h2>' + htmlResumen + '</section>' +
+  '<section><h2>🆕 Miembros nuevos</h2>' + htmlNuevos + '</section>' +
+'</main>' +
+'<footer>Actualizado: ' + actualizado + '</footer>' +
+'</body></html>';
+}
+
+// _escapeHtmlDash(s): escapa texto dinámico antes de insertarlo en el HTML del dashboard. [→ Contexto_Base_Web.md §38B190]
+function _escapeHtmlDash(s) {
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// C) DASHBOARD DE ADMINISTRADORES (doGet ?dashboard=1): HTML de solo lectura para celular, lee las hojas ya actualizadas (Guerra/Pendientes/Directorio) sin llamar a la API de Clash Royale. [→ Contexto_Base_Web.md §38B106]
 // _getDatosDashboard(): arma el objeto del dashboard (ctx, guerraPorClan, diasSemanaGuerra, pendientes, resumenClanes, valoresDiarios*, controlTemporada*, temporadasDisponibles, nuevos, tiempos); lista completa de campos y fixes (05, 07, 09, 10-sep y 05-oct-2026) en el .md. [→ Contexto_Base_Web.md §38B107]
 function _getDatosDashboard() {
   // 19-sep-2026 (webGuerraEnVivo tardaba 28-39 s): durante esta función Backup_Guerra.csv y Guerra_Logs se leen una sola vez (memo por ejecución, se limpia siempre al salir); ver _guerraMemoIniciar_() en 22_ControlCalendario.gs. [→ Contexto_Base_Web.md §38B108]
@@ -1811,127 +1988,6 @@ function _getDatosDashboard() {
     _DASH_MEMO = null;
     _DASH_T = null;
   }
-}
-
-// _DASH_MEMO / _getMinGClanMapsDash_(): 19-sep-2026, calcula _getMinGClanMaps() UNA vez por ejecución del dashboard (antes lo leía por cada temporada); fuera del dashboard llama directo. [→ Contexto_Base_Web.md §38B109]
-var _DASH_MEMO = null;
-
-function _getMinGClanMapsDash_() {
-  if (_DASH_MEMO) {
-    if (!_DASH_MEMO.minG) _DASH_MEMO.minG = _getMinGClanMaps();
-    return _DASH_MEMO.minG;
-  }
-  return _getMinGClanMaps();
-}
-
-// _nombreClanDesdeHojaClanDash_(clanTag): solo dentro del dashboard; lee la hoja Clan una vez por ejecución (Tag -> Nombre); '' si no está. [→ Contexto_Base_Web.md §38B110]
-function _nombreClanDesdeHojaClanDash_(clanTag) {
-  try {
-    if (!_DASH_MEMO.nombresClan) {
-      var mapa = {};
-      var data = _obtenerFilasConFallbackCSV(_getSs(), CFG.SHEETS.CLAN, 'Backup_Clan.csv', CC.CONDICION).filas; // PF073: hoja viva o Backup_Clan.csv
-      if (data.length) {
-        for (var i = 0; i < data.length; i++) {
-          var tag    = cleanTag(String(data[i][CC.CLAN_TAG - 1] || '').trim());
-          var nombre = String(data[i][CC.NOMBRE - 1] || '').trim();
-          if (tag && nombre) mapa[tag] = nombre;
-        }
-      }
-      _DASH_MEMO.nombresClan = mapa;
-    }
-    return _DASH_MEMO.nombresClan[cleanTag(clanTag)] || '';
-  } catch (e) {
-    return '';
-  }
-}
-
-// _leerDirectorioDashboard_(ss): 19-sep-2026, como _leerDirectorioFisicoComoDC() pero sin getRichTextValues() de Links (era lo lento); arma directo las URLs de RoyaleAPI y CWStats desde el Tag; solo lectura. [→ Contexto_Base_Web.md §38B111]
-function _leerDirectorioDashboard_(ss) {
-  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!shDir || shDir.getLastRow() < 2) return [];
-  var numFilas      = shDir.getLastRow() - 1;
-  var dirFisico     = shDir.getRange(2, 1, numFilas, DIR_SHEET_COLS).getValues();
-  var playersPorTag = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.PLAYERS, PC.TAG - 1, PLAYERS_TOTAL_COLS);
-  var linksPorTag   = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.LINKS, LC.TAG - 1, LINKS_TOTAL_COLS);
-  var resultado = [];
-  for (var i = 0; i < dirFisico.length; i++) {
-    var tag  = String(dirFisico[i][IC.TAG - 1] || '').trim().toUpperCase();
-    var fila = _reconstruirFilaDCDesdeFisico(dirFisico[i], playersPorTag[tag], linksPorTag[tag]);
-    var linksFila = linksPorTag[tag];
-    if (linksFila) {
-      var tagSinHash = cleanTag(String(fila[DC.TAG - 1] || tag).trim());
-      if (tagSinHash) {
-        if (String(linksFila[LC.ROYALE_API - 1] || '').trim() !== '') {
-          fila[DC.ROYALE_API - 1] = 'https://royaleapi.com/player/' + tagSinHash + '/';
-        }
-        if (String(linksFila[LC.CW_STATS - 1] || '').trim() !== '') {
-          fila[DC.CW_STATS - 1] = 'https://cwstats.com/player/' + tagSinHash + '/';
-        }
-      }
-    }
-    resultado.push(fila);
-  }
-  return resultado;
-}
-
-// _dashTiempoIniciar_() / _dashTiempoMarca_() / _dashTiempoFin_(): 19-sep-2026, cronómetro por etapas de _getDatosDashboardCalcular_(); una línea [Dashboard] con ms por etapa; no cambia resultados. [→ Contexto_Base_Web.md §38B112]
-function _dashTiempoIniciar_() {
-  var ahora = Date.now();
-  return { t0: ahora, ult: ahora, partes: [], acum: {} };
-}
-
-// _DASH_T / _dashAcum_(etiqueta, desde): 19-sep-2026, suma ms y veces por etiqueta dentro de las etapas; se imprime como `detalle` en la línea [Dashboard]; solo mide. [→ Contexto_Base_Web.md §38B113]
-var _DASH_T = null;
-
-function _dashAcum_(etiqueta, desde) {
-  if (!_DASH_T) return;
-  var a = _DASH_T.acum[etiqueta] || { ms: 0, n: 0 };
-  a.ms += (Date.now() - desde);
-  a.n++;
-  _DASH_T.acum[etiqueta] = a;
-}
-function _dashTiempoMarca_(t, etiqueta) {
-  var ahora = Date.now();
-  t.partes.push(etiqueta + '=' + (ahora - t.ult));
-  t.ult = ahora;
-}
-function _dashTiempoFin_(t) {
-  var detalle = Object.keys(t.acum).map(function (k) { return k + '=' + t.acum[k].ms + 'ms/' + t.acum[k].n + 'x'; });
-  _diagGuerraVivo_('[Dashboard] build=B3 total=' + (Date.now() - t.t0) + 'ms | ' + t.partes.join(' | ') +
-                   (detalle.length ? ' || detalle: ' + detalle.join(' | ') : ''));
-}
-
-// _diagGuerraVivo_(texto) / verDiagnosticoGuerraVivo(): 19-sep-2026, diagnóstico de webGuerraEnVivo por Logger.log, console.log y lista corta en CacheService (15 líneas, 6 h); 'caché HIT' no entra a la lista; la última línea [Dashboard] tiene clave propia; nunca lanza error; no cambia resultados. [→ Contexto_Base_Web.md §38B114]
-var DIAG_GUERRA_VIVO_KEY      = 'diag_guerra_vivo_v1';
-var DIAG_GUERRA_VIVO_DASH_KEY = 'diag_guerra_vivo_dash_v1';
-
-function _diagGuerraVivo_(texto) {
-  var tz = Session.getScriptTimeZone() || 'America/Lima';
-  var linea = Utilities.formatDate(new Date(), tz, 'dd/MM HH:mm:ss') + ' ' + texto;
-  try { Logger.log(linea); } catch (e1) { /* nada que hacer */ }
-  try { console.log(linea); } catch (e2) { /* nada que hacer */ }
-  try {
-    var cache = CacheService.getScriptCache();
-    // La medición completa de la última recalculada tiene su propia clave. [→ Contexto_Base_Web.md §38B115]
-    if (String(texto).indexOf('[Dashboard]') === 0) cache.put(DIAG_GUERRA_VIVO_DASH_KEY, linea, 21600);
-    // Los 'caché HIT' son decenas por hora y llenaban la lista; no se guardan aquí. [→ Contexto_Base_Web.md §38B116]
-    if (String(texto).indexOf('caché HIT') !== -1) return;
-    var previas = cache.get(DIAG_GUERRA_VIVO_KEY);
-    var lista = previas ? previas.split('\n') : [];
-    lista.unshift(linea);
-    cache.put(DIAG_GUERRA_VIVO_KEY, lista.slice(0, 15).join('\n'), 21600);
-  } catch (e3) { /* caché no disponible: se omite */ }
-}
-
-function verDiagnosticoGuerraVivo() {
-  var cache = CacheService.getScriptCache();
-  var dash = cache.get(DIAG_GUERRA_VIVO_DASH_KEY);
-  var txt  = cache.get(DIAG_GUERRA_VIVO_KEY);
-  var salida = [];
-  if (dash) salida.push('Última medición [Dashboard]:\n' + dash);
-  if (txt)  salida.push('Últimas líneas, sin "caché HIT" (la más reciente primero):\n' + txt);
-  Logger.log(salida.length ? salida.join('\n\n')
-                           : 'Sin registros todavía: abre guerra.html una vez (o espera a que venza la caché de 5 min) y vuelve a ejecutar esta función.');
 }
 
 // _getDatosDashboardCalcular_(): cuerpo original de _getDatosDashboard(), separado el 19-sep-2026 solo para envolverlo con la memo por ejecución de Backup_Guerra.csv; su lógica no cambió. [→ Contexto_Base_Web.md §38B117]
@@ -2202,23 +2258,115 @@ function _getDatosDashboardCalcular_() {
   };
 }
 
-// _webAportesInactivos(token): endpoint 'webAportesInactivos' (router en doGet); valida la sesión de admin dentro (patrón de 37_Web_API.gs); token inválido -> { ok:false, error } sin tocar Inactivos ni Guerra. [→ Contexto_Base_Web.md §38B144]
-function _webAportesInactivos(token) {
-  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  var ss  = _getSs();
-  var ctx = _getCtx();
-  return { ok: true, aportesInactivos: _getAportesInactivosSemanaActual(ss, ctx) };
+// _dashTiempoIniciar_() / _dashTiempoMarca_() / _dashTiempoFin_(): 19-sep-2026, cronómetro por etapas de _getDatosDashboardCalcular_(); una línea [Dashboard] con ms por etapa; no cambia resultados. [→ Contexto_Base_Web.md §38B112]
+function _dashTiempoIniciar_() {
+  var ahora = Date.now();
+  return { t0: ahora, ult: ahora, partes: [], acum: {} };
 }
 
-// _MESES_ES_ / _MESES_ABREV_ES_ (FIX 09-sep-2026): nombres de mes en español fijos, índice 0-based, sin depender de Intl (evita el punto final de 'sept.'). [→ Contexto_Base_Web.md §38B145]
-var _MESES_ES_ = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-var _MESES_ABREV_ES_ = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+function _dashAcum_(etiqueta, desde) {
+  if (!_DASH_T) return;
+  var a = _DASH_T.acum[etiqueta] || { ms: 0, n: 0 };
+  a.ms += (Date.now() - desde);
+  a.n++;
+  _DASH_T.acum[etiqueta] = a;
+}
 
-// _fmtFechaCortaSemana(d): 'DD MES' en mayúsculas (ej. '07 SEP') para las etiquetas de semana del selector de Valores diarios. [→ Contexto_Base_Web.md §38B146]
-function _fmtFechaCortaSemana(d) {
-  if (!d || isNaN(d.getTime())) return '—';
-  var dd = ('0' + d.getDate()).slice(-2);
-  return dd + ' ' + _MESES_ABREV_ES_[d.getMonth()];
+function _dashTiempoMarca_(t, etiqueta) {
+  var ahora = Date.now();
+  t.partes.push(etiqueta + '=' + (ahora - t.ult));
+  t.ult = ahora;
+}
+
+function _dashTiempoFin_(t) {
+  var detalle = Object.keys(t.acum).map(function (k) { return k + '=' + t.acum[k].ms + 'ms/' + t.acum[k].n + 'x'; });
+  _diagGuerraVivo_('[Dashboard] build=B3 total=' + (Date.now() - t.t0) + 'ms | ' + t.partes.join(' | ') +
+                   (detalle.length ? ' || detalle: ' + detalle.join(' | ') : ''));
+}
+
+// ----- Dashboard de administradores: lectura de hojas, temporadas y semanas -----
+
+// _leerDirectorioDashboard_(ss): 19-sep-2026, como _leerDirectorioFisicoComoDC() pero sin getRichTextValues() de Links (era lo lento); arma directo las URLs de RoyaleAPI y CWStats desde el Tag; solo lectura. [→ Contexto_Base_Web.md §38B111]
+function _leerDirectorioDashboard_(ss) {
+  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!shDir || shDir.getLastRow() < 2) return [];
+  var numFilas      = shDir.getLastRow() - 1;
+  var dirFisico     = shDir.getRange(2, 1, numFilas, DIR_SHEET_COLS).getValues();
+  var playersPorTag = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.PLAYERS, PC.TAG - 1, PLAYERS_TOTAL_COLS);
+  var linksPorTag   = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.LINKS, LC.TAG - 1, LINKS_TOTAL_COLS);
+  var resultado = [];
+  for (var i = 0; i < dirFisico.length; i++) {
+    var tag  = String(dirFisico[i][IC.TAG - 1] || '').trim().toUpperCase();
+    var fila = _reconstruirFilaDCDesdeFisico(dirFisico[i], playersPorTag[tag], linksPorTag[tag]);
+    var linksFila = linksPorTag[tag];
+    if (linksFila) {
+      var tagSinHash = cleanTag(String(fila[DC.TAG - 1] || tag).trim());
+      if (tagSinHash) {
+        if (String(linksFila[LC.ROYALE_API - 1] || '').trim() !== '') {
+          fila[DC.ROYALE_API - 1] = 'https://royaleapi.com/player/' + tagSinHash + '/';
+        }
+        if (String(linksFila[LC.CW_STATS - 1] || '').trim() !== '') {
+          fila[DC.CW_STATS - 1] = 'https://cwstats.com/player/' + tagSinHash + '/';
+        }
+      }
+    }
+    resultado.push(fila);
+  }
+  return resultado;
+}
+
+// _nombreClanDesdeHojaClanDash_(clanTag): solo dentro del dashboard; lee la hoja Clan una vez por ejecución (Tag -> Nombre); '' si no está. [→ Contexto_Base_Web.md §38B110]
+function _nombreClanDesdeHojaClanDash_(clanTag) {
+  try {
+    if (!_DASH_MEMO.nombresClan) {
+      var mapa = {};
+      var data = _obtenerFilasConFallbackCSV(_getSs(), CFG.SHEETS.CLAN, 'Backup_Clan.csv', CC.CONDICION).filas; // PF073: hoja viva o Backup_Clan.csv
+      if (data.length) {
+        for (var i = 0; i < data.length; i++) {
+          var tag    = cleanTag(String(data[i][CC.CLAN_TAG - 1] || '').trim());
+          var nombre = String(data[i][CC.NOMBRE - 1] || '').trim();
+          if (tag && nombre) mapa[tag] = nombre;
+        }
+      }
+      _DASH_MEMO.nombresClan = mapa;
+    }
+    return _DASH_MEMO.nombresClan[cleanTag(clanTag)] || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+// _getNombreClanDump(clanTag): nombre del clan desde cache o API (retrocompatibilidad). Desde 19-sep/02-oct-2026 también usa la hoja Clan dentro del dashboard y el último checkpoint de clanes en Drive antes de la API. [→ Contexto_Base_Web.md §38B191]
+function _getNombreClanDump(clanTag) {
+  var cached = _getClanCache(clanTag);
+  if (cached && cached.info && cached.info.name) return cached.info.name;
+  // 19-sep-2026 (c2.minG = 5,3 s): dentro de _getDatosDashboard() (_DASH_MEMO activo) el nombre del clan sale de la hoja Clan en vez de una llamada HTTP por clan; si no está, camino de siempre (API). [→ Contexto_Base_Web.md §38B192]
+  if (_DASH_MEMO) {
+    var nombreHoja = _nombreClanDesdeHojaClanDash_(clanTag);
+    if (nombreHoja) return nombreHoja;
+  }
+  // FIX 02-oct-2026: antes de la API se usa el nombre del último checkpoint de clanes en Drive (leído una vez por ejecución), para no devolver el TAG como nombre si la API falla (500/525). [→ Contexto_Base_Web.md §38B193]
+  if (_NOMBRES_CLAN_CHECKPOINT === null) {
+    _NOMBRES_CLAN_CHECKPOINT = {};
+    var cp = _cargarProgresoClanesSinEdad();
+    if (cp) {
+      for (var k in cp) {
+        if (cp[k] && cp[k].info && cp[k].info.name) _NOMBRES_CLAN_CHECKPOINT[cleanTag(k)] = cp[k].info.name;
+      }
+    }
+  }
+  if (_NOMBRES_CLAN_CHECKPOINT[cleanTag(clanTag)]) return _NOMBRES_CLAN_CHECKPOINT[cleanTag(clanTag)];
+  var info = _apiGet('/clans/' + encodeTag(clanTag));
+  if (info && info.name) return info.name;
+  return cleanTag(clanTag);
+}
+
+function _getMinGClanMapsDash_() {
+  if (_DASH_MEMO) {
+    if (!_DASH_MEMO.minG) _DASH_MEMO.minG = _getMinGClanMaps();
+    return _DASH_MEMO.minG;
+  }
+  return _getMinGClanMaps();
 }
 
 // _elegirPeriodoGuerraCongelado_(dataGuerra, csvPorTemporada, ctx) — NUEVO 05-oct-2026: elige el último día de guerra jugado (hoja vigente + Backup_Guerra.csv), prefiriendo el último día con ATAQUES REALES; función pura, devuelve {temporada, periodIndex, letra, valido} o null. [→ Contexto_Base_Web.md §38B147]
@@ -2251,6 +2399,24 @@ function _elegirPeriodoGuerraCongelado_(dataGuerra, csvPorTemporada, ctx) {
   });
   var el = mejorValido || mejorCualquiera;
   return el ? { temporada: el.temp, periodIndex: el.pIdx, letra: periodIdxToLetra(el.pIdx), valido: !!mejorValido } : null;
+}
+
+// _getTemporadasDisponibles(ctxReal): FIX 07-sep-2026; temporadas con datos de guerra (distintas de Backup_Guerra.csv + la vigente siempre), de más reciente a más antigua. [→ Contexto_Base_Web.md §38B178]
+function _getTemporadasDisponibles(ctxReal) {
+  var set = {};
+  set[String(ctxReal.temporada)] = true;
+
+  try {
+    // 19-sep-2026: lectura y parseo de Backup_Guerra.csv pasó a _leerGuerraCsvAgrupado_() (22_ControlCalendario.gs), una sola vez dentro del dashboard; mismo resultado. [→ Contexto_Base_Web.md §38B179]
+    var csvGuerraTemp = _leerGuerraCsvAgrupado_();
+    Object.keys(csvGuerraTemp.porTemporada).forEach(function (t) {
+      if (t) set[t] = true;
+    });
+  } catch (e) {
+    Logger.log('[Cuadrícula Temporada] Error leyendo Backup_Guerra.csv para listar temporadas disponibles: ' + e.message);
+  }
+
+  return Object.keys(set).map(Number).sort(function (a, b) { return b - a; });
 }
 
 // _getInfoTemporada(temporada): FIX 09-sep-2026; cada temporada tiene un único mes (su primer lunes), y el año del selector es el de ese primer lunes (una que arranca en diciembre queda bajo diciembre); devuelve {temporada, anio, mes, mesLabel, label} o null. [→ Contexto_Base_Web.md §38B148]
@@ -2305,6 +2471,13 @@ function _getSemanasTemporada(ctx, temporada) {
   return semanas;
 }
 
+// _fmtFechaCortaSemana(d): 'DD MES' en mayúsculas (ej. '07 SEP') para las etiquetas de semana del selector de Valores diarios. [→ Contexto_Base_Web.md §38B146]
+function _fmtFechaCortaSemana(d) {
+  if (!d || isNaN(d.getTime())) return '—';
+  var dd = ('0' + d.getDate()).slice(-2);
+  return dd + ' ' + _MESES_ABREV_ES_[d.getMonth()];
+}
+
 // _getValoresDiariosSelectores(ctx, temporadasDisponibles): FIX 09-sep-2026; arma los 3 niveles (año, temporada, semana) de Valores diarios; omite la vigente si aún no jugó ninguna semana; porDefecto = lo más reciente disponible. [→ Contexto_Base_Web.md §38B153]
 function _getValoresDiariosSelectores(ctx, temporadasDisponibles) {
   var temporadasPorAnio = {};
@@ -2339,52 +2512,14 @@ function _getValoresDiariosSelectores(ctx, temporadasDisponibles) {
   return { anios: anios, temporadasPorAnio: temporadasPorAnio, semanasPorTemporada: semanasPorTemporada, porDefecto: porDefecto };
 }
 
-// _getParticipantesGuerraTemporada_(temporada, temporadaReal): NUEVO 08-oct-2026 (pedido usuario: puntaje honesto por clan); quienes PARTICIPARON en una temporada, sacados de las filas de Guerra (hoja si es la vigente, Backup_Guerra.csv si es histórica), no del Directorio actual. Devuelve { TAG_MAYUS: { tag, nombre, clan, semanas: {sIdx:true} } } (clan/nombre = los de la ultima fila vista). Quien no tiene filas en esa temporada no aparece (entro despues, ya se habia ido, o estuvo en la 2 y la 4 pero no en la 3).
-function _getParticipantesGuerraTemporada_(temporada, temporadaReal) {
-  var res = {};
-  var filas = [];
-  try {
-    if (String(temporada) === String(temporadaReal)) {
-      var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
-      if (!sh || sh.getLastRow() < 2) return res;
-      if (_GUERRA_MEMO_ACTIVO && _GUERRA_HOJA_MEMO) {
-        filas = _GUERRA_HOJA_MEMO;
-      } else {
-        filas = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
-        if (_GUERRA_MEMO_ACTIVO) _GUERRA_HOJA_MEMO = filas;
-      }
-    } else {
-      var csv = _leerGuerraCsvAgrupado_();
-      filas = (csv.porTemporada && csv.porTemporada[String(temporada)]) || [];
-    }
-  } catch (e) {
-    Logger.log('[Participantes Guerra] T' + temporada + ': ' + e.message);
-    // PF073: si la hoja Guerra falló en la temporada real, se reintenta con Backup_Guerra.csv antes de rendirse
-    try {
-      var csvResp = _leerGuerraCsvAgrupado_();
-      filas = (csvResp.porTemporada && csvResp.porTemporada[String(temporada)]) || [];
-    } catch (e2) {
-      Logger.log('[Participantes Guerra] T' + temporada + ': tampoco el CSV: ' + e2.message);
-      return res;
-    }
-  }
-  for (var i = 0; i < filas.length; i++) {
-    var f = filas[i];
-    if (String(f[GC.TEMPORADA - 1] || '') !== String(temporada)) continue;
-    var tag = String(f[GC.TAG - 1] || '').trim().toUpperCase();
-    if (!tag) continue;
-    var pIdx = Number(f[GC.PERIOD_IDX - 1] || 0);
-    if (!esDiaGuerraIdx(pIdx)) continue; // mismo criterio que _procesarFilasGuerraParaControl()
-    var sIdx = Math.max(Number(f[GC.SEMANA - 1] || 1) - 1, 0);
-    var p = res[tag];
-    if (!p) p = res[tag] = { tag: tag, nombre: '', clan: '', semanas: {} };
-    p.semanas[sIdx] = true;
-    var nom = String(f[GC.NOMBRE - 1] || '').trim();
-    var cl  = String(f[GC.CLAN - 1] || '').trim();
-    if (nom) p.nombre = nom;
-    if (cl)  p.clan = cl;
-  }
-  return res;
+// _getValoresDiariosPorSemana(dataDir, ctx, selectores): recorre las temporadas de selectores.semanasPorTemporada y arma su cuadrícula con _getControlActivosGridPorTemporada() (una lectura por temporada); devuelve { [temporada]: { [sectionIndex]: grid } }. [→ Contexto_Base_Web.md §38B165]
+function _getValoresDiariosPorSemana(dataDir, ctx, selectores) {
+  var resultado = {};
+  if (!selectores) return resultado;
+  Object.keys(selectores.semanasPorTemporada).forEach(function (temporada) {
+    resultado[temporada] = _getControlActivosGridPorTemporada(dataDir, Number(temporada), ctx.temporada, selectores.semanasPorTemporada[temporada], ctx);
+  });
+  return resultado;
 }
 
 // _getControlActivosGridPorTemporada(dataDir, temporada, temporadaReal, semanas, ctxVigente): FIX 09-sep-2026; cuadrícula J/V/S/D de TODAS las semanas de UNA temporada en un solo cálculo vía _getDatosGuerraParaControl(); lista todos los Activos (0/0/0/0) salvo semanas previas a su ingreso (FIX 10-sep); orden por rango y nombre (28-sep, Fase 3b); fila con `rango`. [→ Contexto_Base_Web.md §38B155]
@@ -2525,14 +2660,52 @@ function _getControlActivosGridPorTemporada(dataDir, temporada, temporadaReal, s
   return resultado;
 }
 
-// _getValoresDiariosPorSemana(dataDir, ctx, selectores): recorre las temporadas de selectores.semanasPorTemporada y arma su cuadrícula con _getControlActivosGridPorTemporada() (una lectura por temporada); devuelve { [temporada]: { [sectionIndex]: grid } }. [→ Contexto_Base_Web.md §38B165]
-function _getValoresDiariosPorSemana(dataDir, ctx, selectores) {
-  var resultado = {};
-  if (!selectores) return resultado;
-  Object.keys(selectores.semanasPorTemporada).forEach(function (temporada) {
-    resultado[temporada] = _getControlActivosGridPorTemporada(dataDir, Number(temporada), ctx.temporada, selectores.semanasPorTemporada[temporada], ctx);
-  });
-  return resultado;
+// _getParticipantesGuerraTemporada_(temporada, temporadaReal): NUEVO 08-oct-2026 (pedido usuario: puntaje honesto por clan); quienes PARTICIPARON en una temporada, sacados de las filas de Guerra (hoja si es la vigente, Backup_Guerra.csv si es histórica), no del Directorio actual. Devuelve { TAG_MAYUS: { tag, nombre, clan, semanas: {sIdx:true} } } (clan/nombre = los de la ultima fila vista). Quien no tiene filas en esa temporada no aparece (entro despues, ya se habia ido, o estuvo en la 2 y la 4 pero no en la 3).
+function _getParticipantesGuerraTemporada_(temporada, temporadaReal) {
+  var res = {};
+  var filas = [];
+  try {
+    if (String(temporada) === String(temporadaReal)) {
+      var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+      if (!sh || sh.getLastRow() < 2) return res;
+      if (_GUERRA_MEMO_ACTIVO && _GUERRA_HOJA_MEMO) {
+        filas = _GUERRA_HOJA_MEMO;
+      } else {
+        filas = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+        if (_GUERRA_MEMO_ACTIVO) _GUERRA_HOJA_MEMO = filas;
+      }
+    } else {
+      var csv = _leerGuerraCsvAgrupado_();
+      filas = (csv.porTemporada && csv.porTemporada[String(temporada)]) || [];
+    }
+  } catch (e) {
+    Logger.log('[Participantes Guerra] T' + temporada + ': ' + e.message);
+    // PF073: si la hoja Guerra falló en la temporada real, se reintenta con Backup_Guerra.csv antes de rendirse
+    try {
+      var csvResp = _leerGuerraCsvAgrupado_();
+      filas = (csvResp.porTemporada && csvResp.porTemporada[String(temporada)]) || [];
+    } catch (e2) {
+      Logger.log('[Participantes Guerra] T' + temporada + ': tampoco el CSV: ' + e2.message);
+      return res;
+    }
+  }
+  for (var i = 0; i < filas.length; i++) {
+    var f = filas[i];
+    if (String(f[GC.TEMPORADA - 1] || '') !== String(temporada)) continue;
+    var tag = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+    if (!tag) continue;
+    var pIdx = Number(f[GC.PERIOD_IDX - 1] || 0);
+    if (!esDiaGuerraIdx(pIdx)) continue; // mismo criterio que _procesarFilasGuerraParaControl()
+    var sIdx = Math.max(Number(f[GC.SEMANA - 1] || 1) - 1, 0);
+    var p = res[tag];
+    if (!p) p = res[tag] = { tag: tag, nombre: '', clan: '', semanas: {} };
+    p.semanas[sIdx] = true;
+    var nom = String(f[GC.NOMBRE - 1] || '').trim();
+    var cl  = String(f[GC.CLAN - 1] || '').trim();
+    if (nom) p.nombre = nom;
+    if (cl)  p.clan = cl;
+  }
+  return res;
 }
 
 // _diasOpcionalesClanSemana_(clan, temporada, sIdx, memo) — NUEVO 05-oct-2026: letras (v/s/d) de los días en que el clan ya había cruzado la meta; jueves y coliseo nunca; solo _cruceMetaDesdeGuerraLogs_() (memoizado); sin dato no se marca. [→ Contexto_Base_Web.md §38B166]
@@ -2554,6 +2727,42 @@ function _diasOpcionalesClanSemana_(clan, temporada, sIdx, memo) {
   }
   memo[k] = res;
   return res;
+}
+
+// _getControlTemporadaSelectores(ctx, temporadasDisponibles): FIX 09-sep-2026; agrupa por año -> temporada(mes) para Valores semanales (sin nivel de semana); la vigente siempre se incluye y es el porDefecto. [→ Contexto_Base_Web.md §38B180]
+function _getControlTemporadaSelectores(ctx, temporadasDisponibles) {
+  var temporadasPorAnio = {};
+  var aniosSet = {};
+
+  temporadasDisponibles.forEach(function (temporada) {
+    var info = _getInfoTemporada(temporada);
+    if (!info) return;
+    aniosSet[info.anio] = true;
+    if (!temporadasPorAnio[info.anio]) temporadasPorAnio[info.anio] = [];
+    temporadasPorAnio[info.anio].push({ temporada: temporada, mes: info.mes, mesLabel: info.mesLabel, label: info.label });
+  });
+
+  var anios = Object.keys(aniosSet).map(Number).sort(function (a, b) { return b - a; });
+  Object.keys(temporadasPorAnio).forEach(function (anio) {
+    temporadasPorAnio[anio].sort(function (a, b) { return b.temporada - a.temporada; });
+  });
+
+  var infoVigente = _getInfoTemporada(ctx.temporada);
+  var porDefecto = infoVigente ? { anio: infoVigente.anio, temporada: Number(ctx.temporada) } : null;
+
+  return { anios: anios, temporadasPorAnio: temporadasPorAnio, porDefecto: porDefecto };
+}
+
+// _getControlTemporadaPorTemporada(ss, ctxReal, dataDir, temporadas): FIX 07-sep-2026; shape {semanas, porClan} por cada temporada distinta a la vigente, reusando _getControlTemporadaPorClan() sobre un ctx clonado (_clonarCtxParaTemporada()). [→ Contexto_Base_Web.md §38B181]
+function _getControlTemporadaPorTemporada(ss, ctxReal, dataDir, temporadas) {
+  var resultado = {};
+  temporadas.forEach(function (temporada) {
+    if (String(temporada) === String(ctxReal.temporada)) return; // la vigente ya viaja aparte
+    var ctxTemporada = _clonarCtxParaTemporada(ctxReal, temporada);
+    // FIX 07-sep-2026: se pasa ctxReal.temporada explícito (ver _getControlTemporadaPorClan()). [→ Contexto_Base_Web.md §38B182]
+    resultado[temporada] = _getControlTemporadaPorClan(ss, ctxTemporada, dataDir, ctxReal.temporada);
+  });
+  return resultado;
 }
 
 // _getControlTemporadaPorClan(ss, ctx, dataDirParam, temporadaReal): FIX 05-sep-2026; cuadrícula 'Tipo Control_2' (valores SEMANALES) por clan; usa los datos crudos de Supercell (hoja Guerra/Backup_Guerra.csv) SIN el overlay de correcciones de RoyaleAPI; públicas, lista todos los Activos; FIX 10-sep (excluye ingresos posteriores a la temporada); FIX 07-sep (parámetro temporadaReal para elegir hoja vs CSV). Detalle en el .md. [→ Contexto_Base_Web.md §38B167]
@@ -2745,60 +2954,6 @@ function _getControlTemporadaPorClan(ss, ctx, dataDirParam, temporadaReal) {
   return { semanas: semanas, porClan: porClan };
 }
 
-// _getTemporadasDisponibles(ctxReal): FIX 07-sep-2026; temporadas con datos de guerra (distintas de Backup_Guerra.csv + la vigente siempre), de más reciente a más antigua. [→ Contexto_Base_Web.md §38B178]
-function _getTemporadasDisponibles(ctxReal) {
-  var set = {};
-  set[String(ctxReal.temporada)] = true;
-
-  try {
-    // 19-sep-2026: lectura y parseo de Backup_Guerra.csv pasó a _leerGuerraCsvAgrupado_() (22_ControlCalendario.gs), una sola vez dentro del dashboard; mismo resultado. [→ Contexto_Base_Web.md §38B179]
-    var csvGuerraTemp = _leerGuerraCsvAgrupado_();
-    Object.keys(csvGuerraTemp.porTemporada).forEach(function (t) {
-      if (t) set[t] = true;
-    });
-  } catch (e) {
-    Logger.log('[Cuadrícula Temporada] Error leyendo Backup_Guerra.csv para listar temporadas disponibles: ' + e.message);
-  }
-
-  return Object.keys(set).map(Number).sort(function (a, b) { return b - a; });
-}
-
-// _getControlTemporadaSelectores(ctx, temporadasDisponibles): FIX 09-sep-2026; agrupa por año -> temporada(mes) para Valores semanales (sin nivel de semana); la vigente siempre se incluye y es el porDefecto. [→ Contexto_Base_Web.md §38B180]
-function _getControlTemporadaSelectores(ctx, temporadasDisponibles) {
-  var temporadasPorAnio = {};
-  var aniosSet = {};
-
-  temporadasDisponibles.forEach(function (temporada) {
-    var info = _getInfoTemporada(temporada);
-    if (!info) return;
-    aniosSet[info.anio] = true;
-    if (!temporadasPorAnio[info.anio]) temporadasPorAnio[info.anio] = [];
-    temporadasPorAnio[info.anio].push({ temporada: temporada, mes: info.mes, mesLabel: info.mesLabel, label: info.label });
-  });
-
-  var anios = Object.keys(aniosSet).map(Number).sort(function (a, b) { return b - a; });
-  Object.keys(temporadasPorAnio).forEach(function (anio) {
-    temporadasPorAnio[anio].sort(function (a, b) { return b.temporada - a.temporada; });
-  });
-
-  var infoVigente = _getInfoTemporada(ctx.temporada);
-  var porDefecto = infoVigente ? { anio: infoVigente.anio, temporada: Number(ctx.temporada) } : null;
-
-  return { anios: anios, temporadasPorAnio: temporadasPorAnio, porDefecto: porDefecto };
-}
-
-// _getControlTemporadaPorTemporada(ss, ctxReal, dataDir, temporadas): FIX 07-sep-2026; shape {semanas, porClan} por cada temporada distinta a la vigente, reusando _getControlTemporadaPorClan() sobre un ctx clonado (_clonarCtxParaTemporada()). [→ Contexto_Base_Web.md §38B181]
-function _getControlTemporadaPorTemporada(ss, ctxReal, dataDir, temporadas) {
-  var resultado = {};
-  temporadas.forEach(function (temporada) {
-    if (String(temporada) === String(ctxReal.temporada)) return; // la vigente ya viaja aparte
-    var ctxTemporada = _clonarCtxParaTemporada(ctxReal, temporada);
-    // FIX 07-sep-2026: se pasa ctxReal.temporada explícito (ver _getControlTemporadaPorClan()). [→ Contexto_Base_Web.md §38B182]
-    resultado[temporada] = _getControlTemporadaPorClan(ss, ctxTemporada, dataDir, ctxReal.temporada);
-  });
-  return resultado;
-}
-
 // _getAportesInactivosSemanaActual(ss, ctx): FIX 05-sep-2026; aportes de inactivos de la semana vigente agrupados por Tag+Clan (un inactivo puede aportar a 2+ clanes el mismo día) con ataques, puntaje y barcos (delta diario por Tag+Clan, propio, no _procesarFilasGuerraParaControl()); solo tags de Inactivos con ataques > 0. Detalle en el .md. [→ Contexto_Base_Web.md §38B183]
 function _getAportesInactivosSemanaActual(ss, ctx) {
   // FIX 15-sep-2026: si Inactivos no está disponible se usa Backup_Inactivos.csv (formato DC de 60 columnas), indexando con IC.* para la hoja y con DC.* para el CSV, sin mezclar esquemas. [→ Contexto_Base_Web.md §38B184]
@@ -2944,179 +3099,55 @@ function _getAportesInactivosSemanaActual(ss, ctx) {
   return resultado;
 }
 
-// _escapeHtmlDash(s): escapa texto dinámico antes de insertarlo en el HTML del dashboard. [→ Contexto_Base_Web.md §38B190]
-function _escapeHtmlDash(s) {
-  return String(s === null || s === undefined ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+// _webAportesInactivos(token): endpoint 'webAportesInactivos' (router en doGet); valida la sesión de admin dentro (patrón de 37_Web_API.gs); token inválido -> { ok:false, error } sin tocar Inactivos ni Guerra. [→ Contexto_Base_Web.md §38B144]
+function _webAportesInactivos(token) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  var ss  = _getSs();
+  var ctx = _getCtx();
+  return { ok: true, aportesInactivos: _getAportesInactivosSemanaActual(ss, ctx) };
 }
 
-// _getNombreClanDump(clanTag): nombre del clan desde cache o API (retrocompatibilidad). Desde 19-sep/02-oct-2026 también usa la hoja Clan dentro del dashboard y el último checkpoint de clanes en Drive antes de la API. [→ Contexto_Base_Web.md §38B191]
-function _getNombreClanDump(clanTag) {
-  var cached = _getClanCache(clanTag);
-  if (cached && cached.info && cached.info.name) return cached.info.name;
-  // 19-sep-2026 (c2.minG = 5,3 s): dentro de _getDatosDashboard() (_DASH_MEMO activo) el nombre del clan sale de la hoja Clan en vez de una llamada HTTP por clan; si no está, camino de siempre (API). [→ Contexto_Base_Web.md §38B192]
-  if (_DASH_MEMO) {
-    var nombreHoja = _nombreClanDesdeHojaClanDash_(clanTag);
-    if (nombreHoja) return nombreHoja;
-  }
-  // FIX 02-oct-2026: antes de la API se usa el nombre del último checkpoint de clanes en Drive (leído una vez por ejecución), para no devolver el TAG como nombre si la API falla (500/525). [→ Contexto_Base_Web.md §38B193]
-  if (_NOMBRES_CLAN_CHECKPOINT === null) {
-    _NOMBRES_CLAN_CHECKPOINT = {};
-    var cp = _cargarProgresoClanesSinEdad();
-    if (cp) {
-      for (var k in cp) {
-        if (cp[k] && cp[k].info && cp[k].info.name) _NOMBRES_CLAN_CHECKPOINT[cleanTag(k)] = cp[k].info.name;
-      }
-    }
-  }
-  if (_NOMBRES_CLAN_CHECKPOINT[cleanTag(clanTag)]) return _NOMBRES_CLAN_CHECKPOINT[cleanTag(clanTag)];
-  var info = _apiGet('/clans/' + encodeTag(clanTag));
-  if (info && info.name) return info.name;
-  return cleanTag(clanTag);
+// ----- Diagnóstico de la guerra en vivo: ayudas -----
+
+function _diagGuerraVivo_(texto) {
+  var tz = Session.getScriptTimeZone() || 'America/Lima';
+  var linea = Utilities.formatDate(new Date(), tz, 'dd/MM HH:mm:ss') + ' ' + texto;
+  try { Logger.log(linea); } catch (e1) { /* nada que hacer */ }
+  try { console.log(linea); } catch (e2) { /* nada que hacer */ }
+  try {
+    var cache = CacheService.getScriptCache();
+    // La medición completa de la última recalculada tiene su propia clave. [→ Contexto_Base_Web.md §38B115]
+    if (String(texto).indexOf('[Dashboard]') === 0) cache.put(DIAG_GUERRA_VIVO_DASH_KEY, linea, 21600);
+    // Los 'caché HIT' son decenas por hora y llenaban la lista; no se guardan aquí. [→ Contexto_Base_Web.md §38B116]
+    if (String(texto).indexOf('caché HIT') !== -1) return;
+    var previas = cache.get(DIAG_GUERRA_VIVO_KEY);
+    var lista = previas ? previas.split('\n') : [];
+    lista.unshift(linea);
+    cache.put(DIAG_GUERRA_VIVO_KEY, lista.slice(0, 15).join('\n'), 21600);
+  } catch (e3) { /* caché no disponible: se omite */ }
 }
 
-// FIX (02-oct-2026): memo por ejecución { tagLimpio: nombre } leído del checkpoint de clanes.
-var _NOMBRES_CLAN_CHECKPOINT = null;
-
-// _getClanTagByName(clanName): tag de un clan por nombre, para ordenar por TERNA_TAGS; '' si no existe. [→ Contexto_Base_Web.md §38B194]
-function _getClanTagByName(clanName) {
-  if (!CACHE_CLAN_DATA) return '';
-  for (var tag in CACHE_CLAN_DATA) {
-    var info = CACHE_CLAN_DATA[tag] && CACHE_CLAN_DATA[tag].info;
-    if (info && String(info.name || '') === clanName) return tag;
+function _testTamanioGuerraEnVivoUna_(admin) {
+  var t0 = Date.now();
+  var datos = _webGuerraEnVivo({ esAdmin: admin });
+  var ms = Date.now() - t0;
+  var json = JSON.stringify(datos);
+  Logger.log('[Tamaño] webGuerraEnVivo: ' + ms + ' ms | ' + json.length + ' caracteres (~' + Math.round(json.length / 1024) + ' KB)');
+  var partes = [];
+  Object.keys(datos || {}).forEach(function (k) {
+    var n = JSON.stringify(datos[k] === undefined ? null : datos[k]).length;
+    partes.push({ k: k, n: n });
+  });
+  partes.sort(function (a, b) { return b.n - a.n; });
+  partes.slice(0, 8).forEach(function (x) {
+    Logger.log('[Tamaño]   ' + x.k + ': ' + Math.round(x.n / 1024) + ' KB (' + Math.round(100 * x.n / json.length) + '%)');
+  });
+  var vd = datos && datos.valoresDiariosPorSemana;
+  if (vd) {
+    var inact = 0, total = 0;
+    Object.keys(vd).forEach(function (t) { Object.keys(vd[t]).forEach(function (sem) { Object.keys(vd[t][sem]).forEach(function (cl) {
+      (vd[t][sem][cl] || []).forEach(function (f) { total++; if (f && f.activo === false) inact++; });
+    }); }); });
+    Logger.log('[Tamaño] valoresDiariosPorSemana: ' + total + ' filas, ' + inact + ' de inactivos');
   }
-  return '';
-}
-
-// _generarDashboardHtml(): arma la página HTML completa del dashboard (mobile-first, sin dependencias externas) desde _getDatosDashboard(). [→ Contexto_Base_Web.md §38B195]
-function _generarDashboardHtml() {
-  var d   = _getDatosDashboard();
-  var ctx = d.ctx;
-  var e   = _escapeHtmlDash;
-
-  var etapaTexto  = ctx.esDiaGuerra ? 'GUERRA' : 'ENTRENAMIENTO';
-  var etapaColor  = ctx.esDiaGuerra ? '#e53935' : '#1e88e5';
-  var diaNombre   = diaLetraANombre(ctx.diaLetra);
-
-  // ---- Bloque: Estado de guerra por clan ----
-  var clanesOrdenNombres = Object.keys(d.guerraPorClan).sort();
-  var htmlGuerra = '';
-  if (clanesOrdenNombres.length === 0) {
-    htmlGuerra = '<p class="vacio">Sin datos de guerra para hoy todavía.</p>';
-  } else {
-    clanesOrdenNombres.forEach(function(clanNombre) {
-      var g = d.guerraPorClan[clanNombre];
-      var barcosHtml = g.barcos > 0
-        ? '<span class="badge badge-alerta">⚠️ ' + g.barcos + ' barco(s)</span>'
-        : '';
-      htmlGuerra +=
-        '<div class="card">' +
-          '<div class="card-titulo">' + e(clanNombre) + '</div>' +
-          '<div class="card-fila"><span>Atacaron hoy</span><b>' + g.atacaron + ' / ' + g.totalHoy + '</b></div>' +
-          '<div class="card-fila"><span>Ataques usados</span><b>' + g.ataques + '</b></div>' +
-          '<div class="card-fila"><span>Medallas del día</span><b>' + g.fame.toLocaleString('es-PE') + '</b></div>' +
-          (barcosHtml ? '<div class="card-fila">' + barcosHtml + '</div>' : '') +
-        '</div>';
-    });
-  }
-
-  // ---- Bloque: Pendientes de atacar ----
-  var htmlPendientes;
-  if (!ctx.esDiaGuerra) {
-    htmlPendientes = '<p class="vacio">Hoy es día de entrenamiento — no hay ataques de guerra pendientes.</p>';
-  } else if (d.pendientes.length === 0) {
-    htmlPendientes = '<p class="vacio">🎉 Nadie tiene ataques pendientes.</p>';
-  } else {
-    var pendPorClan = {};
-    d.pendientes.forEach(function(p) {
-      if (!pendPorClan[p.clan]) pendPorClan[p.clan] = [];
-      pendPorClan[p.clan].push(p);
-    });
-    htmlPendientes = Object.keys(pendPorClan).sort().map(function(clanNombre) {
-      var filas = pendPorClan[clanNombre].map(function(p) {
-        return '<div class="lista-fila"><span>' + e(p.nombre) + '</span>' +
-               '<b class="faltan">' + p.faltantes + ' ataque(s)</b></div>';
-      }).join('');
-      return '<div class="card"><div class="card-titulo">' + e(clanNombre) + '</div>' + filas + '</div>';
-    }).join('');
-  }
-
-  // ---- Bloque: Resumen de Directorio ----
-  var clanesResumen = Object.keys(d.resumenClanes).sort();
-  var totalActivos  = clanesResumen.reduce(function(acc, c) { return acc + d.resumenClanes[c]; }, 0);
-  var htmlResumen = '<div class="card">' +
-    clanesResumen.map(function(clanNombre) {
-      return '<div class="card-fila"><span>' + e(clanNombre) + '</span><b>' + d.resumenClanes[clanNombre] + '</b></div>';
-    }).join('') +
-    '<div class="card-fila total"><span>Total activos</span><b>' + totalActivos + '</b></div>' +
-  '</div>';
-
-  // ---- Bloque: Miembros nuevos (con links RoyaleAPI / CWStats) ----
-  var htmlNuevos;
-  if (d.nuevos.length === 0) {
-    htmlNuevos = '<p class="vacio">No hay miembros nuevos por revisar.</p>';
-  } else {
-    htmlNuevos = d.nuevos.map(function(n) {
-      // FIX 08-oct-2026: n.fechaIng puede llegar como texto (lectura desde Backup_Directorio.csv) y formatDate solo acepta Date; se convierte con _parseSpanishDate() y, si no es una fecha valida, se muestra tal cual.
-      var fIngDate = (n.fechaIng instanceof Date) ? n.fechaIng : (n.fechaIng ? _parseSpanishDate(n.fechaIng) : null);
-      var fechaTxt = (fIngDate instanceof Date && !isNaN(fIngDate.getTime()))
-        ? Utilities.formatDate(fIngDate, Session.getScriptTimeZone() || 'America/Lima', 'dd/MM/yyyy')
-        : (n.fechaIng ? String(n.fechaIng) : '—');
-      return '<div class="card">' +
-        '<div class="card-titulo">' + e(n.nombre) + ' <span class="tag-chip">' + e(n.tag) + '</span></div>' +
-        '<div class="card-fila"><span>Clan</span><b>' + e(n.clan) + '</b></div>' +
-        '<div class="card-fila"><span>Ingresó</span><b>' + fechaTxt + '</b></div>' +
-        '<div class="links-fila">' +
-          '<a class="btn-link" href="' + n.royaleApi + '" target="_blank" rel="noopener">RoyaleAPI</a>' +
-          '<a class="btn-link" href="' + n.cwstats + '" target="_blank" rel="noopener">CWStats</a>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-  }
-
-  var actualizado = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Lima', 'dd/MM/yyyy HH:mm');
-
-  return '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">' +
-'<meta name="viewport" content="width=device-width, initial-scale=1">' +
-'<title>Dashboard - Familia Terna</title>' +
-'<style>' +
-'  * { box-sizing: border-box; }' +
-'  body { margin:0; padding:0; background:#f2f2f5; font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:#222; }' +
-'  header { background:#1a1a2e; color:#fff; padding:20px 16px 24px; text-align:center; }' +
-'  header h1 { margin:0 0 6px; font-size:20px; }' +
-'  header .sub { font-size:13px; opacity:0.85; }' +
-'  .etapa-badge { display:inline-block; margin-top:10px; padding:5px 14px; border-radius:999px; font-weight:bold; font-size:13px; color:#fff; }' +
-'  main { max-width:640px; margin:-16px auto 0; padding:0 12px 32px; }' +
-'  section { margin-top:20px; }' +
-'  section h2 { font-size:15px; text-transform:uppercase; letter-spacing:0.5px; color:#555; margin:0 0 10px 4px; }' +
-'  .card { background:#fff; border-radius:12px; padding:14px 16px; margin-bottom:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }' +
-'  .card-titulo { font-weight:bold; font-size:15px; margin-bottom:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }' +
-'  .card-fila { display:flex; justify-content:space-between; padding:4px 0; font-size:14px; border-bottom:1px solid #f0f0f0; }' +
-'  .card-fila:last-child { border-bottom:none; }' +
-'  .card-fila.total { font-weight:bold; border-top:2px solid #eee; margin-top:4px; padding-top:8px; }' +
-'  .lista-fila { display:flex; justify-content:space-between; padding:6px 0; font-size:14px; border-bottom:1px solid #f5f5f5; }' +
-'  .lista-fila:last-child { border-bottom:none; }' +
-'  .faltan { color:#e53935; }' +
-'  .badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:bold; }' +
-'  .badge-alerta { background:#ffebee; color:#c62828; }' +
-'  .tag-chip { font-weight:normal; font-size:12px; color:#777; background:#f0f0f0; padding:2px 8px; border-radius:999px; }' +
-'  .links-fila { display:flex; gap:8px; margin-top:10px; }' +
-'  .btn-link { flex:1; text-align:center; padding:8px 0; border-radius:8px; background:#1a1a2e; color:#fff; text-decoration:none; font-size:13px; font-weight:bold; }' +
-'  .vacio { color:#777; font-size:14px; background:#fff; border-radius:12px; padding:16px; text-align:center; }' +
-'  footer { text-align:center; font-size:12px; color:#999; padding:20px 0 8px; }' +
-'</style></head><body>' +
-'<header>' +
-  '<h1>👑 Dashboard Familia Terna</h1>' +
-  '<div class="sub">Temporada ' + ctx.temporada + ' · Semana ' + (ctx.sectionIndex + 1) + ' · ' + diaNombre + '</div>' +
-  '<span class="etapa-badge" style="background:' + etapaColor + '">' + etapaTexto + '</span>' +
-'</header>' +
-'<main>' +
-  '<section><h2>⚔️ Estado de guerra hoy</h2>' + htmlGuerra + '</section>' +
-  '<section><h2>⏳ Pendientes de atacar</h2>' + htmlPendientes + '</section>' +
-  '<section><h2>👥 Miembros activos por clan</h2>' + htmlResumen + '</section>' +
-  '<section><h2>🆕 Miembros nuevos</h2>' + htmlNuevos + '</section>' +
-'</main>' +
-'<footer>Actualizado: ' + actualizado + '</footer>' +
-'</body></html>';
 }
