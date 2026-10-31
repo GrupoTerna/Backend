@@ -4538,6 +4538,7 @@ function _syncGuerraCSV(sh, forzar) {
     }
 
     // NO se usa _extraerValoresConLinksReales() aquí (17-jul-2026): esa [→ Contexto_Base_Web.md §17B174]
+    Logger.log('[Guerra] _syncGuerraCSV: leyendo la hoja (' + (lastRow - 1) + ' fila(s) de dato).'); // PF311 parte A: en las colas cortadas el registro callaba antes de «CSV leído»
     var data = sh.getRange(1, 1, lastRow, GUERRA_TOTAL_COLS).getDisplayValues();
     var tDisplayFin = Date.now();
 
@@ -4557,6 +4558,7 @@ function _syncGuerraCSV(sh, forzar) {
 
     // --- FUSIÓN con el CSV existente ---
     var tHojaFin = Date.now();
+    Logger.log('[Guerra] _syncGuerraCSV: hoja leída en ' + Math.round((tHojaFin - tIniSync) / 100) / 10 + ' s; leyendo Backup_Guerra.csv de Drive.'); // PF311 parte A
     var csvExistente  = _loadCSVFromDrive('Backup_Guerra.csv');
     var tCsvFin = Date.now();
     // PF289: tamaño de referencia = el mayor entre el peso real del archivo en Drive y el último tamaño que esta función dejó escrito. Si la lectura (memoria, caché o Drive) vino vacía o mucho más chica, se relee directo de Drive; si sigue chica, no se escribe nada.
