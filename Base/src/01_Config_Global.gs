@@ -272,6 +272,7 @@ var CFG = {
 
   // Presupuesto interno SOLO para el bucle de /players dentro de [→ Contexto_Base_Web.md §01B034]
   PLAYERS_FETCH_BUDGET_MS: 3 * 60 * 1000 + 30 * 1000,  // 3m30s
+  PLAYERS_FETCH_RESERVA_MS: 90 * 1000, // PF311 parte A (31-oct-2026): tiempo que _fetchPlayersData() deja libre al final de la ejecución para guardar el progreso y que la cadena cierre el paso; el presupuesto efectivo es el menor entre PLAYERS_FETCH_BUDGET_MS y lo que le queda a la ejecución menos esta reserva
 
   // Límite MÁXIMO de consultas a /players que se hacen en UNA sola tanda de [→ Contexto_Base_Web.md §01B035]
   PLAYERS_FETCH_MAX_POR_TANDA: 60,
