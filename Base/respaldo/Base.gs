@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 30/10/2026 22:19:47 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 00:56:15 */
 
 
 
@@ -3885,15 +3885,13 @@ function _setupDirectorio(ss) {
 function _setupGuerra(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.GUERRA);
   // PUNTO 1.4/1.5 (Consolidado_Cambios_Pendientes_Guerra.md): Temporada_2 y [→ Contexto_Base_Web.md §02B026]
-  var headers = ['N°','Fecha','Temporada','Semana','Día','PeriodIndex',
-                 'DiaGuerra','Etapa','Clan','Tag','Nombre',
-                 'AtaquesHoy','AtaquesSemana','Fame','Barcos',
-                 'Donaciones_r','Donaciones_d','Ranking',
-                 'Temporada_2','Origen','Copas'];
+  // 30-oct-2026 (§PF304): los encabezados salen de GUERRA_HEADERS (17_GuerraSheet.gs, orden nuevo de 23 columnas); ya no se repite la lista aquí.
+  // Cada corrida reescribe la fila 1: con la lista vieja habría desordenado los encabezados de una hoja ya reordenada.
+  var headers = GUERRA_HEADERS.slice();
   if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Guerra OK (21 cols, incluye Temporada_2/Origen/Copas)');
+  Logger.log('[Setup] Guerra OK (' + headers.length + ' cols, incluye Merma_AtaquesHoy/Merma_AtaquesSemana)');
 }
 
 function _setupGuerraLogs(ss) {
@@ -8072,6 +8070,50 @@ function _csvCacheBorrar_(filename) {
   } catch (e) { /* nada que hacer */ }
 }
 
+/**
+ * _migrarTextoGuerraCsv_(texto) — 30-oct-2026 (orden nuevo de la hoja Guerra, §PF304).
+ * Backup_Guerra.csv se lee POR POSICIÓN (GC). Si el archivo todavía trae el orden viejo de 21 columnas (encabezado GUERRA_HEADERS_V21),
+ * lo reordena en memoria al de 23 columnas, emparejando por NOMBRE de columna (no por posición), y calcula la merma de todas las filas
+ * (_recalcularMermaGuerra_). Así todos los lectores del CSV ven el orden nuevo, y la primera escritura (_saveCSVToDrive) lo deja migrado en
+ * Drive. Idempotente: si el encabezado ya es el nuevo (o es otro, desconocido), devuelve el texto tal cual. Un encabezado desconocido se
+ * deja pasar sin tocar para no destruir datos, pero se avisa en el registro.
+ */
+function _migrarTextoGuerraCsv_(texto) {
+  if (!texto) return texto;
+  var finPrimera = texto.search(/\r|\n/);
+  var primera = finPrimera < 0 ? texto : texto.substring(0, finPrimera);
+  var encabezado = _parseCSV(primera)[0] || [];
+  var norm = function (v) { return String(v === undefined || v === null ? '' : v).replace(/^﻿/, '').trim().toLowerCase(); };
+  var igualA = function (lista) {
+    if (encabezado.length !== lista.length) return false;
+    for (var i = 0; i < lista.length; i++) if (norm(encabezado[i]) !== norm(lista[i])) return false;
+    return true;
+  };
+  if (igualA(GUERRA_HEADERS)) return texto;
+  if (!igualA(GUERRA_HEADERS_V21)) {
+    Logger.log('[Guerra][CSV] Backup_Guerra.csv tiene un encabezado que no es ni el de 23 columnas ni el viejo de 21 (' + encabezado.length + ' columnas: ' + encabezado.slice(0, 6).join(' | ') + ' ...). Se deja sin migrar.');
+    return texto;
+  }
+  var filas = _parseCSV(texto);
+  var posViejo = {};
+  for (var h = 0; h < GUERRA_HEADERS_V21.length; h++) posViejo[GUERRA_HEADERS_V21[h].toLowerCase()] = h;
+  var salida = [GUERRA_HEADERS.slice()];
+  for (var r = 1; r < filas.length; r++) {
+    var vieja = filas[r];
+    if (vieja.length === 1 && String(vieja[0]).trim() === '') continue; // línea en blanco
+    var nueva = new Array(GUERRA_TOTAL_COLS);
+    for (var c = 0; c < GUERRA_TOTAL_COLS; c++) {
+      var p = posViejo[GUERRA_HEADERS[c].toLowerCase()];
+      nueva[c] = (p === undefined || vieja[p] === undefined) ? '' : vieja[p];
+    }
+    salida.push(nueva);
+  }
+  var datos = salida.slice(1);
+  _recalcularMermaGuerra_(datos);
+  Logger.log('[Guerra][CSV] Backup_Guerra.csv migrado en memoria del orden de 21 al de 23 columnas (' + datos.length + ' filas, merma calculada). Se guarda así en Drive en la próxima escritura.');
+  return _encodeCSV(salida);
+}
+
 function _loadCSVFromDrive(filename) {
   // 1) memoria de esta ejecución
   if (Object.prototype.hasOwnProperty.call(_CSV_MEM_, filename)) return _CSV_MEM_[filename];
@@ -8079,6 +8121,7 @@ function _loadCSVFromDrive(filename) {
   // 2) caché entre peticiones
   var cacheado = _csvCacheGet_(filename);
   if (cacheado !== null) {
+    if (filename === 'Backup_Guerra.csv') cacheado = _migrarTextoGuerraCsv_(cacheado); // un caché de antes del orden nuevo (TTL 10 min) puede traer 21 columnas
     _CSV_MEM_[filename] = cacheado;
     return cacheado;
   }
@@ -8087,6 +8130,7 @@ function _loadCSVFromDrive(filename) {
   var hit = _csvBuscarArchivo_(filename); // subcarpeta asignada -> raíz -> demás subcarpetas [→ Contexto_Base_Web.md §01B158]
   if (hit) {
     var texto = hit.file.getBlob().getDataAsString('UTF-8');
+    if (filename === 'Backup_Guerra.csv') texto = _migrarTextoGuerraCsv_(texto); // 30-oct-2026 (§PF304): orden viejo de 21 columnas -> 23 del orden nuevo, en memoria
     _CSV_MEM_[filename] = texto;
     _csvCachePut_(filename, texto);
     return texto;
@@ -18896,7 +18940,7 @@ function _mapaNombreClanATagTerna() {
 function _migrarNuevosAHistorico(candidatosPayload) {
   var statsGlobal = {
     temporadasProcesadas: 0, clavesMigradas: 0, clavesYaExistian: 0,
-    descartadosPorMembresia: 0, sinHistorialParaVerificar: 0
+    descartadosPorMembresia: 0, sinHistorialParaVerificar: 0, pausadasPorRestauracion: 0
   };
   if (!candidatosPayload || !candidatosPayload.length) return statsGlobal;
 
@@ -18954,6 +18998,7 @@ function _migrarNuevosAHistorico(candidatosPayload) {
         ataquesSemana: ataquesVal || 0,
         fame: fameVal || 0,
         barcos: barcosVal, // null se preserva tal cual -- _reconstruirSemanaDesdeCero() ya sabe tratarlo como "sin dato"
+        clanTag: clanTagReg, // 31-oct-2026: clan que reporta Nuevos; la fila de Guerra es única por día, Tag y clan
         temporadaRoyaleApi: ts.temporadaPropia + offsetRoyaleApi
       });
     }
@@ -18972,24 +19017,44 @@ function _migrarNuevosAHistorico(candidatosPayload) {
       continue;
     }
 
+    // 31-oct-2026: si la temporada es la de la hoja Guerra y la hoja aún no terminó de restaurarse desde Backup_Guerra.csv (por ejemplo,
+    // justo después de un Demoler), no se escribe nada ahora: la regla de no pisado solo mira lo que ya hay en la hoja y no vería lo que
+    // todavía falta restaurar, así que las semanas se escribirían antes y la restauración las dejaría repetidas o fuera de orden.
+    if (fuente.tipo === 'hoja') {
+      var faltantesRestauracion = _contarFilasGuerraFaltantesDesdeCSV_(fuente.sh, temporadaPropia);
+      if (faltantesRestauracion > 0) {
+        statsGlobal.pausadasPorRestauracion++;
+        Logger.log('[Nuevos-RoyaleAPI] Migración a histórico omitida para la temporada ' + temporadaPropia +
+          ': la hoja Guerra todavía no termina de restaurarse desde Backup_Guerra.csv (faltan ' + faltantesRestauracion +
+          ' fila(s)). Las semanas de Nuevos de esa temporada no se migraron en esta corrida.');
+        continue;
+      }
+    }
+
     var offsetsPorClave = _construirOffsetsPorClave(fuente.filas, temporadaPropia);
     var statsLocal = {};
     var huboCambioTemporada = false;
 
     for (var e = 0; e < entradas.length; e++) {
       var entrada = entradas[e];
-      var clave = entrada.tag + '|' + entrada.semana;
-
-      if (offsetsPorClave[clave]) {
+      // 31-oct-2026: la fila de Guerra es única por día, Tag y clan. La existencia se mira en el clan que reporta Nuevos: si ese
+      // jugador ya tiene filas de la semana en ese clan (reales o ya migradas), manda lo que hay en la hoja y no se escribe nada.
+      // Solo si no hay ninguna fila en ese clan se crea la semana, y con el clan de Nuevos (no el del Directorio), para que la
+      // fila coincida con el id que luego usa updateGuerraSheet() y se actualice en vez de duplicarse.
+      var clanNombreEntrada = _resolverNombreClan(entrada.clanTag) || '';
+      var porClanSemana = _indexarFilasJugadorSemanaPorClan_(fuente.filas, temporadaPropia, entrada.semana, entrada.tag);
+      if (porClanSemana[String(clanNombreEntrada).trim()]) {
         // YA existe -- regla de no pisado (ver docblock de sección arriba): [→ Contexto_Base_Web.md §14B128]
         statsGlobal.clavesYaExistian++;
         continue;
       }
 
+      var clave = entrada.tag + '|' + entrada.semana;
+      delete offsetsPorClave[clave]; // la reconstrucción es de este clan: no se ajustan filas de otro clan
       _aplicarCorreccionAGuerraConReparto(
         fuente, offsetsPorClave, temporadaPropia, entrada.semana, entrada.tag,
         { ataquesSemana: entrada.ataquesSemana, fame: entrada.fame, barcos: entrada.barcos },
-        { temporadaRoyaleApi: entrada.temporadaRoyaleApi },
+        { temporadaRoyaleApi: entrada.temporadaRoyaleApi, clanNombre: clanNombreEntrada },
         statsLocal
       );
       huboCambioTemporada = true;
@@ -19738,31 +19803,36 @@ function SincronizarContactosNube() {
 // PENDIENTES TRASLADADOS DESDE Lista_de_cambios.docx (22-sep-2026, revisión [→ Contexto_Base_Web.md §17B005]
 
 // ÍNDICES DE COLUMNA - HOJA GUERRA (1-based) [→ Contexto_Base_Web.md §17B006]
+// 30-oct-2026 (orden nuevo de la hoja, pedido de la usuaria): 23 columnas. DiaGuerra y Etapa van antes de Temporada, Temporada_2 junto a
+// Temporada, Barcos antes de Fame y Copas antes de Ranking; se agregan Merma_AtaquesHoy y Merma_AtaquesSemana. Toda la lectura y escritura
+// por posición debe pasar por GC (nunca un número suelto) y por GUERRA_TOTAL_COLS. [→ Contexto_Base_Web.md §PF304]
 var GC = {
   NUM:          1,
   FECHA:        2,
-  TEMPORADA:    3,
-  SEMANA:       4,
-  DIA:          5,
-  PERIOD_IDX:   6,
-  DIA_GUERRA:   7,
-  ETAPA:        8,
-  CLAN:         9,
-  TAG:          10,
-  NOMBRE:       11,
-  ATAQUES_HOY:  12,
-  ATAQUES_SEM:  13,
-  FAME:         14,
-  BARCOS:       15,
-  DON_R:        16,
-  DON_D:        17,
-  RANKING:      18,
-  TEMPORADA_2:  19,
-  ORIGEN:       20,
-  COPAS:        21   // 12-oct-2026: copas del jugador en ese día (mem.trophies de /clans/{tag}); se guarda igual que Ranking. Va al final para no mover ningún índice anterior.
+  DIA_GUERRA:   3,
+  ETAPA:        4,
+  TEMPORADA:    5,
+  TEMPORADA_2:  6,
+  SEMANA:       7,
+  DIA:          8,
+  PERIOD_IDX:   9,
+  CLAN:         10,
+  TAG:          11,
+  NOMBRE:       12,
+  ATAQUES_HOY:  13,
+  ATAQUES_SEM:  14,
+  MERMA_HOY:    15,  // 30-oct-2026: ataques desperdiciados ese día (FAME_MAZOS_POR_DIA − AtaquesHoy). Calculada por _recalcularMermaGuerra_().
+  MERMA_SEM:    16,  // 30-oct-2026: merma acumulada de la semana hasta ese día (suma de Merma_AtaquesHoy de los días de la semana, por jugador y clan).
+  BARCOS:       17,
+  FAME:         18,
+  COPAS:        19,  // 12-oct-2026: copas del jugador en ese día (mem.trophies de /clans/{tag}); se guarda igual que Ranking.
+  RANKING:      20,
+  DON_R:        21,
+  DON_D:        22,
+  ORIGEN:       23
 };
 
-var GUERRA_TOTAL_COLS = 21;
+var GUERRA_TOTAL_COLS = 23;
 
 // PF289 (28-oct-2026): blindaje de _syncGuerraCSV() contra una lectura vacía o recortada de Backup_Guerra.csv. Solo se aplica si el CSV de referencia pesa más que el mínimo; el ratio es la fracción del tamaño de referencia por debajo de la cual se rechaza leer o escribir. [→ Contexto_Base_Web.md §PF289]
 var GUERRA_CSV_BLINDAJE_MIN_BYTES = 100000;
@@ -19779,11 +19849,69 @@ function _origenGuerraEs_(valor, base) {
 }
 
 // Encabezados canónicos de la hoja Guerra (mismo orden que GC de arriba). [→ Contexto_Base_Web.md §17B007]
-var GUERRA_HEADERS = ['N°','Fecha','Temporada','Semana','Día','PeriodIndex',
-                       'DiaGuerra','Etapa','Clan','Tag','Nombre',
-                       'AtaquesHoy','AtaquesSemana','Fame','Barcos',
-                       'Donaciones_r','Donaciones_d','Ranking',
-                       'Temporada_2','Origen','Copas'];
+var GUERRA_HEADERS = ['N°','Fecha','DiaGuerra','Etapa','Temporada','Temporada_2',
+                       'Semana','Día','PeriodIndex','Clan','Tag','Nombre',
+                       'AtaquesHoy','AtaquesSemana','Merma_AtaquesHoy','Merma_AtaquesSemana',
+                       'Barcos','Fame','Copas','Ranking',
+                       'Donaciones_r','Donaciones_d','Origen'];
+
+// Encabezados de la hoja Guerra ANTES del 30-oct-2026 (21 columnas). Solo para migrar un Backup_Guerra.csv con el orden viejo
+// (_migrarTextoGuerraCsv_ en 05_Backup_CSV.gs); la migración se hace por NOMBRE de columna, no por posición.
+var GUERRA_HEADERS_V21 = ['N°','Fecha','Temporada','Semana','Día','PeriodIndex',
+                          'DiaGuerra','Etapa','Clan','Tag','Nombre',
+                          'AtaquesHoy','AtaquesSemana','Fame','Barcos',
+                          'Donaciones_r','Donaciones_d','Ranking',
+                          'Temporada_2','Origen','Copas'];
+
+/**
+ * _recalcularMermaGuerra_(filas) — 30-oct-2026. Calcula Merma_AtaquesHoy y Merma_AtaquesSemana de una matriz de filas de Guerra
+ * (en el lugar). Criterio (el mismo de Cruce_CRR_Restricciones.csv, §PF300 punto 6b): merma del día = FAME_MAZOS_POR_DIA − AtaquesHoy
+ * (ataques desperdiciados, nunca negativa); merma de la semana = suma de la merma de los días de esa semana hasta ese día, por
+ * jugador, clan y temporada, en orden de PeriodIndex. Solo cuentan las filas de Etapa «Guerra» con AtaquesHoy numérico; en
+ * «Entrenamiento» o con AtaquesHoy vacío las dos columnas quedan vacías. Si faltan filas de días intermedios, la merma semanal suma
+ * solo los días que existen. El día en curso es provisional: se recalcula en cada corrida.
+ * Devuelve la lista de índices de la matriz cuyas filas cambiaron.
+ */
+function _recalcularMermaGuerra_(filas) {
+  var grupos = {};
+  var objetivos = new Array(filas.length);
+  for (var i = 0; i < filas.length; i++) {
+    var f = filas[i];
+    objetivos[i] = ['', ''];
+    if (String(f[GC.ETAPA - 1] || '').trim() !== 'Guerra') continue;
+    var crudo = f[GC.ATAQUES_HOY - 1];
+    if (crudo === '' || crudo === null || crudo === undefined) continue;
+    var hoy = Number(crudo);
+    if (isNaN(hoy)) continue;
+    var tag = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+    if (!tag) continue;
+    var clave = tag + '│' + String(f[GC.CLAN - 1] || '').trim() + '│' + String(f[GC.TEMPORADA - 1] || '').trim() + '│' + String(f[GC.SEMANA - 1] || '').trim();
+    if (!grupos[clave]) grupos[clave] = [];
+    grupos[clave].push({ i: i, p: Number(f[GC.PERIOD_IDX - 1]) || 0, m: Math.max(0, FAME_MAZOS_POR_DIA - hoy) });
+  }
+  Object.keys(grupos).forEach(function (k) {
+    var g = grupos[k];
+    g.sort(function (a, b) { return a.p - b.p; });
+    var acum = 0;
+    for (var n = 0; n < g.length; n++) {
+      acum += g[n].m;
+      objetivos[g[n].i] = [g[n].m, acum];
+    }
+  });
+  var cambiadas = [];
+  for (var j = 0; j < filas.length; j++) {
+    var fj = filas[j];
+    while (fj.length < GUERRA_TOTAL_COLS) fj.push('');
+    var a = fj[GC.MERMA_HOY - 1], b = fj[GC.MERMA_SEM - 1];
+    var igual = (String(a) === String(objetivos[j][0])) && (String(b) === String(objetivos[j][1]));
+    if (!igual) {
+      fj[GC.MERMA_HOY - 1] = objetivos[j][0];
+      fj[GC.MERMA_SEM - 1] = objetivos[j][1];
+      cambiadas.push(j);
+    }
+  }
+  return cambiadas;
+}
 
 // ÍNDICES DE COLUMNA - HOJA GUERRA_LOGS (1-based) [→ Contexto_Base_Web.md §17B008]
 var GLC = {
@@ -20358,15 +20486,45 @@ function _limpiarLinksAccidentalesGuerraIncremental(sh) {
  * encabezado «Copas» copiando el formato del encabezado de Origen. Idempotente. [→ Contexto_Base_Web.md §PF061]
  */
 function _asegurarColumnaCopasGuerra_(sh) {
-  if (!sh) return;
+  return _asegurarEstructuraGuerra_(sh);
+}
+
+/**
+ * _guerraEncabezadosDiferencias_(sh) — 30-oct-2026. Compara la fila 1 de la hoja Guerra con GUERRA_HEADERS (sin distinguir mayúsculas
+ * ni espacios de los bordes). Devuelve la lista de diferencias ('col N: hoja «x», código «y»'); vacía si coinciden las 23 columnas.
+ */
+function _guerraEncabezadosDiferencias_(sh) {
+  var difs = [];
+  var maxCols = sh.getMaxColumns();
+  var fila1 = sh.getRange(1, 1, 1, Math.min(GUERRA_TOTAL_COLS, maxCols)).getValues()[0];
+  for (var c = 0; c < GUERRA_TOTAL_COLS; c++) {
+    var enHoja = String(fila1[c] === undefined ? '' : fila1[c]).trim();
+    var esperado = GUERRA_HEADERS[c];
+    if (enHoja.toLowerCase() !== esperado.toLowerCase()) difs.push('col ' + (c + 1) + ': hoja «' + enHoja + '», código «' + esperado + '»');
+  }
+  return difs;
+}
+
+/**
+ * _asegurarEstructuraGuerra_(sh) — 30-oct-2026 (orden nuevo de 23 columnas, §PF304). El código lee y escribe la hoja Guerra POR POSICIÓN
+ * (GC), así que antes de tocarla se comprueba que la fila 1 tenga exactamente los encabezados de GUERRA_HEADERS. Si la hoja tiene menos
+ * columnas, se agregan las que falten a la derecha (sin encabezado ni datos: no se acomoda nada a ojo). Si algún encabezado no coincide
+ * devuelve false y escribe un aviso en el registro; quien la llama debe abortar SIN leer ni escribir datos, porque con otro orden se
+ * mezclarían columnas (por ejemplo, Fame en Barcos) en la hoja y en Backup_Guerra.csv. Devuelve true si la estructura es la esperada.
+ * Reemplaza a la antigua guardia de la columna «Copas» (12-oct-2026, §PF061); el nombre antiguo sigue existiendo y delega aquí.
+ */
+function _asegurarEstructuraGuerra_(sh) {
+  if (!sh) return false;
   if (sh.getMaxColumns() < GUERRA_TOTAL_COLS) {
     sh.insertColumnsAfter(sh.getMaxColumns(), GUERRA_TOTAL_COLS - sh.getMaxColumns());
   }
-  var celda = sh.getRange(1, GC.COPAS);
-  if (String(celda.getValue() || '').trim() === '') {
-    sh.getRange(1, GC.ORIGEN).copyTo(celda, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
-    celda.setValue('Copas');
+  var difs = _guerraEncabezadosDiferencias_(sh);
+  if (difs.length) {
+    Logger.log('[Guerra][ESTRUCTURA] ABORT: los encabezados de la hoja Guerra no coinciden con GUERRA_HEADERS (' + difs.length + ' diferencia(s)). ' +
+      'No se lee ni se escribe la hoja ni Backup_Guerra.csv para no mezclar columnas. ' + difs.slice(0, 6).join(' | ') + (difs.length > 6 ? ' | ...' : ''));
+    return false;
   }
+  return true;
 }
 
 /**
@@ -20376,7 +20534,7 @@ function updateGuerraSheet() {
   var ss  = _getSs();
   var sh  = ss.getSheetByName(CFG.SHEETS.GUERRA);
   if (!sh) { Logger.log('[Guerra] Hoja no encontrada'); return; }
-  _asegurarColumnaCopasGuerra_(sh); // 12-oct-2026: la hoja necesita la columna 21 antes de leer o escribir con GUERRA_TOTAL_COLS
+  if (!_asegurarEstructuraGuerra_(sh)) return; // 30-oct-2026: sin los 23 encabezados esperados no se toca la hoja (§PF304). Sin valor (no false): false haría reintentar el paso en la continuación y la causa no se arregla sola.
 
   // GUARDIA: sin cache no hay datos válidos — abortar para no corromper la [→ Contexto_Base_Web.md §17B035]
   if (!CACHE_CLAN_DATA) {
@@ -20587,25 +20745,27 @@ function updateGuerraSheet() {
         row: [
           null,                      // N° (se asigna al escribir)
           _fechaPrimeraConsultaRR_(ctxClan.temporada, ctxClan.periodIndex, clanTag, now), // Fecha = PRIMERA consulta del periodIndex (12-oct-2026); no cambia al actualizar
+          diaGuerra,                 // DiaGuerra (Date)
+          etapa,                     // Etapa
           ctxClan.temporada,         // Temporada
+          ctxClan.temporada + _getTemporadaOffsetRoyaleApi(), // Temporada_2 (punto 1.4)
           ctxClan.sectionIndex + 1,  // Semana
           ctxClan.diaLetra,          // Día
           ctxClan.periodIndex,       // PeriodIndex
-          diaGuerra,                 // DiaGuerra (Date)
-          etapa,                     // Etapa
           clanNombre,                // Clan
           tag,                       // Tag
           nombreActual,          // Nombre (preferido: mem.name de /clans, ver comentario arriba)
           ataqHoy,              // AtaquesHoy
           ataqSem,              // AtaquesSemana
-          fame,                 // Fame
+          '',                   // Merma_AtaquesHoy (la calcula _recalcularMermaGuerra_ antes de escribir)
+          '',                   // Merma_AtaquesSemana (idem)
           barcos,               // Barcos
+          fame,                 // Fame
+          copas > 0 ? copas : '', // Copas (12-oct-2026)
+          ranking,              // Ranking
           donR,                 // Donaciones_r
           donD,                 // Donaciones_d
-          ranking,              // Ranking
-          ctxClan.temporada + _getTemporadaOffsetRoyaleApi(), // Temporada_2 (punto 1.4)
-          'Original',           // Origen (punto 1.5)
-          copas > 0 ? copas : '' // Copas (12-oct-2026)
+          'Original'            // Origen (punto 1.5)
         ]
       });
       existingIds[idGuerra] = true;
@@ -20613,6 +20773,12 @@ function updateGuerraSheet() {
   }
 
   Logger.log('[Guerra][t] tras loop de participantes: ' + (Date.now() - _tGS0) + ' ms');
+
+  // MERMA (30-oct-2026): se recalcula sobre las filas de la hoja y las nuevas juntas, para que la merma semanal vea todos los días.
+  var _mermaCambios = _recalcularMermaGuerra_(datosGuerra.concat(nuevasFilas.map(function (nf) { return nf.row; })));
+  for (var _mc = 0; _mc < _mermaCambios.length; _mc++) {
+    if (_mermaCambios[_mc] < datosGuerra.length) { huboCambiosExistentes = true; break; }
+  }
 
   // Volcar TODOS los cambios de filas existentes en UNA sola escritura [→ Contexto_Base_Web.md §17B052]
   if (huboCambiosExistentes && datosGuerra.length > 0) {
@@ -20710,6 +20876,8 @@ function updateGuerraSheet() {
       Logger.log('[Guerra] _purgarNuevosExpulsados() falló: ' + eNuevos.message);
     }
   }
+
+  _avisarFilasGuerraRepetidas_(sh); // 31-oct-2026: solo informa en el registro
 
   Logger.log('[Guerra] updateGuerraSheet completado. Nuevas filas: ' + nuevasFilas.length +
     ' | tiempo total tras restauración: ' + (Date.now() - _tGS0) + ' ms');
@@ -23945,6 +24113,9 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
     var existingIds = _mapaIdsGuerra(dataActual);
 
     var filasFaltantes = [];
+    var idsEncoladosCsv = {};
+    var repetidasEnCsv = 0;
+    var ejemplosRepetidasCsv = [];
     for (var ff = 0; ff < filasTemporada.length; ff++) {
       var fRawChk = filasTemporada[ff];
       var tagChk  = String(fRawChk[GC.TAG - 1] || '').trim().toUpperCase();
@@ -23954,8 +24125,20 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
       var semChk  = Number(fRawChk[GC.SEMANA - 1] || 1);
       var pidxChk = Number(fRawChk[GC.PERIOD_IDX - 1] || 0);
       var idChk   = tagChk + '│' + clanChk + '│' + String(fRawChk[GC.TEMPORADA - 1] || '') + '│' + (semChk - 1) + '│' + pidxChk;
-      if (existingIds.hasOwnProperty(idChk)) continue; // ya está, no se duplica
+      if (existingIds.hasOwnProperty(idChk)) {
+        if (idsEncoladosCsv[idChk]) { // 31-oct-2026: el id se repite dentro del propio CSV; se copia una sola vez
+          repetidasEnCsv++;
+          if (ejemplosRepetidasCsv.length < 5) ejemplosRepetidasCsv.push(tagChk + ' sem ' + semChk + ' PeriodIndex ' + pidxChk);
+        }
+        continue; // ya está, no se duplica
+      }
+      existingIds[idChk] = -1;
+      idsEncoladosCsv[idChk] = true;
       filasFaltantes.push(fRawChk);
+    }
+    if (repetidasEnCsv > 0) {
+      Logger.log('[Guerra] Backup_Guerra.csv trae ' + repetidasEnCsv + ' fila(s) con el mismo Tag, Clan, Temporada, Semana y PeriodIndex que otra de la temporada actual; se restaura una sola de cada una (por ejemplo: ' +
+        ejemplosRepetidasCsv.join('; ') + '). Las repetidas siguen en el CSV hasta que se limpie.');
     }
 
     if (filasFaltantes.length === 0) {
@@ -24032,6 +24215,95 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
 }
 
 /**
+ * _idGuerraDeFila_(f): mismo id que usa _mapaIdsGuerra() (Tag, Clan, Temporada, Semana y PeriodIndex), para una fila ya leída.
+ */
+function _idGuerraDeFila_(f) {
+  var tag  = String(f[GC.TAG  - 1] || '').trim().toUpperCase();
+  if (!tag) return '';
+  var clan = String(f[GC.CLAN - 1] || '').trim();
+  var sem  = Number(f[GC.SEMANA - 1] || 1);
+  var pidx = Number(f[GC.PERIOD_IDX - 1] || 0);
+  return tag + '│' + clan + '│' + String(f[GC.TEMPORADA - 1] || '') + '│' + (sem - 1) + '│' + pidx;
+}
+
+/**
+ * _contarFilasGuerraFaltantesDesdeCSV_(sh, temporadas): cuántas filas de Backup_Guerra.csv de esas temporadas (ids distintos) aún no están
+ * en la hoja Guerra. 0 = la hoja ya cubre el CSV (o no hay CSV / hubo un error al leerlo: nunca bloquea al llamador).
+ * Lo usa _migrarNuevosAHistorico() para no escribir en la hoja mientras la restauración desde el CSV siga pendiente.
+ */
+function _contarFilasGuerraFaltantesDesdeCSV_(sh, temporadas) {
+  try {
+    var tempsSet = {};
+    [].concat(temporadas).forEach(function(t) { tempsSet[String(t)] = true; });
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (!csvText) return 0;
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length <= 1) return 0;
+    var lastRow = sh.getLastRow();
+    var existentes = (lastRow >= 2)
+      ? _mapaIdsGuerra(sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues())
+      : {};
+    var vistos = {};
+    var faltan = 0;
+    for (var i = 1; i < parsed.length; i++) {
+      if (!tempsSet[String(parsed[i][GC.TEMPORADA - 1] || '')]) continue;
+      var id = _idGuerraDeFila_(parsed[i]);
+      if (!id || vistos[id] || existentes.hasOwnProperty(id)) continue;
+      vistos[id] = true;
+      faltan++;
+    }
+    return faltan;
+  } catch (e) {
+    Logger.log('[Guerra] _contarFilasGuerraFaltantesDesdeCSV_: no se pudo comparar con Backup_Guerra.csv (' + e.message + ').');
+    return 0;
+  }
+}
+
+/**
+ * _avisarFilasGuerraRepetidas_(sh): alarma al cerrar updateGuerraSheet(). Solo escribe en el registro; no borra ni cambia filas.
+ * (1) ids exactamente repetidos (Tag, Clan, Temporada, Semana y PeriodIndex): repeticiones reales.
+ * (2) mismo Tag, Semana y PeriodIndex en clanes distintos: puede ser un cambio de clan o una repetición con otro nombre de clan.
+ */
+function _avisarFilasGuerraRepetidas_(sh) {
+  try {
+    var lastRow = sh.getLastRow();
+    if (lastRow < 2) return;
+    var datos = sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues();
+    var porId = {}, porClave = {}, clanesPorClave = {};
+    var repetidasExactas = 0, ejemplosExactas = [];
+    for (var i = 0; i < datos.length; i++) {
+      var f = datos[i];
+      var id = _idGuerraDeFila_(f);
+      if (!id) continue;
+      var clave = String(f[GC.TAG - 1]).trim().toUpperCase() + ' temporada ' + f[GC.TEMPORADA - 1] + ' sem ' + f[GC.SEMANA - 1] + ' PeriodIndex ' + f[GC.PERIOD_IDX - 1];
+      if (porId[id]) {
+        repetidasExactas++;
+        if (ejemplosExactas.length < 5) ejemplosExactas.push(clave);
+      }
+      porId[id] = true;
+      var clan = String(f[GC.CLAN - 1] || '').trim();
+      if (!clanesPorClave[clave]) clanesPorClave[clave] = {};
+      clanesPorClave[clave][clan] = true;
+      porClave[clave] = (porClave[clave] || 0) + 1;
+    }
+    var otroClan = [];
+    Object.keys(clanesPorClave).forEach(function(k) {
+      if (Object.keys(clanesPorClave[k]).length > 1) otroClan.push(k);
+    });
+    if (repetidasExactas > 0) {
+      Logger.log('[Guerra][ALERTA] Hay ' + repetidasExactas + ' fila(s) repetida(s) en la hoja: mismo Tag, Clan, Temporada, Semana y PeriodIndex (por ejemplo: ' +
+        ejemplosExactas.join('; ') + '). No se borró nada; revísalas.');
+    }
+    if (otroClan.length > 0) {
+      Logger.log('[Guerra][AVISO] ' + otroClan.length + ' combinación(es) de Tag, Semana y PeriodIndex aparecen con clanes distintos (cambio de clan o repetición con otro nombre de clan), por ejemplo: ' +
+        otroClan.slice(0, 5).join('; ') + '.');
+    }
+  } catch (e) {
+    Logger.log('[Guerra] _avisarFilasGuerraRepetidas_: no se pudo revisar (' + e.message + ').');
+  }
+}
+
+/**
  * Sincroniza (FUSIONA) el contenido de la hoja Guerra con Backup_Guerra.csv.
  * @param {Sheet} sh - Hoja Guerra
  */
@@ -24040,6 +24312,8 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
  */
 function _syncGuerraCSV(sh, forzar) {
   try {
+    // 30-oct-2026 (§PF304): con otro orden de columnas en la hoja se escribiría un Backup_Guerra.csv con los datos corridos; el blindaje de tamaño (PF289) no lo detecta.
+    if (!_asegurarEstructuraGuerra_(sh)) return;
     var tIniSync = Date.now(); // PF289 punto 5: tiempos por tramo, se imprimen junto a «CSV leído»
     var lastRow = sh.getLastRow();
     var tLastRowFin = Date.now(); // PF289 punto 12: subdivide «leer hoja» en getLastRow, getDisplayValues y columnas de fecha
@@ -24080,7 +24354,7 @@ function _syncGuerraCSV(sh, forzar) {
         Logger.log('[ALERTA PROTECCIÓN] Backup_Guerra.csv se leyó con ' + largoLeido + ' caracteres y la referencia es de ' + refTam.ref +
                    ' bytes (Drive: ' + refTam.tamDrive + ', último bueno: ' + refTam.tamBueno + '). Se relee directo de Drive, sin caché.');
         var tRelIni = Date.now();
-        csvExistente = _guerraCsvRelecturaDirecta_();
+        csvExistente = _migrarTextoGuerraCsv_(_guerraCsvRelecturaDirecta_()); // 30-oct-2026: la relectura directa no pasa por _loadCSVFromDrive; si Drive aún trae el orden viejo hay que migrarlo aquí también
         msRelectura = Date.now() - tRelIni;
         largoLeido = csvExistente ? csvExistente.length : 0;
         if (largoLeido < refTam.ref * GUERRA_CSV_BLINDAJE_RATIO) {
@@ -24148,6 +24422,10 @@ function _syncGuerraCSV(sh, forzar) {
     for (var rn = 0; rn < filasFusion.length; rn++) {
       filasFusion[rn][GC.NUM - 1] = String(rn + 1);
     }
+
+    // 30-oct-2026 (§PF304): la merma se calcula sobre TODO el CSV fusionado (incluye lo ya purgado de la hoja), para que las dos columnas siempre sean coherentes con AtaquesHoy.
+    var mermaCambiadas = _recalcularMermaGuerra_(filasFusion).length;
+    if (mermaCambiadas > 0) Logger.log('[Guerra] _syncGuerraCSV: merma recalculada en ' + mermaCambiadas + ' fila(s).');
 
     var salida = [encabezado].concat(filasFusion);
     var textoSalida = _encodeCSV(salida);
@@ -27286,7 +27564,7 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
     filaNueva[GC.DIA         - 1] = periodIdxToLetra(pIdx);
     filaNueva[GC.PERIOD_IDX  - 1] = pIdx;
     filaNueva[GC.ETAPA       - 1] = 'Guerra';
-    filaNueva[GC.CLAN        - 1] = datosJugador.clan;
+    filaNueva[GC.CLAN        - 1] = opciones.clanNombre || datosJugador.clan; // 31-oct-2026: el clan que reporta Nuevos manda sobre el del Directorio
     filaNueva[GC.TAG         - 1] = tag;
     filaNueva[GC.NOMBRE      - 1] = datosJugador.nombre;
     filaNueva[GC.ATAQUES_HOY - 1] = 0;
@@ -29789,14 +30067,16 @@ function _completarDomingoDesdeJsonRoyaleApi_(aplicar) {
         _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezadoCsv].concat(filasCsv)));
       }
       if (resHoja && nHoja) {
-        // Solo AtaquesHoy, AtaquesSemana, Fame, Barcos (columnas contiguas) y Origen: no se reescribe el resto.
+        // Solo AtaquesHoy, AtaquesSemana, Barcos, Fame y Origen: no se reescribe el resto (la merma la recalcula _syncGuerraCSV).
         var bloque = datosHoja.map(function (r) { return [r[GC.ATAQUES_HOY - 1], r[GC.ATAQUES_SEM - 1], r[GC.FAME - 1], r[GC.BARCOS - 1]]; });
         var colOrigen = datosHoja.map(function (r) { return [r[GC.ORIGEN - 1]]; });
         resHoja.cambios.forEach(function (c) {
           bloque[c.idx] = [c.ataquesHoyNuevo, c.ataquesSemNueva, c.fameNueva, c.barcosNuevo];
           colOrigen[c.idx][0] = 'Reconstruido';
         });
-        sh.getRange(2, GC.ATAQUES_HOY, bloque.length, 4).setValues(bloque);
+        // 30-oct-2026 (§PF304): con el orden nuevo ya no son 4 columnas contiguas (entre Semana y Barcos están las 2 de merma): dos tramos.
+        sh.getRange(2, GC.ATAQUES_HOY, bloque.length, 2).setValues(bloque.map(function (b) { return [b[0], b[1]]; }));   // AtaquesHoy, AtaquesSemana
+        sh.getRange(2, GC.BARCOS, bloque.length, 2).setValues(bloque.map(function (b) { return [b[3], b[2]]; }));        // Barcos, Fame (ese orden en la hoja)
         sh.getRange(2, GC.ORIGEN, colOrigen.length, 1).setValues(colOrigen);
         _syncGuerraCSV(sh); // propaga la hoja al CSV, igual que en PF031, PF045 y PF047
       }
@@ -29921,7 +30201,7 @@ function _repararSemanaDesdeJsonRoyaleApi_(aplicar) {
         _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezadoCsv].concat(filasCsv)));
       }
       if (resHoja && nHoja) {
-        // Solo AtaquesHoy, AtaquesSemana, Fame, Barcos (columnas contiguas) y Origen: no se reescribe el resto.
+        // Solo AtaquesHoy, AtaquesSemana, Barcos, Fame y Origen: no se reescribe el resto (la merma la recalcula _syncGuerraCSV).
         var bloque = datosHoja.map(function (r) { return [r[GC.ATAQUES_HOY - 1], r[GC.ATAQUES_SEM - 1], r[GC.FAME - 1], r[GC.BARCOS - 1]]; });
         var colOrigen = datosHoja.map(function (r) { return [r[GC.ORIGEN - 1]]; });
         resHoja.repartos.forEach(function (r) {
@@ -29930,7 +30210,9 @@ function _repararSemanaDesdeJsonRoyaleApi_(aplicar) {
             colOrigen[c.idx][0] = c.origenNuevo;
           });
         });
-        sh.getRange(2, GC.ATAQUES_HOY, bloque.length, 4).setValues(bloque);
+        // 30-oct-2026 (§PF304): con el orden nuevo ya no son 4 columnas contiguas (entre Semana y Barcos están las 2 de merma): dos tramos.
+        sh.getRange(2, GC.ATAQUES_HOY, bloque.length, 2).setValues(bloque.map(function (b) { return [b[0], b[1]]; }));   // AtaquesHoy, AtaquesSemana
+        sh.getRange(2, GC.BARCOS, bloque.length, 2).setValues(bloque.map(function (b) { return [b[3], b[2]]; }));        // Barcos, Fame (ese orden en la hoja)
         sh.getRange(2, GC.ORIGEN, colOrigen.length, 1).setValues(colOrigen);
         _syncGuerraCSV(sh); // propaga la hoja al CSV, igual que en PF031, PF045 y PF047
       }
@@ -62184,7 +62466,7 @@ function migrarPosicionCategoriaAscensosDescensosEnExtra() {
 // ----- Tema: Guerra -----
 // 12-oct-2026.
 
-// migrarAgregarCopasAGuerra(): UNA vez (12-oct-2026, pedido usuario: gráfica de copas en perfil y clan). Agrega la columna «Copas» (col. 21, GC.COPAS) a la hoja Guerra y al encabezado de Backup_Guerra.csv; las filas viejas quedan con la celda vacía (no hay historial anterior de copas). Idempotente. Ejecutar a mano justo después de subirBaseDesdeGithub(). [→ Contexto_Base_Web.md §PF061]
+// migrarAgregarCopasAGuerra(): UNA vez (12-oct-2026, pedido usuario: gráfica de copas en perfil y clan). Agrega la columna «Copas» (col. 21, GC.COPAS) a la hoja Guerra y al encabezado de Backup_Guerra.csv; las filas viejas quedan con la celda vacía (no hay historial anterior de copas). Idempotente. Ejecutar a mano justo después de subirBaseDesdeGithub(). OBSOLETA desde el 30-oct-2026 (§PF304): la hoja y el CSV ya tienen 23 columnas en el orden nuevo; hoy solo comprueba la estructura y no cambia datos. [→ Contexto_Base_Web.md §PF061]
 function migrarAgregarCopasAGuerra() {
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
