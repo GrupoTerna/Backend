@@ -1,3 +1,13 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Columnas Temporada / Semana / Día
+//    - Columna Par_CR de Historial_A/D
+//    - Limpieza de duplicados de Historial_I/S
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Historial_A/D: actualización, formato y ayudas
+//    - Cambio de rango: corrida más reciente y verificación contra lo aplicado
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // ==============================================================================
 // 24_Historial_Ascensos.gs
 // Vista derivada del Directorio: hoja Historial_A/D (ingresos, salidas, ascensos).
@@ -5,7 +15,7 @@
 
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS [→ Contexto_Base_Web.md §24B001]
 
-// ----- Variables y constantes -----
+// ----- Constantes y variables globales -----
 
 // Orden jerárquico de rangos (usa la MISMA ortografía que mapRol() en [→ Contexto_Base_Web.md §24B002]
 var RANGO_ORDEN = ['Miembro', 'Veterano', 'Colíder', 'Líder'];
@@ -19,7 +29,10 @@ var HISTORIAL_TOTAL_COLS = 12; // Historial_I/S: 7 columnas propias + 5 de TSD
 var HISTORIAL_TSD_COL = 8;     // primera columna de TSD en Historial_I/S
 var ASC_PAR_ENCABEZADO = 'Par_CR'; // encabezado de la columna ASC.PAR_ID de Historial_A/D (PF286)
 
-// ----- Funciones manuales / punto de entrada -----
+// Tipos de Historial_A/D que son un cambio real de la cuenta (los que la rama «verificar» busca cuando no hay propuesta). «Elegible Admin» no lo es: solo se propone, no cambia el rango.
+var CR_TIPOS_CAMBIO_REAL_ = { 'Ascenso': true, 'Degradación': true, 'Expulsión': true, 'Ascenso de clan': true };
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
 
 /**
  * completarTemporadaSemanaDiaHojas() — proyecto Base. Rellena (o recalcula) las 5 columnas Temporada / Temporada RoyaleAPI / Temporada Supercell / Semana / Día
@@ -174,6 +187,10 @@ function limpiarDuplicadosHistorial() {
   Logger.log('[Limpieza Historial] Eliminados ' + eliminados + ' registros duplicados (sin cambio real de estado entre medio).');
 }
 
+// ===== PARTE 2 — Funciones que no se corren a mano =====
+
+// ----- Hoja Historial_A/D: actualización, formato y ayudas -----
+
 function updateAscensosSheet(ss, dirData) {
   var sh = ss.getSheetByName(CFG.SHEETS.ASCENSOS);
   if (!sh) { Logger.log('[Ascensos] ABORT: hoja Ascensos no existe.'); return; }
@@ -269,7 +286,6 @@ function updateAscensosSheet(ss, dirData) {
     propuestasResueltas + ' propuesta(s) CR_Lista resuelta(s) como Realizado, hoja reordenada globalmente.');
 }
 
-// ----- Funciones internas / helpers -----
 
 /**
  * _tsdDesdeFecha_(fecha, offset, ref) [→ Contexto_Base_Web.md §PF267]
@@ -1231,9 +1247,6 @@ function _corridaDePar_(registros, parId, claveDia) {
 }
 
 // --- Verificar un cambio de rango: propuestas de la corrida más reciente contra lo realmente aplicado (PF286 punto 11 (c), 28-oct-2026; la usa la rama «verificar» de la web) [→ Contexto_Base_Web.md §PF286] ---
-
-// Tipos de Historial_A/D que son un cambio real de la cuenta (los que la rama «verificar» busca cuando no hay propuesta). «Elegible Admin» no lo es: solo se propone, no cambia el rango.
-var CR_TIPOS_CAMBIO_REAL_ = { 'Ascenso': true, 'Degradación': true, 'Expulsión': true, 'Ascenso de clan': true };
 
 /**
  * _leerVerificacionCambioRangoHistorial_()
