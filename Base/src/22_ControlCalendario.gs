@@ -1198,18 +1198,19 @@ function _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) {
   var porClan = {};
 
   for (var i = 0; i < data.length; i++) {
-    var tempStr  = String(data[i][2] || '');
+    var tempStr  = String(data[i][GC.TEMPORADA - 1] || '');
     if (String(ctx.temporada) !== tempStr) continue;
 
-    var semana  = Number(data[i][3] || 1);
+    var semana  = Number(data[i][GC.SEMANA - 1] || 1);
     var sIdx    = semana - 1;
-    var pIdx    = Number(data[i][5] || 0);
-    var tag     = String(data[i][9] || '').trim();
-    var ataques = Number(data[i][11]) || 0;
-    // FIX (28-sep-2026): AtaquesSemana (col. M) es el contador ACUMULADO de la [→ Contexto_Base_Web.md §22B064]
-    var ataquesAcum = Number(data[i][12]) || 0;
-    var fame    = Number(data[i][13]) || 0;
-    var barcos  = Number(data[i][14]) || 0;
+    var pIdx    = Number(data[i][GC.PERIOD_IDX - 1] || 0);
+    var tag     = String(data[i][GC.TAG - 1] || '').trim();
+    var ataques = Number(data[i][GC.ATAQUES_HOY - 1]) || 0;
+    // 31-oct-2026 (§PF304): estas lecturas eran por posición del orden viejo (21 columnas) y con el orden nuevo daban 0 filas de día de guerra; ahora usan GC.
+    // FIX (28-sep-2026): AtaquesSemana es el contador ACUMULADO de la [→ Contexto_Base_Web.md §22B064]
+    var ataquesAcum = Number(data[i][GC.ATAQUES_SEM - 1]) || 0;
+    var fame    = Number(data[i][GC.FAME - 1]) || 0;
+    var barcos  = Number(data[i][GC.BARCOS - 1]) || 0;
     // NUEVO (29-sep-2026, P1 de la pregunta 30 del consolidado): columna Origen (GC.ORIGEN, col. 20)
     // de la fila: 'Original' | 'Corregido' | 'Reconstruido'. Vacia o ausente (CSV viejo) = real.
     var esFilaReconstruida = _origenGuerraEs_(data[i][GC.ORIGEN - 1], 'Reconstruido');
