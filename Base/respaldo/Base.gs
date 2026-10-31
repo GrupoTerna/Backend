@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 15:00:35 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 15:19:03 */
 
 
 
@@ -1551,6 +1551,17 @@ function _liberarLockSiEsDeRunGuerra_() {
 }
 
 /**
+ * _guerraSyncCsvUltMs_() / _guerraSyncCsvAnotarMs_(ms) - PF148 (31-oct-2026). Lo que tardó la última vez _syncGuerraCSV() (propiedad de script GUERRA_SYNC_CSV_ULT_MS). La anotan el paso de respaldo de la cadena RUNGUERRA y la ventana ligera; la ventana ligera la lee para no empezar un respaldo que no le cabe.
+ */
+function _guerraSyncCsvUltMs_() {
+  try { return Number(PropertiesService.getScriptProperties().getProperty('GUERRA_SYNC_CSV_ULT_MS')) || 0; } catch (e) { return 0; }
+}
+
+function _guerraSyncCsvAnotarMs_(ms) {
+  try { PropertiesService.getScriptProperties().setProperty('GUERRA_SYNC_CSV_ULT_MS', String(Math.round(ms))); } catch (e) { /* solo informativo */ }
+}
+
+/**
  * _runGuerraPasoRespaldoCsv_() - PF311 parte B. Paso «Respaldo CSV de Guerra» de la cadena RUNGUERRA: _syncGuerraCSV() sobre la hoja Guerra. Exige CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS de tiempo en la ejecución;
  * si no queda, devuelve false (el motor lo repite en la tanda siguiente, que arranca con el tiempo completo).
  */
@@ -1568,6 +1579,7 @@ function _runGuerraPasoRespaldoCsv_() {
   }
   var t = Date.now();
   _syncGuerraCSV(sh);
+  _guerraSyncCsvAnotarMs_(Date.now() - t); // PF148
   Logger.log('[runGuerra] Respaldo CSV de Guerra terminado en ' + Math.round((Date.now() - t) / 1000) + ' s.');
   return true;
 }
@@ -1657,12 +1669,23 @@ function _runGuerraVentanaLigera_(t0) {
     } else {
       var msUsados = Date.now() - t0;
       var msLimite = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
+      // PF148 (31-oct-2026): además del margen fijo, se compara lo que queda con lo que tardó el último respaldo (con 30 % de holgura). El 20-oct el respaldo empezó con tiempo «suficiente» según el margen y la ejecución se cortó a los 361 s.
+      var msUltSync = _guerraSyncCsvUltMs_();
+      var msNecesariosSync = Math.max(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, Math.round(msUltSync * 1.3));
+      var msQuedanVentana = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - msUsados;
       if (msUsados > msLimite) {
         Logger.log('[runGuerra][ventana] _syncGuerraCSV() SALTADO: ya van ' + Math.round(msUsados / 1000) +
           's, sin margen (' + Math.round(msLimite / 1000) + 's). La hoja Guerra ya quedó actualizada; el CSV se pone al día en la próxima corrida.');
+      } else if (msQuedanVentana < msNecesariosSync) {
+        Logger.log('[runGuerra][ventana] _syncGuerraCSV() SALTADO: quedan ' + Math.round(msQuedanVentana / 1000) + ' s y el último respaldo tardó ' + Math.round(msUltSync / 1000) +
+          ' s (se piden ' + Math.round(msNecesariosSync / 1000) + ' s con holgura). La hoja Guerra ya quedó actualizada; el CSV se pone al día en la corrida horaria.');
       } else {
         var shG = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
-        if (shG) _syncGuerraCSV(shG);
+        if (shG) {
+          var tSyncV = Date.now();
+          _syncGuerraCSV(shG);
+          _guerraSyncCsvAnotarMs_(Date.now() - tSyncV);
+        }
         _revisarCsvAlSalir_(t0); // PF291
       }
     }
@@ -2704,6 +2727,7 @@ var CFG = {
 
   // Presupuesto interno SOLO para el bucle de /players dentro de [→ Contexto_Base_Web.md §01B034]
   PLAYERS_FETCH_BUDGET_MS: 3 * 60 * 1000 + 30 * 1000,  // 3m30s
+  PLAYERS_FETCH_RESERVA_MS: 90 * 1000, // PF311 parte A (31-oct-2026): tiempo que _fetchPlayersData() deja libre al final de la ejecución para guardar el progreso y que la cadena cierre el paso; el presupuesto efectivo es el menor entre PLAYERS_FETCH_BUDGET_MS y lo que le queda a la ejecución menos esta reserva
 
   // Límite MÁXIMO de consultas a /players que se hacen en UNA sola tanda de [→ Contexto_Base_Web.md §01B035]
   PLAYERS_FETCH_MAX_POR_TANDA: 60,
@@ -12400,6 +12424,7 @@ function _fetchPlayersData() {
     return false;
   }
 
+  var tInicioFetchPlayers = Date.now(); // PF311 parte A: para medir cuánto tarda la preparación antes del bucle
   if (!CACHE_CLAN_DATA) {
     Logger.log('[API] _fetchPlayersData: CACHE_CLAN_DATA vacío, se obtiene primero la info básica de clanes.');
     capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'API_ClashRoyale');
@@ -12475,6 +12500,13 @@ function _fetchPlayersData() {
              ' totales (' + (tagsToFetch.length - pendientes.length) + ' ya en cache).');
 
   var inicio = Date.now();
+  // PF311 parte A (31-oct-2026): el presupuesto de /players (3m30s) se medía solo desde aquí y no miraba cuánto le quedaba a la ejecución: el 31-oct el paso tardó 238 s y la tanda llegó a 308 s
+  // de los 361 que permite la plataforma. Ahora el presupuesto efectivo es el menor entre el fijo y lo que le queda a la ejecución menos CFG.PLAYERS_FETCH_RESERVA_MS. Fuera de una cadena por tandas
+  // _msRestantesDeEjecucion_() devuelve el límite entero y se conserva el comportamiento de antes. [→ Contexto_Base_Web.md §PF311]
+  var restoEjecucionMs = _msRestantesDeEjecucion_();
+  var presupuestoPlayersMs = Math.min(CFG.PLAYERS_FETCH_BUDGET_MS, Math.max(0, restoEjecucionMs - CFG.PLAYERS_FETCH_RESERVA_MS));
+  Logger.log('[API][t] /players: preparación de tags y progreso en ' + Math.round((inicio - tInicioFetchPlayers) / 100) / 10 + ' s; presupuesto de esta llamada ' + Math.round(presupuestoPlayersMs / 1000) +
+             ' s (tope fijo ' + Math.round(CFG.PLAYERS_FETCH_BUDGET_MS / 1000) + ' s; a la ejecución le quedan ' + Math.round(restoEjecucionMs / 1000) + ' s, reserva ' + Math.round(CFG.PLAYERS_FETCH_RESERVA_MS / 1000) + ' s).');
   var seCortoPorTiempo = false;
   // FIX (23/07/2026): antes no se llevaba registro de qué tags fallaban al [→ Contexto_Base_Web.md §09B117]
   var erroresPlayers = [];
@@ -12484,8 +12516,8 @@ function _fetchPlayersData() {
   var periodIndex = ctxPlayers.periodIndex;
 
   for (var m = 0; m < pendientes.length; m++) {
-    if ((Date.now() - inicio) > CFG.PLAYERS_FETCH_BUDGET_MS) {
-      Logger.log('[API] Presupuesto interno de /players agotado (' + (CFG.PLAYERS_FETCH_BUDGET_MS / 1000) +
+    if ((Date.now() - inicio) > presupuestoPlayersMs) {
+      Logger.log('[API] Presupuesto interno de /players agotado (' + Math.round(presupuestoPlayersMs / 1000) +
                  's) en ' + m + '/' + pendientes.length + '. Se guarda el progreso y se corta aquí; ' +
                  'la próxima continuación retoma exactamente donde quedó.');
       seCortoPorTiempo = true;
@@ -25147,6 +25179,22 @@ function _avisarFilasGuerraRepetidas_(sh) {
   } catch (e) {
     Logger.log('[Guerra] _avisarFilasGuerraRepetidas_: no se pudo revisar (' + e.message + ').');
   }
+}
+
+/**
+ * respaldarGuerraCSVForzado() - PF311 (31-oct-2026). Para correr a mano UNA vez cuando el recorte de Backup_Guerra.csv es intencional. El 31-oct el archivo quedó en 2 541 887 bytes contra 2 950 134 de
+ * referencia (se quitaron filas repetidas a propósito) y el blindaje de tamaño (PF289) saltaba la fusión en cada corrida con [ALERTA PROTECCIÓN]. Fusiona la hoja Guerra con el CSV sin ese blindaje
+ * (_syncGuerraCSV(sh, true)) y deja el tamaño nuevo como referencia, así las corridas siguientes ya no lo saltan. Es una fusión: no vuelve a agregar las filas recortadas ni borra las que hay.
+ * No la llama ninguna cadena. [→ Contexto_Base_Web.md §PF311]
+ */
+function respaldarGuerraCSVForzado() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+  if (!sh) { Logger.log('[Guerra] respaldarGuerraCSVForzado: no hay hoja Guerra, no se hace nada.'); return; }
+  var antes = _guerraCsvTamRef_();
+  Logger.log('[Guerra] respaldarGuerraCSVForzado: antes, Drive ' + antes.tamDrive + ' bytes y referencia anterior ' + antes.tamBueno + ' bytes. Se escribe sin el blindaje de tamaño.');
+  _syncGuerraCSV(sh, true);
+  var despues = _guerraCsvTamRef_();
+  Logger.log('[Guerra] respaldarGuerraCSVForzado: después, Drive ' + despues.tamDrive + ' bytes y referencia nueva ' + despues.tamBueno + ' bytes.');
 }
 
 /**
