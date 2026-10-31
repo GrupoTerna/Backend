@@ -4388,8 +4388,10 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
       if (!lote.length) return;
       var appendData = lote.map(function(r) { return _prepararFilaGuerraDesdeCSV(r, numCols); });
       sh.getRange(proximaFila, 1, appendData.length, numCols).setValues(appendData);
-      sh.getRange(proximaFila, 2, appendData.length, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
-      sh.getRange(proximaFila, 7, appendData.length, 1).setNumberFormat('dd/mm/yyyy');
+      // 31-oct-2026 (§PF304): las columnas van por GC; con el número fijo 7 (la DiaGuerra del orden viejo) la columna Semana quedaba con formato de fecha,
+      // el id de las filas restauradas no coincidía con el del CSV y la segunda tanda volvía a restaurarlas todas (filas repetidas).
+      sh.getRange(proximaFila, GC.FECHA, appendData.length, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
+      sh.getRange(proximaFila, GC.DIA_GUERRA, appendData.length, 1).setNumberFormat('dd/mm/yyyy');
       proximaFila += appendData.length;
       escritasEnEstaCorrida += appendData.length;
       lote = [];
