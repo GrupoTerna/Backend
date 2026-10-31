@@ -239,14 +239,15 @@ var CFG = {
   PLATAFORMA_LIMITE_EJECUCION_MS: 6 * 60 * 1000, // 6m00s
 
   // Presupuesto de tiempo objetivo para cada "tanda" de runAll/runUpdate antes [→ Contexto_Base_Web.md §01B030]
-  RUNALL_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000,    // 3m30s
-  RUNUPDATE_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
+  // PF311 parte D (31-oct-2026, decidido por Claude por encargo de la usuaria): de 3m30s a 2m30s en las cinco cadenas. Con 3m30s quedaban 2m30s hasta el corte de la plataforma, y un paso largo ya empezado (de 60 a 160 s en el registro del 24 al 31-oct) no cabía.
+  RUNALL_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000,    // 2m30s
+  RUNUPDATE_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s
   // FIX (06-ago-2026): runSyncCSV() ahora usa el mismo motor de tandas [→ Contexto_Base_Web.md §01B031]
-  RUNSYNCCSV_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
+  RUNSYNCCSV_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s (PF311 parte D)
   // FIX (22-ago-2026): runGuerraRapido() se cancelaba por exceder el límite [→ Contexto_Base_Web.md §01B032]
-  RUNGUERRARAPIDO_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
+  RUNGUERRARAPIDO_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s (PF311 parte D)
   // NUEVO (09-sep-2026, pedido usuario -- "_continuarRunSorteos() / [→ Contexto_Base_Web.md §01B033]
-  RUNSORTEOS_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
+  RUNSORTEOS_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s (PF311 parte D)
   // PF292 (29-oct-2026): llamadas extra al MISMO paso dentro de una tanda cuando el paso quedó incompleto, avanzó y a la tanda le sobra tiempo (ver _decidirRellamadaPaso_(), 00_Main.gs).
   TANDA_RELLAMADAS_MAX: 5,                // tope de llamadas extra de un paso por tanda
   TANDA_RELLAMADA_MIN_MS: 60 * 1000,      // duración que se supone a una llamada extra aunque la anterior fuera más corta
