@@ -1090,6 +1090,8 @@ function updateGuerraSheet() {
     }
   }
 
+  _avisarFilasGuerraRepetidas_(sh); // 31-oct-2026: solo informa en el registro
+
   Logger.log('[Guerra] updateGuerraSheet completado. Nuevas filas: ' + nuevasFilas.length +
     ' | tiempo total tras restauración: ' + (Date.now() - _tGS0) + ' ms');
 }
@@ -4324,6 +4326,9 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
     var existingIds = _mapaIdsGuerra(dataActual);
 
     var filasFaltantes = [];
+    var idsEncoladosCsv = {};
+    var repetidasEnCsv = 0;
+    var ejemplosRepetidasCsv = [];
     for (var ff = 0; ff < filasTemporada.length; ff++) {
       var fRawChk = filasTemporada[ff];
       var tagChk  = String(fRawChk[GC.TAG - 1] || '').trim().toUpperCase();
@@ -4333,8 +4338,20 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
       var semChk  = Number(fRawChk[GC.SEMANA - 1] || 1);
       var pidxChk = Number(fRawChk[GC.PERIOD_IDX - 1] || 0);
       var idChk   = tagChk + '│' + clanChk + '│' + String(fRawChk[GC.TEMPORADA - 1] || '') + '│' + (semChk - 1) + '│' + pidxChk;
-      if (existingIds.hasOwnProperty(idChk)) continue; // ya está, no se duplica
+      if (existingIds.hasOwnProperty(idChk)) {
+        if (idsEncoladosCsv[idChk]) { // 31-oct-2026: el id se repite dentro del propio CSV; se copia una sola vez
+          repetidasEnCsv++;
+          if (ejemplosRepetidasCsv.length < 5) ejemplosRepetidasCsv.push(tagChk + ' sem ' + semChk + ' PeriodIndex ' + pidxChk);
+        }
+        continue; // ya está, no se duplica
+      }
+      existingIds[idChk] = -1;
+      idsEncoladosCsv[idChk] = true;
       filasFaltantes.push(fRawChk);
+    }
+    if (repetidasEnCsv > 0) {
+      Logger.log('[Guerra] Backup_Guerra.csv trae ' + repetidasEnCsv + ' fila(s) con el mismo Tag, Clan, Temporada, Semana y PeriodIndex que otra de la temporada actual; se restaura una sola de cada una (por ejemplo: ' +
+        ejemplosRepetidasCsv.join('; ') + '). Las repetidas siguen en el CSV hasta que se limpie.');
     }
 
     if (filasFaltantes.length === 0) {
@@ -4407,6 +4424,95 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
   } catch(e) {
     Logger.log('[Guerra] Error restaurando desde CSV: ' + e.message);
     return true; // no bloquear el resto de updateGuerraSheet() por un error puntual aquí; ya quedó logueado.
+  }
+}
+
+/**
+ * _idGuerraDeFila_(f): mismo id que usa _mapaIdsGuerra() (Tag, Clan, Temporada, Semana y PeriodIndex), para una fila ya leída.
+ */
+function _idGuerraDeFila_(f) {
+  var tag  = String(f[GC.TAG  - 1] || '').trim().toUpperCase();
+  if (!tag) return '';
+  var clan = String(f[GC.CLAN - 1] || '').trim();
+  var sem  = Number(f[GC.SEMANA - 1] || 1);
+  var pidx = Number(f[GC.PERIOD_IDX - 1] || 0);
+  return tag + '│' + clan + '│' + String(f[GC.TEMPORADA - 1] || '') + '│' + (sem - 1) + '│' + pidx;
+}
+
+/**
+ * _contarFilasGuerraFaltantesDesdeCSV_(sh, temporadas): cuántas filas de Backup_Guerra.csv de esas temporadas (ids distintos) aún no están
+ * en la hoja Guerra. 0 = la hoja ya cubre el CSV (o no hay CSV / hubo un error al leerlo: nunca bloquea al llamador).
+ * Lo usa _migrarNuevosAHistorico() para no escribir en la hoja mientras la restauración desde el CSV siga pendiente.
+ */
+function _contarFilasGuerraFaltantesDesdeCSV_(sh, temporadas) {
+  try {
+    var tempsSet = {};
+    [].concat(temporadas).forEach(function(t) { tempsSet[String(t)] = true; });
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (!csvText) return 0;
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length <= 1) return 0;
+    var lastRow = sh.getLastRow();
+    var existentes = (lastRow >= 2)
+      ? _mapaIdsGuerra(sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues())
+      : {};
+    var vistos = {};
+    var faltan = 0;
+    for (var i = 1; i < parsed.length; i++) {
+      if (!tempsSet[String(parsed[i][GC.TEMPORADA - 1] || '')]) continue;
+      var id = _idGuerraDeFila_(parsed[i]);
+      if (!id || vistos[id] || existentes.hasOwnProperty(id)) continue;
+      vistos[id] = true;
+      faltan++;
+    }
+    return faltan;
+  } catch (e) {
+    Logger.log('[Guerra] _contarFilasGuerraFaltantesDesdeCSV_: no se pudo comparar con Backup_Guerra.csv (' + e.message + ').');
+    return 0;
+  }
+}
+
+/**
+ * _avisarFilasGuerraRepetidas_(sh): alarma al cerrar updateGuerraSheet(). Solo escribe en el registro; no borra ni cambia filas.
+ * (1) ids exactamente repetidos (Tag, Clan, Temporada, Semana y PeriodIndex): repeticiones reales.
+ * (2) mismo Tag, Semana y PeriodIndex en clanes distintos: puede ser un cambio de clan o una repetición con otro nombre de clan.
+ */
+function _avisarFilasGuerraRepetidas_(sh) {
+  try {
+    var lastRow = sh.getLastRow();
+    if (lastRow < 2) return;
+    var datos = sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues();
+    var porId = {}, porClave = {}, clanesPorClave = {};
+    var repetidasExactas = 0, ejemplosExactas = [];
+    for (var i = 0; i < datos.length; i++) {
+      var f = datos[i];
+      var id = _idGuerraDeFila_(f);
+      if (!id) continue;
+      var clave = String(f[GC.TAG - 1]).trim().toUpperCase() + ' temporada ' + f[GC.TEMPORADA - 1] + ' sem ' + f[GC.SEMANA - 1] + ' PeriodIndex ' + f[GC.PERIOD_IDX - 1];
+      if (porId[id]) {
+        repetidasExactas++;
+        if (ejemplosExactas.length < 5) ejemplosExactas.push(clave);
+      }
+      porId[id] = true;
+      var clan = String(f[GC.CLAN - 1] || '').trim();
+      if (!clanesPorClave[clave]) clanesPorClave[clave] = {};
+      clanesPorClave[clave][clan] = true;
+      porClave[clave] = (porClave[clave] || 0) + 1;
+    }
+    var otroClan = [];
+    Object.keys(clanesPorClave).forEach(function(k) {
+      if (Object.keys(clanesPorClave[k]).length > 1) otroClan.push(k);
+    });
+    if (repetidasExactas > 0) {
+      Logger.log('[Guerra][ALERTA] Hay ' + repetidasExactas + ' fila(s) repetida(s) en la hoja: mismo Tag, Clan, Temporada, Semana y PeriodIndex (por ejemplo: ' +
+        ejemplosExactas.join('; ') + '). No se borró nada; revísalas.');
+    }
+    if (otroClan.length > 0) {
+      Logger.log('[Guerra][AVISO] ' + otroClan.length + ' combinación(es) de Tag, Semana y PeriodIndex aparecen con clanes distintos (cambio de clan o repetición con otro nombre de clan), por ejemplo: ' +
+        otroClan.slice(0, 5).join('; ') + '.');
+    }
+  } catch (e) {
+    Logger.log('[Guerra] _avisarFilasGuerraRepetidas_: no se pudo revisar (' + e.message + ').');
   }
 }
 
