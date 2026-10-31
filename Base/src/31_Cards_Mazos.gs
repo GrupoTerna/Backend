@@ -1,3 +1,13 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hojas de cartas (Cards y Cards_2)
+//    - Costos de subida de nivel (prueba con un jugador)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Datos de cartas: lectura y escritura de los CSV, cartas de torre y niveles
+//    - Generador de links de mazos de RoyaleAPI (los que llama la web, y sus ayudas)
+//    - Costos de subida de nivel: catálogo y cálculo
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // ==============================================================================
 // 31_Cards_Mazos.gs
 // Datos de cartas (hoja Cards/Cards2) y generador de links de mazo de RoyaleAPI.
@@ -5,7 +15,17 @@
 
 // REGLA DE TRABAJO DE ESTE PROYECTO (ver también 17_GuerraSheet.gs): toda [→ Contexto_Base_Web.md §31B001]
 
-// ----- Funciones manuales / punto de entrada -----
+// ----- Constantes y variables globales -----
+
+// DIFERENCIA FIJA DE NIVEL POR RAREZA (nivel del JSON -> nivel unificado de la app) [→ Contexto_Base_Web.md §31B014]
+var _cacheDiferenciaNivelPorRareza = null;
+
+// CARTAS DE TORRE (24-sep-2026, pedido del usuario). Las tropas de torre viven en [→ Contexto_Base_Web.md §31B015]
+var CARTAS_TORRE_ID_MIN = 159000000;
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
+
+// ----- Hojas de cartas (Cards y Cards_2) -----
 
 /**
  * updateCardsSheet() [→ Contexto_Base_Web.md §31B002]
@@ -213,43 +233,57 @@ function updateCards2Sheet() {
   }
 }
 
-/**
- * generarUrlMazo(tag) [→ Contexto_Base_Web.md §31B011]
- */
-function generarUrlMazo(tag) {
-  if (!tag) return null;
-  var tagClean = String(tag).trim();
-  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
-
-  var ss = _getSs();
-  var cardInfo      = _construirCardInfoMap(ss);
-  var cards2PorTag  = _construirCards2PorTag(ss);
-  return _generarUrlMazoDesdeMapas(tagClean, cardInfo, cards2PorTag[tagClean]);
-}
+// ----- Costos de subida de nivel (prueba con un jugador) -----
 
 /**
- * generarUrlMazo2(tag) [→ Contexto_Base_Web.md §31B012]
+ * probarCostosSubirNivel() [→ Contexto_Base_Web.md §31B063]
  */
-function generarUrlMazo2(tag) {
-  if (!tag) return null;
-  var tagClean = String(tag).trim();
-  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
+function probarCostosSubirNivel() {
+  var cards2 = _leerCards2CSV();
+  var tag = '';
+  for (var i = 0; i < cards2.rows.length; i++) {
+    var t = String(cards2.rows[i][1] || '').trim();
+    if (t) { tag = t; break; }
+  }
+  if (!tag) {
+    Logger.log('[Cards3] Backup_Cards_2.csv vacío o inexistente: no hay jugador con el que probar.');
+    return;
+  }
 
-  var ss = _getSs();
-  var cardInfo      = _construirCardInfoMap(ss);
-  var cards2PorTag  = _construirCards2PorTag(ss);
-  return _generarUrlMazo2DesdeMapas(tagClean, cardInfo, cards2PorTag[tagClean]);
+  var lista = costosSubirNivelJugador(tag);
+  if (!lista.length) return; // el motivo ya quedó en el log
+
+  var bloqueadas = 0, enMax = 0, conCosto = 0, sinDato = 0, maxDistinto = 0;
+  var ejemplos = [];
+  for (var k = 0; k < lista.length; k++) {
+    var it = lista[k];
+    if (it.maxLevelCsv !== null && it.nivelMaxCards3 !== null && it.maxLevelCsv !== it.nivelMaxCards3) maxDistinto++;
+    if (!it.desbloqueada) { bloqueadas++; continue; }
+    if (it.esMax === true) { enMax++; continue; }
+    if (it.esMax === null) { sinDato++; continue; }
+    conCosto++;
+    if (ejemplos.length < 12) {
+      ejemplos.push('  ' + it.nombre + ' (' + it.rarity + ') nivel app ' + it.nivelApp +
+                    ' [rareza ' + it.nivelRareza + '] -> oro ' + it.oro + ' + ' + it.cartas + ' cartas');
+    }
+  }
+
+  Logger.log('[Cards3] ' + tag + ': ' + lista.length + ' cartas | bloqueadas ' + bloqueadas +
+             ' | en nivel máximo ' + enMax + ' | con costo de subida ' + conCosto +
+             ' | sin dato en Backup_Cards_3.csv ' + sinDato);
+  if (maxDistinto > 0) {
+    Logger.log('[Cards3] ' + maxDistinto + ' carta(s) tienen en Backup_Cards.csv un Maxlevel distinto al nivel ' +
+               'máximo de su rareza en Backup_Cards_3.csv, y ambos usan la misma numeración (la del JSON), así que ' +
+               'deberían coincidir. Si el Maxlevel es MAYOR: nivel nuevo sin cargar en Backup_Cards_3.csv. Si es ' +
+               'MENOR: Maxlevel viejo, corre updateCardsSheet() para refrescarlo.');
+  }
+  _avisarRevisionNivelesCards(_leerCardsCSV().rows);
+  for (var e = 0; e < ejemplos.length; e++) Logger.log(ejemplos[e]);
 }
 
-// ----- Funciones internas / helpers -----
+// ===== PARTE 2 — Funciones que no se corren a mano =====
 
 // D) DATOS DE CARTAS: Backup_Cards.csv (fijos) y Backup_Cards_2.csv (por jugador) [→ Contexto_Base_Web.md §31B013]
-
-// DIFERENCIA FIJA DE NIVEL POR RAREZA (nivel del JSON -> nivel unificado de la app) [→ Contexto_Base_Web.md §31B014]
-var _cacheDiferenciaNivelPorRareza = null;
-
-// CARTAS DE TORRE (24-sep-2026, pedido del usuario). Las tropas de torre viven en [→ Contexto_Base_Web.md §31B015]
-var CARTAS_TORRE_ID_MIN = 159000000;
 
 /**
  * _esCartaTorreDatos(id, tipo) [→ Contexto_Base_Web.md §31B016]
@@ -855,6 +889,34 @@ function _getTagsConPlayerCache() {
 // GENERADOR DE LINKS DE MAZOS ROYALEAPI [→ Contexto_Base_Web.md §31B042]
 
 /**
+ * generarUrlMazo(tag) [→ Contexto_Base_Web.md §31B011]
+ */
+function generarUrlMazo(tag) {
+  if (!tag) return null;
+  var tagClean = String(tag).trim();
+  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
+
+  var ss = _getSs();
+  var cardInfo      = _construirCardInfoMap(ss);
+  var cards2PorTag  = _construirCards2PorTag(ss);
+  return _generarUrlMazoDesdeMapas(tagClean, cardInfo, cards2PorTag[tagClean]);
+}
+
+/**
+ * generarUrlMazo2(tag) [→ Contexto_Base_Web.md §31B012]
+ */
+function generarUrlMazo2(tag) {
+  if (!tag) return null;
+  var tagClean = String(tag).trim();
+  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
+
+  var ss = _getSs();
+  var cardInfo      = _construirCardInfoMap(ss);
+  var cards2PorTag  = _construirCards2PorTag(ss);
+  return _generarUrlMazo2DesdeMapas(tagClean, cardInfo, cards2PorTag[tagClean]);
+}
+
+/**
  * _cardNameToSlug(name) [→ Contexto_Base_Web.md §31B043]
  */
 function _cardNameToSlug(name) {
@@ -1388,50 +1450,4 @@ function _avisarDiferenciasNivelCards(cardsRows) {
 function _avisarRevisionNivelesCards(cardsRows) {
   _avisarDiferenciasNivelCards(cardsRows);
   _avisarNivelesFaltantesCards3(cardsRows);
-}
-
-/**
- * probarCostosSubirNivel() [→ Contexto_Base_Web.md §31B063]
- */
-function probarCostosSubirNivel() {
-  var cards2 = _leerCards2CSV();
-  var tag = '';
-  for (var i = 0; i < cards2.rows.length; i++) {
-    var t = String(cards2.rows[i][1] || '').trim();
-    if (t) { tag = t; break; }
-  }
-  if (!tag) {
-    Logger.log('[Cards3] Backup_Cards_2.csv vacío o inexistente: no hay jugador con el que probar.');
-    return;
-  }
-
-  var lista = costosSubirNivelJugador(tag);
-  if (!lista.length) return; // el motivo ya quedó en el log
-
-  var bloqueadas = 0, enMax = 0, conCosto = 0, sinDato = 0, maxDistinto = 0;
-  var ejemplos = [];
-  for (var k = 0; k < lista.length; k++) {
-    var it = lista[k];
-    if (it.maxLevelCsv !== null && it.nivelMaxCards3 !== null && it.maxLevelCsv !== it.nivelMaxCards3) maxDistinto++;
-    if (!it.desbloqueada) { bloqueadas++; continue; }
-    if (it.esMax === true) { enMax++; continue; }
-    if (it.esMax === null) { sinDato++; continue; }
-    conCosto++;
-    if (ejemplos.length < 12) {
-      ejemplos.push('  ' + it.nombre + ' (' + it.rarity + ') nivel app ' + it.nivelApp +
-                    ' [rareza ' + it.nivelRareza + '] -> oro ' + it.oro + ' + ' + it.cartas + ' cartas');
-    }
-  }
-
-  Logger.log('[Cards3] ' + tag + ': ' + lista.length + ' cartas | bloqueadas ' + bloqueadas +
-             ' | en nivel máximo ' + enMax + ' | con costo de subida ' + conCosto +
-             ' | sin dato en Backup_Cards_3.csv ' + sinDato);
-  if (maxDistinto > 0) {
-    Logger.log('[Cards3] ' + maxDistinto + ' carta(s) tienen en Backup_Cards.csv un Maxlevel distinto al nivel ' +
-               'máximo de su rareza en Backup_Cards_3.csv, y ambos usan la misma numeración (la del JSON), así que ' +
-               'deberían coincidir. Si el Maxlevel es MAYOR: nivel nuevo sin cargar en Backup_Cards_3.csv. Si es ' +
-               'MENOR: Maxlevel viejo, corre updateCardsSheet() para refrescarlo.');
-  }
-  _avisarRevisionNivelesCards(_leerCardsCSV().rows);
-  for (var e = 0; e < ejemplos.length; e++) Logger.log(ejemplos[e]);
 }
