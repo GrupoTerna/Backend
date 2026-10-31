@@ -40,6 +40,7 @@
 //    - Verificar CRR, registro de JSON verificados (listar, comparar, leer y guardar)
 //    - Verificar CRR, paso 2: comparar contra el CSV y registrar hallazgos
 //    - Verificar CRR, paso 3: escribir en el CSV (solo Aplicar)
+//    - Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas.
 
 var VCRR_PRESUPUESTO_MS = 3 * 60 * 1000 + 30 * 1000;   // tanda: pasado este tiempo no se empieza otra semana ni otro paso (la plataforma corta a los 6 min)
@@ -54,6 +55,7 @@ var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
 var _vcrrFameLimites_ = null;                          // caché de _vcrrFameLimitesPorAtaques_()
+var _VCRR_CACHE_RANGOS_ = {};                          // caché por ejecución de _vcrrRangosJugadorClan_(): 'temporada|semana' -> { 'clanKey|tag': serie }
 
 // JSON que se sabe anómalos aunque sigan en su carpeta: claves 'temporada|semana|clan en minúsculas|letra del día', por ejemplo '23|1|grupoxterna™3|V'.
 // Un JSON movido a la carpeta Anomalías no hace falta anotarlo aquí: esa carpeta no se lee.
@@ -898,4 +900,34 @@ function _vcrrVerificarAplicado_(filasAntes, filasDespues, casos, creadasEsperad
     });
   });
   return problemas;
+}
+
+// ----- Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día) -----
+
+/**
+ * Para la corrección de guerra (18_CorreccionGuerra.gs, _repartoRangosCrr_) y el cierre del día (56_CurrentRiverRace_Dias.gs, _crrAyerParaCierre_):
+ * los rangos que dejan los JSON de CurrentRiverRace para UN jugador en UN clan y semana (el mismo cálculo de _vcrrRestriccionesSerie_, que es el que
+ * usa la verificación de Backup_Guerra.csv). Devuelve la serie { temporada, semana, clanKey, tag, nombre, capturas, estado, notas, validos, r }, donde
+ * r.A, r.F y r.B (ataques, fame y barcos) traen lo (piso) y hi (máximo posible) del acumulado al cierre de cada día y il e ih del aumento de cada día.
+ * hi de la semana (domingo) es el máximo semanal: ya descuenta la merma (ataques perdidos) que muestran los JSON. Devuelve null si la semana no tiene
+ * JSON, si el jugador no aparece en ese clan o si falla la lectura de Drive. Lee los JSON de la semana una sola vez por ejecución (caché en memoria).
+ * Solo lee; no escribe nada. clanNombre = el nombre del clan tal como figura en la hoja o el CSV de guerra.
+ */
+function _vcrrRangosJugadorClan_(temporada, semana, tag, clanNombre) {
+  try {
+    var clave = Number(temporada) + '|' + Number(semana);
+    if (!_VCRR_CACHE_RANGOS_[clave]) {
+      var mapa = {};
+      var archivos = _vcrrArchivosSemana_(temporada, semana);
+      if (archivos.length) {
+        var cap = _vcrrCapturasSemana_(temporada, semana, archivos);
+        _vcrrSeriesDeSemana_(temporada, semana, cap.porClan).forEach(function (x) { mapa[x.clanKey + '|' + x.tag] = x; });
+      }
+      _VCRR_CACHE_RANGOS_[clave] = mapa;
+    }
+    return _VCRR_CACHE_RANGOS_[clave][_vcrrClanNorm_(clanNombre) + '|' + String(tag || '').trim()] || null;
+  } catch (e) {
+    Logger.log('[VCRR] No se pudieron calcular los rangos de T' + temporada + ' S' + semana + ' ' + tag + ': ' + e.message);
+    return null;
+  }
 }
