@@ -246,6 +246,10 @@ var CFG = {
   RUNSYNCCSV_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s (PF311 parte D)
   // FIX (22-ago-2026): runGuerraRapido() se cancelaba por exceder el límite [→ Contexto_Base_Web.md §01B032]
   RUNGUERRARAPIDO_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s (PF311 parte D)
+  // PF311 parte B (31-oct-2026): la corrida horaria completa de runGuerra() (fuera de la ventana de las 4 a 5 a. m.) corre como cadena por tandas (RUNGUERRA, 00_Main.gs) con este presupuesto por tanda.
+  // RUNGUERRA_POR_TANDAS = false vuelve a la corrida de una sola ejecución con la cola aparte (PF143), sin tocar el código. La ventana ligera de las 4 a 5 a. m. no usa la cadena. [→ Contexto_Base_Web.md §PF311]
+  RUNGUERRA_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s
+  RUNGUERRA_POR_TANDAS: true,
   // NUEVO (09-sep-2026, pedido usuario -- "_continuarRunSorteos() / [→ Contexto_Base_Web.md §01B033]
   RUNSORTEOS_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s (PF311 parte D)
   // PF292 (29-oct-2026): llamadas extra al MISMO paso dentro de una tanda cuando el paso quedó incompleto, avanzó y a la tanda le sobra tiempo (ver _decidirRellamadaPaso_(), 00_Main.gs).

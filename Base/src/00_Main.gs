@@ -65,6 +65,34 @@ var NOMBRES_PASOS_RUNGUERRARAPIDO = [
   'Menú dinámico: actualizar las entradas Dinámico → menú al día',
 ];
 
+// PF311 parte B (31-oct-2026): cadena por tandas de la corrida horaria completa de runGuerra() (fuera de la ventana de las 4 a 5 a. m.; la ventana ligera no la usa). Antes era una sola ejecución de 6 min más una cola aparte
+// (_continuarRunGuerra, PF143) y se cortaba a los 361 s en 12 corridas del 24 al 31-oct. Se inicia desde runGuerra() con CFG.RUNGUERRA_POR_TANDAS y sigue en _continuarRunGuerraCadena(). [→ Contexto_Base_Web.md §PF311]
+var PASOS_RUNGUERRA = [
+  function () { capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS_GUERRA, 'hora'); },
+  // updateGuerraSheet() puede devolver false (FIX 02-sep-2026, igual que en PASOS_RUNGUERRARAPIDO): se pasa tal cual para que el motor reintente el mismo paso.
+  function () { return updateGuerraSheet(); },
+  function () { updateGuerraLogsSheet(); },
+  function () { updateControlSheet(); },
+  function () { updatePendientesSheet(); },
+  function () {
+    try { _cerrarSemanaActualNuevos(); }
+    catch (eCierreNuevos) { Logger.log('[PASOS_RUNGUERRA] _cerrarSemanaActualNuevos() falló: ' + eCierreNuevos.message); }
+  },
+  function () { return _runGuerraPasoRespaldoCsv_(); },
+  function () { return _runGuerraPasoCalentarCache_(); },
+];
+
+var NOMBRES_PASOS_RUNGUERRA = [
+  'Clanes: capturar los datos de los clanes (API, o lo ya guardado si es reciente) → datos de clanes cargados',
+  'Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)',
+  'Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día',
+  'Hoja Control: actualizar → hoja Control al día',
+  'Hoja Pendientes: actualizar → hoja Pendientes al día',
+  'Nuevos: cerrar la semana actual → semana de Nuevos cerrada si correspondía',
+  'Respaldo CSV de Guerra: guardar la hoja Guerra en Backup_Guerra.csv → respaldo al día',
+  'Caché y publicaciones: calentar la guerra en vivo y publicar guerra, roster, home y torneos → caché caliente y archivos publicados',
+];
+
 var PASOS_RUNALL = [
   // FIX (06-ago-2026): _limpiarHojasCardsObsoletas() se agrega aquí, mismo [→ Contexto_Base_Web.md §B008]
   function () { _renombrarHojasHistorialLegacy(); },
@@ -543,7 +571,7 @@ function cancelarEjecucion() {
   try {
     var horaCancelar = String(Date.now());
     var propsCancelar = PropertiesService.getScriptProperties();
-    ['RUNALL', 'RUNUPDATE', 'RUNGUERRARAPIDO'].forEach(function(idCadena) { propsCancelar.setProperty(idCadena + '_CANCELADA_TS', horaCancelar); });
+    ['RUNALL', 'RUNUPDATE', 'RUNGUERRARAPIDO', 'RUNGUERRA'].forEach(function(idCadena) { propsCancelar.setProperty(idCadena + '_CANCELADA_TS', horaCancelar); });
   } catch (eMarcaCancelar) {
     Logger.log('[Cancelar] AVISO: no se pudo dejar la marca de cancelación (' + eMarcaCancelar.message + '). Si hay una tanda corriendo, puede volver a programar su continuación.');
   }
@@ -551,8 +579,11 @@ function cancelarEjecucion() {
   _borrarTriggersDeContinuacion('_continuarRunUpdate');
   // FIX (22-ago-2026): runGuerraRapido() ahora también usa el motor de [→ Contexto_Base_Web.md §B080]
   _borrarTriggersDeContinuacion('_continuarRunGuerraRapido');
+  _borrarTriggersDeContinuacion('_continuarRunGuerraCadena'); // PF311 parte B
 
   var props = PropertiesService.getScriptProperties();
+  var pasoRunGuerraCadena = props.getProperty('RUNGUERRA_PASO'); // PF311 parte B
+  _limpiarCadenaRunGuerra_(props, true); // PF311 parte B: borra el avance de la cadena horaria de runGuerra y devuelve la marca de hora para que el próximo disparo la reintente
   var pasoRunAll    = props.getProperty('RUNALL_PASO');
   var pasoRunUpdate = props.getProperty('RUNUPDATE_PASO');
   var pasoRunGuerraRapido = props.getProperty('RUNGUERRARAPIDO_PASO');
@@ -584,6 +615,7 @@ function cancelarEjecucion() {
     (pasoRunAll    ? ' RUNALL_PASO eliminado (estaba en ' + pasoRunAll + ').' : '') +
     (pasoRunUpdate ? ' RUNUPDATE_PASO eliminado (estaba en ' + pasoRunUpdate + ').' : '') +
     (pasoRunGuerraRapido ? ' RUNGUERRARAPIDO_PASO eliminado (estaba en ' + pasoRunGuerraRapido + ').' : '') +
+    (pasoRunGuerraCadena ? ' RUNGUERRA_PASO eliminado (estaba en ' + pasoRunGuerraCadena + ').' : '') +
     ' Triggers de continuación borrados. Progreso de /players, de clanes y de battlelog/upcomingchests borrado. Lock liberado. Ya puedes ejecutar runAll()/runUpdate()/runGuerraRapido() desde cero.');
 }
 
@@ -1205,6 +1237,11 @@ function runGuerra() {
              ' | Ventana ligera (4-5am): ' + enVentanaGuerra + ' ===');
 
   if (!_adquirirLockEjecucion('runGuerra')) return;
+  // PF311 parte B: la corrida horaria completa sigue como cadena por tandas (el candado lo libera la cadena al terminar, no este return). La ventana ligera (enVentanaGuerra) no entra aquí y sigue como antes.
+  if (!enVentanaGuerra && CFG.RUNGUERRA_POR_TANDAS) {
+    _iniciarRunGuerraPorTandas_(props, claveHora);
+    return;
+  }
   // PF073: la hora se marca antes del trabajo (evita corridas simultáneas), pero si el trabajo falla se restaura la marca previa para que el siguiente disparo reintente en vez de esperar a la hora siguiente. [→ Contexto_Base_Web.md §PF073]
   var _marcaHoraPrevia = props.getProperty('RUNGUERRA_ULTIMA_HORA');
   var _trabajoHoraCompleto = false;
@@ -1386,6 +1423,157 @@ function _continuarRunGuerra() {
   } finally {
     _liberarLockEjecucion();
   }
+}
+
+/**
+ * _iniciarRunGuerraPorTandas_(props, claveHora) - PF311 parte B (31-oct-2026). Arranca la cadena RUNGUERRA desde runGuerra() (ya con el candado tomado). Guarda la marca de hora anterior en
+ * RUNGUERRA_MARCA_PREVIA para devolverla si la cadena no termina (así el siguiente disparo reintenta en vez de esperar a la hora siguiente, PF073), deja limpios los contadores de una cadena anterior
+ * y llama a _continuarRunGuerraCadena(). Si falla al preparar, libera el candado y relanza el error. [→ Contexto_Base_Web.md §PF311]
+ */
+function _iniciarRunGuerraPorTandas_(props, claveHora) {
+  try {
+    var marcaPrevia = props.getProperty('RUNGUERRA_ULTIMA_HORA');
+    props.setProperty('RUNGUERRA_MARCA_PREVIA', marcaPrevia === null ? '' : marcaPrevia);
+    props.setProperty('RUNGUERRA_ULTIMA_HORA', claveHora);
+    props.setProperty('RUNGUERRA_PASO', '0');
+    ['RUNGUERRA_REINTENTO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO', 'RUNGUERRA_CALENTAR_INTENTOS'].forEach(function(clave) { props.deleteProperty(clave); });
+    _borrarTriggersDeContinuacion('_continuarRunGuerraCadena');
+  } catch (e) {
+    _liberarLockEjecucion();
+    Logger.log('[runGuerra] No se pudo preparar la cadena por tandas: ' + e.message + ' — candado liberado.');
+    throw e;
+  }
+  _continuarRunGuerraCadena();
+}
+
+/**
+ * _continuarRunGuerraCadena() - PF311 parte B. Punto de entrada de la cadena RUNGUERRA, tanto de la primera tanda (la llama _iniciarRunGuerraPorTandas_) como de las continuaciones programadas.
+ * Sin RUNGUERRA_MARCA_PREVIA no hay cadena en curso (la cancelaron o terminó): un activador atrasado no hace nada. Al terminar libera el candado; si la cadena se abortó (ventana de guerra protegida,
+ * reenumeración o cancelación) o falló, devuelve la marca de hora para que el siguiente disparo reintente. Una cancelación no toca el candado: ya lo liberó cancelarEjecucion() (PF311 parte C).
+ */
+function _continuarRunGuerraCadena() {
+  var props = PropertiesService.getScriptProperties();
+  if (props.getProperty('RUNGUERRA_MARCA_PREVIA') === null) {
+    Logger.log('[runGuerra] Sin cadena en curso (ya terminó o se canceló). No se hace nada.');
+    _borrarTriggersDeContinuacion('_continuarRunGuerraCadena');
+    return;
+  }
+  var paso = parseInt(props.getProperty('RUNGUERRA_PASO') || '0', 10);
+  var esReintento = props.getProperty('RUNGUERRA_REINTENTO') === '1';
+  Logger.log((paso === 0 && !esReintento ? '=== runGuerra (horaria) INICIO' : '=== runGuerra (horaria) CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNGUERRA.length) + ' ===');
+  try {
+    var completo = _ejecutarPorTandas('RUNGUERRA', PASOS_RUNGUERRA, CFG.RUNGUERRA_PRESUPUESTO_MS, '_continuarRunGuerraCadena', NOMBRES_PASOS_RUNGUERRA);
+    if (completo) {
+      _limpiarCadenaRunGuerra_(props, false);
+      _liberarLockEjecucion();
+      Logger.log('=== runGuerra (horaria) FIN ===');
+    } else if (props.getProperty('RUNGUERRA_PASO') === null) {
+      // Sin paso guardado y sin continuación: la cadena se abortó o se canceló.
+      var canceladaAhora = _cancelacionPedidaDuranteTanda_('RUNGUERRA');
+      _limpiarCadenaRunGuerra_(props, true);
+      if (!canceladaAhora) _liberarLockSiEsDeRunGuerra_();
+      Logger.log('[runGuerra] La cadena horaria no terminó: se devolvió la marca de hora para que el próximo disparo reintente.');
+    }
+    // Si no está completo y hay paso guardado, hay una continuación programada y el candado sigue tomado.
+  } catch (e) {
+    _limpiarCadenaRunGuerra_(props, true);
+    _borrarTriggersDeContinuacion('_continuarRunGuerraCadena');
+    _liberarLockEjecucion();
+    Logger.log('[runGuerra] ERROR en la cadena horaria: ' + e.message + ' — candado liberado y marca de hora devuelta para reintentar.');
+    throw e;
+  }
+}
+
+/**
+ * _limpiarCadenaRunGuerra_(props, restaurarMarca) - PF311 parte B. Borra el estado de la cadena RUNGUERRA. Con restaurarMarca devuelve RUNGUERRA_ULTIMA_HORA a su valor anterior (guardado en RUNGUERRA_MARCA_PREVIA;
+ * vacío = no había marca), para que el siguiente disparo reintente la hora. La llaman la cadena y cancelarEjecucion().
+ */
+function _limpiarCadenaRunGuerra_(props, restaurarMarca) {
+  var previa = props.getProperty('RUNGUERRA_MARCA_PREVIA');
+  if (restaurarMarca && previa !== null) {
+    if (previa) props.setProperty('RUNGUERRA_ULTIMA_HORA', previa);
+    else props.deleteProperty('RUNGUERRA_ULTIMA_HORA');
+  }
+  ['RUNGUERRA_MARCA_PREVIA', 'RUNGUERRA_CALENTAR_INTENTOS', 'RUNGUERRA_PASO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_REINTENTO', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO'].forEach(function(clave) { props.deleteProperty(clave); });
+}
+
+/** _liberarLockSiEsDeRunGuerra_() - PF311 parte B. Libera el candado solo si lo tiene runGuerra o su cadena (no pisa el de otra ejecución). */
+function _liberarLockSiEsDeRunGuerra_() {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var raw = props.getProperty('EJECUCION_EN_CURSO');
+    var info = raw ? JSON.parse(raw) : null;
+    if (info && (info.fn === 'runGuerra' || info.fn === 'RUNGUERRA')) props.deleteProperty('EJECUCION_EN_CURSO');
+  } catch (e) { /* propiedad corrupta: se deja como está */ }
+}
+
+/**
+ * _runGuerraPasoRespaldoCsv_() - PF311 parte B. Paso «Respaldo CSV de Guerra» de la cadena RUNGUERRA: _syncGuerraCSV() sobre la hoja Guerra. Exige CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS de tiempo en la ejecución;
+ * si no queda, devuelve false (el motor lo repite en la tanda siguiente, que arranca con el tiempo completo).
+ */
+function _runGuerraPasoRespaldoCsv_() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+  if (!sh) {
+    Logger.log('[runGuerra] Respaldo CSV de Guerra: no hay hoja Guerra, no hay nada que respaldar.');
+    return true;
+  }
+  var quedaMs = _msRestantesDeEjecucion_();
+  if (quedaMs < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
+    Logger.log('[runGuerra] Respaldo CSV de Guerra: quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan al menos ' + Math.round(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS / 1000) + ' s. Se hace en la próxima tanda.');
+    _anotarProgresoPaso_('Respaldo CSV de Guerra: 0 de 1 respaldos', 0);
+    return false;
+  }
+  var t = Date.now();
+  _syncGuerraCSV(sh);
+  Logger.log('[runGuerra] Respaldo CSV de Guerra terminado en ' + Math.round((Date.now() - t) / 1000) + ' s.');
+  return true;
+}
+
+/**
+ * _runGuerraPasoCalentarCache_() - PF311 parte B. Paso «Caché y publicaciones» de la cadena RUNGUERRA: calienta el caché de la guerra en vivo y publica guerra.json, roster.json, home.json y torneos.json
+ * (lo que hacía _runGuerraColaHoraria_()). Exige tiempo según lo que tardó la última vez (GUERRA_CALENTADO_ULT_MS, con 30 % de holgura, como mínimo el margen fijo y como máximo lo que cabe en una tanda
+ * nueva). Si no hay tiempo o quedaron publicaciones sin hacer, devuelve false y el motor lo repite en la tanda siguiente; tras 2 repeticiones se deja para la próxima hora, para no encadenar tandas sin fin.
+ */
+function _runGuerraPasoCalentarCache_() {
+  var props = PropertiesService.getScriptProperties();
+  var intentos = Number(props.getProperty('RUNGUERRA_CALENTAR_INTENTOS')) || 0;
+  var msUltimo = Number(props.getProperty('GUERRA_CALENTADO_ULT_MS')) || 0;
+  var msNecesarios = Math.min(Math.max(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, Math.round(msUltimo * 1.3)), CFG.PLATAFORMA_LIMITE_EJECUCION_MS - 60000);
+  var quedaMs = _msRestantesDeEjecucion_();
+  if (quedaMs < msNecesarios) {
+    if (intentos >= 2) {
+      props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+      Logger.log('[runGuerra] Caché y publicaciones: sin tiempo tras ' + (intentos + 1) + ' tandas. Se dejan para la próxima hora.');
+      return true;
+    }
+    props.setProperty('RUNGUERRA_CALENTAR_INTENTOS', String(intentos + 1));
+    Logger.log('[runGuerra] Caché y publicaciones: quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan unos ' + Math.round(msNecesarios / 1000) + ' s. Se hace en la próxima tanda.');
+    _anotarProgresoPaso_('Caché y publicaciones: 0 de 1 calentamientos', 0);
+    return false;
+  }
+  var tCalentar = Date.now();
+  try {
+    _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG, tCalentar + quedaMs - 45000);
+  } catch (eCalentar) {
+    Logger.log('[runGuerra] El calentamiento del caché falló: ' + eCalentar.message + '. Se reintenta en la próxima hora.');
+    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+    return true;
+  }
+  var msCalentar = Date.now() - tCalentar;
+  Logger.log('[runGuerra] Calentamiento del caché terminado en ' + Math.round(msCalentar / 1000) + ' s' + (CALENTAR_OMITIO_PUBLICACION_ ? ' (quedaron publicaciones sin hacer por falta de tiempo)' : '') + '.');
+  if (!CALENTAR_OMITIO_PUBLICACION_) {
+    try { props.setProperty('GUERRA_CALENTADO_ULT_MS', String(msCalentar)); } catch (eGuardaUlt) { /* solo una referencia */ }
+    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+    return true;
+  }
+  if (intentos >= 2) {
+    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+    Logger.log('[runGuerra] Quedaron publicaciones sin hacer tras ' + (intentos + 1) + ' tandas. Se dejan para la próxima hora.');
+    return true;
+  }
+  props.setProperty('RUNGUERRA_CALENTAR_INTENTOS', String(intentos + 1));
+  _anotarProgresoPaso_('Publicaciones del caché: incompletas, 0 de 1 calentamientos', 0);
+  return false;
 }
 
 /**
