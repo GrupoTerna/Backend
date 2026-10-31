@@ -1529,8 +1529,10 @@ function _runGuerraPasoRespaldoCsv_() {
     return true;
   }
   var quedaMs = _msRestantesDeEjecucion_();
-  if (quedaMs < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
-    Logger.log('[runGuerra] Respaldo CSV de Guerra: quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan al menos ' + Math.round(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS / 1000) + ' s. Se hace en la próxima tanda.');
+  // PF148 (31-oct-2026): igual que la ventana ligera, además del margen fijo se exige lo que tardó el último respaldo con 30 % de holgura (con tope de lo que cabe en una tanda nueva, para que nunca quede imposible).
+  var msNecesarios = Math.min(Math.max(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, Math.round(_guerraSyncCsvUltMs_() * 1.3)), CFG.PLATAFORMA_LIMITE_EJECUCION_MS - 60000);
+  if (quedaMs < msNecesarios) {
+    Logger.log('[runGuerra] Respaldo CSV de Guerra: quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan unos ' + Math.round(msNecesarios / 1000) + ' s (el último tardó ' + Math.round(_guerraSyncCsvUltMs_() / 1000) + ' s). Se hace en la próxima tanda.');
     _anotarProgresoPaso_('Respaldo CSV de Guerra: 0 de 1 respaldos', 0);
     return false;
   }
