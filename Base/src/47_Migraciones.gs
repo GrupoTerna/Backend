@@ -1,3 +1,8 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes. En cada grupo, por temática y en el orden en que se ejecutarían:
+//  Parte 1 — Funciones que se corren a mano: 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento); 1.5 T_Asistencia alineada con T_Lista (repetible); 1.6 lo mismo para T, S, CR y sus asistencias (repetible; lo usa la reenumeración); 1.7 fecha, hora y fichas de Semanas limpias en las listas (repetible).
+//  Parte 2 — Funciones que no se corren a mano: 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda); 2.6 T_Asistencia alineada con T_Lista (plan, envoltorio y escritura; ahora para T, S y CR); 2.7 envoltorio de las herramientas 1.6; 2.8 fecha, hora y fichas de Semanas limpias (ayudas y escritura).
+// Al reordenar no se cambió el código de ninguna función; la variable SEMANAS_FORZADAS_PROP_ subió a la zona de constantes.
+
 // ==============================================================================
 // 47_Migraciones.gs
 // Migraciones de una sola vez (migrarX), conservadas por trazabilidad; incluye la herramienta manual de reenumeración de temporadas (antes en 52_ReenumerarTemporadas.gs). [→ Contexto_Base_Web.md §47B001]
@@ -98,11 +103,8 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
   'Temporada y Fecha de T_Asistencia y S_Asistencia tomadas de su torneo o sorteo (el id es la llave) y sus respaldos → asistencias coherentes con sus listas'
 ];
 
-// =============================================================================
-// ORDEN DEL ARCHIVO: 1) funciones que se corren a mano; 2) funciones que NO se ejecutan a mano. En cada grupo, primero por temática y luego en el orden en que se ejecutarían.
-// PARTE 1 (manuales): 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento); 1.5 T_Asistencia alineada con T_Lista (repetible); 1.6 lo mismo para T, S, CR y sus asistencias (repetible; lo usa la reenumeración); 1.7 fecha, hora y fichas de Semanas limpias en las listas (repetible).
-// PARTE 2 (no manuales): 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda); 2.6 T_Asistencia alineada con T_Lista (plan, envoltorio y escritura; ahora para T, S y CR); 2.7 envoltorio de las herramientas 1.6; 2.8 fecha, hora y fichas de Semanas limpias (ayudas y escritura).
-// =============================================================================
+// PF286b (29-oct-2026): propiedad de script donde se guarda la semana forzada de un id de evento (tema 2.5, forzarSemanaIdEvento).
+var SEMANAS_FORZADAS_PROP_ = 'IDS_EVENTO_SEMANA_FORZADA';
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO (proyecto Base)
@@ -2004,7 +2006,6 @@ function _corregirTemporadaListaPorFecha_(aplicar, cfg) {
 
 
 // ----- 2.5 Semana forzada de un id de evento (29-oct-2026) -----
-var SEMANAS_FORZADAS_PROP_ = 'IDS_EVENTO_SEMANA_FORZADA';
 
 // _leerSemanasForzadasIdEvento_(): devuelve { 'T_22_S_02_N_01': 3, … } desde la propiedad (objeto vacío si no hay o está dañada). Solo cuentan los valores enteros de 1 a 6.
 function _leerSemanasForzadasIdEvento_() {
