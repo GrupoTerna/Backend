@@ -2200,6 +2200,7 @@ function _fetchPlayersData() {
     return false;
   }
 
+  var tInicioFetchPlayers = Date.now(); // PF311 parte A: para medir cuánto tarda la preparación antes del bucle
   if (!CACHE_CLAN_DATA) {
     Logger.log('[API] _fetchPlayersData: CACHE_CLAN_DATA vacío, se obtiene primero la info básica de clanes.');
     capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'API_ClashRoyale');
@@ -2275,6 +2276,13 @@ function _fetchPlayersData() {
              ' totales (' + (tagsToFetch.length - pendientes.length) + ' ya en cache).');
 
   var inicio = Date.now();
+  // PF311 parte A (31-oct-2026): el presupuesto de /players (3m30s) se medía solo desde aquí y no miraba cuánto le quedaba a la ejecución: el 31-oct el paso tardó 238 s y la tanda llegó a 308 s
+  // de los 361 que permite la plataforma. Ahora el presupuesto efectivo es el menor entre el fijo y lo que le queda a la ejecución menos CFG.PLAYERS_FETCH_RESERVA_MS. Fuera de una cadena por tandas
+  // _msRestantesDeEjecucion_() devuelve el límite entero y se conserva el comportamiento de antes. [→ Contexto_Base_Web.md §PF311]
+  var restoEjecucionMs = _msRestantesDeEjecucion_();
+  var presupuestoPlayersMs = Math.min(CFG.PLAYERS_FETCH_BUDGET_MS, Math.max(0, restoEjecucionMs - CFG.PLAYERS_FETCH_RESERVA_MS));
+  Logger.log('[API][t] /players: preparación de tags y progreso en ' + Math.round((inicio - tInicioFetchPlayers) / 100) / 10 + ' s; presupuesto de esta llamada ' + Math.round(presupuestoPlayersMs / 1000) +
+             ' s (tope fijo ' + Math.round(CFG.PLAYERS_FETCH_BUDGET_MS / 1000) + ' s; a la ejecución le quedan ' + Math.round(restoEjecucionMs / 1000) + ' s, reserva ' + Math.round(CFG.PLAYERS_FETCH_RESERVA_MS / 1000) + ' s).');
   var seCortoPorTiempo = false;
   // FIX (23/07/2026): antes no se llevaba registro de qué tags fallaban al [→ Contexto_Base_Web.md §09B117]
   var erroresPlayers = [];
@@ -2284,8 +2292,8 @@ function _fetchPlayersData() {
   var periodIndex = ctxPlayers.periodIndex;
 
   for (var m = 0; m < pendientes.length; m++) {
-    if ((Date.now() - inicio) > CFG.PLAYERS_FETCH_BUDGET_MS) {
-      Logger.log('[API] Presupuesto interno de /players agotado (' + (CFG.PLAYERS_FETCH_BUDGET_MS / 1000) +
+    if ((Date.now() - inicio) > presupuestoPlayersMs) {
+      Logger.log('[API] Presupuesto interno de /players agotado (' + Math.round(presupuestoPlayersMs / 1000) +
                  's) en ' + m + '/' + pendientes.length + '. Se guarda el progreso y se corta aquí; ' +
                  'la próxima continuación retoma exactamente donde quedó.');
       seCortoPorTiempo = true;
