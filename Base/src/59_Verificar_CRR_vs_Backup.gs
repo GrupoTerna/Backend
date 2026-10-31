@@ -41,12 +41,12 @@ var VCRR_PRESUPUESTO_MS = 3 * 60 * 1000 + 30 * 1000;   // tanda: pasado este tie
 var VCRR_RESERVA_SEMANA_MS = 45 * 1000;                // tiempo que debe sobrar para EMPEZAR una semana nueva (leer unos 20 JSON y guardar lo hecho)
 var VCRR_MAX_FILAS_APLICAR = 2500;                     // tope de filas a crear + modificar en una escritura (si se pasa, no se escribe nada)
 var VCRR_MAX_REVISION = 400;                           // tope de series que se anotan en Revision_Guerra.csv por corrida
-var VCRR_FAME_MAX_DIA = 900;                           // fame máxima de un día (el mismo tope que usa _crrDomingoParaTotales_ en 56_CurrentRiverRace_Dias.gs)
 var VCRR_ESTADO_PROP = 'VCRR_ESTADO';                  // propiedad del script con el avance (JSON)
 var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo «Cruce_» lo manda a CSV/Informes (_csvSubcarpetaDe_)
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
+var _vcrrFameLimites_ = null;                          // caché de _vcrrFameLimitesPorAtaques_()
 
 // JSON que se sabe anómalos aunque sigan en su carpeta: claves 'temporada|semana|clan en minúsculas|letra del día', por ejemplo '23|1|grupoxterna™3|V'.
 // Un JSON movido a la carpeta Anomalías no hace falta anotarlo aquí: esa carpeta no se lee.
@@ -359,7 +359,7 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan) {
  *    el acumulado al cierre es al menos usados. El jueves empieza en 0.
  *  - Fame y barcos: una captura del día d es un piso del cierre de d y un techo del cierre de d-1 (nada baja); si trae hoy = 0 es el cierre exacto de d-1
  *    (aún no había ataques ese día) y si trae hoy = 4 es el cierre exacto de d (ya no puede sumar). Un día sin ataques posibles no suma fame ni barcos;
- *    los barcos no pueden pasar de los ataques; la fame de un día no pasa de VCRR_FAME_MAX_DIA.
+ *    los barcos no pueden pasar de los ataques; la fame de un día no pasa del máximo de la tabla de fame para los ataques de ese día (_vcrrFameLimitesPorAtaques_). No se usa el mínimo de la tabla como piso: en T24 S2 el JSON trae 4 ataques el domingo con la misma fame del sábado (la fame del JSON se atrasa), y con ese piso 19 series saldrían imposibles.
  *  - Se propaga hacia adelante y hacia atrás (_vcrrPropagar_) hasta que no cambie nada. Si una métrica queda sin solución, esa métrica no se usa
  *    (validos no la incluye) y se anota en notas.
  * descartadas = capturas con números imposibles (no restringen). validos = letras de las métricas utilizables.
@@ -367,7 +367,7 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan) {
 function _vcrrRestriccionesSerie_(caps) {
   var INF = Infinity, notas = [], descartadas = [], d;
   var A = { lo: [0, 0, 0, 0], hi: [4, 8, 12, 16], il: [0, 0, 0, 0], ih: [4, 4, 4, 4] };
-  var F = { lo: [0, 0, 0, 0], hi: [INF, INF, INF, INF], il: [0, 0, 0, 0], ih: [VCRR_FAME_MAX_DIA, VCRR_FAME_MAX_DIA, VCRR_FAME_MAX_DIA, VCRR_FAME_MAX_DIA] };
+  var F = { lo: [0, 0, 0, 0], hi: [INF, INF, INF, INF], il: [0, 0, 0, 0], ih: [900, 900, 900, 900] };
   var B = { lo: [0, 0, 0, 0], hi: [INF, INF, INF, INF], il: [0, 0, 0, 0], ih: [4, 4, 4, 4] };
   var ok = [];
   for (d = 0; d < 4; d++) {
@@ -397,16 +397,37 @@ function _vcrrRestriccionesSerie_(caps) {
   var validos = '';
   if (_vcrrPropagar_(A)) validos += 'A'; else notas.push('ataques: las capturas no caben juntas');
   // Los límites de fame y barcos dependen de los ataques (solo si los ataques son utilizables): sin ataques posibles ese día no suman; los barcos no pasan de los ataques.
+  var lim = _vcrrFameLimitesPorAtaques_();
   if (validos === 'A') {
     for (d = 0; d < 4; d++) {
-      F.ih[d] = A.ih[d] === 0 ? 0 : VCRR_FAME_MAX_DIA;
+      F.ih[d] = lim.max[A.ih[d]];
       B.ih[d] = A.ih[d];
       B.hi[d] = Math.min(B.hi[d], A.hi[d]);
     }
+  } else {
+    for (d = 0; d < 4; d++) F.ih[d] = lim.max[4];
   }
   if (_vcrrPropagar_(F)) validos += 'F'; else notas.push('fame: las capturas no caben juntas');
   if (_vcrrPropagar_(B)) validos += 'B'; else notas.push('barcos: las capturas no caben juntos');
   return { A: A, F: F, B: B, validos: validos, notas: notas, descartadas: descartadas };
+}
+
+/**
+ * Fame mínima y máxima de UN día según los ataques que hizo ese día (0 a 4), con la tabla de fame de siempre (_fameDescomposicionesDia_,
+ * 18_CorreccionGuerra.gs; el mejor día posible con 4 ataques da 900). Devuelve { min: [5], max: [5] } indexado por ataques del día; se guarda en memoria.
+ */
+function _vcrrFameLimitesPorAtaques_() {
+  if (_vcrrFameLimites_) return _vcrrFameLimites_;
+  var mn = [], mx = [];
+  for (var n = 0; n <= 4; n++) {
+    var lo = Infinity, hi = 0;
+    for (var b = 0; b <= n; b++) {
+      _fameDescomposicionesDia_(n, b).forEach(function (x) { if (x.fame < lo) lo = x.fame; if (x.fame > hi) hi = x.fame; });
+    }
+    mn.push(lo === Infinity ? 0 : lo); mx.push(hi);
+  }
+  _vcrrFameLimites_ = { min: mn, max: mx };
+  return _vcrrFameLimites_;
 }
 
 /**
@@ -442,8 +463,11 @@ function _vcrrEncabezadoRestricciones_() {
     for (var d = 0; d < 4; d++) { h.push(m + ' acum ' + VCRR_DIAS.charAt(d) + ' min'); h.push(m + ' acum ' + VCRR_DIAS.charAt(d) + ' max'); }
   });
   for (var d2 = 0; d2 < 4; d2++) { h.push('Ataques del día ' + VCRR_DIAS.charAt(d2) + ' min'); h.push('Ataques del día ' + VCRR_DIAS.charAt(d2) + ' max'); }
-  // Calculadas (no se leen de vuelta): merma = ataques desperdiciados hasta el cierre del día; máximo semanal = lo más que puede llegar la semana desde ahí.
-  for (var d3 = 0; d3 < 4; d3++) { h.push('Merma acum ' + VCRR_DIAS.charAt(d3) + ' min'); h.push('Merma acum ' + VCRR_DIAS.charAt(d3) + ' max'); h.push('Máximo semanal tras ' + VCRR_DIAS.charAt(d3)); }
+  // Calculadas (no se leen de vuelta). Merma = lo desperdiciado hasta el cierre del día (tope del día por los días transcurridos menos lo acumulado);
+  // máximo semanal = lo más que puede llegar la semana desde ahí (acumulado máximo más el tope de los días que faltan). Para ataques, medallas (fame) y barcos.
+  ['Ataques', 'Medallas', 'Barcos'].forEach(function (m) {
+    for (var d3 = 0; d3 < 4; d3++) { h.push('Merma ' + m + ' acum ' + VCRR_DIAS.charAt(d3) + ' min'); h.push('Merma ' + m + ' acum ' + VCRR_DIAS.charAt(d3) + ' max'); h.push('Máximo semanal de ' + m + ' tras ' + VCRR_DIAS.charAt(d3)); }
+  });
   return h;
 }
 
@@ -454,7 +478,10 @@ function _vcrrFilaRestriccion_(x) {
   var num = function (v) { return v === Infinity ? '' : v; };
   [x.r.A, x.r.F, x.r.B].forEach(function (m) { for (var d = 0; d < 4; d++) { fila.push(num(m.lo[d])); fila.push(num(m.hi[d])); } });
   for (var d2 = 0; d2 < 4; d2++) { fila.push(x.r.A.il[d2]); fila.push(x.r.A.ih[d2]); }
-  for (var d3 = 0; d3 < 4; d3++) { fila.push(4 * (d3 + 1) - x.r.A.hi[d3]); fila.push(4 * (d3 + 1) - x.r.A.lo[d3]); fila.push(x.r.A.hi[d3] + 4 * (3 - d3)); }
+  var topes = [4, _vcrrFameLimitesPorAtaques_().max[4], 4];   // tope de un día completo: ataques, medallas y barcos
+  [x.r.A, x.r.F, x.r.B].forEach(function (m, i) {
+    for (var d3 = 0; d3 < 4; d3++) { fila.push(num(topes[i] * (d3 + 1) - m.hi[d3])); fila.push(num(topes[i] * (d3 + 1) - m.lo[d3])); fila.push(num(m.hi[d3] + topes[i] * (3 - d3))); }
+  });
   return fila;
 }
 
