@@ -1936,19 +1936,13 @@ function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
 }
 
 /**
- * _nuevosDesdeFilasPerfil_(correcciones) (§PF307 punto 3, pieza 1; 31-oct-2026; SOLO DECIDE, no escribe en «Nuevos»)
- * Dada la lista de correcciones que manda el botón de Correcciones_Guerra (cuentas completas o jugadores elegidos), devuelve qué jugadores
- * califican como nuevos, con el mismo criterio de _esNuevoPorTagClan_(): alguna de las TRES filas más recientes del perfil es de un clan
- * que no es Terna, decidido por TAG de clan (CFG.TERNA_TAGS).
- *   - Solo cuentan las filas del perfil (fuente 'perfil' y sin ClanTag); las de Log y Analytics no dicen en qué clan estuvo el jugador.
- *   - Se ordenan de la más reciente a la más antigua por temporada de RoyaleAPI y semana, y una semana repetida cuenta una sola vez.
- *   - Diferencia con el botón de Nuevos: Tampermonkey no manda la semana en curso desde el perfil (v3.6, §PF237), así que aquí las tres
- *     filas son las tres últimas semanas CERRADAS. Para quien ya lleva la semana en curso en un clan Terna la decisión puede variar en una semana.
- *   - Una fila sin enlace de clan (clanPerfil vacío) se trata como Terna, igual que el overlay (§PF164): no hay dato para decir otra cosa y
- *     no debe marcar a nadie como nuevo por falta de enlace.
- * Devuelve { nuevos: [tags], evaluados: n (jugadores con filas de perfil), sinEnlace: n (jugadores con alguna fila sin enlace entre las tres) }.
+ * _filasPerfilPorTag_(correcciones) (§PF312, 31-oct-2026)
+ * Agrupa por jugador las filas del PERFIL de una lista de correcciones del botón de Correcciones_Guerra: solo las de fuente 'perfil' y sin
+ * ClanTag (las de Log y Analytics no dicen en qué clan estuvo el jugador). Cada fila: { temporada (RoyaleAPI), semana, clanTag (normalizado,
+ * '' si la celda no traía enlace), clanNombre, fecha (YYYY-MM-DD, '' si no vino; Tampermonkey v3.16), ataques, fame, barcos (null si no vino) }.
+ * Una semana repetida cuenta una vez y cada lista queda de la más reciente a la más antigua.
  */
-function _nuevosDesdeFilasPerfil_(correcciones) {
+function _filasPerfilPorTag_(correcciones) {
   var porTag = {};
   for (var i = 0; i < (correcciones || []).length; i++) {
     var c = correcciones[i] || {};
@@ -1958,16 +1952,41 @@ function _nuevosDesdeFilasPerfil_(correcciones) {
     var temporada = Number(c.temporadaRoyaleApi);
     var semana = Number(c.semana);
     if (!tag || !temporada || !semana) continue;
+    var barcosNum = (c.barcos === undefined || c.barcos === null || c.barcos === '') ? null : Number(c.barcos);
     if (!porTag[tag]) porTag[tag] = {};
-    porTag[tag][temporada + '|' + semana] = { temporada: temporada, semana: semana, clanTag: _normalizarClanTagCorreccion(c.clanPerfil) };
+    porTag[tag][temporada + '|' + semana] = {
+      temporada: temporada, semana: semana,
+      clanTag: _normalizarClanTagCorreccion(c.clanPerfil),
+      clanNombre: String(c.clanPerfilNombre || '').trim(),
+      fecha: /^\d{4}-\d{2}-\d{2}$/.test(String(c.fecha || '').trim()) ? String(c.fecha).trim() : '',
+      ataques: Number(c.ataquesSemana), fame: Number(c.fame),
+      barcos: (barcosNum === null || isNaN(barcosNum)) ? null : barcosNum
+    };
   }
-
-  var nuevos = [], evaluados = 0, sinEnlace = 0;
+  var salida = {};
   Object.keys(porTag).forEach(function (tg) {
     var filas = Object.keys(porTag[tg]).map(function (k) { return porTag[tg][k]; });
     filas.sort(function (a, b) { return (b.temporada - a.temporada) || (b.semana - a.semana); });
+    salida[tg] = filas;
+  });
+  return salida;
+}
+
+/**
+ * _decidirNuevosDeFilas_(porTag) (§PF307 punto 3; 31-oct-2026)
+ * «Cuenta como nuevo» con el mismo criterio de _esNuevoPorTagClan_(): alguna de las TRES filas más recientes del perfil (porTag, de
+ * _filasPerfilPorTag_()) es de un clan que NO es Terna, decidido por TAG de clan (CFG.TERNA_TAGS).
+ *   - Diferencia con el botón de Nuevos: Tampermonkey no manda la semana en curso desde el perfil (v3.6, §PF237), así que aquí las tres
+ *     filas son las tres últimas semanas CERRADAS. Para quien ya lleva la semana en curso en un clan Terna la decisión puede variar en una semana.
+ *   - Una fila sin enlace de clan (clanTag vacío) se trata como Terna, igual que el overlay (§PF164): no hay dato para decir otra cosa y
+ *     no debe marcar a nadie como nuevo por falta de enlace.
+ * Devuelve { nuevos: [tags], evaluados: n (jugadores con filas de perfil), sinEnlace: n (jugadores con alguna fila sin enlace entre las tres) }.
+ */
+function _decidirNuevosDeFilas_(porTag) {
+  var nuevos = [], evaluados = 0, sinEnlace = 0;
+  Object.keys(porTag || {}).forEach(function (tg) {
     evaluados++;
-    var ultimas = filas.slice(0, 3);
+    var ultimas = porTag[tg].slice(0, 3);
     var esNuevo = false, faltaEnlace = false;
     for (var j = 0; j < ultimas.length; j++) {
       if (ultimas[j].clanTag === '') { faltaEnlace = true; continue; }
@@ -1977,6 +1996,120 @@ function _nuevosDesdeFilasPerfil_(correcciones) {
     if (esNuevo) nuevos.push(tg);
   });
   return { nuevos: nuevos, evaluados: evaluados, sinEnlace: sinEnlace };
+}
+
+/**
+ * _nuevosDesdeFilasPerfil_(correcciones) (§PF307 punto 3, pieza 1; SOLO DECIDE, no escribe): atajo de _decidirNuevosDeFilas_(_filasPerfilPorTag_(...)).
+ */
+function _nuevosDesdeFilasPerfil_(correcciones) {
+  return _decidirNuevosDeFilas_(_filasPerfilPorTag_(correcciones));
+}
+
+/**
+ * _alimentarNuevosDesdeCorrecciones_(correcciones) (§PF307 punto 3, pieza 2; 31-oct-2026; sin probar en Apps Script real)
+ * El botón de Correcciones_Guerra (cuentas completas o jugadores elegidos) alimenta la hoja «Nuevos». Se llama desde el endpoint
+ * accion=corregirGuerra DESPUÉS de _aplicarCorreccionesGuerra() (fuera de su candado) y NO reenvía nada a Correcciones_Guerra.csv: esas filas ya
+ * se guardaron. No se llama desde _importarNuevosYPerfiles_() (el botón de Nuevos), para que un botón no alimente al otro dos veces.
+ * Candidatos: los jugadores que cuentan como nuevos por tag (_decidirNuevosDeFilas_) y, además, los que ya tienen fila en «Nuevos» (para que su
+ * cuadrícula no se congele, igual que el botón de Nuevos). Un nuevo que NO esté Activo en un clan Terna del Directorio no se agrega (por ejemplo un
+ * jugador elegido que ya salió: _purgarNuevosExpulsados() lo borraría después).
+ * Registros: todas las semanas CERRADAS del perfil que Tampermonkey v3.16 mandó con fecha, menos las que ya están en el histórico de Guerra
+ * (_construirCoberturaPorTag(), como filtra Tampermonkey en el botón de Nuevos). Es necesario mandar todas: _aplicarImportacionNuevos() borra
+ * la cuadrícula del candidato y la reescribe con lo recibido. Un candidato sin ningún registro con fecha (Tampermonkey anterior a v3.16, o todas
+ * las semanas ya en el histórico) NO se envía: no se borra su cuadrícula. La semana en curso no se toca: es un bloque aparte de «Nuevos».
+ * Nombre del clan de cada registro: el que mandó Tampermonkey (clanPerfilNombre); si no vino, el de la hoja Clan por tag (clanes Terna); si
+ * tampoco, el propio tag.
+ * Sin candado propio, como el endpoint de Nuevos: si ambos botones corren a la vez sobre los mismos jugadores, gana la última escritura.
+ * Devuelve { nuevos, evaluados, sinEnlace, candidatos, procesados, filasNuevas, noActivos, sinFecha, sinRegistros, errores[, error] }.
+ */
+function _alimentarNuevosDesdeCorrecciones_(correcciones) {
+  var porTag = _filasPerfilPorTag_(correcciones);
+  var det = _decidirNuevosDeFilas_(porTag);
+  var resumen = {
+    nuevos: det.nuevos, evaluados: det.evaluados, sinEnlace: det.sinEnlace,
+    candidatos: 0, procesados: 0, filasNuevas: 0, noActivos: 0, sinFecha: 0, sinRegistros: 0, errores: []
+  };
+  if (!det.evaluados) return resumen;
+
+  var ss = _getSs();
+  var tagsEnHoja = {};
+  try {
+    tagsEnHoja = _obtenerTagsEnHojaNuevos(ss);
+  } catch (eTags) {
+    Logger.log('[Nuevos-Correcciones] AVISO: no se pudo leer la lista de tags de «Nuevos» (' + (eTags.message || eTags) + '); solo se consideran los nuevos detectados.');
+    tagsEnHoja = {};
+  }
+
+  var tagsCand = Object.keys(porTag).filter(function (tg) { return det.nuevos.indexOf(tg) >= 0 || tagsEnHoja[tg] === true; });
+  if (!tagsCand.length) return resumen;
+
+  // Los nuevos que todavía no tienen fila solo entran si siguen Activos en un clan Terna.
+  var hayNuevoSinFila = tagsCand.some(function (tg) { return tagsEnHoja[tg] !== true; });
+  var dirPorTag = null;
+  if (hayNuevoSinFila) {
+    try {
+      dirPorTag = {};
+      var dirData = _leerDirectorioFisicoComoDC(ss);
+      for (var d = 0; d < dirData.length; d++) {
+        var tgD = String(dirData[d][DC.TAG - 1] || '').trim().toUpperCase();
+        if (tgD) dirPorTag[tgD] = dirData[d];
+      }
+    } catch (eDir) {
+      resumen.error = 'No se pudo leer el Directorio (' + (eDir.message || eDir) + '); no se agregó ningún nuevo a «Nuevos».';
+      Logger.log('[Nuevos-Correcciones] ' + resumen.error);
+      return resumen;
+    }
+  }
+
+  var cobertura = {};
+  try {
+    var cobBruta = _construirCoberturaPorTag();
+    Object.keys(cobBruta).forEach(function (k) { cobertura[String(k).trim().toUpperCase()] = cobBruta[k]; });
+  } catch (eCob) {
+    // Sin la cobertura se escribirían en la cuadrícula semanas ya migradas al histórico: mejor no tocar «Nuevos».
+    resumen.error = 'No se pudo calcular la cobertura de Guerra (' + (eCob.message || eCob) + '); no se escribió en «Nuevos».';
+    Logger.log('[Nuevos-Correcciones] ' + resumen.error);
+    return resumen;
+  }
+
+  var nombresTerna = {};
+  try { nombresTerna = _mapaNombresClanTerna_(CFG.TERNA_TAGS); } catch (eNom) { nombresTerna = {}; }
+
+  var candidatos = [];
+  tagsCand.forEach(function (tg) {
+    if (tagsEnHoja[tg] !== true) {
+      var dRow = dirPorTag && dirPorTag[tg];
+      var activoEnTerna = dRow && String(dRow[DC.ESTADO - 1]) === 'Activo' && CFG.TERNA_TAGS.indexOf(String(dRow[DC.CLAN_TAG - 1])) >= 0;
+      if (!activoEnTerna) { resumen.noActivos++; return; }
+    }
+    var cubiertas = {};
+    (cobertura[tg] || []).forEach(function (et) { cubiertas[et] = true; });
+    var registros = [];
+    porTag[tg].forEach(function (f) {
+      if (cubiertas[f.temporada + '-' + f.semana]) return;
+      if (!f.fecha) { resumen.sinFecha++; return; }
+      registros.push({
+        temporada: f.temporada + '-' + f.semana, fecha: f.fecha,
+        clan: f.clanNombre || nombresTerna[f.clanTag] || f.clanTag || '', clanTag: f.clanTag,
+        ataques: f.ataques, fame: f.fame, barcos: (f.barcos === null ? '' : f.barcos)
+      });
+    });
+    if (!registros.length) { resumen.sinRegistros++; return; }
+    candidatos.push({ tag: tg, registros: registros });
+  });
+
+  resumen.candidatos = candidatos.length;
+  if (candidatos.length) {
+    var r = _aplicarImportacionNuevos(candidatos);
+    resumen.procesados = (r && r.procesados) || 0;
+    resumen.filasNuevas = (r && r.filasNuevas) || 0;
+    if (r && r.errores && r.errores.length) resumen.errores = r.errores.slice(0, 20);
+    if (r && r.ok === false && r.error) resumen.error = r.error;
+  }
+  Logger.log('[Nuevos-Correcciones] ' + det.evaluados + ' jugador(es) con perfil, ' + det.nuevos.length + ' nuevo(s) por tag, ' + candidatos.length +
+    ' candidato(s) enviados a «Nuevos» (procesados ' + resumen.procesados + ', filas nuevas ' + resumen.filasNuevas + '); sin fecha: ' + resumen.sinFecha +
+    ', sin registros: ' + resumen.sinRegistros + ', no activos: ' + resumen.noActivos + '.');
+  return resumen;
 }
 
 /**

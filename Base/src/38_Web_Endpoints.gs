@@ -1586,16 +1586,23 @@ function doPost(e) {
     try {
       var payload = JSON.parse(e.postData.contents);
       var resultado = _aplicarCorreccionesGuerra(payload && payload.correcciones);
-      // §PF307 (3), pieza 1: se informa qué jugadores del lote califican como nuevos (por tag, _nuevosDesdeFilasPerfil_() en 14_Nuevos_RoyaleAPI.gs); todavía NO se escribe en «Nuevos». [→ Contexto_Base_Web.md §PF312]
-      try {
-        var detNuevosCg = _nuevosDesdeFilasPerfil_(payload && payload.correcciones);
-        if (resultado && detNuevosCg.nuevos.length) resultado.nuevosDetectados = detNuevosCg.nuevos.slice(0, 100);
-        if (detNuevosCg.evaluados) {
-          Logger.log('[CorreccionGuerra] Nuevos por tag (solo informativo): ' + detNuevosCg.nuevos.length + ' de ' + detNuevosCg.evaluados +
-            ' jugador(es) con filas de perfil' + (detNuevosCg.sinEnlace ? '; ' + detNuevosCg.sinEnlace + ' con alguna fila sin enlace de clan' : '') + '.');
+      // §PF307 (3), piezas 1 y 2: los jugadores del lote que cuentan como nuevos por tag (y los que ya están en «Nuevos») alimentan la hoja «Nuevos»; ver _alimentarNuevosDesdeCorrecciones_() en 14_Nuevos_RoyaleAPI.gs. Va DESPUÉS de _aplicarCorreccionesGuerra() (fuera de su candado) y un fallo aquí no afecta a la corrección, que ya quedó guardada. [→ Contexto_Base_Web.md §PF312]
+      if (resultado && resultado.ok) {
+        try {
+          var resNuevosCg = _alimentarNuevosDesdeCorrecciones_(payload && payload.correcciones);
+          if (resNuevosCg.nuevos.length) resultado.nuevosDetectados = resNuevosCg.nuevos.slice(0, 100);
+          if (resNuevosCg.evaluados) {
+            resultado.nuevosEnHoja = {
+              candidatos: resNuevosCg.candidatos, procesados: resNuevosCg.procesados, filasNuevas: resNuevosCg.filasNuevas,
+              noActivos: resNuevosCg.noActivos, sinFecha: resNuevosCg.sinFecha, sinRegistros: resNuevosCg.sinRegistros
+            };
+            if (resNuevosCg.errores.length) resultado.nuevosEnHoja.errores = resNuevosCg.errores;
+            if (resNuevosCg.error) resultado.nuevosEnHoja.error = resNuevosCg.error;
+          }
+        } catch (errNuevosCg) {
+          Logger.log('[CorreccionGuerra] AVISO: no se pudo alimentar «Nuevos» (' + (errNuevosCg.message || errNuevosCg) + '). La corrección ya quedó guardada.');
+          resultado.nuevosEnHoja = { error: String(errNuevosCg.message || errNuevosCg) };
         }
-      } catch (errNuevosCg) {
-        Logger.log('[CorreccionGuerra] AVISO: no se pudo calcular quién cuenta como nuevo (' + (errNuevosCg.message || errNuevosCg) + '). La corrección ya quedó guardada.');
       }
       // FIX (13-ago-2026): log en Drive por botón (_logTampermonkeyADrive(), 05_Backup_CSV.gs); resultado.avisoControl2 (si actualizarControl2() falló a mitad) ahora también viaja en la respuesta, antes solo quedaba en Logger.log. [→ Contexto_Base_Web.md §38B095]
       _logTampermonkeyADrive('CorreccionGuerra', resultado,
