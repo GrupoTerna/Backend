@@ -2327,7 +2327,7 @@ function _mapaNombreClanATagTerna() {
 function _migrarNuevosAHistorico(candidatosPayload) {
   var statsGlobal = {
     temporadasProcesadas: 0, clavesMigradas: 0, clavesYaExistian: 0,
-    descartadosPorMembresia: 0, sinHistorialParaVerificar: 0
+    descartadosPorMembresia: 0, sinHistorialParaVerificar: 0, pausadasPorRestauracion: 0
   };
   if (!candidatosPayload || !candidatosPayload.length) return statsGlobal;
 
@@ -2401,6 +2401,20 @@ function _migrarNuevosAHistorico(candidatosPayload) {
       Logger.log('[Nuevos-RoyaleAPI] _migrarNuevosAHistorico(): no se pudo cargar la fuente de Guerra para temporada ' +
         temporadaPropia + ' (hoja Guerra no encontrada). Se omite esa temporada.');
       continue;
+    }
+
+    // 31-oct-2026: si la temporada es la de la hoja Guerra y la hoja aún no terminó de restaurarse desde Backup_Guerra.csv (por ejemplo,
+    // justo después de un Demoler), no se escribe nada ahora: la regla de no pisado solo mira lo que ya hay en la hoja y no vería lo que
+    // todavía falta restaurar, así que las semanas se escribirían antes y la restauración las dejaría repetidas o fuera de orden.
+    if (fuente.tipo === 'hoja') {
+      var faltantesRestauracion = _contarFilasGuerraFaltantesDesdeCSV_(fuente.sh, temporadaPropia);
+      if (faltantesRestauracion > 0) {
+        statsGlobal.pausadasPorRestauracion++;
+        Logger.log('[Nuevos-RoyaleAPI] Migración a histórico omitida para la temporada ' + temporadaPropia +
+          ': la hoja Guerra todavía no termina de restaurarse desde Backup_Guerra.csv (faltan ' + faltantesRestauracion +
+          ' fila(s)). Las semanas de Nuevos de esa temporada no se migraron en esta corrida.');
+        continue;
+      }
     }
 
     var offsetsPorClave = _construirOffsetsPorClave(fuente.filas, temporadaPropia);
