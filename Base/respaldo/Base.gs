@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 01:31:29 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 02:12:37 */
 
 
 
@@ -106,6 +106,34 @@ var NOMBRES_PASOS_RUNGUERRARAPIDO = [
   'Hoja Pendientes: actualizar → hoja Pendientes al día',
   'Hoja Mensajes: generar a partir de Pendientes → hoja Mensajes al día',
   'Menú dinámico: actualizar las entradas Dinámico → menú al día',
+];
+
+// PF311 parte B (31-oct-2026): cadena por tandas de la corrida horaria completa de runGuerra() (fuera de la ventana de las 4 a 5 a. m.; la ventana ligera no la usa). Antes era una sola ejecución de 6 min más una cola aparte
+// (_continuarRunGuerra, PF143) y se cortaba a los 361 s en 12 corridas del 24 al 31-oct. Se inicia desde runGuerra() con CFG.RUNGUERRA_POR_TANDAS y sigue en _continuarRunGuerraCadena(). [→ Contexto_Base_Web.md §PF311]
+var PASOS_RUNGUERRA = [
+  function () { capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS_GUERRA, 'hora'); },
+  // updateGuerraSheet() puede devolver false (FIX 02-sep-2026, igual que en PASOS_RUNGUERRARAPIDO): se pasa tal cual para que el motor reintente el mismo paso.
+  function () { return updateGuerraSheet(); },
+  function () { updateGuerraLogsSheet(); },
+  function () { updateControlSheet(); },
+  function () { updatePendientesSheet(); },
+  function () {
+    try { _cerrarSemanaActualNuevos(); }
+    catch (eCierreNuevos) { Logger.log('[PASOS_RUNGUERRA] _cerrarSemanaActualNuevos() falló: ' + eCierreNuevos.message); }
+  },
+  function () { return _runGuerraPasoRespaldoCsv_(); },
+  function () { return _runGuerraPasoCalentarCache_(); },
+];
+
+var NOMBRES_PASOS_RUNGUERRA = [
+  'Clanes: capturar los datos de los clanes (API, o lo ya guardado si es reciente) → datos de clanes cargados',
+  'Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)',
+  'Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día',
+  'Hoja Control: actualizar → hoja Control al día',
+  'Hoja Pendientes: actualizar → hoja Pendientes al día',
+  'Nuevos: cerrar la semana actual → semana de Nuevos cerrada si correspondía',
+  'Respaldo CSV de Guerra: guardar la hoja Guerra en Backup_Guerra.csv → respaldo al día',
+  'Caché y publicaciones: calentar la guerra en vivo y publicar guerra, roster, home y torneos → caché caliente y archivos publicados',
 ];
 
 var PASOS_RUNALL = [
@@ -580,12 +608,25 @@ var NOMBRES_PASOS_RUNSYNCCSV = [
  * cancelarEjecucion() - Función PÚBLICA para detener manualmente runAll()/ [→ Contexto_Base_Web.md §B079]
  */
 function cancelarEjecucion() {
+  // PF311 parte C (31-oct-2026): ANTES de borrar nada, se deja la hora de la cancelación de cada cadena que esta función cancela. Una tanda que ya estaba corriendo
+  // no se puede interrumpir, pero al terminar su paso mira esta marca (_cancelacionPedidaDuranteTanda_) y no vuelve a guardar el paso ni programa otra continuación.
+  // Sin la marca, esa tanda volvía a escribir <ID>_PASO y a programar un activador justo después de cancelar. [→ Contexto_Base_Web.md §PF311]
+  try {
+    var horaCancelar = String(Date.now());
+    var propsCancelar = PropertiesService.getScriptProperties();
+    ['RUNALL', 'RUNUPDATE', 'RUNGUERRARAPIDO', 'RUNGUERRA'].forEach(function(idCadena) { propsCancelar.setProperty(idCadena + '_CANCELADA_TS', horaCancelar); });
+  } catch (eMarcaCancelar) {
+    Logger.log('[Cancelar] AVISO: no se pudo dejar la marca de cancelación (' + eMarcaCancelar.message + '). Si hay una tanda corriendo, puede volver a programar su continuación.');
+  }
   _borrarTriggersDeContinuacion('_continuarRunAll');
   _borrarTriggersDeContinuacion('_continuarRunUpdate');
   // FIX (22-ago-2026): runGuerraRapido() ahora también usa el motor de [→ Contexto_Base_Web.md §B080]
   _borrarTriggersDeContinuacion('_continuarRunGuerraRapido');
+  _borrarTriggersDeContinuacion('_continuarRunGuerraCadena'); // PF311 parte B
 
   var props = PropertiesService.getScriptProperties();
+  var pasoRunGuerraCadena = props.getProperty('RUNGUERRA_PASO'); // PF311 parte B
+  _limpiarCadenaRunGuerra_(props, true); // PF311 parte B: borra el avance de la cadena horaria de runGuerra y devuelve la marca de hora para que el próximo disparo la reintente
   var pasoRunAll    = props.getProperty('RUNALL_PASO');
   var pasoRunUpdate = props.getProperty('RUNUPDATE_PASO');
   var pasoRunGuerraRapido = props.getProperty('RUNGUERRARAPIDO_PASO');
@@ -617,6 +658,7 @@ function cancelarEjecucion() {
     (pasoRunAll    ? ' RUNALL_PASO eliminado (estaba en ' + pasoRunAll + ').' : '') +
     (pasoRunUpdate ? ' RUNUPDATE_PASO eliminado (estaba en ' + pasoRunUpdate + ').' : '') +
     (pasoRunGuerraRapido ? ' RUNGUERRARAPIDO_PASO eliminado (estaba en ' + pasoRunGuerraRapido + ').' : '') +
+    (pasoRunGuerraCadena ? ' RUNGUERRA_PASO eliminado (estaba en ' + pasoRunGuerraCadena + ').' : '') +
     ' Triggers de continuación borrados. Progreso de /players, de clanes y de battlelog/upcomingchests borrado. Lock liberado. Ya puedes ejecutar runAll()/runUpdate()/runGuerraRapido() desde cero.');
 }
 
@@ -1238,6 +1280,11 @@ function runGuerra() {
              ' | Ventana ligera (4-5am): ' + enVentanaGuerra + ' ===');
 
   if (!_adquirirLockEjecucion('runGuerra')) return;
+  // PF311 parte B: la corrida horaria completa sigue como cadena por tandas (el candado lo libera la cadena al terminar, no este return). La ventana ligera (enVentanaGuerra) no entra aquí y sigue como antes.
+  if (!enVentanaGuerra && CFG.RUNGUERRA_POR_TANDAS) {
+    _iniciarRunGuerraPorTandas_(props, claveHora);
+    return;
+  }
   // PF073: la hora se marca antes del trabajo (evita corridas simultáneas), pero si el trabajo falla se restaura la marca previa para que el siguiente disparo reintente en vez de esperar a la hora siguiente. [→ Contexto_Base_Web.md §PF073]
   var _marcaHoraPrevia = props.getProperty('RUNGUERRA_ULTIMA_HORA');
   var _trabajoHoraCompleto = false;
@@ -1304,26 +1351,56 @@ function runGuerra() {
  * ejecución que lo llama, para respetar el margen contra el límite duro de la plataforma. No depende de variables en memoria de
  * runGuerra(): _syncGuerraCSV() recibe la hoja y _calentarCacheGuerraEnVivo_() lee todo por su cuenta. [→ Contexto_Base_Web.md §PF143]
  */
-function _runGuerraColaHoraria_(t0) {
+function _runGuerraColaHoraria_(t0, soloCalentar) {
   var msTranscurridos = Date.now() - t0;
   var msLimiteParaSyncCsv = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
-  if (msTranscurridos > msLimiteParaSyncCsv) {
+  if (soloCalentar) {
+    Logger.log('[runGuerraCola] El respaldo del CSV de Guerra ya se hizo en la ejecución anterior; aquí solo se calienta el caché y se publican los JSON.');
+  } else if (msTranscurridos > msLimiteParaSyncCsv) {
     Logger.log('[runGuerra] _syncGuerraCSV() SALTADO esta hora: ya van ' +
       Math.round(msTranscurridos / 1000) + 's de corrida, sin margen suficiente ' +
       '(' + Math.round(msLimiteParaSyncCsv / 1000) + 's) antes del límite duro de la plataforma. ' +
       'Se reintenta en el próximo disparo horario.');
   } else {
     var shGuerraBackup = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+    var tSyncCola = Date.now();
     if (shGuerraBackup) _syncGuerraCSV(shGuerraBackup);
+    // PF311 parte A: el registro callaba entre el inicio de la cola y el corte; esta línea y las de abajo dejan ver qué tramo se come el tiempo.
+    Logger.log('[runGuerraCola] Respaldo del CSV de Guerra terminado en ' + Math.round((Date.now() - tSyncCola) / 1000) + ' s (la cola lleva ' + Math.round((Date.now() - t0) / 1000) + ' s).');
   }
 
   try {
     var msRestantesCalentar = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - t0);
-    if (msRestantesCalentar < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
-      Logger.log('[runGuerra] Calentamiento del caché de guerra.html SALTADO: quedan solo ' +
-        Math.round(msRestantesCalentar / 1000) + 's de presupuesto.');
+    // PF311 parte A: el calentamiento tardó entre 108 y 163 s en el registro del 28-oct y se cortó 10 veces a los 361 s. Se exige tiempo para lo que tardó la última vez (guardado en GUERRA_CALENTADO_ULT_MS) con un 30 % de holgura, y no menos que el margen fijo de antes.
+    var msUltimoCalentado = 0;
+    try { msUltimoCalentado = Number(PropertiesService.getScriptProperties().getProperty('GUERRA_CALENTADO_ULT_MS')) || 0; } catch (eUlt) { msUltimoCalentado = 0; }
+    var msNecesariosCalentar = Math.max(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, Math.round(msUltimoCalentado * 1.3));
+    var calentadoCompleto = false;
+    if (msRestantesCalentar < msNecesariosCalentar) {
+      Logger.log('[runGuerra] Calentamiento del caché de guerra.html SALTADO en esta ejecución: quedan ' +
+        Math.round(msRestantesCalentar / 1000) + ' s y se necesitan unos ' + Math.round(msNecesariosCalentar / 1000) + ' s.');
     } else {
-      _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG);
+      var tCalentar = Date.now();
+      _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG, t0 + CFG.PLATAFORMA_LIMITE_EJECUCION_MS - 45000);
+      var msCalentar = Date.now() - tCalentar;
+      Logger.log('[runGuerraCola] Calentamiento del caché terminado en ' + Math.round(msCalentar / 1000) + ' s' + (CALENTAR_OMITIO_PUBLICACION_ ? ' (quedaron publicaciones sin hacer por falta de tiempo)' : '') + '.');
+      if (!CALENTAR_OMITIO_PUBLICACION_) {
+        calentadoCompleto = true;
+        try { PropertiesService.getScriptProperties().setProperty('GUERRA_CALENTADO_ULT_MS', String(msCalentar)); } catch (eGuardaUlt) { /* solo una referencia */ }
+      }
+    }
+    // PF311 parte A: lo que no cupo se hace en una sola continuación más (con las 6 min enteras), nunca en cadena: la continuación de solo calentamiento no programa otra.
+    if (!calentadoCompleto && !soloCalentar) {
+      try {
+        var propsCola = PropertiesService.getScriptProperties();
+        propsCola.setProperty('RUNGUERRA_COLA_PENDIENTE', 'calentar');
+        propsCola.setProperty('RUNGUERRA_COLA_SOLO_CALENTAR', '1');
+        propsCola.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+        _programarContinuacion('_continuarRunGuerra');
+        Logger.log('[runGuerraCola] Se programa una continuación solo para el calentamiento del caché y las publicaciones.');
+      } catch (eReprogramar) {
+        Logger.log('[runGuerraCola] No se pudo programar la continuación del calentamiento: ' + eReprogramar.message + '. Se hará en la próxima hora.');
+      }
     }
   } catch (eCalentar) {
     Logger.log('[runGuerra] _calentarCacheGuerraEnVivo_() falló: ' + eCalentar.message);
@@ -1359,6 +1436,7 @@ function _continuarRunGuerra() {
     Logger.log('[runGuerraCola] ABORTADA: la ventana de guerra protegida está activa. Se descarta; el próximo runGuerra() horario la vuelve a programar.');
     props.deleteProperty('RUNGUERRA_COLA_PENDIENTE');
     props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+    props.deleteProperty('RUNGUERRA_COLA_SOLO_CALENTAR'); // PF311 parte A
     return;
   }
   if (!_adquirirLockEjecucion('runGuerraCola')) {
@@ -1372,19 +1450,173 @@ function _continuarRunGuerra() {
       Logger.log('[runGuerraCola] Se agotaron los reintentos con otra ejecución en curso. Se descarta; la próxima hora vuelve a intentarlo.');
       props.deleteProperty('RUNGUERRA_COLA_PENDIENTE');
       props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+      props.deleteProperty('RUNGUERRA_COLA_SOLO_CALENTAR'); // PF311 parte A
     }
     return;
   }
   var t0 = Date.now();
   try {
+    var soloCalentarCola = props.getProperty('RUNGUERRA_COLA_SOLO_CALENTAR') === '1'; // PF311 parte A
     props.deleteProperty('RUNGUERRA_COLA_PENDIENTE'); // antes del trabajo: si la plataforma corta esta ejecución, no se repite en bucle
     props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
-    Logger.log('[runGuerraCola] INICIO (respaldo CSV + calentamiento del caché)');
-    _runGuerraColaHoraria_(t0);
+    props.deleteProperty('RUNGUERRA_COLA_SOLO_CALENTAR');
+    Logger.log('[runGuerraCola] INICIO (' + (soloCalentarCola ? 'solo calentamiento del caché y publicaciones' : 'respaldo CSV + calentamiento del caché') + ')');
+    _runGuerraColaHoraria_(t0, soloCalentarCola);
     Logger.log('[runGuerraCola] FIN (' + Math.round((Date.now() - t0) / 1000) + ' s)');
   } finally {
     _liberarLockEjecucion();
   }
+}
+
+/**
+ * _iniciarRunGuerraPorTandas_(props, claveHora) - PF311 parte B (31-oct-2026). Arranca la cadena RUNGUERRA desde runGuerra() (ya con el candado tomado). Guarda la marca de hora anterior en
+ * RUNGUERRA_MARCA_PREVIA para devolverla si la cadena no termina (así el siguiente disparo reintenta en vez de esperar a la hora siguiente, PF073), deja limpios los contadores de una cadena anterior
+ * y llama a _continuarRunGuerraCadena(). Si falla al preparar, libera el candado y relanza el error. [→ Contexto_Base_Web.md §PF311]
+ */
+function _iniciarRunGuerraPorTandas_(props, claveHora) {
+  try {
+    var marcaPrevia = props.getProperty('RUNGUERRA_ULTIMA_HORA');
+    props.setProperty('RUNGUERRA_MARCA_PREVIA', marcaPrevia === null ? '' : marcaPrevia);
+    props.setProperty('RUNGUERRA_ULTIMA_HORA', claveHora);
+    props.setProperty('RUNGUERRA_PASO', '0');
+    ['RUNGUERRA_REINTENTO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO', 'RUNGUERRA_CALENTAR_INTENTOS'].forEach(function(clave) { props.deleteProperty(clave); });
+    _borrarTriggersDeContinuacion('_continuarRunGuerraCadena');
+  } catch (e) {
+    _liberarLockEjecucion();
+    Logger.log('[runGuerra] No se pudo preparar la cadena por tandas: ' + e.message + ' — candado liberado.');
+    throw e;
+  }
+  _continuarRunGuerraCadena();
+}
+
+/**
+ * _continuarRunGuerraCadena() - PF311 parte B. Punto de entrada de la cadena RUNGUERRA, tanto de la primera tanda (la llama _iniciarRunGuerraPorTandas_) como de las continuaciones programadas.
+ * Sin RUNGUERRA_MARCA_PREVIA no hay cadena en curso (la cancelaron o terminó): un activador atrasado no hace nada. Al terminar libera el candado; si la cadena se abortó (ventana de guerra protegida,
+ * reenumeración o cancelación) o falló, devuelve la marca de hora para que el siguiente disparo reintente. Una cancelación no toca el candado: ya lo liberó cancelarEjecucion() (PF311 parte C).
+ */
+function _continuarRunGuerraCadena() {
+  var props = PropertiesService.getScriptProperties();
+  if (props.getProperty('RUNGUERRA_MARCA_PREVIA') === null) {
+    Logger.log('[runGuerra] Sin cadena en curso (ya terminó o se canceló). No se hace nada.');
+    _borrarTriggersDeContinuacion('_continuarRunGuerraCadena');
+    return;
+  }
+  var paso = parseInt(props.getProperty('RUNGUERRA_PASO') || '0', 10);
+  var esReintento = props.getProperty('RUNGUERRA_REINTENTO') === '1';
+  Logger.log((paso === 0 && !esReintento ? '=== runGuerra (horaria) INICIO' : '=== runGuerra (horaria) CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_RUNGUERRA.length) + ' ===');
+  try {
+    var completo = _ejecutarPorTandas('RUNGUERRA', PASOS_RUNGUERRA, CFG.RUNGUERRA_PRESUPUESTO_MS, '_continuarRunGuerraCadena', NOMBRES_PASOS_RUNGUERRA);
+    if (completo) {
+      _limpiarCadenaRunGuerra_(props, false);
+      _liberarLockEjecucion();
+      Logger.log('=== runGuerra (horaria) FIN ===');
+    } else if (props.getProperty('RUNGUERRA_PASO') === null) {
+      // Sin paso guardado y sin continuación: la cadena se abortó o se canceló.
+      var canceladaAhora = _cancelacionPedidaDuranteTanda_('RUNGUERRA');
+      _limpiarCadenaRunGuerra_(props, true);
+      if (!canceladaAhora) _liberarLockSiEsDeRunGuerra_();
+      Logger.log('[runGuerra] La cadena horaria no terminó: se devolvió la marca de hora para que el próximo disparo reintente.');
+    }
+    // Si no está completo y hay paso guardado, hay una continuación programada y el candado sigue tomado.
+  } catch (e) {
+    _limpiarCadenaRunGuerra_(props, true);
+    _borrarTriggersDeContinuacion('_continuarRunGuerraCadena');
+    _liberarLockEjecucion();
+    Logger.log('[runGuerra] ERROR en la cadena horaria: ' + e.message + ' — candado liberado y marca de hora devuelta para reintentar.');
+    throw e;
+  }
+}
+
+/**
+ * _limpiarCadenaRunGuerra_(props, restaurarMarca) - PF311 parte B. Borra el estado de la cadena RUNGUERRA. Con restaurarMarca devuelve RUNGUERRA_ULTIMA_HORA a su valor anterior (guardado en RUNGUERRA_MARCA_PREVIA;
+ * vacío = no había marca), para que el siguiente disparo reintente la hora. La llaman la cadena y cancelarEjecucion().
+ */
+function _limpiarCadenaRunGuerra_(props, restaurarMarca) {
+  var previa = props.getProperty('RUNGUERRA_MARCA_PREVIA');
+  if (restaurarMarca && previa !== null) {
+    if (previa) props.setProperty('RUNGUERRA_ULTIMA_HORA', previa);
+    else props.deleteProperty('RUNGUERRA_ULTIMA_HORA');
+  }
+  ['RUNGUERRA_MARCA_PREVIA', 'RUNGUERRA_CALENTAR_INTENTOS', 'RUNGUERRA_PASO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_REINTENTO', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO'].forEach(function(clave) { props.deleteProperty(clave); });
+}
+
+/** _liberarLockSiEsDeRunGuerra_() - PF311 parte B. Libera el candado solo si lo tiene runGuerra o su cadena (no pisa el de otra ejecución). */
+function _liberarLockSiEsDeRunGuerra_() {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var raw = props.getProperty('EJECUCION_EN_CURSO');
+    var info = raw ? JSON.parse(raw) : null;
+    if (info && (info.fn === 'runGuerra' || info.fn === 'RUNGUERRA')) props.deleteProperty('EJECUCION_EN_CURSO');
+  } catch (e) { /* propiedad corrupta: se deja como está */ }
+}
+
+/**
+ * _runGuerraPasoRespaldoCsv_() - PF311 parte B. Paso «Respaldo CSV de Guerra» de la cadena RUNGUERRA: _syncGuerraCSV() sobre la hoja Guerra. Exige CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS de tiempo en la ejecución;
+ * si no queda, devuelve false (el motor lo repite en la tanda siguiente, que arranca con el tiempo completo).
+ */
+function _runGuerraPasoRespaldoCsv_() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+  if (!sh) {
+    Logger.log('[runGuerra] Respaldo CSV de Guerra: no hay hoja Guerra, no hay nada que respaldar.');
+    return true;
+  }
+  var quedaMs = _msRestantesDeEjecucion_();
+  if (quedaMs < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
+    Logger.log('[runGuerra] Respaldo CSV de Guerra: quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan al menos ' + Math.round(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS / 1000) + ' s. Se hace en la próxima tanda.');
+    _anotarProgresoPaso_('Respaldo CSV de Guerra: 0 de 1 respaldos', 0);
+    return false;
+  }
+  var t = Date.now();
+  _syncGuerraCSV(sh);
+  Logger.log('[runGuerra] Respaldo CSV de Guerra terminado en ' + Math.round((Date.now() - t) / 1000) + ' s.');
+  return true;
+}
+
+/**
+ * _runGuerraPasoCalentarCache_() - PF311 parte B. Paso «Caché y publicaciones» de la cadena RUNGUERRA: calienta el caché de la guerra en vivo y publica guerra.json, roster.json, home.json y torneos.json
+ * (lo que hacía _runGuerraColaHoraria_()). Exige tiempo según lo que tardó la última vez (GUERRA_CALENTADO_ULT_MS, con 30 % de holgura, como mínimo el margen fijo y como máximo lo que cabe en una tanda
+ * nueva). Si no hay tiempo o quedaron publicaciones sin hacer, devuelve false y el motor lo repite en la tanda siguiente; tras 2 repeticiones se deja para la próxima hora, para no encadenar tandas sin fin.
+ */
+function _runGuerraPasoCalentarCache_() {
+  var props = PropertiesService.getScriptProperties();
+  var intentos = Number(props.getProperty('RUNGUERRA_CALENTAR_INTENTOS')) || 0;
+  var msUltimo = Number(props.getProperty('GUERRA_CALENTADO_ULT_MS')) || 0;
+  var msNecesarios = Math.min(Math.max(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, Math.round(msUltimo * 1.3)), CFG.PLATAFORMA_LIMITE_EJECUCION_MS - 60000);
+  var quedaMs = _msRestantesDeEjecucion_();
+  if (quedaMs < msNecesarios) {
+    if (intentos >= 2) {
+      props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+      Logger.log('[runGuerra] Caché y publicaciones: sin tiempo tras ' + (intentos + 1) + ' tandas. Se dejan para la próxima hora.');
+      return true;
+    }
+    props.setProperty('RUNGUERRA_CALENTAR_INTENTOS', String(intentos + 1));
+    Logger.log('[runGuerra] Caché y publicaciones: quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan unos ' + Math.round(msNecesarios / 1000) + ' s. Se hace en la próxima tanda.');
+    _anotarProgresoPaso_('Caché y publicaciones: 0 de 1 calentamientos', 0);
+    return false;
+  }
+  var tCalentar = Date.now();
+  try {
+    _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG, tCalentar + quedaMs - 45000);
+  } catch (eCalentar) {
+    Logger.log('[runGuerra] El calentamiento del caché falló: ' + eCalentar.message + '. Se reintenta en la próxima hora.');
+    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+    return true;
+  }
+  var msCalentar = Date.now() - tCalentar;
+  Logger.log('[runGuerra] Calentamiento del caché terminado en ' + Math.round(msCalentar / 1000) + ' s' + (CALENTAR_OMITIO_PUBLICACION_ ? ' (quedaron publicaciones sin hacer por falta de tiempo)' : '') + '.');
+  if (!CALENTAR_OMITIO_PUBLICACION_) {
+    try { props.setProperty('GUERRA_CALENTADO_ULT_MS', String(msCalentar)); } catch (eGuardaUlt) { /* solo una referencia */ }
+    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+    return true;
+  }
+  if (intentos >= 2) {
+    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+    Logger.log('[runGuerra] Quedaron publicaciones sin hacer tras ' + (intentos + 1) + ' tandas. Se dejan para la próxima hora.');
+    return true;
+  }
+  props.setProperty('RUNGUERRA_CALENTAR_INTENTOS', String(intentos + 1));
+  _anotarProgresoPaso_('Publicaciones del caché: incompletas, 0 de 1 calentamientos', 0);
+  return false;
 }
 
 /**
@@ -2008,6 +2240,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
     var rellamadasPaso = 0;
     var acumBasePaso = (progPrevio && progPrevio.acum !== null && progPrevio.acum !== undefined && !isNaN(Number(progPrevio.acum))) ? Number(progPrevio.acum) : 0;
     while (resultado === false) {
+      if (_cancelacionPedidaDuranteTanda_(idEjecucion)) break; // PF311 parte C: no se vuelve a llamar al paso si se canceló
       var decision = _decidirRellamadaPaso_(idEjecucion, presupuestoMs, inicioTanda, Date.now() - tInicioLlamada, rellamadasPaso, acumBasePaso, PROGRESO_PASO_);
       if (!decision.si) {
         if (decision.motivo) Logger.log('[' + idEjecucion + '] No se vuelve a llamar al paso ' + (paso + 1) + '/' + pasos.length + ' en esta tanda: ' + decision.motivo + '.');
@@ -2021,6 +2254,17 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       PROGRESO_PASO_ = null;
       tInicioLlamada = Date.now();
       resultado = pasos[paso]();
+    }
+
+    // PF311 parte A: cuánto tardó el paso (con sus llamadas repetidas) y cuánto lleva la tanda; sin esto el registro callaba justo donde se cortaba. [→ Contexto_Base_Web.md §PF311]
+    Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ': ' + (resultado === false ? 'incompleto' : 'terminado') + ' tras ' + Math.round((Date.now() - tInicioLlamada) / 1000) + ' s en su última llamada; la tanda lleva ' +
+      Math.round((Date.now() - inicioTanda) / 1000) + ' s de ' + Math.round(presupuestoMs / 1000) + ' s.');
+
+    // PF311 parte C: si la usuaria canceló mientras esta tanda corría, no se guarda nada del avance, no se toca el lock ni se programa otra continuación.
+    if (_cancelacionPedidaDuranteTanda_(idEjecucion)) {
+      Logger.log('[' + idEjecucion + '] CANCELADA: se pidió cancelar mientras esta tanda corría. Termina el paso ' + (paso + 1) + '/' + pasos.length +
+        ', no se guarda el avance y no se programa otra continuación. Ya puedes ejecutar la cadena desde cero.');
+      return false;
     }
 
     if (resultado === false) {
@@ -2064,6 +2308,29 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   _revisarCsvAlSalir_(INICIO_TANDA_MS_); // PF291
   _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
   return true;
+}
+
+/**
+ * _cancelacionPedidaDuranteTanda_(idEjecucion) - PF311 parte C. Devuelve true si cancelarEjecucion() dejó su marca (<ID>_CANCELADA_TS) DESPUÉS de que empezó la tanda actual
+ * (INICIO_TANDA_MS_). Una cancelación anterior al inicio de la tanda no cuenta, así que la marca no hace falta borrarla y una corrida nueva no se ve afectada. REENUM nunca se
+ * cancela por aquí (PF260). Ante cualquier error al leer devuelve false y todo sigue como antes. [→ Contexto_Base_Web.md §PF311]
+ */
+function _cancelacionPedidaDuranteTanda_(idEjecucion) {
+  if (idEjecucion === 'REENUM') return false;
+  try {
+    var hora = Number(PropertiesService.getScriptProperties().getProperty(idEjecucion + '_CANCELADA_TS') || '0');
+    return hora > 0 && hora >= INICIO_TANDA_MS_;
+  } catch (e) { return false; }
+}
+
+/**
+ * _msRestantesDeEjecucion_() - PF311 parte A. Milisegundos que le quedan a la ejecución actual antes del corte de la plataforma (CFG.PLATAFORMA_LIMITE_EJECUCION_MS), medidos desde el
+ * inicio de la tanda de _ejecutarPorTandas() (INICIO_TANDA_MS_). Fuera de una cadena por tandas (INICIO_TANDA_MS_ en 0) no se conoce el inicio y devuelve el límite entero.
+ * Sirve para que un paso largo decida, antes de empezar una unidad de trabajo, si le alcanza el tiempo. [→ Contexto_Base_Web.md §PF311]
+ */
+function _msRestantesDeEjecucion_() {
+  if (!INICIO_TANDA_MS_) return CFG.PLATAFORMA_LIMITE_EJECUCION_MS;
+  return CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - INICIO_TANDA_MS_);
 }
 
 /**
@@ -2163,13 +2430,26 @@ function onEditTrigger(e) {
 }
 
 // --- ARCHIVO: 01_Config_Global.gs ---
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Comprobación de datos privados
+//    - Carpeta CSV: mover informes sueltos
+//    - Tokens en las propiedades del script
+//  Parte 2 — Funciones que no se corren a mano (ayudas globales)
+//    - Carpetas y archivos de Plantillas; docs reconstruibles
+//    - Fechas, texto, temporadas y días de guerra
+//    - Datos privados, clanes, tags, rangos y formato de celdas
+//    - Carpeta y subcarpetas CSV, hojas y lectura con respaldo en CSV, tokens
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // =============================================================================
 // 01_Config_Global.gs
 // Configuracion global (CFG), IDs de carpetas de Drive, y helpers genericos
 // (fechas, texto, formato de celdas) usados por el resto del proyecto.
 // ==============================================================================
 
-// ----- Variables y constantes ---F--
+
+// ----- Constantes y variables globales -----
 
 
 // Configuración central del sistema de gestión de clanes - Familia Terna [→ Contexto_Base_Web.md §01B001]
@@ -2404,14 +2684,19 @@ var CFG = {
   PLATAFORMA_LIMITE_EJECUCION_MS: 6 * 60 * 1000, // 6m00s
 
   // Presupuesto de tiempo objetivo para cada "tanda" de runAll/runUpdate antes [→ Contexto_Base_Web.md §01B030]
-  RUNALL_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000,    // 3m30s
-  RUNUPDATE_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
+  // PF311 parte D (31-oct-2026, decidido por Claude por encargo de la usuaria): de 3m30s a 2m30s en las cinco cadenas. Con 3m30s quedaban 2m30s hasta el corte de la plataforma, y un paso largo ya empezado (de 60 a 160 s en el registro del 24 al 31-oct) no cabía.
+  RUNALL_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000,    // 2m30s
+  RUNUPDATE_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s
   // FIX (06-ago-2026): runSyncCSV() ahora usa el mismo motor de tandas [→ Contexto_Base_Web.md §01B031]
-  RUNSYNCCSV_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
+  RUNSYNCCSV_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s (PF311 parte D)
   // FIX (22-ago-2026): runGuerraRapido() se cancelaba por exceder el límite [→ Contexto_Base_Web.md §01B032]
-  RUNGUERRARAPIDO_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
+  RUNGUERRARAPIDO_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s (PF311 parte D)
+  // PF311 parte B (31-oct-2026): la corrida horaria completa de runGuerra() (fuera de la ventana de las 4 a 5 a. m.) corre como cadena por tandas (RUNGUERRA, 00_Main.gs) con este presupuesto por tanda.
+  // RUNGUERRA_POR_TANDAS = false vuelve a la corrida de una sola ejecución con la cola aparte (PF143), sin tocar el código. La ventana ligera de las 4 a 5 a. m. no usa la cadena. [→ Contexto_Base_Web.md §PF311]
+  RUNGUERRA_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s
+  RUNGUERRA_POR_TANDAS: true,
   // NUEVO (09-sep-2026, pedido usuario -- "_continuarRunSorteos() / [→ Contexto_Base_Web.md §01B033]
-  RUNSORTEOS_PRESUPUESTO_MS: 3 * 60 * 1000 + 30 * 1000, // 3m30s
+  RUNSORTEOS_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s (PF311 parte D)
   // PF292 (29-oct-2026): llamadas extra al MISMO paso dentro de una tanda cuando el paso quedó incompleto, avanzó y a la tanda le sobra tiempo (ver _decidirRellamadaPaso_(), 00_Main.gs).
   TANDA_RELLAMADAS_MAX: 5,                // tope de llamadas extra de un paso por tanda
   TANDA_RELLAMADA_MIN_MS: 60 * 1000,      // duración que se supone a una llamada extra aunque la anterior fuera más corta
@@ -2769,7 +3054,75 @@ var _DIAS_ES  = ['domingo','lunes','martes','miércoles','jueves','viernes','sá
 var _MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio',
                  'agosto','septiembre','octubre','noviembre','diciembre'];
 
-// ----- Funciones internas / helpers -----
+// FIX (02-sep-2026, pedido usuario — corridas de RUNUPDATE muriendo "sin [→ Contexto_Base_Web.md §01B115]
+var _CACHE_IDS_PLANTILLAS_MEMORIA_ = {};
+
+// Prefijo de la clave en Script Properties (persiste ENTRE ejecuciones y [→ Contexto_Base_Web.md §01B116]
+var PLANTILLAS_ID_CACHE_PREFIX_ = 'PLANTILLAS_ID_CACHE_';
+
+// DATOS PRIVADOS FUERA DEL CODIGO (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §PF048]
+// El repo Backend es publico: los celulares ya no van en el codigo. Se guardan en Propiedades de la secuencia de comandos (Script Properties):
+//   FUNDADOR_CELULAR (solo digitos, sin prefijo), ADMIN_FAMILIA_JSON (lista [{nombre, celular, prefijo, clanes}]),
+//   CELULARES_RESPALDO_MANUAL_JSON ({ "TAGSINNUMERAL": "celular" }) y TELEFONO_PRUEBA (para simularMensajeBot()).
+// Si una propiedad falta, se usa un valor vacio y NO se hace ninguna coincidencia (nunca se compara contra un celular vacio).
+var _propPrivadaCache_ = {};
+
+// SUBCARPETAS DE LA CARPETA CSV (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §01B158]
+// Cada CSV tiene una subcarpeta asignada. Un nombre sin asignar se queda en la raíz de CSV.
+// Si CSV_MOVER_A_SUBCARPETA es true, al guardar un archivo encontrado fuera de su subcarpeta se mueve a ella.
+var CSV_MOVER_A_SUBCARPETA = true;
+var CSV_SUBCARPETAS_ = ['Background', 'Hojas', 'Informes', 'Tampermonkey', 'Jugador'];
+var _CSV_SUBCARPETAS_MEM_ = {};
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
+
+/**
+ * verificarDatosPrivados(): ejecutar a mano para comprobar que las propiedades privadas estan cargadas. Solo informa cantidades, nunca los valores.
+ */
+function verificarDatosPrivados() {
+  Logger.log('[Privado] FUNDADOR_CELULAR: ' + (_getFundadorCelular_() ? 'cargado (' + _getFundadorCelular_().length + ' digitos)' : 'FALTA') +
+    ' | ADMIN_FAMILIA_JSON: ' + _getAdminFamilia_().length + ' admin(es) | CELULARES_RESPALDO_MANUAL_JSON: ' + Object.keys(_getCelularesRespaldoManual_()).length + ' tag(s)' +
+    ' | TELEFONO_PRUEBA: ' + (_getPropPrivada_('TELEFONO_PRUEBA') ? 'cargado' : 'no cargado (solo hace falta para simularMensajeBot)'));
+}
+
+/**
+ * Mueve a CSV/Informes los informes que ya quedaron sueltos en la raíz de la carpeta CSV (los creados antes de esta corrección no se mueven solos).
+ * Solo mueve archivos cuya subcarpeta asignada por _csvSubcarpetaDe_() sea Informes; no toca nada más ni borra nada. Se puede correr las veces que haga falta.
+ */
+function moverInformesSueltosASubcarpeta() {
+  var raiz = _getCsvFolder(), destino = _getCsvSubcarpeta_('Informes', true), it = raiz.getFiles(), movidos = 0, errores = 0;
+  while (it.hasNext()) {
+    var f = it.next(), nombre = f.getName();
+    if (_csvSubcarpetaDe_(nombre) !== 'Informes') continue;
+    try { f.moveTo(destino); movidos++; }
+    catch (e) { errores++; Logger.log('[Informes] No se pudo mover ' + nombre + ': ' + e.message); }
+  }
+  Logger.log('[Informes] Movidos a CSV/Informes: ' + movidos + (errores ? ' (con ' + errores + ' error(es), ver arriba)' : '') + '. Lo que no es informe no se toco.');
+}
+
+/**
+ * guardarTokensEnScriptProperties() [→ Contexto_Base_Web.md §01B157]
+ */
+function guardarTokensEnScriptProperties() {
+  var props = PropertiesService.getScriptProperties();
+  var nombres = [
+    'WEB_MEMBER_TOKEN', 'CONTACTOS_TOKEN', 'DASHBOARD_TOKEN',
+    'CORRECCION_GUERRA_TOKEN', 'HISTORIAL_GUERRA_TOKEN',
+    'NUEVOS_ROYALEAPI_TOKEN', 'VERIFICAR_RIVERRACE_TOKEN', 'CLAVE_ADMIN_PEPPER'
+  ];
+  var yaExistian = [], fallaron = [];
+  for (var i = 0; i < nombres.length; i++) {
+    var nombre = nombres[i];
+    if (props.getProperty(nombre)) { yaExistian.push(nombre); continue; }
+    // Ya no hay literal de respaldo en el código: sin Property, no hay
+    // valor que copiar. Hay que crearla a mano en Script Properties.
+    fallaron.push(nombre + ' (sin Property y sin literal de respaldo en el código)');
+  }
+  Logger.log('[Tokens] Ya existían (' + yaExistian.length + '): ' + (yaExistian.join(', ') || '—'));
+  if (fallaron.length) Logger.log('[Tokens] Faltan por crear a mano: ' + fallaron.join('; '));
+}
+
+// ===== PARTE 2 — Funciones que no se corren a mano =====
 
 // IV. HELPERS GLOBALES [→ Contexto_Base_Web.md §01B112]
 
@@ -2790,12 +3143,6 @@ function _getCarpetasPlantillas() {
   }
   return carpetas;
 }
-
-// FIX (02-sep-2026, pedido usuario — corridas de RUNUPDATE muriendo "sin [→ Contexto_Base_Web.md §01B115]
-var _CACHE_IDS_PLANTILLAS_MEMORIA_ = {};
-
-// Prefijo de la clave en Script Properties (persiste ENTRE ejecuciones y [→ Contexto_Base_Web.md §01B116]
-var PLANTILLAS_ID_CACHE_PREFIX_ = 'PLANTILLAS_ID_CACHE_';
 
 /**
  * _buscarArchivoEnPlantillas(nombreArchivo, idArchivo) [→ Contexto_Base_Web.md §01B117]
@@ -3145,12 +3492,6 @@ function soloDigitos(v) {
   return String(v || '').replace(/\D/g, '');
 }
 
-// DATOS PRIVADOS FUERA DEL CODIGO (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §PF048]
-// El repo Backend es publico: los celulares ya no van en el codigo. Se guardan en Propiedades de la secuencia de comandos (Script Properties):
-//   FUNDADOR_CELULAR (solo digitos, sin prefijo), ADMIN_FAMILIA_JSON (lista [{nombre, celular, prefijo, clanes}]),
-//   CELULARES_RESPALDO_MANUAL_JSON ({ "TAGSINNUMERAL": "celular" }) y TELEFONO_PRUEBA (para simularMensajeBot()).
-// Si una propiedad falta, se usa un valor vacio y NO se hace ninguna coincidencia (nunca se compara contra un celular vacio).
-var _propPrivadaCache_ = {};
 function _getPropPrivada_(clave) {
   if (Object.prototype.hasOwnProperty.call(_propPrivadaCache_, clave)) return _propPrivadaCache_[clave];
   var v = '';
@@ -3166,15 +3507,6 @@ function _getPropPrivadaJson_(clave, porDefecto) {
 function _getFundadorCelular_() { return soloDigitos(_getPropPrivada_('FUNDADOR_CELULAR')); }
 function _getAdminFamilia_() { var l = _getPropPrivadaJson_('ADMIN_FAMILIA_JSON', []); return Object.prototype.toString.call(l) === '[object Array]' ? l : []; }
 function _getCelularesRespaldoManual_() { var m = _getPropPrivadaJson_('CELULARES_RESPALDO_MANUAL_JSON', {}); return (m && typeof m === 'object') ? m : {}; }
-
-/**
- * verificarDatosPrivados(): ejecutar a mano para comprobar que las propiedades privadas estan cargadas. Solo informa cantidades, nunca los valores.
- */
-function verificarDatosPrivados() {
-  Logger.log('[Privado] FUNDADOR_CELULAR: ' + (_getFundadorCelular_() ? 'cargado (' + _getFundadorCelular_().length + ' digitos)' : 'FALTA') +
-    ' | ADMIN_FAMILIA_JSON: ' + _getAdminFamilia_().length + ' admin(es) | CELULARES_RESPALDO_MANUAL_JSON: ' + Object.keys(_getCelularesRespaldoManual_()).length + ' tag(s)' +
-    ' | TELEFONO_PRUEBA: ' + (_getPropPrivada_('TELEFONO_PRUEBA') ? 'cargado' : 'no cargado (solo hace falta para simularMensajeBot)'));
-}
 
 /**
  * _getClanesAdminTexto(prefijo, celular) [→ Contexto_Base_Web.md §01B141]
@@ -3375,13 +3707,6 @@ function _getCsvFolder() {
   }
 }
 
-// SUBCARPETAS DE LA CARPETA CSV (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §01B158]
-// Cada CSV tiene una subcarpeta asignada. Un nombre sin asignar se queda en la raíz de CSV.
-// Si CSV_MOVER_A_SUBCARPETA es true, al guardar un archivo encontrado fuera de su subcarpeta se mueve a ella.
-var CSV_MOVER_A_SUBCARPETA = true;
-var CSV_SUBCARPETAS_ = ['Background', 'Hojas', 'Informes', 'Tampermonkey', 'Jugador'];
-var _CSV_SUBCARPETAS_MEM_ = {};
-
 function _csvSubcarpetaDe_(filename) {
   var n = String(filename || '');
   // Informes: respaldos previos a reparar, reparaciones, limpiezas, revisiones y diagnósticos.
@@ -3416,21 +3741,6 @@ function _csvSubcarpetaDe_(filename) {
   if (/ \d{4}-\d{2}-\d{2} \d{2}\.\d{2}\.\d{2}/.test(n) || /\((informe|plan|aplicado|detalle|resumen)\)\.csv$/.test(n)) return 'Informes';
   if (/^(Cotejo_|Cruce_|Informe_|Anomalias_|AplicarTotalesSemana_)/.test(n) || n === 'Cache_TotalesSemana_Objetivos.csv') return 'Informes';
   return ''; // sin asignar: raíz de CSV (hoy ninguno de los que usa el código)
-}
-
-/**
- * Mueve a CSV/Informes los informes que ya quedaron sueltos en la raíz de la carpeta CSV (los creados antes de esta corrección no se mueven solos).
- * Solo mueve archivos cuya subcarpeta asignada por _csvSubcarpetaDe_() sea Informes; no toca nada más ni borra nada. Se puede correr las veces que haga falta.
- */
-function moverInformesSueltosASubcarpeta() {
-  var raiz = _getCsvFolder(), destino = _getCsvSubcarpeta_('Informes', true), it = raiz.getFiles(), movidos = 0, errores = 0;
-  while (it.hasNext()) {
-    var f = it.next(), nombre = f.getName();
-    if (_csvSubcarpetaDe_(nombre) !== 'Informes') continue;
-    try { f.moveTo(destino); movidos++; }
-    catch (e) { errores++; Logger.log('[Informes] No se pudo mover ' + nombre + ': ' + e.message); }
-  }
-  Logger.log('[Informes] Movidos a CSV/Informes: ' + movidos + (errores ? ' (con ' + errores + ' error(es), ver arriba)' : '') + '. Lo que no es informe no se toco.');
 }
 
 function _getCsvSubcarpeta_(nombre, crear) {
@@ -3600,27 +3910,8 @@ function _scriptToken(nombrePropiedad) {
   return v;
 }
 
-/**
- * guardarTokensEnScriptProperties() [→ Contexto_Base_Web.md §01B157]
- */
-function guardarTokensEnScriptProperties() {
-  var props = PropertiesService.getScriptProperties();
-  var nombres = [
-    'WEB_MEMBER_TOKEN', 'CONTACTOS_TOKEN', 'DASHBOARD_TOKEN',
-    'CORRECCION_GUERRA_TOKEN', 'HISTORIAL_GUERRA_TOKEN',
-    'NUEVOS_ROYALEAPI_TOKEN', 'VERIFICAR_RIVERRACE_TOKEN', 'CLAVE_ADMIN_PEPPER'
-  ];
-  var yaExistian = [], fallaron = [];
-  for (var i = 0; i < nombres.length; i++) {
-    var nombre = nombres[i];
-    if (props.getProperty(nombre)) { yaExistian.push(nombre); continue; }
-    // Ya no hay literal de respaldo en el código: sin Property, no hay
-    // valor que copiar. Hay que crearla a mano en Script Properties.
-    fallaron.push(nombre + ' (sin Property y sin literal de respaldo en el código)');
-  }
-  Logger.log('[Tokens] Ya existían (' + yaExistian.length + '): ' + (yaExistian.join(', ') || '—'));
-  if (fallaron.length) Logger.log('[Tokens] Faltan por crear a mano: ' + fallaron.join('; '));
-}
+
+
 
 // --- ARCHIVO: 02_Setup_Hojas.gs ---
 // ==============================================================================
@@ -6823,10 +7114,25 @@ function syncAcumulativosCSV() {
   if (idxInicio >= totalTrabajos) idxInicio = 0; // por si cambió la lista de hojas entre corridas
 
   var inicio = Date.now();
+  var maxTrabajoMs = 0; // PF311 parte A: el trabajo más largo de esta llamada, para no empezar otro si no cabe
   var i;
   for (i = idxInicio; i < totalTrabajos; i++) {
     var tInicioTrabajo = Date.now();
     var nombreTrabajo = (i === 0) ? 'Inactivos' : acumulativos[i - 1].sheetName;
+
+    // PF311 parte A (31-oct-2026): los trabajos tardan de 2 a 52 s cada uno y el presupuesto interno solo se miraba al terminar un trabajo; el 29-oct runSyncCSV pasó 3 min 50 s sin escribir nada. Antes de empezar otro trabajo (nunca el primero de la llamada, para que siempre avance) se exige que la ejecución tenga tiempo para el trabajo más largo visto en esta llamada, con 50 % de holgura y como mínimo 60 s.
+    if (i > idxInicio) {
+      var msNecesariosTrabajo = Math.max(60000, Math.round(maxTrabajoMs * 1.5));
+      var msQuedan = _msRestantesDeEjecucion_();
+      if (msQuedan < msNecesariosTrabajo) {
+        props.setProperty(claveIdx, String(i));
+        Logger.log('[Backup] syncAcumulativosCSV: no se empieza el trabajo ' + (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '): quedan ' + Math.round(msQuedan / 1000) +
+                   ' s y se necesitan unos ' + Math.round(msNecesariosTrabajo / 1000) + ' s. Se hace en la próxima continuación.');
+        _logProgresoPaso_('Backup', 'respaldo CSV de acumulativos', idxInicio, i - idxInicio, totalTrabajos, 'trabajos');
+        return false;
+      }
+    }
+    Logger.log('[Backup][t] syncAcumulativosCSV: empieza el trabajo ' + (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '); a la ejecución le quedan ' + Math.round(_msRestantesDeEjecucion_() / 1000) + ' s.');
 
     if (i === 0) {
       syncInactivosCSV();
@@ -6836,6 +7142,7 @@ function syncAcumulativosCSV() {
 
     Logger.log('[Backup][t] syncAcumulativosCSV: trabajo ' + (i + 1) + '/' + totalTrabajos +
                ' (' + nombreTrabajo + '): ' + (Date.now() - tInicioTrabajo) + ' ms');
+    maxTrabajoMs = Math.max(maxTrabajoMs, Date.now() - tInicioTrabajo);
 
     var quedanTrabajos = (i + 1) < totalTrabajos;
     if (quedanTrabajos && (Date.now() - inicio) > CFG.ACUMULATIVOS_BUDGET_MS) {
@@ -13576,6 +13883,8 @@ function updateDirectorioSheet() {
   if (!sh) { Logger.log('[Dir] Hoja no encontrada'); return; }
 
   Logger.log('[Dir] Iniciando updateDirectorioSheet...');
+  var _tDir0 = Date.now(); // PF311 parte A: el 29-oct este paso pasó 2 min 39 s sin escribir nada; las líneas [Dir][t] dejan ver qué tramo se come el tiempo
+  function _marcaDir(tramo) { Logger.log('[Dir][t] tras ' + tramo + ': ' + Math.round((Date.now() - _tDir0) / 1000) + ' s (quedan ' + Math.round(_msRestantesDeEjecucion_() / 1000) + ' s en la ejecución)'); }
 
   for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
     if (!_getClanCache(CFG.TERNA_TAGS[i])) {
@@ -13586,6 +13895,7 @@ function updateDirectorioSheet() {
 
   // El bootstrap de reanudación (_ejecutarPorTandas en 00_Main.gs) solo [→ Contexto_Base_Web.md §11B007]
   _fetchPlayersData();
+  _marcaDir('leer los datos de /players');
 
   var csvMap = _getCsvDirMap();
   var existingRows = _leerDirectorioExistente(sh);
@@ -13593,6 +13903,7 @@ function updateDirectorioSheet() {
   // FASE B4 (16/07/2026): Nivel/Nivel2/V_Guerra/Copas y los 17 campos que [→ Contexto_Base_Web.md §11B008]
   var playersPorTag = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.PLAYERS, PC.TAG - 1, PLAYERS_TOTAL_COLS);
   var linksPorTag    = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.LINKS,   LC.TAG - 1, LINKS_TOTAL_COLS);
+  _marcaDir('leer las hojas Directorio, Players y Links');
 
   // Mapa completo de índices 0-based para todas las columnas leídas desde [→ Contexto_Base_Web.md §11B009]
   var H = existingRows._headerIdx || {};
@@ -13638,10 +13949,13 @@ function updateDirectorioSheet() {
   var multiData = _detectarMulticuentas(existingRows, csvMap, activosPorTag, colIdxMap, inactivosPorTag);
   var resultadoDirectorio = _construirFilasDirectorio(activosPorTag, existingRows, csvMap, multiData, ss, colIdxMap, inactivosPorTag, playersPorTag, linksPorTag);
   var todasFilas = resultadoDirectorio.filas;
+  _marcaDir('armar las filas del Directorio');
   _escribirDirectorio(sh, todasFilas);
+  _marcaDir('escribir la hoja Directorio');
   // FASE B3 (16/07/2026): poblar Players y Links con el mismo modelo de 60 [→ Contexto_Base_Web.md §11B012]
   _escribirPlayers(ss, todasFilas);
   _escribirLinks(ss, todasFilas);
+  _marcaDir('escribir las hojas Players y Links');
   _aplicarDropdownsDirectorio(sh, todasFilas.length);
   _aplicarFormatoCondicionalDirectorio(sh, todasFilas.length);
   if (todasFilas.length > 0) {
@@ -13654,7 +13968,9 @@ function updateDirectorioSheet() {
   _crearTabla(sh, 1, todasFilas.length + 1, DIR_SHEET_COLS, CFG.SHEETS.DIRECTORIO);
 
   // Poblar Inactivos con TODOS los inactivos (admin y no-admin), fila completa [→ Contexto_Base_Web.md §11B015]
+  _marcaDir('formato, validaciones y filtro del Directorio');
   _updateInactivos(ss, resultadoDirectorio.inactivasCompletas);
+  _marcaDir('actualizar la hoja Inactivos');
 
   // Reactivación: retirar de Inactivos (hoja + ClanSystem_Backup_ [→ Contexto_Base_Web.md §11B016]
   if (resultadoDirectorio.tagsReactivados.length > 0) {
@@ -16681,7 +16997,8 @@ var NUEVOS_RESTORE_PROGRESO_MAX_EDAD_MS = 6 * 60 * 60 * 1000; // 6 horas
 // Presupuesto de tiempo PROPIO de la restauración (más chico que [→ Contexto_Base_Web.md §14B010]
 var NUEVOS_RESTORE_PRESUPUESTO_MS = 90 * 1000; // 1m30s
 // Tope de candidatos por sub-lote enviado a _aplicarImportacionNuevos() [→ Contexto_Base_Web.md §14B011]
-var NUEVOS_RESTORE_LOTE_MAX = 10;
+// PF311 parte A (31-oct-2026): de 10 a 5. El 30-oct a las 11:19 p. m. un sub-lote de 10 candidatos pasó de 107 s sin terminar y la ejecución se cortó a los 361 s; con 5 cada sub-lote dura la mitad y el paso reparte el resto en la tanda siguiente.
+var NUEVOS_RESTORE_LOTE_MAX = 5;
 
 /**
  * _guardarProgresoRestaurarNuevos(tagsYaRestaurados) [→ Contexto_Base_Web.md §14B012]
@@ -18748,15 +19065,23 @@ function _restaurarNuevosDesdeCsvDebug() {
   var erroresAcumulados = [];
   var indice = 0;
   var seAgotoElPresupuesto = false;
+  var msSubLoteAnterior = 0; // PF311 parte A: duración del sub-lote anterior (0 = todavía no hubo ninguno)
 
   while (indice < candidatosPendientes.length) {
-    if ((Date.now() - inicio) > NUEVOS_RESTORE_PRESUPUESTO_MS) {
+    // PF311 parte A: además del presupuesto propio, se mira cuánto le queda a la ejecución. Un sub-lote nuevo solo empieza si le alcanza el tiempo
+    // (1,5 veces lo que tardó el anterior, o 60 s si es el primero) más 45 s para cerrar el paso; si no, lo que falta queda para la continuación.
+    var msNecesariosSubLote = Math.max(Math.round(msSubLoteAnterior * 1.5), 60000) + 45000;
+    if ((Date.now() - inicio) > NUEVOS_RESTORE_PRESUPUESTO_MS || _msRestantesDeEjecucion_() < msNecesariosSubLote) {
       seAgotoElPresupuesto = true;
       break;
     }
 
     var subLote = candidatosPendientes.slice(indice, indice + NUEVOS_RESTORE_LOTE_MAX);
+    var tSubLote = Date.now();
     var resultadoSubLote = _aplicarImportacionNuevos(subLote);
+    msSubLoteAnterior = Date.now() - tSubLote;
+    Logger.log('[Nuevos-Restaurar] Sub-lote de ' + subLote.length + ' candidato(s) terminado en ' + Math.round(msSubLoteAnterior / 1000) + ' s (' +
+      Math.min(indice + subLote.length, candidatosPendientes.length) + ' de ' + candidatosPendientes.length + ' pendientes de esta corrida).');
 
     if (resultadoSubLote && resultadoSubLote.ok) {
       totalProcesados += resultadoSubLote.procesados || 0;
@@ -24325,6 +24650,7 @@ function _syncGuerraCSV(sh, forzar) {
     }
 
     // NO se usa _extraerValoresConLinksReales() aquí (17-jul-2026): esa [→ Contexto_Base_Web.md §17B174]
+    Logger.log('[Guerra] _syncGuerraCSV: leyendo la hoja (' + (lastRow - 1) + ' fila(s) de dato).'); // PF311 parte A: en las colas cortadas el registro callaba antes de «CSV leído»
     var data = sh.getRange(1, 1, lastRow, GUERRA_TOTAL_COLS).getDisplayValues();
     var tDisplayFin = Date.now();
 
@@ -24344,6 +24670,7 @@ function _syncGuerraCSV(sh, forzar) {
 
     // --- FUSIÓN con el CSV existente ---
     var tHojaFin = Date.now();
+    Logger.log('[Guerra] _syncGuerraCSV: hoja leída en ' + Math.round((tHojaFin - tIniSync) / 100) / 10 + ' s; leyendo Backup_Guerra.csv de Drive.'); // PF311 parte A
     var csvExistente  = _loadCSVFromDrive('Backup_Guerra.csv');
     var tCsvFin = Date.now();
     // PF289: tamaño de referencia = el mayor entre el peso real del archivo en Drive y el último tamaño que esta función dejó escrito. Si la lectura (memoria, caché o Drive) vino vacía o mucho más chica, se relee directo de Drive; si sigue chica, no se escribe nada.
@@ -32271,16 +32598,66 @@ function _pronosticoPuntosDiasCerrados_(rr, tag, periodIndex) {
 
 
 // --- ARCHIVO: 22_ControlCalendario.gs ---
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hoja Extra
+//    - Hoja Control
+//    - Calendario y Calendario_2
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Control: ayuda del formato
+//    - Calendario: generación
+//    - Hoja Control: requisitos de ascenso, lectura de guerra (hoja y CSV), cruce de meta por día y formato condicional
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // ==============================================================================
 // 22_ControlCalendario.gs
 // Hojas Extra, Control y Calendario/Calendario2: vistas de control semanal y calendario.
 // ==============================================================================
 
-// ----- Variables y constantes -----
+// ----- Constantes y variables globales -----
 
-// ----- Funciones manuales / punto de entrada -----
+// FIX (rendimiento, sept-2026 -- runGuerra() cortándose por "Exceeded maximum [→ Contexto_Base_Web.md §22B008]
+
+var CONTROL_LIMPIAR_LINKS_INTERVALO_MS = 60 * 60 * 1000; // máx. 1 vez por hora, igual criterio que Guerra
+var CONTROL_FORMATO_REBUILD_MAX_ELAPSED_MS = 6 * 60 * 60 * 1000; // respaldo: forzar rebuild al menos cada 6h
+
+// Requisitos para que la columna "Ascenso" de Control muestre "Sí" (ver [→ Contexto_Base_Web.md §22B038]
+var REQUISITOS_ASCENSO = {
+  ATAQUES_PCT: 1.0,      // Ataques.% >= 100%
+  MIEMBRO_PROM: 2500,    // Puntaje.Prom si Rango actual = "Miembro"
+  VETERANO_PROM: 3000,   // Puntaje.Prom si Rango actual = "Veterano"
+  BARCOS_TOTAL: 0        // Barcos.Total debe ser exactamente 0
+};
+
+/**
+ * _ULTIMO_DIAGNOSTICO_GUERRA_CSV [→ Contexto_Base_Web.md §22B042]
+ */
+var _ULTIMO_DIAGNOSTICO_GUERRA_CSV = null;
+
+// MEMO POR EJECUCIÓN de Backup_Guerra.csv (19-sep-2026, pedido del usuario -- [→ Contexto_Base_Web.md §22B043]
+var _GUERRA_MEMO_ACTIVO = false;
+var _GUERRA_CSV_MEMO    = null; // { diag:string|null, totalFilas:number, porTemporada:{ '7': [fila,...] } }
+var _GUERRA_MAPA_MEMO   = {};   // { '7': mapa de _procesarFilasGuerraParaControl() de esa temporada histórica }
+// 19-sep-2026 (medición real: control2Vigente=4.9 s, valoresDiarios=2.3 s): filas crudas de la hoja
+// Guerra (getValues) leídas UNA vez durante la sesión del dashboard, en vez de una por cuadrícula.
+var _GUERRA_HOJA_MEMO   = null;
+
+// CRUCE DE META POR DÍA (19-sep-2026, pedido del usuario): ¿el clan ya había [→ Contexto_Base_Web.md §22B051]
+var _CRUCE_META_LOGS_MEMO = null;   // { 'temp|clan': { periodIndex: {ini, fin} } }
+var _CRUCE_META_RES_MEMO  = {};     // { 'temp|clan|pIdx': true/false }
+var _CRUCE_META_JSON_IDX  = {};     // { 'clan': { t, fresco, ids: { 'T|S|P': idArchivoDrive } } } (PF144: ya no guarda DriveFile)
+var _CRUCE_META_JSON_RES  = {};     // { 'temp|clan|pIdx': true/false/null }
+
+/**
+ * CONTROL_SUMA_ENTRE_CLANES (3-oct-2026, parte 54, sub-tanda 3.4 de la Tanda 3, pregunta 42 y 56 del consolidado) [→ Contexto_Base_Web.md §22B060]
+ */
+var CONTROL_SUMA_ENTRE_CLANES = true;
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
 
 // SECCIÓN 2: RESTO DE FUNCIONES (Extra, Control, Calendario, helpers internos) [→ Contexto_Base_Web.md §22B001]
+
+// CONTROL [→ Contexto_Base_Web.md §22B007]
 
 function updateExtraSheet() {
   var ss  = _getSs();
@@ -32370,34 +32747,6 @@ function updateExtraSheet() {
   applyBorderCenter(sh.getRange(2, 1, Math.max(sh.getLastRow() - 1, 1), totalColsExtra));
 
   Logger.log('[Extra] updateExtraSheet completado. Columnas detectadas: ' + totalColsExtra);
-}
-
-// CONTROL [→ Contexto_Base_Web.md §22B007]
-
-// FIX (rendimiento, sept-2026 -- runGuerra() cortándose por "Exceeded maximum [→ Contexto_Base_Web.md §22B008]
-
-var CONTROL_LIMPIAR_LINKS_INTERVALO_MS = 60 * 60 * 1000; // máx. 1 vez por hora, igual criterio que Guerra
-var CONTROL_FORMATO_REBUILD_MAX_ELAPSED_MS = 6 * 60 * 60 * 1000; // respaldo: forzar rebuild al menos cada 6h
-
-/**
- * _controlNecesitaRebuildFormato(ctx, numJugadores) [→ Contexto_Base_Web.md §22B009]
- */
-function _controlNecesitaRebuildFormato(ctx, numJugadores) {
-  var props = PropertiesService.getScriptProperties();
-  var claveFirma   = '_controlFormatoFirma';
-  var claveUltimoMs = '_controlFormatoUltimoRebuildMs';
-
-  var firmaActual = numJugadores + '|' + ctx.temporada + '|' + ctx.sectionIndex;
-  var firmaPrev   = props.getProperty(claveFirma);
-  var ultimoMs    = Number(props.getProperty(claveUltimoMs)) || 0;
-  var pasoElRespaldo = (Date.now() - ultimoMs) >= CONTROL_FORMATO_REBUILD_MAX_ELAPSED_MS;
-
-  if (firmaActual !== firmaPrev || pasoElRespaldo) {
-    props.setProperty(claveFirma, firmaActual);
-    props.setProperty(claveUltimoMs, String(Date.now()));
-    return true;
-  }
-  return false;
 }
 
 function updateControlSheet(ctxOverride) {
@@ -32731,6 +33080,125 @@ function mostrarTemporadaEnControl() {
   }
 }
 
+function resaltarDiaActual() {
+  var ss  = _getSs();
+  var sh  = ss.getSheetByName(CFG.SHEETS.CALENDARIO);
+  if (!sh || sh.getLastRow() < 5) return;
+
+  // "Hoy" se calcula a partir de ctx.diaGuerra (fecha derivada de la [→ Contexto_Base_Web.md §22B036]
+  var ctx     = _getCtx();
+  var hoy     = (ctx.diaGuerra instanceof Date && !isNaN(ctx.diaGuerra.getTime())) ? ctx.diaGuerra : new Date();
+  var mesAbrevs = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  var textoHoy = String(hoy.getDate()) + '-' + mesAbrevs[hoy.getMonth()];
+
+  var lastRow = sh.getLastRow();
+  var filasFecha = [7, 11, 15, 19, 23];
+  var filasTarea = [6, 10, 14, 18, 22];
+
+  for (var i = 0; i < filasFecha.length; i++) {
+    if (filasFecha[i] > lastRow) break;
+    _clearBg(sh.getRange(filasFecha[i], 4, 1, 7));
+    if (filasTarea[i] <= lastRow) _clearBg(sh.getRange(filasTarea[i], 4, 1, 7));
+  }
+
+  for (var i = 0; i < filasFecha.length; i++) {
+    if (filasFecha[i] > lastRow) break;
+    var celdas = sh.getRange(filasFecha[i], 4, 1, 7).getDisplayValues()[0];
+    for (var d = 0; d < celdas.length; d++) {
+      if (String(celdas[d]).trim() === textoHoy) {
+        sh.getRange(filasFecha[i], 4 + d).setBackground('#FDFD96');
+        if (filasTarea[i] <= lastRow) {
+          sh.getRange(filasTarea[i], 4 + d).setBackground('#FDFD96');
+        }
+        break;
+      }
+    }
+  }
+
+  Logger.log('[Calendario] Día resaltado correctamente: ' + textoHoy);
+}
+
+function updateCalendario2() {
+  var ss  = _getSs();
+  var shCal  = ss.getSheetByName(CFG.SHEETS.CALENDARIO);
+  var shCal2 = ss.getSheetByName(CFG.SHEETS.CALENDARIO2);
+  if (!shCal || !shCal2) return;
+
+  var ctx     = _getCtx();
+  var filasTarea = [6, 10, 14, 18, 22];
+  var diasLetra  = ['L','M','X','J','V','S','D'];
+
+  var existingIds = {};
+  var last2 = shCal2.getLastRow();
+  if (last2 >= 2) {
+    var data2 = shCal2.getRange(2, 1, last2 - 1, 6).getValues();
+    for (var i = 0; i < data2.length; i++) {
+      var t = String(data2[i][2] || '');
+      var s = String(data2[i][3] || '');
+      var d = String(data2[i][4] || '');
+      existingIds[t + '|' + s + '|' + d] = i + 2;
+    }
+  }
+
+  var lastRowCal = shCal.getLastRow();
+
+  for (var sem = 0; sem < 5; sem++) {
+    var filaTarea = filasTarea[sem];
+    if (filaTarea > lastRowCal) break;
+
+    var notas = shCal.getRange(filaTarea, 4, 1, 7).getValues()[0];
+
+    for (var d = 0; d < 7; d++) {
+      var nota     = String(notas[d] || '').trim();
+      if (!nota) continue;
+
+      var diaLetra = diasLetra[d];
+      var idClave  = String(ctx.temporada) + '|' + (sem + 1) + '|' + diaLetra;
+
+      if (existingIds[idClave]) {
+        var rowToUpdate = existingIds[idClave];
+        shCal2.getRange(rowToUpdate, 6).setValue(nota);
+        continue;
+      }
+
+      var newN = shCal2.getLastRow() + 1;
+      shCal2.appendRow([newN, new Date(), ctx.temporada, sem + 1, diaLetra, nota]);
+      var newRow = shCal2.getLastRow();
+      _setDateCell(shCal2, newRow, 2, new Date(), 'dd/mm/yyyy');
+      existingIds[idClave] = newRow;
+    }
+  }
+
+  Logger.log('[Calendario_2] Sincronización completada.');
+}
+
+// ===== PARTE 2 — Funciones que no se corren a mano =====
+
+// ----- Hoja Control: ayuda del formato -----
+
+/**
+ * _controlNecesitaRebuildFormato(ctx, numJugadores) [→ Contexto_Base_Web.md §22B009]
+ */
+function _controlNecesitaRebuildFormato(ctx, numJugadores) {
+  var props = PropertiesService.getScriptProperties();
+  var claveFirma   = '_controlFormatoFirma';
+  var claveUltimoMs = '_controlFormatoUltimoRebuildMs';
+
+  var firmaActual = numJugadores + '|' + ctx.temporada + '|' + ctx.sectionIndex;
+  var firmaPrev   = props.getProperty(claveFirma);
+  var ultimoMs    = Number(props.getProperty(claveUltimoMs)) || 0;
+  var pasoElRespaldo = (Date.now() - ultimoMs) >= CONTROL_FORMATO_REBUILD_MAX_ELAPSED_MS;
+
+  if (firmaActual !== firmaPrev || pasoElRespaldo) {
+    props.setProperty(claveFirma, firmaActual);
+    props.setProperty(claveUltimoMs, String(Date.now()));
+    return true;
+  }
+  return false;
+}
+
+// ----- Calendario: generación -----
+
 function GenerarCalendario(mes, anio) {
   var ss  = _getSs();
   var sh  = ss.getSheetByName(CFG.SHEETS.CALENDARIO);
@@ -32855,99 +33323,7 @@ function GenerarCalendario(mes, anio) {
   Logger.log('[Calendario] Generado para ' + mesNombre + ' ' + anio + ' (' + numSem + ' semanas)');
 }
 
-function resaltarDiaActual() {
-  var ss  = _getSs();
-  var sh  = ss.getSheetByName(CFG.SHEETS.CALENDARIO);
-  if (!sh || sh.getLastRow() < 5) return;
-
-  // "Hoy" se calcula a partir de ctx.diaGuerra (fecha derivada de la [→ Contexto_Base_Web.md §22B036]
-  var ctx     = _getCtx();
-  var hoy     = (ctx.diaGuerra instanceof Date && !isNaN(ctx.diaGuerra.getTime())) ? ctx.diaGuerra : new Date();
-  var mesAbrevs = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  var textoHoy = String(hoy.getDate()) + '-' + mesAbrevs[hoy.getMonth()];
-
-  var lastRow = sh.getLastRow();
-  var filasFecha = [7, 11, 15, 19, 23];
-  var filasTarea = [6, 10, 14, 18, 22];
-
-  for (var i = 0; i < filasFecha.length; i++) {
-    if (filasFecha[i] > lastRow) break;
-    _clearBg(sh.getRange(filasFecha[i], 4, 1, 7));
-    if (filasTarea[i] <= lastRow) _clearBg(sh.getRange(filasTarea[i], 4, 1, 7));
-  }
-
-  for (var i = 0; i < filasFecha.length; i++) {
-    if (filasFecha[i] > lastRow) break;
-    var celdas = sh.getRange(filasFecha[i], 4, 1, 7).getDisplayValues()[0];
-    for (var d = 0; d < celdas.length; d++) {
-      if (String(celdas[d]).trim() === textoHoy) {
-        sh.getRange(filasFecha[i], 4 + d).setBackground('#FDFD96');
-        if (filasTarea[i] <= lastRow) {
-          sh.getRange(filasTarea[i], 4 + d).setBackground('#FDFD96');
-        }
-        break;
-      }
-    }
-  }
-
-  Logger.log('[Calendario] Día resaltado correctamente: ' + textoHoy);
-}
-
-function updateCalendario2() {
-  var ss  = _getSs();
-  var shCal  = ss.getSheetByName(CFG.SHEETS.CALENDARIO);
-  var shCal2 = ss.getSheetByName(CFG.SHEETS.CALENDARIO2);
-  if (!shCal || !shCal2) return;
-
-  var ctx     = _getCtx();
-  var filasTarea = [6, 10, 14, 18, 22];
-  var diasLetra  = ['L','M','X','J','V','S','D'];
-
-  var existingIds = {};
-  var last2 = shCal2.getLastRow();
-  if (last2 >= 2) {
-    var data2 = shCal2.getRange(2, 1, last2 - 1, 6).getValues();
-    for (var i = 0; i < data2.length; i++) {
-      var t = String(data2[i][2] || '');
-      var s = String(data2[i][3] || '');
-      var d = String(data2[i][4] || '');
-      existingIds[t + '|' + s + '|' + d] = i + 2;
-    }
-  }
-
-  var lastRowCal = shCal.getLastRow();
-
-  for (var sem = 0; sem < 5; sem++) {
-    var filaTarea = filasTarea[sem];
-    if (filaTarea > lastRowCal) break;
-
-    var notas = shCal.getRange(filaTarea, 4, 1, 7).getValues()[0];
-
-    for (var d = 0; d < 7; d++) {
-      var nota     = String(notas[d] || '').trim();
-      if (!nota) continue;
-
-      var diaLetra = diasLetra[d];
-      var idClave  = String(ctx.temporada) + '|' + (sem + 1) + '|' + diaLetra;
-
-      if (existingIds[idClave]) {
-        var rowToUpdate = existingIds[idClave];
-        shCal2.getRange(rowToUpdate, 6).setValue(nota);
-        continue;
-      }
-
-      var newN = shCal2.getLastRow() + 1;
-      shCal2.appendRow([newN, new Date(), ctx.temporada, sem + 1, diaLetra, nota]);
-      var newRow = shCal2.getLastRow();
-      _setDateCell(shCal2, newRow, 2, new Date(), 'dd/mm/yyyy');
-      existingIds[idClave] = newRow;
-    }
-  }
-
-  Logger.log('[Calendario_2] Sincronización completada.');
-}
-
-// ----- Funciones internas / helpers -----
+// ----- Hoja Control: requisitos de ascenso, lectura de guerra, cruce de meta y formato condicional -----
 
 /**
  * _clonarCtxParaTemporada(ctxReal, temporadaMostrar) [→ Contexto_Base_Web.md §22B037]
@@ -32967,13 +33343,6 @@ function _clonarCtxParaTemporada(ctxReal, temporadaMostrar) {
   ctx.periodIndexSospechoso = false;
   return ctx;
 }
-// Requisitos para que la columna "Ascenso" de Control muestre "Sí" (ver [→ Contexto_Base_Web.md §22B038]
-var REQUISITOS_ASCENSO = {
-  ATAQUES_PCT: 1.0,      // Ataques.% >= 100%
-  MIEMBRO_PROM: 2500,    // Puntaje.Prom si Rango actual = "Miembro"
-  VETERANO_PROM: 3000,   // Puntaje.Prom si Rango actual = "Veterano"
-  BARCOS_TOTAL: 0        // Barcos.Total debe ser exactamente 0
-};
 /**
  * _evaluarRequisitosAscenso(rango, ataqPct, puntProm, barcoTotal) [→ Contexto_Base_Web.md §22B039]
  */
@@ -33033,19 +33402,6 @@ function _maxOVacio(arr, base, n) {
   }
   return vals.length === 0 ? '' : Math.max.apply(null, vals);
 }
-
-/**
- * _ULTIMO_DIAGNOSTICO_GUERRA_CSV [→ Contexto_Base_Web.md §22B042]
- */
-var _ULTIMO_DIAGNOSTICO_GUERRA_CSV = null;
-
-// MEMO POR EJECUCIÓN de Backup_Guerra.csv (19-sep-2026, pedido del usuario -- [→ Contexto_Base_Web.md §22B043]
-var _GUERRA_MEMO_ACTIVO = false;
-var _GUERRA_CSV_MEMO    = null; // { diag:string|null, totalFilas:number, porTemporada:{ '7': [fila,...] } }
-var _GUERRA_MAPA_MEMO   = {};   // { '7': mapa de _procesarFilasGuerraParaControl() de esa temporada histórica }
-// 19-sep-2026 (medición real: control2Vigente=4.9 s, valoresDiarios=2.3 s): filas crudas de la hoja
-// Guerra (getValues) leídas UNA vez durante la sesión del dashboard, en vez de una por cuadrícula.
-var _GUERRA_HOJA_MEMO   = null;
 
 function _guerraMemoIniciar_() {
   _GUERRA_MEMO_ACTIVO = true;
@@ -33200,12 +33556,6 @@ function _getDatosGuerraDesdeCsvParaControl(ctx) {
     return {};
   }
 }
-
-// CRUCE DE META POR DÍA (19-sep-2026, pedido del usuario): ¿el clan ya había [→ Contexto_Base_Web.md §22B051]
-var _CRUCE_META_LOGS_MEMO = null;   // { 'temp|clan': { periodIndex: {ini, fin} } }
-var _CRUCE_META_RES_MEMO  = {};     // { 'temp|clan|pIdx': true/false }
-var _CRUCE_META_JSON_IDX  = {};     // { 'clan': { t, fresco, ids: { 'T|S|P': idArchivoDrive } } } (PF144: ya no guarda DriveFile)
-var _CRUCE_META_JSON_RES  = {};     // { 'temp|clan|pIdx': true/false/null }
 
 function _cruceNormTemporada_(t) {
   var n = Number(t);
@@ -33448,11 +33798,6 @@ function _cruceMetaDesdeCacheApi_(buscado, pIdx) {
   }
   return null;
 }
-
-/**
- * CONTROL_SUMA_ENTRE_CLANES (3-oct-2026, parte 54, sub-tanda 3.4 de la Tanda 3, pregunta 42 y 56 del consolidado) [→ Contexto_Base_Web.md §22B060]
- */
-var CONTROL_SUMA_ENTRE_CLANES = true;
 
 /**
  * _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) [→ Contexto_Base_Web.md §22B061]
@@ -33981,6 +34326,7 @@ function _reglasCondFmtPuntajeTotalSemana(rangoPunt, letr, colClanL) {
     SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied(formNaranja).setBackground(CFG.COLORES.PUNTAJE_BAJO_BG).setRanges([rangoPunt]).build()
   ];
 }
+
 
 // --- ARCHIVO: 23_Control2_GuerraSemanal.gs ---
 // 23_Control2_GuerraSemanal.gs
@@ -34549,6 +34895,16 @@ function _control2ColTotales() {
 
 
 // --- ARCHIVO: 24_Historial_Ascensos.gs ---
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Columnas Temporada / Semana / Día
+//    - Columna Par_CR de Historial_A/D
+//    - Limpieza de duplicados de Historial_I/S
+//  Parte 2 — Funciones que no se corren a mano
+//    - Hoja Historial_A/D: actualización, formato y ayudas
+//    - Cambio de rango: corrida más reciente y verificación contra lo aplicado
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // ==============================================================================
 // 24_Historial_Ascensos.gs
 // Vista derivada del Directorio: hoja Historial_A/D (ingresos, salidas, ascensos).
@@ -34556,7 +34912,7 @@ function _control2ColTotales() {
 
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS [→ Contexto_Base_Web.md §24B001]
 
-// ----- Variables y constantes -----
+// ----- Constantes y variables globales -----
 
 // Orden jerárquico de rangos (usa la MISMA ortografía que mapRol() en [→ Contexto_Base_Web.md §24B002]
 var RANGO_ORDEN = ['Miembro', 'Veterano', 'Colíder', 'Líder'];
@@ -34570,7 +34926,10 @@ var HISTORIAL_TOTAL_COLS = 12; // Historial_I/S: 7 columnas propias + 5 de TSD
 var HISTORIAL_TSD_COL = 8;     // primera columna de TSD en Historial_I/S
 var ASC_PAR_ENCABEZADO = 'Par_CR'; // encabezado de la columna ASC.PAR_ID de Historial_A/D (PF286)
 
-// ----- Funciones manuales / punto de entrada -----
+// Tipos de Historial_A/D que son un cambio real de la cuenta (los que la rama «verificar» busca cuando no hay propuesta). «Elegible Admin» no lo es: solo se propone, no cambia el rango.
+var CR_TIPOS_CAMBIO_REAL_ = { 'Ascenso': true, 'Degradación': true, 'Expulsión': true, 'Ascenso de clan': true };
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
 
 /**
  * completarTemporadaSemanaDiaHojas() — proyecto Base. Rellena (o recalcula) las 5 columnas Temporada / Temporada RoyaleAPI / Temporada Supercell / Semana / Día
@@ -34725,6 +35084,10 @@ function limpiarDuplicadosHistorial() {
   Logger.log('[Limpieza Historial] Eliminados ' + eliminados + ' registros duplicados (sin cambio real de estado entre medio).');
 }
 
+// ===== PARTE 2 — Funciones que no se corren a mano =====
+
+// ----- Hoja Historial_A/D: actualización, formato y ayudas -----
+
 function updateAscensosSheet(ss, dirData) {
   var sh = ss.getSheetByName(CFG.SHEETS.ASCENSOS);
   if (!sh) { Logger.log('[Ascensos] ABORT: hoja Ascensos no existe.'); return; }
@@ -34820,7 +35183,6 @@ function updateAscensosSheet(ss, dirData) {
     propuestasResueltas + ' propuesta(s) CR_Lista resuelta(s) como Realizado, hoja reordenada globalmente.');
 }
 
-// ----- Funciones internas / helpers -----
 
 /**
  * _tsdDesdeFecha_(fecha, offset, ref) [→ Contexto_Base_Web.md §PF267]
@@ -35782,9 +36144,6 @@ function _corridaDePar_(registros, parId, claveDia) {
 }
 
 // --- Verificar un cambio de rango: propuestas de la corrida más reciente contra lo realmente aplicado (PF286 punto 11 (c), 28-oct-2026; la usa la rama «verificar» de la web) [→ Contexto_Base_Web.md §PF286] ---
-
-// Tipos de Historial_A/D que son un cambio real de la cuenta (los que la rama «verificar» busca cuando no hay propuesta). «Elegible Admin» no lo es: solo se propone, no cambia el rango.
-var CR_TIPOS_CAMBIO_REAL_ = { 'Ascenso': true, 'Degradación': true, 'Expulsión': true, 'Ascenso de clan': true };
 
 /**
  * _leerVerificacionCambioRangoHistorial_()
@@ -46466,6 +46825,16 @@ function _fmt(v) {
 
 
 // --- ARCHIVO: 31_Cards_Mazos.gs ---
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Hojas de cartas (Cards y Cards_2)
+//    - Costos de subida de nivel (prueba con un jugador)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Datos de cartas: lectura y escritura de los CSV, cartas de torre y niveles
+//    - Generador de links de mazos de RoyaleAPI (los que llama la web, y sus ayudas)
+//    - Costos de subida de nivel: catálogo y cálculo
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // ==============================================================================
 // 31_Cards_Mazos.gs
 // Datos de cartas (hoja Cards/Cards2) y generador de links de mazo de RoyaleAPI.
@@ -46473,7 +46842,17 @@ function _fmt(v) {
 
 // REGLA DE TRABAJO DE ESTE PROYECTO (ver también 17_GuerraSheet.gs): toda [→ Contexto_Base_Web.md §31B001]
 
-// ----- Funciones manuales / punto de entrada -----
+// ----- Constantes y variables globales -----
+
+// DIFERENCIA FIJA DE NIVEL POR RAREZA (nivel del JSON -> nivel unificado de la app) [→ Contexto_Base_Web.md §31B014]
+var _cacheDiferenciaNivelPorRareza = null;
+
+// CARTAS DE TORRE (24-sep-2026, pedido del usuario). Las tropas de torre viven en [→ Contexto_Base_Web.md §31B015]
+var CARTAS_TORRE_ID_MIN = 159000000;
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
+
+// ----- Hojas de cartas (Cards y Cards_2) -----
 
 /**
  * updateCardsSheet() [→ Contexto_Base_Web.md §31B002]
@@ -46681,43 +47060,57 @@ function updateCards2Sheet() {
   }
 }
 
-/**
- * generarUrlMazo(tag) [→ Contexto_Base_Web.md §31B011]
- */
-function generarUrlMazo(tag) {
-  if (!tag) return null;
-  var tagClean = String(tag).trim();
-  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
-
-  var ss = _getSs();
-  var cardInfo      = _construirCardInfoMap(ss);
-  var cards2PorTag  = _construirCards2PorTag(ss);
-  return _generarUrlMazoDesdeMapas(tagClean, cardInfo, cards2PorTag[tagClean]);
-}
+// ----- Costos de subida de nivel (prueba con un jugador) -----
 
 /**
- * generarUrlMazo2(tag) [→ Contexto_Base_Web.md §31B012]
+ * probarCostosSubirNivel() [→ Contexto_Base_Web.md §31B063]
  */
-function generarUrlMazo2(tag) {
-  if (!tag) return null;
-  var tagClean = String(tag).trim();
-  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
+function probarCostosSubirNivel() {
+  var cards2 = _leerCards2CSV();
+  var tag = '';
+  for (var i = 0; i < cards2.rows.length; i++) {
+    var t = String(cards2.rows[i][1] || '').trim();
+    if (t) { tag = t; break; }
+  }
+  if (!tag) {
+    Logger.log('[Cards3] Backup_Cards_2.csv vacío o inexistente: no hay jugador con el que probar.');
+    return;
+  }
 
-  var ss = _getSs();
-  var cardInfo      = _construirCardInfoMap(ss);
-  var cards2PorTag  = _construirCards2PorTag(ss);
-  return _generarUrlMazo2DesdeMapas(tagClean, cardInfo, cards2PorTag[tagClean]);
+  var lista = costosSubirNivelJugador(tag);
+  if (!lista.length) return; // el motivo ya quedó en el log
+
+  var bloqueadas = 0, enMax = 0, conCosto = 0, sinDato = 0, maxDistinto = 0;
+  var ejemplos = [];
+  for (var k = 0; k < lista.length; k++) {
+    var it = lista[k];
+    if (it.maxLevelCsv !== null && it.nivelMaxCards3 !== null && it.maxLevelCsv !== it.nivelMaxCards3) maxDistinto++;
+    if (!it.desbloqueada) { bloqueadas++; continue; }
+    if (it.esMax === true) { enMax++; continue; }
+    if (it.esMax === null) { sinDato++; continue; }
+    conCosto++;
+    if (ejemplos.length < 12) {
+      ejemplos.push('  ' + it.nombre + ' (' + it.rarity + ') nivel app ' + it.nivelApp +
+                    ' [rareza ' + it.nivelRareza + '] -> oro ' + it.oro + ' + ' + it.cartas + ' cartas');
+    }
+  }
+
+  Logger.log('[Cards3] ' + tag + ': ' + lista.length + ' cartas | bloqueadas ' + bloqueadas +
+             ' | en nivel máximo ' + enMax + ' | con costo de subida ' + conCosto +
+             ' | sin dato en Backup_Cards_3.csv ' + sinDato);
+  if (maxDistinto > 0) {
+    Logger.log('[Cards3] ' + maxDistinto + ' carta(s) tienen en Backup_Cards.csv un Maxlevel distinto al nivel ' +
+               'máximo de su rareza en Backup_Cards_3.csv, y ambos usan la misma numeración (la del JSON), así que ' +
+               'deberían coincidir. Si el Maxlevel es MAYOR: nivel nuevo sin cargar en Backup_Cards_3.csv. Si es ' +
+               'MENOR: Maxlevel viejo, corre updateCardsSheet() para refrescarlo.');
+  }
+  _avisarRevisionNivelesCards(_leerCardsCSV().rows);
+  for (var e = 0; e < ejemplos.length; e++) Logger.log(ejemplos[e]);
 }
 
-// ----- Funciones internas / helpers -----
+// ===== PARTE 2 — Funciones que no se corren a mano =====
 
 // D) DATOS DE CARTAS: Backup_Cards.csv (fijos) y Backup_Cards_2.csv (por jugador) [→ Contexto_Base_Web.md §31B013]
-
-// DIFERENCIA FIJA DE NIVEL POR RAREZA (nivel del JSON -> nivel unificado de la app) [→ Contexto_Base_Web.md §31B014]
-var _cacheDiferenciaNivelPorRareza = null;
-
-// CARTAS DE TORRE (24-sep-2026, pedido del usuario). Las tropas de torre viven en [→ Contexto_Base_Web.md §31B015]
-var CARTAS_TORRE_ID_MIN = 159000000;
 
 /**
  * _esCartaTorreDatos(id, tipo) [→ Contexto_Base_Web.md §31B016]
@@ -47323,6 +47716,34 @@ function _getTagsConPlayerCache() {
 // GENERADOR DE LINKS DE MAZOS ROYALEAPI [→ Contexto_Base_Web.md §31B042]
 
 /**
+ * generarUrlMazo(tag) [→ Contexto_Base_Web.md §31B011]
+ */
+function generarUrlMazo(tag) {
+  if (!tag) return null;
+  var tagClean = String(tag).trim();
+  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
+
+  var ss = _getSs();
+  var cardInfo      = _construirCardInfoMap(ss);
+  var cards2PorTag  = _construirCards2PorTag(ss);
+  return _generarUrlMazoDesdeMapas(tagClean, cardInfo, cards2PorTag[tagClean]);
+}
+
+/**
+ * generarUrlMazo2(tag) [→ Contexto_Base_Web.md §31B012]
+ */
+function generarUrlMazo2(tag) {
+  if (!tag) return null;
+  var tagClean = String(tag).trim();
+  if (tagClean.charAt(0) !== '#') tagClean = '#' + tagClean;
+
+  var ss = _getSs();
+  var cardInfo      = _construirCardInfoMap(ss);
+  var cards2PorTag  = _construirCards2PorTag(ss);
+  return _generarUrlMazo2DesdeMapas(tagClean, cardInfo, cards2PorTag[tagClean]);
+}
+
+/**
  * _cardNameToSlug(name) [→ Contexto_Base_Web.md §31B043]
  */
 function _cardNameToSlug(name) {
@@ -47858,51 +48279,6 @@ function _avisarRevisionNivelesCards(cardsRows) {
   _avisarNivelesFaltantesCards3(cardsRows);
 }
 
-/**
- * probarCostosSubirNivel() [→ Contexto_Base_Web.md §31B063]
- */
-function probarCostosSubirNivel() {
-  var cards2 = _leerCards2CSV();
-  var tag = '';
-  for (var i = 0; i < cards2.rows.length; i++) {
-    var t = String(cards2.rows[i][1] || '').trim();
-    if (t) { tag = t; break; }
-  }
-  if (!tag) {
-    Logger.log('[Cards3] Backup_Cards_2.csv vacío o inexistente: no hay jugador con el que probar.');
-    return;
-  }
-
-  var lista = costosSubirNivelJugador(tag);
-  if (!lista.length) return; // el motivo ya quedó en el log
-
-  var bloqueadas = 0, enMax = 0, conCosto = 0, sinDato = 0, maxDistinto = 0;
-  var ejemplos = [];
-  for (var k = 0; k < lista.length; k++) {
-    var it = lista[k];
-    if (it.maxLevelCsv !== null && it.nivelMaxCards3 !== null && it.maxLevelCsv !== it.nivelMaxCards3) maxDistinto++;
-    if (!it.desbloqueada) { bloqueadas++; continue; }
-    if (it.esMax === true) { enMax++; continue; }
-    if (it.esMax === null) { sinDato++; continue; }
-    conCosto++;
-    if (ejemplos.length < 12) {
-      ejemplos.push('  ' + it.nombre + ' (' + it.rarity + ') nivel app ' + it.nivelApp +
-                    ' [rareza ' + it.nivelRareza + '] -> oro ' + it.oro + ' + ' + it.cartas + ' cartas');
-    }
-  }
-
-  Logger.log('[Cards3] ' + tag + ': ' + lista.length + ' cartas | bloqueadas ' + bloqueadas +
-             ' | en nivel máximo ' + enMax + ' | con costo de subida ' + conCosto +
-             ' | sin dato en Backup_Cards_3.csv ' + sinDato);
-  if (maxDistinto > 0) {
-    Logger.log('[Cards3] ' + maxDistinto + ' carta(s) tienen en Backup_Cards.csv un Maxlevel distinto al nivel ' +
-               'máximo de su rareza en Backup_Cards_3.csv, y ambos usan la misma numeración (la del JSON), así que ' +
-               'deberían coincidir. Si el Maxlevel es MAYOR: nivel nuevo sin cargar en Backup_Cards_3.csv. Si es ' +
-               'MENOR: Maxlevel viejo, corre updateCardsSheet() para refrescarlo.');
-  }
-  _avisarRevisionNivelesCards(_leerCardsCSV().rows);
-  for (var e = 0; e < ejemplos.length; e++) Logger.log(ejemplos[e]);
-}
 
 // --- ARCHIVO: 32_Insignias.gs ---
 // 32_Insignias.gs
@@ -54566,19 +54942,34 @@ var WEB_GUERRA_VIVO_TTL_CALENTADO_VENTANA_SEG = 660;
 var WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG   = 7200;
 
 // _calentarCacheGuerraEnVivo_(): Recalcula el dashboard (_getDatosDashboard(), el mismo que devuelve _webGuerraEnVivo() a los visitantes) y lo guarda en el MISMO caché (WEB_GUERRA_VIVO_KEY) con `ttlSeg` segundos de vida. Pensada para llamarse desde el bot… [→ Contexto_Base_Web.md §37B362]
-function _calentarCacheGuerraEnVivo_(ttlSeg) {
+// PF311 parte A (31-oct-2026): true si la última llamada a _calentarCacheGuerraEnVivo_() con límite de tiempo dejó sin publicar alguno de los cuatro JSON por falta de tiempo. Lo lee _runGuerraColaHoraria_() (00_Main.gs). [→ Contexto_Base_Web.md §PF311]
+var CALENTAR_OMITIO_PUBLICACION_ = false;
+
+// PF311 parte A: ¿queda tiempo para otra publicación a GitHub (15 a 35 s cada una en el registro del 24 al 31-oct)? Sin límite (limiteMs vacío) siempre devuelve true, como antes.
+function _calentarHayTiempoParaPublicar_(limiteMs, nombre) {
+  if (!limiteMs) return true;
+  var quedaMs = limiteMs - Date.now();
+  if (quedaMs > 40000) return true;
+  CALENTAR_OMITIO_PUBLICACION_ = true;
+  _diagGuerraVivo_('[Publicaciones] Se omite ' + nombre + ': quedan ' + Math.max(0, Math.round(quedaMs / 1000)) + ' s antes del límite de la ejecución. Se publica en la continuación.');
+  return false;
+}
+
+function _calentarCacheGuerraEnVivo_(ttlSeg, limiteMs) {
   var t0 = Date.now();
+  CALENTAR_OMITIO_PUBLICACION_ = false;
   var ttl = Number(ttlSeg) || WEB_GUERRA_VIVO_TTL_SEG;
   var cache = CacheService.getScriptCache();
   var claveCalc = WEB_GUERRA_VIVO_KEY + '_calc';
   try { cache.put(claveCalc, '1', 90); } catch (e0) { /* sin coordinación: se calienta igual */ }
   try {
     var datos = _getDatosDashboard();
+    _diagGuerraVivo_('[WebGuerraEnVivo] datos del dashboard calculados en ' + (Date.now() - t0) + 'ms');
     var ok = _webCacheGrandeGuardar_(WEB_GUERRA_VIVO_KEY, datos, ttl);
-    try { _publicarGuerraEstatico_(datos); } catch (ePub) { _diagGuerraVivo_('[GuerraEstatico] error inesperado (no afecta al bot): ' + ePub); } // NUEVO 08-oct-2026: copia pública en GitHub, ver 39_Publicar_Guerra.gs
-    try { _publicarRosterEstatico_(); } catch (eRos) { _diagGuerraVivo_('[RosterEstatico] error inesperado (no afecta al bot): ' + eRos); }
-    try { _publicarHomeEstatico_(); } catch (eHome) { _diagGuerraVivo_('[HomeEstatico] error inesperado (no afecta al bot): ' + eHome); }
-    try { _publicarTorneosEstatico_(); } catch (eTor) { _diagGuerraVivo_('[TorneosEstatico] error inesperado (no afecta al bot): ' + eTor); }
+    if (_calentarHayTiempoParaPublicar_(limiteMs, 'guerra.json')) try { _publicarGuerraEstatico_(datos); } catch (ePub) { _diagGuerraVivo_('[GuerraEstatico] error inesperado (no afecta al bot): ' + ePub); } // NUEVO 08-oct-2026: copia pública en GitHub, ver 39_Publicar_Guerra.gs
+    if (_calentarHayTiempoParaPublicar_(limiteMs, 'roster.json')) try { _publicarRosterEstatico_(); } catch (eRos) { _diagGuerraVivo_('[RosterEstatico] error inesperado (no afecta al bot): ' + eRos); }
+    if (_calentarHayTiempoParaPublicar_(limiteMs, 'home.json')) try { _publicarHomeEstatico_(); } catch (eHome) { _diagGuerraVivo_('[HomeEstatico] error inesperado (no afecta al bot): ' + eHome); }
+    if (_calentarHayTiempoParaPublicar_(limiteMs, 'torneos.json')) try { _publicarTorneosEstatico_(); } catch (eTor) { _diagGuerraVivo_('[TorneosEstatico] error inesperado (no afecta al bot): ' + eTor); }
     _diagGuerraVivo_('[WebGuerraEnVivo] caché CALENTADA por el bot en ' + (Date.now() - t0) + 'ms, TTL ' + ttl + ' s' + (ok ? '' : ' (NO se pudo guardar)'));
     return ok;
   } finally {
@@ -59781,13 +60172,22 @@ function _getOrdenClanHoja(ss) {
 
 
 // --- ARCHIVO: 44_BotWhatsApp.gs ---
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Simulador del bot (sin WhatsApp)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Envío de mensajes por WhatsApp
+//    - Opciones interactivas, router principal y estado de conversación
+//    - Autorización, textos y respuestas por categoría
+//    - Gestión de información de miembros, torneos e información del clan (según los encabezados del archivo)
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 // ==============================================================================
 // 44_BotWhatsApp.gs
 // Bot conversacional de WhatsApp (maquina de estados). El router web (doPost)
 // vive en 38_Web_Endpoints.gs; aqui solo la logica de conversacion del bot.
 // ==============================================================================
 
-// ----- Variables y constantes -----
+// ----- Constantes y variables globales -----
 
 // =============================================================================
 // Bot de WhatsApp "Sweetyuri_jj", router de intenciones: autorizado → admin → bienvenida → menú de categorías; comandos "0" y "9"; avance Fases 9-15. Estado: estuvo conectado a Meta un tiempo; hoy inactivo (sin chip). Código conservado; simularMensajeBot() prueba el flujo sin WhatsApp. [→ Contexto_Base_Web.md §44B001]
@@ -59829,7 +60229,7 @@ var FUENTES_CONTENIDO = [
   { sheet: CFG.SHEETS.MENSAJES,   colCategoria: 8, colSubcategoria: 10, colClan: 12, colContenido: 15, totalCols: 15, csv: 'Backup_Mensajes.csv' },
 ];
 
-// ----- Funciones manuales / punto de entrada -----
+// ===== PARTE 1 — Funciones que se corren a mano =====
 
 // =============================================================================
 // NOTA DE REORDEN 23-ago-2026: simularMensajeBot() se movió arriba, junto a doPost() (funciones manuales juntas). [→ Contexto_Base_Web.md §44B008]
@@ -59850,7 +60250,7 @@ function simularMensajeBot() {
   if (opciones) Logger.log('--- Opciones (' + opciones.length + ') ---\n' + JSON.stringify(opciones));
 }
 
-// ----- Funciones internas / helpers -----
+// ===== PARTE 2 — Funciones que no se corren a mano =====
 
 // _extraerMensajeMeta(body): saca {telefono, texto} del payload de Cloud API (tipos text e interactive). [→ Contexto_Base_Web.md §44B010]
 function _extraerMensajeMeta(body) {
