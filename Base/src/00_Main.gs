@@ -537,6 +537,16 @@ var NOMBRES_PASOS_RUNSYNCCSV = [
  * cancelarEjecucion() - Función PÚBLICA para detener manualmente runAll()/ [→ Contexto_Base_Web.md §B079]
  */
 function cancelarEjecucion() {
+  // PF311 parte C (31-oct-2026): ANTES de borrar nada, se deja la hora de la cancelación de cada cadena que esta función cancela. Una tanda que ya estaba corriendo
+  // no se puede interrumpir, pero al terminar su paso mira esta marca (_cancelacionPedidaDuranteTanda_) y no vuelve a guardar el paso ni programa otra continuación.
+  // Sin la marca, esa tanda volvía a escribir <ID>_PASO y a programar un activador justo después de cancelar. [→ Contexto_Base_Web.md §PF311]
+  try {
+    var horaCancelar = String(Date.now());
+    var propsCancelar = PropertiesService.getScriptProperties();
+    ['RUNALL', 'RUNUPDATE', 'RUNGUERRARAPIDO'].forEach(function(idCadena) { propsCancelar.setProperty(idCadena + '_CANCELADA_TS', horaCancelar); });
+  } catch (eMarcaCancelar) {
+    Logger.log('[Cancelar] AVISO: no se pudo dejar la marca de cancelación (' + eMarcaCancelar.message + '). Si hay una tanda corriendo, puede volver a programar su continuación.');
+  }
   _borrarTriggersDeContinuacion('_continuarRunAll');
   _borrarTriggersDeContinuacion('_continuarRunUpdate');
   // FIX (22-ago-2026): runGuerraRapido() ahora también usa el motor de [→ Contexto_Base_Web.md §B080]
@@ -1965,6 +1975,7 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
     var rellamadasPaso = 0;
     var acumBasePaso = (progPrevio && progPrevio.acum !== null && progPrevio.acum !== undefined && !isNaN(Number(progPrevio.acum))) ? Number(progPrevio.acum) : 0;
     while (resultado === false) {
+      if (_cancelacionPedidaDuranteTanda_(idEjecucion)) break; // PF311 parte C: no se vuelve a llamar al paso si se canceló
       var decision = _decidirRellamadaPaso_(idEjecucion, presupuestoMs, inicioTanda, Date.now() - tInicioLlamada, rellamadasPaso, acumBasePaso, PROGRESO_PASO_);
       if (!decision.si) {
         if (decision.motivo) Logger.log('[' + idEjecucion + '] No se vuelve a llamar al paso ' + (paso + 1) + '/' + pasos.length + ' en esta tanda: ' + decision.motivo + '.');
@@ -1978,6 +1989,13 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       PROGRESO_PASO_ = null;
       tInicioLlamada = Date.now();
       resultado = pasos[paso]();
+    }
+
+    // PF311 parte C: si la usuaria canceló mientras esta tanda corría, no se guarda nada del avance, no se toca el lock ni se programa otra continuación.
+    if (_cancelacionPedidaDuranteTanda_(idEjecucion)) {
+      Logger.log('[' + idEjecucion + '] CANCELADA: se pidió cancelar mientras esta tanda corría. Termina el paso ' + (paso + 1) + '/' + pasos.length +
+        ', no se guarda el avance y no se programa otra continuación. Ya puedes ejecutar la cadena desde cero.');
+      return false;
     }
 
     if (resultado === false) {
@@ -2021,6 +2039,19 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
   _revisarCsvAlSalir_(INICIO_TANDA_MS_); // PF291
   _borrarTriggersDeContinuacion(nombreHandlerContinuacion);
   return true;
+}
+
+/**
+ * _cancelacionPedidaDuranteTanda_(idEjecucion) - PF311 parte C. Devuelve true si cancelarEjecucion() dejó su marca (<ID>_CANCELADA_TS) DESPUÉS de que empezó la tanda actual
+ * (INICIO_TANDA_MS_). Una cancelación anterior al inicio de la tanda no cuenta, así que la marca no hace falta borrarla y una corrida nueva no se ve afectada. REENUM nunca se
+ * cancela por aquí (PF260). Ante cualquier error al leer devuelve false y todo sigue como antes. [→ Contexto_Base_Web.md §PF311]
+ */
+function _cancelacionPedidaDuranteTanda_(idEjecucion) {
+  if (idEjecucion === 'REENUM') return false;
+  try {
+    var hora = Number(PropertiesService.getScriptProperties().getProperty(idEjecucion + '_CANCELADA_TS') || '0');
+    return hora > 0 && hora >= INICIO_TANDA_MS_;
+  } catch (e) { return false; }
 }
 
 /**
