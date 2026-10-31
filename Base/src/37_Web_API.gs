@@ -1,3 +1,22 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Calentar el caché de la guerra en vivo
+//  Parte 2 — Funciones que no se corren a mano (las llama el router de 38_Web_Endpoints.gs, otras funciones o un activador)
+//    - Acceso: login, sesiones y claves de administradores
+//    - Permisos de administradores (hoja y pantalla)
+//    - Caché web y lectura del Directorio
+//    - Público: roster, clan, rankings, aniversarios, estadísticas e ingresos
+//    - Público: perfil del jugador y comparador
+//    - Público: cofres, battlelog y torneos del jugador
+//    - Público: torneos
+//    - Administración: miembros, vetos y cuentas
+//    - Administración: contenido, semanas y requisitos
+//    - Administración: torneos y sorteos
+//    - Administración: listas CR (ascensos y descensos) y vigentes
+//    - Guerra en vivo (público) y calentamiento del caché
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Solo calentarCacheGuerraEnVivo no tiene parámetros ni llamadas desde otro lugar, por eso es la única manual (deducción de Claude, a confirmar).
+// Al reordenar no se cambió el código de ninguna función; las variables globales que estaban entre las funciones subieron a la zona de constantes y variables.
+
 // 37_Web_API.gs: API del sitio web público de la comunidad (grupoterna.github.io/Web); distinto del dashboard interno (38_Web_Endpoints.gs) y del bot (44_BotWhatsApp.gs), aunque reutiliza funciones de ambos. [→ Contexto_Base_Web.md §37B001]
 
 // Este archivo SOLO define funciones; el enrutamiento (doGet/doPost) vive en 38_Web_Endpoints.gs. Alcance Fases 0-8 (lista de acciones web*: lectura pública, login, admin, torneos, registro/vetado) y decisiones de diseño: Fase 2 = visor de contenido de solo lectura (no hay webGuardarContenido), Fase 3 = sin endpoint de ganadores, Fase 4 = registro y vetado, Fase 5 = login Celular+Clave, Panel de permisos (19-sep-2026, solo PANEL_PERMISOS_CELULAR; Función 'Corregir autor'). Lista completa en el .md. [→ Contexto_Base_Web.md §37B002]
@@ -7,20 +26,112 @@
 // ----- Variables y constantes -----
 
 // FASE 6 — SEGURIDAD (15-sep-2026, B-35): los tokens viven en Script Properties (8: WEB_MEMBER_TOKEN, CONTACTOS_TOKEN, DASHBOARD_TOKEN, CORRECCION_GUERRA_TOKEN, HISTORIAL_GUERRA_TOKEN, NUEVOS_ROYALEAPI_TOKEN, VERIFICAR_RIVERRACE_TOKEN, CLAVE_ADMIN_PEPPER); desde 19-sep-2026 sin literales de respaldo, _scriptToken() corta con error si falta una. [→ Contexto_Base_Web.md §37B004]
-
-
-
-
 // Token público de solo-lectura de las acciones web* de doGet; más débil que DASHBOARD_TOKEN y visible en el JS del repo público. ACTUALIZADO 28-sep-2026: estado 'Inactivo', esRivalTemporada/clanRivalDetectado y nomMulti/prestamo solo salen con sessionToken de admin. No reutilizar el token del dashboard ni el de contactos. [→ Contexto_Base_Web.md §37B005]
 var WEB_MEMBER_TOKEN = _scriptToken('WEB_MEMBER_TOKEN');
 
 // Duración de la sesión de admin en segundos; CacheService tiene tope duro de 21600 s (6 h) por entrada. [→ Contexto_Base_Web.md §37B006]
 var WEB_SESSION_DURACION_SEG = 21600; // 6 horas
 
-// ----- Funciones manuales / punto de entrada -----
-
 // _hashClaveAdmin(clave, tag): FASE 6 (15-sep-2026, B-31) SHA-256 de la Clave con pimienta global + Tag como sal (evita una columna Clave_Salt y hashes iguales entre admins); devuelve hex minúscula de 64 caracteres. [→ Contexto_Base_Web.md §37B007]
 var CLAVE_ADMIN_PEPPER = _scriptToken('CLAVE_ADMIN_PEPPER');
+
+// PANEL DE PERMISOS — SOLO PARA DIANA (19-sep-2026): backend de permisos.html (webAdminMisPermisos GET, webPermisosListar GET, webPermisosGuardar POST). Acceso por Celular de la Script Property PANEL_PERMISOS_CELULAR (sin Property, nadie entra); trabaja por Celular y escribe en todas las filas de la multicuenta; sin casillas se guarda '(ninguna)' (una celda vacía se rellena sola); valida contra WEB_FUNCIONES_ADMIN y categorías del índice; Cat_disp SÍ filtra categorías en bot y web (vacía = sin restricción); Vetar/Registrar/Corregir autor releen la hoja; cada guardado deja línea [Permisos]. Detalle en el .md. [→ Contexto_Base_Web.md §37B018]
+// Nombre exacto de la Función que permite corregir el Autor de un ascenso/descenso (usada por _webAdminEditarAutorAscenso(), 24_Historial_Ascensos.gs). [→ Contexto_Base_Web.md §37B019]
+var WEB_FUNCION_CORREGIR_AUTOR = 'Corregir autor';
+
+// NUEVO 05-oct-2026: Función que permite pedir desde la web la actualización manual del roster y de guerra (runPendientesYMensajes); la usan _webAdminActualizarRoster()/_webAdminEstadoActualizacion() (41_Web_ActualizarRoster.gs); ACTIVA para todos los admin (migrarFuncionActualizarRosterATodosLosAdmins(), 47_Migraciones.gs); se desactiva por admin en permisos.html. [→ Contexto_Base_Web.md §37B020]
+var WEB_FUNCION_ACTUALIZAR_ROSTER = 'Actualizar roster';
+
+// Catálogo de Funciones del panel: `id` = texto exacto de la celda Funciones (y de _webAdminTieneFuncion()); etiqueta/descripcion solo para mostrar. Para sumar una: agregarla aquí y validarla en el endpoint. 'Corregir autor' no está en los valores por defecto de actualizarDropdownCatDisp() a propósito: Diana la da desde el panel. [→ Contexto_Base_Web.md §37B021]
+var WEB_FUNCIONES_ADMIN = [
+  {
+    id: 'Vetar',
+    etiqueta: 'Vetar miembros',
+    descripcion: 'Vetar a un jugador desde el panel, solo en los clanes que el admin administra.'
+  },
+  {
+    id: 'Registrar miembro nuevo',
+    etiqueta: 'Registrar miembro nuevo',
+    descripcion: 'Verificar un Tag y registrar un miembro nuevo desde el panel.'
+  },
+  {
+    id: WEB_FUNCION_CORREGIR_AUTOR,
+    etiqueta: 'Corregir autor de ascensos y descensos',
+    descripcion: 'Cambiar quién figura como responsable (Autor) de un ascenso o descenso. Cada cambio queda anotado en el Comentario del registro, con quién lo hizo.'
+  },
+  {
+    id: WEB_FUNCION_ACTUALIZAR_ROSTER,
+    etiqueta: 'Actualizar roster y datos de guerra',
+    descripcion: 'Pedir desde el panel la actualización manual del roster, de Pendientes y de los Mensajes de guerra (consulta la API de Clash Royale). No está disponible entre las 3:40 y las 5:00 a.m. (hora Lima) y hay un tiempo de espera entre una y otra.'
+  }
+];
+
+// Texto guardado cuando un admin queda sin casillas ('(ninguna)'); una celda vacía se volvería a llenar sola. [→ Contexto_Base_Web.md §37B022]
+var WEB_PERMISOS_SIN_NADA = '(ninguna)';
+
+// Nombre de la Script Property con el Celular (solo dígitos) que puede usar el panel de permisos. [→ Contexto_Base_Web.md §37B023]
+var WEB_PERMISOS_PROP_CELULAR = 'PANEL_PERMISOS_CELULAR';
+
+var WEB_PERMISOS_MSG_HOJA_NO_DISPONIBLE = 'La hoja Administradores no está disponible ahora (¿se está reconstruyendo?). Intenta de nuevo en unos minutos.';
+
+// Ventana de historial de _webHistorialGuerraComparador(): ~6 meses (180 días), suficiente para una gráfica legible etiquetada por mes sin mandar años de historia diaria. [→ Contexto_Base_Web.md §37B170]
+var LIMITE_DIAS_HISTORIAL_GUERRA_COMPARADOR = 180;
+
+// _webAdminCategorias(token): FASE 2 (24-ago-2026); visor de contenido de solo lectura; reutiliza _categoriasDisponibles(true) (44_BotWhatsApp.gs); historial de FIX: 30-ago-2026 se ocultan las categorías de FLUJO/ACCIÓN (Gestionar información de miembros, Torneos, Sorteos, Información sobre mí, Información sobre el clan) porque no tienen filas de Menú/Mensajes y el visor no tiene nada que mostrar (las tres primeras tienen sección propia en admin.html); 30-ago-2026 (2ª vuelta) WEB_SECCIONES_CONTENIDO agrupa por temática y la respuesta trae `secciones` y, por compatibilidad, `categorias` plano; 03-sep-2026 (punto 18) las 4 de "Mensajes automáticos" van en orden alfabético y el orden temático ['Bienvenida','Etiqueta de miembro','Día de guerra','Mensaje de Guerra'] queda SIN aplicar hasta que el usuario lo confirme; 03-sep-2026 (punto 20) WEB_ETIQUETAS_CONTENIDO mapea nombre real -> etiqueta del panel sin renombrar la categoría (solo 'Bienvenida' -> 'Bienvenida de miembros' estaba confirmado); 05-sep-2026 `disponibles` se arma con _leerCategoriasDeExtra() sin el filtro de día para poder alternar guerra/entrenamiento (la causa real del mensaje de entrenamiento "faltante" no era un problema de sync), y se suman las etiquetas 'Mensaje de Guerra' -> 'Mensaje de ataques pendientes' y 'Ascensos y descensos' -> 'Cambio de rango'. [→ Contexto_Base_Web.md §37B210]
+var WEB_CATEGORIAS_SIN_CONTENIDO_PLANO = [
+  'Gestionar información de miembros', 'Torneos', 'Sorteos',
+  'Información sobre mí', 'Información sobre el clan'
+];
+
+var WEB_ETIQUETAS_CONTENIDO = {
+  'Bienvenida':            'Bienvenida de miembros',
+  'Mensaje de Guerra':     'Mensaje de ataques pendientes',
+  'Ascensos y descensos':  'Cambio de rango'
+};
+
+// FIX 05-sep-2026: la agrupación temática real vive hardcodeada en admin.html (estructura curada con tarjetas: toggle Guerra/Entrenamiento/Mazos, toggle Participantes/Ganadores para Torneos y Sorteos); WEB_SECCIONES_CONTENIDO se mantiene solo por compatibilidad con `secciones` (el frontend actual ya no lo consume). [→ Contexto_Base_Web.md §37B211]
+var WEB_SECCIONES_CONTENIDO = [
+  { titulo: '💬 Guerra, entrenamiento y mazos', categorias: ['Día de guerra', 'Defensas de barcos', 'Mazos', 'Mensaje de Guerra'] },
+  { titulo: '🏆 Torneos, sorteos y ascensos',   categorias: ['Participantes calificados (torneo)', 'Ganadores (torneo)', 'Participantes calificados (sorteo)', 'Ganadores (sorteo)', 'Ascensos y descensos'] },
+  { titulo: '📨 Mensajes que no suelen enviarse', categorias: ['Bienvenida', 'iPhone', 'Etiqueta de miembro', 'Celular', 'Descripción'] }
+];
+
+// _webOcultasIndice_() (17-oct-2026, PF091): { dir: {tagNorm: estadoEnMinusculas}, inact: {tagNorm: true}, inactLeida: bool } armado una sola vez por
+// ejecución de Apps Script (la variable global se reinicia en cada ejecución). dir sale de _webLeerDirectorioComoDC() (hoja o Backup_Directorio.csv, como
+// la búsqueda original); inact, de la columna Tag de la hoja Inactivos, y solo si la hoja se pudo leer (si no, inactLeida=false y quien llama usa la
+// búsqueda original, que prueba Backup_Inactivos.csv). Devuelve null si no se pudo leer el Directorio. Para el primer registro de un tag en Directorio
+// vale lo mismo que en la búsqueda original (la primera fila gana).
+var _WEB_OCULTAS_IDX_ = null;
+
+// Respuesta unica para "no puedes ver esto" (inactivo o Tag desconocido para un no admin): mismo texto que el estado del perfil, para no delatar la diferencia. [→ Contexto_Base_Web.md §37B281]
+var WEB_MSG_SIN_REGISTRO_JSON = 'Sin registro con nosotros.';
+
+var WEB_GUERRA_VIVO_KEY     = 'web_guerra_vivo_v1';
+
+// 19-sep-2026: 120 -> 300 s. En el registro real, cada 3.er refresco (cada 60 s desde guerra.html) caía en una caché vencida y el visitante esperaba ~25 s. Los datos de guerra los actualiza el bot cada ~10 min (cada hora fuera de… [→ Contexto_Base_Web.md §37B360]
+var WEB_GUERRA_VIVO_TTL_SEG = 300;
+
+// NUEVO (19-sep-2026, pedido del usuario -- cada 5 min un visitante esperaba 11-18 s mientras se recalculaba el dashboard): el bot deja el caché de webGuerraEnVivo YA CALIENTE al terminar runGuerra() (ver 00_Main.gs), así el… [→ Contexto_Base_Web.md §37B361]
+var WEB_GUERRA_VIVO_TTL_CALENTADO_VENTANA_SEG = 660;
+
+var WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG   = 7200;
+
+// _calentarCacheGuerraEnVivo_(): Recalcula el dashboard (_getDatosDashboard(), el mismo que devuelve _webGuerraEnVivo() a los visitantes) y lo guarda en el MISMO caché (WEB_GUERRA_VIVO_KEY) con `ttlSeg` segundos de vida. Pensada para llamarse desde el bot… [→ Contexto_Base_Web.md §37B362]
+// PF311 parte A (31-oct-2026): true si la última llamada a _calentarCacheGuerraEnVivo_() con límite de tiempo dejó sin publicar alguno de los cuatro JSON por falta de tiempo. Lo lee _runGuerraColaHoraria_() (00_Main.gs). [→ Contexto_Base_Web.md §PF311]
+var CALENTAR_OMITIO_PUBLICACION_ = false;
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
+
+// ----- Calentar el caché de la guerra en vivo -----
+
+// calentarCacheGuerraEnVivo(): Atajo manual (ejecutar desde el editor de Apps Script) para calentar el caché con el TTL de la ventana de guerra y comprobar el resultado con verDiagnosticoGuerraVivo(). [→ Contexto_Base_Web.md §37B363]
+function calentarCacheGuerraEnVivo() {
+  _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_VENTANA_SEG);
+}
+
+// ===== PARTE 2 — Funciones que no se corren a mano =====
+
+// ----- Acceso: login, sesiones y claves de administradores -----
 
 function _hashClaveAdmin(clave, tag) {
   var sal = cleanTag(tag) || 'SIN_TAG';
@@ -48,7 +159,6 @@ function _guardarClaveHashAdmin(celularNorm, hash) {
     }
   }
 }
-
 
 // _webBuscarAdminPorCelular(celularNorm): primera fila de Administradores con ese Celular (solo dígitos, ya normalizado); FIX 02-sep-2026: si la hoja no está disponible o está vacía (ej. Demoler + runAll en curso) cae a _webBuscarAdminPorCelularEnCSV(); con la hoja disponible el CSV nunca se consulta; devuelve {tag, nombre, nomMulti, funciones, clanesAdmin, clave, claveHash} o null. [→ Contexto_Base_Web.md §37B009]
 function _webBuscarAdminPorCelular(celularNorm) {
@@ -197,45 +307,7 @@ function _webAdminTieneFuncion(funcionesStr, funcionBuscada) {
   return false;
 }
 
-// PANEL DE PERMISOS — SOLO PARA DIANA (19-sep-2026): backend de permisos.html (webAdminMisPermisos GET, webPermisosListar GET, webPermisosGuardar POST). Acceso por Celular de la Script Property PANEL_PERMISOS_CELULAR (sin Property, nadie entra); trabaja por Celular y escribe en todas las filas de la multicuenta; sin casillas se guarda '(ninguna)' (una celda vacía se rellena sola); valida contra WEB_FUNCIONES_ADMIN y categorías del índice; Cat_disp SÍ filtra categorías en bot y web (vacía = sin restricción); Vetar/Registrar/Corregir autor releen la hoja; cada guardado deja línea [Permisos]. Detalle en el .md. [→ Contexto_Base_Web.md §37B018]
-
-// Nombre exacto de la Función que permite corregir el Autor de un ascenso/descenso (usada por _webAdminEditarAutorAscenso(), 24_Historial_Ascensos.gs). [→ Contexto_Base_Web.md §37B019]
-var WEB_FUNCION_CORREGIR_AUTOR = 'Corregir autor';
-
-// NUEVO 05-oct-2026: Función que permite pedir desde la web la actualización manual del roster y de guerra (runPendientesYMensajes); la usan _webAdminActualizarRoster()/_webAdminEstadoActualizacion() (41_Web_ActualizarRoster.gs); ACTIVA para todos los admin (migrarFuncionActualizarRosterATodosLosAdmins(), 47_Migraciones.gs); se desactiva por admin en permisos.html. [→ Contexto_Base_Web.md §37B020]
-var WEB_FUNCION_ACTUALIZAR_ROSTER = 'Actualizar roster';
-
-// Catálogo de Funciones del panel: `id` = texto exacto de la celda Funciones (y de _webAdminTieneFuncion()); etiqueta/descripcion solo para mostrar. Para sumar una: agregarla aquí y validarla en el endpoint. 'Corregir autor' no está en los valores por defecto de actualizarDropdownCatDisp() a propósito: Diana la da desde el panel. [→ Contexto_Base_Web.md §37B021]
-var WEB_FUNCIONES_ADMIN = [
-  {
-    id: 'Vetar',
-    etiqueta: 'Vetar miembros',
-    descripcion: 'Vetar a un jugador desde el panel, solo en los clanes que el admin administra.'
-  },
-  {
-    id: 'Registrar miembro nuevo',
-    etiqueta: 'Registrar miembro nuevo',
-    descripcion: 'Verificar un Tag y registrar un miembro nuevo desde el panel.'
-  },
-  {
-    id: WEB_FUNCION_CORREGIR_AUTOR,
-    etiqueta: 'Corregir autor de ascensos y descensos',
-    descripcion: 'Cambiar quién figura como responsable (Autor) de un ascenso o descenso. Cada cambio queda anotado en el Comentario del registro, con quién lo hizo.'
-  },
-  {
-    id: WEB_FUNCION_ACTUALIZAR_ROSTER,
-    etiqueta: 'Actualizar roster y datos de guerra',
-    descripcion: 'Pedir desde el panel la actualización manual del roster, de Pendientes y de los Mensajes de guerra (consulta la API de Clash Royale). No está disponible entre las 3:40 y las 5:00 a.m. (hora Lima) y hay un tiempo de espera entre una y otra.'
-  }
-];
-
-// Texto guardado cuando un admin queda sin casillas ('(ninguna)'); una celda vacía se volvería a llenar sola. [→ Contexto_Base_Web.md §37B022]
-var WEB_PERMISOS_SIN_NADA = '(ninguna)';
-
-// Nombre de la Script Property con el Celular (solo dígitos) que puede usar el panel de permisos. [→ Contexto_Base_Web.md §37B023]
-var WEB_PERMISOS_PROP_CELULAR = 'PANEL_PERMISOS_CELULAR';
-
-var WEB_PERMISOS_MSG_HOJA_NO_DISPONIBLE = 'La hoja Administradores no está disponible ahora (¿se está reconstruyendo?). Intenta de nuevo en unos minutos.';
+// ----- Permisos de administradores (hoja y pantalla) -----
 
 // _webPermisosParsearLista(texto): separa una celda Funciones/Cat_disp por comas, sin espacios sobrantes, repetidos ni '(ninguna)'. [→ Contexto_Base_Web.md §37B024]
 function _webPermisosParsearLista(texto) {
@@ -534,6 +606,8 @@ function _webPermisosGuardar(token, datos) {
   };
 }
 
+// ----- Caché web y lectura del Directorio -----
+
 // _webCacheado(key, ttlSeg, fn): FIX 30-ago-2026 (portal lento, cold-start de 1-3 s por llamada); envuelve funciones de solo lectura en CacheService.getScriptCache() por ttlSeg (60 s por defecto, igual que el sessionStorage de apiGet()); si CacheService falla (cuota, valor >100 KB, caché corrupta) ejecuta fn() sin caché sin romper el endpoint. [→ Contexto_Base_Web.md §37B038]
 function _webCacheado(key, ttlSeg, fn) {
   var cache = CacheService.getScriptCache();
@@ -555,76 +629,47 @@ function _webCacheado(key, ttlSeg, fn) {
   return resultado;
 }
 
-// _webRoster(): miembros ACTIVOS agrupados por clan, vía _leerDirectorioFisicoComoDC() (misma fuente que el dashboard); sin celular, prefijo ni contacto (eso va por CONTACTOS_TOKEN); FIX 30-ago-2026: cacheada 60 s, la función original quedó como _webRosterCalcular() y _webRoster() es el wrapper que llama doGet. [→ Contexto_Base_Web.md §37B041]
-function _webRoster() {
-  return _webCacheado('web_roster_v1', 60, _webRosterCalcular);
+// _webCacheGrandeGuardar_(): CacheService admite máximo 100 KB por valor y la salida de _getDatosDashboard() (historial completo de temporadas) lo supera con holgura, por eso _webCacheado() no sirve aquí: fallaba en silencio y no cacheaba nada. Estas dos… [→ Contexto_Base_Web.md §37B364]
+function _webCacheGrandeGuardar_(key, obj, ttlSeg) {
+  try {
+    var json = JSON.stringify(obj);
+    var gz   = Utilities.gzip(Utilities.newBlob(json, 'application/json', 'datos.json'));
+    var b64  = Utilities.base64Encode(gz.getBytes());
+    var TROZO = 90000;
+    var n = Math.ceil(b64.length / TROZO);
+    var trozos = {};
+    for (var i = 0; i < n; i++) trozos[key + '_' + i] = b64.substr(i * TROZO, TROZO);
+    var cache = CacheService.getScriptCache();
+    cache.putAll(trozos, ttlSeg);
+    cache.put(key + '_n', String(n), ttlSeg);
+    _diagGuerraVivo_('[WebGuerraEnVivo] caché guardada: JSON ' + json.length + ' car. -> gzip+base64 ' + b64.length + ' car. en ' + n + ' trozo(s), ' + ttlSeg + ' s.');
+    return true;
+  } catch (e) {
+    _diagGuerraVivo_('[WebGuerraEnVivo] no se pudo guardar en caché (el endpoint sigue funcionando): ' + e);
+    return false;
+  }
 }
 
-function _webRosterCalcular() {
-  // FIX 24-sep-2026: la lectura hoja-viva-o-Backup_Directorio.csv (con Vigencia/Fecha_ing como Date) pasó a _webLeerDirectorioComoDC(); mismo criterio que la búsqueda de perfil; comportamiento del roster sin cambios. [→ Contexto_Base_Web.md §37B042]
-  var dataDir = _webLeerDirectorioComoDC().filas;
-  var porClan = {}; // nombreClan -> [{tag,nombre,rango,vGuerra,torneos}]
-  var arenaMemo = {};
-
-  for (var i = 0; i < dataDir.length; i++) {
-    var fila = dataDir[i];
-    if (String(fila[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
-    var clanNombre = String(fila[DC.CLAN - 1] || 'Sin clan');
-    if (!porClan[clanNombre]) porClan[clanNombre] = [];
-    var arenaKey = String(fila[DC.ARENA - 1]);
-    if (!(arenaKey in arenaMemo)) arenaMemo[arenaKey] = _resolverArenaDesdeCatalogo(fila[DC.ARENA - 1]);
-    porClan[clanNombre].push({
-      tag:     String(fila[DC.TAG    - 1] || ''),
-      nombre:  String(fila[DC.NOMBRE - 1] || ''),
-      rango:   String(fila[DC.RANGO  - 1] || ''),
-      vGuerra: Number(fila[DC.V_GUERRA - 1]) || 0,
-      torneos: Number(fila[DC.TORNEOS  - 1]) || 0,
-      // FIX 03-sep-2026: se expone Vigencia (DC.VIGENCIA) en webRoster, valor de celda tal cual (Date o ''); el frontend decide el formato. [→ Contexto_Base_Web.md §37B043]
-      vigencia: fila[DC.VIGENCIA - 1] || '',
-      // FIX 07-sep-2026: directorio.html pedía ranking en el clan, nivel (xp), nivel (cartas), antigüedad, copas y arena; se agregan con el mismo mapeo DC que _webPerfilExtendido(); fechaIngreso tal cual; ranking/copas en 0 si vacío (la tabla necesita valor consistente para ordenar). [→ Contexto_Base_Web.md §37B044]
-      ranking:      Number(fila[DC.RANKING - 1]) || 0,
-      nivelXp:      String(fila[DC.NIVEL   - 1] || ''),
-      nivelCartas:  String(fila[DC.NIVEL2  - 1] || ''),
-      copas:        Number(fila[DC.COPAS   - 1]) || 0,
-      // FIX 27-sep-2026: la arena se resuelve con _resolverArenaDesdeCatalogo() (09_API_ClashRoyale.gs) contra Backup_Arena.csv: Nombre (español) si está, si no Name (inglés), si no el rawName; mismo criterio que _webPerfilExtendido(). [→ Contexto_Base_Web.md §37B045]
-      arena:        arenaMemo[arenaKey],
-      fechaIngreso: fila[DC.FECHA_ING - 1] || '',
-      // FIX 09-sep-2026: 'Antigüedad' del Directorio es la antigüedad en el JUEGO en años (PC.ANTIGUEDAD de Players, badge YearsPlayed, vía DC.ANTIGUEDAD), no el tiempo en el clan; se manda tal cual ('' si la cuenta no se sincronizó). [→ Contexto_Base_Web.md §37B046]
-      antiguedad:   fila[DC.ANTIGUEDAD - 1] === '' || fila[DC.ANTIGUEDAD - 1] === null || fila[DC.ANTIGUEDAD - 1] === undefined
-                      ? ''
-                      : Number(fila[DC.ANTIGUEDAD - 1]),
-      // FIX 17-sep-2026: columna Perfil (íconos RoyaleAPI/CWStats) en directorio.html con _webUrlPerfilExterno() y los mismos campos royaleApi/cwStats que guerra.html; '' si la celda no tiene el link. [→ Contexto_Base_Web.md §37B047]
-      royaleApi:    _webUrlPerfilExterno(fila[DC.ROYALE_API - 1], 'royaleapi.com', 'player'),
-      cwStats:      _webUrlPerfilExterno(fila[DC.CW_STATS   - 1], 'cwstats.com',   'player')
-    });
+function _webCacheGrandeLeer_(key) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var n = Number(cache.get(key + '_n'));
+    if (!n || n < 1) return null;
+    var claves = [];
+    for (var i = 0; i < n; i++) claves.push(key + '_' + i);
+    var got = cache.getAll(claves);
+    var b64 = '';
+    for (var j = 0; j < n; j++) {
+      var parte = got[claves[j]];
+      if (parte === null || parte === undefined) { _diagGuerraVivo_('[WebGuerraEnVivo] caché incompleta: falta el trozo ' + j + ' de ' + n); return null; } // trozo expirado o evicto: no usar
+      b64 += parte;
+    }
+    var bytes = Utilities.base64Decode(b64);
+    var json  = Utilities.ungzip(Utilities.newBlob(bytes, 'application/x-gzip', 'datos.gz')).getDataAsString('UTF-8');
+    return JSON.parse(json);
+  } catch (e) {
+    return null;
   }
-
-  // Orden: clanes por CFG.TERNA_TAGS y, dentro de cada clan, por nombre. [→ Contexto_Base_Web.md §37B048]
-  var nombresOrdenados = Object.keys(porClan).sort(function (a, b) {
-    var tagA = _getClanTagByName(a), tagB = _getClanTagByName(b);
-    var oA = CFG.TERNA_TAGS.indexOf(tagA), oB = CFG.TERNA_TAGS.indexOf(tagB);
-    if (oA === -1) oA = 999;
-    if (oB === -1) oB = 999;
-    if (oA !== oB) return oA - oB;
-    return a.localeCompare(b);
-  });
-
-  // FIX 28-ago-2026: dentro de cada clan, primero por Rango (líder > colíder > veterano > miembro, CFG.RANGO_ORDEN) y luego por nombre. [→ Contexto_Base_Web.md §37B049]
-  function _ordenRango(rango) {
-    var key = String(rango || '').toLowerCase().replace('í', 'i').replace('é', 'e');
-    return CFG.RANGO_ORDEN[key] || 4;
-  }
-
-  var resultado = nombresOrdenados.map(function (nombreClan) {
-    var miembros = porClan[nombreClan].slice().sort(function (a, b) {
-      var rA = _ordenRango(a.rango), rB = _ordenRango(b.rango);
-      if (rA !== rB) return rA - rB;
-      return a.nombre.localeCompare(b.nombre);
-    });
-    return { nombre: nombreClan, miembros: miembros };
-  });
-
-  return { clanes: resultado };
 }
 
 // _webLeerDirectorioComoDC(): FIX 24-sep-2026; fuente única de filas de Directorio en formato DC (60 columnas) para la web: 1) hoja viva (+ Players + Links) vía _leerDirectorioFisicoComoDC(); 2) si falta, está vacía o lanza excepción (incluido _getSs()), Backup_Directorio.csv con _obtenerFilasConFallbackCSV(), reconstruyendo Vigencia/Fecha_ing con _parseSpanishDate(); no consulta Inactivos; devuelve {filas, origen: 'sheet'|'csv'|'vacio'}. [→ Contexto_Base_Web.md §37B050]
@@ -727,8 +772,848 @@ function _webBuscarFilaDirectorioPorTagConOrigen(tagBuscado) {
   return filaInactivos ? { fila: filaInactivos, origen: 'inactivos' } : null;
 }
 
-// AVISOS ABIERTOS — TROFEOS DE GUERRA vs V_GUERRA (27-sep-2026). AVISO 9 RESUELTO: la barra 'Trofeos guerra' de Requisitos usaba DC.V_GUERRA (victorias de guerra, un conteo) en vez de trofeos/fame; ahora recibe `fameSemana` (GC.FAME de la hoja Guerra) y el parámetro se renombró a trofeosGuerra; DC.V_GUERRA no se tocó. AVISO 10 VERIFICACIÓN ABIERTA: el perfil a veces muestra '4 ataques' con '0 trofeos' el mismo día; PENDIENTE capturar Tag, fecha y valores de ATAQUES_HOY/FAME de la hoja Guerra antes de volver a atacar. Detalle en el .md. [→ Contexto_Base_Web.md §37B056]
+function _webOcultasIndice_() {
+  if (_WEB_OCULTAS_IDX_) return _WEB_OCULTAS_IDX_;
+  var idx = { dir: {}, inact: {}, inactLeida: false };
+  var filas = _webLeerDirectorioComoDC().filas || [];
+  for (var i = 0; i < filas.length; i++) {
+    var t = cleanTag(filas[i][DC.TAG - 1]);
+    if (t && !idx.dir.hasOwnProperty(t)) idx.dir[t] = String(filas[i][DC.ESTADO - 1] || '').trim().toLowerCase();
+  }
+  try {
+    var shInact = _getSs().getSheetByName(CFG.SHEETS.INACTIVOS);
+    if (shInact && shInact.getLastRow() >= 2) {
+      var tags = shInact.getRange(2, IC.TAG, shInact.getLastRow() - 1, 1).getValues();
+      for (var j = 0; j < tags.length; j++) {
+        var ti = cleanTag(String(tags[j][0] || '').trim());
+        if (ti) idx.inact[ti] = true;
+      }
+      idx.inactLeida = true;
+    }
+  } catch (eInact) { idx.inactLeida = false; }
+  _WEB_OCULTAS_IDX_ = idx;
+  return idx;
+}
 
+// _webCuentaOcultaParaVisitante(): NUEVO (28-sep-2026, Fase 5b tanda A3). true si el Tag es de una cuenta INACTIVA y quien pregunta NO es admin (opciones.esAdmin distinto de true). Mismo criterio exacto que _webPerfilJugador(): la cuenta está en la hoja Inactivos… [→ Contexto_Base_Web.md §37B278]
+function _webCuentaOcultaParaVisitante(tagBuscado, opciones) {
+  if (opciones && opciones.esAdmin === true) return false;
+  // 17-oct-2026 (PF091, opción a): índice en memoria de Directorio e Inactivos, armado UNA vez por ejecución. Antes cada llamada leía la hoja
+  // Directorio completa (y, si el tag no estaba, la de Inactivos) y _webHistorialTorneos()/_webTorneos() la llaman por cada participante de cada
+  // torneo. Mismo resultado que la búsqueda de abajo; si el índice no se puede armar, se usa esa búsqueda como antes. [→ Contexto_Base_Web.md §PF091]
+  try {
+    var idxOc = _webOcultasIndice_();
+    if (idxOc) {
+      var tagOc = cleanTag(tagBuscado);
+      if (!tagOc) return false;
+      if (idxOc.dir.hasOwnProperty(tagOc)) return idxOc.dir[tagOc] === 'inactivo';
+      if (idxOc.inactLeida) return idxOc.inact.hasOwnProperty(tagOc);
+    }
+  } catch (eIdxOc) {
+    Logger.log('[WebAPI] _webCuentaOcultaParaVisitante: el índice falló (' + eIdxOc.message + '); se usa la búsqueda directa.');
+  }
+  try {
+    var hallazgo = _webBuscarFilaDirectorioPorTagConOrigen(tagBuscado);
+    if (!hallazgo || !hallazgo.fila) return false;
+    return hallazgo.origen === 'inactivos'
+      || String(hallazgo.fila[DC.ESTADO - 1] || '').trim().toLowerCase() === 'inactivo';
+  } catch (eOculta) {
+    Logger.log('[WebAPI] _webCuentaOcultaParaVisitante: la búsqueda falló (' + eOculta.message + '); se oculta por precaución.');
+    return true;
+  }
+}
+
+// _webApiGetRapido(path): FIX 09-sep-2026 ("pedir su perfil al endpoint players, que sí funciona"): la ruta armada era correcta (clash-royale-proxy-2eyr.onrender.com/players/%23<TAG>, probada a mano); el error "Unexpected token '<', "<!DOCTYPE"..." venía de que _apiGet() (09_API_ClashRoyale.gs) reintenta hasta 3 veces con espera creciente (API_GET_MAX_INTENTOS/API_GET_ESPERA_BASE_MS, 07_...gs: 3 s, luego 6 s), pensado para procesos batch; el proxy (plan gratuito de Render) se duerme tras ~15 min sin tráfico y puede tardar 30-60 s en despertar, así que la suma de intentos y esperas puede superar el límite de respuesta de la URL /exec de la Web App (más corto que la cuota de 6 min del script); Google corta la conexión y devuelve su propia página HTML de error (el try/catch de doGet(), 11_...gs, ni llega a correr); por eso este helper, usado SOLO por los 2 endpoints interactivos de esta sección (_webPerfilJugadorSinRegistro() y _webAdminVerificarTag()), hace UN solo intento, sin reintentos ni esperas: si el proxy está dormido falla rápido y el admin ve el mensaje de error normal. @param path (ej. '/players/%23ABCD1234'); @returns objeto JSON parseado o null ante cualquier error. [→ Contexto_Base_Web.md §37B134]
+function _webApiGetRapido(path) {
+  try {
+    var resp = UrlFetchApp.fetch(CFG.API_BASE + path, {
+      method: 'get',
+      muteHttpExceptions: true,
+      headers: { 'Accept': 'application/json' }
+    });
+    if (resp.getResponseCode() !== 200) return null;
+    return JSON.parse(resp.getContentText());
+  } catch (e) {
+    Logger.log('[WebApiGetRapido] Falló ' + path + ': ' + e.message);
+    return null;
+  }
+}
+
+// _webUrlPerfilExterno(valorCelda, dominio, segmento): el campo de enlaces externos puede ser URL completa o solo el tag; mismo criterio que _respuestaInfoMi() (44_BotWhatsApp.gs). [→ Contexto_Base_Web.md §37B059]
+function _webUrlPerfilExterno(valorCelda, dominio, segmento) {
+  var v = String(valorCelda || '').trim();
+  if (!v) return '';
+  if (v.startsWith('http')) return v;
+  return 'https://' + dominio + '/' + segmento + '/' + cleanTag(v);
+}
+
+// ----- Público: roster, clan, rankings, aniversarios, estadísticas e ingresos -----
+
+// _webRoster(): miembros ACTIVOS agrupados por clan, vía _leerDirectorioFisicoComoDC() (misma fuente que el dashboard); sin celular, prefijo ni contacto (eso va por CONTACTOS_TOKEN); FIX 30-ago-2026: cacheada 60 s, la función original quedó como _webRosterCalcular() y _webRoster() es el wrapper que llama doGet. [→ Contexto_Base_Web.md §37B041]
+function _webRoster() {
+  return _webCacheado('web_roster_v1', 60, _webRosterCalcular);
+}
+
+function _webRosterCalcular() {
+  // FIX 24-sep-2026: la lectura hoja-viva-o-Backup_Directorio.csv (con Vigencia/Fecha_ing como Date) pasó a _webLeerDirectorioComoDC(); mismo criterio que la búsqueda de perfil; comportamiento del roster sin cambios. [→ Contexto_Base_Web.md §37B042]
+  var dataDir = _webLeerDirectorioComoDC().filas;
+  var porClan = {}; // nombreClan -> [{tag,nombre,rango,vGuerra,torneos}]
+  var arenaMemo = {};
+
+  for (var i = 0; i < dataDir.length; i++) {
+    var fila = dataDir[i];
+    if (String(fila[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
+    var clanNombre = String(fila[DC.CLAN - 1] || 'Sin clan');
+    if (!porClan[clanNombre]) porClan[clanNombre] = [];
+    var arenaKey = String(fila[DC.ARENA - 1]);
+    if (!(arenaKey in arenaMemo)) arenaMemo[arenaKey] = _resolverArenaDesdeCatalogo(fila[DC.ARENA - 1]);
+    porClan[clanNombre].push({
+      tag:     String(fila[DC.TAG    - 1] || ''),
+      nombre:  String(fila[DC.NOMBRE - 1] || ''),
+      rango:   String(fila[DC.RANGO  - 1] || ''),
+      vGuerra: Number(fila[DC.V_GUERRA - 1]) || 0,
+      torneos: Number(fila[DC.TORNEOS  - 1]) || 0,
+      // FIX 03-sep-2026: se expone Vigencia (DC.VIGENCIA) en webRoster, valor de celda tal cual (Date o ''); el frontend decide el formato. [→ Contexto_Base_Web.md §37B043]
+      vigencia: fila[DC.VIGENCIA - 1] || '',
+      // FIX 07-sep-2026: directorio.html pedía ranking en el clan, nivel (xp), nivel (cartas), antigüedad, copas y arena; se agregan con el mismo mapeo DC que _webPerfilExtendido(); fechaIngreso tal cual; ranking/copas en 0 si vacío (la tabla necesita valor consistente para ordenar). [→ Contexto_Base_Web.md §37B044]
+      ranking:      Number(fila[DC.RANKING - 1]) || 0,
+      nivelXp:      String(fila[DC.NIVEL   - 1] || ''),
+      nivelCartas:  String(fila[DC.NIVEL2  - 1] || ''),
+      copas:        Number(fila[DC.COPAS   - 1]) || 0,
+      // FIX 27-sep-2026: la arena se resuelve con _resolverArenaDesdeCatalogo() (09_API_ClashRoyale.gs) contra Backup_Arena.csv: Nombre (español) si está, si no Name (inglés), si no el rawName; mismo criterio que _webPerfilExtendido(). [→ Contexto_Base_Web.md §37B045]
+      arena:        arenaMemo[arenaKey],
+      fechaIngreso: fila[DC.FECHA_ING - 1] || '',
+      // FIX 09-sep-2026: 'Antigüedad' del Directorio es la antigüedad en el JUEGO en años (PC.ANTIGUEDAD de Players, badge YearsPlayed, vía DC.ANTIGUEDAD), no el tiempo en el clan; se manda tal cual ('' si la cuenta no se sincronizó). [→ Contexto_Base_Web.md §37B046]
+      antiguedad:   fila[DC.ANTIGUEDAD - 1] === '' || fila[DC.ANTIGUEDAD - 1] === null || fila[DC.ANTIGUEDAD - 1] === undefined
+                      ? ''
+                      : Number(fila[DC.ANTIGUEDAD - 1]),
+      // FIX 17-sep-2026: columna Perfil (íconos RoyaleAPI/CWStats) en directorio.html con _webUrlPerfilExterno() y los mismos campos royaleApi/cwStats que guerra.html; '' si la celda no tiene el link. [→ Contexto_Base_Web.md §37B047]
+      royaleApi:    _webUrlPerfilExterno(fila[DC.ROYALE_API - 1], 'royaleapi.com', 'player'),
+      cwStats:      _webUrlPerfilExterno(fila[DC.CW_STATS   - 1], 'cwstats.com',   'player')
+    });
+  }
+
+  // Orden: clanes por CFG.TERNA_TAGS y, dentro de cada clan, por nombre. [→ Contexto_Base_Web.md §37B048]
+  var nombresOrdenados = Object.keys(porClan).sort(function (a, b) {
+    var tagA = _getClanTagByName(a), tagB = _getClanTagByName(b);
+    var oA = CFG.TERNA_TAGS.indexOf(tagA), oB = CFG.TERNA_TAGS.indexOf(tagB);
+    if (oA === -1) oA = 999;
+    if (oB === -1) oB = 999;
+    if (oA !== oB) return oA - oB;
+    return a.localeCompare(b);
+  });
+
+  // FIX 28-ago-2026: dentro de cada clan, primero por Rango (líder > colíder > veterano > miembro, CFG.RANGO_ORDEN) y luego por nombre. [→ Contexto_Base_Web.md §37B049]
+  function _ordenRango(rango) {
+    var key = String(rango || '').toLowerCase().replace('í', 'i').replace('é', 'e');
+    return CFG.RANGO_ORDEN[key] || 4;
+  }
+
+  var resultado = nombresOrdenados.map(function (nombreClan) {
+    var miembros = porClan[nombreClan].slice().sort(function (a, b) {
+      var rA = _ordenRango(a.rango), rB = _ordenRango(b.rango);
+      if (rA !== rB) return rA - rB;
+      return a.nombre.localeCompare(b.nombre);
+    });
+    return { nombre: nombreClan, miembros: miembros };
+  });
+
+  return { clanes: resultado };
+}
+
+// _webClanInfo(): FASE 0 (24-ago-2026): index.html tenía las 4 tarjetas de clanes hardcodeadas; reutiliza la MISMA hoja Clan y el MISMO cálculo de mínimo de trofeos de guerra semanal (_getMinGClanMaps(), 10_ClanSheet.gs) que _respuestaInfoClanPorTag() (44_BotWhatsApp.gs), para que la web nunca muestre un número de clan distinto al del bot; IMPORTANTE: recorre CFG.TERNA_TAGS (no ordena por nombre) para respetar el orden de la columna Orden de la hoja Clan (Grupo Terna, Terna 2, Terna 3, Mini Ternas), nunca alfabético; solo devuelve los 4 clanes Terna públicos: el clan vetado (CFG.VETADO_TAG) queda fuera a propósito; FIX 30-ago-2026 (lentitud del portal): cacheada 60 s vía _webCacheado() (ver _webRoster()); la función original quedó renombrada _webClanInfoCalcular(). @returns {{clanes: Array<Object>}} [→ Contexto_Base_Web.md §37B140]
+function _webClanInfo() {
+  return _webCacheado('web_clan_info_v1', 60, _webClanInfoCalcular);
+}
+
+function _webClanInfoCalcular() {
+  var ss = _getSs();
+  // FASE 15-sep-2026 (fallback web->CSV): antes, si la hoja Clan no estaba disponible o vacía devolvía { clanes: [] }; ahora _obtenerFilasConFallbackCSV() (01_Config_Global.gs) redirige a Backup_Clan.csv, que tiene las columnas en el mismo orden que CC (syncClanCSV(), 05_Backup_CSV.gs) y ya trae las URLs REALES de RoyaleAPI/CWStats (usa _extraerValoresConLinksReales(), que lee RichText), por lo que el bloque getRichTextValues() de más abajo solo corre cuando el origen es la hoja viva. [→ Contexto_Base_Web.md §37B141]
+  var lectura = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CLAN, 'Backup_Clan.csv', CC.CONDICION);
+  if (lectura.origen === 'vacio') return { clanes: [] };
+  // TANDA 15 (21-sep-2026): con origen 'csv' los números llegan como texto con separador de miles (Trofeos, Requerimiento, Copas y Donaciones tienen formato '#,##0' y el CSV se arma con getDisplayValues()): se leen con _numDesdeCeldaCSV_() (01_Config_Global.gs), no con Number(). [→ Contexto_Base_Web.md §37B142]
+
+  var dataClan = lectura.filas;
+  var minGPorTag = _getMinGClanMaps().byTag;
+
+  // FIX 01-sep-2026 ("las celdas no están vacías, tendría que generar algo como https://royaleapi.com/player/..."): CC.ROYALE_API y CC.CW_STATS son texto enriquecido (makeLink() en 01_Config_Global.gs, usada por updateClanSheet()) con texto visible "Link" y la URL real solo en el enlace; getValues() solo trae "Link", así que se leen aparte con getRichTextValues() + getLinkUrl() para las 4 filas de Clan (mismo patrón que _leerLinksRichTextPorTag() de 12_Players_Links.gs); FASE 15-sep-2026: esta relectura solo corre si el origen fue la hoja viva; si vino del CSV (ya con la URL real en texto plano) royaleApiRT/cwStatsRT quedan null y el || de abajo cae al valor de la celda. [→ Contexto_Base_Web.md §37B143]
+  var royaleApiRT = null, cwStatsRT = null;
+  if (lectura.origen === 'sheet') {
+    var shClan = ss.getSheetByName(CFG.SHEETS.CLAN);
+    royaleApiRT = shClan.getRange(2, CC.ROYALE_API, shClan.getLastRow() - 1, 1).getRichTextValues();
+    cwStatsRT   = shClan.getRange(2, CC.CW_STATS,   shClan.getLastRow() - 1, 1).getRichTextValues();
+  }
+
+  var clanes = CFG.TERNA_TAGS.map(function (tagBuscado) {
+    for (var i = 0; i < dataClan.length; i++) {
+      if (String(dataClan[i][CC.CLAN_TAG - 1]) !== tagBuscado) continue;
+      var fila = dataClan[i];
+      var minG = minGPorTag[tagBuscado];
+      if (minG === undefined) minG = CFG.MIN_G_DEFAULT;
+
+      // Preferir la URL real del enlace; si la celda no tiene enlace (alguien tipeó el tag a mano sin makeLink()), cae al texto de la celda como respaldo. [→ Contexto_Base_Web.md §37B144]
+      var royaleApi = (royaleApiRT && royaleApiRT[i][0] && royaleApiRT[i][0].getLinkUrl()) || String(fila[CC.ROYALE_API - 1] || '').trim();
+      if (royaleApi && !royaleApi.startsWith('http')) {
+        royaleApi = 'https://royaleapi.com/clan/' + cleanTag(royaleApi);
+      }
+
+      // FIX 28-ago-2026 (botones RoyaleAPI/CWStats + gráfico "Copas" en la página Clanes): CC.CW_STATS y CC.COPAS ya se leían dentro del rango (CC.CONDICION=23) pero nunca se devolvían; se agregan sin tocar nada más; cwStats sigue el criterio de royaleApi (URL completa o solo el tag del clan). [→ Contexto_Base_Web.md §37B145]
+      var cwStats = (cwStatsRT && cwStatsRT[i][0] && cwStatsRT[i][0].getLinkUrl()) || String(fila[CC.CW_STATS - 1] || '').trim();
+      if (cwStats && !cwStats.startsWith('http')) {
+        cwStats = 'https://cwstats.com/clan/' + cleanTag(cwStats);
+      }
+
+      return {
+        clanTag:      tagBuscado,
+        nombre:       String(fila[CC.NOMBRE        - 1] || ''),
+        lider:        String(fila[CC.LIDER         - 1] || ''),
+        miembros:     Number(fila[CC.MIEMBROS      - 1]) || 0,
+        trofeos:      _numDesdeCeldaCSV_(fila[CC.TROFEOS       - 1]) || 0, // TANDA 15: tolera "5,432" del respaldo CSV
+        copas:        _numDesdeCeldaCSV_(fila[CC.COPAS         - 1]) || 0, // TANDA 15
+        minGSemanal:  minG,
+        liga:         String(fila[CC.LIGA          - 1] || ''),
+        requerimiento:_numDesdeCeldaCSV_(fila[CC.REQUERIMIENTO - 1]) || 0, // TANDA 15
+        donaciones:   _numDesdeCeldaCSV_(fila[CC.DONACIONES    - 1]) || 0, // TANDA 15
+        tipo:         String(fila[CC.TIPO          - 1] || ''),
+        pais:         String(fila[CC.PAIS          - 1] || ''),
+        descripcion:  String(fila[CC.DESCRIPCION   - 1] || ''),
+        // NUEVO 16-sep-2026 (ícono real del clan desde el badgeId de Supercell): CC.BADGE_ID guarda el número crudo de /clans/{tag} (updateClanSheet(), 10_ClanSheet.gs) y se reenvía sin transformar, como pide el docblock de iconoBadgeClanHtml() (common.js, frontend), que lo resuelve a un ícono en el momento. [→ Contexto_Base_Web.md §37B146]
+        badgeId:      Number(fila[CC.BADGE_ID      - 1]) || 0,
+        royaleApi:    royaleApi,
+        cwStats:      cwStats
+      };
+    }
+    // Clan de CFG.TERNA_TAGS sin fila todavía en la hoja Clan (recién agregado, esperando la próxima updateClanSheet()): se devuelve un placeholder mínimo en vez de omitirlo, para que el frontend pinte la tarjeta (con guiones) en su posición. [→ Contexto_Base_Web.md §37B147]
+    return { clanTag: tagBuscado, nombre: '', lider: '', miembros: 0, trofeos: 0, copas: 0,
+             minGSemanal: CFG.MIN_G_DEFAULT, liga: '', requerimiento: 0,
+             donaciones: 0, tipo: '', pais: '', descripcion: '', badgeId: 0, royaleApi: '', cwStats: '' };
+  });
+
+  return { clanes: clanes };
+}
+
+// _webRankings(): FASE 10 (30-ago-2026, sección pública "Rankings"): top 10 de cuatro métricas ya calculadas en el Directorio, solo miembros con Estado = 'Activo' (misma fuente y criterio que _webRoster()): donadores (DC.DON_D, donaciones realizadas), racha (DC.RACHA, racha de guerra), torneos (DC.TORNEOS, el mismo campo que exponen _webRoster()/_webPerfilJugador()) y victorias3c (DC.VICTORIAS_3C, victorias con 3 coronas); cada lista excluye valores en 0/vacío (un top no debe mostrar ceros) y se recorta a 10; lectura pública con el mismo WEB_MEMBER_TOKEN de solo lectura que webRoster. @returns {{donadores, racha, torneos, victorias3c: Array<{tag,nombre,clan,valor}>}} [→ Contexto_Base_Web.md §37B165]
+function _webRankings() {
+  // FIX 24-sep-2026 (auditoría "fallback web->CSV, funciones web"): antes usaba _leerDirectorioFisicoComoDC(ss) directo, que no tiene fallback propio (devuelve [] en silencio si Directorio no está disponible); ahora usa _webLeerDirectorioComoDC() (más abajo en este archivo), que cae a Backup_Directorio.csv si la hoja falta, está vacía o falla, igual que _webRoster(). [→ Contexto_Base_Web.md §37B166]
+  var dataDir = _webLeerDirectorioComoDC().filas;
+
+  var activos = [];
+  for (var i = 0; i < dataDir.length; i++) {
+    var fila = dataDir[i];
+    if (String(fila[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
+    activos.push({
+      tag:     String(fila[DC.TAG    - 1] || ''),
+      nombre:  String(fila[DC.NOMBRE - 1] || ''),
+      clan:    String(fila[DC.CLAN   - 1] || ''),
+      donD:    Number(fila[DC.DON_D  - 1]) || 0,
+      racha:   Number(fila[DC.RACHA  - 1]) || 0,
+      torneos: Number(fila[DC.TORNEOS - 1]) || 0,
+      v3c:     Number(fila[DC.VICTORIAS_3C - 1]) || 0
+    });
+  }
+
+  function _webRankingsTopPor(campo) {
+    return activos
+      .filter(function (m) { return m[campo] > 0; })
+      .sort(function (a, b) { return b[campo] - a[campo]; })
+      .slice(0, 10)
+      .map(function (m) { return { tag: m.tag, nombre: m.nombre, clan: m.clan, valor: m[campo] }; });
+  }
+
+  return {
+    donadores:   _webRankingsTopPor('donD'),
+    racha:       _webRankingsTopPor('racha'),
+    torneos:     _webRankingsTopPor('torneos'),
+    victorias3c: _webRankingsTopPor('v3c')
+  };
+}
+
+// _webAniversarios(): FASE 10 (30-ago-2026, "Aniversarios en la Familia"): para cada miembro Activo con Fecha_Ing válida (la misma columna de _webIngresosRecientes()) calcula los días desde su ingreso y su PRÓXIMO hito en múltiplos de ~6 meses (182 días: 182, 364, 546...); si cae dentro de los próximos 14 días entra en la lista (sección rotativa "Próximos aniversarios" en Inicio/Comunidad); 182 días ≈ 6 meses es una aproximación deliberada (evita aritmética de meses calendario con casos límite de fin de mes) y hitoMeses es solo para mostrar ("6 meses", "1 año"...); lectura pública con el mismo WEB_MEMBER_TOKEN de solo lectura que webRoster; FIX 30-ago-2026 (lentitud del portal): cacheada 60 s vía _webCacheado() (ver _webRoster()); la función original quedó renombrada _webAniversariosCalcular(). @returns {{aniversarios: Array<{tag,nombre,clan,fechaIngTxt,hitoMeses,diasFaltantes}>}} [→ Contexto_Base_Web.md §37B167]
+function _webAniversarios() {
+  return _webCacheado('web_aniversarios_v1', 60, _webAniversariosCalcular);
+}
+
+function _webAniversariosCalcular() {
+  // FIX 24-sep-2026 (auditoría "fallback web->CSV, funciones web"): mismo cambio que _webRankings(); _leerDirectorioFisicoComoDC(ss) directo no tiene fallback propio. [→ Contexto_Base_Web.md §37B168]
+  var dataDir = _webLeerDirectorioComoDC().filas;
+  var tz = Session.getScriptTimeZone() || 'America/Lima';
+  var hoy = new Date();
+  var MS_DIA = 86400000;
+  var PACK_DIAS = 182; // ~6 meses
+
+  var aniversarios = [];
+  for (var i = 0; i < dataDir.length; i++) {
+    var fila = dataDir[i];
+    if (String(fila[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
+    var fechaIng = fila[DC.FECHA_ING - 1];
+    if (!(fechaIng instanceof Date) || isNaN(fechaIng.getTime())) continue;
+
+    var diasTranscurridos = Math.floor((hoy - fechaIng) / MS_DIA);
+    if (diasTranscurridos < PACK_DIAS) continue; // todavía no llega a su primer hito
+
+    var proximoHito = (Math.floor(diasTranscurridos / PACK_DIAS) + 1) * PACK_DIAS;
+    var diasFaltantes = proximoHito - diasTranscurridos;
+    if (diasFaltantes > 14) continue;
+
+    aniversarios.push({
+      tag:           String(fila[DC.TAG    - 1] || ''),
+      nombre:        String(fila[DC.NOMBRE - 1] || ''),
+      clan:          String(fila[DC.CLAN   - 1] || ''),
+      fechaIngTxt:   Utilities.formatDate(fechaIng, tz, 'dd/MM/yyyy'),
+      hitoMeses:     (proximoHito / PACK_DIAS) * 6,
+      diasFaltantes: diasFaltantes
+    });
+  }
+
+  aniversarios.sort(function (a, b) { return a.diasFaltantes - b.diasFaltantes; });
+
+  return { aniversarios: aniversarios };
+}
+
+// _webEstadisticasCartas(): FASE 10 (30-ago-2026); Top 10 de cartas más usadas en el mazo actual de la Familia, a partir de Backup_Cards_2.csv (Currentdeck 'Sí') y Backup_Cards.csv; depende de PLAYERS_API_ENABLED: sin datos devuelve top10: [] y jugadoresConDatos: 0, que NO es un error y el frontend debe mostrar como estado vacío; solo cuenta Tags hoy Activos en Directorio; lectura pública con WEB_MEMBER_TOKEN; expone rarity, tipo, hasHero/heroIcon y hasEvolution/evolutionIcon (FIX 04-sep-2026); 'name' lee Nombre (español) y cae a Name y a 'Carta <ID>' (CORRECCIÓN 05-sep-2026); los índices de columna ya reflejan los corrimientos por las columnas Nombre y Tipo. @returns {{top10, jugadoresConDatos}} [→ Contexto_Base_Web.md §37B181]
+function _webEstadisticasCartas() {
+  // FIX 24-sep-2026 (auditoría fallback web->CSV): Directorio se lee con _webLeerDirectorioComoDC() (cae a Backup_Directorio.csv), mismo cambio que _webRankings(). [→ Contexto_Base_Web.md §37B182]
+  var dataDir = _webLeerDirectorioComoDC().filas;
+  var tagsActivos = {};
+  for (var i = 0; i < dataDir.length; i++) {
+    if (String(dataDir[i][DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
+    var t = cleanTag(dataDir[i][DC.TAG - 1]);
+    if (t) tagsActivos[t] = true;
+  }
+
+  var cards2 = _leerCards2CSV(); // headers: N°,Tag,ID,Level,EvolutionLevel,Currentdeck,Count
+  if (!cards2.rows.length) return { top10: [], jugadoresConDatos: 0 };
+
+  var conteoPorId = {};
+  var tagsConDatos = {};
+  for (var r = 0; r < cards2.rows.length; r++) {
+    var row = cards2.rows[r];
+    var tagFila = cleanTag(row[1]);
+    if (!tagFila || !tagsActivos[tagFila]) continue;
+    tagsConDatos[tagFila] = true;
+    var enDeck = String(row[5] || '').trim();
+    if (enDeck !== 'Sí') continue;
+    var idCarta = String(row[2] || '').trim();
+    if (!idCarta) continue;
+    // FIX 24-sep-2026 (cartas de torre en Backup_Cards_2.csv): la tropa de torre equipada no cuenta en este Top 10 (_esCartaTorre(), 31_Cards_Mazos.gs). [→ Contexto_Base_Web.md §37B183]
+    if (_esCartaTorre(idCarta)) continue;
+    conteoPorId[idCarta] = (conteoPorId[idCarta] || 0) + 1;
+  }
+
+  var idsTop = Object.keys(conteoPorId)
+    .sort(function (a, b) { return conteoPorId[b] - conteoPorId[a]; })
+    .slice(0, 10);
+
+  if (!idsTop.length) return { top10: [], jugadoresConDatos: Object.keys(tagsConDatos).length };
+
+  // Catálogo ID -> nombre/rareza/coste/ícono solo para los IDs que se muestran; FIX 04-sep-2026: el ícono sale de la columna Carta de Backup_Cards.csv (iconUrls.medium de Supercell), no de URLs de terceros. [→ Contexto_Base_Web.md §37B184]
+  // headers de Backup_Cards.csv (columnas 1 a 11, de N° a Evolución). [→ Contexto_Base_Web.md §37B185]
+  var cards1 = _leerCardsCSV();
+  var infoPorId = {};
+  for (var c = 0; c < cards1.rows.length; c++) {
+    var idCat = String(cards1.rows[c][1] || '').trim();
+    if (idsTop.indexOf(idCat) === -1) continue;
+    infoPorId[idCat] = {
+      name:          String(cards1.rows[c][3] || cards1.rows[c][2] || ('Carta ' + idCat)),
+      rarity:        String(cards1.rows[c][6] || ''),
+      tipo:          String(cards1.rows[c][7] || ''), // Tropa/Hechizo/Estructura (columna manual del usuario)
+      elixirCost:    cards1.rows[c][8] !== '' ? Number(cards1.rows[c][8]) : null,
+      icon:          String(cards1.rows[c][9] || ''),
+      heroIcon:      String(cards1.rows[c][10] || ''),
+      evolutionIcon: String(cards1.rows[c][11] || '')
+    };
+  }
+
+  var top10 = idsTop.map(function (id) {
+    var info = infoPorId[id] || { name: 'Carta ' + id, rarity: '', tipo: '', elixirCost: null, icon: '', heroIcon: '', evolutionIcon: '' };
+    return {
+      id:             id,
+      name:           info.name,
+      rarity:         info.rarity,
+      tipo:           info.tipo,
+      elixirCost:     info.elixirCost,
+      icon:           info.icon,
+      hasHero:        !!info.heroIcon,
+      heroIcon:       info.heroIcon || null,
+      hasEvolution:   !!info.evolutionIcon,
+      evolutionIcon:  info.evolutionIcon || null,
+      usos:           conteoPorId[id]
+    };
+  });
+
+  return { top10: top10, jugadoresConDatos: Object.keys(tagsConDatos).length };
+}
+
+// _webAscensosRecientes(): FASE 8 (30-ago-2026, pedido del usuario — sección pública de reconocimiento en Inicio/Comunidad). Lee la hoja Historial_A/D (CFG.SHEETS.ASCENSOS, ver updateAscensosSheet()/ASC en 13_Inactivos_Vetados.gs) y devuelve SOLO los… [→ Contexto_Base_Web.md §37B295]
+function _webAscensosRecientes() {
+  var ss = _getSs();
+  // FASE (15-sep-2026, pedido del usuario -- fallback web->CSV, continuación de las funciones de Torneos más arriba en este archivo): Ascensos ya no se lee con shAsc.getRange() directo -- se usa _obtenerFilasConFallbackCSV()… [→ Contexto_Base_Web.md §37B296]
+  var lecturaAsc = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_COLS_SIN_PAR);
+  if (lecturaAsc.origen === 'vacio') return { ascensos: [] };
+
+  var dataAsc = lecturaAsc.filas;
+  if (lecturaAsc.origen === 'csv') {
+    // Igual que con T_Lista/T_Asistencia: el CSV guarda Fecha como texto canónico, no como objeto Date -- hay que reconstruirla antes del ordenamiento/formato de más abajo. [→ Contexto_Base_Web.md §37B297]
+    dataAsc = dataAsc.map(function (f) {
+      var nueva = f.slice();
+      var fechaObj = _parseSpanishDate(nueva[ASC.FECHA - 1]);
+      if (fechaObj instanceof Date && !isNaN(fechaObj.getTime())) nueva[ASC.FECHA - 1] = fechaObj;
+      return nueva;
+    });
+  }
+
+  // Tags de administradores VIGENTES (hoja Administradores) — cualquier ascenso/descenso de una de estas cuentas queda fuera del listado público, en cualquier fecha. FIX (24-sep-2026, pedido usuario -- AVISO 6, auditoría): esta… [→ Contexto_Base_Web.md §37B298]
+  var tagsAdmin = {};
+  var lecturaAdm = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ADMINISTRADORES, 'Backup_Administradores.csv', ADMINISTRADORES_TOTAL_COLS);
+  var dataAdmTags = lecturaAdm.filas;
+  for (var a = 0; a < dataAdmTags.length; a++) {
+    var tagAdm = cleanTag(dataAdmTags[a][AC.TAG - 1]);
+    if (tagAdm) tagsAdmin[tagAdm] = true;
+  }
+
+  // Tags con Estado = 'Activo' VIGENTE en el Directorio (misma fuente y mismo criterio que usa _webRoster()) — ver FIX en el docblock: el Estado guardado en cada fila de Historial_A/D es el de ESE momento, no sirve para decidir si la… [→ Contexto_Base_Web.md §37B299]
+  var tagsActivos = {};
+  var dataDirAsc = _webLeerDirectorioComoDC().filas;
+  for (var d = 0; d < dataDirAsc.length; d++) {
+    if (String(dataDirAsc[d][DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
+    var tagDirAsc = cleanTag(dataDirAsc[d][DC.TAG - 1]);
+    if (tagDirAsc) tagsActivos[tagDirAsc] = true;
+  }
+
+  var tz = Session.getScriptTimeZone() || 'America/Lima';
+
+  var ascensos = dataAsc
+    .filter(function (f) {
+      if (String(f[ASC.TIPO - 1] || '').trim() !== 'Ascenso') return false; // nunca degradaciones
+      var tagNorm = cleanTag(f[ASC.TAG - 1]);
+      if (tagNorm && tagsAdmin[tagNorm]) return false; // nunca cambios de rango de admins
+      if (!tagNorm || !tagsActivos[tagNorm]) return false; // solo cuentas HOY activas
+      return true;
+    })
+    .map(function (f) {
+      var fechaCelda = f[ASC.FECHA - 1];
+      var fechaOk = fechaCelda instanceof Date && !isNaN(fechaCelda.getTime());
+      return {
+        tag:           String(f[ASC.TAG - 1] || ''),
+        nombre:        String(f[ASC.NOMBRE - 1] || ''),
+        clan:          String(f[ASC.CLAN - 1] || ''),
+        rangoAnterior: String(f[ASC.RANGO - 1] || ''),
+        rangoNuevo:    String(f[ASC.RANGO_2 - 1] || ''),
+        fecha:         fechaOk ? fechaCelda.toISOString() : null,
+        fechaTxt:      fechaOk ? Utilities.formatDate(fechaCelda, tz, 'dd/MM/yyyy') : '',
+        _fechaOrden:   fechaOk ? fechaCelda.getTime() : 0
+      };
+    })
+    .sort(function (a, b) { return b._fechaOrden - a._fechaOrden; })
+    .map(function (r) { delete r._fechaOrden; return r; })
+    .slice(0, 20); // últimos 20 ascensos — suficiente para una sección "recientes" sin sobrecargar
+
+  return { ascensos: ascensos };
+}
+
+// _webIngresosRecientes(): FASE 6 (28-ago-2026, pedido del usuario): index.html reemplaza la sección "Torneos" por "Ingresos recientes" — lista pública de miembros que CALIFICAN COMO NUEVOS ahora mismo. No se reinventa ningún criterio de "reciente": se lee… [→ Contexto_Base_Web.md §37B255]
+function _webIngresosRecientes(opciones) {
+  // CAMBIO (28-sep-2026, Fase 5b tanda B, decisión del usuario: el aviso de clan rival es solo para admins): la caché de 60 s es UNA sola para todos y guarda la respuesta COMPLETA (con esRivalTemporada/clanRivalDetectado). Por eso el… [→ Contexto_Base_Web.md §37B256]
+  var completa = _webCacheado('web_ingresos_recientes_v1', 60, _webIngresosRecientesCalcular);
+  if (opciones && opciones.esAdmin === true) return completa;
+  var copia = {};
+  Object.keys(completa || {}).forEach(function (k) { copia[k] = completa[k]; });
+  copia.ingresos = ((completa && completa.ingresos) || []).map(function (ing) {
+    var limpio = {};
+    Object.keys(ing).forEach(function (k) {
+      if (k !== 'esRivalTemporada' && k !== 'clanRivalDetectado' && k !== 'esCuentaAdmin' && k !== 'tieneWsp') limpio[k] = ing[k];
+    });
+    return limpio;
+  });
+  return copia;
+}
+
+function _webIngresosRecientesCalcular() {
+  var lista = _construirIngresosRecientesUnificado();
+  return { ingresos: lista, semanasGuerra: lista.semanasGuerra || [], guerraCongelada: !!lista.guerraCongelada };
+}
+
+// _construirIngresosRecientesUnificado(): FIX (01-sep-2026, pedido usuario — "haz que trabajen juntos, primero se usa la información de directorio, eso no es negociable en ambas. luego se verifica, si hay información de tampermonkey, se implementa, sino se queda con lo… [→ Contexto_Base_Web.md §37B257]
+function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, dataGuerraPrefetch, tDash) {
+  var ss = _getSs();
+  var ctx = ctxPrefetch || _getCtx();
+  var tz = Session.getScriptTimeZone() || 'America/Lima';
+
+  // PASO 1 (no negociable): universo de candidatos = Directorio ---- Mismo criterio que usaba _getDatosDashboard() (38_Web_Endpoints.gs) para su lista "nuevos": Activo, en un clan Terna vigente, y (V_Guerra vacío O FechaIngreso… [→ Contexto_Base_Web.md §37B258]
+  var dataDir;
+  if (dataDirPrefetch) {
+    dataDir = dataDirPrefetch;
+  } else {
+    var shDirIngresos = _hojaConFilas_(ss, CFG.SHEETS.DIRECTORIO, 2); // PF073: null también si Sheets lanza error, y entonces cae al CSV
+    if (shDirIngresos) {
+      dataDir = _leerDirectorioFisicoComoDC(ss);
+    } else {
+      var lecturaDirIngresos = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
+      if (lecturaDirIngresos.origen === 'csv') {
+        // Mismo tratamiento de Fecha que _webRosterCalcular(): el CSV trae Vigencia/Fecha_ing como texto, no como objeto Date. [→ Contexto_Base_Web.md §37B259]
+        dataDir = lecturaDirIngresos.filas.map(function (fila) {
+          var f = fila.slice();
+          var vig = _parseSpanishDate(f[DC.VIGENCIA - 1]);
+          if (vig instanceof Date && !isNaN(vig.getTime())) f[DC.VIGENCIA - 1] = vig;
+          var fIng = _parseSpanishDate(f[DC.FECHA_ING - 1]);
+          if (fIng instanceof Date && !isNaN(fIng.getTime())) f[DC.FECHA_ING - 1] = fIng;
+          return f;
+        });
+      } else {
+        dataDir = [];
+      }
+    }
+  }
+  // 19-oct-2026 (pedido de la usuaria, pastilla «Ocultar admins» de directorio.html): cuentas de administradores = todas las filas del Directorio cuyo Celular es el de un administrador (fila con Admin = 'Sí'), el mismo criterio con que sincronizarAdministradores() arma la hoja Administradores (11_DirectorioSheet.gs). Solo se publica el booleano esCuentaAdmin (y solo con sesión de admin, ver _webIngresosRecientes()); el celular nunca sale.
+  var celularesAdminIR = {};
+  for (var iAdm = 0; iAdm < dataDir.length; iAdm++) {
+    if (String(dataDir[iAdm][DC.ADMIN - 1] || '').trim() !== 'Sí') continue;
+    var celAdm = soloDigitos(dataDir[iAdm][DC.CELULAR - 1]);
+    if (celAdm) celularesAdminIR[celAdm] = true;
+  }
+  var hoy = new Date();
+  var LIMITE_DIAS_NUEVO = 7;
+  var candidatosBase = [];
+  for (var k = 0; k < dataDir.length; k++) {
+    var filaDir0 = dataDir[k];
+    if (String(filaDir0[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
+
+    var clanTagDir0 = String(filaDir0[DC.CLAN_TAG - 1] || '').trim();
+    if (CFG.TERNA_TAGS.indexOf(clanTagDir0) < 0) continue; // ya no está en un clan Terna
+
+    var vGuerra0 = String(filaDir0[DC.V_GUERRA - 1] || '').trim();
+    var fechaIng0 = filaDir0[DC.FECHA_ING - 1];
+    var esReciente0 = false;
+    if (fechaIng0 instanceof Date && !isNaN(fechaIng0.getTime())) {
+      var diasDesdeIngreso0 = (hoy - fechaIng0) / 86400000;
+      esReciente0 = diasDesdeIngreso0 >= 0 && diasDesdeIngreso0 <= LIMITE_DIAS_NUEVO;
+    }
+    if (vGuerra0 !== '' && !esReciente0) continue; // no califica como "reciente"
+
+    var tagDir0 = String(filaDir0[DC.TAG - 1] || '').trim();
+    if (!tagDir0) continue;
+
+    candidatosBase.push({ tagLimpio: cleanTag(tagDir0), filaDir: filaDir0 });
+  }
+
+  if (!candidatosBase.length) return [];
+
+  // ---- PASO 2 (enriquecimiento opcional): hoja "Nuevos" (Tampermonkey) ----
+  var nuevosPorTag = {};
+  var fechasGridNuevos = null, gridNuevosData = null, numBloquesReal = 0;
+  var shNuevos = _hojaConFilas_(ss, CFG.SHEETS.NUEVOS, NUEVOS_FILA_DATOS_INICIO); // PF073
+  if (shNuevos) {
+    var numFilasN = shNuevos.getLastRow() - NUEVOS_FILA_DATOS_INICIO + 1;
+    var dataNuevos = shNuevos.getRange(NUEVOS_FILA_DATOS_INICIO, 1, numFilasN, NC_TOTAL_FIJAS).getValues();
+
+    // Mismo cálculo de ancho REAL de la cuadrícula que ya usa repararFormatoEncabezadosNuevos() (14_Nuevos_RoyaleAPI.gs) — la hoja "Nuevos" puede tener más de los 5 bloques originales. [→ Contexto_Base_Web.md §37B260]
+    var lastColNuevos = shNuevos.getLastColumn();
+    var anchoGridReal = Math.max(0, lastColNuevos - COL_INICIO_GRID_NUEVOS + 1);
+    numBloquesReal = Math.max(GRID_NUM_BLOQUES_NUEVOS, Math.floor(anchoGridReal / GRID_BLOQUE_ANCHO_NUEVOS));
+    var anchoGridNuevos = numBloquesReal * GRID_BLOQUE_ANCHO_NUEVOS;
+    fechasGridNuevos = shNuevos.getRange(NUEVOS_FILA_FECHAS, COL_INICIO_GRID_NUEVOS, 1, anchoGridNuevos).getValues()[0];
+    gridNuevosData = shNuevos.getRange(NUEVOS_FILA_DATOS_INICIO, COL_INICIO_GRID_NUEVOS, numFilasN, anchoGridNuevos).getValues();
+    // 11-oct-2026: ya no se lee la "semana actual" J/V/S/D de "Nuevos" (semanaActualDiasData); el desglose diario de la semana en curso sale SOLO de Guerra (hoja o Backup_Guerra.csv), igual que perfil y tablas. [→ Contexto_Base_Web.md §37B262E]
+
+    for (var n = 0; n < dataNuevos.length; n++) {
+      var tagN = cleanTag(String(dataNuevos[n][NC.TAG - 1] || ''));
+      if (tagN && !nuevosPorTag.hasOwnProperty(tagN)) nuevosPorTag[tagN] = n; // índice de fila dentro del grid
+    }
+  }
+
+  if (tDash) _dashTiempoMarca_(tDash, 'ingresos.nuevos');
+
+  var DIAS_GUERRA_NUEVOS = ['Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  function _diaValorONull(v) { return (v === '' || v === null || v === undefined) ? null : (Number(v) || 0); }
+
+  // Igual que _webUrlPerfilExterno(), pero con respaldo: si la celda de Directorio todavía no tiene el link guardado, se construye directo desde el Tag (mismo patrón que ya usaba _getDatosDashboard() antes de esta unificación) — así… [→ Contexto_Base_Web.md §37B261]
+  function _urlPerfilConFallback(valorCelda, dominio, segmento, tagRaw) {
+    var url = _webUrlPerfilExterno(valorCelda, dominio, segmento);
+    if (url) return url;
+    var tagSinHash = String(tagRaw || '').trim().replace('#', '');
+    return tagSinHash ? ('https://' + dominio + '/' + segmento + '/' + tagSinHash) : '';
+  }
+
+  // Ataques/Puntaje/Barcos de la SEMANA ACTUAL por Tag (hoja Guerra) ---- Independiente de Tampermonkey: viene de la API de Supercell vía runGuerra()/runGuerraRapido() (17_GuerraSheet.gs). FASE 10 (09-sep-2026, pedido usuario… [→ Contexto_Base_Web.md §37B262]
+  var guerraSemanaPorTag = {};
+  var guerraDiasPorTag = {}; // 11-oct-2026: { Tag: { offsetDia(0-3): {ataques, puntaje, barcos} } } de la semana en curso, respaldo del desglose diario cuando el Tag no tiene fila en "Nuevos"
+  var fechaMasRecientePorSemana = {}; // numSemana -> Date más reciente vista
+  // 19-sep-2026 (pedido del usuario -- webGuerraEnVivo lento): si el caller ya leyó la hoja Guerra en esta misma ejecución (dataGuerraPrefetch), se reusa esa lectura en vez de volver a leer 9000+ filas. Solo lectura: este bloque… [→ Contexto_Base_Web.md §37B263]
+  var dataGuerra = dataGuerraPrefetch || null;
+  if (!dataGuerra) {
+    var shGuerra = _hojaConFilas_(ss, CFG.SHEETS.GUERRA, 2); // PF073
+    if (shGuerra) {
+      dataGuerra = shGuerra.getRange(2, 1, shGuerra.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+    }
+  }
+  // 11-oct-2026 (pedido usuario — "los miembros nuevos siguen siendo miembros: sus datos de guerra se obtienen igual que el resto"): si la hoja Guerra no está disponible o no trae filas de la temporada actual, se leen las de Backup_Guerra.csv (mismo respaldo que usan el perfil y las tablas). [→ Contexto_Base_Web.md §37B262E]
+  var hojaTieneTemporadaIR = !!dataGuerra && dataGuerra.some(function (fG) { return String(fG[GC.TEMPORADA - 1] || '') === String(ctx.temporada); });
+  if (!hojaTieneTemporadaIR) {
+    try {
+      var lecturaCsvIR = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.GUERRA, 'Backup_Guerra.csv', GUERRA_TOTAL_COLS);
+      if (lecturaCsvIR && lecturaCsvIR.filas && lecturaCsvIR.filas.length) dataGuerra = lecturaCsvIR.filas;
+    } catch (eCsvIR) {
+      Logger.log('[IngresosRecientes] no se pudo leer el respaldo de Guerra: ' + eCsvIR.message);
+    }
+  }
+  // 19-oct-2026 (pedido de la usuaria): de lunes a miércoles (entrenamiento) la cuadrícula de Ataques, Medallas y Barcos de «Ingresos recientes» queda congelada con lo último obtenido en la guerra (hasta el domingo) y se sigue mostrando hasta que empiece la siguiente (jueves). Antes, en entrenamiento, el desglose diario salía null (no se dibujaba) y los totales de la semana salían en 0 porque se buscaba la semana nueva, que aún no tiene días de guerra. Referencia = última fila de día de guerra (temporada, periodIndex) que no sea futura; en día de guerra la referencia sigue siendo el contexto actual. [→ Contexto_Base_Web.md §PF125]
+  var refGuerraIR = { temporada: String(ctx.temporada), sectionIndex: ctx.sectionIndex, periodIndex: ctx.periodIndex };
+  var guerraCongeladaIR = false;
+  if (dataGuerra && !esDiaGuerraIdx(ctx.periodIndex)) {
+    var mejorTempIR = -1, mejorPeriodoIR = -1, mejorFilaIR = null;
+    for (var gRef = 0; gRef < dataGuerra.length; gRef++) {
+      var pRefIR = Number(dataGuerra[gRef][GC.PERIOD_IDX - 1]);
+      if (!pRefIR || !esDiaGuerraIdx(pRefIR)) continue;
+      var tRefIR = Number(dataGuerra[gRef][GC.TEMPORADA - 1]) || 0;
+      if (!tRefIR || tRefIR > Number(ctx.temporada)) continue;
+      if (tRefIR === Number(ctx.temporada) && pRefIR > ctx.periodIndex) continue; // no futuras
+      if (tRefIR > mejorTempIR || (tRefIR === mejorTempIR && pRefIR > mejorPeriodoIR)) {
+        mejorTempIR = tRefIR; mejorPeriodoIR = pRefIR; mejorFilaIR = dataGuerra[gRef];
+      }
+    }
+    if (mejorFilaIR) {
+      refGuerraIR = {
+        temporada:    String(mejorFilaIR[GC.TEMPORADA - 1]),
+        sectionIndex: (Number(mejorFilaIR[GC.SEMANA - 1]) || 1) - 1,
+        periodIndex:  mejorPeriodoIR
+      };
+      guerraCongeladaIR = true;
+    }
+  }
+  if (dataGuerra) {
+    for (var g = 0; g < dataGuerra.length; g++) {
+      if (String(dataGuerra[g][GC.TEMPORADA - 1] || '') === String(ctx.temporada)) {
+        var numSemanaG = Number(dataGuerra[g][GC.SEMANA - 1]) || 0;
+        var fechaFilaG = dataGuerra[g][GC.FECHA - 1];
+        if (numSemanaG && fechaFilaG instanceof Date && !isNaN(fechaFilaG.getTime())) {
+          if (!fechaMasRecientePorSemana[numSemanaG] || fechaFilaG > fechaMasRecientePorSemana[numSemanaG]) {
+            fechaMasRecientePorSemana[numSemanaG] = fechaFilaG;
+          }
+        }
+      }
+
+      // FIX (11-oct-2026, pedido usuario — "YAHIR tiene ataques pero su cuadrícula aparece vacía"): el desglose diario J/V/S/D solo salía de la hoja "Nuevos" (Tampermonkey); un ingreso sin fila ahí (caso YAHIR, ingresó el sábado) quedaba con guerraSemanaDias = null aunque la hoja Guerra sí tenía sus ataques. Se guardan aquí, por Tag, los valores de CADA día de guerra de la semana en curso, para usarlos de respaldo más abajo. Mismo criterio que _webPerfilJugador() (GC.ATAQUES_HOY / GC.FAME / GC.BARCOS por día). [→ Contexto_Base_Web.md §37B262B]
+      var pIdxDiaG = Number(dataGuerra[g][GC.PERIOD_IDX - 1]) || 0;
+      if (String(dataGuerra[g][GC.TEMPORADA - 1]) === refGuerraIR.temporada &&
+          ((Number(dataGuerra[g][GC.SEMANA - 1]) || 1) - 1) === refGuerraIR.sectionIndex &&
+          esDiaGuerraIdx(pIdxDiaG)) {
+        var tagDiaG = cleanTag(dataGuerra[g][GC.TAG - 1]);
+        if (tagDiaG) {
+          if (!guerraDiasPorTag[tagDiaG]) guerraDiasPorTag[tagDiaG] = {};
+          guerraDiasPorTag[tagDiaG][(pIdxDiaG % 7) - 3] = {
+            ataques: Number(dataGuerra[g][GC.ATAQUES_HOY - 1]) || 0,
+            puntaje: Number(dataGuerra[g][GC.FAME        - 1]) || 0,
+            barcos:  Number(dataGuerra[g][GC.BARCOS      - 1]) || 0
+          };
+        }
+      }
+
+      if (Number(dataGuerra[g][GC.PERIOD_IDX - 1]) !== refGuerraIR.periodIndex ||
+          String(dataGuerra[g][GC.TEMPORADA - 1]) !== refGuerraIR.temporada) continue;
+      var tagG = cleanTag(dataGuerra[g][GC.TAG - 1]);
+      if (!tagG) continue;
+      guerraSemanaPorTag[tagG] = {
+        ataques: Number(dataGuerra[g][GC.ATAQUES_SEM - 1]) || 0,
+        puntaje: Number(dataGuerra[g][GC.FAME        - 1]) || 0,
+        barcos:  Number(dataGuerra[g][GC.BARCOS      - 1]) || 0
+      };
+    }
+  }
+
+  // 11-oct-2026: Fame y barcos de la hoja Guerra son acumulados de la semana; se pasan UNA vez, por Tag, a valor de cada día (YAHIR mostraba 1,000 dos días, imposible: el máximo diario es 900).
+  for (var tagAcumIR in guerraDiasPorTag) _diarioDesdeAcumuladoGuerra_(guerraDiasPorTag[tagAcumIR]);
+
+  if (tDash) _dashTiempoMarca_(tDash, 'ingresos.guerra');
+
+  // FASE 7 (Parte A, punto 7 del documento — avisos de competencia en Ingresos recientes) — reusa _getRivalesYConflicto() (FASE 6, 15_DeteccionInfiltrados.gs) para marcar cuando un ingreso reciente estuvo antes en un clan rival de… [→ Contexto_Base_Web.md §37B264]
+  var rivalesYConflictoIR = {};
+  try {
+    rivalesYConflictoIR = _getRivalesYConflicto(); // 15_DeteccionInfiltrados.gs
+  } catch (eRivalesIR) {
+    // Defensivo, mismo criterio que _getClanesRivalesTemporadaActual(): si currentriverrace no trae el campo esperado (cambio de API, proxy caído, etc.), esta fase simplemente no marca a nadie como rival en vez de romper toda la… [→ Contexto_Base_Web.md §37B265]
+    Logger.log('[IngresosRecientes] _getRivalesYConflicto() falló, se omite el aviso de rival esta vez: ' + eRivalesIR.message);
+  }
+  var rivalesPorNombreIR = {};
+  for (var tagRivalIR in rivalesYConflictoIR) {
+    var infoRivalIR = rivalesYConflictoIR[tagRivalIR];
+    var nombreNormIR = String((infoRivalIR && infoRivalIR.nombre) || '').trim().toUpperCase();
+    if (nombreNormIR) rivalesPorNombreIR[nombreNormIR] = infoRivalIR;
+  }
+
+  if (tDash) _dashTiempoMarca_(tDash, 'ingresos.rivales');
+
+  // Respaldo de historial: Control_2 (S1..S5, sin fecha real) — solo se usa para un candidato que NO tenga historial usable en "Nuevos". [→ Contexto_Base_Web.md §37B266]
+  var historialPorTag = {};
+  var shC2 = _hojaConFilas_(ss, 'Control_2', 4); // PF073
+  if (shC2) {
+    var numFilasC2 = shC2.getLastRow() - 3;
+    var tagsC2   = shC2.getRange(4, CC2.TAG,  numFilasC2, 1).getValues();
+    var clanesC2 = shC2.getRange(4, CC2.CLAN, numFilasC2, 1).getValues();
+    var gridC2   = shC2.getRange(4, COL_INICIO_GRID2, numFilasC2, GRID_WIDTH2).getValues();
+    for (var c2 = 0; c2 < numFilasC2; c2++) {
+      var tagC2 = cleanTag(tagsC2[c2][0]);
+      if (!tagC2) continue;
+      var clanC2 = String(clanesC2[c2][0] || '');
+      var semanas = [];
+      for (var sem = 0; sem < 5; sem++) {
+        var ataquesSem = gridC2[c2][OFF2.ATA + sem];
+        if (ataquesSem === '' || ataquesSem === null) continue; // semana futura, en blanco
+        // FIX (17-sep-2026, cierre de conexión pendiente — index.html, renderComparativaSemanal()/gráfica "Barcos por semana"): faltaba `barcos` aquí. OFF2.BAR (23_Control2_GuerraSemanal.gs) ya existe y trae exactamente este dato por… [→ Contexto_Base_Web.md §37B267]
+        semanas.push({
+          semana:  'Semana ' + (sem + 1),
+          clan:    clanC2,
+          ataques: Number(ataquesSem) || 0,
+          puntaje: Number(gridC2[c2][OFF2.PUN + sem]) || 0,
+          barcos:  Number(gridC2[c2][OFF2.BAR + sem]) || 0
+        });
+      }
+      historialPorTag[tagC2] = semanas;
+    }
+  }
+
+  if (tDash) _dashTiempoMarca_(tDash, 'ingresos.control2');
+
+  // ---- PASO 3: armar la lista final — base Directorio + enriquecimiento ----
+  var lista = [];
+  for (var i = 0; i < candidatosBase.length; i++) {
+    var cand = candidatosBase[i];
+    var filaDir = cand.filaDir;
+    var tagLimpio = cand.tagLimpio;
+
+    var fechaIng = filaDir[DC.FECHA_ING - 1];
+    var fechaTxt = (fechaIng instanceof Date && !isNaN(fechaIng.getTime()))
+      ? Utilities.formatDate(fechaIng, tz, 'dd/MM/yyyy') : '';
+    var fechaIso = (fechaIng instanceof Date && !isNaN(fechaIng.getTime())) ? fechaIng.toISOString() : null;
+
+    var historialFila = [];
+    var guerraSemanaDiasFila = null;
+    var fuenteHistorial = 'ninguna';
+
+    var idxNuevos = nuevosPorTag.hasOwnProperty(tagLimpio) ? nuevosPorTag[tagLimpio] : -1;
+    if (idxNuevos >= 0 && gridNuevosData) {
+      // Sí hay fila en "Nuevos" para este candidato (Tampermonkey ya lo escaneó al menos una vez): se usa su historial y desglose diario. [→ Contexto_Base_Web.md §37B268]
+      var filaGridNuevos = gridNuevosData[idxNuevos];
+      for (var b = 0; b < numBloquesReal; b++) {
+        var offBloque = b * GRID_BLOQUE_ANCHO_NUEVOS;
+        var fechaBloque = fechasGridNuevos[offBloque];
+        if (!(fechaBloque instanceof Date) || isNaN(fechaBloque.getTime())) continue; // bloque sin usar
+        var ataquesBloque = filaGridNuevos[offBloque + OFFN.ATAQUES];
+        if (ataquesBloque === '' || ataquesBloque === null || ataquesBloque === undefined) continue;
+        // FIX (17-sep-2026, cierre de conexión pendiente — index.html, renderComparativaSemanal()/gráfica "Barcos por semana"): faltaba `barcos` aquí. OFFN.BARCOS (14_Nuevos_RoyaleAPI.gs) ya existe y trae exactamente este dato por semana en… [→ Contexto_Base_Web.md §37B269]
+        var tsBloque = _fechaATemporadaSemana(fechaBloque); // 20-oct-2026 (pedido usuaria): temporada, semana y día para el tooltip de cada punto semanal. [→ Contexto_Base_Web.md §PF133]
+        var etiquetaDiaBloque = tsBloque ? _etiquetaTemporadaSemanaDia_(tsBloque.temporadaPropia, tsBloque.semana, tsBloque.periodIndex) : null;
+        historialFila.push({
+          semana:  Utilities.formatDate(fechaBloque, tz, 'dd/MM/yyyy'),
+          temporada:    etiquetaDiaBloque ? etiquetaDiaBloque.temporada    : null,
+          semanaGuerra: etiquetaDiaBloque ? etiquetaDiaBloque.semanaGuerra : null,
+          diaGuerra:    etiquetaDiaBloque ? etiquetaDiaBloque.diaGuerra    : null,
+          clan:    String(filaGridNuevos[offBloque + OFFN.CLAN] || '').trim() || String(filaDir[DC.CLAN - 1] || ''),
+          ataques: Number(ataquesBloque) || 0,
+          puntaje: Number(filaGridNuevos[offBloque + OFFN.FAME]) || 0,
+          barcos:  Number(filaGridNuevos[offBloque + OFFN.BARCOS]) || 0
+        });
+      }
+      if (historialFila.length) fuenteHistorial = 'nuevos';
+    }
+
+    // CAMBIO (11-oct-2026, pedido usuario): el desglose diario de la semana en curso sale SIEMPRE de Guerra (hoja o CSV, guerraDiasPorTag), como el perfil y las tablas; "Nuevos" ya no lo aporta (sigue dando solo el historial semanal de arriba). Un día sin fila del jugador queda null (el frontend lo pinta "—", no 0). [→ Contexto_Base_Web.md §37B262E]
+    var diasGuerraRespaldo = guerraDiasPorTag[tagLimpio];
+    if (diasGuerraRespaldo) {
+      guerraSemanaDiasFila = {
+        dias:     DIAS_GUERRA_NUEVOS,
+        ataques:  [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].ataques : null; }),
+        puntaje:  [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].puntaje : null; }),
+        barcos:   [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].barcos : null; })
+      };
+    }
+
+    // FIX (11-oct-2026, pedido usuario — "Love--Adri ha estado toda la semana sin atacar, debería tener los ceros"): una cuenta sin NINGUNA fila de guerra esta semana (ni en "Nuevos" ni en la hoja Guerra) quedaba con guerraSemanaDias = null y la tarjeta no dibujaba la cuadrícula, mientras otra con filas en 0 sí mostraba ceros. Un miembro actual sin registro no atacó: se rellenan con 0 los días de guerra ya llegados (jueves hasta hoy) y los futuros quedan null ("—"). Fuera de día de guerra (lunes a miércoles) no se rellena. [→ Contexto_Base_Web.md §37B262D]
+    var sinNingunDatoDiario = !guerraSemanaDiasFila ||
+      !['ataques', 'puntaje', 'barcos'].some(function (k) { return guerraSemanaDiasFila[k].some(function (v) { return v !== null; }); });
+    if (sinNingunDatoDiario && esDiaGuerraIdx(ctx.periodIndex)) {
+      var offsetHoyIR = (ctx.periodIndex % 7) - 3; // 0=jueves … 3=domingo
+      var cerosIR = [0, 1, 2, 3].map(function (d) { return d <= offsetHoyIR ? 0 : null; });
+      guerraSemanaDiasFila = {
+        dias:     DIAS_GUERRA_NUEVOS,
+        ataques:  cerosIR.slice(),
+        puntaje:  cerosIR.slice(),
+        barcos:   cerosIR.slice()
+      };
+    }
+
+    // Sin nada de "Nuevos" (todavía no escaneado por Tampermonkey, o sin bloques con fecha usable): se cae al respaldo de Control_2 si hay algo ahí. El candidato NUNCA desaparece por esto — sigue viniendo de Directorio (Paso 1), solo… [→ Contexto_Base_Web.md §37B270]
+    if (!historialFila.length && historialPorTag[tagLimpio]) {
+      historialFila = historialPorTag[tagLimpio];
+      fuenteHistorial = 'control2';
+    }
+
+    // FASE 7 (Parte A): ¿alguna semana de historialFila lo tiene en un clan RIVAL en vez de en su clan Terna actual? Se recorre TODO el historial disponible (no solo la semana más antigua) porque un candidato puede tener bloques… [→ Contexto_Base_Web.md §37B271]
+    var clanActualNombreNormIR = String(filaDir[DC.CLAN - 1] || '').trim().toUpperCase();
+    var esRivalTemporadaIR = false;
+    var clanRivalDetectadoIR = null;
+    for (var hIR = 0; hIR < historialFila.length; hIR++) {
+      var nombreHistNormIR = String(historialFila[hIR].clan || '').trim().toUpperCase();
+      if (!nombreHistNormIR || nombreHistNormIR === clanActualNombreNormIR) continue;
+      if (rivalesPorNombreIR.hasOwnProperty(nombreHistNormIR)) {
+        esRivalTemporadaIR = true;
+        clanRivalDetectadoIR = rivalesPorNombreIR[nombreHistNormIR];
+        break;
+      }
+    }
+
+    lista.push({
+      tag:          String(filaDir[DC.TAG - 1] || '').trim(),
+      nombre:       String(filaDir[DC.NOMBRE - 1] || ''),
+      clan:         String(filaDir[DC.CLAN   - 1] || ''),
+      fechaIngreso: fechaTxt,
+      fechaIngresoISO: fechaIso,
+      royaleApi:    _urlPerfilConFallback(filaDir[DC.ROYALE_API - 1], 'royaleapi.com', 'player', filaDir[DC.TAG - 1]),
+      cwstats:      _urlPerfilConFallback(filaDir[DC.CW_STATS   - 1], 'cwstats.com',   'player', filaDir[DC.TAG - 1]),
+      copas:            Number(filaDir[DC.COPAS      - 1]) || 0,
+      victoriasGuerra:  Number(filaDir[DC.V_GUERRA    - 1]) || 0,
+      diasInactivo:     Number(filaDir[DC.INACTIVIDAD - 1]) || 0,
+      // FIX (07-sep-2026, pedido usuario — "en el bloque de ingresos recientes agrega V_Guerra, Nivel (xp)"): V_Guerra ya salía como victoriasGuerra (línea de arriba); nivelXp faltaba — directorio.html (nc-stats) ya lo esperaba pero esta… [→ Contexto_Base_Web.md §37B272]
+      nivelXp:          String(filaDir[DC.NIVEL       - 1] || ''),
+      // FIX (03-sep-2026, pedido usuario — "Vigencia [última conexión] debe mostrarse en Directorio/Ingresos recientes"): mismo criterio que el fix gemelo de _webRosterCalcular más arriba — la columna ya existía en Directorio… [→ Contexto_Base_Web.md §37B273]
+      vigencia:         filaDir[DC.VIGENCIA - 1] || '',
+      guerraSemana:     guerraSemanaPorTag[tagLimpio] || { ataques: 0, puntaje: 0, barcos: 0 },
+      guerraSemanaDias: guerraSemanaDiasFila,
+      historialSemanal: historialFila,
+      fuenteHistorial:  fuenteHistorial,
+      // FASE 7 (Parte A, punto 7 del documento): ver bloque "FASE 7 (Parte A)" más arriba en este mismo archivo para el detalle del cruce (por NOMBRE de clan, no por Tag) y su limitación conocida. [→ Contexto_Base_Web.md §37B274]
+      esRivalTemporada: esRivalTemporadaIR,
+      esCuentaAdmin: (function () { var celIR = soloDigitos(filaDir[DC.CELULAR - 1]); return !!(celIR && celularesAdminIR[celIR]); })(),
+      // 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp en las tarjetas de ingresos recientes): solo confirma SI tenemos el celular de la cuenta (true/false). NUNCA se manda el número ni el link de WhatsApp. Igual que esCuentaAdmin, _webIngresosRecientes() lo quita de la respuesta pública: solo llega con sesión de admin.
+      tieneWsp: !!soloDigitos(filaDir[DC.CELULAR - 1]),
+      clanRivalDetectado: clanRivalDetectadoIR ? {
+        nombre:  clanRivalDetectadoIR.nombre || '',
+        fuente:  clanRivalDetectadoIR.fuente || '',
+        motivo:  clanRivalDetectadoIR.motivo || ''
+      } : null
+    });
+  }
+
+  lista.sort(function (a, b) {
+    var tagA = _getClanTagByName(a.clan), tagB = _getClanTagByName(b.clan);
+    var oA = CFG.TERNA_TAGS.indexOf(tagA); if (oA === -1) oA = 999;
+    var oB = CFG.TERNA_TAGS.indexOf(tagB); if (oB === -1) oB = 999;
+    if (oA !== oB) return oA - oB;
+    return a.nombre.localeCompare(b.nombre);
+  });
+
+  // FASE 10 (09-sep-2026): ver comentario junto a 'fechaMasRecientePorSemana' más arriba. Se ordena de más antigua a más reciente (mismo criterio de fecha real "dd/MM/yyyy" que ya usa historialSemanal cuando viene de "Nuevos") y se… [→ Contexto_Base_Web.md §37B275]
+  lista.guerraCongelada = guerraCongeladaIR; // PF125: true en entrenamiento (lunes a miércoles); el frontend rotula «Última guerra»
+  lista.semanasGuerra = Object.keys(fechaMasRecientePorSemana)
+    .map(Number)
+    .sort(function (a, b) { return a - b; })
+    .map(function (numSemana) { return Utilities.formatDate(fechaMasRecientePorSemana[numSemana], tz, 'dd/MM/yyyy'); });
+
+  return lista;
+}
+
+// ----- Público: perfil del jugador y comparador -----
+
+// AVISOS ABIERTOS — TROFEOS DE GUERRA vs V_GUERRA (27-sep-2026). AVISO 9 RESUELTO: la barra 'Trofeos guerra' de Requisitos usaba DC.V_GUERRA (victorias de guerra, un conteo) en vez de trofeos/fame; ahora recibe `fameSemana` (GC.FAME de la hoja Guerra) y el parámetro se renombró a trofeosGuerra; DC.V_GUERRA no se tocó. AVISO 10 VERIFICACIÓN ABIERTA: el perfil a veces muestra '4 ataques' con '0 trofeos' el mismo día; PENDIENTE capturar Tag, fecha y valores de ATAQUES_HOY/FAME de la hoja Guerra antes de volver a atacar. Detalle en el .md. [→ Contexto_Base_Web.md §37B056]
 // _webProgresoRequisitos(clanNombre, ataquesSemana, trofeosGuerra, torneosTotal): compara ataques de la semana y trofeos de guerra contra CR_Lista (Ascensos y Descensos) de SU clan; FIX 27-sep-2026: tercer parámetro renombrado de vGuerra a trofeosGuerra (llamador pasa fameSemana); MIGRADO 14-sep-2026 a _getRequisitosCambioRangoBloqueCategoria() (par vigente de CR_Lista, sin respaldo a T_Requisitos desde 17-sep); `torneos` y `reaccion` eliminados; ataques pasa a ataquesMiembro/Veterano/Colider (perfil.html aún espera `ataques` plano); NUEVO 19-sep-2026: quinto parámetro ataquesExentos (4 por día opcional) que baja `requerido` y agrega `exentos`. Detalle en el .md. [→ Contexto_Base_Web.md §37B057]
 function _webProgresoRequisitos(clanNombre, ataquesSemana, trofeosGuerra, torneosTotal, ataquesExentos) {
   var exentos = Math.max(0, Number(ataquesExentos) || 0);
@@ -783,12 +1668,197 @@ function _webCaminoLeyendas(liga, trofeos, rango) {
   return resultado;
 }
 
-// _webUrlPerfilExterno(valorCelda, dominio, segmento): el campo de enlaces externos puede ser URL completa o solo el tag; mismo criterio que _respuestaInfoMi() (44_BotWhatsApp.gs). [→ Contexto_Base_Web.md §37B059]
-function _webUrlPerfilExterno(valorCelda, dominio, segmento) {
-  var v = String(valorCelda || '').trim();
-  if (!v) return '';
-  if (v.startsWith('http')) return v;
-  return 'https://' + dominio + '/' + segmento + '/' + cleanTag(v);
+// _webPerfilJugador(tagBuscado, opciones): perfil público de un jugador: identidad + stats de guerra de la semana actual + progreso vs requisitos de ascenso/descenso de su clan + extendido (FASE 1.5, ver _webPerfilExtendido()); NO incluye celular ni datos de contacto (exclusivo del endpoint CONTACTOS_TOKEN). FASE 10 (06-sep-2026): incluye mazoActual (mazo real equipado, distinto de las Sugerencias de mazo ext.deck/ext.deck2). FIX 09-sep-2026: un Tag sin fila en Directorio se delega a _webPerfilJugadorSinRegistro() (perfil público de Supercell) en vez de devolver error (los comentarios de admin.html y _webAdminBuscarMiembroSugerencias() ya lo daban por hecho). FIX 23-sep-2026: jugador.guerraSemanaDias = {dias:string[4], ataques, puntaje, puntajeAcumulado, barcos (arrays de 4 con number|null)} | null, desglose diario J/V/S/D de la semana en curso (guerraSemana trae solo el acumulado). CAMBIO 28-sep-2026 (Fase 5b tanda A/A2): 2.º parámetro opcional opciones = {esAdmin}; sin esAdmin una cuenta de la hoja Inactivos o con Estado 'Inactivo' en Directorio responde como un Tag sin registro ('Sin registro con nosotros'); con esAdmin:true sale con estado 'Inactivo'. @param tagBuscado, opciones; @returns {{ok, error?, jugador?}} [→ Contexto_Base_Web.md §37B117]
+function _webPerfilJugador(tagBuscado, opciones) {
+  var hallazgo = _webBuscarFilaDirectorioPorTagConOrigen(tagBuscado);
+  var fila = hallazgo ? hallazgo.fila : null;
+  if (!fila) return _webPerfilJugadorSinRegistro(tagBuscado);
+  // CAMBIO 28-sep-2026 (Fase 5b tanda A, decisión del usuario): una cuenta de la hoja Inactivos solo se ve como "Inactivo" con sesión de admin (opciones.esAdmin, ver doGet en 38_Web_Endpoints.gs); para el resto sale igual que un Tag sin registro. Ver AVISOS ABIERTOS (A1 a A4) al inicio del archivo. [→ Contexto_Base_Web.md §37B118]
+  var esAdminPerfil = !!(opciones && opciones.esAdmin);
+  // CAMBIO 28-sep-2026 (Fase 5b tanda A2, "todos los inactivos se ocultan para los no admin"): además de la hoja Inactivos se oculta cualquier fila con Estado 'Inactivo' (administradores inactivos, que viven en Directorio; ver _webAdminCuentasInactivas()), con el mismo criterio de texto (Estado con trim) y sin distinguir mayúsculas. [→ Contexto_Base_Web.md §37B119]
+  var esInactivoPerfil = hallazgo.origen === 'inactivos'
+    || String(fila[DC.ESTADO - 1] || '').trim().toLowerCase() === 'inactivo';
+  if (esInactivoPerfil && !esAdminPerfil) {
+    return _webPerfilJugadorSinRegistro(tagBuscado, { sinDatosDrive: true });
+  }
+
+  var tag         = String(fila[DC.TAG      - 1] || '');
+  var nombre      = String(fila[DC.NOMBRE   - 1] || '');
+  var clanNombre  = String(fila[DC.CLAN     - 1] || '');
+  var rango       = String(fila[DC.RANGO    - 1] || '');
+  var vGuerra     = Number(fila[DC.V_GUERRA - 1]) || 0;
+  var torneos     = Number(fila[DC.TORNEOS  - 1]) || 0;
+  var copas       = Number(fila[DC.COPAS    - 1]) || 0;
+  var estado      = String(fila[DC.ESTADO   - 1] || '');
+
+  // ---- Ataques de la semana en curso + historial de Ranking en el clan, ambos desde la hoja Guerra (una sola pasada) ----; FIX 04-sep-2026 (Ranking del clan de perfil.html): la gráfica esperaba ext.historialRanking = [{semana, ranking}, ...] y el backend solo mandaba ext.rankingClan (el actual); GC.RANKING existe fila por fila en Guerra (un valor por Tag y día, GUERRA_HEADERS en 17_GuerraSheet.gs) y como la hoja solo retiene la TEMPORADA ACTUAL (el resto se purga a Backup_Guerra.csv, _purgarTemporadasAnterioresGuerra()), el historial cubre los días ya jugados de la temporada en curso; ampliarlo a varias temporadas requeriría leer Backup_Guerra.csv y no vale la pena para una vista rápida. FIX 15-sep-2026 (barrido web->CSV): la lectura pasa por _obtenerFilasConFallbackCSV() (01_Config_Global.gs), mismo helper y Backup_Guerra.csv que _construirIngresosRecientesUnificado()/_webAportesRecientes(), para caer al respaldo si la hoja Guerra no está disponible; sigue sin ampliarse a varias temporadas porque el CSV normalmente contiene la misma temporada actual. [→ Contexto_Base_Web.md §37B120]
+  var ctx = _getCtx();
+  var ataquesSemana = 0, fameSemana = 0, barcosSemana = 0;
+  var historialRanking = [];
+  var diasGuerraSemana = {}; // 19-sep-2026: { offsetDia(0-3): {pIdx, clan} } de la semana en curso, para los exentos
+  // FIX 23-sep-2026 (perfil.html, minigráficos "Ataques de la semana" y "Fame de la semana", eje X J/V/S/D): { offsetDia(0-3): {ataques, puntaje, barcos} } de la semana en curso, valor de CADA día suelto (no el acumulado ataquesSemana/fameSemana/barcosSemana); 'ataques' sale de GC.ATAQUES_HOY (GC.ATAQUES_SEM es acumulado); 'puntaje' (Fame) y 'barcos' de GC.FAME/GC.BARCOS; CORREGIDO 11-oct-2026: esas dos columnas son ACUMULADAS de la semana (no del día), se convierten con _diarioDesdeAcumuladoGuerra_() (antes se decía que eran del día; ver guerra.html "Valores diarios", "Sem 1 Puntaje trae 500 400 700 600", y en _webHistorialGuerraComparador()); mismo filtro "esta semana" (ctx.temporada + ctx.sectionIndex) que diasGuerraSemana, por lo que el dato se ve congelado de lunes a miércoles hasta que empiece la guerra del jueves y ctx.sectionIndex avance. [→ Contexto_Base_Web.md §37B121]
+  var guerraSemanaDiasVals = {};
+  var ss = _getSs();
+  var tz = Session.getScriptTimeZone() || 'America/Lima';
+  var lecturaGuerraPerfil = _leerFilasGuerraDeTag_(ss, cleanTag(tag)); // 11-oct-2026: CSV (todas las temporadas) + hoja viva (temporada actual); antes solo la hoja
+  var dataGuerra = lecturaGuerraPerfil.filas;
+  if (dataGuerra.length) {
+    // 21-oct-2026 (pedido usuaria, caso Chistris #2GG8PJ8GC): una fila de un día de guerra con Ranking vacío (las del Origen «Reconstruido», p. ej. el jueves 04/06/2026) se manda también al historial cuando ese día NO tiene otra fila con Ranking > 0. Antes se descartaban todas y el día quedaba sin registro, así que el viernes heredaba los ataques acumulados del jueves y la gráfica mostraba 6. Si el día sí tiene una fila con Ranking, la vacía se sigue descartando: en el Backup (21-oct-2026), de 2 103 filas con Ranking vacío o 0, 104 son hermanas de una fila con Ranking del mismo día y dejarlas pasar haría que la reconstruida pise a la real (el frontend se queda con la última fila de cada día); las otras 1 999 son la única fila de su día y pasan a verse. Clave = Temporada + PeriodIndex (el PeriodIndex se repite entre temporadas). [→ Contexto_Base_Web.md §PF159]
+    var diasConRankingPerfil = {};
+    for (var iRk = 0; iRk < dataGuerra.length; iRk++) {
+      if (cleanTag(dataGuerra[iRk][GC.TAG - 1]) !== cleanTag(tag)) continue;
+      if (Number(dataGuerra[iRk][GC.RANKING - 1]) > 0) {
+        diasConRankingPerfil[String(dataGuerra[iRk][GC.TEMPORADA - 1]) + '|' + String(Number(dataGuerra[iRk][GC.PERIOD_IDX - 1]))] = true;
+      }
+    }
+    for (var i = 0; i < dataGuerra.length; i++) {
+      if (cleanTag(dataGuerra[i][GC.TAG - 1]) !== cleanTag(tag)) continue;
+
+      // Ranking de ESE día puntual si la fila trae uno (0/vacío = sin dato, ej. día de entrenamiento); "semana" en formato fecha real dd/MM/yyyy como historialSemanal en otros endpoints (ver _webIngresosRecientes()), para que el orden alfabético del frontend (renderRankingChart(), perfil.html) coincida con el cronológico dentro de la temporada. [→ Contexto_Base_Web.md §37B122]
+      var rankingDia = Number(dataGuerra[i][GC.RANKING - 1]) || 0;
+      var pIdxCeldaHist = dataGuerra[i][GC.PERIOD_IDX - 1];
+      var pIdxHist = (pIdxCeldaHist === '' || pIdxCeldaHist == null || !isFinite(Number(pIdxCeldaHist))) ? null : Number(pIdxCeldaHist);
+      var sinRankingPeroUnicaDelDia = rankingDia <= 0 && pIdxHist !== null && esDiaGuerraIdx(pIdxHist) &&
+        !diasConRankingPerfil[String(dataGuerra[i][GC.TEMPORADA - 1]) + '|' + String(pIdxHist)]; // 21-oct-2026 [→ Contexto_Base_Web.md §PF159]
+      if (rankingDia > 0 || sinRankingPeroUnicaDelDia) {
+        var fechaDia = dataGuerra[i][GC.FECHA - 1];
+        var semanaTxt = (fechaDia instanceof Date && !isNaN(fechaDia.getTime()))
+          ? Utilities.formatDate(fechaDia, tz, 'dd/MM/yyyy')
+          : String(fechaDia || '');
+        // FIX 09-sep-2026 (perfil.html, renderMetricaSemanal()/renderMetricasSemanales(): "solo se está mostrando evolución de ranking, falta ataques, puntaje y barcos"): el frontend ya esperaba 'ataques', 'puntaje' y 'barcos' en cada entrada de historialRanking (oculta la tarjeta si no llegan); se agregan con la misma fila/día que 'ranking' (GC.ATAQUES_SEM/GC.FAME/GC.BARCOS, point-in-time de ese día en vez de filtrados al periodIndex actual); 'puntaje' = Fame; un día de entrenamiento sin fila de guerra queda sin entrada (no se inventa un 0). [→ Contexto_Base_Web.md §37B123]
+        var etiquetaDiaRK = _etiquetaTemporadaSemanaDia_(dataGuerra[i][GC.TEMPORADA - 1], dataGuerra[i][GC.SEMANA - 1], dataGuerra[i][GC.PERIOD_IDX - 1]); // 20-oct-2026 (pedido usuaria): temporada, semana y día para el tooltip de cada punto. [→ Contexto_Base_Web.md §PF133]
+        historialRanking.push({
+          semana:  semanaTxt,
+          temporada:    etiquetaDiaRK ? etiquetaDiaRK.temporada    : null,
+          semanaGuerra: etiquetaDiaRK ? etiquetaDiaRK.semanaGuerra : null,
+          diaGuerra:    etiquetaDiaRK ? etiquetaDiaRK.diaGuerra    : null,
+          ranking: rankingDia > 0 ? rankingDia : null, // 21-oct-2026: null cuando la fila no tiene Ranking (la gráfica de Ranking ignora esos días). [→ Contexto_Base_Web.md §PF159]
+          // 21-oct-2026 (pedido usuaria, caso Chistris #2GG8PJ8GC): PeriodIndex de la fila. perfil.html (_historialDiasGuerra(), _periodIndexRegistro()) ya lo leía pero el backend no lo mandaba; sin él ubica cada día por la fecha, y la captura del jueves tomada de madrugada del viernes (fecha 04/09, PeriodIndex 31) pisaba a la del viernes (04/09, PeriodIndex 32): la gráfica mostraba 8 ataques en vez de 4 y 4. null si la celda está vacía. [→ Contexto_Base_Web.md §PF159]
+          periodIndex: pIdxHist,
+          ataques: Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0,
+          puntaje: Number(dataGuerra[i][GC.FAME - 1]) || 0,
+          barcos:  Number(dataGuerra[i][GC.BARCOS - 1]) || 0,
+          copas:   Number(dataGuerra[i][GC.COPAS  - 1]) || 0, // 12-oct-2026: copas de ese día (0 = sin dato, filas anteriores a la columna). [→ Contexto_Base_Web.md §PF061]
+          clan:    String(dataGuerra[i][GC.CLAN - 1] || '').trim() // 19-oct-2026 (pedido usuaria): clan donde estaba la cuenta ESE día (columna Clan de la fila de Guerra), para que las gráficas de perfil.html no muestren siempre el clan actual. [→ Contexto_Base_Web.md §PF126]
+        });
+      }
+
+      // 19-sep-2026: se anotan los días de guerra de ESTA semana (temporada real + Semana en curso) para calcular más abajo los ataques exonerados por día opcional; mismo criterio que _getAtaquesYExentosSemanaActualPorTag() (28_Torneos_Docs.gs): un día es opcional cuando el clan ya había cruzado la meta al empezar ese día (_clanYaCruzoMetaEnPeriodo(), 22_ControlCalendario.gs). [→ Contexto_Base_Web.md §37B124]
+      var pIdxFilaGuerra = Number(dataGuerra[i][GC.PERIOD_IDX - 1]) || 0;
+      if (String(dataGuerra[i][GC.TEMPORADA - 1]) === String(ctx.temporada) &&
+          ((Number(dataGuerra[i][GC.SEMANA - 1]) || 1) - 1) === ctx.sectionIndex &&
+          esDiaGuerraIdx(pIdxFilaGuerra)) {
+        var offsetDiaGuerraSem = (pIdxFilaGuerra % 7) - 3;
+        diasGuerraSemana[offsetDiaGuerraSem] = {
+          pIdx: pIdxFilaGuerra,
+          clan: String(dataGuerra[i][GC.CLAN - 1] || '')
+        };
+        // FIX 23-sep-2026: ataques/fame/barcos DE ESE día puntual (ver guerraSemanaDiasVals más arriba); no confundir con ataquesSemana/fameSemana/barcosSemana, el acumulado de toda la semana hasta HOY. [→ Contexto_Base_Web.md §37B125]
+        guerraSemanaDiasVals[offsetDiaGuerraSem] = {
+          ataques: Number(dataGuerra[i][GC.ATAQUES_HOY - 1]) || 0,
+          puntaje: Number(dataGuerra[i][GC.FAME        - 1]) || 0,
+          barcos:  Number(dataGuerra[i][GC.BARCOS      - 1]) || 0
+        };
+      }
+
+      if (Number(dataGuerra[i][GC.PERIOD_IDX - 1]) !== ctx.periodIndex) continue;
+      // ATAQUES_SEM ya viene acumulado por el proceso de guerra (17_GuerraSheet.gs): se toma tal cual, sin volver a sumar por día. [→ Contexto_Base_Web.md §37B126]
+      ataquesSemana = Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0;
+      fameSemana    = Number(dataGuerra[i][GC.FAME        - 1]) || 0;
+      barcosSemana  = Number(dataGuerra[i][GC.BARCOS      - 1]) || 0;
+    }
+  }
+
+  // 19-sep-2026: ataques exonerados de ESTA semana = 4 por cada día opcional (el clan ya había cruzado la meta al empezar ese día); bajan lo EXIGIDO en _webProgresoRequisitos(); lo que hizo el jugador no se infla (12 ataques siguen siendo 12: se muestra 12/12, no 16/16); un día sin fila del jugador en Guerra no cuenta. [→ Contexto_Base_Web.md §37B127]
+  var ataquesExentos = 0;
+  for (var offDiaGuerra in diasGuerraSemana) {
+    var diaGuerraSem = diasGuerraSemana[offDiaGuerra];
+    if (_clanYaCruzoMetaEnPeriodo(diaGuerraSem.clan, diaGuerraSem.pIdx, String(ctx.temporada), true)) ataquesExentos += 4;
+  }
+
+  // FIX 27-sep-2026 (AVISO 9 RESUELTO, confirmado por el usuario): DC.V_GUERRA es "Victorias de guerra" (conteo de batallas ganadas), no trofeos/fame; la barra "Trofeos guerra" de Requisitos compara fameSemana (de GC.FAME, trofeo real de guerra acumulado hasta hoy en la semana en curso) en vez de vGuerra; ver AVISO 9 (37B056). [→ Contexto_Base_Web.md §37B128]
+  var progreso = _webProgresoRequisitos(clanNombre, ataquesSemana, fameSemana, torneos, ataquesExentos);
+  var extendido = _webPerfilExtendido(fila, esAdminPerfil);
+  if (historialRanking.length) extendido.historialRanking = historialRanking;
+
+  // FIX 23-sep-2026 (perfil.html, minigráficos de ataques y Fame): arma guerraSemanaDias desde guerraSemanaDiasVals; null en un día = todavía no jugado (entrenamiento o día de guerra futuro de esta semana), el frontend lo pinta como hueco, no como 0; 'puntajeAcumulado' es la segunda serie pedida para el gráfico de Fame ("diario y acumulado semanal"): suma corriente de 'puntaje'; un día sin dato repite el acumulado del último día con dato (línea plana) y si ningún día anterior tuvo dato queda null. [→ Contexto_Base_Web.md §37B129]
+  var DIAS_GUERRA_PERFIL = ['Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  var guerraSemanaDias = null;
+  if (Object.keys(guerraSemanaDiasVals).length) {
+    _diarioDesdeAcumuladoGuerra_(guerraSemanaDiasVals); // 11-oct-2026: Fame y barcos de la hoja Guerra son acumulados; aquí se pasan a valor de cada día (puntajeAcumulado, abajo, vuelve a ser la suma real)
+    var acumFamePerfil = 0, huboFamePerfil = false;
+    var puntajeAcumuladoPerfil = [0, 1, 2, 3].map(function (d) {
+      var vDia = guerraSemanaDiasVals[d];
+      if (vDia) { acumFamePerfil += vDia.puntaje; huboFamePerfil = true; }
+      return huboFamePerfil ? acumFamePerfil : null;
+    });
+    guerraSemanaDias = {
+      dias:             DIAS_GUERRA_PERFIL,
+      ataques:          [0, 1, 2, 3].map(function (d) { return guerraSemanaDiasVals[d] ? guerraSemanaDiasVals[d].ataques : null; }),
+      puntaje:          [0, 1, 2, 3].map(function (d) { return guerraSemanaDiasVals[d] ? guerraSemanaDiasVals[d].puntaje : null; }),
+      puntajeAcumulado: puntajeAcumuladoPerfil,
+      barcos:           [0, 1, 2, 3].map(function (d) { return guerraSemanaDiasVals[d] ? guerraSemanaDiasVals[d].barcos : null; })
+    };
+  }
+
+  return {
+    ok: true,
+    jugador: {
+      tag: tag, nombre: nombre, clan: clanNombre, rango: rango, estado: estado,
+      vGuerra: vGuerra, torneos: torneos, copas: copas,
+      // FIX 03-sep-2026 ("Vigencia [última conexión] debe mostrarse también en el perfil"): mismo criterio que el fix gemelo en _webRosterCalcular/_construirIngresosRecientesUnificado; la columna ya existía en Directorio (DC.VIGENCIA), solo faltaba exponerla. [→ Contexto_Base_Web.md §37B130]
+      vigencia: fila[DC.VIGENCIA - 1] || '',
+      // FIX 05-sep-2026 (Cara a cara, ver _calcAtaquesMaxSemana()): ataquesMax es el tope esperado de ataques a estas alturas de la semana de guerra (0 en día de entrenamiento, sin tope que mostrar). [→ Contexto_Base_Web.md §37B131]
+      guerraSemana: { ataques: ataquesSemana, fame: fameSemana, barcos: barcosSemana, ataquesMax: _calcAtaquesMaxSemana(ctx.periodIndex) },
+      // FIX 23-sep-2026: desglose diario J/V/S/D para los dos minigráficos nuevos de perfil.html (ver su construcción más arriba); null si esta semana todavía no tiene ningún día de guerra jugado (p. ej. entrenamiento del lunes), el frontend oculta esos cuadritos. [→ Contexto_Base_Web.md §37B132]
+      guerraSemanaDias: guerraSemanaDias,
+      progreso: progreso,
+      extendido: extendido,
+      // FASE 10 (06-sep-2026): null si todavía no hay datos de Cards_2 para este Tag; ver docblock de _webMazoActualDesdeCards2(). [→ Contexto_Base_Web.md §37B133]
+      mazoActual: _webMazoActualDesdeCards2(tag)
+    }
+  };
+}
+
+// _webPerfilJugadorSinRegistro(tagBuscado, opciones): FIX 09-sep-2026 (ver docblock de _webPerfilJugador()): a donde cae _webPerfilJugador() cuando el Tag no tiene fila en Directorio; consulta el perfil PÚBLICO de Supercell (mismo proxy que _webAdminVerificarTag()) para mostrar al menos nombre/clan de cualquier jugador; a propósito sin respaldo de RoyaleAPI (tampoco lo tiene ya _webAdminVerificarTag()): RoyaleAPI bloquea (Cloudflare) las llamadas server-side de Apps Script y solo se puede leer vía el script de Tampermonkey (navegador), ver Tampermonkey.md, y agregarlo sumaba segundos sin posibilidad real de encontrar nada; FIX 09-sep-2026 (mismo día): usaba _apiGet() (3 reintentos), lo que disparaba el error "<!DOCTYPE..." con el proxy dormido, ahora usa _webApiGetRapido() (un solo intento); todo lo que depende de datos internos (guerra, torneos, ascensos, mazo) vuelve en 0/null y renderMiembro() (admin.html) ya lo muestra vacío; sinRegistro:true deja distinguir este caso (hoy el frontend no lo usa). CAMBIO 28-sep-2026 (Fase 5b tanda A): 2.º parámetro opcional opciones = {sinDatosDrive}; si es true no se adjunta extendido.rawClash (lo usa _webPerfilJugador() para las cuentas de Inactivos que ve un no-admin). @param tagBuscado, opciones; @returns {{ok, error?, jugador?}} [→ Contexto_Base_Web.md §37B135]
+function _webPerfilJugadorSinRegistro(tagBuscado, opciones) {
+  var tagNorm = cleanTag(tagBuscado);
+  if (!tagNorm) return { ok: false, error: 'Ingresa un Tag.' };
+
+  var nombrePublico = null, clanPublico = '';
+
+  // Única fuente: proxy de Supercell, un solo intento (ver _webApiGetRapido()). [→ Contexto_Base_Web.md §37B136]
+  var datosApi = _webApiGetRapido('/players/' + encodeTag('#' + tagNorm));
+  if (datosApi && datosApi.name) {
+    nombrePublico = datosApi.name;
+    clanPublico = (datosApi.clan && datosApi.clan.name) || '';
+  }
+
+  if (!nombrePublico) {
+    return { ok: false, error: 'No encontré ese Tag ni en el Directorio ni en la API de Clash Royale. Verifica que esté bien escrito (incluyendo mayúsculas/minúsculas y los caracteres tras el #), o vuelve a intentar en unos segundos si el proxy se estaba reactivando.' };
+  }
+
+  // CONEXIÓN 11-sep-2026: mismo dato de Drive que recibe el flujo con Directorio (ver _webDatosDriveJugador() y su llamada en _webPerfilExtendido()); un jugador sin fila en Directorio igual puede tener snapshot guardado si alguna vez se le consultó /players. FIX 15-sep-2026: mismo renombre .drive -> .rawClash que en _webPerfilExtendido(). [→ Contexto_Base_Web.md §37B137]
+  var extendidoSinRegistro = {};
+  // CAMBIO 28-sep-2026 (Fase 5b tanda A): con opciones.sinDatosDrive (cuenta de Inactivos vista por un no-admin, ver _webPerfilJugador()) no se adjunta el snapshot de Drive, para que la respuesta no delate que la cuenta tuvo historial con la Familia. [→ Contexto_Base_Web.md §37B138]
+  var datosDriveSinRegistro = (opciones && opciones.sinDatosDrive) ? null : _webDatosDriveJugador(tagNorm);
+  if (datosDriveSinRegistro) extendidoSinRegistro.rawClash = datosDriveSinRegistro;
+
+  return {
+    ok: true,
+    jugador: {
+      tag: '#' + tagNorm, nombre: nombrePublico, clan: clanPublico, rango: '',
+      estado: 'Sin registro con nosotros', vGuerra: 0, torneos: 0, copas: 0,
+      vigencia: '',
+      guerraSemana: { ataques: 0, fame: 0, barcos: 0, ataquesMax: 0 },
+      // FIX 23-sep-2026: mismo campo nuevo que _webPerfilJugador() (guerraSemanaDias, ver ese docblock); aquí null porque un Tag sin registro en Directorio nunca tiene filas propias en Guerra. [→ Contexto_Base_Web.md §37B139]
+      guerraSemanaDias: null,
+      progreso: { ascensos: null, descensos: null },
+      extendido: extendidoSinRegistro,
+      mazoActual: null,
+      sinRegistro: true
+    }
+  };
 }
 
 // _webPerfilExtendido(fila): FASE 1.5 (24-ago-2026), paridad de jugadores.html con _respuestaInfoMi(); fila = array DC de 60 columnas; devuelve nivel, copas máx., arena, batallas, racha, Camino de leyendas, logros, coleccionables, donaciones, ranking y enlaces externos; campos numéricos vacíos/0 se omiten. [→ Contexto_Base_Web.md §37B060]
@@ -1493,174 +2563,6 @@ function _diarioDesdeAcumuladoGuerra_(porOffset) {
   return porOffset;
 }
 
-// _webPerfilJugador(tagBuscado, opciones): perfil público de un jugador: identidad + stats de guerra de la semana actual + progreso vs requisitos de ascenso/descenso de su clan + extendido (FASE 1.5, ver _webPerfilExtendido()); NO incluye celular ni datos de contacto (exclusivo del endpoint CONTACTOS_TOKEN). FASE 10 (06-sep-2026): incluye mazoActual (mazo real equipado, distinto de las Sugerencias de mazo ext.deck/ext.deck2). FIX 09-sep-2026: un Tag sin fila en Directorio se delega a _webPerfilJugadorSinRegistro() (perfil público de Supercell) en vez de devolver error (los comentarios de admin.html y _webAdminBuscarMiembroSugerencias() ya lo daban por hecho). FIX 23-sep-2026: jugador.guerraSemanaDias = {dias:string[4], ataques, puntaje, puntajeAcumulado, barcos (arrays de 4 con number|null)} | null, desglose diario J/V/S/D de la semana en curso (guerraSemana trae solo el acumulado). CAMBIO 28-sep-2026 (Fase 5b tanda A/A2): 2.º parámetro opcional opciones = {esAdmin}; sin esAdmin una cuenta de la hoja Inactivos o con Estado 'Inactivo' en Directorio responde como un Tag sin registro ('Sin registro con nosotros'); con esAdmin:true sale con estado 'Inactivo'. @param tagBuscado, opciones; @returns {{ok, error?, jugador?}} [→ Contexto_Base_Web.md §37B117]
-function _webPerfilJugador(tagBuscado, opciones) {
-  var hallazgo = _webBuscarFilaDirectorioPorTagConOrigen(tagBuscado);
-  var fila = hallazgo ? hallazgo.fila : null;
-  if (!fila) return _webPerfilJugadorSinRegistro(tagBuscado);
-  // CAMBIO 28-sep-2026 (Fase 5b tanda A, decisión del usuario): una cuenta de la hoja Inactivos solo se ve como "Inactivo" con sesión de admin (opciones.esAdmin, ver doGet en 38_Web_Endpoints.gs); para el resto sale igual que un Tag sin registro. Ver AVISOS ABIERTOS (A1 a A4) al inicio del archivo. [→ Contexto_Base_Web.md §37B118]
-  var esAdminPerfil = !!(opciones && opciones.esAdmin);
-  // CAMBIO 28-sep-2026 (Fase 5b tanda A2, "todos los inactivos se ocultan para los no admin"): además de la hoja Inactivos se oculta cualquier fila con Estado 'Inactivo' (administradores inactivos, que viven en Directorio; ver _webAdminCuentasInactivas()), con el mismo criterio de texto (Estado con trim) y sin distinguir mayúsculas. [→ Contexto_Base_Web.md §37B119]
-  var esInactivoPerfil = hallazgo.origen === 'inactivos'
-    || String(fila[DC.ESTADO - 1] || '').trim().toLowerCase() === 'inactivo';
-  if (esInactivoPerfil && !esAdminPerfil) {
-    return _webPerfilJugadorSinRegistro(tagBuscado, { sinDatosDrive: true });
-  }
-
-  var tag         = String(fila[DC.TAG      - 1] || '');
-  var nombre      = String(fila[DC.NOMBRE   - 1] || '');
-  var clanNombre  = String(fila[DC.CLAN     - 1] || '');
-  var rango       = String(fila[DC.RANGO    - 1] || '');
-  var vGuerra     = Number(fila[DC.V_GUERRA - 1]) || 0;
-  var torneos     = Number(fila[DC.TORNEOS  - 1]) || 0;
-  var copas       = Number(fila[DC.COPAS    - 1]) || 0;
-  var estado      = String(fila[DC.ESTADO   - 1] || '');
-
-  // ---- Ataques de la semana en curso + historial de Ranking en el clan, ambos desde la hoja Guerra (una sola pasada) ----; FIX 04-sep-2026 (Ranking del clan de perfil.html): la gráfica esperaba ext.historialRanking = [{semana, ranking}, ...] y el backend solo mandaba ext.rankingClan (el actual); GC.RANKING existe fila por fila en Guerra (un valor por Tag y día, GUERRA_HEADERS en 17_GuerraSheet.gs) y como la hoja solo retiene la TEMPORADA ACTUAL (el resto se purga a Backup_Guerra.csv, _purgarTemporadasAnterioresGuerra()), el historial cubre los días ya jugados de la temporada en curso; ampliarlo a varias temporadas requeriría leer Backup_Guerra.csv y no vale la pena para una vista rápida. FIX 15-sep-2026 (barrido web->CSV): la lectura pasa por _obtenerFilasConFallbackCSV() (01_Config_Global.gs), mismo helper y Backup_Guerra.csv que _construirIngresosRecientesUnificado()/_webAportesRecientes(), para caer al respaldo si la hoja Guerra no está disponible; sigue sin ampliarse a varias temporadas porque el CSV normalmente contiene la misma temporada actual. [→ Contexto_Base_Web.md §37B120]
-  var ctx = _getCtx();
-  var ataquesSemana = 0, fameSemana = 0, barcosSemana = 0;
-  var historialRanking = [];
-  var diasGuerraSemana = {}; // 19-sep-2026: { offsetDia(0-3): {pIdx, clan} } de la semana en curso, para los exentos
-  // FIX 23-sep-2026 (perfil.html, minigráficos "Ataques de la semana" y "Fame de la semana", eje X J/V/S/D): { offsetDia(0-3): {ataques, puntaje, barcos} } de la semana en curso, valor de CADA día suelto (no el acumulado ataquesSemana/fameSemana/barcosSemana); 'ataques' sale de GC.ATAQUES_HOY (GC.ATAQUES_SEM es acumulado); 'puntaje' (Fame) y 'barcos' de GC.FAME/GC.BARCOS; CORREGIDO 11-oct-2026: esas dos columnas son ACUMULADAS de la semana (no del día), se convierten con _diarioDesdeAcumuladoGuerra_() (antes se decía que eran del día; ver guerra.html "Valores diarios", "Sem 1 Puntaje trae 500 400 700 600", y en _webHistorialGuerraComparador()); mismo filtro "esta semana" (ctx.temporada + ctx.sectionIndex) que diasGuerraSemana, por lo que el dato se ve congelado de lunes a miércoles hasta que empiece la guerra del jueves y ctx.sectionIndex avance. [→ Contexto_Base_Web.md §37B121]
-  var guerraSemanaDiasVals = {};
-  var ss = _getSs();
-  var tz = Session.getScriptTimeZone() || 'America/Lima';
-  var lecturaGuerraPerfil = _leerFilasGuerraDeTag_(ss, cleanTag(tag)); // 11-oct-2026: CSV (todas las temporadas) + hoja viva (temporada actual); antes solo la hoja
-  var dataGuerra = lecturaGuerraPerfil.filas;
-  if (dataGuerra.length) {
-    // 21-oct-2026 (pedido usuaria, caso Chistris #2GG8PJ8GC): una fila de un día de guerra con Ranking vacío (las del Origen «Reconstruido», p. ej. el jueves 04/06/2026) se manda también al historial cuando ese día NO tiene otra fila con Ranking > 0. Antes se descartaban todas y el día quedaba sin registro, así que el viernes heredaba los ataques acumulados del jueves y la gráfica mostraba 6. Si el día sí tiene una fila con Ranking, la vacía se sigue descartando: en el Backup (21-oct-2026), de 2 103 filas con Ranking vacío o 0, 104 son hermanas de una fila con Ranking del mismo día y dejarlas pasar haría que la reconstruida pise a la real (el frontend se queda con la última fila de cada día); las otras 1 999 son la única fila de su día y pasan a verse. Clave = Temporada + PeriodIndex (el PeriodIndex se repite entre temporadas). [→ Contexto_Base_Web.md §PF159]
-    var diasConRankingPerfil = {};
-    for (var iRk = 0; iRk < dataGuerra.length; iRk++) {
-      if (cleanTag(dataGuerra[iRk][GC.TAG - 1]) !== cleanTag(tag)) continue;
-      if (Number(dataGuerra[iRk][GC.RANKING - 1]) > 0) {
-        diasConRankingPerfil[String(dataGuerra[iRk][GC.TEMPORADA - 1]) + '|' + String(Number(dataGuerra[iRk][GC.PERIOD_IDX - 1]))] = true;
-      }
-    }
-    for (var i = 0; i < dataGuerra.length; i++) {
-      if (cleanTag(dataGuerra[i][GC.TAG - 1]) !== cleanTag(tag)) continue;
-
-      // Ranking de ESE día puntual si la fila trae uno (0/vacío = sin dato, ej. día de entrenamiento); "semana" en formato fecha real dd/MM/yyyy como historialSemanal en otros endpoints (ver _webIngresosRecientes()), para que el orden alfabético del frontend (renderRankingChart(), perfil.html) coincida con el cronológico dentro de la temporada. [→ Contexto_Base_Web.md §37B122]
-      var rankingDia = Number(dataGuerra[i][GC.RANKING - 1]) || 0;
-      var pIdxCeldaHist = dataGuerra[i][GC.PERIOD_IDX - 1];
-      var pIdxHist = (pIdxCeldaHist === '' || pIdxCeldaHist == null || !isFinite(Number(pIdxCeldaHist))) ? null : Number(pIdxCeldaHist);
-      var sinRankingPeroUnicaDelDia = rankingDia <= 0 && pIdxHist !== null && esDiaGuerraIdx(pIdxHist) &&
-        !diasConRankingPerfil[String(dataGuerra[i][GC.TEMPORADA - 1]) + '|' + String(pIdxHist)]; // 21-oct-2026 [→ Contexto_Base_Web.md §PF159]
-      if (rankingDia > 0 || sinRankingPeroUnicaDelDia) {
-        var fechaDia = dataGuerra[i][GC.FECHA - 1];
-        var semanaTxt = (fechaDia instanceof Date && !isNaN(fechaDia.getTime()))
-          ? Utilities.formatDate(fechaDia, tz, 'dd/MM/yyyy')
-          : String(fechaDia || '');
-        // FIX 09-sep-2026 (perfil.html, renderMetricaSemanal()/renderMetricasSemanales(): "solo se está mostrando evolución de ranking, falta ataques, puntaje y barcos"): el frontend ya esperaba 'ataques', 'puntaje' y 'barcos' en cada entrada de historialRanking (oculta la tarjeta si no llegan); se agregan con la misma fila/día que 'ranking' (GC.ATAQUES_SEM/GC.FAME/GC.BARCOS, point-in-time de ese día en vez de filtrados al periodIndex actual); 'puntaje' = Fame; un día de entrenamiento sin fila de guerra queda sin entrada (no se inventa un 0). [→ Contexto_Base_Web.md §37B123]
-        var etiquetaDiaRK = _etiquetaTemporadaSemanaDia_(dataGuerra[i][GC.TEMPORADA - 1], dataGuerra[i][GC.SEMANA - 1], dataGuerra[i][GC.PERIOD_IDX - 1]); // 20-oct-2026 (pedido usuaria): temporada, semana y día para el tooltip de cada punto. [→ Contexto_Base_Web.md §PF133]
-        historialRanking.push({
-          semana:  semanaTxt,
-          temporada:    etiquetaDiaRK ? etiquetaDiaRK.temporada    : null,
-          semanaGuerra: etiquetaDiaRK ? etiquetaDiaRK.semanaGuerra : null,
-          diaGuerra:    etiquetaDiaRK ? etiquetaDiaRK.diaGuerra    : null,
-          ranking: rankingDia > 0 ? rankingDia : null, // 21-oct-2026: null cuando la fila no tiene Ranking (la gráfica de Ranking ignora esos días). [→ Contexto_Base_Web.md §PF159]
-          // 21-oct-2026 (pedido usuaria, caso Chistris #2GG8PJ8GC): PeriodIndex de la fila. perfil.html (_historialDiasGuerra(), _periodIndexRegistro()) ya lo leía pero el backend no lo mandaba; sin él ubica cada día por la fecha, y la captura del jueves tomada de madrugada del viernes (fecha 04/09, PeriodIndex 31) pisaba a la del viernes (04/09, PeriodIndex 32): la gráfica mostraba 8 ataques en vez de 4 y 4. null si la celda está vacía. [→ Contexto_Base_Web.md §PF159]
-          periodIndex: pIdxHist,
-          ataques: Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0,
-          puntaje: Number(dataGuerra[i][GC.FAME - 1]) || 0,
-          barcos:  Number(dataGuerra[i][GC.BARCOS - 1]) || 0,
-          copas:   Number(dataGuerra[i][GC.COPAS  - 1]) || 0, // 12-oct-2026: copas de ese día (0 = sin dato, filas anteriores a la columna). [→ Contexto_Base_Web.md §PF061]
-          clan:    String(dataGuerra[i][GC.CLAN - 1] || '').trim() // 19-oct-2026 (pedido usuaria): clan donde estaba la cuenta ESE día (columna Clan de la fila de Guerra), para que las gráficas de perfil.html no muestren siempre el clan actual. [→ Contexto_Base_Web.md §PF126]
-        });
-      }
-
-      // 19-sep-2026: se anotan los días de guerra de ESTA semana (temporada real + Semana en curso) para calcular más abajo los ataques exonerados por día opcional; mismo criterio que _getAtaquesYExentosSemanaActualPorTag() (28_Torneos_Docs.gs): un día es opcional cuando el clan ya había cruzado la meta al empezar ese día (_clanYaCruzoMetaEnPeriodo(), 22_ControlCalendario.gs). [→ Contexto_Base_Web.md §37B124]
-      var pIdxFilaGuerra = Number(dataGuerra[i][GC.PERIOD_IDX - 1]) || 0;
-      if (String(dataGuerra[i][GC.TEMPORADA - 1]) === String(ctx.temporada) &&
-          ((Number(dataGuerra[i][GC.SEMANA - 1]) || 1) - 1) === ctx.sectionIndex &&
-          esDiaGuerraIdx(pIdxFilaGuerra)) {
-        var offsetDiaGuerraSem = (pIdxFilaGuerra % 7) - 3;
-        diasGuerraSemana[offsetDiaGuerraSem] = {
-          pIdx: pIdxFilaGuerra,
-          clan: String(dataGuerra[i][GC.CLAN - 1] || '')
-        };
-        // FIX 23-sep-2026: ataques/fame/barcos DE ESE día puntual (ver guerraSemanaDiasVals más arriba); no confundir con ataquesSemana/fameSemana/barcosSemana, el acumulado de toda la semana hasta HOY. [→ Contexto_Base_Web.md §37B125]
-        guerraSemanaDiasVals[offsetDiaGuerraSem] = {
-          ataques: Number(dataGuerra[i][GC.ATAQUES_HOY - 1]) || 0,
-          puntaje: Number(dataGuerra[i][GC.FAME        - 1]) || 0,
-          barcos:  Number(dataGuerra[i][GC.BARCOS      - 1]) || 0
-        };
-      }
-
-      if (Number(dataGuerra[i][GC.PERIOD_IDX - 1]) !== ctx.periodIndex) continue;
-      // ATAQUES_SEM ya viene acumulado por el proceso de guerra (17_GuerraSheet.gs): se toma tal cual, sin volver a sumar por día. [→ Contexto_Base_Web.md §37B126]
-      ataquesSemana = Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0;
-      fameSemana    = Number(dataGuerra[i][GC.FAME        - 1]) || 0;
-      barcosSemana  = Number(dataGuerra[i][GC.BARCOS      - 1]) || 0;
-    }
-  }
-
-  // 19-sep-2026: ataques exonerados de ESTA semana = 4 por cada día opcional (el clan ya había cruzado la meta al empezar ese día); bajan lo EXIGIDO en _webProgresoRequisitos(); lo que hizo el jugador no se infla (12 ataques siguen siendo 12: se muestra 12/12, no 16/16); un día sin fila del jugador en Guerra no cuenta. [→ Contexto_Base_Web.md §37B127]
-  var ataquesExentos = 0;
-  for (var offDiaGuerra in diasGuerraSemana) {
-    var diaGuerraSem = diasGuerraSemana[offDiaGuerra];
-    if (_clanYaCruzoMetaEnPeriodo(diaGuerraSem.clan, diaGuerraSem.pIdx, String(ctx.temporada), true)) ataquesExentos += 4;
-  }
-
-  // FIX 27-sep-2026 (AVISO 9 RESUELTO, confirmado por el usuario): DC.V_GUERRA es "Victorias de guerra" (conteo de batallas ganadas), no trofeos/fame; la barra "Trofeos guerra" de Requisitos compara fameSemana (de GC.FAME, trofeo real de guerra acumulado hasta hoy en la semana en curso) en vez de vGuerra; ver AVISO 9 (37B056). [→ Contexto_Base_Web.md §37B128]
-  var progreso = _webProgresoRequisitos(clanNombre, ataquesSemana, fameSemana, torneos, ataquesExentos);
-  var extendido = _webPerfilExtendido(fila, esAdminPerfil);
-  if (historialRanking.length) extendido.historialRanking = historialRanking;
-
-  // FIX 23-sep-2026 (perfil.html, minigráficos de ataques y Fame): arma guerraSemanaDias desde guerraSemanaDiasVals; null en un día = todavía no jugado (entrenamiento o día de guerra futuro de esta semana), el frontend lo pinta como hueco, no como 0; 'puntajeAcumulado' es la segunda serie pedida para el gráfico de Fame ("diario y acumulado semanal"): suma corriente de 'puntaje'; un día sin dato repite el acumulado del último día con dato (línea plana) y si ningún día anterior tuvo dato queda null. [→ Contexto_Base_Web.md §37B129]
-  var DIAS_GUERRA_PERFIL = ['Jueves', 'Viernes', 'Sábado', 'Domingo'];
-  var guerraSemanaDias = null;
-  if (Object.keys(guerraSemanaDiasVals).length) {
-    _diarioDesdeAcumuladoGuerra_(guerraSemanaDiasVals); // 11-oct-2026: Fame y barcos de la hoja Guerra son acumulados; aquí se pasan a valor de cada día (puntajeAcumulado, abajo, vuelve a ser la suma real)
-    var acumFamePerfil = 0, huboFamePerfil = false;
-    var puntajeAcumuladoPerfil = [0, 1, 2, 3].map(function (d) {
-      var vDia = guerraSemanaDiasVals[d];
-      if (vDia) { acumFamePerfil += vDia.puntaje; huboFamePerfil = true; }
-      return huboFamePerfil ? acumFamePerfil : null;
-    });
-    guerraSemanaDias = {
-      dias:             DIAS_GUERRA_PERFIL,
-      ataques:          [0, 1, 2, 3].map(function (d) { return guerraSemanaDiasVals[d] ? guerraSemanaDiasVals[d].ataques : null; }),
-      puntaje:          [0, 1, 2, 3].map(function (d) { return guerraSemanaDiasVals[d] ? guerraSemanaDiasVals[d].puntaje : null; }),
-      puntajeAcumulado: puntajeAcumuladoPerfil,
-      barcos:           [0, 1, 2, 3].map(function (d) { return guerraSemanaDiasVals[d] ? guerraSemanaDiasVals[d].barcos : null; })
-    };
-  }
-
-  return {
-    ok: true,
-    jugador: {
-      tag: tag, nombre: nombre, clan: clanNombre, rango: rango, estado: estado,
-      vGuerra: vGuerra, torneos: torneos, copas: copas,
-      // FIX 03-sep-2026 ("Vigencia [última conexión] debe mostrarse también en el perfil"): mismo criterio que el fix gemelo en _webRosterCalcular/_construirIngresosRecientesUnificado; la columna ya existía en Directorio (DC.VIGENCIA), solo faltaba exponerla. [→ Contexto_Base_Web.md §37B130]
-      vigencia: fila[DC.VIGENCIA - 1] || '',
-      // FIX 05-sep-2026 (Cara a cara, ver _calcAtaquesMaxSemana()): ataquesMax es el tope esperado de ataques a estas alturas de la semana de guerra (0 en día de entrenamiento, sin tope que mostrar). [→ Contexto_Base_Web.md §37B131]
-      guerraSemana: { ataques: ataquesSemana, fame: fameSemana, barcos: barcosSemana, ataquesMax: _calcAtaquesMaxSemana(ctx.periodIndex) },
-      // FIX 23-sep-2026: desglose diario J/V/S/D para los dos minigráficos nuevos de perfil.html (ver su construcción más arriba); null si esta semana todavía no tiene ningún día de guerra jugado (p. ej. entrenamiento del lunes), el frontend oculta esos cuadritos. [→ Contexto_Base_Web.md §37B132]
-      guerraSemanaDias: guerraSemanaDias,
-      progreso: progreso,
-      extendido: extendido,
-      // FASE 10 (06-sep-2026): null si todavía no hay datos de Cards_2 para este Tag; ver docblock de _webMazoActualDesdeCards2(). [→ Contexto_Base_Web.md §37B133]
-      mazoActual: _webMazoActualDesdeCards2(tag)
-    }
-  };
-}
-
-// _webApiGetRapido(path): FIX 09-sep-2026 ("pedir su perfil al endpoint players, que sí funciona"): la ruta armada era correcta (clash-royale-proxy-2eyr.onrender.com/players/%23<TAG>, probada a mano); el error "Unexpected token '<', "<!DOCTYPE"..." venía de que _apiGet() (09_API_ClashRoyale.gs) reintenta hasta 3 veces con espera creciente (API_GET_MAX_INTENTOS/API_GET_ESPERA_BASE_MS, 07_...gs: 3 s, luego 6 s), pensado para procesos batch; el proxy (plan gratuito de Render) se duerme tras ~15 min sin tráfico y puede tardar 30-60 s en despertar, así que la suma de intentos y esperas puede superar el límite de respuesta de la URL /exec de la Web App (más corto que la cuota de 6 min del script); Google corta la conexión y devuelve su propia página HTML de error (el try/catch de doGet(), 11_...gs, ni llega a correr); por eso este helper, usado SOLO por los 2 endpoints interactivos de esta sección (_webPerfilJugadorSinRegistro() y _webAdminVerificarTag()), hace UN solo intento, sin reintentos ni esperas: si el proxy está dormido falla rápido y el admin ve el mensaje de error normal. @param path (ej. '/players/%23ABCD1234'); @returns objeto JSON parseado o null ante cualquier error. [→ Contexto_Base_Web.md §37B134]
-function _webApiGetRapido(path) {
-  try {
-    var resp = UrlFetchApp.fetch(CFG.API_BASE + path, {
-      method: 'get',
-      muteHttpExceptions: true,
-      headers: { 'Accept': 'application/json' }
-    });
-    if (resp.getResponseCode() !== 200) return null;
-    return JSON.parse(resp.getContentText());
-  } catch (e) {
-    Logger.log('[WebApiGetRapido] Falló ' + path + ': ' + e.message);
-    return null;
-  }
-}
-
 // _etiquetaTemporadaSemanaDia_(temporada, semana, periodIndex): 20-oct-2026 (pedido usuaria: en los tooltips de las gráficas, una línea "Temporada 3, Semana 1, Jueves" en cada punto). Devuelve { temporada, semanaGuerra, diaGuerra } o null si falta algún dato. El día sale de periodIndex % 7 (0=Lunes … 3=Jueves … 6=Domingo, igual que guerra.html y _historialDiasGuerra() de perfil.html). Un registro de LUNES (periodIndex % 7 = 0) es el cierre del domingo anterior (el frontend ya lo trata así): se etiqueta Domingo de la semana anterior; si no hay semana anterior en esa temporada (semana 1), se deja como Lunes de la misma semana. [→ Contexto_Base_Web.md §PF133]
 function _etiquetaTemporadaSemanaDia_(temporada, semana, periodIndex) {
   var NOMBRES_DIA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -1671,117 +2573,453 @@ function _etiquetaTemporadaSemanaDia_(temporada, semana, periodIndex) {
   return { temporada: t, semanaGuerra: s, diaGuerra: NOMBRES_DIA[dia] };
 }
 
-// _webPerfilJugadorSinRegistro(tagBuscado, opciones): FIX 09-sep-2026 (ver docblock de _webPerfilJugador()): a donde cae _webPerfilJugador() cuando el Tag no tiene fila en Directorio; consulta el perfil PÚBLICO de Supercell (mismo proxy que _webAdminVerificarTag()) para mostrar al menos nombre/clan de cualquier jugador; a propósito sin respaldo de RoyaleAPI (tampoco lo tiene ya _webAdminVerificarTag()): RoyaleAPI bloquea (Cloudflare) las llamadas server-side de Apps Script y solo se puede leer vía el script de Tampermonkey (navegador), ver Tampermonkey.md, y agregarlo sumaba segundos sin posibilidad real de encontrar nada; FIX 09-sep-2026 (mismo día): usaba _apiGet() (3 reintentos), lo que disparaba el error "<!DOCTYPE..." con el proxy dormido, ahora usa _webApiGetRapido() (un solo intento); todo lo que depende de datos internos (guerra, torneos, ascensos, mazo) vuelve en 0/null y renderMiembro() (admin.html) ya lo muestra vacío; sinRegistro:true deja distinguir este caso (hoy el frontend no lo usa). CAMBIO 28-sep-2026 (Fase 5b tanda A): 2.º parámetro opcional opciones = {sinDatosDrive}; si es true no se adjunta extendido.rawClash (lo usa _webPerfilJugador() para las cuentas de Inactivos que ve un no-admin). @param tagBuscado, opciones; @returns {{ok, error?, jugador?}} [→ Contexto_Base_Web.md §37B135]
-function _webPerfilJugadorSinRegistro(tagBuscado, opciones) {
-  var tagNorm = cleanTag(tagBuscado);
-  if (!tagNorm) return { ok: false, error: 'Ingresa un Tag.' };
+// _webCompararJugadores(tag1, tag2, opciones): FASE 10 (30-ago-2026, comparador de jugadores): envuelve DOS llamadas a _webPerfilJugador() (la misma del buscador de jugadores.html) en un solo round-trip HTTP, sin duplicar lógica de perfil; si un Tag no existe igual se devuelve el lado encontrado más el mensaje de error del otro, para que el frontend muestre el que sí cargó; CAMBIO 28-sep-2026 (Fase 5b tanda A): tercer parámetro opcional opciones ({esAdmin:boolean}) que se pasa tal cual a _webPerfilJugador(). @returns {{a: Object|null, errorA?: string, b: Object|null, errorB?: string}} [→ Contexto_Base_Web.md §37B169]
+function _webCompararJugadores(tag1, tag2, opciones) {
+  var resultado = { a: null, b: null };
 
-  var nombrePublico = null, clanPublico = '';
+  var pa = _webPerfilJugador(tag1, opciones);
+  if (pa.ok) resultado.a = pa.jugador; else resultado.errorA = pa.error;
 
-  // Única fuente: proxy de Supercell, un solo intento (ver _webApiGetRapido()). [→ Contexto_Base_Web.md §37B136]
-  var datosApi = _webApiGetRapido('/players/' + encodeTag('#' + tagNorm));
-  if (datosApi && datosApi.name) {
-    nombrePublico = datosApi.name;
-    clanPublico = (datosApi.clan && datosApi.clan.name) || '';
+  var pb = _webPerfilJugador(tag2, opciones);
+  if (pb.ok) resultado.b = pb.jugador; else resultado.errorB = pb.error;
+
+  return resultado;
+}
+
+// _webHistorialGuerraComparador(tag1, tag2, opciones): FASE 25 (02-sep-2026, PDF de torneos, punto 9: "Cara a cara" con gráficas de desempeño de guerra, valores diarios y eje X etiquetado solo por mes): arma el historial DIARIO (AtaquesHoy + Fame de cada fecha, GC.ATAQUES_HOY/GC.FAME) de los dos Tags del comparador para jugadores.html, como gráfica de líneas con dos series (mismo patrón visual que "Ranking en el clan" de perfil.html, renderRankingChart()) y etiqueta de eje solo en los cambios de mes; fuentes con el mismo criterio de temporada actual + histórico que el docblock "HOJA vs CSV" de 17_GuerraSheet.gs: 1) Backup_Guerra.csv (vía _loadCSVFromDrive(), como _construirMapaSemanalPorTagDesdeSupercell() "más arriba en este archivo"; histórico completo de todas las temporadas, solo API de Supercell, sin overlay de Correcciones_Guerra.csv porque interesa el valor bruto de cada día) y 2) hoja Guerra (CFG.SHEETS.GUERRA), que solo conserva la temporada ACTUAL (el resto se purgó a Backup_Guerra.csv, _purgarTemporadasAnterioresGuerra()), se lee DESPUÉS del CSV y pisa fechas repetidas por ser la más fresca; Estado/Activo del Directorio: CAMBIO 28-sep-2026 (Fase 5b tanda A3): ya no es permisivo con cuentas inactivas: para un visitante una cuenta inactiva (hoja Inactivos o Estado 'Inactivo') devuelve arreglo vacío y con opciones.esAdmin sale el historial real; un Tag sin fila en Directorio/Inactivos responde como antes. @param tag1, tag2; @returns {{a: Array<{fecha:string, ataques:number, fame:number}>, b: igual}} con fecha ISO 'yyyy-MM-dd', un registro por día, orden ascendente, recortado a LIMITE_DIAS_HISTORIAL_GUERRA_COMPARADOR días; un Tag sin registros devuelve arreglo vacío (no es error) [→ Contexto_Base_Web.md §37B171]
+function _webHistorialGuerraComparador(tag1, tag2, opciones) {
+  var tagNorm1 = cleanTag(tag1);
+  var tagNorm2 = cleanTag(tag2);
+  // CAMBIO 28-sep-2026 (Fase 5b tanda A3, decisión del usuario): para un visitante el lado de una cuenta inactiva se trata como un Tag sin registros (arreglo vacío); con sesión de admin (opciones.esAdmin) sale el historial real; ver _webCuentaOcultaParaVisitante() y aviso A5. [→ Contexto_Base_Web.md §37B172]
+  if (tagNorm1 && _webCuentaOcultaParaVisitante(tagNorm1, opciones)) tagNorm1 = '';
+  if (tagNorm2 && _webCuentaOcultaParaVisitante(tagNorm2, opciones)) tagNorm2 = '';
+  if (!tagNorm1 && !tagNorm2) return { a: [], b: [] };
+
+  var porTag = {};
+  if (tagNorm1) porTag[tagNorm1] = {};
+  if (tagNorm2) porTag[tagNorm2] = {};
+
+  var tz = Session.getScriptTimeZone() || 'America/Lima';
+
+  // FIX 03-sep-2026 ("Cara a cara: las gráficas deben mostrar solo los días de guerra, no de entrenamiento; agregar también Ataques y Barcos, no solo Fame"): la hoja Guerra/Backup_Guerra.csv registra TODOS los días de la temporada, incluido entrenamiento (Ataques/Fame/Barcos quedan en 0 porque no se puede atacar) y esos ceros distorsionaban la línea; se agrega GC.ETAPA ('GUERRA' o 'ENTRENAMIENTO', el mismo texto de ctx.esDiaGuerra) al registro y se filtra por él antes de devolver el arreglo; también se captura GC.BARCOS para la tercera gráfica. [→ Contexto_Base_Web.md §37B173]
+  function _registrar(tagCelda, fechaCelda, ataquesCelda, fameCelda, barcosCelda, etapaCelda, clanCelda, pIdxCelda, tempCelda, semanaCelda) {
+    var tagNorm = cleanTag(tagCelda);
+    if (!tagNorm || !porTag.hasOwnProperty(tagNorm)) return;
+    var fechaObj = (fechaCelda instanceof Date) ? fechaCelda : _parseSpanishDate(fechaCelda);
+    if (!(fechaObj instanceof Date) || isNaN(fechaObj.getTime())) return;
+    var claveFecha = Utilities.formatDate(fechaObj, tz, 'yyyy-MM-dd');
+    // Última escritura gana: Backup_Guerra.csv se procesa primero y la hoja Guerra (más fresca) después, así que si la misma fecha está en las dos queda el valor de la hoja. [→ Contexto_Base_Web.md §37B174]
+    porTag[tagNorm][claveFecha] = {
+      fecha:   claveFecha,
+      ataques: Number(ataquesCelda) || 0,
+      fame:    Number(fameCelda) || 0,
+      barcos:  Number(barcosCelda) || 0,
+      esDiaGuerra: String(etapaCelda || '').trim().toUpperCase() === 'GUERRA',
+      // NUEVO 05-oct-2026: datos para decidir si el día fue opcional (meta ya cruzada); no se mandan al frontend. [→ Contexto_Base_Web.md §37B175]
+      clan: String(clanCelda || ''), pIdx: Number(pIdxCelda), temporada: tempCelda,
+      // NUEVO 23-oct-2026 (tanda 3 del Consolidado_Mini_Historial_y_Perfil.md, columnas Temporada y Semana del mini historial): GC.SEMANA tal como está en la fila (1-based, sectionIndex + 1); si la celda viene vacía se deriva del periodIndex. Se mandan como campos ADITIVOS. [→ Contexto_Base_Web.md §PF178]
+      semana: semanaCelda
+    };
   }
 
-  if (!nombrePublico) {
-    return { ok: false, error: 'No encontré ese Tag ni en el Directorio ni en la API de Clash Royale. Verifica que esté bien escrito (incluyendo mayúsculas/minúsculas y los caracteres tras el #), o vuelve a intentar en unos segundos si el proxy se estaba reactivando.' };
+  // 1) Backup_Guerra.csv — histórico completo de todas las temporadas. [→ Contexto_Base_Web.md §37B176]
+  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+  if (csvText) {
+    var parsed = _parseCSV(csvText);
+    if (parsed && parsed.length > 1) {
+      for (var i = 1; i < parsed.length; i++) {
+        var f = parsed[i];
+        _registrar(f[GC.TAG - 1], f[GC.FECHA - 1], f[GC.ATAQUES_HOY - 1], f[GC.FAME - 1], f[GC.BARCOS - 1], f[GC.ETAPA - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], f[GC.TEMPORADA - 1], f[GC.SEMANA - 1]);
+      }
+    }
   }
 
-  // CONEXIÓN 11-sep-2026: mismo dato de Drive que recibe el flujo con Directorio (ver _webDatosDriveJugador() y su llamada en _webPerfilExtendido()); un jugador sin fila en Directorio igual puede tener snapshot guardado si alguna vez se le consultó /players. FIX 15-sep-2026: mismo renombre .drive -> .rawClash que en _webPerfilExtendido(). [→ Contexto_Base_Web.md §37B137]
-  var extendidoSinRegistro = {};
-  // CAMBIO 28-sep-2026 (Fase 5b tanda A): con opciones.sinDatosDrive (cuenta de Inactivos vista por un no-admin, ver _webPerfilJugador()) no se adjunta el snapshot de Drive, para que la respuesta no delate que la cuenta tuvo historial con la Familia. [→ Contexto_Base_Web.md §37B138]
-  var datosDriveSinRegistro = (opciones && opciones.sinDatosDrive) ? null : _webDatosDriveJugador(tagNorm);
-  if (datosDriveSinRegistro) extendidoSinRegistro.rawClash = datosDriveSinRegistro;
+  // 2) Hoja Guerra — temporada actual, pisa el CSV si hay fecha repetida; FIX 24-sep-2026 (auditoría "fallback web->CSV, funciones web"): esta lectura de la hoja viva no tenía try/catch y, si Sheets lanzaba excepción (spreadsheet caído, cuota excedida), el endpoint devolvía error 500 en vez de servir el histórico ya cargado del CSV; ahora la falla se ignora en silencio (queda logueada) y el comparador se sirve solo con el CSV (algo desactualizado en los últimos días de la temporada actual, pero disponible); mismo criterio de try/catch que _webLeerDirectorioComoDC(). [→ Contexto_Base_Web.md §37B177]
+  try {
+    var ss = _getSs();
+    var shGuerra = ss.getSheetByName(CFG.SHEETS.GUERRA);
+    if (shGuerra && shGuerra.getLastRow() >= 2) {
+      var dataGuerra = shGuerra.getRange(2, 1, shGuerra.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+      for (var g = 0; g < dataGuerra.length; g++) {
+        var fg = dataGuerra[g];
+        _registrar(fg[GC.TAG - 1], fg[GC.FECHA - 1], fg[GC.ATAQUES_HOY - 1], fg[GC.FAME - 1], fg[GC.BARCOS - 1], fg[GC.ETAPA - 1], fg[GC.CLAN - 1], fg[GC.PERIOD_IDX - 1], fg[GC.TEMPORADA - 1], fg[GC.SEMANA - 1]);
+      }
+    }
+  } catch (eGuerraViva) {
+    Logger.log('[WebAPI] _webHistorialGuerraComparador: la hoja Guerra falló (' + eGuerraViva.message + '); se usa solo Backup_Guerra.csv.');
+  }
+
+  var limiteFecha = new Date();
+  limiteFecha.setDate(limiteFecha.getDate() - LIMITE_DIAS_HISTORIAL_GUERRA_COMPARADOR);
+  var limiteClave = Utilities.formatDate(limiteFecha, tz, 'yyyy-MM-dd');
+
+  function _aArregloOrdenado(tagNorm) {
+    if (!tagNorm || !porTag[tagNorm]) return [];
+    return Object.keys(porTag[tagNorm])
+      .map(function (k) { return porTag[tagNorm][k]; })
+      .filter(function (r) { return r.fecha >= limiteClave; })
+      // FIX 03-sep-2026: solo días de guerra (ver el comentario junto a _registrar()); esDiaGuerra ya cumplió su propósito aquí (decidir el filtro) y no se manda al frontend, porque cada registro que llega es por definición un día de guerra real. [→ Contexto_Base_Web.md §37B178]
+      .filter(function (r) { return r.esDiaGuerra; })
+      .map(function (r) {
+        var o = { fecha: r.fecha, ataques: r.ataques, fame: r.fame, barcos: r.barcos };
+        // NUEVO 23-oct-2026 (tanda 3, campos ADITIVOS; ningún consumidor actual los usa): temporada interna (GC.TEMPORADA), semana 1-based (GC.SEMANA; si falta, periodIndex / 7 + 1) y clan de ese día; un dato ausente se omite en vez de mandar NaN. [→ Contexto_Base_Web.md §PF178]
+        var tInt = Number(r.temporada);
+        if (r.temporada !== '' && r.temporada !== null && isFinite(tInt) && tInt > 0) o.temporada = tInt;
+        var sNum = Number(r.semana);
+        if (r.semana !== '' && r.semana !== null && r.semana !== undefined && isFinite(sNum) && sNum > 0) o.semana = sNum;
+        else if (isFinite(r.pIdx)) o.semana = periodIdxToSectionIndex(r.pIdx) + 1;
+        if (r.clan) o.clan = r.clan;
+        // NUEVO 05-oct-2026 (los días con meta ya cruzada se muestran como opcionales): campo ADITIVO opcional:true solo cuando el clan ya había cruzado la meta al empezar ese día; nunca el jueves (pIdx % 7 === 3, misma regla que _clanYaCruzoMetaEnPeriodo(), 22_ControlCalendario.gs) ni en semana de coliseo; sin dato de Guerra_Logs no se marca; ataques/fame/barcos no se alteran; usa _cruceMetaDesdeGuerraLogs_() (en memoria, Guerra_Logs leído una vez). [→ Contexto_Base_Web.md §37B179]
+        try {
+          // 07-oct-2026 (criterio unificado): viernes a domingo (pIdx % 7 > 3) se evalúan con Guerra_Logs; Supercell no confirma desde qué día se puede cruzar la meta. [→ Contexto_Base_Web.md §37B180]
+          if (r.clan && isFinite(r.pIdx) && r.pIdx % 7 > 3 &&
+              !_esPeriodoDeColiseo_(r.temporada, r.pIdx) &&
+              _cruceMetaDesdeGuerraLogs_(r.clan, r.pIdx, r.temporada) === true) o.opcional = true;
+        } catch (eOpc) { /* sin marca: lado conservador */ }
+        return o;
+      })
+      .sort(function (a, b) { return a.fecha.localeCompare(b.fecha); });
+  }
+
+  return { a: _aArregloOrdenado(tagNorm1), b: _aArregloOrdenado(tagNorm2) };
+}
+
+// ----- Público: cofres, battlelog y torneos del jugador -----
+
+// _webOpcionesCofresBattlelog(): NUEVO (29-sep-2026, pedido de la usuaria). Arma las opciones que reciben _webCofresJugador() y _webBattlelogJugador() a partir de los parametros de la peticion (e.parameter, ver doGet en 38_Web_Endpoints.gs): - esAdmin: true si… [→ Contexto_Base_Web.md §37B279]
+function _webOpcionesCofresBattlelog(parametros) {
+  var p = parametros || {};
+  var esAdmin = _webAuthValidar(p.sessionToken) === true;
+  var pidioForzar = (String(p.forzar || '') === '1' || String(p.forzar || '').toLowerCase() === 'true');
+  var forzar = false;
+  if (esAdmin && pidioForzar) {
+    try {
+      forzar = _webPermisosExigirAcceso(p.sessionToken).ok === true;
+    } catch (eForzar) {
+      Logger.log('[WebAPI] _webOpcionesCofresBattlelog: no se pudo validar el permiso de forzar (' + eForzar.message + '); se ignora forzar.');
+      forzar = false;
+    }
+  }
+  return { esAdmin: esAdmin, forzar: forzar };
+}
+
+// _webPuedeVerCofresBattlelog(): NUEVO (29-sep-2026, pedido de la usuaria). Un admin (opciones.esAdmin true) puede consultar cofres y battlelog de CUALQUIER Tag, activo o inactivo. Un no admin solo puede consultar miembros ACTIVOS: fila en Directorio (no en… [→ Contexto_Base_Web.md §37B280]
+function _webPuedeVerCofresBattlelog(tagNorm, opciones) {
+  if (opciones && opciones.esAdmin === true) return true;
+  try {
+    var hallazgo = _webBuscarFilaDirectorioPorTagConOrigen(tagNorm);
+    if (!hallazgo || !hallazgo.fila || hallazgo.origen !== 'directorio') return false;
+    return String(hallazgo.fila[DC.ESTADO - 1] || '').trim().toLowerCase() === 'activo';
+  } catch (ePuede) {
+    Logger.log('[WebAPI] _webPuedeVerCofresBattlelog: la busqueda fallo (' + ePuede.message + '); se niega por precaucion.');
+    return false;
+  }
+}
+
+// _webBuscarArchivoJsonJugador(): NUEVO (29-sep-2026). Busca en la carpeta de Drive (Battlelog o UpcomingChests) el archivo JSON de un Tag (nombre "dd-mm-yyyy HH.mm - Clan - #TAG.json", ver _buildBattlelogFilename(), 09_API_ClashRoyale.gs). Recuerda el id del… [→ Contexto_Base_Web.md §37B282]
+function _webBuscarArchivoJsonJugador(folderId, tagNorm) {
+  var tagConHash = '#' + tagNorm;
+  var cache = null;
+  var key = 'JSONJUG_' + folderId + '_' + tagNorm;
+  try {
+    cache = CacheService.getScriptCache();
+    var idGuardado = cache.get(key);
+    if (idGuardado) {
+      try {
+        var fCache = DriveApp.getFileById(idGuardado);
+        if (!fCache.isTrashed() && fCache.getName().toUpperCase().indexOf('- ' + tagConHash + '.JSON') > -1) return fCache;
+      } catch (eCache) { /* id viejo: se recorre la carpeta */ }
+    }
+  } catch (eCacheSvc) { cache = null; }
+
+  var re = /-\s(#[0-9A-Z]+)\.json$/i;
+  var archivos = DriveApp.getFolderById(folderId).getFiles();
+  while (archivos.hasNext()) {
+    var f = archivos.next();
+    var m = re.exec(f.getName());
+    if (m && m[1].toUpperCase() === tagConHash) {
+      if (cache) { try { cache.put(key, f.getId(), 21600); } catch (ePut) {} }
+      return f;
+    }
+  }
+  return null;
+}
+
+// _webObtenerJsonJugadorDelDia(): NUEVO (29-sep-2026, pedido de la usuaria). Fuente unica de cofres y battlelog para la web: SIEMPRE se lee el JSON guardado en Drive. 1. Si el JSON de ese Tag ya se descargo HOY (dia calendario de Lima, segun la ultima… [→ Contexto_Base_Web.md §37B283]
+function _webObtenerJsonJugadorDelDia(tipo, tagNorm, forzar) {
+  var esCofres = (tipo === 'cofres');
+  var folderId = esCofres ? DRIVE_FOLDER_ID_UPCOMINGCHESTS : DRIVE_FOLDER_ID_BATTLELOG;
+  var msgFallo = esCofres
+    ? 'No se pudo consultar la cola de cofres de ese jugador.'
+    : 'No se pudo consultar el historial de batallas de ese jugador.';
+  var tzLima = 'America/Lima';
+  var hoy = Utilities.formatDate(new Date(), tzLima, 'yyyy-MM-dd');
+
+  var archivo = null;
+  try {
+    archivo = _webBuscarArchivoJsonJugador(folderId, tagNorm);
+  } catch (eBuscar) {
+    Logger.log('[WebAPI] _webObtenerJsonJugadorDelDia(' + tipo + '): no se pudo buscar el archivo de ' + tagNorm + ' (' + eBuscar.message + ').');
+  }
+  var esDeHoy = !!archivo && Utilities.formatDate(archivo.getLastUpdated(), tzLima, 'yyyy-MM-dd') === hoy;
+
+  var descargoAhora = false;
+  var actualizacionFallida = false;
+
+  if (!(archivo && esDeHoy && forzar !== true)) {
+    var cache = null;
+    var flagKey = 'JSONJUG_BUSY_' + tipo + '_' + tagNorm;
+    try { cache = CacheService.getScriptCache(); } catch (eSvc) { cache = null; }
+
+    if (cache && cache.get(flagKey)) {
+      // Otra consulta ya esta descargando este mismo dato: no se duplica la llamada.
+      if (!archivo) return { ok: false, error: 'Se esta descargando este dato en este momento. Vuelve a intentar en unos segundos.' };
+    } else {
+      if (cache) { try { cache.put(flagKey, '1', 60); } catch (ePutFlag) {} }
+      var descargoOk = false;
+      try {
+        descargoOk = (esCofres ? descargarUpcomingChestsJugador('#' + tagNorm) : descargarBattlelogJugador('#' + tagNorm)) === true;
+      } catch (eDesc) {
+        Logger.log('[WebAPI] _webObtenerJsonJugadorDelDia(' + tipo + '): la descarga de ' + tagNorm + ' fallo (' + eDesc.message + ').');
+      }
+      if (cache) { try { cache.remove(flagKey); } catch (eRem) {} }
+
+      if (descargoOk) {
+        descargoAhora = true;
+        try { archivo = _webBuscarArchivoJsonJugador(folderId, tagNorm); } catch (eRebuscar) { archivo = null; }
+        esDeHoy = !!archivo;
+      } else {
+        actualizacionFallida = true;
+      }
+    }
+  }
+
+  if (!archivo) return { ok: false, error: msgFallo };
+
+  var data;
+  try {
+    data = JSON.parse(archivo.getBlob().getDataAsString());
+  } catch (eParse) {
+    Logger.log('[WebAPI] _webObtenerJsonJugadorDelDia(' + tipo + '): el JSON guardado de ' + tagNorm + ' no se pudo leer (' + eParse.message + ').');
+    return { ok: false, error: msgFallo };
+  }
+  var valido = esCofres ? (data && Array.isArray(data.items)) : Array.isArray(data);
+  if (!valido) return { ok: false, error: msgFallo };
 
   return {
     ok: true,
-    jugador: {
-      tag: '#' + tagNorm, nombre: nombrePublico, clan: clanPublico, rango: '',
-      estado: 'Sin registro con nosotros', vGuerra: 0, torneos: 0, copas: 0,
-      vigencia: '',
-      guerraSemana: { ataques: 0, fame: 0, barcos: 0, ataquesMax: 0 },
-      // FIX 23-sep-2026: mismo campo nuevo que _webPerfilJugador() (guerraSemanaDias, ver ese docblock); aquí null porque un Tag sin registro en Directorio nunca tiene filas propias en Guerra. [→ Contexto_Base_Web.md §37B139]
-      guerraSemanaDias: null,
-      progreso: { ascensos: null, descensos: null },
-      extendido: extendidoSinRegistro,
-      mazoActual: null,
-      sinRegistro: true
-    }
+    data: data,
+    origen: descargoAhora ? 'api' : (esDeHoy ? 'drive_hoy' : 'drive_anterior'),
+    fechaDescarga: Utilities.formatDate(archivo.getLastUpdated(), tzLima, 'dd/MM/yyyy HH:mm'),
+    actualizacionFallida: actualizacionFallida
   };
 }
 
-// _webClanInfo(): FASE 0 (24-ago-2026): index.html tenía las 4 tarjetas de clanes hardcodeadas; reutiliza la MISMA hoja Clan y el MISMO cálculo de mínimo de trofeos de guerra semanal (_getMinGClanMaps(), 10_ClanSheet.gs) que _respuestaInfoClanPorTag() (44_BotWhatsApp.gs), para que la web nunca muestre un número de clan distinto al del bot; IMPORTANTE: recorre CFG.TERNA_TAGS (no ordena por nombre) para respetar el orden de la columna Orden de la hoja Clan (Grupo Terna, Terna 2, Terna 3, Mini Ternas), nunca alfabético; solo devuelve los 4 clanes Terna públicos: el clan vetado (CFG.VETADO_TAG) queda fuera a propósito; FIX 30-ago-2026 (lentitud del portal): cacheada 60 s vía _webCacheado() (ver _webRoster()); la función original quedó renombrada _webClanInfoCalcular(). @returns {{clanes: Array<Object>}} [→ Contexto_Base_Web.md §37B140]
-function _webClanInfo() {
-  return _webCacheado('web_clan_info_v1', 60, _webClanInfoCalcular);
-}
-
-function _webClanInfoCalcular() {
-  var ss = _getSs();
-  // FASE 15-sep-2026 (fallback web->CSV): antes, si la hoja Clan no estaba disponible o vacía devolvía { clanes: [] }; ahora _obtenerFilasConFallbackCSV() (01_Config_Global.gs) redirige a Backup_Clan.csv, que tiene las columnas en el mismo orden que CC (syncClanCSV(), 05_Backup_CSV.gs) y ya trae las URLs REALES de RoyaleAPI/CWStats (usa _extraerValoresConLinksReales(), que lee RichText), por lo que el bloque getRichTextValues() de más abajo solo corre cuando el origen es la hoja viva. [→ Contexto_Base_Web.md §37B141]
-  var lectura = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CLAN, 'Backup_Clan.csv', CC.CONDICION);
-  if (lectura.origen === 'vacio') return { clanes: [] };
-  // TANDA 15 (21-sep-2026): con origen 'csv' los números llegan como texto con separador de miles (Trofeos, Requerimiento, Copas y Donaciones tienen formato '#,##0' y el CSV se arma con getDisplayValues()): se leen con _numDesdeCeldaCSV_() (01_Config_Global.gs), no con Number(). [→ Contexto_Base_Web.md §37B142]
-
-  var dataClan = lectura.filas;
-  var minGPorTag = _getMinGClanMaps().byTag;
-
-  // FIX 01-sep-2026 ("las celdas no están vacías, tendría que generar algo como https://royaleapi.com/player/..."): CC.ROYALE_API y CC.CW_STATS son texto enriquecido (makeLink() en 01_Config_Global.gs, usada por updateClanSheet()) con texto visible "Link" y la URL real solo en el enlace; getValues() solo trae "Link", así que se leen aparte con getRichTextValues() + getLinkUrl() para las 4 filas de Clan (mismo patrón que _leerLinksRichTextPorTag() de 12_Players_Links.gs); FASE 15-sep-2026: esta relectura solo corre si el origen fue la hoja viva; si vino del CSV (ya con la URL real en texto plano) royaleApiRT/cwStatsRT quedan null y el || de abajo cae al valor de la celda. [→ Contexto_Base_Web.md §37B143]
-  var royaleApiRT = null, cwStatsRT = null;
-  if (lectura.origen === 'sheet') {
-    var shClan = ss.getSheetByName(CFG.SHEETS.CLAN);
-    royaleApiRT = shClan.getRange(2, CC.ROYALE_API, shClan.getLastRow() - 1, 1).getRichTextValues();
-    cwStatsRT   = shClan.getRange(2, CC.CW_STATS,   shClan.getLastRow() - 1, 1).getRichTextValues();
+// _webCofresJugador(): ACTUALIZADO (29-sep-2026, pedido de la usuaria): esta nota reemplaza los parrafos de mas abajo que dicen "EN VIVO", "llamada en vivo por click" y "NO guarda nada en Drive"; el resto (cruce con Backup_Cofres.csv, campos… [→ Contexto_Base_Web.md §37B284]
+function _webCofresJugador(tagBuscado, opciones) {
+  var tagNorm = cleanTag(tagBuscado);
+  if (!tagNorm) return { ok: false, error: 'Falta el Tag del jugador.' };
+  if (!_webPuedeVerCofresBattlelog(tagNorm, opciones)) {
+    return { ok: false, error: WEB_MSG_SIN_REGISTRO_JSON, sinRegistro: true };
   }
 
-  var clanes = CFG.TERNA_TAGS.map(function (tagBuscado) {
-    for (var i = 0; i < dataClan.length; i++) {
-      if (String(dataClan[i][CC.CLAN_TAG - 1]) !== tagBuscado) continue;
-      var fila = dataClan[i];
-      var minG = minGPorTag[tagBuscado];
-      if (minG === undefined) minG = CFG.MIN_G_DEFAULT;
+  // CAMBIO (29-sep-2026): ya no se llama a la API en cada clic. La lectura y la descarga (una por Tag y por dia) viven en _webObtenerJsonJugadorDelDia(). El bug de 27-sep del '#' (encodeTag necesita el '#') queda resuelto porque… [→ Contexto_Base_Web.md §37B285]
+  var lectura = _webObtenerJsonJugadorDelDia('cofres', tagNorm, !!(opciones && opciones.forzar === true));
+  if (!lectura.ok) return { ok: false, error: lectura.error };
+  var data = lectura.data;
 
-      // Preferir la URL real del enlace; si la celda no tiene enlace (alguien tipeó el tag a mano sin makeLink()), cae al texto de la celda como respaldo. [→ Contexto_Base_Web.md §37B144]
-      var royaleApi = (royaleApiRT && royaleApiRT[i][0] && royaleApiRT[i][0].getLinkUrl()) || String(fila[CC.ROYALE_API - 1] || '').trim();
-      if (royaleApi && !royaleApi.startsWith('http')) {
-        royaleApi = 'https://royaleapi.com/clan/' + cleanTag(royaleApi);
-      }
+  // Backup_Cofres.csv: se busca Name/Nombre/Link por NOMBRE de columna (no por posición fija) — así, si el usuario reordena columnas al editarlo a mano (como ya hizo al agregar "Link" después de "Nombre"), esto sigue encontrándolas… [→ Contexto_Base_Web.md §37B286]
+  var csvCofres = _leerCofresCSV();
+  var idxName   = csvCofres.headers.indexOf('Name');
+  var idxNombre = csvCofres.headers.indexOf('Nombre');
+  var idxLink   = csvCofres.headers.indexOf('Link');
 
-      // FIX 28-ago-2026 (botones RoyaleAPI/CWStats + gráfico "Copas" en la página Clanes): CC.CW_STATS y CC.COPAS ya se leían dentro del rango (CC.CONDICION=23) pero nunca se devolvían; se agregan sin tocar nada más; cwStats sigue el criterio de royaleApi (URL completa o solo el tag del clan). [→ Contexto_Base_Web.md §37B145]
-      var cwStats = (cwStatsRT && cwStatsRT[i][0] && cwStatsRT[i][0].getLinkUrl()) || String(fila[CC.CW_STATS - 1] || '').trim();
-      if (cwStats && !cwStats.startsWith('http')) {
-        cwStats = 'https://cwstats.com/clan/' + cleanTag(cwStats);
-      }
-
-      return {
-        clanTag:      tagBuscado,
-        nombre:       String(fila[CC.NOMBRE        - 1] || ''),
-        lider:        String(fila[CC.LIDER         - 1] || ''),
-        miembros:     Number(fila[CC.MIEMBROS      - 1]) || 0,
-        trofeos:      _numDesdeCeldaCSV_(fila[CC.TROFEOS       - 1]) || 0, // TANDA 15: tolera "5,432" del respaldo CSV
-        copas:        _numDesdeCeldaCSV_(fila[CC.COPAS         - 1]) || 0, // TANDA 15
-        minGSemanal:  minG,
-        liga:         String(fila[CC.LIGA          - 1] || ''),
-        requerimiento:_numDesdeCeldaCSV_(fila[CC.REQUERIMIENTO - 1]) || 0, // TANDA 15
-        donaciones:   _numDesdeCeldaCSV_(fila[CC.DONACIONES    - 1]) || 0, // TANDA 15
-        tipo:         String(fila[CC.TIPO          - 1] || ''),
-        pais:         String(fila[CC.PAIS          - 1] || ''),
-        descripcion:  String(fila[CC.DESCRIPCION   - 1] || ''),
-        // NUEVO 16-sep-2026 (ícono real del clan desde el badgeId de Supercell): CC.BADGE_ID guarda el número crudo de /clans/{tag} (updateClanSheet(), 10_ClanSheet.gs) y se reenvía sin transformar, como pide el docblock de iconoBadgeClanHtml() (common.js, frontend), que lo resuelve a un ícono en el momento. [→ Contexto_Base_Web.md §37B146]
-        badgeId:      Number(fila[CC.BADGE_ID      - 1]) || 0,
-        royaleApi:    royaleApi,
-        cwStats:      cwStats
+  var porName = {};
+  if (idxName > -1) {
+    for (var i = 0; i < csvCofres.rows.length; i++) {
+      var nameFila = String(csvCofres.rows[i][idxName] || '').trim();
+      if (!nameFila) continue;
+      porName[nameFila] = {
+        nombre: (idxNombre > -1) ? String(csvCofres.rows[i][idxNombre] || '').trim() : '',
+        link:   (idxLink   > -1) ? String(csvCofres.rows[i][idxLink]   || '').trim() : ''
       };
     }
-    // Clan de CFG.TERNA_TAGS sin fila todavía en la hoja Clan (recién agregado, esperando la próxima updateClanSheet()): se devuelve un placeholder mínimo en vez de omitirlo, para que el frontend pinte la tarjeta (con guiones) en su posición. [→ Contexto_Base_Web.md §37B147]
-    return { clanTag: tagBuscado, nombre: '', lider: '', miembros: 0, trofeos: 0, copas: 0,
-             minGSemanal: CFG.MIN_G_DEFAULT, liga: '', requerimiento: 0,
-             donaciones: 0, tipo: '', pais: '', descripcion: '', badgeId: 0, royaleApi: '', cwStats: '' };
+  }
+
+  var items = data.items.map(function (it) {
+    var nameOriginal = String((it && it.name) || '');
+    var match = porName[nameOriginal];
+    return {
+      index:  (it && it.index),
+      name:   nameOriginal,
+      nombre: (match && match.nombre) ? match.nombre : nameOriginal, // fallback al inglés
+      link:   (match && match.link) ? match.link : ''
+    };
   });
 
-  return { clanes: clanes };
+  return { ok: true, items: items, origen: lectura.origen, fechaDescarga: lectura.fechaDescarga, actualizacionFallida: lectura.actualizacionFallida };
 }
+
+// _obtenerArenaCompletaDesdeCatalogo(): NUEVO (27-sep-2026, pedido usuario -- "se debe procesar toda la información, haciendo pasar todos los datos disponibles en los csv", battlelog del perfil web). A diferencia de _resolverArenaDesdeCatalogo()… [→ Contexto_Base_Web.md §37B287]
+function _obtenerArenaCompletaDesdeCatalogo(rawName) {
+  var rawStr = String(rawName === undefined || rawName === null ? '' : rawName).trim();
+  var vacio = { id: null, name: '', rawName: rawStr, nombre: '', nombre2: '' };
+  if (!rawStr) return vacio;
+
+  var csv = _leerArenaCSV(); // headers: N°, ID, Name, RawName, Nombre, Nombre_2
+  for (var i = 0; i < csv.rows.length; i++) {
+    if (String(csv.rows[i][3] || '').trim() === rawStr) {
+      var idNum = Number(csv.rows[i][1]);
+      return {
+        id:      isNaN(idNum) ? null : idNum,
+        name:    String(csv.rows[i][2] || '').trim(),
+        rawName: rawStr,
+        nombre:  String(csv.rows[i][4] || '').trim(),
+        nombre2: String(csv.rows[i][5] || '').trim()
+      };
+    }
+  }
+  return vacio; // sin match -- el catálogo todavía no vio esta arena
+}
+
+// _obtenerModoCompletoDesdeCatalogo(): Mismo criterio que _obtenerArenaCompletaDesdeCatalogo() (justo arriba), pero contra Backup_Modo.csv (headers: N°, ID, Name, Nombre -- sin Nombre_2, ese catálogo no tiene segunda traducción). Solo lectura, no encola filas nuevas… [→ Contexto_Base_Web.md §37B288]
+function _obtenerModoCompletoDesdeCatalogo(modoId) {
+  var idStr = String(modoId === undefined || modoId === null ? '' : modoId).trim();
+  var vacio = { id: null, name: '', nombre: '' };
+  if (!idStr) return vacio;
+
+  var csv = _leerModoCSV(); // headers: N°, ID, Name, Nombre
+  for (var i = 0; i < csv.rows.length; i++) {
+    if (String(csv.rows[i][1] || '').trim() === idStr) {
+      return {
+        id:     Number(csv.rows[i][1]),
+        name:   String(csv.rows[i][2] || '').trim(),
+        nombre: String(csv.rows[i][3] || '').trim()
+      };
+    }
+  }
+  return vacio; // sin match -- el catálogo todavía no vio este modo
+}
+
+// _webBattlelogJugador(): ACTUALIZADO (29-sep-2026, pedido de la usuaria): esta nota reemplaza lo que dice mas abajo sobre consultar "EN VIVO"; el resto (resumen por batalla, arena/modo, boatBattle, trophyChange) sigue vigente. Mismo criterio que… [→ Contexto_Base_Web.md §37B289]
+function _webBattlelogJugador(tagBuscado, opciones) {
+  var tagNorm = cleanTag(tagBuscado);
+  if (!tagNorm) return { ok: false, error: 'Falta el Tag del jugador.' };
+  if (!_webPuedeVerCofresBattlelog(tagNorm, opciones)) {
+    return { ok: false, error: WEB_MSG_SIN_REGISTRO_JSON, sinRegistro: true };
+  }
+
+  // CAMBIO (29-sep-2026): lectura desde el JSON de Drive, con una descarga por Tag y por dia (ver _webObtenerJsonJugadorDelDia()). Sin llamadas en vivo por clic. [→ Contexto_Base_Web.md §37B290]
+  var lectura = _webObtenerJsonJugadorDelDia('battlelog', tagNorm, !!(opciones && opciones.forzar === true));
+  if (!lectura.ok) return { ok: false, error: lectura.error };
+  var data = lectura.data;
+
+  var tz = Session.getScriptTimeZone() || 'America/Lima';
+
+  var batallas = data.map(function (b) {
+    var miEquipo = (b && b.team && b.team[0]) || {};
+    var rival    = (b && b.opponent && b.opponent[0]) || {};
+    var esBoat   = (b && b.type === 'boatBattle');
+
+    var fechaObj = _parseFechaApiSupercell(b && b.battleTime);
+    var fechaTxt = fechaObj ? Utilities.formatDate(fechaObj, tz, 'dd/MM/yyyy HH:mm') : '';
+
+    var resultado;
+    if (esBoat) {
+      resultado = (b && b.boatBattleWon) ? 'victoria' : 'derrota';
+    } else {
+      var miCrowns    = Number(miEquipo.crowns) || 0;
+      var rivalCrowns = Number(rival.crowns) || 0;
+      resultado = miCrowns > rivalCrowns ? 'victoria' : (miCrowns < rivalCrowns ? 'derrota' : 'empate');
+    }
+
+    // Catálogos completos (Backup_Arena.csv/Backup_Modo.csv) -- ver docblock.
+    var arenaCat = _obtenerArenaCompletaDesdeCatalogo(b && b.arena && b.arena.rawName);
+    var modoCat  = _obtenerModoCompletoDesdeCatalogo(b && b.gameMode && b.gameMode.id);
+
+    // Mismo texto ya resuelto que la versión anterior (Nombre -> Name -> dato crudo), reutilizando los resolvers existentes -- no se duplica esa lógica de fallback aquí, solo se manda además el detalle crudo. [→ Contexto_Base_Web.md §37B291]
+    var arenaTxt = _resolverArenaDesdeCatalogo(b && b.arena && b.arena.rawName);
+    var modoTxt  = _resolverModoDesdeCatalogo(b && b.gameMode && b.gameMode.id) ||
+                    String((b && b.gameMode && b.gameMode.name) || '');
+
+    // trophyChange: solo viene en pathOfLegend (Ranked 1v1) -- undefined en el resto de los tipos, se manda null explícito para que el frontend distinga "no aplica" de "0 trofeos". [→ Contexto_Base_Web.md §37B292]
+    var trophyChangeRaw = miEquipo.trophyChange;
+    var trophyChange = (trophyChangeRaw === undefined || trophyChangeRaw === null)
+      ? null
+      : Number(trophyChangeRaw);
+
+    var fila = {
+      fecha:       fechaTxt,
+      fechaOrden:  fechaObj ? fechaObj.getTime() : 0,
+      tipo:        String((b && b.type) || ''),
+      modo:        modoCat,
+      modoTxt:     modoTxt,
+      arena:       arenaCat,
+      arenaTxt:    arenaTxt,
+      resultado:   resultado,
+      miCorona:    esBoat ? null : (Number(miEquipo.crowns) || 0),
+      rivalCorona: esBoat ? null : (Number(rival.crowns) || 0),
+      trophyChange: trophyChange,
+      // NUEVO (27-sep-2026, pedido usuario): nombre del jugador TAL COMO figuraba en esa batalla (puede haberse cambiado el nombre después). Archivo 37_Web_API.gs, función _webBattlelogJugador(): antes solo se mandaba miClan; perfil.html… [→ Contexto_Base_Web.md §37B293]
+      miNombre:    String(miEquipo.name || ''),
+      miClan:      (miEquipo.clan && miEquipo.clan.name) || '',
+      rivalNombre: String(rival.name || ''),
+      rivalClan:   (rival.clan && rival.clan.name) || '',
+      eventTag:    String((b && b.eventTag) || ''),
+      deckSelection: String((b && b.deckSelection) || '')
+    };
+    if (esBoat) {
+      fila.barcoLado            = (b && b.boatBattleSide) || '';
+      fila.barcoTorresNuevas    = Number(b && b.newTowersDestroyed) || 0;
+      fila.barcoTorresRestantes = Number(b && b.remainingTowers) || 0;
+    }
+    return fila;
+  });
+
+  // La API ya entrega battleTime descendente (más reciente primero), pero se reordena explícito por si algún día no lo trae así -- mismo criterio defensivo que _webTorneosJugador() (arriba en este archivo). [→ Contexto_Base_Web.md §37B294]
+  batallas.sort(function (a, b) { return b.fechaOrden - a.fechaOrden; });
+  batallas.forEach(function (b) { delete b.fechaOrden; });
+
+  return { ok: true, batallas: batallas, origen: lectura.origen, fechaDescarga: lectura.fechaDescarga, actualizacionFallida: lectura.actualizacionFallida };
+}
+
+// _webTorneosJugador(): FASE 7 (29-ago-2026, pedido del usuario — botón "Ver Torneos" del perfil en jugadores.html). A diferencia de _webTorneos() (que solo expone el Top 3 del torneo MÁS RECIENTE, sin indagar en ningún jugador puntual), esta función es… [→ Contexto_Base_Web.md §37B276]
+function _webTorneosJugador(tagBuscado, opciones) {
+  var tagNorm = cleanTag(tagBuscado);
+  if (!tagNorm) return { ok: false, error: 'Falta el Tag del jugador.' };
+
+  // CAMBIO (28-sep-2026, Fase 5b tanda A3, decisión del usuario: "sí" a que torneos responda vacío para inactivos): para un visitante, una cuenta inactiva responde igual que un Tag sin participaciones (ok:true, torneos:[]). Con… [→ Contexto_Base_Web.md §37B277]
+  if (_webCuentaOcultaParaVisitante(tagNorm, opciones)) return { ok: true, torneos: [] };
+
+  var ss = _getSs();
+  var lecturaTA = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.T_ASISTENCIA, 'Backup_T_Asistencia.csv', TA_TOTAL_COLS);
+  var taData = lecturaTA.filas;
+  if (!taData.length) return { ok: true, torneos: [] };
+
+  var tz = Session.getScriptTimeZone() || 'America/Lima';
+
+  var torneos = taData
+    .filter(function (f) { return cleanTag(f[TA.TAG - 1]) === tagNorm; })
+    .map(function (f) {
+      var fechaCelda = f[TA.FECHA - 1];
+      var fechaTxt = (fechaCelda instanceof Date && !isNaN(fechaCelda.getTime()))
+        ? Utilities.formatDate(fechaCelda, tz, 'dd/MM/yyyy') : '';
+      return {
+        idTorneo:  f[TA.ID - 1],
+        fecha:     fechaTxt,
+        fechaOrden: (fechaCelda instanceof Date) ? fechaCelda.getTime() : 0,
+        puesto:    f[TA.PUESTO - 1],
+        victorias: Number(f[TA.VICTORIAS - 1]) || 0,
+        clan:      String(f[TA.CLAN - 1] || '')
+      };
+    })
+    .sort(function (a, b) { return b.fechaOrden - a.fechaOrden; })
+    .map(function (t) { delete t.fechaOrden; return t; });
+
+  return { ok: true, torneos: torneos };
+}
+
+// ----- Público: torneos -----
 
 // _webTorneos(opciones): FASE 1 (24-ago-2026): listado público de los últimos torneos de T_Lista (id, fecha, clan organizador, link de la app) + ganadores del torneo MÁS RECIENTE, con la misma elegibilidad que actualizarDocGanadoresTorneo() (28_Torneos_Docs.gs: top 3 por Puesto en T_Asistencia, filtrado por el Ataques configurado por clan en T_Lista con exención por domingo opcional y trofeos >= Min_T de su clan), para que la web nunca difiera del doc "Ganadores (torneo)"; no expone Contraseña ni Link_JSON (uso interno del bot), solo Link_app; CAMBIO 28-sep-2026 (Fase 5b tanda D): el listado y los resultados siguen mostrando ex-miembros sin filtrar (registro histórico, confirmado por el usuario); _webGanadoresTorneoMasReciente() recibe opciones y agrega el campo tag a cada participante (top3 y participantes), que sale null si _webCuentaOcultaParaVisitante() lo oculta (criterio A5: Inactivos o Directorio Estado='Inactivo') salvo opciones.esAdmin; torneos.html lo usa para enlazar a perfil.html?tag=...; el Tag nunca se expone de forma incondicional. @param {{esAdmin?:boolean}=} opciones; @returns {{torneos: Array, ganadores: Object|null}} [→ Contexto_Base_Web.md §37B148]
 function _webTorneos(opciones) {
@@ -2002,271 +3240,7 @@ function _webHistorialTorneos(opciones) {
   return { historial: historial };
 }
 
-// _webRankings(): FASE 10 (30-ago-2026, sección pública "Rankings"): top 10 de cuatro métricas ya calculadas en el Directorio, solo miembros con Estado = 'Activo' (misma fuente y criterio que _webRoster()): donadores (DC.DON_D, donaciones realizadas), racha (DC.RACHA, racha de guerra), torneos (DC.TORNEOS, el mismo campo que exponen _webRoster()/_webPerfilJugador()) y victorias3c (DC.VICTORIAS_3C, victorias con 3 coronas); cada lista excluye valores en 0/vacío (un top no debe mostrar ceros) y se recorta a 10; lectura pública con el mismo WEB_MEMBER_TOKEN de solo lectura que webRoster. @returns {{donadores, racha, torneos, victorias3c: Array<{tag,nombre,clan,valor}>}} [→ Contexto_Base_Web.md §37B165]
-function _webRankings() {
-  // FIX 24-sep-2026 (auditoría "fallback web->CSV, funciones web"): antes usaba _leerDirectorioFisicoComoDC(ss) directo, que no tiene fallback propio (devuelve [] en silencio si Directorio no está disponible); ahora usa _webLeerDirectorioComoDC() (más abajo en este archivo), que cae a Backup_Directorio.csv si la hoja falta, está vacía o falla, igual que _webRoster(). [→ Contexto_Base_Web.md §37B166]
-  var dataDir = _webLeerDirectorioComoDC().filas;
-
-  var activos = [];
-  for (var i = 0; i < dataDir.length; i++) {
-    var fila = dataDir[i];
-    if (String(fila[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
-    activos.push({
-      tag:     String(fila[DC.TAG    - 1] || ''),
-      nombre:  String(fila[DC.NOMBRE - 1] || ''),
-      clan:    String(fila[DC.CLAN   - 1] || ''),
-      donD:    Number(fila[DC.DON_D  - 1]) || 0,
-      racha:   Number(fila[DC.RACHA  - 1]) || 0,
-      torneos: Number(fila[DC.TORNEOS - 1]) || 0,
-      v3c:     Number(fila[DC.VICTORIAS_3C - 1]) || 0
-    });
-  }
-
-  function _webRankingsTopPor(campo) {
-    return activos
-      .filter(function (m) { return m[campo] > 0; })
-      .sort(function (a, b) { return b[campo] - a[campo]; })
-      .slice(0, 10)
-      .map(function (m) { return { tag: m.tag, nombre: m.nombre, clan: m.clan, valor: m[campo] }; });
-  }
-
-  return {
-    donadores:   _webRankingsTopPor('donD'),
-    racha:       _webRankingsTopPor('racha'),
-    torneos:     _webRankingsTopPor('torneos'),
-    victorias3c: _webRankingsTopPor('v3c')
-  };
-}
-
-// _webAniversarios(): FASE 10 (30-ago-2026, "Aniversarios en la Familia"): para cada miembro Activo con Fecha_Ing válida (la misma columna de _webIngresosRecientes()) calcula los días desde su ingreso y su PRÓXIMO hito en múltiplos de ~6 meses (182 días: 182, 364, 546...); si cae dentro de los próximos 14 días entra en la lista (sección rotativa "Próximos aniversarios" en Inicio/Comunidad); 182 días ≈ 6 meses es una aproximación deliberada (evita aritmética de meses calendario con casos límite de fin de mes) y hitoMeses es solo para mostrar ("6 meses", "1 año"...); lectura pública con el mismo WEB_MEMBER_TOKEN de solo lectura que webRoster; FIX 30-ago-2026 (lentitud del portal): cacheada 60 s vía _webCacheado() (ver _webRoster()); la función original quedó renombrada _webAniversariosCalcular(). @returns {{aniversarios: Array<{tag,nombre,clan,fechaIngTxt,hitoMeses,diasFaltantes}>}} [→ Contexto_Base_Web.md §37B167]
-function _webAniversarios() {
-  return _webCacheado('web_aniversarios_v1', 60, _webAniversariosCalcular);
-}
-
-function _webAniversariosCalcular() {
-  // FIX 24-sep-2026 (auditoría "fallback web->CSV, funciones web"): mismo cambio que _webRankings(); _leerDirectorioFisicoComoDC(ss) directo no tiene fallback propio. [→ Contexto_Base_Web.md §37B168]
-  var dataDir = _webLeerDirectorioComoDC().filas;
-  var tz = Session.getScriptTimeZone() || 'America/Lima';
-  var hoy = new Date();
-  var MS_DIA = 86400000;
-  var PACK_DIAS = 182; // ~6 meses
-
-  var aniversarios = [];
-  for (var i = 0; i < dataDir.length; i++) {
-    var fila = dataDir[i];
-    if (String(fila[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
-    var fechaIng = fila[DC.FECHA_ING - 1];
-    if (!(fechaIng instanceof Date) || isNaN(fechaIng.getTime())) continue;
-
-    var diasTranscurridos = Math.floor((hoy - fechaIng) / MS_DIA);
-    if (diasTranscurridos < PACK_DIAS) continue; // todavía no llega a su primer hito
-
-    var proximoHito = (Math.floor(diasTranscurridos / PACK_DIAS) + 1) * PACK_DIAS;
-    var diasFaltantes = proximoHito - diasTranscurridos;
-    if (diasFaltantes > 14) continue;
-
-    aniversarios.push({
-      tag:           String(fila[DC.TAG    - 1] || ''),
-      nombre:        String(fila[DC.NOMBRE - 1] || ''),
-      clan:          String(fila[DC.CLAN   - 1] || ''),
-      fechaIngTxt:   Utilities.formatDate(fechaIng, tz, 'dd/MM/yyyy'),
-      hitoMeses:     (proximoHito / PACK_DIAS) * 6,
-      diasFaltantes: diasFaltantes
-    });
-  }
-
-  aniversarios.sort(function (a, b) { return a.diasFaltantes - b.diasFaltantes; });
-
-  return { aniversarios: aniversarios };
-}
-
-// _webCompararJugadores(tag1, tag2, opciones): FASE 10 (30-ago-2026, comparador de jugadores): envuelve DOS llamadas a _webPerfilJugador() (la misma del buscador de jugadores.html) en un solo round-trip HTTP, sin duplicar lógica de perfil; si un Tag no existe igual se devuelve el lado encontrado más el mensaje de error del otro, para que el frontend muestre el que sí cargó; CAMBIO 28-sep-2026 (Fase 5b tanda A): tercer parámetro opcional opciones ({esAdmin:boolean}) que se pasa tal cual a _webPerfilJugador(). @returns {{a: Object|null, errorA?: string, b: Object|null, errorB?: string}} [→ Contexto_Base_Web.md §37B169]
-function _webCompararJugadores(tag1, tag2, opciones) {
-  var resultado = { a: null, b: null };
-
-  var pa = _webPerfilJugador(tag1, opciones);
-  if (pa.ok) resultado.a = pa.jugador; else resultado.errorA = pa.error;
-
-  var pb = _webPerfilJugador(tag2, opciones);
-  if (pb.ok) resultado.b = pb.jugador; else resultado.errorB = pb.error;
-
-  return resultado;
-}
-
-// Ventana de historial de _webHistorialGuerraComparador(): ~6 meses (180 días), suficiente para una gráfica legible etiquetada por mes sin mandar años de historia diaria. [→ Contexto_Base_Web.md §37B170]
-var LIMITE_DIAS_HISTORIAL_GUERRA_COMPARADOR = 180;
-
-// _webHistorialGuerraComparador(tag1, tag2, opciones): FASE 25 (02-sep-2026, PDF de torneos, punto 9: "Cara a cara" con gráficas de desempeño de guerra, valores diarios y eje X etiquetado solo por mes): arma el historial DIARIO (AtaquesHoy + Fame de cada fecha, GC.ATAQUES_HOY/GC.FAME) de los dos Tags del comparador para jugadores.html, como gráfica de líneas con dos series (mismo patrón visual que "Ranking en el clan" de perfil.html, renderRankingChart()) y etiqueta de eje solo en los cambios de mes; fuentes con el mismo criterio de temporada actual + histórico que el docblock "HOJA vs CSV" de 17_GuerraSheet.gs: 1) Backup_Guerra.csv (vía _loadCSVFromDrive(), como _construirMapaSemanalPorTagDesdeSupercell() "más arriba en este archivo"; histórico completo de todas las temporadas, solo API de Supercell, sin overlay de Correcciones_Guerra.csv porque interesa el valor bruto de cada día) y 2) hoja Guerra (CFG.SHEETS.GUERRA), que solo conserva la temporada ACTUAL (el resto se purgó a Backup_Guerra.csv, _purgarTemporadasAnterioresGuerra()), se lee DESPUÉS del CSV y pisa fechas repetidas por ser la más fresca; Estado/Activo del Directorio: CAMBIO 28-sep-2026 (Fase 5b tanda A3): ya no es permisivo con cuentas inactivas: para un visitante una cuenta inactiva (hoja Inactivos o Estado 'Inactivo') devuelve arreglo vacío y con opciones.esAdmin sale el historial real; un Tag sin fila en Directorio/Inactivos responde como antes. @param tag1, tag2; @returns {{a: Array<{fecha:string, ataques:number, fame:number}>, b: igual}} con fecha ISO 'yyyy-MM-dd', un registro por día, orden ascendente, recortado a LIMITE_DIAS_HISTORIAL_GUERRA_COMPARADOR días; un Tag sin registros devuelve arreglo vacío (no es error) [→ Contexto_Base_Web.md §37B171]
-function _webHistorialGuerraComparador(tag1, tag2, opciones) {
-  var tagNorm1 = cleanTag(tag1);
-  var tagNorm2 = cleanTag(tag2);
-  // CAMBIO 28-sep-2026 (Fase 5b tanda A3, decisión del usuario): para un visitante el lado de una cuenta inactiva se trata como un Tag sin registros (arreglo vacío); con sesión de admin (opciones.esAdmin) sale el historial real; ver _webCuentaOcultaParaVisitante() y aviso A5. [→ Contexto_Base_Web.md §37B172]
-  if (tagNorm1 && _webCuentaOcultaParaVisitante(tagNorm1, opciones)) tagNorm1 = '';
-  if (tagNorm2 && _webCuentaOcultaParaVisitante(tagNorm2, opciones)) tagNorm2 = '';
-  if (!tagNorm1 && !tagNorm2) return { a: [], b: [] };
-
-  var porTag = {};
-  if (tagNorm1) porTag[tagNorm1] = {};
-  if (tagNorm2) porTag[tagNorm2] = {};
-
-  var tz = Session.getScriptTimeZone() || 'America/Lima';
-
-  // FIX 03-sep-2026 ("Cara a cara: las gráficas deben mostrar solo los días de guerra, no de entrenamiento; agregar también Ataques y Barcos, no solo Fame"): la hoja Guerra/Backup_Guerra.csv registra TODOS los días de la temporada, incluido entrenamiento (Ataques/Fame/Barcos quedan en 0 porque no se puede atacar) y esos ceros distorsionaban la línea; se agrega GC.ETAPA ('GUERRA' o 'ENTRENAMIENTO', el mismo texto de ctx.esDiaGuerra) al registro y se filtra por él antes de devolver el arreglo; también se captura GC.BARCOS para la tercera gráfica. [→ Contexto_Base_Web.md §37B173]
-  function _registrar(tagCelda, fechaCelda, ataquesCelda, fameCelda, barcosCelda, etapaCelda, clanCelda, pIdxCelda, tempCelda, semanaCelda) {
-    var tagNorm = cleanTag(tagCelda);
-    if (!tagNorm || !porTag.hasOwnProperty(tagNorm)) return;
-    var fechaObj = (fechaCelda instanceof Date) ? fechaCelda : _parseSpanishDate(fechaCelda);
-    if (!(fechaObj instanceof Date) || isNaN(fechaObj.getTime())) return;
-    var claveFecha = Utilities.formatDate(fechaObj, tz, 'yyyy-MM-dd');
-    // Última escritura gana: Backup_Guerra.csv se procesa primero y la hoja Guerra (más fresca) después, así que si la misma fecha está en las dos queda el valor de la hoja. [→ Contexto_Base_Web.md §37B174]
-    porTag[tagNorm][claveFecha] = {
-      fecha:   claveFecha,
-      ataques: Number(ataquesCelda) || 0,
-      fame:    Number(fameCelda) || 0,
-      barcos:  Number(barcosCelda) || 0,
-      esDiaGuerra: String(etapaCelda || '').trim().toUpperCase() === 'GUERRA',
-      // NUEVO 05-oct-2026: datos para decidir si el día fue opcional (meta ya cruzada); no se mandan al frontend. [→ Contexto_Base_Web.md §37B175]
-      clan: String(clanCelda || ''), pIdx: Number(pIdxCelda), temporada: tempCelda,
-      // NUEVO 23-oct-2026 (tanda 3 del Consolidado_Mini_Historial_y_Perfil.md, columnas Temporada y Semana del mini historial): GC.SEMANA tal como está en la fila (1-based, sectionIndex + 1); si la celda viene vacía se deriva del periodIndex. Se mandan como campos ADITIVOS. [→ Contexto_Base_Web.md §PF178]
-      semana: semanaCelda
-    };
-  }
-
-  // 1) Backup_Guerra.csv — histórico completo de todas las temporadas. [→ Contexto_Base_Web.md §37B176]
-  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
-  if (csvText) {
-    var parsed = _parseCSV(csvText);
-    if (parsed && parsed.length > 1) {
-      for (var i = 1; i < parsed.length; i++) {
-        var f = parsed[i];
-        _registrar(f[GC.TAG - 1], f[GC.FECHA - 1], f[GC.ATAQUES_HOY - 1], f[GC.FAME - 1], f[GC.BARCOS - 1], f[GC.ETAPA - 1], f[GC.CLAN - 1], f[GC.PERIOD_IDX - 1], f[GC.TEMPORADA - 1], f[GC.SEMANA - 1]);
-      }
-    }
-  }
-
-  // 2) Hoja Guerra — temporada actual, pisa el CSV si hay fecha repetida; FIX 24-sep-2026 (auditoría "fallback web->CSV, funciones web"): esta lectura de la hoja viva no tenía try/catch y, si Sheets lanzaba excepción (spreadsheet caído, cuota excedida), el endpoint devolvía error 500 en vez de servir el histórico ya cargado del CSV; ahora la falla se ignora en silencio (queda logueada) y el comparador se sirve solo con el CSV (algo desactualizado en los últimos días de la temporada actual, pero disponible); mismo criterio de try/catch que _webLeerDirectorioComoDC(). [→ Contexto_Base_Web.md §37B177]
-  try {
-    var ss = _getSs();
-    var shGuerra = ss.getSheetByName(CFG.SHEETS.GUERRA);
-    if (shGuerra && shGuerra.getLastRow() >= 2) {
-      var dataGuerra = shGuerra.getRange(2, 1, shGuerra.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
-      for (var g = 0; g < dataGuerra.length; g++) {
-        var fg = dataGuerra[g];
-        _registrar(fg[GC.TAG - 1], fg[GC.FECHA - 1], fg[GC.ATAQUES_HOY - 1], fg[GC.FAME - 1], fg[GC.BARCOS - 1], fg[GC.ETAPA - 1], fg[GC.CLAN - 1], fg[GC.PERIOD_IDX - 1], fg[GC.TEMPORADA - 1], fg[GC.SEMANA - 1]);
-      }
-    }
-  } catch (eGuerraViva) {
-    Logger.log('[WebAPI] _webHistorialGuerraComparador: la hoja Guerra falló (' + eGuerraViva.message + '); se usa solo Backup_Guerra.csv.');
-  }
-
-  var limiteFecha = new Date();
-  limiteFecha.setDate(limiteFecha.getDate() - LIMITE_DIAS_HISTORIAL_GUERRA_COMPARADOR);
-  var limiteClave = Utilities.formatDate(limiteFecha, tz, 'yyyy-MM-dd');
-
-  function _aArregloOrdenado(tagNorm) {
-    if (!tagNorm || !porTag[tagNorm]) return [];
-    return Object.keys(porTag[tagNorm])
-      .map(function (k) { return porTag[tagNorm][k]; })
-      .filter(function (r) { return r.fecha >= limiteClave; })
-      // FIX 03-sep-2026: solo días de guerra (ver el comentario junto a _registrar()); esDiaGuerra ya cumplió su propósito aquí (decidir el filtro) y no se manda al frontend, porque cada registro que llega es por definición un día de guerra real. [→ Contexto_Base_Web.md §37B178]
-      .filter(function (r) { return r.esDiaGuerra; })
-      .map(function (r) {
-        var o = { fecha: r.fecha, ataques: r.ataques, fame: r.fame, barcos: r.barcos };
-        // NUEVO 23-oct-2026 (tanda 3, campos ADITIVOS; ningún consumidor actual los usa): temporada interna (GC.TEMPORADA), semana 1-based (GC.SEMANA; si falta, periodIndex / 7 + 1) y clan de ese día; un dato ausente se omite en vez de mandar NaN. [→ Contexto_Base_Web.md §PF178]
-        var tInt = Number(r.temporada);
-        if (r.temporada !== '' && r.temporada !== null && isFinite(tInt) && tInt > 0) o.temporada = tInt;
-        var sNum = Number(r.semana);
-        if (r.semana !== '' && r.semana !== null && r.semana !== undefined && isFinite(sNum) && sNum > 0) o.semana = sNum;
-        else if (isFinite(r.pIdx)) o.semana = periodIdxToSectionIndex(r.pIdx) + 1;
-        if (r.clan) o.clan = r.clan;
-        // NUEVO 05-oct-2026 (los días con meta ya cruzada se muestran como opcionales): campo ADITIVO opcional:true solo cuando el clan ya había cruzado la meta al empezar ese día; nunca el jueves (pIdx % 7 === 3, misma regla que _clanYaCruzoMetaEnPeriodo(), 22_ControlCalendario.gs) ni en semana de coliseo; sin dato de Guerra_Logs no se marca; ataques/fame/barcos no se alteran; usa _cruceMetaDesdeGuerraLogs_() (en memoria, Guerra_Logs leído una vez). [→ Contexto_Base_Web.md §37B179]
-        try {
-          // 07-oct-2026 (criterio unificado): viernes a domingo (pIdx % 7 > 3) se evalúan con Guerra_Logs; Supercell no confirma desde qué día se puede cruzar la meta. [→ Contexto_Base_Web.md §37B180]
-          if (r.clan && isFinite(r.pIdx) && r.pIdx % 7 > 3 &&
-              !_esPeriodoDeColiseo_(r.temporada, r.pIdx) &&
-              _cruceMetaDesdeGuerraLogs_(r.clan, r.pIdx, r.temporada) === true) o.opcional = true;
-        } catch (eOpc) { /* sin marca: lado conservador */ }
-        return o;
-      })
-      .sort(function (a, b) { return a.fecha.localeCompare(b.fecha); });
-  }
-
-  return { a: _aArregloOrdenado(tagNorm1), b: _aArregloOrdenado(tagNorm2) };
-}
-
-// _webEstadisticasCartas(): FASE 10 (30-ago-2026); Top 10 de cartas más usadas en el mazo actual de la Familia, a partir de Backup_Cards_2.csv (Currentdeck 'Sí') y Backup_Cards.csv; depende de PLAYERS_API_ENABLED: sin datos devuelve top10: [] y jugadoresConDatos: 0, que NO es un error y el frontend debe mostrar como estado vacío; solo cuenta Tags hoy Activos en Directorio; lectura pública con WEB_MEMBER_TOKEN; expone rarity, tipo, hasHero/heroIcon y hasEvolution/evolutionIcon (FIX 04-sep-2026); 'name' lee Nombre (español) y cae a Name y a 'Carta <ID>' (CORRECCIÓN 05-sep-2026); los índices de columna ya reflejan los corrimientos por las columnas Nombre y Tipo. @returns {{top10, jugadoresConDatos}} [→ Contexto_Base_Web.md §37B181]
-function _webEstadisticasCartas() {
-  // FIX 24-sep-2026 (auditoría fallback web->CSV): Directorio se lee con _webLeerDirectorioComoDC() (cae a Backup_Directorio.csv), mismo cambio que _webRankings(). [→ Contexto_Base_Web.md §37B182]
-  var dataDir = _webLeerDirectorioComoDC().filas;
-  var tagsActivos = {};
-  for (var i = 0; i < dataDir.length; i++) {
-    if (String(dataDir[i][DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
-    var t = cleanTag(dataDir[i][DC.TAG - 1]);
-    if (t) tagsActivos[t] = true;
-  }
-
-  var cards2 = _leerCards2CSV(); // headers: N°,Tag,ID,Level,EvolutionLevel,Currentdeck,Count
-  if (!cards2.rows.length) return { top10: [], jugadoresConDatos: 0 };
-
-  var conteoPorId = {};
-  var tagsConDatos = {};
-  for (var r = 0; r < cards2.rows.length; r++) {
-    var row = cards2.rows[r];
-    var tagFila = cleanTag(row[1]);
-    if (!tagFila || !tagsActivos[tagFila]) continue;
-    tagsConDatos[tagFila] = true;
-    var enDeck = String(row[5] || '').trim();
-    if (enDeck !== 'Sí') continue;
-    var idCarta = String(row[2] || '').trim();
-    if (!idCarta) continue;
-    // FIX 24-sep-2026 (cartas de torre en Backup_Cards_2.csv): la tropa de torre equipada no cuenta en este Top 10 (_esCartaTorre(), 31_Cards_Mazos.gs). [→ Contexto_Base_Web.md §37B183]
-    if (_esCartaTorre(idCarta)) continue;
-    conteoPorId[idCarta] = (conteoPorId[idCarta] || 0) + 1;
-  }
-
-  var idsTop = Object.keys(conteoPorId)
-    .sort(function (a, b) { return conteoPorId[b] - conteoPorId[a]; })
-    .slice(0, 10);
-
-  if (!idsTop.length) return { top10: [], jugadoresConDatos: Object.keys(tagsConDatos).length };
-
-  // Catálogo ID -> nombre/rareza/coste/ícono solo para los IDs que se muestran; FIX 04-sep-2026: el ícono sale de la columna Carta de Backup_Cards.csv (iconUrls.medium de Supercell), no de URLs de terceros. [→ Contexto_Base_Web.md §37B184]
-  // headers de Backup_Cards.csv (columnas 1 a 11, de N° a Evolución). [→ Contexto_Base_Web.md §37B185]
-  var cards1 = _leerCardsCSV();
-  var infoPorId = {};
-  for (var c = 0; c < cards1.rows.length; c++) {
-    var idCat = String(cards1.rows[c][1] || '').trim();
-    if (idsTop.indexOf(idCat) === -1) continue;
-    infoPorId[idCat] = {
-      name:          String(cards1.rows[c][3] || cards1.rows[c][2] || ('Carta ' + idCat)),
-      rarity:        String(cards1.rows[c][6] || ''),
-      tipo:          String(cards1.rows[c][7] || ''), // Tropa/Hechizo/Estructura (columna manual del usuario)
-      elixirCost:    cards1.rows[c][8] !== '' ? Number(cards1.rows[c][8]) : null,
-      icon:          String(cards1.rows[c][9] || ''),
-      heroIcon:      String(cards1.rows[c][10] || ''),
-      evolutionIcon: String(cards1.rows[c][11] || '')
-    };
-  }
-
-  var top10 = idsTop.map(function (id) {
-    var info = infoPorId[id] || { name: 'Carta ' + id, rarity: '', tipo: '', elixirCost: null, icon: '', heroIcon: '', evolutionIcon: '' };
-    return {
-      id:             id,
-      name:           info.name,
-      rarity:         info.rarity,
-      tipo:           info.tipo,
-      elixirCost:     info.elixirCost,
-      icon:           info.icon,
-      hasHero:        !!info.heroIcon,
-      heroIcon:       info.heroIcon || null,
-      hasEvolution:   !!info.evolutionIcon,
-      evolutionIcon:  info.evolutionIcon || null,
-      usos:           conteoPorId[id]
-    };
-  });
-
-  return { top10: top10, jugadoresConDatos: Object.keys(tagsConDatos).length };
-}
+// ----- Administración: miembros, vetos y cuentas -----
 
 // _webAdminBuscarMiembro(token, tagBuscado): como _webPerfilJugador() pero exige sesión de admin y agrega los campos editables (prefijo, celular, nomMulti, prestamo) para precargar el formulario de gestión; FIX 09-sep-2026: `fila` puede ser null con perfil.ok true (jugador sin fila en Directorio, vía _webPerfilJugadorSinRegistro()); en ese caso los 4 campos salen vacíos. [→ Contexto_Base_Web.md §37B186]
 function _webAdminBuscarMiembro(token, tagBuscado) {
@@ -2640,22 +3614,250 @@ function _webMisCuentas(token) {
   };
 }
 
-// _webAdminCategorias(token): FASE 2 (24-ago-2026); visor de contenido de solo lectura; reutiliza _categoriasDisponibles(true) (44_BotWhatsApp.gs); historial de FIX: 30-ago-2026 se ocultan las categorías de FLUJO/ACCIÓN (Gestionar información de miembros, Torneos, Sorteos, Información sobre mí, Información sobre el clan) porque no tienen filas de Menú/Mensajes y el visor no tiene nada que mostrar (las tres primeras tienen sección propia en admin.html); 30-ago-2026 (2ª vuelta) WEB_SECCIONES_CONTENIDO agrupa por temática y la respuesta trae `secciones` y, por compatibilidad, `categorias` plano; 03-sep-2026 (punto 18) las 4 de "Mensajes automáticos" van en orden alfabético y el orden temático ['Bienvenida','Etiqueta de miembro','Día de guerra','Mensaje de Guerra'] queda SIN aplicar hasta que el usuario lo confirme; 03-sep-2026 (punto 20) WEB_ETIQUETAS_CONTENIDO mapea nombre real -> etiqueta del panel sin renombrar la categoría (solo 'Bienvenida' -> 'Bienvenida de miembros' estaba confirmado); 05-sep-2026 `disponibles` se arma con _leerCategoriasDeExtra() sin el filtro de día para poder alternar guerra/entrenamiento (la causa real del mensaje de entrenamiento "faltante" no era un problema de sync), y se suman las etiquetas 'Mensaje de Guerra' -> 'Mensaje de ataques pendientes' y 'Ascensos y descensos' -> 'Cambio de rango'. [→ Contexto_Base_Web.md §37B210]
-var WEB_CATEGORIAS_SIN_CONTENIDO_PLANO = [
-  'Gestionar información de miembros', 'Torneos', 'Sorteos',
-  'Información sobre mí', 'Información sobre el clan'
-];
-var WEB_ETIQUETAS_CONTENIDO = {
-  'Bienvenida':            'Bienvenida de miembros',
-  'Mensaje de Guerra':     'Mensaje de ataques pendientes',
-  'Ascensos y descensos':  'Cambio de rango'
-};
-// FIX 05-sep-2026: la agrupación temática real vive hardcodeada en admin.html (estructura curada con tarjetas: toggle Guerra/Entrenamiento/Mazos, toggle Participantes/Ganadores para Torneos y Sorteos); WEB_SECCIONES_CONTENIDO se mantiene solo por compatibilidad con `secciones` (el frontend actual ya no lo consume). [→ Contexto_Base_Web.md §37B211]
-var WEB_SECCIONES_CONTENIDO = [
-  { titulo: '💬 Guerra, entrenamiento y mazos', categorias: ['Día de guerra', 'Defensas de barcos', 'Mazos', 'Mensaje de Guerra'] },
-  { titulo: '🏆 Torneos, sorteos y ascensos',   categorias: ['Participantes calificados (torneo)', 'Ganadores (torneo)', 'Participantes calificados (sorteo)', 'Ganadores (sorteo)', 'Ascensos y descensos'] },
-  { titulo: '📨 Mensajes que no suelen enviarse', categorias: ['Bienvenida', 'iPhone', 'Etiqueta de miembro', 'Celular', 'Descripción'] }
-];
+// _webAdminCuentasInactivas(): FASE 7 (29-ago-2026, pedido del usuario — tarjeta ADICIONAL a las 4 de clan en Inicio/Clanes, visible SOLO cuando hay un admin logueado en el navegador). Lista completa de la hoja Inactivos (13_Directorio_ Inactivos_Vetados.gs)… [→ Contexto_Base_Web.md §37B300]
+function _webAdminCuentasInactivas(token) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+
+  var ss = _getSs();
+  var cuentas = [];
+
+  // FASE (15-sep-2026, pedido del usuario -- fallback web->CSV): Players ahora pasa por _obtenerMapaPorTagConFallbackCSV() (01_Config_Global.gs) en vez de _leerHojaComoMapaPorTag() directo. A diferencia de Directorio/ Inactivos… [→ Contexto_Base_Web.md §37B301]
+  var lecturaPlayers = _obtenerMapaPorTagConFallbackCSV(ss, CFG.SHEETS.PLAYERS, 'Backup_Players.csv', PC.TAG - 1, PLAYERS_TOTAL_COLS);
+  var playersPorTag = lecturaPlayers.mapa;
+
+  function _statsPlayer(tag) {
+    var fp = playersPorTag[String(tag || '').trim().toUpperCase()];
+    if (!fp) return { nivelXp: '', copas: null };
+    var nivel = fp[PC.NIVEL - 1];
+    var copas = fp[PC.COPAS - 1];
+    return {
+      nivelXp: (nivel === '' || nivel === null || nivel === undefined) ? '' : String(nivel),
+      // TANDA 15 (21-sep-2026): Backup_Players.csv trae Copas con separador de miles ("5,432", formato '#,##0' de la hoja); Number() daba NaN y la web mostraba las copas vacías cuando la hoja no estaba disponible. [→ Contexto_Base_Web.md §37B302]
+      copas:   (copas === '' || copas === null || copas === undefined) ? null : (isNaN(_numDesdeCeldaCSV_(copas)) ? null : _numDesdeCeldaCSV_(copas))
+    };
+  }
+
+  // 1) Administradores inactivos — viven en Directorio (Estado='Inactivo', Admin='Sí'), NUNCA en Inactivos (ver comentario arriba). FIX (05-sep-2026, pedido usuario — "sigue vacío [Inactivos (Admin) en el panel de admin]"): la… [→ Contexto_Base_Web.md §37B303]
+  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (shDir && shDir.getLastRow() >= 2) {
+    var dataDir = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+    for (var i = 0; i < dataDir.length; i++) {
+      var f = dataDir[i];
+      var tagDir = String(f[IC.TAG - 1] || '').trim();
+      if (!tagDir) continue;
+      var esAdminDir = String(f[IC.ADMIN - 1] || '').trim().toLowerCase() === 'sí';
+      var esInactivoDir = String(f[IC.ESTADO - 1] || '').trim() === 'Inactivo';
+      if (esAdminDir && esInactivoDir) {
+        var statsDir = _statsPlayer(tagDir);
+        cuentas.push({
+          tag:     String(f[IC.TAG      - 1] || ''),
+          nombre:  String(f[IC.NOMBRE   - 1] || ''),
+          clan:    String(f[IC.CLAN     - 1] || ''),
+          esAdmin: true,
+          nomMulti: String(f[IC.NOM_MULTI - 1] || ''),
+          nivelXp:  statsDir.nivelXp,
+          copas:    statsDir.copas
+        });
+      }
+    }
+  } else {
+    var lecturaDirInact = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
+    if (lecturaDirInact.origen === 'csv') {
+      var dataDirCsv = lecturaDirInact.filas;
+      for (var iC = 0; iC < dataDirCsv.length; iC++) {
+        var fC = dataDirCsv[iC];
+        var tagDirCsv = String(fC[DC.TAG - 1] || '').trim();
+        if (!tagDirCsv) continue;
+        var esAdminDirCsv = String(fC[DC.ADMIN - 1] || '').trim().toLowerCase() === 'sí';
+        var esInactivoDirCsv = String(fC[DC.ESTADO - 1] || '').trim() === 'Inactivo';
+        if (esAdminDirCsv && esInactivoDirCsv) {
+          var statsDirCsv = _statsPlayer(tagDirCsv);
+          cuentas.push({
+            tag:     String(fC[DC.TAG      - 1] || ''),
+            nombre:  String(fC[DC.NOMBRE   - 1] || ''),
+            clan:    String(fC[DC.CLAN     - 1] || ''),
+            esAdmin: true,
+            nomMulti: String(fC[DC.NOM_MULTI - 1] || ''),
+            nivelXp:  statsDirCsv.nivelXp,
+            copas:    statsDirCsv.copas
+          });
+        }
+      }
+    }
+  }
+
+  // 2) Resto de cuentas inactivas (no-admin) — hoja Inactivos. Por diseño (_updateInactivos()) nunca contiene cuentas Admin='Sí'. FASE (15-sep-2026, pedido del usuario -- fallback web->CSV): mismo criterio que el bloque de Directorio… [→ Contexto_Base_Web.md §37B304]
+  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+  if (sh && sh.getLastRow() >= 2) {
+    var data = sh.getRange(2, 1, sh.getLastRow() - 1, INACTIVOS_TOTAL_COLS).getValues();
+    for (var r = 0; r < data.length; r++) {
+      var fi = data[r];
+      var tagInact = String(fi[IC.TAG - 1] || '').trim();
+      if (!tagInact) continue;
+      var statsInact = _statsPlayer(tagInact);
+      cuentas.push({
+        tag:     String(fi[IC.TAG      - 1] || ''),
+        nombre:  String(fi[IC.NOMBRE   - 1] || ''),
+        clan:    String(fi[IC.CLAN     - 1] || ''),
+        esAdmin: false,
+        nomMulti: String(fi[IC.NOM_MULTI - 1] || ''),
+        nivelXp:  statsInact.nivelXp,
+        copas:    statsInact.copas
+      });
+    }
+  } else {
+    var lecturaInactCsv = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.INACTIVOS, 'Backup_Inactivos.csv', DIR_TOTAL_COLS);
+    if (lecturaInactCsv.origen === 'csv') {
+      var dataInactCsv = lecturaInactCsv.filas;
+      for (var rC = 0; rC < dataInactCsv.length; rC++) {
+        var fiC = dataInactCsv[rC];
+        var tagInactCsv = String(fiC[DC.TAG - 1] || '').trim();
+        if (!tagInactCsv) continue;
+        var statsInactCsv = _statsPlayer(tagInactCsv);
+        cuentas.push({
+          tag:     String(fiC[DC.TAG      - 1] || ''),
+          nombre:  String(fiC[DC.NOMBRE   - 1] || ''),
+          clan:    String(fiC[DC.CLAN     - 1] || ''),
+          esAdmin: false,
+          nomMulti: String(fiC[DC.NOM_MULTI - 1] || ''),
+          nivelXp:  statsInactCsv.nivelXp,
+          copas:    statsInactCsv.copas
+        });
+      }
+    }
+  }
+
+  // FIX (20-sep-2026, cierre de conexión pendiente -- inactivos.js, _filaInactivoHtml()): el frontend ya pinta los botones "RoyaleAPI" y "CWStats" de cada cuenta inactiva si `c.royaleApi`/`c.cwstats` traen una URL válida, pero esta… [→ Contexto_Base_Web.md §37B305]
+  for (var iLk = 0; iLk < cuentas.length; iLk++) {
+    var tagLk = cuentas[iLk].tag;
+    cuentas[iLk].royaleApi = _webUrlPerfilExterno(tagLk, 'royaleapi.com', 'player');
+    cuentas[iLk].cwstats   = _webUrlPerfilExterno(tagLk, 'cwstats.com',   'player');
+  }
+
+  cuentas.sort(function (a, b) { return a.nombre.localeCompare(b.nombre); });
+
+  return { ok: true, cuentas: cuentas };
+}
+
+// _webAdminParticipacionHoyGuerra(): FASE 3 del plan de cambios web (punto 3 de cambios_web.docx): expone _getParticipacionHoyGuerra() (17_GuerraSheet.gs) al panel de admin — qué cuentas Activas de cada clan Terna ya reservaron sus 4 ataques hoy (AtaquesHoy > 0, ya… [→ Contexto_Base_Web.md §37B306]
+function _webAdminParticipacionHoyGuerra(token) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+
+  var ctx = _getCtx();
+  return _getParticipacionHoyGuerra(ctx);
+}
+
+// _webAdminTagsConWsp(): 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp junto al 📈 del mini historial en todas las tablas): devuelve la lista de Tags (sin #) cuyo Directorio tiene celular registrado, de cualquier Estado. NUNCA manda el número ni el enlace de WhatsApp. Solo admins: las tablas públicas (roster y guerra publicados como JSON estático) no llevan este dato; el frontend lo pide aparte y pinta el ícono por Tag. [→ Contexto_Base_Web.md §PF172]
+function _webAdminTagsConWsp(token) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+
+  var ss = _getSs();
+  var shDirWsp = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  var dataDirWsp;
+  if (shDirWsp && shDirWsp.getLastRow() >= 2) {
+    dataDirWsp = _leerDirectorioFisicoComoDC(ss);
+  } else {
+    var lecturaDirWsp = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
+    dataDirWsp = (lecturaDirWsp.origen === 'csv') ? lecturaDirWsp.filas : [];
+  }
+
+  var tagsWsp = [];
+  var vistosWsp = {};
+  for (var iw = 0; iw < dataDirWsp.length; iw++) {
+    var filaWsp = dataDirWsp[iw];
+    var tagWsp = cleanTag(filaWsp[DC.TAG - 1]);
+    if (tagWsp && !vistosWsp[tagWsp] && soloDigitos(filaWsp[DC.CELULAR - 1])) {
+      vistosWsp[tagWsp] = true;
+      tagsWsp.push(tagWsp);
+    }
+  }
+  return { ok: true, tags: tagsWsp };
+}
+
+// _webAdminOtrasCuentas(): FASE 7 (29-ago-2026, pedido del usuario — botón "Ver otras cuentas" del perfil en jugadores.html, visible SOLO para admins logueados). Dado el Tag de un jugador, busca su Celular (primero en Directorio activo; si no está ahí, en… [→ Contexto_Base_Web.md §37B307]
+function _webAdminOtrasCuentas(token, tag) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+
+  var tagNorm = cleanTag(tag);
+  if (!tagNorm) return { ok: false, error: 'Falta el Tag del jugador.' };
+
+  var ss = _getSs();
+  var shDirOtras = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  var dataDir;
+  if (shDirOtras && shDirOtras.getLastRow() >= 2) {
+    dataDir = _leerDirectorioFisicoComoDC(ss);
+  } else {
+    var lecturaDirOtras = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
+    dataDir = (lecturaDirOtras.origen === 'csv') ? lecturaDirOtras.filas : [];
+  }
+
+  var shInact = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+  var dataInact, dataInactOrigen;
+  if (shInact && shInact.getLastRow() >= 2) {
+    dataInact = shInact.getRange(2, 1, shInact.getLastRow() - 1, INACTIVOS_TOTAL_COLS).getValues();
+    dataInactOrigen = 'sheet';
+  } else {
+    var lecturaInactOtras = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.INACTIVOS, 'Backup_Inactivos.csv', DIR_TOTAL_COLS);
+    dataInact = (lecturaInactOtras.origen === 'csv') ? lecturaInactOtras.filas : [];
+    dataInactOrigen = lecturaInactOtras.origen;
+  }
+  // A partir de aquí, dataInact puede venir en formato IC (29 cols, hoja viva) o DC (60 cols, CSV de respaldo) según dataInactOrigen -- los dos usos de abajo (búsqueda de Celular y recorrido final) ya distinguen ambos casos en vez de… [→ Contexto_Base_Web.md §37B308]
+
+  // 1) Ubicar la fila del jugador consultado (Directorio primero, luego Inactivos) para sacar su Celular. [→ Contexto_Base_Web.md §37B309]
+  var celularObjetivo = '';
+  for (var i = 0; i < dataDir.length && !celularObjetivo; i++) {
+    if (cleanTag(dataDir[i][DC.TAG - 1]) === tagNorm) {
+      celularObjetivo = String(dataDir[i][DC.CELULAR - 1] || '').replace(/\D/g, '');
+    }
+  }
+  var colInactTag     = (dataInactOrigen === 'csv') ? (DC.TAG     - 1) : (IC.TAG     - 1);
+  var colInactCelular = (dataInactOrigen === 'csv') ? (DC.CELULAR - 1) : (IC.CELULAR - 1);
+  if (!celularObjetivo) {
+    for (var j = 0; j < dataInact.length && !celularObjetivo; j++) {
+      if (cleanTag(dataInact[j][colInactTag]) === tagNorm) {
+        celularObjetivo = String(dataInact[j][colInactCelular] || '').replace(/\D/g, '');
+      }
+    }
+  }
+  if (!celularObjetivo) return { ok: true, cuentas: [] };
+
+  // 2) Recorrer Directorio + Inactivos buscando ese mismo Celular, excluyendo al propio Tag consultado y sin duplicar por Tag. [→ Contexto_Base_Web.md §37B310]
+  var vistos = {};
+  var cuentas = [];
+  function agregarSiCoincide(tagFila, nombreFila, clanFila, celularFila) {
+    var celLimpio = String(celularFila || '').replace(/\D/g, '');
+    if (!celLimpio || celLimpio !== celularObjetivo) return;
+    var tagLimpio = cleanTag(tagFila);
+    if (!tagLimpio || tagLimpio === tagNorm || vistos[tagLimpio]) return;
+    vistos[tagLimpio] = true;
+    cuentas.push({ tag: String(tagFila || ''), nombre: String(nombreFila || ''), clan: String(clanFila || '') });
+  }
+  for (var k = 0; k < dataDir.length; k++) {
+    agregarSiCoincide(dataDir[k][DC.TAG - 1], dataDir[k][DC.NOMBRE - 1], dataDir[k][DC.CLAN - 1], dataDir[k][DC.CELULAR - 1]);
+  }
+  var colInactNombre = (dataInactOrigen === 'csv') ? (DC.NOMBRE - 1) : (IC.NOMBRE - 1);
+  var colInactClan   = (dataInactOrigen === 'csv') ? (DC.CLAN   - 1) : (IC.CLAN   - 1);
+  for (var m = 0; m < dataInact.length; m++) {
+    agregarSiCoincide(dataInact[m][colInactTag], dataInact[m][colInactNombre], dataInact[m][colInactClan], dataInact[m][colInactCelular]);
+  }
+
+  cuentas.sort(function (a, b) { return a.nombre.localeCompare(b.nombre); });
+  return { ok: true, cuentas: cuentas };
+}
+
+// _webAdminMarcarVistoEnGrupo(): NUEVO (14-sep-2026, pedido del usuario -- cierre del CONTRATO PENDIENTE "Marcar visto en el grupo" dejado en admin.html el 08-sep-2026, ver docblock junto a _grupoVerificadoTags ahí). Envuelve TAL CUAL… [→ Contexto_Base_Web.md §37B254]
+function _webAdminMarcarVistoEnGrupo(token, tag, nombre) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  if (!tag) return { ok: false, error: 'Falta el Tag del ganador.' };
+
+  var admin = _webAuthObtenerAdmin(token);
+  var registradoPor = admin ? (admin.nombre || admin.tag || '') : '';
+
+  return _marcarVistoEnGrupoVerificado(tag, nombre, registradoPor);
+}
+
+// ----- Administración: contenido, semanas y requisitos -----
+
 function _webAdminCategorias(token) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
 
@@ -2777,13 +3979,6 @@ function _webAdminContenidoDocHtml(token, docId) {
     Logger.log('[Web] Error interno leyendo el documento: ' + err.toString());
     return { ok: false, error: 'Error leyendo el documento. Intenta de nuevo en unos segundos.' };
   }
-}
-
-// _webAdminTorneosHoy(): FASE 3 (25-ago-2026, pedido del usuario — gestión de torneos). Envuelve TAL CUAL _listarTorneosDeHoy() (26_Torneos_Core.gs) — la MISMA lista que ve un admin al elegir "Modificar datos de torneo existente" por WhatsApp (solo… [→ Contexto_Base_Web.md §37B220]
-function _webAdminTorneosHoy(token) {
-  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  // 18-oct-2026 (PF099): ya no solo los de hoy; también los Planificados y los que no tienen link. [→ Contexto_Base_Web.md §PF099]
-  return { ok: true, torneos: _listarTorneosModificables() };
 }
 
 // _webAdminSemanasRecientes(): FIX (11-sep-2026, pedido usuario — conectar el selector de semanas de admin.html a un backend real): devuelve las semanas (lunes a domingo) con su Temporada/Semana REALES (misma fuente que TL.TEMPORADA --… [→ Contexto_Base_Web.md §37B221]
@@ -2980,6 +4175,15 @@ function _webAdminBarcosAnterior(token, categoria, id) {
     }
   }
   return { ok: true, qty: mejor, idOrigen: idMejor };
+}
+
+// ----- Administración: torneos y sorteos -----
+
+// _webAdminTorneosHoy(): FASE 3 (25-ago-2026, pedido del usuario — gestión de torneos). Envuelve TAL CUAL _listarTorneosDeHoy() (26_Torneos_Core.gs) — la MISMA lista que ve un admin al elegir "Modificar datos de torneo existente" por WhatsApp (solo… [→ Contexto_Base_Web.md §37B220]
+function _webAdminTorneosHoy(token) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  // 18-oct-2026 (PF099): ya no solo los de hoy; también los Planificados y los que no tienen link. [→ Contexto_Base_Web.md §PF099]
+  return { ok: true, torneos: _listarTorneosModificables() };
 }
 
 // _webAdminTorneoRegistrar(): FASE 3 (25-ago-2026, pedido del usuario — gestión de torneos). Envuelve _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organizadorInfo) (26_Torneos_Core.gs) — la MISMA función que usa el bot en el paso "Ingresar… [→ Contexto_Base_Web.md §37B230, §37B231]
@@ -3294,1106 +4498,6 @@ function _webAdminTorneoResolucionGuardar(token, datos) {
   return _registrarResolucionTorneo(datos.idTorneo, datos.tag, datos.tipoResolucion, datos.puestoFinal, datos.motivo, registradoPor);
 }
 
-// _webAdminMarcarVistoEnGrupo(): NUEVO (14-sep-2026, pedido del usuario -- cierre del CONTRATO PENDIENTE "Marcar visto en el grupo" dejado en admin.html el 08-sep-2026, ver docblock junto a _grupoVerificadoTags ahí). Envuelve TAL CUAL… [→ Contexto_Base_Web.md §37B254]
-function _webAdminMarcarVistoEnGrupo(token, tag, nombre) {
-  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  if (!tag) return { ok: false, error: 'Falta el Tag del ganador.' };
-
-  var admin = _webAuthObtenerAdmin(token);
-  var registradoPor = admin ? (admin.nombre || admin.tag || '') : '';
-
-  return _marcarVistoEnGrupoVerificado(tag, nombre, registradoPor);
-}
-
-// _webIngresosRecientes(): FASE 6 (28-ago-2026, pedido del usuario): index.html reemplaza la sección "Torneos" por "Ingresos recientes" — lista pública de miembros que CALIFICAN COMO NUEVOS ahora mismo. No se reinventa ningún criterio de "reciente": se lee… [→ Contexto_Base_Web.md §37B255]
-function _webIngresosRecientes(opciones) {
-  // CAMBIO (28-sep-2026, Fase 5b tanda B, decisión del usuario: el aviso de clan rival es solo para admins): la caché de 60 s es UNA sola para todos y guarda la respuesta COMPLETA (con esRivalTemporada/clanRivalDetectado). Por eso el… [→ Contexto_Base_Web.md §37B256]
-  var completa = _webCacheado('web_ingresos_recientes_v1', 60, _webIngresosRecientesCalcular);
-  if (opciones && opciones.esAdmin === true) return completa;
-  var copia = {};
-  Object.keys(completa || {}).forEach(function (k) { copia[k] = completa[k]; });
-  copia.ingresos = ((completa && completa.ingresos) || []).map(function (ing) {
-    var limpio = {};
-    Object.keys(ing).forEach(function (k) {
-      if (k !== 'esRivalTemporada' && k !== 'clanRivalDetectado' && k !== 'esCuentaAdmin' && k !== 'tieneWsp') limpio[k] = ing[k];
-    });
-    return limpio;
-  });
-  return copia;
-}
-
-// _construirIngresosRecientesUnificado(): FIX (01-sep-2026, pedido usuario — "haz que trabajen juntos, primero se usa la información de directorio, eso no es negociable en ambas. luego se verifica, si hay información de tampermonkey, se implementa, sino se queda con lo… [→ Contexto_Base_Web.md §37B257]
-function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, dataGuerraPrefetch, tDash) {
-  var ss = _getSs();
-  var ctx = ctxPrefetch || _getCtx();
-  var tz = Session.getScriptTimeZone() || 'America/Lima';
-
-  // PASO 1 (no negociable): universo de candidatos = Directorio ---- Mismo criterio que usaba _getDatosDashboard() (38_Web_Endpoints.gs) para su lista "nuevos": Activo, en un clan Terna vigente, y (V_Guerra vacío O FechaIngreso… [→ Contexto_Base_Web.md §37B258]
-  var dataDir;
-  if (dataDirPrefetch) {
-    dataDir = dataDirPrefetch;
-  } else {
-    var shDirIngresos = _hojaConFilas_(ss, CFG.SHEETS.DIRECTORIO, 2); // PF073: null también si Sheets lanza error, y entonces cae al CSV
-    if (shDirIngresos) {
-      dataDir = _leerDirectorioFisicoComoDC(ss);
-    } else {
-      var lecturaDirIngresos = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
-      if (lecturaDirIngresos.origen === 'csv') {
-        // Mismo tratamiento de Fecha que _webRosterCalcular(): el CSV trae Vigencia/Fecha_ing como texto, no como objeto Date. [→ Contexto_Base_Web.md §37B259]
-        dataDir = lecturaDirIngresos.filas.map(function (fila) {
-          var f = fila.slice();
-          var vig = _parseSpanishDate(f[DC.VIGENCIA - 1]);
-          if (vig instanceof Date && !isNaN(vig.getTime())) f[DC.VIGENCIA - 1] = vig;
-          var fIng = _parseSpanishDate(f[DC.FECHA_ING - 1]);
-          if (fIng instanceof Date && !isNaN(fIng.getTime())) f[DC.FECHA_ING - 1] = fIng;
-          return f;
-        });
-      } else {
-        dataDir = [];
-      }
-    }
-  }
-  // 19-oct-2026 (pedido de la usuaria, pastilla «Ocultar admins» de directorio.html): cuentas de administradores = todas las filas del Directorio cuyo Celular es el de un administrador (fila con Admin = 'Sí'), el mismo criterio con que sincronizarAdministradores() arma la hoja Administradores (11_DirectorioSheet.gs). Solo se publica el booleano esCuentaAdmin (y solo con sesión de admin, ver _webIngresosRecientes()); el celular nunca sale.
-  var celularesAdminIR = {};
-  for (var iAdm = 0; iAdm < dataDir.length; iAdm++) {
-    if (String(dataDir[iAdm][DC.ADMIN - 1] || '').trim() !== 'Sí') continue;
-    var celAdm = soloDigitos(dataDir[iAdm][DC.CELULAR - 1]);
-    if (celAdm) celularesAdminIR[celAdm] = true;
-  }
-  var hoy = new Date();
-  var LIMITE_DIAS_NUEVO = 7;
-  var candidatosBase = [];
-  for (var k = 0; k < dataDir.length; k++) {
-    var filaDir0 = dataDir[k];
-    if (String(filaDir0[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
-
-    var clanTagDir0 = String(filaDir0[DC.CLAN_TAG - 1] || '').trim();
-    if (CFG.TERNA_TAGS.indexOf(clanTagDir0) < 0) continue; // ya no está en un clan Terna
-
-    var vGuerra0 = String(filaDir0[DC.V_GUERRA - 1] || '').trim();
-    var fechaIng0 = filaDir0[DC.FECHA_ING - 1];
-    var esReciente0 = false;
-    if (fechaIng0 instanceof Date && !isNaN(fechaIng0.getTime())) {
-      var diasDesdeIngreso0 = (hoy - fechaIng0) / 86400000;
-      esReciente0 = diasDesdeIngreso0 >= 0 && diasDesdeIngreso0 <= LIMITE_DIAS_NUEVO;
-    }
-    if (vGuerra0 !== '' && !esReciente0) continue; // no califica como "reciente"
-
-    var tagDir0 = String(filaDir0[DC.TAG - 1] || '').trim();
-    if (!tagDir0) continue;
-
-    candidatosBase.push({ tagLimpio: cleanTag(tagDir0), filaDir: filaDir0 });
-  }
-
-  if (!candidatosBase.length) return [];
-
-  // ---- PASO 2 (enriquecimiento opcional): hoja "Nuevos" (Tampermonkey) ----
-  var nuevosPorTag = {};
-  var fechasGridNuevos = null, gridNuevosData = null, numBloquesReal = 0;
-  var shNuevos = _hojaConFilas_(ss, CFG.SHEETS.NUEVOS, NUEVOS_FILA_DATOS_INICIO); // PF073
-  if (shNuevos) {
-    var numFilasN = shNuevos.getLastRow() - NUEVOS_FILA_DATOS_INICIO + 1;
-    var dataNuevos = shNuevos.getRange(NUEVOS_FILA_DATOS_INICIO, 1, numFilasN, NC_TOTAL_FIJAS).getValues();
-
-    // Mismo cálculo de ancho REAL de la cuadrícula que ya usa repararFormatoEncabezadosNuevos() (14_Nuevos_RoyaleAPI.gs) — la hoja "Nuevos" puede tener más de los 5 bloques originales. [→ Contexto_Base_Web.md §37B260]
-    var lastColNuevos = shNuevos.getLastColumn();
-    var anchoGridReal = Math.max(0, lastColNuevos - COL_INICIO_GRID_NUEVOS + 1);
-    numBloquesReal = Math.max(GRID_NUM_BLOQUES_NUEVOS, Math.floor(anchoGridReal / GRID_BLOQUE_ANCHO_NUEVOS));
-    var anchoGridNuevos = numBloquesReal * GRID_BLOQUE_ANCHO_NUEVOS;
-    fechasGridNuevos = shNuevos.getRange(NUEVOS_FILA_FECHAS, COL_INICIO_GRID_NUEVOS, 1, anchoGridNuevos).getValues()[0];
-    gridNuevosData = shNuevos.getRange(NUEVOS_FILA_DATOS_INICIO, COL_INICIO_GRID_NUEVOS, numFilasN, anchoGridNuevos).getValues();
-    // 11-oct-2026: ya no se lee la "semana actual" J/V/S/D de "Nuevos" (semanaActualDiasData); el desglose diario de la semana en curso sale SOLO de Guerra (hoja o Backup_Guerra.csv), igual que perfil y tablas. [→ Contexto_Base_Web.md §37B262E]
-
-    for (var n = 0; n < dataNuevos.length; n++) {
-      var tagN = cleanTag(String(dataNuevos[n][NC.TAG - 1] || ''));
-      if (tagN && !nuevosPorTag.hasOwnProperty(tagN)) nuevosPorTag[tagN] = n; // índice de fila dentro del grid
-    }
-  }
-
-  if (tDash) _dashTiempoMarca_(tDash, 'ingresos.nuevos');
-
-  var DIAS_GUERRA_NUEVOS = ['Jueves', 'Viernes', 'Sábado', 'Domingo'];
-  function _diaValorONull(v) { return (v === '' || v === null || v === undefined) ? null : (Number(v) || 0); }
-
-  // Igual que _webUrlPerfilExterno(), pero con respaldo: si la celda de Directorio todavía no tiene el link guardado, se construye directo desde el Tag (mismo patrón que ya usaba _getDatosDashboard() antes de esta unificación) — así… [→ Contexto_Base_Web.md §37B261]
-  function _urlPerfilConFallback(valorCelda, dominio, segmento, tagRaw) {
-    var url = _webUrlPerfilExterno(valorCelda, dominio, segmento);
-    if (url) return url;
-    var tagSinHash = String(tagRaw || '').trim().replace('#', '');
-    return tagSinHash ? ('https://' + dominio + '/' + segmento + '/' + tagSinHash) : '';
-  }
-
-  // Ataques/Puntaje/Barcos de la SEMANA ACTUAL por Tag (hoja Guerra) ---- Independiente de Tampermonkey: viene de la API de Supercell vía runGuerra()/runGuerraRapido() (17_GuerraSheet.gs). FASE 10 (09-sep-2026, pedido usuario… [→ Contexto_Base_Web.md §37B262]
-  var guerraSemanaPorTag = {};
-  var guerraDiasPorTag = {}; // 11-oct-2026: { Tag: { offsetDia(0-3): {ataques, puntaje, barcos} } } de la semana en curso, respaldo del desglose diario cuando el Tag no tiene fila en "Nuevos"
-  var fechaMasRecientePorSemana = {}; // numSemana -> Date más reciente vista
-  // 19-sep-2026 (pedido del usuario -- webGuerraEnVivo lento): si el caller ya leyó la hoja Guerra en esta misma ejecución (dataGuerraPrefetch), se reusa esa lectura en vez de volver a leer 9000+ filas. Solo lectura: este bloque… [→ Contexto_Base_Web.md §37B263]
-  var dataGuerra = dataGuerraPrefetch || null;
-  if (!dataGuerra) {
-    var shGuerra = _hojaConFilas_(ss, CFG.SHEETS.GUERRA, 2); // PF073
-    if (shGuerra) {
-      dataGuerra = shGuerra.getRange(2, 1, shGuerra.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
-    }
-  }
-  // 11-oct-2026 (pedido usuario — "los miembros nuevos siguen siendo miembros: sus datos de guerra se obtienen igual que el resto"): si la hoja Guerra no está disponible o no trae filas de la temporada actual, se leen las de Backup_Guerra.csv (mismo respaldo que usan el perfil y las tablas). [→ Contexto_Base_Web.md §37B262E]
-  var hojaTieneTemporadaIR = !!dataGuerra && dataGuerra.some(function (fG) { return String(fG[GC.TEMPORADA - 1] || '') === String(ctx.temporada); });
-  if (!hojaTieneTemporadaIR) {
-    try {
-      var lecturaCsvIR = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.GUERRA, 'Backup_Guerra.csv', GUERRA_TOTAL_COLS);
-      if (lecturaCsvIR && lecturaCsvIR.filas && lecturaCsvIR.filas.length) dataGuerra = lecturaCsvIR.filas;
-    } catch (eCsvIR) {
-      Logger.log('[IngresosRecientes] no se pudo leer el respaldo de Guerra: ' + eCsvIR.message);
-    }
-  }
-  // 19-oct-2026 (pedido de la usuaria): de lunes a miércoles (entrenamiento) la cuadrícula de Ataques, Medallas y Barcos de «Ingresos recientes» queda congelada con lo último obtenido en la guerra (hasta el domingo) y se sigue mostrando hasta que empiece la siguiente (jueves). Antes, en entrenamiento, el desglose diario salía null (no se dibujaba) y los totales de la semana salían en 0 porque se buscaba la semana nueva, que aún no tiene días de guerra. Referencia = última fila de día de guerra (temporada, periodIndex) que no sea futura; en día de guerra la referencia sigue siendo el contexto actual. [→ Contexto_Base_Web.md §PF125]
-  var refGuerraIR = { temporada: String(ctx.temporada), sectionIndex: ctx.sectionIndex, periodIndex: ctx.periodIndex };
-  var guerraCongeladaIR = false;
-  if (dataGuerra && !esDiaGuerraIdx(ctx.periodIndex)) {
-    var mejorTempIR = -1, mejorPeriodoIR = -1, mejorFilaIR = null;
-    for (var gRef = 0; gRef < dataGuerra.length; gRef++) {
-      var pRefIR = Number(dataGuerra[gRef][GC.PERIOD_IDX - 1]);
-      if (!pRefIR || !esDiaGuerraIdx(pRefIR)) continue;
-      var tRefIR = Number(dataGuerra[gRef][GC.TEMPORADA - 1]) || 0;
-      if (!tRefIR || tRefIR > Number(ctx.temporada)) continue;
-      if (tRefIR === Number(ctx.temporada) && pRefIR > ctx.periodIndex) continue; // no futuras
-      if (tRefIR > mejorTempIR || (tRefIR === mejorTempIR && pRefIR > mejorPeriodoIR)) {
-        mejorTempIR = tRefIR; mejorPeriodoIR = pRefIR; mejorFilaIR = dataGuerra[gRef];
-      }
-    }
-    if (mejorFilaIR) {
-      refGuerraIR = {
-        temporada:    String(mejorFilaIR[GC.TEMPORADA - 1]),
-        sectionIndex: (Number(mejorFilaIR[GC.SEMANA - 1]) || 1) - 1,
-        periodIndex:  mejorPeriodoIR
-      };
-      guerraCongeladaIR = true;
-    }
-  }
-  if (dataGuerra) {
-    for (var g = 0; g < dataGuerra.length; g++) {
-      if (String(dataGuerra[g][GC.TEMPORADA - 1] || '') === String(ctx.temporada)) {
-        var numSemanaG = Number(dataGuerra[g][GC.SEMANA - 1]) || 0;
-        var fechaFilaG = dataGuerra[g][GC.FECHA - 1];
-        if (numSemanaG && fechaFilaG instanceof Date && !isNaN(fechaFilaG.getTime())) {
-          if (!fechaMasRecientePorSemana[numSemanaG] || fechaFilaG > fechaMasRecientePorSemana[numSemanaG]) {
-            fechaMasRecientePorSemana[numSemanaG] = fechaFilaG;
-          }
-        }
-      }
-
-      // FIX (11-oct-2026, pedido usuario — "YAHIR tiene ataques pero su cuadrícula aparece vacía"): el desglose diario J/V/S/D solo salía de la hoja "Nuevos" (Tampermonkey); un ingreso sin fila ahí (caso YAHIR, ingresó el sábado) quedaba con guerraSemanaDias = null aunque la hoja Guerra sí tenía sus ataques. Se guardan aquí, por Tag, los valores de CADA día de guerra de la semana en curso, para usarlos de respaldo más abajo. Mismo criterio que _webPerfilJugador() (GC.ATAQUES_HOY / GC.FAME / GC.BARCOS por día). [→ Contexto_Base_Web.md §37B262B]
-      var pIdxDiaG = Number(dataGuerra[g][GC.PERIOD_IDX - 1]) || 0;
-      if (String(dataGuerra[g][GC.TEMPORADA - 1]) === refGuerraIR.temporada &&
-          ((Number(dataGuerra[g][GC.SEMANA - 1]) || 1) - 1) === refGuerraIR.sectionIndex &&
-          esDiaGuerraIdx(pIdxDiaG)) {
-        var tagDiaG = cleanTag(dataGuerra[g][GC.TAG - 1]);
-        if (tagDiaG) {
-          if (!guerraDiasPorTag[tagDiaG]) guerraDiasPorTag[tagDiaG] = {};
-          guerraDiasPorTag[tagDiaG][(pIdxDiaG % 7) - 3] = {
-            ataques: Number(dataGuerra[g][GC.ATAQUES_HOY - 1]) || 0,
-            puntaje: Number(dataGuerra[g][GC.FAME        - 1]) || 0,
-            barcos:  Number(dataGuerra[g][GC.BARCOS      - 1]) || 0
-          };
-        }
-      }
-
-      if (Number(dataGuerra[g][GC.PERIOD_IDX - 1]) !== refGuerraIR.periodIndex ||
-          String(dataGuerra[g][GC.TEMPORADA - 1]) !== refGuerraIR.temporada) continue;
-      var tagG = cleanTag(dataGuerra[g][GC.TAG - 1]);
-      if (!tagG) continue;
-      guerraSemanaPorTag[tagG] = {
-        ataques: Number(dataGuerra[g][GC.ATAQUES_SEM - 1]) || 0,
-        puntaje: Number(dataGuerra[g][GC.FAME        - 1]) || 0,
-        barcos:  Number(dataGuerra[g][GC.BARCOS      - 1]) || 0
-      };
-    }
-  }
-
-  // 11-oct-2026: Fame y barcos de la hoja Guerra son acumulados de la semana; se pasan UNA vez, por Tag, a valor de cada día (YAHIR mostraba 1,000 dos días, imposible: el máximo diario es 900).
-  for (var tagAcumIR in guerraDiasPorTag) _diarioDesdeAcumuladoGuerra_(guerraDiasPorTag[tagAcumIR]);
-
-  if (tDash) _dashTiempoMarca_(tDash, 'ingresos.guerra');
-
-  // FASE 7 (Parte A, punto 7 del documento — avisos de competencia en Ingresos recientes) — reusa _getRivalesYConflicto() (FASE 6, 15_DeteccionInfiltrados.gs) para marcar cuando un ingreso reciente estuvo antes en un clan rival de… [→ Contexto_Base_Web.md §37B264]
-  var rivalesYConflictoIR = {};
-  try {
-    rivalesYConflictoIR = _getRivalesYConflicto(); // 15_DeteccionInfiltrados.gs
-  } catch (eRivalesIR) {
-    // Defensivo, mismo criterio que _getClanesRivalesTemporadaActual(): si currentriverrace no trae el campo esperado (cambio de API, proxy caído, etc.), esta fase simplemente no marca a nadie como rival en vez de romper toda la… [→ Contexto_Base_Web.md §37B265]
-    Logger.log('[IngresosRecientes] _getRivalesYConflicto() falló, se omite el aviso de rival esta vez: ' + eRivalesIR.message);
-  }
-  var rivalesPorNombreIR = {};
-  for (var tagRivalIR in rivalesYConflictoIR) {
-    var infoRivalIR = rivalesYConflictoIR[tagRivalIR];
-    var nombreNormIR = String((infoRivalIR && infoRivalIR.nombre) || '').trim().toUpperCase();
-    if (nombreNormIR) rivalesPorNombreIR[nombreNormIR] = infoRivalIR;
-  }
-
-  if (tDash) _dashTiempoMarca_(tDash, 'ingresos.rivales');
-
-  // Respaldo de historial: Control_2 (S1..S5, sin fecha real) — solo se usa para un candidato que NO tenga historial usable en "Nuevos". [→ Contexto_Base_Web.md §37B266]
-  var historialPorTag = {};
-  var shC2 = _hojaConFilas_(ss, 'Control_2', 4); // PF073
-  if (shC2) {
-    var numFilasC2 = shC2.getLastRow() - 3;
-    var tagsC2   = shC2.getRange(4, CC2.TAG,  numFilasC2, 1).getValues();
-    var clanesC2 = shC2.getRange(4, CC2.CLAN, numFilasC2, 1).getValues();
-    var gridC2   = shC2.getRange(4, COL_INICIO_GRID2, numFilasC2, GRID_WIDTH2).getValues();
-    for (var c2 = 0; c2 < numFilasC2; c2++) {
-      var tagC2 = cleanTag(tagsC2[c2][0]);
-      if (!tagC2) continue;
-      var clanC2 = String(clanesC2[c2][0] || '');
-      var semanas = [];
-      for (var sem = 0; sem < 5; sem++) {
-        var ataquesSem = gridC2[c2][OFF2.ATA + sem];
-        if (ataquesSem === '' || ataquesSem === null) continue; // semana futura, en blanco
-        // FIX (17-sep-2026, cierre de conexión pendiente — index.html, renderComparativaSemanal()/gráfica "Barcos por semana"): faltaba `barcos` aquí. OFF2.BAR (23_Control2_GuerraSemanal.gs) ya existe y trae exactamente este dato por… [→ Contexto_Base_Web.md §37B267]
-        semanas.push({
-          semana:  'Semana ' + (sem + 1),
-          clan:    clanC2,
-          ataques: Number(ataquesSem) || 0,
-          puntaje: Number(gridC2[c2][OFF2.PUN + sem]) || 0,
-          barcos:  Number(gridC2[c2][OFF2.BAR + sem]) || 0
-        });
-      }
-      historialPorTag[tagC2] = semanas;
-    }
-  }
-
-  if (tDash) _dashTiempoMarca_(tDash, 'ingresos.control2');
-
-  // ---- PASO 3: armar la lista final — base Directorio + enriquecimiento ----
-  var lista = [];
-  for (var i = 0; i < candidatosBase.length; i++) {
-    var cand = candidatosBase[i];
-    var filaDir = cand.filaDir;
-    var tagLimpio = cand.tagLimpio;
-
-    var fechaIng = filaDir[DC.FECHA_ING - 1];
-    var fechaTxt = (fechaIng instanceof Date && !isNaN(fechaIng.getTime()))
-      ? Utilities.formatDate(fechaIng, tz, 'dd/MM/yyyy') : '';
-    var fechaIso = (fechaIng instanceof Date && !isNaN(fechaIng.getTime())) ? fechaIng.toISOString() : null;
-
-    var historialFila = [];
-    var guerraSemanaDiasFila = null;
-    var fuenteHistorial = 'ninguna';
-
-    var idxNuevos = nuevosPorTag.hasOwnProperty(tagLimpio) ? nuevosPorTag[tagLimpio] : -1;
-    if (idxNuevos >= 0 && gridNuevosData) {
-      // Sí hay fila en "Nuevos" para este candidato (Tampermonkey ya lo escaneó al menos una vez): se usa su historial y desglose diario. [→ Contexto_Base_Web.md §37B268]
-      var filaGridNuevos = gridNuevosData[idxNuevos];
-      for (var b = 0; b < numBloquesReal; b++) {
-        var offBloque = b * GRID_BLOQUE_ANCHO_NUEVOS;
-        var fechaBloque = fechasGridNuevos[offBloque];
-        if (!(fechaBloque instanceof Date) || isNaN(fechaBloque.getTime())) continue; // bloque sin usar
-        var ataquesBloque = filaGridNuevos[offBloque + OFFN.ATAQUES];
-        if (ataquesBloque === '' || ataquesBloque === null || ataquesBloque === undefined) continue;
-        // FIX (17-sep-2026, cierre de conexión pendiente — index.html, renderComparativaSemanal()/gráfica "Barcos por semana"): faltaba `barcos` aquí. OFFN.BARCOS (14_Nuevos_RoyaleAPI.gs) ya existe y trae exactamente este dato por semana en… [→ Contexto_Base_Web.md §37B269]
-        var tsBloque = _fechaATemporadaSemana(fechaBloque); // 20-oct-2026 (pedido usuaria): temporada, semana y día para el tooltip de cada punto semanal. [→ Contexto_Base_Web.md §PF133]
-        var etiquetaDiaBloque = tsBloque ? _etiquetaTemporadaSemanaDia_(tsBloque.temporadaPropia, tsBloque.semana, tsBloque.periodIndex) : null;
-        historialFila.push({
-          semana:  Utilities.formatDate(fechaBloque, tz, 'dd/MM/yyyy'),
-          temporada:    etiquetaDiaBloque ? etiquetaDiaBloque.temporada    : null,
-          semanaGuerra: etiquetaDiaBloque ? etiquetaDiaBloque.semanaGuerra : null,
-          diaGuerra:    etiquetaDiaBloque ? etiquetaDiaBloque.diaGuerra    : null,
-          clan:    String(filaGridNuevos[offBloque + OFFN.CLAN] || '').trim() || String(filaDir[DC.CLAN - 1] || ''),
-          ataques: Number(ataquesBloque) || 0,
-          puntaje: Number(filaGridNuevos[offBloque + OFFN.FAME]) || 0,
-          barcos:  Number(filaGridNuevos[offBloque + OFFN.BARCOS]) || 0
-        });
-      }
-      if (historialFila.length) fuenteHistorial = 'nuevos';
-    }
-
-    // CAMBIO (11-oct-2026, pedido usuario): el desglose diario de la semana en curso sale SIEMPRE de Guerra (hoja o CSV, guerraDiasPorTag), como el perfil y las tablas; "Nuevos" ya no lo aporta (sigue dando solo el historial semanal de arriba). Un día sin fila del jugador queda null (el frontend lo pinta "—", no 0). [→ Contexto_Base_Web.md §37B262E]
-    var diasGuerraRespaldo = guerraDiasPorTag[tagLimpio];
-    if (diasGuerraRespaldo) {
-      guerraSemanaDiasFila = {
-        dias:     DIAS_GUERRA_NUEVOS,
-        ataques:  [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].ataques : null; }),
-        puntaje:  [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].puntaje : null; }),
-        barcos:   [0, 1, 2, 3].map(function (d) { return diasGuerraRespaldo[d] ? diasGuerraRespaldo[d].barcos : null; })
-      };
-    }
-
-    // FIX (11-oct-2026, pedido usuario — "Love--Adri ha estado toda la semana sin atacar, debería tener los ceros"): una cuenta sin NINGUNA fila de guerra esta semana (ni en "Nuevos" ni en la hoja Guerra) quedaba con guerraSemanaDias = null y la tarjeta no dibujaba la cuadrícula, mientras otra con filas en 0 sí mostraba ceros. Un miembro actual sin registro no atacó: se rellenan con 0 los días de guerra ya llegados (jueves hasta hoy) y los futuros quedan null ("—"). Fuera de día de guerra (lunes a miércoles) no se rellena. [→ Contexto_Base_Web.md §37B262D]
-    var sinNingunDatoDiario = !guerraSemanaDiasFila ||
-      !['ataques', 'puntaje', 'barcos'].some(function (k) { return guerraSemanaDiasFila[k].some(function (v) { return v !== null; }); });
-    if (sinNingunDatoDiario && esDiaGuerraIdx(ctx.periodIndex)) {
-      var offsetHoyIR = (ctx.periodIndex % 7) - 3; // 0=jueves … 3=domingo
-      var cerosIR = [0, 1, 2, 3].map(function (d) { return d <= offsetHoyIR ? 0 : null; });
-      guerraSemanaDiasFila = {
-        dias:     DIAS_GUERRA_NUEVOS,
-        ataques:  cerosIR.slice(),
-        puntaje:  cerosIR.slice(),
-        barcos:   cerosIR.slice()
-      };
-    }
-
-    // Sin nada de "Nuevos" (todavía no escaneado por Tampermonkey, o sin bloques con fecha usable): se cae al respaldo de Control_2 si hay algo ahí. El candidato NUNCA desaparece por esto — sigue viniendo de Directorio (Paso 1), solo… [→ Contexto_Base_Web.md §37B270]
-    if (!historialFila.length && historialPorTag[tagLimpio]) {
-      historialFila = historialPorTag[tagLimpio];
-      fuenteHistorial = 'control2';
-    }
-
-    // FASE 7 (Parte A): ¿alguna semana de historialFila lo tiene en un clan RIVAL en vez de en su clan Terna actual? Se recorre TODO el historial disponible (no solo la semana más antigua) porque un candidato puede tener bloques… [→ Contexto_Base_Web.md §37B271]
-    var clanActualNombreNormIR = String(filaDir[DC.CLAN - 1] || '').trim().toUpperCase();
-    var esRivalTemporadaIR = false;
-    var clanRivalDetectadoIR = null;
-    for (var hIR = 0; hIR < historialFila.length; hIR++) {
-      var nombreHistNormIR = String(historialFila[hIR].clan || '').trim().toUpperCase();
-      if (!nombreHistNormIR || nombreHistNormIR === clanActualNombreNormIR) continue;
-      if (rivalesPorNombreIR.hasOwnProperty(nombreHistNormIR)) {
-        esRivalTemporadaIR = true;
-        clanRivalDetectadoIR = rivalesPorNombreIR[nombreHistNormIR];
-        break;
-      }
-    }
-
-    lista.push({
-      tag:          String(filaDir[DC.TAG - 1] || '').trim(),
-      nombre:       String(filaDir[DC.NOMBRE - 1] || ''),
-      clan:         String(filaDir[DC.CLAN   - 1] || ''),
-      fechaIngreso: fechaTxt,
-      fechaIngresoISO: fechaIso,
-      royaleApi:    _urlPerfilConFallback(filaDir[DC.ROYALE_API - 1], 'royaleapi.com', 'player', filaDir[DC.TAG - 1]),
-      cwstats:      _urlPerfilConFallback(filaDir[DC.CW_STATS   - 1], 'cwstats.com',   'player', filaDir[DC.TAG - 1]),
-      copas:            Number(filaDir[DC.COPAS      - 1]) || 0,
-      victoriasGuerra:  Number(filaDir[DC.V_GUERRA    - 1]) || 0,
-      diasInactivo:     Number(filaDir[DC.INACTIVIDAD - 1]) || 0,
-      // FIX (07-sep-2026, pedido usuario — "en el bloque de ingresos recientes agrega V_Guerra, Nivel (xp)"): V_Guerra ya salía como victoriasGuerra (línea de arriba); nivelXp faltaba — directorio.html (nc-stats) ya lo esperaba pero esta… [→ Contexto_Base_Web.md §37B272]
-      nivelXp:          String(filaDir[DC.NIVEL       - 1] || ''),
-      // FIX (03-sep-2026, pedido usuario — "Vigencia [última conexión] debe mostrarse en Directorio/Ingresos recientes"): mismo criterio que el fix gemelo de _webRosterCalcular más arriba — la columna ya existía en Directorio… [→ Contexto_Base_Web.md §37B273]
-      vigencia:         filaDir[DC.VIGENCIA - 1] || '',
-      guerraSemana:     guerraSemanaPorTag[tagLimpio] || { ataques: 0, puntaje: 0, barcos: 0 },
-      guerraSemanaDias: guerraSemanaDiasFila,
-      historialSemanal: historialFila,
-      fuenteHistorial:  fuenteHistorial,
-      // FASE 7 (Parte A, punto 7 del documento): ver bloque "FASE 7 (Parte A)" más arriba en este mismo archivo para el detalle del cruce (por NOMBRE de clan, no por Tag) y su limitación conocida. [→ Contexto_Base_Web.md §37B274]
-      esRivalTemporada: esRivalTemporadaIR,
-      esCuentaAdmin: (function () { var celIR = soloDigitos(filaDir[DC.CELULAR - 1]); return !!(celIR && celularesAdminIR[celIR]); })(),
-      // 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp en las tarjetas de ingresos recientes): solo confirma SI tenemos el celular de la cuenta (true/false). NUNCA se manda el número ni el link de WhatsApp. Igual que esCuentaAdmin, _webIngresosRecientes() lo quita de la respuesta pública: solo llega con sesión de admin.
-      tieneWsp: !!soloDigitos(filaDir[DC.CELULAR - 1]),
-      clanRivalDetectado: clanRivalDetectadoIR ? {
-        nombre:  clanRivalDetectadoIR.nombre || '',
-        fuente:  clanRivalDetectadoIR.fuente || '',
-        motivo:  clanRivalDetectadoIR.motivo || ''
-      } : null
-    });
-  }
-
-  lista.sort(function (a, b) {
-    var tagA = _getClanTagByName(a.clan), tagB = _getClanTagByName(b.clan);
-    var oA = CFG.TERNA_TAGS.indexOf(tagA); if (oA === -1) oA = 999;
-    var oB = CFG.TERNA_TAGS.indexOf(tagB); if (oB === -1) oB = 999;
-    if (oA !== oB) return oA - oB;
-    return a.nombre.localeCompare(b.nombre);
-  });
-
-  // FASE 10 (09-sep-2026): ver comentario junto a 'fechaMasRecientePorSemana' más arriba. Se ordena de más antigua a más reciente (mismo criterio de fecha real "dd/MM/yyyy" que ya usa historialSemanal cuando viene de "Nuevos") y se… [→ Contexto_Base_Web.md §37B275]
-  lista.guerraCongelada = guerraCongeladaIR; // PF125: true en entrenamiento (lunes a miércoles); el frontend rotula «Última guerra»
-  lista.semanasGuerra = Object.keys(fechaMasRecientePorSemana)
-    .map(Number)
-    .sort(function (a, b) { return a - b; })
-    .map(function (numSemana) { return Utilities.formatDate(fechaMasRecientePorSemana[numSemana], tz, 'dd/MM/yyyy'); });
-
-  return lista;
-}
-
-function _webIngresosRecientesCalcular() {
-  var lista = _construirIngresosRecientesUnificado();
-  return { ingresos: lista, semanasGuerra: lista.semanasGuerra || [], guerraCongelada: !!lista.guerraCongelada };
-}
-
-// _webTorneosJugador(): FASE 7 (29-ago-2026, pedido del usuario — botón "Ver Torneos" del perfil en jugadores.html). A diferencia de _webTorneos() (que solo expone el Top 3 del torneo MÁS RECIENTE, sin indagar en ningún jugador puntual), esta función es… [→ Contexto_Base_Web.md §37B276]
-function _webTorneosJugador(tagBuscado, opciones) {
-  var tagNorm = cleanTag(tagBuscado);
-  if (!tagNorm) return { ok: false, error: 'Falta el Tag del jugador.' };
-
-  // CAMBIO (28-sep-2026, Fase 5b tanda A3, decisión del usuario: "sí" a que torneos responda vacío para inactivos): para un visitante, una cuenta inactiva responde igual que un Tag sin participaciones (ok:true, torneos:[]). Con… [→ Contexto_Base_Web.md §37B277]
-  if (_webCuentaOcultaParaVisitante(tagNorm, opciones)) return { ok: true, torneos: [] };
-
-  var ss = _getSs();
-  var lecturaTA = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.T_ASISTENCIA, 'Backup_T_Asistencia.csv', TA_TOTAL_COLS);
-  var taData = lecturaTA.filas;
-  if (!taData.length) return { ok: true, torneos: [] };
-
-  var tz = Session.getScriptTimeZone() || 'America/Lima';
-
-  var torneos = taData
-    .filter(function (f) { return cleanTag(f[TA.TAG - 1]) === tagNorm; })
-    .map(function (f) {
-      var fechaCelda = f[TA.FECHA - 1];
-      var fechaTxt = (fechaCelda instanceof Date && !isNaN(fechaCelda.getTime()))
-        ? Utilities.formatDate(fechaCelda, tz, 'dd/MM/yyyy') : '';
-      return {
-        idTorneo:  f[TA.ID - 1],
-        fecha:     fechaTxt,
-        fechaOrden: (fechaCelda instanceof Date) ? fechaCelda.getTime() : 0,
-        puesto:    f[TA.PUESTO - 1],
-        victorias: Number(f[TA.VICTORIAS - 1]) || 0,
-        clan:      String(f[TA.CLAN - 1] || '')
-      };
-    })
-    .sort(function (a, b) { return b.fechaOrden - a.fechaOrden; })
-    .map(function (t) { delete t.fechaOrden; return t; });
-
-  return { ok: true, torneos: torneos };
-}
-
-// _webOcultasIndice_() (17-oct-2026, PF091): { dir: {tagNorm: estadoEnMinusculas}, inact: {tagNorm: true}, inactLeida: bool } armado una sola vez por
-// ejecución de Apps Script (la variable global se reinicia en cada ejecución). dir sale de _webLeerDirectorioComoDC() (hoja o Backup_Directorio.csv, como
-// la búsqueda original); inact, de la columna Tag de la hoja Inactivos, y solo si la hoja se pudo leer (si no, inactLeida=false y quien llama usa la
-// búsqueda original, que prueba Backup_Inactivos.csv). Devuelve null si no se pudo leer el Directorio. Para el primer registro de un tag en Directorio
-// vale lo mismo que en la búsqueda original (la primera fila gana).
-var _WEB_OCULTAS_IDX_ = null;
-function _webOcultasIndice_() {
-  if (_WEB_OCULTAS_IDX_) return _WEB_OCULTAS_IDX_;
-  var idx = { dir: {}, inact: {}, inactLeida: false };
-  var filas = _webLeerDirectorioComoDC().filas || [];
-  for (var i = 0; i < filas.length; i++) {
-    var t = cleanTag(filas[i][DC.TAG - 1]);
-    if (t && !idx.dir.hasOwnProperty(t)) idx.dir[t] = String(filas[i][DC.ESTADO - 1] || '').trim().toLowerCase();
-  }
-  try {
-    var shInact = _getSs().getSheetByName(CFG.SHEETS.INACTIVOS);
-    if (shInact && shInact.getLastRow() >= 2) {
-      var tags = shInact.getRange(2, IC.TAG, shInact.getLastRow() - 1, 1).getValues();
-      for (var j = 0; j < tags.length; j++) {
-        var ti = cleanTag(String(tags[j][0] || '').trim());
-        if (ti) idx.inact[ti] = true;
-      }
-      idx.inactLeida = true;
-    }
-  } catch (eInact) { idx.inactLeida = false; }
-  _WEB_OCULTAS_IDX_ = idx;
-  return idx;
-}
-
-// _webCuentaOcultaParaVisitante(): NUEVO (28-sep-2026, Fase 5b tanda A3). true si el Tag es de una cuenta INACTIVA y quien pregunta NO es admin (opciones.esAdmin distinto de true). Mismo criterio exacto que _webPerfilJugador(): la cuenta está en la hoja Inactivos… [→ Contexto_Base_Web.md §37B278]
-function _webCuentaOcultaParaVisitante(tagBuscado, opciones) {
-  if (opciones && opciones.esAdmin === true) return false;
-  // 17-oct-2026 (PF091, opción a): índice en memoria de Directorio e Inactivos, armado UNA vez por ejecución. Antes cada llamada leía la hoja
-  // Directorio completa (y, si el tag no estaba, la de Inactivos) y _webHistorialTorneos()/_webTorneos() la llaman por cada participante de cada
-  // torneo. Mismo resultado que la búsqueda de abajo; si el índice no se puede armar, se usa esa búsqueda como antes. [→ Contexto_Base_Web.md §PF091]
-  try {
-    var idxOc = _webOcultasIndice_();
-    if (idxOc) {
-      var tagOc = cleanTag(tagBuscado);
-      if (!tagOc) return false;
-      if (idxOc.dir.hasOwnProperty(tagOc)) return idxOc.dir[tagOc] === 'inactivo';
-      if (idxOc.inactLeida) return idxOc.inact.hasOwnProperty(tagOc);
-    }
-  } catch (eIdxOc) {
-    Logger.log('[WebAPI] _webCuentaOcultaParaVisitante: el índice falló (' + eIdxOc.message + '); se usa la búsqueda directa.');
-  }
-  try {
-    var hallazgo = _webBuscarFilaDirectorioPorTagConOrigen(tagBuscado);
-    if (!hallazgo || !hallazgo.fila) return false;
-    return hallazgo.origen === 'inactivos'
-      || String(hallazgo.fila[DC.ESTADO - 1] || '').trim().toLowerCase() === 'inactivo';
-  } catch (eOculta) {
-    Logger.log('[WebAPI] _webCuentaOcultaParaVisitante: la búsqueda falló (' + eOculta.message + '); se oculta por precaución.');
-    return true;
-  }
-}
-
-// _webOpcionesCofresBattlelog(): NUEVO (29-sep-2026, pedido de la usuaria). Arma las opciones que reciben _webCofresJugador() y _webBattlelogJugador() a partir de los parametros de la peticion (e.parameter, ver doGet en 38_Web_Endpoints.gs): - esAdmin: true si… [→ Contexto_Base_Web.md §37B279]
-function _webOpcionesCofresBattlelog(parametros) {
-  var p = parametros || {};
-  var esAdmin = _webAuthValidar(p.sessionToken) === true;
-  var pidioForzar = (String(p.forzar || '') === '1' || String(p.forzar || '').toLowerCase() === 'true');
-  var forzar = false;
-  if (esAdmin && pidioForzar) {
-    try {
-      forzar = _webPermisosExigirAcceso(p.sessionToken).ok === true;
-    } catch (eForzar) {
-      Logger.log('[WebAPI] _webOpcionesCofresBattlelog: no se pudo validar el permiso de forzar (' + eForzar.message + '); se ignora forzar.');
-      forzar = false;
-    }
-  }
-  return { esAdmin: esAdmin, forzar: forzar };
-}
-
-// _webPuedeVerCofresBattlelog(): NUEVO (29-sep-2026, pedido de la usuaria). Un admin (opciones.esAdmin true) puede consultar cofres y battlelog de CUALQUIER Tag, activo o inactivo. Un no admin solo puede consultar miembros ACTIVOS: fila en Directorio (no en… [→ Contexto_Base_Web.md §37B280]
-function _webPuedeVerCofresBattlelog(tagNorm, opciones) {
-  if (opciones && opciones.esAdmin === true) return true;
-  try {
-    var hallazgo = _webBuscarFilaDirectorioPorTagConOrigen(tagNorm);
-    if (!hallazgo || !hallazgo.fila || hallazgo.origen !== 'directorio') return false;
-    return String(hallazgo.fila[DC.ESTADO - 1] || '').trim().toLowerCase() === 'activo';
-  } catch (ePuede) {
-    Logger.log('[WebAPI] _webPuedeVerCofresBattlelog: la busqueda fallo (' + ePuede.message + '); se niega por precaucion.');
-    return false;
-  }
-}
-
-// Respuesta unica para "no puedes ver esto" (inactivo o Tag desconocido para un no admin): mismo texto que el estado del perfil, para no delatar la diferencia. [→ Contexto_Base_Web.md §37B281]
-var WEB_MSG_SIN_REGISTRO_JSON = 'Sin registro con nosotros.';
-
-// _webBuscarArchivoJsonJugador(): NUEVO (29-sep-2026). Busca en la carpeta de Drive (Battlelog o UpcomingChests) el archivo JSON de un Tag (nombre "dd-mm-yyyy HH.mm - Clan - #TAG.json", ver _buildBattlelogFilename(), 09_API_ClashRoyale.gs). Recuerda el id del… [→ Contexto_Base_Web.md §37B282]
-function _webBuscarArchivoJsonJugador(folderId, tagNorm) {
-  var tagConHash = '#' + tagNorm;
-  var cache = null;
-  var key = 'JSONJUG_' + folderId + '_' + tagNorm;
-  try {
-    cache = CacheService.getScriptCache();
-    var idGuardado = cache.get(key);
-    if (idGuardado) {
-      try {
-        var fCache = DriveApp.getFileById(idGuardado);
-        if (!fCache.isTrashed() && fCache.getName().toUpperCase().indexOf('- ' + tagConHash + '.JSON') > -1) return fCache;
-      } catch (eCache) { /* id viejo: se recorre la carpeta */ }
-    }
-  } catch (eCacheSvc) { cache = null; }
-
-  var re = /-\s(#[0-9A-Z]+)\.json$/i;
-  var archivos = DriveApp.getFolderById(folderId).getFiles();
-  while (archivos.hasNext()) {
-    var f = archivos.next();
-    var m = re.exec(f.getName());
-    if (m && m[1].toUpperCase() === tagConHash) {
-      if (cache) { try { cache.put(key, f.getId(), 21600); } catch (ePut) {} }
-      return f;
-    }
-  }
-  return null;
-}
-
-// _webObtenerJsonJugadorDelDia(): NUEVO (29-sep-2026, pedido de la usuaria). Fuente unica de cofres y battlelog para la web: SIEMPRE se lee el JSON guardado en Drive. 1. Si el JSON de ese Tag ya se descargo HOY (dia calendario de Lima, segun la ultima… [→ Contexto_Base_Web.md §37B283]
-function _webObtenerJsonJugadorDelDia(tipo, tagNorm, forzar) {
-  var esCofres = (tipo === 'cofres');
-  var folderId = esCofres ? DRIVE_FOLDER_ID_UPCOMINGCHESTS : DRIVE_FOLDER_ID_BATTLELOG;
-  var msgFallo = esCofres
-    ? 'No se pudo consultar la cola de cofres de ese jugador.'
-    : 'No se pudo consultar el historial de batallas de ese jugador.';
-  var tzLima = 'America/Lima';
-  var hoy = Utilities.formatDate(new Date(), tzLima, 'yyyy-MM-dd');
-
-  var archivo = null;
-  try {
-    archivo = _webBuscarArchivoJsonJugador(folderId, tagNorm);
-  } catch (eBuscar) {
-    Logger.log('[WebAPI] _webObtenerJsonJugadorDelDia(' + tipo + '): no se pudo buscar el archivo de ' + tagNorm + ' (' + eBuscar.message + ').');
-  }
-  var esDeHoy = !!archivo && Utilities.formatDate(archivo.getLastUpdated(), tzLima, 'yyyy-MM-dd') === hoy;
-
-  var descargoAhora = false;
-  var actualizacionFallida = false;
-
-  if (!(archivo && esDeHoy && forzar !== true)) {
-    var cache = null;
-    var flagKey = 'JSONJUG_BUSY_' + tipo + '_' + tagNorm;
-    try { cache = CacheService.getScriptCache(); } catch (eSvc) { cache = null; }
-
-    if (cache && cache.get(flagKey)) {
-      // Otra consulta ya esta descargando este mismo dato: no se duplica la llamada.
-      if (!archivo) return { ok: false, error: 'Se esta descargando este dato en este momento. Vuelve a intentar en unos segundos.' };
-    } else {
-      if (cache) { try { cache.put(flagKey, '1', 60); } catch (ePutFlag) {} }
-      var descargoOk = false;
-      try {
-        descargoOk = (esCofres ? descargarUpcomingChestsJugador('#' + tagNorm) : descargarBattlelogJugador('#' + tagNorm)) === true;
-      } catch (eDesc) {
-        Logger.log('[WebAPI] _webObtenerJsonJugadorDelDia(' + tipo + '): la descarga de ' + tagNorm + ' fallo (' + eDesc.message + ').');
-      }
-      if (cache) { try { cache.remove(flagKey); } catch (eRem) {} }
-
-      if (descargoOk) {
-        descargoAhora = true;
-        try { archivo = _webBuscarArchivoJsonJugador(folderId, tagNorm); } catch (eRebuscar) { archivo = null; }
-        esDeHoy = !!archivo;
-      } else {
-        actualizacionFallida = true;
-      }
-    }
-  }
-
-  if (!archivo) return { ok: false, error: msgFallo };
-
-  var data;
-  try {
-    data = JSON.parse(archivo.getBlob().getDataAsString());
-  } catch (eParse) {
-    Logger.log('[WebAPI] _webObtenerJsonJugadorDelDia(' + tipo + '): el JSON guardado de ' + tagNorm + ' no se pudo leer (' + eParse.message + ').');
-    return { ok: false, error: msgFallo };
-  }
-  var valido = esCofres ? (data && Array.isArray(data.items)) : Array.isArray(data);
-  if (!valido) return { ok: false, error: msgFallo };
-
-  return {
-    ok: true,
-    data: data,
-    origen: descargoAhora ? 'api' : (esDeHoy ? 'drive_hoy' : 'drive_anterior'),
-    fechaDescarga: Utilities.formatDate(archivo.getLastUpdated(), tzLima, 'dd/MM/yyyy HH:mm'),
-    actualizacionFallida: actualizacionFallida
-  };
-}
-
-// _webCofresJugador(): ACTUALIZADO (29-sep-2026, pedido de la usuaria): esta nota reemplaza los parrafos de mas abajo que dicen "EN VIVO", "llamada en vivo por click" y "NO guarda nada en Drive"; el resto (cruce con Backup_Cofres.csv, campos… [→ Contexto_Base_Web.md §37B284]
-function _webCofresJugador(tagBuscado, opciones) {
-  var tagNorm = cleanTag(tagBuscado);
-  if (!tagNorm) return { ok: false, error: 'Falta el Tag del jugador.' };
-  if (!_webPuedeVerCofresBattlelog(tagNorm, opciones)) {
-    return { ok: false, error: WEB_MSG_SIN_REGISTRO_JSON, sinRegistro: true };
-  }
-
-  // CAMBIO (29-sep-2026): ya no se llama a la API en cada clic. La lectura y la descarga (una por Tag y por dia) viven en _webObtenerJsonJugadorDelDia(). El bug de 27-sep del '#' (encodeTag necesita el '#') queda resuelto porque… [→ Contexto_Base_Web.md §37B285]
-  var lectura = _webObtenerJsonJugadorDelDia('cofres', tagNorm, !!(opciones && opciones.forzar === true));
-  if (!lectura.ok) return { ok: false, error: lectura.error };
-  var data = lectura.data;
-
-  // Backup_Cofres.csv: se busca Name/Nombre/Link por NOMBRE de columna (no por posición fija) — así, si el usuario reordena columnas al editarlo a mano (como ya hizo al agregar "Link" después de "Nombre"), esto sigue encontrándolas… [→ Contexto_Base_Web.md §37B286]
-  var csvCofres = _leerCofresCSV();
-  var idxName   = csvCofres.headers.indexOf('Name');
-  var idxNombre = csvCofres.headers.indexOf('Nombre');
-  var idxLink   = csvCofres.headers.indexOf('Link');
-
-  var porName = {};
-  if (idxName > -1) {
-    for (var i = 0; i < csvCofres.rows.length; i++) {
-      var nameFila = String(csvCofres.rows[i][idxName] || '').trim();
-      if (!nameFila) continue;
-      porName[nameFila] = {
-        nombre: (idxNombre > -1) ? String(csvCofres.rows[i][idxNombre] || '').trim() : '',
-        link:   (idxLink   > -1) ? String(csvCofres.rows[i][idxLink]   || '').trim() : ''
-      };
-    }
-  }
-
-  var items = data.items.map(function (it) {
-    var nameOriginal = String((it && it.name) || '');
-    var match = porName[nameOriginal];
-    return {
-      index:  (it && it.index),
-      name:   nameOriginal,
-      nombre: (match && match.nombre) ? match.nombre : nameOriginal, // fallback al inglés
-      link:   (match && match.link) ? match.link : ''
-    };
-  });
-
-  return { ok: true, items: items, origen: lectura.origen, fechaDescarga: lectura.fechaDescarga, actualizacionFallida: lectura.actualizacionFallida };
-}
-
-// _obtenerArenaCompletaDesdeCatalogo(): NUEVO (27-sep-2026, pedido usuario -- "se debe procesar toda la información, haciendo pasar todos los datos disponibles en los csv", battlelog del perfil web). A diferencia de _resolverArenaDesdeCatalogo()… [→ Contexto_Base_Web.md §37B287]
-function _obtenerArenaCompletaDesdeCatalogo(rawName) {
-  var rawStr = String(rawName === undefined || rawName === null ? '' : rawName).trim();
-  var vacio = { id: null, name: '', rawName: rawStr, nombre: '', nombre2: '' };
-  if (!rawStr) return vacio;
-
-  var csv = _leerArenaCSV(); // headers: N°, ID, Name, RawName, Nombre, Nombre_2
-  for (var i = 0; i < csv.rows.length; i++) {
-    if (String(csv.rows[i][3] || '').trim() === rawStr) {
-      var idNum = Number(csv.rows[i][1]);
-      return {
-        id:      isNaN(idNum) ? null : idNum,
-        name:    String(csv.rows[i][2] || '').trim(),
-        rawName: rawStr,
-        nombre:  String(csv.rows[i][4] || '').trim(),
-        nombre2: String(csv.rows[i][5] || '').trim()
-      };
-    }
-  }
-  return vacio; // sin match -- el catálogo todavía no vio esta arena
-}
-
-// _obtenerModoCompletoDesdeCatalogo(): Mismo criterio que _obtenerArenaCompletaDesdeCatalogo() (justo arriba), pero contra Backup_Modo.csv (headers: N°, ID, Name, Nombre -- sin Nombre_2, ese catálogo no tiene segunda traducción). Solo lectura, no encola filas nuevas… [→ Contexto_Base_Web.md §37B288]
-function _obtenerModoCompletoDesdeCatalogo(modoId) {
-  var idStr = String(modoId === undefined || modoId === null ? '' : modoId).trim();
-  var vacio = { id: null, name: '', nombre: '' };
-  if (!idStr) return vacio;
-
-  var csv = _leerModoCSV(); // headers: N°, ID, Name, Nombre
-  for (var i = 0; i < csv.rows.length; i++) {
-    if (String(csv.rows[i][1] || '').trim() === idStr) {
-      return {
-        id:     Number(csv.rows[i][1]),
-        name:   String(csv.rows[i][2] || '').trim(),
-        nombre: String(csv.rows[i][3] || '').trim()
-      };
-    }
-  }
-  return vacio; // sin match -- el catálogo todavía no vio este modo
-}
-
-// _webBattlelogJugador(): ACTUALIZADO (29-sep-2026, pedido de la usuaria): esta nota reemplaza lo que dice mas abajo sobre consultar "EN VIVO"; el resto (resumen por batalla, arena/modo, boatBattle, trophyChange) sigue vigente. Mismo criterio que… [→ Contexto_Base_Web.md §37B289]
-function _webBattlelogJugador(tagBuscado, opciones) {
-  var tagNorm = cleanTag(tagBuscado);
-  if (!tagNorm) return { ok: false, error: 'Falta el Tag del jugador.' };
-  if (!_webPuedeVerCofresBattlelog(tagNorm, opciones)) {
-    return { ok: false, error: WEB_MSG_SIN_REGISTRO_JSON, sinRegistro: true };
-  }
-
-  // CAMBIO (29-sep-2026): lectura desde el JSON de Drive, con una descarga por Tag y por dia (ver _webObtenerJsonJugadorDelDia()). Sin llamadas en vivo por clic. [→ Contexto_Base_Web.md §37B290]
-  var lectura = _webObtenerJsonJugadorDelDia('battlelog', tagNorm, !!(opciones && opciones.forzar === true));
-  if (!lectura.ok) return { ok: false, error: lectura.error };
-  var data = lectura.data;
-
-  var tz = Session.getScriptTimeZone() || 'America/Lima';
-
-  var batallas = data.map(function (b) {
-    var miEquipo = (b && b.team && b.team[0]) || {};
-    var rival    = (b && b.opponent && b.opponent[0]) || {};
-    var esBoat   = (b && b.type === 'boatBattle');
-
-    var fechaObj = _parseFechaApiSupercell(b && b.battleTime);
-    var fechaTxt = fechaObj ? Utilities.formatDate(fechaObj, tz, 'dd/MM/yyyy HH:mm') : '';
-
-    var resultado;
-    if (esBoat) {
-      resultado = (b && b.boatBattleWon) ? 'victoria' : 'derrota';
-    } else {
-      var miCrowns    = Number(miEquipo.crowns) || 0;
-      var rivalCrowns = Number(rival.crowns) || 0;
-      resultado = miCrowns > rivalCrowns ? 'victoria' : (miCrowns < rivalCrowns ? 'derrota' : 'empate');
-    }
-
-    // Catálogos completos (Backup_Arena.csv/Backup_Modo.csv) -- ver docblock.
-    var arenaCat = _obtenerArenaCompletaDesdeCatalogo(b && b.arena && b.arena.rawName);
-    var modoCat  = _obtenerModoCompletoDesdeCatalogo(b && b.gameMode && b.gameMode.id);
-
-    // Mismo texto ya resuelto que la versión anterior (Nombre -> Name -> dato crudo), reutilizando los resolvers existentes -- no se duplica esa lógica de fallback aquí, solo se manda además el detalle crudo. [→ Contexto_Base_Web.md §37B291]
-    var arenaTxt = _resolverArenaDesdeCatalogo(b && b.arena && b.arena.rawName);
-    var modoTxt  = _resolverModoDesdeCatalogo(b && b.gameMode && b.gameMode.id) ||
-                    String((b && b.gameMode && b.gameMode.name) || '');
-
-    // trophyChange: solo viene en pathOfLegend (Ranked 1v1) -- undefined en el resto de los tipos, se manda null explícito para que el frontend distinga "no aplica" de "0 trofeos". [→ Contexto_Base_Web.md §37B292]
-    var trophyChangeRaw = miEquipo.trophyChange;
-    var trophyChange = (trophyChangeRaw === undefined || trophyChangeRaw === null)
-      ? null
-      : Number(trophyChangeRaw);
-
-    var fila = {
-      fecha:       fechaTxt,
-      fechaOrden:  fechaObj ? fechaObj.getTime() : 0,
-      tipo:        String((b && b.type) || ''),
-      modo:        modoCat,
-      modoTxt:     modoTxt,
-      arena:       arenaCat,
-      arenaTxt:    arenaTxt,
-      resultado:   resultado,
-      miCorona:    esBoat ? null : (Number(miEquipo.crowns) || 0),
-      rivalCorona: esBoat ? null : (Number(rival.crowns) || 0),
-      trophyChange: trophyChange,
-      // NUEVO (27-sep-2026, pedido usuario): nombre del jugador TAL COMO figuraba en esa batalla (puede haberse cambiado el nombre después). Archivo 37_Web_API.gs, función _webBattlelogJugador(): antes solo se mandaba miClan; perfil.html… [→ Contexto_Base_Web.md §37B293]
-      miNombre:    String(miEquipo.name || ''),
-      miClan:      (miEquipo.clan && miEquipo.clan.name) || '',
-      rivalNombre: String(rival.name || ''),
-      rivalClan:   (rival.clan && rival.clan.name) || '',
-      eventTag:    String((b && b.eventTag) || ''),
-      deckSelection: String((b && b.deckSelection) || '')
-    };
-    if (esBoat) {
-      fila.barcoLado            = (b && b.boatBattleSide) || '';
-      fila.barcoTorresNuevas    = Number(b && b.newTowersDestroyed) || 0;
-      fila.barcoTorresRestantes = Number(b && b.remainingTowers) || 0;
-    }
-    return fila;
-  });
-
-  // La API ya entrega battleTime descendente (más reciente primero), pero se reordena explícito por si algún día no lo trae así -- mismo criterio defensivo que _webTorneosJugador() (arriba en este archivo). [→ Contexto_Base_Web.md §37B294]
-  batallas.sort(function (a, b) { return b.fechaOrden - a.fechaOrden; });
-  batallas.forEach(function (b) { delete b.fechaOrden; });
-
-  return { ok: true, batallas: batallas, origen: lectura.origen, fechaDescarga: lectura.fechaDescarga, actualizacionFallida: lectura.actualizacionFallida };
-}
-// _webAscensosRecientes(): FASE 8 (30-ago-2026, pedido del usuario — sección pública de reconocimiento en Inicio/Comunidad). Lee la hoja Historial_A/D (CFG.SHEETS.ASCENSOS, ver updateAscensosSheet()/ASC en 13_Inactivos_Vetados.gs) y devuelve SOLO los… [→ Contexto_Base_Web.md §37B295]
-function _webAscensosRecientes() {
-  var ss = _getSs();
-  // FASE (15-sep-2026, pedido del usuario -- fallback web->CSV, continuación de las funciones de Torneos más arriba en este archivo): Ascensos ya no se lee con shAsc.getRange() directo -- se usa _obtenerFilasConFallbackCSV()… [→ Contexto_Base_Web.md §37B296]
-  var lecturaAsc = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ASCENSOS, 'Backup_Historial_A-D.csv', ASCENSOS_COLS_SIN_PAR);
-  if (lecturaAsc.origen === 'vacio') return { ascensos: [] };
-
-  var dataAsc = lecturaAsc.filas;
-  if (lecturaAsc.origen === 'csv') {
-    // Igual que con T_Lista/T_Asistencia: el CSV guarda Fecha como texto canónico, no como objeto Date -- hay que reconstruirla antes del ordenamiento/formato de más abajo. [→ Contexto_Base_Web.md §37B297]
-    dataAsc = dataAsc.map(function (f) {
-      var nueva = f.slice();
-      var fechaObj = _parseSpanishDate(nueva[ASC.FECHA - 1]);
-      if (fechaObj instanceof Date && !isNaN(fechaObj.getTime())) nueva[ASC.FECHA - 1] = fechaObj;
-      return nueva;
-    });
-  }
-
-  // Tags de administradores VIGENTES (hoja Administradores) — cualquier ascenso/descenso de una de estas cuentas queda fuera del listado público, en cualquier fecha. FIX (24-sep-2026, pedido usuario -- AVISO 6, auditoría): esta… [→ Contexto_Base_Web.md §37B298]
-  var tagsAdmin = {};
-  var lecturaAdm = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.ADMINISTRADORES, 'Backup_Administradores.csv', ADMINISTRADORES_TOTAL_COLS);
-  var dataAdmTags = lecturaAdm.filas;
-  for (var a = 0; a < dataAdmTags.length; a++) {
-    var tagAdm = cleanTag(dataAdmTags[a][AC.TAG - 1]);
-    if (tagAdm) tagsAdmin[tagAdm] = true;
-  }
-
-  // Tags con Estado = 'Activo' VIGENTE en el Directorio (misma fuente y mismo criterio que usa _webRoster()) — ver FIX en el docblock: el Estado guardado en cada fila de Historial_A/D es el de ESE momento, no sirve para decidir si la… [→ Contexto_Base_Web.md §37B299]
-  var tagsActivos = {};
-  var dataDirAsc = _webLeerDirectorioComoDC().filas;
-  for (var d = 0; d < dataDirAsc.length; d++) {
-    if (String(dataDirAsc[d][DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
-    var tagDirAsc = cleanTag(dataDirAsc[d][DC.TAG - 1]);
-    if (tagDirAsc) tagsActivos[tagDirAsc] = true;
-  }
-
-  var tz = Session.getScriptTimeZone() || 'America/Lima';
-
-  var ascensos = dataAsc
-    .filter(function (f) {
-      if (String(f[ASC.TIPO - 1] || '').trim() !== 'Ascenso') return false; // nunca degradaciones
-      var tagNorm = cleanTag(f[ASC.TAG - 1]);
-      if (tagNorm && tagsAdmin[tagNorm]) return false; // nunca cambios de rango de admins
-      if (!tagNorm || !tagsActivos[tagNorm]) return false; // solo cuentas HOY activas
-      return true;
-    })
-    .map(function (f) {
-      var fechaCelda = f[ASC.FECHA - 1];
-      var fechaOk = fechaCelda instanceof Date && !isNaN(fechaCelda.getTime());
-      return {
-        tag:           String(f[ASC.TAG - 1] || ''),
-        nombre:        String(f[ASC.NOMBRE - 1] || ''),
-        clan:          String(f[ASC.CLAN - 1] || ''),
-        rangoAnterior: String(f[ASC.RANGO - 1] || ''),
-        rangoNuevo:    String(f[ASC.RANGO_2 - 1] || ''),
-        fecha:         fechaOk ? fechaCelda.toISOString() : null,
-        fechaTxt:      fechaOk ? Utilities.formatDate(fechaCelda, tz, 'dd/MM/yyyy') : '',
-        _fechaOrden:   fechaOk ? fechaCelda.getTime() : 0
-      };
-    })
-    .sort(function (a, b) { return b._fechaOrden - a._fechaOrden; })
-    .map(function (r) { delete r._fechaOrden; return r; })
-    .slice(0, 20); // últimos 20 ascensos — suficiente para una sección "recientes" sin sobrecargar
-
-  return { ascensos: ascensos };
-}
-
-// _webAdminCuentasInactivas(): FASE 7 (29-ago-2026, pedido del usuario — tarjeta ADICIONAL a las 4 de clan en Inicio/Clanes, visible SOLO cuando hay un admin logueado en el navegador). Lista completa de la hoja Inactivos (13_Directorio_ Inactivos_Vetados.gs)… [→ Contexto_Base_Web.md §37B300]
-function _webAdminCuentasInactivas(token) {
-  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-
-  var ss = _getSs();
-  var cuentas = [];
-
-  // FASE (15-sep-2026, pedido del usuario -- fallback web->CSV): Players ahora pasa por _obtenerMapaPorTagConFallbackCSV() (01_Config_Global.gs) en vez de _leerHojaComoMapaPorTag() directo. A diferencia de Directorio/ Inactivos… [→ Contexto_Base_Web.md §37B301]
-  var lecturaPlayers = _obtenerMapaPorTagConFallbackCSV(ss, CFG.SHEETS.PLAYERS, 'Backup_Players.csv', PC.TAG - 1, PLAYERS_TOTAL_COLS);
-  var playersPorTag = lecturaPlayers.mapa;
-
-  function _statsPlayer(tag) {
-    var fp = playersPorTag[String(tag || '').trim().toUpperCase()];
-    if (!fp) return { nivelXp: '', copas: null };
-    var nivel = fp[PC.NIVEL - 1];
-    var copas = fp[PC.COPAS - 1];
-    return {
-      nivelXp: (nivel === '' || nivel === null || nivel === undefined) ? '' : String(nivel),
-      // TANDA 15 (21-sep-2026): Backup_Players.csv trae Copas con separador de miles ("5,432", formato '#,##0' de la hoja); Number() daba NaN y la web mostraba las copas vacías cuando la hoja no estaba disponible. [→ Contexto_Base_Web.md §37B302]
-      copas:   (copas === '' || copas === null || copas === undefined) ? null : (isNaN(_numDesdeCeldaCSV_(copas)) ? null : _numDesdeCeldaCSV_(copas))
-    };
-  }
-
-  // 1) Administradores inactivos — viven en Directorio (Estado='Inactivo', Admin='Sí'), NUNCA en Inactivos (ver comentario arriba). FIX (05-sep-2026, pedido usuario — "sigue vacío [Inactivos (Admin) en el panel de admin]"): la… [→ Contexto_Base_Web.md §37B303]
-  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (shDir && shDir.getLastRow() >= 2) {
-    var dataDir = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-    for (var i = 0; i < dataDir.length; i++) {
-      var f = dataDir[i];
-      var tagDir = String(f[IC.TAG - 1] || '').trim();
-      if (!tagDir) continue;
-      var esAdminDir = String(f[IC.ADMIN - 1] || '').trim().toLowerCase() === 'sí';
-      var esInactivoDir = String(f[IC.ESTADO - 1] || '').trim() === 'Inactivo';
-      if (esAdminDir && esInactivoDir) {
-        var statsDir = _statsPlayer(tagDir);
-        cuentas.push({
-          tag:     String(f[IC.TAG      - 1] || ''),
-          nombre:  String(f[IC.NOMBRE   - 1] || ''),
-          clan:    String(f[IC.CLAN     - 1] || ''),
-          esAdmin: true,
-          nomMulti: String(f[IC.NOM_MULTI - 1] || ''),
-          nivelXp:  statsDir.nivelXp,
-          copas:    statsDir.copas
-        });
-      }
-    }
-  } else {
-    var lecturaDirInact = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
-    if (lecturaDirInact.origen === 'csv') {
-      var dataDirCsv = lecturaDirInact.filas;
-      for (var iC = 0; iC < dataDirCsv.length; iC++) {
-        var fC = dataDirCsv[iC];
-        var tagDirCsv = String(fC[DC.TAG - 1] || '').trim();
-        if (!tagDirCsv) continue;
-        var esAdminDirCsv = String(fC[DC.ADMIN - 1] || '').trim().toLowerCase() === 'sí';
-        var esInactivoDirCsv = String(fC[DC.ESTADO - 1] || '').trim() === 'Inactivo';
-        if (esAdminDirCsv && esInactivoDirCsv) {
-          var statsDirCsv = _statsPlayer(tagDirCsv);
-          cuentas.push({
-            tag:     String(fC[DC.TAG      - 1] || ''),
-            nombre:  String(fC[DC.NOMBRE   - 1] || ''),
-            clan:    String(fC[DC.CLAN     - 1] || ''),
-            esAdmin: true,
-            nomMulti: String(fC[DC.NOM_MULTI - 1] || ''),
-            nivelXp:  statsDirCsv.nivelXp,
-            copas:    statsDirCsv.copas
-          });
-        }
-      }
-    }
-  }
-
-  // 2) Resto de cuentas inactivas (no-admin) — hoja Inactivos. Por diseño (_updateInactivos()) nunca contiene cuentas Admin='Sí'. FASE (15-sep-2026, pedido del usuario -- fallback web->CSV): mismo criterio que el bloque de Directorio… [→ Contexto_Base_Web.md §37B304]
-  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
-  if (sh && sh.getLastRow() >= 2) {
-    var data = sh.getRange(2, 1, sh.getLastRow() - 1, INACTIVOS_TOTAL_COLS).getValues();
-    for (var r = 0; r < data.length; r++) {
-      var fi = data[r];
-      var tagInact = String(fi[IC.TAG - 1] || '').trim();
-      if (!tagInact) continue;
-      var statsInact = _statsPlayer(tagInact);
-      cuentas.push({
-        tag:     String(fi[IC.TAG      - 1] || ''),
-        nombre:  String(fi[IC.NOMBRE   - 1] || ''),
-        clan:    String(fi[IC.CLAN     - 1] || ''),
-        esAdmin: false,
-        nomMulti: String(fi[IC.NOM_MULTI - 1] || ''),
-        nivelXp:  statsInact.nivelXp,
-        copas:    statsInact.copas
-      });
-    }
-  } else {
-    var lecturaInactCsv = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.INACTIVOS, 'Backup_Inactivos.csv', DIR_TOTAL_COLS);
-    if (lecturaInactCsv.origen === 'csv') {
-      var dataInactCsv = lecturaInactCsv.filas;
-      for (var rC = 0; rC < dataInactCsv.length; rC++) {
-        var fiC = dataInactCsv[rC];
-        var tagInactCsv = String(fiC[DC.TAG - 1] || '').trim();
-        if (!tagInactCsv) continue;
-        var statsInactCsv = _statsPlayer(tagInactCsv);
-        cuentas.push({
-          tag:     String(fiC[DC.TAG      - 1] || ''),
-          nombre:  String(fiC[DC.NOMBRE   - 1] || ''),
-          clan:    String(fiC[DC.CLAN     - 1] || ''),
-          esAdmin: false,
-          nomMulti: String(fiC[DC.NOM_MULTI - 1] || ''),
-          nivelXp:  statsInactCsv.nivelXp,
-          copas:    statsInactCsv.copas
-        });
-      }
-    }
-  }
-
-  // FIX (20-sep-2026, cierre de conexión pendiente -- inactivos.js, _filaInactivoHtml()): el frontend ya pinta los botones "RoyaleAPI" y "CWStats" de cada cuenta inactiva si `c.royaleApi`/`c.cwstats` traen una URL válida, pero esta… [→ Contexto_Base_Web.md §37B305]
-  for (var iLk = 0; iLk < cuentas.length; iLk++) {
-    var tagLk = cuentas[iLk].tag;
-    cuentas[iLk].royaleApi = _webUrlPerfilExterno(tagLk, 'royaleapi.com', 'player');
-    cuentas[iLk].cwstats   = _webUrlPerfilExterno(tagLk, 'cwstats.com',   'player');
-  }
-
-  cuentas.sort(function (a, b) { return a.nombre.localeCompare(b.nombre); });
-
-  return { ok: true, cuentas: cuentas };
-}
-
-// _webAdminParticipacionHoyGuerra(): FASE 3 del plan de cambios web (punto 3 de cambios_web.docx): expone _getParticipacionHoyGuerra() (17_GuerraSheet.gs) al panel de admin — qué cuentas Activas de cada clan Terna ya reservaron sus 4 ataques hoy (AtaquesHoy > 0, ya… [→ Contexto_Base_Web.md §37B306]
-function _webAdminParticipacionHoyGuerra(token) {
-  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-
-  var ctx = _getCtx();
-  return _getParticipacionHoyGuerra(ctx);
-}
-
-// _webAdminTagsConWsp(): 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp junto al 📈 del mini historial en todas las tablas): devuelve la lista de Tags (sin #) cuyo Directorio tiene celular registrado, de cualquier Estado. NUNCA manda el número ni el enlace de WhatsApp. Solo admins: las tablas públicas (roster y guerra publicados como JSON estático) no llevan este dato; el frontend lo pide aparte y pinta el ícono por Tag. [→ Contexto_Base_Web.md §PF172]
-function _webAdminTagsConWsp(token) {
-  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-
-  var ss = _getSs();
-  var shDirWsp = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  var dataDirWsp;
-  if (shDirWsp && shDirWsp.getLastRow() >= 2) {
-    dataDirWsp = _leerDirectorioFisicoComoDC(ss);
-  } else {
-    var lecturaDirWsp = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
-    dataDirWsp = (lecturaDirWsp.origen === 'csv') ? lecturaDirWsp.filas : [];
-  }
-
-  var tagsWsp = [];
-  var vistosWsp = {};
-  for (var iw = 0; iw < dataDirWsp.length; iw++) {
-    var filaWsp = dataDirWsp[iw];
-    var tagWsp = cleanTag(filaWsp[DC.TAG - 1]);
-    if (tagWsp && !vistosWsp[tagWsp] && soloDigitos(filaWsp[DC.CELULAR - 1])) {
-      vistosWsp[tagWsp] = true;
-      tagsWsp.push(tagWsp);
-    }
-  }
-  return { ok: true, tags: tagsWsp };
-}
-
-// _webAdminOtrasCuentas(): FASE 7 (29-ago-2026, pedido del usuario — botón "Ver otras cuentas" del perfil en jugadores.html, visible SOLO para admins logueados). Dado el Tag de un jugador, busca su Celular (primero en Directorio activo; si no está ahí, en… [→ Contexto_Base_Web.md §37B307]
-function _webAdminOtrasCuentas(token, tag) {
-  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-
-  var tagNorm = cleanTag(tag);
-  if (!tagNorm) return { ok: false, error: 'Falta el Tag del jugador.' };
-
-  var ss = _getSs();
-  var shDirOtras = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  var dataDir;
-  if (shDirOtras && shDirOtras.getLastRow() >= 2) {
-    dataDir = _leerDirectorioFisicoComoDC(ss);
-  } else {
-    var lecturaDirOtras = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
-    dataDir = (lecturaDirOtras.origen === 'csv') ? lecturaDirOtras.filas : [];
-  }
-
-  var shInact = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
-  var dataInact, dataInactOrigen;
-  if (shInact && shInact.getLastRow() >= 2) {
-    dataInact = shInact.getRange(2, 1, shInact.getLastRow() - 1, INACTIVOS_TOTAL_COLS).getValues();
-    dataInactOrigen = 'sheet';
-  } else {
-    var lecturaInactOtras = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.INACTIVOS, 'Backup_Inactivos.csv', DIR_TOTAL_COLS);
-    dataInact = (lecturaInactOtras.origen === 'csv') ? lecturaInactOtras.filas : [];
-    dataInactOrigen = lecturaInactOtras.origen;
-  }
-  // A partir de aquí, dataInact puede venir en formato IC (29 cols, hoja viva) o DC (60 cols, CSV de respaldo) según dataInactOrigen -- los dos usos de abajo (búsqueda de Celular y recorrido final) ya distinguen ambos casos en vez de… [→ Contexto_Base_Web.md §37B308]
-
-  // 1) Ubicar la fila del jugador consultado (Directorio primero, luego Inactivos) para sacar su Celular. [→ Contexto_Base_Web.md §37B309]
-  var celularObjetivo = '';
-  for (var i = 0; i < dataDir.length && !celularObjetivo; i++) {
-    if (cleanTag(dataDir[i][DC.TAG - 1]) === tagNorm) {
-      celularObjetivo = String(dataDir[i][DC.CELULAR - 1] || '').replace(/\D/g, '');
-    }
-  }
-  var colInactTag     = (dataInactOrigen === 'csv') ? (DC.TAG     - 1) : (IC.TAG     - 1);
-  var colInactCelular = (dataInactOrigen === 'csv') ? (DC.CELULAR - 1) : (IC.CELULAR - 1);
-  if (!celularObjetivo) {
-    for (var j = 0; j < dataInact.length && !celularObjetivo; j++) {
-      if (cleanTag(dataInact[j][colInactTag]) === tagNorm) {
-        celularObjetivo = String(dataInact[j][colInactCelular] || '').replace(/\D/g, '');
-      }
-    }
-  }
-  if (!celularObjetivo) return { ok: true, cuentas: [] };
-
-  // 2) Recorrer Directorio + Inactivos buscando ese mismo Celular, excluyendo al propio Tag consultado y sin duplicar por Tag. [→ Contexto_Base_Web.md §37B310]
-  var vistos = {};
-  var cuentas = [];
-  function agregarSiCoincide(tagFila, nombreFila, clanFila, celularFila) {
-    var celLimpio = String(celularFila || '').replace(/\D/g, '');
-    if (!celLimpio || celLimpio !== celularObjetivo) return;
-    var tagLimpio = cleanTag(tagFila);
-    if (!tagLimpio || tagLimpio === tagNorm || vistos[tagLimpio]) return;
-    vistos[tagLimpio] = true;
-    cuentas.push({ tag: String(tagFila || ''), nombre: String(nombreFila || ''), clan: String(clanFila || '') });
-  }
-  for (var k = 0; k < dataDir.length; k++) {
-    agregarSiCoincide(dataDir[k][DC.TAG - 1], dataDir[k][DC.NOMBRE - 1], dataDir[k][DC.CLAN - 1], dataDir[k][DC.CELULAR - 1]);
-  }
-  var colInactNombre = (dataInactOrigen === 'csv') ? (DC.NOMBRE - 1) : (IC.NOMBRE - 1);
-  var colInactClan   = (dataInactOrigen === 'csv') ? (DC.CLAN   - 1) : (IC.CLAN   - 1);
-  for (var m = 0; m < dataInact.length; m++) {
-    agregarSiCoincide(dataInact[m][colInactTag], dataInact[m][colInactNombre], dataInact[m][colInactClan], dataInact[m][colInactCelular]);
-  }
-
-  cuentas.sort(function (a, b) { return a.nombre.localeCompare(b.nombre); });
-  return { ok: true, cuentas: cuentas };
-}
 // _webSorteoCalificados(): FASE 8 (30-ago-2026, pedido del usuario — la Ruleta de Sorteo del panel admin [sorteo.html] captaba participantes de forma 100% manual/genérica; este endpoint la autocompleta con los miembros que CALIFICAN según la fuente oficial… [→ Contexto_Base_Web.md §37B311]
 function _webSorteoCalificados(token, idSorteoElegido, soloInfo) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
@@ -4610,10 +4714,19 @@ function _docxFuenteArial_(bytes) {
   }
 }
 
+// _webAdminUltimoRegistroTorneoOSorteo(): NUEVO (16-sep-2026, pedido del usuario -- botones "↻ Precargar datos del último torneo/sorteo registrado" de admin.html, ver precargarUltimoRegistroTorneo()/precargarUltimoRegistroSorteo() ahí). Wrapper delgado de… [→ Contexto_Base_Web.md §37B332]
+function _webAdminUltimoRegistroTorneoOSorteo(token, categoria) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  if (categoria !== 'Torneo' && categoria !== 'Sorteo') return { ok: false, error: 'Categoría inválida (debe ser Torneo o Sorteo).' };
+
+  var registro = _getUltimoRegistroTorneoOSorteo(categoria);
+  return { ok: true, registro: registro };
+}
+
+// ----- Administración: listas CR (ascensos y descensos) y vigentes -----
+
 // CR_Lista — Web: selector de registro + pantalla de propuestas (FASE 7, 13-sep-2026, pedido del usuario, plan de Cambio de Rango). Endpoints para que la administración: (1) vea el listado de pares Ascenso/Descenso ya cargados, (2)… [→ Contexto_Base_Web.md §37B326]
-
 // Extra!Torneo_Vigente_ID / Sorteo_Vigente_ID -- selector web (FASE 0bis, 13-sep-2026, pedido del usuario -- "fase nueva y chica" que la propia Fase 0 del plan de corrección Torneo/Sorteo dejaba anotada para más adelante, ver ese… [→ Contexto_Base_Web.md §37B327]
-
 // _webAdminVigenteListar(): Lista TODOS los registros de T_Lista ('Torneo') o S_Lista ('Sorteo'), del más reciente al más antiguo por Fecha, para poblar el selector de "cuál es el vigente" -- misma idea que _webCRListaListar() (justo abajo), pero para… [→ Contexto_Base_Web.md §37B328]
 function _webAdminVigenteListar(token, categoria) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
@@ -4698,15 +4811,6 @@ function _webAdminVigenteGuardar(token, categoria, id) {
   var col = (categoria === 'Torneo') ? 20 : 21; // Torneo_Vigente_ID / Sorteo_Vigente_ID, ver _setupExtra()
   shExtra.getRange(2, col).setValue(String(id || '').trim());
   return { ok: true };
-}
-
-// _webAdminUltimoRegistroTorneoOSorteo(): NUEVO (16-sep-2026, pedido del usuario -- botones "↻ Precargar datos del último torneo/sorteo registrado" de admin.html, ver precargarUltimoRegistroTorneo()/precargarUltimoRegistroSorteo() ahí). Wrapper delgado de… [→ Contexto_Base_Web.md §37B332]
-function _webAdminUltimoRegistroTorneoOSorteo(token, categoria) {
-  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  if (categoria !== 'Torneo' && categoria !== 'Sorteo') return { ok: false, error: 'Categoría inválida (debe ser Torneo o Sorteo).' };
-
-  var registro = _getUltimoRegistroTorneoOSorteo(categoria);
-  return { ok: true, registro: registro };
 }
 
 // _webCRListaListar(): Lista TODOS los pares Ascenso/Descenso ya cargados en CR_Lista, del más reciente al más antiguo por Fecha -- para poblar el selector de la pantalla de Cambio de Rango (elegir un par existente, ver propuestas, o editarlo). Recorre… [→ Contexto_Base_Web.md §37B333]
@@ -5079,6 +5183,8 @@ function _webCRListaGuardar(token, datos) {
   return { ok: true, idAscenso: idAscensoPar, idDescenso: idDescensoPar };
 }
 
+// ----- Guerra en vivo (público) y calentamiento del caché -----
+
 // _webGuerraEnVivo(): FIX (30-ago-2026, pedido usuario — revisión de seguridad): endpoint PÚBLICO (gateado con WEB_MEMBER_TOKEN, ver doGet() en 38_Web_Endpoints.gs) para que guerra.html deje de depender de DASHBOARD_TOKEN — ese token está pensado para… [→ Contexto_Base_Web.md §37B353]
 function _webGuerraEnVivo(opciones) {
   // CAMBIO (28-sep-2026, Fase 5b tanda C, decisión del usuario): nomMulti y prestamo de cada pendiente son solo para admins. La caché grande (WEB_GUERRA_VIVO_KEY) es UNA sola para todos y la llena también el bot… [→ Contexto_Base_Web.md §37B354]
@@ -5145,18 +5251,6 @@ function _webGuerraEnVivoCompleta_() {
   }
 }
 
-var WEB_GUERRA_VIVO_KEY     = 'web_guerra_vivo_v1';
-// 19-sep-2026: 120 -> 300 s. En el registro real, cada 3.er refresco (cada 60 s desde guerra.html) caía en una caché vencida y el visitante esperaba ~25 s. Los datos de guerra los actualiza el bot cada ~10 min (cada hora fuera de… [→ Contexto_Base_Web.md §37B360]
-var WEB_GUERRA_VIVO_TTL_SEG = 300;
-
-// NUEVO (19-sep-2026, pedido del usuario -- cada 5 min un visitante esperaba 11-18 s mientras se recalculaba el dashboard): el bot deja el caché de webGuerraEnVivo YA CALIENTE al terminar runGuerra() (ver 00_Main.gs), así el… [→ Contexto_Base_Web.md §37B361]
-var WEB_GUERRA_VIVO_TTL_CALENTADO_VENTANA_SEG = 660;
-var WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG   = 7200;
-
-// _calentarCacheGuerraEnVivo_(): Recalcula el dashboard (_getDatosDashboard(), el mismo que devuelve _webGuerraEnVivo() a los visitantes) y lo guarda en el MISMO caché (WEB_GUERRA_VIVO_KEY) con `ttlSeg` segundos de vida. Pensada para llamarse desde el bot… [→ Contexto_Base_Web.md §37B362]
-// PF311 parte A (31-oct-2026): true si la última llamada a _calentarCacheGuerraEnVivo_() con límite de tiempo dejó sin publicar alguno de los cuatro JSON por falta de tiempo. Lo lee _runGuerraColaHoraria_() (00_Main.gs). [→ Contexto_Base_Web.md §PF311]
-var CALENTAR_OMITIO_PUBLICACION_ = false;
-
 // PF311 parte A: ¿queda tiempo para otra publicación a GitHub (15 a 35 s cada una en el registro del 24 al 31-oct)? Sin límite (limiteMs vacío) siempre devuelve true, como antes.
 function _calentarHayTiempoParaPublicar_(limiteMs, nombre) {
   if (!limiteMs) return true;
@@ -5186,53 +5280,5 @@ function _calentarCacheGuerraEnVivo_(ttlSeg, limiteMs) {
     return ok;
   } finally {
     try { cache.remove(claveCalc); } catch (e1) { /* nada que hacer */ }
-  }
-}
-
-// calentarCacheGuerraEnVivo(): Atajo manual (ejecutar desde el editor de Apps Script) para calentar el caché con el TTL de la ventana de guerra y comprobar el resultado con verDiagnosticoGuerraVivo(). [→ Contexto_Base_Web.md §37B363]
-function calentarCacheGuerraEnVivo() {
-  _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_VENTANA_SEG);
-}
-
-// _webCacheGrandeGuardar_(): CacheService admite máximo 100 KB por valor y la salida de _getDatosDashboard() (historial completo de temporadas) lo supera con holgura, por eso _webCacheado() no sirve aquí: fallaba en silencio y no cacheaba nada. Estas dos… [→ Contexto_Base_Web.md §37B364]
-function _webCacheGrandeGuardar_(key, obj, ttlSeg) {
-  try {
-    var json = JSON.stringify(obj);
-    var gz   = Utilities.gzip(Utilities.newBlob(json, 'application/json', 'datos.json'));
-    var b64  = Utilities.base64Encode(gz.getBytes());
-    var TROZO = 90000;
-    var n = Math.ceil(b64.length / TROZO);
-    var trozos = {};
-    for (var i = 0; i < n; i++) trozos[key + '_' + i] = b64.substr(i * TROZO, TROZO);
-    var cache = CacheService.getScriptCache();
-    cache.putAll(trozos, ttlSeg);
-    cache.put(key + '_n', String(n), ttlSeg);
-    _diagGuerraVivo_('[WebGuerraEnVivo] caché guardada: JSON ' + json.length + ' car. -> gzip+base64 ' + b64.length + ' car. en ' + n + ' trozo(s), ' + ttlSeg + ' s.');
-    return true;
-  } catch (e) {
-    _diagGuerraVivo_('[WebGuerraEnVivo] no se pudo guardar en caché (el endpoint sigue funcionando): ' + e);
-    return false;
-  }
-}
-
-function _webCacheGrandeLeer_(key) {
-  try {
-    var cache = CacheService.getScriptCache();
-    var n = Number(cache.get(key + '_n'));
-    if (!n || n < 1) return null;
-    var claves = [];
-    for (var i = 0; i < n; i++) claves.push(key + '_' + i);
-    var got = cache.getAll(claves);
-    var b64 = '';
-    for (var j = 0; j < n; j++) {
-      var parte = got[claves[j]];
-      if (parte === null || parte === undefined) { _diagGuerraVivo_('[WebGuerraEnVivo] caché incompleta: falta el trozo ' + j + ' de ' + n); return null; } // trozo expirado o evicto: no usar
-      b64 += parte;
-    }
-    var bytes = Utilities.base64Decode(b64);
-    var json  = Utilities.ungzip(Utilities.newBlob(bytes, 'application/x-gzip', 'datos.gz')).getDataAsString('UTF-8');
-    return JSON.parse(json);
-  } catch (e) {
-    return null;
   }
 }
