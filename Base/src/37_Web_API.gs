@@ -5154,19 +5154,34 @@ var WEB_GUERRA_VIVO_TTL_CALENTADO_VENTANA_SEG = 660;
 var WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG   = 7200;
 
 // _calentarCacheGuerraEnVivo_(): Recalcula el dashboard (_getDatosDashboard(), el mismo que devuelve _webGuerraEnVivo() a los visitantes) y lo guarda en el MISMO caché (WEB_GUERRA_VIVO_KEY) con `ttlSeg` segundos de vida. Pensada para llamarse desde el bot… [→ Contexto_Base_Web.md §37B362]
-function _calentarCacheGuerraEnVivo_(ttlSeg) {
+// PF311 parte A (31-oct-2026): true si la última llamada a _calentarCacheGuerraEnVivo_() con límite de tiempo dejó sin publicar alguno de los cuatro JSON por falta de tiempo. Lo lee _runGuerraColaHoraria_() (00_Main.gs). [→ Contexto_Base_Web.md §PF311]
+var CALENTAR_OMITIO_PUBLICACION_ = false;
+
+// PF311 parte A: ¿queda tiempo para otra publicación a GitHub (15 a 35 s cada una en el registro del 24 al 31-oct)? Sin límite (limiteMs vacío) siempre devuelve true, como antes.
+function _calentarHayTiempoParaPublicar_(limiteMs, nombre) {
+  if (!limiteMs) return true;
+  var quedaMs = limiteMs - Date.now();
+  if (quedaMs > 40000) return true;
+  CALENTAR_OMITIO_PUBLICACION_ = true;
+  _diagGuerraVivo_('[Publicaciones] Se omite ' + nombre + ': quedan ' + Math.max(0, Math.round(quedaMs / 1000)) + ' s antes del límite de la ejecución. Se publica en la continuación.');
+  return false;
+}
+
+function _calentarCacheGuerraEnVivo_(ttlSeg, limiteMs) {
   var t0 = Date.now();
+  CALENTAR_OMITIO_PUBLICACION_ = false;
   var ttl = Number(ttlSeg) || WEB_GUERRA_VIVO_TTL_SEG;
   var cache = CacheService.getScriptCache();
   var claveCalc = WEB_GUERRA_VIVO_KEY + '_calc';
   try { cache.put(claveCalc, '1', 90); } catch (e0) { /* sin coordinación: se calienta igual */ }
   try {
     var datos = _getDatosDashboard();
+    _diagGuerraVivo_('[WebGuerraEnVivo] datos del dashboard calculados en ' + (Date.now() - t0) + 'ms');
     var ok = _webCacheGrandeGuardar_(WEB_GUERRA_VIVO_KEY, datos, ttl);
-    try { _publicarGuerraEstatico_(datos); } catch (ePub) { _diagGuerraVivo_('[GuerraEstatico] error inesperado (no afecta al bot): ' + ePub); } // NUEVO 08-oct-2026: copia pública en GitHub, ver 39_Publicar_Guerra.gs
-    try { _publicarRosterEstatico_(); } catch (eRos) { _diagGuerraVivo_('[RosterEstatico] error inesperado (no afecta al bot): ' + eRos); }
-    try { _publicarHomeEstatico_(); } catch (eHome) { _diagGuerraVivo_('[HomeEstatico] error inesperado (no afecta al bot): ' + eHome); }
-    try { _publicarTorneosEstatico_(); } catch (eTor) { _diagGuerraVivo_('[TorneosEstatico] error inesperado (no afecta al bot): ' + eTor); }
+    if (_calentarHayTiempoParaPublicar_(limiteMs, 'guerra.json')) try { _publicarGuerraEstatico_(datos); } catch (ePub) { _diagGuerraVivo_('[GuerraEstatico] error inesperado (no afecta al bot): ' + ePub); } // NUEVO 08-oct-2026: copia pública en GitHub, ver 39_Publicar_Guerra.gs
+    if (_calentarHayTiempoParaPublicar_(limiteMs, 'roster.json')) try { _publicarRosterEstatico_(); } catch (eRos) { _diagGuerraVivo_('[RosterEstatico] error inesperado (no afecta al bot): ' + eRos); }
+    if (_calentarHayTiempoParaPublicar_(limiteMs, 'home.json')) try { _publicarHomeEstatico_(); } catch (eHome) { _diagGuerraVivo_('[HomeEstatico] error inesperado (no afecta al bot): ' + eHome); }
+    if (_calentarHayTiempoParaPublicar_(limiteMs, 'torneos.json')) try { _publicarTorneosEstatico_(); } catch (eTor) { _diagGuerraVivo_('[TorneosEstatico] error inesperado (no afecta al bot): ' + eTor); }
     _diagGuerraVivo_('[WebGuerraEnVivo] caché CALENTADA por el bot en ' + (Date.now() - t0) + 'ms, TTL ' + ttl + ' s' + (ok ? '' : ' (NO se pudo guardar)'));
     return ok;
   } finally {

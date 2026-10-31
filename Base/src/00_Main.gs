@@ -1271,26 +1271,56 @@ function runGuerra() {
  * ejecución que lo llama, para respetar el margen contra el límite duro de la plataforma. No depende de variables en memoria de
  * runGuerra(): _syncGuerraCSV() recibe la hoja y _calentarCacheGuerraEnVivo_() lee todo por su cuenta. [→ Contexto_Base_Web.md §PF143]
  */
-function _runGuerraColaHoraria_(t0) {
+function _runGuerraColaHoraria_(t0, soloCalentar) {
   var msTranscurridos = Date.now() - t0;
   var msLimiteParaSyncCsv = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
-  if (msTranscurridos > msLimiteParaSyncCsv) {
+  if (soloCalentar) {
+    Logger.log('[runGuerraCola] El respaldo del CSV de Guerra ya se hizo en la ejecución anterior; aquí solo se calienta el caché y se publican los JSON.');
+  } else if (msTranscurridos > msLimiteParaSyncCsv) {
     Logger.log('[runGuerra] _syncGuerraCSV() SALTADO esta hora: ya van ' +
       Math.round(msTranscurridos / 1000) + 's de corrida, sin margen suficiente ' +
       '(' + Math.round(msLimiteParaSyncCsv / 1000) + 's) antes del límite duro de la plataforma. ' +
       'Se reintenta en el próximo disparo horario.');
   } else {
     var shGuerraBackup = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+    var tSyncCola = Date.now();
     if (shGuerraBackup) _syncGuerraCSV(shGuerraBackup);
+    // PF311 parte A: el registro callaba entre el inicio de la cola y el corte; esta línea y las de abajo dejan ver qué tramo se come el tiempo.
+    Logger.log('[runGuerraCola] Respaldo del CSV de Guerra terminado en ' + Math.round((Date.now() - tSyncCola) / 1000) + ' s (la cola lleva ' + Math.round((Date.now() - t0) / 1000) + ' s).');
   }
 
   try {
     var msRestantesCalentar = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - t0);
-    if (msRestantesCalentar < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
-      Logger.log('[runGuerra] Calentamiento del caché de guerra.html SALTADO: quedan solo ' +
-        Math.round(msRestantesCalentar / 1000) + 's de presupuesto.');
+    // PF311 parte A: el calentamiento tardó entre 108 y 163 s en el registro del 28-oct y se cortó 10 veces a los 361 s. Se exige tiempo para lo que tardó la última vez (guardado en GUERRA_CALENTADO_ULT_MS) con un 30 % de holgura, y no menos que el margen fijo de antes.
+    var msUltimoCalentado = 0;
+    try { msUltimoCalentado = Number(PropertiesService.getScriptProperties().getProperty('GUERRA_CALENTADO_ULT_MS')) || 0; } catch (eUlt) { msUltimoCalentado = 0; }
+    var msNecesariosCalentar = Math.max(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, Math.round(msUltimoCalentado * 1.3));
+    var calentadoCompleto = false;
+    if (msRestantesCalentar < msNecesariosCalentar) {
+      Logger.log('[runGuerra] Calentamiento del caché de guerra.html SALTADO en esta ejecución: quedan ' +
+        Math.round(msRestantesCalentar / 1000) + ' s y se necesitan unos ' + Math.round(msNecesariosCalentar / 1000) + ' s.');
     } else {
-      _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG);
+      var tCalentar = Date.now();
+      _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG, t0 + CFG.PLATAFORMA_LIMITE_EJECUCION_MS - 45000);
+      var msCalentar = Date.now() - tCalentar;
+      Logger.log('[runGuerraCola] Calentamiento del caché terminado en ' + Math.round(msCalentar / 1000) + ' s' + (CALENTAR_OMITIO_PUBLICACION_ ? ' (quedaron publicaciones sin hacer por falta de tiempo)' : '') + '.');
+      if (!CALENTAR_OMITIO_PUBLICACION_) {
+        calentadoCompleto = true;
+        try { PropertiesService.getScriptProperties().setProperty('GUERRA_CALENTADO_ULT_MS', String(msCalentar)); } catch (eGuardaUlt) { /* solo una referencia */ }
+      }
+    }
+    // PF311 parte A: lo que no cupo se hace en una sola continuación más (con las 6 min enteras), nunca en cadena: la continuación de solo calentamiento no programa otra.
+    if (!calentadoCompleto && !soloCalentar) {
+      try {
+        var propsCola = PropertiesService.getScriptProperties();
+        propsCola.setProperty('RUNGUERRA_COLA_PENDIENTE', 'calentar');
+        propsCola.setProperty('RUNGUERRA_COLA_SOLO_CALENTAR', '1');
+        propsCola.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+        _programarContinuacion('_continuarRunGuerra');
+        Logger.log('[runGuerraCola] Se programa una continuación solo para el calentamiento del caché y las publicaciones.');
+      } catch (eReprogramar) {
+        Logger.log('[runGuerraCola] No se pudo programar la continuación del calentamiento: ' + eReprogramar.message + '. Se hará en la próxima hora.');
+      }
     }
   } catch (eCalentar) {
     Logger.log('[runGuerra] _calentarCacheGuerraEnVivo_() falló: ' + eCalentar.message);
@@ -1326,6 +1356,7 @@ function _continuarRunGuerra() {
     Logger.log('[runGuerraCola] ABORTADA: la ventana de guerra protegida está activa. Se descarta; el próximo runGuerra() horario la vuelve a programar.');
     props.deleteProperty('RUNGUERRA_COLA_PENDIENTE');
     props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+    props.deleteProperty('RUNGUERRA_COLA_SOLO_CALENTAR'); // PF311 parte A
     return;
   }
   if (!_adquirirLockEjecucion('runGuerraCola')) {
@@ -1339,15 +1370,18 @@ function _continuarRunGuerra() {
       Logger.log('[runGuerraCola] Se agotaron los reintentos con otra ejecución en curso. Se descarta; la próxima hora vuelve a intentarlo.');
       props.deleteProperty('RUNGUERRA_COLA_PENDIENTE');
       props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
+      props.deleteProperty('RUNGUERRA_COLA_SOLO_CALENTAR'); // PF311 parte A
     }
     return;
   }
   var t0 = Date.now();
   try {
+    var soloCalentarCola = props.getProperty('RUNGUERRA_COLA_SOLO_CALENTAR') === '1'; // PF311 parte A
     props.deleteProperty('RUNGUERRA_COLA_PENDIENTE'); // antes del trabajo: si la plataforma corta esta ejecución, no se repite en bucle
     props.deleteProperty('RUNGUERRA_COLA_INTENTOS');
-    Logger.log('[runGuerraCola] INICIO (respaldo CSV + calentamiento del caché)');
-    _runGuerraColaHoraria_(t0);
+    props.deleteProperty('RUNGUERRA_COLA_SOLO_CALENTAR');
+    Logger.log('[runGuerraCola] INICIO (' + (soloCalentarCola ? 'solo calentamiento del caché y publicaciones' : 'respaldo CSV + calentamiento del caché') + ')');
+    _runGuerraColaHoraria_(t0, soloCalentarCola);
     Logger.log('[runGuerraCola] FIN (' + Math.round((Date.now() - t0) / 1000) + ' s)');
   } finally {
     _liberarLockEjecucion();
