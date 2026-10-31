@@ -1586,7 +1586,7 @@ function doPost(e) {
     try {
       var payload = JSON.parse(e.postData.contents);
       var resultado = _aplicarCorreccionesGuerra(payload && payload.correcciones);
-      // §PF307 (3), pieza 1: se informa qué jugadores del lote califican como nuevos (por tag, _nuevosDesdeFilasPerfil_() en 14_Nuevos_RoyaleAPI.gs); todavía NO se escribe en «Nuevos». [→ Contexto_Base_Web.md §PF309]
+      // §PF307 (3), pieza 1: se informa qué jugadores del lote califican como nuevos (por tag, _nuevosDesdeFilasPerfil_() en 14_Nuevos_RoyaleAPI.gs); todavía NO se escribe en «Nuevos». [→ Contexto_Base_Web.md §PF312]
       try {
         var detNuevosCg = _nuevosDesdeFilasPerfil_(payload && payload.correcciones);
         if (resultado && detNuevosCg.nuevos.length) resultado.nuevosDetectados = detNuevosCg.nuevos.slice(0, 100);
