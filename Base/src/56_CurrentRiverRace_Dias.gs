@@ -202,12 +202,25 @@ function _crrFameDia_(fameAcum) {
  * CurrentRiverRace. ctx = el contexto del clan (temporada propia y sectionIndex); offAyer = 0..2 (jueves a sábado). No se pasan totales
  * semanales (no se conocen aquí), así que el domingo nunca se resuelve por esta vía. Devuelve { ataquesAyer, fameAcumAyer } (null = sin dato)
  * o null si no hay capturas, si estas se contradicen o si falla la lectura de Drive. Solo lee.
+ * §PF301: si quien llama pasa clanNombre (el nombre del clan como figura en la hoja), PRIMERO se usan los rangos de los JSON de ese clan
+ * (_vcrrRangosJugadorClan_, 59_Verificar_CRR_vs_Backup.gs): los ataques de ayer y la fame acumulada al cierre de ayer valen cuando su piso y su máximo
+ * coinciden (el máximo ya descuenta la merma y el tope de la tabla de fame). Si por ahí no sale nada, se sigue con el cálculo de siempre.
  */
-function _crrAyerParaCierre_(tag, ctx, offAyer) {
+function _crrAyerParaCierre_(tag, ctx, offAyer, clanNombre) {
   try {
     if (!(offAyer >= 0 && offAyer <= 2)) return null;
     var temp = Number(ctx && ctx.temporada), sem = Number(ctx && ctx.sectionIndex) + 1;
     if (!(temp > 0) || !(sem > 0)) return null;
+    if (clanNombre && typeof _vcrrRangosJugadorClan_ === 'function') {
+      var serie = _vcrrRangosJugadorClan_(temp, sem, tag, clanNombre);
+      // Un jugador en dos clanes la misma semana: lo que muestra un clan no es todo lo que hizo ese día; se sigue con el cálculo de siempre.
+      if (serie && serie.validos && serie.estado !== 'multiclan') {
+        var rr = serie.r, ataquesR = null, fameR = null;
+        if (serie.validos.indexOf('A') >= 0 && rr.A.il[offAyer] === rr.A.ih[offAyer]) ataquesR = rr.A.il[offAyer];
+        if (serie.validos.indexOf('F') >= 0 && rr.F.lo[offAyer] === rr.F.hi[offAyer]) fameR = rr.F.lo[offAyer];
+        if (ataquesR !== null || fameR !== null) return { ataquesAyer: ataquesR, fameAcumAyer: fameR };
+      }
+    }
     var r = _crrDiasDeJugador_(temp, sem, tag, null, null);
     if (!r.hayCapturas || (r.notas && r.notas.length)) return null;
     var a = r.ataques[offAyer], f = r.fameAcum[offAyer];
