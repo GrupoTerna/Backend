@@ -4819,6 +4819,22 @@ function _avisarFilasGuerraRepetidas_(sh) {
 }
 
 /**
+ * respaldarGuerraCSVForzado() - PF311 (31-oct-2026). Para correr a mano UNA vez cuando el recorte de Backup_Guerra.csv es intencional. El 31-oct el archivo quedó en 2 541 887 bytes contra 2 950 134 de
+ * referencia (se quitaron filas repetidas a propósito) y el blindaje de tamaño (PF289) saltaba la fusión en cada corrida con [ALERTA PROTECCIÓN]. Fusiona la hoja Guerra con el CSV sin ese blindaje
+ * (_syncGuerraCSV(sh, true)) y deja el tamaño nuevo como referencia, así las corridas siguientes ya no lo saltan. Es una fusión: no vuelve a agregar las filas recortadas ni borra las que hay.
+ * No la llama ninguna cadena. [→ Contexto_Base_Web.md §PF311]
+ */
+function respaldarGuerraCSVForzado() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+  if (!sh) { Logger.log('[Guerra] respaldarGuerraCSVForzado: no hay hoja Guerra, no se hace nada.'); return; }
+  var antes = _guerraCsvTamRef_();
+  Logger.log('[Guerra] respaldarGuerraCSVForzado: antes, Drive ' + antes.tamDrive + ' bytes y referencia anterior ' + antes.tamBueno + ' bytes. Se escribe sin el blindaje de tamaño.');
+  _syncGuerraCSV(sh, true);
+  var despues = _guerraCsvTamRef_();
+  Logger.log('[Guerra] respaldarGuerraCSVForzado: después, Drive ' + despues.tamDrive + ' bytes y referencia nueva ' + despues.tamBueno + ' bytes.');
+}
+
+/**
  * Sincroniza (FUSIONA) el contenido de la hoja Guerra con Backup_Guerra.csv.
  * @param {Sheet} sh - Hoja Guerra
  */
