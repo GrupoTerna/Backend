@@ -20,7 +20,11 @@
  *                                     hallazgos. No toca Backup_Guerra.csv.
  *   verificarCrrVsBackupAplicar()  -> lo mismo y además, con respaldo previo y verificación, CREA las filas de día que faltan y SUBE al piso
  *                                     del JSON los valores que estén por debajo. Nunca baja un valor ni toca uno que supere el máximo.
- *   verificarCrrVsBackupReiniciar() -> borra el avance guardado para empezar otra vez desde la primera semana.
+ *   verificarCrrVsBackupReiniciar() -> borra el avance de la corrida en curso (no el registro de JSON verificados).
+ *   verificarCrrVsBackupOlvidarVerificados() -> vacía el registro de JSON verificados: la próxima corrida vuelve a leer todos los JSON.
+ * REGISTRO DE JSON VERIFICADOS (Cruce_CRR_JSON_Verificados.csv): por cada JSON leído guarda clan, semana, día, nombre, fecha de modificación,
+ * tamaño, cuándo se verificó y su resultado (ok o el motivo del descarte). La corrida siguiente lista los archivos de cada semana (sin leerlos) y
+ * solo vuelve a leer las semanas cuyos JSON cambiaron, son nuevos o faltan, o si cambió VCRR_VERSION_REGLAS: sigue desde donde se quedó.
  * Se programa sola: cada tanda tiene su presupuesto de tiempo y, si no alcanza, deja el avance guardado y programa su continuación.
  * Los pasos son: (1) leer JSON y calcular restricciones, (2) comparar contra el CSV y registrar lo que no coincide, (3) escribir (solo Aplicar).
  * El ID de las filas de los informes es el de siempre (T_NN_S_NN_#TAG, lo agrega _encodeCSVInforme); el clan va en su propia columna.
@@ -28,11 +32,12 @@
 
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 30-oct-2026): primero las constantes y variables globales; luego, por partes:
 //  Parte 1 — Funciones que se corren a mano
-//    - Verificar CurrentRiverRace contra Backup_Guerra.csv: informe, aplicar y reinicio (cada una seguida de su continuación)
+//    - Verificar CurrentRiverRace contra Backup_Guerra.csv: informe, aplicar, reinicio y olvidar verificados (cada principal seguida de su continuación)
 //  Parte 2 — Funciones que no se corren a mano
 //    - Verificar CRR: motor por tandas (estado, presupuesto y continuación)
 //    - Verificar CRR, paso 1: capturas de Drive y restricciones por jugador
 //    - Verificar CRR, archivo de restricciones (leer y guardar)
+//    - Verificar CRR, registro de JSON verificados (listar, comparar, leer y guardar)
 //    - Verificar CRR, paso 2: comparar contra el CSV y registrar hallazgos
 //    - Verificar CRR, paso 3: escribir en el CSV (solo Aplicar)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas.
@@ -43,6 +48,8 @@ var VCRR_MAX_FILAS_APLICAR = 2500;                     // tope de filas a crear 
 var VCRR_MAX_REVISION = 400;                           // tope de series que se anotan en Revision_Guerra.csv por corrida
 var VCRR_ESTADO_PROP = 'VCRR_ESTADO';                  // propiedad del script con el avance (JSON)
 var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo «Cruce_» lo manda a CSV/Informes (_csvSubcarpetaDe_)
+var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
+var VCRR_VERSION_REGLAS = 1;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_: invalida el registro y se releen todos los JSON
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
@@ -84,7 +91,7 @@ function verificarCrrVsBackupAplicar() { _vcrrEjecutar_(true, false); }
 /** Punto de entrada del disparador de continuación de verificarCrrVsBackupAplicar() (no se corre a mano). */
 function _continuarVerificarCrrVsBackupAplicar() { _vcrrEjecutar_(true, true); }
 
-/** Borra el avance guardado y la continuación pendiente: la próxima corrida empieza desde la primera semana. No borra ningún archivo de Drive. */
+/** Borra el avance de la corrida en curso y su continuación pendiente. No borra ningún archivo de Drive: el registro de JSON verificados sigue, así que las semanas ya verificadas y sin cambios no se releen (para releerlas: verificarCrrVsBackupOlvidarVerificados()). */
 function verificarCrrVsBackupReiniciar() {
   PropertiesService.getScriptProperties().deleteProperty(VCRR_ESTADO_PROP);
   _borrarTriggersDeContinuacion('_continuarVerificarCrrVsBackupInforme');
@@ -94,7 +101,13 @@ function verificarCrrVsBackupReiniciar() {
     var info = raw ? JSON.parse(raw) : null;
     if (info && /^verificarCrrVsBackup/.test(String(info.fn))) _liberarLockEjecucion();
   } catch (e) { /* propiedad corrupta: se deja como está */ }
-  Logger.log('[VCRR] Avance borrado. La próxima corrida empieza desde la primera semana.');
+  Logger.log('[VCRR] Avance de la corrida borrado. La próxima corrida recorre las semanas desde la primera, pero omite las ya verificadas y sin cambios.');
+}
+
+/** Vacía el registro de JSON verificados (no toca las restricciones ni el CSV): la próxima corrida vuelve a leer todos los JSON de Drive. */
+function verificarCrrVsBackupOlvidarVerificados() {
+  _saveCSVToDrive(VCRR_ARCHIVO_VERIFICADOS, _encodeCSVInforme([_vcrrEncabezadoVerificados_()]));
+  Logger.log('[VCRR] Registro de JSON verificados vaciado. La próxima corrida vuelve a leer todos los JSON.');
 }
 
 // =============================================================================
@@ -163,7 +176,7 @@ function _vcrrEjecutar_(aplicar, esContinuacion) {
       }
     }
     var c = st.cont;
-    Logger.log('[VCRR] FIN (' + st.tandas + ' tanda(s)). Series: ' + (c.series || 0) + '; con JSON anómalo o incoherente: ' + (c.anomalas || 0) + '. Hallazgos: CSV menor ' + (c.csv_menor || 0) +
+    Logger.log('[VCRR] FIN (' + st.tandas + ' tanda(s)). Semanas: ' + (c.semanasOmitidas || 0) + ' ya verificadas y sin cambios (no se releyeron), ' + (c.semanasSinJson || 0) + ' sin JSON. Series nuevas o recalculadas: ' + (c.series || 0) + '; con JSON anómalo o incoherente: ' + (c.anomalas || 0) + '. Hallazgos: CSV menor ' + (c.csv_menor || 0) +
       ', CSV mayor que el máximo ' + (c.csv_mayor_max || 0) + ', filas que faltan ' + (c.fila_faltante || 0) + ', acumulado que baja ' + (c.no_monotono || 0) + '. ' +
       (aplicar ? 'Filas creadas: ' + (c.creadas || 0) + ', modificadas: ' + (c.modificadas || 0) + '. ' : '(No se escribió nada en Backup_Guerra.csv.) ') +
       'Detalle en CSV/Informes: ' + VCRR_ARCHIVO_RESTRICCIONES + ' y «Cruce_CRR_vs_Backup ' + st.marca + ' (hallazgos).csv».');
@@ -207,9 +220,10 @@ function _vcrrClanNorm_(clan) { return String(clan === null || clan === undefine
 // ----- Verificar CRR, paso 1: capturas de Drive y restricciones por jugador -----
 
 /**
- * Paso 1. Recorre las semanas que tiene Backup_Guerra.csv (de la más vieja a la más nueva), lee los JSON de CurrentRiverRace de cada una y
- * guarda en Cruce_CRR_Restricciones.csv los rangos por jugador, clan y semana. Devuelve true cuando recorrió todas las semanas; false si
- * el presupuesto se agotó (el índice de la próxima semana queda en st.idx).
+ * Paso 1. Recorre las semanas que tiene Backup_Guerra.csv (de la más vieja a la más nueva). De cada una lista sus JSON de CurrentRiverRace sin leerlos
+ * y los compara con el registro de verificados: si son los mismos (y la versión de reglas es la vigente) la semana se omite; si no, se leen, se guardan
+ * los rangos por jugador, clan y semana en Cruce_CRR_Restricciones.csv y se actualiza el registro. Devuelve true cuando recorrió todas las semanas;
+ * false si el presupuesto se agotó (el índice de la próxima semana queda en st.idx).
  */
 function _vcrrPaso1_(st, t0) {
   var bk = _vcrrLeerBackupGuerra_();
@@ -226,41 +240,58 @@ function _vcrrPaso1_(st, t0) {
   }
   var clanes = {};   // clave normalizada -> nombre tal como figura en el CSV
   Object.keys(grupos).forEach(function (k) { clanes[_vcrrClanNorm_(grupos[k].clan)] = grupos[k].clan; });
+  var verificados = _vcrrLeerVerificados_();
+  var conSeries = {};
+  var yaGuardadas = _vcrrLeerRestricciones_();
+  Object.keys(yaGuardadas).forEach(function (k) { conSeries[k] = true; });
 
-  var previas = st.idx, hechas = 0, filasNuevas = [], semanasHechas = {};
+  var previas = st.idx, vueltas = 0, hechas = 0, omitidas = 0, filasNuevas = [], regNuevo = [], semanasHechas = {};
   while (st.idx < st.semanas.length) {
-    var gastado = Date.now() - t0;
-    if (hechas > 0 && gastado > VCRR_PRESUPUESTO_MS - VCRR_RESERVA_SEMANA_MS) break;
-    var t = st.semanas[st.idx][0], s = st.semanas[st.idx][1];
-    var cap = _vcrrCapturasSemana_(t, s);
+    if (vueltas > 0 && (Date.now() - t0) > VCRR_PRESUPUESTO_MS - VCRR_RESERVA_SEMANA_MS) break;
+    vueltas++;
+    var t = st.semanas[st.idx][0], s = st.semanas[st.idx][1], clave = t + '|' + s;
+    var archivos = _vcrrArchivosSemana_(t, s);   // solo lista (nombre, fecha y tamaño); no lee el contenido
+    if (!archivos.length) { _vcrrSumar_(st, 'semanasSinJson', 1); st.idx++; continue; }
+    if (_vcrrSemanaVerificada_(verificados[clave], archivos, !!conSeries[clave])) {
+      _vcrrSumar_(st, 'semanasOmitidas', 1); omitidas++; st.idx++; continue;
+    }
+    var cap = _vcrrCapturasSemana_(t, s, archivos);
     cap.avisos.forEach(function (a) { Logger.log('[VCRR] T' + t + ' S' + s + ': JSON descartado (' + a + ').'); _vcrrSumar_(st, 'jsonDescartados', 1); });
-    var series = _vcrrSeriesDeSemana_(t, s, cap.porClan);
+    var series = _vcrrSeriesDeSemana_(t, s, cap.porClan), guardadas = 0;
     series.forEach(function (x) {
       if (!clanes[x.clanKey]) { _vcrrSumar_(st, 'sinClanEnCsv', 1); return; }   // clan que Backup_Guerra.csv no tiene (p. ej. NARANJA x): no se compara
       x.clan = clanes[x.clanKey];
-      filasNuevas.push(x);
+      filasNuevas.push(x); guardadas++;
       _vcrrSumar_(st, 'series', 1);
       if (x.estado !== 'ok') _vcrrSumar_(st, 'anomalas', 1);
+    });
+    archivos.forEach(function (a) {
+      var aviso = cap.avisos.filter(function (m) { return m.indexOf(a.nombre + ':') === 0; })[0];
+      regNuevo.push(_vcrrFilaVerificado_(t, s, a, st.marca, aviso ? 'descartado: ' + aviso.slice(a.nombre.length + 2) : 'ok', guardadas));
     });
     semanasHechas[t * 1000 + s] = true;
     st.idx++; hechas++;
   }
-  if (hechas > 0) _vcrrGuardarRestricciones_(filasNuevas, semanasHechas);
+  if (hechas > 0) {   // primero las restricciones y después el registro: si se corta entre las dos, la semana se vuelve a leer
+    _vcrrGuardarRestricciones_(filasNuevas, semanasHechas);
+    _vcrrGuardarVerificados_(regNuevo, semanasHechas);
+  }
   var completo = st.idx >= st.semanas.length;
+  if (omitidas) Logger.log('[VCRR]   semanas ya verificadas y sin cambios en sus JSON (no se releen): ' + omitidas + ' en esta tanda.');
   if (!completo) {
-    Logger.log('[VCRR]   semanas leídas: acumulado ' + st.idx + ' de ' + st.semanas.length + ' (' + Math.round(st.idx * 100 / st.semanas.length) + ' %); en tandas anteriores: ' + previas + '; faltan ' + (st.semanas.length - st.idx) + '.');
-    Logger.log('[VCRR]   semanas leídas: en esta tanda: ' + hechas + ' semanas.');
-    _anotarProgresoPaso_('semanas leídas: ' + st.idx + ' de ' + st.semanas.length, st.idx);
+    Logger.log('[VCRR]   semanas revisadas: acumulado ' + st.idx + ' de ' + st.semanas.length + ' (' + Math.round(st.idx * 100 / st.semanas.length) + ' %); en tandas anteriores: ' + previas + '; faltan ' + (st.semanas.length - st.idx) + '.');
+    Logger.log('[VCRR]   semanas revisadas: en esta tanda: ' + (st.idx - previas) + ' semanas (' + hechas + ' leídas de nuevo y ' + omitidas + ' sin cambios).');
+    _anotarProgresoPaso_('semanas revisadas: ' + st.idx + ' de ' + st.semanas.length, st.idx);
   }
   return completo;
 }
 
 /**
- * Lee de Drive los JSON de CurrentRiverRace de una semana (CurrentRiverRace/<clan>/T-NN/S-NN) y devuelve { porClan, avisos } (ver
- * _vcrrCapturasDeArchivos_). Solo lee. Una carpeta que falla no corta las demás.
+ * Lista los JSON de CurrentRiverRace de una semana (CurrentRiverRace/<clan>/T-NN/S-NN) SIN leer su contenido. Devuelve
+ * [{ file, nombre, clanKey, letra, modificado (ms), tamano }]. Una carpeta que falla no corta las demás.
  */
-function _vcrrCapturasSemana_(temporada, semana) {
-  var archivos = [];
+function _vcrrArchivosSemana_(temporada, semana) {
+  var lista = [];
   var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(semana);
   Object.keys(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_).forEach(function (k) {
     try {
@@ -269,14 +300,26 @@ function _vcrrCapturasSemana_(temporada, semana) {
       if (!cS) return;
       var it = cS.getFiles();
       while (it.hasNext()) {
-        var f = it.next(), nombre = f.getName();
-        if (!_crrParsearNombre_(nombre)) continue;
-        try { archivos.push({ nombre: nombre, clanKey: k, datos: JSON.parse(f.getBlob().getDataAsString()) }); }
-        catch (eJson) { archivos.push({ nombre: nombre, clanKey: k, datos: null, error: eJson.message }); }
+        var f = it.next(), nombre = f.getName(), p = _crrParsearNombre_(nombre);
+        if (!p) continue;
+        lista.push({ file: f, nombre: nombre, clanKey: k, letra: p.letra, modificado: f.getLastUpdated().getTime(), tamano: f.getSize() });
       }
     } catch (eClan) {
-      Logger.log('[VCRR] No se pudo leer la carpeta de ' + k + ' (' + nT + ' ' + nS + '): ' + eClan.message);
+      Logger.log('[VCRR] No se pudo listar la carpeta de ' + k + ' (' + nT + ' ' + nS + '): ' + eClan.message);
     }
+  });
+  return lista;
+}
+
+/**
+ * Lee el contenido de los JSON ya listados por _vcrrArchivosSemana_() y devuelve { porClan, avisos } (ver _vcrrCapturasDeArchivos_). Solo lee.
+ * Si no se pasa la lista, la arma.
+ */
+function _vcrrCapturasSemana_(temporada, semana, lista) {
+  var archivos = [];
+  (lista || _vcrrArchivosSemana_(temporada, semana)).forEach(function (a) {
+    try { archivos.push({ nombre: a.nombre, clanKey: a.clanKey, datos: JSON.parse(a.file.getBlob().getDataAsString()) }); }
+    catch (eJson) { archivos.push({ nombre: a.nombre, clanKey: a.clanKey, datos: null, error: eJson.message }); }
   });
   return _vcrrCapturasDeArchivos_(archivos, temporada, semana);
 }
@@ -542,6 +585,79 @@ function _vcrrSerieDeFila_(f) {
   });
   for (var d2 = 0; d2 < 4; d2++) { x.r.A.il[d2] = num(f[i++], 0); x.r.A.ih[d2] = num(f[i++], 4); }
   return x;
+}
+
+// ----- Verificar CRR, registro de JSON verificados (listar, comparar, leer y guardar) -----
+
+/** Encabezado de Cruce_CRR_JSON_Verificados.csv (el ID T_NN_S_NN lo agrega _encodeCSVInforme). Una fila por JSON. */
+function _vcrrEncabezadoVerificados_() {
+  return ['Temporada', 'Semana', 'Clan', 'Día', 'Archivo', 'Modificado (ms)', 'Tamaño (bytes)', 'Verificado', 'Corrida', 'Resultado', 'Series de la semana', 'Versión de reglas'];
+}
+
+/** Fila del registro de un JSON recién leído. a = elemento de _vcrrArchivosSemana_; series = cuántas series quedaron guardadas en esa semana. */
+function _vcrrFilaVerificado_(t, s, a, marca, resultado, series) {
+  return [t, s, a.clanKey, a.letra, a.nombre, a.modificado, a.tamano, Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss'), marca, resultado, series, VCRR_VERSION_REGLAS];
+}
+
+/** Huella de un JSON: cambia si cambia el clan, el día, el nombre, la fecha de modificación o el tamaño. */
+function _vcrrHuella_(clanKey, letra, nombre, modificado, tamano) {
+  return [clanKey, letra, nombre, Number(modificado), Number(tamano)].join('|');
+}
+
+/**
+ * Función pura. ¿La semana ya está verificada y no cambió? reg = { huellas: [texto], series, version } del registro (o undefined si no hay);
+ * archivos = los JSON que hay hoy en Drive; hayRestricciones = el archivo de restricciones ya tiene series de esa semana.
+ * Sí solo si los JSON de hoy son exactamente los registrados (mismas huellas), la versión de reglas es la vigente y, cuando la semana dejó series,
+ * esas series siguen en el archivo de restricciones.
+ */
+function _vcrrSemanaVerificada_(reg, archivos, hayRestricciones) {
+  if (!reg || reg.version !== VCRR_VERSION_REGLAS) return false;
+  if (reg.series > 0 && !hayRestricciones) return false;
+  var hoy = archivos.map(function (a) { return _vcrrHuella_(a.clanKey, a.letra, a.nombre, a.modificado, a.tamano); }).sort();
+  var antes = reg.huellas.slice().sort();
+  if (hoy.length !== antes.length) return false;
+  for (var i = 0; i < hoy.length; i++) { if (hoy[i] !== antes[i]) return false; }
+  return true;
+}
+
+/** Lee el registro y devuelve { 'temporada|semana': { huellas, series, version } }. Una semana con filas de versiones distintas queda con version -1 (se relee). */
+function _vcrrLeerVerificados_() {
+  var por = {}, texto = _loadCSVFromDrive(VCRR_ARCHIVO_VERIFICADOS);
+  if (!texto) return por;
+  var parsed = _parseCSV(texto);
+  if (!parsed || parsed.length < 2) return por;
+  var off = String(parsed[0][0]).trim() === 'ID' ? 1 : 0;
+  for (var i = 1; i < parsed.length; i++) {
+    var f = parsed[i].slice(off);
+    if (f.length < 12) continue;
+    var k = Number(f[0]) + '|' + Number(f[1]);
+    var version = Number(f[11]), series = Number(f[10]) || 0;
+    if (!por[k]) por[k] = { huellas: [], series: series, version: version };
+    else if (por[k].version !== version) por[k].version = -1;
+    por[k].huellas.push(_vcrrHuella_(String(f[2]), String(f[3]), String(f[4]), f[5], f[6]));
+  }
+  return por;
+}
+
+/** Guarda el registro: quita las filas de las semanas releídas (semanasHechas) y agrega las nuevas; lo demás se conserva. */
+function _vcrrGuardarVerificados_(filasNuevas, semanasHechas) {
+  var enc = _vcrrEncabezadoVerificados_(), filas = [];
+  var texto = _loadCSVFromDrive(VCRR_ARCHIVO_VERIFICADOS);
+  if (texto) {
+    var parsed = _parseCSV(texto);
+    if (parsed && parsed.length > 1) {
+      var off = String(parsed[0][0]).trim() === 'ID' ? 1 : 0;
+      if (parsed[0].length - off === enc.length) {
+        for (var i = 1; i < parsed.length; i++) {
+          var f = parsed[i].slice(off);
+          if (semanasHechas[Number(f[0]) * 1000 + Number(f[1])]) continue;
+          filas.push(f);
+        }
+      }
+    }
+  }
+  filasNuevas.forEach(function (f) { filas.push(f); });
+  _saveCSVToDrive(VCRR_ARCHIVO_VERIFICADOS, _encodeCSVInforme([enc].concat(filas)));
 }
 
 // ----- Verificar CRR, paso 2: comparar contra el CSV y registrar hallazgos -----
