@@ -1,13 +1,35 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales (y los parámetros que se editan antes de correr las consultas manuales); luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Herramientas del caché y del volcado de la API
+//    - Cartas
+//    - Búsqueda de clanes y miembros
+//    - Torneos globales, ubicaciones y temporadas
+//    - Rankings
+//    - Battlelog y cofres de un jugador
+//  Parte 2 — Funciones que no se corren a mano
+//    - Battlelog y cofres de todos los jugadores (descarga, punto de control y respaldos CSV)
+//    - Ayudas de las descargas manuales (cartas y búsqueda de clanes)
+//    - Clanes: datos básicos, captura y punto de control
+//    - Jugadores: descarga y punto de control
+//    - Llamada a la API y caché en memoria
+//    - Carpetas, nombres, horas y períodos en Drive
+//    - Temporada y período de cada clan
+//    - Primera consulta de la guerra (RiverRace)
+//    - Caché persistente en Drive
+//    - Registro en Script Terna
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+// Las variables globales que estaban entre las funciones subieron a la zona de constantes y variables.
+
 // ==============================================================================
 // 09_API_ClashRoyale.gs
 // Consulta y cacheo de datos de la API de Clash Royale: cache en memoria (por
 // ejecucion) y cache persistente en Drive (para el Generador/Tampermonkey).
 // ==============================================================================
 
+
 // ----- Variables y constantes -----
 
 // Servicio de API: cache global CACHE_CLAN_DATA, _fetchAllClanData() y _apiGet(). [→ Contexto_Base_Web.md §09B001]
-
 // CACHE GLOBAL [→ Contexto_Base_Web.md §09B002]
 var CACHE_CLAN_DATA = null;
 
@@ -20,7 +42,6 @@ var _clanesBasicoListoEnEstaEjecucion = false;
 var _playersCompletoEnEstaEjecucion   = false;
 
 // _apiGet() - Función base de petición HTTP [→ Contexto_Base_Web.md §09B005]
-
 var API_GET_MAX_INTENTOS = 3;
 
 var API_GET_ESPERA_BASE_MS = 3000; // espera = API_GET_ESPERA_BASE_MS * intento (3s, 6s)
@@ -54,22 +75,22 @@ var _DRIVE_CACHE_MEM = {};
 // respaldo del checkpoint por falla de la API (no son datos frescos y no se escriben como JSON);
 // _jsonClanesEscritosEnEstaEjecucion evita escribir dos veces los mismos JSON; _jsonClanesUltimoTotal = cuantos se escribieron.
 var _clanesBasicoDesdeApiEnEstaEjecucion = false;
+
 var CLANES_INFO_RESPALDO = [];
+
 var _jsonClanesEscritosEnEstaEjecucion = false;
+
 var _jsonClanesUltimoTotal = 0;
+
 // PF091 etapa 4 (17-oct-2026): mientras _guardarJsonClanesDesdeCaptura_() escribe los JSON de la captura, esta variable es un arreglo y
 // _guardarCacheEnDrive() anota ahi el nombre de cada archivo en vez de agregar una entrada a Log_ScriptTerna.json por archivo (cada
 // entrada lee y reescribe todo el log, ~3 s). Al terminar se registra UNA sola entrada. Fuera de la captura vale null (se registra cada uno).
 var _logJsonCapturaAcumulado_ = null;
 
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS [→ Contexto_Base_Web.md §09B009]
-
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS — pregunta 51, tanda 2: CSV de battlelogs [→ Contexto_Base_Web.md §09B010]
-
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS — pregunta 52: periodIndex POR CLAN [→ Contexto_Base_Web.md §09B011]
-
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS — FASE B: JSON sueltos -> "Otros" [→ Contexto_Base_Web.md §09B012]
-
 // Claves normalizadas (ver _normalizarNombreClan_) -> ID de la subcarpeta de [→ Contexto_Base_Web.md §09B013]
 var _SUBCARPETAS_CLAN_ = {
   'grupo\u4e42terna\u2122':   '1J7M0A2sKoN0vwXDHPOKjJ_QkLzwbIoWR', // Nombre en Drive: "Grupo乂Terna™"
@@ -118,13 +139,81 @@ var _ENDPOINT_ROOT_Y_SUBCARPETAS_CLAN_ = {
 };
 
 // ÍNDICE EN MEMORIA de la carpeta Players (FIX 23/07/2026) [→ Contexto_Base_Web.md §09B018]
-
 var _PLAYERS_DRIVE_INDEX_POR_TAG = null; // { playerTag: DriveFile } — TODOS los archivos, sin filtrar por periodo (Fase 18)
 
-// ----- Funciones manuales / punto de entrada -----
+// CAMBIO 08-oct-2026 (rendimiento): antes cada llamada hacía _leerArenaCSV() (leer y parsear Backup_Arena.csv de Drive, ~750 ms) y el roster la llama una vez por miembro (~90 s). Ahora el catálogo se resuelve UNA vez por ejecución a un índice rawName -> texto final (mismo criterio de siempre: primera fila con ese RawName; Nombre, si no Name, + ' (Nombre_2)'; sin base, el rawName). _guardarArenaCSV() lo invalida, así una ejecución que agrega arenas nuevas ve el catálogo actualizado.
+var _ARENA_INDICE_MEMO = null;
+
+// LECTURA DEL CHECKPOINT DE CLANES SIN LLAMAR A LA API (05-oct-2026, pedido usuario) [→ Contexto_Base_Web.md §09B106]
+// Edad maxima aceptada por las lecturas SIN API. Por encima de este valor se considera que la captura de [→ Contexto_Base_Web.md §09B107]
+var CLANES_SIN_API_MAX_EDAD_MS = 3 * 60 * 60 * 1000;
+
+// Hora (_ts, ms) del checkpoint que cargo la ultima llamada a _fetchClanesBasicoSinApi() EN ESTA EJECUCION.
+// Sirve para saber si hay una captura nueva desde la ultima vez que se proceso (0 = nada cargado).
+var CLANES_SIN_API_TS_CARGADO = 0;
+
+/**
+ * PF074 (14-oct-2026): carpetas de temporada y semana dentro de la carpeta del clan de cada endpoint. [→ Contexto_Base_Web.md §PF074]
+ * Esquema: endpoint -> clan -> T-02 -> S-01 -> JSON de esa semana. Los nombres de las carpetas (T-02, S-01, con cero a la
+ * izquierda) son un SUPUESTO por confirmar con la usuaria. Devuelve la carpeta de la semana; la crea si no existe.
+ */
+var _CARPETA_SEMANA_MEM_ = {};
+
+// PRIMERA CONSULTA DE CADA periodIndex (12-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF063]
+// Guerra y Guerra_Logs crean sus filas con la fecha y hora de la PRIMERA consulta a la API de ese periodIndex
+// (un mismo día de guerra cubre dos fechas, porque cambia entre las 4 y las 5 a.m. y no a las 12). Esa hora no
+// cambia aunque la fila o el JSON se sigan actualizando. Clave: temporada|periodIndex|tag del clan (sin #).
+var PRIMERA_CONSULTA_RR_PROP = 'PRIMERA_CONSULTA_RR';
+
+var PRIMERA_CONSULTA_RR_MAX  = 150;
+
+var _PRIMERA_CONSULTA_RR_MEM = null;
+
+// NUEVO 08-oct-2026 (rendimiento del perfil web): _cargarPlayerDesideDrive() recorría TODA la carpeta Players, archivo por archivo, por cada jugador (8-30 s por perfil). Cada tag tiene un único archivo que _guardarPlayerEnDrive() renombra y actualiza en el sitio (su id no cambia), así que basta un índice tag -> id guardado en CacheService. Lo escribe _getPlayersDriveIndexPorTag() cada vez que el bot recorre la carpeta (sin costo extra); 6 h de vida. Un tag que no esté en el índice, un archivo borrado/en papelera o cualquier error caen al recorrido completo de siempre.
+var PLAYERS_IDX_CACHE_KEY = 'players_idx_ids_v1';
+
+// ----- Parámetros que se editan antes de correr las consultas manuales -----
+
+// nombre y locationId que se usan si buscarClanesPorNombreYUbicacion() se [→ Contexto_Base_Web.md §09B034]
+var BUSCAR_CLANES_NOMBRE_YUBI_NOMBRE = 'Nombre del clan';
+
+var BUSCAR_CLANES_NOMBRE_YUBI_LOCATION_ID = 57000184;
+
+// locationId que se usa si buscarClanesPorUbicacion() se corre sin argumento [→ Contexto_Base_Web.md §09B036]
+var BUSCAR_CLANES_UBICACION_LOCATION_ID = 57000184;
+
+// tag de clan que se usa si descargarClanMiembros() se corre sin argumento [→ Contexto_Base_Web.md §09B038]
+var TAG_CLAN_A_CONSULTAR = '#GCRG8L00';
+
+// ID que se usa si descargarLocationPorId() se corre sin argumento desde el [→ Contexto_Base_Web.md §09B043]
+var ID_A_CONSULTAR = 57000184;
+
+// locationId que se usa si descargarRankingClanesPorUbicacion() se corre sin [→ Contexto_Base_Web.md §09B045]
+var RANKING_CLANES_LOCATION_ID = 57000184;
+
+// locationId que se usa si descargarRankingJugadoresPorUbicacion() se corre [→ Contexto_Base_Web.md §09B047]
+var RANKING_JUGADORES_LOCATION_ID = 57000184;
+
+// locationId que se usa si descargarRankingClanesGuerraPorUbicacion() se [→ Contexto_Base_Web.md §09B049]
+var RANKING_GUERRA_CLANES_LOCATION_ID = 57000184;
+
+// locationId que se usa si descargarRankingJugadoresCaminoLeyendasPorUbicacion() [→ Contexto_Base_Web.md §09B051]
+var RANKING_CAMINO_LEYENDAS_LOCATION_ID = 57000184;
+
+// seasonId que se usa si descargarRankingGlobalJugadoresCaminoLeyendasPorTemporada() [→ Contexto_Base_Web.md §09B057]
+var SEASON_A_CONSULTAR = '2026-08';
+
+// playerTag que se usa si descargarBattlelogJugador() se corre sin argumento [→ Contexto_Base_Web.md §09B061]
+var TAG_BATTLELOG_A_CONSULTAR = '#CRCCR2LY9';
+
+// playerTag que se usa si descargarUpcomingChestsJugador() se corre sin [→ Contexto_Base_Web.md §09B067]
+var TAG_UPCOMINGCHESTS_A_CONSULTAR = '#2GG8PJ8GC';
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
+
+// ----- Herramientas del caché y del volcado de la API -----
 
 // SECCION 1: FUNCIONES MANUALES (entry points ejecutables a mano desde el [→ Contexto_Base_Web.md §09B019]
-
 /**
  * MANTENIMIENTO MANUAL — ejecutar UNA sola vez desde el editor de Apps Script [→ Contexto_Base_Web.md §09B020]
  */
@@ -136,7 +225,6 @@ function resetGuardianPeriodIndex() {
 }
 
 // NOTA DE REORDEN (23-ago-2026, pedido usuario): las funciones manuales [→ Contexto_Base_Web.md §09B021]
-
 /**
  * guardarApiDump() [→ Contexto_Base_Web.md §09B022]
  */
@@ -165,7 +253,6 @@ function guardarApiDump() {
 }
 
 // LIMPIEZA DE DUPLICADOS — CACHE DE PLAYERS [→ Contexto_Base_Web.md §09B023]
-
 /**
  * limpiarDuplicadosCachePlayers() [→ Contexto_Base_Web.md §09B024]
  */
@@ -237,6 +324,8 @@ function limpiarDuplicadosCachePlayers() {
   return { eliminados: totalEliminados, detalle: resumen };
 
 }
+
+// ----- Cartas -----
 
 /**
  * descargarCards() [→ Contexto_Base_Web.md §09B025]
@@ -354,11 +443,10 @@ function descargarCards() {
   Logger.log('[Cards] descargarCards() completado' + (usandoRespaldo ? ' (con respaldo).' : '.'));
 }
 
+// ----- Búsqueda de clanes y miembros -----
+
 // TRIGGER SEMANAL DE descargarCards() (27-sep-2026, pedido del usuario) [→ Contexto_Base_Web.md §09B030]
-
 // MOVIDO (05-oct-2026, pedido usuario): activarTriggerDescargarCards()/desactivarTriggerDescargarCards() ya no viven [→ Contexto_Base_Web.md §09B031]
-
-
 /**
  * buscarClanesPorNombre(nombre) [→ Contexto_Base_Web.md §09B032]
  */
@@ -383,11 +471,6 @@ function buscarClanesPorNombre(nombre) {
 /**
  * buscarClanesPorNombreYUbicacion(nombre, locationId) [→ Contexto_Base_Web.md §09B033]
  */
-
-// nombre y locationId que se usan si buscarClanesPorNombreYUbicacion() se [→ Contexto_Base_Web.md §09B034]
-var BUSCAR_CLANES_NOMBRE_YUBI_NOMBRE = 'Nombre del clan';
-var BUSCAR_CLANES_NOMBRE_YUBI_LOCATION_ID = 57000184;
-
 function buscarClanesPorNombreYUbicacion(nombre, locationId) {
   if (nombre === undefined || nombre === null || String(nombre).trim() === '') {
     nombre = BUSCAR_CLANES_NOMBRE_YUBI_NOMBRE;
@@ -420,10 +503,6 @@ function buscarClanesPorNombreYUbicacion(nombre, locationId) {
 /**
  * buscarClanesPorUbicacion(locationId) [→ Contexto_Base_Web.md §09B035]
  */
-
-// locationId que se usa si buscarClanesPorUbicacion() se corre sin argumento [→ Contexto_Base_Web.md §09B036]
-var BUSCAR_CLANES_UBICACION_LOCATION_ID = 57000184;
-
 function buscarClanesPorUbicacion(locationId) {
   if (locationId === undefined || locationId === null || String(locationId).trim() === '') {
     locationId = BUSCAR_CLANES_UBICACION_LOCATION_ID;
@@ -450,10 +529,6 @@ function buscarClanesPorUbicacion(locationId) {
 /**
  * descargarClanMiembros(tag, limit) [→ Contexto_Base_Web.md §09B037]
  */
-
-// tag de clan que se usa si descargarClanMiembros() se corre sin argumento [→ Contexto_Base_Web.md §09B038]
-var TAG_CLAN_A_CONSULTAR = '#GCRG8L00';
-
 function descargarClanMiembros(tag, limit) {
   if (tag === undefined || tag === null || String(tag).trim() === '') {
     tag = TAG_CLAN_A_CONSULTAR;
@@ -480,11 +555,11 @@ function descargarClanMiembros(tag, limit) {
   return ok;
 }
 
+// ----- Torneos globales, ubicaciones y temporadas -----
+
 // -----------------------------------------------------------------------------
 // CONTEXTO (25-sep-2026, pedido del usuario) sobre TODOS los endpoints nuevos
-
 // que se están implementando en este bloque (Locations, Seasons, Cards, [→ Contexto_Base_Web.md §09B039]
-
 /**
  * descargarGlobalTournaments() [→ Contexto_Base_Web.md §09B040]
  */
@@ -566,10 +641,6 @@ function descargarLocations() {
 /**
  * descargarLocationPorId(id) [→ Contexto_Base_Web.md §09B042]
  */
-
-// ID que se usa si descargarLocationPorId() se corre sin argumento desde el [→ Contexto_Base_Web.md §09B043]
-var ID_A_CONSULTAR = 57000184;
-
 function descargarLocationPorId(id) {
   if (id === undefined || id === null || String(id).trim() === '') {
     id = ID_A_CONSULTAR;
@@ -604,12 +675,75 @@ function descargarLocationPorId(id) {
 }
 
 /**
+ * descargarSeasons() [→ Contexto_Base_Web.md §09B058]
+ */
+function descargarSeasons() {
+  var data = _apiGet('/locations/global/seasons');
+  if (!data || !data.items || !data.items.length) {
+    Logger.log('[Seasons] No se pudo descargar /locations/global/seasons (respuesta vacía, sin "items", o el proxy falló).');
+    return;
+  }
+  var items = data.items;
+
+  // 1) JSON completo, respuesta cruda sin filtrar ningún campo.
+  try {
+    var folderJson = DriveApp.getFolderById(DRIVE_FOLDER_ID_SEASONS);
+    var nombreJson = 'Cache_Seasons.json';
+    var contenidoJson = JSON.stringify(data, null, 2);
+    var filesJson = folderJson.getFilesByName(nombreJson);
+    if (filesJson.hasNext()) {
+      _setContentConConteo_(filesJson.next(), contenidoJson);
+    } else {
+      _createFileConConteo_(folderJson, nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
+    }
+    Logger.log('[Seasons] ' + nombreJson + ' guardado (' + items.length + ' temporadas).');
+  } catch (eJson) {
+    Logger.log('[Seasons] Error guardando Cache_Seasons.json: ' + eJson.message);
+  }
+
+  // 2) CSV: N° (posición 1-based, calculada) + id (Supercell "YYYY-MM") + [→ Contexto_Base_Web.md §09B059]
+  try {
+    var ANCLA_ID = '2026-05';
+    var ANCLA_ROYALEAPI = 132;
+    var ANCLA_INTERNA = 1;
+
+    var anclaIndex = -1;
+    var anclaOcurrencias = 0;
+    for (var a = 0; a < items.length; a++) {
+      if (items[a].id === ANCLA_ID) {
+        anclaOcurrencias++;
+        if (anclaIndex === -1) anclaIndex = a;
+      }
+    }
+    if (anclaOcurrencias !== 1) {
+      Logger.log('[Seasons] AVISO: id ancla "' + ANCLA_ID + '" aparece ' + anclaOcurrencias + ' veces en el array (se esperaba exactamente 1) -- no se calculan "RoyaleAPI"/"Interna", quedan vacías en todas las filas.');
+      anclaIndex = -1;
+    }
+
+    var filas = [['N°', 'id', 'RoyaleAPI', 'Interna']];
+    for (var i = 0; i < items.length; i++) {
+      var offset = (anclaIndex === -1) ? null : (i - anclaIndex);
+      filas.push([
+        i + 1,
+        items[i].id !== undefined ? items[i].id : '',
+        offset === null ? '' : (ANCLA_ROYALEAPI + offset),
+        offset === null ? '' : (ANCLA_INTERNA + offset)
+      ]);
+    }
+    _saveCSVToDrive('Backup_Seasons.csv', _encodeCSV(filas));
+    Logger.log('[Seasons] Backup_Seasons.csv sincronizado (' + items.length + ' filas).');
+  } catch (eCsv) {
+    Logger.log('[Seasons] Error guardando Backup_Seasons.csv: ' + eCsv.message);
+  }
+
+  Logger.log('[Seasons] descargarSeasons() completado.');
+}
+
+// ----- Rankings -----
+
+/**
  * descargarRankingClanesPorUbicacion(locationId, limit) [→ Contexto_Base_Web.md §09B044]
  */
-
-// locationId que se usa si descargarRankingClanesPorUbicacion() se corre sin [→ Contexto_Base_Web.md §09B045]
-var RANKING_CLANES_LOCATION_ID = 57000184;
-
 function descargarRankingClanesPorUbicacion(locationId, limit) {
   if (locationId === undefined || locationId === null || String(locationId).trim() === '') {
     locationId = RANKING_CLANES_LOCATION_ID;
@@ -649,10 +783,6 @@ function descargarRankingClanesPorUbicacion(locationId, limit) {
 /**
  * descargarRankingJugadoresPorUbicacion(locationId, limit) [→ Contexto_Base_Web.md §09B046]
  */
-
-// locationId que se usa si descargarRankingJugadoresPorUbicacion() se corre [→ Contexto_Base_Web.md §09B047]
-var RANKING_JUGADORES_LOCATION_ID = 57000184;
-
 function descargarRankingJugadoresPorUbicacion(locationId, limit) {
   if (locationId === undefined || locationId === null || String(locationId).trim() === '') {
     locationId = RANKING_JUGADORES_LOCATION_ID;
@@ -692,10 +822,6 @@ function descargarRankingJugadoresPorUbicacion(locationId, limit) {
 /**
  * descargarRankingClanesGuerraPorUbicacion(locationId, limit) [→ Contexto_Base_Web.md §09B048]
  */
-
-// locationId que se usa si descargarRankingClanesGuerraPorUbicacion() se [→ Contexto_Base_Web.md §09B049]
-var RANKING_GUERRA_CLANES_LOCATION_ID = 57000184;
-
 function descargarRankingClanesGuerraPorUbicacion(locationId, limit) {
   if (locationId === undefined || locationId === null || String(locationId).trim() === '') {
     locationId = RANKING_GUERRA_CLANES_LOCATION_ID;
@@ -735,10 +861,6 @@ function descargarRankingClanesGuerraPorUbicacion(locationId, limit) {
 /**
  * descargarRankingJugadoresCaminoLeyendasPorUbicacion(locationId, limit) [→ Contexto_Base_Web.md §09B050]
  */
-
-// locationId que se usa si descargarRankingJugadoresCaminoLeyendasPorUbicacion() [→ Contexto_Base_Web.md §09B051]
-var RANKING_CAMINO_LEYENDAS_LOCATION_ID = 57000184;
-
 function descargarRankingJugadoresCaminoLeyendasPorUbicacion(locationId, limit) {
   if (locationId === undefined || locationId === null || String(locationId).trim() === '') {
     locationId = RANKING_CAMINO_LEYENDAS_LOCATION_ID;
@@ -882,9 +1004,6 @@ function descargarRankingGlobalGuerraClanes(limit) {
 /**
  * descargarRankingGlobalJugadoresCaminoLeyendasPorTemporada(seasonId, limit) [→ Contexto_Base_Web.md §09B056]
  */
-// seasonId que se usa si descargarRankingGlobalJugadoresCaminoLeyendasPorTemporada() [→ Contexto_Base_Web.md §09B057]
-var SEASON_A_CONSULTAR = '2026-08';
-
 function descargarRankingGlobalJugadoresCaminoLeyendasPorTemporada(seasonId, limit) {
   if (seasonId === undefined || seasonId === null || String(seasonId).trim() === '') {
     seasonId = SEASON_A_CONSULTAR;
@@ -926,78 +1045,11 @@ function descargarRankingGlobalJugadoresCaminoLeyendasPorTemporada(seasonId, lim
   }
 }
 
-/**
- * descargarSeasons() [→ Contexto_Base_Web.md §09B058]
- */
-function descargarSeasons() {
-  var data = _apiGet('/locations/global/seasons');
-  if (!data || !data.items || !data.items.length) {
-    Logger.log('[Seasons] No se pudo descargar /locations/global/seasons (respuesta vacía, sin "items", o el proxy falló).');
-    return;
-  }
-  var items = data.items;
-
-  // 1) JSON completo, respuesta cruda sin filtrar ningún campo.
-  try {
-    var folderJson = DriveApp.getFolderById(DRIVE_FOLDER_ID_SEASONS);
-    var nombreJson = 'Cache_Seasons.json';
-    var contenidoJson = JSON.stringify(data, null, 2);
-    var filesJson = folderJson.getFilesByName(nombreJson);
-    if (filesJson.hasNext()) {
-      _setContentConConteo_(filesJson.next(), contenidoJson);
-    } else {
-      _createFileConConteo_(folderJson, nombreJson, contenidoJson, MimeType.PLAIN_TEXT);
-    }
-    Logger.log('[Seasons] ' + nombreJson + ' guardado (' + items.length + ' temporadas).');
-  } catch (eJson) {
-    Logger.log('[Seasons] Error guardando Cache_Seasons.json: ' + eJson.message);
-  }
-
-  // 2) CSV: N° (posición 1-based, calculada) + id (Supercell "YYYY-MM") + [→ Contexto_Base_Web.md §09B059]
-  try {
-    var ANCLA_ID = '2026-05';
-    var ANCLA_ROYALEAPI = 132;
-    var ANCLA_INTERNA = 1;
-
-    var anclaIndex = -1;
-    var anclaOcurrencias = 0;
-    for (var a = 0; a < items.length; a++) {
-      if (items[a].id === ANCLA_ID) {
-        anclaOcurrencias++;
-        if (anclaIndex === -1) anclaIndex = a;
-      }
-    }
-    if (anclaOcurrencias !== 1) {
-      Logger.log('[Seasons] AVISO: id ancla "' + ANCLA_ID + '" aparece ' + anclaOcurrencias + ' veces en el array (se esperaba exactamente 1) -- no se calculan "RoyaleAPI"/"Interna", quedan vacías en todas las filas.');
-      anclaIndex = -1;
-    }
-
-    var filas = [['N°', 'id', 'RoyaleAPI', 'Interna']];
-    for (var i = 0; i < items.length; i++) {
-      var offset = (anclaIndex === -1) ? null : (i - anclaIndex);
-      filas.push([
-        i + 1,
-        items[i].id !== undefined ? items[i].id : '',
-        offset === null ? '' : (ANCLA_ROYALEAPI + offset),
-        offset === null ? '' : (ANCLA_INTERNA + offset)
-      ]);
-    }
-    _saveCSVToDrive('Backup_Seasons.csv', _encodeCSV(filas));
-    Logger.log('[Seasons] Backup_Seasons.csv sincronizado (' + items.length + ' filas).');
-  } catch (eCsv) {
-    Logger.log('[Seasons] Error guardando Backup_Seasons.csv: ' + eCsv.message);
-  }
-
-  Logger.log('[Seasons] descargarSeasons() completado.');
-}
+// ----- Battlelog y cofres de un jugador -----
 
 /**
  * descargarBattlelogJugador(playerTag) [→ Contexto_Base_Web.md §09B060]
  */
-
-// playerTag que se usa si descargarBattlelogJugador() se corre sin argumento [→ Contexto_Base_Web.md §09B061]
-var TAG_BATTLELOG_A_CONSULTAR = '#CRCCR2LY9';
-
 function descargarBattlelogJugador(playerTag) {
   if (playerTag === undefined || playerTag === null || String(playerTag).trim() === '') {
     playerTag = TAG_BATTLELOG_A_CONSULTAR;
@@ -1088,6 +1140,268 @@ function descargarBattlelogJugador(playerTag) {
   }
 
   return true;
+}
+
+/**
+ * descargarUpcomingChestsJugador(playerTag) [→ Contexto_Base_Web.md §09B066]
+ */
+function descargarUpcomingChestsJugador(playerTag) {
+  if (playerTag === undefined || playerTag === null || String(playerTag).trim() === '') {
+    playerTag = TAG_UPCOMINGCHESTS_A_CONSULTAR;
+    Logger.log('[UpcomingChests] Consultando playerTag = ' + playerTag +
+               ' (definido en la variable TAG_UPCOMINGCHESTS_A_CONSULTAR, arriba de esta función).');
+  }
+  var tag = String(playerTag || '').trim().toUpperCase();
+  if (tag && tag.charAt(0) !== '#') tag = '#' + tag;
+  if (!tag || tag === '#') {
+    Logger.log('[UpcomingChests] descargarUpcomingChestsJugador(): falta el tag del jugador.');
+    return false;
+  }
+
+  var data = _apiGet('/players/' + encodeTag(tag) + '/upcomingchests');
+  if (!data || !Array.isArray(data.items)) {
+    Logger.log('[UpcomingChests] No se pudo descargar upcomingchests de ' + tag +
+               ' (respuesta vacía, sin "items", o el proxy falló).');
+    return false;
+  }
+
+  var guardadoOk = false;
+  try {
+    var filename  = _buildBattlelogFilename(tag, ''); // sin clan disponible en este endpoint -> "Sin clan"
+    var contenido = JSON.stringify(data, null, 2);
+    var folder    = DriveApp.getFolderById(DRIVE_FOLDER_ID_UPCOMINGCHESTS);
+
+    // Buscar si ya existe un archivo de este jugador en la carpeta (mismo [→ Contexto_Base_Web.md §09B068]
+    var reTag = /-\s(#[0-9A-Z]+)\.json$/i;
+    var archivoExistente = null;
+    var archivos = folder.getFiles();
+    while (archivos.hasNext()) {
+      var f = archivos.next();
+      var m = reTag.exec(f.getName());
+      if (m && m[1].toUpperCase() === tag) {
+        archivoExistente = f;
+        break;
+      }
+    }
+
+    if (archivoExistente) {
+      if (archivoExistente.getName() !== filename) {
+        archivoExistente.setName(filename);
+      }
+      _setContentConConteo_(archivoExistente, contenido);
+      Logger.log('[UpcomingChests] ' + filename + ' actualizado (' + data.items.length + ' cofres).');
+    } else {
+      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
+      Logger.log('[UpcomingChests] ' + filename + ' creado (' + data.items.length + ' cofres).');
+    }
+    guardadoOk = true;
+  } catch (e) {
+    Logger.log('[UpcomingChests] Error guardando upcomingchests de ' + tag + ': ' + e.message);
+    return false;
+  }
+
+  try {
+    var agregadas = _actualizarBackupCofresConChests(data.items);
+    if (agregadas > 0) {
+      Logger.log('[UpcomingChests] Agregados ' + agregadas + ' cofre(s) nuevo(s) a Backup_Cofres.csv.');
+    } else {
+      Logger.log('[UpcomingChests] Sin cofres nuevos para Backup_Cofres.csv (' + data.items.length + ' en la cola de ' + tag + ').');
+    }
+  } catch (eCsv) {
+    // El JSON ya quedó guardado (guardadoOk=true); un fallo aquí no lo revierte.
+    Logger.log('[UpcomingChests] Error actualizando Backup_Cofres.csv: ' + eCsv.message);
+  }
+
+  return guardadoOk;
+}
+
+// ===== PARTE 2 — Funciones que no se corren a mano =====
+
+// ----- Battlelog y cofres de todos los jugadores (descarga, punto de control y respaldos CSV) -----
+
+/**
+ * _descargarBattlelogYCofresParaTodos() [→ Contexto_Base_Web.md §09B069]
+ */
+function _descargarBattlelogYCofresParaTodos() {
+  // CAMBIO (29-sep-2026, pedido de la usuaria): ya no depende de [→ Contexto_Base_Web.md §09B070]
+  if (BATTLELOGCHESTS_API_ENABLED !== true) {
+    Logger.log('[Battlelog/UpcomingChests] BATTLELOGCHESTS_API_ENABLED no es `true` (valor actual: ' +
+      BATTLELOGCHESTS_API_ENABLED + '): se omiten battlelog y upcomingchests en la corrida masiva ' +
+      '(la web los descarga a pedido, una vez al dia por Tag).');
+    return true;
+  }
+
+  // Mismo criterio que _fetchAllClanData(): asegura /players en cache antes [→ Contexto_Base_Web.md §09B071]
+  var playersOk = true;
+  if (_playersCompletoEnEstaEjecucion && CACHE_CLAN_DATA && CACHE_CLAN_DATA._players) {
+    Logger.log('[Battlelog/UpcomingChests] /players ya se completó en esta ejecución, se omite repetir.');
+  } else {
+    playersOk = _fetchPlayersData();
+  }
+  if (!playersOk) {
+    Logger.log('[Battlelog/UpcomingChests] /players quedó incompleto (presupuesto interno agotado); ' +
+      'se reintenta este mismo paso en la próxima continuación, todavía sin tocar battlelog/upcomingchests.');
+    return false;
+  }
+
+  var tags = _getTagsConPlayerCache(); // 31_Cards_Mazos.gs -- mismos tags con /players en cache
+  if (!tags || tags.length === 0) {
+    Logger.log('[Battlelog/UpcomingChests] Sin jugadores con /players en cache; nada que consultar.');
+    return true;
+  }
+
+  // Cargar progreso de una tanda anterior de ESTE MISMO ciclo (ver [→ Contexto_Base_Web.md §09B072]
+  var progreso = _cargarProgresoBattlelogChests();
+  var hechos = {};
+  if (progreso && progreso.length) {
+    for (var h = 0; h < progreso.length; h++) hechos[progreso[h]] = true;
+    Logger.log('[Battlelog/UpcomingChests] Progreso anterior recuperado de Drive: ' + progreso.length +
+      ' jugador(es) ya procesados, no se vuelven a consultar.');
+  }
+
+  var pendientes = [];
+  for (var p = 0; p < tags.length; p++) {
+    if (!hechos[tags[p]]) pendientes.push(tags[p]);
+  }
+
+  Logger.log('[Battlelog/UpcomingChests] Pendientes: ' + pendientes.length + ' de ' + tags.length +
+    ' totales (' + (tags.length - pendientes.length) + ' ya procesados).');
+
+  var inicio = Date.now();
+  var seCortoPorPresupuesto = false;
+  var okBattlelog = 0;
+  var okChests = 0;
+  var m;
+
+  for (m = 0; m < pendientes.length; m++) {
+    if ((Date.now() - inicio) > CFG.BATTLELOGCHESTS_FETCH_BUDGET_MS) {
+      Logger.log('[Battlelog/UpcomingChests] Presupuesto de tiempo (' +
+        (CFG.BATTLELOGCHESTS_FETCH_BUDGET_MS / 1000) + 's) agotado en ' + m + '/' + pendientes.length +
+        '. Se guarda el progreso y se corta aquí.');
+      seCortoPorPresupuesto = true;
+      break;
+    }
+    if (m >= CFG.BATTLELOGCHESTS_FETCH_MAX_POR_TANDA) {
+      Logger.log('[Battlelog/UpcomingChests] Límite de ' + CFG.BATTLELOGCHESTS_FETCH_MAX_POR_TANDA +
+        ' jugador(es) por tanda alcanzado en ' + m + '/' + pendientes.length +
+        '. Se guarda el progreso y se corta aquí; la próxima continuación retoma exactamente donde quedó.');
+      seCortoPorPresupuesto = true;
+      break;
+    }
+
+    var tag = pendientes[m];
+    try {
+      if (descargarBattlelogJugador(tag)) okBattlelog++;
+    } catch (eB) {
+      Logger.log('[Battlelog] Error con ' + tag + ': ' + eB.message);
+    }
+    try {
+      if (descargarUpcomingChestsJugador(tag)) okChests++;
+    } catch (eC) {
+      Logger.log('[UpcomingChests] Error con ' + tag + ': ' + eC.message);
+    }
+    hechos[tag] = true; // procesado (con o sin error) -- no se vuelve a reintentar solo por un error puntual
+    Utilities.sleep(200);
+  }
+
+  if (seCortoPorPresupuesto) {
+    _guardarProgresoBattlelogChests(Object.keys(hechos));
+    Logger.log('[Battlelog/UpcomingChests] INCOMPLETO. Procesados hasta el corte: ' + Object.keys(hechos).length +
+      '/' + tags.length + ' | Pendientes para la próxima continuación: ' + (pendientes.length - m) +
+      ' | En esta tanda: ' + okBattlelog + ' battlelog(s) OK, ' + okChests + ' upcomingchest(s) OK.');
+    _anotarProgresoPaso_('battlelog/upcomingchests: ' + Object.keys(hechos).length + '/' + tags.length + ' hechos', Object.keys(hechos).length); // PF283
+    return false;
+  }
+
+  Logger.log('[Battlelog/UpcomingChests] Completado para ' + tags.length + ' jugador(es) (' +
+    pendientes.length + ' procesados en esta tanda, ' + (tags.length - pendientes.length) +
+    ' ya venían de una tanda anterior): ' + okBattlelog + ' battlelog(s) OK, ' + okChests + ' upcomingchest(s) OK.');
+  return true;
+}
+
+// PERSISTENCIA DE PROGRESO DE BATTLELOG + UPCOMINGCHESTS (para reanudación [→ Contexto_Base_Web.md §09B073]
+/**
+ * _guardarProgresoBattlelogChests(tagsHechos) [→ Contexto_Base_Web.md §09B074]
+ */
+function _guardarProgresoBattlelogChests(tagsHechos) {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var content = JSON.stringify({ _ts: Date.now(), tags: (tagsHechos || []) });
+    _guardarArchivoProgresoVerificado_(folder, BATTLELOGCHESTS_PROGRESS_FILE, content); // PF291
+  } catch (e) {
+    Logger.log('[Battlelog/UpcomingChests] Error guardando progreso en Drive: ' + e.message);
+  }
+}
+
+/**
+ * _cargarProgresoBattlelogChests() [→ Contexto_Base_Web.md §09B075]
+ */
+function _cargarProgresoBattlelogChests() {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(BATTLELOGCHESTS_PROGRESS_FILE);
+    if (!files.hasNext()) return null;
+    var file = files.next();
+    var text = file.getBlob().getDataAsString('UTF-8');
+    var parsed = JSON.parse(text);
+
+    if (!parsed || typeof parsed !== 'object' || !parsed._ts) return null;
+
+    var edadMs = Date.now() - Number(parsed._ts);
+    if (edadMs > CFG.BATTLELOGCHESTS_PROGRESO_MAX_EDAD_MS) {
+      Logger.log('[Battlelog/UpcomingChests] Progreso en Drive tiene ' + Math.round(edadMs / 60000) +
+        ' min — más viejo que el máximo permitido (' + (CFG.BATTLELOGCHESTS_PROGRESO_MAX_EDAD_MS / 60000) +
+        ' min). Se descarta como resto de un ciclo anterior, no se reutiliza.');
+      file.setTrashed(true);
+      return null;
+    }
+
+    return parsed.tags || null;
+  } catch (e) {
+    Logger.log('[Battlelog/UpcomingChests] Error cargando progreso desde Drive: ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * _borrarProgresoBattlelogChests() [→ Contexto_Base_Web.md §09B076]
+ */
+function _borrarProgresoBattlelogChests() {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(BATTLELOGCHESTS_PROGRESS_FILE);
+    while (files.hasNext()) {
+      files.next().setTrashed(true);
+    }
+  } catch (e) {
+    Logger.log('[Battlelog/UpcomingChests] Error borrando progreso de Drive: ' + e.message);
+  }
+}
+
+/**
+ * _extraerClanDeBattlelog(data, playerTagNormalizado) [→ Contexto_Base_Web.md §09B079]
+ */
+function _extraerClanDeBattlelog(data, playerTagNormalizado) {
+  for (var i = 0; i < data.length; i++) {
+    var team = (data[i] && Array.isArray(data[i].team)) ? data[i].team : [];
+    for (var j = 0; j < team.length; j++) {
+      var integrante = team[j];
+      var tagIntegrante = String((integrante && integrante.tag) || '').trim().toUpperCase();
+      if (tagIntegrante === playerTagNormalizado && integrante.clan && integrante.clan.name) {
+        return integrante.clan.name;
+      }
+    }
+  }
+  return '';
+}
+
+/**
+ * _buildBattlelogFilename(playerTag, clanName) [→ Contexto_Base_Web.md §09B078]
+ */
+function _buildBattlelogFilename(playerTag, clanName) {
+  var fechaHora = Utilities.formatDate(new Date(), 'America/Lima', 'dd-MM-yyyy HH.mm');
+  var clan = (clanName && String(clanName).trim()) ? String(clanName).trim() : 'Sin clan';
+  return fechaHora + ' - ' + clan + ' - ' + String(playerTag || '').trim() + '.json';
 }
 
 /**
@@ -1204,383 +1518,6 @@ function _registrarBattlelogEnCsv_(data, tag, nombreArchivo) {
 }
 
 /**
- * descargarUpcomingChestsJugador(playerTag) [→ Contexto_Base_Web.md §09B066]
- */
-
-// playerTag que se usa si descargarUpcomingChestsJugador() se corre sin [→ Contexto_Base_Web.md §09B067]
-var TAG_UPCOMINGCHESTS_A_CONSULTAR = '#2GG8PJ8GC';
-
-function descargarUpcomingChestsJugador(playerTag) {
-  if (playerTag === undefined || playerTag === null || String(playerTag).trim() === '') {
-    playerTag = TAG_UPCOMINGCHESTS_A_CONSULTAR;
-    Logger.log('[UpcomingChests] Consultando playerTag = ' + playerTag +
-               ' (definido en la variable TAG_UPCOMINGCHESTS_A_CONSULTAR, arriba de esta función).');
-  }
-  var tag = String(playerTag || '').trim().toUpperCase();
-  if (tag && tag.charAt(0) !== '#') tag = '#' + tag;
-  if (!tag || tag === '#') {
-    Logger.log('[UpcomingChests] descargarUpcomingChestsJugador(): falta el tag del jugador.');
-    return false;
-  }
-
-  var data = _apiGet('/players/' + encodeTag(tag) + '/upcomingchests');
-  if (!data || !Array.isArray(data.items)) {
-    Logger.log('[UpcomingChests] No se pudo descargar upcomingchests de ' + tag +
-               ' (respuesta vacía, sin "items", o el proxy falló).');
-    return false;
-  }
-
-  var guardadoOk = false;
-  try {
-    var filename  = _buildBattlelogFilename(tag, ''); // sin clan disponible en este endpoint -> "Sin clan"
-    var contenido = JSON.stringify(data, null, 2);
-    var folder    = DriveApp.getFolderById(DRIVE_FOLDER_ID_UPCOMINGCHESTS);
-
-    // Buscar si ya existe un archivo de este jugador en la carpeta (mismo [→ Contexto_Base_Web.md §09B068]
-    var reTag = /-\s(#[0-9A-Z]+)\.json$/i;
-    var archivoExistente = null;
-    var archivos = folder.getFiles();
-    while (archivos.hasNext()) {
-      var f = archivos.next();
-      var m = reTag.exec(f.getName());
-      if (m && m[1].toUpperCase() === tag) {
-        archivoExistente = f;
-        break;
-      }
-    }
-
-    if (archivoExistente) {
-      if (archivoExistente.getName() !== filename) {
-        archivoExistente.setName(filename);
-      }
-      _setContentConConteo_(archivoExistente, contenido);
-      Logger.log('[UpcomingChests] ' + filename + ' actualizado (' + data.items.length + ' cofres).');
-    } else {
-      _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
-      Logger.log('[UpcomingChests] ' + filename + ' creado (' + data.items.length + ' cofres).');
-    }
-    guardadoOk = true;
-  } catch (e) {
-    Logger.log('[UpcomingChests] Error guardando upcomingchests de ' + tag + ': ' + e.message);
-    return false;
-  }
-
-  try {
-    var agregadas = _actualizarBackupCofresConChests(data.items);
-    if (agregadas > 0) {
-      Logger.log('[UpcomingChests] Agregados ' + agregadas + ' cofre(s) nuevo(s) a Backup_Cofres.csv.');
-    } else {
-      Logger.log('[UpcomingChests] Sin cofres nuevos para Backup_Cofres.csv (' + data.items.length + ' en la cola de ' + tag + ').');
-    }
-  } catch (eCsv) {
-    // El JSON ya quedó guardado (guardadoOk=true); un fallo aquí no lo revierte.
-    Logger.log('[UpcomingChests] Error actualizando Backup_Cofres.csv: ' + eCsv.message);
-  }
-
-  return guardadoOk;
-}
-
-/**
- * _descargarBattlelogYCofresParaTodos() [→ Contexto_Base_Web.md §09B069]
- */
-function _descargarBattlelogYCofresParaTodos() {
-  // CAMBIO (29-sep-2026, pedido de la usuaria): ya no depende de [→ Contexto_Base_Web.md §09B070]
-  if (BATTLELOGCHESTS_API_ENABLED !== true) {
-    Logger.log('[Battlelog/UpcomingChests] BATTLELOGCHESTS_API_ENABLED no es `true` (valor actual: ' +
-      BATTLELOGCHESTS_API_ENABLED + '): se omiten battlelog y upcomingchests en la corrida masiva ' +
-      '(la web los descarga a pedido, una vez al dia por Tag).');
-    return true;
-  }
-
-  // Mismo criterio que _fetchAllClanData(): asegura /players en cache antes [→ Contexto_Base_Web.md §09B071]
-  var playersOk = true;
-  if (_playersCompletoEnEstaEjecucion && CACHE_CLAN_DATA && CACHE_CLAN_DATA._players) {
-    Logger.log('[Battlelog/UpcomingChests] /players ya se completó en esta ejecución, se omite repetir.');
-  } else {
-    playersOk = _fetchPlayersData();
-  }
-  if (!playersOk) {
-    Logger.log('[Battlelog/UpcomingChests] /players quedó incompleto (presupuesto interno agotado); ' +
-      'se reintenta este mismo paso en la próxima continuación, todavía sin tocar battlelog/upcomingchests.');
-    return false;
-  }
-
-  var tags = _getTagsConPlayerCache(); // 31_Cards_Mazos.gs -- mismos tags con /players en cache
-  if (!tags || tags.length === 0) {
-    Logger.log('[Battlelog/UpcomingChests] Sin jugadores con /players en cache; nada que consultar.');
-    return true;
-  }
-
-  // Cargar progreso de una tanda anterior de ESTE MISMO ciclo (ver [→ Contexto_Base_Web.md §09B072]
-  var progreso = _cargarProgresoBattlelogChests();
-  var hechos = {};
-  if (progreso && progreso.length) {
-    for (var h = 0; h < progreso.length; h++) hechos[progreso[h]] = true;
-    Logger.log('[Battlelog/UpcomingChests] Progreso anterior recuperado de Drive: ' + progreso.length +
-      ' jugador(es) ya procesados, no se vuelven a consultar.');
-  }
-
-  var pendientes = [];
-  for (var p = 0; p < tags.length; p++) {
-    if (!hechos[tags[p]]) pendientes.push(tags[p]);
-  }
-
-  Logger.log('[Battlelog/UpcomingChests] Pendientes: ' + pendientes.length + ' de ' + tags.length +
-    ' totales (' + (tags.length - pendientes.length) + ' ya procesados).');
-
-  var inicio = Date.now();
-  var seCortoPorPresupuesto = false;
-  var okBattlelog = 0;
-  var okChests = 0;
-  var m;
-
-  for (m = 0; m < pendientes.length; m++) {
-    if ((Date.now() - inicio) > CFG.BATTLELOGCHESTS_FETCH_BUDGET_MS) {
-      Logger.log('[Battlelog/UpcomingChests] Presupuesto de tiempo (' +
-        (CFG.BATTLELOGCHESTS_FETCH_BUDGET_MS / 1000) + 's) agotado en ' + m + '/' + pendientes.length +
-        '. Se guarda el progreso y se corta aquí.');
-      seCortoPorPresupuesto = true;
-      break;
-    }
-    if (m >= CFG.BATTLELOGCHESTS_FETCH_MAX_POR_TANDA) {
-      Logger.log('[Battlelog/UpcomingChests] Límite de ' + CFG.BATTLELOGCHESTS_FETCH_MAX_POR_TANDA +
-        ' jugador(es) por tanda alcanzado en ' + m + '/' + pendientes.length +
-        '. Se guarda el progreso y se corta aquí; la próxima continuación retoma exactamente donde quedó.');
-      seCortoPorPresupuesto = true;
-      break;
-    }
-
-    var tag = pendientes[m];
-    try {
-      if (descargarBattlelogJugador(tag)) okBattlelog++;
-    } catch (eB) {
-      Logger.log('[Battlelog] Error con ' + tag + ': ' + eB.message);
-    }
-    try {
-      if (descargarUpcomingChestsJugador(tag)) okChests++;
-    } catch (eC) {
-      Logger.log('[UpcomingChests] Error con ' + tag + ': ' + eC.message);
-    }
-    hechos[tag] = true; // procesado (con o sin error) -- no se vuelve a reintentar solo por un error puntual
-    Utilities.sleep(200);
-  }
-
-  if (seCortoPorPresupuesto) {
-    _guardarProgresoBattlelogChests(Object.keys(hechos));
-    Logger.log('[Battlelog/UpcomingChests] INCOMPLETO. Procesados hasta el corte: ' + Object.keys(hechos).length +
-      '/' + tags.length + ' | Pendientes para la próxima continuación: ' + (pendientes.length - m) +
-      ' | En esta tanda: ' + okBattlelog + ' battlelog(s) OK, ' + okChests + ' upcomingchest(s) OK.');
-    _anotarProgresoPaso_('battlelog/upcomingchests: ' + Object.keys(hechos).length + '/' + tags.length + ' hechos', Object.keys(hechos).length); // PF283
-    return false;
-  }
-
-  Logger.log('[Battlelog/UpcomingChests] Completado para ' + tags.length + ' jugador(es) (' +
-    pendientes.length + ' procesados en esta tanda, ' + (tags.length - pendientes.length) +
-    ' ya venían de una tanda anterior): ' + okBattlelog + ' battlelog(s) OK, ' + okChests + ' upcomingchest(s) OK.');
-  return true;
-}
-
-// PERSISTENCIA DE PROGRESO DE BATTLELOG + UPCOMINGCHESTS (para reanudación [→ Contexto_Base_Web.md §09B073]
-
-/**
- * _guardarProgresoBattlelogChests(tagsHechos) [→ Contexto_Base_Web.md §09B074]
- */
-function _guardarProgresoBattlelogChests(tagsHechos) {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var content = JSON.stringify({ _ts: Date.now(), tags: (tagsHechos || []) });
-    _guardarArchivoProgresoVerificado_(folder, BATTLELOGCHESTS_PROGRESS_FILE, content); // PF291
-  } catch (e) {
-    Logger.log('[Battlelog/UpcomingChests] Error guardando progreso en Drive: ' + e.message);
-  }
-}
-
-/**
- * _cargarProgresoBattlelogChests() [→ Contexto_Base_Web.md §09B075]
- */
-function _cargarProgresoBattlelogChests() {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(BATTLELOGCHESTS_PROGRESS_FILE);
-    if (!files.hasNext()) return null;
-    var file = files.next();
-    var text = file.getBlob().getDataAsString('UTF-8');
-    var parsed = JSON.parse(text);
-
-    if (!parsed || typeof parsed !== 'object' || !parsed._ts) return null;
-
-    var edadMs = Date.now() - Number(parsed._ts);
-    if (edadMs > CFG.BATTLELOGCHESTS_PROGRESO_MAX_EDAD_MS) {
-      Logger.log('[Battlelog/UpcomingChests] Progreso en Drive tiene ' + Math.round(edadMs / 60000) +
-        ' min — más viejo que el máximo permitido (' + (CFG.BATTLELOGCHESTS_PROGRESO_MAX_EDAD_MS / 60000) +
-        ' min). Se descarta como resto de un ciclo anterior, no se reutiliza.');
-      file.setTrashed(true);
-      return null;
-    }
-
-    return parsed.tags || null;
-  } catch (e) {
-    Logger.log('[Battlelog/UpcomingChests] Error cargando progreso desde Drive: ' + e.message);
-    return null;
-  }
-}
-
-/**
- * _borrarProgresoBattlelogChests() [→ Contexto_Base_Web.md §09B076]
- */
-function _borrarProgresoBattlelogChests() {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(BATTLELOGCHESTS_PROGRESS_FILE);
-    while (files.hasNext()) {
-      files.next().setTrashed(true);
-    }
-  } catch (e) {
-    Logger.log('[Battlelog/UpcomingChests] Error borrando progreso de Drive: ' + e.message);
-  }
-}
-
-/**
- * _agregarCartasApiAMapa(map, items, esTorre) [→ Contexto_Base_Web.md §09B077]
- */
-function _agregarCartasApiAMapa(map, items, esTorre) {
-  for (var i = 0; i < items.length; i++) {
-    var c = items[i];
-    if (!c || c.id === undefined) continue;
-    var iconUrls = c.iconUrls || {};
-    map[String(c.id)] = {
-      name:              c.name              || '',
-      maxLevel:          c.maxLevel           || '',
-      maxEvolutionLevel: c.maxEvolutionLevel !== undefined ? c.maxEvolutionLevel : '',
-      rarity:            c.rarity             || '',
-      elixirCost:        c.elixirCost !== undefined ? c.elixirCost : '',
-      iconMedium:          iconUrls.medium          || '',
-      iconHeroMedium:      iconUrls.heroMedium      || '',
-      iconEvolutionMedium: iconUrls.evolutionMedium || '',
-      esTorre:           esTorre === true
-    };
-  }
-}
-
-/**
- * _buildBattlelogFilename(playerTag, clanName) [→ Contexto_Base_Web.md §09B078]
- */
-function _buildBattlelogFilename(playerTag, clanName) {
-  var fechaHora = Utilities.formatDate(new Date(), 'America/Lima', 'dd-MM-yyyy HH.mm');
-  var clan = (clanName && String(clanName).trim()) ? String(clanName).trim() : 'Sin clan';
-  return fechaHora + ' - ' + clan + ' - ' + String(playerTag || '').trim() + '.json';
-}
-
-/**
- * _extraerClanDeBattlelog(data, playerTagNormalizado) [→ Contexto_Base_Web.md §09B079]
- */
-function _extraerClanDeBattlelog(data, playerTagNormalizado) {
-  for (var i = 0; i < data.length; i++) {
-    var team = (data[i] && Array.isArray(data[i].team)) ? data[i].team : [];
-    for (var j = 0; j < team.length; j++) {
-      var integrante = team[j];
-      var tagIntegrante = String((integrante && integrante.tag) || '').trim().toUpperCase();
-      if (tagIntegrante === playerTagNormalizado && integrante.clan && integrante.clan.name) {
-        return integrante.clan.name;
-      }
-    }
-  }
-  return '';
-}
-
-/**
- * _leerCofresCSV() [→ Contexto_Base_Web.md §09B080]
- */
-function _leerCofresCSV() {
-  // FIX (27-sep-2026): Link se agregó a mano a Backup_Cofres.csv; el
-  // encabezado por defecto (archivo inexistente/vacío) ahora también la lleva.
-  var headersDefault = ['N°', 'Name', 'Nombre', 'Link'];
-  var csvText = _loadCSVFromDrive('Backup_Cofres.csv');
-  if (!csvText) return { headers: headersDefault, rows: [] };
-
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
-
-  return { headers: parsed[0], rows: parsed.slice(1) };
-}
-
-/**
- * _guardarCofresCSV(headers, rows) [→ Contexto_Base_Web.md §09B081]
- */
-function _guardarCofresCSV(headers, rows) {
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive('Backup_Cofres.csv', _encodeCSV([headers].concat(rows)));
-}
-
-/**
- * _actualizarBackupCofresConChests(items) [→ Contexto_Base_Web.md §09B082]
- */
-function _actualizarBackupCofresConChests(items) {
-  if (!items || !items.length) return 0;
-
-  var csv = _leerCofresCSV();
-
-  var existentes = {};
-  var idxNameExist = csv.headers.indexOf('Name'); // por nombre de columna (FIX 27-sep-2026); 1 si no se encuentra
-  if (idxNameExist < 0) idxNameExist = 1;
-  for (var e = 0; e < csv.rows.length; e++) {
-    var nameExist = String(csv.rows[e][idxNameExist] || '').trim(); // columna Name
-    if (nameExist) existentes[nameExist] = true;
-  }
-
-  var nuevasFilas = [];
-  var vistosEnEstaTanda = {};
-  for (var i = 0; i < items.length; i++) {
-    var nombreCofre = String((items[i] && items[i].name) || '').trim();
-    if (!nombreCofre) continue;
-    if (existentes[nombreCofre] || vistosEnEstaTanda[nombreCofre]) continue;
-    vistosEnEstaTanda[nombreCofre] = true;
-    // FIX (27-sep-2026, pedido usuario -- se agregó a mano la columna Link a [→ Contexto_Base_Web.md §09B083]
-    var filaNueva = [];
-    for (var c = 0; c < csv.headers.length; c++) filaNueva.push('');
-    var idxNameCol = csv.headers.indexOf('Name');
-    filaNueva[idxNameCol > -1 ? idxNameCol : 1] = nombreCofre;
-    nuevasFilas.push(filaNueva);
-  }
-
-  if (nuevasFilas.length === 0) return 0;
-
-  for (var j = 0; j < nuevasFilas.length; j++) csv.rows.push(nuevasFilas[j]);
-  _guardarCofresCSV(csv.headers, csv.rows);
-  return nuevasFilas.length;
-}
-
-/**
- * _leerArenaCSV() [→ Contexto_Base_Web.md §09B084]
- */
-function _leerArenaCSV() {
-  var headersDefault = ['N°', 'ID', 'Name', 'RawName', 'Nombre', 'Nombre_2'];
-  var csvText = _loadCSVFromDrive('Backup_Arena.csv');
-  if (!csvText) return { headers: headersDefault, rows: [] };
-
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
-
-  return { headers: parsed[0], rows: parsed.slice(1) };
-}
-
-/**
- * _guardarArenaCSV(headers, rows) [→ Contexto_Base_Web.md §09B085]
- */
-function _guardarArenaCSV(headers, rows) {
-  rows.sort(function (a, b) {
-    var nameA = String(a[2] || ''), nameB = String(b[2] || '');
-    if (nameA !== nameB) return nameA < nameB ? -1 : 1;
-    var rawA = String(a[3] || ''), rawB = String(b[3] || '');
-    if (rawA === rawB) return 0;
-    return rawA < rawB ? -1 : 1;
-  });
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive('Backup_Arena.csv', _encodeCSV([headers].concat(rows)));
-  _ARENA_INDICE_MEMO = null; // 08-oct-2026: el catálogo cambió; _resolverArenaDesdeCatalogo() lo vuelve a leer
-}
-
-/**
  * _actualizarBackupArenaConBattlelog(battles) [→ Contexto_Base_Web.md §09B086]
  */
 function _actualizarBackupArenaConBattlelog(battles) {
@@ -1617,32 +1554,6 @@ function _actualizarBackupArenaConBattlelog(battles) {
   for (var j = 0; j < nuevasFilas.length; j++) csv.rows.push(nuevasFilas[j]);
   _guardarArenaCSV(csv.headers, csv.rows);
   return nuevasFilas.length;
-}
-
-/**
- * _resolverArenaDesdeCatalogo(rawName) [→ Contexto_Base_Web.md §09B087]
- */
-// CAMBIO 08-oct-2026 (rendimiento): antes cada llamada hacía _leerArenaCSV() (leer y parsear Backup_Arena.csv de Drive, ~750 ms) y el roster la llama una vez por miembro (~90 s). Ahora el catálogo se resuelve UNA vez por ejecución a un índice rawName -> texto final (mismo criterio de siempre: primera fila con ese RawName; Nombre, si no Name, + ' (Nombre_2)'; sin base, el rawName). _guardarArenaCSV() lo invalida, así una ejecución que agrega arenas nuevas ve el catálogo actualizado.
-var _ARENA_INDICE_MEMO = null;
-function _resolverArenaDesdeCatalogo(rawName) {
-  var rawStr = String(rawName === undefined || rawName === null ? '' : rawName).trim();
-  if (!rawStr) return '';
-
-  if (!_ARENA_INDICE_MEMO) {
-    var idx = {};
-    var csv = _leerArenaCSV();
-    for (var i = 0; i < csv.rows.length; i++) {
-      var raw = String(csv.rows[i][3] || '').trim();
-      if (!raw || Object.prototype.hasOwnProperty.call(idx, raw)) continue; // la primera fila con ese RawName manda
-      var nombreManual = String(csv.rows[i][4] || '').trim(); // Nombre (E)
-      var nameIngles   = String(csv.rows[i][2] || '').trim(); // Name (C)
-      var nombre2      = String(csv.rows[i][5] || '').trim(); // Nombre_2 (F) -- antes no se leía
-      var base = nombreManual || nameIngles;
-      idx[raw] = base ? (nombre2 ? (base + ' (' + nombre2 + ')') : base) : raw; // sin Nombre ni Name completos -- se cae al rawName
-    }
-    _ARENA_INDICE_MEMO = idx;
-  }
-  return Object.prototype.hasOwnProperty.call(_ARENA_INDICE_MEMO, rawStr) ? _ARENA_INDICE_MEMO[rawStr] : rawStr; // sin match en el catálogo -- se muestra el rawName tal cual llegó
 }
 
 /**
@@ -1692,6 +1603,146 @@ function _actualizarBackupModoConBattlelog(battles) {
 }
 
 /**
+ * _actualizarBackupCofresConChests(items) [→ Contexto_Base_Web.md §09B082]
+ */
+function _actualizarBackupCofresConChests(items) {
+  if (!items || !items.length) return 0;
+
+  var csv = _leerCofresCSV();
+
+  var existentes = {};
+  var idxNameExist = csv.headers.indexOf('Name'); // por nombre de columna (FIX 27-sep-2026); 1 si no se encuentra
+  if (idxNameExist < 0) idxNameExist = 1;
+  for (var e = 0; e < csv.rows.length; e++) {
+    var nameExist = String(csv.rows[e][idxNameExist] || '').trim(); // columna Name
+    if (nameExist) existentes[nameExist] = true;
+  }
+
+  var nuevasFilas = [];
+  var vistosEnEstaTanda = {};
+  for (var i = 0; i < items.length; i++) {
+    var nombreCofre = String((items[i] && items[i].name) || '').trim();
+    if (!nombreCofre) continue;
+    if (existentes[nombreCofre] || vistosEnEstaTanda[nombreCofre]) continue;
+    vistosEnEstaTanda[nombreCofre] = true;
+    // FIX (27-sep-2026, pedido usuario -- se agregó a mano la columna Link a [→ Contexto_Base_Web.md §09B083]
+    var filaNueva = [];
+    for (var c = 0; c < csv.headers.length; c++) filaNueva.push('');
+    var idxNameCol = csv.headers.indexOf('Name');
+    filaNueva[idxNameCol > -1 ? idxNameCol : 1] = nombreCofre;
+    nuevasFilas.push(filaNueva);
+  }
+
+  if (nuevasFilas.length === 0) return 0;
+
+  for (var j = 0; j < nuevasFilas.length; j++) csv.rows.push(nuevasFilas[j]);
+  _guardarCofresCSV(csv.headers, csv.rows);
+  return nuevasFilas.length;
+}
+
+/**
+ * _leerCofresCSV() [→ Contexto_Base_Web.md §09B080]
+ */
+function _leerCofresCSV() {
+  // FIX (27-sep-2026): Link se agregó a mano a Backup_Cofres.csv; el
+  // encabezado por defecto (archivo inexistente/vacío) ahora también la lleva.
+  var headersDefault = ['N°', 'Name', 'Nombre', 'Link'];
+  var csvText = _loadCSVFromDrive('Backup_Cofres.csv');
+  if (!csvText) return { headers: headersDefault, rows: [] };
+
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
+
+  return { headers: parsed[0], rows: parsed.slice(1) };
+}
+
+/**
+ * _guardarCofresCSV(headers, rows) [→ Contexto_Base_Web.md §09B081]
+ */
+function _guardarCofresCSV(headers, rows) {
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive('Backup_Cofres.csv', _encodeCSV([headers].concat(rows)));
+}
+
+/**
+ * _leerArenaCSV() [→ Contexto_Base_Web.md §09B084]
+ */
+function _leerArenaCSV() {
+  var headersDefault = ['N°', 'ID', 'Name', 'RawName', 'Nombre', 'Nombre_2'];
+  var csvText = _loadCSVFromDrive('Backup_Arena.csv');
+  if (!csvText) return { headers: headersDefault, rows: [] };
+
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
+
+  return { headers: parsed[0], rows: parsed.slice(1) };
+}
+
+/**
+ * _guardarArenaCSV(headers, rows) [→ Contexto_Base_Web.md §09B085]
+ */
+function _guardarArenaCSV(headers, rows) {
+  rows.sort(function (a, b) {
+    var nameA = String(a[2] || ''), nameB = String(b[2] || '');
+    if (nameA !== nameB) return nameA < nameB ? -1 : 1;
+    var rawA = String(a[3] || ''), rawB = String(b[3] || '');
+    if (rawA === rawB) return 0;
+    return rawA < rawB ? -1 : 1;
+  });
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive('Backup_Arena.csv', _encodeCSV([headers].concat(rows)));
+  _ARENA_INDICE_MEMO = null; // 08-oct-2026: el catálogo cambió; _resolverArenaDesdeCatalogo() lo vuelve a leer
+}
+
+/**
+ * _resolverArenaDesdeCatalogo(rawName) [→ Contexto_Base_Web.md §09B087]
+ */
+function _resolverArenaDesdeCatalogo(rawName) {
+  var rawStr = String(rawName === undefined || rawName === null ? '' : rawName).trim();
+  if (!rawStr) return '';
+
+  if (!_ARENA_INDICE_MEMO) {
+    var idx = {};
+    var csv = _leerArenaCSV();
+    for (var i = 0; i < csv.rows.length; i++) {
+      var raw = String(csv.rows[i][3] || '').trim();
+      if (!raw || Object.prototype.hasOwnProperty.call(idx, raw)) continue; // la primera fila con ese RawName manda
+      var nombreManual = String(csv.rows[i][4] || '').trim(); // Nombre (E)
+      var nameIngles   = String(csv.rows[i][2] || '').trim(); // Name (C)
+      var nombre2      = String(csv.rows[i][5] || '').trim(); // Nombre_2 (F) -- antes no se leía
+      var base = nombreManual || nameIngles;
+      idx[raw] = base ? (nombre2 ? (base + ' (' + nombre2 + ')') : base) : raw; // sin Nombre ni Name completos -- se cae al rawName
+    }
+    _ARENA_INDICE_MEMO = idx;
+  }
+  return Object.prototype.hasOwnProperty.call(_ARENA_INDICE_MEMO, rawStr) ? _ARENA_INDICE_MEMO[rawStr] : rawStr; // sin match en el catálogo -- se muestra el rawName tal cual llegó
+}
+
+// ----- Ayudas de las descargas manuales (cartas y búsqueda de clanes) -----
+
+/**
+ * _agregarCartasApiAMapa(map, items, esTorre) [→ Contexto_Base_Web.md §09B077]
+ */
+function _agregarCartasApiAMapa(map, items, esTorre) {
+  for (var i = 0; i < items.length; i++) {
+    var c = items[i];
+    if (!c || c.id === undefined) continue;
+    var iconUrls = c.iconUrls || {};
+    map[String(c.id)] = {
+      name:              c.name              || '',
+      maxLevel:          c.maxLevel           || '',
+      maxEvolutionLevel: c.maxEvolutionLevel !== undefined ? c.maxEvolutionLevel : '',
+      rarity:            c.rarity             || '',
+      elixirCost:        c.elixirCost !== undefined ? c.elixirCost : '',
+      iconMedium:          iconUrls.medium          || '',
+      iconHeroMedium:      iconUrls.heroMedium      || '',
+      iconEvolutionMedium: iconUrls.evolutionMedium || '',
+      esTorre:           esTorre === true
+    };
+  }
+}
+
+/**
  * _guardarJsonClanesConsultaTemporalEnDrive(datos) [→ Contexto_Base_Web.md §09B089]
  */
 function _guardarJsonClanesConsultaTemporalEnDrive(datos) {
@@ -1731,10 +1782,9 @@ function _guardarJsonBusquedaNombreEnDrive(nombreBuscado, datos) {
   }
 }
 
-// ----- Funciones internas / helpers -----
+// ----- Clanes: datos básicos, captura y punto de control -----
 
 // SECCION 2: RESTO DE FUNCIONES (cache, fetch de API, helpers internos). [→ Contexto_Base_Web.md §09B091]
-
 /**
  * Llama solo a /clans/{tag} y /clans/{tag}/currentriverrace para todos los [→ Contexto_Base_Web.md §09B092]
  */
@@ -1863,6 +1913,169 @@ function _fetchClanesBasico(maxEdadMs) {
 }
 
 /**
+ * _fetchClanesBasicoSinApi(maxEdadMs) [→ Contexto_Base_Web.md §09B109]
+ */
+function _fetchClanesBasicoSinApi(maxEdadMs) {
+  if (_clanesBasicoListoEnEstaEjecucion && CACHE_CLAN_DATA) {
+    Logger.log('[API][SinAPI] El cache de clanes ya esta cargado en esta ejecucion, se omite repetir la lectura.');
+    return true;
+  }
+  var umbral = (typeof maxEdadMs === 'number') ? maxEdadMs : CLANES_SIN_API_MAX_EDAD_MS;
+  var cp = _leerProgresoClanesConEdad_();
+  if (!cp) {
+    Logger.log('[API][SinAPI] No hay checkpoint de clanes legible en Drive. NO se llama a la API; se espera a la proxima captura de runGuerra().');
+    return false;
+  }
+  if (cp.edadMs > umbral) {
+    Logger.log('[API][SinAPI] El checkpoint de clanes tiene ' +
+      (cp.edadMs === Infinity ? 'edad desconocida' : Math.round(cp.edadMs / 60000) + ' min') +
+      ' (maximo aceptado: ' + Math.round(umbral / 60000) + ' min). NO se usa y NO se llama a la API; se espera a la proxima captura de runGuerra().');
+    return false;
+  }
+
+  var cache = {}, sinRiver = [], faltan = [], resumen = [];
+  for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
+    var tag = CFG.CLAN_TAGS[i];
+    var cd = cp.clanes[tag];
+    if (!cd || !cd.info) { faltan.push(tag); continue; }
+    cache[tag] = cd;
+    if (!cd.riverrace) sinRiver.push(tag);
+    var pi = (cd.riverrace && cd.riverrace.periodIndex !== undefined && cd.riverrace.periodIndex !== null) ? cd.riverrace.periodIndex : 'sin dato';
+    resumen.push(tag + '=' + pi);
+  }
+  if (faltan.length) {
+    Logger.log('[API][SinAPI] Al checkpoint le faltan clanes (' + faltan.join(', ') + '). NO se usa y NO se llama a la API.');
+    return false;
+  }
+
+  CACHE_CLAN_DATA = cache;
+  CLANES_SIN_RIVERRACE = sinRiver;
+  CLANES_SIN_API_TS_CARGADO = cp.ts;
+  _clanesBasicoListoEnEstaEjecucion = true;
+  _playersCompletoEnEstaEjecucion = false;
+  Logger.log('[API][SinAPI] Clanes cargados del checkpoint de Drive (captura de hace ' + Math.round(cp.edadMs / 60000) +
+    ' min, ' + Utilities.formatDate(new Date(cp.ts), 'America/Lima', 'dd/MM HH:mm:ss') + ' Lima) SIN llamar a la API | periodIndex: ' + resumen.join(', '));
+  return true;
+}
+
+/**
+ * _leerProgresoClanesConEdad_() [→ Contexto_Base_Web.md §09B108]
+ */
+function _leerProgresoClanesConEdad_() {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
+    if (!files.hasNext()) return null;
+    var parsed = JSON.parse(files.next().getBlob().getDataAsString('UTF-8'));
+    if (!parsed || !parsed.clanes) return null;
+    var ts = Number(parsed._ts) || Number(parsed._tsReal) || 0;
+    return { clanes: parsed.clanes, ts: ts, edadMs: ts > 0 ? (Date.now() - ts) : Infinity };
+  } catch (e) {
+    Logger.log('[API][SinAPI] Error leyendo el checkpoint de clanes: ' + e.message);
+    return null;
+  }
+}
+
+// PERSISTENCIA DE PROGRESO DE CLANES (para reanudación sin repetir) [→ Contexto_Base_Web.md §09B099]
+/**
+ * _guardarProgresoClanes(cacheClanData) [→ Contexto_Base_Web.md §09B100]
+ */
+function _guardarProgresoClanes(cacheClanData) {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var soloClanes = {};
+    for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
+      var tag = CFG.CLAN_TAGS[i];
+      if (cacheClanData[tag]) soloClanes[tag] = cacheClanData[tag];
+    }
+
+    var content = JSON.stringify({ _ts: Date.now(), clanes: soloClanes });
+    _guardarArchivoProgresoVerificado_(folder, CLANES_PROGRESO_FILE, content); // PF291
+  } catch (e) {
+    Logger.log('[API] Error guardando progreso de clanes en Drive: ' + e.message);
+  }
+}
+
+/**
+ * _cargarProgresoClanes(maxEdadMs) [→ Contexto_Base_Web.md §09B101]
+ */
+function _cargarProgresoClanes(maxEdadMs) {
+  var umbral = (typeof maxEdadMs === 'number') ? maxEdadMs : CFG.CLANES_PROGRESO_MAX_EDAD_MS;
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
+    if (!files.hasNext()) return null;
+    var file = files.next();
+    var parsed = JSON.parse(file.getBlob().getDataAsString('UTF-8'));
+    if (!parsed || !parsed._ts) return null;
+
+    var edadMs = Date.now() - Number(parsed._ts);
+    if (edadMs > umbral) {
+      Logger.log('[API] Progreso de clanes en Drive tiene ' + Math.round(edadMs / 60000) +
+                 ' min — más viejo que el máximo permitido (' + (umbral / 60000) +
+                 ' min). Se descarta, no se reutiliza (se pedirá fresco a la API).');
+      // NOTA (08-ago-2026): antes esto siempre borraba el archivo [→ Contexto_Base_Web.md §09B102]
+      return null;
+    }
+    return parsed.clanes || null;
+  } catch (e) {
+    Logger.log('[API] Error cargando progreso de clanes desde Drive: ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * _cargarProgresoClanesSinEdad() [→ Contexto_Base_Web.md §09B103]
+ */
+function _cargarProgresoClanesSinEdad() {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
+    if (!files.hasNext()) return null;
+    var parsed = JSON.parse(files.next().getBlob().getDataAsString('UTF-8'));
+    return (parsed && parsed.clanes) ? parsed.clanes : null;
+  } catch (e) {
+    Logger.log('[API] Error cargando respaldo de clanes: ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * _invalidarProgresoClanes() [→ Contexto_Base_Web.md §09B104]
+ */
+function _invalidarProgresoClanes() {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
+    while (files.hasNext()) {
+      var f = files.next();
+      var parsed = JSON.parse(f.getBlob().getDataAsString('UTF-8'));
+      if (parsed) {
+        // NUEVO (05-oct-2026): se conserva la hora real de captura en _tsReal (solo la primera vez) para que [→ Contexto_Base_Web.md §09B105]
+        if (!parsed._tsReal && parsed._ts) parsed._tsReal = parsed._ts;
+        parsed._ts = 0;
+        _setContentConConteo_(f, JSON.stringify(parsed));
+      }
+    }
+  } catch (e) {
+    Logger.log('[API] Error invalidando progreso de clanes: ' + e.message);
+  }
+}
+
+/**
+ * _borrarProgresoClanes() [→ Contexto_Base_Web.md §09B110]
+ */
+function _borrarProgresoClanes() {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
+    while (files.hasNext()) files.next().setTrashed(true);
+  } catch (e) {
+    Logger.log('[API] Error borrando progreso de clanes en Drive: ' + e.message);
+  }
+}
+
+/**
  * PF091 (17-oct-2026): anota la hora de la PRIMERA consulta de cada clan y periodIndex directamente de lo recien pedido a la
  * API (solo una propiedad de script, sin Drive; nunca reemplaza una hora ya registrada). Se llama en TODAS las capturas, tambien
  * en la ventana de 4 a 5 a. m., para que un periodo nuevo que aparece a las 4:xx quede con su hora real aunque la ventana no
@@ -1951,179 +2164,6 @@ function _jsonClanesDeEsteCheckpointYaEscritos_() {
   }
 }
 
-// PERSISTENCIA DE PROGRESO DE CLANES (para reanudación sin repetir) [→ Contexto_Base_Web.md §09B099]
-
-/**
- * _guardarProgresoClanes(cacheClanData) [→ Contexto_Base_Web.md §09B100]
- */
-function _guardarProgresoClanes(cacheClanData) {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var soloClanes = {};
-    for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
-      var tag = CFG.CLAN_TAGS[i];
-      if (cacheClanData[tag]) soloClanes[tag] = cacheClanData[tag];
-    }
-
-    var content = JSON.stringify({ _ts: Date.now(), clanes: soloClanes });
-    _guardarArchivoProgresoVerificado_(folder, CLANES_PROGRESO_FILE, content); // PF291
-  } catch (e) {
-    Logger.log('[API] Error guardando progreso de clanes en Drive: ' + e.message);
-  }
-}
-
-/**
- * _cargarProgresoClanes(maxEdadMs) [→ Contexto_Base_Web.md §09B101]
- */
-function _cargarProgresoClanes(maxEdadMs) {
-  var umbral = (typeof maxEdadMs === 'number') ? maxEdadMs : CFG.CLANES_PROGRESO_MAX_EDAD_MS;
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
-    if (!files.hasNext()) return null;
-    var file = files.next();
-    var parsed = JSON.parse(file.getBlob().getDataAsString('UTF-8'));
-    if (!parsed || !parsed._ts) return null;
-
-    var edadMs = Date.now() - Number(parsed._ts);
-    if (edadMs > umbral) {
-      Logger.log('[API] Progreso de clanes en Drive tiene ' + Math.round(edadMs / 60000) +
-                 ' min — más viejo que el máximo permitido (' + (umbral / 60000) +
-                 ' min). Se descarta, no se reutiliza (se pedirá fresco a la API).');
-      // NOTA (08-ago-2026): antes esto siempre borraba el archivo [→ Contexto_Base_Web.md §09B102]
-      return null;
-    }
-    return parsed.clanes || null;
-  } catch (e) {
-    Logger.log('[API] Error cargando progreso de clanes desde Drive: ' + e.message);
-    return null;
-  }
-}
-
-/**
- * _cargarProgresoClanesSinEdad() [→ Contexto_Base_Web.md §09B103]
- */
-function _cargarProgresoClanesSinEdad() {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
-    if (!files.hasNext()) return null;
-    var parsed = JSON.parse(files.next().getBlob().getDataAsString('UTF-8'));
-    return (parsed && parsed.clanes) ? parsed.clanes : null;
-  } catch (e) {
-    Logger.log('[API] Error cargando respaldo de clanes: ' + e.message);
-    return null;
-  }
-}
-
-/**
- * _invalidarProgresoClanes() [→ Contexto_Base_Web.md §09B104]
- */
-function _invalidarProgresoClanes() {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
-    while (files.hasNext()) {
-      var f = files.next();
-      var parsed = JSON.parse(f.getBlob().getDataAsString('UTF-8'));
-      if (parsed) {
-        // NUEVO (05-oct-2026): se conserva la hora real de captura en _tsReal (solo la primera vez) para que [→ Contexto_Base_Web.md §09B105]
-        if (!parsed._tsReal && parsed._ts) parsed._tsReal = parsed._ts;
-        parsed._ts = 0;
-        _setContentConConteo_(f, JSON.stringify(parsed));
-      }
-    }
-  } catch (e) {
-    Logger.log('[API] Error invalidando progreso de clanes: ' + e.message);
-  }
-}
-
-// LECTURA DEL CHECKPOINT DE CLANES SIN LLAMAR A LA API (05-oct-2026, pedido usuario) [→ Contexto_Base_Web.md §09B106]
-
-// Edad maxima aceptada por las lecturas SIN API. Por encima de este valor se considera que la captura de [→ Contexto_Base_Web.md §09B107]
-var CLANES_SIN_API_MAX_EDAD_MS = 3 * 60 * 60 * 1000;
-
-// Hora (_ts, ms) del checkpoint que cargo la ultima llamada a _fetchClanesBasicoSinApi() EN ESTA EJECUCION.
-// Sirve para saber si hay una captura nueva desde la ultima vez que se proceso (0 = nada cargado).
-var CLANES_SIN_API_TS_CARGADO = 0;
-
-/**
- * _leerProgresoClanesConEdad_() [→ Contexto_Base_Web.md §09B108]
- */
-function _leerProgresoClanesConEdad_() {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
-    if (!files.hasNext()) return null;
-    var parsed = JSON.parse(files.next().getBlob().getDataAsString('UTF-8'));
-    if (!parsed || !parsed.clanes) return null;
-    var ts = Number(parsed._ts) || Number(parsed._tsReal) || 0;
-    return { clanes: parsed.clanes, ts: ts, edadMs: ts > 0 ? (Date.now() - ts) : Infinity };
-  } catch (e) {
-    Logger.log('[API][SinAPI] Error leyendo el checkpoint de clanes: ' + e.message);
-    return null;
-  }
-}
-
-/**
- * _fetchClanesBasicoSinApi(maxEdadMs) [→ Contexto_Base_Web.md §09B109]
- */
-function _fetchClanesBasicoSinApi(maxEdadMs) {
-  if (_clanesBasicoListoEnEstaEjecucion && CACHE_CLAN_DATA) {
-    Logger.log('[API][SinAPI] El cache de clanes ya esta cargado en esta ejecucion, se omite repetir la lectura.');
-    return true;
-  }
-  var umbral = (typeof maxEdadMs === 'number') ? maxEdadMs : CLANES_SIN_API_MAX_EDAD_MS;
-  var cp = _leerProgresoClanesConEdad_();
-  if (!cp) {
-    Logger.log('[API][SinAPI] No hay checkpoint de clanes legible en Drive. NO se llama a la API; se espera a la proxima captura de runGuerra().');
-    return false;
-  }
-  if (cp.edadMs > umbral) {
-    Logger.log('[API][SinAPI] El checkpoint de clanes tiene ' +
-      (cp.edadMs === Infinity ? 'edad desconocida' : Math.round(cp.edadMs / 60000) + ' min') +
-      ' (maximo aceptado: ' + Math.round(umbral / 60000) + ' min). NO se usa y NO se llama a la API; se espera a la proxima captura de runGuerra().');
-    return false;
-  }
-
-  var cache = {}, sinRiver = [], faltan = [], resumen = [];
-  for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
-    var tag = CFG.CLAN_TAGS[i];
-    var cd = cp.clanes[tag];
-    if (!cd || !cd.info) { faltan.push(tag); continue; }
-    cache[tag] = cd;
-    if (!cd.riverrace) sinRiver.push(tag);
-    var pi = (cd.riverrace && cd.riverrace.periodIndex !== undefined && cd.riverrace.periodIndex !== null) ? cd.riverrace.periodIndex : 'sin dato';
-    resumen.push(tag + '=' + pi);
-  }
-  if (faltan.length) {
-    Logger.log('[API][SinAPI] Al checkpoint le faltan clanes (' + faltan.join(', ') + '). NO se usa y NO se llama a la API.');
-    return false;
-  }
-
-  CACHE_CLAN_DATA = cache;
-  CLANES_SIN_RIVERRACE = sinRiver;
-  CLANES_SIN_API_TS_CARGADO = cp.ts;
-  _clanesBasicoListoEnEstaEjecucion = true;
-  _playersCompletoEnEstaEjecucion = false;
-  Logger.log('[API][SinAPI] Clanes cargados del checkpoint de Drive (captura de hace ' + Math.round(cp.edadMs / 60000) +
-    ' min, ' + Utilities.formatDate(new Date(cp.ts), 'America/Lima', 'dd/MM HH:mm:ss') + ' Lima) SIN llamar a la API | periodIndex: ' + resumen.join(', '));
-  return true;
-}
-
-/**
- * _borrarProgresoClanes() [→ Contexto_Base_Web.md §09B110]
- */
-function _borrarProgresoClanes() {
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName(CLANES_PROGRESO_FILE);
-    while (files.hasNext()) files.next().setTrashed(true);
-  } catch (e) {
-    Logger.log('[API] Error borrando progreso de clanes en Drive: ' + e.message);
-  }
-}
-
 /**
  * Llama a la API para todos los clanes (datos básicos) Y, si [→ Contexto_Base_Web.md §09B111]
  */
@@ -2147,6 +2187,8 @@ function _fetchAllClanData() {
   // Se propaga hacia _ejecutarPorTandas() (00_Main.gs): si /players quedó [→ Contexto_Base_Web.md §09B113]
   return playersCompleto;
 }
+
+// ----- Jugadores: descarga y punto de control -----
 
 /**
  * Llama a /players/{tag} según el valor de PLAYERS_API_ENABLED. [→ Contexto_Base_Web.md §09B114]
@@ -2299,7 +2341,6 @@ function _fetchPlayersData() {
 }
 
 // PERSISTENCIA DE PROGRESO DE /players (para reanudación sin repetir) [→ Contexto_Base_Web.md §09B123]
-
 /**
  * _guardarProgresoPlayers(playersMap) [→ Contexto_Base_Web.md §09B124]
  */
@@ -2468,6 +2509,8 @@ function _getNivel2(playerData) {
   return '';
 }
 
+// ----- Llamada a la API y caché en memoria -----
+
 /**
  * Realiza una petición GET al proxy de la API de Clash Royale. [→ Contexto_Base_Web.md §09B134]
  */
@@ -2550,7 +2593,6 @@ function pingProxyRender() {
 }
 
 // Helpers de acceso al cache (para uso en otros módulos) [→ Contexto_Base_Web.md §09B138]
-
 /**
  * Obtiene los datos de un clan desde el cache.
  * Devuelve null si no está en el cache (falló la API para ese clan).
@@ -2667,6 +2709,8 @@ function _getCtx() {
   };
 }
 
+// ----- Carpetas, nombres, horas y períodos en Drive -----
+
 /**
  * _normalizarNombreClan_(nombre) [→ Contexto_Base_Web.md §09B143]
  */
@@ -2715,12 +2759,6 @@ function _pad2_(n) {
   return (Number(n) < 0 ? '-' : '') + (s.length < 2 ? '0' + s : s);
 }
 
-/**
- * PF074 (14-oct-2026): carpetas de temporada y semana dentro de la carpeta del clan de cada endpoint. [→ Contexto_Base_Web.md §PF074]
- * Esquema: endpoint -> clan -> T-02 -> S-01 -> JSON de esa semana. Los nombres de las carpetas (T-02, S-01, con cero a la
- * izquierda) son un SUPUESTO por confirmar con la usuaria. Devuelve la carpeta de la semana; la crea si no existe.
- */
-var _CARPETA_SEMANA_MEM_ = {};
 function _getCarpetaSemana_(carpetaClan, ctx) {
   var nT = 'T-' + _pad2_((ctx && ctx.temporada) || 0);
   var nS = 'S-' + _pad2_(((ctx && ctx.sectionIndex) || 0) + 1);
@@ -2807,17 +2845,12 @@ function _buildPrefijoTSP_(ctx) {
 }
 
 /**
- * _horaLimaNow() [→ Contexto_Base_Web.md §09B147]
+ * _normalizarPeriodIndex_(periodIndex)
+ * Normaliza periodIndex a un entero válido (0 si viene nulo/indefinido/NaN).
  */
-function _horaLimaNow() {
-  return Utilities.formatDate(new Date(), 'America/Lima', 'dd-MM-yyyy HH.mm');
-}
-
-/**
- * _horaLimaMensaje12h(d) [→ Contexto_Base_Web.md §09B148]
- */
-function _horaLimaMensaje12h(d) {
-  return Utilities.formatDate(d instanceof Date ? d : new Date(), 'America/Lima', 'dd/MM/yyyy hh:mm:ss a') + ' (Lima)';
+function _normalizarPeriodIndex_(periodIndex) {
+  var n = Number(periodIndex);
+  return isNaN(n) ? 0 : n;
 }
 
 /**
@@ -2834,15 +2867,6 @@ function _buildCacheFilename(ctx, endpointKey, clanName, fechaMs) {
 }
 
 /**
- * _normalizarPeriodIndex_(periodIndex)
- * Normaliza periodIndex a un entero válido (0 si viene nulo/indefinido/NaN).
- */
-function _normalizarPeriodIndex_(periodIndex) {
-  var n = Number(periodIndex);
-  return isNaN(n) ? 0 : n;
-}
-
-/**
  * _buildCacheSuffix(endpointKey) [→ Contexto_Base_Web.md §09B150]
  */
 function _buildCacheSuffix(endpointKey) {
@@ -2850,70 +2874,17 @@ function _buildCacheSuffix(endpointKey) {
 }
 
 /**
- * _cargarCacheDesideDrive(clanTag, endpointKey, ctxOrPeriodIndex) [→ Contexto_Base_Web.md §09B151]
+ * _horaLimaNow() [→ Contexto_Base_Web.md §09B147]
  */
-function _cargarCacheDesideDrive(clanTag, endpointKey, ctxOrPeriodIndex) {
-  // Para players: buscar por nombre de archivo (tag), no por periodo — sin cambios.
-  if (endpointKey === 'players') {
-    return _cargarPlayerDesideDrive(clanTag);
-  }
+function _horaLimaNow() {
+  return Utilities.formatDate(new Date(), 'America/Lima', 'dd-MM-yyyy HH.mm');
+}
 
-  var ctx = ctxOrPeriodIndex || {};
-  var memKey = clanTag + '|' + endpointKey + '|P' + _normalizarPeriodIndex_(ctx.periodIndex);
-  if (_DRIVE_CACHE_MEM[memKey]) return _DRIVE_CACHE_MEM[memKey];
-
-  try {
-    // Buscar en la subcarpeta del clan/endpoint si ya conocemos el nombre del [→ Contexto_Base_Web.md §09B152]
-    var clanName = '';
-    if (CACHE_CLAN_DATA && CACHE_CLAN_DATA[clanTag] && CACHE_CLAN_DATA[clanTag].info) {
-      clanName = CACHE_CLAN_DATA[clanTag].info.name || '';
-    }
-    var carpetaClan = _getCarpetaParaClan(clanName);
-    var folder = _getSubcarpetaEndpoint_(carpetaClan, endpointKey);
-
-    var tagPrefijo = _buildPrefijoTSP_(ctx);
-    var sufijo     = _buildCacheSuffix(endpointKey);
-    // PF074: se busca en la carpeta de la semana (solo si ya existe; leer no crea carpetas) y en la del clan. [→ Contexto_Base_Web.md §PF074]
-    var carpetasBusqueda = [];
-    try {
-      var nTl = 'T-' + _pad2_(ctx.temporada || 0), nSl = 'S-' + _pad2_((ctx.sectionIndex || 0) + 1);
-      var itT = folder.getFoldersByName(nTl);
-      if (itT.hasNext()) { var itS = itT.next().getFoldersByName(nSl); if (itS.hasNext()) carpetasBusqueda.push(itS.next()); }
-    } catch (eS) { /* sin carpeta de semana: se sigue con la del clan */ }
-    carpetasBusqueda.push(folder);
-
-    for (var cb = 0; cb < carpetasBusqueda.length; cb++) {
-    var todos      = carpetasBusqueda[cb].getFiles();
-
-    while (todos.hasNext()) {
-      var f = todos.next();
-      var n = f.getName();
-      // Filtrar por prefijo (tag T-/S-/P.I- del periodo) + sufijo de endpoint,
-      // sin importar la fecha/hora con la que se guardó el archivo.
-      if (n.indexOf(tagPrefijo) !== 0) continue;
-      if (!/^(?:-[LMXJVSD])?\s/.test(n.substring(tagPrefijo.length))) continue; // PF074: acepta la letra del dia
-      if (!n.endsWith(sufijo)) continue;
-
-      try {
-        var contenido = f.getBlob().getDataAsString('UTF-8');
-        if (!contenido) continue;
-        var obj = JSON.parse(contenido);
-
-        // Verificar que el JSON pertenece al clanTag correcto
-        var tagEnArchivo = obj.tag || (obj.clan && obj.clan.tag) || '';
-        if (!tagEnArchivo || tagEnArchivo.toUpperCase() !== clanTag.toUpperCase()) continue;
-
-        _DRIVE_CACHE_MEM[memKey] = obj;
-        Logger.log('[Cache] Cargado desde Drive: ' + n);
-        return obj;
-      } catch(e2) { /* continuar con siguiente archivo */ }
-    }
-    }
-    return null;
-  } catch(e) {
-    Logger.log('[Cache] Error buscando cache en Drive para ' + clanTag + ': ' + e.message);
-    return null;
-  }
+/**
+ * _horaLimaMensaje12h(d) [→ Contexto_Base_Web.md §09B148]
+ */
+function _horaLimaMensaje12h(d) {
+  return Utilities.formatDate(d instanceof Date ? d : new Date(), 'America/Lima', 'dd/MM/yyyy hh:mm:ss a') + ' (Lima)';
 }
 
 /**
@@ -2923,6 +2894,17 @@ function _cargarCacheDesideDrive(clanTag, endpointKey, ctxOrPeriodIndex) {
 function _tsLimaLog_() {
   return Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
 }
+
+/**
+ * _fmtDiaGuerraLog_(fechaDate)
+ * 'dd/MM/yyyy' del DiaGuerra (fecha de calendario a la que se adjudican los ataques), o 'n/d'.
+ */
+function _fmtDiaGuerraLog_(d) {
+  if (!(d instanceof Date) || isNaN(d.getTime())) return 'n/d';
+  return Utilities.formatDate(d, 'America/Lima', 'dd/MM/yyyy');
+}
+
+// ----- Temporada y período de cada clan -----
 
 /**
  * _temporadaDeClan_(ctx, periodIndexClan) [→ Contexto_Base_Web.md §09B153]
@@ -2963,15 +2945,6 @@ function _temporadasActivasGuerra_(ctx) {
     if (isFinite(t)) set[t] = true;
   }
   return Object.keys(set).map(Number).sort(function(a, b) { return a - b; });
-}
-
-/**
- * _fmtDiaGuerraLog_(fechaDate)
- * 'dd/MM/yyyy' del DiaGuerra (fecha de calendario a la que se adjudican los ataques), o 'n/d'.
- */
-function _fmtDiaGuerraLog_(d) {
-  if (!(d instanceof Date) || isNaN(d.getTime())) return 'n/d';
-  return Utilities.formatDate(d, 'America/Lima', 'dd/MM/yyyy');
 }
 
 /**
@@ -3045,13 +3018,7 @@ function _ctxPorClanDesdeDatos_(ctx, endpointKey, datos) {
   return copia;
 }
 
-// PRIMERA CONSULTA DE CADA periodIndex (12-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF063]
-// Guerra y Guerra_Logs crean sus filas con la fecha y hora de la PRIMERA consulta a la API de ese periodIndex
-// (un mismo día de guerra cubre dos fechas, porque cambia entre las 4 y las 5 a.m. y no a las 12). Esa hora no
-// cambia aunque la fila o el JSON se sigan actualizando. Clave: temporada|periodIndex|tag del clan (sin #).
-var PRIMERA_CONSULTA_RR_PROP = 'PRIMERA_CONSULTA_RR';
-var PRIMERA_CONSULTA_RR_MAX  = 150;
-var _PRIMERA_CONSULTA_RR_MEM = null;
+// ----- Primera consulta de la guerra (RiverRace) -----
 
 function _leerPrimeraConsultaRR_() {
   if (_PRIMERA_CONSULTA_RR_MEM) return _PRIMERA_CONSULTA_RR_MEM;
@@ -3107,6 +3074,8 @@ function _fechaPrimeraConsultaRR_(temporada, periodIndex, clanTag, respaldo) {
   } catch (e) { /* cae al respaldo */ }
   return respaldo;
 }
+
+// ----- Caché persistente en Drive -----
 
 /**
  * _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) [→ Contexto_Base_Web.md §09B157]
@@ -3189,6 +3158,73 @@ function _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) {
 }
 
 /**
+ * _cargarCacheDesideDrive(clanTag, endpointKey, ctxOrPeriodIndex) [→ Contexto_Base_Web.md §09B151]
+ */
+function _cargarCacheDesideDrive(clanTag, endpointKey, ctxOrPeriodIndex) {
+  // Para players: buscar por nombre de archivo (tag), no por periodo — sin cambios.
+  if (endpointKey === 'players') {
+    return _cargarPlayerDesideDrive(clanTag);
+  }
+
+  var ctx = ctxOrPeriodIndex || {};
+  var memKey = clanTag + '|' + endpointKey + '|P' + _normalizarPeriodIndex_(ctx.periodIndex);
+  if (_DRIVE_CACHE_MEM[memKey]) return _DRIVE_CACHE_MEM[memKey];
+
+  try {
+    // Buscar en la subcarpeta del clan/endpoint si ya conocemos el nombre del [→ Contexto_Base_Web.md §09B152]
+    var clanName = '';
+    if (CACHE_CLAN_DATA && CACHE_CLAN_DATA[clanTag] && CACHE_CLAN_DATA[clanTag].info) {
+      clanName = CACHE_CLAN_DATA[clanTag].info.name || '';
+    }
+    var carpetaClan = _getCarpetaParaClan(clanName);
+    var folder = _getSubcarpetaEndpoint_(carpetaClan, endpointKey);
+
+    var tagPrefijo = _buildPrefijoTSP_(ctx);
+    var sufijo     = _buildCacheSuffix(endpointKey);
+    // PF074: se busca en la carpeta de la semana (solo si ya existe; leer no crea carpetas) y en la del clan. [→ Contexto_Base_Web.md §PF074]
+    var carpetasBusqueda = [];
+    try {
+      var nTl = 'T-' + _pad2_(ctx.temporada || 0), nSl = 'S-' + _pad2_((ctx.sectionIndex || 0) + 1);
+      var itT = folder.getFoldersByName(nTl);
+      if (itT.hasNext()) { var itS = itT.next().getFoldersByName(nSl); if (itS.hasNext()) carpetasBusqueda.push(itS.next()); }
+    } catch (eS) { /* sin carpeta de semana: se sigue con la del clan */ }
+    carpetasBusqueda.push(folder);
+
+    for (var cb = 0; cb < carpetasBusqueda.length; cb++) {
+    var todos      = carpetasBusqueda[cb].getFiles();
+
+    while (todos.hasNext()) {
+      var f = todos.next();
+      var n = f.getName();
+      // Filtrar por prefijo (tag T-/S-/P.I- del periodo) + sufijo de endpoint,
+      // sin importar la fecha/hora con la que se guardó el archivo.
+      if (n.indexOf(tagPrefijo) !== 0) continue;
+      if (!/^(?:-[LMXJVSD])?\s/.test(n.substring(tagPrefijo.length))) continue; // PF074: acepta la letra del dia
+      if (!n.endsWith(sufijo)) continue;
+
+      try {
+        var contenido = f.getBlob().getDataAsString('UTF-8');
+        if (!contenido) continue;
+        var obj = JSON.parse(contenido);
+
+        // Verificar que el JSON pertenece al clanTag correcto
+        var tagEnArchivo = obj.tag || (obj.clan && obj.clan.tag) || '';
+        if (!tagEnArchivo || tagEnArchivo.toUpperCase() !== clanTag.toUpperCase()) continue;
+
+        _DRIVE_CACHE_MEM[memKey] = obj;
+        Logger.log('[Cache] Cargado desde Drive: ' + n);
+        return obj;
+      } catch(e2) { /* continuar con siguiente archivo */ }
+    }
+    }
+    return null;
+  } catch(e) {
+    Logger.log('[Cache] Error buscando cache en Drive para ' + clanTag + ': ' + e.message);
+    return null;
+  }
+}
+
+/**
  * _apiGetCached(clanTag, endpointKey, pathFn, ctx) [→ Contexto_Base_Web.md §09B159]
  */
 function _apiGetCached(clanTag, endpointKey, pathFn, ctx) {
@@ -3234,7 +3270,6 @@ function _buildPlayerFilename(playerTag, clanName) {
 /**
  * FASE 9bis (17-sep-2026, limpieza de código muerto, pedido del usuario): [→ Contexto_Base_Web.md §09B161]
  */
-
 /**
  * _getPlayersDriveIndexPorTag(folder) [→ Contexto_Base_Web.md §09B162]
  */
@@ -3262,8 +3297,6 @@ function _getPlayersDriveIndexPorTag(folder) {
   return idx;
 }
 
-// NUEVO 08-oct-2026 (rendimiento del perfil web): _cargarPlayerDesideDrive() recorría TODA la carpeta Players, archivo por archivo, por cada jugador (8-30 s por perfil). Cada tag tiene un único archivo que _guardarPlayerEnDrive() renombra y actualiza en el sitio (su id no cambia), así que basta un índice tag -> id guardado en CacheService. Lo escribe _getPlayersDriveIndexPorTag() cada vez que el bot recorre la carpeta (sin costo extra); 6 h de vida. Un tag que no esté en el índice, un archivo borrado/en papelera o cualquier error caen al recorrido completo de siempre.
-var PLAYERS_IDX_CACHE_KEY = 'players_idx_ids_v1';
 function _playersIndiceIdsGuardar_(idx) {
   try {
     var ids = {};
@@ -3271,6 +3304,7 @@ function _playersIndiceIdsGuardar_(idx) {
     CacheService.getScriptCache().put(PLAYERS_IDX_CACHE_KEY, JSON.stringify({ t: Date.now(), ids: ids }), 21600);
   } catch (e) { /* sin caché: _cargarPlayerDesideDrive() recorre la carpeta como antes */ }
 }
+
 function _cargarPlayerDesideDriveRapido_(playerTag) {
   try {
     var tag = String(playerTag || '').trim();
@@ -3481,8 +3515,9 @@ function _fetchPlayersCached(periodIndex) {
   Logger.log('[Cache] Players cacheados: ' + Object.keys(procesados).length);
 }
 
-// LOG ACUMULATIVO DEL SCRIPT TERNA [→ Contexto_Base_Web.md §09B170]
+// ----- Registro en Script Terna -----
 
+// LOG ACUMULATIVO DEL SCRIPT TERNA [→ Contexto_Base_Web.md §09B170]
 /**
  * _registrarLogScriptTerna(funcion, descripcion, advertencias) [→ Contexto_Base_Web.md §09B171]
  */
