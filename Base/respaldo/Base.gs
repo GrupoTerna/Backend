@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 30/10/2026 21:10:35 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 30/10/2026 22:19:47 */
 
 
 
@@ -25113,6 +25113,14 @@ function _decidirCorreccionConClanTag_(datos) {
     if (sumaAt > 16) alarmaGlobal = 'la suma de ataques entre clanes supera 16';
     else if (sumaBar > sumaAt) alarmaGlobal = 'la suma de barcos entre clanes supera la de ataques';
     else if (sumaFame > _limitesFameSemanaClan_(sumaAt, 0).max) alarmaGlobal = 'la suma de fame entre clanes supera el maximo posible';
+    // §PF302 (criterio 14 de §PF160): pasados los topes, la suma de los clanes no puede superar el valor de perfil de RoyaleAPI (el perfil puede ser mayor: la diferencia es
+    // el clan Externo). Si lo supera, los valores se contradicen y va a revisión manual. Con barcos sin dato la suma es solo un piso, y un piso que ya pasa el perfil también contradice.
+    var pf = datos.perfil;
+    if (!alarmaGlobal && pf) {
+      if (typeof pf.ataquesSemana === 'number' && sumaAt > pf.ataquesSemana) alarmaGlobal = 'la suma de ataques de los clanes (' + sumaAt + ') supera el valor de perfil de RoyaleAPI (' + pf.ataquesSemana + ')';
+      else if (typeof pf.barcos === 'number' && sumaBar > pf.barcos) alarmaGlobal = 'la suma de barcos de los clanes (' + sumaBar + ') supera el valor de perfil de RoyaleAPI (' + pf.barcos + ')';
+      else if (typeof pf.fame === 'number' && sumaFame > pf.fame) alarmaGlobal = 'la suma de medallas de los clanes (' + sumaFame + ') supera el valor de perfil de RoyaleAPI (' + pf.fame + ')';
+    }
   }
 
   // Paso 4: armar la salida (reglas 5 y 6).
@@ -25527,7 +25535,7 @@ function _evaluarCorreccionConClanTagSemana_(filas, temporada, semana, tag, v, o
     }
   });
 
-  var decision = _decidirCorreccionConClanTag_({ ternaTags: ternaTags, correcciones: correcciones, otrosClanesHoja: otros });
+  var decision = _decidirCorreccionConClanTag_({ ternaTags: ternaTags, correcciones: correcciones, otrosClanesHoja: otros, perfil: (v && v.perfil) ? v.perfil : null });
 
   var revisiones = [];
   function agregarRevision(tipo, motivo, detalle) {
@@ -25650,6 +25658,8 @@ function _ajustarSemanaDeUnClan_(filas, offsets, valores, opciones) {
   var rep = _repartirSemanaConjunto_(filas, offsets, valores);
   if (!rep.ok) {
     Logger.log('[Reparto conjunto] SIN CAMBIOS: ' + rep.motivo + '. No se toca esta semana del clan.');
+    // §PF302: quien llama (_aplicarCorreccionConClanTagAFuente_) lo manda a revisión manual con el motivo real, no con el aviso genérico de la comprobación (b).
+    if (opciones.conflictosReparto) opciones.conflictosReparto.push({ crr: rep.crr || '', motivo: rep.motivo });
     return false;
   }
   var offsOrd = Object.keys(offsets).map(Number).sort(function (a, b) { return b - a; });
@@ -25746,6 +25756,11 @@ function _aplicarCorreccionConClanTagAFuente_(fuente, offsetsPorClave, temporada
   });
   var diasAntes = _ataquesPorDiaEntreClanes_(filas, temporadaPropia, semana, tag);
   var cambioAlgo = false;
+  // §PF302: fallos del reparto de cada clan (por ejemplo el conflicto con los JSON de CurrentRiverRace), para mandarlos a revisión manual con su motivo real.
+  var conflictosReparto = [];
+  var opcionesReparto = {};
+  Object.keys(opciones).forEach(function (kk) { opcionesReparto[kk] = opciones[kk]; });
+  opcionesReparto.conflictosReparto = conflictosReparto;
   var problemasAntes = {};
   var offsetsEscritos = {}; // clanTag -> { offsetDia: rowIdx } de las filas que quedaron escritas
   for (var pa = 0; pa < aEscribir.length; pa++) {
@@ -25762,10 +25777,10 @@ function _aplicarCorreccionConClanTagAFuente_(fuente, offsetsPorClave, temporada
     var nombreClan = nombres[ce.clanTag];
     var valores = { ataquesSemana: ce.escribir.ataques, fame: ce.escribir.fame, barcos: ce.escribir.barcos };
     if (ce.accion === 'aplicar') {
-      if (_ajustarSemanaDeUnClan_(filas, porClan[nombreClan], valores, opciones)) cambioAlgo = true;
+      if (_ajustarSemanaDeUnClan_(filas, porClan[nombreClan], valores, opcionesReparto)) cambioAlgo = true;
       offsetsEscritos[ce.clanTag] = porClan[nombreClan];
     } else {
-      offsetsEscritos[ce.clanTag] = _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opciones, nombreClan, nombreJugador);
+      offsetsEscritos[ce.clanTag] = _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opcionesReparto, nombreClan, nombreJugador);
       cambioAlgo = true;
     }
   }
@@ -25797,9 +25812,19 @@ function _aplicarCorreccionConClanTagAFuente_(fuente, offsetsPorClave, temporada
   if (noQuedo.length) {
     devolver();
     suma('ccRevertidos');
+    var conflictosCrr = conflictosReparto.filter(function (x) { return x.crr === 'conflicto'; });
+    if (conflictosCrr.length) {
+      // §PF302: el reparto no escribió porque lo que dice RoyaleAPI no cabe en lo que muestran los JSON de CurrentRiverRace: revisión manual con el motivo real.
+      suma('ccConflictoCrr');
+      var mot2c = 'conflicto con CurrentRiverRace: revision manual';
+      var det2c = conflictosCrr.map(function (x) { return x.motivo; }).join(' | ');
+      Logger.log(etq + 'REVERTIDO: ' + mot2c + ': ' + det2c + '. No se escribe nada para este jugador y semana.');
+      revisar('alarma', mot2c, det2c);
+      return resultado;
+    }
     var mot2 = 'la hoja no quedo con el valor de la correccion (no caben los valores en las filas del clan)';
     Logger.log(etq + 'REVERTIDO: ' + mot2 + ': ' + noQuedo.join('; ') + '. No se escribe nada para este jugador y semana.');
-    revisar('alarma', mot2, noQuedo.join('; '));
+    revisar('alarma', mot2, noQuedo.join('; ') + (conflictosReparto.length ? '; reparto: ' + conflictosReparto.map(function (x) { return x.motivo; }).join(' | ') : ''));
     return resultado;
   }
 
@@ -27293,6 +27318,8 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
   if (!rep.ok) {
     fuente.filas.length = filasAntes;
     Logger.log('[Reparto conjunto] SIN CAMBIOS (reconstruccion) T' + temporadaPropia + ' S' + semana + ' ' + tag + ': ' + rep.motivo + '. No se crean las filas.');
+    // §PF302: el motivo real (por ejemplo el conflicto con los JSON) llega a quien registra la revisión.
+    if (opciones) { opciones.ultimoRepartoFallido = { crr: rep.crr || '', motivo: rep.motivo }; if (opciones.conflictosReparto) opciones.conflictosReparto.push({ crr: rep.crr || '', motivo: rep.motivo }); }
     return null;
   }
 
@@ -27328,8 +27355,10 @@ function _aplicarCorreccionAGuerraConReparto(fuente, offsetsPorClave, temporadaP
     if (!rep.ok) {
       stats.sinCombinacion = (stats.sinCombinacion || 0) + 1;
       Logger.log('[Reparto conjunto] SIN CAMBIOS T' + temporadaPropia + ' S' + semana + ' ' + tag + ': ' + rep.motivo + '. No se toca.');
-      if (opciones.revision) opciones.revision.push({ temporada: temporadaPropia, semana: semana, tag: tag, nombre: '', tipo: 'alarma', motivo: 'reparto conjunto sin combinacion', detalle: rep.motivo });
-      return { modo: 'ajuste', huboCambio: false, sinCombinacion: true, motivo: rep.motivo };
+      var conflictoCrr = rep.crr === 'conflicto';
+      if (conflictoCrr) stats.conflictoCrr = (stats.conflictoCrr || 0) + 1;
+      if (opciones.revision) opciones.revision.push({ temporada: temporadaPropia, semana: semana, tag: tag, nombre: '', tipo: 'alarma', motivo: conflictoCrr ? 'conflicto con CurrentRiverRace: revision manual' : 'reparto conjunto sin combinacion', detalle: rep.motivo });
+      return { modo: 'ajuste', huboCambio: false, sinCombinacion: true, conflictoCrr: conflictoCrr, motivo: rep.motivo };
     }
 
     var offsetsOrdenados = Object.keys(offsetsClave).map(Number).sort(function (a, b) { return b - a; });
@@ -27349,11 +27378,15 @@ function _aplicarCorreccionAGuerraConReparto(fuente, offsetsPorClave, temporadaP
   }
 
   // ---- MODO RECONSTRUCCIÓN COMPLETA (punto 1.5) ----
+  opciones.ultimoRepartoFallido = null;
   var offsetsNuevos = _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valores, opciones);
   if (!offsetsNuevos) {
     stats.sinCombinacion = (stats.sinCombinacion || 0) + 1;
-    if (opciones.revision) opciones.revision.push({ temporada: temporadaPropia, semana: semana, tag: tag, nombre: '', tipo: 'alarma', motivo: 'reparto conjunto sin combinacion (reconstruccion)', detalle: 'no se crearon las filas' });
-    return { modo: 'reconstruccion', huboCambio: false, sinCombinacion: true };
+    var fallo = opciones.ultimoRepartoFallido || null;
+    var conflictoCrr2 = !!fallo && fallo.crr === 'conflicto';
+    if (conflictoCrr2) stats.conflictoCrr = (stats.conflictoCrr || 0) + 1;
+    if (opciones.revision) opciones.revision.push({ temporada: temporadaPropia, semana: semana, tag: tag, nombre: '', tipo: 'alarma', motivo: conflictoCrr2 ? 'conflicto con CurrentRiverRace: revision manual (reconstruccion)' : 'reparto conjunto sin combinacion (reconstruccion)', detalle: fallo ? fallo.motivo + '; no se crearon las filas' : 'no se crearon las filas' });
+    return { modo: 'reconstruccion', huboCambio: false, sinCombinacion: true, conflictoCrr: conflictoCrr2 };
   }
   offsetsPorClave[clave] = offsetsNuevos;
   stats.reconstruidas = (stats.reconstruidas || 0) + 1;
@@ -27967,6 +28000,12 @@ function _cargarOverlayCorreccionesGuerra() {
   for (var g = 0; g < clavesGrupo.length; g++) {
     var filas = grupos[clavesGrupo[g]];
     var conClan = filas.filter(function (x) { return x.clanTag !== ''; });
+    // §PF302: el valor de perfil de RoyaleAPI (fila sin ClanTag con origen «perfil»; la de un clan externo ya se saltó arriba) se guarda aparte para compararlo
+    // con la suma de los clanes; aunque las filas sin ClanTag se ignoren para escribir, ese valor sirve de tope.
+    var perfilGrupo = null;
+    for (var pg = 0; pg < filas.length; pg++) {
+      if (filas[pg].clanTag === '' && filas[pg].origenPerfil === CGW_ORIGEN_PERFIL) perfilGrupo = { ataquesSemana: filas[pg].ataquesSemana, barcos: filas[pg].barcos, fame: filas[pg].fame };
+    }
     if (conClan.length > 0) filas = conClan; // AVISO 1: las sin ClanTag se ignoran
 
     var ataques = 0, fame = 0, barcos = null, actualizado = '';
@@ -27989,7 +28028,8 @@ function _cargarOverlayCorreccionesGuerra() {
       aprobacion: todasAprobadas ? 'Sí' : '',
       implementacion: todasImpl ? 'Sí' : (algunaImplNo ? 'No' : ''),
       clanes: filas.map(function (x) { return x.clanTag; }),
-      filasPorClan: filas
+      filasPorClan: filas,
+      perfil: perfilGrupo
     };
   }
   return mapa;
@@ -28707,8 +28747,11 @@ function _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores
  * sean consecutivos desde el jueves, entre qué valores puede estar el acumulado al cierre del día. El acumulado ya lleva la MERMA (los ataques que
  * se perdieron y lo que eso baja el tope de barcos y fame) y por eso el máximo del domingo es el máximo semanal: con ataques perdidos no se puede
  * llegar a 16. Cada métrica solo se usa si sus capturas son coherentes (serie.validos). Se calcula por clan (las filas son de un clan).
- * Devuelve null si no hay rangos (sin JSON, jugador en varios clanes la misma semana, sin clan en las filas o valores.sinCurrentRiverRace),
- * o { etiqueta, estricto, dias: [{ n, b, f }], acum: [{ a, b, f } | null], estado } con cada cota como [mínimo, máximo] o null si no hay dato.
+ * VARIOS CLANES (§PF302, 30-oct-2026): si el jugador tiene JSON en más de un clan esa semana, los topes valen para el jugador y no para cada clan; por eso los rangos
+ * de este clan se ajustan con lo que los JSON de los OTROS clanes ya muestran (59_Verificar_CRR_vs_Backup.gs, _vcrrRangosAjustadosJugadorClan_): su máximo semanal
+ * no pasa de 16 ataques, 16 barcos ni 3600 medallas menos el piso de los otros clanes. Si los JSON sumados ya rompen un tope, devuelve conflictoTopes (texto).
+ * Devuelve null si no hay rangos (sin JSON, sin clan en las filas o valores.sinCurrentRiverRace),
+ * o { etiqueta, estricto, dias: [{ n, b, f }], acum: [{ a, b, f } | null], estado, multiclan, conflictoTopes } con cada cota como [mínimo, máximo] o null si no hay dato.
  * estricto = true solo si todos los JSON de la serie son utilizables: ahí un total de RoyaleAPI que no cabe es un caso para revisión manual, no se
  * encaja a la fuerza ni se sigue sin los JSON. No escribe nada.
  */
@@ -28722,10 +28765,14 @@ function _repartoRangosCrr_(filas, offsetsExistentes, offs, valores) {
     var tag = _blgNormalizarTag_(valores.tag !== undefined ? valores.tag : f0[GC.TAG - 1]);
     var clan = String(f0[GC.CLAN - 1] === undefined || f0[GC.CLAN - 1] === null ? '' : f0[GC.CLAN - 1]).trim();
     if (!(temp > 0) || !(sem > 0) || !tag || !clan) return null;
-    var serie = _vcrrRangosJugadorClan_(temp, sem, tag, clan);
-    // Un jugador en dos clanes la misma semana: el tope de 4 ataques por día vale entre los dos clanes, así que la merma de un clan no es merma real.
-    if (!serie || !serie.validos || serie.estado === 'multiclan') return null;
-    var r = serie.r, hayA = serie.validos.indexOf('A') >= 0, hayB = serie.validos.indexOf('B') >= 0, hayF = serie.validos.indexOf('F') >= 0;
+    var aj = (typeof _vcrrRangosAjustadosJugadorClan_ === 'function') ? _vcrrRangosAjustadosJugadorClan_(temp, sem, tag, clan) : null;
+    if (!aj || !aj.serie || !aj.validos) return null;
+    var serie = aj.serie;
+    var etiqueta = 'T' + temp + ' S' + sem + ' ' + tag + ' ' + clan + (aj.multiclan ? ' (con sus otros clanes)' : '');
+    var estrictoSerie = serie.validos.length === 3 && (serie.estado === 'ok' || serie.estado === 'multiclan');
+    // Varios clanes: si los JSON sumados rompen un tope semanal no hay nada que repartir con ellos; se devuelve el motivo y quien reparte lo manda a revisión manual.
+    if (aj.conflicto) return { etiqueta: etiqueta, estricto: true, dias: [], acum: [], estado: serie.estado, multiclan: true, conflictoTopes: aj.conflicto };
+    var r = aj.r, hayA = aj.validos.indexOf('A') >= 0, hayB = aj.validos.indexOf('B') >= 0, hayF = aj.validos.indexOf('F') >= 0;
     var dias = [], acum = [], contiguo = true;
     for (var i = 0; i < offs.length; i++) {
       var o = offs[i];
@@ -28734,7 +28781,7 @@ function _repartoRangosCrr_(filas, offsetsExistentes, offs, valores) {
       dias.push({ n: hayA ? [r.A.il[o], r.A.ih[o]] : null, b: hayB ? [r.B.il[o], r.B.ih[o]] : null, f: hayF ? [r.F.il[o], r.F.ih[o]] : null });
       acum.push(contiguo ? { a: hayA ? [r.A.lo[o], r.A.hi[o]] : null, b: hayB ? [r.B.lo[o], r.B.hi[o]] : null, f: hayF ? [r.F.lo[o], r.F.hi[o]] : null } : null);
     }
-    return { etiqueta: 'T' + temp + ' S' + sem + ' ' + tag + ' ' + clan, estricto: serie.estado === 'ok' && serie.validos.length === 3, dias: dias, acum: acum, estado: serie.estado };
+    return { etiqueta: etiqueta, estricto: estrictoSerie, dias: dias, acum: acum, estado: serie.estado, multiclan: aj.multiclan, conflictoTopes: '' };
   } catch (e) {
     Logger.log('[Reparto conjunto] No se pudieron leer los rangos de CurrentRiverRace: ' + e.message + '. Se reparte como siempre.');
     return null;
@@ -28758,6 +28805,8 @@ function _repartoRangosCrr_(filas, offsetsExistentes, offs, valores) {
  * los ataques perdidos bajan el máximo semanal (con merma no se llega a 16 ni se aspira al tope de fame y barcos) y cada día solo admite estados de la tabla dentro
  * de su rango. Si con los JSON limpios (todos utilizables) los totales de RoyaleAPI no caben, NO se escribe nada (ok:false, crr:'conflicto') y el motivo va a revisión
  * manual; si la serie tiene un JSON descartado o una métrica incoherente, se avisa y se sigue con el reparto de siempre. El resultado trae crr: 'rangos', 'aplicado', 'conflicto' o 'sin datos'.
+ * VARIOS CLANES (§PF302, 30-oct-2026): los rangos de un clan ya vienen sumados con lo que los JSON de los otros clanes del jugador muestran (topes de 16 ataques, 16 barcos y 3600 medallas
+ * por semana entre todos los clanes). Si los JSON sumados ya rompen un tope, devuelve ok:false, crr:'conflicto' y conflictoTopes:true: no se escribe y va a revisión manual (criterio 11).
  */
 function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   var offs = Object.keys(offsetsExistentes).map(Number).sort(function (a, b) { return a - b; });
@@ -28895,6 +28944,10 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   var mejor = null;
   var estadoCrr = 'sin datos';
   var rng = _repartoRangosCrr_(filas, offsetsExistentes, offs, valores);
+  if (rng && rng.conflictoTopes) {
+    // §PF302: los JSON de los clanes del jugador, sumados, ya rompen un tope semanal (criterio 11): no se escribe nada y va a revisión manual.
+    return { ok: false, huboCambio: false, crr: 'conflicto', conflictoTopes: true, motivo: 'los JSON de CurrentRiverRace de los clanes del jugador, sumados, rompen un tope semanal (' + rng.etiqueta + ': ' + rng.conflictoTopes + '); no se escribe y queda para revision manual' };
+  }
   if (rng) {
     var catsRng = [];
     for (var d0 = 0; d0 < k; d0++) {
@@ -68721,7 +68774,9 @@ var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
 var _vcrrFameLimites_ = null;                          // caché de _vcrrFameLimitesPorAtaques_()
-var _VCRR_CACHE_RANGOS_ = {};                          // caché por ejecución de _vcrrRangosJugadorClan_(): 'temporada|semana' -> { 'clanKey|tag': serie }
+var _VCRR_CACHE_RANGOS_ = {};                          // caché por ejecución de _vcrrRangosJugadorClan_(): 'temporada|semana' -> { 'clanKey|tag': serie, '*|tag': [series del jugador en todos los clanes] }
+// Topes de un jugador en la semana SUMANDO todos sus clanes (los 4 Terna y el externo; Contexto_Base_Web.md §PF160 criterio 4 y §PF302).
+var VCRR_TOPE_ATAQUES_DIA = 4, VCRR_TOPE_ATAQUES_SEMANA = 16, VCRR_TOPE_BARCOS_SEMANA = 16, VCRR_TOPE_FAME_DIA = 900, VCRR_TOPE_FAME_SEMANA = 3600;
 
 // JSON que se sabe anómalos aunque sigan en su carpeta: claves 'temporada|semana|clan en minúsculas|letra del día', por ejemplo '23|1|grupoxterna™3|V'.
 // Un JSON movido a la carpeta Anomalías no hace falta anotarlo aquí: esa carpeta no se lee.
@@ -69581,21 +69636,138 @@ function _vcrrVerificarAplicado_(filasAntes, filasDespues, casos, creadasEsperad
  */
 function _vcrrRangosJugadorClan_(temporada, semana, tag, clanNombre) {
   try {
-    var clave = Number(temporada) + '|' + Number(semana);
-    if (!_VCRR_CACHE_RANGOS_[clave]) {
-      var mapa = {};
-      var archivos = _vcrrArchivosSemana_(temporada, semana);
-      if (archivos.length) {
-        var cap = _vcrrCapturasSemana_(temporada, semana, archivos);
-        _vcrrSeriesDeSemana_(temporada, semana, cap.porClan).forEach(function (x) { mapa[x.clanKey + '|' + x.tag] = x; });
-      }
-      _VCRR_CACHE_RANGOS_[clave] = mapa;
-    }
-    return _VCRR_CACHE_RANGOS_[clave][_vcrrClanNorm_(clanNombre) + '|' + String(tag || '').trim()] || null;
+    return _vcrrCacheSemana_(temporada, semana)[_vcrrClanNorm_(clanNombre) + '|' + String(tag || '').trim()] || null;
   } catch (e) {
     Logger.log('[VCRR] No se pudieron calcular los rangos de T' + temporada + ' S' + semana + ' ' + tag + ': ' + e.message);
     return null;
   }
+}
+
+/** Mapa de la semana (con caché por ejecución): 'clanKey|tag' -> serie y '*|tag' -> lista de las series de ese jugador en todos los clanes. Lee los JSON una sola vez. */
+function _vcrrCacheSemana_(temporada, semana) {
+  var clave = Number(temporada) + '|' + Number(semana);
+  if (!_VCRR_CACHE_RANGOS_[clave]) {
+    var mapa = {};
+    var archivos = _vcrrArchivosSemana_(temporada, semana);
+    if (archivos.length) {
+      var cap = _vcrrCapturasSemana_(temporada, semana, archivos);
+      _vcrrSeriesDeSemana_(temporada, semana, cap.porClan).forEach(function (x) {
+        mapa[x.clanKey + '|' + x.tag] = x;
+        if (!mapa['*|' + x.tag]) mapa['*|' + x.tag] = [];
+        mapa['*|' + x.tag].push(x);
+      });
+    }
+    _VCRR_CACHE_RANGOS_[clave] = mapa;
+  }
+  return _VCRR_CACHE_RANGOS_[clave];
+}
+
+/** Las series de un jugador en todos los clanes de la semana (una por clan que tenga JSON suyos). [] si no hay. */
+function _vcrrSeriesDeTag_(temporada, semana, tag) {
+  try { return _vcrrCacheSemana_(temporada, semana)['*|' + String(tag || '').trim()] || []; }
+  catch (e) { Logger.log('[VCRR] No se pudieron leer las series de T' + temporada + ' S' + semana + ' ' + tag + ': ' + e.message); return []; }
+}
+
+// ----- Suma de los clanes de un jugador y topes semanales (§PF302) -----
+
+/** Piso conocido (campo 'lo' o 'il') de una métrica en el día d de OTRA serie del mismo jugador; 0 si esa métrica no es utilizable (un 0 siempre es un piso válido). */
+function _vcrrPisoSerie_(serie, m, campo, d) {
+  if (!serie || !serie.r || String(serie.validos || '').indexOf(m) < 0) return 0;
+  var x = serie.r[m][campo][d];
+  return (typeof x === 'number' && isFinite(x)) ? x : 0;
+}
+
+/**
+ * Función pura. Los rangos de UNA serie (un jugador en un clan) ajustados con lo que ya muestran los JSON de sus OTROS clanes la misma semana, que se SUMAN:
+ * los topes valen para el jugador, no para cada clan (4 ataques por día y 16 por semana; 4 barcos por día y 16 por semana; 900 medallas por día y 3600 por semana).
+ * Así el máximo de este clan al cierre del día d no pasa del tope acumulado hasta ese día menos el piso que los otros clanes ya mostraban (en el domingo, el tope semanal),
+ * y su aumento de ese día no pasa del tope del día menos lo que los otros ya habían hecho ese día como mínimo. Lo que los JSON de este clan dicen por sí solos
+ * (su piso y su merma) no cambia: es la cuenta de ESE clan. Solo se ajustan las métricas utilizables (serie.validos).
+ * Devuelve { r: {A,F,B ajustados (copia)}, conflicto, sumaOtras }. conflicto = '' si los rangos siguen siendo coherentes; si no, el texto de qué tope rompe la suma
+ * de los JSON (caso del criterio 11: va a revisión manual). No modifica la serie.
+ */
+function _vcrrAjustarPorOtrosClanes_(serie, otras) {
+  var copia = {}, d, sumaOtras = { A: [0, 0, 0, 0], F: [0, 0, 0, 0], B: [0, 0, 0, 0] };
+  var validos = String((serie && serie.validos) || '');
+  ['A', 'F', 'B'].forEach(function (m) {
+    var x = serie.r[m];
+    copia[m] = { lo: x.lo.slice(), hi: x.hi.slice(), il: x.il.slice(), ih: x.ih.slice() };
+  });
+  var topeDia = { A: VCRR_TOPE_ATAQUES_DIA, F: VCRR_TOPE_FAME_DIA, B: VCRR_TOPE_ATAQUES_DIA };
+  var etiqueta = { A: 'ataques', F: 'medallas', B: 'barcos' };
+  var topeSem = { A: VCRR_TOPE_ATAQUES_SEMANA, F: VCRR_TOPE_FAME_SEMANA, B: VCRR_TOPE_BARCOS_SEMANA };
+  ['A', 'F', 'B'].forEach(function (m) {
+    if (validos.indexOf(m) < 0) return;
+    for (d = 0; d < 4; d++) {
+      var oLo = 0, oIl = 0;
+      (otras || []).forEach(function (o) { oLo += _vcrrPisoSerie_(o, m, 'lo', d); oIl += _vcrrPisoSerie_(o, m, 'il', d); });
+      sumaOtras[m][d] = oLo;
+      copia[m].hi[d] = Math.min(copia[m].hi[d], topeDia[m] * (d + 1) - oLo);
+      copia[m].ih[d] = Math.min(copia[m].ih[d], topeDia[m] - oIl);
+    }
+  });
+  // Lo que depende de los ataques del día (fame y barcos) se vuelve a acotar con los ataques ya ajustados, igual que en _vcrrRestriccionesSerie_.
+  if (validos.indexOf('A') >= 0) {
+    var lim = _vcrrFameLimitesPorAtaques_();
+    for (d = 0; d < 4; d++) {
+      var aih = Math.max(0, Math.min(4, copia.A.ih[d]));
+      if (validos.indexOf('F') >= 0) copia.F.ih[d] = Math.min(copia.F.ih[d], lim.max[aih]);
+      if (validos.indexOf('B') >= 0) { copia.B.ih[d] = Math.min(copia.B.ih[d], copia.A.ih[d]); copia.B.hi[d] = Math.min(copia.B.hi[d], copia.A.hi[d]); }
+    }
+  }
+  var conflicto = '';
+  ['A', 'F', 'B'].forEach(function (m) {
+    if (validos.indexOf(m) < 0 || conflicto) return;
+    if (!_vcrrPropagar_(copia[m])) {
+      conflicto = 'los JSON de los clanes sumados no caben en el tope semanal de ' + topeSem[m] + ' ' + etiqueta[m] + ' (los otros clanes ya muestran ' + sumaOtras[m][3] +
+        ' y este clan al menos ' + serie.r[m].lo[3] + ')';
+    }
+  });
+  return { r: copia, conflicto: conflicto, sumaOtras: sumaOtras };
+}
+
+/**
+ * Los rangos de UN jugador en UN clan y semana, ya sumados con sus otros clanes (§PF302). Para quien reparte la semana de un clan (18_CorreccionGuerra.gs,
+ * _repartoRangosCrr_). Devuelve { serie, r, validos, multiclan, otras, conflicto } o null si esa semana no tiene JSON del jugador en ese clan. Con un solo clan,
+ * r es el de la serie tal cual. conflicto != '' si los JSON de los clanes sumados rompen un tope semanal: eso no se reparte, va a revisión manual.
+ */
+function _vcrrRangosAjustadosJugadorClan_(temporada, semana, tag, clanNombre) {
+  var serie = _vcrrRangosJugadorClan_(temporada, semana, tag, clanNombre);
+  if (!serie) return null;
+  var otras = _vcrrSeriesDeTag_(temporada, semana, tag).filter(function (x) { return x.clanKey !== serie.clanKey; });
+  if (!otras.length) return { serie: serie, r: serie.r, validos: serie.validos, multiclan: false, otras: [], conflicto: '' };
+  var aj = _vcrrAjustarPorOtrosClanes_(serie, otras);
+  return { serie: serie, r: aj.r, validos: serie.validos, multiclan: true, otras: otras, conflicto: aj.conflicto };
+}
+
+/**
+ * Función pura. series = las series de UN jugador en la semana, una por clan (salida de _vcrrSeriesDeSemana_ filtrada por tag). Suma los pisos que muestran los JSON
+ * de todos sus clanes y los compara con los topes semanales (16 ataques, 16 barcos, 3600 medallas) ANTES de mirar los valores de RoyaleAPI. Devuelve
+ * { clanes: { clanKey: { nombre, estado, estricto, A, B, F, conflicto } }, suma: {A,B,F}, topes, conflicto, multiclan }, con A, B y F = [mínimo, máximo] del total semanal
+ * de ESE clan ya ajustado por los otros (null si la métrica no es utilizable en ese clan). conflicto = el primer tope que rompen los JSON sumados ('' si ninguno).
+ */
+function _vcrrResumenDeSeries_(series) {
+  var out = { clanes: {}, suma: { A: 0, B: 0, F: 0 }, topes: { A: VCRR_TOPE_ATAQUES_SEMANA, B: VCRR_TOPE_BARCOS_SEMANA, F: VCRR_TOPE_FAME_SEMANA }, conflicto: '', multiclan: (series || []).length > 1 };
+  var etiqueta = { A: 'ataques', F: 'medallas', B: 'barcos' };
+  (series || []).forEach(function (s) {
+    var otras = series.filter(function (x) { return x !== s; });
+    var aj = _vcrrAjustarPorOtrosClanes_(s, otras);
+    var v = String(s.validos || '');
+    var fin = function (m) { return v.indexOf(m) >= 0 ? [aj.r[m].lo[3], aj.r[m].hi[3]] : null; };
+    ['A', 'B', 'F'].forEach(function (m) { if (v.indexOf(m) >= 0) out.suma[m] += s.r[m].lo[3]; });
+    out.clanes[s.clanKey] = { nombre: s.nombre, estado: s.estado, estricto: v.length === 3 && (s.estado === 'ok' || s.estado === 'multiclan'), A: fin('A'), B: fin('B'), F: fin('F'), conflicto: aj.conflicto };
+    if (aj.conflicto && !out.conflicto) out.conflicto = aj.conflicto;
+  });
+  ['A', 'B', 'F'].forEach(function (m) {
+    if (!out.conflicto && out.suma[m] > out.topes[m]) out.conflicto = 'los JSON de los clanes del jugador suman ' + out.suma[m] + ' ' + etiqueta[m] + ' y el tope semanal es ' + out.topes[m];
+  });
+  return out;
+}
+
+/** El resumen de un jugador y semana con los JSON de todos sus clanes (§PF302). null si no hay JSON suyos esa semana. */
+function _vcrrResumenJugadorSemana_(temporada, semana, tag) {
+  var series = _vcrrSeriesDeTag_(temporada, semana, tag);
+  return series.length ? _vcrrResumenDeSeries_(series) : null;
 }
 
 
