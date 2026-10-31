@@ -17,12 +17,6 @@
 // 14_Nuevos_RoyaleAPI.gs
 // Hoja Nuevos: seguimiento de candidatos externos vistos en RoyaleAPI.
 // ==============================================================================
-
-
-// ==============================================================================
-// 14_Nuevos_RoyaleAPI.gs
-// Hoja Nuevos: seguimiento de candidatos externos vistos en RoyaleAPI.
-// ==============================================================================
 // ----- Variables y constantes ----- [→ Contexto_Base_Web.md §14B001]
 // NUEVO (15-sep-2026, hallazgo B-35 de Plan_Fases.md): movido a Script [→ Contexto_Base_Web.md §14B002]
 var NUEVOS_ROYALEAPI_TOKEN = _scriptToken('NUEVOS_ROYALEAPI_TOKEN');

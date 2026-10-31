@@ -22,10 +22,6 @@
 
 // ----- Variables y constantes -----
 
-// ==============================================================================
-// 05_Backup_CSV.gs
-// Sistema de respaldo y sincronizacion CSV <-> hojas, para todas las hojas del proyecto.
-// ==============================================================================
 // _BACKUP_OMITIR_CHECK_CLAVES_: solo la migración de ids de evento (47_Migraciones.gs) la pone en true, mientras rehace los respaldos de las listas y la asistencia, para que la protección por claves no bloquee un cambio de ids intencional. Siempre vuelve a false. [→ Contexto_Base_Web.md §PF286]
 var _BACKUP_OMITIR_CHECK_CLAVES_ = false;
 
