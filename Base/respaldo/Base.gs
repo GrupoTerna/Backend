@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 14:46:51 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 15:00:35 */
 
 
 
@@ -4182,6 +4182,7 @@ function _setupGuerra(ss) {
   if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
+  _aplicarFormatoMilesGuerra_(sh); // 31-oct-2026: Fame y Copas con coma de miles, solo visual (17_GuerraSheet.gs)
   Logger.log('[Setup] Guerra OK (' + headers.length + ' cols, incluye Merma_AtaquesHoy/Merma_AtaquesSemana)');
 }
 
@@ -5489,6 +5490,7 @@ function _colIndiceFor(campo) {
 //  Parte 2 — Funciones que no se corren a mano
 //    - Columna Jugador (recorte y ocultamiento)
 //    - Encabezados, tablas, filtros y bordes
+//    - Coma de miles automática (solo visual)
 //    - Limpieza de hojas obsoletas (las llama 00_Main.gs)
 //    - Anchos de columna: ayudas
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
@@ -5557,6 +5559,8 @@ function aplicarFormatoGlobal() {
             } catch (eBorde) {}
           }
         }
+
+        _aplicarMilesAutomaticoHoja_(sh); // 31-oct-2026: coma de miles solo visual en toda columna numérica que pase de 999
 
         formateoOk = true;
       } catch (eFmt) {
@@ -6320,6 +6324,71 @@ function _limpiarBordesFilasVacias() {
     }
   }
   Logger.log('[Formato] Bordes en filas vacías limpiados.');
+}
+
+// ----- Coma de miles automática (solo visual) -----
+
+// 31-oct-2026 (pedido de la usuaria: toda columna numérica que pase de 999 lleva coma de miles en cualquier hoja, solo como visualización; nunca en el valor, la hoja ni el CSV). Hojas que no se tocan (texto, fechas o ayudas):
+var MILES_HOJAS_EXCLUIDAS_ = ['INDICE', 'COMENTARIOS', 'MENSAJES', 'ADMINISTRADORES', 'LINKS', 'CONFLICTOS', 'PENDIENTES', 'CARDS', 'CARDS_2', 'CALENDARIO', 'CALENDARIO2'];
+
+// Encabezados que NO llevan coma aunque sean números (posición, identificadores, calendario, hora). Se compara sin tildes y en minúsculas.
+var MILES_ENCABEZADO_EXCLUIDO_ = /^(n|n[°º]|no\.?|id|.*\bid|.*_id|.*tag.*|celular.*|tel.*|temporada.*|season.*|ano|semana.*|dia|dia[ _]?guerra|periodindex|periodidx|puesto|ranking|rank|fecha.*|hora.*|vigencia|.*timestamp.*|ts|orden|fila|idx|indice)$/;
+
+/**
+ * _aplicarMilesAutomaticoHoja_(sh): da formato «#,##0» a toda la columna (hasta el final de la hoja, para que las filas nuevas nazcan con él) de las columnas numéricas enteras que en las últimas 300 filas tienen algún valor de 1000 a 999 999 999, que están en formato General o «0» y cuyo encabezado no es de posición, identificador ni fecha. Solo cambia cómo se ve: el valor no se toca, y el respaldo CSV detecta el formato y guarda el número sin coma (_extraerValoresConLinksReales, 05_Backup_CSV.gs).
+ */
+function _aplicarMilesAutomaticoHoja_(sh) {
+  var nombre = sh.getName();
+  for (var ex = 0; ex < MILES_HOJAS_EXCLUIDAS_.length; ex++) {
+    if (CFG.SHEETS[MILES_HOJAS_EXCLUIDAS_[ex]] === nombre) return;
+  }
+  var conocida = false;
+  for (var k in CFG.SHEETS) { if (CFG.SHEETS[k] === nombre) { conocida = true; break; } }
+  if (!conocida) return;
+
+  var lastRow = sh.getLastRow(), lastCol = sh.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) return;
+
+  var nEnc = Math.min(3, lastRow);
+  var enc = sh.getRange(1, 1, nEnc, lastCol).getDisplayValues();
+  var n = Math.min(300, lastRow - 1);
+  var vals = sh.getRange(lastRow - n + 1, 1, n, lastCol).getValues();
+  var fmts = sh.getRange(lastRow, 1, 1, lastCol).getNumberFormats()[0];
+  var maxRows = sh.getMaxRows();
+  var aplicadas = [];
+
+  for (var c = 0; c < lastCol; c++) {
+    var fmt = String(fmts[c]);
+    if (fmt.indexOf('#,##0') !== -1) continue;
+    if (fmt !== 'General' && !/^0$/.test(fmt)) continue;
+
+    var excluida = false, etiqueta = '';
+    for (var e = 0; e < nEnc; e++) {
+      var txt = String(enc[e][c] || '').trim();
+      if (!txt) continue;
+      if (!etiqueta) etiqueta = txt;
+      var norm = txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (MILES_ENCABEZADO_EXCLUIDO_.test(norm)) { excluida = true; break; }
+    }
+    if (excluida) continue;
+
+    var hayMiles = false, hayNoEntero = false;
+    for (var r = 0; r < n; r++) {
+      var v = vals[r][c];
+      if (typeof v !== 'number' || isNaN(v)) continue;
+      if (v % 1 !== 0) { hayNoEntero = true; break; }
+      if (Math.abs(v) >= 1000 && Math.abs(v) < 1e9) hayMiles = true;
+    }
+    if (hayNoEntero || !hayMiles) continue;
+
+    try {
+      sh.getRange(2, c + 1, Math.max(maxRows - 1, 1), 1).setNumberFormat('#,##0');
+      aplicadas.push((c + 1) + ' «' + etiqueta + '»');
+    } catch (eMiles) {
+      Logger.log('[Formato] miles: no se pudo formatear la columna ' + (c + 1) + ' de "' + nombre + '" (' + eMiles.message + ').');
+    }
+  }
+  if (aplicadas.length) Logger.log('[Formato] miles en "' + nombre + '": ' + aplicadas.join(', '));
 }
 
 // ----- Limpieza de hojas obsoletas (las llama 00_Main.gs) -----
@@ -8409,9 +8478,19 @@ function _extraerValoresConLinksReales(sh, numRows, numCols, colConHoraForzada, 
   }
 
   // 29-oct-2026: columnas con separador de miles solo de visualización: getDisplayValues() trae «1,000»; el respaldo guarda el número crudo («1000»), y también los decimales que el formato redondea al mostrarlos.
-  if (colsSinSeparadorMiles) {
+  // 31-oct-2026 (pedido de la usuaria: la coma de miles nunca se guarda en el CSV): si quien llama no indicó columnas, se detectan por el formato de la primera fila de datos (cualquier columna con «#,##0»). Evita que Guerra_Logs, Clan, Directorio, Players, Inactivos y Control guarden «3,846» en su respaldo.
+  var colsMilesUsar = colsSinSeparadorMiles;
+  if (!colsMilesUsar) {
+    try {
+      var fmtsMiles = sh.getRange(primeraFilaDatos, 1, 1, numCols).getNumberFormats()[0];
+      for (var cfm = 0; cfm < numCols; cfm++) {
+        if (String(fmtsMiles[cfm]).indexOf('#,##0') !== -1) { colsMilesUsar = colsMilesUsar || {}; colsMilesUsar[cfm + 1] = true; }
+      }
+    } catch (eFmtMiles) {}
+  }
+  if (colsMilesUsar) {
     for (var cs = 0; cs < numCols; cs++) {
-      if (!colsSinSeparadorMiles[cs + 1]) continue;
+      if (!colsMilesUsar[cs + 1]) continue;
       var colNumeros = sh.getRange(primeraFilaDatos, cs + 1, filasDatos, 1).getValues();
       for (var rnum = 0; rnum < colNumeros.length; rnum++) {
         var valNumero = colNumeros[rnum][0];
@@ -20338,6 +20417,20 @@ var GUERRA_HEADERS_V21 = ['N°','Fecha','Temporada','Semana','Día','PeriodIndex
                           'Donaciones_r','Donaciones_d','Ranking',
                           'Temporada_2','Origen','Copas'];
 
+// 31-oct-2026 (pedido de la usuaria: medallas y copas llevan coma de miles en cualquier hoja y en la web, SOLO como visualización): Fame y Copas de la hoja Guerra se muestran como «12,345», pero la celda guarda el número sin coma y Backup_Guerra.csv también (ver _syncGuerraCSV).
+var GUERRA_COLS_MILES_ = [GC.FAME, GC.COPAS];
+
+function _aplicarFormatoMilesGuerra_(sh) {
+  try {
+    var nFilasMiles = Math.max(sh.getMaxRows() - 1, 1); // toda la columna: las filas que se agreguen después ya nacen con el formato
+    for (var cmg = 0; cmg < GUERRA_COLS_MILES_.length; cmg++) {
+      sh.getRange(2, GUERRA_COLS_MILES_[cmg], nFilasMiles, 1).setNumberFormat('#,##0');
+    }
+  } catch (eMiles) {
+    Logger.log('[Guerra] _aplicarFormatoMilesGuerra_: no se pudo aplicar el formato de miles (' + eMiles.message + ').');
+  }
+}
+
 // ÍNDICES DE COLUMNA - HOJA GUERRA_LOGS (1-based) [→ Contexto_Base_Web.md §17B008]
 var GLC = {
   NUM:          1,
@@ -20812,10 +20905,12 @@ function updateGuerraSheet() {
     sh.getRange(startRow, 1, batchValues.length, GUERRA_TOTAL_COLS).setValues(batchValues);
     sh.getRange(startRow, GC.FECHA,      batchValues.length, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
     sh.getRange(startRow, GC.DIA_GUERRA, batchValues.length, 1).setNumberFormat('dd/mm/yyyy');
+    _aplicarFormatoMilesGuerra_(sh);
   }
 
   if (fechasReparadas > 0) {
     sh.getRange(2, GC.DIA_GUERRA, datosGuerra.length, 1).setNumberFormat('dd/mm/yyyy');
+    _aplicarFormatoMilesGuerra_(sh);
     Logger.log('[Guerra][FECHAS] Autorreparadas ' + fechasReparadas + ' celda(s) vacía(s) de DiaGuerra en filas existentes (Fecha no se modifica).');
   }
 
@@ -21352,7 +21447,7 @@ function updateGuerraLogsSheet() {
     sh.getRange(2, 1, datosLogs.length, GUERRA_LOGS_TOTAL_COLS).setValues(datosLogs);
     // TANDA 1: mismo formato numérico que ya tienen las filas nuevas en las 3
     // columnas de avance (las filas anteriores a este cambio las tenían vacías).
-    sh.getRange(2, GLC.PROG_EARNED, datosLogs.length, GLC.PROG_DEFENSES - GLC.PROG_EARNED + 1).setNumberFormat('#,##0');
+    sh.getRange(2, GLC.DONACIONES, datosLogs.length, GLC.PROG_DEFENSES - GLC.DONACIONES + 1).setNumberFormat('#,##0');
   }
 
   // Ordenar por periodIndex ASC
@@ -21742,7 +21837,7 @@ function recalcularGuerraLogsDesdeJSON() {
     // Solo PointsEarned..ProgressEarnedFromDefenses (cols 18-25); Min_G (21) se reescribe igual que estaba.
     var bloque = datos.map(function (r) { return r.slice(GLC.PTS_EARNED - 1, GLC.PROG_DEFENSES); });
     sh.getRange(2, GLC.PTS_EARNED, n, bloque[0].length).setValues(bloque);
-    sh.getRange(2, GLC.PROG_EARNED, n, GLC.PROG_DEFENSES - GLC.PROG_EARNED + 1).setNumberFormat('#,##0'); // TANDA 1
+    sh.getRange(2, GLC.DONACIONES, n, GLC.PROG_DEFENSES - GLC.DONACIONES + 1).setNumberFormat('#,##0'); // TANDA 1
     // TANDA 13b: la columna Estado (27) se escribe aparte: el bloque de arriba termina en la 25.
     sh.getRange(2, GLC.ESTADO, n, 1).setValues(datos.map(function (r) { return [r[GLC.ESTADO - 1]]; }));
   }
@@ -23607,7 +23702,7 @@ function _limpiarFilasColiseoGuerraLogs_(aplicar) {
     }
     var bloque = datos.map(function (r) { return r.slice(GLC.PTS_EARNED - 1, GLC.PROG_DEFENSES); });
     sh.getRange(2, GLC.PTS_EARNED, n, bloque[0].length).setValues(bloque);
-    sh.getRange(2, GLC.PROG_EARNED, n, GLC.PROG_DEFENSES - GLC.PROG_EARNED + 1).setNumberFormat('#,##0');
+    sh.getRange(2, GLC.DONACIONES, n, GLC.PROG_DEFENSES - GLC.DONACIONES + 1).setNumberFormat('#,##0');
     sh.getRange(2, GLC.ESTADO, n, 1).setValues(datos.map(function (r) { return [r[GLC.ESTADO - 1]]; }));
   };
   var fijar = function (fila, col, nuevo) {
@@ -24927,6 +25022,7 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
       // el id de las filas restauradas no coincidía con el del CSV y la segunda tanda volvía a restaurarlas todas (filas repetidas).
       sh.getRange(proximaFila, GC.FECHA, appendData.length, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
       sh.getRange(proximaFila, GC.DIA_GUERRA, appendData.length, 1).setNumberFormat('dd/mm/yyyy');
+      _aplicarFormatoMilesGuerra_(sh);
       proximaFila += appendData.length;
       escritasEnEstaCorrida += appendData.length;
       lote = [];
@@ -25087,6 +25183,16 @@ function _syncGuerraCSV(sh, forzar) {
         }
         if (colDiaGuerraGuerra[rg][0] instanceof Date && !isNaN(colDiaGuerraGuerra[rg][0].getTime())) {
           data[rg + 1][GC.DIA_GUERRA - 1] = _formatFechaCanonica(colDiaGuerraGuerra[rg][0]);
+        }
+      }
+    }
+
+    // 31-oct-2026: Fame y Copas tienen formato «#,##0» solo de visualización; getDisplayValues() trae «12,345» y el respaldo guarda el número crudo («12345»).
+    if (lastRow >= 2) {
+      for (var cmGu = 0; cmGu < GUERRA_COLS_MILES_.length; cmGu++) {
+        var colRawGu = sh.getRange(2, GUERRA_COLS_MILES_[cmGu], lastRow - 1, 1).getValues();
+        for (var rmGu = 0; rmGu < colRawGu.length; rmGu++) {
+          if (typeof colRawGu[rmGu][0] === 'number' && !isNaN(colRawGu[rmGu][0])) data[rmGu + 1][GUERRA_COLS_MILES_[cmGu] - 1] = String(colRawGu[rmGu][0]);
         }
       }
     }
@@ -25320,6 +25426,7 @@ function _purgarTemporadasAnterioresGuerra(sh, temporadaActual) {
     sh.getRange(2, 1, filasActuales.length, GUERRA_TOTAL_COLS).setValues(filasActuales);
     sh.getRange(2, GC.FECHA,      filasActuales.length, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
     sh.getRange(2, GC.DIA_GUERRA, filasActuales.length, 1).setNumberFormat('dd/mm/yyyy');
+    _aplicarFormatoMilesGuerra_(sh);
   }
 
   Logger.log('[Guerra] Purga completada: ' + (data.length - filasActuales.length) +
@@ -25481,6 +25588,7 @@ function _corregirTemporadaEnGuerra(ss, temporadaCorrecta, fechaCorte) {
     sh.getRange(2, 1, filasFinal.length, GUERRA_TOTAL_COLS).setValues(filasFinal);
     sh.getRange(2, GC.FECHA,      filasFinal.length, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
     sh.getRange(2, GC.DIA_GUERRA, filasFinal.length, 1).setNumberFormat('dd/mm/yyyy');
+    _aplicarFormatoMilesGuerra_(sh);
   }
 
   Logger.log('[Corrección] Guerra: ' + corregidas + ' fila(s) con Temporada corregida. ' +
@@ -27435,6 +27543,7 @@ function _guardarFuenteGuerra(fuente) {
       sh.getRange(2, 1, fuente.filas.length, GUERRA_TOTAL_COLS).setValues(fuente.filas);
       sh.getRange(2, GC.FECHA,      fuente.filas.length, 1).setNumberFormat('dddd, d "de" mmmm"," yyyy h:mm:ss AM/PM');
       sh.getRange(2, GC.DIA_GUERRA, fuente.filas.length, 1).setNumberFormat('dd/mm/yyyy');
+      _aplicarFormatoMilesGuerra_(sh);
     }
     // FIX (30-ago-2026, reporte usuario: "las filas Reconstruido no tienen [→ Contexto_Base_Web.md §18B072]
     _aplicarFmtCondicionalGuerra(sh);
