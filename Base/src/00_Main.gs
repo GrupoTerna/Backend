@@ -2213,6 +2213,10 @@ function _ejecutarPorTandas(idEjecucion, pasos, presupuestoMs, nombreHandlerCont
       resultado = pasos[paso]();
     }
 
+    // PF311 parte A: cuánto tardó el paso (con sus llamadas repetidas) y cuánto lleva la tanda; sin esto el registro callaba justo donde se cortaba. [→ Contexto_Base_Web.md §PF311]
+    Logger.log('[' + idEjecucion + '] Paso ' + (paso + 1) + '/' + pasos.length + ': ' + (resultado === false ? 'incompleto' : 'terminado') + ' tras ' + Math.round((Date.now() - tInicioLlamada) / 1000) + ' s en su última llamada; la tanda lleva ' +
+      Math.round((Date.now() - inicioTanda) / 1000) + ' s de ' + Math.round(presupuestoMs / 1000) + ' s.');
+
     // PF311 parte C: si la usuaria canceló mientras esta tanda corría, no se guarda nada del avance, no se toca el lock ni se programa otra continuación.
     if (_cancelacionPedidaDuranteTanda_(idEjecucion)) {
       Logger.log('[' + idEjecucion + '] CANCELADA: se pidió cancelar mientras esta tanda corría. Termina el paso ' + (paso + 1) + '/' + pasos.length +
