@@ -1,10 +1,23 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Comprobación de datos privados
+//    - Carpeta CSV: mover informes sueltos
+//    - Tokens en las propiedades del script
+//  Parte 2 — Funciones que no se corren a mano (ayudas globales)
+//    - Carpetas y archivos de Plantillas; docs reconstruibles
+//    - Fechas, texto, temporadas y días de guerra
+//    - Datos privados, clanes, tags, rangos y formato de celdas
+//    - Carpeta y subcarpetas CSV, hojas y lectura con respaldo en CSV, tokens
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
 // =============================================================================
 // 01_Config_Global.gs
 // Configuracion global (CFG), IDs de carpetas de Drive, y helpers genericos
 // (fechas, texto, formato de celdas) usados por el resto del proyecto.
 // ==============================================================================
 
-// ----- Variables y constantes ---F--
+
+// ----- Constantes y variables globales -----
 
 
 // Configuración central del sistema de gestión de clanes - Familia Terna [→ Contexto_Base_Web.md §01B001]
@@ -609,7 +622,75 @@ var _DIAS_ES  = ['domingo','lunes','martes','miércoles','jueves','viernes','sá
 var _MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio',
                  'agosto','septiembre','octubre','noviembre','diciembre'];
 
-// ----- Funciones internas / helpers -----
+// FIX (02-sep-2026, pedido usuario — corridas de RUNUPDATE muriendo "sin [→ Contexto_Base_Web.md §01B115]
+var _CACHE_IDS_PLANTILLAS_MEMORIA_ = {};
+
+// Prefijo de la clave en Script Properties (persiste ENTRE ejecuciones y [→ Contexto_Base_Web.md §01B116]
+var PLANTILLAS_ID_CACHE_PREFIX_ = 'PLANTILLAS_ID_CACHE_';
+
+// DATOS PRIVADOS FUERA DEL CODIGO (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §PF048]
+// El repo Backend es publico: los celulares ya no van en el codigo. Se guardan en Propiedades de la secuencia de comandos (Script Properties):
+//   FUNDADOR_CELULAR (solo digitos, sin prefijo), ADMIN_FAMILIA_JSON (lista [{nombre, celular, prefijo, clanes}]),
+//   CELULARES_RESPALDO_MANUAL_JSON ({ "TAGSINNUMERAL": "celular" }) y TELEFONO_PRUEBA (para simularMensajeBot()).
+// Si una propiedad falta, se usa un valor vacio y NO se hace ninguna coincidencia (nunca se compara contra un celular vacio).
+var _propPrivadaCache_ = {};
+
+// SUBCARPETAS DE LA CARPETA CSV (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §01B158]
+// Cada CSV tiene una subcarpeta asignada. Un nombre sin asignar se queda en la raíz de CSV.
+// Si CSV_MOVER_A_SUBCARPETA es true, al guardar un archivo encontrado fuera de su subcarpeta se mueve a ella.
+var CSV_MOVER_A_SUBCARPETA = true;
+var CSV_SUBCARPETAS_ = ['Background', 'Hojas', 'Informes', 'Tampermonkey', 'Jugador'];
+var _CSV_SUBCARPETAS_MEM_ = {};
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
+
+/**
+ * verificarDatosPrivados(): ejecutar a mano para comprobar que las propiedades privadas estan cargadas. Solo informa cantidades, nunca los valores.
+ */
+function verificarDatosPrivados() {
+  Logger.log('[Privado] FUNDADOR_CELULAR: ' + (_getFundadorCelular_() ? 'cargado (' + _getFundadorCelular_().length + ' digitos)' : 'FALTA') +
+    ' | ADMIN_FAMILIA_JSON: ' + _getAdminFamilia_().length + ' admin(es) | CELULARES_RESPALDO_MANUAL_JSON: ' + Object.keys(_getCelularesRespaldoManual_()).length + ' tag(s)' +
+    ' | TELEFONO_PRUEBA: ' + (_getPropPrivada_('TELEFONO_PRUEBA') ? 'cargado' : 'no cargado (solo hace falta para simularMensajeBot)'));
+}
+
+/**
+ * Mueve a CSV/Informes los informes que ya quedaron sueltos en la raíz de la carpeta CSV (los creados antes de esta corrección no se mueven solos).
+ * Solo mueve archivos cuya subcarpeta asignada por _csvSubcarpetaDe_() sea Informes; no toca nada más ni borra nada. Se puede correr las veces que haga falta.
+ */
+function moverInformesSueltosASubcarpeta() {
+  var raiz = _getCsvFolder(), destino = _getCsvSubcarpeta_('Informes', true), it = raiz.getFiles(), movidos = 0, errores = 0;
+  while (it.hasNext()) {
+    var f = it.next(), nombre = f.getName();
+    if (_csvSubcarpetaDe_(nombre) !== 'Informes') continue;
+    try { f.moveTo(destino); movidos++; }
+    catch (e) { errores++; Logger.log('[Informes] No se pudo mover ' + nombre + ': ' + e.message); }
+  }
+  Logger.log('[Informes] Movidos a CSV/Informes: ' + movidos + (errores ? ' (con ' + errores + ' error(es), ver arriba)' : '') + '. Lo que no es informe no se toco.');
+}
+
+/**
+ * guardarTokensEnScriptProperties() [→ Contexto_Base_Web.md §01B157]
+ */
+function guardarTokensEnScriptProperties() {
+  var props = PropertiesService.getScriptProperties();
+  var nombres = [
+    'WEB_MEMBER_TOKEN', 'CONTACTOS_TOKEN', 'DASHBOARD_TOKEN',
+    'CORRECCION_GUERRA_TOKEN', 'HISTORIAL_GUERRA_TOKEN',
+    'NUEVOS_ROYALEAPI_TOKEN', 'VERIFICAR_RIVERRACE_TOKEN', 'CLAVE_ADMIN_PEPPER'
+  ];
+  var yaExistian = [], fallaron = [];
+  for (var i = 0; i < nombres.length; i++) {
+    var nombre = nombres[i];
+    if (props.getProperty(nombre)) { yaExistian.push(nombre); continue; }
+    // Ya no hay literal de respaldo en el código: sin Property, no hay
+    // valor que copiar. Hay que crearla a mano en Script Properties.
+    fallaron.push(nombre + ' (sin Property y sin literal de respaldo en el código)');
+  }
+  Logger.log('[Tokens] Ya existían (' + yaExistian.length + '): ' + (yaExistian.join(', ') || '—'));
+  if (fallaron.length) Logger.log('[Tokens] Faltan por crear a mano: ' + fallaron.join('; '));
+}
+
+// ===== PARTE 2 — Funciones que no se corren a mano =====
 
 // IV. HELPERS GLOBALES [→ Contexto_Base_Web.md §01B112]
 
@@ -630,12 +711,6 @@ function _getCarpetasPlantillas() {
   }
   return carpetas;
 }
-
-// FIX (02-sep-2026, pedido usuario — corridas de RUNUPDATE muriendo "sin [→ Contexto_Base_Web.md §01B115]
-var _CACHE_IDS_PLANTILLAS_MEMORIA_ = {};
-
-// Prefijo de la clave en Script Properties (persiste ENTRE ejecuciones y [→ Contexto_Base_Web.md §01B116]
-var PLANTILLAS_ID_CACHE_PREFIX_ = 'PLANTILLAS_ID_CACHE_';
 
 /**
  * _buscarArchivoEnPlantillas(nombreArchivo, idArchivo) [→ Contexto_Base_Web.md §01B117]
@@ -985,12 +1060,6 @@ function soloDigitos(v) {
   return String(v || '').replace(/\D/g, '');
 }
 
-// DATOS PRIVADOS FUERA DEL CODIGO (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §PF048]
-// El repo Backend es publico: los celulares ya no van en el codigo. Se guardan en Propiedades de la secuencia de comandos (Script Properties):
-//   FUNDADOR_CELULAR (solo digitos, sin prefijo), ADMIN_FAMILIA_JSON (lista [{nombre, celular, prefijo, clanes}]),
-//   CELULARES_RESPALDO_MANUAL_JSON ({ "TAGSINNUMERAL": "celular" }) y TELEFONO_PRUEBA (para simularMensajeBot()).
-// Si una propiedad falta, se usa un valor vacio y NO se hace ninguna coincidencia (nunca se compara contra un celular vacio).
-var _propPrivadaCache_ = {};
 function _getPropPrivada_(clave) {
   if (Object.prototype.hasOwnProperty.call(_propPrivadaCache_, clave)) return _propPrivadaCache_[clave];
   var v = '';
@@ -1006,15 +1075,6 @@ function _getPropPrivadaJson_(clave, porDefecto) {
 function _getFundadorCelular_() { return soloDigitos(_getPropPrivada_('FUNDADOR_CELULAR')); }
 function _getAdminFamilia_() { var l = _getPropPrivadaJson_('ADMIN_FAMILIA_JSON', []); return Object.prototype.toString.call(l) === '[object Array]' ? l : []; }
 function _getCelularesRespaldoManual_() { var m = _getPropPrivadaJson_('CELULARES_RESPALDO_MANUAL_JSON', {}); return (m && typeof m === 'object') ? m : {}; }
-
-/**
- * verificarDatosPrivados(): ejecutar a mano para comprobar que las propiedades privadas estan cargadas. Solo informa cantidades, nunca los valores.
- */
-function verificarDatosPrivados() {
-  Logger.log('[Privado] FUNDADOR_CELULAR: ' + (_getFundadorCelular_() ? 'cargado (' + _getFundadorCelular_().length + ' digitos)' : 'FALTA') +
-    ' | ADMIN_FAMILIA_JSON: ' + _getAdminFamilia_().length + ' admin(es) | CELULARES_RESPALDO_MANUAL_JSON: ' + Object.keys(_getCelularesRespaldoManual_()).length + ' tag(s)' +
-    ' | TELEFONO_PRUEBA: ' + (_getPropPrivada_('TELEFONO_PRUEBA') ? 'cargado' : 'no cargado (solo hace falta para simularMensajeBot)'));
-}
 
 /**
  * _getClanesAdminTexto(prefijo, celular) [→ Contexto_Base_Web.md §01B141]
@@ -1215,13 +1275,6 @@ function _getCsvFolder() {
   }
 }
 
-// SUBCARPETAS DE LA CARPETA CSV (12-oct-2026, pedido del usuario) [→ Contexto_Base_Web.md §01B158]
-// Cada CSV tiene una subcarpeta asignada. Un nombre sin asignar se queda en la raíz de CSV.
-// Si CSV_MOVER_A_SUBCARPETA es true, al guardar un archivo encontrado fuera de su subcarpeta se mueve a ella.
-var CSV_MOVER_A_SUBCARPETA = true;
-var CSV_SUBCARPETAS_ = ['Background', 'Hojas', 'Informes', 'Tampermonkey', 'Jugador'];
-var _CSV_SUBCARPETAS_MEM_ = {};
-
 function _csvSubcarpetaDe_(filename) {
   var n = String(filename || '');
   // Informes: respaldos previos a reparar, reparaciones, limpiezas, revisiones y diagnósticos.
@@ -1256,21 +1309,6 @@ function _csvSubcarpetaDe_(filename) {
   if (/ \d{4}-\d{2}-\d{2} \d{2}\.\d{2}\.\d{2}/.test(n) || /\((informe|plan|aplicado|detalle|resumen)\)\.csv$/.test(n)) return 'Informes';
   if (/^(Cotejo_|Cruce_|Informe_|Anomalias_|AplicarTotalesSemana_)/.test(n) || n === 'Cache_TotalesSemana_Objetivos.csv') return 'Informes';
   return ''; // sin asignar: raíz de CSV (hoy ninguno de los que usa el código)
-}
-
-/**
- * Mueve a CSV/Informes los informes que ya quedaron sueltos en la raíz de la carpeta CSV (los creados antes de esta corrección no se mueven solos).
- * Solo mueve archivos cuya subcarpeta asignada por _csvSubcarpetaDe_() sea Informes; no toca nada más ni borra nada. Se puede correr las veces que haga falta.
- */
-function moverInformesSueltosASubcarpeta() {
-  var raiz = _getCsvFolder(), destino = _getCsvSubcarpeta_('Informes', true), it = raiz.getFiles(), movidos = 0, errores = 0;
-  while (it.hasNext()) {
-    var f = it.next(), nombre = f.getName();
-    if (_csvSubcarpetaDe_(nombre) !== 'Informes') continue;
-    try { f.moveTo(destino); movidos++; }
-    catch (e) { errores++; Logger.log('[Informes] No se pudo mover ' + nombre + ': ' + e.message); }
-  }
-  Logger.log('[Informes] Movidos a CSV/Informes: ' + movidos + (errores ? ' (con ' + errores + ' error(es), ver arriba)' : '') + '. Lo que no es informe no se toco.');
 }
 
 function _getCsvSubcarpeta_(nombre, crear) {
@@ -1440,24 +1478,4 @@ function _scriptToken(nombrePropiedad) {
   return v;
 }
 
-/**
- * guardarTokensEnScriptProperties() [→ Contexto_Base_Web.md §01B157]
- */
-function guardarTokensEnScriptProperties() {
-  var props = PropertiesService.getScriptProperties();
-  var nombres = [
-    'WEB_MEMBER_TOKEN', 'CONTACTOS_TOKEN', 'DASHBOARD_TOKEN',
-    'CORRECCION_GUERRA_TOKEN', 'HISTORIAL_GUERRA_TOKEN',
-    'NUEVOS_ROYALEAPI_TOKEN', 'VERIFICAR_RIVERRACE_TOKEN', 'CLAVE_ADMIN_PEPPER'
-  ];
-  var yaExistian = [], fallaron = [];
-  for (var i = 0; i < nombres.length; i++) {
-    var nombre = nombres[i];
-    if (props.getProperty(nombre)) { yaExistian.push(nombre); continue; }
-    // Ya no hay literal de respaldo en el código: sin Property, no hay
-    // valor que copiar. Hay que crearla a mano en Script Properties.
-    fallaron.push(nombre + ' (sin Property y sin literal de respaldo en el código)');
-  }
-  Logger.log('[Tokens] Ya existían (' + yaExistian.length + '): ' + (yaExistian.join(', ') || '—'));
-  if (fallaron.length) Logger.log('[Tokens] Faltan por crear a mano: ' + fallaron.join('; '));
-}
+
