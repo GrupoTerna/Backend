@@ -1,3 +1,19 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Directorio y vistas derivadas
+//    - Administradores (hoja Administradores)
+//    - Limpieza de enlaces accidentales en nombres
+//  Parte 2 — Funciones que no se corren a mano
+//    - Directorio: lectura de las fuentes (CSV, hoja y hojas por Tag)
+//    - Directorio: armado de las filas
+//    - Directorio: escritura, validaciones y formato
+//    - Limpieza de enlaces accidentales: ayuda por hoja
+//    - Administradores: clave, dropdowns y edición desde la hoja
+//    - Registro de miembro nuevo (bot de WhatsApp y web)
+//    - Comentarios del Directorio
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+
+
 // ==============================================================================
 // 11_DirectorioSheet.gs
 // Nucleo de la hoja Directorio: lectura/escritura de miembros, administradores,
@@ -64,7 +80,9 @@ var CMC = {
 
 var COMENTARIOS_TOTAL_COLS = 15;
 
-// ----- Funciones manuales / punto de entrada -----
+// ===== PARTE 1 — Funciones que se corren a mano =====
+
+// ----- Directorio y vistas derivadas -----
 
 function updateDirectorioSheet() {
   var ss = _getSs();
@@ -185,25 +203,14 @@ function updateVistasDerivadas() {
   updateAscensosSheet(ss, dirData);
 }
 
+// ----- Administradores (hoja Administradores) -----
+
 /**
  * sincronizarAdministradores() [→ Contexto_Base_Web.md §11B020]
  */
 /**
  * sincronizarAdministradores() [→ Contexto_Base_Web.md §11B021]
  */
-
-/**
- * _generarClaveAdmin() [→ Contexto_Base_Web.md §11B022]
- */
-function _generarClaveAdmin() {
-  var ALFABETO_CLAVE_ADMIN = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-  var clave = '';
-  for (var c = 0; c < 8; c++) {
-    clave += ALFABETO_CLAVE_ADMIN.charAt(Math.floor(Math.random() * ALFABETO_CLAVE_ADMIN.length));
-  }
-  return clave;
-}
-
 function sincronizarAdministradores() {
   var ss = _getSs();
   var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
@@ -438,30 +445,7 @@ function actualizarDropdownCatDisp() {
   Logger.log('[Administradores] Funciones autocompletado (donde estaba vacío) con las funciones disponibles.');
 }
 
-function moverComentarioFila(sh, row) {
-  var comentario = sh.getRange(row, IC.COMENTARIO).getValue();
-  if (!comentario || String(comentario).trim() === '') return;
-  var rowData = sh.getRange(row, 1, 1, DIR_SHEET_COLS).getValues()[0];
-  var shCom = _getSs().getSheetByName(CFG.SHEETS.COMENTARIOS);
-  if (!shCom) return;
-  var now = new Date();
-  // NOTA (26-ago-2026): el encabezado de la columna 5 de Comentarios es [→ Contexto_Base_Web.md §11B044]
-  var filaCMC = new Array(COMENTARIOS_TOTAL_COLS).fill('');
-  filaCMC[CMC.NUM - 1]        = shCom.getLastRow();
-  filaCMC[CMC.FECHA - 1]      = now;
-  filaCMC[CMC.TAG - 1]        = rowData[IC.TAG-1];
-  filaCMC[CMC.NOMBRE - 1]     = rowData[IC.NOMBRE-1];
-  filaCMC[CMC.NOM_MULTI - 1]  = rowData[IC.NOM_MULTI-1];
-  filaCMC[CMC.CLAN_TAG - 1]   = rowData[IC.CLAN_TAG-1];
-  filaCMC[CMC.CLAN - 1]       = rowData[IC.CLAN-1];
-  filaCMC[CMC.RANGO - 1]      = rowData[IC.RANGO-1];
-  filaCMC[CMC.LIDER - 1]      = rowData[IC.LIDER-1];
-  filaCMC[CMC.COMENTARIO - 1] = comentario;
-  shCom.appendRow(filaCMC);
-  _setDateCell(shCom, shCom.getLastRow(), CMC.FECHA, now, 'dddd, d "de" mmmm"," yyyy h:mm:ss am/pm');
-  _escribirTSDEnFilaHoja_(shCom, shCom.getLastRow(), CMC.TSD, now); // 26-oct-2026 (§PF267)
-  sh.getRange(row, IC.COMENTARIO).clearContent();
-}
+// ----- Limpieza de enlaces accidentales en nombres -----
 
 /**
  * limpiarLinksAccidentalesDeNombres() [→ Contexto_Base_Web.md §11B045]
@@ -502,37 +486,9 @@ function limpiarLinksAccidentalesDeNombres() {
   return true;
 }
 
-// ----- Funciones internas / helpers -----
+// ===== PARTE 2 — Funciones que no se corren a mano =====
 
-function _leerDirectorioExistente(sh) {
-  var map = {};
-  var lastRow = sh.getLastRow();
-  if (lastRow < 1) return map;
-
-  // Leer encabezados de la fila 1 para construir índices dinámicos
-  var headerRow = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
-  var headerIdx = {};
-  for (var h = 0; h < headerRow.length; h++) {
-    var hName = String(headerRow[h] || '').trim();
-    if (hName) headerIdx[hName] = h; // índice 0-based dentro de la fila de datos
-  }
-  // Guardar el mapa de encabezados en el objeto devuelto para uso externo
-  map._headerIdx = headerIdx;
-
-  // Columna Tag: buscar por encabezado; si no existe, usar DC.TAG como respaldo
-  var tagColIdx = (headerIdx['Tag'] !== undefined) ? headerIdx['Tag'] : (DC.TAG - 1);
-
-  if (lastRow < 2) return map;
-
-  // Leer filas de datos (fila 2 en adelante)
-  var numCols = Math.max(sh.getLastColumn(), DIR_SHEET_COLS);
-  var data = sh.getRange(2, 1, lastRow - 1, numCols).getValues();
-  for (var i = 0; i < data.length; i++) {
-    var tag = String(data[i][tagColIdx] || '').trim().toUpperCase();
-    if (tag) map[tag] = data[i];
-  }
-  return map;
-}
+// ----- Directorio: lectura de las fuentes (CSV, hoja y hojas por Tag) -----
 
 function _getCsvDirMap() {
   var map = {};
@@ -670,6 +626,120 @@ function _getCsvDirMap() {
 
   return map;
 }
+
+function _leerDirectorioExistente(sh) {
+  var map = {};
+  var lastRow = sh.getLastRow();
+  if (lastRow < 1) return map;
+
+  // Leer encabezados de la fila 1 para construir índices dinámicos
+  var headerRow = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  var headerIdx = {};
+  for (var h = 0; h < headerRow.length; h++) {
+    var hName = String(headerRow[h] || '').trim();
+    if (hName) headerIdx[hName] = h; // índice 0-based dentro de la fila de datos
+  }
+  // Guardar el mapa de encabezados en el objeto devuelto para uso externo
+  map._headerIdx = headerIdx;
+
+  // Columna Tag: buscar por encabezado; si no existe, usar DC.TAG como respaldo
+  var tagColIdx = (headerIdx['Tag'] !== undefined) ? headerIdx['Tag'] : (DC.TAG - 1);
+
+  if (lastRow < 2) return map;
+
+  // Leer filas de datos (fila 2 en adelante)
+  var numCols = Math.max(sh.getLastColumn(), DIR_SHEET_COLS);
+  var data = sh.getRange(2, 1, lastRow - 1, numCols).getValues();
+  for (var i = 0; i < data.length; i++) {
+    var tag = String(data[i][tagColIdx] || '').trim().toUpperCase();
+    if (tag) map[tag] = data[i];
+  }
+  return map;
+}
+
+// FASE B1 (14/07/2026) — Reconstrucción de filas de Directorio en formato DC [→ Contexto_Base_Web.md §11B118]
+/**
+ * _leerHojaComoMapaPorTag(ss, nombreHoja, tagColIdx, totalCols) [→ Contexto_Base_Web.md §11B119]
+ */
+function _leerHojaComoMapaPorTag(ss, nombreHoja, tagColIdx, totalCols) {
+  var mapa = {};
+  var sh = ss.getSheetByName(nombreHoja);
+  if (!sh || sh.getLastRow() < 2) return mapa;
+  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, totalCols).getValues();
+  for (var i = 0; i < datos.length; i++) {
+    var tag = String(datos[i][tagColIdx] || '').trim().toUpperCase();
+    if (tag) mapa[tag] = datos[i];
+  }
+  return mapa;
+}
+
+/**
+ * _leerFilaHojaPorTag(ss, nombreHoja, tagColIdx, totalCols, tag) [→ Contexto_Base_Web.md §11B120]
+ */
+function _leerFilaHojaPorTag(ss, nombreHoja, tagColIdx, totalCols, tag) {
+  var tagNorm = String(tag || '').trim().toUpperCase();
+  if (!tagNorm) return null;
+  var sh = ss.getSheetByName(nombreHoja);
+  if (!sh || sh.getLastRow() < 2) return null;
+  var colTag1based = tagColIdx + 1;
+  var finder = sh.getRange(2, colTag1based, sh.getLastRow() - 1, 1)
+    .createTextFinder(tagNorm)
+    .matchEntireCell(true)
+    .matchCase(false);
+  var match = finder.findNext();
+  if (!match) return null;
+  return sh.getRange(match.getRow(), 1, 1, totalCols).getValues()[0];
+}
+
+/**
+ * _reconstruirFilaDCDesdeFisico(filaDirectorio, playersRow, linksRow) [→ Contexto_Base_Web.md §11B121]
+ */
+function _reconstruirFilaDCDesdeFisico(filaDirectorio, playersRow, linksRow) {
+  var fila = new Array(DIR_TOTAL_COLS).fill('');
+  for (var campo in IC) {
+    var valorIC = filaDirectorio[IC[campo] - 1];
+    if (campo === 'VETADO' || campo === 'PERMISO' || campo === 'ADMIN') {
+      valorIC = _esSiNoOVacio(valorIC) ? valorIC : '';
+    } else if (campo === 'RAZON') {
+      valorIC = esRazonValida(valorIC) ? valorIC : '';
+    }
+    fila[DC[campo] - 1] = valorIC;
+  }
+  var CAMPOS_IDENTIDAD = { NUM:1, TAG:1, NOMBRE:1, NOM_MULTI:1, PRESTAMO:1, CLAN:1, CLAN_TAG:1, RANGO:1 };
+  if (playersRow) {
+    for (var campoP in PC) {
+      if (CAMPOS_IDENTIDAD[campoP]) continue;
+      if (DC[campoP] !== undefined) fila[DC[campoP] - 1] = playersRow[PC[campoP] - 1];
+    }
+  }
+  if (linksRow) {
+    for (var campoL in LC) {
+      if (CAMPOS_IDENTIDAD[campoL]) continue;
+      if (DC[campoL] !== undefined) fila[DC[campoL] - 1] = linksRow[LC[campoL] - 1];
+    }
+  }
+  return fila;
+}
+
+/**
+ * _leerDirectorioFisicoComoDC(ss) [→ Contexto_Base_Web.md §11B122]
+ */
+function _leerDirectorioFisicoComoDC(ss) {
+  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!shDir || shDir.getLastRow() < 2) return [];
+  var numFilas   = shDir.getLastRow() - 1;
+  var dirFisico  = shDir.getRange(2, 1, numFilas, DIR_SHEET_COLS).getValues();
+  var playersPorTag = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.PLAYERS, PC.TAG - 1, PLAYERS_TOTAL_COLS);
+  var linksPorTag   = _leerLinksComoMapaPorTagConUrls(ss);
+  var resultado = [];
+  for (var i = 0; i < dirFisico.length; i++) {
+    var tag = String(dirFisico[i][IC.TAG - 1] || '').trim().toUpperCase();
+    resultado.push(_reconstruirFilaDCDesdeFisico(dirFisico[i], playersPorTag[tag], linksPorTag[tag]));
+  }
+  return resultado;
+}
+
+// ----- Directorio: armado de las filas -----
 
 function _detectarMulticuentas(existingRows, csvMap, activosPorTag, colIdxMap, inactivosPorTag) {
   // colIdxMap contiene índices 0-based para columnas leídas desde encabezados: [→ Contexto_Base_Web.md §11B056]
@@ -892,22 +962,27 @@ function _construirFilasDirectorio(activosPorTag, existingRows, csvMap, multiDat
 }
 
 /**
- * _resolverFechaIngF2(tag, fechaIng, datoRacha) // datoRacha = {fecha:Date, corte:boolean} [→ Contexto_Base_Web.md §11B066]
+ * _calcularInicioRachaGuerraPorTag(ss) [→ Contexto_Base_Web.md §11B068]
  */
-function _resolverFechaIngF2(tag, fechaIng, datoRacha) {
-  if (!datoRacha || !(datoRacha.fecha instanceof Date) || isNaN(datoRacha.fecha.getTime())) return fechaIng;
-  var inicioRacha = datoRacha.fecha;
-  var actual = (fechaIng instanceof Date && !isNaN(fechaIng.getTime())) ? fechaIng : null;
-  if (actual && actual.getTime() === inicioRacha.getTime()) return fechaIng;
-  // Hacia adelante SOLO con corte real (reingreso). Sin corte, una fecha posterior a la Fecha_ing
-  // actual no prueba nada (los datos de Guerra empiezan en una fecha fija).
-  if (actual && inicioRacha.getTime() > actual.getTime() && !datoRacha.corte) return fechaIng;
-  var motivo = !actual ? 'completada (estaba vacia)'
-             : (inicioRacha.getTime() < actual.getTime() ? 'corregida hacia atras (primera fila real de Guerra es anterior)'
-                                                          : 'movida al inicio de la permanencia actual (reingreso detectado por semana sin filas)');
-  var txtAntes = actual ? _formatFechaCanonica(actual, true) : 'vacia';
-  Logger.log('[F2 Fecha_ing] ' + tag + ': ' + txtAntes + ' -> ' + _formatFechaCanonica(inicioRacha, true) + ' | ' + motivo);
-  return inicioRacha;
+function _calcularInicioRachaGuerraPorTag(ss) {
+  var filas = [];
+  var temporadasHoja = {};
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  if (sh && sh.getLastRow() >= 2) {
+    var datos = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+    for (var i = 0; i < datos.length; i++) {
+      temporadasHoja[String(datos[i][GC.TEMPORADA - 1] || '')] = true;
+      filas.push(datos[i]);
+    }
+  }
+  var csv = _leerGuerraCsvAgrupado_();
+  if (csv && csv.porTemporada) {
+    Object.keys(csv.porTemporada).forEach(function (t) {
+      if (temporadasHoja[t]) return;
+      csv.porTemporada[t].forEach(function (r) { filas.push(r); });
+    });
+  }
+  return _inicioRachaDesdeFilasGuerra_(filas);
 }
 
 /**
@@ -948,48 +1023,6 @@ function _inicioRachaDesdeFilasGuerra_(filas) {
     if (inicioWk !== null && m[inicioWk]) res[tag] = { fecha: m[inicioWk], corte: huboCorte };
   });
   return res;
-}
-
-/**
- * _calcularInicioRachaGuerraPorTag(ss) [→ Contexto_Base_Web.md §11B068]
- */
-function _calcularInicioRachaGuerraPorTag(ss) {
-  var filas = [];
-  var temporadasHoja = {};
-  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
-  if (sh && sh.getLastRow() >= 2) {
-    var datos = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
-    for (var i = 0; i < datos.length; i++) {
-      temporadasHoja[String(datos[i][GC.TEMPORADA - 1] || '')] = true;
-      filas.push(datos[i]);
-    }
-  }
-  var csv = _leerGuerraCsvAgrupado_();
-  if (csv && csv.porTemporada) {
-    Object.keys(csv.porTemporada).forEach(function (t) {
-      if (temporadasHoja[t]) return;
-      csv.porTemporada[t].forEach(function (r) { filas.push(r); });
-    });
-  }
-  return _inicioRachaDesdeFilasGuerra_(filas);
-}
-
-function _parseStringDate(str) {
-  if (!str) return null;
-  if (str instanceof Date) return str;
-  var s = String(str).trim();
-
-  var d = new Date(s);
-  if (!isNaN(d.getTime())) return d;
-
-  var parts = s.split('/');
-  if (parts.length === 3) {
-    var day = parseInt(parts[0], 10);
-    var month = parseInt(parts[1], 10) - 1;
-    var year = parseInt(parts[2].substring(0, 4), 10);
-    return new Date(year, month, day);
-  }
-  return null;
 }
 
 function _construirFila(tag, member, info, clanTag, existing, csvRow, tagMulticuenta, multiData, now, estado, colIdxMap, playersRow, existingEsDC, inicioRachaGuerra) {
@@ -1309,6 +1342,43 @@ function _construirFila(tag, member, info, clanTag, existing, csvRow, tagMulticu
 }
 
 /**
+ * _resolverFechaIngF2(tag, fechaIng, datoRacha) // datoRacha = {fecha:Date, corte:boolean} [→ Contexto_Base_Web.md §11B066]
+ */
+function _resolverFechaIngF2(tag, fechaIng, datoRacha) {
+  if (!datoRacha || !(datoRacha.fecha instanceof Date) || isNaN(datoRacha.fecha.getTime())) return fechaIng;
+  var inicioRacha = datoRacha.fecha;
+  var actual = (fechaIng instanceof Date && !isNaN(fechaIng.getTime())) ? fechaIng : null;
+  if (actual && actual.getTime() === inicioRacha.getTime()) return fechaIng;
+  // Hacia adelante SOLO con corte real (reingreso). Sin corte, una fecha posterior a la Fecha_ing
+  // actual no prueba nada (los datos de Guerra empiezan en una fecha fija).
+  if (actual && inicioRacha.getTime() > actual.getTime() && !datoRacha.corte) return fechaIng;
+  var motivo = !actual ? 'completada (estaba vacia)'
+             : (inicioRacha.getTime() < actual.getTime() ? 'corregida hacia atras (primera fila real de Guerra es anterior)'
+                                                          : 'movida al inicio de la permanencia actual (reingreso detectado por semana sin filas)');
+  var txtAntes = actual ? _formatFechaCanonica(actual, true) : 'vacia';
+  Logger.log('[F2 Fecha_ing] ' + tag + ': ' + txtAntes + ' -> ' + _formatFechaCanonica(inicioRacha, true) + ' | ' + motivo);
+  return inicioRacha;
+}
+
+function _parseStringDate(str) {
+  if (!str) return null;
+  if (str instanceof Date) return str;
+  var s = String(str).trim();
+
+  var d = new Date(s);
+  if (!isNaN(d.getTime())) return d;
+
+  var parts = s.split('/');
+  if (parts.length === 3) {
+    var day = parseInt(parts[0], 10);
+    var month = parseInt(parts[1], 10) - 1;
+    var year = parseInt(parts[2].substring(0, 4), 10);
+    return new Date(year, month, day);
+  }
+  return null;
+}
+
+/**
  * _calcJugador [→ Contexto_Base_Web.md §11B088]
  */
 function _calcJugador(tag, nombre, nomMulti, celular, multiData) {
@@ -1349,6 +1419,8 @@ function _calcAlerta(estado, inactividad, celular, iniciales, existing, iEstado)
   if (!celular || iniciales === 'No') alertas.push('Pendiente');
   return alertas.join(', ');
 }
+
+// ----- Directorio: escritura, validaciones y formato -----
 
 function _escribirDirectorio(sh, filas) {
   var lastRow = sh.getLastRow();
@@ -1425,19 +1497,6 @@ function _limpiarValidacionesFilasVaciasDirectorio(sh, numFilas) {
 }
 
 /**
- * _buscarFilaPorTag(sh, tag) [→ Contexto_Base_Web.md §11B099]
- */
-function _buscarFilaPorTag(sh, tag) {
-  var lastRow = sh.getLastRow();
-  if (lastRow < 2) return -1;
-  var tags = sh.getRange(2, DC.TAG, lastRow - 1, 1).getValues();
-  for (var i = 0; i < tags.length; i++) {
-    if (String(tags[i][0] || '').trim() === tag) return i + 2;
-  }
-  return -1;
-}
-
-/**
  * _aplicarFormatoCondicionalDirectorio(sh, numFilas, totalCols, colVetado, colEstado, colRango) [→ Contexto_Base_Web.md §11B100]
  */
 function _aplicarFormatoCondicionalDirectorio(sh, numFilas, totalCols, colVetadoNum, colEstadoNum, colRangoNum) {
@@ -1471,6 +1530,153 @@ function _aplicarFormatoCondicionalDirectorio(sh, numFilas, totalCols, colVetado
       .setBackground(CFG.COLORES.MIEMBRO_BG).setRanges([dataRange]).build()
   );
   _tryCondFmt(sh, rules);
+}
+
+// ----- Limpieza de enlaces accidentales: ayuda por hoja -----
+
+// LIMPIEZA DE ENLACES ACCIDENTALES EN NOMBRES [→ Contexto_Base_Web.md §11B113]
+/**
+ * _limpiarLinksAccidentalesEnHoja(sh) [→ Contexto_Base_Web.md §11B114]
+ */
+function _limpiarLinksAccidentalesEnHoja(sh, headerRow) {
+  headerRow = headerRow || 1;
+  var primeraFilaDatos = headerRow + 1;
+  // FIX (09-ago-2026): se agrega 'clan' a la lista — pedido explícito del [→ Contexto_Base_Web.md §11B115]
+  var ENCABEZADOS_A_LIMPIAR = ['nombre', 'nombre jugador', 'jugador', 'nom_multi', 'clan'];
+  var resumen = [];
+
+  var lastRow = sh.getLastRow();
+  var lastCol = sh.getLastColumn();
+  if (lastRow < primeraFilaDatos || lastCol < 1) return resumen;
+
+  var encabezados;
+  try {
+    encabezados = sh.getRange(headerRow, 1, 1, lastCol).getDisplayValues()[0];
+  } catch (e) {
+    return resumen; // hoja sin acceso o formato raro: se omite sin cortar el resto
+  }
+
+  for (var c = 0; c < encabezados.length; c++) {
+    var nombreCol = String(encabezados[c] || '').trim();
+    if (ENCABEZADOS_A_LIMPIAR.indexOf(nombreCol.toLowerCase()) < 0) continue;
+
+    var col = c + 1;
+    var rango = sh.getRange(primeraFilaDatos, col, lastRow - primeraFilaDatos + 1, 1);
+    var valores;
+    try {
+      valores = rango.getRichTextValues();
+    } catch (e) {
+      Logger.log('[LinksNombres] ' + sh.getName() + '.' + nombreCol + ': error al leer (' + e.message + '), se omite.');
+      continue;
+    }
+
+    var corregidas = 0;
+    for (var i = 0; i < valores.length; i++) {
+      var rt = valores[i][0];
+      if (!rt || !rt.getLinkUrl()) continue;
+
+      // FIX (02/08/2026): reportado que el log registraba "N enlace(s) [→ Contexto_Base_Web.md §11B116]
+      var textoLimpio = rt.getText();
+      var ultimoPunto = textoLimpio.lastIndexOf('.');
+      if (ultimoPunto > 0 && ultimoPunto < textoLimpio.length - 1) {
+        textoLimpio = textoLimpio.slice(0, ultimoPunto + 1) + '\u200B' + textoLimpio.slice(ultimoPunto + 1);
+      }
+
+      valores[i][0] = SpreadsheetApp.newRichTextValue().setText(textoLimpio).build();
+      corregidas++;
+    }
+
+    if (corregidas > 0) {
+      rango.setRichTextValues(valores);
+      // flush() adicional: confirma el cambio de inmediato, antes de que la [→ Contexto_Base_Web.md §11B117]
+      SpreadsheetApp.flush();
+      Logger.log('[LinksNombres] ' + sh.getName() + '.' + nombreCol + ': ' + corregidas + ' enlace(s) accidental(es) quitado(s).');
+    }
+    resumen.push({ hoja: sh.getName(), columna: nombreCol, corregidas: corregidas });
+  }
+
+  return resumen;
+}
+
+// ----- Administradores: clave, dropdowns y edición desde la hoja -----
+
+/**
+ * _generarClaveAdmin() [→ Contexto_Base_Web.md §11B022]
+ */
+function _generarClaveAdmin() {
+  var ALFABETO_CLAVE_ADMIN = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  var clave = '';
+  for (var c = 0; c < 8; c++) {
+    clave += ALFABETO_CLAVE_ADMIN.charAt(Math.floor(Math.random() * ALFABETO_CLAVE_ADMIN.length));
+  }
+  return clave;
+}
+
+function _aplicarDropdownsAdministradores(sh, numFilas) {
+  if (numFilas === 0) return;
+  var opsSiNo = SpreadsheetApp.newDataValidation().requireValueInList(['Sí','No'], true).build();
+  sh.getRange(2, AC.WSP_G,  numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, AC.ADMIN,  numFilas, 1).setDataValidation(opsSiNo);
+  sh.getRange(2, AC.VETADO, numFilas, 1).setDataValidation(opsSiNo);
+}
+
+/**
+ * _aplicarCatDispMultiSelect(sh, categorias) [→ Contexto_Base_Web.md §11B105]
+ */
+function _aplicarCatDispMultiSelect(sh, categorias) {
+  var numFilas = sh.getLastRow() - 1;
+  if (numFilas < 1) return;
+
+  // Quitar cualquier validación de lista/dropdown que haya quedado de una [→ Contexto_Base_Web.md §11B106]
+  sh.getRange(2, AC.CAT_DISP, numFilas, 1).clearDataValidations();
+
+  var todasCategorias = categorias.join(', ');
+  var data = sh.getRange(2, AC.ADMIN, numFilas, AC.CAT_DISP - AC.ADMIN + 1).getValues();
+  var idxAdmin = 0;
+  var idxCatDisp = AC.CAT_DISP - AC.ADMIN;
+  for (var i = 0; i < data.length; i++) {
+    var esAdmin = String(data[i][idxAdmin] || '').trim();
+    var catActual = String(data[i][idxCatDisp] || '').trim();
+    if (esAdmin === 'Sí' && !catActual) {
+      sh.getRange(i + 2, AC.CAT_DISP).setValue(todasCategorias);
+    }
+  }
+}
+
+/**
+ * _aplicarFuncionesMultiSelect(sh, funciones) [→ Contexto_Base_Web.md §11B107]
+ */
+function _aplicarFuncionesMultiSelect(sh, funciones) {
+  var numFilas = sh.getLastRow() - 1;
+  if (numFilas < 1) return;
+
+  // Quitar cualquier validación de lista/dropdown que haya quedado de una [→ Contexto_Base_Web.md §11B108]
+  sh.getRange(2, AC.FUNCIONES, numFilas, 1).clearDataValidations();
+
+  var todasFunciones = funciones.join(', ');
+  var data = sh.getRange(2, AC.ADMIN, numFilas, AC.FUNCIONES - AC.ADMIN + 1).getValues();
+  var idxAdmin = 0;
+  var idxFunciones = AC.FUNCIONES - AC.ADMIN;
+  for (var i = 0; i < data.length; i++) {
+    var esAdmin = String(data[i][idxAdmin] || '').trim();
+    var funcionesActual = String(data[i][idxFunciones] || '').trim();
+    if (esAdmin === 'Sí' && !funcionesActual) {
+      sh.getRange(i + 2, AC.FUNCIONES).setValue(todasFunciones);
+    }
+  }
+}
+
+/**
+ * _buscarFilaPorTag(sh, tag) [→ Contexto_Base_Web.md §11B099]
+ */
+function _buscarFilaPorTag(sh, tag) {
+  var lastRow = sh.getLastRow();
+  if (lastRow < 2) return -1;
+  var tags = sh.getRange(2, DC.TAG, lastRow - 1, 1).getValues();
+  for (var i = 0; i < tags.length; i++) {
+    if (String(tags[i][0] || '').trim() === tag) return i + 2;
+  }
+  return -1;
 }
 
 /**
@@ -1542,60 +1748,6 @@ function sincronizarEdicionAdminCatDisp(sh, row) {
 }
 
 /**
- * _aplicarCatDispMultiSelect(sh, categorias) [→ Contexto_Base_Web.md §11B105]
- */
-function _aplicarCatDispMultiSelect(sh, categorias) {
-  var numFilas = sh.getLastRow() - 1;
-  if (numFilas < 1) return;
-
-  // Quitar cualquier validación de lista/dropdown que haya quedado de una [→ Contexto_Base_Web.md §11B106]
-  sh.getRange(2, AC.CAT_DISP, numFilas, 1).clearDataValidations();
-
-  var todasCategorias = categorias.join(', ');
-  var data = sh.getRange(2, AC.ADMIN, numFilas, AC.CAT_DISP - AC.ADMIN + 1).getValues();
-  var idxAdmin = 0;
-  var idxCatDisp = AC.CAT_DISP - AC.ADMIN;
-  for (var i = 0; i < data.length; i++) {
-    var esAdmin = String(data[i][idxAdmin] || '').trim();
-    var catActual = String(data[i][idxCatDisp] || '').trim();
-    if (esAdmin === 'Sí' && !catActual) {
-      sh.getRange(i + 2, AC.CAT_DISP).setValue(todasCategorias);
-    }
-  }
-}
-
-/**
- * _aplicarFuncionesMultiSelect(sh, funciones) [→ Contexto_Base_Web.md §11B107]
- */
-function _aplicarFuncionesMultiSelect(sh, funciones) {
-  var numFilas = sh.getLastRow() - 1;
-  if (numFilas < 1) return;
-
-  // Quitar cualquier validación de lista/dropdown que haya quedado de una [→ Contexto_Base_Web.md §11B108]
-  sh.getRange(2, AC.FUNCIONES, numFilas, 1).clearDataValidations();
-
-  var todasFunciones = funciones.join(', ');
-  var data = sh.getRange(2, AC.ADMIN, numFilas, AC.FUNCIONES - AC.ADMIN + 1).getValues();
-  var idxAdmin = 0;
-  var idxFunciones = AC.FUNCIONES - AC.ADMIN;
-  for (var i = 0; i < data.length; i++) {
-    var esAdmin = String(data[i][idxAdmin] || '').trim();
-    var funcionesActual = String(data[i][idxFunciones] || '').trim();
-    if (esAdmin === 'Sí' && !funcionesActual) {
-      sh.getRange(i + 2, AC.FUNCIONES).setValue(todasFunciones);
-    }
-  }
-}
-
-function _aplicarDropdownsAdministradores(sh, numFilas) {
-  if (numFilas === 0) return;
-  var opsSiNo = SpreadsheetApp.newDataValidation().requireValueInList(['Sí','No'], true).build();
-  sh.getRange(2, AC.WSP_G,  numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, AC.ADMIN,  numFilas, 1).setDataValidation(opsSiNo);
-  sh.getRange(2, AC.VETADO, numFilas, 1).setDataValidation(opsSiNo);
-}
-
-/**
  * _obtenerNomMultisDistintos() [→ Contexto_Base_Web.md §11B109]
  */
 function _obtenerNomMultisDistintos() {
@@ -1619,6 +1771,8 @@ function _obtenerNomMultisDistintos() {
   resultado.sort(function (a, b) { return a.localeCompare(b); });
   return resultado;
 }
+
+// ----- Registro de miembro nuevo (bot de WhatsApp y web) -----
 
 /**
  * _guardarRegistroNuevoMiembro(datos) [→ Contexto_Base_Web.md §11B110]
@@ -1684,6 +1838,33 @@ function _guardarRegistroNuevoMiembroImpl(datos) {
   return { ok: true, esNueva: true };
 }
 
+// ----- Comentarios del Directorio -----
+
+function moverComentarioFila(sh, row) {
+  var comentario = sh.getRange(row, IC.COMENTARIO).getValue();
+  if (!comentario || String(comentario).trim() === '') return;
+  var rowData = sh.getRange(row, 1, 1, DIR_SHEET_COLS).getValues()[0];
+  var shCom = _getSs().getSheetByName(CFG.SHEETS.COMENTARIOS);
+  if (!shCom) return;
+  var now = new Date();
+  // NOTA (26-ago-2026): el encabezado de la columna 5 de Comentarios es [→ Contexto_Base_Web.md §11B044]
+  var filaCMC = new Array(COMENTARIOS_TOTAL_COLS).fill('');
+  filaCMC[CMC.NUM - 1]        = shCom.getLastRow();
+  filaCMC[CMC.FECHA - 1]      = now;
+  filaCMC[CMC.TAG - 1]        = rowData[IC.TAG-1];
+  filaCMC[CMC.NOMBRE - 1]     = rowData[IC.NOMBRE-1];
+  filaCMC[CMC.NOM_MULTI - 1]  = rowData[IC.NOM_MULTI-1];
+  filaCMC[CMC.CLAN_TAG - 1]   = rowData[IC.CLAN_TAG-1];
+  filaCMC[CMC.CLAN - 1]       = rowData[IC.CLAN-1];
+  filaCMC[CMC.RANGO - 1]      = rowData[IC.RANGO-1];
+  filaCMC[CMC.LIDER - 1]      = rowData[IC.LIDER-1];
+  filaCMC[CMC.COMENTARIO - 1] = comentario;
+  shCom.appendRow(filaCMC);
+  _setDateCell(shCom, shCom.getLastRow(), CMC.FECHA, now, 'dddd, d "de" mmmm"," yyyy h:mm:ss am/pm');
+  _escribirTSDEnFilaHoja_(shCom, shCom.getLastRow(), CMC.TSD, now); // 26-oct-2026 (§PF267)
+  sh.getRange(row, IC.COMENTARIO).clearContent();
+}
+
 /**
  * _aplicarBordesComentarios() (Fase 7 del plan de cambios) [→ Contexto_Base_Web.md §11B112]
  */
@@ -1701,152 +1882,4 @@ function _aplicarBordesComentarios() {
         .setBorder(false, false, false, false, false, false);
     } catch(e) {}
   }
-}
-
-// LIMPIEZA DE ENLACES ACCIDENTALES EN NOMBRES [→ Contexto_Base_Web.md §11B113]
-
-/**
- * _limpiarLinksAccidentalesEnHoja(sh) [→ Contexto_Base_Web.md §11B114]
- */
-function _limpiarLinksAccidentalesEnHoja(sh, headerRow) {
-  headerRow = headerRow || 1;
-  var primeraFilaDatos = headerRow + 1;
-  // FIX (09-ago-2026): se agrega 'clan' a la lista — pedido explícito del [→ Contexto_Base_Web.md §11B115]
-  var ENCABEZADOS_A_LIMPIAR = ['nombre', 'nombre jugador', 'jugador', 'nom_multi', 'clan'];
-  var resumen = [];
-
-  var lastRow = sh.getLastRow();
-  var lastCol = sh.getLastColumn();
-  if (lastRow < primeraFilaDatos || lastCol < 1) return resumen;
-
-  var encabezados;
-  try {
-    encabezados = sh.getRange(headerRow, 1, 1, lastCol).getDisplayValues()[0];
-  } catch (e) {
-    return resumen; // hoja sin acceso o formato raro: se omite sin cortar el resto
-  }
-
-  for (var c = 0; c < encabezados.length; c++) {
-    var nombreCol = String(encabezados[c] || '').trim();
-    if (ENCABEZADOS_A_LIMPIAR.indexOf(nombreCol.toLowerCase()) < 0) continue;
-
-    var col = c + 1;
-    var rango = sh.getRange(primeraFilaDatos, col, lastRow - primeraFilaDatos + 1, 1);
-    var valores;
-    try {
-      valores = rango.getRichTextValues();
-    } catch (e) {
-      Logger.log('[LinksNombres] ' + sh.getName() + '.' + nombreCol + ': error al leer (' + e.message + '), se omite.');
-      continue;
-    }
-
-    var corregidas = 0;
-    for (var i = 0; i < valores.length; i++) {
-      var rt = valores[i][0];
-      if (!rt || !rt.getLinkUrl()) continue;
-
-      // FIX (02/08/2026): reportado que el log registraba "N enlace(s) [→ Contexto_Base_Web.md §11B116]
-      var textoLimpio = rt.getText();
-      var ultimoPunto = textoLimpio.lastIndexOf('.');
-      if (ultimoPunto > 0 && ultimoPunto < textoLimpio.length - 1) {
-        textoLimpio = textoLimpio.slice(0, ultimoPunto + 1) + '\u200B' + textoLimpio.slice(ultimoPunto + 1);
-      }
-
-      valores[i][0] = SpreadsheetApp.newRichTextValue().setText(textoLimpio).build();
-      corregidas++;
-    }
-
-    if (corregidas > 0) {
-      rango.setRichTextValues(valores);
-      // flush() adicional: confirma el cambio de inmediato, antes de que la [→ Contexto_Base_Web.md §11B117]
-      SpreadsheetApp.flush();
-      Logger.log('[LinksNombres] ' + sh.getName() + '.' + nombreCol + ': ' + corregidas + ' enlace(s) accidental(es) quitado(s).');
-    }
-    resumen.push({ hoja: sh.getName(), columna: nombreCol, corregidas: corregidas });
-  }
-
-  return resumen;
-}
-
-// FASE B1 (14/07/2026) — Reconstrucción de filas de Directorio en formato DC [→ Contexto_Base_Web.md §11B118]
-
-/**
- * _leerHojaComoMapaPorTag(ss, nombreHoja, tagColIdx, totalCols) [→ Contexto_Base_Web.md §11B119]
- */
-function _leerHojaComoMapaPorTag(ss, nombreHoja, tagColIdx, totalCols) {
-  var mapa = {};
-  var sh = ss.getSheetByName(nombreHoja);
-  if (!sh || sh.getLastRow() < 2) return mapa;
-  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, totalCols).getValues();
-  for (var i = 0; i < datos.length; i++) {
-    var tag = String(datos[i][tagColIdx] || '').trim().toUpperCase();
-    if (tag) mapa[tag] = datos[i];
-  }
-  return mapa;
-}
-
-/**
- * _leerFilaHojaPorTag(ss, nombreHoja, tagColIdx, totalCols, tag) [→ Contexto_Base_Web.md §11B120]
- */
-function _leerFilaHojaPorTag(ss, nombreHoja, tagColIdx, totalCols, tag) {
-  var tagNorm = String(tag || '').trim().toUpperCase();
-  if (!tagNorm) return null;
-  var sh = ss.getSheetByName(nombreHoja);
-  if (!sh || sh.getLastRow() < 2) return null;
-  var colTag1based = tagColIdx + 1;
-  var finder = sh.getRange(2, colTag1based, sh.getLastRow() - 1, 1)
-    .createTextFinder(tagNorm)
-    .matchEntireCell(true)
-    .matchCase(false);
-  var match = finder.findNext();
-  if (!match) return null;
-  return sh.getRange(match.getRow(), 1, 1, totalCols).getValues()[0];
-}
-
-/**
- * _reconstruirFilaDCDesdeFisico(filaDirectorio, playersRow, linksRow) [→ Contexto_Base_Web.md §11B121]
- */
-function _reconstruirFilaDCDesdeFisico(filaDirectorio, playersRow, linksRow) {
-  var fila = new Array(DIR_TOTAL_COLS).fill('');
-  for (var campo in IC) {
-    var valorIC = filaDirectorio[IC[campo] - 1];
-    if (campo === 'VETADO' || campo === 'PERMISO' || campo === 'ADMIN') {
-      valorIC = _esSiNoOVacio(valorIC) ? valorIC : '';
-    } else if (campo === 'RAZON') {
-      valorIC = esRazonValida(valorIC) ? valorIC : '';
-    }
-    fila[DC[campo] - 1] = valorIC;
-  }
-  var CAMPOS_IDENTIDAD = { NUM:1, TAG:1, NOMBRE:1, NOM_MULTI:1, PRESTAMO:1, CLAN:1, CLAN_TAG:1, RANGO:1 };
-  if (playersRow) {
-    for (var campoP in PC) {
-      if (CAMPOS_IDENTIDAD[campoP]) continue;
-      if (DC[campoP] !== undefined) fila[DC[campoP] - 1] = playersRow[PC[campoP] - 1];
-    }
-  }
-  if (linksRow) {
-    for (var campoL in LC) {
-      if (CAMPOS_IDENTIDAD[campoL]) continue;
-      if (DC[campoL] !== undefined) fila[DC[campoL] - 1] = linksRow[LC[campoL] - 1];
-    }
-  }
-  return fila;
-}
-
-/**
- * _leerDirectorioFisicoComoDC(ss) [→ Contexto_Base_Web.md §11B122]
- */
-function _leerDirectorioFisicoComoDC(ss) {
-  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!shDir || shDir.getLastRow() < 2) return [];
-  var numFilas   = shDir.getLastRow() - 1;
-  var dirFisico  = shDir.getRange(2, 1, numFilas, DIR_SHEET_COLS).getValues();
-  var playersPorTag = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.PLAYERS, PC.TAG - 1, PLAYERS_TOTAL_COLS);
-  var linksPorTag   = _leerLinksComoMapaPorTagConUrls(ss);
-  var resultado = [];
-  for (var i = 0; i < dirFisico.length; i++) {
-    var tag = String(dirFisico[i][IC.TAG - 1] || '').trim().toUpperCase();
-    resultado.push(_reconstruirFilaDCDesdeFisico(dirFisico[i], playersPorTag[tag], linksPorTag[tag]));
-  }
-  return resultado;
 }
