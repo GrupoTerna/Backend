@@ -1233,6 +1233,27 @@ function _webIngresosRecientesCalcular() {
   return { ingresos: lista, semanasGuerra: lista.semanasGuerra || [], guerraCongelada: !!lista.guerraCongelada };
 }
 
+// _webDiasOpcionalesIngresoGuerra_(clanNombre, ref, memo): PF225 caso (b) de P18 (31-oct-2026, la usuaria dijo «sí»): los días de la semana en que el clan ya había cruzado la meta (atacar era opcional), para que la pastilla «Ocultar sin pendientes» de «Ingresos recientes» no cuente como pendiente a quien no atacó ese día. Devuelve 4 booleanos [jueves, viernes, sábado, domingo]; jueves siempre false. Mismo criterio que `opcional` de _webCompararJugadores() y `metaCruzada` de 'Guerra de hoy' (38_Web_Endpoints.gs): viernes a domingo (pIdx % 7 > 3), no coliseo, y _cruceMetaDesdeGuerraLogs_() === true. `ref` = refGuerraIR (el día que muestra la cuadrícula; en lunes a miércoles es el último domingo jugado). Ante cualquier duda devuelve todo false (lado conservador: no oculta a nadie). `memo` guarda el resultado por clan dentro de una misma corrida. [→ Contexto_Base_Web.md §PF225]
+function _webDiasOpcionalesIngresoGuerra_(clanNombre, ref, memo) {
+  var res = [false, false, false, false];
+  try {
+    var clave = String(clanNombre || '');
+    if (!clave || !ref) return res;
+    if (memo && memo.hasOwnProperty(clave)) return memo[clave];
+    var pRef = Number(ref.periodIndex);
+    if (isFinite(pRef)) {
+      var offRef = (pRef % 7) - 3; // 0=jueves ... 3=domingo
+      for (var d = 1; d <= offRef && d <= 3; d++) {
+        var pIdx = pRef - offRef + d;
+        if (pIdx % 7 > 3 && !_esPeriodoDeColiseo_(ref.temporada, pIdx) &&
+            _cruceMetaDesdeGuerraLogs_(clave, pIdx, ref.temporada) === true) res[d] = true;
+      }
+    }
+    if (memo) memo[clave] = res;
+  } catch (eOpcIR) { /* sin marca: lado conservador */ }
+  return res;
+}
+
 // _construirIngresosRecientesUnificado(): FIX (01-sep-2026, pedido usuario — "haz que trabajen juntos, primero se usa la información de directorio, eso no es negociable en ambas. luego se verifica, si hay información de tampermonkey, se implementa, sino se queda con lo… [→ Contexto_Base_Web.md §37B257]
 function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, dataGuerraPrefetch, tDash) {
   var ss = _getSs();
@@ -1475,6 +1496,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
 
   // ---- PASO 3: armar la lista final — base Directorio + enriquecimiento ----
   var lista = [];
+  var memoDiasOpcionalesIR = {}; // PF225 caso (b): un cálculo por clan
   for (var i = 0; i < candidatosBase.length; i++) {
     var cand = candidatosBase[i];
     var filaDir = cand.filaDir;
@@ -1578,6 +1600,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
       vigencia:         filaDir[DC.VIGENCIA - 1] || '',
       guerraSemana:     guerraSemanaPorTag[tagLimpio] || { ataques: 0, puntaje: 0, barcos: 0 },
       guerraSemanaDias: guerraSemanaDiasFila,
+      // PF225 caso (b) (31-oct-2026): campo ADITIVO, 4 booleanos J/V/S/D con los días en que el clan ya había cruzado la meta (atacar era opcional); lo usa solo la pastilla «Ocultar sin pendientes» de directorio.html. [→ Contexto_Base_Web.md §PF225]
+      diasOpcionales:   _webDiasOpcionalesIngresoGuerra_(String(filaDir[DC.CLAN - 1] || '').trim(), refGuerraIR, memoDiasOpcionalesIR),
       historialSemanal: historialFila,
       fuenteHistorial:  fuenteHistorial,
       // FASE 7 (Parte A, punto 7 del documento): ver bloque "FASE 7 (Parte A)" más arriba en este mismo archivo para el detalle del cruce (por NOMBRE de clan, no por Tag) y su limitación conocida. [→ Contexto_Base_Web.md §37B274]
