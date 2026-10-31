@@ -1116,7 +1116,7 @@ function updateGuerraLogsSheet() {
     sh.getRange(2, 1, datosLogs.length, GUERRA_LOGS_TOTAL_COLS).setValues(datosLogs);
     // TANDA 1: mismo formato numérico que ya tienen las filas nuevas en las 3
     // columnas de avance (las filas anteriores a este cambio las tenían vacías).
-    sh.getRange(2, GLC.PROG_EARNED, datosLogs.length, GLC.PROG_DEFENSES - GLC.PROG_EARNED + 1).setNumberFormat('#,##0');
+    sh.getRange(2, GLC.DONACIONES, datosLogs.length, GLC.PROG_DEFENSES - GLC.DONACIONES + 1).setNumberFormat('#,##0');
   }
 
   // Ordenar por periodIndex ASC
@@ -1506,7 +1506,7 @@ function recalcularGuerraLogsDesdeJSON() {
     // Solo PointsEarned..ProgressEarnedFromDefenses (cols 18-25); Min_G (21) se reescribe igual que estaba.
     var bloque = datos.map(function (r) { return r.slice(GLC.PTS_EARNED - 1, GLC.PROG_DEFENSES); });
     sh.getRange(2, GLC.PTS_EARNED, n, bloque[0].length).setValues(bloque);
-    sh.getRange(2, GLC.PROG_EARNED, n, GLC.PROG_DEFENSES - GLC.PROG_EARNED + 1).setNumberFormat('#,##0'); // TANDA 1
+    sh.getRange(2, GLC.DONACIONES, n, GLC.PROG_DEFENSES - GLC.DONACIONES + 1).setNumberFormat('#,##0'); // TANDA 1
     // TANDA 13b: la columna Estado (27) se escribe aparte: el bloque de arriba termina en la 25.
     sh.getRange(2, GLC.ESTADO, n, 1).setValues(datos.map(function (r) { return [r[GLC.ESTADO - 1]]; }));
   }
@@ -3371,7 +3371,7 @@ function _limpiarFilasColiseoGuerraLogs_(aplicar) {
     }
     var bloque = datos.map(function (r) { return r.slice(GLC.PTS_EARNED - 1, GLC.PROG_DEFENSES); });
     sh.getRange(2, GLC.PTS_EARNED, n, bloque[0].length).setValues(bloque);
-    sh.getRange(2, GLC.PROG_EARNED, n, GLC.PROG_DEFENSES - GLC.PROG_EARNED + 1).setNumberFormat('#,##0');
+    sh.getRange(2, GLC.DONACIONES, n, GLC.PROG_DEFENSES - GLC.DONACIONES + 1).setNumberFormat('#,##0');
     sh.getRange(2, GLC.ESTADO, n, 1).setValues(datos.map(function (r) { return [r[GLC.ESTADO - 1]]; }));
   };
   var fijar = function (fila, col, nuevo) {

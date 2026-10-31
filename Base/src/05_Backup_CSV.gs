@@ -1796,9 +1796,19 @@ function _extraerValoresConLinksReales(sh, numRows, numCols, colConHoraForzada, 
   }
 
   // 29-oct-2026: columnas con separador de miles solo de visualización: getDisplayValues() trae «1,000»; el respaldo guarda el número crudo («1000»), y también los decimales que el formato redondea al mostrarlos.
-  if (colsSinSeparadorMiles) {
+  // 31-oct-2026 (pedido de la usuaria: la coma de miles nunca se guarda en el CSV): si quien llama no indicó columnas, se detectan por el formato de la primera fila de datos (cualquier columna con «#,##0»). Evita que Guerra_Logs, Clan, Directorio, Players, Inactivos y Control guarden «3,846» en su respaldo.
+  var colsMilesUsar = colsSinSeparadorMiles;
+  if (!colsMilesUsar) {
+    try {
+      var fmtsMiles = sh.getRange(primeraFilaDatos, 1, 1, numCols).getNumberFormats()[0];
+      for (var cfm = 0; cfm < numCols; cfm++) {
+        if (String(fmtsMiles[cfm]).indexOf('#,##0') !== -1) { colsMilesUsar = colsMilesUsar || {}; colsMilesUsar[cfm + 1] = true; }
+      }
+    } catch (eFmtMiles) {}
+  }
+  if (colsMilesUsar) {
     for (var cs = 0; cs < numCols; cs++) {
-      if (!colsSinSeparadorMiles[cs + 1]) continue;
+      if (!colsMilesUsar[cs + 1]) continue;
       var colNumeros = sh.getRange(primeraFilaDatos, cs + 1, filasDatos, 1).getValues();
       for (var rnum = 0; rnum < colNumeros.length; rnum++) {
         var valNumero = colNumeros[rnum][0];
