@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 30/10/2026 20:42:20 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 30/10/2026 21:10:35 */
 
 
 
@@ -22870,7 +22870,7 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
     var dec = _decidirCierreFameBarcosDia_(parCierre);
     // §PF139 (21-oct-2026): si ayer queda pendiente porque hoy ya hay ataques, se consulta CurrentRiverRace (solo en ese caso, para no leer Drive en cada corrida).
     if (dec.accion === 'pendiente' && typeof _crrAyerParaCierre_ === 'function') {
-      var crrAyer = _crrAyerParaCierre_(tag, ctx, offHoyDia - 1);
+      var crrAyer = _crrAyerParaCierre_(tag, ctx, offHoyDia - 1, _clanNombreAutocorregir); // §PF301: con el clan, primero los rangos de los JSON (piso, merma y máximo)
       if (crrAyer) {
         parCierre.crr = crrAyer;
         dec = _decidirCierreFameBarcosDia_(parCierre);
@@ -28701,6 +28701,47 @@ function _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores
 }
 
 /**
+ * _repartoRangosCrr_(filas, offsetsExistentes, offs, valores) [→ Contexto_Base_Web.md §PF301]
+ * Los rangos que dejan los JSON de CurrentRiverRace (59_Verificar_CRR_vs_Backup.gs, _vcrrRangosJugadorClan_) como restricción del reparto, ANTES de
+ * encajar con la tabla de fame: para cada día, cuántos ataques, barcos y fame puede haber hecho ese día (aumento del día) y, mientras los días
+ * sean consecutivos desde el jueves, entre qué valores puede estar el acumulado al cierre del día. El acumulado ya lleva la MERMA (los ataques que
+ * se perdieron y lo que eso baja el tope de barcos y fame) y por eso el máximo del domingo es el máximo semanal: con ataques perdidos no se puede
+ * llegar a 16. Cada métrica solo se usa si sus capturas son coherentes (serie.validos). Se calcula por clan (las filas son de un clan).
+ * Devuelve null si no hay rangos (sin JSON, jugador en varios clanes la misma semana, sin clan en las filas o valores.sinCurrentRiverRace),
+ * o { etiqueta, estricto, dias: [{ n, b, f }], acum: [{ a, b, f } | null], estado } con cada cota como [mínimo, máximo] o null si no hay dato.
+ * estricto = true solo si todos los JSON de la serie son utilizables: ahí un total de RoyaleAPI que no cabe es un caso para revisión manual, no se
+ * encaja a la fuerza ni se sigue sin los JSON. No escribe nada.
+ */
+function _repartoRangosCrr_(filas, offsetsExistentes, offs, valores) {
+  if (valores.sinCurrentRiverRace === true || typeof _vcrrRangosJugadorClan_ !== 'function') return null;
+  try {
+    var f0 = filas[offsetsExistentes[offs[0]]];
+    function num(v) { var t = String(v === undefined || v === null ? '' : v).trim(); return t === '' ? NaN : Number(t); }
+    var temp = num(valores.temporada !== undefined ? valores.temporada : f0[GC.TEMPORADA - 1]);
+    var sem = num(valores.semana !== undefined ? valores.semana : f0[GC.SEMANA - 1]);
+    var tag = _blgNormalizarTag_(valores.tag !== undefined ? valores.tag : f0[GC.TAG - 1]);
+    var clan = String(f0[GC.CLAN - 1] === undefined || f0[GC.CLAN - 1] === null ? '' : f0[GC.CLAN - 1]).trim();
+    if (!(temp > 0) || !(sem > 0) || !tag || !clan) return null;
+    var serie = _vcrrRangosJugadorClan_(temp, sem, tag, clan);
+    // Un jugador en dos clanes la misma semana: el tope de 4 ataques por día vale entre los dos clanes, así que la merma de un clan no es merma real.
+    if (!serie || !serie.validos || serie.estado === 'multiclan') return null;
+    var r = serie.r, hayA = serie.validos.indexOf('A') >= 0, hayB = serie.validos.indexOf('B') >= 0, hayF = serie.validos.indexOf('F') >= 0;
+    var dias = [], acum = [], contiguo = true;
+    for (var i = 0; i < offs.length; i++) {
+      var o = offs[i];
+      if (!(o >= 0 && o <= 3)) return null;
+      if (o !== i) contiguo = false;   // con un día sin fila el acumulado de las filas que hay no es el de la semana: solo valen los rangos del día
+      dias.push({ n: hayA ? [r.A.il[o], r.A.ih[o]] : null, b: hayB ? [r.B.il[o], r.B.ih[o]] : null, f: hayF ? [r.F.il[o], r.F.ih[o]] : null });
+      acum.push(contiguo ? { a: hayA ? [r.A.lo[o], r.A.hi[o]] : null, b: hayB ? [r.B.lo[o], r.B.hi[o]] : null, f: hayF ? [r.F.lo[o], r.F.hi[o]] : null } : null);
+    }
+    return { etiqueta: 'T' + temp + ' S' + sem + ' ' + tag + ' ' + clan, estricto: serie.estado === 'ok' && serie.validos.length === 3, dias: dias, acum: acum, estado: serie.estado };
+  } catch (e) {
+    Logger.log('[Reparto conjunto] No se pudieron leer los rangos de CurrentRiverRace: ' + e.message + '. Se reparte como siempre.');
+    return null;
+  }
+}
+
+/**
  * _repartirSemanaConjunto_(filas, offsetsExistentes, valores) [→ Contexto_Base_Web.md §PF122]
  * Reemplaza el reparto por campos (barcos, piso, ataques, fame) y el «sobrante». Recibe las tres cifras a la vez
  * (valores.ataquesSemana, valores.fame y valores.barcos; barcos null = «sin dato», se conserva el actual) y busca para
@@ -28713,6 +28754,10 @@ function _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores
  * esas cifras (lo que falta, como los barcos o la fame de un dia sin dato, lo sigue decidiendo el reparto). Si con esas restricciones ninguna
  * combinacion suma los totales, se AVISA en el registro y se hace el reparto de siempre, sin restricciones. El resultado trae crr:
  * 'aplicado', 'conflicto' o 'sin datos'. valores.sinCurrentRiverRace = true apaga todo esto.
+ * RANGOS Y MERMA (§PF301, 30-oct-2026): ANTES de encajar con la tabla se aplican los rangos de los JSON (_repartoRangosCrr_): lo que el JSON ya mostró es piso,
+ * los ataques perdidos bajan el máximo semanal (con merma no se llega a 16 ni se aspira al tope de fame y barcos) y cada día solo admite estados de la tabla dentro
+ * de su rango. Si con los JSON limpios (todos utilizables) los totales de RoyaleAPI no caben, NO se escribe nada (ok:false, crr:'conflicto') y el motivo va a revisión
+ * manual; si la serie tiene un JSON descartado o una métrica incoherente, se avisa y se sigue con el reparto de siempre. El resultado trae crr: 'rangos', 'aplicado', 'conflicto' o 'sin datos'.
  */
 function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   var offs = Object.keys(offsetsExistentes).map(Number).sort(function (a, b) { return a - b; });
@@ -28788,12 +28833,96 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     return mej;
   }
 
-  // CurrentRiverRace como restriccion (§PF139): cada dia con dato solo admite estados de la tabla con esos ataques y esa fame.
+  // Rangos de CurrentRiverRace (§PF301): primero lo que dicen los JSON (piso, merma y máximo semanal), después la tabla.
+  function resolverConAcumulado(cats, acum) {
+    function dentro(j, a, b2, f2) {
+      var x = acum[j];
+      if (!x) return true;
+      if (x.a && (a < x.a[0] || a > x.a[1])) return false;
+      if (x.b && (b2 < x.b[0] || b2 > x.b[1])) return false;
+      if (x.f && (f2 < x.f[0] || f2 > x.f[1])) return false;
+      return true;
+    }
+    // Izquierda: como grupo(), pero cada día debe dejar el acumulado dentro de su rango (la izquierda arranca en 0).
+    var izq = { '0,0,0': { a: 0, b: 0, f: 0, c: 0, p: [] } };
+    for (var x1 = 0; x1 < izqIdx.length; x1++) {
+      var j1 = izqIdx[x1], nuevoI = {}, clavesI = Object.keys(izq);
+      for (var q1 = 0; q1 < clavesI.length; q1++) {
+        var m1 = izq[clavesI[q1]];
+        for (var t1 = 0; t1 < cats[j1].length; t1++) {
+          var s1 = cats[j1][t1], na1 = m1.a + s1.n, nb1 = m1.b + s1.b, nf1 = m1.f + s1.f;
+          if (na1 > A || nb1 > B || nf1 > F || !dentro(j1, na1, nb1, nf1)) continue;
+          var c1 = m1.c + costo(j1, s1), k1 = na1 + ',' + nb1 + ',' + nf1;
+          if (!nuevoI[k1] || c1 < nuevoI[k1].c) nuevoI[k1] = { a: na1, b: nb1, f: nf1, c: c1, p: m1.p.concat([s1]) };
+        }
+      }
+      izq = nuevoI;
+    }
+    // Derecha: se guardan TODAS las combinaciones con sus acumulados parciales (la derecha no sabe lo que sumó la izquierda hasta que se unen).
+    var lista = [{ a: 0, b: 0, f: 0, c: 0, p: [], pre: [] }];
+    for (var x2 = 0; x2 < derIdx.length; x2++) {
+      var j2 = derIdx[x2], nuevaD = [];
+      for (var q2 = 0; q2 < lista.length; q2++) {
+        var m2 = lista[q2];
+        for (var t2 = 0; t2 < cats[j2].length; t2++) {
+          var s2 = cats[j2][t2], na2 = m2.a + s2.n, nb2 = m2.b + s2.b, nf2 = m2.f + s2.f;
+          if (na2 > A || nb2 > B || nf2 > F) continue;
+          nuevaD.push({ a: na2, b: nb2, f: nf2, c: m2.c + costo(j2, s2), p: m2.p.concat([s2]), pre: m2.pre.concat([[na2, nb2, nf2]]) });
+        }
+      }
+      lista = nuevaD;
+    }
+    var der = {};
+    lista.forEach(function (e) { var kd = e.a + ',' + e.b + ',' + e.f; (der[kd] = der[kd] || []).push(e); });
+    var mej = null, clavesIzq2 = Object.keys(izq);
+    for (var w = 0; w < clavesIzq2.length; w++) {
+      var li = izq[clavesIzq2[w]];
+      var cand = der[(A - li.a) + ',' + (B - li.b) + ',' + (F - li.f)];
+      if (!cand) continue;
+      for (var e2 = 0; e2 < cand.length; e2++) {
+        var rd = cand[e2], bien = true;
+        for (var u2 = 0; u2 < derIdx.length && bien; u2++) bien = dentro(derIdx[u2], li.a + rd.pre[u2][0], li.b + rd.pre[u2][1], li.f + rd.pre[u2][2]);
+        if (!bien) continue;
+        var total = li.c + rd.c;
+        if (mej === null || total < mej.c) mej = { c: total, p: li.p.concat(rd.p) };
+      }
+    }
+    return mej;
+  }
+
   var catsLlenos = [];
   for (var v = 0; v < k; v++) catsLlenos.push(catalogo);
   var mejor = null;
   var estadoCrr = 'sin datos';
-  var crr = _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores);
+  var rng = _repartoRangosCrr_(filas, offsetsExistentes, offs, valores);
+  if (rng) {
+    var catsRng = [];
+    for (var d0 = 0; d0 < k; d0++) {
+      var dr = rng.dias[d0];
+      catsRng.push(catalogo.filter(function (s3) {
+        return (dr.n === null || (s3.n >= dr.n[0] && s3.n <= dr.n[1])) &&
+               (dr.b === null || (s3.b >= dr.b[0] && s3.b <= dr.b[1])) &&
+               (dr.f === null || (s3.f >= dr.f[0] && s3.f <= dr.f[1]));
+      }));
+    }
+    mejor = resolverConAcumulado(catsRng, rng.acum);
+    if (mejor !== null) {
+      estadoCrr = 'rangos';
+    } else {
+      estadoCrr = 'conflicto';
+      var ult = rng.acum[k - 1] || null;
+      var rango = function (c) { return !c ? '?' : (c[0] + ' a ' + (c[1] === Infinity ? 'sin tope' : c[1])); };
+      var detalleRng = rng.etiqueta + ': ataques ' + rango(ult && ult.a) + ', barcos ' + rango(ult && ult.b) + ', fame ' + rango(ult && ult.f) + ' al cierre del ultimo dia' +
+        ' (totales a repartir: ataques=' + A + ', barcos=' + B + ', fame=' + F + ')';
+      if (rng.estricto) {
+        return { ok: false, huboCambio: false, crr: 'conflicto', motivo: 'los totales no caben en lo que muestran los JSON de CurrentRiverRace (piso, merma y maximo semanal; ' + detalleRng + '); no se escribe y queda para revision manual' };
+      }
+      Logger.log('[Reparto conjunto] AVISO rangos de CurrentRiverRace (la serie tiene un JSON descartado o una metrica incoherente) ' + detalleRng + '. Se reparte como siempre, sin usarlos.');
+    }
+  }
+
+  // CurrentRiverRace como restriccion (§PF139): cada dia con dato solo admite estados de la tabla con esos ataques y esa fame.
+  var crr = (mejor === null) ? _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores) : null;
   if (crr) {
     var catsCrr = [];
     for (var d = 0; d < k; d++) {
@@ -62933,7 +63062,11 @@ function _finalizarReenumeracion() {
     });
     movidas.forEach(function (x) { props.deleteProperty(x.viejo); });
     movidas.forEach(function (x) { props.setProperty(x.nuevo, x.valor); });
+    // (c) Avance de verificarCrrVsBackup* (59_Verificar_CRR_vs_Backup.gs): VCRR_ESTADO guarda la lista de semanas con pares temporada/semana en la numeración vieja; reanudar con ella buscaría carpetas que ya no existen.
+    // Se descarta: la próxima corrida arma la lista de nuevo y omite las semanas ya verificadas por huella del JSON.
+    props.deleteProperty('VCRR_ESTADO');
     props.setProperty('REENUM_PROPS_NUMERACION_HECHO', runIdFin);
+    Logger.log('[Reenumeración] Avance de verificarCrrVsBackup* (VCRR_ESTADO) descartado.');
     Logger.log('[Reenumeración] Índice de cruce de meta descartado y ' + movidas.length + ' marca(s) NUEVOS_CIERRE_SEMANA_T<n> pasadas a la numeración nueva (T += ' + deltaMeses + ').');
   }
 
@@ -67307,12 +67440,25 @@ function _crrFameDia_(fameAcum) {
  * CurrentRiverRace. ctx = el contexto del clan (temporada propia y sectionIndex); offAyer = 0..2 (jueves a sábado). No se pasan totales
  * semanales (no se conocen aquí), así que el domingo nunca se resuelve por esta vía. Devuelve { ataquesAyer, fameAcumAyer } (null = sin dato)
  * o null si no hay capturas, si estas se contradicen o si falla la lectura de Drive. Solo lee.
+ * §PF301: si quien llama pasa clanNombre (el nombre del clan como figura en la hoja), PRIMERO se usan los rangos de los JSON de ese clan
+ * (_vcrrRangosJugadorClan_, 59_Verificar_CRR_vs_Backup.gs): los ataques de ayer y la fame acumulada al cierre de ayer valen cuando su piso y su máximo
+ * coinciden (el máximo ya descuenta la merma y el tope de la tabla de fame). Si por ahí no sale nada, se sigue con el cálculo de siempre.
  */
-function _crrAyerParaCierre_(tag, ctx, offAyer) {
+function _crrAyerParaCierre_(tag, ctx, offAyer, clanNombre) {
   try {
     if (!(offAyer >= 0 && offAyer <= 2)) return null;
     var temp = Number(ctx && ctx.temporada), sem = Number(ctx && ctx.sectionIndex) + 1;
     if (!(temp > 0) || !(sem > 0)) return null;
+    if (clanNombre && typeof _vcrrRangosJugadorClan_ === 'function') {
+      var serie = _vcrrRangosJugadorClan_(temp, sem, tag, clanNombre);
+      // Un jugador en dos clanes la misma semana: lo que muestra un clan no es todo lo que hizo ese día; se sigue con el cálculo de siempre.
+      if (serie && serie.validos && serie.estado !== 'multiclan') {
+        var rr = serie.r, ataquesR = null, fameR = null;
+        if (serie.validos.indexOf('A') >= 0 && rr.A.il[offAyer] === rr.A.ih[offAyer]) ataquesR = rr.A.il[offAyer];
+        if (serie.validos.indexOf('F') >= 0 && rr.F.lo[offAyer] === rr.F.hi[offAyer]) fameR = rr.F.lo[offAyer];
+        if (ataquesR !== null || fameR !== null) return { ataquesAyer: ataquesR, fameAcumAyer: fameR };
+      }
+    }
     var r = _crrDiasDeJugador_(temp, sem, tag, null, null);
     if (!r.hayCapturas || (r.notas && r.notas.length)) return null;
     var a = r.ataques[offAyer], f = r.fameAcum[offAyer];
@@ -68560,6 +68706,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
 //    - Verificar CRR, registro de JSON verificados (listar, comparar, leer y guardar)
 //    - Verificar CRR, paso 2: comparar contra el CSV y registrar hallazgos
 //    - Verificar CRR, paso 3: escribir en el CSV (solo Aplicar)
+//    - Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas.
 
 var VCRR_PRESUPUESTO_MS = 3 * 60 * 1000 + 30 * 1000;   // tanda: pasado este tiempo no se empieza otra semana ni otro paso (la plataforma corta a los 6 min)
@@ -68574,9 +68721,11 @@ var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
 var _vcrrFameLimites_ = null;                          // caché de _vcrrFameLimitesPorAtaques_()
+var _VCRR_CACHE_RANGOS_ = {};                          // caché por ejecución de _vcrrRangosJugadorClan_(): 'temporada|semana' -> { 'clanKey|tag': serie }
 
 // JSON que se sabe anómalos aunque sigan en su carpeta: claves 'temporada|semana|clan en minúsculas|letra del día', por ejemplo '23|1|grupoxterna™3|V'.
 // Un JSON movido a la carpeta Anomalías no hace falta anotarlo aquí: esa carpeta no se lee.
+// OJO con la reenumeración de temporadas (47_Migraciones.gs): estas claves llevan la temporada y NO se ajustan solas; si hay entradas, súmales el mismo delta (REENUM_DELTA_MESES) después de reenumerar.
 var VCRR_ANOMALIAS = [];
 
 var VCRR_PASOS_NOMBRES_INFORME = [
@@ -69417,6 +69566,36 @@ function _vcrrVerificarAplicado_(filasAntes, filasDespues, casos, creadasEsperad
     });
   });
   return problemas;
+}
+
+// ----- Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día) -----
+
+/**
+ * Para la corrección de guerra (18_CorreccionGuerra.gs, _repartoRangosCrr_) y el cierre del día (56_CurrentRiverRace_Dias.gs, _crrAyerParaCierre_):
+ * los rangos que dejan los JSON de CurrentRiverRace para UN jugador en UN clan y semana (el mismo cálculo de _vcrrRestriccionesSerie_, que es el que
+ * usa la verificación de Backup_Guerra.csv). Devuelve la serie { temporada, semana, clanKey, tag, nombre, capturas, estado, notas, validos, r }, donde
+ * r.A, r.F y r.B (ataques, fame y barcos) traen lo (piso) y hi (máximo posible) del acumulado al cierre de cada día y il e ih del aumento de cada día.
+ * hi de la semana (domingo) es el máximo semanal: ya descuenta la merma (ataques perdidos) que muestran los JSON. Devuelve null si la semana no tiene
+ * JSON, si el jugador no aparece en ese clan o si falla la lectura de Drive. Lee los JSON de la semana una sola vez por ejecución (caché en memoria).
+ * Solo lee; no escribe nada. clanNombre = el nombre del clan tal como figura en la hoja o el CSV de guerra.
+ */
+function _vcrrRangosJugadorClan_(temporada, semana, tag, clanNombre) {
+  try {
+    var clave = Number(temporada) + '|' + Number(semana);
+    if (!_VCRR_CACHE_RANGOS_[clave]) {
+      var mapa = {};
+      var archivos = _vcrrArchivosSemana_(temporada, semana);
+      if (archivos.length) {
+        var cap = _vcrrCapturasSemana_(temporada, semana, archivos);
+        _vcrrSeriesDeSemana_(temporada, semana, cap.porClan).forEach(function (x) { mapa[x.clanKey + '|' + x.tag] = x; });
+      }
+      _VCRR_CACHE_RANGOS_[clave] = mapa;
+    }
+    return _VCRR_CACHE_RANGOS_[clave][_vcrrClanNorm_(clanNombre) + '|' + String(tag || '').trim()] || null;
+  } catch (e) {
+    Logger.log('[VCRR] No se pudieron calcular los rangos de T' + temporada + ' S' + semana + ' ' + tag + ': ' + e.message);
+    return null;
+  }
 }
 
 
