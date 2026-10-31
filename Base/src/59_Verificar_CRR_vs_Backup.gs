@@ -57,6 +57,7 @@ var _vcrrFameLimites_ = null;                          // caché de _vcrrFameLim
 
 // JSON que se sabe anómalos aunque sigan en su carpeta: claves 'temporada|semana|clan en minúsculas|letra del día', por ejemplo '23|1|grupoxterna™3|V'.
 // Un JSON movido a la carpeta Anomalías no hace falta anotarlo aquí: esa carpeta no se lee.
+// OJO con la reenumeración de temporadas (47_Migraciones.gs): estas claves llevan la temporada y NO se ajustan solas; si hay entradas, súmales el mismo delta (REENUM_DELTA_MESES) después de reenumerar.
 var VCRR_ANOMALIAS = [];
 
 var VCRR_PASOS_NOMBRES_INFORME = [
