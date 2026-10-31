@@ -72,6 +72,8 @@ function updateDirectorioSheet() {
   if (!sh) { Logger.log('[Dir] Hoja no encontrada'); return; }
 
   Logger.log('[Dir] Iniciando updateDirectorioSheet...');
+  var _tDir0 = Date.now(); // PF311 parte A: el 29-oct este paso pasó 2 min 39 s sin escribir nada; las líneas [Dir][t] dejan ver qué tramo se come el tiempo
+  function _marcaDir(tramo) { Logger.log('[Dir][t] tras ' + tramo + ': ' + Math.round((Date.now() - _tDir0) / 1000) + ' s (quedan ' + Math.round(_msRestantesDeEjecucion_() / 1000) + ' s en la ejecución)'); }
 
   for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
     if (!_getClanCache(CFG.TERNA_TAGS[i])) {
@@ -82,6 +84,7 @@ function updateDirectorioSheet() {
 
   // El bootstrap de reanudación (_ejecutarPorTandas en 00_Main.gs) solo [→ Contexto_Base_Web.md §11B007]
   _fetchPlayersData();
+  _marcaDir('leer los datos de /players');
 
   var csvMap = _getCsvDirMap();
   var existingRows = _leerDirectorioExistente(sh);
@@ -89,6 +92,7 @@ function updateDirectorioSheet() {
   // FASE B4 (16/07/2026): Nivel/Nivel2/V_Guerra/Copas y los 17 campos que [→ Contexto_Base_Web.md §11B008]
   var playersPorTag = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.PLAYERS, PC.TAG - 1, PLAYERS_TOTAL_COLS);
   var linksPorTag    = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.LINKS,   LC.TAG - 1, LINKS_TOTAL_COLS);
+  _marcaDir('leer las hojas Directorio, Players y Links');
 
   // Mapa completo de índices 0-based para todas las columnas leídas desde [→ Contexto_Base_Web.md §11B009]
   var H = existingRows._headerIdx || {};
@@ -134,10 +138,13 @@ function updateDirectorioSheet() {
   var multiData = _detectarMulticuentas(existingRows, csvMap, activosPorTag, colIdxMap, inactivosPorTag);
   var resultadoDirectorio = _construirFilasDirectorio(activosPorTag, existingRows, csvMap, multiData, ss, colIdxMap, inactivosPorTag, playersPorTag, linksPorTag);
   var todasFilas = resultadoDirectorio.filas;
+  _marcaDir('armar las filas del Directorio');
   _escribirDirectorio(sh, todasFilas);
+  _marcaDir('escribir la hoja Directorio');
   // FASE B3 (16/07/2026): poblar Players y Links con el mismo modelo de 60 [→ Contexto_Base_Web.md §11B012]
   _escribirPlayers(ss, todasFilas);
   _escribirLinks(ss, todasFilas);
+  _marcaDir('escribir las hojas Players y Links');
   _aplicarDropdownsDirectorio(sh, todasFilas.length);
   _aplicarFormatoCondicionalDirectorio(sh, todasFilas.length);
   if (todasFilas.length > 0) {
@@ -150,7 +157,9 @@ function updateDirectorioSheet() {
   _crearTabla(sh, 1, todasFilas.length + 1, DIR_SHEET_COLS, CFG.SHEETS.DIRECTORIO);
 
   // Poblar Inactivos con TODOS los inactivos (admin y no-admin), fila completa [→ Contexto_Base_Web.md §11B015]
+  _marcaDir('formato, validaciones y filtro del Directorio');
   _updateInactivos(ss, resultadoDirectorio.inactivasCompletas);
+  _marcaDir('actualizar la hoja Inactivos');
 
   // Reactivación: retirar de Inactivos (hoja + ClanSystem_Backup_ [→ Contexto_Base_Web.md §11B016]
   if (resultadoDirectorio.tagsReactivados.length > 0) {
