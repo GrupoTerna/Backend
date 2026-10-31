@@ -1,3 +1,18 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Reconstrucción de los 4 Docs
+//    - Participantes calificados (sorteo y torneo)
+//    - Ganadores (torneo y sorteo)
+//  Parte 2 — Funciones que no se corren a mano
+//    - Sorteo: participantes calificados (actualizar el Doc y su fecha)
+//    - Torneo: fecha, asistencia, ataques y trofeos por jugador
+//    - Lista de participantes dentro del Doc
+//    - Ganadores del torneo: escritura del Doc
+//    - Ganadores del sorteo: acta y escritura del Doc
+//    - Plantillas: contenido de los 4 Docs
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+// Las variables globales que estaban entre las funciones subieron a la zona de constantes y variables.
+
 // ==============================================================================
 // 28_Torneos_Docs.gs
 // Generacion de los documentos de Torneos: participantes calificados (sorteo y
@@ -31,7 +46,31 @@ var NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_TORNEO = 'Participantes calificados (to
 // RECONSTRUCCIÓN DESDE CERO DE LOS 4 DOCS DE TORNEOS/SORTEOS [→ Contexto_Base_Web.md §28B006]
 var _CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION = ['Grupo乂Terna™', 'GrupoXTerna™2', 'GrupoXTerna™3', 'Mini乂Ternas™'];
 
-// ----- Funciones manuales / punto de entrada -----
+var PROP_ACTA_SORTEO_EXTRA = 'ACTA_SORTEO_EXTRA';
+
+/**
+ * PF207 (24-oct-2026, pedido de la usuaria). _escribirGanadoresSorteoEnDoc_(body, ganadores): bajo «Ganadores del sorteo:»,
+ * (a) sin ganadores quita la tabla (y cualquier otra tabla que siga) y deja una línea corta (TEXTO_SIN_GANADORES_SORTEO_DOC);
+ * (b) con ganadores quita esa línea y, si la tabla no existe (porque antes no había ganadores), la crea con el mismo estilo de la plantilla
+ * (encabezado gris, texto blanco en negrita: N°, Nombre, Victorias, Clan, Premio); si existe, deja el encabezado y rehace las filas.
+ * La columna «Victorias» muestra los Tickets (igual que antes). Devuelve false si no existe el encabezado.
+ */
+var TEXTO_SIN_GANADORES_SORTEO_DOC = 'Todavía no hay ganadores para este sorteo.';
+
+var PREFIJO_RESUMEN_SORTEO_DOC = 'Resumen del sorteo:';
+
+// PF229 (24-oct-2026, pedido de la usuaria con captura del acta): el documento de ganadores llevaba el título de la plantilla de participantes.
+var TITULO_DOC_GANADORES_SORTEO = 'Lista de ganadores del sorteo';
+
+var TITULO_ANTIGUO_DOC_GANADORES_SORTEO = 'Lista de participantes calificados';
+
+// PF230 (24-oct-2026): el resumen ahora es un título («Resumen del sorteo:») con tres viñetas. Estos prefijos sirven para quitar el resumen anterior
+// (la línea única de PF221 o las viñetas de PF230) antes de escribir el nuevo.
+var PREFIJOS_LINEAS_RESUMEN_SORTEO_DOC = ['Premios del sorteo:', 'Ganadores registrados:', 'Participantes totales en la lista:'];
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
+
+// ----- Reconstrucción de los 4 Docs -----
 
 /**
  * reconstruirDocsTorneosSorteoFaltantes() [→ Contexto_Base_Web.md §28B007]
@@ -59,6 +98,8 @@ function reconstruirDocsTorneosSorteoFaltantes() {
   }
 }
 
+// ----- Participantes calificados (sorteo y torneo) -----
+
 /**
  * actualizarDocParticipantesCalificados() [→ Contexto_Base_Web.md §28B008]
  */
@@ -67,6 +108,9 @@ function actualizarDocParticipantesCalificados(ctxParam) {
   _actualizarUnDocParticipantesCalificados(NOMBRE_DOC_PARTICIPANTES_CALIFICADOS_SORTEO, DOC_ID_PARTICIPANTES_CALIFICADOS_SORTEO, ctxParam);
 }
 
+/**
+ * actualizarDocParticipantesCalificadosTorneo() [→ Contexto_Base_Web.md §28B046]
+ */
 function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
   var archivo;
   try {
@@ -192,6 +236,8 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
     (reqBarcos.activo ? ', máximo ' + reqBarcos.qty + ' ataques a barcos en promedio semanal).' : ').'));
 }
 
+// ----- Ganadores (torneo y sorteo) -----
+
 /**
  * actualizarDocGanadoresTorneo() [→ Contexto_Base_Web.md §28B020]
  */
@@ -271,8 +317,6 @@ function actualizarDocGanadoresTorneo(ctxParam) {
  * Se guarda en ACTA_SORTEO_EXTRA (propiedades del script, con el ID del sorteo) para que la corrida diaria, que llama sin `extra`, no borre
  * la hora ni el resumen. Devuelve el ID del documento (o '' si no se escribió) para que el endpoint pueda entregarlo como Word.
  */
-var PROP_ACTA_SORTEO_EXTRA = 'ACTA_SORTEO_EXTRA';
-
 function actualizarDocGanadoresSorteo(extra) {
   var ss = _getSs();
   var shSL = ss.getSheetByName(CFG.SHEETS.S_LISTA);
@@ -371,6 +415,890 @@ function actualizarDocGanadoresSorteo(extra) {
   return _escribirDocGanadoresSorteo(ganadores, idMasRecienteStr, fechaMasReciente, resumenActa);
 }
 
+// ===== PARTE 2 — Funciones que no se corren a mano =====
+
+// ----- Sorteo: participantes calificados (actualizar el Doc y su fecha) -----
+
+/**
+ * _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc) [→ Contexto_Base_Web.md §28B056]
+ */
+function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
+  var archivo;
+  try {
+    // FASE (01/08/2026): _buscarArchivoEnPlantillas() busca primero por ID [→ Contexto_Base_Web.md §28B057]
+    archivo = _buscarArchivoEnPlantillas(nombreDoc, idDoc);
+    if (!archivo) {
+      Logger.log('[ParticipantesCalificados] No se encontró "' + nombreDoc + '" ni en la carpeta de plantillas ni en sus subcarpetas. Se omite.');
+      return;
+    }
+  } catch (e) {
+    Logger.log('[ParticipantesCalificados] Error al buscar "' + nombreDoc + '": ' + e.message);
+    return;
+  }
+
+  var doc;
+  try {
+    doc = DocumentApp.openById(archivo.getId());
+  } catch (e) {
+    Logger.log('[ParticipantesCalificados] Error al abrir "' + nombreDoc + '": ' + e.message);
+    return;
+  }
+  var body = doc.getBody();
+
+  // 1. Marcador "[Mes]".
+  var mesEfectivo = _calcularMesEfectivoRealDeHoy();
+  var nombreMes = _MESES_ES[mesEfectivo.mes];
+  body.replaceText('\\[Mes\\]', nombreMes);
+
+  // 1b. PF206 (24-oct-2026): la «Fecha:» del Doc es la del sorteo en S_Lista (antes quedaba la de la plantilla: 06 de julio).
+  // Se escribe después de evaluar, con el ID del sorteo vigente; si la evaluación falla, la fecha no se toca.
+
+  // 2. Evaluación (24-oct-2026, pedido de la usuaria): la MISMA que usa el doc de NO calificados del sorteo y la
+  // web (_evaluarCalificacionSorteo_(), 29_Docs_NoCalificados.gs): promedio de las «Semanas» de S_Lista, ataques,
+  // torneos y barcos; ya NO se leen los mínimos del texto de este documento ni se usa el acumulado de la temporada. [→ Contexto_Base_Web.md §PF202]
+  var ev = _evaluarCalificacionSorteo_(ctxParam);
+  if (!ev) {
+    Logger.log('[ParticipantesCalificados] "' + nombreDoc + '": no se pudo evaluar el sorteo (ver el motivo en el registro [CalificacionSorteo]). Se deja la lista como estaba; solo se actualizó "[Mes]".');
+    doc.saveAndClose();
+    return;
+  }
+
+  // 2b. PF205 (24-oct-2026, pedido de la usuaria): el texto de «Requisitos» se regenera desde S_Lista cada vez que se actualiza este
+  // Doc (WhatsApp solo si está activo; barcos: «ningún ataque» si el tope es 0 o el acumulado permitido; «expulsados o sancionados» siempre).
+  // Si falla, la lista se actualiza igual. [→ Contexto_Base_Web.md §PF205]
+  try {
+    _reescribirRequisitosTexto(body, _resumirRequisitosBloque(ev.bloque), nombreMes, [
+      function (t) { return t.trim() === 'Participantes calificados:'; },
+      function (t) { return t.indexOf('Si se detecta trampa') !== -1; }
+    ], '[Requisitos-Sorteo]', { sorteo: true });
+  } catch (eReq) {
+    Logger.log('[ParticipantesCalificados] No se pudo regenerar «Requisitos» en "' + nombreDoc + '": ' + eReq.message);
+  }
+
+  try {
+    _actualizarFechaDocSorteo(body, _fechaSorteoPorId_(ev.idSorteo));
+  } catch (eFecha) {
+    Logger.log('[ParticipantesCalificados] No se pudo actualizar la «Fecha:» en \"' + nombreDoc + '\": ' + eFecha.message);
+  }
+
+  // 3. Un array de calificados por cada clan (mismo orden que los requisitos de S_Lista).
+  var porClan = {};
+  for (var ci = 0; ci < ev.ordenClanes.length; ci++) porClan[ev.ordenClanes[ci]] = [];
+
+  var totalCalificados = 0;
+  ev.evaluados.forEach(function (e) {
+    if (e.motivos.length > 0) return; // no calificó: va en el doc de NO calificados
+    porClan[e.clan].push({ nombre: e.nombre, puntaje: _fmtMilesComa(e.trofeos) }); // puntaje = medallas de guerra (promedio semanal)
+    totalCalificados++;
+  });
+
+  var grupos = [];
+  for (var gi = 0; gi < ev.ordenClanes.length; gi++) {
+    grupos.push({ clan: ev.ordenClanes[gi], personas: porClan[ev.ordenClanes[gi]] });
+  }
+
+  _reemplazarListaParticipantes(body, grupos);
+
+  doc.saveAndClose();
+  Logger.log('[ParticipantesCalificados] "' + nombreDoc + '": "[Mes]" -> "' + nombreMes + '". ' +
+    totalCalificados + ' de ' + ev.evaluados.length + ' cuenta(s) calificada(s) (temporada ' + ev.temporadaActual + ', sorteo ' + (ev.idSorteo || 'sin ID') + ').');
+}
+
+/**
+ * PF206 (24-oct-2026, pedido de la usuaria). _fechaSorteoPorId_(idSorteo): Fecha (con hora) de la fila de S_Lista con ese ID, o null.
+ * El Doc de calificados del sorteo mostraba la «Fecha:» de la plantilla (06 de julio) aunque las semanas eran de la temporada 6.
+ */
+function _fechaSorteoPorId_(idSorteo) {
+  try {
+    var id = String(idSorteo || '').trim();
+    if (!id) return null;
+    var shSL = _getSs().getSheetByName(CFG.SHEETS.S_LISTA);
+    if (!shSL || shSL.getLastRow() < 3) return null;
+    var datos = shSL.getRange(3, 1, shSL.getLastRow() - 2, SL_TOTAL_COLS).getValues();
+    for (var i = 0; i < datos.length; i++) {
+      if (String(datos[i][SL.ID - 1] || '').trim() === id) {
+        var f = datos[i][SL.FECHA - 1];
+        return (f instanceof Date && !isNaN(f.getTime())) ? f : null;
+      }
+    }
+  } catch (e) {
+    Logger.log('[Fecha-Sorteo] No se pudo leer la fecha del sorteo ' + idSorteo + ': ' + e.message);
+  }
+  return null;
+}
+
+/**
+ * PF206. _actualizarFechaDocSorteo(body, fecha): escribe la fecha del sorteo (formato del Doc, «Jueves 22 de Octubre 2026 - 8:00pm»)
+ * en el párrafo que sigue a «Fecha:». Si la fecha del Doc ya es POSTERIOR a la del sorteo (edición manual), la respeta.
+ * Devuelve true si escribió.
+ */
+function _actualizarFechaDocSorteo(body, fecha) {
+  if (!(fecha instanceof Date) || isNaN(fecha.getTime())) return false;
+  var encontrado = body.findText('Fecha:');
+  if (!encontrado) return false;
+  var elHeading = encontrado.getElement();
+  while (elHeading.getParent() && elHeading.getType() !== DocumentApp.ElementType.PARAGRAPH) {
+    elHeading = elHeading.getParent();
+  }
+  var idxValor = body.getChildIndex(elHeading) + 1;
+  if (idxValor >= body.getNumChildren()) return false;
+  var hijoValor = body.getChild(idxValor);
+  if (hijoValor.getType() !== DocumentApp.ElementType.PARAGRAPH) return false;
+  var pValor = hijoValor.asParagraph();
+  var textoActual = pValor.getText();
+  var fechaDoc = _parseSpanishDate(textoActual);
+  if (fechaDoc instanceof Date && !isNaN(fechaDoc.getTime()) && fechaDoc > fecha) return false;
+  var prefijoMatch = textoActual.match(/^[\s\t]*/);
+  var prefijo = prefijoMatch ? prefijoMatch[0] : '';
+  pValor.editAsText().setText(prefijo + _formatFechaHoraDocEs(fecha));
+  // PF207 (24-oct-2026, pedido de la usuaria): el valor de la fecha copiaba el formato del subtítulo «Fecha:» (morado, negrita). Se le da
+  // el formato del texto de cuerpo: el del párrafo que sigue a «Transmisión:»; si no existe, Arial 12 negro sin negrita.
+  try {
+    var refCuerpo = null;
+    var encTr = body.findText('Transmisión:');
+    if (encTr) {
+      var hTr = encTr.getElement();
+      while (hTr.getParent() && hTr.getType() !== DocumentApp.ElementType.PARAGRAPH) hTr = hTr.getParent();
+      var iTr = body.getChildIndex(hTr) + 1;
+      if (iTr < body.getNumChildren() && body.getChild(iTr).getType() === DocumentApp.ElementType.PARAGRAPH) {
+        refCuerpo = body.getChild(iTr).asParagraph();
+      }
+    }
+    if (refCuerpo && refCuerpo.getText().trim() !== '') {
+      var attrs = refCuerpo.getAttributes();
+      delete attrs[DocumentApp.Attribute.INDENT_START];
+      delete attrs[DocumentApp.Attribute.INDENT_FIRST_LINE];
+      delete attrs[DocumentApp.Attribute.INDENT_END];
+      pValor.setHeading(DocumentApp.ParagraphHeading.NORMAL);
+      pValor.setAttributes(attrs);
+      var tF = pValor.editAsText();
+      var lF = tF.getText().length;
+      if (lF > 0) {
+        var aT = refCuerpo.editAsText().getAttributes(0);
+        tF.setAttributes(0, lF - 1, aT);
+      }
+    } else {
+      pValor.setHeading(DocumentApp.ParagraphHeading.NORMAL);
+      var tG = pValor.editAsText();
+      var lG = tG.getText().length;
+      if (lG > 0) {
+        tG.setBold(0, lG - 1, false);
+        tG.setItalic(0, lG - 1, false);
+        tG.setFontFamily(0, lG - 1, 'Arial');
+        tG.setFontSize(0, lG - 1, 12);
+        tG.setForegroundColor(0, lG - 1, '#000000');
+      }
+    }
+  } catch (eFmt) {
+    Logger.log('[Fecha-Sorteo] No se pudo dar formato de cuerpo a la fecha: ' + eFmt.message);
+  }
+  return true;
+}
+
+// ----- Torneo: fecha, asistencia, ataques y trofeos por jugador -----
+
+/**
+ * _actualizarFechaDocTorneo(body, ss) [→ Contexto_Base_Web.md §28B049]
+ */
+function _actualizarFechaDocTorneo(body, ss) {
+  var fechaMasReciente = _getFechaMasRecienteTLista(ss);
+  if (!fechaMasReciente) return false; // T_Lista sin torneos todavía
+
+  var encontrado = body.findText('Fecha:');
+  if (!encontrado) return false;
+  var elHeading = encontrado.getElement();
+  while (elHeading.getParent() && elHeading.getType() !== DocumentApp.ElementType.PARAGRAPH) {
+    elHeading = elHeading.getParent();
+  }
+  var idxHeading = body.getChildIndex(elHeading);
+  var idxValor = idxHeading + 1;
+  if (idxValor >= body.getNumChildren()) return false;
+  var hijoValor = body.getChild(idxValor);
+  if (hijoValor.getType() !== DocumentApp.ElementType.PARAGRAPH) return false;
+  var pValor = hijoValor.asParagraph();
+  var textoActual = pValor.getText();
+
+  var fechaDocx = _parseSpanishDate(textoActual);
+  if (fechaDocx instanceof Date && !isNaN(fechaDocx.getTime()) && fechaDocx > fechaMasReciente) {
+    // Edición manual más reciente que el último torneo de T_Lista: se
+    // respeta tal cual, no se toca.
+    return false;
+  }
+
+  // Se conserva el prefijo de espacios/tabs original de la plantilla [→ Contexto_Base_Web.md §28B050]
+  var prefijoMatch = textoActual.match(/^[\s\t]*/);
+  var prefijo = prefijoMatch ? prefijoMatch[0] : '';
+  pValor.editAsText().setText(prefijo + _formatFechaHoraDocEs(fechaMasReciente));
+  return true;
+}
+
+/**
+ * _getFechaMasRecienteTLista(ss) [→ Contexto_Base_Web.md §28B047]
+ */
+function _getFechaMasRecienteTLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  // FIX (09-sep-2026): T_Lista tiene header de 2 filas -- "tiene datos" es
+  // getLastRow() >= 3, y los datos arrancan en la fila 3, no en la 2.
+  if (!sh || sh.getLastRow() < 3) return null;
+  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, TL_TOTAL_COLS).getValues();
+
+  var idVigenteExtra = _getIdVigenteExtra('Torneo');
+  if (idVigenteExtra) {
+    for (var i = 0; i < datos.length; i++) {
+      if (String(datos[i][TL.ID - 1] || '') === idVigenteExtra) {
+        var fVigente = datos[i][TL.FECHA - 1];
+        return (fVigente instanceof Date && !isNaN(fVigente.getTime())) ? fVigente : null;
+      }
+    }
+  }
+
+  var masReciente = null;
+  for (var j = 0; j < datos.length; j++) {
+    var f = datos[j][TL.FECHA - 1];
+    if (f instanceof Date && !isNaN(f.getTime()) && (!masReciente || f > masReciente)) {
+      masReciente = f;
+    }
+  }
+  return masReciente;
+}
+
+/**
+ * _formatFechaHoraDocEs(fecha) [→ Contexto_Base_Web.md §28B048]
+ */
+function _formatFechaHoraDocEs(fecha) {
+  var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+  var horas24 = fecha.getHours();
+  var minutos = fecha.getMinutes();
+  var ampm = horas24 >= 12 ? 'pm' : 'am';
+  var horas12 = horas24 % 12;
+  if (horas12 === 0) horas12 = 12;
+  var horaTexto = horas12 + ':' + Utilities.formatString('%02d', minutos) + ampm;
+  return cap(_DIAS_ES[fecha.getDay()]) + ' ' + Utilities.formatString('%02d', fecha.getDate()) +
+         ' de ' + cap(_MESES_ES[fecha.getMonth()]) + ' ' + fecha.getFullYear() + ' - ' + horaTexto;
+}
+
+/**
+ * _getTemporadaMostrarExtra(ss, ctxReal) [→ Contexto_Base_Web.md §28B076]
+ */
+function _getTemporadaMostrarExtra(ss, ctxReal) {
+  var temporadaMostrar = ctxReal.temporada;
+  // PF073: si Sheets falla prueba Backup_Extra.csv (columna Mostrar_T) y, si tampoco, se queda con la temporada real (antes lanzaba error y el endpoint respondía 500). [→ Contexto_Base_Web.md §PF073]
+  try {
+    var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
+    if (shExtra) {
+      var mostrarVal = shExtra.getRange(2, 7).getValue(); // G2 = Mostrar
+      var temporadaExtra = Number(mostrarVal);
+      if (temporadaExtra) temporadaMostrar = temporadaExtra;
+    }
+  } catch (eExtra) {
+    Logger.log('[Torneos] _getTemporadaMostrarExtra: no se pudo leer Extra, se prueba Backup_Extra.csv: ' + eExtra);
+    var temporadaCsv = Number(_valorExtraDesdeCsv_(['Mostrar_T', 'Mostrar']));
+    if (temporadaCsv) temporadaMostrar = temporadaCsv;
+  }
+  return temporadaMostrar;
+}
+
+/**
+ * _getAtaquesSemanaActualPorTag(ctx, temporadaReal) [→ Contexto_Base_Web.md §28B051]
+ */
+function _getAtaquesSemanaActualPorTag(ctx, temporadaReal) {
+  var mapa = {};
+  var guerraData = _getDatosGuerraParaControl(ctx, temporadaReal);
+  for (var tag in guerraData) {
+    var semData = guerraData[tag] ? guerraData[tag][ctx.sectionIndex] : null;
+    if (!semData) continue;
+    var total = 0;
+    for (var d = 0; d < 4; d++) {
+      var dData = semData['dia_' + d];
+      if (dData) total += Number(dData.ataques) || 0;
+    }
+    mapa[tag] = total;
+  }
+  return mapa;
+}
+
+/**
+ * _getAtaquesYExentosSemanaActualPorTag(ctx, temporadaReal) [→ Contexto_Base_Web.md §28B052]
+ */
+function _getAtaquesYExentosSemanaActualPorTag(ctx, temporadaReal, guerraDataPrecalculada) {
+  var mapa = {};
+  var guerraData = guerraDataPrecalculada || _getDatosGuerraParaControl(ctx, temporadaReal); // 17-oct-2026 (PF091): 3.er parámetro opcional
+  for (var tag in guerraData) {
+    var semData = guerraData[tag] ? guerraData[tag][ctx.sectionIndex] : null;
+    if (!semData) continue;
+    var total = 0, exentos = 0;
+    for (var d = 0; d < 4; d++) {
+      var dData = semData['dia_' + d];
+      if (!dData) continue;
+      total += Number(dData.ataques) || 0;
+      if (dData.opcional) exentos += 4;
+    }
+    mapa[tag] = { ataques: total, exentos: exentos };
+  }
+  return mapa;
+}
+
+/**
+ * _cumpleAtaquesSemanaActual(info, qty) [→ Contexto_Base_Web.md §28B053]
+ */
+function _cumpleAtaquesSemanaActual(info, qty) {
+  var i = info || {};
+  var q = (qty === undefined || qty === null) ? 16 : Number(qty);
+  return (Number(i.ataques) || 0) >= q - (Number(i.exentos) || 0);
+}
+
+/**
+ * _ataquesMinTorneoPorNombreClan() [→ Contexto_Base_Web.md §28B054]
+ */
+function _ataquesMinTorneoPorNombreClan() {
+  var mapa = {};
+  _getConfigMasRecienteCategoria('Torneo').forEach(function (b) {
+    mapa[b.clan] = (b.ataques && b.ataques.activo) ? (Number(b.ataques.qty) || 0) : 0;
+  });
+  return mapa;
+}
+
+/**
+ * _cumpleAtaquesTorneoClan(info, ataquesMinPorClan, nombreClan) [→ Contexto_Base_Web.md §28B055]
+ */
+function _cumpleAtaquesTorneoClan(info, ataquesMinPorClan, nombreClan) {
+  var nombre = String(nombreClan || '').trim();
+  var q = (ataquesMinPorClan && ataquesMinPorClan.hasOwnProperty(nombre)) ? ataquesMinPorClan[nombre] : 16;
+  if (!(q > 0)) return true;
+  return _cumpleAtaquesSemanaActual(info, q);
+}
+
+/**
+ * _getTrofeosYAtaquesSemanalesPorTag(semanas, ctxReal) [→ Contexto_Base_Web.md §28B079]
+ */
+function _getTrofeosYAtaquesSemanalesPorTag(semanas, ctxReal, denominadorFijo, incluirSemanasCompletas) {
+  var acumTrofeos = {}, acumAtaques = {}, acumBarcos = {}, acumExentos = {}, cachePorTemporada = {};
+  var semanasCompletasPorTag = {}; // solo si incluirSemanasCompletas (Cambio de Rango, Descenso)
+
+  semanas.forEach(function (s) {
+    var guerraData = cachePorTemporada[s.temporada];
+    if (!guerraData) {
+      var ctxToken = _clonarCtxParaTemporada(ctxReal, s.temporada);
+      guerraData = _getDatosGuerraParaControl(ctxToken, ctxReal.temporada);
+      cachePorTemporada[s.temporada] = guerraData;
+    }
+
+    var sIdx = s.semana - 1;
+    for (var tag in guerraData) {
+      var semData = guerraData[tag] ? guerraData[tag][sIdx] : null;
+      if (!semData) continue; // sin datos esa semana puntual: no participa del promedio
+
+      var totalTrofeos = 0, totalAtaques = 0, totalBarcos = 0, totalExentos = 0;
+      // FIX (28-sep-2026): ataques y puntaje de la semana desde contadores acumulados.
+      var totSem = _totalesSemanaDesdeAcumulados(semData);
+      totalTrofeos = totSem.fame;
+      totalAtaques = totSem.ataques;
+      for (var d = 0; d < 4; d++) {
+        var dData = semData['dia_' + d];
+        if (!dData) continue;
+        // 19-sep-2026: se suman los ataques REALES. Si el día es opcional por [→ Contexto_Base_Web.md §28B081]
+        if (dData.opcional) totalExentos += 4;
+        // FIX (12-sep-2026, pedido del usuario -- requisito "Barcos"): mismo [→ Contexto_Base_Web.md §28B082]
+        totalBarcos += Number(dData.barcos) || 0;
+      }
+
+      (acumTrofeos[tag] = acumTrofeos[tag] || []).push(totalTrofeos);
+      (acumAtaques[tag] = acumAtaques[tag] || []).push(totalAtaques);
+      (acumBarcos[tag] = acumBarcos[tag] || []).push(totalBarcos);
+      (acumExentos[tag] = acumExentos[tag] || []).push(totalExentos);
+
+      // NUEVO (28-sep-2026, decision del usuario -- Cambio de Rango, Descenso): [→ Contexto_Base_Web.md §28B083]
+      if (incluirSemanasCompletas && semData.dia_0) {
+        (semanasCompletasPorTag[tag] = semanasCompletasPorTag[tag] || []).push({
+          temporada: s.temporada, semana: s.semana,
+          trofeos: totalTrofeos, ataques: totalAtaques, barcos: totalBarcos, exentos: totalExentos,
+          // 29-sep-2026 (P1): true si la fila del primer dia de guerra es solo 'Reconstruido'
+          // (ver _procesarFilasGuerraParaControl(), 22_ControlCalendario.gs).
+          reconstruido: semData.dia_0.soloReconstruido === true
+        });
+      }
+    }
+  });
+
+  var resultado = {};
+  var tags = {};
+  Object.keys(acumTrofeos).forEach(function (t) { tags[t] = true; });
+  Object.keys(acumAtaques).forEach(function (t) { tags[t] = true; });
+  Object.keys(acumBarcos).forEach(function (t) { tags[t] = true; });
+
+  // FIX (16-sep-2026, pedido del usuario): con `denominadorFijo`, el [→ Contexto_Base_Web.md §28B084]
+  var denom = (denominadorFijo !== false) ? semanas.length : null; // 19-sep-2026: fijo por defecto (sumatorias)
+  Object.keys(tags).forEach(function (tag) {
+    var arrT = acumTrofeos[tag] || [], arrA = acumAtaques[tag] || [], arrB = acumBarcos[tag] || [];
+    var suma = function (a, b) { return a + b; };
+    var sumaA = arrA.reduce(suma, 0);
+    var sumaT = arrT.reduce(suma, 0); // 28-sep-2026: sumatoria de fame, base de _fameCumpleRequisito()
+    var sumaB = arrB.reduce(suma, 0); // 29-sep-2026: sumatoria de barcos, base de _barcosCumplenRequisito()
+    resultado[tag] = {
+      trofeosProm: arrT.length ? (sumaT / (denom || arrT.length)) : 0,
+      trofeosSuma: sumaT,
+      ataquesProm: arrA.length ? (sumaA / (denom || arrA.length)) : 0,
+      barcosProm:  arrB.length ? (sumaB / (denom || arrB.length)) : 0,
+      barcosSuma:  sumaB,
+      // Sumatoria real + exonerados + semanas evaluadas (enteros): base de
+      // _ataquesCumplenRequisito(), sin errores de decimales.
+      ataquesSuma:    sumaA,
+      ataquesExentos: (acumExentos[tag] || []).reduce(suma, 0),
+      semanasEval:    denom || arrA.length
+    };
+    // Solo con incluirSemanasCompletas: detalle semanal de las semanas donde el [→ Contexto_Base_Web.md §28B085]
+    if (incluirSemanasCompletas && semanasCompletasPorTag[tag]) {
+      resultado[tag].semanasCompletas = semanasCompletasPorTag[tag];
+    }
+  });
+
+  return resultado;
+}
+
+/**
+ * _totalesSemanaDesdeAcumulados(semData) [→ Contexto_Base_Web.md §28B080]
+ */
+function _totalesSemanaDesdeAcumulados(semData) {
+  var maxAtq = 0, maxFame = 0, sumAtq = 0, sumPunt = 0, hayAcum = false;
+  for (var d = 0; d < 4; d++) {
+    var dd = semData ? semData['dia_' + d] : null;
+    if (!dd) continue;
+    sumAtq  += Number(dd.ataques) || 0;
+    sumPunt += Number(dd.puntaje) || 0;
+    if (dd.ataquesAcum !== undefined) {
+      hayAcum = true;
+      if ((Number(dd.ataquesAcum) || 0) > maxAtq) maxAtq = Number(dd.ataquesAcum) || 0;
+    }
+    if ((Number(dd.fameAcum) || 0) > maxFame) maxFame = Number(dd.fameAcum) || 0;
+  }
+  return {
+    ataques: hayAcum ? Math.min(maxAtq, 16) : sumAtq, // 16 = 4 dias x 4 ataques
+    fame:    hayAcum ? maxFame : sumPunt
+  };
+}
+
+/**
+ * _ataquesCumplenRequisito(p, qty) [→ Contexto_Base_Web.md §28B086]
+ */
+function _ataquesCumplenRequisito(p, qty) {
+  var q = Number(qty) || 0;
+  if (p && Number(p.semanasEval) > 0) {
+    return (Number(p.ataquesSuma) || 0) + (Number(p.ataquesExentos) || 0) >= q * Number(p.semanasEval);
+  }
+  return (p ? (Number(p.ataquesProm) || 0) : 0) >= q;
+}
+
+/**
+ * _fameCumpleRequisito(p, qty) [→ Contexto_Base_Web.md §28B087]
+ */
+function _fameCumpleRequisito(p, qty) {
+  var q = Number(qty) || 0;
+  if (p && Number(p.semanasEval) > 0 && p.fameSuma !== undefined && p.fameSuma !== null) {
+    return (Number(p.fameSuma) || 0) >= q * Number(p.semanasEval);
+  }
+  return (p ? (Number(p.fameProm) || 0) : 0) >= q;
+}
+
+/**
+ * _barcosCumplenRequisito(p, qty) [→ Contexto_Base_Web.md §28B088]
+ */
+function _barcosCumplenRequisito(p, qty) {
+  var q = Number(qty) || 0;
+  if (p && p.barcosSuma !== undefined && p.barcosSuma !== null) {
+    return (Number(p.barcosSuma) || 0) <= q;
+  }
+  return (p ? (Number(p.barcosProm) || 0) : 0) <= q;
+}
+
+/**
+ * _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaObjetivo, ctxReal) [→ Contexto_Base_Web.md §28B077]
+ */
+function _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaObjetivo, ctxReal, guerraDataPrecalculada) {
+  var ctx = _clonarCtxParaTemporada(ctxReal, temporadaObjetivo);
+  var guerraData = guerraDataPrecalculada || _getDatosGuerraParaControl(ctx, ctxReal.temporada); // 17-oct-2026 (PF091): 3.er parámetro opcional
+  var mapa = {};
+
+  for (var tag in guerraData) {
+    var gd = guerraData[tag];
+    var acumuladoUltimaSemana = '';
+
+    // De la semana 5 a la 1 (más reciente primero): la primera semana YA [→ Contexto_Base_Web.md §28B078]
+    for (var sem = 4; sem >= 0; sem--) {
+      var inicioSemanaPeriodIndex = (sem * 7) + 3;
+      if (inicioSemanaPeriodIndex > ctx.periodIndex) continue; // semana futura, no arrancó
+
+      var semData = gd ? gd[sem] : null;
+      var valoresDia = [];
+      for (var d = 0; d < 4; d++) {
+        var cellPeriodIndex = (sem * 7) + 3 + d;
+        if (cellPeriodIndex > ctx.periodIndex) break; // día futuro dentro de esta semana
+        var dData = semData ? semData['dia_' + d] : null;
+        valoresDia.push(dData ? dData.fameAcum : '');
+      }
+
+      var totalSemana = _maxOVacio(valoresDia, 0, valoresDia.length);
+      if (totalSemana !== '') { acumuladoUltimaSemana = totalSemana; break; }
+    }
+
+    mapa[tag] = acumuladoUltimaSemana === '' ? 0 : (Number(acumuladoUltimaSemana) || 0);
+  }
+
+  return mapa;
+}
+
+/**
+ * _contarTorneosPorTagEnTemporada(ss, temporada)
+ * Mapa { Tag -> cantidad de torneos DISTINTOS en T_Asistencia para esa Temporada }.
+ */
+function _contarTorneosPorTagEnTemporada(ss, temporada) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
+  var conteo = {};
+  if (!sh || sh.getLastRow() < 2) return conteo;
+
+  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, TA_TOTAL_COLS).getValues();
+  var idsPorTag = {};
+  for (var i = 0; i < datos.length; i++) {
+    if ((Number(datos[i][TA.TEMPORADA - 1]) || 0) !== temporada) continue;
+    var tag = String(datos[i][TA.TAG - 1] || '').trim();
+    var id = String(datos[i][TA.ID - 1] || '').trim();
+    if (!tag || !id) continue;
+    if (!idsPorTag[tag]) idsPorTag[tag] = {};
+    idsPorTag[tag][id] = true;
+  }
+  for (var t in idsPorTag) conteo[t] = Object.keys(idsPorTag[t]).length;
+  return conteo;
+}
+
+/**
+ * _contarTorneosPorTagEnSemanas(ss, semanas) [→ Contexto_Base_Web.md §28B089]
+ */
+function _contarTorneosPorTagEnSemanas(ss, semanas) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
+  var conteo = {};
+  if (!sh || sh.getLastRow() < 2 || semanas.length === 0) return conteo;
+
+  var clavesValidas = {};
+  semanas.forEach(function (s) { clavesValidas[s.temporada + '_' + s.semana] = true; });
+
+  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, TA_TOTAL_COLS).getValues();
+  var idsPorTag = {};
+  for (var i = 0; i < datos.length; i++) {
+    var ts = _fechaATemporadaSemana(datos[i][TA.FECHA - 1]);
+    if (!ts || !clavesValidas[ts.temporadaPropia + '_' + ts.semana]) continue;
+
+    var tag = String(datos[i][TA.TAG - 1] || '').trim();
+    var id  = String(datos[i][TA.ID - 1] || '').trim();
+    if (!tag || !id) continue;
+    (idsPorTag[tag] = idsPorTag[tag] || {})[id] = true;
+  }
+  for (var t in idsPorTag) conteo[t] = Object.keys(idsPorTag[t]).length;
+  return conteo;
+}
+
+// ----- Lista de participantes dentro del Doc -----
+
+/**
+ * _reemplazarListaParticipantes(body, grupos) [→ Contexto_Base_Web.md §28B067]
+ */
+function _reemplazarListaParticipantes(body, grupos) {
+  var encontrado = body.findText('Participantes calificados:');
+  if (!encontrado) {
+    Logger.log('[ParticipantesCalificados] No se encontró el encabezado "Participantes calificados:" en el documento. Se omite la lista.');
+    return;
+  }
+  var elHeading = encontrado.getElement();
+  while (elHeading.getParent() && elHeading.getType() !== DocumentApp.ElementType.PARAGRAPH) {
+    elHeading = elHeading.getParent();
+  }
+  var idxHeading = body.getChildIndex(elHeading);
+
+  // Buscar el límite del bloque: el encabezado "Redes sociales [→ Contexto_Base_Web.md §28B068]
+  var numChildrenOriginal = body.getNumChildren();
+  var idxFin = numChildrenOriginal; // por defecto, si no se encuentra límite, hasta el final real
+  for (var i = idxHeading + 1; i < numChildrenOriginal; i++) {
+    var hijo = body.getChild(i);
+    if (hijo.getType() !== DocumentApp.ElementType.PARAGRAPH) continue;
+    var texto = hijo.asParagraph().getText().trim();
+    if (texto === 'Redes sociales oficiales:') {
+      idxFin = i;
+      break;
+    }
+  }
+
+  // Resguardo: Google Docs NUNCA permite que el body se quede sin al menos [→ Contexto_Base_Web.md §28B069]
+  if (idxFin >= numChildrenOriginal) {
+    body.appendParagraph('');
+    idxFin = numChildrenOriginal;
+  }
+
+  // Borramos, de atrás hacia adelante, los párrafos existentes del bloque [→ Contexto_Base_Web.md §28B070]
+  for (var j = idxFin - 1; j > idxHeading; j--) {
+    body.removeChild(body.getChild(j));
+  }
+
+  // Armar las líneas del bloque: un encabezado de clan ("NombreClan:"), [→ Contexto_Base_Web.md §28B071]
+  var insertAt = idxHeading + 1;
+  for (var g = 0; g < grupos.length; g++) {
+    var grupo = grupos[g];
+
+    // --- Encabezado del clan: negrita, Arial Unicode MS, 12pt, sin
+    // viñeta ni sangría (igual que "Grupo乂Terna™:" en la plantilla). ---
+    var pHeader = body.insertParagraph(insertAt++, grupo.clan + ':');
+    pHeader.setIndentStart(0);
+    pHeader.setIndentFirstLine(0);
+    pHeader.setBold(true);
+    var textoHeader = pHeader.editAsText();
+    textoHeader.setFontFamily('Arial Unicode MS');
+    textoHeader.setFontSize(12);
+    // El texto nuevo podía heredar subrayado y color azul/morado (estilo [→ Contexto_Base_Web.md §28B072]
+    textoHeader.setUnderline(false);
+    textoHeader.setItalic(false); // PF204: no hereda la cursiva de la línea «Ningún participante calificado.» del clan anterior
+    textoHeader.setForegroundColor('#000000');
+    textoHeader.setLinkUrl(null);
+
+    // --- Párrafo vacío que separa el encabezado de la lista (idéntico
+    // a la línea " " que trae la plantilla debajo de cada encabezado). ---
+    insertAt = _insertarParrafoEspaciador(body, insertAt);
+
+    // --- Una línea por persona: "●" + tab fingido (6 espacios en Times [→ Contexto_Base_Web.md §28B073]
+    var personas = (grupo.personas || []).slice().sort(function (a, b) {
+      return a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
+    });
+    for (var p = 0; p < personas.length; p++) {
+      insertAt = _insertarLineaParticipante(body, insertAt, personas[p].nombre, personas[p].puntaje);
+    }
+    // PF204 (24-oct-2026): un clan sin ningún calificado ya no queda en blanco; se escribe una línea que lo dice.
+    if (!personas.length) {
+      insertAt = _insertarLineaSinCalificados_(body, insertAt);
+    }
+
+    // --- Párrafo vacío que cierra el grupo (idéntico a la línea " "
+    // que trae la plantilla después del último bullet de cada grupo). ---
+    insertAt = _insertarParrafoEspaciador(body, insertAt);
+  }
+}
+
+/**
+ * _insertarParrafoEspaciador(body, insertAt) [→ Contexto_Base_Web.md §28B074]
+ */
+function _insertarParrafoEspaciador(body, insertAt) {
+  var p = body.insertParagraph(insertAt, ' ');
+  p.setIndentStart(0);
+  p.setIndentFirstLine(0);
+  p.setBold(false);
+  var t = p.editAsText();
+  t.setFontFamily('Arial');
+  t.setFontSize(12);
+  t.setUnderline(false);
+  t.setItalic(false); // PF204: ver el encabezado de clan
+  t.setForegroundColor('#000000');
+  t.setLinkUrl(null);
+  return insertAt + 1;
+}
+
+/**
+ * _insertarLineaSinCalificados_(body, insertAt): línea de texto para un clan sin ningún participante calificado (PF204). Sin viñeta ni
+ * sangría, Arial 12 en cursiva y color gris, para que no se confunda con un nombre. Devuelve la siguiente posición de inserción.
+ * [→ Contexto_Base_Web.md §PF204]
+ */
+function _insertarLineaSinCalificados_(body, insertAt) {
+  var p = body.insertParagraph(insertAt, 'Ningún participante calificado.');
+  p.setIndentStart(0);
+  p.setIndentFirstLine(0);
+  p.setBold(false);
+  var t = p.editAsText();
+  t.setFontFamily('Arial');
+  t.setFontSize(12);
+  t.setItalic(true);
+  t.setUnderline(false);
+  t.setForegroundColor('#666666');
+  t.setLinkUrl(null);
+  return insertAt + 1;
+}
+
+/**
+ * _insertarLineaParticipante(body, insertAt, nombre, puntaje) [→ Contexto_Base_Web.md §28B075]
+ */
+function _insertarLineaParticipante(body, insertAt, nombre, puntaje) {
+  var BULLET = '\u25CF'; // "●"
+  var TAB_FINGIDO = '      '; // 6 espacios — idéntico al de la plantilla
+  var textoNombre = nombre + ' (' + puntaje + ')';
+  var lineaCompleta = BULLET + TAB_FINGIDO + textoNombre;
+
+  var p = body.insertParagraph(insertAt, '');
+  p.setIndentStart(54);       // 1080 twips
+  p.setIndentFirstLine(36);   // 1080 - 360 (hanging) twips
+  p.setBold(false);
+
+  var t = p.editAsText();
+  t.appendText(lineaCompleta);
+  var fin = lineaCompleta.length - 1;
+
+  // Formato base para toda la línea: Arial 12pt, negro, sin subrayado ni enlace.
+  t.setFontFamily(0, fin, 'Arial');
+  t.setFontSize(0, fin, 12);
+  t.setBold(0, fin, false);
+  t.setUnderline(0, fin, false);
+  t.setItalic(0, fin, false); // PF204: ver el encabezado de clan
+  t.setForegroundColor(0, fin, '#000000');
+  t.setLinkUrl(0, fin, null);
+
+  // El "tab" fingido (los 6 espacios) va en Times New Roman 7pt, igual
+  // que en la plantilla original.
+  var tabInicio = BULLET.length;
+  var tabFin = tabInicio + TAB_FINGIDO.length - 1;
+  t.setFontFamily(tabInicio, tabFin, 'Times New Roman');
+  t.setFontSize(tabInicio, tabFin, 7);
+
+  return insertAt + 1;
+}
+
+/**
+ * _parseRequisitosParticipantes(body) [→ Contexto_Base_Web.md §28B064]
+ */
+function _parseRequisitosParticipantes(body) {
+  var minTrofeosPorClan = {};
+  var minAtaquesPorClan = {}; // NUEVO (19-sep-2026)
+  var ordenClanes = []; // orden en que cada clan aparece por primera vez en el documento (trofeos)
+  var minTorneos = null;
+  var numChildren = body.getNumChildren();
+
+  // Lista de nombres de clanes tal como aparecen en el documento
+  var clanNames = ['Grupo乂Terna™', 'GrupoXTerna™2', 'GrupoXTerna™3', 'Mini乂Ternas™'];
+
+  for (var i = 0; i < numChildren; i++) {
+    var el = body.getChild(i);
+    var tipo = el.getType();
+   if (tipo !== DocumentApp.ElementType.PARAGRAPH && tipo !== DocumentApp.ElementType.LIST_ITEM) continue;
+    var texto = el.editAsText().getText().trim();
+    if (!texto) continue;
+
+    // 1. Buscar clan + número en esta línea (coincidencia flexible).
+    for (var c = 0; c < clanNames.length; c++) {
+      var clanName = clanNames[c];
+      var base = clanName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:\\s*(\\d+)';
+
+      // 1a. Línea de ATAQUES semanales por clan (ej. "Clan: \t16 ataques [→ Contexto_Base_Web.md §28B065]
+      var regexAtaques = new RegExp(base + '\\s*ataques\\s*semanales', 'i');
+      var mAtaques = texto.match(regexAtaques);
+      if (mAtaques) {
+        minAtaquesPorClan[clanName] = Number(mAtaques[1]);
+        break;
+      }
+
+      // 1b. Línea de TROFEOS por clan (cualquier otra "Clan: N" -- la de [→ Contexto_Base_Web.md §28B066]
+      var regex = new RegExp(base, 'i');
+      var match = texto.match(regex);
+      if (match) {
+        if (!(clanName in minTrofeosPorClan)) ordenClanes.push(clanName);
+        minTrofeosPorClan[clanName] = Number(match[1]);
+        break;
+      }
+    }
+
+    // 2. Buscar mínimo de torneos
+    var mTorneos = texto.match(/al\s+menos,?\s*(\d+)\s*torneos/i);
+    if (mTorneos && minTorneos === null) {
+      minTorneos = Number(mTorneos[1]);
+    }
+  }
+
+  return { minTrofeosPorClan: minTrofeosPorClan, minAtaquesPorClan: minAtaquesPorClan, ordenClanes: ordenClanes, minTorneos: minTorneos };
+}
+
+// ----- Ganadores del torneo: escritura del Doc -----
+
+/**
+ * _escribirDocGanadores(nombreDoc, idDoc, ganadores, idTorneo, fechaTorneo, encabezado) [→ Contexto_Base_Web.md §28B090]
+ */
+function _escribirDocGanadores(nombreDoc, idDoc, ganadores, idTorneo, fechaTorneo, encabezado) {
+  encabezado = encabezado || 'Ganadores:';
+
+  var archivo;
+  try {
+    // FASE (01/08/2026): _buscarArchivoEnPlantillas() busca primero por ID [→ Contexto_Base_Web.md §28B091]
+    archivo = _buscarArchivoEnPlantillas(nombreDoc, idDoc);
+    if (!archivo) {
+      Logger.log('[Ganadores-Torneo] No se encontró "' + nombreDoc + '" ni en la carpeta de plantillas ni en sus subcarpetas. Se omite.');
+      return;
+    }
+  } catch (e) {
+    Logger.log('[Ganadores-Torneo] Error al buscar el documento: ' + e.message);
+    return;
+  }
+
+  var doc;
+  try {
+    doc = DocumentApp.openById(archivo.getId());
+  } catch (e) {
+    Logger.log('[Ganadores-Torneo] Error al abrir el documento: ' + e.message);
+    return;
+  }
+  var body = doc.getBody();
+
+  // FIX (pedido usuario): igual que en _actualizarFechaDocTorneo() — [→ Contexto_Base_Web.md §28B092]
+  _actualizarFechaDocTorneo(body, _getSs());
+
+  var encontrado = body.findText(encabezado);
+  if (!encontrado) {
+    Logger.log('[Ganadores-Torneo] No se encontró el encabezado "' + encabezado + '" en el documento. Se omite la lista.');
+    doc.saveAndClose();
+    return;
+  }
+  var elHeading = encontrado.getElement();
+  while (elHeading.getParent() && elHeading.getType() !== DocumentApp.ElementType.PARAGRAPH) {
+    elHeading = elHeading.getParent();
+  }
+  var idxHeading = body.getChildIndex(elHeading);
+
+  // FIX (03/08/2026): igual que en _reemplazarListaParticipantes(), ya NO [→ Contexto_Base_Web.md §28B093]
+  var numChildrenOriginal = body.getNumChildren();
+  var idxFin = numChildrenOriginal;
+  for (var i = idxHeading + 1; i < numChildrenOriginal; i++) {
+    var hijo = body.getChild(i);
+    if (hijo.getType() !== DocumentApp.ElementType.PARAGRAPH) continue;
+    var texto = hijo.asParagraph().getText().trim();
+    if (texto === 'Redes sociales oficiales:') {
+      idxFin = i;
+      break;
+    }
+  }
+
+  if (idxFin >= numChildrenOriginal) {
+    body.appendParagraph('');
+    idxFin = numChildrenOriginal;
+  }
+
+  for (var j = idxFin - 1; j > idxHeading; j--) {
+    body.removeChild(body.getChild(j));
+  }
+
+  var lineas = [];
+  if (ganadores.length === 0) {
+    lineas.push('(Sin ganadores que cumplan los requisitos en este torneo.)');
+  } else {
+    for (var g = 0; g < ganadores.length; g++) {
+      var gan = ganadores[g];
+      // FASE 24 (02-sep-2026, pedido del usuario — descalificaciones y [→ Contexto_Base_Web.md §28B094]
+      var etiquetaReparto = gan.premioRepartido ? ' (premio repartido)' : '';
+      // NUEVO (15-sep-2026, pedido del usuario -- cuentas prestadas): [→ Contexto_Base_Web.md §28B095]
+      var etiquetaPrestamo = gan.cuentaPrestada
+        ? (gan.prestamo ? ' (cuenta prestada — premio para ' + gan.prestamo + ')' : ' (cuenta prestada)')
+        : '';
+      lineas.push(gan.puesto + '. ' + gan.nombre + ' — ' + gan.clan + ' (' + gan.victorias + ' victorias)' + etiquetaReparto + etiquetaPrestamo);
+    }
+  }
+
+  for (var k = 0; k < lineas.length; k++) {
+    body.insertParagraph(idxHeading + 1 + k, lineas[k]);
+  }
+
+  doc.saveAndClose();
+  Logger.log('[Ganadores-Torneo] Torneo ' + idTorneo + ': ' + ganadores.length + ' ganador(es) escrito(s).');
+}
+
+// ----- Ganadores del sorteo: acta y escritura del Doc -----
+
 /**
  * PF228 (24-oct-2026, pedido de la usuaria): el documento de Drive es el que se descarga, así que debe traer a TODOS los ganadores de la ruleta,
  * también a quien todavía no se guardó en S_Asistencia. Une, en el orden de la ruleta, los ganadores que manda sorteo.html (`deLaPagina`: nombre, hora,
@@ -408,21 +1336,6 @@ function _fusionarGanadoresActaSorteo_(guardados, deLaPagina) {
   guardados.forEach(function (s, j) { if (!usados[j]) fusion.push(s); });
   return fusion;
 }
-
-/**
- * PF207 (24-oct-2026, pedido de la usuaria). _escribirGanadoresSorteoEnDoc_(body, ganadores): bajo «Ganadores del sorteo:»,
- * (a) sin ganadores quita la tabla (y cualquier otra tabla que siga) y deja una línea corta (TEXTO_SIN_GANADORES_SORTEO_DOC);
- * (b) con ganadores quita esa línea y, si la tabla no existe (porque antes no había ganadores), la crea con el mismo estilo de la plantilla
- * (encabezado gris, texto blanco en negrita: N°, Nombre, Victorias, Clan, Premio); si existe, deja el encabezado y rehace las filas.
- * La columna «Victorias» muestra los Tickets (igual que antes). Devuelve false si no existe el encabezado.
- */
-var TEXTO_SIN_GANADORES_SORTEO_DOC = 'Todavía no hay ganadores para este sorteo.';
-
-var PREFIJO_RESUMEN_SORTEO_DOC = 'Resumen del sorteo:';
-
-// PF229 (24-oct-2026, pedido de la usuaria con captura del acta): el documento de ganadores llevaba el título de la plantilla de participantes.
-var TITULO_DOC_GANADORES_SORTEO = 'Lista de ganadores del sorteo';
-var TITULO_ANTIGUO_DOC_GANADORES_SORTEO = 'Lista de participantes calificados';
 
 /**
  * PF231 (24-oct-2026, pedido de la usuaria con captura): «Ganadores del sorteo:» debe quedar al inicio de una hoja. En vez de depender de los
@@ -490,10 +1403,6 @@ function _lineasResumenSorteoDoc_(resumen) {
   if (resumen.participantes >= 0) lineas.push('Participantes totales en la lista: ' + resumen.participantes);
   return lineas;
 }
-
-// PF230 (24-oct-2026): el resumen ahora es un título («Resumen del sorteo:») con tres viñetas. Estos prefijos sirven para quitar el resumen anterior
-// (la línea única de PF221 o las viñetas de PF230) antes de escribir el nuevo.
-var PREFIJOS_LINEAS_RESUMEN_SORTEO_DOC = ['Premios del sorteo:', 'Ganadores registrados:', 'Participantes totales en la lista:'];
 
 /**
  * PF230: deja el texto de un párrafo o de un elemento de lista en Arial 12, negro y sin cursiva (negrita según `negrita`). Se aplica también al
@@ -831,6 +1740,8 @@ function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo, resumen) 
   return archivo.getId();
 }
 
+// ----- Plantillas: contenido de los 4 Docs -----
+
 // _tablaDeGrupoDoc() — antes vivia en el archivo del documento de mazos personalizados, ya eliminado (su unico [→ Contexto_Base_Web.md §28B033]
 /**
  * _tablaDeGrupoDoc(body, textoBusqueda) [→ Contexto_Base_Web.md §28B034]
@@ -857,8 +1768,6 @@ function _tablaDeGrupoDoc(body, textoBusqueda) {
   }
   return null;
 }
-
-// ----- Funciones internas / helpers -----
 
 /**
  * _rdocParrafoRuns(body, runs, alineacion) [→ Contexto_Base_Web.md §28B035]
@@ -1085,879 +1994,4 @@ function _construirContenidoDocGanadoresTorneo(body) {
     ['3', 'Nombre3', '8', 'Clan1', 'S/.10']
   ]);
   _rdocBloqueRedesSocialesYPie(body);
-}
-
-/**
- * actualizarDocParticipantesCalificadosTorneo() [→ Contexto_Base_Web.md §28B046]
- */
-/**
- * _getFechaMasRecienteTLista(ss) [→ Contexto_Base_Web.md §28B047]
- */
-function _getFechaMasRecienteTLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
-  // FIX (09-sep-2026): T_Lista tiene header de 2 filas -- "tiene datos" es
-  // getLastRow() >= 3, y los datos arrancan en la fila 3, no en la 2.
-  if (!sh || sh.getLastRow() < 3) return null;
-  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, TL_TOTAL_COLS).getValues();
-
-  var idVigenteExtra = _getIdVigenteExtra('Torneo');
-  if (idVigenteExtra) {
-    for (var i = 0; i < datos.length; i++) {
-      if (String(datos[i][TL.ID - 1] || '') === idVigenteExtra) {
-        var fVigente = datos[i][TL.FECHA - 1];
-        return (fVigente instanceof Date && !isNaN(fVigente.getTime())) ? fVigente : null;
-      }
-    }
-  }
-
-  var masReciente = null;
-  for (var j = 0; j < datos.length; j++) {
-    var f = datos[j][TL.FECHA - 1];
-    if (f instanceof Date && !isNaN(f.getTime()) && (!masReciente || f > masReciente)) {
-      masReciente = f;
-    }
-  }
-  return masReciente;
-}
-
-/**
- * _formatFechaHoraDocEs(fecha) [→ Contexto_Base_Web.md §28B048]
- */
-function _formatFechaHoraDocEs(fecha) {
-  var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
-  var horas24 = fecha.getHours();
-  var minutos = fecha.getMinutes();
-  var ampm = horas24 >= 12 ? 'pm' : 'am';
-  var horas12 = horas24 % 12;
-  if (horas12 === 0) horas12 = 12;
-  var horaTexto = horas12 + ':' + Utilities.formatString('%02d', minutos) + ampm;
-  return cap(_DIAS_ES[fecha.getDay()]) + ' ' + Utilities.formatString('%02d', fecha.getDate()) +
-         ' de ' + cap(_MESES_ES[fecha.getMonth()]) + ' ' + fecha.getFullYear() + ' - ' + horaTexto;
-}
-
-/**
- * PF206 (24-oct-2026, pedido de la usuaria). _fechaSorteoPorId_(idSorteo): Fecha (con hora) de la fila de S_Lista con ese ID, o null.
- * El Doc de calificados del sorteo mostraba la «Fecha:» de la plantilla (06 de julio) aunque las semanas eran de la temporada 6.
- */
-function _fechaSorteoPorId_(idSorteo) {
-  try {
-    var id = String(idSorteo || '').trim();
-    if (!id) return null;
-    var shSL = _getSs().getSheetByName(CFG.SHEETS.S_LISTA);
-    if (!shSL || shSL.getLastRow() < 3) return null;
-    var datos = shSL.getRange(3, 1, shSL.getLastRow() - 2, SL_TOTAL_COLS).getValues();
-    for (var i = 0; i < datos.length; i++) {
-      if (String(datos[i][SL.ID - 1] || '').trim() === id) {
-        var f = datos[i][SL.FECHA - 1];
-        return (f instanceof Date && !isNaN(f.getTime())) ? f : null;
-      }
-    }
-  } catch (e) {
-    Logger.log('[Fecha-Sorteo] No se pudo leer la fecha del sorteo ' + idSorteo + ': ' + e.message);
-  }
-  return null;
-}
-
-/**
- * PF206. _actualizarFechaDocSorteo(body, fecha): escribe la fecha del sorteo (formato del Doc, «Jueves 22 de Octubre 2026 - 8:00pm»)
- * en el párrafo que sigue a «Fecha:». Si la fecha del Doc ya es POSTERIOR a la del sorteo (edición manual), la respeta.
- * Devuelve true si escribió.
- */
-function _actualizarFechaDocSorteo(body, fecha) {
-  if (!(fecha instanceof Date) || isNaN(fecha.getTime())) return false;
-  var encontrado = body.findText('Fecha:');
-  if (!encontrado) return false;
-  var elHeading = encontrado.getElement();
-  while (elHeading.getParent() && elHeading.getType() !== DocumentApp.ElementType.PARAGRAPH) {
-    elHeading = elHeading.getParent();
-  }
-  var idxValor = body.getChildIndex(elHeading) + 1;
-  if (idxValor >= body.getNumChildren()) return false;
-  var hijoValor = body.getChild(idxValor);
-  if (hijoValor.getType() !== DocumentApp.ElementType.PARAGRAPH) return false;
-  var pValor = hijoValor.asParagraph();
-  var textoActual = pValor.getText();
-  var fechaDoc = _parseSpanishDate(textoActual);
-  if (fechaDoc instanceof Date && !isNaN(fechaDoc.getTime()) && fechaDoc > fecha) return false;
-  var prefijoMatch = textoActual.match(/^[\s\t]*/);
-  var prefijo = prefijoMatch ? prefijoMatch[0] : '';
-  pValor.editAsText().setText(prefijo + _formatFechaHoraDocEs(fecha));
-  // PF207 (24-oct-2026, pedido de la usuaria): el valor de la fecha copiaba el formato del subtítulo «Fecha:» (morado, negrita). Se le da
-  // el formato del texto de cuerpo: el del párrafo que sigue a «Transmisión:»; si no existe, Arial 12 negro sin negrita.
-  try {
-    var refCuerpo = null;
-    var encTr = body.findText('Transmisión:');
-    if (encTr) {
-      var hTr = encTr.getElement();
-      while (hTr.getParent() && hTr.getType() !== DocumentApp.ElementType.PARAGRAPH) hTr = hTr.getParent();
-      var iTr = body.getChildIndex(hTr) + 1;
-      if (iTr < body.getNumChildren() && body.getChild(iTr).getType() === DocumentApp.ElementType.PARAGRAPH) {
-        refCuerpo = body.getChild(iTr).asParagraph();
-      }
-    }
-    if (refCuerpo && refCuerpo.getText().trim() !== '') {
-      var attrs = refCuerpo.getAttributes();
-      delete attrs[DocumentApp.Attribute.INDENT_START];
-      delete attrs[DocumentApp.Attribute.INDENT_FIRST_LINE];
-      delete attrs[DocumentApp.Attribute.INDENT_END];
-      pValor.setHeading(DocumentApp.ParagraphHeading.NORMAL);
-      pValor.setAttributes(attrs);
-      var tF = pValor.editAsText();
-      var lF = tF.getText().length;
-      if (lF > 0) {
-        var aT = refCuerpo.editAsText().getAttributes(0);
-        tF.setAttributes(0, lF - 1, aT);
-      }
-    } else {
-      pValor.setHeading(DocumentApp.ParagraphHeading.NORMAL);
-      var tG = pValor.editAsText();
-      var lG = tG.getText().length;
-      if (lG > 0) {
-        tG.setBold(0, lG - 1, false);
-        tG.setItalic(0, lG - 1, false);
-        tG.setFontFamily(0, lG - 1, 'Arial');
-        tG.setFontSize(0, lG - 1, 12);
-        tG.setForegroundColor(0, lG - 1, '#000000');
-      }
-    }
-  } catch (eFmt) {
-    Logger.log('[Fecha-Sorteo] No se pudo dar formato de cuerpo a la fecha: ' + eFmt.message);
-  }
-  return true;
-}
-
-/**
- * _actualizarFechaDocTorneo(body, ss) [→ Contexto_Base_Web.md §28B049]
- */
-function _actualizarFechaDocTorneo(body, ss) {
-  var fechaMasReciente = _getFechaMasRecienteTLista(ss);
-  if (!fechaMasReciente) return false; // T_Lista sin torneos todavía
-
-  var encontrado = body.findText('Fecha:');
-  if (!encontrado) return false;
-  var elHeading = encontrado.getElement();
-  while (elHeading.getParent() && elHeading.getType() !== DocumentApp.ElementType.PARAGRAPH) {
-    elHeading = elHeading.getParent();
-  }
-  var idxHeading = body.getChildIndex(elHeading);
-  var idxValor = idxHeading + 1;
-  if (idxValor >= body.getNumChildren()) return false;
-  var hijoValor = body.getChild(idxValor);
-  if (hijoValor.getType() !== DocumentApp.ElementType.PARAGRAPH) return false;
-  var pValor = hijoValor.asParagraph();
-  var textoActual = pValor.getText();
-
-  var fechaDocx = _parseSpanishDate(textoActual);
-  if (fechaDocx instanceof Date && !isNaN(fechaDocx.getTime()) && fechaDocx > fechaMasReciente) {
-    // Edición manual más reciente que el último torneo de T_Lista: se
-    // respeta tal cual, no se toca.
-    return false;
-  }
-
-  // Se conserva el prefijo de espacios/tabs original de la plantilla [→ Contexto_Base_Web.md §28B050]
-  var prefijoMatch = textoActual.match(/^[\s\t]*/);
-  var prefijo = prefijoMatch ? prefijoMatch[0] : '';
-  pValor.editAsText().setText(prefijo + _formatFechaHoraDocEs(fechaMasReciente));
-  return true;
-}
-
-/**
- * _getAtaquesSemanaActualPorTag(ctx, temporadaReal) [→ Contexto_Base_Web.md §28B051]
- */
-function _getAtaquesSemanaActualPorTag(ctx, temporadaReal) {
-  var mapa = {};
-  var guerraData = _getDatosGuerraParaControl(ctx, temporadaReal);
-  for (var tag in guerraData) {
-    var semData = guerraData[tag] ? guerraData[tag][ctx.sectionIndex] : null;
-    if (!semData) continue;
-    var total = 0;
-    for (var d = 0; d < 4; d++) {
-      var dData = semData['dia_' + d];
-      if (dData) total += Number(dData.ataques) || 0;
-    }
-    mapa[tag] = total;
-  }
-  return mapa;
-}
-
-/**
- * _getAtaquesYExentosSemanaActualPorTag(ctx, temporadaReal) [→ Contexto_Base_Web.md §28B052]
- */
-function _getAtaquesYExentosSemanaActualPorTag(ctx, temporadaReal, guerraDataPrecalculada) {
-  var mapa = {};
-  var guerraData = guerraDataPrecalculada || _getDatosGuerraParaControl(ctx, temporadaReal); // 17-oct-2026 (PF091): 3.er parámetro opcional
-  for (var tag in guerraData) {
-    var semData = guerraData[tag] ? guerraData[tag][ctx.sectionIndex] : null;
-    if (!semData) continue;
-    var total = 0, exentos = 0;
-    for (var d = 0; d < 4; d++) {
-      var dData = semData['dia_' + d];
-      if (!dData) continue;
-      total += Number(dData.ataques) || 0;
-      if (dData.opcional) exentos += 4;
-    }
-    mapa[tag] = { ataques: total, exentos: exentos };
-  }
-  return mapa;
-}
-
-/**
- * _cumpleAtaquesSemanaActual(info, qty) [→ Contexto_Base_Web.md §28B053]
- */
-function _cumpleAtaquesSemanaActual(info, qty) {
-  var i = info || {};
-  var q = (qty === undefined || qty === null) ? 16 : Number(qty);
-  return (Number(i.ataques) || 0) >= q - (Number(i.exentos) || 0);
-}
-
-/**
- * _ataquesMinTorneoPorNombreClan() [→ Contexto_Base_Web.md §28B054]
- */
-function _ataquesMinTorneoPorNombreClan() {
-  var mapa = {};
-  _getConfigMasRecienteCategoria('Torneo').forEach(function (b) {
-    mapa[b.clan] = (b.ataques && b.ataques.activo) ? (Number(b.ataques.qty) || 0) : 0;
-  });
-  return mapa;
-}
-
-/**
- * _cumpleAtaquesTorneoClan(info, ataquesMinPorClan, nombreClan) [→ Contexto_Base_Web.md §28B055]
- */
-function _cumpleAtaquesTorneoClan(info, ataquesMinPorClan, nombreClan) {
-  var nombre = String(nombreClan || '').trim();
-  var q = (ataquesMinPorClan && ataquesMinPorClan.hasOwnProperty(nombre)) ? ataquesMinPorClan[nombre] : 16;
-  if (!(q > 0)) return true;
-  return _cumpleAtaquesSemanaActual(info, q);
-}
-
-/**
- * _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc) [→ Contexto_Base_Web.md §28B056]
- */
-function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
-  var archivo;
-  try {
-    // FASE (01/08/2026): _buscarArchivoEnPlantillas() busca primero por ID [→ Contexto_Base_Web.md §28B057]
-    archivo = _buscarArchivoEnPlantillas(nombreDoc, idDoc);
-    if (!archivo) {
-      Logger.log('[ParticipantesCalificados] No se encontró "' + nombreDoc + '" ni en la carpeta de plantillas ni en sus subcarpetas. Se omite.');
-      return;
-    }
-  } catch (e) {
-    Logger.log('[ParticipantesCalificados] Error al buscar "' + nombreDoc + '": ' + e.message);
-    return;
-  }
-
-  var doc;
-  try {
-    doc = DocumentApp.openById(archivo.getId());
-  } catch (e) {
-    Logger.log('[ParticipantesCalificados] Error al abrir "' + nombreDoc + '": ' + e.message);
-    return;
-  }
-  var body = doc.getBody();
-
-  // 1. Marcador "[Mes]".
-  var mesEfectivo = _calcularMesEfectivoRealDeHoy();
-  var nombreMes = _MESES_ES[mesEfectivo.mes];
-  body.replaceText('\\[Mes\\]', nombreMes);
-
-  // 1b. PF206 (24-oct-2026): la «Fecha:» del Doc es la del sorteo en S_Lista (antes quedaba la de la plantilla: 06 de julio).
-  // Se escribe después de evaluar, con el ID del sorteo vigente; si la evaluación falla, la fecha no se toca.
-
-  // 2. Evaluación (24-oct-2026, pedido de la usuaria): la MISMA que usa el doc de NO calificados del sorteo y la
-  // web (_evaluarCalificacionSorteo_(), 29_Docs_NoCalificados.gs): promedio de las «Semanas» de S_Lista, ataques,
-  // torneos y barcos; ya NO se leen los mínimos del texto de este documento ni se usa el acumulado de la temporada. [→ Contexto_Base_Web.md §PF202]
-  var ev = _evaluarCalificacionSorteo_(ctxParam);
-  if (!ev) {
-    Logger.log('[ParticipantesCalificados] "' + nombreDoc + '": no se pudo evaluar el sorteo (ver el motivo en el registro [CalificacionSorteo]). Se deja la lista como estaba; solo se actualizó "[Mes]".');
-    doc.saveAndClose();
-    return;
-  }
-
-  // 2b. PF205 (24-oct-2026, pedido de la usuaria): el texto de «Requisitos» se regenera desde S_Lista cada vez que se actualiza este
-  // Doc (WhatsApp solo si está activo; barcos: «ningún ataque» si el tope es 0 o el acumulado permitido; «expulsados o sancionados» siempre).
-  // Si falla, la lista se actualiza igual. [→ Contexto_Base_Web.md §PF205]
-  try {
-    _reescribirRequisitosTexto(body, _resumirRequisitosBloque(ev.bloque), nombreMes, [
-      function (t) { return t.trim() === 'Participantes calificados:'; },
-      function (t) { return t.indexOf('Si se detecta trampa') !== -1; }
-    ], '[Requisitos-Sorteo]', { sorteo: true });
-  } catch (eReq) {
-    Logger.log('[ParticipantesCalificados] No se pudo regenerar «Requisitos» en "' + nombreDoc + '": ' + eReq.message);
-  }
-
-  try {
-    _actualizarFechaDocSorteo(body, _fechaSorteoPorId_(ev.idSorteo));
-  } catch (eFecha) {
-    Logger.log('[ParticipantesCalificados] No se pudo actualizar la «Fecha:» en \"' + nombreDoc + '\": ' + eFecha.message);
-  }
-
-  // 3. Un array de calificados por cada clan (mismo orden que los requisitos de S_Lista).
-  var porClan = {};
-  for (var ci = 0; ci < ev.ordenClanes.length; ci++) porClan[ev.ordenClanes[ci]] = [];
-
-  var totalCalificados = 0;
-  ev.evaluados.forEach(function (e) {
-    if (e.motivos.length > 0) return; // no calificó: va en el doc de NO calificados
-    porClan[e.clan].push({ nombre: e.nombre, puntaje: _fmtMilesComa(e.trofeos) }); // puntaje = medallas de guerra (promedio semanal)
-    totalCalificados++;
-  });
-
-  var grupos = [];
-  for (var gi = 0; gi < ev.ordenClanes.length; gi++) {
-    grupos.push({ clan: ev.ordenClanes[gi], personas: porClan[ev.ordenClanes[gi]] });
-  }
-
-  _reemplazarListaParticipantes(body, grupos);
-
-  doc.saveAndClose();
-  Logger.log('[ParticipantesCalificados] "' + nombreDoc + '": "[Mes]" -> "' + nombreMes + '". ' +
-    totalCalificados + ' de ' + ev.evaluados.length + ' cuenta(s) calificada(s) (temporada ' + ev.temporadaActual + ', sorteo ' + (ev.idSorteo || 'sin ID') + ').');
-}
-
-/**
- * _parseRequisitosParticipantes(body) [→ Contexto_Base_Web.md §28B064]
- */
-function _parseRequisitosParticipantes(body) {
-  var minTrofeosPorClan = {};
-  var minAtaquesPorClan = {}; // NUEVO (19-sep-2026)
-  var ordenClanes = []; // orden en que cada clan aparece por primera vez en el documento (trofeos)
-  var minTorneos = null;
-  var numChildren = body.getNumChildren();
-
-  // Lista de nombres de clanes tal como aparecen en el documento
-  var clanNames = ['Grupo乂Terna™', 'GrupoXTerna™2', 'GrupoXTerna™3', 'Mini乂Ternas™'];
-
-  for (var i = 0; i < numChildren; i++) {
-    var el = body.getChild(i);
-    var tipo = el.getType();
-   if (tipo !== DocumentApp.ElementType.PARAGRAPH && tipo !== DocumentApp.ElementType.LIST_ITEM) continue;
-    var texto = el.editAsText().getText().trim();
-    if (!texto) continue;
-
-    // 1. Buscar clan + número en esta línea (coincidencia flexible).
-    for (var c = 0; c < clanNames.length; c++) {
-      var clanName = clanNames[c];
-      var base = clanName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:\\s*(\\d+)';
-
-      // 1a. Línea de ATAQUES semanales por clan (ej. "Clan: \t16 ataques [→ Contexto_Base_Web.md §28B065]
-      var regexAtaques = new RegExp(base + '\\s*ataques\\s*semanales', 'i');
-      var mAtaques = texto.match(regexAtaques);
-      if (mAtaques) {
-        minAtaquesPorClan[clanName] = Number(mAtaques[1]);
-        break;
-      }
-
-      // 1b. Línea de TROFEOS por clan (cualquier otra "Clan: N" -- la de [→ Contexto_Base_Web.md §28B066]
-      var regex = new RegExp(base, 'i');
-      var match = texto.match(regex);
-      if (match) {
-        if (!(clanName in minTrofeosPorClan)) ordenClanes.push(clanName);
-        minTrofeosPorClan[clanName] = Number(match[1]);
-        break;
-      }
-    }
-
-    // 2. Buscar mínimo de torneos
-    var mTorneos = texto.match(/al\s+menos,?\s*(\d+)\s*torneos/i);
-    if (mTorneos && minTorneos === null) {
-      minTorneos = Number(mTorneos[1]);
-    }
-  }
-
-  return { minTrofeosPorClan: minTrofeosPorClan, minAtaquesPorClan: minAtaquesPorClan, ordenClanes: ordenClanes, minTorneos: minTorneos };
-}
-
-/**
- * _reemplazarListaParticipantes(body, grupos) [→ Contexto_Base_Web.md §28B067]
- */
-function _reemplazarListaParticipantes(body, grupos) {
-  var encontrado = body.findText('Participantes calificados:');
-  if (!encontrado) {
-    Logger.log('[ParticipantesCalificados] No se encontró el encabezado "Participantes calificados:" en el documento. Se omite la lista.');
-    return;
-  }
-  var elHeading = encontrado.getElement();
-  while (elHeading.getParent() && elHeading.getType() !== DocumentApp.ElementType.PARAGRAPH) {
-    elHeading = elHeading.getParent();
-  }
-  var idxHeading = body.getChildIndex(elHeading);
-
-  // Buscar el límite del bloque: el encabezado "Redes sociales [→ Contexto_Base_Web.md §28B068]
-  var numChildrenOriginal = body.getNumChildren();
-  var idxFin = numChildrenOriginal; // por defecto, si no se encuentra límite, hasta el final real
-  for (var i = idxHeading + 1; i < numChildrenOriginal; i++) {
-    var hijo = body.getChild(i);
-    if (hijo.getType() !== DocumentApp.ElementType.PARAGRAPH) continue;
-    var texto = hijo.asParagraph().getText().trim();
-    if (texto === 'Redes sociales oficiales:') {
-      idxFin = i;
-      break;
-    }
-  }
-
-  // Resguardo: Google Docs NUNCA permite que el body se quede sin al menos [→ Contexto_Base_Web.md §28B069]
-  if (idxFin >= numChildrenOriginal) {
-    body.appendParagraph('');
-    idxFin = numChildrenOriginal;
-  }
-
-  // Borramos, de atrás hacia adelante, los párrafos existentes del bloque [→ Contexto_Base_Web.md §28B070]
-  for (var j = idxFin - 1; j > idxHeading; j--) {
-    body.removeChild(body.getChild(j));
-  }
-
-  // Armar las líneas del bloque: un encabezado de clan ("NombreClan:"), [→ Contexto_Base_Web.md §28B071]
-  var insertAt = idxHeading + 1;
-  for (var g = 0; g < grupos.length; g++) {
-    var grupo = grupos[g];
-
-    // --- Encabezado del clan: negrita, Arial Unicode MS, 12pt, sin
-    // viñeta ni sangría (igual que "Grupo乂Terna™:" en la plantilla). ---
-    var pHeader = body.insertParagraph(insertAt++, grupo.clan + ':');
-    pHeader.setIndentStart(0);
-    pHeader.setIndentFirstLine(0);
-    pHeader.setBold(true);
-    var textoHeader = pHeader.editAsText();
-    textoHeader.setFontFamily('Arial Unicode MS');
-    textoHeader.setFontSize(12);
-    // El texto nuevo podía heredar subrayado y color azul/morado (estilo [→ Contexto_Base_Web.md §28B072]
-    textoHeader.setUnderline(false);
-    textoHeader.setItalic(false); // PF204: no hereda la cursiva de la línea «Ningún participante calificado.» del clan anterior
-    textoHeader.setForegroundColor('#000000');
-    textoHeader.setLinkUrl(null);
-
-    // --- Párrafo vacío que separa el encabezado de la lista (idéntico
-    // a la línea " " que trae la plantilla debajo de cada encabezado). ---
-    insertAt = _insertarParrafoEspaciador(body, insertAt);
-
-    // --- Una línea por persona: "●" + tab fingido (6 espacios en Times [→ Contexto_Base_Web.md §28B073]
-    var personas = (grupo.personas || []).slice().sort(function (a, b) {
-      return a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
-    });
-    for (var p = 0; p < personas.length; p++) {
-      insertAt = _insertarLineaParticipante(body, insertAt, personas[p].nombre, personas[p].puntaje);
-    }
-    // PF204 (24-oct-2026): un clan sin ningún calificado ya no queda en blanco; se escribe una línea que lo dice.
-    if (!personas.length) {
-      insertAt = _insertarLineaSinCalificados_(body, insertAt);
-    }
-
-    // --- Párrafo vacío que cierra el grupo (idéntico a la línea " "
-    // que trae la plantilla después del último bullet de cada grupo). ---
-    insertAt = _insertarParrafoEspaciador(body, insertAt);
-  }
-}
-
-/**
- * _insertarParrafoEspaciador(body, insertAt) [→ Contexto_Base_Web.md §28B074]
- */
-function _insertarParrafoEspaciador(body, insertAt) {
-  var p = body.insertParagraph(insertAt, ' ');
-  p.setIndentStart(0);
-  p.setIndentFirstLine(0);
-  p.setBold(false);
-  var t = p.editAsText();
-  t.setFontFamily('Arial');
-  t.setFontSize(12);
-  t.setUnderline(false);
-  t.setItalic(false); // PF204: ver el encabezado de clan
-  t.setForegroundColor('#000000');
-  t.setLinkUrl(null);
-  return insertAt + 1;
-}
-
-/**
- * _insertarLineaSinCalificados_(body, insertAt): línea de texto para un clan sin ningún participante calificado (PF204). Sin viñeta ni
- * sangría, Arial 12 en cursiva y color gris, para que no se confunda con un nombre. Devuelve la siguiente posición de inserción.
- * [→ Contexto_Base_Web.md §PF204]
- */
-function _insertarLineaSinCalificados_(body, insertAt) {
-  var p = body.insertParagraph(insertAt, 'Ningún participante calificado.');
-  p.setIndentStart(0);
-  p.setIndentFirstLine(0);
-  p.setBold(false);
-  var t = p.editAsText();
-  t.setFontFamily('Arial');
-  t.setFontSize(12);
-  t.setItalic(true);
-  t.setUnderline(false);
-  t.setForegroundColor('#666666');
-  t.setLinkUrl(null);
-  return insertAt + 1;
-}
-
-/**
- * _insertarLineaParticipante(body, insertAt, nombre, puntaje) [→ Contexto_Base_Web.md §28B075]
- */
-function _insertarLineaParticipante(body, insertAt, nombre, puntaje) {
-  var BULLET = '\u25CF'; // "●"
-  var TAB_FINGIDO = '      '; // 6 espacios — idéntico al de la plantilla
-  var textoNombre = nombre + ' (' + puntaje + ')';
-  var lineaCompleta = BULLET + TAB_FINGIDO + textoNombre;
-
-  var p = body.insertParagraph(insertAt, '');
-  p.setIndentStart(54);       // 1080 twips
-  p.setIndentFirstLine(36);   // 1080 - 360 (hanging) twips
-  p.setBold(false);
-
-  var t = p.editAsText();
-  t.appendText(lineaCompleta);
-  var fin = lineaCompleta.length - 1;
-
-  // Formato base para toda la línea: Arial 12pt, negro, sin subrayado ni enlace.
-  t.setFontFamily(0, fin, 'Arial');
-  t.setFontSize(0, fin, 12);
-  t.setBold(0, fin, false);
-  t.setUnderline(0, fin, false);
-  t.setItalic(0, fin, false); // PF204: ver el encabezado de clan
-  t.setForegroundColor(0, fin, '#000000');
-  t.setLinkUrl(0, fin, null);
-
-  // El "tab" fingido (los 6 espacios) va en Times New Roman 7pt, igual
-  // que en la plantilla original.
-  var tabInicio = BULLET.length;
-  var tabFin = tabInicio + TAB_FINGIDO.length - 1;
-  t.setFontFamily(tabInicio, tabFin, 'Times New Roman');
-  t.setFontSize(tabInicio, tabFin, 7);
-
-  return insertAt + 1;
-}
-
-/**
- * _getTemporadaMostrarExtra(ss, ctxReal) [→ Contexto_Base_Web.md §28B076]
- */
-function _getTemporadaMostrarExtra(ss, ctxReal) {
-  var temporadaMostrar = ctxReal.temporada;
-  // PF073: si Sheets falla prueba Backup_Extra.csv (columna Mostrar_T) y, si tampoco, se queda con la temporada real (antes lanzaba error y el endpoint respondía 500). [→ Contexto_Base_Web.md §PF073]
-  try {
-    var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
-    if (shExtra) {
-      var mostrarVal = shExtra.getRange(2, 7).getValue(); // G2 = Mostrar
-      var temporadaExtra = Number(mostrarVal);
-      if (temporadaExtra) temporadaMostrar = temporadaExtra;
-    }
-  } catch (eExtra) {
-    Logger.log('[Torneos] _getTemporadaMostrarExtra: no se pudo leer Extra, se prueba Backup_Extra.csv: ' + eExtra);
-    var temporadaCsv = Number(_valorExtraDesdeCsv_(['Mostrar_T', 'Mostrar']));
-    if (temporadaCsv) temporadaMostrar = temporadaCsv;
-  }
-  return temporadaMostrar;
-}
-
-/**
- * _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaObjetivo, ctxReal) [→ Contexto_Base_Web.md §28B077]
- */
-function _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaObjetivo, ctxReal, guerraDataPrecalculada) {
-  var ctx = _clonarCtxParaTemporada(ctxReal, temporadaObjetivo);
-  var guerraData = guerraDataPrecalculada || _getDatosGuerraParaControl(ctx, ctxReal.temporada); // 17-oct-2026 (PF091): 3.er parámetro opcional
-  var mapa = {};
-
-  for (var tag in guerraData) {
-    var gd = guerraData[tag];
-    var acumuladoUltimaSemana = '';
-
-    // De la semana 5 a la 1 (más reciente primero): la primera semana YA [→ Contexto_Base_Web.md §28B078]
-    for (var sem = 4; sem >= 0; sem--) {
-      var inicioSemanaPeriodIndex = (sem * 7) + 3;
-      if (inicioSemanaPeriodIndex > ctx.periodIndex) continue; // semana futura, no arrancó
-
-      var semData = gd ? gd[sem] : null;
-      var valoresDia = [];
-      for (var d = 0; d < 4; d++) {
-        var cellPeriodIndex = (sem * 7) + 3 + d;
-        if (cellPeriodIndex > ctx.periodIndex) break; // día futuro dentro de esta semana
-        var dData = semData ? semData['dia_' + d] : null;
-        valoresDia.push(dData ? dData.fameAcum : '');
-      }
-
-      var totalSemana = _maxOVacio(valoresDia, 0, valoresDia.length);
-      if (totalSemana !== '') { acumuladoUltimaSemana = totalSemana; break; }
-    }
-
-    mapa[tag] = acumuladoUltimaSemana === '' ? 0 : (Number(acumuladoUltimaSemana) || 0);
-  }
-
-  return mapa;
-}
-
-/**
- * _contarTorneosPorTagEnTemporada(ss, temporada)
- * Mapa { Tag -> cantidad de torneos DISTINTOS en T_Asistencia para esa Temporada }.
- */
-function _contarTorneosPorTagEnTemporada(ss, temporada) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
-  var conteo = {};
-  if (!sh || sh.getLastRow() < 2) return conteo;
-
-  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, TA_TOTAL_COLS).getValues();
-  var idsPorTag = {};
-  for (var i = 0; i < datos.length; i++) {
-    if ((Number(datos[i][TA.TEMPORADA - 1]) || 0) !== temporada) continue;
-    var tag = String(datos[i][TA.TAG - 1] || '').trim();
-    var id = String(datos[i][TA.ID - 1] || '').trim();
-    if (!tag || !id) continue;
-    if (!idsPorTag[tag]) idsPorTag[tag] = {};
-    idsPorTag[tag][id] = true;
-  }
-  for (var t in idsPorTag) conteo[t] = Object.keys(idsPorTag[t]).length;
-  return conteo;
-}
-
-/**
- * _getTrofeosYAtaquesSemanalesPorTag(semanas, ctxReal) [→ Contexto_Base_Web.md §28B079]
- */
-/**
- * _totalesSemanaDesdeAcumulados(semData) [→ Contexto_Base_Web.md §28B080]
- */
-function _totalesSemanaDesdeAcumulados(semData) {
-  var maxAtq = 0, maxFame = 0, sumAtq = 0, sumPunt = 0, hayAcum = false;
-  for (var d = 0; d < 4; d++) {
-    var dd = semData ? semData['dia_' + d] : null;
-    if (!dd) continue;
-    sumAtq  += Number(dd.ataques) || 0;
-    sumPunt += Number(dd.puntaje) || 0;
-    if (dd.ataquesAcum !== undefined) {
-      hayAcum = true;
-      if ((Number(dd.ataquesAcum) || 0) > maxAtq) maxAtq = Number(dd.ataquesAcum) || 0;
-    }
-    if ((Number(dd.fameAcum) || 0) > maxFame) maxFame = Number(dd.fameAcum) || 0;
-  }
-  return {
-    ataques: hayAcum ? Math.min(maxAtq, 16) : sumAtq, // 16 = 4 dias x 4 ataques
-    fame:    hayAcum ? maxFame : sumPunt
-  };
-}
-
-function _getTrofeosYAtaquesSemanalesPorTag(semanas, ctxReal, denominadorFijo, incluirSemanasCompletas) {
-  var acumTrofeos = {}, acumAtaques = {}, acumBarcos = {}, acumExentos = {}, cachePorTemporada = {};
-  var semanasCompletasPorTag = {}; // solo si incluirSemanasCompletas (Cambio de Rango, Descenso)
-
-  semanas.forEach(function (s) {
-    var guerraData = cachePorTemporada[s.temporada];
-    if (!guerraData) {
-      var ctxToken = _clonarCtxParaTemporada(ctxReal, s.temporada);
-      guerraData = _getDatosGuerraParaControl(ctxToken, ctxReal.temporada);
-      cachePorTemporada[s.temporada] = guerraData;
-    }
-
-    var sIdx = s.semana - 1;
-    for (var tag in guerraData) {
-      var semData = guerraData[tag] ? guerraData[tag][sIdx] : null;
-      if (!semData) continue; // sin datos esa semana puntual: no participa del promedio
-
-      var totalTrofeos = 0, totalAtaques = 0, totalBarcos = 0, totalExentos = 0;
-      // FIX (28-sep-2026): ataques y puntaje de la semana desde contadores acumulados.
-      var totSem = _totalesSemanaDesdeAcumulados(semData);
-      totalTrofeos = totSem.fame;
-      totalAtaques = totSem.ataques;
-      for (var d = 0; d < 4; d++) {
-        var dData = semData['dia_' + d];
-        if (!dData) continue;
-        // 19-sep-2026: se suman los ataques REALES. Si el día es opcional por [→ Contexto_Base_Web.md §28B081]
-        if (dData.opcional) totalExentos += 4;
-        // FIX (12-sep-2026, pedido del usuario -- requisito "Barcos"): mismo [→ Contexto_Base_Web.md §28B082]
-        totalBarcos += Number(dData.barcos) || 0;
-      }
-
-      (acumTrofeos[tag] = acumTrofeos[tag] || []).push(totalTrofeos);
-      (acumAtaques[tag] = acumAtaques[tag] || []).push(totalAtaques);
-      (acumBarcos[tag] = acumBarcos[tag] || []).push(totalBarcos);
-      (acumExentos[tag] = acumExentos[tag] || []).push(totalExentos);
-
-      // NUEVO (28-sep-2026, decision del usuario -- Cambio de Rango, Descenso): [→ Contexto_Base_Web.md §28B083]
-      if (incluirSemanasCompletas && semData.dia_0) {
-        (semanasCompletasPorTag[tag] = semanasCompletasPorTag[tag] || []).push({
-          temporada: s.temporada, semana: s.semana,
-          trofeos: totalTrofeos, ataques: totalAtaques, barcos: totalBarcos, exentos: totalExentos,
-          // 29-sep-2026 (P1): true si la fila del primer dia de guerra es solo 'Reconstruido'
-          // (ver _procesarFilasGuerraParaControl(), 22_ControlCalendario.gs).
-          reconstruido: semData.dia_0.soloReconstruido === true
-        });
-      }
-    }
-  });
-
-  var resultado = {};
-  var tags = {};
-  Object.keys(acumTrofeos).forEach(function (t) { tags[t] = true; });
-  Object.keys(acumAtaques).forEach(function (t) { tags[t] = true; });
-  Object.keys(acumBarcos).forEach(function (t) { tags[t] = true; });
-
-  // FIX (16-sep-2026, pedido del usuario): con `denominadorFijo`, el [→ Contexto_Base_Web.md §28B084]
-  var denom = (denominadorFijo !== false) ? semanas.length : null; // 19-sep-2026: fijo por defecto (sumatorias)
-  Object.keys(tags).forEach(function (tag) {
-    var arrT = acumTrofeos[tag] || [], arrA = acumAtaques[tag] || [], arrB = acumBarcos[tag] || [];
-    var suma = function (a, b) { return a + b; };
-    var sumaA = arrA.reduce(suma, 0);
-    var sumaT = arrT.reduce(suma, 0); // 28-sep-2026: sumatoria de fame, base de _fameCumpleRequisito()
-    var sumaB = arrB.reduce(suma, 0); // 29-sep-2026: sumatoria de barcos, base de _barcosCumplenRequisito()
-    resultado[tag] = {
-      trofeosProm: arrT.length ? (sumaT / (denom || arrT.length)) : 0,
-      trofeosSuma: sumaT,
-      ataquesProm: arrA.length ? (sumaA / (denom || arrA.length)) : 0,
-      barcosProm:  arrB.length ? (sumaB / (denom || arrB.length)) : 0,
-      barcosSuma:  sumaB,
-      // Sumatoria real + exonerados + semanas evaluadas (enteros): base de
-      // _ataquesCumplenRequisito(), sin errores de decimales.
-      ataquesSuma:    sumaA,
-      ataquesExentos: (acumExentos[tag] || []).reduce(suma, 0),
-      semanasEval:    denom || arrA.length
-    };
-    // Solo con incluirSemanasCompletas: detalle semanal de las semanas donde el [→ Contexto_Base_Web.md §28B085]
-    if (incluirSemanasCompletas && semanasCompletasPorTag[tag]) {
-      resultado[tag].semanasCompletas = semanasCompletasPorTag[tag];
-    }
-  });
-
-  return resultado;
-}
-
-/**
- * _ataquesCumplenRequisito(p, qty) [→ Contexto_Base_Web.md §28B086]
- */
-function _ataquesCumplenRequisito(p, qty) {
-  var q = Number(qty) || 0;
-  if (p && Number(p.semanasEval) > 0) {
-    return (Number(p.ataquesSuma) || 0) + (Number(p.ataquesExentos) || 0) >= q * Number(p.semanasEval);
-  }
-  return (p ? (Number(p.ataquesProm) || 0) : 0) >= q;
-}
-
-/**
- * _fameCumpleRequisito(p, qty) [→ Contexto_Base_Web.md §28B087]
- */
-function _fameCumpleRequisito(p, qty) {
-  var q = Number(qty) || 0;
-  if (p && Number(p.semanasEval) > 0 && p.fameSuma !== undefined && p.fameSuma !== null) {
-    return (Number(p.fameSuma) || 0) >= q * Number(p.semanasEval);
-  }
-  return (p ? (Number(p.fameProm) || 0) : 0) >= q;
-}
-
-/**
- * _barcosCumplenRequisito(p, qty) [→ Contexto_Base_Web.md §28B088]
- */
-function _barcosCumplenRequisito(p, qty) {
-  var q = Number(qty) || 0;
-  if (p && p.barcosSuma !== undefined && p.barcosSuma !== null) {
-    return (Number(p.barcosSuma) || 0) <= q;
-  }
-  return (p ? (Number(p.barcosProm) || 0) : 0) <= q;
-}
-
-/**
- * _contarTorneosPorTagEnSemanas(ss, semanas) [→ Contexto_Base_Web.md §28B089]
- */
-function _contarTorneosPorTagEnSemanas(ss, semanas) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
-  var conteo = {};
-  if (!sh || sh.getLastRow() < 2 || semanas.length === 0) return conteo;
-
-  var clavesValidas = {};
-  semanas.forEach(function (s) { clavesValidas[s.temporada + '_' + s.semana] = true; });
-
-  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, TA_TOTAL_COLS).getValues();
-  var idsPorTag = {};
-  for (var i = 0; i < datos.length; i++) {
-    var ts = _fechaATemporadaSemana(datos[i][TA.FECHA - 1]);
-    if (!ts || !clavesValidas[ts.temporadaPropia + '_' + ts.semana]) continue;
-
-    var tag = String(datos[i][TA.TAG - 1] || '').trim();
-    var id  = String(datos[i][TA.ID - 1] || '').trim();
-    if (!tag || !id) continue;
-    (idsPorTag[tag] = idsPorTag[tag] || {})[id] = true;
-  }
-  for (var t in idsPorTag) conteo[t] = Object.keys(idsPorTag[t]).length;
-  return conteo;
-}
-
-/**
- * _escribirDocGanadores(nombreDoc, idDoc, ganadores, idTorneo, fechaTorneo, encabezado) [→ Contexto_Base_Web.md §28B090]
- */
-function _escribirDocGanadores(nombreDoc, idDoc, ganadores, idTorneo, fechaTorneo, encabezado) {
-  encabezado = encabezado || 'Ganadores:';
-
-  var archivo;
-  try {
-    // FASE (01/08/2026): _buscarArchivoEnPlantillas() busca primero por ID [→ Contexto_Base_Web.md §28B091]
-    archivo = _buscarArchivoEnPlantillas(nombreDoc, idDoc);
-    if (!archivo) {
-      Logger.log('[Ganadores-Torneo] No se encontró "' + nombreDoc + '" ni en la carpeta de plantillas ni en sus subcarpetas. Se omite.');
-      return;
-    }
-  } catch (e) {
-    Logger.log('[Ganadores-Torneo] Error al buscar el documento: ' + e.message);
-    return;
-  }
-
-  var doc;
-  try {
-    doc = DocumentApp.openById(archivo.getId());
-  } catch (e) {
-    Logger.log('[Ganadores-Torneo] Error al abrir el documento: ' + e.message);
-    return;
-  }
-  var body = doc.getBody();
-
-  // FIX (pedido usuario): igual que en _actualizarFechaDocTorneo() — [→ Contexto_Base_Web.md §28B092]
-  _actualizarFechaDocTorneo(body, _getSs());
-
-  var encontrado = body.findText(encabezado);
-  if (!encontrado) {
-    Logger.log('[Ganadores-Torneo] No se encontró el encabezado "' + encabezado + '" en el documento. Se omite la lista.');
-    doc.saveAndClose();
-    return;
-  }
-  var elHeading = encontrado.getElement();
-  while (elHeading.getParent() && elHeading.getType() !== DocumentApp.ElementType.PARAGRAPH) {
-    elHeading = elHeading.getParent();
-  }
-  var idxHeading = body.getChildIndex(elHeading);
-
-  // FIX (03/08/2026): igual que en _reemplazarListaParticipantes(), ya NO [→ Contexto_Base_Web.md §28B093]
-  var numChildrenOriginal = body.getNumChildren();
-  var idxFin = numChildrenOriginal;
-  for (var i = idxHeading + 1; i < numChildrenOriginal; i++) {
-    var hijo = body.getChild(i);
-    if (hijo.getType() !== DocumentApp.ElementType.PARAGRAPH) continue;
-    var texto = hijo.asParagraph().getText().trim();
-    if (texto === 'Redes sociales oficiales:') {
-      idxFin = i;
-      break;
-    }
-  }
-
-  if (idxFin >= numChildrenOriginal) {
-    body.appendParagraph('');
-    idxFin = numChildrenOriginal;
-  }
-
-  for (var j = idxFin - 1; j > idxHeading; j--) {
-    body.removeChild(body.getChild(j));
-  }
-
-  var lineas = [];
-  if (ganadores.length === 0) {
-    lineas.push('(Sin ganadores que cumplan los requisitos en este torneo.)');
-  } else {
-    for (var g = 0; g < ganadores.length; g++) {
-      var gan = ganadores[g];
-      // FASE 24 (02-sep-2026, pedido del usuario — descalificaciones y [→ Contexto_Base_Web.md §28B094]
-      var etiquetaReparto = gan.premioRepartido ? ' (premio repartido)' : '';
-      // NUEVO (15-sep-2026, pedido del usuario -- cuentas prestadas): [→ Contexto_Base_Web.md §28B095]
-      var etiquetaPrestamo = gan.cuentaPrestada
-        ? (gan.prestamo ? ' (cuenta prestada — premio para ' + gan.prestamo + ')' : ' (cuenta prestada)')
-        : '';
-      lineas.push(gan.puesto + '. ' + gan.nombre + ' — ' + gan.clan + ' (' + gan.victorias + ' victorias)' + etiquetaReparto + etiquetaPrestamo);
-    }
-  }
-
-  for (var k = 0; k < lineas.length; k++) {
-    body.insertParagraph(idxHeading + 1 + k, lineas[k]);
-  }
-
-  doc.saveAndClose();
-  Logger.log('[Ganadores-Torneo] Torneo ' + idTorneo + ': ' + ganadores.length + ' ganador(es) escrito(s).');
 }
