@@ -1396,7 +1396,7 @@ function _formatFechaCanonica(dateVal, forzarConHora) {
 function _saveCSVToDrive(filename, content) {
   content = _agregarIdAInformeCSV_(filename, content); // PF238 (29-oct-2026): los informes llevan una columna ID al final; no toca respaldos ni hojas
   var hit = _csvBuscarArchivo_(filename); // nunca crea una copia si el archivo ya existe en alguna subcarpeta [→ Contexto_Base_Web.md §01B158]
-  var destino = _csvSubcarpetaDe_(filename);
+  var destino = _csvDestinoDe_(filename); // PF185: incluye la subcarpeta de Informes ('Informes/Cruce_Meta')
   if (hit) {
     _setContentConConteo_(hit.file, content);
     if (CSV_MOVER_A_SUBCARPETA && destino && hit.carpetaNombre !== destino) {
