@@ -1508,6 +1508,17 @@ function _liberarLockSiEsDeRunGuerra_() {
 }
 
 /**
+ * _guerraSyncCsvUltMs_() / _guerraSyncCsvAnotarMs_(ms) - PF148 (31-oct-2026). Lo que tardó la última vez _syncGuerraCSV() (propiedad de script GUERRA_SYNC_CSV_ULT_MS). La anotan el paso de respaldo de la cadena RUNGUERRA y la ventana ligera; la ventana ligera la lee para no empezar un respaldo que no le cabe.
+ */
+function _guerraSyncCsvUltMs_() {
+  try { return Number(PropertiesService.getScriptProperties().getProperty('GUERRA_SYNC_CSV_ULT_MS')) || 0; } catch (e) { return 0; }
+}
+
+function _guerraSyncCsvAnotarMs_(ms) {
+  try { PropertiesService.getScriptProperties().setProperty('GUERRA_SYNC_CSV_ULT_MS', String(Math.round(ms))); } catch (e) { /* solo informativo */ }
+}
+
+/**
  * _runGuerraPasoRespaldoCsv_() - PF311 parte B. Paso «Respaldo CSV de Guerra» de la cadena RUNGUERRA: _syncGuerraCSV() sobre la hoja Guerra. Exige CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS de tiempo en la ejecución;
  * si no queda, devuelve false (el motor lo repite en la tanda siguiente, que arranca con el tiempo completo).
  */
@@ -1525,6 +1536,7 @@ function _runGuerraPasoRespaldoCsv_() {
   }
   var t = Date.now();
   _syncGuerraCSV(sh);
+  _guerraSyncCsvAnotarMs_(Date.now() - t); // PF148
   Logger.log('[runGuerra] Respaldo CSV de Guerra terminado en ' + Math.round((Date.now() - t) / 1000) + ' s.');
   return true;
 }
@@ -1614,12 +1626,23 @@ function _runGuerraVentanaLigera_(t0) {
     } else {
       var msUsados = Date.now() - t0;
       var msLimite = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS;
+      // PF148 (31-oct-2026): además del margen fijo, se compara lo que queda con lo que tardó el último respaldo (con 30 % de holgura). El 20-oct el respaldo empezó con tiempo «suficiente» según el margen y la ejecución se cortó a los 361 s.
+      var msUltSync = _guerraSyncCsvUltMs_();
+      var msNecesariosSync = Math.max(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, Math.round(msUltSync * 1.3));
+      var msQuedanVentana = CFG.PLATAFORMA_LIMITE_EJECUCION_MS - msUsados;
       if (msUsados > msLimite) {
         Logger.log('[runGuerra][ventana] _syncGuerraCSV() SALTADO: ya van ' + Math.round(msUsados / 1000) +
           's, sin margen (' + Math.round(msLimite / 1000) + 's). La hoja Guerra ya quedó actualizada; el CSV se pone al día en la próxima corrida.');
+      } else if (msQuedanVentana < msNecesariosSync) {
+        Logger.log('[runGuerra][ventana] _syncGuerraCSV() SALTADO: quedan ' + Math.round(msQuedanVentana / 1000) + ' s y el último respaldo tardó ' + Math.round(msUltSync / 1000) +
+          ' s (se piden ' + Math.round(msNecesariosSync / 1000) + ' s con holgura). La hoja Guerra ya quedó actualizada; el CSV se pone al día en la corrida horaria.');
       } else {
         var shG = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
-        if (shG) _syncGuerraCSV(shG);
+        if (shG) {
+          var tSyncV = Date.now();
+          _syncGuerraCSV(shG);
+          _guerraSyncCsvAnotarMs_(Date.now() - tSyncV);
+        }
         _revisarCsvAlSalir_(t0); // PF291
       }
     }
