@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 15:19:03 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 16:05:22 */
 
 
 
@@ -1572,8 +1572,10 @@ function _runGuerraPasoRespaldoCsv_() {
     return true;
   }
   var quedaMs = _msRestantesDeEjecucion_();
-  if (quedaMs < CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS) {
-    Logger.log('[runGuerra] Respaldo CSV de Guerra: quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan al menos ' + Math.round(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS / 1000) + ' s. Se hace en la próxima tanda.');
+  // PF148 (31-oct-2026): igual que la ventana ligera, además del margen fijo se exige lo que tardó el último respaldo con 30 % de holgura (con tope de lo que cabe en una tanda nueva, para que nunca quede imposible).
+  var msNecesarios = Math.min(Math.max(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, Math.round(_guerraSyncCsvUltMs_() * 1.3)), CFG.PLATAFORMA_LIMITE_EJECUCION_MS - 60000);
+  if (quedaMs < msNecesarios) {
+    Logger.log('[runGuerra] Respaldo CSV de Guerra: quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan unos ' + Math.round(msNecesarios / 1000) + ' s (el último tardó ' + Math.round(_guerraSyncCsvUltMs_() / 1000) + ' s). Se hace en la próxima tanda.');
     _anotarProgresoPaso_('Respaldo CSV de Guerra: 0 de 1 respaldos', 0);
     return false;
   }
@@ -3096,6 +3098,9 @@ var _propPrivadaCache_ = {};
 // Si CSV_MOVER_A_SUBCARPETA es true, al guardar un archivo encontrado fuera de su subcarpeta se mueve a ella.
 var CSV_MOVER_A_SUBCARPETA = true;
 var CSV_SUBCARPETAS_ = ['Background', 'Hojas', 'Informes', 'Tampermonkey', 'Jugador'];
+// PF185 (31-oct-2026, «tú decide» de la usuaria): subcarpetas DENTRO de CSV/Informes, por función. Hoy solo «Cruce_Meta» (lo que sale del cruce de meta: nombres que empiezan por Cruce_ o Cotejo_). El resto de los informes se queda en la raíz de Informes
+// porque 48_Herramientas_Debug.gs los busca ahí por ID (CARPETA_INFORMES_ID). Para agregar otra subcarpeta hay que sumarla aquí y en _csvInformesSubDe_(). [→ Contexto_Base_Web.md §PF185]
+var CSV_INFORMES_SUBCARPETAS_ = ['Cruce_Meta'];
 var _CSV_SUBCARPETAS_MEM_ = {};
 
 // ===== PARTE 1 — Funciones que se corren a mano =====
@@ -3767,12 +3772,35 @@ function _csvSubcarpetaDe_(filename) {
   return ''; // sin asignar: raíz de CSV (hoy ninguno de los que usa el código)
 }
 
+/**
+ * _csvInformesSubDe_(filename) - PF185 (31-oct-2026). Subcarpeta de CSV/Informes que le toca a un archivo, o '' si va en la raíz de Informes (o no es un informe). _csvSubcarpetaDe_() sigue devolviendo
+ * 'Informes' para todos (lo usan _agregarIdAInformeCSV_() y moverInformesSueltosASubcarpeta()); esta función solo afina el destino dentro de esa carpeta. [→ Contexto_Base_Web.md §PF185]
+ */
+function _csvInformesSubDe_(filename) {
+  var n = String(filename || '');
+  if (_csvSubcarpetaDe_(n) !== 'Informes') return '';
+  if (/^(Cruce_|Cotejo_)/.test(n)) return 'Cruce_Meta';
+  return '';
+}
+
+/** _csvDestinoDe_(filename) - PF185. Ruta de destino de un CSV: 'Informes/Cruce_Meta', 'Informes', 'Hojas', etc. ('' = raíz de CSV). Las rutas con «/» las entiende _getCsvSubcarpeta_(). */
+function _csvDestinoDe_(filename) {
+  var familia = _csvSubcarpetaDe_(filename);
+  var sub = _csvInformesSubDe_(filename);
+  return sub ? (familia + '/' + sub) : familia;
+}
+
 function _getCsvSubcarpeta_(nombre, crear) {
   if (!nombre) return _getCsvFolder();
   if (_CSV_SUBCARPETAS_MEM_[nombre]) return _CSV_SUBCARPETAS_MEM_[nombre];
-  var it = _getCsvFolder().getFoldersByName(nombre);
-  var carpeta = it.hasNext() ? it.next() : (crear ? _getCsvFolder().createFolder(nombre) : null);
-  if (carpeta) _CSV_SUBCARPETAS_MEM_[nombre] = carpeta;
+  var partes = String(nombre).split('/'); // PF185: 'Informes/Cruce_Meta' = subcarpeta Cruce_Meta dentro de Informes
+  var carpeta = _getCsvFolder();
+  for (var p = 0; p < partes.length; p++) {
+    var it = carpeta.getFoldersByName(partes[p]);
+    carpeta = it.hasNext() ? it.next() : (crear ? carpeta.createFolder(partes[p]) : null);
+    if (!carpeta) return null;
+  }
+  _CSV_SUBCARPETAS_MEM_[nombre] = carpeta;
   return carpeta;
 }
 
@@ -3780,10 +3808,19 @@ function _getCsvSubcarpeta_(nombre, crear) {
 // Devuelve { file, carpetaNombre } ('' = raíz) o null si no existe.
 function _csvBuscarArchivo_(filename) {
   var asignada = _csvSubcarpetaDe_(filename);
-  var orden = [asignada];
+  var destino = _csvDestinoDe_(filename); // PF185: puede ser 'Informes/Cruce_Meta'
+  var orden = [destino];
+  if (asignada !== '' && orden.indexOf(asignada) < 0) orden.push(asignada);
   if (asignada !== '') orden.push('');
   for (var i = 0; i < CSV_SUBCARPETAS_.length; i++) {
     if (orden.indexOf(CSV_SUBCARPETAS_[i]) < 0) orden.push(CSV_SUBCARPETAS_[i]);
+  }
+  // PF185: solo un informe puede estar en una subcarpeta de Informes; así los demás archivos no pagan búsquedas de más.
+  if (asignada === 'Informes') {
+    for (var k = 0; k < CSV_INFORMES_SUBCARPETAS_.length; k++) {
+      var ruta = 'Informes/' + CSV_INFORMES_SUBCARPETAS_[k];
+      if (orden.indexOf(ruta) < 0) orden.push(ruta);
+    }
   }
   for (var j = 0; j < orden.length; j++) {
     var carpeta = _getCsvSubcarpeta_(orden[j], false);
@@ -8102,7 +8139,7 @@ function _formatFechaCanonica(dateVal, forzarConHora) {
 function _saveCSVToDrive(filename, content) {
   content = _agregarIdAInformeCSV_(filename, content); // PF238 (29-oct-2026): los informes llevan una columna ID al final; no toca respaldos ni hojas
   var hit = _csvBuscarArchivo_(filename); // nunca crea una copia si el archivo ya existe en alguna subcarpeta [→ Contexto_Base_Web.md §01B158]
-  var destino = _csvSubcarpetaDe_(filename);
+  var destino = _csvDestinoDe_(filename); // PF185: incluye la subcarpeta de Informes ('Informes/Cruce_Meta')
   if (hit) {
     _setContentConConteo_(hit.file, content);
     if (CSV_MOVER_A_SUBCARPETA && destino && hit.carpetaNombre !== destino) {
