@@ -494,7 +494,7 @@ function migrarPosicionCategoriaAscensosDescensosEnExtra() {
 // ----- Tema: Guerra -----
 // 12-oct-2026.
 
-// migrarAgregarCopasAGuerra(): UNA vez (12-oct-2026, pedido usuario: gráfica de copas en perfil y clan). Agrega la columna «Copas» (col. 21, GC.COPAS) a la hoja Guerra y al encabezado de Backup_Guerra.csv; las filas viejas quedan con la celda vacía (no hay historial anterior de copas). Idempotente. Ejecutar a mano justo después de subirBaseDesdeGithub(). [→ Contexto_Base_Web.md §PF061]
+// migrarAgregarCopasAGuerra(): UNA vez (12-oct-2026, pedido usuario: gráfica de copas en perfil y clan). Agrega la columna «Copas» (col. 21, GC.COPAS) a la hoja Guerra y al encabezado de Backup_Guerra.csv; las filas viejas quedan con la celda vacía (no hay historial anterior de copas). Idempotente. Ejecutar a mano justo después de subirBaseDesdeGithub(). OBSOLETA desde el 30-oct-2026 (§PF304): la hoja y el CSV ya tienen 23 columnas en el orden nuevo; hoy solo comprueba la estructura y no cambia datos. [→ Contexto_Base_Web.md §PF061]
 function migrarAgregarCopasAGuerra() {
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);

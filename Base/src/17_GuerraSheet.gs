@@ -18,7 +18,7 @@
 // ÍNDICES DE COLUMNA - HOJA GUERRA (1-based) [→ Contexto_Base_Web.md §17B006]
 // 30-oct-2026 (orden nuevo de la hoja, pedido de la usuaria): 23 columnas. DiaGuerra y Etapa van antes de Temporada, Temporada_2 junto a
 // Temporada, Barcos antes de Fame y Copas antes de Ranking; se agregan Merma_AtaquesHoy y Merma_AtaquesSemana. Toda la lectura y escritura
-// por posición debe pasar por GC (nunca un número suelto) y por GUERRA_TOTAL_COLS. [→ Contexto_Base_Web.md §PF303]
+// por posición debe pasar por GC (nunca un número suelto) y por GUERRA_TOTAL_COLS. [→ Contexto_Base_Web.md §PF304]
 var GC = {
   NUM:          1,
   FECHA:        2,
@@ -719,7 +719,7 @@ function _guerraEncabezadosDiferencias_(sh) {
 }
 
 /**
- * _asegurarEstructuraGuerra_(sh) — 30-oct-2026 (orden nuevo de 23 columnas, §PF303). El código lee y escribe la hoja Guerra POR POSICIÓN
+ * _asegurarEstructuraGuerra_(sh) — 30-oct-2026 (orden nuevo de 23 columnas, §PF304). El código lee y escribe la hoja Guerra POR POSICIÓN
  * (GC), así que antes de tocarla se comprueba que la fila 1 tenga exactamente los encabezados de GUERRA_HEADERS. Si la hoja tiene menos
  * columnas, se agregan las que falten a la derecha (sin encabezado ni datos: no se acomoda nada a ojo). Si algún encabezado no coincide
  * devuelve false y escribe un aviso en el registro; quien la llama debe abortar SIN leer ni escribir datos, porque con otro orden se
@@ -747,7 +747,7 @@ function updateGuerraSheet() {
   var ss  = _getSs();
   var sh  = ss.getSheetByName(CFG.SHEETS.GUERRA);
   if (!sh) { Logger.log('[Guerra] Hoja no encontrada'); return; }
-  if (!_asegurarEstructuraGuerra_(sh)) return; // 30-oct-2026: sin los 23 encabezados esperados no se toca la hoja (§PF303). Sin valor (no false): false haría reintentar el paso en la continuación y la causa no se arregla sola.
+  if (!_asegurarEstructuraGuerra_(sh)) return; // 30-oct-2026: sin los 23 encabezados esperados no se toca la hoja (§PF304). Sin valor (no false): false haría reintentar el paso en la continuación y la causa no se arregla sola.
 
   // GUARDIA: sin cache no hay datos válidos — abortar para no corromper la [→ Contexto_Base_Web.md §17B035]
   if (!CACHE_CLAN_DATA) {
@@ -4419,6 +4419,8 @@ function _restaurarGuerraDesdeCSVSiVacia(sh, temporadaActual) {
  */
 function _syncGuerraCSV(sh, forzar) {
   try {
+    // 30-oct-2026 (§PF304): con otro orden de columnas en la hoja se escribiría un Backup_Guerra.csv con los datos corridos; el blindaje de tamaño (PF289) no lo detecta.
+    if (!_asegurarEstructuraGuerra_(sh)) return;
     var tIniSync = Date.now(); // PF289 punto 5: tiempos por tramo, se imprimen junto a «CSV leído»
     var lastRow = sh.getLastRow();
     var tLastRowFin = Date.now(); // PF289 punto 12: subdivide «leer hoja» en getLastRow, getDisplayValues y columnas de fecha
@@ -4459,7 +4461,7 @@ function _syncGuerraCSV(sh, forzar) {
         Logger.log('[ALERTA PROTECCIÓN] Backup_Guerra.csv se leyó con ' + largoLeido + ' caracteres y la referencia es de ' + refTam.ref +
                    ' bytes (Drive: ' + refTam.tamDrive + ', último bueno: ' + refTam.tamBueno + '). Se relee directo de Drive, sin caché.');
         var tRelIni = Date.now();
-        csvExistente = _guerraCsvRelecturaDirecta_();
+        csvExistente = _migrarTextoGuerraCsv_(_guerraCsvRelecturaDirecta_()); // 30-oct-2026: la relectura directa no pasa por _loadCSVFromDrive; si Drive aún trae el orden viejo hay que migrarlo aquí también
         msRelectura = Date.now() - tRelIni;
         largoLeido = csvExistente ? csvExistente.length : 0;
         if (largoLeido < refTam.ref * GUERRA_CSV_BLINDAJE_RATIO) {
@@ -4527,6 +4529,10 @@ function _syncGuerraCSV(sh, forzar) {
     for (var rn = 0; rn < filasFusion.length; rn++) {
       filasFusion[rn][GC.NUM - 1] = String(rn + 1);
     }
+
+    // 30-oct-2026 (§PF304): la merma se calcula sobre TODO el CSV fusionado (incluye lo ya purgado de la hoja), para que las dos columnas siempre sean coherentes con AtaquesHoy.
+    var mermaCambiadas = _recalcularMermaGuerra_(filasFusion).length;
+    if (mermaCambiadas > 0) Logger.log('[Guerra] _syncGuerraCSV: merma recalculada en ' + mermaCambiadas + ' fila(s).');
 
     var salida = [encabezado].concat(filasFusion);
     var textoSalida = _encodeCSV(salida);

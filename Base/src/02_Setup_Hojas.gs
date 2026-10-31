@@ -260,15 +260,13 @@ function _setupDirectorio(ss) {
 function _setupGuerra(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.GUERRA);
   // PUNTO 1.4/1.5 (Consolidado_Cambios_Pendientes_Guerra.md): Temporada_2 y [→ Contexto_Base_Web.md §02B026]
-  var headers = ['N°','Fecha','Temporada','Semana','Día','PeriodIndex',
-                 'DiaGuerra','Etapa','Clan','Tag','Nombre',
-                 'AtaquesHoy','AtaquesSemana','Fame','Barcos',
-                 'Donaciones_r','Donaciones_d','Ranking',
-                 'Temporada_2','Origen','Copas'];
+  // 30-oct-2026 (§PF304): los encabezados salen de GUERRA_HEADERS (17_GuerraSheet.gs, orden nuevo de 23 columnas); ya no se repite la lista aquí.
+  // Cada corrida reescribe la fila 1: con la lista vieja habría desordenado los encabezados de una hoja ya reordenada.
+  var headers = GUERRA_HEADERS.slice();
   if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
-  Logger.log('[Setup] Guerra OK (21 cols, incluye Temporada_2/Origen/Copas)');
+  Logger.log('[Setup] Guerra OK (' + headers.length + ' cols, incluye Merma_AtaquesHoy/Merma_AtaquesSemana)');
 }
 
 function _setupGuerraLogs(ss) {

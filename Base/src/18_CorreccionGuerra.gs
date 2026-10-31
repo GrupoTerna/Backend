@@ -4967,14 +4967,16 @@ function _completarDomingoDesdeJsonRoyaleApi_(aplicar) {
         _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezadoCsv].concat(filasCsv)));
       }
       if (resHoja && nHoja) {
-        // Solo AtaquesHoy, AtaquesSemana, Fame, Barcos (columnas contiguas) y Origen: no se reescribe el resto.
+        // Solo AtaquesHoy, AtaquesSemana, Barcos, Fame y Origen: no se reescribe el resto (la merma la recalcula _syncGuerraCSV).
         var bloque = datosHoja.map(function (r) { return [r[GC.ATAQUES_HOY - 1], r[GC.ATAQUES_SEM - 1], r[GC.FAME - 1], r[GC.BARCOS - 1]]; });
         var colOrigen = datosHoja.map(function (r) { return [r[GC.ORIGEN - 1]]; });
         resHoja.cambios.forEach(function (c) {
           bloque[c.idx] = [c.ataquesHoyNuevo, c.ataquesSemNueva, c.fameNueva, c.barcosNuevo];
           colOrigen[c.idx][0] = 'Reconstruido';
         });
-        sh.getRange(2, GC.ATAQUES_HOY, bloque.length, 4).setValues(bloque);
+        // 30-oct-2026 (§PF304): con el orden nuevo ya no son 4 columnas contiguas (entre Semana y Barcos están las 2 de merma): dos tramos.
+        sh.getRange(2, GC.ATAQUES_HOY, bloque.length, 2).setValues(bloque.map(function (b) { return [b[0], b[1]]; }));   // AtaquesHoy, AtaquesSemana
+        sh.getRange(2, GC.BARCOS, bloque.length, 2).setValues(bloque.map(function (b) { return [b[3], b[2]]; }));        // Barcos, Fame (ese orden en la hoja)
         sh.getRange(2, GC.ORIGEN, colOrigen.length, 1).setValues(colOrigen);
         _syncGuerraCSV(sh); // propaga la hoja al CSV, igual que en PF031, PF045 y PF047
       }
@@ -5099,7 +5101,7 @@ function _repararSemanaDesdeJsonRoyaleApi_(aplicar) {
         _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezadoCsv].concat(filasCsv)));
       }
       if (resHoja && nHoja) {
-        // Solo AtaquesHoy, AtaquesSemana, Fame, Barcos (columnas contiguas) y Origen: no se reescribe el resto.
+        // Solo AtaquesHoy, AtaquesSemana, Barcos, Fame y Origen: no se reescribe el resto (la merma la recalcula _syncGuerraCSV).
         var bloque = datosHoja.map(function (r) { return [r[GC.ATAQUES_HOY - 1], r[GC.ATAQUES_SEM - 1], r[GC.FAME - 1], r[GC.BARCOS - 1]]; });
         var colOrigen = datosHoja.map(function (r) { return [r[GC.ORIGEN - 1]]; });
         resHoja.repartos.forEach(function (r) {
@@ -5108,7 +5110,9 @@ function _repararSemanaDesdeJsonRoyaleApi_(aplicar) {
             colOrigen[c.idx][0] = c.origenNuevo;
           });
         });
-        sh.getRange(2, GC.ATAQUES_HOY, bloque.length, 4).setValues(bloque);
+        // 30-oct-2026 (§PF304): con el orden nuevo ya no son 4 columnas contiguas (entre Semana y Barcos están las 2 de merma): dos tramos.
+        sh.getRange(2, GC.ATAQUES_HOY, bloque.length, 2).setValues(bloque.map(function (b) { return [b[0], b[1]]; }));   // AtaquesHoy, AtaquesSemana
+        sh.getRange(2, GC.BARCOS, bloque.length, 2).setValues(bloque.map(function (b) { return [b[3], b[2]]; }));        // Barcos, Fame (ese orden en la hoja)
         sh.getRange(2, GC.ORIGEN, colOrigen.length, 1).setValues(colOrigen);
         _syncGuerraCSV(sh); // propaga la hoja al CSV, igual que en PF031, PF045 y PF047
       }

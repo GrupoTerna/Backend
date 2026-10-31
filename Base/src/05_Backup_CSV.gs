@@ -1749,7 +1749,7 @@ function _csvCacheBorrar_(filename) {
 }
 
 /**
- * _migrarTextoGuerraCsv_(texto) — 30-oct-2026 (orden nuevo de la hoja Guerra, §PF303).
+ * _migrarTextoGuerraCsv_(texto) — 30-oct-2026 (orden nuevo de la hoja Guerra, §PF304).
  * Backup_Guerra.csv se lee POR POSICIÓN (GC). Si el archivo todavía trae el orden viejo de 21 columnas (encabezado GUERRA_HEADERS_V21),
  * lo reordena en memoria al de 23 columnas, emparejando por NOMBRE de columna (no por posición), y calcula la merma de todas las filas
  * (_recalcularMermaGuerra_). Así todos los lectores del CSV ven el orden nuevo, y la primera escritura (_saveCSVToDrive) lo deja migrado en
@@ -1808,7 +1808,7 @@ function _loadCSVFromDrive(filename) {
   var hit = _csvBuscarArchivo_(filename); // subcarpeta asignada -> raíz -> demás subcarpetas [→ Contexto_Base_Web.md §01B158]
   if (hit) {
     var texto = hit.file.getBlob().getDataAsString('UTF-8');
-    if (filename === 'Backup_Guerra.csv') texto = _migrarTextoGuerraCsv_(texto); // 30-oct-2026 (§PF303): orden viejo de 21 columnas -> 23 del orden nuevo, en memoria
+    if (filename === 'Backup_Guerra.csv') texto = _migrarTextoGuerraCsv_(texto); // 30-oct-2026 (§PF304): orden viejo de 21 columnas -> 23 del orden nuevo, en memoria
     _CSV_MEM_[filename] = texto;
     _csvCachePut_(filename, texto);
     return texto;
