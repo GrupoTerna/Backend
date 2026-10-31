@@ -1,14 +1,14 @@
 # Índice de archivos — Base
 
-Generado automáticamente por el Generador el 31/10/2026 02:12:37 (Lima). No editar a mano: se reemplaza en cada descarga o subida.
+Generado automáticamente por el Generador el 31/10/2026 14:46:51 (Lima). No editar a mano: se reemplaza en cada descarga o subida.
 El estado es respecto de la descarga o subida anterior. «modificado» es solo para los archivos que no se crearon ni eliminaron en esa tanda; los eliminados figuran únicamente en la tanda en que desaparecen.
 
 Total: 61 archivos en el proyecto — 50 permanecen iguales, 11 modificados, 0 creados, 0 eliminados.
 
 | N.º | Archivo | Estado |
 |---|---|---|
-| 1 | 00_Main.gs | modificado |
-| 2 | 01_Config_Global.gs | modificado |
+| 1 | 00_Main.gs | permanece igual |
+| 2 | 01_Config_Global.gs | permanece igual |
 | 3 | 02_Setup_Hojas.gs | permanece igual |
 | 4 | 03_Indice_Sheet.gs | permanece igual |
 | 5 | 04_Formato_Comun.gs | permanece igual |
@@ -16,7 +16,7 @@ Total: 61 archivos en el proyecto — 50 permanecen iguales, 11 modificados, 0 c
 | 7 | 06_Battlelogs_Siembra.gs | permanece igual |
 | 8 | 07_Battlelogs_Hoja.gs | permanece igual |
 | 9 | 08_Activadores.gs | permanece igual |
-| 10 | 09_API_ClashRoyale.gs | permanece igual |
+| 10 | 09_API_ClashRoyale.gs | modificado |
 | 11 | 10_ClanSheet.gs | permanece igual |
 | 12 | 11_DirectorioSheet.gs | modificado |
 | 13 | 12_Players_Links.gs | permanece igual |
@@ -25,36 +25,36 @@ Total: 61 archivos en el proyecto — 50 permanecen iguales, 11 modificados, 0 c
 | 16 | 15_DeteccionInfiltrados.gs | permanece igual |
 | 17 | 16_ContactsSync.gs | permanece igual |
 | 18 | 17_GuerraSheet.gs | modificado |
-| 19 | 18_CorreccionGuerra.gs | permanece igual |
+| 19 | 18_CorreccionGuerra.gs | modificado |
 | 20 | 19_CorreccionRiverRace.gs | permanece igual |
 | 21 | 20_HistorialGuerraJugador.gs | permanece igual |
 | 22 | 21_Pronostico_Guerra.gs | permanece igual |
-| 23 | 22_ControlCalendario.gs | modificado |
+| 23 | 22_ControlCalendario.gs | permanece igual |
 | 24 | 23_Control2_GuerraSemanal.gs | permanece igual |
-| 25 | 24_Historial_Ascensos.gs | modificado |
+| 25 | 24_Historial_Ascensos.gs | permanece igual |
 | 26 | 25_Doc_AscensosDescensos.gs | permanece igual |
-| 27 | 26_Torneos_Core.gs | permanece igual |
+| 27 | 26_Torneos_Core.gs | modificado |
 | 28 | 27_Torneos_Sorteos_Requisitos.gs | permanece igual |
-| 29 | 28_Torneos_Docs.gs | permanece igual |
+| 29 | 28_Torneos_Docs.gs | modificado |
 | 30 | 29_Docs_NoCalificados.gs | permanece igual |
 | 31 | 30_Mensajes.gs | permanece igual |
-| 32 | 31_Cards_Mazos.gs | modificado |
+| 32 | 31_Cards_Mazos.gs | permanece igual |
 | 33 | 32_Insignias.gs | permanece igual |
 | 34 | 33_CaminoLeyendas.gs | permanece igual |
 | 35 | 34_Logros.gs | permanece igual |
 | 36 | 35_ProgresoEventos.gs | permanece igual |
 | 37 | 36_PerfilWeb.gs | permanece igual |
 | 38 | 37_Web_API.gs | modificado |
-| 39 | 38_Web_Endpoints.gs | permanece igual |
+| 39 | 38_Web_Endpoints.gs | modificado |
 | 40 | 39_CartasWeb.gs | permanece igual |
 | 41 | 40_Web_Noticias.gs | permanece igual |
 | 42 | 41_Web_ActualizarRoster.gs | permanece igual |
 | 43 | 42_Web_TiemposActualizacion.gs | permanece igual |
 | 44 | 43_Menu_Dinamico.gs | permanece igual |
-| 45 | 44_BotWhatsApp.gs | modificado |
+| 45 | 44_BotWhatsApp.gs | permanece igual |
 | 46 | 45_Vigilante_UptimeRobot.gs | permanece igual |
 | 47 | 46_Test.gs | permanece igual |
-| 48 | 47_Migraciones.gs | permanece igual |
+| 48 | 47_Migraciones.gs | modificado |
 | 49 | 48_Herramientas_Debug.gs | permanece igual |
 | 50 | 49_Diagnostico_Domingo.gs | permanece igual |
 | 51 | 50_Publicar_Guerra.gs | permanece igual |
@@ -69,4 +69,4 @@ Total: 61 archivos en el proyecto — 50 permanecen iguales, 11 modificados, 0 c
 | 60 | 59_Verificar_CRR_vs_Backup.gs | permanece igual |
 | 61 | appsscript.json | permanece igual |
 
-<!-- HUELLAS {"00_Main.gs":"c2d91c43a3e5","01_Config_Global.gs":"f1221e0ec9d3","02_Setup_Hojas.gs":"c2579db54bd5","03_Indice_Sheet.gs":"ae3ccaff53a2","04_Formato_Comun.gs":"9316e975f982","05_Backup_CSV.gs":"453ba4399412","06_Battlelogs_Siembra.gs":"dde083771b08","07_Battlelogs_Hoja.gs":"100a88821c4d","08_Activadores.gs":"592f97f17c6b","09_API_ClashRoyale.gs":"7bbb1c1c72be","10_ClanSheet.gs":"a6e20130a3e2","11_DirectorioSheet.gs":"2a0d6b7ce856","12_Players_Links.gs":"8e05a6452436","13_Inactivos_Vetados.gs":"97e70fcee3de","14_Nuevos_RoyaleAPI.gs":"ba3fb5203e81","15_DeteccionInfiltrados.gs":"73c00fb27b8a","16_ContactsSync.gs":"b37059dd1bc9","17_GuerraSheet.gs":"f0935cba3c1e","18_CorreccionGuerra.gs":"035c46ec5365","19_CorreccionRiverRace.gs":"f608f672b28d","20_HistorialGuerraJugador.gs":"94ca80a31c3f","21_Pronostico_Guerra.gs":"afdfb7ef2f77","22_ControlCalendario.gs":"ddc0f7b82ea7","23_Control2_GuerraSemanal.gs":"c79ce9b47791","24_Historial_Ascensos.gs":"b474341ae65b","25_Doc_AscensosDescensos.gs":"1f51bba3680e","26_Torneos_Core.gs":"0f686d3690da","27_Torneos_Sorteos_Requisitos.gs":"24edcec514ac","28_Torneos_Docs.gs":"5723a9f33e65","29_Docs_NoCalificados.gs":"2bf34c456e24","30_Mensajes.gs":"8899949d9b29","31_Cards_Mazos.gs":"8f9643026a27","32_Insignias.gs":"5973106f216e","33_CaminoLeyendas.gs":"d1ff9ce2029f","34_Logros.gs":"52eb84e74ef5","35_ProgresoEventos.gs":"488c9894dd22","36_PerfilWeb.gs":"19bede0c395e","37_Web_API.gs":"dbaedeb280e6","38_Web_Endpoints.gs":"065142ffa6e7","39_CartasWeb.gs":"4a6e8fc55cc5","40_Web_Noticias.gs":"96ca018dc4ab","41_Web_ActualizarRoster.gs":"7b12f00a176e","42_Web_TiemposActualizacion.gs":"6d2962bb721a","43_Menu_Dinamico.gs":"ed0532303166","44_BotWhatsApp.gs":"ffdf6902fa7d","45_Vigilante_UptimeRobot.gs":"a403e6935501","46_Test.gs":"7fdf03ce97d2","47_Migraciones.gs":"146e36e46d47","48_Herramientas_Debug.gs":"0bb416507cf9","49_Diagnostico_Domingo.gs":"ac8a30d68dcf","50_Publicar_Guerra.gs":"46c233f4e64f","51_Publicar_Roster.gs":"6146080f8080","52_Publicar_Home.gs":"9698049910ea","53_Publicar_Torneos.gs":"68b8021fbc2f","54_Correccion_AtaquesSemana_Anomalias.gs":"cd40c57204b9","55_Reparar_DiasConExceso.gs":"8293df6ca967","56_CurrentRiverRace_Dias.gs":"bae3fad0f342","57_ReconstruirSemanaPorDias.gs":"9aa71906f6c0","58_Docs_Administracion.gs":"de1e4ee72af2","59_Verificar_CRR_vs_Backup.gs":"040c2f43a740","appsscript.json":"f29b10bf5765"} -->
+<!-- HUELLAS {"00_Main.gs":"c2d91c43a3e5","01_Config_Global.gs":"f1221e0ec9d3","02_Setup_Hojas.gs":"c2579db54bd5","03_Indice_Sheet.gs":"ae3ccaff53a2","04_Formato_Comun.gs":"9316e975f982","05_Backup_CSV.gs":"4507bab2d0ce","06_Battlelogs_Siembra.gs":"dde083771b08","07_Battlelogs_Hoja.gs":"100a88821c4d","08_Activadores.gs":"592f97f17c6b","09_API_ClashRoyale.gs":"fe28142d1a97","10_ClanSheet.gs":"a6e20130a3e2","11_DirectorioSheet.gs":"4a0cec8b5bb9","12_Players_Links.gs":"8e05a6452436","13_Inactivos_Vetados.gs":"97e70fcee3de","14_Nuevos_RoyaleAPI.gs":"1162d68c84ae","15_DeteccionInfiltrados.gs":"73c00fb27b8a","16_ContactsSync.gs":"b37059dd1bc9","17_GuerraSheet.gs":"27038e6e63b1","18_CorreccionGuerra.gs":"3a60ed351227","19_CorreccionRiverRace.gs":"f608f672b28d","20_HistorialGuerraJugador.gs":"94ca80a31c3f","21_Pronostico_Guerra.gs":"afdfb7ef2f77","22_ControlCalendario.gs":"ddc0f7b82ea7","23_Control2_GuerraSemanal.gs":"c79ce9b47791","24_Historial_Ascensos.gs":"b474341ae65b","25_Doc_AscensosDescensos.gs":"1f51bba3680e","26_Torneos_Core.gs":"8044fbf88856","27_Torneos_Sorteos_Requisitos.gs":"24edcec514ac","28_Torneos_Docs.gs":"b2749a332d02","29_Docs_NoCalificados.gs":"2bf34c456e24","30_Mensajes.gs":"8899949d9b29","31_Cards_Mazos.gs":"8f9643026a27","32_Insignias.gs":"5973106f216e","33_CaminoLeyendas.gs":"d1ff9ce2029f","34_Logros.gs":"52eb84e74ef5","35_ProgresoEventos.gs":"488c9894dd22","36_PerfilWeb.gs":"19bede0c395e","37_Web_API.gs":"d555765aea04","38_Web_Endpoints.gs":"0864f7c6316a","39_CartasWeb.gs":"4a6e8fc55cc5","40_Web_Noticias.gs":"96ca018dc4ab","41_Web_ActualizarRoster.gs":"7b12f00a176e","42_Web_TiemposActualizacion.gs":"6d2962bb721a","43_Menu_Dinamico.gs":"ed0532303166","44_BotWhatsApp.gs":"ffdf6902fa7d","45_Vigilante_UptimeRobot.gs":"a403e6935501","46_Test.gs":"7fdf03ce97d2","47_Migraciones.gs":"26a3f1c747c3","48_Herramientas_Debug.gs":"0bb416507cf9","49_Diagnostico_Domingo.gs":"ac8a30d68dcf","50_Publicar_Guerra.gs":"46c233f4e64f","51_Publicar_Roster.gs":"6146080f8080","52_Publicar_Home.gs":"9698049910ea","53_Publicar_Torneos.gs":"68b8021fbc2f","54_Correccion_AtaquesSemana_Anomalias.gs":"cd40c57204b9","55_Reparar_DiasConExceso.gs":"8293df6ca967","56_CurrentRiverRace_Dias.gs":"bae3fad0f342","57_ReconstruirSemanaPorDias.gs":"9aa71906f6c0","58_Docs_Administracion.gs":"de1e4ee72af2","59_Verificar_CRR_vs_Backup.gs":"040c2f43a740","appsscript.json":"f29b10bf5765"} -->
