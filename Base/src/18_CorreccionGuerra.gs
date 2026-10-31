@@ -70,6 +70,13 @@ var REVISION_GUERRA_CSV = 'Revision_Guerra.csv';
 
 var REVISION_GUERRA_ENCABEZADO = ['N°', 'Fecha', 'Temporada', 'Semana', 'Tag', 'Nombre', 'Tipo', 'Motivo', 'Detalle', 'Estado'];
 
+// §PF313 (PF307 punto 4, §PF253 punto 1): registro de contradicciones entre filas de Correcciones_Guerra.csv. [→ Contexto_Base_Web.md §PF313]
+var CGW_CONTRADICCION_TIPO = 'Contradicción';      // columna «Tipo» de Revision_Guerra.csv
+var CGW_CONTRADICCION_ESTADO = 'Pendiente';        // columna «Estado» de lo que no se resolvió solo
+var CGW_CONTRADICCIONES_MAX_LINEAS = 200;          // tope de líneas que viajan en la respuesta (el resto solo cuenta)
+var CGW_REGRESO_HUECO_DIAS = 7;                    // §PF314 (PF253 opción B): un hueco de 7 días o más sin clan Terna cuenta como «salió y regresó»
+var _CGW_MITADES_SEMANA_CACHE_ = null;             // §PF313: sumas de dos días de guerra, para comprobar semanas completas
+
 // 3.5a -- RESUMEN PURO DEL BATTLELOG POR DIA DE GUERRA Y POR CLAN (Fase 15, Tanda 3, [→ Contexto_Base_Web.md §18B034]
 // Indices base 0 dentro de una fila de BLS_HEADERS (N° es el 0).
 var BLG_COL = {
@@ -1334,6 +1341,73 @@ function _fameCatalogoDia_() {
   return lista;
 }
 
+/**
+ * _cgwMitadesSemana_() [→ Contexto_Base_Web.md §PF313]
+ * Todas las sumas posibles de DOS días de guerra, sacadas de _fameCatalogoDia_(): { conBarcos: {'n|b|f': true}, sinBarcos: {'n|f': true}, lista: [{n,b,f}] }.
+ * La semana tiene 4 días (BLG_DIAS_GUERRA), así que una semana posible es la suma de dos mitades. Se calcula una sola vez por ejecución.
+ */
+function _cgwMitadesSemana_() {
+  if (_CGW_MITADES_SEMANA_CACHE_) return _CGW_MITADES_SEMANA_CACHE_;
+  var cat = _fameCatalogoDia_();
+  var conBarcos = {}, sinBarcos = {}, lista = [];
+  for (var i = 0; i < cat.length; i++) {
+    for (var j = i; j < cat.length; j++) {
+      var n = cat[i].n + cat[j].n, b = cat[i].b + cat[j].b, f = cat[i].f + cat[j].f;
+      var kb = n + '|' + b + '|' + f;
+      if (!conBarcos[kb]) { conBarcos[kb] = true; lista.push({ n: n, b: b, f: f }); }
+      sinBarcos[n + '|' + f] = true;
+    }
+  }
+  _CGW_MITADES_SEMANA_CACHE_ = { conBarcos: conBarcos, sinBarcos: sinBarcos, lista: lista };
+  return _CGW_MITADES_SEMANA_CACHE_;
+}
+
+/**
+ * _cgwSemanaEsPosible_(ataques, fame, barcos, memo) [→ Contexto_Base_Web.md §PF313]
+ * §PF253 punto 2: «una terna posible» = una combinación posible de ataques, fame y barcos. Devuelve true si existen 4 días de guerra del catálogo
+ * (_fameCatalogoDia_()) cuya suma sea exactamente esa semana. barcos null/undefined = «sin dato»: se comprueba solo ataques y fame.
+ * Cubre la semana de UN clan o de un jugador en varios (las sumas más chicas también caben: hay días con 0 ataques). memo (opcional): objeto para no repetir cálculos.
+ * Limitación conocida: no conoce la regla del clan terminado (ataques del domingo sin fame, §PF183), así que esos casos salen como «no cabe».
+ */
+function _cgwSemanaEsPosible_(ataques, fame, barcos, memo) {
+  if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame)) return false;
+  if (ataques % 1 !== 0 || fame % 1 !== 0 || ataques < 0 || fame < 0) return false;
+  if (ataques > BLG_DIAS_GUERRA * FAME_MAZOS_POR_DIA) return false;
+  var hayBarcos = (typeof barcos === 'number' && !isNaN(barcos));
+  if (hayBarcos && (barcos % 1 !== 0 || barcos < 0 || barcos > ataques)) return false;
+  var clave = ataques + '|' + (hayBarcos ? barcos : 'x') + '|' + fame;
+  if (memo && memo[clave] !== undefined) return memo[clave];
+  var m = _cgwMitadesSemana_();
+  var ok = false;
+  for (var i = 0; i < m.lista.length && !ok; i++) {
+    var x = m.lista[i];
+    var n2 = ataques - x.n, f2 = fame - x.f;
+    if (n2 < 0 || f2 < 0) continue;
+    ok = hayBarcos ? !!m.conBarcos[n2 + '|' + (barcos - x.b) + '|' + f2] : !!m.sinBarcos[n2 + '|' + f2];
+  }
+  if (memo) memo[clave] = ok;
+  return ok;
+}
+
+/**
+ * _cgwFuenteDeFila_(clanTag, fuenteTexto, guardada) [→ Contexto_Base_Web.md §PF313]
+ * Nombre de la fuente de una fila para el registro de contradicciones. Sin «guardada»: la del envío (fuenteTexto = c.fuente). Con «guardada»: la de la fila del mapa.
+ * Fila sin ClanTag (RoyaleAPI): «perfil» o «desconocida». Fila con ClanTag: «Log», «Analytics» o «desconocida».
+ */
+function _cgwFuenteDeFila_(clanTag, fuenteTexto, guardada) {
+  if (clanTag === '') {
+    var esPerfil = guardada ? (guardada.origenPerfil === CGW_ORIGEN_PERFIL)
+      : (String(fuenteTexto || '').trim().toLowerCase() === CGW_ORIGEN_PERFIL);
+    return esPerfil ? 'perfil' : 'desconocida';
+  }
+  var f = guardada ? (guardada.fuenteClan || '') : _cgwFuenteClanDesdeTexto_(fuenteTexto);
+  return f || 'desconocida';
+}
+
+function _cgwTextoValores_(ataques, fame, barcos) {
+  return ataques + ' ataques / ' + fame + ' fame' + ((barcos !== null && barcos !== undefined) ? ' / ' + barcos + ' barcos' : '');
+}
+
 // ----- Overlay de correcciones (CSV): lectura, escritura y formato -----
 
 function _cgwFuenteClanDesdeTexto_(v) {
@@ -1911,6 +1985,9 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var cambiosPerfil = []; // §PF237: filas del perfil que reemplazan un dato del perfil ya guardado y distinto
   var clavesTocadas = []; // FIX (27-ago-2026, pregunta 4): claves de ESTE lote, para completar Implementación más abajo sin tocar correcciones de corridas anteriores.
   var clavesIgualesClan = []; // §PF240: filas de Log/Analytics (con ClanTag) iguales a las ya guardadas: no se reescriben, pero cuentan para el aviso «revisar a mano»
+  var contradicciones = [], contradiccionesTotal = 0, contradiccionesSinPisar = 0; // §PF313: registro de contradicciones de esta corrida (líneas topadas; el total cuenta todas)
+  var revisionContradicciones = []; // §PF313: lo que no se resuelve solo va también a Revision_Guerra.csv (Estado pendiente)
+  var memoPosible = {}; // §PF313: memoria de _cgwSemanaEsPosible_() para no repetir cálculos en un lote grande
   for (var i = 0; i < correcciones.length; i++) {
     var c = correcciones[i] || {};
     var tag = String(c.tag || '').trim();
@@ -1978,6 +2055,54 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     // semana que cambia en cada corrida. No avisa si lo guardado era «desconocido» (llenarlo es justo lo esperado).
     var valoresDistintos = existente && (existente.ataquesSemana !== ataquesSemana || existente.fame !== fame ||
       (existente.barcos !== null && existente.barcos !== undefined && barcosFinal !== null && existente.barcos !== barcosFinal));
+    // §PF313 (PF307 punto 4; reglas de §PF253 punto 1, por confirmar tras la contrastación con los json). Todo conflicto deja una línea en el registro de la
+    // corrida (jugador, semana, clan, valor antes y ahora, fuente de cada uno y cuál ganó). Lo que NO se resuelve solo no se pisa y va también a Revision_Guerra.csv:
+    //  · D: dos fuentes del mismo nivel que discrepan en la misma clave (Log contra Analytics): se conserva lo guardado.
+    //  · B: valores que no caben en ninguna combinación posible de ataques, fame y barcos: si ya había otro valor, se conserva; si no había, se guarda y se avisa.
+    // El caso A (misma clave, valores distintos, fuentes de distinto nivel o la misma fuente que actualiza) se aplica como siempre y solo deja la línea.
+    // El caso C (clan con nombre de Terna sin enlace) y la comparación Correcciones_Nuevos contra Correcciones_Guerra siguen pendientes (§PF313).
+    var fuenteEntrante = _cgwFuenteDeFila_(clanTag, c.fuente, null);
+    var fuenteGuardada = existente ? _cgwFuenteDeFila_(clanTag, '', existente) : '';
+    var etiquetaConflicto = 'T' + temporadaPropia + ' semana ' + semana + ' ' + tag + ' (' + (clanTag || 'perfil') + ')';
+    var textoAntesC = existente ? _cgwTextoValores_(existente.ataquesSemana, existente.fame, existente.barcos) + ' [' + fuenteGuardada + ']' : '';
+    var textoAhoraC = _cgwTextoValores_(ataquesSemana, fame, barcosFinal) + ' [' + fuenteEntrante + ']';
+    var nombreConflicto = String(c.nombre || '');
+    var mismoNivelDiscrepa = !!(existente && valoresDistintos && clanTag !== '' && fuenteGuardada !== 'desconocida' &&
+      fuenteEntrante !== 'desconocida' && fuenteGuardada !== fuenteEntrante);
+    var yaGuardadaIgual = !!(existente && !valoresDistintos); // reintento por Implementación «No»: el valor ya estaba, no es un conflicto nuevo
+    var noCabeSemana = !yaGuardadaIgual && !_cgwSemanaEsPosible_(ataquesSemana, fame, barcosFinal, memoPosible);
+    if (mismoNivelDiscrepa || noCabeSemana || (valoresDistintos && !(clanTag === '' && fuenteGuardada === 'perfil' && fuenteEntrante === 'perfil'))) {
+      // (perfil contra perfil ya se avisa abajo como «antes / ahora» en cambiosPerfil; no se duplica)
+      var decision, motivoRev = '';
+      if (mismoNivelDiscrepa) {
+        decision = 'mismo nivel: no se pisa, queda lo guardado y va a Revision_Guerra.csv';
+        motivoRev = fuenteGuardada + ' y ' + fuenteEntrante + ' difieren (' + clanTag + ')';
+      } else if (noCabeSemana && existente && valoresDistintos) {
+        decision = 'no cabe en ninguna semana posible: no se pisa, queda lo guardado y va a Revision_Guerra.csv';
+        motivoRev = 'Valor que no cabe en una semana posible (' + (clanTag || 'perfil') + ')';
+      } else if (noCabeSemana) {
+        decision = 'no cabe en ninguna semana posible: se guarda porque no había otro valor y va a Revision_Guerra.csv';
+        motivoRev = 'Valor que no cabe en una semana posible (' + (clanTag || 'perfil') + ')';
+      } else {
+        decision = 'gana el valor de ahora';
+      }
+      contradiccionesTotal++;
+      if (contradicciones.length < CGW_CONTRADICCIONES_MAX_LINEAS) {
+        contradicciones.push(etiquetaConflicto + ': ' + (existente ? 'antes ' + textoAntesC + ', ' : 'sin valor guardado, ') + 'ahora ' + textoAhoraC + '; ' + decision);
+      }
+      if (motivoRev) {
+        revisionContradicciones.push({
+          temporada: temporadaPropia, semana: semana, tag: tag, nombre: nombreConflicto, tipo: CGW_CONTRADICCION_TIPO, motivo: motivoRev,
+          detalle: (existente ? 'antes ' + textoAntesC + '; ' : '') + 'ahora ' + textoAhoraC + '; ' + decision, estado: CGW_CONTRADICCION_ESTADO
+        });
+      }
+      if (mismoNivelDiscrepa || (noCabeSemana && existente && valoresDistintos)) {
+        contradiccionesSinPisar++;
+        if (clanTag !== '') clavesIgualesClan.push(clave); // sigue contando para el aviso «revisar a mano»
+        continue;
+      }
+    }
+
     if (clanTag === '' && valoresDistintos && existente.origenPerfil === CGW_ORIGEN_PERFIL) {
       var baja0 = (ataquesSemana === 0 && fame === 0 && (existente.ataquesSemana > 0 || existente.fame > 0));
       var etiquetaCambio = 'T' + temporadaPropia + ' semana ' + semana + ' ' + tag + ': perfil antes ' + existente.ataquesSemana + ' ataques / ' +
@@ -2032,6 +2157,16 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   });
 
   var avisos = [];
+  // §PF313: lo que no se resolvió solo va a Revision_Guerra.csv con Estado «Pendiente». Un fallo aquí no afecta a lo ya decidido: se avisa.
+  var resultadoRevision = null, avisoRevision = '';
+  if (revisionContradicciones.length) {
+    try {
+      resultadoRevision = _registrarRevisionGuerra_(revisionContradicciones);
+    } catch (eRevC) {
+      avisoRevision = 'Contradicciones: no se pudo escribir Revision_Guerra.csv (' + (eRevC.message || eRevC) + ').';
+      Logger.log('[CorreccionGuerra] ' + avisoRevision);
+    }
+  }
   if (aplicadas > 0) {
     _guardarOverlayCorreccionesGuerra(mapa);
     var falloAlgunaPropagacion = false;
@@ -2067,6 +2202,15 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   if (anterioresT1) resultado.anterioresT1 = anterioresT1; // §PF247
   if (revisarManual.length) resultado.revisarManual = revisarManual; // FIX 29-sep-2026 (Fase 15 tanda 1)
   if (cambiosPerfil.length) resultado.cambiosPerfil = cambiosPerfil; // §PF237
+  if (contradiccionesTotal) { // §PF313: el log de la corrida; viaja en la respuesta y queda en el log de Drive del botón
+    resultado.contradicciones = contradicciones;
+    resultado.contradiccionesTotal = contradiccionesTotal;
+    resultado.contradiccionesSinPisar = contradiccionesSinPisar;
+    if (resultadoRevision) resultado.revisionContradicciones = resultadoRevision;
+    if (avisoRevision) resultado.avisoRevision = avisoRevision;
+    Logger.log('[CorreccionGuerra] Contradicciones: ' + contradiccionesTotal + ' (' + contradiccionesSinPisar + ' sin pisar). ' +
+      contradicciones.slice(0, 20).join(' | ') + (contradicciones.length > 20 ? ' | … (ver la respuesta del endpoint)' : ''));
+  }
   if (avisos.length) {
     // avisoControl2: se mantiene este nombre de campo (aunque ahora puede [→ Contexto_Base_Web.md §18B104]
     resultado.avisoControl2 = avisos.join(' | ');
@@ -2306,7 +2450,7 @@ function _registrarRevisionGuerra_(entradas) {
     var clave = [String(en.temporada), String(en.semana), String(en.tag), String(en.tipo), String(en.motivo)].join('|');
     var pos = indice[clave];
     if (pos === undefined) {
-      filas.push(['', ahora, en.temporada, en.semana, en.tag, en.nombre || '', en.tipo, en.motivo, en.detalle || '', '']);
+      filas.push(['', ahora, en.temporada, en.semana, en.tag, en.nombre || '', en.tipo, en.motivo, en.detalle || '', en.estado || '']); // §PF313: en.estado es opcional («Pendiente» para las contradicciones)
       indice[clave] = filas.length - 1;
       resultado.nuevas++;
     } else if (String(filas[pos][8]) !== String(en.detalle || '')) {
