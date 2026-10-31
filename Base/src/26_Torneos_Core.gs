@@ -1,3 +1,22 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Torneos: procesar y actualización en vivo
+//    - Sorteos y cambio de rango
+//    - Importar desde los CSV
+//    - Ordenar, formatear y reparar
+//  Parte 2 — Funciones que no se corren a mano
+//    - Torneo en vivo: activadores y publicación
+//    - T_Lista: filas nuevas, organizador y datos de la API
+//    - S_Lista: sorteos
+//    - T_Asistencia y T_Control
+//    - CR_Lista: cambio de rango
+//    - Identificadores de evento, fechas y semanas
+//    - Requisitos y configuración vigente
+//    - Registrar, planificar y modificar torneos y sorteos (bot y web)
+//    - Orden, formato y listas desplegables de las hojas
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. regenerarTControlSheet la llama procesarTorneos (paso 3), por eso va en la Parte 2 (deducción de Claude, a confirmar).
+// Al reordenar no se cambió el código de ninguna función; las variables globales que estaban entre las funciones subieron a la zona de constantes y variables, en el mismo orden relativo.
+
 // ==============================================================================
 // 26_Torneos_Core.gs
 // Módulo de Torneos (RoyaleAPI) — hojas T_Lista, T_Asistencia y T_Control.
@@ -9,10 +28,7 @@
 
 // ----- Variables y constantes -----
 
-
 // CAMBIOS REALIZADOS: [→ Contexto_Base_Web.md §26B003]
-
-
 // Índices de columna (1-based) — T_Lista, T_Asistencia y columnas fijas de [→ Contexto_Base_Web.md §26B004]
 var TL = {
   // Nuevo orden de columnas (29-oct-2026, pedido de la usuaria: reordenó la hoja T_Lista; los índices se actualizan aquí y todo el código usa TL.*)
@@ -31,6 +47,7 @@ var TL_TOTAL_COLS = 44;
 
 // Arrays auxiliares -- índice 0 = C1 (clan principal) .. índice 3 = C4 [→ Contexto_Base_Web.md §26B006]
 var TL_MIN_T_COLS = [TL.MIN_T_C1, TL.MIN_T_C2, TL.MIN_T_C3, TL.MIN_T_C4];
+
 var TL_ATAQUES_COLS = [TL.ATAQUES_C1, TL.ATAQUES_C2, TL.ATAQUES_C3, TL.ATAQUES_C4];
 
 // FASE (07-sep-2026, pedido del usuario): SL -- índices de columna (1-based) [→ Contexto_Base_Web.md §26B007]
@@ -46,7 +63,9 @@ var SL = {
 var SL_TOTAL_COLS = 31;
 
 var SL_MIN_S_COLS = [SL.MIN_S_C1, SL.MIN_S_C2, SL.MIN_S_C3, SL.MIN_S_C4];
+
 var SL_ATAQUES_COLS = [SL.ATAQUES_C1, SL.ATAQUES_C2, SL.ATAQUES_C3, SL.ATAQUES_C4];
+
 var SL_TORNEOS_COLS = [SL.TORNEOS_C1, SL.TORNEOS_C2, SL.TORNEOS_C3, SL.TORNEOS_C4];
 
 // NUEVO (13-sep-2026, pedido del usuario): CR -- índices de columna [→ Contexto_Base_Web.md §26B008]
@@ -70,6 +89,7 @@ var CR_MIN_CR_COLS = {
   VETERANO: [CR.MIN_CR_VETERANO_C1, CR.MIN_CR_VETERANO_C2, CR.MIN_CR_VETERANO_C3, CR.MIN_CR_VETERANO_C4],
   COLIDER:  [CR.MIN_CR_COLIDER_C1,  CR.MIN_CR_COLIDER_C2,  CR.MIN_CR_COLIDER_C3,  CR.MIN_CR_COLIDER_C4]
 };
+
 var CR_ATAQUES_COLS = {
   MIEMBRO:  [CR.ATAQUES_MIEMBRO_C1,  CR.ATAQUES_MIEMBRO_C2,  CR.ATAQUES_MIEMBRO_C3,  CR.ATAQUES_MIEMBRO_C4],
   VETERANO: [CR.ATAQUES_VETERANO_C1, CR.ATAQUES_VETERANO_C2, CR.ATAQUES_VETERANO_C3, CR.ATAQUES_VETERANO_C4],
@@ -79,1179 +99,23 @@ var CR_ATAQUES_COLS = {
 // Separador de miles SOLO de visualización (29-oct-2026, pedido de la usuaria): Min (medallas), Ataques y Barcos de T_Lista, S_Lista y CR_Lista se muestran con coma de miles mediante el formato de número `#,##0`.
 // El valor guardado en la celda sigue siendo el número sin coma; el respaldo CSV de estas hojas también lo guarda sin coma (ver _colsMilesDeHoja_() en 05_Backup_CSV.gs). [→ Contexto_Base_Web.md §PF286]
 var FORMATO_MILES_ = '#,##0';
+
 var TL_COLS_MILES = TL_MIN_T_COLS.concat(TL_ATAQUES_COLS, [TL.BARCOS]);
+
 var SL_COLS_MILES = SL_MIN_S_COLS.concat([SL.MIN_S_DELTA], SL_ATAQUES_COLS, [SL.BARCOS]);
+
 var CR_COLS_MILES = CR_MIN_CR_COLS.MIEMBRO.concat(CR_MIN_CR_COLS.VETERANO, CR_MIN_CR_COLS.COLIDER, CR_ATAQUES_COLS.MIEMBRO, CR_ATAQUES_COLS.VETERANO, CR_ATAQUES_COLS.COLIDER, [CR.BARCOS]);
-
-/**
- * _aplicarFormatoMilesHoja_(sh, primera, cols, hastaFila): pone el formato `#,##0` en las columnas `cols` (índices 1-based) desde la fila `primera` hasta `hastaFila` (por omisión, el final de la hoja, para que las filas nuevas ya lo traigan).
- * Solo cambia cómo se ve el número; no toca el valor. Agrupa las columnas contiguas en un solo rango. Idempotente.
- */
-function _aplicarFormatoMilesHoja_(sh, primera, cols, hastaFila) {
-  if (!sh) return;
-  var ultima = hastaFila || sh.getMaxRows();
-  if (ultima < primera) return;
-  var n = ultima - primera + 1;
-  var orden = cols.slice().sort(function (a, b) { return a - b; });
-  var i = 0;
-  while (i < orden.length) {
-    var j = i;
-    while (j + 1 < orden.length && orden[j + 1] === orden[j] + 1) j++;
-    sh.getRange(primera, orden[i], n, orden[j] - orden[i] + 1).setNumberFormat(FORMATO_MILES_);
-    i = j + 1;
-  }
-}
-
-// _aplicarFormatoMilesListas_(ss): aplica el formato de miles a T_Lista, S_Lista y CR_Lista (hasta el final de cada hoja). Devuelve cuántas hojas tocó; un error en una hoja no frena a las otras.
-function _aplicarFormatoMilesListas_(ss) {
-  var tocadas = 0;
-  [
-    { hoja: CFG.SHEETS.T_LISTA,  primera: 3, cols: TL_COLS_MILES },
-    { hoja: CFG.SHEETS.S_LISTA,  primera: 3, cols: SL_COLS_MILES },
-    { hoja: CFG.SHEETS.CR_LISTA, primera: 4, cols: CR_COLS_MILES }
-  ].forEach(function (c) {
-    try {
-      var sh = ss.getSheetByName(c.hoja);
-      if (!sh) return;
-      _aplicarFormatoMilesHoja_(sh, c.primera, c.cols);
-      tocadas++;
-    } catch (e) {
-      Logger.log('[Miles] No se pudo aplicar el formato en ' + c.hoja + ': ' + e.message);
-    }
-  });
-  return tocadas;
-}
-
-// CR_Lista — CR.HORA como HORA REAL, no texto (16-sep-2026, pedido del [→ Contexto_Base_Web.md §26B010]
-
-/**
- * _horaStringADate(fechaBase, horaStr) [→ Contexto_Base_Web.md §26B011]
- */
-function _horaStringADate(fechaBase, horaStr) {
-  // 18-oct-2026 (PF099): los segundos son opcionales; admin.html manda "HH:MM:SS" (horaConSegundos()), el bot "HH:mm". Antes solo aceptaba HH:MM y la Hora quedaba vacía en T_Lista al planificar desde la web. [→ Contexto_Base_Web.md §PF099]
-  var m = String(horaStr || '').trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-  if (!m) return null;
-  if (!(fechaBase instanceof Date) || isNaN(fechaBase.getTime())) return null;
-  var h = Number(m[1]), min = Number(m[2]), seg = Number(m[3] || 0);
-  if (h > 23 || min > 59 || seg > 59) return null;
-  return new Date(fechaBase.getFullYear(), fechaBase.getMonth(), fechaBase.getDate(), h, min, seg);
-}
-
-/**
- * _formatHoraCanonica(dateVal) [→ Contexto_Base_Web.md §26B012]
- */
-function _formatHoraCanonica(dateVal) {
-  if (!(dateVal instanceof Date) || isNaN(dateVal.getTime())) return '';
-  return Utilities.formatDate(dateVal, 'America/Lima', 'HH:mm:ss');
-}
-
-/**
- * _parseHoraCanonica(str, fechaBase) [→ Contexto_Base_Web.md §26B013]
- */
-function _parseHoraCanonica(str, fechaBase) {
-  var m = String(str || '').trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-  if (!m) return null;
-  var base = (fechaBase instanceof Date && !isNaN(fechaBase.getTime())) ? fechaBase : new Date(1899, 11, 30);
-  return new Date(base.getFullYear(), base.getMonth(), base.getDate(), Number(m[1]), Number(m[2]), Number(m[3] || 0));
-}
-
-/**
- * _reordenarCRListaPorFecha(ss) [→ Contexto_Base_Web.md §26B014]
- */
-function _reordenarCRListaPorFecha(ss, soloRevisar) {
-  var sh = ss.getSheetByName(CFG.SHEETS.CR_LISTA);
-  if (!sh) return null;
-  // Sin desempate por ID: el par Ascenso/Descenso del mismo día y hora conserva el orden en que se creó (primero Ascenso).
-  var res = _ordenarHojaPorFechaDesc_(sh, 4, CR_TOTAL_COLS, { NUM: CR.NUM, FECHA: CR.FECHA, HORA: CR.HORA, ID: CR.ID }, {
-    etiqueta: 'CR_Lista', fmtFecha: 'dd/mm/yyyy', fmtHora: 'h:mm:ss AM/PM', soloRevisar: !!soloRevisar
-  });
-  if (!soloRevisar) _aplicarFormatoMilesHoja_(sh, 4, CR_COLS_MILES, sh.getLastRow());
-  return res;
-}
-
-/**
- * Orden de las hojas de lista y de asistencia: MÁS RECIENTE PRIMERO (29-oct-2026, pedido de la usuaria: T_Lista, S_Lista, CR_Lista, T_Asistencia y S_Asistencia).
- * Clave: día de Fecha (descendente), luego la hora (descendente; la de la columna Hora o, si no hay, la que traiga la propia Fecha), luego el ID (descendente, solo si `desempatePorId`) y por último el orden que ya tenían (estable).
- * Las filas sin fecha válida quedan al final. N° pasa a ser la posición de la fila (1 = la más reciente), el mismo criterio que ya usaba CR_Lista. En las asistencias, desempatar por ID deja juntas las filas de cada torneo o sorteo.
- * [→ Contexto_Base_Web.md §PF286]
- */
-function _diaClaveOrden_(v) {
-  if (v instanceof Date && !isNaN(v.getTime())) return Number(Utilities.formatDate(v, 'America/Lima', 'yyyyMMdd'));
-  var m = String(v === null || v === undefined ? '' : v).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  return m ? Number(m[3]) * 10000 + Number(m[2]) * 100 + Number(m[1]) : -1;
-}
-
-function _horaClaveOrden_(v) {
-  function d2(n) { return (n < 10 ? '0' : '') + n; }
-  if (v instanceof Date && !isNaN(v.getTime())) return _formatHoraCanonica(v);
-  if (typeof v === 'number' && v >= 0 && v < 1) {
-    var seg = Math.round(v * 86400);
-    return d2(Math.floor(seg / 3600)) + ':' + d2(Math.floor((seg % 3600) / 60)) + ':' + d2(seg % 60);
-  }
-  var m = String(v === null || v === undefined ? '' : v).match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-  return m ? d2(Number(m[1])) + ':' + m[2] + ':' + (m[3] || '00') : '';
-}
-
-// _ordenarHojaPorFechaDesc_(sh, primera, totalCols, C, opc): C = { NUM, FECHA, HORA (0 si la hoja no tiene), ID }; opc = { etiqueta, desempatePorId, fmtFecha, fmtHora, extraFmts: [{col, fmt}], soloRevisar }.
-// Devuelve { ok, filas, cambio, movidas }. Si el orden y los N° ya son correctos no escribe nada. Si hay fórmulas en el rango no reordena (mover filas rompería sus referencias) y devuelve ok = false.
-// Con soloRevisar = true calcula y registra qué pasaría, sin escribir.
-function _ordenarHojaPorFechaDesc_(sh, primera, totalCols, C, opc) {
-  opc = opc || {};
-  var etiqueta = opc.etiqueta || sh.getName();
-  var ultima = sh.getLastRow();
-  if (ultima < primera) return { ok: true, filas: 0, cambio: false, movidas: 0 };
-  var n = ultima - primera + 1;
-  var rng = sh.getRange(primera, 1, n, totalCols);
-  var datos = rng.getValues();
-
-  var items = datos.map(function (fila, idx) {
-    var f = fila[C.FECHA - 1];
-    var hora = C.HORA ? _horaClaveOrden_(fila[C.HORA - 1]) : '';
-    if (!hora && f instanceof Date && !isNaN(f.getTime())) {
-      var horaDeFecha = Utilities.formatDate(f, 'America/Lima', 'HH:mm:ss');
-      if (horaDeFecha !== '00:00:00') hora = horaDeFecha;
-    }
-    return { fila: fila, idx: idx, dia: _diaClaveOrden_(f), hora: hora, id: opc.desempatePorId ? String(fila[C.ID - 1] || '').trim() : '' };
-  });
-  items.sort(function (a, b) {
-    if (a.dia !== b.dia) return b.dia - a.dia;
-    if (a.hora !== b.hora) return a.hora < b.hora ? 1 : -1;
-    if (a.id !== b.id) return a.id < b.id ? 1 : -1;
-    return a.idx - b.idx; // estable: conserva el orden que ya tenían en los empates
-  });
-
-  var movidas = 0, numMal = 0;
-  for (var i = 0; i < items.length; i++) {
-    if (items[i].idx !== i) movidas++;
-    if (C.NUM && Number(items[i].fila[C.NUM - 1]) !== i + 1) numMal++;
-  }
-  if (!movidas && !numMal) return { ok: true, filas: n, cambio: false, movidas: 0 };
-  if (opc.soloRevisar) {
-    Logger.log('[Orden · solo revisar] ' + etiqueta + ': ' + movidas + ' de ' + n + ' fila(s) cambiarían de posición y ' + numMal + ' N° se renumerarían.');
-    return { ok: true, filas: n, cambio: true, movidas: movidas };
-  }
-
-  var formulas = rng.getFormulas();
-  for (var r = 0; r < formulas.length; r++) {
-    for (var c = 0; c < totalCols; c++) {
-      if (formulas[r][c] !== '') {
-        Logger.log('[Orden] ' + etiqueta + ': hay una fórmula en la fila ' + (primera + r) + ', columna ' + (c + 1) + '; no se reordena porque mover filas rompería sus referencias.');
-        return { ok: false, filas: n, cambio: false, movidas: 0 };
-      }
-    }
-  }
-
-  var salida = items.map(function (it, i) {
-    var fila = it.fila.slice();
-    if (C.NUM) fila[C.NUM - 1] = i + 1;
-    return fila;
-  });
-  rng.setValues(salida);
-  // Reescribir fechas y horas puede dejar la celda con el formato automático (la hora salía como «30/12/1899»): se reaplican los formatos de la hoja.
-  try {
-    if (opc.fmtFecha) sh.getRange(primera, C.FECHA, n, 1).setNumberFormat(opc.fmtFecha);
-    if (C.HORA && opc.fmtHora) sh.getRange(primera, C.HORA, n, 1).setNumberFormat(opc.fmtHora);
-    (opc.extraFmts || []).forEach(function (e) { sh.getRange(primera, e.col, n, 1).setNumberFormat(e.fmt); });
-  } catch (eFmt) {
-    Logger.log('[Orden] ' + etiqueta + ': no se pudo reaplicar un formato (' + eFmt.message + ').');
-  }
-  Logger.log('[Orden] ' + etiqueta + ' reordenada por Fecha, más reciente primero (' + n + ' fila(s); ' + movidas + ' cambiaron de posición).');
-  return { ok: true, filas: n, cambio: true, movidas: movidas };
-}
 
 // IDs de evento (torneo, sorteo, ascenso, descenso) — formato L_TT_S_SS_N_NN (PF286, 28-oct-2026, pedido de la usuaria) [→ Contexto_Base_Web.md §PF286]
 // L = letra de la hoja (T torneo, S sorteo, A ascenso, D descenso); TT = temporada; la «S» es literal y SS = semana; la «N» es literal y NN = número de evento en la semana.
 // Cada cifra se escribe con dos dígitos como mínimo y pasa a tres solo al llegar a 100. Ejemplo: T_27_S_01_N_01. El formato anterior era T_027_1_01 (temporada de tres cifras, semana sin relleno).
 // Mientras queden ids antiguos en las hojas, todo lo que lee ids usa _idEventoParsear_(), que reconoce los dos formatos.
 var ID_EVENTO_REGEX_NUEVO_ = /^([TSAD])_(\d{2,})_S_(\d{2,})_N_(\d{2,})$/;
+
 var ID_EVENTO_REGEX_VIEJO_ = /^([TSAD])_(\d{3})_(\d+)_(\d{2,})$/;
 
-function _idEventoCifras_(n) {
-  var t = String(Math.floor(Number(n)));
-  return t.length < 2 ? '0' + t : t;
-}
-
-function _idEventoConstruir_(letra, temporada, semana, numero) {
-  return letra + '_' + _idEventoCifras_(temporada) + '_S_' + _idEventoCifras_(semana) + '_N_' + _idEventoCifras_(numero);
-}
-
-// Devuelve { letra, temporada, semana, numero, nuevo } (números como Number; nuevo = true si usa el formato L_TT_S_SS_N_NN), o null si el texto no es un id de evento.
-function _idEventoParsear_(id) {
-  var texto = String(id || '').trim();
-  var m = texto.match(ID_EVENTO_REGEX_NUEVO_);
-  if (m) return { letra: m[1], temporada: Number(m[2]), semana: Number(m[3]), numero: Number(m[4]), nuevo: true };
-  m = texto.match(ID_EVENTO_REGEX_VIEJO_);
-  if (m) return { letra: m[1], temporada: Number(m[2]), semana: Number(m[3]), numero: Number(m[4]), nuevo: false };
-  return null;
-}
-
-// CR_Lista — generación de ID (FASE 1, 13-sep-2026, pedido del usuario, plan [→ Contexto_Base_Web.md §26B015]
-
-/**
- * _generarParIdsCRLista(fecha, ss) [→ Contexto_Base_Web.md §26B016]
- */
-function _generarParIdsCRLista(fecha, ss) {
-  ss = ss || _getSs();
-  var temporada = _calcularTemporadaParaFecha(fecha);
-  var semana = _calcularSemanaTorneo(fecha, temporada);
-
-  var lecturaCRIds = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CR_LISTA, 'Backup_CR_Lista.csv', CR_TOTAL_COLS, 3);
-  var datos = lecturaCRIds.filas;
-  var numeroEnSemana = _contarParesCRListaEnSemana(datos, temporada, semana);
-
-  return {
-    idAscenso: _idEventoConstruir_('A', temporada, semana, numeroEnSemana),
-    idDescenso: _idEventoConstruir_('D', temporada, semana, numeroEnSemana),
-    temporada: temporada,
-    semana: semana
-  };
-}
-
-/**
- * _contarParesCRListaEnSemana(datos, temporada, semana) [→ Contexto_Base_Web.md §26B017]
- */
-function _contarParesCRListaEnSemana(datos, temporada, semana) {
-  var count = 0;
-  for (var i = 0; i < datos.length; i++) {
-    var id = String(datos[i][CR.ID - 1] || '').trim();
-    if (!id) continue;
-    var p = _idEventoParsear_(id);
-    if (!p || p.letra !== 'A') continue; // solo cuenta Ascenso -- ver docblock de arriba
-    if (p.temporada !== temporada) continue;
-    if (p.semana !== semana) continue;
-    count++;
-  }
-  return count + 1;
-}
-
-// CR_Lista — autogeneración del par Ascenso/Descenso al inicio de temporada [→ Contexto_Base_Web.md §26B018]
-
-// MOVIDO (05-oct-2026, pedido usuario): activarTriggerAutogenerarCRLista()/desactivarTriggerAutogenerarCRLista() ya [→ Contexto_Base_Web.md §26B019]
-
-/**
- * _esHoyPrimerDiaDeTemporada() [→ Contexto_Base_Web.md §26B020]
- */
-function _esHoyPrimerDiaDeTemporada() {
-  var hoy = _hoyLimaSinHora();
-  var temporadaHoy = _calcularTemporadaParaFecha(hoy);
-  var primerDia = primerLunesTemporada(CFG.REF_DEFAULT, temporadaHoy);
-  return (hoy.getTime() === primerDia.getTime()) ? temporadaHoy : null;
-}
-
-/**
- * _getUltimoParCRLista() [→ Contexto_Base_Web.md §26B021]
- */
-function _getUltimoParCRLista() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.CR_LISTA);
-  if (!sh || sh.getLastRow() < 4) return { ascenso: null, descenso: null };
-
-  var datos = sh.getRange(4, 1, sh.getLastRow() - 3, CR_TOTAL_COLS).getValues();
-  var idAscensoMasReciente = null, fechaMasReciente = null;
-  for (var i = 0; i < datos.length; i++) {
-    if (String(datos[i][CR.TIPO - 1] || '').trim() !== 'Ascenso') continue;
-    var fechaFila = datos[i][CR.FECHA - 1];
-    if (!(fechaFila instanceof Date) || isNaN(fechaFila.getTime())) continue;
-    if (!fechaMasReciente || fechaFila.getTime() > fechaMasReciente.getTime()) {
-      fechaMasReciente = fechaFila;
-      idAscensoMasReciente = String(datos[i][CR.ID - 1] || '').trim();
-    }
-  }
-  if (!idAscensoMasReciente) return { ascenso: null, descenso: null };
-  return _getParCRListaPorId(idAscensoMasReciente);
-}
-
-/**
- * _existeParCRListaParaTemporada(temporada) [→ Contexto_Base_Web.md §26B022]
- */
-function _existeParCRListaParaTemporada(temporada) {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.CR_LISTA);
-  if (!sh || sh.getLastRow() < 4) return false;
-
-  var datos = sh.getRange(4, 1, sh.getLastRow() - 3, CR_TOTAL_COLS).getValues();
-  for (var i = 0; i < datos.length; i++) {
-    if (String(datos[i][CR.TIPO - 1] || '').trim() !== 'Ascenso') continue;
-    if (Number(datos[i][CR.TEMPORADA - 1]) === Number(temporada)) return true;
-  }
-  return false;
-}
-
-/**
- * _bloqueParaAutogeneracionCRLista(filaParseada) [→ Contexto_Base_Web.md §26B023]
- */
-function _bloqueParaAutogeneracionCRLista(filaParseada) {
-  if (!filaParseada) {
-    return { porClan: [], barcos: undefined, miembroActivo: 'No', whatsapp: 'No', estado: 'Planificado', comentario: '' };
-  }
-  var porClan = filaParseada.porClan.map(function (b) {
-    return {
-      clan: b.clan,
-      minCR: { miembro: b.minCR.miembro.qty, veterano: b.minCR.veterano.qty, colider: b.minCR.colider.qty },
-      ataques: { miembro: b.ataques.miembro.qty, veterano: b.ataques.veterano.qty, colider: b.ataques.colider.qty }
-    };
-  });
-  return {
-    porClan: porClan,
-    barcos: filaParseada.barcos.activo ? filaParseada.barcos.qty : undefined,
-    miembroActivo: filaParseada.miembroActivo.activo ? 'Sí' : 'No',
-    whatsapp: filaParseada.whatsapp.activo ? 'Sí' : 'No',
-    estado: 'Planificado',
-    comentario: ''
-  };
-}
-
-/**
- * PF209 (24-oct-2026). _leerDirectorioParaOrganizadorCR_(ss): filas del Directorio con lo mínimo para resolver al organizador:
- * { tag, nombre, nomMulti, clan, clanTag, rango, activo }. Lista vacía si la hoja no existe.
- */
-function _leerDirectorioParaOrganizadorCR_(ss) {
-  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!shDir || shDir.getLastRow() < 2) return [];
-  var datos = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-  var out = [];
-  for (var i = 0; i < datos.length; i++) {
-    var tag = String(datos[i][IC.TAG - 1] || '').trim();
-    if (!tag) continue;
-    var estado = String(datos[i][IC.ESTADO - 1] || '').trim();
-    out.push({
-      tag: tag,
-      nombre: String(datos[i][IC.NOMBRE - 1] || '').trim(),
-      nomMulti: String(datos[i][IC.NOM_MULTI - 1] || '').trim(),
-      clan: String(datos[i][IC.CLAN - 1] || '').trim(),
-      clanTag: String(datos[i][IC.CLAN_TAG - 1] || '').trim(),
-      rango: String(datos[i][IC.RANGO - 1] || '').trim(),
-      activo: (estado === '' || estado === 'Activo')
-    });
-  }
-  return out;
-}
-
-/**
- * PF209. _resolverOrganizadorCRAutogenerado_(organizador, tagOrg, dir): { organizador, tagOrg, clan, clanTag, reemplazado }.
- * (1) Si el organizador por defecto (el del registro anterior) está en un clan Terna (CFG.TERNA_TAGS), se conserva y su Clan/ClanTag salen
- * de ese clan. (2) Si no está, se toma como organizador al LÍDER del clan principal (CFG.TERNA_TAGS[0]). (3) Si tampoco se encuentra al líder,
- * se deja el organizador por defecto y Clan/ClanTag quedan vacíos.
- */
-function _resolverOrganizadorCRAutogenerado_(organizador, tagOrg, dir) {
-  var norm = function (t) { return String(t || '').trim().toUpperCase().replace(/^#/, ''); };
-  var ternaNorm = CFG.TERNA_TAGS.map(norm);
-  var tagN = norm(tagOrg);
-  var i, f;
-  if (tagN) {
-    for (i = 0; i < dir.length; i++) {
-      f = dir[i];
-      if (norm(f.tag) === tagN && f.activo && ternaNorm.indexOf(norm(f.clanTag)) >= 0) {
-        return { organizador: organizador || f.nomMulti || f.nombre, tagOrg: tagOrg || f.tag, clan: f.clan, clanTag: f.clanTag, reemplazado: false };
-      }
-    }
-  }
-  var principal = norm(CFG.TERNA_TAGS[0]);
-  for (i = 0; i < dir.length; i++) {
-    f = dir[i];
-    if (f.activo && norm(f.clanTag) === principal && f.rango === 'Líder') {
-      Logger.log('[CR_Lista][Autogeneración] El organizador por defecto (' + (organizador || tagOrg || 'vacío') +
-        ') no está en un clan Terna; se asigna al líder del clan principal: ' + (f.nomMulti || f.nombre) + ' (' + f.tag + ').');
-      return { organizador: f.nomMulti || f.nombre, tagOrg: f.tag, clan: f.clan, clanTag: f.clanTag, reemplazado: true };
-    }
-  }
-  Logger.log('[CR_Lista][Autogeneración] AVISO: el organizador por defecto no está en un clan Terna y no se encontró al líder del clan principal; ' +
-    'se deja el organizador del registro anterior y Clan/ClanTag vacíos.');
-  return { organizador: organizador || '', tagOrg: tagOrg || '', clan: '', clanTag: '', reemplazado: false };
-}
-
-/**
- * PF209. _comentarioCRAutogenerado_(org): texto de la columna Comentario de la fila autogenerada.
- */
-function _comentarioCRAutogenerado_(org) {
-  return 'Fila autogenerada; puede modificarse manualmente.' +
-    (org && org.reemplazado ? ' El organizador anterior no estaba en un clan; se asignó al líder del clan principal.' : '');
-}
-
-/**
- * _autogenerarParCRListaSiCorrespondeInicioTemporada() [→ Contexto_Base_Web.md §26B024]
- */
-function _autogenerarParCRListaSiCorrespondeInicioTemporada() {
-  if (_bloquearSiReenumerando_('_autogenerarParCRListaSiCorrespondeInicioTemporada')) return; // PF260
-  // PF208 (24-oct-2026, pedido de la usuaria): la fila planificada de Cambio de Rango se crea AL INICIAR EL MES (la temporada vigente), con
-  // Fecha = primer lunes de la temporada SIGUIENTE y Semanas = TODAS las semanas de la temporada ACTUAL. Antes solo actuaba el primer lunes
-  // de la temporada, fechaba el par con el día de la corrida y evaluaba la temporada anterior: si ese día no corría el activador, no se
-  // creaba nada. Ahora corre todos los días y crea el par si todavía no existe uno para la temporada siguiente (recupera un inicio de mes perdido).
-  var hoy = _hoyLimaSinHora();
-  var temporadaActual = _calcularTemporadaParaFecha(hoy);
-  if (!temporadaActual || temporadaActual < 1) {
-    Logger.log('[CR_Lista][Autogeneración] No se pudo calcular la temporada vigente, no se crea nada.');
-    return { ok: false, motivo: 'No se pudo calcular la temporada vigente.' };
-  }
-  var temporadaQueArranca = temporadaActual + 1; // la temporada en que se aplica el cambio de rango
-  var temporadaEvaluada = temporadaActual;       // las semanas que se evalúan son las de la temporada vigente
-
-  if (_existeParCRListaParaTemporada(temporadaQueArranca)) {
-    Logger.log('[CR_Lista][Autogeneración] Ya existe un par CR_Lista para la Temporada ' +
-      temporadaQueArranca + ', no se crea otro.');
-    return { ok: false, motivo: 'Ya existe un par para la Temporada ' + temporadaQueArranca + '.' };
-  }
-
-  var fechaCambio = primerLunesTemporada(CFG.REF_DEFAULT, temporadaQueArranca);
-  if (!(fechaCambio instanceof Date) || isNaN(fechaCambio.getTime())) {
-    Logger.log('[CR_Lista][Autogeneración] No se pudo calcular el primer lunes de la Temporada ' + temporadaQueArranca + '. No se crea nada.');
-    return { ok: false, motivo: 'No se pudo calcular el primer lunes de la Temporada ' + temporadaQueArranca + '.' };
-  }
-
-  var numSemanasEvaluada = _getSemanasDeTemporada(temporadaEvaluada);
-  var tokensSemanas = [];
-  for (var s = 1; s <= numSemanasEvaluada; s++) tokensSemanas.push('T' + temporadaEvaluada + '_S' + s);
-  var semanasCsv = tokensSemanas.join(',');
-
-  var ultimoPar = _getUltimoParCRLista();
-  if (!ultimoPar.ascenso && !ultimoPar.descenso) {
-    Logger.log('[CR_Lista][Autogeneración] CR_Lista está vacía -- no hay ningún par previo del que duplicar ' +
-      'Organizador/Min_CR/Ataques/Otros requisitos. No se crea nada; cargar el primer par a mano.');
-    return { ok: false, motivo: 'CR_Lista vacía, no hay par previo del que duplicar.' };
-  }
-
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.CR_LISTA);
-  if (!sh) {
-    Logger.log('[CR_Lista][Autogeneración] La hoja CR_Lista no existe.');
-    return { ok: false, motivo: 'La hoja CR_Lista no existe.' };
-  }
-
-  var idsNuevos = _generarParIdsCRLista(fechaCambio, ss);
-
-  // PF209 (24-oct-2026, pedido de la usuaria): la fila autogenerada también copia la HORA del registro anterior, completa Clan y ClanTag con
-  // el clan donde está el organizador (si el organizador no está en un clan Terna, pasa a ser el líder del clan principal) y deja un
-  // Comentario que avisa que es autogenerada y que se puede modificar a mano.
-  var dirOrg = _leerDirectorioParaOrganizadorCR_(ss);
-  var orgAsc = _resolverOrganizadorCRAutogenerado_(
-    ultimoPar.ascenso ? ultimoPar.ascenso.organizador : '', ultimoPar.ascenso ? ultimoPar.ascenso.tagOrg : '', dirOrg);
-  var orgDesc = _resolverOrganizadorCRAutogenerado_(
-    ultimoPar.descenso ? ultimoPar.descenso.organizador : '', ultimoPar.descenso ? ultimoPar.descenso.tagOrg : '', dirOrg);
-  var horaAsc = (ultimoPar.ascenso && ultimoPar.ascenso.hora) ? _formatHoraCanonica(ultimoPar.ascenso.hora) : '';
-  var horaDesc = (ultimoPar.descenso && ultimoPar.descenso.hora) ? _formatHoraCanonica(ultimoPar.descenso.hora) : '';
-
-  var comunesAscenso = {
-    fecha: fechaCambio, hora: horaAsc, semanas: semanasCsv, temporada: temporadaQueArranca,
-    organizador: orgAsc.organizador, tagOrg: orgAsc.tagOrg, clan: orgAsc.clan, clanTag: orgAsc.clanTag,
-    comentario: _comentarioCRAutogenerado_(orgAsc)
-  };
-  var comunesDescenso = {
-    fecha: fechaCambio, hora: horaDesc, semanas: semanasCsv, temporada: temporadaQueArranca,
-    organizador: orgDesc.organizador, tagOrg: orgDesc.tagOrg, clan: orgDesc.clan, clanTag: orgDesc.clanTag,
-    comentario: _comentarioCRAutogenerado_(orgDesc)
-  };
-
-  var filaAscenso  = _construirFilaCRLista(comunesAscenso,  'Ascenso',  idsNuevos.idAscenso,  _bloqueParaAutogeneracionCRLista(ultimoPar.ascenso));
-  var filaDescenso = _construirFilaCRLista(comunesDescenso, 'Descenso', idsNuevos.idDescenso, _bloqueParaAutogeneracionCRLista(ultimoPar.descenso));
-
-  var filaBaseSheet = Math.max(sh.getLastRow() + 1, 4);
-  filaAscenso[CR.NUM - 1]  = filaBaseSheet - 3;
-  filaDescenso[CR.NUM - 1] = filaBaseSheet - 2;
-
-  sh.getRange(filaBaseSheet, 1, 2, CR_TOTAL_COLS).setValues([filaAscenso, filaDescenso]);
-  _setDateCell(sh, filaBaseSheet,     CR.FECHA, fechaCambio, 'dd/MM/yyyy');
-  _setDateCell(sh, filaBaseSheet + 1, CR.FECHA, fechaCambio, 'dd/MM/yyyy');
-  // Hora queda vacía en la autogeneración (comunesAscenso/comunesDescenso [→ Contexto_Base_Web.md §26B025]
-  _trySetFmt(sh, filaBaseSheet,     CR.HORA, 'h:mm:ss AM/PM');
-  _trySetFmt(sh, filaBaseSheet + 1, CR.HORA, 'h:mm:ss AM/PM');
-  applyBorderCenter(sh.getRange(filaBaseSheet, 1, 2, CR_TOTAL_COLS));
-  _aplicarDropdownTipoCRLista(ss);
-  _aplicarDropdownEstadoCRLista(ss);
-  _reordenarCRListaPorFecha(ss);
-
-  var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
-  if (shExtra) {
-    shExtra.getRange(2, 22).setValue(idsNuevos.idAscenso);  // Ascenso_Vigente_ID
-    shExtra.getRange(2, 23).setValue(idsNuevos.idDescenso); // Descenso_Vigente_ID
-  } else {
-    Logger.log('[CR_Lista][Autogeneración] AVISO: no encontré la hoja Extra, no se guardó el ID vigente.');
-  }
-
-  Logger.log('[CR_Lista][Autogeneración] Par nuevo creado para Temporada ' + temporadaQueArranca +
-    ' (Planificado para el ' + Utilities.formatDate(fechaCambio, 'America/Lima', 'dd/MM/yyyy') + '; evalúa Temporada ' + temporadaEvaluada + ', ' + numSemanasEvaluada + ' semana(s)): ' +
-    idsNuevos.idAscenso + ' / ' + idsNuevos.idDescenso + '. Guardado como vigente en Extra.');
-
-  return { ok: true, motivo: 'Par creado.', idAscenso: idsNuevos.idAscenso, idDescenso: idsNuevos.idDescenso };
-}
-
-// CR_Lista — lectura por ID (FASE 2, 13-sep-2026, pedido del usuario, plan [→ Contexto_Base_Web.md §26B026]
-
-/**
- * _getFilaCRListaPorId(id) [→ Contexto_Base_Web.md §26B027]
- */
-function _getFilaCRListaPorId(id) {
-  if (!id) return null;
-  var ss = _getSs();
-
-  var lecturaCR = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CR_LISTA, 'Backup_CR_Lista.csv', CR_TOTAL_COLS, 3);
-  var datos = lecturaCR.filas;
-  if (!datos.length) return null;
-
-  var fila = null;
-  for (var i = 0; i < datos.length; i++) {
-    if (String(datos[i][CR.ID - 1] || '').trim() === String(id).trim()) {
-      fila = datos[i];
-      break;
-    }
-  }
-  if (!fila) return null;
-
-  // Barcos: mismo criterio exacto que TL.BARCOS/SL.BARCOS (ver [→ Contexto_Base_Web.md §26B028]
-  var celdaBarcos = fila[CR.BARCOS - 1];
-  var barcosConfigurado = (celdaBarcos !== '' && celdaBarcos !== null && celdaBarcos !== undefined);
-  var barcos = { activo: barcosConfigurado, qty: barcosConfigurado ? (Number(celdaBarcos) || 0) : null };
-
-  // Por clan (mismo orden que CFG.TERNA_TAGS, índice 0 = C1 .. índice 3 = [→ Contexto_Base_Web.md §26B029]
-  var porClan = [];
-  CFG.TERNA_TAGS.forEach(function (tag, idx) {
-    var nombreClan = _getNombreClanDump(tag);
-    function bloqueRol(colsPorRol) {
-      var qty = Number(fila[colsPorRol[idx] - 1]) || 0;
-      return { activo: qty > 0, qty: qty };
-    }
-    porClan.push({
-      clan: nombreClan,
-      minCR: {
-        miembro:  bloqueRol(CR_MIN_CR_COLS.MIEMBRO),
-        veterano: bloqueRol(CR_MIN_CR_COLS.VETERANO),
-        colider:  bloqueRol(CR_MIN_CR_COLS.COLIDER)
-      },
-      ataques: {
-        miembro:  bloqueRol(CR_ATAQUES_COLS.MIEMBRO),
-        veterano: bloqueRol(CR_ATAQUES_COLS.VETERANO),
-        colider:  bloqueRol(CR_ATAQUES_COLS.COLIDER)
-      }
-    });
-  });
-
-  // Fecha: la hoja viva la trae como objeto Date; Backup_CR_Lista.csv la [→ Contexto_Base_Web.md §26B030]
-  var fechaCelda = fila[CR.FECHA - 1];
-  var fechaResuelta = (fechaCelda instanceof Date) ? fechaCelda : _parseSpanishDate(fechaCelda);
-
-  // Hora: la hoja viva la trae como objeto Date real (ver _horaStringADate()/ [→ Contexto_Base_Web.md §26B031]
-  var horaCelda = fila[CR.HORA - 1];
-  var horaResuelta = (horaCelda instanceof Date) ? horaCelda : _parseHoraCanonica(horaCelda, fechaResuelta);
-
-  return {
-    idFila: String(fila[CR.ID - 1] || '').trim(),
-    tipo: String(fila[CR.TIPO - 1] || '').trim(),
-    fecha: fechaResuelta,
-    hora: horaResuelta,
-    organizador: String(fila[CR.ORGANIZADOR - 1] || '').trim(),
-    tagOrg: String(fila[CR.TAG_ORG - 1] || '').trim(),
-    semanas: _parseSemanasSorteo(fila[CR.SEMANAS - 1]),
-    barcos: barcos,
-    miembroActivo: { activo: String(fila[CR.MIEMBRO_ACTIVO - 1] || '').trim() === 'Sí' },
-    whatsapp: { activo: String(fila[CR.WHATSAPP - 1] || '').trim() === 'Sí' },
-    estado: String(fila[CR.ESTADO - 1] || '').trim(),
-    comentario: String(fila[CR.COMENTARIO - 1] || '').trim(),
-    porClan: porClan
-  };
-}
-
-/**
- * _getParCRListaPorId(idCualquiera) [→ Contexto_Base_Web.md §26B032]
- */
-function _getParCRListaPorId(idCualquiera) {
-  var id = String(idCualquiera || '').trim();
-  var p = _idEventoParsear_(id);
-  if (!p || (p.letra !== 'A' && p.letra !== 'D')) return { ascenso: null, descenso: null };
-  return {
-    ascenso: _getFilaCRListaPorId('A' + id.slice(1)),
-    descenso: _getFilaCRListaPorId('D' + id.slice(1))
-  };
-}
-
-/**
- * _getRequisitosCambioRangoBloqueCategoria(nombreCategoria) [→ Contexto_Base_Web.md §26B033]
- */
-function _getRequisitosCambioRangoBloqueCategoria(nombreCategoria) {
-  var tipoCR = (nombreCategoria === 'Ascensos') ? 'Ascenso' : 'Descenso';
-  var idVigente = _getIdVigenteExtraCR(tipoCR);
-  var filaCR = idVigente ? _getFilaCRListaPorId(idVigente) : null;
-
-  if (!filaCR) {
-    if (idVigente) {
-      Logger.log('[CambioRango][Progreso] Extra!' + tipoCR + '_Vigente_ID (' + idVigente + ') no matchea ' +
-        'ninguna fila real de CR_Lista. Sin respaldo (T_Requisitos dado de baja): se devuelve vacío.');
-    } else {
-      Logger.log('[CambioRango][Progreso] Extra!' + tipoCR + '_Vigente_ID está vacío. Sin respaldo ' +
-        '(T_Requisitos dado de baja): se devuelve vacío.');
-    }
-    return [];
-  }
-
-  // miembroActivo en CR_Lista es un flag GLOBAL de toda la corrida (no [→ Contexto_Base_Web.md §26B034]
-  var miembroActivoGlobal = filaCR.miembroActivo;
-  return filaCR.porClan.map(function (b) {
-    return {
-      clan:            b.clan,
-      minTMiembro:     b.minCR.miembro,
-      minT:            b.minCR.veterano,
-      minTColider:     b.minCR.colider,
-      ataquesMiembro:  b.ataques.miembro,
-      ataquesVeterano: b.ataques.veterano,
-      ataquesColider:  b.ataques.colider,
-      miembroActivo:   miembroActivoGlobal
-    };
-  });
-}
-
-// CR_Lista — promedio de Fame y Ataques por jugador (FASE 3, 13-sep-2026, [→ Contexto_Base_Web.md §26B035]
-
-/**
- * _esMiembroVigenteEnClanesFamilia(tag) [→ Contexto_Base_Web.md §26B036]
- */
-function _esMiembroVigenteEnClanesFamilia(tag) {
-  var tagNorm = String(tag || '').trim();
-  if (!tagNorm) return false;
-
-  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'Torneos_Core');
-  if (!CACHE_CLAN_DATA) return false;
-
-  for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
-    var cd = CACHE_CLAN_DATA[CFG.TERNA_TAGS[i]];
-    if (!cd || !cd.members) continue;
-    for (var j = 0; j < cd.members.length; j++) {
-      if (String(cd.members[j].tag || '').trim() === tagNorm) return true;
-    }
-  }
-  return false;
-}
-
-/**
- * _getPromediosCRParaJugador(tag, semanas, ctxReal) [→ Contexto_Base_Web.md §26B037]
- */
-function _getPromediosCRParaJugador(tag, semanas, ctxReal, porTagPrecalculado, datosPropios) {
-  var tagNorm = String(tag || '').trim();
-  // FIX (16-sep-2026, pedido del usuario -- "así no hay problema con los [→ Contexto_Base_Web.md §26B038]
-  var porTag = porTagPrecalculado || _getTrofeosYAtaquesSemanalesPorTag(semanas, ctxReal, true);
-  // NUEVO (28-sep-2026): datosPropios (opcional, solo Cambio de Rango / Descenso) reemplaza [→ Contexto_Base_Web.md §26B039]
-  var datos = datosPropios || porTag[tagNorm];
-  return {
-    fameProm: datos ? (datos.trofeosProm || 0) : 0,
-    fameSuma: datos ? (datos.trofeosSuma || 0) : 0, // 28-sep-2026, ver _fameCumpleRequisito() (28_Torneos_Docs.gs)
-    ataquesProm: datos ? (datos.ataquesProm || 0) : 0,
-    // FIX (16-sep-2026, pedido del usuario -- requisito "Barcos" de Cambio [→ Contexto_Base_Web.md §26B040]
-    barcosProm: datos ? (datos.barcosProm || 0) : 0,
-    barcosSuma: datos ? (datos.barcosSuma || 0) : 0, // 29-sep-2026, ver _barcosCumplenRequisito() (28_Torneos_Docs.gs)
-    // 19-sep-2026: sumatoria real + exonerados + semanas evaluadas, para [→ Contexto_Base_Web.md §26B041]
-    ataquesSuma:    datos ? (datos.ataquesSuma || 0) : 0,
-    ataquesExentos: datos ? (datos.ataquesExentos || 0) : 0,
-    semanasEval:    datos ? (datos.semanasEval || 0) : 0
-  };
-}
-
-// CR_Lista — motor de comparación elegibles/en riesgo (FASE 4, 13-sep-2026, [→ Contexto_Base_Web.md §26B042]
-
-/**
- * _validarCoherenciaCRLista(filaAscenso, filaDescenso) [→ Contexto_Base_Web.md §26B043]
- */
-function _validarCoherenciaCRLista(filaAscenso, filaDescenso) {
-  var errores = [];
-  var porClanDescenso = {};
-  filaDescenso.porClan.forEach(function (b) { porClanDescenso[b.clan] = b; });
-
-  var ROLES = ['miembro', 'veterano', 'colider'];
-  var ETIQUETAS_ROL = { miembro: 'Miembro', veterano: 'Veterano', colider: 'Colíder' };
-
-  filaAscenso.porClan.forEach(function (bloqueAsc) {
-    var bloqueDesc = porClanDescenso[bloqueAsc.clan];
-    if (!bloqueDesc) return; // no debería pasar -- Ascenso y Descenso siempre traen los mismos 4 clanes
-
-    ROLES.forEach(function (rol) {
-      var minAsc = bloqueAsc.minCR[rol], minDesc = bloqueDesc.minCR[rol];
-      if (minAsc.activo && minDesc.activo && minAsc.qty < minDesc.qty) {
-        errores.push(
-          bloqueAsc.clan + ' / ' + ETIQUETAS_ROL[rol] + ': Min_CR de Ascenso (' + minAsc.qty +
-          ') es MENOR que el de Descenso (' + minDesc.qty + ') -- Ascenso debe ser \u2265 Descenso.'
-        );
-      }
-
-      var atqAsc = bloqueAsc.ataques[rol], atqDesc = bloqueDesc.ataques[rol];
-      if (atqAsc.activo && atqDesc.activo && atqAsc.qty < atqDesc.qty) {
-        errores.push(
-          bloqueAsc.clan + ' / ' + ETIQUETAS_ROL[rol] + ': Ataques de Ascenso (' + atqAsc.qty +
-          ') es MENOR que el de Descenso (' + atqDesc.qty + ') -- Ascenso debe ser \u2265 Descenso.'
-        );
-      }
-    });
-  });
-
-  return { ok: errores.length === 0, errores: errores };
-}
-
-/**
- * _cumpleRequisitoCR(reqMinCR, reqAtaques, promedios) [→ Contexto_Base_Web.md §26B044]
- */
-function _cumpleRequisitoCR(reqMinCR, reqAtaques, reqBarcos, reqMiembroActivo, reqWhatsapp, promedios, esMiembroVigente, wspG) {
-  var okMinCR   = !reqMinCR.activo   || _fameCumpleRequisito(promedios, reqMinCR.qty); // sumatoria, 28-sep-2026
-  var okAtaques = !reqAtaques.activo || _ataquesCumplenRequisito(promedios, reqAtaques.qty); // sumatoria, 19-sep-2026
-  // FIX (16-sep-2026, pedido del usuario): Barcos/Miembro activo/WhatsApp [→ Contexto_Base_Web.md §26B045]
-  var okBarcos = !reqBarcos.activo || _barcosCumplenRequisito(promedios, reqBarcos.qty); // sumatoria, 29-sep-2026
-  var okMiembroActivo = !reqMiembroActivo.activo || !!esMiembroVigente;
-  var okWhatsapp = !reqWhatsapp.activo || String(wspG || '').trim() === 'Sí';
-  return okMinCR && okAtaques && okBarcos && okMiembroActivo && okWhatsapp;
-}
-
-/**
- * _detalleRequisitoCR(tipoPropuesta, rolKey, reqMinCR, reqAtaques, promedios) [→ Contexto_Base_Web.md §26B046]
- */
 // FIX (16-sep-2026, pedido del usuario -- calcar el formato de texto que ya [→ Contexto_Base_Web.md §26B047]
 var _ETIQUETAS_ROL_CR_MIN = { miembro: 'miembro', veterano: 'veterano', colider: 'colíder' };
-
-function _destinoRangoCR(tipoPropuesta, rolKey) {
-  if (tipoPropuesta === 'EligibleAdmin') return 'admin';
-  if (tipoPropuesta === 'Ascenso') {
-    if (rolKey === 'miembro')  return 'veterano';
-    if (rolKey === 'veterano') return 'colíder';
-  }
-  if (tipoPropuesta === 'Descenso') {
-    if (rolKey === 'miembro')  return 'expulsión';
-    if (rolKey === 'veterano') return 'miembro';
-    if (rolKey === 'colider')  return 'veterano';
-  }
-  return null;
-}
-
-/**
- * _unirPartesEspanol(arr) [→ Contexto_Base_Web.md §26B048]
- */
-function _unirPartesEspanol(arr) {
-  if (!arr.length) return '';
-  if (arr.length === 1) return arr[0];
-  return arr.slice(0, -1).join(', ') + ' y ' + arr[arr.length - 1];
-}
-
-function _detalleRequisitoCR(tipoPropuesta, rolKey, reqMinCR, reqAtaques, reqBarcos, reqMiembroActivo, reqWhatsapp, promedios, esMiembroVigente, wspG) {
-  var partes = [];
-  if (reqAtaques.activo) {
-    var okAtaques = _ataquesCumplenRequisito(promedios, reqAtaques.qty); // sumatoria, 19-sep-2026
-    var exoneradosTxt = (Number(promedios.ataquesExentos) > 0) ? ', ' + promedios.ataquesExentos + ' exonerados por domingo opcional' : '';
-    partes.push((okAtaques ? 'cumple' : 'no cumple') + ' ataques (' + _round1(promedios.ataquesProm) + '/' + reqAtaques.qty + exoneradosTxt + ')');
-  }
-  if (reqMinCR.activo) {
-    var okPuntaje = _fameCumpleRequisito(promedios, reqMinCR.qty); // sumatoria, 28-sep-2026
-    partes.push((okPuntaje ? 'cumple' : 'no cumple') + ' medallas (' + _round1(promedios.fameProm) + '/' + reqMinCR.qty + ')');
-  }
-  if (reqBarcos.activo) {
-    var okBarcos = _barcosCumplenRequisito(promedios, reqBarcos.qty); // sumatoria, 29-sep-2026
-    // 29-sep-2026 (correccion, pregunta 33 del consolidado): la usuaria pidio que el detalle diga [→ Contexto_Base_Web.md §26B049]
-    var valorBarcos = (promedios.barcosSuma !== undefined && promedios.barcosSuma !== null)
-      ? promedios.barcosSuma
-      : promedios.barcosProm;
-    partes.push((okBarcos ? 'cumple' : 'no cumple') + ' barcos (' + _round1(valorBarcos) + '/' + reqBarcos.qty + ')');
-  }
-  if (reqMiembroActivo.activo) {
-    partes.push((esMiembroVigente ? 'cumple' : 'no cumple') + ' miembro activo');
-  }
-  if (reqWhatsapp.activo) {
-    var okWhatsapp = String(wspG || '').trim() === 'Sí';
-    partes.push((okWhatsapp ? 'cumple' : 'no cumple') + ' WhatsApp');
-  }
-
-  var texto;
-  if (!partes.length) {
-    texto = 'Sin requisitos activos para ' + rolKey + '.';
-  } else {
-    var frase = _unirPartesEspanol(partes);
-    texto = frase.charAt(0).toUpperCase() + frase.slice(1) + '.';
-  }
-
-  var destino = _destinoRangoCR(tipoPropuesta, rolKey);
-  if (destino) {
-    texto += ' Rango: ' + (_ETIQUETAS_ROL_CR_MIN[rolKey] || rolKey) + ' a ' + destino + '.';
-  }
-  return texto;
-}
-
-/**
- * _round1(n) [→ Contexto_Base_Web.md §26B050]
- */
-function _round1(n) {
-  return Math.round((Number(n) || 0) * 10) / 10;
-}
-
-/**
- * _fechaInicioSemanasCR(semanas) [→ Contexto_Base_Web.md §26B051]
- */
-/**
- * _filtrarSemanasJugadasCR(semanas, ctxReal) [→ Contexto_Base_Web.md §26B052]
- */
-// 29-sep-2026: YA NO SE USA en Cambio de Rango (reemplazada por _semanasPendientesCR(), opcion B).
-// Se deja definida por si otro archivo la referencia.
-function _filtrarSemanasJugadasCR(semanas, ctxReal) {
-  if (!semanas || !semanas.length || !ctxReal || ctxReal.periodIndexSospechoso) return semanas || [];
-  var tempReal = Number(ctxReal.temporada);
-  var ultimaTerminadaIdx = Number(ctxReal.sectionIndex) - 1;
-  return semanas.filter(function (s) {
-    if (Number(s.temporada) < tempReal) return true;
-    if (Number(s.temporada) > tempReal) return false;
-    return (Number(s.semana) - 1) <= ultimaTerminadaIdx;
-  });
-}
-
-/**
- * _semanasPendientesCR(semanas, ctxReal) [→ Contexto_Base_Web.md §26B053]
- */
-function _semanasPendientesCR(semanas, ctxReal) {
-  if (!semanas || !semanas.length || !ctxReal || ctxReal.periodIndexSospechoso) return [];
-  var tempReal = Number(ctxReal.temporada);
-  var ultimaTerminadaIdx = Number(ctxReal.sectionIndex) - 1;
-  return semanas.filter(function (s) {
-    if (Number(s.temporada) < tempReal) return false;
-    if (Number(s.temporada) > tempReal) return true;
-    return (Number(s.semana) - 1) > ultimaTerminadaIdx;
-  });
-}
-
-/**
- * _textoSemanasPendientesCR(pendientes) [→ Contexto_Base_Web.md §26B054]
- */
-function _textoSemanasPendientesCR(pendientes) {
-  return (pendientes || []).map(function (s) {
-    var txt = 'semana ' + s.semana + ' de la Temporada ' + s.temporada;
-    try {
-      var r = _getRangoFechasSemana(s.temporada, Number(s.semana) - 1);
-      if (r && r.fin) {
-        var cierre = new Date(r.fin.getTime());
-        cierre.setDate(cierre.getDate() + 1);
-        txt += ' (termina el ' + Utilities.formatDate(cierre, 'America/Lima', 'dd/MM/yyyy') + ')';
-      }
-    } catch (e) { /* sin fecha, el texto igual sirve */ }
-    return txt;
-  }).join(', ');
-}
-
-function _fechaInicioSemanasCR(semanas) {
-  if (!semanas || !semanas.length) return null;
-  var masAntigua = null;
-  semanas.forEach(function (s) {
-    if (!masAntigua || s.temporada < masAntigua.temporada ||
-        (s.temporada === masAntigua.temporada && s.semana < masAntigua.semana)) {
-      masAntigua = s;
-    }
-  });
-  if (!masAntigua) return null;
-  var rango = _getRangoFechasSemana(masAntigua.temporada, masAntigua.semana - 1);
-  return rango ? rango.inicio : null;
-}
-
-// AVISOS ABIERTOS / VERIFICACIONES ABIERTAS -- Cambio de Rango, rendimiento [→ Contexto_Base_Web.md §26B055]
-
-/**
- * _juevesGuerraSemanaCR(temporada, semana) [→ Contexto_Base_Web.md §26B056]
- */
-function _juevesGuerraSemanaCR(temporada, semana) {
-  var r = _getRangoFechasSemana(temporada, Number(semana) - 1);
-  if (!r) return null;
-  var j = new Date(r.inicio.getTime());
-  j.setDate(j.getDate() + 3);
-  return j;
-}
-
-/**
- * _bloqueDescensoDesdeSemanasCompletas(semanasCompletas, fechaIngreso, tag, ventanasPorTag) [→ Contexto_Base_Web.md §26B057]
- */
-function _bloqueDescensoDesdeSemanasCompletas(semanasCompletas, fechaIngreso, tag, ventanasPorTag) {
-  if (!semanasCompletas || !semanasCompletas.length) return null;
-  var ing = fechaIngreso ? new Date(fechaIngreso.getFullYear(), fechaIngreso.getMonth(), fechaIngreso.getDate()) : null;
-  var cont = semanasCompletas.filter(function (w) {
-    // 4-oct-2026 (punto 5 de la 28, opcion A): 'Reconstruido' en 0 nunca cuenta, con o sin Fecha_ing.
-    if (w.reconstruido === true && !(w.trofeos > 0) && !(w.ataques > 0) && !(w.barcos > 0)) return false;
-    // 4-oct-2026, P2: una semana 'Reconstruido' con actividad se descarta si Historial_I/S confirma que
-    // el Tag NO estaba en Terna ese jueves. null (sin historial del Tag) = no verificable = no descarta.
-    if (w.reconstruido === true && ventanasPorTag && tag) {
-      var jueP2 = _juevesGuerraSemanaCR(w.temporada, w.semana);
-      if (jueP2 && _estuvoEnTernaEseJuevesCR_(tag, jueP2, ventanasPorTag) === false) return false;
-    }
-    if (!ing) return true;
-    // 29-sep-2026, P1 (decision de la usuaria, pregunta 30): las filas reales (Original o Corregido) [→ Contexto_Base_Web.md §26B058]
-    if (w.reconstruido !== true) return true;
-    var jue = _juevesGuerraSemanaCR(w.temporada, w.semana);
-    if (!jue) return true;
-    return ing.getTime() <= new Date(jue.getFullYear(), jue.getMonth(), jue.getDate()).getTime();
-  });
-  if (!cont.length) return null;
-  var n = cont.length, sT = 0, sA = 0, sB = 0, sE = 0;
-  cont.forEach(function (w) { sT += w.trofeos; sA += w.ataques; sB += w.barcos; sE += w.exentos; });
-  return {
-    trofeosProm: sT / n, trofeosSuma: sT, ataquesProm: sA / n, barcosProm: sB / n, barcosSuma: sB,
-    ataquesSuma: sA, ataquesExentos: sE, semanasEval: n
-  };
-}
-
-/**
- * _estuvoEnTernaEseJuevesCR_(tag, jueves, ventanasPorTag) [→ Contexto_Base_Web.md §26B059]
- */
-function _estuvoEnTernaEseJuevesCR_(tag, jueves, ventanasPorTag) {
-  var ini = new Date(jueves.getFullYear(), jueves.getMonth(), jueves.getDate(), 0, 0, 0);
-  var fin = new Date(jueves.getFullYear(), jueves.getMonth(), jueves.getDate(), 23, 59, 59);
-  var a = _tagEstuvoEnTernaEnFecha(tag, ini, ventanasPorTag);
-  var b = _tagEstuvoEnTernaEnFecha(tag, fin, ventanasPorTag);
-  if (a === null || b === null) return null;
-  return a || b;
-}
-
-/**
- * _ventanasHistorialParaDescensoCR_() [→ Contexto_Base_Web.md §26B060]
- */
-function _ventanasHistorialParaDescensoCR_() {
-  try {
-    return _construirVentanasMembresiaTernaPorTag() || {};
-  } catch (e) {
-    Logger.log('[Cambio de Rango P2] No se pudo leer Historial_I/S; el Descenso sigue sin ese veto: ' + e);
-    return {};
-  }
-}
-
-/**
- * _notaSemanasContadasCR(contadas, total)
- * 28-sep-2026: aclaracion para detalle cuando el Descenso conto menos semanas que la corrida.
- */
-function _notaSemanasContadasCR(contadas, total) {
-  if (!(contadas > 0) || contadas >= total) return '';
-  return ' Semanas contadas: ' + contadas + ' de ' + total + ' (no se cuentan las semanas en que ingresó después del inicio de la guerra, las semanas reconstruidas sin actividad ni las reconstruidas de cuando Historial_I/S indica que no estaba en Terna).';
-}
-
-/**
- * _esAdminEnDirectorioCR(valor) [→ Contexto_Base_Web.md §26B061]
- */
-function _esAdminEnDirectorioCR(valor) {
-  var t = String(valor === null || valor === undefined ? '' : valor).trim().toLowerCase();
-  return t === 'sí' || t === 'si';
-}
-
-/**
- * _calcularPropuestasCambioRango(idAscenso, idDescenso) [→ Contexto_Base_Web.md §26B062]
- */
-function _calcularPropuestasCambioRango(idAscenso, idDescenso) {
-  // FIX (16-sep-2026, pedido del usuario -- ver docblock de [→ Contexto_Base_Web.md §26B063]
-  _ULTIMO_DIAGNOSTICO_GUERRA_CSV = null;
-
-  var filaAscenso  = _getFilaCRListaPorId(idAscenso);
-  var filaDescenso = _getFilaCRListaPorId(idDescenso);
-  if (!filaAscenso || !filaDescenso) {
-    return {
-      ok: false,
-      error: 'No encontré una o ambas filas de CR_Lista (' + idAscenso + ' / ' + idDescenso + ').',
-      propuestas: []
-    };
-  }
-
-  // Restricción (13-sep-2026, pedido del usuario): Ascenso siempre debe [→ Contexto_Base_Web.md §26B064]
-  var coherencia = _validarCoherenciaCRLista(filaAscenso, filaDescenso);
-  if (!coherencia.ok) {
-    return {
-      ok: false,
-      error: 'CR_Lista tiene requisitos incoherentes entre Ascenso y Descenso (' +
-        idAscenso + ' / ' + idDescenso + '): ' + coherencia.errores.join(' | '),
-      propuestas: []
-    };
-  }
-
-  var ss = _getSs();
-  var ctxReal = _getCtx();
-
-  // CAMBIO (29-sep-2026, pedido de la usuaria, opcion B): la corrida se evalua con TODAS sus [→ Contexto_Base_Web.md §26B065]
-  var pendientesAsc  = _semanasPendientesCR(filaAscenso.semanas, ctxReal);
-  var pendientesDesc = _semanasPendientesCR(filaDescenso.semanas, ctxReal);
-  if (pendientesAsc.length || pendientesDesc.length) {
-    return {
-      ok: false,
-      error: 'Esta corrida evalúa semanas que todavía no terminan: ' +
-        _textoSemanasPendientesCR(pendientesAsc.length ? pendientesAsc : pendientesDesc) +
-        '. Las propuestas se calculan cuando terminen todas las semanas de la corrida.',
-      propuestas: []
-    };
-  }
-  if (!filaAscenso.semanas.length || !filaDescenso.semanas.length) {
-    return {
-      ok: false,
-      error: 'Esta corrida no tiene semanas que evaluar.',
-      propuestas: []
-    };
-  }
-
-  // Índice por nombre de clan (mismo nombre que devuelve _getNombreClanDump(), [→ Contexto_Base_Web.md §26B066]
-  var porClanAscenso = {};
-  filaAscenso.porClan.forEach(function (b) { porClanAscenso[b.clan] = b; });
-  var porClanDescenso = {};
-  filaDescenso.porClan.forEach(function (b) { porClanDescenso[b.clan] = b; });
-
-  // Cache de promedios por (tag + corrida): un mismo jugador puede [→ Contexto_Base_Web.md §26B067]
-  var mismasSemanasAD = JSON.stringify(filaAscenso.semanas) === JSON.stringify(filaDescenso.semanas);
-  // 28-sep-2026: el 4.o parametro (true) agrega el detalle de semanas completas por jugador que [→ Contexto_Base_Web.md §26B068]
-  var porTagAscenso = _getTrofeosYAtaquesSemanalesPorTag(filaAscenso.semanas, ctxReal, true, mismasSemanasAD);
-  var diagAscenso = _ULTIMO_DIAGNOSTICO_GUERRA_CSV;
-  var porTagDescenso = porTagAscenso;
-  var diagDescenso = diagAscenso;
-  if (!mismasSemanasAD) {
-    porTagDescenso = _getTrofeosYAtaquesSemanalesPorTag(filaDescenso.semanas, ctxReal, true, true);
-    diagDescenso = _ULTIMO_DIAGNOSTICO_GUERRA_CSV;
-  }
-  _ULTIMO_DIAGNOSTICO_GUERRA_CSV = diagDescenso || diagAscenso || null;
-  // 4-oct-2026, P2: ventanas de Historial_I/S, leidas una sola vez por corrida.
-  var ventanasHist = _ventanasHistorialParaDescensoCR_();
-
-  var cachePromedios = {};
-  function promediosCache(tag, semanas, sufijoCache) {
-    var key = tag + '|' + sufijoCache;
-    if (!cachePromedios[key]) {
-      cachePromedios[key] = _getPromediosCRParaJugador(tag, semanas, ctxReal, (sufijoCache === 'A') ? porTagAscenso : porTagDescenso);
-    }
-    return cachePromedios[key];
-  }
-
-  // FIX (16-sep-2026, pedido del usuario -- requisito "Miembro activo"): un [→ Contexto_Base_Web.md §26B069]
-  var cacheMiembroVigente = {};
-  function miembroVigenteCache(tag) {
-    if (!(tag in cacheMiembroVigente)) {
-      cacheMiembroVigente[tag] = _esMiembroVigenteEnClanesFamilia(tag);
-    }
-    return cacheMiembroVigente[tag];
-  }
-
-  // FIX (16-sep-2026, pedido del usuario -- ver docblock de [→ Contexto_Base_Web.md §26B070]
-  var fechaInicioAscenso  = _fechaInicioSemanasCR(filaAscenso.semanas);
-  var fechaInicioDescenso = _fechaInicioSemanasCR(filaDescenso.semanas);
-
-  var dataDir = _leerDirectorioFisicoComoDC(ss);
-  var propuestas = [];
-  // 28-sep-2026: orden de los clanes = orden de CFG.TERNA_TAGS (indice 0 = principal, 3 = Mini);
-  // _getFilaCRListaPorId() ya arma porClan en ese orden, asi que no hace falta otra consulta.
-  var ordenClanesCR = filaAscenso.porClan.map(function (b) { return b.clan; });
-
-  for (var i = 0; i < dataDir.length; i++) {
-    var fila = dataDir[i];
-    if (String(fila[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
-
-    var clan = String(fila[DC.CLAN - 1] || '').trim();
-    var bloqueAsc  = porClanAscenso[clan];
-    var bloqueDesc = porClanDescenso[clan];
-    if (!bloqueAsc && !bloqueDesc) continue; // clan fuera de este par de CR_Lista
-
-    var rangoActual = String(fila[DC.RANGO - 1] || '').trim();
-    var rangoNorm = rangoActual.toLowerCase().replace('í', 'i').replace('é', 'e');
-    if (rangoNorm === 'lider') continue; // Líder: completamente afuera (confirmado)
-
-    var rolKey = null;
-    if (rangoNorm === 'miembro')  rolKey = 'miembro';
-    else if (rangoNorm === 'veterano') rolKey = 'veterano';
-    else if (rangoNorm === 'colider')  rolKey = 'colider';
-    if (!rolKey) continue; // Rango no reconocido (dato sucio): se ignora, no se propone nada
-
-    var tag = String(fila[DC.TAG - 1] || '').trim();
-    var nombre = String(fila[DC.NOMBRE - 1] || '').trim();
-    // FIX (16-sep-2026, pedido del usuario -- requisito "WhatsApp"): mismo
-    // dato que ya usa el Directorio para la columna WSP(G) -- 'Sí'/'No'.
-    var wspG = String(fila[DC.WSP_G - 1] || '').trim();
-
-    // FIX (16-sep-2026, pedido del usuario -- ver docblock de [→ Contexto_Base_Web.md §26B071]
-    var fechaIngCelda = fila[DC.FECHA_ING - 1];
-    var fechaIngreso = (fechaIngCelda instanceof Date && !isNaN(fechaIngCelda.getTime())) ? fechaIngCelda : null;
-    // 28-sep-2026: el Descenso ya NO se bloquea entero por Fecha_ing posterior al inicio de la [→ Contexto_Base_Web.md §26B072]
-
-    // --- Descenso: mismo patrón para los 3 rangos (Miembro/Veterano/Colíder) ---
-    if (bloqueDesc) {
-      var reqMinCRDesc  = bloqueDesc.minCR[rolKey];
-      var reqAtaquesDesc = bloqueDesc.ataques[rolKey];
-      // 28-sep-2026 (decision del usuario): solo cuentan las semanas completas de ESTE jugador;
-      // sin ninguna semana contada no se propone nada (no estaba, o es nuevo).
-      var blqDesc = _bloqueDescensoDesdeSemanasCompletas((porTagDescenso[tag] || {}).semanasCompletas, fechaIngreso, tag, ventanasHist);
-      var promDesc = blqDesc ? _getPromediosCRParaJugador(tag, filaDescenso.semanas, ctxReal, porTagDescenso, blqDesc) : null;
-      // FIX (16-sep-2026, pedido del usuario): Barcos/Miembro activo/ [→ Contexto_Base_Web.md §26B073]
-      var miembroVigenteDesc = (promDesc && filaDescenso.miembroActivo.activo) ? miembroVigenteCache(tag) : false;
-      if (promDesc && !_cumpleRequisitoCR(reqMinCRDesc, reqAtaquesDesc, filaDescenso.barcos, filaDescenso.miembroActivo, filaDescenso.whatsapp, promDesc, miembroVigenteDesc, wspG)) {
-        propuestas.push({
-          tag: tag,
-          nombre: nombre,
-          clan: clan,
-          rangoActual: rangoActual,
-          tipoPropuesta: 'Descenso',
-          detalle: _detalleRequisitoCR('Descenso', rolKey, reqMinCRDesc, reqAtaquesDesc, filaDescenso.barcos, filaDescenso.miembroActivo, filaDescenso.whatsapp, promDesc, miembroVigenteDesc, wspG) + _notaSemanasContadasCR(promDesc.semanasEval, filaDescenso.semanas.length),
-          // FASE 8 (13-sep-2026, pedido del usuario -- doc "Ascensos y [→ Contexto_Base_Web.md §26B074]
-          ataquesProm: promDesc.ataquesProm,
-          fameProm: promDesc.fameProm,
-          barcosProm: promDesc.barcosProm,
-          // 4-oct-2026 (decision de la usuaria, opcion B de barcos): suma de ataques a barcos de las [→ Contexto_Base_Web.md §26B075]
-          barcosSuma: promDesc.barcosSuma,
-          // NUEVO (16-sep-2026, pedido del usuario -- primer paso chico [→ Contexto_Base_Web.md §26B076]
-          umbralAtaques: reqAtaquesDesc,
-          umbralPuntaje: reqMinCRDesc,
-          umbralBarcos: filaDescenso.barcos,
-          // NUEVO (16-sep-2026, pedido del usuario -- cuarto paso chico, [→ Contexto_Base_Web.md §26B077]
-          cumpleAtaques: reqAtaquesDesc.activo ? _ataquesCumplenRequisito(promDesc, reqAtaquesDesc.qty) : null,
-          cumplePuntaje: reqMinCRDesc.activo   ? _fameCumpleRequisito(promDesc, reqMinCRDesc.qty) : null,
-          cumpleBarcos:  filaDescenso.barcos.activo ? _barcosCumplenRequisito(promDesc, filaDescenso.barcos.qty) : null
-        });
-      }
-    }
-
-    // --- Ascenso: Miembro/Veterano generan propuesta real; Colíder solo
-    // "elegible para administración" (sin generar ascenso de rango) ---
-    if (bloqueAsc) {
-      var reqMinCRAsc  = bloqueAsc.minCR[rolKey];
-      var reqAtaquesAsc = bloqueAsc.ataques[rolKey];
-      var promAsc = promediosCache(tag, filaAscenso.semanas, 'A');
-      // Ver comentario equivalente en el bloque de Descenso, justo arriba.
-      var miembroVigenteAsc = filaAscenso.miembroActivo.activo ? miembroVigenteCache(tag) : false;
-      if (_cumpleRequisitoCR(reqMinCRAsc, reqAtaquesAsc, filaAscenso.barcos, filaAscenso.miembroActivo, filaAscenso.whatsapp, promAsc, miembroVigenteAsc, wspG)) {
-        // 28-sep-2026 (decisiones del usuario, Fase 14 pregunta 29): [→ Contexto_Base_Web.md §26B078]
-        var tiposAsc = [];
-        var clanDestinoAsc = '';
-        if (rolKey !== 'colider') {
-          tiposAsc.push('Ascenso');
-        } else {
-          var idxClanAsc = ordenClanesCR.indexOf(clan);
-          if (idxClanAsc > 0) { tiposAsc.push('AscensoClan'); clanDestinoAsc = ordenClanesCR[idxClanAsc - 1]; }
-          // 28-sep-2026 (correccion de la usuaria): la cantera SOLO sube de clan; 'EligibleAdmin' queda
-          // solo para el colider del clan principal (o de un clan que no esta en el orden de CR_Lista).
-          if (idxClanAsc <= 0 && !_esAdminEnDirectorioCR(fila[DC.ADMIN - 1])) tiposAsc.push('EligibleAdmin');
-        }
-        tiposAsc.forEach(function (tipoPropuesta) {
-        var propAsc = {
-          tag: tag,
-          nombre: nombre,
-          clan: clan,
-          rangoActual: rangoActual,
-          tipoPropuesta: tipoPropuesta,
-          detalle: _detalleRequisitoCR(tipoPropuesta, rolKey, reqMinCRAsc, reqAtaquesAsc, filaAscenso.barcos, filaAscenso.miembroActivo, filaAscenso.whatsapp, promAsc, miembroVigenteAsc, wspG),
-          // FASE 8 -- ver comentario equivalente en el bloque de Descenso,
-          // justo arriba en esta misma función.
-          ataquesProm: promAsc.ataquesProm,
-          fameProm: promAsc.fameProm,
-          barcosProm: promAsc.barcosProm,
-          barcosSuma: promAsc.barcosSuma, // 4-oct-2026, ver el comentario equivalente en el bloque de Descenso
-          // NUEVO (16-sep-2026, pedido del usuario) -- ver comentario
-          // equivalente en el bloque de Descenso, justo arriba.
-          umbralAtaques: reqAtaquesAsc,
-          umbralPuntaje: reqMinCRAsc,
-          umbralBarcos: filaAscenso.barcos,
-          // NUEVO (16-sep-2026, pedido del usuario) -- ver comentario
-          // equivalente en el bloque de Descenso, justo arriba.
-          cumpleAtaques: reqAtaquesAsc.activo ? _ataquesCumplenRequisito(promAsc, reqAtaquesAsc.qty) : null,
-          cumplePuntaje: reqMinCRAsc.activo   ? _fameCumpleRequisito(promAsc, reqMinCRAsc.qty) : null,
-          cumpleBarcos:  filaAscenso.barcos.activo ? _barcosCumplenRequisito(promAsc, filaAscenso.barcos.qty) : null
-        };
-        if (tipoPropuesta === 'AscensoClan') {
-          propAsc.clanDestino = clanDestinoAsc;
-          propAsc.rangoDestino = 'Miembro';
-          propAsc.detalle += ' Sube al clan ' + clanDestinoAsc + ' como miembro.';
-        }
-        propuestas.push(propAsc);
-        });
-      }
-    }
-  }
-
-  // FIX (16-sep-2026, pedido del usuario -- "Sin propuestas" sin ningún [→ Contexto_Base_Web.md §26B079]
-  var resultado = { ok: true, propuestas: propuestas };
-  if (_ULTIMO_DIAGNOSTICO_GUERRA_CSV) {
-    resultado.diagnostico = _ULTIMO_DIAGNOSTICO_GUERRA_CSV;
-  }
-  return resultado;
-}
 
 var TA = {
   NUM:1, FECHA:2, ID:3, TEMPORADA:4, TAG:5, NOMBRE:6, NOM_MULTI:7,
@@ -1286,6 +150,7 @@ var SA_TOTAL_COLS = 15;
 // PF222 (24-oct-2026, pedido de la usuaria): columna «Ganó» (15, al final para no mover Resultado ni Razón en hojas que ya tienen datos). 'Sí' = salió sorteado y tiene resolución;
 // 'No' = participó en el sorteo pero no ganó. Una fila vieja con Ganó vacío es de un ganador (antes S_Asistencia solo guardaba ganadores). [→ Contexto_Base_Web.md §PF222]
 var SA_GANO_SI = 'Sí';
+
 var SA_GANO_NO = 'No';
 
 // Columnas fijas de T_Control (antes de las columnas dinámicas por torneo).
@@ -1294,46 +159,39 @@ var TCC = { NUM:1, TAG:2, NOMBRE:3, NOM_MULTI:4, PRESTAMO:5, CLAN_TAG:6, CLAN:7 
 var TC_FIXED_COLS = 7;
 
 // FASE 19d (30/07/2026) — Activador temporal "Torneo en vivo". [→ Contexto_Base_Web.md §26B083]
-
 var TORNEO_EN_VIVO_HANDLER     = '_tickTorneoEnVivo';
 
 var TORNEO_EN_VIVO_PROP        = 'TORNEO_EN_VIVO_INICIO';
 
 var TORNEO_EN_VIVO_DURACION_MS = 2 * 60 * 60 * 1000; // 2 horas
+
 // 17-oct-2026 (PF091; la usuaria eligió 15 min): mientras dura la ventana, _tickTorneoEnVivo() republica torneos.json (53_Publicar_Torneos.gs)
 // como máximo cada 15 min y una vez más al cerrar la ventana. [→ Contexto_Base_Web.md §PF091]
 var TORNEO_EN_VIVO_PUBLICAR_CADA_MS = 15 * 60 * 1000;
+
 var TORNEO_EN_VIVO_PUB_PROP         = 'TORNEO_EN_VIVO_PUB_MS';
+
 // 17-oct-2026 (PF091): marca de inicio del tick en curso, para que un tick no arranque mientras el anterior sigue corriendo (ver _tickTorneoEnVivo()).
 var TORNEO_EN_VIVO_TICK_PROP        = 'TORNEO_EN_VIVO_TICK_MS';
 
-// ----- Funciones manuales / punto de entrada -----
+// FIX (09-sep-2026, pedido usuario — Consolidado_Cambios_Pendientes_ [→ Contexto_Base_Web.md §26B189]
+var FALLBACK_TAG_ORG_POR_NOMMULTI = {
+  'Diana':  ['#2GG8PJ8GC'],
+  'Leder':  ['#V20GJRC9Y'],
+  'Maikel': ['#QRQULCCV8', '#GLPC8YQGV', '#GY0GJ09C0']
+};
 
-// SECCIÓN 1: FUNCIONES MANUALES (entry points del usuario, ejecutar a mano [→ Contexto_Base_Web.md §26B084]
+// FASE 4 (25-sep-2026, rediseño T_Lista -- ver punto A del docblock de [→ Contexto_Base_Web.md §26B241]
+// Cache global memoizada por ejecución (mismo criterio que CACHE_CLAN_DATA [→ Contexto_Base_Web.md §26B242]
+var _CATALOGO_MODO_CACHE = null; // { headers, rows } de Backup_Modo.csv, o null si todavía no se leyó en esta ejecución
 
-/**
- * iniciarActualizacionTorneoEnVivo(inicio) [→ Contexto_Base_Web.md §26B085]
- */
-function iniciarActualizacionTorneoEnVivo(inicio) {
-  PropertiesService.getScriptProperties().deleteProperty(TORNEO_EN_VIVO_PUB_PROP); // ventana nueva: el primer tick publica
-  _instalarActivadorTorneoEnVivo(inicio);
-  procesarTorneos();
-}
+var _CATALOGO_MODO_NUEVOS_PENDIENTES = []; // ID (string) agregados en esta ejecución, para loguear al guardar
 
-/**
- * detenerActualizacionTorneoEnVivo()
- * Corta el activador manualmente antes de que se cumplan las 2 horas.
- */
-function detenerActualizacionTorneoEnVivo() {
-  _borrarTriggersPorHandler(TORNEO_EN_VIVO_HANDLER);
-  PropertiesService.getScriptProperties().deleteProperty(TORNEO_EN_VIVO_PROP);
-  PropertiesService.getScriptProperties().deleteProperty(TORNEO_EN_VIVO_PUB_PROP);
-  Logger.log('[TorneoEnVivo] Activador detenido manualmente.');
-}
+// ===== PARTE 1 — Funciones que se corren a mano =====
+
+// ----- Torneos: procesar y actualización en vivo -----
 
 // SECCIÓN 2: RESTO DE FUNCIONES (torneos, docs automatizados, helpers [→ Contexto_Base_Web.md §26B086]
-
-
 /**
  * procesarTorneos()
  * Punto de entrada único del módulo.
@@ -1447,10 +305,93 @@ function procesarTorneos() {
   return true;
 }
 
+// SECCIÓN 1: FUNCIONES MANUALES (entry points del usuario, ejecutar a mano [→ Contexto_Base_Web.md §26B084]
+/**
+ * iniciarActualizacionTorneoEnVivo(inicio) [→ Contexto_Base_Web.md §26B085]
+ */
+function iniciarActualizacionTorneoEnVivo(inicio) {
+  PropertiesService.getScriptProperties().deleteProperty(TORNEO_EN_VIVO_PUB_PROP); // ventana nueva: el primer tick publica
+  _instalarActivadorTorneoEnVivo(inicio);
+  procesarTorneos();
+}
+
+/**
+ * detenerActualizacionTorneoEnVivo()
+ * Corta el activador manualmente antes de que se cumplan las 2 horas.
+ */
+function detenerActualizacionTorneoEnVivo() {
+  _borrarTriggersPorHandler(TORNEO_EN_VIVO_HANDLER);
+  PropertiesService.getScriptProperties().deleteProperty(TORNEO_EN_VIVO_PROP);
+  PropertiesService.getScriptProperties().deleteProperty(TORNEO_EN_VIVO_PUB_PROP);
+  Logger.log('[TorneoEnVivo] Activador detenido manualmente.');
+}
+
+// ----- Sorteos y cambio de rango -----
+
+/**
+ * procesarSorteos() [→ Contexto_Base_Web.md §26B217]
+ */
+function procesarSorteos() {
+  var ss = _getSs();
+
+  var idsResueltos = procesarSListaNuevasFilas(ss);
+  if (idsResueltos.length > 0) {
+    Logger.log('[Sorteos] Resuelto Organizador/Tag_org/Clan/ClanTag en ' + idsResueltos.length + ' fila(s) de S_Lista: ' + idsResueltos.join(', '));
+  }
+
+  sincronizarRequisitosSorteo();
+  actualizarDocParticipantesCalificados();
+  // FASE (10-sep-2026, pedido del usuario -- consolidado sección 1, punto [→ Contexto_Base_Web.md §26B218]
+  actualizarDocGanadoresSorteo();
+
+  // NUEVO (15-sep-2026, pedido del usuario): complemento de [→ Contexto_Base_Web.md §26B219]
+  try {
+    actualizarDocNoCalificadosSorteo();
+  } catch (eNCS2) {
+    Logger.log('[Sorteos] actualizarDocNoCalificadosSorteo() falló (se continúa): ' + eNCS2.message);
+  }
+
+  return true;
+}
+
+/**
+ * procesarCambioRango() [→ Contexto_Base_Web.md §PF286]
+ * Equivalente de procesarSorteos() y procesarTorneos() para Cambio de rango: con el par vigente de
+ * Extra (Ascenso_Vigente_ID / Descenso_Vigente_ID) actualiza los tres documentos que salen de ese par: «Cambio de rango», «Participantes calificados (cambio de rango)» y «No calificados (cambio de rango)».
+ * Cada paso va en su propio try/catch para que uno que falle no corte a los demás.
+ * Lo llaman PASOS_RUNALL y PASOS_RUNUPDATE (00_Main.gs) y la web al guardar el par o generar propuestas.
+ */
+function procesarCambioRango() {
+  var idA = _getIdVigenteExtraCR('Ascenso');
+  var idD = _getIdVigenteExtraCR('Descenso');
+  if (!idA || !idD) {
+    Logger.log('[CambioRango] Falta el par vigente en Extra (Ascenso=' + (idA || 'vacío') + ', Descenso=' +
+      (idD || 'vacío') + '): no se actualizan los documentos.');
+    return true;
+  }
+
+  // Documento «Cambio de rango»: los cambios realmente aplicados de la corrida más reciente, con los requisitos, las listas por clan y las tablas por rango.
+  try {
+    actualizarDocCambioRango(idA, idD);
+  } catch (eDocCR) {
+    Logger.log('[CambioRango] actualizarDocCambioRango() falló (se continúa): ' + eDocCR.message);
+  }
+
+  // Documentos «Participantes calificados» y «No calificados» de Cambio de rango: se evalúa una sola vez a todo el padrón y se reparte entre los dos.
+  try {
+    actualizarDocsCalificadosYNoCalificadosCambioRango(idA, idD);
+  } catch (eDocCal) {
+    Logger.log('[CambioRango] actualizarDocsCalificadosYNoCalificadosCambioRango() falló (se continúa): ' + eDocCal.message);
+  }
+
+  return true;
+}
+
+// ----- Importar desde los CSV -----
+
 /**
  * _mapearIndicesCSVPorEncabezado(), _reconstruirFilaCSVPorEncabezado() y [→ Contexto_Base_Web.md §26B097]
  */
-
 /**
  * importarTListaDesdeCSV() [→ Contexto_Base_Web.md §26B098]
  */
@@ -1723,262 +664,239 @@ function importarSAsistenciaDesdeCSV() {
   _ordenarYColorearSAsistencia_(ss);
 }
 
-// PASO 3 — T_Control: cuadrícula (una columna por torneo de T_Lista) [→ Contexto_Base_Web.md §26B125]
+// ----- Ordenar, formatear y reparar -----
 
-function regenerarTControlSheet(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_CONTROL);
-  if (!sh) { Logger.log('[T_Control] Hoja no encontrada'); return; }
+// ordenarYFormatearListasYAsistenciasRevisar() / ordenarYFormatearListasYAsistencias(): manuales, sin parámetros (29-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF286]
+// Dejan T_Lista, S_Lista, CR_Lista, T_Asistencia y S_Asistencia con más reciente primero, coma de miles solo visual (T_Lista, S_Lista, CR_Lista) y un color por ID (ambas asistencias).
+// La variante «Revisar» solo registra qué cambiaría. Cada hoja falla por separado y se informa en el registro. Idempotentes.
+function ordenarYFormatearListasYAsistenciasRevisar() { return _ordenarYFormatearListasYAsistencias_(true); }
 
-  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!shDir || shDir.getLastRow() < 2) return;
+function ordenarYFormatearListasYAsistencias() { return _ordenarYFormatearListasYAsistencias_(false); }
 
-  var tagsConAsistencia = _getTagsConAsistencia(ss);
-
-  var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-  // Fase 10 (17/07/2026): se quita el chequeo de Vetado — comparaba sin [→ Contexto_Base_Web.md §26B126]
-  var jugadores = dirData.filter(function (r) {
-    var tag = String(r[IC.TAG - 1] || '').trim();
-    return String(r[IC.ESTADO - 1]) === 'Activo' &&
-           CFG.TERNA_TAGS.indexOf(String(r[IC.CLAN_TAG - 1])) >= 0 &&
-           !!tagsConAsistencia[tag];
-  });
-
-  // FASE 23 (30/08/2026): un torneo de continuación (Tag_Tor_2, ver [→ Contexto_Base_Web.md §26B127]
-  var grupos = _resolverGruposContinuacionTorneos(ss);
-  var shLista = ss.getSheetByName(CFG.SHEETS.T_LISTA);
-  var torneos = [];
-  // FIX (08-sep-2026, pedido usuario): header de 2 filas fusionadas en
-  // T_Lista -- datos desde fila 3, guard >= 3 (antes >= 2).
-  if (shLista && shLista.getLastRow() >= 3) {
-    var listaData = shLista.getRange(3, 1, shLista.getLastRow() - 2, TL_TOTAL_COLS).getValues();
-    for (var i = 0; i < listaData.length; i++) {
-      var id = String(listaData[i][TL.ID - 1] || '').trim();
-      if (!id) continue;
-      var raizId = grupos.raizPorId.hasOwnProperty(id) ? grupos.raizPorId[id] : id;
-      if (raizId !== id) continue; // es continuación de otro torneo: se fusiona, no abre columna propia
-      torneos.push({
-        id: id,
-        fecha: listaData[i][TL.FECHA - 1],
-        temporada: Number(listaData[i][TL.TEMPORADA - 1]) || 0
-      });
-    }
-  }
-
-  // FIX 1 (parche T_Control/T_Lista): orden ASC por Fecha (los sin fecha [→ Contexto_Base_Web.md §26B128]
-  torneos.sort(function (a, b) {
-    if (a.temporada !== b.temporada) return a.temporada - b.temporada;
-    var fa = (a.fecha instanceof Date && !isNaN(a.fecha.getTime())) ? a.fecha.getTime() : 0;
-    var fb = (b.fecha instanceof Date && !isNaN(b.fecha.getTime())) ? b.fecha.getTime() : 0;
-    return fa - fb;
-  });
-
-  sh.clearContents();
-  sh.clearFormats();
-
-  // ---- Columnas fijas ---- [→ Contexto_Base_Web.md §26B129]
-  var headersFijos = ['N°', 'Tag', 'Nombre', 'Nom_Multi', 'Préstamo', 'ClanTag', 'Clan'];
-
-  sh.getRange(1, 1, 2, headersFijos.length).merge()
-    .setValue('Control de participación en torneos')
-    .setBackground(CFG.COLORES.HEADER_BG)
-    .setFontColor(CFG.COLORES.HEADER_FG)
-    .setFontWeight('bold')
-    .setHorizontalAlignment('center')
-    .setVerticalAlignment('middle')
-    .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
-
-  var rangoHeadersFijos = sh.getRange(3, 1, 1, headersFijos.length);
-  rangoHeadersFijos.setValues([headersFijos])
-    .setBackground(CFG.COLORES.HEADER_BG)
-    .setFontColor(CFG.COLORES.HEADER_FG)
-    .setFontWeight('bold')
-    .setHorizontalAlignment('center')
-    .setVerticalAlignment('middle')
-    .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
-
-  var totalCols = TC_FIXED_COLS + torneos.length;
-
-  var filasCuerpo = [];
-  for (var j = 0; j < jugadores.length; j++) {
-    var r = jugadores[j];
-    var fila = [];
-    fila[TCC.NUM      - 1] = j + 1;
-    fila[TCC.TAG      - 1] = String(r[IC.TAG       - 1] || '');
-    fila[TCC.NOMBRE   - 1] = String(r[IC.NOMBRE    - 1] || '');
-    fila[TCC.NOM_MULTI- 1] = String(r[IC.NOM_MULTI - 1] || '');
-    fila[TCC.PRESTAMO - 1] = String(r[IC.PRESTAMO  - 1] || '');
-    fila[TCC.CLAN_TAG - 1] = String(r[IC.CLAN_TAG  - 1] || '');
-    fila[TCC.CLAN     - 1] = String(r[IC.CLAN      - 1] || '');
-    filasCuerpo.push(fila);
-  }
-
-  if (torneos.length === 0) {
-    if (filasCuerpo.length > 0) {
-      sh.getRange(4, 1, filasCuerpo.length, TC_FIXED_COLS).setValues(filasCuerpo);
-      applyBorderCenter(sh.getRange(4, 1, filasCuerpo.length, TC_FIXED_COLS));
-    }
-    sh.setFrozenRows(3);
-    sh.setFrozenColumns(TC_FIXED_COLS);
-    Logger.log('[T_Control] Reconstruido sin torneos (' + filasCuerpo.length + ' jugador(es)).');
+// FASE 13 (26-sep-2026, plan Organizador_Fuente -- ver docblock "FASES [→ Contexto_Base_Web.md §26B176]
+/**
+ * repararTorneosViejosDesdeAPI() [→ Contexto_Base_Web.md §26B177]
+ */
+function repararTorneosViejosDesdeAPI() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  if (!sh || sh.getLastRow() < 3) {
+    Logger.log('[Reparación Fase 13] T_Lista vacía o no encontrada, nada que reparar.');
     return;
   }
 
-  // ---- Encabezados de torneos (Fila 1, 2, 3) ----
-  var rangoTorneos = sh.getRange(1, TC_FIXED_COLS + 1, 1, torneos.length);
-  rangoTorneos.merge().setValue('Torneos')
-    .setBackground(CFG.COLORES.HEADER_BG).setFontColor(CFG.COLORES.HEADER_FG).setFontWeight('bold')
-    .setHorizontalAlignment('center').setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+  var PROP_ULTIMA_FILA = 'REPARAR_TORNEOS_VIEJOS_ULTIMA_FILA';
+  var props = PropertiesService.getScriptProperties();
+  var filaDesde = parseInt(props.getProperty(PROP_ULTIMA_FILA) || '0', 10);
 
-  var col = TC_FIXED_COLS + 1;
-  var idx = 0;
-  while (idx < torneos.length) {
-    var temporada = torneos[idx].temporada;
-    var ancho = 0;
-    while (idx + ancho < torneos.length && torneos[idx + ancho].temporada === temporada) ancho++;
-    var rangoTemp = sh.getRange(2, col, 1, ancho);
-    if (ancho > 1) rangoTemp.merge();
-    rangoTemp.setValue('T_' + temporada)
-      .setBackground(CFG.COLORES.HEADER_BG).setFontColor(CFG.COLORES.HEADER_FG).setFontWeight('bold')
-      .setHorizontalAlignment('center').setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
-    col += ancho;
-    idx += ancho;
-  }
+  // FIX (26-sep-2026, reportado por el usuario tras la primera corrida real [→ Contexto_Base_Web.md §26B178]
+  sh.getRange(3, 1, sh.getLastRow() - 2, TL_TOTAL_COLS).clearDataValidations();
 
-  // FASE 23 (30/08/2026) — sugerencia #3 de la lista de mejoras: si la [→ Contexto_Base_Web.md §26B130]
-  var headersFecha = torneos.map(function (t) {
-    var base = (t.fecha instanceof Date && !isNaN(t.fecha.getTime())) ? dateKey(t.fecha) : '';
-    var idsDelGrupo = grupos.grupoPorRaiz[t.id] || [t.id];
-    if (idsDelGrupo.length > 1) base += ' (' + idsDelGrupo.length + ' partes)';
-    return base;
-  });
-  var rangoFechas = sh.getRange(3, TC_FIXED_COLS + 1, 1, torneos.length);
-  rangoFechas.setValues([headersFecha])
-    .setBackground(CFG.COLORES.HEADER_BG).setFontColor(CFG.COLORES.HEADER_FG).setFontWeight('bold')
-    .setHorizontalAlignment('center').setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+  var numFilas = sh.getLastRow() - 2;
+  var datos = sh.getRange(3, 1, numFilas, TL_TOTAL_COLS).getValues();
 
-  // ---- Cuerpo: Victorias (Score) en lugar de ☑ ---- [→ Contexto_Base_Web.md §26B131]
-  var asistenciaPorId = _getAsistenciaFusionadaPorRaiz(ss);
-  for (var f = 0; f < filasCuerpo.length; f++) {
-    var tagJugador = filasCuerpo[f][TCC.TAG - 1];
-    for (var t = 0; t < torneos.length; t++) {
-      var scoresDelTorneo = asistenciaPorId[torneos[t].id] || {};
-      var score = scoresDelTorneo[tagJugador];
-      if (score !== undefined && score !== null && score !== '') {
-        filasCuerpo[f][TC_FIXED_COLS + t] = score;
-      } else {
-        filasCuerpo[f][TC_FIXED_COLS + t] = '';
+  // Mismo criterio que procesarTListaNuevasFilas() (más arriba en este
+  // archivo): se arman UNA sola vez, no en cada fila del loop.
+  var mapaDirectorioOrg = _getDirectorioLookupPorTag(ss);
+  var mapaInactivosOrg = _getInactivosLookupPorTag(ss);
+  var mapaAsistenciaPorId = _getAsistenciaTagsPorId(ss);
+
+  var inicio = Date.now();
+  var consultas = 0;
+  var cortadoPorPresupuesto = false;
+  var revisados = 0;
+  var reparados = 0;
+
+  for (var i = filaDesde; i < datos.length; i++) {
+    var fila = datos[i];
+    var filaHoja = i + 3;
+    var linkApp = String(fila[TL.LINK_APP - 1] || '').trim();
+    if (!linkApp) continue; // sin Link_app no hay tag que volver a consultar
+
+    // Mismo corte de presupuesto/tanda que procesarTListaNuevasFilas() (ver [→ Contexto_Base_Web.md §26B179]
+    if (consultas >= CFG.TORNEOS_REFETCH_MAX_POR_TANDA ||
+        (Date.now() - inicio) > CFG.TORNEOS_REFETCH_BUDGET_MS) {
+      Logger.log('[Reparación Fase 13] Presupuesto/tanda agotado en la fila ' + filaHoja +
+                 ' (' + consultas + ' consulta(s) ya hechas en esta tanda). Se corta aquí; ' +
+                 'correr repararTorneosViejosDesdeAPI() de nuevo para continuar.');
+      props.setProperty(PROP_ULTIMA_FILA, String(i));
+      cortadoPorPresupuesto = true;
+      break;
+    }
+
+    var match = linkApp.match(/[?&]id=([^&]+)/);
+    if (!match) {
+      Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': no se pudo parsear Link_app, se omite.');
+      continue;
+    }
+    var tagTorSinHash = match[1].trim().replace('#', '');
+
+    revisados++;
+    consultas++;
+    var jsonArray = _fetchMembersTorneo(tagTorSinHash);
+    if (!jsonArray || jsonArray.length === 0) {
+      Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': no se pudo obtener el JSON del torneo, se reintentará en otra corrida.');
+      continue;
+    }
+    var torneoData = jsonArray.torneoData || null;
+    if (!torneoData) continue;
+
+    var huboCambio = false;
+
+    // --- columnas de solo lectura (Fases 3/5/6/7), solo si están vacías ---
+    if (String(fila[TL.NOMBRE - 1] || '').trim() === '' && torneoData.name) {
+      sh.getRange(filaHoja, TL.NOMBRE).setValue(String(torneoData.name));
+      huboCambio = true;
+    }
+    if (String(fila[TL.DESCRIPCION - 1] || '').trim() === '' && torneoData.description) {
+      sh.getRange(filaHoja, TL.DESCRIPCION).setValue(String(torneoData.description));
+      huboCambio = true;
+    }
+    // FIX (26-sep-2026, reportado por el usuario -- mismo bug que en [→ Contexto_Base_Web.md §26B180]
+    if (String(fila[TL.LINK_JSON_2 - 1] || '').trim() === '') {
+      sh.getRange(filaHoja, TL.LINK_JSON_2).setValue(CFG.API_BASE + '/tournaments/%23' + tagTorSinHash);
+      huboCambio = true;
+    }
+    if ((fila[TL.NIVEL_TOPE - 1] === '' || fila[TL.NIVEL_TOPE - 1] === null) &&
+        torneoData.levelCap !== undefined && torneoData.levelCap !== null) {
+      sh.getRange(filaHoja, TL.NIVEL_TOPE).setValue(Number(torneoData.levelCap));
+      huboCambio = true;
+    }
+    // CORRECCIÓN (26-sep-2026, mismo fix que en procesarTListaNuevasFilas() [→ Contexto_Base_Web.md §26B181]
+    if (fila[TL.PARTICIPANTES - 1] === '' || fila[TL.PARTICIPANTES - 1] === null) {
+      sh.getRange(filaHoja, TL.PARTICIPANTES).setValue(
+        (torneoData.capacity !== undefined && torneoData.capacity !== null) ? Number(torneoData.capacity) : jsonArray.length);
+      huboCambio = true;
+    }
+    if ((fila[TL.CAPACIDAD - 1] === '' || fila[TL.CAPACIDAD - 1] === null) &&
+        torneoData.maxCapacity !== undefined && torneoData.maxCapacity !== null) {
+      sh.getRange(filaHoja, TL.CAPACIDAD).setValue(Number(torneoData.maxCapacity));
+      huboCambio = true;
+    }
+    // Modo_ID/Modo se tratan como en procesarTListaNuevasFilas() (Fase 4): [→ Contexto_Base_Web.md §26B182]
+    var modoIdApi = (torneoData.gameMode && torneoData.gameMode.id !== undefined && torneoData.gameMode.id !== null)
+      ? Number(torneoData.gameMode.id) : null;
+    var modoIdCelda = (fila[TL.MODO_ID - 1] !== '' && fila[TL.MODO_ID - 1] !== null)
+      ? Number(fila[TL.MODO_ID - 1]) : null;
+    if (modoIdCelda === null && modoIdApi !== null) {
+      sh.getRange(filaHoja, TL.MODO_ID).setValue(modoIdApi);
+      modoIdCelda = modoIdApi;
+      huboCambio = true;
+    }
+    if (String(fila[TL.MODO - 1] || '').trim() === '' && modoIdCelda !== null) {
+      sh.getRange(filaHoja, TL.MODO).setValue(_resolverModoDesdeCatalogo(modoIdCelda));
+      huboCambio = true;
+    }
+    // PF100: si el origen sigue en 'Web', la Creación guardada es la TEMPORAL (momento del registro en la web) y se reemplaza por la real del JSON. [→ Contexto_Base_Web.md §PF100]
+    var creacionEsTemporal = String(fila[TL.ORGANIZADOR_FUENTE - 1] || '').trim() === 'Web';
+    if (creacionEsTemporal || !(fila[TL.CREACION - 1] instanceof Date) || isNaN(fila[TL.CREACION - 1].getTime())) {
+      var creacion = _parseFechaApiSupercell(torneoData.createdTime);
+      if (creacion) {
+        sh.getRange(filaHoja, TL.CREACION).setValue(creacion);
+        _trySetFmt(sh, filaHoja, TL.CREACION, 'dd/mm/yyyy hh:mm:ss');
+        huboCambio = true;
       }
     }
-  }
-
-  if (filasCuerpo.length > 0) {
-    sh.getRange(4, 1, filasCuerpo.length, totalCols).setValues(filasCuerpo);
-    applyBorderCenter(sh.getRange(4, 1, filasCuerpo.length, totalCols));
-
-    var rangoNumeros = sh.getRange(4, TC_FIXED_COLS + 1, filasCuerpo.length, torneos.length);
-    rangoNumeros.setNumberFormat('#,##0');
-
-    // ---- FORMATO CONDICIONAL (Verde si > 0, Azul si = 0) ----
-    var reglas = [];
-    for (var t = 0; t < torneos.length; t++) {
-      var letraCol = colLetter(TC_FIXED_COLS + 1 + t);
-      var rangoColumna = sh.getRange(4, TC_FIXED_COLS + 1 + t, filasCuerpo.length, 1);
-
-      reglas.push(
-        SpreadsheetApp.newConditionalFormatRule()
-          .whenFormulaSatisfied('=AND($' + letraCol + '4<>"", $' + letraCol + '4>0)')
-          .setBackground(CFG.COLORES.TERNA_BG)
-          .setRanges([rangoColumna])
-          .build()
-      );
-
-      reglas.push(
-        SpreadsheetApp.newConditionalFormatRule()
-          .whenFormulaSatisfied('=AND($' + letraCol + '4<>"", $' + letraCol + '4=0)')
-          .setBackground('#cfe2f3')
-          .setRanges([rangoColumna])
-          .build()
-      );
+    // Preparación/Duración: misma conversión seg->min de la Fase 5 (la
+    // celda guarda MINUTOS como valor real, nunca segundos).
+    if (fila[TL.PREPARACION - 1] === '' || fila[TL.PREPARACION - 1] === null) {
+      var prepSeg = (torneoData.preparationDuration !== undefined && torneoData.preparationDuration !== null)
+        ? Number(torneoData.preparationDuration) : null;
+      if (prepSeg !== null && !isNaN(prepSeg)) {
+        sh.getRange(filaHoja, TL.PREPARACION).setValue(prepSeg / 60);
+        huboCambio = true;
+      }
     }
-    _tryCondFmt(sh, reglas);
+    if (fila[TL.DURACION - 1] === '' || fila[TL.DURACION - 1] === null) {
+      var durSeg = (torneoData.duration !== undefined && torneoData.duration !== null)
+        ? Number(torneoData.duration) : null;
+      if (durSeg !== null && !isNaN(durSeg)) {
+        sh.getRange(filaHoja, TL.DURACION).setValue(durSeg / 60);
+        huboCambio = true;
+      }
+    }
+    // Tipo/Estado: mismo mapeo "nunca inventar" de las Fases 6/7 -- si [→ Contexto_Base_Web.md §26B183]
+    if (String(fila[TL.TIPO - 1] || '').trim() === '') {
+      var tipoApi = torneoData.type;
+      var tipoValor = (tipoApi === 'open') ? 'Abierto' :
+                      (tipoApi === 'passwordProtected') ? 'Cerrado' : '';
+      if (tipoValor) {
+        sh.getRange(filaHoja, TL.TIPO).setValue(tipoValor);
+        huboCambio = true;
+      } else if (tipoApi) {
+        Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': valor de type desconocido ("' + tipoApi + '") -- Tipo queda vacío.');
+      }
+    }
+    if (String(fila[TL.ESTADO - 1] || '').trim() === '') {
+      var statusApi = torneoData.status;
+      var estadoValor = (statusApi === 'inPreparation') ? 'Planificado' :
+                         (statusApi === 'inProgress') ? 'En progreso' :
+                         (statusApi === 'ended') ? 'Realizado' : '';
+      if (estadoValor) {
+        sh.getRange(filaHoja, TL.ESTADO).setValue(estadoValor);
+        huboCambio = true;
+      } else if (statusApi) {
+        Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': valor de status desconocido ("' + statusApi + '") -- Estado queda vacío.');
+      }
+    }
+
+    // --- Organizador/Nom_Multi_Org/Tag_org + Organizador_Fuente (punto 3
+    //     del docblock de arriba, excepción explícita del plan) ---
+    var organizadorFuenteActual = String(fila[TL.ORGANIZADOR_FUENTE - 1] || '').trim();
+    var creatorTagValor = String(torneoData.creatorTag || '').trim();
+    if (organizadorFuenteActual !== 'API' && creatorTagValor) {
+      var infoCreator = _resolverOrganizadorPorCreatorTag(creatorTagValor, mapaDirectorioOrg, mapaInactivosOrg);
+      sh.getRange(filaHoja, TL.ORGANIZADOR).setValue(infoCreator.nombreOrg);
+      sh.getRange(filaHoja, TL.NOM_MULTI_ORG).setValue(infoCreator.nomMultiOrg);
+      sh.getRange(filaHoja, TL.TAG_ORG).setValue(infoCreator.tagOrg);
+      sh.getRange(filaHoja, TL.ORGANIZADOR_FUENTE).setValue('API');
+      huboCambio = true;
+      Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': Organizador/Nom_Multi_Org/Tag_org completados por creatorTag (' + infoCreator.tagOrg + ').');
+    }
+
+    // --- T_Asistencia: solo si vino vacía o incompleta (punto 4) ---
+    var idFila = String(fila[TL.ID - 1] || '').trim();
+    if (idFila) {
+      var tagsExistentes = mapaAsistenciaPorId[idFila] || {};
+      var cantidadExistente = Object.keys(tagsExistentes).length;
+      if (cantidadExistente < jsonArray.length) {
+        var fechaFila = fila[TL.FECHA - 1];
+        var temporadaFila = Number(fila[TL.TEMPORADA - 1]) || 0;
+        _generarAsistenciaParaTorneo(ss, idFila, fechaFila, temporadaFila, jsonArray);
+        huboCambio = true;
+        Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': T_Asistencia refrescada (' +
+                   cantidadExistente + ' -> ' + jsonArray.length + ' participante(s)).');
+      }
+    }
+
+    if (huboCambio) reparados++;
   }
 
-  sh.setFrozenRows(3);
-  sh.setFrozenColumns(TC_FIXED_COLS);
-  Logger.log('[T_Control] Reconstruido: ' + filasCuerpo.length + ' jugador(es) x ' + torneos.length + ' torneo(s).');
-}
+  _guardarModoCSVSiHayNuevos();
 
-// ----- Funciones internas / helpers -----
+  // Se reaplican SIEMPRE (se corte o no por presupuesto -- las validaciones [→ Contexto_Base_Web.md §26B184]
+  _aplicarDropdownAdminTLista(ss);
+  _aplicarDropdownTagTor2TLista(ss);
+  _aplicarDropdownEstadoTLista(ss);
+  _aplicarDropdownMiembroActivoTLista(ss);
+  _aplicarDropdownReaccionTLista(ss);
+  _aplicarDropdownWhatsappTLista(ss);
 
-/**
- * _aplicarFormatoCondicionalTAporTorneo(ss) [→ Contexto_Base_Web.md §26B132]
- */
-function _aplicarFormatoCondicionalTAporTorneo(ss) {
-  _aplicarFormatoCondicionalAsistenciaPorId_(ss, CFG.SHEETS.T_ASISTENCIA, TA.ID, TA.FECHA, TA_TOTAL_COLS, 'T_Asistencia');
-}
-
-// _aplicarFormatoCondicionalSAporSorteo(ss): igual que T_Asistencia pero por ID de sorteo en S_Asistencia: un color distinto para cada grupo de filas (29-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF286]
-function _aplicarFormatoCondicionalSAporSorteo(ss) {
-  _aplicarFormatoCondicionalAsistenciaPorId_(ss, CFG.SHEETS.S_ASISTENCIA, SA.ID, SA.FECHA, SA_TOTAL_COLS, 'S_Asistencia');
-}
-
-// _ordenarYColorearSAsistencia_(ss): deja S_Asistencia con el más reciente primero y con un color por sorteo; cada paso falla por separado sin romper al que llama.
-function _ordenarYColorearSAsistencia_(ss) {
-  try { _ordenarSAsistenciaPorFecha(ss); } catch (eOrd) { Logger.log('[S_Asistencia] No se pudo ordenar por fecha (se continúa): ' + eOrd.message); }
-  try { _aplicarFormatoCondicionalSAporSorteo(ss); } catch (eCol) { Logger.log('[S_Asistencia] No se pudo colorear por sorteo (se continúa): ' + eCol.message); }
-}
-
-/**
- * _aplicarFormatoCondicionalAsistenciaPorId_(ss, nombreHoja, colId, colFecha, totalCols, etiqueta): un color de la paleta CFG.COLORES.TA_ID_PALETTE por cada ID, aplicado a toda la fila de datos con reglas condicionales (=$ID2="…").
- * El color depende del ORDEN CRONOLÓGICO de los ID (Fecha ascendente y luego ID), no de la posición en la hoja: así, con la hoja de más reciente a más antiguo, un grupo nuevo arriba no recolorea a los demás, y los grupos vecinos siempre tienen colores distintos.
- * Reemplaza las reglas condicionales de la hoja. Cuerpo del antiguo _aplicarFormatoCondicionalTAporTorneo() [→ Contexto_Base_Web.md §26B132]
- */
-function _aplicarFormatoCondicionalAsistenciaPorId_(ss, nombreHoja, colId, colFecha, totalCols, etiqueta) {
-  var sh = ss.getSheetByName(nombreHoja);
-  if (!sh) { Logger.log('[' + etiqueta + '] Hoja no encontrada, se omite formato por ID.'); return; }
-
-  var lastRow = sh.getLastRow();
-  if (lastRow < 2) {
-    // Sin datos: no hay nada que agrupar. Se limpian reglas viejas por si quedaron de una corrida anterior con más filas.
-    _tryCondFmt(sh, []);
-    return;
+  if (!cortadoPorPresupuesto) {
+    props.deleteProperty(PROP_ULTIMA_FILA);
+    regenerarTControlSheet(ss);
+    Logger.log('[Reparación Fase 13] Pasada COMPLETA: ' + revisados + ' torneo(s) con Link_app revisado(s), ' +
+               reparados + ' reparado(s). T_Control regenerado. NO se tocaron los documentos de Google Docs ' +
+               '(actualizarDocParticipantesCalificadosTorneo()/actualizarDocGanadoresTorneo(), 28_Torneos_Docs.gs).');
+  } else {
+    Logger.log('[Reparación Fase 13] Pasada CORTADA por presupuesto: ' + revisados + ' torneo(s) revisado(s) en esta tanda, ' +
+               reparados + ' reparado(s). T_Control todavía NO se regeneró (se regenera recién al terminar una pasada completa).');
   }
-
-  var ids = sh.getRange(2, colId, lastRow - 1, 1).getValues();
-  var fechas = sh.getRange(2, colFecha, lastRow - 1, 1).getValues();
-  var vistos = {};
-  var lista = [];
-  for (var i = 0; i < ids.length; i++) {
-    var id = String(ids[i][0] || '').trim();
-    if (!id || vistos.hasOwnProperty(id)) continue;
-    vistos[id] = true;
-    lista.push({ id: id, dia: _diaClaveOrden_(fechas[i][0]) });
-  }
-  if (lista.length === 0) {
-    _tryCondFmt(sh, []);
-    return;
-  }
-  lista.sort(function (a, b) {
-    if (a.dia !== b.dia) return a.dia - b.dia;
-    return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
-  });
-
-  var paleta = CFG.COLORES.TA_ID_PALETTE;
-  var dataRange = sh.getRange(2, 1, lastRow - 1, totalCols);
-  var colIdLetra = colLetter(colId);
-  var rules = lista.map(function (it, k) {
-    // Escapar comillas dobles por si algún ID llegara a tenerlas (no debería, pero evita fórmulas rotas).
-    var idEscapado = it.id.replace(/"/g, '""');
-    return SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied('=$' + colIdLetra + '2="' + idEscapado + '"')
-      .setBackground(paleta[k % paleta.length])
-      .setRanges([dataRange])
-      .build();
-  });
-
-  _tryCondFmt(sh, rules);
-  Logger.log('[' + etiqueta + '] Formato condicional por ID aplicado: ' + lista.length + ' grupo(s)/color(es).');
 }
+
+// ===== PARTE 2 — Funciones que no se corren a mano =====
+
+// ----- Torneo en vivo: activadores y publicación -----
 
 /**
  * _instalarActivadorTorneoEnVivo(inicio) [→ Contexto_Base_Web.md §26B133]
@@ -2108,8 +1026,9 @@ function _borrarTriggersPorHandler(nombreHandler) {
   return borrados;
 }
 
-// PASO 1 — T_Lista: detección y llenado automático de filas nuevas [→ Contexto_Base_Web.md §26B137]
+// ----- T_Lista: filas nuevas, organizador y datos de la API -----
 
+// PASO 1 — T_Lista: detección y llenado automático de filas nuevas [→ Contexto_Base_Web.md §26B137]
 function procesarTListaNuevasFilas(ss) {
   var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
   // FIX (08-sep-2026, pedido usuario): T_Lista tiene header de 2 FILAS [→ Contexto_Base_Web.md §26B138]
@@ -2430,294 +1349,6 @@ function procesarTListaNuevasFilas(ss) {
   return idsProcesados;
 }
 
-// _ordenarTListaPorFecha(ss) [→ Contexto_Base_Web.md §26B172]
-function _ordenarTListaPorFecha(ss, soloRevisar) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
-  // FIX (08-sep-2026, pedido usuario): T_Lista tiene header de 2 FILAS [→ Contexto_Base_Web.md §26B173]
-  if (!sh) return null;
-  // FIX (pedido usuario, N° quedaba "2, 1, 3"): antes, si el ORDEN FÍSICO de [→ Contexto_Base_Web.md §26B174]
-  // 29-oct-2026 (pedido de la usuaria): el orden pasa de ascendente a MÁS RECIENTE PRIMERO (ver _ordenarHojaPorFechaDesc_()). N° sigue siendo la posición de la fila.
-  // FASE 1 (25-sep-2026): ESTE es el proceso identificado como causante del [→ Contexto_Base_Web.md §26B175]
-  // La ayuda común reaplica Fecha, Hora y Creación tras reescribir (por eso la hora ya no vuelve a «30/12/1899»).
-  return _ordenarHojaPorFechaDesc_(sh, 3, TL_TOTAL_COLS, { NUM: TL.NUM, FECHA: TL.FECHA, HORA: TL.HORA, ID: TL.ID }, {
-    etiqueta: 'T_Lista', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', fmtHora: 'h:mm:ss AM/PM',
-    extraFmts: [{ col: TL.CREACION, fmt: 'dd/mm/yyyy hh:mm:ss' }], soloRevisar: !!soloRevisar
-  });
-}
-
-// _ordenarSListaPorFecha(ss, soloRevisar): S_Lista, más reciente primero (29-oct-2026, pedido de la usuaria). Fecha en solo día; la hora va en su propia columna. [→ Contexto_Base_Web.md §PF286]
-function _ordenarSListaPorFecha(ss, soloRevisar) {
-  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
-  if (!sh) return null;
-  return _ordenarHojaPorFechaDesc_(sh, 3, SL_TOTAL_COLS, { NUM: SL.NUM, FECHA: SL.FECHA, HORA: SL.HORA, ID: SL.ID }, {
-    etiqueta: 'S_Lista', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', fmtHora: 'h:mm:ss AM/PM', soloRevisar: !!soloRevisar
-  });
-}
-
-// _ordenarTAsistenciaPorFecha(ss, soloRevisar) y _ordenarSAsistenciaPorFecha(ss, soloRevisar): asistencias, más reciente primero; las filas de cada torneo o sorteo quedan juntas (desempate por ID) y conservan su orden interno. [→ Contexto_Base_Web.md §PF286]
-function _ordenarTAsistenciaPorFecha(ss, soloRevisar) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
-  if (!sh) return null;
-  return _ordenarHojaPorFechaDesc_(sh, 2, TA_TOTAL_COLS, { NUM: TA.NUM, FECHA: TA.FECHA, HORA: 0, ID: TA.ID }, {
-    etiqueta: 'T_Asistencia', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', soloRevisar: !!soloRevisar
-  });
-}
-
-function _ordenarSAsistenciaPorFecha(ss, soloRevisar) {
-  var sh = ss.getSheetByName(CFG.SHEETS.S_ASISTENCIA);
-  if (!sh) return null;
-  return _ordenarHojaPorFechaDesc_(sh, 2, SA_TOTAL_COLS, { NUM: SA.NUM, FECHA: SA.FECHA, HORA: 0, ID: SA.ID }, {
-    etiqueta: 'S_Asistencia', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', soloRevisar: !!soloRevisar
-  });
-}
-
-// ordenarYFormatearListasYAsistenciasRevisar() / ordenarYFormatearListasYAsistencias(): manuales, sin parámetros (29-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF286]
-// Dejan T_Lista, S_Lista, CR_Lista, T_Asistencia y S_Asistencia con más reciente primero, coma de miles solo visual (T_Lista, S_Lista, CR_Lista) y un color por ID (ambas asistencias).
-// La variante «Revisar» solo registra qué cambiaría. Cada hoja falla por separado y se informa en el registro. Idempotentes.
-function ordenarYFormatearListasYAsistenciasRevisar() { return _ordenarYFormatearListasYAsistencias_(true); }
-function ordenarYFormatearListasYAsistencias() { return _ordenarYFormatearListasYAsistencias_(false); }
-function _ordenarYFormatearListasYAsistencias_(soloRevisar) {
-  var ss = _getSs();
-  [
-    ['T_Lista', _ordenarTListaPorFecha],
-    ['S_Lista', _ordenarSListaPorFecha],
-    ['CR_Lista', _reordenarCRListaPorFecha],
-    ['T_Asistencia', _ordenarTAsistenciaPorFecha],
-    ['S_Asistencia', _ordenarSAsistenciaPorFecha]
-  ].forEach(function (p) {
-    try {
-      var r = p[1](ss, soloRevisar);
-      Logger.log('[Orden manual] ' + p[0] + ': ' + (r === null ? 'no existe la hoja' : (r.ok ? (r.cambio ? 'reordenada (' + r.movidas + ' fila(s) cambian de posición)' : 'ya estaba en orden') : 'NO se reordenó (hay fórmulas)')));
-    } catch (e) { Logger.log('[Orden manual] ' + p[0] + ' falló: ' + e.message); }
-  });
-  if (soloRevisar) { Logger.log('[Orden manual] Solo revisar: no se escribió nada (ni orden, ni miles, ni colores).'); return; }
-  try { Logger.log('[Orden manual] Formato de miles aplicado en ' + _aplicarFormatoMilesListas_(ss) + ' hoja(s).'); } catch (eM) { Logger.log('[Orden manual] Miles falló: ' + eM.message); }
-  try { _aplicarFormatoCondicionalTAporTorneo(ss); } catch (eT) { Logger.log('[Orden manual] Color de T_Asistencia falló: ' + eT.message); }
-  try { _aplicarFormatoCondicionalSAporSorteo(ss); } catch (eS) { Logger.log('[Orden manual] Color de S_Asistencia falló: ' + eS.message); }
-}
-
-// FASE 13 (26-sep-2026, plan Organizador_Fuente -- ver docblock "FASES [→ Contexto_Base_Web.md §26B176]
-
-/**
- * repararTorneosViejosDesdeAPI() [→ Contexto_Base_Web.md §26B177]
- */
-function repararTorneosViejosDesdeAPI() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
-  if (!sh || sh.getLastRow() < 3) {
-    Logger.log('[Reparación Fase 13] T_Lista vacía o no encontrada, nada que reparar.');
-    return;
-  }
-
-  var PROP_ULTIMA_FILA = 'REPARAR_TORNEOS_VIEJOS_ULTIMA_FILA';
-  var props = PropertiesService.getScriptProperties();
-  var filaDesde = parseInt(props.getProperty(PROP_ULTIMA_FILA) || '0', 10);
-
-  // FIX (26-sep-2026, reportado por el usuario tras la primera corrida real [→ Contexto_Base_Web.md §26B178]
-  sh.getRange(3, 1, sh.getLastRow() - 2, TL_TOTAL_COLS).clearDataValidations();
-
-  var numFilas = sh.getLastRow() - 2;
-  var datos = sh.getRange(3, 1, numFilas, TL_TOTAL_COLS).getValues();
-
-  // Mismo criterio que procesarTListaNuevasFilas() (más arriba en este
-  // archivo): se arman UNA sola vez, no en cada fila del loop.
-  var mapaDirectorioOrg = _getDirectorioLookupPorTag(ss);
-  var mapaInactivosOrg = _getInactivosLookupPorTag(ss);
-  var mapaAsistenciaPorId = _getAsistenciaTagsPorId(ss);
-
-  var inicio = Date.now();
-  var consultas = 0;
-  var cortadoPorPresupuesto = false;
-  var revisados = 0;
-  var reparados = 0;
-
-  for (var i = filaDesde; i < datos.length; i++) {
-    var fila = datos[i];
-    var filaHoja = i + 3;
-    var linkApp = String(fila[TL.LINK_APP - 1] || '').trim();
-    if (!linkApp) continue; // sin Link_app no hay tag que volver a consultar
-
-    // Mismo corte de presupuesto/tanda que procesarTListaNuevasFilas() (ver [→ Contexto_Base_Web.md §26B179]
-    if (consultas >= CFG.TORNEOS_REFETCH_MAX_POR_TANDA ||
-        (Date.now() - inicio) > CFG.TORNEOS_REFETCH_BUDGET_MS) {
-      Logger.log('[Reparación Fase 13] Presupuesto/tanda agotado en la fila ' + filaHoja +
-                 ' (' + consultas + ' consulta(s) ya hechas en esta tanda). Se corta aquí; ' +
-                 'correr repararTorneosViejosDesdeAPI() de nuevo para continuar.');
-      props.setProperty(PROP_ULTIMA_FILA, String(i));
-      cortadoPorPresupuesto = true;
-      break;
-    }
-
-    var match = linkApp.match(/[?&]id=([^&]+)/);
-    if (!match) {
-      Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': no se pudo parsear Link_app, se omite.');
-      continue;
-    }
-    var tagTorSinHash = match[1].trim().replace('#', '');
-
-    revisados++;
-    consultas++;
-    var jsonArray = _fetchMembersTorneo(tagTorSinHash);
-    if (!jsonArray || jsonArray.length === 0) {
-      Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': no se pudo obtener el JSON del torneo, se reintentará en otra corrida.');
-      continue;
-    }
-    var torneoData = jsonArray.torneoData || null;
-    if (!torneoData) continue;
-
-    var huboCambio = false;
-
-    // --- columnas de solo lectura (Fases 3/5/6/7), solo si están vacías ---
-    if (String(fila[TL.NOMBRE - 1] || '').trim() === '' && torneoData.name) {
-      sh.getRange(filaHoja, TL.NOMBRE).setValue(String(torneoData.name));
-      huboCambio = true;
-    }
-    if (String(fila[TL.DESCRIPCION - 1] || '').trim() === '' && torneoData.description) {
-      sh.getRange(filaHoja, TL.DESCRIPCION).setValue(String(torneoData.description));
-      huboCambio = true;
-    }
-    // FIX (26-sep-2026, reportado por el usuario -- mismo bug que en [→ Contexto_Base_Web.md §26B180]
-    if (String(fila[TL.LINK_JSON_2 - 1] || '').trim() === '') {
-      sh.getRange(filaHoja, TL.LINK_JSON_2).setValue(CFG.API_BASE + '/tournaments/%23' + tagTorSinHash);
-      huboCambio = true;
-    }
-    if ((fila[TL.NIVEL_TOPE - 1] === '' || fila[TL.NIVEL_TOPE - 1] === null) &&
-        torneoData.levelCap !== undefined && torneoData.levelCap !== null) {
-      sh.getRange(filaHoja, TL.NIVEL_TOPE).setValue(Number(torneoData.levelCap));
-      huboCambio = true;
-    }
-    // CORRECCIÓN (26-sep-2026, mismo fix que en procesarTListaNuevasFilas() [→ Contexto_Base_Web.md §26B181]
-    if (fila[TL.PARTICIPANTES - 1] === '' || fila[TL.PARTICIPANTES - 1] === null) {
-      sh.getRange(filaHoja, TL.PARTICIPANTES).setValue(
-        (torneoData.capacity !== undefined && torneoData.capacity !== null) ? Number(torneoData.capacity) : jsonArray.length);
-      huboCambio = true;
-    }
-    if ((fila[TL.CAPACIDAD - 1] === '' || fila[TL.CAPACIDAD - 1] === null) &&
-        torneoData.maxCapacity !== undefined && torneoData.maxCapacity !== null) {
-      sh.getRange(filaHoja, TL.CAPACIDAD).setValue(Number(torneoData.maxCapacity));
-      huboCambio = true;
-    }
-    // Modo_ID/Modo se tratan como en procesarTListaNuevasFilas() (Fase 4): [→ Contexto_Base_Web.md §26B182]
-    var modoIdApi = (torneoData.gameMode && torneoData.gameMode.id !== undefined && torneoData.gameMode.id !== null)
-      ? Number(torneoData.gameMode.id) : null;
-    var modoIdCelda = (fila[TL.MODO_ID - 1] !== '' && fila[TL.MODO_ID - 1] !== null)
-      ? Number(fila[TL.MODO_ID - 1]) : null;
-    if (modoIdCelda === null && modoIdApi !== null) {
-      sh.getRange(filaHoja, TL.MODO_ID).setValue(modoIdApi);
-      modoIdCelda = modoIdApi;
-      huboCambio = true;
-    }
-    if (String(fila[TL.MODO - 1] || '').trim() === '' && modoIdCelda !== null) {
-      sh.getRange(filaHoja, TL.MODO).setValue(_resolverModoDesdeCatalogo(modoIdCelda));
-      huboCambio = true;
-    }
-    // PF100: si el origen sigue en 'Web', la Creación guardada es la TEMPORAL (momento del registro en la web) y se reemplaza por la real del JSON. [→ Contexto_Base_Web.md §PF100]
-    var creacionEsTemporal = String(fila[TL.ORGANIZADOR_FUENTE - 1] || '').trim() === 'Web';
-    if (creacionEsTemporal || !(fila[TL.CREACION - 1] instanceof Date) || isNaN(fila[TL.CREACION - 1].getTime())) {
-      var creacion = _parseFechaApiSupercell(torneoData.createdTime);
-      if (creacion) {
-        sh.getRange(filaHoja, TL.CREACION).setValue(creacion);
-        _trySetFmt(sh, filaHoja, TL.CREACION, 'dd/mm/yyyy hh:mm:ss');
-        huboCambio = true;
-      }
-    }
-    // Preparación/Duración: misma conversión seg->min de la Fase 5 (la
-    // celda guarda MINUTOS como valor real, nunca segundos).
-    if (fila[TL.PREPARACION - 1] === '' || fila[TL.PREPARACION - 1] === null) {
-      var prepSeg = (torneoData.preparationDuration !== undefined && torneoData.preparationDuration !== null)
-        ? Number(torneoData.preparationDuration) : null;
-      if (prepSeg !== null && !isNaN(prepSeg)) {
-        sh.getRange(filaHoja, TL.PREPARACION).setValue(prepSeg / 60);
-        huboCambio = true;
-      }
-    }
-    if (fila[TL.DURACION - 1] === '' || fila[TL.DURACION - 1] === null) {
-      var durSeg = (torneoData.duration !== undefined && torneoData.duration !== null)
-        ? Number(torneoData.duration) : null;
-      if (durSeg !== null && !isNaN(durSeg)) {
-        sh.getRange(filaHoja, TL.DURACION).setValue(durSeg / 60);
-        huboCambio = true;
-      }
-    }
-    // Tipo/Estado: mismo mapeo "nunca inventar" de las Fases 6/7 -- si [→ Contexto_Base_Web.md §26B183]
-    if (String(fila[TL.TIPO - 1] || '').trim() === '') {
-      var tipoApi = torneoData.type;
-      var tipoValor = (tipoApi === 'open') ? 'Abierto' :
-                      (tipoApi === 'passwordProtected') ? 'Cerrado' : '';
-      if (tipoValor) {
-        sh.getRange(filaHoja, TL.TIPO).setValue(tipoValor);
-        huboCambio = true;
-      } else if (tipoApi) {
-        Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': valor de type desconocido ("' + tipoApi + '") -- Tipo queda vacío.');
-      }
-    }
-    if (String(fila[TL.ESTADO - 1] || '').trim() === '') {
-      var statusApi = torneoData.status;
-      var estadoValor = (statusApi === 'inPreparation') ? 'Planificado' :
-                         (statusApi === 'inProgress') ? 'En progreso' :
-                         (statusApi === 'ended') ? 'Realizado' : '';
-      if (estadoValor) {
-        sh.getRange(filaHoja, TL.ESTADO).setValue(estadoValor);
-        huboCambio = true;
-      } else if (statusApi) {
-        Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': valor de status desconocido ("' + statusApi + '") -- Estado queda vacío.');
-      }
-    }
-
-    // --- Organizador/Nom_Multi_Org/Tag_org + Organizador_Fuente (punto 3
-    //     del docblock de arriba, excepción explícita del plan) ---
-    var organizadorFuenteActual = String(fila[TL.ORGANIZADOR_FUENTE - 1] || '').trim();
-    var creatorTagValor = String(torneoData.creatorTag || '').trim();
-    if (organizadorFuenteActual !== 'API' && creatorTagValor) {
-      var infoCreator = _resolverOrganizadorPorCreatorTag(creatorTagValor, mapaDirectorioOrg, mapaInactivosOrg);
-      sh.getRange(filaHoja, TL.ORGANIZADOR).setValue(infoCreator.nombreOrg);
-      sh.getRange(filaHoja, TL.NOM_MULTI_ORG).setValue(infoCreator.nomMultiOrg);
-      sh.getRange(filaHoja, TL.TAG_ORG).setValue(infoCreator.tagOrg);
-      sh.getRange(filaHoja, TL.ORGANIZADOR_FUENTE).setValue('API');
-      huboCambio = true;
-      Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': Organizador/Nom_Multi_Org/Tag_org completados por creatorTag (' + infoCreator.tagOrg + ').');
-    }
-
-    // --- T_Asistencia: solo si vino vacía o incompleta (punto 4) ---
-    var idFila = String(fila[TL.ID - 1] || '').trim();
-    if (idFila) {
-      var tagsExistentes = mapaAsistenciaPorId[idFila] || {};
-      var cantidadExistente = Object.keys(tagsExistentes).length;
-      if (cantidadExistente < jsonArray.length) {
-        var fechaFila = fila[TL.FECHA - 1];
-        var temporadaFila = Number(fila[TL.TEMPORADA - 1]) || 0;
-        _generarAsistenciaParaTorneo(ss, idFila, fechaFila, temporadaFila, jsonArray);
-        huboCambio = true;
-        Logger.log('[Reparación Fase 13] Fila ' + filaHoja + ': T_Asistencia refrescada (' +
-                   cantidadExistente + ' -> ' + jsonArray.length + ' participante(s)).');
-      }
-    }
-
-    if (huboCambio) reparados++;
-  }
-
-  _guardarModoCSVSiHayNuevos();
-
-  // Se reaplican SIEMPRE (se corte o no por presupuesto -- las validaciones [→ Contexto_Base_Web.md §26B184]
-  _aplicarDropdownAdminTLista(ss);
-  _aplicarDropdownTagTor2TLista(ss);
-  _aplicarDropdownEstadoTLista(ss);
-  _aplicarDropdownMiembroActivoTLista(ss);
-  _aplicarDropdownReaccionTLista(ss);
-  _aplicarDropdownWhatsappTLista(ss);
-
-  if (!cortadoPorPresupuesto) {
-    props.deleteProperty(PROP_ULTIMA_FILA);
-    regenerarTControlSheet(ss);
-    Logger.log('[Reparación Fase 13] Pasada COMPLETA: ' + revisados + ' torneo(s) con Link_app revisado(s), ' +
-               reparados + ' reparado(s). T_Control regenerado. NO se tocaron los documentos de Google Docs ' +
-               '(actualizarDocParticipantesCalificadosTorneo()/actualizarDocGanadoresTorneo(), 28_Torneos_Docs.gs).');
-  } else {
-    Logger.log('[Reparación Fase 13] Pasada CORTADA por presupuesto: ' + revisados + ' torneo(s) revisado(s) en esta tanda, ' +
-               reparados + ' reparado(s). T_Control todavía NO se regeneró (se regenera recién al terminar una pasada completa).');
-  }
-}
-
 /**
  * _resolverOrganizadorPorCreatorTag(creatorTagCrudo, mapaDirectorio, mapaInactivos) [→ Contexto_Base_Web.md §26B185]
  */
@@ -2838,13 +1469,6 @@ function _buscarInfoOrganizadorPorNomMulti(nomMulti) {
   return null;
 }
 
-// FIX (09-sep-2026, pedido usuario — Consolidado_Cambios_Pendientes_ [→ Contexto_Base_Web.md §26B189]
-var FALLBACK_TAG_ORG_POR_NOMMULTI = {
-  'Diana':  ['#2GG8PJ8GC'],
-  'Leder':  ['#V20GJRC9Y'],
-  'Maikel': ['#QRQULCCV8', '#GLPC8YQGV', '#GY0GJ09C0']
-};
-
 /**
  * _getTagsAdminPorNomMulti(nomMulti) [→ Contexto_Base_Web.md §26B190]
  */
@@ -2946,278 +1570,250 @@ function _derivarClanClanTagDesdeTagOrg(tag, jsonArray, mapaDirectorio) {
   return { clan: '', clanTag: '' };
 }
 
-// FIX (08-sep-2026, pedido usuario — header de 2 filas confirmado por PDF): [→ Contexto_Base_Web.md §26B195]
-function _aplicarDropdownAdminTLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
-
-  // FIX (31/08/2026, pedido del usuario -- caso real: tras reordenar a mano [→ Contexto_Base_Web.md §26B196]
-  sh.getRange(3, 1, numFilas, TL_TOTAL_COLS).clearDataValidations();
-
-  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  var adminNombres = [];
-  if (shDir && shDir.getLastRow() >= 2) {
-    var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-    var adminTags = _getTagsAdmin();
-    for (var i = 0; i < dirData.length; i++) {
-      var tag = String(dirData[i][DC.TAG - 1] || '').trim();
-      if (tag.charAt(0) !== '#') tag = '#' + tag;
-      if (adminTags.indexOf(tag) >= 0) {
-        var nom = String(dirData[i][DC.NOM_MULTI - 1] || '').trim();
-        if (!nom) nom = String(dirData[i][DC.NOMBRE - 1] || '').trim();
-        if (nom && adminNombres.indexOf(nom) < 0) adminNombres.push(nom);
+/**
+ * _nombresOrganizadorTL_(organizadorInfo) — 18-oct-2026 (PF099). organizadorInfo.nombre trae el Nom_Multi del admin (ver _buscarInfoOrganizadorPorNomMulti()). En T_Lista, Nombre_Org es el nombre REAL de la cuenta y Nom_Multi_Org el Nom_Multi (así lo deja el flujo por API, _resolverOrganizadorPorCreatorTag()). Devuelve { nombreOrg, nomMultiOrg }: nombreOrg sale del Directorio (o Inactivos) por Tag_org; si no se encuentra, cae al Nom_Multi para no dejar la celda vacía. [→ Contexto_Base_Web.md §PF099]
+ */
+function _nombresOrganizadorTL_(organizadorInfo) {
+  var nomMulti = String((organizadorInfo && organizadorInfo.nombre) || '').trim();
+  var tag = String((organizadorInfo && organizadorInfo.tag) || '').trim();
+  var nombreReal = '';
+  if (tag && tag !== '#MANUAL') {
+    if (tag.charAt(0) !== '#') tag = '#' + tag;
+    try {
+      var ss = _getSs();
+      var infoDir = _getDirectorioLookupPorTag(ss)[tag];
+      if (infoDir && infoDir.nombre) nombreReal = String(infoDir.nombre).trim();
+      if (!nombreReal) {
+        var infoInact = _getInactivosLookupPorTag(ss)[tag];
+        if (infoInact && infoInact.nombre) nombreReal = String(infoInact.nombre).trim();
       }
+    } catch (e) {
+      Logger.log('[T_Lista] _nombresOrganizadorTL_(): no se pudo resolver el nombre real de ' + tag + ': ' + e.message);
     }
   }
-
-  if (adminNombres.length === 0) return;
-  adminNombres.sort();
-
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(adminNombres, true).setAllowInvalid(false).build();
-  sh.getRange(3, TL.NOM_MULTI_ORG, numFilas, 1).setDataValidation(dv);
+  return { nombreOrg: nombreReal || nomMulti, nomMultiOrg: nomMulti };
 }
 
 /**
- * _aplicarDropdownTagTor2TLista(ss) [→ Contexto_Base_Web.md §26B197]
+ * _validarTagTor2SinCoincidencia(ss) [→ Contexto_Base_Web.md §26B276]
  */
-function _aplicarDropdownTagTor2TLista(ss) {
+function _validarTagTor2SinCoincidencia(ss) {
   var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  // FIX (08-sep-2026, pedido usuario): header de 2 filas -- guard >= 3.
   if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
 
-  sh.getRange(3, TL.TAG_TOR_2, numFilas, 1).clearDataValidations();
-
-  var datos = sh.getRange(3, 1, numFilas, TL_TOTAL_COLS).getValues();
-  var tags = [];
+  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, TL_TOTAL_COLS).getValues();
+  var tagsExistentes = {};
   for (var i = 0; i < datos.length; i++) {
-    var t = String(datos[i][TL.TAG_TOR - 1] || '').trim();
-    if (t && tags.indexOf(t) < 0) tags.push(t);
-    // PF118: un torneo sin Tag_Tor (planificado, sin link) se ofrece por su ID, que es lo que se guarda en Tag_Tor_2 mientras no tenga tag.
-    var idSinTag = String(datos[i][TL.ID - 1] || '').trim();
-    if (!t && idSinTag && tags.indexOf(idSinTag) < 0) tags.push(idSinTag);
+    var tagTor = String(datos[i][TL.TAG_TOR - 1] || '').trim();
+    if (tagTor) tagsExistentes[tagTor] = true;
+    // PF118: Tag_Tor_2 también puede ser el ID de un principal sin tag todavía.
+    var idFila = String(datos[i][TL.ID - 1] || '').trim();
+    if (idFila) tagsExistentes[idFila] = true;
   }
-  if (tags.length === 0) return; // sin ningún Tag_Tor registrado todavía, nada para ofrecer en la lista
-  tags.sort();
 
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(tags, true).setAllowInvalid(false).build();
-  sh.getRange(3, TL.TAG_TOR_2, numFilas, 1).setDataValidation(dv);
-}
-
-/**
- * _aplicarDropdownEstadoTLista(ss) [→ Contexto_Base_Web.md §26B198]
- */
-function _aplicarDropdownEstadoTLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
-
-  sh.getRange(3, TL.ESTADO, numFilas, 1).clearDataValidations();
-  // FASE 7 (25-sep-2026, rediseño T_Lista, punto D): se agrega "En [→ Contexto_Base_Web.md §26B199]
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Planificado', 'En progreso', 'Realizado'], true).setAllowInvalid(false).build();
-  sh.getRange(3, TL.ESTADO, numFilas, 1).setDataValidation(dv);
-}
-
-/**
- * _aplicarDropdownMiembroActivoTLista(ss) [→ Contexto_Base_Web.md §26B200]
- */
-function _aplicarDropdownMiembroActivoTLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
-
-  sh.getRange(3, TL.MIEMBRO_ACTIVO, numFilas, 1).clearDataValidations();
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
-  sh.getRange(3, TL.MIEMBRO_ACTIVO, numFilas, 1).setDataValidation(dv);
-}
-
-/**
- * _aplicarDropdownReaccionTLista(ss) [→ Contexto_Base_Web.md §26B201]
- */
-function _aplicarDropdownReaccionTLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
-
-  sh.getRange(3, TL.REACCION, numFilas, 1).clearDataValidations();
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
-  sh.getRange(3, TL.REACCION, numFilas, 1).setDataValidation(dv);
-}
-
-/**
- * _aplicarDropdownWhatsappTLista(ss) [→ Contexto_Base_Web.md §26B202]
- */
-function _aplicarDropdownWhatsappTLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
-
-  sh.getRange(3, TL.WHATSAPP, numFilas, 1).clearDataValidations();
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
-  sh.getRange(3, TL.WHATSAPP, numFilas, 1).setDataValidation(dv);
-}
-
-/**
- * _aplicarDropdownId2SLista(ss) [→ Contexto_Base_Web.md §26B203]
- */
-function _aplicarDropdownId2SLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
-
-  sh.getRange(3, SL.ID_2, numFilas, 1).clearDataValidations();
-
-  var datos = sh.getRange(3, 1, numFilas, SL_TOTAL_COLS).getValues();
-  var ids = [];
-  for (var i = 0; i < datos.length; i++) {
-    var idVal = String(datos[i][SL.ID - 1] || '').trim();
-    if (idVal && ids.indexOf(idVal) < 0) ids.push(idVal);
+  for (var j = 0; j < datos.length; j++) {
+    var tagTor2 = String(datos[j][TL.TAG_TOR_2 - 1] || '').trim();
+    if (!tagTor2) continue;
+    var propioTagTor = String(datos[j][TL.TAG_TOR - 1] || '').trim();
+    var propioId = String(datos[j][TL.ID - 1] || '').trim();
+    if (tagTor2 === propioTagTor || tagTor2 === propioId) {
+      Logger.log('[T_Lista] Fila ' + (j + 3) + ': Tag_Tor_2 (' + tagTor2 + ') es igual a su propio Tag_Tor o ID -- se ignora (no puede continuarse a sí mismo).');
+      continue;
+    }
+    if (!tagsExistentes[tagTor2]) {
+      Logger.log('[T_Lista] Fila ' + (j + 3) + ': Tag_Tor_2 (' + tagTor2 + ') no coincide con el Tag_Tor de ningún torneo existente -- revisar si está bien escrito.');
+    }
   }
-  if (ids.length === 0) return; // sin ningún ID registrado todavía, nada para ofrecer en la lista
-  ids.sort();
-
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(ids, true).setAllowInvalid(false).build();
-  sh.getRange(3, SL.ID_2, numFilas, 1).setDataValidation(dv);
 }
 
 /**
- * _aplicarDropdownEstadoSLista(ss) [→ Contexto_Base_Web.md §26B204]
+ * _obtenerOrganizadorFuenteTLista(id) [→ Contexto_Base_Web.md §26B303]
  */
-function _aplicarDropdownEstadoSLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
+function _obtenerOrganizadorFuenteTLista(id) {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.T_LISTA);
+  if (!sh || sh.getLastRow() < 3) return '';
   var numFilas = sh.getLastRow() - 2;
-
-  sh.getRange(3, SL.ESTADO, numFilas, 1).clearDataValidations();
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Planificado', 'Realizado'], true).setAllowInvalid(false).build();
-  sh.getRange(3, SL.ESTADO, numFilas, 1).setDataValidation(dv);
+  var ids = sh.getRange(3, TL.ID, numFilas, 1).getValues();
+  for (var i = 0; i < ids.length; i++) {
+    if (String(ids[i][0] || '') === String(id)) {
+      return String(sh.getRange(i + 3, TL.ORGANIZADOR_FUENTE).getValue() || '').trim();
+    }
+  }
+  return '';
 }
 
 /**
- * _aplicarDropdownMiembroActivoSLista(ss) [→ Contexto_Base_Web.md §26B205]
+ * _fetchMembersTorneo(tagSinHash) [→ Contexto_Base_Web.md §26B238]
  */
-function _aplicarDropdownMiembroActivoSLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
+function _fetchMembersTorneo(tagSinHash) {
+  var tag = String(tagSinHash || '').trim();
+  if (tag.charAt(0) === '#') tag = tag.substring(1);
+  if (!tag) {
+    Logger.log('[Torneos] _fetchMembersTorneo: tag de torneo vacío.');
+    return null;
+  }
 
-  sh.getRange(3, SL.MIEMBRO_ACTIVO, numFilas, 1).clearDataValidations();
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
-  sh.getRange(3, SL.MIEMBRO_ACTIVO, numFilas, 1).setDataValidation(dv);
+  var data = _apiGet('/tournaments/%23' + tag);
+  if (!data) return null; // _apiGet ya logueó el código HTTP / excepción real.
+
+  if (!data.membersList || !Array.isArray(data.membersList)) {
+    Logger.log('[Torneos] ' + tag + ' -> la API oficial respondió sin membersList ' +
+               '(torneo no encontrado, aún no empezó, o cambió el nombre del campo). ' +
+               'Respuesta: ' + JSON.stringify(data).substring(0, 300));
+    return null;
+  }
+
+  _guardarJsonTorneoEnDrive(tag, data); // se mantiene el respaldo crudo en Drive
+  // FASE 3 (25-sep-2026, rediseño T_Lista): se expone el JSON completo del [→ Contexto_Base_Web.md §26B239]
+  data.membersList.torneoData = data;
+  return data.membersList;
 }
 
 /**
- * _aplicarDropdownReaccionSLista(ss) [→ Contexto_Base_Web.md §26B206]
+ * _parseFechaApiSupercell(str) [→ Contexto_Base_Web.md §26B240]
  */
-function _aplicarDropdownReaccionSLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
-
-  sh.getRange(3, SL.REACCION, numFilas, 1).clearDataValidations();
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
-  sh.getRange(3, SL.REACCION, numFilas, 1).setDataValidation(dv);
+function _parseFechaApiSupercell(str) {
+  var m = String(str || '').match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})\.(\d{3})Z$/);
+  if (!m) return null;
+  var ms = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6]), Number(m[7]));
+  var d = new Date(ms);
+  return isNaN(d.getTime()) ? null : d;
 }
 
 /**
- * _aplicarDropdownWhatsappSLista(ss) [→ Contexto_Base_Web.md §26B207]
+ * _guardarJsonTorneoEnDrive(tagTorneo, datos) [→ Contexto_Base_Web.md §26B248]
  */
-function _aplicarDropdownWhatsappSLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
+function _guardarJsonTorneoEnDrive(tagTorneo, datos) {
+  try {
+    var filename = 'Torneo - ' + tagTorneo + '.json';
+    var contenido = JSON.stringify(datos, null, 2);
 
-  sh.getRange(3, SL.WHATSAPP, numFilas, 1).clearDataValidations();
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
-  sh.getRange(3, SL.WHATSAPP, numFilas, 1).setDataValidation(dv);
+    // 14-oct-2026 (pedido de la usuaria): la subcarpeta se decide UNA SOLA VEZ, la primera
+    // vez que se guarda el torneo. Si el archivo ya existe en Terna o en la raíz de Torneos,
+    // se sobrescribe ahí y no se mueve (el creador puede cambiarse de clan después).
+    // [→ Contexto_Base_Web.md §PF078]
+    var folderTerna = null;
+    try { folderTerna = DriveApp.getFolderById(DRIVE_FOLDER_ID_TORNEOS_TERNA); }
+    catch (eT) { Logger.log('[Torneos] No se pudo abrir la carpeta Terna (revisar DRIVE_FOLDER_ID_TORNEOS_TERNA): ' + eT.message); }
+    var folderRaiz = DriveApp.getFolderById(DRIVE_FOLDER_ID_TORNEOS);
+
+    if (folderTerna) {
+      var enTerna = folderTerna.getFilesByName(filename);
+      if (enTerna.hasNext()) { _setContentConConteo_(enTerna.next(), contenido); return; }
+    }
+    var enRaiz = folderRaiz.getFilesByName(filename);
+    if (enRaiz.hasNext()) { _setContentConConteo_(enRaiz.next(), contenido); return; }
+
+    // Primera vez: se decide la subcarpeta.
+    var destino = (folderTerna && _creadorTorneoEnClanTerna_(datos)) ? folderTerna : folderRaiz;
+    _createFileConConteo_(destino, filename, contenido, MimeType.PLAIN_TEXT);
+  } catch(e) {
+    Logger.log('[Torneos] Error guardando JSON de ' + tagTorneo + ': ' + e.message);
+  }
 }
 
 /**
- * _aplicarDropdownAdminSLista(ss) [→ Contexto_Base_Web.md §26B208]
+ * _creadorTorneoEnClanTerna_(datos) -- true si el creador (datos.creatorTag) está, en este
+ * momento, en uno de los clanes de CFG.TERNA_TAGS. El clan sale de la entrada del creador en
+ * datos.membersList; si no figura ahí, del Directorio. Sin creatorTag o sin clan: false.
+ * [→ Contexto_Base_Web.md §PF078]
  */
-function _aplicarDropdownAdminSLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
+function _creadorTorneoEnClanTerna_(datos) {
+  var norm = function (t) {
+    t = String(t || '').trim().toUpperCase();
+    return (t && t.charAt(0) !== '#') ? '#' + t : t;
+  };
+  var creador = norm(datos && datos.creatorTag);
+  if (!creador) return false;
 
-  sh.getRange(3, SL.ORGANIZADOR, numFilas, 1).clearDataValidations();
+  var clanTag = '';
+  var lista = (datos && datos.membersList) || [];
+  for (var i = 0; i < lista.length; i++) {
+    if (norm(lista[i].tag) === creador) {
+      clanTag = norm(lista[i].clan && lista[i].clan.tag);
+      break;
+    }
+  }
+  if (!clanTag) {
+    try {
+      var info = _getDirectorioLookupPorTag(_getSs())[creador];
+      if (info) clanTag = norm(info.clanTag);
+    } catch (e) { /* sin Directorio: queda sin clan */ }
+  }
+  if (!clanTag) return false;
 
-  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  var adminNombres = [];
-  if (shDir && shDir.getLastRow() >= 2) {
-    var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-    var adminTags = _getTagsAdmin();
-    for (var i = 0; i < dirData.length; i++) {
-      var tag = String(dirData[i][DC.TAG - 1] || '').trim();
-      if (tag.charAt(0) !== '#') tag = '#' + tag;
-      if (adminTags.indexOf(tag) >= 0) {
-        var nom = String(dirData[i][DC.NOM_MULTI - 1] || '').trim();
-        if (!nom) nom = String(dirData[i][DC.NOMBRE - 1] || '').trim();
-        if (nom && adminNombres.indexOf(nom) < 0) adminNombres.push(nom);
-      }
+  for (var j = 0; j < CFG.TERNA_TAGS.length; j++) {
+    if (norm(CFG.TERNA_TAGS[j]) === clanTag) return true;
+  }
+  return false;
+}
+
+/**
+ * _leerModoCSV() [→ Contexto_Base_Web.md §26B243]
+ */
+function _leerModoCSV() {
+  var headersDefault = ['N°', 'ID', 'Name', 'Nombre'];
+  var csvText = _loadCSVFromDrive('Backup_Modo.csv');
+  if (!csvText) return { headers: headersDefault, rows: [] };
+
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
+
+  return { headers: parsed[0], rows: parsed.slice(1) };
+}
+
+/**
+ * _guardarModoCSV(headers, rows) [→ Contexto_Base_Web.md §26B244]
+ */
+function _guardarModoCSV(headers, rows) {
+  rows.sort(function (a, b) {
+    var nameA = String(a[2] || ''), nameB = String(b[2] || '');
+    if (nameA === nameB) return 0;
+    return nameA < nameB ? -1 : 1;
+  });
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+  _saveCSVToDrive('Backup_Modo.csv', _encodeCSV([headers].concat(rows)));
+}
+
+/**
+ * _resolverModoDesdeCatalogo(modoId) [→ Contexto_Base_Web.md §26B245]
+ */
+function _resolverModoDesdeCatalogo(modoId) {
+  var idStr = String(modoId === undefined || modoId === null ? '' : modoId).trim();
+  if (!idStr) return '';
+
+  if (_CATALOGO_MODO_CACHE === null) _CATALOGO_MODO_CACHE = _leerModoCSV();
+
+  for (var i = 0; i < _CATALOGO_MODO_CACHE.rows.length; i++) {
+    if (String(_CATALOGO_MODO_CACHE.rows[i][1] || '').trim() === idStr) {
+      var nombreManual = String(_CATALOGO_MODO_CACHE.rows[i][3] || '').trim();
+      if (nombreManual) return nombreManual;
+      return String(_CATALOGO_MODO_CACHE.rows[i][2] || '').trim(); // fallback: Name
     }
   }
 
-  if (adminNombres.length === 0) return;
-  adminNombres.sort();
-
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(adminNombres, true).setAllowInvalid(false).build();
-  sh.getRange(3, SL.ORGANIZADOR, numFilas, 1).setDataValidation(dv);
+  // Sin match -- fila nueva, Name/Nombre vacíos hasta que el usuario la [→ Contexto_Base_Web.md §26B246]
+  if (_CATALOGO_MODO_NUEVOS_PENDIENTES.indexOf(idStr) < 0) {
+    _CATALOGO_MODO_CACHE.rows.push(['', Number(idStr), '', '']);
+    _CATALOGO_MODO_NUEVOS_PENDIENTES.push(idStr);
+  }
+  return '';
 }
 
 /**
- * _aplicarDropdownClanSLista(ss) [→ Contexto_Base_Web.md §26B209]
+ * _guardarModoCSVSiHayNuevos() [→ Contexto_Base_Web.md §26B247]
  */
-function _aplicarDropdownClanSLista(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return;
-  var numFilas = sh.getLastRow() - 2;
-
-  var shClan = ss.getSheetByName(CFG.SHEETS.CLAN);
-  var nombresClan = [];
-  if (shClan && shClan.getLastRow() >= 2) {
-    // Mismo orden que CFG.TERNA_TAGS: se recorre CFG.TERNA_TAGS y se busca [→ Contexto_Base_Web.md §26B210]
-    var clanData = shClan.getRange(2, 1, shClan.getLastRow() - 1, CC.CONDICION).getValues();
-    for (var t = 0; t < CFG.TERNA_TAGS.length; t++) {
-      var tagBuscado = CFG.TERNA_TAGS[t];
-      for (var r = 0; r < clanData.length; r++) {
-        if (String(clanData[r][CC.CLAN_TAG - 1] || '').trim() === tagBuscado) {
-          nombresClan.push(String(clanData[r][CC.NOMBRE - 1] || '').trim());
-          break;
-        }
-      }
-    }
-  }
-
-  sh.getRange(3, SL.CLAN, numFilas, 1).clearDataValidations();
-  if (nombresClan.length === 0) return;
-
-  var dv = SpreadsheetApp.newDataValidation().requireValueInList(nombresClan, true).setAllowInvalid(false).build();
-  sh.getRange(3, SL.CLAN, numFilas, 1).setDataValidation(dv);
+function _guardarModoCSVSiHayNuevos() {
+  if (_CATALOGO_MODO_NUEVOS_PENDIENTES.length === 0) return;
+  _guardarModoCSV(_CATALOGO_MODO_CACHE.headers, _CATALOGO_MODO_CACHE.rows);
+  Logger.log('[T_Lista] Backup_Modo.csv: ' + _CATALOGO_MODO_NUEVOS_PENDIENTES.length +
+             ' ID(s) de modo nuevo(s) agregado(s) (' + _CATALOGO_MODO_NUEVOS_PENDIENTES.join(', ') +
+             '), Name/Nombre vacíos hasta que se completen a mano.');
+  _CATALOGO_MODO_NUEVOS_PENDIENTES = [];
 }
 
-/**
- * _normalizarHoraSLista(sh) — 18-oct-2026 (PF118, pedido del usuario). Deja la columna Hora de S_Lista como HORA de verdad (solo hora, sin fecha): (1) si una celda trae texto con una hora («30/12/1899 20:00:00», «20:00:00», «8:00 PM»), la convierte en el número de la hora del día (fracción de día; no depende de la zona horaria); (2) reaplica a toda la columna el formato de solo hora `h:mm:ss AM/PM`, el mismo que usa T_Lista. Antes nadie le ponía formato a esa columna: al restaurar desde el CSV (el respaldo guarda toda hora con su fecha 30/12/1899) la celda volvía a mostrarse como «30/12/1899 20:00:00», aunque la usuaria le hubiera cambiado el formato a mano. Los valores ya correctos no se reescriben. Se llama desde `procesarSListaNuevasFilas()` (todas las rutas de runUpdate/runAll), `_setupSLista()` e `importarSListaDesdeCSV()`. [→ Contexto_Base_Web.md §PF118]
- */
-function _normalizarHoraSLista(sh) {
-  if (!sh || sh.getLastRow() < 3) return;
-  var n = sh.getLastRow() - 2;
-  var rango = sh.getRange(3, SL.HORA, n, 1);
-  var vals = rango.getValues();
-  for (var i = 0; i < vals.length; i++) {
-    var v = vals[i][0];
-    if (typeof v !== 'string' || !v.trim()) continue;
-    var m = v.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(a\.?\s?m\.?|p\.?\s?m\.?)?/i);
-    if (!m) continue; // texto sin hora: no se toca
-    var h = Number(m[1]), min = Number(m[2]), seg = Number(m[3] || 0);
-    var ampm = m[4] ? m[4].toLowerCase().replace(/[.\s]/g, '') : '';
-    if (ampm === 'pm' && h < 12) h += 12;
-    if (ampm === 'am' && h === 12) h = 0;
-    if (h > 23 || min > 59 || seg > 59) continue;
-    sh.getRange(i + 3, SL.HORA).setValue((h * 3600 + min * 60 + seg) / 86400);
-  }
-  rango.setNumberFormat('h:mm:ss AM/PM');
-}
+// ----- S_Lista: sorteos -----
 
 /**
  * procesarSListaNuevasFilas(ss) [→ Contexto_Base_Web.md §26B211]
@@ -3333,561 +1929,278 @@ function procesarSListaNuevasFilas(ss) {
 }
 
 /**
- * procesarSorteos() [→ Contexto_Base_Web.md §26B217]
+ * _normalizarHoraSLista(sh) — 18-oct-2026 (PF118, pedido del usuario). Deja la columna Hora de S_Lista como HORA de verdad (solo hora, sin fecha): (1) si una celda trae texto con una hora («30/12/1899 20:00:00», «20:00:00», «8:00 PM»), la convierte en el número de la hora del día (fracción de día; no depende de la zona horaria); (2) reaplica a toda la columna el formato de solo hora `h:mm:ss AM/PM`, el mismo que usa T_Lista. Antes nadie le ponía formato a esa columna: al restaurar desde el CSV (el respaldo guarda toda hora con su fecha 30/12/1899) la celda volvía a mostrarse como «30/12/1899 20:00:00», aunque la usuaria le hubiera cambiado el formato a mano. Los valores ya correctos no se reescriben. Se llama desde `procesarSListaNuevasFilas()` (todas las rutas de runUpdate/runAll), `_setupSLista()` e `importarSListaDesdeCSV()`. [→ Contexto_Base_Web.md §PF118]
  */
-function procesarSorteos() {
+function _normalizarHoraSLista(sh) {
+  if (!sh || sh.getLastRow() < 3) return;
+  var n = sh.getLastRow() - 2;
+  var rango = sh.getRange(3, SL.HORA, n, 1);
+  var vals = rango.getValues();
+  for (var i = 0; i < vals.length; i++) {
+    var v = vals[i][0];
+    if (typeof v !== 'string' || !v.trim()) continue;
+    var m = v.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(a\.?\s?m\.?|p\.?\s?m\.?)?/i);
+    if (!m) continue; // texto sin hora: no se toca
+    var h = Number(m[1]), min = Number(m[2]), seg = Number(m[3] || 0);
+    var ampm = m[4] ? m[4].toLowerCase().replace(/[.\s]/g, '') : '';
+    if (ampm === 'pm' && h < 12) h += 12;
+    if (ampm === 'am' && h === 12) h = 0;
+    if (h > 23 || min > 59 || seg > 59) continue;
+    sh.getRange(i + 3, SL.HORA).setValue((h * 3600 + min * 60 + seg) / 86400);
+  }
+  rango.setNumberFormat('h:mm:ss AM/PM');
+}
+
+/**
+ * _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, [→ Contexto_Base_Web.md §26B275]
+ */
+function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, razon, permitirSinTag, registradoPor, tickets) {
   var ss = _getSs();
 
-  var idsResueltos = procesarSListaNuevasFilas(ss);
-  if (idsResueltos.length > 0) {
-    Logger.log('[Sorteos] Resuelto Organizador/Tag_org/Clan/ClanTag en ' + idsResueltos.length + ' fila(s) de S_Lista: ' + idsResueltos.join(', '));
+  var idNorm = String(idSorteo || '').trim();
+  if (!idNorm) return { ok: false, error: 'Falta el ID del sorteo.' };
+
+  var RESULTADOS = CFG.SORTEOS_RESULTADO_TIPOS;
+  var resultadosValidos = [RESULTADOS.CALIFICA, RESULTADOS.NO_CALIFICA];
+  if (resultadosValidos.indexOf(resultado) < 0) {
+    return { ok: false, error: 'Resultado inválido.' };
   }
 
-  sincronizarRequisitosSorteo();
-  actualizarDocParticipantesCalificados();
-  // FASE (10-sep-2026, pedido del usuario -- consolidado sección 1, punto [→ Contexto_Base_Web.md §26B218]
-  actualizarDocGanadoresSorteo();
-
-  // NUEVO (15-sep-2026, pedido del usuario): complemento de [→ Contexto_Base_Web.md §26B219]
-  try {
-    actualizarDocNoCalificadosSorteo();
-  } catch (eNCS2) {
-    Logger.log('[Sorteos] actualizarDocNoCalificadosSorteo() falló (se continúa): ' + eNCS2.message);
-  }
-
-  return true;
-}
-
-/**
- * procesarCambioRango() [→ Contexto_Base_Web.md §PF286]
- * Equivalente de procesarSorteos() y procesarTorneos() para Cambio de rango: con el par vigente de
- * Extra (Ascenso_Vigente_ID / Descenso_Vigente_ID) actualiza los tres documentos que salen de ese par: «Cambio de rango», «Participantes calificados (cambio de rango)» y «No calificados (cambio de rango)».
- * Cada paso va en su propio try/catch para que uno que falle no corte a los demás.
- * Lo llaman PASOS_RUNALL y PASOS_RUNUPDATE (00_Main.gs) y la web al guardar el par o generar propuestas.
- */
-function procesarCambioRango() {
-  var idA = _getIdVigenteExtraCR('Ascenso');
-  var idD = _getIdVigenteExtraCR('Descenso');
-  if (!idA || !idD) {
-    Logger.log('[CambioRango] Falta el par vigente en Extra (Ascenso=' + (idA || 'vacío') + ', Descenso=' +
-      (idD || 'vacío') + '): no se actualizan los documentos.');
-    return true;
-  }
-
-  // Documento «Cambio de rango»: los cambios realmente aplicados de la corrida más reciente, con los requisitos, las listas por clan y las tablas por rango.
-  try {
-    actualizarDocCambioRango(idA, idD);
-  } catch (eDocCR) {
-    Logger.log('[CambioRango] actualizarDocCambioRango() falló (se continúa): ' + eDocCR.message);
-  }
-
-  // Documentos «Participantes calificados» y «No calificados» de Cambio de rango: se evalúa una sola vez a todo el padrón y se reparte entre los dos.
-  try {
-    actualizarDocsCalificadosYNoCalificadosCambioRango(idA, idD);
-  } catch (eDocCal) {
-    Logger.log('[CambioRango] actualizarDocsCalificadosYNoCalificadosCambioRango() falló (se continúa): ' + eDocCal.message);
-  }
-
-  return true;
-}
-
-/**
- * _getConfigMasRecienteCategoria(nombreCategoria) [→ Contexto_Base_Web.md §26B220]
- */
-
-/**
- * _parseSemanasSorteo(semanasStr) [→ Contexto_Base_Web.md §26B221]
- */
-function _parseSemanasSorteo(semanasStr) {
-  var resultado = [];
-  String(semanasStr || '').split(',').forEach(function (token) {
-    var m = String(token || '').trim().match(/^T(\d+)_S(\d+)$/i);
-    if (!m) return;
-    resultado.push({ temporada: Number(m[1]), semana: Number(m[2]) });
-  });
-  return resultado;
-}
-
-/**
- * FIX (12-sep-2026, pedido del usuario -- precarga de "Modificar" debe leer [→ Contexto_Base_Web.md §26B222]
- */
-
-/**
- * _getIdVigenteExtra(nombreCategoria) [→ Contexto_Base_Web.md §26B223]
- */
-function _getIdVigenteExtra(nombreCategoria) {
-  try {
-    var ss = _getSs();
-    var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
-    if (!shExtra) return '';
-    var col = (nombreCategoria === 'Torneo') ? 20 : 21; // Torneo_Vigente_ID / Sorteo_Vigente_ID, ver _setupExtra()
-    var val = shExtra.getRange(2, col).getValue();
-    return val ? String(val).trim() : '';
-  } catch (e) {
-    Logger.log('[VigenteExtra] Error leyendo Extra!Torneo_Vigente_ID/Sorteo_Vigente_ID: ' + e.message);
-    return _valorExtraDesdeCsv_((nombreCategoria === 'Torneo') ? ['Torneo_Vigente_ID'] : ['Sorteo_Vigente_ID']); // PF073: respaldo CSV
-  }
-}
-
-/**
- * _getIdVigenteExtraCR(tipo) [→ Contexto_Base_Web.md §26B224]
- */
-function _getIdVigenteExtraCR(tipo) {
-  try {
-    var ss = _getSs();
-    var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
-    if (!shExtra) return '';
-    var col = (tipo === 'Ascenso') ? 22 : 23; // Ascenso_Vigente_ID / Descenso_Vigente_ID, ver _setupExtra()
-    var val = shExtra.getRange(2, col).getValue();
-    return val ? String(val).trim() : '';
-  } catch (e) {
-    Logger.log('[VigenteExtra] Error leyendo Extra!Ascenso_Vigente_ID/Descenso_Vigente_ID: ' + e.message);
-    return _valorExtraDesdeCsv_((tipo === 'Ascenso') ? ['Ascenso_Vigente_ID'] : ['Descenso_Vigente_ID']); // PF073: respaldo CSV
-  }
-}
-
-// _valorExtraDesdeCsv_(nombres): PF073. Valor de la fila 2 de Extra, leído de Backup_Extra.csv por NOMBRE de encabezado (el CSV se mapea por encabezado, no por posición; ver importarExtraDesdeCSV). Devuelve '' si no hay CSV, columna o valor; nunca lanza error. [→ Contexto_Base_Web.md §PF073]
-function _valorExtraDesdeCsv_(nombres) {
-  try {
-    var lec = _obtenerFilasConFallbackCSV(_getSs(), CFG.SHEETS.EXTRA, 'Backup_Extra.csv');
-    if (!lec.filas.length) return '';
-    for (var n = 0; n < nombres.length; n++) {
-      var idx = lec.headerIdx[nombres[n]];
-      if (idx === undefined) continue;
-      var v = lec.filas[0][idx];
-      if (v !== '' && v !== null && v !== undefined) return String(v).trim();
+  var razonTexto = '';
+  if (resultado === RESULTADOS.NO_CALIFICA) {
+    var RAZONES = CFG.SORTEOS_RAZON_TIPOS;
+    var razonesValidas = [RAZONES.NO_WHATSAPP, RAZONES.NO_REACCION, RAZONES.NO_MIEMBRO_ACTIVO];
+    razonTexto = String(razon || '').trim();
+    if (razonesValidas.indexOf(razonTexto) < 0) {
+      return { ok: false, error: 'Falta la razón (obligatoria cuando el resultado es "No califica").' };
     }
-  } catch (e) {
-    Logger.log('[VigenteExtra] Tampoco se pudo leer Backup_Extra.csv: ' + e);
   }
-  return '';
-}
 
-function _getConfigMasRecienteCategoria(nombreCategoria, id) {
-  var esTorneo = (nombreCategoria === 'Torneo');
-  var ss = _getSs();
-  // PF073 (29-oct-2026): hoja viva o, si no está disponible, Backup_T_Lista.csv / Backup_S_Lista.csv (encabezado de 2 filas, datos desde la fila 3). Solo devuelve [] si tampoco hay CSV. [→ Contexto_Base_Web.md §PF073]
-  var totalCols = esTorneo ? TL_TOTAL_COLS : SL_TOTAL_COLS;
-  var lecturaLista = _obtenerFilasConFallbackCSV(ss, esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA, esTorneo ? 'Backup_T_Lista.csv' : 'Backup_S_Lista.csv', totalCols, 2);
-  if (lecturaLista.origen === 'vacio') return [];
-  var datos = lecturaLista.filas;
-  if (lecturaLista.origen === 'csv') {
-    // El CSV trae la Fecha como texto: se pasa a Date igual que en _webTorneos() y _resolverGruposContinuacionTorneos(), porque el criterio histórico de más abajo exige instanceof Date.
-    var colFechaCsv = esTorneo ? TL.FECHA : SL.FECHA;
-    datos = datos.map(function (f) {
-      var nueva = f.slice();
-      var fechaObj = _parseSpanishDate(nueva[colFechaCsv - 1]);
-      if (fechaObj instanceof Date && !isNaN(fechaObj.getTime())) nueva[colFechaCsv - 1] = fechaObj;
-      return nueva;
-    });
+  var tagNorm = String(tag || '').trim().toUpperCase();
+  if (!tagNorm && !permitirSinTag) {
+    return { ok: false, error: 'Falta el Tag del ganador. Si es intencional (cuenta externa a los clanes), confirma explícitamente el guardado sin Tag.' };
   }
-  if (!datos.length) return [];
+  var tagConHash = tagNorm ? (tagNorm.charAt(0) === '#' ? tagNorm : '#' + tagNorm) : '';
 
-  var COL_FECHA     = esTorneo ? TL.FECHA : SL.FECHA;
-  var COL_ID        = esTorneo ? TL.ID : SL.ID;
-  var COLS_MINT     = esTorneo ? TL_MIN_T_COLS : SL_MIN_S_COLS;
-  var COLS_ATAQUES  = esTorneo ? TL_ATAQUES_COLS : SL_ATAQUES_COLS;
-  var COLS_TORNEOS  = esTorneo ? null : SL_TORNEOS_COLS; // T_Lista no tiene esta columna
-  var COL_MIEMBRO   = esTorneo ? TL.MIEMBRO_ACTIVO : SL.MIEMBRO_ACTIVO;
-  var COL_REACCION  = esTorneo ? TL.REACCION : SL.REACCION;
-  // FIX (12-sep-2026, pedido del usuario -- consolidado, sección 1 y 8, [→ Contexto_Base_Web.md §26B225]
-  var COL_WHATSAPP  = esTorneo ? TL.WHATSAPP : SL.WHATSAPP;
-  // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): ver [→ Contexto_Base_Web.md §26B226]
-  var COL_BARCOS    = esTorneo ? TL.BARCOS : SL.BARCOS;
-  var COL_DELTA     = esTorneo ? null : SL.MIN_S_DELTA; // T_Lista no tiene esta columna
-  // Semanas (FIX 11-sep-2026, pedido del usuario -- segunda vuelta: se [→ Contexto_Base_Web.md §26B227]
-  var COL_SEMANAS   = esTorneo ? TL.SEMANAS : SL.SEMANAS;
-  // Premios (FIX 12-sep-2026, pedido del usuario -- consolidado, sección [→ Contexto_Base_Web.md §26B228]
-  var COL_PREMIOS   = esTorneo ? TL.PREMIOS : SL.PREMIOS;
+  var nombreTexto = String(nombre || '').trim();
+  if (!nombreTexto) return { ok: false, error: 'Falta el nombre del ganador.' };
 
-  // Fila objetivo: [→ Contexto_Base_Web.md §26B229]
-  var filaMasReciente = null;
-  if (id) {
-    for (var j = 0; j < datos.length; j++) {
-      if (String(datos[j][COL_ID - 1] || '') === String(id)) {
-        filaMasReciente = datos[j];
+  // Tickets (FIX 12-sep-2026): opcional. Sin valor -> se guarda vacío, sin
+  // inventar un default. Con valor -> debe ser numérico y no negativo.
+  var ticketsGuardar = '';
+  if (tickets !== undefined && tickets !== null && String(tickets).trim() !== '') {
+    var ticketsNum = Number(tickets);
+    if (isNaN(ticketsNum) || ticketsNum < 0) {
+      return { ok: false, error: 'Tickets inválido (debe ser un número mayor o igual a 0).' };
+    }
+    ticketsGuardar = ticketsNum;
+  }
+
+  var filaSorteo = _getFilaSListaPorId(ss, idNorm);
+  if (!filaSorteo) return { ok: false, error: 'No encontré el sorteo ' + idNorm + ' en S_Lista.' };
+
+  var infoDir = { nomMulti: '', prestamo: '', clanTag: '', clan: '' };
+  if (tagConHash) {
+    var mapaDirectorio = _getDirectorioLookupPorTag(ss);
+    if (mapaDirectorio[tagConHash]) infoDir = mapaDirectorio[tagConHash];
+  }
+
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_ASISTENCIA);
+
+  // Upsert por (ID de sorteo, Tag) -- ver docblock. Sin Tag conocido no hay
+  // clave única: siempre se agrega como fila nueva en ese caso.
+  var filaExistente = -1;
+  if (tagConHash && sh.getLastRow() >= 2) {
+    var datosExistentes = sh.getRange(2, 1, sh.getLastRow() - 1, SA_TOTAL_COLS).getValues();
+    for (var f = 0; f < datosExistentes.length; f++) {
+      var idFilaExistente = String(datosExistentes[f][SA.ID - 1] || '').trim();
+      var tagFilaExistente = String(datosExistentes[f][SA.TAG - 1] || '').trim().toUpperCase();
+      if (idFilaExistente === idNorm && tagFilaExistente === tagConHash.toUpperCase()) {
+        filaExistente = f + 2; // +2: encabezado (fila 1) + índice 0-based
         break;
       }
     }
-    if (!filaMasReciente) return [];
+  }
+
+  var numGuardar;
+  if (filaExistente > 0) {
+    numGuardar = sh.getRange(filaExistente, SA.NUM).getValue(); // se conserva el N° ya asignado
   } else {
-    var idVigenteExtra = _getIdVigenteExtra(nombreCategoria);
-    if (idVigenteExtra) {
-      for (var k = 0; k < datos.length; k++) {
-        if (String(datos[k][COL_ID - 1] || '') === String(idVigenteExtra)) {
-          filaMasReciente = datos[k];
-          break;
-        }
-      }
-    }
-    if (!filaMasReciente) {
-      // Respaldo (ver punto 3 del docblock de arriba): ni Extra!*_Vigente_ID
-      // tenía un ID válido, se usa el criterio histórico.
-      var fechaMasReciente = -1;
-      for (var i = 0; i < datos.length; i++) {
-        var fila = datos[i];
-        var fechaVal = fila[COL_FECHA - 1];
-        var t = (fechaVal instanceof Date) ? fechaVal.getTime() : 0;
-        if (!fila[COL_FECHA - 1] && !fila[COL_ID - 1]) continue; // fila totalmente vacía
-        if (t >= fechaMasReciente) {
-          fechaMasReciente = t;
-          filaMasReciente = fila;
-        }
-      }
+    numGuardar = (sh.getLastRow() >= 2 ? sh.getLastRow() - 1 : 0) + 1;
+  }
+
+  var fila = [];
+  fila[SA.NUM - 1]       = numGuardar;
+  fila[SA.FECHA - 1]     = filaSorteo.fecha;
+  fila[SA.ID - 1]        = idNorm;
+  fila[SA.TEMPORADA - 1] = filaSorteo.temporada;
+  fila[SA.TAG - 1]       = tagConHash;
+  fila[SA.NOMBRE - 1]    = nombreTexto;
+  fila[SA.NOM_MULTI - 1] = infoDir.nomMulti || '';
+  fila[SA.PRESTAMO - 1]  = infoDir.prestamo || '';
+  fila[SA.CLAN_TAG - 1]  = infoDir.clanTag || '';
+  fila[SA.CLAN - 1]      = infoDir.clan || '';
+  fila[SA.TICKETS - 1]   = ticketsGuardar;
+  fila[SA.PREMIO - 1]    = String(premio || '').trim();
+  fila[SA.RESULTADO - 1] = resultado;
+  fila[SA.RAZON - 1]     = razonTexto;
+  fila[SA.GANO - 1]      = SA_GANO_SI; // PF222: quien tiene resolución salió sorteado
+
+  if (filaExistente > 0) {
+    sh.getRange(filaExistente, 1, 1, SA_TOTAL_COLS).setValues([fila]);
+  } else {
+    sh.appendRow(fila);
+    _trySetFmt(sh, sh.getLastRow(), SA.FECHA, 'dd/mm/yyyy');
+    applyBorderCenter(sh.getRange(sh.getLastRow(), 1, 1, SA_TOTAL_COLS));
+  }
+
+  Logger.log('[Sorteos] Resolución guardada en S_Asistencia: sorteo ' + idNorm +
+             ', tag ' + (tagConHash || '(sin tag)') + ', resultado ' + resultado +
+             (ticketsGuardar !== '' ? ', tickets ' + ticketsGuardar : '') +
+             (registradoPor ? ', registrado por ' + registradoPor : '') + '.');
+
+  _ordenarYColorearSAsistencia_(ss); // más reciente primero y un color por sorteo
+  return { ok: true };
+}
+
+/**
+ * PF222 (24-oct-2026, pedido de la usuaria). _sincronizarParticipantesSorteoSA(idSorteo, clanes): deja en S_Asistencia a TODOS los que participaron en el sorteo,
+ * no solo a los ganadores. `clanes` es la lista de calificados que arma _webSorteoCalificados() ([{nombre, calificados:[{tag, nombre, tickets}]}]).
+ * Por cada participante sin fila en este sorteo agrega una con Ganó = «No» (sin Premio, Resultado ni Razón). Las filas que ya existen (ganadores o participantes)
+ * no se tocan, así que nunca baja un «Sí» a «No». La Fecha se guarda como fecha real (número de Sheets con formato dd/mm/yyyy), no como texto. Devuelve cuántas agregó.
+ * Decisión de la usuaria (29-oct-2026, §PF294 punto 9): quien salió con «No califica» no entra solo, pero si se agregó a mano en sorteo.html cuenta como participante
+ * aunque no gane. `manuales` ([{nombre, tag, tickets}], opcional) trae a esos agregados a mano. Los elegidos de las sugerencias de sorteo.html traen Tag: se tratan
+ * como un calificado más (sin duplicar por Tag y con Clan, Nom_Multi y Préstamo del Directorio). Los «de fuera» no traen Tag: se evita duplicarlos comparando el nombre
+ * (sin tildes ni mayúsculas) con las filas que el sorteo ya tiene (ganadores sin Tag, calificados o un manual repetido) y se guardan con Tag vacío.
+ */
+function _sincronizarParticipantesSorteoSA(idSorteo, clanes, manuales) {
+  var idNorm = String(idSorteo || '').trim();
+  if (!idNorm || !Array.isArray(clanes)) return { ok: false, agregadas: 0 };
+  var ss = _getSs();
+  var filaSorteo = _getFilaSListaPorId(ss, idNorm);
+  if (!filaSorteo) return { ok: false, agregadas: 0 };
+
+  var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_ASISTENCIA);
+  var yaEstan = {};
+  var nombresYa = {}; // nombres normalizados de este sorteo (para los agregados a mano, que no tienen Tag)
+  var siguienteNum = 1;
+  if (sh.getLastRow() >= 2) {
+    var existentes = sh.getRange(2, 1, sh.getLastRow() - 1, SA_TOTAL_COLS).getValues();
+    siguienteNum = existentes.length + 1;
+    for (var e = 0; e < existentes.length; e++) {
+      if (String(existentes[e][SA.ID - 1] || '').trim() !== idNorm) continue;
+      var tagEx = String(existentes[e][SA.TAG - 1] || '').trim().toUpperCase();
+      if (tagEx) yaEstan[tagEx] = true;
+      var nomEx = _normalizarNombreSA_(existentes[e][SA.NOMBRE - 1]);
+      if (nomEx) nombresYa[nomEx] = true;
     }
   }
-  if (!filaMasReciente) return [];
 
-  var miembroActivo = { activo: String(filaMasReciente[COL_MIEMBRO - 1] || '').trim() === 'Sí' };
-  var reaccion = { activo: String(filaMasReciente[COL_REACCION - 1] || '').trim() === 'Sí' };
-  // whatsapp (FIX 12-sep-2026, ver comentario de COL_WHATSAPP más arriba):
-  // mismo criterio exacto que miembroActivo/reaccion.
-  var whatsapp = { activo: String(filaMasReciente[COL_WHATSAPP - 1] || '').trim() === 'Sí' };
-  // Barcos (FIX 12-sep-2026, pedido del usuario -- requisito nuevo, [→ Contexto_Base_Web.md §26B230]
-  var celdaBarcos = filaMasReciente[COL_BARCOS - 1];
-  var barcosConfigurado = (celdaBarcos !== '' && celdaBarcos !== null && celdaBarcos !== undefined);
-  var barcos = { activo: barcosConfigurado, qty: barcosConfigurado ? (Number(celdaBarcos) || 0) : null };
-  // Delta (FASE 10-sep-2026, pedido del usuario): a diferencia de Min_S, [→ Contexto_Base_Web.md §26B231]
-  var qtyDelta = COL_DELTA ? (Number(filaMasReciente[COL_DELTA - 1]) || 0) : 0;
-
-  // idFila (FASE 10-sep-2026, pedido del usuario -- consolidado sección 1, [→ Contexto_Base_Web.md §26B232]
-  var idFilaMasReciente = filaMasReciente[COL_ID - 1];
-
-  // Semanas (FIX 11-sep-2026, pedido del usuario -- columna de S_Lista, y [→ Contexto_Base_Web.md §26B233]
-  var semanasSorteo = COL_SEMANAS
-    ? _parseSemanasSorteo(filaMasReciente[COL_SEMANAS - 1])
-    : [];
-
-  // Premios (FIX 12-sep-2026, ver comentario de COL_PREMIOS más arriba): [→ Contexto_Base_Web.md §26B234]
-  var premiosStr = String(filaMasReciente[COL_PREMIOS - 1] || '').trim();
-
-  var resultado = [];
-  // Mismo orden que antes tenía T_Requisitos: CFG.TERNA_TAGS (orden Terna
-  // oficial). Índice 0 = C1 (clan principal) .. índice 3 = C4 (Mini乂Ternas™).
-  CFG.TERNA_TAGS.forEach(function (tag, idx) {
-    var nombreClan = _getNombreClanDump(tag);
-
-    var qtyMinT = Number(filaMasReciente[COLS_MINT[idx] - 1]) || 0;
-    var qtyAtaques = Number(filaMasReciente[COLS_ATAQUES[idx] - 1]) || 0;
-    var qtyTorneos = COLS_TORNEOS ? (Number(filaMasReciente[COLS_TORNEOS[idx] - 1]) || 0) : 0;
-
-    // Torneo/Sorteo en T_Requisitos siempre tenían Min_T "fusionado" [→ Contexto_Base_Web.md §26B235]
-    var minTUnico = { activo: qtyMinT > 0, qty: qtyMinT };
-
-    resultado.push({
-      clan: nombreClan,
-      minTMiembro: minTUnico,
-      minT: minTUnico,
-      minTColider: minTUnico,
-      ataques: { activo: qtyAtaques > 0, qty: qtyAtaques },
-      torneos: { activo: qtyTorneos > 0, qty: qtyTorneos },
-      miembroActivo: miembroActivo,
-      reaccion: reaccion,
-      whatsapp: whatsapp,
-      barcos: barcos,
-      delta: qtyDelta,
-      idFila: idFilaMasReciente,
-      semanas: semanasSorteo,
-      premios: premiosStr
+  var mapaDir = _getDirectorioLookupPorTag(ss);
+  var filas = [];
+  clanes.forEach(function (c) {
+    (c && c.calificados || []).forEach(function (p) {
+      var tagNorm = String(p.tag || '').trim().toUpperCase();
+      if (!tagNorm) return;
+      var tagHash = tagNorm.charAt(0) === '#' ? tagNorm : '#' + tagNorm;
+      if (yaEstan[tagHash]) return;
+      yaEstan[tagHash] = true;
+      var nomCal = _normalizarNombreSA_(p.nombre);
+      if (nomCal) nombresYa[nomCal] = true;
+      var info = mapaDir[tagHash] || { nomMulti: '', prestamo: '', clanTag: '', clan: '' };
+      var fila = [];
+      fila[SA.NUM - 1]       = siguienteNum++;
+      fila[SA.FECHA - 1]     = filaSorteo.fecha;
+      fila[SA.ID - 1]        = idNorm;
+      fila[SA.TEMPORADA - 1] = filaSorteo.temporada;
+      fila[SA.TAG - 1]       = tagHash;
+      fila[SA.NOMBRE - 1]    = String(p.nombre || '');
+      fila[SA.NOM_MULTI - 1] = info.nomMulti || '';
+      fila[SA.PRESTAMO - 1]  = info.prestamo || '';
+      fila[SA.CLAN_TAG - 1]  = info.clanTag || '';
+      fila[SA.CLAN - 1]      = info.clan || (c.nombre || '');
+      fila[SA.TICKETS - 1]   = Number(p.tickets) >= 0 ? Number(p.tickets) : '';
+      fila[SA.PREMIO - 1]    = '';
+      fila[SA.RESULTADO - 1] = '';
+      fila[SA.RAZON - 1]     = '';
+      fila[SA.GANO - 1]      = SA_GANO_NO;
+      filas.push(fila);
     });
   });
 
-  return resultado;
-}
-
-/**
- * _getUltimoRegistroTorneoOSorteo(nombreCategoria) [→ Contexto_Base_Web.md §26B236]
- */
-function _getUltimoRegistroTorneoOSorteo(nombreCategoria) {
-  var esTorneo = (nombreCategoria === 'Torneo');
-  var ss = _getSs();
-  var sh = ss.getSheetByName(esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return null;
-
-  var totalCols = esTorneo ? TL_TOTAL_COLS : SL_TOTAL_COLS;
-  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, totalCols).getValues();
-
-  var COL_FECHA       = esTorneo ? TL.FECHA : SL.FECHA;
-  var COL_ID          = esTorneo ? TL.ID : SL.ID;
-  var COL_ORGANIZADOR = esTorneo ? TL.ORGANIZADOR : SL.ORGANIZADOR;
-  var COL_TAG_ORG     = esTorneo ? TL.TAG_ORG : SL.TAG_ORG;
-  var COL_CLAN        = esTorneo ? TL.CLAN : SL.CLAN;
-  var COL_CLAN_TAG    = esTorneo ? TL.CLAN_TAG : SL.CLAN_TAG;
-  var COL_COMENTARIO  = esTorneo ? TL.COMENTARIO : SL.COMENTARIO;
-
-  // Mismo criterio "más reciente por Fecha" que el respaldo de [→ Contexto_Base_Web.md §26B237]
-  var filaMasReciente = null;
-  var fechaMasReciente = -1;
-  for (var i = 0; i < datos.length; i++) {
-    var fila = datos[i];
-    if (!fila[COL_FECHA - 1] && !fila[COL_ID - 1]) continue; // fila totalmente vacía
-    var fechaVal = fila[COL_FECHA - 1];
-    var t = (fechaVal instanceof Date) ? fechaVal.getTime() : 0;
-    if (t >= fechaMasReciente) {
-      fechaMasReciente = t;
-      filaMasReciente = fila;
+  // Agregados a mano en sorteo.html (sin Tag): cuentan como participantes aunque no ganen. [→ Contexto_Base_Web.md §PF294]
+  (Array.isArray(manuales) ? manuales : []).forEach(function (m) {
+    var nombreMan = String((m && m.nombre) || '').trim();
+    var claveMan = _normalizarNombreSA_(nombreMan);
+    var tagMan = String((m && m.tag) || '').trim().toUpperCase();
+    var tagManHash = tagMan ? (tagMan.charAt(0) === '#' ? tagMan : '#' + tagMan) : '';
+    if (!claveMan) return;
+    if (tagManHash) {
+      if (yaEstan[tagManHash]) return; // con Tag se compara por Tag: dos personas distintas pueden llamarse igual
+      yaEstan[tagManHash] = true;
+    } else if (nombresYa[claveMan]) {
+      return;
     }
-  }
-  if (!filaMasReciente) return null;
-
-  return {
-    autor: String(filaMasReciente[COL_ORGANIZADOR - 1] || '').trim(),
-    tagOrg: String(filaMasReciente[COL_TAG_ORG - 1] || '').trim(),
-    clanOrg: String(filaMasReciente[COL_CLAN - 1] || '').trim(),
-    clanTagOrg: String(filaMasReciente[COL_CLAN_TAG - 1] || '').trim(),
-    comentario: String(filaMasReciente[COL_COMENTARIO - 1] || '').trim()
-  };
-}
-
-/**
- * _fetchMembersTorneo(tagSinHash) [→ Contexto_Base_Web.md §26B238]
- */
-function _fetchMembersTorneo(tagSinHash) {
-  var tag = String(tagSinHash || '').trim();
-  if (tag.charAt(0) === '#') tag = tag.substring(1);
-  if (!tag) {
-    Logger.log('[Torneos] _fetchMembersTorneo: tag de torneo vacío.');
-    return null;
-  }
-
-  var data = _apiGet('/tournaments/%23' + tag);
-  if (!data) return null; // _apiGet ya logueó el código HTTP / excepción real.
-
-  if (!data.membersList || !Array.isArray(data.membersList)) {
-    Logger.log('[Torneos] ' + tag + ' -> la API oficial respondió sin membersList ' +
-               '(torneo no encontrado, aún no empezó, o cambió el nombre del campo). ' +
-               'Respuesta: ' + JSON.stringify(data).substring(0, 300));
-    return null;
-  }
-
-  _guardarJsonTorneoEnDrive(tag, data); // se mantiene el respaldo crudo en Drive
-  // FASE 3 (25-sep-2026, rediseño T_Lista): se expone el JSON completo del [→ Contexto_Base_Web.md §26B239]
-  data.membersList.torneoData = data;
-  return data.membersList;
-}
-
-/**
- * _parseFechaApiSupercell(str) [→ Contexto_Base_Web.md §26B240]
- */
-function _parseFechaApiSupercell(str) {
-  var m = String(str || '').match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})\.(\d{3})Z$/);
-  if (!m) return null;
-  var ms = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6]), Number(m[7]));
-  var d = new Date(ms);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-// FASE 4 (25-sep-2026, rediseño T_Lista -- ver punto A del docblock de [→ Contexto_Base_Web.md §26B241]
-
-// Cache global memoizada por ejecución (mismo criterio que CACHE_CLAN_DATA [→ Contexto_Base_Web.md §26B242]
-var _CATALOGO_MODO_CACHE = null; // { headers, rows } de Backup_Modo.csv, o null si todavía no se leyó en esta ejecución
-var _CATALOGO_MODO_NUEVOS_PENDIENTES = []; // ID (string) agregados en esta ejecución, para loguear al guardar
-
-/**
- * _leerModoCSV() [→ Contexto_Base_Web.md §26B243]
- */
-function _leerModoCSV() {
-  var headersDefault = ['N°', 'ID', 'Name', 'Nombre'];
-  var csvText = _loadCSVFromDrive('Backup_Modo.csv');
-  if (!csvText) return { headers: headersDefault, rows: [] };
-
-  var parsed = _parseCSV(csvText);
-  if (!parsed || parsed.length === 0) return { headers: headersDefault, rows: [] };
-
-  return { headers: parsed[0], rows: parsed.slice(1) };
-}
-
-/**
- * _guardarModoCSV(headers, rows) [→ Contexto_Base_Web.md §26B244]
- */
-function _guardarModoCSV(headers, rows) {
-  rows.sort(function (a, b) {
-    var nameA = String(a[2] || ''), nameB = String(b[2] || '');
-    if (nameA === nameB) return 0;
-    return nameA < nameB ? -1 : 1;
+    nombresYa[claveMan] = true;
+    var infoMan = tagManHash ? (mapaDir[tagManHash] || null) : null;
+    var filaMan = [];
+    filaMan[SA.NUM - 1]       = siguienteNum++;
+    filaMan[SA.FECHA - 1]     = filaSorteo.fecha;
+    filaMan[SA.ID - 1]        = idNorm;
+    filaMan[SA.TEMPORADA - 1] = filaSorteo.temporada;
+    filaMan[SA.TAG - 1]       = tagManHash;
+    filaMan[SA.NOMBRE - 1]    = nombreMan;
+    filaMan[SA.NOM_MULTI - 1] = infoMan ? (infoMan.nomMulti || '') : '';
+    filaMan[SA.PRESTAMO - 1]  = infoMan ? (infoMan.prestamo || '') : '';
+    filaMan[SA.CLAN_TAG - 1]  = infoMan ? (infoMan.clanTag || '') : '';
+    filaMan[SA.CLAN - 1]      = infoMan ? (infoMan.clan || '') : '';
+    filaMan[SA.TICKETS - 1]   = (m.tickets !== '' && m.tickets !== null && Number(m.tickets) >= 0) ? Number(m.tickets) : '';
+    filaMan[SA.PREMIO - 1]    = '';
+    filaMan[SA.RESULTADO - 1] = '';
+    filaMan[SA.RAZON - 1]     = '';
+    filaMan[SA.GANO - 1]      = SA_GANO_NO;
+    filas.push(filaMan);
   });
-  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
-  _saveCSVToDrive('Backup_Modo.csv', _encodeCSV([headers].concat(rows)));
+  if (!filas.length) return { ok: true, agregadas: 0 };
+
+  var primera = sh.getLastRow() + 1;
+  sh.getRange(primera, 1, filas.length, SA_TOTAL_COLS).setValues(filas);
+  sh.getRange(primera, SA.FECHA, filas.length, 1).setNumberFormat('dd/mm/yyyy');
+  applyBorderCenter(sh.getRange(primera, 1, filas.length, SA_TOTAL_COLS));
+  Logger.log('[Sorteos] S_Asistencia: ' + filas.length + ' participante(s) agregado(s) con Ganó = No (sorteo ' + idNorm + ').');
+  _ordenarYColorearSAsistencia_(ss); // más reciente primero y un color por sorteo
+  return { ok: true, agregadas: filas.length };
 }
 
 /**
- * _resolverModoDesdeCatalogo(modoId) [→ Contexto_Base_Web.md §26B245]
+ * _normalizarNombreSA_(nombre): clave para comparar nombres de S_Asistencia sin tildes, mayúsculas ni espacios de más. Ayuda de _sincronizarParticipantesSorteoSA().
  */
-function _resolverModoDesdeCatalogo(modoId) {
-  var idStr = String(modoId === undefined || modoId === null ? '' : modoId).trim();
-  if (!idStr) return '';
+function _normalizarNombreSA_(nombre) {
+  return String(nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
 
-  if (_CATALOGO_MODO_CACHE === null) _CATALOGO_MODO_CACHE = _leerModoCSV();
-
-  for (var i = 0; i < _CATALOGO_MODO_CACHE.rows.length; i++) {
-    if (String(_CATALOGO_MODO_CACHE.rows[i][1] || '').trim() === idStr) {
-      var nombreManual = String(_CATALOGO_MODO_CACHE.rows[i][3] || '').trim();
-      if (nombreManual) return nombreManual;
-      return String(_CATALOGO_MODO_CACHE.rows[i][2] || '').trim(); // fallback: Name
+ /**
+  * /* FASE (10-sep-2026, pedido del usuario -- consolidado sección 1, puntos 4 [→ Contexto_Base_Web.md §26B274]
+  */
+function _getFilaSListaPorId(ss, id) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return null;
+  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS).getValues();
+  var idBuscado = String(id || '').trim();
+  for (var i = 0; i < datos.length; i++) {
+    if (String(datos[i][SL.ID - 1] || '').trim() === idBuscado) {
+      return {
+        fecha: datos[i][SL.FECHA - 1],
+        temporada: Number(datos[i][SL.TEMPORADA - 1]) || 0
+      };
     }
   }
-
-  // Sin match -- fila nueva, Name/Nombre vacíos hasta que el usuario la [→ Contexto_Base_Web.md §26B246]
-  if (_CATALOGO_MODO_NUEVOS_PENDIENTES.indexOf(idStr) < 0) {
-    _CATALOGO_MODO_CACHE.rows.push(['', Number(idStr), '', '']);
-    _CATALOGO_MODO_NUEVOS_PENDIENTES.push(idStr);
-  }
-  return '';
+  return null;
 }
 
-/**
- * _guardarModoCSVSiHayNuevos() [→ Contexto_Base_Web.md §26B247]
- */
-function _guardarModoCSVSiHayNuevos() {
-  if (_CATALOGO_MODO_NUEVOS_PENDIENTES.length === 0) return;
-  _guardarModoCSV(_CATALOGO_MODO_CACHE.headers, _CATALOGO_MODO_CACHE.rows);
-  Logger.log('[T_Lista] Backup_Modo.csv: ' + _CATALOGO_MODO_NUEVOS_PENDIENTES.length +
-             ' ID(s) de modo nuevo(s) agregado(s) (' + _CATALOGO_MODO_NUEVOS_PENDIENTES.join(', ') +
-             '), Name/Nombre vacíos hasta que se completen a mano.');
-  _CATALOGO_MODO_NUEVOS_PENDIENTES = [];
-}
-
-/**
- * _guardarJsonTorneoEnDrive(tagTorneo, datos) [→ Contexto_Base_Web.md §26B248]
- */
-function _guardarJsonTorneoEnDrive(tagTorneo, datos) {
-  try {
-    var filename = 'Torneo - ' + tagTorneo + '.json';
-    var contenido = JSON.stringify(datos, null, 2);
-
-    // 14-oct-2026 (pedido de la usuaria): la subcarpeta se decide UNA SOLA VEZ, la primera
-    // vez que se guarda el torneo. Si el archivo ya existe en Terna o en la raíz de Torneos,
-    // se sobrescribe ahí y no se mueve (el creador puede cambiarse de clan después).
-    // [→ Contexto_Base_Web.md §PF078]
-    var folderTerna = null;
-    try { folderTerna = DriveApp.getFolderById(DRIVE_FOLDER_ID_TORNEOS_TERNA); }
-    catch (eT) { Logger.log('[Torneos] No se pudo abrir la carpeta Terna (revisar DRIVE_FOLDER_ID_TORNEOS_TERNA): ' + eT.message); }
-    var folderRaiz = DriveApp.getFolderById(DRIVE_FOLDER_ID_TORNEOS);
-
-    if (folderTerna) {
-      var enTerna = folderTerna.getFilesByName(filename);
-      if (enTerna.hasNext()) { _setContentConConteo_(enTerna.next(), contenido); return; }
-    }
-    var enRaiz = folderRaiz.getFilesByName(filename);
-    if (enRaiz.hasNext()) { _setContentConConteo_(enRaiz.next(), contenido); return; }
-
-    // Primera vez: se decide la subcarpeta.
-    var destino = (folderTerna && _creadorTorneoEnClanTerna_(datos)) ? folderTerna : folderRaiz;
-    _createFileConConteo_(destino, filename, contenido, MimeType.PLAIN_TEXT);
-  } catch(e) {
-    Logger.log('[Torneos] Error guardando JSON de ' + tagTorneo + ': ' + e.message);
-  }
-}
-
-/**
- * _creadorTorneoEnClanTerna_(datos) -- true si el creador (datos.creatorTag) está, en este
- * momento, en uno de los clanes de CFG.TERNA_TAGS. El clan sale de la entrada del creador en
- * datos.membersList; si no figura ahí, del Directorio. Sin creatorTag o sin clan: false.
- * [→ Contexto_Base_Web.md §PF078]
- */
-function _creadorTorneoEnClanTerna_(datos) {
-  var norm = function (t) {
-    t = String(t || '').trim().toUpperCase();
-    return (t && t.charAt(0) !== '#') ? '#' + t : t;
-  };
-  var creador = norm(datos && datos.creatorTag);
-  if (!creador) return false;
-
-  var clanTag = '';
-  var lista = (datos && datos.membersList) || [];
-  for (var i = 0; i < lista.length; i++) {
-    if (norm(lista[i].tag) === creador) {
-      clanTag = norm(lista[i].clan && lista[i].clan.tag);
-      break;
-    }
-  }
-  if (!clanTag) {
-    try {
-      var info = _getDirectorioLookupPorTag(_getSs())[creador];
-      if (info) clanTag = norm(info.clanTag);
-    } catch (e) { /* sin Directorio: queda sin clan */ }
-  }
-  if (!clanTag) return false;
-
-  for (var j = 0; j < CFG.TERNA_TAGS.length; j++) {
-    if (norm(CFG.TERNA_TAGS[j]) === clanTag) return true;
-  }
-  return false;
-}
-
-// DETALLE /tournaments?name=X (25-sep-2026, confirmado por el usuario; movido [→ Contexto_Base_Web.md §26B249]
-
-function _hoyLimaSinHora() {
-  var TZ = 'America/Lima';
-  var partes = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd').split('-');
-  return new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
-}
-
-function _calcularTemporadaParaFecha(fecha) {
-  var anio = fecha.getFullYear();
-  var mes = fecha.getMonth();
-  var primerLunes = primerLunesDelMes(anio, mes);
-  if (fecha < primerLunes) {
-    mes--;
-    if (mes < 0) { mes = 11; anio--; }
-  }
-  var ref = CFG.REF_DEFAULT;
-  return (anio - ref.getFullYear()) * 12 + (mes - ref.getMonth()) + 1;
-}
-
-function _calcularSemanaTorneo(fecha, temporada) {
-  var pl = primerLunesTemporada(CFG.REF_DEFAULT, temporada);
-  var periodIndex = Math.floor((fecha.getTime() - pl.getTime()) / 86400000);
-  if (periodIndex < 0) periodIndex = 0;
-  return periodIdxToSectionIndex(periodIndex) + 1;
-}
-
-/**
- * _construirSemanasCsvDesdeIsos(isosCsv) [→ Contexto_Base_Web.md §26B250]
- */
-function _construirSemanasCsvDesdeIsos(isosCsv) {
-  var tokens = String(isosCsv || '').split(',').map(function (s) {
-    var m = String(s).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return null;
-    var lunes = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-    var temporada = _calcularTemporadaParaFecha(lunes);
-    var semana = _calcularSemanaTorneo(lunes, temporada);
-    return 'T' + temporada + '_S' + semana;
-  }).filter(Boolean);
-  return tokens.join(',');
-}
-
-function _contarTorneosEnSemana(datos, temporada, semana, hastaIndice) {
-  var count = 0;
-  for (var i = 0; i < hastaIndice; i++) {
-    var id = String(datos[i][TL.ID - 1] || '').trim();
-    if (!id) continue;
-    var temp = Number(datos[i][TL.TEMPORADA - 1]) || 0;
-    if (temp !== temporada) continue;
-    var p = _idEventoParsear_(id);
-    if (p && p.letra === 'T' && p.semana === semana) count++;
-  }
-  return count + 1;
-}
-
-/**
- * _contarSorteosEnSemana(datos, temporada, semana, hastaIndice) [→ Contexto_Base_Web.md §26B251]
- */
-function _contarSorteosEnSemana(datos, temporada, semana, hastaIndice) {
-  var count = 0;
-  for (var i = 0; i < hastaIndice; i++) {
-    var id = String(datos[i][SL.ID - 1] || '').trim();
-    if (!id) continue;
-    var temp = Number(datos[i][SL.TEMPORADA - 1]) || 0;
-    if (temp !== temporada) continue;
-    var p = _idEventoParsear_(id);
-    if (p && p.letra === 'S' && p.semana === semana) count++;
-  }
-  return count + 1;
-}
+// ----- T_Asistencia y T_Control -----
 
 // PASO 2 — T_Asistencia: una fila por participante y torneo [→ Contexto_Base_Web.md §26B252]
-
 function _generarAsistenciaParaTorneo(ss, id, fecha, temporada, jsonArray) {
   var sh = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
   if (!sh) return;
@@ -4022,8 +2335,191 @@ function _getTagsConAsistencia(ss) {
   return tags;
 }
 
-// FASE 23 (30/08/2026) — Torneos de continuación (columna Tag_Tor_2 de [→ Contexto_Base_Web.md §26B258]
+// PASO 3 — T_Control: cuadrícula (una columna por torneo de T_Lista) [→ Contexto_Base_Web.md §26B125]
+function regenerarTControlSheet(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_CONTROL);
+  if (!sh) { Logger.log('[T_Control] Hoja no encontrada'); return; }
 
+  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!shDir || shDir.getLastRow() < 2) return;
+
+  var tagsConAsistencia = _getTagsConAsistencia(ss);
+
+  var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  // Fase 10 (17/07/2026): se quita el chequeo de Vetado — comparaba sin [→ Contexto_Base_Web.md §26B126]
+  var jugadores = dirData.filter(function (r) {
+    var tag = String(r[IC.TAG - 1] || '').trim();
+    return String(r[IC.ESTADO - 1]) === 'Activo' &&
+           CFG.TERNA_TAGS.indexOf(String(r[IC.CLAN_TAG - 1])) >= 0 &&
+           !!tagsConAsistencia[tag];
+  });
+
+  // FASE 23 (30/08/2026): un torneo de continuación (Tag_Tor_2, ver [→ Contexto_Base_Web.md §26B127]
+  var grupos = _resolverGruposContinuacionTorneos(ss);
+  var shLista = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  var torneos = [];
+  // FIX (08-sep-2026, pedido usuario): header de 2 filas fusionadas en
+  // T_Lista -- datos desde fila 3, guard >= 3 (antes >= 2).
+  if (shLista && shLista.getLastRow() >= 3) {
+    var listaData = shLista.getRange(3, 1, shLista.getLastRow() - 2, TL_TOTAL_COLS).getValues();
+    for (var i = 0; i < listaData.length; i++) {
+      var id = String(listaData[i][TL.ID - 1] || '').trim();
+      if (!id) continue;
+      var raizId = grupos.raizPorId.hasOwnProperty(id) ? grupos.raizPorId[id] : id;
+      if (raizId !== id) continue; // es continuación de otro torneo: se fusiona, no abre columna propia
+      torneos.push({
+        id: id,
+        fecha: listaData[i][TL.FECHA - 1],
+        temporada: Number(listaData[i][TL.TEMPORADA - 1]) || 0
+      });
+    }
+  }
+
+  // FIX 1 (parche T_Control/T_Lista): orden ASC por Fecha (los sin fecha [→ Contexto_Base_Web.md §26B128]
+  torneos.sort(function (a, b) {
+    if (a.temporada !== b.temporada) return a.temporada - b.temporada;
+    var fa = (a.fecha instanceof Date && !isNaN(a.fecha.getTime())) ? a.fecha.getTime() : 0;
+    var fb = (b.fecha instanceof Date && !isNaN(b.fecha.getTime())) ? b.fecha.getTime() : 0;
+    return fa - fb;
+  });
+
+  sh.clearContents();
+  sh.clearFormats();
+
+  // ---- Columnas fijas ---- [→ Contexto_Base_Web.md §26B129]
+  var headersFijos = ['N°', 'Tag', 'Nombre', 'Nom_Multi', 'Préstamo', 'ClanTag', 'Clan'];
+
+  sh.getRange(1, 1, 2, headersFijos.length).merge()
+    .setValue('Control de participación en torneos')
+    .setBackground(CFG.COLORES.HEADER_BG)
+    .setFontColor(CFG.COLORES.HEADER_FG)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle')
+    .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+
+  var rangoHeadersFijos = sh.getRange(3, 1, 1, headersFijos.length);
+  rangoHeadersFijos.setValues([headersFijos])
+    .setBackground(CFG.COLORES.HEADER_BG)
+    .setFontColor(CFG.COLORES.HEADER_FG)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle')
+    .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+
+  var totalCols = TC_FIXED_COLS + torneos.length;
+
+  var filasCuerpo = [];
+  for (var j = 0; j < jugadores.length; j++) {
+    var r = jugadores[j];
+    var fila = [];
+    fila[TCC.NUM      - 1] = j + 1;
+    fila[TCC.TAG      - 1] = String(r[IC.TAG       - 1] || '');
+    fila[TCC.NOMBRE   - 1] = String(r[IC.NOMBRE    - 1] || '');
+    fila[TCC.NOM_MULTI- 1] = String(r[IC.NOM_MULTI - 1] || '');
+    fila[TCC.PRESTAMO - 1] = String(r[IC.PRESTAMO  - 1] || '');
+    fila[TCC.CLAN_TAG - 1] = String(r[IC.CLAN_TAG  - 1] || '');
+    fila[TCC.CLAN     - 1] = String(r[IC.CLAN      - 1] || '');
+    filasCuerpo.push(fila);
+  }
+
+  if (torneos.length === 0) {
+    if (filasCuerpo.length > 0) {
+      sh.getRange(4, 1, filasCuerpo.length, TC_FIXED_COLS).setValues(filasCuerpo);
+      applyBorderCenter(sh.getRange(4, 1, filasCuerpo.length, TC_FIXED_COLS));
+    }
+    sh.setFrozenRows(3);
+    sh.setFrozenColumns(TC_FIXED_COLS);
+    Logger.log('[T_Control] Reconstruido sin torneos (' + filasCuerpo.length + ' jugador(es)).');
+    return;
+  }
+
+  // ---- Encabezados de torneos (Fila 1, 2, 3) ----
+  var rangoTorneos = sh.getRange(1, TC_FIXED_COLS + 1, 1, torneos.length);
+  rangoTorneos.merge().setValue('Torneos')
+    .setBackground(CFG.COLORES.HEADER_BG).setFontColor(CFG.COLORES.HEADER_FG).setFontWeight('bold')
+    .setHorizontalAlignment('center').setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+
+  var col = TC_FIXED_COLS + 1;
+  var idx = 0;
+  while (idx < torneos.length) {
+    var temporada = torneos[idx].temporada;
+    var ancho = 0;
+    while (idx + ancho < torneos.length && torneos[idx + ancho].temporada === temporada) ancho++;
+    var rangoTemp = sh.getRange(2, col, 1, ancho);
+    if (ancho > 1) rangoTemp.merge();
+    rangoTemp.setValue('T_' + temporada)
+      .setBackground(CFG.COLORES.HEADER_BG).setFontColor(CFG.COLORES.HEADER_FG).setFontWeight('bold')
+      .setHorizontalAlignment('center').setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+    col += ancho;
+    idx += ancho;
+  }
+
+  // FASE 23 (30/08/2026) — sugerencia #3 de la lista de mejoras: si la [→ Contexto_Base_Web.md §26B130]
+  var headersFecha = torneos.map(function (t) {
+    var base = (t.fecha instanceof Date && !isNaN(t.fecha.getTime())) ? dateKey(t.fecha) : '';
+    var idsDelGrupo = grupos.grupoPorRaiz[t.id] || [t.id];
+    if (idsDelGrupo.length > 1) base += ' (' + idsDelGrupo.length + ' partes)';
+    return base;
+  });
+  var rangoFechas = sh.getRange(3, TC_FIXED_COLS + 1, 1, torneos.length);
+  rangoFechas.setValues([headersFecha])
+    .setBackground(CFG.COLORES.HEADER_BG).setFontColor(CFG.COLORES.HEADER_FG).setFontWeight('bold')
+    .setHorizontalAlignment('center').setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+
+  // ---- Cuerpo: Victorias (Score) en lugar de ☑ ---- [→ Contexto_Base_Web.md §26B131]
+  var asistenciaPorId = _getAsistenciaFusionadaPorRaiz(ss);
+  for (var f = 0; f < filasCuerpo.length; f++) {
+    var tagJugador = filasCuerpo[f][TCC.TAG - 1];
+    for (var t = 0; t < torneos.length; t++) {
+      var scoresDelTorneo = asistenciaPorId[torneos[t].id] || {};
+      var score = scoresDelTorneo[tagJugador];
+      if (score !== undefined && score !== null && score !== '') {
+        filasCuerpo[f][TC_FIXED_COLS + t] = score;
+      } else {
+        filasCuerpo[f][TC_FIXED_COLS + t] = '';
+      }
+    }
+  }
+
+  if (filasCuerpo.length > 0) {
+    sh.getRange(4, 1, filasCuerpo.length, totalCols).setValues(filasCuerpo);
+    applyBorderCenter(sh.getRange(4, 1, filasCuerpo.length, totalCols));
+
+    var rangoNumeros = sh.getRange(4, TC_FIXED_COLS + 1, filasCuerpo.length, torneos.length);
+    rangoNumeros.setNumberFormat('#,##0');
+
+    // ---- FORMATO CONDICIONAL (Verde si > 0, Azul si = 0) ----
+    var reglas = [];
+    for (var t = 0; t < torneos.length; t++) {
+      var letraCol = colLetter(TC_FIXED_COLS + 1 + t);
+      var rangoColumna = sh.getRange(4, TC_FIXED_COLS + 1 + t, filasCuerpo.length, 1);
+
+      reglas.push(
+        SpreadsheetApp.newConditionalFormatRule()
+          .whenFormulaSatisfied('=AND($' + letraCol + '4<>"", $' + letraCol + '4>0)')
+          .setBackground(CFG.COLORES.TERNA_BG)
+          .setRanges([rangoColumna])
+          .build()
+      );
+
+      reglas.push(
+        SpreadsheetApp.newConditionalFormatRule()
+          .whenFormulaSatisfied('=AND($' + letraCol + '4<>"", $' + letraCol + '4=0)')
+          .setBackground('#cfe2f3')
+          .setRanges([rangoColumna])
+          .build()
+      );
+    }
+    _tryCondFmt(sh, reglas);
+  }
+
+  sh.setFrozenRows(3);
+  sh.setFrozenColumns(TC_FIXED_COLS);
+  Logger.log('[T_Control] Reconstruido: ' + filasCuerpo.length + ' jugador(es) x ' + torneos.length + ' torneo(s).');
+}
+
+// FASE 23 (30/08/2026) — Torneos de continuación (columna Tag_Tor_2 de [→ Contexto_Base_Web.md §26B258]
 /**
  * _resolverGruposContinuacionTorneos(ss) [→ Contexto_Base_Web.md §26B259]
  */
@@ -4341,284 +2837,1375 @@ function _getTagsVistosEnGrupo() {
   }
   return tags;
 }
- /**
-  * /* FASE (10-sep-2026, pedido del usuario -- consolidado sección 1, puntos 4 [→ Contexto_Base_Web.md §26B274]
-  */
-function _getFilaSListaPorId(ss, id) {
-  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return null;
-  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS).getValues();
-  var idBuscado = String(id || '').trim();
+
+// ----- CR_Lista: cambio de rango -----
+
+// CR_Lista — generación de ID (FASE 1, 13-sep-2026, pedido del usuario, plan [→ Contexto_Base_Web.md §26B015]
+/**
+ * _generarParIdsCRLista(fecha, ss) [→ Contexto_Base_Web.md §26B016]
+ */
+function _generarParIdsCRLista(fecha, ss) {
+  ss = ss || _getSs();
+  var temporada = _calcularTemporadaParaFecha(fecha);
+  var semana = _calcularSemanaTorneo(fecha, temporada);
+
+  var lecturaCRIds = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CR_LISTA, 'Backup_CR_Lista.csv', CR_TOTAL_COLS, 3);
+  var datos = lecturaCRIds.filas;
+  var numeroEnSemana = _contarParesCRListaEnSemana(datos, temporada, semana);
+
+  return {
+    idAscenso: _idEventoConstruir_('A', temporada, semana, numeroEnSemana),
+    idDescenso: _idEventoConstruir_('D', temporada, semana, numeroEnSemana),
+    temporada: temporada,
+    semana: semana
+  };
+}
+
+/**
+ * _contarParesCRListaEnSemana(datos, temporada, semana) [→ Contexto_Base_Web.md §26B017]
+ */
+function _contarParesCRListaEnSemana(datos, temporada, semana) {
+  var count = 0;
   for (var i = 0; i < datos.length; i++) {
-    if (String(datos[i][SL.ID - 1] || '').trim() === idBuscado) {
-      return {
-        fecha: datos[i][SL.FECHA - 1],
-        temporada: Number(datos[i][SL.TEMPORADA - 1]) || 0
-      };
+    var id = String(datos[i][CR.ID - 1] || '').trim();
+    if (!id) continue;
+    var p = _idEventoParsear_(id);
+    if (!p || p.letra !== 'A') continue; // solo cuenta Ascenso -- ver docblock de arriba
+    if (p.temporada !== temporada) continue;
+    if (p.semana !== semana) continue;
+    count++;
+  }
+  return count + 1;
+}
+
+// CR_Lista — autogeneración del par Ascenso/Descenso al inicio de temporada [→ Contexto_Base_Web.md §26B018]
+// MOVIDO (05-oct-2026, pedido usuario): activarTriggerAutogenerarCRLista()/desactivarTriggerAutogenerarCRLista() ya [→ Contexto_Base_Web.md §26B019]
+/**
+ * _esHoyPrimerDiaDeTemporada() [→ Contexto_Base_Web.md §26B020]
+ */
+function _esHoyPrimerDiaDeTemporada() {
+  var hoy = _hoyLimaSinHora();
+  var temporadaHoy = _calcularTemporadaParaFecha(hoy);
+  var primerDia = primerLunesTemporada(CFG.REF_DEFAULT, temporadaHoy);
+  return (hoy.getTime() === primerDia.getTime()) ? temporadaHoy : null;
+}
+
+/**
+ * _getUltimoParCRLista() [→ Contexto_Base_Web.md §26B021]
+ */
+function _getUltimoParCRLista() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.CR_LISTA);
+  if (!sh || sh.getLastRow() < 4) return { ascenso: null, descenso: null };
+
+  var datos = sh.getRange(4, 1, sh.getLastRow() - 3, CR_TOTAL_COLS).getValues();
+  var idAscensoMasReciente = null, fechaMasReciente = null;
+  for (var i = 0; i < datos.length; i++) {
+    if (String(datos[i][CR.TIPO - 1] || '').trim() !== 'Ascenso') continue;
+    var fechaFila = datos[i][CR.FECHA - 1];
+    if (!(fechaFila instanceof Date) || isNaN(fechaFila.getTime())) continue;
+    if (!fechaMasReciente || fechaFila.getTime() > fechaMasReciente.getTime()) {
+      fechaMasReciente = fechaFila;
+      idAscensoMasReciente = String(datos[i][CR.ID - 1] || '').trim();
     }
+  }
+  if (!idAscensoMasReciente) return { ascenso: null, descenso: null };
+  return _getParCRListaPorId(idAscensoMasReciente);
+}
+
+/**
+ * _existeParCRListaParaTemporada(temporada) [→ Contexto_Base_Web.md §26B022]
+ */
+function _existeParCRListaParaTemporada(temporada) {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.CR_LISTA);
+  if (!sh || sh.getLastRow() < 4) return false;
+
+  var datos = sh.getRange(4, 1, sh.getLastRow() - 3, CR_TOTAL_COLS).getValues();
+  for (var i = 0; i < datos.length; i++) {
+    if (String(datos[i][CR.TIPO - 1] || '').trim() !== 'Ascenso') continue;
+    if (Number(datos[i][CR.TEMPORADA - 1]) === Number(temporada)) return true;
+  }
+  return false;
+}
+
+/**
+ * _bloqueParaAutogeneracionCRLista(filaParseada) [→ Contexto_Base_Web.md §26B023]
+ */
+function _bloqueParaAutogeneracionCRLista(filaParseada) {
+  if (!filaParseada) {
+    return { porClan: [], barcos: undefined, miembroActivo: 'No', whatsapp: 'No', estado: 'Planificado', comentario: '' };
+  }
+  var porClan = filaParseada.porClan.map(function (b) {
+    return {
+      clan: b.clan,
+      minCR: { miembro: b.minCR.miembro.qty, veterano: b.minCR.veterano.qty, colider: b.minCR.colider.qty },
+      ataques: { miembro: b.ataques.miembro.qty, veterano: b.ataques.veterano.qty, colider: b.ataques.colider.qty }
+    };
+  });
+  return {
+    porClan: porClan,
+    barcos: filaParseada.barcos.activo ? filaParseada.barcos.qty : undefined,
+    miembroActivo: filaParseada.miembroActivo.activo ? 'Sí' : 'No',
+    whatsapp: filaParseada.whatsapp.activo ? 'Sí' : 'No',
+    estado: 'Planificado',
+    comentario: ''
+  };
+}
+
+/**
+ * PF209 (24-oct-2026). _leerDirectorioParaOrganizadorCR_(ss): filas del Directorio con lo mínimo para resolver al organizador:
+ * { tag, nombre, nomMulti, clan, clanTag, rango, activo }. Lista vacía si la hoja no existe.
+ */
+function _leerDirectorioParaOrganizadorCR_(ss) {
+  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!shDir || shDir.getLastRow() < 2) return [];
+  var datos = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+  var out = [];
+  for (var i = 0; i < datos.length; i++) {
+    var tag = String(datos[i][IC.TAG - 1] || '').trim();
+    if (!tag) continue;
+    var estado = String(datos[i][IC.ESTADO - 1] || '').trim();
+    out.push({
+      tag: tag,
+      nombre: String(datos[i][IC.NOMBRE - 1] || '').trim(),
+      nomMulti: String(datos[i][IC.NOM_MULTI - 1] || '').trim(),
+      clan: String(datos[i][IC.CLAN - 1] || '').trim(),
+      clanTag: String(datos[i][IC.CLAN_TAG - 1] || '').trim(),
+      rango: String(datos[i][IC.RANGO - 1] || '').trim(),
+      activo: (estado === '' || estado === 'Activo')
+    });
+  }
+  return out;
+}
+
+/**
+ * PF209. _resolverOrganizadorCRAutogenerado_(organizador, tagOrg, dir): { organizador, tagOrg, clan, clanTag, reemplazado }.
+ * (1) Si el organizador por defecto (el del registro anterior) está en un clan Terna (CFG.TERNA_TAGS), se conserva y su Clan/ClanTag salen
+ * de ese clan. (2) Si no está, se toma como organizador al LÍDER del clan principal (CFG.TERNA_TAGS[0]). (3) Si tampoco se encuentra al líder,
+ * se deja el organizador por defecto y Clan/ClanTag quedan vacíos.
+ */
+function _resolverOrganizadorCRAutogenerado_(organizador, tagOrg, dir) {
+  var norm = function (t) { return String(t || '').trim().toUpperCase().replace(/^#/, ''); };
+  var ternaNorm = CFG.TERNA_TAGS.map(norm);
+  var tagN = norm(tagOrg);
+  var i, f;
+  if (tagN) {
+    for (i = 0; i < dir.length; i++) {
+      f = dir[i];
+      if (norm(f.tag) === tagN && f.activo && ternaNorm.indexOf(norm(f.clanTag)) >= 0) {
+        return { organizador: organizador || f.nomMulti || f.nombre, tagOrg: tagOrg || f.tag, clan: f.clan, clanTag: f.clanTag, reemplazado: false };
+      }
+    }
+  }
+  var principal = norm(CFG.TERNA_TAGS[0]);
+  for (i = 0; i < dir.length; i++) {
+    f = dir[i];
+    if (f.activo && norm(f.clanTag) === principal && f.rango === 'Líder') {
+      Logger.log('[CR_Lista][Autogeneración] El organizador por defecto (' + (organizador || tagOrg || 'vacío') +
+        ') no está en un clan Terna; se asigna al líder del clan principal: ' + (f.nomMulti || f.nombre) + ' (' + f.tag + ').');
+      return { organizador: f.nomMulti || f.nombre, tagOrg: f.tag, clan: f.clan, clanTag: f.clanTag, reemplazado: true };
+    }
+  }
+  Logger.log('[CR_Lista][Autogeneración] AVISO: el organizador por defecto no está en un clan Terna y no se encontró al líder del clan principal; ' +
+    'se deja el organizador del registro anterior y Clan/ClanTag vacíos.');
+  return { organizador: organizador || '', tagOrg: tagOrg || '', clan: '', clanTag: '', reemplazado: false };
+}
+
+/**
+ * PF209. _comentarioCRAutogenerado_(org): texto de la columna Comentario de la fila autogenerada.
+ */
+function _comentarioCRAutogenerado_(org) {
+  return 'Fila autogenerada; puede modificarse manualmente.' +
+    (org && org.reemplazado ? ' El organizador anterior no estaba en un clan; se asignó al líder del clan principal.' : '');
+}
+
+/**
+ * _autogenerarParCRListaSiCorrespondeInicioTemporada() [→ Contexto_Base_Web.md §26B024]
+ */
+function _autogenerarParCRListaSiCorrespondeInicioTemporada() {
+  if (_bloquearSiReenumerando_('_autogenerarParCRListaSiCorrespondeInicioTemporada')) return; // PF260
+  // PF208 (24-oct-2026, pedido de la usuaria): la fila planificada de Cambio de Rango se crea AL INICIAR EL MES (la temporada vigente), con
+  // Fecha = primer lunes de la temporada SIGUIENTE y Semanas = TODAS las semanas de la temporada ACTUAL. Antes solo actuaba el primer lunes
+  // de la temporada, fechaba el par con el día de la corrida y evaluaba la temporada anterior: si ese día no corría el activador, no se
+  // creaba nada. Ahora corre todos los días y crea el par si todavía no existe uno para la temporada siguiente (recupera un inicio de mes perdido).
+  var hoy = _hoyLimaSinHora();
+  var temporadaActual = _calcularTemporadaParaFecha(hoy);
+  if (!temporadaActual || temporadaActual < 1) {
+    Logger.log('[CR_Lista][Autogeneración] No se pudo calcular la temporada vigente, no se crea nada.');
+    return { ok: false, motivo: 'No se pudo calcular la temporada vigente.' };
+  }
+  var temporadaQueArranca = temporadaActual + 1; // la temporada en que se aplica el cambio de rango
+  var temporadaEvaluada = temporadaActual;       // las semanas que se evalúan son las de la temporada vigente
+
+  if (_existeParCRListaParaTemporada(temporadaQueArranca)) {
+    Logger.log('[CR_Lista][Autogeneración] Ya existe un par CR_Lista para la Temporada ' +
+      temporadaQueArranca + ', no se crea otro.');
+    return { ok: false, motivo: 'Ya existe un par para la Temporada ' + temporadaQueArranca + '.' };
+  }
+
+  var fechaCambio = primerLunesTemporada(CFG.REF_DEFAULT, temporadaQueArranca);
+  if (!(fechaCambio instanceof Date) || isNaN(fechaCambio.getTime())) {
+    Logger.log('[CR_Lista][Autogeneración] No se pudo calcular el primer lunes de la Temporada ' + temporadaQueArranca + '. No se crea nada.');
+    return { ok: false, motivo: 'No se pudo calcular el primer lunes de la Temporada ' + temporadaQueArranca + '.' };
+  }
+
+  var numSemanasEvaluada = _getSemanasDeTemporada(temporadaEvaluada);
+  var tokensSemanas = [];
+  for (var s = 1; s <= numSemanasEvaluada; s++) tokensSemanas.push('T' + temporadaEvaluada + '_S' + s);
+  var semanasCsv = tokensSemanas.join(',');
+
+  var ultimoPar = _getUltimoParCRLista();
+  if (!ultimoPar.ascenso && !ultimoPar.descenso) {
+    Logger.log('[CR_Lista][Autogeneración] CR_Lista está vacía -- no hay ningún par previo del que duplicar ' +
+      'Organizador/Min_CR/Ataques/Otros requisitos. No se crea nada; cargar el primer par a mano.');
+    return { ok: false, motivo: 'CR_Lista vacía, no hay par previo del que duplicar.' };
+  }
+
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.CR_LISTA);
+  if (!sh) {
+    Logger.log('[CR_Lista][Autogeneración] La hoja CR_Lista no existe.');
+    return { ok: false, motivo: 'La hoja CR_Lista no existe.' };
+  }
+
+  var idsNuevos = _generarParIdsCRLista(fechaCambio, ss);
+
+  // PF209 (24-oct-2026, pedido de la usuaria): la fila autogenerada también copia la HORA del registro anterior, completa Clan y ClanTag con
+  // el clan donde está el organizador (si el organizador no está en un clan Terna, pasa a ser el líder del clan principal) y deja un
+  // Comentario que avisa que es autogenerada y que se puede modificar a mano.
+  var dirOrg = _leerDirectorioParaOrganizadorCR_(ss);
+  var orgAsc = _resolverOrganizadorCRAutogenerado_(
+    ultimoPar.ascenso ? ultimoPar.ascenso.organizador : '', ultimoPar.ascenso ? ultimoPar.ascenso.tagOrg : '', dirOrg);
+  var orgDesc = _resolverOrganizadorCRAutogenerado_(
+    ultimoPar.descenso ? ultimoPar.descenso.organizador : '', ultimoPar.descenso ? ultimoPar.descenso.tagOrg : '', dirOrg);
+  var horaAsc = (ultimoPar.ascenso && ultimoPar.ascenso.hora) ? _formatHoraCanonica(ultimoPar.ascenso.hora) : '';
+  var horaDesc = (ultimoPar.descenso && ultimoPar.descenso.hora) ? _formatHoraCanonica(ultimoPar.descenso.hora) : '';
+
+  var comunesAscenso = {
+    fecha: fechaCambio, hora: horaAsc, semanas: semanasCsv, temporada: temporadaQueArranca,
+    organizador: orgAsc.organizador, tagOrg: orgAsc.tagOrg, clan: orgAsc.clan, clanTag: orgAsc.clanTag,
+    comentario: _comentarioCRAutogenerado_(orgAsc)
+  };
+  var comunesDescenso = {
+    fecha: fechaCambio, hora: horaDesc, semanas: semanasCsv, temporada: temporadaQueArranca,
+    organizador: orgDesc.organizador, tagOrg: orgDesc.tagOrg, clan: orgDesc.clan, clanTag: orgDesc.clanTag,
+    comentario: _comentarioCRAutogenerado_(orgDesc)
+  };
+
+  var filaAscenso  = _construirFilaCRLista(comunesAscenso,  'Ascenso',  idsNuevos.idAscenso,  _bloqueParaAutogeneracionCRLista(ultimoPar.ascenso));
+  var filaDescenso = _construirFilaCRLista(comunesDescenso, 'Descenso', idsNuevos.idDescenso, _bloqueParaAutogeneracionCRLista(ultimoPar.descenso));
+
+  var filaBaseSheet = Math.max(sh.getLastRow() + 1, 4);
+  filaAscenso[CR.NUM - 1]  = filaBaseSheet - 3;
+  filaDescenso[CR.NUM - 1] = filaBaseSheet - 2;
+
+  sh.getRange(filaBaseSheet, 1, 2, CR_TOTAL_COLS).setValues([filaAscenso, filaDescenso]);
+  _setDateCell(sh, filaBaseSheet,     CR.FECHA, fechaCambio, 'dd/MM/yyyy');
+  _setDateCell(sh, filaBaseSheet + 1, CR.FECHA, fechaCambio, 'dd/MM/yyyy');
+  // Hora queda vacía en la autogeneración (comunesAscenso/comunesDescenso [→ Contexto_Base_Web.md §26B025]
+  _trySetFmt(sh, filaBaseSheet,     CR.HORA, 'h:mm:ss AM/PM');
+  _trySetFmt(sh, filaBaseSheet + 1, CR.HORA, 'h:mm:ss AM/PM');
+  applyBorderCenter(sh.getRange(filaBaseSheet, 1, 2, CR_TOTAL_COLS));
+  _aplicarDropdownTipoCRLista(ss);
+  _aplicarDropdownEstadoCRLista(ss);
+  _reordenarCRListaPorFecha(ss);
+
+  var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
+  if (shExtra) {
+    shExtra.getRange(2, 22).setValue(idsNuevos.idAscenso);  // Ascenso_Vigente_ID
+    shExtra.getRange(2, 23).setValue(idsNuevos.idDescenso); // Descenso_Vigente_ID
+  } else {
+    Logger.log('[CR_Lista][Autogeneración] AVISO: no encontré la hoja Extra, no se guardó el ID vigente.');
+  }
+
+  Logger.log('[CR_Lista][Autogeneración] Par nuevo creado para Temporada ' + temporadaQueArranca +
+    ' (Planificado para el ' + Utilities.formatDate(fechaCambio, 'America/Lima', 'dd/MM/yyyy') + '; evalúa Temporada ' + temporadaEvaluada + ', ' + numSemanasEvaluada + ' semana(s)): ' +
+    idsNuevos.idAscenso + ' / ' + idsNuevos.idDescenso + '. Guardado como vigente en Extra.');
+
+  return { ok: true, motivo: 'Par creado.', idAscenso: idsNuevos.idAscenso, idDescenso: idsNuevos.idDescenso };
+}
+
+// CR_Lista — lectura por ID (FASE 2, 13-sep-2026, pedido del usuario, plan [→ Contexto_Base_Web.md §26B026]
+/**
+ * _getFilaCRListaPorId(id) [→ Contexto_Base_Web.md §26B027]
+ */
+function _getFilaCRListaPorId(id) {
+  if (!id) return null;
+  var ss = _getSs();
+
+  var lecturaCR = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CR_LISTA, 'Backup_CR_Lista.csv', CR_TOTAL_COLS, 3);
+  var datos = lecturaCR.filas;
+  if (!datos.length) return null;
+
+  var fila = null;
+  for (var i = 0; i < datos.length; i++) {
+    if (String(datos[i][CR.ID - 1] || '').trim() === String(id).trim()) {
+      fila = datos[i];
+      break;
+    }
+  }
+  if (!fila) return null;
+
+  // Barcos: mismo criterio exacto que TL.BARCOS/SL.BARCOS (ver [→ Contexto_Base_Web.md §26B028]
+  var celdaBarcos = fila[CR.BARCOS - 1];
+  var barcosConfigurado = (celdaBarcos !== '' && celdaBarcos !== null && celdaBarcos !== undefined);
+  var barcos = { activo: barcosConfigurado, qty: barcosConfigurado ? (Number(celdaBarcos) || 0) : null };
+
+  // Por clan (mismo orden que CFG.TERNA_TAGS, índice 0 = C1 .. índice 3 = [→ Contexto_Base_Web.md §26B029]
+  var porClan = [];
+  CFG.TERNA_TAGS.forEach(function (tag, idx) {
+    var nombreClan = _getNombreClanDump(tag);
+    function bloqueRol(colsPorRol) {
+      var qty = Number(fila[colsPorRol[idx] - 1]) || 0;
+      return { activo: qty > 0, qty: qty };
+    }
+    porClan.push({
+      clan: nombreClan,
+      minCR: {
+        miembro:  bloqueRol(CR_MIN_CR_COLS.MIEMBRO),
+        veterano: bloqueRol(CR_MIN_CR_COLS.VETERANO),
+        colider:  bloqueRol(CR_MIN_CR_COLS.COLIDER)
+      },
+      ataques: {
+        miembro:  bloqueRol(CR_ATAQUES_COLS.MIEMBRO),
+        veterano: bloqueRol(CR_ATAQUES_COLS.VETERANO),
+        colider:  bloqueRol(CR_ATAQUES_COLS.COLIDER)
+      }
+    });
+  });
+
+  // Fecha: la hoja viva la trae como objeto Date; Backup_CR_Lista.csv la [→ Contexto_Base_Web.md §26B030]
+  var fechaCelda = fila[CR.FECHA - 1];
+  var fechaResuelta = (fechaCelda instanceof Date) ? fechaCelda : _parseSpanishDate(fechaCelda);
+
+  // Hora: la hoja viva la trae como objeto Date real (ver _horaStringADate()/ [→ Contexto_Base_Web.md §26B031]
+  var horaCelda = fila[CR.HORA - 1];
+  var horaResuelta = (horaCelda instanceof Date) ? horaCelda : _parseHoraCanonica(horaCelda, fechaResuelta);
+
+  return {
+    idFila: String(fila[CR.ID - 1] || '').trim(),
+    tipo: String(fila[CR.TIPO - 1] || '').trim(),
+    fecha: fechaResuelta,
+    hora: horaResuelta,
+    organizador: String(fila[CR.ORGANIZADOR - 1] || '').trim(),
+    tagOrg: String(fila[CR.TAG_ORG - 1] || '').trim(),
+    semanas: _parseSemanasSorteo(fila[CR.SEMANAS - 1]),
+    barcos: barcos,
+    miembroActivo: { activo: String(fila[CR.MIEMBRO_ACTIVO - 1] || '').trim() === 'Sí' },
+    whatsapp: { activo: String(fila[CR.WHATSAPP - 1] || '').trim() === 'Sí' },
+    estado: String(fila[CR.ESTADO - 1] || '').trim(),
+    comentario: String(fila[CR.COMENTARIO - 1] || '').trim(),
+    porClan: porClan
+  };
+}
+
+/**
+ * _getParCRListaPorId(idCualquiera) [→ Contexto_Base_Web.md §26B032]
+ */
+function _getParCRListaPorId(idCualquiera) {
+  var id = String(idCualquiera || '').trim();
+  var p = _idEventoParsear_(id);
+  if (!p || (p.letra !== 'A' && p.letra !== 'D')) return { ascenso: null, descenso: null };
+  return {
+    ascenso: _getFilaCRListaPorId('A' + id.slice(1)),
+    descenso: _getFilaCRListaPorId('D' + id.slice(1))
+  };
+}
+
+/**
+ * _getRequisitosCambioRangoBloqueCategoria(nombreCategoria) [→ Contexto_Base_Web.md §26B033]
+ */
+function _getRequisitosCambioRangoBloqueCategoria(nombreCategoria) {
+  var tipoCR = (nombreCategoria === 'Ascensos') ? 'Ascenso' : 'Descenso';
+  var idVigente = _getIdVigenteExtraCR(tipoCR);
+  var filaCR = idVigente ? _getFilaCRListaPorId(idVigente) : null;
+
+  if (!filaCR) {
+    if (idVigente) {
+      Logger.log('[CambioRango][Progreso] Extra!' + tipoCR + '_Vigente_ID (' + idVigente + ') no matchea ' +
+        'ninguna fila real de CR_Lista. Sin respaldo (T_Requisitos dado de baja): se devuelve vacío.');
+    } else {
+      Logger.log('[CambioRango][Progreso] Extra!' + tipoCR + '_Vigente_ID está vacío. Sin respaldo ' +
+        '(T_Requisitos dado de baja): se devuelve vacío.');
+    }
+    return [];
+  }
+
+  // miembroActivo en CR_Lista es un flag GLOBAL de toda la corrida (no [→ Contexto_Base_Web.md §26B034]
+  var miembroActivoGlobal = filaCR.miembroActivo;
+  return filaCR.porClan.map(function (b) {
+    return {
+      clan:            b.clan,
+      minTMiembro:     b.minCR.miembro,
+      minT:            b.minCR.veterano,
+      minTColider:     b.minCR.colider,
+      ataquesMiembro:  b.ataques.miembro,
+      ataquesVeterano: b.ataques.veterano,
+      ataquesColider:  b.ataques.colider,
+      miembroActivo:   miembroActivoGlobal
+    };
+  });
+}
+
+// CR_Lista — promedio de Fame y Ataques por jugador (FASE 3, 13-sep-2026, [→ Contexto_Base_Web.md §26B035]
+/**
+ * _esMiembroVigenteEnClanesFamilia(tag) [→ Contexto_Base_Web.md §26B036]
+ */
+function _esMiembroVigenteEnClanesFamilia(tag) {
+  var tagNorm = String(tag || '').trim();
+  if (!tagNorm) return false;
+
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'Torneos_Core');
+  if (!CACHE_CLAN_DATA) return false;
+
+  for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
+    var cd = CACHE_CLAN_DATA[CFG.TERNA_TAGS[i]];
+    if (!cd || !cd.members) continue;
+    for (var j = 0; j < cd.members.length; j++) {
+      if (String(cd.members[j].tag || '').trim() === tagNorm) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * _getPromediosCRParaJugador(tag, semanas, ctxReal) [→ Contexto_Base_Web.md §26B037]
+ */
+function _getPromediosCRParaJugador(tag, semanas, ctxReal, porTagPrecalculado, datosPropios) {
+  var tagNorm = String(tag || '').trim();
+  // FIX (16-sep-2026, pedido del usuario -- "así no hay problema con los [→ Contexto_Base_Web.md §26B038]
+  var porTag = porTagPrecalculado || _getTrofeosYAtaquesSemanalesPorTag(semanas, ctxReal, true);
+  // NUEVO (28-sep-2026): datosPropios (opcional, solo Cambio de Rango / Descenso) reemplaza [→ Contexto_Base_Web.md §26B039]
+  var datos = datosPropios || porTag[tagNorm];
+  return {
+    fameProm: datos ? (datos.trofeosProm || 0) : 0,
+    fameSuma: datos ? (datos.trofeosSuma || 0) : 0, // 28-sep-2026, ver _fameCumpleRequisito() (28_Torneos_Docs.gs)
+    ataquesProm: datos ? (datos.ataquesProm || 0) : 0,
+    // FIX (16-sep-2026, pedido del usuario -- requisito "Barcos" de Cambio [→ Contexto_Base_Web.md §26B040]
+    barcosProm: datos ? (datos.barcosProm || 0) : 0,
+    barcosSuma: datos ? (datos.barcosSuma || 0) : 0, // 29-sep-2026, ver _barcosCumplenRequisito() (28_Torneos_Docs.gs)
+    // 19-sep-2026: sumatoria real + exonerados + semanas evaluadas, para [→ Contexto_Base_Web.md §26B041]
+    ataquesSuma:    datos ? (datos.ataquesSuma || 0) : 0,
+    ataquesExentos: datos ? (datos.ataquesExentos || 0) : 0,
+    semanasEval:    datos ? (datos.semanasEval || 0) : 0
+  };
+}
+
+// CR_Lista — motor de comparación elegibles/en riesgo (FASE 4, 13-sep-2026, [→ Contexto_Base_Web.md §26B042]
+/**
+ * _validarCoherenciaCRLista(filaAscenso, filaDescenso) [→ Contexto_Base_Web.md §26B043]
+ */
+function _validarCoherenciaCRLista(filaAscenso, filaDescenso) {
+  var errores = [];
+  var porClanDescenso = {};
+  filaDescenso.porClan.forEach(function (b) { porClanDescenso[b.clan] = b; });
+
+  var ROLES = ['miembro', 'veterano', 'colider'];
+  var ETIQUETAS_ROL = { miembro: 'Miembro', veterano: 'Veterano', colider: 'Colíder' };
+
+  filaAscenso.porClan.forEach(function (bloqueAsc) {
+    var bloqueDesc = porClanDescenso[bloqueAsc.clan];
+    if (!bloqueDesc) return; // no debería pasar -- Ascenso y Descenso siempre traen los mismos 4 clanes
+
+    ROLES.forEach(function (rol) {
+      var minAsc = bloqueAsc.minCR[rol], minDesc = bloqueDesc.minCR[rol];
+      if (minAsc.activo && minDesc.activo && minAsc.qty < minDesc.qty) {
+        errores.push(
+          bloqueAsc.clan + ' / ' + ETIQUETAS_ROL[rol] + ': Min_CR de Ascenso (' + minAsc.qty +
+          ') es MENOR que el de Descenso (' + minDesc.qty + ') -- Ascenso debe ser \u2265 Descenso.'
+        );
+      }
+
+      var atqAsc = bloqueAsc.ataques[rol], atqDesc = bloqueDesc.ataques[rol];
+      if (atqAsc.activo && atqDesc.activo && atqAsc.qty < atqDesc.qty) {
+        errores.push(
+          bloqueAsc.clan + ' / ' + ETIQUETAS_ROL[rol] + ': Ataques de Ascenso (' + atqAsc.qty +
+          ') es MENOR que el de Descenso (' + atqDesc.qty + ') -- Ascenso debe ser \u2265 Descenso.'
+        );
+      }
+    });
+  });
+
+  return { ok: errores.length === 0, errores: errores };
+}
+
+/**
+ * _cumpleRequisitoCR(reqMinCR, reqAtaques, promedios) [→ Contexto_Base_Web.md §26B044]
+ */
+function _cumpleRequisitoCR(reqMinCR, reqAtaques, reqBarcos, reqMiembroActivo, reqWhatsapp, promedios, esMiembroVigente, wspG) {
+  var okMinCR   = !reqMinCR.activo   || _fameCumpleRequisito(promedios, reqMinCR.qty); // sumatoria, 28-sep-2026
+  var okAtaques = !reqAtaques.activo || _ataquesCumplenRequisito(promedios, reqAtaques.qty); // sumatoria, 19-sep-2026
+  // FIX (16-sep-2026, pedido del usuario): Barcos/Miembro activo/WhatsApp [→ Contexto_Base_Web.md §26B045]
+  var okBarcos = !reqBarcos.activo || _barcosCumplenRequisito(promedios, reqBarcos.qty); // sumatoria, 29-sep-2026
+  var okMiembroActivo = !reqMiembroActivo.activo || !!esMiembroVigente;
+  var okWhatsapp = !reqWhatsapp.activo || String(wspG || '').trim() === 'Sí';
+  return okMinCR && okAtaques && okBarcos && okMiembroActivo && okWhatsapp;
+}
+
+function _destinoRangoCR(tipoPropuesta, rolKey) {
+  if (tipoPropuesta === 'EligibleAdmin') return 'admin';
+  if (tipoPropuesta === 'Ascenso') {
+    if (rolKey === 'miembro')  return 'veterano';
+    if (rolKey === 'veterano') return 'colíder';
+  }
+  if (tipoPropuesta === 'Descenso') {
+    if (rolKey === 'miembro')  return 'expulsión';
+    if (rolKey === 'veterano') return 'miembro';
+    if (rolKey === 'colider')  return 'veterano';
   }
   return null;
 }
 
 /**
- * _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, [→ Contexto_Base_Web.md §26B275]
+ * _unirPartesEspanol(arr) [→ Contexto_Base_Web.md §26B048]
  */
-function _registrarResolucionSorteo(idSorteo, tag, nombre, premio, resultado, razon, permitirSinTag, registradoPor, tickets) {
+function _unirPartesEspanol(arr) {
+  if (!arr.length) return '';
+  if (arr.length === 1) return arr[0];
+  return arr.slice(0, -1).join(', ') + ' y ' + arr[arr.length - 1];
+}
+
+/**
+ * _detalleRequisitoCR(tipoPropuesta, rolKey, reqMinCR, reqAtaques, promedios) [→ Contexto_Base_Web.md §26B046]
+ */
+function _detalleRequisitoCR(tipoPropuesta, rolKey, reqMinCR, reqAtaques, reqBarcos, reqMiembroActivo, reqWhatsapp, promedios, esMiembroVigente, wspG) {
+  var partes = [];
+  if (reqAtaques.activo) {
+    var okAtaques = _ataquesCumplenRequisito(promedios, reqAtaques.qty); // sumatoria, 19-sep-2026
+    var exoneradosTxt = (Number(promedios.ataquesExentos) > 0) ? ', ' + promedios.ataquesExentos + ' exonerados por domingo opcional' : '';
+    partes.push((okAtaques ? 'cumple' : 'no cumple') + ' ataques (' + _round1(promedios.ataquesProm) + '/' + reqAtaques.qty + exoneradosTxt + ')');
+  }
+  if (reqMinCR.activo) {
+    var okPuntaje = _fameCumpleRequisito(promedios, reqMinCR.qty); // sumatoria, 28-sep-2026
+    partes.push((okPuntaje ? 'cumple' : 'no cumple') + ' medallas (' + _round1(promedios.fameProm) + '/' + reqMinCR.qty + ')');
+  }
+  if (reqBarcos.activo) {
+    var okBarcos = _barcosCumplenRequisito(promedios, reqBarcos.qty); // sumatoria, 29-sep-2026
+    // 29-sep-2026 (correccion, pregunta 33 del consolidado): la usuaria pidio que el detalle diga [→ Contexto_Base_Web.md §26B049]
+    var valorBarcos = (promedios.barcosSuma !== undefined && promedios.barcosSuma !== null)
+      ? promedios.barcosSuma
+      : promedios.barcosProm;
+    partes.push((okBarcos ? 'cumple' : 'no cumple') + ' barcos (' + _round1(valorBarcos) + '/' + reqBarcos.qty + ')');
+  }
+  if (reqMiembroActivo.activo) {
+    partes.push((esMiembroVigente ? 'cumple' : 'no cumple') + ' miembro activo');
+  }
+  if (reqWhatsapp.activo) {
+    var okWhatsapp = String(wspG || '').trim() === 'Sí';
+    partes.push((okWhatsapp ? 'cumple' : 'no cumple') + ' WhatsApp');
+  }
+
+  var texto;
+  if (!partes.length) {
+    texto = 'Sin requisitos activos para ' + rolKey + '.';
+  } else {
+    var frase = _unirPartesEspanol(partes);
+    texto = frase.charAt(0).toUpperCase() + frase.slice(1) + '.';
+  }
+
+  var destino = _destinoRangoCR(tipoPropuesta, rolKey);
+  if (destino) {
+    texto += ' Rango: ' + (_ETIQUETAS_ROL_CR_MIN[rolKey] || rolKey) + ' a ' + destino + '.';
+  }
+  return texto;
+}
+
+/**
+ * _round1(n) [→ Contexto_Base_Web.md §26B050]
+ */
+function _round1(n) {
+  return Math.round((Number(n) || 0) * 10) / 10;
+}
+
+/**
+ * _filtrarSemanasJugadasCR(semanas, ctxReal) [→ Contexto_Base_Web.md §26B052]
+ */
+// 29-sep-2026: YA NO SE USA en Cambio de Rango (reemplazada por _semanasPendientesCR(), opcion B).
+// Se deja definida por si otro archivo la referencia.
+function _filtrarSemanasJugadasCR(semanas, ctxReal) {
+  if (!semanas || !semanas.length || !ctxReal || ctxReal.periodIndexSospechoso) return semanas || [];
+  var tempReal = Number(ctxReal.temporada);
+  var ultimaTerminadaIdx = Number(ctxReal.sectionIndex) - 1;
+  return semanas.filter(function (s) {
+    if (Number(s.temporada) < tempReal) return true;
+    if (Number(s.temporada) > tempReal) return false;
+    return (Number(s.semana) - 1) <= ultimaTerminadaIdx;
+  });
+}
+
+/**
+ * _semanasPendientesCR(semanas, ctxReal) [→ Contexto_Base_Web.md §26B053]
+ */
+function _semanasPendientesCR(semanas, ctxReal) {
+  if (!semanas || !semanas.length || !ctxReal || ctxReal.periodIndexSospechoso) return [];
+  var tempReal = Number(ctxReal.temporada);
+  var ultimaTerminadaIdx = Number(ctxReal.sectionIndex) - 1;
+  return semanas.filter(function (s) {
+    if (Number(s.temporada) < tempReal) return false;
+    if (Number(s.temporada) > tempReal) return true;
+    return (Number(s.semana) - 1) > ultimaTerminadaIdx;
+  });
+}
+
+/**
+ * _textoSemanasPendientesCR(pendientes) [→ Contexto_Base_Web.md §26B054]
+ */
+function _textoSemanasPendientesCR(pendientes) {
+  return (pendientes || []).map(function (s) {
+    var txt = 'semana ' + s.semana + ' de la Temporada ' + s.temporada;
+    try {
+      var r = _getRangoFechasSemana(s.temporada, Number(s.semana) - 1);
+      if (r && r.fin) {
+        var cierre = new Date(r.fin.getTime());
+        cierre.setDate(cierre.getDate() + 1);
+        txt += ' (termina el ' + Utilities.formatDate(cierre, 'America/Lima', 'dd/MM/yyyy') + ')';
+      }
+    } catch (e) { /* sin fecha, el texto igual sirve */ }
+    return txt;
+  }).join(', ');
+}
+
+/**
+ * _fechaInicioSemanasCR(semanas) [→ Contexto_Base_Web.md §26B051]
+ */
+function _fechaInicioSemanasCR(semanas) {
+  if (!semanas || !semanas.length) return null;
+  var masAntigua = null;
+  semanas.forEach(function (s) {
+    if (!masAntigua || s.temporada < masAntigua.temporada ||
+        (s.temporada === masAntigua.temporada && s.semana < masAntigua.semana)) {
+      masAntigua = s;
+    }
+  });
+  if (!masAntigua) return null;
+  var rango = _getRangoFechasSemana(masAntigua.temporada, masAntigua.semana - 1);
+  return rango ? rango.inicio : null;
+}
+
+// AVISOS ABIERTOS / VERIFICACIONES ABIERTAS -- Cambio de Rango, rendimiento [→ Contexto_Base_Web.md §26B055]
+/**
+ * _juevesGuerraSemanaCR(temporada, semana) [→ Contexto_Base_Web.md §26B056]
+ */
+function _juevesGuerraSemanaCR(temporada, semana) {
+  var r = _getRangoFechasSemana(temporada, Number(semana) - 1);
+  if (!r) return null;
+  var j = new Date(r.inicio.getTime());
+  j.setDate(j.getDate() + 3);
+  return j;
+}
+
+/**
+ * _bloqueDescensoDesdeSemanasCompletas(semanasCompletas, fechaIngreso, tag, ventanasPorTag) [→ Contexto_Base_Web.md §26B057]
+ */
+function _bloqueDescensoDesdeSemanasCompletas(semanasCompletas, fechaIngreso, tag, ventanasPorTag) {
+  if (!semanasCompletas || !semanasCompletas.length) return null;
+  var ing = fechaIngreso ? new Date(fechaIngreso.getFullYear(), fechaIngreso.getMonth(), fechaIngreso.getDate()) : null;
+  var cont = semanasCompletas.filter(function (w) {
+    // 4-oct-2026 (punto 5 de la 28, opcion A): 'Reconstruido' en 0 nunca cuenta, con o sin Fecha_ing.
+    if (w.reconstruido === true && !(w.trofeos > 0) && !(w.ataques > 0) && !(w.barcos > 0)) return false;
+    // 4-oct-2026, P2: una semana 'Reconstruido' con actividad se descarta si Historial_I/S confirma que
+    // el Tag NO estaba en Terna ese jueves. null (sin historial del Tag) = no verificable = no descarta.
+    if (w.reconstruido === true && ventanasPorTag && tag) {
+      var jueP2 = _juevesGuerraSemanaCR(w.temporada, w.semana);
+      if (jueP2 && _estuvoEnTernaEseJuevesCR_(tag, jueP2, ventanasPorTag) === false) return false;
+    }
+    if (!ing) return true;
+    // 29-sep-2026, P1 (decision de la usuaria, pregunta 30): las filas reales (Original o Corregido) [→ Contexto_Base_Web.md §26B058]
+    if (w.reconstruido !== true) return true;
+    var jue = _juevesGuerraSemanaCR(w.temporada, w.semana);
+    if (!jue) return true;
+    return ing.getTime() <= new Date(jue.getFullYear(), jue.getMonth(), jue.getDate()).getTime();
+  });
+  if (!cont.length) return null;
+  var n = cont.length, sT = 0, sA = 0, sB = 0, sE = 0;
+  cont.forEach(function (w) { sT += w.trofeos; sA += w.ataques; sB += w.barcos; sE += w.exentos; });
+  return {
+    trofeosProm: sT / n, trofeosSuma: sT, ataquesProm: sA / n, barcosProm: sB / n, barcosSuma: sB,
+    ataquesSuma: sA, ataquesExentos: sE, semanasEval: n
+  };
+}
+
+/**
+ * _estuvoEnTernaEseJuevesCR_(tag, jueves, ventanasPorTag) [→ Contexto_Base_Web.md §26B059]
+ */
+function _estuvoEnTernaEseJuevesCR_(tag, jueves, ventanasPorTag) {
+  var ini = new Date(jueves.getFullYear(), jueves.getMonth(), jueves.getDate(), 0, 0, 0);
+  var fin = new Date(jueves.getFullYear(), jueves.getMonth(), jueves.getDate(), 23, 59, 59);
+  var a = _tagEstuvoEnTernaEnFecha(tag, ini, ventanasPorTag);
+  var b = _tagEstuvoEnTernaEnFecha(tag, fin, ventanasPorTag);
+  if (a === null || b === null) return null;
+  return a || b;
+}
+
+/**
+ * _ventanasHistorialParaDescensoCR_() [→ Contexto_Base_Web.md §26B060]
+ */
+function _ventanasHistorialParaDescensoCR_() {
+  try {
+    return _construirVentanasMembresiaTernaPorTag() || {};
+  } catch (e) {
+    Logger.log('[Cambio de Rango P2] No se pudo leer Historial_I/S; el Descenso sigue sin ese veto: ' + e);
+    return {};
+  }
+}
+
+/**
+ * _notaSemanasContadasCR(contadas, total)
+ * 28-sep-2026: aclaracion para detalle cuando el Descenso conto menos semanas que la corrida.
+ */
+function _notaSemanasContadasCR(contadas, total) {
+  if (!(contadas > 0) || contadas >= total) return '';
+  return ' Semanas contadas: ' + contadas + ' de ' + total + ' (no se cuentan las semanas en que ingresó después del inicio de la guerra, las semanas reconstruidas sin actividad ni las reconstruidas de cuando Historial_I/S indica que no estaba en Terna).';
+}
+
+/**
+ * _esAdminEnDirectorioCR(valor) [→ Contexto_Base_Web.md §26B061]
+ */
+function _esAdminEnDirectorioCR(valor) {
+  var t = String(valor === null || valor === undefined ? '' : valor).trim().toLowerCase();
+  return t === 'sí' || t === 'si';
+}
+
+/**
+ * _calcularPropuestasCambioRango(idAscenso, idDescenso) [→ Contexto_Base_Web.md §26B062]
+ */
+function _calcularPropuestasCambioRango(idAscenso, idDescenso) {
+  // FIX (16-sep-2026, pedido del usuario -- ver docblock de [→ Contexto_Base_Web.md §26B063]
+  _ULTIMO_DIAGNOSTICO_GUERRA_CSV = null;
+
+  var filaAscenso  = _getFilaCRListaPorId(idAscenso);
+  var filaDescenso = _getFilaCRListaPorId(idDescenso);
+  if (!filaAscenso || !filaDescenso) {
+    return {
+      ok: false,
+      error: 'No encontré una o ambas filas de CR_Lista (' + idAscenso + ' / ' + idDescenso + ').',
+      propuestas: []
+    };
+  }
+
+  // Restricción (13-sep-2026, pedido del usuario): Ascenso siempre debe [→ Contexto_Base_Web.md §26B064]
+  var coherencia = _validarCoherenciaCRLista(filaAscenso, filaDescenso);
+  if (!coherencia.ok) {
+    return {
+      ok: false,
+      error: 'CR_Lista tiene requisitos incoherentes entre Ascenso y Descenso (' +
+        idAscenso + ' / ' + idDescenso + '): ' + coherencia.errores.join(' | '),
+      propuestas: []
+    };
+  }
+
   var ss = _getSs();
+  var ctxReal = _getCtx();
 
-  var idNorm = String(idSorteo || '').trim();
-  if (!idNorm) return { ok: false, error: 'Falta el ID del sorteo.' };
-
-  var RESULTADOS = CFG.SORTEOS_RESULTADO_TIPOS;
-  var resultadosValidos = [RESULTADOS.CALIFICA, RESULTADOS.NO_CALIFICA];
-  if (resultadosValidos.indexOf(resultado) < 0) {
-    return { ok: false, error: 'Resultado inválido.' };
+  // CAMBIO (29-sep-2026, pedido de la usuaria, opcion B): la corrida se evalua con TODAS sus [→ Contexto_Base_Web.md §26B065]
+  var pendientesAsc  = _semanasPendientesCR(filaAscenso.semanas, ctxReal);
+  var pendientesDesc = _semanasPendientesCR(filaDescenso.semanas, ctxReal);
+  if (pendientesAsc.length || pendientesDesc.length) {
+    return {
+      ok: false,
+      error: 'Esta corrida evalúa semanas que todavía no terminan: ' +
+        _textoSemanasPendientesCR(pendientesAsc.length ? pendientesAsc : pendientesDesc) +
+        '. Las propuestas se calculan cuando terminen todas las semanas de la corrida.',
+      propuestas: []
+    };
+  }
+  if (!filaAscenso.semanas.length || !filaDescenso.semanas.length) {
+    return {
+      ok: false,
+      error: 'Esta corrida no tiene semanas que evaluar.',
+      propuestas: []
+    };
   }
 
-  var razonTexto = '';
-  if (resultado === RESULTADOS.NO_CALIFICA) {
-    var RAZONES = CFG.SORTEOS_RAZON_TIPOS;
-    var razonesValidas = [RAZONES.NO_WHATSAPP, RAZONES.NO_REACCION, RAZONES.NO_MIEMBRO_ACTIVO];
-    razonTexto = String(razon || '').trim();
-    if (razonesValidas.indexOf(razonTexto) < 0) {
-      return { ok: false, error: 'Falta la razón (obligatoria cuando el resultado es "No califica").' };
+  // Índice por nombre de clan (mismo nombre que devuelve _getNombreClanDump(), [→ Contexto_Base_Web.md §26B066]
+  var porClanAscenso = {};
+  filaAscenso.porClan.forEach(function (b) { porClanAscenso[b.clan] = b; });
+  var porClanDescenso = {};
+  filaDescenso.porClan.forEach(function (b) { porClanDescenso[b.clan] = b; });
+
+  // Cache de promedios por (tag + corrida): un mismo jugador puede [→ Contexto_Base_Web.md §26B067]
+  var mismasSemanasAD = JSON.stringify(filaAscenso.semanas) === JSON.stringify(filaDescenso.semanas);
+  // 28-sep-2026: el 4.o parametro (true) agrega el detalle de semanas completas por jugador que [→ Contexto_Base_Web.md §26B068]
+  var porTagAscenso = _getTrofeosYAtaquesSemanalesPorTag(filaAscenso.semanas, ctxReal, true, mismasSemanasAD);
+  var diagAscenso = _ULTIMO_DIAGNOSTICO_GUERRA_CSV;
+  var porTagDescenso = porTagAscenso;
+  var diagDescenso = diagAscenso;
+  if (!mismasSemanasAD) {
+    porTagDescenso = _getTrofeosYAtaquesSemanalesPorTag(filaDescenso.semanas, ctxReal, true, true);
+    diagDescenso = _ULTIMO_DIAGNOSTICO_GUERRA_CSV;
+  }
+  _ULTIMO_DIAGNOSTICO_GUERRA_CSV = diagDescenso || diagAscenso || null;
+  // 4-oct-2026, P2: ventanas de Historial_I/S, leidas una sola vez por corrida.
+  var ventanasHist = _ventanasHistorialParaDescensoCR_();
+
+  var cachePromedios = {};
+  function promediosCache(tag, semanas, sufijoCache) {
+    var key = tag + '|' + sufijoCache;
+    if (!cachePromedios[key]) {
+      cachePromedios[key] = _getPromediosCRParaJugador(tag, semanas, ctxReal, (sufijoCache === 'A') ? porTagAscenso : porTagDescenso);
     }
+    return cachePromedios[key];
   }
 
-  var tagNorm = String(tag || '').trim().toUpperCase();
-  if (!tagNorm && !permitirSinTag) {
-    return { ok: false, error: 'Falta el Tag del ganador. Si es intencional (cuenta externa a los clanes), confirma explícitamente el guardado sin Tag.' };
-  }
-  var tagConHash = tagNorm ? (tagNorm.charAt(0) === '#' ? tagNorm : '#' + tagNorm) : '';
-
-  var nombreTexto = String(nombre || '').trim();
-  if (!nombreTexto) return { ok: false, error: 'Falta el nombre del ganador.' };
-
-  // Tickets (FIX 12-sep-2026): opcional. Sin valor -> se guarda vacío, sin
-  // inventar un default. Con valor -> debe ser numérico y no negativo.
-  var ticketsGuardar = '';
-  if (tickets !== undefined && tickets !== null && String(tickets).trim() !== '') {
-    var ticketsNum = Number(tickets);
-    if (isNaN(ticketsNum) || ticketsNum < 0) {
-      return { ok: false, error: 'Tickets inválido (debe ser un número mayor o igual a 0).' };
+  // FIX (16-sep-2026, pedido del usuario -- requisito "Miembro activo"): un [→ Contexto_Base_Web.md §26B069]
+  var cacheMiembroVigente = {};
+  function miembroVigenteCache(tag) {
+    if (!(tag in cacheMiembroVigente)) {
+      cacheMiembroVigente[tag] = _esMiembroVigenteEnClanesFamilia(tag);
     }
-    ticketsGuardar = ticketsNum;
+    return cacheMiembroVigente[tag];
   }
 
-  var filaSorteo = _getFilaSListaPorId(ss, idNorm);
-  if (!filaSorteo) return { ok: false, error: 'No encontré el sorteo ' + idNorm + ' en S_Lista.' };
+  // FIX (16-sep-2026, pedido del usuario -- ver docblock de [→ Contexto_Base_Web.md §26B070]
+  var fechaInicioAscenso  = _fechaInicioSemanasCR(filaAscenso.semanas);
+  var fechaInicioDescenso = _fechaInicioSemanasCR(filaDescenso.semanas);
 
-  var infoDir = { nomMulti: '', prestamo: '', clanTag: '', clan: '' };
-  if (tagConHash) {
-    var mapaDirectorio = _getDirectorioLookupPorTag(ss);
-    if (mapaDirectorio[tagConHash]) infoDir = mapaDirectorio[tagConHash];
-  }
+  var dataDir = _leerDirectorioFisicoComoDC(ss);
+  var propuestas = [];
+  // 28-sep-2026: orden de los clanes = orden de CFG.TERNA_TAGS (indice 0 = principal, 3 = Mini);
+  // _getFilaCRListaPorId() ya arma porClan en ese orden, asi que no hace falta otra consulta.
+  var ordenClanesCR = filaAscenso.porClan.map(function (b) { return b.clan; });
 
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_ASISTENCIA);
+  for (var i = 0; i < dataDir.length; i++) {
+    var fila = dataDir[i];
+    if (String(fila[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
 
-  // Upsert por (ID de sorteo, Tag) -- ver docblock. Sin Tag conocido no hay
-  // clave única: siempre se agrega como fila nueva en ese caso.
-  var filaExistente = -1;
-  if (tagConHash && sh.getLastRow() >= 2) {
-    var datosExistentes = sh.getRange(2, 1, sh.getLastRow() - 1, SA_TOTAL_COLS).getValues();
-    for (var f = 0; f < datosExistentes.length; f++) {
-      var idFilaExistente = String(datosExistentes[f][SA.ID - 1] || '').trim();
-      var tagFilaExistente = String(datosExistentes[f][SA.TAG - 1] || '').trim().toUpperCase();
-      if (idFilaExistente === idNorm && tagFilaExistente === tagConHash.toUpperCase()) {
-        filaExistente = f + 2; // +2: encabezado (fila 1) + índice 0-based
-        break;
+    var clan = String(fila[DC.CLAN - 1] || '').trim();
+    var bloqueAsc  = porClanAscenso[clan];
+    var bloqueDesc = porClanDescenso[clan];
+    if (!bloqueAsc && !bloqueDesc) continue; // clan fuera de este par de CR_Lista
+
+    var rangoActual = String(fila[DC.RANGO - 1] || '').trim();
+    var rangoNorm = rangoActual.toLowerCase().replace('í', 'i').replace('é', 'e');
+    if (rangoNorm === 'lider') continue; // Líder: completamente afuera (confirmado)
+
+    var rolKey = null;
+    if (rangoNorm === 'miembro')  rolKey = 'miembro';
+    else if (rangoNorm === 'veterano') rolKey = 'veterano';
+    else if (rangoNorm === 'colider')  rolKey = 'colider';
+    if (!rolKey) continue; // Rango no reconocido (dato sucio): se ignora, no se propone nada
+
+    var tag = String(fila[DC.TAG - 1] || '').trim();
+    var nombre = String(fila[DC.NOMBRE - 1] || '').trim();
+    // FIX (16-sep-2026, pedido del usuario -- requisito "WhatsApp"): mismo
+    // dato que ya usa el Directorio para la columna WSP(G) -- 'Sí'/'No'.
+    var wspG = String(fila[DC.WSP_G - 1] || '').trim();
+
+    // FIX (16-sep-2026, pedido del usuario -- ver docblock de [→ Contexto_Base_Web.md §26B071]
+    var fechaIngCelda = fila[DC.FECHA_ING - 1];
+    var fechaIngreso = (fechaIngCelda instanceof Date && !isNaN(fechaIngCelda.getTime())) ? fechaIngCelda : null;
+    // 28-sep-2026: el Descenso ya NO se bloquea entero por Fecha_ing posterior al inicio de la [→ Contexto_Base_Web.md §26B072]
+
+    // --- Descenso: mismo patrón para los 3 rangos (Miembro/Veterano/Colíder) ---
+    if (bloqueDesc) {
+      var reqMinCRDesc  = bloqueDesc.minCR[rolKey];
+      var reqAtaquesDesc = bloqueDesc.ataques[rolKey];
+      // 28-sep-2026 (decision del usuario): solo cuentan las semanas completas de ESTE jugador;
+      // sin ninguna semana contada no se propone nada (no estaba, o es nuevo).
+      var blqDesc = _bloqueDescensoDesdeSemanasCompletas((porTagDescenso[tag] || {}).semanasCompletas, fechaIngreso, tag, ventanasHist);
+      var promDesc = blqDesc ? _getPromediosCRParaJugador(tag, filaDescenso.semanas, ctxReal, porTagDescenso, blqDesc) : null;
+      // FIX (16-sep-2026, pedido del usuario): Barcos/Miembro activo/ [→ Contexto_Base_Web.md §26B073]
+      var miembroVigenteDesc = (promDesc && filaDescenso.miembroActivo.activo) ? miembroVigenteCache(tag) : false;
+      if (promDesc && !_cumpleRequisitoCR(reqMinCRDesc, reqAtaquesDesc, filaDescenso.barcos, filaDescenso.miembroActivo, filaDescenso.whatsapp, promDesc, miembroVigenteDesc, wspG)) {
+        propuestas.push({
+          tag: tag,
+          nombre: nombre,
+          clan: clan,
+          rangoActual: rangoActual,
+          tipoPropuesta: 'Descenso',
+          detalle: _detalleRequisitoCR('Descenso', rolKey, reqMinCRDesc, reqAtaquesDesc, filaDescenso.barcos, filaDescenso.miembroActivo, filaDescenso.whatsapp, promDesc, miembroVigenteDesc, wspG) + _notaSemanasContadasCR(promDesc.semanasEval, filaDescenso.semanas.length),
+          // FASE 8 (13-sep-2026, pedido del usuario -- doc "Ascensos y [→ Contexto_Base_Web.md §26B074]
+          ataquesProm: promDesc.ataquesProm,
+          fameProm: promDesc.fameProm,
+          barcosProm: promDesc.barcosProm,
+          // 4-oct-2026 (decision de la usuaria, opcion B de barcos): suma de ataques a barcos de las [→ Contexto_Base_Web.md §26B075]
+          barcosSuma: promDesc.barcosSuma,
+          // NUEVO (16-sep-2026, pedido del usuario -- primer paso chico [→ Contexto_Base_Web.md §26B076]
+          umbralAtaques: reqAtaquesDesc,
+          umbralPuntaje: reqMinCRDesc,
+          umbralBarcos: filaDescenso.barcos,
+          // NUEVO (16-sep-2026, pedido del usuario -- cuarto paso chico, [→ Contexto_Base_Web.md §26B077]
+          cumpleAtaques: reqAtaquesDesc.activo ? _ataquesCumplenRequisito(promDesc, reqAtaquesDesc.qty) : null,
+          cumplePuntaje: reqMinCRDesc.activo   ? _fameCumpleRequisito(promDesc, reqMinCRDesc.qty) : null,
+          cumpleBarcos:  filaDescenso.barcos.activo ? _barcosCumplenRequisito(promDesc, filaDescenso.barcos.qty) : null
+        });
+      }
+    }
+
+    // --- Ascenso: Miembro/Veterano generan propuesta real; Colíder solo
+    // "elegible para administración" (sin generar ascenso de rango) ---
+    if (bloqueAsc) {
+      var reqMinCRAsc  = bloqueAsc.minCR[rolKey];
+      var reqAtaquesAsc = bloqueAsc.ataques[rolKey];
+      var promAsc = promediosCache(tag, filaAscenso.semanas, 'A');
+      // Ver comentario equivalente en el bloque de Descenso, justo arriba.
+      var miembroVigenteAsc = filaAscenso.miembroActivo.activo ? miembroVigenteCache(tag) : false;
+      if (_cumpleRequisitoCR(reqMinCRAsc, reqAtaquesAsc, filaAscenso.barcos, filaAscenso.miembroActivo, filaAscenso.whatsapp, promAsc, miembroVigenteAsc, wspG)) {
+        // 28-sep-2026 (decisiones del usuario, Fase 14 pregunta 29): [→ Contexto_Base_Web.md §26B078]
+        var tiposAsc = [];
+        var clanDestinoAsc = '';
+        if (rolKey !== 'colider') {
+          tiposAsc.push('Ascenso');
+        } else {
+          var idxClanAsc = ordenClanesCR.indexOf(clan);
+          if (idxClanAsc > 0) { tiposAsc.push('AscensoClan'); clanDestinoAsc = ordenClanesCR[idxClanAsc - 1]; }
+          // 28-sep-2026 (correccion de la usuaria): la cantera SOLO sube de clan; 'EligibleAdmin' queda
+          // solo para el colider del clan principal (o de un clan que no esta en el orden de CR_Lista).
+          if (idxClanAsc <= 0 && !_esAdminEnDirectorioCR(fila[DC.ADMIN - 1])) tiposAsc.push('EligibleAdmin');
+        }
+        tiposAsc.forEach(function (tipoPropuesta) {
+        var propAsc = {
+          tag: tag,
+          nombre: nombre,
+          clan: clan,
+          rangoActual: rangoActual,
+          tipoPropuesta: tipoPropuesta,
+          detalle: _detalleRequisitoCR(tipoPropuesta, rolKey, reqMinCRAsc, reqAtaquesAsc, filaAscenso.barcos, filaAscenso.miembroActivo, filaAscenso.whatsapp, promAsc, miembroVigenteAsc, wspG),
+          // FASE 8 -- ver comentario equivalente en el bloque de Descenso,
+          // justo arriba en esta misma función.
+          ataquesProm: promAsc.ataquesProm,
+          fameProm: promAsc.fameProm,
+          barcosProm: promAsc.barcosProm,
+          barcosSuma: promAsc.barcosSuma, // 4-oct-2026, ver el comentario equivalente en el bloque de Descenso
+          // NUEVO (16-sep-2026, pedido del usuario) -- ver comentario
+          // equivalente en el bloque de Descenso, justo arriba.
+          umbralAtaques: reqAtaquesAsc,
+          umbralPuntaje: reqMinCRAsc,
+          umbralBarcos: filaAscenso.barcos,
+          // NUEVO (16-sep-2026, pedido del usuario) -- ver comentario
+          // equivalente en el bloque de Descenso, justo arriba.
+          cumpleAtaques: reqAtaquesAsc.activo ? _ataquesCumplenRequisito(promAsc, reqAtaquesAsc.qty) : null,
+          cumplePuntaje: reqMinCRAsc.activo   ? _fameCumpleRequisito(promAsc, reqMinCRAsc.qty) : null,
+          cumpleBarcos:  filaAscenso.barcos.activo ? _barcosCumplenRequisito(promAsc, filaAscenso.barcos.qty) : null
+        };
+        if (tipoPropuesta === 'AscensoClan') {
+          propAsc.clanDestino = clanDestinoAsc;
+          propAsc.rangoDestino = 'Miembro';
+          propAsc.detalle += ' Sube al clan ' + clanDestinoAsc + ' como miembro.';
+        }
+        propuestas.push(propAsc);
+        });
       }
     }
   }
 
-  var numGuardar;
-  if (filaExistente > 0) {
-    numGuardar = sh.getRange(filaExistente, SA.NUM).getValue(); // se conserva el N° ya asignado
-  } else {
-    numGuardar = (sh.getLastRow() >= 2 ? sh.getLastRow() - 1 : 0) + 1;
+  // FIX (16-sep-2026, pedido del usuario -- "Sin propuestas" sin ningún [→ Contexto_Base_Web.md §26B079]
+  var resultado = { ok: true, propuestas: propuestas };
+  if (_ULTIMO_DIAGNOSTICO_GUERRA_CSV) {
+    resultado.diagnostico = _ULTIMO_DIAGNOSTICO_GUERRA_CSV;
   }
+  return resultado;
+}
 
-  var fila = [];
-  fila[SA.NUM - 1]       = numGuardar;
-  fila[SA.FECHA - 1]     = filaSorteo.fecha;
-  fila[SA.ID - 1]        = idNorm;
-  fila[SA.TEMPORADA - 1] = filaSorteo.temporada;
-  fila[SA.TAG - 1]       = tagConHash;
-  fila[SA.NOMBRE - 1]    = nombreTexto;
-  fila[SA.NOM_MULTI - 1] = infoDir.nomMulti || '';
-  fila[SA.PRESTAMO - 1]  = infoDir.prestamo || '';
-  fila[SA.CLAN_TAG - 1]  = infoDir.clanTag || '';
-  fila[SA.CLAN - 1]      = infoDir.clan || '';
-  fila[SA.TICKETS - 1]   = ticketsGuardar;
-  fila[SA.PREMIO - 1]    = String(premio || '').trim();
-  fila[SA.RESULTADO - 1] = resultado;
-  fila[SA.RAZON - 1]     = razonTexto;
-  fila[SA.GANO - 1]      = SA_GANO_SI; // PF222: quien tiene resolución salió sorteado
+// ----- Identificadores de evento, fechas y semanas -----
 
-  if (filaExistente > 0) {
-    sh.getRange(filaExistente, 1, 1, SA_TOTAL_COLS).setValues([fila]);
-  } else {
-    sh.appendRow(fila);
-    _trySetFmt(sh, sh.getLastRow(), SA.FECHA, 'dd/mm/yyyy');
-    applyBorderCenter(sh.getRange(sh.getLastRow(), 1, 1, SA_TOTAL_COLS));
+function _idEventoCifras_(n) {
+  var t = String(Math.floor(Number(n)));
+  return t.length < 2 ? '0' + t : t;
+}
+
+function _idEventoConstruir_(letra, temporada, semana, numero) {
+  return letra + '_' + _idEventoCifras_(temporada) + '_S_' + _idEventoCifras_(semana) + '_N_' + _idEventoCifras_(numero);
+}
+
+// Devuelve { letra, temporada, semana, numero, nuevo } (números como Number; nuevo = true si usa el formato L_TT_S_SS_N_NN), o null si el texto no es un id de evento.
+function _idEventoParsear_(id) {
+  var texto = String(id || '').trim();
+  var m = texto.match(ID_EVENTO_REGEX_NUEVO_);
+  if (m) return { letra: m[1], temporada: Number(m[2]), semana: Number(m[3]), numero: Number(m[4]), nuevo: true };
+  m = texto.match(ID_EVENTO_REGEX_VIEJO_);
+  if (m) return { letra: m[1], temporada: Number(m[2]), semana: Number(m[3]), numero: Number(m[4]), nuevo: false };
+  return null;
+}
+
+// DETALLE /tournaments?name=X (25-sep-2026, confirmado por el usuario; movido [→ Contexto_Base_Web.md §26B249]
+function _hoyLimaSinHora() {
+  var TZ = 'America/Lima';
+  var partes = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd').split('-');
+  return new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+}
+
+function _calcularTemporadaParaFecha(fecha) {
+  var anio = fecha.getFullYear();
+  var mes = fecha.getMonth();
+  var primerLunes = primerLunesDelMes(anio, mes);
+  if (fecha < primerLunes) {
+    mes--;
+    if (mes < 0) { mes = 11; anio--; }
   }
+  var ref = CFG.REF_DEFAULT;
+  return (anio - ref.getFullYear()) * 12 + (mes - ref.getMonth()) + 1;
+}
 
-  Logger.log('[Sorteos] Resolución guardada en S_Asistencia: sorteo ' + idNorm +
-             ', tag ' + (tagConHash || '(sin tag)') + ', resultado ' + resultado +
-             (ticketsGuardar !== '' ? ', tickets ' + ticketsGuardar : '') +
-             (registradoPor ? ', registrado por ' + registradoPor : '') + '.');
-
-  _ordenarYColorearSAsistencia_(ss); // más reciente primero y un color por sorteo
-  return { ok: true };
+function _calcularSemanaTorneo(fecha, temporada) {
+  var pl = primerLunesTemporada(CFG.REF_DEFAULT, temporada);
+  var periodIndex = Math.floor((fecha.getTime() - pl.getTime()) / 86400000);
+  if (periodIndex < 0) periodIndex = 0;
+  return periodIdxToSectionIndex(periodIndex) + 1;
 }
 
 /**
- * PF222 (24-oct-2026, pedido de la usuaria). _sincronizarParticipantesSorteoSA(idSorteo, clanes): deja en S_Asistencia a TODOS los que participaron en el sorteo,
- * no solo a los ganadores. `clanes` es la lista de calificados que arma _webSorteoCalificados() ([{nombre, calificados:[{tag, nombre, tickets}]}]).
- * Por cada participante sin fila en este sorteo agrega una con Ganó = «No» (sin Premio, Resultado ni Razón). Las filas que ya existen (ganadores o participantes)
- * no se tocan, así que nunca baja un «Sí» a «No». La Fecha se guarda como fecha real (número de Sheets con formato dd/mm/yyyy), no como texto. Devuelve cuántas agregó.
- * Decisión de la usuaria (29-oct-2026, §PF294 punto 9): quien salió con «No califica» no entra solo, pero si se agregó a mano en sorteo.html cuenta como participante
- * aunque no gane. `manuales` ([{nombre, tag, tickets}], opcional) trae a esos agregados a mano. Los elegidos de las sugerencias de sorteo.html traen Tag: se tratan
- * como un calificado más (sin duplicar por Tag y con Clan, Nom_Multi y Préstamo del Directorio). Los «de fuera» no traen Tag: se evita duplicarlos comparando el nombre
- * (sin tildes ni mayúsculas) con las filas que el sorteo ya tiene (ganadores sin Tag, calificados o un manual repetido) y se guardan con Tag vacío.
+ * _construirSemanasCsvDesdeIsos(isosCsv) [→ Contexto_Base_Web.md §26B250]
  */
-function _sincronizarParticipantesSorteoSA(idSorteo, clanes, manuales) {
-  var idNorm = String(idSorteo || '').trim();
-  if (!idNorm || !Array.isArray(clanes)) return { ok: false, agregadas: 0 };
-  var ss = _getSs();
-  var filaSorteo = _getFilaSListaPorId(ss, idNorm);
-  if (!filaSorteo) return { ok: false, agregadas: 0 };
+function _construirSemanasCsvDesdeIsos(isosCsv) {
+  var tokens = String(isosCsv || '').split(',').map(function (s) {
+    var m = String(s).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return null;
+    var lunes = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    var temporada = _calcularTemporadaParaFecha(lunes);
+    var semana = _calcularSemanaTorneo(lunes, temporada);
+    return 'T' + temporada + '_S' + semana;
+  }).filter(Boolean);
+  return tokens.join(',');
+}
 
-  var sh = _getOrCreateSheet(ss, CFG.SHEETS.S_ASISTENCIA);
-  var yaEstan = {};
-  var nombresYa = {}; // nombres normalizados de este sorteo (para los agregados a mano, que no tienen Tag)
-  var siguienteNum = 1;
-  if (sh.getLastRow() >= 2) {
-    var existentes = sh.getRange(2, 1, sh.getLastRow() - 1, SA_TOTAL_COLS).getValues();
-    siguienteNum = existentes.length + 1;
-    for (var e = 0; e < existentes.length; e++) {
-      if (String(existentes[e][SA.ID - 1] || '').trim() !== idNorm) continue;
-      var tagEx = String(existentes[e][SA.TAG - 1] || '').trim().toUpperCase();
-      if (tagEx) yaEstan[tagEx] = true;
-      var nomEx = _normalizarNombreSA_(existentes[e][SA.NOMBRE - 1]);
-      if (nomEx) nombresYa[nomEx] = true;
+/**
+ * _extraerIsosDesdeSemanasCsv(semanasCsv) [→ Contexto_Base_Web.md §26B298]
+ */
+function _extraerIsosDesdeSemanasCsv(semanasCsv) {
+  return String(semanasCsv || '').split(',').map(function (token) {
+    var m = String(token).trim().match(/^T(\d+)_S(\d+)$/);
+    if (!m) return null;
+    var temporada = Number(m[1]);
+    var semana = Number(m[2]);
+    var primerLunes = primerLunesTemporada(CFG.REF_DEFAULT, temporada);
+    if (!primerLunes || isNaN(primerLunes.getTime())) return null;
+    var lunes = new Date(primerLunes.getTime());
+    lunes.setDate(lunes.getDate() + (semana - 1) * 7);
+    return Utilities.formatDate(lunes, 'America/Lima', 'yyyy-MM-dd');
+  }).filter(Boolean);
+}
+
+function _contarTorneosEnSemana(datos, temporada, semana, hastaIndice) {
+  var count = 0;
+  for (var i = 0; i < hastaIndice; i++) {
+    var id = String(datos[i][TL.ID - 1] || '').trim();
+    if (!id) continue;
+    var temp = Number(datos[i][TL.TEMPORADA - 1]) || 0;
+    if (temp !== temporada) continue;
+    var p = _idEventoParsear_(id);
+    if (p && p.letra === 'T' && p.semana === semana) count++;
+  }
+  return count + 1;
+}
+
+/**
+ * _contarSorteosEnSemana(datos, temporada, semana, hastaIndice) [→ Contexto_Base_Web.md §26B251]
+ */
+function _contarSorteosEnSemana(datos, temporada, semana, hastaIndice) {
+  var count = 0;
+  for (var i = 0; i < hastaIndice; i++) {
+    var id = String(datos[i][SL.ID - 1] || '').trim();
+    if (!id) continue;
+    var temp = Number(datos[i][SL.TEMPORADA - 1]) || 0;
+    if (temp !== temporada) continue;
+    var p = _idEventoParsear_(id);
+    if (p && p.letra === 'S' && p.semana === semana) count++;
+  }
+  return count + 1;
+}
+
+// CR_Lista — CR.HORA como HORA REAL, no texto (16-sep-2026, pedido del [→ Contexto_Base_Web.md §26B010]
+/**
+ * _horaStringADate(fechaBase, horaStr) [→ Contexto_Base_Web.md §26B011]
+ */
+function _horaStringADate(fechaBase, horaStr) {
+  // 18-oct-2026 (PF099): los segundos son opcionales; admin.html manda "HH:MM:SS" (horaConSegundos()), el bot "HH:mm". Antes solo aceptaba HH:MM y la Hora quedaba vacía en T_Lista al planificar desde la web. [→ Contexto_Base_Web.md §PF099]
+  var m = String(horaStr || '').trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (!m) return null;
+  if (!(fechaBase instanceof Date) || isNaN(fechaBase.getTime())) return null;
+  var h = Number(m[1]), min = Number(m[2]), seg = Number(m[3] || 0);
+  if (h > 23 || min > 59 || seg > 59) return null;
+  return new Date(fechaBase.getFullYear(), fechaBase.getMonth(), fechaBase.getDate(), h, min, seg);
+}
+
+/**
+ * _formatHoraCanonica(dateVal) [→ Contexto_Base_Web.md §26B012]
+ */
+function _formatHoraCanonica(dateVal) {
+  if (!(dateVal instanceof Date) || isNaN(dateVal.getTime())) return '';
+  return Utilities.formatDate(dateVal, 'America/Lima', 'HH:mm:ss');
+}
+
+/**
+ * _parseHoraCanonica(str, fechaBase) [→ Contexto_Base_Web.md §26B013]
+ */
+function _parseHoraCanonica(str, fechaBase) {
+  var m = String(str || '').trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (!m) return null;
+  var base = (fechaBase instanceof Date && !isNaN(fechaBase.getTime())) ? fechaBase : new Date(1899, 11, 30);
+  return new Date(base.getFullYear(), base.getMonth(), base.getDate(), Number(m[1]), Number(m[2]), Number(m[3] || 0));
+}
+
+/**
+ * _combinarFechaHora(fechaStr, horaStr) [→ Contexto_Base_Web.md §26B279]
+ */
+function _combinarFechaHora(fechaStr, horaStr) {
+  var mFecha = String(fechaStr || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  // 17-oct-2026 (PF098): los segundos son opcionales; admin.html manda la hora como "HH:MM:SS" (horaConSegundos()) y el bot como "HH:mm". [→ Contexto_Base_Web.md §PF098]
+  var mHora  = String(horaStr  || '').trim().match(/^([01]?\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/);
+  if (!mFecha || !mHora) return null;
+  var dia = Number(mFecha[1]), mes = Number(mFecha[2]), anio = Number(mFecha[3]);
+  var horas = Number(mHora[1]), minutos = Number(mHora[2]), segundos = Number(mHora[3] || 0);
+  var fecha = new Date(anio, mes - 1, dia, horas, minutos, segundos);
+  if (isNaN(fecha.getTime())) return null;
+  return fecha;
+}
+
+/** _mismoDia(d1, d2) — compara dos Date por año/mes/día, ignorando la hora. */
+function _mismoDia(d1, d2) {
+  return d1.getFullYear() === d2.getFullYear() &&
+         d1.getMonth() === d2.getMonth() &&
+         d1.getDate() === d2.getDate();
+}
+
+/**
+ * _parseSemanasSorteo(semanasStr) [→ Contexto_Base_Web.md §26B221]
+ */
+function _parseSemanasSorteo(semanasStr) {
+  var resultado = [];
+  String(semanasStr || '').split(',').forEach(function (token) {
+    var m = String(token || '').trim().match(/^T(\d+)_S(\d+)$/i);
+    if (!m) return;
+    resultado.push({ temporada: Number(m[1]), semana: Number(m[2]) });
+  });
+  return resultado;
+}
+
+// ----- Requisitos y configuración vigente -----
+
+/**
+ * FIX (12-sep-2026, pedido del usuario -- precarga de "Modificar" debe leer [→ Contexto_Base_Web.md §26B222]
+ */
+/**
+ * _getIdVigenteExtra(nombreCategoria) [→ Contexto_Base_Web.md §26B223]
+ */
+function _getIdVigenteExtra(nombreCategoria) {
+  try {
+    var ss = _getSs();
+    var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
+    if (!shExtra) return '';
+    var col = (nombreCategoria === 'Torneo') ? 20 : 21; // Torneo_Vigente_ID / Sorteo_Vigente_ID, ver _setupExtra()
+    var val = shExtra.getRange(2, col).getValue();
+    return val ? String(val).trim() : '';
+  } catch (e) {
+    Logger.log('[VigenteExtra] Error leyendo Extra!Torneo_Vigente_ID/Sorteo_Vigente_ID: ' + e.message);
+    return _valorExtraDesdeCsv_((nombreCategoria === 'Torneo') ? ['Torneo_Vigente_ID'] : ['Sorteo_Vigente_ID']); // PF073: respaldo CSV
+  }
+}
+
+/**
+ * _getIdVigenteExtraCR(tipo) [→ Contexto_Base_Web.md §26B224]
+ */
+function _getIdVigenteExtraCR(tipo) {
+  try {
+    var ss = _getSs();
+    var shExtra = ss.getSheetByName(CFG.SHEETS.EXTRA);
+    if (!shExtra) return '';
+    var col = (tipo === 'Ascenso') ? 22 : 23; // Ascenso_Vigente_ID / Descenso_Vigente_ID, ver _setupExtra()
+    var val = shExtra.getRange(2, col).getValue();
+    return val ? String(val).trim() : '';
+  } catch (e) {
+    Logger.log('[VigenteExtra] Error leyendo Extra!Ascenso_Vigente_ID/Descenso_Vigente_ID: ' + e.message);
+    return _valorExtraDesdeCsv_((tipo === 'Ascenso') ? ['Ascenso_Vigente_ID'] : ['Descenso_Vigente_ID']); // PF073: respaldo CSV
+  }
+}
+
+// _valorExtraDesdeCsv_(nombres): PF073. Valor de la fila 2 de Extra, leído de Backup_Extra.csv por NOMBRE de encabezado (el CSV se mapea por encabezado, no por posición; ver importarExtraDesdeCSV). Devuelve '' si no hay CSV, columna o valor; nunca lanza error. [→ Contexto_Base_Web.md §PF073]
+function _valorExtraDesdeCsv_(nombres) {
+  try {
+    var lec = _obtenerFilasConFallbackCSV(_getSs(), CFG.SHEETS.EXTRA, 'Backup_Extra.csv');
+    if (!lec.filas.length) return '';
+    for (var n = 0; n < nombres.length; n++) {
+      var idx = lec.headerIdx[nombres[n]];
+      if (idx === undefined) continue;
+      var v = lec.filas[0][idx];
+      if (v !== '' && v !== null && v !== undefined) return String(v).trim();
+    }
+  } catch (e) {
+    Logger.log('[VigenteExtra] Tampoco se pudo leer Backup_Extra.csv: ' + e);
+  }
+  return '';
+}
+
+/**
+ * _getConfigMasRecienteCategoria(nombreCategoria) [→ Contexto_Base_Web.md §26B220]
+ */
+function _getConfigMasRecienteCategoria(nombreCategoria, id) {
+  var esTorneo = (nombreCategoria === 'Torneo');
+  var ss = _getSs();
+  // PF073 (29-oct-2026): hoja viva o, si no está disponible, Backup_T_Lista.csv / Backup_S_Lista.csv (encabezado de 2 filas, datos desde la fila 3). Solo devuelve [] si tampoco hay CSV. [→ Contexto_Base_Web.md §PF073]
+  var totalCols = esTorneo ? TL_TOTAL_COLS : SL_TOTAL_COLS;
+  var lecturaLista = _obtenerFilasConFallbackCSV(ss, esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA, esTorneo ? 'Backup_T_Lista.csv' : 'Backup_S_Lista.csv', totalCols, 2);
+  if (lecturaLista.origen === 'vacio') return [];
+  var datos = lecturaLista.filas;
+  if (lecturaLista.origen === 'csv') {
+    // El CSV trae la Fecha como texto: se pasa a Date igual que en _webTorneos() y _resolverGruposContinuacionTorneos(), porque el criterio histórico de más abajo exige instanceof Date.
+    var colFechaCsv = esTorneo ? TL.FECHA : SL.FECHA;
+    datos = datos.map(function (f) {
+      var nueva = f.slice();
+      var fechaObj = _parseSpanishDate(nueva[colFechaCsv - 1]);
+      if (fechaObj instanceof Date && !isNaN(fechaObj.getTime())) nueva[colFechaCsv - 1] = fechaObj;
+      return nueva;
+    });
+  }
+  if (!datos.length) return [];
+
+  var COL_FECHA     = esTorneo ? TL.FECHA : SL.FECHA;
+  var COL_ID        = esTorneo ? TL.ID : SL.ID;
+  var COLS_MINT     = esTorneo ? TL_MIN_T_COLS : SL_MIN_S_COLS;
+  var COLS_ATAQUES  = esTorneo ? TL_ATAQUES_COLS : SL_ATAQUES_COLS;
+  var COLS_TORNEOS  = esTorneo ? null : SL_TORNEOS_COLS; // T_Lista no tiene esta columna
+  var COL_MIEMBRO   = esTorneo ? TL.MIEMBRO_ACTIVO : SL.MIEMBRO_ACTIVO;
+  var COL_REACCION  = esTorneo ? TL.REACCION : SL.REACCION;
+  // FIX (12-sep-2026, pedido del usuario -- consolidado, sección 1 y 8, [→ Contexto_Base_Web.md §26B225]
+  var COL_WHATSAPP  = esTorneo ? TL.WHATSAPP : SL.WHATSAPP;
+  // FIX (12-sep-2026, pedido del usuario -- requisito nuevo "Barcos"): ver [→ Contexto_Base_Web.md §26B226]
+  var COL_BARCOS    = esTorneo ? TL.BARCOS : SL.BARCOS;
+  var COL_DELTA     = esTorneo ? null : SL.MIN_S_DELTA; // T_Lista no tiene esta columna
+  // Semanas (FIX 11-sep-2026, pedido del usuario -- segunda vuelta: se [→ Contexto_Base_Web.md §26B227]
+  var COL_SEMANAS   = esTorneo ? TL.SEMANAS : SL.SEMANAS;
+  // Premios (FIX 12-sep-2026, pedido del usuario -- consolidado, sección [→ Contexto_Base_Web.md §26B228]
+  var COL_PREMIOS   = esTorneo ? TL.PREMIOS : SL.PREMIOS;
+
+  // Fila objetivo: [→ Contexto_Base_Web.md §26B229]
+  var filaMasReciente = null;
+  if (id) {
+    for (var j = 0; j < datos.length; j++) {
+      if (String(datos[j][COL_ID - 1] || '') === String(id)) {
+        filaMasReciente = datos[j];
+        break;
+      }
+    }
+    if (!filaMasReciente) return [];
+  } else {
+    var idVigenteExtra = _getIdVigenteExtra(nombreCategoria);
+    if (idVigenteExtra) {
+      for (var k = 0; k < datos.length; k++) {
+        if (String(datos[k][COL_ID - 1] || '') === String(idVigenteExtra)) {
+          filaMasReciente = datos[k];
+          break;
+        }
+      }
+    }
+    if (!filaMasReciente) {
+      // Respaldo (ver punto 3 del docblock de arriba): ni Extra!*_Vigente_ID
+      // tenía un ID válido, se usa el criterio histórico.
+      var fechaMasReciente = -1;
+      for (var i = 0; i < datos.length; i++) {
+        var fila = datos[i];
+        var fechaVal = fila[COL_FECHA - 1];
+        var t = (fechaVal instanceof Date) ? fechaVal.getTime() : 0;
+        if (!fila[COL_FECHA - 1] && !fila[COL_ID - 1]) continue; // fila totalmente vacía
+        if (t >= fechaMasReciente) {
+          fechaMasReciente = t;
+          filaMasReciente = fila;
+        }
+      }
     }
   }
+  if (!filaMasReciente) return [];
 
-  var mapaDir = _getDirectorioLookupPorTag(ss);
-  var filas = [];
-  clanes.forEach(function (c) {
-    (c && c.calificados || []).forEach(function (p) {
-      var tagNorm = String(p.tag || '').trim().toUpperCase();
-      if (!tagNorm) return;
-      var tagHash = tagNorm.charAt(0) === '#' ? tagNorm : '#' + tagNorm;
-      if (yaEstan[tagHash]) return;
-      yaEstan[tagHash] = true;
-      var nomCal = _normalizarNombreSA_(p.nombre);
-      if (nomCal) nombresYa[nomCal] = true;
-      var info = mapaDir[tagHash] || { nomMulti: '', prestamo: '', clanTag: '', clan: '' };
-      var fila = [];
-      fila[SA.NUM - 1]       = siguienteNum++;
-      fila[SA.FECHA - 1]     = filaSorteo.fecha;
-      fila[SA.ID - 1]        = idNorm;
-      fila[SA.TEMPORADA - 1] = filaSorteo.temporada;
-      fila[SA.TAG - 1]       = tagHash;
-      fila[SA.NOMBRE - 1]    = String(p.nombre || '');
-      fila[SA.NOM_MULTI - 1] = info.nomMulti || '';
-      fila[SA.PRESTAMO - 1]  = info.prestamo || '';
-      fila[SA.CLAN_TAG - 1]  = info.clanTag || '';
-      fila[SA.CLAN - 1]      = info.clan || (c.nombre || '');
-      fila[SA.TICKETS - 1]   = Number(p.tickets) >= 0 ? Number(p.tickets) : '';
-      fila[SA.PREMIO - 1]    = '';
-      fila[SA.RESULTADO - 1] = '';
-      fila[SA.RAZON - 1]     = '';
-      fila[SA.GANO - 1]      = SA_GANO_NO;
-      filas.push(fila);
+  var miembroActivo = { activo: String(filaMasReciente[COL_MIEMBRO - 1] || '').trim() === 'Sí' };
+  var reaccion = { activo: String(filaMasReciente[COL_REACCION - 1] || '').trim() === 'Sí' };
+  // whatsapp (FIX 12-sep-2026, ver comentario de COL_WHATSAPP más arriba):
+  // mismo criterio exacto que miembroActivo/reaccion.
+  var whatsapp = { activo: String(filaMasReciente[COL_WHATSAPP - 1] || '').trim() === 'Sí' };
+  // Barcos (FIX 12-sep-2026, pedido del usuario -- requisito nuevo, [→ Contexto_Base_Web.md §26B230]
+  var celdaBarcos = filaMasReciente[COL_BARCOS - 1];
+  var barcosConfigurado = (celdaBarcos !== '' && celdaBarcos !== null && celdaBarcos !== undefined);
+  var barcos = { activo: barcosConfigurado, qty: barcosConfigurado ? (Number(celdaBarcos) || 0) : null };
+  // Delta (FASE 10-sep-2026, pedido del usuario): a diferencia de Min_S, [→ Contexto_Base_Web.md §26B231]
+  var qtyDelta = COL_DELTA ? (Number(filaMasReciente[COL_DELTA - 1]) || 0) : 0;
+
+  // idFila (FASE 10-sep-2026, pedido del usuario -- consolidado sección 1, [→ Contexto_Base_Web.md §26B232]
+  var idFilaMasReciente = filaMasReciente[COL_ID - 1];
+
+  // Semanas (FIX 11-sep-2026, pedido del usuario -- columna de S_Lista, y [→ Contexto_Base_Web.md §26B233]
+  var semanasSorteo = COL_SEMANAS
+    ? _parseSemanasSorteo(filaMasReciente[COL_SEMANAS - 1])
+    : [];
+
+  // Premios (FIX 12-sep-2026, ver comentario de COL_PREMIOS más arriba): [→ Contexto_Base_Web.md §26B234]
+  var premiosStr = String(filaMasReciente[COL_PREMIOS - 1] || '').trim();
+
+  var resultado = [];
+  // Mismo orden que antes tenía T_Requisitos: CFG.TERNA_TAGS (orden Terna
+  // oficial). Índice 0 = C1 (clan principal) .. índice 3 = C4 (Mini乂Ternas™).
+  CFG.TERNA_TAGS.forEach(function (tag, idx) {
+    var nombreClan = _getNombreClanDump(tag);
+
+    var qtyMinT = Number(filaMasReciente[COLS_MINT[idx] - 1]) || 0;
+    var qtyAtaques = Number(filaMasReciente[COLS_ATAQUES[idx] - 1]) || 0;
+    var qtyTorneos = COLS_TORNEOS ? (Number(filaMasReciente[COLS_TORNEOS[idx] - 1]) || 0) : 0;
+
+    // Torneo/Sorteo en T_Requisitos siempre tenían Min_T "fusionado" [→ Contexto_Base_Web.md §26B235]
+    var minTUnico = { activo: qtyMinT > 0, qty: qtyMinT };
+
+    resultado.push({
+      clan: nombreClan,
+      minTMiembro: minTUnico,
+      minT: minTUnico,
+      minTColider: minTUnico,
+      ataques: { activo: qtyAtaques > 0, qty: qtyAtaques },
+      torneos: { activo: qtyTorneos > 0, qty: qtyTorneos },
+      miembroActivo: miembroActivo,
+      reaccion: reaccion,
+      whatsapp: whatsapp,
+      barcos: barcos,
+      delta: qtyDelta,
+      idFila: idFilaMasReciente,
+      semanas: semanasSorteo,
+      premios: premiosStr
     });
   });
 
-  // Agregados a mano en sorteo.html (sin Tag): cuentan como participantes aunque no ganen. [→ Contexto_Base_Web.md §PF294]
-  (Array.isArray(manuales) ? manuales : []).forEach(function (m) {
-    var nombreMan = String((m && m.nombre) || '').trim();
-    var claveMan = _normalizarNombreSA_(nombreMan);
-    var tagMan = String((m && m.tag) || '').trim().toUpperCase();
-    var tagManHash = tagMan ? (tagMan.charAt(0) === '#' ? tagMan : '#' + tagMan) : '';
-    if (!claveMan) return;
-    if (tagManHash) {
-      if (yaEstan[tagManHash]) return; // con Tag se compara por Tag: dos personas distintas pueden llamarse igual
-      yaEstan[tagManHash] = true;
-    } else if (nombresYa[claveMan]) {
-      return;
-    }
-    nombresYa[claveMan] = true;
-    var infoMan = tagManHash ? (mapaDir[tagManHash] || null) : null;
-    var filaMan = [];
-    filaMan[SA.NUM - 1]       = siguienteNum++;
-    filaMan[SA.FECHA - 1]     = filaSorteo.fecha;
-    filaMan[SA.ID - 1]        = idNorm;
-    filaMan[SA.TEMPORADA - 1] = filaSorteo.temporada;
-    filaMan[SA.TAG - 1]       = tagManHash;
-    filaMan[SA.NOMBRE - 1]    = nombreMan;
-    filaMan[SA.NOM_MULTI - 1] = infoMan ? (infoMan.nomMulti || '') : '';
-    filaMan[SA.PRESTAMO - 1]  = infoMan ? (infoMan.prestamo || '') : '';
-    filaMan[SA.CLAN_TAG - 1]  = infoMan ? (infoMan.clanTag || '') : '';
-    filaMan[SA.CLAN - 1]      = infoMan ? (infoMan.clan || '') : '';
-    filaMan[SA.TICKETS - 1]   = (m.tickets !== '' && m.tickets !== null && Number(m.tickets) >= 0) ? Number(m.tickets) : '';
-    filaMan[SA.PREMIO - 1]    = '';
-    filaMan[SA.RESULTADO - 1] = '';
-    filaMan[SA.RAZON - 1]     = '';
-    filaMan[SA.GANO - 1]      = SA_GANO_NO;
-    filas.push(filaMan);
-  });
-  if (!filas.length) return { ok: true, agregadas: 0 };
-
-  var primera = sh.getLastRow() + 1;
-  sh.getRange(primera, 1, filas.length, SA_TOTAL_COLS).setValues(filas);
-  sh.getRange(primera, SA.FECHA, filas.length, 1).setNumberFormat('dd/mm/yyyy');
-  applyBorderCenter(sh.getRange(primera, 1, filas.length, SA_TOTAL_COLS));
-  Logger.log('[Sorteos] S_Asistencia: ' + filas.length + ' participante(s) agregado(s) con Ganó = No (sorteo ' + idNorm + ').');
-  _ordenarYColorearSAsistencia_(ss); // más reciente primero y un color por sorteo
-  return { ok: true, agregadas: filas.length };
+  return resultado;
 }
 
 /**
- * _normalizarNombreSA_(nombre): clave para comparar nombres de S_Asistencia sin tildes, mayúsculas ni espacios de más. Ayuda de _sincronizarParticipantesSorteoSA().
+ * _getUltimoRegistroTorneoOSorteo(nombreCategoria) [→ Contexto_Base_Web.md §26B236]
  */
-function _normalizarNombreSA_(nombre) {
-  return String(nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
-}
+function _getUltimoRegistroTorneoOSorteo(nombreCategoria) {
+  var esTorneo = (nombreCategoria === 'Torneo');
+  var ss = _getSs();
+  var sh = ss.getSheetByName(esTorneo ? CFG.SHEETS.T_LISTA : CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return null;
 
-/**
- * _validarTagTor2SinCoincidencia(ss) [→ Contexto_Base_Web.md §26B276]
- */
-function _validarTagTor2SinCoincidencia(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
-  // FIX (08-sep-2026, pedido usuario): header de 2 filas -- guard >= 3.
-  if (!sh || sh.getLastRow() < 3) return;
+  var totalCols = esTorneo ? TL_TOTAL_COLS : SL_TOTAL_COLS;
+  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, totalCols).getValues();
 
-  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, TL_TOTAL_COLS).getValues();
-  var tagsExistentes = {};
+  var COL_FECHA       = esTorneo ? TL.FECHA : SL.FECHA;
+  var COL_ID          = esTorneo ? TL.ID : SL.ID;
+  var COL_ORGANIZADOR = esTorneo ? TL.ORGANIZADOR : SL.ORGANIZADOR;
+  var COL_TAG_ORG     = esTorneo ? TL.TAG_ORG : SL.TAG_ORG;
+  var COL_CLAN        = esTorneo ? TL.CLAN : SL.CLAN;
+  var COL_CLAN_TAG    = esTorneo ? TL.CLAN_TAG : SL.CLAN_TAG;
+  var COL_COMENTARIO  = esTorneo ? TL.COMENTARIO : SL.COMENTARIO;
+
+  // Mismo criterio "más reciente por Fecha" que el respaldo de [→ Contexto_Base_Web.md §26B237]
+  var filaMasReciente = null;
+  var fechaMasReciente = -1;
   for (var i = 0; i < datos.length; i++) {
-    var tagTor = String(datos[i][TL.TAG_TOR - 1] || '').trim();
-    if (tagTor) tagsExistentes[tagTor] = true;
-    // PF118: Tag_Tor_2 también puede ser el ID de un principal sin tag todavía.
-    var idFila = String(datos[i][TL.ID - 1] || '').trim();
-    if (idFila) tagsExistentes[idFila] = true;
+    var fila = datos[i];
+    if (!fila[COL_FECHA - 1] && !fila[COL_ID - 1]) continue; // fila totalmente vacía
+    var fechaVal = fila[COL_FECHA - 1];
+    var t = (fechaVal instanceof Date) ? fechaVal.getTime() : 0;
+    if (t >= fechaMasReciente) {
+      fechaMasReciente = t;
+      filaMasReciente = fila;
+    }
   }
+  if (!filaMasReciente) return null;
 
-  for (var j = 0; j < datos.length; j++) {
-    var tagTor2 = String(datos[j][TL.TAG_TOR_2 - 1] || '').trim();
-    if (!tagTor2) continue;
-    var propioTagTor = String(datos[j][TL.TAG_TOR - 1] || '').trim();
-    var propioId = String(datos[j][TL.ID - 1] || '').trim();
-    if (tagTor2 === propioTagTor || tagTor2 === propioId) {
-      Logger.log('[T_Lista] Fila ' + (j + 3) + ': Tag_Tor_2 (' + tagTor2 + ') es igual a su propio Tag_Tor o ID -- se ignora (no puede continuarse a sí mismo).');
-      continue;
-    }
-    if (!tagsExistentes[tagTor2]) {
-      Logger.log('[T_Lista] Fila ' + (j + 3) + ': Tag_Tor_2 (' + tagTor2 + ') no coincide con el Tag_Tor de ningún torneo existente -- revisar si está bien escrito.');
-    }
-  }
+  return {
+    autor: String(filaMasReciente[COL_ORGANIZADOR - 1] || '').trim(),
+    tagOrg: String(filaMasReciente[COL_TAG_ORG - 1] || '').trim(),
+    clanOrg: String(filaMasReciente[COL_CLAN - 1] || '').trim(),
+    clanTagOrg: String(filaMasReciente[COL_CLAN_TAG - 1] || '').trim(),
+    comentario: String(filaMasReciente[COL_COMENTARIO - 1] || '').trim()
+  };
 }
 
 /**
@@ -4643,7 +4230,6 @@ function _getMinTClanMaps() {
 }
 
 // FASE 13/14 (30/07/2026) — INTEGRACIÓN CON EL BOT DE WHATSAPP [→ Contexto_Base_Web.md §26B278]
-
 /**
  * _barcosDeRequisitos_(requisitos) — 18-oct-2026 (PF099). admin.html manda el requisito de barcos como `ataquesBarcosSemana` (armarPayloadRequisitos()); el bot y el resto del backend lo leían como `barcos`, así que desde la web nunca se guardaba. Devuelve lo que llegue por cualquiera de los dos nombres, o '' si no hay nada. [→ Contexto_Base_Web.md §PF099]
  */
@@ -4652,52 +4238,6 @@ function _barcosDeRequisitos_(requisitos) {
   var v = requisitos.barcos;
   if (v === undefined || v === null || v === '') v = requisitos.ataquesBarcosSemana;
   return (v === undefined || v === null) ? '' : v;
-}
-
-/**
- * _nombresOrganizadorTL_(organizadorInfo) — 18-oct-2026 (PF099). organizadorInfo.nombre trae el Nom_Multi del admin (ver _buscarInfoOrganizadorPorNomMulti()). En T_Lista, Nombre_Org es el nombre REAL de la cuenta y Nom_Multi_Org el Nom_Multi (así lo deja el flujo por API, _resolverOrganizadorPorCreatorTag()). Devuelve { nombreOrg, nomMultiOrg }: nombreOrg sale del Directorio (o Inactivos) por Tag_org; si no se encuentra, cae al Nom_Multi para no dejar la celda vacía. [→ Contexto_Base_Web.md §PF099]
- */
-function _nombresOrganizadorTL_(organizadorInfo) {
-  var nomMulti = String((organizadorInfo && organizadorInfo.nombre) || '').trim();
-  var tag = String((organizadorInfo && organizadorInfo.tag) || '').trim();
-  var nombreReal = '';
-  if (tag && tag !== '#MANUAL') {
-    if (tag.charAt(0) !== '#') tag = '#' + tag;
-    try {
-      var ss = _getSs();
-      var infoDir = _getDirectorioLookupPorTag(ss)[tag];
-      if (infoDir && infoDir.nombre) nombreReal = String(infoDir.nombre).trim();
-      if (!nombreReal) {
-        var infoInact = _getInactivosLookupPorTag(ss)[tag];
-        if (infoInact && infoInact.nombre) nombreReal = String(infoInact.nombre).trim();
-      }
-    } catch (e) {
-      Logger.log('[T_Lista] _nombresOrganizadorTL_(): no se pudo resolver el nombre real de ' + tag + ': ' + e.message);
-    }
-  }
-  return { nombreOrg: nombreReal || nomMulti, nomMultiOrg: nomMulti };
-}
-
-/**
- * _combinarFechaHora(fechaStr, horaStr) [→ Contexto_Base_Web.md §26B279]
- */
-function _combinarFechaHora(fechaStr, horaStr) {
-  var mFecha = String(fechaStr || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  // 17-oct-2026 (PF098): los segundos son opcionales; admin.html manda la hora como "HH:MM:SS" (horaConSegundos()) y el bot como "HH:mm". [→ Contexto_Base_Web.md §PF098]
-  var mHora  = String(horaStr  || '').trim().match(/^([01]?\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/);
-  if (!mFecha || !mHora) return null;
-  var dia = Number(mFecha[1]), mes = Number(mFecha[2]), anio = Number(mFecha[3]);
-  var horas = Number(mHora[1]), minutos = Number(mHora[2]), segundos = Number(mHora[3] || 0);
-  var fecha = new Date(anio, mes - 1, dia, horas, minutos, segundos);
-  if (isNaN(fecha.getTime())) return null;
-  return fecha;
-}
-
-/** _mismoDia(d1, d2) — compara dos Date por año/mes/día, ignorando la hora. */
-function _mismoDia(d1, d2) {
-  return d1.getFullYear() === d2.getFullYear() &&
-         d1.getMonth() === d2.getMonth() &&
-         d1.getDate() === d2.getDate();
 }
 
 /**
@@ -4742,6 +4282,8 @@ function _valoresMinSAtaquesTorneosPorClan(requisitos) {
   });
   return { minS: minS, ataques: ataques, torneos: torneos };
 }
+
+// ----- Registrar, planificar y modificar torneos y sorteos (bot y web) -----
 
 /**
  * _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organizadorInfo) [→ Contexto_Base_Web.md §26B283]
@@ -5039,23 +4581,6 @@ function _listarTorneosModificables() {
 }
 
 /**
- * _extraerIsosDesdeSemanasCsv(semanasCsv) [→ Contexto_Base_Web.md §26B298]
- */
-function _extraerIsosDesdeSemanasCsv(semanasCsv) {
-  return String(semanasCsv || '').split(',').map(function (token) {
-    var m = String(token).trim().match(/^T(\d+)_S(\d+)$/);
-    if (!m) return null;
-    var temporada = Number(m[1]);
-    var semana = Number(m[2]);
-    var primerLunes = primerLunesTemporada(CFG.REF_DEFAULT, temporada);
-    if (!primerLunes || isNaN(primerLunes.getTime())) return null;
-    var lunes = new Date(primerLunes.getTime());
-    lunes.setDate(lunes.getDate() + (semana - 1) * 7);
-    return Utilities.formatDate(lunes, 'America/Lima', 'yyyy-MM-dd');
-  }).filter(Boolean);
-}
-
-/**
  * _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal) [→ Contexto_Base_Web.md §26B299]
  */
 // PF105 (18-oct-2026): 10.º parámetro opcional `tipoTorneo` ('principal' | 'continuacion' | otro/vacío = no tocar el tipo). 'principal' borra Tag_Tor_2 (antes solo se podía escribir, nunca quitar); 'continuacion' exige `tagTorneoPrincipal`, no puede ser el propio Tag_Tor y no se admite si otros torneos ya son continuación de este (evita cadenas). El bot llama con 3 argumentos y no cambia. [→ Contexto_Base_Web.md §PF105]
@@ -5148,22 +4673,6 @@ function _modificarFechaHoraTorneo(id, fecha, hora, tagTorneoPrincipal, semanasI
 }
 
 /**
- * _obtenerOrganizadorFuenteTLista(id) [→ Contexto_Base_Web.md §26B303]
- */
-function _obtenerOrganizadorFuenteTLista(id) {
-  var sh = _getSs().getSheetByName(CFG.SHEETS.T_LISTA);
-  if (!sh || sh.getLastRow() < 3) return '';
-  var numFilas = sh.getLastRow() - 2;
-  var ids = sh.getRange(3, TL.ID, numFilas, 1).getValues();
-  for (var i = 0; i < ids.length; i++) {
-    if (String(ids[i][0] || '') === String(id)) {
-      return String(sh.getRange(i + 3, TL.ORGANIZADOR_FUENTE).getValue() || '').trim();
-    }
-  }
-  return '';
-}
-
-/**
  * _corregirLinkTorneoYaRegistrado(ss, id, linkNuevo) [→ Contexto_Base_Web.md §26B304]
  */
 function _corregirLinkTorneoYaRegistrado(ss, id, linkNuevo) {
@@ -5208,72 +4717,6 @@ function _corregirLinkTorneoYaRegistrado(ss, id, linkNuevo) {
              tagExistente + ' -> ' + tagNuevo + ') -- Tag_Tor/Contraseña/Link_json se limpian para que ' +
              'procesarTListaNuevasFilas() reprocese la fila completa (columnas de solo lectura + Organizador).');
   return { ok: true, cambioTag: true };
-}
-
-/**
- * _listarSorteosDeHoy() [→ Contexto_Base_Web.md §26B308]
- */
-function _listarSorteosDeHoy() {
-  var sh = _getSs().getSheetByName(CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return [];
-  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS).getValues();
-  var hoy = _hoyLimaSinHora();
-  return datos
-    .filter(function(f) { return f[SL.FECHA - 1] instanceof Date && _mismoDia(f[SL.FECHA - 1], hoy); })
-    .map(function(f) {
-      return {
-        id: f[SL.ID - 1],
-        fecha: f[SL.FECHA - 1],
-        idPrincipal: String(f[SL.ID_2 - 1] || '').trim(),
-        autor: String(f[SL.ORGANIZADOR - 1] || '').trim(),
-        premios: String(f[SL.PREMIOS - 1] || '').trim(),
-        semanas: _extraerIsosDesdeSemanasCsv(String(f[SL.SEMANAS - 1] || '').trim()),
-        // AMPLIADO (15-sep-2026, cierre de conexión pendiente -- mismo [→ Contexto_Base_Web.md §26B309]
-        comentario: String(f[SL.COMENTARIO - 1] || '').trim()
-      };
-    });
-}
-
-/**
- * _listarSorteosModificables() — 18-oct-2026 (PF108, pedido del usuario). Lista para "Modificar sorteo" del panel web: los de hoy, MÁS los Planificados (aunque sean de otro día). Antes solo mostraba los de hoy y un sorteo planificado para mañana no se podía editar (mismo problema que ya se corrigió en torneos, PF099). Mismos campos que _listarSorteosDeHoy() más fechaTxt, hora y estado. La hora sale de la propia Fecha (los sorteos se guardan como «dd/mm/yyyy hh:mm»); si la Fecha viene sin hora (00:00), se usa la columna Hora. Va ordenada por fecha. No reemplaza a _listarSorteosDeHoy(). [→ Contexto_Base_Web.md §PF108]
- */
-function _listarSorteosModificables() {
-  var sh = _getSs().getSheetByName(CFG.SHEETS.S_LISTA);
-  if (!sh || sh.getLastRow() < 3) return [];
-  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS).getValues();
-  var hoy = _hoyLimaSinHora();
-  return datos
-    .filter(function (f) {
-      var id = String(f[SL.ID - 1] || '').trim();
-      if (!id) return false;
-      var fecha = f[SL.FECHA - 1];
-      var esHoy = fecha instanceof Date && !isNaN(fecha.getTime()) && _mismoDia(fecha, hoy);
-      var estado = String(f[SL.ESTADO - 1] || '').trim();
-      return esHoy || estado === 'Planificado';
-    })
-    .sort(function (a, b) {
-      var ta = a[SL.FECHA - 1] instanceof Date ? a[SL.FECHA - 1].getTime() : 0;
-      var tb = b[SL.FECHA - 1] instanceof Date ? b[SL.FECHA - 1].getTime() : 0;
-      return ta - tb;
-    })
-    .map(function (f) {
-      var fecha = f[SL.FECHA - 1];
-      var fechaOk = fecha instanceof Date && !isNaN(fecha.getTime());
-      var horaFecha = fechaOk ? Utilities.formatDate(fecha, 'America/Lima', 'HH:mm:ss') : '';
-      var hora = (horaFecha && horaFecha !== '00:00:00') ? horaFecha : (_formatHoraCanonica(f[SL.HORA - 1]) || horaFecha);
-      return {
-        id: f[SL.ID - 1],
-        fecha: fecha,
-        fechaTxt: fechaOk ? Utilities.formatDate(fecha, 'America/Lima', 'dd/MM/yyyy') : '',
-        hora: hora,
-        estado: String(f[SL.ESTADO - 1] || '').trim(),
-        idPrincipal: String(f[SL.ID_2 - 1] || '').trim(),
-        autor: String(f[SL.ORGANIZADOR - 1] || '').trim(),
-        premios: String(f[SL.PREMIOS - 1] || '').trim(),
-        semanas: _extraerIsosDesdeSemanasCsv(String(f[SL.SEMANAS - 1] || '').trim()),
-        comentario: String(f[SL.COMENTARIO - 1] || '').trim()
-      };
-    });
 }
 
 /**
@@ -5418,6 +4861,72 @@ function _planificarSorteoDesdeBot(fecha, hora, premios, idSorteoPrincipal, orga
 }
 
 /**
+ * _listarSorteosDeHoy() [→ Contexto_Base_Web.md §26B308]
+ */
+function _listarSorteosDeHoy() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return [];
+  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS).getValues();
+  var hoy = _hoyLimaSinHora();
+  return datos
+    .filter(function(f) { return f[SL.FECHA - 1] instanceof Date && _mismoDia(f[SL.FECHA - 1], hoy); })
+    .map(function(f) {
+      return {
+        id: f[SL.ID - 1],
+        fecha: f[SL.FECHA - 1],
+        idPrincipal: String(f[SL.ID_2 - 1] || '').trim(),
+        autor: String(f[SL.ORGANIZADOR - 1] || '').trim(),
+        premios: String(f[SL.PREMIOS - 1] || '').trim(),
+        semanas: _extraerIsosDesdeSemanasCsv(String(f[SL.SEMANAS - 1] || '').trim()),
+        // AMPLIADO (15-sep-2026, cierre de conexión pendiente -- mismo [→ Contexto_Base_Web.md §26B309]
+        comentario: String(f[SL.COMENTARIO - 1] || '').trim()
+      };
+    });
+}
+
+/**
+ * _listarSorteosModificables() — 18-oct-2026 (PF108, pedido del usuario). Lista para "Modificar sorteo" del panel web: los de hoy, MÁS los Planificados (aunque sean de otro día). Antes solo mostraba los de hoy y un sorteo planificado para mañana no se podía editar (mismo problema que ya se corrigió en torneos, PF099). Mismos campos que _listarSorteosDeHoy() más fechaTxt, hora y estado. La hora sale de la propia Fecha (los sorteos se guardan como «dd/mm/yyyy hh:mm»); si la Fecha viene sin hora (00:00), se usa la columna Hora. Va ordenada por fecha. No reemplaza a _listarSorteosDeHoy(). [→ Contexto_Base_Web.md §PF108]
+ */
+function _listarSorteosModificables() {
+  var sh = _getSs().getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return [];
+  var datos = sh.getRange(3, 1, sh.getLastRow() - 2, SL_TOTAL_COLS).getValues();
+  var hoy = _hoyLimaSinHora();
+  return datos
+    .filter(function (f) {
+      var id = String(f[SL.ID - 1] || '').trim();
+      if (!id) return false;
+      var fecha = f[SL.FECHA - 1];
+      var esHoy = fecha instanceof Date && !isNaN(fecha.getTime()) && _mismoDia(fecha, hoy);
+      var estado = String(f[SL.ESTADO - 1] || '').trim();
+      return esHoy || estado === 'Planificado';
+    })
+    .sort(function (a, b) {
+      var ta = a[SL.FECHA - 1] instanceof Date ? a[SL.FECHA - 1].getTime() : 0;
+      var tb = b[SL.FECHA - 1] instanceof Date ? b[SL.FECHA - 1].getTime() : 0;
+      return ta - tb;
+    })
+    .map(function (f) {
+      var fecha = f[SL.FECHA - 1];
+      var fechaOk = fecha instanceof Date && !isNaN(fecha.getTime());
+      var horaFecha = fechaOk ? Utilities.formatDate(fecha, 'America/Lima', 'HH:mm:ss') : '';
+      var hora = (horaFecha && horaFecha !== '00:00:00') ? horaFecha : (_formatHoraCanonica(f[SL.HORA - 1]) || horaFecha);
+      return {
+        id: f[SL.ID - 1],
+        fecha: fecha,
+        fechaTxt: fechaOk ? Utilities.formatDate(fecha, 'America/Lima', 'dd/MM/yyyy') : '',
+        hora: hora,
+        estado: String(f[SL.ESTADO - 1] || '').trim(),
+        idPrincipal: String(f[SL.ID_2 - 1] || '').trim(),
+        autor: String(f[SL.ORGANIZADOR - 1] || '').trim(),
+        premios: String(f[SL.PREMIOS - 1] || '').trim(),
+        semanas: _extraerIsosDesdeSemanasCsv(String(f[SL.SEMANAS - 1] || '').trim()),
+        comentario: String(f[SL.COMENTARIO - 1] || '').trim()
+      };
+    });
+}
+
+/**
  * _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanasIsoCsv, comentario, requisitos,… [→ Contexto_Base_Web.md §26B314]
  */
 // PF107 (18-oct-2026): 10.º parámetro opcional `tipoSorteo` ('principal' | 'continuacion' | otro/vacío = no tocar el tipo), gemelo del `tipoTorneo` de _modificarFechaHoraTorneo() (PF105). 'principal' borra ID_2 (antes solo se podía escribir, nunca quitar); 'continuacion' exige `idSorteoPrincipal`, no puede ser el propio ID y no se admite si otros sorteos ya son continuación de este (evita cadenas A <- B <- C). Las validaciones corren antes de escribir cualquier celda. El bot no pasa el parámetro y no cambia. [→ Contexto_Base_Web.md §PF107]
@@ -5488,4 +4997,530 @@ function _modificarFechaHoraSorteo(id, fecha, hora, idSorteoPrincipal, semanasIs
     }
   }
   return { ok: false, error: 'No encontré el sorteo ' + id + '.' };
+}
+
+// ----- Orden, formato y listas desplegables de las hojas -----
+
+/**
+ * _aplicarFormatoMilesHoja_(sh, primera, cols, hastaFila): pone el formato `#,##0` en las columnas `cols` (índices 1-based) desde la fila `primera` hasta `hastaFila` (por omisión, el final de la hoja, para que las filas nuevas ya lo traigan).
+ * Solo cambia cómo se ve el número; no toca el valor. Agrupa las columnas contiguas en un solo rango. Idempotente.
+ */
+function _aplicarFormatoMilesHoja_(sh, primera, cols, hastaFila) {
+  if (!sh) return;
+  var ultima = hastaFila || sh.getMaxRows();
+  if (ultima < primera) return;
+  var n = ultima - primera + 1;
+  var orden = cols.slice().sort(function (a, b) { return a - b; });
+  var i = 0;
+  while (i < orden.length) {
+    var j = i;
+    while (j + 1 < orden.length && orden[j + 1] === orden[j] + 1) j++;
+    sh.getRange(primera, orden[i], n, orden[j] - orden[i] + 1).setNumberFormat(FORMATO_MILES_);
+    i = j + 1;
+  }
+}
+
+// _aplicarFormatoMilesListas_(ss): aplica el formato de miles a T_Lista, S_Lista y CR_Lista (hasta el final de cada hoja). Devuelve cuántas hojas tocó; un error en una hoja no frena a las otras.
+function _aplicarFormatoMilesListas_(ss) {
+  var tocadas = 0;
+  [
+    { hoja: CFG.SHEETS.T_LISTA,  primera: 3, cols: TL_COLS_MILES },
+    { hoja: CFG.SHEETS.S_LISTA,  primera: 3, cols: SL_COLS_MILES },
+    { hoja: CFG.SHEETS.CR_LISTA, primera: 4, cols: CR_COLS_MILES }
+  ].forEach(function (c) {
+    try {
+      var sh = ss.getSheetByName(c.hoja);
+      if (!sh) return;
+      _aplicarFormatoMilesHoja_(sh, c.primera, c.cols);
+      tocadas++;
+    } catch (e) {
+      Logger.log('[Miles] No se pudo aplicar el formato en ' + c.hoja + ': ' + e.message);
+    }
+  });
+  return tocadas;
+}
+
+/**
+ * _reordenarCRListaPorFecha(ss) [→ Contexto_Base_Web.md §26B014]
+ */
+function _reordenarCRListaPorFecha(ss, soloRevisar) {
+  var sh = ss.getSheetByName(CFG.SHEETS.CR_LISTA);
+  if (!sh) return null;
+  // Sin desempate por ID: el par Ascenso/Descenso del mismo día y hora conserva el orden en que se creó (primero Ascenso).
+  var res = _ordenarHojaPorFechaDesc_(sh, 4, CR_TOTAL_COLS, { NUM: CR.NUM, FECHA: CR.FECHA, HORA: CR.HORA, ID: CR.ID }, {
+    etiqueta: 'CR_Lista', fmtFecha: 'dd/mm/yyyy', fmtHora: 'h:mm:ss AM/PM', soloRevisar: !!soloRevisar
+  });
+  if (!soloRevisar) _aplicarFormatoMilesHoja_(sh, 4, CR_COLS_MILES, sh.getLastRow());
+  return res;
+}
+
+/**
+ * Orden de las hojas de lista y de asistencia: MÁS RECIENTE PRIMERO (29-oct-2026, pedido de la usuaria: T_Lista, S_Lista, CR_Lista, T_Asistencia y S_Asistencia).
+ * Clave: día de Fecha (descendente), luego la hora (descendente; la de la columna Hora o, si no hay, la que traiga la propia Fecha), luego el ID (descendente, solo si `desempatePorId`) y por último el orden que ya tenían (estable).
+ * Las filas sin fecha válida quedan al final. N° pasa a ser la posición de la fila (1 = la más reciente), el mismo criterio que ya usaba CR_Lista. En las asistencias, desempatar por ID deja juntas las filas de cada torneo o sorteo.
+ * [→ Contexto_Base_Web.md §PF286]
+ */
+function _diaClaveOrden_(v) {
+  if (v instanceof Date && !isNaN(v.getTime())) return Number(Utilities.formatDate(v, 'America/Lima', 'yyyyMMdd'));
+  var m = String(v === null || v === undefined ? '' : v).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  return m ? Number(m[3]) * 10000 + Number(m[2]) * 100 + Number(m[1]) : -1;
+}
+
+function _horaClaveOrden_(v) {
+  function d2(n) { return (n < 10 ? '0' : '') + n; }
+  if (v instanceof Date && !isNaN(v.getTime())) return _formatHoraCanonica(v);
+  if (typeof v === 'number' && v >= 0 && v < 1) {
+    var seg = Math.round(v * 86400);
+    return d2(Math.floor(seg / 3600)) + ':' + d2(Math.floor((seg % 3600) / 60)) + ':' + d2(seg % 60);
+  }
+  var m = String(v === null || v === undefined ? '' : v).match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  return m ? d2(Number(m[1])) + ':' + m[2] + ':' + (m[3] || '00') : '';
+}
+
+// _ordenarHojaPorFechaDesc_(sh, primera, totalCols, C, opc): C = { NUM, FECHA, HORA (0 si la hoja no tiene), ID }; opc = { etiqueta, desempatePorId, fmtFecha, fmtHora, extraFmts: [{col, fmt}], soloRevisar }.
+// Devuelve { ok, filas, cambio, movidas }. Si el orden y los N° ya son correctos no escribe nada. Si hay fórmulas en el rango no reordena (mover filas rompería sus referencias) y devuelve ok = false.
+// Con soloRevisar = true calcula y registra qué pasaría, sin escribir.
+function _ordenarHojaPorFechaDesc_(sh, primera, totalCols, C, opc) {
+  opc = opc || {};
+  var etiqueta = opc.etiqueta || sh.getName();
+  var ultima = sh.getLastRow();
+  if (ultima < primera) return { ok: true, filas: 0, cambio: false, movidas: 0 };
+  var n = ultima - primera + 1;
+  var rng = sh.getRange(primera, 1, n, totalCols);
+  var datos = rng.getValues();
+
+  var items = datos.map(function (fila, idx) {
+    var f = fila[C.FECHA - 1];
+    var hora = C.HORA ? _horaClaveOrden_(fila[C.HORA - 1]) : '';
+    if (!hora && f instanceof Date && !isNaN(f.getTime())) {
+      var horaDeFecha = Utilities.formatDate(f, 'America/Lima', 'HH:mm:ss');
+      if (horaDeFecha !== '00:00:00') hora = horaDeFecha;
+    }
+    return { fila: fila, idx: idx, dia: _diaClaveOrden_(f), hora: hora, id: opc.desempatePorId ? String(fila[C.ID - 1] || '').trim() : '' };
+  });
+  items.sort(function (a, b) {
+    if (a.dia !== b.dia) return b.dia - a.dia;
+    if (a.hora !== b.hora) return a.hora < b.hora ? 1 : -1;
+    if (a.id !== b.id) return a.id < b.id ? 1 : -1;
+    return a.idx - b.idx; // estable: conserva el orden que ya tenían en los empates
+  });
+
+  var movidas = 0, numMal = 0;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].idx !== i) movidas++;
+    if (C.NUM && Number(items[i].fila[C.NUM - 1]) !== i + 1) numMal++;
+  }
+  if (!movidas && !numMal) return { ok: true, filas: n, cambio: false, movidas: 0 };
+  if (opc.soloRevisar) {
+    Logger.log('[Orden · solo revisar] ' + etiqueta + ': ' + movidas + ' de ' + n + ' fila(s) cambiarían de posición y ' + numMal + ' N° se renumerarían.');
+    return { ok: true, filas: n, cambio: true, movidas: movidas };
+  }
+
+  var formulas = rng.getFormulas();
+  for (var r = 0; r < formulas.length; r++) {
+    for (var c = 0; c < totalCols; c++) {
+      if (formulas[r][c] !== '') {
+        Logger.log('[Orden] ' + etiqueta + ': hay una fórmula en la fila ' + (primera + r) + ', columna ' + (c + 1) + '; no se reordena porque mover filas rompería sus referencias.');
+        return { ok: false, filas: n, cambio: false, movidas: 0 };
+      }
+    }
+  }
+
+  var salida = items.map(function (it, i) {
+    var fila = it.fila.slice();
+    if (C.NUM) fila[C.NUM - 1] = i + 1;
+    return fila;
+  });
+  rng.setValues(salida);
+  // Reescribir fechas y horas puede dejar la celda con el formato automático (la hora salía como «30/12/1899»): se reaplican los formatos de la hoja.
+  try {
+    if (opc.fmtFecha) sh.getRange(primera, C.FECHA, n, 1).setNumberFormat(opc.fmtFecha);
+    if (C.HORA && opc.fmtHora) sh.getRange(primera, C.HORA, n, 1).setNumberFormat(opc.fmtHora);
+    (opc.extraFmts || []).forEach(function (e) { sh.getRange(primera, e.col, n, 1).setNumberFormat(e.fmt); });
+  } catch (eFmt) {
+    Logger.log('[Orden] ' + etiqueta + ': no se pudo reaplicar un formato (' + eFmt.message + ').');
+  }
+  Logger.log('[Orden] ' + etiqueta + ' reordenada por Fecha, más reciente primero (' + n + ' fila(s); ' + movidas + ' cambiaron de posición).');
+  return { ok: true, filas: n, cambio: true, movidas: movidas };
+}
+
+// _ordenarTListaPorFecha(ss) [→ Contexto_Base_Web.md §26B172]
+function _ordenarTListaPorFecha(ss, soloRevisar) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  // FIX (08-sep-2026, pedido usuario): T_Lista tiene header de 2 FILAS [→ Contexto_Base_Web.md §26B173]
+  if (!sh) return null;
+  // FIX (pedido usuario, N° quedaba "2, 1, 3"): antes, si el ORDEN FÍSICO de [→ Contexto_Base_Web.md §26B174]
+  // 29-oct-2026 (pedido de la usuaria): el orden pasa de ascendente a MÁS RECIENTE PRIMERO (ver _ordenarHojaPorFechaDesc_()). N° sigue siendo la posición de la fila.
+  // FASE 1 (25-sep-2026): ESTE es el proceso identificado como causante del [→ Contexto_Base_Web.md §26B175]
+  // La ayuda común reaplica Fecha, Hora y Creación tras reescribir (por eso la hora ya no vuelve a «30/12/1899»).
+  return _ordenarHojaPorFechaDesc_(sh, 3, TL_TOTAL_COLS, { NUM: TL.NUM, FECHA: TL.FECHA, HORA: TL.HORA, ID: TL.ID }, {
+    etiqueta: 'T_Lista', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', fmtHora: 'h:mm:ss AM/PM',
+    extraFmts: [{ col: TL.CREACION, fmt: 'dd/mm/yyyy hh:mm:ss' }], soloRevisar: !!soloRevisar
+  });
+}
+
+// _ordenarSListaPorFecha(ss, soloRevisar): S_Lista, más reciente primero (29-oct-2026, pedido de la usuaria). Fecha en solo día; la hora va en su propia columna. [→ Contexto_Base_Web.md §PF286]
+function _ordenarSListaPorFecha(ss, soloRevisar) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh) return null;
+  return _ordenarHojaPorFechaDesc_(sh, 3, SL_TOTAL_COLS, { NUM: SL.NUM, FECHA: SL.FECHA, HORA: SL.HORA, ID: SL.ID }, {
+    etiqueta: 'S_Lista', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', fmtHora: 'h:mm:ss AM/PM', soloRevisar: !!soloRevisar
+  });
+}
+
+// _ordenarTAsistenciaPorFecha(ss, soloRevisar) y _ordenarSAsistenciaPorFecha(ss, soloRevisar): asistencias, más reciente primero; las filas de cada torneo o sorteo quedan juntas (desempate por ID) y conservan su orden interno. [→ Contexto_Base_Web.md §PF286]
+function _ordenarTAsistenciaPorFecha(ss, soloRevisar) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
+  if (!sh) return null;
+  return _ordenarHojaPorFechaDesc_(sh, 2, TA_TOTAL_COLS, { NUM: TA.NUM, FECHA: TA.FECHA, HORA: 0, ID: TA.ID }, {
+    etiqueta: 'T_Asistencia', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', soloRevisar: !!soloRevisar
+  });
+}
+
+function _ordenarSAsistenciaPorFecha(ss, soloRevisar) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_ASISTENCIA);
+  if (!sh) return null;
+  return _ordenarHojaPorFechaDesc_(sh, 2, SA_TOTAL_COLS, { NUM: SA.NUM, FECHA: SA.FECHA, HORA: 0, ID: SA.ID }, {
+    etiqueta: 'S_Asistencia', desempatePorId: true, fmtFecha: 'dd/mm/yyyy', soloRevisar: !!soloRevisar
+  });
+}
+
+function _ordenarYFormatearListasYAsistencias_(soloRevisar) {
+  var ss = _getSs();
+  [
+    ['T_Lista', _ordenarTListaPorFecha],
+    ['S_Lista', _ordenarSListaPorFecha],
+    ['CR_Lista', _reordenarCRListaPorFecha],
+    ['T_Asistencia', _ordenarTAsistenciaPorFecha],
+    ['S_Asistencia', _ordenarSAsistenciaPorFecha]
+  ].forEach(function (p) {
+    try {
+      var r = p[1](ss, soloRevisar);
+      Logger.log('[Orden manual] ' + p[0] + ': ' + (r === null ? 'no existe la hoja' : (r.ok ? (r.cambio ? 'reordenada (' + r.movidas + ' fila(s) cambian de posición)' : 'ya estaba en orden') : 'NO se reordenó (hay fórmulas)')));
+    } catch (e) { Logger.log('[Orden manual] ' + p[0] + ' falló: ' + e.message); }
+  });
+  if (soloRevisar) { Logger.log('[Orden manual] Solo revisar: no se escribió nada (ni orden, ni miles, ni colores).'); return; }
+  try { Logger.log('[Orden manual] Formato de miles aplicado en ' + _aplicarFormatoMilesListas_(ss) + ' hoja(s).'); } catch (eM) { Logger.log('[Orden manual] Miles falló: ' + eM.message); }
+  try { _aplicarFormatoCondicionalTAporTorneo(ss); } catch (eT) { Logger.log('[Orden manual] Color de T_Asistencia falló: ' + eT.message); }
+  try { _aplicarFormatoCondicionalSAporSorteo(ss); } catch (eS) { Logger.log('[Orden manual] Color de S_Asistencia falló: ' + eS.message); }
+}
+
+// _ordenarYColorearSAsistencia_(ss): deja S_Asistencia con el más reciente primero y con un color por sorteo; cada paso falla por separado sin romper al que llama.
+function _ordenarYColorearSAsistencia_(ss) {
+  try { _ordenarSAsistenciaPorFecha(ss); } catch (eOrd) { Logger.log('[S_Asistencia] No se pudo ordenar por fecha (se continúa): ' + eOrd.message); }
+  try { _aplicarFormatoCondicionalSAporSorteo(ss); } catch (eCol) { Logger.log('[S_Asistencia] No se pudo colorear por sorteo (se continúa): ' + eCol.message); }
+}
+
+/**
+ * _aplicarFormatoCondicionalTAporTorneo(ss) [→ Contexto_Base_Web.md §26B132]
+ */
+function _aplicarFormatoCondicionalTAporTorneo(ss) {
+  _aplicarFormatoCondicionalAsistenciaPorId_(ss, CFG.SHEETS.T_ASISTENCIA, TA.ID, TA.FECHA, TA_TOTAL_COLS, 'T_Asistencia');
+}
+
+// _aplicarFormatoCondicionalSAporSorteo(ss): igual que T_Asistencia pero por ID de sorteo en S_Asistencia: un color distinto para cada grupo de filas (29-oct-2026, pedido de la usuaria). [→ Contexto_Base_Web.md §PF286]
+function _aplicarFormatoCondicionalSAporSorteo(ss) {
+  _aplicarFormatoCondicionalAsistenciaPorId_(ss, CFG.SHEETS.S_ASISTENCIA, SA.ID, SA.FECHA, SA_TOTAL_COLS, 'S_Asistencia');
+}
+
+/**
+ * _aplicarFormatoCondicionalAsistenciaPorId_(ss, nombreHoja, colId, colFecha, totalCols, etiqueta): un color de la paleta CFG.COLORES.TA_ID_PALETTE por cada ID, aplicado a toda la fila de datos con reglas condicionales (=$ID2="…").
+ * El color depende del ORDEN CRONOLÓGICO de los ID (Fecha ascendente y luego ID), no de la posición en la hoja: así, con la hoja de más reciente a más antiguo, un grupo nuevo arriba no recolorea a los demás, y los grupos vecinos siempre tienen colores distintos.
+ * Reemplaza las reglas condicionales de la hoja. Cuerpo del antiguo _aplicarFormatoCondicionalTAporTorneo() [→ Contexto_Base_Web.md §26B132]
+ */
+function _aplicarFormatoCondicionalAsistenciaPorId_(ss, nombreHoja, colId, colFecha, totalCols, etiqueta) {
+  var sh = ss.getSheetByName(nombreHoja);
+  if (!sh) { Logger.log('[' + etiqueta + '] Hoja no encontrada, se omite formato por ID.'); return; }
+
+  var lastRow = sh.getLastRow();
+  if (lastRow < 2) {
+    // Sin datos: no hay nada que agrupar. Se limpian reglas viejas por si quedaron de una corrida anterior con más filas.
+    _tryCondFmt(sh, []);
+    return;
+  }
+
+  var ids = sh.getRange(2, colId, lastRow - 1, 1).getValues();
+  var fechas = sh.getRange(2, colFecha, lastRow - 1, 1).getValues();
+  var vistos = {};
+  var lista = [];
+  for (var i = 0; i < ids.length; i++) {
+    var id = String(ids[i][0] || '').trim();
+    if (!id || vistos.hasOwnProperty(id)) continue;
+    vistos[id] = true;
+    lista.push({ id: id, dia: _diaClaveOrden_(fechas[i][0]) });
+  }
+  if (lista.length === 0) {
+    _tryCondFmt(sh, []);
+    return;
+  }
+  lista.sort(function (a, b) {
+    if (a.dia !== b.dia) return a.dia - b.dia;
+    return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
+  });
+
+  var paleta = CFG.COLORES.TA_ID_PALETTE;
+  var dataRange = sh.getRange(2, 1, lastRow - 1, totalCols);
+  var colIdLetra = colLetter(colId);
+  var rules = lista.map(function (it, k) {
+    // Escapar comillas dobles por si algún ID llegara a tenerlas (no debería, pero evita fórmulas rotas).
+    var idEscapado = it.id.replace(/"/g, '""');
+    return SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied('=$' + colIdLetra + '2="' + idEscapado + '"')
+      .setBackground(paleta[k % paleta.length])
+      .setRanges([dataRange])
+      .build();
+  });
+
+  _tryCondFmt(sh, rules);
+  Logger.log('[' + etiqueta + '] Formato condicional por ID aplicado: ' + lista.length + ' grupo(s)/color(es).');
+}
+
+// FIX (08-sep-2026, pedido usuario — header de 2 filas confirmado por PDF): [→ Contexto_Base_Web.md §26B195]
+function _aplicarDropdownAdminTLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  // FIX (31/08/2026, pedido del usuario -- caso real: tras reordenar a mano [→ Contexto_Base_Web.md §26B196]
+  sh.getRange(3, 1, numFilas, TL_TOTAL_COLS).clearDataValidations();
+
+  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  var adminNombres = [];
+  if (shDir && shDir.getLastRow() >= 2) {
+    var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+    var adminTags = _getTagsAdmin();
+    for (var i = 0; i < dirData.length; i++) {
+      var tag = String(dirData[i][DC.TAG - 1] || '').trim();
+      if (tag.charAt(0) !== '#') tag = '#' + tag;
+      if (adminTags.indexOf(tag) >= 0) {
+        var nom = String(dirData[i][DC.NOM_MULTI - 1] || '').trim();
+        if (!nom) nom = String(dirData[i][DC.NOMBRE - 1] || '').trim();
+        if (nom && adminNombres.indexOf(nom) < 0) adminNombres.push(nom);
+      }
+    }
+  }
+
+  if (adminNombres.length === 0) return;
+  adminNombres.sort();
+
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(adminNombres, true).setAllowInvalid(false).build();
+  sh.getRange(3, TL.NOM_MULTI_ORG, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownTagTor2TLista(ss) [→ Contexto_Base_Web.md §26B197]
+ */
+function _aplicarDropdownTagTor2TLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  sh.getRange(3, TL.TAG_TOR_2, numFilas, 1).clearDataValidations();
+
+  var datos = sh.getRange(3, 1, numFilas, TL_TOTAL_COLS).getValues();
+  var tags = [];
+  for (var i = 0; i < datos.length; i++) {
+    var t = String(datos[i][TL.TAG_TOR - 1] || '').trim();
+    if (t && tags.indexOf(t) < 0) tags.push(t);
+    // PF118: un torneo sin Tag_Tor (planificado, sin link) se ofrece por su ID, que es lo que se guarda en Tag_Tor_2 mientras no tenga tag.
+    var idSinTag = String(datos[i][TL.ID - 1] || '').trim();
+    if (!t && idSinTag && tags.indexOf(idSinTag) < 0) tags.push(idSinTag);
+  }
+  if (tags.length === 0) return; // sin ningún Tag_Tor registrado todavía, nada para ofrecer en la lista
+  tags.sort();
+
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(tags, true).setAllowInvalid(false).build();
+  sh.getRange(3, TL.TAG_TOR_2, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownEstadoTLista(ss) [→ Contexto_Base_Web.md §26B198]
+ */
+function _aplicarDropdownEstadoTLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  sh.getRange(3, TL.ESTADO, numFilas, 1).clearDataValidations();
+  // FASE 7 (25-sep-2026, rediseño T_Lista, punto D): se agrega "En [→ Contexto_Base_Web.md §26B199]
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Planificado', 'En progreso', 'Realizado'], true).setAllowInvalid(false).build();
+  sh.getRange(3, TL.ESTADO, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownMiembroActivoTLista(ss) [→ Contexto_Base_Web.md §26B200]
+ */
+function _aplicarDropdownMiembroActivoTLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  sh.getRange(3, TL.MIEMBRO_ACTIVO, numFilas, 1).clearDataValidations();
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
+  sh.getRange(3, TL.MIEMBRO_ACTIVO, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownReaccionTLista(ss) [→ Contexto_Base_Web.md §26B201]
+ */
+function _aplicarDropdownReaccionTLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  sh.getRange(3, TL.REACCION, numFilas, 1).clearDataValidations();
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
+  sh.getRange(3, TL.REACCION, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownWhatsappTLista(ss) [→ Contexto_Base_Web.md §26B202]
+ */
+function _aplicarDropdownWhatsappTLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.T_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  sh.getRange(3, TL.WHATSAPP, numFilas, 1).clearDataValidations();
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
+  sh.getRange(3, TL.WHATSAPP, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownId2SLista(ss) [→ Contexto_Base_Web.md §26B203]
+ */
+function _aplicarDropdownId2SLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  sh.getRange(3, SL.ID_2, numFilas, 1).clearDataValidations();
+
+  var datos = sh.getRange(3, 1, numFilas, SL_TOTAL_COLS).getValues();
+  var ids = [];
+  for (var i = 0; i < datos.length; i++) {
+    var idVal = String(datos[i][SL.ID - 1] || '').trim();
+    if (idVal && ids.indexOf(idVal) < 0) ids.push(idVal);
+  }
+  if (ids.length === 0) return; // sin ningún ID registrado todavía, nada para ofrecer en la lista
+  ids.sort();
+
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(ids, true).setAllowInvalid(false).build();
+  sh.getRange(3, SL.ID_2, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownEstadoSLista(ss) [→ Contexto_Base_Web.md §26B204]
+ */
+function _aplicarDropdownEstadoSLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  sh.getRange(3, SL.ESTADO, numFilas, 1).clearDataValidations();
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Planificado', 'Realizado'], true).setAllowInvalid(false).build();
+  sh.getRange(3, SL.ESTADO, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownMiembroActivoSLista(ss) [→ Contexto_Base_Web.md §26B205]
+ */
+function _aplicarDropdownMiembroActivoSLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  sh.getRange(3, SL.MIEMBRO_ACTIVO, numFilas, 1).clearDataValidations();
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
+  sh.getRange(3, SL.MIEMBRO_ACTIVO, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownReaccionSLista(ss) [→ Contexto_Base_Web.md §26B206]
+ */
+function _aplicarDropdownReaccionSLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  sh.getRange(3, SL.REACCION, numFilas, 1).clearDataValidations();
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
+  sh.getRange(3, SL.REACCION, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownWhatsappSLista(ss) [→ Contexto_Base_Web.md §26B207]
+ */
+function _aplicarDropdownWhatsappSLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  sh.getRange(3, SL.WHATSAPP, numFilas, 1).clearDataValidations();
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).setAllowInvalid(false).build();
+  sh.getRange(3, SL.WHATSAPP, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownAdminSLista(ss) [→ Contexto_Base_Web.md §26B208]
+ */
+function _aplicarDropdownAdminSLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  sh.getRange(3, SL.ORGANIZADOR, numFilas, 1).clearDataValidations();
+
+  var shDir = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  var adminNombres = [];
+  if (shDir && shDir.getLastRow() >= 2) {
+    var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
+    var adminTags = _getTagsAdmin();
+    for (var i = 0; i < dirData.length; i++) {
+      var tag = String(dirData[i][DC.TAG - 1] || '').trim();
+      if (tag.charAt(0) !== '#') tag = '#' + tag;
+      if (adminTags.indexOf(tag) >= 0) {
+        var nom = String(dirData[i][DC.NOM_MULTI - 1] || '').trim();
+        if (!nom) nom = String(dirData[i][DC.NOMBRE - 1] || '').trim();
+        if (nom && adminNombres.indexOf(nom) < 0) adminNombres.push(nom);
+      }
+    }
+  }
+
+  if (adminNombres.length === 0) return;
+  adminNombres.sort();
+
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(adminNombres, true).setAllowInvalid(false).build();
+  sh.getRange(3, SL.ORGANIZADOR, numFilas, 1).setDataValidation(dv);
+}
+
+/**
+ * _aplicarDropdownClanSLista(ss) [→ Contexto_Base_Web.md §26B209]
+ */
+function _aplicarDropdownClanSLista(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.S_LISTA);
+  if (!sh || sh.getLastRow() < 3) return;
+  var numFilas = sh.getLastRow() - 2;
+
+  var shClan = ss.getSheetByName(CFG.SHEETS.CLAN);
+  var nombresClan = [];
+  if (shClan && shClan.getLastRow() >= 2) {
+    // Mismo orden que CFG.TERNA_TAGS: se recorre CFG.TERNA_TAGS y se busca [→ Contexto_Base_Web.md §26B210]
+    var clanData = shClan.getRange(2, 1, shClan.getLastRow() - 1, CC.CONDICION).getValues();
+    for (var t = 0; t < CFG.TERNA_TAGS.length; t++) {
+      var tagBuscado = CFG.TERNA_TAGS[t];
+      for (var r = 0; r < clanData.length; r++) {
+        if (String(clanData[r][CC.CLAN_TAG - 1] || '').trim() === tagBuscado) {
+          nombresClan.push(String(clanData[r][CC.NOMBRE - 1] || '').trim());
+          break;
+        }
+      }
+    }
+  }
+
+  sh.getRange(3, SL.CLAN, numFilas, 1).clearDataValidations();
+  if (nombresClan.length === 0) return;
+
+  var dv = SpreadsheetApp.newDataValidation().requireValueInList(nombresClan, true).setAllowInvalid(false).build();
+  sh.getRange(3, SL.CLAN, numFilas, 1).setDataValidation(dv);
 }
