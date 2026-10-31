@@ -1,258 +1,38 @@
+// ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
+//  Parte 1 — Funciones que se corren a mano
+//    - Respaldo de las hojas a CSV (por hoja, y todo junto con syncAllCSV)
+//    - Importar desde los CSV
+//    - Correcciones y reparaciones de los respaldos
+//  Parte 2 — Funciones que no se corren a mano
+//    - Codificar, leer y analizar CSV (Drive, caché, fechas)
+//    - Guardar CSV en Drive: conteo, verificación y reverificación
+//    - Leer las hojas con sus links y encabezados
+//    - Respaldo del índice y de las listas de hojas
+//    - Acumulativos
+//    - Inactivos: columnas extra y comparación con el CSV
+//    - Registro de Tampermonkey en Drive
+// Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
+// Las variables globales que estaban entre las funciones subieron a la zona de constantes y variables.
+
 // ==============================================================================
 // 05_Backup_CSV.gs
 // Sistema de respaldo y sincronizacion CSV <-> hojas, para todas las hojas del proyecto.
 // ==============================================================================
 
+
 // ----- Variables y constantes -----
 
+// ==============================================================================
+// 05_Backup_CSV.gs
+// Sistema de respaldo y sincronizacion CSV <-> hojas, para todas las hojas del proyecto.
+// ==============================================================================
 // _BACKUP_OMITIR_CHECK_CLAVES_: solo la migración de ids de evento (47_Migraciones.gs) la pone en true, mientras rehace los respaldos de las listas y la asistencia, para que la protección por claves no bloquee un cambio de ids intencional. Siempre vuelve a false. [→ Contexto_Base_Web.md §PF286]
 var _BACKUP_OMITIR_CHECK_CLAVES_ = false;
-
-// ----- Funciones manuales / punto de entrada -----
-
-// AVISOS ABIERTOS / VERIFICACIONES ABIERTAS [→ Contexto_Base_Web.md §05B001]
-
-// Backup JSON de celulares y Sincronización Bidireccional de CSV. [→ Contexto_Base_Web.md §05B002]
-
-
-// NOTA DE REORDEN (23-ago-2026, pedido usuario): las funciones manuales [→ Contexto_Base_Web.md §05B003]
-/**
- * syncClanCSV() [→ Contexto_Base_Web.md §05B004]
- */
-function syncClanCSV() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
-  if (!sh || sh.getLastRow() < 2) return;
-
-  var lastRow = sh.getLastRow();
-  var numCols = CC.CONDICION;
-  var data    = _extraerValoresConLinksReales(sh, lastRow, numCols);
-
-  _saveCSVToDrive('Backup_Clan.csv', _encodeCSV(data));
-  Logger.log('[Backup] Backup_Clan.csv sincronizado.');
-}
-
-/**
- * exportarBackupCelulares()
- * Guarda en Drive los campos manuales del Directorio como JSON.
- */
-function exportarBackupCelulares() {
-  var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-  if (!sh || sh.getLastRow() < 2) return;
-
-  // Leer encabezados de la fila 1 para mapear por nombre (no por índice fijo)
-  var numCols = Math.max(sh.getLastColumn(), DIR_SHEET_COLS);
-  var headerRow = sh.getRange(1, 1, 1, numCols).getValues()[0];
-  var H = {};
-  for (var h = 0; h < headerRow.length; h++) {
-    var hName = String(headerRow[h] || '').trim();
-    if (hName) H[hName] = h;
-  }
-  var iTag     = H['Tag']      !== undefined ? H['Tag']      : (DC.TAG      - 1);
-  var iPrefijo = H['Prefijo']  !== undefined ? H['Prefijo']  : (DC.PREFIJO  - 1);
-  var iCelular = H['Celular']  !== undefined ? H['Celular']  : (DC.CELULAR  - 1);
-  var iWspG    = H['WSP(G)']   !== undefined ? H['WSP(G)']   :
-                (H['WSP_G']    !== undefined ? H['WSP_G']    : (DC.WSP_G    - 1));
-  var iEtiqueta= H['Etiqueta'] !== undefined ? H['Etiqueta'] : (DC.ETIQUETA - 1);
-  var iFechaIng= H['Fecha_ing']!== undefined ? H['Fecha_ing']: (DC.FECHA_ING- 1);
-  var iVetado  = H['Vetado']   !== undefined ? H['Vetado']   : (DC.VETADO   - 1);
-  var iRazon   = H['Razón']    !== undefined ? H['Razón']    :
-                (H['Razon']    !== undefined ? H['Razon']    : (DC.RAZON    - 1));
-
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, numCols).getValues();
-  var backupData = [];
-
-  for (var i = 0; i < data.length; i++) {
-    var tag = String(data[i][iTag] || '').trim(); // Tag
-    if (tag) {
-      backupData.push({
-        tag:       tag,
-        prefijo:   soloDigitos(data[i][iPrefijo]), // Prefijo
-        celular:   soloDigitos(data[i][iCelular]), // Celular
-        wsp_g:     String(data[i][iWspG]     || ''), // WSP(G)
-        etiqueta:  String(data[i][iEtiqueta] || ''), // Etiqueta
-        fecha_ing: data[i][iFechaIng]        || '',  // Fecha_ing
-        vetado:    String(data[i][iVetado]   || ''), // Vetado
-        razon:     String(data[i][iRazon]    || '')  // Razón
-      });
-    }
-  }
-
-  // (25-sep-2026, FASE B) ClanSystem_Backup_Celulares.json se escribe ahora [→ Contexto_Base_Web.md §05B005]
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var filename = 'ClanSystem_Backup_Celulares.json';
-    var files = folder.getFilesByName(filename);
-    var content = JSON.stringify(backupData, null, 2);
-
-    if (files.hasNext()) {
-      _setContentConConteo_(files.next(), content);
-    } else {
-      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
-    }
-    Logger.log('[Backup] JSON celulares guardado exitosamente (' + backupData.length + ' registros).');
-  } catch(e) {
-    Logger.log('[Backup] Error guardando JSON: ' + e.message);
-  }
-}
-
-function importarBackupCelulares() {
-  Logger.log('[Backup] Importación delegada a lectura en vivo desde _getCsvDirMap().');
-}
-
-function importarDirectorioDesdeCSV() {
-  Logger.log('[Backup] Importación delegada a lectura en vivo desde _getCsvDirMap().');
-}
-
-/**
- * respaldarHojasRestantesCSV() [→ Contexto_Base_Web.md §05B006]
- */
-function respaldarHojasRestantesCSV() {
-  respaldarIndiceYProtegidasCSV();
-  // respaldarHojasDerivadasCSV() ahora es reanudable (devuelve false si le [→ Contexto_Base_Web.md §05B007]
-  while (!respaldarHojasDerivadasCSV()) { /* continúa hasta terminar */ }
-}
 
 // PF146 (21-oct-2026): claves de los 8 respaldos de respaldarIndiceYProtegidasCSV(), en el orden en que se hacen.
 var PROTEGIDAS_CSV_CLAVES = ['INDICE', 'VETADOS', 'T_LISTA', 'S_LISTA', 'CR_LISTA', 'T_ASISTENCIA', 'S_ASISTENCIA', 'EXTRA'];
 
-function _tocaProtegida_(soloClave, clave) {
-  return !soloClave || soloClave === clave;
-}
-
-/**
- * respaldarIndiceYProtegidasCSV() [→ Contexto_Base_Web.md §05B008]
- */
-function respaldarIndiceYProtegidasCSV(soloClave) {
-  // PF146 (21-oct-2026): parametro opcional. Sin argumento hace los 8 respaldos, igual que antes (lo usan runAll,
-  // runUpdate y los botones manuales). Con una clave de PROTEGIDAS_CSV_CLAVES hace solo ese respaldo; asi
-  // PASOS_RUNSYNCCSV lo reparte en 8 pasos y _ejecutarPorTandas puede cortar entre uno y otro. [→ Contexto_Base_Web.md §PF146]
-  var ss = _getSs();
-  // FIX (18-sep-2026, pedido usuario -- "el ID de la hoja de cambio de [→ Contexto_Base_Web.md §05B009]
-  if (_tocaProtegida_(soloClave, 'INDICE')) try {
-    _respaldarIndiceCSV(ss);
-  } catch (eIdx) {
-    Logger.log('[Backup] ERROR respaldando Índice: ' + eIdx.message + ' -- se continúa con el resto de hojas protegidas.');
-  }
-
-  // Hojas protegidas (edición manual, se bloquea si se reducen las filas). [→ Contexto_Base_Web.md §05B010]
-  if (_tocaProtegida_(soloClave, 'VETADOS')) try {
-    _respaldarListaHojasCSV(ss, [CFG.SHEETS.VETADOS], true, 2, _colSet(VC.FECHA));
-  } catch (eVet) {
-    Logger.log('[Backup] ERROR respaldando Vetados: ' + eVet.message + ' -- se continúa con el resto de hojas protegidas.');
-  }
-  if (_tocaProtegida_(soloClave, 'T_LISTA')) try {
-    // FASE 5 (25-sep-2026, rediseño T_Lista -- ver punto B-bis y comentario [→ Contexto_Base_Web.md §05B011]
-    _respaldarListaHojasCSV(ss, [CFG.SHEETS.T_LISTA], true, null, null, _colSet(TL.PREPARACION, TL.DURACION));
-  } catch (eTL) {
-    Logger.log('[Backup] ERROR respaldando T_Lista: ' + eTL.message + ' -- se continúa con el resto de hojas protegidas.');
-  }
-  // FASE (07-sep-2026, pedido del usuario): S_Lista es la hoja análoga a [→ Contexto_Base_Web.md §05B012]
-  if (_tocaProtegida_(soloClave, 'S_LISTA')) try {
-    _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_LISTA], true);
-    _aplicarDropdownId2SLista(ss);
-    _aplicarDropdownEstadoSLista(ss);
-    _aplicarDropdownMiembroActivoSLista(ss);
-    _aplicarDropdownReaccionSLista(ss);
-    // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el [→ Contexto_Base_Web.md §05B013]
-    _aplicarDropdownWhatsappSLista(ss);
-  } catch (eSL) {
-    Logger.log('[Backup] ERROR respaldando S_Lista (o sus dropdowns): ' + eSL.message + ' -- se continúa con el resto de hojas protegidas.');
-  }
-  // NUEVO (13-sep-2026, pedido del usuario): CR_Lista ya tiene su propio [→ Contexto_Base_Web.md §05B014]
-  if (_tocaProtegida_(soloClave, 'CR_LISTA')) try {
-    _respaldarListaHojasCSV(ss, [CFG.SHEETS.CR_LISTA], true);
-    _aplicarDropdownTipoCRLista(ss);
-    // NUEVO (16-sep-2026, pedido del usuario): mismo criterio que el [→ Contexto_Base_Web.md §05B015]
-    _aplicarDropdownEstadoCRLista(ss);
-  } catch (eCR) {
-    Logger.log('[Backup] ERROR respaldando CR_Lista (o sus dropdowns): ' + eCR.message + ' -- se continúa con el resto de hojas protegidas.');
-  }
-  // FIX (07-sep-2026, reportado por el usuario -- "T_Asistencia y T_Control [→ Contexto_Base_Web.md §05B016]
-  if (_tocaProtegida_(soloClave, 'T_ASISTENCIA')) try {
-    _respaldarListaHojasCSV(ss, [CFG.SHEETS.T_ASISTENCIA], true, TA.ID);
-  } catch (eTA) {
-    Logger.log('[Backup] ERROR respaldando T_Asistencia: ' + eTA.message + ' -- se continúa con el resto de hojas protegidas.');
-  }
-
-  // RESUELTO (10-sep-2026, pedido usuario -- ver Consolidado_Cambios_ [→ Contexto_Base_Web.md §05B017]
-  if (_tocaProtegida_(soloClave, 'S_ASISTENCIA')) try {
-    _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_ASISTENCIA], true, SA.ID, (function () { var m = {}; m[SA.FECHA] = true; return m; })()); // PF222: Fecha como número (ms), no como texto
-  } catch (eSA) {
-    Logger.log('[Backup] ERROR respaldando S_Asistencia: ' + eSA.message + ' -- se continúa con el resto de hojas protegidas.');
-  }
-
-  // FIX (27-sep-2026, pedido del usuario -- ver docblock completo de [→ Contexto_Base_Web.md §05B018]
-  if (_tocaProtegida_(soloClave, 'EXTRA')) try {
-    _respaldarListaHojasCSV(ss, [CFG.SHEETS.EXTRA], true);
-  } catch (eExtra) {
-    Logger.log('[Backup] ERROR respaldando Extra: ' + eExtra.message + ' -- se continúa con el resto de hojas protegidas.');
-  }
-}
-
-/**
- * respaldarHojasDerivadasCSV() [→ Contexto_Base_Web.md §05B019]
- */
-function respaldarHojasDerivadasCSV(presupuestoMs) {
-  // PF282 (26-oct-2026): parametro opcional. Sin argumento usa CFG.RESPALDO_DERIVADAS_BUDGET_MS (60 s), igual que antes.
-  // Con 0 hace UNA sola hoja por llamada y devuelve false mientras queden (PASOS_RUNSYNCCSV lo usa asi: cada hoja corre en su
-  // propia ejecucion, porque el 25-oct la hoja Links sola tardo ~299 s y la tanda murio justo despues). [→ Contexto_Base_Web.md §PF282]
-  var presupuesto = (typeof presupuestoMs === 'number') ? presupuestoMs : CFG.RESPALDO_DERIVADAS_BUDGET_MS;
-  var ss = _getSs();
-
-  // Hojas protegidas: excluidas de "derivadas" (se respaldan aparte, en [→ Contexto_Base_Web.md §05B020]
-  var hojasProtegidas = [CFG.SHEETS.VETADOS];
-
-  // Hojas con mecanismo de respaldo DEDICADO en otra función (no se deben [→ Contexto_Base_Web.md §05B021]
-  var hojasConRespaldoDedicado = [
-  CFG.SHEETS.DIRECTORIO, CFG.SHEETS.CLAN, CFG.SHEETS.GUERRA, CFG.SHEETS.INDICE,
-  CFG.SHEETS.COMENTARIOS, CFG.SHEETS.CALENDARIO2,
-  CFG.SHEETS.GUERRA_LOGS, CFG.SHEETS.HISTORIAL, CFG.SHEETS.INACTIVOS, CFG.SHEETS.ASCENSOS,
-  CFG.SHEETS.T_LISTA, CFG.SHEETS.T_ASISTENCIA, CFG.SHEETS.S_LISTA, CFG.SHEETS.S_ASISTENCIA,
-  CFG.SHEETS.CR_LISTA, CFG.SHEETS.EXTRA,
-  'Battlelogs'
-];
-
-  // Todas las demás hojas del spreadsheet (existentes o nuevas) se tratan [→ Contexto_Base_Web.md §05B022]
-  var excluidas = hojasProtegidas.concat(hojasConRespaldoDedicado);
-  var hojasDerivadas = ss.getSheets()
-    .map(function(sh) { return sh.getName(); })
-    .filter(function(nombre) { return excluidas.indexOf(nombre) < 0; });
-
-  var props     = PropertiesService.getScriptProperties();
-  var claveIdx   = 'RESPALDO_DERIVADAS_IDX';
-  var idxInicio  = parseInt(props.getProperty(claveIdx) || '0', 10);
-  if (idxInicio >= hojasDerivadas.length) idxInicio = 0; // por si cambió la lista de hojas entre corridas
-
-  var inicio = Date.now();
-  var i;
-  for (i = idxInicio; i < hojasDerivadas.length; i++) {
-    var inicioHoja = Date.now();
-    _respaldarListaHojasCSV(ss, [hojasDerivadas[i]], false);
-    Logger.log('[Backup] respaldarHojasDerivadasCSV: hoja ' + (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + ') en ' +
-               Math.round((Date.now() - inicioHoja) / 1000) + ' s.'); // PF282: tiempo por hoja, para ubicar la lenta
-    _anotarProgresoPaso_('hoja ' + (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + ')', i + 1); // PF283
-
-    var quedanHojas = (i + 1) < hojasDerivadas.length;
-    if (quedanHojas && (presupuesto === 0 || (Date.now() - inicio) > presupuesto)) {
-      props.setProperty(claveIdx, String(i + 1));
-      Logger.log('[Backup] respaldarHojasDerivadasCSV: presupuesto interno agotado tras la hoja ' +
-                 (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + '). ' +
-                 'Se reintenta el mismo paso en la próxima continuación.');
-      return false;
-    }
-  }
-
-  props.deleteProperty(claveIdx);
-  return true;
-}
-
 // CSV Sync Operations [→ Contexto_Base_Web.md §05B023]
-
-/**
- * syncDirectorioCSV() [→ Contexto_Base_Web.md §05B024]
- */
 /**
  * DC_HEADERS_60_COLS [→ Contexto_Base_Web.md §05B025]
  */
@@ -272,6 +52,49 @@ var DC_HEADERS_60_COLS = [
   'Clanes_Admin'
 ];
 
+// CACHÉ DE CSV (08-oct-2026): memoria por ejecución + CacheService (10 min); _saveCSVToDrive la invalida.
+var CSV_CACHE_TTL_SEG   = 600;     // 10 min
+
+var CSV_CACHE_CHUNK     = 90000;   // CacheService: máx 100 KB por valor
+
+var CSV_CACHE_MAX_CHUNK = 40;      // si el CSV comprimido pasa de ~3.5 MB, no se cachea
+
+var _CSV_MEM_ = {};                // memoria por ejecución: filename -> texto
+
+// PF290 (28-oct-2026): conteo de filas o elementos antes y después de cada escritura de un CSV o JSON en Drive. Para no alargar las corridas con muchos archivos, el tiempo gastado en leer y contar tiene un tope por ejecución; al pasarlo, los archivos siguientes se escriben sin conteo. [→ Contexto_Base_Web.md §PF290]
+var CONTEO_ARCHIVOS_PRESUPUESTO_MS = 20000;
+
+var _conteoArchivosMs_ = 0;           // tiempo acumulado de conteo en esta ejecución
+
+var _conteoArchivosAgotadoAvisado_ = false;
+
+// PF291 (29-oct-2026): verificación del tamaño tras cada escritura y segunda revisión al final de la cola horaria de guerra. El 28-oct a las 8:05 a. m.
+// Backup_Guerra.csv quedó en 0 B justo después de una escritura correcta de 2,4 MB [→ Contexto_Base_Web.md §PF289 punto 10, §PF291].
+var ESCRITURA_VERIF_REINTENTOS = 2;    // reescrituras antes de dar la escritura por fallida
+
+var ESCRITURA_VERIF_ESPERA_MS  = 1500; // espera antes de volver a medir el archivo
+
+var _csvEscritosEnEjecucion_ = {};     // filename -> último texto que _saveCSVToDrive() dejó escrito en esta ejecución
+
+var _csvEscritosTs_ = {};               // filename -> hora (ms) de esa escritura
+
+var ESCRITURA_VERIF_ESPERA_FINAL_MS = 8000; // espera mínima desde la escritura antes de la revisión posterior al salir de una tanda
+
+var ESCRITURA_VERIF_TOLERANCIA_MS = 20000; // margen entre nuestra escritura y la fecha de modificación del archivo para considerar que fue otra ejecución la que lo cambió (PF292, punto 9)
+
+// PF042: caché del resultado de _construirCoberturaPorTag() (18_CorreccionGuerra.gs); se invalida junto con el CSV de guerra. [→ Contexto_Base_Web.md §PF042]
+var COBERTURA_GUERRA_CACHE_KEY = 'COBGUERRA_v1';
+
+// LOG DE TAMPERMONKEY EN DRIVE (13-ago-2026, pedido del usuario) [→ Contexto_Base_Web.md §05B116]
+var TAMPERMONKEY_LOG_MAX_LINEAS = 500;
+
+// ===== PARTE 1 — Funciones que se corren a mano =====
+
+// ----- Respaldo de las hojas a CSV (por hoja, y todo junto con syncAllCSV) -----
+
+/**
+ * syncDirectorioCSV() [→ Contexto_Base_Web.md §05B024]
+ */
 function syncDirectorioCSV() {
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
@@ -340,6 +163,100 @@ function syncDirectorioCSV() {
   var data = [headers].concat(filasDC);
   _saveCSVToDrive('Backup_Directorio.csv', _encodeCSV(data));
   Logger.log('[Backup] Backup_Directorio.csv sincronizado (' + filasDC.length + ' registros, 60 columnas formato DC, Cat_disp/Clanes_Admin tomadas de Administradores).');
+}
+
+// AVISOS ABIERTOS / VERIFICACIONES ABIERTAS [→ Contexto_Base_Web.md §05B001]
+// Backup JSON de celulares y Sincronización Bidireccional de CSV. [→ Contexto_Base_Web.md §05B002]
+// NOTA DE REORDEN (23-ago-2026, pedido usuario): las funciones manuales [→ Contexto_Base_Web.md §05B003]
+/**
+ * syncClanCSV() [→ Contexto_Base_Web.md §05B004]
+ */
+function syncClanCSV() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
+  if (!sh || sh.getLastRow() < 2) return;
+
+  var lastRow = sh.getLastRow();
+  var numCols = CC.CONDICION;
+  var data    = _extraerValoresConLinksReales(sh, lastRow, numCols);
+
+  _saveCSVToDrive('Backup_Clan.csv', _encodeCSV(data));
+  Logger.log('[Backup] Backup_Clan.csv sincronizado.');
+}
+
+/**
+ * syncAcumulativosCSV() [→ Contexto_Base_Web.md §05B110]
+ */
+/**
+ * syncAcumulativosCSV() [→ Contexto_Base_Web.md §05B034]
+ */
+function syncAcumulativosCSV() {
+  // FASE 6 (05-ago-2026, cierre del plan de migración Plantillas -> Menú): [→ Contexto_Base_Web.md §05B035]
+  var acumulativos = [
+    { sheetName: CFG.SHEETS.COMENTARIOS,  fileName: 'Backup_Comentarios.csv',   numCols: COMENTARIOS_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
+    { sheetName: CFG.SHEETS.CALENDARIO2,  fileName: 'Backup_Calendario_2.csv',  numCols: 6,  hasFecha: true,  fechaCol: 2, protegerFechas: true },
+    { sheetName: CFG.SHEETS.GUERRA_LOGS,  fileName: 'Backup_Guerra_Logs.csv',   numCols: GUERRA_LOGS_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: GLC.FECHA, protegerFechas: true }, // TANDA 1 (20-sep-2026): 22 -> 25 (ProgressEarned/NumOfDefensesRemaining/ProgressEarnedFromDefenses). Antes de FASE 13: 21 -> 22 (EndOfDayRank). Con numCols fijo el CSV NO guardaría las columnas nuevas: ahora sigue a la constante
+    // protegerFechas:true (28-sep-2026, extendido a todas las hojas con Fecha): no se [→ Contexto_Base_Web.md §05B036]
+    { sheetName: CFG.SHEETS.HISTORIAL,    fileName: 'Backup_Historial_I-S.csv',     numCols: HISTORIAL_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
+    { sheetName: CFG.SHEETS.ASCENSOS,     fileName: 'Backup_Historial_A-D.csv',      numCols: ASCENSOS_TOTAL_COLS, hasFecha: true, fechaCol: ASC.FECHA, fechaColConHoraForzada: ASC.FECHA, protegerFechas: true },
+    // Histórico de Guerra por jugador (20_HistorialGuerraJugador.gs) — [→ Contexto_Base_Web.md §05B037]
+    { sheetName: CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA, fileName: 'Alertas_HistorialGuerra.csv',
+      numCols: AHG_TOTAL_COLS, hasFecha: true, fechaCol: AHG.FECHA_DETECTADO,
+      fechaColConHoraForzada: AHG.FECHA_DETECTADO, permitirReduccion: true, protegerFechas: true },
+  ];
+
+  // Trabajo 0 = syncInactivosCSV() (caso especial: función propia, no una [→ Contexto_Base_Web.md §05B038]
+  var totalTrabajos = 1 + acumulativos.length;
+
+  var props     = PropertiesService.getScriptProperties();
+  var claveIdx  = 'ACUMULATIVOS_IDX';
+  var idxInicio = parseInt(props.getProperty(claveIdx) || '0', 10);
+  if (idxInicio >= totalTrabajos) idxInicio = 0; // por si cambió la lista de hojas entre corridas
+
+  var inicio = Date.now();
+  var maxTrabajoMs = 0; // PF311 parte A: el trabajo más largo de esta llamada, para no empezar otro si no cabe
+  var i;
+  for (i = idxInicio; i < totalTrabajos; i++) {
+    var tInicioTrabajo = Date.now();
+    var nombreTrabajo = (i === 0) ? 'Inactivos' : acumulativos[i - 1].sheetName;
+
+    // PF311 parte A (31-oct-2026): los trabajos tardan de 2 a 52 s cada uno y el presupuesto interno solo se miraba al terminar un trabajo; el 29-oct runSyncCSV pasó 3 min 50 s sin escribir nada. Antes de empezar otro trabajo (nunca el primero de la llamada, para que siempre avance) se exige que la ejecución tenga tiempo para el trabajo más largo visto en esta llamada, con 50 % de holgura y como mínimo 60 s.
+    if (i > idxInicio) {
+      var msNecesariosTrabajo = Math.max(60000, Math.round(maxTrabajoMs * 1.5));
+      var msQuedan = _msRestantesDeEjecucion_();
+      if (msQuedan < msNecesariosTrabajo) {
+        props.setProperty(claveIdx, String(i));
+        Logger.log('[Backup] syncAcumulativosCSV: no se empieza el trabajo ' + (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '): quedan ' + Math.round(msQuedan / 1000) +
+                   ' s y se necesitan unos ' + Math.round(msNecesariosTrabajo / 1000) + ' s. Se hace en la próxima continuación.');
+        _logProgresoPaso_('Backup', 'respaldo CSV de acumulativos', idxInicio, i - idxInicio, totalTrabajos, 'trabajos');
+        return false;
+      }
+    }
+    Logger.log('[Backup][t] syncAcumulativosCSV: empieza el trabajo ' + (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '); a la ejecución le quedan ' + Math.round(_msRestantesDeEjecucion_() / 1000) + ' s.');
+
+    if (i === 0) {
+      syncInactivosCSV();
+    } else {
+      _syncUnaAcumulativaCSV(acumulativos[i - 1], false);
+    }
+
+    Logger.log('[Backup][t] syncAcumulativosCSV: trabajo ' + (i + 1) + '/' + totalTrabajos +
+               ' (' + nombreTrabajo + '): ' + (Date.now() - tInicioTrabajo) + ' ms');
+    maxTrabajoMs = Math.max(maxTrabajoMs, Date.now() - tInicioTrabajo);
+
+    var quedanTrabajos = (i + 1) < totalTrabajos;
+    if (quedanTrabajos && (Date.now() - inicio) > CFG.ACUMULATIVOS_BUDGET_MS) {
+      props.setProperty(claveIdx, String(i + 1));
+      Logger.log('[Backup] syncAcumulativosCSV: presupuesto interno agotado tras el trabajo ' +
+                 (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '). ' +
+                 'Se reintenta el mismo paso en la próxima continuación.');
+      _logProgresoPaso_('Backup', 'respaldo CSV de acumulativos', idxInicio, (i + 1) - idxInicio, totalTrabajos, 'trabajos'); // PF285
+      return false;
+    }
+  }
+
+  props.deleteProperty(claveIdx);
+  return true;
 }
 
 /**
@@ -475,75 +392,227 @@ function diagnosticoInactivosVsCSV() {
 }
 
 /**
- * syncAcumulativosCSV() [→ Contexto_Base_Web.md §05B034]
+ * exportarBackupCelulares()
+ * Guarda en Drive los campos manuales del Directorio como JSON.
  */
-function syncAcumulativosCSV() {
-  // FASE 6 (05-ago-2026, cierre del plan de migración Plantillas -> Menú): [→ Contexto_Base_Web.md §05B035]
-  var acumulativos = [
-    { sheetName: CFG.SHEETS.COMENTARIOS,  fileName: 'Backup_Comentarios.csv',   numCols: COMENTARIOS_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
-    { sheetName: CFG.SHEETS.CALENDARIO2,  fileName: 'Backup_Calendario_2.csv',  numCols: 6,  hasFecha: true,  fechaCol: 2, protegerFechas: true },
-    { sheetName: CFG.SHEETS.GUERRA_LOGS,  fileName: 'Backup_Guerra_Logs.csv',   numCols: GUERRA_LOGS_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: GLC.FECHA, protegerFechas: true }, // TANDA 1 (20-sep-2026): 22 -> 25 (ProgressEarned/NumOfDefensesRemaining/ProgressEarnedFromDefenses). Antes de FASE 13: 21 -> 22 (EndOfDayRank). Con numCols fijo el CSV NO guardaría las columnas nuevas: ahora sigue a la constante
-    // protegerFechas:true (28-sep-2026, extendido a todas las hojas con Fecha): no se [→ Contexto_Base_Web.md §05B036]
-    { sheetName: CFG.SHEETS.HISTORIAL,    fileName: 'Backup_Historial_I-S.csv',     numCols: HISTORIAL_TOTAL_COLS, hasFecha: true,  fechaCol: 2, fechaColConHoraForzada: 2, protegerFechas: true },
-    { sheetName: CFG.SHEETS.ASCENSOS,     fileName: 'Backup_Historial_A-D.csv',      numCols: ASCENSOS_TOTAL_COLS, hasFecha: true, fechaCol: ASC.FECHA, fechaColConHoraForzada: ASC.FECHA, protegerFechas: true },
-    // Histórico de Guerra por jugador (20_HistorialGuerraJugador.gs) — [→ Contexto_Base_Web.md §05B037]
-    { sheetName: CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA, fileName: 'Alertas_HistorialGuerra.csv',
-      numCols: AHG_TOTAL_COLS, hasFecha: true, fechaCol: AHG.FECHA_DETECTADO,
-      fechaColConHoraForzada: AHG.FECHA_DETECTADO, permitirReduccion: true, protegerFechas: true },
-  ];
+function exportarBackupCelulares() {
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+  if (!sh || sh.getLastRow() < 2) return;
 
-  // Trabajo 0 = syncInactivosCSV() (caso especial: función propia, no una [→ Contexto_Base_Web.md §05B038]
-  var totalTrabajos = 1 + acumulativos.length;
+  // Leer encabezados de la fila 1 para mapear por nombre (no por índice fijo)
+  var numCols = Math.max(sh.getLastColumn(), DIR_SHEET_COLS);
+  var headerRow = sh.getRange(1, 1, 1, numCols).getValues()[0];
+  var H = {};
+  for (var h = 0; h < headerRow.length; h++) {
+    var hName = String(headerRow[h] || '').trim();
+    if (hName) H[hName] = h;
+  }
+  var iTag     = H['Tag']      !== undefined ? H['Tag']      : (DC.TAG      - 1);
+  var iPrefijo = H['Prefijo']  !== undefined ? H['Prefijo']  : (DC.PREFIJO  - 1);
+  var iCelular = H['Celular']  !== undefined ? H['Celular']  : (DC.CELULAR  - 1);
+  var iWspG    = H['WSP(G)']   !== undefined ? H['WSP(G)']   :
+                (H['WSP_G']    !== undefined ? H['WSP_G']    : (DC.WSP_G    - 1));
+  var iEtiqueta= H['Etiqueta'] !== undefined ? H['Etiqueta'] : (DC.ETIQUETA - 1);
+  var iFechaIng= H['Fecha_ing']!== undefined ? H['Fecha_ing']: (DC.FECHA_ING- 1);
+  var iVetado  = H['Vetado']   !== undefined ? H['Vetado']   : (DC.VETADO   - 1);
+  var iRazon   = H['Razón']    !== undefined ? H['Razón']    :
+                (H['Razon']    !== undefined ? H['Razon']    : (DC.RAZON    - 1));
+
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, numCols).getValues();
+  var backupData = [];
+
+  for (var i = 0; i < data.length; i++) {
+    var tag = String(data[i][iTag] || '').trim(); // Tag
+    if (tag) {
+      backupData.push({
+        tag:       tag,
+        prefijo:   soloDigitos(data[i][iPrefijo]), // Prefijo
+        celular:   soloDigitos(data[i][iCelular]), // Celular
+        wsp_g:     String(data[i][iWspG]     || ''), // WSP(G)
+        etiqueta:  String(data[i][iEtiqueta] || ''), // Etiqueta
+        fecha_ing: data[i][iFechaIng]        || '',  // Fecha_ing
+        vetado:    String(data[i][iVetado]   || ''), // Vetado
+        razon:     String(data[i][iRazon]    || '')  // Razón
+      });
+    }
+  }
+
+  // (25-sep-2026, FASE B) ClanSystem_Backup_Celulares.json se escribe ahora [→ Contexto_Base_Web.md §05B005]
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var filename = 'ClanSystem_Backup_Celulares.json';
+    var files = folder.getFilesByName(filename);
+    var content = JSON.stringify(backupData, null, 2);
+
+    if (files.hasNext()) {
+      _setContentConConteo_(files.next(), content);
+    } else {
+      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
+    }
+    Logger.log('[Backup] JSON celulares guardado exitosamente (' + backupData.length + ' registros).');
+  } catch(e) {
+    Logger.log('[Backup] Error guardando JSON: ' + e.message);
+  }
+}
+
+/**
+ * respaldarIndiceYProtegidasCSV() [→ Contexto_Base_Web.md §05B008]
+ */
+function respaldarIndiceYProtegidasCSV(soloClave) {
+  // PF146 (21-oct-2026): parametro opcional. Sin argumento hace los 8 respaldos, igual que antes (lo usan runAll,
+  // runUpdate y los botones manuales). Con una clave de PROTEGIDAS_CSV_CLAVES hace solo ese respaldo; asi
+  // PASOS_RUNSYNCCSV lo reparte en 8 pasos y _ejecutarPorTandas puede cortar entre uno y otro. [→ Contexto_Base_Web.md §PF146]
+  var ss = _getSs();
+  // FIX (18-sep-2026, pedido usuario -- "el ID de la hoja de cambio de [→ Contexto_Base_Web.md §05B009]
+  if (_tocaProtegida_(soloClave, 'INDICE')) try {
+    _respaldarIndiceCSV(ss);
+  } catch (eIdx) {
+    Logger.log('[Backup] ERROR respaldando Índice: ' + eIdx.message + ' -- se continúa con el resto de hojas protegidas.');
+  }
+
+  // Hojas protegidas (edición manual, se bloquea si se reducen las filas). [→ Contexto_Base_Web.md §05B010]
+  if (_tocaProtegida_(soloClave, 'VETADOS')) try {
+    _respaldarListaHojasCSV(ss, [CFG.SHEETS.VETADOS], true, 2, _colSet(VC.FECHA));
+  } catch (eVet) {
+    Logger.log('[Backup] ERROR respaldando Vetados: ' + eVet.message + ' -- se continúa con el resto de hojas protegidas.');
+  }
+  if (_tocaProtegida_(soloClave, 'T_LISTA')) try {
+    // FASE 5 (25-sep-2026, rediseño T_Lista -- ver punto B-bis y comentario [→ Contexto_Base_Web.md §05B011]
+    _respaldarListaHojasCSV(ss, [CFG.SHEETS.T_LISTA], true, null, null, _colSet(TL.PREPARACION, TL.DURACION));
+  } catch (eTL) {
+    Logger.log('[Backup] ERROR respaldando T_Lista: ' + eTL.message + ' -- se continúa con el resto de hojas protegidas.');
+  }
+  // FASE (07-sep-2026, pedido del usuario): S_Lista es la hoja análoga a [→ Contexto_Base_Web.md §05B012]
+  if (_tocaProtegida_(soloClave, 'S_LISTA')) try {
+    _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_LISTA], true);
+    _aplicarDropdownId2SLista(ss);
+    _aplicarDropdownEstadoSLista(ss);
+    _aplicarDropdownMiembroActivoSLista(ss);
+    _aplicarDropdownReaccionSLista(ss);
+    // FIX (12-sep-2026, pedido del usuario): faltaba reaplicar aquí también el [→ Contexto_Base_Web.md §05B013]
+    _aplicarDropdownWhatsappSLista(ss);
+  } catch (eSL) {
+    Logger.log('[Backup] ERROR respaldando S_Lista (o sus dropdowns): ' + eSL.message + ' -- se continúa con el resto de hojas protegidas.');
+  }
+  // NUEVO (13-sep-2026, pedido del usuario): CR_Lista ya tiene su propio [→ Contexto_Base_Web.md §05B014]
+  if (_tocaProtegida_(soloClave, 'CR_LISTA')) try {
+    _respaldarListaHojasCSV(ss, [CFG.SHEETS.CR_LISTA], true);
+    _aplicarDropdownTipoCRLista(ss);
+    // NUEVO (16-sep-2026, pedido del usuario): mismo criterio que el [→ Contexto_Base_Web.md §05B015]
+    _aplicarDropdownEstadoCRLista(ss);
+  } catch (eCR) {
+    Logger.log('[Backup] ERROR respaldando CR_Lista (o sus dropdowns): ' + eCR.message + ' -- se continúa con el resto de hojas protegidas.');
+  }
+  // FIX (07-sep-2026, reportado por el usuario -- "T_Asistencia y T_Control [→ Contexto_Base_Web.md §05B016]
+  if (_tocaProtegida_(soloClave, 'T_ASISTENCIA')) try {
+    _respaldarListaHojasCSV(ss, [CFG.SHEETS.T_ASISTENCIA], true, TA.ID);
+  } catch (eTA) {
+    Logger.log('[Backup] ERROR respaldando T_Asistencia: ' + eTA.message + ' -- se continúa con el resto de hojas protegidas.');
+  }
+
+  // RESUELTO (10-sep-2026, pedido usuario -- ver Consolidado_Cambios_ [→ Contexto_Base_Web.md §05B017]
+  if (_tocaProtegida_(soloClave, 'S_ASISTENCIA')) try {
+    _respaldarListaHojasCSV(ss, [CFG.SHEETS.S_ASISTENCIA], true, SA.ID, (function () { var m = {}; m[SA.FECHA] = true; return m; })()); // PF222: Fecha como número (ms), no como texto
+  } catch (eSA) {
+    Logger.log('[Backup] ERROR respaldando S_Asistencia: ' + eSA.message + ' -- se continúa con el resto de hojas protegidas.');
+  }
+
+  // FIX (27-sep-2026, pedido del usuario -- ver docblock completo de [→ Contexto_Base_Web.md §05B018]
+  if (_tocaProtegida_(soloClave, 'EXTRA')) try {
+    _respaldarListaHojasCSV(ss, [CFG.SHEETS.EXTRA], true);
+  } catch (eExtra) {
+    Logger.log('[Backup] ERROR respaldando Extra: ' + eExtra.message + ' -- se continúa con el resto de hojas protegidas.');
+  }
+}
+
+/**
+ * respaldarHojasDerivadasCSV() [→ Contexto_Base_Web.md §05B019]
+ */
+function respaldarHojasDerivadasCSV(presupuestoMs) {
+  // PF282 (26-oct-2026): parametro opcional. Sin argumento usa CFG.RESPALDO_DERIVADAS_BUDGET_MS (60 s), igual que antes.
+  // Con 0 hace UNA sola hoja por llamada y devuelve false mientras queden (PASOS_RUNSYNCCSV lo usa asi: cada hoja corre en su
+  // propia ejecucion, porque el 25-oct la hoja Links sola tardo ~299 s y la tanda murio justo despues). [→ Contexto_Base_Web.md §PF282]
+  var presupuesto = (typeof presupuestoMs === 'number') ? presupuestoMs : CFG.RESPALDO_DERIVADAS_BUDGET_MS;
+  var ss = _getSs();
+
+  // Hojas protegidas: excluidas de "derivadas" (se respaldan aparte, en [→ Contexto_Base_Web.md §05B020]
+  var hojasProtegidas = [CFG.SHEETS.VETADOS];
+
+  // Hojas con mecanismo de respaldo DEDICADO en otra función (no se deben [→ Contexto_Base_Web.md §05B021]
+  var hojasConRespaldoDedicado = [
+  CFG.SHEETS.DIRECTORIO, CFG.SHEETS.CLAN, CFG.SHEETS.GUERRA, CFG.SHEETS.INDICE,
+  CFG.SHEETS.COMENTARIOS, CFG.SHEETS.CALENDARIO2,
+  CFG.SHEETS.GUERRA_LOGS, CFG.SHEETS.HISTORIAL, CFG.SHEETS.INACTIVOS, CFG.SHEETS.ASCENSOS,
+  CFG.SHEETS.T_LISTA, CFG.SHEETS.T_ASISTENCIA, CFG.SHEETS.S_LISTA, CFG.SHEETS.S_ASISTENCIA,
+  CFG.SHEETS.CR_LISTA, CFG.SHEETS.EXTRA,
+  'Battlelogs'
+];
+
+  // Todas las demás hojas del spreadsheet (existentes o nuevas) se tratan [→ Contexto_Base_Web.md §05B022]
+  var excluidas = hojasProtegidas.concat(hojasConRespaldoDedicado);
+  var hojasDerivadas = ss.getSheets()
+    .map(function(sh) { return sh.getName(); })
+    .filter(function(nombre) { return excluidas.indexOf(nombre) < 0; });
 
   var props     = PropertiesService.getScriptProperties();
-  var claveIdx  = 'ACUMULATIVOS_IDX';
-  var idxInicio = parseInt(props.getProperty(claveIdx) || '0', 10);
-  if (idxInicio >= totalTrabajos) idxInicio = 0; // por si cambió la lista de hojas entre corridas
+  var claveIdx   = 'RESPALDO_DERIVADAS_IDX';
+  var idxInicio  = parseInt(props.getProperty(claveIdx) || '0', 10);
+  if (idxInicio >= hojasDerivadas.length) idxInicio = 0; // por si cambió la lista de hojas entre corridas
 
   var inicio = Date.now();
-  var maxTrabajoMs = 0; // PF311 parte A: el trabajo más largo de esta llamada, para no empezar otro si no cabe
   var i;
-  for (i = idxInicio; i < totalTrabajos; i++) {
-    var tInicioTrabajo = Date.now();
-    var nombreTrabajo = (i === 0) ? 'Inactivos' : acumulativos[i - 1].sheetName;
+  for (i = idxInicio; i < hojasDerivadas.length; i++) {
+    var inicioHoja = Date.now();
+    _respaldarListaHojasCSV(ss, [hojasDerivadas[i]], false);
+    Logger.log('[Backup] respaldarHojasDerivadasCSV: hoja ' + (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + ') en ' +
+               Math.round((Date.now() - inicioHoja) / 1000) + ' s.'); // PF282: tiempo por hoja, para ubicar la lenta
+    _anotarProgresoPaso_('hoja ' + (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + ')', i + 1); // PF283
 
-    // PF311 parte A (31-oct-2026): los trabajos tardan de 2 a 52 s cada uno y el presupuesto interno solo se miraba al terminar un trabajo; el 29-oct runSyncCSV pasó 3 min 50 s sin escribir nada. Antes de empezar otro trabajo (nunca el primero de la llamada, para que siempre avance) se exige que la ejecución tenga tiempo para el trabajo más largo visto en esta llamada, con 50 % de holgura y como mínimo 60 s.
-    if (i > idxInicio) {
-      var msNecesariosTrabajo = Math.max(60000, Math.round(maxTrabajoMs * 1.5));
-      var msQuedan = _msRestantesDeEjecucion_();
-      if (msQuedan < msNecesariosTrabajo) {
-        props.setProperty(claveIdx, String(i));
-        Logger.log('[Backup] syncAcumulativosCSV: no se empieza el trabajo ' + (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '): quedan ' + Math.round(msQuedan / 1000) +
-                   ' s y se necesitan unos ' + Math.round(msNecesariosTrabajo / 1000) + ' s. Se hace en la próxima continuación.');
-        _logProgresoPaso_('Backup', 'respaldo CSV de acumulativos', idxInicio, i - idxInicio, totalTrabajos, 'trabajos');
-        return false;
-      }
-    }
-    Logger.log('[Backup][t] syncAcumulativosCSV: empieza el trabajo ' + (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '); a la ejecución le quedan ' + Math.round(_msRestantesDeEjecucion_() / 1000) + ' s.');
-
-    if (i === 0) {
-      syncInactivosCSV();
-    } else {
-      _syncUnaAcumulativaCSV(acumulativos[i - 1], false);
-    }
-
-    Logger.log('[Backup][t] syncAcumulativosCSV: trabajo ' + (i + 1) + '/' + totalTrabajos +
-               ' (' + nombreTrabajo + '): ' + (Date.now() - tInicioTrabajo) + ' ms');
-    maxTrabajoMs = Math.max(maxTrabajoMs, Date.now() - tInicioTrabajo);
-
-    var quedanTrabajos = (i + 1) < totalTrabajos;
-    if (quedanTrabajos && (Date.now() - inicio) > CFG.ACUMULATIVOS_BUDGET_MS) {
+    var quedanHojas = (i + 1) < hojasDerivadas.length;
+    if (quedanHojas && (presupuesto === 0 || (Date.now() - inicio) > presupuesto)) {
       props.setProperty(claveIdx, String(i + 1));
-      Logger.log('[Backup] syncAcumulativosCSV: presupuesto interno agotado tras el trabajo ' +
-                 (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '). ' +
+      Logger.log('[Backup] respaldarHojasDerivadasCSV: presupuesto interno agotado tras la hoja ' +
+                 (i + 1) + '/' + hojasDerivadas.length + ' (' + hojasDerivadas[i] + '). ' +
                  'Se reintenta el mismo paso en la próxima continuación.');
-      _logProgresoPaso_('Backup', 'respaldo CSV de acumulativos', idxInicio, (i + 1) - idxInicio, totalTrabajos, 'trabajos'); // PF285
       return false;
     }
   }
 
   props.deleteProperty(claveIdx);
   return true;
+}
+
+/**
+ * respaldarHojasRestantesCSV() [→ Contexto_Base_Web.md §05B006]
+ */
+function respaldarHojasRestantesCSV() {
+  respaldarIndiceYProtegidasCSV();
+  // respaldarHojasDerivadasCSV() ahora es reanudable (devuelve false si le [→ Contexto_Base_Web.md §05B007]
+  while (!respaldarHojasDerivadasCSV()) { /* continúa hasta terminar */ }
+}
+
+/**
+ * syncAllCSV() [→ Contexto_Base_Web.md §05B055]
+ */
+function syncAllCSV() {
+  var t0 = Date.now();
+  syncDirectorioCSV();
+  syncClanCSV();
+  while (!syncAcumulativosCSV()) { /* reintenta el mismo bloque de trabajos pendientes */ }
+  // Guerra ya NO se respalda dentro de updateGuerraSheet() (ver nota ahí, [→ Contexto_Base_Web.md §05B056]
+  var ss = _getSs();
+  var shGuerra = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  if (shGuerra) _syncGuerraCSV(shGuerra);
+  exportarBackupCelulares();
+  _revisarCsvAlSalir_(t0); // PF291
+  Logger.log('[Backup] syncAllCSV completado: Directorio + Clan + Guerra + Acumulativos + JSON.');
+}
+
+// ----- Importar desde los CSV -----
+
+function importarDirectorioDesdeCSV() {
+  Logger.log('[Backup] Importación delegada a lectura en vivo desde _getCsvDirMap().');
 }
 
 /**
@@ -652,6 +721,10 @@ function importarAcumulativosDesdeCSV() {
   }
 }
 
+function importarBackupCelulares() {
+  Logger.log('[Backup] Importación delegada a lectura en vivo desde _getCsvDirMap().');
+}
+
 /**
  * importarExtraDesdeCSV() [→ Contexto_Base_Web.md §05B047]
  */
@@ -703,6 +776,8 @@ function importarExtraDesdeCSV() {
              ', Sorteo=' + (valores[1] || 'vacío') + ', Ascenso=' + (valores[2] || 'vacío') +
              ', Descenso=' + (valores[3] || 'vacío') + '.');
 }
+
+// ----- Correcciones y reparaciones de los respaldos -----
 
 /**
  * corregirFechasComoTextoEnBackups() [→ Contexto_Base_Web.md §05B049]
@@ -963,23 +1038,6 @@ function repararRazonInvalida() {
 }
 
 /**
- * syncAllCSV() [→ Contexto_Base_Web.md §05B055]
- */
-function syncAllCSV() {
-  var t0 = Date.now();
-  syncDirectorioCSV();
-  syncClanCSV();
-  while (!syncAcumulativosCSV()) { /* reintenta el mismo bloque de trabajos pendientes */ }
-  // Guerra ya NO se respalda dentro de updateGuerraSheet() (ver nota ahí, [→ Contexto_Base_Web.md §05B056]
-  var ss = _getSs();
-  var shGuerra = ss.getSheetByName(CFG.SHEETS.GUERRA);
-  if (shGuerra) _syncGuerraCSV(shGuerra);
-  exportarBackupCelulares();
-  _revisarCsvAlSalir_(t0); // PF291
-  Logger.log('[Backup] syncAllCSV completado: Directorio + Clan + Guerra + Acumulativos + JSON.');
-}
-
-/**
  * repararFormatoTelefonos()
  * Función de reparación bajo demanda para corregir el formato de Prefijo/Celular.
  */
@@ -1047,10 +1105,11 @@ function repararFormatoTelefonos() {
   Logger.log('[Reparación] repararFormatoTelefonos() completado.');
 }
 
-// ----- Funciones internas / helpers -----
+// ===== PARTE 2 — Funciones que no se corren a mano =====
+
+// ----- Codificar, leer y analizar CSV (Drive, caché, fechas) -----
 
 // CSV Helpers (Parser RFC 4180 completo) [→ Contexto_Base_Web.md §05B058]
-
 /**
  * Codifica un array de arrays como texto CSV con manejo correcto de comillas,
  * comas y saltos de línea dentro de campos.
@@ -1065,6 +1124,11 @@ function _encodeCSV(rows) {
       return s;
     }).join(',');
   }).join('\r\n');
+}
+
+/** _encodeCSV de un informe, con la columna «ID» al principio (ver _informeConIdSemana_). */
+function _encodeCSVInforme(filas) {
+  return _encodeCSV(_informeConIdSemana_(filas));
 }
 
 /**
@@ -1116,188 +1180,538 @@ function _idSemanaInforme_(tTxt, sTxt, tagTxt) {
   return id;
 }
 
-/** _encodeCSV de un informe, con la columna «ID» al principio (ver _informeConIdSemana_). */
-function _encodeCSVInforme(filas) {
-  return _encodeCSV(_informeConIdSemana_(filas));
+function _loadCSVFromDrive(filename) {
+  // 1) memoria de esta ejecución
+  if (Object.prototype.hasOwnProperty.call(_CSV_MEM_, filename)) return _CSV_MEM_[filename];
+
+  // 2) caché entre peticiones
+  var cacheado = _csvCacheGet_(filename);
+  if (cacheado !== null) {
+    if (filename === 'Backup_Guerra.csv') cacheado = _migrarTextoGuerraCsv_(cacheado); // un caché de antes del orden nuevo (TTL 10 min) puede traer 21 columnas
+    _CSV_MEM_[filename] = cacheado;
+    return cacheado;
+  }
+
+  // 3) Drive
+  var hit = _csvBuscarArchivo_(filename); // subcarpeta asignada -> raíz -> demás subcarpetas [→ Contexto_Base_Web.md §01B158]
+  if (hit) {
+    var texto = hit.file.getBlob().getDataAsString('UTF-8');
+    if (filename === 'Backup_Guerra.csv') texto = _migrarTextoGuerraCsv_(texto); // 30-oct-2026 (§PF304): orden viejo de 21 columnas -> 23 del orden nuevo, en memoria
+    _CSV_MEM_[filename] = texto;
+    _csvCachePut_(filename, texto);
+    return texto;
+  }
+  return null; // los archivos inexistentes no se cachean
 }
 
 /**
- * _cargarExtraColsInactivos() [→ Contexto_Base_Web.md §05B059]
+ * _migrarTextoGuerraCsv_(texto) — 30-oct-2026 (orden nuevo de la hoja Guerra, §PF304).
+ * Backup_Guerra.csv se lee POR POSICIÓN (GC). Si el archivo todavía trae el orden viejo de 21 columnas (encabezado GUERRA_HEADERS_V21),
+ * lo reordena en memoria al de 23 columnas, emparejando por NOMBRE de columna (no por posición), y calcula la merma de todas las filas
+ * (_recalcularMermaGuerra_). Así todos los lectores del CSV ven el orden nuevo, y la primera escritura (_saveCSVToDrive) lo deja migrado en
+ * Drive. Idempotente: si el encabezado ya es el nuevo (o es otro, desconocido), devuelve el texto tal cual. Un encabezado desconocido se
+ * deja pasar sin tocar para no destruir datos, pero se avisa en el registro.
  */
-function _cargarExtraColsInactivos() {
-  var mapa = {};
-  // (25-sep-2026, FASE B) ClanSystem_Backup_InactivosExtra.json se lee y se [→ Contexto_Base_Web.md §05B060]
-  try {
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var files = folder.getFilesByName('ClanSystem_Backup_InactivosExtra.json');
-    if (files.hasNext()) {
-      mapa = JSON.parse(files.next().getBlob().getDataAsString('UTF-8')) || {};
+function _migrarTextoGuerraCsv_(texto) {
+  if (!texto) return texto;
+  var finPrimera = texto.search(/\r|\n/);
+  var primera = finPrimera < 0 ? texto : texto.substring(0, finPrimera);
+  var encabezado = _parseCSV(primera)[0] || [];
+  var norm = function (v) { return String(v === undefined || v === null ? '' : v).replace(/^﻿/, '').trim().toLowerCase(); };
+  var igualA = function (lista) {
+    if (encabezado.length !== lista.length) return false;
+    for (var i = 0; i < lista.length; i++) if (norm(encabezado[i]) !== norm(lista[i])) return false;
+    return true;
+  };
+  if (igualA(GUERRA_HEADERS)) return texto;
+  if (!igualA(GUERRA_HEADERS_V21)) {
+    Logger.log('[Guerra][CSV] Backup_Guerra.csv tiene un encabezado que no es ni el de 23 columnas ni el viejo de 21 (' + encabezado.length + ' columnas: ' + encabezado.slice(0, 6).join(' | ') + ' ...). Se deja sin migrar.');
+    return texto;
+  }
+  var filas = _parseCSV(texto);
+  var posViejo = {};
+  for (var h = 0; h < GUERRA_HEADERS_V21.length; h++) posViejo[GUERRA_HEADERS_V21[h].toLowerCase()] = h;
+  var salida = [GUERRA_HEADERS.slice()];
+  for (var r = 1; r < filas.length; r++) {
+    var vieja = filas[r];
+    if (vieja.length === 1 && String(vieja[0]).trim() === '') continue; // línea en blanco
+    var nueva = new Array(GUERRA_TOTAL_COLS);
+    for (var c = 0; c < GUERRA_TOTAL_COLS; c++) {
+      var p = posViejo[GUERRA_HEADERS[c].toLowerCase()];
+      nueva[c] = (p === undefined || vieja[p] === undefined) ? '' : vieja[p];
     }
-  } catch(e) { Logger.log('[Backup] Error leyendo ClanSystem_Backup_InactivosExtra.json: ' + e.message); }
-  return mapa;
+    salida.push(nueva);
+  }
+  var datos = salida.slice(1);
+  _recalcularMermaGuerra_(datos);
+  Logger.log('[Guerra][CSV] Backup_Guerra.csv migrado en memoria del orden de 21 al de 23 columnas (' + datos.length + ' filas, merma calculada). Se guarda así en Drive en la próxima escritura.');
+  return _encodeCSV(salida);
 }
 
-/**
- * _extraColsInactivosDesdeCsv(tagNorm) [→ Contexto_Base_Web.md §05B061]
- */
-function _extraColsInactivosDesdeCsv(tagNorm) {
-  if (!tagNorm) return null;
-  var parsed;
+function _csvCacheKey_(filename) { return 'CSVDRV_' + filename; }
+
+function _csvCacheGet_(filename) {
   try {
-    var csvText = _loadCSVFromDrive('Backup_Inactivos.csv');
-    if (!csvText) return null;
-    parsed = _parseCSV(csvText);
+    var cache = CacheService.getScriptCache();
+    var base = _csvCacheKey_(filename);
+    var n = parseInt(cache.get(base + '_n') || '0', 10);
+    if (!n) return null;
+    var keys = [];
+    for (var i = 0; i < n; i++) keys.push(base + '_' + i);
+    var got = cache.getAll(keys);
+    var b64 = '';
+    for (var j = 0; j < n; j++) {
+      var trozo = got[keys[j]];
+      if (trozo === undefined || trozo === null) return null; // trozo expirado/faltante
+      b64 += trozo;
+    }
+    var blob = Utilities.newBlob(Utilities.base64Decode(b64), 'application/x-gzip', 'x.gz');
+    return Utilities.ungzip(blob).getDataAsString('UTF-8');
   } catch (e) {
-    Logger.log('[Backup] _extraColsInactivosDesdeCsv: no se pudo leer Backup_Inactivos.csv (' + e.message + ').');
-    return null;
+    return null; // ante cualquier duda, se lee de Drive
   }
-  if (!parsed || parsed.length < 2) return null;
-
-  var rows = parsed.slice(1);
-  var campos = _camposExtraInactivos(); // 11_DirectorioSheet.gs: nombres DC que no están en IC
-  for (var i = 0; i < rows.length; i++) {
-    if (cleanTag(rows[i][DC.TAG - 1]) !== tagNorm) continue;
-    var extra = {};
-    for (var c = 0; c < campos.length; c++) {
-      var campo = campos[c];
-      var idx = DC[campo] - 1;
-      var valor = rows[i][idx];
-      if (valor !== undefined && valor !== '') extra[campo] = valor;
-    }
-    return Object.keys(extra).length ? extra : null;
-  }
-  return null;
 }
 
-/**
- * _compararInactivosConCSV(ss) [→ Contexto_Base_Web.md §05B062]
- */
-function _compararInactivosConCSV(ss) {
-  var shInactivos = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
-  var shDirectorio = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
-
-  // --- 1. Tags actuales en la hoja Inactivos (29 cols reales, formato IC) ---
-  var tagsHoja = {}; // Tag -> Nombre
-  if (shInactivos) {
-    var lastRowInactivos = shInactivos.getLastRow();
-    if (lastRowInactivos >= 2) {
-      var datosInactivos = shInactivos.getRange(2, 1, lastRowInactivos - 1, INACTIVOS_TOTAL_COLS).getValues();
-      for (var i = 0; i < datosInactivos.length; i++) {
-        var tg = String(datosInactivos[i][IC.TAG - 1] || '').trim();
-        if (tg) tagsHoja[tg] = String(datosInactivos[i][IC.NOMBRE - 1] || '');
-      }
-    }
-  }
-
-  // --- 2. Tags en el último Backup_Inactivos.csv (60 cols, formato DC) ---
-  var tagsCsv = {}; // Tag -> Nombre
-  var csvTexto = _loadCSVFromDrive('Backup_Inactivos.csv');
-  if (csvTexto) {
-    var filasCsv = _parseCSV(csvTexto);
-    for (var i = 1; i < filasCsv.length; i++) { // fila 0 = encabezado
-      var fila = filasCsv[i];
-      var tg = String(fila[DC.TAG - 1] || '').trim();
-      if (tg) tagsCsv[tg] = String(fila[DC.NOMBRE - 1] || '');
-    }
-  }
-
-  // --- 3. Estado actual en Directorio, por Tag (para explicar cada diferencia). [→ Contexto_Base_Web.md §05B063]
-  var dirPorTag = {};
-  if (shDirectorio) {
-    var lastRowDir = shDirectorio.getLastRow();
-    if (lastRowDir >= 2) {
-      var datosDir = shDirectorio.getRange(2, 1, lastRowDir - 1, DIR_SHEET_COLS).getValues();
-      for (var i = 0; i < datosDir.length; i++) {
-        var tg = String(datosDir[i][IC.TAG - 1] || '').trim();
-        if (tg) {
-          dirPorTag[tg] = {
-            estado: String(datosDir[i][IC.ESTADO - 1] || ''),
-            clan: String(datosDir[i][IC.CLAN - 1] || ''),
-            clanTag: String(datosDir[i][IC.CLAN_TAG - 1] || '')
-          };
-        }
-      }
-    }
-  }
-
-  // --- 3b. Membresía ACTUAL (en vivo) del clan Vetado, vía el cache de la [→ Contexto_Base_Web.md §05B064]
-  var tagsEnClanVetado = {};
-  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'Backup_CSV');
-  var clanVetadoCache = _getClanCache(CFG.VETADO_TAG);
-  if (clanVetadoCache && clanVetadoCache.members) {
-    for (var i = 0; i < clanVetadoCache.members.length; i++) {
-      tagsEnClanVetado[String(clanVetadoCache.members[i].tag || '').trim()] = true;
-    }
-  }
-
-  // --- 4. Diferencias en ambos sentidos ---
-  var soloEnHoja = []; // en Inactivos pero todavía no en el CSV
-  var soloEnCsv  = []; // en el CSV pero ya no en la hoja Inactivos
-  for (var tg in tagsHoja) {
-    if (!tagsCsv.hasOwnProperty(tg)) soloEnHoja.push([tg, tagsHoja[tg]]);
-  }
-  for (var tg in tagsCsv) {
-    if (!tagsHoja.hasOwnProperty(tg)) {
-      var infoDir = dirPorTag[tg];
-      var hipotesis, explicada;
-      if (infoDir && infoDir.estado === 'Activo' && infoDir.clanTag && infoDir.clanTag !== CFG.VETADO_TAG) {
-        hipotesis = 'Reactivada en ' + infoDir.clan;
-        explicada = true;
-      } else if (infoDir && infoDir.clanTag === CFG.VETADO_TAG) {
-        hipotesis = 'Pasó a Vetados (admin)';
-        explicada = true;
-      } else if (tagsEnClanVetado[tg]) {
-        // No-admin activo en el clan Vetado ahora mismo (confirmado en vivo [→ Contexto_Base_Web.md §05B065]
-        hipotesis = 'Activo en el clan Vetado (no-admin, confirmado en vivo)';
-        explicada = true;
-      } else if (!infoDir) {
-        hipotesis = 'No aparece en el Directorio actual';
-        explicada = false;
-      } else {
-        hipotesis = 'Sigue Inactivo/otro estado en Directorio — revisar manualmente';
-        explicada = false;
-      }
-      soloEnCsv.push([tg, tagsCsv[tg], hipotesis, explicada]);
-    }
-  }
-
-  return { tagsHoja: tagsHoja, tagsCsv: tagsCsv, soloEnHoja: soloEnHoja, soloEnCsv: soloEnCsv };
-}
-
-/**
- * _eliminarExtraColsInactivosPorTags(tags) [→ Contexto_Base_Web.md §05B066]
- */
-function _eliminarExtraColsInactivosPorTags(tags) {
-  if (!tags || tags.length === 0) return;
+function _csvCachePut_(filename, text) {
   try {
-    var mapa = _cargarExtraColsInactivos();
-    var borrados = 0;
-    for (var i = 0; i < tags.length; i++) {
-      if (mapa[tags[i]] !== undefined) { delete mapa[tags[i]]; borrados++; }
-    }
-    if (borrados === 0) return;
+    var bytes = Utilities.gzip(Utilities.newBlob(text, 'text/plain', 'x.txt')).getBytes();
+    var b64 = Utilities.base64Encode(bytes);
+    var n = Math.ceil(b64.length / CSV_CACHE_CHUNK);
+    if (n < 1 || n > CSV_CACHE_MAX_CHUNK) return;
+    var base = _csvCacheKey_(filename);
+    var obj = {};
+    for (var i = 0; i < n; i++) obj[base + '_' + i] = b64.substr(i * CSV_CACHE_CHUNK, CSV_CACHE_CHUNK);
+    obj[base + '_n'] = String(n);
+    CacheService.getScriptCache().putAll(obj, CSV_CACHE_TTL_SEG);
+  } catch (e) { /* sin caché: no pasa nada */ }
+}
 
-    // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS), igual
-    // que _cargarExtraColsInactivos() más arriba en este archivo.
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var filename = 'ClanSystem_Backup_InactivosExtra.json';
-    var files = folder.getFilesByName(filename);
-    var content = JSON.stringify(mapa, null, 2);
-    if (files.hasNext()) {
-      _setContentConConteo_(files.next(), content);
+function _csvCacheBorrar_(filename) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var base = _csvCacheKey_(filename);
+    var n = parseInt(cache.get(base + '_n') || '0', 10);
+    var keys = [base + '_n'];
+    for (var i = 0; i < Math.max(n, 0); i++) keys.push(base + '_' + i);
+    if (filename === 'Backup_Guerra.csv') keys.push(COBERTURA_GUERRA_CACHE_KEY); // PF042
+    cache.removeAll(keys);
+  } catch (e) { /* nada que hacer */ }
+}
+
+/**
+ * Parsea texto CSV con manejo completo de RFC 4180
+ * (comillas, comas y saltos de línea dentro de campos).
+ */
+function _parseCSV(text) {
+  var rows = [], row = [], inQuotes = false, val = '';
+  for (var i = 0; i < text.length; i++) {
+    var c = text.charAt(i);
+    if (inQuotes) {
+      if (c === '"') {
+        if (i + 1 < text.length && text.charAt(i + 1) === '"') { val += '"'; i++; }
+        else { inQuotes = false; }
+      } else { val += c; }
     } else {
-      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
+      if (c === '"') { inQuotes = true; }
+      else if (c === ',') { row.push(val); val = ''; }
+      else if (c === '\n' || c === '\r') {
+        row.push(val); rows.push(row); row = []; val = '';
+        if (c === '\r' && text.charAt(i + 1) === '\n') i++;
+      } else { val += c; }
     }
-    Logger.log('[Backup] ClanSystem_Backup_InactivosExtra.json: ' + borrados + ' tag(s) eliminados (reactivados en un clan Terna).');
-  } catch(e) {
-    Logger.log('[Backup] Error eliminando tags reactivados de ClanSystem_Backup_InactivosExtra.json: ' + e.message);
+  }
+  if (val || text.charAt(text.length - 1) === ',') row.push(val);
+  if (row.length > 0) rows.push(row);
+  return rows;
+}
+
+/**
+ * Parsea fechas en formato español o en formato dd/mm/yyyy.
+ */
+function _parseSpanishDate(str) {
+  if (!str) return '';
+  if (str instanceof Date) return str;
+  var s = String(str).trim();
+
+  // FASE 4 (25-ago-2026): formato numérico (epoch ms), usado por Vetados.Fecha [→ Contexto_Base_Web.md §05B094]
+  if (/^\d{10,13}$/.test(s)) {
+    var msNum = s.length <= 10 ? Number(s) * 1000 : Number(s);
+    var dNum = new Date(msNum);
+    if (!isNaN(dNum.getTime())) return dNum;
+  }
+
+  var matchText = s.match(/(\d{1,2})\s+de\s+([a-zA-Z]+)(?:,|\s+)\s*(\d{4})/i);
+  if (matchText) {
+    var day = parseInt(matchText[1], 10);
+    var monthStr = matchText[2].toLowerCase();
+    var year = parseInt(matchText[3], 10);
+    var months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    var monthIdx = months.indexOf(monthStr);
+    if (monthIdx !== -1) {
+      var timeMatch = s.match(/(\d{1,2}):(\d{2}):(\d{2})\s*(a\.?m\.?|p\.?m\.?)/i);
+      var hrs = 0, mins = 0, secs = 0;
+      if (timeMatch) {
+        hrs = parseInt(timeMatch[1], 10);
+        mins = parseInt(timeMatch[2], 10);
+        secs = parseInt(timeMatch[3], 10);
+        var ampm = timeMatch[4].toLowerCase().replace(/\./g, '');
+        if (ampm === 'pm' && hrs < 12) hrs += 12;
+        if (ampm === 'am' && hrs === 12) hrs = 0;
+      }
+      return new Date(year, monthIdx, day, hrs, mins, secs);
+    }
+  }
+
+  // FIX (hora perdida al re-parsear fechas ya en formato canónico [→ Contexto_Base_Web.md §05B095]
+  var matchSlash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{2}):(\d{2}))?/);
+  if (matchSlash) {
+    var hrsS  = matchSlash[4] !== undefined ? parseInt(matchSlash[4], 10) : 0;
+    var minsS = matchSlash[5] !== undefined ? parseInt(matchSlash[5], 10) : 0;
+    var secsS = matchSlash[6] !== undefined ? parseInt(matchSlash[6], 10) : 0;
+    return new Date(
+      parseInt(matchSlash[3], 10),
+      parseInt(matchSlash[2], 10) - 1,
+      parseInt(matchSlash[1], 10),
+      hrsS, minsS, secsS
+    );
+  }
+
+  var d = new Date(s);
+  if (!isNaN(d.getTime())) return d;
+
+  return s;
+}
+
+/**
+ * _formatFechaCanonica(dateVal, forzarConHora) [→ Contexto_Base_Web.md §05B087]
+ */
+function _formatFechaCanonica(dateVal, forzarConHora) {
+  if (!(dateVal instanceof Date) || isNaN(dateVal.getTime())) return '';
+  var TZ = 'America/Lima';
+  var horaStr = Utilities.formatDate(dateVal, TZ, 'HH:mm:ss');
+  // 29-oct-2026 (pedido de la usuaria): una columna de «solo hora» (Hora de T_Lista, S_Lista y CR_Lista) llega como Date con la fecha base de la hoja (30/12/1899). El respaldo guardaba «30/12/1899 21:00:00»; ahora guarda solo «21:00:00». [→ Contexto_Base_Web.md §PF286]
+  if (Utilities.formatDate(dateVal, TZ, 'yyyy') === '1899') return horaStr;
+  if (!forzarConHora && horaStr === '00:00:00') return Utilities.formatDate(dateVal, TZ, 'dd/MM/yyyy');
+  return Utilities.formatDate(dateVal, TZ, 'dd/MM/yyyy HH:mm:ss');
+}
+
+// ----- Guardar CSV en Drive: conteo, verificación y reverificación -----
+
+function _saveCSVToDrive(filename, content) {
+  content = _agregarIdAInformeCSV_(filename, content); // PF238 (29-oct-2026): los informes llevan una columna ID al final; no toca respaldos ni hojas
+  var hit = _csvBuscarArchivo_(filename); // nunca crea una copia si el archivo ya existe en alguna subcarpeta [→ Contexto_Base_Web.md §01B158]
+  var destino = _csvSubcarpetaDe_(filename);
+  if (hit) {
+    _setContentConConteo_(hit.file, content);
+    if (CSV_MOVER_A_SUBCARPETA && destino && hit.carpetaNombre !== destino) {
+      try {
+        hit.file.moveTo(_getCsvSubcarpeta_(destino, true));
+        Logger.log('[CSV] ' + filename + ' movido a la subcarpeta "' + destino + '".');
+      } catch (eMover) {
+        Logger.log('[CSV] No se pudo mover ' + filename + ' a "' + destino + '": ' + eMover.message);
+      }
+    }
+  } else {
+    _createFileConConteo_(_getCsvSubcarpeta_(destino, true), filename, content, MimeType.CSV);
+  }
+  // Invalida la caché compartida y deja el texto nuevo en memoria de esta ejecución.
+  _csvCacheBorrar_(filename);
+  _CSV_MEM_[filename] = content;
+  _csvEscritosEnEjecucion_[filename] = content; // PF291: para _reverificarCsvEscritos_()
+  _csvEscritosTs_[filename] = Date.now();
+}
+
+/**
+ * _agregarIdAInformeCSV_(filename, content) - PF238 (29-oct-2026, «tú decide» de la usuaria): agrega al FINAL de un informe una columna «ID» con el formato
+ * de Correcciones_Guerra.csv (T_NN_S_NN_#TAG, o T_NN_S_NN si la fila no trae Tag), calculado con las columnas «Temporada», «Semana» y «Tag» de cada fila.
+ * Solo aplica a lo que va a la subcarpeta Informes con nombre terminado en (informe), (plan), (aplicado), (detalle) o (resumen), que no empiece por «Backup_»
+ * (los respaldos son copias de hojas y se leen por posición) y cuya primera línea traiga «Temporada» y «Semana» y todavía no tenga «ID». Va al final y no
+ * al inicio porque los lectores conocidos de informes buscan las columnas por nombre, pero no se descarta alguno que use posiciones. Conserva el BOM, el
+ * tipo de salto de línea y el texto original de cada fila. Ante cualquier error devuelve el contenido sin cambios. [→ Contexto_Base_Web.md §PF238]
+ */
+function _agregarIdAInformeCSV_(filename, content) {
+  try {
+    var nombre = String(filename || '');
+    if (typeof content !== 'string' || content === '') return content;
+    if (/^Backup_/.test(nombre) || !/\((informe|plan|aplicado|detalle|resumen)\)\.csv$/.test(nombre)) return content;
+    if (_csvSubcarpetaDe_(nombre) !== 'Informes') return content;
+    var bom = content.charAt(0) === '﻿' ? '﻿' : '';
+    var texto = bom ? content.slice(1) : content;
+    var crlf = texto.indexOf('\r\n') >= 0;
+    // Partir en registros por saltos de línea fuera de comillas.
+    var registros = [], ini = 0, enComillas = false;
+    for (var i = 0; i < texto.length; i++) {
+      var c = texto.charAt(i);
+      if (c === '"') enComillas = !enComillas;
+      else if (c === '\n' && !enComillas) { registros.push(texto.substring(ini, i)); ini = i + 1; }
+    }
+    var cola = texto.substring(ini);
+    if (cola !== '') registros.push(cola);
+    if (registros.length < 1) return content;
+    var cabecera = _parseCSV(registros[0].replace(/\r$/, ''))[0] || [];
+    var iTemp = -1, iSem = -1, iTag = -1;
+    for (var h = 0; h < cabecera.length; h++) {
+      var nh = String(cabecera[h]).trim();
+      if (nh === 'ID') return content;
+      if (nh === 'Temporada') iTemp = h; else if (nh === 'Semana') iSem = h; else if (nh === 'Tag') iTag = h;
+    }
+    if (iTemp < 0 || iSem < 0) return content;
+    var salida = [];
+    for (var r = 0; r < registros.length; r++) {
+      var reg = registros[r].replace(/\r$/, '');
+      if (r === 0) { salida.push(reg + ',ID'); continue; }
+      if (reg === '') { salida.push(reg); continue; }
+      var campos = _parseCSV(reg)[0] || [];
+      var t = String(campos[iTemp] === undefined ? '' : campos[iTemp]).trim();
+      var sm = String(campos[iSem] === undefined ? '' : campos[iSem]).trim();
+      var id = '';
+      if (t !== '' && sm !== '' && !isNaN(Number(t)) && !isNaN(Number(sm))) {
+        var tg = iTag >= 0 ? String(campos[iTag] === undefined ? '' : campos[iTag]).trim().toUpperCase() : '';
+        if (tg && tg.charAt(0) !== '#') tg = '#' + tg;
+        id = tg ? _cgwIdFila_(t, sm, tg) : _cgwIdFila_(t, sm, '').replace(/_$/, '');
+      }
+      salida.push(reg + ',' + id);
+    }
+    return bom + salida.join(crlf ? '\r\n' : '\n') + (texto.charAt(texto.length - 1) === '\n' ? (crlf ? '\r\n' : '\n') : '');
+  } catch (e) {
+    Logger.log('[CSV] No se pudo agregar la columna ID a ' + filename + ' (' + e.message + '); se guarda sin ella.');
+    return content;
   }
 }
+
+/**
+ * _setContentConConteo_(file, contenido) - Igual que file.setContent(contenido), pero lee antes el contenido actual y deja en el log las
+ * filas o elementos antes y después (PF290). No cuenta los archivos Log_*, que ya se leen enteros al escribirse. Los errores de
+ * setContent se propagan igual que antes. [→ Contexto_Base_Web.md §PF290]
+ */
+function _setContentConConteo_(file, contenido) {
+  var nombre = '', antes;
+  var contar = _conteoArchivosDisponible_();
+  var t0 = Date.now();
+  try { nombre = file.getName(); } catch (eNombre) { contar = false; }
+  if (contar && /^Log_/i.test(nombre)) contar = false;
+  if (contar) {
+    try { antes = file.getBlob().getDataAsString('UTF-8'); } catch (eLeer) { antes = null; }
+  }
+  file.setContent(contenido);
+  _asegurarEscrituraCompleta_(file, contenido, nombre); // PF291
+  if (contar) {
+    _logCambioArchivo_(nombre, antes, contenido, false);
+    _conteoArchivosMs_ += Date.now() - t0;
+  }
+}
+
+/**
+ * _createFileConConteo_(folder, nombre, contenido, mime) - Igual que folder.createFile(...) y devuelve el archivo; deja en el log el
+ * conteo del archivo nuevo (PF290). [→ Contexto_Base_Web.md §PF290]
+ */
+function _createFileConConteo_(folder, nombre, contenido, mime) {
+  var archivo = folder.createFile(nombre, contenido, mime);
+  _asegurarEscrituraCompleta_(archivo, contenido, String(nombre)); // PF291
+  if (!/^Log_/i.test(String(nombre)) && _conteoArchivosDisponible_()) {
+    var t0 = Date.now();
+    _logCambioArchivo_(String(nombre), null, contenido, true);
+    _conteoArchivosMs_ += Date.now() - t0;
+  }
+  return archivo;
+}
+
+/**
+ * _guardarArchivoProgresoVerificado_(folder, nombre, contenido) - Guarda un archivo de progreso o checkpoint (JSON) en la carpeta: si ya existe lo
+ * sobrescribe con setContent() y si no lo crea; en los dos casos comprueba que no quedó vacío o recortado con _asegurarEscrituraCompleta_() (PF291).
+ * No deja registro de filas (los archivos de progreso se guardan muchas veces por ejecución; PF290, punto 4) y devuelve el archivo. Si la comprobación
+ * lanza error, lo propaga: los cinco sitios que la llaman lo atrapan con su propio try y lo dejan en el registro. [→ Contexto_Base_Web.md §PF291]
+ */
+function _guardarArchivoProgresoVerificado_(folder, nombre, contenido) {
+  var it = folder.getFilesByName(nombre);
+  var archivo;
+  if (it.hasNext()) {
+    archivo = it.next();
+    archivo.setContent(contenido);
+  } else {
+    archivo = folder.createFile(nombre, contenido, MimeType.PLAIN_TEXT);
+  }
+  _asegurarEscrituraCompleta_(archivo, contenido, String(nombre));
+  return archivo;
+}
+
+/**
+ * _conteoArchivosDisponible_() - true mientras el tiempo de conteo de esta ejecución no pase de CONTEO_ARCHIVOS_PRESUPUESTO_MS (PF290).
+ * Avisa una sola vez en el log cuando se agota. [→ Contexto_Base_Web.md §PF290]
+ */
+function _conteoArchivosDisponible_() {
+  if (_conteoArchivosMs_ <= CONTEO_ARCHIVOS_PRESUPUESTO_MS) return true;
+  if (!_conteoArchivosAgotadoAvisado_) {
+    _conteoArchivosAgotadoAvisado_ = true;
+    Logger.log('[Archivo] Se agotó el tiempo de conteo de esta ejecución (' + Math.round(CONTEO_ARCHIVOS_PRESUPUESTO_MS / 1000) + ' s): los archivos que se escriban después no registran filas antes y después.');
+  }
+  return false;
+}
+
+/**
+ * _contarRegistrosTexto_(texto, nombre) - Cuenta los registros de un CSV o JSON para el log de cambios (PF290).
+ * Devuelve { n, txt }: n = número principal (-1 si no se pudo contar) y txt = descripción legible. CSV o texto: filas de dato (sin la
+ * primera línea, contando solo saltos fuera de comillas). JSON arreglo: elementos. JSON objeto: claves, más el tamaño de hasta tres claves
+ * que sean arreglos u objetos. [→ Contexto_Base_Web.md §PF290]
+ */
+function _contarRegistrosTexto_(texto, nombre) {
+  if (texto === null || texto === undefined) return { n: -1, txt: 'sin lectura' };
+  if (texto === '') return { n: 0, txt: '0 (vacío)' };
+  if (texto.length > 12000000) return { n: -1, txt: 'demasiado grande para contar' };
+  if (/\.json$/i.test(nombre || '')) {
+    try {
+      var o = JSON.parse(texto.charAt(0) === '\uFEFF' ? texto.slice(1) : texto);
+      if (Array.isArray(o)) return { n: o.length, txt: o.length + ' elemento(s)' };
+      if (o && typeof o === 'object') {
+        var ks = Object.keys(o), partes = [];
+        for (var i = 0; i < ks.length && partes.length < 3; i++) {
+          var v = o[ks[i]];
+          if (v && typeof v === 'object') partes.push(ks[i] + ':' + (Array.isArray(v) ? v.length : Object.keys(v).length));
+        }
+        return { n: ks.length, txt: ks.length + ' clave(s)' + (partes.length ? ' [' + partes.join(', ') + ']' : '') };
+      }
+      return { n: 1, txt: '1 valor' };
+    } catch (eJson) { return { n: -1, txt: 'JSON ilegible' }; }
+  }
+  var lineas = 0, enComillas = false;
+  for (var j = 0; j < texto.length; j++) {
+    var c = texto.charAt(j);
+    if (c === '"') enComillas = !enComillas;
+    else if (c === '\n' && !enComillas) lineas++;
+  }
+  if (texto.charAt(texto.length - 1) !== '\n') lineas++;
+  var datos = Math.max(0, lineas - 1);
+  return { n: datos, txt: datos + ' fila(s)' };
+}
+
+/**
+ * _logCambioArchivo_(nombre, textoAntes, textoDespues, esNuevo) - Escribe en el log «[Archivo] nombre: antes → después» (PF290).
+ * Si el conteo baja, agrega «[BAJA n]». Nunca lanza error. [→ Contexto_Base_Web.md §PF290]
+ */
+function _logCambioArchivo_(nombre, textoAntes, textoDespues, esNuevo) {
+  try {
+    var a = esNuevo ? { n: 0, txt: 'archivo nuevo' } : (textoAntes === undefined ? { n: -1, txt: 'antes sin contar' } : _contarRegistrosTexto_(textoAntes, nombre));
+    var d = _contarRegistrosTexto_(textoDespues, nombre);
+    var marca = (a.n >= 0 && d.n >= 0 && d.n < a.n) ? ' [BAJA ' + (a.n - d.n) + ']' : '';
+    Logger.log('[Archivo] ' + nombre + ': ' + a.txt + ' → ' + d.txt + marca);
+  } catch (eLog) { /* el conteo nunca debe romper una escritura */ }
+}
+
+/**
+ * _asegurarEscrituraCompleta_(file, contenido, nombre) - Comprueba que el archivo no quedó vacío o recortado tras escribirlo (PF291).
+ * Un texto de N caracteres ocupa al menos N bytes en UTF-8, así que un archivo que pesa menos que el largo del texto quedó mal escrito.
+ * Si pasa, espera y vuelve a medir (Drive puede tardar en reflejar el tamaño); si sigue corto, reescribe hasta ESCRITURA_VERIF_REINTENTOS
+ * veces dejando [ALERTA PROTECCIÓN] en el log; si no se arregla, lanza un error en vez de dejar el archivo roto sin avisar. Si no se puede
+ * medir el archivo, no hace nada. Un texto vacío no se verifica. [→ Contexto_Base_Web.md §PF291]
+ */
+function _asegurarEscrituraCompleta_(file, contenido, nombre) {
+  if (contenido === null || contenido === undefined) return;
+  var largo = String(contenido).length;
+  if (largo === 0) return;
+  var tam = _tamanoArchivoSeguro_(file);
+  if (tam === null || tam >= largo) return;
+  for (var i = 1; i <= ESCRITURA_VERIF_REINTENTOS; i++) {
+    Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': se escribieron ' + largo + ' caracteres y el archivo pesa ' + tam + ' bytes. Se espera ' +
+      ESCRITURA_VERIF_ESPERA_MS + ' ms y se vuelve a medir (intento ' + i + ' de ' + ESCRITURA_VERIF_REINTENTOS + ').');
+    Utilities.sleep(ESCRITURA_VERIF_ESPERA_MS);
+    tam = _tamanoArchivoSeguro_(file);
+    if (tam === null || tam >= largo) {
+      Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': al volver a medir el archivo pesa ' + tam + ' bytes; la escritura estaba completa.');
+      return;
+    }
+    file.setContent(contenido);
+    tam = _tamanoArchivoSeguro_(file);
+    if (tam === null || tam >= largo) {
+      Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': reescrito; ahora pesa ' + tam + ' bytes.');
+      return;
+    }
+  }
+  throw new Error('[ALERTA PROTECCIÓN] ' + nombre + ' quedó con ' + tam + ' bytes tras escribir ' + largo + ' caracteres y ' +
+    ESCRITURA_VERIF_REINTENTOS + ' reintentos. Revisar el archivo en Drive («Administrar versiones»).');
+}
+
+/**
+ * _tamanoArchivoSeguro_(file) - Peso del archivo en bytes, o null si no se pudo medir (PF291). [→ Contexto_Base_Web.md §PF291]
+ */
+function _tamanoArchivoSeguro_(file) {
+  try { return file.getSize(); } catch (e) { return null; }
+}
+
+/**
+ * _archivoModificadoDespuesDe_(file, tsMs) - true si la fecha de última modificación del archivo es posterior a tsMs (PF292, punto 9). Si no se puede leer, devuelve false (se actúa como antes). [→ Contexto_Base_Web.md §PF292]
+ */
+function _archivoModificadoDespuesDe_(file, tsMs) {
+  try {
+    var f = file.getLastUpdated();
+    return !!f && f.getTime() > tsMs;
+  } catch (e) { return false; }
+}
+
+/**
+ * _reverificarCsvEscritos_(esperaMinMs) - Segunda revisión de los CSV que _saveCSVToDrive() escribió en ESTA ejecución (PF291). Si desde la
+ * escritura pasaron menos de esperaMinMs, espera lo que falta (Drive puede dejar una revisión vacía segundos después). Si el archivo de Drive
+ * pesa menos que el texto escrito (por ejemplo, una revisión vacía que Drive creó después), lo reescribe con ese texto, que sigue en memoria.
+ * Cada archivo se revisa una vez y sale del registro. Nunca lanza error. La llaman la cola horaria de guerra (_runGuerraColaHoraria_,
+ * 00_Main.gs) y, vía _revisarCsvAlSalir_(), la ventana ligera de guerra y _ejecutarPorTandas(). [→ Contexto_Base_Web.md §PF291]
+ */
+function _reverificarCsvEscritos_(esperaMinMs) {
+  var nombres = Object.keys(_csvEscritosEnEjecucion_);
+  for (var i = 0; i < nombres.length; i++) {
+    var nombre = nombres[i];
+    try {
+      var texto = _csvEscritosEnEjecucion_[nombre];
+      var ts = _csvEscritosTs_[nombre] || 0;
+      delete _csvEscritosEnEjecucion_[nombre];
+      delete _csvEscritosTs_[nombre];
+      if (!texto) continue;
+      var falta = (esperaMinMs || 0) - (Date.now() - ts);
+      if (falta > 0) Utilities.sleep(falta);
+      var hit = _csvBuscarArchivo_(nombre);
+      if (!hit) {
+        Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': no se encuentra en Drive al volver a revisarlo tras escribirlo.');
+        continue;
+      }
+      var tam = _tamanoArchivoSeguro_(hit.file);
+      if (tam === null || tam >= texto.length) {
+        Logger.log('[CSV] Revisión posterior: ' + nombre + ' pesa ' + tam + ' bytes (se escribieron ' + texto.length + ' caracteres). Sin cambios.');
+        continue;
+      }
+      // PF292 punto 9 (29-oct-2026): si el archivo NO está vacío y otra ejecución lo modificó después de nuestra escritura, el tamaño menor puede ser
+      // una versión más nueva y legítima: no se pisa con el texto viejo. Un archivo vacío (0 B) se repara siempre; si no se puede leer la fecha, se
+      // actúa como antes. [→ Contexto_Base_Web.md §PF292]
+      if (tam > 0 && _archivoModificadoDespuesDe_(hit.file, ts + ESCRITURA_VERIF_TOLERANCIA_MS)) {
+        Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ' pesa ' + tam + ' bytes (se escribieron ' + texto.length + ' caracteres) pero fue modificado después de nuestra escritura: se deja como está para no pisar una versión más nueva.');
+        continue;
+      }
+      Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ' pesa ' + tam + ' bytes y se había escrito con ' + texto.length + ' caracteres: se reescribe con el texto de esta ejecución.');
+      hit.file.setContent(texto);
+      _asegurarEscrituraCompleta_(hit.file, texto, nombre);
+      _csvCacheBorrar_(nombre);
+    } catch (e) {
+      Logger.log('[ALERTA PROTECCIÓN] Revisión posterior de ' + nombre + ' falló: ' + e.message);
+    }
+  }
+}
+
+/**
+ * _revisarCsvAlSalir_(inicioMs) - Revisión posterior para las ejecuciones que no son la cola horaria (PF291): si esta ejecución escribió algún CSV con
+ * _saveCSVToDrive() y quedan más de 60 s antes del límite de la plataforma (inicioMs = hora de inicio de la ejecución), espera lo que falte hasta
+ * ESCRITURA_VERIF_ESPERA_FINAL_MS desde la escritura y la revisa. Sin escrituras no hace nada ni gasta tiempo. [→ Contexto_Base_Web.md §PF291]
+ */
+function _revisarCsvAlSalir_(inicioMs) {
+  if (Object.keys(_csvEscritosEnEjecucion_).length === 0) return;
+  if (CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - inicioMs) <= 60000) {
+    Logger.log('[CSV] Revisión posterior de los CSV escritos SALTADA: quedan menos de 60 s de presupuesto.');
+    return;
+  }
+  _reverificarCsvEscritos_(ESCRITURA_VERIF_ESPERA_FINAL_MS);
+}
+
+// ----- Leer las hojas con sus links y encabezados -----
 
 /**
  * FASE 9bis (17-sep-2026, limpieza de código muerto, pedido del usuario): [→ Contexto_Base_Web.md §05B067]
  */
-
 /**
  * _extraerValoresConLinksReales(sh, numRows, numCols, colConHoraForzada) [→ Contexto_Base_Web.md §05B068]
  */
@@ -1545,375 +1959,10 @@ function _reconstruirFilaCSVPorEncabezado(rowCSV, csvIdxAIdx, totalCols) {
   return newR;
 }
 
-/**
- * _formatFechaCanonica(dateVal, forzarConHora) [→ Contexto_Base_Web.md §05B087]
- */
-function _formatFechaCanonica(dateVal, forzarConHora) {
-  if (!(dateVal instanceof Date) || isNaN(dateVal.getTime())) return '';
-  var TZ = 'America/Lima';
-  var horaStr = Utilities.formatDate(dateVal, TZ, 'HH:mm:ss');
-  // 29-oct-2026 (pedido de la usuaria): una columna de «solo hora» (Hora de T_Lista, S_Lista y CR_Lista) llega como Date con la fecha base de la hoja (30/12/1899). El respaldo guardaba «30/12/1899 21:00:00»; ahora guarda solo «21:00:00». [→ Contexto_Base_Web.md §PF286]
-  if (Utilities.formatDate(dateVal, TZ, 'yyyy') === '1899') return horaStr;
-  if (!forzarConHora && horaStr === '00:00:00') return Utilities.formatDate(dateVal, TZ, 'dd/MM/yyyy');
-  return Utilities.formatDate(dateVal, TZ, 'dd/MM/yyyy HH:mm:ss');
-}
+// ----- Respaldo del índice y de las listas de hojas -----
 
-/**
- * _guardarExtraColsInactivosBatch(nuevosPorTag) [→ Contexto_Base_Web.md §05B088]
- */
-function _guardarExtraColsInactivosBatch(nuevosPorTag) {
-  try {
-    var mapa = _cargarExtraColsInactivos();
-    for (var tag in nuevosPorTag) mapa[tag] = nuevosPorTag[tag];
-
-    // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS), igual [→ Contexto_Base_Web.md §05B089]
-    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
-    var filename = 'ClanSystem_Backup_InactivosExtra.json';
-    var files = folder.getFilesByName(filename);
-    var content = JSON.stringify(mapa, null, 2);
-    if (files.hasNext()) {
-      _setContentConConteo_(files.next(), content);
-    } else {
-      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
-    }
-    Logger.log('[Backup] ClanSystem_Backup_InactivosExtra.json actualizado (' + Object.keys(nuevosPorTag).length + ' tag(s) frescos).');
-  } catch(e) {
-    Logger.log('[Backup] Error guardando ClanSystem_Backup_InactivosExtra.json: ' + e.message);
-  }
-}
-
-/**
- * _importarInactivosDesdeCSV(ss) [→ Contexto_Base_Web.md §05B090]
- */
-function _importarInactivosDesdeCSV(ss) {
-  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
-  if (!sh) return;
-
-  var fileName = 'Backup_Inactivos.csv';
-  var csvText = _loadCSVFromDrive(fileName);
-  if (!csvText) return;
-
-  try {
-    var parsed = _parseCSV(csvText);
-    if (!parsed || parsed.length <= 1) {
-      Logger.log('[ALERTA IMPORTACIÓN] ' + fileName + ' vacío o corrupto. Se cancela importación.');
-      return;
-    }
-
-    var numRows = parsed.length;
-    var numCols = INACTIVOS_TOTAL_COLS;
-
-    if (numRows > sh.getMaxRows()) sh.insertRowsAfter(sh.getMaxRows(), numRows - sh.getMaxRows() + 10);
-    // NUNCA usar DIR_TOTAL_COLS (60) aquí: forzaría a Sheets a re-expandir
-    // la hoja Inactivos de vuelta a 60 columnas.
-    if (numCols > sh.getMaxColumns()) sh.insertColumnsAfter(sh.getMaxColumns(), numCols - sh.getMaxColumns());
-
-    // Mapa CAMPO (clave de DC, ej. 'TAG', 'PERMISO', ...) -> índice REAL [→ Contexto_Base_Web.md §05B091]
-    var headerCsv = parsed[0];
-    var idxEnCsvPorCampo = {};
-    for (var campoParaMapa in DC) {
-      var nombreLiteral = DC_HEADERS_60_COLS[DC[campoParaMapa] - 1];
-      idxEnCsvPorCampo[campoParaMapa] = nombreLiteral ? headerCsv.indexOf(nombreLiteral) : -1;
-    }
-
-    var extraPorTag = {};
-    var rectData = [];
-    for (var idx = 0; idx < numRows; idx++) {
-      var rCsv = parsed[idx];
-      if (idx === 0) {
-        // Encabezado: se descarta; _setupInactivos() escribe los encabezados [→ Contexto_Base_Web.md §05B092]
-        continue;
-      }
-      var fila29 = new Array(INACTIVOS_TOTAL_COLS).fill('');
-      for (var campo in IC) {
-        var idxCampoCsv = idxEnCsvPorCampo[campo];
-        var valorCampo = (idxCampoCsv >= 0 && rCsv[idxCampoCsv] !== undefined) ? rCsv[idxCampoCsv] : '';
-        if (campo === 'VETADO' || campo === 'PERMISO' || campo === 'ADMIN') {
-          valorCampo = _esSiNoOVacio(valorCampo) ? valorCampo : '';
-        } else if (campo === 'RAZON') {
-          valorCampo = esRazonValida(valorCampo) ? valorCampo : '';
-        }
-        fila29[IC[campo] - 1] = valorCampo;
-      }
-      // Fechas: Fecha_ing/Fecha_lim se guardaron como texto en el CSV.
-      var fIng = _parseSpanishDate(fila29[IC.FECHA_ING - 1]);
-      if (fIng instanceof Date) fila29[IC.FECHA_ING - 1] = fIng;
-      var fLim = _parseSpanishDate(fila29[IC.FECHA_LIM - 1]);
-      if (fLim instanceof Date) fila29[IC.FECHA_LIM - 1] = fLim;
-
-      rectData.push(fila29);
-
-      var tagFila = String(fila29[IC.TAG - 1] || '').trim();
-      if (tagFila) {
-        var extraObj = {};
-        var tieneExtra = false;
-        for (var campoDC in DC) {
-          if (IC[campoDC] !== undefined) continue; // ya está en las 29 columnas propias (incluye Comentario)
-          var idxExtraCsv = idxEnCsvPorCampo[campoDC];
-          var valExtra = idxExtraCsv >= 0 ? rCsv[idxExtraCsv] : undefined;
-          if (valExtra !== '' && valExtra !== undefined && valExtra !== null) {
-            extraObj[campoDC] = valExtra;
-            tieneExtra = true;
-          }
-        }
-        if (tieneExtra) extraPorTag[tagFila] = extraObj;
-      }
-    }
-
-    sh.clearContents();
-    _setupInactivos(ss);
-    if (rectData.length > 0) {
-      sh.getRange(2, 1, rectData.length, INACTIVOS_TOTAL_COLS).setValues(rectData);
-    }
-
-    if (Object.keys(extraPorTag).length > 0) {
-      _guardarExtraColsInactivosBatch(extraPorTag);
-    }
-
-    Logger.log('[Backup] ' + CFG.SHEETS.INACTIVOS + ' restaurado con ' + rectData.length + ' registros (29 columnas, sin re-expandir; extras restauradas en ClanSystem_Backup_InactivosExtra.json).');
-
-  } catch(e) {
-    Logger.log('[Backup] Error importando ' + fileName + ': ' + e.message);
-  }
-}
-
-/**
- * _insertarColumnaFechaIndice(valores, pos, timestamp) [→ Contexto_Base_Web.md §05B093]
- */
-function _insertarColumnaFechaIndice(valores, pos, timestamp) {
-  var headers = valores[0];
-  var nuevosHeaders = headers.slice(0, pos).concat(['Fecha'], headers.slice(pos));
-  var filas = [nuevosHeaders];
-  for (var i = 1; i < valores.length; i++) {
-    var fila = valores[i];
-    filas.push(fila.slice(0, pos).concat([timestamp], fila.slice(pos)));
-  }
-  return filas;
-}
-
-// CACHÉ DE CSV (08-oct-2026): memoria por ejecución + CacheService (10 min); _saveCSVToDrive la invalida.
-var CSV_CACHE_TTL_SEG   = 600;     // 10 min
-var CSV_CACHE_CHUNK     = 90000;   // CacheService: máx 100 KB por valor
-var CSV_CACHE_MAX_CHUNK = 40;      // si el CSV comprimido pasa de ~3.5 MB, no se cachea
-var _CSV_MEM_ = {};                // memoria por ejecución: filename -> texto
-
-// PF290 (28-oct-2026): conteo de filas o elementos antes y después de cada escritura de un CSV o JSON en Drive. Para no alargar las corridas con muchos archivos, el tiempo gastado en leer y contar tiene un tope por ejecución; al pasarlo, los archivos siguientes se escriben sin conteo. [→ Contexto_Base_Web.md §PF290]
-var CONTEO_ARCHIVOS_PRESUPUESTO_MS = 20000;
-var _conteoArchivosMs_ = 0;           // tiempo acumulado de conteo en esta ejecución
-var _conteoArchivosAgotadoAvisado_ = false;
-
-// PF291 (29-oct-2026): verificación del tamaño tras cada escritura y segunda revisión al final de la cola horaria de guerra. El 28-oct a las 8:05 a. m.
-// Backup_Guerra.csv quedó en 0 B justo después de una escritura correcta de 2,4 MB [→ Contexto_Base_Web.md §PF289 punto 10, §PF291].
-var ESCRITURA_VERIF_REINTENTOS = 2;    // reescrituras antes de dar la escritura por fallida
-var ESCRITURA_VERIF_ESPERA_MS  = 1500; // espera antes de volver a medir el archivo
-var _csvEscritosEnEjecucion_ = {};     // filename -> último texto que _saveCSVToDrive() dejó escrito en esta ejecución
-var _csvEscritosTs_ = {};               // filename -> hora (ms) de esa escritura
-var ESCRITURA_VERIF_ESPERA_FINAL_MS = 8000; // espera mínima desde la escritura antes de la revisión posterior al salir de una tanda
-var ESCRITURA_VERIF_TOLERANCIA_MS = 20000; // margen entre nuestra escritura y la fecha de modificación del archivo para considerar que fue otra ejecución la que lo cambió (PF292, punto 9)
-
-function _csvCacheKey_(filename) { return 'CSVDRV_' + filename; }
-
-function _csvCacheGet_(filename) {
-  try {
-    var cache = CacheService.getScriptCache();
-    var base = _csvCacheKey_(filename);
-    var n = parseInt(cache.get(base + '_n') || '0', 10);
-    if (!n) return null;
-    var keys = [];
-    for (var i = 0; i < n; i++) keys.push(base + '_' + i);
-    var got = cache.getAll(keys);
-    var b64 = '';
-    for (var j = 0; j < n; j++) {
-      var trozo = got[keys[j]];
-      if (trozo === undefined || trozo === null) return null; // trozo expirado/faltante
-      b64 += trozo;
-    }
-    var blob = Utilities.newBlob(Utilities.base64Decode(b64), 'application/x-gzip', 'x.gz');
-    return Utilities.ungzip(blob).getDataAsString('UTF-8');
-  } catch (e) {
-    return null; // ante cualquier duda, se lee de Drive
-  }
-}
-
-function _csvCachePut_(filename, text) {
-  try {
-    var bytes = Utilities.gzip(Utilities.newBlob(text, 'text/plain', 'x.txt')).getBytes();
-    var b64 = Utilities.base64Encode(bytes);
-    var n = Math.ceil(b64.length / CSV_CACHE_CHUNK);
-    if (n < 1 || n > CSV_CACHE_MAX_CHUNK) return;
-    var base = _csvCacheKey_(filename);
-    var obj = {};
-    for (var i = 0; i < n; i++) obj[base + '_' + i] = b64.substr(i * CSV_CACHE_CHUNK, CSV_CACHE_CHUNK);
-    obj[base + '_n'] = String(n);
-    CacheService.getScriptCache().putAll(obj, CSV_CACHE_TTL_SEG);
-  } catch (e) { /* sin caché: no pasa nada */ }
-}
-
-// PF042: caché del resultado de _construirCoberturaPorTag() (18_CorreccionGuerra.gs); se invalida junto con el CSV de guerra. [→ Contexto_Base_Web.md §PF042]
-var COBERTURA_GUERRA_CACHE_KEY = 'COBGUERRA_v1';
-
-function _csvCacheBorrar_(filename) {
-  try {
-    var cache = CacheService.getScriptCache();
-    var base = _csvCacheKey_(filename);
-    var n = parseInt(cache.get(base + '_n') || '0', 10);
-    var keys = [base + '_n'];
-    for (var i = 0; i < Math.max(n, 0); i++) keys.push(base + '_' + i);
-    if (filename === 'Backup_Guerra.csv') keys.push(COBERTURA_GUERRA_CACHE_KEY); // PF042
-    cache.removeAll(keys);
-  } catch (e) { /* nada que hacer */ }
-}
-
-/**
- * _migrarTextoGuerraCsv_(texto) — 30-oct-2026 (orden nuevo de la hoja Guerra, §PF304).
- * Backup_Guerra.csv se lee POR POSICIÓN (GC). Si el archivo todavía trae el orden viejo de 21 columnas (encabezado GUERRA_HEADERS_V21),
- * lo reordena en memoria al de 23 columnas, emparejando por NOMBRE de columna (no por posición), y calcula la merma de todas las filas
- * (_recalcularMermaGuerra_). Así todos los lectores del CSV ven el orden nuevo, y la primera escritura (_saveCSVToDrive) lo deja migrado en
- * Drive. Idempotente: si el encabezado ya es el nuevo (o es otro, desconocido), devuelve el texto tal cual. Un encabezado desconocido se
- * deja pasar sin tocar para no destruir datos, pero se avisa en el registro.
- */
-function _migrarTextoGuerraCsv_(texto) {
-  if (!texto) return texto;
-  var finPrimera = texto.search(/\r|\n/);
-  var primera = finPrimera < 0 ? texto : texto.substring(0, finPrimera);
-  var encabezado = _parseCSV(primera)[0] || [];
-  var norm = function (v) { return String(v === undefined || v === null ? '' : v).replace(/^﻿/, '').trim().toLowerCase(); };
-  var igualA = function (lista) {
-    if (encabezado.length !== lista.length) return false;
-    for (var i = 0; i < lista.length; i++) if (norm(encabezado[i]) !== norm(lista[i])) return false;
-    return true;
-  };
-  if (igualA(GUERRA_HEADERS)) return texto;
-  if (!igualA(GUERRA_HEADERS_V21)) {
-    Logger.log('[Guerra][CSV] Backup_Guerra.csv tiene un encabezado que no es ni el de 23 columnas ni el viejo de 21 (' + encabezado.length + ' columnas: ' + encabezado.slice(0, 6).join(' | ') + ' ...). Se deja sin migrar.');
-    return texto;
-  }
-  var filas = _parseCSV(texto);
-  var posViejo = {};
-  for (var h = 0; h < GUERRA_HEADERS_V21.length; h++) posViejo[GUERRA_HEADERS_V21[h].toLowerCase()] = h;
-  var salida = [GUERRA_HEADERS.slice()];
-  for (var r = 1; r < filas.length; r++) {
-    var vieja = filas[r];
-    if (vieja.length === 1 && String(vieja[0]).trim() === '') continue; // línea en blanco
-    var nueva = new Array(GUERRA_TOTAL_COLS);
-    for (var c = 0; c < GUERRA_TOTAL_COLS; c++) {
-      var p = posViejo[GUERRA_HEADERS[c].toLowerCase()];
-      nueva[c] = (p === undefined || vieja[p] === undefined) ? '' : vieja[p];
-    }
-    salida.push(nueva);
-  }
-  var datos = salida.slice(1);
-  _recalcularMermaGuerra_(datos);
-  Logger.log('[Guerra][CSV] Backup_Guerra.csv migrado en memoria del orden de 21 al de 23 columnas (' + datos.length + ' filas, merma calculada). Se guarda así en Drive en la próxima escritura.');
-  return _encodeCSV(salida);
-}
-
-function _loadCSVFromDrive(filename) {
-  // 1) memoria de esta ejecución
-  if (Object.prototype.hasOwnProperty.call(_CSV_MEM_, filename)) return _CSV_MEM_[filename];
-
-  // 2) caché entre peticiones
-  var cacheado = _csvCacheGet_(filename);
-  if (cacheado !== null) {
-    if (filename === 'Backup_Guerra.csv') cacheado = _migrarTextoGuerraCsv_(cacheado); // un caché de antes del orden nuevo (TTL 10 min) puede traer 21 columnas
-    _CSV_MEM_[filename] = cacheado;
-    return cacheado;
-  }
-
-  // 3) Drive
-  var hit = _csvBuscarArchivo_(filename); // subcarpeta asignada -> raíz -> demás subcarpetas [→ Contexto_Base_Web.md §01B158]
-  if (hit) {
-    var texto = hit.file.getBlob().getDataAsString('UTF-8');
-    if (filename === 'Backup_Guerra.csv') texto = _migrarTextoGuerraCsv_(texto); // 30-oct-2026 (§PF304): orden viejo de 21 columnas -> 23 del orden nuevo, en memoria
-    _CSV_MEM_[filename] = texto;
-    _csvCachePut_(filename, texto);
-    return texto;
-  }
-  return null; // los archivos inexistentes no se cachean
-}
-
-/**
- * Parsea texto CSV con manejo completo de RFC 4180
- * (comillas, comas y saltos de línea dentro de campos).
- */
-function _parseCSV(text) {
-  var rows = [], row = [], inQuotes = false, val = '';
-  for (var i = 0; i < text.length; i++) {
-    var c = text.charAt(i);
-    if (inQuotes) {
-      if (c === '"') {
-        if (i + 1 < text.length && text.charAt(i + 1) === '"') { val += '"'; i++; }
-        else { inQuotes = false; }
-      } else { val += c; }
-    } else {
-      if (c === '"') { inQuotes = true; }
-      else if (c === ',') { row.push(val); val = ''; }
-      else if (c === '\n' || c === '\r') {
-        row.push(val); rows.push(row); row = []; val = '';
-        if (c === '\r' && text.charAt(i + 1) === '\n') i++;
-      } else { val += c; }
-    }
-  }
-  if (val || text.charAt(text.length - 1) === ',') row.push(val);
-  if (row.length > 0) rows.push(row);
-  return rows;
-}
-
-/**
- * Parsea fechas en formato español o en formato dd/mm/yyyy.
- */
-function _parseSpanishDate(str) {
-  if (!str) return '';
-  if (str instanceof Date) return str;
-  var s = String(str).trim();
-
-  // FASE 4 (25-ago-2026): formato numérico (epoch ms), usado por Vetados.Fecha [→ Contexto_Base_Web.md §05B094]
-  if (/^\d{10,13}$/.test(s)) {
-    var msNum = s.length <= 10 ? Number(s) * 1000 : Number(s);
-    var dNum = new Date(msNum);
-    if (!isNaN(dNum.getTime())) return dNum;
-  }
-
-  var matchText = s.match(/(\d{1,2})\s+de\s+([a-zA-Z]+)(?:,|\s+)\s*(\d{4})/i);
-  if (matchText) {
-    var day = parseInt(matchText[1], 10);
-    var monthStr = matchText[2].toLowerCase();
-    var year = parseInt(matchText[3], 10);
-    var months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-    var monthIdx = months.indexOf(monthStr);
-    if (monthIdx !== -1) {
-      var timeMatch = s.match(/(\d{1,2}):(\d{2}):(\d{2})\s*(a\.?m\.?|p\.?m\.?)/i);
-      var hrs = 0, mins = 0, secs = 0;
-      if (timeMatch) {
-        hrs = parseInt(timeMatch[1], 10);
-        mins = parseInt(timeMatch[2], 10);
-        secs = parseInt(timeMatch[3], 10);
-        var ampm = timeMatch[4].toLowerCase().replace(/\./g, '');
-        if (ampm === 'pm' && hrs < 12) hrs += 12;
-        if (ampm === 'am' && hrs === 12) hrs = 0;
-      }
-      return new Date(year, monthIdx, day, hrs, mins, secs);
-    }
-  }
-
-  // FIX (hora perdida al re-parsear fechas ya en formato canónico [→ Contexto_Base_Web.md §05B095]
-  var matchSlash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{2}):(\d{2}))?/);
-  if (matchSlash) {
-    var hrsS  = matchSlash[4] !== undefined ? parseInt(matchSlash[4], 10) : 0;
-    var minsS = matchSlash[5] !== undefined ? parseInt(matchSlash[5], 10) : 0;
-    var secsS = matchSlash[6] !== undefined ? parseInt(matchSlash[6], 10) : 0;
-    return new Date(
-      parseInt(matchSlash[3], 10),
-      parseInt(matchSlash[2], 10) - 1,
-      parseInt(matchSlash[1], 10),
-      hrsS, minsS, secsS
-    );
-  }
-
-  var d = new Date(s);
-  if (!isNaN(d.getTime())) return d;
-
-  return s;
+function _tocaProtegida_(soloClave, clave) {
+  return !soloClave || soloClave === clave;
 }
 
 /**
@@ -2039,11 +2088,19 @@ function _respaldarIndiceCSV(ss) {
 }
 
 /**
- * _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx) [→ Contexto_Base_Web.md §05B102]
+ * _insertarColumnaFechaIndice(valores, pos, timestamp) [→ Contexto_Base_Web.md §05B093]
  */
-/**
- * _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx, maxColOverride) [→ Contexto_Base_Web.md §05B103]
- */
+function _insertarColumnaFechaIndice(valores, pos, timestamp) {
+  var headers = valores[0];
+  var nuevosHeaders = headers.slice(0, pos).concat(['Fecha'], headers.slice(pos));
+  var filas = [nuevosHeaders];
+  for (var i = 1; i < valores.length; i++) {
+    var fila = valores[i];
+    filas.push(fila.slice(0, pos).concat([timestamp], fila.slice(pos)));
+  }
+  return filas;
+}
+
 /**
  * _colSet(...cols) [→ Contexto_Base_Web.md §05B104]
  */
@@ -2053,12 +2110,6 @@ function _colSet() {
   return m;
 }
 
-/**
- * _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx, colsFormatoNumerico) [→ Contexto_Base_Web.md §05B105]
- */
-/**
- * _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx, colsFormatoNumerico, colsMinutosASegundos) [→ Contexto_Base_Web.md §05B106]
- */
 // _colsMilesDeHoja_(nombreHoja): columnas con separador de miles solo de visualización de T_Lista, S_Lista y CR_Lista ({col: true}); null en las demás hojas. [→ Contexto_Base_Web.md §PF286]
 function _colsMilesDeHoja_(nombreHoja) {
   if (nombreHoja === CFG.SHEETS.T_LISTA)  return _colSet.apply(null, TL_COLS_MILES);
@@ -2067,6 +2118,18 @@ function _colsMilesDeHoja_(nombreHoja) {
   return null;
 }
 
+/**
+ * _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx) [→ Contexto_Base_Web.md §05B102]
+ */
+/**
+ * _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx, maxColOverride) [→ Contexto_Base_Web.md §05B103]
+ */
+/**
+ * _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx, colsFormatoNumerico) [→ Contexto_Base_Web.md §05B105]
+ */
+/**
+ * _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx, colsFormatoNumerico, colsMinutosASegundos) [→ Contexto_Base_Web.md §05B106]
+ */
 function _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx, colsFormatoNumerico, colsMinutosASegundos) {
   for (var i = 0; i < hojas.length; i++) {
     var sh = ss.getSheetByName(hojas[i]);
@@ -2133,319 +2196,8 @@ function _respaldarListaHojasCSV(ss, hojas, protegerContraReduccion, colClaveIdx
   }
 }
 
-function _saveCSVToDrive(filename, content) {
-  content = _agregarIdAInformeCSV_(filename, content); // PF238 (29-oct-2026): los informes llevan una columna ID al final; no toca respaldos ni hojas
-  var hit = _csvBuscarArchivo_(filename); // nunca crea una copia si el archivo ya existe en alguna subcarpeta [→ Contexto_Base_Web.md §01B158]
-  var destino = _csvSubcarpetaDe_(filename);
-  if (hit) {
-    _setContentConConteo_(hit.file, content);
-    if (CSV_MOVER_A_SUBCARPETA && destino && hit.carpetaNombre !== destino) {
-      try {
-        hit.file.moveTo(_getCsvSubcarpeta_(destino, true));
-        Logger.log('[CSV] ' + filename + ' movido a la subcarpeta "' + destino + '".');
-      } catch (eMover) {
-        Logger.log('[CSV] No se pudo mover ' + filename + ' a "' + destino + '": ' + eMover.message);
-      }
-    }
-  } else {
-    _createFileConConteo_(_getCsvSubcarpeta_(destino, true), filename, content, MimeType.CSV);
-  }
-  // Invalida la caché compartida y deja el texto nuevo en memoria de esta ejecución.
-  _csvCacheBorrar_(filename);
-  _CSV_MEM_[filename] = content;
-  _csvEscritosEnEjecucion_[filename] = content; // PF291: para _reverificarCsvEscritos_()
-  _csvEscritosTs_[filename] = Date.now();
-}
+// ----- Acumulativos -----
 
-/**
- * _agregarIdAInformeCSV_(filename, content) - PF238 (29-oct-2026, «tú decide» de la usuaria): agrega al FINAL de un informe una columna «ID» con el formato
- * de Correcciones_Guerra.csv (T_NN_S_NN_#TAG, o T_NN_S_NN si la fila no trae Tag), calculado con las columnas «Temporada», «Semana» y «Tag» de cada fila.
- * Solo aplica a lo que va a la subcarpeta Informes con nombre terminado en (informe), (plan), (aplicado), (detalle) o (resumen), que no empiece por «Backup_»
- * (los respaldos son copias de hojas y se leen por posición) y cuya primera línea traiga «Temporada» y «Semana» y todavía no tenga «ID». Va al final y no
- * al inicio porque los lectores conocidos de informes buscan las columnas por nombre, pero no se descarta alguno que use posiciones. Conserva el BOM, el
- * tipo de salto de línea y el texto original de cada fila. Ante cualquier error devuelve el contenido sin cambios. [→ Contexto_Base_Web.md §PF238]
- */
-function _agregarIdAInformeCSV_(filename, content) {
-  try {
-    var nombre = String(filename || '');
-    if (typeof content !== 'string' || content === '') return content;
-    if (/^Backup_/.test(nombre) || !/\((informe|plan|aplicado|detalle|resumen)\)\.csv$/.test(nombre)) return content;
-    if (_csvSubcarpetaDe_(nombre) !== 'Informes') return content;
-    var bom = content.charAt(0) === '﻿' ? '﻿' : '';
-    var texto = bom ? content.slice(1) : content;
-    var crlf = texto.indexOf('\r\n') >= 0;
-    // Partir en registros por saltos de línea fuera de comillas.
-    var registros = [], ini = 0, enComillas = false;
-    for (var i = 0; i < texto.length; i++) {
-      var c = texto.charAt(i);
-      if (c === '"') enComillas = !enComillas;
-      else if (c === '\n' && !enComillas) { registros.push(texto.substring(ini, i)); ini = i + 1; }
-    }
-    var cola = texto.substring(ini);
-    if (cola !== '') registros.push(cola);
-    if (registros.length < 1) return content;
-    var cabecera = _parseCSV(registros[0].replace(/\r$/, ''))[0] || [];
-    var iTemp = -1, iSem = -1, iTag = -1;
-    for (var h = 0; h < cabecera.length; h++) {
-      var nh = String(cabecera[h]).trim();
-      if (nh === 'ID') return content;
-      if (nh === 'Temporada') iTemp = h; else if (nh === 'Semana') iSem = h; else if (nh === 'Tag') iTag = h;
-    }
-    if (iTemp < 0 || iSem < 0) return content;
-    var salida = [];
-    for (var r = 0; r < registros.length; r++) {
-      var reg = registros[r].replace(/\r$/, '');
-      if (r === 0) { salida.push(reg + ',ID'); continue; }
-      if (reg === '') { salida.push(reg); continue; }
-      var campos = _parseCSV(reg)[0] || [];
-      var t = String(campos[iTemp] === undefined ? '' : campos[iTemp]).trim();
-      var sm = String(campos[iSem] === undefined ? '' : campos[iSem]).trim();
-      var id = '';
-      if (t !== '' && sm !== '' && !isNaN(Number(t)) && !isNaN(Number(sm))) {
-        var tg = iTag >= 0 ? String(campos[iTag] === undefined ? '' : campos[iTag]).trim().toUpperCase() : '';
-        if (tg && tg.charAt(0) !== '#') tg = '#' + tg;
-        id = tg ? _cgwIdFila_(t, sm, tg) : _cgwIdFila_(t, sm, '').replace(/_$/, '');
-      }
-      salida.push(reg + ',' + id);
-    }
-    return bom + salida.join(crlf ? '\r\n' : '\n') + (texto.charAt(texto.length - 1) === '\n' ? (crlf ? '\r\n' : '\n') : '');
-  } catch (e) {
-    Logger.log('[CSV] No se pudo agregar la columna ID a ' + filename + ' (' + e.message + '); se guarda sin ella.');
-    return content;
-  }
-}
-
-/**
- * _contarRegistrosTexto_(texto, nombre) - Cuenta los registros de un CSV o JSON para el log de cambios (PF290).
- * Devuelve { n, txt }: n = número principal (-1 si no se pudo contar) y txt = descripción legible. CSV o texto: filas de dato (sin la
- * primera línea, contando solo saltos fuera de comillas). JSON arreglo: elementos. JSON objeto: claves, más el tamaño de hasta tres claves
- * que sean arreglos u objetos. [→ Contexto_Base_Web.md §PF290]
- */
-function _contarRegistrosTexto_(texto, nombre) {
-  if (texto === null || texto === undefined) return { n: -1, txt: 'sin lectura' };
-  if (texto === '') return { n: 0, txt: '0 (vacío)' };
-  if (texto.length > 12000000) return { n: -1, txt: 'demasiado grande para contar' };
-  if (/\.json$/i.test(nombre || '')) {
-    try {
-      var o = JSON.parse(texto.charAt(0) === '\uFEFF' ? texto.slice(1) : texto);
-      if (Array.isArray(o)) return { n: o.length, txt: o.length + ' elemento(s)' };
-      if (o && typeof o === 'object') {
-        var ks = Object.keys(o), partes = [];
-        for (var i = 0; i < ks.length && partes.length < 3; i++) {
-          var v = o[ks[i]];
-          if (v && typeof v === 'object') partes.push(ks[i] + ':' + (Array.isArray(v) ? v.length : Object.keys(v).length));
-        }
-        return { n: ks.length, txt: ks.length + ' clave(s)' + (partes.length ? ' [' + partes.join(', ') + ']' : '') };
-      }
-      return { n: 1, txt: '1 valor' };
-    } catch (eJson) { return { n: -1, txt: 'JSON ilegible' }; }
-  }
-  var lineas = 0, enComillas = false;
-  for (var j = 0; j < texto.length; j++) {
-    var c = texto.charAt(j);
-    if (c === '"') enComillas = !enComillas;
-    else if (c === '\n' && !enComillas) lineas++;
-  }
-  if (texto.charAt(texto.length - 1) !== '\n') lineas++;
-  var datos = Math.max(0, lineas - 1);
-  return { n: datos, txt: datos + ' fila(s)' };
-}
-
-/**
- * _logCambioArchivo_(nombre, textoAntes, textoDespues, esNuevo) - Escribe en el log «[Archivo] nombre: antes → después» (PF290).
- * Si el conteo baja, agrega «[BAJA n]». Nunca lanza error. [→ Contexto_Base_Web.md §PF290]
- */
-function _logCambioArchivo_(nombre, textoAntes, textoDespues, esNuevo) {
-  try {
-    var a = esNuevo ? { n: 0, txt: 'archivo nuevo' } : (textoAntes === undefined ? { n: -1, txt: 'antes sin contar' } : _contarRegistrosTexto_(textoAntes, nombre));
-    var d = _contarRegistrosTexto_(textoDespues, nombre);
-    var marca = (a.n >= 0 && d.n >= 0 && d.n < a.n) ? ' [BAJA ' + (a.n - d.n) + ']' : '';
-    Logger.log('[Archivo] ' + nombre + ': ' + a.txt + ' → ' + d.txt + marca);
-  } catch (eLog) { /* el conteo nunca debe romper una escritura */ }
-}
-
-/**
- * _conteoArchivosDisponible_() - true mientras el tiempo de conteo de esta ejecución no pase de CONTEO_ARCHIVOS_PRESUPUESTO_MS (PF290).
- * Avisa una sola vez en el log cuando se agota. [→ Contexto_Base_Web.md §PF290]
- */
-function _conteoArchivosDisponible_() {
-  if (_conteoArchivosMs_ <= CONTEO_ARCHIVOS_PRESUPUESTO_MS) return true;
-  if (!_conteoArchivosAgotadoAvisado_) {
-    _conteoArchivosAgotadoAvisado_ = true;
-    Logger.log('[Archivo] Se agotó el tiempo de conteo de esta ejecución (' + Math.round(CONTEO_ARCHIVOS_PRESUPUESTO_MS / 1000) + ' s): los archivos que se escriban después no registran filas antes y después.');
-  }
-  return false;
-}
-
-/**
- * _setContentConConteo_(file, contenido) - Igual que file.setContent(contenido), pero lee antes el contenido actual y deja en el log las
- * filas o elementos antes y después (PF290). No cuenta los archivos Log_*, que ya se leen enteros al escribirse. Los errores de
- * setContent se propagan igual que antes. [→ Contexto_Base_Web.md §PF290]
- */
-function _setContentConConteo_(file, contenido) {
-  var nombre = '', antes;
-  var contar = _conteoArchivosDisponible_();
-  var t0 = Date.now();
-  try { nombre = file.getName(); } catch (eNombre) { contar = false; }
-  if (contar && /^Log_/i.test(nombre)) contar = false;
-  if (contar) {
-    try { antes = file.getBlob().getDataAsString('UTF-8'); } catch (eLeer) { antes = null; }
-  }
-  file.setContent(contenido);
-  _asegurarEscrituraCompleta_(file, contenido, nombre); // PF291
-  if (contar) {
-    _logCambioArchivo_(nombre, antes, contenido, false);
-    _conteoArchivosMs_ += Date.now() - t0;
-  }
-}
-
-/**
- * _createFileConConteo_(folder, nombre, contenido, mime) - Igual que folder.createFile(...) y devuelve el archivo; deja en el log el
- * conteo del archivo nuevo (PF290). [→ Contexto_Base_Web.md §PF290]
- */
-function _createFileConConteo_(folder, nombre, contenido, mime) {
-  var archivo = folder.createFile(nombre, contenido, mime);
-  _asegurarEscrituraCompleta_(archivo, contenido, String(nombre)); // PF291
-  if (!/^Log_/i.test(String(nombre)) && _conteoArchivosDisponible_()) {
-    var t0 = Date.now();
-    _logCambioArchivo_(String(nombre), null, contenido, true);
-    _conteoArchivosMs_ += Date.now() - t0;
-  }
-  return archivo;
-}
-
-/**
- * _guardarArchivoProgresoVerificado_(folder, nombre, contenido) - Guarda un archivo de progreso o checkpoint (JSON) en la carpeta: si ya existe lo
- * sobrescribe con setContent() y si no lo crea; en los dos casos comprueba que no quedó vacío o recortado con _asegurarEscrituraCompleta_() (PF291).
- * No deja registro de filas (los archivos de progreso se guardan muchas veces por ejecución; PF290, punto 4) y devuelve el archivo. Si la comprobación
- * lanza error, lo propaga: los cinco sitios que la llaman lo atrapan con su propio try y lo dejan en el registro. [→ Contexto_Base_Web.md §PF291]
- */
-function _guardarArchivoProgresoVerificado_(folder, nombre, contenido) {
-  var it = folder.getFilesByName(nombre);
-  var archivo;
-  if (it.hasNext()) {
-    archivo = it.next();
-    archivo.setContent(contenido);
-  } else {
-    archivo = folder.createFile(nombre, contenido, MimeType.PLAIN_TEXT);
-  }
-  _asegurarEscrituraCompleta_(archivo, contenido, String(nombre));
-  return archivo;
-}
-
-/**
- * _archivoModificadoDespuesDe_(file, tsMs) - true si la fecha de última modificación del archivo es posterior a tsMs (PF292, punto 9). Si no se puede leer, devuelve false (se actúa como antes). [→ Contexto_Base_Web.md §PF292]
- */
-function _archivoModificadoDespuesDe_(file, tsMs) {
-  try {
-    var f = file.getLastUpdated();
-    return !!f && f.getTime() > tsMs;
-  } catch (e) { return false; }
-}
-
-/**
- * _tamanoArchivoSeguro_(file) - Peso del archivo en bytes, o null si no se pudo medir (PF291). [→ Contexto_Base_Web.md §PF291]
- */
-function _tamanoArchivoSeguro_(file) {
-  try { return file.getSize(); } catch (e) { return null; }
-}
-
-/**
- * _asegurarEscrituraCompleta_(file, contenido, nombre) - Comprueba que el archivo no quedó vacío o recortado tras escribirlo (PF291).
- * Un texto de N caracteres ocupa al menos N bytes en UTF-8, así que un archivo que pesa menos que el largo del texto quedó mal escrito.
- * Si pasa, espera y vuelve a medir (Drive puede tardar en reflejar el tamaño); si sigue corto, reescribe hasta ESCRITURA_VERIF_REINTENTOS
- * veces dejando [ALERTA PROTECCIÓN] en el log; si no se arregla, lanza un error en vez de dejar el archivo roto sin avisar. Si no se puede
- * medir el archivo, no hace nada. Un texto vacío no se verifica. [→ Contexto_Base_Web.md §PF291]
- */
-function _asegurarEscrituraCompleta_(file, contenido, nombre) {
-  if (contenido === null || contenido === undefined) return;
-  var largo = String(contenido).length;
-  if (largo === 0) return;
-  var tam = _tamanoArchivoSeguro_(file);
-  if (tam === null || tam >= largo) return;
-  for (var i = 1; i <= ESCRITURA_VERIF_REINTENTOS; i++) {
-    Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': se escribieron ' + largo + ' caracteres y el archivo pesa ' + tam + ' bytes. Se espera ' +
-      ESCRITURA_VERIF_ESPERA_MS + ' ms y se vuelve a medir (intento ' + i + ' de ' + ESCRITURA_VERIF_REINTENTOS + ').');
-    Utilities.sleep(ESCRITURA_VERIF_ESPERA_MS);
-    tam = _tamanoArchivoSeguro_(file);
-    if (tam === null || tam >= largo) {
-      Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': al volver a medir el archivo pesa ' + tam + ' bytes; la escritura estaba completa.');
-      return;
-    }
-    file.setContent(contenido);
-    tam = _tamanoArchivoSeguro_(file);
-    if (tam === null || tam >= largo) {
-      Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': reescrito; ahora pesa ' + tam + ' bytes.');
-      return;
-    }
-  }
-  throw new Error('[ALERTA PROTECCIÓN] ' + nombre + ' quedó con ' + tam + ' bytes tras escribir ' + largo + ' caracteres y ' +
-    ESCRITURA_VERIF_REINTENTOS + ' reintentos. Revisar el archivo en Drive («Administrar versiones»).');
-}
-
-/**
- * _reverificarCsvEscritos_(esperaMinMs) - Segunda revisión de los CSV que _saveCSVToDrive() escribió en ESTA ejecución (PF291). Si desde la
- * escritura pasaron menos de esperaMinMs, espera lo que falta (Drive puede dejar una revisión vacía segundos después). Si el archivo de Drive
- * pesa menos que el texto escrito (por ejemplo, una revisión vacía que Drive creó después), lo reescribe con ese texto, que sigue en memoria.
- * Cada archivo se revisa una vez y sale del registro. Nunca lanza error. La llaman la cola horaria de guerra (_runGuerraColaHoraria_,
- * 00_Main.gs) y, vía _revisarCsvAlSalir_(), la ventana ligera de guerra y _ejecutarPorTandas(). [→ Contexto_Base_Web.md §PF291]
- */
-function _reverificarCsvEscritos_(esperaMinMs) {
-  var nombres = Object.keys(_csvEscritosEnEjecucion_);
-  for (var i = 0; i < nombres.length; i++) {
-    var nombre = nombres[i];
-    try {
-      var texto = _csvEscritosEnEjecucion_[nombre];
-      var ts = _csvEscritosTs_[nombre] || 0;
-      delete _csvEscritosEnEjecucion_[nombre];
-      delete _csvEscritosTs_[nombre];
-      if (!texto) continue;
-      var falta = (esperaMinMs || 0) - (Date.now() - ts);
-      if (falta > 0) Utilities.sleep(falta);
-      var hit = _csvBuscarArchivo_(nombre);
-      if (!hit) {
-        Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ': no se encuentra en Drive al volver a revisarlo tras escribirlo.');
-        continue;
-      }
-      var tam = _tamanoArchivoSeguro_(hit.file);
-      if (tam === null || tam >= texto.length) {
-        Logger.log('[CSV] Revisión posterior: ' + nombre + ' pesa ' + tam + ' bytes (se escribieron ' + texto.length + ' caracteres). Sin cambios.');
-        continue;
-      }
-      // PF292 punto 9 (29-oct-2026): si el archivo NO está vacío y otra ejecución lo modificó después de nuestra escritura, el tamaño menor puede ser
-      // una versión más nueva y legítima: no se pisa con el texto viejo. Un archivo vacío (0 B) se repara siempre; si no se puede leer la fecha, se
-      // actúa como antes. [→ Contexto_Base_Web.md §PF292]
-      if (tam > 0 && _archivoModificadoDespuesDe_(hit.file, ts + ESCRITURA_VERIF_TOLERANCIA_MS)) {
-        Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ' pesa ' + tam + ' bytes (se escribieron ' + texto.length + ' caracteres) pero fue modificado después de nuestra escritura: se deja como está para no pisar una versión más nueva.');
-        continue;
-      }
-      Logger.log('[ALERTA PROTECCIÓN] ' + nombre + ' pesa ' + tam + ' bytes y se había escrito con ' + texto.length + ' caracteres: se reescribe con el texto de esta ejecución.');
-      hit.file.setContent(texto);
-      _asegurarEscrituraCompleta_(hit.file, texto, nombre);
-      _csvCacheBorrar_(nombre);
-    } catch (e) {
-      Logger.log('[ALERTA PROTECCIÓN] Revisión posterior de ' + nombre + ' falló: ' + e.message);
-    }
-  }
-}
-
-/**
- * _revisarCsvAlSalir_(inicioMs) - Revisión posterior para las ejecuciones que no son la cola horaria (PF291): si esta ejecución escribió algún CSV con
- * _saveCSVToDrive() y quedan más de 60 s antes del límite de la plataforma (inicioMs = hora de inicio de la ejecución), espera lo que falte hasta
- * ESCRITURA_VERIF_ESPERA_FINAL_MS desde la escritura y la revisa. Sin escrituras no hace nada ni gasta tiempo. [→ Contexto_Base_Web.md §PF291]
- */
-function _revisarCsvAlSalir_(inicioMs) {
-  if (Object.keys(_csvEscritosEnEjecucion_).length === 0) return;
-  if (CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - inicioMs) <= 60000) {
-    Logger.log('[CSV] Revisión posterior de los CSV escritos SALTADA: quedan menos de 60 s de presupuesto.');
-    return;
-  }
-  _reverificarCsvEscritos_(ESCRITURA_VERIF_ESPERA_FINAL_MS);
-}
-
-/**
- * syncAcumulativosCSV() [→ Contexto_Base_Web.md §05B110]
- */
 /**
  * _syncUnaAcumulativaCSV(item, forzar) [→ Contexto_Base_Web.md §05B111]
  */
@@ -2572,8 +2324,303 @@ function _contarFilasSinFechaRespaldable(valores) {
   }
   return sinFecha;
 }
-// LOG DE TAMPERMONKEY EN DRIVE (13-ago-2026, pedido del usuario) [→ Contexto_Base_Web.md §05B116]
-var TAMPERMONKEY_LOG_MAX_LINEAS = 500;
+
+// ----- Inactivos: columnas extra y comparación con el CSV -----
+
+/**
+ * _cargarExtraColsInactivos() [→ Contexto_Base_Web.md §05B059]
+ */
+function _cargarExtraColsInactivos() {
+  var mapa = {};
+  // (25-sep-2026, FASE B) ClanSystem_Backup_InactivosExtra.json se lee y se [→ Contexto_Base_Web.md §05B060]
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName('ClanSystem_Backup_InactivosExtra.json');
+    if (files.hasNext()) {
+      mapa = JSON.parse(files.next().getBlob().getDataAsString('UTF-8')) || {};
+    }
+  } catch(e) { Logger.log('[Backup] Error leyendo ClanSystem_Backup_InactivosExtra.json: ' + e.message); }
+  return mapa;
+}
+
+/**
+ * _extraColsInactivosDesdeCsv(tagNorm) [→ Contexto_Base_Web.md §05B061]
+ */
+function _extraColsInactivosDesdeCsv(tagNorm) {
+  if (!tagNorm) return null;
+  var parsed;
+  try {
+    var csvText = _loadCSVFromDrive('Backup_Inactivos.csv');
+    if (!csvText) return null;
+    parsed = _parseCSV(csvText);
+  } catch (e) {
+    Logger.log('[Backup] _extraColsInactivosDesdeCsv: no se pudo leer Backup_Inactivos.csv (' + e.message + ').');
+    return null;
+  }
+  if (!parsed || parsed.length < 2) return null;
+
+  var rows = parsed.slice(1);
+  var campos = _camposExtraInactivos(); // 11_DirectorioSheet.gs: nombres DC que no están en IC
+  for (var i = 0; i < rows.length; i++) {
+    if (cleanTag(rows[i][DC.TAG - 1]) !== tagNorm) continue;
+    var extra = {};
+    for (var c = 0; c < campos.length; c++) {
+      var campo = campos[c];
+      var idx = DC[campo] - 1;
+      var valor = rows[i][idx];
+      if (valor !== undefined && valor !== '') extra[campo] = valor;
+    }
+    return Object.keys(extra).length ? extra : null;
+  }
+  return null;
+}
+
+/**
+ * _compararInactivosConCSV(ss) [→ Contexto_Base_Web.md §05B062]
+ */
+function _compararInactivosConCSV(ss) {
+  var shInactivos = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+  var shDirectorio = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
+
+  // --- 1. Tags actuales en la hoja Inactivos (29 cols reales, formato IC) ---
+  var tagsHoja = {}; // Tag -> Nombre
+  if (shInactivos) {
+    var lastRowInactivos = shInactivos.getLastRow();
+    if (lastRowInactivos >= 2) {
+      var datosInactivos = shInactivos.getRange(2, 1, lastRowInactivos - 1, INACTIVOS_TOTAL_COLS).getValues();
+      for (var i = 0; i < datosInactivos.length; i++) {
+        var tg = String(datosInactivos[i][IC.TAG - 1] || '').trim();
+        if (tg) tagsHoja[tg] = String(datosInactivos[i][IC.NOMBRE - 1] || '');
+      }
+    }
+  }
+
+  // --- 2. Tags en el último Backup_Inactivos.csv (60 cols, formato DC) ---
+  var tagsCsv = {}; // Tag -> Nombre
+  var csvTexto = _loadCSVFromDrive('Backup_Inactivos.csv');
+  if (csvTexto) {
+    var filasCsv = _parseCSV(csvTexto);
+    for (var i = 1; i < filasCsv.length; i++) { // fila 0 = encabezado
+      var fila = filasCsv[i];
+      var tg = String(fila[DC.TAG - 1] || '').trim();
+      if (tg) tagsCsv[tg] = String(fila[DC.NOMBRE - 1] || '');
+    }
+  }
+
+  // --- 3. Estado actual en Directorio, por Tag (para explicar cada diferencia). [→ Contexto_Base_Web.md §05B063]
+  var dirPorTag = {};
+  if (shDirectorio) {
+    var lastRowDir = shDirectorio.getLastRow();
+    if (lastRowDir >= 2) {
+      var datosDir = shDirectorio.getRange(2, 1, lastRowDir - 1, DIR_SHEET_COLS).getValues();
+      for (var i = 0; i < datosDir.length; i++) {
+        var tg = String(datosDir[i][IC.TAG - 1] || '').trim();
+        if (tg) {
+          dirPorTag[tg] = {
+            estado: String(datosDir[i][IC.ESTADO - 1] || ''),
+            clan: String(datosDir[i][IC.CLAN - 1] || ''),
+            clanTag: String(datosDir[i][IC.CLAN_TAG - 1] || '')
+          };
+        }
+      }
+    }
+  }
+
+  // --- 3b. Membresía ACTUAL (en vivo) del clan Vetado, vía el cache de la [→ Contexto_Base_Web.md §05B064]
+  var tagsEnClanVetado = {};
+  capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'Backup_CSV');
+  var clanVetadoCache = _getClanCache(CFG.VETADO_TAG);
+  if (clanVetadoCache && clanVetadoCache.members) {
+    for (var i = 0; i < clanVetadoCache.members.length; i++) {
+      tagsEnClanVetado[String(clanVetadoCache.members[i].tag || '').trim()] = true;
+    }
+  }
+
+  // --- 4. Diferencias en ambos sentidos ---
+  var soloEnHoja = []; // en Inactivos pero todavía no en el CSV
+  var soloEnCsv  = []; // en el CSV pero ya no en la hoja Inactivos
+  for (var tg in tagsHoja) {
+    if (!tagsCsv.hasOwnProperty(tg)) soloEnHoja.push([tg, tagsHoja[tg]]);
+  }
+  for (var tg in tagsCsv) {
+    if (!tagsHoja.hasOwnProperty(tg)) {
+      var infoDir = dirPorTag[tg];
+      var hipotesis, explicada;
+      if (infoDir && infoDir.estado === 'Activo' && infoDir.clanTag && infoDir.clanTag !== CFG.VETADO_TAG) {
+        hipotesis = 'Reactivada en ' + infoDir.clan;
+        explicada = true;
+      } else if (infoDir && infoDir.clanTag === CFG.VETADO_TAG) {
+        hipotesis = 'Pasó a Vetados (admin)';
+        explicada = true;
+      } else if (tagsEnClanVetado[tg]) {
+        // No-admin activo en el clan Vetado ahora mismo (confirmado en vivo [→ Contexto_Base_Web.md §05B065]
+        hipotesis = 'Activo en el clan Vetado (no-admin, confirmado en vivo)';
+        explicada = true;
+      } else if (!infoDir) {
+        hipotesis = 'No aparece en el Directorio actual';
+        explicada = false;
+      } else {
+        hipotesis = 'Sigue Inactivo/otro estado en Directorio — revisar manualmente';
+        explicada = false;
+      }
+      soloEnCsv.push([tg, tagsCsv[tg], hipotesis, explicada]);
+    }
+  }
+
+  return { tagsHoja: tagsHoja, tagsCsv: tagsCsv, soloEnHoja: soloEnHoja, soloEnCsv: soloEnCsv };
+}
+
+/**
+ * _guardarExtraColsInactivosBatch(nuevosPorTag) [→ Contexto_Base_Web.md §05B088]
+ */
+function _guardarExtraColsInactivosBatch(nuevosPorTag) {
+  try {
+    var mapa = _cargarExtraColsInactivos();
+    for (var tag in nuevosPorTag) mapa[tag] = nuevosPorTag[tag];
+
+    // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS), igual [→ Contexto_Base_Web.md §05B089]
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var filename = 'ClanSystem_Backup_InactivosExtra.json';
+    var files = folder.getFilesByName(filename);
+    var content = JSON.stringify(mapa, null, 2);
+    if (files.hasNext()) {
+      _setContentConConteo_(files.next(), content);
+    } else {
+      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
+    }
+    Logger.log('[Backup] ClanSystem_Backup_InactivosExtra.json actualizado (' + Object.keys(nuevosPorTag).length + ' tag(s) frescos).');
+  } catch(e) {
+    Logger.log('[Backup] Error guardando ClanSystem_Backup_InactivosExtra.json: ' + e.message);
+  }
+}
+
+/**
+ * _eliminarExtraColsInactivosPorTags(tags) [→ Contexto_Base_Web.md §05B066]
+ */
+function _eliminarExtraColsInactivosPorTags(tags) {
+  if (!tags || tags.length === 0) return;
+  try {
+    var mapa = _cargarExtraColsInactivos();
+    var borrados = 0;
+    for (var i = 0; i < tags.length; i++) {
+      if (mapa[tags[i]] !== undefined) { delete mapa[tags[i]]; borrados++; }
+    }
+    if (borrados === 0) return;
+
+    // (25-sep-2026, FASE B) Ahora en "Otros" (DRIVE_FOLDER_ID_OTROS), igual
+    // que _cargarExtraColsInactivos() más arriba en este archivo.
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var filename = 'ClanSystem_Backup_InactivosExtra.json';
+    var files = folder.getFilesByName(filename);
+    var content = JSON.stringify(mapa, null, 2);
+    if (files.hasNext()) {
+      _setContentConConteo_(files.next(), content);
+    } else {
+      _createFileConConteo_(folder, filename, content, MimeType.PLAIN_TEXT);
+    }
+    Logger.log('[Backup] ClanSystem_Backup_InactivosExtra.json: ' + borrados + ' tag(s) eliminados (reactivados en un clan Terna).');
+  } catch(e) {
+    Logger.log('[Backup] Error eliminando tags reactivados de ClanSystem_Backup_InactivosExtra.json: ' + e.message);
+  }
+}
+
+/**
+ * _importarInactivosDesdeCSV(ss) [→ Contexto_Base_Web.md §05B090]
+ */
+function _importarInactivosDesdeCSV(ss) {
+  var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+  if (!sh) return;
+
+  var fileName = 'Backup_Inactivos.csv';
+  var csvText = _loadCSVFromDrive(fileName);
+  if (!csvText) return;
+
+  try {
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length <= 1) {
+      Logger.log('[ALERTA IMPORTACIÓN] ' + fileName + ' vacío o corrupto. Se cancela importación.');
+      return;
+    }
+
+    var numRows = parsed.length;
+    var numCols = INACTIVOS_TOTAL_COLS;
+
+    if (numRows > sh.getMaxRows()) sh.insertRowsAfter(sh.getMaxRows(), numRows - sh.getMaxRows() + 10);
+    // NUNCA usar DIR_TOTAL_COLS (60) aquí: forzaría a Sheets a re-expandir
+    // la hoja Inactivos de vuelta a 60 columnas.
+    if (numCols > sh.getMaxColumns()) sh.insertColumnsAfter(sh.getMaxColumns(), numCols - sh.getMaxColumns());
+
+    // Mapa CAMPO (clave de DC, ej. 'TAG', 'PERMISO', ...) -> índice REAL [→ Contexto_Base_Web.md §05B091]
+    var headerCsv = parsed[0];
+    var idxEnCsvPorCampo = {};
+    for (var campoParaMapa in DC) {
+      var nombreLiteral = DC_HEADERS_60_COLS[DC[campoParaMapa] - 1];
+      idxEnCsvPorCampo[campoParaMapa] = nombreLiteral ? headerCsv.indexOf(nombreLiteral) : -1;
+    }
+
+    var extraPorTag = {};
+    var rectData = [];
+    for (var idx = 0; idx < numRows; idx++) {
+      var rCsv = parsed[idx];
+      if (idx === 0) {
+        // Encabezado: se descarta; _setupInactivos() escribe los encabezados [→ Contexto_Base_Web.md §05B092]
+        continue;
+      }
+      var fila29 = new Array(INACTIVOS_TOTAL_COLS).fill('');
+      for (var campo in IC) {
+        var idxCampoCsv = idxEnCsvPorCampo[campo];
+        var valorCampo = (idxCampoCsv >= 0 && rCsv[idxCampoCsv] !== undefined) ? rCsv[idxCampoCsv] : '';
+        if (campo === 'VETADO' || campo === 'PERMISO' || campo === 'ADMIN') {
+          valorCampo = _esSiNoOVacio(valorCampo) ? valorCampo : '';
+        } else if (campo === 'RAZON') {
+          valorCampo = esRazonValida(valorCampo) ? valorCampo : '';
+        }
+        fila29[IC[campo] - 1] = valorCampo;
+      }
+      // Fechas: Fecha_ing/Fecha_lim se guardaron como texto en el CSV.
+      var fIng = _parseSpanishDate(fila29[IC.FECHA_ING - 1]);
+      if (fIng instanceof Date) fila29[IC.FECHA_ING - 1] = fIng;
+      var fLim = _parseSpanishDate(fila29[IC.FECHA_LIM - 1]);
+      if (fLim instanceof Date) fila29[IC.FECHA_LIM - 1] = fLim;
+
+      rectData.push(fila29);
+
+      var tagFila = String(fila29[IC.TAG - 1] || '').trim();
+      if (tagFila) {
+        var extraObj = {};
+        var tieneExtra = false;
+        for (var campoDC in DC) {
+          if (IC[campoDC] !== undefined) continue; // ya está en las 29 columnas propias (incluye Comentario)
+          var idxExtraCsv = idxEnCsvPorCampo[campoDC];
+          var valExtra = idxExtraCsv >= 0 ? rCsv[idxExtraCsv] : undefined;
+          if (valExtra !== '' && valExtra !== undefined && valExtra !== null) {
+            extraObj[campoDC] = valExtra;
+            tieneExtra = true;
+          }
+        }
+        if (tieneExtra) extraPorTag[tagFila] = extraObj;
+      }
+    }
+
+    sh.clearContents();
+    _setupInactivos(ss);
+    if (rectData.length > 0) {
+      sh.getRange(2, 1, rectData.length, INACTIVOS_TOTAL_COLS).setValues(rectData);
+    }
+
+    if (Object.keys(extraPorTag).length > 0) {
+      _guardarExtraColsInactivosBatch(extraPorTag);
+    }
+
+    Logger.log('[Backup] ' + CFG.SHEETS.INACTIVOS + ' restaurado con ' + rectData.length + ' registros (29 columnas, sin re-expandir; extras restauradas en ClanSystem_Backup_InactivosExtra.json).');
+
+  } catch(e) {
+    Logger.log('[Backup] Error importando ' + fileName + ': ' + e.message);
+  }
+}
+
+// ----- Registro de Tampermonkey en Drive -----
+
 /**
  * _logTampermonkeyADrive(boton, resultado, errorTexto) [→ Contexto_Base_Web.md §05B117]
  */
