@@ -291,6 +291,14 @@ function _decidirCorreccionConClanTag_(datos) {
     if (sumaAt > 16) alarmaGlobal = 'la suma de ataques entre clanes supera 16';
     else if (sumaBar > sumaAt) alarmaGlobal = 'la suma de barcos entre clanes supera la de ataques';
     else if (sumaFame > _limitesFameSemanaClan_(sumaAt, 0).max) alarmaGlobal = 'la suma de fame entre clanes supera el maximo posible';
+    // §PF302 (criterio 14 de §PF160): pasados los topes, la suma de los clanes no puede superar el valor de perfil de RoyaleAPI (el perfil puede ser mayor: la diferencia es
+    // el clan Externo). Si lo supera, los valores se contradicen y va a revisión manual. Con barcos sin dato la suma es solo un piso, y un piso que ya pasa el perfil también contradice.
+    var pf = datos.perfil;
+    if (!alarmaGlobal && pf) {
+      if (typeof pf.ataquesSemana === 'number' && sumaAt > pf.ataquesSemana) alarmaGlobal = 'la suma de ataques de los clanes (' + sumaAt + ') supera el valor de perfil de RoyaleAPI (' + pf.ataquesSemana + ')';
+      else if (typeof pf.barcos === 'number' && sumaBar > pf.barcos) alarmaGlobal = 'la suma de barcos de los clanes (' + sumaBar + ') supera el valor de perfil de RoyaleAPI (' + pf.barcos + ')';
+      else if (typeof pf.fame === 'number' && sumaFame > pf.fame) alarmaGlobal = 'la suma de medallas de los clanes (' + sumaFame + ') supera el valor de perfil de RoyaleAPI (' + pf.fame + ')';
+    }
   }
 
   // Paso 4: armar la salida (reglas 5 y 6).
@@ -705,7 +713,7 @@ function _evaluarCorreccionConClanTagSemana_(filas, temporada, semana, tag, v, o
     }
   });
 
-  var decision = _decidirCorreccionConClanTag_({ ternaTags: ternaTags, correcciones: correcciones, otrosClanesHoja: otros });
+  var decision = _decidirCorreccionConClanTag_({ ternaTags: ternaTags, correcciones: correcciones, otrosClanesHoja: otros, perfil: (v && v.perfil) ? v.perfil : null });
 
   var revisiones = [];
   function agregarRevision(tipo, motivo, detalle) {
@@ -3170,6 +3178,12 @@ function _cargarOverlayCorreccionesGuerra() {
   for (var g = 0; g < clavesGrupo.length; g++) {
     var filas = grupos[clavesGrupo[g]];
     var conClan = filas.filter(function (x) { return x.clanTag !== ''; });
+    // §PF302: el valor de perfil de RoyaleAPI (fila sin ClanTag con origen «perfil»; la de un clan externo ya se saltó arriba) se guarda aparte para compararlo
+    // con la suma de los clanes; aunque las filas sin ClanTag se ignoren para escribir, ese valor sirve de tope.
+    var perfilGrupo = null;
+    for (var pg = 0; pg < filas.length; pg++) {
+      if (filas[pg].clanTag === '' && filas[pg].origenPerfil === CGW_ORIGEN_PERFIL) perfilGrupo = { ataquesSemana: filas[pg].ataquesSemana, barcos: filas[pg].barcos, fame: filas[pg].fame };
+    }
     if (conClan.length > 0) filas = conClan; // AVISO 1: las sin ClanTag se ignoran
 
     var ataques = 0, fame = 0, barcos = null, actualizado = '';
@@ -3192,7 +3206,8 @@ function _cargarOverlayCorreccionesGuerra() {
       aprobacion: todasAprobadas ? 'Sí' : '',
       implementacion: todasImpl ? 'Sí' : (algunaImplNo ? 'No' : ''),
       clanes: filas.map(function (x) { return x.clanTag; }),
-      filasPorClan: filas
+      filasPorClan: filas,
+      perfil: perfilGrupo
     };
   }
   return mapa;
