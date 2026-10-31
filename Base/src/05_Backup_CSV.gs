@@ -501,10 +501,25 @@ function syncAcumulativosCSV() {
   if (idxInicio >= totalTrabajos) idxInicio = 0; // por si cambió la lista de hojas entre corridas
 
   var inicio = Date.now();
+  var maxTrabajoMs = 0; // PF311 parte A: el trabajo más largo de esta llamada, para no empezar otro si no cabe
   var i;
   for (i = idxInicio; i < totalTrabajos; i++) {
     var tInicioTrabajo = Date.now();
     var nombreTrabajo = (i === 0) ? 'Inactivos' : acumulativos[i - 1].sheetName;
+
+    // PF311 parte A (31-oct-2026): los trabajos tardan de 2 a 52 s cada uno y el presupuesto interno solo se miraba al terminar un trabajo; el 29-oct runSyncCSV pasó 3 min 50 s sin escribir nada. Antes de empezar otro trabajo (nunca el primero de la llamada, para que siempre avance) se exige que la ejecución tenga tiempo para el trabajo más largo visto en esta llamada, con 50 % de holgura y como mínimo 60 s.
+    if (i > idxInicio) {
+      var msNecesariosTrabajo = Math.max(60000, Math.round(maxTrabajoMs * 1.5));
+      var msQuedan = _msRestantesDeEjecucion_();
+      if (msQuedan < msNecesariosTrabajo) {
+        props.setProperty(claveIdx, String(i));
+        Logger.log('[Backup] syncAcumulativosCSV: no se empieza el trabajo ' + (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '): quedan ' + Math.round(msQuedan / 1000) +
+                   ' s y se necesitan unos ' + Math.round(msNecesariosTrabajo / 1000) + ' s. Se hace en la próxima continuación.');
+        _logProgresoPaso_('Backup', 'respaldo CSV de acumulativos', idxInicio, i - idxInicio, totalTrabajos, 'trabajos');
+        return false;
+      }
+    }
+    Logger.log('[Backup][t] syncAcumulativosCSV: empieza el trabajo ' + (i + 1) + '/' + totalTrabajos + ' (' + nombreTrabajo + '); a la ejecución le quedan ' + Math.round(_msRestantesDeEjecucion_() / 1000) + ' s.');
 
     if (i === 0) {
       syncInactivosCSV();
@@ -514,6 +529,7 @@ function syncAcumulativosCSV() {
 
     Logger.log('[Backup][t] syncAcumulativosCSV: trabajo ' + (i + 1) + '/' + totalTrabajos +
                ' (' + nombreTrabajo + '): ' + (Date.now() - tInicioTrabajo) + ' ms');
+    maxTrabajoMs = Math.max(maxTrabajoMs, Date.now() - tInicioTrabajo);
 
     var quedanTrabajos = (i + 1) < totalTrabajos;
     if (quedanTrabajos && (Date.now() - inicio) > CFG.ACUMULATIVOS_BUDGET_MS) {
