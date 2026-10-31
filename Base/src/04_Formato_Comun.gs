@@ -11,6 +11,7 @@
 //  Parte 2 — Funciones que no se corren a mano
 //    - Columna Jugador (recorte y ocultamiento)
 //    - Encabezados, tablas, filtros y bordes
+//    - Coma de miles automática (solo visual)
 //    - Limpieza de hojas obsoletas (las llama 00_Main.gs)
 //    - Anchos de columna: ayudas
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
@@ -79,6 +80,8 @@ function aplicarFormatoGlobal() {
             } catch (eBorde) {}
           }
         }
+
+        _aplicarMilesAutomaticoHoja_(sh); // 31-oct-2026: coma de miles solo visual en toda columna numérica que pase de 999
 
         formateoOk = true;
       } catch (eFmt) {
@@ -842,6 +845,71 @@ function _limpiarBordesFilasVacias() {
     }
   }
   Logger.log('[Formato] Bordes en filas vacías limpiados.');
+}
+
+// ----- Coma de miles automática (solo visual) -----
+
+// 31-oct-2026 (pedido de la usuaria: toda columna numérica que pase de 999 lleva coma de miles en cualquier hoja, solo como visualización; nunca en el valor, la hoja ni el CSV). Hojas que no se tocan (texto, fechas o ayudas):
+var MILES_HOJAS_EXCLUIDAS_ = ['INDICE', 'COMENTARIOS', 'MENSAJES', 'ADMINISTRADORES', 'LINKS', 'CONFLICTOS', 'PENDIENTES', 'CARDS', 'CARDS_2', 'CALENDARIO', 'CALENDARIO2'];
+
+// Encabezados que NO llevan coma aunque sean números (posición, identificadores, calendario, hora). Se compara sin tildes y en minúsculas.
+var MILES_ENCABEZADO_EXCLUIDO_ = /^(n|n[°º]|no\.?|id|.*\bid|.*_id|.*tag.*|celular.*|tel.*|temporada.*|season.*|ano|semana.*|dia|dia[ _]?guerra|periodindex|periodidx|puesto|ranking|rank|fecha.*|hora.*|vigencia|.*timestamp.*|ts|orden|fila|idx|indice)$/;
+
+/**
+ * _aplicarMilesAutomaticoHoja_(sh): da formato «#,##0» a toda la columna (hasta el final de la hoja, para que las filas nuevas nazcan con él) de las columnas numéricas enteras que en las últimas 300 filas tienen algún valor de 1000 a 999 999 999, que están en formato General o «0» y cuyo encabezado no es de posición, identificador ni fecha. Solo cambia cómo se ve: el valor no se toca, y el respaldo CSV detecta el formato y guarda el número sin coma (_extraerValoresConLinksReales, 05_Backup_CSV.gs).
+ */
+function _aplicarMilesAutomaticoHoja_(sh) {
+  var nombre = sh.getName();
+  for (var ex = 0; ex < MILES_HOJAS_EXCLUIDAS_.length; ex++) {
+    if (CFG.SHEETS[MILES_HOJAS_EXCLUIDAS_[ex]] === nombre) return;
+  }
+  var conocida = false;
+  for (var k in CFG.SHEETS) { if (CFG.SHEETS[k] === nombre) { conocida = true; break; } }
+  if (!conocida) return;
+
+  var lastRow = sh.getLastRow(), lastCol = sh.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) return;
+
+  var nEnc = Math.min(3, lastRow);
+  var enc = sh.getRange(1, 1, nEnc, lastCol).getDisplayValues();
+  var n = Math.min(300, lastRow - 1);
+  var vals = sh.getRange(lastRow - n + 1, 1, n, lastCol).getValues();
+  var fmts = sh.getRange(lastRow, 1, 1, lastCol).getNumberFormats()[0];
+  var maxRows = sh.getMaxRows();
+  var aplicadas = [];
+
+  for (var c = 0; c < lastCol; c++) {
+    var fmt = String(fmts[c]);
+    if (fmt.indexOf('#,##0') !== -1) continue;
+    if (fmt !== 'General' && !/^0$/.test(fmt)) continue;
+
+    var excluida = false, etiqueta = '';
+    for (var e = 0; e < nEnc; e++) {
+      var txt = String(enc[e][c] || '').trim();
+      if (!txt) continue;
+      if (!etiqueta) etiqueta = txt;
+      var norm = txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (MILES_ENCABEZADO_EXCLUIDO_.test(norm)) { excluida = true; break; }
+    }
+    if (excluida) continue;
+
+    var hayMiles = false, hayNoEntero = false;
+    for (var r = 0; r < n; r++) {
+      var v = vals[r][c];
+      if (typeof v !== 'number' || isNaN(v)) continue;
+      if (v % 1 !== 0) { hayNoEntero = true; break; }
+      if (Math.abs(v) >= 1000 && Math.abs(v) < 1e9) hayMiles = true;
+    }
+    if (hayNoEntero || !hayMiles) continue;
+
+    try {
+      sh.getRange(2, c + 1, Math.max(maxRows - 1, 1), 1).setNumberFormat('#,##0');
+      aplicadas.push((c + 1) + ' «' + etiqueta + '»');
+    } catch (eMiles) {
+      Logger.log('[Formato] miles: no se pudo formatear la columna ' + (c + 1) + ' de "' + nombre + '" (' + eMiles.message + ').');
+    }
+  }
+  if (aplicadas.length) Logger.log('[Formato] miles en "' + nombre + '": ' + aplicadas.join(', '));
 }
 
 // ----- Limpieza de hojas obsoletas (las llama 00_Main.gs) -----
