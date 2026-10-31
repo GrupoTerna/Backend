@@ -2089,6 +2089,16 @@ function _cancelacionPedidaDuranteTanda_(idEjecucion) {
 }
 
 /**
+ * _msRestantesDeEjecucion_() - PF311 parte A. Milisegundos que le quedan a la ejecución actual antes del corte de la plataforma (CFG.PLATAFORMA_LIMITE_EJECUCION_MS), medidos desde el
+ * inicio de la tanda de _ejecutarPorTandas() (INICIO_TANDA_MS_). Fuera de una cadena por tandas (INICIO_TANDA_MS_ en 0) no se conoce el inicio y devuelve el límite entero.
+ * Sirve para que un paso largo decida, antes de empezar una unidad de trabajo, si le alcanza el tiempo. [→ Contexto_Base_Web.md §PF311]
+ */
+function _msRestantesDeEjecucion_() {
+  if (!INICIO_TANDA_MS_) return CFG.PLATAFORMA_LIMITE_EJECUCION_MS;
+  return CFG.PLATAFORMA_LIMITE_EJECUCION_MS - (Date.now() - INICIO_TANDA_MS_);
+}
+
+/**
  * _decidirRellamadaPaso_(idEjecucion, presupuestoMs, inicioTanda, duracionUltimaMs, rellamadas, acumBase, prog) - Decide si _ejecutarPorTandas() vuelve a llamar, en la misma tanda,
  * a un paso que acaba de devolver false (PF292). Devuelve { si: boolean, motivo: string }; el motivo (vacío en la reenumeración, que reparte su propio tiempo) se imprime cuando no se vuelve a llamar.
  * Solo vuelve a llamar si se cumplen TODAS: (1) el paso anotó su avance y este subió respecto de la llamada anterior (o, en la primera, es mayor que 0 o que lo guardado por la tanda anterior);

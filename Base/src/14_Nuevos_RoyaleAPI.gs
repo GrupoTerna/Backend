@@ -68,7 +68,8 @@ var NUEVOS_RESTORE_PROGRESO_MAX_EDAD_MS = 6 * 60 * 60 * 1000; // 6 horas
 // Presupuesto de tiempo PROPIO de la restauración (más chico que [→ Contexto_Base_Web.md §14B010]
 var NUEVOS_RESTORE_PRESUPUESTO_MS = 90 * 1000; // 1m30s
 // Tope de candidatos por sub-lote enviado a _aplicarImportacionNuevos() [→ Contexto_Base_Web.md §14B011]
-var NUEVOS_RESTORE_LOTE_MAX = 10;
+// PF311 parte A (31-oct-2026): de 10 a 5. El 30-oct a las 11:19 p. m. un sub-lote de 10 candidatos pasó de 107 s sin terminar y la ejecución se cortó a los 361 s; con 5 cada sub-lote dura la mitad y el paso reparte el resto en la tanda siguiente.
+var NUEVOS_RESTORE_LOTE_MAX = 5;
 
 /**
  * _guardarProgresoRestaurarNuevos(tagsYaRestaurados) [→ Contexto_Base_Web.md §14B012]
@@ -2135,15 +2136,23 @@ function _restaurarNuevosDesdeCsvDebug() {
   var erroresAcumulados = [];
   var indice = 0;
   var seAgotoElPresupuesto = false;
+  var msSubLoteAnterior = 0; // PF311 parte A: duración del sub-lote anterior (0 = todavía no hubo ninguno)
 
   while (indice < candidatosPendientes.length) {
-    if ((Date.now() - inicio) > NUEVOS_RESTORE_PRESUPUESTO_MS) {
+    // PF311 parte A: además del presupuesto propio, se mira cuánto le queda a la ejecución. Un sub-lote nuevo solo empieza si le alcanza el tiempo
+    // (1,5 veces lo que tardó el anterior, o 60 s si es el primero) más 45 s para cerrar el paso; si no, lo que falta queda para la continuación.
+    var msNecesariosSubLote = Math.max(Math.round(msSubLoteAnterior * 1.5), 60000) + 45000;
+    if ((Date.now() - inicio) > NUEVOS_RESTORE_PRESUPUESTO_MS || _msRestantesDeEjecucion_() < msNecesariosSubLote) {
       seAgotoElPresupuesto = true;
       break;
     }
 
     var subLote = candidatosPendientes.slice(indice, indice + NUEVOS_RESTORE_LOTE_MAX);
+    var tSubLote = Date.now();
     var resultadoSubLote = _aplicarImportacionNuevos(subLote);
+    msSubLoteAnterior = Date.now() - tSubLote;
+    Logger.log('[Nuevos-Restaurar] Sub-lote de ' + subLote.length + ' candidato(s) terminado en ' + Math.round(msSubLoteAnterior / 1000) + ' s (' +
+      Math.min(indice + subLote.length, candidatosPendientes.length) + ' de ' + candidatosPendientes.length + ' pendientes de esta corrida).');
 
     if (resultadoSubLote && resultadoSubLote.ok) {
       totalProcesados += resultadoSubLote.procesados || 0;
