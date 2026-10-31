@@ -3879,6 +3879,47 @@ function _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores
 }
 
 /**
+ * _repartoRangosCrr_(filas, offsetsExistentes, offs, valores) [→ Contexto_Base_Web.md §PF301]
+ * Los rangos que dejan los JSON de CurrentRiverRace (59_Verificar_CRR_vs_Backup.gs, _vcrrRangosJugadorClan_) como restricción del reparto, ANTES de
+ * encajar con la tabla de fame: para cada día, cuántos ataques, barcos y fame puede haber hecho ese día (aumento del día) y, mientras los días
+ * sean consecutivos desde el jueves, entre qué valores puede estar el acumulado al cierre del día. El acumulado ya lleva la MERMA (los ataques que
+ * se perdieron y lo que eso baja el tope de barcos y fame) y por eso el máximo del domingo es el máximo semanal: con ataques perdidos no se puede
+ * llegar a 16. Cada métrica solo se usa si sus capturas son coherentes (serie.validos). Se calcula por clan (las filas son de un clan).
+ * Devuelve null si no hay rangos (sin JSON, jugador en varios clanes la misma semana, sin clan en las filas o valores.sinCurrentRiverRace),
+ * o { etiqueta, estricto, dias: [{ n, b, f }], acum: [{ a, b, f } | null], estado } con cada cota como [mínimo, máximo] o null si no hay dato.
+ * estricto = true solo si todos los JSON de la serie son utilizables: ahí un total de RoyaleAPI que no cabe es un caso para revisión manual, no se
+ * encaja a la fuerza ni se sigue sin los JSON. No escribe nada.
+ */
+function _repartoRangosCrr_(filas, offsetsExistentes, offs, valores) {
+  if (valores.sinCurrentRiverRace === true || typeof _vcrrRangosJugadorClan_ !== 'function') return null;
+  try {
+    var f0 = filas[offsetsExistentes[offs[0]]];
+    function num(v) { var t = String(v === undefined || v === null ? '' : v).trim(); return t === '' ? NaN : Number(t); }
+    var temp = num(valores.temporada !== undefined ? valores.temporada : f0[GC.TEMPORADA - 1]);
+    var sem = num(valores.semana !== undefined ? valores.semana : f0[GC.SEMANA - 1]);
+    var tag = _blgNormalizarTag_(valores.tag !== undefined ? valores.tag : f0[GC.TAG - 1]);
+    var clan = String(f0[GC.CLAN - 1] === undefined || f0[GC.CLAN - 1] === null ? '' : f0[GC.CLAN - 1]).trim();
+    if (!(temp > 0) || !(sem > 0) || !tag || !clan) return null;
+    var serie = _vcrrRangosJugadorClan_(temp, sem, tag, clan);
+    // Un jugador en dos clanes la misma semana: el tope de 4 ataques por día vale entre los dos clanes, así que la merma de un clan no es merma real.
+    if (!serie || !serie.validos || serie.estado === 'multiclan') return null;
+    var r = serie.r, hayA = serie.validos.indexOf('A') >= 0, hayB = serie.validos.indexOf('B') >= 0, hayF = serie.validos.indexOf('F') >= 0;
+    var dias = [], acum = [], contiguo = true;
+    for (var i = 0; i < offs.length; i++) {
+      var o = offs[i];
+      if (!(o >= 0 && o <= 3)) return null;
+      if (o !== i) contiguo = false;   // con un día sin fila el acumulado de las filas que hay no es el de la semana: solo valen los rangos del día
+      dias.push({ n: hayA ? [r.A.il[o], r.A.ih[o]] : null, b: hayB ? [r.B.il[o], r.B.ih[o]] : null, f: hayF ? [r.F.il[o], r.F.ih[o]] : null });
+      acum.push(contiguo ? { a: hayA ? [r.A.lo[o], r.A.hi[o]] : null, b: hayB ? [r.B.lo[o], r.B.hi[o]] : null, f: hayF ? [r.F.lo[o], r.F.hi[o]] : null } : null);
+    }
+    return { etiqueta: 'T' + temp + ' S' + sem + ' ' + tag + ' ' + clan, estricto: serie.estado === 'ok' && serie.validos.length === 3, dias: dias, acum: acum, estado: serie.estado };
+  } catch (e) {
+    Logger.log('[Reparto conjunto] No se pudieron leer los rangos de CurrentRiverRace: ' + e.message + '. Se reparte como siempre.');
+    return null;
+  }
+}
+
+/**
  * _repartirSemanaConjunto_(filas, offsetsExistentes, valores) [→ Contexto_Base_Web.md §PF122]
  * Reemplaza el reparto por campos (barcos, piso, ataques, fame) y el «sobrante». Recibe las tres cifras a la vez
  * (valores.ataquesSemana, valores.fame y valores.barcos; barcos null = «sin dato», se conserva el actual) y busca para
@@ -3891,6 +3932,10 @@ function _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores
  * esas cifras (lo que falta, como los barcos o la fame de un dia sin dato, lo sigue decidiendo el reparto). Si con esas restricciones ninguna
  * combinacion suma los totales, se AVISA en el registro y se hace el reparto de siempre, sin restricciones. El resultado trae crr:
  * 'aplicado', 'conflicto' o 'sin datos'. valores.sinCurrentRiverRace = true apaga todo esto.
+ * RANGOS Y MERMA (§PF301, 30-oct-2026): ANTES de encajar con la tabla se aplican los rangos de los JSON (_repartoRangosCrr_): lo que el JSON ya mostró es piso,
+ * los ataques perdidos bajan el máximo semanal (con merma no se llega a 16 ni se aspira al tope de fame y barcos) y cada día solo admite estados de la tabla dentro
+ * de su rango. Si con los JSON limpios (todos utilizables) los totales de RoyaleAPI no caben, NO se escribe nada (ok:false, crr:'conflicto') y el motivo va a revisión
+ * manual; si la serie tiene un JSON descartado o una métrica incoherente, se avisa y se sigue con el reparto de siempre. El resultado trae crr: 'rangos', 'aplicado', 'conflicto' o 'sin datos'.
  */
 function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   var offs = Object.keys(offsetsExistentes).map(Number).sort(function (a, b) { return a - b; });
@@ -3966,12 +4011,96 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     return mej;
   }
 
-  // CurrentRiverRace como restriccion (§PF139): cada dia con dato solo admite estados de la tabla con esos ataques y esa fame.
+  // Rangos de CurrentRiverRace (§PF301): primero lo que dicen los JSON (piso, merma y máximo semanal), después la tabla.
+  function resolverConAcumulado(cats, acum) {
+    function dentro(j, a, b2, f2) {
+      var x = acum[j];
+      if (!x) return true;
+      if (x.a && (a < x.a[0] || a > x.a[1])) return false;
+      if (x.b && (b2 < x.b[0] || b2 > x.b[1])) return false;
+      if (x.f && (f2 < x.f[0] || f2 > x.f[1])) return false;
+      return true;
+    }
+    // Izquierda: como grupo(), pero cada día debe dejar el acumulado dentro de su rango (la izquierda arranca en 0).
+    var izq = { '0,0,0': { a: 0, b: 0, f: 0, c: 0, p: [] } };
+    for (var x1 = 0; x1 < izqIdx.length; x1++) {
+      var j1 = izqIdx[x1], nuevoI = {}, clavesI = Object.keys(izq);
+      for (var q1 = 0; q1 < clavesI.length; q1++) {
+        var m1 = izq[clavesI[q1]];
+        for (var t1 = 0; t1 < cats[j1].length; t1++) {
+          var s1 = cats[j1][t1], na1 = m1.a + s1.n, nb1 = m1.b + s1.b, nf1 = m1.f + s1.f;
+          if (na1 > A || nb1 > B || nf1 > F || !dentro(j1, na1, nb1, nf1)) continue;
+          var c1 = m1.c + costo(j1, s1), k1 = na1 + ',' + nb1 + ',' + nf1;
+          if (!nuevoI[k1] || c1 < nuevoI[k1].c) nuevoI[k1] = { a: na1, b: nb1, f: nf1, c: c1, p: m1.p.concat([s1]) };
+        }
+      }
+      izq = nuevoI;
+    }
+    // Derecha: se guardan TODAS las combinaciones con sus acumulados parciales (la derecha no sabe lo que sumó la izquierda hasta que se unen).
+    var lista = [{ a: 0, b: 0, f: 0, c: 0, p: [], pre: [] }];
+    for (var x2 = 0; x2 < derIdx.length; x2++) {
+      var j2 = derIdx[x2], nuevaD = [];
+      for (var q2 = 0; q2 < lista.length; q2++) {
+        var m2 = lista[q2];
+        for (var t2 = 0; t2 < cats[j2].length; t2++) {
+          var s2 = cats[j2][t2], na2 = m2.a + s2.n, nb2 = m2.b + s2.b, nf2 = m2.f + s2.f;
+          if (na2 > A || nb2 > B || nf2 > F) continue;
+          nuevaD.push({ a: na2, b: nb2, f: nf2, c: m2.c + costo(j2, s2), p: m2.p.concat([s2]), pre: m2.pre.concat([[na2, nb2, nf2]]) });
+        }
+      }
+      lista = nuevaD;
+    }
+    var der = {};
+    lista.forEach(function (e) { var kd = e.a + ',' + e.b + ',' + e.f; (der[kd] = der[kd] || []).push(e); });
+    var mej = null, clavesIzq2 = Object.keys(izq);
+    for (var w = 0; w < clavesIzq2.length; w++) {
+      var li = izq[clavesIzq2[w]];
+      var cand = der[(A - li.a) + ',' + (B - li.b) + ',' + (F - li.f)];
+      if (!cand) continue;
+      for (var e2 = 0; e2 < cand.length; e2++) {
+        var rd = cand[e2], bien = true;
+        for (var u2 = 0; u2 < derIdx.length && bien; u2++) bien = dentro(derIdx[u2], li.a + rd.pre[u2][0], li.b + rd.pre[u2][1], li.f + rd.pre[u2][2]);
+        if (!bien) continue;
+        var total = li.c + rd.c;
+        if (mej === null || total < mej.c) mej = { c: total, p: li.p.concat(rd.p) };
+      }
+    }
+    return mej;
+  }
+
   var catsLlenos = [];
   for (var v = 0; v < k; v++) catsLlenos.push(catalogo);
   var mejor = null;
   var estadoCrr = 'sin datos';
-  var crr = _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores);
+  var rng = _repartoRangosCrr_(filas, offsetsExistentes, offs, valores);
+  if (rng) {
+    var catsRng = [];
+    for (var d0 = 0; d0 < k; d0++) {
+      var dr = rng.dias[d0];
+      catsRng.push(catalogo.filter(function (s3) {
+        return (dr.n === null || (s3.n >= dr.n[0] && s3.n <= dr.n[1])) &&
+               (dr.b === null || (s3.b >= dr.b[0] && s3.b <= dr.b[1])) &&
+               (dr.f === null || (s3.f >= dr.f[0] && s3.f <= dr.f[1]));
+      }));
+    }
+    mejor = resolverConAcumulado(catsRng, rng.acum);
+    if (mejor !== null) {
+      estadoCrr = 'rangos';
+    } else {
+      estadoCrr = 'conflicto';
+      var ult = rng.acum[k - 1] || null;
+      var rango = function (c) { return !c ? '?' : (c[0] + ' a ' + (c[1] === Infinity ? 'sin tope' : c[1])); };
+      var detalleRng = rng.etiqueta + ': ataques ' + rango(ult && ult.a) + ', barcos ' + rango(ult && ult.b) + ', fame ' + rango(ult && ult.f) + ' al cierre del ultimo dia' +
+        ' (totales a repartir: ataques=' + A + ', barcos=' + B + ', fame=' + F + ')';
+      if (rng.estricto) {
+        return { ok: false, huboCambio: false, crr: 'conflicto', motivo: 'los totales no caben en lo que muestran los JSON de CurrentRiverRace (piso, merma y maximo semanal; ' + detalleRng + '); no se escribe y queda para revision manual' };
+      }
+      Logger.log('[Reparto conjunto] AVISO rangos de CurrentRiverRace (la serie tiene un JSON descartado o una metrica incoherente) ' + detalleRng + '. Se reparte como siempre, sin usarlos.');
+    }
+  }
+
+  // CurrentRiverRace como restriccion (§PF139): cada dia con dato solo admite estados de la tabla con esos ataques y esa fame.
+  var crr = (mejor === null) ? _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores) : null;
   if (crr) {
     var catsCrr = [];
     for (var d = 0; d < k; d++) {
