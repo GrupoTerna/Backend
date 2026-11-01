@@ -1,7 +1,7 @@
 # Índice de funciones — Generador
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Generador/src/`. Total: 278 nombres en 12 archivos .gs.
+Código real: `Generador/src/`. Total: 279 nombres en 12 archivos .gs.
 
 ## Por archivo
 
@@ -183,11 +183,12 @@ Ninguno.
 | `CORTE_MIN_PARES_` | global | 06_Limpieza_Duplicados_JSON.gs | 85 |  |
 | `CREAR_O_ACTUALIZAR_HOJA_SISTEMA` | global | 02_Backstage.gs | 28 |  |
 | `crearProyectoVinculado_` | función | 02_Backstage.gs | 381 |  |
-| `DATOS_GH_CARPETA_HOJAS_` | global | 12_Datos_Drive_GitHub.gs | 62 |  |
-| `DATOS_GH_CARPETA_INDIVIDUAL_` | global | 12_Datos_Drive_GitHub.gs | 64 |  |
-| `DATOS_GH_CARPETA_INFORMES_` | global | 12_Datos_Drive_GitHub.gs | 63 |  |
-| `DATOS_GH_CARPETA_SEASONS_` | global | 12_Datos_Drive_GitHub.gs | 65 |  |
-| `DATOS_GH_CARPETA_TAMPERMONKEY_` | global | 12_Datos_Drive_GitHub.gs | 61 |  |
+| `DATOS_GH_CARPETA_GRUPAL_` | global | 12_Datos_Drive_GitHub.gs | 65 |  |
+| `DATOS_GH_CARPETA_HOJAS_` | global | 12_Datos_Drive_GitHub.gs | 61 |  |
+| `DATOS_GH_CARPETA_INDIVIDUAL_` | global | 12_Datos_Drive_GitHub.gs | 63 |  |
+| `DATOS_GH_CARPETA_INFORMES_` | global | 12_Datos_Drive_GitHub.gs | 62 |  |
+| `DATOS_GH_CARPETA_SEASONS_` | global | 12_Datos_Drive_GitHub.gs | 64 |  |
+| `DATOS_GH_CARPETA_TAMPERMONKEY_` | global | 12_Datos_Drive_GitHub.gs | 60 |  |
 | `DATOS_GH_EXCEPCION_TELEFONOS_` | global | 12_Datos_Drive_GitHub.gs | 98 |  |
 | `DATOS_GH_FUENTES_` | global | 12_Datos_Drive_GitHub.gs | 67 |  |
 | `DATOS_GH_HANDLER_AUTO_` | global | 12_Datos_Drive_GitHub.gs | 101 |  |
