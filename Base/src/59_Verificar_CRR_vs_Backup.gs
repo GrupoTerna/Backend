@@ -371,7 +371,7 @@ function _vcrrCapturasDeArchivos_(archivos, temporada, semana) {
  * aparece en dos clanes de la misma semana: se compara cada clan por separado y el «mayor que el máximo» queda como aviso), 'json_anomalo'
  * (alguna captura se descartó) o 'incoherente' (las capturas no caben juntas: no se usa la métrica que se contradice).
  */
-function _vcrrSeriesDeSemana_(temporada, semana, porClan) {
+function _vcrrSeriesDeSemana_(temporada, semana, porClan, rapiSemana) {
   var series = [], clanesDeTag = {};
   Object.keys(porClan).forEach(function (ck) {
     porClan[ck].forEach(function (dia) {
@@ -395,10 +395,90 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan) {
       if (r.validos.length < 3) estado = 'incoherente';
       if (Object.keys(clanesDeTag[tag]).length > 1 && estado === 'ok') estado = 'multiclan';
       series.push({ temporada: Number(temporada), semana: Number(semana), clanKey: ck, tag: tag, nombre: nombre,
-        capturas: caps.map(function (c) { return !!c; }), estado: estado, notas: notas.join('; '), validos: r.validos, r: r });
+        capturas: caps.map(function (c) { return !!c; }), estado: estado, notas: notas.join('; '), validos: r.validos, r: r, capsDatos: caps });
     });
   });
+  // §PF320: las series anómalas se cruzan con RoyaleAPI (por clan, luego la suma del jugador, luego el perfil). rapiSemana = { 'TAG': { porClan: { clanKey: {A,F,B} }, perfil: {A,F,B,clanKey} } } o null.
+  // rapiSemana undefined = no se cargó RoyaleAPI (no se cruza nada); null o {} = se cargó y esa semana no tiene datos (las anómalas quedan «sin resolver»).
+  if (rapiSemana !== undefined) {
+    var porTag = {};
+    series.forEach(function (x) { (porTag[x.tag] = porTag[x.tag] || []).push(x); });
+    Object.keys(porTag).forEach(function (tag) { _vcrrCruzarRoyaleApi_(porTag[tag], (rapiSemana && rapiSemana[tag]) || null); });
+  }
   return series;
+}
+
+/**
+ * Función pura (§PF320). Cruza con RoyaleAPI las series ANÓMALAS de UN jugador en UNA semana (series = las de todos sus clanes, de _vcrrSeriesDeSemana_, con capsDatos).
+ * Orden (pedido de la usuaria, 1-nov-2026): (1) los valores de cada clan en el JSON deben ser posibles (eso ya lo dice serie.validos); (2) la suma de los clanes del jugador en cada
+ * día debe seguir siendo posible (_vcrrResumenDeSeries_); (3) el total semanal de ese clan según RoyaleAPI fija el acumulado del domingo, y la suma de los clanes del JSON debe ser
+ * menor o igual que el perfil de RoyaleAPI (el jugador pudo atacar en un clan externo, que el JSON no ve).
+ * rapi = { porClan: { clanKey: {A,F,B} }, perfil: {A,F,B,clanKey} } (solo valores cerrados) o null. Candidata = estado json_anomalo o incoherente, o con métricas sin usar.
+ * Lo que se resuelve SIGUE siendo anomalía (estado json_anomalo) pero queda con los rangos estrechados por RoyaleAPI y la nota «estimado con RoyaleAPI»; lo que no, queda con
+ * serie.sinResolver = motivo (y «SIN RESOLVER: motivo» en las notas). Modifica las series. Devuelve { resueltas, sinResolver: [{ clanKey, tag, nombre, motivo }] }.
+ */
+function _vcrrCruzarRoyaleApi_(series, rapi) {
+  var salida = { resueltas: 0, sinResolver: [] };
+  var candidatas = (series || []).filter(function (x) { return x.estado === 'json_anomalo' || x.estado === 'incoherente' || String(x.validos || '').length < 3; });
+  if (!candidatas.length) return salida;
+  var guardar = function (x, motivo) {
+    x.sinResolver = motivo;
+    x.notas = (x.notas ? x.notas + '; ' : '') + 'SIN RESOLVER: ' + motivo;
+    salida.sinResolver.push({ clanKey: x.clanKey, tag: x.tag, nombre: x.nombre, motivo: motivo });
+  };
+  var respaldos = [];
+  candidatas.forEach(function (x) {
+    var fin = null, origen = '', soloPerfil = false;
+    if (rapi && rapi.porClan && rapi.porClan[x.clanKey]) { fin = rapi.porClan[x.clanKey]; origen = 'log'; }
+    else if (rapi && rapi.perfil && series.length === 1 && rapi.perfil.clanKey === x.clanKey) { fin = rapi.perfil; origen = 'perfil'; }
+    else if (rapi && rapi.perfil) soloPerfil = true;
+    if (!rapi || (!fin && !soloPerfil)) { guardar(x, 'RoyaleAPI no trae el total cerrado de ese jugador en esa semana'); return; }
+    if (soloPerfil) {
+      // El perfil es el total de todos los clanes: solo da un techo para este (perfil menos lo que ya muestran los otros clanes), no el valor.
+      guardar(x, 'RoyaleAPI solo trae el perfil (total de ' + series.length + ' clanes), que no fija el valor de este clan');
+      return;
+    }
+    var intentos = [{ final: fin }, { final: fin, ignorar: [3] }], r2 = null, usoIgnorar = false;
+    for (var i = 0; i < intentos.length && !r2; i++) {
+      var cand = _vcrrRestriccionesSerie_(x.capsDatos || [null, null, null, null], intentos[i]);
+      if (cand.validos === 'AFB') { r2 = cand; usoIgnorar = i === 1; }
+    }
+    if (!r2) { guardar(x, 'el total de RoyaleAPI (' + origen + ': ' + fin.A + ' ataques, ' + fin.F + ' medallas, ' + fin.B + ' barcos) no cabe con las capturas del JSON'); return; }
+    respaldos.push({ x: x, antes: { r: x.r, validos: x.validos, estado: x.estado, notas: x.notas }, origen: origen, usoIgnorar: usoIgnorar });
+    x.r = { A: r2.A, F: r2.F, B: r2.B }; x.validos = r2.validos;
+    x.estado = 'json_anomalo';
+    x.estimada = true;
+    x.notas = (x.notas ? x.notas + '; ' : '') + 'estimado con RoyaleAPI (' + origen + (usoIgnorar ? ', sin la captura D' : '') + '): ' + _vcrrTextoEstimado_(x.r);
+  });
+  if (!respaldos.length) return salida;
+  var revertir = function (motivo) {
+    respaldos.forEach(function (b) {
+      b.x.r = b.antes.r; b.x.validos = b.antes.validos; b.x.estado = b.antes.estado; b.x.notas = b.antes.notas; b.x.estimada = false;
+      guardar(b.x, motivo);
+    });
+    respaldos = [];
+  };
+  // (2) y (3): la suma de los clanes del jugador debe seguir siendo posible y no pasar del perfil de RoyaleAPI.
+  var resumen = _vcrrResumenDeSeries_(series);
+  if (resumen.conflicto) { revertir('al sumar los clanes del jugador con el valor de RoyaleAPI: ' + resumen.conflicto); return salida; }
+  if (rapi && rapi.perfil) {
+    var suma = { A: 0, F: 0, B: 0 };
+    series.forEach(function (x) { if (String(x.validos || '') === 'AFB') ['A', 'F', 'B'].forEach(function (m) { suma[m] += x.r[m].lo[3]; }); });
+    var pasa = ['A', 'F', 'B'].filter(function (m) { return typeof rapi.perfil[m] === 'number' && suma[m] > rapi.perfil[m]; });
+    if (pasa.length) { revertir('la suma de los clanes del JSON (' + suma.A + ' ataques, ' + suma.F + ' medallas, ' + suma.B + ' barcos) supera al perfil de RoyaleAPI (' + rapi.perfil.A + ', ' + rapi.perfil.F + ', ' + rapi.perfil.B + ')'); return salida; }
+  }
+  salida.resueltas = respaldos.length;
+  return salida;
+}
+
+/** Texto corto de los acumulados al cierre de J|V|S|D de una serie ya estimada: «ataques 4|8|12|16, medallas …». Un rango se escribe «a-b» y un máximo sin techo «a+». */
+function _vcrrTextoEstimado_(r) {
+  var etiquetas = { A: 'ataques', F: 'medallas', B: 'barcos' };
+  return ['A', 'F', 'B'].map(function (m) {
+    var v = [];
+    for (var d = 0; d < 4; d++) { var lo = r[m].lo[d], hi = r[m].hi[d]; v.push(lo === hi ? String(lo) : (hi === Infinity ? lo + '+' : lo + '-' + hi)); }
+    return etiquetas[m] + ' ' + v.join('|');
+  }).join(', ');
 }
 
 /**
@@ -412,9 +492,12 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan) {
  *    los barcos no pueden pasar de los ataques; la fame de un día no pasa del máximo de la tabla de fame para los ataques de ese día (_vcrrFameLimitesPorAtaques_). No se usa el mínimo de la tabla como piso: en T24 S2 el JSON trae 4 ataques el domingo con la misma fame del sábado (la fame del JSON se atrasa), y con ese piso 19 series saldrían imposibles.
  *  - Se propaga hacia adelante y hacia atrás (_vcrrPropagar_) hasta que no cambie nada. Si una métrica queda sin solución, esa métrica no se usa
  *    (validos no la incluye) y se anota en notas.
+ * extra (opcional, §PF320) = { final: {A,F,B}, finalMax: {A,F,B}, ignorar: [días 0..3] }: el total semanal de RoyaleAPI (exacto o solo techo) y los días cuya captura no se usa
+ *  (por ejemplo la del domingo en blanco). Sin extra el cálculo es el de siempre.
  * descartadas = capturas con números imposibles (no restringen). anomalas = capturas con un fallo conocido del JSON que SÍ restringen (domingo con decksUsedToday 0 y más de 12 ataques: se toma como acumulado final; decksUsedToday mayor que 4: se toma como 4 si los acumulados lo admiten). validos = letras de las métricas utilizables.
  */
-function _vcrrRestriccionesSerie_(caps) {
+function _vcrrRestriccionesSerie_(caps, extra) {
+  extra = extra || {};
   var INF = Infinity, notas = [], descartadas = [], anomalas = [], d;
   var A = { lo: [0, 0, 0, 0], hi: [4, 8, 12, 16], il: [0, 0, 0, 0], ih: [4, 4, 4, 4] };
   var F = { lo: [0, 0, 0, 0], hi: [INF, INF, INF, INF], il: [0, 0, 0, 0], ih: [900, 900, 900, 900] };
@@ -422,7 +505,7 @@ function _vcrrRestriccionesSerie_(caps) {
   var ok = [];
   for (d = 0; d < 4; d++) {
     var c = caps[d];
-    if (!c) continue;
+    if (!c || (extra.ignorar && extra.ignorar.indexOf(d) >= 0)) continue;
     var motivo = '';
     // Fallo conocido del JSON: la captura del domingo trae decksUsedToday 0 aunque ya sumó más de 12 ataques (debía ser 4: 16/0 en vez de 16/4). Se reporta como
     // anomalía pero la captura SÍ se usa como acumulado final: el valor del día sale por diferencia con el cierre del sábado (16 - 12 = 4).
@@ -453,6 +536,13 @@ function _vcrrRestriccionesSerie_(caps) {
     }
     if (c.hoy === 4) { F.hi[d] = Math.min(F.hi[d], c.fame); B.hi[d] = Math.min(B.hi[d], c.barcos); }
   }
+  // §PF320: el total semanal de RoyaleAPI fija el acumulado al cierre del domingo (final = valor exacto; finalMax = solo el techo). Se aplica antes de propagar.
+  ['A', 'F', 'B'].forEach(function (m) {
+    var M = m === 'A' ? A : (m === 'F' ? F : B);
+    var v = extra.final && extra.final[m], vmax = extra.finalMax && extra.finalMax[m];
+    if (typeof v === 'number' && isFinite(v) && v >= 0) { M.lo[3] = Math.max(M.lo[3], v); M.hi[3] = Math.min(M.hi[3], v); }
+    if (typeof vmax === 'number' && isFinite(vmax)) M.hi[3] = Math.min(M.hi[3], vmax);
+  });
   // decksUsedToday > 4: se fuerza «4 ataques ese día» y se comprueba con los acumulados de las demás capturas; si no caben, no se fuerza (y se anota).
   var excedidas = anomalas.filter(function (m) { return m.excedido; });
   if (excedidas.length) {
