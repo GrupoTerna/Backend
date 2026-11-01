@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 22:02:02 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 22:23:12 */
 
 
 
@@ -70469,7 +70469,7 @@ var VCRR_MAX_REVISION = 400;                           // tope de series que se 
 var VCRR_ESTADO_PROP = 'VCRR_ESTADO';                  // propiedad del script con el avance (JSON)
 var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo «Cruce_» lo manda a CSV/Informes (_csvSubcarpetaDe_)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
-var VCRR_VERSION_REGLAS = 1;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_: invalida el registro y se releen todos los JSON
+var VCRR_VERSION_REGLAS = 2;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_: invalida el registro y se releen todos los JSON
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
@@ -70915,6 +70915,10 @@ function _vcrrPropagar_(m) {
         n = Math.min(m.hi[d - 1], m.hi[d] - m.il[d]); if (n !== m.hi[d - 1]) { m.hi[d - 1] = n; cambio = true; }
       }
     }
+    // §PF316 (31-oct-2026): un piso que supera a su techo ya no se arregla (los pisos solo suben y los techos solo bajan), así que se corta aquí.
+    // Antes se seguía hasta 16 vueltas y, con capturas que no caben juntas, cada vuelta empujaba los pisos más arriba: salían cifras de miles de millones
+    // en Cruce_CRR_Restricciones.csv (24 series «incoherente»; el filtro de teléfonos de la copia a GitHub las tomaba por números de teléfono). El resultado (true o false) no cambia.
+    for (var k0 = 0; k0 < 4; k0++) { if (m.lo[k0] > m.hi[k0] || m.il[k0] > m.ih[k0]) return false; }
     if (!cambio) break;
   }
   for (var k = 0; k < 4; k++) { if (m.lo[k] > m.hi[k] || m.il[k] > m.ih[k]) return false; }
@@ -71111,7 +71115,8 @@ function _vcrrPaso2_(st, t0) {
       var menores = hs.filter(function (h) { return h[6] === 'csv_menor' || h[6] === 'fila_faltante'; });
       if (menores.length && (st.cont.revision || 0) + revision.length < VCRR_MAX_REVISION) {
         revision.push({ temporada: x.temporada, semana: x.semana, tag: x.tag, nombre: x.nombre, tipo: 'alarma',
-          motivo: 'Backup_Guerra.csv tiene menos que CurrentRiverRace (o falta el día)', detalle: x.clan + ': ' + menores.slice(0, 4).map(function (h) { return h[5] + ' ' + h[7] + ' ' + h[6] + ' (CSV ' + h[8] + ', mínimo ' + h[9] + ')'; }).join('; ') });
+          motivo: 'Backup_Guerra.csv tiene menos que CurrentRiverRace (o falta el día)', detalle: x.clan + ': ' + menores.slice(0, 4).map(function (h) { return h[5] + ' ' + h[7] + ' ' + h[6] + ' (CSV ' + h[8] + ', mínimo ' + h[9] + ')'; }).join('; '),
+          estado: 'Pendiente' }); // §PF316: igual que las contradicciones de §PF313, para poder filtrar lo que espera revisión
       }
     });
     st.idx++; hechas++;
