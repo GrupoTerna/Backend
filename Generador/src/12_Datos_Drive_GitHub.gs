@@ -92,6 +92,11 @@ var DATOS_GH_FUENTES_ = [
     destino: 'Datos descargados/CSV/Informes/Cruce_Meta/', maxBytes: 4 * 1024 * 1024 }
 ];
 
+// §PF317 (31-oct-2026, pedido de la usuaria): archivos cuyas columnas numéricas no se revisan en busca de teléfonos. Nombre del archivo → cuántas columnas
+// del principio se revisan (las de texto libre); el resto son rangos calculados y pueden traer cifras largas que no son teléfonos. Cruce_CRR_Restricciones.csv
+// (módulo 59): ID, Temporada, Semana, Clan, Tag, Nombre, Capturas, Estado, Métricas utilizables y Notas son las columnas 0 a 9 (se revisan 10); desde la 10 son rangos.
+var DATOS_GH_EXCEPCION_TELEFONOS_ = { 'Cruce_CRR_Restricciones.csv': 10 };
+
 var DATOS_GH_PREFIJO_ESTADO_   = 'DATOS_GH_';
 var DATOS_GH_HANDLER_AUTO_     = 'subirDatosDriveAGithubAuto';
 var DATOS_GH_HANDLER_SEGUIR_   = 'subirDatosDriveAGithubContinuar';
@@ -212,7 +217,7 @@ function _datosDriveAGithub_(op) {
         omitidos.push(nombre + ' → posible secreto: ' + rev.bloqueos.join(', '));
         continue;
       }
-      var tel = _datosGhBuscarTelefonos_(contenido);
+      var tel = _datosGhBuscarTelefonos_(_datosGhTextoParaTelefonos_(nombre, contenido));
       if (tel.length) {
         omitidos.push(nombre + ' → posible teléfono: ' + tel.join(', ') + '. Revisa el archivo; no se copió a un repo público');
         continue;
@@ -360,6 +365,33 @@ function _datosGhBuscarTelefonos_(texto) {
     if (hallazgos.length >= 5) break;
   }
   return hallazgos;
+}
+
+/**
+ * _datosGhTextoParaTelefonos_(nombre, contenido): §PF317. Devuelve el texto que se revisa en busca de teléfonos. Casi siempre es el contenido entero; solo para los archivos de
+ * DATOS_GH_EXCEPCION_TELEFONOS_ se devuelven únicamente las primeras N columnas de cada registro (una línea por registro, el número de línea del aviso es el del registro).
+ * Lee el CSV con comillas (una celda con comas, comillas o saltos de línea no parte el registro). Función pura.
+ */
+function _datosGhTextoParaTelefonos_(nombre, contenido) {
+  var n = DATOS_GH_EXCEPCION_TELEFONOS_[nombre];
+  if (!n) return contenido;
+  var texto = String(contenido), registros = [], fila = [], celda = '', entre = false;
+  for (var i = 0; i < texto.length; i++) {
+    var ch = texto.charAt(i);
+    if (entre) {
+      if (ch === '"') { if (texto.charAt(i + 1) === '"') { celda += '"'; i++; } else entre = false; }
+      else celda += ch;
+    } else if (ch === '"') { entre = true; }
+    else if (ch === ',') { fila.push(celda); celda = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && texto.charAt(i + 1) === '\n') i++;
+      fila.push(celda); celda = '';
+      registros.push(fila.slice(0, n).join(' , ').replace(/[\r\n]+/g, ' '));
+      fila = [];
+    } else celda += ch;
+  }
+  if (celda !== '' || fila.length) { fila.push(celda); registros.push(fila.slice(0, n).join(' , ').replace(/[\r\n]+/g, ' ')); }
+  return registros.join('\n');
 }
 
 /**
