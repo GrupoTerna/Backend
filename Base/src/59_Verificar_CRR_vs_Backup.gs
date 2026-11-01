@@ -54,7 +54,7 @@ var VCRR_ESTADO_PROP = 'VCRR_ESTADO';                  // propiedad del script c
 var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo «Cruce_» lo manda a CSV/Informes (_csvSubcarpetaDe_)
 var VCRR_ARCHIVO_RAPI = 'Cruce_CRR_RoyaleAPI.csv';                // caché de los totales cerrados de RoyaleAPI (log y perfil) leídos de sus JSON individuales (§PF320)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
-var VCRR_VERSION_REGLAS = 4;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_: invalida el registro y se releen todos los JSON
+var VCRR_VERSION_REGLAS = 5;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_ o el cruce con RoyaleAPI (§PF320, 5): invalida el registro y se releen todos los JSON
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
@@ -188,7 +188,8 @@ function _vcrrEjecutar_(aplicar, esContinuacion) {
     }
     var c = st.cont;
     Logger.log('[VCRR] FIN (' + st.tandas + ' tanda(s)). Semanas: ' + (c.semanasOmitidas || 0) + ' ya verificadas y sin cambios (no se releyeron), ' + (c.semanasSinJson || 0) + ' sin JSON. Series nuevas o recalculadas: ' + (c.series || 0) + '; con JSON anómalo o incoherente: ' + (c.anomalas || 0) + '. Hallazgos: CSV menor ' + (c.csv_menor || 0) +
-      ', CSV mayor que el máximo ' + (c.csv_mayor_max || 0) + ', filas que faltan ' + (c.fila_faltante || 0) + ', acumulado que baja ' + (c.no_monotono || 0) + '. ' +
+      ', CSV mayor que el máximo ' + (c.csv_mayor_max || 0) + ', filas que faltan ' + (c.fila_faltante || 0) + ', acumulado que baja ' + (c.no_monotono || 0) + ', series con JSON anómalo ' + (c.json_anomalo || 0) +
+      ' (estimadas con RoyaleAPI ' + (c.estimadas_rapi || 0) + ', sin resolver ' + (c.sin_resolver_rapi || 0) + '). JSON de RoyaleAPI leídos de nuevo: ' + (c.rapiLeidos || 0) + '. ' +
       (aplicar ? 'Filas creadas: ' + (c.creadas || 0) + ', modificadas: ' + (c.modificadas || 0) + '. ' : '(No se escribió nada en Backup_Guerra.csv.) ') +
       'Detalle en CSV/Informes: ' + VCRR_ARCHIVO_RESTRICCIONES + ' y «Cruce_CRR_vs_Backup ' + st.marca + ' (hallazgos).csv».');
     props.deleteProperty(VCRR_ESTADO_PROP);
@@ -379,6 +380,7 @@ function _vcrrPaso1_(st, t0) {
   var clanes = {};   // clave normalizada -> nombre tal como figura en el CSV
   Object.keys(grupos).forEach(function (k) { clanes[_vcrrClanNorm_(grupos[k].clan)] = grupos[k].clan; });
   var verificados = _vcrrLeerVerificados_();
+  var rapiIdx = _vcrrIndiceRapiDeDrive_();   // §PF320: totales cerrados de RoyaleAPI (los dejó el paso 1)
   var conSeries = {};
   var yaGuardadas = _vcrrLeerRestricciones_();
   Object.keys(yaGuardadas).forEach(function (k) { conSeries[k] = true; });
@@ -390,22 +392,25 @@ function _vcrrPaso1_(st, t0) {
     var t = st.semanas[st.idx][0], s = st.semanas[st.idx][1], clave = t + '|' + s;
     var archivos = _vcrrArchivosSemana_(t, s);   // solo lista (nombre, fecha y tamaño); no lee el contenido
     if (!archivos.length) { _vcrrSumar_(st, 'semanasSinJson', 1); st.idx++; continue; }
-    if (_vcrrSemanaVerificada_(verificados[clave], archivos, !!conSeries[clave])) {
+    var rapiSemana = rapiIdx[clave] || {}, firmaRapi = _vcrrFirmaRapi_(rapiSemana);
+    if (_vcrrSemanaVerificada_(verificados[clave], archivos, !!conSeries[clave], firmaRapi)) {
       _vcrrSumar_(st, 'semanasOmitidas', 1); omitidas++; st.idx++; continue;
     }
     var cap = _vcrrCapturasSemana_(t, s, archivos);
     cap.avisos.forEach(function (a) { Logger.log('[VCRR] T' + t + ' S' + s + ': JSON descartado (' + a + ').'); _vcrrSumar_(st, 'jsonDescartados', 1); });
-    var series = _vcrrSeriesDeSemana_(t, s, cap.porClan), guardadas = 0;
+    var series = _vcrrSeriesDeSemana_(t, s, cap.porClan, rapiSemana), guardadas = 0;
     series.forEach(function (x) {
       if (!clanes[x.clanKey]) { _vcrrSumar_(st, 'sinClanEnCsv', 1); return; }   // clan que Backup_Guerra.csv no tiene (p. ej. NARANJA x): no se compara
       x.clan = clanes[x.clanKey];
       filasNuevas.push(x); guardadas++;
       _vcrrSumar_(st, 'series', 1);
       if (x.estado !== 'ok') _vcrrSumar_(st, 'anomalas', 1);
+      if (x.estimada) _vcrrSumar_(st, 'rapiEstimadas', 1);
+      if (x.sinResolver) _vcrrSumar_(st, 'rapiSinResolver', 1);
     });
     archivos.forEach(function (a) {
       var aviso = cap.avisos.filter(function (m) { return m.indexOf(a.nombre + ':') === 0; })[0];
-      regNuevo.push(_vcrrFilaVerificado_(t, s, a, st.marca, aviso ? 'descartado: ' + aviso.slice(a.nombre.length + 2) : 'ok', guardadas));
+      regNuevo.push(_vcrrFilaVerificado_(t, s, a, st.marca, aviso ? 'descartado: ' + aviso.slice(a.nombre.length + 2) : 'ok', guardadas, firmaRapi));
     });
     semanasHechas[t * 1000 + s] = true;
     st.idx++; hechas++;
@@ -535,7 +540,7 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan, rapiSemana) {
   if (rapiSemana !== undefined) {
     var porTag = {};
     series.forEach(function (x) { (porTag[x.tag] = porTag[x.tag] || []).push(x); });
-    Object.keys(porTag).forEach(function (tag) { _vcrrCruzarRoyaleApi_(porTag[tag], (rapiSemana && rapiSemana[tag]) || null); });
+    Object.keys(porTag).forEach(function (tag) { _vcrrCruzarRoyaleApi_(porTag[tag], (rapiSemana && rapiSemana[String(tag).toUpperCase()]) || null); });
   }
   return series;
 }
@@ -845,12 +850,12 @@ function _vcrrSerieDeFila_(f) {
 
 /** Encabezado de Cruce_CRR_JSON_Verificados.csv (el ID T_NN_S_NN lo agrega _encodeCSVInforme). Una fila por JSON. */
 function _vcrrEncabezadoVerificados_() {
-  return ['Temporada', 'Semana', 'Clan', 'Día', 'Archivo', 'Modificado (ms)', 'Tamaño (bytes)', 'Verificado', 'Corrida', 'Resultado', 'Series de la semana', 'Versión de reglas'];
+  return ['Temporada', 'Semana', 'Clan', 'Día', 'Archivo', 'Modificado (ms)', 'Tamaño (bytes)', 'Verificado', 'Corrida', 'Resultado', 'Series de la semana', 'Versión de reglas', 'Huella RoyaleAPI'];
 }
 
 /** Fila del registro de un JSON recién leído. a = elemento de _vcrrArchivosSemana_; series = cuántas series quedaron guardadas en esa semana. */
-function _vcrrFilaVerificado_(t, s, a, marca, resultado, series) {
-  return [t, s, a.clanKey, a.letra, a.nombre, a.modificado, a.tamano, Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss'), marca, resultado, series, VCRR_VERSION_REGLAS];
+function _vcrrFilaVerificado_(t, s, a, marca, resultado, series, firmaRapi) {
+  return [t, s, a.clanKey, a.letra, a.nombre, a.modificado, a.tamano, Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss'), marca, resultado, series, VCRR_VERSION_REGLAS, firmaRapi || ''];
 }
 
 /** Huella de un JSON: cambia si cambia el clan, el día, el nombre, la fecha de modificación o el tamaño. */
@@ -859,13 +864,15 @@ function _vcrrHuella_(clanKey, letra, nombre, modificado, tamano) {
 }
 
 /**
- * Función pura. ¿La semana ya está verificada y no cambió? reg = { huellas: [texto], series, version } del registro (o undefined si no hay);
- * archivos = los JSON que hay hoy en Drive; hayRestricciones = el archivo de restricciones ya tiene series de esa semana.
+ * Función pura. ¿La semana ya está verificada y no cambió? reg = { huellas: [texto], series, version, firmaRapi } del registro (o undefined si no hay);
+ * archivos = los JSON que hay hoy en Drive; hayRestricciones = el archivo de restricciones ya tiene series de esa semana; firmaRapi = huella de lo que RoyaleAPI trae hoy de la semana
+ * (_vcrrFirmaRapi_): si cambió desde que se verificó, la semana se vuelve a calcular porque el cruce de sus series anómalas pudo cambiar.
  * Sí solo si los JSON de hoy son exactamente los registrados (mismas huellas), la versión de reglas es la vigente y, cuando la semana dejó series,
  * esas series siguen en el archivo de restricciones.
  */
-function _vcrrSemanaVerificada_(reg, archivos, hayRestricciones) {
+function _vcrrSemanaVerificada_(reg, archivos, hayRestricciones, firmaRapi) {
   if (!reg || reg.version !== VCRR_VERSION_REGLAS) return false;
+  if (String(reg.firmaRapi || '') !== String(firmaRapi || '')) return false;   // §PF320: RoyaleAPI trae algo distinto de esa semana desde la última vez
   if (reg.series > 0 && !hayRestricciones) return false;
   var hoy = archivos.map(function (a) { return _vcrrHuella_(a.clanKey, a.letra, a.nombre, a.modificado, a.tamano); }).sort();
   var antes = reg.huellas.slice().sort();
@@ -886,7 +893,7 @@ function _vcrrLeerVerificados_() {
     if (f.length < 12) continue;
     var k = Number(f[0]) + '|' + Number(f[1]);
     var version = Number(f[11]), series = Number(f[10]) || 0;
-    if (!por[k]) por[k] = { huellas: [], series: series, version: version };
+    if (!por[k]) por[k] = { huellas: [], series: series, version: version, firmaRapi: String(f[12] === undefined ? '' : f[12]) };
     else if (por[k].version !== version) por[k].version = -1;
     por[k].huellas.push(_vcrrHuella_(String(f[2]), String(f[3]), String(f[4]), f[5], f[6]));
   }
@@ -928,14 +935,21 @@ function _vcrrPaso2_(st, t0) {
   var claves = Object.keys(restr).sort(function (a, b) { var x = a.split('|'), y = b.split('|'); return (Number(x[0]) - Number(y[0])) || (Number(x[1]) - Number(y[1])); });
   if (!claves.length) { Logger.log('[VCRR] ' + VCRR_ARCHIVO_RESTRICCIONES + ' no tiene series: no hay nada que comparar.'); return true; }
   var previas = st.idx, hechas = 0, hallazgos = [], revision = [];
-  if (st.idx === 0) _vcrrLimpiarRevisionAntigua_();   // §PF318: una sola vez por corrida, en la primera tanda del paso 2
+  if (st.idx === 0) {
+    _vcrrLimpiarRevisionAntigua_();   // §PF318: una sola vez por corrida, en la primera tanda del paso 3
+    _vcrrListarSinResolver_(restr, claves);
+  }
   while (st.idx < claves.length) {
     if (hechas > 0 && (Date.now() - t0) > VCRR_PRESUPUESTO_MS - 15000) break;
     (restr[claves[st.idx]] || []).forEach(function (x) {
       var g = grupos[[String(x.temporada), String(x.semana), x.tag, x.clan].join('|')] || null;
       if (x.estado === 'incoherente' || x.estado === 'json_anomalo') {
-        hallazgos.push([x.temporada, x.semana, x.clan, x.tag, x.nombre, '', 'json_anomalo', x.estado, '', '', '', 'revisar', x.notas]);
+        // §PF320: una anómala que RoyaleAPI resolvió sigue siendo anomalía, pero va con severidad 'estimado' (los rangos ya son los estimados); la que no, 'revisar'.
+        var sinRes = /SIN RESOLVER:/.test(x.notas), estimada = !sinRes && /estimado con RoyaleAPI/.test(x.notas);
+        hallazgos.push([x.temporada, x.semana, x.clan, x.tag, x.nombre, '', 'json_anomalo', x.estado, '', '', '', estimada ? 'estimado' : 'revisar', x.notas]);
         _vcrrSumar_(st, 'json_anomalo', 1);
+        if (estimada) _vcrrSumar_(st, 'estimadas_rapi', 1);
+        if (sinRes) _vcrrSumar_(st, 'sin_resolver_rapi', 1);
       }
       var hs = _vcrrCompararSerie_(x, g);
       hs.forEach(function (h) { hallazgos.push(h); _vcrrSumar_(st, h[6], 1); });
@@ -961,6 +975,21 @@ function _vcrrPaso2_(st, t0) {
     _anotarProgresoPaso_('semanas comparadas: ' + st.idx + ' de ' + claves.length, st.idx);
   }
   return completo;
+}
+
+/**
+ * Escribe en el registro las series anómalas que RoyaleAPI no pudo resolver (las que dicen «SIN RESOLVER: motivo» en las notas), para decidir qué hacer con ellas (§PF320).
+ * Se llama una vez por corrida, al empezar el paso 3. Muestra hasta 60 y dice cuántas hay.
+ */
+function _vcrrListarSinResolver_(restr, claves) {
+  var lista = [];
+  claves.forEach(function (k) {
+    (restr[k] || []).forEach(function (x) { var m = /SIN RESOLVER: (.*)$/.exec(String(x.notas || '')); if (m) lista.push({ x: x, motivo: m[1] }); });
+  });
+  Logger.log('[VCRR] Series anómalas que RoyaleAPI no resolvió: ' + lista.length + (lista.length > 60 ? ' (se listan las primeras 60)' : '') + '.');
+  lista.slice(0, 60).forEach(function (e) {
+    Logger.log('[VCRR]   T' + e.x.temporada + ' S' + e.x.semana + ' ' + e.x.nombre + ' (' + e.x.clan + ') ' + e.x.tag + ' [' + e.x.estado + ' ' + (e.x.validos || '-') + ']: ' + e.motivo);
+  });
 }
 
 /**
