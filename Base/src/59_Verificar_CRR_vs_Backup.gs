@@ -46,7 +46,8 @@
 var VCRR_PRESUPUESTO_MS = 3 * 60 * 1000 + 30 * 1000;   // tanda: pasado este tiempo no se empieza otra semana ni otro paso (la plataforma corta a los 6 min)
 var VCRR_RESERVA_SEMANA_MS = 45 * 1000;                // tiempo que debe sobrar para EMPEZAR una semana nueva (leer unos 20 JSON y guardar lo hecho)
 var VCRR_MAX_FILAS_APLICAR = 2500;                     // tope de filas a crear + modificar en una escritura (si se pasa, no se escribe nada)
-var VCRR_MAX_REVISION = 400;                           // tope de series que se anotan en Revision_Guerra.csv por corrida
+var VCRR_MAX_REVISION = 600;                           // tope de series que se anotan en Revision_Guerra.csv por corrida completa (todas las tandas). §PF318: era 400 y dejaba fuera 129 de 504 jugador-semana
+var VCRR_MOTIVO_REVISION = 'Backup_Guerra.csv tiene menos que CurrentRiverRace (o falta el día)';   // §PF318: el motivo lleva además « — <clan>» (la clave de Revision_Guerra.csv no trae el clan)
 var VCRR_ESTADO_PROP = 'VCRR_ESTADO';                  // propiedad del script con el avance (JSON)
 var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo «Cruce_» lo manda a CSV/Informes (_csvSubcarpetaDe_)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
@@ -683,6 +684,7 @@ function _vcrrPaso2_(st, t0) {
   var claves = Object.keys(restr).sort(function (a, b) { var x = a.split('|'), y = b.split('|'); return (Number(x[0]) - Number(y[0])) || (Number(x[1]) - Number(y[1])); });
   if (!claves.length) { Logger.log('[VCRR] ' + VCRR_ARCHIVO_RESTRICCIONES + ' no tiene series: no hay nada que comparar.'); return true; }
   var previas = st.idx, hechas = 0, hallazgos = [], revision = [];
+  if (st.idx === 0) _vcrrLimpiarRevisionAntigua_();   // §PF318: una sola vez por corrida, en la primera tanda del paso 2
   while (st.idx < claves.length) {
     if (hechas > 0 && (Date.now() - t0) > VCRR_PRESUPUESTO_MS - 15000) break;
     (restr[claves[st.idx]] || []).forEach(function (x) {
@@ -696,7 +698,7 @@ function _vcrrPaso2_(st, t0) {
       var menores = hs.filter(function (h) { return h[6] === 'csv_menor' || h[6] === 'fila_faltante'; });
       if (menores.length && (st.cont.revision || 0) + revision.length < VCRR_MAX_REVISION) {
         revision.push({ temporada: x.temporada, semana: x.semana, tag: x.tag, nombre: x.nombre, tipo: 'alarma',
-          motivo: 'Backup_Guerra.csv tiene menos que CurrentRiverRace (o falta el día)', detalle: x.clan + ': ' + menores.slice(0, 4).map(function (h) { return h[5] + ' ' + h[7] + ' ' + h[6] + ' (CSV ' + h[8] + ', mínimo ' + h[9] + ')'; }).join('; '),
+          motivo: VCRR_MOTIVO_REVISION + ' — ' + x.clan, detalle: x.clan + ': ' + menores.slice(0, 4).map(function (h) { return h[5] + ' ' + h[7] + ' ' + h[6] + ' (CSV ' + h[8] + ', mínimo ' + h[9] + ')'; }).join('; '),
           estado: 'Pendiente' }); // §PF316: igual que las contradicciones de §PF313, para poder filtrar lo que espera revisión
       }
     });
@@ -715,6 +717,35 @@ function _vcrrPaso2_(st, t0) {
     _anotarProgresoPaso_('semanas comparadas: ' + st.idx + ' de ' + claves.length, st.idx);
   }
   return completo;
+}
+
+/**
+ * _vcrrLimpiarRevisionAntigua_() — §PF318 (31-oct-2026). Quita de Revision_Guerra.csv las filas que este módulo escribió con el motivo anterior (sin el clan: compartían clave
+ * los jugadores con hallazgos en dos clanes la misma semana) y que siguen con Estado vacío, es decir, nadie las tocó. Las vuelve a escribir el paso 2 con «Pendiente» y el clan en el motivo.
+ * Una fila con Estado escrito, o con otro motivo, no se toca. Sin filas de ese motivo no hace nada, así que no daña si se repite. Devuelve cuántas quitó.
+ */
+function _vcrrLimpiarRevisionAntigua_() {
+  try {
+    var texto = _loadCSVFromDrive(REVISION_GUERRA_CSV);
+    if (!texto) return 0;
+    var parsed = _parseCSV(texto);
+    if (!parsed || parsed.length < 2) return 0;
+    var ncol = REVISION_GUERRA_ENCABEZADO.length, quitadas = 0, filas = [];
+    for (var i = 1; i < parsed.length; i++) {
+      var f = parsed[i].slice(0, ncol);
+      while (f.length < ncol) f.push('');
+      if (String(f[7]) === VCRR_MOTIVO_REVISION && String(f[9]).trim() === '') { quitadas++; continue; }
+      filas.push(f);
+    }
+    if (!quitadas) return 0;
+    for (var n = 0; n < filas.length; n++) filas[n][0] = n + 1;
+    _saveCSVToDrive(REVISION_GUERRA_CSV, _encodeCSV([REVISION_GUERRA_ENCABEZADO].concat(filas)));
+    Logger.log('[VCRR] Revision_Guerra.csv: se quitaron ' + quitadas + ' fila(s) del motivo anterior sin revisar; se reescriben con el clan en el motivo y Estado «Pendiente».');
+    return quitadas;
+  } catch (e) {
+    Logger.log('[VCRR] AVISO: no se pudo limpiar Revision_Guerra.csv (' + (e.message || e) + '). Se sigue; puede quedar alguna fila duplicada.');
+    return 0;
+  }
 }
 
 /**
