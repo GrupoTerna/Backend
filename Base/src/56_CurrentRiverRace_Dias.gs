@@ -60,7 +60,8 @@ function probarCurrentRiverRaceDias() {
 
 /**
  * Punto de entrada para las demás funciones: ataques y fame por día de UN jugador en una semana, según CurrentRiverRace.
- * totA y totF = totales de la semana (null si no se conocen). Devuelve { ataques, fameAcum, inicio, notas, hayCapturas }.
+ * totA y totF = totales de la semana (null si no se conocen). Devuelve { ataques, fameAcum, inicio, notas, anomalias, hayCapturas } (ver _crrResolverJugador_: las
+ * anomalias son fallos conocidos del JSON, §PF319, que NO invalidan la semana; las notas sí).
  */
 function _crrDiasDeJugador_(temporada, semana, tag, totA, totF) {
   var caps = _crrCapturasDeSemana_(temporada, semana)[String(tag || '').trim()];
@@ -138,20 +139,49 @@ function _crrParsearNombre_(nombre) {
 }
 
 /**
+ * Función pura. Clasifica una captura { fame, usados, hoy } del día d (0..3, jueves a domingo) según los fallos conocidos del JSON que ya trata el módulo 59
+ * (59_Verificar_CRR_vs_Backup.gs, _vcrrRestriccionesSerie_; Contexto_Base_Web.md §PF319 puntos 1 a 3 y 7). Devuelve:
+ *  - 'normal': decksUsedToday es fiable, así que usados - hoy es el inicio del día.
+ *  - 'domingo_sin_hoy': domingo con decksUsedToday 0 y más de 12 ataques (hasta 16). El 0 es un fallo: esa captura es solo el acumulado al cierre de la semana.
+ *    Un domingo con 12 ataques o menos y hoy 0 es legítimo (el jugador no atacó ese día) y sigue siendo 'normal'.
+ *  - 'hoy_excedido': decksUsedToday mayor que 4, pero posible con los acumulados (hoy <= usados y usados <= 4 por los días hasta ese). La cifra del día no es fiable.
+ *  - 'hoy_imposible': decksUsedToday mayor que 4 y no cabe: no restringe nada.
+ * Los barcos no se leen en este módulo, así que no entran en la comprobación (el módulo 59 sí los comprueba).
+ */
+function _crrClasificarCaptura_(x, d) {
+  if (!x) return 'normal';
+  if (x.hoy > 4) return (x.hoy <= x.usados && x.usados <= 4 * (d + 1)) ? 'hoy_excedido' : 'hoy_imposible';
+  if (d === 3 && x.hoy === 0 && x.usados > 12 && x.usados <= 16) return 'domingo_sin_hoy';
+  return 'normal';
+}
+
+/**
  * porDia = { J: [captura], V: [...], S: [...], D: [...] } de UN jugador (o null/{} si no hay capturas).
- * totA / totF = ataques y fame de toda la semana (null si no se conocen).
- * Devuelve { ataques: [J,V,S,D], fameAcum: [J,V,S,D], inicio: [J,V,S,D], notas: [] }; null = «sin dato».
+ * totA / totF = ataques y fame de toda la semana (null si no se conocen; si no se pasan y hay una captura D 'domingo_sin_hoy', el total es el de esa captura).
+ * Devuelve { ataques: [J,V,S,D], fameAcum: [J,V,S,D], inicio: [J,V,S,D], notas: [], anomalias: [] }; null = «sin dato».
+ * notas = capturas que se contradicen entre sí (quien llama no usa la semana). anomalias = capturas con un fallo conocido del JSON (_crrClasificarCaptura_): no fijan el inicio del
+ * día ni cuentan como cierre del día anterior, pero NO invalidan la semana. Si la captura de un día trae decksUsedToday mayor que 4 y los acumulados lo admiten, ese día se toma
+ * como de 4 ataques (decisión de la usuaria, 1-nov-2026, §PF319 punto 7); si no cabe, el día queda sin dato.
  */
 function _crrResolverJugador_(porDia, totA, totF) {
   var c = porDia || {};
   var L = CRR_DIAS_LETRAS;
   var inicio = [undefined, undefined, undefined, undefined];   // undefined = no hay captura; null = capturas que no se ponen de acuerdo
-  var notas = [];
+  var notas = [], anomalias = [], domingoFinal = null;
   var i, j;
   for (i = 0; i < 4; i++) {
     var lista = c[L.charAt(i)] || [];
     var vistos = {}, n = 0, v = null;
     for (j = 0; j < lista.length; j++) {
+      var clase = _crrClasificarCaptura_(lista[j], i);
+      if (clase !== 'normal') {
+        if (clase === 'domingo_sin_hoy') {
+          anomalias.push('captura D con decksUsedToday 0 y ' + lista[j].usados + ' ataques: anómala, se usa solo como acumulado al cierre');
+          if (domingoFinal === null || lista[j].usados > domingoFinal.usados) domingoFinal = lista[j];
+        } else if (clase === 'hoy_excedido') anomalias.push('captura ' + L.charAt(i) + ' con decksUsedToday ' + lista[j].hoy + ': anómala, no fija el inicio del día');
+        else anomalias.push('captura ' + L.charAt(i) + ' con decksUsedToday ' + lista[j].hoy + ' imposible con ' + lista[j].usados + ' ataques: se descarta');
+        continue;
+      }
       var s = lista[j].usados - lista[j].hoy;
       if (!vistos[s]) { vistos[s] = true; n++; v = s; }
     }
@@ -163,6 +193,16 @@ function _crrResolverJugador_(porDia, totA, totF) {
     var completo = lista2.some(function (x) { return x.hoy === 4; });
     if ((inicio[i + 1] === undefined || inicio[i + 1] === null) && inicio[i] !== undefined && inicio[i] !== null && completo) inicio[i + 1] = inicio[i] + 4;
   }
+  // decksUsedToday mayor que 4 (§PF319 punto 7): el día se toma como de 4 ataques solo si hay un inicio del día siguiente conocido y los acumulados lo admiten. De atrás hacia adelante para encadenar.
+  for (i = 2; i >= 1; i--) {
+    var excedidas = (c[L.charAt(i)] || []).filter(function (x) { return _crrClasificarCaptura_(x, i) === 'hoy_excedido'; });
+    if (!excedidas.length || inicio[i] !== undefined || typeof inicio[i + 1] !== 'number') continue;
+    var iniForzado = inicio[i + 1] - 4, piso = 0;
+    excedidas.forEach(function (x) { if (x.usados > piso) piso = x.usados; });
+    if (iniForzado < 0 || iniForzado > 4 * i || piso > inicio[i + 1]) { anomalias.push('los acumulados no admiten 4 ataques el ' + L.charAt(i) + ': no se fuerza'); continue; }
+    inicio[i] = iniForzado;
+    anomalias.push('el ' + L.charAt(i) + ' se toma como de 4 ataques: los acumulados lo admiten');
+  }
   if (inicio[0] === undefined) inicio[0] = ((c.J && c.J.length) || (c.V && c.V.length)) ? 0 : null;
 
   var ataques = [null, null, null, null];
@@ -170,18 +210,21 @@ function _crrResolverJugador_(porDia, totA, totF) {
     var a0 = inicio[i], a1 = inicio[i + 1];
     ataques[i] = (a0 !== undefined && a0 !== null && a1 !== undefined && a1 !== null) ? a1 - a0 : null;
   }
-  ataques[3] = (totA !== null && totA !== undefined && inicio[3] !== undefined && inicio[3] !== null) ? totA - inicio[3] : null;
+  var totAUsado = (totA !== null && totA !== undefined) ? totA : (domingoFinal ? domingoFinal.usados : null);
+  ataques[3] = (totAUsado !== null && inicio[3] !== undefined && inicio[3] !== null) ? totAUsado - inicio[3] : null;
 
   var fameAcum = [null, null, null, null];
   for (i = 0; i < 3; i++) {
     var v2 = null;
     (c[L.charAt(i)] || []).forEach(function (x) { if (x.hoy === 4) v2 = x.fame; });
-    if (v2 === null) (c[L.charAt(i + 1)] || []).forEach(function (x) { if (x.hoy === 0) v2 = x.fame; });
+    // hoy 0 = aún no había ataques ese día, así que su fame es el cierre del día anterior; una captura anómala (hoy 0 por fallo del JSON) no vale como cierre del día anterior.
+    if (v2 === null) (c[L.charAt(i + 1)] || []).forEach(function (x) { if (x.hoy === 0 && _crrClasificarCaptura_(x, i + 1) === 'normal') v2 = x.fame; });
     fameAcum[i] = v2;
   }
   if (totF !== null && totF !== undefined) fameAcum[3] = totF;
+  else if (domingoFinal) fameAcum[3] = domingoFinal.fame;
 
-  return { ataques: ataques, fameAcum: fameAcum, inicio: inicio.map(function (x) { return x === undefined ? null : x; }), notas: notas };
+  return { ataques: ataques, fameAcum: fameAcum, inicio: inicio.map(function (x) { return x === undefined ? null : x; }), notas: notas, anomalias: anomalias };
 }
 
 /** fameAcum [J,V,S,D] (null = sin dato) -> fame por día; un día queda en null si falta su acumulado o el del día anterior. */
