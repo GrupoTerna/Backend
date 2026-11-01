@@ -1,0 +1,6999 @@
+{
+  "clan": "Grupo乂Terna™",
+  "fuente": "log",
+  "fechaUltimaActualizacion": "01/11/2026",
+  "semanas": [
+    {
+      "temporadaInterna": 22,
+      "temporadaRoyaleAPI": 133,
+      "temporadaSupercell": "2026-06",
+      "semana": 5,
+      "jugadores": [
+        {
+          "tag": "#VR92C8LYU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 23,
+      "temporadaRoyaleAPI": 134,
+      "temporadaSupercell": "2026-07",
+      "semana": 4,
+      "jugadores": [
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 16,
+          "fame": 3050,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#GRPYUV8R9",
+          "nombre": "tu ex",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 16,
+          "fame": 3050,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 1,
+      "jugadores": [
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 12,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#JR9J0JCQ9",
+          "nombre": "LUCKY",
+          "ataques": 15,
+          "fame": 2550,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVG2L2YP",
+          "nombre": "ᴳ乂ᵀ ⚜️ dfgh",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 2,
+      "jugadores": [
+        {
+          "tag": "#20GL9Q0V0",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YVVYCU2",
+          "nombre": "ᴳ乂ᵀ ⚜ Richard",
+          "ataques": 8,
+          "fame": 1150,
+          "barcos": 0
+        },
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 15,
+          "fame": 1750,
+          "barcos": 0
+        },
+        {
+          "tag": "#28P9Q99RC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#298JJ9RUL",
+          "nombre": "Sebas JAS",
+          "ataques": 16,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#29PYG2V8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2C982888C",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 550,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GG8PJ8GC",
+          "nombre": "ᴳ乂ᵀ ⚜️ Chistris",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GYUC0QLV",
+          "nombre": "miguel",
+          "ataques": 16,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#2LCJLUC9J",
+          "nombre": "",
+          "ataques": 9,
+          "fame": 1550,
+          "barcos": 0
+        },
+        {
+          "tag": "#2RJVYQ92P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2Y90VC0G",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1200,
+          "barcos": 0
+        },
+        {
+          "tag": "#80LPLV92P",
+          "nombre": "Ultra insticto",
+          "ataques": 12,
+          "fame": 1750,
+          "barcos": 0
+        },
+        {
+          "tag": "#80PPY9R9G",
+          "nombre": "ᴳ乂ᵀ ⚜️ Sunix :)",
+          "ataques": 13,
+          "fame": 2150,
+          "barcos": 0
+        },
+        {
+          "tag": "#829GQP0JL",
+          "nombre": "Procrastinador.",
+          "ataques": 12,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#8C0PQ9PR9",
+          "nombre": "Sieh",
+          "ataques": 12,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#8G222CQUR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J2QL9P9J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J9PL92GU",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1000,
+          "barcos": 0
+        },
+        {
+          "tag": "#8PYCU9U9Q",
+          "nombre": "KAITO KID",
+          "ataques": 16,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#8QYPGRJYC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8U0GVUVUU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YU8C9LQ0",
+          "nombre": "DarkJBlack",
+          "ataques": 16,
+          "fame": 1650,
+          "barcos": 0
+        },
+        {
+          "tag": "#90Q8RYGPP",
+          "nombre": "--❤️Kalé❤️--",
+          "ataques": 12,
+          "fame": 1400,
+          "barcos": 0
+        },
+        {
+          "tag": "#90U80RR2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️Cristofer",
+          "ataques": 15,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#92LYVP8RY",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUUV9P",
+          "nombre": "ᴳ乂ᵀ ⚜️ iJonahjk",
+          "ataques": 16,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#9G80CLJ08",
+          "nombre": "Wee-Bey",
+          "ataques": 4,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9JPL89GQP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9LCJ2JQ08",
+          "nombre": "Adrian",
+          "ataques": 12,
+          "fame": 2150,
+          "barcos": 0
+        },
+        {
+          "tag": "#9PGVLQVGG",
+          "nombre": "ᴳ乂ᵀ ⚜️nachodufu",
+          "ataques": 13,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#9UQ8GR0C2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#C0PGPR90U",
+          "nombre": "27R.C.Lazarinos",
+          "ataques": 16,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#C8V200V2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CGGGR82PJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ N1V1C",
+          "ataques": 12,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#CP8PGQGGQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUQG9CJUG",
+          "nombre": "ᴳ乂ᵀ ⚜️Marzz",
+          "ataques": 12,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#CYYV9JCPU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#G2Q9UYY89",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GLPC8YQGV",
+          "nombre": "ᴳ乂ᵀ ⚜️Drill",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GU2QYVY99",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVJ0CYQQU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVVPJ8CLG",
+          "nombre": "JP Titan :)",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#GY0GJ09C0",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#J8V9PQJP9",
+          "nombre": "ilmiatraxxp",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#J9UR0CY0G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JCUPQ88J",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1500,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGPP0G99",
+          "nombre": "Charly",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGLV98Q9V",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JLLGUY09Y",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JR9J0JCQ9",
+          "nombre": "LUCKY",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV08RQU2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ DAVID ★",
+          "ataques": 8,
+          "fame": 1350,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV2CCCP28",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JVVG9YUG0",
+          "nombre": "Fiorela.",
+          "ataques": 2,
+          "fame": 200,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJ0CYCG9V",
+          "nombre": "ᴳ乂ᵀ ⚜️CERFIRE",
+          "ataques": 13,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJUP920C9",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#LLULJ0CJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LR98URR2G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LUCQUJJUJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P8Y0CQ9VR",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PL0J20JUP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPGJVVV90",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPJVG29UV",
+          "nombre": "FLS £V∆°",
+          "ataques": 6,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q29Y8CR2",
+          "nombre": "",
+          "ataques": 14,
+          "fame": 1850,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q98RGPGCU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Senju",
+          "ataques": 12,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCGGPYCYJ",
+          "nombre": "matichu",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG2PP89G2",
+          "nombre": "Har",
+          "ataques": 11,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG88QRR8Y",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1750,
+          "barcos": 0
+        },
+        {
+          "tag": "#QR8JGLC9Q",
+          "nombre": "ᴳ乂ᵀ⚜️Bloodshot",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 12,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#QYGJG02CY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#R98JQRU99",
+          "nombre": "ᴳ乂ᵀ ⚜️Rukon_RB",
+          "ataques": 12,
+          "fame": 1600,
+          "barcos": 0
+        },
+        {
+          "tag": "#RCLYYL8J2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RGQUGU0CU",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2050,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVG2L2YP",
+          "nombre": "ᴳ乂ᵀ ⚜️ dfgh",
+          "ataques": 12,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#U00VJ99VY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U9JY89JVR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJL0GR80Y",
+          "nombre": "j0rdxn_17xd",
+          "ataques": 15,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJUGRYY9C",
+          "nombre": "ㅤᴀᴅᴍㅤϟ",
+          "ataques": 14,
+          "fame": 2050,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UU2JVLLLP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UVU2UYYC2",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#V08Y8GU8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V20GJRC9Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ Caandre",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#V2RUQ9LUG",
+          "nombre": "",
+          "ataques": 15,
+          "fame": 1850,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9QCYQLLC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#VG2RYYVP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQCG0G09G",
+          "nombre": "ᴳ乂ᵀ ⚜️ C-Ron",
+          "ataques": 12,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR92C8LYU",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1500,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y2RLL228R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y8CVG9VYL",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#YGL2QV8LG",
+          "nombre": "ᴳ乂ᵀ ⚜ T3RR1BL3!",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#YR88JLLVU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 3,
+      "jugadores": [
+        {
+          "tag": "#20GL9Q0V0",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YVVYCU2",
+          "nombre": "ᴳ乂ᵀ ⚜ Richard",
+          "ataques": 12,
+          "fame": 1600,
+          "barcos": 0
+        },
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#28P9Q99RC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#298JJ9RUL",
+          "nombre": "Sebas JAS",
+          "ataques": 16,
+          "fame": 2150,
+          "barcos": 0
+        },
+        {
+          "tag": "#29PYG2V8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2C982888C",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GG8PJ8GC",
+          "nombre": "ᴳ乂ᵀ ⚜️ Chistris",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GYUC0QLV",
+          "nombre": "miguel",
+          "ataques": 16,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#2LCJLUC9J",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1850,
+          "barcos": 0
+        },
+        {
+          "tag": "#2RJVYQ92P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2Y90VC0G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#80LPLV92P",
+          "nombre": "Ultra insticto",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#80PPY9R9G",
+          "nombre": "ᴳ乂ᵀ ⚜️ Sunix :)",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#829GQP0JL",
+          "nombre": "Procrastinador.",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#8C0PQ9PR9",
+          "nombre": "Sieh",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#8G222CQUR",
+          "nombre": "",
+          "ataques": 13,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J2QL9P9J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J9PL92GU",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#8PYCU9U9Q",
+          "nombre": "KAITO KID",
+          "ataques": 16,
+          "fame": 2450,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#8QYPGRJYC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8U0GVUVUU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YU8C9LQ0",
+          "nombre": "DarkJBlack",
+          "ataques": 12,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#90Q8RYGPP",
+          "nombre": "--❤️Kalé❤️--",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#90U80RR2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️Cristofer",
+          "ataques": 15,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#92LYVP8RY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUUV9P",
+          "nombre": "ᴳ乂ᵀ ⚜️ iJonahjk",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#9G80CLJ08",
+          "nombre": "Wee-Bey",
+          "ataques": 16,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#9JPL89GQP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9LCJ2JQ08",
+          "nombre": "Adrian",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#9PGVLQVGG",
+          "nombre": "ᴳ乂ᵀ ⚜️nachodufu",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#9UQ8GR0C2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#C0PGPR90U",
+          "nombre": "27R.C.Lazarinos",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#C8V200V2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CGGGR82PJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ N1V1C",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#CP8PGQGGQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUQG9CJUG",
+          "nombre": "ᴳ乂ᵀ ⚜️Marzz",
+          "ataques": 14,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#CYYV9JCPU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#G2Q9UYY89",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GLPC8YQGV",
+          "nombre": "ᴳ乂ᵀ ⚜️Drill",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GU2QYVY99",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVJ0CYQQU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVVPJ8CLG",
+          "nombre": "JP Titan :)",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#GY0GJ09C0",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#J8V9PQJP9",
+          "nombre": "ilmiatraxxp",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#J9UR0CY0G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JCUPQ88J",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGPP0G99",
+          "nombre": "Charly",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGLV98Q9V",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JLLGUY09Y",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JR9J0JCQ9",
+          "nombre": "LUCKY",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV08RQU2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ DAVID ★",
+          "ataques": 16,
+          "fame": 3100,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV2CCCP28",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JVVG9YUG0",
+          "nombre": "Fiorela.",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJ0CYCG9V",
+          "nombre": "ᴳ乂ᵀ ⚜️CERFIRE",
+          "ataques": 15,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJUP920C9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LLULJ0CJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LR98URR2G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LUCQUJJUJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P8Y0CQ9VR",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PL0J20JUP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPGJVVV90",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPJVG29UV",
+          "nombre": "FLS £V∆°",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q29Y8CR2",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q98RGPGCU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Senju",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCGGPYCYJ",
+          "nombre": "matichu",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG2PP89G2",
+          "nombre": "Har",
+          "ataques": 8,
+          "fame": 1350,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG88QRR8Y",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2450,
+          "barcos": 0
+        },
+        {
+          "tag": "#QR8JGLC9Q",
+          "nombre": "ᴳ乂ᵀ⚜️Bloodshot",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 15,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#QYGJG02CY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#R98JQRU99",
+          "nombre": "ᴳ乂ᵀ ⚜️Rukon_RB",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#RCLYYL8J2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RGQUGU0CU",
+          "nombre": "",
+          "ataques": 15,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVG2L2YP",
+          "nombre": "ᴳ乂ᵀ ⚜️ dfgh",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#U00VJ99VY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U9JY89JVR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJL0GR80Y",
+          "nombre": "j0rdxn_17xd",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJUGRYY9C",
+          "nombre": "ㅤᴀᴅᴍㅤϟ",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#UU2JVLLLP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UVU2UYYC2",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#V08Y8GU8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V20GJRC9Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ Caandre",
+          "ataques": 16,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#V2RUQ9LUG",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9QCYQLLC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#VG2RYYVP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQCG0G09G",
+          "nombre": "ᴳ乂ᵀ ⚜️ C-Ron",
+          "ataques": 16,
+          "fame": 2450,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR92C8LYU",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y2RLL228R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y8CVG9VYL",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 900,
+          "barcos": 0
+        },
+        {
+          "tag": "#YGL2QV8LG",
+          "nombre": "ᴳ乂ᵀ ⚜ T3RR1BL3!",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#YR88JLLVU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 4,
+      "jugadores": [
+        {
+          "tag": "#202L8GQJ99",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20GL9Q0V0",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YVVYCU2",
+          "nombre": "ᴳ乂ᵀ ⚜ Richard",
+          "ataques": 15,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#22C090RVJ",
+          "nombre": "反覆分Mc-->WiLL",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#28P9Q99RC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#298JJ9RUL",
+          "nombre": "Sebas JAS",
+          "ataques": 8,
+          "fame": 1250,
+          "barcos": 0
+        },
+        {
+          "tag": "#29PYG2V8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2C982888C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GG8PJ8GC",
+          "nombre": "ᴳ乂ᵀ ⚜️ Chistris",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GYUC0QLV",
+          "nombre": "miguel",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#2LCJLUC9J",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#2PGYJ8Q9U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2RJVYQ92P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2Y90VC0G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#80LPLV92P",
+          "nombre": "Ultra insticto",
+          "ataques": 15,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#80PPY9R9G",
+          "nombre": "ᴳ乂ᵀ ⚜️ Sunix :)",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#829GQP0JL",
+          "nombre": "Procrastinador.",
+          "ataques": 15,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#8C0PQ9PR9",
+          "nombre": "Sieh",
+          "ataques": 16,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#8G222CQUR",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J2QL9P9J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J9PL92GU",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#8PYCU9U9Q",
+          "nombre": "KAITO KID",
+          "ataques": 16,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#8QYPGRJYC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8U0GVUVUU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YU8C9LQ0",
+          "nombre": "DarkJBlack",
+          "ataques": 16,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#900GGJYRQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#90Q8RYGPP",
+          "nombre": "--❤️Kalé❤️--",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#90U80RR2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️Cristofer",
+          "ataques": 15,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#92LYVP8RY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUUV9P",
+          "nombre": "ᴳ乂ᵀ ⚜️ iJonahjk",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#9G80CLJ08",
+          "nombre": "Wee-Bey",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#9JPL89GQP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9LCJ2JQ08",
+          "nombre": "Adrian",
+          "ataques": 16,
+          "fame": 3400,
+          "barcos": 0
+        },
+        {
+          "tag": "#9PGVLQVGG",
+          "nombre": "ᴳ乂ᵀ ⚜️nachodufu",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#9UQ8GR0C2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9Y0L2J8R0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#C0PGPR90U",
+          "nombre": "27R.C.Lazarinos",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#C8V200V2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CGGGR82PJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ N1V1C",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#CP8PGQGGQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CQRVQLP9R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CRR2889JU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUQG9CJUG",
+          "nombre": "ᴳ乂ᵀ ⚜️Marzz",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#CYYV9JCPU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#G2Q9UYY89",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GLPC8YQGV",
+          "nombre": "ᴳ乂ᵀ ⚜️Drill",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#GU2QYVY99",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVJ0CYQQU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVVPJ8CLG",
+          "nombre": "JP Titan :)",
+          "ataques": 15,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#GY0GJ09C0",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#J8V9PQJP9",
+          "nombre": "ilmiatraxxp",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#J9UR0CY0G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JCUPQ88J",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGPP0G99",
+          "nombre": "Charly",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGLV98Q9V",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JLLGUY09Y",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JPY0P0PR2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JR9J0JCQ9",
+          "nombre": "LUCKY",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV08RQU2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ DAVID ★",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV2CCCP28",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JVVG9YUG0",
+          "nombre": "Fiorela.",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJ0CYCG9V",
+          "nombre": "ᴳ乂ᵀ ⚜️CERFIRE",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJUP920C9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LLULJ0CJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LR98URR2G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LUCQUJJUJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P8Y0CQ9VR",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PL0J20JUP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPGJVVV90",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPJVG29UV",
+          "nombre": "FLS £V∆°",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q29Y8CR2",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q98RGPGCU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Senju",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCGGPYCYJ",
+          "nombre": "matichu",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG2PP89G2",
+          "nombre": "Har",
+          "ataques": 16,
+          "fame": 2550,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG88QRR8Y",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#QR8JGLC9Q",
+          "nombre": "ᴳ乂ᵀ⚜️Bloodshot",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 16,
+          "fame": 3400,
+          "barcos": 0
+        },
+        {
+          "tag": "#QYGJG02CY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#R98JQRU99",
+          "nombre": "ᴳ乂ᵀ ⚜️Rukon_RB",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#R9ULCUCUV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RCLYYL8J2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RGQUGU0CU",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVG2L2YP",
+          "nombre": "ᴳ乂ᵀ ⚜️ dfgh",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#U00VJ99VY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U9JY89JVR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJL0GR80Y",
+          "nombre": "j0rdxn_17xd",
+          "ataques": 15,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJUGRYY9C",
+          "nombre": "ㅤᴀᴅᴍㅤϟ",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URPVCY8YU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UU2JVLLLP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UVU2UYYC2",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#V08Y8GU8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V20GJRC9Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ Caandre",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#V2RUQ9LUG",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9QCYQLLC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#VG2RYYVP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQCG0G09G",
+          "nombre": "ᴳ乂ᵀ ⚜️ C-Ron",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR92C8LYU",
+          "nombre": "",
+          "ataques": 14,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y2RLL228R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y8CVG9VYL",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#YGL2QV8LG",
+          "nombre": "ᴳ乂ᵀ ⚜ T3RR1BL3!",
+          "ataques": 13,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#YR88JLLVU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 5,
+      "jugadores": [
+        {
+          "tag": "#202L8GQJ99",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20GL9Q0V0",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YVVYCU2",
+          "nombre": "ᴳ乂ᵀ ⚜ Richard",
+          "ataques": 8,
+          "fame": 1200,
+          "barcos": 0
+        },
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#22C090RVJ",
+          "nombre": "反覆分Mc-->WiLL",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#28P9Q99RC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#298JJ9RUL",
+          "nombre": "Sebas JAS",
+          "ataques": 8,
+          "fame": 1100,
+          "barcos": 0
+        },
+        {
+          "tag": "#29PYG2V8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2C982888C",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GG8PJ8GC",
+          "nombre": "ᴳ乂ᵀ ⚜️ Chistris",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GYUC0QLV",
+          "nombre": "miguel",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#2LCJLUC9J",
+          "nombre": "",
+          "ataques": 10,
+          "fame": 1450,
+          "barcos": 0
+        },
+        {
+          "tag": "#2PGYJ8Q9U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2RJVYQ92P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2Y90VC0G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8008CRLJU",
+          "nombre": "",
+          "ataques": 3,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#80LPLV92P",
+          "nombre": "Ultra insticto",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#80PPY9R9G",
+          "nombre": "ᴳ乂ᵀ ⚜️ Sunix :)",
+          "ataques": 16,
+          "fame": 3100,
+          "barcos": 0
+        },
+        {
+          "tag": "#829GQP0JL",
+          "nombre": "Procrastinador.",
+          "ataques": 15,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#89G9Y8YR8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8C0PQ9PR9",
+          "nombre": "Sieh",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#8G222CQUR",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J2QL9P9J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J9PL92GU",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2550,
+          "barcos": 0
+        },
+        {
+          "tag": "#8PYCU9U9Q",
+          "nombre": "KAITO KID",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#8QRC28G8L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8QYPGRJYC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8U0GVUVUU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬",
+          "ataques": 8,
+          "fame": 1350,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YU8C9LQ0",
+          "nombre": "DarkJBlack",
+          "ataques": 16,
+          "fame": 2450,
+          "barcos": 0
+        },
+        {
+          "tag": "#900GGJYRQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#90Q8RYGPP",
+          "nombre": "--❤️Kalé❤️--",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#90U80RR2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️Cristofer",
+          "ataques": 13,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#92LYVP8RY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUUV9P",
+          "nombre": "ᴳ乂ᵀ ⚜️ iJonahjk",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#9G80CLJ08",
+          "nombre": "Wee-Bey",
+          "ataques": 16,
+          "fame": 3050,
+          "barcos": 0
+        },
+        {
+          "tag": "#9GVLVR2JV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9JPL89GQP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9LCJ2JQ08",
+          "nombre": "Adrian",
+          "ataques": 16,
+          "fame": 2850,
+          "barcos": 0
+        },
+        {
+          "tag": "#9PGVLQVGG",
+          "nombre": "ᴳ乂ᵀ ⚜️nachodufu",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#9UQ8GR0C2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9Y0L2J8R0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#C0PGPR90U",
+          "nombre": "27R.C.Lazarinos",
+          "ataques": 16,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#C8V200V2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CGGGR82PJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ N1V1C",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#CP8PGQGGQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CQRVQLP9R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CRR2889JU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUQG9CJUG",
+          "nombre": "ᴳ乂ᵀ ⚜️Marzz",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#CYYV9JCPU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#G2Q9UYY89",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GLPC8YQGV",
+          "nombre": "ᴳ乂ᵀ ⚜️Drill",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GU2QYVY99",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVJ0CYQQU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVVPJ8CLG",
+          "nombre": "JP Titan :)",
+          "ataques": 16,
+          "fame": 2450,
+          "barcos": 0
+        },
+        {
+          "tag": "#GY0GJ09C0",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1600,
+          "barcos": 0
+        },
+        {
+          "tag": "#J8V9PQJP9",
+          "nombre": "ilmiatraxxp",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#J9UR0CY0G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JCUPQ88J",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGPP0G99",
+          "nombre": "Charly",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGLV98Q9V",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JLLGUY09Y",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JPY0P0PR2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JR9J0JCQ9",
+          "nombre": "LUCKY",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JUY80PYQ9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV08RQU2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ DAVID ★",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV2CCCP28",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JVVG9YUG0",
+          "nombre": "Fiorela.",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJ0CYCG9V",
+          "nombre": "ᴳ乂ᵀ ⚜️CERFIRE",
+          "ataques": 15,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJUP920C9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LL9YJPRGU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LLULJ0CJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LR98URR2G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LUCQUJJUJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P8Y0CQ9VR",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ",
+          "ataques": 8,
+          "fame": 1000,
+          "barcos": 0
+        },
+        {
+          "tag": "#PL0J20JUP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPGJVVV90",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPJVG29UV",
+          "nombre": "FLS £V∆°",
+          "ataques": 16,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q29Y8CR2",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q98RGPGCU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Senju",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCGGPYCYJ",
+          "nombre": "matichu",
+          "ataques": 14,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG09QQCJC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG2PP89G2",
+          "nombre": "Har",
+          "ataques": 16,
+          "fame": 2450,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG88QRR8Y",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#QR8JGLC9Q",
+          "nombre": "ᴳ乂ᵀ⚜️Bloodshot",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#QYGJG02CY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#R98JQRU99",
+          "nombre": "ᴳ乂ᵀ ⚜️Rukon_RB",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#R9ULCUCUV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RCLYYL8J2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RGQUGU0CU",
+          "nombre": "",
+          "ataques": 13,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#RLVRUQ8UU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RR8CRJPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVG2L2YP",
+          "nombre": "ᴳ乂ᵀ ⚜️ dfgh",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#U00VJ99VY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U9JY89JVR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJL0GR80Y",
+          "nombre": "j0rdxn_17xd",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJUGRYY9C",
+          "nombre": "ㅤᴀᴅᴍㅤϟ",
+          "ataques": 16,
+          "fame": 2550,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#ULYRQQPLJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URPVCY8YU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UU2JVLLLP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UVU2UYYC2",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1100,
+          "barcos": 0
+        },
+        {
+          "tag": "#UYU0PGUYJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＲＡＭＩ",
+          "ataques": 8,
+          "fame": 1250,
+          "barcos": 0
+        },
+        {
+          "tag": "#V08Y8GU8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V20GJRC9Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ Caandre",
+          "ataques": 12,
+          "fame": 1750,
+          "barcos": 0
+        },
+        {
+          "tag": "#V2RUQ9LUG",
+          "nombre": "",
+          "ataques": 13,
+          "fame": 2150,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9QCYQLLC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#VG2RYYVP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQCG0G09G",
+          "nombre": "ᴳ乂ᵀ ⚜️ C-Ron",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR92C8LYU",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y2RLL228R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y8CVG9VYL",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1050,
+          "barcos": 0
+        },
+        {
+          "tag": "#YGL2QV8LG",
+          "nombre": "ᴳ乂ᵀ ⚜ T3RR1BL3!",
+          "ataques": 16,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#YR88JLLVU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 1,
+      "jugadores": [
+        {
+          "tag": "#200UY8QL02",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#209Y2UU2G8",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#20GL9Q0V0",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YVVYCU2",
+          "nombre": "ᴳ乂ᵀ ⚜ Richard",
+          "ataques": 12,
+          "fame": 1500,
+          "barcos": 0
+        },
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#298JJ9RUL",
+          "nombre": "Sebas JAS",
+          "ataques": 16,
+          "fame": 2850,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GG8PJ8GC",
+          "nombre": "ᴳ乂ᵀ ⚜️ Chistris",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GYUC0QLV",
+          "nombre": "miguel",
+          "ataques": 16,
+          "fame": 3250,
+          "barcos": 0
+        },
+        {
+          "tag": "#2LCJLUC9J",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#80LPLV92P",
+          "nombre": "Ultra insticto",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#80PPY9R9G",
+          "nombre": "ᴳ乂ᵀ ⚜️ Sunix :)",
+          "ataques": 16,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#829GQP0JL",
+          "nombre": "Procrastinador.",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#82CCYGYYJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8C0PQ9PR9",
+          "nombre": "Sieh",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#8G222CQUR",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J9PL92GU",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#8PYCU9U9Q",
+          "nombre": "KAITO KID",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#8UJP8R0JY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YU8C9LQ0",
+          "nombre": "DarkJBlack",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#90Q8RYGPP",
+          "nombre": "--❤️Kalé❤️--",
+          "ataques": 14,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#90U80RR2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️Cristofer",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUUV9P",
+          "nombre": "ᴳ乂ᵀ ⚜️ iJonahjk",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#9C9PRGV9Y",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9G80CLJ08",
+          "nombre": "Wee-Bey",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#9LCJ2JQ08",
+          "nombre": "Adrian",
+          "ataques": 16,
+          "fame": 2850,
+          "barcos": 0
+        },
+        {
+          "tag": "#9PGVLQVGG",
+          "nombre": "ᴳ乂ᵀ ⚜️nachodufu",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#9QJ2Y98Y0",
+          "nombre": "",
+          "ataques": 1,
+          "fame": 200,
+          "barcos": 0
+        },
+        {
+          "tag": "#C0PGPR90U",
+          "nombre": "27R.C.Lazarinos",
+          "ataques": 14,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#CGGGR82PJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ N1V1C",
+          "ataques": 16,
+          "fame": 3300,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUQG9CJUG",
+          "nombre": "ᴳ乂ᵀ ⚜️Marzz",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#G8UU9LCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GV80GYC2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVVPJ8CLG",
+          "nombre": "JP Titan :)",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#J89R8LYPP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGY090GGP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV08RQU2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ DAVID ★",
+          "ataques": 15,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJ0CYCG9V",
+          "nombre": "ᴳ乂ᵀ ⚜️CERFIRE",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#LL9YJPRGU",
+          "nombre": "",
+          "ataques": 3,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#LPLC990RJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LV90QCYJV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P8Y0CQ9VR",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ",
+          "ataques": 12,
+          "fame": 1850,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPJVG29UV",
+          "nombre": "FLS £V∆°",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q29Y8CR2",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q98RGPGCU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Senju",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCGGPYCYJ",
+          "nombre": "matichu",
+          "ataques": 12,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG2PP89G2",
+          "nombre": "Har",
+          "ataques": 12,
+          "fame": 1750,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG88QRR8Y",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#R98JQRU99",
+          "nombre": "ᴳ乂ᵀ ⚜️Rukon_RB",
+          "ataques": 16,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#RGQUGU0CU",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#RJQL8U2P",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1100,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVG2L2YP",
+          "nombre": "ᴳ乂ᵀ ⚜️ dfgh",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVJ809Y0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RU8LCGCRJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U92JQGCL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJL0GR80Y",
+          "nombre": "j0rdxn_17xd",
+          "ataques": 16,
+          "fame": 3050,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJUGRYY9C",
+          "nombre": "ㅤᴀᴅᴍㅤϟ",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#ULVJU8229",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#UQ2RJYLVQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V20GJRC9Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ Caandre",
+          "ataques": 12,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#V2RUQ9LUG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 3050,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGP0PC2PV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGRYG8YVP",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1250,
+          "barcos": 0
+        },
+        {
+          "tag": "#VP92PYJ0J",
+          "nombre": "zuizidee.",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQCG0G09G",
+          "nombre": "ᴳ乂ᵀ ⚜️ C-Ron",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR92C8LYU",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRCQGQU88",
+          "nombre": "",
+          "ataques": 1,
+          "fame": 100,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y990VL9LL",
+          "nombre": "♿️ l mayin",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#YGL2QV8LG",
+          "nombre": "ᴳ乂ᵀ ⚜ T3RR1BL3!",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 2,
+      "jugadores": [
+        {
+          "tag": "#200UY8QL02",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#209Y2UU2G8",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1500,
+          "barcos": 0
+        },
+        {
+          "tag": "#20GL9Q0V0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YVVYCU2",
+          "nombre": "ᴳ乂ᵀ ⚜ Richard",
+          "ataques": 15,
+          "fame": 1850,
+          "barcos": 0
+        },
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#298JJ9RUL",
+          "nombre": "Sebas JAS",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GG8PJ8GC",
+          "nombre": "ᴳ乂ᵀ ⚜️ Chistris",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GYUC0QLV",
+          "nombre": "miguel",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#2LCJLUC9J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#800VVC9VC",
+          "nombre": "",
+          "ataques": 3,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#80LPLV92P",
+          "nombre": "Ultra insticto",
+          "ataques": 10,
+          "fame": 1350,
+          "barcos": 0
+        },
+        {
+          "tag": "#80PPY9R9G",
+          "nombre": "ᴳ乂ᵀ ⚜️ Sunix :)",
+          "ataques": 16,
+          "fame": 3050,
+          "barcos": 0
+        },
+        {
+          "tag": "#829GQP0JL",
+          "nombre": "Procrastinador.",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#82CCYGYYJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8C0PQ9PR9",
+          "nombre": "Sieh",
+          "ataques": 16,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#8G222CQUR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J9PL92GU",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 650,
+          "barcos": 0
+        },
+        {
+          "tag": "#8PYCU9U9Q",
+          "nombre": "KAITO KID",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#8UJP8R0JY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YU8C9LQ0",
+          "nombre": "DarkJBlack",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#90Q8RYGPP",
+          "nombre": "--❤️Kalé❤️--",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#90U80RR2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️Cristofer",
+          "ataques": 15,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUUV9P",
+          "nombre": "ᴳ乂ᵀ ⚜️ iJonahjk",
+          "ataques": 16,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#9C9PRGV9Y",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9G80CLJ08",
+          "nombre": "Wee-Bey",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#9LCJ2JQ08",
+          "nombre": "Adrian",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#9PGVLQVGG",
+          "nombre": "ᴳ乂ᵀ ⚜️nachodufu",
+          "ataques": 16,
+          "fame": 2850,
+          "barcos": 0
+        },
+        {
+          "tag": "#9QJ2Y98Y0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#C0PGPR90U",
+          "nombre": "27R.C.Lazarinos",
+          "ataques": 12,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#C8V200V2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CGGGR82PJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ N1V1C",
+          "ataques": 12,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#CQR29PVV",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUL98Y8UY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUQG9CJUG",
+          "nombre": "ᴳ乂ᵀ ⚜️Marzz",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#CVPUJ8JYY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#G8UU9LCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GRPYUV8R9",
+          "nombre": "tu ex",
+          "ataques": 8,
+          "fame": 1200,
+          "barcos": 0
+        },
+        {
+          "tag": "#GV80GYC2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVVPJ8CLG",
+          "nombre": "JP Titan :)",
+          "ataques": 16,
+          "fame": 3100,
+          "barcos": 0
+        },
+        {
+          "tag": "#GYU0R0V29",
+          "nombre": "Love--Adri<3",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#J89R8LYPP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGC9PC09",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1200,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGY090GGP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV08RQU2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ DAVID ★",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV2QVGPJJ",
+          "nombre": "",
+          "ataques": 2,
+          "fame": 200,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJ0CYCG9V",
+          "nombre": "ᴳ乂ᵀ ⚜️CERFIRE",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#LL9YJPRGU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LPLC990RJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LV90QCYJV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P00CPGPQR",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#P2CUUJ9P8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P8Y0CQ9VR",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPJVG29UV",
+          "nombre": "FLS £V∆°",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q29Y8CR2",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2850,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q98RGPGCU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Senju",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCGGPYCYJ",
+          "nombre": "matichu",
+          "ataques": 11,
+          "fame": 2050,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCLCL2C08",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG2PP89G2",
+          "nombre": "Har",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG88QRR8Y",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#R98JQRU99",
+          "nombre": "ᴳ乂ᵀ ⚜️Rukon_RB",
+          "ataques": 16,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#RGQUGU0CU",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1600,
+          "barcos": 0
+        },
+        {
+          "tag": "#RJQL8U2P",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#RJRCYPY9L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVG2L2YP",
+          "nombre": "ᴳ乂ᵀ ⚜️ dfgh",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVJ809Y0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RU8LCGCRJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RVG29QC2C",
+          "nombre": "black 333",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U92JQGCL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U9G0GCRLC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJL0GR80Y",
+          "nombre": "j0rdxn_17xd",
+          "ataques": 16,
+          "fame": 3300,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJUGRYY9C",
+          "nombre": "ㅤᴀᴅᴍㅤϟ",
+          "ataques": 12,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#ULVJU8229",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UQ2RJYLVQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URPVCY8YU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V20GJRC9Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ Caandre",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#V2RUQ9LUG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8PYCGPU",
+          "nombre": "",
+          "ataques": 2,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGP0PC2PV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGRYG8YVP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VP92PYJ0J",
+          "nombre": "zuizidee.",
+          "ataques": 16,
+          "fame": 2850,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQCG0G09G",
+          "nombre": "ᴳ乂ᵀ ⚜️ C-Ron",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR92C8LYU",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRCQGQU88",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VU2RRUCQU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VYQQLYL9J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y990VL9LL",
+          "nombre": "♿️ l mayin",
+          "ataques": 15,
+          "fame": 2450,
+          "barcos": 0
+        },
+        {
+          "tag": "#YGL2QV8LG",
+          "nombre": "ᴳ乂ᵀ ⚜ T3RR1BL3!",
+          "ataques": 16,
+          "fame": 2550,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 3,
+      "jugadores": [
+        {
+          "tag": "#200UY8QL02",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#209Y2UU2G8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20GL9Q0V0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YVVYCU2",
+          "nombre": "ᴳ乂ᵀ ⚜ Richard",
+          "ataques": 15,
+          "fame": 1850,
+          "barcos": 0
+        },
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#298JJ9RUL",
+          "nombre": "Sebas JAS",
+          "ataques": 16,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GG8PJ8GC",
+          "nombre": "ᴳ乂ᵀ ⚜️ Chistris",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GYUC0QLV",
+          "nombre": "miguel",
+          "ataques": 16,
+          "fame": 3150,
+          "barcos": 0
+        },
+        {
+          "tag": "#2LCJLUC9J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2VPR800RJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#800VVC9VC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#80LPLV92P",
+          "nombre": "Ultra insticto",
+          "ataques": 12,
+          "fame": 2150,
+          "barcos": 0
+        },
+        {
+          "tag": "#80PPY9R9G",
+          "nombre": "ᴳ乂ᵀ ⚜️ Sunix :)",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#829GQP0JL",
+          "nombre": "Procrastinador.",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#82CCYGYYJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8C0PQ9PR9",
+          "nombre": "Sieh",
+          "ataques": 16,
+          "fame": 2850,
+          "barcos": 0
+        },
+        {
+          "tag": "#8CY9GVLPJ",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#8G222CQUR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J9PL92GU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8PYCU9U9Q",
+          "nombre": "KAITO KID",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 15,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#8UJP8R0JY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8UPP92L2L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YU8C9LQ0",
+          "nombre": "DarkJBlack",
+          "ataques": 16,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#90Q8RYGPP",
+          "nombre": "--❤️Kalé❤️--",
+          "ataques": 14,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#90U80RR2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️Cristofer",
+          "ataques": 16,
+          "fame": 2150,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUCQR0",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUUV9P",
+          "nombre": "ᴳ乂ᵀ ⚜️ iJonahjk",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#9C9PRGV9Y",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9CVLPP28G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9G80CLJ08",
+          "nombre": "Wee-Bey",
+          "ataques": 15,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#9LCJ2JQ08",
+          "nombre": "Adrian",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#9PGVLQVGG",
+          "nombre": "ᴳ乂ᵀ ⚜️nachodufu",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#9QJ2Y98Y0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#C0PGPR90U",
+          "nombre": "27R.C.Lazarinos",
+          "ataques": 16,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#C8V200V2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CGGGR82PJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ N1V1C",
+          "ataques": 8,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#CQCR0R99C",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#CQR29PVV",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUL98Y8UY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUQG9CJUG",
+          "nombre": "ᴳ乂ᵀ ⚜️Marzz",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#CVPUJ8JYY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#G8UU9LCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GRPYUV8R9",
+          "nombre": "tu ex",
+          "ataques": 1,
+          "fame": 100,
+          "barcos": 0
+        },
+        {
+          "tag": "#GV80GYC2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVVPJ8CLG",
+          "nombre": "JP Titan :)",
+          "ataques": 16,
+          "fame": 2850,
+          "barcos": 0
+        },
+        {
+          "tag": "#GYU0R0V29",
+          "nombre": "Love--Adri<3",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#J89R8LYPP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGC9PC09",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1200,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGY090GGP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JP882UV8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV08RQU2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ DAVID ★",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV2QVGPJJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJ0CYCG9V",
+          "nombre": "ᴳ乂ᵀ ⚜️CERFIRE",
+          "ataques": 12,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#LL9YJPRGU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LPLC990RJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LV90QCYJV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P00CPGPQR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P2CUUJ9P8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P8Y0CQ9VR",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PJL9LP222",
+          "nombre": "",
+          "ataques": 13,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#PLPU92QJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPJVG29UV",
+          "nombre": "FLS £V∆°",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q29Y8CR2",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q98RGPGCU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Senju",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCGGPYCYJ",
+          "nombre": "matichu",
+          "ataques": 16,
+          "fame": 2450,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCLCL2C08",
+          "nombre": "",
+          "ataques": 13,
+          "fame": 1600,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG2PP89G2",
+          "nombre": "Har",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG88QRR8Y",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 16,
+          "fame": 3100,
+          "barcos": 0
+        },
+        {
+          "tag": "#R98JQRU99",
+          "nombre": "ᴳ乂ᵀ ⚜️Rukon_RB",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RGQUGU0CU",
+          "nombre": "",
+          "ataques": 15,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#RJQL8U2P",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#RJRCYPY9L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVG2L2YP",
+          "nombre": "ᴳ乂ᵀ ⚜️ dfgh",
+          "ataques": 16,
+          "fame": 2550,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVJ809Y0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RU8LCGCRJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RVG29QC2C",
+          "nombre": "black 333",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U92JQGCL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U9G0GCRLC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJL0GR80Y",
+          "nombre": "j0rdxn_17xd",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJUGRYY9C",
+          "nombre": "ㅤᴀᴅᴍㅤϟ",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#ULCPUJLQL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#ULVJU8229",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UQ2RJYLVQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URPVCY8YU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V20GJRC9Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ Caandre",
+          "ataques": 12,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#V22JPRY89",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2850,
+          "barcos": 0
+        },
+        {
+          "tag": "#V2RUQ9LUG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8PYCGPU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 2850,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGP0PC2PV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGRYG8YVP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VP92PYJ0J",
+          "nombre": "zuizidee.",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQCG0G09G",
+          "nombre": "ᴳ乂ᵀ ⚜️ C-Ron",
+          "ataques": 16,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR92C8LYU",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1850,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRCQGQU88",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VU2RRUCQU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VYQQLYL9J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y990VL9LL",
+          "nombre": "♿️ l mayin",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#YGL2QV8LG",
+          "nombre": "ᴳ乂ᵀ ⚜ T3RR1BL3!",
+          "ataques": 16,
+          "fame": 3100,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 4,
+      "jugadores": [
+        {
+          "tag": "#200UY8QL02",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#209Y2UU2G8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20GL9Q0V0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YVVYCU2",
+          "nombre": "ᴳ乂ᵀ ⚜ Richard",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#298JJ9RUL",
+          "nombre": "Sebas JAS",
+          "ataques": 16,
+          "fame": 3050,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GG8PJ8GC",
+          "nombre": "ᴳ乂ᵀ ⚜️ Chistris",
+          "ataques": 16,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GYUC0QLV",
+          "nombre": "miguel",
+          "ataques": 16,
+          "fame": 3150,
+          "barcos": 0
+        },
+        {
+          "tag": "#2LCJLUC9J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2QC2C2VU8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2RCRUR9LG",
+          "nombre": "",
+          "ataques": 3,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#2RPYQLGPU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2VPR800RJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#800VVC9VC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#80LPLV92P",
+          "nombre": "Ultra insticto",
+          "ataques": 12,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#80PPY9R9G",
+          "nombre": "ᴳ乂ᵀ ⚜️ Sunix :)",
+          "ataques": 12,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#829GQP0JL",
+          "nombre": "Procrastinador.",
+          "ataques": 12,
+          "fame": 1550,
+          "barcos": 0
+        },
+        {
+          "tag": "#82CCYGYYJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8C0PQ9PR9",
+          "nombre": "Sieh",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#8CY9GVLPJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8G222CQUR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8J9PL92GU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8PYCU9U9Q",
+          "nombre": "KAITO KID",
+          "ataques": 16,
+          "fame": 2050,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 12,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#8UJP8R0JY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8UPP92L2L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8V9PCPL8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YG88UVPR",
+          "nombre": "",
+          "ataques": 9,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YU8C9LQ0",
+          "nombre": "DarkJBlack",
+          "ataques": 16,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#90Q8RYGPP",
+          "nombre": "--❤️Kalé❤️--",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#90U80RR2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️Cristofer",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUCQR0",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUUV9P",
+          "nombre": "ᴳ乂ᵀ ⚜️ iJonahjk",
+          "ataques": 16,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#999GQUGUY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9C9PRGV9Y",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9CVLPP28G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9G80CLJ08",
+          "nombre": "Wee-Bey",
+          "ataques": 16,
+          "fame": 2050,
+          "barcos": 0
+        },
+        {
+          "tag": "#9LCJ2JQ08",
+          "nombre": "Adrian",
+          "ataques": 12,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#9LUVGRCQQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9PGVLQVGG",
+          "nombre": "ᴳ乂ᵀ ⚜️nachodufu",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#9QJ2Y98Y0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9UQVC8J89",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#C0PGPR90U",
+          "nombre": "27R.C.Lazarinos",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#C8V200V2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CGGGR82PJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ N1V1C",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#CLCUGGGRR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CQCR0R99C",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#CQR29PVV",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1200,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUL98Y8UY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUQG9CJUG",
+          "nombre": "ᴳ乂ᵀ ⚜️Marzz",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#CVPUJ8JYY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#G8UU9LCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GPQ0UGPR",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 550,
+          "barcos": 0
+        },
+        {
+          "tag": "#GRPYUV8R9",
+          "nombre": "tu ex",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GV80GYC2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVVPJ8CLG",
+          "nombre": "JP Titan :)",
+          "ataques": 16,
+          "fame": 3050,
+          "barcos": 0
+        },
+        {
+          "tag": "#GYU0R0V29",
+          "nombre": "Love--Adri<3",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#J89R8LYPP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGC9PC09",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGY090GGP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JJU0088P9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JLLJUCJCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JP882UV8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JR88GLPGG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JU0RQR2GQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV08RQU2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ DAVID ★",
+          "ataques": 12,
+          "fame": 2050,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV2QVGPJJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JVJGY2CVC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JVVCV8JVU",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJ0CYCG9V",
+          "nombre": "ᴳ乂ᵀ ⚜️CERFIRE",
+          "ataques": 16,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#LL9YJPRGU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LPLC990RJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LQUULRRL0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LV90QCYJV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P00CPGPQR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P2CUUJ9P8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P8Y0CQ9VR",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P9UQ2QVLV",
+          "nombre": "franklin",
+          "ataques": 12,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#PJL9LP222",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PLPU92QJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPJVG29UV",
+          "nombre": "FLS £V∆°",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q29Y8CR2",
+          "nombre": "",
+          "ataques": 11,
+          "fame": 1650,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q98RGPGCU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Senju",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCGGPYCYJ",
+          "nombre": "matichu",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCLCL2C08",
+          "nombre": "",
+          "ataques": 1,
+          "fame": 100,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG2PP89G2",
+          "nombre": "Har",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG88QRR8Y",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#R98JQRU99",
+          "nombre": "ᴳ乂ᵀ ⚜️Rukon_RB",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RGQUGU0CU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RJQL8U2P",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#RJRCYPY9L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVG2L2YP",
+          "nombre": "ᴳ乂ᵀ ⚜️ dfgh",
+          "ataques": 16,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVJ809Y0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RU8LCGCRJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RVG29QC2C",
+          "nombre": "black 333",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U92JQGCL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U9G0GCRLC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJL0GR80Y",
+          "nombre": "j0rdxn_17xd",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJUGRYY9C",
+          "nombre": "ㅤᴀᴅᴍㅤϟ",
+          "ataques": 15,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#ULCPUJLQL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#ULVJU8229",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UPP2J9U99",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UQ2RJYLVQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URPVCY8YU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V20GJRC9Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ Caandre",
+          "ataques": 16,
+          "fame": 3050,
+          "barcos": 0
+        },
+        {
+          "tag": "#V22JPRY89",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#V2RUQ9LUG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8020QG8U",
+          "nombre": "",
+          "ataques": 1,
+          "fame": 100,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8PYCGPU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8R980YL8",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 2050,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCQGUQLJL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGP0PC2PV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGRYG8YVP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VP92PYJ0J",
+          "nombre": "zuizidee.",
+          "ataques": 16,
+          "fame": 2850,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQCG0G09G",
+          "nombre": "ᴳ乂ᵀ ⚜️ C-Ron",
+          "ataques": 16,
+          "fame": 2550,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR92C8LYU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRCQGQU88",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VU2RRUCQU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VYQQLYL9J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y990VL9LL",
+          "nombre": "♿️ l mayin",
+          "ataques": 10,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#YGL2QV8LG",
+          "nombre": "ᴳ乂ᵀ ⚜ T3RR1BL3!",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "temporadaSupercell": "2026-10",
+      "semana": 1,
+      "jugadores": [
+        {
+          "tag": "#20YVVYCU2",
+          "nombre": "ᴳ乂ᵀ ⚜ Richard",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 16,
+          "fame": 3400,
+          "barcos": 0
+        },
+        {
+          "tag": "#298JJ9RUL",
+          "nombre": "Sebas JAS",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GG8PJ8GC",
+          "nombre": "ᴳ乂ᵀ ⚜️ Chistris",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GYUC0QLV",
+          "nombre": "miguel",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#2QC2C2VU8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2RCRUR9LG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#80LPLV92P",
+          "nombre": "Ultra insticto",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#80PPY9R9G",
+          "nombre": "ᴳ乂ᵀ ⚜️ Sunix :)",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#829GQP0JL",
+          "nombre": "Procrastinador.",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#82L8L2RL9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#82QCRUYYG",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#8C0PQ9PR9",
+          "nombre": "Sieh",
+          "ataques": 16,
+          "fame": 2650,
+          "barcos": 0
+        },
+        {
+          "tag": "#8CQLU9QLJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8PYCU9U9Q",
+          "nombre": "KAITO KID",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 16,
+          "fame": 3000,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YG88UVPR",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1250,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YU8C9LQ0",
+          "nombre": "DarkJBlack",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#90GLP9PYR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#90Q8RYGPP",
+          "nombre": "--❤️Kalé❤️--",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#90U80RR2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️Cristofer",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUCQR0",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUUV9P",
+          "nombre": "ᴳ乂ᵀ ⚜️ iJonahjk",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#9G80CLJ08",
+          "nombre": "Wee-Bey",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#9LCJ2JQ08",
+          "nombre": "Adrian",
+          "ataques": 16,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#9PGVLQVGG",
+          "nombre": "ᴳ乂ᵀ ⚜️nachodufu",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#C0PGPR90U",
+          "nombre": "27R.C.Lazarinos",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#CGGGR82PJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ N1V1C",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#CJGU820UU",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1850,
+          "barcos": 0
+        },
+        {
+          "tag": "#CQCR0R99C",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUQG9CJUG",
+          "nombre": "ᴳ乂ᵀ ⚜️Marzz",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUYCVVCJU",
+          "nombre": "",
+          "ataques": 2,
+          "fame": 200,
+          "barcos": 0
+        },
+        {
+          "tag": "#GGPRGCUCQ",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1500,
+          "barcos": 12
+        },
+        {
+          "tag": "#GPQ0UGPR",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 1950,
+          "barcos": 0
+        },
+        {
+          "tag": "#GUJY8RCG",
+          "nombre": "",
+          "ataques": 3,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVVPJ8CLG",
+          "nombre": "JP Titan :)",
+          "ataques": 16,
+          "fame": 2450,
+          "barcos": 0
+        },
+        {
+          "tag": "#JR9J0JCQ9",
+          "nombre": "LUCKY",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV08RQU2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ DAVID ★",
+          "ataques": 16,
+          "fame": 2550,
+          "barcos": 0
+        },
+        {
+          "tag": "#JVVCV8JVU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJ0CYCG9V",
+          "nombre": "ᴳ乂ᵀ ⚜️CERFIRE",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#P0J8Q02CP",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#P9UQ2QVLV",
+          "nombre": "franklin",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPJVG29UV",
+          "nombre": "FLS £V∆°",
+          "ataques": 16,
+          "fame": 3100,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPY28URY8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PRQUC982Y",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q29Y8CR2",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q98RGPGCU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Senju",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCGGPYCYJ",
+          "nombre": "matichu",
+          "ataques": 12,
+          "fame": 1750,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG2PP89G2",
+          "nombre": "Har",
+          "ataques": 15,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#RCCV2LQUJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RJQL8U2P",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#RR8JLRQ2P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVG2L2YP",
+          "nombre": "ᴳ乂ᵀ ⚜️ dfgh",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJL0GR80Y",
+          "nombre": "j0rdxn_17xd",
+          "ataques": 16,
+          "fame": 2750,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJUGRYY9C",
+          "nombre": "ㅤᴀᴅᴍㅤϟ",
+          "ataques": 8,
+          "fame": 1250,
+          "barcos": 0
+        },
+        {
+          "tag": "#UYU0PGUYJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＲＡＭＩ",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#V20GJRC9Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ Caandre",
+          "ataques": 16,
+          "fame": 2550,
+          "barcos": 0
+        },
+        {
+          "tag": "#V22JPRY89",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8R980YL8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#VLGCGP8GG",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#VP92PYJ0J",
+          "nombre": "zuizidee.",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQCG0G09G",
+          "nombre": "ᴳ乂ᵀ ⚜️ C-Ron",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y990VL9LL",
+          "nombre": "♿️ l mayin",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#YGL2QV8LG",
+          "nombre": "ᴳ乂ᵀ ⚜ T3RR1BL3!",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "temporadaSupercell": "2026-10",
+      "semana": 2,
+      "jugadores": [
+        {
+          "tag": "#2098CCQUCU",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#20PQ82Q0CP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YVVYCU2",
+          "nombre": "ᴳ乂ᵀ ⚜ Richard",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#228VUG2RU",
+          "nombre": "ᴳ乂ᵀ ⚜ Fazete",
+          "ataques": 16,
+          "fame": 3300,
+          "barcos": 0
+        },
+        {
+          "tag": "#298JJ9RUL",
+          "nombre": "Sebas JAS",
+          "ataques": 12,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#29JP8YCQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GG8PJ8GC",
+          "nombre": "ᴳ乂ᵀ ⚜️ Chistris",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#2GYUC0QLV",
+          "nombre": "miguel",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#2QC2C2VU8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2RCRUR9LG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2VPCYG29C",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#80LPLV92P",
+          "nombre": "Ultra insticto",
+          "ataques": 11,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#80PPY9R9G",
+          "nombre": "ᴳ乂ᵀ ⚜️ Sunix :)",
+          "ataques": 12,
+          "fame": 1600,
+          "barcos": 0
+        },
+        {
+          "tag": "#829GQP0JL",
+          "nombre": "Procrastinador.",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#82L8L2RL9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#82QCRUYYG",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#8C0PQ9PR9",
+          "nombre": "Sieh",
+          "ataques": 16,
+          "fame": 2350,
+          "barcos": 0
+        },
+        {
+          "tag": "#8CQLU9QLJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8GYJ2LURP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8PYCU9U9Q",
+          "nombre": "KAITO KID",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#8Q92GV08U",
+          "nombre": "Dxniel",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YG88UVPR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8YU8C9LQ0",
+          "nombre": "DarkJBlack",
+          "ataques": 16,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#90GLP9PYR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#90Q8RYGPP",
+          "nombre": "--❤️Kalé❤️--",
+          "ataques": 15,
+          "fame": 2550,
+          "barcos": 0
+        },
+        {
+          "tag": "#90U80RR2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️Cristofer",
+          "ataques": 16,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#92G8CUYVL",
+          "nombre": "",
+          "ataques": 2,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#92QVLUGL2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUCQR0",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YRUUV9P",
+          "nombre": "ᴳ乂ᵀ ⚜️ iJonahjk",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#92YUYPUJQ",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 450,
+          "barcos": 4
+        },
+        {
+          "tag": "#989YYV0PU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9CQRRP98C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#9G80CLJ08",
+          "nombre": "Wee-Bey",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#9LCJ2JQ08",
+          "nombre": "Adrian",
+          "ataques": 16,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#9PGVLQVGG",
+          "nombre": "ᴳ乂ᵀ ⚜️nachodufu",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#9PP002929",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 4
+        },
+        {
+          "tag": "#C08PRU0J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#C0PGPR90U",
+          "nombre": "27R.C.Lazarinos",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#C8YUPURCU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CC2JLUCPQ",
+          "nombre": "",
+          "ataques": 5,
+          "fame": 1000,
+          "barcos": 0
+        },
+        {
+          "tag": "#CGGGR82PJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ N1V1C",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CJGU820UU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CJU8LLGU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CLG282UYQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#CQCR0R99C",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1550,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUQG9CJUG",
+          "nombre": "ᴳ乂ᵀ ⚜️Marzz",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#CUYCVVCJU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GGPRGCUCQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GPQ0UGPR",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#GUJY8RCG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GUP2UJ2C9",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#GVVPJ8CLG",
+          "nombre": "JP Titan :)",
+          "ataques": 12,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#GYU0R0V29",
+          "nombre": "Love--Adri<3",
+          "ataques": 6,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#J8LJGCQ2L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JQPGGUGPR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JR9J0JCQ9",
+          "nombre": "LUCKY",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JV08RQU2Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ DAVID ★",
+          "ataques": 13,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#JVVCV8JVU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#L28JYY2J",
+          "nombre": "Gamer",
+          "ataques": 12,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#LJ0CYCG9V",
+          "nombre": "ᴳ乂ᵀ ⚜️CERFIRE",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#P0J8Q02CP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#P2UUY99LG",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#P9UQ2QVLV",
+          "nombre": "franklin",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPJVG29UV",
+          "nombre": "FLS £V∆°",
+          "ataques": 16,
+          "fame": 2550,
+          "barcos": 0
+        },
+        {
+          "tag": "#PPY28URY8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PRQUC982Y",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q29Y8CR2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#Q98RGPGCU",
+          "nombre": "ᴳ乂ᵀ ⚜️ Senju",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#QCGGPYCYJ",
+          "nombre": "matichu",
+          "ataques": 12,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#QG2PP89G2",
+          "nombre": "Har",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#QRQULCCV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Maikel",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#RCCV2LQUJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RJQL8U2P",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#RR8JLRQ2P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RRVG2L2YP",
+          "nombre": "ᴳ乂ᵀ ⚜️ dfgh",
+          "ataques": 16,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#U2G0800JL",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJL0GR80Y",
+          "nombre": "j0rdxn_17xd",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJUGRYY9C",
+          "nombre": "ㅤᴀᴅᴍㅤϟ",
+          "ataques": 16,
+          "fame": 3250,
+          "barcos": 0
+        },
+        {
+          "tag": "#UYU0PGUYJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＲＡＭＩ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V20GJRC9Y",
+          "nombre": "ᴳ乂ᵀ ⚜️ Caandre",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#V22JPRY89",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8R980YL8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V982VPUQC",
+          "nombre": "",
+          "ataques": 5,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9YLPQY0L",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHON",
+          "ataques": 16,
+          "fame": 3500,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGC9RUYVY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VLGCGP8GG",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 650,
+          "barcos": 0
+        },
+        {
+          "tag": "#VP92PYJ0J",
+          "nombre": "zuizidee.",
+          "ataques": 16,
+          "fame": 2950,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQCG0G09G",
+          "nombre": "ᴳ乂ᵀ ⚜️ C-Ron",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#VYQV2RR2U",
+          "nombre": "MANZANITA✨",
+          "ataques": 16,
+          "fame": 3050,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y990VL9LL",
+          "nombre": "♿️ l mayin",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#YGL2QV8LG",
+          "nombre": "ᴳ乂ᵀ ⚜ T3RR1BL3!",
+          "ataques": 14,
+          "fame": 2250,
+          "barcos": 0
+        }
+      ]
+    }
+  ]
+}

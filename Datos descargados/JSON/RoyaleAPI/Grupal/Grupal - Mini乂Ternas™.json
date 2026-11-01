@@ -1,0 +1,2302 @@
+{
+  "clan": "Mini乂Ternas™",
+  "fuente": "log",
+  "fechaUltimaActualizacion": "01/11/2026",
+  "semanas": [
+    {
+      "temporadaInterna": 23,
+      "temporadaRoyaleAPI": 134,
+      "temporadaSupercell": "2026-07",
+      "semana": 3,
+      "jugadores": [
+        {
+          "tag": "#V9V9RQY9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJL99Q9LR",
+          "nombre": "iRaftyCat",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 23,
+      "temporadaRoyaleAPI": 134,
+      "temporadaSupercell": "2026-07",
+      "semana": 4,
+      "jugadores": [
+        {
+          "tag": "#8L0UUCLPU",
+          "nombre": "",
+          "ataques": 7,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9V9RQY9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJL99Q9LR",
+          "nombre": "iRaftyCat",
+          "ataques": 8,
+          "fame": 1200,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 1,
+      "jugadores": [
+        {
+          "tag": "#V9V9RQY9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJL99Q9LR",
+          "nombre": "iRaftyCat",
+          "ataques": 8,
+          "fame": 1300,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQ2G99QJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 2,
+      "jugadores": [
+        {
+          "tag": "#20080J8GRY",
+          "nombre": "ᴳ乂ᵀ⚜️MiniCandre",
+          "ataques": 3,
+          "fame": 300,
+          "barcos": 0
+        },
+        {
+          "tag": "#202LLCYPRC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2098PGRCPC",
+          "nombre": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#209CPGR92J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JCY8RUP9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JJ8LLP8G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JPVQYL8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JUQVPU8R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cali",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20PC2CL99Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20PV0LQRJY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20RRJ82CLR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VCCQ9GC8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VCLQGPG8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VJLYY8RP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VU2RVR0J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2228JUGQJL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222CCLPY9U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222PCLQQY2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222U2U89YJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#229C822Q0R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#229R0GP2YQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8L0UUCLPU",
+          "nombre": "",
+          "ataques": 7,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#PQ8GJ2LPG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PUPUJUJCU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#UR8CU0CYR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "nombre": "ᴳ乂ᵀ ⚜️ Calito",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "nombre": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0JYGV2CL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V29LQ2UPQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9V9RQY9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCCU98J0U",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1400,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCGGRQY8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCGPQQGR2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCJULQ09P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCLRVUCLG",
+          "nombre": "¡momazos pedro!",
+          "ataques": 8,
+          "fame": 1050,
+          "barcos": 2
+        },
+        {
+          "tag": "#VCQVYJCRC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGQPU9CRG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ00CCC0L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ0G9QL9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ0LJCU2P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJL99Q9LR",
+          "nombre": "iRaftyCat",
+          "ataques": 14,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQ2G99QJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJV0QGPJG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJYJRQ2CC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQ9CJ9VQU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRJYU8Q8P",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+          "ataques": 12,
+          "fame": 1850,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVCV0QR8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVJCPR2L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VVQLLUC9P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 3,
+      "jugadores": [
+        {
+          "tag": "#20080J8GRY",
+          "nombre": "ᴳ乂ᵀ⚜️MiniCandre",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#202LLCYPRC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2098PGRCPC",
+          "nombre": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#209CPGR92J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JCY8RUP9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JJ8LLP8G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JPVQYL8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JUQVPU8R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cali",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20PC2CL99Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20PV0LQRJY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20RRJ82CLR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VCCQ9GC8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VCLQGPG8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VJLYY8RP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VU2RVR0J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2228JUGQJL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222CCLPY9U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222PCLQQY2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222U2U89YJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#229C822Q0R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#229R0GP2YQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#22C090RVJ",
+          "nombre": "反覆分Mc-->WiLL",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8L0UUCLPU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GYU0R0V29",
+          "nombre": "Love--Adri<3",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 4,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#PQ8GJ2LPG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PUPUJUJCU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UR8CU0CYR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "nombre": "ᴳ乂ᵀ ⚜️ Calito",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "nombre": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0JYGV2CL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V29LQ2UPQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9V9RQY9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCCU98J0U",
+          "nombre": "",
+          "ataques": 6,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCGGRQY8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCGPQQGR2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCJULQ09P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCLRVUCLG",
+          "nombre": "¡momazos pedro!",
+          "ataques": 9,
+          "fame": 1300,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCQVYJCRC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGQPU9CRG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ00CCC0L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ0G9QL9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ0LJCU2P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJL99Q9LR",
+          "nombre": "iRaftyCat",
+          "ataques": 12,
+          "fame": 1100,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQ2G99QJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJV0QGPJG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJYJRQ2CC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQ9CJ9VQU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRJYU8Q8P",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVCV0QR8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVJCPR2L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VVQLLUC9P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 4,
+      "jugadores": [
+        {
+          "tag": "#20080J8GRY",
+          "nombre": "ᴳ乂ᵀ⚜️MiniCandre",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#202LLCYPRC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2098PGRCPC",
+          "nombre": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#209CPGR92J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JCY8RUP9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JJ8LLP8G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JPVQYL8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JUQVPU8R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cali",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20PC2CL99Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20PV0LQRJY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20RRJ82CLR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VCCQ9GC8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VCLQGPG8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VJLYY8RP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VU2RVR0J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2228JUGQJL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222CCLPY9U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222PCLQQY2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222U2U89YJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#229C822Q0R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#229R0GP2YQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#22C090RVJ",
+          "nombre": "反覆分Mc-->WiLL",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8L0UUCLPU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GYU0R0V29",
+          "nombre": "Love--Adri<3",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 1,
+          "fame": 100,
+          "barcos": 0
+        },
+        {
+          "tag": "#PQ8GJ2LPG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PUPUJUJCU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 2,
+          "fame": 200,
+          "barcos": 0
+        },
+        {
+          "tag": "#UR8CU0CYR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "nombre": "ᴳ乂ᵀ ⚜️ Calito",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "nombre": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0JYGV2CL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V29LQ2UPQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9V9RQY9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCCU98J0U",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCGGRQY8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCGPQQGR2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCJULQ09P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCLRVUCLG",
+          "nombre": "¡momazos pedro!",
+          "ataques": 12,
+          "fame": 1500,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCQVYJCRC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGQPU9CRG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ00CCC0L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ0G9QL9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ0LJCU2P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJL99Q9LR",
+          "nombre": "iRaftyCat",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQ2G99QJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJV0QGPJG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJYJRQ2CC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQ9CJ9VQU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRJYU8Q8P",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVCV0QR8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVJCPR2L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VVQLLUC9P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 5,
+      "jugadores": [
+        {
+          "tag": "#20080J8GRY",
+          "nombre": "ᴳ乂ᵀ⚜️MiniCandre",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#202LLCYPRC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2098PGRCPC",
+          "nombre": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#209CPGR92J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JCY8RUP9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JJ8LLP8G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JPVQYL8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20JUQVPU8R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cali",
+          "ataques": 1,
+          "fame": 200,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+          "ataques": 2,
+          "fame": 300,
+          "barcos": 0
+        },
+        {
+          "tag": "#20PC2CL99Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20PV0LQRJY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20RRJ82CLR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VCCQ9GC8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VCLQGPG8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VJLYY8RP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VU2RVR0J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2228JUGQJL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222CCLPY9U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222PCLQQY2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222U2U89YJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#229C822Q0R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#229R0GP2YQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#22C090RVJ",
+          "nombre": "反覆分Mc-->WiLL",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8L0UUCLPU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#GYU0R0V29",
+          "nombre": "Love--Adri<3",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 3,
+          "fame": 300,
+          "barcos": 0
+        },
+        {
+          "tag": "#PQ8GJ2LPG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#PUPUJUJCU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UR8CU0CYR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "nombre": "ᴳ乂ᵀ ⚜️ Calito",
+          "ataques": 1,
+          "fame": 100,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "nombre": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0JYGV2CL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V29LQ2UPQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9V9RQY9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCCU98J0U",
+          "nombre": "",
+          "ataques": 10,
+          "fame": 1600,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCGGRQY8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCGPQQGR2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCJULQ09P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCLRVUCLG",
+          "nombre": "¡momazos pedro!",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCQVYJCRC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGQPU9CRG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ00CCC0L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ0G9QL9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJ0LJCU2P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJL99Q9LR",
+          "nombre": "iRaftyCat",
+          "ataques": 14,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQ2G99QJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+          "ataques": 1,
+          "fame": 100,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJV0QGPJG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJYJRQ2CC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQ9CJ9VQU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRJYU8Q8P",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+          "ataques": 16,
+          "fame": 3100,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVCV0QR8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVJCPR2L",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VVQLLUC9P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 1,
+      "jugadores": [
+        {
+          "tag": "#20080J8GRY",
+          "nombre": "ᴳ乂ᵀ⚜️MiniCandre",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#202G2URC8U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2098PGRCPC",
+          "nombre": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cali",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#22C090RVJ",
+          "nombre": "反覆分Mc-->WiLL",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "nombre": "ᴳ乂ᵀ ⚜️ Calito",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#V08RQP2JL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "nombre": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "ataques": 4,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCCU98J0U",
+          "nombre": "",
+          "ataques": 11,
+          "fame": 1600,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJL99Q9LR",
+          "nombre": "iRaftyCat",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRJYU8Q8P",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVCV0QR8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 2,
+      "jugadores": [
+        {
+          "tag": "#20080J8GRY",
+          "nombre": "ᴳ乂ᵀ⚜️MiniCandre",
+          "ataques": 1,
+          "fame": 100,
+          "barcos": 0
+        },
+        {
+          "tag": "#202G2URC8U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2098PGRCPC",
+          "nombre": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cali",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#22C090RVJ",
+          "nombre": "反覆分Mc-->WiLL",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "nombre": "ᴳ乂ᵀ ⚜️ Calito",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V08RQP2JL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "nombre": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCCU98J0U",
+          "nombre": "",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJL99Q9LR",
+          "nombre": "iRaftyCat",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+          "ataques": 8,
+          "fame": 900,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRJYU8Q8P",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+          "ataques": 13,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVCV0QR8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 3,
+      "jugadores": [
+        {
+          "tag": "#20080J8GRY",
+          "nombre": "ᴳ乂ᵀ⚜️MiniCandre",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#202G2URC8U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2098PGRCPC",
+          "nombre": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cali",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#22C090RVJ",
+          "nombre": "反覆分Mc-->WiLL",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "nombre": "ᴳ乂ᵀ ⚜️ Calito",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V08RQP2JL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "nombre": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCCU98J0U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJL99Q9LR",
+          "nombre": "iRaftyCat",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRJYU8Q8P",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+          "ataques": 8,
+          "fame": 950,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVCV0QR8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 4,
+      "jugadores": [
+        {
+          "tag": "#20080J8GRY",
+          "nombre": "ᴳ乂ᵀ⚜️MiniCandre",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#202G2URC8U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2098PGRCPC",
+          "nombre": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cali",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#22C090RVJ",
+          "nombre": "反覆分Mc-->WiLL",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "nombre": "ᴳ乂ᵀ ⚜️ Calito",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V08RQP2JL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "nombre": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VCCU98J0U",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJL99Q9LR",
+          "nombre": "iRaftyCat",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRJYU8Q8P",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVCV0QR8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "temporadaSupercell": "2026-10",
+      "semana": 1,
+      "jugadores": [
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "temporadaSupercell": "2026-10",
+      "semana": 2,
+      "jugadores": [
+        {
+          "tag": "#20080J8GRY",
+          "nombre": "ᴳ乂ᵀ⚜️MiniCandre",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2098PGRCPC",
+          "nombre": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cali",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ramirez☻",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "nombre": "ᴳ乂ᵀ ⚜️ Calito",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "nombre": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＰムＰＩ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVCV0QR8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    }
+  ]
+}

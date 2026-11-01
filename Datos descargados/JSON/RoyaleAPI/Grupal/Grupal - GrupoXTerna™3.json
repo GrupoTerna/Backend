@@ -1,0 +1,1788 @@
+{
+  "clan": "GrupoXTerna™3",
+  "fuente": "log",
+  "fechaUltimaActualizacion": "01/11/2026",
+  "semanas": [
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 2,
+      "jugadores": [
+        {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VC29CR2C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2C982888C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2PUYLPPRG",
+          "nombre": "COSCU06",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#88RV0L8V2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "ᴳ乂ᵀ ⚜️ アンドレ",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "Diana",
+          "ataques": 14,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#J8V9PQJP9",
+          "nombre": "ilmiatraxxp",
+          "ataques": 7,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#JCUPQ88J",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGLGVCGU",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ",
+          "ataques": 16,
+          "fame": 3150,
+          "barcos": 0
+        },
+        {
+          "tag": "#JPPJ9J8GP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#R8LY88C9Q",
+          "nombre": "Jamil",
+          "ataques": 14,
+          "fame": 2900,
+          "barcos": 0
+        },
+        {
+          "tag": "#R8QGGR0Q9",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#RPLVY0R08",
+          "nombre": "rata-piola",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8PQR2QQV",
+          "nombre": "ᴳ乂ᵀ ⚜ D¤R¡T¤",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#UCCRR9G2G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#UVV02Q0PC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V09PQYJ89",
+          "nombre": "",
+          "ataques": 1,
+          "fame": 75,
+          "barcos": 1
+        },
+        {
+          "tag": "#V0JPP0UJR",
+          "nombre": "fatima",
+          "ataques": 13,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 16,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#V929CC8CC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 4,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGV8YLQ0R",
+          "nombre": "",
+          "ataques": 7,
+          "fame": 825,
+          "barcos": 3
+        },
+        {
+          "tag": "#VLY0G9LU9",
+          "nombre": "ᴳ乂ᵀ ⚜. josuexd.",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQQQG98R0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 8,
+          "fame": 1500,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 3,
+      "jugadores": [
+        {
+          "tag": "#20JCYCVR2V",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VC29CR2C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2C982888C",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#2PUYLPPRG",
+          "nombre": "COSCU06",
+          "ataques": 12,
+          "fame": 1850,
+          "barcos": 0
+        },
+        {
+          "tag": "#88RV0L8V2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 15,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "ᴳ乂ᵀ ⚜️ アンドレ",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "Diana",
+          "ataques": 8,
+          "fame": 1400,
+          "barcos": 0
+        },
+        {
+          "tag": "#J8V9PQJP9",
+          "nombre": "ilmiatraxxp",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#JCUPQ88J",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1500,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGLGVCGU",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ",
+          "ataques": 12,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#JPPJ9J8GP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#R8LY88C9Q",
+          "nombre": "Jamil",
+          "ataques": 16,
+          "fame": 3350,
+          "barcos": 0
+        },
+        {
+          "tag": "#R8QGGR0Q9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RPLVY0R08",
+          "nombre": "rata-piola",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#U2PJC8RVV",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 350,
+          "barcos": 4
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8PQR2QQV",
+          "nombre": "ᴳ乂ᵀ ⚜ D¤R¡T¤",
+          "ataques": 7,
+          "fame": 1200,
+          "barcos": 0
+        },
+        {
+          "tag": "#UCCRR9G2G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#UVV02Q0PC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V09PQYJ89",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0JPP0UJR",
+          "nombre": "fatima",
+          "ataques": 12,
+          "fame": 1850,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 16,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8PP2JYGR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V929CC8CC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 4,
+          "fame": 550,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9V9RQY9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGV8YLQ0R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VLY0G9LU9",
+          "nombre": "ᴳ乂ᵀ ⚜. josuexd.",
+          "ataques": 1,
+          "fame": 200,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQQQG98R0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR2UPPUCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRUY9LPUG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 8,
+          "fame": 1250,
+          "barcos": 0
+        },
+        {
+          "tag": "#YQQUVQL0P",
+          "nombre": "",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 4,
+      "jugadores": [
+        {
+          "tag": "#20JCYCVR2V",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LPQU9P28",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VC29CR2C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2C982888C",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1000,
+          "barcos": 0
+        },
+        {
+          "tag": "#2PUYLPPRG",
+          "nombre": "COSCU06",
+          "ataques": 8,
+          "fame": 1400,
+          "barcos": 0
+        },
+        {
+          "tag": "#88RV0L8V2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "ᴳ乂ᵀ ⚜️ アンドレ",
+          "ataques": 16,
+          "fame": 2450,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "Diana",
+          "ataques": 16,
+          "fame": 2250,
+          "barcos": 0
+        },
+        {
+          "tag": "#J8V9PQJP9",
+          "nombre": "ilmiatraxxp",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#JCUPQ88J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGLGVCGU",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ",
+          "ataques": 16,
+          "fame": 3300,
+          "barcos": 0
+        },
+        {
+          "tag": "#JPPJ9J8GP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LL2YLRRV8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#R8LY88C9Q",
+          "nombre": "Jamil",
+          "ataques": 2,
+          "fame": 200,
+          "barcos": 0
+        },
+        {
+          "tag": "#R8QGGR0Q9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RPLVY0R08",
+          "nombre": "rata-piola",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U2PJC8RVV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8PQR2QQV",
+          "nombre": "ᴳ乂ᵀ ⚜ D¤R¡T¤",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UCCRR9G2G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 10,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#UVV02Q0PC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V09PQYJ89",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0JPP0UJR",
+          "nombre": "fatima",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 16,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8PP2JYGR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V929CC8CC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 12,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 16,
+          "fame": 2450,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9V9RQY9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGV8YLQ0R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VLY0G9LU9",
+          "nombre": "ᴳ乂ᵀ ⚜. josuexd.",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#VPRRYY9VU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQQQG98R0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR2UPPUCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRUY9LPUG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#YQQUVQL0P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 24,
+      "temporadaRoyaleAPI": 135,
+      "temporadaSupercell": "2026-08",
+      "semana": 5,
+      "jugadores": [
+        {
+          "tag": "#20JCYCVR2V",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LPQU9P28",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#20VC29CR2C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2C982888C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2PUYLPPRG",
+          "nombre": "COSCU06",
+          "ataques": 7,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#88RV0L8V2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "ᴳ乂ᵀ ⚜️ アンドレ",
+          "ataques": 12,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "Diana",
+          "ataques": 12,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#J8V9PQJP9",
+          "nombre": "ilmiatraxxp",
+          "ataques": 1,
+          "fame": 100,
+          "barcos": 0
+        },
+        {
+          "tag": "#JCUPQ88J",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGLGVCGU",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ",
+          "ataques": 16,
+          "fame": 3200,
+          "barcos": 0
+        },
+        {
+          "tag": "#JPPJ9J8GP",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LL2YLRRV8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#R8LY88C9Q",
+          "nombre": "Jamil",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#R8QGGR0Q9",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#RPLVY0R08",
+          "nombre": "rata-piola",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U2PJC8RVV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+          "ataques": 8,
+          "fame": 1100,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8PQR2QQV",
+          "nombre": "ᴳ乂ᵀ ⚜ D¤R¡T¤",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UCCRR9G2G",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 8,
+          "fame": 1500,
+          "barcos": 0
+        },
+        {
+          "tag": "#UVV02Q0PC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V09PQYJ89",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0JPP0UJR",
+          "nombre": "fatima",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0YG0P8LY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8PP2JYGR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V929CC8CC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 8,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9V9RQY9C",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VGV8YLQ0R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VLY0G9LU9",
+          "nombre": "ᴳ乂ᵀ ⚜. josuexd.",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#VPRRYY9VU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VQQQG98R0",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR2UPPUCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRUY9LPUG",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 8,
+          "fame": 900,
+          "barcos": 0
+        },
+        {
+          "tag": "#YQQUVQL0P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 1,
+      "jugadores": [
+        {
+          "tag": "#2092GR8VGY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 16,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#2PUYLPPRG",
+          "nombre": "COSCU06",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "ᴳ乂ᵀ ⚜️ アンドレ",
+          "ataques": 16,
+          "fame": 2800,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "Diana",
+          "ataques": 16,
+          "fame": 2700,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGLGVCGU",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ",
+          "ataques": 16,
+          "fame": 2550,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0JPP0UJR",
+          "nombre": "fatima",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 13,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#VLY0G9LU9",
+          "nombre": "ᴳ乂ᵀ ⚜. josuexd.",
+          "ataques": 8,
+          "fame": 1200,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR2UPPUCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 2,
+      "jugadores": [
+        {
+          "tag": "#2092GR8VGY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#2PUYLPPRG",
+          "nombre": "COSCU06",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "ᴳ乂ᵀ ⚜️ アンドレ",
+          "ataques": 16,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "Diana",
+          "ataques": 13,
+          "fame": 1900,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGLGVCGU",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJC9P8QC2",
+          "nombre": "řøňåļðø⁷⁷⁷",
+          "ataques": 2,
+          "fame": 200,
+          "barcos": 2
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0JPP0UJR",
+          "nombre": "fatima",
+          "ataques": 16,
+          "fame": 2200,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 14,
+          "fame": 1700,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJRLUUP2P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VLY0G9LU9",
+          "nombre": "ᴳ乂ᵀ ⚜. josuexd.",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR2UPPUCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 3,
+      "jugadores": [
+        {
+          "tag": "#2092GR8VGY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#222V0GYU8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2PUYLPPRG",
+          "nombre": "COSCU06",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 16,
+          "fame": 2500,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "ᴳ乂ᵀ ⚜️ アンドレ",
+          "ataques": 13,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "Diana",
+          "ataques": 12,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGLGVCGU",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ",
+          "ataques": 10,
+          "fame": 1300,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJC9P8QC2",
+          "nombre": "řøňåļðø⁷⁷⁷",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0JPP0UJR",
+          "nombre": "fatima",
+          "ataques": 13,
+          "fame": 1650,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 12,
+          "fame": 1300,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 8,
+          "fame": 1400,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJRLUUP2P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VLY0G9LU9",
+          "nombre": "ᴳ乂ᵀ ⚜. josuexd.",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#VPQPCJLY8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR2UPPUCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "temporadaSupercell": "2026-09",
+      "semana": 4,
+      "jugadores": [
+        {
+          "tag": "#2092GR8VGY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 6,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YJL20Y09",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#222V0GYU8Q",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2PUYLPPRG",
+          "nombre": "COSCU06",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 16,
+          "fame": 2100,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "ᴳ乂ᵀ ⚜️ アンドレ",
+          "ataques": 9,
+          "fame": 1200,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "Diana",
+          "ataques": 2,
+          "fame": 200,
+          "barcos": 0
+        },
+        {
+          "tag": "#9RUQQCJJ2",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JGGLGVCGU",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ",
+          "ataques": 16,
+          "fame": 3150,
+          "barcos": 0
+        },
+        {
+          "tag": "#L28JYY2J",
+          "nombre": "Gamer",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJC9P8QC2",
+          "nombre": "řøňåļðø⁷⁷⁷",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "ᴳ乂ᵀ ⚜️ кυякү 亗",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0JPP0UJR",
+          "nombre": "fatima",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 16,
+          "fame": 1800,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9L9V9YV0",
+          "nombre": "ᴳ乂ᵀ ⚜️ Xarxos",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 16,
+          "fame": 2600,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJRLUUP2P",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VLY0G9LU9",
+          "nombre": "ᴳ乂ᵀ ⚜. josuexd.",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VPQPCJLY8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VR2UPPUCC",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRJYU8Q8P",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHŰRÁ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "ᴳ乂ᵀ ⚜️ Percape",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "temporadaSupercell": "2026-10",
+      "semana": 1,
+      "jugadores": [
+        {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 8,
+          "fame": 1050,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YJL20Y09",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 12,
+          "fame": 2000,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "ᴳ乂ᵀ ⚜️ アンドレ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "Diana",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 12,
+          "fame": 1500,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 12,
+          "fame": 1700,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "temporadaSupercell": "2026-10",
+      "semana": 2,
+      "jugadores": [
+        {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 4,
+          "fame": 700,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YJL20Y09",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 16,
+          "fame": 2400,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "ᴳ乂ᵀ ⚜️ アンドレ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "Diana",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#98VY80RGV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 16,
+          "fame": 2300,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 12,
+          "fame": 2100,
+          "barcos": 0
+        }
+      ]
+    }
+  ]
+}
