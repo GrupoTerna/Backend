@@ -6,6 +6,7 @@
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 29-oct-2026): primero las constantes y variables globales; luego, por partes:
 //  Parte 1 — Funciones que se corren a mano
 //    - Alertas del historial de guerra: resolver
+//    - Revision_Guerra.csv: aplicar la decisión «Conservar» o «Reemplazar»
 //    - Diagnóstico de River Race
 //    - Limpieza de archivos repetidos de la carpeta Individual: atajos del editor
 //  Parte 2 — Funciones que no se corren a mano
@@ -13,6 +14,7 @@
 //    - Guardar un registro (lo llaman la web y la resolución de alertas)
 //    - Historial individual (un JSON por jugador en Drive)
 //    - Historial grupal (HistorialGuerra_Grupal.csv)
+//    - Revision_Guerra.csv: decisión «Conservar» o «Reemplazar» sobre los valores distintos del historial grupal
 //    - Comparar y reemplazar registros (lo usan el individual y el grupal)
 //    - Web: historial por jugador (lectura)
 //    - Limpieza de archivos repetidos de la carpeta Individual: función principal
@@ -145,6 +147,31 @@ function resolverAlertasHistorialGuerra() {
   Logger.log('[HistorialGuerra][Alertas] Resolución terminada: ' + resueltas +
              ' fila(s) aplicada(s) y removida(s) de la hoja' +
              (errores > 0 ? ', ' + errores + ' error(es) (ver log arriba, filas no borradas).' : '.'));
+}
+
+// ----- Revision_Guerra.csv: aplicar la decisión «Conservar» o «Reemplazar» (§PF325) -----
+
+/**
+ * aplicarDecisionesRevisionGuerra() [→ Contexto_Base_Web.md §PF325]
+ * Se corre a mano después de escribir en la columna Estado de Revision_Guerra.csv: «Conservar» deja el valor guardado y borra la alternativa; «Reemplazar» aplica el valor
+ * nuevo y borra el guardado. Solo atiende los valores distintos del historial grupal (CSV grupal y JSON grupal por clan). «Pendiente» y «Resuelto» no se tocan.
+ * Primero escribe el dato final y solo después borra la fila de Revision_Guerra.csv; si el valor guardado cambió desde que se creó la fila, no aplica nada y la devuelve a «Pendiente».
+ */
+function aplicarDecisionesRevisionGuerra() {
+  if (_bloquearSiReenumerando_('aplicarDecisionesRevisionGuerra')) return;
+  var etq = '[HistorialGuerra][Revisión]';
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    Logger.log(etq + ' No se pudo obtener el lock: hay otra escritura en curso. Vuelve a correr la función en unos minutos.');
+    return;
+  }
+  try {
+    _rgAplicarDecisiones_(etq);
+  } catch (e) {
+    Logger.log(etq + ' Error: ' + (e.message || e) + '. Las filas de Revision_Guerra.csv no se borraron; vuelve a correr la función.');
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // ----- Diagnóstico de River Race -----
@@ -1140,6 +1167,245 @@ function _hgReconstruirJsonGrupal_(esContinuacion) {
     throw e;
   }
 }
+
+// ----- Revision_Guerra.csv: decisión «Conservar» o «Reemplazar» sobre los valores distintos del historial grupal (§PF325) -----
+
+/** Función pura (§PF325). El Estado de una fila de Revision_Guerra.csv sin mayúsculas ni tildes ('conservar', 'reemplazar', 'pendiente'...; '' si está vacío). */
+function _rgEstadoNormalizado_(texto) {
+  var s = String(texto === null || texto === undefined ? '' : texto).trim().toLowerCase();
+  if (s.normalize) s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return s;
+}
+
+function _rgNulo_(v) { return v === null || v === undefined || v === ''; }
+
+/** Función pura. Los tres valores de una semana como { A, F, B }: número o null si no hay dato. */
+function _rgValores_(ataques, fame, barcos) {
+  return { A: _rgNulo_(ataques) ? null : Number(ataques), F: _rgNulo_(fame) ? null : Number(fame), B: _rgNulo_(barcos) ? null : Number(barcos) };
+}
+
+/** Función pura. true si los tres valores son iguales (null contra null también). */
+function _rgMismos_(x, y) { return x.A === y.A && x.F === y.F && x.B === y.B; }
+
+/** Función pura. true si `actual` ya trae cada valor que `otro` tiene (un null de `otro` no cuenta). */
+function _rgContiene_(actual, otro) {
+  return ['A', 'F', 'B'].every(function (k) { return otro[k] === null || actual[k] === otro[k]; });
+}
+
+/** Función pura. Texto de los tres valores para el registro y las notas. */
+function _rgTexto_(v) {
+  var t = function (x) { return x === null || x === undefined ? 'sin dato' : x; };
+  return 'ataques ' + t(v.A) + ', fame ' + t(v.F) + ', barcos ' + t(v.B);
+}
+
+/**
+ * Función pura (§PF325). Lee el Motivo y el Detalle de una fila de Revision_Guerra.csv escritos por _entradaRevisionCsvGrupal_() o _entradaRevisionJsonGrupal_().
+ * Devuelve { origen: 'csv'|'json', clan, guardado: {A,F,B}, otro: {A,F,B} } (`otro` es el valor descartado del CSV o el valor nuevo del JSON) o null si la fila es de otro tipo.
+ */
+function _rgParsearFilaGrupal_(motivo, detalle) {
+  var m = String(motivo === null || motivo === undefined ? '' : motivo), d = String(detalle === null || detalle === undefined ? '' : detalle);
+  var num = '(\\d+|sin dato)';
+  var tres = 'ataques ' + num + ', fame ' + num + ', barcos ' + num;
+  var origen, clan, rx;
+  var mc = /^CSV grupal \((.+?)\): /.exec(m);
+  var mj = /^JSON grupal de RoyaleAPI \((.+?)\): /.exec(m);
+  if (mc) { origen = 'csv'; clan = mc[1]; rx = new RegExp('^Se conservó: ' + tres + '\\. Se descartó \\([^)]*\\): ' + tres + '\\.'); }
+  else if (mj) { origen = 'json'; clan = mj[1]; rx = new RegExp('^Guardado: ' + tres + '\\. Nuevo \\([^)]*\\): ' + tres + '\\.'); }
+  else return null;
+  var r = rx.exec(d);
+  if (!r) return null;
+  var v = function (t) { return t === 'sin dato' ? null : Number(t); };
+  return { origen: origen, clan: clan, guardado: { A: v(r[1]), F: v(r[2]), B: v(r[3]) }, otro: { A: v(r[4]), F: v(r[5]), B: v(r[6]) } };
+}
+
+/**
+ * Función pura (§PF325). Aplica la decisión ('conservar' o 'reemplazar') sobre las filas del CSV grupal (se modifica `filas`). `p` es el resultado de _rgParsearFilaGrupal_().
+ * Devuelve { estado: 'aplicada' | 'yaAplicada' | 'obsoleta' | 'sinFila', cambio: bool, quedo: {A,F,B} }. 'obsoleta' = el valor guardado ya no es el de la fila de revisión: no se toca nada.
+ */
+function _rgAplicarEnFilasCsv_(filas, tag, temporada, semana, p, decision) {
+  var tagU = String(tag).trim().toUpperCase(), claveClan = _claveClanHistorialGuerra(p.clan), idx = -1;
+  for (var i = 1; i < filas.length; i++) {
+    var f = filas[i];
+    if (String(f[0]).trim().toUpperCase() === tagU && Number(f[2]) === Number(temporada) && Number(f[4]) === Number(semana) && _claveClanHistorialGuerra(f[5]) === claveClan) { idx = i; break; }
+  }
+  if (idx < 0) return { estado: 'sinFila', cambio: false };
+  var fila = filas[idx], actual = _rgValores_(fila[6], fila[7], fila[8]);
+  if (decision === 'conservar') {
+    return _rgMismos_(actual, p.guardado) ? { estado: 'aplicada', cambio: false, quedo: actual } : { estado: 'obsoleta', cambio: false };
+  }
+  if (_rgMismos_(actual, p.guardado)) {
+    var nuevo = { A: p.otro.A === null ? actual.A : p.otro.A, F: p.otro.F === null ? actual.F : p.otro.F, B: p.otro.B === null ? actual.B : p.otro.B };
+    fila[6] = nuevo.A === null ? '' : nuevo.A; fila[7] = nuevo.F === null ? '' : nuevo.F; fila[8] = nuevo.B === null ? '' : nuevo.B;
+    return { estado: 'aplicada', cambio: true, quedo: nuevo };
+  }
+  if (_rgContiene_(actual, p.otro)) return { estado: 'yaAplicada', cambio: false, quedo: actual };
+  return { estado: 'obsoleta', cambio: false };
+}
+
+/**
+ * Función pura (§PF325). Igual que _rgAplicarEnFilasCsv_(), sobre el documento del JSON grupal de un clan (se modifica `doc`). Quita la alternativa que decidió la fila y, si ya no queda
+ * ninguna, también la marca `revision: 'pendiente'`. «Reemplazar» pasa los valores de la alternativa al jugador; «Conservar» solo la quita.
+ */
+function _rgAplicarEnDocJson_(doc, tag, temporada, semana, p, decision) {
+  var tagU = String(tag).trim().toUpperCase(), sem = null, jug = null, i;
+  for (i = 0; i < doc.semanas.length; i++) { if (Number(doc.semanas[i].temporadaInterna) === Number(temporada) && Number(doc.semanas[i].semana) === Number(semana)) { sem = doc.semanas[i]; break; } }
+  if (!sem) return { estado: 'sinFila', cambio: false };
+  for (i = 0; i < sem.jugadores.length; i++) { if (String(sem.jugadores[i].tag).trim().toUpperCase() === tagU) { jug = sem.jugadores[i]; break; } }
+  if (!jug) return { estado: 'sinFila', cambio: false };
+  var actual = _rgValores_(jug.ataques, jug.fame, jug.barcos);
+  var alts = Array.isArray(jug.alternativas) ? jug.alternativas : [], pos = -1;
+  for (i = 0; i < alts.length; i++) { if (_rgMismos_(_rgValores_(alts[i].ataques, alts[i].fame, alts[i].barcos), p.otro)) { pos = i; break; } }
+  if (decision === 'conservar') {
+    if (!_rgMismos_(actual, p.guardado)) return { estado: 'obsoleta', cambio: false };
+    if (pos < 0) return { estado: 'yaAplicada', cambio: false, quedo: actual };
+    alts.splice(pos, 1);
+  } else {
+    if (pos < 0) return _rgContiene_(actual, p.otro) ? { estado: 'yaAplicada', cambio: false, quedo: actual } : { estado: 'obsoleta', cambio: false };
+    if (!_rgMismos_(actual, p.guardado) && !_rgContiene_(actual, p.otro)) return { estado: 'obsoleta', cambio: false };
+    if (p.otro.A !== null) jug.ataques = p.otro.A;
+    if (p.otro.F !== null) jug.fame = p.otro.F;
+    if (p.otro.B !== null) jug.barcos = p.otro.B;
+    alts.splice(pos, 1);
+    alts = alts.filter(function (a) { return !_jsonGrupalAlternativaIgual_(jug, a); });
+  }
+  if (alts.length) { jug.alternativas = alts; }
+  else { delete jug.alternativas; if (jug.revision === 'pendiente') delete jug.revision; }
+  return { estado: 'aplicada', cambio: true, quedo: _rgValores_(jug.ataques, jug.fame, jug.barcos) };
+}
+
+/** Lee el JSON grupal de un clan. Devuelve { doc, archivo, tocado, fallo } o null si no existe o no se puede leer. */
+function _rgLeerJsonClan_(clan) {
+  try {
+    var files = _getHistorialGuerraGrupalJsonFolder_().getFilesByName(_nombreArchivoJsonGrupal_(clan));
+    if (!files.hasNext()) return null;
+    var f = files.next();
+    var d = JSON.parse(f.getBlob().getDataAsString('UTF-8'));
+    return (d && Array.isArray(d.semanas)) ? { doc: d, archivo: f, tocado: false, fallo: false } : null;
+  } catch (e) {
+    Logger.log('[HistorialGuerra][Revisión] AVISO: no se pudo leer el JSON grupal de «' + clan + '» (' + (e.message || e) + ').');
+    return null;
+  }
+}
+
+/** Clave de una fila de Revision_Guerra.csv: la misma que usa _registrarRevisionGuerra_() (temporada, semana, tag, tipo y motivo). */
+function _rgClaveFila_(f) { return [f[2], f[3], f[4], f[6], f[7]].map(String).join('|'); }
+
+/** Hace el trabajo de aplicarDecisionesRevisionGuerra() (el lock ya está tomado). */
+function _rgAplicarDecisiones_(etq) {
+  var ahora = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
+  var ncol = REVISION_GUERRA_ENCABEZADO.length;
+  var leerRevision = function () {
+    var texto = _loadCSVFromDrive(REVISION_GUERRA_CSV), p = texto ? _parseCSV(texto) : [], filas = [];
+    for (var i = 1; i < (p ? p.length : 0); i++) { var f = p[i].slice(0, ncol); while (f.length < ncol) f.push(''); filas.push(f); }
+    return filas;
+  };
+  var revision = leerRevision();
+  if (!revision.length) { Logger.log(etq + ' Revision_Guerra.csv no tiene filas: no hay nada que aplicar.'); return; }
+
+  var decisiones = [], sinReconocer = 0;
+  revision.forEach(function (f) {
+    var est = _rgEstadoNormalizado_(f[9]);
+    if (est === 'conservar' || est === 'reemplazar') decisiones.push({ fila: f, decision: est });
+    else if (est !== '' && est !== 'pendiente' && est !== 'resuelto') {
+      sinReconocer++;
+      if (sinReconocer <= 20) Logger.log(etq + ' Fila N° ' + f[0] + ': el Estado «' + f[9] + '» no es «Conservar» ni «Reemplazar»; no se toca.');
+    }
+  });
+  if (!decisiones.length) { Logger.log(etq + ' Ninguna fila de Revision_Guerra.csv tiene el Estado «Conservar» o «Reemplazar»: no hay nada que aplicar.'); return; }
+
+  var csvTexto = null, filasCsv = null, csvCambio = false, docs = {};
+  decisiones.forEach(function (d) {
+    var f = d.fila, p = _rgParsearFilaGrupal_(f[7], f[8]);
+    if (!p) { d.r = { estado: 'noSoportada' }; return; }
+    d.p = p;
+    if (p.origen === 'csv') {
+      if (filasCsv === null) { csvTexto = _loadHistorialGuerraGrupalCSV(); filasCsv = csvTexto ? _parseCSV(csvTexto) : []; }
+      d.r = _rgAplicarEnFilasCsv_(filasCsv, f[4], f[2], f[3], p, d.decision);
+      if (d.r.cambio) csvCambio = true;
+    } else {
+      var clave = _claveClanHistorialGuerra(p.clan);
+      if (docs[clave] === undefined) docs[clave] = _rgLeerJsonClan_(p.clan);
+      d.ent = docs[clave];
+      if (!d.ent) { d.r = { estado: 'sinFila' }; return; }
+      d.r = _rgAplicarEnDocJson_(d.ent.doc, f[4], f[2], f[3], p, d.decision);
+      if (d.r.cambio) d.ent.tocado = true;
+    }
+  });
+
+  // 1) Primero se escribe el dato final...
+  var falloCsv = false;
+  if (csvCambio) {
+    try { _saveHistorialGuerraGrupalCSV(_encodeCSV(filasCsv)); }
+    catch (eCsv) { falloCsv = true; Logger.log(etq + ' ERROR escribiendo ' + HISTORIAL_GUERRA_GRUPAL_FILENAME + ': ' + (eCsv.message || eCsv) + '. Las filas del CSV grupal no se aplican.'); }
+  }
+  Object.keys(docs).forEach(function (clave) {
+    var ent = docs[clave];
+    if (!ent || !ent.tocado) return;
+    try {
+      var doc = _jsonGrupalOrdenar_(ent.doc);
+      doc.fechaUltimaActualizacion = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
+      _setContentConConteo_(ent.archivo, JSON.stringify(doc, null, 2));
+    } catch (eJson) {
+      ent.fallo = true;
+      Logger.log(etq + ' ERROR escribiendo el JSON grupal de «' + _rgNombreArchivo_(ent) + '»: ' + (eJson.message || eJson) + '. Sus filas no se aplican.');
+    }
+  });
+
+  // 2) ...y solo después se decide qué pasa con cada fila de Revision_Guerra.csv.
+  var cuenta = { conservar: 0, reemplazar: 0, yaAplicadas: 0, devueltas: 0, noSoportadas: 0 };
+  var nombreDecision = { conservar: 'Conservar', reemplazar: 'Reemplazar' };
+  decisiones.forEach(function (d) {
+    var f = d.fila, r = d.r, p = d.p;
+    var etiqueta = 'T' + f[2] + ' semana ' + f[3] + ' ' + f[4] + (f[5] ? ' (' + f[5] + ')' : '');
+    if (r.estado === 'noSoportada') {
+      d.final = 'noSoportada'; cuenta.noSoportadas++;
+      if (cuenta.noSoportadas <= 20) Logger.log(etq + ' Fila N° ' + f[0] + ' (' + etiqueta + '): «' + nombreDecision[d.decision] + '» solo se aplica a los valores distintos del historial grupal; esta fila es de otro tipo y no se toca.');
+      return;
+    }
+    var escrituraFallo = (r.cambio && p.origen === 'csv' && falloCsv) || (r.cambio && p.origen === 'json' && d.ent && d.ent.fallo);
+    if ((r.estado === 'aplicada' || r.estado === 'yaAplicada') && !escrituraFallo) {
+      d.final = 'borrar';
+      if (r.estado === 'yaAplicada') cuenta.yaAplicadas++; else cuenta[d.decision]++;
+      var descartado = d.decision === 'conservar' ? p.otro : p.guardado;
+      Logger.log(etq + ' ' + etiqueta + ' [' + (p.origen === 'csv' ? 'CSV grupal' : 'JSON grupal') + ' ' + p.clan + ']: ' + nombreDecision[d.decision] +
+        (r.estado === 'yaAplicada' ? ' (ya estaba aplicado)' : '') + ' → quedó ' + _rgTexto_(r.quedo) + '; se borró ' + _rgTexto_(descartado) + '.');
+      return;
+    }
+    if (escrituraFallo) { d.final = 'queda'; return; }
+    d.final = 'devolver'; cuenta.devueltas++;
+    d.nota = r.estado === 'sinFila'
+      ? 'No se aplicó «' + nombreDecision[d.decision] + '» (' + ahora + '): no se encontró ese dato en el ' + (p.origen === 'csv' ? 'CSV grupal' : 'JSON grupal') + '. Revísalo y decide de nuevo.'
+      : 'No se aplicó «' + nombreDecision[d.decision] + '» (' + ahora + '): el valor guardado cambió desde que se creó esta fila o ya no existe la alternativa. Decide de nuevo.';
+    Logger.log(etq + ' ' + etiqueta + ': no se aplicó «' + nombreDecision[d.decision] + '»; ' + (r.estado === 'sinFila' ? 'no se encontró el dato' : 'el valor guardado cambió') + '. La fila vuelve a «Pendiente».');
+  });
+
+  // 3) Revision_Guerra.csv se vuelve a leer justo antes de escribirlo, por si otro proceso agregó filas mientras tanto.
+  var cambios = {};
+  decisiones.forEach(function (d) { if (d.final === 'borrar' || d.final === 'devolver') cambios[_rgClaveFila_(d.fila)] = d; });
+  var fresca = leerRevision(), salida = [], borradas = 0, devueltas = 0;
+  fresca.forEach(function (f) {
+    var d = cambios[_rgClaveFila_(f)], est = _rgEstadoNormalizado_(f[9]);
+    if (!d || (est !== 'conservar' && est !== 'reemplazar')) { salida.push(f); return; }
+    if (d.final === 'borrar') { borradas++; return; }
+    f[9] = CGW_CONTRADICCION_ESTADO;
+    f[8] = String(f[8]) + ' [' + d.nota + ']';
+    devueltas++;
+    salida.push(f);
+  });
+  if (borradas || devueltas) {
+    for (var n = 0; n < salida.length; n++) salida[n][0] = n + 1;
+    try {
+      _saveCSVToDrive(REVISION_GUERRA_CSV, _encodeCSV([REVISION_GUERRA_ENCABEZADO].concat(salida)));
+    } catch (eRev) {
+      Logger.log(etq + ' ERROR escribiendo Revision_Guerra.csv: ' + (eRev.message || eRev) + '. Los valores ya se aplicaron; vuelve a correr la función para limpiar las filas.');
+      return;
+    }
+  }
+  Logger.log(etq + ' Terminó: ' + cuenta.conservar + ' «Conservar» y ' + cuenta.reemplazar + ' «Reemplazar» aplicadas (' + cuenta.yaAplicadas + ' ya estaban aplicadas); ' +
+    borradas + ' fila(s) borrada(s) de Revision_Guerra.csv; ' + devueltas + ' devuelta(s) a «Pendiente»; ' + cuenta.noSoportadas + ' de otro tipo sin tocar; ' + sinReconocer + ' con un Estado que no se reconoce.');
+}
+
+function _rgNombreArchivo_(ent) { return ent && ent.archivo ? ent.archivo.getName() : ''; }
 
 // ----- Comparar y reemplazar registros (lo usan el individual y el grupal) -----
 
