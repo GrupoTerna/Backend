@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 01/11/2026 15:26:52 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 01/11/2026 15:55:28 */
 
 
 
@@ -3740,11 +3740,12 @@ function _csvSubcarpetaDe_(filename) {
   var n = String(filename || '');
   // Informes: respaldos previos a reparar, reparaciones, limpiezas, revisiones y diagnósticos.
   if (/^Backup_Guerra ANTES de /.test(n) || /^Reparacion_/.test(n) || /^Limpieza_Coliseo_/.test(n) ||
-      /^Revision_Guerra/.test(n) || /^Diagnostico_/.test(n) || /^HistorialGuerra_Grupal/.test(n) ||
+      /^Revision_Guerra/.test(n) || /^Diagnostico_/.test(n) ||
       /^Correccion_Fecha_/.test(n) || /^Completar_DomingoDesdeJsonRoyaleApi /.test(n) ||
       /^Reparar_SemanaDesdeJsonRoyaleApi /.test(n)) return 'Informes';
   // Tampermonkey: lo que se arma con datos traídos de RoyaleAPI por Tampermonkey.
-  if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv') return 'Tampermonkey';
+  // §PF321 (1-nov-2026): HistorialGuerra_Grupal.csv (RoyaleAPI vía Tampermonkey, una fila por jugador, semana y clan) vive aquí, no en Informes; la usuaria lo movió a mano a CSV/Tampermonkey.
+  if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv' || n === 'HistorialGuerra_Grupal.csv') return 'Tampermonkey';
   // Jugador: datos que dependen de cada jugador (no son comportamiento general ni respaldo de una hoja).
   var jugador = ['Backup_Cards_2.csv', 'Backup_Insignias_2.csv', 'Backup_Logros_2.csv', 'Backup_ProgresoEventos.csv',
     'Backup_Battlelogs.csv', 'Backup_PerfilWeb.csv', 'Backup_CaminoLeyendas.csv'];
@@ -31886,7 +31887,7 @@ var HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS = [
   'Ataques', 'Fame', 'Barcos', 'Fuente', 'Cerrada', 'Alerta', 'Comentario'
 ];
 
-// CSV GRUPAL (carpeta DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL, Sección 6 del [→ Contexto_Base_Web.md §20B005]
+// CSV GRUPAL (desde el 1-nov-2026 en CSV/Tampermonkey, §PF321; antes carpeta DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL, Sección 6 del [→ Contexto_Base_Web.md §20B005]
 var HISTORIAL_GUERRA_GRUPAL_FILENAME = 'HistorialGuerra_Grupal.csv';
 
 // PUNTO 2 DE LA HOJA DE RUTA — endpoint que recibe los "registro" ya armados [→ Contexto_Base_Web.md §20B006]
@@ -31896,6 +31897,9 @@ var HISTORIAL_GUERRA_TOKEN = _scriptToken('HISTORIAL_GUERRA_TOKEN');
 
 // Índice en memoria { tag: DriveFile }, memoizado para el resto de la [→ Contexto_Base_Web.md §20B008]
 var _HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG = null;
+
+// §PF321: true cuando ya se comprobó (en esta ejecución) si el CSV grupal había que mover de JSON/RoyaleAPI/Grupal a CSV/Tampermonkey.
+var _HISTORIAL_GUERRA_GRUPAL_CSV_MOVIDO = false;
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
@@ -32031,6 +32035,29 @@ function limpiarDuplicadosHistorialGuerraIndividualSimular() { return limpiarDup
 
 function limpiarDuplicadosHistorialGuerraIndividualAplicar() { return limpiarDuplicadosHistorialGuerraIndividual(true); }
 
+// ----- Llenado inicial del JSON grupal por clan desde los JSON individuales (§PF321) -----
+
+/**
+ * Lee los JSON individuales de RoyaleAPI (carpeta Individual) y agrega al JSON grupal de cada clan lo que trae su Log cerrado, con la temporada Supercell. Se puede correr las veces que haga
+ * falta: lo que ya estaba no se duplica y un valor distinto queda como alternativa y va a Revision_Guerra.csv. Si no alcanza en una tanda, se programa sola.
+ */
+function reconstruirJsonGrupalDesdeIndividuales() { _hgReconstruirJsonGrupal_(false); }
+
+/** Punto de entrada del disparador de continuación de reconstruirJsonGrupalDesdeIndividuales() (no se corre a mano). */
+function _continuarReconstruirJsonGrupalDesdeIndividuales() { _hgReconstruirJsonGrupal_(true); }
+
+/** Borra el avance del llenado y su continuación pendiente. No borra ningún archivo de Drive: la próxima corrida recorre los JSON individuales desde el primero, sin duplicar lo ya agregado. */
+function reconstruirJsonGrupalReiniciar() {
+  PropertiesService.getScriptProperties().deleteProperty(HG_JSON_GRUPAL_ESTADO_PROP);
+  _borrarTriggersDeContinuacion('_continuarReconstruirJsonGrupalDesdeIndividuales');
+  try {
+    var raw = PropertiesService.getScriptProperties().getProperty('EJECUCION_EN_CURSO');
+    var info = raw ? JSON.parse(raw) : null;
+    if (info && String(info.fn) === 'reconstruirJsonGrupalDesdeIndividuales') _liberarLockEjecucion();
+  } catch (e) { /* propiedad corrupta: se deja como está */ }
+  Logger.log('[JSON grupal] Avance borrado. La próxima corrida empieza desde el primer JSON individual.');
+}
+
 // =============================================================================
 // PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
 // =============================================================================
@@ -32106,10 +32133,16 @@ function _aplicarHistorialGuerra(candidatosPayload) {
   // CSV grupal: una lectura y una escritura para toda la petición.
   var grupal = _actualizarFilasHistorialGuerraGrupalLote(itemsGrupal);
 
+  // JSON grupal por clan (§PF321): solo lo que viene del Log; un fallo aquí no afecta a lo ya guardado.
+  var jsonGrupal = { guardados: 0, cambios: 0, conflictos: 0, ignorados: 0, sinLock: false };
+  try { jsonGrupal = _actualizarJsonGrupalClanesLote(itemsGrupal); }
+  catch (eJg) { Logger.log('[HistorialGuerra][JSON grupal] Error: ' + eJg.message); }
+
   return {
     ok: true, procesados: procesados, registrosGuardados: registrosGuardados, errores: errores,
     grupalGuardado: grupal.guardado, grupalCambios: grupal.cambios, grupalIgnorados: grupal.ignorados,
-    grupalSinLock: !!grupal.sinLock
+    grupalSinLock: !!grupal.sinLock,
+    jsonGrupalGuardados: jsonGrupal.guardados, jsonGrupalCambios: jsonGrupal.cambios, jsonGrupalConflictos: jsonGrupal.conflictos, jsonGrupalSinLock: !!jsonGrupal.sinLock
   };
 }
 
@@ -32352,6 +32385,32 @@ function _loadHistorialGuerraGrupalCSV() {
  * _getHistorialGuerraGrupalFolder() [→ Contexto_Base_Web.md §20B032]
  */
 function _getHistorialGuerraGrupalFolder() {
+  // §PF321 (1-nov-2026): el CSV grupal vive en CSV/Tampermonkey (la usuaria lo movió a mano); la carpeta JSON/RoyaleAPI/Grupal queda para los JSON grupales por clan.
+  // Si el archivo todavía estuviera en la carpeta vieja y no en la nueva, se MUEVE (conserva su ID y su historial de versiones) la primera vez que se pide la carpeta.
+  try {
+    var destino = _getCsvSubcarpeta_('Tampermonkey', true);
+    if (!_HISTORIAL_GUERRA_GRUPAL_CSV_MOVIDO) {
+      _HISTORIAL_GUERRA_GRUPAL_CSV_MOVIDO = true;
+      if (!destino.getFilesByName(HISTORIAL_GUERRA_GRUPAL_FILENAME).hasNext()) {
+        var viejos = _getHistorialGuerraGrupalJsonFolder_().getFilesByName(HISTORIAL_GUERRA_GRUPAL_FILENAME);
+        if (viejos.hasNext()) {
+          viejos.next().moveTo(destino);
+          Logger.log('[HistorialGuerra][Grupal] ' + HISTORIAL_GUERRA_GRUPAL_FILENAME + ' movido de JSON/RoyaleAPI/Grupal a CSV/Tampermonkey.');
+        }
+      }
+    }
+    return destino;
+  } catch (e) {
+    Logger.log('[HistorialGuerra][Grupal] AVISO: no se pudo usar CSV/Tampermonkey (' + (e.message || e) + '); se usa la carpeta anterior.');
+    return _getHistorialGuerraGrupalJsonFolder_();
+  }
+}
+
+/**
+ * _getHistorialGuerraGrupalJsonFolder_() [→ Contexto_Base_Web.md §PF321]
+ * Carpeta JSON/RoyaleAPI/Grupal (DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL): los JSON grupales por clan; antes también tenía el CSV grupal.
+ */
+function _getHistorialGuerraGrupalJsonFolder_() {
   try { return DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL); }
   catch (e) {
     var folders = DriveApp.getFoldersByName('Grupal');
@@ -32455,6 +32514,257 @@ function _saveHistorialGuerraGrupalCSV(content) {
     _setContentConConteo_(files.next(), content);
   } else {
     _createFileConConteo_(folder, HISTORIAL_GUERRA_GRUPAL_FILENAME, content, MimeType.CSV);
+  }
+}
+
+// ----- JSON grupal por clan (§PF321, 1-nov-2026): lo que trae el Log de cada clan, una semana tras otra -----
+
+var HISTORIAL_GUERRA_JSON_GRUPAL_PREFIJO = 'Grupal - ';
+
+/** Nombre del clan tal como se guarda en el JSON grupal: sin el salto de línea ni la fecha que a veces trae pegados el perfil. */
+function _nombreClanJsonGrupal_(clan) {
+  return String(clan === null || clan === undefined ? '' : clan).split('\n')[0].replace(/\s+\d{4}-\d{2}-\d{2}\s*$/, '').trim();
+}
+
+/** Nombre del archivo de un clan en JSON/RoyaleAPI/Grupal: «Grupal - <clan>.json» (sin caracteres que Drive o un zip no admiten). */
+function _nombreArchivoJsonGrupal_(clan) {
+  return HISTORIAL_GUERRA_JSON_GRUPAL_PREFIJO + _nombreClanJsonGrupal_(clan).replace(/[\\\/:*?"<>|]/g, '-') + '.json';
+}
+
+function _crearJsonGrupalVacio_(clan) {
+  return { clan: _nombreClanJsonGrupal_(clan), fuente: 'log', fechaUltimaActualizacion: '', semanas: [] };
+}
+
+/**
+ * Función pura (§PF321). Aplica en memoria los registros del Log (fuente 'log', cerrada) a los documentos grupales por clan.
+ * docs = { claveClan: documento } (se modifica y se completa con los clanes nuevos); items = [{ tag, nombre, registro }]; offset = _getTemporadaOffsetRoyaleApi(); ahora = texto de la fecha.
+ * Clave de un dato: clan + temporada + semana + jugador. Un Log trae solo semanas cerradas, así que el valor no debería variar: si trae un valor distinto del guardado
+ * NO se pisa; el nuevo se guarda también en `alternativas` del jugador, con `revision: 'pendiente'`, y se devuelve en `conflictos` para mandarlo a revisión manual.
+ * Un valor que ya estaba (o que ya figura en `alternativas`) no cambia nada. Un dato nulo (RoyaleAPI no lo trae) nunca cuenta como distinto.
+ * Cada semana lleva las tres numeraciones: temporadaInterna, temporadaRoyaleAPI y temporadaSupercell (AAAA-MM).
+ * Devuelve { cambios, ignorados, tocados: { claveClan: true }, conflictos: [{ clan, tag, nombre, temporada, semana, guardado: {A,F,B}, nuevo: {A,F,B} }] }.
+ */
+function _jsonGrupalAplicarItems_(docs, items, offset, ahora) {
+  var res = { cambios: 0, ignorados: 0, tocados: {}, conflictos: [] };
+  var nulo = function (v) { return v === null || v === undefined || v === ''; };
+  var campos = [['ataques', 'A'], ['fame', 'F'], ['barcos', 'B']];
+  (items || []).forEach(function (it) {
+    var r = it && it.registro, tag = String((it && it.tag) || '').trim().toUpperCase();
+    if (!r || !tag || String(r.fuente || '').toLowerCase() !== 'log' || r.cerrada === false) { res.ignorados++; return; }
+    var clan = _nombreClanJsonGrupal_(r.clan), t = Number(r.temporadaInterna), sem = Number(r.semana);
+    if (!clan || !isFinite(t) || !(sem > 0)) { res.ignorados++; return; }
+    var clave = _claveClanHistorialGuerra(clan);
+    var doc = docs[clave];
+    if (!doc) { doc = docs[clave] = _crearJsonGrupalVacio_(clan); res.tocados[clave] = true; }
+    var semana = null;
+    for (var i = 0; i < doc.semanas.length; i++) { if (Number(doc.semanas[i].temporadaInterna) === t && Number(doc.semanas[i].semana) === sem) { semana = doc.semanas[i]; break; } }
+    if (!semana) {
+      semana = { temporadaInterna: t, temporadaRoyaleAPI: nulo(r.temporadaRoyaleAPI) ? null : Number(r.temporadaRoyaleAPI), temporadaSupercell: _cgwTemporadaSupercellTexto_(t, offset), semana: sem, jugadores: [] };
+      doc.semanas.push(semana);
+      res.tocados[clave] = true;
+    } else {
+      if (nulo(semana.temporadaSupercell)) { var sc = _cgwTemporadaSupercellTexto_(t, offset); if (sc !== '') { semana.temporadaSupercell = sc; res.tocados[clave] = true; } }
+      if (nulo(semana.temporadaRoyaleAPI) && !nulo(r.temporadaRoyaleAPI)) { semana.temporadaRoyaleAPI = Number(r.temporadaRoyaleAPI); res.tocados[clave] = true; }
+    }
+    var nombre = String(it.nombre || '').trim();
+    var jug = null;
+    for (var k = 0; k < semana.jugadores.length; k++) { if (String(semana.jugadores[k].tag).toUpperCase() === tag) { jug = semana.jugadores[k]; break; } }
+    var nuevo = { ataques: nulo(r.ataques) ? null : Number(r.ataques), fame: nulo(r.fame) ? null : Number(r.fame), barcos: nulo(r.barcos) ? null : Number(r.barcos) };
+    if (!jug) {
+      semana.jugadores.push({ tag: tag, nombre: nombre, ataques: nuevo.ataques, fame: nuevo.fame, barcos: nuevo.barcos });
+      res.cambios++; res.tocados[clave] = true;
+      return;
+    }
+    var cambio = false;
+    if (nombre && jug.nombre !== nombre) { jug.nombre = nombre; cambio = true; }
+    var distinto = false;
+    campos.forEach(function (c) {
+      var v = nuevo[c[0]];
+      if (v === null) return;
+      if (nulo(jug[c[0]])) { jug[c[0]] = v; cambio = true; }
+      else if (Number(jug[c[0]]) !== v) distinto = true;
+    });
+    if (distinto) {
+      var alts = jug.alternativas = jug.alternativas || [];
+      var yaEsta = alts.some(function (a) { return campos.every(function (c) { return nulo(nuevo[c[0]]) || Number(a[c[0]]) === nuevo[c[0]]; }); });
+      if (!yaEsta) {
+        alts.push({ ataques: nuevo.ataques, fame: nuevo.fame, barcos: nuevo.barcos, fechaDetectado: ahora });
+        jug.revision = 'pendiente';
+        res.conflictos.push({ clan: clan, tag: tag, nombre: jug.nombre || nombre, temporada: t, semana: sem,
+          guardado: { A: jug.ataques, F: jug.fame, B: jug.barcos }, nuevo: { A: nuevo.ataques, F: nuevo.fame, B: nuevo.barcos } });
+        cambio = true;
+      }
+    }
+    if (cambio) { res.cambios++; res.tocados[clave] = true; }
+  });
+  return res;
+}
+
+/** Función pura. Deja las semanas de un documento ordenadas por temporada interna y semana, y los jugadores por tag, para que el archivo sea estable. */
+function _jsonGrupalOrdenar_(doc) {
+  doc.semanas.sort(function (a, b) { return (Number(a.temporadaInterna) - Number(b.temporadaInterna)) || (Number(a.semana) - Number(b.semana)); });
+  doc.semanas.forEach(function (w) { w.jugadores.sort(function (a, b) { return a.tag < b.tag ? -1 : (a.tag > b.tag ? 1 : 0); }); });
+  return doc;
+}
+
+/** Texto de la entrada de Revision_Guerra.csv para un conflicto del JSON grupal. */
+function _entradaRevisionJsonGrupal_(c, ahora) {
+  var t = function (v) { return v === null || v === undefined ? 'sin dato' : v; };
+  return {
+    temporada: c.temporada, semana: c.semana, tag: c.tag, nombre: c.nombre,
+    tipo: CGW_CONTRADICCION_TIPO,
+    motivo: 'JSON grupal de RoyaleAPI (' + c.clan + '): el Log trae un valor distinto del guardado para la misma semana cerrada',
+    detalle: 'Guardado: ataques ' + t(c.guardado.A) + ', fame ' + t(c.guardado.F) + ', barcos ' + t(c.guardado.B) + '. Nuevo (' + ahora + '): ataques ' + t(c.nuevo.A) + ', fame ' + t(c.nuevo.F) + ', barcos ' + t(c.nuevo.B) +
+      '. Se conservan ambos en «' + _nombreArchivoJsonGrupal_(c.clan) + '» (campo alternativas); decidir cuál vale.',
+    estado: 'Pendiente'
+  };
+}
+
+/**
+ * _actualizarJsonGrupalClanesLote(items) [→ Contexto_Base_Web.md §PF321]
+ * items: [{ tag, nombre, registro }] (los mismos del CSV grupal). Toma el lock una vez, lee el JSON de cada clan que aparece, aplica todo en memoria y escribe solo los que cambiaron.
+ * Los conflictos van a Revision_Guerra.csv (Estado «Pendiente») cuando ya se soltó el lock. Devuelve { guardados, cambios, conflictos, ignorados, sinLock }.
+ */
+function _actualizarJsonGrupalClanesLote(items) {
+  var res = { guardados: 0, cambios: 0, conflictos: 0, ignorados: 0, sinLock: false };
+  var utiles = (items || []).filter(function (it) { return it && it.registro && String(it.registro.fuente || '').toLowerCase() === 'log' && it.registro.cerrada !== false; });
+  if (!utiles.length) return res;
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    Logger.log('[HistorialGuerra][JSON grupal] No se pudo obtener el lock: se omiten ' + utiles.length + ' registro(s) del JSON grupal.');
+    res.sinLock = true;
+    return res;
+  }
+  var conflictos = [], ahora = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
+  try {
+    var folder = _getHistorialGuerraGrupalJsonFolder_();
+    var docs = {}, archivos = {}, clanes = {};
+    utiles.forEach(function (it) { var c = _nombreClanJsonGrupal_(it.registro.clan); if (c) clanes[_claveClanHistorialGuerra(c)] = c; });
+    Object.keys(clanes).forEach(function (clave) {
+      var files = folder.getFilesByName(_nombreArchivoJsonGrupal_(clanes[clave]));
+      if (!files.hasNext()) return;
+      var f = files.next();
+      try {
+        var d = JSON.parse(f.getBlob().getDataAsString('UTF-8'));
+        if (d && Array.isArray(d.semanas)) { docs[clave] = d; archivos[clave] = f; }
+      } catch (eLeer) { Logger.log('[HistorialGuerra][JSON grupal] AVISO: no se pudo leer ' + f.getName() + ' (' + eLeer.message + '); no se toca.'); clanes[clave] = null; }
+    });
+    var aplicables = utiles.filter(function (it) { var c = _nombreClanJsonGrupal_(it.registro.clan); return c && clanes[_claveClanHistorialGuerra(c)]; });
+    var r = _jsonGrupalAplicarItems_(docs, aplicables, _getTemporadaOffsetRoyaleApi(), ahora);
+    res.cambios = r.cambios; res.ignorados = r.ignorados; conflictos = r.conflictos; res.conflictos = conflictos.length;
+    Object.keys(r.tocados).forEach(function (clave) {
+      var doc = _jsonGrupalOrdenar_(docs[clave]);
+      doc.fechaUltimaActualizacion = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
+      var contenido = JSON.stringify(doc, null, 2);
+      if (archivos[clave]) _setContentConConteo_(archivos[clave], contenido);
+      else _createFileConConteo_(folder, _nombreArchivoJsonGrupal_(doc.clan), contenido, MimeType.PLAIN_TEXT);
+      res.guardados++;
+    });
+  } catch (e) {
+    Logger.log('[HistorialGuerra][JSON grupal] Error en el lote: ' + e.message);
+  } finally {
+    lock.releaseLock();
+  }
+  if (conflictos.length) {
+    try { _registrarRevisionGuerra_(conflictos.map(function (c) { return _entradaRevisionJsonGrupal_(c, ahora); })); }
+    catch (eRev) { Logger.log('[HistorialGuerra][JSON grupal] AVISO: no se pudo escribir Revision_Guerra.csv (' + (eRev.message || eRev) + '); los conflictos quedan en el JSON (revision: pendiente).'); }
+  }
+  return res;
+}
+
+var HG_JSON_GRUPAL_ESTADO_PROP = 'HG_JSON_GRUPAL_ESTADO';           // propiedad del script con el avance del llenado (JSON)
+var HG_JSON_GRUPAL_PRESUPUESTO_MS = 3 * 60 * 1000 + 30 * 1000;      // tanda: pasado este tiempo no se empieza otro lote (la plataforma corta a los 6 min)
+var HG_JSON_GRUPAL_LOTE = 60;                                       // JSON individuales por cada escritura de los JSON grupales
+
+/** Tag -> nombre, leído de HistorialGuerra_Grupal.csv (los JSON individuales no traen el nombre). {} si no se puede leer. */
+function _hgNombresPorTag_() {
+  var mapa = {};
+  try {
+    var texto = _loadHistorialGuerraGrupalCSV();
+    var filas = texto ? _parseCSV(texto) : [];
+    for (var i = 1; i < filas.length; i++) {
+      var tag = String(filas[i][0] || '').trim().toUpperCase(), nombre = String(filas[i][1] || '').trim();
+      if (tag && nombre) mapa[tag] = nombre;
+    }
+  } catch (e) { Logger.log('[JSON grupal] AVISO: no se pudieron leer los nombres de HistorialGuerra_Grupal.csv (' + (e.message || e) + '); los jugadores quedan sin nombre hasta la próxima consulta.'); }
+  return mapa;
+}
+
+/** Función pura. Los registros del Log cerrado de un JSON individual, como items del JSON grupal: [{ tag, nombre, registro }]. */
+function _hgItemsLogDeIndividual_(datos, tagDeNombre, nombres) {
+  var tag = String((datos && datos.tag) || tagDeNombre || '').trim().toUpperCase();
+  if (!tag) return [];
+  return ((datos && datos.registros) || []).filter(function (r) { return r && String(r.fuente || '').toLowerCase() === 'log' && r.cerrada === true; })
+    .map(function (r) { return { tag: tag, nombre: (nombres && nombres[tag]) || '', registro: r }; });
+}
+
+function _hgReconstruirJsonGrupal_(esContinuacion) {
+  var nombreFn = 'reconstruirJsonGrupalDesdeIndividuales', handler = '_continuarReconstruirJsonGrupalDesdeIndividuales';
+  var props = PropertiesService.getScriptProperties();
+  if (esContinuacion) {
+    if (_reenumeracionEnCurso_() || (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida)) {
+      _borrarTriggersDeContinuacion(handler);
+      _liberarLockEjecucion();
+      Logger.log('[JSON grupal] Pausado: hay una reenumeración en curso o la ventana de guerra protegida está activa. El avance queda guardado: vuelve a correr ' + nombreFn + '() después.');
+      return;
+    }
+  } else if (!_adquirirLockEjecucion(nombreFn)) {
+    return;
+  }
+  var t0 = Date.now(), st = null;
+  try { st = JSON.parse(props.getProperty(HG_JSON_GRUPAL_ESTADO_PROP) || 'null'); } catch (eSt) { st = null; }
+  var guardar = function () { props.setProperty(HG_JSON_GRUPAL_ESTADO_PROP, JSON.stringify(st)); };
+  try {
+    if (!st) { st = { ultimo: '', tandas: 0, leidos: 0, conError: 0, cambios: 0, conflictos: 0 }; Logger.log('=== JSON grupal por clan desde los JSON individuales: INICIO ==='); }
+    else Logger.log('=== JSON grupal por clan desde los JSON individuales: CONTINÚA (tanda ' + (st.tandas + 1) + ') ===');
+    st.tandas++;
+
+    var reTag = /-\s(#[0-9A-Z]+)\.json$/i, lista = [], it = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL).getFiles();
+    while (it.hasNext()) { var f = it.next(), m = reTag.exec(f.getName()); if (m) lista.push({ file: f, nombre: f.getName(), tag: m[1].toUpperCase() }); }
+    lista.sort(function (a, b) { return a.nombre < b.nombre ? -1 : (a.nombre > b.nombre ? 1 : 0); });
+    var pendientes = lista.filter(function (x) { return x.nombre > st.ultimo; });
+    var previas = lista.length - pendientes.length, nombres = _hgNombresPorTag_();
+    var items = [], enLote = 0, ultimoLote = st.ultimo, estaTanda = 0, incompleto = false, sinLock = false;
+
+    var cerrarLote = function () {
+      if (!enLote) return true;
+      var r = _actualizarJsonGrupalClanesLote(items);
+      if (r.sinLock) { sinLock = true; return false; }
+      st.cambios += r.cambios; st.conflictos += r.conflictos; st.ultimo = ultimoLote; st.leidos += enLote; estaTanda += enLote;
+      guardar();
+      items = []; enLote = 0;
+      return true;
+    };
+
+    for (var i = 0; i < pendientes.length; i++) {
+      if (Date.now() - t0 > HG_JSON_GRUPAL_PRESUPUESTO_MS) { incompleto = true; break; }
+      var p = pendientes[i];
+      try { items = items.concat(_hgItemsLogDeIndividual_(JSON.parse(p.file.getBlob().getDataAsString('UTF-8')), p.tag, nombres)); }
+      catch (eLeer) { st.conError++; Logger.log('[JSON grupal] AVISO: no se pudo leer «' + p.nombre + '» (' + (eLeer.message || eLeer) + '); se sigue con el siguiente.'); }
+      ultimoLote = p.nombre; enLote++;
+      if (enLote >= HG_JSON_GRUPAL_LOTE && !cerrarLote()) { incompleto = true; break; }
+    }
+    if (!incompleto && !cerrarLote()) incompleto = true;
+
+    if (incompleto) {
+      guardar();
+      _refrescarLockEjecucion(nombreFn);
+      _programarContinuacion(handler);
+      _logProgresoPaso_('JSON grupal', 'JSON individuales leídos', previas, estaTanda, lista.length, 'archivos');
+      Logger.log('[JSON grupal] ' + (sinLock ? 'No se pudo tomar el lock para escribir los JSON grupales; se reintenta en la tanda siguiente.' : 'Presupuesto de la tanda agotado.') + ' Avance guardado; continuación programada en 10 s.');
+      return;
+    }
+    Logger.log('[JSON grupal] FIN (' + st.tandas + ' tanda(s)). JSON individuales leídos: ' + st.leidos + (st.conError ? ' (' + st.conError + ' con error de lectura)' : '') +
+      '. Registros nuevos o cambiados en los JSON grupales: ' + st.cambios + '. Valores distintos enviados a revisión manual (Revision_Guerra.csv): ' + st.conflictos + '.');
+    props.deleteProperty(HG_JSON_GRUPAL_ESTADO_PROP);
+    _borrarTriggersDeContinuacion(handler);
+    _liberarLockEjecucion();
+  } catch (e) {
+    if (st) guardar();
+    _borrarTriggersDeContinuacion(handler);
+    _liberarLockEjecucion();
+    Logger.log('[JSON grupal] ERROR: ' + e.message + '. El avance quedó guardado hasta el último lote escrito; vuelve a correr ' + nombreFn + '() para seguir.');
+    throw e;
   }
 }
 
