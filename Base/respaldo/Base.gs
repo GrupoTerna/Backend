@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 16:05:22 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 22:02:02 */
 
 
 
@@ -19127,6 +19127,183 @@ function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
 }
 
 /**
+ * _filasPerfilPorTag_(correcciones) (§PF312, 31-oct-2026)
+ * Agrupa por jugador las filas del PERFIL de una lista de correcciones del botón de Correcciones_Guerra: solo las de fuente 'perfil' y sin
+ * ClanTag (las de Log y Analytics no dicen en qué clan estuvo el jugador). Cada fila: { temporada (RoyaleAPI), semana, clanTag (normalizado,
+ * '' si la celda no traía enlace), clanNombre, fecha (YYYY-MM-DD, '' si no vino; Tampermonkey v3.16), ataques, fame, barcos (null si no vino) }.
+ * Una semana repetida cuenta una vez y cada lista queda de la más reciente a la más antigua.
+ */
+function _filasPerfilPorTag_(correcciones) {
+  var porTag = {};
+  for (var i = 0; i < (correcciones || []).length; i++) {
+    var c = correcciones[i] || {};
+    if (String(c.fuente || '').trim().toLowerCase() !== CGW_ORIGEN_PERFIL) continue;
+    if (String(c.clanTag || '').trim() !== '') continue; // fila de clan (Log o Analytics), no del perfil
+    var tag = String(c.tag || '').trim().toUpperCase();
+    var temporada = Number(c.temporadaRoyaleApi);
+    var semana = Number(c.semana);
+    if (!tag || !temporada || !semana) continue;
+    var barcosNum = (c.barcos === undefined || c.barcos === null || c.barcos === '') ? null : Number(c.barcos);
+    if (!porTag[tag]) porTag[tag] = {};
+    porTag[tag][temporada + '|' + semana] = {
+      temporada: temporada, semana: semana,
+      clanTag: _normalizarClanTagCorreccion(c.clanPerfil),
+      clanNombre: String(c.clanPerfilNombre || '').trim(),
+      fecha: /^\d{4}-\d{2}-\d{2}$/.test(String(c.fecha || '').trim()) ? String(c.fecha).trim() : '',
+      ataques: Number(c.ataquesSemana), fame: Number(c.fame),
+      barcos: (barcosNum === null || isNaN(barcosNum)) ? null : barcosNum
+    };
+  }
+  var salida = {};
+  Object.keys(porTag).forEach(function (tg) {
+    var filas = Object.keys(porTag[tg]).map(function (k) { return porTag[tg][k]; });
+    filas.sort(function (a, b) { return (b.temporada - a.temporada) || (b.semana - a.semana); });
+    salida[tg] = filas;
+  });
+  return salida;
+}
+
+/**
+ * _decidirNuevosDeFilas_(porTag) (§PF307 punto 3; 31-oct-2026)
+ * «Cuenta como nuevo» con el mismo criterio de _esNuevoPorTagClan_(): alguna de las TRES filas más recientes del perfil (porTag, de
+ * _filasPerfilPorTag_()) es de un clan que NO es Terna, decidido por TAG de clan (CFG.TERNA_TAGS).
+ *   - Diferencia con el botón de Nuevos: Tampermonkey no manda la semana en curso desde el perfil (v3.6, §PF237), así que aquí las tres
+ *     filas son las tres últimas semanas CERRADAS. Para quien ya lleva la semana en curso en un clan Terna la decisión puede variar en una semana.
+ *   - Una fila sin enlace de clan (clanTag vacío) se trata como Terna, igual que el overlay (§PF164): no hay dato para decir otra cosa y
+ *     no debe marcar a nadie como nuevo por falta de enlace.
+ * Devuelve { nuevos: [tags], evaluados: n (jugadores con filas de perfil), sinEnlace: n (jugadores con alguna fila sin enlace entre las tres) }.
+ */
+function _decidirNuevosDeFilas_(porTag) {
+  var nuevos = [], evaluados = 0, sinEnlace = 0;
+  Object.keys(porTag || {}).forEach(function (tg) {
+    evaluados++;
+    var ultimas = porTag[tg].slice(0, 3);
+    var esNuevo = false, faltaEnlace = false;
+    for (var j = 0; j < ultimas.length; j++) {
+      if (ultimas[j].clanTag === '') { faltaEnlace = true; continue; }
+      if (!_clanDeFilaEsTerna_(ultimas[j].clanTag, '', [])) esNuevo = true;
+    }
+    if (faltaEnlace) sinEnlace++;
+    if (esNuevo) nuevos.push(tg);
+  });
+  return { nuevos: nuevos, evaluados: evaluados, sinEnlace: sinEnlace };
+}
+
+/**
+ * _nuevosDesdeFilasPerfil_(correcciones) (§PF307 punto 3, pieza 1; SOLO DECIDE, no escribe): atajo de _decidirNuevosDeFilas_(_filasPerfilPorTag_(...)).
+ */
+function _nuevosDesdeFilasPerfil_(correcciones) {
+  return _decidirNuevosDeFilas_(_filasPerfilPorTag_(correcciones));
+}
+
+/**
+ * _alimentarNuevosDesdeCorrecciones_(correcciones) (§PF307 punto 3, pieza 2; 31-oct-2026; sin probar en Apps Script real)
+ * El botón de Correcciones_Guerra (cuentas completas o jugadores elegidos) alimenta la hoja «Nuevos». Se llama desde el endpoint
+ * accion=corregirGuerra DESPUÉS de _aplicarCorreccionesGuerra() (fuera de su candado) y NO reenvía nada a Correcciones_Guerra.csv: esas filas ya
+ * se guardaron. No se llama desde _importarNuevosYPerfiles_() (el botón de Nuevos), para que un botón no alimente al otro dos veces.
+ * Candidatos: los jugadores que cuentan como nuevos por tag (_decidirNuevosDeFilas_) y, además, los que ya tienen fila en «Nuevos» (para que su
+ * cuadrícula no se congele, igual que el botón de Nuevos). Un nuevo que NO esté Activo en un clan Terna del Directorio no se agrega (por ejemplo un
+ * jugador elegido que ya salió: _purgarNuevosExpulsados() lo borraría después).
+ * Registros: todas las semanas CERRADAS del perfil que Tampermonkey v3.16 mandó con fecha, menos las que ya están en el histórico de Guerra
+ * (_construirCoberturaPorTag(), como filtra Tampermonkey en el botón de Nuevos). Es necesario mandar todas: _aplicarImportacionNuevos() borra
+ * la cuadrícula del candidato y la reescribe con lo recibido. Un candidato sin ningún registro con fecha (Tampermonkey anterior a v3.16, o todas
+ * las semanas ya en el histórico) NO se envía: no se borra su cuadrícula. La semana en curso no se toca: es un bloque aparte de «Nuevos».
+ * Nombre del clan de cada registro: el que mandó Tampermonkey (clanPerfilNombre); si no vino, el de la hoja Clan por tag (clanes Terna); si
+ * tampoco, el propio tag.
+ * Sin candado propio, como el endpoint de Nuevos: si ambos botones corren a la vez sobre los mismos jugadores, gana la última escritura.
+ * Devuelve { nuevos, evaluados, sinEnlace, candidatos, procesados, filasNuevas, noActivos, sinFecha, sinRegistros, errores[, error] }.
+ */
+function _alimentarNuevosDesdeCorrecciones_(correcciones) {
+  var porTag = _filasPerfilPorTag_(correcciones);
+  var det = _decidirNuevosDeFilas_(porTag);
+  var resumen = {
+    nuevos: det.nuevos, evaluados: det.evaluados, sinEnlace: det.sinEnlace,
+    candidatos: 0, procesados: 0, filasNuevas: 0, noActivos: 0, sinFecha: 0, sinRegistros: 0, errores: []
+  };
+  if (!det.evaluados) return resumen;
+
+  var ss = _getSs();
+  var tagsEnHoja = {};
+  try {
+    tagsEnHoja = _obtenerTagsEnHojaNuevos(ss);
+  } catch (eTags) {
+    Logger.log('[Nuevos-Correcciones] AVISO: no se pudo leer la lista de tags de «Nuevos» (' + (eTags.message || eTags) + '); solo se consideran los nuevos detectados.');
+    tagsEnHoja = {};
+  }
+
+  var tagsCand = Object.keys(porTag).filter(function (tg) { return det.nuevos.indexOf(tg) >= 0 || tagsEnHoja[tg] === true; });
+  if (!tagsCand.length) return resumen;
+
+  // Los nuevos que todavía no tienen fila solo entran si siguen Activos en un clan Terna.
+  var hayNuevoSinFila = tagsCand.some(function (tg) { return tagsEnHoja[tg] !== true; });
+  var dirPorTag = null;
+  if (hayNuevoSinFila) {
+    try {
+      dirPorTag = {};
+      var dirData = _leerDirectorioFisicoComoDC(ss);
+      for (var d = 0; d < dirData.length; d++) {
+        var tgD = String(dirData[d][DC.TAG - 1] || '').trim().toUpperCase();
+        if (tgD) dirPorTag[tgD] = dirData[d];
+      }
+    } catch (eDir) {
+      resumen.error = 'No se pudo leer el Directorio (' + (eDir.message || eDir) + '); no se agregó ningún nuevo a «Nuevos».';
+      Logger.log('[Nuevos-Correcciones] ' + resumen.error);
+      return resumen;
+    }
+  }
+
+  var cobertura = {};
+  try {
+    var cobBruta = _construirCoberturaPorTag();
+    Object.keys(cobBruta).forEach(function (k) { cobertura[String(k).trim().toUpperCase()] = cobBruta[k]; });
+  } catch (eCob) {
+    // Sin la cobertura se escribirían en la cuadrícula semanas ya migradas al histórico: mejor no tocar «Nuevos».
+    resumen.error = 'No se pudo calcular la cobertura de Guerra (' + (eCob.message || eCob) + '); no se escribió en «Nuevos».';
+    Logger.log('[Nuevos-Correcciones] ' + resumen.error);
+    return resumen;
+  }
+
+  var nombresTerna = {};
+  try { nombresTerna = _mapaNombresClanTerna_(CFG.TERNA_TAGS); } catch (eNom) { nombresTerna = {}; }
+
+  var candidatos = [];
+  tagsCand.forEach(function (tg) {
+    if (tagsEnHoja[tg] !== true) {
+      var dRow = dirPorTag && dirPorTag[tg];
+      var activoEnTerna = dRow && String(dRow[DC.ESTADO - 1]) === 'Activo' && CFG.TERNA_TAGS.indexOf(String(dRow[DC.CLAN_TAG - 1])) >= 0;
+      if (!activoEnTerna) { resumen.noActivos++; return; }
+    }
+    var cubiertas = {};
+    (cobertura[tg] || []).forEach(function (et) { cubiertas[et] = true; });
+    var registros = [];
+    porTag[tg].forEach(function (f) {
+      if (cubiertas[f.temporada + '-' + f.semana]) return;
+      if (!f.fecha) { resumen.sinFecha++; return; }
+      registros.push({
+        temporada: f.temporada + '-' + f.semana, fecha: f.fecha,
+        clan: f.clanNombre || nombresTerna[f.clanTag] || f.clanTag || '', clanTag: f.clanTag,
+        ataques: f.ataques, fame: f.fame, barcos: (f.barcos === null ? '' : f.barcos)
+      });
+    });
+    if (!registros.length) { resumen.sinRegistros++; return; }
+    candidatos.push({ tag: tg, registros: registros });
+  });
+
+  resumen.candidatos = candidatos.length;
+  if (candidatos.length) {
+    var r = _aplicarImportacionNuevos(candidatos);
+    resumen.procesados = (r && r.procesados) || 0;
+    resumen.filasNuevas = (r && r.filasNuevas) || 0;
+    if (r && r.errores && r.errores.length) resumen.errores = r.errores.slice(0, 20);
+    if (r && r.ok === false && r.error) resumen.error = r.error;
+  }
+  Logger.log('[Nuevos-Correcciones] ' + det.evaluados + ' jugador(es) con perfil, ' + det.nuevos.length + ' nuevo(s) por tag, ' + candidatos.length +
+    ' candidato(s) enviados a «Nuevos» (procesados ' + resumen.procesados + ', filas nuevas ' + resumen.filasNuevas + '); sin fecha: ' + resumen.sinFecha +
+    ', sin registros: ' + resumen.sinRegistros + ', no activos: ' + resumen.noActivos + '.');
+  return resumen;
+}
+
+/**
  * _aplicarImportacionNuevos(candidatosPayload) [→ Contexto_Base_Web.md §14B073]
  */
 function _aplicarImportacionNuevos(candidatosPayload) {
@@ -25885,6 +26062,13 @@ var REVISION_GUERRA_CSV = 'Revision_Guerra.csv';
 
 var REVISION_GUERRA_ENCABEZADO = ['N°', 'Fecha', 'Temporada', 'Semana', 'Tag', 'Nombre', 'Tipo', 'Motivo', 'Detalle', 'Estado'];
 
+// §PF313 (PF307 punto 4, §PF253 punto 1): registro de contradicciones entre filas de Correcciones_Guerra.csv. [→ Contexto_Base_Web.md §PF313]
+var CGW_CONTRADICCION_TIPO = 'Contradicción';      // columna «Tipo» de Revision_Guerra.csv
+var CGW_CONTRADICCION_ESTADO = 'Pendiente';        // columna «Estado» de lo que no se resolvió solo
+var CGW_CONTRADICCIONES_MAX_LINEAS = 200;          // tope de líneas que viajan en la respuesta (el resto solo cuenta)
+var CGW_REGRESO_HUECO_DIAS = 7;                    // §PF314 (PF253 opción B): un hueco de 7 días o más sin clan Terna cuenta como «salió y regresó»
+var _CGW_MITADES_SEMANA_CACHE_ = null;             // §PF313: sumas de dos días de guerra, para comprobar semanas completas
+
 // 3.5a -- RESUMEN PURO DEL BATTLELOG POR DIA DE GUERRA Y POR CLAN (Fase 15, Tanda 3, [→ Contexto_Base_Web.md §18B034]
 // Indices base 0 dentro de una fila de BLS_HEADERS (N° es el 0).
 var BLG_COL = {
@@ -27149,6 +27333,73 @@ function _fameCatalogoDia_() {
   return lista;
 }
 
+/**
+ * _cgwMitadesSemana_() [→ Contexto_Base_Web.md §PF313]
+ * Todas las sumas posibles de DOS días de guerra, sacadas de _fameCatalogoDia_(): { conBarcos: {'n|b|f': true}, sinBarcos: {'n|f': true}, lista: [{n,b,f}] }.
+ * La semana tiene 4 días (BLG_DIAS_GUERRA), así que una semana posible es la suma de dos mitades. Se calcula una sola vez por ejecución.
+ */
+function _cgwMitadesSemana_() {
+  if (_CGW_MITADES_SEMANA_CACHE_) return _CGW_MITADES_SEMANA_CACHE_;
+  var cat = _fameCatalogoDia_();
+  var conBarcos = {}, sinBarcos = {}, lista = [];
+  for (var i = 0; i < cat.length; i++) {
+    for (var j = i; j < cat.length; j++) {
+      var n = cat[i].n + cat[j].n, b = cat[i].b + cat[j].b, f = cat[i].f + cat[j].f;
+      var kb = n + '|' + b + '|' + f;
+      if (!conBarcos[kb]) { conBarcos[kb] = true; lista.push({ n: n, b: b, f: f }); }
+      sinBarcos[n + '|' + f] = true;
+    }
+  }
+  _CGW_MITADES_SEMANA_CACHE_ = { conBarcos: conBarcos, sinBarcos: sinBarcos, lista: lista };
+  return _CGW_MITADES_SEMANA_CACHE_;
+}
+
+/**
+ * _cgwSemanaEsPosible_(ataques, fame, barcos, memo) [→ Contexto_Base_Web.md §PF313]
+ * §PF253 punto 2: «una terna posible» = una combinación posible de ataques, fame y barcos. Devuelve true si existen 4 días de guerra del catálogo
+ * (_fameCatalogoDia_()) cuya suma sea exactamente esa semana. barcos null/undefined = «sin dato»: se comprueba solo ataques y fame.
+ * Cubre la semana de UN clan o de un jugador en varios (las sumas más chicas también caben: hay días con 0 ataques). memo (opcional): objeto para no repetir cálculos.
+ * Limitación conocida: no conoce la regla del clan terminado (ataques del domingo sin fame, §PF183), así que esos casos salen como «no cabe».
+ */
+function _cgwSemanaEsPosible_(ataques, fame, barcos, memo) {
+  if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame)) return false;
+  if (ataques % 1 !== 0 || fame % 1 !== 0 || ataques < 0 || fame < 0) return false;
+  if (ataques > BLG_DIAS_GUERRA * FAME_MAZOS_POR_DIA) return false;
+  var hayBarcos = (typeof barcos === 'number' && !isNaN(barcos));
+  if (hayBarcos && (barcos % 1 !== 0 || barcos < 0 || barcos > ataques)) return false;
+  var clave = ataques + '|' + (hayBarcos ? barcos : 'x') + '|' + fame;
+  if (memo && memo[clave] !== undefined) return memo[clave];
+  var m = _cgwMitadesSemana_();
+  var ok = false;
+  for (var i = 0; i < m.lista.length && !ok; i++) {
+    var x = m.lista[i];
+    var n2 = ataques - x.n, f2 = fame - x.f;
+    if (n2 < 0 || f2 < 0) continue;
+    ok = hayBarcos ? !!m.conBarcos[n2 + '|' + (barcos - x.b) + '|' + f2] : !!m.sinBarcos[n2 + '|' + f2];
+  }
+  if (memo) memo[clave] = ok;
+  return ok;
+}
+
+/**
+ * _cgwFuenteDeFila_(clanTag, fuenteTexto, guardada) [→ Contexto_Base_Web.md §PF313]
+ * Nombre de la fuente de una fila para el registro de contradicciones. Sin «guardada»: la del envío (fuenteTexto = c.fuente). Con «guardada»: la de la fila del mapa.
+ * Fila sin ClanTag (RoyaleAPI): «perfil» o «desconocida». Fila con ClanTag: «Log», «Analytics» o «desconocida».
+ */
+function _cgwFuenteDeFila_(clanTag, fuenteTexto, guardada) {
+  if (clanTag === '') {
+    var esPerfil = guardada ? (guardada.origenPerfil === CGW_ORIGEN_PERFIL)
+      : (String(fuenteTexto || '').trim().toLowerCase() === CGW_ORIGEN_PERFIL);
+    return esPerfil ? 'perfil' : 'desconocida';
+  }
+  var f = guardada ? (guardada.fuenteClan || '') : _cgwFuenteClanDesdeTexto_(fuenteTexto);
+  return f || 'desconocida';
+}
+
+function _cgwTextoValores_(ataques, fame, barcos) {
+  return ataques + ' ataques / ' + fame + ' fame' + ((barcos !== null && barcos !== undefined) ? ' / ' + barcos + ' barcos' : '');
+}
+
 // ----- Overlay de correcciones (CSV): lectura, escritura y formato -----
 
 function _cgwFuenteClanDesdeTexto_(v) {
@@ -27557,6 +27808,52 @@ function _tagsSinPerfilEnOverlay_(mapa) {
 }
 
 /**
+ * _tagsRegresadosSinPerfilTrasRegreso_(mapa, ventanasOpc)  (§PF314, PF253 opción B; por confirmar tras la contrastación con los json)
+ * Tags de jugadores que SALIERON de los clanes Terna y REGRESARON, y cuyo perfil no se ha leído desde que regresaron. Así Tampermonkey visita su
+ * perfil (manda todas las semanas, incluidas las del lapso fuera) y el backend decide: una fila igual a la guardada no se reescribe, una distinta
+ * la reemplaza con aviso «antes / ahora» y una semana que falta se agrega (§PF236, §PF237). El backend no necesita contarle a Tampermonkey qué semanas tiene cada jugador (opción A).
+ * Regreso = la membresía en clanes Terna (ventanas de Historial, _construirVentanasMembresiaTernaPorTag()) tiene un hueco de CGW_REGRESO_HUECO_DIAS o más
+ * (un traslado entre clanes Terna con pocos días de por medio no cuenta) y el jugador está hoy en un clan Terna (última ventana abierta).
+ * «Perfil leído desde el regreso» = alguna fila del perfil (sin ClanTag, origen «perfil») con «Actualizado» igual o posterior a la fecha del regreso.
+ * Riesgo conocido: si el perfil de RoyaleAPI no trae ninguna semana nueva o distinta, «Actualizado» no cambia (§PF236) y el jugador seguiría en la lista.
+ */
+function _tagsRegresadosSinPerfilTrasRegreso_(mapa, ventanasOpc) {
+  var ventanas = ventanasOpc || _construirVentanasMembresiaTernaPorTag();
+  var tz = Session.getScriptTimeZone() || 'GMT-5';
+  var ultimaLecturaPerfil = {}; // tag -> «Actualizado» más reciente de una fila de perfil con origen «perfil»
+  Object.keys(mapa || {}).forEach(function (k) {
+    var p = k.split('|'); // temporada | semana | clantag | tag
+    if (p[2] !== '' || mapa[k].origenPerfil !== CGW_ORIGEN_PERFIL) return;
+    var tg = String(p[3] || '').trim().toUpperCase();
+    var act = String(mapa[k].actualizado || '');
+    if (act && act > (ultimaLecturaPerfil[tg] || '')) ultimaLecturaPerfil[tg] = act;
+  });
+  var margen = CGW_REGRESO_HUECO_DIAS * 24 * 3600 * 1000;
+  var salida = [];
+  Object.keys(ventanas || {}).forEach(function (t) {
+    var v = (ventanas[t] || []).slice().sort(function (a, b) { return a.desde.getTime() - b.desde.getTime(); });
+    if (v.length < 2) return;
+    // Se funden las ventanas que se tocan o se traslapan (traslado entre clanes Terna) y se busca la última interrupción.
+    var tramos = [];
+    v.forEach(function (w) {
+      var fin = (w.hasta === null) ? null : w.hasta.getTime();
+      var ult = tramos[tramos.length - 1];
+      if (ult && (ult.fin === null || w.desde.getTime() - ult.fin < margen)) {
+        if (fin === null || (ult.fin !== null && fin > ult.fin)) ult.fin = fin;
+      } else {
+        tramos.push({ desde: w.desde, fin: fin });
+      }
+    });
+    if (tramos.length < 2) return;
+    var ultimo = tramos[tramos.length - 1];
+    if (ultimo.fin !== null) return; // hoy no está en un clan Terna: Tampermonkey solo visita a los activos
+    var regreso = Utilities.formatDate(ultimo.desde, tz, 'yyyy-MM-dd HH:mm:ss');
+    if ((ultimaLecturaPerfil[t] || '') < regreso) salida.push(t);
+  });
+  return salida.sort();
+}
+
+/**
  * _cuentasConVariosClanesEnOverlay_()
  * §PF164: tags de jugador con al menos una semana con filas de 2 o más clanes Terna en Correcciones_Guerra.csv. Con los datos del 12-oct-2026
  * son 35. Es la lista que Tampermonkey ofrece al forzar la lectura del perfil (opción «VARIOS»).
@@ -27726,6 +28023,9 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var cambiosPerfil = []; // §PF237: filas del perfil que reemplazan un dato del perfil ya guardado y distinto
   var clavesTocadas = []; // FIX (27-ago-2026, pregunta 4): claves de ESTE lote, para completar Implementación más abajo sin tocar correcciones de corridas anteriores.
   var clavesIgualesClan = []; // §PF240: filas de Log/Analytics (con ClanTag) iguales a las ya guardadas: no se reescriben, pero cuentan para el aviso «revisar a mano»
+  var contradicciones = [], contradiccionesTotal = 0, contradiccionesSinPisar = 0; // §PF313: registro de contradicciones de esta corrida (líneas topadas; el total cuenta todas)
+  var revisionContradicciones = []; // §PF313: lo que no se resuelve solo va también a Revision_Guerra.csv (Estado pendiente)
+  var memoPosible = {}; // §PF313: memoria de _cgwSemanaEsPosible_() para no repetir cálculos en un lote grande
   for (var i = 0; i < correcciones.length; i++) {
     var c = correcciones[i] || {};
     var tag = String(c.tag || '').trim();
@@ -27793,6 +28093,54 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     // semana que cambia en cada corrida. No avisa si lo guardado era «desconocido» (llenarlo es justo lo esperado).
     var valoresDistintos = existente && (existente.ataquesSemana !== ataquesSemana || existente.fame !== fame ||
       (existente.barcos !== null && existente.barcos !== undefined && barcosFinal !== null && existente.barcos !== barcosFinal));
+    // §PF313 (PF307 punto 4; reglas de §PF253 punto 1, por confirmar tras la contrastación con los json). Todo conflicto deja una línea en el registro de la
+    // corrida (jugador, semana, clan, valor antes y ahora, fuente de cada uno y cuál ganó). Lo que NO se resuelve solo no se pisa y va también a Revision_Guerra.csv:
+    //  · D: dos fuentes del mismo nivel que discrepan en la misma clave (Log contra Analytics): se conserva lo guardado.
+    //  · B: valores que no caben en ninguna combinación posible de ataques, fame y barcos: si ya había otro valor, se conserva; si no había, se guarda y se avisa.
+    // El caso A (misma clave, valores distintos, fuentes de distinto nivel o la misma fuente que actualiza) se aplica como siempre y solo deja la línea.
+    // El caso C (clan con nombre de Terna sin enlace) y la comparación Correcciones_Nuevos contra Correcciones_Guerra siguen pendientes (§PF313).
+    var fuenteEntrante = _cgwFuenteDeFila_(clanTag, c.fuente, null);
+    var fuenteGuardada = existente ? _cgwFuenteDeFila_(clanTag, '', existente) : '';
+    var etiquetaConflicto = 'T' + temporadaPropia + ' semana ' + semana + ' ' + tag + ' (' + (clanTag || 'perfil') + ')';
+    var textoAntesC = existente ? _cgwTextoValores_(existente.ataquesSemana, existente.fame, existente.barcos) + ' [' + fuenteGuardada + ']' : '';
+    var textoAhoraC = _cgwTextoValores_(ataquesSemana, fame, barcosFinal) + ' [' + fuenteEntrante + ']';
+    var nombreConflicto = String(c.nombre || '');
+    var mismoNivelDiscrepa = !!(existente && valoresDistintos && clanTag !== '' && fuenteGuardada !== 'desconocida' &&
+      fuenteEntrante !== 'desconocida' && fuenteGuardada !== fuenteEntrante);
+    var yaGuardadaIgual = !!(existente && !valoresDistintos); // reintento por Implementación «No»: el valor ya estaba, no es un conflicto nuevo
+    var noCabeSemana = !yaGuardadaIgual && !_cgwSemanaEsPosible_(ataquesSemana, fame, barcosFinal, memoPosible);
+    if (mismoNivelDiscrepa || noCabeSemana || (valoresDistintos && !(clanTag === '' && fuenteGuardada === 'perfil' && fuenteEntrante === 'perfil'))) {
+      // (perfil contra perfil ya se avisa abajo como «antes / ahora» en cambiosPerfil; no se duplica)
+      var decision, motivoRev = '';
+      if (mismoNivelDiscrepa) {
+        decision = 'mismo nivel: no se pisa, queda lo guardado y va a Revision_Guerra.csv';
+        motivoRev = fuenteGuardada + ' y ' + fuenteEntrante + ' difieren (' + clanTag + ')';
+      } else if (noCabeSemana && existente && valoresDistintos) {
+        decision = 'no cabe en ninguna semana posible: no se pisa, queda lo guardado y va a Revision_Guerra.csv';
+        motivoRev = 'Valor que no cabe en una semana posible (' + (clanTag || 'perfil') + ')';
+      } else if (noCabeSemana) {
+        decision = 'no cabe en ninguna semana posible: se guarda porque no había otro valor y va a Revision_Guerra.csv';
+        motivoRev = 'Valor que no cabe en una semana posible (' + (clanTag || 'perfil') + ')';
+      } else {
+        decision = 'gana el valor de ahora';
+      }
+      contradiccionesTotal++;
+      if (contradicciones.length < CGW_CONTRADICCIONES_MAX_LINEAS) {
+        contradicciones.push(etiquetaConflicto + ': ' + (existente ? 'antes ' + textoAntesC + ', ' : 'sin valor guardado, ') + 'ahora ' + textoAhoraC + '; ' + decision);
+      }
+      if (motivoRev) {
+        revisionContradicciones.push({
+          temporada: temporadaPropia, semana: semana, tag: tag, nombre: nombreConflicto, tipo: CGW_CONTRADICCION_TIPO, motivo: motivoRev,
+          detalle: (existente ? 'antes ' + textoAntesC + '; ' : '') + 'ahora ' + textoAhoraC + '; ' + decision, estado: CGW_CONTRADICCION_ESTADO
+        });
+      }
+      if (mismoNivelDiscrepa || (noCabeSemana && existente && valoresDistintos)) {
+        contradiccionesSinPisar++;
+        if (clanTag !== '') clavesIgualesClan.push(clave); // sigue contando para el aviso «revisar a mano»
+        continue;
+      }
+    }
+
     if (clanTag === '' && valoresDistintos && existente.origenPerfil === CGW_ORIGEN_PERFIL) {
       var baja0 = (ataquesSemana === 0 && fame === 0 && (existente.ataquesSemana > 0 || existente.fame > 0));
       var etiquetaCambio = 'T' + temporadaPropia + ' semana ' + semana + ' ' + tag + ': perfil antes ' + existente.ataquesSemana + ' ataques / ' +
@@ -27847,6 +28195,16 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   });
 
   var avisos = [];
+  // §PF313: lo que no se resolvió solo va a Revision_Guerra.csv con Estado «Pendiente». Un fallo aquí no afecta a lo ya decidido: se avisa.
+  var resultadoRevision = null, avisoRevision = '';
+  if (revisionContradicciones.length) {
+    try {
+      resultadoRevision = _registrarRevisionGuerra_(revisionContradicciones);
+    } catch (eRevC) {
+      avisoRevision = 'Contradicciones: no se pudo escribir Revision_Guerra.csv (' + (eRevC.message || eRevC) + ').';
+      Logger.log('[CorreccionGuerra] ' + avisoRevision);
+    }
+  }
   if (aplicadas > 0) {
     _guardarOverlayCorreccionesGuerra(mapa);
     var falloAlgunaPropagacion = false;
@@ -27882,6 +28240,15 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   if (anterioresT1) resultado.anterioresT1 = anterioresT1; // §PF247
   if (revisarManual.length) resultado.revisarManual = revisarManual; // FIX 29-sep-2026 (Fase 15 tanda 1)
   if (cambiosPerfil.length) resultado.cambiosPerfil = cambiosPerfil; // §PF237
+  if (contradiccionesTotal) { // §PF313: el log de la corrida; viaja en la respuesta y queda en el log de Drive del botón
+    resultado.contradicciones = contradicciones;
+    resultado.contradiccionesTotal = contradiccionesTotal;
+    resultado.contradiccionesSinPisar = contradiccionesSinPisar;
+    if (resultadoRevision) resultado.revisionContradicciones = resultadoRevision;
+    if (avisoRevision) resultado.avisoRevision = avisoRevision;
+    Logger.log('[CorreccionGuerra] Contradicciones: ' + contradiccionesTotal + ' (' + contradiccionesSinPisar + ' sin pisar). ' +
+      contradicciones.slice(0, 20).join(' | ') + (contradicciones.length > 20 ? ' | … (ver la respuesta del endpoint)' : ''));
+  }
   if (avisos.length) {
     // avisoControl2: se mantiene este nombre de campo (aunque ahora puede [→ Contexto_Base_Web.md §18B104]
     resultado.avisoControl2 = avisos.join(' | ');
@@ -27948,6 +28315,11 @@ function _obtenerListaCorreccionGuerra(opciones) {
   var mapaOverlayLista = soloClanes ? null : _cargarOverlayCorreccionesGuerraPorClan(); // §PF246: una sola lectura del CSV para las dos listas de abajo
   var cuentasVariosClanes = soloClanes ? [] : _cuentasConVariosClanesEnOverlay_(mapaOverlayLista); // §PF164: para forzar su perfil desde Tampermonkey (v3.2)
   var sinPerfilEnCsv = soloClanes ? [] : _tagsSinPerfilEnOverlay_(mapaOverlayLista); // §PF246 (punto 2 de §PF235)
+  var regresadosSinPerfil = [];
+  if (!soloClanes) { // §PF314 (PF253 opción B): quien salió y regresó se visita aunque ya tenga perfil guardado de antes; un fallo no frena la lista
+    try { regresadosSinPerfil = _tagsRegresadosSinPerfilTrasRegreso_(mapaOverlayLista); }
+    catch (eReg) { Logger.log('[CorreccionGuerra][Lista] AVISO: no se pudo calcular quién regresó (' + (eReg.message || eReg) + '); la lista sale sin ese campo.'); }
+  }
   Logger.log('[CorreccionGuerra][Lista] modo=' + (soloClanes ? 'clanes' : 'completo') +
              ' · directorio ' + (tDirectorio - tInicio) + ' ms · cobertura ' + (Date.now() - tDirectorio) + ' ms · ' +
              jugadores.length + ' jugador(es) · total ' + (Date.now() - tInicio) + ' ms');
@@ -27966,7 +28338,9 @@ function _obtenerListaCorreccionGuerra(opciones) {
     cuentasVariosClanes: cuentasVariosClanes,
     // §PF246: tags con datos de algún clan (Log/Analytics) en Correcciones_Guerra.csv y NINGUNA fila de perfil con origen «perfil» (el «Grupo B» de §PF235).
     // Tampermonkey v3.10 visita su perfil aunque Log/Analytics los hayan cubierto, una sola vez: al guardarse su perfil salen de esta lista.
-    sinPerfilEnCsv: sinPerfilEnCsv
+    sinPerfilEnCsv: sinPerfilEnCsv,
+    // §PF314 (PF253 opción B): activos que salieron de los clanes Terna y regresaron, sin perfil leído desde el regreso. Tampermonkey v3.17 visita su perfil (todas las semanas) y el backend decide qué reemplaza o agrega.
+    regresadosSinPerfil: regresadosSinPerfil
   };
 }
 
@@ -28121,7 +28495,7 @@ function _registrarRevisionGuerra_(entradas) {
     var clave = [String(en.temporada), String(en.semana), String(en.tag), String(en.tipo), String(en.motivo)].join('|');
     var pos = indice[clave];
     if (pos === undefined) {
-      filas.push(['', ahora, en.temporada, en.semana, en.tag, en.nombre || '', en.tipo, en.motivo, en.detalle || '', '']);
+      filas.push(['', ahora, en.temporada, en.semana, en.tag, en.nombre || '', en.tipo, en.motivo, en.detalle || '', en.estado || '']); // §PF313: en.estado es opcional («Pendiente» para las contradicciones)
       indice[clave] = filas.length - 1;
       resultado.nuevas++;
     } else if (String(filas[pos][8]) !== String(en.detalle || '')) {
@@ -51540,6 +51914,27 @@ function _webIngresosRecientesCalcular() {
   return { ingresos: lista, semanasGuerra: lista.semanasGuerra || [], guerraCongelada: !!lista.guerraCongelada };
 }
 
+// _webDiasOpcionalesIngresoGuerra_(clanNombre, ref, memo): PF225 caso (b) de P18 (31-oct-2026, la usuaria dijo «sí»): los días de la semana en que el clan ya había cruzado la meta (atacar era opcional), para que la pastilla «Ocultar sin pendientes» de «Ingresos recientes» no cuente como pendiente a quien no atacó ese día. Devuelve 4 booleanos [jueves, viernes, sábado, domingo]; jueves siempre false. Mismo criterio que `opcional` de _webCompararJugadores() y `metaCruzada` de 'Guerra de hoy' (38_Web_Endpoints.gs): viernes a domingo (pIdx % 7 > 3), no coliseo, y _cruceMetaDesdeGuerraLogs_() === true. `ref` = refGuerraIR (el día que muestra la cuadrícula; en lunes a miércoles es el último domingo jugado). Ante cualquier duda devuelve todo false (lado conservador: no oculta a nadie). `memo` guarda el resultado por clan dentro de una misma corrida. [→ Contexto_Base_Web.md §PF225]
+function _webDiasOpcionalesIngresoGuerra_(clanNombre, ref, memo) {
+  var res = [false, false, false, false];
+  try {
+    var clave = String(clanNombre || '');
+    if (!clave || !ref) return res;
+    if (memo && memo.hasOwnProperty(clave)) return memo[clave];
+    var pRef = Number(ref.periodIndex);
+    if (isFinite(pRef)) {
+      var offRef = (pRef % 7) - 3; // 0=jueves ... 3=domingo
+      for (var d = 1; d <= offRef && d <= 3; d++) {
+        var pIdx = pRef - offRef + d;
+        if (pIdx % 7 > 3 && !_esPeriodoDeColiseo_(ref.temporada, pIdx) &&
+            _cruceMetaDesdeGuerraLogs_(clave, pIdx, ref.temporada) === true) res[d] = true;
+      }
+    }
+    if (memo) memo[clave] = res;
+  } catch (eOpcIR) { /* sin marca: lado conservador */ }
+  return res;
+}
+
 // _construirIngresosRecientesUnificado(): FIX (01-sep-2026, pedido usuario — "haz que trabajen juntos, primero se usa la información de directorio, eso no es negociable en ambas. luego se verifica, si hay información de tampermonkey, se implementa, sino se queda con lo… [→ Contexto_Base_Web.md §37B257]
 function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, dataGuerraPrefetch, tDash) {
   var ss = _getSs();
@@ -51782,6 +52177,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
 
   // ---- PASO 3: armar la lista final — base Directorio + enriquecimiento ----
   var lista = [];
+  var memoDiasOpcionalesIR = {}; // PF225 caso (b): un cálculo por clan
   for (var i = 0; i < candidatosBase.length; i++) {
     var cand = candidatosBase[i];
     var filaDir = cand.filaDir;
@@ -51885,6 +52281,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
       vigencia:         filaDir[DC.VIGENCIA - 1] || '',
       guerraSemana:     guerraSemanaPorTag[tagLimpio] || { ataques: 0, puntaje: 0, barcos: 0 },
       guerraSemanaDias: guerraSemanaDiasFila,
+      // PF225 caso (b) (31-oct-2026): campo ADITIVO, 4 booleanos J/V/S/D con los días en que el clan ya había cruzado la meta (atacar era opcional); lo usa solo la pastilla «Ocultar sin pendientes» de directorio.html. [→ Contexto_Base_Web.md §PF225]
+      diasOpcionales:   _webDiasOpcionalesIngresoGuerra_(String(filaDir[DC.CLAN - 1] || '').trim(), refGuerraIR, memoDiasOpcionalesIR),
       historialSemanal: historialFila,
       fuenteHistorial:  fuenteHistorial,
       // FASE 7 (Parte A, punto 7 del documento): ver bloque "FASE 7 (Parte A)" más arriba en este mismo archivo para el detalle del cruce (por NOMBRE de clan, no por Tag) y su limitación conocida. [→ Contexto_Base_Web.md §37B274]
@@ -57180,6 +57578,24 @@ function doPost(e) {
     try {
       var payload = JSON.parse(e.postData.contents);
       var resultado = _aplicarCorreccionesGuerra(payload && payload.correcciones);
+      // §PF307 (3), piezas 1 y 2: los jugadores del lote que cuentan como nuevos por tag (y los que ya están en «Nuevos») alimentan la hoja «Nuevos»; ver _alimentarNuevosDesdeCorrecciones_() en 14_Nuevos_RoyaleAPI.gs. Va DESPUÉS de _aplicarCorreccionesGuerra() (fuera de su candado) y un fallo aquí no afecta a la corrección, que ya quedó guardada. [→ Contexto_Base_Web.md §PF312]
+      if (resultado && resultado.ok) {
+        try {
+          var resNuevosCg = _alimentarNuevosDesdeCorrecciones_(payload && payload.correcciones);
+          if (resNuevosCg.nuevos.length) resultado.nuevosDetectados = resNuevosCg.nuevos.slice(0, 100);
+          if (resNuevosCg.evaluados) {
+            resultado.nuevosEnHoja = {
+              candidatos: resNuevosCg.candidatos, procesados: resNuevosCg.procesados, filasNuevas: resNuevosCg.filasNuevas,
+              noActivos: resNuevosCg.noActivos, sinFecha: resNuevosCg.sinFecha, sinRegistros: resNuevosCg.sinRegistros
+            };
+            if (resNuevosCg.errores.length) resultado.nuevosEnHoja.errores = resNuevosCg.errores;
+            if (resNuevosCg.error) resultado.nuevosEnHoja.error = resNuevosCg.error;
+          }
+        } catch (errNuevosCg) {
+          Logger.log('[CorreccionGuerra] AVISO: no se pudo alimentar «Nuevos» (' + (errNuevosCg.message || errNuevosCg) + '). La corrección ya quedó guardada.');
+          resultado.nuevosEnHoja = { error: String(errNuevosCg.message || errNuevosCg) };
+        }
+      }
       // FIX (13-ago-2026): log en Drive por botón (_logTampermonkeyADrive(), 05_Backup_CSV.gs); resultado.avisoControl2 (si actualizarControl2() falló a mitad) ahora también viaja en la respuesta, antes solo quedaba en Logger.log. [→ Contexto_Base_Web.md §38B095]
       _logTampermonkeyADrive('CorreccionGuerra', resultado,
         resultado && resultado.avisoControl2 ? resultado.avisoControl2 : null);
