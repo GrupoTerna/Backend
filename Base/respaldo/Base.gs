@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 31/10/2026 22:40:45 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 01/11/2026 15:26:52 */
 
 
 
@@ -70445,7 +70445,8 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
  * tamaño, cuándo se verificó y su resultado (ok o el motivo del descarte). La corrida siguiente lista los archivos de cada semana (sin leerlos) y
  * solo vuelve a leer las semanas cuyos JSON cambiaron, son nuevos o faltan, o si cambió VCRR_VERSION_REGLAS: sigue desde donde se quedó.
  * Se programa sola: cada tanda tiene su presupuesto de tiempo y, si no alcanza, deja el avance guardado y programa su continuación.
- * Los pasos son: (1) leer JSON y calcular restricciones, (2) comparar contra el CSV y registrar lo que no coincide, (3) escribir (solo Aplicar).
+ * Los pasos son: (1) leer los JSON individuales de RoyaleAPI y guardar sus totales cerrados (caché incremental), (2) leer los JSON de CurrentRiverRace, calcular restricciones y cruzar las series anómalas
+ * con RoyaleAPI, (3) comparar contra el CSV y registrar lo que no coincide, (4) escribir (solo Aplicar).
  * El ID de las filas de los informes es el de siempre (T_NN_S_NN_#TAG, lo agrega _encodeCSVInforme); el clan va en su propia columna.
  */
 
@@ -70454,11 +70455,12 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
 //    - Verificar CurrentRiverRace contra Backup_Guerra.csv: informe, aplicar, reinicio y olvidar verificados (cada principal seguida de su continuación)
 //  Parte 2 — Funciones que no se corren a mano
 //    - Verificar CRR: motor por tandas (estado, presupuesto y continuación)
-//    - Verificar CRR, paso 1: capturas de Drive y restricciones por jugador
+//    - Verificar CRR, paso 1: totales cerrados de RoyaleAPI por jugador (§PF320)
+//    - Verificar CRR, paso 2: capturas de Drive y restricciones por jugador (con el cruce contra RoyaleAPI)
 //    - Verificar CRR, archivo de restricciones (leer y guardar)
 //    - Verificar CRR, registro de JSON verificados (listar, comparar, leer y guardar)
-//    - Verificar CRR, paso 2: comparar contra el CSV y registrar hallazgos
-//    - Verificar CRR, paso 3: escribir en el CSV (solo Aplicar)
+//    - Verificar CRR, paso 3: comparar contra el CSV y registrar hallazgos
+//    - Verificar CRR, paso 4: escribir en el CSV (solo Aplicar)
 //    - Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas.
 
@@ -70469,12 +70471,14 @@ var VCRR_MAX_REVISION = 600;                           // tope de series que se 
 var VCRR_MOTIVO_REVISION = 'Backup_Guerra.csv tiene menos que CurrentRiverRace (o falta el día)';   // §PF318: el motivo lleva además « — <clan>» (la clave de Revision_Guerra.csv no trae el clan)
 var VCRR_ESTADO_PROP = 'VCRR_ESTADO';                  // propiedad del script con el avance (JSON)
 var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo «Cruce_» lo manda a CSV/Informes (_csvSubcarpetaDe_)
+var VCRR_ARCHIVO_RAPI = 'Cruce_CRR_RoyaleAPI.csv';                // caché de los totales cerrados de RoyaleAPI (log y perfil) leídos de sus JSON individuales (§PF320)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
-var VCRR_VERSION_REGLAS = 2;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_: invalida el registro y se releen todos los JSON
+var VCRR_VERSION_REGLAS = 5;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_ o el cruce con RoyaleAPI (§PF320, 5): invalida el registro y se releen todos los JSON
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
 var _vcrrFameLimites_ = null;                          // caché de _vcrrFameLimitesPorAtaques_()
+var _VCRR_CACHE_RAPI_ = null;                          // caché por ejecución del índice de RoyaleAPI (_vcrrIndiceRapiDeDrive_)
 var _VCRR_CACHE_RANGOS_ = {};                          // caché por ejecución de _vcrrRangosJugadorClan_(): 'temporada|semana' -> { 'clanKey|tag': serie, '*|tag': [series del jugador en todos los clanes] }
 // Topes de un jugador en la semana SUMANDO todos sus clanes (los 4 Terna y el externo; Contexto_Base_Web.md §PF160 criterio 4 y §PF302).
 var VCRR_TOPE_ATAQUES_DIA = 4, VCRR_TOPE_ATAQUES_SEMANA = 16, VCRR_TOPE_BARCOS_SEMANA = 16, VCRR_TOPE_FAME_DIA = 900, VCRR_TOPE_FAME_SEMANA = 3600;
@@ -70485,6 +70489,7 @@ var VCRR_TOPE_ATAQUES_DIA = 4, VCRR_TOPE_ATAQUES_SEMANA = 16, VCRR_TOPE_BARCOS_S
 var VCRR_ANOMALIAS = [];
 
 var VCRR_PASOS_NOMBRES_INFORME = [
+  'RoyaleAPI: leer los JSON individuales (log y perfil cerrados) de cada jugador y guardar sus totales semanales → Cruce_CRR_RoyaleAPI.csv',
   'CurrentRiverRace: leer los JSON de cada semana y clan y calcular los rangos de ataques, fame y barcos por día → Cruce_CRR_Restricciones.csv',
   'Backup_Guerra.csv: comparar cada día contra esos rangos y anotar lo que no coincide → CSV de hallazgos y Revision_Guerra.csv'
 ];
@@ -70550,7 +70555,7 @@ function _vcrrEjecutar_(aplicar, esContinuacion) {
   var handler = aplicar ? '_continuarVerificarCrrVsBackupAplicar' : '_continuarVerificarCrrVsBackupInforme';
   var props = PropertiesService.getScriptProperties();
   var pasosNombres = aplicar ? VCRR_PASOS_NOMBRES_APLICAR : VCRR_PASOS_NOMBRES_INFORME;
-  var pasos = [_vcrrPaso1_, _vcrrPaso2_, _vcrrPaso3_].slice(0, pasosNombres.length);
+  var pasos = [_vcrrPasoRapi_, _vcrrPaso1_, _vcrrPaso2_, _vcrrPaso3_].slice(0, pasosNombres.length);
 
   if (esContinuacion) {
     if (_reenumeracionEnCurso_() || (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida)) {
@@ -70602,7 +70607,8 @@ function _vcrrEjecutar_(aplicar, esContinuacion) {
     }
     var c = st.cont;
     Logger.log('[VCRR] FIN (' + st.tandas + ' tanda(s)). Semanas: ' + (c.semanasOmitidas || 0) + ' ya verificadas y sin cambios (no se releyeron), ' + (c.semanasSinJson || 0) + ' sin JSON. Series nuevas o recalculadas: ' + (c.series || 0) + '; con JSON anómalo o incoherente: ' + (c.anomalas || 0) + '. Hallazgos: CSV menor ' + (c.csv_menor || 0) +
-      ', CSV mayor que el máximo ' + (c.csv_mayor_max || 0) + ', filas que faltan ' + (c.fila_faltante || 0) + ', acumulado que baja ' + (c.no_monotono || 0) + '. ' +
+      ', CSV mayor que el máximo ' + (c.csv_mayor_max || 0) + ', filas que faltan ' + (c.fila_faltante || 0) + ', acumulado que baja ' + (c.no_monotono || 0) + ', series con JSON anómalo ' + (c.json_anomalo || 0) +
+      ' (estimadas con RoyaleAPI ' + (c.estimadas_rapi || 0) + ', sin resolver ' + (c.sin_resolver_rapi || 0) + '). JSON de RoyaleAPI leídos de nuevo: ' + (c.rapiLeidos || 0) + '. ' +
       (aplicar ? 'Filas creadas: ' + (c.creadas || 0) + ', modificadas: ' + (c.modificadas || 0) + '. ' : '(No se escribió nada en Backup_Guerra.csv.) ') +
       'Detalle en CSV/Informes: ' + VCRR_ARCHIVO_RESTRICCIONES + ' y «Cruce_CRR_vs_Backup ' + st.marca + ' (hallazgos).csv».');
     props.deleteProperty(VCRR_ESTADO_PROP);
@@ -70642,10 +70648,137 @@ function _vcrrLeerBackupGuerra_() {
 /** Normaliza el nombre de un clan para compararlo (minúsculas y sin espacios en los extremos); es la misma forma de las claves de _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_. */
 function _vcrrClanNorm_(clan) { return String(clan === null || clan === undefined ? '' : clan).trim().toLowerCase(); }
 
-// ----- Verificar CRR, paso 1: capturas de Drive y restricciones por jugador -----
+// ----- Verificar CRR, paso 1: totales cerrados de RoyaleAPI por jugador (§PF320) -----
+
+/** Encabezado de Cruce_CRR_RoyaleAPI.csv (el ID T_NN_S_NN_#TAG lo agrega _encodeCSVInforme). Una fila por total cerrado (fuente log o perfil) y una fila «archivo» por JSON ya leído. */
+function _vcrrEncabezadoRapi_() { return ['Temporada', 'Semana', 'Clan', 'Tag', 'Fuente', 'Ataques', 'Fame', 'Barcos', 'Archivo', 'Modificado (ms)']; }
 
 /**
- * Paso 1. Recorre las semanas que tiene Backup_Guerra.csv (de la más vieja a la más nueva). De cada una lista sus JSON de CurrentRiverRace sin leerlos
+ * Función pura. Un JSON individual de RoyaleAPI (datos = { tag, registros: [...] }) -> filas del caché: una fila «archivo» (marca que ya se leyó, aunque no traiga
+ * nada útil) y una por cada registro CERRADO de fuente log (total de ESE clan) o perfil (total de todos los clanes del jugador, con el clan que mostraba el perfil).
+ * Los riverrace son instantáneas abiertas: no se guardan. El clan va normalizado (_vcrrClanNorm_) para que coincida con la clave de clan de los JSON de CurrentRiverRace.
+ */
+function _vcrrFilasRapiDeArchivo_(nombre, modificado, datos, tagNombre) {
+  var tag = String((datos && datos.tag) || tagNombre || '').trim().toUpperCase();
+  var filas = [['', '', '', tag, 'archivo', '', '', '', nombre, modificado]];
+  ((datos && datos.registros) || []).forEach(function (x) {
+    if (!x || !x.cerrada || (x.fuente !== 'log' && x.fuente !== 'perfil')) return;
+    var t = Number(x.temporadaInterna), s = Number(x.semana), a = Number(x.ataques), f = Number(x.fame);
+    if (!(t > 0) || !(s > 0) || !isFinite(a) || !isFinite(f)) return;
+    var b = (x.barcos === null || x.barcos === undefined || x.barcos === '') ? '' : Number(x.barcos);
+    if (b !== '' && !isFinite(b)) b = '';
+    filas.push([t, s, _vcrrClanNorm_(_cdjNormalizarClan_(x.clan)), tag, x.fuente, a, f, b, nombre, modificado]);
+  });
+  return filas;
+}
+
+/**
+ * Función pura. filas = filas del caché (sin encabezado ni ID) -> { 'temporada|semana': { 'TAG': { porClan: { clanKey: {A,F,B} }, perfil: {A,F,B,clanKey} | null } } }.
+ * Un total que se contradice dentro de la misma fuente (mismo jugador, semana y clan con valores distintos) se descarta: no se usa para resolver nada. Si el perfil trae
+ * el mismo valor con clanes distintos, queda con clanKey '' (no se sabe de qué clan es). barcos null = RoyaleAPI no lo trae.
+ */
+function _vcrrIndiceRapi_(filas) {
+  var tmp = {}, orden = [];
+  (filas || []).forEach(function (f) {
+    var fuente = String(f[4]);
+    if (fuente !== 'log' && fuente !== 'perfil') return;
+    var t = Number(f[0]), s = Number(f[1]);
+    if (!(t > 0) || !(s > 0)) return;
+    var clan = String(f[2]), tag = String(f[3]).trim().toUpperCase();
+    var v = { A: Number(f[5]), F: Number(f[6]), B: (f[7] === '' || f[7] === undefined || f[7] === null) ? null : Number(f[7]), clanKey: clan, malo: false };
+    var k = t + '|' + s + '|' + tag + '|' + fuente + '|' + (fuente === 'log' ? clan : '');
+    var previo = tmp[k];
+    if (!previo) { tmp[k] = v; orden.push(k); return; }
+    if (previo.A !== v.A || previo.F !== v.F || previo.B !== v.B) previo.malo = true;
+    else if (previo.clanKey !== v.clanKey) previo.clanKey = '';
+  });
+  var out = {};
+  orden.forEach(function (k) {
+    var v = tmp[k];
+    if (v.malo) return;
+    var p = k.split('|'), ks = p[0] + '|' + p[1], tag = p[2], fuente = p[3];
+    if (!out[ks]) out[ks] = {};
+    if (!out[ks][tag]) out[ks][tag] = { porClan: {}, perfil: null };
+    if (fuente === 'log') out[ks][tag].porClan[v.clanKey] = { A: v.A, F: v.F, B: v.B };
+    else out[ks][tag].perfil = { A: v.A, F: v.F, B: v.B, clanKey: v.clanKey };
+  });
+  return out;
+}
+
+/** Función pura. Huella corta de lo que RoyaleAPI trae de una semana (el valor de _vcrrIndiceRapi_ para esa semana); '' si no trae nada. Si cambia, la semana se vuelve a calcular. */
+function _vcrrFirmaRapi_(rapiSemana) {
+  if (!rapiSemana) return '';
+  var partes = [];
+  Object.keys(rapiSemana).sort().forEach(function (tag) {
+    var e = rapiSemana[tag];
+    Object.keys(e.porClan).sort().forEach(function (ck) { var v = e.porClan[ck]; partes.push(tag + '|' + ck + '|' + v.A + '/' + v.F + '/' + v.B); });
+    if (e.perfil) partes.push(tag + '|P|' + e.perfil.clanKey + '|' + e.perfil.A + '/' + e.perfil.F + '/' + e.perfil.B);
+  });
+  if (!partes.length) return '';
+  var txt = partes.join(';'), h = 5381;
+  for (var i = 0; i < txt.length; i++) h = ((h * 33) ^ txt.charCodeAt(i)) >>> 0;
+  return partes.length + '-' + h.toString(36);
+}
+
+/** Lee Cruce_CRR_RoyaleAPI.csv y devuelve sus filas de datos (sin encabezado ni ID); [] si no existe. */
+function _vcrrLeerFilasRapi_() {
+  var texto = _loadCSVFromDrive(VCRR_ARCHIVO_RAPI);
+  if (!texto) return [];
+  var parsed = _parseCSV(texto);
+  if (!parsed || parsed.length < 2) return [];
+  var off = String(parsed[0][0]).trim() === 'ID' ? 1 : 0;
+  if (parsed[0].length - off !== _vcrrEncabezadoRapi_().length) return [];   // otro formato: se rehace
+  return parsed.slice(1).map(function (f) { return f.slice(off); });
+}
+
+/** El índice de RoyaleAPI para las semanas de la corrida (lee el caché una sola vez por ejecución). */
+function _vcrrIndiceRapiDeDrive_() {
+  if (!_VCRR_CACHE_RAPI_) _VCRR_CACHE_RAPI_ = _vcrrIndiceRapi_(_vcrrLeerFilasRapi_());
+  return _VCRR_CACHE_RAPI_;
+}
+
+/**
+ * Paso 1 (RoyaleAPI). Lista los JSON individuales de RoyaleAPI (carpeta DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL) SIN leerlos, compara cada uno (nombre y fecha de
+ * modificación) con Cruce_CRR_RoyaleAPI.csv y lee solo los nuevos o cambiados; lo que ya no existe se quita del caché. Devuelve true cuando el caché quedó al día; false
+ * si el presupuesto se agotó (lo leído ya quedó guardado y la tanda siguiente sigue con los pendientes).
+ */
+function _vcrrPasoRapi_(st, t0) {
+  _VCRR_CACHE_RAPI_ = null;
+  var carpeta = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL);
+  var reTag = /-\s(#[0-9A-Z]+)\.json$/i;
+  var lista = [], it = carpeta.getFiles();
+  while (it.hasNext()) {
+    var f = it.next(), m = reTag.exec(f.getName());
+    if (m) lista.push({ file: f, nombre: f.getName(), tag: m[1].toUpperCase(), mod: f.getLastUpdated().getTime() });
+  }
+  var previas = _vcrrLeerFilasRapi_(), vistos = {}, vigentes = {};
+  previas.forEach(function (f) { if (f[4] === 'archivo') vistos[f[8] + '|' + f[9]] = true; });
+  lista.forEach(function (a) { vigentes[a.nombre + '|' + a.mod] = true; });
+  var filas = previas.filter(function (f) { return vigentes[f[8] + '|' + f[9]]; });
+  var quitadas = previas.length - filas.length;
+  var pendientes = lista.filter(function (a) { return !vistos[a.nombre + '|' + a.mod]; });
+  var leidos = 0, errores = 0;
+  for (var i = 0; i < pendientes.length; i++) {
+    if (leidos > 0 && (Date.now() - t0) > VCRR_PRESUPUESTO_MS - VCRR_RESERVA_SEMANA_MS) break;
+    var a = pendientes[i];
+    try { filas = filas.concat(_vcrrFilasRapiDeArchivo_(a.nombre, a.mod, JSON.parse(a.file.getBlob().getDataAsString('UTF-8')), a.tag)); }
+    catch (e) { errores++; filas.push(['', '', '', a.tag, 'archivo', '', '', '', a.nombre, a.mod]); Logger.log('[VCRR] No se pudo leer ' + a.nombre + ' de RoyaleAPI (' + e.message + '); se vuelve a intentar solo si el archivo cambia.'); }
+    leidos++;
+  }
+  if (leidos > 0 || quitadas > 0 || !previas.length) {
+    _saveCSVToDrive(VCRR_ARCHIVO_RAPI, _encodeCSVInforme([_vcrrEncabezadoRapi_()].concat(filas)));
+  }
+  _vcrrSumar_(st, 'rapiLeidos', leidos);
+  var completo = leidos >= pendientes.length;
+  Logger.log('[VCRR]   RoyaleAPI: ' + lista.length + ' JSON individuales; ya en el caché ' + (lista.length - pendientes.length) + ', leídos en esta tanda ' + leidos + (errores ? ' (' + errores + ' con error)' : '') + (quitadas ? ', quitadas ' + quitadas + ' filas de archivos que ya no están' : '') + '.');
+  if (!completo) _logProgresoPaso_('VCRR', 'JSON de RoyaleAPI leídos', lista.length - pendientes.length, leidos, lista.length, 'archivos');
+  return completo;
+}
+
+// ----- Verificar CRR, paso 2: capturas de Drive y restricciones por jugador -----
+
+/**
+ * Paso 2. Recorre las semanas que tiene Backup_Guerra.csv (de la más vieja a la más nueva). De cada una lista sus JSON de CurrentRiverRace sin leerlos
  * y los compara con el registro de verificados: si son los mismos (y la versión de reglas es la vigente) la semana se omite; si no, se leen, se guardan
  * los rangos por jugador, clan y semana en Cruce_CRR_Restricciones.csv y se actualiza el registro. Devuelve true cuando recorrió todas las semanas;
  * false si el presupuesto se agotó (el índice de la próxima semana queda en st.idx).
@@ -70666,6 +70799,7 @@ function _vcrrPaso1_(st, t0) {
   var clanes = {};   // clave normalizada -> nombre tal como figura en el CSV
   Object.keys(grupos).forEach(function (k) { clanes[_vcrrClanNorm_(grupos[k].clan)] = grupos[k].clan; });
   var verificados = _vcrrLeerVerificados_();
+  var rapiIdx = _vcrrIndiceRapiDeDrive_();   // §PF320: totales cerrados de RoyaleAPI (los dejó el paso 1)
   var conSeries = {};
   var yaGuardadas = _vcrrLeerRestricciones_();
   Object.keys(yaGuardadas).forEach(function (k) { conSeries[k] = true; });
@@ -70677,22 +70811,25 @@ function _vcrrPaso1_(st, t0) {
     var t = st.semanas[st.idx][0], s = st.semanas[st.idx][1], clave = t + '|' + s;
     var archivos = _vcrrArchivosSemana_(t, s);   // solo lista (nombre, fecha y tamaño); no lee el contenido
     if (!archivos.length) { _vcrrSumar_(st, 'semanasSinJson', 1); st.idx++; continue; }
-    if (_vcrrSemanaVerificada_(verificados[clave], archivos, !!conSeries[clave])) {
+    var rapiSemana = rapiIdx[clave] || {}, firmaRapi = _vcrrFirmaRapi_(rapiSemana);
+    if (_vcrrSemanaVerificada_(verificados[clave], archivos, !!conSeries[clave], firmaRapi)) {
       _vcrrSumar_(st, 'semanasOmitidas', 1); omitidas++; st.idx++; continue;
     }
     var cap = _vcrrCapturasSemana_(t, s, archivos);
     cap.avisos.forEach(function (a) { Logger.log('[VCRR] T' + t + ' S' + s + ': JSON descartado (' + a + ').'); _vcrrSumar_(st, 'jsonDescartados', 1); });
-    var series = _vcrrSeriesDeSemana_(t, s, cap.porClan), guardadas = 0;
+    var series = _vcrrSeriesDeSemana_(t, s, cap.porClan, rapiSemana), guardadas = 0;
     series.forEach(function (x) {
       if (!clanes[x.clanKey]) { _vcrrSumar_(st, 'sinClanEnCsv', 1); return; }   // clan que Backup_Guerra.csv no tiene (p. ej. NARANJA x): no se compara
       x.clan = clanes[x.clanKey];
       filasNuevas.push(x); guardadas++;
       _vcrrSumar_(st, 'series', 1);
       if (x.estado !== 'ok') _vcrrSumar_(st, 'anomalas', 1);
+      if (x.estimada) _vcrrSumar_(st, 'rapiEstimadas', 1);
+      if (x.sinResolver) _vcrrSumar_(st, 'rapiSinResolver', 1);
     });
     archivos.forEach(function (a) {
       var aviso = cap.avisos.filter(function (m) { return m.indexOf(a.nombre + ':') === 0; })[0];
-      regNuevo.push(_vcrrFilaVerificado_(t, s, a, st.marca, aviso ? 'descartado: ' + aviso.slice(a.nombre.length + 2) : 'ok', guardadas));
+      regNuevo.push(_vcrrFilaVerificado_(t, s, a, st.marca, aviso ? 'descartado: ' + aviso.slice(a.nombre.length + 2) : 'ok', guardadas, firmaRapi));
     });
     semanasHechas[t * 1000 + s] = true;
     st.idx++; hechas++;
@@ -70790,7 +70927,7 @@ function _vcrrCapturasDeArchivos_(archivos, temporada, semana) {
  * aparece en dos clanes de la misma semana: se compara cada clan por separado y el «mayor que el máximo» queda como aviso), 'json_anomalo'
  * (alguna captura se descartó) o 'incoherente' (las capturas no caben juntas: no se usa la métrica que se contradice).
  */
-function _vcrrSeriesDeSemana_(temporada, semana, porClan) {
+function _vcrrSeriesDeSemana_(temporada, semana, porClan, rapiSemana) {
   var series = [], clanesDeTag = {};
   Object.keys(porClan).forEach(function (ck) {
     porClan[ck].forEach(function (dia) {
@@ -70810,13 +70947,94 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan) {
       var r = _vcrrRestriccionesSerie_(caps);
       var estado = 'ok', notas = r.notas.slice();
       if (r.descartadas.length) { estado = 'json_anomalo'; r.descartadas.forEach(function (m) { notas.push('captura ' + VCRR_DIAS.charAt(m.dia) + ' descartada: ' + m.motivo); }); }
+      if (r.anomalas.length) { estado = 'json_anomalo'; r.anomalas.forEach(function (m) { notas.push('captura ' + VCRR_DIAS.charAt(m.dia) + ' anómala pero usada: ' + m.motivo); }); }
       if (r.validos.length < 3) estado = 'incoherente';
       if (Object.keys(clanesDeTag[tag]).length > 1 && estado === 'ok') estado = 'multiclan';
       series.push({ temporada: Number(temporada), semana: Number(semana), clanKey: ck, tag: tag, nombre: nombre,
-        capturas: caps.map(function (c) { return !!c; }), estado: estado, notas: notas.join('; '), validos: r.validos, r: r });
+        capturas: caps.map(function (c) { return !!c; }), estado: estado, notas: notas.join('; '), validos: r.validos, r: r, capsDatos: caps });
     });
   });
+  // §PF320: las series anómalas se cruzan con RoyaleAPI (por clan, luego la suma del jugador, luego el perfil). rapiSemana = { 'TAG': { porClan: { clanKey: {A,F,B} }, perfil: {A,F,B,clanKey} } } o null.
+  // rapiSemana undefined = no se cargó RoyaleAPI (no se cruza nada); null o {} = se cargó y esa semana no tiene datos (las anómalas quedan «sin resolver»).
+  if (rapiSemana !== undefined) {
+    var porTag = {};
+    series.forEach(function (x) { (porTag[x.tag] = porTag[x.tag] || []).push(x); });
+    Object.keys(porTag).forEach(function (tag) { _vcrrCruzarRoyaleApi_(porTag[tag], (rapiSemana && rapiSemana[String(tag).toUpperCase()]) || null); });
+  }
   return series;
+}
+
+/**
+ * Función pura (§PF320). Cruza con RoyaleAPI las series ANÓMALAS de UN jugador en UNA semana (series = las de todos sus clanes, de _vcrrSeriesDeSemana_, con capsDatos).
+ * Orden (pedido de la usuaria, 1-nov-2026): (1) los valores de cada clan en el JSON deben ser posibles (eso ya lo dice serie.validos); (2) la suma de los clanes del jugador en cada
+ * día debe seguir siendo posible (_vcrrResumenDeSeries_); (3) el total semanal de ese clan según RoyaleAPI fija el acumulado del domingo, y la suma de los clanes del JSON debe ser
+ * menor o igual que el perfil de RoyaleAPI (el jugador pudo atacar en un clan externo, que el JSON no ve).
+ * rapi = { porClan: { clanKey: {A,F,B} }, perfil: {A,F,B,clanKey} } (solo valores cerrados) o null. Candidata = estado json_anomalo o incoherente, o con métricas sin usar.
+ * Lo que se resuelve SIGUE siendo anomalía (estado json_anomalo) pero queda con los rangos estrechados por RoyaleAPI y la nota «estimado con RoyaleAPI»; lo que no, queda con
+ * serie.sinResolver = motivo (y «SIN RESOLVER: motivo» en las notas). Modifica las series. Devuelve { resueltas, sinResolver: [{ clanKey, tag, nombre, motivo }] }.
+ */
+function _vcrrCruzarRoyaleApi_(series, rapi) {
+  var salida = { resueltas: 0, sinResolver: [] };
+  var candidatas = (series || []).filter(function (x) { return x.estado === 'json_anomalo' || x.estado === 'incoherente' || String(x.validos || '').length < 3; });
+  if (!candidatas.length) return salida;
+  var guardar = function (x, motivo) {
+    x.sinResolver = motivo;
+    x.notas = (x.notas ? x.notas + '; ' : '') + 'SIN RESOLVER: ' + motivo;
+    salida.sinResolver.push({ clanKey: x.clanKey, tag: x.tag, nombre: x.nombre, motivo: motivo });
+  };
+  var respaldos = [];
+  candidatas.forEach(function (x) {
+    var fin = null, origen = '', soloPerfil = false;
+    if (rapi && rapi.porClan && rapi.porClan[x.clanKey]) { fin = rapi.porClan[x.clanKey]; origen = 'log'; }
+    else if (rapi && rapi.perfil && series.length === 1 && rapi.perfil.clanKey === x.clanKey) { fin = rapi.perfil; origen = 'perfil'; }
+    else if (rapi && rapi.perfil) soloPerfil = true;
+    if (!rapi || (!fin && !soloPerfil)) { guardar(x, 'RoyaleAPI no trae el total cerrado de ese jugador en esa semana'); return; }
+    if (soloPerfil) {
+      // El perfil es el total de todos los clanes: solo da un techo para este (perfil menos lo que ya muestran los otros clanes), no el valor.
+      guardar(x, 'RoyaleAPI solo trae el perfil (total de ' + series.length + ' clanes), que no fija el valor de este clan');
+      return;
+    }
+    var intentos = [{ final: fin }, { final: fin, ignorar: [3] }], r2 = null, usoIgnorar = false;
+    for (var i = 0; i < intentos.length && !r2; i++) {
+      var cand = _vcrrRestriccionesSerie_(x.capsDatos || [null, null, null, null], intentos[i]);
+      if (cand.validos === 'AFB') { r2 = cand; usoIgnorar = i === 1; }
+    }
+    if (!r2) { guardar(x, 'el total de RoyaleAPI (' + origen + ': ' + fin.A + ' ataques, ' + fin.F + ' medallas, ' + fin.B + ' barcos) no cabe con las capturas del JSON'); return; }
+    respaldos.push({ x: x, antes: { r: x.r, validos: x.validos, estado: x.estado, notas: x.notas }, origen: origen, usoIgnorar: usoIgnorar });
+    x.r = { A: r2.A, F: r2.F, B: r2.B }; x.validos = r2.validos;
+    x.estado = 'json_anomalo';
+    x.estimada = true;
+    x.notas = (x.notas ? x.notas + '; ' : '') + 'estimado con RoyaleAPI (' + origen + (usoIgnorar ? ', sin la captura D' : '') + '): ' + _vcrrTextoEstimado_(x.r);
+  });
+  if (!respaldos.length) return salida;
+  var revertir = function (motivo) {
+    respaldos.forEach(function (b) {
+      b.x.r = b.antes.r; b.x.validos = b.antes.validos; b.x.estado = b.antes.estado; b.x.notas = b.antes.notas; b.x.estimada = false;
+      guardar(b.x, motivo);
+    });
+    respaldos = [];
+  };
+  // (2) y (3): la suma de los clanes del jugador debe seguir siendo posible y no pasar del perfil de RoyaleAPI.
+  var resumen = _vcrrResumenDeSeries_(series);
+  if (resumen.conflicto) { revertir('al sumar los clanes del jugador con el valor de RoyaleAPI: ' + resumen.conflicto); return salida; }
+  if (rapi && rapi.perfil) {
+    var suma = { A: 0, F: 0, B: 0 };
+    series.forEach(function (x) { if (String(x.validos || '') === 'AFB') ['A', 'F', 'B'].forEach(function (m) { suma[m] += x.r[m].lo[3]; }); });
+    var pasa = ['A', 'F', 'B'].filter(function (m) { return typeof rapi.perfil[m] === 'number' && suma[m] > rapi.perfil[m]; });
+    if (pasa.length) { revertir('la suma de los clanes del JSON (' + suma.A + ' ataques, ' + suma.F + ' medallas, ' + suma.B + ' barcos) supera al perfil de RoyaleAPI (' + rapi.perfil.A + ', ' + rapi.perfil.F + ', ' + rapi.perfil.B + ')'); return salida; }
+  }
+  salida.resueltas = respaldos.length;
+  return salida;
+}
+
+/** Texto corto de los acumulados al cierre de J|V|S|D de una serie ya estimada: «ataques 4|8|12|16, medallas …». Un rango se escribe «a-b» y un máximo sin techo «a+». */
+function _vcrrTextoEstimado_(r) {
+  var etiquetas = { A: 'ataques', F: 'medallas', B: 'barcos' };
+  return ['A', 'F', 'B'].map(function (m) {
+    var v = [];
+    for (var d = 0; d < 4; d++) { var lo = r[m].lo[d], hi = r[m].hi[d]; v.push(lo === hi ? String(lo) : (hi === Infinity ? lo + '+' : lo + '-' + hi)); }
+    return etiquetas[m] + ' ' + v.join('|');
+  }).join(', ');
 }
 
 /**
@@ -70830,19 +71048,30 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan) {
  *    los barcos no pueden pasar de los ataques; la fame de un día no pasa del máximo de la tabla de fame para los ataques de ese día (_vcrrFameLimitesPorAtaques_). No se usa el mínimo de la tabla como piso: en T24 S2 el JSON trae 4 ataques el domingo con la misma fame del sábado (la fame del JSON se atrasa), y con ese piso 19 series saldrían imposibles.
  *  - Se propaga hacia adelante y hacia atrás (_vcrrPropagar_) hasta que no cambie nada. Si una métrica queda sin solución, esa métrica no se usa
  *    (validos no la incluye) y se anota en notas.
- * descartadas = capturas con números imposibles (no restringen). validos = letras de las métricas utilizables.
+ * extra (opcional, §PF320) = { final: {A,F,B}, finalMax: {A,F,B}, ignorar: [días 0..3] }: el total semanal de RoyaleAPI (exacto o solo techo) y los días cuya captura no se usa
+ *  (por ejemplo la del domingo en blanco). Sin extra el cálculo es el de siempre.
+ * descartadas = capturas con números imposibles (no restringen). anomalas = capturas con un fallo conocido del JSON que SÍ restringen (domingo con decksUsedToday 0 y más de 12 ataques: se toma como acumulado final; decksUsedToday mayor que 4: se toma como 4 si los acumulados lo admiten). validos = letras de las métricas utilizables.
  */
-function _vcrrRestriccionesSerie_(caps) {
-  var INF = Infinity, notas = [], descartadas = [], d;
+function _vcrrRestriccionesSerie_(caps, extra) {
+  extra = extra || {};
+  var INF = Infinity, notas = [], descartadas = [], anomalas = [], d;
   var A = { lo: [0, 0, 0, 0], hi: [4, 8, 12, 16], il: [0, 0, 0, 0], ih: [4, 4, 4, 4] };
   var F = { lo: [0, 0, 0, 0], hi: [INF, INF, INF, INF], il: [0, 0, 0, 0], ih: [900, 900, 900, 900] };
   var B = { lo: [0, 0, 0, 0], hi: [INF, INF, INF, INF], il: [0, 0, 0, 0], ih: [4, 4, 4, 4] };
   var ok = [];
   for (d = 0; d < 4; d++) {
     var c = caps[d];
-    if (!c) continue;
+    if (!c || (extra.ignorar && extra.ignorar.indexOf(d) >= 0)) continue;
     var motivo = '';
-    if (c.hoy < 0 || c.hoy > 4) motivo = 'decksUsedToday ' + c.hoy + ' fuera de 0 a 4';
+    // Fallo conocido del JSON: la captura del domingo trae decksUsedToday 0 aunque ya sumó más de 12 ataques (debía ser 4: 16/0 en vez de 16/4). Se reporta como
+    // anomalía pero la captura SÍ se usa como acumulado final: el valor del día sale por diferencia con el cierre del sábado (16 - 12 = 4).
+    var finDeSemana = d === 3 && c.hoy === 0 && c.usados > 4 * d && c.usados <= 4 * (d + 1) && c.fame >= 0 && c.barcos >= 0 && c.barcos <= c.usados;
+    // Otro fallo del JSON (1-nov-2026, la usuaria): decksUsedToday mayor que 4 (T22 S5, SKYSER: 10/6). Se toma como 4 ataques ese día y se anota como anomalía, pero SOLO si los
+    // acumulados lo admiten (se comprueba después del bucle): usados - hoy ya no es el inicio del día, así que esa captura entra solo como piso del acumulado.
+    var hoyExcedido = !finDeSemana && c.hoy > 4 && c.hoy <= c.usados && c.usados <= 4 * (d + 1) && c.fame >= 0 && c.barcos >= 0 && c.barcos <= c.usados;
+    if (hoyExcedido) anomalas.push({ dia: d, excedido: true, motivo: 'decksUsedToday ' + c.hoy + ' (imposible, el máximo es 4): se toma como 4 ataques ese día' });
+    else if (finDeSemana) anomalas.push({ dia: d, motivo: 'decksUsedToday 0 con decksUsed ' + c.usados + ' (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia' });
+    else if (c.hoy < 0 || c.hoy > 4) motivo = 'decksUsedToday ' + c.hoy + ' fuera de 0 a 4';
     else if (c.hoy > c.usados) motivo = 'decksUsedToday ' + c.hoy + ' mayor que decksUsed ' + c.usados;
     else if (c.usados > 4 * (d + 1)) motivo = 'decksUsed ' + c.usados + ' no cabe en ' + (d + 1) + ' día(s)';
     else if (c.usados - c.hoy > 4 * d) motivo = 'el inicio del día (' + (c.usados - c.hoy) + ') no cabe en ' + d + ' día(s) anteriores';
@@ -70852,15 +71081,35 @@ function _vcrrRestriccionesSerie_(caps) {
     if (motivo) { descartadas.push({ dia: d, motivo: motivo }); continue; }
     ok[d] = true;
     var inicio = c.usados - c.hoy;
-    A.il[d] = Math.max(A.il[d], c.hoy);
+    var sinInicio = finDeSemana || hoyExcedido;
+    if (!hoyExcedido) A.il[d] = Math.max(A.il[d], c.hoy);
     A.lo[d] = Math.max(A.lo[d], c.usados);
-    if (d > 0) { A.lo[d - 1] = Math.max(A.lo[d - 1], inicio); A.hi[d - 1] = Math.min(A.hi[d - 1], inicio); }
+    if (d > 0 && !sinInicio) { A.lo[d - 1] = Math.max(A.lo[d - 1], inicio); A.hi[d - 1] = Math.min(A.hi[d - 1], inicio); }
     F.lo[d] = Math.max(F.lo[d], c.fame); B.lo[d] = Math.max(B.lo[d], c.barcos);
     if (d > 0) {
       F.hi[d - 1] = Math.min(F.hi[d - 1], c.fame); B.hi[d - 1] = Math.min(B.hi[d - 1], c.barcos);
-      if (c.hoy === 0) { F.lo[d - 1] = Math.max(F.lo[d - 1], c.fame); B.lo[d - 1] = Math.max(B.lo[d - 1], c.barcos); }
+      if (c.hoy === 0 && !sinInicio) { F.lo[d - 1] = Math.max(F.lo[d - 1], c.fame); B.lo[d - 1] = Math.max(B.lo[d - 1], c.barcos); }
     }
     if (c.hoy === 4) { F.hi[d] = Math.min(F.hi[d], c.fame); B.hi[d] = Math.min(B.hi[d], c.barcos); }
+  }
+  // §PF320: el total semanal de RoyaleAPI fija el acumulado al cierre del domingo (final = valor exacto; finalMax = solo el techo). Se aplica antes de propagar.
+  ['A', 'F', 'B'].forEach(function (m) {
+    var M = m === 'A' ? A : (m === 'F' ? F : B);
+    var v = extra.final && extra.final[m], vmax = extra.finalMax && extra.finalMax[m];
+    if (typeof v === 'number' && isFinite(v) && v >= 0) { M.lo[3] = Math.max(M.lo[3], v); M.hi[3] = Math.min(M.hi[3], v); }
+    if (typeof vmax === 'number' && isFinite(vmax)) M.hi[3] = Math.min(M.hi[3], vmax);
+  });
+  // decksUsedToday > 4: se fuerza «4 ataques ese día» y se comprueba con los acumulados de las demás capturas; si no caben, no se fuerza (y se anota).
+  var excedidas = anomalas.filter(function (m) { return m.excedido; });
+  if (excedidas.length) {
+    var A0 = JSON.parse(JSON.stringify(A));
+    excedidas.forEach(function (m) { A.il[m.dia] = Math.max(A.il[m.dia], 4); });
+    if (_vcrrPropagar_(A)) {
+      excedidas.forEach(function (m) { m.motivo += '; los acumulados de ataques lo admiten'; });
+    } else {
+      A.lo = A0.lo; A.hi = A0.hi; A.il = A0.il; A.ih = A0.ih;
+      excedidas.forEach(function (m) { m.motivo += '; los acumulados de ataques NO admiten 4 ese día, no se fuerza'; });
+    }
   }
   var validos = '';
   if (_vcrrPropagar_(A)) validos += 'A'; else notas.push('ataques: las capturas no caben juntas');
@@ -70877,7 +71126,7 @@ function _vcrrRestriccionesSerie_(caps) {
   }
   if (_vcrrPropagar_(F)) validos += 'F'; else notas.push('fame: las capturas no caben juntas');
   if (_vcrrPropagar_(B)) validos += 'B'; else notas.push('barcos: las capturas no caben juntos');
-  return { A: A, F: F, B: B, validos: validos, notas: notas, descartadas: descartadas };
+  return { A: A, F: F, B: B, validos: validos, notas: notas, descartadas: descartadas, anomalas: anomalas };
 }
 
 /**
@@ -71020,12 +71269,12 @@ function _vcrrSerieDeFila_(f) {
 
 /** Encabezado de Cruce_CRR_JSON_Verificados.csv (el ID T_NN_S_NN lo agrega _encodeCSVInforme). Una fila por JSON. */
 function _vcrrEncabezadoVerificados_() {
-  return ['Temporada', 'Semana', 'Clan', 'Día', 'Archivo', 'Modificado (ms)', 'Tamaño (bytes)', 'Verificado', 'Corrida', 'Resultado', 'Series de la semana', 'Versión de reglas'];
+  return ['Temporada', 'Semana', 'Clan', 'Día', 'Archivo', 'Modificado (ms)', 'Tamaño (bytes)', 'Verificado', 'Corrida', 'Resultado', 'Series de la semana', 'Versión de reglas', 'Huella RoyaleAPI'];
 }
 
 /** Fila del registro de un JSON recién leído. a = elemento de _vcrrArchivosSemana_; series = cuántas series quedaron guardadas en esa semana. */
-function _vcrrFilaVerificado_(t, s, a, marca, resultado, series) {
-  return [t, s, a.clanKey, a.letra, a.nombre, a.modificado, a.tamano, Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss'), marca, resultado, series, VCRR_VERSION_REGLAS];
+function _vcrrFilaVerificado_(t, s, a, marca, resultado, series, firmaRapi) {
+  return [t, s, a.clanKey, a.letra, a.nombre, a.modificado, a.tamano, Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss'), marca, resultado, series, VCRR_VERSION_REGLAS, firmaRapi || ''];
 }
 
 /** Huella de un JSON: cambia si cambia el clan, el día, el nombre, la fecha de modificación o el tamaño. */
@@ -71034,13 +71283,15 @@ function _vcrrHuella_(clanKey, letra, nombre, modificado, tamano) {
 }
 
 /**
- * Función pura. ¿La semana ya está verificada y no cambió? reg = { huellas: [texto], series, version } del registro (o undefined si no hay);
- * archivos = los JSON que hay hoy en Drive; hayRestricciones = el archivo de restricciones ya tiene series de esa semana.
+ * Función pura. ¿La semana ya está verificada y no cambió? reg = { huellas: [texto], series, version, firmaRapi } del registro (o undefined si no hay);
+ * archivos = los JSON que hay hoy en Drive; hayRestricciones = el archivo de restricciones ya tiene series de esa semana; firmaRapi = huella de lo que RoyaleAPI trae hoy de la semana
+ * (_vcrrFirmaRapi_): si cambió desde que se verificó, la semana se vuelve a calcular porque el cruce de sus series anómalas pudo cambiar.
  * Sí solo si los JSON de hoy son exactamente los registrados (mismas huellas), la versión de reglas es la vigente y, cuando la semana dejó series,
  * esas series siguen en el archivo de restricciones.
  */
-function _vcrrSemanaVerificada_(reg, archivos, hayRestricciones) {
+function _vcrrSemanaVerificada_(reg, archivos, hayRestricciones, firmaRapi) {
   if (!reg || reg.version !== VCRR_VERSION_REGLAS) return false;
+  if (String(reg.firmaRapi || '') !== String(firmaRapi || '')) return false;   // §PF320: RoyaleAPI trae algo distinto de esa semana desde la última vez
   if (reg.series > 0 && !hayRestricciones) return false;
   var hoy = archivos.map(function (a) { return _vcrrHuella_(a.clanKey, a.letra, a.nombre, a.modificado, a.tamano); }).sort();
   var antes = reg.huellas.slice().sort();
@@ -71061,7 +71312,7 @@ function _vcrrLeerVerificados_() {
     if (f.length < 12) continue;
     var k = Number(f[0]) + '|' + Number(f[1]);
     var version = Number(f[11]), series = Number(f[10]) || 0;
-    if (!por[k]) por[k] = { huellas: [], series: series, version: version };
+    if (!por[k]) por[k] = { huellas: [], series: series, version: version, firmaRapi: String(f[12] === undefined ? '' : f[12]) };
     else if (por[k].version !== version) por[k].version = -1;
     por[k].huellas.push(_vcrrHuella_(String(f[2]), String(f[3]), String(f[4]), f[5], f[6]));
   }
@@ -71089,10 +71340,10 @@ function _vcrrGuardarVerificados_(filasNuevas, semanasHechas) {
   _saveCSVToDrive(VCRR_ARCHIVO_VERIFICADOS, _encodeCSVInforme([enc].concat(filas)));
 }
 
-// ----- Verificar CRR, paso 2: comparar contra el CSV y registrar hallazgos -----
+// ----- Verificar CRR, paso 3: comparar contra el CSV y registrar hallazgos -----
 
 /**
- * Paso 2. Compara cada semana de Cruce_CRR_Restricciones.csv contra Backup_Guerra.csv y agrega los hallazgos al CSV
+ * Paso 3. Compara cada semana de Cruce_CRR_Restricciones.csv contra Backup_Guerra.csv y agrega los hallazgos al CSV
  * «Cruce_CRR_vs_Backup <marca> (hallazgos).csv». Devuelve true al terminar todas las semanas; false si el presupuesto se agota.
  */
 function _vcrrPaso2_(st, t0) {
@@ -71103,14 +71354,21 @@ function _vcrrPaso2_(st, t0) {
   var claves = Object.keys(restr).sort(function (a, b) { var x = a.split('|'), y = b.split('|'); return (Number(x[0]) - Number(y[0])) || (Number(x[1]) - Number(y[1])); });
   if (!claves.length) { Logger.log('[VCRR] ' + VCRR_ARCHIVO_RESTRICCIONES + ' no tiene series: no hay nada que comparar.'); return true; }
   var previas = st.idx, hechas = 0, hallazgos = [], revision = [];
-  if (st.idx === 0) _vcrrLimpiarRevisionAntigua_();   // §PF318: una sola vez por corrida, en la primera tanda del paso 2
+  if (st.idx === 0) {
+    _vcrrLimpiarRevisionAntigua_();   // §PF318: una sola vez por corrida, en la primera tanda del paso 3
+    _vcrrListarSinResolver_(restr, claves);
+  }
   while (st.idx < claves.length) {
     if (hechas > 0 && (Date.now() - t0) > VCRR_PRESUPUESTO_MS - 15000) break;
     (restr[claves[st.idx]] || []).forEach(function (x) {
       var g = grupos[[String(x.temporada), String(x.semana), x.tag, x.clan].join('|')] || null;
       if (x.estado === 'incoherente' || x.estado === 'json_anomalo') {
-        hallazgos.push([x.temporada, x.semana, x.clan, x.tag, x.nombre, '', 'json_anomalo', x.estado, '', '', '', 'revisar', x.notas]);
+        // §PF320: una anómala que RoyaleAPI resolvió sigue siendo anomalía, pero va con severidad 'estimado' (los rangos ya son los estimados); la que no, 'revisar'.
+        var sinRes = /SIN RESOLVER:/.test(x.notas), estimada = !sinRes && /estimado con RoyaleAPI/.test(x.notas);
+        hallazgos.push([x.temporada, x.semana, x.clan, x.tag, x.nombre, '', 'json_anomalo', x.estado, '', '', '', estimada ? 'estimado' : 'revisar', x.notas]);
         _vcrrSumar_(st, 'json_anomalo', 1);
+        if (estimada) _vcrrSumar_(st, 'estimadas_rapi', 1);
+        if (sinRes) _vcrrSumar_(st, 'sin_resolver_rapi', 1);
       }
       var hs = _vcrrCompararSerie_(x, g);
       hs.forEach(function (h) { hallazgos.push(h); _vcrrSumar_(st, h[6], 1); });
@@ -71136,6 +71394,21 @@ function _vcrrPaso2_(st, t0) {
     _anotarProgresoPaso_('semanas comparadas: ' + st.idx + ' de ' + claves.length, st.idx);
   }
   return completo;
+}
+
+/**
+ * Escribe en el registro las series anómalas que RoyaleAPI no pudo resolver (las que dicen «SIN RESOLVER: motivo» en las notas), para decidir qué hacer con ellas (§PF320).
+ * Se llama una vez por corrida, al empezar el paso 3. Muestra hasta 60 y dice cuántas hay.
+ */
+function _vcrrListarSinResolver_(restr, claves) {
+  var lista = [];
+  claves.forEach(function (k) {
+    (restr[k] || []).forEach(function (x) { var m = /SIN RESOLVER: (.*)$/.exec(String(x.notas || '')); if (m) lista.push({ x: x, motivo: m[1] }); });
+  });
+  Logger.log('[VCRR] Series anómalas que RoyaleAPI no resolvió: ' + lista.length + (lista.length > 60 ? ' (se listan las primeras 60)' : '') + '.');
+  lista.slice(0, 60).forEach(function (e) {
+    Logger.log('[VCRR]   T' + e.x.temporada + ' S' + e.x.semana + ' ' + e.x.nombre + ' (' + e.x.clan + ') ' + e.x.tag + ' [' + e.x.estado + ' ' + (e.x.validos || '-') + ']: ' + e.motivo);
+  });
 }
 
 /**
@@ -71218,10 +71491,10 @@ function _vcrrGuardarHallazgos_(marca, hallazgos) {
   _saveCSVToDrive(nombre, previo.replace(/\s+$/, '') + '\r\n' + nuevo.slice(corte + 1));
 }
 
-// ----- Verificar CRR, paso 3: escribir en el CSV (solo Aplicar) -----
+// ----- Verificar CRR, paso 4: escribir en el CSV (solo Aplicar) -----
 
 /**
- * Paso 3 (solo Aplicar), de una sola vez: arma el plan con todas las semanas, hace el respaldo «Backup_Guerra ANTES de verificar CRR vs Backup <marca>.csv»,
+ * Paso 4 (solo Aplicar), de una sola vez: arma el plan con todas las semanas, hace el respaldo «Backup_Guerra ANTES de verificar CRR vs Backup <marca>.csv»,
  * crea las filas que faltan, sube al piso los acumulados que estén por debajo, vuelve a leer el CSV y verifica. Si el plan pasa de VCRR_MAX_FILAS_APLICAR
  * no escribe nada. Devuelve true si terminó (aunque haya decidido no escribir); false solo si no alcanzó el tiempo y debe reintentarse.
  */
