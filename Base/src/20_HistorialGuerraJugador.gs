@@ -1207,8 +1207,9 @@ function _rgParsearFilaGrupal_(motivo, detalle) {
   var num = '(\\d+|sin dato)';
   var tres = 'ataques ' + num + ', fame ' + num + ', barcos ' + num;
   var origen, clan, rx;
-  var mc = /^CSV grupal \((.+?)\): /.exec(m);
-  var mj = /^JSON grupal de RoyaleAPI \((.+?)\): /.exec(m);
+  // [\s\S] y no «.»: el clan del CSV grupal suele traer pegados un salto de línea y una fecha (la mitad de las filas reales), y el motivo los hereda.
+  var mc = /^CSV grupal \(([\s\S]+?)\): /.exec(m);
+  var mj = /^JSON grupal de RoyaleAPI \(([\s\S]+?)\): /.exec(m);
   if (mc) { origen = 'csv'; clan = mc[1]; rx = new RegExp('^Se conservó: ' + tres + '\\. Se descartó \\([^)]*\\): ' + tres + '\\.'); }
   else if (mj) { origen = 'json'; clan = mj[1]; rx = new RegExp('^Guardado: ' + tres + '\\. Nuevo \\([^)]*\\): ' + tres + '\\.'); }
   else return null;
@@ -1367,7 +1368,7 @@ function _rgAplicarDecisiones_(etq) {
       d.final = 'borrar';
       if (r.estado === 'yaAplicada') cuenta.yaAplicadas++; else cuenta[d.decision]++;
       var descartado = d.decision === 'conservar' ? p.otro : p.guardado;
-      Logger.log(etq + ' ' + etiqueta + ' [' + (p.origen === 'csv' ? 'CSV grupal' : 'JSON grupal') + ' ' + p.clan + ']: ' + nombreDecision[d.decision] +
+      Logger.log(etq + ' ' + etiqueta + ' [' + (p.origen === 'csv' ? 'CSV grupal' : 'JSON grupal') + ' ' + _nombreClanJsonGrupal_(p.clan) + ']: ' + nombreDecision[d.decision] +
         (r.estado === 'yaAplicada' ? ' (ya estaba aplicado)' : '') + ' → quedó ' + _rgTexto_(r.quedo) + '; se borró ' + _rgTexto_(descartado) + '.');
       return;
     }
