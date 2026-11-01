@@ -55,7 +55,7 @@ var HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS = [
   'Ataques', 'Fame', 'Barcos', 'Fuente', 'Cerrada', 'Alerta', 'Comentario'
 ];
 
-// CSV GRUPAL (desde el 1-nov-2026 en CSV/RoyaleAPI/Grupal, §PF321; antes carpeta DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL, Sección 6 del [→ Contexto_Base_Web.md §20B005]
+// CSV GRUPAL (desde el 1-nov-2026 en CSV/Tampermonkey, §PF321; antes carpeta DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL, Sección 6 del [→ Contexto_Base_Web.md §20B005]
 var HISTORIAL_GUERRA_GRUPAL_FILENAME = 'HistorialGuerra_Grupal.csv';
 
 // PUNTO 2 DE LA HOJA DE RUTA — endpoint que recibe los "registro" ya armados [→ Contexto_Base_Web.md §20B006]
@@ -524,23 +524,23 @@ function _loadHistorialGuerraGrupalCSV() {
  * _getHistorialGuerraGrupalFolder() [→ Contexto_Base_Web.md §20B032]
  */
 function _getHistorialGuerraGrupalFolder() {
-  // §PF321 (1-nov-2026): el CSV grupal vive en CSV/RoyaleAPI/Grupal; la carpeta JSON/RoyaleAPI/Grupal queda para los JSON grupales por clan.
-  // Si el archivo todavía está en la carpeta vieja, se MUEVE (conserva su ID y su historial de versiones) la primera vez que se pide la carpeta.
+  // §PF321 (1-nov-2026): el CSV grupal vive en CSV/Tampermonkey (la usuaria lo movió a mano); la carpeta JSON/RoyaleAPI/Grupal queda para los JSON grupales por clan.
+  // Si el archivo todavía estuviera en la carpeta vieja y no en la nueva, se MUEVE (conserva su ID y su historial de versiones) la primera vez que se pide la carpeta.
   try {
-    var destino = _getCsvSubcarpeta_('RoyaleAPI/Grupal', true);
+    var destino = _getCsvSubcarpeta_('Tampermonkey', true);
     if (!_HISTORIAL_GUERRA_GRUPAL_CSV_MOVIDO) {
       _HISTORIAL_GUERRA_GRUPAL_CSV_MOVIDO = true;
       if (!destino.getFilesByName(HISTORIAL_GUERRA_GRUPAL_FILENAME).hasNext()) {
         var viejos = _getHistorialGuerraGrupalJsonFolder_().getFilesByName(HISTORIAL_GUERRA_GRUPAL_FILENAME);
         if (viejos.hasNext()) {
           viejos.next().moveTo(destino);
-          Logger.log('[HistorialGuerra][Grupal] ' + HISTORIAL_GUERRA_GRUPAL_FILENAME + ' movido de JSON/RoyaleAPI/Grupal a CSV/RoyaleAPI/Grupal.');
+          Logger.log('[HistorialGuerra][Grupal] ' + HISTORIAL_GUERRA_GRUPAL_FILENAME + ' movido de JSON/RoyaleAPI/Grupal a CSV/Tampermonkey.');
         }
       }
     }
     return destino;
   } catch (e) {
-    Logger.log('[HistorialGuerra][Grupal] AVISO: no se pudo usar CSV/RoyaleAPI/Grupal (' + (e.message || e) + '); se usa la carpeta anterior.');
+    Logger.log('[HistorialGuerra][Grupal] AVISO: no se pudo usar CSV/Tampermonkey (' + (e.message || e) + '); se usa la carpeta anterior.');
     return _getHistorialGuerraGrupalJsonFolder_();
   }
 }

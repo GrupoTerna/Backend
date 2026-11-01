@@ -1281,15 +1281,14 @@ function _getCsvFolder() {
 
 function _csvSubcarpetaDe_(filename) {
   var n = String(filename || '');
-  // RoyaleAPI grupal (§PF321, 1-nov-2026): el CSV consolidado por jugador, semana y clan vive en CSV/RoyaleAPI/Grupal (antes en JSON/RoyaleAPI/Grupal); no es un informe y no lleva columna ID.
-  if (/^HistorialGuerra_Grupal\.csv$/.test(n)) return 'RoyaleAPI/Grupal';
   // Informes: respaldos previos a reparar, reparaciones, limpiezas, revisiones y diagnósticos.
   if (/^Backup_Guerra ANTES de /.test(n) || /^Reparacion_/.test(n) || /^Limpieza_Coliseo_/.test(n) ||
       /^Revision_Guerra/.test(n) || /^Diagnostico_/.test(n) ||
       /^Correccion_Fecha_/.test(n) || /^Completar_DomingoDesdeJsonRoyaleApi /.test(n) ||
       /^Reparar_SemanaDesdeJsonRoyaleApi /.test(n)) return 'Informes';
   // Tampermonkey: lo que se arma con datos traídos de RoyaleAPI por Tampermonkey.
-  if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv') return 'Tampermonkey';
+  // §PF321 (1-nov-2026): HistorialGuerra_Grupal.csv (RoyaleAPI vía Tampermonkey, una fila por jugador, semana y clan) vive aquí, no en Informes; la usuaria lo movió a mano a CSV/Tampermonkey.
+  if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv' || n === 'HistorialGuerra_Grupal.csv') return 'Tampermonkey';
   // Jugador: datos que dependen de cada jugador (no son comportamiento general ni respaldo de una hoja).
   var jugador = ['Backup_Cards_2.csv', 'Backup_Insignias_2.csv', 'Backup_Logros_2.csv', 'Backup_ProgresoEventos.csv',
     'Backup_Battlelogs.csv', 'Backup_PerfilWeb.csv', 'Backup_CaminoLeyendas.csv'];
