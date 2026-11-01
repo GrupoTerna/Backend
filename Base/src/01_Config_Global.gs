@@ -1281,9 +1281,11 @@ function _getCsvFolder() {
 
 function _csvSubcarpetaDe_(filename) {
   var n = String(filename || '');
+  // RoyaleAPI grupal (§PF321, 1-nov-2026): el CSV consolidado por jugador, semana y clan vive en CSV/RoyaleAPI/Grupal (antes en JSON/RoyaleAPI/Grupal); no es un informe y no lleva columna ID.
+  if (/^HistorialGuerra_Grupal\.csv$/.test(n)) return 'RoyaleAPI/Grupal';
   // Informes: respaldos previos a reparar, reparaciones, limpiezas, revisiones y diagnósticos.
   if (/^Backup_Guerra ANTES de /.test(n) || /^Reparacion_/.test(n) || /^Limpieza_Coliseo_/.test(n) ||
-      /^Revision_Guerra/.test(n) || /^Diagnostico_/.test(n) || /^HistorialGuerra_Grupal/.test(n) ||
+      /^Revision_Guerra/.test(n) || /^Diagnostico_/.test(n) ||
       /^Correccion_Fecha_/.test(n) || /^Completar_DomingoDesdeJsonRoyaleApi /.test(n) ||
       /^Reparar_SemanaDesdeJsonRoyaleApi /.test(n)) return 'Informes';
   // Tampermonkey: lo que se arma con datos traídos de RoyaleAPI por Tampermonkey.
