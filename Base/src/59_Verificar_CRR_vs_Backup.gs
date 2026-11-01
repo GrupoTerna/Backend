@@ -51,7 +51,7 @@ var VCRR_MOTIVO_REVISION = 'Backup_Guerra.csv tiene menos que CurrentRiverRace (
 var VCRR_ESTADO_PROP = 'VCRR_ESTADO';                  // propiedad del script con el avance (JSON)
 var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo «Cruce_» lo manda a CSV/Informes (_csvSubcarpetaDe_)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
-var VCRR_VERSION_REGLAS = 2;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_: invalida el registro y se releen todos los JSON
+var VCRR_VERSION_REGLAS = 3;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_: invalida el registro y se releen todos los JSON
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
@@ -391,6 +391,7 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan) {
       var r = _vcrrRestriccionesSerie_(caps);
       var estado = 'ok', notas = r.notas.slice();
       if (r.descartadas.length) { estado = 'json_anomalo'; r.descartadas.forEach(function (m) { notas.push('captura ' + VCRR_DIAS.charAt(m.dia) + ' descartada: ' + m.motivo); }); }
+      if (r.anomalas.length) { estado = 'json_anomalo'; r.anomalas.forEach(function (m) { notas.push('captura ' + VCRR_DIAS.charAt(m.dia) + ' anómala pero usada: ' + m.motivo); }); }
       if (r.validos.length < 3) estado = 'incoherente';
       if (Object.keys(clanesDeTag[tag]).length > 1 && estado === 'ok') estado = 'multiclan';
       series.push({ temporada: Number(temporada), semana: Number(semana), clanKey: ck, tag: tag, nombre: nombre,
@@ -411,10 +412,10 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan) {
  *    los barcos no pueden pasar de los ataques; la fame de un día no pasa del máximo de la tabla de fame para los ataques de ese día (_vcrrFameLimitesPorAtaques_). No se usa el mínimo de la tabla como piso: en T24 S2 el JSON trae 4 ataques el domingo con la misma fame del sábado (la fame del JSON se atrasa), y con ese piso 19 series saldrían imposibles.
  *  - Se propaga hacia adelante y hacia atrás (_vcrrPropagar_) hasta que no cambie nada. Si una métrica queda sin solución, esa métrica no se usa
  *    (validos no la incluye) y se anota en notas.
- * descartadas = capturas con números imposibles (no restringen). validos = letras de las métricas utilizables.
+ * descartadas = capturas con números imposibles (no restringen). anomalas = capturas con un fallo conocido del JSON que SÍ restringen (domingo con decksUsedToday 0 y más de 12 ataques: se toma como acumulado final). validos = letras de las métricas utilizables.
  */
 function _vcrrRestriccionesSerie_(caps) {
-  var INF = Infinity, notas = [], descartadas = [], d;
+  var INF = Infinity, notas = [], descartadas = [], anomalas = [], d;
   var A = { lo: [0, 0, 0, 0], hi: [4, 8, 12, 16], il: [0, 0, 0, 0], ih: [4, 4, 4, 4] };
   var F = { lo: [0, 0, 0, 0], hi: [INF, INF, INF, INF], il: [0, 0, 0, 0], ih: [900, 900, 900, 900] };
   var B = { lo: [0, 0, 0, 0], hi: [INF, INF, INF, INF], il: [0, 0, 0, 0], ih: [4, 4, 4, 4] };
@@ -423,7 +424,11 @@ function _vcrrRestriccionesSerie_(caps) {
     var c = caps[d];
     if (!c) continue;
     var motivo = '';
-    if (c.hoy < 0 || c.hoy > 4) motivo = 'decksUsedToday ' + c.hoy + ' fuera de 0 a 4';
+    // Fallo conocido del JSON: la captura del domingo trae decksUsedToday 0 aunque ya sumó más de 12 ataques (debía ser 4: 16/0 en vez de 16/4). Se reporta como
+    // anomalía pero la captura SÍ se usa como acumulado final: el valor del día sale por diferencia con el cierre del sábado (16 - 12 = 4).
+    var finDeSemana = d === 3 && c.hoy === 0 && c.usados > 4 * d && c.usados <= 4 * (d + 1) && c.fame >= 0 && c.barcos >= 0 && c.barcos <= c.usados;
+    if (finDeSemana) anomalas.push({ dia: d, motivo: 'decksUsedToday 0 con decksUsed ' + c.usados + ' (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia' });
+    else if (c.hoy < 0 || c.hoy > 4) motivo = 'decksUsedToday ' + c.hoy + ' fuera de 0 a 4';
     else if (c.hoy > c.usados) motivo = 'decksUsedToday ' + c.hoy + ' mayor que decksUsed ' + c.usados;
     else if (c.usados > 4 * (d + 1)) motivo = 'decksUsed ' + c.usados + ' no cabe en ' + (d + 1) + ' día(s)';
     else if (c.usados - c.hoy > 4 * d) motivo = 'el inicio del día (' + (c.usados - c.hoy) + ') no cabe en ' + d + ' día(s) anteriores';
@@ -435,11 +440,11 @@ function _vcrrRestriccionesSerie_(caps) {
     var inicio = c.usados - c.hoy;
     A.il[d] = Math.max(A.il[d], c.hoy);
     A.lo[d] = Math.max(A.lo[d], c.usados);
-    if (d > 0) { A.lo[d - 1] = Math.max(A.lo[d - 1], inicio); A.hi[d - 1] = Math.min(A.hi[d - 1], inicio); }
+    if (d > 0 && !finDeSemana) { A.lo[d - 1] = Math.max(A.lo[d - 1], inicio); A.hi[d - 1] = Math.min(A.hi[d - 1], inicio); }
     F.lo[d] = Math.max(F.lo[d], c.fame); B.lo[d] = Math.max(B.lo[d], c.barcos);
     if (d > 0) {
       F.hi[d - 1] = Math.min(F.hi[d - 1], c.fame); B.hi[d - 1] = Math.min(B.hi[d - 1], c.barcos);
-      if (c.hoy === 0) { F.lo[d - 1] = Math.max(F.lo[d - 1], c.fame); B.lo[d - 1] = Math.max(B.lo[d - 1], c.barcos); }
+      if (c.hoy === 0 && !finDeSemana) { F.lo[d - 1] = Math.max(F.lo[d - 1], c.fame); B.lo[d - 1] = Math.max(B.lo[d - 1], c.barcos); }
     }
     if (c.hoy === 4) { F.hi[d] = Math.min(F.hi[d], c.fame); B.hi[d] = Math.min(B.hi[d], c.barcos); }
   }
@@ -458,7 +463,7 @@ function _vcrrRestriccionesSerie_(caps) {
   }
   if (_vcrrPropagar_(F)) validos += 'F'; else notas.push('fame: las capturas no caben juntas');
   if (_vcrrPropagar_(B)) validos += 'B'; else notas.push('barcos: las capturas no caben juntos');
-  return { A: A, F: F, B: B, validos: validos, notas: notas, descartadas: descartadas };
+  return { A: A, F: F, B: B, validos: validos, notas: notas, descartadas: descartadas, anomalas: anomalas };
 }
 
 /**
