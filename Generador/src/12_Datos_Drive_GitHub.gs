@@ -6,15 +6,12 @@
 // [→ Contexto_Base_Web.md §PF241]
 //
 // QUÉ COPIA (ver DATOS_GH_FUENTES_):
-//   - Tampermonkey/: Correcciones_Guerra.csv, Correcciones_Nuevos.csv y
-//     Backup_Guerra_Semanal.csv        → Datos descargados/CSV/Tampermonkey/
-//     Desde el 25-oct-2026 (§PF241, decisión de la usuaria) también, de esa misma
-//     carpeta, Correcciones_RiverRace_Pendientes.csv y los Log_Tampermonkey_*.csv
-//     (se buscan con el filtro «solo»; si no existen no es un error).
+//   - Tampermonkey/ (CSV/Tampermonkey de Drive): TODOS los archivos de texto de la carpeta (desde el 1-nov-2026, §PF324; antes una lista de nombres más un filtro, y por eso
+//     HistorialGuerra_Grupal.csv, que se mudó a esta carpeta, no llegaba)   → Datos descargados/CSV/Tampermonkey/
+//     Hoy: Correcciones_Guerra.csv, Correcciones_Nuevos.csv, Backup_Guerra_Semanal.csv, HistorialGuerra_Grupal.csv, Correcciones_RiverRace_Pendientes.csv y los Log_Tampermonkey_*.csv.
 //   - Carpeta Seasons: Cache_Seasons.json (respuesta cruda de descargarSeasons(), ids de
 //     temporada de Supercell)  → Datos descargados/JSON/Endpoints/Seasons/
 //   - Backup_Guerra.csv y Backup_Guerra_Logs.csv → Datos descargados/CSV/Hojas/
-//   - HistorialGuerra_Grupal.csv (desde el 1-nov-2026, §PF321, vive en CSV/Tampermonkey) → Datos descargados/CSV/Tampermonkey/
 //   - Carpeta Grupal de RoyaleAPI (desde el 1-nov-2026, §PF321): los «Grupal - <clan>.json» → Datos descargados/JSON/RoyaleAPI/Grupal/
 //   - Carpeta Individual de RoyaleAPI (JSON por jugador; desde el 25-oct-2026, §PF276): todos los .json
 //     → Datos descargados/JSON/RoyaleAPI/Individual/. Se omiten los nombres con una fecha AAAA-MM-DD pegada
@@ -38,8 +35,8 @@
 //   - Solo agrega o actualiza archivos: nunca borra nada del repo.
 //
 // CUÁNDO: un activador diario (instalarActivadorDatosDriveGithub) o a mano
-// (subirDatosDriveAGithub). Solo se leen los archivos cuya fecha de modificación o
-// tamaño cambió desde la última copia (propiedades del script DATOS_GH_...).
+// (subirDatosDriveAGithub). Solo se leen los archivos cuya fecha de modificación, tamaño o carpeta de destino cambió desde la última copia (propiedades del script DATOS_GH_...;
+// §PF324: la memoria incluye el destino, así que la primera corrida tras este cambio revisa todos los archivos una vez y se continúa sola).
 //
 // TOKEN: el mismo GITHUB_TOKEN del Generador (repo Backend, Contents: Read and write).
 // Desde el 25-oct-2026 (§PF272, pedido de la usuaria) el registro de la corrida lista los archivos subidos agrupados por carpeta de destino,
@@ -68,12 +65,8 @@ var DATOS_GH_CARPETA_SEASONS_      = '1oIMkaJS6ElqXD9Z8xRA5jn0YVaz3l01d';   // =
 var DATOS_GH_CARPETA_GRUPAL_       = '1T8PhxVVRZ-p7o2A_U6ARP-LsC3Zg7ObL';   // = DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL de Base (01_Config_Global.gs): los JSON grupales por clan (§PF321)
 
 var DATOS_GH_FUENTES_ = [
-  { carpetaId: DATOS_GH_CARPETA_TAMPERMONKEY_,
-    nombres: ['Correcciones_Guerra.csv', 'Correcciones_Nuevos.csv', 'Backup_Guerra_Semanal.csv', 'HistorialGuerra_Grupal.csv'],
-    destino: 'Datos descargados/CSV/Tampermonkey/', maxBytes: 8 * 1024 * 1024 },
-  { carpetaId: DATOS_GH_CARPETA_TAMPERMONKEY_,
+  { carpetaId: DATOS_GH_CARPETA_TAMPERMONKEY_,   // 1-nov-2026 (§PF324, pedido de la usuaria): TODA la carpeta, sin lista de nombres ni filtro; así un archivo nuevo (como HistorialGuerra_Grupal.csv al mudarse aquí) llega solo
     todos: true,
-    solo: /^(Correcciones_RiverRace_Pendientes\.csv|Log_Tampermonkey_.*\.csv)$/i,
     destino: 'Datos descargados/CSV/Tampermonkey/', maxBytes: 8 * 1024 * 1024 },
   { carpetaId: DATOS_GH_CARPETA_SEASONS_,
     nombres: ['Cache_Seasons.json'],
@@ -183,7 +176,7 @@ function _datosDriveAGithub_(op) {
   }
   try {
     var props = PropertiesService.getScriptProperties();
-    var estado = props.getProperties();   // DATOS_GH_<idArchivo> = '<modificado ms>_<tamaño>'
+    var estado = props.getProperties();   // DATOS_GH_<idArchivo>@<carpeta de destino> = '<modificado ms>_<tamaño>' (§PF324)
 
     var lista = _datosGhListarCandidatos_();
     var omitidos = lista.problemas.slice();
@@ -198,7 +191,7 @@ function _datosDriveAGithub_(op) {
       var f = c.archivo;
       var nombre = f.getName();
       var huella = f.getLastUpdated().getTime() + '_' + f.getSize();
-      var clave = DATOS_GH_PREFIJO_ESTADO_ + f.getId();
+      var clave = DATOS_GH_PREFIJO_ESTADO_ + f.getId() + '@' + c.destino; // §PF324: con el destino, un archivo que cambia de carpeta (mismo ID y misma fecha) se vuelve a copiar a la nueva ruta
 
       if (!op.forzar && estado[clave] === huella) { sinCambios++; continue; }
       if (Date.now() - t0 > DATOS_GH_TIEMPO_MAX_MS_) {
