@@ -23,6 +23,9 @@
 //     carpeta y no una lista de nombres  → Datos descargados/CSV/Informes/
 //     Se omiten las copias «Backup_Guerra ANTES de ...» (pesan unos 2 MB cada
 //     una y son copias de Backup_Guerra.csv).
+//   - Subcarpeta Informes/Cruce_Meta de Drive (Cruce_* y Cotejo_*, §PF185; desde el 31-oct-2026, §PF315): todos los archivos de texto
+//     → Datos descargados/CSV/Informes/Cruce_Meta/. La carpeta de informes se recorre sin entrar en sus subcarpetas, y desde §PF185 el cruce
+//     de CurrentRiverRace contra Backup_Guerra (Cruce_CRR_*) y sus hallazgos viven allí, por eso no llegaban a GitHub.
 //
 // REGLAS DE SEGURIDAD (el repo es público):
 //   - Un archivo con posible token o clave se omite (reutiliza _githubRevisarSecretos_).
@@ -82,7 +85,11 @@ var DATOS_GH_FUENTES_ = [
   { carpetaId: DATOS_GH_CARPETA_INFORMES_,
     todos: true,
     omitir: /^Backup_Guerra ANTES de /i,
-    destino: 'Datos descargados/CSV/Informes/', maxBytes: 3 * 1024 * 1024 }
+    destino: 'Datos descargados/CSV/Informes/', maxBytes: 3 * 1024 * 1024 },
+  { carpetaId: DATOS_GH_CARPETA_INFORMES_,   // §PF315: subcarpeta Cruce_Meta de Informes (se busca por nombre dentro de esa carpeta)
+    subcarpeta: 'Cruce_Meta',
+    todos: true,
+    destino: 'Datos descargados/CSV/Informes/Cruce_Meta/', maxBytes: 4 * 1024 * 1024 }
 ];
 
 var DATOS_GH_PREFIJO_ESTADO_   = 'DATOS_GH_';
@@ -294,6 +301,11 @@ function _datosGhListarCandidatos_() {
     var carpeta;
     try { carpeta = DriveApp.getFolderById(fuente.carpetaId); }
     catch (e) { problemas.push('carpeta ' + fuente.destino + ' → no se pudo abrir en Drive'); return; }
+    if (fuente.subcarpeta) { // §PF315: la fuente es una subcarpeta (por nombre) de la carpeta indicada
+      var itSub = carpeta.getFoldersByName(fuente.subcarpeta);
+      if (!itSub.hasNext()) { problemas.push('subcarpeta ' + fuente.subcarpeta + ' → no existe todavía en la carpeta de Drive (se crea al guardar el primer Cruce_ o Cotejo_)'); return; }
+      carpeta = itSub.next();
+    }
 
     if (fuente.nombres) {
       fuente.nombres.forEach(function(nombre) {
