@@ -1233,7 +1233,24 @@ function _vcrrRangosJugadorClan_(temporada, semana, tag, clanNombre) {
   }
 }
 
-/** Mapa de la semana (con caché por ejecución): 'clanKey|tag' -> serie y '*|tag' -> lista de las series de ese jugador en todos los clanes. Lee los JSON una sola vez. */
+/**
+ * Los totales cerrados de RoyaleAPI de UNA semana, para cruzarlos con las series anómalas fuera de la verificación (§PF320, decisión (a): las demás cadenas usan también el cruce).
+ * Lee Cruce_CRR_RoyaleAPI.csv una sola vez por ejecución (_vcrrIndiceRapiDeDrive_). Devuelve undefined si ese caché no existe, está vacío o falla la lectura: entonces no se cruza
+ * nada y las series quedan como antes (solo con los JSON de CurrentRiverRace). Si el caché existe pero la semana no tiene datos, devuelve {} (las anómalas quedan «SIN RESOLVER», solo como nota).
+ * No lo actualiza: lo refresca el paso de RoyaleAPI de verificarCrrVsBackupInforme().
+ */
+function _vcrrRapiSemanaParaCache_(temporada, semana) {
+  try {
+    var idx = _vcrrIndiceRapiDeDrive_();
+    if (!idx || !Object.keys(idx).length) return undefined;
+    return idx[Number(temporada) + '|' + Number(semana)] || {};
+  } catch (e) {
+    Logger.log('[VCRR] No se pudo leer el caché de RoyaleAPI para T' + temporada + ' S' + semana + ' (' + e.message + '); las series se calculan sin el cruce.');
+    return undefined;
+  }
+}
+
+/** Mapa de la semana (con caché por ejecución): 'clanKey|tag' -> serie y '*|tag' -> lista de las series de ese jugador en todos los clanes. Lee los JSON una sola vez. Las series anómalas van ya cruzadas con RoyaleAPI (§PF320) cuando su caché existe. */
 function _vcrrCacheSemana_(temporada, semana) {
   var clave = Number(temporada) + '|' + Number(semana);
   if (!_VCRR_CACHE_RANGOS_[clave]) {
@@ -1241,7 +1258,7 @@ function _vcrrCacheSemana_(temporada, semana) {
     var archivos = _vcrrArchivosSemana_(temporada, semana);
     if (archivos.length) {
       var cap = _vcrrCapturasSemana_(temporada, semana, archivos);
-      _vcrrSeriesDeSemana_(temporada, semana, cap.porClan).forEach(function (x) {
+      _vcrrSeriesDeSemana_(temporada, semana, cap.porClan, _vcrrRapiSemanaParaCache_(temporada, semana)).forEach(function (x) {
         mapa[x.clanKey + '|' + x.tag] = x;
         if (!mapa['*|' + x.tag]) mapa['*|' + x.tag] = [];
         mapa['*|' + x.tag].push(x);
