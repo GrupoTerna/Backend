@@ -1,6 +1,6 @@
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes. En cada grupo, por temática y en el orden en que se ejecutarían:
-//  Parte 1 — Funciones que se corren a mano: 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento); 1.5 T_Asistencia alineada con T_Lista (repetible); 1.6 lo mismo para T, S, CR y sus asistencias (repetible; lo usa la reenumeración); 1.7 fecha, hora y fichas de Semanas limpias en las listas (repetible).
-//  Parte 2 — Funciones que no se corren a mano: 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda); 2.6 T_Asistencia alineada con T_Lista (plan, envoltorio y escritura; ahora para T, S y CR); 2.7 envoltorio de las herramientas 1.6; 2.8 fecha, hora y fichas de Semanas limpias (ayudas y escritura).
+//  Parte 1 — Funciones que se corren a mano: 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento); 1.5 T_Asistencia alineada con T_Lista (repetible); 1.6 lo mismo para T, S, CR y sus asistencias (repetible; lo usa la reenumeración); 1.7 fecha, hora y fichas de Semanas limpias en las listas (repetible). 1.8 numeración de lo grupal (CSV y JSON por clan) alineada con la vigente (repetible).
+//  Parte 2 — Funciones que no se corren a mano: 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda); 2.6 T_Asistencia alineada con T_Lista (plan, envoltorio y escritura; ahora para T, S y CR); 2.7 envoltorio de las herramientas 1.6; 2.8 fecha, hora y fichas de Semanas limpias (ayudas y escritura). 2.9 numeración de lo grupal alineada (lectura, alineación y escritura).
 // Al reordenar no se cambió el código de ninguna función; la variable SEMANAS_FORZADAS_PROP_ subió a la zona de constantes.
 
 // ==============================================================================
@@ -680,6 +680,20 @@ function normalizarFechaHoraListasRevisar() {
 
 function normalizarFechaHoraListas() {
   _correrHerramientaTemporada_('normalizarFechaHoraListas', true, _normalizarFechaHoraListas_);
+}
+
+// ----- 1.8 Numeración de lo grupal alineada con la vigente (1-nov-2026): herramienta MANUAL y repetible -----
+// alinearNumeracionGrupalRevisar(): NO escribe nada; lee HistorialGuerra_Grupal.csv (CSV/Tampermonkey) y los «Grupal - <clan>.json» (JSON/RoyaleAPI/Grupal) y deja en el registro cuántas filas o semanas tienen otra numeración,
+// cuántas se juntarían y cuántos valores distintos irían a revisión. Córrela primero: también sirve para contrastar la copia viva de Drive.
+// alinearNumeracionGrupal(): pone en cada fila o semana TemporadaInterna = TemporadaRoyaleAPI - offset vigente (la temporada de RoyaleAPI no cambia con la reenumeración, así que no suma ni resta meses y NO duplica nada si se corre dos veces).
+// Si dos filas o semanas quedan iguales las junta (gana la que ya tenía la numeración vigente) y un valor distinto no se pierde: va a Revision_Guerra.csv (Pendiente). Lo que no trae TemporadaRoyaleAPI no se toca.
+// Cuándo: después de una reenumeración, para dejar al día lo grupal que esa reenumeración no alcanzó, y ANTES de reconstruirJsonGrupalDesdeIndividuales() (proyecto Base, 20_HistorialGuerraJugador.gs). [→ Contexto_Base_Web.md §PF323]
+function alinearNumeracionGrupalRevisar() {
+  _correrHerramientaTemporada_('alinearNumeracionGrupalRevisar', false, _alinearNumeracionGrupal_);
+}
+
+function alinearNumeracionGrupal() {
+  _correrHerramientaTemporada_('alinearNumeracionGrupal', true, _alinearNumeracionGrupal_);
 }
 
 // =============================================================================
@@ -2304,5 +2318,101 @@ function _normalizarFechaHoraListas_(aplicar) {
     try { respaldarIndiceYProtegidasCSV(cfg.clave); Logger.log(tag + ' Respaldo CSV de ' + cfg.etiqueta + ' rehecho desde la hoja.'); }
     catch (eB) { errores++; Logger.log(tag + ' ERROR rehaciendo el respaldo de ' + cfg.etiqueta + ': ' + eB.message + ' (repite la herramienta).'); }
   });
+  return errores;
+}
+
+// ----- 2.9 Numeración de lo grupal alineada con la vigente (1-nov-2026): lectura, alineación y escritura -----
+
+// _alinearNumeracionGrupal_(aplicar): herramienta alinearNumeracionGrupal*. Devuelve la cantidad de errores (0 = todo bien). Las partes puras son _historialGuerraGrupalAlinearFilas_() y _jsonGrupalAlinearDoc_() (20_HistorialGuerraJugador.gs). [→ Contexto_Base_Web.md §PF323]
+// Seguridad: se niega si hay una reenumeración sin terminar (el offset todavía no es el final) o si la referencia de temporadas no pasa _guardaReferenciaTemporadas_().
+function _alinearNumeracionGrupal_(aplicar) {
+  var tag = aplicar ? '[Numeración grupal]' : '[Numeración grupal · solo revisar]';
+  if (_reenumeracionEnCurso_()) {
+    Logger.log(tag + ' ERROR: hay una reenumeración de temporadas sin terminar (REENUM_PASO). Termínala primero con reanudarReenumerarTemporadas(); no se hace nada.');
+    return 1;
+  }
+  if (!_guardaReferenciaTemporadas_(tag)) return 1;
+  var offset = _getTemporadaOffsetRoyaleApi();
+  var errores = 0, conflictos = [];
+  var ahora = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
+  Logger.log(tag + ' Offset de RoyaleAPI vigente = ' + offset + ': TemporadaInterna = TemporadaRoyaleAPI - ' + offset + '.');
+
+  // 1) HistorialGuerra_Grupal.csv
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    errores++;
+    Logger.log(tag + ' ERROR: no se obtuvo el lock para HistorialGuerra_Grupal.csv; vuelve a correr la herramienta.');
+  } else {
+    try {
+      var texto = _loadHistorialGuerraGrupalCSV();
+      if (!texto) {
+        Logger.log(tag + ' HistorialGuerra_Grupal.csv: no existe todavía en CSV/Tampermonkey; se omite.');
+      } else {
+        var filas = _parseCSV(texto);
+        var r = _historialGuerraGrupalAlinearFilas_(filas, offset);
+        Logger.log(tag + ' HistorialGuerra_Grupal.csv: ' + Math.max(0, filas.length - 1) + ' fila(s); con otra numeración: ' + r.cambiadas + '; sin TemporadaRoyaleAPI (no se tocan): ' + r.sinReferencia +
+          '; filas repetidas juntadas: ' + r.fusionadas + '; valores distintos para revisión: ' + r.conflictos.length + '.');
+        var conflictosCsv = r.conflictos.map(function (c) { return _entradaRevisionCsvGrupal_(c, ahora); });
+        if (!aplicar) conflictos = conflictos.concat(conflictosCsv);
+        if (aplicar && (r.cambiadas > 0 || r.fusionadas > 0)) {
+          if (conflictosCsv.length) { // primero la revisión: el valor que se descarta del CSV solo queda guardado ahí; si falla, no se escribe el CSV
+            var rc = _registrarRevisionGuerra_(conflictosCsv);
+            Logger.log(tag + ' Revision_Guerra.csv (CSV grupal): ' + rc.nuevas + ' nueva(s), ' + rc.actualizadas + ' actualizada(s), ' + rc.sinCambio + ' sin cambio.');
+          }
+          _saveHistorialGuerraGrupalCSV(_encodeCSV(r.filas));
+          Logger.log(tag + ' HistorialGuerra_Grupal.csv: escrito (' + (r.filas.length - 1) + ' fila(s)).');
+        }
+      }
+    } catch (eCsv) {
+      errores++;
+      Logger.log(tag + ' ERROR en HistorialGuerra_Grupal.csv: ' + eCsv.message);
+    } finally {
+      lock.releaseLock();
+    }
+  }
+
+  // 2) JSON grupales por clan
+  try {
+    var it = _getHistorialGuerraGrupalJsonFolder_().getFiles();
+    var archivos = [];
+    while (it.hasNext()) { var f = it.next(); if (/^Grupal - .+\.json$/i.test(f.getName())) archivos.push(f); }
+    archivos.sort(function (a, b) { return a.getName() < b.getName() ? -1 : (a.getName() > b.getName() ? 1 : 0); });
+    if (!archivos.length) Logger.log(tag + ' JSON grupales por clan: no hay ninguno todavía; se omite.');
+    archivos.forEach(function (archivo) {
+      try {
+        var doc = JSON.parse(archivo.getBlob().getDataAsString('UTF-8'));
+        if (!doc || !Array.isArray(doc.semanas)) { Logger.log(tag + ' «' + archivo.getName() + '»: no tiene semanas; se omite.'); return; }
+        var rj = _jsonGrupalAlinearDoc_(doc, offset, ahora);
+        Logger.log(tag + ' «' + archivo.getName() + '»: semanas con otra numeración: ' + rj.semanas + '; sin temporadaRoyaleAPI (no se tocan): ' + rj.sinReferencia + '; semanas repetidas juntadas: ' + rj.fusionadas +
+          '; valores distintos para revisión: ' + rj.conflictos.length + '.');
+        rj.conflictos.forEach(function (c) { conflictos.push(_entradaRevisionJsonGrupal_(c, ahora)); });
+        if (aplicar && rj.cambioDoc) {
+          _setContentConConteo_(archivo, JSON.stringify(doc, null, 2));
+          Logger.log(tag + ' «' + archivo.getName() + '»: escrito.');
+        }
+      } catch (eArch) {
+        errores++;
+        Logger.log(tag + ' ERROR en «' + archivo.getName() + '»: ' + eArch.message + '; queda sin alinear.');
+      }
+    });
+  } catch (eJson) {
+    errores++;
+    Logger.log(tag + ' ERROR leyendo la carpeta de los JSON grupales: ' + eJson.message);
+  }
+
+  // 3) Valores distintos de los JSON a Revision_Guerra.csv (en el CSV ya se registraron antes de escribirlo; nada se pierde en silencio)
+  if (conflictos.length) {
+    if (!aplicar) {
+      Logger.log(tag + ' Irían a Revision_Guerra.csv (Pendiente): ' + conflictos.length + ' valor(es) distinto(s).');
+    } else {
+      try {
+        var rr = _registrarRevisionGuerra_(conflictos);
+        Logger.log(tag + ' Revision_Guerra.csv: ' + rr.nuevas + ' nueva(s), ' + rr.actualizadas + ' actualizada(s), ' + rr.sinCambio + ' sin cambio.');
+      } catch (eRev) {
+        errores++;
+        Logger.log(tag + ' ERROR escribiendo Revision_Guerra.csv: ' + eRev.message + '. Los valores quedan en los JSON (campo alternativas); vuelve a correr la herramienta.');
+      }
+    }
+  }
   return errores;
 }
