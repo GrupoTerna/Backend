@@ -775,6 +775,106 @@ function _jsonGrupalOrdenar_(doc) {
   return doc;
 }
 
+/**
+ * _jsonGrupalAlternativaIgual_(jugador, alternativa) [→ Contexto_Base_Web.md §PF322]
+ * Función pura. true si la alternativa ya no contradice al valor guardado: cada campo que trae (ataques, fame, barcos) es igual al guardado. Un campo nulo de la alternativa no cuenta.
+ */
+function _jsonGrupalAlternativaIgual_(jugador, alternativa) {
+  var nulo = function (v) { return v === null || v === undefined || v === ''; };
+  return ['ataques', 'fame', 'barcos'].every(function (c) {
+    return nulo(alternativa[c]) || (!nulo(jugador[c]) && Number(jugador[c]) === Number(alternativa[c]));
+  });
+}
+
+/**
+ * _jsonGrupalFusionarJugador_(destino, origen, ahora) [→ Contexto_Base_Web.md §PF322]
+ * Función pura. Junta dos fichas del mismo jugador, el mismo clan y la misma semana (se modifica `destino`). Un dato nulo del destino se rellena; un valor distinto del guardado
+ * NO se pisa: pasa a `alternativas` con `revision: 'pendiente'`, igual que _jsonGrupalAplicarItems_(). Las alternativas del origen también se conservan.
+ * Devuelve true si el valor del origen contradecía al guardado y es un conflicto nuevo (para mandarlo a Revision_Guerra.csv).
+ */
+function _jsonGrupalFusionarJugador_(destino, origen, ahora) {
+  var nulo = function (v) { return v === null || v === undefined || v === ''; };
+  var campos = ['ataques', 'fame', 'barcos'];
+  if (!destino.nombre && origen.nombre) destino.nombre = origen.nombre;
+  var nuevo = {}, distinto = false;
+  campos.forEach(function (c) {
+    var v = nulo(origen[c]) ? null : Number(origen[c]);
+    nuevo[c] = v;
+    if (v === null) return;
+    if (nulo(destino[c])) destino[c] = v;
+    else if (Number(destino[c]) !== v) distinto = true;
+  });
+  var alts = Array.isArray(destino.alternativas) ? destino.alternativas : [];
+  var igualA = function (a, b) { return campos.every(function (c) { return (nulo(a[c]) ? null : Number(a[c])) === (nulo(b[c]) ? null : Number(b[c])); }); };
+  var conflicto = false;
+  if (distinto && !alts.some(function (a) { return campos.every(function (c) { return nulo(nuevo[c]) || Number(a[c]) === nuevo[c]; }); })) {
+    alts.push({ ataques: nuevo.ataques, fame: nuevo.fame, barcos: nuevo.barcos, fechaDetectado: ahora });
+    conflicto = true;
+  }
+  (Array.isArray(origen.alternativas) ? origen.alternativas : []).forEach(function (a) {
+    if (!_jsonGrupalAlternativaIgual_(destino, a) && !alts.some(function (x) { return igualA(x, a); })) alts.push(a);
+  });
+  if (alts.length) { destino.alternativas = alts; destino.revision = 'pendiente'; }
+  return conflicto;
+}
+
+/**
+ * _jsonGrupalReenumerarDoc_(doc, delta, ahora) [→ Contexto_Base_Web.md §PF322]
+ * Función pura (§PF322, 1-nov-2026). Reenumeración de temporadas aplicada a un JSON grupal por clan (se modifica `doc`):
+ *   1. Suma `delta` a la temporadaInterna de cada semana. temporadaRoyaleAPI y temporadaSupercell no cambian (la reenumeración mueve la Ref y el offset en sentido contrario).
+ *   2. Si dos semanas quedan con la misma temporadaInterna y semana, las junta: los jugadores iguales no se duplican y un valor distinto se conserva como alternativa (nunca se pierde un dato).
+ *   3. Quita las alternativas que ya coinciden con el valor guardado (el conflicto quedó resuelto) y, si no queda ninguna, también la marca `revision: 'pendiente'`.
+ * Devuelve { semanas, fusionadas, conflictos: [...como _jsonGrupalAplicarItems_...], alternativasQuitadas, revisionesCerradas }. No marca el documento con la corrida: eso lo hace quien lo guarda.
+ */
+function _jsonGrupalReenumerarDoc_(doc, delta, ahora) {
+  var res = { semanas: 0, fusionadas: 0, conflictos: [], alternativasQuitadas: 0, revisionesCerradas: 0 };
+  if (!doc || !Array.isArray(doc.semanas)) return res;
+  var nulo = function (v) { return v === null || v === undefined || v === ''; };
+  var d = Number(delta);
+  if (!isFinite(d)) return res;
+  doc.semanas.forEach(function (w) {
+    if (nulo(w.temporadaInterna) || !isFinite(Number(w.temporadaInterna))) return;
+    w.temporadaInterna = Number(w.temporadaInterna) + d;
+    res.semanas++;
+  });
+  var porClave = {}, quedan = [];
+  doc.semanas.forEach(function (w) {
+    var t = Number(w.temporadaInterna), s = Number(w.semana);
+    if (nulo(w.temporadaInterna) || !isFinite(t) || !isFinite(s)) { quedan.push(w); return; }
+    var base = porClave[t + '|' + s];
+    if (!base) { porClave[t + '|' + s] = w; quedan.push(w); return; }
+    res.fusionadas++;
+    base.jugadores = base.jugadores || [];
+    if (nulo(base.temporadaRoyaleAPI) && !nulo(w.temporadaRoyaleAPI)) base.temporadaRoyaleAPI = w.temporadaRoyaleAPI;
+    if (nulo(base.temporadaSupercell) && !nulo(w.temporadaSupercell)) base.temporadaSupercell = w.temporadaSupercell;
+    (w.jugadores || []).forEach(function (j) {
+      var dest = null;
+      for (var k = 0; k < base.jugadores.length; k++) { if (String(base.jugadores[k].tag).toUpperCase() === String(j.tag).toUpperCase()) { dest = base.jugadores[k]; break; } }
+      if (!dest) { base.jugadores.push(j); return; }
+      var guardado = { A: dest.ataques, F: dest.fame, B: dest.barcos };
+      if (_jsonGrupalFusionarJugador_(dest, j, ahora)) {
+        res.conflictos.push({ clan: doc.clan, tag: dest.tag, nombre: dest.nombre || j.nombre || '', temporada: t, semana: s,
+          guardado: guardado, nuevo: { A: j.ataques, F: j.fame, B: j.barcos } });
+      }
+    });
+  });
+  doc.semanas = quedan;
+  doc.semanas.forEach(function (w) {
+    (w.jugadores || []).forEach(function (j) {
+      if (!Array.isArray(j.alternativas)) return;
+      var antes = j.alternativas.length;
+      j.alternativas = j.alternativas.filter(function (a) { return !_jsonGrupalAlternativaIgual_(j, a); });
+      res.alternativasQuitadas += antes - j.alternativas.length;
+      if (!j.alternativas.length) {
+        delete j.alternativas;
+        if (j.revision === 'pendiente') { delete j.revision; res.revisionesCerradas++; }
+      }
+    });
+  });
+  _jsonGrupalOrdenar_(doc);
+  return res;
+}
+
 /** Texto de la entrada de Revision_Guerra.csv para un conflicto del JSON grupal. */
 function _entradaRevisionJsonGrupal_(c, ahora) {
   var t = function (v) { return v === null || v === undefined ? 'sin dato' : v; };

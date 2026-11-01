@@ -64,7 +64,9 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   // PF286 (28-oct-2026): los ids de evento L_TT_S_SS_N_NN llevan la temporada y la suma del delta solo toca la columna Temporada. Se rehacen DESPUÉS de todos los pasos anteriores, con las listas ya reenumeradas. Al FINAL para no mover índices.
   function () { _migrarIdsEventoPaso_(); },
   // PF286b (29-oct-2026): DESPUÉS de los ids (sirven de llave): T_Asistencia y S_Asistencia toman Temporada y Fecha de su torneo o sorteo.
-  function () { _alinearAsistencias_(true); }
+  function () { _alinearAsistencias_(true); },
+  // PF322 (1-nov-2026): JSON grupales por clan (JSON/RoyaleAPI/Grupal, PF321). Al FINAL para no mover los índices de los pasos anteriores; no depende de la Ref ni del offset (solo suma el delta a temporadaInterna), y mientras dura la reenumeración los endpoints están bloqueados.
+  function () { return _reenumerarJsonGrupal_(); }
 ];
 
 // PF269 (25-oct-2026): qué hace cada paso y qué se espera al terminarlo; _ejecutarPorTandas lo imprime («Ejecutando paso N/M: …»). MISMO ORDEN que PASOS_REENUMERAR_TEMPORADAS (si se añade un paso, añadir su texto al final).
@@ -100,7 +102,8 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
   'Nombres de informes históricos con T<n>S<m> o T<n>_PI<m> (CSV/Informes y CSV/Tampermonkey): suma el delta al número de temporada del nombre → nombres con la numeración nueva',
   'Temporada de T_Lista, S_Lista y CR_Lista recalculada por fecha (y ficha de Semanas si repetía el valor equivocado) y sus respaldos → filas que ya venían desfasadas quedan con la temporada de su fecha',
   'Ids de evento de T_Lista, S_Lista y CR_Lista: rehace cada id con la temporada de su fila y reescribe las citas en T_Asistencia, S_Asistencia, T_Resoluciones y Extra, y sus respaldos → ids con la numeración nueva en todas las hojas',
-  'Temporada y Fecha de T_Asistencia y S_Asistencia tomadas de su torneo o sorteo (el id es la llave) y sus respaldos → asistencias coherentes con sus listas'
+  'Temporada y Fecha de T_Asistencia y S_Asistencia tomadas de su torneo o sorteo (el id es la llave) y sus respaldos → asistencias coherentes con sus listas',
+  'HistorialGuerra, JSON grupales por clan (Drive): suma el delta a la temporada interna de cada semana, junta las semanas repetidas y quita las alternativas ya resueltas → todos los JSON grupales con la numeración nueva'
 ];
 
 // PF286b (29-oct-2026): propiedad de script donde se guarda la semana forzada de un id de evento (tema 2.5, forzarSemanaIdEvento).
@@ -1181,6 +1184,66 @@ function _reenumerarHistorialGuerraGrupalCSV() {
   } finally {
     lock.releaseLock();
   }
+}
+
+// _reenumerarJsonGrupal_(): PF322 (1-nov-2026); suma REENUM_DELTA_MESES a la temporadaInterna de cada semana de los JSON grupales por clan («Grupal - <clan>.json», carpeta JSON/RoyaleAPI/Grupal, PF321). temporadaRoyaleAPI y temporadaSupercell no cambian.
+// Si dos semanas quedan con la misma temporada interna y semana las junta, y quita las alternativas que ya coinciden con el valor guardado (conflicto resuelto). Reanudable y sin sumar dos veces: cada archivo ya hecho lleva reenumeracionId = REENUM_RUN_ID y se salta.
+// Un valor distinto que aparezca al juntar se conserva como alternativa y va a Revision_Guerra.csv (Pendiente). Devuelve false si queda incompleto. Sin probar en Apps Script real.
+function _reenumerarJsonGrupal_() {
+  var props = PropertiesService.getScriptProperties();
+  var deltaMeses = Number(props.getProperty('REENUM_DELTA_MESES'));
+  var runId = props.getProperty('REENUM_RUN_ID') ||
+    (props.getProperty('REENUM_NUEVA_REF') + '|' + props.getProperty('REENUM_OFFSET_VIEJO') + '|' + deltaMeses);
+  var nombrePaso = 'JSON grupal por clan';
+
+  var folder;
+  try { folder = _getHistorialGuerraGrupalJsonFolder_(); }
+  catch (e) { Logger.log('[Reenumeración] ' + nombrePaso + ': carpeta no accesible (' + e.message + '), se omite.'); return true; }
+
+  var archivos = [];
+  var it = folder.getFiles();
+  while (it.hasNext()) {
+    var f = it.next();
+    if (/^Grupal - .+\.json$/i.test(f.getName())) archivos.push(f);
+  }
+  archivos.sort(function (a, b) { return a.getName() < b.getName() ? -1 : (a.getName() > b.getName() ? 1 : 0); });
+  if (!archivos.length) { Logger.log('[Reenumeración] ' + nombrePaso + ': no hay JSON grupales todavía, se omite.'); return true; }
+
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[Reenumeración] ' + nombrePaso + ': no se obtuvo el lock; se reintenta en la próxima continuación.'); return false; }
+  var ahora = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
+  var inicio = Date.now(), cambiados = 0, yaHechos = 0, omitidos = 0, fusionadas = 0, quitadas = 0, cerradas = 0, conflictos = [], incompleto = false;
+  try {
+    for (var i = 0; i < archivos.length; i++) {
+      var archivo = archivos[i];
+      try {
+        var doc = JSON.parse(archivo.getBlob().getDataAsString('UTF-8'));
+        if (!doc || !Array.isArray(doc.semanas)) { omitidos++; }
+        else if (doc.reenumeracionId === runId) { yaHechos++; }
+        else {
+          var r = _jsonGrupalReenumerarDoc_(doc, deltaMeses, ahora);
+          doc.reenumeracionId = runId;
+          _setContentConConteo_(archivo, JSON.stringify(doc, null, 2));
+          cambiados++; fusionadas += r.fusionadas; quitadas += r.alternativasQuitadas; cerradas += r.revisionesCerradas;
+          conflictos = conflictos.concat(r.conflictos);
+        }
+      } catch (eArch) {
+        Logger.log('[Reenumeración] ' + nombrePaso + ': AVISO: no se pudo procesar «' + archivo.getName() + '» (' + eArch.message + '); queda sin reenumerar.');
+        omitidos++;
+      }
+      if ((i + 1) < archivos.length && _reenumSinTiempo_(inicio)) { incompleto = true; break; }
+    }
+  } finally {
+    lock.releaseLock();
+  }
+  if (conflictos.length) {
+    try { _registrarRevisionGuerra_(conflictos.map(function (c) { return _entradaRevisionJsonGrupal_(c, ahora); })); }
+    catch (eRev) { Logger.log('[Reenumeración] ' + nombrePaso + ': AVISO: no se pudo escribir Revision_Guerra.csv (' + (eRev.message || eRev) + '); los conflictos quedan en los JSON (revision: pendiente).'); }
+  }
+  _reenumProgreso_(nombrePaso, yaHechos, cambiados, archivos.length, 'archivos');
+  Logger.log('[Reenumeración] ' + nombrePaso + ': ' + (incompleto ? 'presupuesto agotado, se reintenta en la próxima continuación. ' : '') + 'cambiados en esta pasada: ' + cambiados + ', ya hechos: ' + yaHechos + ', omitidos: ' + omitidos +
+    '; semanas repetidas juntadas: ' + fusionadas + '; alternativas resueltas quitadas: ' + quitadas + ' (revisiones cerradas: ' + cerradas + '); valores distintos enviados a revisión: ' + conflictos.length + ' (temporadaInterna += ' + deltaMeses + ').');
+  return !incompleto;
 }
 
 // _reenumerarInformesCSV(): PF258; recorre los .csv de CSV/Informes y CSV/Tampermonkey (menos los de _nombreInformeExcluidoReenum_) y les suma REENUM_DELTA_MESES a «Temporada».
