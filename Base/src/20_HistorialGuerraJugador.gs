@@ -837,6 +837,17 @@ function _jsonGrupalReenumerarDoc_(doc, delta, ahora) {
     w.temporadaInterna = Number(w.temporadaInterna) + d;
     res.semanas++;
   });
+  return _jsonGrupalJuntarSemanas_(doc, res, ahora);
+}
+
+/**
+ * _jsonGrupalJuntarSemanas_(doc, res, ahora) [→ Contexto_Base_Web.md §PF323]
+ * Función pura. Segunda y tercera parte de la reenumeración de un JSON grupal, separadas el 1-nov-2026 para que las use también _jsonGrupalAlinearDoc_():
+ * junta las semanas que quedaron con la misma temporadaInterna y semana (el valor distinto se conserva como alternativa), quita las alternativas que ya coinciden con el valor guardado y ordena.
+ * Se modifica `doc` y se completa `res` (fusionadas, conflictos, alternativasQuitadas, revisionesCerradas); lo devuelve.
+ */
+function _jsonGrupalJuntarSemanas_(doc, res, ahora) {
+  var nulo = function (v) { return v === null || v === undefined || v === ''; };
   var porClave = {}, quedan = [];
   doc.semanas.forEach(function (w) {
     var t = Number(w.temporadaInterna), s = Number(w.semana);
@@ -873,6 +884,100 @@ function _jsonGrupalReenumerarDoc_(doc, delta, ahora) {
   });
   _jsonGrupalOrdenar_(doc);
   return res;
+}
+
+/**
+ * _jsonGrupalAlinearDoc_(doc, offset, ahora) [→ Contexto_Base_Web.md §PF323]
+ * Función pura (§PF323, 1-nov-2026). Deja un JSON grupal por clan en la numeración vigente SIN depender de cuántos meses se corrió la referencia: a cada semana con temporadaRoyaleAPI le pone
+ * temporadaInterna = temporadaRoyaleAPI - offset (el mismo mapeo de _cgwTemporadaRoyaleApiTexto_(); la temporada de RoyaleAPI no cambia con la reenumeración). Es idempotente: con los datos ya al día no cambia nada.
+ * Una semana sin temporadaRoyaleAPI no se toca (se cuenta en `sinReferencia`). Si dos semanas quedan iguales, las junta como _jsonGrupalReenumerarDoc_() (un valor distinto se conserva como alternativa).
+ * Devuelve { semanas (cambiadas), sinReferencia, fusionadas, conflictos, alternativasQuitadas, revisionesCerradas }. No marca el documento con la corrida: eso lo hace quien lo guarda.
+ */
+function _jsonGrupalAlinearDoc_(doc, offset, ahora) {
+  var res = { semanas: 0, sinReferencia: 0, fusionadas: 0, conflictos: [], alternativasQuitadas: 0, revisionesCerradas: 0 };
+  if (!doc || !Array.isArray(doc.semanas)) return res;
+  var nulo = function (v) { return v === null || v === undefined || v === ''; };
+  var off = Number(offset);
+  if (!isFinite(off)) return res;
+  var alDia = [], movidas = [];
+  doc.semanas.forEach(function (w) {
+    if (nulo(w.temporadaRoyaleAPI) || !isFinite(Number(w.temporadaRoyaleAPI))) { res.sinReferencia++; alDia.push(w); return; }
+    var objetivo = Number(w.temporadaRoyaleAPI) - off;
+    if (nulo(w.temporadaInterna) || Number(w.temporadaInterna) !== objetivo) { w.temporadaInterna = objetivo; res.semanas++; movidas.push(w); }
+    else alDia.push(w);
+  });
+  doc.semanas = alDia.concat(movidas); // al juntar gana la semana que YA estaba en la numeración vigente; la otra aporta lo que falta o queda como alternativa
+  var antes = JSON.stringify(doc);
+  var r = _jsonGrupalJuntarSemanas_(doc, res, ahora);
+  r.cambioDoc = res.semanas > 0 || r.fusionadas > 0 || r.alternativasQuitadas > 0 || JSON.stringify(doc) !== antes;
+  return r;
+}
+
+/**
+ * _historialGuerraGrupalAlinearFilas_(filas, offset) [→ Contexto_Base_Web.md §PF323]
+ * Función pura (§PF323, 1-nov-2026). Lo mismo que _jsonGrupalAlinearDoc_() para las filas de HistorialGuerra_Grupal.csv (fila 0 = encabezados): a cada fila con TemporadaRoyaleAPI le pone
+ * TemporadaInterna = TemporadaRoyaleAPI - offset; una fila sin TemporadaRoyaleAPI no se toca (`sinReferencia`). Idempotente.
+ * Si dos filas quedan con la misma clave (tag, temporada interna, semana y clan), las junta en una: gana la que YA estaba en la numeración vigente y, si ambas estaban o ninguna, la de fuente de mayor prioridad;
+ * a la ganadora se le rellenan los datos vacíos con los de la otra. Un valor distinto no se pierde en silencio: va en `conflictos` para mandarlo a Revision_Guerra.csv.
+ * Devuelve { filas (tabla nueva, la original no se modifica), cambiadas, sinReferencia, fusionadas, conflictos: [{ tag, nombre, clan, temporada, semana, guardado: {A,F,B}, descartado: {A,F,B} }] }.
+ */
+function _historialGuerraGrupalAlinearFilas_(filas, offset) {
+  var res = { filas: filas, cambiadas: 0, sinReferencia: 0, fusionadas: 0, conflictos: [] };
+  var off = Number(offset);
+  if (!filas || filas.length < 2 || !isFinite(off)) return res;
+  var ncol = HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS.length;
+  var vacio = function (v) { return v === null || v === undefined || String(v).trim() === ''; };
+  var salida = [filas[0]], porClave = {};
+  for (var i = 1; i < filas.length; i++) {
+    var f = filas[i].slice();
+    while (f.length < ncol) f.push('');
+    var yaEstaba = true;
+    if (vacio(f[3]) || !isFinite(Number(f[3]))) {
+      res.sinReferencia++;
+    } else {
+      var objetivo = Number(f[3]) - off;
+      if (String(f[2]).trim() !== String(objetivo)) { f[2] = objetivo; res.cambiadas++; yaEstaba = false; }
+    }
+    if (vacio(f[0])) { salida.push(f); continue; }
+    var clave = [String(f[0]).trim().toUpperCase(), String(f[2]).trim(), String(f[4]).trim(), _claveClanHistorialGuerra(f[5])].join('|');
+    var previo = porClave[clave];
+    if (!previo) { porClave[clave] = { fila: f, yaEstaba: yaEstaba, pos: salida.length }; salida.push(f); continue; }
+    res.fusionadas++;
+    var cand = { fila: f, yaEstaba: yaEstaba };
+    var candGana = (cand.yaEstaba && !previo.yaEstaba) ||
+      (cand.yaEstaba === previo.yaEstaba && _prioridadFuenteHistorialGuerra(f[9]) > _prioridadFuenteHistorialGuerra(previo.fila[9]));
+    var gana = candGana ? cand : previo, pierde = candGana ? previo : cand;
+    var fg = gana.fila.slice(), fp = pierde.fila;
+    [[6, 'A'], [7, 'F'], [8, 'B']].forEach(function (c) {
+      if (vacio(fp[c[0]])) return;
+      if (vacio(fg[c[0]])) fg[c[0]] = fp[c[0]];
+    });
+    if (vacio(fg[1]) && !vacio(fp[1])) fg[1] = fp[1];
+    if (vacio(fg[12]) && !vacio(fp[12])) fg[12] = fp[12];
+    if (String(fp[11]) === 'true') fg[11] = 'true';
+    var distintos = [6, 7, 8].some(function (c) { return !vacio(fp[c]) && !vacio(gana.fila[c]) && Number(fp[c]) !== Number(gana.fila[c]); });
+    if (distintos) {
+      res.conflictos.push({ tag: String(fg[0]).trim(), nombre: String(fg[1] || ''), clan: String(fg[5] || ''), temporada: fg[2], semana: fg[4],
+        guardado: { A: gana.fila[6], F: gana.fila[7], B: gana.fila[8] }, descartado: { A: fp[6], F: fp[7], B: fp[8] } });
+    }
+    salida[previo.pos] = fg;
+    porClave[clave] = { fila: fg, yaEstaba: gana.yaEstaba, pos: previo.pos };
+  }
+  res.filas = salida;
+  return res;
+}
+
+/** Texto de la entrada de Revision_Guerra.csv para un conflicto al alinear HistorialGuerra_Grupal.csv (§PF323). */
+function _entradaRevisionCsvGrupal_(c, ahora) {
+  var t = function (v) { return (v === null || v === undefined || String(v).trim() === '') ? 'sin dato' : v; };
+  return {
+    temporada: c.temporada, semana: c.semana, tag: c.tag, nombre: c.nombre,
+    tipo: CGW_CONTRADICCION_TIPO,
+    motivo: 'CSV grupal (' + c.clan + '): al alinear la numeración, dos filas de la misma semana traían valores distintos',
+    detalle: 'Se conservó: ataques ' + t(c.guardado.A) + ', fame ' + t(c.guardado.F) + ', barcos ' + t(c.guardado.B) + '. Se descartó (' + ahora + '): ataques ' + t(c.descartado.A) + ', fame ' + t(c.descartado.F) + ', barcos ' + t(c.descartado.B) +
+      '. Decidir cuál vale.',
+    estado: 'Pendiente'
+  };
 }
 
 /** Texto de la entrada de Revision_Guerra.csv para un conflicto del JSON grupal. */
