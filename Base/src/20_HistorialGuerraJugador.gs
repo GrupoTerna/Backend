@@ -203,6 +203,29 @@ function limpiarDuplicadosHistorialGuerraIndividualSimular() { return limpiarDup
 
 function limpiarDuplicadosHistorialGuerraIndividualAplicar() { return limpiarDuplicadosHistorialGuerraIndividual(true); }
 
+// ----- Llenado inicial del JSON grupal por clan desde los JSON individuales (§PF321) -----
+
+/**
+ * Lee los JSON individuales de RoyaleAPI (carpeta Individual) y agrega al JSON grupal de cada clan lo que trae su Log cerrado, con la temporada Supercell. Se puede correr las veces que haga
+ * falta: lo que ya estaba no se duplica y un valor distinto queda como alternativa y va a Revision_Guerra.csv. Si no alcanza en una tanda, se programa sola.
+ */
+function reconstruirJsonGrupalDesdeIndividuales() { _hgReconstruirJsonGrupal_(false); }
+
+/** Punto de entrada del disparador de continuación de reconstruirJsonGrupalDesdeIndividuales() (no se corre a mano). */
+function _continuarReconstruirJsonGrupalDesdeIndividuales() { _hgReconstruirJsonGrupal_(true); }
+
+/** Borra el avance del llenado y su continuación pendiente. No borra ningún archivo de Drive: la próxima corrida recorre los JSON individuales desde el primero, sin duplicar lo ya agregado. */
+function reconstruirJsonGrupalReiniciar() {
+  PropertiesService.getScriptProperties().deleteProperty(HG_JSON_GRUPAL_ESTADO_PROP);
+  _borrarTriggersDeContinuacion('_continuarReconstruirJsonGrupalDesdeIndividuales');
+  try {
+    var raw = PropertiesService.getScriptProperties().getProperty('EJECUCION_EN_CURSO');
+    var info = raw ? JSON.parse(raw) : null;
+    if (info && String(info.fn) === 'reconstruirJsonGrupalDesdeIndividuales') _liberarLockEjecucion();
+  } catch (e) { /* propiedad corrupta: se deja como está */ }
+  Logger.log('[JSON grupal] Avance borrado. La próxima corrida empieza desde el primer JSON individual.');
+}
+
 // =============================================================================
 // PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
 // =============================================================================
@@ -815,6 +838,102 @@ function _actualizarJsonGrupalClanesLote(items) {
     catch (eRev) { Logger.log('[HistorialGuerra][JSON grupal] AVISO: no se pudo escribir Revision_Guerra.csv (' + (eRev.message || eRev) + '); los conflictos quedan en el JSON (revision: pendiente).'); }
   }
   return res;
+}
+
+var HG_JSON_GRUPAL_ESTADO_PROP = 'HG_JSON_GRUPAL_ESTADO';           // propiedad del script con el avance del llenado (JSON)
+var HG_JSON_GRUPAL_PRESUPUESTO_MS = 3 * 60 * 1000 + 30 * 1000;      // tanda: pasado este tiempo no se empieza otro lote (la plataforma corta a los 6 min)
+var HG_JSON_GRUPAL_LOTE = 60;                                       // JSON individuales por cada escritura de los JSON grupales
+
+/** Tag -> nombre, leído de HistorialGuerra_Grupal.csv (los JSON individuales no traen el nombre). {} si no se puede leer. */
+function _hgNombresPorTag_() {
+  var mapa = {};
+  try {
+    var texto = _loadHistorialGuerraGrupalCSV();
+    var filas = texto ? _parseCSV(texto) : [];
+    for (var i = 1; i < filas.length; i++) {
+      var tag = String(filas[i][0] || '').trim().toUpperCase(), nombre = String(filas[i][1] || '').trim();
+      if (tag && nombre) mapa[tag] = nombre;
+    }
+  } catch (e) { Logger.log('[JSON grupal] AVISO: no se pudieron leer los nombres de HistorialGuerra_Grupal.csv (' + (e.message || e) + '); los jugadores quedan sin nombre hasta la próxima consulta.'); }
+  return mapa;
+}
+
+/** Función pura. Los registros del Log cerrado de un JSON individual, como items del JSON grupal: [{ tag, nombre, registro }]. */
+function _hgItemsLogDeIndividual_(datos, tagDeNombre, nombres) {
+  var tag = String((datos && datos.tag) || tagDeNombre || '').trim().toUpperCase();
+  if (!tag) return [];
+  return ((datos && datos.registros) || []).filter(function (r) { return r && String(r.fuente || '').toLowerCase() === 'log' && r.cerrada === true; })
+    .map(function (r) { return { tag: tag, nombre: (nombres && nombres[tag]) || '', registro: r }; });
+}
+
+function _hgReconstruirJsonGrupal_(esContinuacion) {
+  var nombreFn = 'reconstruirJsonGrupalDesdeIndividuales', handler = '_continuarReconstruirJsonGrupalDesdeIndividuales';
+  var props = PropertiesService.getScriptProperties();
+  if (esContinuacion) {
+    if (_reenumeracionEnCurso_() || (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida)) {
+      _borrarTriggersDeContinuacion(handler);
+      _liberarLockEjecucion();
+      Logger.log('[JSON grupal] Pausado: hay una reenumeración en curso o la ventana de guerra protegida está activa. El avance queda guardado: vuelve a correr ' + nombreFn + '() después.');
+      return;
+    }
+  } else if (!_adquirirLockEjecucion(nombreFn)) {
+    return;
+  }
+  var t0 = Date.now(), st = null;
+  try { st = JSON.parse(props.getProperty(HG_JSON_GRUPAL_ESTADO_PROP) || 'null'); } catch (eSt) { st = null; }
+  var guardar = function () { props.setProperty(HG_JSON_GRUPAL_ESTADO_PROP, JSON.stringify(st)); };
+  try {
+    if (!st) { st = { ultimo: '', tandas: 0, leidos: 0, conError: 0, cambios: 0, conflictos: 0 }; Logger.log('=== JSON grupal por clan desde los JSON individuales: INICIO ==='); }
+    else Logger.log('=== JSON grupal por clan desde los JSON individuales: CONTINÚA (tanda ' + (st.tandas + 1) + ') ===');
+    st.tandas++;
+
+    var reTag = /-\s(#[0-9A-Z]+)\.json$/i, lista = [], it = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL).getFiles();
+    while (it.hasNext()) { var f = it.next(), m = reTag.exec(f.getName()); if (m) lista.push({ file: f, nombre: f.getName(), tag: m[1].toUpperCase() }); }
+    lista.sort(function (a, b) { return a.nombre < b.nombre ? -1 : (a.nombre > b.nombre ? 1 : 0); });
+    var pendientes = lista.filter(function (x) { return x.nombre > st.ultimo; });
+    var previas = lista.length - pendientes.length, nombres = _hgNombresPorTag_();
+    var items = [], enLote = 0, ultimoLote = st.ultimo, estaTanda = 0, incompleto = false, sinLock = false;
+
+    var cerrarLote = function () {
+      if (!enLote) return true;
+      var r = _actualizarJsonGrupalClanesLote(items);
+      if (r.sinLock) { sinLock = true; return false; }
+      st.cambios += r.cambios; st.conflictos += r.conflictos; st.ultimo = ultimoLote; st.leidos += enLote; estaTanda += enLote;
+      guardar();
+      items = []; enLote = 0;
+      return true;
+    };
+
+    for (var i = 0; i < pendientes.length; i++) {
+      if (Date.now() - t0 > HG_JSON_GRUPAL_PRESUPUESTO_MS) { incompleto = true; break; }
+      var p = pendientes[i];
+      try { items = items.concat(_hgItemsLogDeIndividual_(JSON.parse(p.file.getBlob().getDataAsString('UTF-8')), p.tag, nombres)); }
+      catch (eLeer) { st.conError++; Logger.log('[JSON grupal] AVISO: no se pudo leer «' + p.nombre + '» (' + (eLeer.message || eLeer) + '); se sigue con el siguiente.'); }
+      ultimoLote = p.nombre; enLote++;
+      if (enLote >= HG_JSON_GRUPAL_LOTE && !cerrarLote()) { incompleto = true; break; }
+    }
+    if (!incompleto && !cerrarLote()) incompleto = true;
+
+    if (incompleto) {
+      guardar();
+      _refrescarLockEjecucion(nombreFn);
+      _programarContinuacion(handler);
+      _logProgresoPaso_('JSON grupal', 'JSON individuales leídos', previas, estaTanda, lista.length, 'archivos');
+      Logger.log('[JSON grupal] ' + (sinLock ? 'No se pudo tomar el lock para escribir los JSON grupales; se reintenta en la tanda siguiente.' : 'Presupuesto de la tanda agotado.') + ' Avance guardado; continuación programada en 10 s.');
+      return;
+    }
+    Logger.log('[JSON grupal] FIN (' + st.tandas + ' tanda(s)). JSON individuales leídos: ' + st.leidos + (st.conError ? ' (' + st.conError + ' con error de lectura)' : '') +
+      '. Registros nuevos o cambiados en los JSON grupales: ' + st.cambios + '. Valores distintos enviados a revisión manual (Revision_Guerra.csv): ' + st.conflictos + '.');
+    props.deleteProperty(HG_JSON_GRUPAL_ESTADO_PROP);
+    _borrarTriggersDeContinuacion(handler);
+    _liberarLockEjecucion();
+  } catch (e) {
+    if (st) guardar();
+    _borrarTriggersDeContinuacion(handler);
+    _liberarLockEjecucion();
+    Logger.log('[JSON grupal] ERROR: ' + e.message + '. El avance quedó guardado hasta el último lote escrito; vuelve a correr ' + nombreFn + '() para seguir.');
+    throw e;
+  }
 }
 
 // ----- Comparar y reemplazar registros (lo usan el individual y el grupal) -----
