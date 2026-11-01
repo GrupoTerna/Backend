@@ -696,7 +696,8 @@ function _vcrrPaso2_(st, t0) {
       var menores = hs.filter(function (h) { return h[6] === 'csv_menor' || h[6] === 'fila_faltante'; });
       if (menores.length && (st.cont.revision || 0) + revision.length < VCRR_MAX_REVISION) {
         revision.push({ temporada: x.temporada, semana: x.semana, tag: x.tag, nombre: x.nombre, tipo: 'alarma',
-          motivo: 'Backup_Guerra.csv tiene menos que CurrentRiverRace (o falta el día)', detalle: x.clan + ': ' + menores.slice(0, 4).map(function (h) { return h[5] + ' ' + h[7] + ' ' + h[6] + ' (CSV ' + h[8] + ', mínimo ' + h[9] + ')'; }).join('; ') });
+          motivo: 'Backup_Guerra.csv tiene menos que CurrentRiverRace (o falta el día)', detalle: x.clan + ': ' + menores.slice(0, 4).map(function (h) { return h[5] + ' ' + h[7] + ' ' + h[6] + ' (CSV ' + h[8] + ', mínimo ' + h[9] + ')'; }).join('; '),
+          estado: 'Pendiente' }); // §PF316: igual que las contradicciones de §PF313, para poder filtrar lo que espera revisión
       }
     });
     st.idx++; hechas++;
