@@ -2590,12 +2590,14 @@ function _getParticipacionHoyGuerra(ctx) {
   var porClan = {}; // nombreClan -> { clan, reservadas: [], disponibles: [] }
   // 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp en «Participación de hoy»): Tag -> true si el Directorio tiene el celular de esa cuenta (cualquier Estado, para cubrir también los casos multi-clan). Solo se manda el booleano `tieneWsp`; NUNCA el número. Esta función solo la sirve `_webAdminParticipacionHoyGuerra()`, que exige sesión de admin. [→ Contexto_Base_Web.md §PF171]
   var tieneCelPorTag = {};
+  var activoPorTag = {}; // §PF344: Tag -> true si el Directorio lo tiene como Activo (en cualquier clan)
 
   for (var k = 0; k < dataDir.length; k++) {
     var filaDir = dataDir[k];
     var tagCelDir = cleanTag(filaDir[DC.TAG - 1]);
     if (tagCelDir && soloDigitos(filaDir[DC.CELULAR - 1])) tieneCelPorTag[tagCelDir] = true;
     if (String(filaDir[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
+    if (tagCelDir) activoPorTag[tagCelDir] = true; // §PF344: para no tratar como inactiva a quien hoy es Activo en cualquier clan
     var clanNombreDir = String(filaDir[DC.CLAN - 1] || '');
     if (!clanNombreDir) continue;
     var tagDir = cleanTag(filaDir[DC.TAG - 1]);
@@ -2616,6 +2618,23 @@ function _getParticipacionHoyGuerra(ctx) {
       porClan[clanNombreDir].reservadas.push(infoCuenta);
     } else {
       porClan[clanNombreDir].disponibles.push(infoCuenta);
+    }
+  }
+
+  // 3b) §PF344 (2-nov-2026, pedido de la usuaria): el tope de 50 cuentas por clan y día incluye a quien atacó y salió del clan, así que las cuentas INACTIVAS con al menos
+  // un ataque hoy también se listan en «reservadas», con `inactiva: true` (el frontend las muestra aparte y más tenues). Solo cuenta quien figura como inactivo (hoja Inactivos o
+  // Directorio con otro Estado) y no es Activo en ningún clan: un miembro nuevo que aún no está en el Directorio no se confunde con una inactiva. [→ Contexto_Base_Web.md §PF344]
+  var inactivoPorTag = _leerInactivosParaParticipacion_(ss, dataDir, tieneCelPorTag);
+  for (var tagIn in porTag) {
+    if (activoPorTag[tagIn] || !inactivoPorTag[tagIn]) continue;
+    var infoIn = inactivoPorTag[tagIn];
+    for (var clanIn in porTag[tagIn].clanes) {
+      var ataqIn = Number(porTag[tagIn].clanes[clanIn]) || 0;
+      if (!clanIn || ataqIn <= 0) continue;
+      if (!porClan[clanIn]) porClan[clanIn] = { clan: clanIn, reservadas: [], disponibles: [] };
+      porClan[clanIn].reservadas.push({
+        tag: infoIn.tag, nombre: infoIn.nombre || porTag[tagIn].nombre, ataquesHoy: ataqIn, tieneWsp: !!infoIn.tieneWsp, inactiva: true
+      });
     }
   }
 
@@ -2648,6 +2667,43 @@ function _getParticipacionHoyGuerra(ctx) {
     clanes: Object.keys(porClan).map(function (c) { return porClan[c]; }),
     multiClan: multiClan
   };
+}
+
+/**
+ * _leerInactivosParaParticipacion_(ss, dataDir, tieneCelPorTag)  (§PF344)
+ * Tag (cleanTag) -> { tag, nombre, tieneWsp } de las cuentas inactivas: filas del Directorio con Estado distinto de «Activo» (`dataDir`, ya leído, formato DC) y toda fila de la
+ * hoja Inactivos (formato IC; sin la hoja, Backup_Inactivos.csv, formato DC), igual que _webBuscarJugadores. `tieneCelPorTag` es el del Directorio; la hoja Inactivos aporta el suyo.
+ * Un fallo al leer la hoja no rompe la sección: se devuelve lo que se alcanzó a leer.
+ */
+function _leerInactivosParaParticipacion_(ss, dataDir, tieneCelPorTag) {
+  var mapa = {};
+  for (var i = 0; i < dataDir.length; i++) {
+    var fd = dataDir[i];
+    var tagD = cleanTag(fd[DC.TAG - 1]);
+    if (!tagD || String(fd[DC.ESTADO - 1] || '').trim() === 'Activo') continue;
+    mapa[tagD] = { tag: String(fd[DC.TAG - 1] || ''), nombre: String(fd[DC.NOMBRE - 1] || ''), tieneWsp: !!tieneCelPorTag[tagD] };
+  }
+  try {
+    var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+    var filas, esCsv = false;
+    if (sh && sh.getLastRow() >= 2) {
+      filas = sh.getRange(2, 1, sh.getLastRow() - 1, INACTIVOS_TOTAL_COLS).getValues();
+    } else {
+      var lectura = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.INACTIVOS, 'Backup_Inactivos.csv', DIR_TOTAL_COLS);
+      filas = (lectura.origen === 'csv') ? lectura.filas : [];
+      esCsv = true;
+    }
+    var iTag = (esCsv ? DC.TAG : IC.TAG) - 1, iNombre = (esCsv ? DC.NOMBRE : IC.NOMBRE) - 1, iCel = (esCsv ? DC.CELULAR : IC.CELULAR) - 1;
+    for (var j = 0; j < filas.length; j++) {
+      var tagI = cleanTag(filas[j][iTag]);
+      if (!tagI) continue;
+      var conCel = !!soloDigitos(filas[j][iCel]) || !!tieneCelPorTag[tagI];
+      mapa[tagI] = { tag: String(filas[j][iTag] || ''), nombre: String(filas[j][iNombre] || ''), tieneWsp: conCel };
+    }
+  } catch (e) {
+    Logger.log('[ParticipacionHoy] No se pudo leer la hoja Inactivos: ' + e.message);
+  }
+  return mapa;
 }
 
 /**
