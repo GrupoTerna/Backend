@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 01/11/2026 21:53:28 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 01:37:32 */
 
 
 
@@ -71627,6 +71627,8 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
  *                                     del JSON los valores que estén por debajo. Nunca baja un valor ni toca uno que supere el máximo.
  *   verificarCrrVsBackupReiniciar() -> borra el avance de la corrida en curso (no el registro de JSON verificados).
  *   verificarCrrVsBackupOlvidarVerificados() -> vacía el registro de JSON verificados: la próxima corrida vuelve a leer todos los JSON.
+ *   descartarFilasClanEquivocadoInforme()  -> (§PF339) SOLO INFORMA qué filas de VCRR_FILAS_DESCARTAR se quitarían de Backup_Guerra.csv.
+ *   descartarFilasClanEquivocadoAplicar()  -> (§PF339) QUITA esas filas (clan equivocado, decisión de la usuaria), con respaldo previo y verificación. Es la única función del módulo que borra filas.
  * REGISTRO DE JSON VERIFICADOS (Cruce_CRR_JSON_Verificados.csv): por cada JSON leído guarda clan, semana, día, nombre, fecha de modificación,
  * tamaño, cuándo se verificó y su resultado (ok o el motivo del descarte). La corrida siguiente lista los archivos de cada semana (sin leerlos) y
  * solo vuelve a leer las semanas cuyos JSON cambiaron, son nuevos o faltan, o si cambió VCRR_VERSION_REGLAS: sigue desde donde se quedó.
@@ -71640,6 +71642,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 30-oct-2026): primero las constantes y variables globales; luego, por partes:
 //  Parte 1 — Funciones que se corren a mano
 //    - Verificar CurrentRiverRace contra Backup_Guerra.csv: informe, aplicar, reinicio y olvidar verificados (cada principal seguida de su continuación)
+//    - Descartar filas de un clan equivocado en Backup_Guerra.csv: informe y aplicar (§PF339; se corren ANTES de verificarCrrVsBackupAplicar)
 //  Parte 2 — Funciones que no se corren a mano
 //    - Verificar CRR: motor por tandas (estado, presupuesto y continuación)
 //    - Verificar CRR, paso 1: totales cerrados de RoyaleAPI por jugador (§PF320)
@@ -71648,6 +71651,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
 //    - Verificar CRR, registro de JSON verificados (listar, comparar, leer y guardar)
 //    - Verificar CRR, paso 3: comparar contra el CSV y registrar hallazgos
 //    - Verificar CRR, paso 4: escribir en el CSV (solo Aplicar)
+//    - Descartar filas de un clan equivocado (motor, plan, hoja Guerra y verificación)
 //    - Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas.
 
@@ -71660,7 +71664,7 @@ var VCRR_ESTADO_PROP = 'VCRR_ESTADO';                  // propiedad del script c
 var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo «Cruce_» lo manda a CSV/Informes (_csvSubcarpetaDe_)
 var VCRR_ARCHIVO_RAPI = 'Cruce_CRR_RoyaleAPI.csv';                // caché de los totales cerrados de RoyaleAPI (log y perfil) leídos de sus JSON individuales (§PF320)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
-var VCRR_VERSION_REGLAS = 8;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_, el cruce con RoyaleAPI (§PF320, 5), la lista VCRR_SERIES_CONFIRMADAS (§PF331, 6; §PF332, 7) o qué capturas se descartan (§PF333, 8): invalida el registro y se releen todos los JSON
+var VCRR_VERSION_REGLAS = 9;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_, el cruce con RoyaleAPI (§PF320, 5), la lista VCRR_SERIES_CONFIRMADAS (§PF331, 6; §PF332, 7; §PF339, 9) o qué capturas se descartan (§PF333, 8): invalida el registro y se releen todos los JSON
 var VCRR_CLAN_VETADO_KEY = 'naranja x';                 // §PF335: clave (en minúsculas) del clan vetado (CFG.VETADO_TAG) en _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_; sus JSON viejos no se listan ni se leen mientras CFG.VETADO_API_ACTIVO sea false
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
@@ -71686,8 +71690,44 @@ var VCRR_SERIES_CONFIRMADAS = [
   { temporada: 22, semana: 1, tag: '#22C090RVJ', clanKey: 'grupoxterna\u21222', nombre: 'MC-->WiLL', A: [0, 4, 7, 11], F: [0, 700, 1000, 1700], B: 0,
     nota: 'la usuaria comprobó en el perfil de RoyaleAPI (133-1) 11 ataques y 1700 medallas; ya no hay logs diarios, así que aceptó la distribución de Backup_Guerra.csv: ataques 0, 4, 3 y 4; medallas 0, 700, 300 y 700 (estimada, no verificable)' },
   { temporada: 22, semana: 5, tag: '#80QCQ9R9Y', clanKey: 'grupoxterna\u21223', nombre: 'JEQ', A: [4, 8, 12, 16], F: [500, 1100, 1700, 2300], B: 0,
-    nota: 'la usuaria vio el registro 133-5 (2026-07-06) con 16 ataques y 2300 medallas, que coincide con 4 ataques por día y fame diaria de 500, 600, 600 y 600' }
+    nota: 'la usuaria vio el registro 133-5 (2026-07-06) con 16 ataques y 2300 medallas, que coincide con 4 ataques por día y fame diaria de 500, 600, 600 y 600' },
+  // §PF339 (2-nov-2026): series en CEROS de un clan que la usuaria DESCARTÓ (§PF337) y cuyo JSON sí trae actividad. Sin ellas, «Aplicar» volvería a crear las filas que descartarFilasClanEquivocadoAplicar() quita.
+  { temporada: 22, semana: 3, tag: '#2C982888C', clanKey: 'grupo乂terna™', nombre: 'M.SEBAS', A: [0, 0, 0, 0], F: [0, 0, 0, 0], B: 0,
+    nota: 'decisión de la usuaria (§PF337): en T22 S3 se conserva ™2 (RoyaleAPI: 8 ataques y 1400 medallas) y se descarta Terna, aunque el JSON de Terna traiga capturas' },
+  { temporada: 23, semana: 2, tag: '#LRQ8YJRCU', clanKey: 'grupoxterna™2', nombre: 'PEDRI', A: [0, 0, 0, 0], F: [0, 0, 0, 0], B: 0,
+    nota: 'decisión de la usuaria (§PF337): en T23 S2 se conserva ™3 (RoyaleAPI: 8 ataques y 1000 medallas) y se descarta ™2, cuyo JSON solo trae una captura del sábado' }
 ];
+
+// Filas de Backup_Guerra.csv que se DESCARTAN por ser de un clan equivocado (§PF339; 2-nov-2026, pedido de la usuaria: «los casos similares a los cuatro de §PF337 deben eliminar las filas
+// con datos erróneos del csv, debe ser una función nueva»). «Aplicar» nunca baja ni mueve filas, así que estas no se quitan solas: las quita descartarFilasClanEquivocadoAplicar().
+// Cada entrada: temporada, semana, tag, clanKey (la clave de _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_, en minúsculas), nombre (solo para leer la lista), dias (letras J, V, S y D de
+// los días de guerra cuya fila se quita), valores [AtaquesHoy, AtaquesSemana, Fame] que debe tener esa fila (si cambió desde la decisión, NO se quita), conserva (clan donde sí quedan los ataques) y
+// nota (de dónde sale la decisión). Si cambias o agregas una entrada, no hace falta subir VCRR_VERSION_REGLAS: esta lista no entra en el cálculo de los rangos.
+// Orden de uso: (1) descartarFilasClanEquivocadoInforme() para ver qué quitaría; (2) descartarFilasClanEquivocadoAplicar(); (3) verificarCrrVsBackupAplicar(), que vuelve a crear con el piso del JSON
+// la fila correcta del clan que se conserva (y la del mismo día en el clan descartado, con los valores del JSON, cuando el JSON de ese clan trae acumulado ese día).
+var VCRR_FILAS_DESCARTAR = [
+  // --- Las cuatro decisiones de la usuaria de §PF337 (PEDRI T23 S2 no tiene filas de ™2 en el CSV: solo se bloquea con la serie en ceros de arriba) ---
+  { temporada: 22, semana: 3, tag: '#2C982888C', clanKey: 'grupo乂terna™', nombre: 'M.SEBAS', dias: 'D', valores: [4, 8, 1400], conserva: 'GrupoXTerna™2',
+    nota: '§PF337: el 8 y el 1400 del domingo de Terna son el acumulado de ™2' },
+  { temporada: 22, semana: 3, tag: '#QRQULCCV8', clanKey: 'grupo乂terna™', nombre: 'Maikel', dias: 'D', valores: [4, 16, 3200], conserva: 'GrupoXTerna™2',
+    nota: '§PF337: ™2 ya tiene 16 ataques y 2800 medallas día por día, como RoyaleAPI; la fila de Terna (3200) no coincide con nada' },
+  { temporada: 22, semana: 3, tag: '#U8G029GUQ', clanKey: 'grupoxterna™2', nombre: 'Reyper', dias: 'D', valores: [0, 4, 600], conserva: 'GrupoXTerna™3',
+    nota: '§PF337: en RoyaleAPI solo llega a 400 medallas y la fila de ™2 indica 600' },
+  { temporada: 22, semana: 3, tag: '#U8G029GUQ', clanKey: 'mini乂ternas™', nombre: 'Reyper', dias: 'D', valores: [4, 4, 400], conserva: 'GrupoXTerna™3',
+    nota: '§PF337: el domingo exacto de ™3 en el JSON es 4 / 4 / 400, igual que esta fila de Mini (clan equivocado); las filas en cero de Mini de jueves a sábado no se tocan' },
+  // --- Casos similares, con el total por clan del Log de RoyaleAPI (Tampermonkey v3.18, corrida del 2-nov-2026) y el tope de 4 ataques por día ---
+  { temporada: 24, semana: 2, tag: '#JVVG9YUG0', clanKey: 'grupo乂terna™', nombre: 'Fiorela', dias: 'S', valores: [4, 4, 400], conserva: 'GrupoXTerna™2',
+    nota: 'Log: Terna 2 y ™2 4 ataques; el 4 del sábado es de ™2' },
+  { temporada: 24, semana: 3, tag: '#UJY0PGPUV', clanKey: 'mini乂ternas™', nombre: 'кυякү', dias: 'V', valores: [4, 4, 500], conserva: 'GrupoXTerna™3',
+    nota: 'Log: Mini 0 ataques (Terna 4 y ™3 4); si el viernes es de ™3 o de Terna sigue sin resolver, pero no es de Mini' },
+  { temporada: 24, semana: 5, tag: '#P8Y0CQ9VR', clanKey: 'grupoxterna™2', nombre: 'SKYSER', dias: 'S', valores: [4, 8, 1300], conserva: 'Grupo乂Terna™',
+    nota: 'Log: Terna 8 y ™2 8 ataques; ™2 llegó a 8 el viernes, así que el 4 del sábado es de Terna' },
+  { temporada: 25, semana: 1, tag: '#U8G029GUQ', clanKey: 'grupoxterna™3', nombre: 'Reyper', dias: 'S', valores: [4, 4, 700], conserva: 'GrupoXTerna™2',
+    nota: 'Log: ™2 7 y ™3 4 ataques; ™3 llegó a 4 el viernes, así que el 4 del sábado es de ™2' },
+  { temporada: 25, semana: 1, tag: '#VUVC9P8VL', clanKey: 'grupoxterna™3', nombre: 'Percape', dias: 'S', valores: [4, 4, 600], conserva: 'GrupoXTerna™2',
+    nota: 'Log: ™2 4 y ™3 0 ataques; el 4 del sábado es de ™2' }
+];
+var VCRR_MAX_FILAS_DESCARTAR = 30;                     // tope de filas que una corrida puede quitar de Backup_Guerra.csv (si se pasa, no se quita nada)
 
 var VCRR_PASOS_NOMBRES_INFORME = [
   'RoyaleAPI: leer los JSON individuales (log y perfil cerrados) de cada jugador y guardar sus totales semanales → Cruce_CRR_RoyaleAPI.csv',
@@ -71740,6 +71780,21 @@ function verificarCrrVsBackupOlvidarVerificados() {
   _saveCSVToDrive(VCRR_ARCHIVO_VERIFICADOS, _encodeCSVInforme([_vcrrEncabezadoVerificados_()]));
   Logger.log('[VCRR] Registro de JSON verificados vaciado. La próxima corrida vuelve a leer todos los JSON.');
 }
+
+// ----- Descartar filas de un clan equivocado en Backup_Guerra.csv (§PF339) -----
+
+/**
+ * Solo informa (no toca Backup_Guerra.csv): lista qué filas de VCRR_FILAS_DESCARTAR quitaría descartarFilasClanEquivocadoAplicar() y cuáles no (porque ya no están, porque cambiaron
+ * o porque la hoja Guerra todavía las tiene). Deja el detalle en «Cruce_CRR_vs_Backup <fecha> (descarte, informe).csv».
+ */
+function descartarFilasClanEquivocadoInforme() { _vcrrDescartarFilas_(false); }
+
+/**
+ * Quita de Backup_Guerra.csv las filas de VCRR_FILAS_DESCARTAR (decisión de la usuaria: son de un clan equivocado). Es la única función del módulo que BORRA filas; «Aplicar» nunca lo hace.
+ * Respaldo previo («Backup_Guerra ANTES de descartar filas de clan equivocado <fecha>.csv»), verificación al releer y nada se quita si algo no cuadra. No renumera la columna N°: la
+ * próxima sincronización de la hoja Guerra lo hace. Después de correrla, corre verificarCrrVsBackupAplicar() para que cree con el piso del JSON las filas correctas de los clanes que se conservan.
+ */
+function descartarFilasClanEquivocadoAplicar() { _vcrrDescartarFilas_(true); }
 
 // =============================================================================
 // PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
@@ -72945,6 +73000,150 @@ function _vcrrVerificarAplicado_(filasAntes, filasDespues, casos, creadasEsperad
       if (v.hoy !== op.nuevo.hoy || v.sem !== op.nuevo.sem || v.fame !== op.nuevo.fame || v.barcos !== op.nuevo.barcos || String(f[GC.ORIGEN - 1]) !== op.nuevo.origen) problemas.push(etq + 'la fila del día ' + VCRR_DIAS.charAt(op.dia) + ' no quedó como se planeó');
     });
   });
+  return problemas;
+}
+
+// ----- Descartar filas de un clan equivocado en Backup_Guerra.csv (§PF339) -----
+
+/**
+ * Motor de descartarFilasClanEquivocadoInforme() y descartarFilasClanEquivocadoAplicar(). aplicar = false solo informa. Con aplicar = true: respaldo previo, quita las filas,
+ * relee Backup_Guerra.csv de Drive y verifica; si la verificación falla lo dice con el nombre del respaldo para restaurar. Si no se puede leer la hoja Guerra no quita nada
+ * (la próxima sincronización volvería a copiar al CSV las filas que la hoja todavía tenga). Detalle en «Cruce_CRR_vs_Backup <fecha> (descarte, informe|aplicado).csv».
+ */
+function _vcrrDescartarFilas_(aplicar) {
+  var nombreFn = aplicar ? 'descartarFilasClanEquivocadoAplicar' : 'descartarFilasClanEquivocadoInforme';
+  if (!_adquirirLockEjecucion(nombreFn)) return;
+  var lock = LockService.getScriptLock(), conLock = false;
+  try {
+    if (aplicar) {
+      if (!lock.tryLock(30000)) { Logger.log('[VCRR descarte] Hay otro proceso escribiendo; vuelve a correr ' + nombreFn + '() en un momento. No se quitó nada.'); return; }
+      conLock = true;
+    }
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var bk = _vcrrLeerBackupGuerra_();
+    if (!bk) { Logger.log('[VCRR descarte] No se encontró Backup_Guerra.csv o está vacío; no se quita nada.'); return; }
+    var idsHoja = _vcrrIdsHojaGuerra_();
+    if (idsHoja === null) {
+      if (aplicar) { Logger.log('[VCRR descarte] No se pudo leer la hoja Guerra: no se quita nada, porque la sincronización volvería a copiar al CSV las filas que la hoja tenga. Vuelve a intentarlo.'); return; }
+      Logger.log('[VCRR descarte] OJO: no se pudo leer la hoja Guerra; este informe no avisa si la hoja todavía tiene alguna de las filas.');
+      idsHoja = {};
+    }
+    var plan = _vcrrPlanDescartar_(bk.filas, VCRR_FILAS_DESCARTAR, idsHoja);
+    var nQuitar = plan.quitar.length;
+    var sinQuitar = plan.avisos.filter(function (a) { return a.tipo === 'conflicto'; }).length;
+    var yaQuitadas = plan.avisos.length - sinQuitar;
+    var detalle = [['Temporada', 'Semana', 'Clan', 'Tag', 'Nombre', 'Día', 'Acción', 'AtaquesHoy', 'AtaquesSemana', 'Fame', 'Origen', 'Se conserva', 'Nota']];
+    plan.quitar.forEach(function (q) {
+      var r = q.fila;
+      detalle.push([r[GC.TEMPORADA - 1], r[GC.SEMANA - 1], r[GC.CLAN - 1], q.entrada.tag, q.entrada.nombre, VCRR_DIAS.charAt(q.dia), aplicar ? 'Quitar' : 'Quitaría',
+        r[GC.ATAQUES_HOY - 1], r[GC.ATAQUES_SEM - 1], r[GC.FAME - 1], r[GC.ORIGEN - 1], q.entrada.conserva || '', q.entrada.nota || '']);
+    });
+    plan.avisos.forEach(function (a) {
+      var e = a.entrada;
+      detalle.push([e.temporada, e.semana, e.clanKey, e.tag, e.nombre, e.dias, (a.tipo === 'conflicto' ? 'SIN QUITAR: ' : 'Nada que quitar: ') + a.motivo, '', '', '', '', e.conserva || '', e.nota || '']);
+    });
+    var problemas = [];
+    if (aplicar && nQuitar > VCRR_MAX_FILAS_DESCARTAR) {
+      Logger.log('[VCRR descarte] NO SE QUITÓ NADA: ' + nQuitar + ' fila(s) por quitar pasan el tope de ' + VCRR_MAX_FILAS_DESCARTAR + ' (VCRR_MAX_FILAS_DESCARTAR). Revisa VCRR_FILAS_DESCARTAR.');
+      return;
+    }
+    if (aplicar && nQuitar > 0) {
+      var quitarIdx = {};
+      plan.quitar.forEach(function (q) { quitarIdx[q.idx] = true; });
+      var copiaAntes = bk.filas.map(function (r) { return r.slice(); });
+      var restantes = bk.filas.filter(function (r, i) { return !quitarIdx[i]; });
+      _saveCSVToDrive('Backup_Guerra ANTES de descartar filas de clan equivocado ' + marca + '.csv', bk.texto);
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([bk.encabezado].concat(restantes)));
+      var despues = _loadCSVFromDrive('Backup_Guerra.csv');
+      var parsedDespues = despues ? _parseCSV(despues) : null;
+      if (!parsedDespues || parsedDespues.length < 2) problemas.push('No se pudo releer Backup_Guerra.csv');
+      else {
+        var filasDespues = parsedDespues.slice(1);
+        for (var b = 0; b < filasDespues.length; b++) { while (filasDespues[b].length < GUERRA_TOTAL_COLS) filasDespues[b].push(''); }
+        problemas = _vcrrVerificarDescarte_(copiaAntes, filasDespues, plan, idsHoja);
+      }
+    }
+    if (detalle.length > 1) _saveCSVToDrive('Cruce_CRR_vs_Backup ' + marca + ' (descarte, ' + (aplicar ? 'aplicado' : 'informe') + ').csv', _encodeCSVInforme(detalle));
+    Logger.log('[VCRR descarte] ' + (aplicar ? 'Quitadas' : 'Se quitarían') + ' ' + nQuitar + ' fila(s) de ' + VCRR_FILAS_DESCARTAR.length + ' entrada(s); ya quitadas o ausentes: ' + yaQuitadas + '; sin quitar por conflicto: ' + sinQuitar + '. ' +
+      (problemas.length ? 'VERIFICACIÓN FALLÓ (' + problemas.length + '): ' + problemas.slice(0, 5).join('; ') + '. Restaurar con «Backup_Guerra ANTES de descartar filas de clan equivocado ' + marca + '.csv».'
+        : (aplicar && nQuitar > 0 ? 'Verificación OK. Ahora corre verificarCrrVsBackupAplicar() para crear con el piso del JSON las filas correctas.' : '')));
+    plan.avisos.forEach(function (a) {
+      if (a.tipo === 'conflicto') Logger.log('[VCRR descarte] SIN QUITAR T' + a.entrada.temporada + ' S' + a.entrada.semana + ' ' + a.entrada.nombre + ' ' + a.entrada.tag + ': ' + a.motivo);
+    });
+  } finally {
+    if (conLock) lock.releaseLock();
+    _liberarLockEjecucion();
+  }
+}
+
+/**
+ * Función pura. De las filas de Backup_Guerra.csv y la lista VCRR_FILAS_DESCARTAR arma qué filas se quitan: { quitar: [{ idx, fila, dia, entrada }], avisos: [{ tipo, entrada, motivo }] }.
+ * Cada entrada es TODO O NADA: si una de sus filas no cuadra no se quita ninguna de esa entrada y queda un aviso de tipo 'conflicto'. No se quita la fila si: (1) hay más filas que días
+ * pedidos (se esperaba una por día), (2) sus valores [AtaquesHoy, AtaquesSemana, Fame] no son los de la entrada (cambió desde la decisión), o (3) la hoja Guerra todavía la tiene (idsHoja =
+ * { id de _idFilaGuerraCSV: true }): la próxima sincronización la volvería a copiar al CSV. Una entrada sin filas deja un aviso 'ausente' (ya se quitó o nunca estuvo). Solo mira filas de la etapa Guerra.
+ */
+function _vcrrPlanDescartar_(filas, lista, idsHoja) {
+  var quitar = [], avisos = [];
+  (lista || []).forEach(function (e) {
+    var dias = String(e.dias || '');
+    var halladas = [];
+    for (var i = 0; i < filas.length; i++) {
+      var r = filas[i];
+      if (String(r[GC.ETAPA - 1]) !== 'Guerra') continue;
+      if (Number(r[GC.TEMPORADA - 1]) !== Number(e.temporada) || Number(r[GC.SEMANA - 1]) !== Number(e.semana)) continue;
+      if (String(r[GC.TAG - 1]).trim().toUpperCase() !== String(e.tag).toUpperCase()) continue;
+      if (_vcrrClanNorm_(r[GC.CLAN - 1]) !== e.clanKey) continue;
+      var off = (_excDiasNum(r[GC.PERIOD_IDX - 1]) % 7) - 3;
+      if (off < 0 || off > 3 || dias.indexOf(VCRR_DIAS.charAt(off)) < 0) continue;
+      halladas.push({ idx: i, fila: r, dia: off, entrada: e });
+    }
+    if (!halladas.length) { avisos.push({ tipo: 'ausente', entrada: e, motivo: 'no hay filas de ese clan en los días ' + dias + ' (ya se quitaron o nunca estuvieron)' }); return; }
+    var motivo = '';
+    if (halladas.length > dias.length) motivo = 'hay ' + halladas.length + ' filas y se esperaba una por día (' + dias + ')';
+    for (var h = 0; h < halladas.length && !motivo; h++) {
+      var f = halladas[h].fila, letra = VCRR_DIAS.charAt(halladas[h].dia);
+      var v = [_excDiasNum(f[GC.ATAQUES_HOY - 1]), _excDiasNum(f[GC.ATAQUES_SEM - 1]), _excDiasNum(f[GC.FAME - 1])];
+      if (e.valores && (v[0] !== e.valores[0] || v[1] !== e.valores[1] || v[2] !== e.valores[2])) motivo = 'la fila del día ' + letra + ' tiene ' + v.join('/') + ' y se esperaba ' + e.valores.join('/') + ' (cambió desde la decisión)';
+      else if (idsHoja && idsHoja[_idFilaGuerraCSV(f)]) motivo = 'la hoja Guerra todavía tiene la fila del día ' + letra + ': se volvería a copiar al CSV en la próxima sincronización';
+    }
+    if (motivo) { avisos.push({ tipo: 'conflicto', entrada: e, motivo: motivo }); return; }
+    halladas.forEach(function (x) { quitar.push(x); });
+  });
+  return { quitar: quitar, avisos: avisos };
+}
+
+/** IDs (_idFilaGuerraCSV) de las filas que tiene ahora la hoja Guerra: { id: true }. {} si la hoja no existe o está vacía; null si falla la lectura. Solo lee. */
+function _vcrrIdsHojaGuerra_() {
+  try {
+    var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+    var ids = {};
+    if (!sh || sh.getLastRow() < 2) return ids;
+    var datos = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+    for (var i = 0; i < datos.length; i++) { var id = _idFilaGuerraCSV(datos[i]); if (id) ids[id] = true; }
+    return ids;
+  } catch (e) {
+    Logger.log('[VCRR descarte] No se pudo leer la hoja Guerra: ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * Verifica, sobre las filas releídas de Drive, que: (1) quedaron exactamente las filas de antes menos las quitadas; (2) todas las demás son idénticas y en el mismo orden;
+ * (3) ninguna entrada que se aplicó sigue teniendo filas por quitar. Devuelve la lista de problemas (vacía = todo bien).
+ */
+function _vcrrVerificarDescarte_(filasAntes, filasDespues, plan, idsHoja) {
+  var problemas = [];
+  var quitado = {};
+  plan.quitar.forEach(function (q) { quitado[q.idx] = true; });
+  var esperadas = filasAntes.filter(function (r, i) { return !quitado[i]; });
+  if (filasDespues.length !== esperadas.length) problemas.push('número de filas ' + filasDespues.length + ' en vez de ' + esperadas.length);
+  for (var i = 0; i < esperadas.length && i < filasDespues.length; i++) {
+    if (esperadas[i].join('\u0001') !== filasDespues[i].slice(0, esperadas[i].length).join('\u0001')) { problemas.push('cambió una fila no planeada (fila ' + (i + 1) + ' tras quitar)'); if (problemas.length > 10) break; }
+  }
+  var aplicadas = [];
+  plan.quitar.forEach(function (q) { if (aplicadas.indexOf(q.entrada) < 0) aplicadas.push(q.entrada); });
+  var otra = _vcrrPlanDescartar_(filasDespues, aplicadas, idsHoja);
+  if (otra.quitar.length) problemas.push('siguen ' + otra.quitar.length + ' fila(s) por quitar');
   return problemas;
 }
 
