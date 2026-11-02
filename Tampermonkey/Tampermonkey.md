@@ -1124,20 +1124,45 @@
   }
 
   /**
+   * _leerNombreDePerfil(tag)  (v3.20, §PF341)
+   * Lee el nombre del jugador de la página de su perfil (la que ya está abierta cuando se procesa). Primero el encabezado de la página (h1); si no sirve, el
+   * título de la pestaña («Nombre (#TAG) - Clash Royale …»). Devuelve '' si no logra un nombre que no sea el propio tag. Los selectores NO se probaron contra
+   * RoyaleAPI real (no se pudo abrir desde el entorno de trabajo): si el nombre sale vacío en el registro, hay que ajustar aquí el selector.
+   */
+  function _leerNombreDePerfil(tag) {
+    try {
+      var tagTxt = '#' + String(tag || '').replace('#', '').toUpperCase();
+      var limpio = function (t) {
+        t = String(t || '').replace(/\s+/g, ' ').trim();
+        t = t.split(tagTxt).join('').split(tagTxt.toLowerCase()).join('').replace(/\(\s*\)/g, '').trim();
+        return (!t || /just a moment|un momento|attention required/i.test(t)) ? '' : t;
+      };
+      var hs = document.querySelectorAll('h1');
+      for (var h = 0; h < hs.length; h++) {
+        var n1 = limpio(hs[h].textContent);
+        if (n1) return n1;
+      }
+      var n2 = limpio(String(document.title || '').replace(/\s[-|–—]\s*(Clash Royale|RoyaleAPI)[\s\S]*$/i, ''));
+      return n2;
+    } catch (e) { return ''; }
+  }
+
+  /**
    * _registrarFilasPerfilEnHistorial(estado, jugador, filas)  (v3.20, §PF341)
    * Único lugar donde las filas leídas del perfil (leerFilasClanWars2) pasan a la cola del histórico, para la Corrección de Guerra, los jugadores
    * elegidos y Miembros nuevos. El backend decide por clanTag cuáles son de un clan que no es Terna y las guarda SOLO en el JSON individual (§PF340).
    * `jugador.sinHistorial` (alguien que ya no está en los clanes Terna y solo se conoce por su tag, §PF164): antes se omitía por completo; ahora se envía
-   * con nombre vacío (el nombre que tendría es el propio tag) y la marca soloIndividual, para que el backend lo guarde en su JSON individual y NO
-   * escriba nada de esa persona en el CSV grupal ni en el JSON grupal (donde no hay un nombre real que poner).
+   * con su nombre leído de la página del perfil (_leerNombreDePerfil(); su ficha solo trae el tag) y la marca soloIndividual, para que el backend lo guarde en
+   * su JSON individual y NO escriba nada de esa persona en el CSV grupal ni en el JSON grupal (solo se pidió el JSON individual).
    * Con una fila externa el clan del jugador (nombre del archivo) no se cambia: se manda '' para no pisar el último clan Terna.
    */
   function _registrarFilasPerfilEnHistorial(estado, jugador, filas) {
     _asegurarHistorialEnEstado(estado);
     var soloIndividual = !!jugador.sinHistorial;
+    var nombreHist = soloIndividual ? _leerNombreDePerfil(jugador.tag) : jugador.nombre;
     for (var rfp = 0; rfp < filas.length; rfp++) {
       var fp = filas[rfp];
-      _agregarRegistroHistorial(estado, jugador.tag, soloIndividual ? '' : jugador.nombre, fp.esTerna ? fp.clan : '', {
+      _agregarRegistroHistorial(estado, jugador.tag, nombreHist, fp.esTerna ? fp.clan : '', {
         temporadaRoyaleApi: fp.temporadaRoyaleApi,
         semana: fp.semana,
         clan: fp.clan,
@@ -2641,7 +2666,7 @@
       : estado.jugadoresOriginal.filter(function (j) { return cubiertos.indexOf(j.tag) === -1 || sinPerfilCsv.indexOf(j.tag) !== -1 || regresadosCsv.indexOf(j.tag) !== -1; });
     // v3.2 (§PF164): los jugadores cuyo perfil se fuerza se agregan siempre. Si no están en la lista de activos (ya no están en un clan
     // Terna), se arma su ficha con la URL del perfil y se marca sinHistorial. Hasta v3.19 eso omitía su histórico (para no escribirlo con el tag como nombre);
-    // desde v3.20 (§PF341) se envía a su JSON individual con nombre vacío y la marca soloIndividual (no pasa al CSV grupal ni al JSON grupal).
+    // desde v3.20 (§PF341) se envía a su JSON individual con el nombre leído del perfil y la marca soloIndividual (no pasa al CSV grupal ni al JSON grupal).
     var forzados = estado.forzarPerfil || [];
     var yaPendientes = {};
     pendientesTotal.forEach(function (j) { yaPendientes[j.tag] = true; });
@@ -2762,8 +2787,8 @@
     // histórico.
     // v3.19 (§PF340): las filas de clan externo también van al historial. El backend decide por clanTag (CFG.TERNA_TAGS): las externas las guarda SOLO en el
     // JSON individual del jugador (total por semana y clan), sin pasar por el CSV grupal ni por Backup_Guerra.csv. Antes (v3.3 a v3.18) se omitían aquí.
-    // v3.20 (§PF341): tampoco se omite a quien ya no está en los clanes Terna (sinHistorial, p. ej. un tag escrito en «jugadores elegidos»): se envía con nombre vacío y
-    // la marca soloIndividual, y el backend lo guarda solo en su JSON individual. Con una fila externa el clan del jugador (nombre del archivo) no se cambia.
+    // v3.20 (§PF341): tampoco se omite a quien ya no está en los clanes Terna (sinHistorial, p. ej. un tag escrito en «jugadores elegidos»): se envía con el nombre leído
+    // del perfil y la marca soloIndividual, y el backend lo guarda solo en su JSON individual. Con una fila externa el clan del jugador (nombre del archivo) no se cambia.
     _registrarFilasPerfilEnHistorial(estado, jugador, filas);
     _flushHistorialSiHaceFalta(estado, false);
     // v3.5 (§PF236): si el perfil se visita, se envían TODAS las filas leídas. Ya no se descartan las semanas que
