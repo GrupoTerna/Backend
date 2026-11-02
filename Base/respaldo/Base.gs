@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 02:31:42 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 03:22:09 */
 
 
 
@@ -23197,12 +23197,14 @@ function _getParticipacionHoyGuerra(ctx) {
   var porClan = {}; // nombreClan -> { clan, reservadas: [], disponibles: [] }
   // 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp en «Participación de hoy»): Tag -> true si el Directorio tiene el celular de esa cuenta (cualquier Estado, para cubrir también los casos multi-clan). Solo se manda el booleano `tieneWsp`; NUNCA el número. Esta función solo la sirve `_webAdminParticipacionHoyGuerra()`, que exige sesión de admin. [→ Contexto_Base_Web.md §PF171]
   var tieneCelPorTag = {};
+  var activoPorTag = {}; // §PF344: Tag -> true si el Directorio lo tiene como Activo (en cualquier clan)
 
   for (var k = 0; k < dataDir.length; k++) {
     var filaDir = dataDir[k];
     var tagCelDir = cleanTag(filaDir[DC.TAG - 1]);
     if (tagCelDir && soloDigitos(filaDir[DC.CELULAR - 1])) tieneCelPorTag[tagCelDir] = true;
     if (String(filaDir[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
+    if (tagCelDir) activoPorTag[tagCelDir] = true; // §PF344: para no tratar como inactiva a quien hoy es Activo en cualquier clan
     var clanNombreDir = String(filaDir[DC.CLAN - 1] || '');
     if (!clanNombreDir) continue;
     var tagDir = cleanTag(filaDir[DC.TAG - 1]);
@@ -23223,6 +23225,23 @@ function _getParticipacionHoyGuerra(ctx) {
       porClan[clanNombreDir].reservadas.push(infoCuenta);
     } else {
       porClan[clanNombreDir].disponibles.push(infoCuenta);
+    }
+  }
+
+  // 3b) §PF344 (2-nov-2026, pedido de la usuaria): el tope de 50 cuentas por clan y día incluye a quien atacó y salió del clan, así que las cuentas INACTIVAS con al menos
+  // un ataque hoy también se listan en «reservadas», con `inactiva: true` (el frontend las muestra aparte y más tenues). Solo cuenta quien figura como inactivo (hoja Inactivos o
+  // Directorio con otro Estado) y no es Activo en ningún clan: un miembro nuevo que aún no está en el Directorio no se confunde con una inactiva. [→ Contexto_Base_Web.md §PF344]
+  var inactivoPorTag = _leerInactivosParaParticipacion_(ss, dataDir, tieneCelPorTag);
+  for (var tagIn in porTag) {
+    if (activoPorTag[tagIn] || !inactivoPorTag[tagIn]) continue;
+    var infoIn = inactivoPorTag[tagIn];
+    for (var clanIn in porTag[tagIn].clanes) {
+      var ataqIn = Number(porTag[tagIn].clanes[clanIn]) || 0;
+      if (!clanIn || ataqIn <= 0) continue;
+      if (!porClan[clanIn]) porClan[clanIn] = { clan: clanIn, reservadas: [], disponibles: [] };
+      porClan[clanIn].reservadas.push({
+        tag: infoIn.tag, nombre: infoIn.nombre || porTag[tagIn].nombre, ataquesHoy: ataqIn, tieneWsp: !!infoIn.tieneWsp, inactiva: true
+      });
     }
   }
 
@@ -23255,6 +23274,43 @@ function _getParticipacionHoyGuerra(ctx) {
     clanes: Object.keys(porClan).map(function (c) { return porClan[c]; }),
     multiClan: multiClan
   };
+}
+
+/**
+ * _leerInactivosParaParticipacion_(ss, dataDir, tieneCelPorTag)  (§PF344)
+ * Tag (cleanTag) -> { tag, nombre, tieneWsp } de las cuentas inactivas: filas del Directorio con Estado distinto de «Activo» (`dataDir`, ya leído, formato DC) y toda fila de la
+ * hoja Inactivos (formato IC; sin la hoja, Backup_Inactivos.csv, formato DC), igual que _webBuscarJugadores. `tieneCelPorTag` es el del Directorio; la hoja Inactivos aporta el suyo.
+ * Un fallo al leer la hoja no rompe la sección: se devuelve lo que se alcanzó a leer.
+ */
+function _leerInactivosParaParticipacion_(ss, dataDir, tieneCelPorTag) {
+  var mapa = {};
+  for (var i = 0; i < dataDir.length; i++) {
+    var fd = dataDir[i];
+    var tagD = cleanTag(fd[DC.TAG - 1]);
+    if (!tagD || String(fd[DC.ESTADO - 1] || '').trim() === 'Activo') continue;
+    mapa[tagD] = { tag: String(fd[DC.TAG - 1] || ''), nombre: String(fd[DC.NOMBRE - 1] || ''), tieneWsp: !!tieneCelPorTag[tagD] };
+  }
+  try {
+    var sh = ss.getSheetByName(CFG.SHEETS.INACTIVOS);
+    var filas, esCsv = false;
+    if (sh && sh.getLastRow() >= 2) {
+      filas = sh.getRange(2, 1, sh.getLastRow() - 1, INACTIVOS_TOTAL_COLS).getValues();
+    } else {
+      var lectura = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.INACTIVOS, 'Backup_Inactivos.csv', DIR_TOTAL_COLS);
+      filas = (lectura.origen === 'csv') ? lectura.filas : [];
+      esCsv = true;
+    }
+    var iTag = (esCsv ? DC.TAG : IC.TAG) - 1, iNombre = (esCsv ? DC.NOMBRE : IC.NOMBRE) - 1, iCel = (esCsv ? DC.CELULAR : IC.CELULAR) - 1;
+    for (var j = 0; j < filas.length; j++) {
+      var tagI = cleanTag(filas[j][iTag]);
+      if (!tagI) continue;
+      var conCel = !!soloDigitos(filas[j][iCel]) || !!tieneCelPorTag[tagI];
+      mapa[tagI] = { tag: String(filas[j][iTag] || ''), nombre: String(filas[j][iNombre] || ''), tieneWsp: conCel };
+    }
+  } catch (e) {
+    Logger.log('[ParticipacionHoy] No se pudo leer la hoja Inactivos: ' + e.message);
+  }
+  return mapa;
 }
 
 /**
@@ -27562,6 +27618,52 @@ function _cgwPerfilEsExterno_(e) {
 }
 
 /**
+ * _cgwIndiceAtaqueTerna_(mapa, correcciones, offset)  (§PF343)
+ * Índice «temporada propia|semana|tag jugador» → true de las semanas en que ya hay registro de al menos un ataque en un clan Terna: filas del overlay con
+ * ClanTag (Log o Analytics, `mapa`) y filas con clanTag de este mismo lote (el perfil puede llegar antes que el Log dentro del envío). Se arma una sola vez por envío.
+ */
+function _cgwIndiceAtaqueTerna_(mapa, correcciones, offset) {
+  var idx = {};
+  Object.keys(mapa).forEach(function (k) {
+    var q = k.split('|'); // temporada | semana | clantag | tag
+    if (q.length === 4 && q[2] !== '' && Number(mapa[k].ataquesSemana) > 0) idx[q[0] + '|' + q[1] + '|' + q[3]] = true;
+  });
+  for (var i = 0; i < correcciones.length; i++) {
+    var c = correcciones[i] || {};
+    if (_normalizarClanTagCorreccion(c.clanTag) === '' || !(Number(c.ataquesSemana) > 0)) continue;
+    idx[(Number(c.temporadaRoyaleApi) - offset) + '|' + Number(c.semana) + '|' + String(c.tag || '').trim()] = true;
+  }
+  return idx;
+}
+
+/**
+ * _cgwHayAtaqueTernaEnSemana_(indice, cacheJson, temporadaPropia, semana, tag)  (§PF343)
+ * true si hay registro de que el jugador hizo al menos un ataque esa semana en un clan Terna: el índice de _cgwIndiceAtaqueTerna_(), o su JSON individual
+ * (registros del Log, Analytics o River Race de un clan Terna, con ataques > 0; las filas del perfil y las `externa` no cuentan). El JSON se lee una vez por
+ * jugador y solo cuando hace falta (`cacheJson`). Un fallo al leerlo cuenta como «sin registro».
+ */
+function _cgwHayAtaqueTernaEnSemana_(indice, cacheJson, temporadaPropia, semana, tag) {
+  if (indice[temporadaPropia + '|' + semana + '|' + tag]) return true;
+  if (cacheJson[tag] === undefined) {
+    var registros = [];
+    try {
+      var hist = _cargarHistorialGuerraIndividual(tag);
+      registros = (hist && hist.registros) ? hist.registros : [];
+    } catch (e) { registros = []; }
+    cacheJson[tag] = registros;
+  }
+  var regs = cacheJson[tag];
+  for (var i = 0; i < regs.length; i++) {
+    var r = regs[i];
+    if (!r || r.externa === true) continue;
+    if (Number(r.temporadaInterna) !== Number(temporadaPropia) || Number(r.semana) !== Number(semana)) continue;
+    var f = String(r.fuente || '').toLowerCase();
+    if ((f === 'log' || f === 'analytics' || f === 'riverrace') && Number(r.ataques) > 0) return true;
+  }
+  return false;
+}
+
+/**
  * _cgwFilasLargasAMapa_(parsed)
  * Lee el formato de antes (una fila por clan, columna ClanTag) y le asigna el origen a las filas sin ClanTag. [→ Contexto_Base_Web.md §18B093]
  */
@@ -28095,6 +28197,8 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var contradicciones = [], contradiccionesTotal = 0, contradiccionesSinPisar = 0; // §PF313: registro de contradicciones de esta corrida (líneas topadas; el total cuenta todas)
   var revisionContradicciones = []; // §PF313: lo que no se resuelve solo va también a Revision_Guerra.csv (Estado pendiente)
   var memoPosible = {}; // §PF313: memoria de _cgwSemanaEsPosible_() para no repetir cálculos en un lote grande
+  var indiceAtaqueTerna = _cgwIndiceAtaqueTerna_(mapa, correcciones, _getTemporadaOffsetRoyaleApi()); // §PF343
+  var cacheJsonTerna = {}, contradiccionesExternasIgnoradas = 0; // §PF343
   for (var i = 0; i < correcciones.length; i++) {
     var c = correcciones[i] || {};
     var tag = String(c.tag || '').trim();
@@ -28178,7 +28282,19 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       fuenteEntrante !== 'desconocida' && fuenteGuardada !== fuenteEntrante);
     var yaGuardadaIgual = !!(existente && !valoresDistintos); // reintento por Implementación «No»: el valor ya estaba, no es un conflicto nuevo
     var noCabeSemana = !yaGuardadaIgual && !_cgwSemanaEsPosible_(ataquesSemana, fame, barcosFinal, memoPosible);
-    if (mismoNivelDiscrepa || noCabeSemana || (valoresDistintos && !(clanTag === '' && fuenteGuardada === 'perfil' && fuenteEntrante === 'perfil'))) {
+    var hayConflicto = mismoNivelDiscrepa || noCabeSemana || (valoresDistintos && !(clanTag === '' && fuenteGuardada === 'perfil' && fuenteEntrante === 'perfil'));
+    // §PF343 (2-nov-2026, regla de la usuaria): la fila del perfil de un clan que NO es Terna solo genera contradicción si hay registro de que el jugador hizo al
+    // menos un ataque esa semana en algún clan Terna (Log, Analytics o River Race). Sin ese registro se ignora: el valor se aplica como siempre, sin línea de conflicto
+    // ni fila en Revision_Guerra.csv. [→ Contexto_Base_Web.md §PF343]
+    if (hayConflicto && clanTag === '') {
+      var clanPerfilFila = _normalizarClanTagCorreccion(c.clanPerfil);
+      if (clanPerfilFila && CFG.TERNA_TAGS.indexOf(clanPerfilFila) < 0 &&
+          !_cgwHayAtaqueTernaEnSemana_(indiceAtaqueTerna, cacheJsonTerna, temporadaPropia, semana, tag)) {
+        hayConflicto = false;
+        contradiccionesExternasIgnoradas++;
+      }
+    }
+    if (hayConflicto) {
       // (perfil contra perfil ya se avisa abajo como «antes / ahora» en cambiosPerfil; no se duplica)
       var decision, motivoRev = '';
       if (mismoNivelDiscrepa) {
@@ -28307,6 +28423,10 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
 
   var resultado = { ok: true, aplicadas: aplicadas, omitidas: omitidas, sinCambios: sinCambios, total: correcciones.length };
   if (anterioresT1) resultado.anterioresT1 = anterioresT1; // §PF247
+  if (contradiccionesExternasIgnoradas) { // §PF343
+    resultado.contradiccionesExternasIgnoradas = contradiccionesExternasIgnoradas;
+    Logger.log('[CorreccionGuerra] ' + contradiccionesExternasIgnoradas + ' contradicción(es) de filas de perfil de clan externo ignorada(s): sin registro de ataques en un clan Terna esa semana.');
+  }
   if (revisarManual.length) resultado.revisarManual = revisarManual; // FIX 29-sep-2026 (Fase 15 tanda 1)
   if (cambiosPerfil.length) resultado.cambiosPerfil = cambiosPerfil; // §PF237
   if (contradiccionesTotal) { // §PF313: el log de la corrida; viaja en la respuesta y queda en el log de Drive del botón
@@ -32313,7 +32433,15 @@ function _aplicarHistorialGuerra(candidatosPayload) {
           registroCompleto.clanTag = clanTagFila;
         }
 
-        registrosDelJugador.push(registroCompleto);
+        // §PF342 (2-nov-2026): el JSON individual guarda el tag del clan en TODAS las filas, también en las de clanes Terna (antes solo en las externas). Va en una copia:
+        // lo que se manda al CSV grupal y al JSON grupal (itemsGrupal) sigue siendo `registroCompleto`, sin ese campo. Sin tag en la entrada (Tampermonkey anterior) no se agrega nada.
+        var registroIndividual = registroCompleto;
+        if (!esExterna && clanTagFila) {
+          registroIndividual = JSON.parse(JSON.stringify(registroCompleto));
+          registroIndividual.clanTag = clanTagFila;
+        }
+
+        registrosDelJugador.push(registroIndividual);
         if (esExterna) {
           if (registroCompleto.clan) clanExternoDelJugador = registroCompleto.clan;
           registrosExternos++;
@@ -32498,6 +32626,11 @@ function _fusionarRegistroEnArrayHistorialGuerra(registros, nuevo, tag, nombre) 
   }
   // Comentario (FASE 2, 04-sep-2026): mismo criterio que en el CSV grupal [→ Contexto_Base_Web.md §20B029]
   registroFinal.comentario = (existente && existente.comentario) || '';
+  // §PF342: si la fila entrante no trae clanTag (Tampermonkey anterior) y la guardada sí, y es del mismo clan, se conserva; con otro clan no se hereda. [→ Contexto_Base_Web.md §PF342]
+  if (!registroFinal.clanTag && existente && existente.clanTag &&
+      _claveClanHistorialGuerra(existente.clan) === _claveClanHistorialGuerra(registroFinal.clan)) {
+    registroFinal.clanTag = existente.clanTag;
+  }
 
   if (idxExistente >= 0) {
     registros[idxExistente] = registroFinal;
