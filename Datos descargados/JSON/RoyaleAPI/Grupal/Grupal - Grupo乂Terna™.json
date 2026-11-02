@@ -1,7 +1,7 @@
 {
   "clan": "Grupo乂Terna™",
   "fuente": "log",
-  "fechaUltimaActualizacion": "01/11/2026",
+  "fechaUltimaActualizacion": "02/11/2026",
   "semanas": [
     {
       "temporadaInterna": 22,
@@ -6991,6 +6991,63 @@
           "nombre": "ᴳ乂ᵀ ⚜ T3RR1BL3!",
           "ataques": 14,
           "fame": 2250,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "temporadaSupercell": "2026-10",
+      "semana": 3,
+      "jugadores": [
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#JVVG9YUG0",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#P8Y0CQ9VR",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#UYU0PGUYJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ ＲＡＭＩ",
+          "ataques": 4,
+          "fame": 500,
+          "barcos": 0
+        },
+        {
+          "tag": "#VUVC9P8VL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
           "barcos": 0
         }
       ]

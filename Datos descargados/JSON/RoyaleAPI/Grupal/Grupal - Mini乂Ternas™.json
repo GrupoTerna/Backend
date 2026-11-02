@@ -1,7 +1,7 @@
 {
   "clan": "Mini乂Ternas™",
   "fuente": "log",
-  "fechaUltimaActualizacion": "01/11/2026",
+  "fechaUltimaActualizacion": "02/11/2026",
   "semanas": [
     {
       "temporadaInterna": 23,
@@ -2292,6 +2292,28 @@
         {
           "tag": "#VRVCV0QR8",
           "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "temporadaSupercell": "2026-10",
+      "semana": 3,
+      "jugadores": [
+        {
+          "tag": "#20080J8GRY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "nombre": "ᴳ乂ᵀ ⚜️ Calito",
           "ataques": 0,
           "fame": 0,
           "barcos": 0
