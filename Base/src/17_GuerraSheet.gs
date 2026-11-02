@@ -2780,6 +2780,17 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
         dec = _decidirCierreFameBarcosDia_(parCierre);
       }
     }
+    // §PF328: aviso (solo en el registro) cuando lo que trae la API al cierre de ayer cae fuera de los rangos de los JSON. Solo se mira cuando el cierre escribe o queda
+    // pendiente, para no leer Drive en cada corrida; no cambia lo que se escribe. La fame y los barcos acumulados de la API valen como cierre de ayer solo si hoy no hay ataques.
+    if ((dec.accion === 'aplicar' || dec.accion === 'pendiente') && typeof _crrAvisoFueraDeRangosCierre_ === 'function') {
+      var avisoRangos = _crrAvisoFueraDeRangosCierre_(tag, ctx, offHoyDia - 1, _clanNombreAutocorregir, {
+        ataquesAcum: ataqSemApi - ataqHoyApi, ataquesDia: (ataqSemApi - ataqHoyApi) - sumaAtaquesDiasPrevios,
+        fameAcum: ataqHoyApi === 0 ? fameApi : null, barcosAcum: ataqHoyApi === 0 ? barcosApi : null });
+      if (avisoRangos) {
+        Logger.log('[Guerra][Cierre de dia] ALARMA RANGOS: ' + tag + ' en ' + (_clanNombreAutocorregir || clanTag) + ', periodIndex ' + periodIndexAnterior +
+          ' -- la API trae al cierre de ayer: ' + avisoRangos + '. Solo es un aviso: no cambia lo que se escribe.');
+      }
+    }
     if (dec.accion === 'aplicar') {
       filaAyer[GC.ATAQUES_SEM - 1] = dec.nuevoAtaqSem;
       filaAyer[GC.FAME - 1]        = dec.nuevaFame;

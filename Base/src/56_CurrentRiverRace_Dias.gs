@@ -275,6 +275,38 @@ function _crrAyerParaCierre_(tag, ctx, offAyer, clanNombre) {
 }
 
 /**
+ * Aviso del cierre del día (§PF328, pedido de la usuaria el 1-nov-2026): compara lo que trae la API al cierre de ayer con los rangos de los JSON de CurrentRiverRace
+ * de ese jugador y clan (_vcrrRangosJugadorClan_, 59_Verificar_CRR_vs_Backup.gs). Solo avisa: no cambia lo que se escribe ni lo que se deja pendiente.
+ * api = { ataquesAcum, ataquesDia, fameAcum, barcosAcum } (null o undefined = la API no trae ese dato al cierre de ayer). Se comparan los ataques acumulados y los del día
+ * contra el piso y el máximo de los JSON, y la fame y los barcos acumulados cuando la API los trae. Solo se miran las métricas que la serie puede usar (serie.validos).
+ * Un jugador en dos clanes la misma semana no se compara (lo que muestra un clan no es todo lo que hizo). Devuelve '' si todo cabe, si no hay JSON de la semana o si falla
+ * la lectura; si no, el texto de qué valores quedan fuera y de qué rango.
+ */
+function _crrAvisoFueraDeRangosCierre_(tag, ctx, offAyer, clanNombre, api) {
+  try {
+    if (!clanNombre || !api || !(offAyer >= 0 && offAyer <= 2) || typeof _vcrrRangosJugadorClan_ !== 'function') return '';
+    var temp = Number(ctx && ctx.temporada), sem = Number(ctx && ctx.sectionIndex) + 1;
+    if (!(temp > 0) || !(sem > 0)) return '';
+    var serie = _vcrrRangosJugadorClan_(temp, sem, tag, clanNombre);
+    if (!serie || !serie.validos || !serie.r || serie.estado === 'multiclan') return '';
+    var fuera = [];
+    function revisar(letra, nombre, valor, campoLo, campoHi) {
+      if (serie.validos.indexOf(letra) < 0 || typeof valor !== 'number' || isNaN(valor)) return;
+      var lo = serie.r[letra][campoLo][offAyer], hi = serie.r[letra][campoHi][offAyer];
+      if (valor < lo || valor > hi) fuera.push(nombre + ' ' + valor + ' (los JSON permiten de ' + lo + ' a ' + (hi === Infinity ? 'sin tope' : hi) + ')');
+    }
+    revisar('A', 'ataques acumulados', api.ataquesAcum, 'lo', 'hi');
+    revisar('A', 'ataques de ayer', api.ataquesDia, 'il', 'ih');
+    revisar('F', 'fame acumulada', api.fameAcum, 'lo', 'hi');
+    revisar('B', 'barcos acumulados', api.barcosAcum, 'lo', 'hi');
+    return fuera.join('; ');
+  } catch (e) {
+    Logger.log('[CRR] No se pudo comparar el cierre del dia con los rangos (' + tag + '): ' + e.message);
+    return '';
+  }
+}
+
+/**
  * Para AplicarTotalesSemana_Historial (48_Herramientas_Debug.gs, §PF139): comprueba unos totales semanales (ataques y fame) contra CurrentRiverRace.
  * Devuelve null si no hay capturas, si se contradicen o si no hay ningun dato del domingo; si no, { ataquesDomingo, fameDomingo, conflicto }, con
  * conflicto = '' si todo es posible o el motivo si algun dia saldria imposible con esos totales (ataques de un dia fuera de 0 a 4, o fame de un dia
