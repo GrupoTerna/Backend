@@ -530,6 +530,7 @@ function _vcrrCapturasDeArchivos_(archivos, temporada, semana) {
     if (!previoConDatos) return;
     avisos.push(dom.archivo + ': captura del domingo en blanco (sin fame ni ataques en ningún participante) con datos en los días anteriores; no se usa (§PF333)');
     dias[3] = null;
+    dias.domingoDescartado = true;   // propiedad del arreglo: _vcrrSeriesDeSemana_() deja a los jugadores con datos de este clan como candidatos al cruce con RoyaleAPI (el domingo exacto)
   });
   return { porClan: porClan, avisos: avisos };
 }
@@ -563,8 +564,11 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan, rapiSemana) {
       if (r.anomalas.length) { estado = 'json_anomalo'; r.anomalas.forEach(function (m) { notas.push('captura ' + VCRR_DIAS.charAt(m.dia) + ' anómala pero usada: ' + m.motivo); }); }
       if (r.validos.length < 3) estado = 'incoherente';
       if (Object.keys(clanesDeTag[tag]).length > 1 && estado === 'ok') estado = 'multiclan';
+      // §PF333: en un clan cuyo domingo en blanco se descartó, el jugador que ya tenía datos de jueves a sábado queda candidato al cruce con RoyaleAPI aunque su serie salga 'ok':
+      // sin eso perdería el domingo exacto que el total de RoyaleAPI le fijaba (§PF320). Si el cruce no lo resuelve, no se lista como «SIN RESOLVER»: la serie ya es utilizable.
+      var domingoDescartado = !!porClan[ck].domingoDescartado && caps.some(function (c) { return c && (c.usados > 0 || c.fame > 0 || c.barcos > 0); });
       series.push({ temporada: Number(temporada), semana: Number(semana), clanKey: ck, tag: tag, nombre: nombre,
-        capturas: caps.map(function (c) { return !!c; }), estado: estado, notas: notas.join('; '), validos: r.validos, r: r, capsDatos: caps });
+        capturas: caps.map(function (c) { return !!c; }), estado: estado, notas: notas.join('; '), validos: r.validos, r: r, capsDatos: caps, domingoDescartado: domingoDescartado });
     });
   });
   // §PF331: las series confirmadas a mano por la usuaria se fijan antes del cruce, que ya no las trata como candidatas.
@@ -590,9 +594,12 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan, rapiSemana) {
  */
 function _vcrrCruzarRoyaleApi_(series, rapi) {
   var salida = { resueltas: 0, sinResolver: [] };
-  var candidatas = (series || []).filter(function (x) { return x.estado === 'json_anomalo' || x.estado === 'incoherente' || String(x.validos || '').length < 3; });
+  var candidatas = (series || []).filter(function (x) { return x.estado === 'json_anomalo' || x.estado === 'incoherente' || String(x.validos || '').length < 3 || x.domingoDescartado; });
   if (!candidatas.length) return salida;
+  // §PF333: candidata solo por tener el domingo en blanco descartado (su serie ya es utilizable): si no se resuelve, se queda como estaba y no se anota ni se lista.
+  candidatas.forEach(function (x) { x.soloDomingoDescartado = !!x.domingoDescartado && (x.estado === 'ok' || x.estado === 'multiclan') && String(x.validos || '').length === 3; });
   var guardar = function (x, motivo) {
+    if (x.soloDomingoDescartado) return;
     x.sinResolver = motivo;
     x.notas = (x.notas ? x.notas + '; ' : '') + 'SIN RESOLVER: ' + motivo;
     salida.sinResolver.push({ clanKey: x.clanKey, tag: x.tag, nombre: x.nombre, motivo: motivo });
