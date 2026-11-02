@@ -1,0 +1,10 @@
+ID,Temporada,Semana,Clan,Tag,Nombre,Día,Acción,AtaquesHoy,AtaquesSemana,Fame,Origen,Se conserva,Nota
+T_22_S_03_#2C982888C,22,3,Grupo乂Terna™,#2C982888C,M.SEBAS,D,Quitar,4,8,1400,,GrupoXTerna™2,§PF337: el 8 y el 1400 del domingo de Terna son el acumulado de ™2
+T_22_S_03_#QRQULCCV8,22,3,Grupo乂Terna™,#QRQULCCV8,Maikel,D,Quitar,4,16,3200,Original,GrupoXTerna™2,"§PF337: ™2 ya tiene 16 ataques y 2800 medallas día por día, como RoyaleAPI; la fila de Terna (3200) no coincide con nada"
+T_22_S_03_#U8G029GUQ,22,3,GrupoXTerna™2,#U8G029GUQ,Reyper,D,Quitar,0,4,600,Original,GrupoXTerna™3,§PF337: en RoyaleAPI solo llega a 400 medallas y la fila de ™2 indica 600
+T_22_S_03_#U8G029GUQ,22,3,Mini乂Ternas™,#U8G029GUQ,Reyper,D,Quitar,4,4,400,,GrupoXTerna™3,"§PF337: el domingo exacto de ™3 en el JSON es 4 / 4 / 400, igual que esta fila de Mini (clan equivocado); las filas en cero de Mini de jueves a sábado no se tocan"
+T_24_S_02_#JVVG9YUG0,24,2,Grupo乂Terna™,#JVVG9YUG0,Fiorela,S,Quitar,4,4,400,,GrupoXTerna™2,Log: Terna 2 y ™2 4 ataques; el 4 del sábado es de ™2
+T_24_S_03_#UJY0PGPUV,24,3,Mini乂Ternas™,#UJY0PGPUV,кυякү,V,Quitar,4,4,500,,GrupoXTerna™3,"Log: Mini 0 ataques (Terna 4 y ™3 4); si el viernes es de ™3 o de Terna sigue sin resolver, pero no es de Mini"
+T_24_S_05_#P8Y0CQ9VR,24,5,GrupoXTerna™2,#P8Y0CQ9VR,SKYSER,S,Quitar,4,8,1300,Original,Grupo乂Terna™,"Log: Terna 8 y ™2 8 ataques; ™2 llegó a 8 el viernes, así que el 4 del sábado es de Terna"
+T_25_S_01_#U8G029GUQ,25,1,GrupoXTerna™3,#U8G029GUQ,Reyper,S,Quitar,4,4,700,Original,GrupoXTerna™2,"Log: ™2 7 y ™3 4 ataques; ™3 llegó a 4 el viernes, así que el 4 del sábado es de ™2"
+T_25_S_01_#VUVC9P8VL,25,1,GrupoXTerna™3,#VUVC9P8VL,Percape,S,Quitar,4,4,600,Original,GrupoXTerna™2,Log: ™2 4 y ™3 0 ataques; el 4 del sábado es de ™2
