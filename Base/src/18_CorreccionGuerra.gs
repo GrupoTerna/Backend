@@ -1242,6 +1242,34 @@ function repararSemanaDesdeJsonRoyaleApiInforme() { _repararSemanaDesdeJsonRoyal
 
 function repararSemanaDesdeJsonRoyaleApiAplicar() { _repararSemanaDesdeJsonRoyaleApi_(true); }
 
+// ----- Comparar Correcciones_Nuevos.csv con Correcciones_Guerra.csv (§PF329) -----
+
+/**
+ * Se corre a mano. Compara, por jugador, temporada de RoyaleAPI y semana, lo que guarda Correcciones_Nuevos.csv con lo que guarda Correcciones_Guerra.csv
+ * para el mismo clan, y anota en Revision_Guerra.csv (Tipo «Contradicción», Estado «Pendiente») lo que no coincide. No cambia ninguno de los dos archivos
+ * de correcciones. Detalle en _cnvCompararNuevosConGuerra_().
+ */
+function compararNuevosConGuerraInforme() {
+  var textoNuevos = _loadCSVFromDrive(NOMBRE_CSV_DEBUG_NUEVOS);
+  var textoGuerra = _loadCSVFromDrive(CORRECCIONES_GUERRA_CSV);
+  if (!textoNuevos || !textoGuerra) {
+    Logger.log('[Nuevos contra Guerra] No se puede comparar: ' + (!textoNuevos ? NOMBRE_CSV_DEBUG_NUEVOS : CORRECCIONES_GUERRA_CSV) + ' no existe o está vacío.');
+    return;
+  }
+  var nombresPorTag = {};
+  try { nombresPorTag = _mapaNombresClanTerna_(CFG.TERNA_TAGS); } catch (eNom) { nombresPorTag = {}; }
+  var r = _cnvCompararNuevosConGuerra_(textoNuevos, textoGuerra, nombresPorTag, 300);
+  if (r.error) { Logger.log('[Nuevos contra Guerra] ' + r.error); return; }
+  var st = r.stats;
+  Logger.log('[Nuevos contra Guerra] Filas de ' + NOMBRE_CSV_DEBUG_NUEVOS + ': ' + st.filasNuevos + '. Sin clan de Terna identificable: ' + st.sinClan +
+    '. Sin fila de ese jugador y semana en ' + CORRECCIONES_GUERRA_CSV + ': ' + st.sinFilaGuerra + '. Sin valores de ese clan allí: ' + st.sinDatoDelClan +
+    '. Comparadas: ' + st.comparadas + ' (iguales ' + st.iguales + ', distintas ' + st.diferentes + ').');
+  if (st.diferentes > r.entradas.length) Logger.log('[Nuevos contra Guerra] Hay ' + st.diferentes + ' diferencias; esta corrida solo anota las primeras ' + r.entradas.length + '. Vuelve a correrla cuando se resuelvan.');
+  if (!r.entradas.length) return;
+  var reg = _registrarRevisionGuerra_(r.entradas);
+  Logger.log('[Nuevos contra Guerra] Revision_Guerra.csv: ' + reg.nuevas + ' nueva(s), ' + reg.actualizadas + ' actualizada(s), ' + reg.sinCambio + ' sin cambio.');
+}
+
 // ===== PARTE 2 — Funciones que no se corren a mano =====
 
 // ----- Fame: combinaciones posibles por día -----
@@ -2519,6 +2547,94 @@ function _registrarRevisionGuerra_(entradas) {
   for (var n = 0; n < filas.length; n++) filas[n][0] = n + 1;
   _saveCSVToDrive(REVISION_GUERRA_CSV, _encodeCSV([REVISION_GUERRA_ENCABEZADO].concat(filas)));
   return resultado;
+}
+
+/**
+ * _cnvCompararNuevosConGuerra_(textoNuevos, textoGuerra, nombresPorTag, tope) (§PF329, 1-nov-2026). Función pura: no lee ni escribe Drive.
+ * La clave común es el jugador, la temporada de RoyaleAPI y la semana: el «136-2» de la columna Temporada de Correcciones_Nuevos.csv es la temporada 136 de RoyaleAPI y su
+ * semana 2 (el número de la derecha, contado desde 1), igual que «Temporada RoyaleAPI» y «Semana» de Correcciones_Guerra.csv (formato ancho). La temporada interna no se usa
+ * (la reenumeración la cambia y la de RoyaleAPI no). El clan sale del ClanTag de Nuevos o, si falta, del nombre cuando es el de UN solo clan de Terna (nombresPorTag: tag -> nombre,
+ * vacío si el nombre se repite). Se comparan ataques, fame (contra Medallas) y barcos solo cuando AMBOS archivos traen el valor de ese clan; un hueco no es diferencia.
+ * Nada se pisa: devuelve las entradas para _registrarRevisionGuerra_ (Tipo «Contradicción», Estado «Pendiente»), hasta `tope`.
+ * Devuelve { stats, entradas } o { error }.
+ */
+function _cnvCompararNuevosConGuerra_(textoNuevos, textoGuerra, nombresPorTag, tope) {
+  var stats = { filasNuevos: 0, sinClan: 0, sinFilaGuerra: 0, sinDatoDelClan: 0, comparadas: 0, iguales: 0, diferentes: 0 };
+  var entradas = [];
+  var pN = _parseCSV(_cgwQuitarBom_(textoNuevos));
+  var pG = _parseCSV(_cgwQuitarBom_(textoGuerra));
+  if (!pN || pN.length < 2) return { error: 'Correcciones_Nuevos.csv no tiene filas.' };
+  if (!pG || pG.length < 2) return { error: 'Correcciones_Guerra.csv no tiene filas.' };
+  if (!_cgwEsFormatoAncho_(pG[0])) return { error: 'Correcciones_Guerra.csv no está en el formato ancho; solo se compara con ese formato.' };
+
+  function celda(fila, idx) { return (idx === undefined || fila[idx] === undefined || fila[idx] === null) ? '' : String(fila[idx]).trim(); }
+  function numero(x) { if (x === '') return null; var v = Number(String(x).replace(',', '.')); return isFinite(v) ? v : null; }
+  function mostrar(x) { return x === null ? 'sin dato' : x; }
+
+  // Correcciones_Guerra.csv: 'tag|temporadaRoyaleApi|semana' -> { temporadaInterna, clanes: { clanTag: { ataques, barcos, medallas } } }
+  var encG = pG[0].map(function (h) { return String(h).trim(); });
+  var colG = {}, colClan = {}, h, m;
+  var reClan = /^(Ataques|Barcos|Medallas) (#[0-9A-Za-z]+)$/;
+  for (h = 0; h < encG.length; h++) {
+    colG[encG[h]] = h;
+    m = reClan.exec(encG[h]);
+    if (m) { var ct = _normalizarClanTagCorreccion(m[2]); if (!colClan[ct]) colClan[ct] = {}; colClan[ct][m[1]] = h; }
+  }
+  var guerra = {}, i;
+  for (i = 1; i < pG.length; i++) {
+    var fg = pG[i];
+    var tagG = celda(fg, colG['Tag']), rapiG = celda(fg, colG['Temporada RoyaleAPI']), semG = celda(fg, colG['Semana']);
+    if (!tagG || !rapiG || !semG) continue;
+    var ent = { temporadaInterna: celda(fg, colG['Temporada']), clanes: {} };
+    Object.keys(colClan).forEach(function (c) {
+      var v = { ataques: numero(celda(fg, colClan[c].Ataques)), barcos: numero(celda(fg, colClan[c].Barcos)), medallas: numero(celda(fg, colClan[c].Medallas)) };
+      if (v.ataques !== null || v.barcos !== null || v.medallas !== null) ent.clanes[c] = v;
+    });
+    guerra[tagG + '|' + rapiG + '|' + semG] = ent;
+  }
+
+  // nombre de clan (minúsculas) -> clanTag, solo para los nombres que identifican a un único clan de Terna
+  var tagPorNombre = {};
+  Object.keys(nombresPorTag || {}).forEach(function (t) {
+    var nom = String(nombresPorTag[t] || '').trim().toLowerCase();
+    if (nom) tagPorNombre[nom] = _normalizarClanTagCorreccion(t);
+  });
+
+  var encN = pN[0].map(function (x) { return String(x).trim(); });
+  var colN = {};
+  encN.forEach(function (x, idx) { colN[x] = idx; });
+  for (i = 1; i < pN.length; i++) {
+    var fn = pN[i];
+    var tagN = celda(fn, colN['Tag']), temporadaN = celda(fn, colN['Temporada']);
+    var partes = temporadaN.split('-');
+    if (!tagN || partes.length !== 2) continue;
+    stats.filasNuevos++;
+    var clanNombre = celda(fn, colN['Clan']);
+    var clanTag = celda(fn, colN['ClanTag']) ? _normalizarClanTagCorreccion(celda(fn, colN['ClanTag'])) : (tagPorNombre[clanNombre.toLowerCase()] || '');
+    if (!clanTag || !colClan[clanTag]) { stats.sinClan++; continue; }
+    var g = guerra[tagN + '|' + partes[0] + '|' + partes[1]];
+    if (!g) { stats.sinFilaGuerra++; continue; }
+    var vg = g.clanes[clanTag];
+    if (!vg) { stats.sinDatoDelClan++; continue; }
+    var vn = { ataques: numero(celda(fn, colN['Ataques'])), fame: numero(celda(fn, colN['Fame'])), barcos: numero(celda(fn, colN['Barcos'])) };
+    var distintas = [];
+    if (vn.ataques !== null && vg.ataques !== null && vn.ataques !== vg.ataques) distintas.push('ataques');
+    if (vn.fame !== null && vg.medallas !== null && vn.fame !== vg.medallas) distintas.push('fame');
+    if (vn.barcos !== null && vg.barcos !== null && vn.barcos !== vg.barcos) distintas.push('barcos');
+    var comparable = (vn.ataques !== null && vg.ataques !== null) || (vn.fame !== null && vg.medallas !== null) || (vn.barcos !== null && vg.barcos !== null);
+    if (!comparable) { stats.sinDatoDelClan++; continue; }
+    stats.comparadas++;
+    if (!distintas.length) { stats.iguales++; continue; }
+    stats.diferentes++;
+    if (entradas.length >= (tope || 300)) continue;
+    entradas.push({
+      temporada: g.temporadaInterna, semana: partes[1], tag: tagN, nombre: '', tipo: CGW_CONTRADICCION_TIPO,
+      motivo: 'Nuevos y Guerra difieren (' + (clanNombre || clanTag) + ')', estado: CGW_CONTRADICCION_ESTADO,
+      detalle: 'Difieren en ' + distintas.join(', ') + '. Correcciones_Nuevos.csv: ataques ' + mostrar(vn.ataques) + ', fame ' + mostrar(vn.fame) + ', barcos ' + mostrar(vn.barcos) +
+        '. Correcciones_Guerra.csv (' + clanTag + '): ataques ' + mostrar(vg.ataques) + ', medallas ' + mostrar(vg.medallas) + ', barcos ' + mostrar(vg.barcos) + '. No se cambió ninguno de los dos.'
+    });
+  }
+  return { stats: stats, entradas: entradas };
 }
 
 // ----- Reparto, reconstrucción y cobertura -----
