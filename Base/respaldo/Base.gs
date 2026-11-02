@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 02:07:07 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 02:31:42 */
 
 
 
@@ -32276,6 +32276,9 @@ function _aplicarHistorialGuerra(candidatosPayload) {
     var tag = String(cand.tag || '').trim().toUpperCase();
     if (!tag) continue;
     var nombre = cand.nombre || '';
+    // §PF341: `soloIndividual` (Tampermonkey v3.20) = alguien que ya no está en los clanes Terna y se conoce solo por su tag (sin nombre real): todo lo suyo va
+    // únicamente a su JSON individual, nada al CSV grupal ni al JSON grupal. Sin la marca (Tampermonkey anterior) todo funciona como antes.
+    var soloIndividual = cand.soloIndividual === true;
     var registrosEntrada = cand.registros || [];
     var registrosDelJugador = [];
     var clanDelJugador = '';
@@ -32316,7 +32319,7 @@ function _aplicarHistorialGuerra(candidatosPayload) {
           registrosExternos++;
         } else {
           if (registroCompleto.clan) clanDelJugador = registroCompleto.clan; // el nombre del archivo usa el clan del último registro Terna, como antes
-          itemsGrupal.push({ tag: tag, nombre: nombre, registro: registroCompleto });
+          if (!soloIndividual) itemsGrupal.push({ tag: tag, nombre: nombre, registro: registroCompleto });
         }
         registrosGuardados++;
       }
