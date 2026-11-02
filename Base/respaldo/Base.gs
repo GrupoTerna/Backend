@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 01/11/2026 21:14:53 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 01/11/2026 21:39:42 */
 
 
 
@@ -2489,6 +2489,13 @@ var CFG = {
 
   // Tag del clan vetado (solo seguimiento, no participa en guerra ni mensajes)
   VETADO_TAG: '#RYYCRGVG',
+
+  // §PF334 (1-nov-2026): ¿se le piden /clans y /currentriverrace a la API al clan vetado (VETADO_TAG) y se guardan sus JSON? Por defecto NO: no interesa su guerra ni su
+  // lista de miembros. Para reactivarlo sin tocar el código: propiedad del script CFG_VETADO_API_ACTIVO = 'true' (Configuración del proyecto > Propiedades del script).
+  // OJO: sin la lista de miembros del clan vetado, el Directorio ya no ve a quien está ahí «en vivo» (§PF334).
+  get VETADO_API_ACTIVO() {
+    try { return PropertiesService.getScriptProperties().getProperty('CFG_VETADO_API_ACTIVO') === 'true'; } catch (e) { return false; }
+  },
 
   // FASE 6 (punto 6 del documento — Detección de infiltrados/sabotaje): [→ Contexto_Base_Web.md §01B003]
   CLANES_CONFLICTO_MANUAL: [
@@ -10348,6 +10355,7 @@ var _jsonClanesUltimoTotal = 0;
 // _guardarCacheEnDrive() anota ahi el nombre de cada archivo en vez de agregar una entrada a Log_ScriptTerna.json por archivo (cada
 // entrada lee y reescribe todo el log, ~3 s). Al terminar se registra UNA sola entrada. Fuera de la captura vale null (se registra cada uno).
 var _logJsonCapturaAcumulado_ = null;
+var _TAGS_API_CACHE_ = null;   // §PF334: tags de clanes a los que se les pide /clans y /currentriverrace (memoria por ejecución de _tagsClanesApi_)
 
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS [→ Contexto_Base_Web.md §09B009]
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS — pregunta 51, tanda 2: CSV de battlelogs [→ Contexto_Base_Web.md §09B010]
@@ -10494,7 +10502,7 @@ function guardarApiDump() {
   // PF091 (17-oct-2026, pedido usuario): ya NO pide a la API por su cuenta. Usa la captura (capturarApiClanes_), que reutiliza el
   // checkpoint si tiene <= CFG.CLANES_PROGRESO_MAX_EDAD_MS o pide una sola vez, y escribe los JSON con esas respuestas.
   // Antes volvia a pedir los mismos 2 endpoints de los 5 clanes. [→ Contexto_Base_Web.md §PF091]
-  Logger.log('[ApiDump] Iniciando (usa la captura, sin pedir de nuevo a la API) para ' + CFG.CLAN_TAGS.length + ' clanes...');
+  Logger.log('[ApiDump] Iniciando (usa la captura, sin pedir de nuevo a la API) para ' + _tagsClanesApi_().length + ' clanes...');
   capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'guardarApiDump');
   // PF091 etapa 4 (17-oct-2026, registro de runUpdate del 12:04): si la captura de OTRA ejecucion (p. ej. el paso 0 de la misma cadena, antes
   // de una continuacion) ya escribio los JSON con este checkpoint, no se reescriben: costaba ~40 s y renombraba los de clans con una hora
@@ -10510,7 +10518,7 @@ function guardarApiDump() {
   Logger.log('[ApiDump] Completado. Endpoints escritos: ' + total + nota);
   _registrarLogScriptTerna('guardarApiDump()',
     'Dump de API completado. Endpoints escritos: ' + total +
-    ' de ' + (CFG.CLAN_TAGS.length * CACHE_ENDPOINTS.length) + ' posibles.' + nota,
+    ' de ' + (_tagsClanesApi_().length * CACHE_ENDPOINTS.length) + ' posibles.' + nota,
     total === 0 ? ['Ningún endpoint se pudo escribir'] : []);
 }
 
@@ -12046,6 +12054,27 @@ function _guardarJsonBusquedaNombreEnDrive(nombreBuscado, datos) {
 
 // ----- Clanes: datos básicos, captura y punto de control -----
 
+/**
+ * §PF334 (1-nov-2026, pedido de la usuaria: «NARANJA x ya no debe guardar currentriverrace, no me importa su guerra, tampoco clans»).
+ * Tags de clanes a los que se les pide /clans y /currentriverrace: CFG.CLAN_TAGS sin el clan vetado (CFG.VETADO_TAG), salvo que CFG.VETADO_API_ACTIVO sea true
+ * (opcional, para reactivarlo). Se calcula una vez por ejecución. Es la lista que usan la captura, el checkpoint, el guardado de JSON y los conteos de este archivo.
+ */
+function _tagsClanesApi_() {
+  if (!_TAGS_API_CACHE_) {
+    var activo = CFG.VETADO_API_ACTIVO;
+    _TAGS_API_CACHE_ = CFG.CLAN_TAGS.filter(function (t) { return activo || t !== CFG.VETADO_TAG; });
+  }
+  return _TAGS_API_CACHE_;
+}
+
+/** §PF334: copia del objeto { tag: datos } de un checkpoint con solo los clanes de _tagsClanesApi_(). null si no hay objeto. */
+function _soloClanesApi_(clanes) {
+  if (!clanes) return null;
+  var salida = {};
+  _tagsClanesApi_().forEach(function (t) { if (clanes[t]) salida[t] = clanes[t]; });
+  return salida;
+}
+
 // SECCION 2: RESTO DE FUNCIONES (cache, fetch de API, helpers internos). [→ Contexto_Base_Web.md §09B091]
 /**
  * Llama solo a /clans/{tag} y /clans/{tag}/currentriverrace para todos los [→ Contexto_Base_Web.md §09B092]
@@ -12057,8 +12086,8 @@ function _fetchClanesBasico(maxEdadMs) {
   }
 
   // FIX (06-ago-2026): antes, esta función SIEMPRE pedía los 5 clanes a la [→ Contexto_Base_Web.md §09B093]
-  var progreso = _cargarProgresoClanes(maxEdadMs);
-  if (progreso && Object.keys(progreso).length === CFG.CLAN_TAGS.length) {
+  var progreso = _soloClanesApi_(_cargarProgresoClanes(maxEdadMs));   // §PF334: un checkpoint viejo con el clan vetado no lo reintroduce
+  if (progreso && Object.keys(progreso).length === _tagsClanesApi_().length) {
     CACHE_CLAN_DATA = progreso;
     _clanesBasicoListoEnEstaEjecucion = true;
     _clanesBasicoDesdeApiEnEstaEjecucion = false;  // PF091: datos del checkpoint, no de una consulta nueva
@@ -12075,10 +12104,10 @@ function _fetchClanesBasico(maxEdadMs) {
   // FIX (02-oct-2026): último checkpoint conocido (sin importar su edad) como
   // respaldo SOLO para /clans/{tag} (roster) cuando la API falla.
   var respaldoClanes = null;
-  Logger.log('[API] Iniciando _fetchAllClanData para ' + CFG.CLAN_TAGS.length + ' clanes...');
+  Logger.log('[API] Iniciando _fetchAllClanData para ' + _tagsClanesApi_().length + ' clanes...');
 
-  for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
-    var tag = CFG.CLAN_TAGS[i];
+  for (var i = 0; i < _tagsClanesApi_().length; i++) {
+    var tag = _tagsClanesApi_()[i];
     Logger.log('[API] Consultando clan: ' + tag);
 
     // Endpoint principal: /clans/{tag}
@@ -12156,7 +12185,7 @@ function _fetchClanesBasico(maxEdadMs) {
   } catch (eResPer) { Logger.log('[API][PERIODO] no se pudo armar el resumen: ' + eResPer.message); }
 
   // FIX (06-ago-2026): guarda lo recién obtenido en Drive para que la [→ Contexto_Base_Web.md §09B097]
-  var _consultaCompleta = (!huboFallbackInfo && CLANES_SIN_RIVERRACE.length === 0 && Object.keys(CACHE_CLAN_DATA).length === CFG.CLAN_TAGS.length);
+  var _consultaCompleta = (!huboFallbackInfo && CLANES_SIN_RIVERRACE.length === 0 && Object.keys(CACHE_CLAN_DATA).length === _tagsClanesApi_().length);
   if (_consultaCompleta) {
     _guardarProgresoClanes(CACHE_CLAN_DATA);
   } else {
@@ -12196,8 +12225,8 @@ function _fetchClanesBasicoSinApi(maxEdadMs) {
   }
 
   var cache = {}, sinRiver = [], faltan = [], resumen = [];
-  for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
-    var tag = CFG.CLAN_TAGS[i];
+  for (var i = 0; i < _tagsClanesApi_().length; i++) {
+    var tag = _tagsClanesApi_()[i];
     var cd = cp.clanes[tag];
     if (!cd || !cd.info) { faltan.push(tag); continue; }
     cache[tag] = cd;
@@ -12246,8 +12275,8 @@ function _guardarProgresoClanes(cacheClanData) {
   try {
     var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
     var soloClanes = {};
-    for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
-      var tag = CFG.CLAN_TAGS[i];
+    for (var i = 0; i < _tagsClanesApi_().length; i++) {
+      var tag = _tagsClanesApi_()[i];
       if (cacheClanData[tag]) soloClanes[tag] = cacheClanData[tag];
     }
 
@@ -12348,8 +12377,8 @@ function _registrarPrimeraConsultaDesdeCaptura_() {
   try {
     var ctx = _getCtx();
     var ahora = new Date().getTime();
-    for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
-      var tag = CFG.CLAN_TAGS[i];
+    for (var i = 0; i < _tagsClanesApi_().length; i++) {
+      var tag = _tagsClanesApi_()[i];
       var d = CACHE_CLAN_DATA && CACHE_CLAN_DATA[tag];
       var rr = d && d.riverrace;
       if (!rr || rr.periodIndex === '' || rr.periodIndex === null || rr.periodIndex === undefined || !isFinite(Number(rr.periodIndex))) continue;
@@ -12380,8 +12409,8 @@ function _guardarJsonClanesDesdeCaptura_(forzar) {
   try {
     var ctx = _getCtx();
     _logJsonCapturaAcumulado_ = nombresEscritos;   // PF091 etapa 4: una sola entrada en Log_ScriptTerna.json al terminar
-    for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
-      var tag = CFG.CLAN_TAGS[i];
+    for (var i = 0; i < _tagsClanesApi_().length; i++) {
+      var tag = _tagsClanesApi_()[i];
       var d = CACHE_CLAN_DATA && CACHE_CLAN_DATA[tag];
       if (!d) continue;
       if (d.info && CLANES_INFO_RESPALDO.indexOf(tag) < 0) { _guardarCacheEnDrive(tag, 'clans', ctx, d.info); total++; }
@@ -13723,8 +13752,8 @@ function _fetchAllClanDataCached() {
 
   if (!CACHE_CLAN_DATA) CACHE_CLAN_DATA = {};
 
-  for (var i = 0; i < CFG.CLAN_TAGS.length; i++) {
-    var clanTag = CFG.CLAN_TAGS[i];
+  for (var i = 0; i < _tagsClanesApi_().length; i++) {
+    var clanTag = _tagsClanesApi_()[i];
 
     // Info del clan
     var info = _apiGetCached(clanTag, 'clans', function(t) {
@@ -71632,6 +71661,7 @@ var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo 
 var VCRR_ARCHIVO_RAPI = 'Cruce_CRR_RoyaleAPI.csv';                // caché de los totales cerrados de RoyaleAPI (log y perfil) leídos de sus JSON individuales (§PF320)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
 var VCRR_VERSION_REGLAS = 8;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_, el cruce con RoyaleAPI (§PF320, 5), la lista VCRR_SERIES_CONFIRMADAS (§PF331, 6; §PF332, 7) o qué capturas se descartan (§PF333, 8): invalida el registro y se releen todos los JSON
+var VCRR_CLAN_VETADO_KEY = 'naranja x';                 // §PF335: clave (en minúsculas) del clan vetado (CFG.VETADO_TAG) en _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_; sus JSON viejos no se listan ni se leen mientras CFG.VETADO_API_ACTIVO sea false
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
@@ -72023,11 +72053,14 @@ function _vcrrPaso1_(st, t0) {
 /**
  * Lista los JSON de CurrentRiverRace de una semana (CurrentRiverRace/<clan>/T-NN/S-NN) SIN leer su contenido. Devuelve
  * [{ file, nombre, clanKey, letra, modificado (ms), tamano }]. Una carpeta que falla no corta las demás.
+ * §PF335: no lista la carpeta del clan vetado (VCRR_CLAN_VETADO_KEY) mientras CFG.VETADO_API_ACTIVO sea false (§PF334): Backup_Guerra.csv no tiene ese clan,
+ * así que sus series se descartaban como «sinClanEnCsv» después de leer y calcular todo. Con la opción activa se lista como antes.
  */
 function _vcrrArchivosSemana_(temporada, semana) {
   var lista = [];
   var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(semana);
   Object.keys(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_).forEach(function (k) {
+    if (k === VCRR_CLAN_VETADO_KEY && !CFG.VETADO_API_ACTIVO) return;   // §PF335
     try {
       var cT = _crrSubcarpeta_(DriveApp.getFolderById(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_[k]), nT);
       var cS = cT ? _crrSubcarpeta_(cT, nS) : null;
