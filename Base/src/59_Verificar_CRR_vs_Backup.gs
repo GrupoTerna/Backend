@@ -313,7 +313,7 @@ function _vcrrFilasRapiDeArchivo_(nombre, modificado, datos, tagNombre) {
   var tag = String((datos && datos.tag) || tagNombre || '').trim().toUpperCase();
   var filas = [['', '', '', tag, 'archivo', '', '', '', nombre, modificado]];
   ((datos && datos.registros) || []).forEach(function (x) {
-    if (!x || !x.cerrada || (x.fuente !== 'log' && x.fuente !== 'perfil')) return;
+    if (!x || x.externa === true || !x.cerrada || (x.fuente !== 'log' && x.fuente !== 'perfil')) return; // §PF340: la fila de un clan externo no es el perfil Terna del jugador ni sirve de techo
     var t = Number(x.temporadaInterna), s = Number(x.semana), a = Number(x.ataques), f = Number(x.fame);
     if (!(t > 0) || !(s > 0) || !isFinite(a) || !isFinite(f)) return;
     var b = (x.barcos === null || x.barcos === undefined || x.barcos === '') ? '' : Number(x.barcos);

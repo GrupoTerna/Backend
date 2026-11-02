@@ -279,7 +279,7 @@ function _aplicarHistorialGuerra(candidatosPayload) {
   }
 
   var offset = _getTemporadaOffsetRoyaleApi(); // 18_CorreccionGuerra.gs — mismo mapeo que Correcciones_Guerra.csv
-  var procesados = 0, registrosGuardados = 0;
+  var procesados = 0, registrosGuardados = 0, registrosExternos = 0;
   var errores = [];
   var itemsGrupal = []; // se escriben todos juntos al final (un solo CSV grupal por petición) [→ Contexto_Base_Web.md §PF068]
 
@@ -291,6 +291,7 @@ function _aplicarHistorialGuerra(candidatosPayload) {
     var registrosEntrada = cand.registros || [];
     var registrosDelJugador = [];
     var clanDelJugador = '';
+    var clanExternoDelJugador = ''; // solo se usa para el nombre de un archivo NUEVO cuando el lote del jugador trae únicamente filas externas
 
     try {
       for (var r = 0; r < registrosEntrada.length; r++) {
@@ -311,13 +312,28 @@ function _aplicarHistorialGuerra(candidatosPayload) {
           cerrada: reg.cerrada !== false // por defecto true; solo River Race mandaría cerrada:false explícito (todavía no implementado del lado cliente)
         };
 
+        // §PF340 (2-nov-2026): una fila de un clan que NO es de CFG.TERNA_TAGS (decide el backend por el tag del clan que manda Tampermonkey; sin tag se trata
+        // como Terna, igual que antes) se guarda SOLO en el JSON individual, como total del jugador en esa semana y ese clan. No va al CSV grupal ni al JSON grupal
+        // y los lectores de Guerra (18_, 59_) la ignoran, así que nunca llega a Backup_Guerra.csv. [→ Contexto_Base_Web.md §PF340]
+        var clanTagFila = _normalizarClanTagCorreccion(reg.clanTag);
+        var esExterna = !!clanTagFila && CFG.TERNA_TAGS.indexOf(clanTagFila) < 0;
+        if (esExterna) {
+          registroCompleto.externa = true;
+          registroCompleto.clanTag = clanTagFila;
+        }
+
         registrosDelJugador.push(registroCompleto);
-        if (registroCompleto.clan) clanDelJugador = registroCompleto.clan; // el nombre del archivo usa el clan del último registro, como antes
-        itemsGrupal.push({ tag: tag, nombre: nombre, registro: registroCompleto });
+        if (esExterna) {
+          if (registroCompleto.clan) clanExternoDelJugador = registroCompleto.clan;
+          registrosExternos++;
+        } else {
+          if (registroCompleto.clan) clanDelJugador = registroCompleto.clan; // el nombre del archivo usa el clan del último registro Terna, como antes
+          itemsGrupal.push({ tag: tag, nombre: nombre, registro: registroCompleto });
+        }
         registrosGuardados++;
       }
       // JSON individual: una lectura y, si cambió algo, una escritura por jugador.
-      _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanDelJugador, registrosDelJugador);
+      _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanDelJugador || clanExternoDelJugador, registrosDelJugador);
       procesados++;
     } catch (e) {
       errores.push({ tag: tag, error: e.message });
@@ -334,7 +350,7 @@ function _aplicarHistorialGuerra(candidatosPayload) {
   catch (eJg) { Logger.log('[HistorialGuerra][JSON grupal] Error: ' + eJg.message); }
 
   return {
-    ok: true, procesados: procesados, registrosGuardados: registrosGuardados, errores: errores,
+    ok: true, procesados: procesados, registrosGuardados: registrosGuardados, registrosExternos: registrosExternos, errores: errores,
     grupalGuardado: grupal.guardado, grupalCambios: grupal.cambios, grupalIgnorados: grupal.ignorados,
     grupalSinLock: !!grupal.sinLock,
     jsonGrupalGuardados: jsonGrupal.guardados, jsonGrupalCambios: jsonGrupal.cambios, jsonGrupalConflictos: jsonGrupal.conflictos, jsonGrupalSinLock: !!jsonGrupal.sinLock
@@ -391,8 +407,10 @@ function _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanActual, reg
     var indice    = _getHistorialGuerraDriveIndexPorTag(folder);
     var archivoExistente = indice[String(tag).trim()] || null;
 
+    // §PF340: si el lote trae solo filas de clan externo, el archivo ya existente conserva su nombre (lleva el clan Terna del jugador); el externo solo nombra un archivo nuevo.
+    var soloExternos = registrosNuevos.every(function (rn) { return rn && rn.externa === true; });
     if (archivoExistente) {
-      if (archivoExistente.getName() !== filename) archivoExistente.setName(filename);
+      if (!soloExternos && archivoExistente.getName() !== filename) archivoExistente.setName(filename);
       _setContentConConteo_(archivoExistente, contenido);
     } else {
       var nuevoArchivo = _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
@@ -1416,12 +1434,21 @@ function _rgNombreArchivo_(ent) { return ent && ent.archivo ? ent.archivo.getNam
 function _buscarIndiceHistorialGuerra(registros, nuevo) {
   var nuevoEsPerfil = String(nuevo.fuente || '').toLowerCase() === 'perfil';
   var clanNuevo = _claveClanHistorialGuerra(nuevo.clan);
+  var nuevoEsExterno = nuevo.externa === true;
   var idxMismoClan = -1, idxPerfil = -1, idxMejorNoPerfil = -1, prioMejor = -2;
 
   for (var i = 0; i < registros.length; i++) {
     var r = registros[i];
     if (Number(r.temporadaInterna) !== Number(nuevo.temporadaInterna) ||
         Number(r.semana) !== Number(nuevo.semana)) continue;
+
+    // §PF340: las filas de clan externo (externa: true) tienen su propia identidad por jugador, semana y clan: nunca se mezclan con las de clanes Terna
+    // (ni como «el perfil de la semana» ni como «el registro de mejor fuente»), ni una pisa a la otra. [→ Contexto_Base_Web.md §PF340]
+    if ((r.externa === true) !== nuevoEsExterno) continue;
+    if (nuevoEsExterno) {
+      if (_claveClanHistorialGuerra(r.clan) === clanNuevo) return i;
+      continue;
+    }
 
     var esPerfil = String(r.fuente || '').toLowerCase() === 'perfil';
     if (esPerfil) {
@@ -1592,7 +1619,8 @@ function _webHistorialGuerraJugador(token, tagBuscado, limite) {
         barcos:             (r.barcos == null) ? null : r.barcos,
         fuente:             r.fuente || '',
         cerrada:            !!r.cerrada,
-        comentario:         r.comentario || ''
+        comentario:         r.comentario || '',
+        externa:            r.externa === true // §PF340: fila de un clan que no es de Terna (solo vive en el JSON individual)
       };
     });
 

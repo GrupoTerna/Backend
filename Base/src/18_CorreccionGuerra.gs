@@ -4896,7 +4896,7 @@ function _cdjIndexarRegistrosJson_(registrosPorTag) {
   Object.keys(registrosPorTag || {}).forEach(function (tagCrudo) {
     var tag = String(tagCrudo).trim().toUpperCase();
     (registrosPorTag[tagCrudo] || []).forEach(function (x) {
-      if (!x) return;
+      if (!x || x.externa === true) return; // §PF340: las filas de clan externo viven solo en el JSON individual; nunca entran a Guerra ni a Backup_Guerra.csv
       var t = Number(x.temporadaInterna), s = Number(x.semana);
       var ataques = Number(x.ataques), fame = Number(x.fame);
       if (!(t > 0) || !(s > 0) || !isFinite(ataques) || !isFinite(fame)) return;
