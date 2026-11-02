@@ -33,6 +33,13 @@ var CFG = {
   // Tag del clan vetado (solo seguimiento, no participa en guerra ni mensajes)
   VETADO_TAG: '#RYYCRGVG',
 
+  // §PF334 (1-nov-2026): ¿se le piden /clans y /currentriverrace a la API al clan vetado (VETADO_TAG) y se guardan sus JSON? Por defecto NO: no interesa su guerra ni su
+  // lista de miembros. Para reactivarlo sin tocar el código: propiedad del script CFG_VETADO_API_ACTIVO = 'true' (Configuración del proyecto > Propiedades del script).
+  // OJO: sin la lista de miembros del clan vetado, el Directorio ya no ve a quien está ahí «en vivo» (§PF334).
+  get VETADO_API_ACTIVO() {
+    try { return PropertiesService.getScriptProperties().getProperty('CFG_VETADO_API_ACTIVO') === 'true'; } catch (e) { return false; }
+  },
+
   // FASE 6 (punto 6 del documento — Detección de infiltrados/sabotaje): [→ Contexto_Base_Web.md §01B003]
   CLANES_CONFLICTO_MANUAL: [
     // { tag: '#XXXXXXXX', nombre: 'Nombre del clan', motivo: 'Ej: exmiembros vetados fundaron este clan' },
