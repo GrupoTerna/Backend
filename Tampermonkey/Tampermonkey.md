@@ -1126,8 +1126,8 @@
   /**
    * _leerNombreDePerfil(tag)  (v3.20, §PF341)
    * Lee el nombre del jugador de la página de su perfil (la que ya está abierta cuando se procesa). Primero el encabezado de la página (h1); si no sirve, el
-   * título de la pestaña («Nombre (#TAG) - Clash Royale …»). Devuelve '' si no logra un nombre que no sea el propio tag. Los selectores NO se probaron contra
-   * RoyaleAPI real (no se pudo abrir desde el entorno de trabajo): si el nombre sale vacío en el registro, hay que ajustar aquí el selector.
+   * título de la pestaña («Nombre #TAG | Player Profile in Clash Royale - RoyaleAPI»). Devuelve '' si no logra un nombre que no sea el propio tag.
+   * Verificado el 2-nov-2026 en la consola con el perfil real de #22C090RVJ: el h1 trae el nombre completo («反覆分Mc-->WiLL»); el título solo se usa de respaldo.
    */
   function _leerNombreDePerfil(tag) {
     try {
@@ -1142,7 +1142,7 @@
         var n1 = limpio(hs[h].textContent);
         if (n1) return n1;
       }
-      var n2 = limpio(String(document.title || '').replace(/\s[-|–—]\s*(Clash Royale|RoyaleAPI)[\s\S]*$/i, ''));
+      var n2 = limpio(String(document.title || '').replace(/\s*\|\s*Player Profile[\s\S]*$|\s[-|–—]\s*(Clash Royale|RoyaleAPI)[\s\S]*$/i, ''));
       return n2;
     } catch (e) { return ''; }
   }
