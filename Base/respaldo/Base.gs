@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 01/11/2026 20:10:38 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 01/11/2026 20:54:12 */
 
 
 
@@ -71604,6 +71604,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
  * Se programa sola: cada tanda tiene su presupuesto de tiempo y, si no alcanza, deja el avance guardado y programa su continuación.
  * Los pasos son: (1) leer los JSON individuales de RoyaleAPI y guardar sus totales cerrados (caché incremental), (2) leer los JSON de CurrentRiverRace, calcular restricciones y cruzar las series anómalas
  * con RoyaleAPI, (3) comparar contra el CSV y registrar lo que no coincide, (4) escribir (solo Aplicar).
+ * SERIES CONFIRMADAS A MANO (VCRR_SERIES_CONFIRMADAS, §PF331): la usuaria fija a mano una serie (jugador, clan y semana) cuando comprobó el total en RoyaleAPI y las capturas se contradicen; el cruce la respeta y no la lista como «SIN RESOLVER».
  * El ID de las filas de los informes es el de siempre (T_NN_S_NN_#TAG, lo agrega _encodeCSVInforme); el clan va en su propia columna.
  */
 
@@ -71630,7 +71631,7 @@ var VCRR_ESTADO_PROP = 'VCRR_ESTADO';                  // propiedad del script c
 var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo «Cruce_» lo manda a CSV/Informes (_csvSubcarpetaDe_)
 var VCRR_ARCHIVO_RAPI = 'Cruce_CRR_RoyaleAPI.csv';                // caché de los totales cerrados de RoyaleAPI (log y perfil) leídos de sus JSON individuales (§PF320)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
-var VCRR_VERSION_REGLAS = 5;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_ o el cruce con RoyaleAPI (§PF320, 5): invalida el registro y se releen todos los JSON
+var VCRR_VERSION_REGLAS = 7;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_, el cruce con RoyaleAPI (§PF320, 5) o la lista VCRR_SERIES_CONFIRMADAS (§PF331, 6; §PF332, 7): invalida el registro y se releen todos los JSON
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
@@ -71644,6 +71645,19 @@ var VCRR_TOPE_ATAQUES_DIA = 4, VCRR_TOPE_ATAQUES_SEMANA = 16, VCRR_TOPE_BARCOS_S
 // Un JSON movido a la carpeta Anomalías no hace falta anotarlo aquí: esa carpeta no se lee.
 // OJO con la reenumeración de temporadas (47_Migraciones.gs): estas claves llevan la temporada y NO se ajustan solas; si hay entradas, súmales el mismo delta (REENUM_DELTA_MESES) después de reenumerar.
 var VCRR_ANOMALIAS = [];
+
+// Series CONFIRMADAS A MANO por la usuaria (§PF331; 1-nov-2026): casos en que las capturas del JSON se contradicen y ella comprobó el total en RoyaleAPI.
+// Cada entrada fija la serie de UN jugador en UN clan y UNA semana: temporada, semana, tag, clanKey (la clave de _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_, en minúsculas),
+// nombre (solo para leer la lista) y, por métrica, A (ataques), F (fame) y B (barcos): un arreglo de 4 acumulados al cierre de J, V, S y D (cada día exacto) o un número
+// (solo el total del domingo; los días quedan entre 0 y ese total). nota = de dónde sale lo confirmado. El cruce respeta la entrada: la serie queda en estado 'confirmada', con esos
+// rangos y sin pasar por RoyaleAPI, así que deja de salir en «SIN RESOLVER». Una entrada sin serie esa semana (no hay JSON de ese jugador y clan) no hace nada.
+// Si cambias o agregas una entrada, sube VCRR_VERSION_REGLAS: así se vuelven a calcular las semanas ya verificadas.
+var VCRR_SERIES_CONFIRMADAS = [
+  { temporada: 22, semana: 1, tag: '#22C090RVJ', clanKey: 'grupoxterna\u21222', nombre: 'MC-->WiLL', A: [0, 4, 7, 11], F: [0, 700, 1000, 1700], B: 0,
+    nota: 'la usuaria comprobó en el perfil de RoyaleAPI (133-1) 11 ataques y 1700 medallas; ya no hay logs diarios, así que aceptó la distribución de Backup_Guerra.csv: ataques 0, 4, 3 y 4; medallas 0, 700, 300 y 700 (estimada, no verificable)' },
+  { temporada: 22, semana: 5, tag: '#80QCQ9R9Y', clanKey: 'grupoxterna\u21223', nombre: 'JEQ', A: [4, 8, 12, 16], F: [500, 1100, 1700, 2300], B: 0,
+    nota: 'la usuaria vio el registro 133-5 (2026-07-06) con 16 ataques y 2300 medallas, que coincide con 4 ataques por día y fame diaria de 500, 600, 600 y 600' }
+];
 
 var VCRR_PASOS_NOMBRES_INFORME = [
   'RoyaleAPI: leer los JSON individuales (log y perfil cerrados) de cada jugador y guardar sus totales semanales → Cruce_CRR_RoyaleAPI.csv',
@@ -71765,7 +71779,7 @@ function _vcrrEjecutar_(aplicar, esContinuacion) {
     var c = st.cont;
     Logger.log('[VCRR] FIN (' + st.tandas + ' tanda(s)). Semanas: ' + (c.semanasOmitidas || 0) + ' ya verificadas y sin cambios (no se releyeron), ' + (c.semanasSinJson || 0) + ' sin JSON. Series nuevas o recalculadas: ' + (c.series || 0) + '; con JSON anómalo o incoherente: ' + (c.anomalas || 0) + '. Hallazgos: CSV menor ' + (c.csv_menor || 0) +
       ', CSV mayor que el máximo ' + (c.csv_mayor_max || 0) + ', filas que faltan ' + (c.fila_faltante || 0) + ', acumulado que baja ' + (c.no_monotono || 0) + ', series con JSON anómalo ' + (c.json_anomalo || 0) +
-      ' (estimadas con RoyaleAPI ' + (c.estimadas_rapi || 0) + ', sin resolver ' + (c.sin_resolver_rapi || 0) + '). JSON de RoyaleAPI leídos de nuevo: ' + (c.rapiLeidos || 0) + '. ' +
+      ' (estimadas con RoyaleAPI ' + (c.estimadas_rapi || 0) + ', sin resolver ' + (c.sin_resolver_rapi || 0) + ', confirmadas a mano ' + (c.confirmadas || 0) + '). JSON de RoyaleAPI leídos de nuevo: ' + (c.rapiLeidos || 0) + '. ' +
       (aplicar ? 'Filas creadas: ' + (c.creadas || 0) + ', modificadas: ' + (c.modificadas || 0) + '. ' : '(No se escribió nada en Backup_Guerra.csv.) ') +
       'Detalle en CSV/Informes: ' + VCRR_ARCHIVO_RESTRICCIONES + ' y «Cruce_CRR_vs_Backup ' + st.marca + ' (hallazgos).csv».');
     props.deleteProperty(VCRR_ESTADO_PROP);
@@ -71982,6 +71996,7 @@ function _vcrrPaso1_(st, t0) {
       _vcrrSumar_(st, 'series', 1);
       if (x.estado !== 'ok') _vcrrSumar_(st, 'anomalas', 1);
       if (x.estimada) _vcrrSumar_(st, 'rapiEstimadas', 1);
+      if (x.confirmada) _vcrrSumar_(st, 'confirmadas', 1);
       if (x.sinResolver) _vcrrSumar_(st, 'rapiSinResolver', 1);
     });
     archivos.forEach(function (a) {
@@ -72111,6 +72126,8 @@ function _vcrrSeriesDeSemana_(temporada, semana, porClan, rapiSemana) {
         capturas: caps.map(function (c) { return !!c; }), estado: estado, notas: notas.join('; '), validos: r.validos, r: r, capsDatos: caps });
     });
   });
+  // §PF331: las series confirmadas a mano por la usuaria se fijan antes del cruce, que ya no las trata como candidatas.
+  _vcrrAplicarConfirmadas_(series, VCRR_SERIES_CONFIRMADAS);
   // §PF320: las series anómalas se cruzan con RoyaleAPI (por clan, luego la suma del jugador, luego el perfil). rapiSemana = { 'TAG': { porClan: { clanKey: {A,F,B} }, perfil: {A,F,B,clanKey} } } o null.
   // rapiSemana undefined = no se cargó RoyaleAPI (no se cruza nada); null o {} = se cargó y esa semana no tiene datos (las anómalas quedan «sin resolver»).
   if (rapiSemana !== undefined) {
@@ -72192,6 +72209,83 @@ function _vcrrTextoEstimado_(r) {
     for (var d = 0; d < 4; d++) { var lo = r[m].lo[d], hi = r[m].hi[d]; v.push(lo === hi ? String(lo) : (hi === Infinity ? lo + '+' : lo + '-' + hi)); }
     return etiquetas[m] + ' ' + v.join('|');
   }).join(', ');
+}
+
+/**
+ * Función pura (§PF331). Aplica a las series las confirmaciones a mano (VCRR_SERIES_CONFIRMADAS). series = las de _vcrrSeriesDeSemana_; confirmadas = la lista.
+ * Cada serie que coincide en temporada, semana, tag y clanKey queda con estado 'confirmada', validos 'AFB', confirmada = true y los rangos de la entrada (acumulados al cierre
+ * de J, V, S y D; el aumento de ataques de cada día sale por diferencia). Una entrada con valores imposibles (no suben, un día con más de 4 ataques, más de 16 ataques, más barcos
+ * que ataques, fame de un día sobre 900 o de la semana sobre 3600) NO se aplica: la serie queda como estaba y su nota dice por qué. Si una captura del JSON trae más que lo
+ * confirmado, se anota (no bloquea: manda la confirmación). Quita de las notas el «SIN RESOLVER» anterior. Modifica las series. Devuelve { aplicadas, invalidas: [{ tag, motivo }] }.
+ */
+function _vcrrAplicarConfirmadas_(series, confirmadas) {
+  var salida = { aplicadas: 0, invalidas: [] };
+  (confirmadas || []).forEach(function (c) {
+    var x = (series || []).filter(function (s) {
+      return Number(s.temporada) === Number(c.temporada) && Number(s.semana) === Number(c.semana) && String(s.tag).toUpperCase() === String(c.tag).toUpperCase() && s.clanKey === c.clanKey;
+    })[0];
+    if (!x) return;
+    var r = _vcrrRangosDeConfirmada_(c);
+    if (r.motivo) {
+      salida.invalidas.push({ tag: c.tag, motivo: r.motivo });
+      x.notas = (x.notas ? x.notas + '; ' : '') + 'confirmación a mano ignorada: ' + r.motivo;
+      return;
+    }
+    var conflictos = [];
+    (x.capsDatos || []).forEach(function (cap, d) {
+      if (!cap) return;
+      if (cap.usados > r.A.hi[d]) conflictos.push(VCRR_DIAS.charAt(d) + ' ataques ' + cap.usados);
+      if (cap.fame > r.F.hi[d]) conflictos.push(VCRR_DIAS.charAt(d) + ' fame ' + cap.fame);
+      if (cap.barcos > r.B.hi[d]) conflictos.push(VCRR_DIAS.charAt(d) + ' barcos ' + cap.barcos);
+    });
+    var antes = String(x.notas || '').replace(/;?\s*SIN RESOLVER:.*$/, '').trim();
+    var estadoAntes = x.estado;
+    x.r = r; x.validos = 'AFB'; x.estado = 'confirmada'; x.confirmada = true; x.estimada = false;
+    delete x.sinResolver;
+    x.notas = 'confirmada a mano (§PF331): ' + _vcrrTextoEstimado_(x.r) + (c.nota ? ' — ' + c.nota : '') +
+      (conflictos.length ? '; ojo, el JSON trae más que lo confirmado (' + conflictos.join(', ') + ')' : '') +
+      '; antes: ' + estadoAntes + (antes ? ' (' + antes + ')' : '');
+    salida.aplicadas++;
+  });
+  return salida;
+}
+
+/**
+ * Función pura (§PF331). De una entrada de VCRR_SERIES_CONFIRMADAS arma { A, F, B } con { lo, hi, il, ih } por métrica (el mismo formato de _vcrrRestriccionesSerie_)
+ * o { motivo } si los valores son imposibles. Un arreglo de 4 = acumulado exacto al cierre de cada día; un número = total del domingo (los días van de 0 a ese total).
+ */
+function _vcrrRangosDeConfirmada_(c) {
+  var topes = { A: VCRR_TOPE_ATAQUES_DIA, F: VCRR_TOPE_FAME_DIA, B: VCRR_TOPE_ATAQUES_DIA };
+  var maxSem = { A: VCRR_TOPE_ATAQUES_SEMANA, F: VCRR_TOPE_FAME_SEMANA, B: VCRR_TOPE_BARCOS_SEMANA };
+  var etq = { A: 'ataques', F: 'fame', B: 'barcos' };
+  var out = {}, motivo = '', d;
+  ['A', 'F', 'B'].forEach(function (k) {
+    if (motivo) return;
+    var v = c[k], lo, hi, il, ih;
+    var esNum = function (n) { return typeof n === 'number' && isFinite(n) && n >= 0 && Math.floor(n) === n; };
+    if (esNum(v)) {
+      if (v > maxSem[k]) { motivo = etq[k] + ' ' + v + ' pasa del máximo semanal ' + maxSem[k]; return; }
+      lo = [0, 0, 0, v]; hi = [v, v, v, v]; il = [0, 0, 0, 0]; ih = [topes[k], topes[k], topes[k], topes[k]];
+    } else if (Object.prototype.toString.call(v) === '[object Array]' && v.length === 4 && v.every(esNum)) {
+      lo = v.slice(); hi = v.slice(); il = []; ih = [];
+      for (d = 0; d < 4; d++) {
+        var dia = v[d] - (d > 0 ? v[d - 1] : 0);
+        if (dia < 0) { motivo = etq[k] + ' baja de un día a otro'; return; }
+        if (dia > topes[k]) { motivo = etq[k] + ' ' + VCRR_DIAS.charAt(d) + ': ' + dia + ' en un día (máximo ' + topes[k] + ')'; return; }
+        il.push(dia); ih.push(dia);
+      }
+      if (v[3] > maxSem[k]) { motivo = etq[k] + ' ' + v[3] + ' pasa del máximo semanal ' + maxSem[k]; return; }
+    } else { motivo = etq[k] + ' debe ser un número o un arreglo de 4 acumulados (J, V, S, D)'; return; }
+    out[k] = { lo: lo, hi: hi, il: il, ih: ih };
+  });
+  if (motivo) return { motivo: motivo };
+  // Los barcos son ataques: no pueden pasar de los ataques acumulados (con A exacto, día por día; con A solo en total, el del domingo).
+  for (d = 0; d < 4; d++) {
+    if (out.B.lo[d] > out.A.hi[d]) return { motivo: 'barcos ' + out.B.lo[d] + ' mayor que los ataques ' + out.A.hi[d] + ' (' + VCRR_DIAS.charAt(d) + ')' };
+    out.B.hi[d] = Math.min(out.B.hi[d], out.A.hi[d]);
+    out.B.ih[d] = Math.min(out.B.ih[d], out.A.ih[d]);
+  }
+  return out;
 }
 
 /**
@@ -72938,7 +73032,7 @@ function _vcrrResumenDeSeries_(series) {
     var v = String(s.validos || '');
     var fin = function (m) { return v.indexOf(m) >= 0 ? [aj.r[m].lo[3], aj.r[m].hi[3]] : null; };
     ['A', 'B', 'F'].forEach(function (m) { if (v.indexOf(m) >= 0) out.suma[m] += s.r[m].lo[3]; });
-    out.clanes[s.clanKey] = { nombre: s.nombre, estado: s.estado, estricto: v.length === 3 && (s.estado === 'ok' || s.estado === 'multiclan'), A: fin('A'), B: fin('B'), F: fin('F'), conflicto: aj.conflicto };
+    out.clanes[s.clanKey] = { nombre: s.nombre, estado: s.estado, estricto: v.length === 3 && (s.estado === 'ok' || s.estado === 'multiclan' || s.estado === 'confirmada'), A: fin('A'), B: fin('B'), F: fin('F'), conflicto: aj.conflicto };
     if (aj.conflicto && !out.conflicto) out.conflicto = aj.conflicto;
   });
   ['A', 'B', 'F'].forEach(function (m) {

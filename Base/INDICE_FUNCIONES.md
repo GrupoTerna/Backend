@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2628 nombres en 60 archivos .gs.
+Código real: `Base/src/`. Total: 2631 nombres en 60 archivos .gs.
 
 ## Por archivo
 
@@ -64,7 +64,7 @@ Código real: `Base/src/`. Total: 2628 nombres en 60 archivos .gs.
 - **56_CurrentRiverRace_Dias.gs** (12 funciones): probarCurrentRiverRaceDias, _crrDiasDeJugador_, _crrCapturasDeSemana_, _crrSubcarpeta_, _crrCapturasDesdeArchivos_, _crrParsearNombre_, _crrClasificarCaptura_, _crrResolverJugador_, _crrFameDia_, _crrAyerParaCierre_, _crrAvisoFueraDeRangosCierre_, _crrDomingoParaTotales_
 - **57_ReconstruirSemanaPorDias.gs** (18 funciones): totalesSemanaPorDiasReiniciar, _totSemanaPorDias_, _rsObjetivos, _rsObjetivosDeCache_, _rsObjetivosDeJson_, _rsObjetivosGuardarCache_, _rsClavesHoja, _rsClaveSem_, _rsPlanificar, _rsCrrRestricciones, _rsResolver, _rsRegistros, _rsMapeos, _rsResolverNivel, _rsCatalogo, _rsMenor, _rsCursorLeer_, _rsCursorGuardar_
 - **58_Docs_Administracion.gs** (23 funciones): _adminDocActualizar_, _adminDocNorm_, _adminDocLeerEquipo_, _adminDocCopasPorTag_, _adminDocNombresDeHojaClan_, _adminDocClaveAlfa_, _adminDocTagDeClan_, _adminDocOrdenNombres_, _adminDocAplicarClan_, _adminDocGrupo_, _adminDocBuscarGrupo_, _adminDocEncabezado_, _adminDocPrefEncabezados_, _adminDocPrefijo_, _adminDocSetTexto_, _adminDocQuitarVineta_, _adminDocLineas_, _adminDocCuentaAMostrar_, _adminDocMejorPorCopas_, _adminDocCuentaPrincipal_, _adminDocAdminsExtra_, _adminDocPersonaTieneCuenta_, _adminDocAplicarFamilia_
-- **59_Verificar_CRR_vs_Backup.gs** (57 funciones): verificarCrrVsBackupInforme, _continuarVerificarCrrVsBackupInforme, verificarCrrVsBackupAplicar, _continuarVerificarCrrVsBackupAplicar, verificarCrrVsBackupReiniciar, verificarCrrVsBackupOlvidarVerificados, _vcrrEjecutar_, _vcrrLeerEstado_, _vcrrGuardarEstado_, _vcrrSumar_, _vcrrLeerBackupGuerra_, _vcrrClanNorm_, _vcrrEncabezadoRapi_, _vcrrFilasRapiDeArchivo_, _vcrrIndiceRapi_, _vcrrFirmaRapi_, _vcrrLeerFilasRapi_, _vcrrIndiceRapiDeDrive_, _vcrrPasoRapi_, _vcrrPaso1_, _vcrrArchivosSemana_, _vcrrCapturasSemana_, _vcrrCapturasDeArchivos_, _vcrrSeriesDeSemana_, _vcrrCruzarRoyaleApi_, _vcrrTextoEstimado_, _vcrrRestriccionesSerie_, _vcrrFameLimitesPorAtaques_, _vcrrPropagar_, _vcrrEncabezadoRestricciones_, _vcrrFilaRestriccion_, _vcrrGuardarRestricciones_, _vcrrLeerRestricciones_, _vcrrSerieDeFila_, _vcrrEncabezadoVerificados_, _vcrrFilaVerificado_, _vcrrHuella_, _vcrrSemanaVerificada_, _vcrrLeerVerificados_, _vcrrGuardarVerificados_, _vcrrPaso2_, _vcrrListarSinResolver_, _vcrrLimpiarRevisionAntigua_, _vcrrCompararSerie_, _vcrrGuardarHallazgos_, _vcrrPaso3_, _vcrrPlanSerie_, _vcrrVerificarAplicado_, _vcrrRangosJugadorClan_, _vcrrRapiSemanaParaCache_, _vcrrCacheSemana_, _vcrrSeriesDeTag_, _vcrrPisoSerie_, _vcrrAjustarPorOtrosClanes_, _vcrrRangosAjustadosJugadorClan_, _vcrrResumenDeSeries_, _vcrrResumenJugadorSemana_
+- **59_Verificar_CRR_vs_Backup.gs** (59 funciones): verificarCrrVsBackupInforme, _continuarVerificarCrrVsBackupInforme, verificarCrrVsBackupAplicar, _continuarVerificarCrrVsBackupAplicar, verificarCrrVsBackupReiniciar, verificarCrrVsBackupOlvidarVerificados, _vcrrEjecutar_, _vcrrLeerEstado_, _vcrrGuardarEstado_, _vcrrSumar_, _vcrrLeerBackupGuerra_, _vcrrClanNorm_, _vcrrEncabezadoRapi_, _vcrrFilasRapiDeArchivo_, _vcrrIndiceRapi_, _vcrrFirmaRapi_, _vcrrLeerFilasRapi_, _vcrrIndiceRapiDeDrive_, _vcrrPasoRapi_, _vcrrPaso1_, _vcrrArchivosSemana_, _vcrrCapturasSemana_, _vcrrCapturasDeArchivos_, _vcrrSeriesDeSemana_, _vcrrCruzarRoyaleApi_, _vcrrTextoEstimado_, _vcrrAplicarConfirmadas_, _vcrrRangosDeConfirmada_, _vcrrRestriccionesSerie_, _vcrrFameLimitesPorAtaques_, _vcrrPropagar_, _vcrrEncabezadoRestricciones_, _vcrrFilaRestriccion_, _vcrrGuardarRestricciones_, _vcrrLeerRestricciones_, _vcrrSerieDeFila_, _vcrrEncabezadoVerificados_, _vcrrFilaVerificado_, _vcrrHuella_, _vcrrSemanaVerificada_, _vcrrLeerVerificados_, _vcrrGuardarVerificados_, _vcrrPaso2_, _vcrrListarSinResolver_, _vcrrLimpiarRevisionAntigua_, _vcrrCompararSerie_, _vcrrGuardarHallazgos_, _vcrrPaso3_, _vcrrPlanSerie_, _vcrrVerificarAplicado_, _vcrrRangosJugadorClan_, _vcrrRapiSemanaParaCache_, _vcrrCacheSemana_, _vcrrSeriesDeTag_, _vcrrPisoSerie_, _vcrrAjustarPorOtrosClanes_, _vcrrRangosAjustadosJugadorClan_, _vcrrResumenDeSeries_, _vcrrResumenJugadorSemana_
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
@@ -514,8 +514,8 @@ Ninguno.
 | `_continuarRunSorteos` | función | 00_Main.gs | 1106 | Contexto_Base_Web.md §B106 |
 | `_continuarRunSyncCSV` | función | 00_Main.gs | 1153 | Contexto_Base_Web.md §B109 |
 | `_continuarRunUpdate` | función | 00_Main.gs | 1040 |  |
-| `_continuarVerificarCrrVsBackupAplicar` | función | 59_Verificar_CRR_vs_Backup.gs | 103 |  |
-| `_continuarVerificarCrrVsBackupInforme` | función | 59_Verificar_CRR_vs_Backup.gs | 94 |  |
+| `_continuarVerificarCrrVsBackupAplicar` | función | 59_Verificar_CRR_vs_Backup.gs | 117 |  |
+| `_continuarVerificarCrrVsBackupInforme` | función | 59_Verificar_CRR_vs_Backup.gs | 108 |  |
 | `_control2ColTotales` | función | 23_Control2_GuerraSemanal.gs | 559 | Contexto_Base_Web.md §23B022 |
 | `_controlColTotales` | función | 02_Setup_Hojas.gs | 316 | Contexto_Base_Web.md §02B029 |
 | `_controlNecesitaRebuildFormato` | función | 22_ControlCalendario.gs | 582 | Contexto_Base_Web.md §22B009 |
@@ -1574,60 +1574,62 @@ Ninguno.
 | `_valoresMinTAtaquesPorClan` | función | 26_Torneos_Core.gs | 4256 | Contexto_Base_Web.md §26B281 |
 | `_valorExtraDesdeCsv_` | función | 26_Torneos_Core.gs | 4016 | Contexto_Base_Web.md §PF073 |
 | `_variacionTemporadas_` | función | 47_Migraciones.gs | 806 |  |
-| `_VCRR_CACHE_RANGOS_` | global | 59_Verificar_CRR_vs_Backup.gs | 63 |  |
-| `_VCRR_CACHE_RAPI_` | global | 59_Verificar_CRR_vs_Backup.gs | 62 |  |
-| `_vcrrAjustarPorOtrosClanes_` | función | 59_Verificar_CRR_vs_Backup.gs | 1296 |  |
-| `_vcrrArchivosSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 436 |  |
-| `_vcrrCacheSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 1254 |  |
-| `_vcrrCapturasDeArchivos_` | función | 59_Verificar_CRR_vs_Backup.gs | 475 |  |
-| `_vcrrCapturasSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 461 |  |
-| `_vcrrClanNorm_` | función | 59_Verificar_CRR_vs_Backup.gs | 230 |  |
-| `_vcrrCompararSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 1032 |  |
-| `_vcrrCruzarRoyaleApi_` | función | 59_Verificar_CRR_vs_Backup.gs | 557 |  |
-| `_vcrrEjecutar_` | función | 59_Verificar_CRR_vs_Backup.gs | 134 |  |
-| `_vcrrEncabezadoRapi_` | función | 59_Verificar_CRR_vs_Backup.gs | 235 |  |
-| `_vcrrEncabezadoRestricciones_` | función | 59_Verificar_CRR_vs_Backup.gs | 762 |  |
-| `_vcrrEncabezadoVerificados_` | función | 59_Verificar_CRR_vs_Backup.gs | 852 |  |
-| `_vcrrFameLimites_` | global | 59_Verificar_CRR_vs_Backup.gs | 61 |  |
-| `_vcrrFameLimitesPorAtaques_` | función | 59_Verificar_CRR_vs_Backup.gs | 717 |  |
-| `_vcrrFilaRestriccion_` | función | 59_Verificar_CRR_vs_Backup.gs | 777 |  |
-| `_vcrrFilasRapiDeArchivo_` | función | 59_Verificar_CRR_vs_Backup.gs | 242 |  |
-| `_vcrrFilaVerificado_` | función | 59_Verificar_CRR_vs_Backup.gs | 857 |  |
-| `_vcrrFirmaRapi_` | función | 59_Verificar_CRR_vs_Backup.gs | 290 |  |
-| `_vcrrGuardarEstado_` | función | 59_Verificar_CRR_vs_Backup.gs | 211 |  |
-| `_vcrrGuardarHallazgos_` | función | 59_Verificar_CRR_vs_Backup.gs | 1065 |  |
-| `_vcrrGuardarRestricciones_` | función | 59_Verificar_CRR_vs_Backup.gs | 794 |  |
-| `_vcrrGuardarVerificados_` | función | 59_Verificar_CRR_vs_Backup.gs | 904 |  |
-| `_vcrrHuella_` | función | 59_Verificar_CRR_vs_Backup.gs | 862 |  |
-| `_vcrrIndiceRapi_` | función | 59_Verificar_CRR_vs_Backup.gs | 261 |  |
-| `_vcrrIndiceRapiDeDrive_` | función | 59_Verificar_CRR_vs_Backup.gs | 316 |  |
-| `_vcrrLeerBackupGuerra_` | función | 59_Verificar_CRR_vs_Backup.gs | 219 |  |
-| `_vcrrLeerEstado_` | función | 59_Verificar_CRR_vs_Backup.gs | 207 |  |
-| `_vcrrLeerFilasRapi_` | función | 59_Verificar_CRR_vs_Backup.gs | 305 |  |
-| `_vcrrLeerRestricciones_` | función | 59_Verificar_CRR_vs_Backup.gs | 817 |  |
-| `_vcrrLeerVerificados_` | función | 59_Verificar_CRR_vs_Backup.gs | 885 |  |
-| `_vcrrLimpiarRevisionAntigua_` | función | 59_Verificar_CRR_vs_Backup.gs | 1000 |  |
-| `_vcrrListarSinResolver_` | función | 59_Verificar_CRR_vs_Backup.gs | 984 |  |
-| `_vcrrPaso1_` | función | 59_Verificar_CRR_vs_Backup.gs | 367 |  |
-| `_vcrrPaso2_` | función | 59_Verificar_CRR_vs_Backup.gs | 930 |  |
-| `_vcrrPaso3_` | función | 59_Verificar_CRR_vs_Backup.gs | 1082 |  |
-| `_vcrrPasoRapi_` | función | 59_Verificar_CRR_vs_Backup.gs | 326 |  |
-| `_vcrrPisoSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 1281 |  |
-| `_vcrrPlanSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 1149 |  |
-| `_vcrrPropagar_` | función | 59_Verificar_CRR_vs_Backup.gs | 735 |  |
-| `_vcrrRangosAjustadosJugadorClan_` | función | 59_Verificar_CRR_vs_Backup.gs | 1341 |  |
-| `_vcrrRangosJugadorClan_` | función | 59_Verificar_CRR_vs_Backup.gs | 1227 |  |
-| `_vcrrRapiSemanaParaCache_` | función | 59_Verificar_CRR_vs_Backup.gs | 1242 |  |
-| `_vcrrRestriccionesSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 636 |  |
-| `_vcrrResumenDeSeries_` | función | 59_Verificar_CRR_vs_Backup.gs | 1356 |  |
-| `_vcrrResumenJugadorSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 1375 |  |
-| `_vcrrSemanaVerificada_` | función | 59_Verificar_CRR_vs_Backup.gs | 873 |  |
-| `_vcrrSerieDeFila_` | función | 59_Verificar_CRR_vs_Backup.gs | 834 |  |
-| `_vcrrSeriesDeSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 511 |  |
-| `_vcrrSeriesDeTag_` | función | 59_Verificar_CRR_vs_Backup.gs | 1273 |  |
-| `_vcrrSumar_` | función | 59_Verificar_CRR_vs_Backup.gs | 216 |  |
-| `_vcrrTextoEstimado_` | función | 59_Verificar_CRR_vs_Backup.gs | 612 |  |
-| `_vcrrVerificarAplicado_` | función | 59_Verificar_CRR_vs_Backup.gs | 1192 |  |
+| `_VCRR_CACHE_RANGOS_` | global | 59_Verificar_CRR_vs_Backup.gs | 64 |  |
+| `_VCRR_CACHE_RAPI_` | global | 59_Verificar_CRR_vs_Backup.gs | 63 |  |
+| `_vcrrAjustarPorOtrosClanes_` | función | 59_Verificar_CRR_vs_Backup.gs | 1390 |  |
+| `_vcrrAplicarConfirmadas_` | función | 59_Verificar_CRR_vs_Backup.gs | 645 |  |
+| `_vcrrArchivosSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 451 |  |
+| `_vcrrCacheSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 1348 |  |
+| `_vcrrCapturasDeArchivos_` | función | 59_Verificar_CRR_vs_Backup.gs | 490 |  |
+| `_vcrrCapturasSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 476 |  |
+| `_vcrrClanNorm_` | función | 59_Verificar_CRR_vs_Backup.gs | 244 |  |
+| `_vcrrCompararSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 1126 |  |
+| `_vcrrCruzarRoyaleApi_` | función | 59_Verificar_CRR_vs_Backup.gs | 574 |  |
+| `_vcrrEjecutar_` | función | 59_Verificar_CRR_vs_Backup.gs | 148 |  |
+| `_vcrrEncabezadoRapi_` | función | 59_Verificar_CRR_vs_Backup.gs | 249 |  |
+| `_vcrrEncabezadoRestricciones_` | función | 59_Verificar_CRR_vs_Backup.gs | 856 |  |
+| `_vcrrEncabezadoVerificados_` | función | 59_Verificar_CRR_vs_Backup.gs | 946 |  |
+| `_vcrrFameLimites_` | global | 59_Verificar_CRR_vs_Backup.gs | 62 |  |
+| `_vcrrFameLimitesPorAtaques_` | función | 59_Verificar_CRR_vs_Backup.gs | 811 |  |
+| `_vcrrFilaRestriccion_` | función | 59_Verificar_CRR_vs_Backup.gs | 871 |  |
+| `_vcrrFilasRapiDeArchivo_` | función | 59_Verificar_CRR_vs_Backup.gs | 256 |  |
+| `_vcrrFilaVerificado_` | función | 59_Verificar_CRR_vs_Backup.gs | 951 |  |
+| `_vcrrFirmaRapi_` | función | 59_Verificar_CRR_vs_Backup.gs | 304 |  |
+| `_vcrrGuardarEstado_` | función | 59_Verificar_CRR_vs_Backup.gs | 225 |  |
+| `_vcrrGuardarHallazgos_` | función | 59_Verificar_CRR_vs_Backup.gs | 1159 |  |
+| `_vcrrGuardarRestricciones_` | función | 59_Verificar_CRR_vs_Backup.gs | 888 |  |
+| `_vcrrGuardarVerificados_` | función | 59_Verificar_CRR_vs_Backup.gs | 998 |  |
+| `_vcrrHuella_` | función | 59_Verificar_CRR_vs_Backup.gs | 956 |  |
+| `_vcrrIndiceRapi_` | función | 59_Verificar_CRR_vs_Backup.gs | 275 |  |
+| `_vcrrIndiceRapiDeDrive_` | función | 59_Verificar_CRR_vs_Backup.gs | 330 |  |
+| `_vcrrLeerBackupGuerra_` | función | 59_Verificar_CRR_vs_Backup.gs | 233 |  |
+| `_vcrrLeerEstado_` | función | 59_Verificar_CRR_vs_Backup.gs | 221 |  |
+| `_vcrrLeerFilasRapi_` | función | 59_Verificar_CRR_vs_Backup.gs | 319 |  |
+| `_vcrrLeerRestricciones_` | función | 59_Verificar_CRR_vs_Backup.gs | 911 |  |
+| `_vcrrLeerVerificados_` | función | 59_Verificar_CRR_vs_Backup.gs | 979 |  |
+| `_vcrrLimpiarRevisionAntigua_` | función | 59_Verificar_CRR_vs_Backup.gs | 1094 |  |
+| `_vcrrListarSinResolver_` | función | 59_Verificar_CRR_vs_Backup.gs | 1078 |  |
+| `_vcrrPaso1_` | función | 59_Verificar_CRR_vs_Backup.gs | 381 |  |
+| `_vcrrPaso2_` | función | 59_Verificar_CRR_vs_Backup.gs | 1024 |  |
+| `_vcrrPaso3_` | función | 59_Verificar_CRR_vs_Backup.gs | 1176 |  |
+| `_vcrrPasoRapi_` | función | 59_Verificar_CRR_vs_Backup.gs | 340 |  |
+| `_vcrrPisoSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 1375 |  |
+| `_vcrrPlanSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 1243 |  |
+| `_vcrrPropagar_` | función | 59_Verificar_CRR_vs_Backup.gs | 829 |  |
+| `_vcrrRangosAjustadosJugadorClan_` | función | 59_Verificar_CRR_vs_Backup.gs | 1435 |  |
+| `_vcrrRangosDeConfirmada_` | función | 59_Verificar_CRR_vs_Backup.gs | 681 |  |
+| `_vcrrRangosJugadorClan_` | función | 59_Verificar_CRR_vs_Backup.gs | 1321 |  |
+| `_vcrrRapiSemanaParaCache_` | función | 59_Verificar_CRR_vs_Backup.gs | 1336 |  |
+| `_vcrrRestriccionesSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 730 |  |
+| `_vcrrResumenDeSeries_` | función | 59_Verificar_CRR_vs_Backup.gs | 1450 |  |
+| `_vcrrResumenJugadorSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 1469 |  |
+| `_vcrrSemanaVerificada_` | función | 59_Verificar_CRR_vs_Backup.gs | 967 |  |
+| `_vcrrSerieDeFila_` | función | 59_Verificar_CRR_vs_Backup.gs | 928 |  |
+| `_vcrrSeriesDeSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 526 |  |
+| `_vcrrSeriesDeTag_` | función | 59_Verificar_CRR_vs_Backup.gs | 1367 |  |
+| `_vcrrSumar_` | función | 59_Verificar_CRR_vs_Backup.gs | 230 |  |
+| `_vcrrTextoEstimado_` | función | 59_Verificar_CRR_vs_Backup.gs | 629 |  |
+| `_vcrrVerificarAplicado_` | función | 59_Verificar_CRR_vs_Backup.gs | 1286 |  |
 | `_ventanasHistorialParaDescensoCR_` | función | 26_Torneos_Core.gs | 3544 | Contexto_Base_Web.md §26B060 |
 | `_verificarCambioRangoDesdeRegistros_` | función | 24_Historial_Ascensos.gs | 1650 |  |
 | `_verificarYMarcarCambioRangoHistorial_` | función | 24_Historial_Ascensos.gs | 1285 | Contexto_Base_Web.md §PF286 |
@@ -2631,29 +2633,30 @@ Ninguno.
 | `updateProgresoEventosSheet` | función | 35_ProgresoEventos.gs | 32 | Contexto_Base_Web.md §35B004 |
 | `updateVistasDerivadas` | función | 11_DirectorioSheet.gs | 191 |  |
 | `VC` | global | 11_DirectorioSheet.gs | 63 | Contexto_Base_Web.md §11B004 |
-| `VCRR_ANOMALIAS` | global | 59_Verificar_CRR_vs_Backup.gs | 70 |  |
-| `VCRR_ARCHIVO_RAPI` | global | 59_Verificar_CRR_vs_Backup.gs | 55 |  |
-| `VCRR_ARCHIVO_RESTRICCIONES` | global | 59_Verificar_CRR_vs_Backup.gs | 54 |  |
-| `VCRR_ARCHIVO_VERIFICADOS` | global | 59_Verificar_CRR_vs_Backup.gs | 56 |  |
-| `VCRR_DIAS` | global | 59_Verificar_CRR_vs_Backup.gs | 60 |  |
-| `VCRR_ESTADO_PROP` | global | 59_Verificar_CRR_vs_Backup.gs | 53 |  |
-| `VCRR_MAX_FILAS_APLICAR` | global | 59_Verificar_CRR_vs_Backup.gs | 50 |  |
-| `VCRR_MAX_REVISION` | global | 59_Verificar_CRR_vs_Backup.gs | 51 |  |
-| `VCRR_MOTIVO_REVISION` | global | 59_Verificar_CRR_vs_Backup.gs | 52 |  |
-| `VCRR_ORIGEN_CREADA` | global | 59_Verificar_CRR_vs_Backup.gs | 58 |  |
-| `VCRR_ORIGEN_SUBIDA` | global | 59_Verificar_CRR_vs_Backup.gs | 59 |  |
-| `VCRR_PASOS_NOMBRES_APLICAR` | global | 59_Verificar_CRR_vs_Backup.gs | 77 |  |
-| `VCRR_PASOS_NOMBRES_INFORME` | global | 59_Verificar_CRR_vs_Backup.gs | 72 |  |
-| `VCRR_PRESUPUESTO_MS` | global | 59_Verificar_CRR_vs_Backup.gs | 48 |  |
-| `VCRR_RESERVA_SEMANA_MS` | global | 59_Verificar_CRR_vs_Backup.gs | 49 |  |
-| `VCRR_TOPE_ATAQUES_DIA` | global | 59_Verificar_CRR_vs_Backup.gs | 65 |  |
-| `VCRR_VERSION_REGLAS` | global | 59_Verificar_CRR_vs_Backup.gs | 57 |  |
+| `VCRR_ANOMALIAS` | global | 59_Verificar_CRR_vs_Backup.gs | 71 |  |
+| `VCRR_ARCHIVO_RAPI` | global | 59_Verificar_CRR_vs_Backup.gs | 56 |  |
+| `VCRR_ARCHIVO_RESTRICCIONES` | global | 59_Verificar_CRR_vs_Backup.gs | 55 |  |
+| `VCRR_ARCHIVO_VERIFICADOS` | global | 59_Verificar_CRR_vs_Backup.gs | 57 |  |
+| `VCRR_DIAS` | global | 59_Verificar_CRR_vs_Backup.gs | 61 |  |
+| `VCRR_ESTADO_PROP` | global | 59_Verificar_CRR_vs_Backup.gs | 54 |  |
+| `VCRR_MAX_FILAS_APLICAR` | global | 59_Verificar_CRR_vs_Backup.gs | 51 |  |
+| `VCRR_MAX_REVISION` | global | 59_Verificar_CRR_vs_Backup.gs | 52 |  |
+| `VCRR_MOTIVO_REVISION` | global | 59_Verificar_CRR_vs_Backup.gs | 53 |  |
+| `VCRR_ORIGEN_CREADA` | global | 59_Verificar_CRR_vs_Backup.gs | 59 |  |
+| `VCRR_ORIGEN_SUBIDA` | global | 59_Verificar_CRR_vs_Backup.gs | 60 |  |
+| `VCRR_PASOS_NOMBRES_APLICAR` | global | 59_Verificar_CRR_vs_Backup.gs | 91 |  |
+| `VCRR_PASOS_NOMBRES_INFORME` | global | 59_Verificar_CRR_vs_Backup.gs | 86 |  |
+| `VCRR_PRESUPUESTO_MS` | global | 59_Verificar_CRR_vs_Backup.gs | 49 |  |
+| `VCRR_RESERVA_SEMANA_MS` | global | 59_Verificar_CRR_vs_Backup.gs | 50 |  |
+| `VCRR_SERIES_CONFIRMADAS` | global | 59_Verificar_CRR_vs_Backup.gs | 79 |  |
+| `VCRR_TOPE_ATAQUES_DIA` | global | 59_Verificar_CRR_vs_Backup.gs | 66 |  |
+| `VCRR_VERSION_REGLAS` | global | 59_Verificar_CRR_vs_Backup.gs | 58 |  |
 | `verDiagnosticoGuerraVivo` | función | 38_Web_Endpoints.gs | 102 |  |
 | `VERIFICAR_RIVERRACE_TOKEN` | global | 19_CorreccionRiverRace.gs | 40 | Contexto_Base_Web.md §19B004 |
-| `verificarCrrVsBackupAplicar` | función | 59_Verificar_CRR_vs_Backup.gs | 100 |  |
-| `verificarCrrVsBackupInforme` | función | 59_Verificar_CRR_vs_Backup.gs | 91 |  |
-| `verificarCrrVsBackupOlvidarVerificados` | función | 59_Verificar_CRR_vs_Backup.gs | 119 |  |
-| `verificarCrrVsBackupReiniciar` | función | 59_Verificar_CRR_vs_Backup.gs | 106 |  |
+| `verificarCrrVsBackupAplicar` | función | 59_Verificar_CRR_vs_Backup.gs | 114 |  |
+| `verificarCrrVsBackupInforme` | función | 59_Verificar_CRR_vs_Backup.gs | 105 |  |
+| `verificarCrrVsBackupOlvidarVerificados` | función | 59_Verificar_CRR_vs_Backup.gs | 133 |  |
+| `verificarCrrVsBackupReiniciar` | función | 59_Verificar_CRR_vs_Backup.gs | 120 |  |
 | `verificarDatosPrivados` | función | 01_Config_Global.gs | 654 |  |
 | `verTiemposActualizacion` | función | 42_Web_TiemposActualizacion.gs | 29 |  |
 | `VETADOS_COLS_AUTOSYNC` | global | 11_DirectorioSheet.gs | 71 | Contexto_Base_Web.md §11B005 |
