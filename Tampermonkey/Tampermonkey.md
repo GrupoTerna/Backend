@@ -1165,7 +1165,10 @@
       _agregarRegistroHistorial(estado, jugador.tag, nombreHist, fp.esTerna ? fp.clan : '', {
         temporadaRoyaleApi: fp.temporadaRoyaleApi,
         semana: fp.semana,
-        clan: fp.clan,
+        // La celda del clan trae el nombre en el enlace y la fecha de la semana en un div aparte (td.clan_name > a + div.log_date), y .textContent los une
+        // («PERUVIANOS SJL\n 2026-09-21»). Para las filas de clan externo (nuevas en este canal, §PF340) se manda el nombre limpio (clanNombre). Las filas Terna
+        // del perfil siguen con el texto de siempre para no cambiar lo que ya leen otros módulos; el backend compara el clan sin la fecha final (_claveClanHistorialGuerra).
+        clan: fp.esTerna ? fp.clan : (fp.clanNombre || fp.clan),
         clanTag: fp.clanTag || undefined,
         ataques: fp.ataquesSemana,
         fame: fp.fame,
