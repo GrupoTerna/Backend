@@ -55,7 +55,7 @@ var VCRR_ESTADO_PROP = 'VCRR_ESTADO';                  // propiedad del script c
 var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo «Cruce_» lo manda a CSV/Informes (_csvSubcarpetaDe_)
 var VCRR_ARCHIVO_RAPI = 'Cruce_CRR_RoyaleAPI.csv';                // caché de los totales cerrados de RoyaleAPI (log y perfil) leídos de sus JSON individuales (§PF320)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
-var VCRR_VERSION_REGLAS = 6;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_, el cruce con RoyaleAPI (§PF320, 5) o la lista VCRR_SERIES_CONFIRMADAS (§PF331, 6): invalida el registro y se releen todos los JSON
+var VCRR_VERSION_REGLAS = 7;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_, el cruce con RoyaleAPI (§PF320, 5) o la lista VCRR_SERIES_CONFIRMADAS (§PF331, 6; §PF332, 7): invalida el registro y se releen todos los JSON
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
@@ -77,8 +77,8 @@ var VCRR_ANOMALIAS = [];
 // rangos y sin pasar por RoyaleAPI, así que deja de salir en «SIN RESOLVER». Una entrada sin serie esa semana (no hay JSON de ese jugador y clan) no hace nada.
 // Si cambias o agregas una entrada, sube VCRR_VERSION_REGLAS: así se vuelven a calcular las semanas ya verificadas.
 var VCRR_SERIES_CONFIRMADAS = [
-  { temporada: 22, semana: 1, tag: '#22C090RVJ', clanKey: 'grupoxterna\u21222', nombre: 'MC-->WiLL', A: [0, 4, 7, 11], F: 1700, B: 0,
-    nota: 'la usuaria comprobó en RoyaleAPI 11 ataques y 1700 medallas; jueves 0, viernes 4, sábado 3 y domingo 4' },
+  { temporada: 22, semana: 1, tag: '#22C090RVJ', clanKey: 'grupoxterna\u21222', nombre: 'MC-->WiLL', A: [0, 4, 7, 11], F: [0, 700, 1000, 1700], B: 0,
+    nota: 'la usuaria comprobó en el perfil de RoyaleAPI (133-1) 11 ataques y 1700 medallas; ya no hay logs diarios, así que aceptó la distribución de Backup_Guerra.csv: ataques 0, 4, 3 y 4; medallas 0, 700, 300 y 700 (estimada, no verificable)' },
   { temporada: 22, semana: 5, tag: '#80QCQ9R9Y', clanKey: 'grupoxterna\u21223', nombre: 'JEQ', A: [4, 8, 12, 16], F: [500, 1100, 1700, 2300], B: 0,
     nota: 'la usuaria vio el registro 133-5 (2026-07-06) con 16 ataques y 2300 medallas, que coincide con 4 ataques por día y fame diaria de 500, 600, 600 y 600' }
 ];
