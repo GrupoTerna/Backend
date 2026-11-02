@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Familia Terna - Corrección de Guerra + Miembros Nuevos + Verificar Semana (RoyaleAPI)
 // @namespace    familia-terna-correccion-guerra
-// @version      3.17
+// @version      3.18
 // @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041] v3.2 (pedido usuaria, formato ancho de Correcciones_Guerra.csv, §PF164): cada fila del Perfil sale marcada con fuente:'perfil' (el backend guarda así de dónde salió la columna RoyaleAPI: «perfil» o «desconocido»), y al iniciar la Corrección de Guerra se puede FORZAR la lectura del perfil de ciertos jugadores (las cuentas con varios clanes o los tags que se escriban): se visita su perfil aunque Log/Analytics ya los cubrieran y se reenvían TODAS sus semanas, aunque ya estén guardadas, para llenar de verdad la columna RoyaleAPI. v3.4 (pedido usuaria, 24-oct-2026, §PF234): cuarto botón «Corrección de jugadores elegidos»: escribes los tags y lee la semana en curso (River Race), el Log, Analytics y el perfil, pero guarda y envía SOLO a esos jugadores; al final lista las diferencias entre fuentes. Antes, forzar perfiles solo cambiaba la fase de Perfiles y el Log y Analytics enviaban a toda la comunidad. v3.5 (pedido usuaria, 25-oct-2026, §PF236): cuando se visita un perfil se envían TODAS sus filas (ya no se descartan las semanas cubiertas por Log/Analytics ni las ya guardadas) y el backend decide qué conserva: una fila igual a la guardada no se reescribe. v3.6 (pedido usuaria, 25-oct-2026, §PF237): el panel muestra «REVISAR PERFIL» cuando el backend reemplaza un valor del perfil ya guardado por otro distinto (antes/ahora), y el perfil ya no envía la semana en curso. v3.8 (pedido usuaria, 25-oct-2026, §PF243): el botón de miembros nuevos manda TODO lo que lee de cada perfil visitado (las semanas del perfil de todos los candidatos, no solo de los que cuentan como nuevos) y el backend decide qué guarda en la hoja «Nuevos» y qué en Correcciones_Guerra.csv; el panel muestra cuántas filas del perfil se aplicaron, cuántas estaban sin cambios y los avisos «REVISAR PERFIL». v3.15 (pedido usuaria, 30-oct-2026, §PF303): los cuatro botones del panel se ordenan de arriba abajo: Verificar Semana en Curso, miembros nuevos, jugadores elegidos y Corrección de Guerra completa.
 // @author       Familia Terna
 // @match        https://royaleapi.com/*
@@ -22,6 +22,26 @@
   // CONFIGURACIÓN — EDITAR ANTES DE USAR
   // =========================================================================
   var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwxTdbddzujbus0e5JT8cDcSHrOB6i-txjdjTu6_cbUGIYmNsF0P8MF71eFmH8_3MKfiw/exec';
+
+  // v3.18 (§PF338): tags que la «Corrección de jugadores elegidos» deja ya escritos en el cuadro al iniciar (se pueden editar o borrar ahí).
+  // Son los 14 jugadores con día-jugador multiclan pendiente de contrastar con el perfil de RoyaleAPI (Contexto_Base_Web.md §PF337, punto 10).
+  // Vacío ([]) = el cuadro sale vacío, como en v3.17.
+  var JUGADORES_ELEGIDOS_POR_DEFECTO = [
+    '#LRQ8YJRCU',
+    '#8YCLY8CRU',
+    '#P8Y0CQ9VR',
+    '#RR8CRJPUV',
+    '#UYU0PGUYJ',
+    '#Q09UJ2UP2',
+    '#20080J8GRY',
+    '#URRG2QG20',
+    '#UJY0PGPUV',
+    '#Y8CVG9VYL',
+    '#JVVG9YUG0',
+    '#2C982888C',
+    '#U8G029GUQ',
+    '#VUVC9P8VL'
+  ];
 
   // FIX (20-sep-2026, pedido usuario: "hubo cambios en Base.md y sus tokens,
   // ahora cuando ejecuto Tampermonkey me dice que el backend no responde con
@@ -3624,8 +3644,9 @@
       'Escribe o pega los tags (por ejemplo #ABC123, #DEF456), separados por coma o espacio.\n\n' +
       'Se lee la semana en curso (River Race), el Log, Analytics y el perfil, pero SOLO se guarda y se envía lo de estos jugadores; ' +
       'los demás se descartan. Las páginas de los 4 clanes se visitan igual (RoyaleAPI no permite pedir un solo jugador al Log ni a Analytics).\n\n' +
-      'Al final el panel lista las diferencias entre fuentes.',
-      ''
+      'Al final el panel lista las diferencias entre fuentes.' +
+      (JUGADORES_ELEGIDOS_POR_DEFECTO.length ? '\n\nEl cuadro ya trae ' + JUGADORES_ELEGIDOS_POR_DEFECTO.length + ' tag(s) propuestos (JUGADORES_ELEGIDOS_POR_DEFECTO): edítalos o bórralos si quieres otros.' : ''),
+      JUGADORES_ELEGIDOS_POR_DEFECTO.join(', ')
     );
     var salida = { tags: [], invalidos: [] };
     if (texto === null || !String(texto).trim()) return salida;
