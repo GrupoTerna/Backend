@@ -1529,6 +1529,52 @@ function _cgwPerfilEsExterno_(e) {
 }
 
 /**
+ * _cgwIndiceAtaqueTerna_(mapa, correcciones, offset)  (§PF343)
+ * Índice «temporada propia|semana|tag jugador» → true de las semanas en que ya hay registro de al menos un ataque en un clan Terna: filas del overlay con
+ * ClanTag (Log o Analytics, `mapa`) y filas con clanTag de este mismo lote (el perfil puede llegar antes que el Log dentro del envío). Se arma una sola vez por envío.
+ */
+function _cgwIndiceAtaqueTerna_(mapa, correcciones, offset) {
+  var idx = {};
+  Object.keys(mapa).forEach(function (k) {
+    var q = k.split('|'); // temporada | semana | clantag | tag
+    if (q.length === 4 && q[2] !== '' && Number(mapa[k].ataquesSemana) > 0) idx[q[0] + '|' + q[1] + '|' + q[3]] = true;
+  });
+  for (var i = 0; i < correcciones.length; i++) {
+    var c = correcciones[i] || {};
+    if (_normalizarClanTagCorreccion(c.clanTag) === '' || !(Number(c.ataquesSemana) > 0)) continue;
+    idx[(Number(c.temporadaRoyaleApi) - offset) + '|' + Number(c.semana) + '|' + String(c.tag || '').trim()] = true;
+  }
+  return idx;
+}
+
+/**
+ * _cgwHayAtaqueTernaEnSemana_(indice, cacheJson, temporadaPropia, semana, tag)  (§PF343)
+ * true si hay registro de que el jugador hizo al menos un ataque esa semana en un clan Terna: el índice de _cgwIndiceAtaqueTerna_(), o su JSON individual
+ * (registros del Log, Analytics o River Race de un clan Terna, con ataques > 0; las filas del perfil y las `externa` no cuentan). El JSON se lee una vez por
+ * jugador y solo cuando hace falta (`cacheJson`). Un fallo al leerlo cuenta como «sin registro».
+ */
+function _cgwHayAtaqueTernaEnSemana_(indice, cacheJson, temporadaPropia, semana, tag) {
+  if (indice[temporadaPropia + '|' + semana + '|' + tag]) return true;
+  if (cacheJson[tag] === undefined) {
+    var registros = [];
+    try {
+      var hist = _cargarHistorialGuerraIndividual(tag);
+      registros = (hist && hist.registros) ? hist.registros : [];
+    } catch (e) { registros = []; }
+    cacheJson[tag] = registros;
+  }
+  var regs = cacheJson[tag];
+  for (var i = 0; i < regs.length; i++) {
+    var r = regs[i];
+    if (!r || r.externa === true) continue;
+    if (Number(r.temporadaInterna) !== Number(temporadaPropia) || Number(r.semana) !== Number(semana)) continue;
+    var f = String(r.fuente || '').toLowerCase();
+    if ((f === 'log' || f === 'analytics' || f === 'riverrace') && Number(r.ataques) > 0) return true;
+  }
+  return false;
+}
+
+/**
  * _cgwFilasLargasAMapa_(parsed)
  * Lee el formato de antes (una fila por clan, columna ClanTag) y le asigna el origen a las filas sin ClanTag. [→ Contexto_Base_Web.md §18B093]
  */
@@ -2062,6 +2108,8 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var contradicciones = [], contradiccionesTotal = 0, contradiccionesSinPisar = 0; // §PF313: registro de contradicciones de esta corrida (líneas topadas; el total cuenta todas)
   var revisionContradicciones = []; // §PF313: lo que no se resuelve solo va también a Revision_Guerra.csv (Estado pendiente)
   var memoPosible = {}; // §PF313: memoria de _cgwSemanaEsPosible_() para no repetir cálculos en un lote grande
+  var indiceAtaqueTerna = _cgwIndiceAtaqueTerna_(mapa, correcciones, _getTemporadaOffsetRoyaleApi()); // §PF343
+  var cacheJsonTerna = {}, contradiccionesExternasIgnoradas = 0; // §PF343
   for (var i = 0; i < correcciones.length; i++) {
     var c = correcciones[i] || {};
     var tag = String(c.tag || '').trim();
@@ -2145,7 +2193,19 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       fuenteEntrante !== 'desconocida' && fuenteGuardada !== fuenteEntrante);
     var yaGuardadaIgual = !!(existente && !valoresDistintos); // reintento por Implementación «No»: el valor ya estaba, no es un conflicto nuevo
     var noCabeSemana = !yaGuardadaIgual && !_cgwSemanaEsPosible_(ataquesSemana, fame, barcosFinal, memoPosible);
-    if (mismoNivelDiscrepa || noCabeSemana || (valoresDistintos && !(clanTag === '' && fuenteGuardada === 'perfil' && fuenteEntrante === 'perfil'))) {
+    var hayConflicto = mismoNivelDiscrepa || noCabeSemana || (valoresDistintos && !(clanTag === '' && fuenteGuardada === 'perfil' && fuenteEntrante === 'perfil'));
+    // §PF343 (2-nov-2026, regla de la usuaria): la fila del perfil de un clan que NO es Terna solo genera contradicción si hay registro de que el jugador hizo al
+    // menos un ataque esa semana en algún clan Terna (Log, Analytics o River Race). Sin ese registro se ignora: el valor se aplica como siempre, sin línea de conflicto
+    // ni fila en Revision_Guerra.csv. [→ Contexto_Base_Web.md §PF343]
+    if (hayConflicto && clanTag === '') {
+      var clanPerfilFila = _normalizarClanTagCorreccion(c.clanPerfil);
+      if (clanPerfilFila && CFG.TERNA_TAGS.indexOf(clanPerfilFila) < 0 &&
+          !_cgwHayAtaqueTernaEnSemana_(indiceAtaqueTerna, cacheJsonTerna, temporadaPropia, semana, tag)) {
+        hayConflicto = false;
+        contradiccionesExternasIgnoradas++;
+      }
+    }
+    if (hayConflicto) {
       // (perfil contra perfil ya se avisa abajo como «antes / ahora» en cambiosPerfil; no se duplica)
       var decision, motivoRev = '';
       if (mismoNivelDiscrepa) {
@@ -2274,6 +2334,10 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
 
   var resultado = { ok: true, aplicadas: aplicadas, omitidas: omitidas, sinCambios: sinCambios, total: correcciones.length };
   if (anterioresT1) resultado.anterioresT1 = anterioresT1; // §PF247
+  if (contradiccionesExternasIgnoradas) { // §PF343
+    resultado.contradiccionesExternasIgnoradas = contradiccionesExternasIgnoradas;
+    Logger.log('[CorreccionGuerra] ' + contradiccionesExternasIgnoradas + ' contradicción(es) de filas de perfil de clan externo ignorada(s): sin registro de ataques en un clan Terna esa semana.');
+  }
   if (revisarManual.length) resultado.revisarManual = revisarManual; // FIX 29-sep-2026 (Fase 15 tanda 1)
   if (cambiosPerfil.length) resultado.cambiosPerfil = cambiosPerfil; // §PF237
   if (contradiccionesTotal) { // §PF313: el log de la corrida; viaja en la respuesta y queda en el log de Drive del botón
