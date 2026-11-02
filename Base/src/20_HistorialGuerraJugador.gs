@@ -325,7 +325,15 @@ function _aplicarHistorialGuerra(candidatosPayload) {
           registroCompleto.clanTag = clanTagFila;
         }
 
-        registrosDelJugador.push(registroCompleto);
+        // §PF342 (2-nov-2026): el JSON individual guarda el tag del clan en TODAS las filas, también en las de clanes Terna (antes solo en las externas). Va en una copia:
+        // lo que se manda al CSV grupal y al JSON grupal (itemsGrupal) sigue siendo `registroCompleto`, sin ese campo. Sin tag en la entrada (Tampermonkey anterior) no se agrega nada.
+        var registroIndividual = registroCompleto;
+        if (!esExterna && clanTagFila) {
+          registroIndividual = JSON.parse(JSON.stringify(registroCompleto));
+          registroIndividual.clanTag = clanTagFila;
+        }
+
+        registrosDelJugador.push(registroIndividual);
         if (esExterna) {
           if (registroCompleto.clan) clanExternoDelJugador = registroCompleto.clan;
           registrosExternos++;
@@ -510,6 +518,11 @@ function _fusionarRegistroEnArrayHistorialGuerra(registros, nuevo, tag, nombre) 
   }
   // Comentario (FASE 2, 04-sep-2026): mismo criterio que en el CSV grupal [→ Contexto_Base_Web.md §20B029]
   registroFinal.comentario = (existente && existente.comentario) || '';
+  // §PF342: si la fila entrante no trae clanTag (Tampermonkey anterior) y la guardada sí, y es del mismo clan, se conserva; con otro clan no se hereda. [→ Contexto_Base_Web.md §PF342]
+  if (!registroFinal.clanTag && existente && existente.clanTag &&
+      _claveClanHistorialGuerra(existente.clan) === _claveClanHistorialGuerra(registroFinal.clan)) {
+    registroFinal.clanTag = existente.clanTag;
+  }
 
   if (idxExistente >= 0) {
     registros[idxExistente] = registroFinal;
