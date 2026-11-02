@@ -1579,10 +1579,10 @@ Ninguno.
 | `_variacionTemporadas_` | función | 47_Migraciones.gs | 806 |  |
 | `_VCRR_CACHE_RANGOS_` | global | 59_Verificar_CRR_vs_Backup.gs | 65 |  |
 | `_VCRR_CACHE_RAPI_` | global | 59_Verificar_CRR_vs_Backup.gs | 64 |  |
-| `_vcrrAjustarPorOtrosClanes_` | función | 59_Verificar_CRR_vs_Backup.gs | 1418 |  |
+| `_vcrrAjustarPorOtrosClanes_` | función | 59_Verificar_CRR_vs_Backup.gs | 1426 |  |
 | `_vcrrAplicarConfirmadas_` | función | 59_Verificar_CRR_vs_Backup.gs | 673 |  |
 | `_vcrrArchivosSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 454 |  |
-| `_vcrrCacheSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 1376 |  |
+| `_vcrrCacheSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 1384 |  |
 | `_vcrrCapturasDeArchivos_` | función | 59_Verificar_CRR_vs_Backup.gs | 495 |  |
 | `_vcrrCapturasSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 480 |  |
 | `_vcrrClanNorm_` | función | 59_Verificar_CRR_vs_Backup.gs | 245 |  |
@@ -1616,23 +1616,23 @@ Ninguno.
 | `_vcrrPaso2_` | función | 59_Verificar_CRR_vs_Backup.gs | 1052 |  |
 | `_vcrrPaso3_` | función | 59_Verificar_CRR_vs_Backup.gs | 1204 |  |
 | `_vcrrPasoRapi_` | función | 59_Verificar_CRR_vs_Backup.gs | 341 |  |
-| `_vcrrPisoSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 1403 |  |
-| `_vcrrPlanSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 1271 |  |
+| `_vcrrPisoSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 1411 |  |
+| `_vcrrPlanSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 1272 |  |
 | `_vcrrPropagar_` | función | 59_Verificar_CRR_vs_Backup.gs | 857 |  |
-| `_vcrrRangosAjustadosJugadorClan_` | función | 59_Verificar_CRR_vs_Backup.gs | 1463 |  |
+| `_vcrrRangosAjustadosJugadorClan_` | función | 59_Verificar_CRR_vs_Backup.gs | 1471 |  |
 | `_vcrrRangosDeConfirmada_` | función | 59_Verificar_CRR_vs_Backup.gs | 709 |  |
-| `_vcrrRangosJugadorClan_` | función | 59_Verificar_CRR_vs_Backup.gs | 1349 |  |
-| `_vcrrRapiSemanaParaCache_` | función | 59_Verificar_CRR_vs_Backup.gs | 1364 |  |
+| `_vcrrRangosJugadorClan_` | función | 59_Verificar_CRR_vs_Backup.gs | 1357 |  |
+| `_vcrrRapiSemanaParaCache_` | función | 59_Verificar_CRR_vs_Backup.gs | 1372 |  |
 | `_vcrrRestriccionesSerie_` | función | 59_Verificar_CRR_vs_Backup.gs | 758 |  |
-| `_vcrrResumenDeSeries_` | función | 59_Verificar_CRR_vs_Backup.gs | 1478 |  |
-| `_vcrrResumenJugadorSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 1497 |  |
+| `_vcrrResumenDeSeries_` | función | 59_Verificar_CRR_vs_Backup.gs | 1486 |  |
+| `_vcrrResumenJugadorSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 1505 |  |
 | `_vcrrSemanaVerificada_` | función | 59_Verificar_CRR_vs_Backup.gs | 995 |  |
 | `_vcrrSerieDeFila_` | función | 59_Verificar_CRR_vs_Backup.gs | 956 |  |
 | `_vcrrSeriesDeSemana_` | función | 59_Verificar_CRR_vs_Backup.gs | 548 |  |
-| `_vcrrSeriesDeTag_` | función | 59_Verificar_CRR_vs_Backup.gs | 1395 |  |
+| `_vcrrSeriesDeTag_` | función | 59_Verificar_CRR_vs_Backup.gs | 1403 |  |
 | `_vcrrSumar_` | función | 59_Verificar_CRR_vs_Backup.gs | 231 |  |
 | `_vcrrTextoEstimado_` | función | 59_Verificar_CRR_vs_Backup.gs | 657 |  |
-| `_vcrrVerificarAplicado_` | función | 59_Verificar_CRR_vs_Backup.gs | 1314 |  |
+| `_vcrrVerificarAplicado_` | función | 59_Verificar_CRR_vs_Backup.gs | 1322 |  |
 | `_ventanasHistorialParaDescensoCR_` | función | 26_Torneos_Core.gs | 3544 | Contexto_Base_Web.md §26B060 |
 | `_verificarCambioRangoDesdeRegistros_` | función | 24_Historial_Ascensos.gs | 1650 |  |
 | `_verificarYMarcarCambioRangoHistorial_` | función | 24_Historial_Ascensos.gs | 1285 | Contexto_Base_Web.md §PF286 |
