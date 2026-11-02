@@ -55,7 +55,7 @@ var VCRR_ESTADO_PROP = 'VCRR_ESTADO';                  // propiedad del script c
 var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo «Cruce_» lo manda a CSV/Informes (_csvSubcarpetaDe_)
 var VCRR_ARCHIVO_RAPI = 'Cruce_CRR_RoyaleAPI.csv';                // caché de los totales cerrados de RoyaleAPI (log y perfil) leídos de sus JSON individuales (§PF320)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
-var VCRR_VERSION_REGLAS = 7;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_, el cruce con RoyaleAPI (§PF320, 5) o la lista VCRR_SERIES_CONFIRMADAS (§PF331, 6; §PF332, 7): invalida el registro y se releen todos los JSON
+var VCRR_VERSION_REGLAS = 8;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_, el cruce con RoyaleAPI (§PF320, 5), la lista VCRR_SERIES_CONFIRMADAS (§PF331, 6; §PF332, 7) o qué capturas se descartan (§PF333, 8): invalida el registro y se releen todos los JSON
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
@@ -484,8 +484,9 @@ function _vcrrCapturasSemana_(temporada, semana, lista) {
 
 /**
  * Función pura. archivos = [{ nombre, clanKey, datos }]. Devuelve { porClan: { clanKey: [dia0..dia3] }, avisos: [texto] } con
- * dia = { archivo, jugadores: { tag: { nombre, fame, usados, hoy, barcos } } } o null. Si hay dos archivos del mismo clan y día se queda con el de hora
- * más tardía. Descarta (y avisa) los JSON anómalos: lista VCRR_ANOMALIAS, archivo ilegible, periodIndex o semana que no coinciden con el nombre.
+ * dia = { archivo, hora, conDatos, jugadores: { tag: { nombre, fame, usados, hoy, barcos } } } o null. Si hay dos archivos del mismo clan y día se queda con el de hora
+ * más tardía. Descarta (y avisa) los JSON anómalos: lista VCRR_ANOMALIAS, archivo ilegible, periodIndex o semana que no coinciden con el nombre, y la captura del domingo
+ * completamente en blanco cuando las anteriores del clan traen datos (§PF333).
  */
 function _vcrrCapturasDeArchivos_(archivos, temporada, semana) {
   var porClan = {}, avisos = [];
@@ -512,7 +513,23 @@ function _vcrrCapturasDeArchivos_(archivos, temporada, semana) {
       if (!tag) return;
       jugadores[tag] = { nombre: String(j.name || ''), fame: Number(j.fame) || 0, usados: Number(j.decksUsed) || 0, hoy: Number(j.decksUsedToday) || 0, barcos: Number(j.boatAttacks) || 0 };
     });
-    porClan[a.clanKey][p.off] = { archivo: a.nombre, hora: hora, jugadores: jugadores };
+    // §PF333: ¿la captura trae algún dato? Fame del clan y fame, ataques y barcos de cada jugador, todo en 0 = captura en blanco (T24 S5, GrupoXTerna™3 y Mini乂Ternas™).
+    var conDatos = (Number(d.clan && d.clan.fame) || 0) > 0 || part.some(function (j) {
+      return j && ((Number(j.fame) || 0) > 0 || (Number(j.decksUsed) || 0) > 0 || (Number(j.decksUsedToday) || 0) > 0 || (Number(j.boatAttacks) || 0) > 0);
+    });
+    porClan[a.clanKey][p.off] = { archivo: a.nombre, hora: hora, jugadores: jugadores, conDatos: conDatos };
+  });
+  // §PF333: la captura del DOMINGO completamente en blanco se descarta cuando alguna captura anterior de ese clan en la semana (jueves a sábado) sí trae datos: los acumulados
+  // de la semana no pueden volver a 0, así que esa captura es del reinicio y no de la guerra, y dejaba «incoherente» a todo el que ya había atacado. Si ninguna otra captura
+  // del clan trae datos (clan realmente inactivo, o solo existe la del domingo) se conserva: ahí el 0 sí restringe lo que dice el Backup. Un domingo con 0 ataques de un
+  // jugador suelto no entra aquí (la captura trae datos de otros): sigue siendo válido.
+  Object.keys(porClan).forEach(function (ck) {
+    var dias = porClan[ck], dom = dias[3];
+    if (!dom || dom.conDatos) return;
+    var previoConDatos = [0, 1, 2].some(function (k) { return dias[k] && dias[k].conDatos; });
+    if (!previoConDatos) return;
+    avisos.push(dom.archivo + ': captura del domingo en blanco (sin fame ni ataques en ningún participante) con datos en los días anteriores; no se usa (§PF333)');
+    dias[3] = null;
   });
   return { porClan: porClan, avisos: avisos };
 }
