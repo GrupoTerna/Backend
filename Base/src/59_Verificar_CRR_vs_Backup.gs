@@ -1267,6 +1267,7 @@ function _vcrrPaso3_(st, t0) {
  * Función pura. Arma las operaciones de escritura de una serie: crea el día que falta (si el JSON de ese clan y día trae actividad) y sube al piso
  * los acumulados que estén por debajo; nunca baja un valor y no toca los que pasan del máximo. clanes = { clave normalizada: nombre del clan en el CSV }.
  * Devuelve { grupo, ops, conflictos }. Las ops sirven para _excDiasAplicarPlan() (55_Reparar_DiasConExceso.gs).
+ * §PF336: si la serie está estimada solo con el perfil de RoyaleAPI, no devuelve ops: sus escrituras pasan a conflictos.
  */
 function _vcrrPlanSerie_(x, g, clanes) {
   var grupo = g || { temporada: String(x.temporada), semana: String(x.semana), tag: x.tag, clan: clanes[_vcrrClanNorm_(x.clan)] || x.clan, nombre: x.nombre, dias: {} };
@@ -1303,6 +1304,13 @@ function _vcrrPlanSerie_(x, g, clanes) {
       ops.push({ dia: d, existe: true, fila: fila, sinCambio: false, ant: csv, nuevo: { hoy: nHoy, sem: nSem, fame: nFame, barcos: nBarcos, origen: VCRR_ORIGEN_SUBIDA } });
     }
     prev = { a: nSem, f: nFame, b: nBarcos };
+  }
+  // §PF336: una serie estimada solo con el PERFIL de RoyaleAPI (no con el log del clan) no se escribe: el perfil suma todos los clanes del jugador y puede incluir
+  // ataques en un clan externo, así que su valor es una inferencia. Lo que habría escrito queda como conflicto («SIN ESCRIBIR») para revisarlo a mano.
+  // Las estimadas con el log del clan y las confirmadas a mano se escriben como siempre.
+  if (ops.length && /estimado con RoyaleAPI \(perfil/.test(String(x.notas || ''))) {
+    ops.forEach(function (op) { pideConflicto(op.dia, 'serie estimada con el perfil de RoyaleAPI (no con el log del clan): revisar a mano'); });
+    ops = [];
   }
   return { grupo: grupo, ops: ops, conflictos: conflictos };
 }
