@@ -2591,13 +2591,14 @@ function _getParticipacionHoyGuerra(ctx) {
   // 22-oct-2026 (pedido de la usuaria, ícono de WhatsApp en «Participación de hoy»): Tag -> true si el Directorio tiene el celular de esa cuenta (cualquier Estado, para cubrir también los casos multi-clan). Solo se manda el booleano `tieneWsp`; NUNCA el número. Esta función solo la sirve `_webAdminParticipacionHoyGuerra()`, que exige sesión de admin. [→ Contexto_Base_Web.md §PF171]
   var tieneCelPorTag = {};
   var activoPorTag = {}; // §PF344: Tag -> true si el Directorio lo tiene como Activo (en cualquier clan)
+  var activoClanPorTag = {}; // §PF344 (2-nov-2026): Tag -> nombre del clan donde el Directorio lo tiene como Activo
 
   for (var k = 0; k < dataDir.length; k++) {
     var filaDir = dataDir[k];
     var tagCelDir = cleanTag(filaDir[DC.TAG - 1]);
     if (tagCelDir && soloDigitos(filaDir[DC.CELULAR - 1])) tieneCelPorTag[tagCelDir] = true;
     if (String(filaDir[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
-    if (tagCelDir) activoPorTag[tagCelDir] = true; // §PF344: para no tratar como inactiva a quien hoy es Activo en cualquier clan
+    if (tagCelDir) { activoPorTag[tagCelDir] = true; activoClanPorTag[tagCelDir] = String(filaDir[DC.CLAN - 1] || ''); } // §PF344: para saber si hoy es Activo en otro clan
     var clanNombreDir = String(filaDir[DC.CLAN - 1] || '');
     if (!clanNombreDir) continue;
     var tagDir = cleanTag(filaDir[DC.TAG - 1]);
@@ -2621,20 +2622,37 @@ function _getParticipacionHoyGuerra(ctx) {
     }
   }
 
-  // 3b) §PF344 (2-nov-2026, pedido de la usuaria): el tope de 50 cuentas por clan y día incluye a quien atacó y salió del clan, así que las cuentas INACTIVAS con al menos
-  // un ataque hoy también se listan en «reservadas», con `inactiva: true` (el frontend las muestra aparte y más tenues). Solo cuenta quien figura como inactivo (hoja Inactivos o
-  // Directorio con otro Estado) y no es Activo en ningún clan: un miembro nuevo que aún no está en el Directorio no se confunde con una inactiva. [→ Contexto_Base_Web.md §PF344]
+  // 3b) §PF344 (2-nov-2026, pedido de la usuaria; ampliado el 2-nov-2026): el tope de 50 cuentas por clan y día incluye a TODA cuenta que atacó en ese clan hoy, siga o no en él. Además de las
+  // reservadas activas de arriba, se listan (en «reservadas», con `inactiva: true` por compatibilidad y un `motivo`) las cuentas con al menos un ataque hoy en un clan en el que el Directorio
+  // ya no las tiene como Activas: 'inactiva' (figura en la hoja Inactivos o con otro Estado y no es Activa en ningún clan), 'otroClan' (hoy es Activa en otro clan; va `clanActual`) o
+  // 'sinDirectorio' (no figura en el Directorio ni en Inactivos, por ejemplo una cuenta que entró y atacó antes de que el roster la registrara). [→ Contexto_Base_Web.md §PF344]
   var inactivoPorTag = _leerInactivosParaParticipacion_(ss, dataDir, tieneCelPorTag);
+  var yaReservada = {}; // 'clan|TAG' -> true para las reservadas activas ya agregadas
+  for (var cYa in porClan) {
+    for (var rYa = 0; rYa < porClan[cYa].reservadas.length; rYa++) {
+      yaReservada[cYa + '|' + cleanTag(porClan[cYa].reservadas[rYa].tag)] = true;
+    }
+  }
   for (var tagIn in porTag) {
-    if (activoPorTag[tagIn] || !inactivoPorTag[tagIn]) continue;
-    var infoIn = inactivoPorTag[tagIn];
+    var infoIn = inactivoPorTag[tagIn] || null;
     for (var clanIn in porTag[tagIn].clanes) {
       var ataqIn = Number(porTag[tagIn].clanes[clanIn]) || 0;
-      if (!clanIn || ataqIn <= 0) continue;
+      if (!clanIn || ataqIn <= 0 || yaReservada[clanIn + '|' + tagIn]) continue;
+      var motivoIn, clanActualIn = '';
+      if (activoPorTag[tagIn]) { motivoIn = 'otroClan'; clanActualIn = activoClanPorTag[tagIn] || ''; }
+      else if (infoIn) { motivoIn = 'inactiva'; }
+      else { motivoIn = 'sinDirectorio'; }
       if (!porClan[clanIn]) porClan[clanIn] = { clan: clanIn, reservadas: [], disponibles: [] };
       porClan[clanIn].reservadas.push({
-        tag: infoIn.tag, nombre: infoIn.nombre || porTag[tagIn].nombre, ataquesHoy: ataqIn, tieneWsp: !!infoIn.tieneWsp, inactiva: true
+        tag: infoIn ? infoIn.tag : '#' + tagIn,
+        nombre: (infoIn && infoIn.nombre) || porTag[tagIn].nombre,
+        ataquesHoy: ataqIn,
+        tieneWsp: !!(infoIn && infoIn.tieneWsp) || !!tieneCelPorTag[tagIn],
+        inactiva: true,
+        motivo: motivoIn,
+        clanActual: clanActualIn
       });
+      yaReservada[clanIn + '|' + tagIn] = true;
     }
   }
 
