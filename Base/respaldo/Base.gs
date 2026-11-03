@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 03/11/2026 16:43:25 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 03/11/2026 17:34:38 */
 
 
 
@@ -70893,7 +70893,7 @@ function _crrDomingoParaTotales_(temporada, semana, tag, totA, totF) {
  * Reutiliza de 55_Reparar_DiasConExceso.gs la agrupación, la creación de filas, la aplicación del plan y la verificación.
  *
  * Pasadas (21-oct-2026, Contexto_Base_Web.md §PF139, tanda 5): en Apps Script no alcanza el tiempo para todas las series en una corrida. Se recorre por
- * semanas; al pasar RS_MS_LIMITE se corta al empezar otra semana y el avance queda en la propiedad RS_CURSOR_INFORME o RS_CURSOR_APLICAR. Se vuelve a
+ * semanas; al pasar RS_MS_LIMITE (o RS_FILAS_CORTE filas a escribir, §PF183) se corta al empezar otra semana y el avance queda en la propiedad RS_CURSOR_INFORME o RS_CURSOR_APLICAR. Se vuelve a
  * correr la misma función hasta que el log diga TERMINADO. Lo leído de los JSON queda 6 horas en Cache_TotalesSemana_Objetivos.csv.
  * totalesSemanaPorDiasReiniciar() borra el avance y esa caché.
  */
@@ -70911,6 +70911,9 @@ function _crrDomingoParaTotales_(temporada, semana, tag, totA, totF) {
 
 var RS_MAX_FILAS = 4500;     // tope de filas a modificar + crear en una escritura (si se pasa, no se escribe nada); 3-nov-2026: subido de 2 500 para la tanda de T21 S2 a T26 S1 (3 742 filas); la de T1 a T21 S1 trae más de 7 800 por crear y sigue bloqueada hasta revisarla
 var RS_MS_LIMITE = 150000;   // tiempo máximo desde que empieza la corrida (ms) para EMPEZAR otra semana; lo que falte se hace en la corrida siguiente (queda margen para escribir y verificar)
+// §PF183 (3-nov-2026): corte por filas. La pasada también se corta al empezar otra semana cuando ya lleva RS_FILAS_CORTE filas a modificar o crear, para que ninguna pase de RS_MAX_FILAS (con el corte solo por tiempo,
+// una pasada llegó a 6 437 filas y Aplicar se habría negado a escribir sin guardar el avance). Queda margen de 1 500 filas para la semana que se estaba recorriendo (la mayor vista trae 720).
+var RS_FILAS_CORTE = 3000;
 var RS_CACHE_ARCHIVO = 'Cache_TotalesSemana_Objetivos.csv';   // totales cerrados leidos de los JSON de RoyaleAPI (se reutilizan para no releer 231 archivos en cada corrida)
 var RS_CACHE_MS = 6 * 3600 * 1000;   // vigencia de ese archivo (6 horas)
 var RS_HANDLER_CONT_INFORME = '_continuarTotalesSemanaInforme';   // activador de una sola vez que sigue el informe en la tanda siguiente (§PF183)
@@ -71252,7 +71255,7 @@ function _rsPlanificar(filas, objetivos, opciones) {
     if (ks <= desde) return;
     if (parado) { plan.pendientes++; pendSet[ks] = true; return; }
     if (ks !== semActual) {
-      if (semActual !== null && Date.now() - t0 > RS_MS_LIMITE) { parado = true; plan.pendientes++; pendSet[ks] = true; return; }
+      if (semActual !== null && (Date.now() - t0 > RS_MS_LIMITE || _rsFilasPlan_(plan) >= RS_FILAS_CORTE)) { parado = true; plan.pendientes++; pendSet[ks] = true; return; }
       semActual = ks;
       plan.semanas.push('T' + ob.temporada + ' S' + ob.semana);
     }
@@ -71367,6 +71370,13 @@ function _rsPlanificar(filas, objetivos, opciones) {
   plan.terminado = !parado;
   plan.semanasPendientes = Object.keys(pendSet).length;
   return plan;
+}
+
+/** Filas a modificar o crear que lleva el plan (la misma cuenta que se compara con RS_MAX_FILAS). §PF183 */
+function _rsFilasPlan_(plan) {
+  var n = 0;
+  plan.series.forEach(function (s) { n += s.nCrear + s.nMod; });
+  return n;
 }
 
 /** Restricciones de CurrentRiverRace por día ([{ n, f }|null] x 4) o null si no hay capturas, se contradicen o no se puede leer Drive. clanTag (opcional, §PF183): solo las capturas de ese clan. */
