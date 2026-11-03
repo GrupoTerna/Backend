@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 22:45:40 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 23:21:16 */
 
 
 
@@ -70764,6 +70764,7 @@ function _crrDomingoParaTotales_(temporada, semana, tag, totA, totF) {
  *  - CurrentRiverRace (módulo 56), si hay, fija los ataques y la fame de cada día que tenga dato. Si con eso no hay solución, se avisa
  *    y se reparte sin él (misma decisión de las tandas anteriores de §PF139).
  *    §PF183 (2-nov-2026, solo el informe): las capturas se separan por clan y CurrentRiverRace se prueba primero entre los estrictos, luego lo estricto sin él y solo después los relajados, con CurrentRiverRace primero (RS_NIVELES_CRR_PRIMERO).
+ *    §PF183 (2-nov-2026, solo el informe): en las series de RS_CRR_MANDA (decididas una a una por la usuaria) CurrentRiverRace manda sobre las filas de la hoja (RS_NIVEL_CRR_MANDA): las filas ya no limitan el reparto.
  *  - Se corrigen las filas existentes que no coinciden y se CREAN las que faltan (Origen 'Reconstruido - Solución ...').
  *  - Si ningún reparto cumple los registros y el total, no se escribe y la serie queda en el informe y en Revision_Guerra.csv.
  * Reutiliza de 55_Reparar_DiasConExceso.gs la agrupación, la creación de filas, la aplicación del plan y la verificación.
@@ -70818,6 +70819,16 @@ var RS_NIVELES_CRR_PRIMERO = [
   { nombre: 'relajado con AtaquesHoy', estricto: false, hoy: true, crr: false },
   { nombre: 'relajado sin AtaquesHoy', estricto: false, hoy: false, crr: false }
 ];
+
+// §PF183 (2-nov-2026, solo el informe): nivel para las series en que la usuaria decidió que mandan las capturas de CurrentRiverRace sobre las filas de la hoja (regla 1 de los consolidados).
+// Con ignorarFilas las filas registradas no limitan el reparto (solo se usan para contar cuántas cambian). Se prueba PRIMERO y solo en las series de RS_CRR_MANDA; el criterio general no cambia.
+// Motivo: una fila de la hoja actúa como cota mínima del acumulado, así que si la hoja tiene un ataque de más ningún nivel con CurrentRiverRace tiene solución y se repartía sin él.
+var RS_NIVEL_CRR_MANDA = { nombre: 'CurrentRiverRace manda sobre las filas de la hoja', estricto: false, hoy: false, crr: true, ignorarFilas: true };
+// Series decididas. Clave: temporada|semana|tag del jugador|tag del clan de la serie. Contrastación y motivo: Contexto_Base_Web.md §PF183.
+var RS_CRR_MANDA = {
+  '24|5|#J8V9PQJP9|#GQQPPJGR': true,   // GrupoXTerna™3: el ataque es del viernes (la fila J de la hoja se leyó ya cambiado el día)
+  '24|5|#829GQP0JL|#GCRG8L00': true    // Grupo乂Terna™: viernes 3, sábado 4, domingo 4 según las capturas (V, S y D de la hoja son «Corregido»)
+};
 
 var _rsCatalogo_ = null;
 var _rsCatalogoSinFame_ = null;
@@ -71124,6 +71135,8 @@ function _rsPlanificar(filas, objetivos, opciones) {
     var nuevo = !!opciones.crrNuevo && opciones.usarCrr !== false;
     var tagClan = nuevo ? _rsTagDeClanNombre_(ob.clan) : null;
     var niveles = nuevo ? RS_NIVELES_CRR_PRIMERO : RS_NIVELES;
+    var manda = nuevo && !!tagClan && !!RS_CRR_MANDA[ob.temporada + '|' + ob.semana + '|' + ob.tag + '|' + tagClan];   // §PF183 (2-nov-2026): serie decidida, mandan las capturas
+    if (manda) niveles = [RS_NIVEL_CRR_MANDA].concat(niveles);
     var crr = opciones.usarCrr === false ? null : _rsCrrRestricciones(ob.temporada, ob.semana, ob.tag, tot, tagClan);
     var sinFame = opciones.usarCierre ? _rsSinFameDeSerie(ob.temporada, ob.semana, ob.clan) : null;   // §PF183: domingo sin fame en un clan que ya cruzó
     var res = _rsResolver(g.dias, tot, crr, sinFame, niveles);
@@ -71133,7 +71146,19 @@ function _rsPlanificar(filas, objetivos, opciones) {
     }
     serie.nivel = res.nivel; serie.soluciones = res.nSol;
     var notas = [];
-    if (res.crrIgnorado) { notas.push('CurrentRiverRace no cuadra con los registros y el total: no se uso'); Logger.log('[Semana por dias] AVISO ' + ob.tag + ' T' + ob.temporada + ' S' + ob.semana + ': CurrentRiverRace no cuadra; se repartio sin el.'); }
+    if (res.crrIgnorado) {
+      // §PF183 (2-nov-2026): con el orden nuevo un nivel estricto sin CurrentRiverRace resuelve antes de probar los relajados con él. Solo es «no cuadra» si ningún nivel con CurrentRiverRace que aún no se probó tiene reparto.
+      var cuadraDespues = false;
+      if (nuevo) {
+        var iNivel = -1;
+        for (var kn = 0; kn < niveles.length; kn++) if (niveles[kn].nombre === res.nivel) iNivel = kn;
+        var restantes = niveles.slice(iNivel + 1).filter(function (n) { return n.crr; });
+        if (iNivel >= 0 && restantes.length) cuadraDespues = _rsResolver(g.dias, tot, crr, sinFame, restantes).nSol > 0;
+      }
+      if (cuadraDespues) notas.push('CurrentRiverRace no se uso: se eligio un nivel estricto sin el, aunque en un nivel relajado con el tambien hay reparto');
+      else { notas.push('CurrentRiverRace no cuadra con los registros y el total: no se uso'); Logger.log('[Semana por dias] AVISO ' + ob.tag + ' T' + ob.temporada + ' S' + ob.semana + ': CurrentRiverRace no cuadra; se repartio sin el.'); }
+    }
+    if (manda && res.nivel === RS_NIVEL_CRR_MANDA.nombre) notas.push('CurrentRiverRace manda sobre las filas de la hoja (decision de la usuaria, regla 1; §PF183)');
     if (sinFame) {
       // §PF183: comparación en el mismo informe. Sin la regla, ¿había reparto y era el mismo? (solo informa; no cambia lo que se elige)
       var resSin = _rsResolver(g.dias, tot, crr, null, niveles);
@@ -71292,7 +71317,7 @@ function _rsResolverNivel(tot, rec, mapeo, restr, nivel, sinFame) {
     cand.push(lst); sets.push(st);
   }
   var rowAt = [null, null, null, null], K = [null, null, null, tot.a];
-  for (i = 0; i < mapeo.offs.length; i++) {
+  for (i = 0; !nivel.ignorarFilas && i < mapeo.offs.length; i++) {   // §PF183: con ignorarFilas (RS_NIVEL_CRR_MANDA) las filas no limitan el reparto
     var dEn = mapeo.offs[i], dMap = mapeo.m[i], r = rec[dEn];
     rowAt[dMap] = r;
     // Ataques hechos hasta el dia anterior = AtaquesSemana - AtaquesHoy (solo si la fila corresponde a su propio dia).
