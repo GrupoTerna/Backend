@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2646 nombres en 60 archivos .gs.
+Código real: `Base/src/`. Total: 2655 nombres en 60 archivos .gs.
 
 ## Por archivo
 
@@ -61,8 +61,8 @@ Código real: `Base/src/`. Total: 2646 nombres en 60 archivos .gs.
 - **53_Publicar_Torneos.gs** (3 funciones): publicarTorneosEstatico, _publicarTorneosEstatico_, _leerHistorialTorneosPublicado_
 - **54_Correccion_AtaquesSemana_Anomalias.gs** (13 funciones): corregirAnomaliasAtaquesSemanaInforme, corregirAnomaliasAtaquesSemanaAplicar, _corregirAnomaliasAtaquesSemana_, _anomAtqSemEvaluar_, _anomAtqSemCoincide_, _anomAtqSemValores_, _anomAtqSemIguales_, _anomAtqSemTextoSumas_, _anomAtqSemSumaClanes_, _anomAtqSemSeriesAfectadas_, _anomAtqSemNum_, _anomAtqSemTag_, _anomAtqSemClan_
 - **55_Reparar_DiasConExceso.gs** (30 funciones): repararDiasConExcesoInforme, repararDiasConExcesoAplicarUnicas, repararDiasConExcesoAplicar, informeFameCurrentRiverRace52, aplicarFameCurrentRiverRace52, _repararDiasConExceso_, _excDiasClasificar, _excDiasAgrupar, _excDiasNum, _excDiasNecesitaReparo, _excDiasSegmentos, _excDiasResumir, _excDiasResolver, _excDiasFaltanteJueves, _excDiasSoluciones, _excDiasOpciones, _excDiasEsCero, _excDiasPlanificar, _excDiasRegistradoPorDia, _excDiasFinalDe, _excDiasElegirSolucion, _excDiasOrigenNuevo, _excDiasTextoActual, _excDiasTextoPorDia, _excDiasAplicarPlan, _excDiasFilaNueva, _excDiasVerificar, _fameCrr52_, _fameCrr52Planificar_, _fameCrr52Verificar_
-- **56_CurrentRiverRace_Dias.gs** (12 funciones): probarCurrentRiverRaceDias, _crrDiasDeJugador_, _crrCapturasDeSemana_, _crrSubcarpeta_, _crrCapturasDesdeArchivos_, _crrParsearNombre_, _crrClasificarCaptura_, _crrResolverJugador_, _crrFameDia_, _crrAyerParaCierre_, _crrAvisoFueraDeRangosCierre_, _crrDomingoParaTotales_
-- **57_ReconstruirSemanaPorDias.gs** (18 funciones): totalesSemanaPorDiasReiniciar, _totSemanaPorDias_, _rsObjetivos, _rsObjetivosDeCache_, _rsObjetivosDeJson_, _rsObjetivosGuardarCache_, _rsClavesHoja, _rsClaveSem_, _rsPlanificar, _rsCrrRestricciones, _rsResolver, _rsRegistros, _rsMapeos, _rsResolverNivel, _rsCatalogo, _rsMenor, _rsCursorLeer_, _rsCursorGuardar_
+- **56_CurrentRiverRace_Dias.gs** (16 funciones): probarCurrentRiverRaceDias, _crrDiasDeJugador_, _crrCapturasDeSemana_, _crrArchivosDeSemana_, _crrSubcarpeta_, _crrCapturasDesdeArchivos_, _crrCierresDesdeArchivos_, _crrCierresDeSemana_, _crrDomingoSinFame_, _crrParsearNombre_, _crrClasificarCaptura_, _crrResolverJugador_, _crrFameDia_, _crrAyerParaCierre_, _crrAvisoFueraDeRangosCierre_, _crrDomingoParaTotales_
+- **57_ReconstruirSemanaPorDias.gs** (20 funciones): totalesSemanaPorDiasReiniciar, _totSemanaPorDias_, _rsObjetivos, _rsObjetivosDeCache_, _rsObjetivosDeJson_, _rsObjetivosGuardarCache_, _rsClavesHoja, _rsClaveSem_, _rsPlanificar, _rsCrrRestricciones, _rsResolver, _rsRegistros, _rsMapeos, _rsResolverNivel, _rsCatalogo, _rsCatalogoSinFameDomingo, _rsSinFameDeSerie, _rsMenor, _rsCursorLeer_, _rsCursorGuardar_
 - **58_Docs_Administracion.gs** (23 funciones): _adminDocActualizar_, _adminDocNorm_, _adminDocLeerEquipo_, _adminDocCopasPorTag_, _adminDocNombresDeHojaClan_, _adminDocClaveAlfa_, _adminDocTagDeClan_, _adminDocOrdenNombres_, _adminDocAplicarClan_, _adminDocGrupo_, _adminDocBuscarGrupo_, _adminDocEncabezado_, _adminDocPrefEncabezados_, _adminDocPrefijo_, _adminDocSetTexto_, _adminDocQuitarVineta_, _adminDocLineas_, _adminDocCuentaAMostrar_, _adminDocMejorPorCopas_, _adminDocCuentaPrincipal_, _adminDocAdminsExtra_, _adminDocPersonaTieneCuenta_, _adminDocAplicarFamilia_
 - **59_Verificar_CRR_vs_Backup.gs** (65 funciones): verificarCrrVsBackupInforme, _continuarVerificarCrrVsBackupInforme, verificarCrrVsBackupAplicar, _continuarVerificarCrrVsBackupAplicar, verificarCrrVsBackupReiniciar, verificarCrrVsBackupOlvidarVerificados, descartarFilasClanEquivocadoInforme, descartarFilasClanEquivocadoAplicar, _vcrrEjecutar_, _vcrrLeerEstado_, _vcrrGuardarEstado_, _vcrrSumar_, _vcrrLeerBackupGuerra_, _vcrrClanNorm_, _vcrrEncabezadoRapi_, _vcrrFilasRapiDeArchivo_, _vcrrIndiceRapi_, _vcrrFirmaRapi_, _vcrrLeerFilasRapi_, _vcrrIndiceRapiDeDrive_, _vcrrPasoRapi_, _vcrrPaso1_, _vcrrArchivosSemana_, _vcrrCapturasSemana_, _vcrrCapturasDeArchivos_, _vcrrSeriesDeSemana_, _vcrrCruzarRoyaleApi_, _vcrrTextoEstimado_, _vcrrAplicarConfirmadas_, _vcrrRangosDeConfirmada_, _vcrrRestriccionesSerie_, _vcrrFameLimitesPorAtaques_, _vcrrPropagar_, _vcrrEncabezadoRestricciones_, _vcrrFilaRestriccion_, _vcrrGuardarRestricciones_, _vcrrLeerRestricciones_, _vcrrSerieDeFila_, _vcrrEncabezadoVerificados_, _vcrrFilaVerificado_, _vcrrHuella_, _vcrrSemanaVerificada_, _vcrrLeerVerificados_, _vcrrGuardarVerificados_, _vcrrPaso2_, _vcrrListarSinResolver_, _vcrrLimpiarRevisionAntigua_, _vcrrCompararSerie_, _vcrrGuardarHallazgos_, _vcrrPaso3_, _vcrrPlanSerie_, _vcrrVerificarAplicado_, _vcrrDescartarFilas_, _vcrrPlanDescartar_, _vcrrIdsHojaGuerra_, _vcrrVerificarDescarte_, _vcrrRangosJugadorClan_, _vcrrRapiSemanaParaCache_, _vcrrCacheSemana_, _vcrrSeriesDeTag_, _vcrrPisoSerie_, _vcrrAjustarPorOtrosClanes_, _vcrrRangosAjustadosJugadorClan_, _vcrrResumenDeSeries_, _vcrrResumenJugadorSemana_
 
@@ -553,18 +553,24 @@ Ninguno.
 | `_crearRegistroAscenso` | función | 24_Historial_Ascensos.gs | 739 | Contexto_Base_Web.md §24B028 |
 | `_crearTabla` | función | 04_Formato_Comun.gs | 639 |  |
 | `_createFileConConteo_` | función | 05_Backup_CSV.gs | 1504 | Contexto_Base_Web.md §PF290 |
+| `_CRR_CACHE_ARCHIVOS_` | global | 56_CurrentRiverRace_Dias.gs | 34 |  |
+| `_CRR_CACHE_CIERRES_` | global | 56_CurrentRiverRace_Dias.gs | 35 |  |
 | `_CRR_CACHE_SEMANA_` | global | 56_CurrentRiverRace_Dias.gs | 33 |  |
-| `_crrAvisoFueraDeRangosCierre_` | función | 56_CurrentRiverRace_Dias.gs | 285 |  |
-| `_crrAyerParaCierre_` | función | 56_CurrentRiverRace_Dias.gs | 252 |  |
-| `_crrCapturasDesdeArchivos_` | función | 56_CurrentRiverRace_Dias.gs | 115 |  |
-| `_crrCapturasDeSemana_` | función | 56_CurrentRiverRace_Dias.gs | 78 |  |
-| `_crrClasificarCaptura_` | función | 56_CurrentRiverRace_Dias.gs | 151 |  |
-| `_crrDiasDeJugador_` | función | 56_CurrentRiverRace_Dias.gs | 66 |  |
-| `_crrDomingoParaTotales_` | función | 56_CurrentRiverRace_Dias.gs | 315 |  |
-| `_crrFameDia_` | función | 56_CurrentRiverRace_Dias.gs | 231 |  |
-| `_crrParsearNombre_` | función | 56_CurrentRiverRace_Dias.gs | 133 |  |
-| `_crrResolverJugador_` | función | 56_CurrentRiverRace_Dias.gs | 166 |  |
-| `_crrSubcarpeta_` | función | 56_CurrentRiverRace_Dias.gs | 105 |  |
+| `_crrArchivosDeSemana_` | función | 56_CurrentRiverRace_Dias.gs | 91 |  |
+| `_crrAvisoFueraDeRangosCierre_` | función | 56_CurrentRiverRace_Dias.gs | 346 |  |
+| `_crrAyerParaCierre_` | función | 56_CurrentRiverRace_Dias.gs | 313 |  |
+| `_crrCapturasDesdeArchivos_` | función | 56_CurrentRiverRace_Dias.gs | 128 |  |
+| `_crrCapturasDeSemana_` | función | 56_CurrentRiverRace_Dias.gs | 80 |  |
+| `_crrCierresDesdeArchivos_` | función | 56_CurrentRiverRace_Dias.gs | 151 |  |
+| `_crrCierresDeSemana_` | función | 56_CurrentRiverRace_Dias.gs | 174 |  |
+| `_crrClasificarCaptura_` | función | 56_CurrentRiverRace_Dias.gs | 212 |  |
+| `_crrDiasDeJugador_` | función | 56_CurrentRiverRace_Dias.gs | 68 |  |
+| `_crrDomingoParaTotales_` | función | 56_CurrentRiverRace_Dias.gs | 376 |  |
+| `_crrDomingoSinFame_` | función | 56_CurrentRiverRace_Dias.gs | 186 |  |
+| `_crrFameDia_` | función | 56_CurrentRiverRace_Dias.gs | 292 |  |
+| `_crrParsearNombre_` | función | 56_CurrentRiverRace_Dias.gs | 194 |  |
+| `_crrResolverJugador_` | función | 56_CurrentRiverRace_Dias.gs | 227 |  |
+| `_crrSubcarpeta_` | función | 56_CurrentRiverRace_Dias.gs | 118 |  |
 | `_CRUCE_META_JSON_IDX` | global | 22_ControlCalendario.gs | 48 |  |
 | `_CRUCE_META_JSON_RES` | global | 22_ControlCalendario.gs | 49 |  |
 | `_CRUCE_META_LOGS_MEMO` | global | 22_ControlCalendario.gs | 46 | Contexto_Base_Web.md §22B051 |
@@ -1455,23 +1461,26 @@ Ninguno.
 | `_rgValores_` | función | 20_HistorialGuerraJugador.gs | 1217 |  |
 | `_rolDeRangoCR_` | función | 24_Historial_Ascensos.gs | 1404 |  |
 | `_round1` | función | 26_Torneos_Core.gs | 3417 | Contexto_Base_Web.md §26B050 |
-| `_rsCatalogo` | función | 57_ReconstruirSemanaPorDias.gs | 554 |  |
+| `_rsCatalogo` | función | 57_ReconstruirSemanaPorDias.gs | 559 |  |
 | `_rsCatalogo_` | global | 57_ReconstruirSemanaPorDias.gs | 61 |  |
-| `_rsClaveSem_` | función | 57_ReconstruirSemanaPorDias.gs | 300 |  |
-| `_rsClavesHoja` | función | 57_ReconstruirSemanaPorDias.gs | 285 |  |
-| `_rsCrrRestricciones` | función | 57_ReconstruirSemanaPorDias.gs | 407 |  |
-| `_rsCursorGuardar_` | función | 57_ReconstruirSemanaPorDias.gs | 585 |  |
-| `_rsCursorLeer_` | función | 57_ReconstruirSemanaPorDias.gs | 579 |  |
-| `_rsMapeos` | función | 57_ReconstruirSemanaPorDias.gs | 463 |  |
-| `_rsMenor` | función | 57_ReconstruirSemanaPorDias.gs | 566 |  |
-| `_rsObjetivos` | función | 57_ReconstruirSemanaPorDias.gs | 200 |  |
-| `_rsObjetivosDeCache_` | función | 57_ReconstruirSemanaPorDias.gs | 217 |  |
-| `_rsObjetivosDeJson_` | función | 57_ReconstruirSemanaPorDias.gs | 240 |  |
-| `_rsObjetivosGuardarCache_` | función | 57_ReconstruirSemanaPorDias.gs | 266 |  |
-| `_rsPlanificar` | función | 57_ReconstruirSemanaPorDias.gs | 312 |  |
-| `_rsRegistros` | función | 57_ReconstruirSemanaPorDias.gs | 450 |  |
-| `_rsResolver` | función | 57_ReconstruirSemanaPorDias.gs | 430 |  |
-| `_rsResolverNivel` | función | 57_ReconstruirSemanaPorDias.gs | 484 |  |
+| `_rsCatalogoSinFame_` | global | 57_ReconstruirSemanaPorDias.gs | 62 |  |
+| `_rsCatalogoSinFameDomingo` | función | 57_ReconstruirSemanaPorDias.gs | 575 |  |
+| `_rsClaveSem_` | función | 57_ReconstruirSemanaPorDias.gs | 302 |  |
+| `_rsClavesHoja` | función | 57_ReconstruirSemanaPorDias.gs | 287 |  |
+| `_rsCrrRestricciones` | función | 57_ReconstruirSemanaPorDias.gs | 411 |  |
+| `_rsCursorGuardar_` | función | 57_ReconstruirSemanaPorDias.gs | 614 |  |
+| `_rsCursorLeer_` | función | 57_ReconstruirSemanaPorDias.gs | 608 |  |
+| `_rsMapeos` | función | 57_ReconstruirSemanaPorDias.gs | 467 |  |
+| `_rsMenor` | función | 57_ReconstruirSemanaPorDias.gs | 595 |  |
+| `_rsObjetivos` | función | 57_ReconstruirSemanaPorDias.gs | 202 |  |
+| `_rsObjetivosDeCache_` | función | 57_ReconstruirSemanaPorDias.gs | 219 |  |
+| `_rsObjetivosDeJson_` | función | 57_ReconstruirSemanaPorDias.gs | 242 |  |
+| `_rsObjetivosGuardarCache_` | función | 57_ReconstruirSemanaPorDias.gs | 268 |  |
+| `_rsPlanificar` | función | 57_ReconstruirSemanaPorDias.gs | 314 |  |
+| `_rsRegistros` | función | 57_ReconstruirSemanaPorDias.gs | 454 |  |
+| `_rsResolver` | función | 57_ReconstruirSemanaPorDias.gs | 434 |  |
+| `_rsResolverNivel` | función | 57_ReconstruirSemanaPorDias.gs | 488 |  |
+| `_rsSinFameDeSerie` | función | 57_ReconstruirSemanaPorDias.gs | 587 |  |
 | `_runGuerraColaHoraria_` | función | 00_Main.gs | 1311 | Contexto_Base_Web.md §PF143 |
 | `_runGuerraPasoCalentarCache_` | función | 00_Main.gs | 1551 |  |
 | `_runGuerraPasoRespaldoCsv_` | función | 00_Main.gs | 1525 |  |
@@ -1559,7 +1568,7 @@ Ninguno.
 | `_tocaProtegida_` | función | 05_Backup_CSV.gs | 1970 |  |
 | `_topNTrasResoluciones` | función | 26_Torneos_Core.gs | 2719 | Contexto_Base_Web.md §26B269 |
 | `_totalesSemanaDesdeAcumulados` | función | 28_Torneos_Docs.gs | 861 | Contexto_Base_Web.md §28B080 |
-| `_totSemanaPorDias_` | función | 57_ReconstruirSemanaPorDias.gs | 87 |  |
+| `_totSemanaPorDias_` | función | 57_ReconstruirSemanaPorDias.gs | 88 |  |
 | `_tpSumarClaves_` | función | 48_Herramientas_Debug.gs | 864 |  |
 | `_traducirNombreInsignia` | función | 32_Insignias.gs | 249 | Contexto_Base_Web.md §32B013 |
 | `_truncarTitulo` | función | 44_BotWhatsApp.gs | 219 |  |
@@ -2397,7 +2406,7 @@ Ninguno.
 | `primerLunesDelMes` | función | 01_Config_Global.gs | 1036 |  |
 | `primerLunesTemporada` | función | 01_Config_Global.gs | 1052 |  |
 | `probarCostosSubirNivel` | función | 31_Cards_Mazos.gs | 241 | Contexto_Base_Web.md §31B063 |
-| `probarCurrentRiverRaceDias` | función | 56_CurrentRiverRace_Dias.gs | 45 |  |
+| `probarCurrentRiverRaceDias` | función | 56_CurrentRiverRace_Dias.gs | 47 |  |
 | `procesarCambioRango` | función | 26_Torneos_Core.gs | 364 | Contexto_Base_Web.md §PF286 |
 | `procesarSListaNuevasFilas` | función | 26_Torneos_Core.gs | 1821 | Contexto_Base_Web.md §26B211 |
 | `procesarSorteos` | función | 26_Torneos_Core.gs | 334 | Contexto_Base_Web.md §26B217 |
@@ -2620,7 +2629,7 @@ Ninguno.
 | `tot_num_` | función | 48_Herramientas_Debug.gs | 1183 |  |
 | `tot_serializar_` | función | 48_Herramientas_Debug.gs | 1207 |  |
 | `tot_tag_` | función | 48_Herramientas_Debug.gs | 1188 |  |
-| `totalesSemanaPorDiasReiniciar` | función | 57_ReconstruirSemanaPorDias.gs | 72 |  |
+| `totalesSemanaPorDiasReiniciar` | función | 57_ReconstruirSemanaPorDias.gs | 73 |  |
 | `TR` | global | 26_Torneos_Core.gs | 128 | Contexto_Base_Web.md §26B080 |
 | `TR_TOTAL_COLS` | global | 26_Torneos_Core.gs | 133 |  |
 | `TSD_DIAS_ES_` | global | 24_Historial_Ascensos.gs | 27 |  |
