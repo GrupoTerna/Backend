@@ -873,3 +873,6 @@ N°,Fecha,Temporada,Semana,Tag,Nombre,Tipo,Motivo,Detalle,Estado
 872,2026-11-02 02:37:08,-47,2,#22C090RVJ,,Contradicción,Valor que no cabe en una semana posible (perfil),ahora 0 ataques / 411 fame / 0 barcos [perfil]; no cabe en ninguna semana posible: se guarda porque no había otro valor y va a Revision_Guerra.csv,Pendiente
 873,2026-11-02 02:37:08,-47,1,#22C090RVJ,,Contradicción,Valor que no cabe en una semana posible (perfil),ahora 0 ataques / 3184 fame / 0 barcos [perfil]; no cabe en ninguna semana posible: se guarda porque no había otro valor y va a Revision_Guerra.csv,Pendiente
 874,2026-11-03 18:19:18,7,1,#VY0UJ82PV,,alarma,totales semanales: no se escribio,GrupoXTerna™2: ningun reparto de ternas cumple los registros y el total de RoyaleAPI (16/1/1325),
+875,2026-11-03 18:33:24,15,2,#Q9J8ULV0,,alarma,totales semanales: no se escribio,GrupoXTerna™2: ningun reparto de ternas cumple los registros y el total de RoyaleAPI (4/0/0),
+876,2026-11-03 18:33:24,18,1,#22C090RVJ,,alarma,totales semanales: no se escribio,Mini乂Ternas™: ningun reparto de ternas cumple los registros y el total de RoyaleAPI (16/0/1200),
+877,2026-11-03 18:33:24,18,1,#90QYJQRQ8,,alarma,totales semanales: no se escribio,Mini乂Ternas™: ningun reparto de ternas cumple los registros y el total de RoyaleAPI (16/0/1650),
