@@ -481,7 +481,11 @@ function _rsPlanificar(filas, objetivos, opciones) {
     var semanaOtros = 0;
     otros.forEach(function (o) { semanaOtros += _excDiasFinalDe(o.dias).a; });
     if (!excede && cumA + semanaOtros > 16) excede = 'la semana quedaria con ' + (cumA + semanaOtros) + ' ataques sumando clanes';
-    if (excede) { omitir(excede, true); return; }
+    if (excede) {
+      // §PF183 (3-nov-2026): la serie ya quedó marcada con crrCambia (cuenta en el log); omitir() reemplaza las notas, así que se conserva aquí la de «CRR CAMBIA» para que el CSV y el log coincidan.
+      var notaCrrOmitida = notas.filter(function (n) { return n.indexOf('CRR CAMBIA') === 0; }).join('; ');
+      omitir(excede + (notaCrrOmitida ? '; ' + notaCrrOmitida : ''), true); return;
+    }
 
     ops.forEach(function (op) {
       op.nuevo.origen = _excDiasOrigenNuevo(op.existe ? op.ant.origen : '', op.existe, op.estimadoDia);
