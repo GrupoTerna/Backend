@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 19:45:48 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 20:16:48 */
 
 
 
@@ -71039,7 +71039,13 @@ function _rsPlanificar(filas, objetivos, opciones) {
     serie.nivel = res.nivel; serie.soluciones = res.nSol;
     var notas = [];
     if (res.crrIgnorado) { notas.push('CurrentRiverRace no cuadra con los registros y el total: no se uso'); Logger.log('[Semana por dias] AVISO ' + ob.tag + ' T' + ob.temporada + ' S' + ob.semana + ': CurrentRiverRace no cuadra; se repartio sin el.'); }
-    if (sinFame) notas.push('domingo sin fame: el clan ya había cruzado la meta (§PF183)');
+    if (sinFame) {
+      // §PF183: comparación en el mismo informe. Sin la regla, ¿había reparto y era el mismo? (solo informa; no cambia lo que se elige)
+      var resSin = _rsResolver(g.dias, tot, crr, null);
+      var txtSin = resSin.nSol === 0 ? 'sin la regla no había ningún reparto'
+        : (_rsMismoReparto_(resSin.mejor, res.mejor) ? 'sin la regla el reparto elegido era el mismo (' + resSin.nSol + ' soluciones)' : 'CAMBIA: sin la regla había ' + resSin.nSol + ' soluciones y el reparto elegido era otro');
+      notas.push('domingo sin fame: el clan ya había cruzado la meta (§PF183); ' + txtSin);
+    }
     if (res.desplazadas) notas.push('fila(s) con el acumulado de un dia posterior: ' + res.desplazadas);
     if (res.nivel.indexOf('sin AtaquesHoy') >= 0) notas.push('AtaquesHoy no cuadra con los acumulados: no se uso');
     if (res.nivel.indexOf('relajado') === 0) notas.push('nivel relajado: se acepto que una fila con todos sus ataques tuviera barcos o fame mayores (revisar)');
@@ -71245,6 +71251,13 @@ function _rsCatalogo() {
   }
   _rsCatalogo_ = { lista: lista, claves: claves };
   return _rsCatalogo_;
+}
+
+/** ¿Dos repartos de cuatro días (listas de { n, b, f }) son iguales? Solo para el informe de §PF183. */
+function _rsMismoReparto_(x, y) {
+  if (!x || !y) return false;
+  for (var d = 0; d < 4; d++) if (x[d].n !== y[d].n || x[d].b !== y[d].b || x[d].f !== y[d].f) return false;
+  return true;
 }
 
 /**
