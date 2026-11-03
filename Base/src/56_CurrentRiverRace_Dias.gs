@@ -63,9 +63,11 @@ function probarCurrentRiverRaceDias() {
  * Punto de entrada para las demás funciones: ataques y fame por día de UN jugador en una semana, según CurrentRiverRace.
  * totA y totF = totales de la semana (null si no se conocen). Devuelve { ataques, fameAcum, inicio, notas, anomalias, hayCapturas } (ver _crrResolverJugador_: las
  * anomalias son fallos conocidos del JSON, §PF319, que NO invalidan la semana; las notas sí).
+ * clanTag (opcional, §PF183): si se pasa, solo se usan las capturas de ese clan; sin él se juntan las de todos los clanes Terna, como siempre.
  */
-function _crrDiasDeJugador_(temporada, semana, tag, totA, totF) {
+function _crrDiasDeJugador_(temporada, semana, tag, totA, totF, clanTag) {
   var caps = _crrCapturasDeSemana_(temporada, semana)[String(tag || '').trim()];
+  if (clanTag) caps = _crrCapturasDeClan_(caps, clanTag);   // §PF183: solo las capturas del clan de la serie (un jugador en dos clanes trae capturas de los dos)
   var r = _crrResolverJugador_(caps || null, totA, totF);
   r.hayCapturas = !!caps;
   return r;
@@ -128,7 +130,7 @@ function _crrSubcarpeta_(padre, nombre) {
 
 /**
  * archivos = [{ nombre, datos }] con datos = JSON de /currentriverrace ya convertido en objeto.
- * Devuelve { tag: { J: [captura, ...], V: [...], S: [...], D: [...] } } con captura = { fame, usados, hoy }.
+ * Devuelve { tag: { J: [captura, ...], V: [...], S: [...], D: [...] } } con captura = { fame, usados, hoy, clan } (clan = tag del clan del archivo, en mayúsculas).
  * Un jugador puede tener dos capturas el mismo día si estuvo en dos clanes.
  */
 function _crrCapturasDesdeArchivos_(archivos) {
@@ -137,15 +139,32 @@ function _crrCapturasDesdeArchivos_(archivos) {
     var p = _crrParsearNombre_(a && a.nombre);
     var part = a && a.datos && a.datos.clan && a.datos.clan.participants;
     if (!p || !part) return;
+    var clanTag = String(a.datos.clan.tag || '').trim().toUpperCase();
     part.forEach(function (j) {
       var tag = String((j && j.tag) || '').trim();
       if (!tag) return;
       if (!porTag[tag]) porTag[tag] = {};
       if (!porTag[tag][p.letra]) porTag[tag][p.letra] = [];
-      porTag[tag][p.letra].push({ fame: Number(j.fame) || 0, usados: Number(j.decksUsed) || 0, hoy: Number(j.decksUsedToday) || 0 });
+      porTag[tag][p.letra].push({ fame: Number(j.fame) || 0, usados: Number(j.decksUsed) || 0, hoy: Number(j.decksUsedToday) || 0, clan: clanTag });
     });
   });
   return porTag;
+}
+
+/**
+ * Función pura (§PF183, 2-nov-2026). De las capturas de UN jugador ({ J: [captura], ... }) deja solo las de un clan. Devuelve null si ese clan no tiene ninguna.
+ * Sin clanTag devuelve las capturas tal cual. Un jugador que estuvo en dos clanes la misma semana trae capturas de los dos: juntarlas hacía que _crrResolverJugador_
+ * viera inicios del día incoherentes y la semana quedara sin CurrentRiverRace.
+ */
+function _crrCapturasDeClan_(porDia, clanTag) {
+  var tag = String(clanTag || '').trim().toUpperCase();
+  if (!porDia || !tag) return porDia || null;
+  var out = {}, hay = false;
+  Object.keys(porDia).forEach(function (letra) {
+    var lista = (porDia[letra] || []).filter(function (x) { return x.clan === tag; });
+    if (lista.length) { out[letra] = lista; hay = true; }
+  });
+  return hay ? out : null;
 }
 
 /**

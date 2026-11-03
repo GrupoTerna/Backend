@@ -23,6 +23,7 @@
  *    («Solución estimada»). Los días con la misma terna en todas las soluciones se marcan «única» aunque la semana sea ambigua.
  *  - CurrentRiverRace (módulo 56), si hay, fija los ataques y la fame de cada día que tenga dato. Si con eso no hay solución, se avisa
  *    y se reparte sin él (misma decisión de las tandas anteriores de §PF139).
+ *    §PF183 (2-nov-2026, solo el informe): las capturas se separan por clan y CurrentRiverRace se prueba en los cuatro niveles (RS_NIVELES_CRR_PRIMERO) antes de descartarlo.
  *  - Se corrigen las filas existentes que no coinciden y se CREAN las que faltan (Origen 'Reconstruido - Solución ...').
  *  - Si ningún reparto cumple los registros y el total, no se escribe y la serie queda en el informe y en Revision_Guerra.csv.
  * Reutiliza de 55_Reparar_DiasConExceso.gs la agrupación, la creación de filas, la aplicación del plan y la verificación.
@@ -57,6 +58,21 @@ var RS_CURSOR_PROP = 'RS_CURSOR_';   // propiedad del script: ultima semana ya r
 
 var RS_NIVELES = [
   { nombre: 'estricto con AtaquesHoy y CurrentRiverRace', estricto: true, hoy: true, crr: true },
+  { nombre: 'estricto con AtaquesHoy', estricto: true, hoy: true, crr: false },
+  { nombre: 'estricto sin AtaquesHoy', estricto: true, hoy: false, crr: false },
+  { nombre: 'relajado con AtaquesHoy', estricto: false, hoy: true, crr: false },
+  { nombre: 'relajado sin AtaquesHoy', estricto: false, hoy: false, crr: false }
+];
+
+// §PF183 (2-nov-2026): niveles con CurrentRiverRace PRIMERO, como decidió la usuaria en §PF303 (los JSON crudos pesan más que las filas ya reconstruidas del Backup).
+// Con RS_NIVELES, si el AtaquesHoy de una fila ya registrada chocaba con la captura, se descartaba CurrentRiverRace entero. Aquí CurrentRiverRace se prueba en los cuatro
+// niveles (con y sin AtaquesHoy, estricto y relajado) antes de repartir sin él. Solo lo usa el informe (opciones.crrNuevo); la escritura sigue con RS_NIVELES hasta
+// comparar el informe (cuántas series cambian).
+var RS_NIVELES_CRR_PRIMERO = [
+  { nombre: 'estricto con AtaquesHoy y CurrentRiverRace', estricto: true, hoy: true, crr: true },
+  { nombre: 'estricto sin AtaquesHoy y CurrentRiverRace', estricto: true, hoy: false, crr: true },
+  { nombre: 'relajado con AtaquesHoy y CurrentRiverRace', estricto: false, hoy: true, crr: true },
+  { nombre: 'relajado sin AtaquesHoy y CurrentRiverRace', estricto: false, hoy: false, crr: true },
   { nombre: 'estricto con AtaquesHoy', estricto: true, hoy: true, crr: false },
   { nombre: 'estricto sin AtaquesHoy', estricto: true, hoy: false, crr: false },
   { nombre: 'relajado con AtaquesHoy', estricto: false, hoy: true, crr: false },
@@ -113,13 +129,15 @@ function _totSemanaPorDias_(aplicar, esContinuacion) {
     if (!objetivos) { Logger.log('[Semana por dias] ABORT: se agoto el tiempo leyendo los JSON de RoyaleAPI. No se escribio nada.'); return; }
     var tipoCursor = aplicar ? 'APLICAR' : 'INFORME';
     // §PF183: el catálogo del domingo sin fame solo se usa en el informe (aplicar = false) hasta comparar Revision_Guerra.csv antes y después.
-    var plan = _rsPlanificar(filas, objetivos, { usarCrr: true, usarCierre: !aplicar, t0: t0, desde: _rsCursorLeer_(tipoCursor) });
+    // §PF183: lo nuevo de CurrentRiverRace (capturas por clan y niveles con CurrentRiverRace primero) va solo en el informe, igual que el domingo sin fame, hasta comparar cuántas series cambian.
+    var plan = _rsPlanificar(filas, objetivos, { usarCrr: true, usarCierre: !aplicar, crrNuevo: !aplicar, t0: t0, desde: _rsCursorLeer_(tipoCursor) });
     var idxDe = new Map();
     for (var q = 0; q < filas.length; q++) idxDe.set(filas[q], q);
     plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.existe) op.idxAntes = idxDe.get(op.fila); }); });
     var nCrear = 0, nModificar = 0, cuenta = {};
     plan.series.forEach(function (s) { nCrear += s.nCrear; nModificar += s.nMod; var k = s.clase + ' / ' + s.accion; cuenta[k] = (cuenta[k] || 0) + 1; });
     var resumenSeries = Object.keys(cuenta).sort().map(function (k) { return k + ': ' + cuenta[k]; }).join(' | ');
+    var nCrrCambian = plan.series.filter(function (s) { return s.crrCambia; }).length;   // §PF183: series donde lo nuevo de CurrentRiverRace cambia el reparto (solo el informe)
 
     var nombresCsv = [];
     var series = [['Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Filas existentes', 'Total RoyaleAPI ataques/barcos/fame', 'Nivel', 'Soluciones', 'Clase', 'Accion', 'Filas a modificar', 'Filas a crear', 'Notas']];
@@ -191,7 +209,8 @@ function _totSemanaPorDias_(aplicar, esContinuacion) {
       avance = 'El avance NO se guardo: al volver a correr se repite esta misma tanda de semanas. ';
     }
     Logger.log('[Semana por dias] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Backup_Guerra.csv: ' + filas.length + ' filas. ' + avance +
-      'Series del informe: ' + plan.series.length + ' (' + resumenSeries + '). Filas a modificar: ' + nModificar + ', a crear: ' + nCrear + '. ' + revisionTxt +
+      'Series del informe: ' + plan.series.length + ' (' + resumenSeries + '). ' + (aplicar ? '' : 'Series que CAMBIAN con CurrentRiverRace por clan y niveles nuevos (§PF183): ' + nCrrCambian + '. ') +
+      'Filas a modificar: ' + nModificar + ', a crear: ' + nCrear + '. ' + revisionTxt +
       (verificacion ? verificacion + ' ' : '') + (nombresCsv.length ? 'Detalle en Drive: ' + nombresCsv.join(' y ') + '.' : 'Nada que escribir.') +
       (aplicar ? '' : ' (No se escribio nada en el Backup ni en Guerra.)'));
     if (!aplicar) _rsContinuacionInforme_(avanzar && !plan.terminado);
@@ -318,7 +337,7 @@ function _rsClaveSem_(temporada, semana) { return Number(temporada) * 1000 + Num
 
 /**
  * Planifica la escritura. NO modifica filas. objetivos = [{ temporada, semana, tag, nombre, clan, jsonAtaques, jsonFame, jsonBarcos, omitir }]
- * (omitir = motivo de texto si el Historial no confirma el total). opciones = { usarCrr, usarCierre, t0 }.
+ * (omitir = motivo de texto si el Historial no confirma el total). opciones = { usarCrr, usarCierre, crrNuevo, t0, desde }; crrNuevo = capturas por clan y niveles con CurrentRiverRace primero (§PF183, solo el informe).
  * Devuelve { casos: [{ grupo, clase, estimado, ops, finalAntes }], omitidos: [{ grupo, clase, motivo, alarma }], series: [...] } (mismo formato de ops que
  * _excDiasPlanificar(), para reutilizar _excDiasAplicarPlan() y _excDiasVerificar()).
  */
@@ -360,9 +379,13 @@ function _rsPlanificar(filas, objetivos, opciones) {
     if (ob.omitir) { omitir(ob.omitir, false); return; }
     if (tot.a > 16 || tot.a < 0) { omitir('total de ataques fuera de 0 a 16 (' + tot.a + ')', true); return; }
 
-    var crr = opciones.usarCrr === false ? null : _rsCrrRestricciones(ob.temporada, ob.semana, ob.tag, tot);
+    // §PF183 (2-nov-2026): con opciones.crrNuevo (solo el informe) las capturas se separan por clan y CurrentRiverRace se prueba en todos los niveles antes de descartarlo.
+    var nuevo = !!opciones.crrNuevo && opciones.usarCrr !== false;
+    var tagClan = nuevo ? _rsTagDeClanNombre_(ob.clan) : null;
+    var niveles = nuevo ? RS_NIVELES_CRR_PRIMERO : RS_NIVELES;
+    var crr = opciones.usarCrr === false ? null : _rsCrrRestricciones(ob.temporada, ob.semana, ob.tag, tot, tagClan);
     var sinFame = opciones.usarCierre ? _rsSinFameDeSerie(ob.temporada, ob.semana, ob.clan) : null;   // §PF183: domingo sin fame en un clan que ya cruzó
-    var res = _rsResolver(g.dias, tot, crr, sinFame);
+    var res = _rsResolver(g.dias, tot, crr, sinFame, niveles);
     if (res.nSol === 0) {
       omitir('ningun reparto de ternas cumple los registros y el total de RoyaleAPI (' + tot.a + '/' + tot.b + '/' + tot.f + ')', true);
       return;
@@ -372,10 +395,20 @@ function _rsPlanificar(filas, objetivos, opciones) {
     if (res.crrIgnorado) { notas.push('CurrentRiverRace no cuadra con los registros y el total: no se uso'); Logger.log('[Semana por dias] AVISO ' + ob.tag + ' T' + ob.temporada + ' S' + ob.semana + ': CurrentRiverRace no cuadra; se repartio sin el.'); }
     if (sinFame) {
       // §PF183: comparación en el mismo informe. Sin la regla, ¿había reparto y era el mismo? (solo informa; no cambia lo que se elige)
-      var resSin = _rsResolver(g.dias, tot, crr, null);
+      var resSin = _rsResolver(g.dias, tot, crr, null, niveles);
       var txtSin = resSin.nSol === 0 ? 'sin la regla no había ningún reparto'
         : (_rsMismoReparto_(resSin.mejor, res.mejor) ? 'sin la regla el reparto elegido era el mismo (' + resSin.nSol + ' soluciones)' : 'CAMBIA: sin la regla había ' + resSin.nSol + ' soluciones y el reparto elegido era otro');
       notas.push('domingo sin fame: el clan ya había cruzado la meta (§PF183); ' + txtSin);
+    }
+    if (nuevo && (crr || _rsCrrRestricciones(ob.temporada, ob.semana, ob.tag, tot, null))) {
+      // §PF183: comparación en el mismo informe con el criterio de la escritura (RS_NIVELES y capturas de todos los clanes juntas). Solo informa; no cambia lo que se elige.
+      var crrAnt = _rsCrrRestricciones(ob.temporada, ob.semana, ob.tag, tot, null);
+      var resAnt = _rsResolver(g.dias, tot, crrAnt, sinFame, RS_NIVELES);
+      if (resAnt.nSol === 0) { serie.crrCambia = true; notas.push('CRR CAMBIA: con el criterio anterior no había ningún reparto'); }
+      else if (!_rsMismoReparto_(resAnt.mejor, res.mejor)) {
+        serie.crrCambia = true;
+        notas.push('CRR CAMBIA: con el criterio anterior (' + resAnt.nivel + (resAnt.crrIgnorado ? ', sin CurrentRiverRace' : '') + ', ' + resAnt.nSol + ' soluciones) el reparto elegido era otro');
+      }
     }
     if (res.desplazadas) notas.push('fila(s) con el acumulado de un dia posterior: ' + res.desplazadas);
     if (res.nivel.indexOf('sin AtaquesHoy') >= 0) notas.push('AtaquesHoy no cuadra con los acumulados: no se uso');
@@ -424,11 +457,11 @@ function _rsPlanificar(filas, objetivos, opciones) {
   return plan;
 }
 
-/** Restricciones de CurrentRiverRace por día ([{ n, f }|null] x 4) o null si no hay capturas, se contradicen o no se puede leer Drive. */
-function _rsCrrRestricciones(temporada, semana, tag, tot) {
+/** Restricciones de CurrentRiverRace por día ([{ n, f }|null] x 4) o null si no hay capturas, se contradicen o no se puede leer Drive. clanTag (opcional, §PF183): solo las capturas de ese clan. */
+function _rsCrrRestricciones(temporada, semana, tag, tot, clanTag) {
   if (typeof _crrDiasDeJugador_ !== 'function') return null;
   try {
-    var r = _crrDiasDeJugador_(temporada, semana, tag, tot.a, tot.f);
+    var r = _crrDiasDeJugador_(temporada, semana, tag, tot.a, tot.f, clanTag || null);
     if (!r || !r.hayCapturas || (r.notas && r.notas.length)) return null;
     var fd = _crrFameDia_(r.fameAcum), out = [], hay = false;
     for (var d = 0; d < 4; d++) {
@@ -447,11 +480,13 @@ function _rsCrrRestricciones(temporada, semana, tag, tot) {
 /**
  * Resuelve una serie: de lo más estricto a lo más relajado, y con las filas en su día antes que desplazadas, la primera
  * forma que tenga solución. Devuelve { nSol, porDia, mejor, nivel, desplazadas, crrIgnorado } o { nSol: 0 } si no hay ninguna.
+ * niveles (opcional, §PF183): la lista de niveles a probar, en orden; sin él, RS_NIVELES (el criterio de la escritura).
  */
-function _rsResolver(dias, tot, crr, sinFame) {
+function _rsResolver(dias, tot, crr, sinFame, niveles) {
   var rec = _rsRegistros(dias), mp = _rsMapeos(rec);
-  for (var n = 0; n < RS_NIVELES.length; n++) {
-    var nivel = RS_NIVELES[n];
+  niveles = niveles || RS_NIVELES;
+  for (var n = 0; n < niveles.length; n++) {
+    var nivel = niveles[n];
     if (nivel.crr && !crr) continue;
     for (var c = 0; c < mp.combos.length; c++) {
       var mapeo = { offs: mp.offs, m: mp.combos[c] };
@@ -607,9 +642,8 @@ function _rsCatalogoSinFameDomingo() {
   return _rsCatalogoSinFame_;
 }
 
-/** [false, false, false, true] si el clan de la serie ya había cruzado la meta antes del domingo (módulo 56, _crrDomingoSinFame_); null si no. clanNombre = nombre del clan de la hoja. */
-function _rsSinFameDeSerie(temporada, semana, clanNombre) {
-  if (typeof _crrDomingoSinFame_ !== 'function') return null;
+/** Tag del clan Terna a partir del nombre que figura en la hoja (null si no coincide con ninguno). Arma el mapa una sola vez por ejecución (§PF183). */
+function _rsTagDeClanNombre_(clanNombre) {
   if (!_rsTagPorNombre_) {   // una sola vez por ejecución: _resolverNombreClan() consulta la caché del clan y se llamaría miles de veces
     _rsTagPorNombre_ = {};
     for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
@@ -619,7 +653,13 @@ function _rsSinFameDeSerie(temporada, semana, clanNombre) {
       if (respaldo) _rsTagPorNombre_[respaldo] = CFG.TERNA_TAGS[i];
     }
   }
-  var tag = _rsTagPorNombre_[clanNombre];
+  return _rsTagPorNombre_[clanNombre] || null;
+}
+
+/** [false, false, false, true] si el clan de la serie ya había cruzado la meta antes del domingo (módulo 56, _crrDomingoSinFame_); null si no. clanNombre = nombre del clan de la hoja. */
+function _rsSinFameDeSerie(temporada, semana, clanNombre) {
+  if (typeof _crrDomingoSinFame_ !== 'function') return null;
+  var tag = _rsTagDeClanNombre_(clanNombre);
   if (!tag && clanNombre && !_rsNombreSinTag_[clanNombre]) {
     _rsNombreSinTag_[clanNombre] = true;
     Logger.log('[Semana por dias] AVISO: el clan "' + clanNombre + '" de la hoja no coincide con ningun clan Terna; no se aplica la regla del domingo sin fame (§PF183).');
