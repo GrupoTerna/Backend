@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 20:20:26 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 20:37:38 */
 
 
 
@@ -70315,7 +70315,6 @@ function _fameCrr52Verificar_(filasAntes, filasDespues, plan) {
 var CRR_DIAS_LETRAS = 'JVSD';   // desplazamiento 0..3 = jueves a domingo (PeriodIndex % 7 - 3)
 
 var _CRR_CACHE_SEMANA_ = {};
-var _CRR_CACHE_ARCHIVOS_ = {};
 var _CRR_CACHE_CIERRES_ = {};
 
 // =============================================================================
@@ -70363,18 +70362,26 @@ function _crrDiasDeJugador_(temporada, semana, tag, totA, totF) {
  */
 function _crrCapturasDeSemana_(temporada, semana) {
   var clave = Number(temporada) + '|' + Number(semana);
-  if (_CRR_CACHE_SEMANA_[clave]) return _CRR_CACHE_SEMANA_[clave];
-  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(_crrArchivosDeSemana_(temporada, semana));
+  if (!_CRR_CACHE_SEMANA_[clave]) _crrLeerSemana_(temporada, semana);
   return _CRR_CACHE_SEMANA_[clave];
 }
 
 /**
- * Lee de Drive los JSON de CurrentRiverRace de una semana en los clanes Terna y devuelve [{ nombre, datos }]. Se guarda en memoria por ejecución. Solo lee.
+ * Lee la semana de Drive UNA vez y guarda solo lo pequeño: las capturas por jugador (_CRR_CACHE_SEMANA_) y los clanes que ya habían cruzado la meta (_CRR_CACHE_CIERRES_).
+ * Los JSON completos NO se guardan en memoria (una caché de ellos, probada el 2-nov-2026, agotó el tiempo del informe de totales por días: son miles de archivos).
+ */
+function _crrLeerSemana_(temporada, semana) {
+  var clave = Number(temporada) + '|' + Number(semana);
+  var archivos = _crrArchivosDeSemana_(temporada, semana);
+  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(archivos);
+  _CRR_CACHE_CIERRES_[clave] = _crrCierresDesdeArchivos_(archivos);
+}
+
+/**
+ * Lee de Drive los JSON de CurrentRiverRace de una semana en los clanes Terna y devuelve [{ nombre, datos }]. NO se guarda en memoria (ver _crrLeerSemana_). Solo lee.
  * (Separada de _crrCapturasDeSemana_ el 2-nov-2026 para que el cierre de carrera, §PF183, use los mismos archivos sin leerlos dos veces.)
  */
 function _crrArchivosDeSemana_(temporada, semana) {
-  var clave = Number(temporada) + '|' + Number(semana);
-  if (_CRR_CACHE_ARCHIVOS_[clave]) return _CRR_CACHE_ARCHIVOS_[clave];
   var archivos = [];
   var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(semana);
   Object.keys(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_).forEach(function (k) {
@@ -70395,7 +70402,6 @@ function _crrArchivosDeSemana_(temporada, semana) {
       Logger.log('[CRR] No se pudo leer la carpeta de ' + k + ' (' + nT + ' ' + nS + '): ' + eClan.message);
     }
   });
-  _CRR_CACHE_ARCHIVOS_[clave] = archivos;
   return archivos;
 }
 
@@ -70457,8 +70463,7 @@ function _crrCierresDesdeArchivos_(archivos) {
 /** Clanes que ya habían cruzado la meta antes del domingo en una semana ({ '#CLAN': { finishTime, nombre } }; ver _crrCierresDesdeArchivos_). Solo lee Drive; se guarda por ejecución. */
 function _crrCierresDeSemana_(temporada, semana) {
   var clave = Number(temporada) + '|' + Number(semana);
-  if (_CRR_CACHE_CIERRES_[clave]) return _CRR_CACHE_CIERRES_[clave];
-  _CRR_CACHE_CIERRES_[clave] = _crrCierresDesdeArchivos_(_crrArchivosDeSemana_(temporada, semana));
+  if (!_CRR_CACHE_CIERRES_[clave]) _crrLeerSemana_(temporada, semana);
   return _CRR_CACHE_CIERRES_[clave];
 }
 
@@ -70725,11 +70730,13 @@ function _crrDomingoParaTotales_(temporada, semana, tag, totA, totF) {
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var RS_MAX_FILAS = 2500;     // tope de filas a modificar + crear en una escritura (si se pasa, no se escribe nada)
-var RS_MS_LIMITE = 240000;   // tiempo máximo desde que empieza la corrida (ms) para EMPEZAR otra semana; lo que falte se hace en la corrida siguiente (queda margen para escribir y verificar)
+var RS_MS_LIMITE = 150000;   // tiempo máximo desde que empieza la corrida (ms) para EMPEZAR otra semana; lo que falte se hace en la corrida siguiente (queda margen para escribir y verificar)
 var RS_CACHE_ARCHIVO = 'Cache_TotalesSemana_Objetivos.csv';   // totales cerrados leidos de los JSON de RoyaleAPI (se reutilizan para no releer 231 archivos en cada corrida)
 var RS_CACHE_MS = 6 * 3600 * 1000;   // vigencia de ese archivo (6 horas)
 var RS_HANDLER_CONT_INFORME = '_continuarTotalesSemanaInforme';   // activador de una sola vez que sigue el informe en la tanda siguiente (§PF183)
 var RS_AUTO_PROP = 'RS_AUTO_TANDAS';   // tandas automáticas seguidas del informe (se reinicia al empezar a mano)
+var RS_VIGILANTE_MS = 8 * 60 * 1000;   // si una tanda muere por tiempo, este activador la retoma (pasa del máximo de 6 minutos de una ejecución)
+var RS_AUTO_SIN_AVANCE = 'RS_AUTO_SIN_AVANCE';   // { c: semana de arranque, n: veces seguidas que arrancó en la misma }; con 3 se detiene
 var RS_AUTO_MAX = 60;   // tope de tandas automáticas seguidas: si se pasa, se detiene y se sigue a mano
 var RS_CURSOR_PROP = 'RS_CURSOR_';   // propiedad del script: ultima semana ya recorrida (sufijo INFORME o APLICAR)
 
@@ -70743,6 +70750,7 @@ var RS_NIVELES = [
 
 var _rsCatalogo_ = null;
 var _rsCatalogoSinFame_ = null;
+var _rsTagPorNombre_ = null;
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
@@ -70755,7 +70763,7 @@ var _rsCatalogoSinFame_ = null;
 /** Borra el avance de las dos funciones y el archivo de totales leidos de los JSON: la proxima corrida empieza desde cero y relee los JSON. */
 function totalesSemanaPorDiasReiniciar() {
   var p = PropertiesService.getScriptProperties();
-  _borrarTriggersDeContinuacion(RS_HANDLER_CONT_INFORME); p.deleteProperty(RS_AUTO_PROP);
+  _borrarTriggersDeContinuacion(RS_HANDLER_CONT_INFORME); p.deleteProperty(RS_AUTO_PROP); p.deleteProperty(RS_AUTO_SIN_AVANCE);
   p.deleteProperty(RS_CURSOR_PROP + 'INFORME'); p.deleteProperty(RS_CURSOR_PROP + 'APLICAR');
   try { if (_csvBuscarArchivo_(RS_CACHE_ARCHIVO)) _saveCSVToDrive(RS_CACHE_ARCHIVO, 'Creado\n'); } catch (e) { Logger.log('[Semana por dias] No se pudo vaciar ' + RS_CACHE_ARCHIVO + ': ' + e.message); }
   Logger.log('[Semana por dias] Avance borrado. La proxima corrida empieza desde la primera semana y vuelve a leer los JSON de RoyaleAPI.');
@@ -70773,7 +70781,8 @@ function _totSemanaPorDias_(aplicar, esContinuacion) {
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) { Logger.log('[Semana por dias] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
   try {
-    if (!aplicar && !esContinuacion) { try { PropertiesService.getScriptProperties().deleteProperty(RS_AUTO_PROP); } catch (eAuto) { /* sin contador: el tope de tandas se cuenta desde cero */ } }
+    if (!aplicar && !esContinuacion) { try { var pAuto = PropertiesService.getScriptProperties(); pAuto.deleteProperty(RS_AUTO_PROP); pAuto.deleteProperty(RS_AUTO_SIN_AVANCE); } catch (eAuto) { /* sin contador: el tope de tandas se cuenta desde cero */ } }
+    if (!aplicar) _rsVigilanteInforme_();
     var t0 = Date.now();
     var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
     var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
@@ -71285,8 +71294,11 @@ function _rsCatalogoSinFameDomingo() {
 /** [false, false, false, true] si el clan de la serie ya había cruzado la meta antes del domingo (módulo 56, _crrDomingoSinFame_); null si no. clanNombre = nombre del clan de la hoja. */
 function _rsSinFameDeSerie(temporada, semana, clanNombre) {
   if (typeof _crrDomingoSinFame_ !== 'function') return null;
-  var tag = '';
-  for (var i = 0; i < CFG.TERNA_TAGS.length; i++) if (_resolverNombreClan(CFG.TERNA_TAGS[i]) === clanNombre) { tag = CFG.TERNA_TAGS[i]; break; }
+  if (!_rsTagPorNombre_) {   // una sola vez por ejecución: _resolverNombreClan() consulta la caché del clan y se llamaría miles de veces
+    _rsTagPorNombre_ = {};
+    for (var i = 0; i < CFG.TERNA_TAGS.length; i++) _rsTagPorNombre_[_resolverNombreClan(CFG.TERNA_TAGS[i])] = CFG.TERNA_TAGS[i];
+  }
+  var tag = _rsTagPorNombre_[clanNombre];
   return (tag && _crrDomingoSinFame_(temporada, semana, tag)) ? [false, false, false, true] : null;
 }
 
@@ -71311,7 +71323,7 @@ function _rsMenor(a, b) {
 function _rsContinuacionInforme_(seguir) {
   try {
     var p = PropertiesService.getScriptProperties();
-    if (!seguir) { _borrarTriggersDeContinuacion(RS_HANDLER_CONT_INFORME); p.deleteProperty(RS_AUTO_PROP); return; }
+    if (!seguir) { _borrarTriggersDeContinuacion(RS_HANDLER_CONT_INFORME); p.deleteProperty(RS_AUTO_PROP); p.deleteProperty(RS_AUTO_SIN_AVANCE); return; }
     var n = (Number(p.getProperty(RS_AUTO_PROP)) || 0) + 1;
     if (n > RS_AUTO_MAX) {
       _borrarTriggersDeContinuacion(RS_HANDLER_CONT_INFORME); p.deleteProperty(RS_AUTO_PROP);
@@ -71333,7 +71345,24 @@ function _continuarTotalesSemanaInforme() {
     Logger.log('[Semana por dias] Pausado: hay una reenumeración en curso o la ventana de guerra protegida está activa. El avance queda guardado: vuelve a correr aplicarTotalesSemanaDesdeHistorialInforme() después.');
     return;
   }
+  var p = PropertiesService.getScriptProperties(), cur = String(_rsCursorLeer_('INFORME')), est = null;
+  try { est = JSON.parse(p.getProperty(RS_AUTO_SIN_AVANCE) || 'null'); } catch (eJson) { est = null; }
+  var n = (est && est.c === cur) ? (Number(est.n) || 0) + 1 : 1;
+  p.setProperty(RS_AUTO_SIN_AVANCE, JSON.stringify({ c: cur, n: n }));
+  if (n >= 3) {
+    p.deleteProperty(RS_AUTO_SIN_AVANCE); p.deleteProperty(RS_AUTO_PROP);
+    Logger.log('[Semana por dias] Se detiene: la tanda arrancó 3 veces seguidas en la misma semana sin avanzar (se agota el tiempo o falla la lectura). Revisa el registro anterior y vuelve a correr aplicarTotalesSemanaDesdeHistorialInforme().');
+    return;
+  }
   _totSemanaPorDias_(false, true);
+}
+
+/** Vigilante: al empezar una tanda del informe deja un activador a RS_VIGILANTE_MS. Si la tanda termina bien, _rsContinuacionInforme_() lo reemplaza o lo borra; si muere por tiempo, retoma el informe. */
+function _rsVigilanteInforme_() {
+  try {
+    _borrarTriggersDeContinuacion(RS_HANDLER_CONT_INFORME);
+    ScriptApp.newTrigger(RS_HANDLER_CONT_INFORME).timeBased().after(RS_VIGILANTE_MS).create();
+  } catch (e) { Logger.log('[Semana por dias] No se pudo dejar el activador de respaldo: ' + e.message); }
 }
 
 /** Ultima semana ya recorrida (0 = empezar desde el principio). tipo: 'INFORME' o 'APLICAR'. */
