@@ -3,10 +3,11 @@
 //    - Diagnóstico de guerra y Control
 //    - Pruebas de RoyaleAPI
 //    - Diagnóstico de jugadores y perfiles
-//    - Informes de guerra desde Drive (cruce con el historial, totales semanales y anomalías)
+//    - Informes de guerra desde Drive (cruce con el historial, totales semanales, corrección de filas de series CRR y anomalías)
 //  Parte 2 — Funciones que no se corren a mano
 //    - Ayuda de testTamanioPerfiles
 //    - Ayudas del cruce con el historial
+//    - Ayudas de la corrección de filas de series CRR
 //    - Totales semanales desde el historial (versión anterior, sin uso, y ayudas)
 //    - Ayudas del informe de anomalías de ataques
 // Dentro de cada tema, en el orden en que se espera ejecutarlas (diagnosticar antes de corregir; informar antes de aplicar). Al reordenar no se cambió el código de ninguna función.
@@ -653,6 +654,23 @@ function aplicarTotalesSemanaDesdeHistorialInforme() { _totSemanaPorDias_(false)
 function aplicarTotalesSemanaDesdeHistorialAplicar() { _totSemanaPorDias_(true); }
 
 /**
+ * corregirFilasSeriesCrrInforme()  -> SOLO INFORMA (no escribe nada).
+ * corregirFilasSeriesCrrAplicar()  -> corrige 4 filas de Backup_Guerra.csv (3 series de las 5 omitidas «CRR CAMBIA»; §PF183, actualización 38).
+ *
+ * Las 3 series (T23 S3 #QRQULCCV8, T23 S4 #UJY0PGPUV y T24 S1 #V9L9V9YV0) salen OMITIDAS en el informe de totales por semana porque otra fila de la hoja
+ * (de otro clan o con el día corrido) choca con el reparto que dan las capturas de CurrentRiverRace. Las correcciones:
+ *   - T23 S3: GrupoXTerna™2, jueves (PeriodIndex 17): de 12 ataques / 2500 de fame a 4 / 800 (lo que dice la captura del jueves 07:26).
+ *   - T23 S4: GrupoXTerna™2, sábado (PeriodIndex 26, 4 ataques y 600 de fame): pasa al clan Mini乂Ternas™ (su captura del sábado 04:56).
+ *   - T24 S1: GrupoXTerna™3, jueves (PeriodIndex 3): AtaquesHoy de 0 a 4; viernes (PeriodIndex 4): AtaquesHoy de 4 a 0 (día corrido).
+ * Seguridad: cada fila solo se toca si coincide con los valores esperados de ANTES (si ya está corregida o cambió, se salta y se avisa); guarda una copia
+ * «Backup_Guerra ANTES de corregir filas de series CRR ...» en Informes; comprueba que re-serializar el CSV reproduce el texto original; y relee el archivo
+ * para comprobar que solo cambiaron esas filas. Idempotente: correrla dos veces no hace nada la segunda. NO toca la hoja Guerra.
+ * Orden sugerido: informe, aplicar y volver a correr aplicarTotalesSemanaDesdeHistorialInforme() para comprobar que esas series ya no salen OMITIDAS.
+ */
+function corregirFilasSeriesCrrInforme() { _ctsCorregir_(false); }
+function corregirFilasSeriesCrrAplicar() { _ctsCorregir_(true); }
+
+/**
  * informeAnomaliasAtaquesSemana()  -> SOLO INFORMA (no escribe en Guerra ni en Backup_Guerra.csv).
  *
  * Busca en Backup_Guerra.csv las series (jugador + temporada + semana + clan) con mas de
@@ -934,6 +952,111 @@ function cruce_clave_(tag, temporada, semana, clan) {
 function cruce_csvCelda_(v) {
   var s = (v === null || v === undefined) ? '' : String(v);
   return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+// ----- Ayudas de la corrección de filas de series CRR -----
+
+// Lista de correcciones (§PF183, actualización 38). 'esperado' = valores de la fila ANTES; 'nuevo' = lo que queda (solo los campos que cambian).
+function _ctsLista_() {
+  return [
+    { id: 'T23 S3 #QRQULCCV8', temporada: 23, semana: 3, tag: '#QRQULCCV8', clan: 'GrupoXTerna™2', pi: 17,
+      esperado: { hoy: '12', sem: '12', fame: '2500' }, nuevo: { hoy: '4', sem: '4', fame: '800' } },
+    { id: 'T23 S4 #UJY0PGPUV', temporada: 23, semana: 4, tag: '#UJY0PGPUV', clan: 'GrupoXTerna™2', pi: 26,
+      esperado: { hoy: '4', sem: '4', fame: '600' }, nuevo: { clan: 'Mini乂Ternas™' } },
+    { id: 'T24 S1 #V9L9V9YV0 (jueves)', temporada: 24, semana: 1, tag: '#V9L9V9YV0', clan: 'GrupoXTerna™3', pi: 3,
+      esperado: { hoy: '0', sem: '4', fame: '500' }, nuevo: { hoy: '4' } },
+    { id: 'T24 S1 #V9L9V9YV0 (viernes)', temporada: 24, semana: 1, tag: '#V9L9V9YV0', clan: 'GrupoXTerna™3', pi: 4,
+      esperado: { hoy: '4', sem: '4', fame: '500' }, nuevo: { hoy: '0' } }
+  ];
+}
+
+function _ctsCorregir_(aplicar) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[Corregir filas CRR] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var t0 = Date.now();
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (!csvText) { Logger.log('[Corregir filas CRR] No se encontro Backup_Guerra.csv; no se hace nada.'); return; }
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length < 2) { Logger.log('[Corregir filas CRR] Backup_Guerra.csv esta vacio; no se hace nada.'); return; }
+    var encabezado = parsed[0], filas = parsed.slice(1);
+    for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
+    var copiaAntes = filas.map(function (r) { return r.slice(); });
+    var reproduce = _encodeCSV([encabezado].concat(filas)) === csvText;
+
+    var lista = _ctsLista_(), informe = [], cambios = [];
+    var campos = { hoy: GC.ATAQUES_HOY - 1, sem: GC.ATAQUES_SEM - 1, fame: GC.FAME - 1 };
+    var buscar = function (c, clan) {
+      var halladas = [];
+      for (var i = 0; i < filas.length; i++) {
+        var r = filas[i];
+        if (String(r[GC.ETAPA - 1]) === 'Guerra' && Number(r[GC.TEMPORADA - 1]) === c.temporada && Number(r[GC.SEMANA - 1]) === c.semana &&
+            String(r[GC.TAG - 1]).trim() === c.tag && String(r[GC.CLAN - 1]) === clan && Number(r[GC.PERIOD_IDX - 1]) === c.pi) halladas.push(i);
+      }
+      return halladas;
+    };
+    lista.forEach(function (c) {
+      var hall = buscar(c, c.clan);
+      if (hall.length === 0 && c.nuevo.clan && buscar(c, c.nuevo.clan).length === 1) { informe.push(c.id + ': YA CORREGIDA (la fila ya esta en ' + c.nuevo.clan + ').'); return; }
+      if (hall.length !== 1) { informe.push(c.id + ': OMITIDA, se esperaba 1 fila de ' + c.clan + ' (PeriodIndex ' + c.pi + ') y hay ' + hall.length + '.'); return; }
+      var idx = hall[0], r = filas[idx];
+      var yaEsta = Object.keys(c.nuevo).every(function (k) { return k === 'clan' ? false : String(r[campos[k]]).trim() === c.nuevo[k]; });
+      var comoAntes = Object.keys(c.esperado).every(function (k) { return String(r[campos[k]]).trim() === c.esperado[k]; });
+      if (c.nuevo.clan) {
+        if (buscar(c, c.nuevo.clan).length > 0) { informe.push(c.id + ': OMITIDA, ya hay una fila de ' + c.nuevo.clan + ' en ese dia; no se mueve para no duplicar.'); return; }
+        if (!comoAntes) { informe.push(c.id + ': OMITIDA, la fila ' + (idx + 2) + ' ya no tiene los valores esperados (hoy ' + r[campos.hoy] + ', acum ' + r[campos.sem] + ', fame ' + r[campos.fame] + ').'); return; }
+        cambios.push({ id: c.id, idx: idx, clan: c.nuevo.clan });
+        informe.push(c.id + ': fila ' + (idx + 2) + ' pasa de ' + c.clan + ' a ' + c.nuevo.clan + ' (hoy ' + r[campos.hoy] + ', acum ' + r[campos.sem] + ', fame ' + r[campos.fame] + ').');
+        return;
+      }
+      if (yaEsta) { informe.push(c.id + ': YA CORREGIDA (fila ' + (idx + 2) + ').'); return; }
+      if (!comoAntes) { informe.push(c.id + ': OMITIDA, la fila ' + (idx + 2) + ' ya no tiene los valores esperados (hoy ' + r[campos.hoy] + ', acum ' + r[campos.sem] + ', fame ' + r[campos.fame] + ').'); return; }
+      cambios.push({ id: c.id, idx: idx, nuevo: c.nuevo });
+      informe.push(c.id + ': fila ' + (idx + 2) + ' (' + c.clan + ') hoy ' + r[campos.hoy] + ' / acum ' + r[campos.sem] + ' / fame ' + r[campos.fame] + ' -> ' +
+        Object.keys(c.nuevo).map(function (k) { return k + ' ' + c.nuevo[k]; }).join(', ') + '.');
+    });
+    var resumen = informe.join(' | ');
+    if (!aplicar) {
+      Logger.log('[Corregir filas CRR] SOLO INFORMAR (' + Math.round((Date.now() - t0) / 1000) + ' s). Backup_Guerra.csv: ' + filas.length + ' filas. Cambios que se harian: ' + cambios.length + '. ' +
+        resumen + ' Formato del Backup reproducible: ' + (reproduce ? 'SI' : 'NO (no se podria aplicar)') + '. (No se escribio nada.)');
+      return;
+    }
+    if (!reproduce) { throw new Error('El formato de Backup_Guerra.csv no se reproduce exactamente al re-serializarlo. No se escribio nada.'); }
+    if (cambios.length === 0) { Logger.log('[Corregir filas CRR] APLICAR: no hay nada que cambiar. ' + resumen); return; }
+    if (cambios.length > lista.length) { throw new Error('Se piden ' + cambios.length + ' cambios (maximo ' + lista.length + '). No se escribio nada.'); }
+
+    var nombreCopia = 'Backup_Guerra ANTES de corregir filas de series CRR ' + marca + '.csv';
+    _saveCSVToDrive(nombreCopia, csvText);
+    cambios.forEach(function (cb) {
+      var r = filas[cb.idx];
+      if (cb.clan) { r[GC.CLAN - 1] = cb.clan; return; }
+      Object.keys(cb.nuevo).forEach(function (k) { r[campos[k]] = cb.nuevo[k]; });
+    });
+    _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
+
+    var releido = _loadCSVFromDrive('Backup_Guerra.csv');
+    var parsedDespues = releido ? _parseCSV(releido) : null;
+    var problemas = [];
+    if (!parsedDespues || parsedDespues.length !== filas.length + 1) { problemas.push('no se pudo releer Backup_Guerra.csv o cambio el numero de filas'); }
+    else {
+      var filasDespues = parsedDespues.slice(1);
+      for (var b = 0; b < filasDespues.length && problemas.length < 5; b++) {
+        while (filasDespues[b].length < GUERRA_TOTAL_COLS) filasDespues[b].push('');
+        if (filasDespues[b].join('\u0001') !== filas[b].join('\u0001')) problemas.push('la fila ' + (b + 2) + ' no coincide con lo escrito');
+      }
+      var tocadas = {};
+      cambios.forEach(function (cb) { tocadas[cb.idx] = true; });
+      for (var d = 0; d < copiaAntes.length && problemas.length < 5; d++) {
+        if (!tocadas[d] && copiaAntes[d].join('\u0001') !== filasDespues[d].join('\u0001')) problemas.push('la fila ' + (d + 2) + ' cambio sin estar en la lista');
+      }
+    }
+    Logger.log('[Corregir filas CRR] APLICADO (' + Math.round((Date.now() - t0) / 1000) + ' s). ' + cambios.length + ' fila(s) corregidas en Backup_Guerra.csv. ' + resumen + ' ' +
+      (problemas.length ? 'VERIFICACION FALLO (' + problemas.join('; ') + '). Restaurar con la copia previa.' : 'Verificacion OK.') + ' Copia previa: ' + nombreCopia +
+      '. Siguiente: volver a correr aplicarTotalesSemanaDesdeHistorialInforme() y comprobar que T23 S3, T23 S4 y T24 S1 ya no salen OMITIDAS.');
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // ----- Totales semanales desde el historial (versión anterior, sin uso, y ayudas) -----
