@@ -393,7 +393,18 @@ function _rsPlanificar(filas, objetivos, opciones) {
     }
     serie.nivel = res.nivel; serie.soluciones = res.nSol;
     var notas = [];
-    if (res.crrIgnorado) { notas.push('CurrentRiverRace no cuadra con los registros y el total: no se uso'); Logger.log('[Semana por dias] AVISO ' + ob.tag + ' T' + ob.temporada + ' S' + ob.semana + ': CurrentRiverRace no cuadra; se repartio sin el.'); }
+    if (res.crrIgnorado) {
+      // §PF183 (2-nov-2026): con el orden nuevo un nivel estricto sin CurrentRiverRace resuelve antes de probar los relajados con él. Solo es «no cuadra» si ningún nivel con CurrentRiverRace que aún no se probó tiene reparto.
+      var cuadraDespues = false;
+      if (nuevo) {
+        var iNivel = -1;
+        for (var kn = 0; kn < niveles.length; kn++) if (niveles[kn].nombre === res.nivel) iNivel = kn;
+        var restantes = niveles.slice(iNivel + 1).filter(function (n) { return n.crr; });
+        if (iNivel >= 0 && restantes.length) cuadraDespues = _rsResolver(g.dias, tot, crr, sinFame, restantes).nSol > 0;
+      }
+      if (cuadraDespues) notas.push('CurrentRiverRace no se uso: se eligio un nivel estricto sin el, aunque en un nivel relajado con el tambien hay reparto');
+      else { notas.push('CurrentRiverRace no cuadra con los registros y el total: no se uso'); Logger.log('[Semana por dias] AVISO ' + ob.tag + ' T' + ob.temporada + ' S' + ob.semana + ': CurrentRiverRace no cuadra; se repartio sin el.'); }
+    }
     if (sinFame) {
       // §PF183: comparación en el mismo informe. Sin la regla, ¿había reparto y era el mismo? (solo informa; no cambia lo que se elige)
       var resSin = _rsResolver(g.dias, tot, crr, null, niveles);
