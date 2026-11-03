@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 22:03:59 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 02/11/2026 22:39:08 */
 
 
 
@@ -70730,7 +70730,7 @@ function _crrDomingoParaTotales_(temporada, semana, tag, totA, totF) {
  *    («Solución estimada»). Los días con la misma terna en todas las soluciones se marcan «única» aunque la semana sea ambigua.
  *  - CurrentRiverRace (módulo 56), si hay, fija los ataques y la fame de cada día que tenga dato. Si con eso no hay solución, se avisa
  *    y se reparte sin él (misma decisión de las tandas anteriores de §PF139).
- *    §PF183 (2-nov-2026, solo el informe): las capturas se separan por clan y CurrentRiverRace se prueba en los cuatro niveles (RS_NIVELES_CRR_PRIMERO) antes de descartarlo.
+ *    §PF183 (2-nov-2026, solo el informe): las capturas se separan por clan y CurrentRiverRace se prueba primero entre los estrictos, luego lo estricto sin él y solo después los relajados, con CurrentRiverRace primero (RS_NIVELES_CRR_PRIMERO).
  *  - Se corrigen las filas existentes que no coinciden y se CREAN las que faltan (Origen 'Reconstruido - Solución ...').
  *  - Si ningún reparto cumple los registros y el total, no se escribe y la serie queda en el informe y en Revision_Guerra.csv.
  * Reutiliza de 55_Reparar_DiasConExceso.gs la agrupación, la creación de filas, la aplicación del plan y la verificación.
@@ -70771,17 +70771,17 @@ var RS_NIVELES = [
   { nombre: 'relajado sin AtaquesHoy', estricto: false, hoy: false, crr: false }
 ];
 
-// §PF183 (2-nov-2026): niveles con CurrentRiverRace PRIMERO, como decidió la usuaria en §PF303 (los JSON crudos pesan más que las filas ya reconstruidas del Backup).
-// Con RS_NIVELES, si el AtaquesHoy de una fila ya registrada chocaba con la captura, se descartaba CurrentRiverRace entero. Aquí CurrentRiverRace se prueba en los cuatro
-// niveles (con y sin AtaquesHoy, estricto y relajado) antes de repartir sin él. Solo lo usa el informe (opciones.crrNuevo); la escritura sigue con RS_NIVELES hasta
-// comparar el informe (cuántas series cambian).
+// §PF183 (2-nov-2026): niveles con CurrentRiverRace PRIMERO dentro de cada rigor, como decidió la usuaria en §PF303 (los JSON crudos pesan más que las filas ya reconstruidas del Backup).
+// Con RS_NIVELES, si el AtaquesHoy de una fila ya registrada chocaba con la captura, se descartaba CurrentRiverRace entero. Orden decidido el 2-nov-2026: primero los estrictos con
+// CurrentRiverRace, luego los estrictos sin él y solo después los relajados (primero con CurrentRiverRace). Así una captura de un solo día no reescribe una serie que ya cuadra en un
+// nivel estricto, y lo relajado solo se usa cuando ningún estricto tiene reparto. Solo lo usa el informe (opciones.crrNuevo); la escritura sigue con RS_NIVELES hasta comparar el informe.
 var RS_NIVELES_CRR_PRIMERO = [
   { nombre: 'estricto con AtaquesHoy y CurrentRiverRace', estricto: true, hoy: true, crr: true },
   { nombre: 'estricto sin AtaquesHoy y CurrentRiverRace', estricto: true, hoy: false, crr: true },
-  { nombre: 'relajado con AtaquesHoy y CurrentRiverRace', estricto: false, hoy: true, crr: true },
-  { nombre: 'relajado sin AtaquesHoy y CurrentRiverRace', estricto: false, hoy: false, crr: true },
   { nombre: 'estricto con AtaquesHoy', estricto: true, hoy: true, crr: false },
   { nombre: 'estricto sin AtaquesHoy', estricto: true, hoy: false, crr: false },
+  { nombre: 'relajado con AtaquesHoy y CurrentRiverRace', estricto: false, hoy: true, crr: true },
+  { nombre: 'relajado sin AtaquesHoy y CurrentRiverRace', estricto: false, hoy: false, crr: true },
   { nombre: 'relajado con AtaquesHoy', estricto: false, hoy: true, crr: false },
   { nombre: 'relajado sin AtaquesHoy', estricto: false, hoy: false, crr: false }
 ];
