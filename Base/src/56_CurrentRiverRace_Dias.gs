@@ -31,7 +31,6 @@
 var CRR_DIAS_LETRAS = 'JVSD';   // desplazamiento 0..3 = jueves a domingo (PeriodIndex % 7 - 3)
 
 var _CRR_CACHE_SEMANA_ = {};
-var _CRR_CACHE_ARCHIVOS_ = {};
 var _CRR_CACHE_CIERRES_ = {};
 
 // =============================================================================
@@ -79,18 +78,26 @@ function _crrDiasDeJugador_(temporada, semana, tag, totA, totF) {
  */
 function _crrCapturasDeSemana_(temporada, semana) {
   var clave = Number(temporada) + '|' + Number(semana);
-  if (_CRR_CACHE_SEMANA_[clave]) return _CRR_CACHE_SEMANA_[clave];
-  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(_crrArchivosDeSemana_(temporada, semana));
+  if (!_CRR_CACHE_SEMANA_[clave]) _crrLeerSemana_(temporada, semana);
   return _CRR_CACHE_SEMANA_[clave];
 }
 
 /**
- * Lee de Drive los JSON de CurrentRiverRace de una semana en los clanes Terna y devuelve [{ nombre, datos }]. Se guarda en memoria por ejecución. Solo lee.
+ * Lee la semana de Drive UNA vez y guarda solo lo pequeño: las capturas por jugador (_CRR_CACHE_SEMANA_) y los clanes que ya habían cruzado la meta (_CRR_CACHE_CIERRES_).
+ * Los JSON completos NO se guardan en memoria (una caché de ellos, probada el 2-nov-2026, agotó el tiempo del informe de totales por días: son miles de archivos).
+ */
+function _crrLeerSemana_(temporada, semana) {
+  var clave = Number(temporada) + '|' + Number(semana);
+  var archivos = _crrArchivosDeSemana_(temporada, semana);
+  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(archivos);
+  _CRR_CACHE_CIERRES_[clave] = _crrCierresDesdeArchivos_(archivos);
+}
+
+/**
+ * Lee de Drive los JSON de CurrentRiverRace de una semana en los clanes Terna y devuelve [{ nombre, datos }]. NO se guarda en memoria (ver _crrLeerSemana_). Solo lee.
  * (Separada de _crrCapturasDeSemana_ el 2-nov-2026 para que el cierre de carrera, §PF183, use los mismos archivos sin leerlos dos veces.)
  */
 function _crrArchivosDeSemana_(temporada, semana) {
-  var clave = Number(temporada) + '|' + Number(semana);
-  if (_CRR_CACHE_ARCHIVOS_[clave]) return _CRR_CACHE_ARCHIVOS_[clave];
   var archivos = [];
   var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(semana);
   Object.keys(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_).forEach(function (k) {
@@ -111,7 +118,6 @@ function _crrArchivosDeSemana_(temporada, semana) {
       Logger.log('[CRR] No se pudo leer la carpeta de ' + k + ' (' + nT + ' ' + nS + '): ' + eClan.message);
     }
   });
-  _CRR_CACHE_ARCHIVOS_[clave] = archivos;
   return archivos;
 }
 
@@ -173,8 +179,7 @@ function _crrCierresDesdeArchivos_(archivos) {
 /** Clanes que ya habían cruzado la meta antes del domingo en una semana ({ '#CLAN': { finishTime, nombre } }; ver _crrCierresDesdeArchivos_). Solo lee Drive; se guarda por ejecución. */
 function _crrCierresDeSemana_(temporada, semana) {
   var clave = Number(temporada) + '|' + Number(semana);
-  if (_CRR_CACHE_CIERRES_[clave]) return _CRR_CACHE_CIERRES_[clave];
-  _CRR_CACHE_CIERRES_[clave] = _crrCierresDesdeArchivos_(_crrArchivosDeSemana_(temporada, semana));
+  if (!_CRR_CACHE_CIERRES_[clave]) _crrLeerSemana_(temporada, semana);
   return _CRR_CACHE_CIERRES_[clave];
 }
 
