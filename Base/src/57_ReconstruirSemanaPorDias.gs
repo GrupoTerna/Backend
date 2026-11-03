@@ -46,7 +46,7 @@
 //    - Avance entre corridas
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
-var RS_MAX_FILAS = 2500;     // tope de filas a modificar + crear en una escritura (si se pasa, no se escribe nada)
+var RS_MAX_FILAS = 4500;     // tope de filas a modificar + crear en una escritura (si se pasa, no se escribe nada); 3-nov-2026: subido de 2 500 para la tanda de T21 S2 a T26 S1 (3 742 filas); la de T1 a T21 S1 trae más de 7 800 por crear y sigue bloqueada hasta revisarla
 var RS_MS_LIMITE = 150000;   // tiempo máximo desde que empieza la corrida (ms) para EMPEZAR otra semana; lo que falte se hace en la corrida siguiente (queda margen para escribir y verificar)
 var RS_CACHE_ARCHIVO = 'Cache_TotalesSemana_Objetivos.csv';   // totales cerrados leidos de los JSON de RoyaleAPI (se reutilizan para no releer 231 archivos en cada corrida)
 var RS_CACHE_MS = 6 * 3600 * 1000;   // vigencia de ese archivo (6 horas)
