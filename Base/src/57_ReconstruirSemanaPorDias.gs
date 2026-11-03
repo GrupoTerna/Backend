@@ -23,8 +23,8 @@
  *    («Solución estimada»). Los días con la misma terna en todas las soluciones se marcan «única» aunque la semana sea ambigua.
  *  - CurrentRiverRace (módulo 56), si hay, fija los ataques y la fame de cada día que tenga dato. Si con eso no hay solución, se avisa
  *    y se reparte sin él (misma decisión de las tandas anteriores de §PF139).
- *    §PF183 (2-nov-2026, solo el informe): las capturas se separan por clan y CurrentRiverRace se prueba primero entre los estrictos, luego lo estricto sin él y solo después los relajados, con CurrentRiverRace primero (RS_NIVELES_CRR_PRIMERO).
- *    §PF183 (2-nov-2026, solo el informe): en las series de RS_CRR_MANDA (decididas una a una por la usuaria) CurrentRiverRace manda sobre las filas de la hoja (RS_NIVEL_CRR_MANDA): las filas ya no limitan el reparto.
+ *    §PF183 (2-nov-2026; desde el 3-nov-2026 también Aplicar): las capturas se separan por clan y CurrentRiverRace se prueba primero entre los estrictos, luego lo estricto sin él y solo después los relajados, con CurrentRiverRace primero (RS_NIVELES_CRR_PRIMERO).
+ *    §PF183 (2-nov-2026; desde el 3-nov-2026 también Aplicar): en las series de RS_CRR_MANDA (decididas una a una por la usuaria) CurrentRiverRace manda sobre las filas de la hoja (RS_NIVEL_CRR_MANDA): las filas ya no limitan el reparto.
  *  - Se corrigen las filas existentes que no coinciden y se CREAN las que faltan (Origen 'Reconstruido - Solución ...').
  *  - Si ningún reparto cumple los registros y el total, no se escribe y la serie queda en el informe y en Revision_Guerra.csv.
  * Reutiliza de 55_Reparar_DiasConExceso.gs la agrupación, la creación de filas, la aplicación del plan y la verificación.
@@ -68,7 +68,7 @@ var RS_NIVELES = [
 // §PF183 (2-nov-2026): niveles con CurrentRiverRace PRIMERO dentro de cada rigor, como decidió la usuaria en §PF303 (los JSON crudos pesan más que las filas ya reconstruidas del Backup).
 // Con RS_NIVELES, si el AtaquesHoy de una fila ya registrada chocaba con la captura, se descartaba CurrentRiverRace entero. Orden decidido el 2-nov-2026: primero los estrictos con
 // CurrentRiverRace, luego los estrictos sin él y solo después los relajados (primero con CurrentRiverRace). Así una captura de un solo día no reescribe una serie que ya cuadra en un
-// nivel estricto, y lo relajado solo se usa cuando ningún estricto tiene reparto. Solo lo usa el informe (opciones.crrNuevo); la escritura sigue con RS_NIVELES hasta comparar el informe.
+// nivel estricto, y lo relajado solo se usa cuando ningún estricto tiene reparto. Lo usan el informe y Aplicar (opciones.crrNuevo, desde el 3-nov-2026); RS_NIVELES queda para la comparación «CRR CAMBIA».
 var RS_NIVELES_CRR_PRIMERO = [
   { nombre: 'estricto con AtaquesHoy y CurrentRiverRace', estricto: true, hoy: true, crr: true },
   { nombre: 'estricto sin AtaquesHoy y CurrentRiverRace', estricto: true, hoy: false, crr: true },
@@ -80,7 +80,7 @@ var RS_NIVELES_CRR_PRIMERO = [
   { nombre: 'relajado sin AtaquesHoy', estricto: false, hoy: false, crr: false }
 ];
 
-// §PF183 (2-nov-2026, solo el informe): nivel para las series en que la usuaria decidió que mandan las capturas de CurrentRiverRace sobre las filas de la hoja (regla 1 de los consolidados).
+// §PF183 (2-nov-2026; desde el 3-nov-2026 también Aplicar): nivel para las series en que la usuaria decidió que mandan las capturas de CurrentRiverRace sobre las filas de la hoja (regla 1 de los consolidados).
 // Con ignorarFilas las filas registradas no limitan el reparto (solo se usan para contar cuántas cambian). Se prueba PRIMERO y solo en las series de RS_CRR_MANDA; el criterio general no cambia.
 // Motivo: una fila de la hoja actúa como cota mínima del acumulado, así que si la hoja tiene un ataque de más ningún nivel con CurrentRiverRace tiene solución y se repartía sin él.
 var RS_NIVEL_CRR_MANDA = { nombre: 'CurrentRiverRace manda sobre las filas de la hoja', estricto: false, hoy: false, crr: true, ignorarFilas: true };
@@ -88,6 +88,20 @@ var RS_NIVEL_CRR_MANDA = { nombre: 'CurrentRiverRace manda sobre las filas de la
 var RS_CRR_MANDA = {
   '24|5|#J8V9PQJP9|#GQQPPJGR': true,   // GrupoXTerna™3: el ataque es del viernes (la fila J de la hoja se leyó ya cambiado el día)
   '24|5|#829GQP0JL|#GCRG8L00': true    // Grupo乂Terna™: viernes 3, sábado 4, domingo 4 según las capturas (V, S y D de la hoja son «Corregido»)
+};
+
+// §PF183 (2-nov-2026): series que Aplicar NO escribe aunque el informe las resuelva; quedan como alarma en Revision_Guerra.csv para revisarlas a mano (decisión de la usuaria: «sí»).
+// Motivo: o llevan mucha estimación (3 a 512 soluciones y días sin captura propia) o pisarían una fila «Original» de la hoja, que puede estar leída con el día de juego cambiado.
+// Clave: temporada|semana|tag del jugador|tag del clan de la serie. Solo la usa Aplicar (opciones.excluirLista); el informe las sigue mostrando como se escribirían.
+var RS_EXCLUIR_APLICAR = {
+  '22|5|#V0UJ0RPVP|#GQQPPJGR': 'estimada: 30 soluciones y solo la captura del domingo',
+  '23|2|#PGLYYV9Q0|#GYCU9YRG': 'estimada: 9 soluciones y dias sin captura propia',
+  '23|2|#V20GJRC9Y|#GCRG8L00': 'estimada: 3 soluciones y dias sin captura propia',
+  '23|3|#GLPC8YQGV|#GCRG8L00': 'estimada: 512 soluciones, hoja vacia y ninguna captura del clan',
+  '24|4|#22C090RVJ|#GCRG8L00': 'estimada: 33 soluciones y solo la captura del domingo',
+  '24|4|#JCUPQ88J|#GCRG8L00': 'pisaria una fila Original de la hoja (dia S)',
+  '24|5|#2C982888C|#GCRG8L00': 'pisaria una fila Original de la hoja (dia J)',
+  '24|2|#2C982888C|#GCRG8L00': 'sin filas en la hoja y una sola captura; el reparto depende de la regla del domingo sin fame'
 };
 
 var _rsCatalogo_ = null;
@@ -141,15 +155,16 @@ function _totSemanaPorDias_(aplicar, esContinuacion) {
     var tipoCursor = aplicar ? 'APLICAR' : 'INFORME';
     // §PF183: el catálogo del domingo sin fame solo se usa en el informe (aplicar = false) hasta comparar Revision_Guerra.csv antes y después.
     // §PF183: lo nuevo de CurrentRiverRace (capturas por clan y niveles con CurrentRiverRace primero) va solo en el informe, igual que el domingo sin fame, hasta comparar cuántas series cambian.
-    _CRR_DESCARTAR_CLAN_VACIO_ = !aplicar;   // §PF183: capturas de clan vacío fuera, solo en el informe; aplicar lee las capturas como siempre
-    var plan = _rsPlanificar(filas, objetivos, { usarCrr: true, usarCierre: !aplicar, crrNuevo: !aplicar, t0: t0, desde: _rsCursorLeer_(tipoCursor) });
+    // §PF183 (3-nov-2026): las reglas nuevas (capturas de clan vacío fuera, capturas por clan, niveles con CurrentRiverRace primero y domingo sin fame) pasan también a Aplicar, con RS_EXCLUIR_APLICAR apartada.
+    _CRR_DESCARTAR_CLAN_VACIO_ = true;
+    var plan = _rsPlanificar(filas, objetivos, { usarCrr: true, usarCierre: true, crrNuevo: true, excluirLista: !!aplicar, t0: t0, desde: _rsCursorLeer_(tipoCursor) });
     var idxDe = new Map();
     for (var q = 0; q < filas.length; q++) idxDe.set(filas[q], q);
     plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.existe) op.idxAntes = idxDe.get(op.fila); }); });
     var nCrear = 0, nModificar = 0, cuenta = {};
     plan.series.forEach(function (s) { nCrear += s.nCrear; nModificar += s.nMod; var k = s.clase + ' / ' + s.accion; cuenta[k] = (cuenta[k] || 0) + 1; });
     var resumenSeries = Object.keys(cuenta).sort().map(function (k) { return k + ': ' + cuenta[k]; }).join(' | ');
-    var nCrrCambian = plan.series.filter(function (s) { return s.crrCambia; }).length;   // §PF183: series donde lo nuevo de CurrentRiverRace cambia el reparto (solo el informe)
+    var nCrrCambian = plan.series.filter(function (s) { return s.crrCambia; }).length;   // §PF183: series donde lo nuevo de CurrentRiverRace cambia el reparto
 
     var nombresCsv = [];
     var series = [['Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Filas existentes', 'Total RoyaleAPI ataques/barcos/fame', 'Nivel', 'Soluciones', 'Clase', 'Accion', 'Filas a modificar', 'Filas a crear', 'Notas']];
@@ -221,7 +236,7 @@ function _totSemanaPorDias_(aplicar, esContinuacion) {
       avance = 'El avance NO se guardo: al volver a correr se repite esta misma tanda de semanas. ';
     }
     Logger.log('[Semana por dias] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Backup_Guerra.csv: ' + filas.length + ' filas. ' + avance +
-      'Series del informe: ' + plan.series.length + ' (' + resumenSeries + '). ' + (aplicar ? '' : 'Series que CAMBIAN con CurrentRiverRace por clan y niveles nuevos (§PF183): ' + nCrrCambian + '. ') +
+      'Series del informe: ' + plan.series.length + ' (' + resumenSeries + '). ' + 'Series que CAMBIAN con CurrentRiverRace por clan y niveles nuevos (§PF183): ' + nCrrCambian + '. ' +
       'Filas a modificar: ' + nModificar + ', a crear: ' + nCrear + '. ' + revisionTxt +
       (verificacion ? verificacion + ' ' : '') + (nombresCsv.length ? 'Detalle en Drive: ' + nombresCsv.join(' y ') + '.' : 'Nada que escribir.') +
       (aplicar ? '' : ' (No se escribio nada en el Backup ni en Guerra.)'));
@@ -349,7 +364,7 @@ function _rsClaveSem_(temporada, semana) { return Number(temporada) * 1000 + Num
 
 /**
  * Planifica la escritura. NO modifica filas. objetivos = [{ temporada, semana, tag, nombre, clan, jsonAtaques, jsonFame, jsonBarcos, omitir }]
- * (omitir = motivo de texto si el Historial no confirma el total). opciones = { usarCrr, usarCierre, crrNuevo, t0, desde }; crrNuevo = capturas por clan y niveles con CurrentRiverRace primero (§PF183, solo el informe).
+ * (omitir = motivo de texto si el Historial no confirma el total). opciones = { usarCrr, usarCierre, crrNuevo, excluirLista, t0, desde }; crrNuevo = capturas por clan y niveles con CurrentRiverRace primero (§PF183, solo el informe).
  * Devuelve { casos: [{ grupo, clase, estimado, ops, finalAntes }], omitidos: [{ grupo, clase, motivo, alarma }], series: [...] } (mismo formato de ops que
  * _excDiasPlanificar(), para reutilizar _excDiasAplicarPlan() y _excDiasVerificar()).
  */
@@ -390,8 +405,12 @@ function _rsPlanificar(filas, objetivos, opciones) {
     };
     if (ob.omitir) { omitir(ob.omitir, false); return; }
     if (tot.a > 16 || tot.a < 0) { omitir('total de ataques fuera de 0 a 16 (' + tot.a + ')', true); return; }
+    if (opciones.excluirLista) {   // §PF183: solo Aplicar; la serie queda como alarma en Revision_Guerra.csv (ver RS_EXCLUIR_APLICAR)
+      var tcEx = _rsTagDeClanNombre_(ob.clan), motivoEx = tcEx ? RS_EXCLUIR_APLICAR[ob.temporada + '|' + ob.semana + '|' + ob.tag + '|' + tcEx] : '';
+      if (motivoEx) { omitir('serie apartada de la escritura para revisarla a mano (' + motivoEx + ')', true); return; }
+    }
 
-    // §PF183 (2-nov-2026): con opciones.crrNuevo (solo el informe) las capturas se separan por clan y CurrentRiverRace se prueba en todos los niveles antes de descartarlo.
+    // §PF183 (2-nov-2026): con opciones.crrNuevo (informe y Aplicar) las capturas se separan por clan y CurrentRiverRace se prueba en todos los niveles antes de descartarlo.
     var nuevo = !!opciones.crrNuevo && opciones.usarCrr !== false;
     var tagClan = nuevo ? _rsTagDeClanNombre_(ob.clan) : null;
     var niveles = nuevo ? RS_NIVELES_CRR_PRIMERO : RS_NIVELES;

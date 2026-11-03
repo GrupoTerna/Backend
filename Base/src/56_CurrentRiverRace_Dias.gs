@@ -30,7 +30,7 @@
 
 var CRR_DIAS_LETRAS = 'JVSD';   // desplazamiento 0..3 = jueves a domingo (PeriodIndex % 7 - 3)
 
-var _CRR_DESCARTAR_CLAN_VACIO_ = false;   // §PF183: true solo en el informe de totales por días (57); descarta las capturas de un clan con la fame menor que la del día anterior (_crrArchivosSinClanVacio_)
+var _CRR_DESCARTAR_CLAN_VACIO_ = false;   // §PF183: true en el informe y en Aplicar de totales por días (57; desde el 3-nov-2026); descarta las capturas de un clan con la fame menor que la del día anterior (_crrArchivosSinClanVacio_)
 var _CRR_CACHE_SEMANA_ = {};
 var _CRR_CACHE_CIERRES_ = {};
 
@@ -93,7 +93,7 @@ function _crrLeerSemana_(temporada, semana) {
   var clave = Number(temporada) + '|' + Number(semana);
   var archivos = _crrArchivosDeSemana_(temporada, semana);
   var paraCapturas = archivos;
-  if (_CRR_DESCARTAR_CLAN_VACIO_) {   // §PF183 (2-nov-2026, solo el informe): las capturas de un clan que vino vacío no valen; el cierre de carrera sigue usando todos los archivos.
+  if (_CRR_DESCARTAR_CLAN_VACIO_) {   // §PF183 (2-nov-2026; informe y Aplicar desde el 3-nov-2026): las capturas de un clan que vino vacío no valen; el cierre de carrera sigue usando todos los archivos.
     var limpio = _crrArchivosSinClanVacio_(archivos);
     paraCapturas = limpio.validos;
     if (limpio.descartados.length) Logger.log('[CRR] AVISO T' + temporada + ' S' + semana + ': se descartaron ' + limpio.descartados.length + ' captura(s) de clan con la fame menor que la del dia anterior (clan vacio): ' + limpio.descartados.join(' | '));
