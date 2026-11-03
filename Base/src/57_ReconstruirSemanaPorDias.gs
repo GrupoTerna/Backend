@@ -130,6 +130,7 @@ function _totSemanaPorDias_(aplicar, esContinuacion) {
     var tipoCursor = aplicar ? 'APLICAR' : 'INFORME';
     // §PF183: el catálogo del domingo sin fame solo se usa en el informe (aplicar = false) hasta comparar Revision_Guerra.csv antes y después.
     // §PF183: lo nuevo de CurrentRiverRace (capturas por clan y niveles con CurrentRiverRace primero) va solo en el informe, igual que el domingo sin fame, hasta comparar cuántas series cambian.
+    _CRR_DESCARTAR_CLAN_VACIO_ = !aplicar;   // §PF183: capturas de clan vacío fuera, solo en el informe; aplicar lee las capturas como siempre
     var plan = _rsPlanificar(filas, objetivos, { usarCrr: true, usarCierre: !aplicar, crrNuevo: !aplicar, t0: t0, desde: _rsCursorLeer_(tipoCursor) });
     var idxDe = new Map();
     for (var q = 0; q < filas.length; q++) idxDe.set(filas[q], q);

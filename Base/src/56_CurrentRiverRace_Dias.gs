@@ -30,6 +30,7 @@
 
 var CRR_DIAS_LETRAS = 'JVSD';   // desplazamiento 0..3 = jueves a domingo (PeriodIndex % 7 - 3)
 
+var _CRR_DESCARTAR_CLAN_VACIO_ = false;   // §PF183: true solo en el informe de totales por días (57); descarta las capturas de un clan con la fame menor que la del día anterior (_crrArchivosSinClanVacio_)
 var _CRR_CACHE_SEMANA_ = {};
 var _CRR_CACHE_CIERRES_ = {};
 
@@ -91,7 +92,13 @@ function _crrCapturasDeSemana_(temporada, semana) {
 function _crrLeerSemana_(temporada, semana) {
   var clave = Number(temporada) + '|' + Number(semana);
   var archivos = _crrArchivosDeSemana_(temporada, semana);
-  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(archivos);
+  var paraCapturas = archivos;
+  if (_CRR_DESCARTAR_CLAN_VACIO_) {   // §PF183 (2-nov-2026, solo el informe): las capturas de un clan que vino vacío no valen; el cierre de carrera sigue usando todos los archivos.
+    var limpio = _crrArchivosSinClanVacio_(archivos);
+    paraCapturas = limpio.validos;
+    if (limpio.descartados.length) Logger.log('[CRR] AVISO T' + temporada + ' S' + semana + ': se descartaron ' + limpio.descartados.length + ' captura(s) de clan con la fame menor que la del dia anterior (clan vacio): ' + limpio.descartados.join(' | '));
+  }
+  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(paraCapturas);
   _CRR_CACHE_CIERRES_[clave] = _crrCierresDesdeArchivos_(archivos);
 }
 
@@ -165,6 +172,32 @@ function _crrCapturasDeClan_(porDia, clanTag) {
     if (lista.length) { out[letra] = lista; hay = true; }
   });
   return hay ? out : null;
+}
+
+/**
+ * Función pura (§PF183, 2-nov-2026). archivos = [{ nombre, datos }]. Quita las capturas de un clan que vinieron vacías: dentro de una semana la fame del clan solo sube, así que un archivo
+ * cuyo clan.fame es MENOR que el del archivo anterior del mismo clan (ordenados por periodIndex) no es una captura válida. Caso real: T24 S5, el domingo de GrupoXTerna™3, Mini乂Ternas™ y
+ * NARANJA x vino con todo el clan en 0 y dejaba el sábado con ataques negativos (solo esos 3 archivos de los 602 del repo). Devuelve { validos, descartados: [nombre] }; los archivos sin clan
+ * o con un nombre que no se entiende se dejan pasar.
+ */
+function _crrArchivosSinClanVacio_(archivos) {
+  var porClan = {}, malos = [];
+  (archivos || []).forEach(function (a) {
+    var p = _crrParsearNombre_(a && a.nombre);
+    var c = a && a.datos && a.datos.clan;
+    if (!p || !c || !c.tag) return;
+    var tag = String(c.tag).trim().toUpperCase();
+    if (!porClan[tag]) porClan[tag] = [];
+    porClan[tag].push({ a: a, pi: (a.datos.periodIndex !== undefined && a.datos.periodIndex !== null) ? Number(a.datos.periodIndex) : p.periodIndex, fame: Number(c.fame) || 0 });
+  });
+  Object.keys(porClan).forEach(function (tag) {
+    var lista = porClan[tag].sort(function (x, y) { return x.pi - y.pi; }), prev = -1;
+    lista.forEach(function (x) { if (x.fame < prev) malos.push(x.a); else prev = x.fame; });
+  });
+  return {
+    validos: (archivos || []).filter(function (a) { return malos.indexOf(a) < 0; }),
+    descartados: malos.map(function (a) { return a.nombre; })
+  };
 }
 
 /**
