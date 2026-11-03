@@ -700,7 +700,7 @@ Ninguno.
 | `_excDiasElegirSolucion` | función | 55_Reparar_DiasConExceso.gs | 607 |  |
 | `_excDiasEsCero` | función | 55_Reparar_DiasConExceso.gs | 513 |  |
 | `_excDiasFaltanteJueves` | función | 55_Reparar_DiasConExceso.gs | 467 |  |
-| `_excDiasFilaNueva` | función | 55_Reparar_DiasConExceso.gs | 673 |  |
+| `_excDiasFilaNueva` | función | 55_Reparar_DiasConExceso.gs | 674 |  |
 | `_excDiasFinalDe` | función | 55_Reparar_DiasConExceso.gs | 599 |  |
 | `_excDiasNecesitaReparo` | función | 55_Reparar_DiasConExceso.gs | 323 | Contexto_Base_Web.md §PF160, criterio 1 |
 | `_excDiasNum` | función | 55_Reparar_DiasConExceso.gs | 309 |  |
@@ -715,7 +715,7 @@ Ninguno.
 | `_excDiasSoluciones` | función | 55_Reparar_DiasConExceso.gs | 477 |  |
 | `_excDiasTextoActual` | función | 55_Reparar_DiasConExceso.gs | 635 |  |
 | `_excDiasTextoPorDia` | función | 55_Reparar_DiasConExceso.gs | 641 |  |
-| `_excDiasVerificar` | función | 55_Reparar_DiasConExceso.gs | 700 |  |
+| `_excDiasVerificar` | función | 55_Reparar_DiasConExceso.gs | 707 |  |
 | `_existeParCRListaParaTemporada` | función | 26_Torneos_Core.gs | 2919 | Contexto_Base_Web.md §26B022 |
 | `_explicarAltasCR_` | función | 24_Historial_Ascensos.gs | 1413 | Contexto_Base_Web.md §PF286 |
 | `_explicarBajasCR_` | función | 24_Historial_Ascensos.gs | 1442 | Contexto_Base_Web.md §PF286 |
@@ -729,9 +729,9 @@ Ninguno.
 | `_extraerValoresConLinksReales` | función | 05_Backup_CSV.gs | 1724 | Contexto_Base_Web.md §05B071 |
 | `_FAME_CATALOGO_DIA_CACHE_` | global | 18_CorreccionGuerra.gs | 179 | Contexto_Base_Web.md §PF122 |
 | `_fameCatalogoDia_` | función | 18_CorreccionGuerra.gs | 1355 | Contexto_Base_Web.md §PF122 |
-| `_fameCrr52_` | función | 55_Reparar_DiasConExceso.gs | 737 |  |
-| `_fameCrr52Planificar_` | función | 55_Reparar_DiasConExceso.gs | 820 |  |
-| `_fameCrr52Verificar_` | función | 55_Reparar_DiasConExceso.gs | 868 |  |
+| `_fameCrr52_` | función | 55_Reparar_DiasConExceso.gs | 744 |  |
+| `_fameCrr52Planificar_` | función | 55_Reparar_DiasConExceso.gs | 827 |  |
+| `_fameCrr52Verificar_` | función | 55_Reparar_DiasConExceso.gs | 875 |  |
 | `_fameCumpleRequisito` | función | 28_Torneos_Docs.gs | 894 | Contexto_Base_Web.md §28B087 |
 | `_fameDescomposicionesDeCifra_` | función | 18_CorreccionGuerra.gs | 1346 | Contexto_Base_Web.md §18B008 |
 | `_fameDescomposicionesDia_` | función | 18_CorreccionGuerra.gs | 1280 | Contexto_Base_Web.md §18B004 |
