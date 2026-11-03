@@ -104,7 +104,8 @@ var RS_EXCLUIR_APLICAR = {
   '24|4|#22C090RVJ|#GCRG8L00': 'estimada: 33 soluciones y solo la captura del domingo',
   '24|4|#JCUPQ88J|#GCRG8L00': 'pisaria una fila Original de la hoja (dia S)',
   '24|5|#2C982888C|#GCRG8L00': 'pisaria una fila Original de la hoja (dia J)',
-  '24|2|#2C982888C|#GCRG8L00': 'sin filas en la hoja y una sola captura; el reparto depende de la regla del domingo sin fame'
+  '24|2|#2C982888C|#GCRG8L00': 'sin filas en la hoja y una sola captura; el reparto depende de la regla del domingo sin fame',
+  '24|1|#VCLRVUCLG|#GG99LCJY': 'la verificacion de Aplicar la rechazo (3-nov-2026): el dia D quedaba con 2 ataques, 0 barcos y 0 de fame, que no estan en la tabla de fame'
 };
 
 var _rsCatalogo_ = null;
