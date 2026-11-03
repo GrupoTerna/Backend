@@ -80,6 +80,9 @@ var CFG = {
   // Nombre de respaldo por ClanTag, usado SOLO si todavía no hay cache de [→ Contexto_Base_Web.md §01B008]
   CLAN_NOMBRES_FALLBACK: {
     '#GCRG8L00': 'Grupo乂Terna™',
+    '#GYCU9YRG': 'GrupoXTerna™2',
+    '#GQQPPJGR': 'GrupoXTerna™3',
+    '#GG99LCJY': 'Mini乂Ternas™',
   },
 
   // Letras de días indexadas por (periodIndex % 7): L=0, M=1, X=2, J=3, V=4, S=5, D=6

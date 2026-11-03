@@ -66,6 +66,7 @@ var RS_NIVELES = [
 var _rsCatalogo_ = null;
 var _rsCatalogoSinFame_ = null;
 var _rsTagPorNombre_ = null;
+var _rsNombreSinTag_ = {};   // nombres de clan de la hoja sin tag, para avisar una sola vez por ejecución
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
@@ -611,9 +612,18 @@ function _rsSinFameDeSerie(temporada, semana, clanNombre) {
   if (typeof _crrDomingoSinFame_ !== 'function') return null;
   if (!_rsTagPorNombre_) {   // una sola vez por ejecución: _resolverNombreClan() consulta la caché del clan y se llamaría miles de veces
     _rsTagPorNombre_ = {};
-    for (var i = 0; i < CFG.TERNA_TAGS.length; i++) _rsTagPorNombre_[_resolverNombreClan(CFG.TERNA_TAGS[i])] = CFG.TERNA_TAGS[i];
+    for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
+      _rsTagPorNombre_[_resolverNombreClan(CFG.TERNA_TAGS[i])] = CFG.TERNA_TAGS[i];
+      // Sin caché del clan (p. ej. en la tanda automática) _resolverNombreClan() devuelve el tag; el nombre de respaldo evita que el clan quede sin tag (2-nov-2026, §PF183).
+      var respaldo = CFG.CLAN_NOMBRES_FALLBACK[CFG.TERNA_TAGS[i]];
+      if (respaldo) _rsTagPorNombre_[respaldo] = CFG.TERNA_TAGS[i];
+    }
   }
   var tag = _rsTagPorNombre_[clanNombre];
+  if (!tag && clanNombre && !_rsNombreSinTag_[clanNombre]) {
+    _rsNombreSinTag_[clanNombre] = true;
+    Logger.log('[Semana por dias] AVISO: el clan "' + clanNombre + '" de la hoja no coincide con ningun clan Terna; no se aplica la regla del domingo sin fame (§PF183).');
+  }
   return (tag && _crrDomingoSinFame_(temporada, semana, tag)) ? [false, false, false, true] : null;
 }
 
