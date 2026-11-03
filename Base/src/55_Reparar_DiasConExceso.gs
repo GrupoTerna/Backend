@@ -647,11 +647,12 @@ function _excDiasTextoPorDia(porDia, campo) {
 /** Aplica el plan sobre `filas` (modifica las filas existentes y agrega al final las nuevas). Devuelve cuantas modifico y cuantas creo. */
 function _excDiasAplicarPlan(filas, plan) {
   var modificadas = 0, creadas = 0;
+  var offsetRapi = _getTemporadaOffsetRoyaleApi(); // una sola lectura de PropertiesService (§PF183, 3-nov-2026): antes se leía en cada fila creada y 3 064 filas tardaron ~3 min
   plan.casos.forEach(function (c) {
     c.ops.forEach(function (op) {
       var fila = op.fila;
       if (!op.existe) {
-        fila = _excDiasFilaNueva(c.grupo, op);
+        fila = _excDiasFilaNueva(c.grupo, op, offsetRapi);
         filas.push(fila);
         op.filaNueva = fila;
         creadas++;
@@ -669,7 +670,7 @@ function _excDiasAplicarPlan(filas, plan) {
 }
 
 /** Fila nueva (reconstruida) de un dia que no tiene fila, con los datos del propio jugador y clan. */
-function _excDiasFilaNueva(g, op) {
+function _excDiasFilaNueva(g, op, offsetRapi) {   // offsetRapi (opcional): desfase ya leído; si falta se lee aquí
   var temporada = Number(g.temporada), semana = Number(g.semana);
   var pIdx = (semana - 1) * 7 + 3 + op.dia;
   var diaGuerraObj = calcDiaGuerraIdx(CFG.REF_DEFAULT, temporada, pIdx);
@@ -684,7 +685,7 @@ function _excDiasFilaNueva(g, op) {
   f[GC.CLAN - 1] = g.clan;
   f[GC.TAG - 1] = g.tag;
   f[GC.NOMBRE - 1] = g.nombre;
-  f[GC.TEMPORADA_2 - 1] = (modelo && String(modelo[GC.TEMPORADA_2 - 1] || '') !== '') ? String(modelo[GC.TEMPORADA_2 - 1]) : String(_getTemporadaRoyaleApiDesdePropia(temporada));
+  f[GC.TEMPORADA_2 - 1] = (modelo && String(modelo[GC.TEMPORADA_2 - 1] || '') !== '') ? String(modelo[GC.TEMPORADA_2 - 1]) : String(offsetRapi === undefined ? _getTemporadaRoyaleApiDesdePropia(temporada) : Number(temporada) + offsetRapi);
   f[GC.FECHA - 1] = (diaGuerraObj instanceof Date) ? _formatFechaCanonica(diaGuerraObj, true) : '';
   f[GC.DIA_GUERRA - 1] = (diaGuerraObj instanceof Date) ? _formatFechaCanonica(diaGuerraObj) : '';
   return f;
