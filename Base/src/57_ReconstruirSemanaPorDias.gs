@@ -48,6 +48,9 @@ var RS_MAX_FILAS = 2500;     // tope de filas a modificar + crear en una escritu
 var RS_MS_LIMITE = 240000;   // tiempo máximo desde que empieza la corrida (ms) para EMPEZAR otra semana; lo que falte se hace en la corrida siguiente (queda margen para escribir y verificar)
 var RS_CACHE_ARCHIVO = 'Cache_TotalesSemana_Objetivos.csv';   // totales cerrados leidos de los JSON de RoyaleAPI (se reutilizan para no releer 231 archivos en cada corrida)
 var RS_CACHE_MS = 6 * 3600 * 1000;   // vigencia de ese archivo (6 horas)
+var RS_HANDLER_CONT_INFORME = '_continuarTotalesSemanaInforme';   // activador de una sola vez que sigue el informe en la tanda siguiente (§PF183)
+var RS_AUTO_PROP = 'RS_AUTO_TANDAS';   // tandas automáticas seguidas del informe (se reinicia al empezar a mano)
+var RS_AUTO_MAX = 60;   // tope de tandas automáticas seguidas: si se pasa, se detiene y se sigue a mano
 var RS_CURSOR_PROP = 'RS_CURSOR_';   // propiedad del script: ultima semana ya recorrida (sufijo INFORME o APLICAR)
 
 var RS_NIVELES = [
@@ -72,6 +75,7 @@ var _rsCatalogoSinFame_ = null;
 /** Borra el avance de las dos funciones y el archivo de totales leidos de los JSON: la proxima corrida empieza desde cero y relee los JSON. */
 function totalesSemanaPorDiasReiniciar() {
   var p = PropertiesService.getScriptProperties();
+  _borrarTriggersDeContinuacion(RS_HANDLER_CONT_INFORME); p.deleteProperty(RS_AUTO_PROP);
   p.deleteProperty(RS_CURSOR_PROP + 'INFORME'); p.deleteProperty(RS_CURSOR_PROP + 'APLICAR');
   try { if (_csvBuscarArchivo_(RS_CACHE_ARCHIVO)) _saveCSVToDrive(RS_CACHE_ARCHIVO, 'Creado\n'); } catch (e) { Logger.log('[Semana por dias] No se pudo vaciar ' + RS_CACHE_ARCHIVO + ': ' + e.message); }
   Logger.log('[Semana por dias] Avance borrado. La proxima corrida empieza desde la primera semana y vuelve a leer los JSON de RoyaleAPI.');
@@ -85,10 +89,11 @@ function totalesSemanaPorDiasReiniciar() {
 // ENTRADA (Drive)
 // ---------------------------------------------------------------------------------------------------------------
 
-function _totSemanaPorDias_(aplicar) {
+function _totSemanaPorDias_(aplicar, esContinuacion) {
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) { Logger.log('[Semana por dias] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
   try {
+    if (!aplicar && !esContinuacion) { try { PropertiesService.getScriptProperties().deleteProperty(RS_AUTO_PROP); } catch (eAuto) { /* sin contador: el tope de tandas se cuenta desde cero */ } }
     var t0 = Date.now();
     var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
     var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
@@ -184,6 +189,7 @@ function _totSemanaPorDias_(aplicar) {
       'Series del informe: ' + plan.series.length + ' (' + resumenSeries + '). Filas a modificar: ' + nModificar + ', a crear: ' + nCrear + '. ' + revisionTxt +
       (verificacion ? verificacion + ' ' : '') + (nombresCsv.length ? 'Detalle en Drive: ' + nombresCsv.join(' y ') + '.' : 'Nada que escribir.') +
       (aplicar ? '' : ' (No se escribio nada en el Backup ni en Guerra.)'));
+    if (!aplicar) _rsContinuacionInforme_(avanzar && !plan.terminado);
   } finally {
     lock.releaseLock();
   }
@@ -616,6 +622,39 @@ function _rsMenor(a, b) {
 // ---------------------------------------------------------------------------------------------------------------
 // AVANCE ENTRE CORRIDAS (última semana recorrida)
 // ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * El informe se continúa solo (§PF183, pedido de la usuaria del 2-nov-2026): si quedan semanas por recorrer, programa un activador de una sola vez a los 10 s que vuelve a
+ * llamar a _totSemanaPorDias_(false). Con seguir = false (terminó o no se guardó el avance) borra el activador y el contador. Tope: RS_AUTO_MAX tandas seguidas.
+ * Solo el informe: la versión que escribe en el Backup (aplicar) se sigue corriendo a mano. Nunca lanza error.
+ */
+function _rsContinuacionInforme_(seguir) {
+  try {
+    var p = PropertiesService.getScriptProperties();
+    if (!seguir) { _borrarTriggersDeContinuacion(RS_HANDLER_CONT_INFORME); p.deleteProperty(RS_AUTO_PROP); return; }
+    var n = (Number(p.getProperty(RS_AUTO_PROP)) || 0) + 1;
+    if (n > RS_AUTO_MAX) {
+      _borrarTriggersDeContinuacion(RS_HANDLER_CONT_INFORME); p.deleteProperty(RS_AUTO_PROP);
+      Logger.log('[Semana por dias] Se llegó al tope de ' + RS_AUTO_MAX + ' tandas automáticas seguidas. El avance queda guardado: vuelve a correr aplicarTotalesSemanaDesdeHistorialInforme() para seguir.');
+      return;
+    }
+    p.setProperty(RS_AUTO_PROP, String(n));
+    _programarContinuacion(RS_HANDLER_CONT_INFORME);
+    Logger.log('[Semana por dias] Continuación programada en 10 s (tanda automática ' + n + ' de ' + RS_AUTO_MAX + '). No hace falta volver a correr la función.');
+  } catch (e) {
+    Logger.log('[Semana por dias] No se pudo programar la continuación (' + e.message + '). El avance queda guardado: vuelve a correr aplicarTotalesSemanaDesdeHistorialInforme() para seguir.');
+  }
+}
+
+/** Handler del activador de _rsContinuacionInforme_: borra su propio activador, se pausa si hay una reenumeración o la ventana de guerra protegida, y sigue el informe. */
+function _continuarTotalesSemanaInforme() {
+  _borrarTriggersDeContinuacion(RS_HANDLER_CONT_INFORME);
+  if (_reenumeracionEnCurso_() || (CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida)) {
+    Logger.log('[Semana por dias] Pausado: hay una reenumeración en curso o la ventana de guerra protegida está activa. El avance queda guardado: vuelve a correr aplicarTotalesSemanaDesdeHistorialInforme() después.');
+    return;
+  }
+  _totSemanaPorDias_(false, true);
+}
 
 /** Ultima semana ya recorrida (0 = empezar desde el principio). tipo: 'INFORME' o 'APLICAR'. */
 function _rsCursorLeer_(tipo) {
