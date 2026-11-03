@@ -59,6 +59,7 @@ var RS_NIVELES = [
 ];
 
 var _rsCatalogo_ = null;
+var _rsCatalogoSinFame_ = null;
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
@@ -101,7 +102,8 @@ function _totSemanaPorDias_(aplicar) {
     var objetivos = _rsObjetivos(filas, _rsClavesHoja());
     if (!objetivos) { Logger.log('[Semana por dias] ABORT: se agoto el tiempo leyendo los JSON de RoyaleAPI. No se escribio nada.'); return; }
     var tipoCursor = aplicar ? 'APLICAR' : 'INFORME';
-    var plan = _rsPlanificar(filas, objetivos, { usarCrr: true, t0: t0, desde: _rsCursorLeer_(tipoCursor) });
+    // §PF183: el catálogo del domingo sin fame solo se usa en el informe (aplicar = false) hasta comparar Revision_Guerra.csv antes y después.
+    var plan = _rsPlanificar(filas, objetivos, { usarCrr: true, usarCierre: !aplicar, t0: t0, desde: _rsCursorLeer_(tipoCursor) });
     var idxDe = new Map();
     for (var q = 0; q < filas.length; q++) idxDe.set(filas[q], q);
     plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.existe) op.idxAntes = idxDe.get(op.fila); }); });
@@ -305,7 +307,7 @@ function _rsClaveSem_(temporada, semana) { return Number(temporada) * 1000 + Num
 
 /**
  * Planifica la escritura. NO modifica filas. objetivos = [{ temporada, semana, tag, nombre, clan, jsonAtaques, jsonFame, jsonBarcos, omitir }]
- * (omitir = motivo de texto si el Historial no confirma el total). opciones = { usarCrr, t0 }.
+ * (omitir = motivo de texto si el Historial no confirma el total). opciones = { usarCrr, usarCierre, t0 }.
  * Devuelve { casos: [{ grupo, clase, estimado, ops, finalAntes }], omitidos: [{ grupo, clase, motivo, alarma }], series: [...] } (mismo formato de ops que
  * _excDiasPlanificar(), para reutilizar _excDiasAplicarPlan() y _excDiasVerificar()).
  */
@@ -348,7 +350,8 @@ function _rsPlanificar(filas, objetivos, opciones) {
     if (tot.a > 16 || tot.a < 0) { omitir('total de ataques fuera de 0 a 16 (' + tot.a + ')', true); return; }
 
     var crr = opciones.usarCrr === false ? null : _rsCrrRestricciones(ob.temporada, ob.semana, ob.tag, tot);
-    var res = _rsResolver(g.dias, tot, crr);
+    var sinFame = opciones.usarCierre ? _rsSinFameDeSerie(ob.temporada, ob.semana, ob.clan) : null;   // §PF183: domingo sin fame en un clan que ya cruzó
+    var res = _rsResolver(g.dias, tot, crr, sinFame);
     if (res.nSol === 0) {
       omitir('ningun reparto de ternas cumple los registros y el total de RoyaleAPI (' + tot.a + '/' + tot.b + '/' + tot.f + ')', true);
       return;
@@ -356,6 +359,7 @@ function _rsPlanificar(filas, objetivos, opciones) {
     serie.nivel = res.nivel; serie.soluciones = res.nSol;
     var notas = [];
     if (res.crrIgnorado) { notas.push('CurrentRiverRace no cuadra con los registros y el total: no se uso'); Logger.log('[Semana por dias] AVISO ' + ob.tag + ' T' + ob.temporada + ' S' + ob.semana + ': CurrentRiverRace no cuadra; se repartio sin el.'); }
+    if (sinFame) notas.push('domingo sin fame: el clan ya había cruzado la meta (§PF183)');
     if (res.desplazadas) notas.push('fila(s) con el acumulado de un dia posterior: ' + res.desplazadas);
     if (res.nivel.indexOf('sin AtaquesHoy') >= 0) notas.push('AtaquesHoy no cuadra con los acumulados: no se uso');
     if (res.nivel.indexOf('relajado') === 0) notas.push('nivel relajado: se acepto que una fila con todos sus ataques tuviera barcos o fame mayores (revisar)');
@@ -427,14 +431,14 @@ function _rsCrrRestricciones(temporada, semana, tag, tot) {
  * Resuelve una serie: de lo más estricto a lo más relajado, y con las filas en su día antes que desplazadas, la primera
  * forma que tenga solución. Devuelve { nSol, porDia, mejor, nivel, desplazadas, crrIgnorado } o { nSol: 0 } si no hay ninguna.
  */
-function _rsResolver(dias, tot, crr) {
+function _rsResolver(dias, tot, crr, sinFame) {
   var rec = _rsRegistros(dias), mp = _rsMapeos(rec);
   for (var n = 0; n < RS_NIVELES.length; n++) {
     var nivel = RS_NIVELES[n];
     if (nivel.crr && !crr) continue;
     for (var c = 0; c < mp.combos.length; c++) {
       var mapeo = { offs: mp.offs, m: mp.combos[c] };
-      var res = _rsResolverNivel(tot, rec, mapeo, nivel.crr ? crr : null, nivel);
+      var res = _rsResolverNivel(tot, rec, mapeo, nivel.crr ? crr : null, nivel, sinFame);
       if (res.nSol > 0) {
         var despl = [];
         mapeo.offs.forEach(function (o, i) { if (mapeo.m[i] !== o) despl.push(EXC_DIAS_LETRAS.charAt(o) + '->' + EXC_DIAS_LETRAS.charAt(mapeo.m[i])); });
@@ -481,13 +485,14 @@ function _rsMapeos(rec) {
  *  restr = restricciones de CurrentRiverRace por día ([{ n, f }|null] o null).
  * Devuelve { nSol, porDia: [cantidad de ternas distintas por día], mejor: [4 ternas] | null }.
  */
-function _rsResolverNivel(tot, rec, mapeo, restr, nivel) {
-  var cat = _rsCatalogo();
+function _rsResolverNivel(tot, rec, mapeo, restr, nivel, sinFame) {
+  var cat = _rsCatalogo(), catSF = sinFame ? _rsCatalogoSinFameDomingo() : null;
   var cand = [], sets = [], d, i;
   for (d = 0; d < 4; d++) {
     var rs = restr ? restr[d] : null, lst = [], st = {};
-    for (i = 0; i < cat.lista.length; i++) {
-      var e = cat.lista[i];
+    var base = (catSF && sinFame[d]) ? catSF : cat;   // §PF183: el día sin fame usa su propio catálogo
+    for (i = 0; i < base.lista.length; i++) {
+      var e = base.lista[i];
       if (rs && ((rs.n !== null && e.n !== rs.n) || (rs.f !== null && e.f !== rs.f))) continue;
       lst.push(e); st[e.k] = true;
     }
@@ -560,6 +565,30 @@ function _rsCatalogo() {
   }
   _rsCatalogo_ = { lista: lista, claves: claves };
   return _rsCatalogo_;
+}
+
+/**
+ * Catálogo del día en un clan que ya cruzó la meta (§PF183, regla de la usuaria del 2-nov-2026): los ataques de ese clan no dan fame, así que cada terna es
+ * (n ataques, b barcos, 0 de fame) con n de 0 a 4 y b de 0 a n. Los barcos tras el cruce siguen sin determinar (§PF183 actualización 7): no se supone ni que se pueda ni que no.
+ * Si el mismo jugador ataca ese día en OTRO clan Terna que no cruzó, esos ataques son de la serie de ese otro clan y dan fame como siempre.
+ */
+function _rsCatalogoSinFameDomingo() {
+  if (_rsCatalogoSinFame_) return _rsCatalogoSinFame_;
+  var lista = [], claves = {};
+  for (var n = 0; n <= 4; n++) for (var b = 0; b <= n; b++) {
+    var e = { n: n, b: b, f: 0, k: n + ',' + b + ',0' };
+    lista.push(e); claves[e.k] = true;
+  }
+  _rsCatalogoSinFame_ = { lista: lista, claves: claves };
+  return _rsCatalogoSinFame_;
+}
+
+/** [false, false, false, true] si el clan de la serie ya había cruzado la meta antes del domingo (módulo 56, _crrDomingoSinFame_); null si no. clanNombre = nombre del clan de la hoja. */
+function _rsSinFameDeSerie(temporada, semana, clanNombre) {
+  if (typeof _crrDomingoSinFame_ !== 'function') return null;
+  var tag = '';
+  for (var i = 0; i < CFG.TERNA_TAGS.length; i++) if (_resolverNombreClan(CFG.TERNA_TAGS[i]) === clanNombre) { tag = CFG.TERNA_TAGS[i]; break; }
+  return (tag && _crrDomingoSinFame_(temporada, semana, tag)) ? [false, false, false, true] : null;
 }
 
 /** ¿La solución a es mejor que b a igualdad de cambios? Reparte de domingo a jueves: más ataques, luego más fame, luego más barcos, mirando primero el domingo. */

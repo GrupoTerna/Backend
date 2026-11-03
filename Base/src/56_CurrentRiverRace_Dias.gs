@@ -31,6 +31,8 @@
 var CRR_DIAS_LETRAS = 'JVSD';   // desplazamiento 0..3 = jueves a domingo (PeriodIndex % 7 - 3)
 
 var _CRR_CACHE_SEMANA_ = {};
+var _CRR_CACHE_ARCHIVOS_ = {};
+var _CRR_CACHE_CIERRES_ = {};
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
@@ -78,6 +80,17 @@ function _crrDiasDeJugador_(temporada, semana, tag, totA, totF) {
 function _crrCapturasDeSemana_(temporada, semana) {
   var clave = Number(temporada) + '|' + Number(semana);
   if (_CRR_CACHE_SEMANA_[clave]) return _CRR_CACHE_SEMANA_[clave];
+  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(_crrArchivosDeSemana_(temporada, semana));
+  return _CRR_CACHE_SEMANA_[clave];
+}
+
+/**
+ * Lee de Drive los JSON de CurrentRiverRace de una semana en los clanes Terna y devuelve [{ nombre, datos }]. Se guarda en memoria por ejecución. Solo lee.
+ * (Separada de _crrCapturasDeSemana_ el 2-nov-2026 para que el cierre de carrera, §PF183, use los mismos archivos sin leerlos dos veces.)
+ */
+function _crrArchivosDeSemana_(temporada, semana) {
+  var clave = Number(temporada) + '|' + Number(semana);
+  if (_CRR_CACHE_ARCHIVOS_[clave]) return _CRR_CACHE_ARCHIVOS_[clave];
   var archivos = [];
   var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(semana);
   Object.keys(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_).forEach(function (k) {
@@ -98,8 +111,8 @@ function _crrCapturasDeSemana_(temporada, semana) {
       Logger.log('[CRR] No se pudo leer la carpeta de ' + k + ' (' + nT + ' ' + nS + '): ' + eClan.message);
     }
   });
-  _CRR_CACHE_SEMANA_[clave] = _crrCapturasDesdeArchivos_(archivos);
-  return _CRR_CACHE_SEMANA_[clave];
+  _CRR_CACHE_ARCHIVOS_[clave] = archivos;
+  return archivos;
 }
 
 function _crrSubcarpeta_(padre, nombre) {
@@ -127,6 +140,54 @@ function _crrCapturasDesdeArchivos_(archivos) {
     });
   });
   return porTag;
+}
+
+/**
+ * Cierre de carrera por clan (§PF183, regla de la usuaria del 2-nov-2026). Función pura.
+ * archivos = [{ nombre, datos }]. Devuelve { '#CLAN': { finishTime, nombre } } con los clanes que YA HABÍAN CRUZADO la meta antes del domingo:
+ * la captura del domingo (D) trae clan.finishTime Y periodLogs dice que el clan terminó el sábado (periodIndex - 1) con progressEndOfDay >= META_GUERRA_PROGRESO.
+ * En los 10 cruces observados el cruce fue el sábado (§PF183 actualización 8). Un cruce a mitad de otro día NO se reconoce aquí (queda sin regla hasta tener los JSON del cruce, §PF185).
+ */
+function _crrCierresDesdeArchivos_(archivos) {
+  var out = {};
+  (archivos || []).forEach(function (a) {
+    var p = _crrParsearNombre_(a && a.nombre);
+    var d = a && a.datos;
+    if (!p || p.letra !== 'D' || !d || !d.clan || !d.clan.finishTime) return;
+    var tag = String(d.clan.tag || '').trim().toUpperCase();
+    if (!tag) return;
+    var idxSabado = (d.periodIndex !== undefined && d.periodIndex !== null) ? Number(d.periodIndex) - 1 : p.periodIndex - 1;
+    var logs = d.periodLogs || [];
+    for (var l = 0; l < logs.length; l++) {
+      if (Number(logs[l].periodIndex) !== idxSabado) continue;
+      var items = logs[l].items || [];
+      for (var k = 0; k < items.length; k++) {
+        if (!items[k] || !items[k].clan || String(items[k].clan.tag || '').trim().toUpperCase() !== tag) continue;
+        if (Number(items[k].progressEndOfDay) >= META_GUERRA_PROGRESO) out[tag] = { finishTime: String(d.clan.finishTime), nombre: a.nombre };
+      }
+    }
+  });
+  return out;
+}
+
+/** Clanes que ya habían cruzado la meta antes del domingo en una semana ({ '#CLAN': { finishTime, nombre } }; ver _crrCierresDesdeArchivos_). Solo lee Drive; se guarda por ejecución. */
+function _crrCierresDeSemana_(temporada, semana) {
+  var clave = Number(temporada) + '|' + Number(semana);
+  if (_CRR_CACHE_CIERRES_[clave]) return _CRR_CACHE_CIERRES_[clave];
+  _CRR_CACHE_CIERRES_[clave] = _crrCierresDesdeArchivos_(_crrArchivosDeSemana_(temporada, semana));
+  return _CRR_CACHE_CIERRES_[clave];
+}
+
+/**
+ * ¿Los ataques del domingo en ESTE clan no dan fame? true solo si el clan ya había cruzado la meta antes del domingo (_crrCierresDeSemana_). Regla de la usuaria (2-nov-2026): afecta
+ * únicamente a los ataques hechos en el clan que cruzó; los que el mismo jugador hace el domingo en otro clan Terna que no cruzó siguen dando fame (se resuelve por clan).
+ * clanTag = tag del clan de la serie. Sin captura que lo pruebe devuelve false: no se relaja nada.
+ */
+function _crrDomingoSinFame_(temporada, semana, clanTag) {
+  var tag = String(clanTag || '').trim().toUpperCase();
+  if (!tag) return false;
+  try { return !!_crrCierresDeSemana_(temporada, semana)[tag]; }
+  catch (e) { Logger.log('[CRR] No se pudo leer el cierre de ' + clanTag + ': ' + e.message); return false; }
 }
 
 /** Nombre del archivo -> { temporada, semana, periodIndex, letra, off } o null. Ej.: 'T-03  S-02 P.I-11-V 17-07-2026 11.35 - Clan - currentriverrace.json'. Los días de entrenamiento (L, M, X) devuelven null. */
