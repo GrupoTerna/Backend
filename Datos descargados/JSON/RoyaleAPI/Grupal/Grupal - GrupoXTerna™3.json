@@ -1,7 +1,7 @@
 {
   "clan": "GrupoXTerna™3",
   "fuente": "log",
-  "fechaUltimaActualizacion": "02/11/2026",
+  "fechaUltimaActualizacion": "04/11/2026",
   "semanas": [
     {
       "temporadaInterna": 24,
@@ -769,7 +769,7 @@
         },
         {
           "tag": "#YQQUVQL0P",
-          "nombre": "",
+          "nombre": "ᴳ乂ᵀ⚜️LoloMaster",
           "ataques": 0,
           "fame": 0,
           "barcos": 0
@@ -1064,7 +1064,7 @@
         },
         {
           "tag": "#YQQUVQL0P",
-          "nombre": "",
+          "nombre": "ᴳ乂ᵀ⚜️LoloMaster",
           "ataques": 0,
           "fame": 0,
           "barcos": 0
@@ -1791,6 +1791,48 @@
       "semana": 3,
       "jugadores": [
         {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YJL20Y09",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#98VY80RGV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
           "tag": "#U8G029GUQ",
           "nombre": "ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️",
           "ataques": 0,
@@ -1800,6 +1842,105 @@
         {
           "tag": "#UJY0PGPUV",
           "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "temporadaSupercell": "2026-10",
+      "semana": 4,
+      "jugadores": [
+        {
+          "tag": "#20P2UP80UY",
+          "nombre": "ᴳ乂ᵀ ⚜️ SHAKA",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20YJL20Y09",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#8VU0Y9LJ0",
+          "nombre": "Yisus Craiz",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#900PCRQ2R",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#90QYJQRQ8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#98VY80RGV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UJY0PGPUV",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0UJ0RPVP",
+          "nombre": "ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V9P20U8RC",
+          "nombre": "kayserleandro",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VC09Q8JLV",
+          "nombre": "ᴳ乂ᵀ ⚜️ Lidel",
           "ataques": 0,
           "fame": 0,
           "barcos": 0

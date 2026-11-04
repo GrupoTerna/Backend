@@ -1,7 +1,7 @@
 {
   "clan": "Mini乂Ternas™",
   "fuente": "log",
-  "fechaUltimaActualizacion": "02/11/2026",
+  "fechaUltimaActualizacion": "04/11/2026",
   "semanas": [
     {
       "temporadaInterna": 23,
@@ -2312,8 +2312,142 @@
           "barcos": 0
         },
         {
+          "tag": "#2098PGRCPC",
+          "nombre": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cali",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
           "tag": "#URRG2QG20",
           "nombre": "ᴳ乂ᵀ ⚜️ Calito",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "nombre": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVCV0QR8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "temporadaSupercell": "2026-10",
+      "semana": 4,
+      "jugadores": [
+        {
+          "tag": "#20080J8GRY",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#2098PGRCPC",
+          "nombre": "ᴳ乂ᵀ ⚜️ ムＮＤＲＥ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20LUCQG0LJ",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cali",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#20P80C9229",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#LYVJU9UJJ",
+          "nombre": "fggij09",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#URRG2QG20",
+          "nombre": "ᴳ乂ᵀ ⚜️ Calito",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V0J90R2V2",
+          "nombre": "ᴳ乂ᵀ ⚜️ Αντρέ¹⁸",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#V8LPC909C",
+          "nombre": "ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VJQLY8JV8",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#VRVCV0QR8",
+          "nombre": "ᴳ乂ᵀ ⚜️ Carlinho",
           "ataques": 0,
           "fame": 0,
           "barcos": 0

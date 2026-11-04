@@ -1,0 +1,23 @@
+{
+  "tag": "#2RPYQLGPU",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "04/11/2026",
+  "registros": [
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "semana": 4,
+      "clan": "Grupo乂Terna™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "clanTag": "#GCRG8L00",
+      "comentario": ""
+    }
+  ],
+  "reenumeracionId": "1793146932920"
+}
