@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 14:27:28 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 14:47:44 */
 
 
 
@@ -22445,6 +22445,11 @@ function repararClanConTagGuerraInforme() { _repararClanConTagGuerra_(false); }
 
 function repararClanConTagGuerraAplicar() { _repararClanConTagGuerra_(true); }
 
+// Borra, de Backup_Guerra.csv, las filas «Reconstruido» con el tag en Clan que ya existen completas con el nombre del clan y no aportan ningun dato (PF355): informe primero; aplicar borra y guarda antes un respaldo. [→ Contexto_Base_Web.md §PF355]
+function borrarDuplicadasClanConTagGuerraInforme() { _borrarDuplicadasClanConTagGuerra_(false); }
+
+function borrarDuplicadasClanConTagGuerraAplicar() { _borrarDuplicadasClanConTagGuerra_(true); }
+
 /**
  * rellenarTemporada2Historico() [→ Contexto_Base_Web.md §17B159]
  */
@@ -24724,6 +24729,92 @@ function _repararClanConTagGuerra_(aplicar) {
       '. Duplicadas (no se tocan): ' + duplicadas + '. Sin nombre en el respaldo: ' + sinNombre + '. ' +
       (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que reparar.') +
       (aplicar ? '' : ' (No se escribio nada; correr repararClanConTagGuerraAplicar() para aplicar.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * _borrarDuplicadasClanConTagGuerra_(aplicar) [→ Contexto_Base_Web.md §PF355]
+ * Complemento de _repararClanConTagGuerra_(): las filas con el tag en Clan que esa funcion no renombra porque ya hay otra con el mismo Tag + Temporada + Semana + PeriodIndex y el nombre del clan.
+ * Una fila con tag se borra SOLO si: es «Reconstruido»; su tag esta en CFG.CLAN_NOMBRES_FALLBACK; existe la fila hermana con el nombre; y la fila con tag no aporta nada que la hermana no tenga
+ * (cada columna con valor en la fila con tag es igual en la hermana; no se comparan N°, Clan, Origen, la hora de Fecha ni las dos Merma, que son derivadas y la sincronizacion las recalcula).
+ * Cualquier otra se informa y no se toca. Tope: BORRAR_TOPE filas por corrida; si salen mas, no se borra nada. Solo Backup_Guerra.csv, no la hoja. Informe: Reparacion_BorrarDuplicadasTag_Guerra <fecha>.csv.
+ */
+function _borrarDuplicadasClanConTagGuerra_(aplicar) {
+  var BORRAR_TOPE = 50;
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[BorrarDupTag] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var t0 = Date.now();
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (!csvText) { Logger.log('[BorrarDupTag] Backup_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length < 2) { Logger.log('[BorrarDupTag] Backup_Guerra.csv no tiene filas de datos; no se hace nada.'); return; }
+    var encabezado = parsed[0], filas = parsed.slice(1);
+    if (String(encabezado[GC.CLAN - 1] || '').trim() !== 'Clan' || String(encabezado[GC.TAG - 1] || '').trim() !== 'Tag') {
+      Logger.log('[BorrarDupTag] El encabezado de Backup_Guerra.csv no tiene el orden actual de columnas (Clan en la columna ' + GC.CLAN + ', Tag en la ' + GC.TAG + '); no se toca nada.');
+      return;
+    }
+    for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
+
+    var nombres = CFG.CLAN_NOMBRES_FALLBACK || {};
+    var celda = function (f, col) { return String(f[col - 1] || '').trim(); };
+    var claveDe = function (f, clan) { return [celda(f, GC.TAG).toUpperCase(), clan, celda(f, GC.TEMPORADA), celda(f, GC.SEMANA), celda(f, GC.PERIOD_IDX)].join('|'); };
+    var porClave = {};
+    filas.forEach(function (f, idx) {
+      var clan = celda(f, GC.CLAN);
+      if (clan.charAt(0) === '#') return;
+      var k = claveDe(f, clan);
+      if (!porClave[k]) porClave[k] = [];
+      porClave[k].push(idx);
+    });
+    var omitir = {};
+    [GC.NUM, GC.CLAN, GC.ORIGEN, GC.FECHA, GC.MERMA_HOY, GC.MERMA_SEM].forEach(function (c) { omitir[c] = true; });
+
+    var informe = [['Tipo', 'N°', 'Temporada', 'Semana', 'Tag', 'Nombre', 'PeriodIndex', 'Clan actual', 'N° de la fila completa', 'Detalle']];
+    var aBorrar = {}, nBorrar = 0, noTocar = 0;
+    filas.forEach(function (f, idx) {
+      var clan = celda(f, GC.CLAN);
+      if (clan.charAt(0) !== '#') return;
+      var base = [f[GC.NUM - 1], f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.PERIOD_IDX - 1], clan];
+      var nuevo = nombres[clan.toUpperCase()];
+      if (!nuevo) { noTocar++; informe.push(['SIN NOMBRE (no se toca)'].concat(base, ['', 'el tag no esta en CFG.CLAN_NOMBRES_FALLBACK'])); return; }
+      if (celda(f, GC.ORIGEN) !== 'Reconstruido') { noTocar++; informe.push(['NO RECONSTRUIDA (no se toca)'].concat(base, ['', 'solo se borran filas con Origen Reconstruido; esta dice ' + celda(f, GC.ORIGEN)])); return; }
+      var hermanas = porClave[claveDe(f, nuevo)] || [];
+      if (!hermanas.length) { noTocar++; informe.push(['SIN HERMANA (no se toca)'].concat(base, ['', 'no hay fila con el nombre del clan; para esta sirve repararClanConTagGuerraAplicar()'])); return; }
+      var elegida = -1, sobrantes = [];
+      for (var h = 0; h < hermanas.length && elegida < 0; h++) {
+        var g = filas[hermanas[h]], dif = [];
+        for (var c = 1; c <= GUERRA_TOTAL_COLS; c++) {
+          if (omitir[c]) continue;
+          var va = celda(f, c);
+          if (va !== '' && va !== celda(g, c)) dif.push(encabezado[c - 1]);
+        }
+        if (celda(f, GC.FECHA).slice(0, 10) !== celda(g, GC.FECHA).slice(0, 10)) dif.push(encabezado[GC.FECHA - 1]);
+        if (!dif.length) elegida = hermanas[h]; else sobrantes = dif;
+      }
+      if (elegida < 0) { noTocar++; informe.push(['DISTINTA (no se toca)'].concat(base, [filas[hermanas[0]][GC.NUM - 1], 'trae valores que la fila completa no tiene: ' + sobrantes.join(', ')])); return; }
+      aBorrar[idx] = true; nBorrar++;
+      informe.push(['Borrar'].concat(base, [filas[elegida][GC.NUM - 1], 'no aporta nada que la fila N° ' + filas[elegida][GC.NUM - 1] + ' no tenga']));
+    });
+
+    var nombreInforme = 'Reparacion_BorrarDuplicadasTag_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
+
+    var excede = nBorrar > BORRAR_TOPE;
+    if (aplicar && nBorrar && !excede) {
+      _saveCSVToDrive('Backup_Guerra ANTES de borrar duplicadas con tag ' + marca + '.csv', csvText);
+      var quedan = filas.filter(function (f, idx) { return !aBorrar[idx]; });
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(quedan)));
+    }
+
+    Logger.log('[BorrarDupTag] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). ' +
+      'Filas con tag en Clan: ' + (nBorrar + noTocar) + '. A borrar: ' + nBorrar + (aplicar && nBorrar && !excede ? ' (borradas)' : '') + '. No se tocan: ' + noTocar + '. ' +
+      (excede ? 'NO SE BORRO NADA: salen mas de ' + BORRAR_TOPE + ' candidatas, revisar el informe. ' : '') +
+      (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que borrar.') +
+      (aplicar ? '' : ' (No se escribio nada; correr borrarDuplicadasClanConTagGuerraAplicar() para aplicar.)'));
   } finally {
     lock.releaseLock();
   }
