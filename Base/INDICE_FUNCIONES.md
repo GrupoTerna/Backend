@@ -729,9 +729,9 @@ Ninguno.
 | `_extraerValoresConLinksReales` | función | 05_Backup_CSV.gs | 1724 | Contexto_Base_Web.md §05B071 |
 | `_FAME_CATALOGO_DIA_CACHE_` | global | 18_CorreccionGuerra.gs | 179 | Contexto_Base_Web.md §PF122 |
 | `_fameCatalogoDia_` | función | 18_CorreccionGuerra.gs | 1355 | Contexto_Base_Web.md §PF122 |
-| `_fameCrr52_` | función | 55_Reparar_DiasConExceso.gs | 744 |  |
-| `_fameCrr52Planificar_` | función | 55_Reparar_DiasConExceso.gs | 827 |  |
-| `_fameCrr52Verificar_` | función | 55_Reparar_DiasConExceso.gs | 875 |  |
+| `_fameCrr52_` | función | 55_Reparar_DiasConExceso.gs | 745 |  |
+| `_fameCrr52Planificar_` | función | 55_Reparar_DiasConExceso.gs | 828 |  |
+| `_fameCrr52Verificar_` | función | 55_Reparar_DiasConExceso.gs | 876 |  |
 | `_fameCumpleRequisito` | función | 28_Torneos_Docs.gs | 894 | Contexto_Base_Web.md §28B087 |
 | `_fameDescomposicionesDeCifra_` | función | 18_CorreccionGuerra.gs | 1346 | Contexto_Base_Web.md §18B008 |
 | `_fameDescomposicionesDia_` | función | 18_CorreccionGuerra.gs | 1280 | Contexto_Base_Web.md §18B004 |
