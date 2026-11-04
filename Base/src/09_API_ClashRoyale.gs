@@ -2481,28 +2481,22 @@ function _getTagsAdmin() {
  * Obtiene los tags de jugadores que tienen V_Guerra vacío en la hoja Directorio. [→ Contexto_Base_Web.md §09B129]
  */
 function _getTagsConVGuerraVacia() {
+  // PF346 (4-nov-2026): V. Guerra NO está en la hoja Directorio física (29 columnas, IC); vive en la hoja Players (PC.V_GUERRA). Antes se
+  // leía la columna 15 del Directorio (Etiqueta) por no encontrar el encabezado. Ahora: tags del Directorio cuya fila de Players
+  // tiene V. Guerra vacío, o que aún no tienen fila en Players. [→ Contexto_Base_Web.md §PF346]
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
   if (!sh || sh.getLastRow() < 2) return [];
 
-  // Leer encabezados de la fila 1 para obtener índices por nombre (no por posición fija)
-  var numCols = sh.getLastColumn();
-  var headerRow = sh.getRange(1, 1, 1, numCols).getValues()[0];
-  var idxTag = DC.TAG - 1, idxVGuerra = DC.V_GUERRA - 1;
-  for (var h = 0; h < headerRow.length; h++) {
-    var hName = String(headerRow[h] || '').trim();
-    if (hName === 'Tag')      idxTag     = h;
-    if (hName === 'V_Guerra') idxVGuerra = h;
-  }
-
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, numCols).getValues();
+  var tagsDir = sh.getRange(2, IC.TAG, sh.getLastRow() - 1, 1).getValues();
+  var playersPorTag = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.PLAYERS, PC.TAG - 1, PLAYERS_TOTAL_COLS);
   var tags = [];
-  for (var i = 0; i < data.length; i++) {
-    var tag     = String(data[i][idxTag]     || '').trim();
-    var vGuerra = data[i][idxVGuerra];
-    if (tag && (vGuerra === '' || vGuerra === null || vGuerra === undefined)) {
-      tags.push(tag);
-    }
+  for (var i = 0; i < tagsDir.length; i++) {
+    var tag = String(tagsDir[i][0] || '').trim();
+    if (!tag) continue;
+    var filaPlayers = playersPorTag[tag.toUpperCase()];
+    var vGuerra = filaPlayers ? filaPlayers[PC.V_GUERRA - 1] : '';
+    if (vGuerra === '' || vGuerra === null || vGuerra === undefined) tags.push(tag);
   }
   return tags;
 }
