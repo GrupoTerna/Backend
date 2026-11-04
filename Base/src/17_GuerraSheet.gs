@@ -5185,6 +5185,15 @@ function _purgarTemporadasAnterioresGuerra(sh, temporadaActual) {
     ' en la hoja. Fusionando con Backup_Guerra.csv ANTES de purgar, para no perder nada.');
   _syncGuerraCSV(sh); // asegura que TODO lo que hay en la hoja ahora mismo (incluidas las filas viejas) ya quedó en el CSV
 
+  // 03-nov-2026 (pedido de la usuaria: «precachear la última semana de guerra de la temporada anterior»): las filas viejas todavía están en `data`, así que aquí se deja lista la instantánea de la última guerra para «Ingresos recientes» (37_Web_API.gs) y su primera carga tras el cambio de temporada no tiene que leer Backup_Guerra.csv. Es solo una ayuda de velocidad: si falla, la web la arma sola desde el CSV. [→ Contexto_Base_Web.md §PF125]
+  try {
+    var tVigentePrecache = Math.max.apply(null, Object.keys(tempsSet).map(Number));
+    var snapPrecache = _webUltimaGuerraPreviaDesdeFilas_(data, tVigentePrecache);
+    if (snapPrecache) _webUltimaGuerraPreviaGuardar_(snapPrecache);
+  } catch (ePrecacheUG) {
+    Logger.log('[Guerra] no se pudo precalentar la última guerra previa (la web la arma sola desde el CSV): ' + ePrecacheUG);
+  }
+
   var filasActuales = [];
   for (var i = 0; i < data.length; i++) {
     if (tempsSet[String(data[i][GC.TEMPORADA - 1] || '')]) filasActuales.push(data[i]);
