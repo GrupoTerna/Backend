@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 03/11/2026 21:24:33 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 03/11/2026 22:44:21 */
 
 
 
@@ -2934,6 +2934,9 @@ var BATTLELOGCHESTS_API_ENABLED = false;
 
 // INTERRUPTOR SUPRIMIR_PLAYERS_TEMPORAL (Fase 1 del plan de cambios) [→ Contexto_Base_Web.md §01B072]
 var SUPRIMIR_PLAYERS_TEMPORAL = false;
+
+// INTERRUPTOR PLAYERS_SOLO_INGRESOS_TEMPORAL (PF345, 4-nov-2026): excepción de SUPRIMIR_PLAYERS_TEMPORAL solo para el botón «Actualizar» de «Ingresos recientes» (41_Web_ActualizarRoster.gs). Con ambos en true, _fetchPlayersData() consulta /players ÚNICAMENTE de las cuentas que hoy califican como ingreso reciente (_getTagsIngresosRecientes()); ni admins ni el resto del clan. Quien lo active debe volver a ponerlo en false junto con SUPRIMIR_PLAYERS_TEMPORAL. [→ Contexto_Base_Web.md §PF345]
+var PLAYERS_SOLO_INGRESOS_TEMPORAL = false;
 
 // IDs DE CARPETAS DRIVE [→ Contexto_Base_Web.md §01B073]
 var DRIVE_FOLDER_ID_CSV  = '1rTp5gXQ0ydnkM3eg6wy2vfOrpUp9GOsR';
@@ -12489,7 +12492,9 @@ function _fetchAllClanData() {
  */
 function _fetchPlayersData() {
   // FASE 1 (plan de cambios, ver 01_Config_Global.gs): interruptor de "esta [→ Contexto_Base_Web.md §09B115]
-  if (SUPRIMIR_PLAYERS_TEMPORAL === true) {
+  // PF345 (4-nov-2026): el botón «Actualizar» de «Ingresos recientes» activa también PLAYERS_SOLO_INGRESOS_TEMPORAL y entonces SOLO se piden las cuentas que califican como ingreso reciente (más abajo).
+  var soloIngresosRecientes = (SUPRIMIR_PLAYERS_TEMPORAL === true && PLAYERS_SOLO_INGRESOS_TEMPORAL === true);
+  if (SUPRIMIR_PLAYERS_TEMPORAL === true && !soloIngresosRecientes) {
     Logger.log('[API] _fetchPlayersData: SUPRIMIR_PLAYERS_TEMPORAL=true, se omite POR COMPLETO la consulta a /players (ni siquiera admins).');
     return false;
   }
@@ -12507,8 +12512,23 @@ function _fetchPlayersData() {
 
   var tagsToFetch = [];
 
+  if (soloIngresosRecientes) {
+    // PF345: solo los ingresos recientes que siguen en un clan Terna ahora mismo; no se piden admins ni el resto, sin importar PLAYERS_API_ENABLED.
+    var tagsIngresos = _getTagsIngresosRecientes();
+    var miembrosVigentes = {};
+    for (var iv = 0; iv < CFG.TERNA_TAGS.length; iv++) {
+      var datosClanVig = CACHE_CLAN_DATA[CFG.TERNA_TAGS[iv]];
+      var miembrosClanVig = (datosClanVig && datosClanVig.members) || [];
+      for (var jv = 0; jv < miembrosClanVig.length; jv++) miembrosVigentes[miembrosClanVig[jv].tag] = true;
+    }
+    for (var ti = 0; ti < tagsIngresos.length; ti++) {
+      if (miembrosVigentes[tagsIngresos[ti]] && tagsToFetch.indexOf(tagsIngresos[ti]) < 0) tagsToFetch.push(tagsIngresos[ti]);
+    }
+    Logger.log('[API] /players solo ingresos recientes (PF345): ' + tagsToFetch.length + ' cuentas de ' + tagsIngresos.length + ' que califican.');
+  }
+
   // FASE 12 (18/07/2026): los admins se cargan PRIMERO, antes que los [→ Contexto_Base_Web.md §09B116]
-  if (PLAYERS_API_ENABLED !== false) {
+  if (!soloIngresosRecientes && PLAYERS_API_ENABLED !== false) {
     var tagsAdmin = _getTagsAdmin();
     for (var a = 0; a < tagsAdmin.length; a++) {
       if (tagsToFetch.indexOf(tagsAdmin[a]) < 0) tagsToFetch.push(tagsAdmin[a]);
@@ -12522,7 +12542,9 @@ function _fetchPlayersData() {
 
     var members = clanData.members || [];
 
-    if (PLAYERS_API_ENABLED === 'partial') {
+    if (soloIngresosRecientes) {
+      // PF345: la lista ya se armó arriba; este bucle no agrega nada.
+    } else if (PLAYERS_API_ENABLED === 'partial') {
       // Solo miembros con V_Guerra vacío en la hoja Directorio
       var vGuerraVacios = _getTagsConVGuerraVacia();
       for (var j = 0; j < members.length; j++) {
@@ -12637,7 +12659,8 @@ function _fetchPlayersData() {
   // MISMA corrida lo recuperen. Lo borra _continuarRunUpdate()/_continuarRunAll() al terminar el ciclo, y
   // _cargarProgresoPlayers() lo descarta si tiene más de CFG.PLAYERS_PROGRESO_MAX_EDAD_MS. [→ Contexto_Base_Web.md §PF140]
   if (pendientes.length > 0) _guardarProgresoPlayers(CACHE_CLAN_DATA._players);
-  _playersCompletoEnEstaEjecucion = true;
+  if (!soloIngresosRecientes) _playersCompletoEnEstaEjecucion = true; // PF345: la consulta parcial de ingresos recientes no cuenta como /players completo
+
   Logger.log('[API] /players completado. Datos obtenidos: ' + Object.keys(CACHE_CLAN_DATA._players).length + resumenErrores);
   return true;
 }
@@ -12733,30 +12756,45 @@ function _getTagsAdmin() {
  * Obtiene los tags de jugadores que tienen V_Guerra vacío en la hoja Directorio. [→ Contexto_Base_Web.md §09B129]
  */
 function _getTagsConVGuerraVacia() {
+  // PF346 (4-nov-2026): V. Guerra NO está en la hoja Directorio física (29 columnas, IC); vive en la hoja Players (PC.V_GUERRA). Antes se
+  // leía la columna 15 del Directorio (Etiqueta) por no encontrar el encabezado. Ahora: tags del Directorio cuya fila de Players
+  // tiene V. Guerra vacío, o que aún no tienen fila en Players. [→ Contexto_Base_Web.md §PF346]
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.DIRECTORIO);
   if (!sh || sh.getLastRow() < 2) return [];
 
-  // Leer encabezados de la fila 1 para obtener índices por nombre (no por posición fija)
-  var numCols = sh.getLastColumn();
-  var headerRow = sh.getRange(1, 1, 1, numCols).getValues()[0];
-  var idxTag = DC.TAG - 1, idxVGuerra = DC.V_GUERRA - 1;
-  for (var h = 0; h < headerRow.length; h++) {
-    var hName = String(headerRow[h] || '').trim();
-    if (hName === 'Tag')      idxTag     = h;
-    if (hName === 'V_Guerra') idxVGuerra = h;
-  }
-
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, numCols).getValues();
+  var tagsDir = sh.getRange(2, IC.TAG, sh.getLastRow() - 1, 1).getValues();
+  var playersPorTag = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.PLAYERS, PC.TAG - 1, PLAYERS_TOTAL_COLS);
   var tags = [];
-  for (var i = 0; i < data.length; i++) {
-    var tag     = String(data[i][idxTag]     || '').trim();
-    var vGuerra = data[i][idxVGuerra];
-    if (tag && (vGuerra === '' || vGuerra === null || vGuerra === undefined)) {
-      tags.push(tag);
-    }
+  for (var i = 0; i < tagsDir.length; i++) {
+    var tag = String(tagsDir[i][0] || '').trim();
+    if (!tag) continue;
+    var filaPlayers = playersPorTag[tag.toUpperCase()];
+    var vGuerra = filaPlayers ? filaPlayers[PC.V_GUERRA - 1] : '';
+    if (vGuerra === '' || vGuerra === null || vGuerra === undefined) tags.push(tag);
   }
   return tags;
+}
+
+/**
+ * Tags de las cuentas que hoy califican como «ingreso reciente» (el mismo criterio del panel: Activo, en un clan Terna, y V. Guerra vacío
+ * o Fecha_ing de hace 7 días o menos). Lee el Directorio reconstruido con Players (V. Guerra está en la hoja Players, no en la física
+ * del Directorio), así que es la misma lista que muestra «Ingresos recientes». Devuelve [] si falla la lectura. [→ Contexto_Base_Web.md §PF345]
+ */
+function _getTagsIngresosRecientes() {
+  try {
+    var dataDir = _leerDirectorioFisicoComoDC(_getSs());
+    var hoy = new Date();
+    var tags = [];
+    for (var i = 0; i < dataDir.length; i++) {
+      var tag = _tagIngresoRecienteDeFilaDir_(dataDir[i], hoy);
+      if (tag && tags.indexOf(tag) < 0) tags.push(tag);
+    }
+    return tags;
+  } catch (e) {
+    Logger.log('[API] _getTagsIngresosRecientes: no se pudo leer el Directorio: ' + e.message);
+    return [];
+  }
 }
 
 /**
@@ -53058,6 +53096,26 @@ function _webDiasOpcionalesIngresoGuerra_(clanNombre, ref, memo) {
   return res;
 }
 
+// Tag de una fila del Directorio (formato DC) si califica como «ingreso reciente»; '' si no. Criterio de siempre del PASO 1 de _construirIngresosRecientesUnificado(): estado Activo, en un clan Terna vigente y (V. Guerra vacío o Fecha_ing de hace 7 días o menos). Lo reutiliza _getTagsIngresosRecientes() (09_API_ClashRoyale.gs) para que el botón «Actualizar» pida /players de las mismas cuentas que muestra el panel. [→ Contexto_Base_Web.md §PF345]
+function _tagIngresoRecienteDeFilaDir_(filaDir, hoy) {
+  var LIMITE_DIAS_NUEVO = 7;
+  if (String(filaDir[DC.ESTADO - 1] || '').trim() !== 'Activo') return '';
+
+  var clanTagDir = String(filaDir[DC.CLAN_TAG - 1] || '').trim();
+  if (CFG.TERNA_TAGS.indexOf(clanTagDir) < 0) return ''; // ya no está en un clan Terna
+
+  var vGuerra = String(filaDir[DC.V_GUERRA - 1] || '').trim();
+  var fechaIng = filaDir[DC.FECHA_ING - 1];
+  var esReciente = false;
+  if (fechaIng instanceof Date && !isNaN(fechaIng.getTime())) {
+    var diasDesdeIngreso = (hoy - fechaIng) / 86400000;
+    esReciente = diasDesdeIngreso >= 0 && diasDesdeIngreso <= LIMITE_DIAS_NUEVO;
+  }
+  if (vGuerra !== '' && !esReciente) return ''; // no califica como "reciente"
+
+  return String(filaDir[DC.TAG - 1] || '').trim();
+}
+
 // _construirIngresosRecientesUnificado(): FIX (01-sep-2026, pedido usuario — "haz que trabajen juntos, primero se usa la información de directorio, eso no es negociable en ambas. luego se verifica, si hay información de tampermonkey, se implementa, sino se queda con lo… [→ Contexto_Base_Web.md §37B257]
 function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, dataGuerraPrefetch, tDash) {
   var ss = _getSs();
@@ -53097,25 +53155,10 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
     if (celAdm) celularesAdminIR[celAdm] = true;
   }
   var hoy = new Date();
-  var LIMITE_DIAS_NUEVO = 7;
   var candidatosBase = [];
   for (var k = 0; k < dataDir.length; k++) {
     var filaDir0 = dataDir[k];
-    if (String(filaDir0[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
-
-    var clanTagDir0 = String(filaDir0[DC.CLAN_TAG - 1] || '').trim();
-    if (CFG.TERNA_TAGS.indexOf(clanTagDir0) < 0) continue; // ya no está en un clan Terna
-
-    var vGuerra0 = String(filaDir0[DC.V_GUERRA - 1] || '').trim();
-    var fechaIng0 = filaDir0[DC.FECHA_ING - 1];
-    var esReciente0 = false;
-    if (fechaIng0 instanceof Date && !isNaN(fechaIng0.getTime())) {
-      var diasDesdeIngreso0 = (hoy - fechaIng0) / 86400000;
-      esReciente0 = diasDesdeIngreso0 >= 0 && diasDesdeIngreso0 <= LIMITE_DIAS_NUEVO;
-    }
-    if (vGuerra0 !== '' && !esReciente0) continue; // no califica como "reciente"
-
-    var tagDir0 = String(filaDir0[DC.TAG - 1] || '').trim();
+    var tagDir0 = _tagIngresoRecienteDeFilaDir_(filaDir0, hoy); // PF345: el criterio vive en un helper para que el botón «Actualizar» consulte /players de las mismas cuentas
     if (!tagDir0) continue;
 
     candidatosBase.push({ tagLimpio: cleanTag(tagDir0), filaDir: filaDir0 });
@@ -53522,6 +53565,10 @@ function _webPerfilJugador(tagBuscado, opciones) {
   // ---- Ataques de la semana en curso + historial de Ranking en el clan, ambos desde la hoja Guerra (una sola pasada) ----; FIX 04-sep-2026 (Ranking del clan de perfil.html): la gráfica esperaba ext.historialRanking = [{semana, ranking}, ...] y el backend solo mandaba ext.rankingClan (el actual); GC.RANKING existe fila por fila en Guerra (un valor por Tag y día, GUERRA_HEADERS en 17_GuerraSheet.gs) y como la hoja solo retiene la TEMPORADA ACTUAL (el resto se purga a Backup_Guerra.csv, _purgarTemporadasAnterioresGuerra()), el historial cubre los días ya jugados de la temporada en curso; ampliarlo a varias temporadas requeriría leer Backup_Guerra.csv y no vale la pena para una vista rápida. FIX 15-sep-2026 (barrido web->CSV): la lectura pasa por _obtenerFilasConFallbackCSV() (01_Config_Global.gs), mismo helper y Backup_Guerra.csv que _construirIngresosRecientesUnificado()/_webAportesRecientes(), para caer al respaldo si la hoja Guerra no está disponible; sigue sin ampliarse a varias temporadas porque el CSV normalmente contiene la misma temporada actual. [→ Contexto_Base_Web.md §37B120]
   var ctx = _getCtx();
   var ataquesSemana = 0, fameSemana = 0, barcosSemana = 0;
+  // 03-nov-2026 (pedido usuaria, revisión de secciones que no congelaban): de lunes a miércoles (entrenamiento) la semana nueva todavía no tiene días de guerra, así que guerraSemana salía en 0 y ataquesMax en 0 (el comparador de directorio.html y la cabecera de perfil.html mostraban 0 sin tope). Se congela con la misma idea de §PF125: referencia = el domingo anterior (periodIndex - periodIndex%7 - 1), con la temporada más alta que no sea futura (el periodIndex se repite entre temporadas). Solo cambia lo que se MUESTRA en guerraSemana; ataquesSemana/fameSemana/barcosSemana siguen siendo los de la semana en curso porque alimentan _webProgresoRequisitos() junto con los ataques exentos, que sí son de la semana en curso. [→ Contexto_Base_Web.md §PF125]
+  var perfilCongelado = !esDiaGuerraIdx(ctx.periodIndex);
+  var perfilPIdxDomingo = Number(ctx.periodIndex) - (Number(ctx.periodIndex) % 7) - 1;
+  var perfilCongTemp = -1, perfilCongAtaques = 0, perfilCongFame = 0, perfilCongBarcos = 0;
   var historialRanking = [];
   var diasGuerraSemana = {}; // 19-sep-2026: { offsetDia(0-3): {pIdx, clan} } de la semana en curso, para los exentos
   // FIX 23-sep-2026 (perfil.html, minigráficos "Ataques de la semana" y "Fame de la semana", eje X J/V/S/D): { offsetDia(0-3): {ataques, puntaje, barcos} } de la semana en curso, valor de CADA día suelto (no el acumulado ataquesSemana/fameSemana/barcosSemana); 'ataques' sale de GC.ATAQUES_HOY (GC.ATAQUES_SEM es acumulado); 'puntaje' (Fame) y 'barcos' de GC.FAME/GC.BARCOS; CORREGIDO 11-oct-2026: esas dos columnas son ACUMULADAS de la semana (no del día), se convierten con _diarioDesdeAcumuladoGuerra_() (antes se decía que eran del día; ver guerra.html "Valores diarios", "Sem 1 Puntaje trae 500 400 700 600", y en _webHistorialGuerraComparador()); mismo filtro "esta semana" (ctx.temporada + ctx.sectionIndex) que diasGuerraSemana, por lo que el dato se ve congelado de lunes a miércoles hasta que empiece la guerra del jueves y ctx.sectionIndex avance. [→ Contexto_Base_Web.md §37B121]
@@ -53589,6 +53636,15 @@ function _webPerfilJugador(tagBuscado, opciones) {
         };
       }
 
+      if (perfilCongelado && Number(dataGuerra[i][GC.PERIOD_IDX - 1]) === perfilPIdxDomingo) {
+        var tempCongPerfil = Number(dataGuerra[i][GC.TEMPORADA - 1]) || 0;
+        if (tempCongPerfil && tempCongPerfil <= Number(ctx.temporada) && tempCongPerfil >= perfilCongTemp) {
+          perfilCongTemp    = tempCongPerfil;
+          perfilCongAtaques = Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0;
+          perfilCongFame    = Number(dataGuerra[i][GC.FAME        - 1]) || 0;
+          perfilCongBarcos  = Number(dataGuerra[i][GC.BARCOS      - 1]) || 0;
+        }
+      }
       if (Number(dataGuerra[i][GC.PERIOD_IDX - 1]) !== ctx.periodIndex) continue;
       // ATAQUES_SEM ya viene acumulado por el proceso de guerra (17_GuerraSheet.gs): se toma tal cual, sin volver a sumar por día. [→ Contexto_Base_Web.md §37B126]
       ataquesSemana = Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0;
@@ -53637,7 +53693,10 @@ function _webPerfilJugador(tagBuscado, opciones) {
       // FIX 03-sep-2026 ("Vigencia [última conexión] debe mostrarse también en el perfil"): mismo criterio que el fix gemelo en _webRosterCalcular/_construirIngresosRecientesUnificado; la columna ya existía en Directorio (DC.VIGENCIA), solo faltaba exponerla. [→ Contexto_Base_Web.md §37B130]
       vigencia: fila[DC.VIGENCIA - 1] || '',
       // FIX 05-sep-2026 (Cara a cara, ver _calcAtaquesMaxSemana()): ataquesMax es el tope esperado de ataques a estas alturas de la semana de guerra (0 en día de entrenamiento, sin tope que mostrar). [→ Contexto_Base_Web.md §37B131]
-      guerraSemana: { ataques: ataquesSemana, fame: fameSemana, barcos: barcosSemana, ataquesMax: _calcAtaquesMaxSemana(ctx.periodIndex) },
+      // 03-nov-2026: en entrenamiento (lunes a miércoles) salen los valores del domingo anterior y ataquesMax = 16 (tope de la semana completa); congelada:true le dice al frontend que rotule «Última guerra». Si la cuenta no jugó ese domingo, salen 0 y es correcto. [→ Contexto_Base_Web.md §PF125]
+      guerraSemana: perfilCongelado
+        ? { ataques: perfilCongAtaques, fame: perfilCongFame, barcos: perfilCongBarcos, ataquesMax: _calcAtaquesMaxSemana(perfilPIdxDomingo), congelada: true }
+        : { ataques: ataquesSemana, fame: fameSemana, barcos: barcosSemana, ataquesMax: _calcAtaquesMaxSemana(ctx.periodIndex), congelada: false },
       // FIX 23-sep-2026: desglose diario J/V/S/D para los dos minigráficos nuevos de perfil.html (ver su construcción más arriba); null si esta semana todavía no tiene ningún día de guerra jugado (p. ej. entrenamiento del lunes), el frontend oculta esos cuadritos. [→ Contexto_Base_Web.md §37B132]
       guerraSemanaDias: guerraSemanaDias,
       progreso: progreso,
@@ -61268,13 +61327,17 @@ function _webActualizarRosterContinuar() {
 
   var tipo = _webActRosterTipo_(est.tipo); // §PF181
   var nombresPasos = _webActRosterNombresPasos_(tipo);
-  if (tipo === 'roster') SUPRIMIR_PLAYERS_TEMPORAL = true; // variable global en memoria: se pone en cada tanda (ver runGuerraRapido); Pendientes/Mensajes no usan /players
+  if (tipo === 'roster') {
+    SUPRIMIR_PLAYERS_TEMPORAL = true; // variable global en memoria: se pone en cada tanda (ver runGuerraRapido); Pendientes/Mensajes no usan /players
+    PLAYERS_SOLO_INGRESOS_TEMPORAL = true; // PF345: excepción: del resto del clan no se pide /players, pero sí de los ingresos recientes
+  }
   var completo;
   try {
     completo = _ejecutarPorTandas(WEB_ACTROSTER_ID_TANDAS, _webActRosterPasos_(tipo), CFG.RUNGUERRARAPIDO_PRESUPUESTO_MS,
       WEB_ACTROSTER_HANDLER_CONTINUAR, nombresPasos);
   } catch (e) {
     SUPRIMIR_PLAYERS_TEMPORAL = false;
+    PLAYERS_SOLO_INGRESOS_TEMPORAL = false;
     Logger.log('[ActRoster] ERROR en la solicitud ' + est.id + ': ' + e + (e && e.stack ? ' | ' + e.stack : ''));
     _webActRosterLimpiarCadena_(true);
     _webActRosterCerrar_(est, 'error', (tipo === 'mensajes' ? 'La regeneración falló' : 'La actualización falló') + '. Intenta de nuevo; si se repite, avisa al administrador.');
@@ -61296,6 +61359,7 @@ function _webActualizarRosterContinuar() {
 
   if (completo) {
     SUPRIMIR_PLAYERS_TEMPORAL = false;
+    PLAYERS_SOLO_INGRESOS_TEMPORAL = false;
     // Recalentar la cache de la web ANTES de cerrar el estado (sigue en 'ejecutando'), para que cuando el frontend vea 'ok' ya encuentre los datos nuevos (AVISO 4).
     est.mensaje = 'Datos actualizados. Actualizando la web...';
     _webActRosterGuardarEstado_(est);
@@ -61311,6 +61375,7 @@ function _webActualizarRosterContinuar() {
   var pasoRestante = props.getProperty(WEB_ACTROSTER_ID_TANDAS + '_PASO');
   if (pasoRestante === null) {
     SUPRIMIR_PLAYERS_TEMPORAL = false;
+    PLAYERS_SOLO_INGRESOS_TEMPORAL = false;
     _webActRosterCerrar_(est, 'omitido', _webActRosterTextoVentana_() + ' Intenta de nuevo más tarde.');
     return;
   }
@@ -61355,7 +61420,8 @@ function _webActRosterPasos_(tipo) {
   if (_webActRosterTipo_(tipo) === 'mensajes') return _webActRosterPasosMensajes_();
   return [
     function () {
-      SUPRIMIR_PLAYERS_TEMPORAL = true; // el Directorio de esta cadena no pide /players (igual que runGuerraRapido)
+      SUPRIMIR_PLAYERS_TEMPORAL = true; // el Directorio de esta cadena no pide /players del resto del clan (igual que runGuerraRapido)
+      PLAYERS_SOLO_INGRESOS_TEMPORAL = true; // PF345: sí pide los ingresos recientes (V. Guerra, Nivel y demás campos de /players)
       forzarRosterFrescoAhora();
       capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'actualizarRosterWeb paso 0');
     },
