@@ -1395,14 +1395,30 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
   var guerraCongeladaIR = false;
   if (dataGuerra && !esDiaGuerraIdx(ctx.periodIndex)) {
     var mejorTempIR = -1, mejorPeriodoIR = -1, mejorFilaIR = null;
-    for (var gRef = 0; gRef < dataGuerra.length; gRef++) {
-      var pRefIR = Number(dataGuerra[gRef][GC.PERIOD_IDX - 1]);
-      if (!pRefIR || !esDiaGuerraIdx(pRefIR)) continue;
-      var tRefIR = Number(dataGuerra[gRef][GC.TEMPORADA - 1]) || 0;
-      if (!tRefIR || tRefIR > Number(ctx.temporada)) continue;
-      if (tRefIR === Number(ctx.temporada) && pRefIR > ctx.periodIndex) continue; // no futuras
-      if (tRefIR > mejorTempIR || (tRefIR === mejorTempIR && pRefIR > mejorPeriodoIR)) {
-        mejorTempIR = tRefIR; mejorPeriodoIR = pRefIR; mejorFilaIR = dataGuerra[gRef];
+    // FIX (03-nov-2026, pedido de la usuaria: «Ingresos recientes» seguía diciendo «Semana actual» un martes): se busca la última fila de día de guerra (no futura) en un conjunto de filas; se usa primero con la hoja Guerra y, si ahí no hay ninguna, con el CSV. [→ Contexto_Base_Web.md §PF125]
+    var buscarMejorDiaGuerraIR = function (filas) {
+      for (var gRef = 0; gRef < filas.length; gRef++) {
+        var pRefIR = Number(filas[gRef][GC.PERIOD_IDX - 1]);
+        if (!pRefIR || !esDiaGuerraIdx(pRefIR)) continue;
+        var tRefIR = Number(filas[gRef][GC.TEMPORADA - 1]) || 0;
+        if (!tRefIR || tRefIR > Number(ctx.temporada)) continue;
+        if (tRefIR === Number(ctx.temporada) && pRefIR > ctx.periodIndex) continue; // no futuras
+        if (tRefIR > mejorTempIR || (tRefIR === mejorTempIR && pRefIR > mejorPeriodoIR)) {
+          mejorTempIR = tRefIR; mejorPeriodoIR = pRefIR; mejorFilaIR = filas[gRef];
+        }
+      }
+    };
+    buscarMejorDiaGuerraIR(dataGuerra);
+    // La hoja Guerra solo guarda la temporada vigente: el primer lunes de una temporada nueva (T27) tiene filas de entrenamiento pero ningún día de guerra, y la última guerra (T26, hasta el domingo) solo está en Backup_Guerra.csv. Antes el CSV se leía únicamente si la hoja no tenía filas de la temporada vigente, así que aquí no se consultaba, `guerraCongeladaIR` quedaba en falso y la tarjeta seguía rotulando «Semana actual». Mismo criterio que _getDatosDashboardCalcular_() (§38B123). Si se halla en el CSV, se agregan SOLO las filas de esa temporada para que los bucles de abajo encuentren la referencia sin tocar los de la temporada vigente.
+    if (!mejorFilaIR) {
+      try {
+        var csvPorTempIR = _leerGuerraCsvAgrupado_().porTemporada;
+        Object.keys(csvPorTempIR).forEach(function (tCsvIR) {
+          if (Number(tCsvIR) < Number(ctx.temporada)) buscarMejorDiaGuerraIR(csvPorTempIR[tCsvIR]);
+        });
+        if (mejorFilaIR) dataGuerra = dataGuerra.concat(csvPorTempIR[String(mejorTempIR)] || []);
+      } catch (eCsvRefIR) {
+        Logger.log('[IngresosRecientes] no se pudo leer Backup_Guerra.csv para la última guerra: ' + eCsvRefIR.message);
       }
     }
     if (mejorFilaIR) {
