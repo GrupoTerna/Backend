@@ -363,6 +363,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF346` | **`_getTagsConVGuerraVacia()` (`09_API_ClashRoyale.gs`) lee V. Guerra de la hoja Players** y no la columna Etiqueta del Directorio; con `'partial'` ahora se pide `/players` a quien tiene V. Guerra vacío o aún no tiene fila en Players. **SIN PROBAR en Apps Script real** (4-nov-2026) |
 | `PF347` | **Botón «Actualizar» de «Ingresos recientes»: permiso nuevo «Actualizar V. Guerra» y tope de consultas `/players` por hora y por día** (`WEB_FUNCION_ACTUALIZAR_VGUERRA`, `_webActRosterPlayersTope_()`; sin el permiso o sobre el tope el botón corre igual pero sin `/players` y lo dice). **SIN PROBAR en Apps Script real ni en navegador real** (3-nov-2026) |
 | `PF348` | **Eje X de las gráficas de línea (perfil y directorio): la letra de las fechas se achica cuando hay muchos puntos** (`tamanoLetraEjeXRotado()` en `timeline-svg.js`; mínimo 7, y si ni así caben se omiten fechas; la fila J V S D se omite si no se lee). **SIN PROBAR en navegador real** (3-nov-2026) |
+| `PF349` | **Espacio sobrante bajo el pie de página en `clan.html` (y en toda página con una tabla en recuadro de scroll):** los `.sr-only` de las filas escapaban del recorte; `.tabla-scroll-wrap` lleva `position:relative` (`assets/styles.css`). **SIN PROBAR en navegador real** (3-nov-2026). |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -8178,3 +8179,15 @@ Inventario de temporadas (etapa C-0) → etapa A (nuevos, `ClanTag`, correccione
 5. **Decisión sobre el mínimo (7).** En un SVG de 960 de ancho, 7 es unos 9 px reales en pantalla ancha; en móvil el SVG se escala y todo (también el tamaño normal) queda más chico, sin cambio.
 6. **Verificado.** Tests nuevos en `test/perfil-eje-x-grafica.test.js` (helper; pocas semanas sin cambios; 60 semanas achica sin omitir; 110 semanas baja a 7, omite fechas y quita las letras); suite completa 815 de 815 y `eslint assets` limpio. **No** se vio en un navegador real.
 7. **Lo que sigue abierto.** Abrir un perfil con historial largo y comprobar que las fechas se leen y no se pisan, y la comparación del directorio con muchas semanas. Publicar `Web` (`sw.js` v201).
+
+### PF349 — Espacio sobrante bajo el pie de página en `clan.html` (pedido de la usuaria, 3-nov-2026, con captura; `Web`: `assets/styles.css`, `sw.js` v202, commit `0c87c7f`; **SIN PROBAR en navegador real**)
+
+**Qué se veía.** Al bajar al final de `clan.html`, tras el pie de página quedaba un espacio vacío de más de un millar de píxeles (la barra de desplazamiento mostraba un documento mucho más largo que el contenido).
+
+**Causa (medida en un navegador de pruebas con `home.json`, `roster.json` y `guerra.json` reales de la rama `data`).** La tabla del roster va en un recuadro `.tabla-scroll-wrap` (`overflow:auto`, 480 px). Cada fila lleva spans `.sr-only` (`position:absolute`, §PF050) y ese recuadro **no era un ancestro posicionado**: su bloque contenedor pasaba a ser la tarjeta `.pf-cinta` (`position:relative`), que no recorta. El recorte del scroll no alcanzaba a esos spans, y el documento crecía con la altura **total** de la tabla: `scrollHeight` 3391 px frente a 1817 del pie. No salía en la lista de elementos por encima del pie porque cada uno está recortado por su propio ancestro; había que buscar los hijos absolutos del recuadro.
+
+**Qué se descartó.** Quitar el `padding-bottom:80px` de `main` o el `margin-top:60px` del pie: son los ~140 px normales entre la última tarjeta y el pie, y no eran la causa.
+
+**Corrección.** `.tabla-scroll-wrap{position:relative}` en `assets/styles.css`. Medido después: `scrollHeight` 1817 px, igual al borde inferior del pie; el encabezado fijo (`thead th`, `position:sticky`) sigue pegado arriba al desplazar. Como la clase la agrega `tables.js` a toda tabla con recuadro, el arreglo vale también para `directorio.html`, `guerra.html` y las demás páginas con ese patrón. **Sin revisar página por página** si algún elemento absoluto dentro de una de esas tablas dependía de la tarjeta como contenedor. `sw.js` v202 (`styles.css` está en `CORE_ASSETS`).
+
+**Pruebas.** En este contenedor `npm test` da 50 correctas y 62 fallidas **con y sin** el cambio (falta el módulo `jsdom`); no se pudo correr la suite completa.
