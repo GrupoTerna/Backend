@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 00:07:13 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 00:29:12 */
 
 
 
@@ -51926,7 +51926,7 @@ var WEB_FUNCIONES_ADMIN = [
   {
     id: WEB_FUNCION_ACTUALIZAR_VGUERRA,
     etiqueta: 'Actualizar V. Guerra desde «Actualizar»',
-    descripcion: 'Hace que el botón «Actualizar» de Ingresos recientes también consulte en la API de Clash Royale el perfil de esos jugadores (V. Guerra, nivel y demás datos). Es lo que más gasta de la cuota gratuita, por eso hay un tope de consultas por hora y por día compartido entre todos los admins; sin esta casilla el botón actualiza lo demás, pero no V. Guerra.'
+    descripcion: 'Hace que el botón «Actualizar» de Ingresos recientes también consulte en la API de Clash Royale el perfil de esos jugadores (V. Guerra y demás datos del perfil). Es lo que más gasta de la cuota gratuita, por eso hay un tope de consultas por hora y por día compartido entre todos los admins. Es todo o nada: sin esta casilla, o con el tope alcanzado, el botón no consulta ningún perfil (ni V. Guerra ni otro dato de jugador) y solo actualiza lo que no sale de los perfiles (clanes, Directorio, Nuevos y Guerra).'
   }
 ];
 
@@ -61330,7 +61330,7 @@ function _webAdminActualizarRoster(token, tipo) {
     var playersNota = '';
     if (tipoSol === 'roster') {
       if (!acceso.puedeVGuerra) {
-        playersNota = 'V. Guerra no se consultó: tu cuenta no tiene el permiso «' + WEB_FUNCION_ACTUALIZAR_VGUERRA + '».';
+        playersNota = 'No se consultaron los perfiles de los jugadores (V. Guerra incluida): tu cuenta no tiene el permiso «' + WEB_FUNCION_ACTUALIZAR_VGUERRA + '».';
       } else {
         var tope = _webActRosterPlayersTope_(ahora);
         if (tope.permitido) {
@@ -61693,11 +61693,11 @@ function _webActRosterPlayersTope_(ahora) {
   var enHora = usos.filter(function (ts) { return (ahora - ts) < WEB_ACTROSTER_PLAYERS_HORA_MS; });
   var hora = function (ms) { return Utilities.formatDate(new Date(ms), 'America/Lima', 'HH:mm'); };
   if (enHora.length >= WEB_ACTROSTER_PLAYERS_MAX_HORA) {
-    return { permitido: false, motivo: 'V. Guerra no se consultó: ya se hicieron ' + WEB_ACTROSTER_PLAYERS_MAX_HORA + ' consultas en la última hora. Se libera un cupo a las ' +
+    return { permitido: false, motivo: 'No se consultaron los perfiles de los jugadores (V. Guerra incluida): ya se hicieron ' + WEB_ACTROSTER_PLAYERS_MAX_HORA + ' consultas en la última hora. Se libera un cupo a las ' +
       hora(enHora[0] + WEB_ACTROSTER_PLAYERS_HORA_MS) + ' (hora Lima).' };
   }
   if (usos.length >= WEB_ACTROSTER_PLAYERS_MAX_DIA) {
-    return { permitido: false, motivo: 'V. Guerra no se consultó: ya se hicieron ' + WEB_ACTROSTER_PLAYERS_MAX_DIA + ' consultas en las últimas 24 horas. Se libera un cupo a las ' +
+    return { permitido: false, motivo: 'No se consultaron los perfiles de los jugadores (V. Guerra incluida): ya se hicieron ' + WEB_ACTROSTER_PLAYERS_MAX_DIA + ' consultas en las últimas 24 horas. Se libera un cupo a las ' +
       hora(usos[0] + WEB_ACTROSTER_PLAYERS_DIA_MS) + ' (hora Lima).' };
   }
   return { permitido: true, motivo: '' };
