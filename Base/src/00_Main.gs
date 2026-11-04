@@ -1212,7 +1212,7 @@ function runGuerra() {
   var horaUtc = now.getUTCHours();
   var minUtc  = now.getUTCMinutes();
 
-  // FIX (02-sep-2026): runGuerra() es monolítica (no usa _ejecutarPorTandas(), [→ Contexto_Base_Web.md §B112]
+  // FIX (02-sep-2026): runGuerra() es monolítica (no usa _ejecutarPorTandas(), PF311 parte B (31-oct-2026): con CFG.RUNGUERRA_POR_TANDAS = true la corrida horaria completa ya delega en la cadena RUNGUERRA (_iniciarRunGuerraPorTandas_()); este cuerpo solo corre en la ventana ligera de 4 a 5 a. m. o con ese interruptor en false. [→ Contexto_Base_Web.md §B112]
   var _tRunGuerra0 = Date.now();
 
   var enVentanaGuerra = _estadoVentanaGuerra_(now).enVentana;
