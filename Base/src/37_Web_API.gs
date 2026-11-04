@@ -42,6 +42,9 @@ var WEB_FUNCION_CORREGIR_AUTOR = 'Corregir autor';
 // NUEVO 05-oct-2026: Función que permite pedir desde la web la actualización manual del roster y de guerra (runPendientesYMensajes); la usan _webAdminActualizarRoster()/_webAdminEstadoActualizacion() (41_Web_ActualizarRoster.gs); ACTIVA para todos los admin (migrarFuncionActualizarRosterATodosLosAdmins(), 47_Migraciones.gs); se desactiva por admin en permisos.html. [→ Contexto_Base_Web.md §37B020]
 var WEB_FUNCION_ACTUALIZAR_ROSTER = 'Actualizar roster';
 
+// NUEVO 03-nov-2026 (§PF347): Función que permite que el botón «Actualizar» consulte además /players de los jugadores de «Ingresos recientes» (V. Guerra, Nivel y demás campos; §PF345). Sin ella el botón funciona igual pero sin /players. NO se da por defecto (ni en _aplicarFuncionesMultiSelect ni en una migración): Diana la da desde permisos.html. La usa _webActRosterExigirFuncion_() (41_Web_ActualizarRoster.gs), que además aplica el tope de consultas por hora y por día. [→ Contexto_Base_Web.md §PF347]
+var WEB_FUNCION_ACTUALIZAR_VGUERRA = 'Actualizar V. Guerra';
+
 // Catálogo de Funciones del panel: `id` = texto exacto de la celda Funciones (y de _webAdminTieneFuncion()); etiqueta/descripcion solo para mostrar. Para sumar una: agregarla aquí y validarla en el endpoint. 'Corregir autor' no está en los valores por defecto de actualizarDropdownCatDisp() a propósito: Diana la da desde el panel. [→ Contexto_Base_Web.md §37B021]
 var WEB_FUNCIONES_ADMIN = [
   {
@@ -63,6 +66,11 @@ var WEB_FUNCIONES_ADMIN = [
     id: WEB_FUNCION_ACTUALIZAR_ROSTER,
     etiqueta: 'Actualizar roster y datos de guerra',
     descripcion: 'Pedir desde el panel la actualización manual del roster, de Pendientes y de los Mensajes de guerra (consulta la API de Clash Royale). No está disponible entre las 3:40 y las 5:00 a.m. (hora Lima) y hay un tiempo de espera entre una y otra.'
+  },
+  {
+    id: WEB_FUNCION_ACTUALIZAR_VGUERRA,
+    etiqueta: 'Actualizar V. Guerra desde «Actualizar»',
+    descripcion: 'Hace que el botón «Actualizar» de Ingresos recientes también consulte en la API de Clash Royale el perfil de esos jugadores (V. Guerra, nivel y demás datos). Es lo que más gasta de la cuota gratuita, por eso hay un tope de consultas por hora y por día compartido entre todos los admins; sin esta casilla el botón actualiza lo demás, pero no V. Guerra.'
   }
 ];
 

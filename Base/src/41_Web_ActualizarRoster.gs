@@ -18,6 +18,7 @@
 //    - Ejecución por disparador: arranque con reintentos de turno, tandas de la cadena (_webActualizarRosterContinuar justo después de su principal) y recalentado de la web
 //    - Pasos de la cadena: tipo de actualización, lista de pasos y sus nombres
 //    - Permiso y estado de la solicitud
+//    - Tope de consultas /players del botón (§PF347)
 //    - Bloqueo, candado y textos para el admin
 //    - Cierre de la solicitud: cachés, estado final y limpieza de la cadena
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
@@ -32,6 +33,12 @@ var WEB_ACTROSTER_TURNO_REINTENTO_MS = 30 * 1000;          // cada cuánto reint
 var WEB_ACTROSTER_PENDIENTE_MAX_MS = 12 * 60 * 1000;       // un 'pendiente' más viejo que esto se da por fallido (mayor que TURNO_MAX)
 var WEB_ACTROSTER_EJECUTANDO_MAX_MS = 15 * 60 * 1000;      // un 'ejecutando' más viejo que esto se da por fallido (la cadena puede usar varias tandas)
 var WEB_ACTROSTER_ARRANQUE_MS = 5 * 1000;                  // retraso del disparador de un solo uso
+// §PF347: tope de las consultas /players que dispara el botón (PF345), para que un admin que lo pulse a cada rato no agote la cuota gratuita. Se cuenta cada solicitud aceptada que pidió /players (lista de marcas de tiempo en una Script Property) y el tope es de TODO el sistema, no por admin, porque la cuota es una sola. Ventanas móviles: última hora y últimas 24 h. Superado el tope, «Actualizar» corre igual pero sin /players.
+var WEB_ACTROSTER_PROP_PLAYERS_USOS = 'WEB_ACTROSTER_PLAYERS_USOS';
+var WEB_ACTROSTER_PLAYERS_MAX_HORA = 3;
+var WEB_ACTROSTER_PLAYERS_MAX_DIA = 10;
+var WEB_ACTROSTER_PLAYERS_HORA_MS = 60 * 60 * 1000;
+var WEB_ACTROSTER_PLAYERS_DIA_MS = 24 * 60 * 60 * 1000;
 var WEB_ACTROSTER_CACHES_A_BORRAR = ['web_ingresos_recientes_v1', 'web_roster_v1']; // §PF180: lo que lee Ingresos recientes de directorio.html (cacheado 60 s); se borra al terminar para que la recarga del botón «Actualizar» no reciba datos de hasta 60 s antes
 
 // §PF181: la misma cola de turno sirve para regenerar solo Pendientes y Mensajes de guerra (boton «Regenerar ahora» de guerra.html): tipo 'mensajes' = los mismos pasos que runPendientesYMensajes() manual (clanes frescos de la API, Pendientes, Mensajes, indice).
@@ -81,6 +88,23 @@ function _webAdminActualizarRoster(token, tipo) {
     var otra = _webActRosterEjecucionEnCurso_(ahora);
     var tipoSol = _webActRosterTipo_(tipo); // §PF181
     var nombreAccion = tipoSol === 'mensajes' ? 'la regeneración de Pendientes y Mensajes' : 'la actualización';
+
+    // §PF347: /players de los ingresos recientes solo con el permiso «Actualizar V. Guerra» y bajo el tope; si no, la cadena corre sin /players y se deja la razón.
+    var conPlayers = false;
+    var playersNota = '';
+    if (tipoSol === 'roster') {
+      if (!acceso.puedeVGuerra) {
+        playersNota = 'V. Guerra no se consultó: tu cuenta no tiene el permiso «' + WEB_FUNCION_ACTUALIZAR_VGUERRA + '».';
+      } else {
+        var tope = _webActRosterPlayersTope_(ahora);
+        if (tope.permitido) {
+          conPlayers = true;
+          _webActRosterPlayersRegistrarUso_(ahora);
+        } else {
+          playersNota = tope.motivo;
+        }
+      }
+    }
     var nuevo = {
       id: Utilities.formatDate(new Date(ahora), 'UTC', 'yyyyMMddHHmmss') + '-' + Math.floor(Math.random() * 1000),
       estado: 'pendiente',
@@ -90,6 +114,8 @@ function _webAdminActualizarRoster(token, tipo) {
       inicioTs: 0,
       finTs: 0,
       intentosTurno: 0,
+      conPlayers: conPlayers,
+      playersNota: playersNota,
       mensaje: otra
         ? 'Solicitada. El sistema está ejecutando ' + _webActRosterNombreTarea_(otra) + '; ' + nombreAccion + ' empezará sola cuando termine.'
         : 'Solicitada. Empieza en unos segundos.'
@@ -108,7 +134,8 @@ function _webAdminActualizarRoster(token, tipo) {
       return { ok: false, error: nuevo.mensaje };
     }
 
-    Logger.log('[ActRoster] Solicitud ' + nuevo.id + ' (' + tipoSol + ') registrada por ' + nuevo.solicitadoPor + (otra ? ' (candado ocupado por ' + otra + ': queda en cola)' : '') + '.');
+    Logger.log('[ActRoster] Solicitud ' + nuevo.id + ' (' + tipoSol + ') registrada por ' + nuevo.solicitadoPor + (otra ? ' (candado ocupado por ' + otra + ': queda en cola)' : '') +
+      (tipoSol === 'roster' ? ' /players de ingresos recientes: ' + (conPlayers ? 'SÍ' : 'NO (' + playersNota + ')') : '') + '.');
     return {
       ok: true,
       estado: 'pendiente',
@@ -116,6 +143,8 @@ function _webAdminActualizarRoster(token, tipo) {
       id: nuevo.id,
       solicitadoLima: _webActRosterFechaLima_(nuevo.solicitadoTs),
       enCola: !!otra,
+      conPlayers: conPlayers,
+      playersNota: playersNota,
       mensaje: nuevo.mensaje
     };
   } finally {
@@ -148,6 +177,9 @@ function _webAdminEstadoActualizacion(token) {
     motivoBloqueo: bloqueo.bloqueado ? bloqueo.motivo : null,
     esperaSeg: bloqueo.esperaSeg || 0,
     webRecalentada: est && typeof est.webRecalentada === 'boolean' ? est.webRecalentada : null,
+    // §PF347: si la solicitud pidió /players de los ingresos recientes y, si no, por qué (sin permiso o tope alcanzado); el frontend lo muestra al terminar.
+    conPlayers: est ? est.conPlayers === true : false,
+    playersNota: est && est.playersNota ? String(est.playersNota) : '',
     // PF166: tarea ajena que tiene el candado ahora (la solicitud esperaría su turno) y avance de la cadena propia.
     ocupadoPor: otra && otra !== WEB_ACTROSTER_ID_TANDAS ? _webActRosterNombreTarea_(otra) : null,
     paso: null,
@@ -214,7 +246,7 @@ function _webActualizarRosterEjecutar() {
     ? 'Regenerando Pendientes y Mensajes de guerra...'
     : 'Actualizando clanes, Directorio, Nuevos y Guerra...';
   _webActRosterGuardarEstado_(est);
-  Logger.log('[ActRoster] INICIO de la solicitud ' + est.id + ' (' + _webActRosterTipo_(est.tipo) + ', pedida por ' + est.solicitadoPor + ', esperó ' + Math.round((est.inicioTs - est.solicitadoTs) / 1000) + ' s).');
+  Logger.log('[ActRoster] INICIO de la solicitud ' + est.id + ' (' + _webActRosterTipo_(est.tipo) + ', pedida por ' + est.solicitadoPor + ', esperó ' + Math.round((est.inicioTs - est.solicitadoTs) / 1000) + ' s, /players de ingresos recientes: ' + (est.conPlayers === true ? 'SÍ' : 'NO') + ').');
 
   var props = PropertiesService.getScriptProperties();
   props.setProperty(WEB_ACTROSTER_ID_TANDAS + '_PASO', '0');
@@ -247,7 +279,7 @@ function _webActualizarRosterContinuar() {
   var nombresPasos = _webActRosterNombresPasos_(tipo);
   if (tipo === 'roster') {
     SUPRIMIR_PLAYERS_TEMPORAL = true; // variable global en memoria: se pone en cada tanda (ver runGuerraRapido); Pendientes/Mensajes no usan /players
-    PLAYERS_SOLO_INGRESOS_TEMPORAL = true; // PF345: excepción: del resto del clan no se pide /players, pero sí de los ingresos recientes
+    PLAYERS_SOLO_INGRESOS_TEMPORAL = est.conPlayers === true; // PF345: excepción: del resto del clan no se pide /players, pero sí de los ingresos recientes; §PF347: solo si la solicitud tenía el permiso y estaba bajo el tope (una solicitud anterior a este cambio no trae el campo: queda en false)
   }
   var completo;
   try {
@@ -285,7 +317,8 @@ function _webActualizarRosterContinuar() {
     est.webRecalentada = _webActRosterRecalentarWeb_(t0);
     _liberarLockEjecucion();
     _webActRosterCerrar_(est, 'ok', 'Clanes, Directorio, Nuevos y Guerra actualizados.' +
-      (est.webRecalentada ? '' : ' La web puede tardar unos minutos en mostrar los datos nuevos.'));
+      (est.webRecalentada ? '' : ' La web puede tardar unos minutos en mostrar los datos nuevos.') +
+      (est.playersNota ? ' ' + est.playersNota : ''));
     return;
   }
 
@@ -339,7 +372,7 @@ function _webActRosterPasos_(tipo) {
   return [
     function () {
       SUPRIMIR_PLAYERS_TEMPORAL = true; // el Directorio de esta cadena no pide /players del resto del clan (igual que runGuerraRapido)
-      PLAYERS_SOLO_INGRESOS_TEMPORAL = true; // PF345: sí pide los ingresos recientes (V. Guerra, Nivel y demás campos de /players)
+      PLAYERS_SOLO_INGRESOS_TEMPORAL = _webActRosterConPlayers_(); // PF345: pide los ingresos recientes (V. Guerra, Nivel y demás campos de /players); §PF347: solo si la solicitud en curso lo tiene autorizado
       forzarRosterFrescoAhora();
       capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'actualizarRosterWeb paso 0');
     },
@@ -391,7 +424,54 @@ function _webActRosterExigirFuncion_(token) {
   if (!fresco || !_webAdminTieneFuncion(fresco.funciones, WEB_FUNCION_ACTUALIZAR_ROSTER)) {
     return { ok: false, error: 'No tienes permiso para actualizar el roster.' };
   }
-  return { ok: true, admin: admin };
+  // §PF347: permiso aparte para que «Actualizar» pida /players de los ingresos recientes (releído de la hoja, igual que el anterior).
+  return { ok: true, admin: admin, puedeVGuerra: _webAdminTieneFuncion(fresco.funciones, WEB_FUNCION_ACTUALIZAR_VGUERRA) };
+}
+
+// ---------------------------------------------------------------------------
+// Tope de consultas /players del botón (§PF347)
+// ---------------------------------------------------------------------------
+
+/** true si la solicitud en curso quedó autorizada a pedir /players de los ingresos recientes (permiso y tope verificados al pedirla). */
+function _webActRosterConPlayers_() {
+  var est = _webActRosterLeerEstado_();
+  return !!(est && est.conPlayers === true);
+}
+
+/** Marcas de tiempo (ms) de las solicitudes que pidieron /players en las últimas 24 h; una propiedad ilegible cuenta como vacía. */
+function _webActRosterPlayersUsos_(ahora) {
+  try {
+    var raw = PropertiesService.getScriptProperties().getProperty(WEB_ACTROSTER_PROP_PLAYERS_USOS);
+    var lista = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(lista)) return [];
+    return lista.filter(function (ts) { return typeof ts === 'number' && (ahora - ts) < WEB_ACTROSTER_PLAYERS_DIA_MS && ts <= ahora + 60000; });
+  } catch (e) {
+    Logger.log('[ActRoster] Contador de /players ilegible, se toma como vacío: ' + e.message);
+    return [];
+  }
+}
+
+/** Decide si una solicitud nueva puede pedir /players: {permitido, motivo}. El motivo dice a qué hora Lima se libera un cupo. */
+function _webActRosterPlayersTope_(ahora) {
+  var usos = _webActRosterPlayersUsos_(ahora).sort(function (a, b) { return a - b; });
+  var enHora = usos.filter(function (ts) { return (ahora - ts) < WEB_ACTROSTER_PLAYERS_HORA_MS; });
+  var hora = function (ms) { return Utilities.formatDate(new Date(ms), 'America/Lima', 'HH:mm'); };
+  if (enHora.length >= WEB_ACTROSTER_PLAYERS_MAX_HORA) {
+    return { permitido: false, motivo: 'V. Guerra no se consultó: ya se hicieron ' + WEB_ACTROSTER_PLAYERS_MAX_HORA + ' consultas en la última hora. Se libera un cupo a las ' +
+      hora(enHora[0] + WEB_ACTROSTER_PLAYERS_HORA_MS) + ' (hora Lima).' };
+  }
+  if (usos.length >= WEB_ACTROSTER_PLAYERS_MAX_DIA) {
+    return { permitido: false, motivo: 'V. Guerra no se consultó: ya se hicieron ' + WEB_ACTROSTER_PLAYERS_MAX_DIA + ' consultas en las últimas 24 horas. Se libera un cupo a las ' +
+      hora(usos[0] + WEB_ACTROSTER_PLAYERS_DIA_MS) + ' (hora Lima).' };
+  }
+  return { permitido: true, motivo: '' };
+}
+
+/** Anota una consulta /players (solo las 24 h vigentes). Se llama dentro del candado de _webAdminActualizarRoster(). */
+function _webActRosterPlayersRegistrarUso_(ahora) {
+  var usos = _webActRosterPlayersUsos_(ahora);
+  usos.push(ahora);
+  PropertiesService.getScriptProperties().setProperty(WEB_ACTROSTER_PROP_PLAYERS_USOS, JSON.stringify(usos));
 }
 
 // Lee el estado y pasa a 'error' el que quedó trabado ('pendiente' más allá de la espera de turno o 'ejecutando' más allá del máximo de la cadena). [→ Contexto_Base_Web.md §41B007, PF166]
