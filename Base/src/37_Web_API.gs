@@ -1723,6 +1723,10 @@ function _webPerfilJugador(tagBuscado, opciones) {
   // ---- Ataques de la semana en curso + historial de Ranking en el clan, ambos desde la hoja Guerra (una sola pasada) ----; FIX 04-sep-2026 (Ranking del clan de perfil.html): la gráfica esperaba ext.historialRanking = [{semana, ranking}, ...] y el backend solo mandaba ext.rankingClan (el actual); GC.RANKING existe fila por fila en Guerra (un valor por Tag y día, GUERRA_HEADERS en 17_GuerraSheet.gs) y como la hoja solo retiene la TEMPORADA ACTUAL (el resto se purga a Backup_Guerra.csv, _purgarTemporadasAnterioresGuerra()), el historial cubre los días ya jugados de la temporada en curso; ampliarlo a varias temporadas requeriría leer Backup_Guerra.csv y no vale la pena para una vista rápida. FIX 15-sep-2026 (barrido web->CSV): la lectura pasa por _obtenerFilasConFallbackCSV() (01_Config_Global.gs), mismo helper y Backup_Guerra.csv que _construirIngresosRecientesUnificado()/_webAportesRecientes(), para caer al respaldo si la hoja Guerra no está disponible; sigue sin ampliarse a varias temporadas porque el CSV normalmente contiene la misma temporada actual. [→ Contexto_Base_Web.md §37B120]
   var ctx = _getCtx();
   var ataquesSemana = 0, fameSemana = 0, barcosSemana = 0;
+  // 03-nov-2026 (pedido usuaria, revisión de secciones que no congelaban): de lunes a miércoles (entrenamiento) la semana nueva todavía no tiene días de guerra, así que guerraSemana salía en 0 y ataquesMax en 0 (el comparador de directorio.html y la cabecera de perfil.html mostraban 0 sin tope). Se congela con la misma idea de §PF125: referencia = el domingo anterior (periodIndex - periodIndex%7 - 1), con la temporada más alta que no sea futura (el periodIndex se repite entre temporadas). Solo cambia lo que se MUESTRA en guerraSemana; ataquesSemana/fameSemana/barcosSemana siguen siendo los de la semana en curso porque alimentan _webProgresoRequisitos() junto con los ataques exentos, que sí son de la semana en curso. [→ Contexto_Base_Web.md §PF125]
+  var perfilCongelado = !esDiaGuerraIdx(ctx.periodIndex);
+  var perfilPIdxDomingo = Number(ctx.periodIndex) - (Number(ctx.periodIndex) % 7) - 1;
+  var perfilCongTemp = -1, perfilCongAtaques = 0, perfilCongFame = 0, perfilCongBarcos = 0;
   var historialRanking = [];
   var diasGuerraSemana = {}; // 19-sep-2026: { offsetDia(0-3): {pIdx, clan} } de la semana en curso, para los exentos
   // FIX 23-sep-2026 (perfil.html, minigráficos "Ataques de la semana" y "Fame de la semana", eje X J/V/S/D): { offsetDia(0-3): {ataques, puntaje, barcos} } de la semana en curso, valor de CADA día suelto (no el acumulado ataquesSemana/fameSemana/barcosSemana); 'ataques' sale de GC.ATAQUES_HOY (GC.ATAQUES_SEM es acumulado); 'puntaje' (Fame) y 'barcos' de GC.FAME/GC.BARCOS; CORREGIDO 11-oct-2026: esas dos columnas son ACUMULADAS de la semana (no del día), se convierten con _diarioDesdeAcumuladoGuerra_() (antes se decía que eran del día; ver guerra.html "Valores diarios", "Sem 1 Puntaje trae 500 400 700 600", y en _webHistorialGuerraComparador()); mismo filtro "esta semana" (ctx.temporada + ctx.sectionIndex) que diasGuerraSemana, por lo que el dato se ve congelado de lunes a miércoles hasta que empiece la guerra del jueves y ctx.sectionIndex avance. [→ Contexto_Base_Web.md §37B121]
@@ -1790,6 +1794,15 @@ function _webPerfilJugador(tagBuscado, opciones) {
         };
       }
 
+      if (perfilCongelado && Number(dataGuerra[i][GC.PERIOD_IDX - 1]) === perfilPIdxDomingo) {
+        var tempCongPerfil = Number(dataGuerra[i][GC.TEMPORADA - 1]) || 0;
+        if (tempCongPerfil && tempCongPerfil <= Number(ctx.temporada) && tempCongPerfil >= perfilCongTemp) {
+          perfilCongTemp    = tempCongPerfil;
+          perfilCongAtaques = Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0;
+          perfilCongFame    = Number(dataGuerra[i][GC.FAME        - 1]) || 0;
+          perfilCongBarcos  = Number(dataGuerra[i][GC.BARCOS      - 1]) || 0;
+        }
+      }
       if (Number(dataGuerra[i][GC.PERIOD_IDX - 1]) !== ctx.periodIndex) continue;
       // ATAQUES_SEM ya viene acumulado por el proceso de guerra (17_GuerraSheet.gs): se toma tal cual, sin volver a sumar por día. [→ Contexto_Base_Web.md §37B126]
       ataquesSemana = Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0;
@@ -1838,7 +1851,10 @@ function _webPerfilJugador(tagBuscado, opciones) {
       // FIX 03-sep-2026 ("Vigencia [última conexión] debe mostrarse también en el perfil"): mismo criterio que el fix gemelo en _webRosterCalcular/_construirIngresosRecientesUnificado; la columna ya existía en Directorio (DC.VIGENCIA), solo faltaba exponerla. [→ Contexto_Base_Web.md §37B130]
       vigencia: fila[DC.VIGENCIA - 1] || '',
       // FIX 05-sep-2026 (Cara a cara, ver _calcAtaquesMaxSemana()): ataquesMax es el tope esperado de ataques a estas alturas de la semana de guerra (0 en día de entrenamiento, sin tope que mostrar). [→ Contexto_Base_Web.md §37B131]
-      guerraSemana: { ataques: ataquesSemana, fame: fameSemana, barcos: barcosSemana, ataquesMax: _calcAtaquesMaxSemana(ctx.periodIndex) },
+      // 03-nov-2026: en entrenamiento (lunes a miércoles) salen los valores del domingo anterior y ataquesMax = 16 (tope de la semana completa); congelada:true le dice al frontend que rotule «Última guerra». Si la cuenta no jugó ese domingo, salen 0 y es correcto. [→ Contexto_Base_Web.md §PF125]
+      guerraSemana: perfilCongelado
+        ? { ataques: perfilCongAtaques, fame: perfilCongFame, barcos: perfilCongBarcos, ataquesMax: _calcAtaquesMaxSemana(perfilPIdxDomingo), congelada: true }
+        : { ataques: ataquesSemana, fame: fameSemana, barcos: barcosSemana, ataquesMax: _calcAtaquesMaxSemana(ctx.periodIndex), congelada: false },
       // FIX 23-sep-2026: desglose diario J/V/S/D para los dos minigráficos nuevos de perfil.html (ver su construcción más arriba); null si esta semana todavía no tiene ningún día de guerra jugado (p. ej. entrenamiento del lunes), el frontend oculta esos cuadritos. [→ Contexto_Base_Web.md §37B132]
       guerraSemanaDias: guerraSemanaDias,
       progreso: progreso,
