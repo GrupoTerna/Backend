@@ -8192,6 +8192,9 @@ Inventario de temporadas (etapa C-0) → etapa A (nuevos, `ClanTag`, correccione
 6. **Verificado.** Tests nuevos en `test/perfil-eje-x-grafica.test.js` (helper; pocas semanas sin cambios; 60 semanas achica sin omitir; 110 semanas baja a 7, omite fechas y quita las letras); suite completa 815 de 815 y `eslint assets` limpio. **No** se vio en un navegador real.
 7. **Lo que sigue abierto.** Abrir un perfil con historial largo y comprobar que las fechas se leen y no se pisan, y la comparación del directorio con muchas semanas. Publicar `Web` (`sw.js` v201).
 
+**Confirmado en navegador real (4-nov-2026, Lima).** La usuaria confirmó que ya tiene `Web` actualizada y que la letra del eje X que se achica con muchos datos funciona bien. Se quitó la línea correspondiente de «Abiertos» de `Web/CHANGELOG.md`.
+
+
 ### PF349 — Espacio sobrante bajo el pie de página en `clan.html` (pedido de la usuaria, 3-nov-2026, con captura; `Web`: `assets/styles.css`, `sw.js` v202, commit `0c87c7f`; **SIN PROBAR en navegador real**)
 
 **Qué se veía.** Al bajar al final de `clan.html`, tras el pie de página quedaba un espacio vacío de más de un millar de píxeles (la barra de desplazamiento mostraba un documento mucho más largo que el contenido).
@@ -8204,6 +8207,9 @@ Inventario de temporadas (etapa C-0) → etapa A (nuevos, `ClanTag`, correccione
 
 **Pruebas.** En este contenedor `npm test` da 50 correctas y 62 fallidas **con y sin** el cambio (falta el módulo `jsdom`); no se pudo correr la suite completa.
 
+**Confirmado en navegador real (4-nov-2026, Lima).** La usuaria confirmó que ya tiene `Web` actualizada y que el espacio sobrante bajo el pie de `clan.html` ya no aparece queda bien. Se quitó la línea correspondiente de «Abiertos» de `Web/CHANGELOG.md`.
+
+
 ### PF350 — «Buscar miembro» de `admin.html` parecía no hacer nada (pedido de la usuaria, 4-nov-2026; `Web`: `admin.html`, `sw.js` v203, commits `2e19300` y `d480bc3`; **SIN PROBAR en navegador real**)
 
 **Qué se veía.** Al pulsar «Buscar miembro» (o Enter) en `admin.html` no pasaba nada a la vista: «Buscando…» aparecía un instante y desaparecía.
@@ -8215,6 +8221,9 @@ Inventario de temporadas (etapa C-0) → etapa A (nuevos, `ClanTag`, correccione
 **Qué se descartó.** Un fallo de JavaScript al registrar el botón: el script inline pasa `node --check` y `#btnBuscar` existe una sola vez.
 
 **Pruebas.** `test/admin-buscar-miembro-scroll-dom.test.js` (3 pruebas; extrae `buscarMiembro()` del script real entre marcadores). Suite completa: 818 de 818. **Límite:** jsdom no hace layout; se comprueba que se pide el desplazamiento y el foco, no que el resultado quede visible. Si en el navegador real el botón sigue sin hacer nada (ni siquiera aparece «Buscando…»), la causa sería otra (por ejemplo la sesión o la respuesta del backend `webAdminBuscarMiembro`) y habría que mirar la consola.
+
+**Confirmado en navegador real (4-nov-2026, Lima).** La usuaria confirmó que ya tiene `Web` actualizada y que «Buscar miembro» de `admin.html` funciona bien. Se quitó la línea correspondiente de «Abiertos» de `Web/CHANGELOG.md`.
+
 
 ### PF351 — El panel de permisos sale de `admin.html` y pasa a ser el link «Permisos» del nav (pedido de la usuaria, 4-nov-2026; `Web`: `admin.html`, `permisos.html`, `assets/js/core/auth.js`, `assets/js/core/api.js`, las 11 páginas con barra, `sw.js` v204, commit `9d70ba5`; **SIN PROBAR en navegador real**)
 
@@ -8232,6 +8241,9 @@ Inventario de temporadas (etapa C-0) → etapa A (nuevos, `ClanTag`, correccione
 **Efecto a tener presente.** El link solo aparece **después de que `admin.html` (o `permisos.html`) corrió una vez con esa sesión**. Quien ya tenía la sesión abierta antes de publicar este cambio no lo ve en `guerra.html` o `index.html` hasta abrir «Mi panel» una vez. Si cambia `PANEL_PERMISOS_CELULAR`, el link se corrige la próxima vez que se abra `admin.html`, no al instante.
 
 **Pruebas.** `test/nav-permisos-dom.test.js` (7 pruebas: orden Mensajes < Permisos < Acceder en las 11 páginas, la tarjeta ya no está, oculto sin sesión o sin visto bueno, visible con ambos, `guardarAccesoPanelPermisos()` y borrado al cerrar sesión). Suite completa: 825 de 825; `eslint assets`, `html-validate` y `check-local-links` sin errores. **Límite:** jsdom; no prueba el backend real ni el aspecto en un navegador (en pantalla chica el menú ☰ ahora lleva un enlace más).
+
+**Confirmado en navegador real (4-nov-2026, Lima).** La usuaria confirmó que ya tiene `Web` actualizada y que el link «Permisos» del nav funciona bien. Se quitó la línea correspondiente de «Abiertos» de `Web/CHANGELOG.md`.
+
 
 ### PF352 — Gráficas del perfil: pastilla de 6 temporadas, zoom con barra de desplazamiento y tooltip de fecha en el eje X (pedido de la usuaria, 4-nov-2026; `Web`: `perfil.html`, `assets/js/core/auth.js`, `sw.js` v205, commit `904be15`; **SIN PROBAR en navegador real**)
 
@@ -8251,3 +8263,4 @@ Inventario de temporadas (etapa C-0) → etapa A (nuevos, `ClanTag`, correccione
 
 **Pruebas.** `test/perfil-vista-grafica.test.js` (6 pruebas: recorte, pastilla encendida/apagada, pastilla deshabilitada, zoom, extremos del zoom, tooltip del eje X con coordenadas simuladas) y 2 pruebas nuevas en `test/nav-permisos-dom.test.js`. Los 7 tests que extraen `pintarGraficaPerfil()` por nombre ahora incluyen también las funciones y constantes nuevas. Suite completa: 833 de 833. **Límite:** jsdom no hace layout; el ancho real, la barra de desplazamiento y la posición del tooltip no se probaron en un navegador.
 
+**Confirmado en navegador real (4-nov-2026, Lima).** La usuaria confirmó que ya tiene `Web` actualizada y que las gráficas del perfil (pastilla de 6 temporadas, zoom y tooltip de fecha del eje X) funciona bien. Se quitó la línea correspondiente de «Abiertos» de `Web/CHANGELOG.md`.
