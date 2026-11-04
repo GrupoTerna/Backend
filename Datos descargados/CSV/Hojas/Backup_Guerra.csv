@@ -11027,7 +11027,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 11026,05/09/2026 08:53:43,05/09/2026,Guerra,24,135,5,S,33,GrupoXTerna™2,#V8U2G9C8J,Olivera8,4,4,0,8,0,600,,21,0,0,Corregido
 11027,05/09/2026 13:01:47,05/09/2026,Guerra,24,135,5,S,33,GrupoXTerna™2,#Q9J8ULV0,AlexX,4,4,0,8,0,650,,19,0,0,Corregido
 11028,06/09/2026 05:01:59,06/09/2026,Guerra,24,135,5,D,34,Grupo乂Terna™,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,4,8,0,8,0,1000,,49,0,8,Original
-11029,06/09/2026 05:01:59,06/09/2026,Guerra,24,135,5,D,34,Grupo乂Terna™,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,4,0,12,0,500,,49,0,0,Reconstruido
+11029,06/09/2026 05:01:59,06/09/2026,Guerra,24,135,5,D,34,Grupo乂Terna™,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,0,4,0,12,0,500,,49,0,0,Reconstruido - Solución única
 11030,06/09/2026 05:01:59,06/09/2026,Guerra,24,135,5,D,34,Grupo乂Terna™,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,8,0,8,0,1250,,49,40,24,Original
 11031,06/09/2026 05:01:59,06/09/2026,Guerra,24,135,5,D,34,Grupo乂Terna™,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,4,8,0,8,0,1350,,48,0,16,Original
 11032,06/09/2026 05:01:59,06/09/2026,Guerra,24,135,5,D,34,Grupo乂Terna™,#2LCJLUC9J,DANIEL,2,10,2,6,0,1450,,25,0,0,Original
@@ -18324,7 +18324,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 18323,06/09/2026 00:00:00,06/09/2026,Guerra,24,135,5,D,34,Grupo乂Terna™,#JR9J0JCQ9,,0,0,4,16,0,0,,,,,Reconstruido - Solución única
 18324,03/09/2026 00:00:00,03/09/2026,Guerra,24,135,5,J,31,Grupo乂Terna™,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,0,0,4,4,0,0,,,,,Reconstruido - Solución única
 18325,04/09/2026 00:00:00,04/09/2026,Guerra,24,135,5,V,32,Grupo乂Terna™,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,0,0,4,8,0,0,,,,,Reconstruido - Solución única
-18326,05/09/2026 00:00:00,05/09/2026,Guerra,24,135,5,S,33,Grupo乂Terna™,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,0,0,4,12,0,0,,,,,Reconstruido - Solución única
+18326,05/09/2026 00:00:00,05/09/2026,Guerra,24,135,5,S,33,Grupo乂Terna™,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,4,4,12,0,500,,,,,Reconstruido - Solución estimada
 18327,03/09/2026 00:00:00,03/09/2026,Guerra,24,135,5,J,31,Grupo乂Terna™,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,0,0,4,4,0,0,,,,,Reconstruido - Solución estimada
 18328,04/09/2026 00:00:00,04/09/2026,Guerra,24,135,5,V,32,Grupo乂Terna™,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,0,0,4,8,0,0,,,,,Reconstruido - Solución estimada
 18329,05/09/2026 00:00:00,05/09/2026,Guerra,24,135,5,S,33,Grupo乂Terna™,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,4,0,8,0,550,,,,,Reconstruido - Solución estimada
@@ -31885,3 +31885,8 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 31884,03/11/2026 04:45:42,03/11/2026,Entrenamiento,27,138,1,M,1,GrupoXTerna™2,#U2QL9PYUU,El mejor,0,0,,,0,0,13713,31,0,0,Original
 31885,03/11/2026 04:45:42,03/11/2026,Entrenamiento,27,138,1,M,1,GrupoXTerna™2,#80VLPLLG8,Lago,3,0,,,0,0,13819,30,0,0,Original
 31886,03/11/2026 04:55:41,03/11/2026,Entrenamiento,27,138,1,M,1,Grupo乂Terna™,#YQQUVQL0P,ᴳ乂ᵀ⚜️LoloMaster,0,0,,,0,0,11867,49,0,0,Original
+,13/08/2026 00:00:00,13/08/2026,Guerra,24,135,2,J,10,GrupoXTerna™3,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,0,0,,,0,0,,,,,Reconstruido - Solución única
+,14/08/2026 00:00:00,14/08/2026,Guerra,24,135,2,V,11,GrupoXTerna™3,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,4,4,,,0,500,,,,,Reconstruido - Solución única
+,16/08/2026 00:00:00,16/08/2026,Guerra,24,135,2,D,13,GrupoXTerna™3,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,0,4,,,0,500,,,,,Reconstruido - Solución única
+,27/08/2026 00:00:00,27/08/2026,Guerra,24,135,4,J,24,GrupoXTerna™2,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,0,0,,,0,0,,,,,Reconstruido - Solución única
+,28/08/2026 00:00:00,28/08/2026,Guerra,24,135,4,V,25,GrupoXTerna™2,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,,,0,800,,,,,Reconstruido - Solución única

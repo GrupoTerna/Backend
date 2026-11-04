@@ -1,0 +1,13 @@
+ID,Temporada,Semana,Tag,Nombre,Clan,Clase,Dia,PeriodIndex,Accion,AtaquesHoy anterior,AtaquesHoy nuevo,AtaquesSemana anterior (acumulado),AtaquesSemana nueva (acumulado),Fame del dia anterior,Fame del dia nueva,Fame anterior (acumulado),Fame nueva (acumulado),Barcos del dia anterior,Barcos del dia nuevo,Barcos anterior (acumulado),Barcos nuevo (acumulado),Origen anterior,Origen nuevo,Solucion
+T_24_S_02_#UJY0PGPUV,24,2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,GrupoXTerna™3,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_02_#UJY0PGPUV,24,2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,GrupoXTerna™3,unica,V,11,Crear,,4,,4,,500,,500,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_02_#UJY0PGPUV,24,2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,GrupoXTerna™3,unica,S,12,Sin cambio,0,0,4,4,500,0,500,500,0,0,0,0,,,unica
+T_24_S_02_#UJY0PGPUV,24,2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,GrupoXTerna™3,unica,D,13,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_04_#2C982888C,24,4,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™2,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_04_#2C982888C,24,4,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™2,unica,V,25,Crear,,4,,4,,800,,800,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_04_#2C982888C,24,4,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™2,unica,S,26,Sin cambio,4,4,8,8,1400,600,1400,1400,0,0,0,0,Corregido,Corregido,unica
+T_24_S_04_#2C982888C,24,4,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™2,unica,D,27,Sin cambio,0,0,8,8,0,0,1400,1400,0,0,0,0,Corregido,Corregido,unica
+T_24_S_05_#RR8CRJPUV,24,5,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,Grupo乂Terna™,estimada,J,31,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,estimada (varias ternas validas)
+T_24_S_05_#RR8CRJPUV,24,5,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,Grupo乂Terna™,estimada,V,32,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,estimada (varias ternas validas)
+T_24_S_05_#RR8CRJPUV,24,5,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,Grupo乂Terna™,estimada,S,33,Modificar,0,4,0,4,0,500,0,500,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_24_S_05_#RR8CRJPUV,24,5,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,Grupo乂Terna™,estimada,D,34,Modificar,4,0,4,4,500,0,500,500,0,0,0,0,Reconstruido,Reconstruido - Solución única,unica
