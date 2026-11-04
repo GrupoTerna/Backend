@@ -2088,6 +2088,7 @@ function _aplicarCorreccionesGuerra(correcciones) {
   try {
     return _aplicarCorreccionesGuerraImpl(correcciones);
   } finally {
+    _webUltimaGuerraPreviaInvalidar_(); // 03-nov-2026: la instantánea de la última guerra previa de «Ingresos recientes» no debe mostrar un valor anterior a la corrección (§PF125)
     lock.releaseLock();
   }
 }

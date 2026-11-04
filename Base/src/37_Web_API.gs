@@ -34,7 +34,7 @@ var WEB_SESSION_DURACION_SEG = 21600; // 6 horas
 
 // PF125 (03-nov-2026): instantánea de la última guerra de la temporada anterior para «Ingresos recientes». Va en Script Properties (no vence como CacheService, que tiene tope de 6 h); el valor va comprimido porque una propiedad admite ~9 KB. [→ Contexto_Base_Web.md §PF125]
 var WEB_ULTIMA_GUERRA_PREVIA_PROP   = 'WEB_ULTIMA_GUERRA_PREVIA_V1';
-var WEB_ULTIMA_GUERRA_PREVIA_MAX_MS = 24 * 60 * 60 * 1000; // pasadas 24 h se recalcula desde el CSV, para recoger correcciones
+var WEB_ULTIMA_GUERRA_PREVIA_MAX_MS = 10 * 60 * 1000; // pasados 10 min se recalcula desde el CSV: la usuaria corrige guerra a diario y no debe verse un valor desfasado (cambio del 3-nov-2026; antes 24 h)
 
 // _hashClaveAdmin(clave, tag): FASE 6 (15-sep-2026, B-31) SHA-256 de la Clave con pimienta global + Tag como sal (evita una columna Clave_Salt y hashes iguales entre admins); devuelve hex minúscula de 64 caracteres. [→ Contexto_Base_Web.md §37B007]
 var CLAVE_ADMIN_PEPPER = _scriptToken('CLAVE_ADMIN_PEPPER');
@@ -1335,7 +1335,14 @@ function _webUltimaGuerraPreviaGuardar_(snap) {
   }
 }
 
-// _webUltimaGuerraPreviaFilas_(ctx): PF125; filas (formato de la hoja Guerra) de la última guerra de la temporada anterior, para el congelado de lunes a miércoles de «Ingresos recientes». 1) Instantánea guardada, si es de esta temporada vigente (paraTemporada) y tiene menos de 24 h: lectura de milisegundos. 2) Si no, se arma desde Backup_Guerra.csv (≈4 MB, lo lento) y se guarda para las siguientes. La instantánea también la deja lista _purgarTemporadasAnterioresGuerra() (17_GuerraSheet.gs) en el cambio de temporada, con lo que ni la primera carga lee el CSV. Devuelve [] si no hay ninguna guerra previa. [→ Contexto_Base_Web.md §PF125]
+// _webUltimaGuerraPreviaInvalidar_(): PF125; borra la instantánea guardada para que la siguiente carga de «Ingresos recientes» la recalcule desde Backup_Guerra.csv. La llama _aplicarCorreccionesGuerra() (18_CorreccionGuerra.gs) al terminar, para que una corrección se vea de inmediato; nunca lanza. [→ Contexto_Base_Web.md §PF125]
+function _webUltimaGuerraPreviaInvalidar_() {
+  try {
+    PropertiesService.getScriptProperties().deleteProperty(WEB_ULTIMA_GUERRA_PREVIA_PROP);
+  } catch (eInvalidarUG) { /* sin instantánea que borrar */ }
+}
+
+// _webUltimaGuerraPreviaFilas_(ctx): PF125; filas (formato de la hoja Guerra) de la última guerra de la temporada anterior, para el congelado de lunes a miércoles de «Ingresos recientes». 1) Instantánea guardada, si es de esta temporada vigente (paraTemporada) y tiene menos de 10 min: lectura de milisegundos. 2) Si no, se arma desde Backup_Guerra.csv (≈4 MB, lo lento) y se guarda para las siguientes. La instantánea también la deja lista _purgarTemporadasAnterioresGuerra() (17_GuerraSheet.gs) en el cambio de temporada, con lo que ni la primera carga lee el CSV. Devuelve [] si no hay ninguna guerra previa. [→ Contexto_Base_Web.md §PF125]
 function _webUltimaGuerraPreviaFilas_(ctx) {
   var snap = null;
   try {
@@ -1513,7 +1520,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
     buscarMejorDiaGuerraIR(dataGuerra);
     // La hoja Guerra solo guarda la temporada vigente: el primer lunes de una temporada nueva (T27) tiene filas de entrenamiento pero ningún día de guerra, y la última guerra (T26, hasta el domingo) solo está en Backup_Guerra.csv. Antes el CSV se leía únicamente si la hoja no tenía filas de la temporada vigente, así que aquí no se consultaba, `guerraCongeladaIR` quedaba en falso y la tarjeta seguía rotulando «Semana actual». Mismo criterio que _getDatosDashboardCalcular_() (§38B123). Si se halla en el CSV, se agregan SOLO las filas de esa temporada para que los bucles de abajo encuentren la referencia sin tocar los de la temporada vigente.
     if (!mejorFilaIR) {
-      // 03-nov-2026 (pedido de la usuaria: «precachear la última semana de guerra de la temporada anterior»): ya no se lee y parsea Backup_Guerra.csv (≈4 MB) en cada carga; se usa la instantánea guardada de esa semana (_webUltimaGuerraPreviaFilas_()), que solo recurre al CSV si falta o tiene más de 24 h. [→ Contexto_Base_Web.md §PF125]
+      // 03-nov-2026 (pedido de la usuaria: «precachear la última semana de guerra de la temporada anterior»): ya no se lee y parsea Backup_Guerra.csv (≈4 MB) en cada carga; se usa la instantánea guardada de esa semana (_webUltimaGuerraPreviaFilas_()), que solo recurre al CSV si falta, tiene más de 10 min o se aplicó una corrección. [→ Contexto_Base_Web.md §PF125]
       try {
         var filasPreviasIR = _webUltimaGuerraPreviaFilas_(ctx);
         buscarMejorDiaGuerraIR(filasPreviasIR);
