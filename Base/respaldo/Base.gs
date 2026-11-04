@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 12:59:37 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 14:27:28 */
 
 
 
@@ -22440,6 +22440,11 @@ function repararDomingosDesdeCorreccionesInforme() { _repararDomingosDesdeCorrec
 
 function repararDomingosDesdeCorreccionesAplicar() { _repararDomingosDesdeCorrecciones_(true); }
 
+// Clan con el tag en vez del nombre en Backup_Guerra.csv (PF355): informe primero; aplicar renombra solo las filas que no quedan duplicadas y guarda antes un respaldo. [→ Contexto_Base_Web.md §PF355]
+function repararClanConTagGuerraInforme() { _repararClanConTagGuerra_(false); }
+
+function repararClanConTagGuerraAplicar() { _repararClanConTagGuerra_(true); }
+
 /**
  * rellenarTemporada2Historico() [→ Contexto_Base_Web.md §17B159]
  */
@@ -24653,6 +24658,72 @@ function _repararAtaquesHoyGuerra_(aplicar) {
       'Hoja Guerra: ' + resumen.hojaCambios + ' fila(s) a bajar, ' + resumen.hojaSinResolver + ' semana(s) sin resolver. ' +
       (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que reparar.') +
       (aplicar ? '' : ' (No se escribio nada; correr repararAtaquesHoyGuerraAplicar() para aplicar.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * _repararClanConTagGuerra_(aplicar) [→ Contexto_Base_Web.md §PF355]
+ * Busca en Backup_Guerra.csv las filas cuya columna Clan trae un tag (#...) en vez del nombre del clan, que se resuelve con CFG.CLAN_NOMBRES_FALLBACK.
+ * Solo informa o, con aplicar = true, renombra las filas que no dejan una clave repetida (mismo Tag + Clan + Temporada + Semana + PeriodIndex).
+ * Las que sí quedarían repetidas NO se tocan: salen en el informe como DUPLICADA. No toca la hoja Guerra. Informe: Reparacion_ClanConTag_Guerra <fecha>.csv.
+ */
+function _repararClanConTagGuerra_(aplicar) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[ReparoClanTag] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var t0 = Date.now();
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (!csvText) { Logger.log('[ReparoClanTag] Backup_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length < 2) { Logger.log('[ReparoClanTag] Backup_Guerra.csv no tiene filas de datos; no se hace nada.'); return; }
+    var encabezado = parsed[0], filas = parsed.slice(1);
+    // Solo con el orden actual de columnas; con el orden viejo (antes del 30-oct-2026) no se toca nada.
+    if (String(encabezado[GC.CLAN - 1] || '').trim() !== 'Clan' || String(encabezado[GC.TAG - 1] || '').trim() !== 'Tag') {
+      Logger.log('[ReparoClanTag] El encabezado de Backup_Guerra.csv no tiene el orden actual de columnas (Clan en la columna ' + GC.CLAN + ', Tag en la ' + GC.TAG + '); no se toca nada.');
+      return;
+    }
+    for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
+
+    var nombres = CFG.CLAN_NOMBRES_FALLBACK || {};
+    var claveDe = function (f, clan) {
+      return [String(f[GC.TAG - 1] || '').trim().toUpperCase(), clan, String(f[GC.TEMPORADA - 1] || '').trim(), String(f[GC.SEMANA - 1] || '').trim(), String(f[GC.PERIOD_IDX - 1] || '').trim()].join('|');
+    };
+    var existentes = {};
+    filas.forEach(function (f) { existentes[claveDe(f, String(f[GC.CLAN - 1] || '').trim())] = true; });
+
+    var informe = [['Tipo', 'N°', 'Temporada', 'Semana', 'Tag', 'Nombre', 'PeriodIndex', 'Clan actual', 'Clan nuevo', 'Detalle']];
+    var cambios = [], duplicadas = 0, sinNombre = 0;
+    filas.forEach(function (f, idx) {
+      var clan = String(f[GC.CLAN - 1] || '').trim();
+      if (clan.charAt(0) !== '#') return;
+      var nuevo = nombres[clan.toUpperCase()];
+      var base = [f[GC.NUM - 1], f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.PERIOD_IDX - 1], clan];
+      if (!nuevo) { sinNombre++; informe.push(['SIN NOMBRE'].concat(base, ['', 'el tag no esta en CFG.CLAN_NOMBRES_FALLBACK'])); return; }
+      var claveNueva = claveDe(f, nuevo);
+      if (existentes[claveNueva]) { duplicadas++; informe.push(['DUPLICADA (no se toca)'].concat(base, [nuevo, 'ya hay una fila del mismo jugador y periodo con el clan ' + nuevo])); return; }
+      existentes[claveNueva] = true; // si dos filas con tag chocaran entre si, solo se renombra la primera
+      cambios.push(idx);
+      informe.push(['Cambio'].concat(base, [nuevo, 'Clan: tag -> nombre']));
+    });
+
+    var nombreInforme = 'Reparacion_ClanConTag_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
+
+    if (aplicar && cambios.length) {
+      // Respaldo previo del CSV completo, ANTES de escribir nada.
+      _saveCSVToDrive('Backup_Guerra ANTES de reparar Clan con tag ' + marca + '.csv', csvText);
+      cambios.forEach(function (idx) { filas[idx][GC.CLAN - 1] = nombres[String(filas[idx][GC.CLAN - 1] || '').trim().toUpperCase()]; });
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
+    }
+
+    Logger.log('[ReparoClanTag] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). ' +
+      'Filas con tag en Clan: ' + (cambios.length + duplicadas + sinNombre) + '. A renombrar: ' + cambios.length + (aplicar ? ' (renombradas)' : '') +
+      '. Duplicadas (no se tocan): ' + duplicadas + '. Sin nombre en el respaldo: ' + sinNombre + '. ' +
+      (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que reparar.') +
+      (aplicar ? '' : ' (No se escribio nada; correr repararClanConTagGuerraAplicar() para aplicar.)'));
   } finally {
     lock.releaseLock();
   }
