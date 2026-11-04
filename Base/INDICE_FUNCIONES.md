@@ -188,7 +188,7 @@ Ninguno.
 | `_aplicarFiltroEnFilaHeader` | función | 04_Formato_Comun.gs | 730 | Contexto_Base_Web.md §04B015 |
 | `_aplicarFiltroFila2` | función | 02_Setup_Hojas.gs | 865 | Contexto_Base_Web.md §02B064 |
 | `_aplicarFiltroFila3` | función | 02_Setup_Hojas.gs | 881 | Contexto_Base_Web.md §02B065 |
-| `_aplicarFmtCondicionalControl` | función | 22_ControlCalendario.gs | 1511 |  |
+| `_aplicarFmtCondicionalControl` | función | 22_ControlCalendario.gs | 1513 |  |
 | `_aplicarFmtCondicionalControl2` | función | 23_Control2_GuerraSemanal.gs | 378 | Contexto_Base_Web.md §23B021 |
 | `_aplicarFmtCondicionalGuerra` | función | 17_GuerraSheet.gs | 5219 |  |
 | `_aplicarFmtCondicionalGuerraLogs` | función | 17_GuerraSheet.gs | 3608 |  |
@@ -319,7 +319,7 @@ Ninguno.
 | `_buildCacheSuffix` | función | 09_API_ClashRoyale.gs | 2937 | Contexto_Base_Web.md §09B150 |
 | `_buildControlHeaders` | función | 02_Setup_Hojas.gs | 302 |  |
 | `_buildHistorialGuerraFilename` | función | 20_HistorialGuerraJugador.gs | 540 | Contexto_Base_Web.md §20B021 |
-| `_buildMinGSwitchFormula` | función | 22_ControlCalendario.gs | 1499 | Contexto_Base_Web.md §22B077 |
+| `_buildMinGSwitchFormula` | función | 22_ControlCalendario.gs | 1501 | Contexto_Base_Web.md §22B077 |
 | `_buildPlayerFilename` | función | 09_API_ClashRoyale.gs | 3329 | Contexto_Base_Web.md §09B160 |
 | `_buildPrefijoTSP_` | función | 09_API_ClashRoyale.gs | 2903 | Contexto_Base_Web.md §09B146 |
 | `_buscarArchivoDelPeriodo_` | función | 09_API_ClashRoyale.gs | 2849 | Contexto_Base_Web.md §PF074 |
@@ -580,7 +580,7 @@ Ninguno.
 | `_CRUCE_META_LOGS_MEMO` | global | 22_ControlCalendario.gs | 46 | Contexto_Base_Web.md §22B051 |
 | `_CRUCE_META_RES_MEMO` | global | 22_ControlCalendario.gs | 47 |  |
 | `_cruceMetaAbrirArchivo_` | función | 22_ControlCalendario.gs | 1115 |  |
-| `_cruceMetaDesdeCacheApi_` | función | 22_ControlCalendario.gs | 1173 | Contexto_Base_Web.md §22B059 |
+| `_cruceMetaDesdeCacheApi_` | función | 22_ControlCalendario.gs | 1175 | Contexto_Base_Web.md §22B059 |
 | `_cruceMetaDesdeGuerraLogs_` | función | 22_ControlCalendario.gs | 1003 |  |
 | `_cruceMetaDesdeJsonDrive_` | función | 22_ControlCalendario.gs | 1018 | Contexto_Base_Web.md §PF144 |
 | `_cruceMetaIndiceDesdeCache_` | función | 22_ControlCalendario.gs | 1101 |  |
@@ -789,11 +789,11 @@ Ninguno.
 | `_generarUrlMazo3DesdeMapas` | función | 31_Cards_Mazos.gs | 1129 | Contexto_Base_Web.md §PF051 |
 | `_generarUrlMazoDesdeMapas` | función | 31_Cards_Mazos.gs | 1046 | Contexto_Base_Web.md §31B049 |
 | `_getAdminFamilia_` | función | 01_Config_Global.gs | 1093 |  |
-| `_getAgregadosAscensoPorTag` | función | 22_ControlCalendario.gs | 1360 | Contexto_Base_Web.md §22B070 |
+| `_getAgregadosAscensoPorTag` | función | 22_ControlCalendario.gs | 1362 | Contexto_Base_Web.md §22B070 |
 | `_getAportesInactivosSemanaActual` | función | 38_Web_Endpoints.gs | 2976 | Contexto_Base_Web.md §38B183 |
 | `_getAsistenciaFusionadaPorRaiz` | función | 26_Torneos_Core.gs | 2601 | Contexto_Base_Web.md §26B263 |
 | `_getAsistenciaTagsPorId` | función | 26_Torneos_Core.gs | 2310 |  |
-| `_getAtaquesHoyCache` | función | 22_ControlCalendario.gs | 1453 |  |
+| `_getAtaquesHoyCache` | función | 22_ControlCalendario.gs | 1455 |  |
 | `_getAtaquesHoyDeGuerra` | función | 17_GuerraSheet.gs | 2519 | Contexto_Base_Web.md §17B184 |
 | `_getAtaquesSemanaActualPorTag` | función | 28_Torneos_Docs.gs | 704 | Contexto_Base_Web.md §28B051 |
 | `_getAtaquesYExentosSemanaActualPorTag` | función | 28_Torneos_Docs.gs | 723 | Contexto_Base_Web.md §28B052 |
@@ -1058,7 +1058,7 @@ Ninguno.
 | `_leerLogrosCSV` | función | 34_Logros.gs | 90 |  |
 | `_leerMapaCodigosClanContactos` | función | 38_Web_Endpoints.gs | 1839 | Contexto_Base_Web.md §38B101 |
 | `_leerModoCSV` | función | 26_Torneos_Core.gs | 1755 | Contexto_Base_Web.md §26B243 |
-| `_leerNotasCalendario2PorSemana` | función | 22_ControlCalendario.gs | 1665 | Contexto_Base_Web.md §22B083 |
+| `_leerNotasCalendario2PorSemana` | función | 22_ControlCalendario.gs | 1667 | Contexto_Base_Web.md §22B083 |
 | `_leerParesCRListaParaHistorial_` | función | 24_Historial_Ascensos.gs | 1605 | Contexto_Base_Web.md §PF286 |
 | `_leerPerfilWebCSV` | función | 36_PerfilWeb.gs | 76 | Contexto_Base_Web.md §36B003 |
 | `_leerPrimeraConsultaRR_` | función | 09_API_ClashRoyale.gs | 3088 |  |
@@ -1282,10 +1282,10 @@ Ninguno.
 | `_primerasCapturasGuerra_` | función | 17_GuerraSheet.gs | 3661 |  |
 | `_primerLunesDelMesEfectivoDe_` | función | 47_Migraciones.gs | 789 |  |
 | `_prioridadFuenteHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 1523 | Contexto_Base_Web.md §20B039 |
-| `_probarCentradoControl` | función | 22_ControlCalendario.gs | 1691 |  |
+| `_probarCentradoControl` | función | 22_ControlCalendario.gs | 1693 |  |
 | `_probarEp` | función | 46_Test.gs | 351 | Contexto_Base_Web.md §46B005 |
 | `_problemasFilasClan_` | función | 18_CorreccionGuerra.gs | 3931 | Contexto_Base_Web.md §18B030 |
-| `_procesarFilasGuerraParaControl` | función | 22_ControlCalendario.gs | 1205 | Contexto_Base_Web.md §22B061 |
+| `_procesarFilasGuerraParaControl` | función | 22_ControlCalendario.gs | 1207 | Contexto_Base_Web.md §22B061 |
 | `_procesarMensajeEntrante` | función | 44_BotWhatsApp.gs | 330 | Contexto_Base_Web.md §44B018 |
 | `_procesarPasoGestion` | función | 44_BotWhatsApp.gs | 958 |  |
 | `_procesarPasoTorneos` | función | 44_BotWhatsApp.gs | 1140 |  |
@@ -1389,12 +1389,12 @@ Ninguno.
 | `_registrarTorneoDesdeBot` | función | 26_Torneos_Core.gs | 4291 | Contexto_Base_Web.md §26B283 |
 | `_registrarVetadoConfirmado` | función | 13_Inactivos_Vetados.gs | 671 | Contexto_Base_Web.md §13B032 |
 | `_registroHistorialGuerraAFilaGrupal` | función | 20_HistorialGuerraJugador.gs | 724 | Contexto_Base_Web.md §20B042 |
-| `_reglaCondFmtAscenso` | función | 22_ControlCalendario.gs | 1478 |  |
-| `_reglaCondFmtAtaquesTotalSemana` | función | 22_ControlCalendario.gs | 1485 |  |
-| `_reglaCondFmtPuntajePct` | función | 22_ControlCalendario.gs | 1698 |  |
-| `_reglasCondFmtBarcosTotalSemana` | función | 22_ControlCalendario.gs | 1710 |  |
-| `_reglasCondFmtPuntajeTotalSemana` | función | 22_ControlCalendario.gs | 1718 | Contexto_Base_Web.md §22B084 |
-| `_reglasCondFmtRango` | función | 22_ControlCalendario.gs | 1469 |  |
+| `_reglaCondFmtAscenso` | función | 22_ControlCalendario.gs | 1480 |  |
+| `_reglaCondFmtAtaquesTotalSemana` | función | 22_ControlCalendario.gs | 1487 |  |
+| `_reglaCondFmtPuntajePct` | función | 22_ControlCalendario.gs | 1700 |  |
+| `_reglasCondFmtBarcosTotalSemana` | función | 22_ControlCalendario.gs | 1712 |  |
+| `_reglasCondFmtPuntajeTotalSemana` | función | 22_ControlCalendario.gs | 1720 | Contexto_Base_Web.md §22B084 |
+| `_reglasCondFmtRango` | función | 22_ControlCalendario.gs | 1471 |  |
 | `_reintentarDiarioSiCandadoOcupado_` | función | 00_Main.gs | 2016 | Contexto_Base_Web.md §PF281 |
 | `_reintentarRunSyncCSV` | función | 00_Main.gs | 2047 |  |
 | `_reintentarRunUpdateProgramado` | función | 00_Main.gs | 2041 |  |
@@ -1551,7 +1551,7 @@ Ninguno.
 | `_sufijoPrestamo` | función | 30_Mensajes.gs | 497 | Contexto_Base_Web.md §30B036 |
 | `_sumaOVacio` | función | 22_ControlCalendario.gs | 788 |  |
 | `_sumaPuntosColiseoPrevios_` | función | 17_GuerraSheet.gs | 2406 | Contexto_Base_Web.md §17B015 |
-| `_sumarEntreClanesSemanaControl_` | función | 22_ControlCalendario.gs | 1322 | Contexto_Base_Web.md §22B069 |
+| `_sumarEntreClanesSemanaControl_` | función | 22_ControlCalendario.gs | 1324 | Contexto_Base_Web.md §22B069 |
 | `_syncGuerraCSV` | función | 17_GuerraSheet.gs | 4929 | Contexto_Base_Web.md §17B173 |
 | `_syncUnaAcumulativaCSV` | función | 05_Backup_CSV.gs | 2210 | Contexto_Base_Web.md §05B111 |
 | `_tablaDeGrupoDoc` | función | 28_Torneos_Docs.gs | 1749 | Contexto_Base_Web.md §28B034 |
