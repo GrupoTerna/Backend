@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 00:29:12 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 01:55:01 */
 
 
 
@@ -614,7 +614,7 @@ function cancelarEjecucion() {
   try {
     var horaCancelar = String(Date.now());
     var propsCancelar = PropertiesService.getScriptProperties();
-    ['RUNALL', 'RUNUPDATE', 'RUNGUERRARAPIDO', 'RUNGUERRA'].forEach(function(idCadena) { propsCancelar.setProperty(idCadena + '_CANCELADA_TS', horaCancelar); });
+    ['RUNALL', 'RUNUPDATE', 'RUNGUERRARAPIDO', 'RUNGUERRA', 'RUNSORTEOS', 'RUNSYNCCSV'].forEach(function(idCadena) { propsCancelar.setProperty(idCadena + '_CANCELADA_TS', horaCancelar); }); // PF354 (4-nov-2026, decidido por la usuaria): RUNSORTEOS y RUNSYNCCSV también se cancelan. [→ Contexto_Base_Web.md §PF354]
   } catch (eMarcaCancelar) {
     Logger.log('[Cancelar] AVISO: no se pudo dejar la marca de cancelación (' + eMarcaCancelar.message + '). Si hay una tanda corriendo, puede volver a programar su continuación.');
   }
@@ -622,20 +622,20 @@ function cancelarEjecucion() {
   _borrarTriggersDeContinuacion('_continuarRunUpdate');
   // FIX (22-ago-2026): runGuerraRapido() ahora también usa el motor de [→ Contexto_Base_Web.md §B080]
   _borrarTriggersDeContinuacion('_continuarRunGuerraRapido');
-  _borrarTriggersDeContinuacion('_continuarRunGuerraCadena'); // PF311 parte B
+  _borrarTriggersDeContinuacion('_continuarRunGuerraCadena'); _borrarTriggersDeContinuacion('_continuarRunSorteos'); _borrarTriggersDeContinuacion('_continuarRunSyncCSV'); // PF311 parte B; PF354 (las dos últimas)
 
   var props = PropertiesService.getScriptProperties();
   var pasoRunGuerraCadena = props.getProperty('RUNGUERRA_PASO'); // PF311 parte B
   _limpiarCadenaRunGuerra_(props, true); // PF311 parte B: borra el avance de la cadena horaria de runGuerra y devuelve la marca de hora para que el próximo disparo la reintente
   var pasoRunAll    = props.getProperty('RUNALL_PASO');
   var pasoRunUpdate = props.getProperty('RUNUPDATE_PASO');
-  var pasoRunGuerraRapido = props.getProperty('RUNGUERRARAPIDO_PASO');
+  var pasoRunGuerraRapido = props.getProperty('RUNGUERRARAPIDO_PASO'), pasoRunSorteos = props.getProperty('RUNSORTEOS_PASO'), pasoRunSyncCSV = props.getProperty('RUNSYNCCSV_PASO'); // PF354 (los dos últimos)
   props.deleteProperty('RUNALL_PASO');
   props.deleteProperty('RUNUPDATE_PASO');
   props.deleteProperty('RUNALL_REINTENTO');
   props.deleteProperty('RUNUPDATE_REINTENTO');
   props.deleteProperty('RUNGUERRARAPIDO_PASO');
-  props.deleteProperty('RUNGUERRARAPIDO_REINTENTO');
+  props.deleteProperty('RUNGUERRARAPIDO_REINTENTO'); ['RUNSORTEOS_PASO', 'RUNSORTEOS_REINTENTO', 'RUNSYNCCSV_PASO', 'RUNSYNCCSV_REINTENTO'].forEach(function(k) { props.deleteProperty(k); }); // PF354
   // NUEVO (05-oct-2026): bandera de la version programada de runGuerraRapido y candado propio de la version
   // programada de Pendientes/Mensajes.
   props.deleteProperty('RUNGUERRARAPIDO_SIN_API');
@@ -658,8 +658,8 @@ function cancelarEjecucion() {
     (pasoRunAll    ? ' RUNALL_PASO eliminado (estaba en ' + pasoRunAll + ').' : '') +
     (pasoRunUpdate ? ' RUNUPDATE_PASO eliminado (estaba en ' + pasoRunUpdate + ').' : '') +
     (pasoRunGuerraRapido ? ' RUNGUERRARAPIDO_PASO eliminado (estaba en ' + pasoRunGuerraRapido + ').' : '') +
-    (pasoRunGuerraCadena ? ' RUNGUERRA_PASO eliminado (estaba en ' + pasoRunGuerraCadena + ').' : '') +
-    ' Triggers de continuación borrados. Progreso de /players, de clanes y de battlelog/upcomingchests borrado. Lock liberado. Ya puedes ejecutar runAll()/runUpdate()/runGuerraRapido() desde cero.');
+    (pasoRunGuerraCadena ? ' RUNGUERRA_PASO eliminado (estaba en ' + pasoRunGuerraCadena + ').' : '') + (pasoRunSorteos ? ' RUNSORTEOS_PASO eliminado (estaba en ' + pasoRunSorteos + ').' : '') + (pasoRunSyncCSV ? ' RUNSYNCCSV_PASO eliminado (estaba en ' + pasoRunSyncCSV + ').' : '') +
+    ' Triggers de continuación borrados. Progreso de /players, de clanes y de battlelog/upcomingchests borrado. Lock liberado. Ya puedes ejecutar runAll()/runUpdate()/runGuerraRapido()/runSorteos()/runSyncCSV() desde cero.');
 }
 
 // demolerTodoElSpreadsheet() — MOVIDA desde 48_Herramientas_Debug.gs a este archivo, justo [→ Contexto_Base_Web.md §B083]
@@ -1255,7 +1255,7 @@ function runGuerra() {
   var horaUtc = now.getUTCHours();
   var minUtc  = now.getUTCMinutes();
 
-  // FIX (02-sep-2026): runGuerra() es monolítica (no usa _ejecutarPorTandas(), [→ Contexto_Base_Web.md §B112]
+  // FIX (02-sep-2026): runGuerra() es monolítica (no usa _ejecutarPorTandas(), PF311 parte B (31-oct-2026): con CFG.RUNGUERRA_POR_TANDAS = true la corrida horaria completa ya delega en la cadena RUNGUERRA (_iniciarRunGuerraPorTandas_()); este cuerpo solo corre en la ventana ligera de 4 a 5 a. m. o con ese interruptor en false. [→ Contexto_Base_Web.md §B112]
   var _tRunGuerra0 = Date.now();
 
   var enVentanaGuerra = _estadoVentanaGuerra_(now).enVentana;
