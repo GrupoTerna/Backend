@@ -1,0 +1,49 @@
+ID,Temporada,Semana,Tag,Nombre,Clan,Clase,Dia,PeriodIndex,Accion,AtaquesHoy anterior,AtaquesHoy nuevo,AtaquesSemana anterior (acumulado),AtaquesSemana nueva (acumulado),Fame del dia anterior,Fame del dia nueva,Fame anterior (acumulado),Fame nueva (acumulado),Barcos del dia anterior,Barcos del dia nuevo,Barcos anterior (acumulado),Barcos nuevo (acumulado),Origen anterior,Origen nuevo,Solucion
+T_22_S_05_#V0UJ0RPVP,22,5,#V0UJ0RPVP,MassimoBabyOhh,GrupoXTerna™3,estimada,J,31,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,estimada (varias ternas validas)
+T_22_S_05_#V0UJ0RPVP,22,5,#V0UJ0RPVP,MassimoBabyOhh,GrupoXTerna™3,estimada,V,32,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,estimada (varias ternas validas)
+T_22_S_05_#V0UJ0RPVP,22,5,#V0UJ0RPVP,MassimoBabyOhh,GrupoXTerna™3,estimada,S,33,Modificar,0,4,0,4,0,500,0,500,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_22_S_05_#V0UJ0RPVP,22,5,#V0UJ0RPVP,MassimoBabyOhh,GrupoXTerna™3,estimada,D,34,Modificar,4,0,4,4,500,0,500,500,0,0,0,0,Reconstruido,Reconstruido - Solución única,unica
+T_23_S_02_#PGLYYV9Q0,23,2,#PGLYYV9Q0,carloselpro,GrupoXTerna™2,estimada,J,10,Modificar,2,3,2,3,400,500,400,500,0,0,0,0,Corregido - Solución única,Corregido - Solución única,unica
+T_23_S_02_#PGLYYV9Q0,23,2,#PGLYYV9Q0,carloselpro,GrupoXTerna™2,estimada,V,11,Modificar,1,4,3,7,100,700,500,1200,0,0,0,0,Corregido - Solución única,Corregido - Solución única,unica
+T_23_S_02_#PGLYYV9Q0,23,2,#PGLYYV9Q0,carloselpro,GrupoXTerna™2,estimada,S,12,Modificar,4,1,7,8,500,100,1000,1300,0,0,0,0,Corregido - Solución estimada,Corregido - Solución estimada,estimada (varias ternas validas)
+T_23_S_02_#PGLYYV9Q0,23,2,#PGLYYV9Q0,carloselpro,GrupoXTerna™2,estimada,D,13,Modificar,4,3,11,11,900,600,1900,1900,0,0,0,0,Reconstruido - Solución estimada,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_23_S_02_#V20GJRC9Y,23,2,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,Grupo乂Terna™,estimada,J,10,Modificar,0,4,0,4,0,500,0,500,0,0,0,0,Corregido - Solución única,Corregido - Solución única,unica
+T_23_S_02_#V20GJRC9Y,23,2,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,Grupo乂Terna™,estimada,V,11,Modificar,4,4,4,8,500,800,500,1300,0,0,0,0,Corregido - Solución única,Corregido - Solución única,unica
+T_23_S_02_#V20GJRC9Y,23,2,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,Grupo乂Terna™,estimada,S,12,Modificar,4,1,8,9,550,100,1050,1400,0,0,0,0,Corregido - Solución estimada,Corregido - Solución estimada,estimada (varias ternas validas)
+T_23_S_02_#V20GJRC9Y,23,2,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,Grupo乂Terna™,estimada,D,13,Modificar,4,3,12,12,800,450,1850,1850,0,0,0,0,Reconstruido - Solución estimada,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_23_S_03_#GLPC8YQGV,23,3,#GLPC8YQGV,,Grupo乂Terna™,estimada,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_23_S_03_#GLPC8YQGV,23,3,#GLPC8YQGV,,Grupo乂Terna™,estimada,V,18,Crear,,4,,4,,700,,700,,0,,0,,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_23_S_03_#GLPC8YQGV,23,3,#GLPC8YQGV,,Grupo乂Terna™,estimada,S,19,Crear,,4,,8,,900,,1600,,0,,0,,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_23_S_03_#GLPC8YQGV,23,3,#GLPC8YQGV,,Grupo乂Terna™,estimada,D,20,Crear,,4,,12,,900,,2500,,0,,0,,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_24_S_01_#VCLRVUCLG,24,1,#VCLRVUCLG,¡momazos pedro!,Mini乂Ternas™,unica,J,3,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,unica
+T_24_S_01_#VCLRVUCLG,24,1,#VCLRVUCLG,¡momazos pedro!,Mini乂Ternas™,unica,V,4,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,,,unica
+T_24_S_01_#VCLRVUCLG,24,1,#VCLRVUCLG,¡momazos pedro!,Mini乂Ternas™,unica,S,5,Modificar,0,1,1,1,75,75,75,75,1,1,1,1,,Corregido - Solución única,unica
+T_24_S_01_#VCLRVUCLG,24,1,#VCLRVUCLG,¡momazos pedro!,Mini乂Ternas™,unica,D,6,Modificar,3,2,3,3,0,0,75,75,0,0,1,1,,Corregido - Solución única,unica
+T_24_S_02_#UJY0PGPUV,24,2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,GrupoXTerna™3,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_02_#UJY0PGPUV,24,2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,GrupoXTerna™3,unica,V,11,Crear,,4,,4,,500,,500,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_02_#UJY0PGPUV,24,2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,GrupoXTerna™3,unica,S,12,Sin cambio,0,0,4,4,500,0,500,500,0,0,0,0,,,unica
+T_24_S_02_#UJY0PGPUV,24,2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,GrupoXTerna™3,unica,D,13,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_02_#2C982888C,24,2,#2C982888C,,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_02_#2C982888C,24,2,#2C982888C,,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_02_#2C982888C,24,2,#2C982888C,,Grupo乂Terna™,unica,S,12,Crear,,4,,4,,550,,550,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_02_#2C982888C,24,2,#2C982888C,,Grupo乂Terna™,unica,D,13,Crear,,0,,4,,0,,550,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_04_#2C982888C,24,4,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™2,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_04_#2C982888C,24,4,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™2,unica,V,25,Crear,,4,,4,,800,,800,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_04_#2C982888C,24,4,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™2,unica,S,26,Sin cambio,4,4,8,8,1400,600,1400,1400,0,0,0,0,Corregido,Corregido,unica
+T_24_S_04_#2C982888C,24,4,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,GrupoXTerna™2,unica,D,27,Sin cambio,0,0,8,8,0,0,1400,1400,0,0,0,0,Corregido,Corregido,unica
+T_24_S_04_#22C090RVJ,24,4,#22C090RVJ,,Grupo乂Terna™,estimada,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_24_S_04_#22C090RVJ,24,4,#22C090RVJ,,Grupo乂Terna™,estimada,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_24_S_04_#22C090RVJ,24,4,#22C090RVJ,,Grupo乂Terna™,estimada,S,26,Crear,,4,,4,,800,,800,,0,,0,,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_24_S_04_#22C090RVJ,24,4,#22C090RVJ,,Grupo乂Terna™,estimada,D,27,Crear,,0,,4,,0,,800,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_04_#JCUPQ88J,24,4,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,Grupo乂Terna™,unica,J,24,Sin cambio,4,4,4,4,500,500,500,500,0,0,0,0,Original,Original,unica
+T_24_S_04_#JCUPQ88J,24,4,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,Grupo乂Terna™,unica,V,25,Modificar,4,4,4,8,0,800,500,1300,0,0,0,0,Corregido,Corregido - Solución única,unica
+T_24_S_04_#JCUPQ88J,24,4,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,Grupo乂Terna™,unica,S,26,Modificar,2,4,10,12,1000,400,1500,1700,0,0,0,0,Original,Corregido - Solución única,unica
+T_24_S_04_#JCUPQ88J,24,4,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,Grupo乂Terna™,unica,D,27,Crear,,0,,12,,0,,1700,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_05_#2C982888C,24,5,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,unica,J,31,Modificar,2,4,2,4,300,500,300,500,0,0,0,0,Original,Corregido - Solución única,unica
+T_24_S_05_#2C982888C,24,5,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,unica,V,32,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_05_#2C982888C,24,5,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,unica,S,33,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_05_#2C982888C,24,5,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,unica,D,34,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+T_24_S_05_#RR8CRJPUV,24,5,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,Grupo乂Terna™,estimada,J,31,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,estimada (varias ternas validas)
+T_24_S_05_#RR8CRJPUV,24,5,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,Grupo乂Terna™,estimada,V,32,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,estimada (varias ternas validas)
+T_24_S_05_#RR8CRJPUV,24,5,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,Grupo乂Terna™,estimada,S,33,Modificar,0,4,0,4,0,500,0,500,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución estimada,estimada (varias ternas validas)
+T_24_S_05_#RR8CRJPUV,24,5,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,Grupo乂Terna™,estimada,D,34,Modificar,4,0,4,4,500,0,500,500,0,0,0,0,Reconstruido,Reconstruido - Solución única,unica
