@@ -1144,6 +1144,8 @@ function _esPeriodoDeColiseo_(temporada, pIdx) {
 function _clanYaCruzoMetaEnPeriodo(nombreClan, periodIndex, temporada, permitirCache) {
   try {
     var buscado = String(nombreClan || '').trim();
+    // 04-nov-2026 (§PF355): si la fila trae el tag del clan en vez de su nombre (filas «Reconstruido» antiguas de Backup_Guerra.csv), se traduce con CFG.CLAN_NOMBRES_FALLBACK; sin esto no se hallaba la subcarpeta de Drive y se listaba la raíz de currentriverrace (0 archivos, 6,6 s).
+    if (/^#[0-9A-Z]+$/i.test(buscado) && CFG.CLAN_NOMBRES_FALLBACK[buscado.toUpperCase()]) buscado = CFG.CLAN_NOMBRES_FALLBACK[buscado.toUpperCase()];
     var pIdx = Number(periodIndex);
     if (!buscado || !isFinite(pIdx)) return false;
     if (temporada !== undefined && temporada !== null && temporada !== '') {
