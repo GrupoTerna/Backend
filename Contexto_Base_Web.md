@@ -365,6 +365,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF348` | **Eje X de las gráficas de línea (perfil y directorio): la letra de las fechas se achica cuando hay muchos puntos** (`tamanoLetraEjeXRotado()` en `timeline-svg.js`; mínimo 7, y si ni así caben se omiten fechas; la fila J V S D se omite si no se lee). **SIN PROBAR en navegador real** (3-nov-2026) |
 | `PF349` | **Espacio sobrante bajo el pie de página en `clan.html` (y en toda página con una tabla en recuadro de scroll):** los `.sr-only` de las filas escapaban del recorte; `.tabla-scroll-wrap` lleva `position:relative` (`assets/styles.css`). **SIN PROBAR en navegador real** (3-nov-2026). |
 | `PF350` | **«Buscar miembro» de `admin.html` ya no parece muerto:** `buscarMiembro()` lleva la vista a `#miembroSec` (al final del panel) y el foco a `#mNombre`; antes la ficha salía fuera de pantalla. **SIN PROBAR en navegador real** (4-nov-2026). |
+| `PF351` | **El panel de permisos pasa de tarjeta de `admin.html` a link «Permisos» del nav** (entre «Mensajes» y «Mi panel», en las 11 páginas con barra): `auth.js` `guardarAccesoPanelPermisos()` y `actualizarNavCta()`; `permisos.html` no cambia de acceso. **SIN PROBAR en navegador real** (4-nov-2026). |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -8213,3 +8214,20 @@ Inventario de temporadas (etapa C-0) → etapa A (nuevos, `ClanTag`, correccione
 **Qué se descartó.** Un fallo de JavaScript al registrar el botón: el script inline pasa `node --check` y `#btnBuscar` existe una sola vez.
 
 **Pruebas.** `test/admin-buscar-miembro-scroll-dom.test.js` (3 pruebas; extrae `buscarMiembro()` del script real entre marcadores). Suite completa: 818 de 818. **Límite:** jsdom no hace layout; se comprueba que se pide el desplazamiento y el foco, no que el resultado quede visible. Si en el navegador real el botón sigue sin hacer nada (ni siquiera aparece «Buscando…»), la causa sería otra (por ejemplo la sesión o la respuesta del backend `webAdminBuscarMiembro`) y habría que mirar la consola.
+
+### PF351 — El panel de permisos sale de `admin.html` y pasa a ser el link «Permisos» del nav (pedido de la usuaria, 4-nov-2026; `Web`: `admin.html`, `permisos.html`, `assets/js/core/auth.js`, `assets/js/core/api.js`, las 11 páginas con barra, `sw.js` v204, commit `9d70ba5`; **SIN PROBAR en navegador real**)
+
+**Qué pidió la usuaria.** «Quita el panel de permisos de admin y ponlo como los botones entre mensajes y admin»: que deje de ser una tarjeta dentro del panel de `admin.html` y sea un botón de la barra, junto a «Mensajes» y antes de «Acceder / Mi panel». Es el mismo criterio que usó con «Mensajes» el 19-sep-2026 (`auth.js`).
+
+**Qué cambió.**
+- Se quitó de `admin.html` la tarjeta `#cardPanelPermisos` («Solo para ti» / «Abrir panel de permisos»).
+- Las 11 páginas con barra (`404`, `admin`, `clan`, `comunidad`, `directorio`, `guerra`, `index`, `mensajes`, `perfil`, `permisos`, `torneos`) llevan `<a href="permisos.html" data-page="permisos" style="display:none;">Permisos</a>` justo después de «Mensajes». `sorteo.html` no tiene esa barra y no se tocó.
+- **Quién lo ve:** solo con sesión de admin **y** si el backend confirmó que ese Celular es el de `PANEL_PERMISOS_CELULAR` (`webAdminMisPermisos`, campo `panelPermisos`). Como esa confirmación necesita al backend y la barra está en todas las páginas, **no se pregunta en cada una**: `admin.html` (`aplicarVisibilidadPanelPermisos()`, al abrir el panel) y `permisos.html` (`verificarAccesoYCargar()`) la guardan con `guardarAccesoPanelPermisos()` en `localStorage['terna_panel_permisos']`, y `actualizarNavCta()` (`auth.js`) lo muestra u oculta junto con «Mensajes».
+- **Se borra el flag** en `cerrarSesionAdmin()` (`auth.js`), en `_manejarSesionVencida()` (`api.js`) y en `mostrarLogin()` (`admin.html`), para que el siguiente admin de ese navegador no herede el link.
+- **Falla cerrado:** si la llamada falla, `aplicarVisibilidadPanelPermisos()` guarda «sin acceso» y el link queda oculto; sin `localStorage` también.
+
+**Lo que NO cambia.** El aislamiento real sigue en el backend (`_webPermisosExigirAcceso()`, `34_Web_API.gs`): ocultar el link es solo comodidad. Un admin que escriba la URL de `permisos.html` ve la pantalla «sin acceso». `permisos.html` conserva su propia verificación.
+
+**Efecto a tener presente.** El link solo aparece **después de que `admin.html` (o `permisos.html`) corrió una vez con esa sesión**. Quien ya tenía la sesión abierta antes de publicar este cambio no lo ve en `guerra.html` o `index.html` hasta abrir «Mi panel» una vez. Si cambia `PANEL_PERMISOS_CELULAR`, el link se corrige la próxima vez que se abra `admin.html`, no al instante.
+
+**Pruebas.** `test/nav-permisos-dom.test.js` (7 pruebas: orden Mensajes < Permisos < Acceder en las 11 páginas, la tarjeta ya no está, oculto sin sesión o sin visto bueno, visible con ambos, `guardarAccesoPanelPermisos()` y borrado al cerrar sesión). Suite completa: 825 de 825; `eslint assets`, `html-validate` y `check-local-links` sin errores. **Límite:** jsdom; no prueba el backend real ni el aspecto en un navegador (en pantalla chica el menú ☰ ahora lleva un enlace más).
