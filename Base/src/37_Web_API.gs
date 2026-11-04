@@ -74,7 +74,7 @@ var WEB_FUNCIONES_ADMIN = [
   {
     id: WEB_FUNCION_ACTUALIZAR_VGUERRA,
     etiqueta: 'Actualizar V. Guerra desde «Actualizar»',
-    descripcion: 'Hace que el botón «Actualizar» de Ingresos recientes también consulte en la API de Clash Royale el perfil de esos jugadores (V. Guerra, nivel y demás datos). Es lo que más gasta de la cuota gratuita, por eso hay un tope de consultas por hora y por día compartido entre todos los admins; sin esta casilla el botón actualiza lo demás, pero no V. Guerra.'
+    descripcion: 'Hace que el botón «Actualizar» de Ingresos recientes también consulte en la API de Clash Royale el perfil de esos jugadores (V. Guerra y demás datos del perfil). Es lo que más gasta de la cuota gratuita, por eso hay un tope de consultas por hora y por día compartido entre todos los admins. Es todo o nada: sin esta casilla, o con el tope alcanzado, el botón no consulta ningún perfil (ni V. Guerra ni otro dato de jugador) y solo actualiza lo que no sale de los perfiles (clanes, Directorio, Nuevos y Guerra).'
   }
 ];
 

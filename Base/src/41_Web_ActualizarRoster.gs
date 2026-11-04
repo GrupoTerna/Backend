@@ -94,7 +94,7 @@ function _webAdminActualizarRoster(token, tipo) {
     var playersNota = '';
     if (tipoSol === 'roster') {
       if (!acceso.puedeVGuerra) {
-        playersNota = 'V. Guerra no se consultó: tu cuenta no tiene el permiso «' + WEB_FUNCION_ACTUALIZAR_VGUERRA + '».';
+        playersNota = 'No se consultaron los perfiles de los jugadores (V. Guerra incluida): tu cuenta no tiene el permiso «' + WEB_FUNCION_ACTUALIZAR_VGUERRA + '».';
       } else {
         var tope = _webActRosterPlayersTope_(ahora);
         if (tope.permitido) {
@@ -457,11 +457,11 @@ function _webActRosterPlayersTope_(ahora) {
   var enHora = usos.filter(function (ts) { return (ahora - ts) < WEB_ACTROSTER_PLAYERS_HORA_MS; });
   var hora = function (ms) { return Utilities.formatDate(new Date(ms), 'America/Lima', 'HH:mm'); };
   if (enHora.length >= WEB_ACTROSTER_PLAYERS_MAX_HORA) {
-    return { permitido: false, motivo: 'V. Guerra no se consultó: ya se hicieron ' + WEB_ACTROSTER_PLAYERS_MAX_HORA + ' consultas en la última hora. Se libera un cupo a las ' +
+    return { permitido: false, motivo: 'No se consultaron los perfiles de los jugadores (V. Guerra incluida): ya se hicieron ' + WEB_ACTROSTER_PLAYERS_MAX_HORA + ' consultas en la última hora. Se libera un cupo a las ' +
       hora(enHora[0] + WEB_ACTROSTER_PLAYERS_HORA_MS) + ' (hora Lima).' };
   }
   if (usos.length >= WEB_ACTROSTER_PLAYERS_MAX_DIA) {
-    return { permitido: false, motivo: 'V. Guerra no se consultó: ya se hicieron ' + WEB_ACTROSTER_PLAYERS_MAX_DIA + ' consultas en las últimas 24 horas. Se libera un cupo a las ' +
+    return { permitido: false, motivo: 'No se consultaron los perfiles de los jugadores (V. Guerra incluida): ya se hicieron ' + WEB_ACTROSTER_PLAYERS_MAX_DIA + ' consultas en las últimas 24 horas. Se libera un cupo a las ' +
       hora(usos[0] + WEB_ACTROSTER_PLAYERS_DIA_MS) + ' (hora Lima).' };
   }
   return { permitido: true, motivo: '' };
