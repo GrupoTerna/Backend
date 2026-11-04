@@ -1750,6 +1750,18 @@ function _webPerfilJugador(tagBuscado, opciones) {
   // 03-nov-2026 (pedido usuaria, revisión de secciones que no congelaban): de lunes a miércoles (entrenamiento) la semana nueva todavía no tiene días de guerra, así que guerraSemana salía en 0 y ataquesMax en 0 (el comparador de directorio.html y la cabecera de perfil.html mostraban 0 sin tope). Se congela con la misma idea de §PF125: referencia = el domingo anterior (periodIndex - periodIndex%7 - 1), con la temporada más alta que no sea futura (el periodIndex se repite entre temporadas). Solo cambia lo que se MUESTRA en guerraSemana; ataquesSemana/fameSemana/barcosSemana siguen siendo los de la semana en curso porque alimentan _webProgresoRequisitos() junto con los ataques exentos, que sí son de la semana en curso. [→ Contexto_Base_Web.md §PF125]
   var perfilCongelado = !esDiaGuerraIdx(ctx.periodIndex);
   var perfilPIdxDomingo = Number(ctx.periodIndex) - (Number(ctx.periodIndex) % 7) - 1;
+  // FIX (03-nov-2026, pedido de la usuaria: el rótulo de admin.html seguía en «Ataques/sem» con 0 ataques): el primer lunes de una temporada nueva el periodIndex se reinicia (T27 empieza en 0), así que la fórmula de arriba da -1 y no existe esa fila: guerraSemana salía en 0 y ataquesMax en 0. En ese caso el domingo anterior es el último de la temporada previa: 7 × (lunes que tuvo su mes) - 1, igual que _getSemanasTemporada(), y solo vale una fila de esa temporada. [→ Contexto_Base_Web.md §PF125]
+  var perfilTempDomingoMax = Number(ctx.temporada);
+  var perfilDomingoTempPrevia = false;
+  if (perfilCongelado && perfilPIdxDomingo < 0) {
+    var plTempPrevia = primerLunesTemporada(CFG.REF_DEFAULT, Number(ctx.temporada) - 1);
+    var semanasTempPrevia = (plTempPrevia && !isNaN(plTempPrevia.getTime())) ? (lunesEnMes(plTempPrevia.getFullYear(), plTempPrevia.getMonth()) || 0) : 0;
+    if (semanasTempPrevia > 0) {
+      perfilPIdxDomingo = semanasTempPrevia * 7 - 1;
+      perfilTempDomingoMax = Number(ctx.temporada) - 1;
+      perfilDomingoTempPrevia = true;
+    }
+  }
   var perfilCongTemp = -1, perfilCongAtaques = 0, perfilCongFame = 0, perfilCongBarcos = 0;
   var historialRanking = [];
   var diasGuerraSemana = {}; // 19-sep-2026: { offsetDia(0-3): {pIdx, clan} } de la semana en curso, para los exentos
@@ -1820,7 +1832,7 @@ function _webPerfilJugador(tagBuscado, opciones) {
 
       if (perfilCongelado && Number(dataGuerra[i][GC.PERIOD_IDX - 1]) === perfilPIdxDomingo) {
         var tempCongPerfil = Number(dataGuerra[i][GC.TEMPORADA - 1]) || 0;
-        if (tempCongPerfil && tempCongPerfil <= Number(ctx.temporada) && tempCongPerfil >= perfilCongTemp) {
+        if (tempCongPerfil && (perfilDomingoTempPrevia ? tempCongPerfil === perfilTempDomingoMax : tempCongPerfil <= perfilTempDomingoMax) && tempCongPerfil >= perfilCongTemp) {
           perfilCongTemp    = tempCongPerfil;
           perfilCongAtaques = Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0;
           perfilCongFame    = Number(dataGuerra[i][GC.FAME        - 1]) || 0;
