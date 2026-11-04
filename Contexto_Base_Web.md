@@ -364,6 +364,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF347` | **Botón «Actualizar» de «Ingresos recientes»: permiso nuevo «Actualizar V. Guerra» y tope de consultas `/players` por hora y por día** (`WEB_FUNCION_ACTUALIZAR_VGUERRA`, `_webActRosterPlayersTope_()`; sin el permiso o sobre el tope el botón corre igual pero sin `/players` y lo dice). **SIN PROBAR en Apps Script real ni en navegador real** (3-nov-2026) |
 | `PF348` | **Eje X de las gráficas de línea (perfil y directorio): la letra de las fechas se achica cuando hay muchos puntos** (`tamanoLetraEjeXRotado()` en `timeline-svg.js`; mínimo 7, y si ni así caben se omiten fechas; la fila J V S D se omite si no se lee). **SIN PROBAR en navegador real** (3-nov-2026) |
 | `PF349` | **Espacio sobrante bajo el pie de página en `clan.html` (y en toda página con una tabla en recuadro de scroll):** los `.sr-only` de las filas escapaban del recorte; `.tabla-scroll-wrap` lleva `position:relative` (`assets/styles.css`). **SIN PROBAR en navegador real** (3-nov-2026). |
+| `PF350` | **«Buscar miembro» de `admin.html` ya no parece muerto:** `buscarMiembro()` lleva la vista a `#miembroSec` (al final del panel) y el foco a `#mNombre`; antes la ficha salía fuera de pantalla. **SIN PROBAR en navegador real** (4-nov-2026). |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -8197,3 +8198,15 @@ Inventario de temporadas (etapa C-0) → etapa A (nuevos, `ClanTag`, correccione
 **Corrección.** `.tabla-scroll-wrap{position:relative}` en `assets/styles.css`. Medido después: `scrollHeight` 1817 px, igual al borde inferior del pie; el encabezado fijo (`thead th`, `position:sticky`) sigue pegado arriba al desplazar. Como la clase la agrega `tables.js` a toda tabla con recuadro, el arreglo vale también para `directorio.html`, `guerra.html` y las demás páginas con ese patrón. **Sin revisar página por página** si algún elemento absoluto dentro de una de esas tablas dependía de la tarjeta como contenedor. `sw.js` v202 (`styles.css` está en `CORE_ASSETS`).
 
 **Pruebas.** En este contenedor `npm test` da 50 correctas y 62 fallidas **con y sin** el cambio (falta el módulo `jsdom`); no se pudo correr la suite completa.
+
+### PF350 — «Buscar miembro» de `admin.html` parecía no hacer nada (pedido de la usuaria, 4-nov-2026; `Web`: `admin.html`, `sw.js` v203, commits `2e19300` y `d480bc3`; **SIN PROBAR en navegador real**)
+
+**Qué se veía.** Al pulsar «Buscar miembro» (o Enter) en `admin.html` no pasaba nada a la vista: «Buscando…» aparecía un instante y desaparecía.
+
+**Causa (leída en el código, no medida en un navegador).** La ficha se dibuja en `#miembroSec`, que está al final de `#panelSec`, **después de otras tarjetas** (cuatro `.card` entre el buscador y ese bloque), y `buscarMiembro()` no desplazaba la vista hasta ella. La función, los ids y la sintaxis del script estaban bien: el resultado salía correcto, pero fuera de pantalla. El último cambio de `renderMiembro()` (rótulo «Ataques última guerra», `c0d19c3`, §PF125) no tiene relación: no puede fallar sin que el `catch` muestre un error.
+
+**Corrección.** Tras `renderMiembro(data.jugador)`, `buscarMiembro()` hace `scrollIntoView({block:'start'})` sobre `#miembroSec` (`behavior:'auto'` si el sistema pide «reducir movimiento») y pasa el foco a `#mNombre` con `tabindex="-1"` y `preventScroll:true`, el mismo criterio de §PF050 (H-1). Si el backend responde con error, no se desplaza y el error sale junto al buscador, como antes.
+
+**Qué se descartó.** Un fallo de JavaScript al registrar el botón: el script inline pasa `node --check` y `#btnBuscar` existe una sola vez.
+
+**Pruebas.** `test/admin-buscar-miembro-scroll-dom.test.js` (3 pruebas; extrae `buscarMiembro()` del script real entre marcadores). Suite completa: 818 de 818. **Límite:** jsdom no hace layout; se comprueba que se pide el desplazamiento y el foco, no que el resultado quede visible. Si en el navegador real el botón sigue sin hacer nada (ni siquiera aparece «Buscando…»), la causa sería otra (por ejemplo la sesión o la respuesta del backend `webAdminBuscarMiembro`) y habría que mirar la consola.
