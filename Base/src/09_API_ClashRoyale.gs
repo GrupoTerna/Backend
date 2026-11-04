@@ -2217,7 +2217,9 @@ function _fetchAllClanData() {
  */
 function _fetchPlayersData() {
   // FASE 1 (plan de cambios, ver 01_Config_Global.gs): interruptor de "esta [→ Contexto_Base_Web.md §09B115]
-  if (SUPRIMIR_PLAYERS_TEMPORAL === true) {
+  // PF345 (4-nov-2026): el botón «Actualizar» de «Ingresos recientes» activa también PLAYERS_SOLO_INGRESOS_TEMPORAL y entonces SOLO se piden las cuentas que califican como ingreso reciente (más abajo).
+  var soloIngresosRecientes = (SUPRIMIR_PLAYERS_TEMPORAL === true && PLAYERS_SOLO_INGRESOS_TEMPORAL === true);
+  if (SUPRIMIR_PLAYERS_TEMPORAL === true && !soloIngresosRecientes) {
     Logger.log('[API] _fetchPlayersData: SUPRIMIR_PLAYERS_TEMPORAL=true, se omite POR COMPLETO la consulta a /players (ni siquiera admins).');
     return false;
   }
@@ -2235,8 +2237,23 @@ function _fetchPlayersData() {
 
   var tagsToFetch = [];
 
+  if (soloIngresosRecientes) {
+    // PF345: solo los ingresos recientes que siguen en un clan Terna ahora mismo; no se piden admins ni el resto, sin importar PLAYERS_API_ENABLED.
+    var tagsIngresos = _getTagsIngresosRecientes();
+    var miembrosVigentes = {};
+    for (var iv = 0; iv < CFG.TERNA_TAGS.length; iv++) {
+      var datosClanVig = CACHE_CLAN_DATA[CFG.TERNA_TAGS[iv]];
+      var miembrosClanVig = (datosClanVig && datosClanVig.members) || [];
+      for (var jv = 0; jv < miembrosClanVig.length; jv++) miembrosVigentes[miembrosClanVig[jv].tag] = true;
+    }
+    for (var ti = 0; ti < tagsIngresos.length; ti++) {
+      if (miembrosVigentes[tagsIngresos[ti]] && tagsToFetch.indexOf(tagsIngresos[ti]) < 0) tagsToFetch.push(tagsIngresos[ti]);
+    }
+    Logger.log('[API] /players solo ingresos recientes (PF345): ' + tagsToFetch.length + ' cuentas de ' + tagsIngresos.length + ' que califican.');
+  }
+
   // FASE 12 (18/07/2026): los admins se cargan PRIMERO, antes que los [→ Contexto_Base_Web.md §09B116]
-  if (PLAYERS_API_ENABLED !== false) {
+  if (!soloIngresosRecientes && PLAYERS_API_ENABLED !== false) {
     var tagsAdmin = _getTagsAdmin();
     for (var a = 0; a < tagsAdmin.length; a++) {
       if (tagsToFetch.indexOf(tagsAdmin[a]) < 0) tagsToFetch.push(tagsAdmin[a]);
@@ -2250,7 +2267,9 @@ function _fetchPlayersData() {
 
     var members = clanData.members || [];
 
-    if (PLAYERS_API_ENABLED === 'partial') {
+    if (soloIngresosRecientes) {
+      // PF345: la lista ya se armó arriba; este bucle no agrega nada.
+    } else if (PLAYERS_API_ENABLED === 'partial') {
       // Solo miembros con V_Guerra vacío en la hoja Directorio
       var vGuerraVacios = _getTagsConVGuerraVacia();
       for (var j = 0; j < members.length; j++) {
@@ -2365,7 +2384,8 @@ function _fetchPlayersData() {
   // MISMA corrida lo recuperen. Lo borra _continuarRunUpdate()/_continuarRunAll() al terminar el ciclo, y
   // _cargarProgresoPlayers() lo descarta si tiene más de CFG.PLAYERS_PROGRESO_MAX_EDAD_MS. [→ Contexto_Base_Web.md §PF140]
   if (pendientes.length > 0) _guardarProgresoPlayers(CACHE_CLAN_DATA._players);
-  _playersCompletoEnEstaEjecucion = true;
+  if (!soloIngresosRecientes) _playersCompletoEnEstaEjecucion = true; // PF345: la consulta parcial de ingresos recientes no cuenta como /players completo
+
   Logger.log('[API] /players completado. Datos obtenidos: ' + Object.keys(CACHE_CLAN_DATA._players).length + resumenErrores);
   return true;
 }
@@ -2485,6 +2505,27 @@ function _getTagsConVGuerraVacia() {
     }
   }
   return tags;
+}
+
+/**
+ * Tags de las cuentas que hoy califican como «ingreso reciente» (el mismo criterio del panel: Activo, en un clan Terna, y V. Guerra vacío
+ * o Fecha_ing de hace 7 días o menos). Lee el Directorio reconstruido con Players (V. Guerra está en la hoja Players, no en la física
+ * del Directorio), así que es la misma lista que muestra «Ingresos recientes». Devuelve [] si falla la lectura. [→ Contexto_Base_Web.md §PF345]
+ */
+function _getTagsIngresosRecientes() {
+  try {
+    var dataDir = _leerDirectorioFisicoComoDC(_getSs());
+    var hoy = new Date();
+    var tags = [];
+    for (var i = 0; i < dataDir.length; i++) {
+      var tag = _tagIngresoRecienteDeFilaDir_(dataDir[i], hoy);
+      if (tag && tags.indexOf(tag) < 0) tags.push(tag);
+    }
+    return tags;
+  } catch (e) {
+    Logger.log('[API] _getTagsIngresosRecientes: no se pudo leer el Directorio: ' + e.message);
+    return [];
+  }
 }
 
 /**

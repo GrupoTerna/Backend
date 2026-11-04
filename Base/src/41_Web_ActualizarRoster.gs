@@ -245,13 +245,17 @@ function _webActualizarRosterContinuar() {
 
   var tipo = _webActRosterTipo_(est.tipo); // §PF181
   var nombresPasos = _webActRosterNombresPasos_(tipo);
-  if (tipo === 'roster') SUPRIMIR_PLAYERS_TEMPORAL = true; // variable global en memoria: se pone en cada tanda (ver runGuerraRapido); Pendientes/Mensajes no usan /players
+  if (tipo === 'roster') {
+    SUPRIMIR_PLAYERS_TEMPORAL = true; // variable global en memoria: se pone en cada tanda (ver runGuerraRapido); Pendientes/Mensajes no usan /players
+    PLAYERS_SOLO_INGRESOS_TEMPORAL = true; // PF345: excepción: del resto del clan no se pide /players, pero sí de los ingresos recientes
+  }
   var completo;
   try {
     completo = _ejecutarPorTandas(WEB_ACTROSTER_ID_TANDAS, _webActRosterPasos_(tipo), CFG.RUNGUERRARAPIDO_PRESUPUESTO_MS,
       WEB_ACTROSTER_HANDLER_CONTINUAR, nombresPasos);
   } catch (e) {
     SUPRIMIR_PLAYERS_TEMPORAL = false;
+    PLAYERS_SOLO_INGRESOS_TEMPORAL = false;
     Logger.log('[ActRoster] ERROR en la solicitud ' + est.id + ': ' + e + (e && e.stack ? ' | ' + e.stack : ''));
     _webActRosterLimpiarCadena_(true);
     _webActRosterCerrar_(est, 'error', (tipo === 'mensajes' ? 'La regeneración falló' : 'La actualización falló') + '. Intenta de nuevo; si se repite, avisa al administrador.');
@@ -273,6 +277,7 @@ function _webActualizarRosterContinuar() {
 
   if (completo) {
     SUPRIMIR_PLAYERS_TEMPORAL = false;
+    PLAYERS_SOLO_INGRESOS_TEMPORAL = false;
     // Recalentar la cache de la web ANTES de cerrar el estado (sigue en 'ejecutando'), para que cuando el frontend vea 'ok' ya encuentre los datos nuevos (AVISO 4).
     est.mensaje = 'Datos actualizados. Actualizando la web...';
     _webActRosterGuardarEstado_(est);
@@ -288,6 +293,7 @@ function _webActualizarRosterContinuar() {
   var pasoRestante = props.getProperty(WEB_ACTROSTER_ID_TANDAS + '_PASO');
   if (pasoRestante === null) {
     SUPRIMIR_PLAYERS_TEMPORAL = false;
+    PLAYERS_SOLO_INGRESOS_TEMPORAL = false;
     _webActRosterCerrar_(est, 'omitido', _webActRosterTextoVentana_() + ' Intenta de nuevo más tarde.');
     return;
   }
@@ -332,7 +338,8 @@ function _webActRosterPasos_(tipo) {
   if (_webActRosterTipo_(tipo) === 'mensajes') return _webActRosterPasosMensajes_();
   return [
     function () {
-      SUPRIMIR_PLAYERS_TEMPORAL = true; // el Directorio de esta cadena no pide /players (igual que runGuerraRapido)
+      SUPRIMIR_PLAYERS_TEMPORAL = true; // el Directorio de esta cadena no pide /players del resto del clan (igual que runGuerraRapido)
+      PLAYERS_SOLO_INGRESOS_TEMPORAL = true; // PF345: sí pide los ingresos recientes (V. Guerra, Nivel y demás campos de /players)
       forzarRosterFrescoAhora();
       capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'actualizarRosterWeb paso 0');
     },

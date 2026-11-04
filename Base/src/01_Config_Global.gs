@@ -478,6 +478,9 @@ var BATTLELOGCHESTS_API_ENABLED = false;
 // INTERRUPTOR SUPRIMIR_PLAYERS_TEMPORAL (Fase 1 del plan de cambios) [→ Contexto_Base_Web.md §01B072]
 var SUPRIMIR_PLAYERS_TEMPORAL = false;
 
+// INTERRUPTOR PLAYERS_SOLO_INGRESOS_TEMPORAL (PF345, 4-nov-2026): excepción de SUPRIMIR_PLAYERS_TEMPORAL solo para el botón «Actualizar» de «Ingresos recientes» (41_Web_ActualizarRoster.gs). Con ambos en true, _fetchPlayersData() consulta /players ÚNICAMENTE de las cuentas que hoy califican como ingreso reciente (_getTagsIngresosRecientes()); ni admins ni el resto del clan. Quien lo active debe volver a ponerlo en false junto con SUPRIMIR_PLAYERS_TEMPORAL. [→ Contexto_Base_Web.md §PF345]
+var PLAYERS_SOLO_INGRESOS_TEMPORAL = false;
+
 // IDs DE CARPETAS DRIVE [→ Contexto_Base_Web.md §01B073]
 var DRIVE_FOLDER_ID_CSV  = '1rTp5gXQ0ydnkM3eg6wy2vfOrpUp9GOsR';
 

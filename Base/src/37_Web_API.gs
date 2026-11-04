@@ -1254,6 +1254,26 @@ function _webDiasOpcionalesIngresoGuerra_(clanNombre, ref, memo) {
   return res;
 }
 
+// Tag de una fila del Directorio (formato DC) si califica como «ingreso reciente»; '' si no. Criterio de siempre del PASO 1 de _construirIngresosRecientesUnificado(): estado Activo, en un clan Terna vigente y (V. Guerra vacío o Fecha_ing de hace 7 días o menos). Lo reutiliza _getTagsIngresosRecientes() (09_API_ClashRoyale.gs) para que el botón «Actualizar» pida /players de las mismas cuentas que muestra el panel. [→ Contexto_Base_Web.md §PF345]
+function _tagIngresoRecienteDeFilaDir_(filaDir, hoy) {
+  var LIMITE_DIAS_NUEVO = 7;
+  if (String(filaDir[DC.ESTADO - 1] || '').trim() !== 'Activo') return '';
+
+  var clanTagDir = String(filaDir[DC.CLAN_TAG - 1] || '').trim();
+  if (CFG.TERNA_TAGS.indexOf(clanTagDir) < 0) return ''; // ya no está en un clan Terna
+
+  var vGuerra = String(filaDir[DC.V_GUERRA - 1] || '').trim();
+  var fechaIng = filaDir[DC.FECHA_ING - 1];
+  var esReciente = false;
+  if (fechaIng instanceof Date && !isNaN(fechaIng.getTime())) {
+    var diasDesdeIngreso = (hoy - fechaIng) / 86400000;
+    esReciente = diasDesdeIngreso >= 0 && diasDesdeIngreso <= LIMITE_DIAS_NUEVO;
+  }
+  if (vGuerra !== '' && !esReciente) return ''; // no califica como "reciente"
+
+  return String(filaDir[DC.TAG - 1] || '').trim();
+}
+
 // _construirIngresosRecientesUnificado(): FIX (01-sep-2026, pedido usuario — "haz que trabajen juntos, primero se usa la información de directorio, eso no es negociable en ambas. luego se verifica, si hay información de tampermonkey, se implementa, sino se queda con lo… [→ Contexto_Base_Web.md §37B257]
 function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, dataGuerraPrefetch, tDash) {
   var ss = _getSs();
@@ -1293,25 +1313,10 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
     if (celAdm) celularesAdminIR[celAdm] = true;
   }
   var hoy = new Date();
-  var LIMITE_DIAS_NUEVO = 7;
   var candidatosBase = [];
   for (var k = 0; k < dataDir.length; k++) {
     var filaDir0 = dataDir[k];
-    if (String(filaDir0[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
-
-    var clanTagDir0 = String(filaDir0[DC.CLAN_TAG - 1] || '').trim();
-    if (CFG.TERNA_TAGS.indexOf(clanTagDir0) < 0) continue; // ya no está en un clan Terna
-
-    var vGuerra0 = String(filaDir0[DC.V_GUERRA - 1] || '').trim();
-    var fechaIng0 = filaDir0[DC.FECHA_ING - 1];
-    var esReciente0 = false;
-    if (fechaIng0 instanceof Date && !isNaN(fechaIng0.getTime())) {
-      var diasDesdeIngreso0 = (hoy - fechaIng0) / 86400000;
-      esReciente0 = diasDesdeIngreso0 >= 0 && diasDesdeIngreso0 <= LIMITE_DIAS_NUEVO;
-    }
-    if (vGuerra0 !== '' && !esReciente0) continue; // no califica como "reciente"
-
-    var tagDir0 = String(filaDir0[DC.TAG - 1] || '').trim();
+    var tagDir0 = _tagIngresoRecienteDeFilaDir_(filaDir0, hoy); // PF345: el criterio vive en un helper para que el botón «Actualizar» consulte /players de las mismas cuentas
     if (!tagDir0) continue;
 
     candidatosBase.push({ tagLimpio: cleanTag(tagDir0), filaDir: filaDir0 });
