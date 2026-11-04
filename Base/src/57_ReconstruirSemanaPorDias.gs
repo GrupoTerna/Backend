@@ -502,7 +502,7 @@ function _rsPlanificar(filas, objetivos, opciones) {
     serie.notas = notas.join('; ');
     if (serie.nMod === 0 && serie.nCrear === 0) { serie.accion = 'Sin cambios'; return; }
     serie.accion = 'Escribir';
-    plan.casos.push({ grupo: g, clase: serie.clase, estimado: estimado, ops: ops, finalAntes: { a: tot.a, b: tot.b, f: tot.f } });
+    plan.casos.push({ grupo: g, clase: serie.clase, estimado: estimado, ops: ops, finalAntes: { a: tot.a, b: tot.b, f: tot.f }, sinFame: sinFame });   // sinFame (§PF183, 3-nov-2026): días sin fame del clan que ya cruzó; la verificación los acepta
   });
   plan.cursor = semActual;
   plan.terminado = !parado;

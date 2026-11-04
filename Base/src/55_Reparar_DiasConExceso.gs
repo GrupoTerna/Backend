@@ -701,7 +701,7 @@ function _excDiasFilaNueva(g, op, offsetRapi, cacheFechas) {   // offsetRapi (op
 /**
  * Verifica, sobre las filas ya leidas de nuevo desde Drive, que:
  *  (1) el numero de filas es el de antes mas las creadas; (2) las filas que el plan no toca son identicas a las de antes;
- *  (3) cada fila del plan quedo con los valores planeados; (4) en cada caso, cada dia esta en la tabla de fame (ataques, barcos y fame del dia),
+ *  (3) cada fila del plan quedo con los valores planeados; (4) en cada caso, cada dia esta en la tabla de fame (ataques, barcos y fame del dia; los dias sin fame del clan que ya cruzo aceptan fame 0),
  *      ninguno pasa de 4 ataques y el total de la semana es el mismo de antes. Devuelve la lista de problemas (vacia = todo bien).
  */
 function _excDiasVerificar(filasAntes, filasDespues, plan, creadasEsperadas) {
@@ -730,7 +730,8 @@ function _excDiasVerificar(filasAntes, filasDespues, plan, creadasEsperadas) {
       var n = _excDiasNum(f[GC.ATAQUES_HOY - 1]), b = _excDiasNum(f[GC.BARCOS - 1]), fm = _excDiasNum(f[GC.FAME - 1]), a = _excDiasNum(f[GC.ATAQUES_SEM - 1]);
       if (n > 4) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ' con mas de 4 ataques');
       if (a - pa !== n) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ': AtaquesSemana no sube lo que dice AtaquesHoy');
-      if (_fameTablaDia_(n, b - pb).indexOf(fm - pf) < 0) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ': ' + n + ' ataques, ' + (b - pb) + ' barcos y ' + (fm - pf) + ' de fame no estan en la tabla');
+      var dSF = !!(c.sinFame && c.sinFame[o]);   // §PF183 (3-nov-2026): día sin fame de un clan que ya cruzó la meta: fame 0 con 0 a n barcos es válido (mismo catálogo que _rsCatalogoSinFameDomingo)
+      if (dSF ? (fm - pf !== 0 || b - pb < 0 || b - pb > n) : _fameTablaDia_(n, b - pb).indexOf(fm - pf) < 0) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ': ' + n + ' ataques, ' + (b - pb) + ' barcos y ' + (fm - pf) + ' de fame no estan en la tabla');
       pa = a; pb = b; pf = fm;
     });
     var fin = _excDiasFinalDe(gd.dias), antes = c.finalAntes;
