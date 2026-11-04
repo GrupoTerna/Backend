@@ -1,0 +1,101 @@
+{
+  "tag": "#YLJYLR0G0",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "04/11/2026",
+  "registros": [
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "semana": 3,
+      "clan": "GrupoXTerna™2",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "semana": 4,
+      "clan": "GrupoXTerna™2",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "semana": 2,
+      "clan": "GrupoXTerna™2",
+      "ataques": 8,
+      "fame": 1500,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "semana": 1,
+      "clan": "GrupoXTerna™2",
+      "ataques": 4,
+      "fame": 900,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "semana": 4,
+      "clan": "GrupoXTerna™2",
+      "ataques": 16,
+      "fame": 2300,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "semana": 3,
+      "clan": "GrupoXTerna™2",
+      "ataques": 16,
+      "fame": 2450,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 25,
+      "temporadaRoyaleAPI": 136,
+      "semana": 2,
+      "clan": "GrupoXTerna™2",
+      "ataques": 12,
+      "fame": 1800,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    }
+  ],
+  "reenumeracionId": "1793146932920"
+}
