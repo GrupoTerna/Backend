@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 03/11/2026 23:22:15 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 00:07:13 */
 
 
 
@@ -25833,6 +25833,15 @@ function _purgarTemporadasAnterioresGuerra(sh, temporadaActual) {
     ' en la hoja. Fusionando con Backup_Guerra.csv ANTES de purgar, para no perder nada.');
   _syncGuerraCSV(sh); // asegura que TODO lo que hay en la hoja ahora mismo (incluidas las filas viejas) ya quedó en el CSV
 
+  // 03-nov-2026 (pedido de la usuaria: «precachear la última semana de guerra de la temporada anterior»): las filas viejas todavía están en `data`, así que aquí se deja lista la instantánea de la última guerra para «Ingresos recientes» (37_Web_API.gs) y su primera carga tras el cambio de temporada no tiene que leer Backup_Guerra.csv. Es solo una ayuda de velocidad: si falla, la web la arma sola desde el CSV. [→ Contexto_Base_Web.md §PF125]
+  try {
+    var tVigentePrecache = Math.max.apply(null, Object.keys(tempsSet).map(Number));
+    var snapPrecache = _webUltimaGuerraPreviaDesdeFilas_(data, tVigentePrecache);
+    if (snapPrecache) _webUltimaGuerraPreviaGuardar_(snapPrecache);
+  } catch (ePrecacheUG) {
+    Logger.log('[Guerra] no se pudo precalentar la última guerra previa (la web la arma sola desde el CSV): ' + ePrecacheUG);
+  }
+
   var filasActuales = [];
   for (var i = 0; i < data.length; i++) {
     if (tempsSet[String(data[i][GC.TEMPORADA - 1] || '')]) filasActuales.push(data[i]);
@@ -28236,6 +28245,7 @@ function _aplicarCorreccionesGuerra(correcciones) {
   try {
     return _aplicarCorreccionesGuerraImpl(correcciones);
   } finally {
+    _webUltimaGuerraPreviaInvalidar_(); // 03-nov-2026: la instantánea de la última guerra previa de «Ingresos recientes» no debe mostrar un valor anterior a la corrección (§PF125)
     lock.releaseLock();
   }
 }
@@ -51874,6 +51884,10 @@ var WEB_MEMBER_TOKEN = _scriptToken('WEB_MEMBER_TOKEN');
 // Duración de la sesión de admin en segundos; CacheService tiene tope duro de 21600 s (6 h) por entrada. [→ Contexto_Base_Web.md §37B006]
 var WEB_SESSION_DURACION_SEG = 21600; // 6 horas
 
+// PF125 (03-nov-2026): instantánea de la última guerra de la temporada anterior para «Ingresos recientes». Va en Script Properties (no vence como CacheService, que tiene tope de 6 h); el valor va comprimido porque una propiedad admite ~9 KB. [→ Contexto_Base_Web.md §PF125]
+var WEB_ULTIMA_GUERRA_PREVIA_PROP   = 'WEB_ULTIMA_GUERRA_PREVIA_V1';
+var WEB_ULTIMA_GUERRA_PREVIA_MAX_MS = 10 * 60 * 1000; // pasados 10 min se recalcula desde el CSV: la usuaria corrige guerra a diario y no debe verse un valor desfasado (cambio del 3-nov-2026; antes 24 h)
+
 // _hashClaveAdmin(clave, tag): FASE 6 (15-sep-2026, B-31) SHA-256 de la Clave con pimienta global + Tag como sal (evita una columna Clave_Salt y hashes iguales entre admins); devuelve hex minúscula de 64 caracteres. [→ Contexto_Base_Web.md §37B007]
 var CLAVE_ADMIN_PEPPER = _scriptToken('CLAVE_ADMIN_PEPPER');
 
@@ -53104,6 +53118,111 @@ function _webDiasOpcionalesIngresoGuerra_(clanNombre, ref, memo) {
   return res;
 }
 
+// _webUltimaGuerraPreviaDesdeFilas_(filas, temporadaActual): PF125 (03-nov-2026, pedido de la usuaria: «¿se puede precachear la última semana de guerra de la temporada anterior? para que no demore consultando»); de un conjunto de filas de Guerra (formato de la hoja, GUERRA_TOTAL_COLS) halla la última guerra de las temporadas ANTERIORES a temporadaActual (el día de guerra con mayor temporada y periodIndex) y devuelve una instantánea compacta con solo los días de guerra (jueves a domingo) de esa semana y solo las columnas que usa «Ingresos recientes»: [periodIndex, Tag, AtaquesHoy, AtaquesSem, Barcos, Fame]; null si no hay ninguna. [→ Contexto_Base_Web.md §PF125]
+function _webUltimaGuerraPreviaDesdeFilas_(filas, temporadaActual) {
+  var tAct = Number(temporadaActual) || 0;
+  var mejorT = -1, mejorP = -1, mejorSem = 1;
+  for (var i = 0; i < filas.length; i++) {
+    var p = Number(filas[i][GC.PERIOD_IDX - 1]);
+    if (!p || !esDiaGuerraIdx(p)) continue;
+    var t = Number(filas[i][GC.TEMPORADA - 1]) || 0;
+    if (!t || t >= tAct) continue;
+    if (t > mejorT || (t === mejorT && p > mejorP)) {
+      mejorT = t; mejorP = p; mejorSem = Number(filas[i][GC.SEMANA - 1]) || 1;
+    }
+  }
+  if (mejorT < 0) return null;
+  var compactas = [];
+  for (var j = 0; j < filas.length; j++) {
+    var f = filas[j];
+    if ((Number(f[GC.TEMPORADA - 1]) || 0) !== mejorT) continue;
+    if ((Number(f[GC.SEMANA - 1]) || 1) !== mejorSem) continue;
+    var pj = Number(f[GC.PERIOD_IDX - 1]);
+    if (!pj || !esDiaGuerraIdx(pj)) continue;
+    compactas.push([
+      pj,
+      String(f[GC.TAG - 1] || ''),
+      Number(f[GC.ATAQUES_HOY - 1]) || 0,
+      Number(f[GC.ATAQUES_SEM - 1]) || 0,
+      Number(f[GC.BARCOS - 1]) || 0,
+      Number(f[GC.FAME - 1]) || 0
+    ]);
+  }
+  return { v: 1, paraTemporada: String(tAct), temporada: String(mejorT), semana: mejorSem, periodIndex: mejorP, filas: compactas };
+}
+
+// _webUltimaGuerraPreviaExpandir_(snap): PF125; devuelve las filas de la instantánea en formato de la hoja Guerra (GUERRA_TOTAL_COLS columnas, las no usadas vacías) para que los bucles de _construirIngresosRecientesUnificado() las lean con los mismos índices GC. [→ Contexto_Base_Web.md §PF125]
+function _webUltimaGuerraPreviaExpandir_(snap) {
+  return snap.filas.map(function (c) {
+    var fila = [];
+    for (var k = 0; k < GUERRA_TOTAL_COLS; k++) fila.push('');
+    fila[GC.TEMPORADA   - 1] = snap.temporada;
+    fila[GC.SEMANA      - 1] = snap.semana;
+    fila[GC.PERIOD_IDX  - 1] = c[0];
+    fila[GC.TAG         - 1] = c[1];
+    fila[GC.ATAQUES_HOY - 1] = c[2];
+    fila[GC.ATAQUES_SEM - 1] = c[3];
+    fila[GC.BARCOS      - 1] = c[4];
+    fila[GC.FAME        - 1] = c[5];
+    return fila;
+  });
+}
+
+// _webUltimaGuerraPreviaGuardar_(snap): PF125; guarda la instantánea comprimida (gzip + base64) en Script Properties con la hora; devuelve true si se guardó. Nunca lanza: si no cabe (~9 KB por propiedad) o falla, el endpoint sigue funcionando y solo pierde la ganancia de velocidad. [→ Contexto_Base_Web.md §PF125]
+function _webUltimaGuerraPreviaGuardar_(snap) {
+  try {
+    var json = JSON.stringify({ guardadoEn: Date.now(), snap: snap });
+    var gz   = Utilities.gzip(Utilities.newBlob(json, 'application/json', 'ultima_guerra.json'));
+    var b64  = Utilities.base64Encode(gz.getBytes());
+    if (b64.length > 8500) {
+      Logger.log('[UltimaGuerraPrevia] la instantánea comprimida pesa ' + b64.length + ' car. y no cabe en una propiedad (máx. ~9000); no se guarda.');
+      return false;
+    }
+    PropertiesService.getScriptProperties().setProperty(WEB_ULTIMA_GUERRA_PREVIA_PROP, b64);
+    Logger.log('[UltimaGuerraPrevia] guardada: T' + snap.temporada + ' semana ' + snap.semana + ', ' + snap.filas.length + ' fila(s), ' + b64.length + ' car. comprimidos.');
+    return true;
+  } catch (eGuardarUG) {
+    Logger.log('[UltimaGuerraPrevia] no se pudo guardar la instantánea: ' + eGuardarUG);
+    return false;
+  }
+}
+
+// _webUltimaGuerraPreviaInvalidar_(): PF125; borra la instantánea guardada para que la siguiente carga de «Ingresos recientes» la recalcule desde Backup_Guerra.csv. La llama _aplicarCorreccionesGuerra() (18_CorreccionGuerra.gs) al terminar, para que una corrección se vea de inmediato; nunca lanza. [→ Contexto_Base_Web.md §PF125]
+function _webUltimaGuerraPreviaInvalidar_() {
+  try {
+    PropertiesService.getScriptProperties().deleteProperty(WEB_ULTIMA_GUERRA_PREVIA_PROP);
+  } catch (eInvalidarUG) { /* sin instantánea que borrar */ }
+}
+
+// _webUltimaGuerraPreviaFilas_(ctx): PF125; filas (formato de la hoja Guerra) de la última guerra de la temporada anterior, para el congelado de lunes a miércoles de «Ingresos recientes». 1) Instantánea guardada, si es de esta temporada vigente (paraTemporada) y tiene menos de 10 min: lectura de milisegundos. 2) Si no, se arma desde Backup_Guerra.csv (≈4 MB, lo lento) y se guarda para las siguientes. La instantánea también la deja lista _purgarTemporadasAnterioresGuerra() (17_GuerraSheet.gs) en el cambio de temporada, con lo que ni la primera carga lee el CSV. Devuelve [] si no hay ninguna guerra previa. [→ Contexto_Base_Web.md §PF125]
+function _webUltimaGuerraPreviaFilas_(ctx) {
+  var snap = null;
+  try {
+    var b64 = PropertiesService.getScriptProperties().getProperty(WEB_ULTIMA_GUERRA_PREVIA_PROP);
+    if (b64) {
+      var json = Utilities.ungzip(Utilities.newBlob(Utilities.base64Decode(b64), 'application/x-gzip', 'ultima_guerra.gz')).getDataAsString('UTF-8');
+      var obj  = JSON.parse(json);
+      if (obj && obj.snap && obj.snap.v === 1 &&
+          obj.snap.paraTemporada === String(ctx.temporada) &&
+          (Date.now() - Number(obj.guardadoEn)) <= WEB_ULTIMA_GUERRA_PREVIA_MAX_MS) {
+        snap = obj.snap;
+      }
+    }
+  } catch (eLeerUG) {
+    snap = null; // propiedad ilegible: se recalcula desde el CSV
+  }
+  if (!snap) {
+    var porTempUG = _leerGuerraCsvAgrupado_().porTemporada;
+    var previas = [];
+    Object.keys(porTempUG).forEach(function (tUG) {
+      if (Number(tUG) < Number(ctx.temporada)) previas = previas.concat(porTempUG[tUG]);
+    });
+    snap = _webUltimaGuerraPreviaDesdeFilas_(previas, ctx.temporada);
+    if (snap) _webUltimaGuerraPreviaGuardar_(snap);
+  }
+  return snap ? _webUltimaGuerraPreviaExpandir_(snap) : [];
+}
+
 // Tag de una fila del Directorio (formato DC) si califica como «ingreso reciente»; '' si no. Criterio de siempre del PASO 1 de _construirIngresosRecientesUnificado(): estado Activo, en un clan Terna vigente y (V. Guerra vacío o Fecha_ing de hace 7 días o menos). Lo reutiliza _getTagsIngresosRecientes() (09_API_ClashRoyale.gs) para que el botón «Actualizar» pida /players de las mismas cuentas que muestra el panel. [→ Contexto_Base_Web.md §PF345]
 function _tagIngresoRecienteDeFilaDir_(filaDir, hoy) {
   var LIMITE_DIAS_NUEVO = 7;
@@ -53237,14 +53356,29 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
   var guerraCongeladaIR = false;
   if (dataGuerra && !esDiaGuerraIdx(ctx.periodIndex)) {
     var mejorTempIR = -1, mejorPeriodoIR = -1, mejorFilaIR = null;
-    for (var gRef = 0; gRef < dataGuerra.length; gRef++) {
-      var pRefIR = Number(dataGuerra[gRef][GC.PERIOD_IDX - 1]);
-      if (!pRefIR || !esDiaGuerraIdx(pRefIR)) continue;
-      var tRefIR = Number(dataGuerra[gRef][GC.TEMPORADA - 1]) || 0;
-      if (!tRefIR || tRefIR > Number(ctx.temporada)) continue;
-      if (tRefIR === Number(ctx.temporada) && pRefIR > ctx.periodIndex) continue; // no futuras
-      if (tRefIR > mejorTempIR || (tRefIR === mejorTempIR && pRefIR > mejorPeriodoIR)) {
-        mejorTempIR = tRefIR; mejorPeriodoIR = pRefIR; mejorFilaIR = dataGuerra[gRef];
+    // FIX (03-nov-2026, pedido de la usuaria: «Ingresos recientes» seguía diciendo «Semana actual» un martes): se busca la última fila de día de guerra (no futura) en un conjunto de filas; se usa primero con la hoja Guerra y, si ahí no hay ninguna, con el CSV. [→ Contexto_Base_Web.md §PF125]
+    var buscarMejorDiaGuerraIR = function (filas) {
+      for (var gRef = 0; gRef < filas.length; gRef++) {
+        var pRefIR = Number(filas[gRef][GC.PERIOD_IDX - 1]);
+        if (!pRefIR || !esDiaGuerraIdx(pRefIR)) continue;
+        var tRefIR = Number(filas[gRef][GC.TEMPORADA - 1]) || 0;
+        if (!tRefIR || tRefIR > Number(ctx.temporada)) continue;
+        if (tRefIR === Number(ctx.temporada) && pRefIR > ctx.periodIndex) continue; // no futuras
+        if (tRefIR > mejorTempIR || (tRefIR === mejorTempIR && pRefIR > mejorPeriodoIR)) {
+          mejorTempIR = tRefIR; mejorPeriodoIR = pRefIR; mejorFilaIR = filas[gRef];
+        }
+      }
+    };
+    buscarMejorDiaGuerraIR(dataGuerra);
+    // La hoja Guerra solo guarda la temporada vigente: el primer lunes de una temporada nueva (T27) tiene filas de entrenamiento pero ningún día de guerra, y la última guerra (T26, hasta el domingo) solo está en Backup_Guerra.csv. Antes el CSV se leía únicamente si la hoja no tenía filas de la temporada vigente, así que aquí no se consultaba, `guerraCongeladaIR` quedaba en falso y la tarjeta seguía rotulando «Semana actual». Mismo criterio que _getDatosDashboardCalcular_() (§38B123). Si se halla en el CSV, se agregan SOLO las filas de esa temporada para que los bucles de abajo encuentren la referencia sin tocar los de la temporada vigente.
+    if (!mejorFilaIR) {
+      // 03-nov-2026 (pedido de la usuaria: «precachear la última semana de guerra de la temporada anterior»): ya no se lee y parsea Backup_Guerra.csv (≈4 MB) en cada carga; se usa la instantánea guardada de esa semana (_webUltimaGuerraPreviaFilas_()), que solo recurre al CSV si falta, tiene más de 10 min o se aplicó una corrección. [→ Contexto_Base_Web.md §PF125]
+      try {
+        var filasPreviasIR = _webUltimaGuerraPreviaFilas_(ctx);
+        buscarMejorDiaGuerraIR(filasPreviasIR);
+        if (mejorFilaIR) dataGuerra = dataGuerra.concat(filasPreviasIR);
+      } catch (eCsvRefIR) {
+        Logger.log('[IngresosRecientes] no se pudo obtener la última guerra de la temporada anterior: ' + eCsvRefIR.message);
       }
     }
     if (mejorFilaIR) {
@@ -53576,6 +53710,18 @@ function _webPerfilJugador(tagBuscado, opciones) {
   // 03-nov-2026 (pedido usuaria, revisión de secciones que no congelaban): de lunes a miércoles (entrenamiento) la semana nueva todavía no tiene días de guerra, así que guerraSemana salía en 0 y ataquesMax en 0 (el comparador de directorio.html y la cabecera de perfil.html mostraban 0 sin tope). Se congela con la misma idea de §PF125: referencia = el domingo anterior (periodIndex - periodIndex%7 - 1), con la temporada más alta que no sea futura (el periodIndex se repite entre temporadas). Solo cambia lo que se MUESTRA en guerraSemana; ataquesSemana/fameSemana/barcosSemana siguen siendo los de la semana en curso porque alimentan _webProgresoRequisitos() junto con los ataques exentos, que sí son de la semana en curso. [→ Contexto_Base_Web.md §PF125]
   var perfilCongelado = !esDiaGuerraIdx(ctx.periodIndex);
   var perfilPIdxDomingo = Number(ctx.periodIndex) - (Number(ctx.periodIndex) % 7) - 1;
+  // FIX (03-nov-2026, pedido de la usuaria: el rótulo de admin.html seguía en «Ataques/sem» con 0 ataques): el primer lunes de una temporada nueva el periodIndex se reinicia (T27 empieza en 0), así que la fórmula de arriba da -1 y no existe esa fila: guerraSemana salía en 0 y ataquesMax en 0. En ese caso el domingo anterior es el último de la temporada previa: 7 × (lunes que tuvo su mes) - 1, igual que _getSemanasTemporada(), y solo vale una fila de esa temporada. [→ Contexto_Base_Web.md §PF125]
+  var perfilTempDomingoMax = Number(ctx.temporada);
+  var perfilDomingoTempPrevia = false;
+  if (perfilCongelado && perfilPIdxDomingo < 0) {
+    var plTempPrevia = primerLunesTemporada(CFG.REF_DEFAULT, Number(ctx.temporada) - 1);
+    var semanasTempPrevia = (plTempPrevia && !isNaN(plTempPrevia.getTime())) ? (lunesEnMes(plTempPrevia.getFullYear(), plTempPrevia.getMonth()) || 0) : 0;
+    if (semanasTempPrevia > 0) {
+      perfilPIdxDomingo = semanasTempPrevia * 7 - 1;
+      perfilTempDomingoMax = Number(ctx.temporada) - 1;
+      perfilDomingoTempPrevia = true;
+    }
+  }
   var perfilCongTemp = -1, perfilCongAtaques = 0, perfilCongFame = 0, perfilCongBarcos = 0;
   var historialRanking = [];
   var diasGuerraSemana = {}; // 19-sep-2026: { offsetDia(0-3): {pIdx, clan} } de la semana en curso, para los exentos
@@ -53646,7 +53792,7 @@ function _webPerfilJugador(tagBuscado, opciones) {
 
       if (perfilCongelado && Number(dataGuerra[i][GC.PERIOD_IDX - 1]) === perfilPIdxDomingo) {
         var tempCongPerfil = Number(dataGuerra[i][GC.TEMPORADA - 1]) || 0;
-        if (tempCongPerfil && tempCongPerfil <= Number(ctx.temporada) && tempCongPerfil >= perfilCongTemp) {
+        if (tempCongPerfil && (perfilDomingoTempPrevia ? tempCongPerfil === perfilTempDomingoMax : tempCongPerfil <= perfilTempDomingoMax) && tempCongPerfil >= perfilCongTemp) {
           perfilCongTemp    = tempCongPerfil;
           perfilCongAtaques = Number(dataGuerra[i][GC.ATAQUES_SEM - 1]) || 0;
           perfilCongFame    = Number(dataGuerra[i][GC.FAME        - 1]) || 0;
