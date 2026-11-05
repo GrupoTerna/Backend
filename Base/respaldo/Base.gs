@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 05/11/2026 17:23:51 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 05/11/2026 17:55:41 */
 
 
 
@@ -20648,17 +20648,20 @@ function _indiceClanesJugadoresDe_(tagClanNorm) {
 
 /**
  * _exMiembrosDesdeIndice_(jugadoresIndice, tagsActuales, yaListados) [→ Contexto_Base_Web.md §PF369]
- * Pasa los jugadores del índice de clanes externos a filas de «Jugadores nuestros que pasaron por este clan»: { origen, tag, nombre, clan, razon, semanas }. Cada jugador sale una vez por cada hoja del roster donde figura (Directorio, Inactivos o Vetados); si no figura en ninguna, sale con origen «Fuera del roster» y sin nombre (el índice guarda solo Tags). Se omiten los miembros actuales del clan (`tagsActuales`, ya salen en la tabla de coincidencias) y lo que ya estaba en `yaListados` (misma hoja y mismo Tag), a lo que se le agrega `semanas`. Devuelve la lista completa, ordenada por Origen (Directorio, Inactivos, Vetados, Fuera del roster) y luego por semanas.
+ * Pasa los jugadores del índice de clanes externos a filas de «Jugadores nuestros que pasaron por este clan»: { origen, tag, nombre, clan, razon, semanas, primera, ultima } (§PF372: primera y última son {temporada, semana, temporadaRoyaleApi, supercell} o null; Web separa «activos» (origen Directorio, por clan nuestro) de «inactivos»). Cada jugador sale una vez por cada hoja del roster donde figura (Directorio, Inactivos o Vetados); si no figura en ninguna, sale con origen «Fuera del roster» y sin nombre (el índice guarda solo Tags). Se omiten los miembros actuales del clan (`tagsActuales`, ya salen en la tabla de coincidencias) y lo que ya estaba en `yaListados` (misma hoja y mismo Tag), a lo que se le agrega `semanas`. Devuelve la lista completa, ordenada por Origen (Directorio, Inactivos, Vetados, Fuera del roster) y luego por semanas.
  */
 function _exMiembrosDesdeIndice_(jugadoresIndice, tagsActuales, yaListados) {
   var salida = (yaListados || []).slice();
-  var semanasPorTag = {};
-  for (var a = 0; a < jugadoresIndice.length; a++) semanasPorTag[cleanTag(jugadoresIndice[a].tag)] = jugadoresIndice[a].semanas;
+  var semanasPorTag = {}, rangoPorTag = {};
+  for (var a = 0; a < jugadoresIndice.length; a++) {
+    semanasPorTag[cleanTag(jugadoresIndice[a].tag)] = jugadoresIndice[a].semanas;
+    rangoPorTag[cleanTag(jugadoresIndice[a].tag)] = { primera: jugadoresIndice[a].primera || null, ultima: jugadoresIndice[a].ultima || null }; // §PF372: primera y última semana en ese clan, para la lista de activos e inactivos
+  }
   var porClave = {};
   for (var b = 0; b < salida.length; b++) {
     var tb = cleanTag(salida[b].tag);
     porClave[salida[b].origen + '|' + tb] = salida[b];
-    if (semanasPorTag[tb] !== undefined) salida[b].semanas = semanasPorTag[tb];
+    if (semanasPorTag[tb] !== undefined) { salida[b].semanas = semanasPorTag[tb]; salida[b].primera = rangoPorTag[tb].primera; salida[b].ultima = rangoPorTag[tb].ultima; }
   }
   var mapas = [];
   try {
@@ -20681,11 +20684,11 @@ function _exMiembrosDesdeIndice_(jugadoresIndice, tagsActuales, yaListados) {
       if (!fila) continue;
       hallado = true;
       if (porClave[mapas[m].origen + '|' + tagJ]) continue;
-      var nueva = { origen: mapas[m].origen, tag: '#' + tagJ, nombre: String(fila[mapas[m].nombre - 1] || ''), clan: String(fila[mapas[m].clan - 1] || ''), razon: String(fila[mapas[m].razon - 1] || ''), semanas: jugadoresIndice[i].semanas };
+      var nueva = { origen: mapas[m].origen, tag: '#' + tagJ, nombre: String(fila[mapas[m].nombre - 1] || ''), clan: String(fila[mapas[m].clan - 1] || ''), razon: String(fila[mapas[m].razon - 1] || ''), semanas: jugadoresIndice[i].semanas, primera: jugadoresIndice[i].primera || null, ultima: jugadoresIndice[i].ultima || null };
       porClave[nueva.origen + '|' + tagJ] = nueva;
       salida.push(nueva);
     }
-    if (!hallado) salida.push({ origen: 'Fuera del roster', tag: '#' + tagJ, nombre: '', clan: '', razon: '', semanas: jugadoresIndice[i].semanas });
+    if (!hallado) salida.push({ origen: 'Fuera del roster', tag: '#' + tagJ, nombre: '', clan: '', razon: '', semanas: jugadoresIndice[i].semanas, primera: jugadoresIndice[i].primera || null, ultima: jugadoresIndice[i].ultima || null });
   }
   var orden = { 'Directorio': 0, 'Inactivos': 1, 'Vetados': 2, 'Fuera del roster': 3 };
   salida.sort(function (x, y) {
