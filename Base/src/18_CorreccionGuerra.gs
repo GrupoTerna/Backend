@@ -75,6 +75,7 @@ var CGW_CONTRADICCION_TIPO = 'Contradicción';      // columna «Tipo» de Revis
 var CGW_CONTRADICCION_ESTADO = 'Pendiente';        // columna «Estado» de lo que no se resolvió solo
 var CGW_CONTRADICCIONES_MAX_LINEAS = 200;          // tope de líneas que viajan en la respuesta (el resto solo cuenta)
 var CGW_MAX_ATAQUES_SIN_FAME = 4;                 // §PF357: clan que cruzó la meta el domingo: como máximo los 4 mazos de ese día no dan fame (decisión de la usuaria, 4-nov-2026)
+var CGW_MAX_SEMANAS_VERIFICAR_CIERRE = 5;           // §PF357: semanas distintas por corrida cuyos currentriverrace se leen de Drive para verificar el cierre (leer una semana son miles de archivos); el resto queda «sin verificar»
 var CGW_REGRESO_HUECO_DIAS = 7;                    // §PF314 (PF253 opción B): un hueco de 7 días o más sin clan Terna cuenta como «salió y regresó»
 var _CGW_MITADES_SEMANA_CACHE_ = null;             // §PF313: sumas de dos días de guerra, para comprobar semanas completas
 
@@ -1447,6 +1448,24 @@ function _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) {
 }
 
 /**
+ * _cgwClanTerminadoVerificado_(temporadaPropia, semana, clanTag, cache) [→ Contexto_Base_Web.md §PF357]
+ * true solo si los currentriverrace de Drive prueban que el clan ya había cruzado la meta antes del domingo esa semana (_crrDomingoSinFame_, módulo 56). false = «sin verificar»:
+ * no hay captura, la temporada es anterior a T1, el clan no se conoce, el módulo 56 no está, falló la lectura o se llegó al tope de semanas por corrida
+ * (CGW_MAX_SEMANAS_VERIFICAR_CIERRE). Que dé false NO prueba que el clan no terminó. Un cruce el mismo domingo no se reconoce (limitación del módulo 56). cache: { leidas: {}, n: 0 }.
+ */
+function _cgwClanTerminadoVerificado_(temporadaPropia, semana, clanTag, cache) {
+  if (typeof _crrDomingoSinFame_ !== 'function' || !clanTag || !(temporadaPropia >= 1) || !cache) return false;
+  var claveSem = temporadaPropia + '|' + semana;
+  if (!cache.leidas[claveSem]) {
+    if (cache.n >= CGW_MAX_SEMANAS_VERIFICAR_CIERRE) return false;
+    cache.leidas[claveSem] = true;
+    cache.n++;
+  }
+  try { return !!_crrDomingoSinFame_(temporadaPropia, semana, clanTag); }
+  catch (e) { return false; }
+}
+
+/**
  * _cgwFuenteDeFila_(clanTag, fuenteTexto, guardada) [→ Contexto_Base_Web.md §PF313]
  * Nombre de la fuente de una fila para el registro de contradicciones. Sin «guardada»: la del envío (fuenteTexto = c.fuente). Con «guardada»: la de la fila del mapa.
  * Fila sin ClanTag (RoyaleAPI): «perfil» o «desconocida». Fila con ClanTag: «Log», «Analytics» o «desconocida».
@@ -2141,6 +2160,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var indiceAtaqueTerna = _cgwIndiceAtaqueTerna_(mapa, correcciones, _getTemporadaOffsetRoyaleApi()); // §PF343
   var cacheJsonTerna = {}, contradiccionesExternasIgnoradas = 0; // §PF343
   var aceptadasClanTerminado = [], aceptadasClanTerminadoTotal = 0; // §PF357: filas que solo cuadran suponiendo ataques sin fame por clan terminado (sin verificar)
+  var aceptadasClanTerminadoVerificadas = 0, cacheCierreCrr = { leidas: {}, n: 0 }; // §PF357: cuántas se verificaron con los currentriverrace de Drive
   for (var i = 0; i < correcciones.length; i++) {
     var c = correcciones[i] || {};
     var tag = String(c.tag || '').trim();
@@ -2281,8 +2301,12 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
 
     if (sinFameK > 0) { // §PF357: se aplica el valor; queda dicho en el registro que se supuso clan terminado (no hay fila en Revision_Guerra.csv)
       aceptadasClanTerminadoTotal++;
+      var clanCierre = clanTag !== '' ? clanTag : _normalizarClanTagCorreccion(c.clanPerfil);
+      var cierreVerificado = _cgwClanTerminadoVerificado_(temporadaPropia, semana, clanCierre, cacheCierreCrr);
+      if (cierreVerificado) aceptadasClanTerminadoVerificadas++;
       if (aceptadasClanTerminado.length < CGW_CONTRADICCIONES_MAX_LINEAS) {
-        aceptadasClanTerminado.push(etiquetaConflicto + ': ' + textoAhoraC + ' cuadra con ' + sinFameK + ' ataque(s) sin fame (clan terminado, sin verificar)');
+        aceptadasClanTerminado.push(etiquetaConflicto + ': ' + textoAhoraC + ' cuadra con ' + sinFameK + ' ataque(s) sin fame (' +
+          (cierreVerificado ? 'verificado con la API: el clan ' + clanCierre + ' cruzó la meta antes del domingo' : 'clan terminado, sin verificar') + ')');
       }
     }
     // Aprobación/Implementación (pregunta 4, FIX 27-ago-2026, ver comentario [→ Contexto_Base_Web.md §18B100]
@@ -2380,7 +2404,9 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   if (aceptadasClanTerminadoTotal) { // §PF357
     resultado.aceptadasClanTerminado = aceptadasClanTerminado;
     resultado.aceptadasClanTerminadoTotal = aceptadasClanTerminadoTotal;
-    Logger.log('[CorreccionGuerra] ' + aceptadasClanTerminadoTotal + ' fila(s) cuadran solo con ataques sin fame por clan terminado (sin verificar que el clan haya cruzado la meta): ' +
+    resultado.aceptadasClanTerminadoVerificadas = aceptadasClanTerminadoVerificadas;
+    Logger.log('[CorreccionGuerra] ' + aceptadasClanTerminadoTotal + ' fila(s) cuadran solo con ataques sin fame por clan terminado (' + aceptadasClanTerminadoVerificadas +
+      ' verificada(s) con los currentriverrace de Drive, el resto sin verificar): ' +
       aceptadasClanTerminado.slice(0, 20).join(' | ') + (aceptadasClanTerminado.length > 20 ? ' | … (ver la respuesta del endpoint)' : ''));
   }
   if (revisarManual.length) resultado.revisarManual = revisarManual; // FIX 29-sep-2026 (Fase 15 tanda 1)
