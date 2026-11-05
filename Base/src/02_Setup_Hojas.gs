@@ -202,7 +202,7 @@ function _setupClan(ss) {
       [2,'#GYCU9YRG','','','','','','','','','','','','','','','','','','','','','','Terna'],
       [3,'#GQQPPJGR','','','','','','','','','','','','','','','','','','','','','','Terna'],
       [4,'#GG99LCJY','','','','','','','','','','','','','','','','','','','','','','Terna'],
-      [5,'#RYYCRGVG','','','','','','','','','','','','','','','','','','','','','','Vetado'],
+      // El clan vetado (CFG.VETADO_TAG) ya no se siembra aquí: vive en la hoja Conflictos, como los clanes que se vetan desde la web (§PF369).
     ];
     sh.getRange(2, 1, initialData.length, headers.length).setValues(initialData);
   } else {

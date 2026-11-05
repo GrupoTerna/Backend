@@ -2,6 +2,7 @@
 //  Parte 1 — Funciones que se corren a mano: 1.1 Reenumeración de temporadas (uso ocasional); 1.2 migraciones de una sola vez, por hoja: Directorio, Links, Control, Extra, Guerra y Permiso; 1.3 ids de eventos L_TT_S_SS_N_NN (repetible); 1.4 temporada de T_Lista según la fecha (repetible); la semana forzada de un id va en 1.3 (forzarSemanaIdEvento); 1.5 T_Asistencia alineada con T_Lista (repetible); 1.6 lo mismo para T, S, CR y sus asistencias (repetible; lo usa la reenumeración); 1.7 fecha, hora y fichas de Semanas limpias en las listas (repetible). 1.8 numeración de lo grupal (CSV y JSON por clan) alineada con la vigente (repetible).
 //  Parte 2 — Funciones que no se corren a mano: 2.1 Reenumeración de temporadas (motor, ayudas del detector y pasos); 2.2 Directorio (ayuda de la migración de Préstamo); 2.3 ids de eventos (plan y escritura); 2.4 temporada de T_Lista (envoltorio y escritura); 2.5 semana forzada de un id (ayuda); 2.6 T_Asistencia alineada con T_Lista (plan, envoltorio y escritura; ahora para T, S y CR); 2.7 envoltorio de las herramientas 1.6; 2.8 fecha, hora y fichas de Semanas limpias (ayudas y escritura). 2.9 numeración de lo grupal alineada (lectura, alineación y escritura).
 // Al reordenar no se cambió el código de ninguna función; la variable SEMANAS_FORZADAS_PROP_ subió a la zona de constantes.
+// 1.9 (5-nov-2026, §PF369): clan vetado de la hoja Clan a la hoja Conflictos, herramienta MANUAL y repetible (en la Parte 1, después de 1.8).
 
 // ==============================================================================
 // 47_Migraciones.gs
@@ -694,6 +695,49 @@ function alinearNumeracionGrupalRevisar() {
 
 function alinearNumeracionGrupal() {
   _correrHerramientaTemporada_('alinearNumeracionGrupal', true, _alinearNumeracionGrupal_);
+}
+
+// ----- 1.9 Clan vetado de la hoja Clan a la hoja Conflictos (5-nov-2026, pedido de la usuaria): herramienta MANUAL y repetible -----
+// moverClanVetadoAConflictos(): el clan vetado de siempre (CFG.VETADO_TAG, NARANJA x) estaba como una fila «Vetado» de la hoja Clan, mientras que los clanes que se vetan desde la web («Buscar clan», §PF368) van a Conflictos. Esto los deja guardados igual: agrega NARANJA x a Conflictos (con el nombre que tenía en Clan) y quita su fila de la hoja Clan y de Backup_Clan.csv.
+// Primero escribe en Conflictos y solo después borra de Clan: si algo falla en el primer paso, la hoja Clan queda intacta. Se puede correr otra vez sin duplicar nada. Con la fila fuera de Clan, la web, el bot y los mensajes ya no ven NARANJA x como clan de la Familia ni como «Vetado» de la hoja Clan; NARANJA x sigue en CFG.CLAN_TAGS y se detecta por su Tag como antes. [→ Contexto_Base_Web.md §PF369]
+function moverClanVetadoAConflictos() {
+  var ss = _getSs();
+  var tagVet = cleanTag(CFG.VETADO_TAG);
+  if (!tagVet) { Logger.log('[ClanVetado] CFG.VETADO_TAG está vacío: no hay nada que mover.'); return; }
+
+  var shClan = ss.getSheetByName(CFG.SHEETS.CLAN);
+  var filaClan = 0, nombre = '';
+  if (shClan && shClan.getLastRow() >= 2) {
+    var datos = shClan.getRange(2, 1, shClan.getLastRow() - 1, CC.CONDICION).getValues();
+    for (var i = 0; i < datos.length; i++) {
+      if (cleanTag(datos[i][CC.CLAN_TAG - 1]) === tagVet) { filaClan = i + 2; nombre = String(datos[i][CC.NOMBRE - 1] || '').trim(); break; }
+    }
+  }
+
+  var shConf = ss.getSheetByName(CFG.SHEETS.CONFLICTOS);
+  if (!shConf) { _setupConflictos(ss); shConf = ss.getSheetByName(CFG.SHEETS.CONFLICTOS); }
+  if (!shConf) { Logger.log('[ClanVetado] No se pudo abrir la hoja Conflictos. No se tocó la hoja Clan.'); return; }
+
+  var yaEnConflictos = false;
+  var ultimaConf = shConf.getLastRow();
+  if (ultimaConf >= 2) {
+    var tagsConf = shConf.getRange(2, CFC.TAG, ultimaConf - 1, 1).getValues();
+    for (var c = 0; c < tagsConf.length; c++) { if (cleanTag(tagsConf[c][0]) === tagVet) { yaEnConflictos = true; break; } }
+  }
+  if (!yaEnConflictos) {
+    var fecha = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
+    shConf.appendRow(['#' + tagVet, nombre || 'NARANJA x', 'Clan vetado (pasado desde la hoja Clan el ' + fecha + ')']);
+    try { applyBorderCenter(shConf.getRange(shConf.getLastRow(), 1, 1, CFC_TOTAL_COLS)); } catch (eFmt) { Logger.log('[ClanVetado] No se pudo dar formato a la fila de Conflictos: ' + eFmt.message); }
+    Logger.log('[ClanVetado] #' + tagVet + ' agregado a Conflictos.');
+  } else {
+    Logger.log('[ClanVetado] #' + tagVet + ' ya estaba en Conflictos: no se duplica.');
+  }
+
+  if (!filaClan) { Logger.log('[ClanVetado] La hoja Clan ya no tiene la fila de #' + tagVet + '. Nada que quitar.'); return; }
+  if (cleanTag(shClan.getRange(filaClan, CC.CLAN_TAG).getValue()) !== tagVet) { Logger.log('[ClanVetado] La fila ' + filaClan + ' de la hoja Clan cambió mientras se corría. No se borró nada; vuelve a correrla.'); return; }
+  shClan.deleteRow(filaClan);
+  syncClanCSV();
+  Logger.log('[ClanVetado] Fila ' + filaClan + ' (#' + tagVet + ') quitada de la hoja Clan y de Backup_Clan.csv.');
 }
 
 // =============================================================================
