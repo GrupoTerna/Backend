@@ -2756,6 +2756,7 @@ function _aplicarCorreccionAGuerraConReparto(fuente, offsetsPorClave, temporadaP
 
   // ---- MODO RECONSTRUCCIÓN COMPLETA (punto 1.5) ----
   opciones.ultimoRepartoFallido = null;
+  opciones.ultimaReconstruccionClanTerminado = null;
   var offsetsNuevos = _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valores, opciones);
   if (!offsetsNuevos) {
     stats.sinCombinacion = (stats.sinCombinacion || 0) + 1;
@@ -2767,6 +2768,7 @@ function _aplicarCorreccionAGuerraConReparto(fuente, offsetsPorClave, temporadaP
   }
   offsetsPorClave[clave] = offsetsNuevos;
   stats.reconstruidas = (stats.reconstruidas || 0) + 1;
+  if (opciones.ultimaReconstruccionClanTerminado) stats.reconstruidasClanTerminado = (stats.reconstruidasClanTerminado || 0) + 1; // §PF358
   return { modo: 'reconstruccion', huboCambio: true };
 }
 
@@ -3518,6 +3520,17 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
   // Mismo reparto conjunto que el modo ajuste (§PF122), partiendo de una base de 4 días en cero.
   // Si ninguna combinación cuadra no se crea nada: se quitan las filas recién agregadas y se devuelve null.
   var rep = _repartirSemanaConjunto_(fuente.filas, offsetsNuevos, valores);
+  // §PF358 (4-nov-2026): si ninguna combinación de los 4 días cuadra (y no es un conflicto con los JSON de CurrentRiverRace, que se deja a revisión manual), se prueba la regla del
+  // clan terminado de §PF357: jueves, viernes y sábado con la tabla y el domingo con k ataques sin fame (k de 1 a 4). Escribe las 4 filas con Origen «Reconstruido».
+  if (!rep.ok && /^ninguna combinacion de la tabla/.test(String(rep.motivo || ''))) {
+    var repTerminado = _cgwEscribirRepartoClanTerminado_(fuente.filas, offsetsNuevos, valores);
+    if (repTerminado) {
+      rep = { ok: true, huboCambio: true, crr: 'clan terminado' };
+      if (opciones) opciones.ultimaReconstruccionClanTerminado = { k: repTerminado.k, texto: _cgwTextoReparto_(repTerminado) };
+      Logger.log('[Reparto clan terminado] RECONSTRUIDA T' + temporadaPropia + ' S' + semana + ' ' + tag + ': ' + _cgwTextoValores_(valores.ataquesSemana, valores.fame, valores.barcos) +
+        ' cuadra con el domingo sin fame, ' + repTerminado.k + ' ataque(s) (clan terminado, sin verificar con la API). Reparto: ' + _cgwTextoReparto_(repTerminado));
+    }
+  }
   if (!rep.ok) {
     fuente.filas.length = filasAntes;
     Logger.log('[Reparto conjunto] SIN CAMBIOS (reconstruccion) T' + temporadaPropia + ' S' + semana + ' ' + tag + ': ' + rep.motivo + '. No se crean las filas.');
@@ -3529,6 +3542,31 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
   fuente.filas[offsetsNuevos[3]][GC.ATAQUES_SEM - 1] = valores.ataquesSemana;
 
   return offsetsNuevos;
+}
+
+/**
+ * _cgwEscribirRepartoClanTerminado_(filas, offsets, valores) [→ Contexto_Base_Web.md §PF358]
+ * Escribe en las 4 filas de la semana (offsets 0 a 3: jueves a domingo) el reparto de _cgwRepartoClanTerminado_(): ataques del día, y ataques de la semana, barcos y fame acumulados.
+ * Jueves, viernes y sábado salen de la tabla; el domingo lleva sus k ataques con 0 de fame (los acumulados de barcos y fame ya son los totales). barcos null se toma como 0, igual que
+ * el reparto normal en una reconstrucción. Devuelve el reparto escrito, o null (sin escribir nada) si los valores no son válidos, no hacen falta k ataques sin fame o no cuadra.
+ */
+function _cgwEscribirRepartoClanTerminado_(filas, offsets, valores) {
+  var A = Number(valores.ataquesSemana), F = Number(valores.fame);
+  var B = (valores.barcos === null || valores.barcos === undefined) ? 0 : Number(valores.barcos);
+  if (!isFinite(A) || A % 1 !== 0 || A < 0 || !isFinite(F) || F < 0 || !isFinite(B) || B % 1 !== 0 || B < 0) return null;
+  var rep = _cgwRepartoClanTerminado_(A, F, B, null);
+  if (!rep || !(rep.k > 0) || !rep.dias || rep.dias.length !== 4) return null;
+  for (var o = 0; o < 4; o++) { if (offsets[o] === undefined || !filas[offsets[o]]) return null; }
+  var an = 0, bn = 0, fn = 0;
+  for (var z = 0; z < 4; z++) {
+    var d = rep.dias[z], fila = filas[offsets[z]];
+    an += d.n; bn += d.b; fn += d.f;
+    fila[GC.ATAQUES_HOY - 1] = d.n;
+    fila[GC.ATAQUES_SEM - 1] = an;
+    fila[GC.BARCOS - 1] = bn;
+    fila[GC.FAME - 1] = fn;
+  }
+  return rep;
 }
 
 /**
