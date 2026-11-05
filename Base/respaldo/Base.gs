@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 05/11/2026 02:11:22 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 05/11/2026 02:52:38 */
 
 
 
@@ -19946,6 +19946,7 @@ function _fechaATemporadaSemana(fecha) {
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
 //  Parte 1 — Funciones que no se corren a mano
 //    - Infiltrados: búsqueda desde la web de admin (en el orden de la llamada)
+//    - Clanes: ficha y veto desde «Buscar clan» de la web de admin (§PF368)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Columnas de la hoja 'Conflictos' (ver _setupConflictos(), 02_Setup_Hojas.gs). [→ Contexto_Base_Web.md §15B002]
@@ -20054,7 +20055,8 @@ function _buscarInfiltrado(query, soloClan) {
 /**
  * _clanesExternosDeJugador_(tagNorm, rivalesYConflicto) [→ Contexto_Base_Web.md §PF367]
  * Clanes externos (que no son de CFG.TERNA_TAGS) donde el jugador jugó guerra, leídos de su JSON individual de RoyaleAPI (filas `externa: true`, §PF340).
- * Devuelve un arreglo por clan, del más reciente al más antiguo: { tag, nombre, semanas, ultima:{temporada,semana}, primera:{temporada,semana}, infoRival }.
+ * Devuelve un arreglo por clan, del más reciente al más antiguo: { tag, nombre, semanas, ultima:{temporada,semana,temporadaRoyaleApi,supercell}, primera:{...igual}, infoRival }.
+ * `temporada` es la propia (puede ser 0 o negativa en semanas anteriores a la T1 interna); `supercell` es el id «AAAA-MM» de esa semana (§PF368: la web lo muestra en vez de «T-7» cuando `temporada` <= 0).
  * `infoRival` es la entrada de rivalesYConflicto del clan (misma forma que la de la respuesta principal) o null. Devuelve null si el JSON no se pudo leer (distinto de [] = sin filas externas).
  * Solo ve semanas con fila de guerra: no prueba que no pasara por otro clan donde no jugó guerra.
  */
@@ -20085,7 +20087,8 @@ function _clanesExternosDeJugador_(tagNorm, rivalesYConflicto) {
     var temp = Number(r.temporadaInterna), sem = Number(r.semana);
     var claveSemana = temp + '|' + sem;
     if (!g.semanasVistas[claveSemana]) { g.semanasVistas[claveSemana] = true; g.semanas++; }
-    var punto = { temporada: temp, semana: sem };
+    var tRoy = Number(r.temporadaRoyaleAPI);
+    var punto = { temporada: temp, semana: sem, temporadaRoyaleApi: isNaN(tRoy) ? null : tRoy, supercell: _temporadaSupercellDeRoyaleApi_(tRoy) };
     if (!g.ultima  || temp > g.ultima.temporada  || (temp === g.ultima.temporada  && sem > g.ultima.semana))  g.ultima  = punto;
     if (!g.primera || temp < g.primera.temporada || (temp === g.primera.temporada && sem < g.primera.semana)) g.primera = punto;
   }
@@ -20101,6 +20104,132 @@ function _clanesExternosDeJugador_(tagNorm, rivalesYConflicto) {
     return b.semanas - a.semanas;
   });
   return salida;
+}
+
+/**
+ * _temporadaSupercellDeRoyaleApi_(temporadaRoyaleApi) [→ Contexto_Base_Web.md §PF368]
+ * Id «AAAA-MM» de la temporada de Supercell que corresponde a una temporada de RoyaleAPI (un mes por temporada; ancla 2026-05 = RoyaleAPI 132). Es el mismo cálculo de _cgwTemporadaSupercellTexto_() (18_CorreccionGuerra.gs) y usa sus constantes CGW_SUPERCELL_ANCLA_*, pero parte de la temporada de RoyaleAPI que ya trae cada fila del JSON individual, sin pasar por la propia ni por el offset. Devuelve '' si el número no es válido.
+ */
+function _temporadaSupercellDeRoyaleApi_(temporadaRoyaleApi) {
+  var r = Number(temporadaRoyaleApi);
+  if (isNaN(r) || r < 1) return '';
+  var meses = CGW_SUPERCELL_ANCLA_ANIO * 12 + (CGW_SUPERCELL_ANCLA_MES - 1) + (r - CGW_SUPERCELL_ANCLA_ROYALEAPI);
+  var anio = Math.floor(meses / 12), mes = (meses % 12) + 1;
+  return anio + '-' + (mes < 10 ? '0' : '') + mes;
+}
+
+// ----- Clanes: ficha y veto desde «Buscar clan» de la web de admin (§PF368) -----
+
+/**
+ * _webAdminBuscarClan(token, tag) [→ Contexto_Base_Web.md §PF368]
+ * Ficha de un clan para «Buscar clan» de admin.html: una sola consulta a /clans/<Tag> más la lista de rivales y conflicto. No cruza los miembros con nuestro roster (eso lo hace la pastilla «¿Infiltrado?» con _buscarInfiltrado(tag, true)).
+ * Respuesta: { ok, clan:{ tag, nombre, miembros, puntos, trofeosGuerra, ubicacion, tipo, copasRequeridas, esNuestro }, esRivalTemporada, infoRival } o { ok:false, error }.
+ */
+function _webAdminBuscarClan(token, tag) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  var tagNorm = cleanTag(tag);
+  if (!tagNorm || tagNorm.length < 3) return { ok: false, error: 'Ingresa un Tag de clan (con o sin #).' };
+
+  var clanInfo = null;
+  try {
+    clanInfo = _apiGet('/clans/' + encodeTag('#' + tagNorm));
+  } catch (eClan) {
+    Logger.log('[BuscarClan] /clans falló para ' + tagNorm + ': ' + eClan.message);
+  }
+  if (!clanInfo || !clanInfo.name) {
+    return { ok: false, error: 'No encontré ningún clan con ese Tag. Verifica que esté bien escrito (con o sin #). Si es un jugador, búscalo en «Buscar miembro».' };
+  }
+
+  var rivalesYConflicto = _getRivalesYConflicto();
+  var infoRival = rivalesYConflicto[tagNorm] || null;
+  return {
+    ok: true,
+    clan: {
+      tag: '#' + tagNorm,
+      nombre: clanInfo.name,
+      miembros: clanInfo.members !== undefined ? clanInfo.members : (clanInfo.memberList ? clanInfo.memberList.length : 0),
+      puntos: clanInfo.clanScore !== undefined ? clanInfo.clanScore : null,
+      trofeosGuerra: clanInfo.clanWarTrophies !== undefined ? clanInfo.clanWarTrophies : null,
+      ubicacion: (clanInfo.location && clanInfo.location.name) || '',
+      tipo: clanInfo.type || '',
+      copasRequeridas: clanInfo.requiredTrophies !== undefined ? clanInfo.requiredTrophies : null,
+      esNuestro: _esClanPropio_(tagNorm)
+    },
+    esRivalTemporada: !!infoRival,
+    infoRival: infoRival
+  };
+}
+
+/**
+ * _esClanPropio_(tagNorm) [→ Contexto_Base_Web.md §PF368]
+ * true si el Tag (sin #) es de uno de los clanes de la Familia (CFG.TERNA_TAGS o CFG.CLAN_TAGS).
+ */
+function _esClanPropio_(tagNorm) {
+  var listas = [CFG.TERNA_TAGS || [], CFG.CLAN_TAGS || []];
+  for (var a = 0; a < listas.length; a++) {
+    for (var b = 0; b < listas[a].length; b++) {
+      if (cleanTag(listas[a][b]) === tagNorm) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * _webAdminVetarClan(token, datos) [→ Contexto_Base_Web.md §PF368]
+ * «Vetar» un clan desde la ficha de «Buscar clan»: lo agrega a la hoja «Conflictos» (lista manual de clanes en conflicto, la misma que lee _getClanesConflictoManual()), así que desde ese momento figura como «En lista de conflicto» en toda detección de infiltrados.
+ * datos = { tag, motivo }. Requiere la Función «Vetar», releída por Celular como en _webAdminVetar() (quitar la Función aplica de inmediato). No se puede vetar un clan de la Familia. El nombre se toma de la API, no del cliente. Es de un solo sentido, como el veto de jugadores: no hay «desvetar» desde la web (se quita la fila a mano en la hoja).
+ * El Motivo se guarda con el autor y la fecha de Lima al final: «motivo (Web: autor, dd/mm/aaaa)».
+ */
+function _webAdminVetarClan(token, datos) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  var admin = _webAuthObtenerAdmin(token);
+  if (!admin) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  var adminFresco = _webBuscarAdminPorCelular(admin.celular);
+  if (!adminFresco || !_webAdminTieneFuncion(adminFresco.funciones, 'Vetar')) {
+    return { ok: false, error: 'No tienes permiso para vetar.' };
+  }
+  if (!datos || !datos.tag) return { ok: false, error: 'Falta el Tag del clan a vetar.' };
+  var tagNorm = cleanTag(datos.tag);
+  if (!tagNorm || tagNorm.length < 3) return { ok: false, error: 'Tag inválido.' };
+  if (_esClanPropio_(tagNorm)) return { ok: false, error: 'No se puede vetar un clan de la Familia.' };
+
+  var motivo = String((datos && datos.motivo) || '').trim().replace(/\s+/g, ' ');
+  if (!motivo) return { ok: false, error: 'Escribe el motivo del veto.' };
+  if (motivo.length > 200) return { ok: false, error: 'El motivo es muy largo (máximo 200 caracteres).' };
+
+  var clanInfo = null;
+  try {
+    clanInfo = _apiGet('/clans/' + encodeTag('#' + tagNorm));
+  } catch (eClan) {
+    Logger.log('[VetarClan] /clans falló para ' + tagNorm + ': ' + eClan.message);
+  }
+  if (!clanInfo || !clanInfo.name) return { ok: false, error: 'No encontré ningún clan con ese Tag.' };
+
+  var ss = _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.CONFLICTOS);
+  if (!sh) {
+    _setupConflictos(ss);
+    sh = ss.getSheetByName(CFG.SHEETS.CONFLICTOS);
+  }
+  if (!sh) return { ok: false, error: 'No pudimos abrir la hoja Conflictos, intenta de nuevo en un momento.' };
+
+  var ultima = sh.getLastRow();
+  if (ultima >= 2) {
+    var tagsActuales = sh.getRange(2, CFC.TAG, ultima - 1, 1).getValues();
+    for (var i = 0; i < tagsActuales.length; i++) {
+      if (cleanTag(tagsActuales[i][0]) === tagNorm) return { ok: false, error: 'Ese clan ya está en la lista de conflicto.' };
+    }
+  }
+
+  var autor = admin.nomMulti || admin.nombre || '';
+  var fecha = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
+  sh.appendRow(['#' + tagNorm, String(clanInfo.name), motivo + ' (Web: ' + autor + ', ' + fecha + ')']);
+  try {
+    applyBorderCenter(sh.getRange(sh.getLastRow(), 1, 1, CFC_TOTAL_COLS));
+  } catch (eFormato) {
+    Logger.log('[VetarClan] no se pudo dar formato a la fila nueva: ' + eFormato.message);
+  }
+  return { ok: true, nombre: String(clanInfo.name) };
 }
 
 /**
@@ -59153,6 +59282,19 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // §PF368: webAdminBuscarClan, ficha de un clan para «Buscar clan» de admin.html (una consulta a /clans más rivales y conflicto; 15_DeteccionInfiltrados.gs); GET, sesión de admin. [→ Contexto_Base_Web.md §PF368]
+  if (e && e.parameter && e.parameter.accion === 'webAdminBuscarClan') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminBuscarClan(e.parameter.sessionToken, e.parameter.tag)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errClan) {
+      Logger.log('[Web] Error interno: ' + errClan.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // FASE 6: webAdminBuscarInfiltrado, coincidencias de un Tag contra Directorio/Inactivos/Vetados, clanes rivales de la temporada y lista manual de conflicto (15_DeteccionInfiltrados.gs); GET, sesión de admin. [→ Contexto_Base_Web.md §38B064]
   if (e && e.parameter && e.parameter.accion === 'webAdminBuscarInfiltrado') {
     try {
@@ -59332,6 +59474,21 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     } catch (errRegNuevo) {
       Logger.log('[Web] Error interno: ' + errRegNuevo.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ ok: false, error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  // §PF368: webAdminVetarClan; datos = { tag, motivo }; agrega el clan a la hoja Conflictos, ver _webAdminVetarClan() en 15_DeteccionInfiltrados.gs. [→ Contexto_Base_Web.md §PF368]
+  if (e && e.parameter && e.parameter.accion === 'webAdminVetarClan') {
+    try {
+      var payloadVetarClan = JSON.parse(e.postData.contents);
+      var resultadoVetarClan = _webAdminVetarClan(payloadVetarClan && payloadVetarClan.sessionToken, payloadVetarClan && payloadVetarClan.datos);
+      return ContentService
+        .createTextOutput(JSON.stringify(resultadoVetarClan))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errVetarClan) {
+      Logger.log('[Web] Error interno: ' + errVetarClan.toString());
       return ContentService
         .createTextOutput(JSON.stringify({ ok: false, error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.' }))
         .setMimeType(ContentService.MimeType.JSON);
