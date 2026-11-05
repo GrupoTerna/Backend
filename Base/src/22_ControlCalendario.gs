@@ -737,6 +737,14 @@ function _clonarCtxParaTemporada(ctxReal, temporadaMostrar) {
     return ctx; // temporada real en curso: se respeta el avance real (semana/día actuales)
   }
 
+  // §PF360 (4-nov-2026): el mes efectivo del clon es el de la temporada que se muestra, no el de la vigente. Antes se copiaba el de la vigente y una temporada de 4 semanas
+  // (octubre 2026) salía con «Sem 5» porque la vigente (noviembre 2026) tiene 5 lunes: lo leen _getControlTemporadaPorClan() (38_Web_Endpoints.gs), actualizarControl2() y updateControlSheet().
+  // Mes de la temporada T = mes de CFG.REF_DEFAULT + (T - 1), el mismo cálculo de primerLunesTemporada(). [→ Contexto_Base_Web.md §PF360]
+  var mesTemp = CFG.REF_DEFAULT.getMonth() + (Number(temporadaMostrar) - 1);
+  if (isFinite(mesTemp)) {
+    ctx.mesEfectivoAnio     = CFG.REF_DEFAULT.getFullYear() + Math.floor(mesTemp / 12);
+    ctx.mesEfectivoMes      = ((mesTemp % 12) + 12) % 12;
+  }
   ctx.periodIndex           = 34; // semana 5, día 3: último periodIndex posible de una temporada
   ctx.sectionIndex          = 4;
   ctx.esDiaGuerra           = true;
