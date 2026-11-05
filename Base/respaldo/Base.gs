@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 20:22:08 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 20:33:19 */
 
 
 
@@ -26323,6 +26323,7 @@ function _corregirTemporadaEnCSV(fileName, colMap, totalCols, colsValor, tempora
 //    - Aplicar las correcciones desde Control_2
 //    - Auditorías de la guerra reconstruida
 //    - Completar el domingo y reparar la semana desde el JSON de RoyaleAPI
+//    - Cerrar las contradicciones de clan terminado de Revision_Guerra.csv (§PF357)
 //  Parte 2 — Funciones que no se corren a mano
 //    - Fame: combinaciones posibles por día
 //    - Overlay de correcciones (CSV): lectura, escritura y formato
@@ -26394,6 +26395,11 @@ var CGW_CONTRADICCION_TIPO = 'Contradicción';      // columna «Tipo» de Revis
 var CGW_CONTRADICCION_ESTADO = 'Pendiente';        // columna «Estado» de lo que no se resolvió solo
 var CGW_CONTRADICCIONES_MAX_LINEAS = 200;          // tope de líneas que viajan en la respuesta (el resto solo cuenta)
 var CGW_MAX_ATAQUES_SIN_FAME = 4;                 // §PF357: clan que cruzó la meta el domingo: el domingo no da fame: cuentan todos sus ataques (máximo 4) o ninguno (decisión de la usuaria, 4-nov-2026)
+// §PF357 (5-nov-2026): contradicciones de Revision_Guerra.csv que la usuaria resolvió con la regla del clan terminado; las cierra cerrarContradiccionesClanTerminado() [→ Contexto_Base_Web.md §PF357]
+var CGW_CONTRADICCIONES_CERRAR_PF357 = [
+  { temporada: 7,  semana: 1, tag: '#VY0UJ82PV', ataques: 16, fame: 1325, barcos: 1 },   // N° 912 al 4-nov-2026
+  { temporada: 19, semana: 1, tag: '#V9P20U8RC', ataques: 15, fame: 1200, barcos: 0 }    // N° 913 al 4-nov-2026
+];
 var CGW_MAX_SEMANAS_VERIFICAR_CIERRE = 5;           // §PF357: semanas distintas por corrida cuyos currentriverrace se leen de Drive para verificar el cierre (leer una semana son miles de archivos); el resto queda «sin verificar»
 var CGW_REGRESO_HUECO_DIAS = 7;                    // §PF314 (PF253 opción B): un hueco de 7 días o más sin clan Terna cuenta como «salió y regresó»
 var _CGW_MITADES_SEMANA_CACHE_ = null;             // §PF313: sumas de dos días de guerra, para comprobar semanas completas
@@ -27589,6 +27595,73 @@ function compararNuevosConGuerraInforme() {
   if (!r.entradas.length) return;
   var reg = _registrarRevisionGuerra_(r.entradas);
   Logger.log('[Nuevos contra Guerra] Revision_Guerra.csv: ' + reg.nuevas + ' nueva(s), ' + reg.actualizadas + ' actualizada(s), ' + reg.sinCambio + ' sin cambio.');
+}
+
+// ----- Cerrar las contradicciones de clan terminado de Revision_Guerra.csv (§PF357) -----
+
+/**
+ * cerrarContradiccionesClanTerminado() [→ Contexto_Base_Web.md §PF357]
+ * Se corre a mano, una sola vez. Pasa a «Resuelto» las filas de Revision_Guerra.csv (Tipo «Contradicción», Estado «Pendiente») de las semanas de
+ * CGW_CONTRADICCIONES_CERRAR_PF357 (T7 S1 y T19 S1), que la usuaria resolvió el 5-nov-2026 con la regla del clan terminado. Las busca por temporada, semana y tag
+ * (no por el N°, que cambia al reescribirse el archivo). Antes de cambiar una fila comprueba que el valor de «ahora» en el Detalle sea el esperado y que
+ * _cgwRepartoClanTerminado_() siga dando un reparto con el domingo sin fame; si no, la deja como está y lo avisa. No borra filas, no cambia el N° ni la fecha, y agrega
+ * al Detalle la fecha, el k y el reparto por día. «Resuelto» no lo toca aplicarDecisionesRevisionGuerra().
+ */
+function cerrarContradiccionesClanTerminado() {
+  if (_bloquearSiReenumerando_('cerrarContradiccionesClanTerminado')) return;
+  var etq = '[Contradicciones clan terminado]';
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    Logger.log(etq + ' No se pudo obtener el lock: hay otra escritura en curso. Vuelve a correr la función en unos minutos.');
+    return;
+  }
+  try {
+    var texto = _loadCSVFromDrive(REVISION_GUERRA_CSV);
+    var parsed = texto ? _parseCSV(texto) : [];
+    if (!parsed || parsed.length < 2) { Logger.log(etq + ' ' + REVISION_GUERRA_CSV + ' no existe o no tiene filas: no hay nada que cerrar.'); return; }
+    var ncol = REVISION_GUERRA_ENCABEZADO.length, filas = [];
+    for (var i = 1; i < parsed.length; i++) {
+      var f = parsed[i].slice(0, ncol);
+      while (f.length < ncol) f.push('');
+      filas.push(f);
+    }
+    var hoy = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd');
+    var cerradas = 0;
+    CGW_CONTRADICCIONES_CERRAR_PF357.forEach(function (c) {
+      var nombre = 'T' + c.temporada + ' S' + c.semana + ' ' + c.tag;
+      var halladas = 0, yaResueltas = 0, hecha = false;
+      for (var r = 0; r < filas.length; r++) {
+        var fila = filas[r];
+        if (String(fila[2]).trim() !== String(c.temporada) || String(fila[3]).trim() !== String(c.semana) || String(fila[4]).trim() !== c.tag) continue;
+        if (String(fila[6]).trim() !== CGW_CONTRADICCION_TIPO) continue;
+        halladas++;
+        var estado = String(fila[9]).trim().toLowerCase();
+        if (estado === 'resuelto') { yaResueltas++; continue; }
+        if (estado !== 'pendiente') { Logger.log(etq + ' ' + nombre + ': la fila N° ' + fila[0] + ' tiene el Estado «' + fila[9] + '»; no se toca.'); continue; }
+        var m = /ahora (\d+) ataques \/ (\d+) fame \/ (\d+) barcos/.exec(String(fila[8]));
+        if (!m) { Logger.log(etq + ' ' + nombre + ': la fila N° ' + fila[0] + ' no trae «ahora … ataques / … fame / … barcos» en el Detalle; no se toca.'); continue; }
+        if (Number(m[1]) !== c.ataques || Number(m[2]) !== c.fame || Number(m[3]) !== c.barcos) {
+          Logger.log(etq + ' ' + nombre + ': la fila N° ' + fila[0] + ' trae ' + _cgwTextoValores_(Number(m[1]), Number(m[2]), Number(m[3])) + ' y se esperaba ' + _cgwTextoValores_(c.ataques, c.fame, c.barcos) + '; el valor cambió desde la decisión, no se toca.');
+          continue;
+        }
+        var rep = _cgwRepartoClanTerminado_(c.ataques, c.fame, c.barcos, null);
+        if (!rep || !(rep.k > 0)) { Logger.log(etq + ' ' + nombre + ': la fila N° ' + fila[0] + ' ya no cuadra con el domingo sin fame (reparto: ' + (rep ? 'k = ' + rep.k : 'ninguno') + '); no se toca.'); continue; }
+        fila[8] = String(fila[8]) + ' | Resuelto el ' + hoy + ': cuadra con el domingo sin fame, k = ' + rep.k + ' (§PF357). Reparto: ' + _cgwTextoReparto_(rep);
+        fila[9] = 'Resuelto';
+        cerradas++; hecha = true;
+        Logger.log(etq + ' ' + nombre + ': fila N° ' + fila[0] + ' pasa a «Resuelto» (k = ' + rep.k + '). Reparto: ' + _cgwTextoReparto_(rep) + '.');
+      }
+      if (!halladas) Logger.log(etq + ' ' + nombre + ': no hay fila de Contradicción en ' + REVISION_GUERRA_CSV + ' (¿ya se borró?).');
+      else if (!hecha && yaResueltas === halladas) Logger.log(etq + ' ' + nombre + ': ya estaba «Resuelto».');
+    });
+    if (!cerradas) { Logger.log(etq + ' No se cambió ninguna fila; ' + REVISION_GUERRA_CSV + ' queda como estaba.'); return; }
+    _saveCSVToDrive(REVISION_GUERRA_CSV, _encodeCSV([REVISION_GUERRA_ENCABEZADO].concat(filas)));
+    Logger.log(etq + ' Listo: ' + cerradas + ' fila(s) pasaron a «Resuelto» en ' + REVISION_GUERRA_CSV + '.');
+  } catch (e) {
+    Logger.log(etq + ' Error: ' + (e.message || e) + '. ' + REVISION_GUERRA_CSV + ' no se modificó; vuelve a correr la función.');
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // ===== PARTE 2 — Funciones que no se corren a mano =====
