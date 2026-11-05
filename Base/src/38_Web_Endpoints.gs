@@ -992,6 +992,31 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // §PF375: webAdminTagsClanesSospechosos (Tags con ⚠️: estuvieron en clanes vetados o rivales) y webAdminClanesSospechososJugador (semanas por clan, para el modal del ⚠️); GET, sesión de admin. [→ Contexto_Base_Web.md §PF375]
+  if (e && e.parameter && e.parameter.accion === 'webAdminTagsClanesSospechosos') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminTagsClanesSospechosos(e.parameter.sessionToken)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('[Web] Error interno: ' + err.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  if (e && e.parameter && e.parameter.accion === 'webAdminClanesSospechososJugador') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminClanesSospechososJugador(e.parameter.sessionToken, e.parameter.tag)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('[Web] Error interno: ' + err.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // FASE 8 (30-ago-2026): webSorteoCalificados, autocompleta la Ruleta de Sorteo con los calificados según la fila más reciente de cada clan en S_Lista; GET, sesión de admin. [→ Contexto_Base_Web.md §38B063]
   if (e && e.parameter && e.parameter.accion === 'webSorteoCalificados') {
     try {

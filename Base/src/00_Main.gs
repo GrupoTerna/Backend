@@ -1612,6 +1612,8 @@ function capturarApiClanes_(maxEdadMs, origen) {
   try { _pronosticoRegistrarFotoDia_(); }
   catch (eFotoDia) { Logger.log('[Captura] No se pudo guardar la foto diaria de fama: ' + eFotoDia.message); }
   if (origen !== 'ventana') _guardarJsonClanesDesdeCaptura_();
+  // PF375 (5-nov-2026): si apareció un clan sospechoso nuevo (rival de la semana, Conflictos o vetado), se actualizan las alertas de clanes sospechosos. Casi siempre no hace nada (compara una firma) y nunca lanza error. [→ Contexto_Base_Web.md §PF375]
+  if (origen !== 'ventana') _alertasClanesDesdeCaptura_();
   Logger.log('[Captura] FIN (' + (origen || 'sin origen') + ', ' + Math.round((Date.now() - t0) / 1000) + ' s)');
   return datos;
 }
