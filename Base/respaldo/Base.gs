@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 14:47:44 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 04/11/2026 20:22:08 */
 
 
 
@@ -26393,6 +26393,8 @@ var REVISION_GUERRA_ENCABEZADO = ['N°', 'Fecha', 'Temporada', 'Semana', 'Tag', 
 var CGW_CONTRADICCION_TIPO = 'Contradicción';      // columna «Tipo» de Revision_Guerra.csv
 var CGW_CONTRADICCION_ESTADO = 'Pendiente';        // columna «Estado» de lo que no se resolvió solo
 var CGW_CONTRADICCIONES_MAX_LINEAS = 200;          // tope de líneas que viajan en la respuesta (el resto solo cuenta)
+var CGW_MAX_ATAQUES_SIN_FAME = 4;                 // §PF357: clan que cruzó la meta el domingo: el domingo no da fame: cuentan todos sus ataques (máximo 4) o ninguno (decisión de la usuaria, 4-nov-2026)
+var CGW_MAX_SEMANAS_VERIFICAR_CIERRE = 5;           // §PF357: semanas distintas por corrida cuyos currentriverrace se leen de Drive para verificar el cierre (leer una semana son miles de archivos); el resto queda «sin verificar»
 var CGW_REGRESO_HUECO_DIAS = 7;                    // §PF314 (PF253 opción B): un hueco de 7 días o más sin clan Terna cuenta como «salió y regresó»
 var _CGW_MITADES_SEMANA_CACHE_ = null;             // §PF313: sumas de dos días de guerra, para comprobar semanas completas
 
@@ -27714,7 +27716,7 @@ function _cgwMitadesSemana_() {
  * §PF253 punto 2: «una terna posible» = una combinación posible de ataques, fame y barcos. Devuelve true si existen 4 días de guerra del catálogo
  * (_fameCatalogoDia_()) cuya suma sea exactamente esa semana. barcos null/undefined = «sin dato»: se comprueba solo ataques y fame.
  * Cubre la semana de UN clan o de un jugador en varios (las sumas más chicas también caben: hay días con 0 ataques). memo (opcional): objeto para no repetir cálculos.
- * Limitación conocida: no conoce la regla del clan terminado (ataques del domingo sin fame, §PF183), así que esos casos salen como «no cabe».
+ * No conoce la regla del clan terminado (ataques del domingo sin fame, §PF183): eso lo prueba _cgwSemanaPosibleClanTerminado_() (§PF357), que usa esta función.
  */
 function _cgwSemanaEsPosible_(ataques, fame, barcos, memo) {
   if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame)) return false;
@@ -27734,6 +27736,167 @@ function _cgwSemanaEsPosible_(ataques, fame, barcos, memo) {
   }
   if (memo) memo[clave] = ok;
   return ok;
+}
+
+/**
+ * _cgwSemanaEsPosibleTresDias_(ataques, fame, barcos) [→ Contexto_Base_Web.md §PF357]
+ * Como _cgwSemanaEsPosible_ pero con TRES días de guerra (jueves, viernes y sábado): un día del catálogo (_fameCatalogoDia_) más una suma de dos días (_cgwMitadesSemana_).
+ * Sirve para la semana de un clan que cruzó la meta al empezar el domingo, cuando el domingo no dio fame. barcos null/undefined = «sin dato».
+ */
+function _cgwSemanaEsPosibleTresDias_(ataques, fame, barcos) {
+  if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame)) return false;
+  if (ataques % 1 !== 0 || fame % 1 !== 0 || ataques < 0 || fame < 0) return false;
+  var hayBarcos = (typeof barcos === 'number' && !isNaN(barcos));
+  var m = _cgwMitadesSemana_(), cat = _fameCatalogoDia_();
+  for (var i = 0; i < cat.length; i++) {
+    var d = cat[i], n2 = ataques - d.n, f2 = fame - d.f;
+    if (n2 < 0 || f2 < 0) continue;
+    if (hayBarcos) { if (barcos - d.b >= 0 && m.conBarcos[n2 + '|' + (barcos - d.b) + '|' + f2]) return true; }
+    else if (m.sinBarcos[n2 + '|' + f2]) return true;
+  }
+  return false;
+}
+
+/**
+ * _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) [→ Contexto_Base_Web.md §PF357]
+ * §PF357 (reglas de la usuaria, 4-nov-2026; §PF183): el clan cruza la meta en el cambio de periodIndex hacia el domingo, así que en el domingo cuentan todos los ataques con fame
+ * o ninguno. Primero prueba la semana tal cual (k = 0, _cgwSemanaEsPosible_, cuatro días). Si no cabe, prueba k = 1 a 4 ataques en el domingo, TODOS sin fame (CGW_MAX_ATAQUES_SIN_FAME), y los
+ * (ataques - k) restantes deben cuadrar con la tabla en jueves, viernes y sábado (_cgwSemanaEsPosibleTresDias_). Los k ataques pueden ser de PvP, de duelo o de barco (no se ha descartado
+ * que se pueda atacar barcos con el clan ya terminado), así que los barcos que dieron fame pueden ser desde (barcos - k) hasta barcos. Sin dato de barcos solo se comprueban ataques y fame.
+ * Devuelve el menor k que cuadra (0 = cabe sin suponer nada) o -1 si no cabe de ninguna forma. No comprueba que el clan haya terminado (eso es _cgwClanTerminadoVerificado_).
+ */
+function _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) {
+  if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame)) return -1;
+  if (ataques % 1 !== 0 || ataques < 0 || ataques > BLG_DIAS_GUERRA * FAME_MAZOS_POR_DIA) return -1;
+  var hayBarcos = (typeof barcos === 'number' && !isNaN(barcos));
+  var clave = 'T|' + ataques + '|' + (hayBarcos ? barcos : 'x') + '|' + fame;
+  if (memo && memo[clave] !== undefined) return memo[clave];
+  var res = -1;
+  if (_cgwSemanaEsPosible_(ataques, fame, hayBarcos ? barcos : null, null)) res = 0;
+  for (var k = 1; k <= CGW_MAX_ATAQUES_SIN_FAME && k <= ataques && res < 0; k++) {
+    if (!hayBarcos) {
+      if (_cgwSemanaEsPosibleTresDias_(ataques - k, fame, null)) res = k;
+    } else {
+      for (var b2 = Math.max(0, barcos - k); b2 <= barcos && res < 0; b2++) {
+        if (_cgwSemanaEsPosibleTresDias_(ataques - k, fame, b2)) res = k;
+      }
+    }
+  }
+  if (memo) memo[clave] = res;
+  return res;
+}
+
+/**
+ * _cgwTextoDiaDescomposicion_(d) / _cgwDescripcionDia_(n, b, f) [→ Contexto_Base_Web.md §PF357]
+ * De las descomposiciones de un día (_fameDescomposicionesDia_) con esos ataques, barcos y fame, elige la de menos barcos ganados (regla de la usuaria: si hay dos casos posibles,
+ * se prefiere que el barco se haya perdido) y devuelve { barcosGanados, texto }.
+ */
+function _cgwDescripcionDia_(n, b, f) {
+  var desc = _fameDescomposicionesDia_(n, b).filter(function (d) { return d.fame === f; });
+  var mejor = null;
+  for (var i = 0; i < desc.length; i++) if (!mejor || desc[i].barcosGanados < mejor.barcosGanados) mejor = desc[i];
+  if (!mejor) return { barcosGanados: 0, texto: '' };
+  var partes = [];
+  if (mejor.duelo) partes.push('duelo ' + mejor.duelo);
+  if (mejor.barcosGanados) partes.push(mejor.barcosGanados + ' barco(s) ganado(s)');
+  if (mejor.barcosPerdidos) partes.push(mejor.barcosPerdidos + ' barco(s) perdido(s)');
+  if (mejor.pvpGanados) partes.push(mejor.pvpGanados + ' PvP ganado(s)');
+  if (mejor.pvpPerdidos) partes.push(mejor.pvpPerdidos + ' PvP perdido(s)');
+  return { barcosGanados: mejor.barcosGanados, texto: partes.join(', ') };
+}
+
+/**
+ * _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) [→ Contexto_Base_Web.md §PF357]
+ * Reparto por día de una semana que solo cuadra con el domingo sin fame (k de 1 a 4; si cabe sin suponer nada devuelve { k: 0 } sin reparto; si no cabe, null).
+ * Reglas de la usuaria (4-nov-2026): (1) el domingo cuentan todos los ataques o ninguno: los k ataques del domingo dan 0 de fame y jueves, viernes y sábado cuadran con la tabla
+ * (_fameCatalogoDia_). Primero se descarta todo lo que no cuadra y, entre las combinaciones semanales que SÍ quedan posibles, se aplica la regla de la usuaria (5-nov-2026):
+ * (2) **si aún quedan dos casos posibles se prefiere que el barco se haya perdido** (usualmente se necesitan varios ataques de barco para derrotar las defensas). Esa regla NO va primera:
+ * solo desempata lo que los criterios anteriores no resolvieron. Orden (los criterios a y b son de Claude, por confirmar): a) el menor k (más ataques con fame), b) menos barcos con el domingo
+ * en 0 (los barcos de la semana dieron fame), c) menos barcos ganados (barco perdido; regla de la usuaria), d) los días más llenos primero (J, V, S) y, a igual, el de más fame primero (como en las hojas de la usuaria,
+ * donde el duelo y el barco caen en los primeros días), e) el primero en el orden del catálogo.
+ * Devuelve { k, barcosGanados, dias: [{ dia, n, b, f, texto }] (J, V, S, D) } o { k: 0 } o null. Un día con el mismo total puede tener otro orden (por ejemplo el duelo en jueves o en viernes):
+ * el reparto elegido es uno entre varios equivalentes.
+ */
+function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
+  if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame) || ataques % 1 !== 0 || ataques < 0 || ataques > BLG_DIAS_GUERRA * FAME_MAZOS_POR_DIA) return null;
+  var hayBarcos = (typeof barcos === 'number' && !isNaN(barcos));
+  var clave = 'R|' + ataques + '|' + (hayBarcos ? barcos : 'x') + '|' + fame;
+  if (memo && memo[clave] !== undefined) return memo[clave];
+  var res = null;
+  if (_cgwSemanaEsPosible_(ataques, fame, hayBarcos ? barcos : null, null)) {
+    res = { k: 0 };
+  } else {
+    var cat = _fameCatalogoDia_(), porClave = {};
+    for (var c = 0; c < cat.length; c++) porClave[cat[c].n + '|' + cat[c].b + '|' + cat[c].f] = cat[c];
+    var info = {};
+    var infoDe = function (st) {
+      var kk = st.n + '|' + st.b + '|' + st.f;
+      if (!info[kk]) info[kk] = _cgwDescripcionDia_(st.n, st.b, st.f);
+      return info[kk];
+    };
+    var mejor = null, mejorClave = null;
+    for (var k = 1; k <= CGW_MAX_ATAQUES_SIN_FAME && k <= ataques; k++) {
+      var n3 = ataques - k;
+      if (n3 > 3 * FAME_MAZOS_POR_DIA) continue;
+      var b2ini = hayBarcos ? Math.max(0, barcos - k) : 0, b2fin = hayBarcos ? barcos : 0;
+      for (var b2 = b2ini; b2 <= b2fin; b2++) {
+        for (var i = 0; i < cat.length; i++) {
+          var s1 = cat[i];
+          for (var j = 0; j < cat.length; j++) {
+            var s2 = cat[j];
+            var nr = n3 - s1.n - s2.n, fr = fame - s1.f - s2.f;
+            if (nr < 0 || fr < 0) continue;
+            var cands = [];
+            if (hayBarcos) { var st = porClave[nr + '|' + (b2 - s1.b - s2.b) + '|' + fr]; if (st) cands.push(st); }
+            else for (var q = 0; q < cat.length; q++) if (cat[q].n === nr && cat[q].f === fr) cands.push(cat[q]);
+            for (var z = 0; z < cands.length; z++) {
+              var s3 = cands[z];
+              var ganados = infoDe(s1).barcosGanados + infoDe(s2).barcosGanados + infoDe(s3).barcosGanados;
+              var bDom = hayBarcos ? barcos - b2 : 0;
+              var clv = [k, bDom, ganados, -s1.n, -s2.n, -s3.n, -s1.f, -s2.f, -s3.f]; // el barco perdido (ganados) desempata solo entre las combinaciones que quedan (5-nov-2026)
+              var mejorQue = !mejorClave;
+              for (var t = 0; !mejorQue && t < clv.length; t++) { if (clv[t] < mejorClave[t]) mejorQue = true; else if (clv[t] > mejorClave[t]) break; }
+              if (mejorQue) { mejorClave = clv; mejor = { k: k, barcosGanados: ganados, bDom: bDom, s: [s1, s2, s3] }; }
+            }
+          }
+        }
+      }
+    }
+    if (mejor) {
+      var letras = ['J', 'V', 'S'], dias = [];
+      for (var d = 0; d < 3; d++) dias.push({ dia: letras[d], n: mejor.s[d].n, b: mejor.s[d].b, f: mejor.s[d].f, texto: infoDe(mejor.s[d]).texto });
+      dias.push({ dia: 'D', n: mejor.k, b: mejor.bDom, f: 0, texto: 'sin fame' });
+      res = { k: mejor.k, barcosGanados: mejor.barcosGanados, dias: dias };
+    }
+  }
+  if (memo) memo[clave] = res;
+  return res;
+}
+
+/** Texto corto del reparto de _cgwRepartoClanTerminado_ para el registro: «J 4 atq 525 (…); V …; D 4 atq sin fame». [→ Contexto_Base_Web.md §PF357] */
+function _cgwTextoReparto_(r) {
+  if (!r || !r.dias) return '';
+  return r.dias.map(function (d) {
+    return d.dia + ' ' + d.n + ' atq' + (d.dia === 'D' ? ' sin fame' : ' ' + d.f + (d.texto ? ' (' + d.texto + ')' : ''));
+  }).join('; ');
+}
+
+/**
+ * _cgwClanTerminadoVerificado_(temporadaPropia, semana, clanTag, cache) [→ Contexto_Base_Web.md §PF357]
+ * true solo si los currentriverrace de Drive prueban que el clan ya había cruzado la meta al empezar el domingo esa semana (_crrDomingoSinFame_, módulo 56). false = «sin verificar»:
+ * no hay captura, la temporada es anterior a T1, el clan no se conoce, el módulo 56 no está, falló la lectura o se llegó al tope de semanas por corrida
+ * (CGW_MAX_SEMANAS_VERIFICAR_CIERRE). Que dé false NO prueba que el clan no terminó. El módulo 56 reconoce el cruce al cierre del sábado; la usuaria (4-nov-2026) nunca ha visto cruces en otro día, así que el cruce se toma como del domingo hasta que se demuestre lo contrario. cache: { leidas: {}, n: 0 }.
+ */
+function _cgwClanTerminadoVerificado_(temporadaPropia, semana, clanTag, cache) {
+  if (typeof _crrDomingoSinFame_ !== 'function' || !clanTag || !(temporadaPropia >= 1) || !cache) return false;
+  var claveSem = temporadaPropia + '|' + semana;
+  if (!cache.leidas[claveSem]) {
+    if (cache.n >= CGW_MAX_SEMANAS_VERIFICAR_CIERRE) return false;
+    cache.leidas[claveSem] = true;
+    cache.n++;
+  }
+  try { return !!_crrDomingoSinFame_(temporadaPropia, semana, clanTag); }
+  catch (e) { return false; }
 }
 
 /**
@@ -28430,6 +28593,8 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var memoPosible = {}; // §PF313: memoria de _cgwSemanaEsPosible_() para no repetir cálculos en un lote grande
   var indiceAtaqueTerna = _cgwIndiceAtaqueTerna_(mapa, correcciones, _getTemporadaOffsetRoyaleApi()); // §PF343
   var cacheJsonTerna = {}, contradiccionesExternasIgnoradas = 0; // §PF343
+  var aceptadasClanTerminado = [], aceptadasClanTerminadoTotal = 0; // §PF357: filas que solo cuadran suponiendo ataques sin fame por clan terminado (sin verificar)
+  var aceptadasClanTerminadoVerificadas = 0, cacheCierreCrr = { leidas: {}, n: 0 }; // §PF357: cuántas se verificaron con los currentriverrace de Drive
   for (var i = 0; i < correcciones.length; i++) {
     var c = correcciones[i] || {};
     var tag = String(c.tag || '').trim();
@@ -28512,7 +28677,9 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     var mismoNivelDiscrepa = !!(existente && valoresDistintos && clanTag !== '' && fuenteGuardada !== 'desconocida' &&
       fuenteEntrante !== 'desconocida' && fuenteGuardada !== fuenteEntrante);
     var yaGuardadaIgual = !!(existente && !valoresDistintos); // reintento por Implementación «No»: el valor ya estaba, no es un conflicto nuevo
-    var noCabeSemana = !yaGuardadaIgual && !_cgwSemanaEsPosible_(ataquesSemana, fame, barcosFinal, memoPosible);
+    // §PF357: antes de decir «no cabe» se prueba el caso del clan que cruzó la meta el domingo (hasta 4 ataques sin fame; _cgwSemanaPosibleClanTerminado_).
+    var sinFameK = yaGuardadaIgual ? 0 : _cgwSemanaPosibleClanTerminado_(ataquesSemana, fame, barcosFinal, memoPosible);
+    var noCabeSemana = !yaGuardadaIgual && sinFameK < 0;
     var hayConflicto = mismoNivelDiscrepa || noCabeSemana || (valoresDistintos && !(clanTag === '' && fuenteGuardada === 'perfil' && fuenteEntrante === 'perfil'));
     // §PF343 (2-nov-2026, regla de la usuaria): la fila del perfil de un clan que NO es Terna solo genera contradicción si hay registro de que el jugador hizo al
     // menos un ataque esa semana en algún clan Terna (Log, Analytics o River Race). Sin ese registro se ignora: el valor se aplica como siempre, sin línea de conflicto
@@ -28566,6 +28733,18 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       if (cambiosPerfil.length < 200) cambiosPerfil.push(etiquetaCambio);
     }
 
+    if (sinFameK > 0) { // §PF357: se aplica el valor; queda dicho en el registro que se supuso clan terminado (no hay fila en Revision_Guerra.csv)
+      aceptadasClanTerminadoTotal++;
+      var clanCierre = clanTag !== '' ? clanTag : _normalizarClanTagCorreccion(c.clanPerfil);
+      var cierreVerificado = _cgwClanTerminadoVerificado_(temporadaPropia, semana, clanCierre, cacheCierreCrr);
+      if (cierreVerificado) aceptadasClanTerminadoVerificadas++;
+      if (aceptadasClanTerminado.length < CGW_CONTRADICCIONES_MAX_LINEAS) {
+        var repartoCierre = _cgwTextoReparto_(_cgwRepartoClanTerminado_(ataquesSemana, fame, barcosFinal, memoPosible));
+        aceptadasClanTerminado.push(etiquetaConflicto + ': ' + textoAhoraC + ' cuadra con el domingo sin fame, ' + sinFameK + ' ataque(s) (' +
+          (cierreVerificado ? 'verificado con la API: el clan ' + clanCierre + ' ya había cruzado la meta al empezar el domingo' : 'clan terminado, sin verificar') + ')' +
+          (repartoCierre ? '. Reparto: ' + repartoCierre : ''));
+      }
+    }
     // Aprobación/Implementación (pregunta 4, FIX 27-ago-2026, ver comentario [→ Contexto_Base_Web.md §18B100]
     mapa[clave] = {
       ataquesSemana: ataquesSemana, barcos: barcosFinal, fame: fame, actualizado: ahora,
@@ -28657,6 +28836,14 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   if (contradiccionesExternasIgnoradas) { // §PF343
     resultado.contradiccionesExternasIgnoradas = contradiccionesExternasIgnoradas;
     Logger.log('[CorreccionGuerra] ' + contradiccionesExternasIgnoradas + ' contradicción(es) de filas de perfil de clan externo ignorada(s): sin registro de ataques en un clan Terna esa semana.');
+  }
+  if (aceptadasClanTerminadoTotal) { // §PF357
+    resultado.aceptadasClanTerminado = aceptadasClanTerminado;
+    resultado.aceptadasClanTerminadoTotal = aceptadasClanTerminadoTotal;
+    resultado.aceptadasClanTerminadoVerificadas = aceptadasClanTerminadoVerificadas;
+    Logger.log('[CorreccionGuerra] ' + aceptadasClanTerminadoTotal + ' fila(s) cuadran solo con ataques sin fame por clan terminado (' + aceptadasClanTerminadoVerificadas +
+      ' verificada(s) con los currentriverrace de Drive, el resto sin verificar): ' +
+      aceptadasClanTerminado.slice(0, 20).join(' | ') + (aceptadasClanTerminado.length > 20 ? ' | … (ver la respuesta del endpoint)' : ''));
   }
   if (revisarManual.length) resultado.revisarManual = revisarManual; // FIX 29-sep-2026 (Fase 15 tanda 1)
   if (cambiosPerfil.length) resultado.cambiosPerfil = cambiosPerfil; // §PF237
