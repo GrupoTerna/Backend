@@ -468,7 +468,10 @@ function _getHistorialGuerraDriveIndexPorTag(folder) {
     if (!m) continue;
     var tag = m[1];
     // Por las dudas hubiera más de un archivo del mismo tag (no debería [→ Contexto_Base_Web.md §20B031]
-    if (!idx[tag] || f.getName() > idx[tag].getName()) idx[tag] = f;
+    // 5-nov-2026 (§PF370): los nombres empiezan con la fecha dd-mm-aaaa, así que el orden alfabético elegía el de MAYOR DÍA DEL MES, no el más reciente (22-10-2026 le ganaba a 04-11-2026). Con dos archivos del mismo Tag se elige el de última modificación; solo en ese caso se pide getLastUpdated(), que no se llama en el camino normal.
+    if (!idx[tag]) { idx[tag] = f; continue; }
+    var tNuevo = f.getLastUpdated().getTime(), tPrevio = idx[tag].getLastUpdated().getTime();
+    if (tNuevo > tPrevio || (tNuevo === tPrevio && f.getName() > idx[tag].getName())) idx[tag] = f;
   }
 
   _HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG = idx;
