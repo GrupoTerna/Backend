@@ -1,7 +1,7 @@
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
 //  Parte 1 — Funciones que se corren a mano
 //    - Informes (solo leen y registran)
-//    - Aplicar las correcciones desde Control_2
+//    - Aplicar las correcciones desde Control_2 (aplicarCorreccionGuerraATodasLasTemporadas() corre por tandas: cadena CORRGUERRA, §PF358)
 //    - Auditorías de la guerra reconstruida
 //    - Completar el domingo y reparar la semana desde el JSON de RoyaleAPI
 //    - Cerrar las contradicciones de clan terminado de Revision_Guerra.csv (§PF357)
@@ -82,6 +82,19 @@ var CGW_CONTRADICCIONES_CERRAR_PF357 = [
   { temporada: 19, semana: 1, tag: '#V9P20U8RC', ataques: 15, fame: 1200, barcos: 0 }    // N° 913 al 4-nov-2026
 ];
 var CGW_MAX_SEMANAS_VERIFICAR_CIERRE = 5;           // §PF357: semanas distintas por corrida cuyos currentriverrace se leen de Drive para verificar el cierre (leer una semana son miles de archivos); el resto queda «sin verificar»
+// §PF358 (4-nov-2026): cadena por tandas de aplicarCorreccionGuerraATodasLasTemporadas() (id CORRGUERRA; regla 0.10 de la skill). NOMBRES_PASOS_CORRGUERRA va en el mismo orden que PASOS_CORRGUERRA. [→ Contexto_Base_Web.md §PF358]
+var PASOS_CORRGUERRA = [
+  function () { _cgwPasoCorrGuerraCache_(); },
+  function () { return _cgwPasoCorrGuerraAplicar_(); },
+  function () { _cgwPasoCorrGuerraControl_(); },
+  function () { _cgwPasoCorrGuerraControl2_(); }
+];
+var NOMBRES_PASOS_CORRGUERRA = [
+  'Caché de clanes: refrescar → caché al día (si falla, se continúa igual)',
+  'Correcciones de Guerra: aplicar por temporada y por jugador-semana → hoja Guerra o Backup_Guerra.csv corregidos y Revision_Guerra.csv al día',
+  'Hoja Control: repintar → Control al día con la guerra corregida',
+  'Hoja Control_2: repintar → Control_2 al día con la guerra corregida'
+];
 var CGW_REGRESO_HUECO_DIAS = 7;                    // §PF314 (PF253 opción B): un hueco de 7 días o más sin clan Terna cuenta como «salió y regresó»
 var _CGW_MITADES_SEMANA_CACHE_ = null;             // §PF313: sumas de dos días de guerra, para comprobar semanas completas
 
@@ -900,103 +913,44 @@ function aplicarCorreccionGuerraATemporadaSeleccionada() {
 
 /**
  * aplicarCorreccionGuerraATodasLasTemporadas() [→ Contexto_Base_Web.md §18B067]
+ * §PF358 (4-nov-2026): corre como cadena por tandas (id CORRGUERRA, motor _ejecutarPorTandas()). La versión anterior recorría todas las temporadas en una sola ejecución y la
+ * plataforma la cortaba a los 6 minutos (T22, 4-nov-2026), sin repintar Control ni Control_2. Ahora cada tanda aplica las correcciones hasta agotar su presupuesto
+ * (CFG.CORRGUERRA_PRESUPUESTO_MS), guarda lo hecho, anota el avance y programa sola la continuación; no hace falta volver a correr nada. Si la cancelas con cancelarEjecucion() o corres
+ * esta función otra vez, empieza de cero (es seguro: lo ya aplicado no cambia). El detalle del avance sale en el registro.
  */
 function aplicarCorreccionGuerraATodasLasTemporadas() {
-  var ctxReal = _getCtx();
-  var overlay = _cargarOverlayCorreccionesGuerra();
-  var todasLasClaves = Object.keys(overlay);
-  if (!todasLasClaves.length) {
-    Logger.log('[Corregir Guerra<-RoyaleAPI] ' + CORRECCIONES_GUERRA_CSV + ' está vacío, nada que aplicar.');
-    return;
-  }
+  if (!_adquirirLockEjecucion('aplicarCorreccionGuerraATodasLasTemporadas')) return;
+  var props = PropertiesService.getScriptProperties();
+  props.deleteProperty('CORRGUERRA_ESTADO');
+  props.setProperty('CORRGUERRA_PASO', '0');
+  _continuarAplicarCorreccionGuerraATodas();
+}
 
+/**
+ * _continuarAplicarCorreccionGuerraATodas() - punto de entrada de aplicarCorreccionGuerraATodasLasTemporadas() y del activador de continuación (§PF358). [→ Contexto_Base_Web.md §PF358]
+ * Cuando la cadena termina escribe el resumen de todas las temporadas, borra el estado guardado y libera el candado.
+ */
+function _continuarAplicarCorreccionGuerraATodas() {
+  var props = PropertiesService.getScriptProperties();
+  var paso = parseInt(props.getProperty('CORRGUERRA_PASO') || '0', 10);
+  Logger.log(paso === 0 ? '=== Corrección de Guerra (todas las temporadas) INICIO ===' : '=== Corrección de Guerra (todas las temporadas) CONTINÚA desde el paso ' + (paso + 1) + '/' + PASOS_CORRGUERRA.length + ' ===');
   try {
-    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionGuerra');
-  } catch (eFetch) {
-    Logger.log('[Corregir Guerra<-RoyaleAPI] AVISO: no se pudo refrescar el cache de clanes (' +
-      eFetch.message + '). Se continúa igual.');
-  }
-
-  // Agrupar por temporada para procesar cada fuente una sola vez.
-  var porTemporada = {};
-  for (var i = 0; i < todasLasClaves.length; i++) {
-    var temporadaClave = todasLasClaves[i].split('|')[0];
-    if (!porTemporada[temporadaClave]) porTemporada[temporadaClave] = [];
-    porTemporada[temporadaClave].push(todasLasClaves[i]);
-  }
-
-  var temporadas = Object.keys(porTemporada).sort(function (a, b) { return Number(a) - Number(b); });
-  var resumenGlobal = { procesadas: 0, ajustadas: 0, reconstruidas: 0, ccAplicadas: 0, ccReconstruidas: 0, ccAlarmas: 0, ccRevertidos: 0, ccIncompletos: 0 };
-  // 3.3b: revisiones (Revision_Guerra.csv) y orden fijo de clanes Terna para el reparto del domingo.
-  var revisionAcum = [];
-  var ternaOrden = [];
-  try { ternaOrden = _getNombresClanesTernaOrdenados(); } catch (eTerna) { ternaOrden = []; }
-  // 3.3c-2b: nombres de los clanes Terna (una sola vez por corrida) para la rama con ClanTag.
-  var nombresPorTag; // si falla, la rama los arma ella misma
-  try { nombresPorTag = _mapaNombresClanTerna_(CFG.TERNA_TAGS.slice()); } catch (eNom) { nombresPorTag = undefined; }
-
-  for (var t = 0; t < temporadas.length; t++) {
-    var temporadaPropia = Number(temporadas[t]);
-    var clavesTemporada = porTemporada[temporadas[t]];
-    if (temporadaPropia < 1) { // §PF247: anteriores a T1; no existen en Guerra y no se crean filas con temporada 0 o negativa hasta la reenumeración
-      Logger.log('[Corregir Guerra<-RoyaleAPI] Temporada ' + temporadaPropia + ': ' + clavesTemporada.length + ' clave(s) anteriores a T1, se dejan en el CSV hasta la reenumeración.');
-      continue;
+    var completo = _ejecutarPorTandas('CORRGUERRA', PASOS_CORRGUERRA, CFG.CORRGUERRA_PRESUPUESTO_MS, '_continuarAplicarCorreccionGuerraATodas', NOMBRES_PASOS_CORRGUERRA);
+    if (completo) {
+      _cgwResumenCorrGuerra_(props);
+      props.deleteProperty('CORRGUERRA_ESTADO');
+      _liberarLockEjecucion();
+      Logger.log('=== Corrección de Guerra (todas las temporadas) FIN ===');
     }
-
-    var fuente = _cargarFuenteGuerraParaTemporada(temporadaPropia, ctxReal.temporada);
-    if (!fuente) {
-      Logger.log('[Corregir Guerra<-RoyaleAPI] Temporada ' + temporadaPropia + ': no se pudo cargar la fuente, se omite.');
-      continue;
-    }
-
-    var offsetsPorClave = _construirOffsetsPorClave(fuente.filas, temporadaPropia);
-    var stats = {};
-    var temporadaRoyaleApi = _getTemporadaRoyaleApiDesdePropia(temporadaPropia);
-
-    for (var k = 0; k < clavesTemporada.length; k++) {
-      var partes = clavesTemporada[k].split('|');
-      var semana = Number(partes[1]);
-      var tag = partes[2];
-      var v = overlay[clavesTemporada[k]];
-      _aplicarCorreccionOverlayAFuente_(
-        fuente, offsetsPorClave, temporadaPropia, semana, tag, v,
-        { temporadaRoyaleApi: temporadaRoyaleApi, revision: revisionAcum, ternaOrden: ternaOrden, nombresPorTag: nombresPorTag }, stats
-      );
-    }
-
-    _guardarFuenteGuerra(fuente);
-
-    resumenGlobal.procesadas += clavesTemporada.length;
-    resumenGlobal.ajustadas += (stats.corregidas || 0);
-    resumenGlobal.reconstruidas += (stats.reconstruidas || 0);
-    resumenGlobal.ccAplicadas += (stats.ccAplicadas || 0);
-    resumenGlobal.ccReconstruidas += (stats.ccReconstruidas || 0);
-    resumenGlobal.ccAlarmas += (stats.ccAlarmas || 0);
-    resumenGlobal.ccRevertidos += (stats.ccRevertidos || 0);
-    resumenGlobal.ccIncompletos += (stats.ccIncompletos || 0);
-
-    Logger.log('[Corregir Guerra<-RoyaleAPI] Temporada ' + temporadaPropia + ': ' + clavesTemporada.length +
-      ' clave(s). Ajustadas: ' + (stats.corregidas || 0) + '. Reconstruidas desde cero: ' + (stats.reconstruidas || 0) +
-      '. Con ClanTag: aplicadas ' + (stats.ccAplicadas || 0) + ', reconstruidas ' + (stats.ccReconstruidas || 0) + ', alarmas ' + (stats.ccAlarmas || 0) +
-      ', revertidas ' + (stats.ccRevertidos || 0) + ', incompletas ' + (stats.ccIncompletos || 0) + '.');
+    // Si no está completo, el candado NO se libera: _ejecutarPorTandas ya refrescó su marca y programó la continuación.
+  } catch (e) {
+    props.deleteProperty('CORRGUERRA_PASO');
+    props.deleteProperty('CORRGUERRA_ESTADO');
+    _borrarTriggersDeContinuacion('_continuarAplicarCorreccionGuerraATodas');
+    _liberarLockEjecucion();
+    Logger.log('[Corregir Guerra<-RoyaleAPI] ERROR: ' + e.message + ' — candado liberado. Lo ya guardado queda; vuelve a correr la función para retomar desde cero.');
+    throw e;
   }
-
-  try { _registrarRevisionGuerra_(revisionAcum); } catch (eRev) {
-    Logger.log('[Corregir Guerra<-RoyaleAPI] Corrección aplicada pero no se pudo escribir ' + REVISION_GUERRA_CSV + ': ' + eRev.message);
-  }
-
-  try { updateControlSheet(); } catch (e1) {
-    Logger.log('[Corregir Guerra<-RoyaleAPI] Corrección aplicada pero updateControlSheet() falló: ' + e1.message);
-  }
-  try { actualizarControl2(); } catch (e2) {
-    Logger.log('[Corregir Guerra<-RoyaleAPI] Corrección aplicada pero actualizarControl2() falló: ' + e2.message);
-  }
-
-  Logger.log('[Corregir Guerra<-RoyaleAPI] TODAS LAS TEMPORADAS: ' + temporadas.length + ' temporada(s), ' +
-    resumenGlobal.procesadas + ' clave(s) procesada(s) en total. Ajustadas: ' + resumenGlobal.ajustadas +
-    '. Reconstruidas desde cero: ' + resumenGlobal.reconstruidas + '. Con ClanTag: aplicadas ' + resumenGlobal.ccAplicadas +
-    ', reconstruidas ' + resumenGlobal.ccReconstruidas + ', alarmas ' + resumenGlobal.ccAlarmas + ', revertidas ' + resumenGlobal.ccRevertidos +
-    ', incompletas ' + resumenGlobal.ccIncompletos + '.');
 }
 
 /**
@@ -2962,6 +2916,165 @@ function _cnvCompararNuevosConGuerra_(textoNuevos, textoGuerra, nombresPorTag, t
     });
   }
   return { stats: stats, entradas: entradas };
+}
+
+// §PF358: pasos de la cadena CORRGUERRA (aplicarCorreccionGuerraATodasLasTemporadas). Estado entre tandas: propiedad CORRGUERRA_ESTADO (JSON) con { ultima: última temporada terminada,
+// parcial: { temp, idx, n, stats } de la temporada a medias, temporadas: cuántas se terminaron, st: suma de las estadísticas }. Lo hecho se deduce del propio orden de las claves.
+// [→ Contexto_Base_Web.md §PF358]
+
+/** Paso 1 de CORRGUERRA: refresca el caché de clanes (como hacían las demás funciones de este tema); si falla se continúa igual. */
+function _cgwPasoCorrGuerraCache_() {
+  try {
+    capturarApiClanes_(CFG.CLANES_PROGRESO_MAX_EDAD_MS, 'CorreccionGuerra');
+  } catch (eFetch) {
+    Logger.log('[Corregir Guerra<-RoyaleAPI] AVISO: no se pudo refrescar el cache de clanes (' + eFetch.message + '). Se continúa igual.');
+  }
+}
+
+/** Suma, clave por clave, las estadísticas numéricas de `origen` en `destino`. */
+function _cgwSumarStats_(destino, origen) {
+  Object.keys(origen || {}).forEach(function (k) {
+    if (typeof origen[k] === 'number') destino[k] = (destino[k] || 0) + origen[k];
+  });
+  return destino;
+}
+
+/**
+ * Paso 2 de CORRGUERRA. Aplica las correcciones de Correcciones_Guerra.csv temporada por temporada (de la menor a la mayor) y, dentro de cada una, clave por clave
+ * (jugador-semana). Cuando la tanda agota su presupuesto guarda la fuente de guerra, anota el avance (claves hechas de las totales) y devuelve false: el motor programa
+ * la continuación y esta función retoma en la clave siguiente. Devuelve undefined cuando ya no queda nada. Siempre procesa al menos una clave por llamada, para que haya avance.
+ */
+function _cgwPasoCorrGuerraAplicar_() {
+  var etq = '[Corregir Guerra<-RoyaleAPI]';
+  var props = PropertiesService.getScriptProperties();
+  var inicioMs = INICIO_TANDA_MS_ || Date.now();
+  var agotado = function () { return (Date.now() - inicioMs) >= CFG.CORRGUERRA_PRESUPUESTO_MS; };
+  var ctxReal = _getCtx();
+  var overlay = _cargarOverlayCorreccionesGuerra();
+  var todasLasClaves = Object.keys(overlay);
+  if (!todasLasClaves.length) { Logger.log(etq + ' ' + CORRECCIONES_GUERRA_CSV + ' está vacío, nada que aplicar.'); return; }
+
+  var porTemporada = {};
+  for (var i = 0; i < todasLasClaves.length; i++) {
+    var temporadaClave = todasLasClaves[i].split('|')[0];
+    if (!porTemporada[temporadaClave]) porTemporada[temporadaClave] = [];
+    porTemporada[temporadaClave].push(todasLasClaves[i]);
+  }
+  var temporadas = Object.keys(porTemporada).sort(function (a, b) { return Number(a) - Number(b); });
+
+  var est = null;
+  try { est = JSON.parse(props.getProperty('CORRGUERRA_ESTADO') || 'null'); } catch (eEst) { est = null; }
+  if (!est) {
+    est = { ultima: null, parcial: null, temporadas: 0, st: {} };
+    temporadas.forEach(function (ts) { // §PF247: anteriores a T1; no existen en Guerra y no se crean filas con temporada 0 o negativa hasta la reenumeración
+      if (Number(ts) < 1) Logger.log(etq + ' Temporada ' + ts + ': ' + porTemporada[ts].length + ' clave(s) anteriores a T1, se dejan en el CSV hasta la reenumeración.');
+    });
+  }
+
+  // Total de claves a procesar y las ya hechas (por el orden de las temporadas y el índice de la temporada a medias).
+  var total = 0, previas = 0;
+  temporadas.forEach(function (ts) {
+    var n = Number(ts);
+    if (n < 1) return;
+    total += porTemporada[ts].length;
+    if (est.ultima !== null && n <= est.ultima) previas += porTemporada[ts].length;
+    else if (est.parcial && est.parcial.temp === n && est.parcial.n === porTemporada[ts].length) previas += est.parcial.idx;
+  });
+
+  var ternaOrden = [];
+  try { ternaOrden = _getNombresClanesTernaOrdenados(); } catch (eTerna) { ternaOrden = []; }
+  var nombresPorTag;
+  try { nombresPorTag = _mapaNombresClanTerna_(CFG.TERNA_TAGS.slice()); } catch (eNom) { nombresPorTag = undefined; }
+
+  var estaTanda = 0, cortado = false;
+  for (var t = 0; t < temporadas.length && !cortado; t++) {
+    var temporadaPropia = Number(temporadas[t]);
+    if (temporadaPropia < 1) continue;
+    if (est.ultima !== null && temporadaPropia <= est.ultima) continue;
+    var claves = porTemporada[temporadas[t]];
+
+    var idx = 0, statsTemp = {};
+    if (est.parcial && est.parcial.temp === temporadaPropia) {
+      if (est.parcial.n === claves.length) { idx = est.parcial.idx; statsTemp = est.parcial.stats || {}; }
+      else Logger.log(etq + ' Temporada ' + temporadaPropia + ': las correcciones cambiaron entre tandas (' + est.parcial.n + ' → ' + claves.length + ' claves); se repasa desde la primera, lo ya aplicado no cambia.');
+    }
+    if (estaTanda > 0 && agotado()) { cortado = true; break; } // no se abre otra temporada si ya no hay tiempo
+
+    var fuente = _cargarFuenteGuerraParaTemporada(temporadaPropia, ctxReal.temporada);
+    if (!fuente) {
+      Logger.log(etq + ' Temporada ' + temporadaPropia + ': no se pudo cargar la fuente, se omite.');
+      est.ultima = temporadaPropia; est.parcial = null; est.temporadas++;
+      props.setProperty('CORRGUERRA_ESTADO', JSON.stringify(est));
+      continue;
+    }
+
+    var offsetsPorClave = _construirOffsetsPorClave(fuente.filas, temporadaPropia);
+    var stats = {};
+    var revisionAcum = [];
+    var temporadaRoyaleApi = _getTemporadaRoyaleApiDesdePropia(temporadaPropia);
+    var idxInicial = idx;
+    while (idx < claves.length) {
+      var partes = claves[idx].split('|');
+      _aplicarCorreccionOverlayAFuente_(
+        fuente, offsetsPorClave, temporadaPropia, Number(partes[1]), partes[2], overlay[claves[idx]],
+        { temporadaRoyaleApi: temporadaRoyaleApi, revision: revisionAcum, ternaOrden: ternaOrden, nombresPorTag: nombresPorTag }, stats
+      );
+      idx++; estaTanda++;
+      if (idx < claves.length && agotado()) { cortado = true; break; }
+    }
+
+    _guardarFuenteGuerra(fuente);
+    try { _registrarRevisionGuerra_(revisionAcum); } catch (eRev) {
+      Logger.log(etq + ' Corrección aplicada pero no se pudo escribir ' + REVISION_GUERRA_CSV + ': ' + eRev.message);
+    }
+    stats.claves = idx - idxInicial;
+    _cgwSumarStats_(statsTemp, stats);
+    _cgwSumarStats_(est.st, stats);
+
+    if (idx >= claves.length) {
+      est.ultima = temporadaPropia; est.parcial = null; est.temporadas++;
+      Logger.log(etq + ' Temporada ' + temporadaPropia + ': ' + claves.length +
+        ' clave(s). Ajustadas: ' + (statsTemp.corregidas || 0) + '. Reconstruidas desde cero: ' + (statsTemp.reconstruidas || 0) +
+        (statsTemp.reconstruidasClanTerminado ? ' (' + statsTemp.reconstruidasClanTerminado + ' con el domingo sin fame del clan terminado)' : '') +
+        '. Con ClanTag: aplicadas ' + (statsTemp.ccAplicadas || 0) + ', reconstruidas ' + (statsTemp.ccReconstruidas || 0) + ', alarmas ' + (statsTemp.ccAlarmas || 0) +
+        ', revertidas ' + (statsTemp.ccRevertidos || 0) + ', incompletas ' + (statsTemp.ccIncompletos || 0) + '.');
+    } else {
+      est.parcial = { temp: temporadaPropia, idx: idx, n: claves.length, stats: statsTemp };
+      Logger.log(etq + ' Temporada ' + temporadaPropia + ': corte por tiempo tras ' + idx + ' de ' + claves.length + ' clave(s); la tanda siguiente retoma en la clave ' + (idx + 1) + '.');
+    }
+    props.setProperty('CORRGUERRA_ESTADO', JSON.stringify(est));
+  }
+
+  if (cortado) {
+    _logProgresoPaso_('Corregir Guerra<-RoyaleAPI', 'Correcciones de guerra aplicadas', previas, estaTanda, total, 'clave(s) jugador-semana');
+    return false;
+  }
+}
+
+/** Paso 3 de CORRGUERRA: repinta la hoja Control. Si falla lo dice y sigue (lo corregido ya está guardado). */
+function _cgwPasoCorrGuerraControl_() {
+  try { updateControlSheet(); } catch (e1) {
+    Logger.log('[Corregir Guerra<-RoyaleAPI] Corrección aplicada pero no se pudo repintar la hoja Control: ' + e1.message);
+  }
+}
+
+/** Paso 4 de CORRGUERRA: repinta la hoja Control_2. Si falla lo dice y sigue (lo corregido ya está guardado). */
+function _cgwPasoCorrGuerraControl2_() {
+  try { actualizarControl2(); } catch (e2) {
+    Logger.log('[Corregir Guerra<-RoyaleAPI] Corrección aplicada pero no se pudo repintar la hoja Control_2: ' + e2.message);
+  }
+}
+
+/** Resumen final de CORRGUERRA (el mismo que escribía la versión de una sola ejecución), a partir del estado guardado entre tandas. */
+function _cgwResumenCorrGuerra_(props) {
+  var est = null;
+  try { est = JSON.parse(props.getProperty('CORRGUERRA_ESTADO') || 'null'); } catch (e) { est = null; }
+  if (!est) { Logger.log('[Corregir Guerra<-RoyaleAPI] TODAS LAS TEMPORADAS: sin resumen (no quedó estado guardado).'); return; }
+  var s = est.st || {};
+  Logger.log('[Corregir Guerra<-RoyaleAPI] TODAS LAS TEMPORADAS: ' + est.temporadas + ' temporada(s), ' + (s.claves || 0) + ' clave(s) procesada(s) en total. Ajustadas: ' + (s.corregidas || 0) +
+    '. Reconstruidas desde cero: ' + (s.reconstruidas || 0) + (s.reconstruidasClanTerminado ? ' (' + s.reconstruidasClanTerminado + ' con el domingo sin fame del clan terminado)' : '') +
+    '. Con ClanTag: aplicadas ' + (s.ccAplicadas || 0) + ', reconstruidas ' + (s.ccReconstruidas || 0) + ', alarmas ' + (s.ccAlarmas || 0) + ', revertidas ' + (s.ccRevertidos || 0) +
+    ', incompletas ' + (s.ccIncompletos || 0) + '.');
 }
 
 // ----- Reparto, reconstrucción y cobertura -----

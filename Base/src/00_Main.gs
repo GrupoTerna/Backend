@@ -571,7 +571,7 @@ function cancelarEjecucion() {
   try {
     var horaCancelar = String(Date.now());
     var propsCancelar = PropertiesService.getScriptProperties();
-    ['RUNALL', 'RUNUPDATE', 'RUNGUERRARAPIDO', 'RUNGUERRA', 'RUNSORTEOS', 'RUNSYNCCSV'].forEach(function(idCadena) { propsCancelar.setProperty(idCadena + '_CANCELADA_TS', horaCancelar); }); // PF354 (4-nov-2026, decidido por la usuaria): RUNSORTEOS y RUNSYNCCSV también se cancelan. [→ Contexto_Base_Web.md §PF354]
+    ['RUNALL', 'RUNUPDATE', 'RUNGUERRARAPIDO', 'RUNGUERRA', 'RUNSORTEOS', 'RUNSYNCCSV', 'CORRGUERRA'].forEach(function(idCadena) { propsCancelar.setProperty(idCadena + '_CANCELADA_TS', horaCancelar); }); // PF354 (4-nov-2026, decidido por la usuaria): RUNSORTEOS y RUNSYNCCSV también se cancelan. [→ Contexto_Base_Web.md §PF354]
   } catch (eMarcaCancelar) {
     Logger.log('[Cancelar] AVISO: no se pudo dejar la marca de cancelación (' + eMarcaCancelar.message + '). Si hay una tanda corriendo, puede volver a programar su continuación.');
   }
@@ -579,7 +579,7 @@ function cancelarEjecucion() {
   _borrarTriggersDeContinuacion('_continuarRunUpdate');
   // FIX (22-ago-2026): runGuerraRapido() ahora también usa el motor de [→ Contexto_Base_Web.md §B080]
   _borrarTriggersDeContinuacion('_continuarRunGuerraRapido');
-  _borrarTriggersDeContinuacion('_continuarRunGuerraCadena'); _borrarTriggersDeContinuacion('_continuarRunSorteos'); _borrarTriggersDeContinuacion('_continuarRunSyncCSV'); // PF311 parte B; PF354 (las dos últimas)
+  _borrarTriggersDeContinuacion('_continuarRunGuerraCadena'); _borrarTriggersDeContinuacion('_continuarRunSorteos'); _borrarTriggersDeContinuacion('_continuarRunSyncCSV'); _borrarTriggersDeContinuacion('_continuarAplicarCorreccionGuerraATodas'); // PF311 parte B; PF354 (las dos últimas); PF358 (la última)
 
   var props = PropertiesService.getScriptProperties();
   var pasoRunGuerraCadena = props.getProperty('RUNGUERRA_PASO'); // PF311 parte B
@@ -593,6 +593,7 @@ function cancelarEjecucion() {
   props.deleteProperty('RUNUPDATE_REINTENTO');
   props.deleteProperty('RUNGUERRARAPIDO_PASO');
   props.deleteProperty('RUNGUERRARAPIDO_REINTENTO'); ['RUNSORTEOS_PASO', 'RUNSORTEOS_REINTENTO', 'RUNSYNCCSV_PASO', 'RUNSYNCCSV_REINTENTO'].forEach(function(k) { props.deleteProperty(k); }); // PF354
+  ['CORRGUERRA_PASO', 'CORRGUERRA_PASO_NOMBRE', 'CORRGUERRA_REINTENTO', 'CORRGUERRA_TANDAS_PASO', 'CORRGUERRA_PROGRESO_PASO', 'CORRGUERRA_ESTADO'].forEach(function(k) { props.deleteProperty(k); }); // PF358: cadena de aplicarCorreccionGuerraATodasLasTemporadas()
   // NUEVO (05-oct-2026): bandera de la version programada de runGuerraRapido y candado propio de la version
   // programada de Pendientes/Mensajes.
   props.deleteProperty('RUNGUERRARAPIDO_SIN_API');

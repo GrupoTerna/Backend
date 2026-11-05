@@ -275,6 +275,8 @@ var CFG = {
   RUNGUERRA_POR_TANDAS: true,
   // NUEVO (09-sep-2026, pedido usuario -- "_continuarRunSorteos() / [→ Contexto_Base_Web.md §01B033]
   RUNSORTEOS_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s (PF311 parte D)
+  // §PF358 (4-nov-2026): aplicarCorreccionGuerraATodasLasTemporadas() corre como cadena por tandas (CORRGUERRA, 18_CorreccionGuerra.gs) con este presupuesto por tanda. [→ Contexto_Base_Web.md §PF358]
+  CORRGUERRA_PRESUPUESTO_MS: 2 * 60 * 1000 + 30 * 1000, // 2m30s
   // PF292 (29-oct-2026): llamadas extra al MISMO paso dentro de una tanda cuando el paso quedó incompleto, avanzó y a la tanda le sobra tiempo (ver _decidirRellamadaPaso_(), 00_Main.gs).
   TANDA_RELLAMADAS_MAX: 5,                // tope de llamadas extra de un paso por tanda
   TANDA_RELLAMADA_MIN_MS: 60 * 1000,      // duración que se supone a una llamada extra aunque la anterior fuera más corta
