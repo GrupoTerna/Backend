@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 05/11/2026 02:52:38 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 05/11/2026 03:50:09 */
 
 
 
@@ -19978,7 +19978,7 @@ function _buscarInfiltrado(query, soloClan) {
     return { ok: false, error: 'Ingresa un Tag de clan o de jugador (con o sin #).' };
   }
 
-  var rivalesYConflicto = _getRivalesYConflicto();
+  var rivalesYConflicto = _getRivalesYConflicto(true);
 
   // 1) Probar como CLAN.
   var clanInfo = null;
@@ -20140,7 +20140,7 @@ function _webAdminBuscarClan(token, tag) {
     return { ok: false, error: 'No encontré ningún clan con ese Tag. Verifica que esté bien escrito (con o sin #). Si es un jugador, búscalo en «Buscar miembro».' };
   }
 
-  var rivalesYConflicto = _getRivalesYConflicto();
+  var rivalesYConflicto = _getRivalesYConflicto(true);
   var infoRival = rivalesYConflicto[tagNorm] || null;
   return {
     ok: true,
@@ -20162,10 +20162,10 @@ function _webAdminBuscarClan(token, tag) {
 
 /**
  * _esClanPropio_(tagNorm) [→ Contexto_Base_Web.md §PF368]
- * true si el Tag (sin #) es de uno de los clanes de la Familia (CFG.TERNA_TAGS o CFG.CLAN_TAGS).
+ * true si el Tag (sin #) es de uno de los clanes de la Familia (CFG.TERNA_TAGS). NO incluye al clan vetado (CFG.VETADO_TAG, NARANJA x): está en CFG.CLAN_TAGS pero no es nuestro, es un clan vetado como cualquier otro (corrección del 5-nov-2026, hora de Lima, pedido de la usuaria).
  */
 function _esClanPropio_(tagNorm) {
-  var listas = [CFG.TERNA_TAGS || [], CFG.CLAN_TAGS || []];
+  var listas = [CFG.TERNA_TAGS || []];
   for (var a = 0; a < listas.length; a++) {
     for (var b = 0; b < listas[a].length; b++) {
       if (cleanTag(listas[a][b]) === tagNorm) return true;
@@ -20192,6 +20192,7 @@ function _webAdminVetarClan(token, datos) {
   var tagNorm = cleanTag(datos.tag);
   if (!tagNorm || tagNorm.length < 3) return { ok: false, error: 'Tag inválido.' };
   if (_esClanPropio_(tagNorm)) return { ok: false, error: 'No se puede vetar un clan de la Familia.' };
+  if (CFG.VETADO_TAG && cleanTag(CFG.VETADO_TAG) === tagNorm) return { ok: false, error: 'Ese clan ya es el clan vetado (NARANJA x).' };
 
   var motivo = String((datos && datos.motivo) || '').trim().replace(/\s+/g, ' ');
   if (!motivo) return { ok: false, error: 'Escribe el motivo del veto.' };
@@ -20233,9 +20234,10 @@ function _webAdminVetarClan(token, datos) {
 }
 
 /**
- * _getRivalesYConflicto() [→ Contexto_Base_Web.md §15B006]
+ * _getRivalesYConflicto(incluirVetado) [→ Contexto_Base_Web.md §15B006]
+ * incluirVetado (opcional, false por defecto): agrega al clan vetado (CFG.VETADO_TAG, NARANJA x) con fuente 'vetado', salvo que ya figure en Conflictos. Solo lo piden la detección de infiltrados y «Buscar clan» (§PF368); Ingresos recientes (37_Web_API.gs) no lo pide y sigue igual.
  */
-function _getRivalesYConflicto() {
+function _getRivalesYConflicto(incluirVetado) {
   var automatico = _getClanesRivalesTemporadaActual();
   var manual = _getClanesConflictoManual();
 
@@ -20249,6 +20251,12 @@ function _getRivalesYConflicto() {
       // motivo manual se conserva tal cual ya estaba en combinado[tagA]
     } else {
       combinado[tagA] = automatico[tagA];
+    }
+  }
+  if (incluirVetado && CFG.VETADO_TAG) {
+    var tagVet = cleanTag(CFG.VETADO_TAG);
+    if (tagVet && !combinado[tagVet]) {
+      combinado[tagVet] = { tag: '#' + tagVet, nombre: 'NARANJA x', fuente: 'vetado', motivo: 'Clan vetado' };
     }
   }
   return combinado;
