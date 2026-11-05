@@ -67,7 +67,7 @@ function _buscarInfiltrado(query, soloClan) {
         });
       }
     }
-    return {
+    var respuestaClan = {
       ok: true,
       tipo: 'clan',
       clan: { tag: '#' + tagNorm, nombre: clanInfo.name, miembros: clanInfo.memberList.length },
@@ -75,6 +75,14 @@ function _buscarInfiltrado(query, soloClan) {
       infoRival: esRivalClan ? rivalesYConflicto[tagNorm] : null,
       coincidencias: coincidenciasClan
     };
+    // §PF368 (5-nov-2026, pedido de la usuaria): el clan vetado (NARANJA x) tuvo jugadores nuestros que ya salieron y hoy están en Inactivos o Vetados; no figuran en su lista actual.
+    if (CFG.VETADO_TAG && cleanTag(CFG.VETADO_TAG) === tagNorm) {
+      var tagsActuales = {};
+      for (var q = 0; q < clanInfo.memberList.length; q++) tagsActuales[cleanTag(clanInfo.memberList[q].tag)] = true;
+      respuestaClan.esClanVetado = true;
+      respuestaClan.exMiembros = _rosterPasoPorClanVetado_(clanInfo.name, tagsActuales);
+    }
+    return respuestaClan;
   }
 
   // Modo «solo clan» (§PF367): no se prueba como jugador, así que tampoco se gasta la consulta a /players.
@@ -182,6 +190,52 @@ function _temporadaSupercellDeRoyaleApi_(temporadaRoyaleApi) {
 }
 
 // ----- Clanes: ficha y veto desde «Buscar clan» de la web de admin (§PF368) -----
+
+/**
+ * _rosterPasoPorClanVetado_(nombreClan, tagsActuales) [→ Contexto_Base_Web.md §PF368]
+ * Jugadores de nuestro roster que pasaron por el clan vetado (CFG.VETADO_TAG, NARANJA x) y ya no están en él: filas de Directorio, Inactivos o Vetados cuyo Clan Tag es el del clan vetado, o cuya Razón (o Clan, en Vetados) es el nombre del clan vetado. Se excluyen los Tags de `tagsActuales` (miembros actuales del clan, que ya salen en la tabla de coincidencias). Barato: lee tres hojas, no recorre JSON de Drive. Solo se pide para el clan vetado; el cruce inverso de cualquier otro clan no existe (habría que recorrer los JSON individuales). Devuelve [{ origen, tag, nombre, clan, razon }].
+ */
+function _rosterPasoPorClanVetado_(nombreClan, tagsActuales) {
+  var salida = [];
+  try {
+    var ss = _getSs();
+    var tagVet = cleanTag(CFG.VETADO_TAG);
+    var norm = function (t) { return String(t || '').trim().toLowerCase(); };
+    var nombres = {};
+    nombres['naranja x'] = true;
+    if (norm(nombreClan)) nombres[norm(nombreClan)] = true;
+    var vistos = {};
+    var agregar = function (origen, tag, nombre, clan, razon) {
+      var t = cleanTag(tag);
+      if (!t || (tagsActuales && tagsActuales[t]) || vistos[origen + '|' + t]) return;
+      vistos[origen + '|' + t] = true;
+      salida.push({ origen: origen, tag: '#' + t, nombre: String(nombre || ''), clan: String(clan || ''), razon: String(razon || '') });
+    };
+
+    var mapaDir = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS);
+    for (var kd in mapaDir) {
+      var fd = mapaDir[kd];
+      if (cleanTag(fd[IC.CLAN_TAG - 1]) === tagVet) agregar('Directorio', kd, fd[IC.NOMBRE - 1], fd[IC.CLAN - 1], '');
+    }
+    var mapaIna = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.INACTIVOS, IC.TAG - 1, INACTIVOS_TOTAL_COLS);
+    for (var ki in mapaIna) {
+      var fi = mapaIna[ki];
+      if (cleanTag(fi[IC.CLAN_TAG - 1]) === tagVet || nombres[norm(fi[IC.RAZON - 1])] || nombres[norm(fi[IC.CLAN - 1])]) {
+        agregar('Inactivos', ki, fi[IC.NOMBRE - 1], fi[IC.CLAN - 1], fi[IC.RAZON - 1]);
+      }
+    }
+    var mapaVet = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.VETADOS, VC.TAG - 1, VETADOS_TOTAL_COLS);
+    for (var kv in mapaVet) {
+      var fv = mapaVet[kv];
+      if (nombres[norm(fv[VC.RAZON - 1])] || nombres[norm(fv[VC.CLAN - 1])]) {
+        agregar('Vetados', kv, fv[VC.NOMBRE - 1], fv[VC.CLAN - 1], fv[VC.RAZON - 1]);
+      }
+    }
+  } catch (e) {
+    Logger.log('[BuscarClan] _rosterPasoPorClanVetado_ falló: ' + e.message);
+  }
+  return salida;
+}
 
 /**
  * _webAdminBuscarClan(token, tag) [→ Contexto_Base_Web.md §PF368]
