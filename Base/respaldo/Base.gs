@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 05/11/2026 04:24:03 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 05/11/2026 17:23:51 */
 
 
 
@@ -20391,6 +20391,36 @@ function _getRivalesYConflicto(incluirVetado) {
 }
 
 /**
+ * _cacheClanesParaRivales_() [→ Contexto_Base_Web.md §PF370]
+ * 5-nov-2026: de dónde sale la lista de clanes de nuestras carreras. CACHE_CLAN_DATA vive solo en la memoria de una ejecución y las
+ * consultas web («Buscar clan», «¿Infiltrado?», Ingresos recientes) no la llenan: llegaba null y _getClanesRivalesTemporadaActual()
+ * devolvía siempre {}, así que la marca «Rival de esta temporada» nunca salía (solo la de Conflictos). Ahora, si la memoria está
+ * vacía, se lee el checkpoint de clanes de Drive (Cache_Clanes_Progreso.json, el que escribe la captura de runGuerra()) sin tocar
+ * CACHE_CLAN_DATA, para no alterar a las demás funciones. Si el checkpoint tiene más de RIVALES_CHECKPOINT_MAX_EDAD_MS, no se usa:
+ * es mejor no marcar que marcar rivales de una semana vieja. Se lee una sola vez por ejecución.
+ */
+var RIVALES_CHECKPOINT_MAX_EDAD_MS = 3 * 24 * 60 * 60 * 1000;
+var _CACHE_RIVALES_ = undefined;
+function _cacheClanesParaRivales_() {
+  if (CACHE_CLAN_DATA && Object.keys(CACHE_CLAN_DATA).length) return CACHE_CLAN_DATA;
+  if (_CACHE_RIVALES_ !== undefined) return _CACHE_RIVALES_;
+  _CACHE_RIVALES_ = null;
+  try {
+    var cp = _leerProgresoClanesConEdad_(); // 09_API_ClashRoyale.gs: { clanes, ts, edadMs } o null
+    if (!cp) {
+      Logger.log('[Rivales] No hay checkpoint de clanes legible en Drive: no se marcan rivales de la carrera (sí los de Conflictos).');
+    } else if (cp.edadMs > RIVALES_CHECKPOINT_MAX_EDAD_MS) {
+      Logger.log('[Rivales] El checkpoint de clanes tiene ' + (cp.edadMs === Infinity ? 'edad desconocida' : Math.round(cp.edadMs / 3600000) + ' h') + ' (máximo ' + Math.round(RIVALES_CHECKPOINT_MAX_EDAD_MS / 3600000) + ' h): no se marcan rivales de la carrera.');
+    } else {
+      _CACHE_RIVALES_ = cp.clanes;
+    }
+  } catch (eRiv) {
+    Logger.log('[Rivales] No se pudo leer el checkpoint de clanes: ' + eRiv.message);
+  }
+  return _CACHE_RIVALES_;
+}
+
+/**
  * _getClanesRivalesTemporadaActual() [→ Contexto_Base_Web.md §15B003]
  */
 function _getClanesRivalesTemporadaActual() {
@@ -20400,9 +20430,10 @@ function _getClanesRivalesTemporadaActual() {
     propiosNorm[cleanTag(CFG.CLAN_TAGS[p])] = true;
   }
 
+  var cacheRivales = _cacheClanesParaRivales_();
   for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
     var clanTagPropio = CFG.TERNA_TAGS[i];
-    var clanData = _getClanCache(clanTagPropio);
+    var clanData = (cacheRivales && cacheRivales[clanTagPropio]) || null;
     if (!clanData || !clanData.riverrace) continue;
 
     var rr = clanData.riverrace;
@@ -33888,7 +33919,10 @@ function _getHistorialGuerraDriveIndexPorTag(folder) {
     if (!m) continue;
     var tag = m[1];
     // Por las dudas hubiera más de un archivo del mismo tag (no debería [→ Contexto_Base_Web.md §20B031]
-    if (!idx[tag] || f.getName() > idx[tag].getName()) idx[tag] = f;
+    // 5-nov-2026 (§PF370): los nombres empiezan con la fecha dd-mm-aaaa, así que el orden alfabético elegía el de MAYOR DÍA DEL MES, no el más reciente (22-10-2026 le ganaba a 04-11-2026). Con dos archivos del mismo Tag se elige el de última modificación; solo en ese caso se pide getLastUpdated(), que no se llama en el camino normal.
+    if (!idx[tag]) { idx[tag] = f; continue; }
+    var tNuevo = f.getLastUpdated().getTime(), tPrevio = idx[tag].getLastUpdated().getTime();
+    if (tNuevo > tPrevio || (tNuevo === tPrevio && f.getName() > idx[tag].getName())) idx[tag] = f;
   }
 
   _HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG = idx;
