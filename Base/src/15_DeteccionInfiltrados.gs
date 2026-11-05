@@ -23,17 +23,18 @@ var CFC_TOTAL_COLS = 3;
 // ----- Infiltrados: búsqueda desde la web de admin (en el orden de la llamada) -----
 
 /**
- * _webAdminBuscarInfiltrado(token, tag) [→ Contexto_Base_Web.md §15B009]
+ * _webAdminBuscarInfiltrado(token, tag, soloClan) [→ Contexto_Base_Web.md §15B009]
+ * `soloClan` (6-nov-2026, §PF367): la tarjeta «Detección de infiltrados» de admin.html solo revisa clanes; la pastilla «¿Infiltrado?» de la ficha cubre al jugador.
  */
-function _webAdminBuscarInfiltrado(token, tag) {
+function _webAdminBuscarInfiltrado(token, tag, soloClan) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  return _buscarInfiltrado(tag);
+  return _buscarInfiltrado(tag, soloClan === true || soloClan === '1' || soloClan === 'true');
 }
 
 /**
- * _buscarInfiltrado(query) [→ Contexto_Base_Web.md §15B008]
+ * _buscarInfiltrado(query, soloClan) [→ Contexto_Base_Web.md §15B008]
  */
-function _buscarInfiltrado(query) {
+function _buscarInfiltrado(query, soloClan) {
   var tagNorm = cleanTag(query);
   if (!tagNorm || tagNorm.length < 3) {
     return { ok: false, error: 'Ingresa un Tag de clan o de jugador (con o sin #).' };
@@ -75,6 +76,11 @@ function _buscarInfiltrado(query) {
     };
   }
 
+  // Modo «solo clan» (§PF367): no se prueba como jugador, así que tampoco se gasta la consulta a /players.
+  if (soloClan) {
+    return { ok: false, error: 'No encontré ningún clan con ese Tag. Si es un jugador, usa la pastilla «¿Infiltrado?» de su ficha en «Buscar miembro».' };
+  }
+
   // 2) Probar como JUGADOR.
   var playerInfo = null;
   try {
@@ -87,6 +93,7 @@ function _buscarInfiltrado(query) {
     var clanActualTag = (playerInfo.clan && playerInfo.clan.tag) ? cleanTag(playerInfo.clan.tag) : '';
     var esRivalJugador = !!(clanActualTag && rivalesYConflicto[clanActualTag]);
     var historial = _buscarEnRosterTerna(tagNorm);
+    var clanesExt = _clanesExternosDeJugador_(tagNorm, rivalesYConflicto);
     return {
       ok: true,
       tipo: 'jugador',
@@ -98,11 +105,65 @@ function _buscarInfiltrado(query) {
       },
       esRivalTemporada: esRivalJugador,
       infoRival: esRivalJugador ? rivalesYConflicto[clanActualTag] : null,
-      historialTerna: historial
+      historialTerna: historial,
+      clanesExternos: clanesExt || [],
+      clanesExternosDisponible: clanesExt !== null
     };
   }
 
   return { ok: false, error: 'No encontré ningún clan ni jugador con ese Tag. Verifica que esté bien escrito (incluyendo mayúsculas/minúsculas y los caracteres tras el #).' };
+}
+
+/**
+ * _clanesExternosDeJugador_(tagNorm, rivalesYConflicto) [→ Contexto_Base_Web.md §PF367]
+ * Clanes externos (que no son de CFG.TERNA_TAGS) donde el jugador jugó guerra, leídos de su JSON individual de RoyaleAPI (filas `externa: true`, §PF340).
+ * Devuelve un arreglo por clan, del más reciente al más antiguo: { tag, nombre, semanas, ultima:{temporada,semana}, primera:{temporada,semana}, infoRival }.
+ * `infoRival` es la entrada de rivalesYConflicto del clan (misma forma que la de la respuesta principal) o null. Devuelve null si el JSON no se pudo leer (distinto de [] = sin filas externas).
+ * Solo ve semanas con fila de guerra: no prueba que no pasara por otro clan donde no jugó guerra.
+ */
+function _clanesExternosDeJugador_(tagNorm, rivalesYConflicto) {
+  var historial = null;
+  try {
+    historial = _cargarHistorialGuerraIndividual('#' + tagNorm);
+  } catch (e) {
+    Logger.log('[DeteccionInfiltrados] JSON individual de ' + tagNorm + ' no se pudo leer: ' + e.message);
+    return null;
+  }
+  var registros = (historial && historial.registros) ? historial.registros : [];
+  var porClan = {};
+  var orden = [];
+  for (var i = 0; i < registros.length; i++) {
+    var r = registros[i];
+    if (!r || r.externa !== true) continue;
+    var tagClan = r.clanTag ? cleanTag(r.clanTag) : '';
+    var nombre = String(r.clan || '').replace(/\s+\d{4}-\d{2}-\d{2}\s*$/, '').trim();
+    var clave = tagClan ? ('T:' + tagClan) : ('N:' + nombre.toUpperCase());
+    var g = porClan[clave];
+    if (!g) {
+      g = { tag: tagClan ? ('#' + tagClan) : '', nombre: nombre, semanasVistas: {}, semanas: 0, ultima: null, primera: null, infoRival: tagClan && rivalesYConflicto[tagClan] ? rivalesYConflicto[tagClan] : null };
+      porClan[clave] = g;
+      orden.push(clave);
+    }
+    if (!g.nombre && nombre) g.nombre = nombre;
+    var temp = Number(r.temporadaInterna), sem = Number(r.semana);
+    var claveSemana = temp + '|' + sem;
+    if (!g.semanasVistas[claveSemana]) { g.semanasVistas[claveSemana] = true; g.semanas++; }
+    var punto = { temporada: temp, semana: sem };
+    if (!g.ultima  || temp > g.ultima.temporada  || (temp === g.ultima.temporada  && sem > g.ultima.semana))  g.ultima  = punto;
+    if (!g.primera || temp < g.primera.temporada || (temp === g.primera.temporada && sem < g.primera.semana)) g.primera = punto;
+  }
+  var salida = [];
+  for (var k = 0; k < orden.length; k++) {
+    var c = porClan[orden[k]];
+    salida.push({ tag: c.tag, nombre: c.nombre, semanas: c.semanas, ultima: c.ultima, primera: c.primera, infoRival: c.infoRival });
+  }
+  salida.sort(function (a, b) {
+    var ua = a.ultima || { temporada: 0, semana: 0 }, ub = b.ultima || { temporada: 0, semana: 0 };
+    if (ua.temporada !== ub.temporada) return ub.temporada - ua.temporada;
+    if (ua.semana !== ub.semana) return ub.semana - ua.semana;
+    return b.semanas - a.semanas;
+  });
+  return salida;
 }
 
 /**

@@ -1009,7 +1009,7 @@ function doGet(e) {
   if (e && e.parameter && e.parameter.accion === 'webAdminBuscarInfiltrado') {
     try {
       return ContentService
-        .createTextOutput(JSON.stringify(_webAdminBuscarInfiltrado(e.parameter.sessionToken, e.parameter.tag)))
+        .createTextOutput(JSON.stringify(_webAdminBuscarInfiltrado(e.parameter.sessionToken, e.parameter.tag, e.parameter.soloClan)))
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       Logger.log('[Web] Error interno: ' + err.toString());
