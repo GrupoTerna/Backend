@@ -144,12 +144,18 @@ function _buscarInfiltrado(query, soloClan) {
       coincidencias: coincidenciasClan
     };
     // §PF368 (5-nov-2026, pedido de la usuaria): el clan vetado (NARANJA x) tuvo jugadores nuestros que ya salieron y hoy están en Inactivos o Vetados; no figuran en su lista actual.
+    // §PF369: para cualquier clan, los jugadores nuestros que pasaron por él salen del índice de clanes externos (generarIndiceClanesExternos()), que lee los JSON individuales de RoyaleAPI. Sin índice completo solo queda lo del clan vetado.
+    var tagsActuales = {};
+    for (var q = 0; q < clanInfo.memberList.length; q++) tagsActuales[cleanTag(clanInfo.memberList[q].tag)] = true;
+    var exMiembros = [];
     if (CFG.VETADO_TAG && cleanTag(CFG.VETADO_TAG) === tagNorm) {
-      var tagsActuales = {};
-      for (var q = 0; q < clanInfo.memberList.length; q++) tagsActuales[cleanTag(clanInfo.memberList[q].tag)] = true;
       respuestaClan.esClanVetado = true;
-      respuestaClan.exMiembros = _rosterPasoPorClanVetado_(clanInfo.name, tagsActuales);
+      exMiembros = _rosterPasoPorClanVetado_(clanInfo.name, tagsActuales);
     }
+    var jugadoresIndice = _indiceClanesJugadoresDe_(tagNorm);
+    respuestaClan.indiceClanesDisponible = jugadoresIndice !== null;
+    if (jugadoresIndice !== null) exMiembros = _exMiembrosDesdeIndice_(jugadoresIndice, tagsActuales, exMiembros);
+    respuestaClan.exMiembros = exMiembros;
     return respuestaClan;
   }
 
@@ -670,4 +676,53 @@ function _indiceClanesJugadoresDe_(tagClanNorm) {
   if (!ind || !ind.completo || !ind.clanes) return null;
   var c = ind.clanes['#' + cleanTag(tagClanNorm)];
   return c ? c.jugadores : [];
+}
+
+/**
+ * _exMiembrosDesdeIndice_(jugadoresIndice, tagsActuales, yaListados) [→ Contexto_Base_Web.md §PF369]
+ * Pasa los jugadores del índice de clanes externos a filas de «Jugadores nuestros que pasaron por este clan»: { origen, tag, nombre, clan, razon, semanas }. Cada jugador sale una vez por cada hoja del roster donde figura (Directorio, Inactivos o Vetados); si no figura en ninguna, sale con origen «Fuera del roster» y sin nombre (el índice guarda solo Tags). Se omiten los miembros actuales del clan (`tagsActuales`, ya salen en la tabla de coincidencias) y lo que ya estaba en `yaListados` (misma hoja y mismo Tag), a lo que se le agrega `semanas`. Devuelve la lista completa, ordenada por Origen (Directorio, Inactivos, Vetados, Fuera del roster) y luego por semanas.
+ */
+function _exMiembrosDesdeIndice_(jugadoresIndice, tagsActuales, yaListados) {
+  var salida = (yaListados || []).slice();
+  var semanasPorTag = {};
+  for (var a = 0; a < jugadoresIndice.length; a++) semanasPorTag[cleanTag(jugadoresIndice[a].tag)] = jugadoresIndice[a].semanas;
+  var porClave = {};
+  for (var b = 0; b < salida.length; b++) {
+    var tb = cleanTag(salida[b].tag);
+    porClave[salida[b].origen + '|' + tb] = salida[b];
+    if (semanasPorTag[tb] !== undefined) salida[b].semanas = semanasPorTag[tb];
+  }
+  var mapas = [];
+  try {
+    var ss = _getSs();
+    mapas = [
+      { origen: 'Directorio', mapa: _leerHojaComoMapaPorTag(ss, CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS), nombre: IC.NOMBRE, clan: IC.CLAN, razon: IC.RAZON },
+      { origen: 'Inactivos', mapa: _leerHojaComoMapaPorTag(ss, CFG.SHEETS.INACTIVOS, IC.TAG - 1, INACTIVOS_TOTAL_COLS), nombre: IC.NOMBRE, clan: IC.CLAN, razon: IC.RAZON },
+      { origen: 'Vetados', mapa: _leerHojaComoMapaPorTag(ss, CFG.SHEETS.VETADOS, VC.TAG - 1, VETADOS_TOTAL_COLS), nombre: VC.NOMBRE, clan: VC.CLAN, razon: VC.RAZON }
+    ];
+  } catch (eHojas) {
+    Logger.log('[IndiceClanes] No se pudo leer el roster para cruzar el índice: ' + eHojas.message);
+  }
+  for (var i = 0; i < jugadoresIndice.length; i++) {
+    var tagJ = cleanTag(jugadoresIndice[i].tag);
+    if (!tagJ || tagsActuales[tagJ]) continue;
+    var hallado = false;
+    for (var m = 0; m < mapas.length; m++) {
+      var fila = null;
+      for (var k in mapas[m].mapa) { if (cleanTag(k) === tagJ) { fila = mapas[m].mapa[k]; break; } }
+      if (!fila) continue;
+      hallado = true;
+      if (porClave[mapas[m].origen + '|' + tagJ]) continue;
+      var nueva = { origen: mapas[m].origen, tag: '#' + tagJ, nombre: String(fila[mapas[m].nombre - 1] || ''), clan: String(fila[mapas[m].clan - 1] || ''), razon: String(fila[mapas[m].razon - 1] || ''), semanas: jugadoresIndice[i].semanas };
+      porClave[nueva.origen + '|' + tagJ] = nueva;
+      salida.push(nueva);
+    }
+    if (!hallado) salida.push({ origen: 'Fuera del roster', tag: '#' + tagJ, nombre: '', clan: '', razon: '', semanas: jugadoresIndice[i].semanas });
+  }
+  var orden = { 'Directorio': 0, 'Inactivos': 1, 'Vetados': 2, 'Fuera del roster': 3 };
+  salida.sort(function (x, y) {
+    var ox = orden[x.origen] !== undefined ? orden[x.origen] : 9, oy = orden[y.origen] !== undefined ? orden[y.origen] : 9;
+    return (ox - oy) || ((y.semanas || 0) - (x.semanas || 0)) || (x.tag < y.tag ? -1 : x.tag > y.tag ? 1 : 0);
+  });
+  return salida;
 }
