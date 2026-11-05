@@ -1490,8 +1490,11 @@ function _cgwDescripcionDia_(n, b, f) {
  * _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) [→ Contexto_Base_Web.md §PF357]
  * Reparto por día de una semana que solo cuadra con el domingo sin fame (k de 1 a 4; si cabe sin suponer nada devuelve { k: 0 } sin reparto; si no cabe, null).
  * Reglas de la usuaria (4-nov-2026): (1) el domingo cuentan todos los ataques o ninguno: los k ataques del domingo dan 0 de fame y jueves, viernes y sábado cuadran con la tabla
- * (_fameCatalogoDia_); (2) **si hay dos casos posibles se prefiere que el barco se haya perdido**; criterio de desempate de Claude, por confirmar: (3) menos barcos con el domingo
- * en 0 (los barcos de la semana dieron fame), (4) el menor k (más ataques con fame), (5) los días más llenos primero (J, V, S) y, a igual, el de más fame primero (como en las hojas de la usuaria, donde el duelo y el barco caen en los primeros días), (6) el primero en el orden del catálogo.
+ * (_fameCatalogoDia_). Primero se descarta todo lo que no cuadra y, entre las combinaciones semanales que SÍ quedan posibles, se aplica la regla de la usuaria (5-nov-2026):
+ * (2) **si aún quedan dos casos posibles se prefiere que el barco se haya perdido** (usualmente se necesitan varios ataques de barco para derrotar las defensas). Esa regla NO va primera:
+ * solo desempata lo que los criterios anteriores no resolvieron. Orden (los criterios a y b son de Claude, por confirmar): a) el menor k (más ataques con fame), b) menos barcos con el domingo
+ * en 0 (los barcos de la semana dieron fame), c) menos barcos ganados (barco perdido; regla de la usuaria), d) los días más llenos primero (J, V, S) y, a igual, el de más fame primero (como en las hojas de la usuaria,
+ * donde el duelo y el barco caen en los primeros días), e) el primero en el orden del catálogo.
  * Devuelve { k, barcosGanados, dias: [{ dia, n, b, f, texto }] (J, V, S, D) } o { k: 0 } o null. Un día con el mismo total puede tener otro orden (por ejemplo el duelo en jueves o en viernes):
  * el reparto elegido es uno entre varios equivalentes.
  */
@@ -1531,7 +1534,7 @@ function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
               var s3 = cands[z];
               var ganados = infoDe(s1).barcosGanados + infoDe(s2).barcosGanados + infoDe(s3).barcosGanados;
               var bDom = hayBarcos ? barcos - b2 : 0;
-              var clv = [ganados, bDom, k, -s1.n, -s2.n, -s3.n, -s1.f, -s2.f, -s3.f];
+              var clv = [k, bDom, ganados, -s1.n, -s2.n, -s3.n, -s1.f, -s2.f, -s3.f]; // el barco perdido (ganados) desempata solo entre las combinaciones que quedan (5-nov-2026)
               var mejorQue = !mejorClave;
               for (var t = 0; !mejorQue && t < clv.length; t++) { if (clv[t] < mejorClave[t]) mejorQue = true; else if (clv[t] > mejorClave[t]) break; }
               if (mejorQue) { mejorClave = clv; mejor = { k: k, barcosGanados: ganados, bDom: bDom, s: [s1, s2, s3] }; }
