@@ -7,9 +7,12 @@
 // FASE 6 (punto 6 del documento — Detección de infiltrados/sabotaje). [→ Contexto_Base_Web.md §15B001]
 
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
-//  Parte 1 — Funciones que no se corren a mano
+//  Parte 1 — Funciones que se corren a mano
+//    - Índice de clanes externos: generar (§PF369)
+//  Parte 2 — Funciones que no se corren a mano
 //    - Infiltrados: búsqueda desde la web de admin (en el orden de la llamada)
 //    - Clanes: ficha y veto desde «Buscar clan» de la web de admin (§PF368)
+//    - Índice de clanes externos: armar, guardar y consultar (§PF369)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Columnas de la hoja 'Conflictos' (ver _setupConflictos(), 02_Setup_Hojas.gs). [→ Contexto_Base_Web.md §15B002]
@@ -17,8 +20,73 @@ var CFC = { TAG:1, NOMBRE:2, MOTIVO:3 };
 
 var CFC_TOTAL_COLS = 3;
 
+// Índice de clanes externos (§PF369): por cada clan donde algún jugador nuestro jugó guerra sin ser de la Familia, qué Tags de jugador estuvieron ahí. Se arma leyendo los JSON individuales de RoyaleAPI.
+var INDICE_CLANES_JSON = 'Indice_Clanes_Externos.json';
+var INDICE_CLANES_CSV = 'Indice_Clanes_Externos.csv';
+var INDICE_CLANES_PRESUPUESTO_MS = 270000;
+var _indiceClanesCache_ = undefined;
+
 // =============================================================================
-// PARTE 1 — FUNCIONES QUE NO SE CORREN A MANO
+// PARTE 1 — FUNCIONES QUE SE CORREN A MANO
+// =============================================================================
+
+// ----- Índice de clanes externos: generar (§PF369) -----
+
+/**
+ * generarIndiceClanesExternos() [→ Contexto_Base_Web.md §PF369]
+ * Lee los JSON individuales de RoyaleAPI y arma el índice «clan externo → Tags de los jugadores nuestros que estuvieron ahí»: Indice_Clanes_Externos.json (carpeta Otros, con el detalle de cada jugador) e Indice_Clanes_Externos.csv (un clan por fila, para leerlo en una hoja).
+ * Son más de 2 000 archivos y Apps Script corta a los 6 minutos, así que trabaja con un presupuesto de tiempo y guarda lo avanzado: si queda incompleto, vuelve a correrla y continúa donde se quedó. Cuando termina, la siguiente corrida empieza de cero con los archivos actuales.
+ * «Buscar clan» de la web de admin usa este índice para listar a los jugadores nuestros que pasaron por cualquier clan (§PF369).
+ */
+function generarIndiceClanesExternos() {
+  var inicio = Date.now();
+  var carpeta = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL);
+  var archivos = _getHistorialGuerraDriveIndexPorTag(carpeta);
+  var tags = Object.keys(archivos).sort();
+
+  var estado = _cargarIndiceClanes_();
+  var continuaba = !!(estado && !estado.completo && estado.procesados);
+  if (!continuaba) estado = _indiceClanesVacio_();
+
+  var hechosAhora = 0;
+  for (var i = 0; i < tags.length; i++) {
+    var tag = tags[i];
+    if (estado.procesados[tag]) continue;
+    if (Date.now() - inicio > INDICE_CLANES_PRESUPUESTO_MS) break;
+    var registros = null;
+    try {
+      var historial = JSON.parse(archivos[tag].getBlob().getDataAsString('UTF-8'));
+      registros = (historial && historial.registros) ? historial.registros : [];
+    } catch (eLeer) {
+      Logger.log('[IndiceClanes] No se pudo leer el JSON de ' + tag + ': ' + eLeer.message);
+      estado.ilegibles.push(tag);
+    }
+    if (registros) _indiceClanesAgregar_(estado, tag, registros);
+    estado.procesados[tag] = true;
+    hechosAhora++;
+  }
+
+  var listos = 0;
+  for (var t = 0; t < tags.length; t++) if (estado.procesados[tags[t]]) listos++;
+  estado.completo = listos >= tags.length;
+  estado.actualizado = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm');
+  if (!estado.generado) estado.generado = estado.actualizado;
+  estado.jugadoresLeidos = listos;
+
+  if (estado.completo) {
+    estado.procesados = {};
+    estado.totalClanes = Object.keys(estado.clanes).length;
+    _guardarIndiceClanes_(estado);
+    _saveCSVToDrive(INDICE_CLANES_CSV, _encodeCSV(_indiceClanesAFilasCsv_(estado)));
+    Logger.log('[IndiceClanes] COMPLETO: ' + listos + ' jugadores leídos, ' + estado.totalClanes + ' clanes externos' + (estado.ilegibles.length ? ', ' + estado.ilegibles.length + ' JSON ilegibles' : '') + '. Archivos: ' + INDICE_CLANES_JSON + ' (Otros) y ' + INDICE_CLANES_CSV + '.');
+  } else {
+    _guardarIndiceClanes_(estado);
+    Logger.log('[IndiceClanes] INCOMPLETO: ' + listos + ' de ' + tags.length + ' jugadores leídos (' + hechosAhora + ' en esta corrida). Vuelve a correr generarIndiceClanesExternos() para continuar.');
+  }
+}
+
+// =============================================================================
+// PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
 // =============================================================================
 
 // ----- Infiltrados: búsqueda desde la web de admin (en el orden de la llamada) -----
@@ -483,4 +551,123 @@ function _buscarEnRosterTerna(tagNorm) {
   }
 
   return resultado;
+}
+
+// ----- Índice de clanes externos: armar, guardar y consultar (§PF369) -----
+
+/**
+ * _indiceClanesVacio_() [→ Contexto_Base_Web.md §PF369]
+ * Estado inicial del índice. `procesados` (Tags de jugador ya leídos) solo existe mientras la generación está incompleta.
+ */
+function _indiceClanesVacio_() {
+  return { version: 1, generado: '', actualizado: '', completo: false, jugadoresLeidos: 0, totalClanes: 0, ilegibles: [], procesados: {}, clanes: {} };
+}
+
+/**
+ * _indiceClanesAgregar_(indice, tagJugador, registros) [→ Contexto_Base_Web.md §PF369]
+ * Suma al índice los clanes externos (filas `externa: true` con clanTag, §PF340) de un jugador. Por cada clan guarda al jugador una sola vez, con cuántas semanas jugó ahí y su primera y última semana. El nombre del clan es el de la semana más reciente vista en cualquier jugador (los clanes cambian de nombre); los otros nombres quedan en `nombres`.
+ */
+function _indiceClanesAgregar_(indice, tagJugador, registros) {
+  var tagJ = '#' + cleanTag(tagJugador);
+  var porClan = {};
+  for (var i = 0; i < (registros || []).length; i++) {
+    var r = registros[i];
+    if (!r || r.externa !== true || !r.clanTag) continue;
+    var tagC = '#' + cleanTag(r.clanTag);
+    var temp = Number(r.temporadaInterna), sem = Number(r.semana);
+    var tRoy = Number(r.temporadaRoyaleAPI);
+    var punto = { temporada: temp, semana: sem, temporadaRoyaleApi: isNaN(tRoy) ? null : tRoy };
+    var nombre = String(r.clan || '').replace(/\s+\d{4}-\d{2}-\d{2}\s*$/, '').trim();
+    var g = porClan[tagC];
+    if (!g) { g = porClan[tagC] = { vistas: {}, semanas: 0, primera: null, ultima: null, nombre: '' }; }
+    var claveSemana = temp + '|' + sem;
+    if (!g.vistas[claveSemana]) { g.vistas[claveSemana] = true; g.semanas++; }
+    if (!g.primera || temp < g.primera.temporada || (temp === g.primera.temporada && sem < g.primera.semana)) g.primera = punto;
+    if (!g.ultima || temp > g.ultima.temporada || (temp === g.ultima.temporada && sem > g.ultima.semana)) { g.ultima = punto; if (nombre) g.nombre = nombre; }
+    else if (!g.nombre && nombre) g.nombre = nombre;
+  }
+  for (var tagClan in porClan) {
+    var d = porClan[tagClan];
+    var c = indice.clanes[tagClan];
+    if (!c) { c = indice.clanes[tagClan] = { nombre: '', nombres: [], jugadores: [], _ref: null }; }
+    if (d.nombre && c.nombres.indexOf(d.nombre) < 0) c.nombres.push(d.nombre);
+    var u = d.ultima;
+    if (d.nombre && (!c._ref || u.temporada > c._ref.temporada || (u.temporada === c._ref.temporada && u.semana >= c._ref.semana))) {
+      c.nombre = d.nombre;
+      c._ref = { temporada: u.temporada, semana: u.semana };
+    }
+    c.jugadores.push({ tag: tagJ, semanas: d.semanas, primera: d.primera, ultima: d.ultima });
+  }
+}
+
+/**
+ * _indiceClanesAFilasCsv_(indice) [→ Contexto_Base_Web.md §PF369]
+ * Filas del CSV: un clan por fila, del que más jugadores nuestros tuvo al que menos. «Tags de jugadores» va separado por espacios, del que más semanas jugó ahí al que menos.
+ */
+function _indiceClanesAFilasCsv_(indice) {
+  var fmt = function (p) { return p ? ((p.temporadaRoyaleApi !== null ? p.temporadaRoyaleApi : '?') + ' S' + p.semana) : ''; };
+  var lista = [];
+  for (var tagClan in indice.clanes) {
+    var c = indice.clanes[tagClan];
+    var jug = c.jugadores.slice().sort(function (a, b) { return (b.semanas - a.semanas) || (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0); });
+    var semanas = 0, primera = null, ultima = null;
+    for (var j = 0; j < jug.length; j++) {
+      semanas += jug[j].semanas;
+      var pa = jug[j].primera, pu = jug[j].ultima;
+      if (pa && (!primera || pa.temporada < primera.temporada || (pa.temporada === primera.temporada && pa.semana < primera.semana))) primera = pa;
+      if (pu && (!ultima || pu.temporada > ultima.temporada || (pu.temporada === ultima.temporada && pu.semana > ultima.semana))) ultima = pu;
+    }
+    lista.push({ tag: tagClan, c: c, jug: jug, semanas: semanas, primera: primera, ultima: ultima });
+  }
+  lista.sort(function (a, b) { return (b.jug.length - a.jug.length) || (b.semanas - a.semanas) || (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0); });
+  var filas = [['ClanTag', 'Clan', 'Otros nombres', 'Jugadores', 'Semanas', 'Primera (temporada RoyaleAPI y semana)', 'Última (temporada RoyaleAPI y semana)', 'Tags de jugadores']];
+  for (var i = 0; i < lista.length; i++) {
+    var e = lista[i];
+    var otros = e.c.nombres.filter(function (n) { return n !== e.c.nombre; }).join(' | ');
+    filas.push([e.tag, e.c.nombre, otros, e.jug.length, e.semanas, fmt(e.primera), fmt(e.ultima), e.jug.map(function (x) { return x.tag; }).join(' ')]);
+  }
+  return filas;
+}
+
+/**
+ * _cargarIndiceClanes_() [→ Contexto_Base_Web.md §PF369]
+ * Lee Indice_Clanes_Externos.json de la carpeta Otros; null si no existe o no se pudo leer.
+ */
+function _cargarIndiceClanes_() {
+  try {
+    var files = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS).getFilesByName(INDICE_CLANES_JSON);
+    if (files.hasNext()) return JSON.parse(files.next().getBlob().getDataAsString('UTF-8'));
+  } catch (e) {
+    Logger.log('[IndiceClanes] Error leyendo ' + INDICE_CLANES_JSON + ': ' + e.message);
+  }
+  return null;
+}
+
+/**
+ * _guardarIndiceClanes_(indice) [→ Contexto_Base_Web.md §PF369]
+ * Guarda el índice en la carpeta Otros. Antes de escribir quita el campo interno `_ref` de cada clan.
+ */
+function _guardarIndiceClanes_(indice) {
+  try {
+    for (var k in indice.clanes) delete indice.clanes[k]._ref;
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(INDICE_CLANES_JSON);
+    var content = JSON.stringify(indice);
+    if (files.hasNext()) _setContentConConteo_(files.next(), content);
+    else _createFileConConteo_(folder, INDICE_CLANES_JSON, content, MimeType.PLAIN_TEXT);
+  } catch (e) {
+    Logger.log('[IndiceClanes] Error guardando ' + INDICE_CLANES_JSON + ': ' + e.message);
+  }
+}
+
+/**
+ * _indiceClanesJugadoresDe_(tagClanNorm) [→ Contexto_Base_Web.md §PF369]
+ * Jugadores nuestros que estuvieron en un clan externo, según el índice completo: [{ tag, semanas, primera, ultima }]. Devuelve null si el índice no existe o está incompleto (distinto de [] = el clan no figura en el índice). El índice se lee una vez por ejecución.
+ */
+function _indiceClanesJugadoresDe_(tagClanNorm) {
+  if (_indiceClanesCache_ === undefined) _indiceClanesCache_ = _cargarIndiceClanes_();
+  var ind = _indiceClanesCache_;
+  if (!ind || !ind.completo || !ind.clanes) return null;
+  var c = ind.clanes['#' + cleanTag(tagClanNorm)];
+  return c ? c.jugadores : [];
 }
