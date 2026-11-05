@@ -1005,6 +1005,19 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // §PF368: webAdminBuscarClan, ficha de un clan para «Buscar clan» de admin.html (una consulta a /clans más rivales y conflicto; 15_DeteccionInfiltrados.gs); GET, sesión de admin. [→ Contexto_Base_Web.md §PF368]
+  if (e && e.parameter && e.parameter.accion === 'webAdminBuscarClan') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminBuscarClan(e.parameter.sessionToken, e.parameter.tag)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errClan) {
+      Logger.log('[Web] Error interno: ' + errClan.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // FASE 6: webAdminBuscarInfiltrado, coincidencias de un Tag contra Directorio/Inactivos/Vetados, clanes rivales de la temporada y lista manual de conflicto (15_DeteccionInfiltrados.gs); GET, sesión de admin. [→ Contexto_Base_Web.md §38B064]
   if (e && e.parameter && e.parameter.accion === 'webAdminBuscarInfiltrado') {
     try {
@@ -1184,6 +1197,21 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     } catch (errRegNuevo) {
       Logger.log('[Web] Error interno: ' + errRegNuevo.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ ok: false, error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  // §PF368: webAdminVetarClan; datos = { tag, motivo }; agrega el clan a la hoja Conflictos, ver _webAdminVetarClan() en 15_DeteccionInfiltrados.gs. [→ Contexto_Base_Web.md §PF368]
+  if (e && e.parameter && e.parameter.accion === 'webAdminVetarClan') {
+    try {
+      var payloadVetarClan = JSON.parse(e.postData.contents);
+      var resultadoVetarClan = _webAdminVetarClan(payloadVetarClan && payloadVetarClan.sessionToken, payloadVetarClan && payloadVetarClan.datos);
+      return ContentService
+        .createTextOutput(JSON.stringify(resultadoVetarClan))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errVetarClan) {
+      Logger.log('[Web] Error interno: ' + errVetarClan.toString());
       return ContentService
         .createTextOutput(JSON.stringify({ ok: false, error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.' }))
         .setMimeType(ContentService.MimeType.JSON);
