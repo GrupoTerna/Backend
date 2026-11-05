@@ -3078,14 +3078,36 @@ function _webGuerraLogUnClan(tagNorm, data) {
     return a.semana - b.semana;
   });
 
-  var trophyAnterior = null;
+  // FIX (04-nov-2026, reporte de la usuaria: «los valores no coinciden» con RoyaleAPI):
+  // la columna Trofeos de Guerra_Logs guarda info.clanWarTrophies del momento de la fila,
+  // que es el valor ANTES de que se aplique el resultado de esa semana (la API lo aplica
+  // al cerrar la semana). Antes, la web mostraba ese valor como si fuera el de la semana,
+  // así que cada fila salía una semana desfasada. Ahora el trofeo de la semana N es el
+  // valor con que empieza la semana N+1 (ya con el resultado de N aplicado) y la variación
+  // es la diferencia entre ambos. Solo se usa la semana siguiente si es la inmediata
+  // (misma temporada con semana + 1, o semana 1 de la temporada siguiente); si falta o aún
+  // no existe (semana más reciente), trophy = null y trophyDelta = 0.
   var nombreClan = '';
   for (var s = 0; s < lista.length; s++) {
     var item = lista[s];
-    item.trophyDelta = (trophyAnterior === null) ? 0 : (item.trophy - trophyAnterior);
-    trophyAnterior = item.trophy;
+    var sig = lista[s + 1] || null;
+    var sigInmediata = !!sig && (
+      (sig.temporada === item.temporada && sig.semana === item.semana + 1) ||
+      (sig.temporada === item.temporada + 1 && sig.semana === 1)
+    );
+    if (sigInmediata) {
+      item.trophyDelta = sig.trophy - item.trophy;
+      item.trophyPost  = sig.trophy;
+    } else {
+      item.trophyDelta = 0;
+      item.trophyPost  = null;
+    }
     if (item.clanNombre) nombreClan = item.clanNombre; // el nombre más reciente gana
-    delete item.clanNombre;
+  }
+  for (var s2 = 0; s2 < lista.length; s2++) {
+    lista[s2].trophy = lista[s2].trophyPost;
+    delete lista[s2].trophyPost;
+    delete lista[s2].clanNombre;
   }
 
   // Se devuelve DESCENDENTE (más reciente primero) -- se invierte recién

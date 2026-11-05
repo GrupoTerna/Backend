@@ -336,7 +336,7 @@ function _noticiasPosiciones_(semana) {
     // Tendencia para el gráfico: hasta 6 semanas terminando en la elegida, de la más
     // vieja a la más nueva (la lista viene descendente, por eso se invierte).
     var tendencia = lista.slice(idx, idx + NOTICIAS_SEMANAS_TENDENCIA).reverse().map(function (x) {
-      return { temporada: Number(x.temporada), semana: Number(x.semana), puesto: Number(x.rank) || 0, trofeos: Number(x.trophy) || 0 };
+      return { temporada: Number(x.temporada), semana: Number(x.semana), puesto: Number(x.rank) || 0, trofeos: (x.trophy === null || x.trophy === undefined) ? null : (Number(x.trophy) || 0) }; // trophy null = semana sin resultado aplicado todavía (FIX 04-nov-2026, _webGuerraLogUnClan en 17_GuerraSheet.gs)
     });
     clanes.push({
       tendencia: tendencia,
@@ -345,7 +345,7 @@ function _noticiasPosiciones_(semana) {
       sinDatos: false,
       puesto: puesto,                       // 0 = sin dato
       puestoEstimado: !!s.rankEstimado,
-      trofeos: Number(s.trophy) || 0,
+      trofeos: (s.trophy === null || s.trophy === undefined) ? null : (Number(s.trophy) || 0), // null = el resultado de la semana aún no se aplica
       variacionTrofeos: Number(s.trophyDelta) || 0,
       barco: Number(s.boat) || 0,
       coliseo: !!s.coliseo,
