@@ -1303,7 +1303,7 @@ function _csvSubcarpetaDe_(filename) {
       /^Reparar_SemanaDesdeJsonRoyaleApi /.test(n)) return 'Informes';
   // Tampermonkey: lo que se arma con datos traídos de RoyaleAPI por Tampermonkey.
   // §PF321 (1-nov-2026): HistorialGuerra_Grupal.csv (RoyaleAPI vía Tampermonkey, una fila por jugador, semana y clan) vive aquí, no en Informes; la usuaria lo movió a mano a CSV/Tampermonkey.
-  if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv' || n === 'HistorialGuerra_Grupal.csv') return 'Tampermonkey';
+  if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv' || n === 'HistorialGuerra_Grupal.csv' || n === 'Trofeos_Guerra_RoyaleAPI.csv') return 'Tampermonkey'; // 04-nov-2026 (§PF362): trofeos por semana del Log de RoyaleAPI
   // Jugador: datos que dependen de cada jugador (no son comportamiento general ni respaldo de una hoja).
   var jugador = ['Backup_Cards_2.csv', 'Backup_Insignias_2.csv', 'Backup_Logros_2.csv', 'Backup_ProgresoEventos.csv',
     'Backup_Battlelogs.csv', 'Backup_PerfilWeb.csv', 'Backup_CaminoLeyendas.csv'];

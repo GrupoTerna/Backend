@@ -3026,8 +3026,11 @@ function _webGuerraLog(tag) {
     : (tagNorm ? [] : CFG.TERNA_TAGS); // tag inválido -> []; sin tag -> todos
 
   var clanes = [];
+  var trofeosRoyale = _leerTrofeosRoyaleApi_(); // 04-nov-2026: trofeos oficiales guardados desde el Log de RoyaleAPI (Tampermonkey), ver _aplicarTrofeosLogRoyaleApi()
   for (var t = 0; t < tagsAPedir.length; t++) {
-    clanes.push(_webGuerraLogUnClan(tagsAPedir[t], data));
+    var unClan = _webGuerraLogUnClan(tagsAPedir[t], data);
+    _superponerTrofeosRoyaleApi_(unClan, trofeosRoyale);
+    clanes.push(unClan);
   }
   return { clanes: clanes };
 }
@@ -3117,6 +3120,154 @@ function _webGuerraLogUnClan(tagNorm, data) {
   salida.clan    = nombreClan;
   salida.semanas = lista;
   return salida;
+}
+
+// TROFEOS DE GUERRA DESDE EL LOG DE ROYALEAPI (Tampermonkey, 04-nov-2026) [→ Contexto_Base_Web.md §PF362]
+// Guerra_Logs solo conoce los trofeos del clan ANTES de que se aplique el resultado de cada semana, así que la última semana de cada temporada
+// no tiene su valor hasta que empieza la siguiente. El Log de RoyaleAPI (/clan/<TAG>/war/log) trae, por semana, el cambio y los trofeos finales ya
+// con el resultado aplicado. Tampermonkey los envía y aquí se guardan, sin borrar nunca nada, en CSV/Tampermonkey/Trofeos_Guerra_RoyaleAPI.csv
+// (RoyaleAPI solo conserva unas pocas temporadas: lo que no se guarda ahora no se puede recuperar después).
+var TROFEOS_ROYALEAPI_CSV = 'Trofeos_Guerra_RoyaleAPI.csv';
+var TROFEOS_ROYALEAPI_ENCABEZADOS = ['TemporadaRoyaleAPI', 'Temporada', 'Semana', 'Tag', 'Clan', 'Puesto', 'Barcos', 'CambioTrofeos', 'TrofeosFin', 'FechaCaptura'];
+
+/**
+ * _leerTrofeosRoyaleApi_() — filas guardadas del CSV como objetos { tempRoyale, temp, semana, tag, clan, puesto, barcos, cambio, fin, fecha }; [] si no existe o falla.
+ */
+function _leerTrofeosRoyaleApi_() {
+  try {
+    var texto = _loadCSVFromDrive(TROFEOS_ROYALEAPI_CSV);
+    if (!texto) return [];
+    var filas = _parseCSV(texto);
+    var out = [];
+    for (var i = 1; i < filas.length; i++) {
+      var f = filas[i];
+      if (!f || f.length < 9) continue;
+      var fin = _numDesdeCeldaLogs_(f[8]);
+      var cambio = _numDesdeCeldaLogs_(f[7]);
+      if (!isFinite(fin) || !isFinite(cambio)) continue;
+      out.push({
+        tempRoyale: Number(f[0]) || 0, temp: Number(f[1]) || 0, semana: Number(f[2]) || 0,
+        tag: _tagComparableLogs_(f[3]), clan: String(f[4] || ''),
+        puesto: Number(f[5]) || 0, barcos: Number(f[6]) || 0,
+        cambio: cambio, fin: fin, fecha: String(f[9] || '')
+      });
+    }
+    return out;
+  } catch (e) {
+    Logger.log('[TrofeosRoyaleApi] No se pudo leer ' + TROFEOS_ROYALEAPI_CSV + ': ' + e.message);
+    return [];
+  }
+}
+
+/**
+ * _superponerTrofeosRoyaleApi_(salida, registros) — sobre la salida de _webGuerraLogUnClan(), reemplaza trophy y trophyDelta de las semanas que RoyaleAPI ya confirmó
+ * (marca trophyFuente:'royaleapi'). Las semanas sin dato guardado quedan como las calculó Guerra_Logs.
+ */
+function _superponerTrofeosRoyaleApi_(salida, registros) {
+  if (!registros || !registros.length) return;
+  var tagClan = _tagComparableLogs_(salida.tag);
+  var porSemana = {};
+  for (var i = 0; i < registros.length; i++) {
+    if (registros[i].tag === tagClan) porSemana[registros[i].temp + '|' + registros[i].semana] = registros[i];
+  }
+  for (var s = 0; s < salida.semanas.length; s++) {
+    var item = salida.semanas[s];
+    var r = porSemana[item.temporada + '|' + item.semana];
+    if (!r) continue;
+    item.trophy = r.fin;
+    item.trophyDelta = r.cambio;
+    item.trophyFuente = 'royaleapi';
+  }
+}
+
+/**
+ * _aplicarTrofeosLogRoyaleApi(items) — endpoint 'trofeosLogGuerra' (Tampermonkey, token HISTORIAL_GUERRA_TOKEN).
+ * items: [{ clanTag, temporadaRoyaleApi, semana, puesto, barcos, cambio, trofeosFin }] leídos de la tabla resumen de /clan/<TAG>/war/log.
+ * Guarda (nueva o actualizada, nunca borra) en Trofeos_Guerra_RoyaleAPI.csv y compara cada fila con lo que Guerra_Logs deduce (_webGuerraLogUnClan, sin superponer).
+ * Respuesta: contadores + `diferencias` (texto) + `sinDatoLogs` (semanas que Guerra_Logs aún no puede confirmar: la última de cada temporada).
+ */
+function _aplicarTrofeosLogRoyaleApi(items) {
+  var res = { ok: true, recibidas: 0, nuevas: 0, actualizadas: 0, sinCambios: 0, descartadas: 0, coinciden: 0, difieren: 0, sinDatoLogs: 0, diferencias: [], avisos: [] };
+  if (!Array.isArray(items)) return { error: 'Formato inválido: se esperaba una lista de semanas.', code: 400 };
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) return { error: 'El backend está ocupado; reintenta en un momento.', code: 503 };
+  try {
+    var offset = _getTemporadaOffsetRoyaleApi();
+    var ss = _getSs();
+    var lectura = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.GUERRA_LOGS, 'Backup_Guerra_Logs.csv', GUERRA_LOGS_TOTAL_COLS, 1);
+    var baseLogs = {}; // tagNorm -> 'temp|semana' -> item de _webGuerraLogUnClan (sin superponer)
+    var nombresClan = {};
+    var tagsOficiales = {};
+    for (var q = 0; q < CFG.TERNA_TAGS.length; q++) {
+      var tg = _tagComparableLogs_(CFG.TERNA_TAGS[q]);
+      tagsOficiales[tg] = CFG.TERNA_TAGS[q];
+      var un = _webGuerraLogUnClan(CFG.TERNA_TAGS[q], lectura.filas);
+      nombresClan[tg] = un.clan || '';
+      baseLogs[tg] = {};
+      for (var w = 0; w < un.semanas.length; w++) baseLogs[tg][un.semanas[w].temporada + '|' + un.semanas[w].semana] = un.semanas[w];
+    }
+
+    var guardadas = _leerTrofeosRoyaleApi_();
+    var porClave = {};
+    for (var g = 0; g < guardadas.length; g++) porClave[guardadas[g].tempRoyale + '|' + guardadas[g].semana + '|' + guardadas[g].tag] = guardadas[g];
+
+    var ahora = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
+    var huboCambios = false;
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i] || {};
+      res.recibidas++;
+      var tag = _tagComparableLogs_(it.clanTag);
+      var tempR = Number(it.temporadaRoyaleApi), sem = Number(it.semana);
+      var cambio = _numDesdeCeldaLogs_(it.cambio), fin = _numDesdeCeldaLogs_(it.trofeosFin);
+      var puesto = (it.puesto === null || it.puesto === undefined || it.puesto === '') ? 0 : Number(it.puesto);
+      var barcos = (it.barcos === null || it.barcos === undefined || it.barcos === '') ? 0 : _numDesdeCeldaLogs_(it.barcos);
+      if (!tagsOficiales[tag] || !(tempR > 0) || !(sem >= 1 && sem <= 6) || !isFinite(cambio) || !isFinite(fin) || !(fin > 0)) { res.descartadas++; continue; }
+      if (!isFinite(puesto) || puesto < 0 || puesto > 5) puesto = 0;
+      if (!isFinite(barcos) || barcos < 0) barcos = 0;
+      var temp = tempR - offset;
+      var etiqueta = 'T' + temp + ' S' + sem + ' ' + (nombresClan[tag] || tagsOficiales[tag]);
+
+      // Comparación con lo que deduce Guerra_Logs (trofeo post-resultado, variación, puesto y barcos).
+      var deLogs = baseLogs[tag][temp + '|' + sem] || null;
+      if (!deLogs || deLogs.trophy === null || deLogs.trophy === undefined) {
+        res.sinDatoLogs++;
+      } else {
+        var dif = [];
+        if (Number(deLogs.trophy) !== fin) dif.push('trofeos ' + fin + ' (RoyaleAPI) vs ' + deLogs.trophy + ' (Guerra_Logs)');
+        if (Number(deLogs.trophyDelta) !== cambio) dif.push('variación ' + cambio + ' vs ' + deLogs.trophyDelta);
+        if (puesto > 0 && Number(deLogs.rank) > 0 && Number(deLogs.rank) !== puesto) dif.push('puesto ' + puesto + ' vs ' + deLogs.rank + (deLogs.rankEstimado ? ' (estimado)' : ''));
+        if (barcos > 0 && !deLogs.coliseo && Number(deLogs.boat) > 0 && Number(deLogs.boat) !== barcos) dif.push('barcos ' + barcos + ' vs ' + deLogs.boat);
+        if (dif.length) { res.difieren++; if (res.diferencias.length < 40) res.diferencias.push(etiqueta + ': ' + dif.join('; ')); }
+        else res.coinciden++;
+      }
+
+      // Guardado (upsert por temporada de RoyaleAPI + semana + clan).
+      var clave = tempR + '|' + sem + '|' + tag;
+      var previa = porClave[clave];
+      var nueva = { tempRoyale: tempR, temp: temp, semana: sem, tag: tag, clan: nombresClan[tag] || '', puesto: puesto, barcos: barcos, cambio: cambio, fin: fin, fecha: ahora };
+      if (!previa) { porClave[clave] = nueva; res.nuevas++; huboCambios = true; }
+      else if (previa.fin === fin && previa.cambio === cambio && previa.puesto === puesto && previa.barcos === barcos) { res.sinCambios++; }
+      else { porClave[clave] = nueva; res.actualizadas++; huboCambios = true; }
+    }
+
+    if (huboCambios) {
+      var lista = Object.keys(porClave).map(function (k) { return porClave[k]; });
+      lista.sort(function (a, b) { return (a.tempRoyale - b.tempRoyale) || (a.semana - b.semana) || (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0); });
+      var filasCsv = [TROFEOS_ROYALEAPI_ENCABEZADOS.slice()];
+      for (var k = 0; k < lista.length; k++) {
+        var r = lista[k];
+        filasCsv.push([r.tempRoyale, r.temp, r.semana, '#' + r.tag, r.clan, r.puesto || '', r.barcos || '', r.cambio, r.fin, r.fecha]);
+      }
+      _saveCSVToDrive(TROFEOS_ROYALEAPI_CSV, _encodeCSV(filasCsv));
+    }
+    res.guardado = huboCambios;
+  } catch (e) {
+    Logger.log('[TrofeosRoyaleApi] Error: ' + e.message);
+    return { error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 };
+  } finally {
+    lock.releaseLock();
+  }
+  return res;
 }
 
 // WEB: HISTORIAL DE COPAS DEL CLAN (gráfica «Copas» de clan.html) [→ Contexto_Base_Web.md §PF062]

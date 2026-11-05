@@ -1661,6 +1661,27 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // Endpoint 'trofeosLogGuerra' (Tampermonkey, fase Log; 04-nov-2026): guarda en CSV/Tampermonkey/Trofeos_Guerra_RoyaleAPI.csv los trofeos, el puesto y los barcos por semana de la tabla resumen de /war/log y los compara con Guerra_Logs (_aplicarTrofeosLogRoyaleApi, 17_GuerraSheet.gs); mismo token que 'historialGuerra'. [→ Contexto_Base_Web.md §PF362]
+  if (e && e.parameter && e.parameter.accion === 'trofeosLogGuerra') {
+    if (e.parameter.token !== HISTORIAL_GUERRA_TOKEN) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'No autorizado', code: 401 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    try {
+      var payloadTL = JSON.parse(e.postData.contents);
+      var resultadoTL = _aplicarTrofeosLogRoyaleApi(payloadTL && payloadTL.semanas);
+      _logTampermonkeyADrive('TrofeosLogGuerra', resultadoTL, null);
+      return ContentService
+        .createTextOutput(JSON.stringify(resultadoTL))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errTL) {
+      _logTampermonkeyADrive('TrofeosLogGuerra', null, errTL.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // Endpoint 'Verificar Semana en Curso' (fase race, Tampermonkey; ver 19_CorreccionRiverRace.gs): nunca escribe directo sobre Guerra/Control_2, solo deja discrepancias pendientes de aprobación manual (aprobarCorreccionesRiverRacePendientes()). [→ Contexto_Base_Web.md §38B099]
   if (e && e.parameter && e.parameter.accion === 'verificarSemanaActual') {
     if (e.parameter.token !== VERIFICAR_RIVERRACE_TOKEN) {
