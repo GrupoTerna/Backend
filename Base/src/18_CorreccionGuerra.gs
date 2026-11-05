@@ -74,6 +74,7 @@ var REVISION_GUERRA_ENCABEZADO = ['N°', 'Fecha', 'Temporada', 'Semana', 'Tag', 
 var CGW_CONTRADICCION_TIPO = 'Contradicción';      // columna «Tipo» de Revision_Guerra.csv
 var CGW_CONTRADICCION_ESTADO = 'Pendiente';        // columna «Estado» de lo que no se resolvió solo
 var CGW_CONTRADICCIONES_MAX_LINEAS = 200;          // tope de líneas que viajan en la respuesta (el resto solo cuenta)
+var CGW_MAX_ATAQUES_SIN_FAME = 4;                 // §PF357: clan que cruzó la meta el domingo: como máximo los 4 mazos de ese día no dan fame (decisión de la usuaria, 4-nov-2026)
 var CGW_REGRESO_HUECO_DIAS = 7;                    // §PF314 (PF253 opción B): un hueco de 7 días o más sin clan Terna cuenta como «salió y regresó»
 var _CGW_MITADES_SEMANA_CACHE_ = null;             // §PF313: sumas de dos días de guerra, para comprobar semanas completas
 
@@ -1395,7 +1396,7 @@ function _cgwMitadesSemana_() {
  * §PF253 punto 2: «una terna posible» = una combinación posible de ataques, fame y barcos. Devuelve true si existen 4 días de guerra del catálogo
  * (_fameCatalogoDia_()) cuya suma sea exactamente esa semana. barcos null/undefined = «sin dato»: se comprueba solo ataques y fame.
  * Cubre la semana de UN clan o de un jugador en varios (las sumas más chicas también caben: hay días con 0 ataques). memo (opcional): objeto para no repetir cálculos.
- * Limitación conocida: no conoce la regla del clan terminado (ataques del domingo sin fame, §PF183), así que esos casos salen como «no cabe».
+ * No conoce la regla del clan terminado (ataques del domingo sin fame, §PF183): eso lo prueba _cgwSemanaPosibleClanTerminado_() (§PF357), que usa esta función.
  */
 function _cgwSemanaEsPosible_(ataques, fame, barcos, memo) {
   if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame)) return false;
@@ -1415,6 +1416,34 @@ function _cgwSemanaEsPosible_(ataques, fame, barcos, memo) {
   }
   if (memo) memo[clave] = ok;
   return ok;
+}
+
+/**
+ * _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) [→ Contexto_Base_Web.md §PF357]
+ * §PF357 (regla de la usuaria, 4-nov-2026; §PF183): si el clan cruzó la meta el domingo, hasta 4 ataques (CGW_MAX_ATAQUES_SIN_FAME) pueden no dar fame.
+ * Primero prueba la semana tal cual (k = 0, _cgwSemanaEsPosible_). Si no cabe, prueba k = 1 a 4 ataques sin fame: los (ataques - k) restantes deben cuadrar
+ * con la tabla. Esos k ataques pueden ser de PvP, de duelo o de barco (no se ha descartado que se pueda atacar barcos con el clan ya terminado), así que los barcos
+ * que dieron fame pueden ser desde (barcos - k) hasta barcos. Con barcos null/undefined solo se comprueban ataques y fame.
+ * Devuelve el menor k que cuadra (0 = cabe sin suponer nada) o -1 si no cabe de ninguna forma. No comprueba que el clan haya terminado ni reparte por día.
+ */
+function _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) {
+  if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame)) return -1;
+  if (ataques % 1 !== 0 || ataques < 0 || ataques > BLG_DIAS_GUERRA * FAME_MAZOS_POR_DIA) return -1;
+  var hayBarcos = (typeof barcos === 'number' && !isNaN(barcos));
+  var clave = 'T|' + ataques + '|' + (hayBarcos ? barcos : 'x') + '|' + fame;
+  if (memo && memo[clave] !== undefined) return memo[clave];
+  var res = -1;
+  for (var k = 0; k <= CGW_MAX_ATAQUES_SIN_FAME && k <= ataques && res < 0; k++) {
+    if (!hayBarcos) {
+      if (_cgwSemanaEsPosible_(ataques - k, fame, null, null)) res = k;
+    } else {
+      for (var b2 = Math.max(0, barcos - k); b2 <= barcos && res < 0; b2++) {
+        if (_cgwSemanaEsPosible_(ataques - k, fame, b2, null)) res = k;
+      }
+    }
+  }
+  if (memo) memo[clave] = res;
+  return res;
 }
 
 /**
@@ -2111,6 +2140,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var memoPosible = {}; // §PF313: memoria de _cgwSemanaEsPosible_() para no repetir cálculos en un lote grande
   var indiceAtaqueTerna = _cgwIndiceAtaqueTerna_(mapa, correcciones, _getTemporadaOffsetRoyaleApi()); // §PF343
   var cacheJsonTerna = {}, contradiccionesExternasIgnoradas = 0; // §PF343
+  var aceptadasClanTerminado = [], aceptadasClanTerminadoTotal = 0; // §PF357: filas que solo cuadran suponiendo ataques sin fame por clan terminado (sin verificar)
   for (var i = 0; i < correcciones.length; i++) {
     var c = correcciones[i] || {};
     var tag = String(c.tag || '').trim();
@@ -2193,7 +2223,9 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     var mismoNivelDiscrepa = !!(existente && valoresDistintos && clanTag !== '' && fuenteGuardada !== 'desconocida' &&
       fuenteEntrante !== 'desconocida' && fuenteGuardada !== fuenteEntrante);
     var yaGuardadaIgual = !!(existente && !valoresDistintos); // reintento por Implementación «No»: el valor ya estaba, no es un conflicto nuevo
-    var noCabeSemana = !yaGuardadaIgual && !_cgwSemanaEsPosible_(ataquesSemana, fame, barcosFinal, memoPosible);
+    // §PF357: antes de decir «no cabe» se prueba el caso del clan que cruzó la meta el domingo (hasta 4 ataques sin fame; _cgwSemanaPosibleClanTerminado_).
+    var sinFameK = yaGuardadaIgual ? 0 : _cgwSemanaPosibleClanTerminado_(ataquesSemana, fame, barcosFinal, memoPosible);
+    var noCabeSemana = !yaGuardadaIgual && sinFameK < 0;
     var hayConflicto = mismoNivelDiscrepa || noCabeSemana || (valoresDistintos && !(clanTag === '' && fuenteGuardada === 'perfil' && fuenteEntrante === 'perfil'));
     // §PF343 (2-nov-2026, regla de la usuaria): la fila del perfil de un clan que NO es Terna solo genera contradicción si hay registro de que el jugador hizo al
     // menos un ataque esa semana en algún clan Terna (Log, Analytics o River Race). Sin ese registro se ignora: el valor se aplica como siempre, sin línea de conflicto
@@ -2247,6 +2279,12 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       if (cambiosPerfil.length < 200) cambiosPerfil.push(etiquetaCambio);
     }
 
+    if (sinFameK > 0) { // §PF357: se aplica el valor; queda dicho en el registro que se supuso clan terminado (no hay fila en Revision_Guerra.csv)
+      aceptadasClanTerminadoTotal++;
+      if (aceptadasClanTerminado.length < CGW_CONTRADICCIONES_MAX_LINEAS) {
+        aceptadasClanTerminado.push(etiquetaConflicto + ': ' + textoAhoraC + ' cuadra con ' + sinFameK + ' ataque(s) sin fame (clan terminado, sin verificar)');
+      }
+    }
     // Aprobación/Implementación (pregunta 4, FIX 27-ago-2026, ver comentario [→ Contexto_Base_Web.md §18B100]
     mapa[clave] = {
       ataquesSemana: ataquesSemana, barcos: barcosFinal, fame: fame, actualizado: ahora,
@@ -2338,6 +2376,12 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   if (contradiccionesExternasIgnoradas) { // §PF343
     resultado.contradiccionesExternasIgnoradas = contradiccionesExternasIgnoradas;
     Logger.log('[CorreccionGuerra] ' + contradiccionesExternasIgnoradas + ' contradicción(es) de filas de perfil de clan externo ignorada(s): sin registro de ataques en un clan Terna esa semana.');
+  }
+  if (aceptadasClanTerminadoTotal) { // §PF357
+    resultado.aceptadasClanTerminado = aceptadasClanTerminado;
+    resultado.aceptadasClanTerminadoTotal = aceptadasClanTerminadoTotal;
+    Logger.log('[CorreccionGuerra] ' + aceptadasClanTerminadoTotal + ' fila(s) cuadran solo con ataques sin fame por clan terminado (sin verificar que el clan haya cruzado la meta): ' +
+      aceptadasClanTerminado.slice(0, 20).join(' | ') + (aceptadasClanTerminado.length > 20 ? ' | … (ver la respuesta del endpoint)' : ''));
   }
   if (revisarManual.length) resultado.revisarManual = revisarManual; // FIX 29-sep-2026 (Fase 15 tanda 1)
   if (cambiosPerfil.length) resultado.cambiosPerfil = cambiosPerfil; // §PF237
