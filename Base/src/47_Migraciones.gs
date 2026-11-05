@@ -1507,8 +1507,12 @@ function _finalizarReenumeracion() {
     // (c) Avance de verificarCrrVsBackup* (59_Verificar_CRR_vs_Backup.gs): VCRR_ESTADO guarda la lista de semanas con pares temporada/semana en la numeración vieja; reanudar con ella buscaría carpetas que ya no existen.
     // Se descarta: la próxima corrida arma la lista de nuevo y omite las semanas ya verificadas por huella del JSON.
     props.deleteProperty('VCRR_ESTADO');
+    // (d) §PF359: avance de aplicarCorreccionGuerraATodasLasTemporadas() (18_CorreccionGuerra.gs, cadena CORRGUERRA): CORRGUERRA_ESTADO guarda la última temporada terminada y la temporada a medias
+    // con la numeración vieja. Normalmente no queda nada (la cadena tiene el candado y se limpia al terminar, al fallar o al cancelar), pero una cadena cortada por la plataforma puede dejarlo.
+    // Se descarta: sin estado, la cadena vuelve a empezar desde la primera temporada y es segura (lo ya aplicado no cambia). Las filas «Reconstruido» y Revision_Guerra.csv ya los cubren sus pasos.
+    props.deleteProperty('CORRGUERRA_ESTADO');
     props.setProperty('REENUM_PROPS_NUMERACION_HECHO', runIdFin);
-    Logger.log('[Reenumeración] Avance de verificarCrrVsBackup* (VCRR_ESTADO) descartado.');
+    Logger.log('[Reenumeración] Avance de verificarCrrVsBackup* (VCRR_ESTADO) y de la corrección de Guerra (CORRGUERRA_ESTADO) descartados.');
     Logger.log('[Reenumeración] Índice de cruce de meta descartado y ' + movidas.length + ' marca(s) NUEVOS_CIERRE_SEMANA_T<n> pasadas a la numeración nueva (T += ' + deltaMeses + ').');
   }
 
