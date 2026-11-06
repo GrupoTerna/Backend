@@ -38,6 +38,7 @@ var ACTIVADORES_CONFIG = [
   { handler: 'descargarCards',               tipo: 'semanal', dia: 1, hora: 5, activo: true },
   { handler: 'resolverAlertasHistorialGuerra', tipo: 'diario', hora: 6, activo: true },
   { handler: 'generarIndiceClanesExternosProgramado', tipo: 'semanal', dia: 2, hora: 9, activo: true },  // 5-nov-2026 (PF376): índice de clanes externos cada martes a las 9 (Lima); si queda incompleto se continúa solo
+  { handler: 'descargarRankingsSemanal', tipo: 'semanal', dia: 1, hora: 8, activo: true },  // 6-nov-2026 (PF393): rankings de Perú y globales, una sola descarga a la semana (lunes, entre las 8:00 y las 8:59; fuera de la ventana de guerra de 4:00 a 4:59); 6 llamadas a la API, ~1 a 2 min
   { handler: '_autogenerarParCRListaSiCorrespondeInicioTemporada', tipo: 'diario', hora: 6, activo: true }
 ];
 
