@@ -992,16 +992,28 @@ function _webClanInfoCalcular() {
         // NUEVO 16-sep-2026 (ícono real del clan desde el badgeId de Supercell): CC.BADGE_ID guarda el número crudo de /clans/{tag} (updateClanSheet(), 10_ClanSheet.gs) y se reenvía sin transformar, como pide el docblock de iconoBadgeClanHtml() (common.js, frontend), que lo resuelve a un ícono en el momento. [→ Contexto_Base_Web.md §37B146]
         badgeId:      Number(fila[CC.BADGE_ID      - 1]) || 0,
         royaleApi:    royaleApi,
-        cwStats:      cwStats
+        cwStats:      cwStats,
+        // 6-nov-2026 (§PF393): puesto del clan en los rankings semanales de Perú y globales (copas y guerra); null si no figura en ninguno y entonces clan.html oculta la sección. [→ Contexto_Base_Web.md §PF393]
+        ranking:      _rankingsDeClanSeguro_(tagBuscado)
       };
     }
     // Clan de CFG.TERNA_TAGS sin fila todavía en la hoja Clan (recién agregado, esperando la próxima updateClanSheet()): se devuelve un placeholder mínimo en vez de omitirlo, para que el frontend pinte la tarjeta (con guiones) en su posición. [→ Contexto_Base_Web.md §37B147]
     return { clanTag: tagBuscado, nombre: '', lider: '', miembros: 0, trofeos: 0, copas: 0,
              minGSemanal: CFG.MIN_G_DEFAULT, liga: '', requerimiento: 0,
-             donaciones: 0, tipo: '', pais: '', descripcion: '', badgeId: 0, royaleApi: '', cwStats: '' };
+             donaciones: 0, tipo: '', pais: '', descripcion: '', badgeId: 0, royaleApi: '', cwStats: '', ranking: null };
   });
 
   return { clanes: clanes };
+}
+
+/** _rankingsDeClanSeguro_(tag) (§PF393): _rankingsDeClan_() que nunca lanza error; si el índice de rankings no se puede leer devuelve null y la ficha sigue sin esa sección. */
+function _rankingsDeClanSeguro_(tag) {
+  try {
+    return _rankingsDeClan_(tag);
+  } catch (e) {
+    Logger.log('[WebAPI] _rankingsDeClan_ falló para ' + tag + ': ' + e.message);
+    return null;
+  }
 }
 
 // _webRankings(): FASE 10 (30-ago-2026, sección pública "Rankings"): top 10 de cuatro métricas ya calculadas en el Directorio, solo miembros con Estado = 'Activo' (misma fuente y criterio que _webRoster()): donadores (DC.DON_D, donaciones realizadas), racha (DC.RACHA, racha de guerra), torneos (DC.TORNEOS, el mismo campo que exponen _webRoster()/_webPerfilJugador()) y victorias3c (DC.VICTORIAS_3C, victorias con 3 coronas); cada lista excluye valores en 0/vacío (un top no debe mostrar ceros) y se recorta a 10; lectura pública con el mismo WEB_MEMBER_TOKEN de solo lectura que webRoster. @returns {{donadores, racha, torneos, victorias3c: Array<{tag,nombre,clan,valor}>}} [→ Contexto_Base_Web.md §37B165]
@@ -2004,9 +2016,21 @@ function _webPerfilJugador(tagBuscado, opciones) {
       progreso: progreso,
       extendido: extendido,
       // FASE 10 (06-sep-2026): null si todavía no hay datos de Cards_2 para este Tag; ver docblock de _webMazoActualDesdeCards2(). [→ Contexto_Base_Web.md §37B133]
-      mazoActual: _webMazoActualDesdeCards2(tag)
+      mazoActual: _webMazoActualDesdeCards2(tag),
+      // 6-nov-2026 (§PF393): puesto en el ranking de Camino de Leyendas de Perú y global (semanal, lunes); null si no figura y perfil.html oculta la sección. [→ Contexto_Base_Web.md §PF393]
+      ranking: _rankingsDeJugadorSeguro_(tag)
     }
   };
+}
+
+/** _rankingsDeJugadorSeguro_(tag) (§PF393): _rankingsDeJugador_() que nunca lanza error; si el índice no se puede leer devuelve null y el perfil sigue sin esa sección. */
+function _rankingsDeJugadorSeguro_(tag) {
+  try {
+    return _rankingsDeJugador_(tag);
+  } catch (e) {
+    Logger.log('[WebAPI] _rankingsDeJugador_ falló para ' + tag + ': ' + e.message);
+    return null;
+  }
 }
 
 // _webPerfilJugadorSinRegistro(tagBuscado, opciones): FIX 09-sep-2026 (ver docblock de _webPerfilJugador()): a donde cae _webPerfilJugador() cuando el Tag no tiene fila en Directorio; consulta el perfil PÚBLICO de Supercell (mismo proxy que _webAdminVerificarTag()) para mostrar al menos nombre/clan de cualquier jugador; a propósito sin respaldo de RoyaleAPI (tampoco lo tiene ya _webAdminVerificarTag()): RoyaleAPI bloquea (Cloudflare) las llamadas server-side de Apps Script y solo se puede leer vía el script de Tampermonkey (navegador), ver Tampermonkey.md, y agregarlo sumaba segundos sin posibilidad real de encontrar nada; FIX 09-sep-2026 (mismo día): usaba _apiGet() (3 reintentos), lo que disparaba el error "<!DOCTYPE..." con el proxy dormido, ahora usa _webApiGetRapido() (un solo intento); todo lo que depende de datos internos (guerra, torneos, ascensos, mazo) vuelve en 0/null y renderMiembro() (admin.html) ya lo muestra vacío; sinRegistro:true deja distinguir este caso (hoy el frontend no lo usa). CAMBIO 28-sep-2026 (Fase 5b tanda A): 2.º parámetro opcional opciones = {sinDatosDrive}; si es true no se adjunta extendido.rawClash (lo usa _webPerfilJugador() para las cuentas de Inactivos que ve un no-admin). @param tagBuscado, opciones; @returns {{ok, error?, jugador?}} [→ Contexto_Base_Web.md §37B135]
