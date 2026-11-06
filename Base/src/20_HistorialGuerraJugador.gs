@@ -282,6 +282,7 @@ function _aplicarHistorialGuerra(candidatosPayload) {
   var procesados = 0, registrosGuardados = 0, registrosExternos = 0;
   var errores = [];
   var itemsGrupal = []; // se escriben todos juntos al final (un solo CSV grupal por petición) [→ Contexto_Base_Web.md §PF068]
+  var tagsConExternas = []; // §PF397: jugadores de este lote con filas de un clan externo; después del guardado se revisan contra las alertas de clanes sospechosos
 
   for (var c = 0; c < candidatosPayload.length; c++) {
     var cand = candidatosPayload[c] || {};
@@ -337,6 +338,7 @@ function _aplicarHistorialGuerra(candidatosPayload) {
         if (esExterna) {
           if (registroCompleto.clan) clanExternoDelJugador = registroCompleto.clan;
           registrosExternos++;
+          if (tagsConExternas.indexOf(tag) < 0) tagsConExternas.push(tag);
         } else {
           if (registroCompleto.clan) clanDelJugador = registroCompleto.clan; // el nombre del archivo usa el clan del último registro Terna, como antes
           if (!soloIndividual) itemsGrupal.push({ tag: tag, nombre: nombre, registro: registroCompleto });
@@ -360,8 +362,16 @@ function _aplicarHistorialGuerra(candidatosPayload) {
   try { jsonGrupal = _actualizarJsonGrupalClanesLote(itemsGrupal); }
   catch (eJg) { Logger.log('[HistorialGuerra][JSON grupal] Error: ' + eJg.message); }
 
+  // §PF397 (6-nov-2026): si el lote trajo filas de un clan externo, se suman al archivo del clan y a las alertas los jugadores que estuvieron en un clan sospechoso (rival, Conflictos o vetado), para que el ⚠️ salga sin esperar a la corrida semanal del índice. Va después de los demás locks y nunca hace fallar el guardado.
+  var alertasClanes = { ok: false, jugadoresNuevos: 0 };
+  if (tagsConExternas.length) {
+    try { alertasClanes = _alertasClanesDesdeJugadoresNuevos_(tagsConExternas); }
+    catch (eAl) { Logger.log('[HistorialGuerra][AlertasClanes] Error: ' + eAl.message); }
+  }
+
   return {
     ok: true, procesados: procesados, registrosGuardados: registrosGuardados, registrosExternos: registrosExternos, errores: errores,
+    alertasClanesOk: !!alertasClanes.ok, alertasClanesJugadoresNuevos: alertasClanes.jugadoresNuevos || 0,
     grupalGuardado: grupal.guardado, grupalCambios: grupal.cambios, grupalIgnorados: grupal.ignorados,
     grupalSinLock: !!grupal.sinLock,
     jsonGrupalGuardados: jsonGrupal.guardados, jsonGrupalCambios: jsonGrupal.cambios, jsonGrupalConflictos: jsonGrupal.conflictos, jsonGrupalSinLock: !!jsonGrupal.sinLock
