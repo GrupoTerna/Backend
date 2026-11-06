@@ -67,7 +67,9 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   // PF286b (29-oct-2026): DESPUÉS de los ids (sirven de llave): T_Asistencia y S_Asistencia toman Temporada y Fecha de su torneo o sorteo.
   function () { _alinearAsistencias_(true); },
   // PF322 (1-nov-2026): JSON grupales por clan (JSON/RoyaleAPI/Grupal, PF321). Al FINAL para no mover los índices de los pasos anteriores; no depende de la Ref ni del offset (solo suma el delta a temporadaInterna), y mientras dura la reenumeración los endpoints están bloqueados.
-  function () { return _reenumerarJsonGrupal_(); }
+  function () { return _reenumerarJsonGrupal_(); },
+  // PF378 (6-nov-2026): archivos por clan externo (carpeta Clanes_Externos de Otros): suma el delta a la temporada interna de cada semana. Al FINAL para no mover los índices de los pasos anteriores.
+  function () { return _reenumerarClanesExternos_(); }
 ];
 
 // PF269 (25-oct-2026): qué hace cada paso y qué se espera al terminarlo; _ejecutarPorTandas lo imprime («Ejecutando paso N/M: …»). MISMO ORDEN que PASOS_REENUMERAR_TEMPORADAS (si se añade un paso, añadir su texto al final).
@@ -104,7 +106,8 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
   'Temporada de T_Lista, S_Lista y CR_Lista recalculada por fecha (y ficha de Semanas si repetía el valor equivocado) y sus respaldos → filas que ya venían desfasadas quedan con la temporada de su fecha',
   'Ids de evento de T_Lista, S_Lista y CR_Lista: rehace cada id con la temporada de su fila y reescribe las citas en T_Asistencia, S_Asistencia, T_Resoluciones y Extra, y sus respaldos → ids con la numeración nueva en todas las hojas',
   'Temporada y Fecha de T_Asistencia y S_Asistencia tomadas de su torneo o sorteo (el id es la llave) y sus respaldos → asistencias coherentes con sus listas',
-  'HistorialGuerra, JSON grupales por clan (Drive): suma el delta a la temporada interna de cada semana, junta las semanas repetidas y quita las alternativas ya resueltas → todos los JSON grupales con la numeración nueva'
+  'HistorialGuerra, JSON grupales por clan (Drive): suma el delta a la temporada interna de cada semana, junta las semanas repetidas y quita las alternativas ya resueltas → todos los JSON grupales con la numeración nueva',
+  'Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva'
 ];
 
 // PF286b (29-oct-2026): propiedad de script donde se guarda la semana forzada de un id de evento (tema 2.5, forzarSemanaIdEvento).
@@ -1301,6 +1304,78 @@ function _reenumerarJsonGrupal_() {
   _reenumProgreso_(nombrePaso, yaHechos, cambiados, archivos.length, 'archivos');
   Logger.log('[Reenumeración] ' + nombrePaso + ': ' + (incompleto ? 'presupuesto agotado, se reintenta en la próxima continuación. ' : '') + 'cambiados en esta pasada: ' + cambiados + ', ya hechos: ' + yaHechos + ', omitidos: ' + omitidos +
     '; semanas repetidas juntadas: ' + fusionadas + '; alternativas resueltas quitadas: ' + quitadas + ' (revisiones cerradas: ' + cerradas + '); valores distintos enviados a revisión: ' + conflictos.length + ' (temporadaInterna += ' + deltaMeses + ').');
+  return !incompleto;
+}
+
+// _clanExternoReenumerarDoc_(doc, deltaMeses): PF378 (6-nov-2026); función pura (sin Drive). Suma deltaMeses a la temporada interna de cada semana de un archivo de clan externo («Clan - #TAG.json», carpeta Clanes_Externos de Otros) y a la de `refNombre`.
+// La clave de cada semana es temporadaRoyaleApi + semana y no cambia; solo si una semana no trae temporadaRoyaleApi su clave usa la interna, así que cada lista se vuelve a unir con _unirSemanasClan_() (nunca quita una semana). Devuelve el mismo doc, ya modificado.
+function _clanExternoReenumerarDoc_(doc, deltaMeses) {
+  var suma = function (v) { return (v === null || v === undefined || isNaN(Number(v))) ? v : Number(v) + deltaMeses; };
+  var pj = (doc && doc.jugadores && typeof doc.jugadores === 'object') ? doc.jugadores : {};
+  for (var tag in pj) {
+    var lista = [];
+    for (var i = 0; i < (pj[tag] || []).length; i++) {
+      var w = pj[tag][i];
+      lista.push({ temporadaRoyaleApi: w.temporadaRoyaleApi, temporada: suma(w.temporada), semana: w.semana });
+    }
+    pj[tag] = _unirSemanasClan_(lista, null);
+  }
+  if (doc && doc.refNombre && typeof doc.refNombre === 'object') doc.refNombre.temporada = suma(doc.refNombre.temporada);
+  return doc;
+}
+
+// _reenumerarClanesExternos_(): PF378 (6-nov-2026); aplica _clanExternoReenumerarDoc_() a cada «Clan - #TAG.json» de la carpeta Clanes_Externos. Las semanas de esos archivos son históricas y guardan la temporada interna (para mostrar «T5 S3»); si un JSON individual del jugador ya se limpió, nada las corregiría solo en la corrida del índice.
+// Reanudable y sin sumar dos veces: cada archivo ya hecho lleva reenumeracionId = REENUM_RUN_ID y se salta (la fusión del índice, _clanExternoFusionar_(), conserva esa marca). Las alertas (Alertas_Clanes_Sospechosos.json) se recalculan en la siguiente corrida del índice, o a mano con actualizarAlertasClanesSospechosos(). Devuelve false si queda incompleto. Sin probar en Apps Script real.
+function _reenumerarClanesExternos_() {
+  var props = PropertiesService.getScriptProperties();
+  var deltaMeses = Number(props.getProperty('REENUM_DELTA_MESES'));
+  var runId = props.getProperty('REENUM_RUN_ID') ||
+    (props.getProperty('REENUM_NUEVA_REF') + '|' + props.getProperty('REENUM_OFFSET_VIEJO') + '|' + deltaMeses);
+  var nombrePaso = 'Clanes externos';
+
+  var folder = null;
+  try { folder = _clanesExternosCarpeta_(false); }
+  catch (e) { Logger.log('[Reenumeración] ' + nombrePaso + ': carpeta no accesible (' + e.message + '), se omite.'); return true; }
+  if (!folder) { Logger.log('[Reenumeración] ' + nombrePaso + ': la carpeta ' + CLANES_EXTERNOS_CARPETA + ' no existe todavía, se omite.'); return true; }
+
+  var archivos = [];
+  var it = folder.getFiles();
+  while (it.hasNext()) {
+    var f = it.next();
+    if (/^Clan - #[0-9A-Z]+\.json$/i.test(f.getName())) archivos.push(f);
+  }
+  archivos.sort(function (a, b) { return a.getName() < b.getName() ? -1 : (a.getName() > b.getName() ? 1 : 0); });
+  if (!archivos.length) { Logger.log('[Reenumeración] ' + nombrePaso + ': no hay archivos de clan todavía, se omite.'); return true; }
+
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[Reenumeración] ' + nombrePaso + ': no se obtuvo el lock; se reintenta en la próxima continuación.'); return false; }
+  var inicio = Date.now(), cambiados = 0, yaHechos = 0, omitidos = 0, incompleto = false;
+  try {
+    for (var i = 0; i < archivos.length; i++) {
+      var archivo = archivos[i];
+      try {
+        var doc = JSON.parse(archivo.getBlob().getDataAsString('UTF-8'));
+        if (!doc || !doc.jugadores || typeof doc.jugadores !== 'object') { omitidos++; }
+        else if (doc.reenumeracionId === runId) { yaHechos++; }
+        else {
+          _clanExternoReenumerarDoc_(doc, deltaMeses);
+          doc.reenumeracionId = runId;
+          var texto = JSON.stringify(doc);
+          archivo.setContent(texto);
+          _asegurarEscrituraCompleta_(archivo, texto, archivo.getName());
+          cambiados++;
+        }
+      } catch (eArch) {
+        Logger.log('[Reenumeración] ' + nombrePaso + ': AVISO: no se pudo procesar «' + archivo.getName() + '» (' + eArch.message + '); queda sin reenumerar.');
+        omitidos++;
+      }
+      if ((i + 1) < archivos.length && _reenumSinTiempo_(inicio)) { incompleto = true; break; }
+    }
+  } finally {
+    lock.releaseLock();
+  }
+  _reenumProgreso_(nombrePaso, yaHechos, cambiados, archivos.length, 'archivos');
+  Logger.log('[Reenumeración] ' + nombrePaso + ': ' + (incompleto ? 'presupuesto agotado, se reintenta en la próxima continuación. ' : '') + 'cambiados en esta pasada: ' + cambiados + ', ya hechos: ' + yaHechos + ', omitidos: ' + omitidos + ' (temporada interna += ' + deltaMeses + ').');
   return !incompleto;
 }
 

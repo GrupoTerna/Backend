@@ -979,6 +979,7 @@ function _clanExternoFusionar_(previo, tagClan, acum, ahoraTxt) {
       actualizado: String((p && p.actualizado) || ''),
       jugadores: {}
     };
+    if (p && p.reenumeracionId) d.reenumeracionId = p.reenumeracionId; // §PF378: marca de _reenumerarClanesExternos_() (47_Migraciones.gs); se conserva para no sumar el delta dos veces si el índice corre en medio de una reenumeración
     var previos = (p && p.nombres instanceof Array) ? p.nombres : [];
     for (var n = 0; n < previos.length; n++) if (previos[n] && d.nombres.indexOf(previos[n]) < 0) d.nombres.push(previos[n]);
     if (a) {
