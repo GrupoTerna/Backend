@@ -37,6 +37,7 @@ var ACTIVADORES_CONFIG = [
   // ---- Antes de instalacion manual (ver AVISO 3) ----
   { handler: 'descargarCards',               tipo: 'semanal', dia: 1, hora: 5, activo: true },
   { handler: 'resolverAlertasHistorialGuerra', tipo: 'diario', hora: 6, activo: true },
+  { handler: 'generarIndiceClanesExternosProgramado', tipo: 'semanal', dia: 2, hora: 9, activo: true },  // 5-nov-2026 (PF376): índice de clanes externos cada martes a las 9 (Lima); si queda incompleto se continúa solo
   { handler: '_autogenerarParCRListaSiCorrespondeInicioTemporada', tipo: 'diario', hora: 6, activo: true }
 ];
 

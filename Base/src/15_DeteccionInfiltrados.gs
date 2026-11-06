@@ -13,6 +13,7 @@
 //  Parte 2 — Funciones que no se corren a mano
 //    - Infiltrados: búsqueda desde la web de admin (en el orden de la llamada)
 //    - Clanes: ficha y veto desde «Buscar clan» de la web de admin (§PF368)
+//    - Índice de clanes externos: ejecución programada semanal (§PF376)
 //    - Índice de clanes externos: armar, guardar y consultar (§PF369)
 //    - Alertas de clanes sospechosos: cruzar, guardar y consultar (§PF375)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
@@ -26,6 +27,11 @@ var CFC_TOTAL_COLS = 3;
 var INDICE_CLANES_JSON = 'Indice_Clanes_Externos.json';
 var INDICE_CLANES_CSV = 'Indice_Clanes_Externos.csv';
 var INDICE_CLANES_PRESUPUESTO_MS = 270000;
+// Ejecución programada del índice (§PF376): un activador semanal (08_Activadores.gs) llama a generarIndiceClanesExternosProgramado(); si el índice queda incompleto, se programa una continuación a INDICE_CLANES_CONT_ESPERA_MS, hasta INDICE_CLANES_CONT_MAX corridas seguidas.
+var INDICE_CLANES_HANDLER_CONT = '_continuarGenerarIndiceClanesExternos';
+var INDICE_CLANES_CONT_ESPERA_MS = 60000;
+var INDICE_CLANES_CONT_MAX = 8;
+var INDICE_CLANES_CONT_PROP = 'INDICE_CLANES_CONT_N';
 var _indiceClanesCache_ = undefined;
 
 // Alertas de clanes sospechosos (§PF375): jugadores nuestros que alguna vez jugaron guerra en un clan vetado, en conflicto o rival de la temporada. Se guardan en Drive (carpeta Otros) y no en una columna de Directorio: esa hoja tiene el mismo ancho que Inactivos y las filas se mueven entre las dos, así que una columna nueva obligaría a tocar las dos hojas, sus respaldos CSV y las tablas.
@@ -45,6 +51,7 @@ var ALERTAS_CLANES_FIRMA_PROP = 'ALERTAS_CLANES_FIRMA';
  * Lee los JSON individuales de RoyaleAPI y arma el índice «clan externo → Tags de los jugadores nuestros que estuvieron ahí»: Indice_Clanes_Externos.json (carpeta Otros, con el detalle de cada jugador) e Indice_Clanes_Externos.csv (un clan por fila, para leerlo en una hoja).
  * Son más de 2 000 archivos y Apps Script corta a los 6 minutos, así que trabaja con un presupuesto de tiempo y guarda lo avanzado: si queda incompleto, vuelve a correrla y continúa donde se quedó. Cuando termina, la siguiente corrida empieza de cero con los archivos actuales.
  * «Buscar clan» de la web de admin usa este índice para listar a los jugadores nuestros que pasaron por cualquier clan (§PF369).
+ * Desde el 5-nov-2026 (§PF376) también la corre cada semana generarIndiceClanesExternosProgramado() (activador de 08_Activadores.gs), que continúa sola hasta completarlo. Devuelve true si el índice quedó completo y false si quedó incompleto.
  */
 function generarIndiceClanesExternos() {
   var inicio = Date.now();
@@ -94,6 +101,7 @@ function generarIndiceClanesExternos() {
     _guardarIndiceClanes_(estado);
     Logger.log('[IndiceClanes] INCOMPLETO: ' + listos + ' de ' + tags.length + ' jugadores leídos (' + hechosAhora + ' en esta corrida). Vuelve a correr generarIndiceClanesExternos() para continuar.');
   }
+  return estado.completo === true;
 }
 
 // ----- Alertas de clanes sospechosos: actualizar (§PF375) -----
@@ -611,6 +619,59 @@ function _buscarEnRosterTerna(tagNorm) {
   }
 
   return resultado;
+}
+
+// ----- Índice de clanes externos: ejecución programada semanal (§PF376) -----
+
+/**
+ * generarIndiceClanesExternosProgramado() [→ Contexto_Base_Web.md §PF376]
+ * Handler del activador semanal (ACTIVADORES_CONFIG, 08_Activadores.gs). Pone en cero el contador de corridas seguidas y corre el índice. No se corre a mano: a mano se usa generarIndiceClanesExternos().
+ */
+function generarIndiceClanesExternosProgramado() {
+  PropertiesService.getScriptProperties().setProperty(INDICE_CLANES_CONT_PROP, '0');
+  _indiceClanesCorrerProgramado_();
+}
+
+/**
+ * _continuarGenerarIndiceClanesExternos() [→ Contexto_Base_Web.md §PF376]
+ * Continuación de generarIndiceClanesExternosProgramado(): borra su propio activador, suma una corrida al contador y vuelve a correr el índice, que sigue donde se quedó.
+ */
+function _continuarGenerarIndiceClanesExternos() {
+  _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT);
+  var props = PropertiesService.getScriptProperties();
+  var n = (Number(props.getProperty(INDICE_CLANES_CONT_PROP)) || 0) + 1;
+  props.setProperty(INDICE_CLANES_CONT_PROP, String(n));
+  _indiceClanesCorrerProgramado_();
+}
+
+/**
+ * _indiceClanesCorrerProgramado_() [→ Contexto_Base_Web.md §PF376]
+ * Corre generarIndiceClanesExternos() una vez. Si el índice queda completo, termina; si queda incompleto y no se llegó al máximo de corridas seguidas, programa la continuación; si falla, lo anota y no reintenta (la próxima corrida semanal sigue donde quedó el índice guardado).
+ */
+function _indiceClanesCorrerProgramado_() {
+  var props = PropertiesService.getScriptProperties();
+  var n = Number(props.getProperty(INDICE_CLANES_CONT_PROP)) || 0;
+  var completo = false;
+  try {
+    completo = generarIndiceClanesExternos() === true;
+  } catch (e) {
+    Logger.log('[IndiceClanes] La corrida programada falló: ' + e.message + '. La próxima corrida semanal sigue donde quedó.');
+    props.deleteProperty(INDICE_CLANES_CONT_PROP);
+    return;
+  }
+  if (completo) {
+    Logger.log('[IndiceClanes] Corrida programada: índice completo tras ' + (n + 1) + (n === 0 ? ' corrida.' : ' corridas.'));
+    props.deleteProperty(INDICE_CLANES_CONT_PROP);
+    return;
+  }
+  if (n + 1 >= INDICE_CLANES_CONT_MAX) {
+    Logger.log('[IndiceClanes] Corrida programada: el índice sigue incompleto tras ' + INDICE_CLANES_CONT_MAX + ' corridas seguidas; la próxima corrida semanal sigue donde quedó.');
+    props.deleteProperty(INDICE_CLANES_CONT_PROP);
+    return;
+  }
+  _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT);
+  ScriptApp.newTrigger(INDICE_CLANES_HANDLER_CONT).timeBased().after(INDICE_CLANES_CONT_ESPERA_MS).create();
+  Logger.log('[IndiceClanes] Corrida programada: el índice quedó incompleto; continúa en ' + Math.round(INDICE_CLANES_CONT_ESPERA_MS / 1000) + ' s (corrida ' + (n + 2) + ' de ' + INDICE_CLANES_CONT_MAX + ' como máximo).');
 }
 
 // ----- Índice de clanes externos: armar, guardar y consultar (§PF369) -----
