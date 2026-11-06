@@ -113,7 +113,7 @@ function generarTodosMensajes() {
         msjClan += icono + ' ' + p.nombre + ' (' + p.faltantes + ')' + wsp + prest + '\n';
       });
       // NUEVO (19-sep-2026, punto 7): si el clan ya cruzó la meta de la [→ Contexto_Base_Web.md §30B015]
-      if (_clanCruzoMetaPorNombre(clanName)) {
+      if (_clanCruzoMetaPorTag(clanesPend[ci2].clanTag)) { // PF407 (tanda 3): se pregunta por el Tag; el texto del mensaje sigue mostrando el nombre
         msjClan += '🏆 ¡Este clan ya cruzó la meta de la semana! Atacar hoy es opcional.\n';
       } else {
         msjClan += '⏳ Tienen hasta las 12:00 AM para completar sus ataques.\n';
@@ -139,7 +139,7 @@ function generarTodosMensajes() {
         if (rA !== rB) return rA - rB;
         return a.nombre.localeCompare(b.nombre);
       });
-      var cnCruzoMeta = _clanCruzoMetaPorNombre(cn);
+      var cnCruzoMeta = _clanCruzoMetaPorTag(clanesPend[ci3].clanTag); // PF407 (tanda 3)
       if (cnCruzoMeta) clanesCruzaronMeta++;
       msjGral += '==============================\n';
       msjGral += '🔥 ' + cn + ' (' + ml.length + ' pendientes)\n';
@@ -493,7 +493,8 @@ function _agruparPorClanOrdenado(lista, clanOrden) {
     var ob = clanOrden[b.toLowerCase()]; if (ob === undefined) ob = 9999;
     return oa - ob;
   });
-  return clanes.map(function(cn) { return { clan: cn, lista: grupos[cn] }; });
+  // PF407 (tanda 3): cada grupo trae también el Tag del clan (resolvedor único; Guerra guarda solo el nombre hasta la tanda 7); '' si el nombre no corresponde a un clan Terna.
+  return clanes.map(function(cn) { return { clan: cn, clanTag: _getClanTagByName(cn), lista: grupos[cn] }; });
 }
 
 /**
@@ -514,25 +515,25 @@ function _sufijoPrestamo(nombrePrestamo) {
 }
 
 /**
- * _clanCruzoMetaPorNombre(nombreClan) [→ Contexto_Base_Web.md §30B006]
+ * _clanCruzoMetaPorTag(clanTag) [→ Contexto_Base_Web.md §30B006]
+ * PF407 (tanda 3): antes _clanCruzoMetaPorNombre(nombreClan), que comparaba el nombre contra la caché de cada clan; ahora busca la caché del Tag directamente. Mismo criterio de antes: coliseo nunca cuenta y la meta es META_GUERRA_PROGRESO.
  */
-function _clanCruzoMetaPorNombre(nombreClan) {
+function _clanCruzoMetaPorTag(clanTag) {
   try {
-    var buscado = String(nombreClan || '').trim();
-    if (!buscado) return false;
-    for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
-      var clanData = _getClanCache(CFG.TERNA_TAGS[i]);
-      if (!clanData || !clanData.info) continue;
-      if (String(clanData.info.name || '').trim() !== buscado) continue;
-      var rr = clanData.riverrace;
-      if (!rr || !rr.clan) return false;
-      // TANDA 9 (21-sep-2026): en la semana de COLISEO los barcos no avanzan y [→ Contexto_Base_Web.md §30B007]
-      if (String(rr.periodType || '') === 'colosseum') return false;
-      var progreso = Number(rr.clan.fame);
-      return isFinite(progreso) && progreso >= META_GUERRA_PROGRESO;
-    }
+    var tag = String(clanTag || '').trim().toUpperCase();
+    if (!tag) return false;
+    if (tag.charAt(0) !== '#') tag = '#' + tag;
+    if (CFG.TERNA_TAGS.indexOf(tag) < 0) return false;
+    var clanData = _getClanCache(tag);
+    if (!clanData || !clanData.info) return false;
+    var rr = clanData.riverrace;
+    if (!rr || !rr.clan) return false;
+    // TANDA 9 (21-sep-2026): en la semana de COLISEO los barcos no avanzan y [→ Contexto_Base_Web.md §30B007]
+    if (String(rr.periodType || '') === 'colosseum') return false;
+    var progreso = Number(rr.clan.fame);
+    return isFinite(progreso) && progreso >= META_GUERRA_PROGRESO;
   } catch (e) {
-    Logger.log('[Mensajes] No se pudo evaluar si el clan cruzó la meta (' + nombreClan + '): ' + e.message);
+    Logger.log('[Mensajes] No se pudo evaluar si el clan cruzó la meta (' + clanTag + '): ' + e.message);
   }
   return false;
 }
