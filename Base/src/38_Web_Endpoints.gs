@@ -1918,12 +1918,11 @@ function _leerMapaCodigosClanContactos() {
 
 // _getClanTagByName(clanName): tag de un clan por nombre, para ordenar por TERNA_TAGS; '' si no existe. [→ Contexto_Base_Web.md §38B194]
 function _getClanTagByName(clanName) {
-  if (!CACHE_CLAN_DATA) return '';
-  for (var tag in CACHE_CLAN_DATA) {
-    var info = CACHE_CLAN_DATA[tag] && CACHE_CLAN_DATA[tag].info;
-    if (info && String(info.name || '') === clanName) return tag;
-  }
-  return '';
+  // §PF403 (6-nov-2026): delega en el resolvedor unico (_mapaNombreClanATagTerna(), 14_Nuevos_RoyaleAPI.gs: hoja Clan o CFG.CLAN_NOMBRES_FALLBACK). Antes leia CACHE_CLAN_DATA, que las consultas web no llenan, y devolvia '' siempre. El nombre se compara sin mayusculas ni espacios de los bordes; '' si no es un clan Terna. Es un respaldo por nombre (regla 2 del plan Clanes por Tag): quien ya tenga el Tag debe usar el Tag.
+  var nombre = String(clanName === undefined || clanName === null ? '' : clanName).trim().toLowerCase();
+  if (!nombre) return '';
+  var mapa = _mapaNombreClanATagTerna();
+  return Object.prototype.hasOwnProperty.call(mapa, nombre) ? mapa[nombre] : '';
 }
 
 // ----- Dashboard de administradores: HTML y armado de los datos -----

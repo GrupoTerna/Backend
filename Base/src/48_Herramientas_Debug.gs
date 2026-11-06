@@ -325,7 +325,7 @@ function testTamanioPerfiles(n) {
  * Mide cada pieza por separado, sin pasar por GitHub:
  *   - lectura del Directorio (_webLeerDirectorioComoDC)
  *   - _resolverArenaDesdeCatalogo() por llamada (el roster la llama una vez por miembro)
- *   - _getClanTagByName() por llamada (el orden de clanes la llama varias veces)
+ *   - _getClanTagByName() por llamada (el orden de clanes la llama varias veces; desde §PF403 usa el mapa en memoria de _mapaNombreClanATagTerna(): la primera llamada lee la hoja Clan y las demas no)
  *   - _webRosterCalcular() completo
  *   - cada sección de home.json (versión sin caché cuando existe)
  * Ejecutar testTiempoEstaticos() desde el editor y mandar el registro.

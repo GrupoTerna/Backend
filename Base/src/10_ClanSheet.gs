@@ -135,6 +135,8 @@ function updateClanSheet() {
   // Persistir el estado actual de la hoja (incluye Min_G manual) en el [→ Contexto_Base_Web.md §10B008]
   syncClanCSV();
 
+  _reiniciarMapaNombreClanATagTerna_(); // §PF403: la hoja Clan cambio; el mapa nombre -> Tag de esta ejecucion se vuelve a leer
+
   Logger.log('[Clan] updateClanSheet completado.');
 }
 

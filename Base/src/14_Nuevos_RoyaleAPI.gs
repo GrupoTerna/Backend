@@ -65,6 +65,9 @@ var PASTEL_CLANES_NUEVOS_ = [
   '#fff2cc'  // amarillo pastel
 ];
 
+// §PF403 (6-nov-2026): mapa nombre de clan -> Tag, guardado durante la ejecucion. Lo llena _mapaNombreClanATagTerna() la primera vez que se pide (los ordenamientos lo llaman muchas veces) y lo borra _reiniciarMapaNombreClanATagTerna_() cuando cambia la hoja Clan.
+var _MAPA_NOMBRE_CLAN_TAG_MEMO = null;
+
 // FIX (15-ago-2026, pedido usuario): renombrado de [→ Contexto_Base_Web.md §14B006]
 var NOMBRE_CSV_DEBUG_NUEVOS  = 'Correcciones_Nuevos.csv';
 
@@ -2620,6 +2623,7 @@ function _migrarNuevosAHistorico(candidatosPayload) {
  * _mapaNombreClanATagTerna() [→ Contexto_Base_Web.md §14B123]
  */
 function _mapaNombreClanATagTerna() {
+  if (_MAPA_NOMBRE_CLAN_TAG_MEMO) return _MAPA_NOMBRE_CLAN_TAG_MEMO; // §PF403: una sola lectura de la hoja Clan por ejecucion
   var mapa = {};
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
@@ -2642,7 +2646,16 @@ function _mapaNombreClanATagTerna() {
       if (nombreJ) mapa[String(nombreJ).trim().toLowerCase()] = tagJ;
     }
   }
+  if (Object.keys(mapa).length > 0) _MAPA_NOMBRE_CLAN_TAG_MEMO = mapa; // §PF403: un mapa vacio no se guarda, para no dejarlo fijo
   return mapa;
+}
+
+/**
+ * _reiniciarMapaNombreClanATagTerna_() [→ Contexto_Base_Web.md §PF403]
+ * Borra el mapa nombre -> Tag guardado en memoria; la siguiente llamada a _mapaNombreClanATagTerna() vuelve a leer la hoja Clan. Se llama cuando la hoja Clan cambia durante la misma ejecucion.
+ */
+function _reiniciarMapaNombreClanATagTerna_() {
+  _MAPA_NOMBRE_CLAN_TAG_MEMO = null;
 }
 
 // FASE 9 (Consolidado_Cambios_Pendientes_Guerra.md, punto 3): MIGRACIÓN DE [→ Contexto_Base_Web.md §14B120]
