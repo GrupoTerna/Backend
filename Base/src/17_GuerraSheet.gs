@@ -1171,16 +1171,24 @@ function updatePendientesSheet() {
   PENDIENTES_ABORTADO_POR_API = false;
   try { PropertiesService.getScriptProperties().deleteProperty('PENDIENTES_ABORT_TS'); } catch (eP) {}
   if (ctx.esDiaGuerra) {
-    var ternaSinDatos = [];
+    var ternaSinDatos = [], ternaSinGuerra = [];
     for (var iT = 0; iT < CFG.TERNA_TAGS.length; iT++) {
       var cdT = _getClanCache(CFG.TERNA_TAGS[iT]);
-      if (!cdT || !cdT.riverrace) ternaSinDatos.push(CFG.TERNA_TAGS[iT]);
+      if (!cdT) { ternaSinDatos.push(CFG.TERNA_TAGS[iT]); continue; }
+      if (cdT.riverrace) continue;
+      // §PF379: un clan con /clans correcto y /currentriverrace en 404 no tiene la guerra abierta (regla del juego: 10 miembros al inicio de la temporada); no es una falla de la API y no impide generar los mensajes de los demás clanes.
+      if (cdT.riverraceEstado === RIVERRACE_ESTADO_SIN_GUERRA) ternaSinGuerra.push(CFG.TERNA_TAGS[iT]);
+      else ternaSinDatos.push(CFG.TERNA_TAGS[iT]);
+    }
+    if (ternaSinGuerra.length > 0) {
+      Logger.log('[Pendientes] Sin guerra abierta (HTTP 404, no es falla de la API; se omiten sus miembros): ' + ternaSinGuerra.join(', ') + '.');
     }
     if (ternaSinDatos.length > 0) {
       PENDIENTES_ABORTADO_POR_API = true;
       // Persistido: Mensajes puede correr en otra tanda (otra ejecución).
       try { PropertiesService.getScriptProperties().setProperty('PENDIENTES_ABORT_TS', String(Date.now())); } catch (eP2) {}
       Logger.log('[Pendientes] ABORT: sin datos de guerra (API) para ' + ternaSinDatos.join(', ') +
+                 ' (último HTTP de /currentriverrace en la captura: ver líneas «[API] Clan …» de esta corrida; solo el 404 con /clans correcto se toma como «sin guerra abierta»)' +
                  '. Se conserva la hoja anterior; no se generan mensajes en esta corrida.');
       return;
     }

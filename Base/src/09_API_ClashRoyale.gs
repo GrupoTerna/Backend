@@ -36,6 +36,12 @@ var CACHE_CLAN_DATA = null;
 // FIX (02-oct-2026): tags cuyo /currentriverrace falló en la última [→ Contexto_Base_Web.md §09B003]
 var CLANES_SIN_RIVERRACE = [];
 
+// 5-nov-2026 (§PF379): un clan con /clans correcto pero /currentriverrace en HTTP 404 NO tiene la guerra abierta (regla del juego: hacen falta 10 miembros al inicio de la temporada de guerra, jueves de la primera semana). No es una falla de la API: queda marcado con riverraceEstado = RIVERRACE_ESTADO_SIN_GUERRA en su entrada de CACHE_CLAN_DATA (y en el checkpoint de Drive) y se lista aparte en CLANES_SIN_GUERRA. CLANES_SIN_RIVERRACE queda solo con las fallas reales.
+var RIVERRACE_ESTADO_SIN_GUERRA = 'sin_guerra';
+var CLANES_SIN_GUERRA = [];
+// Código HTTP de la última respuesta de _apiGet() (0 si no hubo respuesta: excepción de red). Sirve para distinguir un 404 de una falla.
+var API_ULTIMO_HTTP_CODE = 0;
+
 // Memoización DENTRO DE UNA MISMA EJECUCIÓN de Apps Script (se resetea [→ Contexto_Base_Web.md §09B004]
 var _clanesBasicoListoEnEstaEjecucion = false;
 
@@ -1830,6 +1836,7 @@ function _fetchClanesBasico(maxEdadMs) {
 
   CACHE_CLAN_DATA = {};
   CLANES_SIN_RIVERRACE = [];
+  CLANES_SIN_GUERRA = [];     // §PF379
   CLANES_INFO_RESPALDO = [];  // PF091
   var huboFallbackInfo = false;
   // FIX (02-oct-2026): último checkpoint conocido (sin importar su edad) como
@@ -1846,6 +1853,7 @@ function _fetchClanesBasico(maxEdadMs) {
 
     // Endpoint de guerra: /clans/{tag}/currentriverrace
     var riverrace = _apiGet('/clans/' + encodeTag(tag) + '/currentriverrace');
+    var rrCodigoHttp = API_ULTIMO_HTTP_CODE; // §PF379: se lee ya, antes de cualquier otra llamada
 
     // LOG DE PERIODO (05-oct-2026, pedido usuario): sectionIndex/periodIndex/periodType TAL CUAL los [→ Contexto_Base_Web.md §09B094]
     try {
@@ -1875,7 +1883,17 @@ function _fetchClanesBasico(maxEdadMs) {
         riverrace: riverrace
       };
       Logger.log('[API] OK clan ' + tag + ' | miembros: ' + memberListFiltrado.length);
-      if (!riverrace) CLANES_SIN_RIVERRACE.push(tag);
+      if (!riverrace) {
+        if (rrCodigoHttp === 404) {
+          // §PF379: sin guerra abierta (con menos de 10 miembros al inicio de la temporada de guerra no se abre); no es una falla de la API.
+          CACHE_CLAN_DATA[tag].riverraceEstado = RIVERRACE_ESTADO_SIN_GUERRA;
+          CLANES_SIN_GUERRA.push(tag);
+          Logger.log('[API] Clan ' + tag + ' SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, ' + memberListFiltrado.length + ' miembros): no se cuenta como falla de la API.');
+        } else {
+          CLANES_SIN_RIVERRACE.push(tag);
+          Logger.log('[API] Clan ' + tag + ': /currentriverrace sin datos (HTTP ' + rrCodigoHttp + '), se cuenta como falla de la API.');
+        }
+      }
     } else {
       // API falló para este clan. FIX (02-oct-2026): antes el clan quedaba [→ Contexto_Base_Web.md §09B096]
       if (respaldoClanes === null) respaldoClanes = _cargarProgresoClanesSinEdad() || {};
@@ -1912,7 +1930,7 @@ function _fetchClanesBasico(maxEdadMs) {
     Logger.log('[API][PERIODO] RESUMEN periodIndex por clan: ' + _pis.join(', ') +
       (_nDist > 1 ? ' -> LOS CLANES NO COINCIDEN en esta corrida.'
         : (_nDist === 1 ? ' -> los clanes con dato coinciden.' : ' -> ningun clan trajo periodIndex.')) +
-      (_sinDato.length ? ' | SIN currentriverrace: ' + _sinDato.join(', ') + ' (404 o fuera de la carrera; no se escribe nada para ellos).' : ''));
+      (_sinDato.length ? ' | SIN currentriverrace: ' + _sinDato.join(', ') + ' (404 o fuera de la carrera; no se escribe nada para ellos)' + (CLANES_SIN_GUERRA.length ? '; sin guerra abierta (404, §PF379): ' + CLANES_SIN_GUERRA.join(', ') : '') + '.' : ''));
   } catch (eResPer) { Logger.log('[API][PERIODO] no se pudo armar el resumen: ' + eResPer.message); }
 
   // FIX (06-ago-2026): guarda lo recién obtenido en Drive para que la [→ Contexto_Base_Web.md §09B097]
@@ -1955,13 +1973,16 @@ function _fetchClanesBasicoSinApi(maxEdadMs) {
     return false;
   }
 
-  var cache = {}, sinRiver = [], faltan = [], resumen = [];
+  var cache = {}, sinRiver = [], sinGuerra = [], faltan = [], resumen = [];
   for (var i = 0; i < _tagsClanesApi_().length; i++) {
     var tag = _tagsClanesApi_()[i];
     var cd = cp.clanes[tag];
     if (!cd || !cd.info) { faltan.push(tag); continue; }
     cache[tag] = cd;
-    if (!cd.riverrace) sinRiver.push(tag);
+    if (!cd.riverrace) {
+      if (cd.riverraceEstado === RIVERRACE_ESTADO_SIN_GUERRA) sinGuerra.push(tag); // §PF379
+      else sinRiver.push(tag);
+    }
     var pi = (cd.riverrace && cd.riverrace.periodIndex !== undefined && cd.riverrace.periodIndex !== null) ? cd.riverrace.periodIndex : 'sin dato';
     resumen.push(tag + '=' + pi);
   }
@@ -1972,6 +1993,7 @@ function _fetchClanesBasicoSinApi(maxEdadMs) {
 
   CACHE_CLAN_DATA = cache;
   CLANES_SIN_RIVERRACE = sinRiver;
+  CLANES_SIN_GUERRA = sinGuerra;
   CLANES_SIN_API_TS_CARGADO = cp.ts;
   _clanesBasicoListoEnEstaEjecucion = true;
   _playersCompletoEnEstaEjecucion = false;
@@ -2589,8 +2611,10 @@ function _apiGet(path) {
 
   for (var intento = 1; intento <= API_GET_MAX_INTENTOS; intento++) {
     try {
+      API_ULTIMO_HTTP_CODE = 0;
       var response = UrlFetchApp.fetch(url, options);
       var code = response.getResponseCode();
+      API_ULTIMO_HTTP_CODE = code;
       var text = response.getContentText();
 
       if (code === 200) {
