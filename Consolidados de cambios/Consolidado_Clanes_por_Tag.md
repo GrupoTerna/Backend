@@ -36,6 +36,12 @@
 
 *Efecto: (a) se aplicó §PF402 (commit `d157731`): `_reconstruirSemanaDesdeCero()` ya no crea filas sin clan; (b) aclaración de lo averiguado: `corregirGuerraYControlDesdeControl2()` **no usa datos de Tampermonkey**, lee la cuadrícula de `Control_2` (tag y totales por semana, sin clan por semana); el clan por semana solo lo traen las correcciones de Tampermonkey con ClanTag; (c) regla de diseño de la usuaria: **una fila por jugador, por clan y por día de guerra** (4 filas por semana y clan en `Guerra`), y **`Control` (y, por coherencia, `Control_2`) pasa a tener una fila por cada clan en el que el jugador tenga registros esa temporada, cada una con el clan de sus registros y una columna nueva `Estado` que indica en cuál está presente ahora**. Esto cambia el diseño actual de una fila por jugador con suma entre clanes (`CONTROL_SUMA_ENTRE_CLANES`, 3-oct-2026): ver tanda 13 y P7.*
 
+**Respuesta de la usuaria a P7 (texto literal, 6-nov-2026; regla 12):**
+
+> la columna de Estado y el cambbio del clan se aplica para Control y Control_2. ascenso, inactividad y Alerta debe seguir siendo por jugador, no por clan.
+
+*Efecto: P7 queda contestada. `Estado` y el clan por fila se aplican a `Control` **y** a `Control_2`; Ascenso, Inactividad y Alerta **siguen siendo del jugador** (se calculan con el total del jugador entre todos sus clanes, como hoy), no de cada clan.*
+
 ## 1. Regla y criterios de diseño (decididos por Claude por delegación, 6-nov-2026)
 
 1. **La clave de identidad de un clan es su Tag** (con «#», en mayúsculas). El nombre es un texto para mostrar: no sirve para decidir si dos clanes son el mismo, si un clan es Terna, rival o vetado, ni para agrupar, filtrar, ordenar o cruzar datos. Motivo: dos clanes pueden llamarse igual (los dos «Argentina» de §PF400) y un clan puede cambiar de nombre.
@@ -71,7 +77,7 @@
 | 10 | Backend: nombre actualizable (`_sincronizarNombreClan_`) | Pendiente | — |
 | 11 | Guardia contra comparaciones nuevas por nombre y regla en la skill (**la usuaria debe reinstalar la skill**) | Pendiente | — |
 | 12 | Cierre: pasar lo permanente al contexto y preguntar si se borra este consolidado | Pendiente | — |
-| 13 | Backend: `Control` y `Control_2` con una fila por jugador y clan de la temporada y columna `Estado` (agregada el 6-nov-2026; **diseño por decidir, P7**); se hace antes del cierre (12) | Pendiente de decisión | — |
+| 13 | Backend: `Control` y `Control_2` con una fila por jugador y clan de la temporada y columna `Estado` (agregada el 6-nov-2026; **P7 contestada**); se hace antes del cierre (12) | Pendiente | — |
 | — | Fuera de tanda: la reconstrucción no crea filas sin clan (§PF402) | **Hecha** (6-nov-2026), sin probar en Apps Script real | `d157731` |
 
 ## 3. Tandas
@@ -163,11 +169,12 @@
 ### Tanda 12 — Cierre
 - Pasar a `Contexto_Base_Web.md` lo permanente (cómo quedó cada función, decisiones tomadas y descartadas con su motivo). Informar a la usuaria y **preguntar si se borra este consolidado** (`Reglas_Consolidados.md`, sección 1); no se borra sin un sí explícito.
 
-### Tanda 13 — `Control` y `Control_2` por clan, con columna `Estado` (backend; agregada el 6-nov-2026, **no empezar antes de contestar P7**)
+### Tanda 13 — `Control` y `Control_2` por clan, con columna `Estado` (backend; agregada el 6-nov-2026; P7 contestada el mismo día)
 - **Objetivo.** Que un jugador con registros en varios clanes la misma temporada tenga **una fila por clan** en `Control` y `Control_2`, cada una con el clan de sus registros (no solo el actual) y una columna `Estado` que diga en cuál está presente ahora. Así «se tienen todos los registros» (usuaria, 6-nov-2026).
 - **Qué cambia respecto de hoy (verificado el 6-nov-2026).** Hoy ambas hojas tienen **una fila por jugador** (tag de `Directorio`) y, si estuvo en 2 o más clanes la misma semana, **suman entre clanes** (`CONTROL_SUMA_ENTRE_CLANES = true`, `22_ControlCalendario.gs`; `_procesarFilasGuerraParaControl()`; `generarBackupGuerraSemanalCSV()` en `23_Control2_GuerraSemanal.gs`, que hoy agrupa por temporada, semana y tag y toma el clan de la fila más reciente). La hoja `Guerra` y `Backup_Guerra.csv` **ya guardan una fila por jugador, clan y día**, así que el dato de partida existe.
 - **Qué hay que leer antes de editar** (solo ver): `22_ControlCalendario.gs` (`updateControlSheet()` y `_procesarFilasGuerraParaControl()`), `23_Control2_GuerraSemanal.gs` (`actualizarControl2()`, `generarBackupGuerraSemanalCSV()`, `CC2`, `COL_INICIO_GRID2`), y todo consumidor de la fila de `Control` o de `Control_2` por tag: `_getAgregadosAscensoPorTag()` y `_getTrofeosYAtaquesSemanalesPorTag()` (`28_Torneos_Docs.gs`), requisitos de ascenso (`REQUISITOS_ASCENSO`), las columnas Inactividad, Alerta, Ataq_Pend y Ascenso, `corregirGuerraYControlDesdeControl2()` (lee `Control_2` por tag) y la web (`37_Web_API.gs`, `38_Web_Endpoints.gs`). Con `grep -n "CC2\.\|Control_2\|CONTROL_SUMA_ENTRE_CLANES" Base/src/*.gs`.
-- **Riesgos que hay que resolver antes de escribir código (ver P7):** (1) dos filas del mismo tag rompen todo lo que busca «la fila de este tag» en `Control` o `Control_2`; (2) Ascenso, Inactividad y Alerta son del **jugador**: si cada fila solo ve su clan, un jugador repartido entre dos clanes parecería inactivo o sin ataques en cada uno; (3) `corregirGuerraYControlDesdeControl2()` pasaría a recibir varias filas por tag, y por fin traería el clan por fila (resuelve el caso de §PF402); (4) las hojas ya existentes necesitan una columna nueva sin mover las demás (criterio 6) y `Control` se reconstruye entera en cada corrida (`updateControlSheet()`), así que el cambio de estructura es de la hoja completa, no solo de una columna.
+- **Decidido por la usuaria (P7, 6-nov-2026).** `Estado` y el clan por fila se aplican a `Control` y a `Control_2`. **Ascenso, Inactividad y Alerta siguen siendo por jugador, no por clan:** se calculan con el total del jugador entre todos sus clanes (como hoy). Lo que sigue **sin dictar** y se resuelve al empezar la tanda, con la opción segura: (a) los valores de `Estado` («Presente» / «Anterior»); (b) en qué filas se muestran esos tres valores del jugador (propuesta: el mismo valor en todas las filas del jugador, porque son del jugador, y avisar a la usuaria antes de aplicar si queda confuso); (c) la temporada que se muestra es la de `Extra!G2`.
+- **Riesgos que hay que resolver antes de escribir código:** (1) dos filas del mismo tag rompen todo lo que busca «la fila de este tag» en `Control` o `Control_2`; (2) Ascenso, Inactividad y Alerta son del **jugador**: si cada fila solo ve su clan, un jugador repartido entre dos clanes parecería inactivo o sin ataques en cada uno; (3) `corregirGuerraYControlDesdeControl2()` pasaría a recibir varias filas por tag, y por fin traería el clan por fila (resuelve el caso de §PF402); (4) las hojas ya existentes necesitan una columna nueva sin mover las demás (criterio 6) y `Control` se reconstruye entera en cada corrida (`updateControlSheet()`), así que el cambio de estructura es de la hoja completa, no solo de una columna.
 - **Verificación.** Prueba en Node con un jugador de 1 clan (la fila sale igual que hoy) y otro con 2 clanes (dos filas, un solo `Estado` «Presente»); `node --check`; comparación de totales antes y después. **Sin probar en Apps Script real.**
 
 ## 4. Pendiente de definir o contestar (regla 3)
@@ -185,11 +192,7 @@
 - **P5. `Backup_Inactivos.csv`: 1000 de 1211 filas sin `Clan` ni `ClanTag`** (N° 1 en adelante, todas con `Estado` «Inactivo»; copia del 18-oct-2026, así que puede estar vieja: antes de usarla se compara con Drive, skill 0.5). Es el mismo tipo de dato incompleto de las etapas tempranas. No bloquea ninguna tanda; se decide en la tanda 8 si se intenta completar desde `Historial` o se deja marcado. *Mientras no se conteste:* se deja marcado.
 - **P6. Posición de la columna `Clan_Tag` — CONTESTADA (6-nov-2026).** En las hojas ya existentes va al final (no se mueven los índices); **en toda hoja o archivo nuevo va al lado del nombre** (criterio 6).
 
-- **P7. `Control` y `Control_2` por clan — PENDIENTE de contestar (6-nov-2026).** La usuaria dictó la regla (sección 0, tercer bloque). Faltan cuatro decisiones de detalle; *mientras no se conteste* no se empieza la tanda 13 y se sigue con la tanda 1:
-  1. **Valores de `Estado`.** Propuesta: «Presente» (el jugador está hoy en ese clan según `Directorio`) y «Anterior» (tuvo registros esa temporada pero ya no está). Si `Directorio` ya usa «Estado» para Activo/Inactivo, la columna de `Control` se llamaría igual pero con estos valores; confirmar.
-  2. **Qué calculan Ascenso, Inactividad y Alerta en cada fila.** Propuesta: cada fila muestra los ataques, fame y barcos **de su clan**, pero Ascenso, Inactividad y Alerta se calculan **con el total del jugador entre todos sus clanes** (como hoy) y se muestran solo en la fila «Presente», para no marcar inactivo a quien repartió sus ataques.
-  3. **Temporada anterior.** Propuesta: una fila por clan **de la temporada que se muestra** (la de `Extra!G2`), como dijo la usuaria («esa temporada»).
-  4. **`Control_2`.** Propuesta: mismo cambio que `Control`, con `Estado`, para que `corregirGuerraYControlDesdeControl2()` traiga el clan de cada fila y cree las 4 filas del clan correcto.
+- **P7. `Control` y `Control_2` por clan — CONTESTADA (6-nov-2026).** Una fila por jugador y clan con registros esa temporada, con el clan de esos registros y la columna `Estado` (en cuál está presente ahora), en `Control` y en `Control_2`. **Ascenso, Inactividad y Alerta siguen siendo por jugador, no por clan.** Quedan sin dictar tres detalles menores, con la opción que se usa mientras la usuaria no los cambie: valores de `Estado` «Presente» y «Anterior»; los tres valores del jugador se repiten en todas sus filas; se muestra la temporada de `Extra!G2`. Ver tanda 13.
 
 ## 5. Cómo continuar en otra sesión
 
