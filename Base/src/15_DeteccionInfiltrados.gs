@@ -1375,6 +1375,37 @@ function _alertasClanesSospechosos_(rivalesYConflicto) {
 }
 
 /**
+ * _clanRivalConfirmadoPorTag_(tagJugador, nombreNorm, tagsRivales) [→ Contexto_Base_Web.md §PF400]
+ * Confirma por Tag un aviso de «clan rival» que Ingresos recientes (37_Web_API.gs) detectó por NOMBRE. Dos clanes distintos pueden llamarse igual (caso Ribe: #YGQ8JPV y el rival #8JV20LCJ, ambos «Argentina»), y la hoja «Nuevos» solo guarda el nombre.
+ * Lee el JSON individual del jugador (una lectura de Drive; solo se llama cuando el nombre ya coincidió con un clan sospechoso) y mira sus filas cuyo clan, sin la fecha final, se llama `nombreNorm` (mayúsculas):
+ *   { estado: 'si', tag: 'TAG' }  alguna de esas filas trae el Tag de un clan de `tagsRivales` (Tags sin «#»): el aviso es correcto.
+ *   { estado: 'no' }              todas esas filas traen Tag y ninguno es rival: era otro clan con el mismo nombre, no se avisa.
+ *   { estado: 'sin_dato' }        no hay JSON, no hay filas con ese nombre o alguna no trae Tag (CSV anteriores a §PF253): no se puede decir, se conserva el aviso por nombre.
+ * @param {string} tagJugador Tag del jugador, con o sin «#».
+ * @param {string} nombreNorm Nombre del clan en mayúsculas y sin espacios en los extremos.
+ * @param {string[]} tagsRivales Tags (sin «#») de los clanes sospechosos que se llaman así.
+ * @return {{estado: string, tag: (string|undefined)}}
+ */
+function _clanRivalConfirmadoPorTag_(tagJugador, nombreNorm, tagsRivales) {
+  var historial = null;
+  try { historial = _cargarHistorialGuerraIndividual('#' + cleanTag(tagJugador)); }
+  catch (e) { return { estado: 'sin_dato' }; }
+  var registros = (historial && historial.registros) ? historial.registros : [];
+  var conTag = 0, sinTag = 0;
+  for (var i = 0; i < registros.length; i++) {
+    var r = registros[i];
+    if (!r) continue;
+    var nombre = String(r.clan || '').replace(/\s+\d{4}-\d{2}-\d{2}\s*$/, '').trim().toUpperCase();
+    if (nombre !== nombreNorm) continue;
+    var tagFila = cleanTag(r.clanTag);
+    if (!tagFila) { sinTag++; continue; }
+    if (tagsRivales.indexOf(tagFila) >= 0) return { estado: 'si', tag: tagFila };
+    conTag++;
+  }
+  return (conTag > 0 && sinTag === 0) ? { estado: 'no' } : { estado: 'sin_dato' };
+}
+
+/**
  * _alertasClanesCruzar_(previo, sospechosos, indice, ahoraTxt) [→ Contexto_Base_Web.md §PF375]
  * Función pura: devuelve { estado, jugadoresNuevos, clanesNuevos }. `previo` es lo ya guardado (o null); `sospechosos` sale de _alertasClanesSospechosos_(); `indice` tiene la forma { actualizado, clanes: { '#CLAN': { nombre, jugadores: [{ tag, semanas, primera, ultima }], marcas? } } } (el índice anterior completo, o lo leído de los archivos de clan, §PF378).
  * Estado: { version, actualizado, indiceActualizado, clanes: { '#CLAN': { nombre, tipos, desde } }, jugadores: { '#JUGADOR': { clanes: { '#CLAN': { semanas, primera, ultima } } } } }.

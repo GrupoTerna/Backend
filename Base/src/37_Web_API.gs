@@ -1603,11 +1603,14 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
     // Defensivo, mismo criterio que _getClanesRivalesTemporadaActual(): si currentriverrace no trae el campo esperado (cambio de API, proxy caído, etc.), esta fase simplemente no marca a nadie como rival en vez de romper toda la… [→ Contexto_Base_Web.md §37B265]
     Logger.log('[IngresosRecientes] _getRivalesYConflicto() falló, se omite el aviso de rival esta vez: ' + eRivalesIR.message);
   }
+  // §PF400 (6-nov-2026): una LISTA por nombre, no un solo clan: dos clanes pueden llamarse igual y el segundo pisaba al primero (caso «Argentina»).
   var rivalesPorNombreIR = {};
   for (var tagRivalIR in rivalesYConflictoIR) {
     var infoRivalIR = rivalesYConflictoIR[tagRivalIR];
     var nombreNormIR = String((infoRivalIR && infoRivalIR.nombre) || '').trim().toUpperCase();
-    if (nombreNormIR) rivalesPorNombreIR[nombreNormIR] = infoRivalIR;
+    if (!nombreNormIR) continue;
+    if (!rivalesPorNombreIR.hasOwnProperty(nombreNormIR)) rivalesPorNombreIR[nombreNormIR] = [];
+    rivalesPorNombreIR[nombreNormIR].push({ tag: cleanTag((infoRivalIR && infoRivalIR.tag) || tagRivalIR), info: infoRivalIR });
   }
 
   if (tDash) _dashTiempoMarca_(tDash, 'ingresos.rivales');
@@ -1722,14 +1725,25 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
     var clanActualNombreNormIR = String(filaDir[DC.CLAN - 1] || '').trim().toUpperCase();
     var esRivalTemporadaIR = false;
     var clanRivalDetectadoIR = null;
+    var confirmacionRivalIR = '';
+    var nombresYaRevisadosIR = {};
     for (var hIR = 0; hIR < historialFila.length; hIR++) {
       var nombreHistNormIR = String(historialFila[hIR].clan || '').trim().toUpperCase();
       if (!nombreHistNormIR || nombreHistNormIR === clanActualNombreNormIR) continue;
-      if (rivalesPorNombreIR.hasOwnProperty(nombreHistNormIR)) {
-        esRivalTemporadaIR = true;
-        clanRivalDetectadoIR = rivalesPorNombreIR[nombreHistNormIR];
-        break;
+      if (!rivalesPorNombreIR.hasOwnProperty(nombreHistNormIR) || nombresYaRevisadosIR[nombreHistNormIR]) continue;
+      nombresYaRevisadosIR[nombreHistNormIR] = true;
+      // §PF400: el nombre solo avisa de una coincidencia; se confirma por Tag con el JSON individual (15_DeteccionInfiltrados.gs). 'no' = otro clan con el mismo nombre: no se avisa. 'sin_dato' = no se puede confirmar: se conserva el aviso, marcado «por nombre».
+      var candidatosRivalIR = rivalesPorNombreIR[nombreHistNormIR];
+      var confIR = _clanRivalConfirmadoPorTag_(tagLimpio, nombreHistNormIR, candidatosRivalIR.map(function (c) { return c.tag; }));
+      if (confIR.estado === 'no') continue;
+      var elegidoIR = candidatosRivalIR[0];
+      if (confIR.estado === 'si') {
+        for (var cIR = 0; cIR < candidatosRivalIR.length; cIR++) if (candidatosRivalIR[cIR].tag === confIR.tag) { elegidoIR = candidatosRivalIR[cIR]; break; }
       }
+      esRivalTemporadaIR = true;
+      clanRivalDetectadoIR = elegidoIR.info;
+      confirmacionRivalIR = (confIR.estado === 'si') ? 'tag' : 'nombre';
+      if (confIR.estado === 'si') break; // una confirmada por Tag gana a una pendiente por nombre
     }
 
     lista.push({
@@ -1761,7 +1775,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
       clanRivalDetectado: clanRivalDetectadoIR ? {
         nombre:  clanRivalDetectadoIR.nombre || '',
         fuente:  clanRivalDetectadoIR.fuente || '',
-        motivo:  clanRivalDetectadoIR.motivo || ''
+        motivo:  clanRivalDetectadoIR.motivo || '',
+        confirmacion: confirmacionRivalIR // §PF400: 'tag' (Tag confirmado en su JSON individual) o 'nombre' (solo coincide el nombre; sin dato de Tag)
       } : null
     });
   }
