@@ -11,6 +11,7 @@
 //    - Índice de clanes externos: generar (§PF369)
 //    - Alertas de clanes sospechosos: actualizar (§PF375)
 //  Parte 2 — Funciones que no se corren a mano
+//    - Clanes externos: /clans una vez al día, solo a pedido (§PF390)
 //    - Infiltrados: búsqueda desde la web de admin (en el orden de la llamada)
 //    - Clanes: ficha y veto desde «Buscar clan» de la web de admin (§PF368)
 //    - Índice de clanes externos: ejecución programada semanal (§PF376)
@@ -23,6 +24,9 @@
 var CFC = { TAG:1, NOMBRE:2, MOTIVO:3 };
 
 var CFC_TOTAL_COLS = 3;
+
+// Consulta de un clan una vez al día (§PF390): nombre del archivo por clan en DRIVE_FOLDER_ID_CLANS_CONSULTA_TEMPORAL («Busqueda_Clan - #TAG.json»).
+var CLAN_DIA_PREFIJO_ARCHIVO = 'Busqueda_Clan - ';
 
 // Índice de clanes externos (§PF369): por cada clan donde algún jugador nuestro jugó guerra sin ser de la Familia, qué Tags de jugador estuvieron ahí. Se arma leyendo los JSON individuales de RoyaleAPI.
 var INDICE_CLANES_JSON = 'Indice_Clanes_Externos.json';
@@ -150,6 +154,62 @@ function actualizarAlertasClanesSospechosos() {
 // PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
 // =============================================================================
 
+// ----- Clanes externos: /clans una vez al día, solo a pedido (§PF390) -----
+
+/**
+ * _obtenerClanDelDia_(tagNorm) [→ Contexto_Base_Web.md §PF390]
+ * 5-nov-2026 (pedido de la usuaria: «que se consulte una vez al día por clan, así como upcomingchests, solo a pedido»). Única puerta a /clans/<Tag> para las
+ * consultas web de clanes externos («Buscar clan», pastilla «¿Infiltrado?» del clan y «Vetar clan»). Mismo patrón que _webObtenerJsonJugadorDelDia() (37_Web_API.gs, cofres):
+ * el JSON del clan se guarda en Drive (DRIVE_FOLDER_ID_CLANS_CONSULTA_TEMPORAL, un archivo por clan: «Busqueda_Clan - #TAG.json», con { dia, fecha, clan }).
+ * Si ese archivo es de HOY (día calendario de Lima, tomado de `dia` dentro del archivo), se lee de ahí y no se llama a la API. Si no, se consulta /clans/<Tag> UNA vez, se guarda y se devuelve.
+ * Nunca se consulta por horario: solo cuando alguien lo pide. Si la API falla y hay un archivo de un día anterior, se devuelve ese en vez de un error. Un Tag que no existe no se guarda
+ * (un error de tipeo no deja archivos). Si Drive falla al leer o al guardar, la consulta sigue y solo se pierde la reutilización.
+ * @param {string} tagNorm Tag del clan sin «#» (cleanTag()).
+ * @returns {?{info:Object, origen:string, fecha:string}} `info` es la respuesta de /clans/<Tag> (con memberList); `origen` es 'api', 'drive_hoy' o 'drive_anterior'; `fecha` es dd/MM/yyyy HH:mm (Lima) de la consulta. null si no hay dato ni de hoy ni de antes.
+ */
+function _obtenerClanDelDia_(tagNorm) {
+  var nombre = CLAN_DIA_PREFIJO_ARCHIVO + '#' + tagNorm + '.json';
+  var tzLima = 'America/Lima';
+  var ahora = new Date();
+  var hoy = Utilities.formatDate(ahora, tzLima, 'yyyy-MM-dd');
+
+  var folder = null;
+  var guardado = null;
+  try {
+    folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_CLANS_CONSULTA_TEMPORAL);
+    var it = folder.getFilesByName(nombre);
+    if (it.hasNext()) {
+      var g = JSON.parse(it.next().getBlob().getDataAsString('UTF-8'));
+      if (g && g.dia && g.clan && g.clan.name) guardado = g;
+    }
+  } catch (eLeer) {
+    Logger.log('[ClanDelDia] No se pudo leer el archivo de ' + tagNorm + ': ' + eLeer.message);
+  }
+  if (guardado && guardado.dia === hoy) {
+    return { info: guardado.clan, origen: 'drive_hoy', fecha: guardado.fecha || '' };
+  }
+
+  var info = null;
+  try {
+    info = _apiGet('/clans/' + encodeTag('#' + tagNorm));
+  } catch (eApi) {
+    Logger.log('[ClanDelDia] /clans falló para ' + tagNorm + ': ' + eApi.message);
+  }
+  if (info && info.name) {
+    var fechaTxt = Utilities.formatDate(ahora, tzLima, 'dd/MM/yyyy HH:mm');
+    if (folder) {
+      try {
+        _guardarArchivoProgresoVerificado_(folder, nombre, JSON.stringify({ dia: hoy, fecha: fechaTxt, clan: info }));
+      } catch (eGuardar) {
+        Logger.log('[ClanDelDia] No se pudo guardar el archivo de ' + tagNorm + ': ' + eGuardar.message);
+      }
+    }
+    return { info: info, origen: 'api', fecha: fechaTxt };
+  }
+  if (guardado) return { info: guardado.clan, origen: 'drive_anterior', fecha: guardado.fecha || '' };
+  return null;
+}
+
 // ----- Infiltrados: búsqueda desde la web de admin (en el orden de la llamada) -----
 
 /**
@@ -172,13 +232,9 @@ function _buscarInfiltrado(query, soloClan) {
 
   var rivalesYConflicto = _getRivalesYConflicto(true);
 
-  // 1) Probar como CLAN.
-  var clanInfo = null;
-  try {
-    clanInfo = _apiGet('/clans/' + encodeTag('#' + tagNorm));
-  } catch (eClan) {
-    Logger.log('[DeteccionInfiltrados] /clans falló para ' + tagNorm + ': ' + eClan.message);
-  }
+  // 1) Probar como CLAN. §PF390: una consulta a /clans por clan y por día (_obtenerClanDelDia_()).
+  var clanDelDia = _obtenerClanDelDia_(tagNorm);
+  var clanInfo = clanDelDia ? clanDelDia.info : null;
 
   if (clanInfo && clanInfo.name && clanInfo.memberList) {
     var esRivalClan = !!rivalesYConflicto[tagNorm];
@@ -202,7 +258,10 @@ function _buscarInfiltrado(query, soloClan) {
       clan: { tag: '#' + tagNorm, nombre: clanInfo.name, miembros: clanInfo.memberList.length },
       esRivalTemporada: esRivalClan,
       infoRival: esRivalClan ? rivalesYConflicto[tagNorm] : null,
-      coincidencias: coincidenciasClan
+      coincidencias: coincidenciasClan,
+      // §PF390: de cuándo son los datos del clan y de dónde salieron ('api', 'drive_hoy' o 'drive_anterior').
+      fechaConsulta: clanDelDia.fecha,
+      origenDatos: clanDelDia.origen
     };
     // §PF368 (5-nov-2026, pedido de la usuaria): el clan vetado (NARANJA x) tuvo jugadores nuestros que ya salieron y hoy están en Inactivos o Vetados; no figuran en su lista actual.
     // §PF369: para cualquier clan, los jugadores nuestros que pasaron por él salen del índice de clanes externos (generarIndiceClanesExternos()), que lee los JSON individuales de RoyaleAPI. Sin índice completo solo queda lo del clan vetado.
@@ -374,20 +433,17 @@ function _rosterPasoPorClanVetado_(nombreClan, tagsActuales) {
 
 /**
  * _webAdminBuscarClan(token, tag) [→ Contexto_Base_Web.md §PF368]
- * Ficha de un clan para «Buscar clan» de admin.html: una sola consulta a /clans/<Tag> más la lista de rivales y conflicto. No cruza los miembros con nuestro roster (eso lo hace la pastilla «¿Infiltrado?» con _buscarInfiltrado(tag, true)).
- * Respuesta: { ok, clan:{ tag, nombre, miembros, puntos, trofeosGuerra, ubicacion, tipo, copasRequeridas, esNuestro }, esRivalTemporada, infoRival } o { ok:false, error }.
+ * Ficha de un clan para «Buscar clan» de admin.html: los datos del clan salen de _obtenerClanDelDia_() (§PF390: /clans/<Tag> se consulta una vez por clan y por día; el resto del día se lee de Drive) más la lista de rivales y conflicto. No cruza los miembros con nuestro roster (eso lo hace la pastilla «¿Infiltrado?» con _buscarInfiltrado(tag, true)).
+ * Respuesta: { ok, clan:{ tag, nombre, miembros, puntos, trofeosGuerra, ubicacion, tipo, copasRequeridas, esNuestro }, esRivalTemporada, infoRival, fechaConsulta, origenDatos } o { ok:false, error }.
  */
 function _webAdminBuscarClan(token, tag) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
   var tagNorm = cleanTag(tag);
   if (!tagNorm || tagNorm.length < 3) return { ok: false, error: 'Ingresa un Tag de clan (con o sin #).' };
 
-  var clanInfo = null;
-  try {
-    clanInfo = _apiGet('/clans/' + encodeTag('#' + tagNorm));
-  } catch (eClan) {
-    Logger.log('[BuscarClan] /clans falló para ' + tagNorm + ': ' + eClan.message);
-  }
+  // §PF390: una consulta a /clans por clan y por día (_obtenerClanDelDia_()).
+  var clanDelDia = _obtenerClanDelDia_(tagNorm);
+  var clanInfo = clanDelDia ? clanDelDia.info : null;
   if (!clanInfo || !clanInfo.name) {
     return { ok: false, error: 'No encontré ningún clan con ese Tag. Verifica que esté bien escrito (con o sin #). Si es un jugador, búscalo en «Buscar miembro».' };
   }
@@ -408,7 +464,10 @@ function _webAdminBuscarClan(token, tag) {
       esNuestro: _esClanPropio_(tagNorm)
     },
     esRivalTemporada: !!infoRival,
-    infoRival: infoRival
+    infoRival: infoRival,
+    // §PF390: de cuándo son los datos del clan y de dónde salieron ('api', 'drive_hoy' o 'drive_anterior').
+    fechaConsulta: clanDelDia.fecha,
+    origenDatos: clanDelDia.origen
   };
 }
 
@@ -450,12 +509,9 @@ function _webAdminVetarClan(token, datos) {
   if (!motivo) return { ok: false, error: 'Escribe el motivo del veto.' };
   if (motivo.length > 200) return { ok: false, error: 'El motivo es muy largo (máximo 200 caracteres).' };
 
-  var clanInfo = null;
-  try {
-    clanInfo = _apiGet('/clans/' + encodeTag('#' + tagNorm));
-  } catch (eClan) {
-    Logger.log('[VetarClan] /clans falló para ' + tagNorm + ': ' + eClan.message);
-  }
+  // §PF390: el nombre sale de la consulta del día del clan (_obtenerClanDelDia_()); si ya se buscó hoy, no se vuelve a llamar a la API.
+  var clanDelDia = _obtenerClanDelDia_(tagNorm);
+  var clanInfo = clanDelDia ? clanDelDia.info : null;
   if (!clanInfo || !clanInfo.name) return { ok: false, error: 'No encontré ningún clan con ese Tag.' };
 
   var ss = _getSs();
