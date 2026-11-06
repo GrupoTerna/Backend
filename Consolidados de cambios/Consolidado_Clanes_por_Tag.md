@@ -2,7 +2,7 @@
 
 # Consolidado — Clanes por Tag (todo clan se compara por Tag; el nombre solo se muestra)
 
-*Creado el 6-nov-2026 (pedido de la usuaria). Estado: **plan definido y ampliado el 6-nov-2026 con las respuestas de la usuaria (sección 0, tercer bloque); ninguna tanda de código aplicada todavía** (la tanda 0 ya se hizo en §PF400 y §PF401, y el 6-nov-2026 se aplicó fuera de tanda §PF402; la tanda 13 se agregó ese mismo día). Sigue a §PF400 (aviso de clan rival confirmado por Tag) y §PF401 (la regla y el primer inventario). Se actualiza la tabla de «Estado» (sección 2) al cerrar cada tanda.*
+*Creado el 6-nov-2026 (pedido de la usuaria). Estado: **plan definido y ampliado el 6-nov-2026 con las respuestas de la usuaria (sección 0, tercer bloque); tandas 1, 2 y 3 aplicadas (ver la tabla de Estado, sección 2)** (la tanda 0 ya se hizo en §PF400 y §PF401, y el 6-nov-2026 se aplicó fuera de tanda §PF402; la tanda 13 se agregó ese mismo día). Sigue a §PF400 (aviso de clan rival confirmado por Tag) y §PF401 (la regla y el primer inventario). Se actualiza la tabla de «Estado» (sección 2) al cerrar cada tanda.*
 
 ## 0. Indicaciones de la usuaria (texto literal, 6-nov-2026; regla 12)
 
@@ -72,8 +72,8 @@
 |---|---|---|---|
 | 0 | Aviso «Estuvo en un clan rival» confirmado por Tag (`15_`, `37_`, `directorio.html`); `_migrarNuevosAHistorico()` y lista de miembros por clan por Tag | **Hecha** (6-nov-2026), sin probar en Apps Script real | `3e7f202`, `2aaa39f`, `bcd22f0` |
 | 1 | Backend: resolvedor único con memoria y `_getClanTagByName()` que delega en él | **Hecha** (6-nov-2026); memoria **probada en Apps Script real** el mismo día (primera pasada 534 ms, 20 llamadas siguientes 0 ms, 4 clanes con su Tag); falta ver el orden de clanes en roster y directorio de la web | `c23636a`, `f93d529` |
-| 2 | Backend: `clanTag` aditivo en las respuestas web (2a, 2b, 2c) | **Hecha** (6-nov-2026), sin probar en Apps Script real | `a06fe51`, `12d71c9` (2a), `532cf80` (2b), `2735c02` (2c) |
-| 3 | Backend: cruce de meta y mensajes por Tag | Pendiente | — |
+| 2 | Backend: `clanTag` aditivo en las respuestas web (2a, 2b, 2c y 2d: herramientas de admin, `a13bee5`) | **Hecha** (6-nov-2026), sin probar en Apps Script real | `a06fe51`, `12d71c9` (2a), `532cf80` (2b), `2735c02` (2c) |
+| 3 | Backend: cruce de meta y mensajes por Tag (3a `30_Mensajes.gs`, 3b `22_ControlCalendario.gs`; los llamadores de `37_`, `38_` y `40_` siguen pasando el nombre hasta la tanda 7) | **Hecha** (6-nov-2026), sin probar en Apps Script real; §PF407 | `c82dbea`, `a388248` |
 | 4 | Backend: mínimos y ataques por clan de torneos y sorteos por Tag | Pendiente | — |
 | 5 | Backend: reparación de días y reconstrucción por semana (otros clanes del jugador) por Tag | Pendiente | — |
 | 6 | Web: agrupar, filtrar y buscar por `clanTag` (6a a 6d) | Pendiente | — |
