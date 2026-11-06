@@ -1743,3 +1743,47 @@ function _webAdminClanesSospechososJugador(token, tag) {
   });
   return { ok: true, tag: '#' + tagNorm, clanes: clanes, historialDisponible: historial !== null };
 }
+
+/**
+ * diagnosticarAlertaClanJugador(tag) [→ Contexto_Base_Web.md §PF399]
+ * SOLO LECTURA. Explica en el registro por qué un jugador tiene (o no) el ⚠️: lee su JSON individual, lista sus clanes externos con su clanTag, dice cuáles son sospechosos hoy (rival, Conflictos o vetado), si cada clan existe en las alertas y si el jugador figura en Alertas_Clanes_Sospechosos.json. Sin argumento (se corre desde el editor) usa DIAG_ALERTA_TAG_DEFECTO; cámbialo o llama con otro Tag.
+ * @param {string=} tag Tag del jugador, con o sin «#».
+ */
+var DIAG_ALERTA_TAG_DEFECTO = '#JUJP2UJVJ';
+function diagnosticarAlertaClanJugador(tag) {
+  var tagNorm = cleanTag(tag || DIAG_ALERTA_TAG_DEFECTO);
+  var L = function (t) { Logger.log('[DiagAlerta] ' + t); };
+  L('Jugador #' + tagNorm);
+  var historial = null;
+  try { historial = _cargarHistorialGuerraIndividual('#' + tagNorm); } catch (e) { L('No se pudo leer su JSON individual: ' + e.message); }
+  var registros = (historial && historial.registros) ? historial.registros : [];
+  var externas = registros.filter(function (r) { return r && r.externa === true; });
+  var sinTag = externas.filter(function (r) { return !r.clanTag; });
+  L('JSON individual: ' + (historial ? 'existe' : 'NO existe') + '; filas: ' + registros.length + '; filas externas: ' + externas.length + '; externas SIN clanTag (no cuentan para el ⚠️): ' + sinTag.length);
+  var nombresHist = {};
+  registros.forEach(function (r) { if (r && r.clan) nombresHist[String(r.clan).replace(/\s+\d{4}-\d{2}-\d{2}\s*$/, '').trim()] = true; });
+  L('Nombres de clan en su historial: ' + (Object.keys(nombresHist).join(' | ') || '(ninguno)'));
+
+  var acum = _indiceClanesVacio_();
+  if (registros.length) _indiceClanesAgregar_(acum, '#' + tagNorm, registros);
+  var sospechosos = {};
+  try { sospechosos = _alertasClanesSospechosos_(_getRivalesYConflicto(true)); } catch (e2) { L('No se pudo leer rivales/Conflictos: ' + e2.message); }
+  var previo = _alertasClanesCargar_();
+  var claves = Object.keys(acum.clanes);
+  L('Clanes externos con clanTag: ' + claves.length);
+  claves.forEach(function (c) {
+    var sosp = sospechosos[cleanTag(c)];
+    var enAlertas = !!(previo && previo.clanes && previo.clanes[c]);
+    L('  ' + c + ' «' + acum.clanes[c].nombre + '»: sospechoso hoy = ' + (sosp ? 'SÍ (' + sosp.tipos.join('+') + ')' : 'no') + '; clan en alertas = ' + (enAlertas ? 'sí' : 'no'));
+  });
+  var pj = previo && previo.jugadores ? previo.jugadores['#' + tagNorm] : null;
+  L('Archivo de alertas: ' + (previo ? 'existe (actualizado ' + (previo.actualizado || '?') + ', índice ' + (previo.indiceActualizado || '?') + ')' : 'NO existe') + '; el jugador ' + (pj ? 'FIGURA con ' + Object.keys(pj.clanes || {}).join(', ') : 'NO figura'));
+  var rivalesNombres = [];
+  for (var t in sospechosos) rivalesNombres.push(sospechosos[t].nombre + ' (#' + t + ', ' + sospechosos[t].tipos.join('+') + ')');
+  L('Clanes sospechosos hoy (' + rivalesNombres.length + '): ' + rivalesNombres.join(' | '));
+  if (!externas.length) L('CONCLUSIÓN: sin filas externas con clanTag el ⚠️ no puede salir; el aviso «clan rival» viene del nombre del clan en «Nuevos». Hay que volver a capturar a este jugador con Tampermonkey (Miembros nuevos) con el script actual.');
+  else if (!claves.length) L('CONCLUSIÓN: sus filas externas no traen clanTag.');
+  else if (!claves.some(function (c) { return sospechosos[cleanTag(c)]; })) L('CONCLUSIÓN: ninguno de sus clanes externos es sospechoso por Tag hoy; el aviso por nombre puede ser un falso positivo (otro clan con el mismo nombre).');
+  else if (!pj) L('CONCLUSIÓN: tiene clanes sospechosos pero no figura en las alertas: correr actualizarAlertasClanesSospechosos().');
+  else L('CONCLUSIÓN: figura en las alertas; si no sale el ⚠️, revisa la sesión de admin y la caché (60 s) o recarga con Ctrl+F5.');
+}
