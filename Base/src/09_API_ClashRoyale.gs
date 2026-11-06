@@ -4,11 +4,12 @@
 //    - Cartas
 //    - Búsqueda de clanes y miembros
 //    - Torneos globales, ubicaciones y temporadas
-//    - Rankings
+//    - Rankings (incluye la descarga semanal descargarRankingsSemanal)
 //    - Battlelog y cofres de un jugador
 //  Parte 2 — Funciones que no se corren a mano
 //    - Battlelog y cofres de todos los jugadores (descarga, punto de control y respaldos CSV)
 //    - Ayudas de las descargas manuales (cartas y búsqueda de clanes)
+//    - Rankings semanales: ayudas e índices (los lee la web)
 //    - Clanes: datos básicos, captura y punto de control
 //    - Jugadores: descarga y punto de control
 //    - Llamada a la API y caché en memoria
@@ -215,6 +216,18 @@ var TAG_BATTLELOG_A_CONSULTAR = '#CRCCR2LY9';
 
 // playerTag que se usa si descargarUpcomingChestsJugador() se corre sin [→ Contexto_Base_Web.md §09B067]
 var TAG_UPCOMINGCHESTS_A_CONSULTAR = '#2GG8PJ8GC';
+
+// ----- Rankings semanales (lunes): límites y archivos del índice -----
+
+// 6-nov-2026 (pedido de la usuaria, §PF393): una sola descarga a la semana (lunes) de los rankings de Perú (local) y global, para mostrar la posición de cada clan en clan.html y admin.html
+// y la de cada jugador en perfil.html. Cuántos puestos pide cada llamada: 1000 en clanes y 9999 en Camino de Leyendas (lo que ya traían los archivos descargados a mano).
+var RANKINGS_SEMANAL_LIMITE_CLANES = 1000;
+var RANKINGS_SEMANAL_LIMITE_JUGADORES = 9999;
+// Índices compactos que arma descargarRankingsSemanal() en la carpeta «Ranking» (DRIVE_FOLDER_ID_RANKING): puesto de cada tag en cada lista, sin el resto del JSON.
+var RANKINGS_INDICE_CLANES_ARCHIVO = 'Cache_RankingsIndice_Clanes.json';
+var RANKINGS_INDICE_JUGADORES_ARCHIVO = 'Cache_RankingsIndice_Jugadores.json';
+// Índices ya leídos en esta ejecución (nombre de archivo -> objeto), para no abrir el mismo archivo dos veces.
+var _RANKINGS_MEMO_ = {};
 
 // ===== PARTE 1 — Funciones que se corren a mano =====
 
@@ -1052,6 +1065,101 @@ function descargarRankingGlobalJugadoresCaminoLeyendasPorTemporada(seasonId, lim
   }
 }
 
+/**
+ * descargarRankingsSemanal() [→ Contexto_Base_Web.md §PF393]
+ * ACTIVADOR SEMANAL (lunes, ver ACTIVADORES_CONFIG en 08_Activadores.gs) y también se puede correr a mano. Descarga, en una sola pasada, los rankings que muestra la web:
+ *  - Clanes por copas y por guerra: Perú (RANKING_CLANES_LOCATION_ID, la descarga local sigue siendo solo de Perú) y global.
+ *  - Jugadores por Camino de Leyendas: Perú y global de la temporada en curso (el ranking de jugadores por copas responde vacío desde el 25-sep-2026 y no se descarga).
+ * Cada lista se guarda con la misma función de siempre (los archivos Cache_Ranking*.json no cambian) y después se arma un índice compacto por lista (puesto de cada Tag) en la carpeta «Ranking»:
+ * RANKINGS_INDICE_CLANES_ARCHIVO (todos los clanes de cada lista) y RANKINGS_INDICE_JUGADORES_ARCHIVO (solo los jugadores que hoy están en el Directorio). Si una descarga falla, esa lista
+ * conserva el índice de la semana anterior y las demás se actualizan; el resumen del registro dice cuáles. Devuelve true si todas las listas se actualizaron.
+ */
+function descargarRankingsSemanal() {
+  var t0 = Date.now();
+  var fecha = _rankingsFechaLima_();
+  var idxClanes = _rankingsLeerIndice_(RANKINGS_INDICE_CLANES_ARCHIVO, true) || {};
+  var idxJug = _rankingsLeerIndice_(RANKINGS_INDICE_JUGADORES_ARCHIVO, true) || {};
+  idxClanes.listas = idxClanes.listas || {};
+  idxJug.listas = idxJug.listas || {};
+  var resumen = [];
+  var todasBien = true;
+  var limC = RANKINGS_SEMANAL_LIMITE_CLANES, limJ = RANKINGS_SEMANAL_LIMITE_JUGADORES;
+  var locC = RANKING_CLANES_LOCATION_ID, locG = RANKING_GUERRA_CLANES_LOCATION_ID, locL = RANKING_CAMINO_LEYENDAS_LOCATION_ID;
+
+  var seasonId = _rankingsSeasonIdActual_();
+  var tagsFamilia = _rankingsTagsFamilia_();
+  var hayTagsFamilia = Object.keys(tagsFamilia).length > 0;
+
+  var pasos = [
+    { clave: 'copasLocal',    destino: idxClanes, tipo: 'clan', carpeta: DRIVE_FOLDER_ID_RANKING_COPAS,
+      archivo: 'Cache_RankingClanes_' + locC + '.json',
+      bajar: function () { return descargarRankingClanesPorUbicacion(locC, limC); } },
+    { clave: 'copasGlobal',   destino: idxClanes, tipo: 'clan', carpeta: DRIVE_FOLDER_ID_RANKING_COPAS,
+      archivo: 'Cache_RankingGlobalClanes.json',
+      bajar: function () { return descargarRankingGlobalClanes(limC); } },
+    { clave: 'guerraLocal',   destino: idxClanes, tipo: 'clan', carpeta: DRIVE_FOLDER_ID_RANKING_GUERRA,
+      archivo: 'Cache_RankingGuerraClanes_' + locG + '.json',
+      bajar: function () { return descargarRankingClanesGuerraPorUbicacion(locG, limC); } },
+    { clave: 'guerraGlobal',  destino: idxClanes, tipo: 'clan', carpeta: DRIVE_FOLDER_ID_RANKING_GUERRA,
+      archivo: 'Cache_RankingGlobalGuerraClanes.json',
+      bajar: function () { return descargarRankingGlobalGuerraClanes(limC); } },
+    { clave: 'jugadoresLocal',  destino: idxJug, tipo: 'jugador', carpeta: DRIVE_FOLDER_ID_RANKING_JUGADORES_CAMINO_LEYENDAS,
+      archivo: 'Cache_RankingCaminoLeyendas_' + locL + '.json',
+      bajar: function () { return descargarRankingJugadoresCaminoLeyendasPorUbicacion(locL, limJ); } },
+    { clave: 'jugadoresGlobal', destino: idxJug, tipo: 'jugador', carpeta: DRIVE_FOLDER_ID_RANKING_JUGADORES_CAMINO_LEYENDAS,
+      archivo: 'Cache_RankingGlobalCaminoLeyendas_' + seasonId + '.json', temporada: seasonId,
+      bajar: function () { return descargarRankingGlobalJugadoresCaminoLeyendasPorTemporada(seasonId, limJ); } }
+  ];
+
+  for (var i = 0; i < pasos.length; i++) {
+    var paso = pasos[i];
+    var etiqueta = paso.clave;
+    try {
+      if (paso.tipo === 'jugador' && !hayTagsFamilia) {
+        resumen.push(etiqueta + ': OMITIDO (no se pudo leer el Directorio; queda el índice anterior)');
+        todasBien = false;
+        continue;
+      }
+      if (!paso.bajar()) {
+        resumen.push(etiqueta + ': FALLÓ la descarga (queda el índice anterior)');
+        todasBien = false;
+        continue;
+      }
+      var items = _rankingsItemsDeArchivo_(paso.carpeta, paso.archivo);
+      if (!items) {
+        resumen.push(etiqueta + ': descargada, pero no se pudo leer ' + paso.archivo + ' (queda el índice anterior)');
+        todasBien = false;
+        continue;
+      }
+      var lista = { fecha: fecha, total: items.length, ranks: {} };
+      if (paso.temporada) lista.temporada = paso.temporada;
+      for (var k = 0; k < items.length; k++) {
+        var it = items[k];
+        var tg = cleanTag(it && it.tag);
+        var rk = Number(it && it.rank);
+        if (!tg || !(rk > 0)) continue;
+        if (paso.tipo === 'clan') {
+          lista.ranks[tg] = rk;
+        } else if (tagsFamilia[tg]) {
+          lista.ranks[tg] = [rk, Number(it.eloRating) || 0];
+        }
+      }
+      paso.destino.listas[paso.clave] = lista;
+      resumen.push(etiqueta + ': ' + items.length + ' puestos, ' + Object.keys(lista.ranks).length + ' guardados');
+    } catch (ePaso) {
+      resumen.push(etiqueta + ': ERROR ' + ePaso.message + ' (queda el índice anterior)');
+      todasBien = false;
+    }
+  }
+
+  idxClanes.generado = fecha;
+  idxJug.generado = fecha;
+  _rankingsGuardarIndice_(RANKINGS_INDICE_CLANES_ARCHIVO, idxClanes);
+  _rankingsGuardarIndice_(RANKINGS_INDICE_JUGADORES_ARCHIVO, idxJug);
+  Logger.log('[RankingsSemanal] ' + fecha + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). ' + resumen.join(' | '));
+  return todasBien;
+}
+
 // ----- Battlelog y cofres de un jugador -----
 
 /**
@@ -1787,6 +1895,144 @@ function _guardarJsonBusquedaNombreEnDrive(nombreBuscado, datos) {
   } catch(e) {
     Logger.log('[Torneos] Error guardando JSON de búsqueda "' + nombreBuscado + '": ' + e.message);
   }
+}
+
+// ----- Rankings semanales: ayudas e índices (los lee la web) -----
+
+/** Fecha de hoy en Lima, «dd/mm/aaaa» (no la hora UTC del servidor). */
+function _rankingsFechaLima_() {
+  return Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy');
+}
+
+/**
+ * _rankingsSeasonIdActual_() - Id («AAAA-MM») de la temporada de Camino de Leyendas en curso: el mayor id de /locations/global/seasons. Si esa llamada falla, usa SEASON_A_CONSULTAR.
+ */
+function _rankingsSeasonIdActual_() {
+  var data = _apiGet('/locations/global/seasons');
+  var mejor = '';
+  var items = (data && data.items) || [];
+  for (var i = 0; i < items.length; i++) {
+    var id = String(items[i] && items[i].id || '');
+    if (/^\d{4}-\d{2}$/.test(id) && id > mejor) mejor = id;
+  }
+  if (!mejor) {
+    Logger.log('[RankingsSemanal] /locations/global/seasons no respondió; se usa SEASON_A_CONSULTAR = ' + SEASON_A_CONSULTAR + '.');
+    return SEASON_A_CONSULTAR;
+  }
+  return mejor;
+}
+
+/** Tags (sin #, en mayúsculas) de los jugadores que hoy están en el Directorio, como objeto {TAG: true}. Vacío si no se pudo leer. */
+function _rankingsTagsFamilia_() {
+  var tags = {};
+  try {
+    var filas = _webLeerDirectorioComoDC().filas || [];
+    for (var i = 0; i < filas.length; i++) {
+      var t = cleanTag(filas[i][DC.TAG - 1]);
+      if (t) tags[t] = true;
+    }
+  } catch (e) {
+    Logger.log('[RankingsSemanal] No se pudo leer el Directorio: ' + e.message);
+  }
+  return tags;
+}
+
+/** Items (array) de un archivo Cache_Ranking*.json de una carpeta de Drive; null si no existe o no se puede leer. */
+function _rankingsItemsDeArchivo_(folderId, nombre) {
+  try {
+    var it = DriveApp.getFolderById(folderId).getFilesByName(nombre);
+    if (!it.hasNext()) return null;
+    var d = JSON.parse(it.next().getBlob().getDataAsString('UTF-8'));
+    return Array.isArray(d) ? d : (d && Array.isArray(d.items) ? d.items : null);
+  } catch (e) {
+    Logger.log('[RankingsSemanal] No se pudo leer ' + nombre + ': ' + e.message);
+    return null;
+  }
+}
+
+/** Lee un índice de la carpeta «Ranking» (objeto o null). Sin `sinMemo`, repite la lectura solo una vez por ejecución. */
+function _rankingsLeerIndice_(nombre, sinMemo) {
+  if (!sinMemo && _RANKINGS_MEMO_[nombre] !== undefined) return _RANKINGS_MEMO_[nombre];
+  var res = null;
+  try {
+    var it = DriveApp.getFolderById(DRIVE_FOLDER_ID_RANKING).getFilesByName(nombre);
+    if (it.hasNext()) res = JSON.parse(it.next().getBlob().getDataAsString('UTF-8'));
+  } catch (e) {
+    Logger.log('[Rankings] No se pudo leer ' + nombre + ': ' + e.message);
+  }
+  if (!sinMemo) _RANKINGS_MEMO_[nombre] = res;
+  return res;
+}
+
+/** Guarda un índice (JSON compacto) en la carpeta «Ranking»; lo crea si no existe. */
+function _rankingsGuardarIndice_(nombre, objeto) {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_RANKING);
+    var contenido = JSON.stringify(objeto);
+    var existentes = folder.getFilesByName(nombre);
+    if (existentes.hasNext()) {
+      _setContentConConteo_(existentes.next(), contenido);
+    } else {
+      _createFileConConteo_(folder, nombre, contenido, MimeType.PLAIN_TEXT);
+    }
+    delete _RANKINGS_MEMO_[nombre];
+    return true;
+  } catch (e) {
+    Logger.log('[RankingsSemanal] Error guardando ' + nombre + ': ' + e.message);
+    return false;
+  }
+}
+
+/**
+ * _rankingsDeClan_(tag) - Puesto de un clan en los rankings semanales, o null si no figura en ninguno (la web oculta la sección).
+ * { fecha, copas: { local, global }, guerra: { local, global } }; cada puesto es un número o null. «Local» es Perú.
+ */
+function _rankingsDeClan_(tag) {
+  var idx = _rankingsLeerIndice_(RANKINGS_INDICE_CLANES_ARCHIVO);
+  if (!idx || !idx.listas) return null;
+  var t = cleanTag(tag);
+  if (!t) return null;
+  var fecha = '';
+  function puesto(clave) {
+    var l = idx.listas[clave];
+    if (!l) return null;
+    if (!fecha && l.fecha) fecha = l.fecha;
+    var r = l.ranks ? Number(l.ranks[t]) : 0;
+    return r > 0 ? r : null;
+  }
+  var res = {
+    fecha: '',
+    copas:  { local: puesto('copasLocal'),  global: puesto('copasGlobal') },
+    guerra: { local: puesto('guerraLocal'), global: puesto('guerraGlobal') }
+  };
+  res.fecha = fecha;
+  if (res.copas.local === null && res.copas.global === null && res.guerra.local === null && res.guerra.global === null) return null;
+  return res;
+}
+
+/**
+ * _rankingsDeJugador_(tag) - Puesto de un jugador de la Familia en Camino de Leyendas, o null si no figura en ninguna lista (perfil.html oculta la sección).
+ * { fecha, temporada, local: { puesto, elo } | null, global: { puesto, elo } | null }. «Local» es Perú; «global» es el de la temporada `temporada` («AAAA-MM»).
+ */
+function _rankingsDeJugador_(tag) {
+  var t = cleanTag(tag);
+  if (!t) return null;
+  var idx = _webCacheado('web_rankings_idx_jug_v1', 1800, function () {
+    return _rankingsLeerIndice_(RANKINGS_INDICE_JUGADORES_ARCHIVO) || {};
+  });
+  if (!idx || !idx.listas) return null;
+  var fecha = '', temporada = '';
+  function par(clave) {
+    var l = idx.listas[clave];
+    if (!l) return null;
+    if (!fecha && l.fecha) fecha = l.fecha;
+    if (l.temporada) temporada = l.temporada;
+    var v = l.ranks ? l.ranks[t] : null;
+    return (v && Number(v[0]) > 0) ? { puesto: Number(v[0]), elo: Number(v[1]) || 0 } : null;
+  }
+  var local = par('jugadoresLocal'), global = par('jugadoresGlobal');
+  if (!local && !global) return null;
+  return { fecha: fecha, temporada: temporada, local: local, global: global };
 }
 
 // ----- Clanes: datos básicos, captura y punto de control -----
