@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 06/11/2026 03:03:32 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 06/11/2026 04:48:32 */
 
 
 
@@ -21586,6 +21586,37 @@ function _alertasClanesSospechosos_(rivalesYConflicto) {
 }
 
 /**
+ * _clanRivalConfirmadoPorTag_(tagJugador, nombreNorm, tagsRivales) [→ Contexto_Base_Web.md §PF400]
+ * Confirma por Tag un aviso de «clan rival» que Ingresos recientes (37_Web_API.gs) detectó por NOMBRE. Dos clanes distintos pueden llamarse igual (caso Ribe: #YGQ8JPV y el rival #8JV20LCJ, ambos «Argentina»), y la hoja «Nuevos» solo guarda el nombre.
+ * Lee el JSON individual del jugador (una lectura de Drive; solo se llama cuando el nombre ya coincidió con un clan sospechoso) y mira sus filas cuyo clan, sin la fecha final, se llama `nombreNorm` (mayúsculas):
+ *   { estado: 'si', tag: 'TAG' }  alguna de esas filas trae el Tag de un clan de `tagsRivales` (Tags sin «#»): el aviso es correcto.
+ *   { estado: 'no' }              todas esas filas traen Tag y ninguno es rival: era otro clan con el mismo nombre, no se avisa.
+ *   { estado: 'sin_dato' }        no hay JSON, no hay filas con ese nombre o alguna no trae Tag (CSV anteriores a §PF253): no se puede decir, se conserva el aviso por nombre.
+ * @param {string} tagJugador Tag del jugador, con o sin «#».
+ * @param {string} nombreNorm Nombre del clan en mayúsculas y sin espacios en los extremos.
+ * @param {string[]} tagsRivales Tags (sin «#») de los clanes sospechosos que se llaman así.
+ * @return {{estado: string, tag: (string|undefined)}}
+ */
+function _clanRivalConfirmadoPorTag_(tagJugador, nombreNorm, tagsRivales) {
+  var historial = null;
+  try { historial = _cargarHistorialGuerraIndividual('#' + cleanTag(tagJugador)); }
+  catch (e) { return { estado: 'sin_dato' }; }
+  var registros = (historial && historial.registros) ? historial.registros : [];
+  var conTag = 0, sinTag = 0;
+  for (var i = 0; i < registros.length; i++) {
+    var r = registros[i];
+    if (!r) continue;
+    var nombre = String(r.clan || '').replace(/\s+\d{4}-\d{2}-\d{2}\s*$/, '').trim().toUpperCase();
+    if (nombre !== nombreNorm) continue;
+    var tagFila = cleanTag(r.clanTag);
+    if (!tagFila) { sinTag++; continue; }
+    if (tagsRivales.indexOf(tagFila) >= 0) return { estado: 'si', tag: tagFila };
+    conTag++;
+  }
+  return (conTag > 0 && sinTag === 0) ? { estado: 'no' } : { estado: 'sin_dato' };
+}
+
+/**
  * _alertasClanesCruzar_(previo, sospechosos, indice, ahoraTxt) [→ Contexto_Base_Web.md §PF375]
  * Función pura: devuelve { estado, jugadoresNuevos, clanesNuevos }. `previo` es lo ya guardado (o null); `sospechosos` sale de _alertasClanesSospechosos_(); `indice` tiene la forma { actualizado, clanes: { '#CLAN': { nombre, jugadores: [{ tag, semanas, primera, ultima }], marcas? } } } (el índice anterior completo, o lo leído de los archivos de clan, §PF378).
  * Estado: { version, actualizado, indiceActualizado, clanes: { '#CLAN': { nombre, tipos, desde } }, jugadores: { '#JUGADOR': { clanes: { '#CLAN': { semanas, primera, ultima } } } } }.
@@ -21953,6 +21984,50 @@ function _webAdminClanesSospechososJugador(token, tag) {
     return (ub.temporada - ua.temporada) || (ub.semana - ua.semana) || (b.semanas - a.semanas);
   });
   return { ok: true, tag: '#' + tagNorm, clanes: clanes, historialDisponible: historial !== null };
+}
+
+/**
+ * diagnosticarAlertaClanJugador(tag) [→ Contexto_Base_Web.md §PF399]
+ * SOLO LECTURA. Explica en el registro por qué un jugador tiene (o no) el ⚠️: lee su JSON individual, lista sus clanes externos con su clanTag, dice cuáles son sospechosos hoy (rival, Conflictos o vetado), si cada clan existe en las alertas y si el jugador figura en Alertas_Clanes_Sospechosos.json. Sin argumento (se corre desde el editor) usa DIAG_ALERTA_TAG_DEFECTO; cámbialo o llama con otro Tag.
+ * @param {string=} tag Tag del jugador, con o sin «#».
+ */
+var DIAG_ALERTA_TAG_DEFECTO = '#JUJP2UJVJ';
+function diagnosticarAlertaClanJugador(tag) {
+  var tagNorm = cleanTag(tag || DIAG_ALERTA_TAG_DEFECTO);
+  var L = function (t) { Logger.log('[DiagAlerta] ' + t); };
+  L('Jugador #' + tagNorm);
+  var historial = null;
+  try { historial = _cargarHistorialGuerraIndividual('#' + tagNorm); } catch (e) { L('No se pudo leer su JSON individual: ' + e.message); }
+  var registros = (historial && historial.registros) ? historial.registros : [];
+  var externas = registros.filter(function (r) { return r && r.externa === true; });
+  var sinTag = externas.filter(function (r) { return !r.clanTag; });
+  L('JSON individual: ' + (historial ? 'existe' : 'NO existe') + '; filas: ' + registros.length + '; filas externas: ' + externas.length + '; externas SIN clanTag (no cuentan para el ⚠️): ' + sinTag.length);
+  var nombresHist = {};
+  registros.forEach(function (r) { if (r && r.clan) nombresHist[String(r.clan).replace(/\s+\d{4}-\d{2}-\d{2}\s*$/, '').trim()] = true; });
+  L('Nombres de clan en su historial: ' + (Object.keys(nombresHist).join(' | ') || '(ninguno)'));
+
+  var acum = _indiceClanesVacio_();
+  if (registros.length) _indiceClanesAgregar_(acum, '#' + tagNorm, registros);
+  var sospechosos = {};
+  try { sospechosos = _alertasClanesSospechosos_(_getRivalesYConflicto(true)); } catch (e2) { L('No se pudo leer rivales/Conflictos: ' + e2.message); }
+  var previo = _alertasClanesCargar_();
+  var claves = Object.keys(acum.clanes);
+  L('Clanes externos con clanTag: ' + claves.length);
+  claves.forEach(function (c) {
+    var sosp = sospechosos[cleanTag(c)];
+    var enAlertas = !!(previo && previo.clanes && previo.clanes[c]);
+    L('  ' + c + ' «' + acum.clanes[c].nombre + '»: sospechoso hoy = ' + (sosp ? 'SÍ (' + sosp.tipos.join('+') + ')' : 'no') + '; clan en alertas = ' + (enAlertas ? 'sí' : 'no'));
+  });
+  var pj = previo && previo.jugadores ? previo.jugadores['#' + tagNorm] : null;
+  L('Archivo de alertas: ' + (previo ? 'existe (actualizado ' + (previo.actualizado || '?') + ', índice ' + (previo.indiceActualizado || '?') + ')' : 'NO existe') + '; el jugador ' + (pj ? 'FIGURA con ' + Object.keys(pj.clanes || {}).join(', ') : 'NO figura'));
+  var rivalesNombres = [];
+  for (var t in sospechosos) rivalesNombres.push(sospechosos[t].nombre + ' (#' + t + ', ' + sospechosos[t].tipos.join('+') + ')');
+  L('Clanes sospechosos hoy (' + rivalesNombres.length + '): ' + rivalesNombres.join(' | '));
+  if (!externas.length) L('CONCLUSIÓN: sin filas externas con clanTag el ⚠️ no puede salir; el aviso «clan rival» viene del nombre del clan en «Nuevos». Hay que volver a capturar a este jugador con Tampermonkey (Miembros nuevos) con el script actual.');
+  else if (!claves.length) L('CONCLUSIÓN: sus filas externas no traen clanTag.');
+  else if (!claves.some(function (c) { return sospechosos[cleanTag(c)]; })) L('CONCLUSIÓN: ninguno de sus clanes externos es sospechoso por Tag hoy; el aviso por nombre puede ser un falso positivo (otro clan con el mismo nombre).');
+  else if (!pj) L('CONCLUSIÓN: tiene clanes sospechosos pero no figura en las alertas: correr actualizarAlertasClanesSospechosos().');
+  else L('CONCLUSIÓN: figura en las alertas; si no sale el ⚠️, revisa la sesión de admin y la caché (60 s) o recarga con Ctrl+F5.');
 }
 
 
@@ -56033,11 +56108,14 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
     // Defensivo, mismo criterio que _getClanesRivalesTemporadaActual(): si currentriverrace no trae el campo esperado (cambio de API, proxy caído, etc.), esta fase simplemente no marca a nadie como rival en vez de romper toda la… [→ Contexto_Base_Web.md §37B265]
     Logger.log('[IngresosRecientes] _getRivalesYConflicto() falló, se omite el aviso de rival esta vez: ' + eRivalesIR.message);
   }
+  // §PF400 (6-nov-2026): una LISTA por nombre, no un solo clan: dos clanes pueden llamarse igual y el segundo pisaba al primero (caso «Argentina»).
   var rivalesPorNombreIR = {};
   for (var tagRivalIR in rivalesYConflictoIR) {
     var infoRivalIR = rivalesYConflictoIR[tagRivalIR];
     var nombreNormIR = String((infoRivalIR && infoRivalIR.nombre) || '').trim().toUpperCase();
-    if (nombreNormIR) rivalesPorNombreIR[nombreNormIR] = infoRivalIR;
+    if (!nombreNormIR) continue;
+    if (!rivalesPorNombreIR.hasOwnProperty(nombreNormIR)) rivalesPorNombreIR[nombreNormIR] = [];
+    rivalesPorNombreIR[nombreNormIR].push({ tag: cleanTag((infoRivalIR && infoRivalIR.tag) || tagRivalIR), info: infoRivalIR });
   }
 
   if (tDash) _dashTiempoMarca_(tDash, 'ingresos.rivales');
@@ -56152,14 +56230,25 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
     var clanActualNombreNormIR = String(filaDir[DC.CLAN - 1] || '').trim().toUpperCase();
     var esRivalTemporadaIR = false;
     var clanRivalDetectadoIR = null;
+    var confirmacionRivalIR = '';
+    var nombresYaRevisadosIR = {};
     for (var hIR = 0; hIR < historialFila.length; hIR++) {
       var nombreHistNormIR = String(historialFila[hIR].clan || '').trim().toUpperCase();
       if (!nombreHistNormIR || nombreHistNormIR === clanActualNombreNormIR) continue;
-      if (rivalesPorNombreIR.hasOwnProperty(nombreHistNormIR)) {
-        esRivalTemporadaIR = true;
-        clanRivalDetectadoIR = rivalesPorNombreIR[nombreHistNormIR];
-        break;
+      if (!rivalesPorNombreIR.hasOwnProperty(nombreHistNormIR) || nombresYaRevisadosIR[nombreHistNormIR]) continue;
+      nombresYaRevisadosIR[nombreHistNormIR] = true;
+      // §PF400: el nombre solo avisa de una coincidencia; se confirma por Tag con el JSON individual (15_DeteccionInfiltrados.gs). 'no' = otro clan con el mismo nombre: no se avisa. 'sin_dato' = no se puede confirmar: se conserva el aviso, marcado «por nombre».
+      var candidatosRivalIR = rivalesPorNombreIR[nombreHistNormIR];
+      var confIR = _clanRivalConfirmadoPorTag_(tagLimpio, nombreHistNormIR, candidatosRivalIR.map(function (c) { return c.tag; }));
+      if (confIR.estado === 'no') continue;
+      var elegidoIR = candidatosRivalIR[0];
+      if (confIR.estado === 'si') {
+        for (var cIR = 0; cIR < candidatosRivalIR.length; cIR++) if (candidatosRivalIR[cIR].tag === confIR.tag) { elegidoIR = candidatosRivalIR[cIR]; break; }
       }
+      esRivalTemporadaIR = true;
+      clanRivalDetectadoIR = elegidoIR.info;
+      confirmacionRivalIR = (confIR.estado === 'si') ? 'tag' : 'nombre';
+      if (confIR.estado === 'si') break; // una confirmada por Tag gana a una pendiente por nombre
     }
 
     lista.push({
@@ -56191,7 +56280,8 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
       clanRivalDetectado: clanRivalDetectadoIR ? {
         nombre:  clanRivalDetectadoIR.nombre || '',
         fuente:  clanRivalDetectadoIR.fuente || '',
-        motivo:  clanRivalDetectadoIR.motivo || ''
+        motivo:  clanRivalDetectadoIR.motivo || '',
+        confirmacion: confirmacionRivalIR // §PF400: 'tag' (Tag confirmado en su JSON individual) o 'nombre' (solo coincide el nombre; sin dato de Tag)
       } : null
     });
   }
