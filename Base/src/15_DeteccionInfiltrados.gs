@@ -11,7 +11,7 @@
 //    - Índice de clanes externos: generar (§PF369)
 //    - Alertas de clanes sospechosos: actualizar (§PF375)
 //  Parte 2 — Funciones que no se corren a mano
-//    - Clanes externos: /clans una vez al día, solo a pedido (§PF390)
+//    - Clanes externos: /clans una vez al día, solo a pedido (§PF390); resumen de miembros para la ficha (§PF391)
 //    - Infiltrados: búsqueda desde la web de admin (en el orden de la llamada)
 //    - Clanes: ficha y veto desde «Buscar clan» de la web de admin (§PF368)
 //    - Índice de clanes externos: ejecución programada semanal (§PF376)
@@ -160,12 +160,12 @@ function actualizarAlertasClanesSospechosos() {
  * _obtenerClanDelDia_(tagNorm) [→ Contexto_Base_Web.md §PF390]
  * 5-nov-2026 (pedido de la usuaria: «que se consulte una vez al día por clan, así como upcomingchests, solo a pedido»). Única puerta a /clans/<Tag> para las
  * consultas web de clanes externos («Buscar clan», pastilla «¿Infiltrado?» del clan y «Vetar clan»). Mismo patrón que _webObtenerJsonJugadorDelDia() (37_Web_API.gs, cofres):
- * el JSON del clan se guarda en Drive (DRIVE_FOLDER_ID_CLANS_CONSULTA_TEMPORAL, un archivo por clan: «Busqueda_Clan - #TAG.json», con { dia, fecha, clan }).
+ * el JSON del clan se guarda en Drive (DRIVE_FOLDER_ID_CLANS_CONSULTA_TEMPORAL, un archivo por clan: «Busqueda_Clan - #TAG.json», con { dia, fecha, ts, clan }; `ts` son los milisegundos de la consulta y falta en los archivos guardados antes del §PF391).
  * Si ese archivo es de HOY (día calendario de Lima, tomado de `dia` dentro del archivo), se lee de ahí y no se llama a la API. Si no, se consulta /clans/<Tag> UNA vez, se guarda y se devuelve.
  * Nunca se consulta por horario: solo cuando alguien lo pide. Si la API falla y hay un archivo de un día anterior, se devuelve ese en vez de un error. Un Tag que no existe no se guarda
  * (un error de tipeo no deja archivos). Si Drive falla al leer o al guardar, la consulta sigue y solo se pierde la reutilización.
  * @param {string} tagNorm Tag del clan sin «#» (cleanTag()).
- * @returns {?{info:Object, origen:string, fecha:string}} `info` es la respuesta de /clans/<Tag> (con memberList); `origen` es 'api', 'drive_hoy' o 'drive_anterior'; `fecha` es dd/MM/yyyy HH:mm (Lima) de la consulta. null si no hay dato ni de hoy ni de antes.
+ * @returns {?{info:Object, origen:string, fecha:string, ts:?number}} `info` es la respuesta de /clans/<Tag> (con memberList); `origen` es 'api', 'drive_hoy' o 'drive_anterior'; `fecha` es dd/MM/yyyy HH:mm (Lima) de la consulta; `ts` son sus milisegundos (null si el archivo es anterior al §PF391). null si no hay dato ni de hoy ni de antes.
  */
 function _obtenerClanDelDia_(tagNorm) {
   var nombre = CLAN_DIA_PREFIJO_ARCHIVO + '#' + tagNorm + '.json';
@@ -186,7 +186,7 @@ function _obtenerClanDelDia_(tagNorm) {
     Logger.log('[ClanDelDia] No se pudo leer el archivo de ' + tagNorm + ': ' + eLeer.message);
   }
   if (guardado && guardado.dia === hoy) {
-    return { info: guardado.clan, origen: 'drive_hoy', fecha: guardado.fecha || '' };
+    return { info: guardado.clan, origen: 'drive_hoy', fecha: guardado.fecha || '', ts: Number(guardado.ts) || null };
   }
 
   var info = null;
@@ -199,15 +199,46 @@ function _obtenerClanDelDia_(tagNorm) {
     var fechaTxt = Utilities.formatDate(ahora, tzLima, 'dd/MM/yyyy HH:mm');
     if (folder) {
       try {
-        _guardarArchivoProgresoVerificado_(folder, nombre, JSON.stringify({ dia: hoy, fecha: fechaTxt, clan: info }));
+        _guardarArchivoProgresoVerificado_(folder, nombre, JSON.stringify({ dia: hoy, fecha: fechaTxt, ts: ahora.getTime(), clan: info }));
       } catch (eGuardar) {
         Logger.log('[ClanDelDia] No se pudo guardar el archivo de ' + tagNorm + ': ' + eGuardar.message);
       }
     }
-    return { info: info, origen: 'api', fecha: fechaTxt };
+    return { info: info, origen: 'api', fecha: fechaTxt, ts: ahora.getTime() };
   }
-  if (guardado) return { info: guardado.clan, origen: 'drive_anterior', fecha: guardado.fecha || '' };
+  if (guardado) return { info: guardado.clan, origen: 'drive_anterior', fecha: guardado.fecha || '', ts: Number(guardado.ts) || null };
   return null;
+}
+
+/**
+ * _resumenMiembrosClan_(memberList, refMs) [→ Contexto_Base_Web.md §PF391]
+ * 5-nov-2026 (pedido de la usuaria: aprovechar más datos de /clans en «Buscar clan»). Resume la `memberList` de /clans/<Tag> para la ficha, sin otra consulta a la API:
+ * líder (getClanLeader()), cantidad de colíderes, copas promedio de los miembros y cuántos se conectaron en los últimos 7 días.
+ * `refMs` es la hora de la consulta (_obtenerClanDelDia_().ts): como la ficha puede salir de un archivo de hoy, «últimos 7 días» se cuenta desde esa hora y no desde ahora.
+ * Sin `refMs` (archivo anterior al §PF391) se usa la hora actual. `lastSeen` viene como «20260706T035151.000Z» (UTC); un miembro sin ese dato no cuenta como activo ni como inactivo.
+ * @param {Array} memberList memberList de /clans/<Tag>.
+ * @param {?number} refMs Milisegundos de la consulta, o null.
+ * @returns {{lider:string, coLideres:number, copasPromedio:?number, activos7d:?number}} Los dos últimos son null si no hay dato.
+ */
+function _resumenMiembrosClan_(memberList, refMs) {
+  var res = { lider: '', coLideres: 0, copasPromedio: null, activos7d: null };
+  if (!memberList || !memberList.length) return res;
+  res.lider = getClanLeader(memberList);
+  var limite = (Number(refMs) || new Date().getTime()) - 7 * 86400000;
+  var sumaCopas = 0, conCopas = 0, activos = 0, conConexion = 0;
+  for (var i = 0; i < memberList.length; i++) {
+    var m = memberList[i] || {};
+    if (m.role === 'coLeader') res.coLideres++;
+    if (typeof m.trophies === 'number') { sumaCopas += m.trophies; conCopas++; }
+    var f = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/.exec(String(m.lastSeen || ''));
+    if (f) {
+      conConexion++;
+      if (Date.UTC(+f[1], +f[2] - 1, +f[3], +f[4], +f[5], +f[6]) >= limite) activos++;
+    }
+  }
+  if (conCopas) res.copasPromedio = Math.round(sumaCopas / conCopas);
+  if (conConexion) res.activos7d = activos;
+  return res;
 }
 
 // ----- Infiltrados: búsqueda desde la web de admin (en el orden de la llamada) -----
@@ -434,7 +465,7 @@ function _rosterPasoPorClanVetado_(nombreClan, tagsActuales) {
 /**
  * _webAdminBuscarClan(token, tag) [→ Contexto_Base_Web.md §PF368]
  * Ficha de un clan para «Buscar clan» de admin.html: los datos del clan salen de _obtenerClanDelDia_() (§PF390: /clans/<Tag> se consulta una vez por clan y por día; el resto del día se lee de Drive) más la lista de rivales y conflicto. No cruza los miembros con nuestro roster (eso lo hace la pastilla «¿Infiltrado?» con _buscarInfiltrado(tag, true)).
- * Respuesta: { ok, clan:{ tag, nombre, miembros, puntos, trofeosGuerra, ubicacion, tipo, copasRequeridas, esNuestro }, esRivalTemporada, infoRival, fechaConsulta, origenDatos } o { ok:false, error }.
+ * Respuesta: { ok, clan:{ tag, nombre, miembros, puntos, trofeosGuerra, ubicacion, tipo, copasRequeridas, descripcion, donacionesSemana, badgeId, liga, lider, coLideres, copasPromedio, activos7d, esNuestro }, esRivalTemporada, infoRival, fechaConsulta, origenDatos } o { ok:false, error }.
  */
 function _webAdminBuscarClan(token, tag) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
@@ -450,6 +481,7 @@ function _webAdminBuscarClan(token, tag) {
 
   var rivalesYConflicto = _getRivalesYConflicto(true);
   var infoRival = rivalesYConflicto[tagNorm] || null;
+  var resumen = _resumenMiembrosClan_(clanInfo.memberList, clanDelDia.ts); // §PF391
   return {
     ok: true,
     clan: {
@@ -461,6 +493,15 @@ function _webAdminBuscarClan(token, tag) {
       ubicacion: (clanInfo.location && clanInfo.location.name) || '',
       tipo: clanInfo.type || '',
       copasRequeridas: clanInfo.requiredTrophies !== undefined ? clanInfo.requiredTrophies : null,
+      // §PF391: más datos de /clans para la ficha. `liga` se calcula igual que en la hoja Clan (getLiga() sobre los trofeos de guerra).
+      descripcion: clanInfo.description || '',
+      donacionesSemana: clanInfo.donationsPerWeek !== undefined ? clanInfo.donationsPerWeek : null,
+      badgeId: Number(clanInfo.badgeId) || 0,
+      liga: clanInfo.clanWarTrophies !== undefined ? getLiga(clanInfo.clanWarTrophies) : '',
+      lider: resumen.lider,
+      coLideres: resumen.coLideres,
+      copasPromedio: resumen.copasPromedio,
+      activos7d: resumen.activos7d,
       esNuestro: _esClanPropio_(tagNorm)
     },
     esRivalTemporada: !!infoRival,
