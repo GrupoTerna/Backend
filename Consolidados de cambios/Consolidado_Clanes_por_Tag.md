@@ -72,7 +72,7 @@
 |---|---|---|---|
 | 0 | Aviso «Estuvo en un clan rival» confirmado por Tag (`15_`, `37_`, `directorio.html`); `_migrarNuevosAHistorico()` y lista de miembros por clan por Tag | **Hecha** (6-nov-2026), sin probar en Apps Script real | `3e7f202`, `2aaa39f`, `bcd22f0` |
 | 1 | Backend: resolvedor único con memoria y `_getClanTagByName()` que delega en él | **Hecha** (6-nov-2026); memoria **probada en Apps Script real** el mismo día (primera pasada 534 ms, 20 llamadas siguientes 0 ms, 4 clanes con su Tag); falta ver el orden de clanes en roster y directorio de la web | `c23636a`, `f93d529` |
-| 2 | Backend: `clanTag` aditivo en las respuestas web (2a, 2b, 2c) | Pendiente | — |
+| 2 | Backend: `clanTag` aditivo en las respuestas web (2a, 2b, 2c) | **Hecha** (6-nov-2026), sin probar en Apps Script real | `a06fe51`, `12d71c9` (2a), `532cf80` (2b), `2735c02` (2c) |
 | 3 | Backend: cruce de meta y mensajes por Tag | Pendiente | — |
 | 4 | Backend: mínimos y ataques por clan de torneos y sorteos por Tag | Pendiente | — |
 | 5 | Backend: reparación de días y reconstrucción por semana (otros clanes del jugador) por Tag | Pendiente | — |
@@ -108,6 +108,7 @@
 - **Cuidado.** Las respuestas públicas (sin sesión de admin) pasan por filtros que quitan campos (`37_Web_API.gs`, bloque de la caché de 60 s de Ingresos recientes): `clanTag` de un clan Terna no es un dato sensible, pero hay que comprobar que el filtro no lo quite ni lo deje pasar por error en objetos de clanes externos.
 - **Verificación.** `node --check`; prueba en Node del armado de un objeto de cada tipo; revisar que ningún campo existente cambie de nombre ni de valor. **Sin probar en Apps Script real.**
 - **Orden.** 2a, 2b y 2c son commits separados. La web no cambia en esta tanda.
+- **Cómo quedó (6-nov-2026, §PF405 y §PF406).** 2a en `37_Web_API.gs` (más un complemento en `_webAdminOtrasCuentas()`); 2b en `37_Web_API.gs`; 2c en `38_Web_Endpoints.gs`. `_generarJsonContactos()` no se cambió porque ya trae `clan_tag`. Quedan fuera, para decidir, las funciones de admin que devuelven `clan` y el grid de control por temporada (ver §PF406, punto 4).
 
 ### Tanda 3 — Cruce de meta y mensajes por Tag (backend)
 - **Objetivo.** Que «¿este clan ya cruzó la meta?» se pregunte por Tag.
