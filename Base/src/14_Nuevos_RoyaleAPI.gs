@@ -2501,8 +2501,16 @@ function _migrarNuevosAHistorico(candidatosPayload) {
       var reg = registros[r] || {};
 
       // Punto 3: SOLO clanes Terna. reg.clan es el nombre tal cual lo [→ Contexto_Base_Web.md §14B126]
+      // §PF401 (6-nov-2026): los clanes se comparan por TAG; el nombre solo se usa si el registro no trae clanTag (CSV anteriores a §PF253). Antes un clan de afuera con el mismo nombre que uno Terna se aceptaba como Terna.
       var clanNombreReg = String(reg.clan || '').trim().toLowerCase();
-      var clanTagReg = clanNombreReg ? nombreClanATag[clanNombreReg] : null;
+      var clanTagReg = null;
+      var tagCrudoReg = String(reg.clanTag || '').trim().toUpperCase();
+      if (tagCrudoReg) {
+        if (tagCrudoReg.charAt(0) !== '#') tagCrudoReg = '#' + tagCrudoReg;
+        clanTagReg = (CFG.TERNA_TAGS.indexOf(tagCrudoReg) >= 0) ? tagCrudoReg : null;
+      } else if (clanNombreReg) {
+        clanTagReg = nombreClanATag[clanNombreReg] || null;
+      }
       if (!clanTagReg) continue;
 
       var fechaReg = _parseFechaISONuevos(reg.fecha);
