@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 06/11/2026 04:58:02 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 06/11/2026 06:02:11 */
 
 
 
@@ -14311,6 +14311,8 @@ function updateClanSheet() {
   // Persistir el estado actual de la hoja (incluye Min_G manual) en el [→ Contexto_Base_Web.md §10B008]
   syncClanCSV();
 
+  _reiniciarMapaNombreClanATagTerna_(); // §PF403: la hoja Clan cambio; el mapa nombre -> Tag de esta ejecucion se vuelve a leer
+
   Logger.log('[Clan] updateClanSheet completado.');
 }
 
@@ -17604,6 +17606,9 @@ var PASTEL_CLANES_NUEVOS_ = [
   '#fff2cc'  // amarillo pastel
 ];
 
+// §PF403 (6-nov-2026): mapa nombre de clan -> Tag, guardado durante la ejecucion. Lo llena _mapaNombreClanATagTerna() la primera vez que se pide (los ordenamientos lo llaman muchas veces) y lo borra _reiniciarMapaNombreClanATagTerna_() cuando cambia la hoja Clan.
+var _MAPA_NOMBRE_CLAN_TAG_MEMO = null;
+
 // FIX (15-ago-2026, pedido usuario): renombrado de [→ Contexto_Base_Web.md §14B006]
 var NOMBRE_CSV_DEBUG_NUEVOS  = 'Correcciones_Nuevos.csv';
 
@@ -20159,6 +20164,7 @@ function _migrarNuevosAHistorico(candidatosPayload) {
  * _mapaNombreClanATagTerna() [→ Contexto_Base_Web.md §14B123]
  */
 function _mapaNombreClanATagTerna() {
+  if (_MAPA_NOMBRE_CLAN_TAG_MEMO) return _MAPA_NOMBRE_CLAN_TAG_MEMO; // §PF403: una sola lectura de la hoja Clan por ejecucion
   var mapa = {};
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.CLAN);
@@ -20181,7 +20187,16 @@ function _mapaNombreClanATagTerna() {
       if (nombreJ) mapa[String(nombreJ).trim().toLowerCase()] = tagJ;
     }
   }
+  if (Object.keys(mapa).length > 0) _MAPA_NOMBRE_CLAN_TAG_MEMO = mapa; // §PF403: un mapa vacio no se guarda, para no dejarlo fijo
   return mapa;
+}
+
+/**
+ * _reiniciarMapaNombreClanATagTerna_() [→ Contexto_Base_Web.md §PF403]
+ * Borra el mapa nombre -> Tag guardado en memoria; la siguiente llamada a _mapaNombreClanATagTerna() vuelve a leer la hoja Clan. Se llama cuando la hoja Clan cambia durante la misma ejecucion.
+ */
+function _reiniciarMapaNombreClanATagTerna_() {
+  _MAPA_NOMBRE_CLAN_TAG_MEMO = null;
 }
 
 // FASE 9 (Consolidado_Cambios_Pendientes_Guerra.md, punto 3): MIGRACIÓN DE [→ Contexto_Base_Web.md §14B120]
@@ -29200,6 +29215,7 @@ function corregirGuerraYControlDesdeControl2() {
     (esTemporadaActual ? ' (actual, corregida en hoja Guerra + Backup_Guerra.csv).' : ' (histórica, corregida solo en Backup_Guerra.csv).') +
     ' Claves procesadas: ' + correcciones.length +
     '. Ajustadas: ' + (stats.corregidas || 0) + '. Reconstruidas desde cero: ' + (stats.reconstruidas || 0) +
+    '. Sin clan (no se crearon filas): ' + (stats.sinClan || 0) +
     '. Filas de Control_2 sin Tag: ' + filasSinTag + '. Semanas en blanco omitidas: ' + semanasVacias + '.');
 }
 
@@ -31082,7 +31098,14 @@ function _aplicarCorreccionAGuerraConReparto(fuente, offsetsPorClave, temporadaP
   // ---- MODO RECONSTRUCCIÓN COMPLETA (punto 1.5) ----
   opciones.ultimoRepartoFallido = null;
   opciones.ultimaReconstruccionClanTerminado = null;
+  opciones.sinClanReconstruccion = false;
   var offsetsNuevos = _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valores, opciones);
+  if (!offsetsNuevos && opciones.sinClanReconstruccion) {
+    // §PF402: no se conoce el clan: no se crea nada y va a revision (no cuenta como «sin combinacion»).
+    stats.sinClan = (stats.sinClan || 0) + 1;
+    if (opciones.revision) opciones.revision.push({ temporada: temporadaPropia, semana: semana, tag: tag, nombre: '', tipo: 'alarma', motivo: 'sin clan: no se crearon las filas (reconstruccion)', detalle: 'el jugador no figura en el Directorio y la correccion no trae su clan de esa semana' });
+    return { modo: 'reconstruccion', huboCambio: false, sinClan: true };
+  }
   if (!offsetsNuevos) {
     stats.sinCombinacion = (stats.sinCombinacion || 0) + 1;
     var fallo = opciones.ultimoRepartoFallido || null;
@@ -31443,7 +31466,7 @@ function _cgwResumenCorrGuerra_(props) {
   if (!est) { Logger.log('[Corregir Guerra<-RoyaleAPI] TODAS LAS TEMPORADAS: sin resumen (no quedó estado guardado).'); return; }
   var s = est.st || {};
   Logger.log('[Corregir Guerra<-RoyaleAPI] TODAS LAS TEMPORADAS: ' + est.temporadas + ' temporada(s), ' + (s.claves || 0) + ' clave(s) procesada(s) en total. Ajustadas: ' + (s.corregidas || 0) +
-    '. Reconstruidas desde cero: ' + (s.reconstruidas || 0) + (s.reconstruidasClanTerminado ? ' (' + s.reconstruidasClanTerminado + ' con el domingo sin fame del clan terminado)' : '') +
+    '. Sin clan (no se crearon filas): ' + (s.sinClan || 0) + '. Reconstruidas desde cero: ' + (s.reconstruidas || 0) + (s.reconstruidasClanTerminado ? ' (' + s.reconstruidasClanTerminado + ' con el domingo sin fame del clan terminado)' : '') +
     '. Con ClanTag: aplicadas ' + (s.ccAplicadas || 0) + ', reconstruidas ' + (s.ccReconstruidas || 0) + ', alarmas ' + (s.ccAlarmas || 0) + ', revertidas ' + (s.ccRevertidos || 0) +
     ', incompletas ' + (s.ccIncompletos || 0) + '.');
 }
@@ -31960,6 +31983,13 @@ function _marcarOrigenCorregido(filas, offsetsExistentes) {
 function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valores, opciones) {
   var temporadaRoyaleApi = opciones.temporadaRoyaleApi || _getTemporadaRoyaleApiDesdePropia(temporadaPropia);
   var datosJugador = _buscarDatosJugadorParaReconstruccion(tag);
+  // 6-nov-2026 (§PF402): nunca se crea una fila de Guerra sin clan. Antes, si el jugador no estaba en el Directorio, la fila salia con el nombre igual al tag y el Clan vacio (las 3920 filas de Backup_Guerra.csv). Ahora no se escribe nada y el caso va a revision.
+  var clanReconstruccion = String(opciones.clanNombre || datosJugador.clan || '').trim();
+  if (!clanReconstruccion) {
+    opciones.sinClanReconstruccion = true;
+    Logger.log('[CorreccionGuerra] No se reconstruye T' + temporadaPropia + ' S' + semana + ' ' + tag + ': no se conoce su clan (no figura en el Directorio y la correccion no lo trae). No se crearon filas.');
+    return null;
+  }
   var inicioSemanaPeriodIndex = (Number(semana) - 1) * 7;
 
   var offsetsNuevos = {};
@@ -31975,7 +32005,7 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
     filaNueva[GC.DIA         - 1] = periodIdxToLetra(pIdx);
     filaNueva[GC.PERIOD_IDX  - 1] = pIdx;
     filaNueva[GC.ETAPA       - 1] = 'Guerra';
-    filaNueva[GC.CLAN        - 1] = opciones.clanNombre || datosJugador.clan; // 31-oct-2026: el clan que reporta Nuevos manda sobre el del Directorio
+    filaNueva[GC.CLAN        - 1] = clanReconstruccion; // 31-oct-2026: el clan que reporta Nuevos manda sobre el del Directorio; §PF402: nunca vacio
     filaNueva[GC.TAG         - 1] = tag;
     filaNueva[GC.NOMBRE      - 1] = datosJugador.nombre;
     filaNueva[GC.ATAQUES_HOY - 1] = 0;
@@ -32759,7 +32789,13 @@ function _ajustarSemanaDeUnClan_(filas, offsets, valores, opciones) {
  */
 function _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opciones, nombreClan, nombreJugador) {
   var temp = { tipo: fuente.tipo, filas: [] };
-  var offsTemp = _reconstruirSemanaDesdeCero(temp, temporadaPropia, semana, tag, valores, opciones || {});
+  // §PF402: aqui el clan ya se conoce (nombreClan); se pasa para que la reconstruccion no dependa del Directorio. Se restaura al terminar porque `opciones` se comparte con quien llama.
+  var opcionesRec = opciones || {};
+  var clanNombrePrevio = opcionesRec.clanNombre;
+  if (nombreClan) opcionesRec.clanNombre = nombreClan;
+  var offsTemp;
+  try { offsTemp = _reconstruirSemanaDesdeCero(temp, temporadaPropia, semana, tag, valores, opcionesRec); }
+  finally { opcionesRec.clanNombre = clanNombrePrevio; }
   if (!offsTemp) return {}; // sin combinacion (§PF122): no se escribe nada; la comprobacion (b) de quien llama lo revierte y lo avisa
   for (var i = 0; i < temp.filas.length; i++) {
     temp.filas[i][GC.CLAN - 1] = nombreClan;
@@ -61950,12 +61986,11 @@ function _leerMapaCodigosClanContactos() {
 
 // _getClanTagByName(clanName): tag de un clan por nombre, para ordenar por TERNA_TAGS; '' si no existe. [→ Contexto_Base_Web.md §38B194]
 function _getClanTagByName(clanName) {
-  if (!CACHE_CLAN_DATA) return '';
-  for (var tag in CACHE_CLAN_DATA) {
-    var info = CACHE_CLAN_DATA[tag] && CACHE_CLAN_DATA[tag].info;
-    if (info && String(info.name || '') === clanName) return tag;
-  }
-  return '';
+  // §PF403 (6-nov-2026): delega en el resolvedor unico (_mapaNombreClanATagTerna(), 14_Nuevos_RoyaleAPI.gs: hoja Clan o CFG.CLAN_NOMBRES_FALLBACK). Antes leia CACHE_CLAN_DATA, que las consultas web no llenan, y devolvia '' siempre. El nombre se compara sin mayusculas ni espacios de los bordes; '' si no es un clan Terna. Es un respaldo por nombre (regla 2 del plan Clanes por Tag): quien ya tenga el Tag debe usar el Tag.
+  var nombre = String(clanName === undefined || clanName === null ? '' : clanName).trim().toLowerCase();
+  if (!nombre) return '';
+  var mapa = _mapaNombreClanATagTerna();
+  return Object.prototype.hasOwnProperty.call(mapa, nombre) ? mapa[nombre] : '';
 }
 
 // ----- Dashboard de administradores: HTML y armado de los datos -----
@@ -70459,7 +70494,7 @@ function testTamanioPerfiles(n) {
  * Mide cada pieza por separado, sin pasar por GitHub:
  *   - lectura del Directorio (_webLeerDirectorioComoDC)
  *   - _resolverArenaDesdeCatalogo() por llamada (el roster la llama una vez por miembro)
- *   - _getClanTagByName() por llamada (el orden de clanes la llama varias veces)
+ *   - _getClanTagByName() por llamada (el orden de clanes la llama varias veces; desde §PF403 usa el mapa en memoria de _mapaNombreClanATagTerna(): la primera llamada lee la hoja Clan y las demas no)
  *   - _webRosterCalcular() completo
  *   - cada sección de home.json (versión sin caché cuando existe)
  * Ejecutar testTiempoEstaticos() desde el editor y mandar el registro.
