@@ -4068,21 +4068,22 @@ function _webAdminOtrasCuentas(token, tag) {
   // 2) Recorrer Directorio + Inactivos buscando ese mismo Celular, excluyendo al propio Tag consultado y sin duplicar por Tag. [→ Contexto_Base_Web.md §37B310]
   var vistos = {};
   var cuentas = [];
-  function agregarSiCoincide(tagFila, nombreFila, clanFila, celularFila) {
+  function agregarSiCoincide(tagFila, nombreFila, clanFila, celularFila, clanTagFila) {
     var celLimpio = String(celularFila || '').replace(/\D/g, '');
     if (!celLimpio || celLimpio !== celularObjetivo) return;
     var tagLimpio = cleanTag(tagFila);
     if (!tagLimpio || tagLimpio === tagNorm || vistos[tagLimpio]) return;
     vistos[tagLimpio] = true;
-    cuentas.push({ tag: String(tagFila || ''), nombre: String(nombreFila || ''), clan: String(clanFila || '') });
+    cuentas.push({ tag: String(tagFila || ''), nombre: String(nombreFila || ''), clan: String(clanFila || ''), clanTag: String(clanTagFila || '') }); // PF405: aditivo, junto a clan
   }
   for (var k = 0; k < dataDir.length; k++) {
-    agregarSiCoincide(dataDir[k][DC.TAG - 1], dataDir[k][DC.NOMBRE - 1], dataDir[k][DC.CLAN - 1], dataDir[k][DC.CELULAR - 1]);
+    agregarSiCoincide(dataDir[k][DC.TAG - 1], dataDir[k][DC.NOMBRE - 1], dataDir[k][DC.CLAN - 1], dataDir[k][DC.CELULAR - 1], dataDir[k][DC.CLAN_TAG - 1]);
   }
   var colInactNombre = (dataInactOrigen === 'csv') ? (DC.NOMBRE - 1) : (IC.NOMBRE - 1);
   var colInactClan   = (dataInactOrigen === 'csv') ? (DC.CLAN   - 1) : (IC.CLAN   - 1);
+  var colInactClanTag = (dataInactOrigen === 'csv') ? (DC.CLAN_TAG - 1) : (IC.CLAN_TAG - 1); // PF405
   for (var m = 0; m < dataInact.length; m++) {
-    agregarSiCoincide(dataInact[m][colInactTag], dataInact[m][colInactNombre], dataInact[m][colInactClan], dataInact[m][colInactCelular]);
+    agregarSiCoincide(dataInact[m][colInactTag], dataInact[m][colInactNombre], dataInact[m][colInactClan], dataInact[m][colInactCelular], dataInact[m][colInactClanTag]);
   }
 
   cuentas.sort(function (a, b) { return a.nombre.localeCompare(b.nombre); });
