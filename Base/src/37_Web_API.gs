@@ -3550,6 +3550,7 @@ function _webAdminBuscarMiembroSugerencias(token, q) {
     var idxNombre   = (esCsv ? DC.NOMBRE   : IC.NOMBRE)   - 1;
     var idxNomMulti = (esCsv ? DC.NOM_MULTI: IC.NOM_MULTI) - 1;
     var idxClan     = (esCsv ? DC.CLAN     : IC.CLAN)     - 1;
+    var idxClanTag  = (esCsv ? DC.CLAN_TAG : IC.CLAN_TAG) - 1; // PF407
     var idxEstado   = (esCsv ? DC.ESTADO   : IC.ESTADO)   - 1;
 
     for (var i = 0; i < data.length; i++) {
@@ -3573,6 +3574,7 @@ function _webAdminBuscarMiembroSugerencias(token, q) {
         nombre:   nombre,
         nomMulti: nomMulti,
         clan:     String(f[idxClan] || ''),
+        clanTag:  String(f[idxClanTag] || ''), // PF407: aditivo, junto a clan
         estado:   estadoForzado || (String(f[idxEstado] || '').trim() || 'Inactivo')
       });
     }
@@ -3614,7 +3616,9 @@ function _webAdminVerificarTag(token, tag) {
       jugador: {
         tag: '#' + tagNorm,
         nombre: data.name,
-        clan: (data.clan && data.clan.name) || ''
+        clan: (data.clan && data.clan.name) || '',
+        // PF407: Tag del clan solo si es Terna (criterio 4: vacío si no es Terna)
+        clanTag: (data.clan && data.clan.tag && CFG.TERNA_TAGS.indexOf(String(data.clan.tag).trim().toUpperCase()) >= 0) ? String(data.clan.tag).trim().toUpperCase() : ''
       }
     };
   }
@@ -3694,7 +3698,7 @@ function _webAdminListaMiembrosClan(token, clan) {
     });
   }
 
-  return { ok: true, clan: nombreClan, miembros: miembros };
+  return { ok: true, clan: nombreClan, clanTag: tagClanFiltro, miembros: miembros }; // PF407: aditivo, junto a clan
 }
 
 // _webAdminNomMultisExistentes(token): FASE 4 web (Sección 7.4, Paso 2); lista de Nom_Multi ya usados para poblar el <select> del registro (el frontend agrega "Ninguna de las anteriores"); reutiliza _obtenerNomMultisDistintos() (11_DirectorioSheet.gs); cualquier admin con sesión, sin exigir la Función puntual (solo lectura). @returns {{ok, error?, nomMultis?}} [→ Contexto_Base_Web.md §37B201]
