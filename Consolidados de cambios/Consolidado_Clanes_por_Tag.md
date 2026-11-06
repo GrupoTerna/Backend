@@ -71,7 +71,7 @@
 | Tanda | Qué | Estado | Commit |
 |---|---|---|---|
 | 0 | Aviso «Estuvo en un clan rival» confirmado por Tag (`15_`, `37_`, `directorio.html`); `_migrarNuevosAHistorico()` y lista de miembros por clan por Tag | **Hecha** (6-nov-2026), sin probar en Apps Script real | `3e7f202`, `2aaa39f`, `bcd22f0` |
-| 1 | Backend: resolvedor único con memoria y `_getClanTagByName()` que delega en él | **Hecha** (6-nov-2026), sin probar en Apps Script real (13 pruebas en Node con datos simulados) | `c23636a` |
+| 1 | Backend: resolvedor único con memoria y `_getClanTagByName()` que delega en él | **Hecha** (6-nov-2026); memoria **probada en Apps Script real** el mismo día (primera pasada 534 ms, 20 llamadas siguientes 0 ms, 4 clanes con su Tag); falta ver el orden de clanes en roster y directorio de la web | `c23636a`, `f93d529` |
 | 2 | Backend: `clanTag` aditivo en las respuestas web (2a, 2b, 2c) | Pendiente | — |
 | 3 | Backend: cruce de meta y mensajes por Tag | Pendiente | — |
 | 4 | Backend: mínimos y ataques por clan de torneos y sorteos por Tag | Pendiente | — |
