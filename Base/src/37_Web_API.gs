@@ -1951,6 +1951,7 @@ function _webPerfilJugador(tagBuscado, opciones) {
           puntaje: Number(dataGuerra[i][GC.FAME - 1]) || 0,
           barcos:  Number(dataGuerra[i][GC.BARCOS - 1]) || 0,
           copas:   Number(dataGuerra[i][GC.COPAS  - 1]) || 0, // 12-oct-2026: copas de ese día (0 = sin dato, filas anteriores a la columna). [→ Contexto_Base_Web.md §PF061]
+          clanTag: _getClanTagByName(String(dataGuerra[i][GC.CLAN - 1] || '').trim()), // PF406: aditivo; Guerra guarda solo el nombre, el Tag sale del resolvedor
           clan:    String(dataGuerra[i][GC.CLAN - 1] || '').trim() // 19-oct-2026 (pedido usuaria): clan donde estaba la cuenta ESE día (columna Clan de la fila de Guerra), para que las gráficas de perfil.html no muestren siempre el clan actual. [→ Contexto_Base_Web.md §PF126]
         });
       }
@@ -2026,6 +2027,7 @@ function _webPerfilJugador(tagBuscado, opciones) {
     ok: true,
     jugador: {
       tag: tag, nombre: nombre, clan: clanNombre, rango: rango, estado: estado,
+      clanTag: String(fila[DC.CLAN_TAG - 1] || ''), // PF406: aditivo, junto a clan
       vGuerra: vGuerra, torneos: torneos, copas: copas,
       // FIX 03-sep-2026 ("Vigencia [última conexión] debe mostrarse también en el perfil"): mismo criterio que el fix gemelo en _webRosterCalcular/_construirIngresosRecientesUnificado; la columna ya existía en Directorio (DC.VIGENCIA), solo faltaba exponerla. [→ Contexto_Base_Web.md §37B130]
       vigencia: fila[DC.VIGENCIA - 1] || '',
@@ -2061,13 +2063,16 @@ function _webPerfilJugadorSinRegistro(tagBuscado, opciones) {
   var tagNorm = cleanTag(tagBuscado);
   if (!tagNorm) return { ok: false, error: 'Ingresa un Tag.' };
 
-  var nombrePublico = null, clanPublico = '';
+  var nombrePublico = null, clanPublico = '', clanTagPublico = '';
 
   // Única fuente: proxy de Supercell, un solo intento (ver _webApiGetRapido()). [→ Contexto_Base_Web.md §37B136]
   var datosApi = _webApiGetRapido('/players/' + encodeTag('#' + tagNorm));
   if (datosApi && datosApi.name) {
     nombrePublico = datosApi.name;
     clanPublico = (datosApi.clan && datosApi.clan.name) || '';
+    // PF406: clanTag solo si el clan es Terna (criterio 4 del consolidado: vacío si no es Terna); un clan externo queda con nombre y sin Tag.
+    clanTagPublico = (datosApi.clan && datosApi.clan.tag) ? String(datosApi.clan.tag).trim().toUpperCase() : '';
+    if (CFG.TERNA_TAGS.indexOf(clanTagPublico) < 0) clanTagPublico = '';
   }
 
   if (!nombrePublico) {
@@ -2084,6 +2089,7 @@ function _webPerfilJugadorSinRegistro(tagBuscado, opciones) {
     ok: true,
     jugador: {
       tag: '#' + tagNorm, nombre: nombrePublico, clan: clanPublico, rango: '',
+      clanTag: clanTagPublico, // PF406
       estado: 'Sin registro con nosotros', vGuerra: 0, torneos: 0, copas: 0,
       vigencia: '',
       guerraSemana: { ataques: 0, fame: 0, barcos: 0, ataquesMax: 0 },
@@ -3246,7 +3252,8 @@ function _webTorneosJugador(tagBuscado, opciones) {
         fechaOrden: (fechaCelda instanceof Date) ? fechaCelda.getTime() : 0,
         puesto:    f[TA.PUESTO - 1],
         victorias: Number(f[TA.VICTORIAS - 1]) || 0,
-        clan:      String(f[TA.CLAN - 1] || '')
+        clan:      String(f[TA.CLAN - 1] || ''),
+        clanTag:   String(f[TA.CLAN_TAG - 1] || '') // PF406: aditivo, junto a clan
       };
     })
     .sort(function (a, b) { return b.fechaOrden - a.fechaOrden; })
@@ -3291,6 +3298,7 @@ function _webTorneos(opciones) {
         id:          f[TL.ID - 1],
         fecha:       f[TL.FECHA - 1].toISOString(),
         clan:        String(f[TL.CLAN - 1] || ''),
+        clanTag:     String(f[TL.CLAN_TAG - 1] || ''), // PF406: aditivo, junto a clan
         organizador: String(f[TL.ORGANIZADOR - 1] || ''),
         linkApp:     String(f[TL.LINK_APP - 1] || ''),
         partes:      idsGrupo.length,
@@ -3379,6 +3387,7 @@ function _webGanadoresTorneoMasReciente(ss, opciones) {
       puesto:          p.puesto,
       nombre:          p.nombre,
       clan:            p.clan,
+      clanTag:         p.clanTag || '', // PF406: aditivo, junto a clan
       victorias:       p.victorias,
       premioRepartido: !!p.premioRepartido,
       // CAMBIO 28-sep-2026 (Fase 5b tanda D): tag condicional; ver el docblock de la función para el criterio completo. [→ Contexto_Base_Web.md §37B158]
@@ -3394,6 +3403,7 @@ function _webGanadoresTorneoMasReciente(ss, opciones) {
         puesto:          p.puesto,
         nombre:          p.nombre,
         clan:            p.clan,
+        clanTag:         p.clanTag || '', // PF406: aditivo, junto a clan
         victorias:       p.victorias,
         descalificado:   !!p.descalificado,
         premioRepartido: !!p.premioRepartido,
@@ -3441,6 +3451,7 @@ function _webHistorialTorneos(opciones) {
           puesto:          p.puesto,
           nombre:          p.nombre,
           clan:            p.clan,
+          clanTag:         p.clanTag || '', // PF406: aditivo, junto a clan
           victorias:       p.victorias,
           premioRepartido: !!p.premioRepartido,
           // CAMBIO 28-sep-2026 (Fase 5b tanda D): tag condicional; ver el docblock de _webHistorialTorneos() para el criterio completo. [→ Contexto_Base_Web.md §37B163]
@@ -3455,6 +3466,7 @@ function _webHistorialTorneos(opciones) {
             puesto:          p.puesto,
             nombre:          p.nombre,
             clan:            p.clan,
+            clanTag:         p.clanTag || '', // PF406: aditivo, junto a clan
             victorias:       p.victorias,
             descalificado:   !!p.descalificado,
             premioRepartido: !!p.premioRepartido,
@@ -3466,6 +3478,7 @@ function _webHistorialTorneos(opciones) {
         participantes: participantes,
         fecha:    f[TL.FECHA - 1].toISOString(),
         clan:     String(f[TL.CLAN - 1] || ''),
+        clanTag:  String(f[TL.CLAN_TAG - 1] || ''), // PF406: aditivo, junto a clan
         top3:     top3
       };
     })
@@ -4705,6 +4718,7 @@ function _webMapearParticipanteAdminResolucion(p, celularPorTag, tagsVistosEnGru
     tag:              p.tag,
     nombre:           p.nombre,
     clan:             p.clan,
+    clanTag:          p.clanTag || '', // PF406: aditivo, junto a clan
     victorias:        p.victorias,
     puesto:           p.puesto,
     puestoOriginal:   p.puestoOriginal,
@@ -4852,7 +4866,7 @@ function _webSorteoCalificados(token, idSorteoElegido, soloInfo) {
 
   var clanes = ordenClanes.map(function (c) {
     var lista = porClan[c].slice().sort(function (a, b) { return a.nombre.localeCompare(b.nombre); });
-    return { nombre: c, calificados: lista };
+    return { nombre: c, clanTag: _getClanTagByName(c), calificados: lista }; // PF406: aditivo
   });
 
   // idSorteo (FASE 10-sep-2026, consolidado sección 1, puntos 4 y 6): mismo valor para los 4 clanes de `bloque` (ver docblock de _getConfigMasRecienteCategoria(), 26_Torneos_Core.gs) -- se toma de cualquiera de sus elementos.… [→ Contexto_Base_Web.md §37B323]
