@@ -255,9 +255,22 @@ function generarTodosMensajes() {
   });
   for (var pj = 0; pj < plantillasBloques.length; pj++) {
     var pb = plantillasBloques[pj];
+    var contenidoPlant = pb.contenido;
+    // 5-nov-2026 (pedido de la usuaria, §PF380): el mensaje de entrenamiento (plantilla «Defensas de barcos», que sale
+    // solo en días de entrenamiento) dice el día real según periodIndex («Hoy es Lunes de ENTRENAMIENTO ⚔», en vez de
+    // «Estamos en días de ENTRENAMIENTO ⚔») y cierra con la fecha y hora de generación, igual que el mensaje de guerra.
+    // El Google Doc no se toca: el reemplazo se hace aquí, sobre el texto leído. Si el Doc ya no trae esa frase, el
+    // texto queda como está y solo se agrega la línea de generación.
+    if (pb.categoria === 'Defensas de barcos' && !ctx.esDiaGuerra) {
+      var nombreDiaEntr = diaLetraANombre(ctx.diaLetra);
+      nombreDiaEntr = nombreDiaEntr.charAt(0).toUpperCase() + nombreDiaEntr.slice(1).toLowerCase();
+      contenidoPlant = String(contenidoPlant || '')
+        .replace(/Estamos en d[ií]as de ENTRENAMIENTO/i, 'Hoy es ' + nombreDiaEntr + ' de ENTRENAMIENTO')
+        .replace(/\s+$/, '') + '\n🕒 Generado: ' + horaGeneracionMsj;
+    }
     bloques.push({
       categoria: pb.categoria, subcategoria: pb.subcategoria,
-      clan: pb.clan, contenido: pb.contenido, tipo: 'Estático'
+      clan: pb.clan, contenido: contenidoPlant, tipo: 'Estático'
     });
   }
 
