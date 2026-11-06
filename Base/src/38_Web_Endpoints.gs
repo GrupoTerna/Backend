@@ -2207,6 +2207,7 @@ function _getDatosDashboardCalcular_() {
         nomMulti:  String(dataPend[j][3] || ''),
         prestamo:  String(dataPend[j][4] || ''),
         clan:      String(dataPend[j][5] || ''),
+        clanTag:   _getClanTagByName(String(dataPend[j][5] || '').trim()), // PF406: aditivo; la hoja de pendientes guarda solo el nombre del clan
         faltantes: Number(dataPend[j][6]) || 0
       });
     }
@@ -2316,6 +2317,7 @@ function _getDatosDashboardCalcular_() {
       tag:       c.tag,
       nombre:    c.nombre,
       clan:      c.clan,
+      clanTag:   c.clanTag || '', // PF406: aditivo, junto a clan (viene de _construirIngresosRecientesUnificado, 37_Web_API.gs)
       fechaIng:  c.fechaIngresoISO,
       royaleApi: c.royaleApi,
       cwstats:   c.cwstats
