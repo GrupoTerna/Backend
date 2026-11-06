@@ -28,6 +28,7 @@ var TSD_DIAS_ES_ = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viern
 var HISTORIAL_TOTAL_COLS = 12; // Historial_I/S: 7 columnas propias + 5 de TSD
 var HISTORIAL_TSD_COL = 8;     // primera columna de TSD en Historial_I/S
 var ASC_PAR_ENCABEZADO = 'Par_CR'; // encabezado de la columna ASC.PAR_ID de Historial_A/D (PF286)
+var ASC_SNAPSHOT_PROP = 'ASCENSOS_RANGOS_SNAPSHOT'; // PF404: propiedad del script con el último rango visto por Tag (texto «tag=0;tag=2»; 0 Miembro, 1 Veterano, 2 Colíder, 3 Líder). Solo la escribe updateAscensosSheet()
 
 // Tipos de Historial_A/D que son un cambio real de la cuenta (los que la rama «verificar» busca cuando no hay propuesta). «Elegible Admin» no lo es: solo se propone, no cambia el rango.
 var CR_TIPOS_CAMBIO_REAL_ = { 'Ascenso': true, 'Degradación': true, 'Expulsión': true, 'Ascenso de clan': true };
@@ -195,32 +196,40 @@ function updateAscensosSheet(ss, dirData) {
   var sh = ss.getSheetByName(CFG.SHEETS.ASCENSOS);
   if (!sh) { Logger.log('[Ascensos] ABORT: hoja Ascensos no existe.'); return; }
 
-  var csvExistente = _loadCSVFromDrive('Backup_Directorio.csv');
-  if (!csvExistente) {
-    Logger.log('[Ascensos] Sin Backup_Directorio.csv previo (primera corrida) — no se puede comparar, no se detectan cambios esta vez.');
-    _reordenarHistorialAscensosGlobal(ss, sh, []);
-    return;
-  }
+  // PF404 (06-nov-2026): el punto de comparación es el registro propio de rangos (_leerSnapshotRangosAscensos_()), que solo escribe esta función. Antes era
+  // únicamente Backup_Directorio.csv, y runSyncCSV (activador de las 7:00) lo reescribe sin pasar por las vistas: cuando runUpdateProgramado corría a las
+  // 12:00 el rango nuevo ya estaba en el CSV y el cambio no se registraba. El CSV queda solo como respaldo de la primera corrida (aún sin registro propio).
+  var rangoPrevioPorTag = _leerSnapshotRangosAscensos_();
+  if (!rangoPrevioPorTag) {
+    var csvExistente = _loadCSVFromDrive('Backup_Directorio.csv');
+    if (!csvExistente) {
+      Logger.log('[Ascensos] Sin registro propio de rangos ni Backup_Directorio.csv previo (primera corrida) — no se puede comparar, no se detectan cambios esta vez.');
+      _guardarSnapshotRangosAscensos_(dirData);
+      _reordenarHistorialAscensosGlobal(ss, sh, []);
+      return;
+    }
 
-  var parsedDir = _parseCSV(csvExistente);
-  if (parsedDir.length < 2) {
-    Logger.log('[Ascensos] Backup_Directorio.csv vacío, nada que comparar.');
-    return;
-  }
+    var parsedDir = _parseCSV(csvExistente);
+    if (parsedDir.length < 2) {
+      Logger.log('[Ascensos] Backup_Directorio.csv vacío, nada que comparar.');
+      return;
+    }
 
-  var headers = parsedDir[0];
-  var hIdx = {};
-  for (var c = 0; c < headers.length; c++) hIdx[String(headers[c]).trim()] = c;
-  if (hIdx['Tag'] === undefined || hIdx['Rango'] === undefined) {
-    Logger.log('[Ascensos] Backup_Directorio.csv no tiene columnas Tag/Rango, aborto.');
-    return;
-  }
+    var headers = parsedDir[0];
+    var hIdx = {};
+    for (var c = 0; c < headers.length; c++) hIdx[String(headers[c]).trim()] = c;
+    if (hIdx['Tag'] === undefined || hIdx['Rango'] === undefined) {
+      Logger.log('[Ascensos] Backup_Directorio.csv no tiene columnas Tag/Rango, aborto.');
+      return;
+    }
 
-  var rangoPrevioPorTag = {};
-  for (var i = 1; i < parsedDir.length; i++) {
-    var row = parsedDir[i];
-    var tg = String(row[hIdx['Tag']] || '').trim();
-    if (tg) rangoPrevioPorTag[tg] = String(row[hIdx['Rango']] || '').trim();
+    rangoPrevioPorTag = {};
+    for (var i = 1; i < parsedDir.length; i++) {
+      var row = parsedDir[i];
+      var tg = String(row[hIdx['Tag']] || '').trim();
+      if (tg) rangoPrevioPorTag[tg] = String(row[hIdx['Rango']] || '').trim();
+    }
+    Logger.log('[Ascensos] Primera corrida con registro propio de rangos: se compara contra Backup_Directorio.csv por última vez.');
   }
 
   // FASE 6 (13-sep-2026, pedido del usuario, plan de Cambio de Rango): antes [→ Contexto_Base_Web.md §24B004]
@@ -267,6 +276,7 @@ function updateAscensosSheet(ss, dirData) {
     Logger.log('[Ascensos] Sin cambios de rango detectados en esta corrida.');
     // Igual se reordena globalmente: cubre el caso de que la hoja haya [→ Contexto_Base_Web.md §24B007]
     _reordenarHistorialAscensosGlobal(ss, sh, []);
+    _guardarSnapshotRangosAscensos_(dirData); // PF404: el registro de rangos avanza solo cuando la corrida terminó de escribir
     return;
   }
 
@@ -284,6 +294,56 @@ function updateAscensosSheet(ss, dirData) {
 
   Logger.log('[Ascensos] ' + nuevosRegistros.length + ' registro(s) nuevo(s) creado(s), ' +
     propuestasResueltas + ' propuesta(s) CR_Lista resuelta(s) como Realizado, hoja reordenada globalmente.');
+  _guardarSnapshotRangosAscensos_(dirData); // PF404
+}
+
+/**
+ * _leerSnapshotRangosAscensos_() [→ Contexto_Base_Web.md §PF404]
+ * Devuelve { tag: 'Rango' } con el último rango visto por updateAscensosSheet(), o null si aún no hay registro propio o está dañado (entonces se usa Backup_Directorio.csv).
+ */
+function _leerSnapshotRangosAscensos_() {
+  try {
+    var txt = PropertiesService.getScriptProperties().getProperty(ASC_SNAPSHOT_PROP);
+    if (!txt) return null;
+    var mapa = {};
+    var partes = String(txt).split(';');
+    for (var i = 0; i < partes.length; i++) {
+      var kv = partes[i].split('=');
+      if (kv.length !== 2) continue;
+      var rango = RANGO_ORDEN[parseInt(kv[1], 10)];
+      if (kv[0] && rango) mapa[kv[0]] = rango;
+    }
+    return Object.keys(mapa).length ? mapa : null;
+  } catch (e) {
+    Logger.log('[Ascensos] No se pudo leer el registro propio de rangos (' + e.message + '); se usa Backup_Directorio.csv.');
+    return null;
+  }
+}
+
+/**
+ * _guardarSnapshotRangosAscensos_(dirData) [→ Contexto_Base_Web.md §PF404]
+ * Guarda el rango actual de cada jugador Activo de un clan Terna (mismo criterio que updateAscensosSheet()). Si el texto no cabe en la propiedad (9 KB) no guarda nada
+ * y avisa: la corrida siguiente vuelve a comparar contra Backup_Directorio.csv, como antes de PF404.
+ */
+function _guardarSnapshotRangosAscensos_(dirData) {
+  try {
+    var partes = [];
+    for (var d = 0; d < dirData.length; d++) {
+      var dir = dirData[d];
+      if (String(dir[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
+      var tag = String(dir[DC.TAG - 1] || '').trim();
+      if (!tag || CFG.TERNA_TAGS.indexOf(String(dir[DC.CLAN_TAG - 1] || '').trim()) < 0) continue;
+      var idx = RANGO_ORDEN.indexOf(String(dir[DC.RANGO - 1] || '').trim());
+      if (idx < 0) continue;
+      partes.push(tag + '=' + idx);
+    }
+    var txt = partes.join(';');
+    if (txt.length > 8500) { Logger.log('[Ascensos] AVISO: el registro de rangos (' + txt.length + ' caracteres) no cabe en la propiedad; no se guarda.'); return; }
+    if (!partes.length) return; // un Directorio vacío no borra el registro anterior
+    PropertiesService.getScriptProperties().setProperty(ASC_SNAPSHOT_PROP, txt);
+  } catch (e) {
+    Logger.log('[Ascensos] No se pudo guardar el registro propio de rangos: ' + e.message);
+  }
 }
 
 
