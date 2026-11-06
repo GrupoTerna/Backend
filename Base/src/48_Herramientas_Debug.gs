@@ -348,10 +348,15 @@ function testTiempoEstaticos() {
 
   var nombres = {};
   activos.forEach(function (f) { nombres[String(f[DC.CLAN - 1] || 'Sin clan')] = true; });
+  // §PF403: la primera llamada lee la hoja Clan y las demas usan el mapa en memoria; se miden por separado para comprobar que la memoria funciona.
+  var nomsC = Object.keys(nombres);
+  var tC1 = Date.now();
+  var tagsC = nomsC.map(function (n) { return n + ' -> ' + (_getClanTagByName(n) || '(sin Tag)'); });
+  var msC1 = Date.now() - tC1;
   var tC = Date.now();
   var nC = 0;
-  Object.keys(nombres).forEach(function (n) { for (var r = 0; r < 5; r++) { _getClanTagByName(n); nC++; } });
-  L('_getClanTagByName: ' + nC + ' llamadas en ' + (Date.now() - tC) + ' ms');
+  nomsC.forEach(function (n) { for (var r = 0; r < 5; r++) { _getClanTagByName(n); nC++; } });
+  L('_getClanTagByName: primera pasada (' + nomsC.length + ' nombres, lee la hoja Clan) ' + msC1 + ' ms; ' + nC + ' llamadas siguientes ' + (Date.now() - tC) + ' ms (deben ser casi 0). Tags: ' + tagsC.join(' | '));
 
   var tR = Date.now();
   var roster = _webRosterCalcular();
