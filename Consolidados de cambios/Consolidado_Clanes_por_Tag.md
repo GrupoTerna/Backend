@@ -42,6 +42,12 @@
 
 *Efecto: P7 queda contestada. `Estado` y el clan por fila se aplican a `Control` **y** a `Control_2`; Ascenso, Inactividad y Alerta **siguen siendo del jugador** (se calculan con el total del jugador entre todos sus clanes, como hoy), no de cada clan.*
 
+**Precisiones de la usuaria a P7 (texto literal, 6-nov-2026; regla 12):**
+
+> Estado es solo Activo o Inactivo, se traen de directorio. si el jugador está presente en uno de los clanes, en los otros se marca como inactivo. ascenso, inactividad y alerta deben mostrar lo mismo en todas sus filas para el jugador. la temporada a mostrar está bien. haz la tanda 1
+
+*Efecto: **se cancelan los valores «Presente» / «Anterior» propuestos**: `Estado` vale solo «Activo» o «Inactivo» y sale del `Directorio`. Si el jugador está presente en uno de sus clanes, esa fila queda «Activo» y las filas de los otros clanes quedan «Inactivo». Ascenso, Inactividad y Alerta muestran **el mismo valor en todas las filas del jugador**. Se muestra la temporada de `Extra!G2`. Se ordena empezar por la tanda 1.*
+
 ## 1. Regla y criterios de diseño (decididos por Claude por delegación, 6-nov-2026)
 
 1. **La clave de identidad de un clan es su Tag** (con «#», en mayúsculas). El nombre es un texto para mostrar: no sirve para decidir si dos clanes son el mismo, si un clan es Terna, rival o vetado, ni para agrupar, filtrar, ordenar o cruzar datos. Motivo: dos clanes pueden llamarse igual (los dos «Argentina» de §PF400) y un clan puede cambiar de nombre.
@@ -65,7 +71,7 @@
 | Tanda | Qué | Estado | Commit |
 |---|---|---|---|
 | 0 | Aviso «Estuvo en un clan rival» confirmado por Tag (`15_`, `37_`, `directorio.html`); `_migrarNuevosAHistorico()` y lista de miembros por clan por Tag | **Hecha** (6-nov-2026), sin probar en Apps Script real | `3e7f202`, `2aaa39f`, `bcd22f0` |
-| 1 | Backend: resolvedor único con memoria y `_getClanTagByName()` que delega en él | Pendiente | — |
+| 1 | Backend: resolvedor único con memoria y `_getClanTagByName()` que delega en él | **Hecha** (6-nov-2026), sin probar en Apps Script real (13 pruebas en Node con datos simulados) | `c23636a` |
 | 2 | Backend: `clanTag` aditivo en las respuestas web (2a, 2b, 2c) | Pendiente | — |
 | 3 | Backend: cruce de meta y mensajes por Tag | Pendiente | — |
 | 4 | Backend: mínimos y ataques por clan de torneos y sorteos por Tag | Pendiente | — |
@@ -89,6 +95,7 @@
 - **Editar:** `14_Nuevos_RoyaleAPI.gs` (`_mapaNombreClanATagTerna()`: guardar el mapa en una variable global por ejecución); `38_Web_Endpoints.gs` (`_getClanTagByName()`: delegar en el mapa, sin usar `CACHE_CLAN_DATA`). **Ver:** `01_Config_Global.gs` (`_resolverNombreClan()`, `CFG.CLAN_NOMBRES_FALLBACK`), `48_Herramientas_Debug.gs` (mide `_getClanTagByName()`; actualizar su texto si cambia el costo).
 - **Cuidado.** Hoy `_getClanTagByName()` compara con `info.name` exacto; el mapa usa minúsculas y espacios recortados. Hay que conservar que devuelva `''` cuando el nombre no es de un clan Terna (los ordenamientos mandan al final lo que no encuentran).
 - **Verificación.** `node --check` de los dos archivos; prueba en Node con datos simulados (nombre exacto, con otras mayúsculas, inexistente, hoja Clan vacía con respaldo); sin comillas triples; `verificar_idioma.py`. **Sin probar en Apps Script real.**
+- **Cómo quedó (6-nov-2026, `c23636a`, §PF403).** Además de los dos archivos del plan se tocaron `10_ClanSheet.gs` (`updateClanSheet()` reinicia el mapa al terminar, porque la hoja Clan cambió) y el comentario de `48_Herramientas_Debug.gs`. Detalle en `Contexto_Base_Web.md` §PF403.
 
 ### Tanda 2 — `clanTag` aditivo en las respuestas web (backend)
 - **Objetivo.** Que cada objeto con `clan` (nombre) lleve también `clanTag`, para que la web deje de depender del nombre.
@@ -173,7 +180,7 @@
 - **Objetivo.** Que un jugador con registros en varios clanes la misma temporada tenga **una fila por clan** en `Control` y `Control_2`, cada una con el clan de sus registros (no solo el actual) y una columna `Estado` que diga en cuál está presente ahora. Así «se tienen todos los registros» (usuaria, 6-nov-2026).
 - **Qué cambia respecto de hoy (verificado el 6-nov-2026).** Hoy ambas hojas tienen **una fila por jugador** (tag de `Directorio`) y, si estuvo en 2 o más clanes la misma semana, **suman entre clanes** (`CONTROL_SUMA_ENTRE_CLANES = true`, `22_ControlCalendario.gs`; `_procesarFilasGuerraParaControl()`; `generarBackupGuerraSemanalCSV()` en `23_Control2_GuerraSemanal.gs`, que hoy agrupa por temporada, semana y tag y toma el clan de la fila más reciente). La hoja `Guerra` y `Backup_Guerra.csv` **ya guardan una fila por jugador, clan y día**, así que el dato de partida existe.
 - **Qué hay que leer antes de editar** (solo ver): `22_ControlCalendario.gs` (`updateControlSheet()` y `_procesarFilasGuerraParaControl()`), `23_Control2_GuerraSemanal.gs` (`actualizarControl2()`, `generarBackupGuerraSemanalCSV()`, `CC2`, `COL_INICIO_GRID2`), y todo consumidor de la fila de `Control` o de `Control_2` por tag: `_getAgregadosAscensoPorTag()` y `_getTrofeosYAtaquesSemanalesPorTag()` (`28_Torneos_Docs.gs`), requisitos de ascenso (`REQUISITOS_ASCENSO`), las columnas Inactividad, Alerta, Ataq_Pend y Ascenso, `corregirGuerraYControlDesdeControl2()` (lee `Control_2` por tag) y la web (`37_Web_API.gs`, `38_Web_Endpoints.gs`). Con `grep -n "CC2\.\|Control_2\|CONTROL_SUMA_ENTRE_CLANES" Base/src/*.gs`.
-- **Decidido por la usuaria (P7, 6-nov-2026).** `Estado` y el clan por fila se aplican a `Control` y a `Control_2`. **Ascenso, Inactividad y Alerta siguen siendo por jugador, no por clan:** se calculan con el total del jugador entre todos sus clanes (como hoy). Lo que sigue **sin dictar** y se resuelve al empezar la tanda, con la opción segura: (a) los valores de `Estado` («Presente» / «Anterior»); (b) en qué filas se muestran esos tres valores del jugador (propuesta: el mismo valor en todas las filas del jugador, porque son del jugador, y avisar a la usuaria antes de aplicar si queda confuso); (c) la temporada que se muestra es la de `Extra!G2`.
+- **Decidido por la usuaria (P7 y precisiones, 6-nov-2026).** `Estado` y el clan por fila se aplican a `Control` y a `Control_2`. **`Estado` es solo «Activo» o «Inactivo» y se trae del `Directorio`:** si el jugador está presente en uno de sus clanes, esa fila es «Activo» y las de los otros clanes son «Inactivo». **Ascenso, Inactividad y Alerta son por jugador** (se calculan con el total del jugador entre todos sus clanes) y **se muestran con el mismo valor en todas las filas del jugador**. La temporada que se muestra es la de `Extra!G2`. No queda ningún detalle sin dictar.
 - **Riesgos que hay que resolver antes de escribir código:** (1) dos filas del mismo tag rompen todo lo que busca «la fila de este tag» en `Control` o `Control_2`; (2) Ascenso, Inactividad y Alerta son del **jugador**: si cada fila solo ve su clan, un jugador repartido entre dos clanes parecería inactivo o sin ataques en cada uno; (3) `corregirGuerraYControlDesdeControl2()` pasaría a recibir varias filas por tag, y por fin traería el clan por fila (resuelve el caso de §PF402); (4) las hojas ya existentes necesitan una columna nueva sin mover las demás (criterio 6) y `Control` se reconstruye entera en cada corrida (`updateControlSheet()`), así que el cambio de estructura es de la hoja completa, no solo de una columna.
 - **Verificación.** Prueba en Node con un jugador de 1 clan (la fila sale igual que hoy) y otro con 2 clanes (dos filas, un solo `Estado` «Presente»); `node --check`; comparación de totales antes y después. **Sin probar en Apps Script real.**
 
@@ -192,7 +199,7 @@
 - **P5. `Backup_Inactivos.csv`: 1000 de 1211 filas sin `Clan` ni `ClanTag`** (N° 1 en adelante, todas con `Estado` «Inactivo»; copia del 18-oct-2026, así que puede estar vieja: antes de usarla se compara con Drive, skill 0.5). Es el mismo tipo de dato incompleto de las etapas tempranas. No bloquea ninguna tanda; se decide en la tanda 8 si se intenta completar desde `Historial` o se deja marcado. *Mientras no se conteste:* se deja marcado.
 - **P6. Posición de la columna `Clan_Tag` — CONTESTADA (6-nov-2026).** En las hojas ya existentes va al final (no se mueven los índices); **en toda hoja o archivo nuevo va al lado del nombre** (criterio 6).
 
-- **P7. `Control` y `Control_2` por clan — CONTESTADA (6-nov-2026).** Una fila por jugador y clan con registros esa temporada, con el clan de esos registros y la columna `Estado` (en cuál está presente ahora), en `Control` y en `Control_2`. **Ascenso, Inactividad y Alerta siguen siendo por jugador, no por clan.** Quedan sin dictar tres detalles menores, con la opción que se usa mientras la usuaria no los cambie: valores de `Estado` «Presente» y «Anterior»; los tres valores del jugador se repiten en todas sus filas; se muestra la temporada de `Extra!G2`. Ver tanda 13.
+- **P7. `Control` y `Control_2` por clan — CONTESTADA por completo (6-nov-2026).** Una fila por jugador y clan con registros esa temporada, con el clan de esos registros y la columna `Estado` («Activo» o «Inactivo», del `Directorio`; «Activo» solo en el clan donde está presente), en `Control` y en `Control_2`. Ascenso, Inactividad y Alerta son por jugador y se repiten iguales en todas sus filas. Temporada: la de `Extra!G2`. Ver tanda 13.
 
 ## 5. Cómo continuar en otra sesión
 
