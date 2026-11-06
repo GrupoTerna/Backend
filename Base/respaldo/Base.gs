@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 06/11/2026 04:48:32 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 06/11/2026 04:58:02 */
 
 
 
@@ -20040,8 +20040,16 @@ function _migrarNuevosAHistorico(candidatosPayload) {
       var reg = registros[r] || {};
 
       // Punto 3: SOLO clanes Terna. reg.clan es el nombre tal cual lo [→ Contexto_Base_Web.md §14B126]
+      // §PF401 (6-nov-2026): los clanes se comparan por TAG; el nombre solo se usa si el registro no trae clanTag (CSV anteriores a §PF253). Antes un clan de afuera con el mismo nombre que uno Terna se aceptaba como Terna.
       var clanNombreReg = String(reg.clan || '').trim().toLowerCase();
-      var clanTagReg = clanNombreReg ? nombreClanATag[clanNombreReg] : null;
+      var clanTagReg = null;
+      var tagCrudoReg = String(reg.clanTag || '').trim().toUpperCase();
+      if (tagCrudoReg) {
+        if (tagCrudoReg.charAt(0) !== '#') tagCrudoReg = '#' + tagCrudoReg;
+        clanTagReg = (CFG.TERNA_TAGS.indexOf(tagCrudoReg) >= 0) ? tagCrudoReg : null;
+      } else if (clanNombreReg) {
+        clanTagReg = nombreClanATag[clanNombreReg] || null;
+      }
       if (!clanTagReg) continue;
 
       var fechaReg = _parseFechaISONuevos(reg.fecha);
@@ -58146,6 +58154,8 @@ function _webAdminListaMiembrosClan(token, clan) {
     if (_normalizar(nombresFamilia[n]) === clanNorm) { nombreClan = String(nombresFamilia[n]); break; }
   }
   if (!nombreClan) return { ok: false, error: 'Ese clan no pertenece a la Familia.' };
+  // §PF401 (6-nov-2026): los miembros se filtran por el Tag del clan (columna Clan Tag de Directorio); el nombre solo se usa si la fila no trae Tag.
+  var tagClanFiltro = String(_mapaNombreClanATagTerna()[String(nombreClan).trim().toLowerCase()] || '').trim().toUpperCase(); // 14_Nuevos_RoyaleAPI.gs: hoja Clan, no depende de la caché en memoria
 
   // FIX 24-sep-2026 (auditoría fallback web->CSV): antes leía Directorio directo y devolvía error duro si la hoja fallaba, dejando inutilizable "Registrar miembro nuevo"; ahora usa _webLeerDirectorioComoDC() (cae a Backup_Directorio.csv), igual que _webRoster()/_webRankings(). [→ Contexto_Base_Web.md §37B200]
   var dataDir = _webLeerDirectorioComoDC().filas;
@@ -58163,7 +58173,9 @@ function _webAdminListaMiembrosClan(token, clan) {
   for (var i = 0; i < dataDir.length; i++) {
     var fila = dataDir[i];
     if (String(fila[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
-    if (_normalizar(fila[DC.CLAN - 1]) !== clanNorm) continue;
+    var tagClanFila = String(fila[DC.CLAN_TAG - 1] || '').trim().toUpperCase();
+    if (tagClanFiltro && tagClanFila) { if (tagClanFila !== tagClanFiltro) continue; }
+    else if (_normalizar(fila[DC.CLAN - 1]) !== clanNorm) continue;
     var tag = String(fila[DC.TAG - 1] || '').trim();
     if (!tag) continue;
     miembros.push({
