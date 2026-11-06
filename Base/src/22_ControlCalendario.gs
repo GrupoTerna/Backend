@@ -44,9 +44,9 @@ var _GUERRA_HOJA_MEMO   = null;
 
 // CRUCE DE META POR DÍA (19-sep-2026, pedido del usuario): ¿el clan ya había [→ Contexto_Base_Web.md §22B051]
 var _CRUCE_META_LOGS_MEMO = null;   // { 'temp|clan': { periodIndex: {ini, fin} } }
-var _CRUCE_META_RES_MEMO  = {};     // { 'temp|clan|pIdx': true/false }
-var _CRUCE_META_JSON_IDX  = {};     // { 'clan': { t, fresco, ids: { 'T|S|P': idArchivoDrive } } } (PF144: ya no guarda DriveFile)
-var _CRUCE_META_JSON_RES  = {};     // { 'temp|clan|pIdx': true/false/null }
+var _CRUCE_META_RES_MEMO  = {};     // { 'temp|TAG|pIdx': true/false } (PF407: la clave lleva el Tag)
+var _CRUCE_META_JSON_IDX  = {};     // { 'TAG': { t, fresco, ids: { 'T|S|P': idArchivoDrive } } } (PF144: ya no guarda DriveFile)
+var _CRUCE_META_JSON_RES  = {};     // { 'temp|TAG|pIdx': true/false/null } (PF407)
 
 /**
  * CONTROL_SUMA_ENTRE_CLANES (3-oct-2026, parte 54, sub-tanda 3.4 de la Tanda 3, pregunta 42 y 56 del consolidado) [→ Contexto_Base_Web.md §22B060]
@@ -971,7 +971,30 @@ function _cruceNormTemporada_(t) {
 }
 
 /**
+ * _cruceMetaTagDe_(clanOTag) PF407 (tanda 3): Tag del clan normalizado (sin '#', mayúsculas) a partir de un Tag o, interinamente, de un nombre.
+ * Los llamadores que leen la hoja Guerra (que guarda solo el nombre hasta la tanda 7) siguen pasando el nombre; aquí se traduce una sola vez con el resolvedor único. '' si no se puede.
+ */
+function _cruceMetaTagDe_(clanOTag) {
+  var s = String(clanOTag === undefined || clanOTag === null ? '' : clanOTag).trim();
+  if (!s) return '';
+  var sinNumeral = s.replace(/#/g, '').toUpperCase();
+  if (_cruceMetaEsTagTerna_(sinNumeral)) return sinNumeral; // ya es el Tag de un clan Terna, con o sin '#'
+  var t = /^#[0-9A-Z]+$/i.test(s) ? s : _getClanTagByName(s); // Tag de otro clan (§PF355) o nombre
+  return String(t || '').replace(/#/g, '').trim().toUpperCase();
+}
+
+/** PF407: true si el Tag (ya normalizado por _cruceMetaTagDe_) es de uno de los clanes Terna; solo ellos tienen datos de river race. */
+function _cruceMetaEsTagTerna_(tagSinNumeral) {
+  if (!tagSinNumeral) return false;
+  for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
+    if (String(CFG.TERNA_TAGS[i]).replace(/#/g, '').trim().toUpperCase() === tagSinNumeral) return true;
+  }
+  return false;
+}
+
+/**
  * _getMapaCruceMetaGuerraLogs_() [→ Contexto_Base_Web.md §22B052]
+ * PF407 (tanda 3): la clave del mapa es 'temporada|TAG' (columna Tag de Guerra_Logs); si una fila no trae Tag se traduce su nombre con el resolvedor.
  */
 function _getMapaCruceMetaGuerraLogs_() {
   if (_CRUCE_META_LOGS_MEMO) return _CRUCE_META_LOGS_MEMO;
@@ -986,7 +1009,7 @@ function _getMapaCruceMetaGuerraLogs_() {
     for (var i = 0; i < filas.length; i++) {
       var r = filas[i];
       var temp   = _cruceNormTemporada_(r[GLC.TEMPORADA - 1]);
-      var nombre = _normalizarNombreClan_(r[GLC.CLAN - 1]);
+      var nombre = _cruceMetaTagDe_(r[GLC.TAG - 1]) || _cruceMetaTagDe_(r[GLC.CLAN - 1]); // PF407: Tag del clan
       var p      = Number(r[GLC.PERIOD_IDX - 1]);
       if (!temp || !nombre || !isFinite(p)) continue;
       var k = temp + '|' + nombre;
@@ -1008,8 +1031,8 @@ function _getMapaCruceMetaGuerraLogs_() {
 }
 
 /** Fuente 1. true/false si Guerra_Logs tiene dato de ese clan/día; null si no. */
-function _cruceMetaDesdeGuerraLogs_(nombreClan, pIdx, temporada) {
-  var reg = _getMapaCruceMetaGuerraLogs_()[_cruceNormTemporada_(temporada) + '|' + _normalizarNombreClan_(nombreClan)];
+function _cruceMetaDesdeGuerraLogs_(clanOTag, pIdx, temporada) { // PF407: acepta el Tag (o, interinamente, el nombre)
+  var reg = _getMapaCruceMetaGuerraLogs_()[_cruceNormTemporada_(temporada) + '|' + _cruceMetaTagDe_(clanOTag)];
   if (!reg) return null;
   var cur = reg[pIdx], prev = reg[pIdx - 1];
   if ((cur && cur.ini >= META_GUERRA_PROGRESO) || (prev && prev.fin >= META_GUERRA_PROGRESO)) return true;
@@ -1023,9 +1046,13 @@ function _cruceMetaDesdeGuerraLogs_(nombreClan, pIdx, temporada) {
  * (CFG.CRUCE_META_IDX_TTL_SEG) y solo se vuelve a listar Drive si falta la clave pedida (como máximo 1 vez cada
  * CFG.CRUCE_META_IDX_REFRESCO_MIN_MS) o si el archivo del índice ya no se puede abrir. [→ Contexto_Base_Web.md §PF144]
  */
-function _cruceMetaDesdeJsonDrive_(nombreClan, pIdx, temporada) {
+function _cruceMetaDesdeJsonDrive_(clanOTag, pIdx, temporada) { // PF407: acepta el Tag (o, interinamente, el nombre)
+  var nombreClan = clanOTag;
   try {
-    var nombre = _normalizarNombreClan_(nombreClan);
+    var nombre = _cruceMetaTagDe_(clanOTag); // clave del índice y de la caché: el Tag
+    if (!_cruceMetaEsTagTerna_(nombre)) return null;
+    // Interino hasta la tanda 9 (carpetas de Drive por Tag): la subcarpeta se busca por el nombre actual del clan.
+    nombreClan = _resolverNombreClan('#' + nombre);
     var claveRes = _cruceNormTemporada_(temporada) + '|' + nombre + '|' + pIdx;
     if (_CRUCE_META_JSON_RES.hasOwnProperty(claveRes)) return _CRUCE_META_JSON_RES[claveRes];
 
@@ -1151,9 +1178,10 @@ function _esPeriodoDeColiseo_(temporada, pIdx) {
  */
 function _clanYaCruzoMetaEnPeriodo(nombreClan, periodIndex, temporada, permitirCache) {
   try {
-    var buscado = String(nombreClan || '').trim();
-    // 04-nov-2026 (§PF355): si la fila trae el tag del clan en vez de su nombre (filas «Reconstruido» antiguas de Backup_Guerra.csv), se traduce con CFG.CLAN_NOMBRES_FALLBACK; sin esto no se hallaba la subcarpeta de Drive y se listaba la raíz de currentriverrace (0 archivos, 6,6 s).
-    if (/^#[0-9A-Z]+$/i.test(buscado) && CFG.CLAN_NOMBRES_FALLBACK[buscado.toUpperCase()]) buscado = CFG.CLAN_NOMBRES_FALLBACK[buscado.toUpperCase()];
+    // PF407 (tanda 3): se trabaja con el Tag; si llega un nombre (Guerra guarda solo el nombre hasta la tanda 7) se traduce una vez con el resolvedor.
+    var buscado = _cruceMetaTagDe_(nombreClan);
+    if (!_cruceMetaEsTagTerna_(buscado)) return false;
+    // 04-nov-2026 (§PF355): las filas «Reconstruido» antiguas de Backup_Guerra.csv traen el Tag en el campo del nombre; _cruceMetaTagDe_ lo acepta tal cual (ya no hace falta traducirlo a nombre).
     var pIdx = Number(periodIndex);
     if (!buscado || !isFinite(pIdx)) return false;
     if (temporada !== undefined && temporada !== null && temporada !== '') {
@@ -1161,7 +1189,7 @@ function _clanYaCruzoMetaEnPeriodo(nombreClan, periodIndex, temporada, permitirC
       if ((pIdx % 7) <= 3) return false;
       // TANDA 9 (21-sep-2026): semana de COLISEO (última de la temporada) -> nunca [→ Contexto_Base_Web.md §22B058]
       if (_esPeriodoDeColiseo_(temporada, pIdx)) return false;
-      var claveMemo = _cruceNormTemporada_(temporada) + '|' + _normalizarNombreClan_(buscado) + '|' + pIdx;
+      var claveMemo = _cruceNormTemporada_(temporada) + '|' + buscado + '|' + pIdx; // PF407: buscado es el Tag
       if (_CRUCE_META_RES_MEMO.hasOwnProperty(claveMemo)) return _CRUCE_META_RES_MEMO[claveMemo];
       var r = _cruceMetaDesdeGuerraLogs_(buscado, pIdx, temporada);
       if (r === null) r = _cruceMetaDesdeJsonDrive_(buscado, pIdx, temporada);
@@ -1180,12 +1208,12 @@ function _clanYaCruzoMetaEnPeriodo(nombreClan, periodIndex, temporada, permitirC
 /**
  * Fuente 3 (lógica original del 19-sep-2026, sin cambios): caché de [→ Contexto_Base_Web.md §22B059]
  */
-function _cruceMetaDesdeCacheApi_(buscado, pIdx) {
+function _cruceMetaDesdeCacheApi_(buscado, pIdx) { // PF407: buscado es el Tag sin '#'
   for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
     var clanTag  = CFG.TERNA_TAGS[i];
+    if (String(clanTag).replace(/#/g, '').trim().toUpperCase() !== buscado) continue;
     var clanData = _getClanCache(clanTag);
     if (!clanData || !clanData.info) continue;
-    if (String(clanData.info.name || '').trim() !== buscado) continue;
     var rr = clanData.riverrace;
     if (!rr || !rr.clan) return null;
     if (Number(rr.periodIndex) === pIdx) {
