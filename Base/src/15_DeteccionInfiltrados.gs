@@ -502,7 +502,9 @@ function _webAdminBuscarClan(token, tag) {
       coLideres: resumen.coLideres,
       copasPromedio: resumen.copasPromedio,
       activos7d: resumen.activos7d,
-      esNuestro: _esClanPropio_(tagNorm)
+      esNuestro: _esClanPropio_(tagNorm),
+      // 6-nov-2026 (§PF393): puesto del clan en los rankings semanales de Perú y globales (copas y guerra); null si no figura en ninguno y admin.html oculta la sección. [→ Contexto_Base_Web.md §PF393]
+      ranking: _rankingsDeClanSeguro_(tagNorm)
     },
     esRivalTemporada: !!infoRival,
     infoRival: infoRival,
