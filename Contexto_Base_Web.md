@@ -402,6 +402,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF385` | **⚠️ de clanes vetados o rivales en el perfil, a la izquierda de RoyaleAPI, cuadritos con letras más chicas y títulos de minigráficas centrados** (5-nov-2026, pedido de la usuaria; `Web`: `perfil.html`, `assets/js/features/mini-historial.js`, `sw.js` v240, commit `ea2b492`; **sin probar en navegador real**) |
 | `PF386` | **Fichas de carta del perfil sin filas vacías** (5-nov-2026, pedido de la usuaria; `Web`: `perfil.html`, `sw.js` v241, commit `a445367`; **sin probar en navegador real**) |
 | `PF387` | **Cantidad de cartas bajo el nombre en las fichas de carta del perfil** (5-nov-2026, pedido de la usuaria; `Web`: `perfil.html`, `sw.js` v242, commit `dd5f7c6`; **sin probar en navegador real**) |
+| `PF388` | **Formato de «Logros» en el perfil** (5-nov-2026, pedido de la usuaria; `Web`: `perfil.html`, `sw.js` v243, commit `f1ce937`; **sin probar en navegador real**) |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -581,6 +582,7 @@ Lista única de lo que quedó «pendiente de definir o contestar» (regla 3) en 
 | `PF385` | **Probar el ⚠️ del perfil y los ajustes de la cabecera.** Publicar `Web` (`sw.js` v240); con sesión de admin, abrir `perfil.html` de un jugador que figure con alerta (el mismo que ya muestra ⚠️ en `directorio.html` o `guerra.html`): el ⚠️ debe verse a la izquierda de RoyaleAPI, con el mismo alto que las demás pastillas, y al hacer clic abrir el modal con los clanes y las semanas (cerrar con ×, clic fuera o Esc). Un jugador sin alerta no debe mostrarlo. Revisar además que los cuadritos de la derecha de Requisitos se lean bien con las letras más chicas y que los cuatro títulos de las minigráficas queden centrados, también en móvil. | Abierto (5-nov-2026). Solo probado con jsdom. |
 | `PF386` | **Probar las fichas sin huecos.** Publicar `Web` (`sw.js` v241); en `perfil.html`, «Mazo actual», «Colección completa» y «Cartas de torre»: una carta sin rareza (Montapuercos, Ronin) debe mostrar el tipo en la primera fila y los botones de Héroe o Evolución quedar justo bajo el último dato. | Abierto (5-nov-2026). Solo probado con jsdom. |
 | `PF387` | **Probar la cantidad bajo el nombre.** Publicar `Web` (`sw.js` v242); en `perfil.html`, «Colección completa»: una carta con «1,611/1,000» (por ejemplo Arbusto sospechoso) debe mostrar el nombre entero en una línea y la cantidad en la segunda, a la derecha; un nombre muy largo se parte; revisar también en móvil. | Abierto (5-nov-2026). Solo probado con jsdom. |
+| `PF388` | **Probar «Logros».** Publicar `Web` (`sw.js` v243); en `perfil.html`, «Logros»: «Recompensas del torneo» en una línea, barras alineadas y descripciones grises con sangría; revisar también en móvil. | Abierto (5-nov-2026). Solo probado con jsdom. |
 
 | `PF176` | Publicar `Web` (`sw.js` v150) y abrir `guerra.html`: en día de guerra, la columna de hoy (J, V, S o D) con líneas laterales y encabezado marcado en Ataques, Medallas y Barcos; en entrenamiento, el domingo; en Valores semanales, la semana en curso o la última jugada. Comprobar que el 0 de Ataques se lee bien dentro de la columna, que otra semana elegida no marca nada y que el estilo (líneas, sin fondo) convence: **P11 se decidió por contraste, por confirmar al verlo**. Probado solo con jsdom y con cálculo de contraste a mano. | Abierto (23-oct-2026) |
 
@@ -8827,3 +8829,11 @@ Inventario de temporadas (etapa C-0) → etapa A (nuevos, `ClanTag`, correccione
 4. **Límite conocido.** Si el nombre es tan largo que ocupa varias líneas, la cantidad queda en una línea propia debajo de todas, no al lado de la última línea del nombre.
 5. **Verificado.** 3 pruebas nuevas sobre las reglas CSS (jsdom no calcula anchos); suite completa (1001 pruebas) y `html-validate perfil.html` pasan.
 6. **Qué falta.** Verlo en el navegador real, también en móvil; ver «Abiertos» (`PF387`).
+
+### PF388 — «Logros»: rótulo más ancho y descripciones con sangría (5-nov-2026, Lima; pedido de la usuaria; `Web`: `perfil.html`, `sw.js` v243, `test/perfil-logros-formato.test.js` (nuevo), commit `f1ce937` **hecho**; **SIN probar en navegador real**)
+
+1. **Pedido.** «Recompensas del torneo» se partía en dos líneas: acortar un poco la barra para que quepa; y dar una sangría a las descripciones grises para que no empiecen al mismo nivel que el nombre.
+2. **Cambio.** `#mLogrosContenido .req-row .lbl{width:172px}` (la base compartida, `.req-row .lbl` de `assets/styles.css`, sigue en 140 px porque la usan los requisitos de rango); la barra, que es `flex:1`, se acorta sola. La descripción de `renderLogros()` lleva la clase `.logro-info` con `padding-left:14px`.
+3. **Decisión.** El ancho es fijo (no automático) para que las barras de todos los logros sigan alineadas entre sí. Un nombre de logro más largo que ~172 px se partiría igual; si aparece otro, subir ese ancho.
+4. **Verificado.** 2 pruebas nuevas (el `renderLogros()` real con jsdom y las reglas CSS); suite completa (1003 pruebas) y `html-validate perfil.html` pasan. El ancho de 172 px es una estimación por el texto de la captura, **no medida en un navegador**.
+5. **Qué falta.** Verlo en el navegador real, también en móvil; ver «Abiertos» (`PF388`).
