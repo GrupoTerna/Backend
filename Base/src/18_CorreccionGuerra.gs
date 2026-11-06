@@ -829,6 +829,7 @@ function corregirGuerraYControlDesdeControl2() {
     (esTemporadaActual ? ' (actual, corregida en hoja Guerra + Backup_Guerra.csv).' : ' (histórica, corregida solo en Backup_Guerra.csv).') +
     ' Claves procesadas: ' + correcciones.length +
     '. Ajustadas: ' + (stats.corregidas || 0) + '. Reconstruidas desde cero: ' + (stats.reconstruidas || 0) +
+    '. Sin clan (no se crearon filas): ' + (stats.sinClan || 0) +
     '. Filas de Control_2 sin Tag: ' + filasSinTag + '. Semanas en blanco omitidas: ' + semanasVacias + '.');
 }
 
@@ -2711,7 +2712,14 @@ function _aplicarCorreccionAGuerraConReparto(fuente, offsetsPorClave, temporadaP
   // ---- MODO RECONSTRUCCIÓN COMPLETA (punto 1.5) ----
   opciones.ultimoRepartoFallido = null;
   opciones.ultimaReconstruccionClanTerminado = null;
+  opciones.sinClanReconstruccion = false;
   var offsetsNuevos = _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valores, opciones);
+  if (!offsetsNuevos && opciones.sinClanReconstruccion) {
+    // §PF402: no se conoce el clan: no se crea nada y va a revision (no cuenta como «sin combinacion»).
+    stats.sinClan = (stats.sinClan || 0) + 1;
+    if (opciones.revision) opciones.revision.push({ temporada: temporadaPropia, semana: semana, tag: tag, nombre: '', tipo: 'alarma', motivo: 'sin clan: no se crearon las filas (reconstruccion)', detalle: 'el jugador no figura en el Directorio y la correccion no trae su clan de esa semana' });
+    return { modo: 'reconstruccion', huboCambio: false, sinClan: true };
+  }
   if (!offsetsNuevos) {
     stats.sinCombinacion = (stats.sinCombinacion || 0) + 1;
     var fallo = opciones.ultimoRepartoFallido || null;
@@ -3072,7 +3080,7 @@ function _cgwResumenCorrGuerra_(props) {
   if (!est) { Logger.log('[Corregir Guerra<-RoyaleAPI] TODAS LAS TEMPORADAS: sin resumen (no quedó estado guardado).'); return; }
   var s = est.st || {};
   Logger.log('[Corregir Guerra<-RoyaleAPI] TODAS LAS TEMPORADAS: ' + est.temporadas + ' temporada(s), ' + (s.claves || 0) + ' clave(s) procesada(s) en total. Ajustadas: ' + (s.corregidas || 0) +
-    '. Reconstruidas desde cero: ' + (s.reconstruidas || 0) + (s.reconstruidasClanTerminado ? ' (' + s.reconstruidasClanTerminado + ' con el domingo sin fame del clan terminado)' : '') +
+    '. Sin clan (no se crearon filas): ' + (s.sinClan || 0) + '. Reconstruidas desde cero: ' + (s.reconstruidas || 0) + (s.reconstruidasClanTerminado ? ' (' + s.reconstruidasClanTerminado + ' con el domingo sin fame del clan terminado)' : '') +
     '. Con ClanTag: aplicadas ' + (s.ccAplicadas || 0) + ', reconstruidas ' + (s.ccReconstruidas || 0) + ', alarmas ' + (s.ccAlarmas || 0) + ', revertidas ' + (s.ccRevertidos || 0) +
     ', incompletas ' + (s.ccIncompletos || 0) + '.');
 }
@@ -3589,6 +3597,13 @@ function _marcarOrigenCorregido(filas, offsetsExistentes) {
 function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valores, opciones) {
   var temporadaRoyaleApi = opciones.temporadaRoyaleApi || _getTemporadaRoyaleApiDesdePropia(temporadaPropia);
   var datosJugador = _buscarDatosJugadorParaReconstruccion(tag);
+  // 6-nov-2026 (§PF402): nunca se crea una fila de Guerra sin clan. Antes, si el jugador no estaba en el Directorio, la fila salia con el nombre igual al tag y el Clan vacio (las 3920 filas de Backup_Guerra.csv). Ahora no se escribe nada y el caso va a revision.
+  var clanReconstruccion = String(opciones.clanNombre || datosJugador.clan || '').trim();
+  if (!clanReconstruccion) {
+    opciones.sinClanReconstruccion = true;
+    Logger.log('[CorreccionGuerra] No se reconstruye T' + temporadaPropia + ' S' + semana + ' ' + tag + ': no se conoce su clan (no figura en el Directorio y la correccion no lo trae). No se crearon filas.');
+    return null;
+  }
   var inicioSemanaPeriodIndex = (Number(semana) - 1) * 7;
 
   var offsetsNuevos = {};
@@ -3604,7 +3619,7 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
     filaNueva[GC.DIA         - 1] = periodIdxToLetra(pIdx);
     filaNueva[GC.PERIOD_IDX  - 1] = pIdx;
     filaNueva[GC.ETAPA       - 1] = 'Guerra';
-    filaNueva[GC.CLAN        - 1] = opciones.clanNombre || datosJugador.clan; // 31-oct-2026: el clan que reporta Nuevos manda sobre el del Directorio
+    filaNueva[GC.CLAN        - 1] = clanReconstruccion; // 31-oct-2026: el clan que reporta Nuevos manda sobre el del Directorio; §PF402: nunca vacio
     filaNueva[GC.TAG         - 1] = tag;
     filaNueva[GC.NOMBRE      - 1] = datosJugador.nombre;
     filaNueva[GC.ATAQUES_HOY - 1] = 0;
@@ -4388,7 +4403,13 @@ function _ajustarSemanaDeUnClan_(filas, offsets, valores, opciones) {
  */
 function _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opciones, nombreClan, nombreJugador) {
   var temp = { tipo: fuente.tipo, filas: [] };
-  var offsTemp = _reconstruirSemanaDesdeCero(temp, temporadaPropia, semana, tag, valores, opciones || {});
+  // §PF402: aqui el clan ya se conoce (nombreClan); se pasa para que la reconstruccion no dependa del Directorio. Se restaura al terminar porque `opciones` se comparte con quien llama.
+  var opcionesRec = opciones || {};
+  var clanNombrePrevio = opcionesRec.clanNombre;
+  if (nombreClan) opcionesRec.clanNombre = nombreClan;
+  var offsTemp;
+  try { offsTemp = _reconstruirSemanaDesdeCero(temp, temporadaPropia, semana, tag, valores, opcionesRec); }
+  finally { opcionesRec.clanNombre = clanNombrePrevio; }
   if (!offsTemp) return {}; // sin combinacion (§PF122): no se escribe nada; la comprobacion (b) de quien llama lo revierte y lo avisa
   for (var i = 0; i < temp.filas.length; i++) {
     temp.filas[i][GC.CLAN - 1] = nombreClan;
