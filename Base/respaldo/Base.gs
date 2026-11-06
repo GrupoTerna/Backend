@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 05/11/2026 17:55:41 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 05/11/2026 19:04:38 */
 
 
 
@@ -1655,6 +1655,8 @@ function capturarApiClanes_(maxEdadMs, origen) {
   try { _pronosticoRegistrarFotoDia_(); }
   catch (eFotoDia) { Logger.log('[Captura] No se pudo guardar la foto diaria de fama: ' + eFotoDia.message); }
   if (origen !== 'ventana') _guardarJsonClanesDesdeCaptura_();
+  // PF375 (5-nov-2026): si apareció un clan sospechoso nuevo (rival de la semana, Conflictos o vetado), se actualizan las alertas de clanes sospechosos. Casi siempre no hace nada (compara una firma) y nunca lanza error. [→ Contexto_Base_Web.md §PF375]
+  if (origen !== 'ventana') _alertasClanesDesdeCaptura_();
   Logger.log('[Captura] FIN (' + (origen || 'sin origen') + ', ' + Math.round((Date.now() - t0) / 1000) + ' s)');
   return datos;
 }
@@ -19946,10 +19948,12 @@ function _fechaATemporadaSemana(fecha) {
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
 //  Parte 1 — Funciones que se corren a mano
 //    - Índice de clanes externos: generar (§PF369)
+//    - Alertas de clanes sospechosos: actualizar (§PF375)
 //  Parte 2 — Funciones que no se corren a mano
 //    - Infiltrados: búsqueda desde la web de admin (en el orden de la llamada)
 //    - Clanes: ficha y veto desde «Buscar clan» de la web de admin (§PF368)
 //    - Índice de clanes externos: armar, guardar y consultar (§PF369)
+//    - Alertas de clanes sospechosos: cruzar, guardar y consultar (§PF375)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Columnas de la hoja 'Conflictos' (ver _setupConflictos(), 02_Setup_Hojas.gs). [→ Contexto_Base_Web.md §15B002]
@@ -19962,6 +19966,12 @@ var INDICE_CLANES_JSON = 'Indice_Clanes_Externos.json';
 var INDICE_CLANES_CSV = 'Indice_Clanes_Externos.csv';
 var INDICE_CLANES_PRESUPUESTO_MS = 270000;
 var _indiceClanesCache_ = undefined;
+
+// Alertas de clanes sospechosos (§PF375): jugadores nuestros que alguna vez jugaron guerra en un clan vetado, en conflicto o rival de la temporada. Se guardan en Drive (carpeta Otros) y no en una columna de Directorio: esa hoja tiene el mismo ancho que Inactivos y las filas se mueven entre las dos, así que una columna nueva obligaría a tocar las dos hojas, sus respaldos CSV y las tablas.
+var ALERTAS_CLANES_JSON = 'Alertas_Clanes_Sospechosos.json';
+var ALERTAS_CLANES_CACHE_KEY = 'ALERTAS_CLANES_RESUMEN_V1';
+var ALERTAS_CLANES_CACHE_TTL_SEG = 21600;
+var ALERTAS_CLANES_FIRMA_PROP = 'ALERTAS_CLANES_FIRMA';
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
@@ -20015,11 +20025,26 @@ function generarIndiceClanesExternos() {
     estado.totalClanes = Object.keys(estado.clanes).length;
     _guardarIndiceClanes_(estado);
     _saveCSVToDrive(INDICE_CLANES_CSV, _encodeCSV(_indiceClanesAFilasCsv_(estado)));
+    // §PF375: con el índice recién completo se actualizan las alertas de clanes sospechosos; si falla, el índice ya quedó guardado.
+    try { _alertasClanesActualizar_('índice', null, estado); }
+    catch (eAlertas) { Logger.log('[AlertasClanes] No se pudieron actualizar tras generar el índice: ' + eAlertas.message); }
     Logger.log('[IndiceClanes] COMPLETO: ' + listos + ' jugadores leídos, ' + estado.totalClanes + ' clanes externos' + (estado.ilegibles.length ? ', ' + estado.ilegibles.length + ' JSON ilegibles' : '') + '. Archivos: ' + INDICE_CLANES_JSON + ' (Otros) y ' + INDICE_CLANES_CSV + '.');
   } else {
     _guardarIndiceClanes_(estado);
     Logger.log('[IndiceClanes] INCOMPLETO: ' + listos + ' de ' + tags.length + ' jugadores leídos (' + hechosAhora + ' en esta corrida). Vuelve a correr generarIndiceClanesExternos() para continuar.');
   }
+}
+
+// ----- Alertas de clanes sospechosos: actualizar (§PF375) -----
+
+/**
+ * actualizarAlertasClanesSospechosos() [→ Contexto_Base_Web.md §PF375]
+ * Cruza el índice de clanes externos (generarIndiceClanesExternos(), debe estar COMPLETO) con los clanes vetados, en conflicto y rivales de la temporada, y guarda en Alertas_Clanes_Sospechosos.json qué jugadores nuestros estuvieron en ellos. La marca es permanente: un clan que dejó de ser rival no se quita, y se pueden sumar clanes pero no restar.
+ * Normalmente no hace falta correrla a mano: la corre sola generarIndiceClanesExternos() al completarse y capturarApiClanes_() cuando aparece un clan sospechoso nuevo (por ejemplo, un rival de la semana).
+ */
+function actualizarAlertasClanesSospechosos() {
+  var r = _alertasClanesActualizar_('manual');
+  if (!r.ok) Logger.log('[AlertasClanes] No se actualizó: ' + r.motivo);
 }
 
 // =============================================================================
@@ -20696,6 +20721,197 @@ function _exMiembrosDesdeIndice_(jugadoresIndice, tagsActuales, yaListados) {
     return (ox - oy) || ((y.semanas || 0) - (x.semanas || 0)) || (x.tag < y.tag ? -1 : x.tag > y.tag ? 1 : 0);
   });
   return salida;
+}
+
+// ----- Alertas de clanes sospechosos: cruzar, guardar y consultar (§PF375) -----
+
+/**
+ * _alertasClanesSospechosos_(rivalesYConflicto) [→ Contexto_Base_Web.md §PF375]
+ * Pasa el resultado de _getRivalesYConflicto(true) a { TAGNORM: { nombre, tipos } }, con tipos 'rival' (rival de la temporada) y/o 'vetado' (hoja Conflictos o clan vetado). Los clanes de la Familia nunca llegan aquí (_getClanesRivalesTemporadaActual() los excluye).
+ */
+function _alertasClanesSospechosos_(rivalesYConflicto) {
+  var salida = {};
+  for (var tag in rivalesYConflicto) {
+    var r = rivalesYConflicto[tag];
+    var fuente = String((r && r.fuente) || '');
+    var tipos = [];
+    if (fuente.indexOf('currentriverrace') >= 0) tipos.push('rival');
+    if (fuente === 'manual' || fuente === 'currentriverrace+manual' || fuente === 'vetado') tipos.push('vetado');
+    var tagNorm = cleanTag(tag);
+    if (!tipos.length || !tagNorm) continue;
+    salida[tagNorm] = { nombre: String((r && r.nombre) || ''), tipos: tipos };
+  }
+  return salida;
+}
+
+/**
+ * _alertasClanesCruzar_(previo, sospechosos, indice, ahoraTxt) [→ Contexto_Base_Web.md §PF375]
+ * Función pura: devuelve { estado, jugadoresNuevos, clanesNuevos }. `previo` es lo ya guardado (o null); `sospechosos` sale de _alertasClanesSospechosos_(); `indice` es el índice de clanes externos completo.
+ * Estado: { version, actualizado, indiceActualizado, clanes: { '#CLAN': { nombre, tipos, desde } }, jugadores: { '#JUGADOR': { clanes: { '#CLAN': { semanas, primera, ultima } } } } }.
+ * PERMANENTE: se revisan los clanes sospechosos de hoy y TAMBIÉN los ya guardados (para refrescar sus semanas cuando se regenera el índice); nunca se borra un clan ni un jugador, y los tipos se suman (un clan que fue rival y luego se vetó queda con los dos).
+ * Un clan sospechoso sin jugadores nuestros en el índice no se guarda.
+ */
+function _alertasClanesCruzar_(previo, sospechosos, indice, ahoraTxt) {
+  var estado = (previo && previo.clanes && previo.jugadores) ? previo : { version: 1, actualizado: '', indiceActualizado: '', clanes: {}, jugadores: {} };
+  var claves = {};
+  for (var t in sospechosos) claves['#' + t] = true;
+  for (var k in estado.clanes) claves[k] = true;
+  var jugadoresNuevos = 0, clanesNuevos = 0;
+  for (var clave in claves) {
+    var enIndice = indice && indice.clanes ? indice.clanes[clave] : null;
+    if (!enIndice || !enIndice.jugadores || !enIndice.jugadores.length) continue;
+    var hoy = sospechosos[cleanTag(clave)] || null;
+    var c = estado.clanes[clave];
+    if (!c) { c = estado.clanes[clave] = { nombre: '', tipos: [], desde: String(ahoraTxt).slice(0, 10) }; clanesNuevos++; }
+    if (hoy && hoy.nombre) c.nombre = hoy.nombre;
+    else if (!c.nombre && enIndice.nombre) c.nombre = enIndice.nombre;
+    var tiposHoy = hoy ? hoy.tipos : [];
+    for (var ti = 0; ti < tiposHoy.length; ti++) if (c.tipos.indexOf(tiposHoy[ti]) < 0) c.tipos.push(tiposHoy[ti]);
+    for (var j = 0; j < enIndice.jugadores.length; j++) {
+      var jug = enIndice.jugadores[j];
+      var tagJ = '#' + cleanTag(jug.tag);
+      if (tagJ === '#') continue;
+      var pj = estado.jugadores[tagJ];
+      if (!pj) { pj = estado.jugadores[tagJ] = { clanes: {} }; jugadoresNuevos++; }
+      pj.clanes[clave] = { semanas: jug.semanas || 0, primera: jug.primera || null, ultima: jug.ultima || null };
+    }
+  }
+  estado.actualizado = ahoraTxt;
+  estado.indiceActualizado = (indice && indice.actualizado) || '';
+  return { estado: estado, jugadoresNuevos: jugadoresNuevos, clanesNuevos: clanesNuevos };
+}
+
+/**
+ * _alertasClanesCargar_() / _alertasClanesGuardar_(estado) [→ Contexto_Base_Web.md §PF375]
+ * Lee y escribe Alertas_Clanes_Sospechosos.json en la carpeta Otros. Cargar devuelve null si no existe o no se pudo leer; guardar borra el resumen en caché para que la web vea lo nuevo.
+ */
+function _alertasClanesCargar_() {
+  try {
+    var files = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS).getFilesByName(ALERTAS_CLANES_JSON);
+    if (files.hasNext()) return JSON.parse(files.next().getBlob().getDataAsString('UTF-8'));
+  } catch (e) {
+    Logger.log('[AlertasClanes] Error leyendo ' + ALERTAS_CLANES_JSON + ': ' + e.message);
+  }
+  return null;
+}
+function _alertasClanesGuardar_(estado) {
+  var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+  var files = folder.getFilesByName(ALERTAS_CLANES_JSON);
+  var content = JSON.stringify(estado);
+  if (files.hasNext()) _setContentConConteo_(files.next(), content);
+  else _createFileConConteo_(folder, ALERTAS_CLANES_JSON, content, MimeType.PLAIN_TEXT);
+  try { CacheService.getScriptCache().remove(ALERTAS_CLANES_CACHE_KEY); } catch (eCache) { /* el resumen se vuelve a armar solo al vencer */ }
+}
+
+/**
+ * _alertasClanesActualizar_(origen, sospechososDados, indiceDado) [→ Contexto_Base_Web.md §PF375]
+ * Orquesta: índice completo (el dado o el de Drive) + clanes sospechosos de hoy (los dados o los de _getRivalesYConflicto(true)) + lo ya guardado. Devuelve { ok, motivo?, jugadoresNuevos, clanesNuevos, jugadores, clanes }; ok:false con motivo 'sin-indice' si el índice no existe o está incompleto (no se toca nada). Al terminar anota la firma de los clanes sospechosos de hoy, que usa _alertasClanesDesdeCaptura_() para no repetir el trabajo.
+ */
+function _alertasClanesActualizar_(origen, sospechososDados, indiceDado) {
+  var indice = indiceDado || _cargarIndiceClanes_();
+  if (!indice || !indice.completo || !indice.clanes) return { ok: false, motivo: 'sin-indice' };
+  var sospechosos = sospechososDados || _alertasClanesSospechosos_(_getRivalesYConflicto(true));
+  var ahoraTxt = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm');
+  var res = _alertasClanesCruzar_(_alertasClanesCargar_(), sospechosos, indice, ahoraTxt);
+  _alertasClanesGuardar_(res.estado);
+  PropertiesService.getScriptProperties().setProperty(ALERTAS_CLANES_FIRMA_PROP, Object.keys(sospechosos).sort().join(','));
+  var nJug = Object.keys(res.estado.jugadores).length, nClan = Object.keys(res.estado.clanes).length;
+  Logger.log('[AlertasClanes] (' + origen + ') ' + nJug + ' jugadores en ' + nClan + ' clanes sospechosos (' + res.jugadoresNuevos + ' jugadores y ' + res.clanesNuevos + ' clanes nuevos; ' + Object.keys(sospechosos).length + ' clanes sospechosos hoy).');
+  return { ok: true, jugadoresNuevos: res.jugadoresNuevos, clanesNuevos: res.clanesNuevos, jugadores: nJug, clanes: nClan };
+}
+
+/**
+ * _alertasClanesDesdeCaptura_() [→ Contexto_Base_Web.md §PF375]
+ * Gancho de capturarApiClanes_() (00_Main.gs), fuera de la ventana de las 4 a. m.: si los clanes sospechosos de hoy (rivales, Conflictos, vetado) son los mismos de la última vez, no hace nada (solo lee la hoja Conflictos y una propiedad de script); si aparece uno nuevo, vuelve a cruzar con el índice. Nunca lanza error: la captura no debe fallar por esto. Con el índice incompleto no anota la firma y lo reintenta en la siguiente captura.
+ */
+function _alertasClanesDesdeCaptura_() {
+  try {
+    var sospechosos = _alertasClanesSospechosos_(_getRivalesYConflicto(true));
+    var firma = Object.keys(sospechosos).sort().join(',');
+    if (PropertiesService.getScriptProperties().getProperty(ALERTAS_CLANES_FIRMA_PROP) === firma) return;
+    var r = _alertasClanesActualizar_('captura', sospechosos);
+    if (!r.ok) Logger.log('[AlertasClanes] Captura: no se actualizó (' + r.motivo + ').');
+  } catch (e) {
+    Logger.log('[AlertasClanes] Captura: no se pudo actualizar las alertas: ' + e.message);
+  }
+}
+
+/**
+ * _alertasClanesResumen_(estado) [→ Contexto_Base_Web.md §PF375]
+ * Lo mínimo que necesita la web para pintar el ⚠️: { ok, actualizado, jugadores: { 'TAGSINNUMERAL': { n: clanes sospechosos, tipos: ['rival','vetado'] } } }. Sin nombres ni semanas (eso va aparte, al abrir el modal).
+ */
+function _alertasClanesResumen_(estado) {
+  var jugadores = {};
+  for (var tj in estado.jugadores) {
+    var tipos = {}, n = 0;
+    for (var tc in estado.jugadores[tj].clanes) {
+      n++;
+      var ct = estado.clanes[tc];
+      var lista = (ct && ct.tipos) || [];
+      for (var i = 0; i < lista.length; i++) tipos[lista[i]] = true;
+    }
+    if (n) jugadores[cleanTag(tj)] = { n: n, tipos: Object.keys(tipos).sort() };
+  }
+  return { ok: true, actualizado: estado.actualizado || '', jugadores: jugadores };
+}
+
+/**
+ * _webAdminTagsClanesSospechosos(token) [→ Contexto_Base_Web.md §PF375]
+ * Para el ⚠️ junto al 📈 del mini historial: Tags (sin #) de jugadores que estuvieron en clanes vetados o rivales. Solo admins (las tablas públicas no llevan este dato). Lee el resumen de la caché del script o, si no está, de Alertas_Clanes_Sospechosos.json (un solo archivo pequeño; no recorre hojas ni JSON individuales).
+ */
+function _webAdminTagsClanesSospechosos(token) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  var cache = null;
+  try {
+    cache = CacheService.getScriptCache();
+    var crudo = cache.get(ALERTAS_CLANES_CACHE_KEY);
+    if (crudo) return JSON.parse(crudo);
+  } catch (eLeer) { cache = null; }
+  var estado = _alertasClanesCargar_();
+  var resumen = estado ? _alertasClanesResumen_(estado) : { ok: true, actualizado: '', jugadores: {} };
+  if (cache) { try { cache.put(ALERTAS_CLANES_CACHE_KEY, JSON.stringify(resumen), ALERTAS_CLANES_CACHE_TTL_SEG); } catch (eGuardar) { /* sin caché solo se lee de Drive */ } }
+  return resumen;
+}
+
+/**
+ * _webAdminClanesSospechososJugador(token, tag) [→ Contexto_Base_Web.md §PF375]
+ * Para el modal del ⚠️: por cada clan sospechoso de un jugador, sus semanas jugadas ahí (filas `externa: true` de su JSON individual de RoyaleAPI con ese clanTag, §PF340): { tag, nombre, tipos, semanas, primera, ultima, filas: [{ temporada, temporadaRoyaleApi, supercell, semana, ataques, fame, barcos, cerrada }] }, del clan más reciente al más antiguo y las semanas de la más reciente a la más antigua. De un clan externo solo hay totales por semana (no por día, como en el mini historial de nuestros clanes). `historialDisponible` es false si el JSON individual no se pudo leer; las semanas salen vacías pero la lista de clanes sale igual (viene de las alertas). Solo admins.
+ */
+function _webAdminClanesSospechososJugador(token, tag) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  var tagNorm = cleanTag(tag);
+  if (!tagNorm) return { ok: false, error: 'Falta el Tag del jugador.' };
+  var estado = _alertasClanesCargar_();
+  var pj = estado && estado.jugadores ? estado.jugadores['#' + tagNorm] : null;
+  if (!pj) return { ok: true, tag: '#' + tagNorm, clanes: [], historialDisponible: true };
+
+  var historial = null;
+  try { historial = _cargarHistorialGuerraIndividual('#' + tagNorm); }
+  catch (eJson) { Logger.log('[AlertasClanes] JSON individual de ' + tagNorm + ' no se pudo leer: ' + eJson.message); }
+  var registros = (historial && historial.registros) ? historial.registros : [];
+
+  var clanes = [];
+  for (var clave in pj.clanes) {
+    var tagC = cleanTag(clave);
+    var filas = [];
+    for (var i = 0; i < registros.length; i++) {
+      var r = registros[i];
+      if (!r || r.externa !== true || cleanTag(r.clanTag) !== tagC) continue;
+      var tRoy = Number(r.temporadaRoyaleAPI);
+      filas.push({
+        temporada: Number(r.temporadaInterna), temporadaRoyaleApi: isNaN(tRoy) ? null : tRoy, supercell: _temporadaSupercellDeRoyaleApi_(tRoy),
+        semana: Number(r.semana), ataques: (r.ataques == null) ? null : r.ataques, fame: (r.fame == null) ? null : r.fame, barcos: (r.barcos == null) ? null : r.barcos, cerrada: !!r.cerrada
+      });
+    }
+    filas.sort(function (a, b) { return (b.temporada - a.temporada) || (b.semana - a.semana); });
+    var ct = estado.clanes[clave] || {};
+    clanes.push({ tag: clave, nombre: ct.nombre || '', tipos: ct.tipos || [], semanas: pj.clanes[clave].semanas || filas.length, primera: pj.clanes[clave].primera || null, ultima: pj.clanes[clave].ultima || null, filas: filas });
+  }
+  clanes.sort(function (a, b) {
+    var ua = a.ultima || { temporada: 0, semana: 0 }, ub = b.ultima || { temporada: 0, semana: 0 };
+    return (ub.temporada - ua.temporada) || (ub.semana - ua.semana) || (b.semanas - a.semanas);
+  });
+  return { ok: true, tag: '#' + tagNorm, clanes: clanes, historialDisponible: historial !== null };
 }
 
 
@@ -59602,6 +59818,31 @@ function doGet(e) {
     try {
       return ContentService
         .createTextOutput(JSON.stringify(_webAdminTagsConWsp(e.parameter.sessionToken)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('[Web] Error interno: ' + err.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  // §PF375: webAdminTagsClanesSospechosos (Tags con ⚠️: estuvieron en clanes vetados o rivales) y webAdminClanesSospechososJugador (semanas por clan, para el modal del ⚠️); GET, sesión de admin. [→ Contexto_Base_Web.md §PF375]
+  if (e && e.parameter && e.parameter.accion === 'webAdminTagsClanesSospechosos') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminTagsClanesSospechosos(e.parameter.sessionToken)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('[Web] Error interno: ' + err.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  if (e && e.parameter && e.parameter.accion === 'webAdminClanesSospechososJugador') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminClanesSospechososJugador(e.parameter.sessionToken, e.parameter.tag)))
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
       Logger.log('[Web] Error interno: ' + err.toString());
