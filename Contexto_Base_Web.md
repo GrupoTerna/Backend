@@ -404,6 +404,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF387` | **Cantidad de cartas bajo el nombre en las fichas de carta del perfil** (5-nov-2026, pedido de la usuaria; `Web`: `perfil.html`, `sw.js` v242, commit `dd5f7c6`; **sin probar en navegador real**) |
 | `PF388` | **Formato de «Logros» en el perfil** (5-nov-2026, pedido de la usuaria; `Web`: `perfil.html`, `sw.js` v243, commit `f1ce937`; **sin probar en navegador real**) |
 | `PF389` | **Rareza y elixir de «Mazo actual» desde el backend** (5-nov-2026, pedido de la usuaria; `Web`: `perfil.html`, `sw.js` v244, commit `fb43fe8`; probado por la usuaria el 5-nov-2026) |
+| `PF390` | **Consulta de clanes externos una vez al día, solo a pedido** (5-nov-2026, pedido de la usuaria; `Base`: `15_DeteccionInfiltrados.gs`, commit `8acdfd2`; **sin probar en Apps Script real**) |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -8849,3 +8850,18 @@ Inventario de temporadas (etapa C-0) → etapa A (nuevos, `ClanTag`, correccione
 6. **Dato útil.** Si se edita a mano `Backup_Cards.csv` en Drive, el backend lo lee con una caché de hasta 10 minutos (`_loadCSVFromDrive()`, `05_Backup_CSV.gs`; solo `_saveCSVToDrive()` la invalida), así que un cambio manual puede tardar ese tiempo en verse en el perfil.
 7. **Verificado.** 5 pruebas nuevas (las líneas reales de `perfil.html` con jsdom y una revisión del código de `renderMazoActual()`); suite completa (1008 pruebas) y `node --check` del script de `perfil.html` pasan. No se midió en un navegador real.
 8. **Resultado.** La usuaria confirmó el 5-nov-2026 que el perfil ya muestra bien la rareza y el elixir en «Mazo actual». No se revisó el ancho de móvil (este cambio no toca el diseño).
+
+### PF390 — «Buscar clan», «¿Infiltrado?» y «Vetar clan»: /clans/<Tag> se consulta una vez al día por clan y solo a pedido (5-nov-2026, Lima; pedido de la usuaria; `Base`: `15_DeteccionInfiltrados.gs`, commit `8acdfd2` **hecho**; **sin probar en Apps Script real**)
+
+1. **Pedido.** La usuaria preguntó cómo obtiene la web los miembros, los puntos de clan y los trofeos de guerra al buscar un clan, y cada cuánto se consulta. Se comprobó en el código que cada pulsación de «Buscar clan» llamaba en vivo a `/clans/<Tag>` (sin caché propia; el proxy de Render, repo `Script`, no se revisó). Pidió: «que se consulte una vez al día por clan, así como upcomingchests, solo a pedido».
+2. **Cambio.** Función nueva `_obtenerClanDelDia_(tagNorm)` (`15_DeteccionInfiltrados.gs`), con el mismo patrón que `_webObtenerJsonJugadorDelDia()` de los cofres (`37_Web_API.gs`). Guarda el JSON del clan en Drive, carpeta `DRIVE_FOLDER_ID_CLANS_CONSULTA_TEMPORAL`, un archivo por clan: `Busqueda_Clan - #TAG.json`, con `{ dia, fecha, clan }`. Si el archivo es de hoy (día calendario de Lima, tomado de `dia` dentro del archivo), se lee de ahí y no se llama a la API; si no, se consulta `/clans/<Tag>` una vez, se guarda y se devuelve.
+3. **Quién la usa.** Es la única puerta a `/clans/<Tag>` para las consultas web de clanes externos: `_webAdminBuscarClan()` («Buscar clan»), `_buscarInfiltrado()` (pastilla «¿Infiltrado?» del clan) y `_webAdminVetarClan()` (el nombre del clan al vetar). Si ya se buscó el clan hoy, las tres reutilizan el mismo archivo. Nunca hay consulta por horario: solo cuando alguien la pide.
+4. **Qué devuelve.** `_webAdminBuscarClan()` y `_buscarInfiltrado()` agregan `fechaConsulta` (dd/MM/yyyy HH:mm, Lima) y `origenDatos` (`api`, `drive_hoy` o `drive_anterior`). **`admin.html` todavía no los muestra**: la ficha no dice de cuándo son los datos.
+5. **Decisiones.**
+   - Si la API falla y existe un archivo de un día anterior, se devuelve ese (`drive_anterior`) en lugar de un error.
+   - Un Tag que no existe no se guarda, para que un error de tipeo no deje archivos en Drive.
+   - Si Drive falla al leer o al guardar, la consulta sigue y solo se pierde la reutilización.
+   - El prefijo `Busqueda_Clan - ` no choca con los otros archivos de esa carpeta (`clans_consulta_temporal.json` y la búsqueda por nombre).
+6. **Consecuencia.** Miembros, puntos de clan y trofeos de guerra de la ficha pueden tener hasta un día de antigüedad (antes eran en vivo). Si la usuaria necesita el dato del momento, hay que borrar el archivo del clan en esa carpeta o agregar un botón de «actualizar»; no se hizo.
+7. **No se tocó.** `_fetchAllClanData()` (`09_API_ClashRoyale.gs`, clanes propios de la cadena programada) y el nombre de clan de `38_Web_Endpoints.gs` (con checkpoint de Drive como respaldo): no son consultas a pedido de clanes externos.
+8. **Verificado.** `node --check` sobre una copia `.js` de `15_DeteccionInfiltrados.gs` pasa, no hay comillas inversas triples, y la constante de carpeta y `_guardarArchivoProgresoVerificado_()` (`05_Backup_CSV.gs`) existen. **Nada se corrió en Apps Script real.** Falta probar: buscar un clan dos veces el mismo día (la segunda debe dar `drive_hoy` sin llamar a la API) y un Tag inexistente (no debe crear archivo).
