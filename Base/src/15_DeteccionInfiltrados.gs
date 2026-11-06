@@ -44,6 +44,7 @@ var INDICE_CLANES_PARCIAL_MAX_EDAD_MS = 3 * 24 * 60 * 60 * 1000;
 var CLANES_EXTERNOS_LISTAR_DESDE = 100;
 var CLANES_EXTERNOS_FALLOS_MAX = 5;
 var _clanesExternosCarpetaCache_ = undefined;
+var _clanesExternosListoCache_ = undefined; // §PF378: «dd/MM/yyyy HH:mm» de la última corrida completa del índice ('' = todavía ninguna); se lee una vez por ejecución
 
 // Alertas de clanes sospechosos (§PF375): jugadores nuestros que alguna vez jugaron guerra en un clan vetado, en conflicto o rival de la temporada. Se guardan en Drive (carpeta Otros) y no en una columna de Directorio: esa hoja tiene el mismo ancho que Inactivos y las filas se mueven entre las dos, así que una columna nueva obligaría a tocar las dos hojas, sus respaldos CSV y las tablas.
 var ALERTAS_CLANES_JSON = 'Alertas_Clanes_Sospechosos.json';
@@ -124,9 +125,10 @@ function generarIndiceClanesExternos() {
   _saveCSVToDrive(INDICE_CLANES_CSV, _encodeCSV(_indiceClanesAFilasCsv_(legado)));
   res.firmas.ultimaCompleta = ahoraTxt;
   _clanesExternosFirmasGuardar_(res.firmas);
+  _clanesExternosListoCache_ = ahoraTxt;
   _indiceClanesBorrarParcial_();
-  // §PF375: con el índice recién completo se actualizan las alertas de clanes sospechosos; si falla, el índice ya quedó guardado.
-  try { _alertasClanesActualizar_('índice', null, legado); }
+  // §PF375: con el índice recién completo se actualizan las alertas de clanes sospechosos; si falla, el índice ya quedó guardado. §PF378: las alertas leen los archivos de clan que acaban de quedar completos (no el respaldo).
+  try { _alertasClanesActualizar_('índice'); }
   catch (eAlertas) { Logger.log('[AlertasClanes] No se pudieron actualizar tras generar el índice: ' + eAlertas.message); }
   Logger.log('[IndiceClanes] COMPLETO: ' + listos + ' jugadores leídos, ' + legado.totalClanes + ' clanes externos' + (estado.ilegibles.length ? ', ' + estado.ilegibles.length + ' JSON ilegibles' : '') + '. Archivos de clan (' + CLANES_EXTERNOS_CARPETA + ' en Otros): ' + res.creados + ' creados, ' + res.actualizados + ' actualizados, ' + res.sinCambios + ' sin cambios' + (res.ilegiblesApartados ? ', ' + res.ilegiblesApartados + ' ilegibles apartados' : '') + '. Respaldo: ' + INDICE_CLANES_JSON + ' (Otros) y ' + INDICE_CLANES_CSV + '.');
   return true;
@@ -136,7 +138,7 @@ function generarIndiceClanesExternos() {
 
 /**
  * actualizarAlertasClanesSospechosos() [→ Contexto_Base_Web.md §PF375]
- * Cruza el índice de clanes externos (generarIndiceClanesExternos(), debe estar COMPLETO) con los clanes vetados, en conflicto y rivales de la temporada, y guarda en Alertas_Clanes_Sospechosos.json qué jugadores nuestros estuvieron en ellos. La marca es permanente: un clan que dejó de ser rival no se quita, y se pueden sumar clanes pero no restar.
+ * Cruza el índice de clanes externos (generarIndiceClanesExternos(), debe estar COMPLETO) con los clanes vetados, en conflicto y rivales de la temporada, y guarda en Alertas_Clanes_Sospechosos.json qué jugadores nuestros estuvieron en ellos. Lo permanente es el CLAN (§PF378): un clan que dejó de ser rival no se quita, y se pueden sumar clanes pero no restar; su marca queda también en el archivo del clan (Clanes_Externos). Los jugadores se recalculan desde los archivos de clan en cada corrida.
  * Normalmente no hace falta correrla a mano: la corre sola generarIndiceClanesExternos() al completarse y capturarApiClanes_() cuando aparece un clan sospechoso nuevo (por ejemplo, un rival de la semana).
  */
 function actualizarAlertasClanesSospechosos() {
@@ -808,9 +810,13 @@ function _guardarIndiceClanes_(indice) {
 
 /**
  * _indiceClanesJugadoresDe_(tagClanNorm) [→ Contexto_Base_Web.md §PF369]
- * Jugadores nuestros que estuvieron en un clan externo, según el índice completo: [{ tag, semanas, primera, ultima }]. Devuelve null si el índice no existe o está incompleto (distinto de [] = el clan no figura en el índice). El índice se lee una vez por ejecución.
+ * Jugadores nuestros que estuvieron en un clan externo: [{ tag, semanas, primera, ultima }]. Devuelve null si no hay de dónde leer (distinto de [] = el clan no figura). §PF378: desde la primera corrida completa del índice lee UN solo archivo pequeño, el del clan en Clanes_Externos (histórico); si ese archivo no se puede leer, o aún no hubo una corrida completa, usa el índice anterior (Indice_Clanes_Externos.json), que se lee una vez por ejecución y devuelve null si no existe o está incompleto.
  */
 function _indiceClanesJugadoresDe_(tagClanNorm) {
+  if (_clanesExternosListos_()) {
+    var lectura = _clanExternoLeer_(tagClanNorm);
+    if (!lectura.error) return lectura.datos ? _clanExternoJugadoresDe_(lectura.datos) : [];
+  }
   if (_indiceClanesCache_ === undefined) _indiceClanesCache_ = _cargarIndiceClanes_();
   var ind = _indiceClanesCache_;
   if (!ind || !ind.completo || !ind.clanes) return null;
@@ -1149,6 +1155,56 @@ function _clanesExternosFirmasGuardar_(firmas) {
 }
 
 /**
+ * _clanesExternosUltimaCompleta_() / _clanesExternosListos_() [→ Contexto_Base_Web.md §PF378]
+ * Desde que una corrida del índice termina entera (Indice_Clanes_Externos_Firmas.json con `ultimaCompleta`), los archivos de la carpeta Clanes_Externos son el índice: «Buscar clan» y las alertas leen de ellos. Antes de esa primera corrida completa siguen leyendo el índice anterior (Indice_Clanes_Externos.json), así que la migración no deja a la web sin datos. Como los archivos son históricos y solo se suman, una corrida nueva a medias NO los deja incompletos. Se consulta una vez por ejecución.
+ */
+function _clanesExternosUltimaCompleta_() {
+  if (_clanesExternosListoCache_ === undefined) _clanesExternosListoCache_ = String(_clanesExternosFirmasCargar_().ultimaCompleta || '');
+  return _clanesExternosListoCache_;
+}
+function _clanesExternosListos_() {
+  return !!_clanesExternosUltimaCompleta_();
+}
+
+/**
+ * _clanExternoLeer_(tagClanNorm) [→ Contexto_Base_Web.md §PF378]
+ * Lee el archivo «Clan - #TAG.json» de un clan externo. Devuelve { error, datos, archivo }: `datos` es el contenido (forma de _clanExternoFusionar_()) o null si el clan no tiene archivo (ningún jugador nuestro jugó ahí, no es un error); `error` es true si no se pudo leer (carpeta inexistente, JSON dañado o falla de Drive), para no confundirlo con «sin jugadores». `archivo` es el File de Drive, para poder escribir marcas.
+ */
+function _clanExternoLeer_(tagClanNorm) {
+  try {
+    var carpeta = _clanesExternosCarpeta_(false);
+    if (!carpeta) return { error: true, datos: null, archivo: null };
+    var it = carpeta.getFilesByName(_clanExternoNombreArchivo_('#' + cleanTag(tagClanNorm)));
+    if (!it.hasNext()) return { error: false, datos: null, archivo: null };
+    var archivo = it.next();
+    var d = JSON.parse(archivo.getBlob().getDataAsString('UTF-8'));
+    if (!d || !d.jugadores || typeof d.jugadores !== 'object') {
+      Logger.log('[IndiceClanes] El archivo de ' + tagClanNorm + ' no tiene el formato esperado.');
+      return { error: true, datos: null, archivo: archivo };
+    }
+    return { error: false, datos: d, archivo: archivo };
+  } catch (e) {
+    Logger.log('[IndiceClanes] No se pudo leer el archivo del clan ' + tagClanNorm + ': ' + e.message);
+    return { error: true, datos: null, archivo: null };
+  }
+}
+
+/**
+ * _clanExternoJugadoresDe_(datos) [→ Contexto_Base_Web.md §PF378]
+ * Jugadores del archivo de un clan con la forma que daba el índice anterior: [{ tag, semanas, primera, ultima }], con el total y la primera y última semana calculados de la lista de semanas (_semanasResumen_). Los jugadores sin semanas no salen. Función pura.
+ */
+function _clanExternoJugadoresDe_(datos) {
+  var salida = [];
+  var pj = (datos && datos.jugadores) || {};
+  var tagsJ = Object.keys(pj).sort();
+  for (var i = 0; i < tagsJ.length; i++) {
+    var r = _semanasResumen_(pj[tagsJ[i]]);
+    if (r.semanas > 0) salida.push({ tag: tagsJ[i], semanas: r.semanas, primera: r.primera, ultima: r.ultima });
+  }
+  return salida;
+}
+
+/**
  * _indiceClanesCargarParcial_() / _indiceClanesGuardarParcial_(estado) / _indiceClanesBorrarParcial_() [→ Contexto_Base_Web.md §PF378]
  * Indice_Clanes_Externos_Parcial.json (carpeta Otros): el avance de la lectura mientras la corrida no termina, aparte del índice completo. Cargar devuelve null si no existe, tiene otro formato o es más viejo que INDICE_CLANES_PARCIAL_MAX_EDAD_MS (una lectura de hace días ya no es «la de esta semana»; no daña los archivos de clan porque solo suman, pero el respaldo saldría mezclado). Borrar manda el archivo a la papelera al completarse.
  */
@@ -1207,16 +1263,30 @@ function _alertasClanesSospechosos_(rivalesYConflicto) {
 
 /**
  * _alertasClanesCruzar_(previo, sospechosos, indice, ahoraTxt) [→ Contexto_Base_Web.md §PF375]
- * Función pura: devuelve { estado, jugadoresNuevos, clanesNuevos }. `previo` es lo ya guardado (o null); `sospechosos` sale de _alertasClanesSospechosos_(); `indice` es el índice de clanes externos completo.
+ * Función pura: devuelve { estado, jugadoresNuevos, clanesNuevos }. `previo` es lo ya guardado (o null); `sospechosos` sale de _alertasClanesSospechosos_(); `indice` tiene la forma { actualizado, clanes: { '#CLAN': { nombre, jugadores: [{ tag, semanas, primera, ultima }], marcas? } } } (el índice anterior completo, o lo leído de los archivos de clan, §PF378).
  * Estado: { version, actualizado, indiceActualizado, clanes: { '#CLAN': { nombre, tipos, desde } }, jugadores: { '#JUGADOR': { clanes: { '#CLAN': { semanas, primera, ultima } } } } }.
- * PERMANENTE: se revisan los clanes sospechosos de hoy y TAMBIÉN los ya guardados (para refrescar sus semanas cuando se regenera el índice); nunca se borra un clan ni un jugador, y los tipos se suman (un clan que fue rival y luego se vetó queda con los dos).
- * Un clan sospechoso sin jugadores nuestros en el índice no se guarda.
+ * PERMANENTE es el CLAN (§PF378): se revisan los clanes sospechosos de hoy y TAMBIÉN los ya guardados; nunca se borra un clan y los tipos se suman (un clan que fue rival y luego se vetó queda con los dos; las `marcas` del archivo del clan también cuentan como tipos).
+ * Los JUGADORES: con `opciones.recalcular` (la fuente son los archivos de clan, que son históricos) se arman de nuevo en cada corrida, así que un jugador sin respaldo en el archivo de su clan deja de salir. Solo se conserva lo anterior de los clanes de `opciones.fallidos` (su archivo no se pudo leer: no se castiga un error de Drive). Sin `recalcular` (fuente: el índice anterior, que se vuelve a calcular y pierde historia si se limpia un JSON individual) se acumula como antes: nunca se borra un jugador.
+ * Un clan sospechoso sin jugadores nuestros en la fuente no se guarda.
  */
-function _alertasClanesCruzar_(previo, sospechosos, indice, ahoraTxt) {
+function _alertasClanesCruzar_(previo, sospechosos, indice, ahoraTxt, opciones) {
+  var opc = opciones || {};
   var estado = (previo && previo.clanes && previo.jugadores) ? previo : { version: 1, actualizado: '', indiceActualizado: '', clanes: {}, jugadores: {} };
   var claves = {};
   for (var t in sospechosos) claves['#' + t] = true;
   for (var k in estado.clanes) claves[k] = true;
+  var antes = estado.jugadores;
+  if (opc.recalcular) {
+    estado.jugadores = {};
+    var fallidos = opc.fallidos || {};
+    for (var tagAnt in antes) {
+      for (var claveAnt in antes[tagAnt].clanes) {
+        if (!fallidos[claveAnt]) continue;
+        if (!estado.jugadores[tagAnt]) estado.jugadores[tagAnt] = { clanes: {} };
+        estado.jugadores[tagAnt].clanes[claveAnt] = antes[tagAnt].clanes[claveAnt];
+      }
+    }
+  }
   var jugadoresNuevos = 0, clanesNuevos = 0;
   for (var clave in claves) {
     var enIndice = indice && indice.clanes ? indice.clanes[clave] : null;
@@ -1228,12 +1298,15 @@ function _alertasClanesCruzar_(previo, sospechosos, indice, ahoraTxt) {
     else if (!c.nombre && enIndice.nombre) c.nombre = enIndice.nombre;
     var tiposHoy = hoy ? hoy.tipos : [];
     for (var ti = 0; ti < tiposHoy.length; ti++) if (c.tipos.indexOf(tiposHoy[ti]) < 0) c.tipos.push(tiposHoy[ti]);
+    if (enIndice.marcas && typeof enIndice.marcas === 'object') {
+      for (var tipoMarca in enIndice.marcas) if (c.tipos.indexOf(tipoMarca) < 0) c.tipos.push(tipoMarca);
+    }
     for (var j = 0; j < enIndice.jugadores.length; j++) {
       var jug = enIndice.jugadores[j];
       var tagJ = '#' + cleanTag(jug.tag);
       if (tagJ === '#') continue;
       var pj = estado.jugadores[tagJ];
-      if (!pj) { pj = estado.jugadores[tagJ] = { clanes: {} }; jugadoresNuevos++; }
+      if (!pj) { pj = estado.jugadores[tagJ] = { clanes: {} }; if (!antes[tagJ]) jugadoresNuevos++; }
       pj.clanes[clave] = { semanas: jug.semanas || 0, primera: jug.primera || null, ultima: jug.ultima || null };
     }
   }
@@ -1266,19 +1339,84 @@ function _alertasClanesGuardar_(estado) {
 
 /**
  * _alertasClanesActualizar_(origen, sospechososDados, indiceDado) [→ Contexto_Base_Web.md §PF375]
- * Orquesta: índice completo (el dado o el de Drive) + clanes sospechosos de hoy (los dados o los de _getRivalesYConflicto(true)) + lo ya guardado. Devuelve { ok, motivo?, jugadoresNuevos, clanesNuevos, jugadores, clanes }; ok:false con motivo 'sin-indice' si el índice no existe o está incompleto (no se toca nada). Al terminar anota la firma de los clanes sospechosos de hoy, que usa _alertasClanesDesdeCaptura_() para no repetir el trabajo.
+ * Orquesta: fuente de datos + clanes sospechosos de hoy (los dados o los de _getRivalesYConflicto(true)) + lo ya guardado. Devuelve { ok, motivo?, jugadoresNuevos, clanesNuevos, jugadores, clanes }; ok:false con motivo 'sin-indice' si no hay fuente completa (no se toca nada). Al terminar anota la firma de los clanes sospechosos de hoy, que usa _alertasClanesDesdeCaptura_() para no repetir el trabajo.
+ * Fuente (§PF378): si hay un índice dado, ese; si no, y ya hubo una corrida completa, los archivos de clan de los clanes sospechosos (hoy y ya guardados), leídos de uno en uno: ahí los jugadores se recalculan en cada corrida y la marca (rival o vetado, con su fecha) se escribe también en el archivo del clan; si no, el índice anterior completo (Indice_Clanes_Externos.json), con el comportamiento acumulativo de siempre.
  */
 function _alertasClanesActualizar_(origen, sospechososDados, indiceDado) {
-  var indice = indiceDado || _cargarIndiceClanes_();
-  if (!indice || !indice.completo || !indice.clanes) return { ok: false, motivo: 'sin-indice' };
   var sospechosos = sospechososDados || _alertasClanesSospechosos_(_getRivalesYConflicto(true));
   var ahoraTxt = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm');
-  var res = _alertasClanesCruzar_(_alertasClanesCargar_(), sospechosos, indice, ahoraTxt);
+  var previo = _alertasClanesCargar_();
+  var indice = indiceDado || null, opciones = null, lecturas = null, fuenteTxt = 'índice anterior';
+  if (!indice && _clanesExternosListos_()) {
+    var claves = {};
+    for (var t in sospechosos) claves['#' + t] = true;
+    if (previo && previo.clanes) for (var k in previo.clanes) claves[k] = true;
+    var f = _alertasClanesFuenteDeArchivos_(claves);
+    indice = f.fuente;
+    lecturas = f.lecturas;
+    opciones = { recalcular: true, fallidos: f.fallidos };
+    fuenteTxt = 'archivos de clan';
+  }
+  if (!indice) {
+    indice = _cargarIndiceClanes_();
+    if (!indice || !indice.completo || !indice.clanes) return { ok: false, motivo: 'sin-indice' };
+  }
+  var tiposPrevios = {};
+  if (previo && previo.clanes) for (var kp in previo.clanes) tiposPrevios[kp] = (previo.clanes[kp].tipos || []).slice();
+  var res = _alertasClanesCruzar_(previo, sospechosos, indice, ahoraTxt, opciones);
   _alertasClanesGuardar_(res.estado);
+  if (lecturas) _alertasClanesMarcarEnArchivos_(res.estado, lecturas, tiposPrevios, ahoraTxt);
   PropertiesService.getScriptProperties().setProperty(ALERTAS_CLANES_FIRMA_PROP, Object.keys(sospechosos).sort().join(','));
   var nJug = Object.keys(res.estado.jugadores).length, nClan = Object.keys(res.estado.clanes).length;
-  Logger.log('[AlertasClanes] (' + origen + ') ' + nJug + ' jugadores en ' + nClan + ' clanes sospechosos (' + res.jugadoresNuevos + ' jugadores y ' + res.clanesNuevos + ' clanes nuevos; ' + Object.keys(sospechosos).length + ' clanes sospechosos hoy).');
+  Logger.log('[AlertasClanes] (' + origen + ', ' + fuenteTxt + ') ' + nJug + ' jugadores en ' + nClan + ' clanes sospechosos (' + res.jugadoresNuevos + ' jugadores y ' + res.clanesNuevos + ' clanes nuevos; ' + Object.keys(sospechosos).length + ' clanes sospechosos hoy).');
   return { ok: true, jugadoresNuevos: res.jugadoresNuevos, clanesNuevos: res.clanesNuevos, jugadores: nJug, clanes: nClan };
+}
+
+/**
+ * _alertasClanesFuenteDeArchivos_(claves) [→ Contexto_Base_Web.md §PF378]
+ * Lee los archivos de clan de `claves` ({ '#CLAN': true }) y los deja con la forma de índice que espera _alertasClanesCruzar_(): { fuente: { actualizado, clanes: { '#CLAN': { nombre, jugadores, marcas } } }, lecturas: { '#CLAN': lectura de _clanExternoLeer_() }, fallidos: { '#CLAN': true } }. Un clan sin archivo (ningún jugador nuestro jugó ahí) no aparece en `clanes`; uno cuyo archivo no se pudo leer queda en `fallidos`. `actualizado` es la fecha de la última corrida completa del índice.
+ */
+function _alertasClanesFuenteDeArchivos_(claves) {
+  var fuente = { actualizado: _clanesExternosUltimaCompleta_(), clanes: {} };
+  var lecturas = {}, fallidos = {};
+  for (var clave in claves) {
+    var l = _clanExternoLeer_(cleanTag(clave));
+    if (l.error) { fallidos[clave] = true; continue; }
+    if (!l.datos) continue;
+    lecturas[clave] = l;
+    fuente.clanes[clave] = { nombre: String(l.datos.nombre || ''), jugadores: _clanExternoJugadoresDe_(l.datos), marcas: (l.datos.marcas && typeof l.datos.marcas === 'object') ? l.datos.marcas : {} };
+  }
+  return { fuente: fuente, lecturas: lecturas, fallidos: fallidos };
+}
+
+/**
+ * _alertasClanesMarcarEnArchivos_(estado, lecturas, tiposPrevios, ahoraTxt) [→ Contexto_Base_Web.md §PF378]
+ * Escribe en `marcas` del archivo de cada clan sospechoso los tipos (rival, vetado) que aún no tenía, con su fecha: la de la primera alerta del clan (`desde`) si el tipo ya estaba en las alertas guardadas, o la de hoy si es nuevo. Las marcas nunca se quitan. Solo se reescriben los archivos que cambian; si falla uno, se anota y se sigue (las alertas ya quedaron guardadas).
+ */
+function _alertasClanesMarcarEnArchivos_(estado, lecturas, tiposPrevios, ahoraTxt) {
+  for (var clave in lecturas) {
+    var c = estado.clanes[clave];
+    var l = lecturas[clave];
+    if (!c || !l.datos || !l.archivo) continue;
+    try {
+      var marcas = (l.datos.marcas && typeof l.datos.marcas === 'object') ? l.datos.marcas : {};
+      var previos = tiposPrevios[clave] || [];
+      var cambio = false;
+      for (var i = 0; i < c.tipos.length; i++) {
+        var tipo = c.tipos[i];
+        if (marcas[tipo]) continue;
+        marcas[tipo] = (previos.indexOf(tipo) >= 0 && c.desde) ? c.desde : String(ahoraTxt).slice(0, 10);
+        cambio = true;
+      }
+      if (!cambio) continue;
+      l.datos.marcas = marcas;
+      var texto = JSON.stringify(l.datos);
+      l.archivo.setContent(texto);
+      _asegurarEscrituraCompleta_(l.archivo, texto, _clanExternoNombreArchivo_(clave));
+    } catch (e) {
+      Logger.log('[AlertasClanes] No se pudo escribir la marca en el archivo del clan ' + clave + ': ' + e.message);
+    }
+  }
 }
 
 /**
