@@ -286,6 +286,7 @@ function _excDiasClasificar(filas) {
  */
 function _excDiasAgrupar(filas) {
   var grupos = {};
+  var tagPorNombre = {}; // 6-nov-2026 (tanda 7b-2): una sola traduccion nombre -> Tag por nombre de clan (el CSV tiene decenas de miles de filas)
   for (var i = 0; i < filas.length; i++) {
     var r = filas[i];
     if (String(r[GC.ETAPA - 1]) !== 'Guerra') continue;
@@ -293,10 +294,18 @@ function _excDiasAgrupar(filas) {
     var off = (pi % 7) - 3;
     if (off < 0 || off > 3) continue;
     var tag = String(r[GC.TAG - 1]).trim();
-    var clave = [String(r[GC.TEMPORADA - 1]), String(r[GC.SEMANA - 1]), tag, String(r[GC.CLAN - 1])].join('|');
+    // 6-nov-2026 (tanda 7b-2): el clan del grupo se identifica por su Tag (columna Clan_Tag; si la fila no la trae, el Tag que corresponde al nombre) y solo
+    // si no hay Tag (clan externo) por el nombre. Asi dos filas del mismo clan con nombre distinto, o una con Clan_Tag y otra sin ella, caen en el mismo grupo.
+    var nomClan = String(r[GC.CLAN - 1]);
+    var tagClan = String(r[GC.CLAN_TAG - 1] || '').trim().toUpperCase();
+    if (!tagClan) {
+      if (!tagPorNombre.hasOwnProperty(nomClan)) tagPorNombre[nomClan] = String(_clanTagDeFilaORespaldo_('', nomClan) || '').trim().toUpperCase();
+      tagClan = tagPorNombre[nomClan];
+    }
+    var clave = [String(r[GC.TEMPORADA - 1]), String(r[GC.SEMANA - 1]), tag, tagClan || nomClan].join('|');
     var g = grupos[clave];
     if (!g) {
-      g = { temporada: String(r[GC.TEMPORADA - 1]), semana: String(r[GC.SEMANA - 1]), tag: tag, clan: String(r[GC.CLAN - 1]), nombre: String(r[GC.NOMBRE - 1] || ''), dias: {} };
+      g = { temporada: String(r[GC.TEMPORADA - 1]), semana: String(r[GC.SEMANA - 1]), tag: tag, clan: nomClan, clanTag: tagClan, nombre: String(r[GC.NOMBRE - 1] || ''), dias: {} };
       grupos[clave] = g;
     }
     var previa = g.dias[off];
@@ -304,6 +313,14 @@ function _excDiasAgrupar(filas) {
     if (!g.nombre) g.nombre = String(r[GC.NOMBRE - 1] || '');
   }
   return grupos;
+}
+
+/**
+ * _excDiasClaveGrupo_(g) [tanda 7b-2]
+ * Clave de un grupo de _excDiasAgrupar(): temporada|semana|tag del jugador|Tag del clan (o el nombre si el clan no tiene Tag). Debe coincidir con la que arma _excDiasAgrupar().
+ */
+function _excDiasClaveGrupo_(g) {
+  return [g.temporada, g.semana, g.tag, g.clanTag || g.clan].join('|');
 }
 
 /**
@@ -710,6 +727,7 @@ function _excDiasFilaNueva(g, op, offsetRapi, cacheFechas) {   // offsetRapi (op
   f[GC.PERIOD_IDX - 1] = String(pIdx);
   f[GC.ETAPA - 1] = 'Guerra';
   f[GC.CLAN - 1] = g.clan;
+  f[GC.CLAN_TAG - 1] = g.clanTag || ''; // 6-nov-2026 (tanda 7b-2): la fila creada lleva el Tag del clan del grupo
   f[GC.TAG - 1] = g.tag;
   f[GC.NOMBRE - 1] = g.nombre;
   f[GC.TEMPORADA_2 - 1] = (modelo && String(modelo[GC.TEMPORADA_2 - 1] || '') !== '') ? String(modelo[GC.TEMPORADA_2 - 1]) : String(offsetRapi === undefined ? _getTemporadaRoyaleApiDesdePropia(temporada) : Number(temporada) + offsetRapi);
@@ -735,7 +753,7 @@ function _excDiasVerificar(filasAntes, filasDespues, plan, creadasEsperadas) {
   }
   var grupos = _excDiasAgrupar(filasDespues);
   plan.casos.forEach(function (c) {
-    var g = c.grupo, k = [g.temporada, g.semana, g.tag, g.clan].join('|'), gd = grupos[k];
+    var g = c.grupo, k = _excDiasClaveGrupo_(g), gd = grupos[k];
     var etq = 'T' + g.temporada + ' S' + g.semana + ' ' + g.tag + ' ' + g.clan + ': ';
     if (!gd) { problemas.push(etq + 'no se encuentra la serie'); return; }
     c.ops.forEach(function (op) {
@@ -907,7 +925,7 @@ function _fameCrr52Verificar_(filasAntes, filasDespues, plan) {
   }
   var grupos = _excDiasAgrupar(filasDespues);
   plan.casos.forEach(function (c) {
-    var g = c.grupo, k = [g.temporada, g.semana, g.tag, g.clan].join('|'), gd = grupos[k];
+    var g = c.grupo, k = _excDiasClaveGrupo_(g), gd = grupos[k];
     if (!gd) { problemas.push(c.etq + ': no se encuentra la serie'); return; }
     var pf = 0, pa = 0;
     for (var d2 = 0; d2 < 4; d2++) {
