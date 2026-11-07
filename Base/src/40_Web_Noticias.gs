@@ -174,6 +174,17 @@ function _noticiasLimitesBarcos_(semana) {
   return res;
 }
 
+// Tag del clan de una fila de noticias, normalizado ('#ABC123'); el nombre solo sirve de respaldo cuando la fila no trae Tag (resolvedor único, §PF409). '' si no se puede resolver. Tanda 6e del plan Clanes por Tag. [→ Contexto_Base_Web.md §PF416]
+function _noticiasClanTag_(clanTag, nombreClan) {
+  try {
+    if (typeof _clanTagDeFilaORespaldo_ === 'function') return _clanTagDeFilaORespaldo_(clanTag, nombreClan);
+  } catch (e) {
+    Logger.log('[Noticias] No pude resolver el Tag de «' + nombreClan + '»: ' + e.message);
+  }
+  var t = String(clanTag === undefined || clanTag === null ? '' : clanTag).trim().toUpperCase();
+  return t && t.charAt(0) !== '#' ? '#' + t : t;
+}
+
 // Ataques a barcos por jugador y clan en la semana (jueves a domingo) desde Backup_Battlelogs.csv; solo cuentan filas boatBattle con LadoBarco de ataque. [→ Contexto_Base_Web.md §40B007]
 function _noticiasBarcos_(semana) {
   if (typeof _blsLeerCsv_ !== 'function' || typeof BLS_HEADERS === 'undefined' || typeof BLS_CSV_NOMBRE === 'undefined' ||
@@ -218,8 +229,9 @@ function _noticiasBarcos_(semana) {
     var tagClan = String(f[iClanTag] || '').trim().toUpperCase();
     var claveClan = tagClan || nombreClan || 'sin-clan';
 
-    var c = clanes[claveClan] || (clanes[claveClan] = { clan: nombreClan || tagClan || 'Sin clan', jugadores: {} });
+    var c = clanes[claveClan] || (clanes[claveClan] = { clan: nombreClan || tagClan || 'Sin clan', clanTag: _noticiasClanTag_(tagClan, nombreClan), jugadores: {} });
     if (nombreClan) c.clan = nombreClan;
+    if (!c.clanTag && tagClan) c.clanTag = _noticiasClanTag_(tagClan, nombreClan);
     var j = c.jugadores[tag] || (c.jugadores[tag] = { tag: tag, nombre: '', ataques: 0, ganados: 0, perdidos: 0, sinResultado: 0 });
     j.nombre = String(f[iNombre] || '').trim() || j.nombre;
     j.ataques++;
@@ -261,7 +273,7 @@ function _noticiasBarcos_(semana) {
       return j;
     }).sort(function (a, b) { return b.ataques - a.ataques || a.nombre.localeCompare(b.nombre); });
     var total = 0; jugadores.forEach(function (j) { total += j.ataques; });
-    return { clan: c.clan, totalAtaques: total, jugadores: jugadores };
+    return { clan: c.clan, clanTag: c.clanTag, totalAtaques: total, jugadores: jugadores };
   }).sort(function (a, b) {
     var ia = orden.indexOf(a.clan.toLowerCase()), ib = orden.indexOf(b.clan.toLowerCase());
     if (ia < 0) ia = 999; if (ib < 0) ib = 999;
@@ -298,6 +310,7 @@ function _noticiasAscensos_(semana) {
       tag: String(f[ASC.TAG - 1] || '').trim(),
       nombre: String(f[ASC.NOMBRE - 1] || ''),
       clan: String(f[ASC.CLAN - 1] || ''),
+      clanTag: _noticiasClanTag_(f[ASC.CLAN_TAG - 1], f[ASC.CLAN - 1]),
       tipo: tipo,
       esAscensoClan: tipo === 'Ascenso de clan',
       rangoAnterior: String(f[ASC.RANGO - 1] || ''),
@@ -328,7 +341,7 @@ function _noticiasPosiciones_(semana) {
     for (var i = 0; i < lista.length; i++) {
       if (Number(lista[i].temporada) === Number(semana.temporada) && Number(lista[i].semana) === Number(semana.semana)) { idx = i; break; }
     }
-    if (idx < 0) { clanes.push({ clan: c.clan || c.tag, tag: c.tag, sinDatos: true }); return; }
+    if (idx < 0) { clanes.push({ clan: c.clan || c.tag, tag: c.tag, clanTag: _noticiasClanTag_(c.tag, c.clan), sinDatos: true }); return; }
 
     var s = lista[idx], ant = lista[idx + 1] || null;
     var puesto = Number(s.rank) || 0;
@@ -342,6 +355,7 @@ function _noticiasPosiciones_(semana) {
       tendencia: tendencia,
       clan: c.clan || c.tag,
       tag: c.tag,
+      clanTag: _noticiasClanTag_(c.tag, c.clan),
       sinDatos: false,
       puesto: puesto,                       // 0 = sin dato
       puestoEstimado: !!s.rankEstimado,
@@ -460,8 +474,13 @@ function _noticiasGuerra_(semana) {
     todos.push(j);
   });
 
+  // La hoja Guerra no guarda el Tag del clan hasta la tanda 7: se resuelve por el nombre (respaldo único) una vez por clan. Solo entran clanes Terna, de nombre único.
+  var tagPorClan = {};
+  var tagDeClan = function (nombre) { return tagPorClan.hasOwnProperty(nombre) ? tagPorClan[nombre] : (tagPorClan[nombre] = _noticiasClanTag_('', nombre)); };
+
   var salida = Object.keys(clanes).map(function (nombre) {
     var c = clanes[nombre];
+    c.clanTag = tagDeClan(nombre);
     // Día sin ninguna fila del clan -> null (no 0): la pantalla lo deja en blanco.
     c.fameDias = c.fameSuma.map(function (v, d) { return (clanDias[nombre] && clanDias[nombre][d]) ? v : null; });
     delete c.fameSuma;
@@ -482,7 +501,7 @@ function _noticiasGuerra_(semana) {
 
   todos.sort(function (a, b) { return b.fameTotal - a.fameTotal; });
   var topFame = todos.slice(0, NOTICIAS_TOP_FAME).filter(function (j) { return j.fameTotal > 0; }).map(function (j) {
-    return { tag: j.tag, nombre: j.nombre || j.tag, clan: j.clan, fame: j.fameTotal, ataques: j.ataquesTotal };
+    return { tag: j.tag, nombre: j.nombre || j.tag, clan: j.clan, clanTag: tagDeClan(j.clan), fame: j.fameTotal, ataques: j.ataquesTotal };
   });
 
   return { ok: true, clanes: salida, topFame: topFame, ataquesMaxJugador: NOTICIAS_ATAQUES_MAX_SEMANA };
@@ -510,13 +529,16 @@ function _noticiasMovimientos_(semana) {
     var mov = String(f[4] || '').trim();
     if (['Ingreso', 'Reingreso', 'Salida', 'Expulsión'].indexOf(mov) < 0) continue;
     var clan = String(f[5] || '').trim() || 'Sin clan';
-    var c = clanes[clan] || (clanes[clan] = { clan: clan, ingresos: 0, reingresos: 0, salidas: 0, expulsiones: 0 });
+    // Columna G = ClanTag (§PF253); filas anteriores sin Tag caen al nombre. «Sin clan» no se resuelve (no es un clan).
+    var clanTag = _noticiasClanTag_(f[6], clan === 'Sin clan' ? '' : clan);
+    var claveClan = clanTag || clan; // agrupa por Tag: dos clanes con el mismo nombre y distinto Tag no se mezclan
+    var c = clanes[claveClan] || (clanes[claveClan] = { clan: clan, clanTag: clanTag, ingresos: 0, reingresos: 0, salidas: 0, expulsiones: 0 });
     if (mov === 'Ingreso') c.ingresos++;
     else if (mov === 'Reingreso') c.reingresos++;
     else if (mov === 'Salida') c.salidas++;
     else c.expulsiones++;
     lista.push({
-      tag: String(f[2] || '').trim(), nombre: String(f[3] || ''), movimiento: mov, clan: clan,
+      tag: String(f[2] || '').trim(), nombre: String(f[3] || ''), movimiento: mov, clan: clan, clanTag: clanTag,
       fechaTxt: Utilities.formatDate(fecha, NOTICIAS_TZ, 'dd/MM/yyyy'), _orden: fecha.getTime()
     });
   }
