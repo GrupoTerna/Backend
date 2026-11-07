@@ -36,6 +36,8 @@
 // 30-oct-2026 (orden nuevo de la hoja, pedido de la usuaria): 23 columnas. DiaGuerra y Etapa van antes de Temporada, Temporada_2 junto a
 // Temporada, Barcos antes de Fame y Copas antes de Ranking; se agregan Merma_AtaquesHoy y Merma_AtaquesSemana. Toda la lectura y escritura
 // por posición debe pasar por GC (nunca un número suelto) y por GUERRA_TOTAL_COLS. [→ Contexto_Base_Web.md §PF304]
+// 7-nov-2026 (tanda 7 del plan Clanes por Tag): 24 columnas. Clan_Tag va al FINAL (no junto a Clan) para no mover ningún índice de una hoja que ya existe;
+// las hojas y archivos NUEVOS ponen el Tag al lado del nombre (regla de la usuaria). GC.TAG sigue siendo el Tag del JUGADOR. [→ Contexto_Base_Web.md §PF401]
 var GC = {
   NUM:          1,
   FECHA:        2,
@@ -59,10 +61,11 @@ var GC = {
   RANKING:      20,
   DON_R:        21,
   DON_D:        22,
-  ORIGEN:       23
+  ORIGEN:       23,
+  CLAN_TAG:     24   // 7-nov-2026: Tag del CLAN de la fila (p. ej. #GCRG8L00); es la clave de identidad del clan, la columna Clan es solo el nombre.
 };
 
-var GUERRA_TOTAL_COLS = 23;
+var GUERRA_TOTAL_COLS = 24;
 
 // PF289 (28-oct-2026): blindaje de _syncGuerraCSV() contra una lectura vacía o recortada de Backup_Guerra.csv. Solo se aplica si el CSV de referencia pesa más que el mínimo; el ratio es la fracción del tamaño de referencia por debajo de la cual se rechaza leer o escribir. [→ Contexto_Base_Web.md §PF289]
 var GUERRA_CSV_BLINDAJE_MIN_BYTES = 100000;
@@ -76,7 +79,15 @@ var GUERRA_HEADERS = ['N°','Fecha','DiaGuerra','Etapa','Temporada','Temporada_2
                        'Semana','Día','PeriodIndex','Clan','Tag','Nombre',
                        'AtaquesHoy','AtaquesSemana','Merma_AtaquesHoy','Merma_AtaquesSemana',
                        'Barcos','Fame','Copas','Ranking',
-                       'Donaciones_r','Donaciones_d','Origen'];
+                       'Donaciones_r','Donaciones_d','Origen','Clan_Tag'];
+
+// Encabezados de la hoja Guerra ANTES del 7-nov-2026 (23 columnas, sin Clan_Tag). Solo para migrar en memoria un Backup_Guerra.csv que aún no la trae
+// (_migrarTextoGuerraCsv_ en 05_Backup_CSV.gs); la migración se hace por NOMBRE de columna.
+var GUERRA_HEADERS_V23 = ['N°','Fecha','DiaGuerra','Etapa','Temporada','Temporada_2',
+                          'Semana','Día','PeriodIndex','Clan','Tag','Nombre',
+                          'AtaquesHoy','AtaquesSemana','Merma_AtaquesHoy','Merma_AtaquesSemana',
+                          'Barcos','Fame','Copas','Ranking',
+                          'Donaciones_r','Donaciones_d','Origen'];
 
 // Encabezados de la hoja Guerra ANTES del 30-oct-2026 (21 columnas). Solo para migrar un Backup_Guerra.csv con el orden viejo
 // (_migrarTextoGuerraCsv_ en 05_Backup_CSV.gs); la migración se hace por NOMBRE de columna, no por posición.
@@ -490,6 +501,7 @@ function updateGuerraSheet() {
         existing[GC.DON_R - 1]   = donR;
         existing[GC.DON_D - 1]   = donD;
         existing[GC.RANKING - 1] = ranking;
+        existing[GC.CLAN_TAG - 1] = clanTag; // 7-nov-2026 (tanda 7): el Tag del clan que se procesa es seguro; completa las filas de antes de la columna y mantiene la clave de identidad
         if (copas > 0) existing[GC.COPAS - 1] = copas; // 0 = la API no mandó trofeos; no se pisa un valor ya guardado
         if (nombreActual && nombreActual !== String(existing[GC.NOMBRE - 1] || '')) {
           existing[GC.NOMBRE - 1] = nombreActual;
@@ -530,7 +542,8 @@ function updateGuerraSheet() {
           ranking,              // Ranking
           donR,                 // Donaciones_r
           donD,                 // Donaciones_d
-          'Original'            // Origen (punto 1.5)
+          'Original',           // Origen (punto 1.5)
+          clanTag               // Clan_Tag (7-nov-2026, tanda 7): Tag del clan, p. ej. #GCRG8L00
         ]
       });
       existingIds[idGuerra] = true;
@@ -2177,6 +2190,13 @@ function _asegurarEstructuraGuerra_(sh) {
     sh.insertColumnsAfter(sh.getMaxColumns(), GUERRA_TOTAL_COLS - sh.getMaxColumns());
   }
   var difs = _guerraEncabezadosDiferencias_(sh);
+  // 7-nov-2026 (tanda 7, Clan_Tag): si la ÚNICA diferencia es que a la hoja le falta el encabezado de la última columna (Clan_Tag), se escribe aquí.
+  // Es una migración segura e idempotente: no mueve ni cambia ningún dato, y sin ella toda función de Guerra abortaría hasta que se corra _setupGuerra().
+  if (difs.length === 1 && difs[0].indexOf('col ' + GUERRA_TOTAL_COLS + ': hoja «»') === 0) {
+    sh.getRange(1, GUERRA_TOTAL_COLS).setValue(GUERRA_HEADERS[GUERRA_TOTAL_COLS - 1]);
+    Logger.log('[Guerra][ESTRUCTURA] Se agregó el encabezado «' + GUERRA_HEADERS[GUERRA_TOTAL_COLS - 1] + '» en la columna ' + GUERRA_TOTAL_COLS + ' de la hoja Guerra (tanda 7, Clan_Tag).');
+    difs = _guerraEncabezadosDiferencias_(sh);
+  }
   if (difs.length) {
     Logger.log('[Guerra][ESTRUCTURA] ABORT: los encabezados de la hoja Guerra no coinciden con GUERRA_HEADERS (' + difs.length + ' diferencia(s)). ' +
       'No se lee ni se escribe la hoja ni Backup_Guerra.csv para no mezclar columnas. ' + difs.slice(0, 6).join(' | ') + (difs.length > 6 ? ' | ...' : ''));

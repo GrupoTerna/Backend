@@ -1192,7 +1192,7 @@ function _loadCSVFromDrive(filename) {
   var hit = _csvBuscarArchivo_(filename); // subcarpeta asignada -> raíz -> demás subcarpetas [→ Contexto_Base_Web.md §01B158]
   if (hit) {
     var texto = hit.file.getBlob().getDataAsString('UTF-8');
-    if (filename === 'Backup_Guerra.csv') texto = _migrarTextoGuerraCsv_(texto); // 30-oct-2026 (§PF304): orden viejo de 21 columnas -> 23 del orden nuevo, en memoria
+    if (filename === 'Backup_Guerra.csv') texto = _migrarTextoGuerraCsv_(texto); // 30-oct-2026 (§PF304): orden viejo de 21 columnas -> orden nuevo; 7-nov-2026: también el de 23 columnas (sin Clan_Tag) -> 24, en memoria
     _CSV_MEM_[filename] = texto;
     _csvCachePut_(filename, texto);
     return texto;
@@ -1201,7 +1201,8 @@ function _loadCSVFromDrive(filename) {
 }
 
 /**
- * _migrarTextoGuerraCsv_(texto) — 30-oct-2026 (orden nuevo de la hoja Guerra, §PF304).
+ * _migrarTextoGuerraCsv_(texto) — 30-oct-2026 (orden nuevo de la hoja Guerra, §PF304); 7-nov-2026 (tanda 7): también acepta el encabezado de 23 columnas
+ * (GUERRA_HEADERS_V23, sin Clan_Tag) y lo lleva al de 24 con Clan_Tag vacía, sin recalcular la merma (ya viene calculada).
  * Backup_Guerra.csv se lee POR POSICIÓN (GC). Si el archivo todavía trae el orden viejo de 21 columnas (encabezado GUERRA_HEADERS_V21),
  * lo reordena en memoria al de 23 columnas, emparejando por NOMBRE de columna (no por posición), y calcula la merma de todas las filas
  * (_recalcularMermaGuerra_). Así todos los lectores del CSV ven el orden nuevo, y la primera escritura (_saveCSVToDrive) lo deja migrado en
@@ -1220,13 +1221,15 @@ function _migrarTextoGuerraCsv_(texto) {
     return true;
   };
   if (igualA(GUERRA_HEADERS)) return texto;
-  if (!igualA(GUERRA_HEADERS_V21)) {
-    Logger.log('[Guerra][CSV] Backup_Guerra.csv tiene un encabezado que no es ni el de 23 columnas ni el viejo de 21 (' + encabezado.length + ' columnas: ' + encabezado.slice(0, 6).join(' | ') + ' ...). Se deja sin migrar.');
+  var esV23 = igualA(GUERRA_HEADERS_V23);
+  if (!esV23 && !igualA(GUERRA_HEADERS_V21)) {
+    Logger.log('[Guerra][CSV] Backup_Guerra.csv tiene un encabezado que no es ni el de ' + GUERRA_TOTAL_COLS + ' columnas ni el de 23 ni el viejo de 21 (' + encabezado.length + ' columnas: ' + encabezado.slice(0, 6).join(' | ') + ' ...). Se deja sin migrar.');
     return texto;
   }
   var filas = _parseCSV(texto);
   var posViejo = {};
-  for (var h = 0; h < GUERRA_HEADERS_V21.length; h++) posViejo[GUERRA_HEADERS_V21[h].toLowerCase()] = h;
+  var encViejo = esV23 ? GUERRA_HEADERS_V23 : GUERRA_HEADERS_V21;
+  for (var h = 0; h < encViejo.length; h++) posViejo[encViejo[h].toLowerCase()] = h;
   var salida = [GUERRA_HEADERS.slice()];
   for (var r = 1; r < filas.length; r++) {
     var vieja = filas[r];
@@ -1239,8 +1242,8 @@ function _migrarTextoGuerraCsv_(texto) {
     salida.push(nueva);
   }
   var datos = salida.slice(1);
-  _recalcularMermaGuerra_(datos);
-  Logger.log('[Guerra][CSV] Backup_Guerra.csv migrado en memoria del orden de 21 al de 23 columnas (' + datos.length + ' filas, merma calculada). Se guarda así en Drive en la próxima escritura.');
+  if (!esV23) _recalcularMermaGuerra_(datos); // el de 23 columnas ya trae la merma calculada
+  Logger.log('[Guerra][CSV] Backup_Guerra.csv migrado en memoria del orden de ' + encViejo.length + ' al de ' + GUERRA_TOTAL_COLS + ' columnas (' + datos.length + ' filas' + (esV23 ? ', Clan_Tag vacía' : ', merma calculada') + '). Se guarda así en Drive en la próxima escritura.');
   return _encodeCSV(salida);
 }
 
