@@ -4273,7 +4273,7 @@ function _repararClanConTagGuerra_(aplicar) {
     if (aplicar && cambios.length) {
       // Respaldo previo del CSV completo, ANTES de escribir nada.
       _saveCSVToDrive('Backup_Guerra ANTES de reparar Clan con tag ' + marca + '.csv', csvText);
-      cambios.forEach(function (idx) { filas[idx][GC.CLAN - 1] = nombres[String(filas[idx][GC.CLAN - 1] || '').trim().toUpperCase()]; });
+      cambios.forEach(function (idx) { var tagClanRep = String(filas[idx][GC.CLAN - 1] || '').trim().toUpperCase(); filas[idx][GC.CLAN - 1] = nombres[tagClanRep]; filas[idx][GC.CLAN_TAG - 1] = tagClanRep; }); // 7-nov-2026 (tanda 7): además del nombre, se escribe el Tag del clan (el que traía la columna Clan)
       _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
     }
 
@@ -4324,7 +4324,7 @@ function _borrarDuplicadasClanConTagGuerra_(aplicar) {
       porClave[k].push(idx);
     });
     var omitir = {};
-    [GC.NUM, GC.CLAN, GC.ORIGEN, GC.FECHA, GC.MERMA_HOY, GC.MERMA_SEM].forEach(function (c) { omitir[c] = true; });
+    [GC.NUM, GC.CLAN, GC.CLAN_TAG, GC.ORIGEN, GC.FECHA, GC.MERMA_HOY, GC.MERMA_SEM].forEach(function (c) { omitir[c] = true; }); // 7-nov-2026 (tanda 7): Clan_Tag tampoco se compara (la hermana vieja puede no traerla)
 
     var informe = [['Tipo', 'N°', 'Temporada', 'Semana', 'Tag', 'Nombre', 'PeriodIndex', 'Clan actual', 'N° de la fila completa', 'Detalle']];
     var aBorrar = {}, nBorrar = 0, noTocar = 0;
