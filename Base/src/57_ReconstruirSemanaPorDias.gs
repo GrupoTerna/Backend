@@ -291,7 +291,8 @@ function _rsObjetivosDeCache_() {
       var r = rows[i];
       var ob = { temporada: Number(r[1]), semana: Number(r[2]), tag: String(r[3]), nombre: '', clan: String(r[4]),
         jsonAtaques: num(r[5]), jsonFame: num(r[6]), jsonBarcos: num(r[7]), omitir: String(r[8] || '') };
-      ob.clave = tot_clave_(ob.tag, ob.temporada, ob.semana, ob.clan);
+      ob.clanTag = _rsTagDeClanSerie_('', ob.clan);
+      ob.clave = _rsClaveSerie_(ob.tag, ob.temporada, ob.semana, ob.clanTag, ob.clan);
       out.push(ob);
     }
     Logger.log('[Semana por dias] Totales de los JSON tomados de ' + RS_CACHE_ARCHIVO + ' (' + out.length + ' series, de hace ' + Math.round((Date.now() - creado) / 60000) + ' min).');
@@ -315,7 +316,8 @@ function _rsObjetivosDeJson_(filas) {
     var js = _cdjJsonDeSerie_(indice.series[k]);
     var ob = { temporada: Number(p[2]), semana: Number(p[3]), tag: tot_tag_(p[0]), nombre: '', clan: tot_clan_(p[1]),
       jsonAtaques: js.ataques, jsonFame: js.fame, jsonBarcos: js.barcos, omitir: '' };
-    ob.clave = tot_clave_(ob.tag, ob.temporada, ob.semana, ob.clan);
+    ob.clanTag = _rsTagDeClanSerie_('', ob.clan);
+    ob.clave = _rsClaveSerie_(ob.tag, ob.temporada, ob.semana, ob.clanTag, ob.clan);
     if (js.estado === 'json_inconsistente') ob.omitir = 'JSON_INCONSISTENTE';
     else if (js.estado !== 'ok') return;
     else if (!js.cerrado) ob.omitir = 'JSON_SIN_CERRAR';
@@ -345,6 +347,29 @@ function _rsObjetivosGuardarCache_(objetivos) {
 // ---------------------------------------------------------------------------------------------------------------
 
 /** Claves (tag|temporada|semana|clan) de las series que tienen filas en la hoja Guerra (temporada vigente): esas no se tocan aqui. */
+var _rsTagClanSerieCache_ = {};
+
+/**
+ * _rsTagDeClanSerie_(clanTag, clanNombre) [tanda 7b-2]
+ * Tag del clan de una serie: el que ya traiga la fila o, si no, el que corresponde al nombre (el mismo resolvedor que usa _excDiasAgrupar() de 55_, para que las dos claves coincidan). '' si el clan no tiene Tag.
+ */
+function _rsTagDeClanSerie_(clanTag, clanNombre) {
+  var ct = String(clanTag || '').trim().toUpperCase();
+  if (ct) return ct;
+  var nom = String(clanNombre === null || clanNombre === undefined ? '' : clanNombre);
+  if (!_rsTagClanSerieCache_.hasOwnProperty(nom)) _rsTagClanSerieCache_[nom] = String(_clanTagDeFilaORespaldo_('', nom) || '').trim().toUpperCase();
+  return _rsTagClanSerieCache_[nom];
+}
+
+/**
+ * _rsClaveSerie_(tag, temporada, semana, clanTag, clanNombre) [tanda 7b-2]
+ * Clave de una serie jugador/semana/clan: la de tot_clave_(), pero el clan se identifica por su Tag y solo si no tiene Tag por su nombre (igual que _excDiasClaveGrupo_() de 55_).
+ */
+function _rsClaveSerie_(tag, temporada, semana, clanTag, clanNombre) {
+  var ct = _rsTagDeClanSerie_(clanTag, clanNombre);
+  return tot_clave_(tot_tag_(tag), tot_num_(temporada), tot_num_(semana), ct || tot_clan_(clanNombre));
+}
+
 function _rsClavesHoja() {
   var set = {};
   try {
@@ -353,7 +378,7 @@ function _rsClavesHoja() {
     var datos = sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
     datos.forEach(function (f) {
       if (String(f[GC.ETAPA - 1] || '').trim() !== 'Guerra') return;
-      set[tot_clave_(tot_tag_(f[GC.TAG - 1]), tot_num_(f[GC.TEMPORADA - 1]), tot_num_(f[GC.SEMANA - 1]), tot_clan_(f[GC.CLAN - 1]))] = true;
+      set[_rsClaveSerie_(f[GC.TAG - 1], f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.CLAN_TAG - 1], f[GC.CLAN - 1])] = true;
     });
   } catch (e) { Logger.log('[Semana por dias] No se pudo leer la hoja Guerra: ' + e.message); }
   return set;
@@ -377,7 +402,7 @@ function _rsPlanificar(filas, objetivos, opciones) {
   var grupos = _excDiasAgrupar(filas), porClave = {}, porSemana = {};
   Object.keys(grupos).forEach(function (k) {
     var g = grupos[k];
-    porClave[tot_clave_(tot_tag_(g.tag), tot_num_(g.temporada), tot_num_(g.semana), tot_clan_(g.clan))] = g;
+    porClave[_rsClaveSerie_(g.tag, g.temporada, g.semana, g.clanTag, g.clan)] = g;
     var ks = g.temporada + '|' + g.semana + '|' + g.tag;
     if (!porSemana[ks]) porSemana[ks] = [];
     porSemana[ks].push(g);
@@ -397,8 +422,8 @@ function _rsPlanificar(filas, objetivos, opciones) {
       semActual = ks;
       plan.semanas.push('T' + ob.temporada + ' S' + ob.semana);
     }
-    var clave = tot_clave_(ob.tag, ob.temporada, ob.semana, ob.clan);
-    var g = porClave[clave] || { temporada: String(ob.temporada), semana: String(ob.semana), tag: ob.tag, clan: ob.clan, nombre: ob.nombre || '', dias: {} };
+    var clave = ob.clave;
+    var g = porClave[clave] || { temporada: String(ob.temporada), semana: String(ob.semana), tag: ob.tag, clan: ob.clan, clanTag: ob.clanTag || '', nombre: ob.nombre || '', dias: {} };
     var patron = Object.keys(g.dias).map(Number).sort(function (a, b) { return a - b; }).map(function (o) { return EXC_DIAS_LETRAS.charAt(o); }).join('');
     var tot = { a: ob.jsonAtaques, b: ob.jsonBarcos, f: ob.jsonFame };
     var serie = { grupo: g, ob: ob, patron: patron, tot: tot, clase: '', nivel: '', soluciones: '', accion: '', nMod: 0, nCrear: 0, notas: '' };
