@@ -85,6 +85,13 @@ var CFG = {
     '#GG99LCJY': 'Mini乂Ternas™',
   },
 
+  // Tag de clanes EXTERNOS (no Terna) ya confirmado con varias fuentes, para completar Clan_Tag en filas historicas cuando ninguna hoja viva conserva ya el clan
+  // (7-nov-2026, tanda 8: PERUVIANOS SJL consta en el JSON del jugador #22C090RVJ de Endpoints/Players, en Backup_Directorio.csv y en Correcciones_Guerra.csv). Solo lo lee
+  // _completarClanTagGuerra_(); un nombre que ademas salga con OTRO Tag en una hoja queda «ambiguo» y no se toca. [→ Contexto_Base_Web.md §PF423]
+  CLAN_EXTERNOS_TAGS: {
+    'PERUVIANOS SJL': '#R2UJCYJQ',
+  },
+
   // Letras de días indexadas por (periodIndex % 7): L=0, M=1, X=2, J=3, V=4, S=5, D=6
   DIA_LETRAS: ['L','M','X','J','V','S','D'],
 

@@ -4407,6 +4407,8 @@ function _completarClanTagGuerra_(aplicar) {
       }
     } catch (e2) { Logger.log('[ClanTagHistorico] No se pudo leer Inactivos para los clanes externos: ' + e2.message); }
 
+    var externosFijos = CFG.CLAN_EXTERNOS_TAGS || {}; // 7-nov-2026: clanes externos ya confirmados que ninguna hoja viva conserva (p. ej. PERUVIANOS SJL)
+    Object.keys(externosFijos).forEach(function (n) { sumar(n, externosFijos[n]); });
     var plan = _clanTagPlanGuerra_(filas, tagsPorNombre);
     var rs = plan.resumen;
     // 7-nov-2026: diagnostico del mapa (el primer informe real dejo 4 filas de PERUVIANOS SJL sin Tag aunque el Directorio y Inactivos se leen).
