@@ -2357,7 +2357,7 @@ function _getDatosDashboardCalcular_() {
 
 /**
  * _dashClanTagPorClan_(fuentes) [PF411]
- * Mapa { nombreDeClan: clanTag } de todos los nombres que el dashboard usa como CLAVE (guerraPorClan, resumenClanes, controlTemporadaPorClan, controlTemporadaPorTemporada[t].porClan, valoresDiariosPorSemana[s]) o como campo `clan` (pendientes). Esas estructuras van por nombre y no se pueden cambiar sin romper la web antigua; este mapa permite a la web agrupar por Tag sin traducir nada por su cuenta. El Tag sale del resolvedor unico (_getClanTagByName(), §PF403); un nombre que no es de un clan Terna queda con '' (criterio 4 del plan Clanes por Tag). Nunca lanza: si algo falla devuelve {} y la web cae al nombre.
+ * Mapa { nombreDeClan: clanTag } de todos los nombres que el dashboard usa como CLAVE (guerraPorClan, resumenClanes, controlTemporadaPorClan, controlTemporadaPorTemporada[t].porClan, valoresDiariosPorSemana[t][s]) o como campo `clan` (pendientes). Esas estructuras van por nombre y no se pueden cambiar sin romper la web antigua; este mapa permite a la web agrupar por Tag sin traducir nada por su cuenta. El Tag sale del resolvedor unico (_getClanTagByName(), §PF403); un nombre que no es de un clan Terna queda con '' (criterio 4 del plan Clanes por Tag). Nunca lanza: si algo falla devuelve {} y la web cae al nombre.
  */
 function _dashClanTagPorClan_(f) {
   var mapa = {};
@@ -2369,7 +2369,7 @@ function _dashClanTagPorClan_(f) {
     var claves = function (o) { if (o && typeof o === 'object') Object.keys(o).forEach(agregar); };
     claves(f.guerraPorClan); claves(f.resumenClanes); claves(f.controlPorClan);
     Object.keys(f.controlPorTemporada || {}).forEach(function (t) { claves((f.controlPorTemporada[t] || {}).porClan); });
-    Object.keys(f.valoresPorSemana || {}).forEach(function (sIdx) { claves(f.valoresPorSemana[sIdx]); });
+    Object.keys(f.valoresPorSemana || {}).forEach(function (t) { Object.keys(f.valoresPorSemana[t] || {}).forEach(function (sem) { claves(f.valoresPorSemana[t][sem]); }); }); // PF411b: la forma es temporada -> semana -> clan; antes se recorria un solo nivel y los indices de semana ('0'..'4') entraban como nombres de clan
     (f.pendientes || []).forEach(function (p) { if (p) agregar(p.clan); });
   } catch (e) {
     Logger.log('[Dashboard] No se pudo armar clanTagPorClan: ' + e.message);
