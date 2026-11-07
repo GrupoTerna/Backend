@@ -2603,7 +2603,7 @@ function _migrarNuevosAHistorico(candidatosPayload) {
       _aplicarCorreccionAGuerraConReparto(
         fuente, offsetsPorClave, temporadaPropia, entrada.semana, entrada.tag,
         { ataquesSemana: entrada.ataquesSemana, fame: entrada.fame, barcos: entrada.barcos },
-        { temporadaRoyaleApi: entrada.temporadaRoyaleApi, clanNombre: clanNombreEntrada },
+        { temporadaRoyaleApi: entrada.temporadaRoyaleApi, clanNombre: clanNombreEntrada, clanTag: entrada.clanTag }, // 7-nov-2026 (tanda 7): el Tag del clan que reporta Nuevos
         statsLocal
       );
       huboCambioTemporada = true;

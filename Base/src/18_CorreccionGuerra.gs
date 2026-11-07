@@ -3598,7 +3598,13 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
   var temporadaRoyaleApi = opciones.temporadaRoyaleApi || _getTemporadaRoyaleApiDesdePropia(temporadaPropia);
   var datosJugador = _buscarDatosJugadorParaReconstruccion(tag);
   // 6-nov-2026 (§PF402): nunca se crea una fila de Guerra sin clan. Antes, si el jugador no estaba en el Directorio, la fila salia con el nombre igual al tag y el Clan vacio (las 3920 filas de Backup_Guerra.csv). Ahora no se escribe nada y el caso va a revision.
-  var clanReconstruccion = String(opciones.clanNombre || datosJugador.clan || '').trim();
+  // 7-nov-2026 (tanda 7, Clan_Tag): el clan se identifica por Tag. Si quien llama trae el Tag (opciones.clanTag), el nombre sale de el cuando no viene aparte; la fila lleva siempre el Tag
+  // del clan (el de la correccion o, si falta, el que resuelve _getClanTagByName() para los clanes Terna; vacio para un clan externo sin Tag conocido).
+  var clanTagReconstruccion = _normalizarClanTagCorreccion(opciones.clanTag);
+  var nombreDesdeTag = '';
+  if (clanTagReconstruccion) { nombreDesdeTag = String(_resolverNombreClan(clanTagReconstruccion) || '').trim(); if (nombreDesdeTag.charAt(0) === '#') nombreDesdeTag = ''; }
+  var clanReconstruccion = String(opciones.clanNombre || nombreDesdeTag || datosJugador.clan || '').trim();
+  if (!clanTagReconstruccion && clanReconstruccion) clanTagReconstruccion = String(_getClanTagByName(clanReconstruccion) || '').trim().toUpperCase();
   if (!clanReconstruccion) {
     opciones.sinClanReconstruccion = true;
     Logger.log('[CorreccionGuerra] No se reconstruye T' + temporadaPropia + ' S' + semana + ' ' + tag + ': no se conoce su clan (no figura en el Directorio y la correccion no lo trae). No se crearon filas.');
@@ -3620,6 +3626,7 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
     filaNueva[GC.PERIOD_IDX  - 1] = pIdx;
     filaNueva[GC.ETAPA       - 1] = 'Guerra';
     filaNueva[GC.CLAN        - 1] = clanReconstruccion; // 31-oct-2026: el clan que reporta Nuevos manda sobre el del Directorio; §PF402: nunca vacio
+    filaNueva[GC.CLAN_TAG    - 1] = clanTagReconstruccion; // 7-nov-2026 (tanda 7): Tag del clan de la fila
     filaNueva[GC.TAG         - 1] = tag;
     filaNueva[GC.NOMBRE      - 1] = datosJugador.nombre;
     filaNueva[GC.ATAQUES_HOY - 1] = 0;
@@ -4401,18 +4408,20 @@ function _ajustarSemanaDeUnClan_(filas, offsets, valores, opciones) {
 /**
  * _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opciones, nombreClan,… [→ Contexto_Base_Web.md §18B032]
  */
-function _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opciones, nombreClan, nombreJugador) {
+function _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opciones, nombreClan, nombreJugador, clanTag) {
   var temp = { tipo: fuente.tipo, filas: [] };
   // §PF402: aqui el clan ya se conoce (nombreClan); se pasa para que la reconstruccion no dependa del Directorio. Se restaura al terminar porque `opciones` se comparte con quien llama.
   var opcionesRec = opciones || {};
-  var clanNombrePrevio = opcionesRec.clanNombre;
+  var clanNombrePrevio = opcionesRec.clanNombre, clanTagPrevio = opcionesRec.clanTag;
   if (nombreClan) opcionesRec.clanNombre = nombreClan;
+  if (clanTag) opcionesRec.clanTag = clanTag; // 7-nov-2026 (tanda 7): el Tag del clan de esta semana
   var offsTemp;
   try { offsTemp = _reconstruirSemanaDesdeCero(temp, temporadaPropia, semana, tag, valores, opcionesRec); }
-  finally { opcionesRec.clanNombre = clanNombrePrevio; }
+  finally { opcionesRec.clanNombre = clanNombrePrevio; opcionesRec.clanTag = clanTagPrevio; }
   if (!offsTemp) return {}; // sin combinacion (§PF122): no se escribe nada; la comprobacion (b) de quien llama lo revierte y lo avisa
   for (var i = 0; i < temp.filas.length; i++) {
     temp.filas[i][GC.CLAN - 1] = nombreClan;
+    if (clanTag) temp.filas[i][GC.CLAN_TAG - 1] = _normalizarClanTagCorreccion(clanTag); // 7-nov-2026 (tanda 7)
     if (nombreJugador) temp.filas[i][GC.NOMBRE - 1] = nombreJugador;
   }
   var base = fuente.filas.length;
@@ -4509,7 +4518,7 @@ function _aplicarCorreccionConClanTagAFuente_(fuente, offsetsPorClave, temporada
       if (_ajustarSemanaDeUnClan_(filas, porClan[nombreClan], valores, opcionesReparto)) cambioAlgo = true;
       offsetsEscritos[ce.clanTag] = porClan[nombreClan];
     } else {
-      offsetsEscritos[ce.clanTag] = _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opcionesReparto, nombreClan, nombreJugador);
+      offsetsEscritos[ce.clanTag] = _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opcionesReparto, nombreClan, nombreJugador, ce.clanTag);
       cambioAlgo = true;
     }
   }
