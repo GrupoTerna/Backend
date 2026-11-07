@@ -100,7 +100,9 @@ function actualizarControl2() {
   var guerraData = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
   var agregadosAscensoPorTag = _getAgregadosAscensoPorTag();
   var numSemanasTemporada = lunesEnMes(ctx.mesEfectivoAnio, ctx.mesEfectivoMes) || 4;
-  var minGPorNombreClan = _getMinGClanMaps().byNombre;
+  var mapasMinG = _getMinGClanMaps(); // 6-nov-2026 (tanda 7b-1): el Min_G se busca por Tag del clan y, de respaldo, por nombre
+  var minGPorTagClan = mapasMinG.byTag;
+  var minGPorNombreClan = mapasMinG.byNombre;
 
   // Overlay de correcciones desde RoyaleAPI (ver 18_CorreccionGuerra.gs). [→ Contexto_Base_Web.md §23B008]
   var overlayGuerra = _cargarOverlayCorreccionesGuerra();
@@ -176,7 +178,8 @@ function actualizarControl2() {
     if (puntSemTotales.length > 0) {
       var prom = puntSemTotales.reduce(function(a,b){ return a+b; }, 0) / puntSemTotales.length;
       gridFila[OFF2.PUN_PROM] = prom;
-      var minGJugador = minGPorNombreClan[jug[DC.CLAN - 1]] || CFG.MIN_G_DEFAULT;
+      var tagClanJug = String(jug[DC.CLAN_TAG - 1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7b-1)
+      var minGJugador = (tagClanJug && minGPorTagClan[tagClanJug] !== undefined ? minGPorTagClan[tagClanJug] : minGPorNombreClan[jug[DC.CLAN - 1]]) || CFG.MIN_G_DEFAULT;
       var pctPunt = minGJugador > 0 ? (prom / minGJugador) : 0;
       gridFila[OFF2.PUN_PCT] = (pctPunt >= 1) ? 1 : pctPunt;
     }
