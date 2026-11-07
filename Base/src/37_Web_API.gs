@@ -3205,6 +3205,7 @@ function _webBattlelogJugador(tagBuscado, opciones) {
       // NUEVO (27-sep-2026, pedido usuario): nombre del jugador TAL COMO figuraba en esa batalla (puede haberse cambiado el nombre después). Archivo 37_Web_API.gs, función _webBattlelogJugador(): antes solo se mandaba miClan; perfil.html… [→ Contexto_Base_Web.md §37B293]
       miNombre:    String(miEquipo.name || ''),
       miClan:      (miEquipo.clan && miEquipo.clan.name) || '',
+      miClanTag:   (function () { var t = '#' + cleanTag(miEquipo.clan && miEquipo.clan.tag); return (t !== '#' && CFG.TERNA_TAGS.indexOf(t) >= 0) ? t : ''; })(), // §PF418 (tanda 6g): clanTag aditivo; solo si el clan es Terna (un clan externo queda con '' y enlaza por nombre)
       rivalNombre: String(rival.name || ''),
       rivalClan:   (rival.clan && rival.clan.name) || '',
       eventTag:    String((b && b.eventTag) || ''),
