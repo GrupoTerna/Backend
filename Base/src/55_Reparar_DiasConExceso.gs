@@ -306,6 +306,26 @@ function _excDiasAgrupar(filas) {
   return grupos;
 }
 
+/**
+ * _excDiasTagDeGrupo_(g) [PF410]
+ * Tag del clan de un grupo de _excDiasAgrupar() (o de un grupo sintetico de _rsPlanificar()). Mientras `Guerra` guarde solo el nombre del clan (hasta la tanda 7 del plan Clanes por Tag) se traduce con el resolvedor unico (_clanTagDeFilaORespaldo_(), 27_Torneos_Sorteos_Requisitos.gs); si el grupo ya trae `clanTag` se usa ese. '' si el clan no es Terna o no se puede resolver (clan externo): ese Tag vacio NO identifica a ningun clan.
+ */
+function _excDiasTagDeGrupo_(g) {
+  if (!g) return '';
+  if (g.clanTag === undefined) g.clanTag = _clanTagDeFilaORespaldo_('', g.clan);
+  return g.clanTag;
+}
+
+/**
+ * _excDiasMismoClan_(a, b) [PF410]
+ * ¿Los dos grupos son del mismo clan? Se decide por Tag (criterio 1 del plan Clanes por Tag). El nombre solo entra de respaldo cuando alguno de los dos no tiene Tag (clan externo, o fila anterior a §PF253): dos Tags vacios no cuentan como «el mismo clan», porque dos clanes externos distintos quedarian iguales.
+ */
+function _excDiasMismoClan_(a, b) {
+  var ta = _excDiasTagDeGrupo_(a), tb = _excDiasTagDeGrupo_(b);
+  if (ta && tb) return ta === tb;
+  return String(a.clan) === String(b.clan);
+}
+
 function _excDiasNum(v) {
   var n = Number(String(v === null || v === undefined ? '' : v).replace(/,/g, '').trim());
   return isNaN(n) ? 0 : Math.trunc(n);
@@ -560,7 +580,7 @@ function _excDiasPlanificar(filas, clases) {
       plan.omitidos.push({ grupo: g, clase: clase, motivo: 'el total de la semana no cuadra (' + cumA + '/' + cumB + '/' + cumF + ' contra ' + finalAntes.a + '/' + finalAntes.b + '/' + finalAntes.f + ')' }); return;
     }
     // Comprobacion entre clanes: tope de 4 por dia y de 16 por semana sumando los demas clanes del jugador.
-    var otros = (porSemana[g.temporada + '|' + g.semana + '|' + g.tag] || []).filter(function (o) { return o.clan !== g.clan; });
+    var otros = (porSemana[g.temporada + '|' + g.semana + '|' + g.tag] || []).filter(function (o) { return !_excDiasMismoClan_(o, g); });   // §PF410: por Tag (respaldo: nombre)
     var excede = '';
     ops.forEach(function (op) {
       var suma = op.nuevo.hoy;

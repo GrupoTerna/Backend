@@ -475,7 +475,7 @@ function _rsPlanificar(filas, objetivos, opciones) {
         nuevo: { hoy: e.n, sem: cumA, fame: cumF, barcos: cumB, fameDia: e.f, barcosDia: e.b, origen: '' } });
     }
     // Comprobacion entre clanes: tope de 4 por dia y de 16 por semana sumando los demas clanes del jugador.
-    var otros = (porSemana[g.temporada + '|' + g.semana + '|' + g.tag] || []).filter(function (o) { return o.clan !== g.clan; });
+    var otros = (porSemana[g.temporada + '|' + g.semana + '|' + g.tag] || []).filter(function (o) { return !_excDiasMismoClan_(o, g); });   // §PF410: por Tag (respaldo: nombre)
     var excede = '';
     ops.forEach(function (op) {
       var suma = op.nuevo.hoy;
