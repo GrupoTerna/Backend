@@ -1507,7 +1507,9 @@ function _explicarBajasCR_(bajas, v, par, ctxReal, dir) {
   if (_semanasPendientesCR(semanas, ctxReal).length) { nota('No se pudo evaluar: las semanas del par ' + par.idD + ' todavía no terminan.'); return; }
   var porTag = _getTrofeosYAtaquesSemanalesPorTag(semanas, ctxReal, true, true);
   var ventanas = _ventanasHistorialParaDescensoCR_();
-  var minG = _getMinGClanMaps().byNombre;
+  var mapasMinG = _getMinGClanMaps(); // 6-nov-2026 (tanda 7b-1): Min_G por Tag del clan (x.clanTag) y, de respaldo, por nombre
+  var minG = mapasMinG.byNombre;
+  var minGPorTag = mapasMinG.byTag;
   var glob = { barcos: par.filaDescenso.barcos, miembroActivo: par.filaDescenso.miembroActivo, whatsapp: par.filaDescenso.whatsapp };
   var porClan = {};
   par.filaDescenso.porClan.forEach(function (b) { porClan[b.clan] = b; });
@@ -1526,7 +1528,8 @@ function _explicarBajasCR_(bajas, v, par, ctxReal, dir) {
     x.incumple = _requisitosIncumplidosCR_(bloque, rolKey, glob, prom, mv, d.wsp);
     x.evaluadoContra = 'Descenso ' + par.idD + ', ' + _ncNombreRol(rolKey) + ' de ' + x.clan;
     if (x.tipo === 'Expulsión') {
-      var mg = (minG[x.clan] !== undefined) ? minG[x.clan] : CFG.MIN_G_DEFAULT;
+      var tagClanBaja = String(x.clanTag || '').trim().toUpperCase();
+      var mg = (tagClanBaja && minGPorTag[tagClanBaja] !== undefined) ? minGPorTag[tagClanBaja] : ((minG[x.clan] !== undefined) ? minG[x.clan] : CFG.MIN_G_DEFAULT);
       if (prom.fameProm < mg) x.incumple.push('Medallas promedio ' + _ncFmtNum(prom.fameProm) + ', por debajo de Min_G (' + mg + ')');
       else x.requisitoNota = 'Alcanzaba Min_G (' + mg + ', con ' + _ncFmtNum(prom.fameProm) + ' medallas promedio): con los datos del par correspondía Descenso, no Expulsión.';
     }
@@ -1734,7 +1737,7 @@ function _verificarCambioRangoDesdeRegistros_(registros, claveDia, opciones) {
 
   var diaCorrida = corrida.diaTxt.split('/').reverse().join('-'); // 'aaaa-mm-dd'
   function item(r, dia) {
-    return { tag: r.tag, nombre: r.nombre, clan: r.clan, tipo: r.tipo, rango: r.rango, rango2: r.rango2, fechaTxt: dia.split('-').reverse().join('/') };
+    return { tag: r.tag, nombre: r.nombre, clan: r.clan, clanTag: r.clanTag || '', tipo: r.tipo, rango: r.rango, rango2: r.rango2, fechaTxt: dia.split('-').reverse().join('/') }; // 6-nov-2026 (tanda 7b-1): clanTag aditivo, para buscar el Min_G por Tag
   }
   function describir(x) {
     return x.tipo + ((x.rango && x.rango2) ? ' de ' + x.rango + ' a ' + x.rango2 : '');
