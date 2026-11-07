@@ -1053,6 +1053,7 @@ function _webAdminAscensosEditables(token) {
       tag:           tagLimpio,
       nombre:        String(f[ASC.NOMBRE - 1] || ''),
       clan:          String(f[ASC.CLAN - 1] || ''),
+      clanTag:       String(f[ASC.CLAN_TAG - 1] || '').trim(), // §PF417 (tanda 6f): aditivo, junto a clan
       tipo:          String(f[ASC.TIPO - 1] || ''),
       rangoAnterior: String(f[ASC.RANGO - 1] || ''),
       rangoNuevo:    String(f[ASC.RANGO_2 - 1] || ''),

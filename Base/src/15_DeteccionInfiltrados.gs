@@ -366,23 +366,23 @@ function _rosterPasoPorClanVetado_(nombreClan, tagsActuales) {
     nombres['naranja x'] = true;
     if (norm(nombreClan)) nombres[norm(nombreClan)] = true;
     var vistos = {};
-    var agregar = function (origen, tag, nombre, clan, razon) {
+    var agregar = function (origen, tag, nombre, clan, razon, clanTag) {
       var t = cleanTag(tag);
       if (!t || (tagsActuales && tagsActuales[t]) || vistos[origen + '|' + t]) return;
       vistos[origen + '|' + t] = true;
-      salida.push({ origen: origen, tag: '#' + t, nombre: String(nombre || ''), clan: String(clan || ''), razon: String(razon || '') });
+      salida.push({ origen: origen, tag: '#' + t, nombre: String(nombre || ''), clan: String(clan || ''), clanTag: String(clanTag || '').trim(), razon: String(razon || '') }); // §PF417 (tanda 6f): clanTag aditivo
     };
 
     var mapaDir = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS);
     for (var kd in mapaDir) {
       var fd = mapaDir[kd];
-      if (cleanTag(fd[IC.CLAN_TAG - 1]) === tagVet) agregar('Directorio', kd, fd[IC.NOMBRE - 1], fd[IC.CLAN - 1], '');
+      if (cleanTag(fd[IC.CLAN_TAG - 1]) === tagVet) agregar('Directorio', kd, fd[IC.NOMBRE - 1], fd[IC.CLAN - 1], '', fd[IC.CLAN_TAG - 1]);
     }
     var mapaIna = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.INACTIVOS, IC.TAG - 1, INACTIVOS_TOTAL_COLS);
     for (var ki in mapaIna) {
       var fi = mapaIna[ki];
       if (cleanTag(fi[IC.CLAN_TAG - 1]) === tagVet || nombres[norm(fi[IC.RAZON - 1])] || nombres[norm(fi[IC.CLAN - 1])]) {
-        agregar('Inactivos', ki, fi[IC.NOMBRE - 1], fi[IC.CLAN - 1], fi[IC.RAZON - 1]);
+        agregar('Inactivos', ki, fi[IC.NOMBRE - 1], fi[IC.CLAN - 1], fi[IC.RAZON - 1], fi[IC.CLAN_TAG - 1]);
       }
     }
     var mapaVet = _leerHojaComoMapaPorTag(ss, CFG.SHEETS.VETADOS, VC.TAG - 1, VETADOS_TOTAL_COLS);
@@ -655,6 +655,7 @@ function _buscarEnRosterTerna(tagNorm) {
       tag:    '#' + tagNorm,
       nombre: String(filaDir[IC.NOMBRE - 1] || ''),
       clan:   String(filaDir[IC.CLAN   - 1] || ''),
+      clanTag: String(filaDir[IC.CLAN_TAG - 1] || '').trim(), // §PF417 (tanda 6f): aditivo
       razon:  ''
     });
   }
@@ -667,6 +668,7 @@ function _buscarEnRosterTerna(tagNorm) {
       tag:    '#' + tagNorm,
       nombre: String(filaInact[IC.NOMBRE - 1] || ''),
       clan:   String(filaInact[IC.CLAN   - 1] || ''),
+      clanTag: String(filaInact[IC.CLAN_TAG - 1] || '').trim(), // §PF417
       razon:  String(filaInact[IC.RAZON  - 1] || '')
     });
   }
@@ -679,6 +681,7 @@ function _buscarEnRosterTerna(tagNorm) {
       tag:    '#' + tagNorm,
       nombre: String(filaVet[VC.NOMBRE - 1] || ''),
       clan:   String(filaVet[VC.CLAN   - 1] || ''),
+      clanTag: '', // Vetados no tiene columna de Tag (§PF417)
       razon:  String(filaVet[VC.RAZON  - 1] || '')
     });
   }
@@ -957,8 +960,8 @@ function _exMiembrosDesdeIndice_(jugadoresIndice, tagsActuales, yaListados) {
   try {
     var ss = _getSs();
     mapas = [
-      { origen: 'Directorio', mapa: _leerHojaComoMapaPorTag(ss, CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS), nombre: IC.NOMBRE, clan: IC.CLAN, razon: IC.RAZON },
-      { origen: 'Inactivos', mapa: _leerHojaComoMapaPorTag(ss, CFG.SHEETS.INACTIVOS, IC.TAG - 1, INACTIVOS_TOTAL_COLS), nombre: IC.NOMBRE, clan: IC.CLAN, razon: IC.RAZON },
+      { origen: 'Directorio', mapa: _leerHojaComoMapaPorTag(ss, CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS), nombre: IC.NOMBRE, clan: IC.CLAN, clanTag: IC.CLAN_TAG, razon: IC.RAZON },
+      { origen: 'Inactivos', mapa: _leerHojaComoMapaPorTag(ss, CFG.SHEETS.INACTIVOS, IC.TAG - 1, INACTIVOS_TOTAL_COLS), nombre: IC.NOMBRE, clan: IC.CLAN, clanTag: IC.CLAN_TAG, razon: IC.RAZON },
       { origen: 'Vetados', mapa: _leerHojaComoMapaPorTag(ss, CFG.SHEETS.VETADOS, VC.TAG - 1, VETADOS_TOTAL_COLS), nombre: VC.NOMBRE, clan: VC.CLAN, razon: VC.RAZON }
     ];
   } catch (eHojas) {
@@ -974,7 +977,7 @@ function _exMiembrosDesdeIndice_(jugadoresIndice, tagsActuales, yaListados) {
       if (!fila) continue;
       hallado = true;
       if (porClave[mapas[m].origen + '|' + tagJ]) continue;
-      var nueva = { origen: mapas[m].origen, tag: '#' + tagJ, nombre: String(fila[mapas[m].nombre - 1] || ''), clan: String(fila[mapas[m].clan - 1] || ''), razon: String(fila[mapas[m].razon - 1] || ''), semanas: jugadoresIndice[i].semanas, primera: jugadoresIndice[i].primera || null, ultima: jugadoresIndice[i].ultima || null };
+      var nueva = { origen: mapas[m].origen, tag: '#' + tagJ, nombre: String(fila[mapas[m].nombre - 1] || ''), clan: String(fila[mapas[m].clan - 1] || ''), clanTag: mapas[m].clanTag ? String(fila[mapas[m].clanTag - 1] || '').trim() : '', razon: String(fila[mapas[m].razon - 1] || ''), semanas: jugadoresIndice[i].semanas, primera: jugadoresIndice[i].primera || null, ultima: jugadoresIndice[i].ultima || null };
       porClave[nueva.origen + '|' + tagJ] = nueva;
       salida.push(nueva);
     }

@@ -3672,6 +3672,7 @@ function _calcularPropuestasCambioRango(idAscenso, idDescenso) {
     if (String(fila[DC.ESTADO - 1] || '').trim() !== 'Activo') continue;
 
     var clan = String(fila[DC.CLAN - 1] || '').trim();
+    var clanTagFilaCR = String(fila[DC.CLAN_TAG - 1] || '').trim(); // §PF417 (tanda 6f): clanTag aditivo en las propuestas
     var bloqueAsc  = porClanAscenso[clan];
     var bloqueDesc = porClanDescenso[clan];
     if (!bloqueAsc && !bloqueDesc) continue; // clan fuera de este par de CR_Lista
@@ -3712,6 +3713,7 @@ function _calcularPropuestasCambioRango(idAscenso, idDescenso) {
           tag: tag,
           nombre: nombre,
           clan: clan,
+          clanTag: clanTagFilaCR,
           rangoActual: rangoActual,
           tipoPropuesta: 'Descenso',
           detalle: _detalleRequisitoCR('Descenso', rolKey, reqMinCRDesc, reqAtaquesDesc, filaDescenso.barcos, filaDescenso.miembroActivo, filaDescenso.whatsapp, promDesc, miembroVigenteDesc, wspG) + _notaSemanasContadasCR(promDesc.semanasEval, filaDescenso.semanas.length),
@@ -3759,6 +3761,7 @@ function _calcularPropuestasCambioRango(idAscenso, idDescenso) {
           tag: tag,
           nombre: nombre,
           clan: clan,
+          clanTag: clanTagFilaCR,
           rangoActual: rangoActual,
           tipoPropuesta: tipoPropuesta,
           detalle: _detalleRequisitoCR(tipoPropuesta, rolKey, reqMinCRAsc, reqAtaquesAsc, filaAscenso.barcos, filaAscenso.miembroActivo, filaAscenso.whatsapp, promAsc, miembroVigenteAsc, wspG),

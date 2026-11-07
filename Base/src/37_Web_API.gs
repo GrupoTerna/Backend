@@ -3840,7 +3840,7 @@ function _webMisCuentas(token) {
 
     var clanNombre = String(fila[DC.CLAN - 1] || 'Sin clan');
     var claveClan  = clanTagFila || 'SIN_CLAN';
-    if (!porClan[claveClan]) porClan[claveClan] = { nombre: clanNombre, cuentas: [] };
+    if (!porClan[claveClan]) porClan[claveClan] = { nombre: clanNombre, clanTag: clanTagFila || '', cuentas: [] }; // §PF417 (tanda 6f): clanTag aditivo
     porClan[claveClan].cuentas.push(cuenta);
   }
 
@@ -3860,7 +3860,7 @@ function _webMisCuentas(token) {
       if (rA !== rB) return rA - rB;
       return a.nombre.localeCompare(b.nombre);
     });
-    return { nombre: info.nombre, cuentas: cuentasOrd };
+    return { nombre: info.nombre, clanTag: info.clanTag || '', cuentas: cuentasOrd };
   });
 
   return {
