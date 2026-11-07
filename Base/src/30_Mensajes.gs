@@ -702,7 +702,9 @@ function _getDatosClanHoja(ss) {
   if (!sh || sh.getLastRow() < 2) return mapa;
   var data = sh.getRange(2, 1, sh.getLastRow() - 1, CC.CONDICION).getValues();
   var headers = sh.getRange(1, 1, 1, CC.CONDICION).getValues()[0];
-  var minGByNombre = _getMinGClanMaps().byNombre;
+  var mapasMinG = _getMinGClanMaps(); // 6-nov-2026 (tanda 7b-1): el Min_G de cada clan de la hoja Clan se busca por su Tag y, de respaldo, por nombre
+  var minGByTag = mapasMinG.byTag;
+  var minGByNombre = mapasMinG.byNombre;
 
   for (var i = 0; i < data.length; i++) {
     var r = data[i];
@@ -716,7 +718,7 @@ function _getDatosClanHoja(ss) {
       clanTag:        r[CC.CLAN_TAG     - 1],
       lider:          r[CC.LIDER        - 1],
       miembros:       r[CC.MIEMBROS     - 1],
-      minG:           (minGByNombre[nombre] !== undefined) ? minGByNombre[nombre] : CFG.MIN_G_DEFAULT,
+      minG:           (minGByTag[String(r[CC.CLAN_TAG - 1] || '').trim()] !== undefined) ? minGByTag[String(r[CC.CLAN_TAG - 1] || '').trim()] : ((minGByNombre[nombre] !== undefined) ? minGByNombre[nombre] : CFG.MIN_G_DEFAULT),
       trofeos:        r[CC.TROFEOS      - 1],
       liga:           r[CC.LIGA         - 1],
       requerimiento:  r[CC.REQUERIMIENTO- 1],
