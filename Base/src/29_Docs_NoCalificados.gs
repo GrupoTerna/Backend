@@ -563,7 +563,9 @@ function _evaluarCambioRango_(idAscenso, idDescenso) {
   filaDescenso.porClan.forEach(function (b) { porClanDescenso[b.clan] = b; });
 
   // Min_G por nombre de clan — el umbral de EXPULSIÓN. Es la misma fuente [→ Contexto_Base_Web.md §29B013]
-  var minGPorNombreClan = _getMinGClanMaps().byNombre;
+  var mapasMinG = _getMinGClanMaps(); // 6-nov-2026 (tanda 7b-1): por Tag del clan de la fila del Directorio y, de respaldo, por nombre
+  var minGPorTagClan = mapasMinG.byTag;
+  var minGPorNombreClan = mapasMinG.byNombre;
 
   // FIX (27-sep-2026, pedido del usuario -- mismo arreglo que ya se aplicó en [→ Contexto_Base_Web.md §29B014]
   var mismasSemanasAD = JSON.stringify(filaAscenso.semanas) === JSON.stringify(filaDescenso.semanas);
@@ -641,7 +643,8 @@ function _evaluarCambioRango_(idAscenso, idDescenso) {
     // Los indicadores que se muestran son los de la corrida de Descenso [→ Contexto_Base_Web.md §29B017]
     var promMostrado = promDesc || promAsc;
 
-    var minGClan = (minGPorNombreClan[clan] !== undefined) ? minGPorNombreClan[clan] : CFG.MIN_G_DEFAULT;
+    var tagClanFila = String(fila[DC.CLAN_TAG - 1] || '').trim().toUpperCase();
+    var minGClan = (tagClanFila && minGPorTagClan[tagClanFila] !== undefined) ? minGPorTagClan[tagClanFila] : ((minGPorNombreClan[clan] !== undefined) ? minGPorNombreClan[clan] : CFG.MIN_G_DEFAULT);
     var veredicto = _ncVeredictoCambioRango(rolKey, bloqueAsc, bloqueDesc, promAsc, promDesc, minGClan, ctxVeredicto);
 
     evaluados.push({
