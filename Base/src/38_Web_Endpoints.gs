@@ -2347,8 +2347,35 @@ function _getDatosDashboardCalcular_() {
     controlTemporadaPorTemporada: controlTemporadaPorTemporada,
     controlTemporadaSelectores: controlTemporadaSelectores,
     nuevos:                     nuevos,
-    tiempos:                    tiemposAct
+    tiempos:                    tiemposAct,
+    clanTagPorClan:             _dashClanTagPorClan_({   // PF411: aditivo; Tag de cada nombre de clan que usan como clave las estructuras de arriba
+      guerraPorClan: guerraPorClan, resumenClanes: resumenClanes, controlPorClan: controlTemporada.porClan,
+      controlPorTemporada: controlTemporadaPorTemporada, valoresPorSemana: valoresDiariosPorSemana, pendientes: pendientes
+    })
   };
+}
+
+/**
+ * _dashClanTagPorClan_(fuentes) [PF411]
+ * Mapa { nombreDeClan: clanTag } de todos los nombres que el dashboard usa como CLAVE (guerraPorClan, resumenClanes, controlTemporadaPorClan, controlTemporadaPorTemporada[t].porClan, valoresDiariosPorSemana[s]) o como campo `clan` (pendientes). Esas estructuras van por nombre y no se pueden cambiar sin romper la web antigua; este mapa permite a la web agrupar por Tag sin traducir nada por su cuenta. El Tag sale del resolvedor unico (_getClanTagByName(), §PF403); un nombre que no es de un clan Terna queda con '' (criterio 4 del plan Clanes por Tag). Nunca lanza: si algo falla devuelve {} y la web cae al nombre.
+ */
+function _dashClanTagPorClan_(f) {
+  var mapa = {};
+  try {
+    var agregar = function (n) {
+      n = String(n === undefined || n === null ? '' : n).trim();
+      if (n && !mapa.hasOwnProperty(n)) mapa[n] = _clanTagNorm_(_getClanTagByName(n));
+    };
+    var claves = function (o) { if (o && typeof o === 'object') Object.keys(o).forEach(agregar); };
+    claves(f.guerraPorClan); claves(f.resumenClanes); claves(f.controlPorClan);
+    Object.keys(f.controlPorTemporada || {}).forEach(function (t) { claves((f.controlPorTemporada[t] || {}).porClan); });
+    Object.keys(f.valoresPorSemana || {}).forEach(function (sIdx) { claves(f.valoresPorSemana[sIdx]); });
+    (f.pendientes || []).forEach(function (p) { if (p) agregar(p.clan); });
+  } catch (e) {
+    Logger.log('[Dashboard] No se pudo armar clanTagPorClan: ' + e.message);
+    return {};
+  }
+  return mapa;
 }
 
 // _dashTiempoIniciar_() / _dashTiempoMarca_() / _dashTiempoFin_(): 19-sep-2026, cronómetro por etapas de _getDatosDashboardCalcular_(); una línea [Dashboard] con ms por etapa; no cambia resultados. [→ Contexto_Base_Web.md §38B112]
