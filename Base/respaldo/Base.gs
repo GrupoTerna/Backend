@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 06/11/2026 22:36:48 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 06/11/2026 23:48:11 */
 
 
 
@@ -4541,8 +4541,9 @@ function _setupInactivos(ss) {
 function _setupVetados(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.VETADOS);
   // FIX (26-ago-2026, pedido explícito del usuario): la columna 4 vuelve de [→ Contexto_Base_Web.md §02B046]
-  var headers = ['N°','Tag','Nombre','Nom_Multi','Clan','Rango','Iniciales','Permiso','Estado','Razón','Autor','Vía','Fecha'];
-  // Se reescriben SIEMPRE las 13 columnas (headers.length === VETADOS_TOTAL_COLS) [→ Contexto_Base_Web.md §02B047]
+  var headers = ['N°','Tag','Nombre','Nom_Multi','Clan','Rango','Iniciales','Permiso','Estado','Razón','Autor','Vía','Fecha','Clan_Tag']; // 6-nov-2026 (tanda 7, Clanes por Tag): Clan_Tag al final
+  if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
+  // Se reescriben SIEMPRE las 14 columnas (headers.length === VETADOS_TOTAL_COLS) [→ Contexto_Base_Web.md §02B047]
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
 
@@ -4552,7 +4553,7 @@ function _setupVetados(ss) {
     sh.getRange(2, VC.FECHA, numFilasVet, 1).setNumberFormat('dd/mm/yyyy hh:mm:ss');
   }
 
-  Logger.log('[Setup] Vetados OK (13 cols)');
+  Logger.log('[Setup] Vetados OK (14 cols)');
 }
 
 // Multicuentas: 15 columnas [→ Contexto_Base_Web.md §02B049]
@@ -4613,13 +4614,14 @@ function _setupMensajes(ss) {
   // Nueva estructura: N° | Fecha | Temporada | Semana | Dia | PeriodIndex |
   //                  N1° | Categoría | N2° | Subcategoría | N3° | Clan | Rango | Tipo | Contenido
   var headers = ['N°','Fecha','Temporada','Semana','Dia','PeriodIndex',
-                 'N1°','Categoría','N2°','Subcategoría','N3°','Clan','Rango','Tipo','Contenido'];
+                 'N1°','Categoría','N2°','Subcategoría','N3°','Clan','Rango','Tipo','Contenido','Clan_Tag']; // 6-nov-2026 (tanda 7, Clanes por Tag): Clan_Tag despues de Contenido
+  if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
   // FIX (28-sep-2026, pedido del usuario -- "en la hoja Mensajes se borro el encabezado de la [→ Contexto_Base_Web.md §02B058]
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
   _aplicarSubindiceEncabezados(sh);
-  sh.setColumnWidth(headers.length, 428); // Contenido: ancho fijo, texto largo (428px, pedido usuario 14-ago-2026)
-  Logger.log('[Setup] Mensajes OK (15 cols, encabezados al dia)');
+  sh.setColumnWidth(MC.CONTENIDO, 428); // Contenido: ancho fijo, texto largo (428px, pedido usuario 14-ago-2026); 6-nov-2026 (tanda 7, Clanes por Tag): antes headers.length (Contenido era la ultima)
+  Logger.log('[Setup] Mensajes OK (16 cols, encabezados al dia)');
 }
 
 // ----- Torneos, sorteos y cambio de rango: listas, encabezados y filtros -----
@@ -5081,6 +5083,7 @@ function _setupLinks(ss) {
 function _setupAlertasHistorialGuerra(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA);
   var encabezados = AHG_ENCABEZADOS; // 20_HistorialGuerraJugador.gs
+  if (sh.getMaxColumns() < encabezados.length) sh.insertColumnsAfter(sh.getMaxColumns(), encabezados.length - sh.getMaxColumns()); // 6-nov-2026 (tanda 7, Clanes por Tag)
   sh.getRange(1, 1, 1, encabezados.length).setValues([encabezados]);
   // FIX (23-ago-2026, pedido del usuario): mismo estilo que T_Lista — antes [→ Contexto_Base_Web.md §02B013]
   applyHeaderStyle(sh, encabezados.length);
@@ -5689,7 +5692,7 @@ function aplicarFormatoGlobal() {
   // Mensajes: columna Contenido con ancho fijo de 428px y ajuste de texto [→ Contexto_Base_Web.md §04B006]
   var shMsgWrap = ss.getSheetByName(CFG.SHEETS.MENSAJES);
   if (shMsgWrap) {
-    var colContenidoMsg = shMsgWrap.getLastColumn(); // Contenido es la última columna (14)
+    var colContenidoMsg = MC.CONTENIDO; // 6-nov-2026 (tanda 7, Clanes por Tag): antes getLastColumn() (Contenido era la ultima); ahora la ultima es Clan_Tag
     shMsgWrap.setColumnWidth(colContenidoMsg, 428);
     var lastRowMsgWrap = shMsgWrap.getLastRow();
     if (lastRowMsgWrap >= 1) {
@@ -7410,6 +7413,7 @@ function importarAcumulativosDesdeCSV() {
       }
 
       var numCols = item.numCols;
+      if (numCols > sh.getMaxColumns()) sh.insertColumnsAfter(sh.getMaxColumns(), numCols - sh.getMaxColumns()); // 6-nov-2026 (tanda 7, Clanes por Tag): antes de leer el encabezado (Vetados pasa de 13 a 14 columnas)
       var hasFecha = !!item.hasFecha;
       // fechaCol: columna 1-based donde vive Fecha en ESTA hoja acumulativa. [→ Contexto_Base_Web.md §05B042]
       var fechaCol = item.fechaCol || 2;
@@ -7954,7 +7958,7 @@ function _loadCSVFromDrive(filename) {
   var hit = _csvBuscarArchivo_(filename); // subcarpeta asignada -> raíz -> demás subcarpetas [→ Contexto_Base_Web.md §01B158]
   if (hit) {
     var texto = hit.file.getBlob().getDataAsString('UTF-8');
-    if (filename === 'Backup_Guerra.csv') texto = _migrarTextoGuerraCsv_(texto); // 30-oct-2026 (§PF304): orden viejo de 21 columnas -> 23 del orden nuevo, en memoria
+    if (filename === 'Backup_Guerra.csv') texto = _migrarTextoGuerraCsv_(texto); // 30-oct-2026 (§PF304): orden viejo de 21 columnas -> orden nuevo; 7-nov-2026: también el de 23 columnas (sin Clan_Tag) -> 24, en memoria
     _CSV_MEM_[filename] = texto;
     _csvCachePut_(filename, texto);
     return texto;
@@ -7963,7 +7967,8 @@ function _loadCSVFromDrive(filename) {
 }
 
 /**
- * _migrarTextoGuerraCsv_(texto) — 30-oct-2026 (orden nuevo de la hoja Guerra, §PF304).
+ * _migrarTextoGuerraCsv_(texto) — 30-oct-2026 (orden nuevo de la hoja Guerra, §PF304); 7-nov-2026 (tanda 7): también acepta el encabezado de 23 columnas
+ * (GUERRA_HEADERS_V23, sin Clan_Tag) y lo lleva al de 24 con Clan_Tag vacía, sin recalcular la merma (ya viene calculada).
  * Backup_Guerra.csv se lee POR POSICIÓN (GC). Si el archivo todavía trae el orden viejo de 21 columnas (encabezado GUERRA_HEADERS_V21),
  * lo reordena en memoria al de 23 columnas, emparejando por NOMBRE de columna (no por posición), y calcula la merma de todas las filas
  * (_recalcularMermaGuerra_). Así todos los lectores del CSV ven el orden nuevo, y la primera escritura (_saveCSVToDrive) lo deja migrado en
@@ -7982,13 +7987,15 @@ function _migrarTextoGuerraCsv_(texto) {
     return true;
   };
   if (igualA(GUERRA_HEADERS)) return texto;
-  if (!igualA(GUERRA_HEADERS_V21)) {
-    Logger.log('[Guerra][CSV] Backup_Guerra.csv tiene un encabezado que no es ni el de 23 columnas ni el viejo de 21 (' + encabezado.length + ' columnas: ' + encabezado.slice(0, 6).join(' | ') + ' ...). Se deja sin migrar.');
+  var esV23 = igualA(GUERRA_HEADERS_V23);
+  if (!esV23 && !igualA(GUERRA_HEADERS_V21)) {
+    Logger.log('[Guerra][CSV] Backup_Guerra.csv tiene un encabezado que no es ni el de ' + GUERRA_TOTAL_COLS + ' columnas ni el de 23 ni el viejo de 21 (' + encabezado.length + ' columnas: ' + encabezado.slice(0, 6).join(' | ') + ' ...). Se deja sin migrar.');
     return texto;
   }
   var filas = _parseCSV(texto);
   var posViejo = {};
-  for (var h = 0; h < GUERRA_HEADERS_V21.length; h++) posViejo[GUERRA_HEADERS_V21[h].toLowerCase()] = h;
+  var encViejo = esV23 ? GUERRA_HEADERS_V23 : GUERRA_HEADERS_V21;
+  for (var h = 0; h < encViejo.length; h++) posViejo[encViejo[h].toLowerCase()] = h;
   var salida = [GUERRA_HEADERS.slice()];
   for (var r = 1; r < filas.length; r++) {
     var vieja = filas[r];
@@ -8001,8 +8008,8 @@ function _migrarTextoGuerraCsv_(texto) {
     salida.push(nueva);
   }
   var datos = salida.slice(1);
-  _recalcularMermaGuerra_(datos);
-  Logger.log('[Guerra][CSV] Backup_Guerra.csv migrado en memoria del orden de 21 al de 23 columnas (' + datos.length + ' filas, merma calculada). Se guarda así en Drive en la próxima escritura.');
+  if (!esV23) _recalcularMermaGuerra_(datos); // el de 23 columnas ya trae la merma calculada
+  Logger.log('[Guerra][CSV] Backup_Guerra.csv migrado en memoria del orden de ' + encViejo.length + ' al de ' + GUERRA_TOTAL_COLS + ' columnas (' + datos.length + ' filas' + (esV23 ? ', Clan_Tag vacía' : ', merma calculada') + '). Se guarda así en Drive en la próxima escritura.');
   return _encodeCSV(salida);
 }
 
@@ -8975,6 +8982,7 @@ function _syncUnaAcumulativaCSV(item, forzar) {
   if (!sh) return;
   // PF286: Historial_A/D pasó a 24 columnas; si la hoja aún tiene 23, se agrega la columna antes de leer numCols columnas (si no, getRange falla y el respaldo no se guarda).
   if (item.sheetName === CFG.SHEETS.ASCENSOS) _asegurarColumnaParCRAscensos_(sh);
+  if (item.sheetName === CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA) _asegurarColumnaClanTagAlertasHG_(sh); // 6-nov-2026 (tanda 7, Clanes por Tag): la hoja pasa de 19 a 20 columnas
 
   var sheetRows = sh.getLastRow();
 
@@ -14451,10 +14459,11 @@ var ADMINISTRADORES_TOTAL_COLS = 24;
 // Índices de columna (1-based) de la hoja "Vetados" — ver _setupVetados() en [→ Contexto_Base_Web.md §11B004]
 var VC = {
   NUM:1, TAG:2, NOMBRE:3, NOM_MULTI:4, CLAN:5, RANGO:6, INICIALES:7, PERMISO:8,
-  ESTADO:9, RAZON:10, AUTOR:11, VIA:12, FECHA:13
+  ESTADO:9, RAZON:10, AUTOR:11, VIA:12, FECHA:13,
+  CLAN_TAG:14 // 6-nov-2026 (tanda 7, Clanes por Tag): va AL FINAL de la hoja ya existente, para no mover ninguna columna
 };
 
-var VETADOS_TOTAL_COLS = 13;
+var VETADOS_TOTAL_COLS = 14; // 13 -> 14 con Clan_Tag
 
 // Columnas que SÍ se recalculan automáticamente desde Directorio/Inactivos [→ Contexto_Base_Web.md §11B005]
 var VETADOS_COLS_AUTOSYNC = VC.RAZON; // hasta esta columna inclusive (1..10)
@@ -15054,7 +15063,8 @@ function _leerHojaComoMapaPorTag(ss, nombreHoja, tagColIdx, totalCols) {
   var mapa = {};
   var sh = ss.getSheetByName(nombreHoja);
   if (!sh || sh.getLastRow() < 2) return mapa;
-  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, totalCols).getValues();
+  var ancho = Math.min(totalCols, sh.getMaxColumns()); // 6-nov-2026 (tanda 7, Clanes por Tag): una hoja a la que aun no se le agrego Clan_Tag (Vetados) se lee con las columnas que tiene
+  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, ancho).getValues();
   for (var i = 0; i < datos.length; i++) {
     var tag = String(datos[i][tagColIdx] || '').trim().toUpperCase();
     if (tag) mapa[tag] = datos[i];
@@ -16928,9 +16938,27 @@ function _retirarDeInactivosPorReactivacion(ss, tags) {
 
 // ----- Hoja Vetados -----
 
+/**
+ * _asegurarColumnaClanTagVetados_(sh)
+ * 6-nov-2026 (tanda 7, Clanes por Tag); §PF419. Idempotente: garantiza que Vetados tenga la columna
+ * VC.CLAN_TAG (14, al final) y su encabezado «Clan_Tag». No toca ninguna otra columna ni ninguna fila.
+ * La llaman las funciones que escriben o leen la fila completa (VETADOS_TOTAL_COLS).
+ */
+function _asegurarColumnaClanTagVetados_(sh) {
+  if (!sh) return;
+  if (sh.getMaxColumns() < VC.CLAN_TAG) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), VC.CLAN_TAG - sh.getMaxColumns());
+  }
+  var celda = sh.getRange(1, VC.CLAN_TAG);
+  if (String(celda.getValue()) === 'Clan_Tag') return;
+  celda.setValue('Clan_Tag');
+  applyHeaderStyle(sh, VC.CLAN_TAG);
+}
+
 function _updateVetados(ss, dirData) {
   var sh = ss.getSheetByName(CFG.SHEETS.VETADOS);
   if (!sh) return;
+  _asegurarColumnaClanTagVetados_(sh); // 6-nov-2026 (tanda 7, Clanes por Tag): la hoja ya existente recibe la columna antes de leer o escribir la fila completa
 
   var dirPorTag = {};
   for (var i = 0; i < dirData.length; i++) {
@@ -16988,6 +17016,7 @@ function _updateVetados(ss, dirData) {
       filaVC[VC.NOMBRE - 1]   = r[DC.NOMBRE-1];
       filaVC[VC.NOM_MULTI - 1] = r[DC.NOM_MULTI-1];
       filaVC[VC.CLAN - 1]     = r[DC.CLAN-1];
+      filaVC[VC.CLAN_TAG - 1] = String(r[DC.CLAN_TAG-1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7, Clanes por Tag)
       filaVC[VC.RANGO - 1]    = r[DC.RANGO-1];
       filaVC[VC.INICIALES-1]  = r[DC.INICIALES-1];
       filaVC[VC.PERMISO - 1]  = r[DC.PERMISO-1];
@@ -17021,6 +17050,7 @@ function _updateVetados(ss, dirData) {
       filaVCI[VC.NOMBRE - 1]   = ri[IC.NOMBRE-1];
       filaVCI[VC.NOM_MULTI - 1] = ri[IC.NOM_MULTI-1];
       filaVCI[VC.CLAN - 1]     = ri[IC.CLAN-1];
+      filaVCI[VC.CLAN_TAG - 1] = String(ri[IC.CLAN_TAG-1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7, Clanes por Tag)
       filaVCI[VC.RANGO - 1]    = ri[IC.RANGO-1];
       filaVCI[VC.INICIALES-1]  = ri[IC.INICIALES-1];
       filaVCI[VC.PERMISO - 1]  = ri[IC.PERMISO-1];
@@ -17228,6 +17258,7 @@ function sincronizarRazonHaciaVetados(shDir, row) {
   }
   var shVet = _getSs().getSheetByName(CFG.SHEETS.VETADOS);
   if (!shVet || shVet.getLastRow() < 2) return;
+  _asegurarColumnaClanTagVetados_(shVet); // 6-nov-2026 (tanda 7, Clanes por Tag)
   // Usar VC.* (nunca índices sueltos) para que el orden real de columnas
   // de Vetados nunca vuelva a desalinear qué campo se lee/escribe aquí.
   var data = shVet.getRange(2, 1, shVet.getLastRow() - 1, VETADOS_TOTAL_COLS).getValues();
@@ -17245,6 +17276,7 @@ function sincronizarRazonHaciaVetados(shDir, row) {
   filaNuevaVC[VC.NOMBRE - 1]   = dirRow[IC.NOMBRE-1];
   filaNuevaVC[VC.NOM_MULTI - 1] = dirRow[IC.NOM_MULTI-1];
   filaNuevaVC[VC.CLAN - 1]     = dirRow[IC.CLAN-1];
+  filaNuevaVC[VC.CLAN_TAG - 1] = String(dirRow[IC.CLAN_TAG-1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7, Clanes por Tag)
   filaNuevaVC[VC.RANGO - 1]    = dirRow[IC.RANGO-1];
   filaNuevaVC[VC.INICIALES-1]  = dirRow[IC.INICIALES-1];
   filaNuevaVC[VC.PERMISO - 1]  = dirRow[IC.PERMISO-1];
@@ -17281,6 +17313,7 @@ function sincronizarRazonHaciaDirectorio(shVet, row) {
 function _upsertVetadoDesdeWeb(tag, filaOrigenIC, razon, autor, via, fecha) {
   var shVet = _getSs().getSheetByName(CFG.SHEETS.VETADOS);
   if (!shVet) return;
+  _asegurarColumnaClanTagVetados_(shVet); // 6-nov-2026 (tanda 7, Clanes por Tag)
 
   var lastRow = shVet.getLastRow();
   if (lastRow >= 2) {
@@ -17299,6 +17332,7 @@ function _upsertVetadoDesdeWeb(tag, filaOrigenIC, razon, autor, via, fecha) {
   filaVC[VC.NOMBRE - 1]    = filaOrigenIC[IC.NOMBRE    - 1];
   filaVC[VC.NOM_MULTI - 1] = filaOrigenIC[IC.NOM_MULTI - 1];
   filaVC[VC.CLAN - 1]      = filaOrigenIC[IC.CLAN      - 1];
+  filaVC[VC.CLAN_TAG - 1]  = String(filaOrigenIC[IC.CLAN_TAG - 1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7, Clanes por Tag)
   filaVC[VC.RANGO - 1]     = filaOrigenIC[IC.RANGO     - 1];
   filaVC[VC.INICIALES - 1] = filaOrigenIC[IC.INICIALES - 1];
   filaVC[VC.PERMISO - 1]   = filaOrigenIC[IC.PERMISO   - 1];
@@ -20144,7 +20178,7 @@ function _migrarNuevosAHistorico(candidatosPayload) {
       _aplicarCorreccionAGuerraConReparto(
         fuente, offsetsPorClave, temporadaPropia, entrada.semana, entrada.tag,
         { ataquesSemana: entrada.ataquesSemana, fame: entrada.fame, barcos: entrada.barcos },
-        { temporadaRoyaleApi: entrada.temporadaRoyaleApi, clanNombre: clanNombreEntrada },
+        { temporadaRoyaleApi: entrada.temporadaRoyaleApi, clanNombre: clanNombreEntrada, clanTag: entrada.clanTag }, // 7-nov-2026 (tanda 7): el Tag del clan que reporta Nuevos
         statsLocal
       );
       huboCambioTemporada = true;
@@ -22573,6 +22607,8 @@ function SincronizarContactosNube() {
 // 30-oct-2026 (orden nuevo de la hoja, pedido de la usuaria): 23 columnas. DiaGuerra y Etapa van antes de Temporada, Temporada_2 junto a
 // Temporada, Barcos antes de Fame y Copas antes de Ranking; se agregan Merma_AtaquesHoy y Merma_AtaquesSemana. Toda la lectura y escritura
 // por posición debe pasar por GC (nunca un número suelto) y por GUERRA_TOTAL_COLS. [→ Contexto_Base_Web.md §PF304]
+// 7-nov-2026 (tanda 7 del plan Clanes por Tag): 24 columnas. Clan_Tag va al FINAL (no junto a Clan) para no mover ningún índice de una hoja que ya existe;
+// las hojas y archivos NUEVOS ponen el Tag al lado del nombre (regla de la usuaria). GC.TAG sigue siendo el Tag del JUGADOR. [→ Contexto_Base_Web.md §PF401]
 var GC = {
   NUM:          1,
   FECHA:        2,
@@ -22596,10 +22632,11 @@ var GC = {
   RANKING:      20,
   DON_R:        21,
   DON_D:        22,
-  ORIGEN:       23
+  ORIGEN:       23,
+  CLAN_TAG:     24   // 7-nov-2026: Tag del CLAN de la fila (p. ej. #GCRG8L00); es la clave de identidad del clan, la columna Clan es solo el nombre.
 };
 
-var GUERRA_TOTAL_COLS = 23;
+var GUERRA_TOTAL_COLS = 24;
 
 // PF289 (28-oct-2026): blindaje de _syncGuerraCSV() contra una lectura vacía o recortada de Backup_Guerra.csv. Solo se aplica si el CSV de referencia pesa más que el mínimo; el ratio es la fracción del tamaño de referencia por debajo de la cual se rechaza leer o escribir. [→ Contexto_Base_Web.md §PF289]
 var GUERRA_CSV_BLINDAJE_MIN_BYTES = 100000;
@@ -22613,7 +22650,15 @@ var GUERRA_HEADERS = ['N°','Fecha','DiaGuerra','Etapa','Temporada','Temporada_2
                        'Semana','Día','PeriodIndex','Clan','Tag','Nombre',
                        'AtaquesHoy','AtaquesSemana','Merma_AtaquesHoy','Merma_AtaquesSemana',
                        'Barcos','Fame','Copas','Ranking',
-                       'Donaciones_r','Donaciones_d','Origen'];
+                       'Donaciones_r','Donaciones_d','Origen','Clan_Tag'];
+
+// Encabezados de la hoja Guerra ANTES del 7-nov-2026 (23 columnas, sin Clan_Tag). Solo para migrar en memoria un Backup_Guerra.csv que aún no la trae
+// (_migrarTextoGuerraCsv_ en 05_Backup_CSV.gs); la migración se hace por NOMBRE de columna.
+var GUERRA_HEADERS_V23 = ['N°','Fecha','DiaGuerra','Etapa','Temporada','Temporada_2',
+                          'Semana','Día','PeriodIndex','Clan','Tag','Nombre',
+                          'AtaquesHoy','AtaquesSemana','Merma_AtaquesHoy','Merma_AtaquesSemana',
+                          'Barcos','Fame','Copas','Ranking',
+                          'Donaciones_r','Donaciones_d','Origen'];
 
 // Encabezados de la hoja Guerra ANTES del 30-oct-2026 (21 columnas). Solo para migrar un Backup_Guerra.csv con el orden viejo
 // (_migrarTextoGuerraCsv_ en 05_Backup_CSV.gs); la migración se hace por NOMBRE de columna, no por posición.
@@ -23027,6 +23072,7 @@ function updateGuerraSheet() {
         existing[GC.DON_R - 1]   = donR;
         existing[GC.DON_D - 1]   = donD;
         existing[GC.RANKING - 1] = ranking;
+        existing[GC.CLAN_TAG - 1] = clanTag; // 7-nov-2026 (tanda 7): el Tag del clan que se procesa es seguro; completa las filas de antes de la columna y mantiene la clave de identidad
         if (copas > 0) existing[GC.COPAS - 1] = copas; // 0 = la API no mandó trofeos; no se pisa un valor ya guardado
         if (nombreActual && nombreActual !== String(existing[GC.NOMBRE - 1] || '')) {
           existing[GC.NOMBRE - 1] = nombreActual;
@@ -23067,7 +23113,8 @@ function updateGuerraSheet() {
           ranking,              // Ranking
           donR,                 // Donaciones_r
           donD,                 // Donaciones_d
-          'Original'            // Origen (punto 1.5)
+          'Original',           // Origen (punto 1.5)
+          clanTag               // Clan_Tag (7-nov-2026, tanda 7): Tag del clan, p. ej. #GCRG8L00
         ]
       });
       existingIds[idGuerra] = true;
@@ -24714,6 +24761,13 @@ function _asegurarEstructuraGuerra_(sh) {
     sh.insertColumnsAfter(sh.getMaxColumns(), GUERRA_TOTAL_COLS - sh.getMaxColumns());
   }
   var difs = _guerraEncabezadosDiferencias_(sh);
+  // 7-nov-2026 (tanda 7, Clan_Tag): si la ÚNICA diferencia es que a la hoja le falta el encabezado de la última columna (Clan_Tag), se escribe aquí.
+  // Es una migración segura e idempotente: no mueve ni cambia ningún dato, y sin ella toda función de Guerra abortaría hasta que se corra _setupGuerra().
+  if (difs.length === 1 && difs[0].indexOf('col ' + GUERRA_TOTAL_COLS + ': hoja «»') === 0) {
+    sh.getRange(1, GUERRA_TOTAL_COLS).setValue(GUERRA_HEADERS[GUERRA_TOTAL_COLS - 1]);
+    Logger.log('[Guerra][ESTRUCTURA] Se agregó el encabezado «' + GUERRA_HEADERS[GUERRA_TOTAL_COLS - 1] + '» en la columna ' + GUERRA_TOTAL_COLS + ' de la hoja Guerra (tanda 7, Clan_Tag).');
+    difs = _guerraEncabezadosDiferencias_(sh);
+  }
   if (difs.length) {
     Logger.log('[Guerra][ESTRUCTURA] ABORT: los encabezados de la hoja Guerra no coinciden con GUERRA_HEADERS (' + difs.length + ' diferencia(s)). ' +
       'No se lee ni se escribe la hoja ni Backup_Guerra.csv para no mezclar columnas. ' + difs.slice(0, 6).join(' | ') + (difs.length > 6 ? ' | ...' : ''));
@@ -26790,7 +26844,7 @@ function _repararClanConTagGuerra_(aplicar) {
     if (aplicar && cambios.length) {
       // Respaldo previo del CSV completo, ANTES de escribir nada.
       _saveCSVToDrive('Backup_Guerra ANTES de reparar Clan con tag ' + marca + '.csv', csvText);
-      cambios.forEach(function (idx) { filas[idx][GC.CLAN - 1] = nombres[String(filas[idx][GC.CLAN - 1] || '').trim().toUpperCase()]; });
+      cambios.forEach(function (idx) { var tagClanRep = String(filas[idx][GC.CLAN - 1] || '').trim().toUpperCase(); filas[idx][GC.CLAN - 1] = nombres[tagClanRep]; filas[idx][GC.CLAN_TAG - 1] = tagClanRep; }); // 7-nov-2026 (tanda 7): además del nombre, se escribe el Tag del clan (el que traía la columna Clan)
       _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
     }
 
@@ -26841,7 +26895,7 @@ function _borrarDuplicadasClanConTagGuerra_(aplicar) {
       porClave[k].push(idx);
     });
     var omitir = {};
-    [GC.NUM, GC.CLAN, GC.ORIGEN, GC.FECHA, GC.MERMA_HOY, GC.MERMA_SEM].forEach(function (c) { omitir[c] = true; });
+    [GC.NUM, GC.CLAN, GC.CLAN_TAG, GC.ORIGEN, GC.FECHA, GC.MERMA_HOY, GC.MERMA_SEM].forEach(function (c) { omitir[c] = true; }); // 7-nov-2026 (tanda 7): Clan_Tag tampoco se compara (la hermana vieja puede no traerla)
 
     var informe = [['Tipo', 'N°', 'Temporada', 'Semana', 'Tag', 'Nombre', 'PeriodIndex', 'Clan actual', 'N° de la fila completa', 'Detalle']];
     var aBorrar = {}, nBorrar = 0, noTocar = 0;
@@ -31987,7 +32041,13 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
   var temporadaRoyaleApi = opciones.temporadaRoyaleApi || _getTemporadaRoyaleApiDesdePropia(temporadaPropia);
   var datosJugador = _buscarDatosJugadorParaReconstruccion(tag);
   // 6-nov-2026 (§PF402): nunca se crea una fila de Guerra sin clan. Antes, si el jugador no estaba en el Directorio, la fila salia con el nombre igual al tag y el Clan vacio (las 3920 filas de Backup_Guerra.csv). Ahora no se escribe nada y el caso va a revision.
-  var clanReconstruccion = String(opciones.clanNombre || datosJugador.clan || '').trim();
+  // 7-nov-2026 (tanda 7, Clan_Tag): el clan se identifica por Tag. Si quien llama trae el Tag (opciones.clanTag), el nombre sale de el cuando no viene aparte; la fila lleva siempre el Tag
+  // del clan (el de la correccion o, si falta, el que resuelve _getClanTagByName() para los clanes Terna; vacio para un clan externo sin Tag conocido).
+  var clanTagReconstruccion = _normalizarClanTagCorreccion(opciones.clanTag);
+  var nombreDesdeTag = '';
+  if (clanTagReconstruccion) { nombreDesdeTag = String(_resolverNombreClan(clanTagReconstruccion) || '').trim(); if (nombreDesdeTag.charAt(0) === '#') nombreDesdeTag = ''; }
+  var clanReconstruccion = String(opciones.clanNombre || nombreDesdeTag || datosJugador.clan || '').trim();
+  if (!clanTagReconstruccion && clanReconstruccion) clanTagReconstruccion = String(_getClanTagByName(clanReconstruccion) || '').trim().toUpperCase();
   if (!clanReconstruccion) {
     opciones.sinClanReconstruccion = true;
     Logger.log('[CorreccionGuerra] No se reconstruye T' + temporadaPropia + ' S' + semana + ' ' + tag + ': no se conoce su clan (no figura en el Directorio y la correccion no lo trae). No se crearon filas.');
@@ -32009,6 +32069,7 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
     filaNueva[GC.PERIOD_IDX  - 1] = pIdx;
     filaNueva[GC.ETAPA       - 1] = 'Guerra';
     filaNueva[GC.CLAN        - 1] = clanReconstruccion; // 31-oct-2026: el clan que reporta Nuevos manda sobre el del Directorio; §PF402: nunca vacio
+    filaNueva[GC.CLAN_TAG    - 1] = clanTagReconstruccion; // 7-nov-2026 (tanda 7): Tag del clan de la fila
     filaNueva[GC.TAG         - 1] = tag;
     filaNueva[GC.NOMBRE      - 1] = datosJugador.nombre;
     filaNueva[GC.ATAQUES_HOY - 1] = 0;
@@ -32790,18 +32851,20 @@ function _ajustarSemanaDeUnClan_(filas, offsets, valores, opciones) {
 /**
  * _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opciones, nombreClan,… [→ Contexto_Base_Web.md §18B032]
  */
-function _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opciones, nombreClan, nombreJugador) {
+function _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opciones, nombreClan, nombreJugador, clanTag) {
   var temp = { tipo: fuente.tipo, filas: [] };
   // §PF402: aqui el clan ya se conoce (nombreClan); se pasa para que la reconstruccion no dependa del Directorio. Se restaura al terminar porque `opciones` se comparte con quien llama.
   var opcionesRec = opciones || {};
-  var clanNombrePrevio = opcionesRec.clanNombre;
+  var clanNombrePrevio = opcionesRec.clanNombre, clanTagPrevio = opcionesRec.clanTag;
   if (nombreClan) opcionesRec.clanNombre = nombreClan;
+  if (clanTag) opcionesRec.clanTag = clanTag; // 7-nov-2026 (tanda 7): el Tag del clan de esta semana
   var offsTemp;
   try { offsTemp = _reconstruirSemanaDesdeCero(temp, temporadaPropia, semana, tag, valores, opcionesRec); }
-  finally { opcionesRec.clanNombre = clanNombrePrevio; }
+  finally { opcionesRec.clanNombre = clanNombrePrevio; opcionesRec.clanTag = clanTagPrevio; }
   if (!offsTemp) return {}; // sin combinacion (§PF122): no se escribe nada; la comprobacion (b) de quien llama lo revierte y lo avisa
   for (var i = 0; i < temp.filas.length; i++) {
     temp.filas[i][GC.CLAN - 1] = nombreClan;
+    if (clanTag) temp.filas[i][GC.CLAN_TAG - 1] = _normalizarClanTagCorreccion(clanTag); // 7-nov-2026 (tanda 7)
     if (nombreJugador) temp.filas[i][GC.NOMBRE - 1] = nombreJugador;
   }
   var base = fuente.filas.length;
@@ -32898,7 +32961,7 @@ function _aplicarCorreccionConClanTagAFuente_(fuente, offsetsPorClave, temporada
       if (_ajustarSemanaDeUnClan_(filas, porClan[nombreClan], valores, opcionesReparto)) cambioAlgo = true;
       offsetsEscritos[ce.clanTag] = porClan[nombreClan];
     } else {
-      offsetsEscritos[ce.clanTag] = _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opcionesReparto, nombreClan, nombreJugador);
+      offsetsEscritos[ce.clanTag] = _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opcionesReparto, nombreClan, nombreJugador, ce.clanTag);
       cambioAlgo = true;
     }
   }
@@ -34880,16 +34943,17 @@ var AHG = {
   BARCOS_RIVERRACE: 12, BARCOS_NUEVO: 13,
   FECHA_DETECTADO: 14, ESTADO: 15,
   VALOR_CORRECTO_ATAQUES: 16, VALOR_CORRECTO_FAME: 17, VALOR_CORRECTO_BARCOS: 18,
-  NOTAS: 19
+  NOTAS: 19,
+  CLAN_TAG: 20 // 6-nov-2026 (tanda 7, Clanes por Tag): va AL FINAL de la hoja ya existente, para no mover ninguna columna
 };
 
 var AHG_ENCABEZADOS = [
   'Tag', 'Nombre', 'TemporadaInterna', 'TemporadaRoyaleAPI', 'Semana', 'Clan', 'FuenteNueva',
   'Ataques_RiverRace', 'Ataques_Nuevo', 'Fame_RiverRace', 'Fame_Nuevo', 'Barcos_RiverRace', 'Barcos_Nuevo',
-  'FechaDetectado', 'Estado', 'ValorCorrecto_Ataques', 'ValorCorrecto_Fame', 'ValorCorrecto_Barcos', 'Notas'
+  'FechaDetectado', 'Estado', 'ValorCorrecto_Ataques', 'ValorCorrecto_Fame', 'ValorCorrecto_Barcos', 'Notas', 'Clan_Tag'
 ];
 
-var AHG_TOTAL_COLS = 19;
+var AHG_TOTAL_COLS = 20; // 19 -> 20 con Clan_Tag
 
 // FASE 2 (04-sep-2026, pedido del usuario, punto 1 del documento de [→ Contexto_Base_Web.md §20B004]
 var HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS = [
@@ -34932,6 +34996,7 @@ function resolverAlertasHistorialGuerra() {
     return;
   }
 
+  _asegurarColumnaClanTagAlertasHG_(sh); // 6-nov-2026 (tanda 7, Clanes por Tag)
   var lastRow = sh.getLastRow();
   if (lastRow < 2) {
     Logger.log('[HistorialGuerra][Alertas] Hoja vacía — nada que resolver.');
@@ -36395,6 +36460,22 @@ function _algunValorBajoHistorialGuerra(existente, nuevo) {
 }
 
 /**
+ * _asegurarColumnaClanTagAlertasHG_(sh)
+ * 6-nov-2026 (tanda 7, Clanes por Tag); §PF419. Idempotente: garantiza que Alertas_HistorialGuerra tenga la
+ * columna AHG.CLAN_TAG (20, al final) y su encabezado «Clan_Tag». No toca ninguna otra columna ni fila.
+ */
+function _asegurarColumnaClanTagAlertasHG_(sh) {
+  if (!sh) return;
+  if (sh.getMaxColumns() < AHG.CLAN_TAG) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), AHG.CLAN_TAG - sh.getMaxColumns());
+  }
+  var celda = sh.getRange(1, AHG.CLAN_TAG);
+  if (String(celda.getValue()) === 'Clan_Tag') return;
+  celda.setValue('Clan_Tag');
+  applyHeaderStyle(sh, AHG.CLAN_TAG);
+}
+
+/**
  * _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo) [→ Contexto_Base_Web.md §20B040]
  */
 function _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo) {
@@ -36402,6 +36483,7 @@ function _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo) {
     var ss = _getSs();
     var sh = ss.getSheetByName(CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA);
     if (!sh) { _setupAlertasHistorialGuerra(ss); sh = ss.getSheetByName(CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA); }
+    _asegurarColumnaClanTagAlertasHG_(sh); // 6-nov-2026 (tanda 7, Clanes por Tag)
 
     var filas = sh.getLastRow() > 1
       ? sh.getRange(2, 1, sh.getLastRow() - 1, AHG_TOTAL_COLS).getValues() : [];
@@ -36436,6 +36518,8 @@ function _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo) {
     fila[AHG.VALOR_CORRECTO_FAME - 1] = '';
     fila[AHG.VALOR_CORRECTO_BARCOS - 1] = '';
     fila[AHG.NOTAS - 1] = '';
+    // 6-nov-2026 (tanda 7, Clanes por Tag): el Tag del clan de la alerta; si el registro no lo trae, el resolvedor unico (vacio para clanes externos: no se adivina)
+    fila[AHG.CLAN_TAG - 1] = _normalizarClanTagCorreccion(nuevo.clanTag) || _normalizarClanTagCorreccion(_getClanTagByName(nuevo.clan));
 
     sh.appendRow(fila);
     sh.getRange(sh.getLastRow(), AHG.ESTADO).setDataValidation(
@@ -37507,7 +37591,9 @@ function updateControlSheet(ctxOverride) {
   var numSemanasTemporada = lunesEnMes(ctx.mesEfectivoAnio, ctx.mesEfectivoMes) || 4;
 
   // Min_G vigente por clan, indexado por NOMBRE (la columna "Clan" de la [→ Contexto_Base_Web.md §22B018]
-  var minGPorNombreClan = _getMinGClanMaps().byNombre;
+  var mapasMinG = _getMinGClanMaps(); // 6-nov-2026 (tanda 7b-1): el Min_G se busca por Tag del clan de la fila y, de respaldo, por nombre
+  var minGPorTagClan = mapasMinG.byTag;
+  var minGPorNombreClan = mapasMinG.byNombre;
 
   var fixedRows = [];
   var gridRows  = [];
@@ -37593,7 +37679,8 @@ function updateControlSheet(ctxOverride) {
     if (puntSemTotales.length > 0) {
       var prom = puntSemTotales.reduce(function(a,b){ return a+b; }, 0) / puntSemTotales.length;
       gridFila[OFF.PUN_PROM] = prom;
-      var minGJugador = minGPorNombreClan[jug[DC.CLAN - 1]] || CFG.MIN_G_DEFAULT;
+      var tagClanJug = String(jug[DC.CLAN_TAG - 1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7b-1)
+      var minGJugador = (tagClanJug && minGPorTagClan[tagClanJug] !== undefined ? minGPorTagClan[tagClanJug] : minGPorNombreClan[jug[DC.CLAN - 1]]) || CFG.MIN_G_DEFAULT;
       var pctPunt = minGJugador > 0 ? (prom / minGJugador) : 0;
       gridFila[OFF.PUN_PCT] = (pctPunt >= 1) ? 1 : pctPunt; // fijo en 100% si se cumple o supera
     }
@@ -39052,7 +39139,8 @@ function _reglasCondFmtPuntajeTotalSemana(rangoPunt, letr, colClanL) {
 // Índices de columna (1-based) — Control_2. [→ Contexto_Base_Web.md §23B002]
 var CC2 = {
   NUM: 1, TAG: 2, NOMBRE: 3, NOM_MULTI: 4, CLAN: 5, RANGO: 6, INICIALES: 7,
-  CELULAR: 8, V_GUERRA: 9, INACTIVIDAD: 10, ALERTA: 11, ATAQ_PEND: 12, ASCENSO: 13
+  CELULAR: 8, V_GUERRA: 9, INACTIVIDAD: 10, ALERTA: 11, ATAQ_PEND: 12, ASCENSO: 13,
+  CLAN_TAG: 34 // 6-nov-2026 (tanda 7, Clanes por Tag): va AL FINAL, despues de la cuadricula (CC2_TOTAL_FIJAS + GRID_WIDTH2 + 1), para no mover ninguna columna existente
 };
 
 var CC2_TOTAL_FIJAS = 13;
@@ -39138,13 +39226,16 @@ function actualizarControl2() {
   var guerraData = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
   var agregadosAscensoPorTag = _getAgregadosAscensoPorTag();
   var numSemanasTemporada = lunesEnMes(ctx.mesEfectivoAnio, ctx.mesEfectivoMes) || 4;
-  var minGPorNombreClan = _getMinGClanMaps().byNombre;
+  var mapasMinG = _getMinGClanMaps(); // 6-nov-2026 (tanda 7b-1): el Min_G se busca por Tag del clan y, de respaldo, por nombre
+  var minGPorTagClan = mapasMinG.byTag;
+  var minGPorNombreClan = mapasMinG.byNombre;
 
   // Overlay de correcciones desde RoyaleAPI (ver 18_CorreccionGuerra.gs). [→ Contexto_Base_Web.md §23B008]
   var overlayGuerra = _cargarOverlayCorreccionesGuerra();
 
   var fixedRows = [];
   var gridRows = [];
+  var tagClanRows = []; // 6-nov-2026 (tanda 7): Clan_Tag de cada fila, en la columna CC2.CLAN_TAG (al final)
 
   for (var i = 0; i < jugadores.length; i++) {
     var jug = jugadores[i];
@@ -39213,7 +39304,8 @@ function actualizarControl2() {
     if (puntSemTotales.length > 0) {
       var prom = puntSemTotales.reduce(function(a,b){ return a+b; }, 0) / puntSemTotales.length;
       gridFila[OFF2.PUN_PROM] = prom;
-      var minGJugador = minGPorNombreClan[jug[DC.CLAN - 1]] || CFG.MIN_G_DEFAULT;
+      var tagClanJug = String(jug[DC.CLAN_TAG - 1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7b-1)
+      var minGJugador = (tagClanJug && minGPorTagClan[tagClanJug] !== undefined ? minGPorTagClan[tagClanJug] : minGPorNombreClan[jug[DC.CLAN - 1]]) || CFG.MIN_G_DEFAULT;
       var pctPunt = minGJugador > 0 ? (prom / minGJugador) : 0;
       gridFila[OFF2.PUN_PCT] = (pctPunt >= 1) ? 1 : pctPunt;
     }
@@ -39245,11 +39337,20 @@ function actualizarControl2() {
       jug[DC.INACTIVIDAD - 1], jug[DC.ALERTA - 1], pendCol, ascensoVal
     ]);
     gridRows.push(gridFila);
+    tagClanRows.push([String(jug[DC.CLAN_TAG - 1] || '').trim().toUpperCase()]); // 6-nov-2026 (tanda 7): el Tag sale del Directorio, igual que el nombre del clan
   }
 
   // FIX (15-ago-2026, pedido usuario: "Control_2 solo actualiza hasta la [→ Contexto_Base_Web.md §23B013]
+  // 6-nov-2026 (tanda 7): la hoja ya existente puede no tener la columna Clan_Tag; se agrega (idempotente) antes de escribir.
+  _asegurarColumnaClanTagControl2_(sh);
+
   if (fixedRows.length > 0) {
     sh.getRange(4, 1, fixedRows.length, CC2_TOTAL_FIJAS).setValues(fixedRows);
+  }
+
+  if (tagClanRows.length > 0) {
+    sh.getRange(4, CC2.CLAN_TAG, tagClanRows.length, 1).setValues(tagClanRows);
+    applyBorderCenter(sh.getRange(4, CC2.CLAN_TAG, tagClanRows.length, 1));
   }
 
   if (gridRows.length > 0) {
@@ -39457,6 +39558,32 @@ function _aplicarFmtCondicionalControl2(sh, numJugadores) {
 // ----- Control2: restaurar la hoja si no existe (lo usa RUNALL) -----
 
 /**
+ * _asegurarColumnaClanTagControl2_(sh)
+ * 6-nov-2026 (tanda 7, Clanes por Tag; §PF419). Idempotente: garantiza que Control_2 tenga la
+ * columna CC2.CLAN_TAG (34, al final) y su encabezado «Clan_Tag» en la fila 3. No toca ninguna otra
+ * columna. Control_2 se reescribe entera en cada corrida de actualizarControl2(), asi que las filas
+ * se llenan solas; esta funcion solo agrega la columna y el encabezado a la hoja que ya existia.
+ */
+function _asegurarColumnaClanTagControl2_(sh) {
+  if (sh.getMaxColumns() < CC2.CLAN_TAG) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), CC2.CLAN_TAG - sh.getMaxColumns());
+  }
+  var celda = sh.getRange(3, CC2.CLAN_TAG);
+  if (String(celda.getValue()) === 'Clan_Tag') return;
+  sh.getRange(1, CC2.CLAN_TAG, 2, 1).merge()
+    .setBackground(CFG.COLORES.HEADER_BG)
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+  celda.setValue('Clan_Tag')
+    .setBackground(CFG.COLORES.HEADER_BG)
+    .setFontColor(CFG.COLORES.HEADER_FG)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center');
+  sh.getRange(1, CC2.CLAN_TAG, 3, 1)
+    .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+}
+
+/**
  * _restaurarControl2SiNoExiste() [→ Contexto_Base_Web.md §23B027]
  */
 function _restaurarControl2SiNoExiste() {
@@ -39464,9 +39591,8 @@ function _restaurarControl2SiNoExiste() {
   if (ss.getSheetByName('Control_2')) return; // ya existe: nunca se toca
 
   var sh = ss.insertSheet('Control_2');
-  var COL_TOTALES = _control2ColTotales();
-  if (sh.getMaxColumns() < COL_TOTALES) {
-    sh.insertColumnsAfter(sh.getMaxColumns(), COL_TOTALES - sh.getMaxColumns());
+  if (sh.getMaxColumns() < CC2.CLAN_TAG) { // 6-nov-2026 (tanda 7): hasta la columna Clan_Tag, no solo hasta la cuadricula
+    sh.insertColumnsAfter(sh.getMaxColumns(), CC2.CLAN_TAG - sh.getMaxColumns());
   }
 
   _pintarEncabezadosControl2(sh);
@@ -39590,6 +39716,8 @@ function _pintarEncabezadosControl2(sh) {
   // A1:C2 sin bordes (se limpia después del borde general para que no lo
   // sobreescriba, mismo criterio que Control).
   sh.getRange(1, 1, 2, 3).setBorder(false, false, false, false, false, false);
+
+  _asegurarColumnaClanTagControl2_(sh); // 6-nov-2026 (tanda 7): encabezado de la columna Clan_Tag (al final)
 }
 
 /**
@@ -41112,7 +41240,9 @@ function _explicarBajasCR_(bajas, v, par, ctxReal, dir) {
   if (_semanasPendientesCR(semanas, ctxReal).length) { nota('No se pudo evaluar: las semanas del par ' + par.idD + ' todavía no terminan.'); return; }
   var porTag = _getTrofeosYAtaquesSemanalesPorTag(semanas, ctxReal, true, true);
   var ventanas = _ventanasHistorialParaDescensoCR_();
-  var minG = _getMinGClanMaps().byNombre;
+  var mapasMinG = _getMinGClanMaps(); // 6-nov-2026 (tanda 7b-1): Min_G por Tag del clan (x.clanTag) y, de respaldo, por nombre
+  var minG = mapasMinG.byNombre;
+  var minGPorTag = mapasMinG.byTag;
   var glob = { barcos: par.filaDescenso.barcos, miembroActivo: par.filaDescenso.miembroActivo, whatsapp: par.filaDescenso.whatsapp };
   var porClan = {};
   par.filaDescenso.porClan.forEach(function (b) { porClan[b.clan] = b; });
@@ -41131,7 +41261,8 @@ function _explicarBajasCR_(bajas, v, par, ctxReal, dir) {
     x.incumple = _requisitosIncumplidosCR_(bloque, rolKey, glob, prom, mv, d.wsp);
     x.evaluadoContra = 'Descenso ' + par.idD + ', ' + _ncNombreRol(rolKey) + ' de ' + x.clan;
     if (x.tipo === 'Expulsión') {
-      var mg = (minG[x.clan] !== undefined) ? minG[x.clan] : CFG.MIN_G_DEFAULT;
+      var tagClanBaja = String(x.clanTag || '').trim().toUpperCase();
+      var mg = (tagClanBaja && minGPorTag[tagClanBaja] !== undefined) ? minGPorTag[tagClanBaja] : ((minG[x.clan] !== undefined) ? minG[x.clan] : CFG.MIN_G_DEFAULT);
       if (prom.fameProm < mg) x.incumple.push('Medallas promedio ' + _ncFmtNum(prom.fameProm) + ', por debajo de Min_G (' + mg + ')');
       else x.requisitoNota = 'Alcanzaba Min_G (' + mg + ', con ' + _ncFmtNum(prom.fameProm) + ' medallas promedio): con los datos del par correspondía Descenso, no Expulsión.';
     }
@@ -41339,7 +41470,7 @@ function _verificarCambioRangoDesdeRegistros_(registros, claveDia, opciones) {
 
   var diaCorrida = corrida.diaTxt.split('/').reverse().join('-'); // 'aaaa-mm-dd'
   function item(r, dia) {
-    return { tag: r.tag, nombre: r.nombre, clan: r.clan, tipo: r.tipo, rango: r.rango, rango2: r.rango2, fechaTxt: dia.split('-').reverse().join('/') };
+    return { tag: r.tag, nombre: r.nombre, clan: r.clan, clanTag: r.clanTag || '', tipo: r.tipo, rango: r.rango, rango2: r.rango2, fechaTxt: dia.split('-').reverse().join('/') }; // 6-nov-2026 (tanda 7b-1): clanTag aditivo, para buscar el Min_G por Tag
   }
   function describir(x) {
     return x.tipo + ((x.rango && x.rango2) ? ' de ' + x.rango + ' a ' + x.rango2 : '');
@@ -50444,7 +50575,9 @@ function _evaluarCambioRango_(idAscenso, idDescenso) {
   filaDescenso.porClan.forEach(function (b) { porClanDescenso[b.clan] = b; });
 
   // Min_G por nombre de clan — el umbral de EXPULSIÓN. Es la misma fuente [→ Contexto_Base_Web.md §29B013]
-  var minGPorNombreClan = _getMinGClanMaps().byNombre;
+  var mapasMinG = _getMinGClanMaps(); // 6-nov-2026 (tanda 7b-1): por Tag del clan de la fila del Directorio y, de respaldo, por nombre
+  var minGPorTagClan = mapasMinG.byTag;
+  var minGPorNombreClan = mapasMinG.byNombre;
 
   // FIX (27-sep-2026, pedido del usuario -- mismo arreglo que ya se aplicó en [→ Contexto_Base_Web.md §29B014]
   var mismasSemanasAD = JSON.stringify(filaAscenso.semanas) === JSON.stringify(filaDescenso.semanas);
@@ -50522,7 +50655,8 @@ function _evaluarCambioRango_(idAscenso, idDescenso) {
     // Los indicadores que se muestran son los de la corrida de Descenso [→ Contexto_Base_Web.md §29B017]
     var promMostrado = promDesc || promAsc;
 
-    var minGClan = (minGPorNombreClan[clan] !== undefined) ? minGPorNombreClan[clan] : CFG.MIN_G_DEFAULT;
+    var tagClanFila = String(fila[DC.CLAN_TAG - 1] || '').trim().toUpperCase();
+    var minGClan = (tagClanFila && minGPorTagClan[tagClanFila] !== undefined) ? minGPorTagClan[tagClanFila] : ((minGPorNombreClan[clan] !== undefined) ? minGPorNombreClan[clan] : CFG.MIN_G_DEFAULT);
     var veredicto = _ncVeredictoCambioRango(rolKey, bloqueAsc, bloqueDesc, promAsc, promDesc, minGClan, ctxVeredicto);
 
     evaluados.push({
@@ -50960,10 +51094,11 @@ function _ncContenidoBasePlaceholder(body, titulo) {
 // Columnas de la hoja Mensajes (1-based)
 var MC = {
   NUM:1, FECHA:2, TEMPORADA:3, SEMANA:4, DIA:5, PERIOD:6,
-  N1:7, CATEGORIA:8, N2:9, SUBCATEGORIA:10, N3:11, CLAN:12, RANGO:13, TIPO:14, CONTENIDO:15
+  N1:7, CATEGORIA:8, N2:9, SUBCATEGORIA:10, N3:11, CLAN:12, RANGO:13, TIPO:14, CONTENIDO:15,
+  CLAN_TAG:16 // 6-nov-2026 (tanda 7, Clanes por Tag): va DESPUES de Contenido (la hoja ya existente no mueve ninguna columna); Contenido ya NO es la ultima columna
 };
 
-var MENSAJES_TOTAL_COLS = 15;
+var MENSAJES_TOTAL_COLS = 16; // 15 -> 16 con Clan_Tag
 
 // Nombre del clan "Chat General" para mensajes generales (todas las subcategorías generales)
 var CLAN_CHAT_GENERAL = 'ᴳ乂ᵀ ⚜️ Familia Terna';
@@ -50997,10 +51132,28 @@ var META_GUERRA_PROGRESO = 10000;
 
 // ----- Parte 1: funciones que se corren a mano -----
 
+/**
+ * _asegurarColumnaClanTagMensajes_(sh)
+ * 6-nov-2026 (tanda 7, Clanes por Tag); §PF419. Idempotente: garantiza que Mensajes tenga la columna MC.CLAN_TAG
+ * (16, despues de Contenido) y su encabezado «Clan_Tag». No toca ninguna otra columna. Mensajes se
+ * reescribe entera en cada corrida de generarTodosMensajes(), asi que las filas se llenan solas.
+ */
+function _asegurarColumnaClanTagMensajes_(sh) {
+  if (!sh) return;
+  if (sh.getMaxColumns() < MC.CLAN_TAG) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), MC.CLAN_TAG - sh.getMaxColumns());
+  }
+  var celda = sh.getRange(1, MC.CLAN_TAG);
+  if (String(celda.getValue()) === 'Clan_Tag') return;
+  celda.setValue('Clan_Tag');
+  applyHeaderStyle(sh, MC.CLAN_TAG);
+}
+
 function generarTodosMensajes() {
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.MENSAJES);
   if (!sh) { Logger.log('[Mensajes] Hoja no encontrada'); return; }
+  _asegurarColumnaClanTagMensajes_(sh); // 6-nov-2026 (tanda 7, Clanes por Tag)
 
   var ctx = _getCtx();
   var now = new Date();
@@ -51267,7 +51420,8 @@ function generarTodosMensajes() {
     // Fila: N° | Fecha | Temporada | Semana | Dia | PeriodIndex | N1° | Categoría | N2° | Subcategoría | N3° | Clan |… [→ Contexto_Base_Web.md §30B023]
     nuevosMensajes.push([
       bi + 1, now, ctx.temporada, ctx.sectionIndex + 1, ctx.diaLetra, ctx.periodIndex,
-      n1, b.categoria, n2, b.subcategoria, n3, b.clan, (b.rango || ''), (b.tipo || 'Dinámico'), b.contenido
+      n1, b.categoria, n2, b.subcategoria, n3, b.clan, (b.rango || ''), (b.tipo || 'Dinámico'), b.contenido,
+      String(_getClanTagByName(b.clan) || '') // 6-nov-2026 (tanda 7, Clanes por Tag): el Tag del clan del mensaje; vacio para el Chat General y lo que no es un clan Terna
     ]);
   }
 
@@ -51284,8 +51438,8 @@ function generarTodosMensajes() {
     }
 
     // FIX (18-ago-2026, pedido usuario: "Mensajes!Contenido siempre vuelve a [→ Contexto_Base_Web.md §30B025]
-    sh.getRange(2, 1, nuevosMensajes.length, MENSAJES_TOTAL_COLS - 1)
-      .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
+    sh.getRange(2, 1, nuevosMensajes.length, MENSAJES_TOTAL_COLS)
+      .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP); // 6-nov-2026 (tanda 7, Clanes por Tag): antes MENSAJES_TOTAL_COLS - 1 (Contenido era la ultima); la linea siguiente vuelve a poner WRAP solo en Contenido
     sh.getRange(2, MC.CONTENIDO, nuevosMensajes.length, 1)
       .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
     for (var r = 2; r <= nuevosMensajes.length + 1; r++) sh.setRowHeight(r, 200);
@@ -51623,7 +51777,9 @@ function _getDatosClanHoja(ss) {
   if (!sh || sh.getLastRow() < 2) return mapa;
   var data = sh.getRange(2, 1, sh.getLastRow() - 1, CC.CONDICION).getValues();
   var headers = sh.getRange(1, 1, 1, CC.CONDICION).getValues()[0];
-  var minGByNombre = _getMinGClanMaps().byNombre;
+  var mapasMinG = _getMinGClanMaps(); // 6-nov-2026 (tanda 7b-1): el Min_G de cada clan de la hoja Clan se busca por su Tag y, de respaldo, por nombre
+  var minGByTag = mapasMinG.byTag;
+  var minGByNombre = mapasMinG.byNombre;
 
   for (var i = 0; i < data.length; i++) {
     var r = data[i];
@@ -51637,7 +51793,7 @@ function _getDatosClanHoja(ss) {
       clanTag:        r[CC.CLAN_TAG     - 1],
       lider:          r[CC.LIDER        - 1],
       miembros:       r[CC.MIEMBROS     - 1],
-      minG:           (minGByNombre[nombre] !== undefined) ? minGByNombre[nombre] : CFG.MIN_G_DEFAULT,
+      minG:           (minGByTag[String(r[CC.CLAN_TAG - 1] || '').trim()] !== undefined) ? minGByTag[String(r[CC.CLAN_TAG - 1] || '').trim()] : ((minGByNombre[nombre] !== undefined) ? minGByNombre[nombre] : CFG.MIN_G_DEFAULT),
       trofeos:        r[CC.TROFEOS      - 1],
       liga:           r[CC.LIGA         - 1],
       requerimiento:  r[CC.REQUERIMIENTO- 1],
@@ -63138,7 +63294,9 @@ function _getControlTemporadaPorClan(ss, ctx, dataDirParam, temporadaReal) {
   var numSemanasTemporada = Math.min(lunesEnMes(ctx.mesEfectivoAnio, ctx.mesEfectivoMes) || 4, MAX_SEMANAS_GRID);
   _dashAcum_('c2.guerraData', _c2t);
   _c2t = Date.now();
-  var minGPorNombreClan   = _getMinGClanMapsDash_().byNombre; // 19-sep-2026: memo por ejecución del dashboard
+  var mapasMinGDash       = _getMinGClanMapsDash_(); // 19-sep-2026: memo por ejecución del dashboard
+  var minGPorTagClan      = mapasMinGDash.byTag;      // 6-nov-2026 (tanda 7b-1): primero por el Tag del clan de la fila
+  var minGPorNombreClan   = mapasMinGDash.byNombre;   // respaldo por nombre
   _dashAcum_('c2.minG', _c2t);
   _c2t = Date.now();
 
@@ -63252,7 +63410,8 @@ function _getControlTemporadaPorClan(ss, ctx, dataDirParam, temporadaReal) {
     var puntProm = puntSemTotales.length
       ? puntSemTotales.reduce(function (a, b) { return a + b; }, 0) / puntSemTotales.length
       : 0;
-    var minGJugador = minGPorNombreClan[clanNombre] || CFG.MIN_G_DEFAULT;
+    var tagClanJug  = String(jug[DC.CLAN_TAG - 1] || '').trim().toUpperCase();
+    var minGJugador = (tagClanJug && minGPorTagClan[tagClanJug] !== undefined ? minGPorTagClan[tagClanJug] : minGPorNombreClan[clanNombre]) || CFG.MIN_G_DEFAULT;
     var puntPct     = minGJugador > 0 ? Math.round(Math.min(puntProm / minGJugador, 1) * 100) : 0;
 
     var barcoTotal = barcoSemTotales.length ? barcoSemTotales.reduce(function (a, b) { return a + b; }, 0) : 0;
@@ -65520,7 +65679,7 @@ function _agregarEntradasDinamicas(ss, entradas, orden) {
   // Paso 3: Mensajes fresco → Dinámico solo si la clave no está cubierta; FIX 28-sep-2026: el contenido se lee con MC (Mensajes pasó a 15 columnas) en vez de índice fijo. [→ Contexto_Base_Web.md §43B021]
   var shMsg = ss.getSheetByName(CFG.SHEETS.MENSAJES);
   if (shMsg && shMsg.getLastRow() >= 2) {
-    var dataMsg = shMsg.getRange(2, 1, shMsg.getLastRow() - 1, MENSAJES_TOTAL_COLS).getValues();
+    var dataMsg = shMsg.getRange(2, 1, shMsg.getLastRow() - 1, Math.min(MENSAJES_TOTAL_COLS, shMsg.getMaxColumns())).getValues(); // 6-nov-2026 (tanda 7, Clanes por Tag): una hoja que aun no tiene Clan_Tag se lee con las columnas que tiene
     for (var j = 0; j < dataMsg.length; j++) {
       var cat2  = String(dataMsg[j][MC.CATEGORIA    - 1] || '').trim();
       var sub2  = String(dataMsg[j][MC.SUBCATEGORIA - 1] || '').trim();
