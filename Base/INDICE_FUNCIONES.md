@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2853 nombres en 60 archivos .gs.
+Código real: `Base/src/`. Total: 2854 nombres en 60 archivos .gs.
 
 ## Por archivo
 
@@ -60,7 +60,7 @@ Código real: `Base/src/`. Total: 2853 nombres en 60 archivos .gs.
 - **52_Publicar_Home.gs** (2 funciones): publicarHomeEstatico, _publicarHomeEstatico_
 - **53_Publicar_Torneos.gs** (3 funciones): publicarTorneosEstatico, _publicarTorneosEstatico_, _leerHistorialTorneosPublicado_
 - **54_Correccion_AtaquesSemana_Anomalias.gs** (13 funciones): corregirAnomaliasAtaquesSemanaInforme, corregirAnomaliasAtaquesSemanaAplicar, _corregirAnomaliasAtaquesSemana_, _anomAtqSemEvaluar_, _anomAtqSemCoincide_, _anomAtqSemValores_, _anomAtqSemIguales_, _anomAtqSemTextoSumas_, _anomAtqSemSumaClanes_, _anomAtqSemSeriesAfectadas_, _anomAtqSemNum_, _anomAtqSemTag_, _anomAtqSemClan_
-- **55_Reparar_DiasConExceso.gs** (32 funciones): repararDiasConExcesoInforme, repararDiasConExcesoAplicarUnicas, repararDiasConExcesoAplicar, informeFameCurrentRiverRace52, aplicarFameCurrentRiverRace52, _repararDiasConExceso_, _excDiasClasificar, _excDiasAgrupar, _excDiasTagDeGrupo_, _excDiasMismoClan_, _excDiasNum, _excDiasNecesitaReparo, _excDiasSegmentos, _excDiasResumir, _excDiasResolver, _excDiasFaltanteJueves, _excDiasSoluciones, _excDiasOpciones, _excDiasEsCero, _excDiasPlanificar, _excDiasRegistradoPorDia, _excDiasFinalDe, _excDiasElegirSolucion, _excDiasOrigenNuevo, _excDiasTextoActual, _excDiasTextoPorDia, _excDiasAplicarPlan, _excDiasFilaNueva, _excDiasVerificar, _fameCrr52_, _fameCrr52Planificar_, _fameCrr52Verificar_
+- **55_Reparar_DiasConExceso.gs** (33 funciones): repararDiasConExcesoInforme, repararDiasConExcesoAplicarUnicas, repararDiasConExcesoAplicar, informeFameCurrentRiverRace52, aplicarFameCurrentRiverRace52, _repararDiasConExceso_, _excDiasClasificar, _excDiasAgrupar, _excDiasClaveGrupo_, _excDiasTagDeGrupo_, _excDiasMismoClan_, _excDiasNum, _excDiasNecesitaReparo, _excDiasSegmentos, _excDiasResumir, _excDiasResolver, _excDiasFaltanteJueves, _excDiasSoluciones, _excDiasOpciones, _excDiasEsCero, _excDiasPlanificar, _excDiasRegistradoPorDia, _excDiasFinalDe, _excDiasElegirSolucion, _excDiasOrigenNuevo, _excDiasTextoActual, _excDiasTextoPorDia, _excDiasAplicarPlan, _excDiasFilaNueva, _excDiasVerificar, _fameCrr52_, _fameCrr52Planificar_, _fameCrr52Verificar_
 - **56_CurrentRiverRace_Dias.gs** (19 funciones): probarCurrentRiverRaceDias, _crrDiasDeJugador_, _crrCapturasDeSemana_, _crrLeerSemana_, _crrArchivosDeSemana_, _crrSubcarpeta_, _crrCapturasDesdeArchivos_, _crrCapturasDeClan_, _crrArchivosSinClanVacio_, _crrCierresDesdeArchivos_, _crrCierresDeSemana_, _crrDomingoSinFame_, _crrParsearNombre_, _crrClasificarCaptura_, _crrResolverJugador_, _crrFameDia_, _crrAyerParaCierre_, _crrAvisoFueraDeRangosCierre_, _crrDomingoParaTotales_
 - **57_ReconstruirSemanaPorDias.gs** (26 funciones): totalesSemanaPorDiasReiniciar, _totSemanaPorDias_, _rsObjetivos, _rsObjetivosDeCache_, _rsObjetivosDeJson_, _rsObjetivosGuardarCache_, _rsClavesHoja, _rsClaveSem_, _rsPlanificar, _rsFilasPlan_, _rsCrrRestricciones, _rsResolver, _rsRegistros, _rsMapeos, _rsResolverNivel, _rsCatalogo, _rsMismoReparto_, _rsCatalogoSinFameDomingo, _rsTagDeClanNombre_, _rsSinFameDeSerie, _rsMenor, _rsContinuacionInforme_, _continuarTotalesSemanaInforme, _rsVigilanteInforme_, _rsCursorLeer_, _rsCursorGuardar_
 - **58_Docs_Administracion.gs** (23 funciones): _adminDocActualizar_, _adminDocNorm_, _adminDocLeerEquipo_, _adminDocCopasPorTag_, _adminDocNombresDeHojaClan_, _adminDocClaveAlfa_, _adminDocTagDeClan_, _adminDocOrdenNombres_, _adminDocAplicarClan_, _adminDocGrupo_, _adminDocBuscarGrupo_, _adminDocEncabezado_, _adminDocPrefEncabezados_, _adminDocPrefijo_, _adminDocSetTexto_, _adminDocQuitarVineta_, _adminDocLineas_, _adminDocCuentaAMostrar_, _adminDocMejorPorCopas_, _adminDocCuentaPrincipal_, _adminDocAdminsExtra_, _adminDocPersonaTieneCuenta_, _adminDocAplicarFamilia_
@@ -755,29 +755,30 @@ Ninguno.
 | `_evaluarRequisitosAscenso` | función | 22_ControlCalendario.gs | 760 | Contexto_Base_Web.md §22B039 |
 | `_evitarAutoLinkWsp` | función | 44_BotWhatsApp.gs | 106 | Contexto_Base_Web.md §44B011 |
 | `_excDiasAgrupar` | función | 55_Reparar_DiasConExceso.gs | 287 |  |
-| `_excDiasAplicarPlan` | función | 55_Reparar_DiasConExceso.gs | 668 |  |
+| `_excDiasAplicarPlan` | función | 55_Reparar_DiasConExceso.gs | 685 |  |
 | `_excDiasClasificar` | función | 55_Reparar_DiasConExceso.gs | 273 |  |
-| `_excDiasElegirSolucion` | función | 55_Reparar_DiasConExceso.gs | 627 |  |
-| `_excDiasEsCero` | función | 55_Reparar_DiasConExceso.gs | 533 |  |
-| `_excDiasFaltanteJueves` | función | 55_Reparar_DiasConExceso.gs | 487 |  |
-| `_excDiasFilaNueva` | función | 55_Reparar_DiasConExceso.gs | 694 |  |
-| `_excDiasFinalDe` | función | 55_Reparar_DiasConExceso.gs | 619 |  |
-| `_excDiasMismoClan_` | función | 55_Reparar_DiasConExceso.gs | 323 |  |
-| `_excDiasNecesitaReparo` | función | 55_Reparar_DiasConExceso.gs | 343 | Contexto_Base_Web.md §PF160, criterio 1 |
-| `_excDiasNum` | función | 55_Reparar_DiasConExceso.gs | 329 |  |
-| `_excDiasOpciones` | función | 55_Reparar_DiasConExceso.gs | 520 |  |
+| `_excDiasClaveGrupo_` | función | 55_Reparar_DiasConExceso.gs | 322 |  |
+| `_excDiasElegirSolucion` | función | 55_Reparar_DiasConExceso.gs | 644 |  |
+| `_excDiasEsCero` | función | 55_Reparar_DiasConExceso.gs | 550 |  |
+| `_excDiasFaltanteJueves` | función | 55_Reparar_DiasConExceso.gs | 504 |  |
+| `_excDiasFilaNueva` | función | 55_Reparar_DiasConExceso.gs | 711 |  |
+| `_excDiasFinalDe` | función | 55_Reparar_DiasConExceso.gs | 636 |  |
+| `_excDiasMismoClan_` | función | 55_Reparar_DiasConExceso.gs | 340 |  |
+| `_excDiasNecesitaReparo` | función | 55_Reparar_DiasConExceso.gs | 360 | Contexto_Base_Web.md §PF160, criterio 1 |
+| `_excDiasNum` | función | 55_Reparar_DiasConExceso.gs | 346 |  |
+| `_excDiasOpciones` | función | 55_Reparar_DiasConExceso.gs | 537 |  |
 | `_excDiasOpciones_` | global | 55_Reparar_DiasConExceso.gs | 40 |  |
-| `_excDiasOrigenNuevo` | función | 55_Reparar_DiasConExceso.gs | 646 |  |
-| `_excDiasPlanificar` | función | 55_Reparar_DiasConExceso.gs | 545 |  |
-| `_excDiasRegistradoPorDia` | función | 55_Reparar_DiasConExceso.gs | 607 |  |
-| `_excDiasResolver` | función | 55_Reparar_DiasConExceso.gs | 402 |  |
-| `_excDiasResumir` | función | 55_Reparar_DiasConExceso.gs | 377 |  |
-| `_excDiasSegmentos` | función | 55_Reparar_DiasConExceso.gs | 358 |  |
-| `_excDiasSoluciones` | función | 55_Reparar_DiasConExceso.gs | 497 |  |
-| `_excDiasTagDeGrupo_` | función | 55_Reparar_DiasConExceso.gs | 313 |  |
-| `_excDiasTextoActual` | función | 55_Reparar_DiasConExceso.gs | 655 |  |
-| `_excDiasTextoPorDia` | función | 55_Reparar_DiasConExceso.gs | 661 |  |
-| `_excDiasVerificar` | función | 55_Reparar_DiasConExceso.gs | 727 |  |
+| `_excDiasOrigenNuevo` | función | 55_Reparar_DiasConExceso.gs | 663 |  |
+| `_excDiasPlanificar` | función | 55_Reparar_DiasConExceso.gs | 562 |  |
+| `_excDiasRegistradoPorDia` | función | 55_Reparar_DiasConExceso.gs | 624 |  |
+| `_excDiasResolver` | función | 55_Reparar_DiasConExceso.gs | 419 |  |
+| `_excDiasResumir` | función | 55_Reparar_DiasConExceso.gs | 394 |  |
+| `_excDiasSegmentos` | función | 55_Reparar_DiasConExceso.gs | 375 |  |
+| `_excDiasSoluciones` | función | 55_Reparar_DiasConExceso.gs | 514 |  |
+| `_excDiasTagDeGrupo_` | función | 55_Reparar_DiasConExceso.gs | 330 |  |
+| `_excDiasTextoActual` | función | 55_Reparar_DiasConExceso.gs | 672 |  |
+| `_excDiasTextoPorDia` | función | 55_Reparar_DiasConExceso.gs | 678 |  |
+| `_excDiasVerificar` | función | 55_Reparar_DiasConExceso.gs | 745 |  |
 | `_existeParCRListaParaTemporada` | función | 26_Torneos_Core.gs | 2919 | Contexto_Base_Web.md §26B022 |
 | `_exMiembrosDesdeIndice_` | función | 15_DeteccionInfiltrados.gs | 946 | Contexto_Base_Web.md §PF369 |
 | `_explicarAltasCR_` | función | 24_Historial_Ascensos.gs | 1474 | Contexto_Base_Web.md §PF286 |
@@ -792,9 +793,9 @@ Ninguno.
 | `_extraerValoresConLinksReales` | función | 05_Backup_CSV.gs | 1728 | Contexto_Base_Web.md §05B071 |
 | `_FAME_CATALOGO_DIA_CACHE_` | global | 18_CorreccionGuerra.gs | 200 | Contexto_Base_Web.md §PF122 |
 | `_fameCatalogoDia_` | función | 18_CorreccionGuerra.gs | 1385 | Contexto_Base_Web.md §PF122 |
-| `_fameCrr52_` | función | 55_Reparar_DiasConExceso.gs | 765 |  |
-| `_fameCrr52Planificar_` | función | 55_Reparar_DiasConExceso.gs | 848 |  |
-| `_fameCrr52Verificar_` | función | 55_Reparar_DiasConExceso.gs | 896 |  |
+| `_fameCrr52_` | función | 55_Reparar_DiasConExceso.gs | 783 |  |
+| `_fameCrr52Planificar_` | función | 55_Reparar_DiasConExceso.gs | 866 |  |
+| `_fameCrr52Verificar_` | función | 55_Reparar_DiasConExceso.gs | 914 |  |
 | `_fameCumpleRequisito` | función | 28_Torneos_Docs.gs | 896 | Contexto_Base_Web.md §28B087 |
 | `_fameDescomposicionesDeCifra_` | función | 18_CorreccionGuerra.gs | 1376 | Contexto_Base_Web.md §18B008 |
 | `_fameDescomposicionesDia_` | función | 18_CorreccionGuerra.gs | 1310 | Contexto_Base_Web.md §18B004 |
