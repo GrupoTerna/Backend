@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 07/11/2026 07:17:28 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 07/11/2026 08:21:59 */
 
 
 
@@ -28118,6 +28118,7 @@ function _syncGuerraCSV(sh, forzar) {
 
     var csvRowsAntes = filasFusion.length;
     var nuevasDesdeHoja = 0;
+    var tagsConservadosDelCsv = 0; // §PF423: filas donde la hoja traía Clan_Tag vacío y se conservó el del CSV
     var tParseFin = Date.now();
     // PF289: deja a la vista qué se leyó, para ubicar la primera escritura que recorte el CSV.
     Logger.log('[Guerra] _syncGuerraCSV: CSV leído con ' + csvRowsAntes + ' fila(s) y ' + (csvExistente ? csvExistente.length : 0) + ' caracteres; hoja con ' + (data.length - 1) + ' fila(s); referencia ' + (refTam ? refTam.ref : 0) + ' bytes.');
@@ -28130,6 +28131,15 @@ function _syncGuerraCSV(sh, forzar) {
       var idHoja = _idFilaGuerraCSV(filaHoja);
       if (!idHoja) continue;
       if (mapaFusion.hasOwnProperty(idHoja)) {
+        // 7-nov-2026 (§PF423): la hoja manda en todo MENOS en Clan_Tag cuando ella lo trae vacío y el CSV ya lo tiene. La tanda 8 completó Clan_Tag solo en el CSV
+        // (updateGuerraSheet() lo escribe únicamente en las filas del período en curso), y sin esta excepción cada sync devolvía a vacío el tag de las filas de
+        // PeriodIndex anteriores de la temporada en curso (el 7-nov se perdieron 404). Si la hoja trae un tag, ese gana, como siempre.
+        var tagCsvPrevio = String(filasFusion[mapaFusion[idHoja]][GC.CLAN_TAG - 1] || '').trim();
+        if (tagCsvPrevio && !String(filaHoja[GC.CLAN_TAG - 1] || '').trim()) {
+          filaHoja = filaHoja.slice(); // copia: no se modifica lo leído de la hoja
+          filaHoja[GC.CLAN_TAG - 1] = tagCsvPrevio;
+          tagsConservadosDelCsv++;
+        }
         filasFusion[mapaFusion[idHoja]] = filaHoja; // actualizar con el valor más reciente de la hoja
       } else {
         mapaFusion[idHoja] = filasFusion.length;
@@ -28167,7 +28177,7 @@ function _syncGuerraCSV(sh, forzar) {
     _saveCSVToDrive('Backup_Guerra.csv', textoSalida);
     _guerraCsvRegistrarTamBueno_(textoSalida.length);
     Logger.log('[Guerra] Backup_Guerra.csv fusionado (' + (salida.length - 1) + ' filas totales; ' +
-      nuevasDesdeHoja + ' nueva(s) desde la hoja, el resto actualizadas o intactas de temporadas anteriores).');
+      nuevasDesdeHoja + ' nueva(s) desde la hoja, el resto actualizadas o intactas de temporadas anteriores). Clan_Tag conservado del CSV (la hoja lo traía vacío): ' + tagsConservadosDelCsv + ' fila(s).');
   } catch(e) {
     Logger.log('[Guerra] Error fusionando CSV: ' + e.message);
   }
