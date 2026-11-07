@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 07/11/2026 06:51:28 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 07/11/2026 06:59:54 */
 
 
 
@@ -26967,6 +26967,12 @@ function _completarClanTagGuerra_(aplicar) {
     try {
       _leerDirectorioFisicoComoDC(_getSs()).forEach(function (f) { sumar(f[DC.CLAN - 1], f[DC.CLAN_TAG - 1]); });
     } catch (e) { Logger.log('[ClanTagHistorico] No se pudo leer Directorio para los clanes externos: ' + e.message); }
+    try { // 7-nov-2026: tambien la hoja Inactivos (un jugador que ya no esta en el Directorio activo, p. ej. de un clan externo, sigue trayendo ahi el Clan_Tag)
+      var shInact = _getSs().getSheetByName(CFG.SHEETS.INACTIVOS);
+      if (shInact && shInact.getLastRow() >= 2) {
+        shInact.getRange(2, 1, shInact.getLastRow() - 1, IC.CLAN_TAG).getValues().forEach(function (f) { sumar(f[IC.CLAN - 1], f[IC.CLAN_TAG - 1]); });
+      }
+    } catch (e2) { Logger.log('[ClanTagHistorico] No se pudo leer Inactivos para los clanes externos: ' + e2.message); }
 
     var plan = _clanTagPlanGuerra_(filas, tagsPorNombre);
     var rs = plan.resumen;
