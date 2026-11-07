@@ -2926,7 +2926,9 @@ function _getControlTemporadaPorClan(ss, ctx, dataDirParam, temporadaReal) {
   var numSemanasTemporada = Math.min(lunesEnMes(ctx.mesEfectivoAnio, ctx.mesEfectivoMes) || 4, MAX_SEMANAS_GRID);
   _dashAcum_('c2.guerraData', _c2t);
   _c2t = Date.now();
-  var minGPorNombreClan   = _getMinGClanMapsDash_().byNombre; // 19-sep-2026: memo por ejecución del dashboard
+  var mapasMinGDash       = _getMinGClanMapsDash_(); // 19-sep-2026: memo por ejecución del dashboard
+  var minGPorTagClan      = mapasMinGDash.byTag;      // 6-nov-2026 (tanda 7b-1): primero por el Tag del clan de la fila
+  var minGPorNombreClan   = mapasMinGDash.byNombre;   // respaldo por nombre
   _dashAcum_('c2.minG', _c2t);
   _c2t = Date.now();
 
@@ -3040,7 +3042,8 @@ function _getControlTemporadaPorClan(ss, ctx, dataDirParam, temporadaReal) {
     var puntProm = puntSemTotales.length
       ? puntSemTotales.reduce(function (a, b) { return a + b; }, 0) / puntSemTotales.length
       : 0;
-    var minGJugador = minGPorNombreClan[clanNombre] || CFG.MIN_G_DEFAULT;
+    var tagClanJug  = String(jug[DC.CLAN_TAG - 1] || '').trim().toUpperCase();
+    var minGJugador = (tagClanJug && minGPorTagClan[tagClanJug] !== undefined ? minGPorTagClan[tagClanJug] : minGPorNombreClan[clanNombre]) || CFG.MIN_G_DEFAULT;
     var puntPct     = minGJugador > 0 ? Math.round(Math.min(puntProm / minGJugador, 1) * 100) : 0;
 
     var barcoTotal = barcoSemTotales.length ? barcoSemTotales.reduce(function (a, b) { return a + b; }, 0) : 0;
