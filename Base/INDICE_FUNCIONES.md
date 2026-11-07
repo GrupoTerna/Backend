@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2842 nombres en 60 archivos .gs.
+Código real: `Base/src/`. Total: 2846 nombres en 60 archivos .gs.
 
 ## Por archivo
 
@@ -32,8 +32,8 @@ Código real: `Base/src/`. Total: 2842 nombres en 60 archivos .gs.
 - **24_Historial_Ascensos.gs** (48 funciones): completarTemporadaSemanaDiaHojas, agregarColumnaParCRHistorialAD, enlazarPropuestasConParCRHistorialAD, limpiarDuplicadosHistorial, updateAscensosSheet, _leerSnapshotRangosAscensos_, _guardarSnapshotRangosAscensos_, _tsdDesdeFecha_, _completarTSDEnHoja_, _asegurarColumnaParCRAscensos_, _leerFilasAscensosHoja_, _escribirTSDEnFilaHoja_, _updateHistorial, _reaplicarFormatoAscensosExistente, _getOrdenClanAscensos, _reordenarHistorialAscensosGlobal, _crearRegistroAscenso, _generarComentarioAscensoDefault, _copiarComentarioAscensoAComentarios, _registrarPropuestasCRListaEnHistorial, _aplicarFormatoFilaAscenso, _aplicarFormatoCondicionalAscensos, _webAdminAscensosEditables, _webAdminEditarAutorAscenso, _indexarPropuestasPendientesAscensos, _resolverPropuestaCRListaComoRealizada, _corridaCambioRangoVacia_, _leerCorridaCambioRangoHistorial_, _claveDiaLimaCR_, _leerRegistrosHistorialAscensos_, _corridaCambioRangoDesdeRegistros_, _corridaDePar_, _leerVerificacionCambioRangoHistorial_, _prepararVerificacionCR_, _verificarYMarcarCambioRangoHistorial_, _requisitosIncumplidosCR_, _explicarExcepcionalesCR_, _notaSinDatosGuerraCR_, _rolDeRangoCR_, _explicarAltasCR_, _explicarBajasCR_, _leerCuentasDirectorioParaCR_, _decidirPropuestaCRRealizada_, _planificarMarcadoRealizadoCR_, _aplicarMarcadoRealizadoCR_, _leerParesCRListaParaHistorial_, _asignarParesAPropuestas_, _verificarCambioRangoDesdeRegistros_
 - **25_Doc_AscensosDescensos.gs** (10 funciones): reconstruirDocAscensosDescensosSiFalta, _formatearQtyCelda, _agruparCambiosAplicadosPorClan_, _textoCambioAplicado_, _agregarListasCambiosAplicadosADoc_, _filasTablaRequisitosRango_, _agregarTablasRequisitosRangoADoc_, _agregarReglasCambioRangoADoc_, _limpiarMemoSemanasTemporada_, _getSemanasDeTemporada
 - **26_Torneos_Core.gs** (157 funciones): procesarTorneos, iniciarActualizacionTorneoEnVivo, detenerActualizacionTorneoEnVivo, procesarSorteos, procesarCambioRango, importarTListaDesdeCSV, importarSListaDesdeCSV, importarCRListaDesdeCSV, importarTAsistenciaDesdeCSV, importarTResolucionesDesdeCSV, importarSAsistenciaDesdeCSV, ordenarYFormatearListasYAsistenciasRevisar, ordenarYFormatearListasYAsistencias, repararTorneosViejosDesdeAPI, _instalarActivadorTorneoEnVivo, _tickTorneoEnVivo, _tickTorneoEnVivoCuerpo_, _publicarTorneosDesdeTick_, _borrarTriggersPorHandler, procesarTListaNuevasFilas, _resolverOrganizadorPorCreatorTag, _determinarOrganizador, _extraerInfoOrganizador, _buscarInfoOrganizadorPorNomMulti, _getTagsAdminPorNomMulti, _getNomMultiPorTag, _resolverTagOrgDesdeOrganizador, _derivarClanClanTagDesdeTagOrg, _nombresOrganizadorTL_, _validarTagTor2SinCoincidencia, _obtenerOrganizadorFuenteTLista, _fetchMembersTorneo, _parseFechaApiSupercell, _guardarJsonTorneoEnDrive, _creadorTorneoEnClanTerna_, _leerModoCSV, _guardarModoCSV, _resolverModoDesdeCatalogo, _guardarModoCSVSiHayNuevos, procesarSListaNuevasFilas, _normalizarHoraSLista, _registrarResolucionSorteo, _sincronizarParticipantesSorteoSA, _normalizarNombreSA_, _getFilaSListaPorId, _generarAsistenciaParaTorneo, _borrarFilasAsistenciaPorId, _getDirectorioLookupPorTag, _getInactivosLookupPorTag, _getAsistenciaTagsPorId, _getTagsConAsistencia, regenerarTControlSheet, _resolverGruposContinuacionTorneos, _getAsistenciaFusionadaPorRaiz, _getParticipantesFusionadosPorTorneo, _aplicarResolucionesTorneo, _topNTrasResoluciones, _registrarResolucionTorneo, _marcarVistoEnGrupoVerificado, _getTagsVistosEnGrupo, _generarParIdsCRLista, _contarParesCRListaEnSemana, _esHoyPrimerDiaDeTemporada, _getUltimoParCRLista, _existeParCRListaParaTemporada, _bloqueParaAutogeneracionCRLista, _leerDirectorioParaOrganizadorCR_, _resolverOrganizadorCRAutogenerado_, _comentarioCRAutogenerado_, _autogenerarParCRListaSiCorrespondeInicioTemporada, _getFilaCRListaPorId, _getParCRListaPorId, _getRequisitosCambioRangoBloqueCategoria, _esMiembroVigenteEnClanesFamilia, _getPromediosCRParaJugador, _validarCoherenciaCRLista, _cumpleRequisitoCR, _destinoRangoCR, _unirPartesEspanol, _detalleRequisitoCR, _round1, _filtrarSemanasJugadasCR, _semanasPendientesCR, _textoSemanasPendientesCR, _fechaInicioSemanasCR, _juevesGuerraSemanaCR, _bloqueDescensoDesdeSemanasCompletas, _estuvoEnTernaEseJuevesCR_, _ventanasHistorialParaDescensoCR_, _notaSemanasContadasCR, _esAdminEnDirectorioCR, _calcularPropuestasCambioRango, _idEventoCifras_, _idEventoConstruir_, _idEventoParsear_, _hoyLimaSinHora, _calcularTemporadaParaFecha, _calcularSemanaTorneo, _construirSemanasCsvDesdeIsos, _extraerIsosDesdeSemanasCsv, _contarTorneosEnSemana, _contarSorteosEnSemana, _horaStringADate, _formatHoraCanonica, _parseHoraCanonica, _combinarFechaHora, _mismoDia, _parseSemanasSorteo, _getIdVigenteExtra, _getIdVigenteExtraCR, _valorExtraDesdeCsv_, _getConfigMasRecienteCategoria, _getUltimoRegistroTorneoOSorteo, _getMinTClanMaps, _barcosDeRequisitos_, _normalizarSiNoRequisito, _valoresMinTAtaquesPorClan, _valoresMinSAtaquesTorneosPorClan, _registrarTorneoDesdeBot, _planificarTorneoDesdeBot, _listarTorneosDeHoy, _listarTorneosModificables, _modificarFechaHoraTorneo, _corregirLinkTorneoYaRegistrado, _registrarSorteoDesdeBot, _planificarSorteoDesdeBot, _listarSorteosDeHoy, _listarSorteosModificables, _modificarFechaHoraSorteo, _aplicarFormatoMilesHoja_, _aplicarFormatoMilesListas_, _reordenarCRListaPorFecha, _diaClaveOrden_, _horaClaveOrden_, _ordenarHojaPorFechaDesc_, _ordenarTListaPorFecha, _ordenarSListaPorFecha, _ordenarTAsistenciaPorFecha, _ordenarSAsistenciaPorFecha, _ordenarYFormatearListasYAsistencias_, _ordenarYColorearSAsistencia_, _aplicarFormatoCondicionalTAporTorneo, _aplicarFormatoCondicionalSAporSorteo, _aplicarFormatoCondicionalAsistenciaPorId_, _aplicarDropdownAdminTLista, _aplicarDropdownTagTor2TLista, _aplicarDropdownEstadoTLista, _aplicarDropdownMiembroActivoTLista, _aplicarDropdownReaccionTLista, _aplicarDropdownWhatsappTLista, _aplicarDropdownId2SLista, _aplicarDropdownEstadoSLista, _aplicarDropdownMiembroActivoSLista, _aplicarDropdownReaccionSLista, _aplicarDropdownWhatsappSLista, _aplicarDropdownAdminSLista, _aplicarDropdownClanSLista
-- **27_Torneos_Sorteos_Requisitos.gs** (21 funciones): sincronizarRequisitosYPremiosTorneo, sincronizarRequisitosSorteo, _resumirRequisitosBloque, _getMinTPorNombreClan, _reescribirRequisitosTexto, _buscarIndiceHijo, _insertarBulletRequisito, _ordenarSemanasSorteoDoc, _insertarFilaRequisito, _etiquetaSemanaSorteoDoc, _insertarBloquePorClan, _fmtMilesComa, _REQ_DOC_TEXTO_ATAQUES_VALOR, _REQ_DOC_TEXTO_TORNEOS_VALOR, _REQ_DOC_TEXTO_BARCOS, _escribirPremiosEnDoc, _insertarLineaPuestoPremio, _formatearValorPremioParaDoc, _insertarBulletPremiosGanadores, _copiarPremiosFechaAGanadoresTorneo, _copiarLineaConFormato
-- **28_Torneos_Docs.gs** (52 funciones): reconstruirDocsTorneosSorteoFaltantes, actualizarDocParticipantesCalificados, actualizarDocParticipantesCalificadosTorneo, actualizarDocGanadoresTorneo, actualizarDocGanadoresSorteo, _actualizarUnDocParticipantesCalificados, _fechaSorteoPorId_, _actualizarFechaDocSorteo, _actualizarFechaDocTorneo, _getFechaMasRecienteTLista, _formatFechaHoraDocEs, _getTemporadaMostrarExtra, _getAtaquesSemanaActualPorTag, _getAtaquesYExentosSemanaActualPorTag, _cumpleAtaquesSemanaActual, _ataquesMinTorneoPorNombreClan, _cumpleAtaquesTorneoClan, _getTrofeosYAtaquesSemanalesPorTag, _totalesSemanaDesdeAcumulados, _ataquesCumplenRequisito, _fameCumpleRequisito, _barcosCumplenRequisito, _getTrofeosGuerraAcumuladosPorTagParaTemporada, _contarTorneosPorTagEnTemporada, _contarTorneosPorTagEnSemanas, _reemplazarListaParticipantes, _insertarParrafoEspaciador, _insertarLineaSinCalificados_, _insertarLineaParticipante, _parseRequisitosParticipantes, _escribirDocGanadores, _fusionarGanadoresActaSorteo_, _ganadoresAlInicioDePaginaDoc_, _normalizarHoraActa_, _lineasResumenSorteoDoc_, _estiloArialDoc_, _anchoTextoArialDoc_, _formatearTablaGanadoresSorteoDoc_, _escribirGanadoresSorteoEnDoc_, _escribirDocGanadoresSorteo, _tablaDeGrupoDoc, _rdocParrafoRuns, _rdocParrafoTexto, _rdocBloqueClanValor, _rdocBloqueRequisitosSorteo, _rdocBloqueRequisitosTorneo, _rdocBloqueRedesSocialesYPie, _rdocTablaConEncabezadoNegrita, _construirContenidoDocParticipantesCalificadosSorteo, _construirContenidoDocParticipantesCalificadosTorneo, _construirContenidoDocGanadoresSorteo, _construirContenidoDocGanadoresTorneo
+- **27_Torneos_Sorteos_Requisitos.gs** (23 funciones): sincronizarRequisitosYPremiosTorneo, sincronizarRequisitosSorteo, _resumirRequisitosBloque, _clanTagNorm_, _clanTagDeFilaORespaldo_, _getMinTPorTagClan, _reescribirRequisitosTexto, _buscarIndiceHijo, _insertarBulletRequisito, _ordenarSemanasSorteoDoc, _insertarFilaRequisito, _etiquetaSemanaSorteoDoc, _insertarBloquePorClan, _fmtMilesComa, _REQ_DOC_TEXTO_ATAQUES_VALOR, _REQ_DOC_TEXTO_TORNEOS_VALOR, _REQ_DOC_TEXTO_BARCOS, _escribirPremiosEnDoc, _insertarLineaPuestoPremio, _formatearValorPremioParaDoc, _insertarBulletPremiosGanadores, _copiarPremiosFechaAGanadoresTorneo, _copiarLineaConFormato
+- **28_Torneos_Docs.gs** (52 funciones): reconstruirDocsTorneosSorteoFaltantes, actualizarDocParticipantesCalificados, actualizarDocParticipantesCalificadosTorneo, actualizarDocGanadoresTorneo, actualizarDocGanadoresSorteo, _actualizarUnDocParticipantesCalificados, _fechaSorteoPorId_, _actualizarFechaDocSorteo, _actualizarFechaDocTorneo, _getFechaMasRecienteTLista, _formatFechaHoraDocEs, _getTemporadaMostrarExtra, _getAtaquesSemanaActualPorTag, _getAtaquesYExentosSemanaActualPorTag, _cumpleAtaquesSemanaActual, _ataquesMinTorneoPorTagClan, _cumpleAtaquesTorneoClan, _getTrofeosYAtaquesSemanalesPorTag, _totalesSemanaDesdeAcumulados, _ataquesCumplenRequisito, _fameCumpleRequisito, _barcosCumplenRequisito, _getTrofeosGuerraAcumuladosPorTagParaTemporada, _contarTorneosPorTagEnTemporada, _contarTorneosPorTagEnSemanas, _reemplazarListaParticipantes, _insertarParrafoEspaciador, _insertarLineaSinCalificados_, _insertarLineaParticipante, _parseRequisitosParticipantes, _escribirDocGanadores, _fusionarGanadoresActaSorteo_, _ganadoresAlInicioDePaginaDoc_, _normalizarHoraActa_, _lineasResumenSorteoDoc_, _estiloArialDoc_, _anchoTextoArialDoc_, _formatearTablaGanadoresSorteoDoc_, _escribirGanadoresSorteoEnDoc_, _escribirDocGanadoresSorteo, _tablaDeGrupoDoc, _rdocParrafoRuns, _rdocParrafoTexto, _rdocBloqueClanValor, _rdocBloqueRequisitosSorteo, _rdocBloqueRequisitosTorneo, _rdocBloqueRedesSocialesYPie, _rdocTablaConEncabezadoNegrita, _construirContenidoDocParticipantesCalificadosSorteo, _construirContenidoDocParticipantesCalificadosTorneo, _construirContenidoDocGanadoresSorteo, _construirContenidoDocGanadoresTorneo
 - **29_Docs_NoCalificados.gs** (28 funciones): actualizarDocsNoCalificadosYCambioRango, actualizarDocNoCalificadosTorneo, actualizarDocNoCalificadosSorteo, _evaluarCalificacionSorteo_, actualizarDocCambioRango, actualizarDocsCalificadosYNoCalificadosCambioRango, _cargarParCambioRango_, _requisitosCambioRango_, _resumenCorridaCambioRango_, _evaluarCambioRango_, _repartirEvaluadosCambioRango_, _filasEvaluadosCambioRango_, _conteoVeredictosTexto_, _ncVeredictoCambioRango, _ncFmtNum, _ncNombreRol, _ncTextoRequisito, _ncTextoRequisitoVsReal, _ncEscribirDocumento, _ncFechaHoraPeru, _ncTablaEstiloOscuro, _ncBordesBlancosEncabezado_, _construirContenidoDocNoCalificadosTorneo, _construirContenidoDocNoCalificadosSorteo, _construirContenidoDocCambioRango, _construirContenidoDocCalificadosCambioRango, _construirContenidoDocNoCalificadosCambioRango, _ncContenidoBasePlaceholder
 - **30_Mensajes.gs** (19 funciones): generarTodosMensajes, _obtenerDatosPendientes, _obtenerDatosSinCelular, _obtenerDatosSinEtiqueta, _obtenerCelularPorTag, _obtenerPrestamoPorTag, _agruparPorClanOrdenado, _ordenRango, _sufijoPrestamo, _clanCruzoMetaPorTag, _getOrdenMensajesCategoria, _getPlantillasParaMensajes, _agregarCategoriaAExtra, _colCategoriaExtra_, _aplicarFormatoCondicionalMensajes, _getNombresClanesOrdenados, _getDatosClanHoja, _formatearInfoClan, _fmt
 - **31_Cards_Mazos.gs** (50 funciones): updateCardsSheet, updateCards2Sheet, probarCostosSubirNivel, _esCartaTorreDatos, _mapaDiferenciaNivelPorRareza, _esCartaTorre, _invalidarCacheDiferenciaNivelPorRareza, _diferenciaNivelRareza, _nivelUnificadoMaxDeCartas, _nivelUnificadoDeCarta, _avisarRarezasSinDiferencia, _leerCardsCSV, _guardarCardsCSV, _leerCards2CSV, _guardarCards2CSV, _getTodosLosCardIdsDesdeCSV, _mergearCards2CSV, _actualizarCards2SoloAdmins, _rarezaParaFila, _filasCards2DeTorre, _getTagsParaPartialMode, _getCardsFromCache, _mezclarCartasEnMapa, _refrescarCardsRows, _getTagsConPlayerCache, generarUrlMazo, generarUrlMazo2, _cardNameToSlug, _construirCardInfoMap, _construirCards2PorTag, _construirListasMazoDesdeMapas, _ensamblarUrlMazo, _generarUrlMazoDesdeMapas, _generarUrlMazo2DesdeMapas, _construirCards2DeTag, _nivelPromedioCartas, _generarUrlMazo3DesdeMapas, generarMazo3, generarMazoPerfil, _leerCards3CSV, _construirCostosPorRareza, _nivelRarezaDesdeNivelApp, _costoSubirNivel, _construirCartaRarezaMap, _calcularCostosSubirDesdeMapas, costosSubirNivelJugador, _nivelesFaltantesEnCards3, _avisarNivelesFaltantesCards3, _avisarDiferenciasNivelCards, _avisarRevisionNivelesCards
@@ -60,7 +60,7 @@ Código real: `Base/src/`. Total: 2842 nombres en 60 archivos .gs.
 - **52_Publicar_Home.gs** (2 funciones): publicarHomeEstatico, _publicarHomeEstatico_
 - **53_Publicar_Torneos.gs** (3 funciones): publicarTorneosEstatico, _publicarTorneosEstatico_, _leerHistorialTorneosPublicado_
 - **54_Correccion_AtaquesSemana_Anomalias.gs** (13 funciones): corregirAnomaliasAtaquesSemanaInforme, corregirAnomaliasAtaquesSemanaAplicar, _corregirAnomaliasAtaquesSemana_, _anomAtqSemEvaluar_, _anomAtqSemCoincide_, _anomAtqSemValores_, _anomAtqSemIguales_, _anomAtqSemTextoSumas_, _anomAtqSemSumaClanes_, _anomAtqSemSeriesAfectadas_, _anomAtqSemNum_, _anomAtqSemTag_, _anomAtqSemClan_
-- **55_Reparar_DiasConExceso.gs** (30 funciones): repararDiasConExcesoInforme, repararDiasConExcesoAplicarUnicas, repararDiasConExcesoAplicar, informeFameCurrentRiverRace52, aplicarFameCurrentRiverRace52, _repararDiasConExceso_, _excDiasClasificar, _excDiasAgrupar, _excDiasNum, _excDiasNecesitaReparo, _excDiasSegmentos, _excDiasResumir, _excDiasResolver, _excDiasFaltanteJueves, _excDiasSoluciones, _excDiasOpciones, _excDiasEsCero, _excDiasPlanificar, _excDiasRegistradoPorDia, _excDiasFinalDe, _excDiasElegirSolucion, _excDiasOrigenNuevo, _excDiasTextoActual, _excDiasTextoPorDia, _excDiasAplicarPlan, _excDiasFilaNueva, _excDiasVerificar, _fameCrr52_, _fameCrr52Planificar_, _fameCrr52Verificar_
+- **55_Reparar_DiasConExceso.gs** (32 funciones): repararDiasConExcesoInforme, repararDiasConExcesoAplicarUnicas, repararDiasConExcesoAplicar, informeFameCurrentRiverRace52, aplicarFameCurrentRiverRace52, _repararDiasConExceso_, _excDiasClasificar, _excDiasAgrupar, _excDiasTagDeGrupo_, _excDiasMismoClan_, _excDiasNum, _excDiasNecesitaReparo, _excDiasSegmentos, _excDiasResumir, _excDiasResolver, _excDiasFaltanteJueves, _excDiasSoluciones, _excDiasOpciones, _excDiasEsCero, _excDiasPlanificar, _excDiasRegistradoPorDia, _excDiasFinalDe, _excDiasElegirSolucion, _excDiasOrigenNuevo, _excDiasTextoActual, _excDiasTextoPorDia, _excDiasAplicarPlan, _excDiasFilaNueva, _excDiasVerificar, _fameCrr52_, _fameCrr52Planificar_, _fameCrr52Verificar_
 - **56_CurrentRiverRace_Dias.gs** (19 funciones): probarCurrentRiverRaceDias, _crrDiasDeJugador_, _crrCapturasDeSemana_, _crrLeerSemana_, _crrArchivosDeSemana_, _crrSubcarpeta_, _crrCapturasDesdeArchivos_, _crrCapturasDeClan_, _crrArchivosSinClanVacio_, _crrCierresDesdeArchivos_, _crrCierresDeSemana_, _crrDomingoSinFame_, _crrParsearNombre_, _crrClasificarCaptura_, _crrResolverJugador_, _crrFameDia_, _crrAyerParaCierre_, _crrAvisoFueraDeRangosCierre_, _crrDomingoParaTotales_
 - **57_ReconstruirSemanaPorDias.gs** (26 funciones): totalesSemanaPorDiasReiniciar, _totSemanaPorDias_, _rsObjetivos, _rsObjetivosDeCache_, _rsObjetivosDeJson_, _rsObjetivosGuardarCache_, _rsClavesHoja, _rsClaveSem_, _rsPlanificar, _rsFilasPlan_, _rsCrrRestricciones, _rsResolver, _rsRegistros, _rsMapeos, _rsResolverNivel, _rsCatalogo, _rsMismoReparto_, _rsCatalogoSinFameDomingo, _rsTagDeClanNombre_, _rsSinFameDeSerie, _rsMenor, _rsContinuacionInforme_, _continuarTotalesSemanaInforme, _rsVigilanteInforme_, _rsCursorLeer_, _rsCursorGuardar_
 - **58_Docs_Administracion.gs** (23 funciones): _adminDocActualizar_, _adminDocNorm_, _adminDocLeerEquipo_, _adminDocCopasPorTag_, _adminDocNombresDeHojaClan_, _adminDocClaveAlfa_, _adminDocTagDeClan_, _adminDocOrdenNombres_, _adminDocAplicarClan_, _adminDocGrupo_, _adminDocBuscarGrupo_, _adminDocEncabezado_, _adminDocPrefEncabezados_, _adminDocPrefijo_, _adminDocSetTexto_, _adminDocQuitarVineta_, _adminDocLineas_, _adminDocCuentaAMostrar_, _adminDocMejorPorCopas_, _adminDocCuentaPrincipal_, _adminDocAdminsExtra_, _adminDocPersonaTieneCuenta_, _adminDocAplicarFamilia_
@@ -149,7 +149,7 @@ Ninguno.
 | `_alinearAsistencias_` | función | 47_Migraciones.gs | 2288 |  |
 | `_alinearNumeracionGrupal_` | función | 47_Migraciones.gs | 2451 | Contexto_Base_Web.md §PF323 |
 | `_alinearTAsistenciaConTLista_` | función | 47_Migraciones.gs | 2283 |  |
-| `_anchoTextoArialDoc_` | función | 28_Torneos_Docs.gs | 1436 |  |
+| `_anchoTextoArialDoc_` | función | 28_Torneos_Docs.gs | 1438 |  |
 | `_anomAtqSemClan_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 299 |  |
 | `_anomAtqSemCoincide_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 232 |  |
 | `_anomAtqSemEvaluar_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 211 |  |
@@ -175,26 +175,26 @@ Ninguno.
 | `_aplicarCorreccionesGuerra` | función | 18_CorreccionGuerra.gs | 2274 | Contexto_Base_Web.md §18B099 |
 | `_aplicarCorreccionesGuerraImpl` | función | 18_CorreccionGuerra.gs | 2287 |  |
 | `_aplicarCorreccionOverlayAFuente_` | función | 18_CorreccionGuerra.gs | 2740 | Contexto_Base_Web.md §18B021 |
-| `_aplicarDropdownAdminSLista` | función | 26_Torneos_Core.gs | 5467 | Contexto_Base_Web.md §26B208 |
-| `_aplicarDropdownAdminTLista` | función | 26_Torneos_Core.gs | 5279 | Contexto_Base_Web.md §26B195 |
+| `_aplicarDropdownAdminSLista` | función | 26_Torneos_Core.gs | 5455 | Contexto_Base_Web.md §26B208 |
+| `_aplicarDropdownAdminTLista` | función | 26_Torneos_Core.gs | 5267 | Contexto_Base_Web.md §26B195 |
 | `_aplicarDropdownAutorVetados` | función | 13_Inactivos_Vetados.gs | 629 | Contexto_Base_Web.md §13B030 |
-| `_aplicarDropdownClanSLista` | función | 26_Torneos_Core.gs | 5500 | Contexto_Base_Web.md §26B209 |
+| `_aplicarDropdownClanSLista` | función | 26_Torneos_Core.gs | 5488 | Contexto_Base_Web.md §26B209 |
 | `_aplicarDropdownEstadoCRLista` | función | 02_Setup_Hojas.gs | 917 | Contexto_Base_Web.md §02B079 |
-| `_aplicarDropdownEstadoSLista` | función | 26_Torneos_Core.gs | 5415 | Contexto_Base_Web.md §26B204 |
-| `_aplicarDropdownEstadoTLista` | función | 26_Torneos_Core.gs | 5339 | Contexto_Base_Web.md §26B198 |
-| `_aplicarDropdownId2SLista` | función | 26_Torneos_Core.gs | 5392 | Contexto_Base_Web.md §26B203 |
-| `_aplicarDropdownMiembroActivoSLista` | función | 26_Torneos_Core.gs | 5428 | Contexto_Base_Web.md §26B205 |
-| `_aplicarDropdownMiembroActivoTLista` | función | 26_Torneos_Core.gs | 5353 | Contexto_Base_Web.md §26B200 |
-| `_aplicarDropdownReaccionSLista` | función | 26_Torneos_Core.gs | 5441 | Contexto_Base_Web.md §26B206 |
-| `_aplicarDropdownReaccionTLista` | función | 26_Torneos_Core.gs | 5366 | Contexto_Base_Web.md §26B201 |
+| `_aplicarDropdownEstadoSLista` | función | 26_Torneos_Core.gs | 5403 | Contexto_Base_Web.md §26B204 |
+| `_aplicarDropdownEstadoTLista` | función | 26_Torneos_Core.gs | 5327 | Contexto_Base_Web.md §26B198 |
+| `_aplicarDropdownId2SLista` | función | 26_Torneos_Core.gs | 5380 | Contexto_Base_Web.md §26B203 |
+| `_aplicarDropdownMiembroActivoSLista` | función | 26_Torneos_Core.gs | 5416 | Contexto_Base_Web.md §26B205 |
+| `_aplicarDropdownMiembroActivoTLista` | función | 26_Torneos_Core.gs | 5341 | Contexto_Base_Web.md §26B200 |
+| `_aplicarDropdownReaccionSLista` | función | 26_Torneos_Core.gs | 5429 | Contexto_Base_Web.md §26B206 |
+| `_aplicarDropdownReaccionTLista` | función | 26_Torneos_Core.gs | 5354 | Contexto_Base_Web.md §26B201 |
 | `_aplicarDropdownsAdministradores` | función | 11_DirectorioSheet.gs | 1615 |  |
 | `_aplicarDropdownsDirectorio` | función | 11_DirectorioSheet.gs | 1467 |  |
 | `_aplicarDropdownsInactivos` | función | 13_Inactivos_Vetados.gs | 193 |  |
 | `_aplicarDropdownsVetados` | función | 13_Inactivos_Vetados.gs | 620 | Contexto_Base_Web.md §13B027 |
-| `_aplicarDropdownTagTor2TLista` | función | 26_Torneos_Core.gs | 5313 | Contexto_Base_Web.md §26B197 |
+| `_aplicarDropdownTagTor2TLista` | función | 26_Torneos_Core.gs | 5301 | Contexto_Base_Web.md §26B197 |
 | `_aplicarDropdownTipoCRLista` | función | 02_Setup_Hojas.gs | 897 | Contexto_Base_Web.md §02B078 |
-| `_aplicarDropdownWhatsappSLista` | función | 26_Torneos_Core.gs | 5454 | Contexto_Base_Web.md §26B207 |
-| `_aplicarDropdownWhatsappTLista` | función | 26_Torneos_Core.gs | 5379 | Contexto_Base_Web.md §26B202 |
+| `_aplicarDropdownWhatsappSLista` | función | 26_Torneos_Core.gs | 5442 | Contexto_Base_Web.md §26B207 |
+| `_aplicarDropdownWhatsappTLista` | función | 26_Torneos_Core.gs | 5367 | Contexto_Base_Web.md §26B202 |
 | `_aplicarFiltroEnFilaHeader` | función | 04_Formato_Comun.gs | 730 | Contexto_Base_Web.md §04B015 |
 | `_aplicarFiltroFila2` | función | 02_Setup_Hojas.gs | 865 | Contexto_Base_Web.md §02B064 |
 | `_aplicarFiltroFila3` | función | 02_Setup_Hojas.gs | 881 | Contexto_Base_Web.md §02B065 |
@@ -203,18 +203,18 @@ Ninguno.
 | `_aplicarFmtCondicionalGuerra` | función | 17_GuerraSheet.gs | 5562 |  |
 | `_aplicarFmtCondicionalGuerraLogs` | función | 17_GuerraSheet.gs | 3799 |  |
 | `_aplicarFormatoCondicionalAscensos` | función | 24_Historial_Ascensos.gs | 993 | Contexto_Base_Web.md §24B041 |
-| `_aplicarFormatoCondicionalAsistenciaPorId_` | función | 26_Torneos_Core.gs | 5231 | Contexto_Base_Web.md §26B132 |
+| `_aplicarFormatoCondicionalAsistenciaPorId_` | función | 26_Torneos_Core.gs | 5219 | Contexto_Base_Web.md §26B132 |
 | `_aplicarFormatoCondicionalClan` | función | 10_ClanSheet.gs | 152 |  |
 | `_aplicarFormatoCondicionalDirectorio` | función | 11_DirectorioSheet.gs | 1502 | Contexto_Base_Web.md §11B100 |
 | `_aplicarFormatoCondicionalIndice` | función | 03_Indice_Sheet.gs | 258 | Contexto_Base_Web.md §03B014 |
 | `_aplicarFormatoCondicionalMensajes` | función | 30_Mensajes.gs | 644 |  |
 | `_aplicarFormatoCondicionalPlayers` | función | 12_Players_Links.gs | 70 | Contexto_Base_Web.md §12B006 |
-| `_aplicarFormatoCondicionalSAporSorteo` | función | 26_Torneos_Core.gs | 5222 | Contexto_Base_Web.md §PF286 |
-| `_aplicarFormatoCondicionalTAporTorneo` | función | 26_Torneos_Core.gs | 5217 | Contexto_Base_Web.md §26B132 |
+| `_aplicarFormatoCondicionalSAporSorteo` | función | 26_Torneos_Core.gs | 5210 | Contexto_Base_Web.md §PF286 |
+| `_aplicarFormatoCondicionalTAporTorneo` | función | 26_Torneos_Core.gs | 5205 | Contexto_Base_Web.md §26B132 |
 | `_aplicarFormatoFilaAscenso` | función | 24_Historial_Ascensos.gs | 974 | Contexto_Base_Web.md §24B039 |
 | `_aplicarFormatoMilesGuerra_` | función | 17_GuerraSheet.gs | 92 |  |
-| `_aplicarFormatoMilesHoja_` | función | 26_Torneos_Core.gs | 5008 |  |
-| `_aplicarFormatoMilesListas_` | función | 26_Torneos_Core.gs | 5024 |  |
+| `_aplicarFormatoMilesHoja_` | función | 26_Torneos_Core.gs | 4996 |  |
+| `_aplicarFormatoMilesListas_` | función | 26_Torneos_Core.gs | 5012 |  |
 | `_aplicarFuncionesMultiSelect` | función | 11_DirectorioSheet.gs | 1649 | Contexto_Base_Web.md §11B107 |
 | `_aplicarHeaderDosFilas` | función | 02_Setup_Hojas.gs | 743 | Contexto_Base_Web.md §02B059 |
 | `_aplicarHeaderTresFilas` | función | 02_Setup_Hojas.gs | 795 | Contexto_Base_Web.md §02B062 |
@@ -251,8 +251,8 @@ Ninguno.
 | `_asegurarEscrituraCompleta_` | función | 05_Backup_CSV.gs | 1603 | Contexto_Base_Web.md §PF291 |
 | `_asegurarEstructuraGuerra_` | función | 17_GuerraSheet.gs | 2174 |  |
 | `_asignarParesAPropuestas_` | función | 24_Historial_Ascensos.gs | 1685 |  |
-| `_ataquesCumplenRequisito` | función | 28_Torneos_Docs.gs | 883 | Contexto_Base_Web.md §28B086 |
-| `_ataquesMinTorneoPorNombreClan` | función | 28_Torneos_Docs.gs | 753 | Contexto_Base_Web.md §28B054 |
+| `_ataquesCumplenRequisito` | función | 28_Torneos_Docs.gs | 885 | Contexto_Base_Web.md §28B086 |
+| `_ataquesMinTorneoPorTagClan` | función | 28_Torneos_Docs.gs | 754 | Contexto_Base_Web.md §28B054 |
 | `_ataquesPorDiaEntreClanes_` | función | 18_CorreccionGuerra.gs | 4344 | Contexto_Base_Web.md §18B029 |
 | `_auditarPisoEnFuente` | función | 18_CorreccionGuerra.gs | 3703 | Contexto_Base_Web.md §18B082 |
 | `_auditarReconstruccionesGuerraSospechosas` | función | 18_CorreccionGuerra.gs | 1062 | Contexto_Base_Web.md §18B088 |
@@ -265,8 +265,8 @@ Ninguno.
 | `_avisarRarezasSinDiferencia` | función | 31_Cards_Mazos.gs | 390 | Contexto_Base_Web.md §31B023 |
 | `_avisarRevisionNivelesCards` | función | 31_Cards_Mazos.gs | 1450 | Contexto_Base_Web.md §31B062 |
 | `_BACKUP_OMITIR_CHECK_CLAVES_` | global | 05_Backup_CSV.gs | 26 | Contexto_Base_Web.md §PF286 |
-| `_barcosCumplenRequisito` | función | 28_Torneos_Docs.gs | 905 | Contexto_Base_Web.md §28B088 |
-| `_barcosDeRequisitos_` | función | 26_Torneos_Core.gs | 4236 | Contexto_Base_Web.md §PF099 |
+| `_barcosCumplenRequisito` | función | 28_Torneos_Docs.gs | 907 | Contexto_Base_Web.md §28B088 |
+| `_barcosDeRequisitos_` | función | 26_Torneos_Core.gs | 4224 | Contexto_Base_Web.md §PF099 |
 | `_blgBucketsDelDia_` | función | 18_CorreccionGuerra.gs | 4804 |  |
 | `_blgBucketVacio_` | función | 18_CorreccionGuerra.gs | 4774 |  |
 | `_blgClasificarBatallaGuerra_` | función | 18_CorreccionGuerra.gs | 4704 | Contexto_Base_Web.md §18B040 |
@@ -344,7 +344,7 @@ Ninguno.
 | `_buscarFechaMasAntiguaTernaEnCorreccionesGuerra` | función | 47_Migraciones.gs | 1011 |  |
 | `_buscarFechaMasAntiguaTernaEnNuevos` | función | 47_Migraciones.gs | 920 | Contexto_Base_Web.md §47B025 |
 | `_buscarFilaPorTag` | función | 11_DirectorioSheet.gs | 1672 | Contexto_Base_Web.md §11B099 |
-| `_buscarIndiceHijo` | función | 27_Torneos_Sorteos_Requisitos.gs | 327 | Contexto_Base_Web.md §27B013 |
+| `_buscarIndiceHijo` | función | 27_Torneos_Sorteos_Requisitos.gs | 351 | Contexto_Base_Web.md §27B013 |
 | `_buscarIndiceHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 1463 | Contexto_Base_Web.md §PF040 |
 | `_buscarInfiltrado` | función | 15_DeteccionInfiltrados.gs | 194 | Contexto_Base_Web.md §15B008 |
 | `_buscarInfoOrganizadorPorNomMulti` | función | 26_Torneos_Core.gs | 1455 | Contexto_Base_Web.md §26B188 |
@@ -383,7 +383,7 @@ Ninguno.
 | `_cargarIndiceClanes_` | función | 15_DeteccionInfiltrados.gs | 896 | Contexto_Base_Web.md §PF369 |
 | `_cargarOverlayCorreccionesGuerra` | función | 18_CorreccionGuerra.gs | 1905 | Contexto_Base_Web.md §18B096 |
 | `_cargarOverlayCorreccionesGuerraPorClan` | función | 18_CorreccionGuerra.gs | 1898 | Contexto_Base_Web.md §18B093 |
-| `_cargarParCambioRango_` | función | 29_Docs_NoCalificados.gs | 431 |  |
+| `_cargarParCambioRango_` | función | 29_Docs_NoCalificados.gs | 433 |  |
 | `_cargarPendientesRiverRace` | función | 19_CorreccionRiverRace.gs | 358 |  |
 | `_cargarPlayerDesideDrive` | función | 09_API_ClashRoyale.gs | 3717 | Contexto_Base_Web.md §09B166 |
 | `_cargarPlayerDesideDriveRapido_` | función | 09_API_ClashRoyale.gs | 3643 |  |
@@ -475,6 +475,8 @@ Ninguno.
 | `_clanExternoNombreArchivo_` | función | 15_DeteccionInfiltrados.gs | 1156 | Contexto_Base_Web.md §PF378 |
 | `_clanExternoReenumerarDoc_` | función | 47_Migraciones.gs | 1312 |  |
 | `_clanRivalConfirmadoPorTag_` | función | 15_DeteccionInfiltrados.gs | 1389 | Contexto_Base_Web.md §PF400 |
+| `_clanTagDeFilaORespaldo_` | función | 27_Torneos_Sorteos_Requisitos.gs | 237 |  |
+| `_clanTagNorm_` | función | 27_Torneos_Sorteos_Requisitos.gs | 227 |  |
 | `_clanTernaOpciones` | función | 44_BotWhatsApp.gs | 1494 | Contexto_Base_Web.md §44B049 |
 | `_clanYaCruzoMetaEnPeriodo` | función | 22_ControlCalendario.gs | 1179 | Contexto_Base_Web.md §22B056 |
 | `_claveClanHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 1500 | Contexto_Base_Web.md §PF040 |
@@ -518,15 +520,15 @@ Ninguno.
 | `_construirCards2PorTag` | función | 31_Cards_Mazos.gs | 958 | Contexto_Base_Web.md §31B046 |
 | `_construirCartaRarezaMap` | función | 31_Cards_Mazos.gs | 1277 | Contexto_Base_Web.md §31B056 |
 | `_construirCoberturaPorTag` | función | 18_CorreccionGuerra.gs | 3820 | Contexto_Base_Web.md §18B111 |
-| `_construirContenidoDocCalificadosCambioRango` | función | 29_Docs_NoCalificados.gs | 1042 |  |
-| `_construirContenidoDocCambioRango` | función | 29_Docs_NoCalificados.gs | 1038 |  |
-| `_construirContenidoDocGanadoresSorteo` | función | 28_Torneos_Docs.gs | 1934 | Contexto_Base_Web.md §28B044 |
-| `_construirContenidoDocGanadoresTorneo` | función | 28_Torneos_Docs.gs | 1961 | Contexto_Base_Web.md §28B045 |
-| `_construirContenidoDocNoCalificadosCambioRango` | función | 29_Docs_NoCalificados.gs | 1046 |  |
-| `_construirContenidoDocNoCalificadosSorteo` | función | 29_Docs_NoCalificados.gs | 1034 |  |
-| `_construirContenidoDocNoCalificadosTorneo` | función | 29_Docs_NoCalificados.gs | 1030 |  |
-| `_construirContenidoDocParticipantesCalificadosSorteo` | función | 28_Torneos_Docs.gs | 1868 | Contexto_Base_Web.md §28B042 |
-| `_construirContenidoDocParticipantesCalificadosTorneo` | función | 28_Torneos_Docs.gs | 1899 | Contexto_Base_Web.md §28B043 |
+| `_construirContenidoDocCalificadosCambioRango` | función | 29_Docs_NoCalificados.gs | 1044 |  |
+| `_construirContenidoDocCambioRango` | función | 29_Docs_NoCalificados.gs | 1040 |  |
+| `_construirContenidoDocGanadoresSorteo` | función | 28_Torneos_Docs.gs | 1936 | Contexto_Base_Web.md §28B044 |
+| `_construirContenidoDocGanadoresTorneo` | función | 28_Torneos_Docs.gs | 1963 | Contexto_Base_Web.md §28B045 |
+| `_construirContenidoDocNoCalificadosCambioRango` | función | 29_Docs_NoCalificados.gs | 1048 |  |
+| `_construirContenidoDocNoCalificadosSorteo` | función | 29_Docs_NoCalificados.gs | 1036 |  |
+| `_construirContenidoDocNoCalificadosTorneo` | función | 29_Docs_NoCalificados.gs | 1032 |  |
+| `_construirContenidoDocParticipantesCalificadosSorteo` | función | 28_Torneos_Docs.gs | 1870 | Contexto_Base_Web.md §28B042 |
+| `_construirContenidoDocParticipantesCalificadosTorneo` | función | 28_Torneos_Docs.gs | 1901 | Contexto_Base_Web.md §28B043 |
 | `_construirCostosPorRareza` | función | 31_Cards_Mazos.gs | 1214 | Contexto_Base_Web.md §31B053 |
 | `_construirFila` | función | 11_DirectorioSheet.gs | 1028 |  |
 | `_construirFilaCRLista` | función | 37_Web_API.gs | 5198 | Contexto_Base_Web.md §37B339 |
@@ -549,12 +551,12 @@ Ninguno.
 | `_contarSemanasGuerraTerna` | función | 14_Nuevos_RoyaleAPI.gs | 938 | Contexto_Base_Web.md §14B066 |
 | `_contarSorteosEnSemana` | función | 26_Torneos_Core.gs | 3896 | Contexto_Base_Web.md §26B251 |
 | `_contarTorneosEnSemana` | función | 26_Torneos_Core.gs | 3880 |  |
-| `_contarTorneosPorTagEnSemanas` | función | 28_Torneos_Docs.gs | 975 | Contexto_Base_Web.md §28B089 |
-| `_contarTorneosPorTagEnTemporada` | función | 28_Torneos_Docs.gs | 953 |  |
+| `_contarTorneosPorTagEnSemanas` | función | 28_Torneos_Docs.gs | 977 | Contexto_Base_Web.md §28B089 |
+| `_contarTorneosPorTagEnTemporada` | función | 28_Torneos_Docs.gs | 955 |  |
 | `_conteoArchivosAgotadoAvisado_` | global | 05_Backup_CSV.gs | 65 |  |
 | `_conteoArchivosDisponible_` | función | 05_Backup_CSV.gs | 1538 | Contexto_Base_Web.md §PF290 |
 | `_conteoArchivosMs_` | global | 05_Backup_CSV.gs | 63 |  |
-| `_conteoVeredictosTexto_` | función | 29_Docs_NoCalificados.gs | 713 |  |
+| `_conteoVeredictosTexto_` | función | 29_Docs_NoCalificados.gs | 715 |  |
 | `_continuarAplicarCorreccionGuerraATodas` | función | 18_CorreccionGuerra.gs | 934 | Contexto_Base_Web.md §PF358 |
 | `_continuarGenerarIndiceClanesExternos` | función | 15_DeteccionInfiltrados.gs | 704 | Contexto_Base_Web.md §PF376 |
 | `_continuarReconstruirJsonGrupalDesdeIndividuales` | función | 20_HistorialGuerraJugador.gs | 242 |  |
@@ -573,13 +575,13 @@ Ninguno.
 | `_controlColTotales` | función | 02_Setup_Hojas.gs | 316 | Contexto_Base_Web.md §02B029 |
 | `_controlNecesitaRebuildFormato` | función | 22_ControlCalendario.gs | 582 | Contexto_Base_Web.md §22B009 |
 | `_copiarComentarioAscensoAComentarios` | función | 24_Historial_Ascensos.gs | 836 | Contexto_Base_Web.md §24B030 |
-| `_copiarLineaConFormato` | función | 27_Torneos_Sorteos_Requisitos.gs | 650 | Contexto_Base_Web.md §27B023 |
-| `_copiarPremiosFechaAGanadoresTorneo` | función | 27_Torneos_Sorteos_Requisitos.gs | 586 | Contexto_Base_Web.md §27B027 |
+| `_copiarLineaConFormato` | función | 27_Torneos_Sorteos_Requisitos.gs | 674 | Contexto_Base_Web.md §27B023 |
+| `_copiarPremiosFechaAGanadoresTorneo` | función | 27_Torneos_Sorteos_Requisitos.gs | 610 | Contexto_Base_Web.md §27B027 |
 | `_corregirAnomaliasAtaquesSemana_` | función | 54_Correccion_AtaquesSemana_Anomalias.gs | 80 |  |
 | `_corregirCampoAcumuladoConDistribucion` | función | 18_CorreccionGuerra.gs | 3479 | Contexto_Base_Web.md §18B118 |
 | `_corregirCampoDiarioConDistribucion` | función | 18_CorreccionGuerra.gs | 3409 | Contexto_Base_Web.md §18B114 |
 | `_corregirFechaGuerraLogs_` | función | 17_GuerraSheet.gs | 3904 |  |
-| `_corregirLinkTorneoYaRegistrado` | función | 26_Torneos_Core.gs | 4678 | Contexto_Base_Web.md §26B304 |
+| `_corregirLinkTorneoYaRegistrado` | función | 26_Torneos_Core.gs | 4666 | Contexto_Base_Web.md §26B304 |
 | `_corregirTemporadaEnCSV` | función | 17_GuerraSheet.gs | 5789 | Contexto_Base_Web.md §17B191 |
 | `_corregirTemporadaEnGuerra` | función | 17_GuerraSheet.gs | 5660 |  |
 | `_corregirTemporadaEnGuerraLogs` | función | 17_GuerraSheet.gs | 5721 |  |
@@ -657,7 +659,7 @@ Ninguno.
 | `_ctxPorClanDesdeDatos_` | función | 09_API_ClashRoyale.gs | 3333 | Contexto_Base_Web.md §09B156 |
 | `_cuentasConVariosClanesEnOverlay_` | función | 18_CorreccionGuerra.gs | 2134 |  |
 | `_cumpleAtaquesSemanaActual` | función | 28_Torneos_Docs.gs | 744 | Contexto_Base_Web.md §28B053 |
-| `_cumpleAtaquesTorneoClan` | función | 28_Torneos_Docs.gs | 764 | Contexto_Base_Web.md §28B055 |
+| `_cumpleAtaquesTorneoClan` | función | 28_Torneos_Docs.gs | 766 | Contexto_Base_Web.md §28B055 |
 | `_cumpleRequisitoCR` | función | 26_Torneos_Core.gs | 3336 | Contexto_Base_Web.md §26B044 |
 | `_CW_CATALOGO_MEMO` | global | 39_CartasWeb.gs | 11 |  |
 | `_DASH_MEMO` | global | 38_Web_Endpoints.gs | 48 | Contexto_Base_Web.md §38B109 |
@@ -681,7 +683,7 @@ Ninguno.
 | `_detalleRequisitoCR` | función | 26_Torneos_Core.gs | 3372 | Contexto_Base_Web.md §26B046 |
 | `_detectarMulticuentas` | función | 11_DirectorioSheet.gs | 744 |  |
 | `_determinarOrganizador` | función | 26_Torneos_Core.gs | 1389 |  |
-| `_diaClaveOrden_` | función | 26_Torneos_Core.gs | 5063 | Contexto_Base_Web.md §PF286 |
+| `_diaClaveOrden_` | función | 26_Torneos_Core.gs | 5051 | Contexto_Base_Web.md §PF286 |
 | `_diagGuerraVivo_` | función | 38_Web_Endpoints.gs | 3205 |  |
 | `_diagnosticoGuerraDia` | función | 49_Diagnostico_Domingo.gs | 32 |  |
 | `_diaLimaDe_` | función | 17_GuerraSheet.gs | 3839 |  |
@@ -717,12 +719,12 @@ Ninguno.
 | `_esClanPropio_` | función | 15_DeteccionInfiltrados.gs | 457 | Contexto_Base_Web.md §PF368 |
 | `_escribirAnchosColumnasGuardados` | función | 04_Formato_Comun.gs | 1088 | Contexto_Base_Web.md §04B069 |
 | `_escribirDirectorio` | función | 11_DirectorioSheet.gs | 1425 |  |
-| `_escribirDocGanadores` | función | 28_Torneos_Docs.gs | 1214 | Contexto_Base_Web.md §28B090 |
-| `_escribirDocGanadoresSorteo` | función | 28_Torneos_Docs.gs | 1687 | Contexto_Base_Web.md §28B030 |
-| `_escribirGanadoresSorteoEnDoc_` | función | 28_Torneos_Docs.gs | 1520 |  |
+| `_escribirDocGanadores` | función | 28_Torneos_Docs.gs | 1216 | Contexto_Base_Web.md §28B090 |
+| `_escribirDocGanadoresSorteo` | función | 28_Torneos_Docs.gs | 1689 | Contexto_Base_Web.md §28B030 |
+| `_escribirGanadoresSorteoEnDoc_` | función | 28_Torneos_Docs.gs | 1522 |  |
 | `_escribirLinks` | función | 12_Players_Links.gs | 105 | Contexto_Base_Web.md §12B008 |
 | `_escribirPlayers` | función | 12_Players_Links.gs | 31 | Contexto_Base_Web.md §12B003 |
-| `_escribirPremiosEnDoc` | función | 27_Torneos_Sorteos_Requisitos.gs | 482 | Contexto_Base_Web.md §27B022 |
+| `_escribirPremiosEnDoc` | función | 27_Torneos_Sorteos_Requisitos.gs | 506 | Contexto_Base_Web.md §27B022 |
 | `_escribirTSDEnFilaHoja_` | función | 24_Historial_Ascensos.gs | 468 | Contexto_Base_Web.md §PF267 |
 | `_esFechaValida` | función | 44_BotWhatsApp.gs | 1122 |  |
 | `_esHoraValida` | función | 44_BotWhatsApp.gs | 1127 |  |
@@ -733,42 +735,44 @@ Ninguno.
 | `_esRespuestaVacia` | función | 44_BotWhatsApp.gs | 1049 |  |
 | `_esSiNoOVacio` | función | 13_Inactivos_Vetados.gs | 403 | Contexto_Base_Web.md §13B018 |
 | `_estadoVentanaGuerra_` | función | 00_Main.gs | 1906 | Contexto_Base_Web.md §B133 |
-| `_estiloArialDoc_` | función | 28_Torneos_Docs.gs | 1411 |  |
+| `_estiloArialDoc_` | función | 28_Torneos_Docs.gs | 1413 |  |
 | `_estimarPuestosColiseoRR_` | función | 17_GuerraSheet.gs | 2391 | Contexto_Base_Web.md §17B014 |
 | `_estimarPuestosDomingoRR_` | función | 17_GuerraSheet.gs | 2335 | Contexto_Base_Web.md §17B013 |
 | `_estuvoEnTernaEseJuevesCR_` | función | 26_Torneos_Core.gs | 3532 | Contexto_Base_Web.md §26B059 |
 | `_esUsuarioAutorizado` | función | 44_BotWhatsApp.gs | 480 | Contexto_Base_Web.md §44B021 |
 | `_etiquetaMesTemporada_` | función | 47_Migraciones.gs | 847 |  |
 | `_ETIQUETAS_ROL_CR_MIN` | global | 26_Torneos_Core.gs | 118 | Contexto_Base_Web.md §26B047 |
-| `_etiquetaSemanaSorteoDoc` | función | 27_Torneos_Sorteos_Requisitos.gs | 400 |  |
+| `_etiquetaSemanaSorteoDoc` | función | 27_Torneos_Sorteos_Requisitos.gs | 424 |  |
 | `_etiquetaTemporadaSemanaDia_` | función | 37_Web_API.gs | 2809 | Contexto_Base_Web.md §PF133 |
-| `_evaluarCalificacionSorteo_` | función | 29_Docs_NoCalificados.gs | 237 | Contexto_Base_Web.md §PF202 |
-| `_evaluarCambioRango_` | función | 29_Docs_NoCalificados.gs | 531 |  |
+| `_evaluarCalificacionSorteo_` | función | 29_Docs_NoCalificados.gs | 239 | Contexto_Base_Web.md §PF202 |
+| `_evaluarCambioRango_` | función | 29_Docs_NoCalificados.gs | 533 |  |
 | `_evaluarCorreccionConClanTagSemana_` | función | 18_CorreccionGuerra.gs | 4262 | Contexto_Base_Web.md §18B026 |
 | `_evaluarRequisitosAscenso` | función | 22_ControlCalendario.gs | 757 | Contexto_Base_Web.md §22B039 |
 | `_evitarAutoLinkWsp` | función | 44_BotWhatsApp.gs | 106 | Contexto_Base_Web.md §44B011 |
 | `_excDiasAgrupar` | función | 55_Reparar_DiasConExceso.gs | 287 |  |
-| `_excDiasAplicarPlan` | función | 55_Reparar_DiasConExceso.gs | 648 |  |
+| `_excDiasAplicarPlan` | función | 55_Reparar_DiasConExceso.gs | 668 |  |
 | `_excDiasClasificar` | función | 55_Reparar_DiasConExceso.gs | 273 |  |
-| `_excDiasElegirSolucion` | función | 55_Reparar_DiasConExceso.gs | 607 |  |
-| `_excDiasEsCero` | función | 55_Reparar_DiasConExceso.gs | 513 |  |
-| `_excDiasFaltanteJueves` | función | 55_Reparar_DiasConExceso.gs | 467 |  |
-| `_excDiasFilaNueva` | función | 55_Reparar_DiasConExceso.gs | 674 |  |
-| `_excDiasFinalDe` | función | 55_Reparar_DiasConExceso.gs | 599 |  |
-| `_excDiasNecesitaReparo` | función | 55_Reparar_DiasConExceso.gs | 323 | Contexto_Base_Web.md §PF160, criterio 1 |
-| `_excDiasNum` | función | 55_Reparar_DiasConExceso.gs | 309 |  |
-| `_excDiasOpciones` | función | 55_Reparar_DiasConExceso.gs | 500 |  |
+| `_excDiasElegirSolucion` | función | 55_Reparar_DiasConExceso.gs | 627 |  |
+| `_excDiasEsCero` | función | 55_Reparar_DiasConExceso.gs | 533 |  |
+| `_excDiasFaltanteJueves` | función | 55_Reparar_DiasConExceso.gs | 487 |  |
+| `_excDiasFilaNueva` | función | 55_Reparar_DiasConExceso.gs | 694 |  |
+| `_excDiasFinalDe` | función | 55_Reparar_DiasConExceso.gs | 619 |  |
+| `_excDiasMismoClan_` | función | 55_Reparar_DiasConExceso.gs | 323 |  |
+| `_excDiasNecesitaReparo` | función | 55_Reparar_DiasConExceso.gs | 343 | Contexto_Base_Web.md §PF160, criterio 1 |
+| `_excDiasNum` | función | 55_Reparar_DiasConExceso.gs | 329 |  |
+| `_excDiasOpciones` | función | 55_Reparar_DiasConExceso.gs | 520 |  |
 | `_excDiasOpciones_` | global | 55_Reparar_DiasConExceso.gs | 40 |  |
-| `_excDiasOrigenNuevo` | función | 55_Reparar_DiasConExceso.gs | 626 |  |
-| `_excDiasPlanificar` | función | 55_Reparar_DiasConExceso.gs | 525 |  |
-| `_excDiasRegistradoPorDia` | función | 55_Reparar_DiasConExceso.gs | 587 |  |
-| `_excDiasResolver` | función | 55_Reparar_DiasConExceso.gs | 382 |  |
-| `_excDiasResumir` | función | 55_Reparar_DiasConExceso.gs | 357 |  |
-| `_excDiasSegmentos` | función | 55_Reparar_DiasConExceso.gs | 338 |  |
-| `_excDiasSoluciones` | función | 55_Reparar_DiasConExceso.gs | 477 |  |
-| `_excDiasTextoActual` | función | 55_Reparar_DiasConExceso.gs | 635 |  |
-| `_excDiasTextoPorDia` | función | 55_Reparar_DiasConExceso.gs | 641 |  |
-| `_excDiasVerificar` | función | 55_Reparar_DiasConExceso.gs | 707 |  |
+| `_excDiasOrigenNuevo` | función | 55_Reparar_DiasConExceso.gs | 646 |  |
+| `_excDiasPlanificar` | función | 55_Reparar_DiasConExceso.gs | 545 |  |
+| `_excDiasRegistradoPorDia` | función | 55_Reparar_DiasConExceso.gs | 607 |  |
+| `_excDiasResolver` | función | 55_Reparar_DiasConExceso.gs | 402 |  |
+| `_excDiasResumir` | función | 55_Reparar_DiasConExceso.gs | 377 |  |
+| `_excDiasSegmentos` | función | 55_Reparar_DiasConExceso.gs | 358 |  |
+| `_excDiasSoluciones` | función | 55_Reparar_DiasConExceso.gs | 497 |  |
+| `_excDiasTagDeGrupo_` | función | 55_Reparar_DiasConExceso.gs | 313 |  |
+| `_excDiasTextoActual` | función | 55_Reparar_DiasConExceso.gs | 655 |  |
+| `_excDiasTextoPorDia` | función | 55_Reparar_DiasConExceso.gs | 661 |  |
+| `_excDiasVerificar` | función | 55_Reparar_DiasConExceso.gs | 727 |  |
 | `_existeParCRListaParaTemporada` | función | 26_Torneos_Core.gs | 2919 | Contexto_Base_Web.md §26B022 |
 | `_exMiembrosDesdeIndice_` | función | 15_DeteccionInfiltrados.gs | 943 | Contexto_Base_Web.md §PF369 |
 | `_explicarAltasCR_` | función | 24_Historial_Ascensos.gs | 1473 | Contexto_Base_Web.md §PF286 |
@@ -783,10 +787,10 @@ Ninguno.
 | `_extraerValoresConLinksReales` | función | 05_Backup_CSV.gs | 1724 | Contexto_Base_Web.md §05B071 |
 | `_FAME_CATALOGO_DIA_CACHE_` | global | 18_CorreccionGuerra.gs | 200 | Contexto_Base_Web.md §PF122 |
 | `_fameCatalogoDia_` | función | 18_CorreccionGuerra.gs | 1385 | Contexto_Base_Web.md §PF122 |
-| `_fameCrr52_` | función | 55_Reparar_DiasConExceso.gs | 745 |  |
-| `_fameCrr52Planificar_` | función | 55_Reparar_DiasConExceso.gs | 828 |  |
-| `_fameCrr52Verificar_` | función | 55_Reparar_DiasConExceso.gs | 876 |  |
-| `_fameCumpleRequisito` | función | 28_Torneos_Docs.gs | 894 | Contexto_Base_Web.md §28B087 |
+| `_fameCrr52_` | función | 55_Reparar_DiasConExceso.gs | 765 |  |
+| `_fameCrr52Planificar_` | función | 55_Reparar_DiasConExceso.gs | 848 |  |
+| `_fameCrr52Verificar_` | función | 55_Reparar_DiasConExceso.gs | 896 |  |
+| `_fameCumpleRequisito` | función | 28_Torneos_Docs.gs | 896 | Contexto_Base_Web.md §28B087 |
 | `_fameDescomposicionesDeCifra_` | función | 18_CorreccionGuerra.gs | 1376 | Contexto_Base_Web.md §18B008 |
 | `_fameDescomposicionesDia_` | función | 18_CorreccionGuerra.gs | 1310 | Contexto_Base_Web.md §18B004 |
 | `_fameEsPosibleDia_` | función | 18_CorreccionGuerra.gs | 1356 | Contexto_Base_Web.md §18B006 |
@@ -809,7 +813,7 @@ Ninguno.
 | `_filaEncabezadoParaAnchos` | función | 04_Formato_Comun.gs | 1155 | Contexto_Base_Web.md §04B063 |
 | `_filaHistorialGuerraGrupalARegistro` | función | 20_HistorialGuerraJugador.gs | 717 | Contexto_Base_Web.md §20B026 |
 | `_filasCards2DeTorre` | función | 31_Cards_Mazos.gs | 614 | Contexto_Base_Web.md §31B035 |
-| `_filasEvaluadosCambioRango_` | función | 29_Docs_NoCalificados.gs | 702 |  |
+| `_filasEvaluadosCambioRango_` | función | 29_Docs_NoCalificados.gs | 704 |  |
 | `_filasPerfilPorTag_` | función | 14_Nuevos_RoyaleAPI.gs | 1948 |  |
 | `_filasTablaRequisitosRango_` | función | 25_Doc_AscensosDescensos.gs | 154 |  |
 | `_filtrarSemanasJugadasCR` | función | 26_Torneos_Core.gs | 3426 | Contexto_Base_Web.md §26B052 |
@@ -818,21 +822,21 @@ Ninguno.
 | `_fmt` | función | 30_Mensajes.gs | 751 |  |
 | `_fmtDiaGuerraLog_` | función | 09_API_ClashRoyale.gs | 3237 |  |
 | `_fmtFechaCortaSemana` | función | 38_Web_Endpoints.gs | 2568 | Contexto_Base_Web.md §38B146 |
-| `_fmtMilesComa` | función | 27_Torneos_Sorteos_Requisitos.gs | 444 |  |
+| `_fmtMilesComa` | función | 27_Torneos_Sorteos_Requisitos.gs | 468 |  |
 | `_formatearBloqueFechaNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1126 | Contexto_Base_Web.md §14B067 |
 | `_formatearCaminoLeyendas` | función | 44_BotWhatsApp.gs | 1291 | Contexto_Base_Web.md §44B043 |
 | `_formatearInfoClan` | función | 30_Mensajes.gs | 725 |  |
 | `_formatearQtyCelda` | función | 25_Doc_AscensosDescensos.gs | 75 | Contexto_Base_Web.md §25B045 |
-| `_formatearTablaGanadoresSorteoDoc_` | función | 28_Torneos_Docs.gs | 1461 |  |
-| `_formatearValorPremioParaDoc` | función | 27_Torneos_Sorteos_Requisitos.gs | 567 | Contexto_Base_Web.md §27B018 |
+| `_formatearTablaGanadoresSorteoDoc_` | función | 28_Torneos_Docs.gs | 1463 |  |
+| `_formatearValorPremioParaDoc` | función | 27_Torneos_Sorteos_Requisitos.gs | 591 | Contexto_Base_Web.md §27B018 |
 | `_formatFechaCanonica` | función | 05_Backup_CSV.gs | 1384 | Contexto_Base_Web.md §05B087 |
 | `_formatFechaHoraDocEs` | función | 28_Torneos_Docs.gs | 668 | Contexto_Base_Web.md §28B048 |
 | `_formatFechaLargaEs` | función | 01_Config_Global.gs | 916 | Contexto_Base_Web.md §01B130 |
 | `_formatHoraCanonica` | función | 26_Torneos_Core.gs | 3926 | Contexto_Base_Web.md §26B012 |
 | `_fusionarFilasPorMaximo` | función | 17_GuerraSheet.gs | 5632 | Contexto_Base_Web.md §17B186 |
-| `_fusionarGanadoresActaSorteo_` | función | 28_Torneos_Docs.gs | 1309 |  |
+| `_fusionarGanadoresActaSorteo_` | función | 28_Torneos_Docs.gs | 1311 |  |
 | `_fusionarRegistroEnArrayHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 509 | Contexto_Base_Web.md §20B028 |
-| `_ganadoresAlInicioDePaginaDoc_` | función | 28_Torneos_Docs.gs | 1346 |  |
+| `_ganadoresAlInicioDePaginaDoc_` | función | 28_Torneos_Docs.gs | 1348 |  |
 | `_generarAsistenciaParaTorneo` | función | 26_Torneos_Core.gs | 2204 | Contexto_Base_Web.md §26B252 |
 | `_generarClaveAdmin` | función | 11_DirectorioSheet.gs | 1606 | Contexto_Base_Web.md §11B022 |
 | `_generarComentarioAscensoDefault` | función | 24_Historial_Ascensos.gs | 828 | Contexto_Base_Web.md §24B029 |
@@ -907,8 +911,8 @@ Ninguno.
 | `_getMesEfectivo` | función | 01_Config_Global.gs | 970 | Contexto_Base_Web.md §01B133 |
 | `_getMinGClanMaps` | función | 10_ClanSheet.gs | 177 | Contexto_Base_Web.md §10B009 |
 | `_getMinGClanMapsDash_` | función | 38_Web_Endpoints.gs | 2457 |  |
-| `_getMinTClanMaps` | función | 26_Torneos_Core.gs | 4214 | Contexto_Base_Web.md §26B277 |
-| `_getMinTPorNombreClan` | función | 27_Torneos_Sorteos_Requisitos.gs | 226 | Contexto_Base_Web.md §27B012 |
+| `_getMinTClanMaps` | función | 26_Torneos_Core.gs | 4215 | Contexto_Base_Web.md §26B277 |
+| `_getMinTPorTagClan` | función | 27_Torneos_Sorteos_Requisitos.gs | 248 | Contexto_Base_Web.md §27B012 |
 | `_getNivel2` | función | 09_API_ClashRoyale.gs | 2835 | Contexto_Base_Web.md §09B133 |
 | `_getNombreClanDump` | función | 38_Web_Endpoints.gs | 2433 | Contexto_Base_Web.md §38B191 |
 | `_getNombresClanesOrdenados` | función | 30_Mensajes.gs | 669 | Contexto_Base_Web.md §30B032 |
@@ -952,11 +956,11 @@ Ninguno.
 | `_getTemporadasDisponibles` | función | 38_Web_Endpoints.gs | 2498 | Contexto_Base_Web.md §38B178 |
 | `_getTodasLasSemanasTemporada` | función | 37_Web_API.gs | 4281 | Contexto_Base_Web.md §37B223 |
 | `_getTodosLosCardIdsDesdeCSV` | función | 31_Cards_Mazos.gs | 457 | Contexto_Base_Web.md §31B028 |
-| `_getTrofeosGuerraAcumuladosPorTagParaTemporada` | función | 28_Torneos_Docs.gs | 916 | Contexto_Base_Web.md §28B077 |
-| `_getTrofeosYAtaquesSemanalesPorTag` | función | 28_Torneos_Docs.gs | 774 | Contexto_Base_Web.md §28B079 |
+| `_getTrofeosGuerraAcumuladosPorTagParaTemporada` | función | 28_Torneos_Docs.gs | 918 | Contexto_Base_Web.md §28B077 |
+| `_getTrofeosYAtaquesSemanalesPorTag` | función | 28_Torneos_Docs.gs | 776 | Contexto_Base_Web.md §28B079 |
 | `_getUltimaSemanaJugada` | función | 38_Web_Endpoints.gs | 2541 | Contexto_Base_Web.md §38B150 |
 | `_getUltimoParCRLista` | función | 26_Torneos_Core.gs | 2896 | Contexto_Base_Web.md §26B021 |
-| `_getUltimoRegistroTorneoOSorteo` | función | 26_Torneos_Core.gs | 4170 | Contexto_Base_Web.md §26B236 |
+| `_getUltimoRegistroTorneoOSorteo` | función | 26_Torneos_Core.gs | 4171 | Contexto_Base_Web.md §26B236 |
 | `_getValoresDiariosPorSemana` | función | 38_Web_Endpoints.gs | 2609 | Contexto_Base_Web.md §38B165 |
 | `_getValoresDiariosSelectores` | función | 38_Web_Endpoints.gs | 2575 | Contexto_Base_Web.md §38B153 |
 | `_getVGuerra` | función | 09_API_ClashRoyale.gs | 2822 | Contexto_Base_Web.md §09B132 |
@@ -1032,7 +1036,7 @@ Ninguno.
 | `_historialGuerraGrupalAlinearFilas_` | función | 20_HistorialGuerraJugador.gs | 998 | Contexto_Base_Web.md §PF323 |
 | `_hojaConFilas_` | función | 01_Config_Global.gs | 1402 | Contexto_Base_Web.md §PF073 |
 | `_hojasConColumnaJugador` | función | 04_Formato_Comun.gs | 579 | Contexto_Base_Web.md §04B008 |
-| `_horaClaveOrden_` | función | 26_Torneos_Core.gs | 5069 |  |
+| `_horaClaveOrden_` | función | 26_Torneos_Core.gs | 5057 |  |
 | `_horaLimaCortaMs_` | función | 00_Main.gs | 851 |  |
 | `_horaLimaMensaje12h` | función | 09_API_ClashRoyale.gs | 3221 | Contexto_Base_Web.md §09B148 |
 | `_horaLimaNow` | función | 09_API_ClashRoyale.gs | 3214 | Contexto_Base_Web.md §09B147 |
@@ -1063,16 +1067,16 @@ Ninguno.
 | `_iniciarRespuestaCategoria` | función | 44_BotWhatsApp.gs | 807 | Contexto_Base_Web.md §44B034 |
 | `_iniciarRunGuerraPorTandas_` | función | 00_Main.gs | 1434 | Contexto_Base_Web.md §PF311 |
 | `_inicioRachaDesdeFilasGuerra_` | función | 11_DirectorioSheet.gs | 991 | Contexto_Base_Web.md §11B067 |
-| `_insertarBloquePorClan` | función | 27_Torneos_Sorteos_Requisitos.gs | 415 | Contexto_Base_Web.md §27B016 |
-| `_insertarBulletPremiosGanadores` | función | 27_Torneos_Sorteos_Requisitos.gs | 577 | Contexto_Base_Web.md §27B021 |
-| `_insertarBulletRequisito` | función | 27_Torneos_Sorteos_Requisitos.gs | 338 | Contexto_Base_Web.md §27B017 |
+| `_insertarBloquePorClan` | función | 27_Torneos_Sorteos_Requisitos.gs | 439 | Contexto_Base_Web.md §27B016 |
+| `_insertarBulletPremiosGanadores` | función | 27_Torneos_Sorteos_Requisitos.gs | 601 | Contexto_Base_Web.md §27B021 |
+| `_insertarBulletRequisito` | función | 27_Torneos_Sorteos_Requisitos.gs | 362 | Contexto_Base_Web.md §27B017 |
 | `_insertarColumnaFechaIndice` | función | 05_Backup_CSV.gs | 2099 | Contexto_Base_Web.md §05B093 |
-| `_insertarFilaRequisito` | función | 27_Torneos_Sorteos_Requisitos.gs | 379 |  |
-| `_insertarLineaParticipante` | función | 28_Torneos_Docs.gs | 1122 | Contexto_Base_Web.md §28B075 |
-| `_insertarLineaPuestoPremio` | función | 27_Torneos_Sorteos_Requisitos.gs | 542 | Contexto_Base_Web.md §27B019 |
-| `_insertarLineaSinCalificados_` | función | 28_Torneos_Docs.gs | 1104 | Contexto_Base_Web.md §PF204 |
+| `_insertarFilaRequisito` | función | 27_Torneos_Sorteos_Requisitos.gs | 403 |  |
+| `_insertarLineaParticipante` | función | 28_Torneos_Docs.gs | 1124 | Contexto_Base_Web.md §28B075 |
+| `_insertarLineaPuestoPremio` | función | 27_Torneos_Sorteos_Requisitos.gs | 566 | Contexto_Base_Web.md §27B019 |
+| `_insertarLineaSinCalificados_` | función | 28_Torneos_Docs.gs | 1106 | Contexto_Base_Web.md §PF204 |
 | `_insertarNuevosCandidatosOrdenadosPorClan` | función | 14_Nuevos_RoyaleAPI.gs | 2399 | Contexto_Base_Web.md §14B074 |
-| `_insertarParrafoEspaciador` | función | 28_Torneos_Docs.gs | 1084 | Contexto_Base_Web.md §28B074 |
+| `_insertarParrafoEspaciador` | función | 28_Torneos_Docs.gs | 1086 | Contexto_Base_Web.md §28B074 |
 | `_INSIGNIAS_MAPA_CARTAS_MEMO` | global | 32_Insignias.gs | 15 | Contexto_Base_Web.md §32B010 |
 | `_instalarActivadorTorneoEnVivo` | función | 26_Torneos_Core.gs | 904 | Contexto_Base_Web.md §26B133 |
 | `_invalidarCacheDiferenciaNivelPorRareza` | función | 31_Cards_Mazos.gs | 338 | Contexto_Base_Web.md §31B019 |
@@ -1156,13 +1160,13 @@ Ninguno.
 | `_limpiarMemoSemanasTemporada_` | función | 25_Doc_AscensosDescensos.gs | 232 |  |
 | `_limpiarValidacionesFilasVaciasDirectorio` | función | 11_DirectorioSheet.gs | 1487 | Contexto_Base_Web.md §11B098 |
 | `_lineaPeriodoClan_` | función | 09_API_ClashRoyale.gs | 3288 | Contexto_Base_Web.md §09B155 |
-| `_lineasResumenSorteoDoc_` | función | 28_Torneos_Docs.gs | 1394 |  |
+| `_lineasResumenSorteoDoc_` | función | 28_Torneos_Docs.gs | 1396 |  |
 | `_listarCarpetasOrdenadas_` | función | 47_Migraciones.gs | 1570 |  |
 | `_listarMiembrosClanParaGestion` | función | 44_BotWhatsApp.gs | 918 | Contexto_Base_Web.md §44B037 |
-| `_listarSorteosDeHoy` | función | 26_Torneos_Core.gs | 4866 | Contexto_Base_Web.md §26B308 |
-| `_listarSorteosModificables` | función | 26_Torneos_Core.gs | 4890 | Contexto_Base_Web.md §PF108 |
-| `_listarTorneosDeHoy` | función | 26_Torneos_Core.gs | 4509 | Contexto_Base_Web.md §26B296 |
-| `_listarTorneosModificables` | función | 26_Torneos_Core.gs | 4538 | Contexto_Base_Web.md §PF099 |
+| `_listarSorteosDeHoy` | función | 26_Torneos_Core.gs | 4854 | Contexto_Base_Web.md §26B308 |
+| `_listarSorteosModificables` | función | 26_Torneos_Core.gs | 4878 | Contexto_Base_Web.md §PF108 |
+| `_listarTorneosDeHoy` | función | 26_Torneos_Core.gs | 4497 | Contexto_Base_Web.md §26B296 |
+| `_listarTorneosModificables` | función | 26_Torneos_Core.gs | 4526 | Contexto_Base_Web.md §PF099 |
 | `_loadCSVFromDrive` | función | 05_Backup_CSV.gs | 1179 |  |
 | `_loadHistorialGuerraGrupalCSV` | función | 20_HistorialGuerraJugador.gs | 617 |  |
 | `_logAvanceTanda_` | función | 00_Main.gs | 2089 |  |
@@ -1202,8 +1206,8 @@ Ninguno.
 | `_migrarOrdenColumnasIndiceSiHaceFalta` | función | 03_Indice_Sheet.gs | 221 | Contexto_Base_Web.md §03B013 |
 | `_migrarTextoGuerraCsv_` | función | 05_Backup_CSV.gs | 1211 |  |
 | `_mismoDia` | función | 26_Torneos_Core.gs | 3957 |  |
-| `_modificarFechaHoraSorteo` | función | 26_Torneos_Core.gs | 4933 | Contexto_Base_Web.md §PF107 |
-| `_modificarFechaHoraTorneo` | función | 26_Torneos_Core.gs | 4587 | Contexto_Base_Web.md §PF105 |
+| `_modificarFechaHoraSorteo` | función | 26_Torneos_Core.gs | 4921 | Contexto_Base_Web.md §PF107 |
+| `_modificarFechaHoraTorneo` | función | 26_Torneos_Core.gs | 4575 | Contexto_Base_Web.md §PF105 |
 | `_msFechaConHoraLima_` | función | 17_GuerraSheet.gs | 3825 |  |
 | `_msgBienvenida` | función | 44_BotWhatsApp.gs | 512 | Contexto_Base_Web.md §44B024 |
 | `_msgBienvenidaAdmin` | función | 44_BotWhatsApp.gs | 560 | Contexto_Base_Web.md §44B026 |
@@ -1224,16 +1228,16 @@ Ninguno.
 | `_msgTorneosPedirHora` | función | 44_BotWhatsApp.gs | 1104 |  |
 | `_msgTorneosPedirLink` | función | 44_BotWhatsApp.gs | 1096 |  |
 | `_msRestantesDeEjecucion_` | función | 00_Main.gs | 2316 | Contexto_Base_Web.md §PF311 |
-| `_ncBordesBlancosEncabezado_` | función | 29_Docs_NoCalificados.gs | 982 |  |
-| `_ncContenidoBasePlaceholder` | función | 29_Docs_NoCalificados.gs | 1050 |  |
-| `_ncEscribirDocumento` | función | 29_Docs_NoCalificados.gs | 867 | Contexto_Base_Web.md §29B021 |
-| `_ncFechaHoraPeru` | función | 29_Docs_NoCalificados.gs | 936 | Contexto_Base_Web.md §29B027 |
-| `_ncFmtNum` | función | 29_Docs_NoCalificados.gs | 818 | Contexto_Base_Web.md §29B026 |
-| `_ncNombreRol` | función | 29_Docs_NoCalificados.gs | 828 |  |
-| `_ncTablaEstiloOscuro` | función | 29_Docs_NoCalificados.gs | 953 |  |
-| `_ncTextoRequisito` | función | 29_Docs_NoCalificados.gs | 838 | Contexto_Base_Web.md §29B023 |
-| `_ncTextoRequisitoVsReal` | función | 29_Docs_NoCalificados.gs | 848 | Contexto_Base_Web.md §29B024 |
-| `_ncVeredictoCambioRango` | función | 29_Docs_NoCalificados.gs | 725 | Contexto_Base_Web.md §29B018 |
+| `_ncBordesBlancosEncabezado_` | función | 29_Docs_NoCalificados.gs | 984 |  |
+| `_ncContenidoBasePlaceholder` | función | 29_Docs_NoCalificados.gs | 1052 |  |
+| `_ncEscribirDocumento` | función | 29_Docs_NoCalificados.gs | 869 | Contexto_Base_Web.md §29B021 |
+| `_ncFechaHoraPeru` | función | 29_Docs_NoCalificados.gs | 938 | Contexto_Base_Web.md §29B027 |
+| `_ncFmtNum` | función | 29_Docs_NoCalificados.gs | 820 | Contexto_Base_Web.md §29B026 |
+| `_ncNombreRol` | función | 29_Docs_NoCalificados.gs | 830 |  |
+| `_ncTablaEstiloOscuro` | función | 29_Docs_NoCalificados.gs | 955 |  |
+| `_ncTextoRequisito` | función | 29_Docs_NoCalificados.gs | 840 | Contexto_Base_Web.md §29B023 |
+| `_ncTextoRequisitoVsReal` | función | 29_Docs_NoCalificados.gs | 850 | Contexto_Base_Web.md §29B024 |
+| `_ncVeredictoCambioRango` | función | 29_Docs_NoCalificados.gs | 727 | Contexto_Base_Web.md §29B018 |
 | `_nivelesFaltantesEnCards3` | función | 31_Cards_Mazos.gs | 1363 | Contexto_Base_Web.md §31B059 |
 | `_nivelPromedioCartas` | función | 31_Cards_Mazos.gs | 1101 | Contexto_Base_Web.md §PF051 |
 | `_nivelRarezaDesdeNivelApp` | función | 31_Cards_Mazos.gs | 1255 | Contexto_Base_Web.md §31B054 |
@@ -1250,13 +1254,13 @@ Ninguno.
 | `_normalizarClaveInsignia` | función | 32_Insignias.gs | 295 | Contexto_Base_Web.md §32B009 |
 | `_normalizarFechaCelda_` | función | 47_Migraciones.gs | 2393 |  |
 | `_normalizarFechaHoraListas_` | función | 47_Migraciones.gs | 2414 |  |
-| `_normalizarHoraActa_` | función | 28_Torneos_Docs.gs | 1380 |  |
+| `_normalizarHoraActa_` | función | 28_Torneos_Docs.gs | 1382 |  |
 | `_normalizarHoraCelda_` | función | 47_Migraciones.gs | 2385 |  |
 | `_normalizarHoraSLista` | función | 26_Torneos_Core.gs | 1934 | Contexto_Base_Web.md §PF118 |
 | `_normalizarNombreClan_` | función | 09_API_ClashRoyale.gs | 3052 | Contexto_Base_Web.md §09B143 |
 | `_normalizarNombreSA_` | función | 26_Torneos_Core.gs | 2178 |  |
 | `_normalizarPeriodIndex_` | función | 09_API_ClashRoyale.gs | 3186 |  |
-| `_normalizarSiNoRequisito` | función | 26_Torneos_Core.gs | 4246 | Contexto_Base_Web.md §26B280 |
+| `_normalizarSiNoRequisito` | función | 26_Torneos_Core.gs | 4234 | Contexto_Base_Web.md §26B280 |
 | `_notaEndOfDayRankGuerraLogs_` | función | 17_GuerraSheet.gs | 2099 | Contexto_Base_Web.md §17B011 |
 | `_notaSemanasContadasCR` | función | 26_Torneos_Core.gs | 3557 |  |
 | `_notaSinDatosGuerraCR_` | función | 24_Historial_Ascensos.gs | 1452 | Contexto_Base_Web.md §PF286 |
@@ -1310,14 +1314,14 @@ Ninguno.
 | `_ordenarEntradasIndice` | función | 43_Menu_Dinamico.gs | 469 | Contexto_Base_Web.md §43B022 |
 | `_ordenarFichasSemanas_` | función | 47_Migraciones.gs | 2400 |  |
 | `_ordenarFilasCatalogoInsignias` | función | 32_Insignias.gs | 302 | Contexto_Base_Web.md §32B005 |
-| `_ordenarHojaPorFechaDesc_` | función | 26_Torneos_Core.gs | 5083 |  |
-| `_ordenarSAsistenciaPorFecha` | función | 26_Torneos_Core.gs | 5180 |  |
-| `_ordenarSemanasSorteoDoc` | función | 27_Torneos_Sorteos_Requisitos.gs | 370 |  |
-| `_ordenarSListaPorFecha` | función | 26_Torneos_Core.gs | 5163 | Contexto_Base_Web.md §PF286 |
-| `_ordenarTAsistenciaPorFecha` | función | 26_Torneos_Core.gs | 5172 | Contexto_Base_Web.md §PF286 |
-| `_ordenarTListaPorFecha` | función | 26_Torneos_Core.gs | 5148 | Contexto_Base_Web.md §26B172 |
-| `_ordenarYColorearSAsistencia_` | función | 26_Torneos_Core.gs | 5209 |  |
-| `_ordenarYFormatearListasYAsistencias_` | función | 26_Torneos_Core.gs | 5188 |  |
+| `_ordenarHojaPorFechaDesc_` | función | 26_Torneos_Core.gs | 5071 |  |
+| `_ordenarSAsistenciaPorFecha` | función | 26_Torneos_Core.gs | 5168 |  |
+| `_ordenarSemanasSorteoDoc` | función | 27_Torneos_Sorteos_Requisitos.gs | 394 |  |
+| `_ordenarSListaPorFecha` | función | 26_Torneos_Core.gs | 5151 | Contexto_Base_Web.md §PF286 |
+| `_ordenarTAsistenciaPorFecha` | función | 26_Torneos_Core.gs | 5160 | Contexto_Base_Web.md §PF286 |
+| `_ordenarTListaPorFecha` | función | 26_Torneos_Core.gs | 5136 | Contexto_Base_Web.md §26B172 |
+| `_ordenarYColorearSAsistencia_` | función | 26_Torneos_Core.gs | 5197 |  |
+| `_ordenarYFormatearListasYAsistencias_` | función | 26_Torneos_Core.gs | 5176 |  |
 | `_ordenRango` | función | 30_Mensajes.gs | 503 | Contexto_Base_Web.md §30B008 |
 | `_ORDINALES_PUESTO_PREMIO` | global | 27_Torneos_Sorteos_Requisitos.gs | 38 | Contexto_Base_Web.md §27B020 |
 | `_origenGuerraEs_` | función | 17_GuerraSheet.gs | 2040 |  |
@@ -1326,7 +1330,7 @@ Ninguno.
 | `_parseFechaApiSupercell` | función | 26_Torneos_Core.gs | 1676 | Contexto_Base_Web.md §26B240 |
 | `_parseFechaISONuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1597 | Contexto_Base_Web.md §14B095 |
 | `_parseHoraCanonica` | función | 26_Torneos_Core.gs | 3934 | Contexto_Base_Web.md §26B013 |
-| `_parseRequisitosParticipantes` | función | 28_Torneos_Docs.gs | 1159 | Contexto_Base_Web.md §28B064 |
+| `_parseRequisitosParticipantes` | función | 28_Torneos_Docs.gs | 1161 | Contexto_Base_Web.md §28B064 |
 | `_parseSemanasSorteo` | función | 26_Torneos_Core.gs | 3966 | Contexto_Base_Web.md §26B221 |
 | `_parseSpanishDate` | función | 05_Backup_CSV.gs | 1327 |  |
 | `_parseStringDate` | función | 11_DirectorioSheet.gs | 1363 |  |
@@ -1341,8 +1345,8 @@ Ninguno.
 | `_planAlinearAsistencia_` | función | 47_Migraciones.gs | 2238 |  |
 | `_planIdsEventoLista_` | función | 47_Migraciones.gs | 1845 | Contexto_Base_Web.md §PF286 |
 | `_planificarMarcadoRealizadoCR_` | función | 24_Historial_Ascensos.gs | 1630 | Contexto_Base_Web.md §PF286 |
-| `_planificarSorteoDesdeBot` | función | 26_Torneos_Core.gs | 4810 | Contexto_Base_Web.md §26B312 |
-| `_planificarTorneoDesdeBot` | función | 26_Torneos_Core.gs | 4438 | Contexto_Base_Web.md §26B293 |
+| `_planificarSorteoDesdeBot` | función | 26_Torneos_Core.gs | 4798 | Contexto_Base_Web.md §26B312 |
+| `_planificarTorneoDesdeBot` | función | 26_Torneos_Core.gs | 4426 | Contexto_Base_Web.md §26B293 |
 | `_PLAYERS_DRIVE_INDEX_POR_TAG` | global | 09_API_ClashRoyale.gs | 150 | Contexto_Base_Web.md §09B018 |
 | `_playersCompletoEnEstaEjecucion` | global | 09_API_ClashRoyale.gs | 49 |  |
 | `_playersIndiceIdsGuardar_` | función | 09_API_ClashRoyale.gs | 3635 |  |
@@ -1412,13 +1416,13 @@ Ninguno.
 | `_rankingsSeasonIdActual_` | función | 09_API_ClashRoyale.gs | 1910 |  |
 | `_rankingsTagsFamilia_` | función | 09_API_ClashRoyale.gs | 1926 |  |
 | `_rarezaParaFila` | función | 31_Cards_Mazos.gs | 605 | Contexto_Base_Web.md §31B034 |
-| `_rdocBloqueClanValor` | función | 28_Torneos_Docs.gs | 1796 | Contexto_Base_Web.md §28B037 |
-| `_rdocBloqueRedesSocialesYPie` | función | 28_Torneos_Docs.gs | 1837 | Contexto_Base_Web.md §28B040 |
-| `_rdocBloqueRequisitosSorteo` | función | 28_Torneos_Docs.gs | 1806 | Contexto_Base_Web.md §28B038 |
-| `_rdocBloqueRequisitosTorneo` | función | 28_Torneos_Docs.gs | 1820 | Contexto_Base_Web.md §28B039 |
-| `_rdocParrafoRuns` | función | 28_Torneos_Docs.gs | 1775 | Contexto_Base_Web.md §28B035 |
-| `_rdocParrafoTexto` | función | 28_Torneos_Docs.gs | 1789 | Contexto_Base_Web.md §28B036 |
-| `_rdocTablaConEncabezadoNegrita` | función | 28_Torneos_Docs.gs | 1856 | Contexto_Base_Web.md §28B041 |
+| `_rdocBloqueClanValor` | función | 28_Torneos_Docs.gs | 1798 | Contexto_Base_Web.md §28B037 |
+| `_rdocBloqueRedesSocialesYPie` | función | 28_Torneos_Docs.gs | 1839 | Contexto_Base_Web.md §28B040 |
+| `_rdocBloqueRequisitosSorteo` | función | 28_Torneos_Docs.gs | 1808 | Contexto_Base_Web.md §28B038 |
+| `_rdocBloqueRequisitosTorneo` | función | 28_Torneos_Docs.gs | 1822 | Contexto_Base_Web.md §28B039 |
+| `_rdocParrafoRuns` | función | 28_Torneos_Docs.gs | 1777 | Contexto_Base_Web.md §28B035 |
+| `_rdocParrafoTexto` | función | 28_Torneos_Docs.gs | 1791 | Contexto_Base_Web.md §28B036 |
+| `_rdocTablaConEncabezadoNegrita` | función | 28_Torneos_Docs.gs | 1858 | Contexto_Base_Web.md §28B041 |
 | `_reajustarTituloGridNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1151 | Contexto_Base_Web.md §14B102 |
 | `_reaplicarFormatoAscensosExistente` | función | 24_Historial_Ascensos.gs | 725 | Contexto_Base_Web.md §24B024 |
 | `_recalcularMermaGuerra_` | función | 17_GuerraSheet.gs | 2055 |  |
@@ -1430,7 +1434,7 @@ Ninguno.
 | `_reconstruirMensajeDePaso` | función | 44_BotWhatsApp.gs | 282 | Contexto_Base_Web.md §44B017 |
 | `_reconstruirSemanaDesdeCero` | función | 18_CorreccionGuerra.gs | 3597 | Contexto_Base_Web.md §18B078 |
 | `_reconstruirSemanaDeUnClanDesdeCero_` | función | 18_CorreccionGuerra.gs | 4404 | Contexto_Base_Web.md §18B032 |
-| `_reemplazarListaParticipantes` | función | 28_Torneos_Docs.gs | 1003 | Contexto_Base_Web.md §28B067 |
+| `_reemplazarListaParticipantes` | función | 28_Torneos_Docs.gs | 1005 | Contexto_Base_Web.md §28B067 |
 | `_reenumeracionEnCurso_` | función | 00_Main.gs | 1931 |  |
 | `_reenumerarCalendario2Hoja` | función | 47_Migraciones.gs | 1106 | Contexto_Base_Web.md §47B030 |
 | `_reenumerarClanesExternos_` | función | 47_Migraciones.gs | 1329 |  |
@@ -1450,7 +1454,7 @@ Ninguno.
 | `_reenumProgreso_` | función | 47_Migraciones.gs | 1021 |  |
 | `_reenumRenombrarItem_` | función | 47_Migraciones.gs | 1580 |  |
 | `_reenumSinTiempo_` | función | 47_Migraciones.gs | 1502 |  |
-| `_reescribirRequisitosTexto` | función | 27_Torneos_Sorteos_Requisitos.gs | 241 | Contexto_Base_Web.md §27B014 |
+| `_reescribirRequisitosTexto` | función | 27_Torneos_Sorteos_Requisitos.gs | 265 | Contexto_Base_Web.md §27B014 |
 | `_refrescarCardsRows` | función | 31_Cards_Mazos.gs | 786 | Contexto_Base_Web.md §31B040 |
 | `_refrescarColumnasFijasNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 443 | Contexto_Base_Web.md §14B103 |
 | `_refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado` | función | 14_Nuevos_RoyaleAPI.gs | 449 |  |
@@ -1468,8 +1472,8 @@ Ninguno.
 | `_registrarResolucionSorteo` | función | 26_Torneos_Core.gs | 1957 | Contexto_Base_Web.md §26B275 |
 | `_registrarResolucionTorneo` | función | 26_Torneos_Core.gs | 2733 | Contexto_Base_Web.md §26B270 |
 | `_registrarRevisionGuerra_` | función | 18_CorreccionGuerra.gs | 2797 | Contexto_Base_Web.md §18B022 |
-| `_registrarSorteoDesdeBot` | función | 26_Torneos_Core.gs | 4725 | Contexto_Base_Web.md §26B310 |
-| `_registrarTorneoDesdeBot` | función | 26_Torneos_Core.gs | 4291 | Contexto_Base_Web.md §26B283 |
+| `_registrarSorteoDesdeBot` | función | 26_Torneos_Core.gs | 4713 | Contexto_Base_Web.md §26B310 |
+| `_registrarTorneoDesdeBot` | función | 26_Torneos_Core.gs | 4279 | Contexto_Base_Web.md §26B283 |
 | `_registrarVetadoConfirmado` | función | 13_Inactivos_Vetados.gs | 671 | Contexto_Base_Web.md §13B032 |
 | `_registroHistorialGuerraAFilaGrupal` | función | 20_HistorialGuerraJugador.gs | 737 | Contexto_Base_Web.md §20B042 |
 | `_reglaCondFmtAscenso` | función | 22_ControlCalendario.gs | 1516 |  |
@@ -1486,7 +1490,7 @@ Ninguno.
 | `_renombrarDocFormatoAntiguo` | función | 43_Menu_Dinamico.gs | 353 | Contexto_Base_Web.md §43B006 |
 | `_renombrarHojasHistorialLegacy` | función | 04_Formato_Comun.gs | 938 | Contexto_Base_Web.md §04B025 |
 | `_renumerarNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 890 | Contexto_Base_Web.md §14B109 |
-| `_reordenarCRListaPorFecha` | función | 26_Torneos_Core.gs | 5046 | Contexto_Base_Web.md §26B014 |
+| `_reordenarCRListaPorFecha` | función | 26_Torneos_Core.gs | 5034 | Contexto_Base_Web.md §26B014 |
 | `_reordenarFilasNuevosPorClanYNombre` | función | 14_Nuevos_RoyaleAPI.gs | 975 | Contexto_Base_Web.md §14B110 |
 | `_reordenarHistorialAscensosGlobal` | función | 24_Historial_Ascensos.gs | 752 | Contexto_Base_Web.md §24B026 |
 | `_reordenarYOcultarHojasSegunIndice` | función | 03_Indice_Sheet.gs | 350 | Contexto_Base_Web.md §03B017 |
@@ -1499,15 +1503,15 @@ Ninguno.
 | `_repararFamaDomingoDesdeJSON_` | función | 17_GuerraSheet.gs | 4709 |  |
 | `_repararMergesFiltroHeader` | función | 04_Formato_Comun.gs | 774 | Contexto_Base_Web.md §04B014 |
 | `_repararSemanaDesdeJsonRoyaleApi_` | función | 18_CorreccionGuerra.gs | 5891 | Contexto_Base_Web.md §PF123 |
-| `_repartirEvaluadosCambioRango_` | función | 29_Docs_NoCalificados.gs | 675 |  |
+| `_repartirEvaluadosCambioRango_` | función | 29_Docs_NoCalificados.gs | 677 |  |
 | `_repartirSemanaConjunto_` | función | 18_CorreccionGuerra.gs | 3110 |  |
 | `_repartoDomingoSinClanTag_` | función | 18_CorreccionGuerra.gs | 3881 | Contexto_Base_Web.md §18B010 |
 | `_repartoRangosCrr_` | función | 18_CorreccionGuerra.gs | 3372 | Contexto_Base_Web.md §PF301 |
 | `_repartoRestriccionesCrr_` | función | 18_CorreccionGuerra.gs | 3325 | Contexto_Base_Web.md §PF139 |
-| `_REQ_DOC_TEXTO_ATAQUES_VALOR` | función | 27_Torneos_Sorteos_Requisitos.gs | 453 |  |
-| `_REQ_DOC_TEXTO_BARCOS` | función | 27_Torneos_Sorteos_Requisitos.gs | 464 | Contexto_Base_Web.md §27B009 |
-| `_REQ_DOC_TEXTO_TORNEOS_VALOR` | función | 27_Torneos_Sorteos_Requisitos.gs | 457 |  |
-| `_requisitosCambioRango_` | función | 29_Docs_NoCalificados.gs | 462 |  |
+| `_REQ_DOC_TEXTO_ATAQUES_VALOR` | función | 27_Torneos_Sorteos_Requisitos.gs | 477 |  |
+| `_REQ_DOC_TEXTO_BARCOS` | función | 27_Torneos_Sorteos_Requisitos.gs | 488 | Contexto_Base_Web.md §27B009 |
+| `_REQ_DOC_TEXTO_TORNEOS_VALOR` | función | 27_Torneos_Sorteos_Requisitos.gs | 481 |  |
+| `_requisitosCambioRango_` | función | 29_Docs_NoCalificados.gs | 464 |  |
 | `_requisitosIncumplidosCR_` | función | 24_Historial_Ascensos.gs | 1382 | Contexto_Base_Web.md §PF286 |
 | `_resolverArenaDesdeCatalogo` | función | 09_API_ClashRoyale.gs | 1815 | Contexto_Base_Web.md §09B087 |
 | `_resolverFechaIngF2` | función | 11_DirectorioSheet.gs | 1347 | Contexto_Base_Web.md §11B066 |
@@ -1531,7 +1535,7 @@ Ninguno.
 | `_restaurarGuerraDesdeCSVSiVacia` | función | 17_GuerraSheet.gs | 5016 | Contexto_Base_Web.md §17B170 |
 | `_restaurarNuevosDesdeCsvDebug` | función | 14_Nuevos_RoyaleAPI.gs | 584 | Contexto_Base_Web.md §14B111 |
 | `_restaurarNuevosSiNoExiste` | función | 14_Nuevos_RoyaleAPI.gs | 245 | Contexto_Base_Web.md §14B027 |
-| `_resumenCorridaCambioRango_` | función | 29_Docs_NoCalificados.gs | 509 |  |
+| `_resumenCorridaCambioRango_` | función | 29_Docs_NoCalificados.gs | 511 |  |
 | `_resumenHojaParaReparto_` | función | 18_CorreccionGuerra.gs | 4113 | Contexto_Base_Web.md §18B018 |
 | `_resumenMiembrosClan_` | función | 15_DeteccionInfiltrados.gs | 159 | Contexto_Base_Web.md §PF391 |
 | `_resumirRequisitosBloque` | función | 27_Torneos_Sorteos_Requisitos.gs | 182 | Contexto_Base_Web.md §27B011 |
@@ -1643,7 +1647,7 @@ Ninguno.
 | `_superponerTrofeosRoyaleApi_` | función | 17_GuerraSheet.gs | 3174 |  |
 | `_syncGuerraCSV` | función | 17_GuerraSheet.gs | 5272 | Contexto_Base_Web.md §17B173 |
 | `_syncUnaAcumulativaCSV` | función | 05_Backup_CSV.gs | 2210 | Contexto_Base_Web.md §05B111 |
-| `_tablaDeGrupoDoc` | función | 28_Torneos_Docs.gs | 1749 | Contexto_Base_Web.md §28B034 |
+| `_tablaDeGrupoDoc` | función | 28_Torneos_Docs.gs | 1751 | Contexto_Base_Web.md §28B034 |
 | `_tagComparableLogs_` | función | 17_GuerraSheet.gs | 3000 | Contexto_Base_Web.md §17B093 |
 | `_tagEstaVetadoConfirmado` | función | 13_Inactivos_Vetados.gs | 709 |  |
 | `_tagEstuvoEnTernaEnFecha` | función | 18_CorreccionGuerra.gs | 3804 | Contexto_Base_Web.md §18B087 |
@@ -1672,7 +1676,7 @@ Ninguno.
 | `_tiemposMensajesWeb_` | función | 42_Web_TiemposActualizacion.gs | 129 |  |
 | `_tocaProtegida_` | función | 05_Backup_CSV.gs | 1970 |  |
 | `_topNTrasResoluciones` | función | 26_Torneos_Core.gs | 2719 | Contexto_Base_Web.md §26B269 |
-| `_totalesSemanaDesdeAcumulados` | función | 28_Torneos_Docs.gs | 861 | Contexto_Base_Web.md §28B080 |
+| `_totalesSemanaDesdeAcumulados` | función | 28_Torneos_Docs.gs | 863 | Contexto_Base_Web.md §28B080 |
 | `_totSemanaPorDias_` | función | 57_ReconstruirSemanaPorDias.gs | 141 |  |
 | `_tpSumarClaves_` | función | 48_Herramientas_Debug.gs | 887 |  |
 | `_traducirNombreInsignia` | función | 32_Insignias.gs | 249 | Contexto_Base_Web.md §32B013 |
@@ -1691,8 +1695,8 @@ Ninguno.
 | `_upsertVetadoDesdeWeb` | función | 13_Inactivos_Vetados.gs | 791 | Contexto_Base_Web.md §13B043 |
 | `_validarCoherenciaCRLista` | función | 26_Torneos_Core.gs | 3299 | Contexto_Base_Web.md §26B043 |
 | `_validarTagTor2SinCoincidencia` | función | 26_Torneos_Core.gs | 1600 | Contexto_Base_Web.md §26B276 |
-| `_valoresMinSAtaquesTorneosPorClan` | función | 26_Torneos_Core.gs | 4271 | Contexto_Base_Web.md §26B282 |
-| `_valoresMinTAtaquesPorClan` | función | 26_Torneos_Core.gs | 4256 | Contexto_Base_Web.md §26B281 |
+| `_valoresMinSAtaquesTorneosPorClan` | función | 26_Torneos_Core.gs | 4259 | Contexto_Base_Web.md §26B282 |
+| `_valoresMinTAtaquesPorClan` | función | 26_Torneos_Core.gs | 4244 | Contexto_Base_Web.md §26B281 |
 | `_valorExtraDesdeCsv_` | función | 26_Torneos_Core.gs | 4016 | Contexto_Base_Web.md §PF073 |
 | `_variacionTemporadas_` | función | 47_Migraciones.gs | 853 |  |
 | `_VCRR_CACHE_RANGOS_` | global | 59_Verificar_CRR_vs_Backup.gs | 69 |  |
@@ -1971,14 +1975,14 @@ Ninguno.
 | `activarTodosLosActivadores` | función | 08_Activadores.gs | 61 | Contexto_Base_Web.md §08B004 |
 | `actualizarAlertasClanesSospechosos` | función | 15_DeteccionInfiltrados.gs | 84 | Contexto_Base_Web.md §PF375 |
 | `actualizarControl2` | función | 23_Control2_GuerraSemanal.gs | 50 | Contexto_Base_Web.md §23B006 |
-| `actualizarDocCambioRango` | función | 29_Docs_NoCalificados.gs | 360 | Contexto_Base_Web.md §29B010 |
+| `actualizarDocCambioRango` | función | 29_Docs_NoCalificados.gs | 362 | Contexto_Base_Web.md §29B010 |
 | `actualizarDocGanadoresSorteo` | función | 28_Torneos_Docs.gs | 320 | Contexto_Base_Web.md §28B027 |
 | `actualizarDocGanadoresTorneo` | función | 28_Torneos_Docs.gs | 244 | Contexto_Base_Web.md §28B020 |
-| `actualizarDocNoCalificadosSorteo` | función | 29_Docs_NoCalificados.gs | 200 | Contexto_Base_Web.md §29B007 |
+| `actualizarDocNoCalificadosSorteo` | función | 29_Docs_NoCalificados.gs | 202 | Contexto_Base_Web.md §29B007 |
 | `actualizarDocNoCalificadosTorneo` | función | 29_Docs_NoCalificados.gs | 73 | Contexto_Base_Web.md §29B005 |
 | `actualizarDocParticipantesCalificados` | función | 28_Torneos_Docs.gs | 107 | Contexto_Base_Web.md §28B009 |
 | `actualizarDocParticipantesCalificadosTorneo` | función | 28_Torneos_Docs.gs | 114 | Contexto_Base_Web.md §28B046 |
-| `actualizarDocsCalificadosYNoCalificadosCambioRango` | función | 29_Docs_NoCalificados.gs | 398 |  |
+| `actualizarDocsCalificadosYNoCalificadosCambioRango` | función | 29_Docs_NoCalificados.gs | 400 |  |
 | `actualizarDocsNoCalificadosYCambioRango` | función | 29_Docs_NoCalificados.gs | 59 | Contexto_Base_Web.md §29B003 |
 | `actualizarDropdownCatDisp` | función | 11_DirectorioSheet.gs | 422 | Contexto_Base_Web.md §11B042 |
 | `actualizarHojaBattlelogs` | función | 07_Battlelogs_Hoja.gs | 44 | Contexto_Base_Web.md §07B003 |
