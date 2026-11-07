@@ -75,7 +75,7 @@
 | 2 | Backend: `clanTag` aditivo en las respuestas web (2a, 2b, 2c y 2d: herramientas de admin, `a13bee5`) | **Hecha** (6-nov-2026), sin probar en Apps Script real | `a06fe51`, `12d71c9` (2a), `532cf80` (2b), `2735c02` (2c) |
 | 3 | Backend: cruce de meta y mensajes por Tag (3a `30_Mensajes.gs`, 3b `22_ControlCalendario.gs`; los llamadores de `37_`, `38_` y `40_` siguen pasando el nombre hasta la tanda 7) | **Hecha** (6-nov-2026), sin probar en Apps Script real; §PF407 | `c82dbea`, `a388248` |
 | 4 | Backend: mínimos y ataques por clan de torneos y sorteos por Tag | **Hecha** (6-nov-2026), sin probar en Apps Script real; §PF409 | `b68b890` |
-| 5 | Backend: reparación de días y reconstrucción por semana (otros clanes del jugador) por Tag | Pendiente | — |
+| 5 | Backend: reparación de días y reconstrucción por semana (otros clanes del jugador) por Tag | **Hecha** (6-nov-2026), sin probar en Apps Script real; §PF410 | `7219140` |
 | 6 | Web: agrupar, filtrar y buscar por `clanTag` (6a a 6d) | Pendiente | — |
 | 7 | Backend: columna `Clan_Tag` al final de `Guerra`, `Control_2`, `Vetados`, `Nuevos`, `Mensajes`, la hoja de alertas del historial de guerra y `Backup_Guerra.csv`; las filas nuevas ya la llenan | Pendiente | — |
 | 8 | Backend: completar `Clan_Tag` en las filas históricas (informe primero, aplicación después; las dudosas quedan marcadas) | Pendiente | — |
@@ -129,6 +129,7 @@
 - **Editar:** `55_Reparar_DiasConExceso.gs` (`o.clan !== g.clan`, línea ~563) y `57_ReconstruirSemanaPorDias.gs` (línea ~478). **Ver:** `56_CurrentRiverRace_Dias.gs` (`_crrCapturasDeClan_()`, `x.clan === tag`: **ya compara por Tag**, comprobado el 6-nov-2026; no se toca).
 - **Cuidado.** Hasta que la tanda 7 agregue `Clan_Tag` a `Guerra`, esa hoja guarda solo el nombre: el grupo `g` y cada `o` deben traducirse con el resolvedor antes de comparar (interino; después de la tanda 7 se compara `Clan_Tag` directamente). Son funciones de reparación que modifican hojas: con la prueba en Node y el modo «solo informar» que ya tengan; no se corren en Apps Script desde aquí.
 - **Verificación.** `node --check`; prueba en Node con un jugador en dos clanes la misma semana; el resultado del plan de reparación no cambia para los datos de ejemplo. **Sin probar en Apps Script real.**
+- **Cómo quedó (6-nov-2026, `7219140`, §PF410).** En `55_` se agregaron `_excDiasTagDeGrupo_()` y `_excDiasMismoClan_()` (por Tag; el nombre solo de respaldo, y dos Tags vacíos de clanes externos no cuentan como el mismo clan); se usan en `_excDiasPlanificar()` (`55_`) y en `_rsPlanificar()` (`57_`). `_excDiasAgrupar()` sigue agrupando por nombre hasta la tanda 7: entonces hay que pasar la clave de agrupación a `Clan_Tag` (y `tot_clave_(…, tot_clan_(g.clan))` de `57_`/`48_`). **Pendiente sin tanda asignada:** los mínimos Min_G de cambio de rango (`_getMinGClanMaps().byNombre`, §PF409 punto 6).
 
 ### Tanda 6 — Web: agrupar, filtrar y buscar por `clanTag`
 - **Requisito.** Tandas 1 y 2 subidas y publicadas en Apps Script (`subirBaseDesdeGithub()`); verificar con una respuesta real que `clanTag` llega.
