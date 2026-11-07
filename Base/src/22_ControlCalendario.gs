@@ -237,7 +237,9 @@ function updateControlSheet(ctxOverride) {
   var numSemanasTemporada = lunesEnMes(ctx.mesEfectivoAnio, ctx.mesEfectivoMes) || 4;
 
   // Min_G vigente por clan, indexado por NOMBRE (la columna "Clan" de la [→ Contexto_Base_Web.md §22B018]
-  var minGPorNombreClan = _getMinGClanMaps().byNombre;
+  var mapasMinG = _getMinGClanMaps(); // 6-nov-2026 (tanda 7b-1): el Min_G se busca por Tag del clan de la fila y, de respaldo, por nombre
+  var minGPorTagClan = mapasMinG.byTag;
+  var minGPorNombreClan = mapasMinG.byNombre;
 
   var fixedRows = [];
   var gridRows  = [];
@@ -323,7 +325,8 @@ function updateControlSheet(ctxOverride) {
     if (puntSemTotales.length > 0) {
       var prom = puntSemTotales.reduce(function(a,b){ return a+b; }, 0) / puntSemTotales.length;
       gridFila[OFF.PUN_PROM] = prom;
-      var minGJugador = minGPorNombreClan[jug[DC.CLAN - 1]] || CFG.MIN_G_DEFAULT;
+      var tagClanJug = String(jug[DC.CLAN_TAG - 1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7b-1)
+      var minGJugador = (tagClanJug && minGPorTagClan[tagClanJug] !== undefined ? minGPorTagClan[tagClanJug] : minGPorNombreClan[jug[DC.CLAN - 1]]) || CFG.MIN_G_DEFAULT;
       var pctPunt = minGJugador > 0 ? (prom / minGJugador) : 0;
       gridFila[OFF.PUN_PCT] = (pctPunt >= 1) ? 1 : pctPunt; // fijo en 100% si se cumple o supera
     }
