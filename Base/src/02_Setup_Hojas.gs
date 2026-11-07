@@ -618,13 +618,14 @@ function _setupMensajes(ss) {
   // Nueva estructura: N° | Fecha | Temporada | Semana | Dia | PeriodIndex |
   //                  N1° | Categoría | N2° | Subcategoría | N3° | Clan | Rango | Tipo | Contenido
   var headers = ['N°','Fecha','Temporada','Semana','Dia','PeriodIndex',
-                 'N1°','Categoría','N2°','Subcategoría','N3°','Clan','Rango','Tipo','Contenido'];
+                 'N1°','Categoría','N2°','Subcategoría','N3°','Clan','Rango','Tipo','Contenido','Clan_Tag']; // 6-nov-2026 (tanda 7, Clanes por Tag): Clan_Tag despues de Contenido
+  if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
   // FIX (28-sep-2026, pedido del usuario -- "en la hoja Mensajes se borro el encabezado de la [→ Contexto_Base_Web.md §02B058]
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
   _aplicarSubindiceEncabezados(sh);
-  sh.setColumnWidth(headers.length, 428); // Contenido: ancho fijo, texto largo (428px, pedido usuario 14-ago-2026)
-  Logger.log('[Setup] Mensajes OK (15 cols, encabezados al dia)');
+  sh.setColumnWidth(MC.CONTENIDO, 428); // Contenido: ancho fijo, texto largo (428px, pedido usuario 14-ago-2026); 6-nov-2026 (tanda 7, Clanes por Tag): antes headers.length (Contenido era la ultima)
+  Logger.log('[Setup] Mensajes OK (16 cols, encabezados al dia)');
 }
 
 // ----- Torneos, sorteos y cambio de rango: listas, encabezados y filtros -----

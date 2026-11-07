@@ -448,7 +448,7 @@ function _agregarEntradasDinamicas(ss, entradas, orden) {
   // Paso 3: Mensajes fresco → Dinámico solo si la clave no está cubierta; FIX 28-sep-2026: el contenido se lee con MC (Mensajes pasó a 15 columnas) en vez de índice fijo. [→ Contexto_Base_Web.md §43B021]
   var shMsg = ss.getSheetByName(CFG.SHEETS.MENSAJES);
   if (shMsg && shMsg.getLastRow() >= 2) {
-    var dataMsg = shMsg.getRange(2, 1, shMsg.getLastRow() - 1, MENSAJES_TOTAL_COLS).getValues();
+    var dataMsg = shMsg.getRange(2, 1, shMsg.getLastRow() - 1, Math.min(MENSAJES_TOTAL_COLS, shMsg.getMaxColumns())).getValues(); // 6-nov-2026 (tanda 7, Clanes por Tag): una hoja que aun no tiene Clan_Tag se lee con las columnas que tiene
     for (var j = 0; j < dataMsg.length; j++) {
       var cat2  = String(dataMsg[j][MC.CATEGORIA    - 1] || '').trim();
       var sub2  = String(dataMsg[j][MC.SUBCATEGORIA - 1] || '').trim();

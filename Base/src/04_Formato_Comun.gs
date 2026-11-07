@@ -130,7 +130,7 @@ function aplicarFormatoGlobal() {
   // Mensajes: columna Contenido con ancho fijo de 428px y ajuste de texto [→ Contexto_Base_Web.md §04B006]
   var shMsgWrap = ss.getSheetByName(CFG.SHEETS.MENSAJES);
   if (shMsgWrap) {
-    var colContenidoMsg = shMsgWrap.getLastColumn(); // Contenido es la última columna (14)
+    var colContenidoMsg = MC.CONTENIDO; // 6-nov-2026 (tanda 7, Clanes por Tag): antes getLastColumn() (Contenido era la ultima); ahora la ultima es Clan_Tag
     shMsgWrap.setColumnWidth(colContenidoMsg, 428);
     var lastRowMsgWrap = shMsgWrap.getLastRow();
     if (lastRowMsgWrap >= 1) {

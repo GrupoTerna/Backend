@@ -19,10 +19,11 @@
 // Columnas de la hoja Mensajes (1-based)
 var MC = {
   NUM:1, FECHA:2, TEMPORADA:3, SEMANA:4, DIA:5, PERIOD:6,
-  N1:7, CATEGORIA:8, N2:9, SUBCATEGORIA:10, N3:11, CLAN:12, RANGO:13, TIPO:14, CONTENIDO:15
+  N1:7, CATEGORIA:8, N2:9, SUBCATEGORIA:10, N3:11, CLAN:12, RANGO:13, TIPO:14, CONTENIDO:15,
+  CLAN_TAG:16 // 6-nov-2026 (tanda 7, Clanes por Tag): va DESPUES de Contenido (la hoja ya existente no mueve ninguna columna); Contenido ya NO es la ultima columna
 };
 
-var MENSAJES_TOTAL_COLS = 15;
+var MENSAJES_TOTAL_COLS = 16; // 15 -> 16 con Clan_Tag
 
 // Nombre del clan "Chat General" para mensajes generales (todas las subcategorías generales)
 var CLAN_CHAT_GENERAL = 'ᴳ乂ᵀ ⚜️ Familia Terna';
@@ -56,10 +57,28 @@ var META_GUERRA_PROGRESO = 10000;
 
 // ----- Parte 1: funciones que se corren a mano -----
 
+/**
+ * _asegurarColumnaClanTagMensajes_(sh)
+ * 6-nov-2026 (tanda 7, Clanes por Tag); §PF419. Idempotente: garantiza que Mensajes tenga la columna MC.CLAN_TAG
+ * (16, despues de Contenido) y su encabezado «Clan_Tag». No toca ninguna otra columna. Mensajes se
+ * reescribe entera en cada corrida de generarTodosMensajes(), asi que las filas se llenan solas.
+ */
+function _asegurarColumnaClanTagMensajes_(sh) {
+  if (!sh) return;
+  if (sh.getMaxColumns() < MC.CLAN_TAG) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), MC.CLAN_TAG - sh.getMaxColumns());
+  }
+  var celda = sh.getRange(1, MC.CLAN_TAG);
+  if (String(celda.getValue()) === 'Clan_Tag') return;
+  celda.setValue('Clan_Tag');
+  applyHeaderStyle(sh, MC.CLAN_TAG);
+}
+
 function generarTodosMensajes() {
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.MENSAJES);
   if (!sh) { Logger.log('[Mensajes] Hoja no encontrada'); return; }
+  _asegurarColumnaClanTagMensajes_(sh); // 6-nov-2026 (tanda 7, Clanes por Tag)
 
   var ctx = _getCtx();
   var now = new Date();
@@ -326,7 +345,8 @@ function generarTodosMensajes() {
     // Fila: N° | Fecha | Temporada | Semana | Dia | PeriodIndex | N1° | Categoría | N2° | Subcategoría | N3° | Clan |… [→ Contexto_Base_Web.md §30B023]
     nuevosMensajes.push([
       bi + 1, now, ctx.temporada, ctx.sectionIndex + 1, ctx.diaLetra, ctx.periodIndex,
-      n1, b.categoria, n2, b.subcategoria, n3, b.clan, (b.rango || ''), (b.tipo || 'Dinámico'), b.contenido
+      n1, b.categoria, n2, b.subcategoria, n3, b.clan, (b.rango || ''), (b.tipo || 'Dinámico'), b.contenido,
+      String(_getClanTagByName(b.clan) || '') // 6-nov-2026 (tanda 7, Clanes por Tag): el Tag del clan del mensaje; vacio para el Chat General y lo que no es un clan Terna
     ]);
   }
 
@@ -343,8 +363,8 @@ function generarTodosMensajes() {
     }
 
     // FIX (18-ago-2026, pedido usuario: "Mensajes!Contenido siempre vuelve a [→ Contexto_Base_Web.md §30B025]
-    sh.getRange(2, 1, nuevosMensajes.length, MENSAJES_TOTAL_COLS - 1)
-      .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
+    sh.getRange(2, 1, nuevosMensajes.length, MENSAJES_TOTAL_COLS)
+      .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP); // 6-nov-2026 (tanda 7, Clanes por Tag): antes MENSAJES_TOTAL_COLS - 1 (Contenido era la ultima); la linea siguiente vuelve a poner WRAP solo en Contenido
     sh.getRange(2, MC.CONTENIDO, nuevosMensajes.length, 1)
       .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
     for (var r = 2; r <= nuevosMensajes.length + 1; r++) sh.setRowHeight(r, 200);
