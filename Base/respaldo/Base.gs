@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 07/11/2026 08:21:59 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 07/11/2026 09:01:25 */
 
 
 
@@ -26875,16 +26875,26 @@ function completarClanTagGuerraInforme() { _completarClanTagGuerra_(false); }
 function completarClanTagGuerraAplicar() { _completarClanTagGuerra_(true); }
 
 /**
+ * completarClanTagInactivosInforme() [→ Contexto_Base_Web.md §PF423]
+ * Tanda 8, P5 (7-nov-2026). SOLO INFORMA, no escribe en ninguna hoja ni CSV. Cruza las filas de Backup_Inactivos.csv que no traen Clan ni ClanTag con Backup_Historial_A-D.csv,
+ * Backup_Historial_I-S.csv y Backup_Guerra.csv (por el Tag del jugador) y deja en Drive «Completar_ClanTag_Inactivos <fecha> (informe).csv» con lo que se puede confirmar. La aplicación
+ * se decide después de revisar ese informe.
+ */
+function completarClanTagInactivosInforme() { _completarClanTagInactivos_(); }
+
+/**
  * _clanTagPlanGuerra_(filas, tagsPorNombre) [→ Contexto_Base_Web.md §PF423]
  * Función pura (no toca Drive ni hojas). filas: filas de Backup_Guerra.csv ya rellenadas a GUERRA_TOTAL_COLS columnas, sin encabezado.
  * tagsPorNombre: { 'Nombre del clan': ['#TAG', ...] } (más de un Tag = ambiguo).
+ * historial (opcional, 7-nov-2026): resultado de _clanTagMovimientosHistorial_() (ingresos, reingresos y salidas con fecha). Confirma una fila con Clan vacío solo si el Historial la cubre sin dudas (ver _clanTagPorHistorial_()).
  * Devuelve { cambios: [{ idx, tag, motivo }], detalle: [[tipo, idx, motivo]], resumen: {...} }. Reglas (criterio 10 del consolidado):
  *  - Fila con Clan_Tag: no se toca.
  *  - Fila con nombre de clan que resuelve a UN Tag: «Completar».
  *  - Fila con Clan vacío: «Confirmada» solo si otra fila del mismo jugador y el mismo día (Temporada, Semana, PeriodIndex) trae un clan con UN Tag;
  *    «Probable» (no se aplica) si en la misma temporada y semana el jugador tiene otras filas con un único Tag; el resto, «Sin clan».
+ *  - Con historial: «Confirmada por Historial» si los movimientos con fecha del jugador cubren ese día sin dudas y no contradicen a las otras filas de su semana; si las contradicen, «Conflicto» (no se aplica).
  */
-function _clanTagPlanGuerra_(filas, tagsPorNombre) {
+function _clanTagPlanGuerra_(filas, tagsPorNombre, historial) {
   var celda = function (f, col) { return String(f[col - 1] === undefined || f[col - 1] === null ? '' : f[col - 1]).trim(); };
   var tagDeNombre = function (n) {
     var l = tagsPorNombre[n];
@@ -26905,7 +26915,7 @@ function _clanTagPlanGuerra_(filas, tagsPorNombre) {
     (porSemana[ks] || (porSemana[ks] = {}))[tg] = true;
   }
   var cambios = [], detalle = [];
-  var resumen = { yaTrae: 0, completar: 0, sinTag: 0, ambiguo: 0, confirmada: 0, ambiguaDia: 0, probable: 0, sinClan: 0, conTagEnClan: 0, vaciasConDatos: 0 };
+  var resumen = { yaTrae: 0, completar: 0, sinTag: 0, ambiguo: 0, confirmada: 0, confirmadaHistorial: 0, conflictoHistorial: 0, ambiguaDia: 0, probable: 0, sinClan: 0, conTagEnClan: 0, vaciasConDatos: 0 };
   for (var j = 0; j < filas.length; j++) {
     var g = filas[j];
     if (celda(g, GC.CLAN_TAG)) { resumen.yaTrae++; continue; }
@@ -26928,11 +26938,87 @@ function _clanTagPlanGuerra_(filas, tagsPorNombre) {
     if (tagsDia.length > 1) { resumen.ambiguaDia++; detalle.push([(conDatos ? '0 ' : '1 ') + 'AMBIGUA (el mismo dia hay filas de mas de un clan)', j, tagsDia.join(' / ')]); continue; }
     var sem = porSemana[[jg, celda(g, GC.TEMPORADA), celda(g, GC.SEMANA)].join('|')];
     var tagsSem = sem ? Object.keys(sem) : [];
+    var tagHist = (historial && historial.ok) ? _clanTagPorHistorial_(historial.porJugador[jg], _clanTagDiaNum_(celda(g, GC.FECHA)), historial.desde) : '';
+    if (tagHist) {
+      if (tagsSem.length && !(tagsSem.length === 1 && tagsSem[0] === tagHist)) { resumen.conflictoHistorial++; detalle.push([(conDatos ? '0 ' : '1 ') + 'CONFLICTO (el Historial dice ' + tagHist + ', otras filas de la semana dicen ' + tagsSem.join(' / ') + '; no se aplica)', j, tagHist]); continue; }
+      resumen.confirmadaHistorial++; cambios.push({ idx: j, tag: tagHist, motivo: 'Confirmada por Historial (ingreso o salida con fecha)' }); continue;
+    }
     if (tagsSem.length === 1) { resumen.probable++; detalle.push([(conDatos ? '0 ' : '1 ') + 'PROBABLE (no se aplica)', j, tagsSem[0]]); continue; }
     resumen.sinClan++;
     detalle.push([(conDatos ? '0 ' : '1 ') + 'SIN CLAN (reconstruida sin Directorio)', j, tagsSem.length ? tagsSem.join(' / ') : '']);
   }
   return { cambios: cambios, detalle: detalle, resumen: resumen };
+}
+
+/**
+ * _clanTagDiaNum_(texto) [→ Contexto_Base_Web.md §PF423]
+ * Día de una fecha «dd/mm/aaaa» (con o sin hora) como número aaaammdd; 0 si no se puede leer. Sirve para comparar días sin zona horaria.
+ */
+function _clanTagDiaNum_(texto) {
+  var m = String(texto === undefined || texto === null ? '' : texto).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  return m ? Number(m[3]) * 10000 + Number(m[2]) * 100 + Number(m[1]) : 0;
+}
+
+/**
+ * _clanTagMovimientosHistorial_(filas) [→ Contexto_Base_Web.md §PF423]
+ * Función pura. filas: Backup_Historial_I-S.csv parseado CON encabezado (columnas Fecha, Tag, Movimiento, ClanTag). Solo cuentan Ingreso, Reingreso y Salida con un ClanTag que empiece por «#».
+ * Devuelve { ok, desde, porJugador: { '#TAG': [{ dia, tipo: 'E' | 'S', clan }] } } con cada lista ordenada por día; desde = primer día registrado (antes de esa fecha el Historial no sirve para confirmar nada).
+ */
+function _clanTagMovimientosHistorial_(filas) {
+  var cab = (filas && filas[0]) || [];
+  var iF = cab.indexOf('Fecha'), iT = cab.indexOf('Tag'), iM = cab.indexOf('Movimiento'), iC = cab.indexOf('ClanTag');
+  var out = { ok: iF >= 0 && iT >= 0 && iM >= 0 && iC >= 0, desde: 0, porJugador: {} };
+  if (!out.ok) return out;
+  for (var r = 1; r < filas.length; r++) {
+    var f = filas[r];
+    var mov = String(f[iM] || '').trim(), clan = String(f[iC] || '').trim().toUpperCase(), tag = String(f[iT] || '').trim().toUpperCase(), dia = _clanTagDiaNum_(f[iF]);
+    if (!dia || !tag || clan.charAt(0) !== '#') continue;
+    if (mov !== 'Ingreso' && mov !== 'Reingreso' && mov !== 'Salida') continue;
+    (out.porJugador[tag] || (out.porJugador[tag] = [])).push({ dia: dia, tipo: mov === 'Salida' ? 'S' : 'E', clan: clan });
+    if (!out.desde || dia < out.desde) out.desde = dia;
+  }
+  Object.keys(out.porJugador).forEach(function (k) { out.porJugador[k].sort(function (a, b) { return a.dia - b.dia; }); });
+  return out;
+}
+
+/**
+ * _clanTagPorHistorial_(movs, dia, desde) [→ Contexto_Base_Web.md §PF423]
+ * Función pura. Devuelve el Tag del clan en que el jugador estaba ese día, o '' si el Historial no lo prueba. Confirma solo en estos casos (criterio 10: no se adivina):
+ *  (1) el último movimiento anterior al día es un Ingreso o Reingreso a X y no hay movimiento posterior, o el siguiente es la Salida de ese mismo X;
+ *  (2) no hay movimiento anterior, el día es posterior al inicio del Historial (desde) y el siguiente movimiento es la Salida de X.
+ * No confirma si hay un movimiento ese mismo día, si el último anterior es una Salida (no dice a qué clan fue), ni si el siguiente es un Ingreso (no dice de dónde venía).
+ */
+function _clanTagPorHistorial_(movs, dia, desde) {
+  if (!movs || !movs.length || !dia) return '';
+  var prev = null, next = null;
+  for (var i = 0; i < movs.length; i++) {
+    var m = movs[i];
+    if (m.dia === dia) return '';
+    if (m.dia < dia) prev = m; else { next = m; break; }
+  }
+  if (prev) {
+    if (prev.tipo !== 'E') return '';
+    if (!next || (next.tipo === 'S' && next.clan === prev.clan)) return prev.clan;
+    return '';
+  }
+  if (next && next.tipo === 'S' && desde && dia >= desde) return next.clan;
+  return '';
+}
+
+/**
+ * _clanTagTagsPorConfirmar_(plan, filas) [→ Contexto_Base_Web.md §PF423]
+ * Función pura. De las filas dudosas del plan (probables, sin clan, ambiguas y conflictos) que traen ataques o fame (las que el plan marca con el prefijo «0 »),
+ * devuelve los Tag de jugador distintos, ordenados, para pegarlos en el cuadro «Corrección de jugadores elegidos» del script de Tampermonkey (RoyaleAPI), que los lee separados por coma.
+ */
+function _clanTagTagsPorConfirmar_(plan, filas) {
+  var vistos = {}, lista = [];
+  (plan.detalle || []).forEach(function (d) {
+    if (String(d[0]).indexOf('0 ') !== 0) return;
+    var f = filas[d[1]];
+    var t = String(f && f[GC.TAG - 1] !== undefined && f[GC.TAG - 1] !== null ? f[GC.TAG - 1] : '').trim().toUpperCase();
+    if (t && !vistos[t]) { vistos[t] = true; lista.push(t); }
+  });
+  return lista.sort();
 }
 
 /**
@@ -26987,7 +27073,17 @@ function _completarClanTagGuerra_(aplicar) {
 
     var externosFijos = CFG.CLAN_EXTERNOS_TAGS || {}; // 7-nov-2026: clanes externos ya confirmados que ninguna hoja viva conserva (p. ej. PERUVIANOS SJL)
     Object.keys(externosFijos).forEach(function (n) { sumar(n, externosFijos[n]); });
-    var plan = _clanTagPlanGuerra_(filas, tagsPorNombre);
+    var historial = null, historialNota = '';
+    try { // 7-nov-2026: Backup_Historial_I-S.csv (ingresos, reingresos y salidas con fecha) confirma filas con Clan vacio que el mismo dia y la misma semana no resuelven
+      var txtHist = _loadCSVFromDrive('Backup_Historial_I-S.csv');
+      var pHist = txtHist ? _parseCSV(txtHist) : null;
+      if (pHist && pHist.length > 1) {
+        historial = _clanTagMovimientosHistorial_(pHist);
+        historialNota = historial.ok ? ('Historial leido: ' + (pHist.length - 1) + ' movimientos desde el dia ' + historial.desde + '.') : 'Backup_Historial_I-S.csv sin las columnas Fecha, Tag, Movimiento y ClanTag; no se usa.';
+        if (!historial.ok) historial = null;
+      } else { historialNota = 'Backup_Historial_I-S.csv no existe o esta vacio; no se usa.'; }
+    } catch (eH) { historialNota = 'No se pudo leer el Historial: ' + eH.message; historial = null; }
+    var plan = _clanTagPlanGuerra_(filas, tagsPorNombre, historial);
     var rs = plan.resumen;
     // 7-nov-2026: diagnostico del mapa (el primer informe real dejo 4 filas de PERUVIANOS SJL sin Tag aunque el Directorio y Inactivos se leen).
     var nombresSinTag = {};
@@ -26995,11 +27091,13 @@ function _completarClanTagGuerra_(aplicar) {
     Logger.log('[ClanTagHistorico] Mapa nombre -> Tag: ' + Object.keys(tagsPorNombre).length + ' nombre(s) (' + Object.keys(tagsPorNombre).map(function (n) { return n + ' = ' + tagsPorNombre[n].join('/'); }).join('; ') + '). Filas leidas: Directorio ' + leidasDir + ', Inactivos ' + leidasInact + '. Nombres sin Tag: ' + (Object.keys(nombresSinTag).join('; ') || 'ninguno') + '.');
     var cab = ['Tipo', 'N°', 'Temporada', 'Semana', 'Tag', 'Nombre', 'PeriodIndex', 'Clan actual', 'AtaquesHoy', 'Fame', 'Detalle'];
     var informe = [cab];
-    [['Resumen: ya traen Clan_Tag', rs.yaTrae], ['Resumen: a completar por nombre', rs.completar], ['Resumen: confirmadas por otra fila del mismo dia', rs.confirmada],
+    [['Resumen: ya traen Clan_Tag', rs.yaTrae], ['Resumen: a completar por nombre', rs.completar], ['Resumen: confirmadas por otra fila del mismo dia', rs.confirmada], ['Resumen: confirmadas por el Historial (fecha)', rs.confirmadaHistorial], ['Resumen: conflicto Historial contra la semana (no se aplican)', rs.conflictoHistorial],
       ['Resumen: probables (no se aplican)', rs.probable], ['Resumen: ambiguas el mismo dia', rs.ambiguaDia], ['Resumen: sin clan', rs.sinClan],
       ['Resumen: nombre sin Tag en el mapa', rs.sinTag], ['Resumen: nombre con mas de un Tag', rs.ambiguo], ['Resumen: filas con Clan vacio y con ataques o fame', rs.vaciasConDatos]].forEach(function (x) {
       informe.push([x[0], '', '', '', '', '', '', '', '', '', String(x[1])]);
     });
+    var tagsRoyale = _clanTagTagsPorConfirmar_(plan, filas); // 7-nov-2026: lista para pegar en el cuadro de jugadores elegidos de Tampermonkey (RoyaleAPI)
+    informe.push(['Tags por confirmar con RoyaleAPI (' + tagsRoyale.length + ' jugadores; pegar en el cuadro del script de Tampermonkey)', '', '', '', '', '', '', '', '', '', tagsRoyale.join(', ')]);
     // Las filas dudosas con ataques o fame (prefijo «0 ») van primero, porque son las que afectan estadisticas.
     var detalle = plan.detalle.slice().sort(function (x, y) { return String(x[0]).localeCompare(String(y[0])); });
     detalle.forEach(function (d) {
@@ -27017,9 +27115,101 @@ function _completarClanTagGuerra_(aplicar) {
       _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
     }
     Logger.log('[ClanTagHistorico] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Filas: ' + filas.length + '. Ya traen Clan_Tag: ' + rs.yaTrae +
-      '. A completar por nombre: ' + rs.completar + '. Confirmadas por otra fila del mismo dia: ' + rs.confirmada + (aplicar ? ' (escritas en esta corrida: ' + aEscribir.length + ', tope ' + APLICAR_TOPE + ')' : '') +
+      '. A completar por nombre: ' + rs.completar + '. Confirmadas por otra fila del mismo dia: ' + rs.confirmada + '. Confirmadas por el Historial: ' + rs.confirmadaHistorial + '. Conflictos Historial/semana (no se aplican): ' + rs.conflictoHistorial + '. Jugadores por confirmar con RoyaleAPI: ' + tagsRoyale.length + ' (lista en el informe). ' + historialNota + (aplicar ? ' (escritas en esta corrida: ' + aEscribir.length + ', tope ' + APLICAR_TOPE + ')' : '') +
       '. Probables (no se aplican): ' + rs.probable + '. Sin clan: ' + rs.sinClan + '. Ambiguas: ' + (rs.ambiguaDia + rs.ambiguo) + '. Nombre sin Tag: ' + rs.sinTag + '. Detalle en Drive: ' + nombreInforme + '.' +
       (aplicar ? (plan.cambios.length > APLICAR_TOPE ? ' Quedaron ' + (plan.cambios.length - APLICAR_TOPE) + ' por completar: correr completarClanTagGuerraAplicar() otra vez.' : '') : ' (No se escribio nada; correr completarClanTagGuerraAplicar() para aplicar.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * _clanTagPlanInactivos_(inact, fuentes) [→ Contexto_Base_Web.md §PF423]
+ * Función pura (no toca Drive ni hojas). inact: filas parseadas de Backup_Inactivos.csv CON encabezado. fuentes: [{ nombre, filas }], cada una con encabezado y con columnas Tag y ClanTag (o Clan_Tag).
+ * Una fila de Inactivos entra al plan solo si trae Clan y ClanTag vacíos. «Confirmada»: dos o más fuentes distintas coinciden en UN solo Tag. «Probable» (no se aplicaría): una sola fuente con UN Tag.
+ * «Ambigua»: el jugador figura con más de un Tag. «Sin fuente»: no figura en ninguna. Devuelve { detalle: [[tipo, idx, tag, fuentes]], resumen: {...}, fuentesSinColumnas: [nombres] }.
+ */
+function _clanTagPlanInactivos_(inact, fuentes) {
+  var col = function (cab, nombres) {
+    for (var i = 0; i < cab.length; i++) { if (nombres.indexOf(String(cab[i]).trim()) >= 0) return i; }
+    return -1;
+  };
+  var porJugador = {}, sinColumnas = [];
+  fuentes.forEach(function (fu) {
+    var cab = (fu.filas && fu.filas[0]) || [];
+    var iT = col(cab, ['Tag']), iC = col(cab, ['ClanTag', 'Clan_Tag']);
+    if (iT < 0 || iC < 0) { if (sinColumnas.indexOf(fu.nombre) < 0) sinColumnas.push(fu.nombre); return; }
+    for (var r = 1; r < fu.filas.length; r++) {
+      var f = fu.filas[r];
+      var t = String(f[iT] === undefined || f[iT] === null ? '' : f[iT]).trim().toUpperCase();
+      var c = String(f[iC] === undefined || f[iC] === null ? '' : f[iC]).trim().toUpperCase();
+      if (!t || c.charAt(0) !== '#') continue;
+      var o = porJugador[t] || (porJugador[t] = {});
+      (o[fu.nombre] || (o[fu.nombre] = {}))[c] = true;
+    }
+  });
+  var cab0 = inact[0] || [];
+  var iTag = col(cab0, ['Tag']), iClan = col(cab0, ['Clan']), iCT = col(cab0, ['ClanTag', 'Clan_Tag']);
+  var resumen = { filas: 0, yaTrae: 0, confirmada: 0, probable: 0, ambigua: 0, sinFuente: 0 }, detalle = [];
+  for (var i = 1; i < inact.length; i++) {
+    var g = inact[i];
+    resumen.filas++;
+    var cel = function (k) { return String(g[k] === undefined || g[k] === null ? '' : g[k]).trim(); };
+    if (cel(iClan) || cel(iCT)) { resumen.yaTrae++; continue; }
+    var jug = cel(iTag).toUpperCase();
+    var fu = porJugador[jug] || {};
+    var nombresFu = Object.keys(fu);
+    var union = {};
+    nombresFu.forEach(function (n) { Object.keys(fu[n]).forEach(function (t) { union[t] = true; }); });
+    var tags = Object.keys(union);
+    var quien = nombresFu.join(' + ');
+    if (!tags.length) { resumen.sinFuente++; detalle.push(['SIN FUENTE', i, '', '']); }
+    else if (tags.length > 1) { resumen.ambigua++; detalle.push(['AMBIGUA (más de un Tag)', i, tags.join(' / '), quien]); }
+    else if (nombresFu.length >= 2) { resumen.confirmada++; detalle.push(['CONFIRMADA (' + quien + ' coinciden)', i, tags[0], quien]); }
+    else { resumen.probable++; detalle.push(['PROBABLE (solo ' + quien + ', no se aplicaría)', i, tags[0], quien]); }
+  }
+  return { detalle: detalle, resumen: resumen, fuentesSinColumnas: sinColumnas };
+}
+
+/**
+ * _completarClanTagInactivos_() [→ Contexto_Base_Web.md §PF423]
+ * Envoltorio de _clanTagPlanInactivos_() (solo informe): candado de script, lee los CSV de Drive y guarda el informe. No escribe en ninguna hoja ni CSV.
+ */
+function _completarClanTagInactivos_() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[ClanTagInactivos] Hay otra ejecucion en curso; se cancela. Reintentar en unos minutos.'); return; }
+  try {
+    var t0 = Date.now();
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var txtInact = _loadCSVFromDrive('Backup_Inactivos.csv');
+    if (!txtInact) { Logger.log('[ClanTagInactivos] Backup_Inactivos.csv no existe o esta vacio; no se hace nada.'); return; }
+    var inact = _parseCSV(txtInact);
+    if (!inact || inact.length < 2) { Logger.log('[ClanTagInactivos] Backup_Inactivos.csv no tiene filas de datos; no se hace nada.'); return; }
+    var fuentes = [], faltan = [];
+    [['Historial', 'Backup_Historial_A-D.csv'], ['Historial', 'Backup_Historial_I-S.csv'], ['Guerra', 'Backup_Guerra.csv']].forEach(function (x) {
+      var txt = _loadCSVFromDrive(x[1]);
+      var pf = txt ? _parseCSV(txt) : null;
+      if (pf && pf.length > 1) fuentes.push({ nombre: x[0], filas: pf }); else faltan.push(x[1]);
+    });
+    var plan = _clanTagPlanInactivos_(inact, fuentes);
+    var rs = plan.resumen;
+    var cab = inact[0];
+    var iN = cab.indexOf('N°'), iTg = cab.indexOf('Tag'), iNom = cab.indexOf('Nombre'), iEst = cab.indexOf('Estado');
+    var informe = [['Tipo', 'N°', 'Tag', 'Nombre', 'Estado', 'Tag de clan propuesto', 'Fuentes']];
+    [['Resumen: filas de Inactivos', rs.filas], ['Resumen: ya traen Clan o ClanTag', rs.yaTrae], ['Resumen: confirmadas (dos fuentes coinciden)', rs.confirmada],
+      ['Resumen: probables (una sola fuente, no se aplicarian)', rs.probable], ['Resumen: ambiguas (mas de un Tag)', rs.ambigua], ['Resumen: sin fuente', rs.sinFuente]].forEach(function (x) {
+      informe.push([x[0], '', '', '', '', String(x[1]), '']);
+    });
+    plan.detalle.slice().sort(function (a, b) { return String(a[0]).localeCompare(String(b[0])); }).forEach(function (d) {
+      var f = inact[d[1]];
+      informe.push([d[0], iN >= 0 ? f[iN] : '', iTg >= 0 ? f[iTg] : '', iNom >= 0 ? f[iNom] : '', iEst >= 0 ? f[iEst] : '', d[2], d[3]]);
+    });
+    var nombreInforme = 'Completar_ClanTag_Inactivos ' + marca + ' (informe).csv';
+    _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
+    Logger.log('[ClanTagInactivos] SOLO INFORMAR (' + Math.round((Date.now() - t0) / 1000) + ' s). Filas: ' + rs.filas + '. Ya traen Clan o ClanTag: ' + rs.yaTrae + '. Confirmadas: ' + rs.confirmada +
+      '. Probables (una sola fuente): ' + rs.probable + '. Ambiguas: ' + rs.ambigua + '. Sin fuente: ' + rs.sinFuente +
+      (faltan.length ? '. No se pudieron leer: ' + faltan.join(', ') : '') + (plan.fuentesSinColumnas.length ? '. Sin columnas Tag y ClanTag: ' + plan.fuentesSinColumnas.join(', ') : '') +
+      '. Detalle en Drive: ' + nombreInforme + '. (No se escribio nada.)');
   } finally {
     lock.releaseLock();
   }
