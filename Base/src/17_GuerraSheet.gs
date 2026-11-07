@@ -4382,7 +4382,7 @@ function _completarClanTagGuerra_(aplicar) {
     for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
 
     // Mapa nombre -> Tag: clanes Terna y, de respaldo, los nombres de la hoja Directorio (clanes externos).
-    var tagsPorNombre = {};
+    var tagsPorNombre = {}, leidasDir = 0, leidasInact = 0;
     var sumar = function (nombre, tag) {
       nombre = String(nombre || '').trim(); tag = String(tag || '').trim().toUpperCase();
       if (!nombre || !tag || tag.charAt(0) !== '#') return;
@@ -4394,17 +4394,25 @@ function _completarClanTagGuerra_(aplicar) {
       sumar((CFG.CLAN_NOMBRES_FALLBACK || {})[t], t);
     });
     try {
-      _leerDirectorioFisicoComoDC(_getSs()).forEach(function (f) { sumar(f[DC.CLAN - 1], f[DC.CLAN_TAG - 1]); });
+      var dirLeido = _leerDirectorioFisicoComoDC(_getSs());
+      leidasDir = dirLeido.length;
+      dirLeido.forEach(function (f) { sumar(f[DC.CLAN - 1], f[DC.CLAN_TAG - 1]); });
     } catch (e) { Logger.log('[ClanTagHistorico] No se pudo leer Directorio para los clanes externos: ' + e.message); }
     try { // 7-nov-2026: tambien la hoja Inactivos (un jugador que ya no esta en el Directorio activo, p. ej. de un clan externo, sigue trayendo ahi el Clan_Tag)
       var shInact = _getSs().getSheetByName(CFG.SHEETS.INACTIVOS);
       if (shInact && shInact.getLastRow() >= 2) {
-        shInact.getRange(2, 1, shInact.getLastRow() - 1, IC.CLAN_TAG).getValues().forEach(function (f) { sumar(f[IC.CLAN - 1], f[IC.CLAN_TAG - 1]); });
+        var inactLeido = shInact.getRange(2, 1, shInact.getLastRow() - 1, IC.CLAN_TAG).getValues();
+        leidasInact = inactLeido.length;
+        inactLeido.forEach(function (f) { sumar(f[IC.CLAN - 1], f[IC.CLAN_TAG - 1]); });
       }
     } catch (e2) { Logger.log('[ClanTagHistorico] No se pudo leer Inactivos para los clanes externos: ' + e2.message); }
 
     var plan = _clanTagPlanGuerra_(filas, tagsPorNombre);
     var rs = plan.resumen;
+    // 7-nov-2026: diagnostico del mapa (el primer informe real dejo 4 filas de PERUVIANOS SJL sin Tag aunque el Directorio y Inactivos se leen).
+    var nombresSinTag = {};
+    plan.detalle.forEach(function (d) { if (/^SIN TAG/.test(String(d[0]))) nombresSinTag[String(filas[d[1]][GC.CLAN - 1] || '').trim()] = true; });
+    Logger.log('[ClanTagHistorico] Mapa nombre -> Tag: ' + Object.keys(tagsPorNombre).length + ' nombre(s) (' + Object.keys(tagsPorNombre).map(function (n) { return n + ' = ' + tagsPorNombre[n].join('/'); }).join('; ') + '). Filas leidas: Directorio ' + leidasDir + ', Inactivos ' + leidasInact + '. Nombres sin Tag: ' + (Object.keys(nombresSinTag).join('; ') || 'ninguno') + '.');
     var cab = ['Tipo', 'N°', 'Temporada', 'Semana', 'Tag', 'Nombre', 'PeriodIndex', 'Clan actual', 'AtaquesHoy', 'Fame', 'Detalle'];
     var informe = [cab];
     [['Resumen: ya traen Clan_Tag', rs.yaTrae], ['Resumen: a completar por nombre', rs.completar], ['Resumen: confirmadas por otra fila del mismo dia', rs.confirmada],
