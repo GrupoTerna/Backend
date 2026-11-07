@@ -39,16 +39,17 @@ var AHG = {
   BARCOS_RIVERRACE: 12, BARCOS_NUEVO: 13,
   FECHA_DETECTADO: 14, ESTADO: 15,
   VALOR_CORRECTO_ATAQUES: 16, VALOR_CORRECTO_FAME: 17, VALOR_CORRECTO_BARCOS: 18,
-  NOTAS: 19
+  NOTAS: 19,
+  CLAN_TAG: 20 // 6-nov-2026 (tanda 7, Clanes por Tag): va AL FINAL de la hoja ya existente, para no mover ninguna columna
 };
 
 var AHG_ENCABEZADOS = [
   'Tag', 'Nombre', 'TemporadaInterna', 'TemporadaRoyaleAPI', 'Semana', 'Clan', 'FuenteNueva',
   'Ataques_RiverRace', 'Ataques_Nuevo', 'Fame_RiverRace', 'Fame_Nuevo', 'Barcos_RiverRace', 'Barcos_Nuevo',
-  'FechaDetectado', 'Estado', 'ValorCorrecto_Ataques', 'ValorCorrecto_Fame', 'ValorCorrecto_Barcos', 'Notas'
+  'FechaDetectado', 'Estado', 'ValorCorrecto_Ataques', 'ValorCorrecto_Fame', 'ValorCorrecto_Barcos', 'Notas', 'Clan_Tag'
 ];
 
-var AHG_TOTAL_COLS = 19;
+var AHG_TOTAL_COLS = 20; // 19 -> 20 con Clan_Tag
 
 // FASE 2 (04-sep-2026, pedido del usuario, punto 1 del documento de [→ Contexto_Base_Web.md §20B004]
 var HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS = [
@@ -91,6 +92,7 @@ function resolverAlertasHistorialGuerra() {
     return;
   }
 
+  _asegurarColumnaClanTagAlertasHG_(sh); // 6-nov-2026 (tanda 7, Clanes por Tag)
   var lastRow = sh.getLastRow();
   if (lastRow < 2) {
     Logger.log('[HistorialGuerra][Alertas] Hoja vacía — nada que resolver.');
@@ -1554,6 +1556,22 @@ function _algunValorBajoHistorialGuerra(existente, nuevo) {
 }
 
 /**
+ * _asegurarColumnaClanTagAlertasHG_(sh)
+ * 6-nov-2026 (tanda 7, Clanes por Tag); §PF419. Idempotente: garantiza que Alertas_HistorialGuerra tenga la
+ * columna AHG.CLAN_TAG (20, al final) y su encabezado «Clan_Tag». No toca ninguna otra columna ni fila.
+ */
+function _asegurarColumnaClanTagAlertasHG_(sh) {
+  if (!sh) return;
+  if (sh.getMaxColumns() < AHG.CLAN_TAG) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), AHG.CLAN_TAG - sh.getMaxColumns());
+  }
+  var celda = sh.getRange(1, AHG.CLAN_TAG);
+  if (String(celda.getValue()) === 'Clan_Tag') return;
+  celda.setValue('Clan_Tag');
+  applyHeaderStyle(sh, AHG.CLAN_TAG);
+}
+
+/**
  * _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo) [→ Contexto_Base_Web.md §20B040]
  */
 function _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo) {
@@ -1561,6 +1579,7 @@ function _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo) {
     var ss = _getSs();
     var sh = ss.getSheetByName(CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA);
     if (!sh) { _setupAlertasHistorialGuerra(ss); sh = ss.getSheetByName(CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA); }
+    _asegurarColumnaClanTagAlertasHG_(sh); // 6-nov-2026 (tanda 7, Clanes por Tag)
 
     var filas = sh.getLastRow() > 1
       ? sh.getRange(2, 1, sh.getLastRow() - 1, AHG_TOTAL_COLS).getValues() : [];
@@ -1595,6 +1614,8 @@ function _registrarAlertaHistorialGuerra(tag, nombre, existente, nuevo) {
     fila[AHG.VALOR_CORRECTO_FAME - 1] = '';
     fila[AHG.VALOR_CORRECTO_BARCOS - 1] = '';
     fila[AHG.NOTAS - 1] = '';
+    // 6-nov-2026 (tanda 7, Clanes por Tag): el Tag del clan de la alerta; si el registro no lo trae, el resolvedor unico (vacio para clanes externos: no se adivina)
+    fila[AHG.CLAN_TAG - 1] = _normalizarClanTagCorreccion(nuevo.clanTag) || _normalizarClanTagCorreccion(_getClanTagByName(nuevo.clan));
 
     sh.appendRow(fila);
     sh.getRange(sh.getLastRow(), AHG.ESTADO).setDataValidation(

@@ -1087,6 +1087,7 @@ function _setupLinks(ss) {
 function _setupAlertasHistorialGuerra(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.ALERTAS_HISTORIAL_GUERRA);
   var encabezados = AHG_ENCABEZADOS; // 20_HistorialGuerraJugador.gs
+  if (sh.getMaxColumns() < encabezados.length) sh.insertColumnsAfter(sh.getMaxColumns(), encabezados.length - sh.getMaxColumns()); // 6-nov-2026 (tanda 7, Clanes por Tag)
   sh.getRange(1, 1, 1, encabezados.length).setValues([encabezados]);
   // FIX (23-ago-2026, pedido del usuario): mismo estilo que T_Lista — antes [→ Contexto_Base_Web.md §02B013]
   applyHeaderStyle(sh, encabezados.length);
