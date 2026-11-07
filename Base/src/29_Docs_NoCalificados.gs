@@ -73,10 +73,11 @@ function actualizarDocsNoCalificadosYCambioRango() {
 function actualizarDocNoCalificadosTorneo(ctxParam) {
   var ss = _getSs();
 
-  var infoMinT = _getMinTPorNombreClan('Torneo');
-  var minTPorNombreClan = infoMinT.minTPorNombreClan;
-  var clanesOrden = infoMinT.clanesOrden;
-  if (clanesOrden.length === 0) {
+  var infoMinT = _getMinTPorTagClan('Torneo'); // PF409: por Tag, no por nombre
+  var minTPorTag = infoMinT.minTPorTag;
+  var nombrePorTag = infoMinT.nombrePorTag; // solo para mostrar
+  var tagsOrden = infoMinT.tagsOrden;
+  if (tagsOrden.length === 0) {
     Logger.log('[NoCalificados-Torneo] No hay clanes con Min_T activo en T_Lista todavía. Se omite.');
     return;
   }
@@ -92,7 +93,7 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
   // 17-oct-2026 (PF091): los datos de Guerra se leen UNA vez y se pasan a los dos helpers (antes cada uno los leía por su cuenta, ~20 s c/u); [→ Contexto_Base_Web.md §PF091]
   var guerraDataUnica = _getDatosGuerraParaControl(ctx, ctxReal.temporada);
   var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada, guerraDataUnica); // 19-sep-2026: { ataques, exentos }
-  var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan(); // 19-sep-2026 (pedido del usuario): Ataques de T_Lista por clan
+  var ataquesMinPorTag = _ataquesMinTorneoPorTagClan(); // 19-sep-2026 (pedido del usuario): Ataques de T_Lista por clan (PF409: la clave es el Tag)
 
   var bloqueBarcos = _getConfigMasRecienteCategoria('Torneo');
   var reqBarcos = (bloqueBarcos[0] && bloqueBarcos[0].barcos) || { activo: false, qty: null };
@@ -119,12 +120,12 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
   // requisitos separados por «;», y luego las viñetas generales (antes eran viñetas con
   // sangrías de espacios y subviñetas, con formatos distintos entre sí).
   var requisitos = [];
-  for (var ri = 0; ri < clanesOrden.length; ri++) {
-    var clanReq = clanesOrden[ri];
-    var ataquesReqClan = ataquesMinPorClan.hasOwnProperty(clanReq) ? ataquesMinPorClan[clanReq] : 16; // 19-sep-2026: Ataques de T_Lista por clan
-    requisitos.push(clanReq + ' — Ataques de guerra en la semana evaluada: ' +
+  for (var ri = 0; ri < tagsOrden.length; ri++) {
+    var tagReq = tagsOrden[ri];
+    var ataquesReqClan = ataquesMinPorTag.hasOwnProperty(tagReq) ? ataquesMinPorTag[tagReq] : 16; // 19-sep-2026: Ataques de T_Lista por clan
+    requisitos.push(nombrePorTag[tagReq] + ' — Ataques de guerra en la semana evaluada: ' +
       (ataquesReqClan > 0 ? 'mínimo ' + ataquesReqClan : 'no exigido') +
-      '; Medallas de guerra acumuladas (temporada ' + temporadaMostrar + '): mínimo ' + minTPorNombreClan[clanReq] + '.');
+      '; Medallas de guerra acumuladas (temporada ' + temporadaMostrar + '): mínimo ' + minTPorTag[tagReq] + '.');
   }
   if (reqBarcos.activo) {
     requisitos.push('Barcos (promedio semanal): máximo ' + reqBarcos.qty +
@@ -140,10 +141,11 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
   for (var i = 0; i < dirData.length; i++) {
     var r = dirData[i];
     if (String(r[IC.ESTADO - 1]) !== 'Activo') continue;
-    if (CFG.TERNA_TAGS.indexOf(String(r[IC.CLAN_TAG - 1])) < 0) continue;
+    var clanTag = _clanTagDeFilaORespaldo_(r[IC.CLAN_TAG - 1], r[IC.CLAN - 1]); // PF409: el clan se compara por Tag
+    if (CFG.TERNA_TAGS.indexOf(clanTag) < 0) continue;
 
-    var clan = String(r[IC.CLAN - 1] || '').trim();
-    if (!(clan in minTPorNombreClan)) continue; // clan sin Min_T: fuera del padrón, igual que en el doc de calificados
+    var clan = String(r[IC.CLAN - 1] || '').trim(); // solo para mostrar
+    if (!minTPorTag.hasOwnProperty(clanTag)) continue; // clan sin Min_T: fuera del padrón, igual que en el doc de calificados
 
     totalEvaluados++;
     var tag = String(r[IC.TAG - 1] || '').trim();
@@ -151,7 +153,7 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
 
     var infoAtaques = ataquesSemanaPorTag[tag] || { ataques: 0, exentos: 0 };
     var ataquesSemana = infoAtaques.ataques; // reales
-    var ataquesMinClan = ataquesMinPorClan.hasOwnProperty(clan) ? ataquesMinPorClan[clan] : 16; // 19-sep-2026: Ataques de T_Lista de su clan
+    var ataquesMinClan = ataquesMinPorTag.hasOwnProperty(clanTag) ? ataquesMinPorTag[clanTag] : 16; // 19-sep-2026: Ataques de T_Lista de su clan
     var ataquesExigidos = Math.max(0, ataquesMinClan - infoAtaques.exentos); // menos 4 por día opcional
     var trofeos = trofeosPorTag[tag] || 0;
     var barcosProm = reqBarcos.activo
@@ -159,12 +161,12 @@ function actualizarDocNoCalificadosTorneo(ctxParam) {
       : null;
 
     var motivos = [];
-    if (!_cumpleAtaquesTorneoClan(infoAtaques, ataquesMinPorClan, clan)) {
+    if (!_cumpleAtaquesTorneoClan(infoAtaques, ataquesMinPorTag, clanTag)) {
       motivos.push('Ataques: ' + ataquesSemana + ' de ' + ataquesExigidos + ' exigidos' +
         (infoAtaques.exentos > 0 ? ' (' + ataquesMinClan + ' menos ' + infoAtaques.exentos + ' por día opcional)' : '') + '.');
     }
-    if (trofeos < minTPorNombreClan[clan]) {
-      motivos.push('Medallas de guerra: ' + _ncFmtNum(trofeos) + ' (se piden ' + minTPorNombreClan[clan] + ').');
+    if (trofeos < minTPorTag[clanTag]) {
+      motivos.push('Medallas de guerra: ' + _ncFmtNum(trofeos) + ' (se piden ' + minTPorTag[clanTag] + ').');
     }
     if (reqBarcos.activo && barcosProm > reqBarcos.qty) {
       motivos.push('Barcos: ' + _ncFmtNum(barcosProm) + ' de promedio semanal (el tope es ' + reqBarcos.qty + ').');

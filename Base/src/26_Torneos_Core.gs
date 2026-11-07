@@ -4145,6 +4145,7 @@ function _getConfigMasRecienteCategoria(nombreCategoria, id) {
 
     resultado.push({
       clan: nombreClan,
+      clanTag: tag, // PF409 (6-nov-2026, tanda 4 del plan Clanes por Tag): aditivo, junto a clan; es la clave con que se comparan los clanes (el nombre solo se muestra)
       minTMiembro: minTUnico,
       minT: minTUnico,
       minTColider: minTUnico,
@@ -4212,21 +4213,8 @@ function _getUltimoRegistroTorneoOSorteo(nombreCategoria) {
  * _getMinTClanMaps() [→ Contexto_Base_Web.md §26B277]
  */
 function _getMinTClanMaps() {
-  var byTag = {};
-  var info = _getMinTPorNombreClan('Torneo');
-  var ss = _getSs();
-  // PF073: hoja Clan viva o Backup_Clan.csv. [→ Contexto_Base_Web.md §PF073]
-  var clanData = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.CLAN, 'Backup_Clan.csv', CC.CONDICION).filas;
-  if (!clanData.length) return { byTag: byTag };
-  for (var c = 0; c < clanData.length; c++) {
-    var nombreClan = String(clanData[c][CC.NOMBRE - 1] || '').trim();
-    var clanTag    = String(clanData[c][CC.CLAN_TAG - 1] || '').trim();
-    if (!nombreClan || !clanTag) continue;
-    if (info.minTPorNombreClan.hasOwnProperty(nombreClan)) {
-      byTag[clanTag] = info.minTPorNombreClan[nombreClan];
-    }
-  }
-  return { byTag: byTag };
+  // PF409 (6-nov-2026, tanda 4 del plan Clanes por Tag): el Min_T por clan ya sale por Tag de _getMinTPorTagClan(). Antes se cruzaba por NOMBRE con la hoja Clan (o Backup_Clan.csv): si esa hoja estaba vacía, todos caían al Min_T por defecto.
+  return { byTag: _getMinTPorTagClan('Torneo').minTPorTag };
 }
 
 // FASE 13/14 (30/07/2026) — INTEGRACIÓN CON EL BOT DE WHATSAPP [→ Contexto_Base_Web.md §26B278]

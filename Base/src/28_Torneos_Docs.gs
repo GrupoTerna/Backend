@@ -139,11 +139,12 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
   var fechaDocActualizada = _actualizarFechaDocTorneo(body, ss);
 
   // 2. Requisitos: Min_T por clan, leído de la fila más reciente de cada [→ Contexto_Base_Web.md §28B012]
-  var infoMinT = _getMinTPorNombreClan('Torneo');
-  var minTPorNombreClan = infoMinT.minTPorNombreClan;
-  var clanesOrden = infoMinT.clanesOrden; // mismo orden en que CFG.TERNA_TAGS lista los clanes
+  var infoMinT = _getMinTPorTagClan('Torneo'); // PF409: por Tag, no por nombre
+  var minTPorTag = infoMinT.minTPorTag;
+  var nombrePorTag = infoMinT.nombrePorTag; // solo para mostrar
+  var tagsOrden = infoMinT.tagsOrden; // mismo orden en que CFG.TERNA_TAGS lista los clanes
 
-  if (clanesOrden.length === 0) {
+  if (tagsOrden.length === 0) {
     Logger.log('[ParticipantesCalificados-Torneo] No hay clanes con Min_T activo en T_Lista todavía. Se omite la lista, solo se actualizó la fecha.');
     doc.saveAndClose();
     return;
@@ -164,8 +165,8 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
   // Ataques: FIX (05-ago-2026) — antes exigía 16 ataques en la semana REAL [→ Contexto_Base_Web.md §28B014]
   var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada, guerraDataUnica); // 19-sep-2026: { ataques, exentos }
   // 19-sep-2026 (pedido del usuario): el mínimo de ataques sale del Ataques configurado por clan en T_Lista
-  // (ya no un 16 fijo); ver _ataquesMinTorneoPorNombreClan() y _cumpleAtaquesTorneoClan().
-  var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan();
+  // (ya no un 16 fijo); ver _ataquesMinTorneoPorTagClan() y _cumpleAtaquesTorneoClan().
+  var ataquesMinPorTag = _ataquesMinTorneoPorTagClan();
 
   // 3bis. Barcos (FIX 12-sep-2026, pedido del usuario -- calificación real [→ Contexto_Base_Web.md §28B015]
   var bloqueBarcos = _getConfigMasRecienteCategoria('Torneo');
@@ -188,26 +189,25 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
   var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal, guerraDataUnica);
   var dirData = shDir.getRange(2, 1, shDir.getLastRow() - 1, DIR_SHEET_COLS).getValues();
 
-  // Un array de calificados por cada clan (mismo orden que clanesOrden).
+  // Un array de calificados por cada clan, con el Tag como clave (mismo orden que tagsOrden).
   var porClan = {};
-  for (var ci = 0; ci < clanesOrden.length; ci++) porClan[clanesOrden[ci]] = [];
+  for (var ci = 0; ci < tagsOrden.length; ci++) porClan[tagsOrden[ci]] = [];
 
   var totalCalificados = 0;
   for (var i = 0; i < dirData.length; i++) {
     var r = dirData[i];
     if (String(r[IC.ESTADO - 1]) !== 'Activo') continue;
-    if (CFG.TERNA_TAGS.indexOf(String(r[IC.CLAN_TAG - 1])) < 0) continue;
-
-    var clan = String(r[IC.CLAN - 1] || '').trim();
-    if (!(clan in minTPorNombreClan)) continue; // clan sin Min_T definido (no es Terna), no califica
+    var clanTag = _clanTagDeFilaORespaldo_(r[IC.CLAN_TAG - 1], r[IC.CLAN - 1]); // PF409: el clan se compara por Tag
+    if (CFG.TERNA_TAGS.indexOf(clanTag) < 0) continue;
+    if (!minTPorTag.hasOwnProperty(clanTag)) continue; // clan sin Min_T definido (no es Terna), no califica
 
     var tag = String(r[IC.TAG - 1] || '').trim();
 
     // 19-sep-2026: el Ataques de T_Lista para su clan, menos 4 por cada día opcional (clan ya cruzó la meta).
-    if (!_cumpleAtaquesTorneoClan(ataquesSemanaPorTag[tag], ataquesMinPorClan, clan)) continue;
+    if (!_cumpleAtaquesTorneoClan(ataquesSemanaPorTag[tag], ataquesMinPorTag, clanTag)) continue;
 
     var trofeos = trofeosPorTag[tag] || 0;
-    if (trofeos < minTPorNombreClan[clan]) continue;
+    if (trofeos < minTPorTag[clanTag]) continue;
 
     // FIX (12-sep-2026, pedido del usuario -- requisito "Barcos", tope [→ Contexto_Base_Web.md §28B018]
     if (reqBarcos.activo) {
@@ -215,14 +215,14 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
       if (barcosProm > reqBarcos.qty) continue;
     }
 
-    porClan[clan].push({ nombre: String(r[IC.NOMBRE - 1] || ''), puntaje: trofeos });
+    porClan[clanTag].push({ nombre: String(r[IC.NOMBRE - 1] || ''), puntaje: trofeos });
     totalCalificados++;
   }
 
   // Armar los grupos en el mismo orden en que aparecen los clanes en la [→ Contexto_Base_Web.md §28B019]
   var grupos = [];
-  for (var gi = 0; gi < clanesOrden.length; gi++) {
-    grupos.push({ clan: clanesOrden[gi], personas: porClan[clanesOrden[gi]] });
+  for (var gi = 0; gi < tagsOrden.length; gi++) {
+    grupos.push({ clan: nombrePorTag[tagsOrden[gi]], personas: porClan[tagsOrden[gi]] }); // el nombre solo se muestra
   }
 
   _reemplazarListaParticipantes(body, grupos);
@@ -284,14 +284,14 @@ function actualizarDocGanadoresTorneo(ctxParam) {
   var ataquesSemanaPorTag = _getAtaquesYExentosSemanaActualPorTag(ctx, ctxReal.temporada, guerraDataUnica); // 19-sep-2026: { ataques, exentos }
   var trofeosPorTag = _getTrofeosGuerraAcumuladosPorTagParaTemporada(temporadaMostrar, ctxReal, guerraDataUnica);
   var minTPorTag = _getMinTClanMaps().byTag;
-  var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan(); // 19-sep-2026: Ataques de T_Lista por clan
+  var ataquesMinPorTag = _ataquesMinTorneoPorTagClan(); // 19-sep-2026: Ataques de T_Lista por clan (PF409: la clave es el Tag)
 
   var ganadoresFinal = top3.filter(function(p) {
     var tag = p.tag;
-    var clanTag = p.clanTag;
+    var clanTag = _clanTagDeFilaORespaldo_(p.clanTag, p.clan); // PF409: por Tag; el nombre solo si la fila no trae Tag
     var trofeos = trofeosPorTag[tag] || 0;
     var minT = minTPorTag[clanTag] !== undefined ? minTPorTag[clanTag] : CFG.MIN_T_DEFAULT;
-    return _cumpleAtaquesTorneoClan(ataquesSemanaPorTag[tag], ataquesMinPorClan, p.clan) && trofeos >= minT; // 19-sep-2026
+    return _cumpleAtaquesTorneoClan(ataquesSemanaPorTag[tag], ataquesMinPorTag, clanTag) && trofeos >= minT; // 19-sep-2026
   }).map(function(p) {
     return {
       puesto: p.puesto,
@@ -748,22 +748,24 @@ function _cumpleAtaquesSemanaActual(info, qty) {
 }
 
 /**
- * _ataquesMinTorneoPorNombreClan() [→ Contexto_Base_Web.md §28B054]
+ * _ataquesMinTorneoPorTagClan() [→ Contexto_Base_Web.md §28B054]
+ * PF409 (6-nov-2026, tanda 4 del plan Clanes por Tag): antes _ataquesMinTorneoPorNombreClan(); ahora la clave del mapa es el Tag del clan (con «#» y en mayúsculas). 0 = el requisito de Ataques no está activo para ese clan.
  */
-function _ataquesMinTorneoPorNombreClan() {
+function _ataquesMinTorneoPorTagClan() {
   var mapa = {};
   _getConfigMasRecienteCategoria('Torneo').forEach(function (b) {
-    mapa[b.clan] = (b.ataques && b.ataques.activo) ? (Number(b.ataques.qty) || 0) : 0;
+    mapa[b.clanTag] = (b.ataques && b.ataques.activo) ? (Number(b.ataques.qty) || 0) : 0;
   });
   return mapa;
 }
 
 /**
- * _cumpleAtaquesTorneoClan(info, ataquesMinPorClan, nombreClan) [→ Contexto_Base_Web.md §28B055]
+ * _cumpleAtaquesTorneoClan(info, ataquesMinPorTag, clanTag) [→ Contexto_Base_Web.md §28B055]
+ * PF409: recibe el Tag del clan (antes el nombre). Un Tag que no está en el mapa (o vacío) usa 16, como antes con un nombre desconocido.
  */
-function _cumpleAtaquesTorneoClan(info, ataquesMinPorClan, nombreClan) {
-  var nombre = String(nombreClan || '').trim();
-  var q = (ataquesMinPorClan && ataquesMinPorClan.hasOwnProperty(nombre)) ? ataquesMinPorClan[nombre] : 16;
+function _cumpleAtaquesTorneoClan(info, ataquesMinPorTag, clanTag) {
+  var tag = _clanTagNorm_(clanTag);
+  var q = (tag && ataquesMinPorTag && ataquesMinPorTag.hasOwnProperty(tag)) ? ataquesMinPorTag[tag] : 16;
   if (!(q > 0)) return true;
   return _cumpleAtaquesSemanaActual(info, q);
 }

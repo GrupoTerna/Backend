@@ -2,7 +2,7 @@
 // 27_Torneos_Sorteos_Requisitos.gs
 // Torneo/Sorteo: sincronizacion de los textos de "Requisitos:" y premios
 // hacia los documentos correspondientes, y utilidades relacionadas
-// (_getMinTPorNombreClan(), _reescribirRequisitosTexto(), etc.). 
+// (_getMinTPorTagClan(), _reescribirRequisitosTexto(), etc.). 
 // ==============================================================================
 
 // Ya NO depende de la hoja T_Requisitos (dada de baja el 14-sep-2026) — la [→ Contexto_Base_Web.md §27B001]
@@ -221,18 +221,42 @@ function _resumirRequisitosBloque(bloqueClanes) {
 }
 
 /**
- * _getMinTPorNombreClan(nombreCategoria) [→ Contexto_Base_Web.md §27B012]
+ * _clanTagNorm_(v) [PF409]
+ * Tag de clan en mayúsculas y con «#»; '' si no viene. Es la forma en que se guardan CFG.TERNA_TAGS y los bloques de _getConfigMasRecienteCategoria().
  */
-function _getMinTPorNombreClan(nombreCategoria) {
+function _clanTagNorm_(v) {
+  var t = String(v === undefined || v === null ? '' : v).trim().toUpperCase();
+  if (!t) return '';
+  return t.charAt(0) === '#' ? t : '#' + t;
+}
+
+/**
+ * _clanTagDeFilaORespaldo_(clanTag, nombreClan) [PF409]
+ * Tag normalizado del clan de una fila. Si la fila no trae Tag (datos anteriores a §PF253) se usa el nombre SOLO como respaldo, a través del resolvedor único (_getClanTagByName() → _mapaNombreClanATagTerna(), §PF403); '' si tampoco se puede resolver (criterio 2 del plan Clanes por Tag: el resultado no está confirmado por Tag).
+ */
+function _clanTagDeFilaORespaldo_(clanTag, nombreClan) {
+  var t = _clanTagNorm_(clanTag);
+  if (t) return t;
+  var nombre = String(nombreClan === undefined || nombreClan === null ? '' : nombreClan).trim();
+  return nombre ? _clanTagNorm_(_getClanTagByName(nombre)) : '';
+}
+
+/**
+ * _getMinTPorTagClan(nombreCategoria) [→ Contexto_Base_Web.md §27B012]
+ * PF409 (6-nov-2026, tanda 4 del plan Clanes por Tag): antes se llamaba _getMinTPorNombreClan() y devolvía los mapas por NOMBRE de clan. Ahora la clave es el Tag. Devuelve { tagsOrden, nombrePorTag, minTPorTag }: tagsOrden sigue el orden de CFG.TERNA_TAGS (solo clanes con Min_T activo), nombrePorTag sirve únicamente para mostrar y minTPorTag es el mínimo de medallas de cada Tag.
+ */
+function _getMinTPorTagClan(nombreCategoria) {
   var bloque = _getConfigMasRecienteCategoria(nombreCategoria);
-  var minTPorNombreClan = {};
-  var clanesOrden = [];
+  var minTPorTag = {};
+  var nombrePorTag = {};
+  var tagsOrden = [];
   bloque.forEach(function (b) {
     if (!b.minT.activo) return;
-    minTPorNombreClan[b.clan] = b.minT.qty > 0 ? b.minT.qty : CFG.MIN_T_DEFAULT;
-    clanesOrden.push(b.clan);
+    minTPorTag[b.clanTag] = b.minT.qty > 0 ? b.minT.qty : CFG.MIN_T_DEFAULT;
+    nombrePorTag[b.clanTag] = b.clan;
+    tagsOrden.push(b.clanTag);
   });
-  return { clanesOrden: clanesOrden, minTPorNombreClan: minTPorNombreClan };
+  return { tagsOrden: tagsOrden, nombrePorTag: nombrePorTag, minTPorTag: minTPorTag };
 }
 
 /**

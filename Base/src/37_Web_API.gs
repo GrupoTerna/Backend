@@ -3373,15 +3373,15 @@ function _webGanadoresTorneoMasReciente(ss, opciones) {
   _medMarca('trofeos');
   var minTPorTag = _getMinTClanMaps().byTag;
   _medMarca('minT');
-  // FIX 19-sep-2026: este endpoint había quedado fuera del cambio "el 16 fijo debe leer el Ataques configurado por clan en T_Lista" (actualizarDocGanadoresTorneo() ya usaba _ataquesMinTorneoPorNombreClan()/_cumpleAtaquesTorneoClan()); con Ataques en 16 coincidía, pero con otro valor configurado la web mostraba un top3 distinto al del documento real. [→ Contexto_Base_Web.md §37B157]
-  var ataquesMinPorClan = _ataquesMinTorneoPorNombreClan();
+  // FIX 19-sep-2026: este endpoint había quedado fuera del cambio "el 16 fijo debe leer el Ataques configurado por clan en T_Lista" (actualizarDocGanadoresTorneo() ya usaba _ataquesMinTorneoPorTagClan() [antes ...PorNombreClan()]/_cumpleAtaquesTorneoClan()); con Ataques en 16 coincidía, pero con otro valor configurado la web mostraba un top3 distinto al del documento real. [→ Contexto_Base_Web.md §37B157]
+  var ataquesMinPorTag = _ataquesMinTorneoPorTagClan(); // PF409: la clave es el Tag del clan
 
   var top3Filtrado = top3.filter(function (p) {
     var tag = p.tag;
-    var clanTag = p.clanTag;
+    var clanTag = _clanTagDeFilaORespaldo_(p.clanTag, p.clan); // PF409: por Tag; el nombre solo si la fila no trae Tag
     var trofeos = trofeosPorTag[tag] || 0;
     var minT = minTPorTag[clanTag] !== undefined ? minTPorTag[clanTag] : CFG.MIN_T_DEFAULT;
-    return _cumpleAtaquesTorneoClan(ataquesSemanaPorTag[tag], ataquesMinPorClan, p.clan) && trofeos >= minT; // 19-sep-2026
+    return _cumpleAtaquesTorneoClan(ataquesSemanaPorTag[tag], ataquesMinPorTag, clanTag) && trofeos >= minT; // 19-sep-2026
   }).map(function (p) {
     return {
       puesto:          p.puesto,
