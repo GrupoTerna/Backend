@@ -4428,6 +4428,22 @@ function _clanTagPorHistorial_(movs, dia, desde) {
 }
 
 /**
+ * _clanTagTagsPorConfirmar_(plan, filas) [→ Contexto_Base_Web.md §PF423]
+ * Función pura. De las filas dudosas del plan (probables, sin clan, ambiguas y conflictos) que traen ataques o fame (las que el plan marca con el prefijo «0 »),
+ * devuelve los Tag de jugador distintos, ordenados, para pegarlos en el cuadro «Corrección de jugadores elegidos» del script de Tampermonkey (RoyaleAPI), que los lee separados por coma.
+ */
+function _clanTagTagsPorConfirmar_(plan, filas) {
+  var vistos = {}, lista = [];
+  (plan.detalle || []).forEach(function (d) {
+    if (String(d[0]).indexOf('0 ') !== 0) return;
+    var f = filas[d[1]];
+    var t = String(f && f[GC.TAG - 1] !== undefined && f[GC.TAG - 1] !== null ? f[GC.TAG - 1] : '').trim().toUpperCase();
+    if (t && !vistos[t]) { vistos[t] = true; lista.push(t); }
+  });
+  return lista.sort();
+}
+
+/**
  * _completarClanTagGuerra_(aplicar) [→ Contexto_Base_Web.md §PF423]
  * Envoltorio de _clanTagPlanGuerra_() con el patron de §PF355: candado de script, orden de columnas exigido, informe en Drive, respaldo ANTES del CSV completo y tope de filas por corrida.
  * El mapa nombre -> Tag sale de los clanes Terna (_getClanTagByName con CFG.TERNA_TAGS y CFG.CLAN_NOMBRES_FALLBACK) y, para los externos (p. ej. PERUVIANOS SJL), de la hoja Directorio.
@@ -4502,6 +4518,8 @@ function _completarClanTagGuerra_(aplicar) {
       ['Resumen: nombre sin Tag en el mapa', rs.sinTag], ['Resumen: nombre con mas de un Tag', rs.ambiguo], ['Resumen: filas con Clan vacio y con ataques o fame', rs.vaciasConDatos]].forEach(function (x) {
       informe.push([x[0], '', '', '', '', '', '', '', '', '', String(x[1])]);
     });
+    var tagsRoyale = _clanTagTagsPorConfirmar_(plan, filas); // 7-nov-2026: lista para pegar en el cuadro de jugadores elegidos de Tampermonkey (RoyaleAPI)
+    informe.push(['Tags por confirmar con RoyaleAPI (' + tagsRoyale.length + ' jugadores; pegar en el cuadro del script de Tampermonkey)', '', '', '', '', '', '', '', '', '', tagsRoyale.join(', ')]);
     // Las filas dudosas con ataques o fame (prefijo «0 ») van primero, porque son las que afectan estadisticas.
     var detalle = plan.detalle.slice().sort(function (x, y) { return String(x[0]).localeCompare(String(y[0])); });
     detalle.forEach(function (d) {
@@ -4519,7 +4537,7 @@ function _completarClanTagGuerra_(aplicar) {
       _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
     }
     Logger.log('[ClanTagHistorico] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Filas: ' + filas.length + '. Ya traen Clan_Tag: ' + rs.yaTrae +
-      '. A completar por nombre: ' + rs.completar + '. Confirmadas por otra fila del mismo dia: ' + rs.confirmada + '. Confirmadas por el Historial: ' + rs.confirmadaHistorial + '. Conflictos Historial/semana (no se aplican): ' + rs.conflictoHistorial + '. ' + historialNota + (aplicar ? ' (escritas en esta corrida: ' + aEscribir.length + ', tope ' + APLICAR_TOPE + ')' : '') +
+      '. A completar por nombre: ' + rs.completar + '. Confirmadas por otra fila del mismo dia: ' + rs.confirmada + '. Confirmadas por el Historial: ' + rs.confirmadaHistorial + '. Conflictos Historial/semana (no se aplican): ' + rs.conflictoHistorial + '. Jugadores por confirmar con RoyaleAPI: ' + tagsRoyale.length + ' (lista en el informe). ' + historialNota + (aplicar ? ' (escritas en esta corrida: ' + aEscribir.length + ', tope ' + APLICAR_TOPE + ')' : '') +
       '. Probables (no se aplican): ' + rs.probable + '. Sin clan: ' + rs.sinClan + '. Ambiguas: ' + (rs.ambiguaDia + rs.ambiguo) + '. Nombre sin Tag: ' + rs.sinTag + '. Detalle en Drive: ' + nombreInforme + '.' +
       (aplicar ? (plan.cambios.length > APLICAR_TOPE ? ' Quedaron ' + (plan.cambios.length - APLICAR_TOPE) + ' por completar: correr completarClanTagGuerraAplicar() otra vez.' : '') : ' (No se escribio nada; correr completarClanTagGuerraAplicar() para aplicar.)'));
   } finally {
