@@ -137,6 +137,7 @@
   - **6b `directorio.html`:** `m.clan !== clanPrevio` (~2609), `ingresosGrupos.find(g => g.clan === clan)` (~3007 y ~3147), filtros por clan.
   - **6c `mensajes.html`, `sorteo.html`, `torneos.html`:** comparación `o.clan !== (o.etiqueta || '')` (`mensajes.html` ~569) y `clanNombre === SIN_CLAN_LABEL` (`sorteo.html` ~1122), más los agrupados por clan.
   - **6d `noticias.html`, `index.html`, `perfil.html`, `clan.html`, `comunidad.html`, `permisos.html`, `admin.html`:** revisar cada uso; `admin.html` ya usa `clanTag` en 40 sitios y se audita, no se reescribe.
+- **Anotado el 6-nov-2026 (§PF408).** Tres usos nuevos de `?clan=` comparan por **nombre**, porque `guerra.json` no trae `clanTag`: `guerra.html` (`CLAN_PRESELECCIONADO` en `gestionarTabsClan()`, sub-tanda 6a) y la tarjeta «Valores semanales» de `clan.html` (`clanSemanalesFuente()`, que usa `clanCoincide()`; sub-tanda 6d). Al hacer 6a, pasar ambos a Tag y agregar `&tag=` al enlace «Ver Guerra en vivo» de `clan.html`. El filtro de «Ingresos recientes» de `directorio.html` (`seleccionIngresosDeClan()`, sub-tanda 6b) **ya compara por Tag**, con el nombre solo de respaldo.
 - **Verificación.** Suite completa (`npm ci` primero; sin `jsdom` fallan 86 pruebas por el entorno); prueba nueva por archivo con dos clanes de **igual nombre y distinto Tag** (no se confunden) y con objetos sin `clanTag` (caen al nombre). **Sin ver en navegador real.**
 - **Registro.** Una viñeta de `CHANGELOG.md` por archivo y su fila en «Abiertos» hasta que la usuaria lo vea publicado.
 
