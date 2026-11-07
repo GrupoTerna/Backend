@@ -62,10 +62,11 @@ var ADMINISTRADORES_TOTAL_COLS = 24;
 // Índices de columna (1-based) de la hoja "Vetados" — ver _setupVetados() en [→ Contexto_Base_Web.md §11B004]
 var VC = {
   NUM:1, TAG:2, NOMBRE:3, NOM_MULTI:4, CLAN:5, RANGO:6, INICIALES:7, PERMISO:8,
-  ESTADO:9, RAZON:10, AUTOR:11, VIA:12, FECHA:13
+  ESTADO:9, RAZON:10, AUTOR:11, VIA:12, FECHA:13,
+  CLAN_TAG:14 // 6-nov-2026 (tanda 7, Clanes por Tag): va AL FINAL de la hoja ya existente, para no mover ninguna columna
 };
 
-var VETADOS_TOTAL_COLS = 13;
+var VETADOS_TOTAL_COLS = 14; // 13 -> 14 con Clan_Tag
 
 // Columnas que SÍ se recalculan automáticamente desde Directorio/Inactivos [→ Contexto_Base_Web.md §11B005]
 var VETADOS_COLS_AUTOSYNC = VC.RAZON; // hasta esta columna inclusive (1..10)
@@ -665,7 +666,8 @@ function _leerHojaComoMapaPorTag(ss, nombreHoja, tagColIdx, totalCols) {
   var mapa = {};
   var sh = ss.getSheetByName(nombreHoja);
   if (!sh || sh.getLastRow() < 2) return mapa;
-  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, totalCols).getValues();
+  var ancho = Math.min(totalCols, sh.getMaxColumns()); // 6-nov-2026 (tanda 7, Clanes por Tag): una hoja a la que aun no se le agrego Clan_Tag (Vetados) se lee con las columnas que tiene
+  var datos = sh.getRange(2, 1, sh.getLastRow() - 1, ancho).getValues();
   for (var i = 0; i < datos.length; i++) {
     var tag = String(datos[i][tagColIdx] || '').trim().toUpperCase();
     if (tag) mapa[tag] = datos[i];

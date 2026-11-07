@@ -438,9 +438,27 @@ function _retirarDeInactivosPorReactivacion(ss, tags) {
 
 // ----- Hoja Vetados -----
 
+/**
+ * _asegurarColumnaClanTagVetados_(sh)
+ * 6-nov-2026 (tanda 7, Clanes por Tag); §PF419. Idempotente: garantiza que Vetados tenga la columna
+ * VC.CLAN_TAG (14, al final) y su encabezado «Clan_Tag». No toca ninguna otra columna ni ninguna fila.
+ * La llaman las funciones que escriben o leen la fila completa (VETADOS_TOTAL_COLS).
+ */
+function _asegurarColumnaClanTagVetados_(sh) {
+  if (!sh) return;
+  if (sh.getMaxColumns() < VC.CLAN_TAG) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), VC.CLAN_TAG - sh.getMaxColumns());
+  }
+  var celda = sh.getRange(1, VC.CLAN_TAG);
+  if (String(celda.getValue()) === 'Clan_Tag') return;
+  celda.setValue('Clan_Tag');
+  applyHeaderStyle(sh, VC.CLAN_TAG);
+}
+
 function _updateVetados(ss, dirData) {
   var sh = ss.getSheetByName(CFG.SHEETS.VETADOS);
   if (!sh) return;
+  _asegurarColumnaClanTagVetados_(sh); // 6-nov-2026 (tanda 7, Clanes por Tag): la hoja ya existente recibe la columna antes de leer o escribir la fila completa
 
   var dirPorTag = {};
   for (var i = 0; i < dirData.length; i++) {
@@ -498,6 +516,7 @@ function _updateVetados(ss, dirData) {
       filaVC[VC.NOMBRE - 1]   = r[DC.NOMBRE-1];
       filaVC[VC.NOM_MULTI - 1] = r[DC.NOM_MULTI-1];
       filaVC[VC.CLAN - 1]     = r[DC.CLAN-1];
+      filaVC[VC.CLAN_TAG - 1] = String(r[DC.CLAN_TAG-1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7, Clanes por Tag)
       filaVC[VC.RANGO - 1]    = r[DC.RANGO-1];
       filaVC[VC.INICIALES-1]  = r[DC.INICIALES-1];
       filaVC[VC.PERMISO - 1]  = r[DC.PERMISO-1];
@@ -531,6 +550,7 @@ function _updateVetados(ss, dirData) {
       filaVCI[VC.NOMBRE - 1]   = ri[IC.NOMBRE-1];
       filaVCI[VC.NOM_MULTI - 1] = ri[IC.NOM_MULTI-1];
       filaVCI[VC.CLAN - 1]     = ri[IC.CLAN-1];
+      filaVCI[VC.CLAN_TAG - 1] = String(ri[IC.CLAN_TAG-1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7, Clanes por Tag)
       filaVCI[VC.RANGO - 1]    = ri[IC.RANGO-1];
       filaVCI[VC.INICIALES-1]  = ri[IC.INICIALES-1];
       filaVCI[VC.PERMISO - 1]  = ri[IC.PERMISO-1];
@@ -738,6 +758,7 @@ function sincronizarRazonHaciaVetados(shDir, row) {
   }
   var shVet = _getSs().getSheetByName(CFG.SHEETS.VETADOS);
   if (!shVet || shVet.getLastRow() < 2) return;
+  _asegurarColumnaClanTagVetados_(shVet); // 6-nov-2026 (tanda 7, Clanes por Tag)
   // Usar VC.* (nunca índices sueltos) para que el orden real de columnas
   // de Vetados nunca vuelva a desalinear qué campo se lee/escribe aquí.
   var data = shVet.getRange(2, 1, shVet.getLastRow() - 1, VETADOS_TOTAL_COLS).getValues();
@@ -755,6 +776,7 @@ function sincronizarRazonHaciaVetados(shDir, row) {
   filaNuevaVC[VC.NOMBRE - 1]   = dirRow[IC.NOMBRE-1];
   filaNuevaVC[VC.NOM_MULTI - 1] = dirRow[IC.NOM_MULTI-1];
   filaNuevaVC[VC.CLAN - 1]     = dirRow[IC.CLAN-1];
+  filaNuevaVC[VC.CLAN_TAG - 1] = String(dirRow[IC.CLAN_TAG-1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7, Clanes por Tag)
   filaNuevaVC[VC.RANGO - 1]    = dirRow[IC.RANGO-1];
   filaNuevaVC[VC.INICIALES-1]  = dirRow[IC.INICIALES-1];
   filaNuevaVC[VC.PERMISO - 1]  = dirRow[IC.PERMISO-1];
@@ -791,6 +813,7 @@ function sincronizarRazonHaciaDirectorio(shVet, row) {
 function _upsertVetadoDesdeWeb(tag, filaOrigenIC, razon, autor, via, fecha) {
   var shVet = _getSs().getSheetByName(CFG.SHEETS.VETADOS);
   if (!shVet) return;
+  _asegurarColumnaClanTagVetados_(shVet); // 6-nov-2026 (tanda 7, Clanes por Tag)
 
   var lastRow = shVet.getLastRow();
   if (lastRow >= 2) {
@@ -809,6 +832,7 @@ function _upsertVetadoDesdeWeb(tag, filaOrigenIC, razon, autor, via, fecha) {
   filaVC[VC.NOMBRE - 1]    = filaOrigenIC[IC.NOMBRE    - 1];
   filaVC[VC.NOM_MULTI - 1] = filaOrigenIC[IC.NOM_MULTI - 1];
   filaVC[VC.CLAN - 1]      = filaOrigenIC[IC.CLAN      - 1];
+  filaVC[VC.CLAN_TAG - 1]  = String(filaOrigenIC[IC.CLAN_TAG - 1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7, Clanes por Tag)
   filaVC[VC.RANGO - 1]     = filaOrigenIC[IC.RANGO     - 1];
   filaVC[VC.INICIALES - 1] = filaOrigenIC[IC.INICIALES - 1];
   filaVC[VC.PERMISO - 1]   = filaOrigenIC[IC.PERMISO   - 1];

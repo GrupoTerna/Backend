@@ -648,6 +648,7 @@ function importarAcumulativosDesdeCSV() {
       }
 
       var numCols = item.numCols;
+      if (numCols > sh.getMaxColumns()) sh.insertColumnsAfter(sh.getMaxColumns(), numCols - sh.getMaxColumns()); // 6-nov-2026 (tanda 7, Clanes por Tag): antes de leer el encabezado (Vetados pasa de 13 a 14 columnas)
       var hasFecha = !!item.hasFecha;
       // fechaCol: columna 1-based donde vive Fecha en ESTA hoja acumulativa. [→ Contexto_Base_Web.md §05B042]
       var fechaCol = item.fechaCol || 2;

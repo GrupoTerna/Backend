@@ -545,8 +545,9 @@ function _setupInactivos(ss) {
 function _setupVetados(ss) {
   var sh = _getOrCreateSheet(ss, CFG.SHEETS.VETADOS);
   // FIX (26-ago-2026, pedido explícito del usuario): la columna 4 vuelve de [→ Contexto_Base_Web.md §02B046]
-  var headers = ['N°','Tag','Nombre','Nom_Multi','Clan','Rango','Iniciales','Permiso','Estado','Razón','Autor','Vía','Fecha'];
-  // Se reescriben SIEMPRE las 13 columnas (headers.length === VETADOS_TOTAL_COLS) [→ Contexto_Base_Web.md §02B047]
+  var headers = ['N°','Tag','Nombre','Nom_Multi','Clan','Rango','Iniciales','Permiso','Estado','Razón','Autor','Vía','Fecha','Clan_Tag']; // 6-nov-2026 (tanda 7, Clanes por Tag): Clan_Tag al final
+  if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
+  // Se reescriben SIEMPRE las 14 columnas (headers.length === VETADOS_TOTAL_COLS) [→ Contexto_Base_Web.md §02B047]
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
 
@@ -556,7 +557,7 @@ function _setupVetados(ss) {
     sh.getRange(2, VC.FECHA, numFilasVet, 1).setNumberFormat('dd/mm/yyyy hh:mm:ss');
   }
 
-  Logger.log('[Setup] Vetados OK (13 cols)');
+  Logger.log('[Setup] Vetados OK (14 cols)');
 }
 
 // Multicuentas: 15 columnas [→ Contexto_Base_Web.md §02B049]
