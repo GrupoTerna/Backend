@@ -13,7 +13,8 @@
 // Índices de columna (1-based) — Control_2. [→ Contexto_Base_Web.md §23B002]
 var CC2 = {
   NUM: 1, TAG: 2, NOMBRE: 3, NOM_MULTI: 4, CLAN: 5, RANGO: 6, INICIALES: 7,
-  CELULAR: 8, V_GUERRA: 9, INACTIVIDAD: 10, ALERTA: 11, ATAQ_PEND: 12, ASCENSO: 13
+  CELULAR: 8, V_GUERRA: 9, INACTIVIDAD: 10, ALERTA: 11, ATAQ_PEND: 12, ASCENSO: 13,
+  CLAN_TAG: 34 // 6-nov-2026 (tanda 7, Clanes por Tag): va AL FINAL, despues de la cuadricula (CC2_TOTAL_FIJAS + GRID_WIDTH2 + 1), para no mover ninguna columna existente
 };
 
 var CC2_TOTAL_FIJAS = 13;
@@ -106,6 +107,7 @@ function actualizarControl2() {
 
   var fixedRows = [];
   var gridRows = [];
+  var tagClanRows = []; // 6-nov-2026 (tanda 7): Clan_Tag de cada fila, en la columna CC2.CLAN_TAG (al final)
 
   for (var i = 0; i < jugadores.length; i++) {
     var jug = jugadores[i];
@@ -206,11 +208,20 @@ function actualizarControl2() {
       jug[DC.INACTIVIDAD - 1], jug[DC.ALERTA - 1], pendCol, ascensoVal
     ]);
     gridRows.push(gridFila);
+    tagClanRows.push([String(jug[DC.CLAN_TAG - 1] || '').trim().toUpperCase()]); // 6-nov-2026 (tanda 7): el Tag sale del Directorio, igual que el nombre del clan
   }
 
   // FIX (15-ago-2026, pedido usuario: "Control_2 solo actualiza hasta la [→ Contexto_Base_Web.md §23B013]
+  // 6-nov-2026 (tanda 7): la hoja ya existente puede no tener la columna Clan_Tag; se agrega (idempotente) antes de escribir.
+  _asegurarColumnaClanTagControl2_(sh);
+
   if (fixedRows.length > 0) {
     sh.getRange(4, 1, fixedRows.length, CC2_TOTAL_FIJAS).setValues(fixedRows);
+  }
+
+  if (tagClanRows.length > 0) {
+    sh.getRange(4, CC2.CLAN_TAG, tagClanRows.length, 1).setValues(tagClanRows);
+    applyBorderCenter(sh.getRange(4, CC2.CLAN_TAG, tagClanRows.length, 1));
   }
 
   if (gridRows.length > 0) {
@@ -418,6 +429,32 @@ function _aplicarFmtCondicionalControl2(sh, numJugadores) {
 // ----- Control2: restaurar la hoja si no existe (lo usa RUNALL) -----
 
 /**
+ * _asegurarColumnaClanTagControl2_(sh)
+ * 6-nov-2026 (tanda 7, Clanes por Tag; §PF419). Idempotente: garantiza que Control_2 tenga la
+ * columna CC2.CLAN_TAG (34, al final) y su encabezado «Clan_Tag» en la fila 3. No toca ninguna otra
+ * columna. Control_2 se reescribe entera en cada corrida de actualizarControl2(), asi que las filas
+ * se llenan solas; esta funcion solo agrega la columna y el encabezado a la hoja que ya existia.
+ */
+function _asegurarColumnaClanTagControl2_(sh) {
+  if (sh.getMaxColumns() < CC2.CLAN_TAG) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), CC2.CLAN_TAG - sh.getMaxColumns());
+  }
+  var celda = sh.getRange(3, CC2.CLAN_TAG);
+  if (String(celda.getValue()) === 'Clan_Tag') return;
+  sh.getRange(1, CC2.CLAN_TAG, 2, 1).merge()
+    .setBackground(CFG.COLORES.HEADER_BG)
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+  celda.setValue('Clan_Tag')
+    .setBackground(CFG.COLORES.HEADER_BG)
+    .setFontColor(CFG.COLORES.HEADER_FG)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center');
+  sh.getRange(1, CC2.CLAN_TAG, 3, 1)
+    .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+}
+
+/**
  * _restaurarControl2SiNoExiste() [→ Contexto_Base_Web.md §23B027]
  */
 function _restaurarControl2SiNoExiste() {
@@ -425,9 +462,8 @@ function _restaurarControl2SiNoExiste() {
   if (ss.getSheetByName('Control_2')) return; // ya existe: nunca se toca
 
   var sh = ss.insertSheet('Control_2');
-  var COL_TOTALES = _control2ColTotales();
-  if (sh.getMaxColumns() < COL_TOTALES) {
-    sh.insertColumnsAfter(sh.getMaxColumns(), COL_TOTALES - sh.getMaxColumns());
+  if (sh.getMaxColumns() < CC2.CLAN_TAG) { // 6-nov-2026 (tanda 7): hasta la columna Clan_Tag, no solo hasta la cuadricula
+    sh.insertColumnsAfter(sh.getMaxColumns(), CC2.CLAN_TAG - sh.getMaxColumns());
   }
 
   _pintarEncabezadosControl2(sh);
@@ -551,6 +587,8 @@ function _pintarEncabezadosControl2(sh) {
   // A1:C2 sin bordes (se limpia después del borde general para que no lo
   // sobreescriba, mismo criterio que Control).
   sh.getRange(1, 1, 2, 3).setBorder(false, false, false, false, false, false);
+
+  _asegurarColumnaClanTagControl2_(sh); // 6-nov-2026 (tanda 7): encabezado de la columna Clan_Tag (al final)
 }
 
 /**
