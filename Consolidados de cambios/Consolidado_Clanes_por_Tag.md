@@ -73,6 +73,7 @@
 | 0 | Aviso «Estuvo en un clan rival» confirmado por Tag (`15_`, `37_`, `directorio.html`); `_migrarNuevosAHistorico()` y lista de miembros por clan por Tag | **Hecha** (6-nov-2026), sin probar en Apps Script real | `3e7f202`, `2aaa39f`, `bcd22f0` |
 | 1 | Backend: resolvedor único con memoria y `_getClanTagByName()` que delega en él | **Hecha** (6-nov-2026); memoria **probada en Apps Script real** el mismo día (primera pasada 534 ms, 20 llamadas siguientes 0 ms, 4 clanes con su Tag); falta ver el orden de clanes en roster y directorio de la web | `c23636a`, `f93d529` |
 | 2 | Backend: `clanTag` aditivo en las respuestas web (2a, 2b, 2c y 2d: herramientas de admin, `a13bee5`) | **Hecha** (6-nov-2026), sin probar en Apps Script real | `a06fe51`, `12d71c9` (2a), `532cf80` (2b), `2735c02` (2c) |
+| 2e | Backend: `clanTagPorClan` en el dashboard y en `guerra.json` (agregada el 6-nov-2026: las estructuras por clan van por nombre y la web no podía agrupar por Tag sin ella) | **Hecha** (6-nov-2026), sin probar en Apps Script real; §PF411 | `7bebc45` |
 | 3 | Backend: cruce de meta y mensajes por Tag (3a `30_Mensajes.gs`, 3b `22_ControlCalendario.gs`; los llamadores de `37_`, `38_` y `40_` siguen pasando el nombre hasta la tanda 7) | **Hecha** (6-nov-2026), sin probar en Apps Script real; §PF407 | `c82dbea`, `a388248` |
 | 4 | Backend: mínimos y ataques por clan de torneos y sorteos por Tag | **Hecha** (6-nov-2026), sin probar en Apps Script real; §PF409 | `b68b890` |
 | 5 | Backend: reparación de días y reconstrucción por semana (otros clanes del jugador) por Tag | **Hecha** (6-nov-2026), sin probar en Apps Script real; §PF410 | `7219140` |
@@ -110,6 +111,9 @@
 - **Verificación.** `node --check`; prueba en Node del armado de un objeto de cada tipo; revisar que ningún campo existente cambie de nombre ni de valor. **Sin probar en Apps Script real.**
 - **Orden.** 2a, 2b y 2c son commits separados. La web no cambia en esta tanda.
 - **Cómo quedó (6-nov-2026, §PF405 y §PF406).** 2a en `37_Web_API.gs` (más un complemento en `_webAdminOtrasCuentas()`); 2b en `37_Web_API.gs`; 2c en `38_Web_Endpoints.gs`. `_generarJsonContactos()` no se cambió porque ya trae `clan_tag`. Quedan fuera, para decidir, las funciones de admin que devuelven `clan` y el grid de control por temporada (ver §PF406, punto 4).
+
+### Tanda 2e — `clanTagPorClan` en el dashboard y `guerra.json` (backend; agregada el 6-nov-2026)
+- **Qué es.** Campo aditivo `clanTagPorClan` = `{ nombre: clanTag }` con los nombres que el dashboard usa como clave. La web de la tanda 6a lo usa para agrupar y preseleccionar por Tag. **Cómo quedó:** §PF411 (`38_Web_Endpoints.gs`, `_dashClanTagPorClan_()`, `7bebc45`). Límite: dos clanes distintos con el mismo nombre siguen colapsados hasta las tandas 7 y 13.
 
 ### Tanda 3 — Cruce de meta y mensajes por Tag (backend)
 - **Objetivo.** Que «¿este clan ya cruzó la meta?» se pregunte por Tag.
