@@ -2342,6 +2342,20 @@
       "externa": true,
       "clanTag": "#LR9P209L",
       "comentario": ""
+    },
+    {
+      "temporadaInterna": 27,
+      "temporadaRoyaleAPI": 138,
+      "semana": 1,
+      "clan": "NEWSTYLEPERU",
+      "ataques": 4,
+      "fame": 400,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#2J80YGJL",
+      "comentario": ""
     }
   ]
 }
