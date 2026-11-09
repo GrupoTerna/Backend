@@ -319,8 +319,12 @@ function generarBackupGuerraSemanalCSV() {
     // NUEVO (3-oct-2026, parte 54, sub-tanda 3.4): maximo de fame y de barcos por clan, para sumar entre
     // clanes si el jugador estuvo en 2 o mas clanes esa semana (ver CONTROL_SUMA_ENTRE_CLANES, 19_).
     var maxFamePorClan = {}, maxBarcosPorClan = {}, hayFilaSinClan = false;
+    // §PF427 (8-nov-2026): los ataques solo se miran en filas de Etapa 'Guerra' (criterio 15 de §PF160). Entrenamiento es práctica:
+    // da oro pero no fame y sus ataques no son obligatorios; sus filas traen AtaquesHoy pero AtaquesSemana en 0 o arrastrado de la semana anterior.
+    var maxAtaSemPorClan = {};
     for (var k = 0; k < grupo.length; k++) {
-      sumaAtaques += Number(grupo[k][GC.ATAQUES_HOY - 1]) || 0;
+      var esGuerraK = String(grupo[k][GC.ETAPA - 1] || '').trim() === 'Guerra';
+      if (esGuerraK) sumaAtaques += Number(grupo[k][GC.ATAQUES_HOY - 1]) || 0;
       var fameK = Number(grupo[k][GC.FAME - 1]) || 0;
       if (fameK > maxFame) maxFame = fameK;
       var barcosK = Number(grupo[k][GC.BARCOS - 1]) || 0;
@@ -329,11 +333,27 @@ function generarBackupGuerraSemanalCSV() {
       if (!claveClanK) hayFilaSinClan = true;
       if (!(claveClanK in maxFamePorClan) || fameK > maxFamePorClan[claveClanK]) maxFamePorClan[claveClanK] = fameK;
       if (!(claveClanK in maxBarcosPorClan) || barcosK > maxBarcosPorClan[claveClanK]) maxBarcosPorClan[claveClanK] = barcosK;
+      if (esGuerraK) {
+        var ataSemK = Number(grupo[k][GC.ATAQUES_SEM - 1]) || 0;
+        if (!(claveClanK in maxAtaSemPorClan) || ataSemK > maxAtaSemPorClan[claveClanK]) maxAtaSemPorClan[claveClanK] = ataSemK;
+      }
     }
     var clavesClanGrupo = Object.keys(maxFamePorClan);
     if (CONTROL_SUMA_ENTRE_CLANES && !hayFilaSinClan && clavesClanGrupo.length >= 2) {
       maxFame = 0; maxBarcos = 0;
       clavesClanGrupo.forEach(function (c) { maxFame += maxFamePorClan[c]; maxBarcos += maxBarcosPorClan[c]; });
+    }
+
+    // §PF427 (8-nov-2026): sin corrección, los ataques de la semana salen del ACUMULADO (AtaquesSemana) y no de la suma de AtaquesHoy, que da menos si falta
+    // la fila de un día (criterio 1 de §PF160). AtaquesSemana es por clan: máximo por clan y, con 2 o más clanes (mismo interruptor que fame y barcos), suma entre clanes.
+    // Si hay filas sin clan o el interruptor está apagado con 2 o más clanes, se conserva la suma de AtaquesHoy, pero solo de filas de Guerra.
+    var clavesAtaGrupo = Object.keys(maxAtaSemPorClan);
+    var ataquesSinCorreccion = sumaAtaques;
+    if (clavesAtaGrupo.length === 1) {
+      ataquesSinCorreccion = maxAtaSemPorClan[clavesAtaGrupo[0]];
+    } else if (clavesAtaGrupo.length >= 2 && CONTROL_SUMA_ENTRE_CLANES && !hayFilaSinClan) {
+      ataquesSinCorreccion = 0;
+      clavesAtaGrupo.forEach(function (c) { ataquesSinCorreccion += maxAtaSemPorClan[c]; });
     }
 
     var filaSalida = new Array(GUERRA_TOTAL_COLS).fill('');
@@ -351,7 +371,7 @@ function generarBackupGuerraSemanalCSV() {
     filaSalida[GC.NOMBRE     - 1] = filaMasReciente[GC.NOMBRE - 1];
     // Corrección RoyaleAPI (si existe una para este mismo grupo): reemplaza [→ Contexto_Base_Web.md §23B020]
     var correccion = overlayGuerra[ordenClaves[g]];
-    var ataquesFinal = correccion ? correccion.ataquesSemana : sumaAtaques;
+    var ataquesFinal = correccion ? correccion.ataquesSemana : ataquesSinCorreccion;
     var fameFinal    = correccion ? correccion.fame          : maxFame;
     var barcosFinal  = (correccion && correccion.barcos !== null && correccion.barcos !== undefined)
       ? correccion.barcos
