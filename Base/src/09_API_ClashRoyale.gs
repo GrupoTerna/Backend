@@ -99,14 +99,8 @@ var _TAGS_API_CACHE_ = null;   // §PF334: tags de clanes a los que se les pide 
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS — pregunta 51, tanda 2: CSV de battlelogs [→ Contexto_Base_Web.md §09B010]
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS — pregunta 52: periodIndex POR CLAN [→ Contexto_Base_Web.md §09B011]
 // AVISOS ABIERTOS / VERIFICACIONES ABIERTAS — FASE B: JSON sueltos -> "Otros" [→ Contexto_Base_Web.md §09B012]
-// Claves normalizadas (ver _normalizarNombreClan_) -> ID de la subcarpeta de [→ Contexto_Base_Web.md §09B013]
-var _SUBCARPETAS_CLAN_ = {
-  'grupo\u4e42terna\u2122':   '1J7M0A2sKoN0vwXDHPOKjJ_QkLzwbIoWR', // Nombre en Drive: "Grupo乂Terna™"
-  'grupoxterna\u21222':       '1i7lZIw_69S_6NtQLAmSjMV_6TePKu8cH', // Nombre en Drive: "GrupoXTerna™2"
-  'grupoxterna\u21223':       '1nkBknCl29nAO7Pph4QM4BAeO05Up2GFm', // Nombre en Drive: "GrupoXTerna™3"
-  'mini\u4e42ternas\u2122':   '1p7mu6rh0wu5hCWTEPttlCjNGF1Cgdqbi', // Nombre en Drive: "Mini乂Ternas™"
-  'naranja x':                '1DKxLFE7P0pnItV6nTk6Q1jCctF1YgGx9'  // Nombre en Drive: "NARANJA x"
-};
+// §PF433 (9-nov-2026): se retiró _SUBCARPETAS_CLAN_ (IDs de las carpetas viejas JSON/<clan>, que no existen en Drive; sin lectores en el código).
+//   Los 5 IDs quedan anotados en Contexto_Base_Web.md §PF074 por si hace falta consultarlos.
 
 /**
  * CARPETAS_JSON_POR_ENDPOINT_ [→ Contexto_Base_Web.md §09B014]
