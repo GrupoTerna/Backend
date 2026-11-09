@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 09/11/2026 01:19:14 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 09/11/2026 02:38:19 */
 
 
 
@@ -28999,6 +28999,7 @@ var REVISION_GUERRA_ENCABEZADO = ['N°', 'Fecha', 'Temporada', 'Semana', 'Tag', 
 var CGW_CONTRADICCION_TIPO = 'Contradicción';      // columna «Tipo» de Revision_Guerra.csv
 var CGW_CONTRADICCION_ESTADO = 'Pendiente';        // columna «Estado» de lo que no se resolvió solo
 var CGW_CONTRADICCIONES_MAX_LINEAS = 200;          // tope de líneas que viajan en la respuesta (el resto solo cuenta)
+var CGW_MIN_JUGADORES_COBERTURA = 5;               // §PF436: un día cuenta como «cubierto» para un clan si hay al menos 5 jugadores distintos con fila real ese día; con menos se toma como un día sin registro (la ausencia de un jugador no prueba nada)
 var CGW_MAX_ATAQUES_SIN_FAME = 4;                 // §PF357: clan que cruzó la meta el domingo: el domingo no da fame: cuentan todos sus ataques (máximo 4) o ninguno (decisión de la usuaria, 4-nov-2026)
 // §PF357 (5-nov-2026): contradicciones de Revision_Guerra.csv que la usuaria resolvió con la regla del clan terminado; las cierra cerrarContradiccionesClanTerminado() [→ Contexto_Base_Web.md §PF357]
 var CGW_CONTRADICCIONES_CERRAR_PF357 = [
@@ -31637,7 +31638,14 @@ function _aplicarCorreccionAGuerraConReparto(fuente, offsetsPorClave, temporadaP
   opciones.ultimoRepartoFallido = null;
   opciones.ultimaReconstruccionClanTerminado = null;
   opciones.sinClanReconstruccion = false;
+  opciones.sinPresenciaReconstruccion = false; // §PF436
   var offsetsNuevos = _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valores, opciones);
+  if (!offsetsNuevos && opciones.sinPresenciaReconstruccion) {
+    // §PF436: sin evidencia de que el jugador estuviera en el clan esa semana: no se crea nada y va a revisión (no cuenta como «sin combinación»).
+    stats.sinPresencia = (stats.sinPresencia || 0) + 1;
+    if (opciones.revision) opciones.revision.push({ temporada: temporadaPropia, semana: semana, tag: tag, nombre: '', tipo: 'alarma', motivo: 'presencia no establecida: no se crearon las filas (reconstruccion)', detalle: String(opciones.detallePresenciaReconstruccion || '') });
+    return { modo: 'reconstruccion', huboCambio: false, sinPresencia: true };
+  }
   if (!offsetsNuevos && opciones.sinClanReconstruccion) {
     // §PF402: no se conoce el clan: no se crea nada y va a revision (no cuenta como «sin combinacion»).
     stats.sinClan = (stats.sinClan || 0) + 1;
@@ -32516,6 +32524,91 @@ function _marcarOrigenCorregido(filas, offsetsExistentes) {
 }
 
 /**
+ * _cgwIndicePresencia_(fuente) [→ Contexto_Base_Web.md §PF436]
+ * Índice de presencia sacado de las filas REALES de Guerra (Origen distinto de «Reconstruido»: Original o Corregido). Cada fila real existe porque el jugador estaba en la lista de miembros
+ * del clan ese día (updateGuerraSheet() escribe una fila por participante que esté en el memberList, también en entrenamiento). Un día se identifica con clave = Temporada*1000 + PeriodIndex
+ * (orden cronológico; no hace falta calcular fechas). El clan se identifica por ClanTag y, si la fila no lo trae (filas antiguas), por el nombre del clan.
+ * Se arma UNA vez por fuente y se guarda en fuente.indicePresencia: durante la corrida solo se agregan filas «Reconstruido», que no entran al índice.
+ * Devuelve { jugadorDias: {tag|clan: {clave: true}}, clanDias: {clan: {clave: {n, tags}}}, cubiertos: {clan: [claves ordenadas]} (se llena al consultar) }.
+ */
+function _cgwIndicePresencia_(fuente) {
+  if (fuente.indicePresencia) return fuente.indicePresencia;
+  var idx = { jugadorDias: {}, clanDias: {}, cubiertos: {} };
+  var filas = fuente.filas || [];
+  for (var i = 0; i < filas.length; i++) {
+    var f = filas[i];
+    if (_origenGuerraEs_(f[GC.ORIGEN - 1], 'Reconstruido')) continue;
+    var tag = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+    var t = Number(f[GC.TEMPORADA - 1]), p = Number(f[GC.PERIOD_IDX - 1]);
+    if (!tag || !isFinite(t) || !isFinite(p) || String(f[GC.PERIOD_IDX - 1]).trim() === '') continue;
+    var clan = String(f[GC.CLAN_TAG - 1] || '').trim().toUpperCase() || ('N:' + String(f[GC.CLAN - 1] || '').trim());
+    if (clan === 'N:') continue;
+    var clave = t * 1000 + p;
+    var kj = tag + '|' + clan;
+    if (!idx.jugadorDias[kj]) idx.jugadorDias[kj] = {};
+    idx.jugadorDias[kj][clave] = true;
+    if (!idx.clanDias[clan]) idx.clanDias[clan] = {};
+    var d = idx.clanDias[clan][clave];
+    if (!d) d = idx.clanDias[clan][clave] = { n: 0, tags: {} };
+    if (!d.tags[tag]) { d.tags[tag] = true; d.n++; }
+  }
+  fuente.indicePresencia = idx;
+  return idx;
+}
+
+/**
+ * _cgwPresenciaSemana_(fuente, temporadaPropia, semana, tag, clanTag, clanNombre) [→ Contexto_Base_Web.md §PF436]
+ * Regla de la usuaria (9-nov-2026): una semana solo se reconstruye desde cuando el jugador estuvo de verdad en el clan; si estuvo y no aportó nada, se registra con 0. La hora de RoyaleAPI
+ * no sirve para decidirlo (puede errar unas 12 horas), así que la evidencia es propia: las filas reales de Backup_Guerra (que salen de la lista de miembros del clan).
+ * Para cada día de guerra de la semana (jueves a domingo, offsets 0 a 3):
+ *   a) el jugador tiene fila real ese día en ese clan -> presente;
+ *   b) no la tiene pero el clan SÍ tiene registro ese día (al menos CGW_MIN_JUGADORES_COBERTURA jugadores con fila real) -> ausente: si hubiera estado, tendría fila;
+ *   c) el clan no tiene registro ese día (corte de la recolección): presente solo si el jugador tiene fila real en el día con registro anterior más cercano Y en el posterior más cercano;
+ *   d) el clan no tiene ningún registro en todo el archivo -> sin datos: no se puede decidir y se deja como antes (todos los días presentes).
+ * La semana se reconstruye solo en los días presentes. Devuelve { dias: [bool x 4], hayPresencia, sinDatos, texto }.
+ */
+function _cgwPresenciaSemana_(fuente, temporadaPropia, semana, tag, clanTag, clanNombre) {
+  var idx = _cgwIndicePresencia_(fuente);
+  var tg = String(tag || '').trim().toUpperCase();
+  var claves = [];
+  var ct = String(clanTag || '').trim().toUpperCase();
+  if (ct) claves.push(ct);
+  var cn = String(clanNombre || '').trim();
+  if (cn) claves.push('N:' + cn);
+  // días con registro del clan (unión del ClanTag y del nombre) y días del jugador
+  var cubierto = {}, jugador = {}, hayCobertura = false;
+  for (var c = 0; c < claves.length; c++) {
+    var dc = idx.clanDias[claves[c]];
+    if (dc) Object.keys(dc).forEach(function (k) { if (dc[k].n >= CGW_MIN_JUGADORES_COBERTURA) { cubierto[k] = true; hayCobertura = true; } });
+    var dj = idx.jugadorDias[tg + '|' + claves[c]];
+    if (dj) Object.keys(dj).forEach(function (k) { jugador[k] = true; });
+  }
+  var res = { dias: [true, true, true, true], hayPresencia: true, sinDatos: false, texto: '' };
+  if (!hayCobertura) { res.sinDatos = true; res.texto = 'el clan no tiene registros reales en el archivo: no se puede decidir la presencia'; return res; }
+  var ordenados = Object.keys(cubierto).map(Number).sort(function (a, b) { return a - b; });
+  var partes = [];
+  var algunaPresente = false;
+  for (var off = 0; off <= 3; off++) {
+    var pIdx = (Number(semana) - 1) * 7 + 3 + off;
+    var clave = Number(temporadaPropia) * 1000 + pIdx;
+    var presente;
+    if (jugador[clave]) presente = true;
+    else if (cubierto[clave]) presente = false;
+    else {
+      var antes = null, despues = null;
+      for (var q = 0; q < ordenados.length; q++) { if (ordenados[q] < clave) antes = ordenados[q]; else if (ordenados[q] > clave) { despues = ordenados[q]; break; } }
+      presente = (antes !== null && despues !== null && !!jugador[antes] && !!jugador[despues]);
+    }
+    res.dias[off] = presente;
+    if (presente) algunaPresente = true;
+    partes.push('JVSD'.charAt(off) + (presente ? ' sí' : ' no'));
+  }
+  res.hayPresencia = algunaPresente;
+  res.texto = 'presencia por día (' + partes.join(', ') + ') según las filas reales de Backup_Guerra.csv del clan';
+  return res;
+}
+
+/**
  * _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valores, opciones) [→ Contexto_Base_Web.md §18B078]
  */
 function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valores, opciones) {
@@ -32534,11 +32627,26 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
     Logger.log('[CorreccionGuerra] No se reconstruye T' + temporadaPropia + ' S' + semana + ' ' + tag + ': no se conoce su clan (no figura en el Directorio y la correccion no lo trae). No se crearon filas.');
     return null;
   }
+  // §PF436 (9-nov-2026, regla de la usuaria): solo se reconstruye desde cuando el jugador estuvo de verdad en el clan; si no hay evidencia de presencia no se crean filas y va a revisión.
+  // quien llama desde un clan concreto pasa la fuente real en opciones.fuenteEvidencia (aquí `fuente` es una temporal vacía).
+  var presencia = _cgwPresenciaSemana_(opciones.fuenteEvidencia || fuente, temporadaPropia, semana, tag, clanTagReconstruccion, clanReconstruccion);
+  // Si lo que se reconstruye trae ataques, barcos o fame en ESTE clan, el jugador estuvo ahí esa semana (quien no está en el clan no ataca por él): la actividad prueba la presencia. No dice en qué
+  // día entró, así que se mantiene lo de antes (los 4 días). Solo un 0 puro (como el del log de un clan que lista a quien pasó por él) depende de la evidencia de las filas reales.
+  if ((Number(valores.ataquesSemana) > 0) || (Number(valores.fame) > 0) || (Number(valores.barcos) > 0)) {
+    presencia = { dias: [true, true, true, true], hayPresencia: true, sinDatos: false, texto: 'la semana trae ataques, barcos o fame en este clan: presencia probada por la actividad' };
+  }
+  if (!presencia.hayPresencia) {
+    opciones.sinPresenciaReconstruccion = true;
+    opciones.detallePresenciaReconstruccion = presencia.texto;
+    Logger.log('[CorreccionGuerra] No se reconstruye T' + temporadaPropia + ' S' + semana + ' ' + tag + ' en ' + clanReconstruccion + ': no hay evidencia de que estuviera en el clan (' + presencia.texto + '). No se crearon filas.');
+    return null;
+  }
   var inicioSemanaPeriodIndex = (Number(semana) - 1) * 7;
 
   var offsetsNuevos = {};
   var filasAntes = fuente.filas.length;
   for (var off = 0; off <= 3; off++) {
+    if (!presencia.dias[off]) continue; // §PF436: día sin presencia, no se crea fila
     var pIdx = inicioSemanaPeriodIndex + 3 + off; // 3=Jueves .. 6=Domingo
     var diaGuerraObj = calcDiaGuerraIdx(CFG.REF_DEFAULT, temporadaPropia, pIdx);
 
@@ -32598,7 +32706,8 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
     return null;
   }
 
-  fuente.filas[offsetsNuevos[3]][GC.ATAQUES_SEM - 1] = valores.ataquesSemana;
+  var offsetsOrdenadosNuevos = Object.keys(offsetsNuevos).map(Number).sort(function (a, b) { return b - a; });
+  fuente.filas[offsetsNuevos[offsetsOrdenadosNuevos[0]]][GC.ATAQUES_SEM - 1] = valores.ataquesSemana; // §PF436: el último día con presencia (antes siempre el domingo)
 
   return offsetsNuevos;
 }
@@ -33340,8 +33449,10 @@ function _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, t
   if (nombreClan) opcionesRec.clanNombre = nombreClan;
   if (clanTag) opcionesRec.clanTag = clanTag; // 7-nov-2026 (tanda 7): el Tag del clan de esta semana
   var offsTemp;
+  var fuenteEvPrevia = opcionesRec.fuenteEvidencia;
+  opcionesRec.fuenteEvidencia = fuente; // §PF436: `temp` está vacía; la presencia se decide con las filas reales de la fuente
   try { offsTemp = _reconstruirSemanaDesdeCero(temp, temporadaPropia, semana, tag, valores, opcionesRec); }
-  finally { opcionesRec.clanNombre = clanNombrePrevio; opcionesRec.clanTag = clanTagPrevio; }
+  finally { opcionesRec.clanNombre = clanNombrePrevio; opcionesRec.clanTag = clanTagPrevio; opcionesRec.fuenteEvidencia = fuenteEvPrevia; }
   if (!offsTemp) return {}; // sin combinacion (§PF122): no se escribe nada; la comprobacion (b) de quien llama lo revierte y lo avisa
   for (var i = 0; i < temp.filas.length; i++) {
     temp.filas[i][GC.CLAN - 1] = nombreClan;
@@ -33425,6 +33536,7 @@ function _aplicarCorreccionConClanTagAFuente_(fuente, offsetsPorClave, temporada
   opcionesReparto.conflictosReparto = conflictosReparto;
   var problemasAntes = {};
   var offsetsEscritos = {}; // clanTag -> { offsetDia: rowIdx } de las filas que quedaron escritas
+  var sinPresenciaClanes = {}; // §PF436: clanes donde no se reconstruyó por falta de evidencia de presencia
   for (var pa = 0; pa < aEscribir.length; pa++) {
     var nomPa = nombres[aEscribir[pa].clanTag];
     if (aEscribir[pa].accion === 'aplicar') problemasAntes[aEscribir[pa].clanTag] = _problemasFilasClan_(filas, porClan[nomPa]);
@@ -33442,7 +33554,17 @@ function _aplicarCorreccionConClanTagAFuente_(fuente, offsetsPorClave, temporada
       if (_ajustarSemanaDeUnClan_(filas, porClan[nombreClan], valores, opcionesReparto)) cambioAlgo = true;
       offsetsEscritos[ce.clanTag] = porClan[nombreClan];
     } else {
+      opcionesReparto.sinPresenciaReconstruccion = false;
       offsetsEscritos[ce.clanTag] = _reconstruirSemanaDeUnClanDesdeCero_(fuente, temporadaPropia, semana, tag, valores, opcionesReparto, nombreClan, nombreJugador, ce.clanTag);
+      if (opcionesReparto.sinPresenciaReconstruccion) {
+        // §PF436: sin evidencia de presencia en este clan esa semana: no se crean filas, no es un error de reparto; se avisa y las comprobaciones de abajo lo saltan.
+        sinPresenciaClanes[ce.clanTag] = true;
+        offsetsEscritos[ce.clanTag] = {};
+        suma('ccSinPresencia');
+        Logger.log(etq + 'Sin presencia en el clan ' + ce.clanTag + ': no se reconstruye (' + opcionesReparto.detallePresenciaReconstruccion + ').');
+        revisar('alarma', 'presencia no establecida: no se crearon las filas (reconstruccion)', 'clan=' + ce.clanTag + '; ataques=' + valores.ataquesSemana + ' fame=' + valores.fame + ' barcos=' + (valores.barcos === null || valores.barcos === undefined ? 'sin dato' : valores.barcos) + '; ' + opcionesReparto.detallePresenciaReconstruccion);
+        continue;
+      }
       cambioAlgo = true;
     }
   }
@@ -33467,6 +33589,7 @@ function _aplicarCorreccionConClanTagAFuente_(fuente, offsetsPorClave, temporada
     { ternaTags: ternaTags, nombresPorTag: nombres, nombre: nombreJugador });
   var noQuedo = [];
   for (var x = 0; x < aEscribir.length; x++) {
+    if (sinPresenciaClanes[aEscribir[x].clanTag]) continue; // §PF436
     var hallado = null;
     for (var y = 0; y < ev2.decision.clanes.length; y++) { if (ev2.decision.clanes[y].clanTag === aEscribir[x].clanTag) hallado = ev2.decision.clanes[y]; }
     if (!hallado || hallado.accion !== 'sin-cambio') noQuedo.push(aEscribir[x].clanTag + (hallado ? ' (' + hallado.accion + ': ' + hallado.motivo + ')' : ''));
@@ -33507,6 +33630,7 @@ function _aplicarCorreccionConClanTagAFuente_(fuente, offsetsPorClave, temporada
   }
 
   for (var z = 0; z < aEscribir.length; z++) {
+    if (sinPresenciaClanes[aEscribir[z].clanTag]) continue; // §PF436
     suma(aEscribir[z].accion === 'aplicar' ? 'ccAplicadas' : 'ccReconstruidas');
     Logger.log(etq + (aEscribir[z].accion === 'aplicar' ? 'Escrito clan ' : 'Reconstruido clan ') + aEscribir[z].clanTag +
       ': ataques=' + aEscribir[z].escribir.ataques + ' fame=' + aEscribir[z].escribir.fame + ' barcos=' +
