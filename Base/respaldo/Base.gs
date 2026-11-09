@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 07/11/2026 09:01:25 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 08/11/2026 22:13:34 */
 
 
 
@@ -25403,15 +25403,18 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
    */
   var sumaAtaquesDiasPrevios = 0;
   var diasPreviosConFila = {}; // §PF297: periodIndex de los días previos a ayer que SÍ tienen fila (para saber si la suma está completa)
+  var diasPreviosClanConFila = {}; // §PF424: periodIndex de los días previos a ayer en que ALGÚN jugador de este clan tiene fila (si el clan tiene fila ese día y este jugador no, no estaba en el clan: no es un hueco)
   var rowIdxBase = -1; // NUEVO (sub-tanda 3.2): fila del dia D-1 (cierra la base de fame/barcos de ayer)
   for (var i = 0; i < datosGuerra.length; i++) {
     var fila = datosGuerra[i];
-    if (String(fila[GC.TAG - 1] || '').trim() !== tag) continue;
+    var tagEsEste = String(fila[GC.TAG - 1] || '').trim() === tag; // §PF424: antes el tag se filtraba primero; ahora se mira el clan antes para saber qué días tiene registrados
     if (_clanNombreAutocorregir && String(fila[GC.CLAN - 1] || '') !== _clanNombreAutocorregir) continue;
     if (String(fila[GC.TEMPORADA - 1] || '') !== String(ctx.temporada)) continue;
     if (((Number(fila[GC.SEMANA - 1]) || 1) - 1) !== ctx.sectionIndex) continue;
     var pIdxFilaPrevia = Number(fila[GC.PERIOD_IDX - 1]) || 0;
     if (!esDiaGuerraIdx(pIdxFilaPrevia)) continue;
+    if (pIdxFilaPrevia < periodIndexAnterior) diasPreviosClanConFila[pIdxFilaPrevia] = true;
+    if (!tagEsEste) continue;
     if (pIdxFilaPrevia === periodIndexAnterior - 1) rowIdxBase = i;
     if (pIdxFilaPrevia === periodIndexAnterior) { rowIdx = i; continue; }
     if (pIdxFilaPrevia < periodIndexAnterior) {
@@ -25422,11 +25425,16 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
   if (rowIdx < 0) return false; // el día anterior todavía no tiene fila (corrida se saltó ese periodo, o es de otro clan)
 
   // §PF297 (30-oct-2026, criterio 1 de §PF160): la resta (decksUsed - decksUsedToday) - suma de los días previos solo vale si TODOS los días previos a ayer tienen fila; si falta alguna (por ejemplo el jueves), la suma queda corta y la resta le atribuiría a ayer los ataques del día que falta (hasta el tope de 4). En ese caso no se escribe nada: lo repara el informe manual (`55_`/`57_`) y queda un aviso en el registro.
-  var diasPreviosEsperados = offHoyDia - 1; // jueves hasta anteayer (viernes: 0, sábado: 1, domingo: 2)
-  var diasPreviosEncontrados = Object.keys(diasPreviosConFila).length;
-  if (diasPreviosEncontrados < diasPreviosEsperados) {
+  // §PF424 (7-nov-2026): un día previo sin fila del jugador solo es un hueco si el clan tampoco tiene ninguna fila ese día (no se registró el día). Si otros jugadores del clan sí
+  // la tienen, el jugador no estaba en este clan (entró después o venía de otro clan): sus ataques de ese día en este clan son 0 y la suma está completa.
+  var diasPreviosHueco = 0;
+  for (var kPrev = 1; kPrev <= offHoyDia - 1; kPrev++) { // jueves hasta anteayer: periodIndexAnterior - 1 ... periodIndexAnterior - (offHoyDia - 1)
+    var pIdxEsperado = periodIndexAnterior - kPrev;
+    if (!diasPreviosConFila[pIdxEsperado] && !diasPreviosClanConFila[pIdxEsperado]) diasPreviosHueco++;
+  }
+  if (diasPreviosHueco > 0) {
     Logger.log('[Guerra][Cierre de dia] PENDIENTE: ' + tag + ' en ' + (_clanNombreAutocorregir || clanTag) + ', periodIndex ' + periodIndexAnterior +
-      ' -- faltan ' + (diasPreviosEsperados - diasPreviosEncontrados) + ' fila(s) de dias previos; con la suma incompleta no se corrige el dia anterior.');
+      ' -- faltan ' + diasPreviosHueco + ' fila(s) de dias previos que el clan no registro; con la suma incompleta no se corrige el dia anterior.');
     return false;
   }
 
