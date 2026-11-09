@@ -1,7 +1,7 @@
 {
   "clan": "GrupoXTerna™2",
   "fuente": "log",
-  "fechaUltimaActualizacion": "04/11/2026",
+  "fechaUltimaActualizacion": "09/11/2026",
   "semanas": [
     {
       "temporadaInterna": 22,
@@ -10924,6 +10924,35 @@
         },
         {
           "tag": "#YY8R9P8UJ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 27,
+      "temporadaRoyaleAPI": 138,
+      "temporadaSupercell": "2026-11",
+      "semana": 1,
+      "jugadores": [
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
+          "barcos": 0
+        },
+        {
+          "tag": "#UYU0PGUYJ",
           "nombre": "",
           "ataques": 0,
           "fame": 0,

@@ -2510,6 +2510,20 @@
       "externa": true,
       "clanTag": "#9VGYGRQL",
       "comentario": ""
+    },
+    {
+      "temporadaInterna": 27,
+      "temporadaRoyaleAPI": 138,
+      "semana": 1,
+      "clan": "PERU",
+      "ataques": 8,
+      "fame": 1200,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#L20UVPVP",
+      "comentario": ""
     }
   ]
 }

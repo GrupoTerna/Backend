@@ -1,7 +1,7 @@
 {
   "clan": "Grupo乂Terna™",
   "fuente": "log",
-  "fechaUltimaActualizacion": "04/11/2026",
+  "fechaUltimaActualizacion": "09/11/2026",
   "semanas": [
     {
       "temporadaInterna": 22,
@@ -8806,6 +8806,56 @@
           "nombre": "ᴳ乂ᵀ⚜️LoloMaster",
           "ataques": 4,
           "fame": 700,
+          "barcos": 0
+        }
+      ]
+    },
+    {
+      "temporadaInterna": 27,
+      "temporadaRoyaleAPI": 138,
+      "temporadaSupercell": "2026-11",
+      "semana": 1,
+      "jugadores": [
+        {
+          "tag": "#8YCLY8CRU",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 400,
+          "barcos": 0
+        },
+        {
+          "tag": "#P8Y0CQ9VR",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#RR8CRJPUV",
+          "nombre": "",
+          "ataques": 4,
+          "fame": 600,
+          "barcos": 0
+        },
+        {
+          "tag": "#U8G029GUQ",
+          "nombre": "",
+          "ataques": 5,
+          "fame": 800,
+          "barcos": 0
+        },
+        {
+          "tag": "#UYU0PGUYJ",
+          "nombre": "",
+          "ataques": 8,
+          "fame": 1300,
+          "barcos": 0
+        },
+        {
+          "tag": "#Y8CVG9VYL",
+          "nombre": "",
+          "ataques": 0,
+          "fame": 0,
           "barcos": 0
         }
       ]
