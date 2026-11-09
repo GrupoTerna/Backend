@@ -1,6 +1,6 @@
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 31-oct-2026): primero las constantes y variables globales; luego, por partes:
 //  Parte 1 — Funciones que se corren a mano
-//    - Informes (solo leen y registran)
+//    - Informes (solo leen y registran); generarGuerraDesglose() (§PF437 fase 2) escribe Guerra_Desglose.csv y Battlelog_Capturas.csv, sin tocar la hoja Guerra
 //    - Aplicar las correcciones desde Control_2 (aplicarCorreccionGuerraATodasLasTemporadas() corre por tandas: cadena CORRGUERRA, §PF358)
 //    - Auditorías de la guerra reconstruida
 //    - Completar el domingo y reparar la semana desde el JSON de RoyaleAPI
@@ -12,7 +12,7 @@
 //    - Aplicar las correcciones (motor)
 //    - Reparto, reconstrucción y cobertura
 //    - Reparto del domingo y corrección con ClanTag
-//    - Battlelog contra guerra
+//    - Battlelog contra guerra (incluye las ayudas de Guerra_Desglose.csv y Battlelog_Capturas.csv, §PF437 fase 2)
 //    - Hoja contra correcciones
 //    - Domingo y semana desde el JSON de RoyaleAPI
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
@@ -715,6 +715,75 @@ function informeBattlelogContraGuerra() {
   for (var li = 0; li < mostrar; li++) Logger.log(etiqueta + ' ' + lineas[li].texto);
   if (lineas.length > mostrar) Logger.log(etiqueta + ' ... y ' + (lineas.length - mostrar) + ' linea(s) mas sin mostrar (primero se listan las firmes, despues las ambiguas y al final las no concluyentes).');
   if (!lineas.length) Logger.log(etiqueta + ' Sin diferencias que listar.');
+}
+
+/**
+ * generarGuerraDesglose() — §PF437 fase 2 (9-nov-2026). MANUAL (se corre desde el editor de Apps Script). Escribe Guerra_Desglose.csv: una fila por jugador, día de guerra y clan Terna (etapa «Guerra»),
+ * con los ataques por puntuación (duelo, PvP y barco, ganados y perdidos, y sin fame), la fuente del desglose, la consistencia con el battlelog y la cobertura de la mejor captura. Lee Backup_Guerra.csv
+ * y Backup_Battlelogs.csv y, para la cobertura, las capturas JSON a través de Battlelog_Capturas.csv (que solo abre los JSON nuevos). No toca la hoja Guerra, no corrige nada y NO pide nada a la API.
+ * Si se acaba el tiempo de lectura de capturas (GDS_PRESUPUESTO_CAPTURAS_MS), escribe lo que tiene, avisa cuántas quedaron sin leer y se vuelve a correr hasta que diga 0. [→ Contexto_Base_Web.md §PF437]
+ */
+function generarGuerraDesglose() {
+  var etiqueta = '[Guerra Desglose]';
+  var t0 = Date.now();
+  if (typeof _blsLeerCsv_ !== 'function' || typeof _blsListarArchivos_ !== 'function' || typeof BLS_HEADERS === 'undefined' || typeof BLS_CSV_NOMBRE === 'undefined') {
+    Logger.log(etiqueta + ' ABORT: falta 06_Battlelogs_Siembra.gs (funciones _blsLeerCsv_ y _blsListarArchivos_ y constantes BLS_*).');
+    return;
+  }
+  var csvTexto = _loadCSVFromDrive('Backup_Guerra.csv');
+  if (!csvTexto || !String(csvTexto).trim()) { Logger.log(etiqueta + ' ABORT: Backup_Guerra.csv no existe o está vacío.'); return; }
+  var parsed = _parseCSV(csvTexto);
+  if (!parsed || parsed.length < 2) { Logger.log(etiqueta + ' ABORT: Backup_Guerra.csv no tiene filas de datos.'); return; }
+  var filas = [];
+  var i;
+  for (i = 1; i < parsed.length; i++) {
+    var f = parsed[i].slice(0, GUERRA_TOTAL_COLS);
+    while (f.length < GUERRA_TOTAL_COLS) f.push('');
+    filas.push(f);
+  }
+
+  var bl = _blsLeerCsv_(BLS_CSV_NOMBRE, BLS_HEADERS);
+  if (!bl.ok) { Logger.log(etiqueta + ' ABORT: ' + bl.error); return; }
+  var battlelogPorTag = {};
+  for (i = 0; i < bl.rows.length; i++) {
+    var tg = _blgNormalizarTag_(bl.rows[i][BLG_COL.TAG]);
+    if (!tg) continue;
+    if (!battlelogPorTag[tg]) battlelogPorTag[tg] = [];
+    battlelogPorTag[tg].push(bl.rows[i]);
+  }
+
+  var tagsGuerra = {};
+  for (i = 0; i < filas.length; i++) {
+    if (String(filas[i][GC.ETAPA - 1]).trim() !== 'Guerra') continue;
+    var tj = _blgNormalizarTag_(filas[i][GC.TAG - 1]);
+    if (tj) tagsGuerra[tj] = true;
+  }
+  var cap = _gdsActualizarCapturas_(tagsGuerra);
+  if (!cap.ok) { Logger.log(etiqueta + ' ABORT: ' + cap.motivo); return; }
+
+  var ternaTags = CFG.TERNA_TAGS.slice();
+  var nombresPorTag = {};
+  try { nombresPorTag = _mapaNombresClanTerna_(ternaTags); } catch (eN) { nombresPorTag = {}; }
+  var tagPorNombre = {};
+  ternaTags.forEach(function (t) { if (nombresPorTag[t]) tagPorNombre[nombresPorTag[t]] = t; });
+
+  var res = _gdsConstruirFilas_(filas, { ternaTags: ternaTags, tagPorNombre: tagPorNombre, battlelogPorTag: battlelogPorTag, capturasPorTag: cap.porTag });
+  if (!res.ok) { Logger.log(etiqueta + ' ABORT: ' + res.motivo); return; }
+  var c = res.cuenta;
+  if (!res.filas.length) { Logger.log(etiqueta + ' No salió ninguna fila (' + c.filasLeidas + ' leídas de Backup_Guerra.csv, ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag); no se escribe ' + GDS_CSV_NOMBRE + '.'); return; }
+  for (i = 0; i < res.filas.length; i++) res.filas[i][0] = i + 1;
+  _saveCSVToDrive(GDS_CSV_NOMBRE, _encodeCSV([GDS_HEADERS].concat(res.filas)));
+
+  function resumenDe(mapa) { return Object.keys(mapa).sort().map(function (k) { return k + ' ' + mapa[k]; }).join(', '); }
+  Logger.log(etiqueta + ' ' + GDS_CSV_NOMBRE + ' escrito: ' + c.filasSalida + ' fila(s) de ' + c.semanasJugador + ' semana(s) de jugador (' + c.filasLeidas + ' filas leídas de Backup_Guerra.csv; ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag, ' + c.fueraDeSemana + ' fuera de la semana de guerra).');
+  Logger.log(etiqueta + ' Fuente del desglose: ' + resumenDe(c.porFuente) + '.');
+  Logger.log(etiqueta + ' Cobertura de la mejor captura: ' + resumenDe(c.porCobertura) + '. La cobertura es por tiempo y no prueba que el día esté completo (el log pierde batallas, §18B049).');
+  if (c.repetidas.length) Logger.log(etiqueta + ' ' + c.repetidas.length + ' fila(s) repetidas (mismo jugador, semana, clan y día de guerra); se conservó la de mayor PeriodIndex. Líneas de Backup_Guerra.csv: ' + c.repetidas.slice(0, 20).join(', ') + (c.repetidas.length > 20 ? ' y más' : '') + '.');
+  if (c.sinLimites) Logger.log(etiqueta + ' ' + c.sinLimites + ' semana(s) de jugador sin límites de día (falta una fecha DiaGuerra válida): salen sin battlelog ni cobertura.');
+  if (c.ambiguasPendientes) Logger.log(etiqueta + ' ' + c.ambiguasPendientes + ' batalla(s) del cambio de día sin ubicar; los desgloses de ese clan y semana quedan como «Battlelog parcial».');
+  Logger.log(etiqueta + ' Capturas: ' + cap.filas + ' registradas en ' + GDS_CAPTURAS_CSV_NOMBRE + ' (' + cap.nuevas + ' nuevas en esta corrida, ' + cap.errores + ' con error de lectura).');
+  if (cap.sinLeer > 0) Logger.log(etiqueta + ' AVISO: se acabó el tiempo de lectura y ' + cap.sinLeer + ' captura(s) quedaron sin leer; la cobertura de esas filas puede salir «sin-dato». Vuelve a correr generarGuerraDesglose() hasta que este aviso desaparezca.');
+  Logger.log(etiqueta + ' Terminó en ' + Math.round((Date.now() - t0) / 1000) + ' s. No se pidió nada a la API.');
 }
 
 // ----- Aplicar las correcciones desde Control_2 -----
@@ -5776,6 +5845,105 @@ function _gdsConstruirFilas_(filas, opciones) {
     return p.clanTag < q.clanTag ? -1 : (p.clanTag > q.clanTag ? 1 : 0);
   });
   return { ok: true, filas: salida.map(function (e) { return e.fila; }), cuenta: cuenta };
+}
+
+/**
+ * _gdsFilaCapturaDeJson_(tag, archivo, datos) — §PF437 fase 2. Fila de Battlelog_Capturas.csv (GDS_CAPTURAS_HEADERS) de UNA captura ya leída (datos = el JSON del battlelog, una lista de batallas).
+ * Tag; Archivo (el nombre del JSON); Descargado (hora de Lima, sale del nombre del archivo); EntradaMasAntigua y EntradaMasNueva (battleTime crudo, en UTC, para no perder los segundos
+ * al medir la cobertura); Entradas (cuántas trae). Si datos no es una lista o ninguna entrada tiene fecha válida, las dos fechas quedan vacías: la captura se registra pero no sirve para medir.
+ * Devuelve null si el nombre no trae la fecha de descarga. No lee Drive ni pide nada a la API. [→ Contexto_Base_Web.md §PF437]
+ */
+function _gdsFilaCapturaDeJson_(tag, archivo, datos) {
+  var descargaMs = _blgDescargaMsDeNombreArchivo_(archivo);
+  if (descargaMs === null) return null;
+  var antigua = null, nueva = null;
+  var entradas = Array.isArray(datos) ? datos.length : 0;
+  for (var i = 0; i < entradas; i++) {
+    var bt = datos[i] && datos[i].battleTime;
+    var ms = _blgParsearBattleTime_(bt);
+    if (ms === null) continue;
+    if (antigua === null || ms < antigua.ms) antigua = { ms: ms, txt: String(bt).trim() };
+    if (nueva === null || ms > nueva.ms) nueva = { ms: ms, txt: String(bt).trim() };
+  }
+  return [_blgNormalizarTag_(tag), String(archivo), _gdsFechaLima_(descargaMs), antigua ? antigua.txt : '', nueva ? nueva.txt : '', entradas];
+}
+
+/**
+ * _gdsCapturasDesdeFilas_(filasCsv) — §PF437 fase 2. Lee las filas de Battlelog_Capturas.csv (sin el encabezado) y devuelve { porTag, vistos, descartadas }.
+ * porTag: { tag: [{ archivo, descargaMs, inicioMs }] }, solo las capturas medibles (fecha de descarga en el nombre y entrada más antigua válida), en el formato que espera _gdsConstruirFilas_.
+ * vistos: { 'tag|archivo': true } de TODAS las capturas registradas, medibles o no, para no volver a abrir su JSON. descartadas: filas sin Tag o sin Archivo.
+ * La fecha de descarga se saca del nombre del archivo (no de la columna Descargado, que solo informa y pierde los segundos de la entrada más antigua que sí se conservan en EntradaMasAntigua).
+ */
+function _gdsCapturasDesdeFilas_(filasCsv) {
+  var res = { porTag: {}, vistos: {}, descartadas: 0 };
+  if (!Array.isArray(filasCsv)) return res;
+  for (var i = 0; i < filasCsv.length; i++) {
+    var f = filasCsv[i];
+    if (!Array.isArray(f)) continue;
+    var tag = _blgNormalizarTag_(f[0]);
+    var archivo = String(f[1] === undefined || f[1] === null ? '' : f[1]);
+    if (!tag || !archivo) { res.descartadas++; continue; }
+    res.vistos[tag + '|' + archivo] = true;
+    var descargaMs = _blgDescargaMsDeNombreArchivo_(archivo);
+    var inicioMs = _blgParsearBattleTime_(f[3]);
+    if (descargaMs === null || inicioMs === null) continue;
+    if (!res.porTag[tag]) res.porTag[tag] = [];
+    res.porTag[tag].push({ archivo: archivo, descargaMs: descargaMs, inicioMs: inicioMs });
+  }
+  return res;
+}
+
+/**
+ * _gdsActualizarCapturas_(tagsNecesarios) — §PF437 fase 2. Mantiene Battlelog_Capturas.csv: lee el CSV, lista los JSON de la carpeta de battlelogs y abre SOLO los de los Tag de tagsNecesarios
+ * ({ '#TAG': true }) que todavía no están registrados, dentro de GDS_PRESUPUESTO_CAPTURAS_MS; guarda el CSV si agregó filas. Solo lee Drive: no pide nada a la API (§PF437 punto 7 b).
+ * Devuelve { ok, porTag, filas, nuevas, sinLeer, errores } (sinLeer = capturas que quedaron para otra corrida por falta de tiempo; errores = JSON que no se pudieron abrir, no se registran y se reintentan),
+ * o { ok: false, motivo }. Un JSON que se abre pero no se puede interpretar queda registrado sin fechas (Entradas 0) para no reabrirlo cada vez.
+ */
+function _gdsActualizarCapturas_(tagsNecesarios) {
+  var csv = _blsLeerCsv_(GDS_CAPTURAS_CSV_NOMBRE, GDS_CAPTURAS_HEADERS);
+  if (!csv.ok) return { ok: false, motivo: csv.error };
+  var filasCsv = csv.rows.slice();
+  var conocidas = _gdsCapturasDesdeFilas_(filasCsv);
+  var archivosPorTag = {};
+  try {
+    archivosPorTag = _blsListarArchivos_().porTag || {};
+  } catch (eListar) {
+    return { ok: false, motivo: 'no se pudo listar la carpeta de battlelogs: ' + eListar.message };
+  }
+  var t0 = Date.now(), nuevas = 0, sinLeer = 0, errores = 0, agotado = false;
+  var tags = Object.keys(archivosPorTag).filter(function (t) { return tagsNecesarios && tagsNecesarios[_blgNormalizarTag_(t)]; }).sort();
+  for (var i = 0; i < tags.length; i++) {
+    var lista = archivosPorTag[tags[i]].slice().sort(function (a, b) { return a.orden < b.orden ? -1 : (a.orden > b.orden ? 1 : 0); });
+    for (var j = 0; j < lista.length; j++) {
+      var a = lista[j];
+      var clave = _blgNormalizarTag_(tags[i]) + '|' + a.nombre;
+      if (conocidas.vistos[clave]) continue;
+      if (agotado || Date.now() - t0 > GDS_PRESUPUESTO_CAPTURAS_MS) { agotado = true; sinLeer++; continue; }
+      var texto;
+      try { texto = a.file.getBlob().getDataAsString(); } catch (eLeer) { errores++; continue; }
+      var datos = null;
+      try { datos = JSON.parse(texto); } catch (eJson) { datos = null; }
+      var fila = _gdsFilaCapturaDeJson_(tags[i], a.nombre, datos);
+      if (!fila) { errores++; continue; }
+      filasCsv.push(fila);
+      conocidas.vistos[clave] = true;
+      nuevas++;
+    }
+  }
+  if (nuevas > 0) {
+    filasCsv.sort(function (p, q) {
+      if (p[0] !== q[0]) return p[0] < q[0] ? -1 : 1;
+      var mp = _blgDescargaMsDeNombreArchivo_(p[1]) || 0, mq = _blgDescargaMsDeNombreArchivo_(q[1]) || 0;
+      if (mp !== mq) return mp - mq;
+      return p[1] < q[1] ? -1 : (p[1] > q[1] ? 1 : 0);
+    });
+    try {
+      _saveCSVToDrive(GDS_CAPTURAS_CSV_NOMBRE, _encodeCSV([GDS_CAPTURAS_HEADERS].concat(filasCsv)));
+    } catch (eGuardar) {
+      return { ok: false, motivo: 'no se pudo guardar ' + GDS_CAPTURAS_CSV_NOMBRE + ': ' + eGuardar.message };
+    }
+  }
+  return { ok: true, porTag: _gdsCapturasDesdeFilas_(filasCsv).porTag, filas: filasCsv.length, nuevas: nuevas, sinLeer: sinLeer, errores: errores };
 }
 
 // ----- Hoja contra correcciones -----
