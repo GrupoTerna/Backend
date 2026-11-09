@@ -3706,6 +3706,11 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
   // §PF436 (9-nov-2026, regla de la usuaria): solo se reconstruye desde cuando el jugador estuvo de verdad en el clan; si no hay evidencia de presencia no se crean filas y va a revisión.
   // quien llama desde un clan concreto pasa la fuente real en opciones.fuenteEvidencia (aquí `fuente` es una temporal vacía).
   var presencia = _cgwPresenciaSemana_(opciones.fuenteEvidencia || fuente, temporadaPropia, semana, tag, clanTagReconstruccion, clanReconstruccion);
+  // Si lo que se reconstruye trae ataques, barcos o fame en ESTE clan, el jugador estuvo ahí esa semana (quien no está en el clan no ataca por él): la actividad prueba la presencia. No dice en qué
+  // día entró, así que se mantiene lo de antes (los 4 días). Solo un 0 puro (como el del log de un clan que lista a quien pasó por él) depende de la evidencia de las filas reales.
+  if ((Number(valores.ataquesSemana) > 0) || (Number(valores.fame) > 0) || (Number(valores.barcos) > 0)) {
+    presencia = { dias: [true, true, true, true], hayPresencia: true, sinDatos: false, texto: 'la semana trae ataques, barcos o fame en este clan: presencia probada por la actividad' };
+  }
   if (!presencia.hayPresencia) {
     opciones.sinPresenciaReconstruccion = true;
     opciones.detallePresenciaReconstruccion = presencia.texto;
