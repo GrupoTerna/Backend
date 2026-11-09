@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 08/11/2026 23:53:30 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 09/11/2026 00:53:37 */
 
 
 
@@ -22968,6 +22968,11 @@ function updateGuerraSheet() {
       try { Logger.log(_lineaPeriodoClan_('Guerra', info.name || '', clanTag, rr, ctx, null)); } catch (eLogPer0) {}
       continue;
     }
+    // PROTECCION (9-nov-2026, §PF430): sin periodType no se sabe si es entrenamiento o guerra. Antes se asumia 'training' y un dia de guerra se escribia como Entrenamiento. [→ Contexto_Base_Web.md §PF430]
+    if (rr.periodType === undefined || rr.periodType === null || String(rr.periodType).trim() === '') {
+      Logger.log('[Guerra][PROTECCION] ' + (info.name || clanTag) + ' (' + clanTag + '): currentriverrace sin periodType; no se sabe si es entrenamiento o guerra, se omite este clan en esta corrida.');
+      continue;
+    }
     var periodIndexClan  = Number(rr.periodIndex);
     var sectionIndexClan = (rr.sectionIndex !== undefined && rr.sectionIndex !== null && rr.sectionIndex !== '' && !isNaN(Number(rr.sectionIndex)))
       ? Number(rr.sectionIndex) : periodIdxToSectionIndex(periodIndexClan);
@@ -22999,6 +23004,23 @@ function updateGuerraSheet() {
 
     var clanNombre = info.name || '';
     var diaGuerra  = ctxClan.diaGuerra;
+
+    // PROTECCION DE DATO REZAGADO (9-nov-2026, §PF430): el entrenamiento no da fame ni suma a decksUsed (0 casos en las 243 capturas de entrenamiento de Datos descargados/JSON). [→ Contexto_Base_Web.md §PF430]
+    // Si una respuesta 'training' trae fame, decksUsed o boatAttacks > 0, es el cierre del dia de guerra anterior que la API aun no reinicio: no se escribe como Entrenamiento
+    // (el 8-jun, 15-jun y 6-jul-2026 dejo 144 filas de lunes con el acumulado del domingo). Se omite el clan en esta corrida y, si es lunes, la captura sirve para cerrar la fila del domingo.
+    if (ctxClan.periodType === 'training') {
+      var nConDatoGuerra = _contarParticipantesConDatoDeGuerra_(participants);
+      if (nConDatoGuerra > 0) {
+        var cierreDom = _cerrarDomingoConCapturaLunes_(clanTag, ctxClan, participants, memberMap, datosGuerra);
+        if (cierreDom.corregidos > 0) huboCambiosExistentes = true;
+        Logger.log('[Guerra][PROTECCION] ' + clanNombre + ', periodIndex ' + ctxClan.periodIndex + ' (training): ' + nConDatoGuerra +
+          ' participante(s) con fame, decksUsed o boatAttacks > 0; el entrenamiento no los da, es el cierre del dia de guerra anterior sin reiniciar. Se omite este clan en esta corrida.' +
+          (cierreDom.elegible
+            ? ' Cierre del domingo con esta captura: ' + cierreDom.revisados + ' jugador(es) revisados, ' + cierreDom.corregidos + ' corregido(s).'
+            : ' No hay domingo que cerrar (no es lunes, o es la primera semana de la temporada).'));
+        continue;
+      }
+    }
 
     // PROTECCION (05-oct-2026, pedido usuario -- "domingo T5 S4 sin ataques"): el lunes 05-oct, 4:48-5:08 a.m. (Lima), [→ Contexto_Base_Web.md §17B042]
     if (_apiGuerraReiniciadaParaClan_(datosGuerra, clanNombre, ctxClan.temporada, ctxClan.periodIndex, participants)) {
@@ -25397,10 +25419,60 @@ function _desgloseBarcosPorDia(tag, clanTag, ctx, datosGuerra, barcosHoy) {
 }
 
 /**
- * _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra, ataqHoyApi, ataqSemApi) [→ Contexto_Base_Web.md §17B153]
+ * _contarParticipantesConDatoDeGuerra_(participants) [→ Contexto_Base_Web.md §PF430]
+ * Cuenta los participantes con fame, decksUsed o boatAttacks mayores que 0. Una respuesta de periodType 'training' no puede traer ninguno: si trae alguno, es el cierre del
+ * dia de guerra anterior sin reiniciar. Solo lee.
  */
-function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra, ataqHoyApi, ataqSemApi, fameApi, barcosApi) {
-  var offHoyDia = (ctx.periodIndex % 7) - 3; // 0=Jueves..3=Domingo
+function _contarParticipantesConDatoDeGuerra_(participants) {
+  var n = 0;
+  if (!participants) return 0;
+  for (var i = 0; i < participants.length; i++) {
+    var p = participants[i] || {};
+    if ((Number(p.fame) || 0) > 0 || (Number(p.decksUsed) || 0) > 0 || (Number(p.boatAttacks) || 0) > 0) n++;
+  }
+  return n;
+}
+
+/**
+ * _cerrarDomingoConCapturaLunes_(clanTag, ctxClan, participants, memberMap, datosGuerra) [→ Contexto_Base_Web.md §PF430]
+ * Usa una captura rezagada del lunes (periodType 'training' con fame o decksUsed > 0) para cerrar la fila del domingo de cada jugador. Para cada uno llama a
+ * _autocorregirAtaqueDiaAnteriorDecksUsed() en modo domingo, que solo SUBE ataques, fame y barcos de la fila del domingo (nunca baja nada), con el tope de 4 por dia, la guardia de
+ * huecos del jueves al sabado y la tabla de fame. No usa decksUsedToday (en lunes puede ser de entrenamiento). Solo aplica en lunes y desde la segunda semana de la temporada
+ * (la primera semana no tiene un domingo de la misma temporada). Modifica datosGuerra en memoria; quien llama decide si se escribe. Devuelve { elegible, revisados, corregidos }.
+ */
+function _cerrarDomingoConCapturaLunes_(clanTag, ctxClan, participants, memberMap, datosGuerra) {
+  var res = { elegible: false, revisados: 0, corregidos: 0 };
+  if ((ctxClan.periodIndex % 7) !== 0 || ctxClan.sectionIndex < 1) return res;
+  res.elegible = true;
+  for (var j = 0; j < participants.length; j++) {
+    var part = participants[j] || {};
+    var tag = String(part.tag || '').trim();
+    if (!tag || !memberMap[tag]) continue;
+    var ataqSem = Number(part.decksUsed) || 0;
+    var fame    = Number(part.fame) || 0;
+    var barcos  = Number(part.boatAttacks) || 0;
+    if (ataqSem <= 0 && fame <= 0) continue;
+    res.revisados++;
+    try {
+      if (_autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctxClan, datosGuerra, 0, ataqSem, fame, barcos, true)) res.corregidos++;
+    } catch (eCierreDom) {
+      Logger.log('[Guerra][Cierre del domingo] ERROR en ' + tag + ' (' + clanTag + '): ' + eCierreDom.message + '. No se corrige a este jugador.');
+    }
+  }
+  return res;
+}
+
+/**
+ * _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra, ataqHoyApi, ataqSemApi, fameApi, barcosApi, modoDomingo) [→ Contexto_Base_Web.md §17B153]
+ * modoDomingo (§PF430, 9-nov-2026): true solo cuando la llama _cerrarDomingoConCapturaLunes_() con una captura rezagada del lunes. «Hoy» pasa a ser un dia virtual posterior al domingo
+ * (offHoyDia 4), «ayer» es el domingo de la semana anterior (sectionIndex - 1) y ataqHoyApi debe llegar en 0 (decksUsedToday del lunes no se usa como evidencia).
+ */
+function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra, ataqHoyApi, ataqSemApi, fameApi, barcosApi, modoDomingo) {
+  modoDomingo = (modoDomingo === true);
+  if (modoDomingo && ((ctx.periodIndex % 7) !== 0 || ctx.sectionIndex < 1)) return false; // solo lunes y desde la 2.ª semana de la temporada
+  var offHoyDia = modoDomingo ? 4 : (ctx.periodIndex % 7) - 3; // 0=Jueves..3=Domingo (4 = dia virtual tras el domingo, solo modoDomingo)
+  // Contexto de las FILAS que se buscan y se cierran: en modoDomingo son las de la semana anterior (el domingo).
+  var ctxFilas = modoDomingo ? { temporada: ctx.temporada, sectionIndex: ctx.sectionIndex - 1, periodIndex: ctx.periodIndex - 1 } : ctx;
   if (offHoyDia <= 0) return false; // Jueves (o fuera de día de guerra): no hay día anterior en la misma semana
 
   // Resolver el NOMBRE de clan asociado a clanTag (la columna Clan de la [→ Contexto_Base_Web.md §17B154]
@@ -25421,7 +25493,7 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
     var tagEsEste = String(fila[GC.TAG - 1] || '').trim() === tag; // §PF424: antes el tag se filtraba primero; ahora se mira el clan antes para saber qué días tiene registrados
     if (_clanNombreAutocorregir && String(fila[GC.CLAN - 1] || '') !== _clanNombreAutocorregir) continue;
     if (String(fila[GC.TEMPORADA - 1] || '') !== String(ctx.temporada)) continue;
-    if (((Number(fila[GC.SEMANA - 1]) || 1) - 1) !== ctx.sectionIndex) continue;
+    if (((Number(fila[GC.SEMANA - 1]) || 1) - 1) !== ctxFilas.sectionIndex) continue;
     var pIdxFilaPrevia = Number(fila[GC.PERIOD_IDX - 1]) || 0;
     if (!esDiaGuerraIdx(pIdxFilaPrevia)) continue;
     if (pIdxFilaPrevia < periodIndexAnterior) diasPreviosClanConFila[pIdxFilaPrevia] = true;
@@ -25434,6 +25506,16 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
     }
   }
   if (rowIdx < 0) return false; // el día anterior todavía no tiene fila (corrida se saltó ese periodo, o es de otro clan)
+
+  // §PF430: en modoDomingo la captura solo vale si su fame NO es menor que la del domingo guardado (si no, no es el cierre del domingo y no se toca nada, ni los ataques).
+  if (modoDomingo) {
+    var fameDomGuardada = Number(datosGuerra[rowIdx][GC.FAME - 1]) || 0;
+    if (!(Number(fameApi) >= fameDomGuardada)) {
+      Logger.log('[Guerra][Cierre del domingo] ALARMA: ' + tag + ' en ' + (_clanNombreAutocorregir || clanTag) + ', periodIndex ' + periodIndexAnterior +
+        ' -- la fame de la captura del lunes (' + (Number(fameApi) || 0) + ') es menor que la del domingo guardado (' + fameDomGuardada + '); no se corrige.');
+      return false;
+    }
+  }
 
   // §PF297 (30-oct-2026, criterio 1 de §PF160): la resta (decksUsed - decksUsedToday) - suma de los días previos solo vale si TODOS los días previos a ayer tienen fila; si falta alguna (por ejemplo el jueves), la suma queda corta y la resta le atribuiría a ayer los ataques del día que falta (hasta el tope de 4). En ese caso no se escribe nada: lo repara el informe manual (`55_`/`57_`) y queda un aviso en el registro.
   // §PF424 (7-nov-2026): un día previo sin fila del jugador solo es un hueco si el clan tampoco tiene ninguna fila ese día (no se registró el día). Si otros jugadores del clan sí
@@ -25455,6 +25537,12 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
   var huboCambio = false;
   var ataquesRealesDiaAnterior = (ataqSemApi - ataqHoyApi) - sumaAtaquesDiasPrevios;
   var ataquesGuardados = Number(datosGuerra[rowIdx][GC.ATAQUES_HOY - 1]) || 0;
+  // §PF430: una captura rezagada del lunes no se toma por buena si los ataques del domingo salen fuera de 0 a 4 (el flujo normal los topa a 4 y sigue; aqui no se toca nada).
+  if (modoDomingo && (ataquesRealesDiaAnterior < 0 || ataquesRealesDiaAnterior > 4)) {
+    Logger.log('[Guerra][Cierre del domingo] ALARMA: ' + tag + ' en ' + (_clanNombreAutocorregir || clanTag) + ', periodIndex ' + periodIndexAnterior +
+      ' -- los ataques del domingo salen ' + ataquesRealesDiaAnterior + ' (decksUsed ' + ataqSemApi + ' menos dias previos guardados ' + sumaAtaquesDiasPrevios + '); fuera de 0 a 4. No se corrige.');
+    return false;
+  }
   if (ataquesRealesDiaAnterior > ataquesGuardados) {
     datosGuerra[rowIdx][GC.ATAQUES_HOY - 1] = Math.min(4, ataquesRealesDiaAnterior);
     // Fila "cerrada" que se autocorrige: si nació 'Original', pasa a
@@ -25483,7 +25571,7 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
     var dec = _decidirCierreFameBarcosDia_(parCierre);
     // §PF139 (21-oct-2026): si ayer queda pendiente porque hoy ya hay ataques, se consulta CurrentRiverRace (solo en ese caso, para no leer Drive en cada corrida).
     if (dec.accion === 'pendiente' && typeof _crrAyerParaCierre_ === 'function') {
-      var crrAyer = _crrAyerParaCierre_(tag, ctx, offHoyDia - 1, _clanNombreAutocorregir); // §PF301: con el clan, primero los rangos de los JSON (piso, merma y máximo)
+      var crrAyer = _crrAyerParaCierre_(tag, ctxFilas, offHoyDia - 1, _clanNombreAutocorregir); // §PF301: con el clan, primero los rangos de los JSON (piso, merma y máximo)
       if (crrAyer) {
         parCierre.crr = crrAyer;
         dec = _decidirCierreFameBarcosDia_(parCierre);
@@ -25492,7 +25580,7 @@ function _autocorregirAtaqueDiaAnteriorDecksUsed(tag, clanTag, ctx, datosGuerra,
     // §PF328: aviso (solo en el registro) cuando lo que trae la API al cierre de ayer cae fuera de los rangos de los JSON. Solo se mira cuando el cierre escribe o queda
     // pendiente, para no leer Drive en cada corrida; no cambia lo que se escribe. La fame y los barcos acumulados de la API valen como cierre de ayer solo si hoy no hay ataques.
     if ((dec.accion === 'aplicar' || dec.accion === 'pendiente') && typeof _crrAvisoFueraDeRangosCierre_ === 'function') {
-      var avisoRangos = _crrAvisoFueraDeRangosCierre_(tag, ctx, offHoyDia - 1, _clanNombreAutocorregir, {
+      var avisoRangos = _crrAvisoFueraDeRangosCierre_(tag, ctxFilas, offHoyDia - 1, _clanNombreAutocorregir, {
         ataquesAcum: ataqSemApi - ataqHoyApi, ataquesDia: (ataqSemApi - ataqHoyApi) - sumaAtaquesDiasPrevios,
         fameAcum: ataqHoyApi === 0 ? fameApi : null, barcosAcum: ataqHoyApi === 0 ? barcosApi : null });
       if (avisoRangos) {
