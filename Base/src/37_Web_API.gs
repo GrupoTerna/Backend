@@ -3209,6 +3209,7 @@ function _webBattlelogJugador(tagBuscado, opciones) {
       miClanTagExt: (function () { var t = '#' + cleanTag(miEquipo.clan && miEquipo.clan.tag); return (t !== '#' && CFG.TERNA_TAGS.indexOf(t) < 0) ? t : ''; })(), // §PF428: Tag del clan propio de la batalla cuando NO es Terna (perfil.html lo enlaza a RoyaleAPI); aditivo, miClanTag no cambia
       rivalNombre: String(rival.name || ''),
       rivalClan:   (rival.clan && rival.clan.name) || '',
+      rivalClanTag: (function () { var t = '#' + cleanTag(rival.clan && rival.clan.tag); return t !== '#' ? t : ''; })(), // §PF429: Tag del clan del rival (perfil.html lo enlaza a RoyaleAPI); aditivo
       eventTag:    String((b && b.eventTag) || ''),
       deckSelection: String((b && b.deckSelection) || '')
     };
