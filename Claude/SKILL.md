@@ -10,7 +10,7 @@ description: >-
 
 # Skill: `md` — código del clan en GitHub: lectura, corrección y consolidados de fases
 
-**Versión de esta skill: 6-nov-2026, rev. 6.** Cada cambio de `SKILL.md` sube el número de revisión (el workflow `skill-ci.yml` lo exige). Al empezar la tanda, después de clonar, Claude compara esta línea con la de `Claude/SKILL.md` del repo; si difieren, avisa a la usuaria que hay que reinstalar la skill desde ese archivo y toma el repo como referencia.
+**Versión de esta skill: 9-nov-2026, rev. 7.** Cada cambio de `SKILL.md` sube el número de revisión (el workflow `skill-ci.yml` lo exige). Al empezar la tanda, después de clonar, Claude compara esta línea con la de `Claude/SKILL.md` del repo; si difieren, avisa a la usuaria que hay que reinstalar la skill desde ese archivo y toma el repo como referencia.
 
 ## Idioma
 
@@ -241,6 +241,7 @@ No debe perderse información entre una conversación y la siguiente.
 - Lo que la usuaria explique o confirme se documenta **de inmediato** en el lugar que corresponde (plan de fases, código o `Contexto_Base_Web.md`, 0.4); no queda solo en el chat.
 - **Se busca lo ya escrito antes de preguntar o suponer**, y se cruzan todas las fuentes antes de decir «no es concluyente» (reglas 13 y 14 de `Consolidados de cambios/Reglas_Consolidados.md`).
 - **Se contrasta con los datos disponibles** (`Datos descargados/` y Drive) antes de suponer o ignorar; si los datos están en Drive y Claude no los ve, se le pide a la usuaria que los suba a GitHub y no se sigue sobre una suposición.
+- **No se descarta ni se resume información que la usuaria da (regla de la usuaria, 9-nov-2026).** Todo dato que entrega se conserva completo y se usa tal como lo dio. En la guerra eso significa que **las tablas y los repartos evalúan cuántos ataques hay de cada puntuación posible** (250, 200, 125, 100, 75 y 0, las variables `a` a `f` de `Contexto_Base_Web.md §PF356` punto 8), semanales y por día, y no solo el número de ataques, la fame y los barcos. Al mostrar una terna o un reparto se pone el desglose por puntuación de cada día. Detalle en `Claude/referencias/continuidad_sesiones.md`.
 
 ## Referencias en el changelog: archivo + función, no solo el número
 
