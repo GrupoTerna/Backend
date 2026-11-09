@@ -1838,6 +1838,7 @@ function _importarNuevosYPerfiles_(candidatosPayload) {
 
   var paraNuevos = [];
   var correcciones = [];
+  var sombra = { comparados: 0, difieren: 0, casos: [] }; // §PF434: «en sombra» de §PF432 punto 2 (compara el cálculo por tag del backend con el esNuevo de Tampermonkey)
   var candidatosConPerfil = 0, filasEnCurso = 0;
   for (var i = 0; i < candidatosPayload.length; i++) {
     var cand = candidatosPayload[i] || {};
@@ -1846,6 +1847,13 @@ function _importarNuevosYPerfiles_(candidatosPayload) {
 
     // §PF253: «cuenta como nuevo» lo decide el backend por TAG de clan con las últimas tres filas del perfil (cand.ultimasSemanas, Tampermonkey v3.13). Sin ese campo (Tampermonkey anterior) se usa el esNuevo que mandó.
     var esNuevoCand = Array.isArray(cand.ultimasSemanas) ? _esNuevoPorTagClan_(cand.ultimasSemanas, nombresTernaNv) : (cand.esNuevo !== false);
+    if (Array.isArray(cand.ultimasSemanas) && typeof cand.esNuevo === 'boolean') {
+      sombra.comparados++;
+      if (cand.esNuevo !== esNuevoCand) {
+        sombra.difieren++;
+        if (sombra.casos.length < 20) sombra.casos.push({ tag: tag, tampermonkey: cand.esNuevo, backend: esNuevoCand });
+      }
+    }
     var cuentaComoNuevo = (tagsEnHoja === null) || esNuevoCand || (tagsEnHoja[tag] === true);
     if (cuentaComoNuevo) paraNuevos.push(cand);
 
@@ -1875,6 +1883,11 @@ function _importarNuevosYPerfiles_(candidatosPayload) {
     : { ok: true, procesados: 0, filasNuevas: 0, registrosOmitidos: 0, errores: [] };
   resultado.recibidos = candidatosPayload.length;
   resultado.noContaronComoNuevos = candidatosPayload.length - paraNuevos.length;
+  resultado.sombraPF243 = sombra;
+  if (sombra.difieren > 0) {
+    Logger.log('[Nuevos-RoyaleAPI] [Sombra PF243] ' + sombra.difieren + ' de ' + sombra.comparados + ' candidato(s) con «cuenta como nuevo» distinto entre el backend (por tag) y Tampermonkey: ' +
+      sombra.casos.map(function (x) { return x.tag + ' (TM ' + (x.tampermonkey ? 'sí' : 'no') + ', backend ' + (x.backend ? 'sí' : 'no') + ')'; }).join(', '));
+  }
 
   if (correcciones.length) {
     try {
