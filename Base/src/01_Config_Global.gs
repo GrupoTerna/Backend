@@ -323,6 +323,14 @@ var CFG = {
   VENTANA_GUERRA_FIN_UTC_MIN: 10 * 60,
   VENTANA_GUERRA_PRE_MARGEN_MIN: 20,
   VENTANA_GUERRA_BLOQUEAR_OTROS: true,
+  // §PF426 (8-nov-2026): capturas continuas de currentriverrace para medir el criterio 13 de §PF160. Cada captura es un archivo NUEVO (con hora y segundos en el nombre) en la subcarpeta CARPETA de CurrentRiverRace; no pisa nada.
+  CAPTURA_CONTINUA_ACTIVA: true,
+  CAPTURA_CONTINUA_TAGS: ['#GCRG8L00', '#GYCU9YRG'],          // Grupo乂Terna™ y GrupoXTerna™2 (los dos con guerra abierta; Principal y Clan 2)
+  CAPTURA_CONTINUA_INI_UTC_MIN: 9 * 60 + 45,                    // 04:45 Lima
+  CAPTURA_CONTINUA_FIN_UTC_MIN: 12 * 60,                        // 07:00 Lima (no incluida)
+  CAPTURA_CONTINUA_MIN_ENTRE_MS: 4 * 60 * 1000,                 // runGuerra corre cada 5 min; con 4 min no se capturan dos disparos pegados
+  CAPTURA_CONTINUA_DIAS_MAX: 7,                                 // se detiene sola tras 7 días distintos con captura; reiniciarCapturaContinuaCRR() la vuelve a abrir
+  CAPTURA_CONTINUA_CARPETA: 'Capturas_Continuas',
   // Dentro de la ventana el disparo es cada 5 min: el checkpoint de clanes solo se reutiliza si tiene menos
   // de 90 s, asi cada corrida pide /currentriverrace fresco a la API.
   CLANES_PROGRESO_MAX_EDAD_MS_GUERRA_VENTANA: 90 * 1000,

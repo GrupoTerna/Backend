@@ -63,6 +63,7 @@ var DATOS_GH_CARPETA_INFORMES_     = '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X';
 var DATOS_GH_CARPETA_INDIVIDUAL_   = '1U11RBaJJLdqJST9wJF4z_ExcLE92TjO7';   // = DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL de Base (01_Config_Global.gs)
 var DATOS_GH_CARPETA_SEASONS_      = '1oIMkaJS6ElqXD9Z8xRA5jn0YVaz3l01d';   // = DRIVE_FOLDER_ID_SEASONS de Base (01_Config_Global.gs)
 var DATOS_GH_CARPETA_GRUPAL_       = '1T8PhxVVRZ-p7o2A_U6ARP-LsC3Zg7ObL';   // = DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL de Base (01_Config_Global.gs): los JSON grupales por clan (§PF321)
+var DATOS_GH_CARPETA_CRR_          = '1xZr_GxHbuG_Y4gzPHZQxduhzkF8CeFPg';   // = DRIVE_FOLDER_ID_CURRENTRIVERRACE de Base (01_Config_Global.gs): raíz de CurrentRiverRace; de aquí solo se copia la subcarpeta Capturas_Continuas (§PF426)
 
 var DATOS_GH_FUENTES_ = [
   { carpetaId: DATOS_GH_CARPETA_TAMPERMONKEY_,   // 1-nov-2026 (§PF324, pedido de la usuaria): TODA la carpeta, sin lista de nombres ni filtro; así un archivo nuevo (como HistorialGuerra_Grupal.csv al mudarse aquí) llega solo
@@ -86,6 +87,10 @@ var DATOS_GH_FUENTES_ = [
     todos: true,
     omitir: /^Backup_Guerra ANTES de /i,
     destino: 'Datos descargados/CSV/Informes/', maxBytes: 3 * 1024 * 1024 },
+  { carpetaId: DATOS_GH_CARPETA_CRR_,   // §PF426: capturas continuas de currentriverrace (04:45 a 07:00 Lima, un archivo nuevo por captura y clan); solo esa subcarpeta, no las carpetas por clan
+    subcarpeta: 'Capturas_Continuas',
+    todos: true,
+    destino: 'Datos descargados/JSON/Endpoints/CurrentRiverRace/Capturas_Continuas/', maxBytes: 1 * 1024 * 1024 },
   { carpetaId: DATOS_GH_CARPETA_INFORMES_,   // §PF315: subcarpeta Cruce_Meta de Informes (se busca por nombre dentro de esa carpeta)
     subcarpeta: 'Cruce_Meta',
     todos: true,

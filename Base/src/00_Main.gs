@@ -1223,6 +1223,9 @@ function runGuerra() {
   // NUEVO (05-oct-2026, pedido del usuario): vigilante de UptimeRobot (45_Vigilante_UptimeRobot.gs). Si UptimeRobot… [→ Contexto_Base_Web.md §B113]
   _vigilarUptimeRobotSeguro_();
 
+  // §PF426 (8-nov-2026): captura continua de currentriverrace (04:45 a 07:00 Lima, archivos nuevos en Capturas_Continuas) para medir el criterio 13 de §PF160. Antes del candado y dentro de un try: nunca frena ni cambia lo demás de runGuerra.
+  try { _capturaContinuaCRR_(); } catch (eCapCont) { Logger.log('[CapturaContinua] ' + eCapCont.message); }
+
   // Fuera de la ventana: trabajo completo 1 vez por hora UTC. Se compara con la última hora hecha en vez de
   // "minuto < 10", que dependía de en qué minuto exacto caía el disparo.
   var esPrimerDisparoDeHora = false;
