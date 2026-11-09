@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 08/11/2026 22:13:34 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 08/11/2026 22:32:56 */
 
 
 
@@ -1265,6 +1265,9 @@ function runGuerra() {
 
   // NUEVO (05-oct-2026, pedido del usuario): vigilante de UptimeRobot (45_Vigilante_UptimeRobot.gs). Si UptimeRobot… [→ Contexto_Base_Web.md §B113]
   _vigilarUptimeRobotSeguro_();
+
+  // §PF426 (8-nov-2026): captura continua de currentriverrace (04:45 a 07:00 Lima, archivos nuevos en Capturas_Continuas) para medir el criterio 13 de §PF160. Antes del candado y dentro de un try: nunca frena ni cambia lo demás de runGuerra.
+  try { _capturaContinuaCRR_(); } catch (eCapCont) { Logger.log('[CapturaContinua] ' + eCapCont.message); }
 
   // Fuera de la ventana: trabajo completo 1 vez por hora UTC. Se compara con la última hora hecha en vez de
   // "minuto < 10", que dependía de en qué minuto exacto caía el disparo.
@@ -2783,6 +2786,14 @@ var CFG = {
   VENTANA_GUERRA_FIN_UTC_MIN: 10 * 60,
   VENTANA_GUERRA_PRE_MARGEN_MIN: 20,
   VENTANA_GUERRA_BLOQUEAR_OTROS: true,
+  // §PF426 (8-nov-2026): capturas continuas de currentriverrace para medir el criterio 13 de §PF160. Cada captura es un archivo NUEVO (con hora y segundos en el nombre) en la subcarpeta CARPETA de CurrentRiverRace; no pisa nada.
+  CAPTURA_CONTINUA_ACTIVA: true,
+  CAPTURA_CONTINUA_TAGS: ['#GCRG8L00', '#GYCU9YRG'],          // Grupo乂Terna™ y GrupoXTerna™2 (los dos con guerra abierta; Principal y Clan 2)
+  CAPTURA_CONTINUA_INI_UTC_MIN: 9 * 60 + 45,                    // 04:45 Lima
+  CAPTURA_CONTINUA_FIN_UTC_MIN: 12 * 60,                        // 07:00 Lima (no incluida)
+  CAPTURA_CONTINUA_MIN_ENTRE_MS: 4 * 60 * 1000,                 // runGuerra corre cada 5 min; con 4 min no se capturan dos disparos pegados
+  CAPTURA_CONTINUA_DIAS_MAX: 7,                                 // se detiene sola tras 7 días distintos con captura; reiniciarCapturaContinuaCRR() la vuelve a abrir
+  CAPTURA_CONTINUA_CARPETA: 'Capturas_Continuas',
   // Dentro de la ventana el disparo es cada 5 min: el checkpoint de clanes solo se reutiliza si tiene menos
   // de 90 s, asi cada corrida pide /currentriverrace fresco a la API.
   CLANES_PROGRESO_MAX_EDAD_MS_GUERRA_VENTANA: 90 * 1000,
@@ -74450,9 +74461,11 @@ function _fameCrr52Verificar_(filasAntes, filasDespues, plan) {
 // ORDEN DE ESTE ARCHIVO (regla 0.9 de la skill; 27-oct-2026): primero las constantes y variables globales; luego, por partes:
 //  Parte 1 — Funciones que se corren a mano
 //    - CurrentRiverRace por días: prueba de solo lectura
+//    - Capturas continuas de currentriverrace (§PF426): estado y reinicio
 //  Parte 2 — Funciones que no se corren a mano
 //    - CurrentRiverRace por días: capturas de Drive y días del jugador
 //    - CurrentRiverRace por días: usos de otras cadenas (cierre y totales)
+//    - Capturas continuas de currentriverrace (§PF426): la captura y su carpeta
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 var CRR_DIAS_LETRAS = 'JVSD';   // desplazamiento 0..3 = jueves a domingo (PeriodIndex % 7 - 3)
@@ -74479,6 +74492,37 @@ function probarCurrentRiverRaceDias() {
   var ok = ata === '4|4|4|4' && fame === '600|800|800|700';
   Logger.log('[CRR] T3 S1: ' + tags.length + ' jugador(es) con capturas. Chistris: ataques ' + ata + ', fame ' + fame + ' -> ' +
     (ok ? 'OK (coincide con lo comprobado a mano).' : 'DIFIERE de lo esperado (4|4|4|4 y 600|800|800|700).') + ' (No se escribio nada.)');
+}
+
+// ----- Capturas continuas de currentriverrace (§PF426): estado y reinicio -----
+
+/**
+ * estadoCapturaContinuaCRR() [→ Contexto_Base_Web.md §PF426]
+ * Manual, solo lectura: muestra en el registro cuántos días llevan captura, la última captura y cuántos archivos hay en la carpeta. No escribe nada.
+ */
+function estadoCapturaContinuaCRR() {
+  var props = PropertiesService.getScriptProperties();
+  var dias = (props.getProperty('CAPTURA_CONTINUA_DIAS') || '').split(',').filter(Boolean);
+  var ult = Number(props.getProperty('CAPTURA_CONTINUA_ULTIMA_MS')) || 0;
+  var nArchivos = 0;
+  try {
+    var it = _carpetaCapturasContinuasCRR_().getFiles();
+    while (it.hasNext()) { it.next(); nArchivos++; }
+  } catch (e) { Logger.log('[CapturaContinua] No se pudo contar los archivos: ' + e.message); }
+  Logger.log('[CapturaContinua] Activa: ' + !!CFG.CAPTURA_CONTINUA_ACTIVA + '. Días con captura: ' + dias.length + ' de ' + CFG.CAPTURA_CONTINUA_DIAS_MAX +
+    (dias.length ? ' (' + dias.join(', ') + ')' : '') + '. Última captura: ' + (ult ? Utilities.formatDate(new Date(ult), 'America/Lima', 'yyyy-MM-dd HH:mm:ss') + ' (Lima)' : 'ninguna') +
+    '. Archivos en ' + CFG.CAPTURA_CONTINUA_CARPETA + ': ' + nArchivos + '. Horario: 04:45 a 07:00 Lima, clanes ' + CFG.CAPTURA_CONTINUA_TAGS.join(', ') + '.');
+}
+
+/**
+ * reiniciarCapturaContinuaCRR() [→ Contexto_Base_Web.md §PF426]
+ * Manual: pone a cero el conteo de días (la captura se detiene sola tras CFG.CAPTURA_CONTINUA_DIAS_MAX días distintos) para que vuelva a capturar. No borra ningún archivo.
+ */
+function reiniciarCapturaContinuaCRR() {
+  var props = PropertiesService.getScriptProperties();
+  props.deleteProperty('CAPTURA_CONTINUA_DIAS');
+  props.deleteProperty('CAPTURA_CONTINUA_ULTIMA_MS');
+  Logger.log('[CapturaContinua] Conteo reiniciado: vuelve a capturar desde la próxima ventana (04:45 a 07:00 Lima). Los archivos ya guardados no se tocaron.');
 }
 
 // =============================================================================
@@ -74874,6 +74918,76 @@ function _crrDomingoParaTotales_(temporada, semana, tag, totA, totF) {
     Logger.log('[CRR] No se pudo comprobar los totales (' + tag + '): ' + e.message);
     return null;
   }
+}
+
+
+// ----- Capturas continuas de currentriverrace (§PF426): la captura y su carpeta -----
+
+/**
+ * _capturaContinuaCRR_() [→ Contexto_Base_Web.md §PF426]
+ * La llama runGuerra() al empezar (cada 5 min). Entre las 04:45 y las 07:00 (Lima), una vez cada ~5 min, pide /currentriverrace de los clanes de
+ * CFG.CAPTURA_CONTINUA_TAGS y guarda la respuesta tal cual en un archivo NUEVO de la subcarpeta Capturas_Continuas (nunca actualiza uno existente), con la
+ * hora y los segundos en el nombre, para medir qué trae la API justo después del cambio de periodIndex (criterio 13 de §PF160). Se detiene sola tras
+ * CFG.CAPTURA_CONTINUA_DIAS_MAX días distintos. No toca hojas ni el caché normal. Devuelve cuántos archivos escribió.
+ */
+function _capturaContinuaCRR_() {
+  if (!CFG.CAPTURA_CONTINUA_ACTIVA) return 0;
+  var ahora = new Date();
+  var m = ahora.getUTCHours() * 60 + ahora.getUTCMinutes();
+  if (m < CFG.CAPTURA_CONTINUA_INI_UTC_MIN || m >= CFG.CAPTURA_CONTINUA_FIN_UTC_MIN) return 0;
+  var props = PropertiesService.getScriptProperties();
+  var ultima = Number(props.getProperty('CAPTURA_CONTINUA_ULTIMA_MS')) || 0;
+  if (ahora.getTime() - ultima < CFG.CAPTURA_CONTINUA_MIN_ENTRE_MS) return 0;
+  var diaLima = Utilities.formatDate(ahora, 'America/Lima', 'yyyy-MM-dd');
+  var dias = (props.getProperty('CAPTURA_CONTINUA_DIAS') || '').split(',').filter(Boolean);
+  if (dias.indexOf(diaLima) < 0) {
+    if (dias.length >= CFG.CAPTURA_CONTINUA_DIAS_MAX) {
+      if (props.getProperty('CAPTURA_CONTINUA_AVISO_FIN') !== diaLima) {
+        props.setProperty('CAPTURA_CONTINUA_AVISO_FIN', diaLima);
+        Logger.log('[CapturaContinua] Detenida: ya hay ' + dias.length + ' días con captura (CFG.CAPTURA_CONTINUA_DIAS_MAX). reiniciarCapturaContinuaCRR() la vuelve a abrir.');
+      }
+      return 0;
+    }
+    dias.push(diaLima);
+    props.setProperty('CAPTURA_CONTINUA_DIAS', dias.join(','));
+  }
+  // La hora se anota antes de consultar la API: si otro disparo llega mientras esta captura sigue, no captura de nuevo.
+  props.setProperty('CAPTURA_CONTINUA_ULTIMA_MS', String(ahora.getTime()));
+  var carpeta = _carpetaCapturasContinuasCRR_();
+  var sello = Utilities.formatDate(ahora, 'America/Lima', 'yyyy-MM-dd HH.mm.ss');
+  var escritos = 0;
+  for (var i = 0; i < CFG.CAPTURA_CONTINUA_TAGS.length; i++) {
+    var tag = CFG.CAPTURA_CONTINUA_TAGS[i];
+    try {
+      var datos = _apiGet('/clans/' + encodeTag(tag) + '/currentriverrace');
+      if (!datos) { Logger.log('[CapturaContinua] ' + tag + ': la API no devolvió datos (HTTP ' + API_ULTIMO_HTTP_CODE + '); no se guarda nada.'); continue; }
+      var nombreClan = String((datos.clan && datos.clan.name) || cleanTag(tag)).replace(/[\\\/]/g, '-');
+      var pi = (datos.periodIndex === undefined || datos.periodIndex === null) ? 'xx' : _pad2_(datos.periodIndex);
+      var nombre = 'Captura ' + sello + ' P.I-' + pi + ' ' + (datos.periodType || '') + ' - ' + nombreClan + ' - currentriverrace.json';
+      carpeta.createFile(nombre, JSON.stringify(datos), MimeType.PLAIN_TEXT);
+      escritos++;
+    } catch (e) {
+      Logger.log('[CapturaContinua] Error con ' + tag + ': ' + e.message);
+    }
+  }
+  Logger.log('[CapturaContinua] ' + sello + ' (Lima): ' + escritos + ' archivo(s) nuevo(s) en ' + CFG.CAPTURA_CONTINUA_CARPETA + '.');
+  return escritos;
+}
+
+/**
+ * _carpetaCapturasContinuasCRR_() [→ Contexto_Base_Web.md §PF426]
+ * Subcarpeta CFG.CAPTURA_CONTINUA_CARPETA dentro de la carpeta CurrentRiverRace de Drive; se crea si no existe y su id se guarda en una propiedad del script.
+ * Va aparte de las carpetas por clan, así que ni el caché normal ni el Generador la leen como si fuera un clan.
+ */
+function _carpetaCapturasContinuasCRR_() {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty('CAPTURA_CONTINUA_CARPETA_ID');
+  if (id) { try { return DriveApp.getFolderById(id); } catch (e) { /* se vuelve a buscar por nombre */ } }
+  var raiz = DriveApp.getFolderById(DRIVE_FOLDER_ID_CURRENTRIVERRACE);
+  var it = raiz.getFoldersByName(CFG.CAPTURA_CONTINUA_CARPETA);
+  var carpeta = it.hasNext() ? it.next() : raiz.createFolder(CFG.CAPTURA_CONTINUA_CARPETA);
+  props.setProperty('CAPTURA_CONTINUA_CARPETA_ID', carpeta.getId());
+  return carpeta;
 }
 
 
