@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 09/11/2026 03:37:50 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 09/11/2026 05:26:56 */
 
 
 
@@ -29046,6 +29046,9 @@ var BLG_FAME_RONDA_DUELO_GANA = 250;
 
 var BLG_FAME_RONDA_DUELO_PIERDE = 100;
 
+// 9-nov-2026 (§PF437, fase 1): campos del desglose por puntuación de los ataques (mazos) que trae el battlelog. duelo250 y duelo100 son rondas de duelo ganadas y perdidas; pvp200 y pvp100, batallas de PvP; barco125 y barco75, ataques de barco; sinResolver, ataques cuyo resultado el log no permite saber (empate de coronas, ronda sin dato, barco sin resultado); duelosSinLeer, duelos cuyas rondas no se pudieron leer (cuentan 2 o 3 ataques). [→ Contexto_Base_Web.md §PF437]
+var BLG_DESGLOSE_CAMPOS = ['duelo250', 'duelo100', 'pvp200', 'pvp100', 'barco125', 'barco75', 'sinResolver', 'duelosSinLeer'];
+
 // 3.5b-2b -- COBERTURA DEL LOG (Fase 15, Tanda 3, 4-oct-2026, parte 59). Ver la seccion 26 del bloque [→ Contexto_Base_Web.md §18B045]
 // Mejor cobertura primero (se usa para elegir entre varios JSON de un mismo Tag).
 var BLG_COBERTURA_RANGO = { 'completa': 5, 'en-curso': 4, 'parcial': 3, 'ninguna': 2, 'futuro': 1, 'sin-dato': 0 };
@@ -33872,6 +33875,15 @@ function _blgUnicosOrdenados_(lista) {
 }
 
 /**
+ * _blgDesgloseVacio_() — 9-nov-2026 (§PF437, fase 1). Desglose por puntuación en ceros (campos de BLG_DESGLOSE_CAMPOS). [→ Contexto_Base_Web.md §PF437]
+ */
+function _blgDesgloseVacio_() {
+  var d = {};
+  for (var i = 0; i < BLG_DESGLOSE_CAMPOS.length; i++) d[BLG_DESGLOSE_CAMPOS[i]] = 0;
+  return d;
+}
+
+/**
  * _blgClasificarBatallaGuerra_(fila) [→ Contexto_Base_Web.md §18B040]
  */
 function _blgClasificarBatallaGuerra_(fila) {
@@ -33886,7 +33898,11 @@ function _blgClasificarBatallaGuerra_(fila) {
     if (pr !== null && ri !== null && pr > ri) fame = [FAME_PVP_GANA];
     else if (pr !== null && ri !== null && pr < ri) fame = [FAME_PVP_PIERDE];
     else fame = [FAME_PVP_PIERDE, FAME_PVP_GANA];
-    return { ok: true, tipo: 'pvp', mazosPosibles: [1], famePosibles: fame, barcos: 0, exacto: fame.length === 1, incompleto: false };
+    var dgPvp = _blgDesgloseVacio_(); // §PF437
+    if (pr !== null && ri !== null && pr > ri) dgPvp.pvp200 = 1;
+    else if (pr !== null && ri !== null && pr < ri) dgPvp.pvp100 = 1;
+    else dgPvp.sinResolver = 1;
+    return { ok: true, tipo: 'pvp', mazosPosibles: [1], famePosibles: fame, barcos: 0, exacto: fame.length === 1, incompleto: false, desglose: dgPvp };
   }
 
   if (tipo === 'boatBattle') {
@@ -33904,7 +33920,11 @@ function _blgClasificarBatallaGuerra_(fila) {
     if (g === 'sí' || g === 'si') fameB = [FAME_BARCO_GANA];
     else if (g === 'no') fameB = [FAME_BARCO_PIERDE];
     else fameB = [FAME_BARCO_PIERDE, FAME_BARCO_GANA];
-    return { ok: true, tipo: 'barco', mazosPosibles: [1], famePosibles: fameB, barcos: 1, exacto: fameB.length === 1, incompleto: false };
+    var dgBarco = _blgDesgloseVacio_(); // §PF437
+    if (g === 'sí' || g === 'si') dgBarco.barco125 = 1;
+    else if (g === 'no') dgBarco.barco75 = 1;
+    else dgBarco.sinResolver = 1;
+    return { ok: true, tipo: 'barco', mazosPosibles: [1], famePosibles: fameB, barcos: 1, exacto: fameB.length === 1, incompleto: false, desglose: dgBarco };
   }
 
   if (tipo.indexOf('riverRaceDuel') === 0) {
@@ -33922,21 +33942,24 @@ function _blgClasificarBatallaGuerra_(fila) {
     if (!legible || (rondas.length !== 2 && rondas.length !== 3)) {
       var todas = [];
       for (var d = 0; d < FAME_DUELO_RESULTADOS.length; d++) todas.push(FAME_DUELO_RESULTADOS[d].fame);
-      return { ok: true, tipo: 'duelo', mazosPosibles: [2, 3], famePosibles: _blgUnicosOrdenados_(todas), barcos: 0, exacto: false, incompleto: true };
+      var dgSinLeer = _blgDesgloseVacio_(); // §PF437
+      dgSinLeer.duelosSinLeer = 1;
+      return { ok: true, tipo: 'duelo', mazosPosibles: [2, 3], famePosibles: _blgUnicosOrdenados_(todas), barcos: 0, exacto: false, incompleto: true, desglose: dgSinLeer };
     }
     var sumas = [0];
+    var dgDuelo = _blgDesgloseVacio_(); // §PF437
     for (var r = 0; r < rondas.length; r++) {
       var a = rondas[r][0], b = rondas[r][1];
       var valores;
-      if (a !== null && b !== null && a > b) valores = [BLG_FAME_RONDA_DUELO_GANA];
-      else if (a !== null && b !== null && a < b) valores = [BLG_FAME_RONDA_DUELO_PIERDE];
-      else valores = [BLG_FAME_RONDA_DUELO_PIERDE, BLG_FAME_RONDA_DUELO_GANA];
+      if (a !== null && b !== null && a > b) { valores = [BLG_FAME_RONDA_DUELO_GANA]; dgDuelo.duelo250++; }
+      else if (a !== null && b !== null && a < b) { valores = [BLG_FAME_RONDA_DUELO_PIERDE]; dgDuelo.duelo100++; }
+      else { valores = [BLG_FAME_RONDA_DUELO_PIERDE, BLG_FAME_RONDA_DUELO_GANA]; dgDuelo.sinResolver++; }
       var nuevas = [];
       for (var s = 0; s < sumas.length; s++) for (var v = 0; v < valores.length; v++) nuevas.push(sumas[s] + valores[v]);
       sumas = nuevas;
     }
     var fameD = _blgUnicosOrdenados_(sumas);
-    return { ok: true, tipo: 'duelo', mazosPosibles: [rondas.length], famePosibles: fameD, barcos: 0, exacto: fameD.length === 1, incompleto: false };
+    return { ok: true, tipo: 'duelo', mazosPosibles: [rondas.length], famePosibles: fameD, barcos: 0, exacto: fameD.length === 1, incompleto: false, desglose: dgDuelo };
   }
 
   if (tipo.indexOf('riverRace') === 0) return { ok: false, motivo: 'tipo de guerra no reconocido: ' + tipo };
@@ -33945,7 +33968,9 @@ function _blgClasificarBatallaGuerra_(fila) {
 
 /** Bucket vacio de un dia y clan (o de los clanes ajenos). */
 function _blgBucketVacio_() {
-  return { batallas: 0, mazosMin: 0, mazosMax: 0, fameMin: 0, fameMax: 0, pvp: 0, duelos: 0, barcos: 0, exacto: true };
+  var b = { batallas: 0, mazosMin: 0, mazosMax: 0, fameMin: 0, fameMax: 0, pvp: 0, duelos: 0, barcos: 0, exacto: true, desgloseExacto: true };
+  for (var i = 0; i < BLG_DESGLOSE_CAMPOS.length; i++) b[BLG_DESGLOSE_CAMPOS[i]] = 0; // §PF437
+  return b;
 }
 
 /** Suma una batalla clasificada a un bucket y deja «exacto» al dia. */
@@ -33959,6 +33984,10 @@ function _blgSumarEnBucket_(bucket, c) {
   else if (c.tipo === 'duelo') bucket.duelos += 1;
   else if (c.tipo === 'barco') bucket.barcos += 1;
   bucket.exacto = bucket.mazosMin === bucket.mazosMax && bucket.fameMin === bucket.fameMax;
+  // §PF437: desglose por puntuación; desgloseExacto = todos los ataques del bucket tienen resultado conocido y rondas legibles.
+  var dg = c.desglose || {};
+  for (var i = 0; i < BLG_DESGLOSE_CAMPOS.length; i++) bucket[BLG_DESGLOSE_CAMPOS[i]] += (dg[BLG_DESGLOSE_CAMPOS[i]] || 0);
+  bucket.desgloseExacto = bucket.sinResolver === 0 && bucket.duelosSinLeer === 0;
 }
 
 /** Suma el bucket b en el bucket destino. */
@@ -33972,6 +34001,8 @@ function _blgSumarBuckets_(destino, b) {
   destino.duelos += b.duelos;
   destino.barcos += b.barcos;
   destino.exacto = destino.mazosMin === destino.mazosMax && destino.fameMin === destino.fameMax;
+  for (var i = 0; i < BLG_DESGLOSE_CAMPOS.length; i++) destino[BLG_DESGLOSE_CAMPOS[i]] += (b[BLG_DESGLOSE_CAMPOS[i]] || 0); // §PF437
+  destino.desgloseExacto = destino.sinResolver === 0 && destino.duelosSinLeer === 0;
 }
 
 function _blgBucketsDelDia_() {
@@ -34056,7 +34087,8 @@ function _blgResumirBatallasJugador_(filas, tag, limites, opciones) {
       clave: orden[k], battleTime: g.battleTime, clanTag: clanTag,
       clanNombre: String(g.fila[BLG_COL.CLAN_NOMBRE] === undefined || g.fila[BLG_COL.CLAN_NOMBRE] === null ? '' : g.fila[BLG_COL.CLAN_NOMBRE]).trim(),
       tipo: cl.tipo, mazosMin: cl.mazosPosibles[0], mazosMax: cl.mazosPosibles[cl.mazosPosibles.length - 1],
-      fameMin: cl.famePosibles[0], fameMax: cl.famePosibles[cl.famePosibles.length - 1], barcos: cl.barcos
+      fameMin: cl.famePosibles[0], fameMax: cl.famePosibles[cl.famePosibles.length - 1], barcos: cl.barcos,
+      desglose: cl.desglose // §PF437: para ubicarlo cuando se decida el día
     };
     if (dia.estado === 'invalido') { res.invalidas.push({ indice: -1, motivo: 'no se pudo ubicar el dia de ' + orden[k] }); continue; }
     if (dia.estado === 'fuera') { res.fueraDeGuerra.push(item); continue; }
