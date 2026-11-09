@@ -605,46 +605,12 @@ function informeBattlelogContraGuerra() {
     Object.keys(porClan).forEach(function (nombre) {
       var ct = tagPorNombre[nombre];
       if (!ct) { cuenta.filasClanSinTag++; return; }
-      var arr = [null, null, null, null];
-      var arrFB = [null, null, null, null];
-      var arrNo = [false, false, false, false];
-      for (var o = 0; o < BLG_DIAS_GUERRA; o++) {
-        var idx = porClan[nombre][o];
-        if (idx === undefined) continue;
-        var fila = fuente.filas[idx];
-        arr[o] = Number(fila[GC.ATAQUES_HOY - 1]) || 0;
-        // NUEVO (4-oct-2026, parte 59): el DOMINGO la ultima actualizacion de la fila ocurre despues del reinicio, cuando el [→ Contexto_Base_Web.md §18B059]
-        if (o === BLG_DIAS_GUERRA - 1 && arr[o] === 0) {
-          var idxSab = porClan[nombre][o - 1];
-          var semDom = _blgNumero_(fila[GC.ATAQUES_SEM - 1]);
-          var semSab = idxSab === undefined ? null : _blgNumero_(fuente.filas[idxSab][GC.ATAQUES_SEM - 1]);
-          // CORRECCION (4-oct-2026, regla 9, caso MiniCandre S1): el AtaquesSemana del sabado solo sirve de base si es [→ Contexto_Base_Web.md §18B060]
-          var sumaJueSab = 0;
-          for (var oo = 0; oo < o; oo++) sumaJueSab += (arr[oo] === null ? 0 : arr[oo]);
-          var difDom = (semDom === null || semSab === null || semSab < sumaJueSab) ? null : semDom - semSab;
-          if (difDom !== null && difDom >= 0 && difDom <= FAME_MAZOS_POR_DIA) {
-            arr[o] = difDom;
-            cuenta.domCalculado++;
-          } else {
-            arr[o] = null;
-            arrNo[o] = true;
-            cuenta.domNoCalculable++;
-          }
-        }
-        // Fame y barcos de la hoja son ACUMULADOS de la semana por clan: el dia = acumulado de hoy menos el de la fila
-        // de ayer del MISMO clan (0 si no hay fila de ayer), igual que Control (3.4). Nunca negativo.
-        var idxAyer = o > 0 ? porClan[nombre][o - 1] : undefined;
-        var fAcum = _blgNumero_(fila[GC.FAME - 1]), bAcum = _blgNumero_(fila[GC.BARCOS - 1]);
-        var fAyer = idxAyer === undefined ? 0 : _blgNumero_(fuente.filas[idxAyer][GC.FAME - 1]);
-        var bAyer = idxAyer === undefined ? 0 : _blgNumero_(fuente.filas[idxAyer][GC.BARCOS - 1]);
-        arrFB[o] = {
-          fame: (fAcum === null || fAyer === null) ? null : Math.max(0, fAcum - fAyer),
-          barcos: (bAcum === null || bAyer === null) ? null : Math.max(0, bAcum - bAyer)
-        };
-      }
-      hoja[ct] = arr;
-      hojaFB[ct] = arrFB;
-      hojaNoComparar[ct] = arrNo;
+      var vh = _blgValoresHojaDeClan_(fuente.filas, porClan[nombre]); // 9-nov-2026 (§PF437 fase 2): el cálculo salió a esta función para reutilizarlo
+      cuenta.domCalculado += vh.domCalculado;
+      cuenta.domNoCalculable += vh.domNoCalculable;
+      hoja[ct] = vh.ataques;
+      hojaFB[ct] = vh.fameBarcos;
+      hojaNoComparar[ct] = vh.noComparar;
     });
 
     var cmp = _blgCompararConHoja_(resumen, hoja, { noComparar: hojaNoComparar });
@@ -5352,6 +5318,56 @@ function _blgDecidirAmbiguas_(resumen) {
     salida.decisiones.push(r);
   }
   return salida;
+}
+
+/**
+ * _blgValoresHojaDeClan_(filas, idxPorDia) — 9-nov-2026 (§PF437, fase 2). Valores DIARIOS de la hoja Guerra para un jugador, una semana y un clan:
+ * ataques del día, y fame y barcos del día (la hoja guarda acumulados de la semana; el día es la diferencia con la fila de ayer del mismo clan).
+ * Es el mismo cálculo que hacía por dentro informeBattlelogContraGuerra(), movido aquí sin cambios para que el CSV de desglose use exactamente lo mismo.
+ * idxPorDia = { 0..3: índice de la fila en `filas` } (resultado de _indexarFilasJugadorSemanaPorClan_ para ese clan).
+ * Devuelve { ataques[4], fameBarcos[4], noComparar[4], domCalculado, domNoCalculable }; null en el día sin fila. Domingo con AtaquesHoy en 0:
+ * se calcula con AtaquesSemana contra el sábado, o queda en null con noComparar[3] = true. [→ Contexto_Base_Web.md §PF437]
+ */
+function _blgValoresHojaDeClan_(filas, idxPorDia) {
+  var arr = [null, null, null, null];
+  var arrFB = [null, null, null, null];
+  var arrNo = [false, false, false, false];
+  var domCalculado = 0, domNoCalculable = 0;
+  for (var o = 0; o < BLG_DIAS_GUERRA; o++) {
+    var idx = idxPorDia[o];
+    if (idx === undefined) continue;
+    var fila = filas[idx];
+    arr[o] = Number(fila[GC.ATAQUES_HOY - 1]) || 0;
+    // NUEVO (4-oct-2026, parte 59): el DOMINGO la ultima actualizacion de la fila ocurre despues del reinicio, cuando el [→ Contexto_Base_Web.md §18B059]
+    if (o === BLG_DIAS_GUERRA - 1 && arr[o] === 0) {
+      var idxSab = idxPorDia[o - 1];
+      var semDom = _blgNumero_(fila[GC.ATAQUES_SEM - 1]);
+      var semSab = idxSab === undefined ? null : _blgNumero_(filas[idxSab][GC.ATAQUES_SEM - 1]);
+      // CORRECCION (4-oct-2026, regla 9, caso MiniCandre S1): el AtaquesSemana del sabado solo sirve de base si es [→ Contexto_Base_Web.md §18B060]
+      var sumaJueSab = 0;
+      for (var oo = 0; oo < o; oo++) sumaJueSab += (arr[oo] === null ? 0 : arr[oo]);
+      var difDom = (semDom === null || semSab === null || semSab < sumaJueSab) ? null : semDom - semSab;
+      if (difDom !== null && difDom >= 0 && difDom <= FAME_MAZOS_POR_DIA) {
+        arr[o] = difDom;
+        domCalculado++;
+      } else {
+        arr[o] = null;
+        arrNo[o] = true;
+        domNoCalculable++;
+      }
+    }
+    // Fame y barcos de la hoja son ACUMULADOS de la semana por clan: el dia = acumulado de hoy menos el de la fila
+    // de ayer del MISMO clan (0 si no hay fila de ayer), igual que Control (3.4). Nunca negativo.
+    var idxAyer = o > 0 ? idxPorDia[o - 1] : undefined;
+    var fAcum = _blgNumero_(fila[GC.FAME - 1]), bAcum = _blgNumero_(fila[GC.BARCOS - 1]);
+    var fAyer = idxAyer === undefined ? 0 : _blgNumero_(filas[idxAyer][GC.FAME - 1]);
+    var bAyer = idxAyer === undefined ? 0 : _blgNumero_(filas[idxAyer][GC.BARCOS - 1]);
+    arrFB[o] = {
+      fame: (fAcum === null || fAyer === null) ? null : Math.max(0, fAcum - fAyer),
+      barcos: (bAcum === null || bAyer === null) ? null : Math.max(0, bAcum - bAyer)
+    };
+  }
+  return { ataques: arr, fameBarcos: arrFB, noComparar: arrNo, domCalculado: domCalculado, domNoCalculable: domNoCalculable };
 }
 
 /**
