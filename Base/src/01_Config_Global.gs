@@ -1321,7 +1321,8 @@ function _csvSubcarpetaDe_(filename) {
   if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv' || n === 'HistorialGuerra_Grupal.csv' || n === 'Trofeos_Guerra_RoyaleAPI.csv') return 'Tampermonkey'; // 04-nov-2026 (§PF362): trofeos por semana del Log de RoyaleAPI
   // Jugador: datos que dependen de cada jugador (no son comportamiento general ni respaldo de una hoja).
   var jugador = ['Backup_Cards_2.csv', 'Backup_Insignias_2.csv', 'Backup_Logros_2.csv', 'Backup_ProgresoEventos.csv',
-    'Backup_Battlelogs.csv', 'Backup_PerfilWeb.csv', 'Backup_CaminoLeyendas.csv'];
+    'Backup_Battlelogs.csv', 'Backup_PerfilWeb.csv', 'Backup_CaminoLeyendas.csv',
+    'Battlelog_Capturas.csv'];   // §PF437 fase 2 (9-nov-2026): qué cubre cada captura de battlelog; es de cada jugador, como Backup_Battlelogs.csv (deducción de Claude, a confirmar)
   if (jugador.indexOf(n) >= 0) return 'Jugador';
   // Background: comportamiento general, sin información personal de un jugador.
   var background = ['Backup_Cards.csv', 'Backup_Cards_3.csv', 'Backup_Modo.csv', 'Backup_Arena.csv',
@@ -1336,7 +1337,7 @@ function _csvSubcarpetaDe_(filename) {
     'Backup_Historial_I-S.csv', 'Backup_Grupo_Verificado.csv', 'Backup_Alertas_HistorialGuerra.csv',
     'Alertas_HistorialGuerra.csv', 'Backup_Conflictos.csv', 'Backup_Índice.csv',
     'Backup_Control.csv', 'Backup_Control_2.csv', 'Backup_T_Control.csv', 'Backup_Calendario.csv', 'Backup_Links.csv',
-    'Backup_Multicuentas.csv'];
+    'Backup_Multicuentas.csv', 'Guerra_Desglose.csv'];   // §PF437 fase 2 (9-nov-2026): la hoja Guerra con el desglose por puntuación (una fila por jugador, día y clan); va con las hojas por ser su par derivado (deducción de Claude, a confirmar)
   if (hojas.indexOf(n) >= 0) return 'Hojas';
   // Regla general (21-oct-2026, Contexto_Base_Web.md §PF139 tanda 5): todo informe, plan, aplicado, detalle, resumen o respaldo previo lleva fecha y hora
   // en el nombre (aaaa-mm-dd hh.mm.ss) o termina en (informe), (plan), (aplicado), (detalle) o (resumen): va a Informes aunque su prefijo no esté en la lista de arriba.
