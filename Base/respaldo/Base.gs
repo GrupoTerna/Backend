@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 08/11/2026 23:10:48 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 08/11/2026 23:53:30 */
 
 
 
@@ -58429,8 +58429,10 @@ function _webBattlelogJugador(tagBuscado, opciones) {
       miNombre:    String(miEquipo.name || ''),
       miClan:      (miEquipo.clan && miEquipo.clan.name) || '',
       miClanTag:   (function () { var t = '#' + cleanTag(miEquipo.clan && miEquipo.clan.tag); return (t !== '#' && CFG.TERNA_TAGS.indexOf(t) >= 0) ? t : ''; })(), // §PF418 (tanda 6g): clanTag aditivo; solo si el clan es Terna (un clan externo queda con '' y enlaza por nombre)
+      miClanTagExt: (function () { var t = '#' + cleanTag(miEquipo.clan && miEquipo.clan.tag); return (t !== '#' && CFG.TERNA_TAGS.indexOf(t) < 0) ? t : ''; })(), // §PF428: Tag del clan propio de la batalla cuando NO es Terna (perfil.html lo enlaza a RoyaleAPI); aditivo, miClanTag no cambia
       rivalNombre: String(rival.name || ''),
       rivalClan:   (rival.clan && rival.clan.name) || '',
+      rivalClanTag: (function () { var t = '#' + cleanTag(rival.clan && rival.clan.tag); return t !== '#' ? t : ''; })(), // §PF429: Tag del clan del rival (perfil.html lo enlaza a RoyaleAPI); aditivo
       eventTag:    String((b && b.eventTag) || ''),
       deckSelection: String((b && b.deckSelection) || '')
     };
