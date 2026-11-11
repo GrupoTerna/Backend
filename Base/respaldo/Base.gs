@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 10/11/2026 21:04:49 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 10/11/2026 21:12:43 */
 
 
 
@@ -3800,7 +3800,7 @@ function _csvSubcarpetaDe_(filename) {
     'Backup_Historial_I-S.csv', 'Backup_Grupo_Verificado.csv', 'Backup_Alertas_HistorialGuerra.csv',
     'Alertas_HistorialGuerra.csv', 'Backup_Conflictos.csv', 'Backup_Índice.csv',
     'Backup_Control.csv', 'Backup_Control_2.csv', 'Backup_T_Control.csv', 'Backup_Calendario.csv', 'Backup_Links.csv',
-    'Backup_Multicuentas.csv', 'Guerra_Desglose.csv'];   // §PF437 fase 2 (9-nov-2026): la hoja Guerra con el desglose por puntuación (una fila por jugador, día y clan); va con las hojas por ser su par derivado (deducción de Claude, a confirmar)
+    'Backup_Multicuentas.csv', 'Guerra_Desglose.csv'];   // §PF437 fase 2 (9-nov-2026): la hoja Guerra con el desglose por puntuación (desde el 10-nov-2026, formato ancho: una fila por jugador, semana y clan, §PF442); va con las hojas por ser su par derivado (deducción de Claude, a confirmar)
   if (hojas.indexOf(n) >= 0) return 'Hojas';
   // Regla general (21-oct-2026, Contexto_Base_Web.md §PF139 tanda 5): todo informe, plan, aplicado, detalle, resumen o respaldo previo lleva fecha y hora
   // en el nombre (aaaa-mm-dd hh.mm.ss) o termina en (informe), (plan), (aplicado), (detalle) o (resumen): va a Informes aunque su prefijo no esté en la lista de arriba.
