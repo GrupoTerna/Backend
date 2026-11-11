@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 09/11/2026 06:05:57 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 10/11/2026 19:29:10 */
 
 
 
@@ -29023,7 +29023,7 @@ var NOMBRES_PASOS_CORRGUERRA = [
 ];
 var CGW_REGRESO_HUECO_DIAS = 7;                    // §PF314 (PF253 opción B): un hueco de 7 días o más sin clan Terna cuenta como «salió y regresó»
 var _CGW_MITADES_SEMANA_CACHE_ = null;             // §PF313: sumas de dos días de guerra, para comprobar semanas completas
-var _CGW_VECTORES_DIA_CACHE_ = null;               // §PF357 punto 15: estados posibles de un día como cantidades de ataques de cada puntuación (a a e)
+var _CGW_VECTORES_DIA_CACHE_ = null;               // §PF357 punto 15: estados posibles de un día como cantidades de ataques de cada puntuación (a a f, §PF438)
 
 // 3.5a -- RESUMEN PURO DEL BATTLELOG POR DIA DE GUERRA Y POR CLAN (Fase 15, Tanda 3, [→ Contexto_Base_Web.md §18B034]
 // Indices base 0 dentro de una fila de BLS_HEADERS (N° es el 0).
@@ -30259,11 +30259,11 @@ function cerrarContradiccionesClanTerminado() {
           continue;
         }
         var rep = _cgwRepartoClanTerminado_(c.ataques, c.fame, c.barcos, null);
-        if (!rep || !(rep.k > 0)) { Logger.log(etq + ' ' + nombre + ': la fila N° ' + fila[0] + ' ya no cuadra con el domingo sin fame (reparto: ' + (rep ? 'k = ' + rep.k : 'ninguno') + '); no se toca.'); continue; }
-        fila[8] = String(fila[8]) + ' | Resuelto el ' + hoy + ': cuadra con el domingo sin fame, k = ' + rep.k + ' (§PF357). Reparto: ' + _cgwTextoReparto_(rep);
+        if (!rep || !(rep.g > 0)) { Logger.log(etq + ' ' + nombre + ': la fila N° ' + fila[0] + ' ya no cuadra con el domingo sin fame (reparto: ' + (rep ? 'g = ' + rep.g : 'ninguno') + '); no se toca.'); continue; }
+        fila[8] = String(fila[8]) + ' | Resuelto el ' + hoy + ': cuadra con el domingo sin fame, g = ' + rep.g + ' (§PF357). Reparto: ' + _cgwTextoReparto_(rep);
         fila[9] = 'Resuelto';
         cerradas++; hecha = true;
-        Logger.log(etq + ' ' + nombre + ': fila N° ' + fila[0] + ' pasa a «Resuelto» (k = ' + rep.k + '). Reparto: ' + _cgwTextoReparto_(rep) + '.');
+        Logger.log(etq + ' ' + nombre + ': fila N° ' + fila[0] + ' pasa a «Resuelto» (g = ' + rep.g + '). Reparto: ' + _cgwTextoReparto_(rep) + '.');
       }
       if (!halladas) Logger.log(etq + ' ' + nombre + ': no hay fila de Contradicción en ' + REVISION_GUERRA_CSV + ' (¿ya se borró?).');
       else if (!hecha && yaResueltas === halladas) Logger.log(etq + ' ' + nombre + ': ya estaba «Resuelto».');
@@ -30447,10 +30447,10 @@ function _cgwSemanaEsPosibleTresDias_(ataques, fame, barcos) {
 /**
  * _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) [→ Contexto_Base_Web.md §PF357]
  * §PF357 (reglas de la usuaria, 4-nov-2026; §PF183): el clan cruza la meta en el cambio de periodIndex hacia el domingo, así que en el domingo cuentan todos los ataques con fame
- * o ninguno. Primero prueba la semana tal cual (k = 0, _cgwSemanaEsPosible_, cuatro días). Si no cabe, prueba k = 1 a 4 ataques en el domingo, TODOS sin fame (CGW_MAX_ATAQUES_SIN_FAME), y los
- * (ataques - k) restantes deben cuadrar con la tabla en jueves, viernes y sábado (_cgwSemanaEsPosibleTresDias_). Los k ataques pueden ser de PvP, de duelo o de barco (no se ha descartado
- * que se pueda atacar barcos con el clan ya terminado), así que los barcos que dieron fame pueden ser desde (barcos - k) hasta barcos. Sin dato de barcos solo se comprueban ataques y fame.
- * Devuelve el menor k que cuadra (0 = cabe sin suponer nada) o -1 si no cabe de ninguna forma. No comprueba que el clan haya terminado (eso es _cgwClanTerminadoVerificado_).
+ * o ninguno. Primero prueba la semana tal cual (g = 0, _cgwSemanaEsPosible_, cuatro días). Si no cabe, prueba g = 1 a 4 ataques en el domingo, TODOS sin fame (CGW_MAX_ATAQUES_SIN_FAME), y los
+ * (ataques - g) restantes deben cuadrar con la tabla en jueves, viernes y sábado (_cgwSemanaEsPosibleTresDias_). Los g ataques pueden ser de PvP, de duelo o de barco (no se ha descartado
+ * que se pueda atacar barcos con el clan ya terminado), así que los barcos que dieron fame pueden ser desde (barcos - g) hasta barcos. Sin dato de barcos solo se comprueban ataques y fame.
+ * Devuelve el menor g que cuadra (0 = cabe sin suponer nada; g es la variable «sin medallas» de §PF438, antes llamada k) o -1 si no cabe de ninguna forma. No comprueba que el clan haya terminado (eso es _cgwClanTerminadoVerificado_).
  */
 function _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) {
   if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame)) return -1;
@@ -30460,12 +30460,12 @@ function _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) {
   if (memo && memo[clave] !== undefined) return memo[clave];
   var res = -1;
   if (_cgwSemanaEsPosible_(ataques, fame, hayBarcos ? barcos : null, null)) res = 0;
-  for (var k = 1; k <= CGW_MAX_ATAQUES_SIN_FAME && k <= ataques && res < 0; k++) {
+  for (var g = 1; g <= CGW_MAX_ATAQUES_SIN_FAME && g <= ataques && res < 0; g++) {
     if (!hayBarcos) {
-      if (_cgwSemanaEsPosibleTresDias_(ataques - k, fame, null)) res = k;
+      if (_cgwSemanaEsPosibleTresDias_(ataques - g, fame, null)) res = g;
     } else {
-      for (var b2 = Math.max(0, barcos - k); b2 <= barcos && res < 0; b2++) {
-        if (_cgwSemanaEsPosibleTresDias_(ataques - k, fame, b2)) res = k;
+      for (var b2 = Math.max(0, barcos - g); b2 <= barcos && res < 0; b2++) {
+        if (_cgwSemanaEsPosibleTresDias_(ataques - g, fame, b2)) res = g;
       }
     }
   }
@@ -30494,14 +30494,14 @@ function _cgwDescripcionDia_(n, b, f) {
 
 /**
  * _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) [→ Contexto_Base_Web.md §PF357]
- * Reparto por día de una semana que solo cuadra con el domingo sin fame (k de 1 a 4; si cabe sin suponer nada devuelve { k: 0 } sin reparto; si no cabe, null).
- * Reglas de la usuaria (4-nov-2026): (1) el domingo cuentan todos los ataques o ninguno: los k ataques del domingo dan 0 de fame y jueves, viernes y sábado cuadran con la tabla
+ * Reparto por día de una semana que solo cuadra con el domingo sin fame (g de 1 a 4; si cabe sin suponer nada devuelve { g: 0 } sin reparto; si no cabe, null).
+ * Reglas de la usuaria (4-nov-2026): (1) el domingo cuentan todos los ataques o ninguno: los g ataques del domingo dan 0 de fame y jueves, viernes y sábado cuadran con la tabla
  * (_fameCatalogoDia_). Primero se descarta todo lo que no cuadra y, entre las combinaciones semanales que SÍ quedan posibles, se aplica la regla de la usuaria (5-nov-2026):
  * (2) **si aún quedan dos casos posibles se prefiere que el barco se haya perdido** (usualmente se necesitan varios ataques de barco para derrotar las defensas). Esa regla NO va primera:
- * solo desempata lo que los criterios anteriores no resolvieron. Orden (los criterios a y b son de Claude, por confirmar): a) el menor k (más ataques con fame), b) menos barcos con el domingo
+ * solo desempata lo que los criterios anteriores no resolvieron. Orden (los criterios a y b son de Claude, por confirmar): a) el menor g (más ataques con fame), b) menos barcos con el domingo
  * en 0 (los barcos de la semana dieron fame), c) menos barcos ganados (barco perdido; regla de la usuaria), d) los días más llenos primero (J, V, S) y, a igual, el de más fame primero (como en las hojas de la usuaria,
  * donde el duelo y el barco caen en los primeros días), e) el primero en el orden del catálogo.
- * Devuelve { k, barcosGanados, dias: [{ dia, n, b, f, texto }] (J, V, S, D) } o { k: 0 } o null. Un día con el mismo total puede tener otro orden (por ejemplo el duelo en jueves o en viernes):
+ * Devuelve { g, barcosGanados, dias: [{ dia, n, b, f, texto }] (J, V, S, D) } o { g: 0 } o null (g = ataques sin medallas, §PF438; n, b, f de los días son las del catálogo de §PF122). Un día con el mismo total puede tener otro orden (por ejemplo el duelo en jueves o en viernes):
  * el reparto elegido es uno entre varios equivalentes.
  */
 function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
@@ -30511,7 +30511,7 @@ function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
   if (memo && memo[clave] !== undefined) return memo[clave];
   var res = null;
   if (_cgwSemanaEsPosible_(ataques, fame, hayBarcos ? barcos : null, null)) {
-    res = { k: 0 };
+    res = { g: 0 };
   } else {
     var cat = _fameCatalogoDia_(), porClave = {};
     for (var c = 0; c < cat.length; c++) porClave[cat[c].n + '|' + cat[c].b + '|' + cat[c].f] = cat[c];
@@ -30522,10 +30522,10 @@ function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
       return info[kk];
     };
     var mejor = null, mejorClave = null;
-    for (var k = 1; k <= CGW_MAX_ATAQUES_SIN_FAME && k <= ataques; k++) {
-      var n3 = ataques - k;
+    for (var g = 1; g <= CGW_MAX_ATAQUES_SIN_FAME && g <= ataques; g++) {
+      var n3 = ataques - g;
       if (n3 > 3 * FAME_MAZOS_POR_DIA) continue;
-      var b2ini = hayBarcos ? Math.max(0, barcos - k) : 0, b2fin = hayBarcos ? barcos : 0;
+      var b2ini = hayBarcos ? Math.max(0, barcos - g) : 0, b2fin = hayBarcos ? barcos : 0;
       for (var b2 = b2ini; b2 <= b2fin; b2++) {
         for (var i = 0; i < cat.length; i++) {
           var s1 = cat[i];
@@ -30540,10 +30540,10 @@ function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
               var s3 = cands[z];
               var ganados = infoDe(s1).barcosGanados + infoDe(s2).barcosGanados + infoDe(s3).barcosGanados;
               var bDom = hayBarcos ? barcos - b2 : 0;
-              var clv = [k, bDom, ganados, -s1.n, -s2.n, -s3.n, -s1.f, -s2.f, -s3.f]; // el barco perdido (ganados) desempata solo entre las combinaciones que quedan (5-nov-2026)
+              var clv = [g, bDom, ganados, -s1.n, -s2.n, -s3.n, -s1.f, -s2.f, -s3.f]; // el barco perdido (ganados) desempata solo entre las combinaciones que quedan (5-nov-2026)
               var mejorQue = !mejorClave;
               for (var t = 0; !mejorQue && t < clv.length; t++) { if (clv[t] < mejorClave[t]) mejorQue = true; else if (clv[t] > mejorClave[t]) break; }
-              if (mejorQue) { mejorClave = clv; mejor = { k: k, barcosGanados: ganados, bDom: bDom, s: [s1, s2, s3] }; }
+              if (mejorQue) { mejorClave = clv; mejor = { g: g, barcosGanados: ganados, bDom: bDom, s: [s1, s2, s3] }; }
             }
           }
         }
@@ -30552,8 +30552,8 @@ function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
     if (mejor) {
       var letras = ['J', 'V', 'S'], dias = [];
       for (var d = 0; d < 3; d++) dias.push({ dia: letras[d], n: mejor.s[d].n, b: mejor.s[d].b, f: mejor.s[d].f, texto: infoDe(mejor.s[d]).texto });
-      dias.push({ dia: 'D', n: mejor.k, b: mejor.bDom, f: 0, texto: 'sin fame' });
-      res = { k: mejor.k, barcosGanados: mejor.barcosGanados, dias: dias };
+      dias.push({ dia: 'D', n: mejor.g, b: mejor.bDom, f: 0, texto: 'sin fame' });
+      res = { g: mejor.g, barcosGanados: mejor.barcosGanados, dias: dias };
     }
   }
   if (memo) memo[clave] = res;
@@ -30569,105 +30569,113 @@ function _cgwTextoReparto_(r) {
 }
 
 /**
- * _cgwVectoresDia_() [→ Contexto_Base_Web.md §PF357]
- * Los estados posibles de UN día como cuántos ataques hay de cada puntuación (las letras de §PF356 punto 8): { n, f, a, b, c, d, e } sin repetir, con a = 250, b = 200, c = 125, d = 100, e = 75
- * (f = 0, los ataques sin fame, solo existen en el domingo de un clan terminado). Sale de _fameDescomposicionesDia_(): cada batalla de duelo ganada es una «a» y perdida una «d»; el PvP ganado es «b»
- * y perdido «d»; el barco ganado es «c» y perdido «e». Ordenados de los días más llenos y con más fame a los más vacíos. Se calcula una sola vez por ejecución.
+ * _cgwVectoresDia_() [→ Contexto_Base_Web.md §PF438]
+ * Los estados posibles de UN día como cuántos ataques hay de cada puntuación, con las variables de la tabla de la usuaria (9-nov-2026; §PF438), sin repetir:
+ * a = duelo 250, b = duelo 100, c = PvP 200, d = PvP 100, e = barco 125, f = barco 75, g = sin medallas (0), h = total de ataques, i = merma (4 − h), j = barcos (e + f), k = medallas.
+ * Aquí g vale 0 (los ataques sin medallas solo existen en el domingo de un clan terminado y los agrega _cgwCombinacionesPorPuntuacion_). Sale de _fameDescomposicionesDia_():
+ * cada batalla de duelo ganada es una «a» y perdida una «b»; el PvP ganado es «c» y perdido «d»; el barco ganado es «e» y perdido «f». Estas letras NO son las de §PF356 punto 8
+ * (a a f de antes) ni su k: en esa leyenda el duelo perdido y el PvP perdido eran la misma «d». Ordenados de los días más llenos y con más medallas a los más vacíos.
+ * Se calcula una sola vez por ejecución.
  */
 function _cgwVectoresDia_() {
   if (_CGW_VECTORES_DIA_CACHE_) return _CGW_VECTORES_DIA_CACHE_;
   var vistos = {}, lista = [];
-  for (var n = 0; n <= FAME_MAZOS_POR_DIA; n++) {
-    for (var b = 0; b <= n; b++) {
-      var desc = _fameDescomposicionesDia_(n, b);
+  for (var h = 0; h <= FAME_MAZOS_POR_DIA; h++) {
+    for (var j = 0; j <= h; j++) {
+      var desc = _fameDescomposicionesDia_(h, j);
       for (var i = 0; i < desc.length; i++) {
         var x = desc[i], ganadas = 0, perdidas = 0;
         if (x.duelo) { var pp = String(x.duelo).split('-'); ganadas = Number(pp[0]); perdidas = Number(pp[1]); }
-        var v = { n: n, f: x.fame, a: ganadas, b: x.pvpGanados, c: x.barcosGanados, d: x.pvpPerdidos + perdidas, e: x.barcosPerdidos };
-        var clave = [v.a, v.b, v.c, v.d, v.e].join(',');
-        if (!vistos[clave]) { vistos[clave] = true; lista.push(v); }
+        var v = { a: ganadas, b: perdidas, c: x.pvpGanados, d: x.pvpPerdidos, e: x.barcosGanados, f: x.barcosPerdidos, g: 0 };
+        v.h = v.a + v.b + v.c + v.d + v.e + v.f;
+        v.i = FAME_MAZOS_POR_DIA - v.h;
+        v.j = v.e + v.f;
+        v.k = 250 * v.a + 100 * v.b + 200 * v.c + 100 * v.d + 125 * v.e + 75 * v.f;
+        var clave = [v.a, v.b, v.c, v.d, v.e, v.f].join(',');
+        if (vistos[clave]) continue;
+        vistos[clave] = true;
+        lista.push(v);
       }
     }
   }
-  lista.sort(function (p, q) { return (q.n - p.n) || (q.f - p.f); });
+  lista.sort(function (p, q) { return (q.h - p.h) || (q.k - p.k) || (q.j - p.j); });
   _CGW_VECTORES_DIA_CACHE_ = lista;
   return lista;
 }
 
-/** Texto de un día con fame como letras: «a1+d3» (a = 250, b = 200, c = 125, d = 100, e = 75). La «f» (sin fame) no va aquí: en un estado de día `f` es la fame, y los ataques sin fame solo están en el domingo. [→ Contexto_Base_Web.md §PF357] */
+/** Texto corto de un estado de día con las letras de _cgwVectoresDia_: «a1+c1+e2» (solo las letras a a f que valen más de 0). [→ Contexto_Base_Web.md §PF438] */
 function _cgwTextoLetras_(v) {
-  var partes = [], letras = ['a', 'b', 'c', 'd', 'e'];
-  for (var i = 0; i < letras.length; i++) if (v[letras[i]] > 0) partes.push(letras[i] + v[letras[i]]);
-  return partes.length ? partes.join('+') : 'sin ataques';
+  var partes = [], ls = ['a', 'b', 'c', 'd', 'e', 'f'];
+  for (var i = 0; i < ls.length; i++) if (v[ls[i]] > 0) partes.push(ls[i] + v[ls[i]]);
+  return partes.length ? partes.join('+') : '-';
 }
 
 /**
- * _cgwCombinacionesPorPuntuacion_(ataques, fame, barcos, memo) [→ Contexto_Base_Web.md §PF357]
- * Regla de la usuaria (9-nov-2026): se evalúa cuántos ataques hay de cada puntuación, no solo el total. Devuelve TODAS las combinaciones semanales (a, b, c, d, e, f: cantidades de ataques de 250, 200,
- * 125, 100, 75 y 0) que cuadran con los ataques, la fame y los barcos, cada una con un reparto por día (J, V, S y D), ordenadas por k (ataques del domingo sin fame, 0 a 4), barcos que dieron 0 el domingo
- * y barcos ganados. k = 0 usa cuatro días con fame; k de 1 a 4 usa jueves, viernes y sábado con fame (los k ataques del domingo dan 0, todos o ninguno: §PF357 punto 9 a) y los barcos que dieron fame son
- * desde barcos - k hasta barcos. Sin dato de barcos solo se comprueban ataques y fame. Cada combinación sale con un solo reparto (los días más llenos primero, como en las hojas de la usuaria); otros repartos
- * equivalentes existen. NO elige entre combinaciones (eso lo hace _cgwRepartoClanTerminado_, que no se tocó): solo las lista, para que se vean todas. Devuelve [] si ninguna cuadra, o null si los datos no son válidos.
- * Cada elemento: { k, bDom (barcos del domingo, sin fame), letras: {a,b,c,d,e,f}, dias: [{ dia, n, f, texto }] }. memo (opcional) evita repetir cálculos.
+ * _cgwCombinacionesPorPuntuacion_(h, k, j, memo) [→ Contexto_Base_Web.md §PF438]
+ * Todas las formas de repartir una semana (h = total de ataques, k = medallas, j = barcos que dieron medallas; j puede ser null) entre las puntuaciones de _cgwVectoresDia_ (a a f),
+ * con g ataques sin medallas en el domingo de un clan terminado. g = 0 usa cuatro días con medallas; g de 1 a 4 usa jueves, viernes y sábado con medallas (los g ataques del domingo dan 0,
+ * todos o ninguno: §PF357 punto 9 a) y los barcos que dieron medallas son desde (j − g) hasta j. Distingue el duelo perdido (b) del PvP perdido (d): §PF438.
+ * Devuelve [{ g, jDom, letras: { a, b, c, d, e, f, g }, dias: [{ dia, h, k, texto }] }] ordenada por menor g, menos barcos en el domingo y menos barcos ganados (e), o null si los datos no valen.
+ * Los parámetros se pasan en el orden de siempre (ataques, medallas, barcos): solo cambian los nombres de las variables.
  */
-function _cgwCombinacionesPorPuntuacion_(ataques, fame, barcos, memo) {
-  if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame)) return null;
-  if (ataques % 1 !== 0 || fame % 1 !== 0 || ataques < 0 || fame < 0 || ataques > BLG_DIAS_GUERRA * FAME_MAZOS_POR_DIA) return null;
-  var hayBarcos = (typeof barcos === 'number' && !isNaN(barcos));
-  if (hayBarcos && (barcos % 1 !== 0 || barcos < 0 || barcos > ataques)) return null;
-  var claveMemo = 'P|' + ataques + '|' + (hayBarcos ? barcos : 'x') + '|' + fame;
+function _cgwCombinacionesPorPuntuacion_(h, k, j, memo) {
+  if (typeof h !== 'number' || typeof k !== 'number' || isNaN(h) || isNaN(k)) return null;
+  if (h % 1 !== 0 || k % 1 !== 0 || h < 0 || k < 0 || h > BLG_DIAS_GUERRA * FAME_MAZOS_POR_DIA) return null;
+  var hayBarcos = (typeof j === 'number' && !isNaN(j));
+  if (hayBarcos && (j % 1 !== 0 || j < 0 || j > h)) return null;
+  var claveMemo = 'P|' + h + '|' + (hayBarcos ? j : 'x') + '|' + k;
   if (memo && memo[claveMemo] !== undefined) return memo[claveMemo];
   var vec = _cgwVectoresDia_(), salida = [], letrasDia = ['J', 'V', 'S', 'D'];
-  var kMax = Math.min(CGW_MAX_ATAQUES_SIN_FAME, ataques);
-  for (var k = 0; k <= kMax; k++) {
-    var nDias = (k === 0) ? 4 : 3, nObj = ataques - k;
+  var gMax = Math.min(CGW_MAX_ATAQUES_SIN_FAME, h);
+  for (var g = 0; g <= gMax; g++) {
+    var nDias = (g === 0) ? 4 : 3, nObj = h - g;
     if (nObj > nDias * FAME_MAZOS_POR_DIA) continue;
-    var bMin = hayBarcos ? (k === 0 ? barcos : Math.max(0, barcos - k)) : 0;
-    var bMax = hayBarcos ? barcos : ataques;
+    var jMin = hayBarcos ? (g === 0 ? j : Math.max(0, j - g)) : 0;
+    var jMax = hayBarcos ? j : h;
     var capa = {};
-    capa['0,0,0,0,0'] = { t: [0, 0, 0, 0, 0], dias: [] };
+    capa['0,0,0,0,0,0'] = { t: [0, 0, 0, 0, 0, 0], dias: [] };
     for (var paso = 0; paso < nDias; paso++) {
       var sig = {}, restantes = nDias - paso - 1;
       for (var clave in capa) {
         var est = capa[clave], t = est.t;
         for (var q = 0; q < vec.length; q++) {
           var v = vec[q];
-          var n2 = t[0] + t[1] + t[2] + t[3] + t[4] + v.n;
-          if (n2 > nObj || nObj - n2 > restantes * FAME_MAZOS_POR_DIA) continue;
-          var a2 = t[0] + v.a, b2 = t[1] + v.b, c2 = t[2] + v.c, d2 = t[3] + v.d, e2 = t[4] + v.e;
-          if (250 * a2 + 200 * b2 + 125 * c2 + 100 * d2 + 75 * e2 > fame) continue;
-          if (c2 + e2 > bMax) continue;
-          var nuevaClave = a2 + ',' + b2 + ',' + c2 + ',' + d2 + ',' + e2;
-          if (!sig[nuevaClave]) sig[nuevaClave] = { t: [a2, b2, c2, d2, e2], dias: est.dias.concat([q]) };
+          var h2 = t[0] + t[1] + t[2] + t[3] + t[4] + t[5] + v.h;
+          if (h2 > nObj || nObj - h2 > restantes * FAME_MAZOS_POR_DIA) continue;
+          var a2 = t[0] + v.a, b2 = t[1] + v.b, c2 = t[2] + v.c, d2 = t[3] + v.d, e2 = t[4] + v.e, f2 = t[5] + v.f;
+          if (250 * a2 + 100 * b2 + 200 * c2 + 100 * d2 + 125 * e2 + 75 * f2 > k) continue;
+          if (e2 + f2 > jMax) continue;
+          var nuevaClave = a2 + ',' + b2 + ',' + c2 + ',' + d2 + ',' + e2 + ',' + f2;
+          if (!sig[nuevaClave]) sig[nuevaClave] = { t: [a2, b2, c2, d2, e2, f2], dias: est.dias.concat([q]) };
         }
       }
       capa = sig;
     }
     for (var c in capa) {
       var fin = capa[c], tt = fin.t;
-      if (250 * tt[0] + 200 * tt[1] + 125 * tt[2] + 100 * tt[3] + 75 * tt[4] !== fame) continue;
-      if (tt[0] + tt[1] + tt[2] + tt[3] + tt[4] !== nObj) continue;
-      if (tt[2] + tt[4] < bMin || tt[2] + tt[4] > bMax) continue;
+      if (250 * tt[0] + 100 * tt[1] + 200 * tt[2] + 100 * tt[3] + 125 * tt[4] + 75 * tt[5] !== k) continue;
+      if (tt[0] + tt[1] + tt[2] + tt[3] + tt[4] + tt[5] !== nObj) continue;
+      if (tt[4] + tt[5] < jMin || tt[4] + tt[5] > jMax) continue;
       var dias = [];
       for (var di = 0; di < fin.dias.length; di++) {
         var dv = vec[fin.dias[di]];
-        dias.push({ dia: letrasDia[di], n: dv.n, f: dv.f, texto: _cgwTextoLetras_(dv) });
+        dias.push({ dia: letrasDia[di], h: dv.h, k: dv.k, texto: _cgwTextoLetras_(dv) });
       }
-      if (k > 0) dias.push({ dia: 'D', n: k, f: 0, texto: 'f' + k });
+      if (g > 0) dias.push({ dia: 'D', h: g, k: 0, texto: 'g' + g });
       salida.push({
-        k: k, bDom: hayBarcos ? barcos - (tt[2] + tt[4]) : 0,
-        letras: { a: tt[0], b: tt[1], c: tt[2], d: tt[3], e: tt[4], f: k },
+        g: g, jDom: hayBarcos ? j - (tt[4] + tt[5]) : 0,
+        letras: { a: tt[0], b: tt[1], c: tt[2], d: tt[3], e: tt[4], f: tt[5], g: g },
         dias: dias
       });
     }
   }
-  salida.sort(function (p, q) { return (p.k - q.k) || (p.bDom - q.bDom) || (p.letras.c - q.letras.c); });
+  salida.sort(function (p, q) { return (p.g - q.g) || (p.jDom - q.jDom) || (p.letras.e - q.letras.e); });
   if (memo) memo[claveMemo] = salida;
   return salida;
 }
 
 /**
- * Texto de las combinaciones de _cgwCombinacionesPorPuntuacion_ para el registro: «Combinaciones por puntuación (a=250, …): k=4 a1 d10 e1 f4 (J a1+d3=550; V d4=400; …) | …». [→ Contexto_Base_Web.md §PF357]
+ * Texto de las combinaciones de _cgwCombinacionesPorPuntuacion_ para el registro: «Combinaciones por puntuación (a=duelo 250, …, g=sin medallas): g=4 a1 d10 e1 (J a1+d3=550; V d4=400; …; D g4) | …». [→ Contexto_Base_Web.md §PF438]
  * Muestra hasta `max` (6 por defecto) y dice cuántas faltan. Lista vacía o null: texto vacío.
  */
 function _cgwTextoCombinaciones_(lista, max) {
@@ -30675,10 +30683,10 @@ function _cgwTextoCombinaciones_(lista, max) {
   var tope = max || 6, ls = ['a', 'b', 'c', 'd', 'e', 'f'];
   var partes = lista.slice(0, tope).map(function (x) {
     var sem = ls.filter(function (l) { return x.letras[l] > 0; }).map(function (l) { return l + x.letras[l]; }).join(' ');
-    var dias = x.dias.map(function (d) { return d.dia + ' ' + d.texto + (d.dia === 'D' ? '' : '=' + d.f); }).join('; ');
-    return 'k=' + x.k + ' ' + sem + ' (' + dias + ')';
+    var dias = x.dias.map(function (d) { return d.dia + ' ' + d.texto + (d.dia === 'D' ? '' : '=' + d.k); }).join('; ');
+    return 'g=' + x.g + ' ' + sem + ' (' + dias + ')';
   });
-  return 'Combinaciones por puntuación (a=250, b=200, c=125, d=100, e=75, f=0): ' + partes.join(' | ') +
+  return 'Combinaciones por puntuación (a=duelo 250, b=duelo 100, c=PvP 200, d=PvP 100, e=barco 125, f=barco 75, g=sin medallas): ' + partes.join(' | ') +
     (lista.length > tope ? ' | y ' + (lista.length - tope) + ' más' : '');
 }
 
@@ -31479,8 +31487,8 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       fuenteEntrante !== 'desconocida' && fuenteGuardada !== fuenteEntrante);
     var yaGuardadaIgual = !!(existente && !valoresDistintos); // reintento por Implementación «No»: el valor ya estaba, no es un conflicto nuevo
     // §PF357: antes de decir «no cabe» se prueba el caso del clan que cruzó la meta el domingo (hasta 4 ataques sin fame; _cgwSemanaPosibleClanTerminado_).
-    var sinFameK = yaGuardadaIgual ? 0 : _cgwSemanaPosibleClanTerminado_(ataquesSemana, fame, barcosFinal, memoPosible);
-    var noCabeSemana = !yaGuardadaIgual && sinFameK < 0;
+    var sinFameG = yaGuardadaIgual ? 0 : _cgwSemanaPosibleClanTerminado_(ataquesSemana, fame, barcosFinal, memoPosible);
+    var noCabeSemana = !yaGuardadaIgual && sinFameG < 0;
     var hayConflicto = mismoNivelDiscrepa || noCabeSemana || (valoresDistintos && !(clanTag === '' && fuenteGuardada === 'perfil' && fuenteEntrante === 'perfil'));
     // §PF343 (2-nov-2026, regla de la usuaria): la fila del perfil de un clan que NO es Terna solo genera contradicción si hay registro de que el jugador hizo al
     // menos un ataque esa semana en algún clan Terna (Log, Analytics o River Race). Sin ese registro se ignora: el valor se aplica como siempre, sin línea de conflicto
@@ -31534,7 +31542,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       if (cambiosPerfil.length < 200) cambiosPerfil.push(etiquetaCambio);
     }
 
-    if (sinFameK > 0) { // §PF357: se aplica el valor; queda dicho en el registro que se supuso clan terminado (no hay fila en Revision_Guerra.csv)
+    if (sinFameG > 0) { // §PF357: se aplica el valor; queda dicho en el registro que se supuso clan terminado (no hay fila en Revision_Guerra.csv)
       aceptadasClanTerminadoTotal++;
       var clanCierre = clanTag !== '' ? clanTag : _normalizarClanTagCorreccion(c.clanPerfil);
       var cierreVerificado = _cgwClanTerminadoVerificado_(temporadaPropia, semana, clanCierre, cacheCierreCrr);
@@ -31542,7 +31550,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       if (aceptadasClanTerminado.length < CGW_CONTRADICCIONES_MAX_LINEAS) {
         var repartoCierre = _cgwTextoReparto_(_cgwRepartoClanTerminado_(ataquesSemana, fame, barcosFinal, memoPosible));
         var combosCierre = _cgwTextoCombinaciones_(_cgwCombinacionesPorPuntuacion_(ataquesSemana, fame, barcosFinal, memoPosible)); // §PF357 punto 15: todas las combinaciones por puntuación, no solo la elegida
-        aceptadasClanTerminado.push(etiquetaConflicto + ': ' + textoAhoraC + ' cuadra con el domingo sin fame, ' + sinFameK + ' ataque(s) (' +
+        aceptadasClanTerminado.push(etiquetaConflicto + ': ' + textoAhoraC + ' cuadra con el domingo sin fame, ' + sinFameG + ' ataque(s) (' +
           (cierreVerificado ? 'verificado con la API: el clan ' + clanCierre + ' ya había cruzado la meta al empezar el domingo' : 'clan terminado, sin verificar') + ')' +
           (repartoCierre ? '. Reparto: ' + repartoCierre : '') + (combosCierre ? '. ' + combosCierre : ''));
       }
@@ -32856,14 +32864,14 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
   // Si ninguna combinación cuadra no se crea nada: se quitan las filas recién agregadas y se devuelve null.
   var rep = _repartirSemanaConjunto_(fuente.filas, offsetsNuevos, valores);
   // §PF358 (4-nov-2026): si ninguna combinación de los 4 días cuadra (y no es un conflicto con los JSON de CurrentRiverRace, que se deja a revisión manual), se prueba la regla del
-  // clan terminado de §PF357: jueves, viernes y sábado con la tabla y el domingo con k ataques sin fame (k de 1 a 4). Escribe las 4 filas con Origen «Reconstruido».
+  // clan terminado de §PF357: jueves, viernes y sábado con la tabla y el domingo con g ataques sin fame (g de 1 a 4). Escribe las 4 filas con Origen «Reconstruido».
   if (!rep.ok && /^ninguna combinacion de la tabla/.test(String(rep.motivo || ''))) {
     var repTerminado = _cgwEscribirRepartoClanTerminado_(fuente.filas, offsetsNuevos, valores);
     if (repTerminado) {
       rep = { ok: true, huboCambio: true, crr: 'clan terminado' };
-      if (opciones) opciones.ultimaReconstruccionClanTerminado = { k: repTerminado.k, texto: _cgwTextoReparto_(repTerminado) };
+      if (opciones) opciones.ultimaReconstruccionClanTerminado = { g: repTerminado.g, texto: _cgwTextoReparto_(repTerminado) };
       Logger.log('[Reparto clan terminado] RECONSTRUIDA T' + temporadaPropia + ' S' + semana + ' ' + tag + ': ' + _cgwTextoValores_(valores.ataquesSemana, valores.fame, valores.barcos) +
-        ' cuadra con el domingo sin fame, ' + repTerminado.k + ' ataque(s) (clan terminado, sin verificar con la API). Reparto: ' + _cgwTextoReparto_(repTerminado));
+        ' cuadra con el domingo sin fame, ' + repTerminado.g + ' ataque(s) (clan terminado, sin verificar con la API). Reparto: ' + _cgwTextoReparto_(repTerminado));
     }
   }
   if (!rep.ok) {
@@ -32891,7 +32899,7 @@ function _cgwEscribirRepartoClanTerminado_(filas, offsets, valores) {
   var B = (valores.barcos === null || valores.barcos === undefined) ? 0 : Number(valores.barcos);
   if (!isFinite(A) || A % 1 !== 0 || A < 0 || !isFinite(F) || F < 0 || !isFinite(B) || B % 1 !== 0 || B < 0) return null;
   var rep = _cgwRepartoClanTerminado_(A, F, B, null);
-  if (!rep || !(rep.k > 0) || !rep.dias || rep.dias.length !== 4) return null;
+  if (!rep || !(rep.g > 0) || !rep.dias || rep.dias.length !== 4) return null;
   for (var o = 0; o < 4; o++) { if (offsets[o] === undefined || !filas[offsets[o]]) return null; }
   var an = 0, bn = 0, fn = 0;
   for (var z = 0; z < 4; z++) {
