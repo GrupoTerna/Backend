@@ -1358,28 +1358,28 @@ function cerrarContradiccionesClanTerminado() {
 // ----- Fame: combinaciones posibles por día -----
 
 /**
- * _fameDescomposicionesDia_(n, b) [→ Contexto_Base_Web.md §18B004]
+ * _fameDescomposicionesDia_(h, j) [→ Contexto_Base_Web.md §18B004]
  */
-function _fameDescomposicionesDia_(n, b) {
+function _fameDescomposicionesDia_(h, j) {
   var salida = [];
-  if (typeof n !== 'number' || typeof b !== 'number' || n % 1 !== 0 || b % 1 !== 0) return salida;
-  if (n < 0 || n > FAME_MAZOS_POR_DIA || b < 0 || b > n) return salida;
+  if (typeof h !== 'number' || typeof j !== 'number' || h % 1 !== 0 || j % 1 !== 0) return salida;
+  if (h < 0 || h > FAME_MAZOS_POR_DIA || j < 0 || j > h) return salida;
 
   // Opciones de duelo: ninguno, o uno de los resultados que quepa en los mazos que quedan.
   var opcionesDuelo = [{ etiqueta: null, mazos: 0, fame: 0 }];
   for (var d = 0; d < FAME_DUELO_RESULTADOS.length; d++) {
-    if (b + FAME_DUELO_RESULTADOS[d].mazos <= n) opcionesDuelo.push(FAME_DUELO_RESULTADOS[d]);
+    if (j + FAME_DUELO_RESULTADOS[d].mazos <= h) opcionesDuelo.push(FAME_DUELO_RESULTADOS[d]);
   }
 
   for (var o = 0; o < opcionesDuelo.length; o++) {
     var duelo = opcionesDuelo[o];
-    var pvp = n - b - duelo.mazos; // el resto de los mazos son batallas PvP normales
-    for (var bg = 0; bg <= b; bg++) {
+    var pvp = h - j - duelo.mazos; // el resto de los mazos son batallas PvP normales
+    for (var bg = 0; bg <= j; bg++) {
       for (var pg = 0; pg <= pvp; pg++) {
         salida.push({
-          fame: bg * FAME_BARCO_GANA + (b - bg) * FAME_BARCO_PIERDE +
+          fame: bg * FAME_BARCO_GANA + (j - bg) * FAME_BARCO_PIERDE +
                 pg * FAME_PVP_GANA + (pvp - pg) * FAME_PVP_PIERDE + duelo.fame,
-          barcosGanados: bg, barcosPerdidos: b - bg,
+          barcosGanados: bg, barcosPerdidos: j - bg,
           pvpGanados: pg, pvpPerdidos: pvp - pg,
           duelo: duelo.etiqueta
         });
@@ -1390,10 +1390,10 @@ function _fameDescomposicionesDia_(n, b) {
 }
 
 /**
- * _fameTablaDia_(n, b) [→ Contexto_Base_Web.md §18B005]
+ * _fameTablaDia_(h, j) [→ Contexto_Base_Web.md §18B005]
  */
-function _fameTablaDia_(n, b) {
-  var desc = _fameDescomposicionesDia_(n, b);
+function _fameTablaDia_(h, j) {
+  var desc = _fameDescomposicionesDia_(h, j);
   var vistos = {};
   var lista = [];
   for (var i = 0; i < desc.length; i++) {
@@ -1404,47 +1404,47 @@ function _fameTablaDia_(n, b) {
 }
 
 /**
- * _fameEsPosibleDia_(n, fame, b) [→ Contexto_Base_Web.md §18B006]
+ * _fameEsPosibleDia_(h, fame, j) [→ Contexto_Base_Web.md §18B006]
  */
-function _fameEsPosibleDia_(n, fame, b) {
+function _fameEsPosibleDia_(h, fame, j) {
   if (typeof fame !== 'number' || isNaN(fame)) return false;
-  return _fameTablaDia_(n, b).indexOf(fame) >= 0;
+  return _fameTablaDia_(h, j).indexOf(fame) >= 0;
 }
 
 /**
- * _fameNPosiblesPorFame_(fame, b) [→ Contexto_Base_Web.md §18B007]
+ * _fameNPosiblesPorFame_(fame, j) [→ Contexto_Base_Web.md §18B007]
  */
-function _fameNPosiblesPorFame_(fame, b) {
+function _fameNPosiblesPorFame_(fame, j) {
   var ns = [];
-  if (typeof b !== 'number' || b % 1 !== 0 || b < 0) return ns;
-  for (var n = b; n <= FAME_MAZOS_POR_DIA; n++) {
-    if (_fameEsPosibleDia_(n, fame, b)) ns.push(n);
+  if (typeof j !== 'number' || j % 1 !== 0 || j < 0) return ns;
+  for (var h = j; h <= FAME_MAZOS_POR_DIA; h++) {
+    if (_fameEsPosibleDia_(h, fame, j)) ns.push(h);
   }
   return ns;
 }
 
 /**
- * _fameDescomposicionesDeCifra_(n, fame, b) [→ Contexto_Base_Web.md §18B008]
+ * _fameDescomposicionesDeCifra_(h, fame, j) [→ Contexto_Base_Web.md §18B008]
  */
-function _fameDescomposicionesDeCifra_(n, fame, b) {
-  return _fameDescomposicionesDia_(n, b).filter(function (d) { return d.fame === fame; });
+function _fameDescomposicionesDeCifra_(h, fame, j) {
+  return _fameDescomposicionesDia_(h, j).filter(function (d) { return d.fame === fame; });
 }
 
 /**
  * _fameCatalogoDia_() [→ Contexto_Base_Web.md §PF122]
- * Todos los estados posibles de UN dia: lista de { n: ataques, b: barcos, f: medallas } sin repetir,
+ * Todos los estados posibles de UN dia: lista de { h: ataques, j: barcos, k: medallas } sin repetir (antes n, b, f; §PF440),
  * sacada de _fameDescomposicionesDia_() (77 estados). Se calcula una sola vez por ejecucion.
  */
 function _fameCatalogoDia_() {
   if (_FAME_CATALOGO_DIA_CACHE_) return _FAME_CATALOGO_DIA_CACHE_;
   var vistos = {};
   var lista = [];
-  for (var n = 0; n <= FAME_MAZOS_POR_DIA; n++) {
-    for (var b = 0; b <= n; b++) {
-      var desc = _fameDescomposicionesDia_(n, b);
+  for (var h = 0; h <= FAME_MAZOS_POR_DIA; h++) {
+    for (var j = 0; j <= h; j++) {
+      var desc = _fameDescomposicionesDia_(h, j);
       for (var i = 0; i < desc.length; i++) {
-        var clave = n + ',' + b + ',' + desc[i].fame;
-        if (!vistos[clave]) { vistos[clave] = true; lista.push({ n: n, b: b, f: desc[i].fame }); }
+        var clave = h + ',' + j + ',' + desc[i].fame;
+        if (!vistos[clave]) { vistos[clave] = true; lista.push({ h: h, j: j, k: desc[i].fame }); }
       }
     }
   }
@@ -1454,7 +1454,7 @@ function _fameCatalogoDia_() {
 
 /**
  * _cgwMitadesSemana_() [→ Contexto_Base_Web.md §PF313]
- * Todas las sumas posibles de DOS días de guerra, sacadas de _fameCatalogoDia_(): { conBarcos: {'n|b|f': true}, sinBarcos: {'n|f': true}, lista: [{n,b,f}] }.
+ * Todas las sumas posibles de DOS días de guerra, sacadas de _fameCatalogoDia_(): { conBarcos: {'h|j|k': true}, sinBarcos: {'h|k': true}, lista: [{h,j,k}] } (antes n, b, f; §PF440).
  * La semana tiene 4 días (BLG_DIAS_GUERRA), así que una semana posible es la suma de dos mitades. Se calcula una sola vez por ejecución.
  */
 function _cgwMitadesSemana_() {
@@ -1462,11 +1462,11 @@ function _cgwMitadesSemana_() {
   var cat = _fameCatalogoDia_();
   var conBarcos = {}, sinBarcos = {}, lista = [];
   for (var i = 0; i < cat.length; i++) {
-    for (var j = i; j < cat.length; j++) {
-      var n = cat[i].n + cat[j].n, b = cat[i].b + cat[j].b, f = cat[i].f + cat[j].f;
-      var kb = n + '|' + b + '|' + f;
-      if (!conBarcos[kb]) { conBarcos[kb] = true; lista.push({ n: n, b: b, f: f }); }
-      sinBarcos[n + '|' + f] = true;
+    for (var q = i; q < cat.length; q++) {
+      var h = cat[i].h + cat[q].h, j = cat[i].j + cat[q].j, k = cat[i].k + cat[q].k;
+      var kb = h + '|' + j + '|' + k;
+      if (!conBarcos[kb]) { conBarcos[kb] = true; lista.push({ h: h, j: j, k: k }); }
+      sinBarcos[h + '|' + k] = true;
     }
   }
   _CGW_MITADES_SEMANA_CACHE_ = { conBarcos: conBarcos, sinBarcos: sinBarcos, lista: lista };
@@ -1492,9 +1492,9 @@ function _cgwSemanaEsPosible_(ataques, fame, barcos, memo) {
   var ok = false;
   for (var i = 0; i < m.lista.length && !ok; i++) {
     var x = m.lista[i];
-    var n2 = ataques - x.n, f2 = fame - x.f;
-    if (n2 < 0 || f2 < 0) continue;
-    ok = hayBarcos ? !!m.conBarcos[n2 + '|' + (barcos - x.b) + '|' + f2] : !!m.sinBarcos[n2 + '|' + f2];
+    var h2 = ataques - x.h, k2 = fame - x.k;
+    if (h2 < 0 || k2 < 0) continue;
+    ok = hayBarcos ? !!m.conBarcos[h2 + '|' + (barcos - x.j) + '|' + k2] : !!m.sinBarcos[h2 + '|' + k2];
   }
   if (memo) memo[clave] = ok;
   return ok;
@@ -1511,10 +1511,10 @@ function _cgwSemanaEsPosibleTresDias_(ataques, fame, barcos) {
   var hayBarcos = (typeof barcos === 'number' && !isNaN(barcos));
   var m = _cgwMitadesSemana_(), cat = _fameCatalogoDia_();
   for (var i = 0; i < cat.length; i++) {
-    var d = cat[i], n2 = ataques - d.n, f2 = fame - d.f;
-    if (n2 < 0 || f2 < 0) continue;
-    if (hayBarcos) { if (barcos - d.b >= 0 && m.conBarcos[n2 + '|' + (barcos - d.b) + '|' + f2]) return true; }
-    else if (m.sinBarcos[n2 + '|' + f2]) return true;
+    var d = cat[i], h2 = ataques - d.h, k2 = fame - d.k;
+    if (h2 < 0 || k2 < 0) continue;
+    if (hayBarcos) { if (barcos - d.j >= 0 && m.conBarcos[h2 + '|' + (barcos - d.j) + '|' + k2]) return true; }
+    else if (m.sinBarcos[h2 + '|' + k2]) return true;
   }
   return false;
 }
@@ -1539,8 +1539,8 @@ function _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) {
     if (!hayBarcos) {
       if (_cgwSemanaEsPosibleTresDias_(ataques - g, fame, null)) res = g;
     } else {
-      for (var b2 = Math.max(0, barcos - g); b2 <= barcos && res < 0; b2++) {
-        if (_cgwSemanaEsPosibleTresDias_(ataques - g, fame, b2)) res = g;
+      for (var j2 = Math.max(0, barcos - g); j2 <= barcos && res < 0; j2++) {
+        if (_cgwSemanaEsPosibleTresDias_(ataques - g, fame, j2)) res = g;
       }
     }
   }
@@ -1549,12 +1549,12 @@ function _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) {
 }
 
 /**
- * _cgwTextoDiaDescomposicion_(d) / _cgwDescripcionDia_(n, b, f) [→ Contexto_Base_Web.md §PF357]
+ * _cgwTextoDiaDescomposicion_(d) / _cgwDescripcionDia_(h, j, k) [→ Contexto_Base_Web.md §PF357]
  * De las descomposiciones de un día (_fameDescomposicionesDia_) con esos ataques, barcos y fame, elige la de menos barcos ganados (regla de la usuaria: si hay dos casos posibles,
  * se prefiere que el barco se haya perdido) y devuelve { barcosGanados, texto }.
  */
-function _cgwDescripcionDia_(n, b, f) {
-  var desc = _fameDescomposicionesDia_(n, b).filter(function (d) { return d.fame === f; });
+function _cgwDescripcionDia_(h, j, k) {
+  var desc = _fameDescomposicionesDia_(h, j).filter(function (d) { return d.fame === k; });
   var mejor = null;
   for (var i = 0; i < desc.length; i++) if (!mejor || desc[i].barcosGanados < mejor.barcosGanados) mejor = desc[i];
   if (!mejor) return { barcosGanados: 0, texto: '' };
@@ -1576,7 +1576,7 @@ function _cgwDescripcionDia_(n, b, f) {
  * solo desempata lo que los criterios anteriores no resolvieron. Orden (los criterios a y b son de Claude, por confirmar): a) el menor g (más ataques con fame), b) menos barcos con el domingo
  * en 0 (los barcos de la semana dieron fame), c) menos barcos ganados (barco perdido; regla de la usuaria), d) los días más llenos primero (J, V, S) y, a igual, el de más fame primero (como en las hojas de la usuaria,
  * donde el duelo y el barco caen en los primeros días), e) el primero en el orden del catálogo.
- * Devuelve { g, barcosGanados, dias: [{ dia, n, b, f, texto }] (J, V, S, D) } o { g: 0 } o null (g = ataques sin medallas, §PF438; n, b, f de los días son las del catálogo de §PF122). Un día con el mismo total puede tener otro orden (por ejemplo el duelo en jueves o en viernes):
+ * Devuelve { g, barcosGanados, dias: [{ dia, h, j, k, texto }] (J, V, S, D) } o { g: 0 } o null (g = ataques sin medallas, §PF438; h, j, k de los días son las del catálogo de §PF122, antes n, b, f: §PF440). Un día con el mismo total puede tener otro orden (por ejemplo el duelo en jueves o en viernes):
  * el reparto elegido es uno entre varios equivalentes.
  */
 function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
@@ -1589,36 +1589,36 @@ function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
     res = { g: 0 };
   } else {
     var cat = _fameCatalogoDia_(), porClave = {};
-    for (var c = 0; c < cat.length; c++) porClave[cat[c].n + '|' + cat[c].b + '|' + cat[c].f] = cat[c];
+    for (var c = 0; c < cat.length; c++) porClave[cat[c].h + '|' + cat[c].j + '|' + cat[c].k] = cat[c];
     var info = {};
     var infoDe = function (st) {
-      var kk = st.n + '|' + st.b + '|' + st.f;
-      if (!info[kk]) info[kk] = _cgwDescripcionDia_(st.n, st.b, st.f);
+      var kk = st.h + '|' + st.j + '|' + st.k;
+      if (!info[kk]) info[kk] = _cgwDescripcionDia_(st.h, st.j, st.k);
       return info[kk];
     };
     var mejor = null, mejorClave = null;
     for (var g = 1; g <= CGW_MAX_ATAQUES_SIN_FAME && g <= ataques; g++) {
-      var n3 = ataques - g;
-      if (n3 > 3 * FAME_MAZOS_POR_DIA) continue;
-      var b2ini = hayBarcos ? Math.max(0, barcos - g) : 0, b2fin = hayBarcos ? barcos : 0;
-      for (var b2 = b2ini; b2 <= b2fin; b2++) {
+      var h3 = ataques - g;
+      if (h3 > 3 * FAME_MAZOS_POR_DIA) continue;
+      var j2ini = hayBarcos ? Math.max(0, barcos - g) : 0, j2fin = hayBarcos ? barcos : 0;
+      for (var j2 = j2ini; j2 <= j2fin; j2++) {
         for (var i = 0; i < cat.length; i++) {
           var s1 = cat[i];
           for (var j = 0; j < cat.length; j++) {
             var s2 = cat[j];
-            var nr = n3 - s1.n - s2.n, fr = fame - s1.f - s2.f;
-            if (nr < 0 || fr < 0) continue;
+            var hr = h3 - s1.h - s2.h, kr = fame - s1.k - s2.k;
+            if (hr < 0 || kr < 0) continue;
             var cands = [];
-            if (hayBarcos) { var st = porClave[nr + '|' + (b2 - s1.b - s2.b) + '|' + fr]; if (st) cands.push(st); }
-            else for (var q = 0; q < cat.length; q++) if (cat[q].n === nr && cat[q].f === fr) cands.push(cat[q]);
+            if (hayBarcos) { var st = porClave[hr + '|' + (j2 - s1.j - s2.j) + '|' + kr]; if (st) cands.push(st); }
+            else for (var q = 0; q < cat.length; q++) if (cat[q].h === hr && cat[q].k === kr) cands.push(cat[q]);
             for (var z = 0; z < cands.length; z++) {
               var s3 = cands[z];
               var ganados = infoDe(s1).barcosGanados + infoDe(s2).barcosGanados + infoDe(s3).barcosGanados;
-              var bDom = hayBarcos ? barcos - b2 : 0;
-              var clv = [g, bDom, ganados, -s1.n, -s2.n, -s3.n, -s1.f, -s2.f, -s3.f]; // el barco perdido (ganados) desempata solo entre las combinaciones que quedan (5-nov-2026)
+              var jDom = hayBarcos ? barcos - j2 : 0;
+              var clv = [g, jDom, ganados, -s1.h, -s2.h, -s3.h, -s1.k, -s2.k, -s3.k]; // el barco perdido (ganados) desempata solo entre las combinaciones que quedan (5-nov-2026)
               var mejorQue = !mejorClave;
               for (var t = 0; !mejorQue && t < clv.length; t++) { if (clv[t] < mejorClave[t]) mejorQue = true; else if (clv[t] > mejorClave[t]) break; }
-              if (mejorQue) { mejorClave = clv; mejor = { g: g, barcosGanados: ganados, bDom: bDom, s: [s1, s2, s3] }; }
+              if (mejorQue) { mejorClave = clv; mejor = { g: g, barcosGanados: ganados, jDom: jDom, s: [s1, s2, s3] }; }
             }
           }
         }
@@ -1626,8 +1626,8 @@ function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
     }
     if (mejor) {
       var letras = ['J', 'V', 'S'], dias = [];
-      for (var d = 0; d < 3; d++) dias.push({ dia: letras[d], n: mejor.s[d].n, b: mejor.s[d].b, f: mejor.s[d].f, texto: infoDe(mejor.s[d]).texto });
-      dias.push({ dia: 'D', n: mejor.g, b: mejor.bDom, f: 0, texto: 'sin fame' });
+      for (var d = 0; d < 3; d++) dias.push({ dia: letras[d], h: mejor.s[d].h, j: mejor.s[d].j, k: mejor.s[d].k, texto: infoDe(mejor.s[d]).texto });
+      dias.push({ dia: 'D', h: mejor.g, j: mejor.jDom, k: 0, texto: 'sin fame' });
       res = { g: mejor.g, barcosGanados: mejor.barcosGanados, dias: dias };
     }
   }
@@ -1639,7 +1639,7 @@ function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
 function _cgwTextoReparto_(r) {
   if (!r || !r.dias) return '';
   return r.dias.map(function (d) {
-    return d.dia + ' ' + d.n + ' atq' + (d.dia === 'D' ? ' sin fame' : ' ' + d.f + (d.texto ? ' (' + d.texto + ')' : ''));
+    return d.dia + ' ' + d.h + ' atq' + (d.dia === 'D' ? ' sin fame' : ' ' + d.k + (d.texto ? ' (' + d.texto + ')' : ''));
   }).join('; ');
 }
 
@@ -3308,7 +3308,7 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     var fila = filas[offsetsExistentes[offs[i]]];
     var cb = Number(fila[GC.BARCOS - 1]) || 0;
     var cf = Number(fila[GC.FAME - 1]) || 0;
-    cur.push({ n: Number(fila[GC.ATAQUES_HOY - 1]) || 0, b: cb - cbPrev, f: cf - cfPrev });
+    cur.push({ h: Number(fila[GC.ATAQUES_HOY - 1]) || 0, j: cb - cbPrev, k: cf - cfPrev });
     cbPrev = cb; cfPrev = cf;
     if (cb > maxB) maxB = cb;
   }
@@ -3318,10 +3318,10 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   }
 
   var catalogo = _fameCatalogoDia_();
-  function costo(j, s) {
-    var c = cur[j];
-    if (c.n === s.n && c.b === s.b && c.f === s.f) return 0;
-    return 1000000 + (3 - offs[j]) * 10000 + Math.abs(c.n - s.n) * 100 + Math.abs(c.b - s.b) * 100 + Math.abs(c.f - s.f);
+  function costo(dia, s) {
+    var c = cur[dia];
+    if (c.h === s.h && c.j === s.j && c.k === s.k) return 0;
+    return 1000000 + (3 - offs[dia]) * 10000 + Math.abs(c.h - s.h) * 100 + Math.abs(c.j - s.j) * 100 + Math.abs(c.k - s.k);
   }
   function grupo(indices, cats) {
     var mapa = { '0,0,0': { a: 0, b: 0, f: 0, c: 0, p: [] } };
@@ -3334,7 +3334,7 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
         var m = mapa[claves[q]];
         for (var t = 0; t < catJ.length; t++) {
           var s = catJ[t];
-          var na = m.a + s.n, nb = m.b + s.b, nf = m.f + s.f;
+          var na = m.a + s.h, nb = m.b + s.j, nf = m.f + s.k;
           if (na > A || nb > B || nf > F) continue;
           var c = m.c + costo(j, s);
           var kk = na + ',' + nb + ',' + nf;
@@ -3381,7 +3381,7 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
       for (var q1 = 0; q1 < clavesI.length; q1++) {
         var m1 = izq[clavesI[q1]];
         for (var t1 = 0; t1 < cats[j1].length; t1++) {
-          var s1 = cats[j1][t1], na1 = m1.a + s1.n, nb1 = m1.b + s1.b, nf1 = m1.f + s1.f;
+          var s1 = cats[j1][t1], na1 = m1.a + s1.h, nb1 = m1.b + s1.j, nf1 = m1.f + s1.k;
           if (na1 > A || nb1 > B || nf1 > F || !dentro(j1, na1, nb1, nf1)) continue;
           var c1 = m1.c + costo(j1, s1), k1 = na1 + ',' + nb1 + ',' + nf1;
           if (!nuevoI[k1] || c1 < nuevoI[k1].c) nuevoI[k1] = { a: na1, b: nb1, f: nf1, c: c1, p: m1.p.concat([s1]) };
@@ -3396,7 +3396,7 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
       for (var q2 = 0; q2 < lista.length; q2++) {
         var m2 = lista[q2];
         for (var t2 = 0; t2 < cats[j2].length; t2++) {
-          var s2 = cats[j2][t2], na2 = m2.a + s2.n, nb2 = m2.b + s2.b, nf2 = m2.f + s2.f;
+          var s2 = cats[j2][t2], na2 = m2.a + s2.h, nb2 = m2.b + s2.j, nf2 = m2.f + s2.k;
           if (na2 > A || nb2 > B || nf2 > F) continue;
           nuevaD.push({ a: na2, b: nb2, f: nf2, c: m2.c + costo(j2, s2), p: m2.p.concat([s2]), pre: m2.pre.concat([[na2, nb2, nf2]]) });
         }
@@ -3435,9 +3435,9 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     for (var d0 = 0; d0 < k; d0++) {
       var dr = rng.dias[d0];
       catsRng.push(catalogo.filter(function (s3) {
-        return (dr.n === null || (s3.n >= dr.n[0] && s3.n <= dr.n[1])) &&
-               (dr.b === null || (s3.b >= dr.b[0] && s3.b <= dr.b[1])) &&
-               (dr.f === null || (s3.f >= dr.f[0] && s3.f <= dr.f[1]));
+        return (dr.h === null || (s3.h >= dr.h[0] && s3.h <= dr.h[1])) &&
+               (dr.j === null || (s3.j >= dr.j[0] && s3.j <= dr.j[1])) &&
+               (dr.k === null || (s3.k >= dr.k[0] && s3.k <= dr.k[1]));
       }));
     }
     mejor = resolverConAcumulado(catsRng, rng.acum);
@@ -3463,7 +3463,7 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     for (var d = 0; d < k; d++) {
       var rest = crr.dias[d];
       catsCrr.push(catalogo.filter(function (s2) {
-        return (rest.n === null || s2.n === rest.n) && (rest.f === null || s2.f === rest.f);
+        return (rest.h === null || s2.h === rest.h) && (rest.k === null || s2.k === rest.k);
       }));
     }
     mejor = resolver(catsCrr);
@@ -3471,8 +3471,8 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
       estadoCrr = 'aplicado';
     } else {
       estadoCrr = 'conflicto';
-      Logger.log('[Reparto conjunto] AVISO CurrentRiverRace ' + crr.etiqueta + ': ataques ' + crr.dias.map(function (x) { return x.n === null ? '?' : x.n; }).join('|') +
-        ', fame ' + crr.dias.map(function (x) { return x.f === null ? '?' : x.f; }).join('|') + ' no cuadran con los totales (ataques=' + A + ', barcos=' + B +
+      Logger.log('[Reparto conjunto] AVISO CurrentRiverRace ' + crr.etiqueta + ': ataques ' + crr.dias.map(function (x) { return x.h === null ? '?' : x.h; }).join('|') +
+        ', fame ' + crr.dias.map(function (x) { return x.k === null ? '?' : x.k; }).join('|') + ' no cuadran con los totales (ataques=' + A + ', barcos=' + B +
         ', fame=' + F + '). Se reparte como siempre, sin usarlos.');
     }
   }
@@ -3485,12 +3485,12 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   var an = 0, bn = 0, fn = 0;
   for (var z = 0; z < k; z++) {
     var fila2 = filas[offsetsExistentes[offs[z]]];
-    an += mejor.p[z].n; bn += mejor.p[z].b; fn += mejor.p[z].f;
-    if ((Number(fila2[GC.ATAQUES_HOY - 1]) || 0) !== mejor.p[z].n) huboCambio = true;
+    an += mejor.p[z].h; bn += mejor.p[z].j; fn += mejor.p[z].k;
+    if ((Number(fila2[GC.ATAQUES_HOY - 1]) || 0) !== mejor.p[z].h) huboCambio = true;
     if ((Number(fila2[GC.ATAQUES_SEM - 1]) || 0) !== an) huboCambio = true;
     if ((Number(fila2[GC.BARCOS - 1]) || 0) !== bn) huboCambio = true;
     if ((Number(fila2[GC.FAME - 1]) || 0) !== fn) huboCambio = true;
-    fila2[GC.ATAQUES_HOY - 1] = mejor.p[z].n;
+    fila2[GC.ATAQUES_HOY - 1] = mejor.p[z].h;
     fila2[GC.ATAQUES_SEM - 1] = an;
     fila2[GC.BARCOS - 1] = bn;
     fila2[GC.FAME - 1] = fn;
@@ -3501,7 +3501,7 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
 /**
  * _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores) [→ Contexto_Base_Web.md §PF139]
  * Pide al modulo 56 los ataques y la fame por dia de CurrentRiverRace del jugador de estas filas. Temporada propia, semana y tag salen de
- * la primera fila (valores.temporada, valores.semana y valores.tag, si vienen, los reemplazan). Devuelve { etiqueta, dias: [{ n, f }] } con una
+ * la primera fila (valores.temporada, valores.semana y valores.tag, si vienen, los reemplazan). Devuelve { etiqueta, dias: [{ h, k }] } (antes n, f; §PF440) con una
  * entrada por cada posicion de offs (null = sin dato en CurrentRiverRace), o null si no hay capturas, si estas son incoherentes, si no se pudo
  * leer Drive o si valores.sinCurrentRiverRace es true. No escribe nada.
  */
@@ -3525,10 +3525,10 @@ function _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores
     var dias = [], hay = false;
     for (var i = 0; i < offs.length; i++) {
       var o = offs[i];
-      var n = (r.ataques[o] === undefined) ? null : r.ataques[o];
-      var f = (fd[o] === undefined) ? null : fd[o];
-      dias.push({ n: n, f: f });
-      if (n !== null || f !== null) hay = true;
+      var h = (r.ataques[o] === undefined) ? null : r.ataques[o];
+      var k = (fd[o] === undefined) ? null : fd[o];
+      dias.push({ h: h, k: k });
+      if (h !== null || k !== null) hay = true;
     }
     return hay ? { etiqueta: etiqueta, dias: dias } : null;
   } catch (e) {
@@ -3548,7 +3548,7 @@ function _repartoRestriccionesCrr_(filas, offsetsExistentes, offs, A, F, valores
  * de este clan se ajustan con lo que los JSON de los OTROS clanes ya muestran (59_Verificar_CRR_vs_Backup.gs, _vcrrRangosAjustadosJugadorClan_): su máximo semanal
  * no pasa de 16 ataques, 16 barcos ni 3600 medallas menos el piso de los otros clanes. Si los JSON sumados ya rompen un tope, devuelve conflictoTopes (texto).
  * Devuelve null si no hay rangos (sin JSON, sin clan en las filas o valores.sinCurrentRiverRace),
- * o { etiqueta, estricto, dias: [{ n, b, f }], acum: [{ a, b, f } | null], estado, multiclan, conflictoTopes } con cada cota como [mínimo, máximo] o null si no hay dato.
+ * o { etiqueta, estricto, dias: [{ h, j, k }] (antes n, b, f; §PF440), acum: [{ a, b, f } | null], estado, multiclan, conflictoTopes } con cada cota como [mínimo, máximo] o null si no hay dato.
  * estricto = true solo si todos los JSON de la serie son utilizables: ahí un total de RoyaleAPI que no cabe es un caso para revisión manual, no se
  * encaja a la fuerza ni se sigue sin los JSON. No escribe nada.
  */
@@ -3575,7 +3575,7 @@ function _repartoRangosCrr_(filas, offsetsExistentes, offs, valores) {
       var o = offs[i];
       if (!(o >= 0 && o <= 3)) return null;
       if (o !== i) contiguo = false;   // con un día sin fila el acumulado de las filas que hay no es el de la semana: solo valen los rangos del día
-      dias.push({ n: hayA ? [r.A.il[o], r.A.ih[o]] : null, b: hayB ? [r.B.il[o], r.B.ih[o]] : null, f: hayF ? [r.F.il[o], r.F.ih[o]] : null });
+      dias.push({ h: hayA ? [r.A.il[o], r.A.ih[o]] : null, j: hayB ? [r.B.il[o], r.B.ih[o]] : null, k: hayF ? [r.F.il[o], r.F.ih[o]] : null });
       acum.push(contiguo ? { a: hayA ? [r.A.lo[o], r.A.hi[o]] : null, b: hayB ? [r.B.lo[o], r.B.hi[o]] : null, f: hayF ? [r.F.lo[o], r.F.hi[o]] : null } : null);
     }
     return { etiqueta: etiqueta, estricto: estrictoSerie, dias: dias, acum: acum, estado: serie.estado, multiclan: aj.multiclan, conflictoTopes: '' };
@@ -3966,8 +3966,8 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
 /**
  * _cgwEscribirRepartoClanTerminado_(filas, offsets, valores) [→ Contexto_Base_Web.md §PF358]
  * Escribe en las 4 filas de la semana (offsets 0 a 3: jueves a domingo) el reparto de _cgwRepartoClanTerminado_(): ataques del día, y ataques de la semana, barcos y fame acumulados.
- * Jueves, viernes y sábado salen de la tabla; el domingo lleva sus k ataques con 0 de fame (los acumulados de barcos y fame ya son los totales). barcos null se toma como 0, igual que
- * el reparto normal en una reconstrucción. Devuelve el reparto escrito, o null (sin escribir nada) si los valores no son válidos, no hacen falta k ataques sin fame o no cuadra.
+ * Jueves, viernes y sábado salen de la tabla; el domingo lleva sus g ataques con 0 de fame (los acumulados de barcos y fame ya son los totales). barcos null se toma como 0, igual que
+ * el reparto normal en una reconstrucción. Devuelve el reparto escrito, o null (sin escribir nada) si los valores no son válidos, no hacen falta g ataques sin fame o no cuadra.
  */
 function _cgwEscribirRepartoClanTerminado_(filas, offsets, valores) {
   var A = Number(valores.ataquesSemana), F = Number(valores.fame);
@@ -3979,8 +3979,8 @@ function _cgwEscribirRepartoClanTerminado_(filas, offsets, valores) {
   var an = 0, bn = 0, fn = 0;
   for (var z = 0; z < 4; z++) {
     var d = rep.dias[z], fila = filas[offsets[z]];
-    an += d.n; bn += d.b; fn += d.f;
-    fila[GC.ATAQUES_HOY - 1] = d.n;
+    an += d.h; bn += d.j; fn += d.k;
+    fila[GC.ATAQUES_HOY - 1] = d.h;
     fila[GC.ATAQUES_SEM - 1] = an;
     fila[GC.BARCOS - 1] = bn;
     fila[GC.FAME - 1] = fn;
