@@ -169,6 +169,7 @@ var GDS_CAPTURAS_HEADERS = ['Tag', 'Archivo', 'Descargado', 'EntradaMasAntigua',
 var GDS_MAX_COMBINACIONES_TEXTO = 6;                // combinaciones que se escriben en la celda «Combinaciones» (el resto se cuenta)
 var GDS_PRESUPUESTO_CAPTURAS_MS = 200000;           // tiempo máximo de cada ejecución para leer JSON de capturas nuevas
 var _GDS_COMB_DIA_CACHE_ = {};                      // combinaciones posibles de un día, por (ataques, fame, barcos)
+var GDS_MARCA_BACKUP_CONTRADICHO = 'Backup contradicho por JSON';   // §PF445 (d): marca que se agrega a ConsistenciaValores cuando la fame acumulada del backup queda fuera del rango de los JSON de CurrentRiverRace
 var _GDS_TRIPLES_DIA_CACHE_ = {};                   // ternas [ataques, fame, barcos] posibles de un día (§PF445), una lista para jueves a sábado ('n') y otra para el domingo ('d')
 
 // OVERLAY — lectura y escritura de Correcciones_Guerra.csv [→ Contexto_Base_Web.md §18B092]
@@ -738,7 +739,7 @@ function informeBattlelogContraGuerra() {
 
 /**
  * generarGuerraDesglose() — §PF437 fase 2 (9-nov-2026). MANUAL (se corre desde el editor de Apps Script). Escribe Guerra_Desglose.csv: una fila por jugador, semana de guerra y clan Terna (etapa «Guerra»), con los días J, V, S y D en bloques (formato ancho, §PF442),
- * con los ataques por puntuación (duelo, PvP y barco, ganados y perdidos, y sin fame), la fuente del desglose, la consistencia con el battlelog y la cobertura de la mejor captura. Lee Backup_Guerra.csv
+ * con los ataques por puntuación (duelo, PvP y barco, ganados y perdidos, y sin fame), la fuente del desglose, la consistencia (con el battlelog y, desde §PF445 d, con los rangos de los JSON) y la cobertura de la mejor captura. Lee Backup_Guerra.csv
  * y Backup_Battlelogs.csv y, para la cobertura, las capturas JSON a través de Battlelog_Capturas.csv (que solo abre los JSON nuevos). No toca la hoja Guerra, no corrige nada y NO pide nada a la API.
  * Si se acaba el tiempo de lectura de capturas (GDS_PRESUPUESTO_CAPTURAS_MS), escribe lo que tiene, avisa cuántas quedaron sin leer y se vuelve a correr hasta que diga 0. [→ Contexto_Base_Web.md §PF437]
  */
@@ -786,7 +787,19 @@ function generarGuerraDesglose() {
   var tagPorNombre = {};
   ternaTags.forEach(function (t) { if (nombresPorTag[t]) tagPorNombre[nombresPorTag[t]] = t; });
 
-  var res = _gdsConstruirFilas_(filas, { ternaTags: ternaTags, tagPorNombre: tagPorNombre, battlelogPorTag: battlelogPorTag, capturasPorTag: cap.porTag });
+  // §PF445 (d): los rangos de los JSON de CurrentRiverRace (Cruce_CRR_Restricciones.csv, 59_Verificar_CRR_vs_Backup.gs). Si no se pueden leer, el desglose sale igual y solo falta la marca.
+  var restriccionesPorSemana = {}, restriccionesOk = false;
+  try {
+    if (typeof _vcrrLeerRestricciones_ === 'function') {
+      restriccionesPorSemana = _vcrrLeerRestricciones_();
+      restriccionesOk = Object.keys(restriccionesPorSemana).length > 0;
+    }
+  } catch (eRestr) {
+    Logger.log(etiqueta + ' AVISO: no se pudo leer Cruce_CRR_Restricciones.csv (' + eRestr.message + '). El desglose sale sin la marca «' + GDS_MARCA_BACKUP_CONTRADICHO + '».');
+    restriccionesPorSemana = {};
+  }
+
+  var res = _gdsConstruirFilas_(filas, { ternaTags: ternaTags, tagPorNombre: tagPorNombre, battlelogPorTag: battlelogPorTag, capturasPorTag: cap.porTag, restriccionesPorSemana: restriccionesPorSemana });
   if (!res.ok) { Logger.log(etiqueta + ' ABORT: ' + res.motivo); return; }
   var c = res.cuenta;
   if (!res.filas.length) { Logger.log(etiqueta + ' No salió ninguna fila (' + c.filasLeidas + ' leídas de Backup_Guerra.csv, ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag); no se escribe ' + GDS_CSV_NOMBRE + '.'); return; }
@@ -797,6 +810,8 @@ function generarGuerraDesglose() {
   Logger.log(etiqueta + ' ' + GDS_CSV_NOMBRE + ' escrito: ' + c.filasSalida + ' fila(s) (jugador, semana y clan; ' + c.diasSalida + ' día(s) con datos) de ' + c.semanasJugador + ' semana(s) de jugador (' + c.filasLeidas + ' filas leídas de Backup_Guerra.csv; ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag, ' + c.fueraDeSemana + ' fuera de la semana de guerra).');
   Logger.log(etiqueta + ' Fuente del desglose (por día): ' + resumenDe(c.porFuente) + '.');
   Logger.log(etiqueta + ' Cobertura de la mejor captura (por día): ' + resumenDe(c.porCobertura) + '. La cobertura es por tiempo y no prueba que el día esté completo (el log pierde batallas, §18B049).');
+  if (restriccionesOk) Logger.log(etiqueta + ' «' + GDS_MARCA_BACKUP_CONTRADICHO + '» (fame acumulada del backup fuera del rango de los JSON): ' + c.contradichosJson + ' día(s), anotados en ConsistenciaValores. Solo se marca: FuenteDesglose no cambia.');
+  else Logger.log(etiqueta + ' AVISO: Cruce_CRR_Restricciones.csv no existe o está vacío (corre verificarCrrVsBackupInforme() en este proyecto): no se marcó «' + GDS_MARCA_BACKUP_CONTRADICHO + '».');
   if (c.repetidas.length) Logger.log(etiqueta + ' ' + c.repetidas.length + ' fila(s) repetidas (mismo jugador, semana, clan y día de guerra); se conservó la de mayor PeriodIndex. Líneas de Backup_Guerra.csv: ' + c.repetidas.slice(0, 20).join(', ') + (c.repetidas.length > 20 ? ' y más' : '') + '.');
   if (c.sinLimites) Logger.log(etiqueta + ' ' + c.sinLimites + ' semana(s) de jugador sin límites de día (falta una fecha DiaGuerra válida): salen sin battlelog ni cobertura.');
   if (c.ambiguasPendientes) Logger.log(etiqueta + ' ' + c.ambiguasPendientes + ' batalla(s) del cambio de día sin ubicar; los desgloses de ese clan y semana quedan como «Battlelog parcial».');
@@ -5876,6 +5891,39 @@ function _gdsDesgloseDelDia_(dia, bucket, pendiente, esDomingo) {
 }
 
 /**
+ * _gdsSerieJsonDelJugador_(series, tag, clanNombre) — §PF445 (d), 10-nov-2026. Función pura. Ubica, entre las series de UNA semana de Cruce_CRR_Restricciones.csv (la lista que da
+ * _vcrrLeerRestricciones_() para 'temporada|semana'), la del jugador en ese clan: mismo Tag y mismo nombre de clan (minúsculas y sin espacios en los extremos, como _vcrrClanNorm_).
+ * Devuelve la serie o null (no hay lista, no hay JSON de ese jugador y clan esa semana, o falta el tag o el clan). No lee Drive.
+ */
+function _gdsSerieJsonDelJugador_(series, tag, clanNombre) {
+  if (!Array.isArray(series)) return null;
+  var norm = function (s) { return String(s === null || s === undefined ? '' : s).trim().toLowerCase(); };
+  var t = norm(tag), c = norm(clanNombre);
+  if (!t || !c) return null;
+  for (var i = 0; i < series.length; i++) {
+    var x = series[i];
+    if (x && norm(x.tag) === t && norm(x.clan) === c) return x;
+  }
+  return null;
+}
+
+/**
+ * _gdsMarcaBackupVsJson_(serie, o, fameAcum) — §PF445 (d), 10-nov-2026. Función pura. Compara la fame ACUMULADA que trae el backup en el día o (0 = jueves … 3 = domingo) con el rango que
+ * dan los JSON de CurrentRiverRace para ese día (serie.r.F.lo[o] a serie.r.F.hi[o], los mismos de _vcrrCompararSerie_). Devuelve GDS_MARCA_BACKUP_CONTRADICHO si queda por debajo del piso
+ * o por encima del máximo, y '' en cualquier otro caso: sin serie, sin fame, o serie que no sirve de evidencia (estado «incoherente» o «json_anomalo», o sin la fame entre sus métricas utilizables).
+ * Solo marca: no cambia FuenteDesglose ni ningún valor del día. Una fila «Corregido - Solución estimada» no es evidencia de un día (§PF445 punto 7), por eso el dato que se contradice es el del backup.
+ */
+function _gdsMarcaBackupVsJson_(serie, o, fameAcum) {
+  if (!serie || !serie.r || !serie.r.F) return '';
+  if (serie.estado !== 'ok' && serie.estado !== 'multiclan' && serie.estado !== 'confirmada') return '';
+  if (String(serie.validos).indexOf('F') < 0) return '';
+  if (typeof fameAcum !== 'number' || isNaN(fameAcum)) return '';
+  var lo = serie.r.F.lo[o], hi = serie.r.F.hi[o];
+  if (lo === undefined || hi === undefined) return '';
+  return (fameAcum < lo || fameAcum > hi) ? GDS_MARCA_BACKUP_CONTRADICHO : '';
+}
+
+/**
  * _gdsMejorCapturaDia_(dia, limites, capturas) — §PF437 fase 2. De las capturas de un Tag ({ archivo, descargaMs, inicioMs }), la que mejor cubre el día (misma escala que _blgMejorCobertura_;
  * a igual cobertura, la descargada más tarde). Devuelve { estado, archivo, descargaMs, inicioMs }; estado «sin-dato» si no hay ninguna que se pueda medir.
  * La cobertura es por TIEMPO: «completa» NO prueba que el día esté completo (el log pierde batallas, §18B049). [→ Contexto_Base_Web.md §PF437]
@@ -5937,8 +5985,10 @@ function _gdsFilaSemana_(cab, dias) {
 /**
  * _gdsConstruirFilas_(filas, opciones) — §PF437 fase 2. Arma las filas de Guerra_Desglose.csv (GDS_HEADERS) a partir de las filas de la hoja Guerra (o de Backup_Guerra.csv), sin leer Drive ni hojas
  * y sin pedir nada a la API. Una fila por jugador, semana de guerra y clan Terna de la etapa «Guerra», con los cuatro días en bloques (formato ancho, §PF442; la arma _gdsFilaSemana_). Los valores del día salen de _blgValoresHojaDeClan_ (el mismo cálculo del informe de battlelog).
- * opciones = { ternaTags: [...], tagPorNombre: { nombreDeClan: tag } (solo para filas sin ClanTag), battlelogPorTag: { tag: [filas de Backup_Battlelogs.csv] }, capturasPorTag: { tag: [{ archivo, descargaMs, inicioMs }] } }.
- * Devuelve { ok, filas, cuenta }; cuenta lleva las filas por FuenteDesglose y las filas que no se pudieron incluir (sin ClanTag, de clan ajeno, fuera de la semana de guerra). Deja la columna N° vacía.
+ * opciones = { ternaTags: [...], tagPorNombre: { nombreDeClan: tag } (solo para filas sin ClanTag), battlelogPorTag: { tag: [filas de Backup_Battlelogs.csv] }, capturasPorTag: { tag: [{ archivo, descargaMs, inicioMs }] },
+ *   restriccionesPorSemana (opcional, §PF445 d): { 'temporada|semana': [serie, ...] } tal como lo da _vcrrLeerRestricciones_(); sin esta opción no se marca nada }.
+ * Con restriccionesPorSemana, el día cuya fame acumulada del backup queda fuera del rango de los JSON recibe «Backup contradicho por JSON» en ConsistenciaValores (se agrega a lo que ya tenga, separado por «; »).
+ * Devuelve { ok, filas, cuenta }; cuenta lleva las filas por FuenteDesglose, los días marcados (contradichosJson) y las filas que no se pudieron incluir (sin ClanTag, de clan ajeno, fuera de la semana de guerra). Deja la columna N° vacía.
  */
 function _gdsConstruirFilas_(filas, opciones) {
   if (!Array.isArray(filas)) return { ok: false, motivo: 'filas no es una lista' };
@@ -5949,9 +5999,10 @@ function _gdsConstruirFilas_(filas, opciones) {
   var tagPorNombre = opciones.tagPorNombre || {};
   var blgPorTag = opciones.battlelogPorTag || {};
   var capPorTag = opciones.capturasPorTag || {};
+  var restrPorSemana = opciones.restriccionesPorSemana || {};
   var cuenta = {
     filasLeidas: filas.length, repetidas: [], noGuerra: 0, sinClanTag: 0, clanAjeno: 0, fueraDeSemana: 0, filasSalida: 0,
-    semanasJugador: 0, diasSalida: 0, variosDias: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {}
+    semanasJugador: 0, diasSalida: 0, variosDias: 0, contradichosJson: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {}
   };
 
   // Una sola pasada: (temporada, semana, jugador) -> clan -> día -> fila con mayor PeriodIndex.
@@ -6016,6 +6067,7 @@ function _gdsConstruirFilas_(filas, opciones) {
       }
     }
     var capturas = capPorTag[tagN] || [];
+    var seriesSemana = restrPorSemana[(Number(gr.temporada) || 0) + '|' + (Number(gr.semana) || 0)];   // §PF445 (d): las series de los JSON de esa semana
     Object.keys(gr.clanes).forEach(function (clanTagK) {
       var idxPorDia = gr.clanes[clanTagK];
       var enOtroClan = [false, false, false, false];   // días con fila del jugador en otro clan Terna esa semana: no son huecos de este clan (§PF445)
@@ -6025,6 +6077,7 @@ function _gdsConstruirFilas_(filas, opciones) {
       });
       var vh = _gdsValoresHojaDeClan_(filas, idxPorDia, enOtroClan);   // §PF445: base en la última fila existente y regla semanal de jueves a domingo; el informe de battlelog sigue con _blgValoresHojaDeClan_
       var diasClan = [], ultimo = null;
+      var serieJson = null;   // la serie de los JSON de este jugador en este clan (se ubica con el nombre de clan de la primera fila del clan)
       for (var o = 0; o < BLG_DIAS_GUERRA; o++) {
         var idx = idxPorDia[o];
         if (idx === undefined) { diasClan.push(null); continue; }
@@ -6036,12 +6089,18 @@ function _gdsConstruirFilas_(filas, opciones) {
         var des = variosDias
           ? _gdsDesgloseVariosDias_({ ataques: vh.ataques[o], fame: fb.fame, barcos: fb.barcos }, o, vh.span[o])
           : _gdsDesgloseDelDia_({ ataques: vh.ataques[o], fame: fb.fame, barcos: fb.barcos }, bucket, !!pendientes[clanTagK], o === BLG_DIAS_GUERRA - 1);
+        var consistencia = des.consistencia;
+        if (seriesSemana) {
+          if (!serieJson) serieJson = _gdsSerieJsonDelJugador_(seriesSemana, gr.tag, fila[GC.CLAN - 1]);
+          var marca = _gdsMarcaBackupVsJson_(serieJson, o, _blgNumero_(fila[GC.FAME - 1]));
+          if (marca) { consistencia = consistencia ? consistencia + '; ' + marca : marca; cuenta.contradichosJson++; }
+        }
         var cob = limites ? _gdsMejorCapturaDia_(o, limites, capturas) : { estado: 'sin-dato', archivo: '', descargaMs: null, inicioMs: null };
         var isoDia = _blgFechaIsoDeDiaGuerra_(fila[GC.DIA_GUERRA - 1]);
         var diaTexto = isoDia ? isoDia.substr(8, 2) + '/' + isoDia.substr(5, 2) + '/' + isoDia.substr(0, 4) : String(fila[GC.DIA_GUERRA - 1] === undefined || fila[GC.DIA_GUERRA - 1] === null ? '' : fila[GC.DIA_GUERRA - 1]);
         diasClan.push({
           valores: des.valores, ataques: vh.ataques[o], barcos: fb.barcos, fame: fb.fame,
-          fuente: des.fuente, combinaciones: des.combinaciones, consistencia: des.consistencia,
+          fuente: des.fuente, combinaciones: des.combinaciones, consistencia: consistencia,
           diaGuerra: diaTexto, periodIndex: fila[GC.PERIOD_IDX - 1], origen: fila[GC.ORIGEN - 1],
           ataquesAcum: fila[GC.ATAQUES_HOY - 1], barcosAcum: fila[GC.BARCOS - 1], fameAcum: fila[GC.FAME - 1],
           cobertura: cob
