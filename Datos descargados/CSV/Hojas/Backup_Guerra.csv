@@ -177,7 +177,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 176,06/06/2026 00:00:00,10/10/2026,Guerra,22,,1,S,5,Grupo乂Terna™,#9LCJ2JQ08,Adrian,4,12,0,0,0,2400,,5,520,1135,,#GCRG8L00
 177,06/06/2026 00:00:00,10/10/2026,Guerra,22,,1,S,5,Grupo乂Terna™,#8PYCU9U9Q,KAITO KID,4,12,0,0,0,2300,,7,200,322,,#GCRG8L00
 178,06/06/2026 00:00:00,10/10/2026,Guerra,22,,1,S,5,Grupo乂Terna™,#8C0PQ9PR9,Sieh,4,12,0,0,0,2250,,13,590,386,,#GCRG8L00
-179,06/06/2026 00:00:00,10/10/2026,Guerra,22,,1,S,5,Grupo乂Terna™,#L9L9Y9JYV,LORD BOROS,4,12,4,4,0,2250,,4,160,38,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+179,06/06/2026 00:00:00,10/10/2026,Guerra,22,,1,S,5,Grupo乂Terna™,#L9L9Y9JYV,LORD BOROS,4,12,0,0,0,2250,,4,160,38,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 180,06/06/2026 00:00:00,10/10/2026,Guerra,22,,1,S,5,Grupo乂Terna™,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,4,12,0,0,0,2300,,15,320,597,,#GCRG8L00
 181,06/06/2026 00:00:00,10/10/2026,Guerra,22,,1,S,5,Grupo乂Terna™,#QRQULCCV8,ᴳ乂ᵀ ⚜️ Maikel,4,12,0,0,0,2500,,6,480,351,,#GCRG8L00
 182,06/06/2026 00:00:00,10/10/2026,Guerra,22,,1,S,5,Grupo乂Terna™,#J9GJC900J,ʜᴀʀᴜ,0,8,4,4,0,1800,,1,80,128,,#GCRG8L00
@@ -1401,7 +1401,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 1400,14/06/2026 00:00:00,18/10/2026,Guerra,22,,2,D,13,Grupo乂Terna™,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,0,4,4,4,0,600,,46,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 1401,14/06/2026 00:00:00,18/10/2026,Guerra,22,,2,D,13,Grupo乂Terna™,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,4,12,0,4,0,1500,,43,0,0,Corregido - Solución única,#GCRG8L00
 1402,14/06/2026 00:00:00,18/10/2026,Guerra,22,,2,D,13,Grupo乂Terna™,#VR92C8LYU,ᴳ乂ᵀ ⚜️GONCHA,4,12,0,4,0,1900,,26,0,0,,#GCRG8L00
-1403,14/06/2026 00:00:00,18/10/2026,Guerra,22,,2,D,13,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,12,4,4,0,1700,,47,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+1403,14/06/2026 00:00:00,18/10/2026,Guerra,22,,2,D,13,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,12,0,0,0,1700,,47,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 1404,14/06/2026 00:00:00,18/10/2026,Guerra,22,,2,D,13,Grupo乂Terna™,#YQQUVQL0P,ᴳ乂ᵀ⚜️LoloMaster,0,8,4,8,0,1100,,42,0,0,,#GCRG8L00
 1405,14/06/2026 00:00:00,18/10/2026,Guerra,22,,2,D,13,Grupo乂Terna™,#JCYLCLYPU,jhord@n,0,8,4,8,0,1200,,34,0,0,,#GCRG8L00
 1406,14/06/2026 00:00:00,18/10/2026,Guerra,22,,2,D,13,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,0,8,4,8,0,1200,,40,40,52,,#GCRG8L00
@@ -2260,11 +2260,11 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 2259,19/06/2026 00:00:00,23/10/2026,Guerra,22,,3,V,18,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,4,0,4,0,500,,41,40,0,,#GYCU9YRG
 2260,19/06/2026 00:00:00,23/10/2026,Guerra,22,,3,V,18,GrupoXTerna™2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,4,4,0,4,0,500,,42,0,0,,#GYCU9YRG
 2261,19/06/2026 00:00:00,23/10/2026,Guerra,22,,3,V,18,GrupoXTerna™2,#UGJRJUPLY,frankxd,3,3,1,1,0,500,,19,40,21,,#GYCU9YRG
-2262,20/06/2026 00:00:00,23/10/2026,Guerra,22,,3,V,18,GrupoXTerna™2,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,3,3,0,700,,38,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+2262,20/06/2026 00:00:00,23/10/2026,Guerra,22,,3,V,18,GrupoXTerna™2,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,0,0,0,700,,38,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 2263,20/06/2026 00:00:00,23/10/2026,Guerra,22,,3,V,18,GrupoXTerna™2,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,4,4,0,0,0,600,,36,0,0,,#GYCU9YRG
 2264,20/06/2026 00:00:00,23/10/2026,Guerra,22,,3,V,18,GrupoXTerna™2,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,4,0,4,0,600,,37,0,18,,#GYCU9YRG
 2265,20/06/2026 00:00:00,23/10/2026,Guerra,22,,3,V,18,GrupoXTerna™3,#GYU0R0V29,Love--Adri<3,4,4,0,4,0,400,,4,0,0,,#GQQPPJGR
-2266,20/06/2026 00:00:00,23/10/2026,Guerra,22,,3,V,18,GrupoXTerna™2,#20JPVQYL8Q,MiniSebas,2,2,4,4,2,150,,43,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+2266,20/06/2026 00:00:00,23/10/2026,Guerra,22,,3,V,18,GrupoXTerna™2,#20JPVQYL8Q,MiniSebas,2,2,2,2,2,150,,43,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 2267,20/06/2026 00:00:00,23/10/2026,Guerra,22,,3,V,18,GrupoXTerna™2,#20VLPP2QLU,MiniSebas,0,0,4,4,0,0,,44,0,0,,#GYCU9YRG
 2268,20/06/2026 00:00:00,24/10/2026,Guerra,22,,3,S,19,Grupo乂Terna™,#228VUG2RU,†✧▯オFazeteッ▯✧†,4,8,0,4,0,1200,,4,80,52,Corregido,#GCRG8L00
 2269,20/06/2026 00:00:00,24/10/2026,Guerra,22,,3,S,19,Grupo乂Terna™,#PJ2PVRQUY,ᴳ乂ᵀ ⚜️Jolwyrr,4,8,0,4,0,1300,,33,600,175,,#GCRG8L00
@@ -2315,7 +2315,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 2314,20/06/2026 00:00:00,24/10/2026,Guerra,22,,3,S,19,Grupo乂Terna™,#CCQVL0029,ᴳ乂ᵀ ⚜️Cr7亗,4,12,0,0,0,2500,,37,0,0,,#GCRG8L00
 2315,20/06/2026 00:00:00,24/10/2026,Guerra,22,,3,S,19,Grupo乂Terna™,#V2RUQ9LUG,Anthony ^,4,12,0,0,0,2500,,36,0,232,,#GCRG8L00
 2316,20/06/2026 00:00:00,24/10/2026,Guerra,22,,3,S,19,Grupo乂Terna™,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,4,12,0,0,0,2350,,22,320,464,,#GCRG8L00
-2317,20/06/2026 00:00:00,24/10/2026,Guerra,22,,3,S,19,GrupoXTerna™2,#20JPVQYL8Q,MiniSebas,0,2,4,8,2,150,,43,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+2317,20/06/2026 00:00:00,24/10/2026,Guerra,22,,3,S,19,GrupoXTerna™2,#20JPVQYL8Q,MiniSebas,0,2,4,6,2,150,,43,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 2318,20/06/2026 00:00:00,24/10/2026,Guerra,22,,3,S,19,GrupoXTerna™2,#20VLPP2QLU,MiniSebas,0,0,4,8,0,0,,49,0,0,,#GYCU9YRG
 2319,20/06/2026 00:00:00,24/10/2026,Guerra,22,,3,S,19,GrupoXTerna™2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,4,8,0,4,0,1200,,48,40,0,,#GYCU9YRG
 2320,20/06/2026 00:00:00,24/10/2026,Guerra,22,,3,S,19,GrupoXTerna™2,#UGJRJUPLY,frankxd,0,3,4,5,0,500,,25,80,67,Corregido,#GYCU9YRG
@@ -2442,7 +2442,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 2441,21/06/2026 00:00:00,25/10/2026,Guerra,22,,3,D,20,GrupoXTerna™2,#VJP0C8R8R,Mi Linda Sherly,1,2,3,6,0,400,,18,40,10,,#GYCU9YRG
 2442,21/06/2026 00:00:00,25/10/2026,Guerra,22,,3,D,20,GrupoXTerna™2,#UGJRJUPLY,frankxd,4,7,0,5,0,1100,,23,30,26,,#GYCU9YRG
 2443,21/06/2026 00:00:00,25/10/2026,Guerra,22,,3,D,20,GrupoXTerna™2,#8GCCGQP8L,$g-alfh-a$,4,9,0,7,0,1400,,13,40,48,,#GYCU9YRG
-2444,21/06/2026 00:00:00,25/10/2026,Guerra,22,,3,D,20,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,4,10,3,6,0,1600,13030,34,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+2444,21/06/2026 00:00:00,25/10/2026,Guerra,22,,3,D,20,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,4,10,0,3,0,1600,13030,34,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 2445,21/06/2026 00:00:00,25/10/2026,Guerra,22,,3,D,20,GrupoXTerna™2,#CPYUPLLPC,henry,4,8,0,0,0,1700,,4,40,10,,#GYCU9YRG
 2446,21/06/2026 00:00:00,25/10/2026,Guerra,22,,3,D,20,GrupoXTerna™2,#C8GPVLVJL,~$VNThONY$~,4,8,0,8,0,1300,,6,0,0,,#GYCU9YRG
 2447,21/06/2026 00:00:00,25/10/2026,Guerra,22,,3,D,20,GrupoXTerna™2,#9UYRC99VC,Tottenham,4,7,0,1,0,1250,,24,30,70,,#GYCU9YRG
@@ -2899,7 +2899,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 2898,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,Grupo乂Terna™,#J9GJC900J,ʜᴀʀᴜ,4,4,0,0,0,900,,7,40,72,,#GCRG8L00
 2899,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,Grupo乂Terna™,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,4,4,0,0,0,800,,26,200,452,,#GCRG8L00
 2900,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,Grupo乂Terna™,#RCR280GPV,Jano Meza,0,0,4,4,0,0,,19,0,0,,#GCRG8L00
-2901,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,Grupo乂Terna™,#VPPCGQR2C,Leonardo.p,2,2,4,4,0,200,,32,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+2901,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,Grupo乂Terna™,#VPPCGQR2C,Leonardo.p,2,2,2,2,0,200,,32,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 2902,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,Grupo乂Terna™,#82QUR9L2R,ファブリシオ,4,4,0,0,0,800,,2,0,18,,#GCRG8L00
 2903,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,Grupo乂Terna™,#UVU2UYYC2,ᴳ乂ᵀ⚜️MasterNopi,4,4,0,0,0,800,,46,200,284,,#GCRG8L00
 2904,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,Grupo乂Terna™,#8PYCU9U9Q,KAITO KID,4,4,0,0,0,500,,5,0,36,,#GCRG8L00
@@ -2958,7 +2958,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 2957,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,GrupoXTerna™2,#92V9L92GV,JeaPro18,4,4,0,0,0,400,,32,170,110,,#GYCU9YRG
 2958,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,GrupoXTerna™2,#CYR2PVLLY,carepoto:3,4,4,0,0,0,800,,19,168,254,,#GYCU9YRG
 2959,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,GrupoXTerna™2,#V8R28J89Q,Yoselin,0,0,4,4,0,0,,19,40,118,,#GYCU9YRG
-2960,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,GrupoXTerna™2,#VYV8U9CL2,LEON,1,1,4,4,1,125,,26,0,10,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+2960,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,GrupoXTerna™2,#VYV8U9CL2,LEON,1,1,3,3,1,125,,26,0,10,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 2961,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,GrupoXTerna™2,#2RVP2J0U8,jhon psh,3,3,1,1,0,600,,22,80,68,,#GYCU9YRG
 2962,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,GrupoXTerna™2,#C2V90LPQG,JORDI_JK,4,4,0,0,0,400,,29,112,0,,#GYCU9YRG
 2963,25/06/2026 00:00:00,29/10/2026,Guerra,22,,4,J,24,GrupoXTerna™2,#CPYUPLLPC,henry,4,4,0,0,0,600,,10,160,26,,#GYCU9YRG
@@ -3079,7 +3079,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 3078,26/06/2026 00:00:00,30/10/2026,Guerra,22,,4,V,25,GrupoXTerna™2,#G9Y2R9J0J,hh,0,4,4,4,0,650,,14,232,801,,#GYCU9YRG
 3079,26/06/2026 00:00:00,30/10/2026,Guerra,22,,4,V,25,GrupoXTerna™2,#9G0RQR2GV,frank -.-,4,8,0,0,0,1500,,26,187,96,,#GYCU9YRG
 3080,26/06/2026 00:00:00,30/10/2026,Guerra,22,,4,V,25,GrupoXTerna™2,#CC2PQG829,(-KING-),0,4,4,4,0,700,,26,0,26,,#GYCU9YRG
-3081,26/06/2026 00:00:00,30/10/2026,Guerra,22,,4,V,25,GrupoXTerna™2,#LJJVQGJ,Dade ,4,8,1,1,0,1400,,8,590,209,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+3081,26/06/2026 00:00:00,30/10/2026,Guerra,22,,4,V,25,GrupoXTerna™2,#LJJVQGJ,Dade ,4,8,0,0,0,1400,,8,590,209,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 3082,26/06/2026 00:00:00,30/10/2026,Guerra,22,,4,V,25,GrupoXTerna™2,#YLYGC9Y9C,TOTTI,0,4,4,4,0,700,,36,200,176,,#GYCU9YRG
 3083,26/06/2026 00:00:00,30/10/2026,Guerra,22,,4,V,25,GrupoXTerna™2,#LQG92URQV,♖♘Mr.Dani05♘♖,4,8,0,0,0,1500,,30,200,237,,#GYCU9YRG
 3084,26/06/2026 00:00:00,30/10/2026,Guerra,22,,4,V,25,GrupoXTerna™2,#CUU92GQQG,Larry god,4,8,0,0,0,1500,,6,0,0,,#GYCU9YRG
@@ -3187,7 +3187,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 3186,27/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™2,#8YJGLRJUJ,Xdrago218X,4,12,0,0,0,1900,,18,416,111,,#GYCU9YRG
 3187,27/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™2,#U2QJ2LCY9,ivan,4,12,0,0,0,2150,,3,201,84,,#GYCU9YRG
 3188,27/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™2,#QRQULCCV8,ᴳ乂ᵀ ⚜️ Maikel,4,12,0,0,0,2050,,1,220,386,,#GYCU9YRG
-3189,27/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™2,#LJJVQGJ,Dade ,4,12,0,1,0,2300,,2,710,260,,#GYCU9YRG
+3189,27/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™2,#LJJVQGJ,Dade ,4,12,0,0,0,2300,,2,710,260,,#GYCU9YRG
 3190,27/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™2,#8GCCGQP8L,$g-alfh-a$,4,12,0,0,0,1900,,10,80,263,,#GYCU9YRG
 3191,27/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™2,#PJL9GL8U2,Luigi,4,12,0,0,0,2000,,27,320,185,,#GYCU9YRG
 3192,27/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™2,#U2CPLUU80,Valentina,4,12,0,0,0,2050,,39,96,10,,#GYCU9YRG
@@ -3225,7 +3225,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 3224,27/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™2,#CV9U8PU8G,DAVII BOYX,0,0,4,12,0,0,,25,0,0,,#GYCU9YRG
 3225,27/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™2,#J2RC2C9V,⭐Imanol⭐,0,0,4,4,0,0,,16,0,44,,#GYCU9YRG
 3226,27/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™3,#RPLVY0R08,rata-piola,4,4,0,8,4,350,,8,0,0,,#GQQPPJGR
-3227,28/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,Grupo乂Terna™,#20JPVQYL8Q,MiniSebas,3,3,3,3,2,250,,50,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+3227,28/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,Grupo乂Terna™,#20JPVQYL8Q,MiniSebas,3,3,1,1,2,250,,50,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 3228,28/06/2026 00:00:00,31/10/2026,Guerra,22,,4,S,26,GrupoXTerna™2,#JLU999JRU,RASHFORD,2,2,2,2,0,200,,45,0,0,,#GYCU9YRG
 3229,28/06/2026 00:00:00,01/11/2026,Guerra,22,,4,D,27,Grupo乂Terna™,#VR92C8LYU,ᴳ乂ᵀ ⚜️GONCHA,0,4,4,12,0,650,,33,0,0,,#GCRG8L00
 3230,28/06/2026 00:00:00,01/11/2026,Guerra,22,,4,D,27,Grupo乂Terna™,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,4,12,0,4,0,1600,,44,0,44,,#GCRG8L00
@@ -3319,7 +3319,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 3318,28/06/2026 00:00:00,01/11/2026,Guerra,22,,4,D,27,GrupoXTerna™2,#LQG92URQV,♖♘Mr.Dani05♘♖,4,16,0,0,0,2800,,34,10,58,,#GYCU9YRG
 3319,28/06/2026 00:00:00,01/11/2026,Guerra,22,,4,D,27,GrupoXTerna™2,#C289JPLQG,[ TORO ],4,16,0,0,0,2750,,5,0,0,,#GYCU9YRG
 3320,28/06/2026 00:00:00,01/11/2026,Guerra,22,,4,D,27,GrupoXTerna™2,#20QL8URRYR,Daprepz,4,16,0,0,0,2900,,22,0,38,,#GYCU9YRG
-3321,28/06/2026 00:00:00,01/11/2026,Guerra,22,,4,D,27,GrupoXTerna™2,#LJJVQGJ,Dade ,4,16,0,1,0,3100,,2,40,28,Corregido,#GYCU9YRG
+3321,28/06/2026 00:00:00,01/11/2026,Guerra,22,,4,D,27,GrupoXTerna™2,#LJJVQGJ,Dade ,4,16,0,0,0,3100,,2,40,28,Corregido,#GYCU9YRG
 3322,28/06/2026 00:00:00,01/11/2026,Guerra,22,,4,D,27,GrupoXTerna™2,#CYR2PVLLY,carepoto:3,4,16,0,0,0,3400,,21,30,56,,#GYCU9YRG
 3323,28/06/2026 00:00:00,01/11/2026,Guerra,22,,4,D,27,GrupoXTerna™3,#VLY0G9LU9,ᴳ乂ᵀ ⚜. josuexd.,0,0,4,12,0,0,,1,0,0,,#GQQPPJGR
 3324,28/06/2026 00:00:00,01/11/2026,Guerra,22,,4,D,27,GrupoXTerna™3,#200C8YYJ82,•josue•,0,0,4,16,0,0,,14,0,0,,#GQQPPJGR
@@ -3718,7 +3718,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 3717,02/07/2026 00:00:00,05/11/2026,Guerra,22,,5,J,31,Grupo乂Terna™,#RGQUGU0CU,ᴳ乂ᵀ ⚜️pedro289,4,4,0,0,0,400,,43,80,42,,#GCRG8L00
 3718,02/07/2026 00:00:00,05/11/2026,Guerra,22,,5,J,31,Grupo乂Terna™,#CGGGR82PJ,°Gatito°✓,0,0,4,4,0,0,,4,120,122,,#GCRG8L00
 3719,02/07/2026 00:00:00,05/11/2026,Guerra,22,,5,J,31,Grupo乂Terna™,#8J9PL92GU,Marín,4,4,0,0,0,500,,33,40,0,,#GCRG8L00
-3720,02/07/2026 00:00:00,05/11/2026,Guerra,22,,5,J,31,Grupo乂Terna™,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,4,4,4,4,0,500,,15,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+3720,02/07/2026 00:00:00,05/11/2026,Guerra,22,,5,J,31,Grupo乂Terna™,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,4,4,0,0,0,500,,15,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 3721,02/07/2026 00:00:00,05/11/2026,Guerra,22,,5,J,31,Grupo乂Terna™,#J8V9PQJP9,ilmiatraxxp,4,4,0,0,0,400,,44,200,10,,#GCRG8L00
 3722,02/07/2026 00:00:00,05/11/2026,Guerra,22,,5,J,31,Grupo乂Terna™,#YGL2QV8LG,ᴳ乂ᵀ ⚜ T3RR1BL3!,0,0,4,4,0,0,,36,80,130,,#GCRG8L00
 3723,02/07/2026 00:00:00,05/11/2026,Guerra,22,,5,J,31,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),4,4,0,0,0,500,,9,280,186,,#GCRG8L00
@@ -4001,7 +4001,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4000,04/07/2026 00:00:00,07/11/2026,Guerra,22,,5,S,33,Grupo乂Terna™,#9LCJ2JQ08,Adrian,4,12,0,0,0,2300,,1,400,593,,#GCRG8L00
 4001,04/07/2026 00:00:00,07/11/2026,Guerra,22,,5,S,33,Grupo乂Terna™,#82QUR9L2R,ファブリシオ,4,12,0,0,0,2500,,3,0,0,,#GCRG8L00
 4002,04/07/2026 00:00:00,07/11/2026,Guerra,22,,5,S,33,Grupo乂Terna™,#QG2PP89G2,Har,4,12,0,0,0,2100,,27,520,78,,#GCRG8L00
-4003,04/07/2026 00:00:00,07/11/2026,Guerra,22,,5,S,33,GrupoXTerna™2,#20JPVQYL8Q,MiniSebas,0,3,4,4,0,400,,50,20,0,,#GYCU9YRG
+4003,04/07/2026 00:00:00,07/11/2026,Guerra,22,,5,S,33,GrupoXTerna™2,#20JPVQYL8Q,MiniSebas,0,3,4,5,0,400,,50,20,0,,#GYCU9YRG
 4004,04/07/2026 00:00:00,07/11/2026,Guerra,22,,5,S,33,GrupoXTerna™2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,4,11,0,1,0,1450,,46,40,101,Corregido - Solución estimada,#GYCU9YRG
 4005,04/07/2026 00:00:00,07/11/2026,Guerra,22,,5,S,33,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,0,4,4,8,0,650,,45,0,0,,#GYCU9YRG
 4006,04/07/2026 00:00:00,07/11/2026,Guerra,22,,5,S,33,GrupoXTerna™2,#8YJGLRJUJ,Xdrago218X,0,4,4,8,0,700,,22,320,44,,#GYCU9YRG
@@ -4173,22 +4173,22 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4172,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#Q09UJ2UP2,MASTER K.,0,11,4,5,0,1500,,10,0,0,,#GQQPPJGR
 4173,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#V0JPP0UJR,fatima,4,16,0,0,0,2300,,14,10,48,Reconstruido,#GQQPPJGR
 4174,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#JVVG9YUG0,Fiorela.,4,16,0,0,0,2150,,16,0,0,Corregido - Solución única,#GQQPPJGR
-4175,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#UG90QUU0P,MiniNopi,4,16,4,4,0,2200,,7,0,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+4175,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#UG90QUU0P,MiniNopi,4,16,0,0,0,2200,,7,0,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 4176,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#U8G029GUQ,ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️,0,12,4,4,0,1700,,18,0,0,,#GQQPPJGR
-4177,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#80QCQ9R9Y,JEQ,4,16,4,4,0,2300,,6,30,18,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+4177,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#80QCQ9R9Y,JEQ,4,16,0,0,0,2300,,6,30,18,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 4178,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#V9P20U8RC,kayserleandro,4,16,0,0,0,2300,,17,40,40,Reconstruido,#GQQPPJGR
 4179,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#RGCL8LGJC,Alex♡Dmr,4,16,0,0,0,2300,,5,20,0,Reconstruido,#GQQPPJGR
 4180,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,4,16,0,0,0,2400,,12,0,38,Reconstruido,#GQQPPJGR
 4181,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#90QYJQRQ8,Diana,4,16,0,0,0,2500,,11,0,0,Reconstruido,#GQQPPJGR
-4182,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#JJ0RUP0RR,Axelgamer,4,16,4,4,0,2700,,4,20,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+4182,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#JJ0RUP0RR,Axelgamer,4,16,0,0,0,2700,,4,20,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 4183,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#GYU0R0V29,Love--Adri<3,4,16,0,0,0,2500,,3,24,20,Reconstruido,#GQQPPJGR
 4184,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#VLY0G9LU9,ᴳ乂ᵀ ⚜. josuexd.,0,12,4,4,0,2000,,1,0,0,,#GQQPPJGR
-4185,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#V929CC8CC,esteban,4,16,4,4,0,3100,,2,0,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+4185,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#V929CC8CC,esteban,4,16,0,0,0,3100,,2,0,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 4186,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,Mini乂Ternas™,#20VLVQLP08,ElAbramh,0,0,4,16,0,0,,4,0,0,,#GG99LCJY
 4187,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,Mini乂Ternas™,#VJU9L8GR2,Destripador,0,0,4,12,0,0,,3,0,0,,#GG99LCJY
 4188,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,Mini乂Ternas™,#LYVJU9UJJ,fggij09,4,12,0,4,0,1600,,2,0,0,Reconstruido,#GG99LCJY
 4189,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™2,#VQ2CLU9GU,DAVID JR,0,0,4,4,0,0,,31,0,0,,#GYCU9YRG
-4190,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#V0UJ0RPVP,MassimoBabyOhh,4,4,0,12,0,500,,20,0,0,Reconstruido,#GQQPPJGR
+4190,05/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,GrupoXTerna™3,#V0UJ0RPVP,MassimoBabyOhh,4,4,0,8,0,500,,20,0,0,Reconstruido,#GQQPPJGR
 4191,06/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,Grupo乂Terna™,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,4,15,0,1,0,2200,,45,0,0,Corregido - Solución estimada,#GCRG8L00
 4192,06/07/2026 00:00:00,08/11/2026,Guerra,22,,5,D,34,Grupo乂Terna™,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,16,0,0,0,2300,,45,0,0,Corregido - Solución estimada,#GCRG8L00
 4193,06/07/2026,06/07/2026,Entrenamiento,23,,1,L,0,Grupo乂Terna™,#8Q92GV08U,Dxniel,0,0,,,0,0,,10,160,96,,#GCRG8L00
@@ -4675,7 +4675,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4674,10/07/2026,09/07/2026,Guerra,23,,1,J,3,GrupoXTerna™3,#90QYJQRQ8,Diana,4,4,0,0,0,500,,12,8,8,,#GQQPPJGR
 4675,10/07/2026,09/07/2026,Guerra,23,,1,J,3,GrupoXTerna™3,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,0,0,0,600,,7,0,0,,#GQQPPJGR
 4676,10/07/2026,09/07/2026,Guerra,23,,1,J,3,GrupoXTerna™2,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,4,4,0,0,0,700,,41,0,0,,#GYCU9YRG
-4677,10/07/2026,09/07/2026,Guerra,23,,1,J,3,GrupoXTerna™2,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,4,3,3,0,700,,42,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+4677,10/07/2026,09/07/2026,Guerra,23,,1,J,3,GrupoXTerna™2,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,4,0,0,0,700,,42,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 4678,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Grupo乂Terna™,#YGL2QV8LG,ᴳ乂ᵀ ⚜ T3RR1BL3!,4,4,0,4,0,650,,35,360,487,Corregido - Solución única,#GCRG8L00
 4679,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Grupo乂Terna™,#RYCR2C2YR,✨Daniel Cc✨,0,0,4,8,0,0,,33,233,103,,#GCRG8L00
 4680,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Grupo乂Terna™,#8J9PL92GU,Marín,4,8,0,0,0,950,,25,320,42,Corregido - Solución única,#GCRG8L00
@@ -4757,7 +4757,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4756,10/07/2026,10/07/2026,Guerra,23,,1,V,4,GrupoXTerna™2,#L28JYY2J,Gamer,4,8,0,0,0,1600,,29,240,181,Corregido - Solución única,#GYCU9YRG
 4757,10/07/2026,10/07/2026,Guerra,23,,1,V,4,GrupoXTerna™2,#CPRQG82L,tatsumi,4,8,0,0,0,1200,,39,233,182,Corregido - Solución única,#GYCU9YRG
 4758,10/07/2026,10/07/2026,Guerra,23,,1,V,4,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,8,0,0,0,1200,,36,160,185,,#GYCU9YRG
-4759,10/07/2026,10/07/2026,Guerra,23,,1,V,4,GrupoXTerna™2,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,0,4,4,7,0,700,,45,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+4759,10/07/2026,10/07/2026,Guerra,23,,1,V,4,GrupoXTerna™2,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,0,4,4,4,0,700,,45,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 4760,10/07/2026,10/07/2026,Guerra,23,,1,V,4,GrupoXTerna™2,#CUU92GQQG,Larry god,4,8,0,0,0,1400,,9,0,0,,#GYCU9YRG
 4761,10/07/2026,10/07/2026,Guerra,23,,1,V,4,GrupoXTerna™2,#9U9QUL02R,j y j,4,8,0,0,0,1500,,20,360,90,,#GYCU9YRG
 4762,10/07/2026,10/07/2026,Guerra,23,,1,V,4,GrupoXTerna™2,#9G0RQR2GV,frank -.-,4,8,0,0,0,1450,,33,200,113,Corregido - Solución única,#GYCU9YRG
@@ -4795,11 +4795,11 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4794,10/07/2026,10/07/2026,Guerra,23,,1,V,4,GrupoXTerna™3,#RGCL8LGJC,Alex♡Dmr,4,8,0,0,0,1200,,5,40,7,Corregido - Solución única,#GQQPPJGR
 4795,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,4,4,0,4,0,500,,17,0,0,,#GG99LCJY
 4796,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,4,4,0,4,0,500,,48,0,0,,#GG99LCJY
-4797,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,4,4,4,4,0,600,,8,0,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
-4798,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,3,3,4,5,0,300,,1,0,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+4797,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,4,4,0,0,0,600,,8,0,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+4798,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,3,3,1,2,0,300,,1,0,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
 4799,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,4,4,0,4,0,500,,48,0,0,,#GG99LCJY
-4800,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,4,4,4,4,0,700,,2,40,70,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
-4801,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,4,4,4,4,0,400,,4,44,11,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+4800,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,4,4,0,0,0,700,,2,40,70,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+4801,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,4,4,0,0,0,400,,4,44,11,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
 4802,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,4,4,0,4,0,600,,47,0,0,,#GG99LCJY
 4803,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,3,3,1,5,0,400,,23,0,0,,#GG99LCJY
 4804,10/07/2026,10/07/2026,Guerra,23,,1,V,4,Mini乂Ternas™,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,4,8,0,0,0,1000,,7,40,44,Corregido - Solución única,#GG99LCJY
@@ -4818,7 +4818,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4817,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,4,12,0,0,0,1600,,38,0,40,,#GCRG8L00
 4818,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#R98JQRU99,ᴳ乂ᵀ ⚜️Rukon_RB,4,12,0,0,0,1800,,27,160,196,Corregido - CurrentRiverRace,#GCRG8L00
 4819,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#Q98RGPGCU,ᴳ乂ᵀ ⚜️ Senju,4,12,0,0,0,1700,,47,315,381,Corregido - CurrentRiverRace,#GCRG8L00
-4820,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#2CJJ9JLLQ,ᴳ乂ᵀ ⚜️ CASTRO,4,12,4,4,0,1600,,7,0,756,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+4820,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#2CJJ9JLLQ,ᴳ乂ᵀ ⚜️ CASTRO,4,12,0,0,0,1600,,7,0,756,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 4821,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#2LCJLUC9J,DANIEL,4,12,0,0,0,1700,,9,0,51,Corregido - CurrentRiverRace,#GCRG8L00
 4822,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#8Q92GV08U,Dxniel,4,12,0,0,0,1500,,22,520,410,Corregido - Solución estimada,#GCRG8L00
 4823,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#829GQP0JL,Procrastinador.,4,12,0,0,0,1700,,3,360,88,Corregido - CurrentRiverRace,#GCRG8L00
@@ -4827,7 +4827,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4826,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#LJ0CYCG9V,ᴳ乂ᵀ ⚜️CERFIRE,4,12,0,0,0,1500,,44,200,201,Corregido - Solución única,#GCRG8L00
 4827,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#GY0GJ09C0,ᴳ乂ᵀ ⚜️ ⓈⒺⒷⒶⓈ⚡,4,12,0,0,0,1700,,5,640,1446,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 4828,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#RGQUGU0CU,ᴳ乂ᵀ ⚜️pedro289,4,12,0,0,0,1700,,43,104,28,Corregido - CurrentRiverRace,#GCRG8L00
-4829,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#CCQVL0029,ᴳ乂ᵀ ⚜️Cr7亗,4,12,4,4,0,1850,,36,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+4829,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#CCQVL0029,ᴳ乂ᵀ ⚜️Cr7亗,4,12,0,0,0,1850,,36,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 4830,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#GVVPJ8CLG,JP Titan :),4,12,0,0,0,2000,,16,280,78,Corregido - CurrentRiverRace,#GCRG8L00
 4831,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#JV08RQU2Y,ᴳ乂ᵀ ⚜️ DAVID ★,4,12,0,0,0,1700,,19,320,576,Corregido - CurrentRiverRace,#GCRG8L00
 4832,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#UVU2UYYC2,ᴳ乂ᵀ⚜️MasterNopi,0,8,4,4,0,1200,,45,80,138,Corregido - Solución única,#GCRG8L00
@@ -4837,7 +4837,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4836,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#298JJ9RUL,Sebas JAS,1,9,3,3,0,1400,,25,120,230,Corregido - Solución estimada,#GCRG8L00
 4837,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#20YVVYCU2,ᴳ乂ᵀ ⚜ Richard,4,12,0,0,0,1800,,2,0,0,Corregido - CurrentRiverRace,#GCRG8L00
 4838,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,4,12,0,0,0,1950,,21,400,309,Corregido - Solución única,#GCRG8L00
-4839,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#G2Q9UYY89,✨✞₳Ⱡ€Ӿ✞✨♣️YV♠️,4,12,4,4,0,1900,,23,400,176,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+4839,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#G2Q9UYY89,✨✞₳Ⱡ€Ӿ✞✨♣️YV♠️,4,12,0,0,0,1900,,23,400,176,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 4840,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#CUQG9CJUG,ᴳ乂ᵀ ⚜️Marzz,4,12,0,0,0,1800,,30,232,207,Corregido - CurrentRiverRace,#GCRG8L00
 4841,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#VQCG0G09G,ᴳ乂ᵀ ⚜️ C-Ron,4,12,0,0,0,1800,,8,552,461,Corregido - CurrentRiverRace,#GCRG8L00
 4842,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#2PUYLPPRG,COSCU06,4,12,0,0,0,1800,,17,120,101,,#GCRG8L00
@@ -4853,7 +4853,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4852,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#QG2PP89G2,Har,4,12,0,0,0,2000,,24,320,112,Corregido - Solución estimada,#GCRG8L00
 4853,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#QR8JGLC9Q,ᴳ乂ᵀ⚜️Bloodshot,4,12,0,0,0,2200,,46,40,44,Corregido - CurrentRiverRace,#GCRG8L00
 4854,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#UJUGRYY9C,ㅤᴀᴅᴍㅤϟ,4,12,0,0,0,2300,,13,280,56,Corregido - CurrentRiverRace,#GCRG8L00
-4855,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#J9GJC900J,ʜᴀʀᴜ,4,12,4,4,0,2400,,14,0,32,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+4855,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#J9GJC900J,ʜᴀʀᴜ,4,12,0,0,0,2400,,14,0,32,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 4856,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#8C0PQ9PR9,Sieh,4,12,0,0,0,2100,,10,440,324,Corregido - CurrentRiverRace,#GCRG8L00
 4857,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Grupo乂Terna™,#9LCJ2JQ08,Adrian,4,12,0,0,0,2600,,26,280,285,Corregido - CurrentRiverRace,#GCRG8L00
 4858,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,8,0,4,0,900,,46,30,0,Corregido - Solución estimada,#GYCU9YRG
@@ -4863,7 +4863,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4862,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#LVVP82CU9,ᴳ乂ᵀ ⚜️Angel R.,4,11,0,1,0,1500,,13,0,10,Corregido - Solución única,#GYCU9YRG
 4863,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,4,12,0,0,0,1500,,43,120,240,Corregido - CurrentRiverRace,#GYCU9YRG
 4864,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,12,0,0,0,1550,,45,80,16,Corregido - Solución única,#GYCU9YRG
-4865,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#202PRG8QU,miner90000,4,12,4,4,0,1800,,15,120,88,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+4865,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#202PRG8QU,miner90000,4,12,0,0,0,1800,,15,120,88,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 4866,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#LPGG98PLL,chris da amor,0,8,4,4,0,1200,,11,154,77,,#GYCU9YRG
 4867,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#U9L82V28P,Dajorami,4,12,0,0,0,2000,,23,272,64,Corregido - CurrentRiverRace,#GYCU9YRG
 4868,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#22C090RVJ,反覆分Mc-->WiLL,4,12,0,0,0,1700,,21,120,232,Corregido - CurrentRiverRace,#GYCU9YRG
@@ -4873,7 +4873,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4872,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#UYJCQQ028,cristofer adt,4,12,0,0,0,1900,,22,0,86,Corregido - Solución única,#GYCU9YRG
 4873,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#92V9L92GV,JeaPro18,3,11,1,1,0,1500,,36,110,18,Corregido - Solución estimada,#GYCU9YRG
 4874,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#200Y80CU29,KElito,0,8,4,4,0,1200,,28,0,501,,#GYCU9YRG
-4875,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#CPYUPLLPC,henry,4,12,4,4,0,1850,,18,50,32,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+4875,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#CPYUPLLPC,henry,4,12,0,0,0,1850,,18,50,32,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 4876,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#CPRQG82L,tatsumi,4,12,0,0,0,1800,,40,233,182,Corregido - CurrentRiverRace,#GYCU9YRG
 4877,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,4,12,0,0,0,1600,,30,0,1,Corregido - Solución estimada,#GYCU9YRG
 4878,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,12,0,0,0,2000,,37,160,227,Corregido - Solución única,#GYCU9YRG
@@ -4881,12 +4881,12 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4880,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#UR902UV8L,hola,4,12,0,0,0,2000,,41,0,0,Corregido - CurrentRiverRace,#GYCU9YRG
 4881,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#J2JJ8LGV9,TUVILOL,4,12,0,0,0,1950,,26,150,166,Corregido - CurrentRiverRace,#GYCU9YRG
 4882,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#C8GPVLVJL,~$VNThONY$~,4,12,0,0,0,1700,,1,370,118,Corregido - Solución única,#GYCU9YRG
-4883,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#YG8U8Q2PC,skap,4,16,1,1,0,2500,,31,120,152,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+4883,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#YG8U8Q2PC,skap,4,16,0,0,0,2500,,31,120,152,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 4884,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#LRR2RGCCV,gabriel18,4,12,0,0,0,2150,,8,183,140,Corregido - CurrentRiverRace,#GYCU9YRG
 4885,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#U2QJ2LCY9,ivan,4,12,0,0,0,2150,,19,236,102,Corregido - Solución única,#GYCU9YRG
 4886,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,4,12,0,0,0,2000,,39,320,77,Corregido - CurrentRiverRace,#GYCU9YRG
 4887,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#UQJU0JRG2,ivzn,4,12,0,0,0,2100,,16,0,20,Corregido - Solución estimada,#GYCU9YRG
-4888,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#UU02UUQGY,dark zz,1,9,4,4,0,1500,,17,0,300,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+4888,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#UU02UUQGY,dark zz,1,9,3,3,0,1500,,17,0,300,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 4889,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#VY0UJ82PV,Manamunacoc,4,12,0,0,0,2100,,5,380,147,Corregido - Solución única,#GYCU9YRG
 4890,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#C289JPLQG,[ TORO ],4,12,0,0,0,2100,,3,80,79,Corregido - Solución única,#GYCU9YRG
 4891,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#QRQULCCV8,ᴳ乂ᵀ ⚜️ Maikel,4,12,0,0,0,2200,,2,264,638,Corregido - Solución estimada,#GYCU9YRG
@@ -4904,7 +4904,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4903,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#900UU80R9,Maliante olger,4,12,0,0,0,2300,,4,288,95,Corregido - Solución estimada,#GYCU9YRG
 4904,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,4,12,0,0,0,2150,,44,80,66,Corregido - Solución estimada,#GYCU9YRG
 4905,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™2,#GLPC8YQGV,ᴳ乂ᵀ ⚜️Drill,4,12,0,0,0,2200,,38,120,0,Corregido - Solución única,#GYCU9YRG
-4906,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#UVV02Q0PC,alex280301,0,4,7,11,0,400,,16,0,13,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+4906,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#UVV02Q0PC,alex280301,0,4,4,8,0,400,,16,0,13,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 4907,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#Q09UJ2UP2,MASTER K.,0,4,4,4,0,500,,10,39,0,,#GQQPPJGR
 4908,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,0,4,4,4,0,500,,23,0,0,,#GQQPPJGR
 4909,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,0,4,4,4,0,500,,18,0,0,,#GQQPPJGR
@@ -4916,20 +4916,20 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4915,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#U8G029GUQ,ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️,4,12,0,0,0,1500,,21,32,95,,#GQQPPJGR
 4916,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,4,12,0,0,0,1400,,12,120,226,,#GQQPPJGR
 4917,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#90QYJQRQ8,Diana,4,12,0,0,0,1600,,11,70,8,,#GQQPPJGR
-4918,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#V929CC8CC,esteban,4,15,7,8,0,2250,,1,0,34,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+4918,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#V929CC8CC,esteban,4,15,0,1,0,2250,,1,0,34,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 4919,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#20P2UP80UY,ᴳ乂ᵀ ⚜️ SHAKA,4,12,0,0,0,1550,,9,241,41,Corregido - Solución estimada,#GQQPPJGR
 4920,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#V9P20U8RC,kayserleandro,4,12,0,0,0,1600,,20,121,182,Corregido - Solución única,#GQQPPJGR
 4921,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#RGCL8LGJC,Alex♡Dmr,4,12,0,0,0,1600,,5,40,7,Corregido - Solución estimada,#GQQPPJGR
-4922,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#80QCQ9R9Y,JEQ,4,12,4,4,0,2100,,6,330,315,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+4922,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#80QCQ9R9Y,JEQ,4,12,0,0,0,2100,,6,330,315,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 4923,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#RPLVY0R08,rata-piola,4,12,0,0,0,1900,,8,82,24,,#GQQPPJGR
 4924,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#VLY0G9LU9,ᴳ乂ᵀ ⚜. josuexd.,0,8,4,4,0,1300,,2,192,63,,#GQQPPJGR
 4925,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#UG90QUU0P,MiniNopi,4,12,0,0,0,2000,,7,0,0,Corregido - CurrentRiverRace,#GQQPPJGR
 4926,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#V0JPP0UJR,fatima,4,12,0,0,0,2000,,15,175,230,Corregido - Solución única,#GQQPPJGR
 4927,11/07/2026,11/07/2026,Guerra,23,,1,S,5,GrupoXTerna™3,#JJ0RUP0RR,Axelgamer,0,8,4,4,0,1400,,4,160,296,,#GQQPPJGR
-4928,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,0,3,4,9,0,300,,1,0,0,Corregido - Solución única,#GG99LCJY
-4929,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,4,4,8,0,400,,4,44,11,Corregido - Solución única,#GG99LCJY
-4930,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,0,4,4,8,0,600,,8,0,0,Corregido - Solución única,#GG99LCJY
-4931,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,0,4,4,8,0,700,,2,40,70,Corregido - Solución única,#GG99LCJY
+4928,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,0,3,4,6,0,300,,1,0,0,Corregido - Solución única,#GG99LCJY
+4929,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,4,4,4,0,400,,4,44,11,Corregido - Solución única,#GG99LCJY
+4930,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,0,4,4,4,0,600,,8,0,0,Corregido - Solución única,#GG99LCJY
+4931,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,0,4,4,4,0,700,,2,40,70,Corregido - Solución única,#GG99LCJY
 4932,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Mini乂Ternas™,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,0,8,4,4,0,1000,,7,40,44,Corregido - Solución única,#GG99LCJY
 4933,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Mini乂Ternas™,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,0,8,4,4,0,1100,,5,20,22,Corregido - Solución única,#GG99LCJY
 4934,11/07/2026,11/07/2026,Guerra,23,,1,S,5,Mini乂Ternas™,#LYVJU9UJJ,fggij09,0,8,4,4,0,1200,,3,118,28,Corregido - Solución única,#GG99LCJY
@@ -4979,7 +4979,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 4978,16/07/2026,16/07/2026,Guerra,23,,2,J,10,Grupo乂Terna™,#UJUGRYY9C,ㅤᴀᴅᴍㅤϟ,4,4,0,0,0,900,,14,160,52,Corregido - Solución única,#GCRG8L00
 4979,16/07/2026,16/07/2026,Guerra,23,,2,J,10,Grupo乂Terna™,#VQCG0G09G,ᴳ乂ᵀ ⚜️ C-Ron,4,4,0,0,0,500,,16,440,421,Corregido - Solución única,#GCRG8L00
 4980,16/07/2026,16/07/2026,Guerra,23,,2,J,10,Grupo乂Terna™,#2GG8PJ8GC,ᴳ乂ᵀ ⚜️ Chistris,4,4,0,0,0,700,,37,232,324,,#GCRG8L00
-4981,16/07/2026,16/07/2026,Guerra,23,,2,J,10,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,4,4,4,4,0,500,,39,0,66,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+4981,16/07/2026,16/07/2026,Guerra,23,,2,J,10,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,4,4,0,0,0,500,,39,0,66,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 4982,16/07/2026,16/07/2026,Guerra,23,,2,J,10,Grupo乂Terna™,#2PUYLPPRG,COSCU06,3,3,1,1,0,300,,8,158,160,,#GCRG8L00
 4983,16/07/2026,16/07/2026,Guerra,23,,2,J,10,Grupo乂Terna™,#C0PGPR90U,27R.C.Lazarinos,4,4,0,0,0,800,,32,440,485,Corregido - Solución única,#GCRG8L00
 4984,16/07/2026,16/07/2026,Guerra,23,,2,J,10,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,4,0,0,0,800,,46,0,0,,#GYCU9YRG
@@ -5029,7 +5029,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5028,16/07/2026,16/07/2026,Guerra,23,,2,J,10,GrupoXTerna™2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,0,0,4,4,0,0,,50,0,0,,#GYCU9YRG
 5029,16/07/2026,16/07/2026,Guerra,23,,2,J,10,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,4,0,0,0,600,,39,176,157,Corregido - Solución única,#GYCU9YRG
 5030,16/07/2026,16/07/2026,Guerra,23,,2,J,10,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,4,4,0,0,0,900,,45,0,8,,#GYCU9YRG
-5031,16/07/2026,16/07/2026,Guerra,23,,2,J,10,GrupoXTerna™2,#PGLYYV9Q0,carloselpro,3,3,2,2,0,500,,36,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5031,16/07/2026,16/07/2026,Guerra,23,,2,J,10,GrupoXTerna™2,#PGLYYV9Q0,carloselpro,3,3,1,1,0,500,,36,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5032,16/07/2026,16/07/2026,Guerra,23,,2,J,10,GrupoXTerna™2,#CUU92GQQG,Larry god,4,4,0,0,0,700,,12,0,0,,#GYCU9YRG
 5033,16/07/2026,16/07/2026,Guerra,23,,2,J,10,GrupoXTerna™2,#LJJVQGJ,Dade ,4,4,0,0,0,900,,19,350,131,Corregido - Solución única,#GYCU9YRG
 5034,16/07/2026,16/07/2026,Guerra,23,,2,J,10,GrupoXTerna™3,#Q09UJ2UP2,MASTER K.,0,0,4,4,0,0,,10,0,0,,#GQQPPJGR
@@ -5066,7 +5066,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5065,16/07/2026,16/07/2026,Guerra,23,,2,J,10,Grupo乂Terna™,#PU2GP2LPG,JNTN,4,4,0,0,0,800,,18,40,24,,#GCRG8L00
 5066,16/07/2026,16/07/2026,Guerra,23,,2,J,10,Mini乂Ternas™,#229R0GP2YQ,messi,3,3,1,1,0,400,,8,20,4,,#GG99LCJY
 5067,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#9LCJ2JQ08,Adrian,4,4,0,4,0,550,,31,200,284,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
-5068,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#G2Q9UYY89,✨✞₳Ⱡ€Ӿ✞✨♣️YV♠️,4,4,4,8,0,550,,30,220,65,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+5068,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#G2Q9UYY89,✨✞₳Ⱡ€Ӿ✞✨♣️YV♠️,4,4,0,4,0,550,,30,220,65,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5069,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,4,8,0,0,1,875,,50,0,0,Corregido - Solución estimada,#GCRG8L00
 5070,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#2PUYLPPRG,COSCU06,3,6,1,2,0,600,,1,160,160,Corregido - Solución estimada,#GCRG8L00
 5071,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#92YRUUV9P,ᴳ乂ᵀ ⚜️ iJonahjk,4,8,0,0,0,900,,41,240,80,Corregido - Solución única,#GCRG8L00
@@ -5075,7 +5075,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5074,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#8VU0Y9LJ0,Yisus Craiz,4,8,0,0,0,1000,,42,0,0,Corregido - CurrentRiverRace,#GCRG8L00
 5075,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#90U80RR2Y,ᴳ乂ᵀ ⚜️Cristofer,4,8,0,0,0,900,,4,0,44,Corregido - Solución estimada,#GCRG8L00
 5076,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#VQCG0G09G,ᴳ乂ᵀ ⚜️ C-Ron,4,8,0,0,0,1000,,19,440,421,Corregido - Solución estimada,#GCRG8L00
-5077,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,4,8,0,4,0,1300,,40,0,88,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+5077,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,4,8,0,0,0,1300,,40,0,88,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5078,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#YGL2QV8LG,ᴳ乂ᵀ ⚜ T3RR1BL3!,4,8,0,0,0,950,,37,160,195,Corregido - Solución estimada,#GCRG8L00
 5079,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),4,8,0,0,0,950,,24,320,106,Corregido - Solución estimada,#GCRG8L00
 5080,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#GVVPJ8CLG,JP Titan :),4,8,0,0,0,950,,13,240,67,Corregido - Solución estimada,#GCRG8L00
@@ -5084,12 +5084,12 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5083,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#VR92C8LYU,ᴳ乂ᵀ ⚜️GONCHA,4,8,0,0,0,1050,,34,0,272,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5084,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#Q98RGPGCU,ᴳ乂ᵀ ⚜️ Senju,4,8,0,0,0,1200,,49,200,380,Corregido - CurrentRiverRace,#GCRG8L00
 5085,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#J8V9PQJP9,ilmiatraxxp,3,7,1,1,0,900,,45,80,0,Corregido - Solución estimada,#GCRG8L00
-5086,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#2CJJ9JLLQ,ᴳ乂ᵀ ⚜️ CASTRO,4,8,4,4,0,1400,,5,0,964,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+5086,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#2CJJ9JLLQ,ᴳ乂ᵀ ⚜️ CASTRO,4,8,0,0,0,1400,,5,0,964,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5087,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#8Q92GV08U,Dxniel,4,8,0,0,0,1300,,9,264,102,Corregido - CurrentRiverRace,#GCRG8L00
 5088,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#QG2PP89G2,Har,4,8,0,0,0,1000,,11,200,16,Corregido - Solución estimada,#GCRG8L00
 5089,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#228VUG2RU,†✧▯オFazeteッ▯✧†,4,8,0,0,0,1150,,8,40,11,Corregido - Solución estimada,#GCRG8L00
 5090,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#8J9PL92GU,Marín,4,8,0,0,0,1050,,25,280,46,Corregido - Solución estimada,#GCRG8L00
-5091,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#CCQVL0029,ᴳ乂ᵀ ⚜️Cr7亗,4,8,4,4,0,1150,,39,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+5091,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#CCQVL0029,ᴳ乂ᵀ ⚜️Cr7亗,4,8,0,0,0,1150,,39,0,0,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5092,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#2LCJLUC9J,DANIEL,4,8,0,0,0,1050,,29,40,32,Corregido - Solución estimada,#GCRG8L00
 5093,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#QR8JGLC9Q,ᴳ乂ᵀ⚜️Bloodshot,4,8,0,0,0,1100,,48,120,152,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5094,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#88RV0L8V2,☆ ᴍ ᴀ ʏ ᴄ ᴏ ʟ ☆,0,4,4,4,0,650,,14,200,34,,#GCRG8L00
@@ -5110,13 +5110,13 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5109,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#CUQG9CJUG,ᴳ乂ᵀ ⚜️Marzz,4,8,0,0,0,1500,,32,160,150,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5110,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#RGQUGU0CU,ᴳ乂ᵀ ⚜️pedro289,4,8,0,0,0,1450,,44,0,10,Corregido - CurrentRiverRace,#GCRG8L00
 5111,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#JV08RQU2Y,ᴳ乂ᵀ ⚜️ DAVID ★,4,8,0,0,0,1300,,20,120,232,Corregido - Solución estimada,#GCRG8L00
-5112,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#J9GJC900J,ʜᴀʀᴜ,4,8,4,4,0,1700,,16,40,40,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+5112,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#J9GJC900J,ʜᴀʀᴜ,4,8,0,0,0,1700,,16,40,40,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5113,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#8C0PQ9PR9,Sieh,3,7,1,1,0,1300,,7,390,282,Corregido - Solución estimada,#GCRG8L00
 5114,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#2GYUC0QLV,miguel,4,8,0,0,0,1450,,27,240,198,Corregido - Solución estimada,#GCRG8L00
 5115,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Grupo乂Terna™,#UJUGRYY9C,ㅤᴀᴅᴍㅤϟ,4,8,0,0,0,1500,,18,160,52,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5116,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,0,0,4,8,0,0,,49,0,0,,#GYCU9YRG
-5117,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#LPGG98PLL,chris da amor,4,4,4,8,0,700,,19,160,138,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-5118,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#P09CPYUU8,ROMPE CORAZONES,4,4,4,8,0,650,,8,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5117,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#LPGG98PLL,chris da amor,4,4,0,4,0,700,,19,160,138,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5118,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#P09CPYUU8,ROMPE CORAZONES,4,4,0,4,0,650,,8,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5119,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,0,0,4,8,0,0,,44,40,60,,#GYCU9YRG
 5120,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,0,0,4,8,0,0,,50,0,0,,#GYCU9YRG
 5121,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#UU02UUQGY,dark zz,0,2,4,6,0,200,,16,0,0,,#GYCU9YRG
@@ -5124,15 +5124,15 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5123,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#9G0RQR2GV,frank -.-,4,8,0,0,0,950,,27,208,120,Corregido - Solución estimada,#GYCU9YRG
 5124,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#CV9U8PU8G,DAVII BOYX,4,8,0,0,0,1000,,1,0,179,Corregido - Solución estimada,#GYCU9YRG
 5125,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#L28JYY2J,Gamer,4,8,0,0,0,1000,,35,150,137,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-5126,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#202PRG8QU,miner90000,4,8,4,4,0,1000,,15,212,84,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-5127,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#JGCU09PJ8,BICHOTE,4,7,2,3,0,1200,,33,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5126,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#202PRG8QU,miner90000,4,8,0,0,0,1000,,15,212,84,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5127,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#JGCU09PJ8,BICHOTE,4,7,0,1,0,1200,,33,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5128,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#22C090RVJ,反覆分Mc-->WiLL,4,8,0,0,0,900,,21,80,152,Corregido - Solución estimada,#GYCU9YRG
 5129,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#C8Q0C88UL,ᴳ乂ᵀ ⚜️S C Λ R Ξ,4,8,0,0,0,1200,,22,0,0,Corregido - Solución única,#GYCU9YRG
-5130,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#200Y80CU29,KElito,4,8,4,4,0,1150,,30,0,422,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-5131,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#CPYUPLLPC,henry,4,8,4,4,0,1300,,18,120,16,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5130,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#200Y80CU29,KElito,4,8,0,0,0,1150,,30,0,422,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5131,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#CPYUPLLPC,henry,4,8,0,0,0,1300,,18,120,16,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5132,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#YG8U8Q2PC,skap,4,8,0,0,0,900,,32,100,89,Corregido - Solución estimada,#GYCU9YRG
 5133,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#900UU80R9,Maliante olger,4,8,0,0,0,1300,,17,216,205,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-5134,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#PGLYYV9Q0,carloselpro,4,7,3,5,0,1200,,36,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5134,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#PGLYYV9Q0,carloselpro,4,7,0,1,0,1200,,36,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5135,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#GLPC8YQGV,ᴳ乂ᵀ ⚜️Drill,4,8,0,0,0,1150,,37,0,0,Corregido - Solución estimada,#GYCU9YRG
 5136,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,4,8,0,0,0,1000,,40,200,0,Corregido - Solución estimada,#GYCU9YRG
 5137,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#U9L82V28P,Dajorami,4,8,0,0,0,1000,,24,240,112,Corregido - Solución estimada,#GYCU9YRG
@@ -5145,14 +5145,14 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5144,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#JR9J0JCQ9,LUCKY,4,8,0,0,0,1450,,34,50,0,Corregido - Solución estimada,#GYCU9YRG
 5145,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#CYR2PVLLY,carepoto:3,4,8,0,0,0,1150,,23,120,250,Corregido - CurrentRiverRace,#GYCU9YRG
 5146,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,4,8,0,0,0,1250,,48,40,0,Corregido - Solución estimada,#GYCU9YRG
-5147,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#LRR2RGCCV,gabriel18,4,7,4,5,0,1300,,6,240,193,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5147,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#LRR2RGCCV,gabriel18,4,7,0,1,0,1300,,6,240,193,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5148,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#9U9QUL02R,j y j,4,8,0,0,0,1100,,20,290,16,Corregido - Solución estimada,#GYCU9YRG
 5149,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#VY0UJ82PV,Manamunacoc,4,8,0,0,0,1300,,13,200,76,Corregido - CurrentRiverRace,#GYCU9YRG
 5150,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#C0YVCRPY2,ÐɑʀҟƑîʀɛ,0,4,4,4,0,700,,5,0,498,,#GYCU9YRG
 5151,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#YLYGC9Y9C,TOTTI,4,8,0,0,0,1200,,43,200,193,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5152,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#C8GPVLVJL,~$VNThONY$~,4,8,0,0,0,1300,,2,200,62,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5153,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#92V9L92GV,JeaPro18,4,8,0,0,0,1350,,38,184,169,Corregido - Solución única,#GYCU9YRG
-5154,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#CUU92GQQG,Larry god,4,8,4,4,0,900,,14,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5154,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#CUU92GQQG,Larry god,4,8,0,0,0,900,,14,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5155,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,8,0,0,0,1400,,46,0,0,Corregido - Solución estimada,#GYCU9YRG
 5156,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#UQJU0JRG2,ivzn,4,8,0,0,0,1400,,11,0,188,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5157,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™2,#UR902UV8L,hola,4,8,0,0,0,1200,,42,0,14,Corregido - Solución estimada,#GYCU9YRG
@@ -5177,15 +5177,15 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5176,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#UVV02Q0PC,alex280301,0,4,4,4,0,500,,16,0,0,,#GQQPPJGR
 5177,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#20P2UP80UY,ᴳ乂ᵀ ⚜️ SHAKA,4,8,0,0,0,1300,,9,120,36,Corregido - Solución única,#GQQPPJGR
 5178,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#RGCL8LGJC,Alex♡Dmr,4,8,0,0,0,900,,4,0,0,Corregido - Solución estimada,#GQQPPJGR
-5179,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#2Q8GJVR8V,arturo,4,8,4,4,0,950,,14,0,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+5179,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#2Q8GJVR8V,arturo,4,8,0,0,0,950,,14,0,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 5180,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#V929CC8CC,esteban,4,8,0,0,0,1200,,2,0,0,Corregido - CurrentRiverRace,#GQQPPJGR
 5181,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#V0JPP0UJR,fatima,4,8,0,0,0,1000,,15,86,156,Corregido - Solución estimada,#GQQPPJGR
 5182,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#90QYJQRQ8,Diana,1,5,3,3,0,700,,11,0,58,Corregido - Solución estimada,#GQQPPJGR
 5183,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#VLY0G9LU9,ᴳ乂ᵀ ⚜. josuexd.,4,8,0,0,0,1200,,1,156,74,Corregido - Solución única,#GQQPPJGR
-5184,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#JVVG9YUG0,Fiorela.,2,6,4,4,0,850,,19,40,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
-5185,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#80QCQ9R9Y,JEQ,4,8,4,4,0,1400,,6,180,178,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+5184,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#JVVG9YUG0,Fiorela.,2,6,2,2,0,850,,19,40,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+5185,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#80QCQ9R9Y,JEQ,4,8,0,0,0,1400,,6,180,178,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 5186,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#V9P20U8RC,kayserleandro,4,8,0,0,0,1300,,20,62,118,Corregido - Solución única,#GQQPPJGR
-5187,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#UG90QUU0P,MiniNopi,4,8,4,4,0,1300,,7,0,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+5187,17/07/2026,17/07/2026,Guerra,23,,2,V,11,GrupoXTerna™3,#UG90QUU0P,MiniNopi,4,8,0,0,0,1300,,7,0,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 5188,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Mini乂Ternas™,#LYVJU9UJJ,fggij09,0,0,4,8,0,0,,3,0,0,,#GG99LCJY
 5189,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,0,0,4,8,0,0,,1,0,0,,#GG99LCJY
 5190,17/07/2026,17/07/2026,Guerra,23,,2,V,11,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,0,4,8,0,0,,4,20,0,,#GG99LCJY
@@ -5199,26 +5199,26 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5198,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,0,0,4,4,0,0,,49,0,0,,#GCRG8L00
 5199,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#9LCJ2JQ08,Adrian,4,8,0,4,0,950,,32,280,447,Corregido - Solución estimada,#GCRG8L00
 5200,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#2PUYLPPRG,COSCU06,4,10,0,2,0,1400,,11,200,182,Corregido - Solución estimada,#GCRG8L00
-5201,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#PU2GP2LPG,JNTN,4,8,4,8,0,1500,,1,200,270,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+5201,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#PU2GP2LPG,JNTN,4,8,0,4,0,1500,,1,200,270,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5202,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#80LPLV92P,Ultra insticto,4,12,0,0,0,1300,,28,0,132,Corregido - Solución única,#GCRG8L00
 5203,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#88RV0L8V2,☆ ᴍ ᴀ ʏ ᴄ ᴏ ʟ ☆,8,12,0,4,0,1950,,31,240,50,,#GCRG8L00
 5204,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#Q29Y8CR2,kenpachi,4,12,0,0,0,1800,,37,440,248,Corregido - Solución estimada,#GCRG8L00
 5205,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#JGGLGVCGU,ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ,4,12,0,0,0,2050,,6,0,16,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5206,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,4,12,0,0,0,1850,,3,312,209,Corregido - Solución estimada,#GCRG8L00
-5207,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,4,8,0,4,0,1300,,41,0,108,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+5207,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,4,8,0,0,0,1300,,41,0,108,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5208,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#GY0GJ09C0,ᴳ乂ᵀ ⚜️ ⓈⒺⒷⒶⓈ⚡,4,12,0,0,0,2000,,17,80,180,Corregido - Solución estimada,#GCRG8L00
 5209,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#J8V9PQJP9,ilmiatraxxp,4,11,0,1,0,1400,,46,160,16,Corregido - Solución estimada,#GCRG8L00
 5210,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#JV08RQU2Y,ᴳ乂ᵀ ⚜️ DAVID ★,4,12,0,0,0,2200,,12,200,319,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5211,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#92YRUUV9P,ᴳ乂ᵀ ⚜️ iJonahjk,4,12,0,0,0,1400,,42,360,118,Corregido - CurrentRiverRace,#GCRG8L00
 5212,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#LJ0CYCG9V,ᴳ乂ᵀ ⚜️CERFIRE,4,12,0,0,0,1900,,47,120,122,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5213,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#C0PGPR90U,27R.C.Lazarinos,4,12,0,0,0,2150,,35,640,595,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
-5214,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#G2Q9UYY89,✨✞₳Ⱡ€Ӿ✞✨♣️YV♠️,8,8,0,8,0,1450,,4,340,93,,#GCRG8L00
+5214,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#G2Q9UYY89,✨✞₳Ⱡ€Ӿ✞✨♣️YV♠️,8,8,0,4,0,1450,,4,340,93,,#GCRG8L00
 5215,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#8J9PL92GU,Marín,4,12,0,0,0,1550,,22,400,64,Corregido - CurrentRiverRace,#GCRG8L00
 5216,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#QG2PP89G2,Har,4,12,0,0,0,1550,,15,320,24,Corregido - Solución estimada,#GCRG8L00
 5217,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#8VU0Y9LJ0,Yisus Craiz,4,12,0,0,0,1600,,43,40,20,Corregido - CurrentRiverRace,#GCRG8L00
 5218,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#298JJ9RUL,Sebas JAS,4,12,0,0,0,1700,,25,200,398,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5219,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#V2RUQ9LUG,ᴳ乂ᵀ ⚜️yanx_zz,4,10,0,2,0,1700,,36,0,114,Corregido - Solución estimada,#GCRG8L00
-5220,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#J9GJC900J,ʜᴀʀᴜ,4,12,4,8,0,2600,,33,40,40,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+5220,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#J9GJC900J,ʜᴀʀᴜ,4,12,0,0,0,2600,,33,40,40,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5221,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#90U80RR2Y,ᴳ乂ᵀ ⚜️Cristofer,4,12,0,0,0,1700,,26,0,44,Corregido - Solución estimada,#GCRG8L00
 5222,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#YGL2QV8LG,ᴳ乂ᵀ ⚜ T3RR1BL3!,4,12,0,0,0,1750,,38,240,301,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5223,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),4,12,0,0,0,1750,,18,440,158,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
@@ -5235,8 +5235,8 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5234,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#8C0PQ9PR9,Sieh,4,11,0,1,0,2200,,7,510,378,Corregido - Solución estimada,#GCRG8L00
 5235,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#QR8JGLC9Q,ᴳ乂ᵀ⚜️Bloodshot,4,12,0,0,0,2000,,48,200,229,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 5236,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#228VUG2RU,†✧▯オFazeteッ▯✧†,4,12,0,0,0,2000,,13,80,83,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
-5237,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#CCQVL0029,ᴳ乂ᵀ ⚜️Cr7亗,4,12,0,4,0,2050,,40,0,20,,#GCRG8L00
-5238,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#2CJJ9JLLQ,ᴳ乂ᵀ ⚜️ CASTRO,4,12,0,4,0,2050,,14,0,1334,,#GCRG8L00
+5237,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#CCQVL0029,ᴳ乂ᵀ ⚜️Cr7亗,4,12,0,0,0,2050,,40,0,20,,#GCRG8L00
+5238,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#2CJJ9JLLQ,ᴳ乂ᵀ ⚜️ CASTRO,4,12,0,0,0,2050,,14,0,1334,,#GCRG8L00
 5239,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#20YVVYCU2,ᴳ乂ᵀ ⚜ Richard,4,12,0,0,0,2050,,27,0,0,Corregido - CurrentRiverRace,#GCRG8L00
 5240,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#RGQUGU0CU,ᴳ乂ᵀ ⚜️pedro289,4,12,0,0,0,2100,,44,0,139,Corregido - CurrentRiverRace,#GCRG8L00
 5241,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Grupo乂Terna™,#CGGGR82PJ,ᴳ乂ᵀ N1V1C,4,12,0,0,0,2150,,2,320,366,Corregido - CurrentRiverRace,#GCRG8L00
@@ -5248,15 +5248,15 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5247,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,4,4,0,8,0,500,,44,40,60,Corregido - Solución única,#GYCU9YRG
 5248,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,0,0,4,12,0,0,,50,0,0,,#GYCU9YRG
 5249,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#2LR9L9208,renz ×_×,0,1,4,4,0,200,,26,0,0,,#GYCU9YRG
-5250,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#P09CPYUU8,ROMPE CORAZONES,0,4,4,12,0,650,,17,80,144,,#GYCU9YRG
+5250,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#P09CPYUU8,ROMPE CORAZONES,0,4,4,8,0,650,,17,80,144,,#GYCU9YRG
 5251,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#UJYP2GYCY,Kay Wills mcs,4,4,0,0,0,700,,11,0,191,,#GYCU9YRG
-5252,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#LPGG98PLL,chris da amor,0,4,4,12,0,700,,15,272,428,,#GYCU9YRG
+5252,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#LPGG98PLL,chris da amor,0,4,4,8,0,700,,15,272,428,,#GYCU9YRG
 5253,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#22C090RVJ,反覆分Mc-->WiLL,4,12,0,0,0,1400,,22,80,230,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5254,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#YG8U8Q2PC,skap,4,12,0,0,0,1300,,33,180,235,Corregido - Solución estimada,#GYCU9YRG
-5255,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#202PRG8QU,miner90000,0,8,4,8,0,1000,,20,292,116,,#GYCU9YRG
+5255,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#202PRG8QU,miner90000,0,8,4,4,0,1000,,20,292,116,,#GYCU9YRG
 5256,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,4,12,0,0,0,1600,,40,240,0,Corregido - Solución estimada,#GYCU9YRG
-5257,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#200Y80CU29,KElito,0,8,4,8,0,1150,,31,0,634,,#GYCU9YRG
-5258,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#PGLYYV9Q0,carloselpro,4,7,0,5,0,1200,,35,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5257,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#200Y80CU29,KElito,0,8,4,4,0,1150,,31,0,634,,#GYCU9YRG
+5258,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#PGLYYV9Q0,carloselpro,4,7,0,1,0,1200,,35,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5259,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#UR902UV8L,hola,4,12,0,0,0,1800,,42,0,14,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5260,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#U9L82V28P,Dajorami,4,12,0,0,0,1800,,25,360,130,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5261,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#Q9J8ULV0,AlexX,4,12,0,0,0,1900,,3,272,151,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
@@ -5264,9 +5264,9 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5263,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,4,12,0,0,0,2100,,30,0,58,Corregido - CurrentRiverRace,#GYCU9YRG
 5264,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,4,12,0,0,0,2250,,45,40,8,Corregido - Solución estimada,#GYCU9YRG
 5265,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,12,0,0,0,2300,,46,0,0,Corregido - Solución estimada,#GYCU9YRG
-5266,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#JGCU09PJ8,BICHOTE,2,9,2,5,0,1500,,32,0,0,,#GYCU9YRG
+5266,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#JGCU09PJ8,BICHOTE,2,9,2,3,0,1500,,32,0,0,,#GYCU9YRG
 5267,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#C0YVCRPY2,ÐɑʀҟƑîʀɛ,4,8,0,4,0,1500,,5,0,644,Corregido - Solución única,#GYCU9YRG
-5268,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#LRR2RGCCV,gabriel18,11,14,0,5,0,2900,,8,384,276,,#GYCU9YRG
+5268,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#LRR2RGCCV,gabriel18,11,14,0,1,0,2900,,8,384,276,,#GYCU9YRG
 5269,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#CYR2PVLLY,carepoto:3,4,12,0,0,0,1950,,23,160,316,Corregido - CurrentRiverRace,#GYCU9YRG
 5270,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#C8Q0C88UL,ᴳ乂ᵀ ⚜️S C Λ R Ξ,4,12,0,0,0,1700,,24,0,0,Corregido - CurrentRiverRace,#GYCU9YRG
 5271,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,12,0,0,0,1700,,39,296,276,Corregido - Solución estimada,#GYCU9YRG
@@ -5274,8 +5274,8 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5273,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#9U9QUL02R,j y j,4,12,0,0,0,1800,,14,410,25,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5274,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#CV9U8PU8G,DAVII BOYX,4,12,0,0,0,1900,,9,0,215,Corregido - Solución estimada,#GYCU9YRG
 5275,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#L28JYY2J,Gamer,4,12,0,0,1,1800,,36,230,169,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-5276,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#CPYUPLLPC,henry,4,12,0,4,0,1800,,19,200,24,,#GYCU9YRG
-5277,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#CUU92GQQG,Larry god,7,11,0,4,0,1800,,13,0,0,,#GYCU9YRG
+5276,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#CPYUPLLPC,henry,4,12,0,0,0,1800,,19,200,24,,#GYCU9YRG
+5277,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#CUU92GQQG,Larry god,7,11,0,0,0,1800,,13,0,0,,#GYCU9YRG
 5278,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#VY0UJ82PV,Manamunacoc,4,12,0,0,0,1900,,2,320,151,Corregido - CurrentRiverRace,#GYCU9YRG
 5279,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#C289JPLQG,[ TORO ],4,12,0,0,0,1900,,18,0,0,Corregido - Solución estimada,#GYCU9YRG
 5280,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#UYJCQQ028,cristofer adt,4,12,0,0,0,1900,,26,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
@@ -5302,19 +5302,19 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5301,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,4,6,0,6,0,700,,12,0,0,Corregido - Solución única,#GQQPPJGR
 5302,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#UVV02Q0PC,alex280301,0,4,4,8,0,500,,16,0,0,,#GQQPPJGR
 5303,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#Q09UJ2UP2,MASTER K.,4,4,0,8,0,550,,10,0,0,,#GQQPPJGR
-5304,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#JVVG9YUG0,Fiorela.,0,6,4,8,0,850,,19,40,0,,#GQQPPJGR
+5304,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#JVVG9YUG0,Fiorela.,0,6,4,6,0,850,,19,40,0,,#GQQPPJGR
 5305,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#RPLVY0R08,rata-piola,4,8,0,4,0,1300,,8,37,0,Corregido - Solución estimada,#GQQPPJGR
 5306,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,0,8,4,4,0,1000,,17,80,0,Corregido - Solución única,#GQQPPJGR
 5307,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#VLY0G9LU9,ᴳ乂ᵀ ⚜. josuexd.,0,8,4,4,0,1200,,1,196,74,Corregido - Solución única,#GQQPPJGR
 5308,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#V0UJ0RPVP,MassimoBabyOhh,4,12,0,0,0,1300,,18,0,97,Corregido - Solución estimada,#GQQPPJGR
-5309,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#UG90QUU0P,MiniNopi,4,8,0,4,0,1300,,7,0,0,,#GQQPPJGR
+5309,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#UG90QUU0P,MiniNopi,4,8,0,0,0,1300,,7,0,0,,#GQQPPJGR
 5310,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#90QYJQRQ8,Diana,4,9,0,3,0,1300,,11,32,58,Corregido - Solución estimada,#GQQPPJGR
 5311,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#20P2UP80UY,ᴳ乂ᵀ ⚜️ SHAKA,0,8,4,4,0,1300,,9,136,36,Corregido - Solución única,#GQQPPJGR
 5312,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#V9P20U8RC,kayserleandro,3,11,1,1,0,1600,,19,103,152,Corregido - Solución estimada,#GQQPPJGR
 5313,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#RGCL8LGJC,Alex♡Dmr,4,12,0,0,0,1600,,4,0,0,Corregido - Solución estimada,#GQQPPJGR
-5314,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#V0JPP0UJR,fatima,3,11,3,3,0,1700,,15,135,180,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
-5315,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#2Q8GJVR8V,arturo,4,12,0,4,0,1850,,14,0,0,,#GQQPPJGR
-5316,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#80QCQ9R9Y,JEQ,4,12,0,4,0,1900,,6,250,234,,#GQQPPJGR
+5314,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#V0JPP0UJR,fatima,3,11,1,1,0,1700,,15,135,180,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+5315,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#2Q8GJVR8V,arturo,4,12,0,0,0,1850,,14,0,0,,#GQQPPJGR
+5316,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#80QCQ9R9Y,JEQ,4,12,0,0,0,1900,,6,250,234,,#GQQPPJGR
 5317,18/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™3,#V929CC8CC,esteban,4,12,0,0,0,2000,,2,0,0,Corregido - CurrentRiverRace,#GQQPPJGR
 5318,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#LYVJU9UJJ,fggij09,5,5,0,8,0,600,,3,0,0,,#GG99LCJY
 5319,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,0,0,4,12,0,0,,1,0,0,,#GG99LCJY
@@ -5323,14 +5323,14 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5322,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#VCLRVUCLG,manzanita,0,0,4,12,0,0,,13,0,0,,#GG99LCJY
 5323,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,0,4,12,0,0,,4,32,0,,#GG99LCJY
 5324,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#VRVJCPR2L,dxrl,0,0,4,4,0,0,,14,0,0,,#GG99LCJY
-5325,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#20VJLLRP0U,monchi,1,2,3,3,0,300,,5,10,4,,#GG99LCJY
+5325,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#20VJLLRP0U,monchi,1,2,3,6,0,300,,5,10,4,,#GG99LCJY
 5326,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,0,3,4,9,0,400,,7,0,18,,#GG99LCJY
 5327,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,0,4,4,8,0,500,,2,0,0,,#GG99LCJY
 5328,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,0,4,4,8,0,500,,10,0,14,,#GG99LCJY
 5329,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#V0J90R2V2,ᴳ乂ᵀ ⚜️ Αντρέ¹⁸,0,4,4,8,0,700,,9,0,4,,#GG99LCJY
 5330,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#229R0GP2YQ,messi,4,7,0,5,0,900,,6,20,8,,#GG99LCJY
 5331,18/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,0,5,4,7,0,1000,,8,0,14,Corregido - Solución única,#GG99LCJY
-5332,19/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#98CRPUVUP,DONFAMA ^_^,4,4,4,4,0,700,,21,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5332,19/07/2026,18/07/2026,Guerra,23,,2,S,12,GrupoXTerna™2,#98CRPUVUP,DONFAMA ^_^,4,4,0,0,0,700,,21,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5333,19/07/2026,18/07/2026,Guerra,23,,2,S,12,Mini乂Ternas™,#229R89VCV9,el tronco FC,0,0,4,4,0,0,,11,0,0,,#GG99LCJY
 5334,23/07/2026,23/07/2026,Guerra,23,,3,J,17,Grupo乂Terna™,#JGGLGVCGU,ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ,4,4,0,0,0,400,,21,0,8,Corregido - Solución estimada,#GCRG8L00
 5335,23/07/2026,23/07/2026,Guerra,23,,3,J,17,Grupo乂Terna™,#PUUPJ9CYR,ALISTA el QLO,1,1,3,3,0,200,,7,384,512,,#GCRG8L00
@@ -5395,7 +5395,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5394,23/07/2026,23/07/2026,Guerra,23,,3,J,17,GrupoXTerna™2,#9JCG0ULPL,mataratas,0,0,4,4,0,0,,41,0,0,,#GYCU9YRG
 5395,23/07/2026,23/07/2026,Guerra,23,,3,J,17,GrupoXTerna™2,#PGLYYV9Q0,carloselpro,4,4,0,0,0,400,,31,0,0,Corregido - Solución estimada,#GYCU9YRG
 5396,23/07/2026,23/07/2026,Guerra,23,,3,J,17,GrupoXTerna™2,#RGCL8LGJC,Alex♡Dmr,4,4,0,0,0,700,,40,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-5397,23/07/2026,23/07/2026,Guerra,23,,3,J,17,GrupoXTerna™2,#JC99L0Y8P,MADNESS,2,2,3,3,0,200,,43,184,274,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5397,23/07/2026,23/07/2026,Guerra,23,,3,J,17,GrupoXTerna™2,#JC99L0Y8P,MADNESS,2,2,2,2,0,200,,43,184,274,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5398,23/07/2026,23/07/2026,Guerra,23,,3,J,17,GrupoXTerna™2,#LVVP82CU9,ᴳ乂ᵀ ⚜️Angel R.,4,4,0,0,0,600,,5,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5399,23/07/2026,23/07/2026,Guerra,23,,3,J,17,GrupoXTerna™2,#J2JJ8LGV9,TUVILOL,4,4,0,0,0,600,,29,224,90,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5400,23/07/2026,23/07/2026,Guerra,23,,3,J,17,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,15,15,0,0,0,2250,,36,0,0,,#GYCU9YRG
@@ -5468,7 +5468,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5467,23/07/2026,23/07/2026,Guerra,23,,3,J,17,Mini乂Ternas™,#20PGGU909G,Naomi,0,0,4,4,0,0,,20,0,0,,#GG99LCJY
 5468,23/07/2026,23/07/2026,Guerra,23,,3,J,17,Mini乂Ternas™,#20RL0C89UJ,Eleidydfv,0,0,4,4,0,0,,8,124,24,,#GG99LCJY
 5469,23/07/2026,23/07/2026,Guerra,23,,3,J,17,Mini乂Ternas™,#VCLRVUCLG,¡momazos pedro!,2,2,2,2,2,150,,16,50,32,,#GG99LCJY
-5470,23/07/2026,23/07/2026,Guerra,23,,3,J,17,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,3,3,2,2,0,600,,10,50,54,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+5470,23/07/2026,23/07/2026,Guerra,23,,3,J,17,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,3,3,1,1,0,600,,10,50,54,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
 5471,23/07/2026,23/07/2026,Guerra,23,,3,J,17,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,4,4,0,0,0,800,,6,21,0,,#GG99LCJY
 5472,29/07/2026,29/07/2026,Entrenamiento,23,,4,X,23,Grupo乂Terna™,#JGGLGVCGU,ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ,0,0,,,0,0,,21,0,0,,#GCRG8L00
 5473,29/07/2026,29/07/2026,Entrenamiento,23,,4,X,23,Grupo乂Terna™,#GRPYUV8R9,tu ex,0,0,,,0,0,,17,200,84,,#GCRG8L00
@@ -5790,7 +5790,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5789,30/07/2026,30/07/2026,Guerra,23,,4,J,24,Mini乂Ternas™,#VCJULQ09P,Dante,0,0,4,4,0,0,,30,0,0,,#GG99LCJY
 5790,30/07/2026,30/07/2026,Guerra,23,,4,J,24,Mini乂Ternas™,#UJUC89CVJ,DarkSHADOW,0,0,4,4,0,0,,42,0,0,,#GG99LCJY
 5791,30/07/2026,30/07/2026,Guerra,23,,4,J,24,Mini乂Ternas™,#V0J90R2V2,ᴳ乂ᵀ ⚜️ Αντρέ¹⁸,0,0,4,4,0,0,,27,20,52,,#GG99LCJY
-5792,30/07/2026,30/07/2026,Guerra,23,,4,J,24,Mini乂Ternas™,#VCGGRQY8Q,RODRÍGUEZ 666,3,3,4,4,0,450,,21,20,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+5792,30/07/2026,30/07/2026,Guerra,23,,4,J,24,Mini乂Ternas™,#VCGGRQY8Q,RODRÍGUEZ 666,3,3,1,1,0,450,,21,20,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
 5793,30/07/2026,30/07/2026,Guerra,23,,4,J,24,Mini乂Ternas™,#V8CV0Q9C0,"""*THIAGO ©®L",0,0,4,4,0,0,,3,0,0,,#GG99LCJY
 5794,30/07/2026,30/07/2026,Guerra,23,,4,J,24,Mini乂Ternas™,#PUPUJUJCU,lenn4321,0,0,4,4,0,0,,2,124,88,,#GG99LCJY
 5795,30/07/2026,30/07/2026,Guerra,23,,4,J,24,Mini乂Ternas™,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,0,0,4,4,0,0,,28,0,0,,#GG99LCJY
@@ -5809,7 +5809,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5808,31/07/2026,30/07/2026,Guerra,23,,4,J,24,GrupoXTerna™2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,4,4,0,0,0,800,,48,10,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5809,31/07/2026,30/07/2026,Guerra,23,,4,J,24,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,4,0,0,0,400,,47,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5810,31/07/2026,30/07/2026,Guerra,23,,4,J,24,GrupoXTerna™2,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,4,0,0,0,600,,38,0,0,,#GYCU9YRG
-5811,31/07/2026,30/07/2026,Guerra,23,,4,J,24,GrupoXTerna™2,#JLU999JRU,RASHFORD,4,4,3,3,0,400,,48,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+5811,31/07/2026,30/07/2026,Guerra,23,,4,J,24,GrupoXTerna™2,#JLU999JRU,RASHFORD,4,4,0,0,0,400,,48,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5812,31/07/2026,30/07/2026,Guerra,23,,4,J,24,GrupoXTerna™2,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,0,0,0,500,,41,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 5813,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Grupo乂Terna™,#VR92C8LYU,ᴳ乂ᵀ ⚜️GONCHA,4,7,0,1,0,1100,,33,0,574,,#GCRG8L00
 5814,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Grupo乂Terna™,#80LPLV92P,Ultra insticto,4,8,0,0,0,900,,10,0,172,,#GCRG8L00
@@ -5934,7 +5934,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5933,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#20JCY8RUP9,WAZA999,0,0,4,8,0,0,,42,0,0,,#GG99LCJY
 5934,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,2,2,2,6,0,300,,25,0,24,Corregido - Solución única,#GG99LCJY
 5935,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#20Y0RQ9LJL,Rin2.0,0,0,4,8,0,0,,40,0,0,,#GG99LCJY
-5936,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#202LLCYPRC,lufty,2,2,4,8,0,200,,38,30,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+5936,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#202LLCYPRC,lufty,2,2,2,6,0,200,,38,30,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
 5937,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,0,0,4,8,0,0,,10,0,39,,#GG99LCJY
 5938,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#20RQ8U9VPC,LEVIATAN,0,0,4,8,0,0,,17,130,49,,#GG99LCJY
 5939,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#V8R88QJYG,percy,0,0,4,8,0,0,,30,0,0,,#GG99LCJY
@@ -5974,7 +5974,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 5973,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#VJ0LJCU2P,kate_stph,0,0,4,8,0,0,,46,0,0,,#GG99LCJY
 5974,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#VJ00CCC0L,bur,0,0,4,8,0,0,,35,0,0,,#GG99LCJY
 5975,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,4,6,0,2,0,900,,21,20,55,Corregido - Solución única,#GG99LCJY
-5976,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#VCGGRQY8Q,RODRÍGUEZ 666,0,3,4,8,0,450,,18,50,38,,#GG99LCJY
+5976,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#VCGGRQY8Q,RODRÍGUEZ 666,0,3,4,5,0,450,,18,50,38,,#GG99LCJY
 5977,31/07/2026,31/07/2026,Guerra,23,,4,V,25,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,4,4,4,0,800,,12,100,52,,#GG99LCJY
 5978,31/07/2026,31/07/2026,Guerra,23,,4,V,25,GrupoXTerna™2,#J22Q2292P,fabian69,2,2,2,2,0,300,,34,0,0,,#GYCU9YRG
 5979,31/07/2026,31/07/2026,Guerra,23,,4,V,25,GrupoXTerna™2,#RY9RJVLR8,⚡Juanpe⚡,4,4,0,0,0,400,,27,40,10,,#GYCU9YRG
@@ -6133,12 +6133,12 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6132,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#PUPUJUJCU,lenn4321,0,0,4,12,0,0,,2,193,96,,#GG99LCJY
 6133,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,4,4,0,8,0,600,,27,0,8,Corregido - Solución estimada,#GG99LCJY
 6134,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#VJ00CCC0L,bur,0,0,4,12,0,0,,34,0,1,,#GG99LCJY
-6135,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#202LLCYPRC,lufty,0,2,4,12,0,200,,42,30,0,,#GG99LCJY
+6135,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#202LLCYPRC,lufty,0,2,4,10,0,200,,42,30,0,,#GG99LCJY
 6136,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#VCLRVUCLG,¡momazos pedro!,4,6,0,6,0,850,,16,137,85,Corregido - Solución única,#GG99LCJY
 6137,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,4,6,0,6,0,1000,,24,0,35,Corregido - Solución única,#GG99LCJY
 6138,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#8L0UUCLPU,Angel mak,0,3,4,9,0,400,,4,64,44,Corregido - Solución única,#GG99LCJY
 6139,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#VJL99Q9LR,iRaftyCat,3,5,1,7,0,700,,40,40,26,Corregido - Solución única,#GG99LCJY
-6140,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#VCGGRQY8Q,RODRÍGUEZ 666,0,3,4,12,0,450,,19,50,38,,#GG99LCJY
+6140,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#VCGGRQY8Q,RODRÍGUEZ 666,0,3,4,9,0,450,,19,50,38,,#GG99LCJY
 6141,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,4,4,8,0,800,,12,114,52,,#GG99LCJY
 6142,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,4,10,0,2,0,1300,,21,20,59,Corregido - Solución única,#GG99LCJY
 6143,01/08/2026,01/08/2026,Guerra,23,,4,S,26,Mini乂Ternas™,#20VCCQ9GC8,Franklin,0,0,4,4,0,0,,38,0,1,,#GG99LCJY
@@ -6259,7 +6259,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6258,02/08/2026,02/08/2026,Guerra,23,,4,D,27,GrupoXTerna™3,#RPLVY0R08,rata-piola,2,7,2,9,0,1100,,8,0,0,,#GQQPPJGR
 6259,02/08/2026,02/08/2026,Guerra,23,,4,D,27,GrupoXTerna™3,#UG90QUU0P,MiniNopi,4,12,0,4,0,1800,,7,0,0,,#GQQPPJGR
 6260,02/08/2026,02/08/2026,Guerra,23,,4,D,27,GrupoXTerna™3,#V0JPP0UJR,fatima,0,8,4,8,0,1000,,14,8,0,,#GQQPPJGR
-6261,02/08/2026,02/08/2026,Guerra,23,,4,D,27,GrupoXTerna™3,#V929CC8CC,esteban,4,12,4,8,0,1800,,3,0,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+6261,02/08/2026,02/08/2026,Guerra,23,,4,D,27,GrupoXTerna™3,#V929CC8CC,esteban,4,12,0,4,0,1800,,3,0,0,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 6262,02/08/2026,02/08/2026,Guerra,23,,4,D,27,GrupoXTerna™3,#V0UJ0RPVP,MassimoBabyOhh,3,15,1,1,0,1700,,16,0,0,,#GQQPPJGR
 6263,02/08/2026,02/08/2026,Guerra,23,,4,D,27,GrupoXTerna™3,#V9P20U8RC,kayserleandro,4,16,0,0,0,2400,,17,0,46,,#GQQPPJGR
 6264,02/08/2026,02/08/2026,Guerra,23,,4,D,27,GrupoXTerna™3,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,4,16,0,0,0,2400,,12,10,0,,#GQQPPJGR
@@ -6297,9 +6297,9 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6296,02/08/2026,02/08/2026,Guerra,23,,4,D,27,Mini乂Ternas™,#VCQVYJCRC,hola234,0,0,4,8,0,0,,41,0,0,,#GG99LCJY
 6297,02/08/2026,02/08/2026,Guerra,23,,4,D,27,Mini乂Ternas™,#UJUC89CVJ,DarkSHADOW,0,0,4,16,0,0,,46,0,0,,#GG99LCJY
 6298,02/08/2026,02/08/2026,Guerra,23,,4,D,27,Mini乂Ternas™,#V8CV0Q9C0,"""*THIAGO ©®L",0,0,4,16,0,0,,4,0,0,,#GG99LCJY
-6299,02/08/2026,02/08/2026,Guerra,23,,4,D,27,Mini乂Ternas™,#202LLCYPRC,lufty,2,2,2,14,0,200,,42,0,0,,#GG99LCJY
+6299,02/08/2026,02/08/2026,Guerra,23,,4,D,27,Mini乂Ternas™,#202LLCYPRC,lufty,2,2,2,12,0,200,,42,0,0,,#GG99LCJY
 6300,02/08/2026,02/08/2026,Guerra,23,,4,D,27,Mini乂Ternas™,#8L0UUCLPU,Angel mak,4,7,0,9,0,800,,5,40,28,Corregido - Solución única,#GG99LCJY
-6301,02/08/2026,02/08/2026,Guerra,23,,4,D,27,Mini乂Ternas™,#VCGGRQY8Q,RODRÍGUEZ 666,3,3,1,13,0,450,,22,0,0,,#GG99LCJY
+6301,02/08/2026,02/08/2026,Guerra,23,,4,D,27,Mini乂Ternas™,#VCGGRQY8Q,RODRÍGUEZ 666,3,3,1,10,0,450,,22,0,0,,#GG99LCJY
 6302,02/08/2026,02/08/2026,Guerra,23,,4,D,27,Mini乂Ternas™,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,0,4,4,12,0,500,,9,0,0,Corregido - Solución única,#GG99LCJY
 6303,02/08/2026,02/08/2026,Guerra,23,,4,D,27,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,0,4,4,12,0,500,,11,0,0,Corregido - Solución única,#GG99LCJY
 6304,02/08/2026,02/08/2026,Guerra,23,,4,D,27,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,0,4,4,12,0,500,,8,0,0,Corregido - Solución única,#GG99LCJY
@@ -6680,14 +6680,14 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6679,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#QPV2QQRRQ,⚡PROTOTYPE⚡,4,4,0,0,4,500,,9,472,318,Corregido - Solución única,#GYCU9YRG
 6680,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#PYJL0LYCP,OXIDION ROYALE,0,0,4,4,0,0,,42,105,1,,#GYCU9YRG
 6681,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#GJ09C8RLJ,toe waska,0,0,4,4,0,0,,38,0,0,,#GYCU9YRG
-6682,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#LRR2RGCCV,gabriel18,4,4,4,4,0,900,,6,170,194,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6682,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#LRR2RGCCV,gabriel18,4,4,0,0,0,900,,6,170,194,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 6683,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,4,4,0,0,0,700,,39,200,0,,#GYCU9YRG
 6684,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#UR902UV8L,hola,4,4,0,0,0,800,,41,0,0,,#GYCU9YRG
 6685,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#9U9QUL02R,j y j,4,4,0,0,0,600,,17,280,213,,#GYCU9YRG
 6686,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#9G0RQR2GV,frank -.-,4,4,0,0,0,900,,26,264,186,,#GYCU9YRG
 6687,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#J2JJ8LGV9,TUVILOL,4,4,0,0,0,800,,22,80,10,,#GYCU9YRG
 6688,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,4,4,0,0,0,500,,46,240,432,Corregido - Solución única,#GYCU9YRG
-6689,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#U9L82V28P,Dajorami,4,4,4,4,0,500,,24,152,16,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6689,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#U9L82V28P,Dajorami,4,4,0,0,0,500,,24,152,16,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 6690,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#LJJVQGJ,Dade ,0,0,4,4,0,0,,19,288,74,,#GYCU9YRG
 6691,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#Q9J8ULV0,AlexX,4,4,0,0,0,600,,18,168,178,Corregido - Solución única,#GYCU9YRG
 6692,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#UQU9QPGRY,Edinson7,4,4,0,0,0,700,,10,464,821,,#GYCU9YRG
@@ -6701,18 +6701,18 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6700,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#VYYU0QGUC,Christian12,4,4,0,0,0,700,,28,203,94,,#GYCU9YRG
 6701,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#L8Q9RV228,J-P1,0,0,4,4,0,0,,2,104,34,,#GYCU9YRG
 6702,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#PJL9GL8U2,Luigi,4,4,0,0,0,600,,32,240,190,,#GYCU9YRG
-6703,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#LLUURU990,SK｜Wirtz,3,3,4,4,0,400,,11,72,58,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-6704,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#CUQLYVVJ0,WGEID26,4,4,4,4,0,650,,25,224,55,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6703,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#LLUURU990,SK｜Wirtz,3,3,1,1,0,400,,11,72,58,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6704,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#CUQLYVVJ0,WGEID26,4,4,0,0,0,650,,25,224,55,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 6705,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#UYJCQQ028,cristofer adt,4,4,0,0,0,600,,23,0,0,,#GYCU9YRG
 6706,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#VPQUJ0VL0,d@VID,0,0,4,4,0,0,,28,80,38,,#GYCU9YRG
 6707,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#92V9L92GV,JeaPro18,4,4,0,0,0,500,,30,140,228,,#GYCU9YRG
 6708,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#CYR2PVLLY,carepoto:3,4,4,0,0,0,650,,5,120,97,,#GYCU9YRG
 6709,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#CPRQG82L,tatsumi,4,4,0,0,0,500,,40,330,310,,#GYCU9YRG
 6710,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#8LPPYC98V,Brayan2902,0,0,4,4,0,0,,39,0,0,,#GYCU9YRG
-6711,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#YG8U8Q2PC,skap,4,4,4,4,0,700,,31,132,85,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6711,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#YG8U8Q2PC,skap,4,4,0,0,0,700,,31,132,85,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 6712,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#LVVP82CU9,ᴳ乂ᵀ ⚜️Angel R.,4,4,0,0,0,500,,13,0,0,Corregido - Solución única,#GYCU9YRG
 6713,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#900UU80R9,Maliante olger,4,4,0,0,0,700,,19,104,64,,#GYCU9YRG
-6714,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,4,4,4,4,0,600,,33,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6714,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,4,4,0,0,0,600,,33,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 6715,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,4,0,0,0,700,,37,256,355,,#GYCU9YRG
 6716,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#PGLYYV9Q0,carloselpro,4,4,0,0,0,700,,27,0,10,,#GYCU9YRG
 6717,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#CUU92GQQG,Larry god,0,0,4,4,0,0,,21,0,0,,#GYCU9YRG
@@ -6793,7 +6793,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6792,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#J2LCPR0V2,MUAK_Muak,0,0,4,4,0,0,,40,0,0,,#GYCU9YRG
 6793,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,GrupoXTerna™2,#CYYV9JCPU,Mikehaold,3,3,1,1,0,450,,24,0,0,,#GYCU9YRG
 6794,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,Mini乂Ternas™,#VJ0G9QL9C,XXEduardoXX,0,0,4,4,0,0,,44,0,0,,#GG99LCJY
-6795,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,Mini乂Ternas™,#UR8CU0CYR,Cami,3,3,4,4,0,400,,35,0,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+6795,06/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,Mini乂Ternas™,#UR8CU0CYR,Cami,3,3,1,1,0,400,,35,0,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
 6796,07/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,Grupo乂Terna™,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,4,4,0,0,0,600,,50,0,0,,#GCRG8L00
 6797,07/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,4,4,0,0,0,550,,42,0,46,,#GCRG8L00
 6798,07/08/2026 00:00:00,06/08/2026,Guerra,24,,1,J,3,Grupo乂Terna™,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,4,4,0,0,0,600,,39,0,0,,#GCRG8L00
@@ -6854,14 +6854,14 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6853,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Grupo乂Terna™,#UJUGRYY9C,ㅤᴀᴅᴍㅤϟ,4,8,0,0,0,1200,,6,280,58,,#GCRG8L00
 6854,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Grupo乂Terna™,#VQCG0G09G,ᴳ乂ᵀ ⚜️ C-Ron,4,8,0,0,0,1600,,9,560,576,,#GCRG8L00
 6855,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Grupo乂Terna™,#298JJ9RUL,Sebas JAS,4,8,0,0,0,1700,,21,240,390,,#GCRG8L00
-6856,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,4,4,4,0,500,,49,0,1,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6856,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,4,0,0,0,500,,49,0,1,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 6857,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#G0QCC2VQC,TONYSTAR,0,0,4,8,0,0,,1,40,0,,#GYCU9YRG
 6858,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#RGCL8LGJC,Alex♡Dmr,4,6,0,2,0,800,,38,0,0,,#GYCU9YRG
 6859,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,0,4,4,4,0,400,,44,120,156,Corregido - Solución estimada,#GYCU9YRG
-6860,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#LLUURU990,SK｜Wirtz,1,4,4,8,0,500,,3,80,76,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6860,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#LLUURU990,SK｜Wirtz,1,4,3,4,0,500,,3,80,76,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 6861,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#QPV2QQRRQ,⚡PROTOTYPE⚡,0,4,4,4,4,500,,18,520,370,Corregido - Solución estimada,#GYCU9YRG
 6862,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,4,8,0,0,0,1200,,47,280,524,Corregido - Solución única,#GYCU9YRG
-6863,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#U9L82V28P,Dajorami,4,8,4,8,0,1100,,26,176,24,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6863,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#U9L82V28P,Dajorami,4,8,0,0,0,1100,,26,176,24,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 6864,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#22C090RVJ,反覆分Mc-->WiLL,1,5,3,3,0,700,,6,304,801,Corregido - Solución única,#GYCU9YRG
 6865,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#U2QJ2LCY9,ivan,4,8,0,0,0,1000,,7,209,122,,#GYCU9YRG
 6866,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#92V9L92GV,JeaPro18,4,8,0,0,0,1150,,30,180,246,,#GYCU9YRG
@@ -6878,8 +6878,8 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6877,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#YLYGC9Y9C,TOTTI,4,8,0,0,0,1200,,42,169,253,,#GYCU9YRG
 6878,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#J8UQ9GLGV,Eduardo,4,7,0,1,0,1300,,21,160,78,,#GYCU9YRG
 6879,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#UYJCQQ028,cristofer adt,4,8,0,0,0,1100,,24,0,0,,#GYCU9YRG
-6880,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,4,8,4,8,0,1100,,33,0,1,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-6881,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#CUQLYVVJ0,WGEID26,3,7,4,8,0,1250,,27,224,55,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6880,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,4,8,0,0,0,1100,,33,0,1,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6881,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#CUQLYVVJ0,WGEID26,3,7,1,1,0,1250,,27,224,55,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 6882,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#CYR2PVLLY,carepoto:3,4,8,0,0,0,1150,,8,200,128,,#GYCU9YRG
 6883,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,8,0,0,0,1200,,46,0,0,Corregido - Solución única,#GYCU9YRG
 6884,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,4,8,0,0,0,1400,,39,240,0,,#GYCU9YRG
@@ -6887,7 +6887,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6886,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#CV9U8PU8G,DAVII BOYX,4,8,0,0,0,1250,,4,0,208,,#GYCU9YRG
 6887,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#VY0UJ82PV,Manamunacoc,4,8,0,0,0,1500,,16,280,118,,#GYCU9YRG
 6888,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#VYYU0QGUC,Christian12,4,8,0,0,0,1500,,29,291,120,,#GYCU9YRG
-6889,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#YG8U8Q2PC,skap,4,8,4,8,0,1300,,31,173,95,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6889,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#YG8U8Q2PC,skap,4,8,0,0,0,1300,,31,173,95,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 6890,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#900UU80R9,Maliante olger,4,8,0,0,0,1300,,20,144,108,,#GYCU9YRG
 6891,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,8,0,0,0,1200,,37,312,415,,#GYCU9YRG
 6892,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,4,8,0,0,0,1250,,45,0,10,Corregido - Solución única,#GYCU9YRG
@@ -6898,7 +6898,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6897,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#80VLPLLG8,Lago,4,8,0,0,0,1450,,25,0,44,,#GYCU9YRG
 6898,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#C289JPLQG,[ TORO ],4,8,0,0,0,1450,,13,40,16,,#GYCU9YRG
 6899,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#GLPC8YQGV,ᴳ乂ᵀ ⚜️Drill,4,8,0,0,0,1700,,36,20,42,,#GYCU9YRG
-6900,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#LRR2RGCCV,gabriel18,4,8,4,8,0,1700,,2,249,250,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+6900,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#LRR2RGCCV,gabriel18,4,8,0,0,0,1700,,2,249,250,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 6901,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#9G0RQR2GV,frank -.-,4,8,0,0,0,1800,,28,304,194,,#GYCU9YRG
 6902,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™2,#C8GPVLVJL,~$VNThONY$~,4,8,0,0,0,1300,,14,312,146,,#GYCU9YRG
 6903,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,GrupoXTerna™3,#UVV02Q0PC,alex280301,0,0,4,8,0,0,,17,0,0,,#GQQPPJGR
@@ -6938,7 +6938,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6937,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#VCGPQQGR2,Axhlii_w,0,0,4,8,0,0,,24,0,0,,#GG99LCJY
 6938,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#VCLRVUCLG,¡momazos pedro!,0,0,4,8,0,0,,15,70,87,,#GG99LCJY
 6939,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#VVQLLUC9P,Lily :3,0,0,4,8,0,0,,19,40,12,,#GG99LCJY
-6940,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#V0JYGV2CL,☆Cątsîęėń☆ミ,1,1,4,8,1,75,,2,0,40,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+6940,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#V0JYGV2CL,☆Cątsîęėń☆ミ,1,1,3,7,1,75,,2,0,40,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
 6941,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#20PV0LQRJY,leo,0,0,4,8,0,0,,29,20,30,,#GG99LCJY
 6942,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,0,0,4,8,0,0,,11,0,0,,#GG99LCJY
 6943,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#202LLCYPRC,lufty,0,0,4,8,0,0,,45,20,0,,#GG99LCJY
@@ -6955,7 +6955,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 6954,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,0,0,4,8,0,0,,6,4,63,,#GG99LCJY
 6955,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#20VCCQ9GC8,Franklin,0,0,4,8,0,0,,41,0,2,,#GG99LCJY
 6956,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#20VU2RVR0J,Washington,0,0,4,8,0,0,,23,30,0,,#GG99LCJY
-6957,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#UR8CU0CYR,Cami,1,4,4,8,0,600,,21,20,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+6957,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#UR8CU0CYR,Cami,1,4,3,4,0,600,,21,20,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
 6958,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,0,4,4,4,0,400,,26,20,28,,#GG99LCJY
 6959,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,0,4,4,4,0,600,,20,30,45,,#GG99LCJY
 6960,07/08/2026 00:00:00,07/08/2026,Guerra,24,,1,V,4,Mini乂Ternas™,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,0,4,4,4,0,600,,30,20,64,,#GG99LCJY
@@ -7020,21 +7020,21 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 7019,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#G0QCC2VQC,TONYSTAR,0,0,4,12,0,0,,9,40,0,,#GYCU9YRG
 7020,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,4,8,0,4,0,800,,43,120,156,,#GYCU9YRG
 7021,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#QPV2QQRRQ,⚡PROTOTYPE⚡,4,8,0,4,4,1100,,9,600,448,,#GYCU9YRG
-7022,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,8,0,4,0,1200,,48,0,1,Corregido - Solución única,#GYCU9YRG
-7023,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#LLUURU990,SK｜Wirtz,0,4,4,12,0,500,,2,130,86,,#GYCU9YRG
+7022,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,8,0,0,0,1200,,48,0,1,Corregido - Solución única,#GYCU9YRG
+7023,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#LLUURU990,SK｜Wirtz,0,4,4,8,0,500,,2,130,86,,#GYCU9YRG
 7024,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,4,8,0,4,0,900,,47,0,0,Corregido - Solución estimada,#GYCU9YRG
-7025,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,4,7,4,4,0,1200,,49,0,40,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+7025,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,4,7,0,0,0,1200,,49,0,40,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 7026,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#22C090RVJ,反覆分Mc-->WiLL,4,9,0,3,0,1200,,1,304,801,Corregido - Solución única,#GYCU9YRG
 7027,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#QR8JGLC9Q,ᴳ乂ᵀ⚜️Bloodshot,4,8,0,4,0,1250,,42,150,398,,#GYCU9YRG
 7028,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#RGCL8LGJC,Alex♡Dmr,4,10,0,2,0,1400,,37,0,0,,#GYCU9YRG
 7029,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#Q9J8ULV0,AlexX,4,10,0,2,0,1500,,7,216,221,Corregido - Solución única,#GYCU9YRG
 7030,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#U2QJ2LCY9,ivan,4,12,0,0,0,1650,,15,249,205,,#GYCU9YRG
 7031,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#CPRQG82L,tatsumi,4,12,0,0,0,1700,,39,410,330,,#GYCU9YRG
-7032,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#U9L82V28P,Dajorami,4,12,4,12,0,1600,,25,225,40,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+7032,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#U9L82V28P,Dajorami,4,12,0,0,0,1600,,25,225,40,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 7033,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#C0YVCRPY2,ÐɑʀҟƑîʀɛ,4,12,0,0,0,1500,,4,0,612,,#GYCU9YRG
 7034,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#PJL9GL8U2,Luigi,4,12,0,0,0,1800,,32,360,260,,#GYCU9YRG
 7035,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#UYJCQQ028,cristofer adt,4,12,0,0,0,1500,,23,0,0,,#GYCU9YRG
-7036,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,4,12,4,12,0,1700,,33,0,1,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+7036,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,4,12,0,0,0,1700,,33,0,1,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 7037,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#92V9L92GV,JeaPro18,4,12,0,0,0,1850,,29,180,262,,#GYCU9YRG
 7038,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#CYR2PVLLY,carepoto:3,4,12,0,0,0,1700,,18,240,158,,#GYCU9YRG
 7039,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,12,0,0,0,1850,,45,40,24,Corregido - Solución única,#GYCU9YRG
@@ -7047,12 +7047,12 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 7046,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#9U9QUL02R,j y j,4,12,0,0,0,2050,,12,360,281,,#GYCU9YRG
 7047,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#CV9U8PU8G,DAVII BOYX,4,12,0,0,0,2050,,6,0,226,,#GYCU9YRG
 7048,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#L28JYY2J,Gamer,4,12,0,0,0,2050,,30,280,181,,#GYCU9YRG
-7049,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#CUQLYVVJ0,WGEID26,4,11,4,12,0,1750,,26,288,65,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+7049,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#CUQLYVVJ0,WGEID26,4,11,0,1,0,1750,,26,288,65,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 7050,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,4,12,0,0,0,2050,,44,0,20,Corregido - Solución única,#GYCU9YRG
 7051,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#C8Q0C88UL,ᴳ乂ᵀ ⚜️S C Λ R Ξ,4,12,0,0,0,1900,,16,0,10,,#GYCU9YRG
 7052,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#J8UQ9GLGV,Eduardo,4,11,0,1,0,1800,,19,200,112,,#GYCU9YRG
 7053,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#C8GPVLVJL,~$VNThONY$~,4,12,0,0,0,2100,,10,392,161,,#GYCU9YRG
-7054,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#YG8U8Q2PC,skap,4,12,4,12,0,1900,,31,220,169,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+7054,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#YG8U8Q2PC,skap,4,12,0,0,0,1900,,31,220,169,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 7055,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#900UU80R9,Maliante olger,4,12,0,0,0,2200,,8,224,164,,#GYCU9YRG
 7056,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#2GG0L8RYG,el jeico,4,12,0,0,0,1950,,1,160,0,,#GYCU9YRG
 7057,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,4,12,0,0,0,1900,,38,320,0,,#GYCU9YRG
@@ -7062,7 +7062,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 7061,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#VY0UJ82PV,Manamunacoc,4,12,0,0,0,2300,,17,320,158,,#GYCU9YRG
 7062,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#VYYU0QGUC,Christian12,4,12,0,0,0,2200,,28,363,120,,#GYCU9YRG
 7063,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#PGLYYV9Q0,carloselpro,4,12,0,0,0,2200,,20,0,10,,#GYCU9YRG
-7064,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#LRR2RGCCV,gabriel18,3,11,4,12,0,2400,,3,290,276,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+7064,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#LRR2RGCCV,gabriel18,3,11,1,1,0,2400,,3,290,276,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 7065,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#J2JJ8LGV9,TUVILOL,4,12,0,0,0,2200,,21,80,18,,#GYCU9YRG
 7066,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#GLPC8YQGV,ᴳ乂ᵀ ⚜️Drill,4,12,0,0,0,2200,,35,80,100,,#GYCU9YRG
 7067,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#9G0RQR2GV,frank -.-,4,12,0,0,0,2300,,27,384,268,,#GYCU9YRG
@@ -7098,8 +7098,8 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 7097,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#VCJULQ09P,Dante,0,0,4,12,0,0,,32,0,0,,#GG99LCJY
 7098,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#V29LQ2UPQ,GuisodeFideos,0,0,4,12,0,0,,1,0,6,,#GG99LCJY
 7099,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#VCGPQQGR2,Axhlii_w,0,0,4,12,0,0,,24,0,0,,#GG99LCJY
-7100,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#VCLRVUCLG,¡momazos pedro!,1,1,4,12,1,75,,14,108,116,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
-7101,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#VGQPU9CRG,degod,1,1,4,8,0,100,,43,0,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+7100,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#VCLRVUCLG,¡momazos pedro!,1,1,3,11,1,75,,14,108,116,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+7101,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#VGQPU9CRG,degod,1,1,3,7,0,100,,43,0,0,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
 7102,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#VVQLLUC9P,Lily :3,0,0,4,12,0,0,,19,40,13,,#GG99LCJY
 7103,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#20PC2CL99Q,BRAYAN YT,0,0,4,8,0,0,,42,0,0,,#GG99LCJY
 7104,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#20PV0LQRJY,leo,0,0,4,12,0,0,,29,20,30,,#GG99LCJY
@@ -7119,12 +7119,12 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 7118,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,4,4,0,8,0,500,,6,24,105,Corregido - Solución estimada,#GG99LCJY
 7119,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#20VCCQ9GC8,Franklin,0,0,4,12,0,0,,41,0,2,,#GG99LCJY
 7120,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#20VU2RVR0J,Washington,0,0,4,12,0,0,,18,30,0,,#GG99LCJY
-7121,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#V0JYGV2CL,☆Cątsîęėń☆ミ,0,1,4,12,1,75,,2,0,40,,#GG99LCJY
+7121,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#V0JYGV2CL,☆Cątsîęėń☆ミ,0,1,4,11,1,75,,2,0,40,,#GG99LCJY
 7122,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,0,4,4,8,0,400,,26,20,28,,#GG99LCJY
 7123,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#VCCU98J0U,Alexx123,4,7,0,5,0,1100,,28,61,40,Corregido - Solución estimada,#GG99LCJY
 7124,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,0,4,4,8,0,600,,20,30,45,,#GG99LCJY
 7125,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,0,4,4,8,0,600,,31,20,64,,#GG99LCJY
-7126,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#UR8CU0CYR,Cami,0,4,4,12,0,600,,22,20,0,,#GG99LCJY
+7126,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#UR8CU0CYR,Cami,0,4,4,8,0,600,,22,20,0,,#GG99LCJY
 7127,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#V0J90R2V2,ᴳ乂ᵀ ⚜️ Αντρέ¹⁸,0,4,4,8,0,700,,27,20,64,,#GG99LCJY
 7128,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#VJL99Q9LR,iRaftyCat,0,8,4,4,0,1300,,35,68,79,Corregido - Solución única,#GG99LCJY
 7129,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,4,12,0,0,0,2150,,13,50,20,,#GG99LCJY
@@ -7180,35 +7180,35 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 7179,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Grupo乂Terna™,#CUQG9CJUG,ᴳ乂ᵀ ⚜️Marzz,4,16,0,0,0,3100,,19,40,8,,#GCRG8L00
 7180,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Grupo乂Terna™,#298JJ9RUL,Sebas JAS,4,16,0,0,0,3100,,11,40,84,,#GCRG8L00
 7181,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#20JPVQYL8Q,MiniSebas,0,4,4,4,4,300,,50,0,0,,#GYCU9YRG
-7182,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,0,8,4,8,0,1200,,48,0,0,,#GYCU9YRG
-7183,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#LLUURU990,SK｜Wirtz,0,4,4,16,0,500,,9,160,86,,#GYCU9YRG
+7182,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,0,8,4,4,0,1200,,48,0,0,,#GYCU9YRG
+7183,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#LLUURU990,SK｜Wirtz,0,4,4,12,0,500,,9,160,86,,#GYCU9YRG
 7184,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#CVRURQYQ0,kigox,4,8,0,8,0,1100,,20,0,100,,#GYCU9YRG
 7185,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,4,12,0,4,0,1200,,42,40,60,,#GYCU9YRG
 7186,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,0,8,4,8,0,900,,46,0,0,Corregido - Solución única,#GYCU9YRG
 7187,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#QPV2QQRRQ,⚡PROTOTYPE⚡,4,12,0,4,4,1800,,1,40,36,,#GYCU9YRG
 7188,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,0,12,4,4,0,1850,,45,0,0,,#GYCU9YRG
-7189,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,0,7,4,8,0,1200,,49,0,8,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+7189,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,0,7,4,4,0,1200,,49,0,8,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 7190,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#QR8JGLC9Q,ᴳ乂ᵀ⚜️Bloodshot,4,12,0,4,0,1750,,41,43,70,,#GYCU9YRG
 7191,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,4,13,0,3,0,2000,,46,0,10,Corregido - Solución única,#GYCU9YRG
 7192,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#RGCL8LGJC,Alex♡Dmr,4,14,0,2,0,2100,,36,0,0,,#GYCU9YRG
 7193,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#Q9J8ULV0,AlexX,0,10,4,6,0,1500,,17,0,0,,#GYCU9YRG
 7194,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#C0YVCRPY2,ÐɑʀҟƑîʀɛ,4,16,0,0,0,2200,,14,0,0,,#GYCU9YRG
 7195,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#UYJCQQ028,cristofer adt,4,16,0,0,0,2200,,22,0,0,,#GYCU9YRG
-7196,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#U9L82V28P,Dajorami,4,16,4,16,0,2300,,24,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+7196,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#U9L82V28P,Dajorami,4,16,0,0,0,2300,,24,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 7197,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#U2QJ2LCY9,ivan,4,16,0,0,0,2450,,13,40,0,,#GYCU9YRG
 7198,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#90RGLQ98P,ʕ•́ᴥ•̀ʔ,4,16,0,0,0,2300,,33,24,28,,#GYCU9YRG
 7199,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#YLYGC9Y9C,TOTTI,4,16,0,0,0,2400,,40,0,0,,#GYCU9YRG
 7200,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#CYR2PVLLY,carepoto:3,4,16,0,0,0,2500,,4,32,50,,#GYCU9YRG
 7201,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#CPRQG82L,tatsumi,4,16,0,0,0,2200,,38,20,0,,#GYCU9YRG
-7202,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,4,16,4,16,0,2300,,31,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-7203,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#CUQLYVVJ0,WGEID26,0,11,4,16,0,1750,,21,10,0,,#GYCU9YRG
+7202,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,4,16,0,0,0,2300,,31,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+7203,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#CUQLYVVJ0,WGEID26,0,11,4,5,0,1750,,21,10,0,,#GYCU9YRG
 7204,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#PJL9GL8U2,Luigi,4,16,0,0,0,2400,,30,20,40,,#GYCU9YRG
 7205,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#J8UQ9GLGV,Eduardo,4,15,0,1,0,2600,,17,40,18,,#GYCU9YRG
 7206,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#92V9L92GV,JeaPro18,4,16,0,0,0,2350,,25,40,18,,#GYCU9YRG
 7207,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,16,0,0,0,2450,,35,0,0,,#GYCU9YRG
 7208,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,4,16,0,0,0,2400,,37,40,9,,#GYCU9YRG
 7209,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#C8Q0C88UL,ᴳ乂ᵀ ⚜️S C Λ R Ξ,4,16,0,0,0,2500,,8,0,0,,#GYCU9YRG
-7210,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#YG8U8Q2PC,skap,4,16,4,16,0,2400,,29,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+7210,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#YG8U8Q2PC,skap,4,16,0,0,0,2400,,29,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 7211,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#2GG0L8RYG,el jeico,4,16,0,0,0,2350,,9,32,0,,#GYCU9YRG
 7212,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#UQU9QPGRY,Edinson7,4,16,0,0,0,2600,,7,34,64,,#GYCU9YRG
 7213,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#C289JPLQG,[ TORO ],4,16,0,0,0,2650,,16,0,0,,#GYCU9YRG
@@ -7228,7 +7228,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 7227,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#UQJU0JRG2,ivzn,4,16,0,0,0,2850,,2,0,0,,#GYCU9YRG
 7228,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#9G0RQR2GV,frank -.-,4,16,0,0,0,2850,,26,30,0,,#GYCU9YRG
 7229,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#VY0UJ82PV,Manamunacoc,4,16,0,0,0,2800,,15,0,0,,#GYCU9YRG
-7230,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#LRR2RGCCV,gabriel18,4,15,4,16,0,3200,,3,40,66,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+7230,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™2,#LRR2RGCCV,gabriel18,4,15,0,1,0,3200,,3,40,66,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 7231,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™3,#UVV02Q0PC,alex280301,0,0,4,16,0,0,,17,0,0,,#GQQPPJGR
 7232,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™3,#V929CC8CC,esteban,0,0,4,16,0,0,,5,0,0,,#GQQPPJGR
 7233,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,GrupoXTerna™3,#88RV0L8V2,☆ ᴍ ᴀ ʏ ᴄ ᴏ ʟ ☆,0,0,4,16,0,0,,7,20,0,,#GQQPPJGR
@@ -7277,15 +7277,15 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 7276,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#20VCLQGPG8,JCCC,0,0,4,16,0,0,,22,0,0,,#GG99LCJY
 7277,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#20VCCQ9GC8,Franklin,0,0,4,16,0,0,,42,0,0,,#GG99LCJY
 7278,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#20VU2RVR0J,Washington,0,0,4,16,0,0,,17,0,0,,#GG99LCJY
-7279,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#VCLRVUCLG,¡momazos pedro!,3,3,1,13,1,75,,15,4,8,,#GG99LCJY
-7280,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#V0JYGV2CL,☆Cątsîęėń☆ミ,0,1,4,16,1,75,,2,0,0,,#GG99LCJY
-7281,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#VGQPU9CRG,degod,0,1,4,12,0,100,,44,0,0,,#GG99LCJY
+7279,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#VCLRVUCLG,¡momazos pedro!,3,3,1,12,1,75,,15,4,8,,#GG99LCJY
+7280,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#V0JYGV2CL,☆Cątsîęėń☆ミ,0,1,4,15,1,75,,2,0,0,,#GG99LCJY
+7281,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#VGQPU9CRG,degod,0,1,4,11,0,100,,44,0,0,,#GG99LCJY
 7282,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,0,4,4,12,0,400,,28,0,0,Corregido - Solución única,#GG99LCJY
 7283,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,0,4,4,12,0,500,,7,0,0,Corregido - Solución única,#GG99LCJY
 7284,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,0,4,4,12,0,600,,11,0,0,Corregido - Solución única,#GG99LCJY
 7285,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,0,4,4,12,0,600,,21,0,0,Corregido - Solución única,#GG99LCJY
 7286,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,0,4,4,12,0,600,,32,0,0,Corregido - Solución única,#GG99LCJY
-7287,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#UR8CU0CYR,Cami,0,4,4,16,0,600,,23,0,0,,#GG99LCJY
+7287,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#UR8CU0CYR,Cami,0,4,4,12,0,600,,23,0,0,,#GG99LCJY
 7288,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#V0J90R2V2,ᴳ乂ᵀ ⚜️ Αντρέ¹⁸,0,4,4,12,0,700,,29,0,0,Corregido - Solución única,#GG99LCJY
 7289,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#VCCU98J0U,Alexx123,0,7,4,9,0,1100,,26,10,4,Corregido - Solución única,#GG99LCJY
 7290,09/08/2026 00:00:00,09/08/2026,Guerra,24,,1,D,6,Mini乂Ternas™,#VJL99Q9LR,iRaftyCat,0,8,4,8,0,1300,,34,10,10,Corregido - Solución única,#GG99LCJY
@@ -9189,7 +9189,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 9188,23/08/2026 05:01:43,23/08/2026,Guerra,24,,3,D,20,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,0,0,4,16,0,0,,13,0,0,,#GG99LCJY
 9189,23/08/2026 05:01:43,23/08/2026,Guerra,24,,3,D,20,Mini乂Ternas™,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,0,4,4,12,0,400,,5,0,0,Corregido - Solución única,#GG99LCJY
 9190,23/08/2026 05:01:43,23/08/2026,Guerra,24,,3,D,20,Mini乂Ternas™,#LYVJU9UJJ,fggij09,0,4,4,12,0,700,,9,0,0,Corregido - Solución única,#GG99LCJY
-9191,23/08/2026 05:01:43,23/08/2026,Guerra,24,,3,D,20,Mini乂Ternas™,#VCCU98J0U,Alexx123,1,6,4,10,0,800,,10,0,26,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
+9191,23/08/2026 05:01:43,23/08/2026,Guerra,24,,3,D,20,Mini乂Ternas™,#VCCU98J0U,Alexx123,1,6,3,9,0,800,,10,0,26,Corregido - CurrentRiverRace (mínimo),#GG99LCJY
 9192,23/08/2026 05:01:43,23/08/2026,Guerra,24,,3,D,20,Mini乂Ternas™,#VJL99Q9LR,iRaftyCat,4,12,0,4,0,1100,,12,0,0,Corregido - Solución única,#GG99LCJY
 9193,23/08/2026 05:01:43,23/08/2026,Guerra,24,,3,D,20,Mini乂Ternas™,#VCLRVUCLG,¡momazos pedro!,0,9,4,7,0,1300,,3,10,0,Corregido - Solución única,#GG99LCJY
 9194,23/08/2026 05:01:43,23/08/2026,Guerra,24,,3,D,20,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,12,4,4,0,2000,,4,6,0,Corregido - Solución única,#GG99LCJY
@@ -10009,7 +10009,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 10008,30/08/2026 04:02:17,29/08/2026,Guerra,24,135,4,S,26,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,4,0,8,0,700,,49,0,0,Original,#GYCU9YRG
 10009,30/08/2026 04:11:48,29/08/2026,Guerra,24,135,4,S,26,GrupoXTerna™2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,4,4,0,8,0,500,,48,0,0,Corregido - Solución única,#GYCU9YRG
 10010,30/08/2026 04:31:57,29/08/2026,Guerra,24,135,4,S,26,GrupoXTerna™2,#2Q8GJVR8V,arturo,4,4,0,8,0,400,,49,0,20,Corregido,#GYCU9YRG
-10011,30/08/2026 04:52:33,29/08/2026,Guerra,24,135,4,S,26,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,2,6,0,8,0,500,,48,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+10011,30/08/2026 04:52:33,29/08/2026,Guerra,24,135,4,S,26,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,2,6,2,6,0,500,,48,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 10012,30/08/2026 09:41:32,30/08/2026,Guerra,24,135,4,D,27,Grupo乂Terna™,#8YU8C9LQ0,DarkJBlack,4,16,0,0,0,1900,,21,0,0,Original,#GCRG8L00
 10013,30/08/2026 09:41:32,30/08/2026,Guerra,24,135,4,D,27,Grupo乂Terna™,#UJL0GR80Y,j0rdxn_17xd,4,15,0,1,0,1950,,27,40,24,Original,#GCRG8L00
 10014,30/08/2026 09:41:32,30/08/2026,Guerra,24,135,4,D,27,Grupo乂Terna™,#8J9PL92GU,Marín,4,16,0,0,0,2300,,35,0,0,Original,#GCRG8L00
@@ -10058,7 +10058,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 10057,30/08/2026 09:41:32,30/08/2026,Guerra,24,135,4,D,27,Grupo乂Terna™,#CGGGR82PJ,ᴳ乂ᵀ ⚜️ N1V1C,4,16,0,0,0,3200,,4,40,34,Original,#GCRG8L00
 10058,30/08/2026 09:41:32,30/08/2026,Guerra,24,135,4,D,27,Grupo乂Terna™,#9LCJ2JQ08,Adrian,4,16,0,0,0,3400,,1,0,10,Original,#GCRG8L00
 10059,30/08/2026 09:41:32,30/08/2026,Guerra,24,135,4,D,27,GrupoXTerna™2,#2Q8GJVR8V,arturo,0,4,4,12,0,400,,45,0,0,Corregido,#GYCU9YRG
-10060,30/08/2026 09:41:32,30/08/2026,Guerra,24,135,4,D,27,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,2,6,2,10,0,500,,44,0,0,Corregido - Solución estimada,#GYCU9YRG
+10060,30/08/2026 09:41:32,30/08/2026,Guerra,24,135,4,D,27,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,2,6,2,8,0,500,,44,0,0,Corregido - Solución estimada,#GYCU9YRG
 10061,30/08/2026 09:41:32,30/08/2026,Guerra,24,135,4,D,27,GrupoXTerna™2,#GUJUVUVUR,pepe lucho,2,6,2,10,0,600,,29,0,0,Corregido - Solución única,#GYCU9YRG
 10062,30/08/2026 09:41:32,30/08/2026,Guerra,24,135,4,D,27,GrupoXTerna™2,#J2CCYYLUU,deClow,0,4,4,12,0,900,,26,0,0,Corregido,#GYCU9YRG
 10063,30/08/2026 09:41:32,30/08/2026,Guerra,24,135,4,D,27,GrupoXTerna™2,#C8Q0C88UL,ᴳ乂ᵀ ⚜️S C Λ R Ξ,4,11,0,5,0,900,,18,0,0,Corregido - Solución única,#GYCU9YRG
@@ -10150,7 +10150,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 10149,13/08/2026 00:00:00,13/08/2026,Guerra,24,135,2,J,10,Grupo乂Terna™,#90Q8RYGPP,--❤️Kalé❤️--,1,1,3,3,0,100,,,,,Reconstruido - Solución estimada,#GCRG8L00
 10150,14/08/2026 00:00:00,14/08/2026,Guerra,24,135,2,V,11,Grupo乂Terna™,#90Q8RYGPP,--❤️Kalé❤️--,4,5,0,3,0,500,,,,,Reconstruido - Solución estimada,#GCRG8L00
 10151,15/08/2026 00:00:00,15/08/2026,Guerra,24,135,2,S,12,Grupo乂Terna™,#90Q8RYGPP,--❤️Kalé❤️--,4,9,0,3,0,1400,,,,,Reconstruido - Solución estimada,#GCRG8L00
-10152,16/08/2026 00:00:00,16/08/2026,Guerra,24,135,2,D,13,Grupo乂Terna™,#90Q8RYGPP,--❤️Kalé❤️--,4,12,1,4,0,1400,,,,,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+10152,16/08/2026 00:00:00,16/08/2026,Guerra,24,135,2,D,13,Grupo乂Terna™,#90Q8RYGPP,--❤️Kalé❤️--,4,12,0,3,0,1400,,,,,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 10153,20/08/2026 00:00:00,20/08/2026,Guerra,24,135,3,J,17,Grupo乂Terna™,#RRVG2L2YP,dfgh,4,4,0,0,0,500,,,,,Reconstruido - Solución única,#GCRG8L00
 10154,21/08/2026 00:00:00,21/08/2026,Guerra,24,135,3,V,18,Grupo乂Terna™,#RRVG2L2YP,dfgh,4,8,0,0,0,1050,,,,,Reconstruido - Solución estimada,#GCRG8L00
 10155,22/08/2026 00:00:00,22/08/2026,Guerra,24,135,3,S,19,Grupo乂Terna™,#RRVG2L2YP,dfgh,4,12,0,0,0,1950,,,,,Reconstruido - Solución estimada,#GCRG8L00
@@ -11900,7 +11900,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 11899,13/09/2026 04:41:40,13/09/2026,Guerra,25,136,1,D,6,GrupoXTerna™2,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,4,16,0,0,0,2400,,41,10,0,Original,#GYCU9YRG
 11900,13/09/2026 04:41:40,13/09/2026,Guerra,25,136,1,D,6,GrupoXTerna™2,#U2QL9PYUU,El mejor,4,15,0,1,0,2000,,26,0,0,Corregido,#GYCU9YRG
 11901,13/09/2026 04:41:40,13/09/2026,Guerra,25,136,1,D,6,GrupoXTerna™2,#RGCL8LGJC,Alex♡Dmr,4,16,0,0,0,2500,,33,0,0,Original,#GYCU9YRG
-11902,13/09/2026 04:41:40,13/09/2026,Guerra,25,136,1,D,6,GrupoXTerna™2,#UYJCQQ028,cristofer adt,4,15,1,1,0,2300,,30,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+11902,13/09/2026 04:41:40,13/09/2026,Guerra,25,136,1,D,6,GrupoXTerna™2,#UYJCQQ028,cristofer adt,4,15,0,0,0,2300,,30,0,0,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 11903,13/09/2026 04:41:40,13/09/2026,Guerra,25,136,1,D,6,GrupoXTerna™2,#CV9U8PU8G,DAVII BOYX,4,16,0,0,0,2250,,1,0,60,Original,#GYCU9YRG
 11904,13/09/2026 04:41:40,13/09/2026,Guerra,25,136,1,D,6,GrupoXTerna™2,#90RGLQ98P,ʕ•́ᴥ•̀ʔ,4,16,0,0,0,2300,,31,32,20,Original,#GYCU9YRG
 11905,13/09/2026 04:41:40,13/09/2026,Guerra,25,136,1,D,6,GrupoXTerna™2,#VY0UJ82PV,Manamunacoc,4,16,0,0,0,2300,,21,0,0,Original,#GYCU9YRG
@@ -15781,7 +15781,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 15780,16/10/2026 04:34:12,16/10/2026,Guerra,26,137,2,V,11,Grupo乂Terna™,#92YRUCQR0,Akuma L4D,4,4,0,4,0,800,14000,37,120,160,Original,#GCRG8L00
 15781,16/10/2026 04:34:12,16/10/2026,Guerra,26,137,2,V,11,Grupo乂Terna™,#C8YUPURCU,★†Park-Seory†★,0,0,4,8,0,0,14000,45,160,24,Original,#GCRG8L00
 15782,16/10/2026 04:34:12,16/10/2026,Guerra,26,137,2,V,11,Grupo乂Terna™,#RJQL8U2P,wisman35,4,4,0,4,0,600,14000,31,320,156,Original,#GCRG8L00
-15783,16/10/2026 04:34:12,16/10/2026,Guerra,26,137,2,V,11,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),2,4,4,4,0,500,14000,24,280,400,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+15783,16/10/2026 04:34:12,16/10/2026,Guerra,26,137,2,V,11,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),2,4,2,2,0,500,14000,24,280,400,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 15784,16/10/2026 04:34:12,16/10/2026,Guerra,26,137,2,V,11,Grupo乂Terna™,#8YU8C9LQ0,DarkJBlack,4,8,0,0,0,900,14000,32,0,206,Original,#GCRG8L00
 15785,16/10/2026 04:34:12,16/10/2026,Guerra,26,137,2,V,11,Grupo乂Terna™,#CQCR0R99C,Angel,0,4,4,4,0,400,14000,41,400,240,Original,#GCRG8L00
 15786,16/10/2026 04:34:12,16/10/2026,Guerra,26,137,2,V,11,Grupo乂Terna™,#2VPCYG29C,Panto,0,4,4,4,0,400,14000,45,0,0,Original,#GCRG8L00
@@ -15902,7 +15902,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 15901,16/10/2026 13:06:03,16/10/2026,Guerra,26,137,2,V,11,Grupo乂Terna™,#GUP2UJ2C9,Loyal Kou,4,4,0,4,0,800,14000,13,40,0,Original,#GCRG8L00
 15902,17/10/2026 04:34:07,17/10/2026,Guerra,26,137,2,S,12,Grupo乂Terna™,#CQCR0R99C,Angel,4,8,0,4,0,950,14000,34,440,248,Original,#GCRG8L00
 15903,17/10/2026 04:34:07,17/10/2026,Guerra,26,137,2,S,12,Grupo乂Terna™,#2VPCYG29C,Panto,0,4,4,8,0,400,14000,45,0,0,Original,#GCRG8L00
-15904,17/10/2026 04:34:07,17/10/2026,Guerra,26,137,2,S,12,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),4,8,0,4,0,1200,14000,13,320,578,Original,#GCRG8L00
+15904,17/10/2026 04:34:07,17/10/2026,Guerra,26,137,2,S,12,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),4,8,0,2,0,1200,14000,13,320,578,Original,#GCRG8L00
 15905,17/10/2026 04:34:07,17/10/2026,Guerra,26,137,2,S,12,Grupo乂Terna™,#RJQL8U2P,wisman35,4,8,0,4,0,1100,14000,26,400,184,Original,#GCRG8L00
 15906,17/10/2026 04:34:07,17/10/2026,Guerra,26,137,2,S,12,Grupo乂Terna™,#VLGCGP8GG,I'M. renzo,0,4,4,8,0,650,14000,26,40,16,Original,#GCRG8L00
 15907,17/10/2026 04:34:07,17/10/2026,Guerra,26,137,2,S,12,Grupo乂Terna™,#GVVPJ8CLG,JP Titan :),4,8,0,4,0,1600,14000,17,512,186,Original,#GCRG8L00
@@ -16026,7 +16026,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 16025,18/10/2026 04:33:14,18/10/2026,Guerra,26,137,2,D,13,Grupo乂Terna™,#92G8CUYVL,Rodrizzx! ⭐,0,2,4,14,0,500,14000,38,0,0,Original,#GCRG8L00
 16026,18/10/2026 04:33:14,18/10/2026,Guerra,26,137,2,D,13,Grupo乂Terna™,#CQCR0R99C,Angel,4,12,0,4,0,1550,14000,34,0,0,Original,#GCRG8L00
 16027,18/10/2026 04:33:14,18/10/2026,Guerra,26,137,2,D,13,Grupo乂Terna™,#RJQL8U2P,wisman35,4,12,0,4,0,1800,14000,23,40,0,Original,#GCRG8L00
-16028,18/10/2026 04:33:14,18/10/2026,Guerra,26,137,2,D,13,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),4,12,0,4,0,1600,14000,4,30,104,Original,#GCRG8L00
+16028,18/10/2026 04:33:14,18/10/2026,Guerra,26,137,2,D,13,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),4,12,0,2,0,1600,14000,4,30,104,Original,#GCRG8L00
 16029,18/10/2026 04:33:14,18/10/2026,Guerra,26,137,2,D,13,Grupo乂Terna™,#QCGGPYCYJ,matichu,4,12,0,4,0,2250,14000,18,0,10,Original,#GCRG8L00
 16030,18/10/2026 04:33:14,18/10/2026,Guerra,26,137,2,D,13,Grupo乂Terna™,#8YU8C9LQ0,DarkJBlack,4,16,0,0,0,2000,14000,26,0,16,Original,#GCRG8L00
 16031,18/10/2026 04:33:14,18/10/2026,Guerra,26,137,2,D,13,Grupo乂Terna™,#9LCJ2JQ08,Adrian,4,16,0,0,0,2100,14000,1,0,0,Original,#GCRG8L00
@@ -16459,7 +16459,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 16458,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,Grupo乂Terna™,#LJ0CYCG9V,ᴳ乂ᵀ ⚜️CERFIRE,4,16,0,0,0,2600,,,,,Reconstruido - Solución estimada,#GCRG8L00
 16459,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™2,#LJJVQGJ,Dade ,4,16,0,0,0,2900,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 16460,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™2,#LVVP82CU9,ᴳ乂ᵀ ⚜️Angel R.,4,16,0,0,0,2550,,,,,Reconstruido - Solución estimada,#GYCU9YRG
-16461,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™2,#PGLYYV9Q0,carloselpro,4,11,0,5,0,1900,,,,,Reconstruido - Solución estimada,#GYCU9YRG
+16461,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™2,#PGLYYV9Q0,carloselpro,4,11,0,1,0,1900,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 16462,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™2,#PJL9GL8U2,Luigi,4,16,0,0,0,2700,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 16463,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,Grupo乂Terna™,#Q98RGPGCU,ᴳ乂ᵀ ⚜️ Senju,4,16,0,0,0,2500,,,,,Reconstruido - Solución estimada,#GCRG8L00
 16464,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™2,#Q9J8ULV0,AlexX,4,16,0,0,0,2700,,,,,Reconstruido - Solución estimada,#GYCU9YRG
@@ -16476,7 +16476,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 16475,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™2,#UR902UV8L,hola,4,16,0,0,0,2400,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 16476,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™2,#UYJCQQ028,cristofer adt,4,16,0,0,0,2500,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 16477,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™3,#V0UJ0RPVP,MassimoBabyOhh,4,16,0,0,0,1800,,,,,Reconstruido - Solución estimada,#GQQPPJGR
-16478,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,4,12,0,4,0,1850,,,,,Reconstruido - Solución estimada,#GCRG8L00
+16478,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,4,12,0,0,0,1850,,,,,Reconstruido - Solución estimada,#GCRG8L00
 16479,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™3,#V929CC8CC,esteban,4,16,0,0,0,2700,,,,,Reconstruido - Solución estimada,#GQQPPJGR
 16480,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,Grupo乂Terna™,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,4,16,0,0,0,2750,,,,,Reconstruido - Solución estimada,#GCRG8L00
 16481,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,Grupo乂Terna™,#VLU8GLL09,angel,4,16,0,0,0,3100,,,,,Reconstruido - Solución estimada,#GCRG8L00
@@ -16805,7 +16805,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 16804,26/07/2026 00:00:00,26/07/2026,Guerra,23,134,3,D,20,Mini乂Ternas™,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,0,4,4,12,0,500,,,,,Reconstruido - Solución única,#GG99LCJY
 16805,10/09/2026 00:00:00,10/09/2026,Guerra,25,136,1,J,3,Mini乂Ternas™,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,0,0,4,4,0,0,,,,,Reconstruido - Solución única,#GG99LCJY
 16806,11/09/2026 00:00:00,11/09/2026,Guerra,25,136,1,V,4,Mini乂Ternas™,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,0,0,4,8,0,0,,,,,Reconstruido - Solución única,#GG99LCJY
-16807,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,0,4,4,12,0,600,,,,,Reconstruido - Solución única,#GG99LCJY
+16807,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,0,4,4,8,0,600,,,,,Reconstruido - Solución única,#GG99LCJY
 16808,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,0,3,4,13,0,400,,,,,Reconstruido - Solución única,#GG99LCJY
 16809,24/07/2026 00:00:00,24/07/2026,Guerra,23,134,3,V,18,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,4,5,0,3,0,900,,,,,Reconstruido - Solución estimada,#GG99LCJY
 16810,25/07/2026 00:00:00,25/07/2026,Guerra,23,134,3,S,19,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,0,5,4,7,0,900,,,,,Reconstruido - Solución única,#GG99LCJY
@@ -17812,7 +17812,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 17811,04/06/2026 00:00:00,08/10/2026,Guerra,22,133,1,J,3,Mini乂Ternas™,#V0JPP0UJR,fatima,2,2,2,2,0,200,,,,,Reconstruido - Solución estimada,#GG99LCJY
 17812,04/06/2026 00:00:00,08/10/2026,Guerra,22,133,1,J,3,Mini乂Ternas™,#V9P20U8RC,kayserleandro,4,4,0,0,0,400,,,,,Reconstruido - Solución estimada,#GG99LCJY
 17813,11/06/2026 00:00:00,15/10/2026,Guerra,22,133,2,J,10,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,0,0,4,4,0,0,,,,,Reconstruido - Solución única,#GYCU9YRG
-17814,14/06/2026 00:00:00,18/10/2026,Guerra,22,133,2,D,13,GrupoXTerna™2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,4,11,4,5,0,1200,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+17814,14/06/2026 00:00:00,18/10/2026,Guerra,22,133,2,D,13,GrupoXTerna™2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,4,11,0,1,0,1200,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 17815,11/06/2026 00:00:00,15/10/2026,Guerra,22,133,2,J,10,GrupoXTerna™2,#QRQULCCV8,ᴳ乂ᵀ ⚜️ Maikel,0,0,4,4,0,0,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 17816,12/06/2026 00:00:00,16/10/2026,Guerra,22,133,2,V,11,GrupoXTerna™2,#QRQULCCV8,ᴳ乂ᵀ ⚜️ Maikel,0,0,4,8,0,0,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 17817,13/06/2026 00:00:00,17/10/2026,Guerra,22,133,2,S,12,GrupoXTerna™2,#QRQULCCV8,ᴳ乂ᵀ ⚜️ Maikel,4,4,0,8,0,800,,,,,Reconstruido - Solución estimada,#GYCU9YRG
@@ -17856,7 +17856,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 17855,02/07/2026 00:00:00,05/11/2026,Guerra,22,133,5,J,31,GrupoXTerna™3,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,0,0,4,4,0,0,,,,,Reconstruido - Solución única,#GQQPPJGR
 17856,02/07/2026 00:00:00,05/11/2026,Guerra,22,133,5,J,31,GrupoXTerna™3,#V0UJ0RPVP,MassimoBabyOhh,0,0,4,4,0,0,,,,,Reconstruido - Solución única,#GQQPPJGR
 17857,03/07/2026 00:00:00,06/11/2026,Guerra,22,133,5,V,32,GrupoXTerna™3,#V0UJ0RPVP,MassimoBabyOhh,0,0,4,8,0,0,,,,,Reconstruido - Solución única,#GQQPPJGR
-17858,04/07/2026 00:00:00,07/11/2026,Guerra,22,133,5,S,33,GrupoXTerna™3,#V0UJ0RPVP,MassimoBabyOhh,4,4,4,12,0,500,,,,,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
+17858,04/07/2026 00:00:00,07/11/2026,Guerra,22,133,5,S,33,GrupoXTerna™3,#V0UJ0RPVP,MassimoBabyOhh,4,4,0,8,0,500,,,,,Corregido - CurrentRiverRace (mínimo),#GQQPPJGR
 17859,03/07/2026 00:00:00,06/11/2026,Guerra,22,133,5,V,32,Grupo乂Terna™,#CGGGR82PJ,°Gatito°✓,0,0,4,8,0,0,,,,,Reconstruido - Solución única,#GCRG8L00
 17860,02/07/2026 00:00:00,05/11/2026,Guerra,22,133,5,J,31,Grupo乂Terna™,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,4,0,0,0,600,,,,,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
 17861,03/07/2026 00:00:00,06/11/2026,Guerra,22,133,5,V,32,Grupo乂Terna™,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,8,0,0,0,1000,,,,,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
@@ -17919,12 +17919,12 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 17918,10/07/2026 00:00:00,10/07/2026,Guerra,23,134,1,V,4,Grupo乂Terna™,#Y8CVG9VYL,,4,4,0,4,0,500,,,,,Reconstruido - Solución única,#GCRG8L00
 17919,11/07/2026 00:00:00,11/07/2026,Guerra,23,134,1,S,5,Grupo乂Terna™,#Y8CVG9VYL,,4,8,0,4,0,1200,,,,,Reconstruido - Solución única,#GCRG8L00
 17920,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Grupo乂Terna™,#Y8CVG9VYL,,0,8,4,8,0,1200,,,,,Reconstruido - Solución única,#GCRG8L00
-17921,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,0,3,4,13,0,300,,,,,Reconstruido - Solución única,#GG99LCJY
+17921,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,0,3,4,10,0,300,,,,,Reconstruido - Solución única,#GG99LCJY
 17922,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Mini乂Ternas™,#LYVJU9UJJ,fggij09,0,8,4,8,0,1200,,,,,Reconstruido - Solución única,#GG99LCJY
 17923,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Mini乂Ternas™,#V0J90R2V2,ᴳ乂ᵀ ⚜️ Αντρέ¹⁸,0,8,4,8,0,1400,,,,,Reconstruido - Solución única,#GG99LCJY
 17924,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Mini乂Ternas™,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,0,8,4,8,0,1000,,,,,Reconstruido - Solución única,#GG99LCJY
-17925,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,0,4,4,12,0,700,,,,,Reconstruido - Solución única,#GG99LCJY
-17926,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,4,4,12,0,400,,,,,Reconstruido - Solución única,#GG99LCJY
+17925,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,0,4,4,8,0,700,,,,,Reconstruido - Solución única,#GG99LCJY
+17926,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,4,4,8,0,400,,,,,Reconstruido - Solución única,#GG99LCJY
 17927,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,4,16,0,0,0,2800,,,,,Reconstruido - Solución única,#GYCU9YRG
 17928,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™2,#92V9L92GV,JeaPro18,4,15,0,1,0,2750,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 17929,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™2,#C0YVCRPY2,ÐɑʀҟƑîʀɛ,4,12,0,4,0,2200,,,,,Reconstruido - Solución única,#GYCU9YRG
@@ -17954,7 +17954,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 17953,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™3,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,0,8,4,8,0,1000,,,,,Reconstruido - Solución única,#GQQPPJGR
 17954,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™3,#RGCL8LGJC,Alex♡Dmr,1,13,3,3,0,1700,,,,,Reconstruido - Solución única,#GQQPPJGR
 17955,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™3,#RPLVY0R08,rata-piola,0,8,4,8,0,1300,,,,,Reconstruido - Solución estimada,#GQQPPJGR
-17956,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™3,#V0JPP0UJR,fatima,4,13,0,3,0,1900,,,,,Reconstruido - Solución estimada,#GQQPPJGR
+17956,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™3,#V0JPP0UJR,fatima,4,13,0,1,0,1900,,,,,Reconstruido - Solución estimada,#GQQPPJGR
 17957,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™3,#V9P20U8RC,kayserleandro,4,15,0,1,0,2100,,,,,Reconstruido - Solución estimada,#GQQPPJGR
 17958,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™3,#VLY0G9LU9,ᴳ乂ᵀ ⚜. josuexd.,0,8,4,8,0,1200,,,,,Reconstruido - Solución única,#GQQPPJGR
 17959,19/07/2026 00:00:00,19/07/2026,Guerra,23,134,2,D,13,GrupoXTerna™3,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,0,0,4,16,0,0,,,,,Reconstruido - Solución única,#GQQPPJGR
@@ -17997,9 +17997,9 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 17996,24/07/2026 00:00:00,24/07/2026,Guerra,23,134,3,V,18,GrupoXTerna™2,#J8UQ9GLGV,Eduardo,4,8,0,0,0,1200,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 17997,25/07/2026 00:00:00,25/07/2026,Guerra,23,134,3,S,19,GrupoXTerna™2,#J8UQ9GLGV,Eduardo,4,12,0,0,0,2100,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 17998,26/07/2026 00:00:00,26/07/2026,Guerra,23,134,3,D,20,GrupoXTerna™2,#J8UQ9GLGV,Eduardo,0,12,4,4,0,2100,,,,,Reconstruido - Solución única,#GYCU9YRG
-17999,24/07/2026 00:00:00,24/07/2026,Guerra,23,134,3,V,18,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,5,0,3,0,500,,,,,Reconstruido - Solución estimada,#GYCU9YRG
-18000,25/07/2026 00:00:00,25/07/2026,Guerra,23,134,3,S,19,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,9,0,3,0,1000,,,,,Reconstruido - Solución estimada,#GYCU9YRG
-18001,26/07/2026 00:00:00,26/07/2026,Guerra,23,134,3,D,20,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,13,0,3,0,1900,,,,,Reconstruido - Solución estimada,#GYCU9YRG
+17999,24/07/2026 00:00:00,24/07/2026,Guerra,23,134,3,V,18,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,5,0,2,0,500,,,,,Reconstruido - Solución estimada,#GYCU9YRG
+18000,25/07/2026 00:00:00,25/07/2026,Guerra,23,134,3,S,19,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,9,0,2,0,1000,,,,,Reconstruido - Solución estimada,#GYCU9YRG
+18001,26/07/2026 00:00:00,26/07/2026,Guerra,23,134,3,D,20,GrupoXTerna™2,#JC99L0Y8P,MADNESS,4,13,0,2,0,1900,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 18002,23/07/2026 00:00:00,23/07/2026,Guerra,23,134,3,J,17,GrupoXTerna™2,#LRQ8YJRCU,,0,0,4,4,0,0,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 18003,24/07/2026 00:00:00,24/07/2026,Guerra,23,134,3,V,18,GrupoXTerna™2,#LRQ8YJRCU,,4,4,0,4,0,400,,,,,Reconstruido - Solución estimada,#GYCU9YRG
 18004,25/07/2026 00:00:00,25/07/2026,Guerra,23,134,3,S,19,GrupoXTerna™2,#LRQ8YJRCU,,4,8,0,4,0,800,,,,,Reconstruido - Solución estimada,#GYCU9YRG
@@ -18156,9 +18156,9 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 18155,24/07/2026 00:00:00,24/07/2026,Guerra,23,134,3,V,18,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,4,4,4,0,800,,,,,Reconstruido - Solución única,#GG99LCJY
 18156,25/07/2026 00:00:00,25/07/2026,Guerra,23,134,3,S,19,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,4,4,8,0,800,,,,,Reconstruido - Solución única,#GG99LCJY
 18157,26/07/2026 00:00:00,26/07/2026,Guerra,23,134,3,D,20,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,0,4,4,12,0,800,,,,,Reconstruido - Solución única,#GG99LCJY
-18158,24/07/2026 00:00:00,24/07/2026,Guerra,23,134,3,V,18,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,4,6,0,2,0,1100,,,,,Reconstruido - Solución estimada,#GG99LCJY
-18159,25/07/2026 00:00:00,25/07/2026,Guerra,23,134,3,S,19,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,0,6,4,6,0,1100,,,,,Reconstruido - Solución única,#GG99LCJY
-18160,26/07/2026 00:00:00,26/07/2026,Guerra,23,134,3,D,20,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,0,6,4,10,0,1100,,,,,Reconstruido - Solución única,#GG99LCJY
+18158,24/07/2026 00:00:00,24/07/2026,Guerra,23,134,3,V,18,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,4,6,0,1,0,1100,,,,,Reconstruido - Solución estimada,#GG99LCJY
+18159,25/07/2026 00:00:00,25/07/2026,Guerra,23,134,3,S,19,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,0,6,4,5,0,1100,,,,,Reconstruido - Solución única,#GG99LCJY
+18160,26/07/2026 00:00:00,26/07/2026,Guerra,23,134,3,D,20,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,0,6,4,9,0,1100,,,,,Reconstruido - Solución única,#GG99LCJY
 18161,30/07/2026 00:00:00,30/07/2026,Guerra,23,134,4,J,24,GrupoXTerna™2,#LYVJU9UJJ,,0,0,4,4,0,0,,,,,Reconstruido - Solución única,#GYCU9YRG
 18162,31/07/2026 00:00:00,31/07/2026,Guerra,23,134,4,V,25,GrupoXTerna™2,#LYVJU9UJJ,,0,0,4,8,0,0,,,,,Reconstruido - Solución única,#GYCU9YRG
 18163,01/08/2026 00:00:00,01/08/2026,Guerra,23,134,4,S,26,GrupoXTerna™2,#LYVJU9UJJ,,0,0,4,12,0,0,,,,,Reconstruido - Solución única,#GYCU9YRG
@@ -29030,8 +29030,8 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 29029,28/08/2026 00:00:00,28/08/2026,Guerra,24,135,4,V,25,GrupoXTerna™2,#8UG89UQ2R,,0,0,4,8,0,0,,,,,Reconstruido - Solución única,#GYCU9YRG
 29030,29/08/2026 00:00:00,29/08/2026,Guerra,24,135,4,S,26,GrupoXTerna™2,#8UG89UQ2R,,0,0,4,12,0,0,,,,,Reconstruido - Solución única,#GYCU9YRG
 29031,30/08/2026 00:00:00,30/08/2026,Guerra,24,135,4,D,27,GrupoXTerna™2,#8UG89UQ2R,,0,0,4,16,0,0,,,,,Reconstruido - Solución única,#GYCU9YRG
-29032,27/08/2026 00:00:00,27/08/2026,Guerra,24,135,4,J,24,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,4,4,4,4,0,500,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-29033,28/08/2026 00:00:00,28/08/2026,Guerra,24,135,4,V,25,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,0,4,4,8,0,500,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+29032,27/08/2026 00:00:00,27/08/2026,Guerra,24,135,4,J,24,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,4,4,0,0,0,500,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+29033,28/08/2026 00:00:00,28/08/2026,Guerra,24,135,4,V,25,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,0,4,4,4,0,500,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
 29034,27/08/2026 00:00:00,27/08/2026,Guerra,24,135,4,J,24,GrupoXTerna™2,#8YYYPP8LY,,0,0,4,4,0,0,,,,,Reconstruido - Solución única,#GYCU9YRG
 29035,28/08/2026 00:00:00,28/08/2026,Guerra,24,135,4,V,25,GrupoXTerna™2,#8YYYPP8LY,,0,0,4,8,0,0,,,,,Reconstruido - Solución única,#GYCU9YRG
 29036,29/08/2026 00:00:00,29/08/2026,Guerra,24,135,4,S,26,GrupoXTerna™2,#8YYYPP8LY,,0,0,4,12,0,0,,,,,Reconstruido - Solución única,#GYCU9YRG
@@ -36492,8 +36492,8 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 36491,16/08/2026 00:00:00,16/08/2026,Guerra,24,135,2,D,13,Grupo乂Terna™,#29PYG2V8Q,#29PYG2V8Q,0,0,4,16,0,0,,,,,Reconstruido,#GCRG8L00
 36492,13/08/2026 00:00:00,13/08/2026,Guerra,24,135,2,J,10,Grupo乂Terna™,#2C982888C,#2C982888C,0,0,4,4,0,0,,,,,Reconstruido,#GCRG8L00
 36493,14/08/2026 00:00:00,14/08/2026,Guerra,24,135,2,V,11,Grupo乂Terna™,#2C982888C,#2C982888C,0,0,4,8,0,0,,,,,Reconstruido,#GCRG8L00
-36494,15/08/2026 00:00:00,15/08/2026,Guerra,24,135,2,S,12,Grupo乂Terna™,#2C982888C,#2C982888C,4,4,4,12,0,550,,,,,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
-36495,16/08/2026 00:00:00,16/08/2026,Guerra,24,135,2,D,13,Grupo乂Terna™,#2C982888C,#2C982888C,4,4,0,12,0,550,,,,,Reconstruido,#GCRG8L00
+36494,15/08/2026 00:00:00,15/08/2026,Guerra,24,135,2,S,12,Grupo乂Terna™,#2C982888C,#2C982888C,4,4,0,8,0,550,,,,,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+36495,16/08/2026 00:00:00,16/08/2026,Guerra,24,135,2,D,13,Grupo乂Terna™,#2C982888C,#2C982888C,4,4,0,8,0,550,,,,,Reconstruido,#GCRG8L00
 36496,13/08/2026 00:00:00,13/08/2026,Guerra,24,135,2,J,10,GrupoXTerna™2,#2P8VJ8U0V,#2P8VJ8U0V,0,0,4,4,0,0,,,,,Reconstruido,#GYCU9YRG
 36497,14/08/2026 00:00:00,14/08/2026,Guerra,24,135,2,V,11,GrupoXTerna™2,#2P8VJ8U0V,#2P8VJ8U0V,0,0,4,8,0,0,,,,,Reconstruido,#GYCU9YRG
 36498,15/08/2026 00:00:00,15/08/2026,Guerra,24,135,2,S,12,GrupoXTerna™2,#2P8VJ8U0V,#2P8VJ8U0V,0,0,4,12,0,0,,,,,Reconstruido,#GYCU9YRG
@@ -36832,8 +36832,8 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 36831,30/08/2026 00:00:00,30/08/2026,Guerra,24,135,4,D,27,Mini乂Ternas™,#222PCLQQY2,#222PCLQQY2,0,0,4,16,0,0,,,,,Reconstruido,#GG99LCJY
 36832,27/08/2026 00:00:00,27/08/2026,Guerra,24,135,4,J,24,Grupo乂Terna™,#22C090RVJ,反覆分Mc-->WiLL,0,0,4,4,0,0,,,,,Reconstruido,#GCRG8L00
 36833,28/08/2026 00:00:00,28/08/2026,Guerra,24,135,4,V,25,Grupo乂Terna™,#22C090RVJ,反覆分Mc-->WiLL,0,0,4,8,0,0,,,,,Reconstruido,#GCRG8L00
-36834,29/08/2026 00:00:00,29/08/2026,Guerra,24,135,4,S,26,Grupo乂Terna™,#22C090RVJ,反覆分Mc-->WiLL,4,4,4,12,0,800,,,,,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
-36835,30/08/2026 00:00:00,30/08/2026,Guerra,24,135,4,D,27,Grupo乂Terna™,#22C090RVJ,反覆分Mc-->WiLL,4,4,0,12,0,800,,,,,Reconstruido,#GCRG8L00
+36834,29/08/2026 00:00:00,29/08/2026,Guerra,24,135,4,S,26,Grupo乂Terna™,#22C090RVJ,反覆分Mc-->WiLL,4,4,0,8,0,800,,,,,Corregido - CurrentRiverRace (mínimo),#GCRG8L00
+36835,30/08/2026 00:00:00,30/08/2026,Guerra,24,135,4,D,27,Grupo乂Terna™,#22C090RVJ,反覆分Mc-->WiLL,4,4,0,8,0,800,,,,,Reconstruido,#GCRG8L00
 36836,27/08/2026 00:00:00,27/08/2026,Guerra,24,135,4,J,24,Grupo乂Terna™,#28P9Q99RC,#28P9Q99RC,0,0,4,4,0,0,,,,,Reconstruido,#GCRG8L00
 36837,28/08/2026 00:00:00,28/08/2026,Guerra,24,135,4,V,25,Grupo乂Terna™,#28P9Q99RC,#28P9Q99RC,0,0,4,8,0,0,,,,,Reconstruido,#GCRG8L00
 36838,29/08/2026 00:00:00,29/08/2026,Guerra,24,135,4,S,26,Grupo乂Terna™,#28P9Q99RC,#28P9Q99RC,0,0,4,12,0,0,,,,,Reconstruido,#GCRG8L00
@@ -38838,10 +38838,10 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 38837,30/10/2026 00:00:00,30/10/2026,Guerra,26,137,4,V,25,Grupo乂Terna™,#2098CCQUCU,#2098CCQUCU,0,0,4,8,0,0,,,,,Reconstruido,#GCRG8L00
 38838,31/10/2026 00:00:00,31/10/2026,Guerra,26,137,4,S,26,Grupo乂Terna™,#2098CCQUCU,#2098CCQUCU,0,0,4,12,0,0,,,,,Reconstruido,#GCRG8L00
 38839,01/11/2026 00:00:00,01/11/2026,Guerra,26,137,4,D,27,Grupo乂Terna™,#2098CCQUCU,#2098CCQUCU,0,0,4,16,0,0,,,,,Reconstruido,#GCRG8L00
-38840,29/10/2026 00:00:00,29/10/2026,Guerra,26,137,4,J,24,GrupoXTerna™2,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,4,4,4,4,0,700,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-38841,30/10/2026 00:00:00,30/10/2026,Guerra,26,137,4,V,25,GrupoXTerna™2,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,0,4,4,8,0,700,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-38842,31/10/2026 00:00:00,31/10/2026,Guerra,26,137,4,S,26,GrupoXTerna™2,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,0,4,4,12,0,700,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
-38843,01/11/2026 00:00:00,01/11/2026,Guerra,26,137,4,D,27,GrupoXTerna™2,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,4,4,0,12,0,700,,,,,Reconstruido,#GYCU9YRG
+38840,29/10/2026 00:00:00,29/10/2026,Guerra,26,137,4,J,24,GrupoXTerna™2,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,4,4,0,0,0,700,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+38841,30/10/2026 00:00:00,30/10/2026,Guerra,26,137,4,V,25,GrupoXTerna™2,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,0,4,4,4,0,700,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+38842,31/10/2026 00:00:00,31/10/2026,Guerra,26,137,4,S,26,GrupoXTerna™2,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,0,4,4,8,0,700,,,,,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+38843,01/11/2026 00:00:00,01/11/2026,Guerra,26,137,4,D,27,GrupoXTerna™2,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,4,4,0,8,0,700,,,,,Reconstruido,#GYCU9YRG
 38844,29/10/2026 00:00:00,29/10/2026,Guerra,26,137,4,J,24,Grupo乂Terna™,#20PJ90JGVY,#20PJ90JGVY,0,0,4,4,0,0,,,,,Reconstruido,#GCRG8L00
 38845,30/10/2026 00:00:00,30/10/2026,Guerra,26,137,4,V,25,Grupo乂Terna™,#20PJ90JGVY,#20PJ90JGVY,0,0,4,8,0,0,,,,,Reconstruido,#GCRG8L00
 38846,31/10/2026 00:00:00,31/10/2026,Guerra,26,137,4,S,26,Grupo乂Terna™,#20PJ90JGVY,#20PJ90JGVY,0,0,4,12,0,0,,,,,Reconstruido,#GCRG8L00
@@ -39794,7 +39794,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 39793,06/11/2026 04:45:08,06/11/2026,Guerra,27,138,1,V,4,GrupoXTerna™2,#G0V0UC08U,YACI kalpek,4,8,0,0,0,1600,14000,1,598,891,Original,#GYCU9YRG
 39794,06/11/2026 04:45:08,06/11/2026,Guerra,27,138,1,V,4,GrupoXTerna™2,#UQU9QPGRY,Edinson7,4,8,0,0,0,1600,14000,10,550,685,Original,#GYCU9YRG
 39795,06/11/2026 04:45:08,06/11/2026,Guerra,27,138,1,V,4,GrupoXTerna™2,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,0,4,4,4,0,800,8697,44,344,586,Original,#GYCU9YRG
-39796,06/11/2026 04:45:08,06/11/2026,Guerra,27,138,1,V,4,GrupoXTerna™2,#UG8LQYPPQ,Lui$29,4,8,3,3,0,1500,14000,5,224,56,Corregido - CurrentRiverRace (mínimo),#GYCU9YRG
+39796,06/11/2026 04:45:08,06/11/2026,Guerra,27,138,1,V,4,GrupoXTerna™2,#UG8LQYPPQ,Lui$29,1,5,3,3,0,900,14000,5,224,56,Original,#GYCU9YRG
 39797,06/11/2026 04:45:08,06/11/2026,Guerra,27,138,1,V,4,GrupoXTerna™2,#U2QL9PYUU,El mejor,4,8,0,0,0,1600,13743,29,0,47,Original,#GYCU9YRG
 39798,06/11/2026 04:45:08,06/11/2026,Guerra,27,138,1,V,4,GrupoXTerna™2,#YYUY2PU2V,AlxNadal,4,8,0,0,0,1350,12737,35,160,268,Original,#GYCU9YRG
 39799,06/11/2026 04:45:08,06/11/2026,Guerra,27,138,1,V,4,GrupoXTerna™2,#VYYU0QGUC,Christian12,4,8,0,0,0,1700,14000,3,504,134,Original,#GYCU9YRG
@@ -40261,132 +40261,135 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 40260,24/05/2026 00:00:00,24/05/2026,Guerra,21,132,3,D,20,GrupoXTerna™3,#R8JRQ0PY8,josecitopro7,2,2,2,14,0,200,,,,,Reconstruido,#GQQPPJGR
 40261,10/11/2026 19:49:02,10/11/2026,Entrenamiento,27,138,2,M,8,Grupo乂Terna™,#RUPG08YVV,jsjsjs,1,0,,,0,0,14000,19,0,0,Original,#GCRG8L00
 40262,10/11/2026 19:49:02,10/11/2026,Entrenamiento,27,138,2,M,8,Grupo乂Terna™,#VPLJU2JU8,Sumiko,0,0,,,0,0,14000,1,0,0,Original,#GCRG8L00
-40263,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#JGGLGVCGU,ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ,0,0,,,0,0,14000,15,0,0,Original,#GYCU9YRG
-40264,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#V0UJ0RPVP,ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ,0,0,,,0,0,7765,37,0,0,Original,#GYCU9YRG
+40263,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#JGGLGVCGU,ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ,0,0,,,0,0,14000,16,0,0,Original,#GYCU9YRG
+40264,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#V0UJ0RPVP,ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ,0,0,,,0,0,7765,38,0,0,Original,#GYCU9YRG
 40265,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,0,0,,,0,0,13062,29,80,0,Original,#GYCU9YRG
 40266,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#UQJU0JRG2,ivzn,0,0,,,0,0,14000,21,0,0,Original,#GYCU9YRG
 40267,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#9U9QUL02R,j y j,0,0,,,0,0,14000,25,88,230,Original,#GYCU9YRG
-40268,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#2J29JJVQ9,Jared,0,0,,,0,0,14000,4,0,0,Original,#GYCU9YRG
-40269,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#9G0RQR2GV,frank -.-,0,0,,,0,0,14000,14,184,164,Original,#GYCU9YRG
-40270,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#J2JJ8LGV9,TUVILOL,0,0,,,0,0,14000,6,72,0,Original,#GYCU9YRG
-40271,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#UVPV9RGQ2,Kraven,2,0,,,0,0,14000,1,250,420,Original,#GYCU9YRG
-40272,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#G0V0UC08U,YACI kalpek,0,0,,,0,0,14000,5,200,280,Original,#GYCU9YRG
+40268,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#2J29JJVQ9,Jared,4,0,,,0,0,14000,2,16,28,Original,#GYCU9YRG
+40269,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#9G0RQR2GV,frank -.-,0,0,,,0,0,14000,15,192,164,Original,#GYCU9YRG
+40270,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#J2JJ8LGV9,TUVILOL,0,0,,,0,0,14000,7,80,0,Original,#GYCU9YRG
+40271,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#UVPV9RGQ2,Kraven,4,0,,,0,0,14000,5,280,420,Original,#GYCU9YRG
+40272,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#G0V0UC08U,YACI kalpek,0,0,,,0,0,14000,1,216,308,Original,#GYCU9YRG
 40273,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#29YC0CL2,Alejandro_Rt,0,0,,,0,0,14000,19,160,52,Original,#GYCU9YRG
-40274,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#V9P20U8RC,kayserleandro,0,0,,,0,0,6713,38,40,98,Original,#GYCU9YRG
-40275,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#UQU9QPGRY,Edinson7,0,0,,,0,0,14000,9,320,344,Original,#GYCU9YRG
+40274,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#V9P20U8RC,kayserleandro,0,0,,,0,0,6713,39,40,98,Original,#GYCU9YRG
+40275,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#UQU9QPGRY,Edinson7,0,0,,,0,0,14000,10,320,344,Original,#GYCU9YRG
 40276,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#U2QJ2LCY9,ivan,0,0,,,0,0,14000,20,120,48,Original,#GYCU9YRG
-40277,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,0,0,,,0,0,8697,36,144,193,Original,#GYCU9YRG
+40277,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,0,0,,,0,0,8697,37,160,193,Original,#GYCU9YRG
 40278,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#JUJP2UJVJ,Ribe,0,0,,,0,0,14000,26,40,0,Original,#GYCU9YRG
-40279,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#VY0UJ82PV,Manamunacoc,0,0,,,0,0,14000,7,160,46,Original,#GYCU9YRG
+40279,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#VY0UJ82PV,Manamunacoc,0,0,,,0,0,14000,8,160,46,Original,#GYCU9YRG
 40280,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#80VLPLLG8,Lago,0,0,,,0,0,13819,27,0,0,Original,#GYCU9YRG
 40281,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#YYUY2PU2V,AlxNadal,0,0,,,0,0,12763,31,160,250,Original,#GYCU9YRG
-40282,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#VYYU0QGUC,Christian12,0,0,,,0,0,14000,12,200,96,Original,#GYCU9YRG
+40282,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#VYYU0QGUC,Christian12,0,0,,,0,0,14000,13,200,96,Original,#GYCU9YRG
 40283,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#8VU0Y9LJ0,Yisus Craiz,0,0,,,0,0,13058,30,0,0,Original,#GYCU9YRG
 40284,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#20P2UP80UY,ᴳ乂ᵀ ⚜️ SHAKA,0,0,,,0,0,10131,35,40,50,Original,#GYCU9YRG
-40285,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#PJL9GL8U2,Luigi,0,0,,,0,0,14000,13,170,220,Original,#GYCU9YRG
-40286,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#C289JPLQG,[ TORO ],4,0,,,0,0,14000,8,80,76,Original,#GYCU9YRG
-40287,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#C29P2YJ2P,ola,0,0,,,0,0,11000,34,0,0,Original,#GYCU9YRG
-40288,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#C29J22YRG,ATENAZAS 2.0,0,0,,,0,0,14000,3,80,42,Original,#GYCU9YRG
-40289,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#UPC9P9JUC,Elduro69,0,0,,,0,0,14000,18,40,50,Original,#GYCU9YRG
+40285,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#PJL9GL8U2,Luigi,0,0,,,0,0,14000,14,190,220,Original,#GYCU9YRG
+40286,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#C289JPLQG,[ TORO ],4,0,,,0,0,14000,9,80,76,Original,#GYCU9YRG
+40287,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#C29P2YJ2P,ola,0,0,,,0,0,11030,34,0,0,Original,#GYCU9YRG
+40288,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#C29J22YRG,ATENAZAS 2.0,0,0,,,0,0,14000,6,80,42,Original,#GYCU9YRG
+40289,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#UPC9P9JUC,Elduro69,0,0,,,0,0,14000,3,50,84,Original,#GYCU9YRG
 40290,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#2029VVYP0C,Adrian _R!,0,0,,,0,0,14000,22,160,94,Original,#GYCU9YRG
-40291,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#L28JYY2J,Gamer,0,0,,,0,0,14000,10,0,0,Original,#GYCU9YRG
+40291,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#L28JYY2J,Gamer,0,0,,,0,0,14000,11,0,0,Original,#GYCU9YRG
 40292,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#CGR9CLRLV,fabrizio,0,0,,,0,0,14000,23,0,0,Original,#GYCU9YRG
 40293,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#JYCC0RUCY,₩Jhordan₩,0,0,,,0,0,12000,33,0,0,Original,#GYCU9YRG
 40294,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#UYJCQQ028,cristofer adt,0,0,,,0,0,13687,28,0,0,Original,#GYCU9YRG
-40295,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#2RQ0PL0LY,walle,0,0,,,0,0,14000,17,110,93,Original,#GYCU9YRG
-40296,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#92V9L92GV,JeaPro18,0,0,,,0,0,14000,2,0,32,Original,#GYCU9YRG
+40295,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#2RQ0PL0LY,walle,0,0,,,0,0,14000,18,110,93,Original,#GYCU9YRG
+40296,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#92V9L92GV,JeaPro18,0,0,,,0,0,14000,4,0,32,Original,#GYCU9YRG
 40297,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#CYR2PVLLY,carepoto:3,0,0,,,0,0,14000,24,0,0,Original,#GYCU9YRG
 40298,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#QR8JGLC9Q,ᴳ乂ᵀ⚜️Bloodshot,0,0,,,0,0,12625,32,80,188,Original,#GYCU9YRG
-40299,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#8R0GVJ88J,ZlDimNacoFBI,0,0,,,0,0,14000,11,160,202,Original,#GYCU9YRG
-40300,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#LVVP82CU9,ᴳ乂ᵀ ⚜️Angel R.,0,0,,,0,0,14000,16,0,0,Original,#GYCU9YRG
-40301,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#90Q8RYGPP,--❤️Kalé❤️--,0,0,,,0,0,14000,28,80,0,Original,#GCRG8L00
-40302,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#Y990VL9LL,♿️ l mayin,0,0,,,0,0,14000,27,160,74,Original,#GCRG8L00
-40303,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#Q98RGPGCU,ᴳ乂ᵀ ⚜️ Senju,0,0,,,0,0,10010,46,80,54,Original,#GCRG8L00
-40304,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#RUPG08YVV,jsjsjs,0,0,,,0,0,14000,24,0,0,Original,#GCRG8L00
-40305,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#VPLJU2JU8,Sumiko,0,0,,,0,0,14000,3,40,10,Original,#GCRG8L00
-40306,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#YGL2QV8LG,ᴳ乂ᵀ ⚜ T3RR1BL3!,0,0,,,0,0,14000,39,0,0,Original,#GCRG8L00
-40307,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#P9UQ2QVLV,franklin,4,0,,,0,0,14000,6,90,64,Original,#GCRG8L00
-40308,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),0,0,,,0,0,14000,26,80,218,Original,#GCRG8L00
-40309,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#C0PGPR90U,27R.C.Lazarinos,0,0,,,0,0,14000,33,200,368,Original,#GCRG8L00
-40310,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#8YU8C9LQ0,DarkJBlack,0,0,,,0,0,14000,32,0,80,Original,#GCRG8L00
-40311,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#QCGGPYCYJ,matichu,0,0,,,0,0,14000,35,120,46,Original,#GCRG8L00
-40312,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#82GCLPGJR,Diego 7u7r,0,0,,,0,0,14000,21,80,26,Original,#GCRG8L00
-40313,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#9GY0QU8PY,machete ll,0,0,,,0,0,14000,36,120,86,Original,#GCRG8L00
-40314,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#GVVPJ8CLG,JP Titan :),0,0,,,0,0,14000,34,80,24,Original,#GCRG8L00
-40315,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#PPJVG29UV,FLS £V∆°,0,0,,,0,0,14000,40,40,10,Original,#GCRG8L00
-40316,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#Q9PY2Y80R,Brian TC,0,0,,,0,0,14000,23,120,18,Original,#GCRG8L00
-40317,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#298JJ9RUL,Sebas JAS,0,0,,,0,0,14000,38,40,34,Original,#GCRG8L00
-40318,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#9YC08RJC8,Mini Diego :),0,0,,,0,0,14000,20,120,88,Original,#GCRG8L00
-40319,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#9LCJ2JQ08,Adrian,0,0,,,0,0,14000,17,0,244,Original,#GCRG8L00
-40320,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#829GQP0JL,Procrastinador.,0,0,,,0,0,14000,5,0,20,Original,#GCRG8L00
-40321,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#92YRUUV9P,ᴳ乂ᵀ ⚜️ iJonahjk,4,0,,,0,0,13685,42,48,38,Original,#GCRG8L00
-40322,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#YYYYULCRG,rafael,1,0,,,0,0,14000,12,0,0,Original,#GCRG8L00
-40323,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,0,0,,,0,0,14000,30,190,257,Original,#GCRG8L00
-40324,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#8PYCU9U9Q,KAITO KID,0,0,,,0,0,14000,18,80,96,Original,#GCRG8L00
-40325,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#VVLUYCGYC,Ari,0,0,,,0,0,12777,45,120,80,Original,#GCRG8L00
-40326,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#VP92PYJ0J,zuizidee.,0,0,,,0,0,14000,15,200,146,Original,#GCRG8L00
+40299,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#8R0GVJ88J,ZlDimNacoFBI,0,0,,,0,0,14000,12,160,202,Original,#GYCU9YRG
+40300,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#LVVP82CU9,ᴳ乂ᵀ ⚜️Angel R.,0,0,,,0,0,14000,17,0,0,Original,#GYCU9YRG
+40301,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#90Q8RYGPP,--❤️Kalé❤️--,0,0,,,0,0,14000,30,80,0,Original,#GCRG8L00
+40302,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#Y990VL9LL,♿️ l mayin,0,0,,,0,0,14000,29,160,74,Original,#GCRG8L00
+40303,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#Q98RGPGCU,ᴳ乂ᵀ ⚜️ Senju,0,0,,,0,0,10010,47,80,54,Original,#GCRG8L00
+40304,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#RUPG08YVV,jsjsjs,0,0,,,0,0,14000,26,0,0,Original,#GCRG8L00
+40305,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#VPLJU2JU8,Sumiko,0,0,,,0,0,14000,6,40,10,Original,#GCRG8L00
+40306,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#YGL2QV8LG,ᴳ乂ᵀ ⚜ T3RR1BL3!,0,0,,,0,0,14000,40,0,0,Original,#GCRG8L00
+40307,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#P9UQ2QVLV,franklin,4,0,,,0,0,14000,9,100,64,Original,#GCRG8L00
+40308,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),0,0,,,0,0,14000,28,80,218,Original,#GCRG8L00
+40309,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#C0PGPR90U,27R.C.Lazarinos,0,0,,,0,0,14000,35,200,368,Original,#GCRG8L00
+40310,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#8YU8C9LQ0,DarkJBlack,0,0,,,0,0,14000,34,0,80,Original,#GCRG8L00
+40311,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#QCGGPYCYJ,matichu,0,0,,,0,0,14000,1,120,56,Original,#GCRG8L00
+40312,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#82GCLPGJR,Diego 7u7r,0,0,,,0,0,14000,24,80,26,Original,#GCRG8L00
+40313,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#9GY0QU8PY,machete ll,0,0,,,0,0,14000,37,120,86,Original,#GCRG8L00
+40314,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#GVVPJ8CLG,JP Titan :),0,0,,,0,0,14000,36,80,24,Original,#GCRG8L00
+40315,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#PPJVG29UV,FLS £V∆°,0,0,,,0,0,14000,41,40,10,Original,#GCRG8L00
+40316,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#Q9PY2Y80R,Brian TC,0,0,,,0,0,14000,25,120,18,Original,#GCRG8L00
+40317,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#298JJ9RUL,Sebas JAS,0,0,,,0,0,14000,39,40,34,Original,#GCRG8L00
+40318,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#9YC08RJC8,Mini Diego :),0,0,,,0,0,14000,23,120,88,Original,#GCRG8L00
+40319,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#9LCJ2JQ08,Adrian,0,0,,,0,0,14000,20,0,244,Original,#GCRG8L00
+40320,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#829GQP0JL,Procrastinador.,0,0,,,0,0,14000,8,0,20,Original,#GCRG8L00
+40321,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#92YRUUV9P,ᴳ乂ᵀ ⚜️ iJonahjk,4,0,,,0,0,13685,42,56,38,Original,#GCRG8L00
+40322,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#YYYYULCRG,rafael,1,0,,,0,0,14000,15,0,0,Original,#GCRG8L00
+40323,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#V9YLPQY0L,ᴳ乂ᵀ ⚜️ SHON,0,0,,,0,0,14000,32,190,257,Original,#GCRG8L00
+40324,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#8PYCU9U9Q,KAITO KID,0,0,,,0,0,14000,21,80,96,Original,#GCRG8L00
+40325,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#VVLUYCGYC,Ari,0,0,,,0,0,12777,46,120,80,Original,#GCRG8L00
+40326,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#VP92PYJ0J,zuizidee.,0,0,,,0,0,14000,18,200,146,Original,#GCRG8L00
 40327,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#2L2RPYRYR,Benjha Pe,0,0,,,0,0,14000,1,160,66,Original,#GCRG8L00
-40328,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#VY9VVLRRR,GRONE P CTMR,0,0,,,0,0,14000,31,80,100,Original,#GCRG8L00
-40329,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#2GYUC0QLV,miguel,0,0,,,0,0,14000,10,90,98,Original,#GCRG8L00
-40330,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#QG2PP89G2,Har,0,0,,,0,0,14000,9,280,36,Original,#GCRG8L00
-40331,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#228VUG2RU,ᴳ乂ᵀ ⚜ Fazete,0,0,,,0,0,14000,16,0,26,Original,#GCRG8L00
-40332,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#QVRJGPYGJ,AlonSoS,0,0,,,0,0,14000,29,120,56,Original,#GCRG8L00
-40333,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#RRVG2L2YP,ᴳ乂ᵀ ⚜️ dfgh,0,0,,,0,0,14000,7,180,78,Original,#GCRG8L00
-40334,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#2VQ0Y9992,Jhona_PRO ⚔️,0,0,,,0,0,14000,37,40,97,Original,#GCRG8L00
-40335,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#90U80RR2Y,ᴳ乂ᵀ ⚜️Cristofer,1,0,,,0,0,14000,4,0,0,Original,#GCRG8L00
-40336,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#LJ0CYCG9V,ᴳ乂ᵀ ⚜️CERFIRE,0,0,,,0,0,12808,44,80,17,Original,#GCRG8L00
-40337,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#CUQG9CJUG,ᴳ乂ᵀ ⚜️Marzz,0,0,,,0,0,14000,22,200,250,Original,#GCRG8L00
-40338,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#8GJ0PGVVQ,GØNZĄLØ BS,0,0,,,0,0,14000,25,0,74,Original,#GCRG8L00
-40339,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#8J892C02C,Diego Shelby,0,0,,,0,0,14000,8,140,74,Original,#GCRG8L00
-40340,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#UJUGRYY9C,ㅤᴀᴅᴍㅤϟ,0,0,,,0,0,14000,19,80,10,Original,#GCRG8L00
-40341,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#YLU0JYUL,‼DANIETTO‼,0,0,,,0,0,14000,14,0,370,Original,#GCRG8L00
-40342,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#VQCG0G09G,ᴳ乂ᵀ ⚜️ C-Ron,0,0,,,0,0,14000,2,320,188,Original,#GCRG8L00
-40343,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#2GG8PJ8GC,ᴳ乂ᵀ ⚜️ Chistris,0,0,,,0,0,13691,41,240,438,Original,#GCRG8L00
-40344,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,0,0,,,0,0,13000,43,80,52,Original,#GCRG8L00
-40345,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#8VG8J9099,CODI SH,0,0,,,0,0,14000,13,220,161,Original,#GCRG8L00
-40346,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#9CJY8RU20,ZupeRey,4,0,,,0,0,14000,11,0,108,Original,#GCRG8L00
-,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™2,#8YJGLRJUJ,Xdrago218X,1,1,,,0,200,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™2,#C0JRUURGU,Cris,1,1,,,1,125,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™2,#JR0V99Y0U,VALENTINITA_SK,2,2,,,2,250,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™2,#Q2GR9JVQL,TT DIEGO B),1,1,,,0,200,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™2,#UCVP89PJQ,亗 ＭＡＴＨ ϟ ＡＳ 么,2,2,,,0,300,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™3,#2CR90VVV,Marf96,4,4,,,4,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
-,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™3,#9Y88C8U8Y,xXROBERTOXx,4,4,,,4,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
-,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™3,#UJYULR99J,vibpollo,4,4,,,4,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
-,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™3,#UQL8V0YVJ,Yamil,4,4,,,4,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
-,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™3,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,4,,,0,550,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
-,12/06/2026 00:00:00,12/06/2026,Guerra,22,133,2,V,11,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,,,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,13/06/2026 00:00:00,13/06/2026,Guerra,22,133,2,S,12,Grupo乂Terna™,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,4,4,,,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,21/06/2026 00:00:00,21/06/2026,Guerra,22,133,3,D,20,GrupoXTerna™2,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,8,,,0,1400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,18/06/2026 00:00:00,18/06/2026,Guerra,22,133,3,J,17,Grupo乂Terna™,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,4,,,0,700,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,20/06/2026 00:00:00,20/06/2026,Guerra,22,133,3,S,19,Grupo乂Terna™,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,8,,,0,1300,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,26/06/2026 00:00:00,26/06/2026,Guerra,22,133,4,V,25,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,4,4,,,0,700,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,26/06/2026 00:00:00,26/06/2026,Guerra,22,133,4,V,25,GrupoXTerna™2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,4,4,,,0,650,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,26/06/2026 00:00:00,26/06/2026,Guerra,22,133,4,V,25,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,4,,,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,27/06/2026 00:00:00,27/06/2026,Guerra,22,133,4,S,26,GrupoXTerna™2,#UL2L8R9UQ,J3$H_❤️,1,1,,,1,125,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,26/06/2026 00:00:00,26/06/2026,Guerra,22,133,4,V,25,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,4,,,0,700,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,25/06/2026 00:00:00,25/06/2026,Guerra,22,133,4,J,24,GrupoXTerna™3,#Q09UJ2UP2,MASTER K.,4,4,,,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
-,03/07/2026 00:00:00,03/07/2026,Guerra,22,133,5,V,32,GrupoXTerna™2,#20JPVQYL8Q,MiniSebas,3,3,,,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,03/07/2026 00:00:00,03/07/2026,Guerra,22,133,5,V,32,GrupoXTerna™2,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,1,1,,,0,100,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,04/07/2026 00:00:00,04/07/2026,Guerra,22,133,5,S,33,Grupo乂Terna™,#20JPVQYL8Q,MiniSebas,3,3,,,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,10/07/2026 00:00:00,10/07/2026,Guerra,23,134,1,V,4,GrupoXTerna™2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,4,4,,,0,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™2,#CPYUPLLPC,henry,4,16,,,0,2350,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™2,#JGCU09PJ8,BICHOTE,4,7,,,0,900,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,11/07/2026 00:00:00,11/07/2026,Guerra,23,134,1,S,5,GrupoXTerna™2,#JJ9VVRCYG,shamir el crak,3,3,,,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™2,#JJ9VVRCYG,shamir el crak,1,4,,,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,10/07/2026 00:00:00,10/07/2026,Guerra,23,134,1,V,4,GrupoXTerna™2,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,4,4,,,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™2,#UU02UUQGY,dark zz,3,12,,,0,2000,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™3,#80QCQ9R9Y,JEQ,4,16,,,0,2600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
-,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™3,#JJ0RUP0RR,Axelgamer,4,12,,,0,1900,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
-,11/07/2026 00:00:00,11/07/2026,Guerra,23,134,1,S,5,GrupoXTerna™3,#VP2GYQGQ8,espinozaxd,1,1,,,0,100,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
-,10/07/2026 00:00:00,10/07/2026,Guerra,23,134,1,V,4,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,,,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,11/07/2026 00:00:00,11/07/2026,Guerra,23,134,1,S,5,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,8,,,0,1200,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,18/07/2026 00:00:00,18/07/2026,Guerra,23,134,2,S,12,Grupo乂Terna™,#UQPU20P09,Drago zr,2,2,,,0,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,17/07/2026 00:00:00,17/07/2026,Guerra,23,134,2,V,11,Mini乂Ternas™,#20VJLLRP0U,monchi,1,1,,,0,200,,,,,Reconstruido - CurrentRiverRace (mínimo),#GG99LCJY
-,01/08/2026 00:00:00,01/08/2026,Guerra,23,134,4,S,26,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,,,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,01/08/2026 00:00:00,01/08/2026,Guerra,23,134,4,S,26,Grupo乂Terna™,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,4,,,0,550,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,02/08/2026 00:00:00,02/08/2026,Guerra,23,134,4,D,27,Grupo乂Terna™,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,3,3,,,0,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,01/08/2026 00:00:00,01/08/2026,Guerra,23,134,4,S,26,Grupo乂Terna™,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,4,4,,,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,09/08/2026 00:00:00,09/08/2026,Guerra,24,135,1,D,6,GrupoXTerna™2,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,4,4,,,0,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
-,07/08/2026 00:00:00,07/08/2026,Guerra,24,135,1,V,4,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,,,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
-,05/11/2026 00:00:00,05/11/2026,Guerra,27,138,1,J,3,GrupoXTerna™2,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,4,4,,,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40328,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#VY9VVLRRR,GRONE P CTMR,0,0,,,0,0,14000,33,80,100,Original,#GCRG8L00
+40329,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#2GYUC0QLV,miguel,0,0,,,0,0,14000,13,100,98,Original,#GCRG8L00
+40330,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#QG2PP89G2,Har,0,0,,,0,0,14000,12,280,36,Original,#GCRG8L00
+40331,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#228VUG2RU,ᴳ乂ᵀ ⚜ Fazete,0,0,,,0,0,14000,19,0,26,Original,#GCRG8L00
+40332,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#QVRJGPYGJ,AlonSoS,0,0,,,0,0,14000,31,120,56,Original,#GCRG8L00
+40333,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#RRVG2L2YP,ᴳ乂ᵀ ⚜️ dfgh,0,0,,,0,0,14000,10,200,78,Original,#GCRG8L00
+40334,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#2VQ0Y9992,Jhona_PRO ⚔️,0,0,,,0,0,14000,38,40,97,Original,#GCRG8L00
+40335,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#90U80RR2Y,ᴳ乂ᵀ ⚜️Cristofer,1,0,,,0,0,14000,7,0,0,Original,#GCRG8L00
+40336,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#LJ0CYCG9V,ᴳ乂ᵀ ⚜️CERFIRE,0,0,,,0,0,12808,45,80,17,Original,#GCRG8L00
+40337,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#CUQG9CJUG,ᴳ乂ᵀ ⚜️Marzz,0,0,,,0,0,14000,3,216,308,Original,#GCRG8L00
+40338,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#8GJ0PGVVQ,GØNZĄLØ BS,0,0,,,0,0,14000,27,0,74,Original,#GCRG8L00
+40339,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#8J892C02C,Diego Shelby,0,0,,,0,0,14000,11,150,74,Original,#GCRG8L00
+40340,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#UJUGRYY9C,ㅤᴀᴅᴍㅤϟ,0,0,,,0,0,14000,22,80,10,Original,#GCRG8L00
+40341,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#YLU0JYUL,‼DANIETTO‼,0,0,,,0,0,14000,17,0,370,Original,#GCRG8L00
+40342,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#VQCG0G09G,ᴳ乂ᵀ ⚜️ C-Ron,0,0,,,0,0,14000,5,320,188,Original,#GCRG8L00
+40343,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#2GG8PJ8GC,ᴳ乂ᵀ ⚜️ Chistris,0,0,,,0,0,13661,43,240,446,Original,#GCRG8L00
+40344,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#V20GJRC9Y,ᴳ乂ᵀ ⚜️ Caandre,0,0,,,0,0,13000,44,80,52,Original,#GCRG8L00
+40345,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#8VG8J9099,CODI SH,0,0,,,0,0,14000,16,230,161,Original,#GCRG8L00
+40346,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#9CJY8RU20,ZupeRey,4,0,,,0,0,14000,14,0,108,Original,#GCRG8L00
+40347,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™2,#8YJGLRJUJ,Xdrago218X,1,1,3,3,0,200,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40348,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™2,#C0JRUURGU,Cris,1,1,3,3,1,125,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40349,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™2,#JR0V99Y0U,VALENTINITA_SK,2,2,2,2,2,250,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40350,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™2,#Q2GR9JVQL,TT DIEGO B),1,1,3,3,0,200,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40351,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™2,#UCVP89PJQ,亗 ＭＡＴＨ ϟ ＡＳ 么,2,2,2,2,0,300,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40352,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™3,#2CR90VVV,Marf96,4,4,0,0,4,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
+40353,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™3,#9Y88C8U8Y,xXROBERTOXx,4,4,0,0,4,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
+40354,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™3,#UJYULR99J,vibpollo,4,4,0,0,4,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
+40355,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™3,#UQL8V0YVJ,Yamil,4,4,0,0,4,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
+40356,07/06/2026 00:00:00,07/06/2026,Guerra,22,133,1,D,6,GrupoXTerna™3,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,4,0,0,0,550,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
+40357,12/06/2026 00:00:00,12/06/2026,Guerra,22,133,2,V,11,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,0,0,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40358,13/06/2026 00:00:00,13/06/2026,Guerra,22,133,2,S,12,Grupo乂Terna™,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,4,4,0,0,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40359,21/06/2026 00:00:00,21/06/2026,Guerra,22,133,3,D,20,GrupoXTerna™2,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,8,0,0,0,1400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40360,18/06/2026 00:00:00,18/06/2026,Guerra,22,133,3,J,17,Grupo乂Terna™,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,4,0,0,0,700,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40361,20/06/2026 00:00:00,20/06/2026,Guerra,22,133,3,S,19,Grupo乂Terna™,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,8,0,0,0,1300,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40362,26/06/2026 00:00:00,26/06/2026,Guerra,22,133,4,V,25,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,4,4,0,0,0,700,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40363,26/06/2026 00:00:00,26/06/2026,Guerra,22,133,4,V,25,GrupoXTerna™2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,4,4,0,0,0,650,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40364,26/06/2026 00:00:00,26/06/2026,Guerra,22,133,4,V,25,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,4,0,0,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40365,27/06/2026 00:00:00,27/06/2026,Guerra,22,133,4,S,26,GrupoXTerna™2,#UL2L8R9UQ,J3$H_❤️,1,1,3,3,1,125,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40366,26/06/2026 00:00:00,26/06/2026,Guerra,22,133,4,V,25,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,4,4,0,0,0,700,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40367,25/06/2026 00:00:00,25/06/2026,Guerra,22,133,4,J,24,GrupoXTerna™3,#Q09UJ2UP2,MASTER K.,4,4,0,0,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
+40368,03/07/2026 00:00:00,03/07/2026,Guerra,22,133,5,V,32,GrupoXTerna™2,#20JPVQYL8Q,MiniSebas,3,3,1,1,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40369,03/07/2026 00:00:00,03/07/2026,Guerra,22,133,5,V,32,GrupoXTerna™2,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,1,1,3,3,0,100,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40370,04/07/2026 00:00:00,04/07/2026,Guerra,22,133,5,S,33,Grupo乂Terna™,#20JPVQYL8Q,MiniSebas,3,3,1,1,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40371,10/07/2026 00:00:00,10/07/2026,Guerra,23,134,1,V,4,GrupoXTerna™2,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,4,4,0,0,0,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40372,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™2,#CPYUPLLPC,henry,4,16,0,0,0,2350,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40373,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™2,#JGCU09PJ8,BICHOTE,4,7,0,1,0,900,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40374,11/07/2026 00:00:00,11/07/2026,Guerra,23,134,1,S,5,GrupoXTerna™2,#JJ9VVRCYG,shamir el crak,3,3,1,1,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40375,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™2,#JJ9VVRCYG,shamir el crak,1,4,3,4,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40376,10/07/2026 00:00:00,10/07/2026,Guerra,23,134,1,V,4,GrupoXTerna™2,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,4,4,0,0,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40377,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™2,#UU02UUQGY,dark zz,3,12,1,4,0,2000,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40378,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™3,#80QCQ9R9Y,JEQ,4,16,0,0,0,2600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
+40379,12/07/2026 00:00:00,12/07/2026,Guerra,23,134,1,D,6,GrupoXTerna™3,#JJ0RUP0RR,Axelgamer,4,12,0,4,0,1900,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
+40380,11/07/2026 00:00:00,11/07/2026,Guerra,23,134,1,S,5,GrupoXTerna™3,#VP2GYQGQ8,espinozaxd,1,1,3,3,0,100,,,,,Reconstruido - CurrentRiverRace (mínimo),#GQQPPJGR
+40381,10/07/2026 00:00:00,10/07/2026,Guerra,23,134,1,V,4,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,0,0,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40382,11/07/2026 00:00:00,11/07/2026,Guerra,23,134,1,S,5,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,8,0,0,0,1200,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40383,18/07/2026 00:00:00,18/07/2026,Guerra,23,134,2,S,12,Grupo乂Terna™,#UQPU20P09,Drago zr,2,2,2,2,0,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40384,17/07/2026 00:00:00,17/07/2026,Guerra,23,134,2,V,11,Mini乂Ternas™,#20VJLLRP0U,monchi,1,1,3,3,0,200,,,,,Reconstruido - CurrentRiverRace (mínimo),#GG99LCJY
+40385,01/08/2026 00:00:00,01/08/2026,Guerra,23,134,4,S,26,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,0,0,0,600,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40386,01/08/2026 00:00:00,01/08/2026,Guerra,23,134,4,S,26,Grupo乂Terna™,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,4,4,0,0,0,550,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40387,02/08/2026 00:00:00,02/08/2026,Guerra,23,134,4,D,27,Grupo乂Terna™,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,3,3,1,1,0,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40388,01/08/2026 00:00:00,01/08/2026,Guerra,23,134,4,S,26,Grupo乂Terna™,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,4,4,0,0,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40389,09/08/2026 00:00:00,09/08/2026,Guerra,24,135,1,D,6,GrupoXTerna™2,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,4,4,0,0,0,500,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40390,07/08/2026 00:00:00,07/08/2026,Guerra,24,135,1,V,4,Grupo乂Terna™,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,4,4,0,0,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GCRG8L00
+40391,05/11/2026 00:00:00,05/11/2026,Guerra,27,138,1,J,3,GrupoXTerna™2,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,4,4,0,0,0,400,,,,,Reconstruido - CurrentRiverRace (mínimo),#GYCU9YRG
+40392,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#L2VGUYR9J,"MOSQUITO""",0,0,,,0,0,14000,2,0,0,Original,#GCRG8L00
+40393,11/11/2026 04:54:19,11/11/2026,Entrenamiento,27,138,2,X,9,Grupo乂Terna™,#8YG88UVPR,Paul,0,0,,,0,0,14000,4,0,0,Original,#GCRG8L00
+40394,11/11/2026 04:44:01,11/11/2026,Entrenamiento,27,138,2,X,9,GrupoXTerna™2,#2V2YQLJCP,LucyWeird,1,0,,,0,0,10061,36,10,44,Original,#GYCU9YRG
