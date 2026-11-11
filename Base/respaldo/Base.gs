@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 10/11/2026 23:12:54 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 10/11/2026 23:47:31 */
 
 
 
@@ -78747,7 +78747,7 @@ function _vcrrLimpiarRevisionAntigua_() {
  * Devuelve filas de hallazgos [Temporada, Semana, Clan, Tag, Nombre, Día, Tipo, Campo, CSV, Mínimo JSON, Máximo posible, Severidad, Detalle]:
  *  - csv_menor: el CSV tiene menos que el piso del JSON (ataques de la semana, ataques del día, fame o barcos). Severidad 'error'.
  *  - csv_mayor_max: el CSV pasa del máximo posible. Severidad 'revisar' ('aviso' si el jugador estuvo en dos clanes esa semana).
- *  - fila_faltante: el JSON de ese clan y día muestra actividad y el CSV no tiene la fila del día. Severidad 'error'.
+ *  - fila_faltante: el JSON de ese clan y día muestra actividad nueva (más que lo acumulado el día anterior, o ataques propios) y el CSV no tiene la fila del día. Severidad 'error'. Desde §PF445 punto 14 un arrastre puro no cuenta.
  *  - no_monotono: un acumulado del CSV baja de un día al siguiente.
  */
 function _vcrrCompararSerie_(x, g) {
@@ -78757,10 +78757,13 @@ function _vcrrCompararSerie_(x, g) {
   };
   var campos = [['A', 'Ataques semana', GC.ATAQUES_SEM], ['F', 'Fame', GC.FAME], ['B', 'Barcos', GC.BARCOS]];
   var previo = { A: null, F: null, B: null };
+  var acum = { a: 0, f: 0, b: 0 };   // §PF445 punto 14: acumulado visto hasta el día anterior (filas del CSV o mínimos del JSON de los días sin fila), para no marcar un arrastre puro como fila faltante
   for (d = 0; d < 4; d++) {
     var fila = g && g.dias[d];
     if (!fila) {
       var actividad = x.capturas[d] && (x.r.A.lo[d] > 0 || x.r.F.lo[d] > 0 || x.r.B.lo[d] > 0 || x.r.A.il[d] > 0);
+      if (actividad && _vcrrEsArrastre_(x, d, acum)) actividad = false;
+      if (actividad) acum = { a: Math.max(acum.a, x.r.A.lo[d]), f: Math.max(acum.f, x.r.F.lo[d]), b: Math.max(acum.b, x.r.B.lo[d]) };
       if (actividad) out.push(base(d, 'fila_faltante', 'fila del día', '', 'A ' + x.r.A.lo[d] + ' / F ' + x.r.F.lo[d] + ' / B ' + x.r.B.lo[d], '', 'error', 'el JSON trae actividad este día y el CSV no tiene la fila'));
       continue;
     }
@@ -78772,6 +78775,8 @@ function _vcrrCompararSerie_(x, g) {
       }
       if (previo[k] !== null && v < previo[k]) out.push(base(d, 'no_monotono', cm[1], v, previo[k], '', 'revisar', 'el acumulado baja respecto del día anterior del CSV'));
       previo[k] = v;
+      var kl = k.toLowerCase();
+      if (v > acum[kl]) acum[kl] = v;
     });
     if (x.validos.indexOf('A') >= 0) {
       var hoy = _excDiasNum(fila[GC.ATAQUES_HOY - 1]);
@@ -78863,6 +78868,16 @@ function _vcrrPaso3_(st, t0) {
 }
 
 /**
+ * _vcrrEsArrastre_(x, d, prev) — §PF445 punto 14. Función pura. True si el día d (0 = jueves a 3 = domingo) de la serie x, que no tiene fila en el CSV, no agrega ningún dato:
+ * el mínimo del JSON de ataques, fame y barcos no pasa de lo acumulado el día anterior (prev = { a, f, b }) y el JSON no exige ataques propios ese día (il = 0).
+ * Una fila así solo repetiría el acumulado con AtaquesHoy en 0. «Actividad» se decide por el acumulado del JSON, así que sin esta prueba cualquier jugador con algo acumulado
+ * parecería tener un día faltante.
+ */
+function _vcrrEsArrastre_(x, d, prev) {
+  return x.r.A.il[d] === 0 && x.r.A.lo[d] <= prev.a && x.r.F.lo[d] <= prev.f && x.r.B.lo[d] <= prev.b;
+}
+
+/**
  * Función pura. Arma las operaciones de escritura de una serie: crea el día que falta (si el JSON de ese clan y día trae actividad) y sube al piso
  * los acumulados que estén por debajo; nunca baja un valor y no toca los que pasan del máximo. clanes = { clave normalizada: nombre del clan en el CSV }.
  * Devuelve { grupo, ops, conflictos }. Las ops sirven para _excDiasAplicarPlan() (55_Reparar_DiasConExceso.gs).
@@ -78880,6 +78895,8 @@ function _vcrrPlanSerie_(x, g, clanes) {
     if (!fila) {
       var actividad = x.capturas[d] && (A.lo[d] > 0 || F.lo[d] > 0 || B.lo[d] > 0 || A.il[d] > 0);
       if (!actividad) continue;
+      // §PF445 punto 14: un día sin fila cuyo mínimo no pasa de lo acumulado el día anterior y sin ataques propios es un arrastre puro (el JSON trae el acumulado, no una acción de ese día): no se crea, ya que no agrega dato y en una serie multiclan podría inventar un día en un clan que el jugador ya dejó.
+      if (_vcrrEsArrastre_(x, d, prev)) continue;
       if (!conocido) { pideConflicto(d, 'no se sabe cómo se escribe el nombre del clan en el CSV'); continue; }
       if (!usa('A') || !usa('F') || !usa('B')) { pideConflicto(d, 'el JSON de esa serie es incoherente en alguna métrica'); continue; }
       var sem = Math.max(A.lo[d], prev.a), fame = Math.max(F.lo[d], prev.f), barcos = Math.max(B.lo[d], prev.b);
