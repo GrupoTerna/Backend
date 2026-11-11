@@ -142,7 +142,7 @@ var BLG_INFORME_MAX_LINEAS = 80;
 // §PF437 fase 2 (9-nov-2026): Guerra_Desglose.csv (una fila por jugador, semana de guerra y clan Terna, con los cuatro días en bloques; formato ancho del 10-nov-2026) y Battlelog_Capturas.csv (qué cubre cada captura). [→ Contexto_Base_Web.md §PF437]
 var GDS_CSV_NOMBRE = 'Guerra_Desglose.csv';
 var GDS_CAPTURAS_CSV_NOMBRE = 'Battlelog_Capturas.csv';
-// FORMATO ANCHO (10-nov-2026, pedido de la usuaria; [→ Contexto_Base_Web.md §PF439]): UNA fila por jugador, semana de guerra y clan Terna, con los cuatro días en bloques J, V, S y D como su tabla de 180 filas (§PF438).
+// FORMATO ANCHO (10-nov-2026, pedido de la usuaria; [→ Contexto_Base_Web.md §PF442]): UNA fila por jugador, semana de guerra y clan Terna, con los cuatro días en bloques J, V, S y D como su tabla de 180 filas (§PF438).
 // Bloque principal, igual a la tabla: por día Duelo 250, Duelo 100, PvP 200, PvP 100, Barcos 125, Barcos 75 y Total (solo el domingo lleva además «Sin Medallas»), luego Total Ataques, Tipo de día, Barcos J…D y Total, Medallas J…D y Total.
 // Después, por día, lo que el desglose ya tenía y la tabla no: DiaGuerra, PeriodIndex, Origen, AtaquesAcum, BarcosAcum, FameAcum (los acumulados que trae la hoja Guerra), FuenteDesglose, Combinaciones, ConsistenciaValores, CoberturaLog y BattlelogArchivo, BattlelogDescargado y BattlelogDesde.
 var GDS_DIAS = ['J', 'V', 'S', 'D'];
@@ -736,7 +736,7 @@ function informeBattlelogContraGuerra() {
 }
 
 /**
- * generarGuerraDesglose() — §PF437 fase 2 (9-nov-2026). MANUAL (se corre desde el editor de Apps Script). Escribe Guerra_Desglose.csv: una fila por jugador, semana de guerra y clan Terna (etapa «Guerra»), con los días J, V, S y D en bloques (formato ancho, §PF439),
+ * generarGuerraDesglose() — §PF437 fase 2 (9-nov-2026). MANUAL (se corre desde el editor de Apps Script). Escribe Guerra_Desglose.csv: una fila por jugador, semana de guerra y clan Terna (etapa «Guerra»), con los días J, V, S y D en bloques (formato ancho, §PF442),
  * con los ataques por puntuación (duelo, PvP y barco, ganados y perdidos, y sin fame), la fuente del desglose, la consistencia con el battlelog y la cobertura de la mejor captura. Lee Backup_Guerra.csv
  * y Backup_Battlelogs.csv y, para la cobertura, las capturas JSON a través de Battlelog_Capturas.csv (que solo abre los JSON nuevos). No toca la hoja Guerra, no corrige nada y NO pide nada a la API.
  * Si se acaba el tiempo de lectura de capturas (GDS_PRESUPUESTO_CAPTURAS_MS), escribe lo que tiene, avisa cuántas quedaron sin leer y se vuelve a correr hasta que diga 0. [→ Contexto_Base_Web.md §PF437]
@@ -5631,7 +5631,7 @@ function _gdsFechaLima_(ms) {
 /**
  * _gdsCombinacionesDelDia_(ataques, fame, barcos) — §PF437 fase 2. TODAS las formas de repartir un día de guerra por puntuación que cuadran con los ataques, la fame y los barcos DEL DÍA
  * (los días de la hoja ya vienen como diferencia de acumulados, ver _blgValoresHojaDeClan_). Cada elemento: { duelo250, duelo100, pvp200, pvp100, barco125, barco75, sinFame }.
- * esDomingo (opcional): false para jueves a sábado, donde «sin medallas» no existe (§PF439); true o sin dato, como antes.
+ * esDomingo (opcional): false para jueves a sábado, donde «sin medallas» no existe (§PF442); true o sin dato, como antes.
  * A diferencia de las letras a a f de §PF356, separa el duelo perdido (100) del PvP perdido (100). Reglas: un día sin ataques ni fame es todo ceros; un día con ataques y fame 0 son
  * ataques sin fame (todos o ninguno, §PF357 punto 9 a); si no, salen de _fameDescomposicionesDia_(). Sin dato de barcos se prueba con todos. Devuelve [] si ninguna cuadra,
  * o null si algún dato no es válido. [→ Contexto_Base_Web.md §PF437]
@@ -5646,7 +5646,7 @@ function _gdsCombinacionesDelDia_(ataques, fame, barcos, esDomingo) {
   var salida = [];
   function cero() { return { duelo250: 0, duelo100: 0, pvp200: 0, pvp100: 0, barco125: 0, barco75: 0, sinFame: 0 }; }
   if (fame === 0) {
-    // §PF439: los ataques sin medallas solo se dan el domingo; un día de jueves a sábado con ataques y fame 0 no tiene reparto posible (esDomingo === false). Sin ese dato (undefined) vale lo de antes.
+    // §PF442: los ataques sin medallas solo se dan el domingo; un día de jueves a sábado con ataques y fame 0 no tiene reparto posible (esDomingo === false). Sin ese dato (undefined) vale lo de antes.
     if (ataques === 0 || esDomingo !== false) {
       var c0 = cero();
       c0.sinFame = ataques;
@@ -5693,7 +5693,7 @@ function _gdsTextoCombinaciones_(lista, max) {
  * _gdsDesgloseDelDia_(dia, bucket, pendiente) — §PF437 fase 2. Desglose por puntuación de UN día de UN clan.
  * dia = { ataques, fame, barcos } (valores del día de la hoja; null si no se pudieron calcular). bucket = resumen del battlelog de ese clan y día (_blgBucketVacio_) o null.
  * pendiente = true si en esa semana quedó una batalla del cambio de día sin ubicar para ese clan (el log puede tener más de lo que se contó).
- * esDomingo = true solo para el domingo (4.º día); false de jueves a sábado, donde no hay ataques sin medallas (§PF439).
+ * esDomingo = true solo para el domingo (4.º día); false de jueves a sábado, donde no hay ataques sin medallas (§PF442).
  * Devuelve { valores: { duelo250, …, sinFame } (números, o '' si no se sabe), fuente, combinaciones, consistencia }. FuenteDesglose:
  *  «Battlelog»: el log tiene el desglose exacto y sus mazos son los ataques de la hoja (criterio 6 d de §PF437; el log es una cota inferior, §18B049, así que solo se acepta si no sobra ni falta ningún ataque).
  *  «Battlelog parcial»: el log trae menos mazos que la hoja, o no se pudo leer algún resultado: lo que muestra es una cota inferior.
@@ -5760,12 +5760,12 @@ function _gdsMejorCapturaDia_(dia, limites, capturas) {
 }
 
 /**
- * _gdsFilaSemana_(cab, dias) — §PF439 (10-nov-2026). Arma UNA fila ancha de Guerra_Desglose.csv (GDS_HEADERS) de un jugador, una semana de guerra y un clan.
+ * _gdsFilaSemana_(cab, dias) — §PF442 (10-nov-2026). Arma UNA fila ancha de Guerra_Desglose.csv (GDS_HEADERS) de un jugador, una semana de guerra y un clan.
  * cab = { temporada, semana, clanTag, clan, tag, nombre }. dias = lista de 4 elementos (J, V, S, D): null si el jugador no tiene fila ese día en ese clan (todas sus celdas quedan vacías,
  * que no es lo mismo que 0), o { valores (de _gdsDesgloseDelDia_), ataques, barcos, fame (del día, o null), fuente, combinaciones, consistencia, diaGuerra, periodIndex, origen,
  * ataquesAcum, barcosAcum, fameAcum, cobertura: { estado, archivo, descargaMs, inicioMs } }. «Total» de cada día = los ataques del día de la hoja (no la suma de las celdas: si el reparto es «Posible» las celdas quedan vacías).
  * «Sin Medallas» solo existe el domingo. «Tipo de día» es el del domingo: «Domingo con cruce» si tiene ataques sin medallas, «Día normal» si el desglose lo da sin ellos, vacío si no se sabe.
- * Los totales de la semana suman solo los días con dato y quedan vacíos si no hay ninguno. N° queda vacío (lo llena generarGuerraDesglose). No lee Drive ni hojas. [→ Contexto_Base_Web.md §PF439]
+ * Los totales de la semana suman solo los días con dato y quedan vacíos si no hay ninguno. N° queda vacío (lo llena generarGuerraDesglose). No lee Drive ni hojas. [→ Contexto_Base_Web.md §PF442]
  */
 function _gdsFilaSemana_(cab, dias) {
   var v = function (x) { return (x === null || x === undefined) ? '' : x; };
@@ -5799,7 +5799,7 @@ function _gdsFilaSemana_(cab, dias) {
 
 /**
  * _gdsConstruirFilas_(filas, opciones) — §PF437 fase 2. Arma las filas de Guerra_Desglose.csv (GDS_HEADERS) a partir de las filas de la hoja Guerra (o de Backup_Guerra.csv), sin leer Drive ni hojas
- * y sin pedir nada a la API. Una fila por jugador, semana de guerra y clan Terna de la etapa «Guerra», con los cuatro días en bloques (formato ancho, §PF439; la arma _gdsFilaSemana_). Los valores del día salen de _blgValoresHojaDeClan_ (el mismo cálculo del informe de battlelog).
+ * y sin pedir nada a la API. Una fila por jugador, semana de guerra y clan Terna de la etapa «Guerra», con los cuatro días en bloques (formato ancho, §PF442; la arma _gdsFilaSemana_). Los valores del día salen de _blgValoresHojaDeClan_ (el mismo cálculo del informe de battlelog).
  * opciones = { ternaTags: [...], tagPorNombre: { nombreDeClan: tag } (solo para filas sin ClanTag), battlelogPorTag: { tag: [filas de Backup_Battlelogs.csv] }, capturasPorTag: { tag: [{ archivo, descargaMs, inicioMs }] } }.
  * Devuelve { ok, filas, cuenta }; cuenta lleva las filas por FuenteDesglose y las filas que no se pudieron incluir (sin ClanTag, de clan ajeno, fuera de la semana de guerra). Deja la columna N° vacía.
  */

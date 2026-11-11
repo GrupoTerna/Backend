@@ -1,4 +1,4 @@
-// Prueba (solo lectura) del formato ancho de Guerra_Desglose.csv, §PF439. Uso: node prueba_guerra_desglose_ancho.js [base.json]
+// Prueba (solo lectura) del formato ancho de Guerra_Desglose.csv, §PF442. Uso: node prueba_guerra_desglose_ancho.js [base.json]
 // Carga 01, 05, 06, 17 y 18 de Base/src en un contexto de node y usa los datos reales de «Datos descargados».
 // Con base.json (las filas por día de la versión anterior, mismas entradas) compara día por día; sin él solo hace las pruebas de forma.
 const fs = require('fs'), vm = require('vm'), path = require('path');
