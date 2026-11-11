@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 10/11/2026 19:53:30 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 10/11/2026 21:04:49 */
 
 
 
@@ -29064,13 +29064,31 @@ var BLG_DIAS_NOMBRE = ['Jue', 'Vie', 'Sab', 'Dom'];
 // Maximo de lineas de detalle que imprime el informe (el resumen siempre se imprime completo).
 var BLG_INFORME_MAX_LINEAS = 80;
 
-// §PF437 fase 2 (9-nov-2026): Guerra_Desglose.csv (una fila por jugador, día de guerra y clan Terna) y Battlelog_Capturas.csv (qué cubre cada captura). [→ Contexto_Base_Web.md §PF437]
+// §PF437 fase 2 (9-nov-2026): Guerra_Desglose.csv (una fila por jugador, semana de guerra y clan Terna, con los cuatro días en bloques; formato ancho del 10-nov-2026) y Battlelog_Capturas.csv (qué cubre cada captura). [→ Contexto_Base_Web.md §PF437]
 var GDS_CSV_NOMBRE = 'Guerra_Desglose.csv';
 var GDS_CAPTURAS_CSV_NOMBRE = 'Battlelog_Capturas.csv';
-var GDS_HEADERS = ['N°', 'Temporada', 'Semana', 'Día', 'DiaGuerra', 'PeriodIndex', 'ClanTag', 'Clan', 'Tag', 'Nombre', 'Origen',
-  'AtaquesHoy', 'Barcos', 'Fame', 'AtaquesDia', 'BarcosDia', 'FameDia',
-  'DueloGanadas', 'DueloPerdidas', 'PvPGanados', 'PvPPerdidos', 'BarcoGanados', 'BarcoPerdidos', 'SinFame',
-  'FuenteDesglose', 'Combinaciones', 'ConsistenciaValores', 'CoberturaLog', 'BattlelogArchivo', 'BattlelogDescargado', 'BattlelogDesde'];
+// FORMATO ANCHO (10-nov-2026, pedido de la usuaria; [→ Contexto_Base_Web.md §PF442]): UNA fila por jugador, semana de guerra y clan Terna, con los cuatro días en bloques J, V, S y D como su tabla de 180 filas (§PF438).
+// Bloque principal, igual a la tabla: por día Duelo 250, Duelo 100, PvP 200, PvP 100, Barcos 125, Barcos 75 y Total (solo el domingo lleva además «Sin Medallas»), luego Total Ataques, Tipo de día, Barcos J…D y Total, Medallas J…D y Total.
+// Después, por día, lo que el desglose ya tenía y la tabla no: DiaGuerra, PeriodIndex, Origen, AtaquesAcum, BarcosAcum, FameAcum (los acumulados que trae la hoja Guerra), FuenteDesglose, Combinaciones, ConsistenciaValores, CoberturaLog y BattlelogArchivo, BattlelogDescargado y BattlelogDesde.
+var GDS_DIAS = ['J', 'V', 'S', 'D'];
+var GDS_HEADERS = (function () {
+  var h = ['N°', 'Temporada', 'Semana', 'ClanTag', 'Clan', 'Tag', 'Nombre'], i, d;
+  for (i = 0; i < GDS_DIAS.length; i++) {
+    d = GDS_DIAS[i];
+    h.push(d + ' Duelo 250', d + ' Duelo 100', d + ' PvP 200', d + ' PvP 100', d + ' Barcos 125', d + ' Barcos 75');
+    if (i === GDS_DIAS.length - 1) h.push(d + ' Sin Medallas');   // los ataques sin medallas solo existen el domingo (§PF438 punto 2)
+    h.push(d + ' Total');
+  }
+  h.push('Total Ataques', 'Tipo de día');
+  h.push('Barcos J', 'Barcos V', 'Barcos S', 'Barcos D', 'Barcos Total');
+  h.push('Medallas J', 'Medallas V', 'Medallas S', 'Medallas D', 'Medallas Total');
+  for (i = 0; i < GDS_DIAS.length; i++) {
+    d = GDS_DIAS[i];
+    h.push(d + ' DiaGuerra', d + ' PeriodIndex', d + ' Origen', d + ' AtaquesAcum', d + ' BarcosAcum', d + ' FameAcum',
+      d + ' FuenteDesglose', d + ' Combinaciones', d + ' ConsistenciaValores', d + ' CoberturaLog', d + ' BattlelogArchivo', d + ' BattlelogDescargado', d + ' BattlelogDesde');
+  }
+  return h;
+})();
 var GDS_CAMPOS_VALOR = ['duelo250', 'duelo100', 'pvp200', 'pvp100', 'barco125', 'barco75', 'sinFame'];   // en el orden de las columnas DueloGanadas … SinFame
 var GDS_CAPTURAS_HEADERS = ['Tag', 'Archivo', 'Descargado', 'EntradaMasAntigua', 'EntradaMasNueva', 'Entradas'];
 var GDS_MAX_COMBINACIONES_TEXTO = 6;                // combinaciones que se escriben en la celda «Combinaciones» (el resto se cuenta)
@@ -29643,7 +29661,7 @@ function informeBattlelogContraGuerra() {
 }
 
 /**
- * generarGuerraDesglose() — §PF437 fase 2 (9-nov-2026). MANUAL (se corre desde el editor de Apps Script). Escribe Guerra_Desglose.csv: una fila por jugador, día de guerra y clan Terna (etapa «Guerra»),
+ * generarGuerraDesglose() — §PF437 fase 2 (9-nov-2026). MANUAL (se corre desde el editor de Apps Script). Escribe Guerra_Desglose.csv: una fila por jugador, semana de guerra y clan Terna (etapa «Guerra»), con los días J, V, S y D en bloques (formato ancho, §PF442),
  * con los ataques por puntuación (duelo, PvP y barco, ganados y perdidos, y sin fame), la fuente del desglose, la consistencia con el battlelog y la cobertura de la mejor captura. Lee Backup_Guerra.csv
  * y Backup_Battlelogs.csv y, para la cobertura, las capturas JSON a través de Battlelog_Capturas.csv (que solo abre los JSON nuevos). No toca la hoja Guerra, no corrige nada y NO pide nada a la API.
  * Si se acaba el tiempo de lectura de capturas (GDS_PRESUPUESTO_CAPTURAS_MS), escribe lo que tiene, avisa cuántas quedaron sin leer y se vuelve a correr hasta que diga 0. [→ Contexto_Base_Web.md §PF437]
@@ -29700,9 +29718,9 @@ function generarGuerraDesglose() {
   _saveCSVToDrive(GDS_CSV_NOMBRE, _encodeCSV([GDS_HEADERS].concat(res.filas)));
 
   function resumenDe(mapa) { return Object.keys(mapa).sort().map(function (k) { return k + ' ' + mapa[k]; }).join(', '); }
-  Logger.log(etiqueta + ' ' + GDS_CSV_NOMBRE + ' escrito: ' + c.filasSalida + ' fila(s) de ' + c.semanasJugador + ' semana(s) de jugador (' + c.filasLeidas + ' filas leídas de Backup_Guerra.csv; ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag, ' + c.fueraDeSemana + ' fuera de la semana de guerra).');
-  Logger.log(etiqueta + ' Fuente del desglose: ' + resumenDe(c.porFuente) + '.');
-  Logger.log(etiqueta + ' Cobertura de la mejor captura: ' + resumenDe(c.porCobertura) + '. La cobertura es por tiempo y no prueba que el día esté completo (el log pierde batallas, §18B049).');
+  Logger.log(etiqueta + ' ' + GDS_CSV_NOMBRE + ' escrito: ' + c.filasSalida + ' fila(s) (jugador, semana y clan; ' + c.diasSalida + ' día(s) con datos) de ' + c.semanasJugador + ' semana(s) de jugador (' + c.filasLeidas + ' filas leídas de Backup_Guerra.csv; ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag, ' + c.fueraDeSemana + ' fuera de la semana de guerra).');
+  Logger.log(etiqueta + ' Fuente del desglose (por día): ' + resumenDe(c.porFuente) + '.');
+  Logger.log(etiqueta + ' Cobertura de la mejor captura (por día): ' + resumenDe(c.porCobertura) + '. La cobertura es por tiempo y no prueba que el día esté completo (el log pierde batallas, §18B049).');
   if (c.repetidas.length) Logger.log(etiqueta + ' ' + c.repetidas.length + ' fila(s) repetidas (mismo jugador, semana, clan y día de guerra); se conservó la de mayor PeriodIndex. Líneas de Backup_Guerra.csv: ' + c.repetidas.slice(0, 20).join(', ') + (c.repetidas.length > 20 ? ' y más' : '') + '.');
   if (c.sinLimites) Logger.log(etiqueta + ' ' + c.sinLimites + ' semana(s) de jugador sin límites de día (falta una fecha DiaGuerra válida): salen sin battlelog ni cobertura.');
   if (c.ambiguasPendientes) Logger.log(etiqueta + ' ' + c.ambiguasPendientes + ' batalla(s) del cambio de día sin ubicar; los desgloses de ese clan y semana quedan como «Battlelog parcial».');
@@ -34538,23 +34556,27 @@ function _gdsFechaLima_(ms) {
 /**
  * _gdsCombinacionesDelDia_(ataques, fame, barcos) — §PF437 fase 2. TODAS las formas de repartir un día de guerra por puntuación que cuadran con los ataques, la fame y los barcos DEL DÍA
  * (los días de la hoja ya vienen como diferencia de acumulados, ver _blgValoresHojaDeClan_). Cada elemento: { duelo250, duelo100, pvp200, pvp100, barco125, barco75, sinFame }.
+ * esDomingo (opcional): false para jueves a sábado, donde «sin medallas» no existe (§PF442); true o sin dato, como antes.
  * A diferencia de las letras a a f de §PF356, separa el duelo perdido (100) del PvP perdido (100). Reglas: un día sin ataques ni fame es todo ceros; un día con ataques y fame 0 son
  * ataques sin fame (todos o ninguno, §PF357 punto 9 a); si no, salen de _fameDescomposicionesDia_(). Sin dato de barcos se prueba con todos. Devuelve [] si ninguna cuadra,
  * o null si algún dato no es válido. [→ Contexto_Base_Web.md §PF437]
  */
-function _gdsCombinacionesDelDia_(ataques, fame, barcos) {
+function _gdsCombinacionesDelDia_(ataques, fame, barcos, esDomingo) {
   if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame)) return null;
   if (ataques % 1 !== 0 || fame % 1 !== 0 || ataques < 0 || fame < 0 || ataques > FAME_MAZOS_POR_DIA) return null;
   var hayBarcos = (typeof barcos === 'number' && !isNaN(barcos));
   if (hayBarcos && (barcos % 1 !== 0 || barcos < 0 || barcos > ataques)) return null;
-  var clave = ataques + '|' + fame + '|' + (hayBarcos ? barcos : 'x');
+  var clave = ataques + '|' + fame + '|' + (hayBarcos ? barcos : 'x') + '|' + (esDomingo === false ? 'n' : 'd');
   if (_GDS_COMB_DIA_CACHE_[clave] !== undefined) return _GDS_COMB_DIA_CACHE_[clave];
   var salida = [];
   function cero() { return { duelo250: 0, duelo100: 0, pvp200: 0, pvp100: 0, barco125: 0, barco75: 0, sinFame: 0 }; }
   if (fame === 0) {
-    var c0 = cero();
-    c0.sinFame = ataques;
-    salida.push(c0);
+    // §PF442: los ataques sin medallas solo se dan el domingo; un día de jueves a sábado con ataques y fame 0 no tiene reparto posible (esDomingo === false). Sin ese dato (undefined) vale lo de antes.
+    if (ataques === 0 || esDomingo !== false) {
+      var c0 = cero();
+      c0.sinFame = ataques;
+      salida.push(c0);
+    }
   } else {
     var bIni = hayBarcos ? barcos : 0, bFin = hayBarcos ? barcos : ataques, vistos = {};
     for (var b = bIni; b <= bFin; b++) {
@@ -34586,7 +34608,7 @@ function _gdsTextoCombinaciones_(lista, max) {
     if (c.duelo250 + c.duelo100 > 0) t.push('duelo ' + c.duelo250 + '-' + c.duelo100);
     if (c.pvp200 + c.pvp100 > 0) t.push('PvP ' + c.pvp200 + '-' + c.pvp100);
     if (c.barco125 + c.barco75 > 0) t.push('barco ' + c.barco125 + '-' + c.barco75);
-    if (c.sinFame > 0) t.push('sin fame ' + c.sinFame);
+    if (c.sinFame > 0) t.push('sin medallas ' + c.sinFame);
     return t.length ? t.join(', ') : 'sin ataques';
   });
   return partes.join(' | ') + (lista.length > tope ? ' | y ' + (lista.length - tope) + ' más' : '');
@@ -34596,6 +34618,7 @@ function _gdsTextoCombinaciones_(lista, max) {
  * _gdsDesgloseDelDia_(dia, bucket, pendiente) — §PF437 fase 2. Desglose por puntuación de UN día de UN clan.
  * dia = { ataques, fame, barcos } (valores del día de la hoja; null si no se pudieron calcular). bucket = resumen del battlelog de ese clan y día (_blgBucketVacio_) o null.
  * pendiente = true si en esa semana quedó una batalla del cambio de día sin ubicar para ese clan (el log puede tener más de lo que se contó).
+ * esDomingo = true solo para el domingo (4.º día); false de jueves a sábado, donde no hay ataques sin medallas (§PF442).
  * Devuelve { valores: { duelo250, …, sinFame } (números, o '' si no se sabe), fuente, combinaciones, consistencia }. FuenteDesglose:
  *  «Battlelog»: el log tiene el desglose exacto y sus mazos son los ataques de la hoja (criterio 6 d de §PF437; el log es una cota inferior, §18B049, así que solo se acepta si no sobra ni falta ningún ataque).
  *  «Battlelog parcial»: el log trae menos mazos que la hoja, o no se pudo leer algún resultado: lo que muestra es una cota inferior.
@@ -34603,11 +34626,11 @@ function _gdsTextoCombinaciones_(lista, max) {
  *  «Único» / «Posible» / «Imposible» / «Sin dato»: sin battlelog, solo con los valores de la hoja: una sola combinación, varias (se listan), ninguna (o valores que no pueden darse, como más barcos que ataques), o falta el valor de ataques o de fame.
  * consistencia compara fame y barcos del log exacto con los de la hoja: «Coincide», «Fame distinta», «Barcos distintos» o «Fame y barcos distintos» (no cambia FuenteDesglose, ver el criterio aceptado).
  */
-function _gdsDesgloseDelDia_(dia, bucket, pendiente) {
+function _gdsDesgloseDelDia_(dia, bucket, pendiente, esDomingo) {
   var res = { valores: {}, fuente: '', combinaciones: '', consistencia: '' };
   var i;
   for (i = 0; i < GDS_CAMPOS_VALOR.length; i++) res.valores[GDS_CAMPOS_VALOR[i]] = '';
-  var comb = _gdsCombinacionesDelDia_(dia.ataques, dia.fame, dia.barcos);
+  var comb = _gdsCombinacionesDelDia_(dia.ataques, dia.fame, dia.barcos, esDomingo);
   if (bucket && bucket.batallas > 0) {
     for (i = 0; i < GDS_CAMPOS_VALOR.length - 1; i++) res.valores[GDS_CAMPOS_VALOR[i]] = bucket[GDS_CAMPOS_VALOR[i]];
     var mazos = bucket.duelo250 + bucket.duelo100 + bucket.pvp200 + bucket.pvp100 + bucket.barco125 + bucket.barco75;
@@ -34662,8 +34685,46 @@ function _gdsMejorCapturaDia_(dia, limites, capturas) {
 }
 
 /**
+ * _gdsFilaSemana_(cab, dias) — §PF442 (10-nov-2026). Arma UNA fila ancha de Guerra_Desglose.csv (GDS_HEADERS) de un jugador, una semana de guerra y un clan.
+ * cab = { temporada, semana, clanTag, clan, tag, nombre }. dias = lista de 4 elementos (J, V, S, D): null si el jugador no tiene fila ese día en ese clan (todas sus celdas quedan vacías,
+ * que no es lo mismo que 0), o { valores (de _gdsDesgloseDelDia_), ataques, barcos, fame (del día, o null), fuente, combinaciones, consistencia, diaGuerra, periodIndex, origen,
+ * ataquesAcum, barcosAcum, fameAcum, cobertura: { estado, archivo, descargaMs, inicioMs } }. «Total» de cada día = los ataques del día de la hoja (no la suma de las celdas: si el reparto es «Posible» las celdas quedan vacías).
+ * «Sin Medallas» solo existe el domingo. «Tipo de día» es el del domingo: «Domingo con cruce» si tiene ataques sin medallas, «Día normal» si el desglose lo da sin ellos, vacío si no se sabe.
+ * Los totales de la semana suman solo los días con dato y quedan vacíos si no hay ninguno. N° queda vacío (lo llena generarGuerraDesglose). No lee Drive ni hojas. [→ Contexto_Base_Web.md §PF442]
+ */
+function _gdsFilaSemana_(cab, dias) {
+  var v = function (x) { return (x === null || x === undefined) ? '' : x; };
+  var esNum = function (x) { return typeof x === 'number' && !isNaN(x); };
+  var fila = ['', cab.temporada, cab.semana, cab.clanTag, v(cab.clan), cab.tag, v(cab.nombre)];
+  var i, j, d, tot = { ataques: 0, nAtaques: 0, barcos: 0, nBarcos: 0, fame: 0, nFame: 0 };
+  for (i = 0; i < GDS_DIAS.length; i++) {
+    d = dias[i];
+    var nCampos = (i === GDS_DIAS.length - 1) ? GDS_CAMPOS_VALOR.length : GDS_CAMPOS_VALOR.length - 1;   // J, V y S no llevan «sin medallas»
+    for (j = 0; j < nCampos; j++) fila.push(d ? v(d.valores[GDS_CAMPOS_VALOR[j]]) : '');
+    fila.push(d ? v(d.ataques) : '');
+    if (d && esNum(d.ataques)) { tot.ataques += d.ataques; tot.nAtaques++; }
+    if (d && esNum(d.barcos)) { tot.barcos += d.barcos; tot.nBarcos++; }
+    if (d && esNum(d.fame)) { tot.fame += d.fame; tot.nFame++; }
+  }
+  var dom = dias[GDS_DIAS.length - 1], tipo = '';
+  if (dom && esNum(dom.valores.sinFame)) tipo = dom.valores.sinFame > 0 ? 'Domingo con cruce' : 'Día normal';
+  fila.push(tot.nAtaques ? tot.ataques : '', tipo);
+  for (i = 0; i < GDS_DIAS.length; i++) fila.push(dias[i] ? v(dias[i].barcos) : '');
+  fila.push(tot.nBarcos ? tot.barcos : '');
+  for (i = 0; i < GDS_DIAS.length; i++) fila.push(dias[i] ? v(dias[i].fame) : '');
+  fila.push(tot.nFame ? tot.fame : '');
+  for (i = 0; i < GDS_DIAS.length; i++) {
+    d = dias[i];
+    if (!d) { for (j = 0; j < 13; j++) fila.push(''); continue; }
+    fila.push(v(d.diaGuerra), v(d.periodIndex), v(d.origen), v(d.ataquesAcum), v(d.barcosAcum), v(d.fameAcum),
+      d.fuente, d.combinaciones, d.consistencia, d.cobertura.estado, d.cobertura.archivo, _gdsFechaLima_(d.cobertura.descargaMs), _gdsFechaLima_(d.cobertura.inicioMs));
+  }
+  return fila;
+}
+
+/**
  * _gdsConstruirFilas_(filas, opciones) — §PF437 fase 2. Arma las filas de Guerra_Desglose.csv (GDS_HEADERS) a partir de las filas de la hoja Guerra (o de Backup_Guerra.csv), sin leer Drive ni hojas
- * y sin pedir nada a la API. Una fila por jugador, día de guerra y clan Terna de la etapa «Guerra». Los valores del día salen de _blgValoresHojaDeClan_ (el mismo cálculo del informe de battlelog).
+ * y sin pedir nada a la API. Una fila por jugador, semana de guerra y clan Terna de la etapa «Guerra», con los cuatro días en bloques (formato ancho, §PF442; la arma _gdsFilaSemana_). Los valores del día salen de _blgValoresHojaDeClan_ (el mismo cálculo del informe de battlelog).
  * opciones = { ternaTags: [...], tagPorNombre: { nombreDeClan: tag } (solo para filas sin ClanTag), battlelogPorTag: { tag: [filas de Backup_Battlelogs.csv] }, capturasPorTag: { tag: [{ archivo, descargaMs, inicioMs }] } }.
  * Devuelve { ok, filas, cuenta }; cuenta lleva las filas por FuenteDesglose y las filas que no se pudieron incluir (sin ClanTag, de clan ajeno, fuera de la semana de guerra). Deja la columna N° vacía.
  */
@@ -34678,7 +34739,7 @@ function _gdsConstruirFilas_(filas, opciones) {
   var capPorTag = opciones.capturasPorTag || {};
   var cuenta = {
     filasLeidas: filas.length, repetidas: [], noGuerra: 0, sinClanTag: 0, clanAjeno: 0, fueraDeSemana: 0, filasSalida: 0,
-    semanasJugador: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {}
+    semanasJugador: 0, diasSalida: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {}
   };
 
   // Una sola pasada: (temporada, semana, jugador) -> clan -> día -> fila con mayor PeriodIndex.
@@ -34746,34 +34807,40 @@ function _gdsConstruirFilas_(filas, opciones) {
     Object.keys(gr.clanes).forEach(function (clanTagK) {
       var idxPorDia = gr.clanes[clanTagK];
       var vh = _blgValoresHojaDeClan_(filas, idxPorDia);
+      var diasClan = [], ultimo = null;
       for (var o = 0; o < BLG_DIAS_GUERRA; o++) {
         var idx = idxPorDia[o];
-        if (idx === undefined) continue;
+        if (idx === undefined) { diasClan.push(null); continue; }
         var fila = filas[idx];
         var fb = vh.fameBarcos[o] || { fame: null, barcos: null };
         var bucket = (resumen && resumen.porClanDia[clanTagK]) ? resumen.porClanDia[clanTagK][o] : null;
-        var des = _gdsDesgloseDelDia_({ ataques: vh.ataques[o], fame: fb.fame, barcos: fb.barcos }, bucket, !!pendientes[clanTagK]);
+        var des = _gdsDesgloseDelDia_({ ataques: vh.ataques[o], fame: fb.fame, barcos: fb.barcos }, bucket, !!pendientes[clanTagK], o === BLG_DIAS_GUERRA - 1);
         var cob = limites ? _gdsMejorCapturaDia_(o, limites, capturas) : { estado: 'sin-dato', archivo: '', descargaMs: null, inicioMs: null };
         var isoDia = _blgFechaIsoDeDiaGuerra_(fila[GC.DIA_GUERRA - 1]);
         var diaTexto = isoDia ? isoDia.substr(8, 2) + '/' + isoDia.substr(5, 2) + '/' + isoDia.substr(0, 4) : String(fila[GC.DIA_GUERRA - 1] === undefined || fila[GC.DIA_GUERRA - 1] === null ? '' : fila[GC.DIA_GUERRA - 1]);
-        var vacioSiNull = function (v) { return (v === null || v === undefined) ? '' : v; };
-        var fuenteFila = [
-          '', gr.temporada, gr.semana, fila[GC.DIA - 1], diaTexto, fila[GC.PERIOD_IDX - 1], clanTagK, fila[GC.CLAN - 1], gr.tag, fila[GC.NOMBRE - 1], fila[GC.ORIGEN - 1],
-          fila[GC.ATAQUES_HOY - 1], fila[GC.BARCOS - 1], fila[GC.FAME - 1], vacioSiNull(vh.ataques[o]), vacioSiNull(fb.barcos), vacioSiNull(fb.fame)
-        ];
-        for (var vv = 0; vv < GDS_CAMPOS_VALOR.length; vv++) fuenteFila.push(des.valores[GDS_CAMPOS_VALOR[vv]]);
-        fuenteFila.push(des.fuente, des.combinaciones, des.consistencia, cob.estado, cob.archivo, _gdsFechaLima_(cob.descargaMs), _gdsFechaLima_(cob.inicioMs));
-        salida.push({ temporada: Number(gr.temporada) || 0, semana: Number(gr.semana) || 0, off: o, tag: gr.tag, clanTag: clanTagK, fila: fuenteFila });
-        cuenta.filasSalida++;
+        diasClan.push({
+          valores: des.valores, ataques: vh.ataques[o], barcos: fb.barcos, fame: fb.fame,
+          fuente: des.fuente, combinaciones: des.combinaciones, consistencia: des.consistencia,
+          diaGuerra: diaTexto, periodIndex: fila[GC.PERIOD_IDX - 1], origen: fila[GC.ORIGEN - 1],
+          ataquesAcum: fila[GC.ATAQUES_HOY - 1], barcosAcum: fila[GC.BARCOS - 1], fameAcum: fila[GC.FAME - 1],
+          cobertura: cob
+        });
+        ultimo = fila;   // el último día con fila da el nombre del jugador y del clan
+        cuenta.diasSalida++;
         cuenta.porFuente[des.fuente] = (cuenta.porFuente[des.fuente] || 0) + 1;
         cuenta.porCobertura[cob.estado] = (cuenta.porCobertura[cob.estado] || 0) + 1;
       }
+      if (!ultimo) return;
+      salida.push({
+        temporada: Number(gr.temporada) || 0, semana: Number(gr.semana) || 0, tag: gr.tag, clanTag: clanTagK,
+        fila: _gdsFilaSemana_({ temporada: gr.temporada, semana: gr.semana, clanTag: clanTagK, clan: ultimo[GC.CLAN - 1], tag: gr.tag, nombre: ultimo[GC.NOMBRE - 1] }, diasClan)
+      });
+      cuenta.filasSalida++;
     });
   }
   salida.sort(function (p, q) {
     if (p.temporada !== q.temporada) return p.temporada - q.temporada;
     if (p.semana !== q.semana) return p.semana - q.semana;
-    if (p.off !== q.off) return p.off - q.off;
     if (p.tag !== q.tag) return p.tag < q.tag ? -1 : 1;
     return p.clanTag < q.clanTag ? -1 : (p.clanTag > q.clanTag ? 1 : 0);
   });
