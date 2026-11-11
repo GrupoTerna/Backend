@@ -66,7 +66,8 @@ var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
 var _vcrrFameLimites_ = null;                          // caché de _vcrrFameLimitesPorAtaques_()
 var _VCRR_CACHE_RAPI_ = null;                          // caché por ejecución del índice de RoyaleAPI (_vcrrIndiceRapiDeDrive_)
-var _VCRR_CACHE_RANGOS_ = {};                          // caché por ejecución de _vcrrRangosJugadorClan_(): 'temporada|semana' -> { 'clanKey|tag': serie, '*|tag': [series del jugador en todos los clanes] }
+var _VCRR_CACHE_TAGCLAN_ = {};                         // caché por ejecución de _vcrrTagDeClan_(): nombre de clan -> Tag del clan ('' si no se resuelve) (§PF445 punto 12)
+var _VCRR_CACHE_RANGOS_ = {};                        // caché por ejecución de _vcrrRangosJugadorClan_(): 'temporada|semana' -> { 'clanKey|tag': serie, '*|tag': [series del jugador en todos los clanes] }
 // Topes de un jugador en la semana SUMANDO todos sus clanes (los 4 Terna y el externo; Contexto_Base_Web.md §PF160 criterio 4 y §PF302).
 var VCRR_TOPE_ATAQUES_DIA = 4, VCRR_TOPE_ATAQUES_SEMANA = 16, VCRR_TOPE_BARCOS_SEMANA = 16, VCRR_TOPE_FAME_DIA = 900, VCRR_TOPE_FAME_SEMANA = 3600;
 
@@ -1101,6 +1102,25 @@ function _vcrrGuardarVerificados_(filasNuevas, semanasHechas) {
 // ----- Verificar CRR, paso 3: comparar contra el CSV y registrar hallazgos -----
 
 /**
+ * _vcrrTagDeClan_(nombre) — §PF445 punto 12 (10-nov-2026). Tag del clan que corresponde a un nombre, con la MISMA traducción que usa _excDiasAgrupar() para las filas sin Clan_Tag
+ * (_clanTagDeFilaORespaldo_ con el Tag vacío, en mayúsculas). '' si no se resuelve (clan externo o nombre desconocido). Caché por ejecución en _VCRR_CACHE_TAGCLAN_.
+ */
+function _vcrrTagDeClan_(nombre) {
+  var k = String(nombre === undefined || nombre === null ? '' : nombre);
+  if (!Object.prototype.hasOwnProperty.call(_VCRR_CACHE_TAGCLAN_, k)) _VCRR_CACHE_TAGCLAN_[k] = String(_clanTagDeFilaORespaldo_('', k) || '').trim().toUpperCase();
+  return _VCRR_CACHE_TAGCLAN_[k];
+}
+
+/**
+ * _vcrrClaveGrupoSerie_(x) — §PF445 punto 12. La clave que _excDiasAgrupar() (55_Reparar_DiasConExceso.gs) da al grupo de una serie del archivo de restricciones:
+ * temporada|semana|tag del jugador|Tag del clan (o el nombre del clan si no tiene Tag). Desde §PF422 (6-nov-2026) los grupos se agrupan por el Tag del clan y no por su nombre;
+ * buscarlos por nombre solo encuentra los de clan sin Tag. Es la misma forma de _excDiasClaveGrupo_(g).
+ */
+function _vcrrClaveGrupoSerie_(x) {
+  return [String(x.temporada), String(x.semana), x.tag, _vcrrTagDeClan_(x.clan) || x.clan].join('|');
+}
+
+/**
  * Paso 3. Compara cada semana de Cruce_CRR_Restricciones.csv contra Backup_Guerra.csv y agrega los hallazgos al CSV
  * «Cruce_CRR_vs_Backup <marca> (hallazgos).csv». Devuelve true al terminar todas las semanas; false si el presupuesto se agota.
  */
@@ -1119,7 +1139,7 @@ function _vcrrPaso2_(st, t0) {
   while (st.idx < claves.length) {
     if (hechas > 0 && (Date.now() - t0) > VCRR_PRESUPUESTO_MS - 15000) break;
     (restr[claves[st.idx]] || []).forEach(function (x) {
-      var g = grupos[[String(x.temporada), String(x.semana), x.tag, x.clan].join('|')] || null;
+      var g = grupos[_vcrrClaveGrupoSerie_(x)] || null;   // §PF445 punto 12: por el Tag del clan, como _excDiasAgrupar()
       if (x.estado === 'incoherente' || x.estado === 'json_anomalo') {
         // §PF320: una anómala que RoyaleAPI resolvió sigue siendo anomalía, pero va con severidad 'estimado' (los rangos ya son los estimados); la que no, 'revisar'.
         var sinRes = /SIN RESOLVER:/.test(x.notas), estimada = !sinRes && /estimado con RoyaleAPI/.test(x.notas);
@@ -1268,7 +1288,7 @@ function _vcrrPaso3_(st, t0) {
     var casos = [], conflictos = [], nCrear = 0, nMod = 0;
     Object.keys(restr).forEach(function (k) {
       restr[k].forEach(function (x) {
-        var g = grupos[[String(x.temporada), String(x.semana), x.tag, x.clan].join('|')] || null;
+        var g = grupos[_vcrrClaveGrupoSerie_(x)] || null;   // §PF445 punto 12: por el Tag del clan, como _excDiasAgrupar()
         var plan = _vcrrPlanSerie_(x, g, clanes);
         plan.conflictos.forEach(function (c) { conflictos.push(c); });
         var ops = plan.ops.filter(function (op) { return !op.sinCambio; });
@@ -1325,7 +1345,7 @@ function _vcrrPaso3_(st, t0) {
  * §PF336: si la serie está estimada solo con el perfil de RoyaleAPI, no devuelve ops: sus escrituras pasan a conflictos.
  */
 function _vcrrPlanSerie_(x, g, clanes) {
-  var grupo = g || { temporada: String(x.temporada), semana: String(x.semana), tag: x.tag, clan: clanes[_vcrrClanNorm_(x.clan)] || x.clan, nombre: x.nombre, dias: {} };
+  var grupo = g || { temporada: String(x.temporada), semana: String(x.semana), tag: x.tag, clan: clanes[_vcrrClanNorm_(x.clan)] || x.clan, clanTag: _vcrrTagDeClan_(clanes[_vcrrClanNorm_(x.clan)] || x.clan), nombre: x.nombre, dias: {} };   // §PF445 punto 12: clanTag para que la fila creada lleve el Clan_Tag y la verificación encuentre el grupo por su clave
   var ops = [], conflictos = [], prev = { a: 0, f: 0, b: 0 };
   var pideConflicto = function (d, motivo) { conflictos.push({ temporada: x.temporada, semana: x.semana, clan: grupo.clan, tag: x.tag, nombre: x.nombre, dia: VCRR_DIAS.charAt(d), motivo: motivo }); };
   var conocido = !!clanes[_vcrrClanNorm_(x.clan)];
@@ -1385,7 +1405,7 @@ function _vcrrVerificarAplicado_(filasAntes, filasDespues, casos, creadasEsperad
   }
   var grupos = _excDiasAgrupar(filasDespues);
   casos.forEach(function (c) {
-    var g = c.grupo, gd = grupos[[g.temporada, g.semana, g.tag, g.clan].join('|')];
+    var g = c.grupo, gd = grupos[_excDiasClaveGrupo_(g)];   // §PF445 punto 12: la clave por Tag del clan (el grupo sintético de _vcrrPlanSerie_ lleva su clanTag)
     var etq = 'T' + g.temporada + ' S' + g.semana + ' ' + g.tag + ' ' + g.clan + ': ';
     if (!gd) { problemas.push(etq + 'no se encuentra la serie'); return; }
     c.ops.forEach(function (op) {
