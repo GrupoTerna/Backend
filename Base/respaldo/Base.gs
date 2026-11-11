@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 10/11/2026 21:12:43 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 10/11/2026 22:34:36 */
 
 
 
@@ -29094,6 +29094,7 @@ var GDS_CAPTURAS_HEADERS = ['Tag', 'Archivo', 'Descargado', 'EntradaMasAntigua',
 var GDS_MAX_COMBINACIONES_TEXTO = 6;                // combinaciones que se escriben en la celda «Combinaciones» (el resto se cuenta)
 var GDS_PRESUPUESTO_CAPTURAS_MS = 200000;           // tiempo máximo de cada ejecución para leer JSON de capturas nuevas
 var _GDS_COMB_DIA_CACHE_ = {};                      // combinaciones posibles de un día, por (ataques, fame, barcos)
+var _GDS_TRIPLES_DIA_CACHE_ = {};                   // ternas [ataques, fame, barcos] posibles de un día (§PF445), una lista para jueves a sábado ('n') y otra para el domingo ('d')
 
 // OVERLAY — lectura y escritura de Correcciones_Guerra.csv [→ Contexto_Base_Web.md §18B092]
 // FORMATO ANCHO DEFINITIVO (22-oct-2026, pedido de la usuaria; [→ Contexto_Base_Web.md §PF164]).
@@ -34404,6 +34405,140 @@ function _blgValoresHojaDeClan_(filas, idxPorDia) {
 }
 
 /**
+ * _gdsValoresHojaDeClan_(filas, idxPorDia) — 10-nov-2026 (§PF445, puntos a y c). Valores DIARIOS de la hoja Guerra para Guerra_Desglose.csv. Solo los usa el desglose:
+ * informeBattlelogContraGuerra() sigue con _blgValoresHojaDeClan_, que no cambió.
+ * Diferencias con _blgValoresHojaDeClan_: (a) la base del acumulado es la ÚLTIMA fila anterior que exista del mismo clan, no solo la de ayer; si no hay ninguna, la base es 0 y la fila cubre desde el jueves.
+ * span[o] = cuántos días cubre la fila (1 = normal; más de 1 = faltan filas en medio). Con span mayor que 1, ataques, fame y barcos son la SUMA de esos días: no se reparten entre días sin fila,
+ * porque el acumulado de una fila sin fila previa puede traer más de un día o un día a medias (caso de Diana en T25 S1, §PF445).
+ * (c) La regla de la cuenta semanal (AtaquesHoy en 0 y AtaquesSemana que avanza) vale de jueves a domingo y no solo el domingo; la diferencia semanal debe caber en 4 ataques por día cubierto
+ * y la base semanal no puede ser menor que los ataques ya contados. Sin una diferencia válida: el domingo queda en null (como antes) y de jueves a sábado queda en 0 (como antes).
+ * Con span mayor que 1 los ataques salen siempre de la diferencia semanal (AtaquesHoy es solo el último día); si no es válida, null.
+ * enOtroClan (opcional) = [bool x4]: true si en ese día el jugador tiene fila en OTRO clan Terna esa semana. Un día así no es un hueco de este clan (el jugador estaba en el otro y el acumulado
+ * de este clan arranca de cero al volver o llegar), así que no suma al span. Sin este dato, todo día sin fila cuenta como hueco.
+ * Devuelve { ataques[4], fameBarcos[4], span[4] }: null (span 0) en el día sin fila. [→ Contexto_Base_Web.md §PF445]
+ */
+function _gdsValoresHojaDeClan_(filas, idxPorDia, enOtroClan) {
+  var ataques = [null, null, null, null];
+  var fameBarcos = [null, null, null, null];
+  var span = [0, 0, 0, 0];
+  var otro = Array.isArray(enOtroClan) ? enOtroClan : [];
+  var anterior = null;   // { o, sem, fame, barcos }: la última fila existente antes del día que se calcula
+  for (var o = 0; o < BLG_DIAS_GUERRA; o++) {
+    var idx = idxPorDia[o];
+    if (idx === undefined) continue;
+    var fila = filas[idx];
+    var sp = 1;   // este día, más los días sin fila de ningún clan entre la fila anterior (o el inicio de la semana) y este día
+    for (var q = (anterior ? anterior.o : -1) + 1; q < o; q++) if (otro[q] !== true) sp++;
+    span[o] = sp;
+    var hoy = Number(fila[GC.ATAQUES_HOY - 1]) || 0;
+    var sem = _blgNumero_(fila[GC.ATAQUES_SEM - 1]);
+    var semBase = anterior ? anterior.sem : 0;
+    var contados = 0;
+    for (var oo = 0; oo < o; oo++) contados += (ataques[oo] === null ? 0 : ataques[oo]);
+    var dif = (sem === null || semBase === null || semBase < contados) ? null : sem - semBase;
+    var difValida = dif !== null && dif >= 0 && dif <= FAME_MAZOS_POR_DIA * sp;
+    var a;
+    if (sp > 1) {
+      a = (difValida && dif >= hoy) ? dif : null;
+    } else if (hoy !== 0) {
+      a = hoy;
+    } else if (difValida) {
+      a = dif;
+    } else {
+      a = (o === BLG_DIAS_GUERRA - 1) ? null : 0;
+    }
+    var fAcum = _blgNumero_(fila[GC.FAME - 1]), bAcum = _blgNumero_(fila[GC.BARCOS - 1]);
+    var fBase = anterior ? anterior.fame : 0, bBase = anterior ? anterior.barcos : 0;
+    ataques[o] = a;
+    fameBarcos[o] = {
+      fame: (fAcum === null || fBase === null) ? null : Math.max(0, fAcum - fBase),
+      barcos: (bAcum === null || bBase === null) ? null : Math.max(0, bAcum - bBase)
+    };
+    anterior = { o: o, sem: sem, fame: fAcum, barcos: bAcum };
+  }
+  return { ataques: ataques, fameBarcos: fameBarcos, span: span };
+}
+
+/**
+ * _gdsTriplesDia_(esDomingo) — 10-nov-2026 (§PF445). Todas las ternas [ataques, fame, barcos] que puede dar UN día de guerra (0 a FAME_MAZOS_POR_DIA ataques), sin repetir. El domingo se
+ * añade «ataques sin medallas» ([n, 0, 0]); de jueves a sábado no existen (§PF442). Se guarda en _GDS_TRIPLES_DIA_CACHE_.
+ */
+function _gdsTriplesDia_(esDomingo) {
+  var clave = esDomingo ? 'd' : 'n';
+  if (_GDS_TRIPLES_DIA_CACHE_[clave]) return _GDS_TRIPLES_DIA_CACHE_[clave];
+  var vistos = { '0|0|0': true }, lista = [[0, 0, 0]];
+  for (var a = 1; a <= FAME_MAZOS_POR_DIA; a++) {
+    if (esDomingo) { vistos[a + '|0|0'] = true; lista.push([a, 0, 0]); }
+    for (var b = 0; b <= a; b++) {
+      var desc = _fameDescomposicionesDia_(a, b);
+      for (var i = 0; i < desc.length; i++) {
+        var k = a + '|' + desc[i].fame + '|' + b;
+        if (vistos[k]) continue;
+        vistos[k] = true;
+        lista.push([a, desc[i].fame, b]);
+      }
+    }
+  }
+  _GDS_TRIPLES_DIA_CACHE_[clave] = lista;
+  return lista;
+}
+
+/**
+ * _gdsVariosDiasCabe_(ataques, fame, barcos, offFinal, span) — 10-nov-2026 (§PF445). ¿Pueden ser la suma de los span días que terminan en offFinal (0 jueves … 3 domingo) estos ataques, fame y barcos?
+ * Suma de una terna por día (_gdsTriplesDia_). barcos null = no se sabe, vale cualquiera. Devuelve true, false, o null si algún dato no es válido.
+ * Es una condición DÉBIL: que cabe no prueba que el reparto sea cierto, solo que no es imposible.
+ */
+function _gdsVariosDiasCabe_(ataques, fame, barcos, offFinal, span) {
+  if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame)) return null;
+  if (ataques % 1 !== 0 || fame % 1 !== 0 || ataques < 0 || fame < 0 || typeof span !== 'number' || span < 1) return null;
+  var hayBarcos = (typeof barcos === 'number' && !isNaN(barcos));
+  if (hayBarcos && (barcos % 1 !== 0 || barcos < 0 || barcos > ataques)) return null;
+  var estados = { '0|0|0': [0, 0, 0] };
+  for (var d = offFinal - span + 1; d <= offFinal; d++) {
+    var triples = _gdsTriplesDia_(d === BLG_DIAS_GUERRA - 1);
+    var sig = {};
+    var claves = Object.keys(estados);
+    for (var s = 0; s < claves.length; s++) {
+      var e = estados[claves[s]];
+      for (var t = 0; t < triples.length; t++) {
+        var a = e[0] + triples[t][0], f = e[1] + triples[t][1], b = e[2] + triples[t][2];
+        if (a > ataques || f > fame || (hayBarcos && b > barcos)) continue;
+        sig[a + '|' + f + '|' + b] = [a, f, b];
+      }
+    }
+    estados = sig;
+  }
+  var fin = Object.keys(estados);
+  for (var i = 0; i < fin.length; i++) {
+    var x = estados[fin[i]];
+    if (x[0] === ataques && x[1] === fame && (!hayBarcos || x[2] === barcos)) return true;
+  }
+  return false;
+}
+
+/**
+ * _gdsDesgloseVariosDias_(dia, offFinal, span) — 10-nov-2026 (§PF445, punto b). Desglose de una fila cuyo acumulado cubre varios días porque faltan las filas de en medio (span mayor que 1).
+ * dia = { ataques, fame, barcos } con la SUMA de esos días (de _gdsValoresHojaDeClan_). No reparte nada: las cantidades por puntuación quedan vacías.
+ * FuenteDesglose: «Varios días» si la suma cabe (Combinaciones dice qué días cubre y si la cifra también cabría como un solo día), «Imposible» si no cabe o los valores no son válidos, «Sin dato» si falta ataques o fame.
+ * Devuelve { valores, fuente, combinaciones, consistencia } como _gdsDesgloseDelDia_. [→ Contexto_Base_Web.md §PF445]
+ */
+function _gdsDesgloseVariosDias_(dia, offFinal, span) {
+  var res = { valores: {}, fuente: '', combinaciones: '', consistencia: '' };
+  for (var i = 0; i < GDS_CAMPOS_VALOR.length; i++) res.valores[GDS_CAMPOS_VALOR[i]] = '';
+  if (dia.ataques === null || dia.fame === null) { res.fuente = 'Sin dato'; return res; }
+  if (_gdsVariosDiasCabe_(dia.ataques, dia.fame, dia.barcos, offFinal, span) === true) {
+    res.fuente = 'Varios días';
+    res.combinaciones = 'suma de ' + span + ' días (' + GDS_DIAS[offFinal - span + 1] + '–' + GDS_DIAS[offFinal] + '), sin reparto por día';
+    // Sin fila previa no se sabe si faltan días (hueco) o el jugador llegó tarde (un solo día): si la cifra también cabe como un solo día, se dice, pero no se reparte.
+    var uno = _gdsCombinacionesDelDia_(dia.ataques, dia.fame, dia.barcos, offFinal === BLG_DIAS_GUERRA - 1);
+    if (uno && uno.length) res.combinaciones += '; también cabe como un solo día';
+  } else {
+    res.fuente = 'Imposible';
+  }
+  return res;
+}
+
+/**
  * _blgCompararConHoja_(resumen, hojaPorClanDia) [→ Contexto_Base_Web.md §18B053]
  */
 function _blgCompararConHoja_(resumen, hojaPorClanDia, opciones) {
@@ -34624,6 +34759,7 @@ function _gdsTextoCombinaciones_(lista, max) {
  *  «Battlelog parcial»: el log trae menos mazos que la hoja, o no se pudo leer algún resultado: lo que muestra es una cota inferior.
  *  «Contradicción battlelog»: el log trae MÁS mazos que los ataques de la hoja.
  *  «Único» / «Posible» / «Imposible» / «Sin dato»: sin battlelog, solo con los valores de la hoja: una sola combinación, varias (se listan), ninguna (o valores que no pueden darse, como más barcos que ataques), o falta el valor de ataques o de fame.
+ *  «Varios días» (§PF445): no sale de esta función sino de _gdsDesgloseVariosDias_, que _gdsConstruirFilas_ usa cuando la fila cubre más de un día porque faltan filas en medio y no hay battlelog de ese día.
  * consistencia compara fame y barcos del log exacto con los de la hoja: «Coincide», «Fame distinta», «Barcos distintos» o «Fame y barcos distintos» (no cambia FuenteDesglose, ver el criterio aceptado).
  */
 function _gdsDesgloseDelDia_(dia, bucket, pendiente, esDomingo) {
@@ -34689,6 +34825,7 @@ function _gdsMejorCapturaDia_(dia, limites, capturas) {
  * cab = { temporada, semana, clanTag, clan, tag, nombre }. dias = lista de 4 elementos (J, V, S, D): null si el jugador no tiene fila ese día en ese clan (todas sus celdas quedan vacías,
  * que no es lo mismo que 0), o { valores (de _gdsDesgloseDelDia_), ataques, barcos, fame (del día, o null), fuente, combinaciones, consistencia, diaGuerra, periodIndex, origen,
  * ataquesAcum, barcosAcum, fameAcum, cobertura: { estado, archivo, descargaMs, inicioMs } }. «Total» de cada día = los ataques del día de la hoja (no la suma de las celdas: si el reparto es «Posible» las celdas quedan vacías).
+ * En un día «Varios días» (§PF445), Total, Barcos y Medallas son la suma de los días que cubre la fila (los días sin fila quedan sin celdas), así que los totales de la semana siguen sumando lo acumulado.
  * «Sin Medallas» solo existe el domingo. «Tipo de día» es el del domingo: «Domingo con cruce» si tiene ataques sin medallas, «Día normal» si el desglose lo da sin ellos, vacío si no se sabe.
  * Los totales de la semana suman solo los días con dato y quedan vacíos si no hay ninguno. N° queda vacío (lo llena generarGuerraDesglose). No lee Drive ni hojas. [→ Contexto_Base_Web.md §PF442]
  */
@@ -34739,7 +34876,7 @@ function _gdsConstruirFilas_(filas, opciones) {
   var capPorTag = opciones.capturasPorTag || {};
   var cuenta = {
     filasLeidas: filas.length, repetidas: [], noGuerra: 0, sinClanTag: 0, clanAjeno: 0, fueraDeSemana: 0, filasSalida: 0,
-    semanasJugador: 0, diasSalida: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {}
+    semanasJugador: 0, diasSalida: 0, variosDias: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {}
   };
 
   // Una sola pasada: (temporada, semana, jugador) -> clan -> día -> fila con mayor PeriodIndex.
@@ -34806,7 +34943,12 @@ function _gdsConstruirFilas_(filas, opciones) {
     var capturas = capPorTag[tagN] || [];
     Object.keys(gr.clanes).forEach(function (clanTagK) {
       var idxPorDia = gr.clanes[clanTagK];
-      var vh = _blgValoresHojaDeClan_(filas, idxPorDia);
+      var enOtroClan = [false, false, false, false];   // días con fila del jugador en otro clan Terna esa semana: no son huecos de este clan (§PF445)
+      Object.keys(gr.clanes).forEach(function (otroTag) {
+        if (otroTag === clanTagK) return;
+        for (var od = 0; od < BLG_DIAS_GUERRA; od++) if (gr.clanes[otroTag][od] !== undefined) enOtroClan[od] = true;
+      });
+      var vh = _gdsValoresHojaDeClan_(filas, idxPorDia, enOtroClan);   // §PF445: base en la última fila existente y regla semanal de jueves a domingo; el informe de battlelog sigue con _blgValoresHojaDeClan_
       var diasClan = [], ultimo = null;
       for (var o = 0; o < BLG_DIAS_GUERRA; o++) {
         var idx = idxPorDia[o];
@@ -34814,7 +34956,11 @@ function _gdsConstruirFilas_(filas, opciones) {
         var fila = filas[idx];
         var fb = vh.fameBarcos[o] || { fame: null, barcos: null };
         var bucket = (resumen && resumen.porClanDia[clanTagK]) ? resumen.porClanDia[clanTagK][o] : null;
-        var des = _gdsDesgloseDelDia_({ ataques: vh.ataques[o], fame: fb.fame, barcos: fb.barcos }, bucket, !!pendientes[clanTagK], o === BLG_DIAS_GUERRA - 1);
+        var variosDias = vh.span[o] > 1 && !(bucket && bucket.batallas > 0);   // §PF445: faltan filas en medio y no hay battlelog de ese día: se evalúa la suma de los días, sin repartir
+        if (vh.span[o] > 1) cuenta.variosDias++;
+        var des = variosDias
+          ? _gdsDesgloseVariosDias_({ ataques: vh.ataques[o], fame: fb.fame, barcos: fb.barcos }, o, vh.span[o])
+          : _gdsDesgloseDelDia_({ ataques: vh.ataques[o], fame: fb.fame, barcos: fb.barcos }, bucket, !!pendientes[clanTagK], o === BLG_DIAS_GUERRA - 1);
         var cob = limites ? _gdsMejorCapturaDia_(o, limites, capturas) : { estado: 'sin-dato', archivo: '', descargaMs: null, inicioMs: null };
         var isoDia = _blgFechaIsoDeDiaGuerra_(fila[GC.DIA_GUERRA - 1]);
         var diaTexto = isoDia ? isoDia.substr(8, 2) + '/' + isoDia.substr(5, 2) + '/' + isoDia.substr(0, 4) : String(fila[GC.DIA_GUERRA - 1] === undefined || fila[GC.DIA_GUERRA - 1] === null ? '' : fila[GC.DIA_GUERRA - 1]);
