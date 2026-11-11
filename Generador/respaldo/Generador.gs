@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 08/11/2026 23:16:51 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 10/11/2026 21:23:34 */
 
 
 
@@ -5612,7 +5612,8 @@ function _imgApiArchivoTipos_() {
 //     Hoy: Correcciones_Guerra.csv, Correcciones_Nuevos.csv, Backup_Guerra_Semanal.csv, HistorialGuerra_Grupal.csv, Correcciones_RiverRace_Pendientes.csv y los Log_Tampermonkey_*.csv.
 //   - Carpeta Seasons: Cache_Seasons.json (respuesta cruda de descargarSeasons(), ids de
 //     temporada de Supercell)  → Datos descargados/JSON/Endpoints/Seasons/
-//   - Backup_Guerra.csv y Backup_Guerra_Logs.csv → Datos descargados/CSV/Hojas/
+//   - Backup_Guerra.csv, Backup_Guerra_Logs.csv y Guerra_Desglose.csv (desde el 10-nov-2026, §PF443; formato ancho de §PF442) → Datos descargados/CSV/Hojas/
+//   - Subcarpeta Jugador de la carpeta CSV de Drive: solo Battlelog_Capturas.csv (desde el 10-nov-2026, §PF443; lo escribe generarGuerraDesglose() de Base) → Datos descargados/CSV/Jugador/
 //   - Carpeta Grupal de RoyaleAPI (desde el 1-nov-2026, §PF321): los «Grupal - <clan>.json» → Datos descargados/JSON/RoyaleAPI/Grupal/
 //   - Carpeta Individual de RoyaleAPI (JSON por jugador; desde el 25-oct-2026, §PF276): todos los .json
 //     → Datos descargados/JSON/RoyaleAPI/Individual/. Se omiten los nombres con una fecha AAAA-MM-DD pegada
@@ -5664,6 +5665,7 @@ var DATOS_GH_CARPETA_INFORMES_     = '17Mv2oQFTMIdSKlGyHNnrBiApYoHfHg4X';
 var DATOS_GH_CARPETA_INDIVIDUAL_   = '1U11RBaJJLdqJST9wJF4z_ExcLE92TjO7';   // = DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL de Base (01_Config_Global.gs)
 var DATOS_GH_CARPETA_SEASONS_      = '1oIMkaJS6ElqXD9Z8xRA5jn0YVaz3l01d';   // = DRIVE_FOLDER_ID_SEASONS de Base (01_Config_Global.gs)
 var DATOS_GH_CARPETA_GRUPAL_       = '1T8PhxVVRZ-p7o2A_U6ARP-LsC3Zg7ObL';   // = DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL de Base (01_Config_Global.gs): los JSON grupales por clan (§PF321)
+var DATOS_GH_CARPETA_CSV_          = '1rTp5gXQ0ydnkM3eg6wy2vfOrpUp9GOsR';   // = DRIVE_FOLDER_ID_CSV de Base (01_Config_Global.gs): raíz de la carpeta CSV; de aquí solo se copia Battlelog_Capturas.csv de la subcarpeta Jugador (§PF443)
 var DATOS_GH_CARPETA_CRR_          = '1xZr_GxHbuG_Y4gzPHZQxduhzkF8CeFPg';   // = DRIVE_FOLDER_ID_CURRENTRIVERRACE de Base (01_Config_Global.gs): raíz de CurrentRiverRace; de aquí solo se copia la subcarpeta Capturas_Continuas (§PF426)
 
 var DATOS_GH_FUENTES_ = [
@@ -5674,8 +5676,12 @@ var DATOS_GH_FUENTES_ = [
     nombres: ['Cache_Seasons.json'],
     destino: 'Datos descargados/JSON/Endpoints/Seasons/', maxBytes: 1 * 1024 * 1024 },
   { carpetaId: DATOS_GH_CARPETA_HOJAS_,
-    nombres: ['Backup_Guerra.csv', 'Backup_Guerra_Logs.csv'],
+    nombres: ['Backup_Guerra.csv', 'Backup_Guerra_Logs.csv', 'Guerra_Desglose.csv'],   // §PF443: Guerra_Desglose.csv (unos 3 MB) lo escribe generarGuerraDesglose() de Base en esta misma carpeta
     destino: 'Datos descargados/CSV/Hojas/', maxBytes: 8 * 1024 * 1024 },
+  { carpetaId: DATOS_GH_CARPETA_CSV_,   // §PF443: Battlelog_Capturas.csv (qué cubre cada captura de battlelog; unos 126 filas) está en la subcarpeta Jugador, que se busca por nombre
+    subcarpeta: 'Jugador',
+    nombres: ['Battlelog_Capturas.csv'],
+    destino: 'Datos descargados/CSV/Jugador/', maxBytes: 1 * 1024 * 1024 },
   { carpetaId: DATOS_GH_CARPETA_INDIVIDUAL_,
     todos: true,
     omitir: /\d{4}-\d{2}-\d{2} - #/,
