@@ -1,0 +1,207 @@
+ID,Temporada,Semana,Clan,Tag,Nombre,Día,Tipo,Campo,CSV,Mínimo JSON,Máximo posible,Severidad,Detalle
+T_22_S_01_#C0JRUURGU,22,1,GrupoXTerna™2,#C0JRUURGU,Cris,S,fila_faltante,fila del día,,A 1 / F 125 / B 1,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#C92GJYP82,22,1,GrupoXTerna™2,#C92GJYP82,Sr. Esñerw,S,fila_faltante,fila del día,,A 8 / F 1100 / B 4,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#JJJL8QP2U,22,1,GrupoXTerna™2,#JJJL8QP2U,♤♧diego♧♤,S,fila_faltante,fila del día,,A 8 / F 1350 / B 2,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#JR0V99Y0U,22,1,GrupoXTerna™2,#JR0V99Y0U,VALENTINITA_SK,S,fila_faltante,fila del día,,A 2 / F 250 / B 2,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#Q2GR9JVQL,22,1,GrupoXTerna™2,#Q2GR9JVQL,TT DIEGO B),S,fila_faltante,fila del día,,A 1 / F 200 / B 0,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#UCVP89PJQ,22,1,GrupoXTerna™2,#UCVP89PJQ,亗 ＭＡＴＨ ϟ ＡＳ 么,S,fila_faltante,fila del día,,A 2 / F 300 / B 0,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#200RPCYV8L,22,1,GrupoXTerna™3,#200RPCYV8L,Nyxar,S,fila_faltante,fila del día,,A 7 / F 825 / B 7,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#2CR90VVV,22,1,GrupoXTerna™3,#2CR90VVV,Marf96,S,fila_faltante,fila del día,,A 4 / F 500 / B 4,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#9Y88C8U8Y,22,1,GrupoXTerna™3,#9Y88C8U8Y,xXROBERTOXx,S,fila_faltante,fila del día,,A 4 / F 500 / B 4,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#JR88CULJ0,22,1,GrupoXTerna™3,#JR88CULJ0,yordan,S,fila_faltante,fila del día,,A 6 / F 650 / B 6,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#UJYULR99J,22,1,GrupoXTerna™3,#UJYULR99J,vibpollo,S,fila_faltante,fila del día,,A 4 / F 500 / B 4,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#UQL8V0YVJ,22,1,GrupoXTerna™3,#UQL8V0YVJ,Yamil,S,fila_faltante,fila del día,,A 4 / F 500 / B 4,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_01_#UYU0PGUYJ,22,1,GrupoXTerna™3,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,S,fila_faltante,fila del día,,A 4 / F 550 / B 0,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_22_S_02_#LRQ8YJRCU,22,2,GrupoXTerna™2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,S,csv_mayor_max,Ataques semana,11,7,7,aviso,el CSV pasa del máximo posible
+T_22_S_02_#LRQ8YJRCU,22,2,GrupoXTerna™2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,S,csv_mayor_max,Fame,1200,700,700,aviso,el CSV pasa del máximo posible
+T_22_S_02_#LRQ8YJRCU,22,2,GrupoXTerna™2,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,S,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_22_S_03_#8YCLY8CRU,22,3,GrupoXTerna™2,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,D,csv_mayor_max,Fame,2400,1950,1950,aviso,el CSV pasa del máximo posible
+T_22_S_03_#9G0RQR2GV,22,3,GrupoXTerna™2,#9G0RQR2GV,frank -.-,D,csv_mayor_max,Fame,2300,2000,2000,revisar,el CSV pasa del máximo posible
+T_22_S_03_#J2JJ8LGV9,22,3,GrupoXTerna™2,#J2JJ8LGV9,TUVILOL,D,csv_mayor_max,Fame,2000,1900,1900,revisar,el CSV pasa del máximo posible
+T_22_S_03_#JR9J0JCQ9,22,3,GrupoXTerna™2,#JR9J0JCQ9,LUCKY,D,csv_mayor_max,Ataques semana,12,0,4,revisar,el CSV pasa del máximo posible
+T_22_S_03_#JR9J0JCQ9,22,3,GrupoXTerna™2,#JR9J0JCQ9,LUCKY,D,csv_mayor_max,Fame,2000,0,900,revisar,el CSV pasa del máximo posible
+T_22_S_03_#VPRGY9YGG,22,3,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,J,csv_mayor_max,Ataques semana,1,0,0,revisar,el CSV pasa del máximo posible
+T_22_S_03_#VPRGY9YGG,22,3,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,J,csv_mayor_max,Fame,100,0,0,revisar,el CSV pasa del máximo posible
+T_22_S_03_#VPRGY9YGG,22,3,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,J,csv_mayor_max,Ataques del día,1,0,0,revisar,el CSV pasa del máximo posible del día
+T_22_S_03_#VPRGY9YGG,22,3,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,V,csv_mayor_max,Ataques semana,5,4,4,revisar,el CSV pasa del máximo posible
+T_22_S_03_#VPRGY9YGG,22,3,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,S,csv_mayor_max,Ataques semana,9,6,6,revisar,el CSV pasa del máximo posible
+T_22_S_03_#VPRGY9YGG,22,3,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,S,csv_mayor_max,Fame,1400,900,1100,revisar,el CSV pasa del máximo posible
+T_22_S_03_#VPRGY9YGG,22,3,GrupoXTerna™2,#VPRGY9YGG,luisxzz_,S,csv_mayor_max,Ataques del día,4,2,2,revisar,el CSV pasa del máximo posible del día
+T_22_S_03_#VY0UJ82PV,22,3,GrupoXTerna™2,#VY0UJ82PV,Manamunacoc,D,csv_mayor_max,Fame,2700,2600,2600,revisar,el CSV pasa del máximo posible
+T_22_S_03_#228VUG2RU,22,3,Grupo乂Terna™,#228VUG2RU,†✧▯オFazeteッ▯✧†,D,csv_mayor_max,Ataques semana,16,12,12,revisar,el CSV pasa del máximo posible
+T_22_S_03_#228VUG2RU,22,3,Grupo乂Terna™,#228VUG2RU,†✧▯オFazeteッ▯✧†,D,csv_mayor_max,Fame,3200,1800,1800,revisar,el CSV pasa del máximo posible
+T_22_S_03_#2GYUC0QLV,22,3,Grupo乂Terna™,#2GYUC0QLV,miguel,D,csv_mayor_max,Fame,2450,2300,2300,revisar,el CSV pasa del máximo posible
+T_22_S_03_#92YRUUV9P,22,3,Grupo乂Terna™,#92YRUUV9P,ᴳ乂ᵀ ⚜️ iJonahjk,D,csv_mayor_max,Fame,3000,2400,2400,revisar,el CSV pasa del máximo posible
+T_22_S_03_#CUQG9CJUG,22,3,Grupo乂Terna™,#CUQG9CJUG,ᴳ乂ᵀ ⚜️Marzz,D,csv_mayor_max,Fame,3400,2450,2450,revisar,el CSV pasa del máximo posible
+T_22_S_03_#UJUGRYY9C,22,3,Grupo乂Terna™,#UJUGRYY9C,ᴳ乂ᵀ ⚜️ ADM,D,csv_mayor_max,Fame,3200,2700,2700,revisar,el CSV pasa del máximo posible
+T_22_S_03_#YGL2QV8LG,22,3,Grupo乂Terna™,#YGL2QV8LG,ᴳ乂ᵀ ⚜ T3RR1BL3!,D,csv_mayor_max,Fame,2650,2350,2350,revisar,el CSV pasa del máximo posible
+T_22_S_04_#8YCLY8CRU,22,4,GrupoXTerna™3,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,V,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_22_S_04_#8YCLY8CRU,22,4,GrupoXTerna™3,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,V,csv_mayor_max,Fame,700,0,0,aviso,el CSV pasa del máximo posible
+T_22_S_04_#8YCLY8CRU,22,4,GrupoXTerna™3,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,V,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_22_S_04_#P8Y0CQ9VR,22,4,GrupoXTerna™3,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,V,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_22_S_04_#P8Y0CQ9VR,22,4,GrupoXTerna™3,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,V,csv_mayor_max,Fame,650,0,0,aviso,el CSV pasa del máximo posible
+T_22_S_04_#P8Y0CQ9VR,22,4,GrupoXTerna™3,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,V,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_22_S_04_#RR8CRJPUV,22,4,GrupoXTerna™3,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,V,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_22_S_04_#RR8CRJPUV,22,4,GrupoXTerna™3,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,V,csv_mayor_max,Fame,400,0,0,aviso,el CSV pasa del máximo posible
+T_22_S_04_#RR8CRJPUV,22,4,GrupoXTerna™3,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,V,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_22_S_04_#UYU0PGUYJ,22,4,GrupoXTerna™3,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,V,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_22_S_04_#UYU0PGUYJ,22,4,GrupoXTerna™3,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,V,csv_mayor_max,Fame,700,0,0,aviso,el CSV pasa del máximo posible
+T_22_S_04_#UYU0PGUYJ,22,4,GrupoXTerna™3,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,V,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_22_S_04_#Q09UJ2UP2,22,4,Mini乂Ternas™,#Q09UJ2UP2,MASTER K.,J,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_22_S_04_#Q09UJ2UP2,22,4,Mini乂Ternas™,#Q09UJ2UP2,MASTER K.,J,csv_mayor_max,Fame,600,0,0,aviso,el CSV pasa del máximo posible
+T_22_S_04_#Q09UJ2UP2,22,4,Mini乂Ternas™,#Q09UJ2UP2,MASTER K.,J,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_22_S_05_#P8Y0CQ9VR,22,5,GrupoXTerna™2,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,,json_anomalo,json_anomalo,,,,revisar,"captura S anómala pero usada: decksUsedToday 6 (imposible, el máximo es 4): se toma como 4 ataques ese día; los acumulados de ataques lo admiten; SIN RESOLVER: RoyaleAPI solo trae el perfil (total de 3 clanes), que no fija el valor de este clan"
+T_22_S_05_#20P2UP80UY,22,5,GrupoXTerna™3,#20P2UP80UY,♤FƆŔ,,json_anomalo,json_anomalo,,,,revisar,"captura D anómala pero usada: decksUsedToday 0 con decksUsed 14 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; SIN RESOLVER: RoyaleAPI solo trae el perfil (total de 2 clanes), que no fija el valor de este clan"
+T_22_S_05_#900PCRQ2R,22,5,GrupoXTerna™3,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,,json_anomalo,json_anomalo,,,,revisar,"captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; SIN RESOLVER: RoyaleAPI solo trae el perfil (total de 2 clanes), que no fija el valor de este clan"
+T_22_S_05_#90QYJQRQ8,22,5,GrupoXTerna™3,#90QYJQRQ8,Diana,,json_anomalo,json_anomalo,,,,revisar,"captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; SIN RESOLVER: RoyaleAPI solo trae el perfil (total de 2 clanes), que no fija el valor de este clan"
+T_22_S_05_#GYU0R0V29,22,5,GrupoXTerna™3,#GYU0R0V29,Love--Adri<3,,json_anomalo,json_anomalo,,,,estimado,"captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; estimado con RoyaleAPI (perfil): ataques 4|8|12|16, medallas 600|1300|2000|2500, barcos 0|0|0|0"
+T_22_S_05_#JJ0RUP0RR,22,5,GrupoXTerna™3,#JJ0RUP0RR,Axelgamer,,json_anomalo,json_anomalo,,,,revisar,captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; SIN RESOLVER: RoyaleAPI no trae el total cerrado de ese jugador en esa semana
+T_22_S_05_#JVVG9YUG0,22,5,GrupoXTerna™3,#JVVG9YUG0,Fiorela.,,json_anomalo,json_anomalo,,,,revisar,"captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; SIN RESOLVER: RoyaleAPI solo trae el perfil (total de 2 clanes), que no fija el valor de este clan"
+T_22_S_05_#LRQ8YJRCU,22,5,GrupoXTerna™3,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,,json_anomalo,incoherente,,,,revisar,"ataques: las capturas no caben juntas; fame: las capturas no caben juntas; SIN RESOLVER: RoyaleAPI solo trae el perfil (total de 3 clanes), que no fija el valor de este clan"
+T_22_S_05_#RGCL8LGJC,22,5,GrupoXTerna™3,#RGCL8LGJC,Alex♡Dmr,,json_anomalo,json_anomalo,,,,estimado,"captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; estimado con RoyaleAPI (perfil): ataques 4|8|12|16, medallas 500|1100|1700|2300, barcos 0|0|0|0"
+T_22_S_05_#RPLVY0R08,22,5,GrupoXTerna™3,#RPLVY0R08,rata-piola,,json_anomalo,json_anomalo,,,,estimado,"ataques: las capturas no caben juntas; estimado con RoyaleAPI (perfil, sin la captura D): ataques 0|3|6-7|9, medallas 0|450-700|900-1500|1500, barcos 0|0|0|0"
+T_22_S_05_#UG90QUU0P,22,5,GrupoXTerna™3,#UG90QUU0P,MiniNopi,,json_anomalo,json_anomalo,,,,revisar,captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; SIN RESOLVER: RoyaleAPI no trae el total cerrado de ese jugador en esa semana
+T_22_S_05_#UVV02Q0PC,22,5,GrupoXTerna™3,#UVV02Q0PC,alex280301,,json_anomalo,incoherente,,,,revisar,ataques: las capturas no caben juntas; SIN RESOLVER: RoyaleAPI no trae el total cerrado de ese jugador en esa semana
+T_22_S_05_#V0JPP0UJR,22,5,GrupoXTerna™3,#V0JPP0UJR,fatima,,json_anomalo,json_anomalo,,,,revisar,"captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; SIN RESOLVER: RoyaleAPI solo trae el perfil (total de 2 clanes), que no fija el valor de este clan"
+T_22_S_05_#V929CC8CC,22,5,GrupoXTerna™3,#V929CC8CC,esteban,,json_anomalo,json_anomalo,,,,revisar,captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; SIN RESOLVER: RoyaleAPI no trae el total cerrado de ese jugador en esa semana
+T_22_S_05_#V9P20U8RC,22,5,GrupoXTerna™3,#V9P20U8RC,kayserleandro,,json_anomalo,json_anomalo,,,,revisar,"captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; SIN RESOLVER: RoyaleAPI solo trae el perfil (total de 2 clanes), que no fija el valor de este clan"
+T_23_S_01_#CUU92GQQG,23,1,GrupoXTerna™2,#CUU92GQQG,Larry god,S,csv_mayor_max,Ataques semana,14,10,10,revisar,el CSV pasa del máximo posible
+T_23_S_01_#CUU92GQQG,23,1,GrupoXTerna™2,#CUU92GQQG,Larry god,S,csv_mayor_max,Fame,2400,1600,1600,revisar,el CSV pasa del máximo posible
+T_23_S_01_#CUU92GQQG,23,1,GrupoXTerna™2,#CUU92GQQG,Larry god,S,csv_mayor_max,Ataques del día,6,2,2,revisar,el CSV pasa del máximo posible del día
+T_23_S_01_#LJJVQGJ,23,1,GrupoXTerna™2,#LJJVQGJ,Dade ,S,csv_mayor_max,Ataques semana,14,10,10,revisar,el CSV pasa del máximo posible
+T_23_S_01_#LJJVQGJ,23,1,GrupoXTerna™2,#LJJVQGJ,Dade ,S,csv_mayor_max,Fame,2500,1950,1950,revisar,el CSV pasa del máximo posible
+T_23_S_01_#LJJVQGJ,23,1,GrupoXTerna™2,#LJJVQGJ,Dade ,S,csv_mayor_max,Ataques del día,6,2,2,revisar,el CSV pasa del máximo posible del día
+T_23_S_01_#LJJVQGJ,23,1,GrupoXTerna™2,#LJJVQGJ,Dade ,D,fila_faltante,fila del día,,A 14 / F 2500 / B 0,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_23_S_01_#RR8CRJPUV,23,1,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,S,csv_mayor_max,Ataques semana,8,4,4,aviso,el CSV pasa del máximo posible
+T_23_S_01_#RR8CRJPUV,23,1,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,S,csv_mayor_max,Fame,900,500,500,aviso,el CSV pasa del máximo posible
+T_23_S_01_#RR8CRJPUV,23,1,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,S,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_23_S_01_#YG8U8Q2PC,23,1,GrupoXTerna™2,#YG8U8Q2PC,skap,S,csv_mayor_max,Ataques semana,16,12,12,revisar,el CSV pasa del máximo posible
+T_23_S_01_#YG8U8Q2PC,23,1,GrupoXTerna™2,#YG8U8Q2PC,skap,S,csv_mayor_max,Fame,2500,1900,1900,revisar,el CSV pasa del máximo posible
+T_23_S_01_#V929CC8CC,23,1,GrupoXTerna™3,#V929CC8CC,esteban,S,csv_mayor_max,Ataques semana,15,11,11,revisar,el CSV pasa del máximo posible
+T_23_S_01_#V929CC8CC,23,1,GrupoXTerna™3,#V929CC8CC,esteban,S,csv_mayor_max,Fame,2250,1700,1700,revisar,el CSV pasa del máximo posible
+T_23_S_01_#V929CC8CC,23,1,GrupoXTerna™3,#V929CC8CC,esteban,D,fila_faltante,fila del día,,A 15 / F 2250 / B 0,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_23_S_01_#88RV0L8V2,23,1,Grupo乂Terna™,#88RV0L8V2,☆ ᴍ ᴀ ʏ ᴄ ᴏ ʟ ☆,S,csv_mayor_max,Ataques semana,12,8,8,revisar,el CSV pasa del máximo posible
+T_23_S_01_#88RV0L8V2,23,1,Grupo乂Terna™,#88RV0L8V2,☆ ᴍ ᴀ ʏ ᴄ ᴏ ʟ ☆,S,csv_mayor_max,Fame,1700,1200,1200,revisar,el CSV pasa del máximo posible
+T_23_S_01_#88RV0L8V2,23,1,Grupo乂Terna™,#88RV0L8V2,☆ ᴍ ᴀ ʏ ᴄ ᴏ ʟ ☆,S,csv_mayor_max,Ataques del día,8,4,4,revisar,el CSV pasa del máximo posible del día
+T_23_S_01_#20080J8GRY,23,1,Mini乂Ternas™,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,V,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_01_#20080J8GRY,23,1,Mini乂Ternas™,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,V,csv_mayor_max,Fame,500,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_01_#20080J8GRY,23,1,Mini乂Ternas™,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,V,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_23_S_01_#20LUCQG0LJ,23,1,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,J,csv_mayor_max,Ataques semana,4,0,0,revisar,el CSV pasa del máximo posible
+T_23_S_01_#20LUCQG0LJ,23,1,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,J,csv_mayor_max,Fame,600,0,0,revisar,el CSV pasa del máximo posible
+T_23_S_01_#20LUCQG0LJ,23,1,Mini乂Ternas™,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,J,csv_mayor_max,Ataques del día,4,0,0,revisar,el CSV pasa del máximo posible del día
+T_23_S_01_#20P80C9229,23,1,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,J,csv_mayor_max,Ataques semana,3,0,0,revisar,el CSV pasa del máximo posible
+T_23_S_01_#20P80C9229,23,1,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,J,csv_mayor_max,Fame,300,0,0,revisar,el CSV pasa del máximo posible
+T_23_S_01_#20P80C9229,23,1,Mini乂Ternas™,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,J,csv_mayor_max,Ataques del día,3,0,0,revisar,el CSV pasa del máximo posible del día
+T_23_S_01_#UJY0PGPUV,23,1,Mini乂Ternas™,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,V,csv_mayor_max,Ataques semana,3,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_01_#UJY0PGPUV,23,1,Mini乂Ternas™,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,V,csv_mayor_max,Fame,400,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_01_#UJY0PGPUV,23,1,Mini乂Ternas™,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,V,csv_mayor_max,Ataques del día,3,0,0,aviso,el CSV pasa del máximo posible del día
+T_23_S_01_#URRG2QG20,23,1,Mini乂Ternas™,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,V,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_01_#URRG2QG20,23,1,Mini乂Ternas™,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,V,csv_mayor_max,Fame,600,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_01_#URRG2QG20,23,1,Mini乂Ternas™,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,V,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_23_S_01_#V9L9V9YV0,23,1,Mini乂Ternas™,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,V,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_01_#V9L9V9YV0,23,1,Mini乂Ternas™,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,V,csv_mayor_max,Fame,500,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_01_#V9L9V9YV0,23,1,Mini乂Ternas™,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,V,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_23_S_01_#VJQLY8JV8,23,1,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,J,csv_mayor_max,Ataques semana,4,0,0,revisar,el CSV pasa del máximo posible
+T_23_S_01_#VJQLY8JV8,23,1,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,J,csv_mayor_max,Fame,700,0,0,revisar,el CSV pasa del máximo posible
+T_23_S_01_#VJQLY8JV8,23,1,Mini乂Ternas™,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,J,csv_mayor_max,Ataques del día,4,0,0,revisar,el CSV pasa del máximo posible del día
+T_23_S_01_#VRJYU8Q8P,23,1,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,J,csv_mayor_max,Ataques semana,4,0,0,revisar,el CSV pasa del máximo posible
+T_23_S_01_#VRJYU8Q8P,23,1,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,J,csv_mayor_max,Fame,400,0,0,revisar,el CSV pasa del máximo posible
+T_23_S_01_#VRJYU8Q8P,23,1,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,J,csv_mayor_max,Ataques del día,4,0,0,revisar,el CSV pasa del máximo posible del día
+T_23_S_01_#VUVC9P8VL,23,1,Mini乂Ternas™,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,V,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_01_#VUVC9P8VL,23,1,Mini乂Ternas™,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,V,csv_mayor_max,Fame,500,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_01_#VUVC9P8VL,23,1,Mini乂Ternas™,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,V,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_23_S_02_#CUU92GQQG,23,2,GrupoXTerna™2,#CUU92GQQG,Larry god,S,csv_mayor_max,Ataques del día,7,3,4,revisar,el CSV pasa del máximo posible del día
+T_23_S_02_#L28JYY2J,23,2,GrupoXTerna™2,#L28JYY2J,Gamer,S,csv_mayor_max,Barcos,1,0,0,revisar,el CSV pasa del máximo posible
+T_23_S_02_#LRR2RGCCV,23,2,GrupoXTerna™2,#LRR2RGCCV,gabriel18,S,csv_mayor_max,Ataques semana,14,10,11,revisar,el CSV pasa del máximo posible
+T_23_S_02_#LRR2RGCCV,23,2,GrupoXTerna™2,#LRR2RGCCV,gabriel18,S,csv_mayor_max,Fame,2900,2200,2500,revisar,el CSV pasa del máximo posible
+T_23_S_02_#LRR2RGCCV,23,2,GrupoXTerna™2,#LRR2RGCCV,gabriel18,S,csv_mayor_max,Ataques del día,11,3,4,revisar,el CSV pasa del máximo posible del día
+T_23_S_02_#88RV0L8V2,23,2,Grupo乂Terna™,#88RV0L8V2,☆ ᴍ ᴀ ʏ ᴄ ᴏ ʟ ☆,S,csv_mayor_max,Ataques semana,12,8,8,revisar,el CSV pasa del máximo posible
+T_23_S_02_#88RV0L8V2,23,2,Grupo乂Terna™,#88RV0L8V2,☆ ᴍ ᴀ ʏ ᴄ ᴏ ʟ ☆,S,csv_mayor_max,Fame,1950,1150,1150,revisar,el CSV pasa del máximo posible
+T_23_S_02_#88RV0L8V2,23,2,Grupo乂Terna™,#88RV0L8V2,☆ ᴍ ᴀ ʏ ᴄ ᴏ ʟ ☆,S,csv_mayor_max,Ataques del día,8,4,4,revisar,el CSV pasa del máximo posible del día
+T_23_S_02_#G2Q9UYY89,23,2,Grupo乂Terna™,#G2Q9UYY89,✨✞₳Ⱡ€Ӿ✞✨♣️YV♠️,S,csv_mayor_max,Ataques del día,8,4,4,revisar,el CSV pasa del máximo posible del día
+T_23_S_02_#V9L9V9YV0,23,2,Grupo乂Terna™,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,J,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_02_#V9L9V9YV0,23,2,Grupo乂Terna™,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,J,csv_mayor_max,Fame,400,0,0,aviso,el CSV pasa del máximo posible
+T_23_S_02_#V9L9V9YV0,23,2,Grupo乂Terna™,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,J,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_23_S_02_#V9L9V9YV0,23,2,Grupo乂Terna™,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,V,csv_mayor_max,Ataques semana,8,4,4,aviso,el CSV pasa del máximo posible
+T_23_S_02_#V9L9V9YV0,23,2,Grupo乂Terna™,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,V,csv_mayor_max,Fame,875,475,475,aviso,el CSV pasa del máximo posible
+T_23_S_02_#LYVJU9UJJ,23,2,Mini乂Ternas™,#LYVJU9UJJ,fggij09,S,csv_mayor_max,Ataques semana,5,0,4,revisar,el CSV pasa del máximo posible
+T_23_S_02_#LYVJU9UJJ,23,2,Mini乂Ternas™,#LYVJU9UJJ,fggij09,S,csv_mayor_max,Ataques del día,5,0,4,revisar,el CSV pasa del máximo posible del día
+T_23_S_03_#U8CJG9JQ0,23,3,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,J,csv_mayor_max,Ataques semana,15,3,4,revisar,el CSV pasa del máximo posible
+T_23_S_03_#U8CJG9JQ0,23,3,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,J,csv_mayor_max,Fame,2250,400,900,revisar,el CSV pasa del máximo posible
+T_23_S_03_#U8CJG9JQ0,23,3,GrupoXTerna™2,#U8CJG9JQ0,ᴳ乂ᵀ ⚜️Αℓσηѕσ,J,csv_mayor_max,Ataques del día,15,3,4,revisar,el CSV pasa del máximo posible del día
+T_23_S_03_#YG8U8Q2PC,23,3,GrupoXTerna™2,#YG8U8Q2PC,skap,J,csv_mayor_max,Ataques semana,12,4,4,revisar,el CSV pasa del máximo posible
+T_23_S_03_#YG8U8Q2PC,23,3,GrupoXTerna™2,#YG8U8Q2PC,skap,J,csv_mayor_max,Fame,1700,700,700,revisar,el CSV pasa del máximo posible
+T_23_S_03_#YG8U8Q2PC,23,3,GrupoXTerna™2,#YG8U8Q2PC,skap,J,csv_mayor_max,Ataques del día,12,4,4,revisar,el CSV pasa del máximo posible del día
+T_23_S_04_#RR8CRJPUV,23,4,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,V,csv_mayor_max,Fame,500,400,400,aviso,el CSV pasa del máximo posible
+T_23_S_04_#Y8CVG9VYL,23,4,GrupoXTerna™2,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,S,csv_mayor_max,Ataques semana,9,8,8,aviso,el CSV pasa del máximo posible
+T_23_S_04_#Y8CVG9VYL,23,4,GrupoXTerna™2,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,S,csv_mayor_max,Fame,1700,1500,1500,aviso,el CSV pasa del máximo posible
+T_23_S_04_#Y8CVG9VYL,23,4,GrupoXTerna™2,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,S,csv_mayor_max,Ataques del día,1,0,0,aviso,el CSV pasa del máximo posible del día
+T_24_S_01_#RR8CRJPUV,24,1,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,J,csv_mayor_max,Ataques semana,4,0,0,revisar,el CSV pasa del máximo posible
+T_24_S_01_#RR8CRJPUV,24,1,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,J,csv_mayor_max,Fame,500,0,0,revisar,el CSV pasa del máximo posible
+T_24_S_01_#RR8CRJPUV,24,1,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,J,csv_mayor_max,Ataques del día,4,0,0,revisar,el CSV pasa del máximo posible del día
+T_24_S_01_#RR8CRJPUV,24,1,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,S,csv_mayor_max,Ataques semana,8,4,4,revisar,el CSV pasa del máximo posible
+T_24_S_01_#RR8CRJPUV,24,1,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,S,csv_mayor_max,Fame,1200,500,500,revisar,el CSV pasa del máximo posible
+T_24_S_01_#RR8CRJPUV,24,1,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,S,csv_mayor_max,Ataques del día,4,0,0,revisar,el CSV pasa del máximo posible del día
+T_24_S_01_#UYU0PGUYJ,24,1,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,S,csv_mayor_max,Ataques semana,12,8,8,revisar,el CSV pasa del máximo posible
+T_24_S_01_#UYU0PGUYJ,24,1,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,S,csv_mayor_max,Fame,1850,1200,1200,revisar,el CSV pasa del máximo posible
+T_24_S_01_#UYU0PGUYJ,24,1,GrupoXTerna™2,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,S,csv_mayor_max,Ataques del día,4,0,0,revisar,el CSV pasa del máximo posible del día
+T_24_S_01_#UJY0PGPUV,24,1,Mini乂Ternas™,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,J,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_24_S_01_#VUVC9P8VL,24,1,Mini乂Ternas™,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,J,csv_mayor_max,Ataques semana,4,0,0,aviso,el CSV pasa del máximo posible
+T_24_S_02_#J8V9PQJP9,24,2,GrupoXTerna™3,#J8V9PQJP9,ilmiatraxxp,S,csv_mayor_max,Ataques semana,4,3,3,aviso,el CSV pasa del máximo posible
+T_24_S_02_#J8V9PQJP9,24,2,GrupoXTerna™3,#J8V9PQJP9,ilmiatraxxp,S,csv_mayor_max,Fame,500,300,300,aviso,el CSV pasa del máximo posible
+T_24_S_02_#J8V9PQJP9,24,2,GrupoXTerna™3,#J8V9PQJP9,ilmiatraxxp,S,csv_mayor_max,Ataques del día,4,3,3,aviso,el CSV pasa del máximo posible del día
+T_24_S_02_#JCUPQ88J,24,2,GrupoXTerna™3,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,V,csv_mayor_max,Fame,700,600,600,aviso,el CSV pasa del máximo posible
+T_24_S_02_#90Q8RYGPP,24,2,Grupo乂Terna™,#90Q8RYGPP,--❤️Kalé❤️--,V,csv_mayor_max,Ataques semana,5,4,4,revisar,el CSV pasa del máximo posible
+T_24_S_02_#90Q8RYGPP,24,2,Grupo乂Terna™,#90Q8RYGPP,--❤️Kalé❤️--,S,csv_mayor_max,Ataques semana,9,8,8,revisar,el CSV pasa del máximo posible
+T_24_S_02_#VCLRVUCLG,24,2,Mini乂Ternas™,#VCLRVUCLG,¡momazos pedro!,S,csv_mayor_max,Ataques semana,8,7,7,revisar,el CSV pasa del máximo posible
+T_24_S_02_#VCLRVUCLG,24,2,Mini乂Ternas™,#VCLRVUCLG,¡momazos pedro!,S,csv_mayor_max,Ataques del día,2,1,1,revisar,el CSV pasa del máximo posible del día
+T_24_S_03_#VCCU98J0U,24,3,Mini乂Ternas™,#VCCU98J0U,Alexx123,V,csv_mayor_max,Ataques semana,2,1,1,revisar,el CSV pasa del máximo posible
+T_24_S_03_#VCCU98J0U,24,3,Mini乂Ternas™,#VCCU98J0U,Alexx123,V,csv_mayor_max,Ataques del día,2,1,1,revisar,el CSV pasa del máximo posible del día
+T_24_S_03_#VCCU98J0U,24,3,Mini乂Ternas™,#VCCU98J0U,Alexx123,S,csv_mayor_max,Ataques semana,6,5,5,revisar,el CSV pasa del máximo posible
+T_24_S_04_#UJY0PGPUV,24,4,GrupoXTerna™3,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,S,csv_mayor_max,Ataques semana,10,6,6,aviso,el CSV pasa del máximo posible
+T_24_S_04_#UJY0PGPUV,24,4,GrupoXTerna™3,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,S,csv_mayor_max,Fame,1700,800,800,aviso,el CSV pasa del máximo posible
+T_24_S_04_#UJY0PGPUV,24,4,GrupoXTerna™3,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,S,csv_mayor_max,Ataques del día,4,0,0,aviso,el CSV pasa del máximo posible del día
+T_24_S_04_#829GQP0JL,24,4,Grupo乂Terna™,#829GQP0JL,Procrastinador.,V,csv_mayor_max,Ataques semana,8,7,7,revisar,el CSV pasa del máximo posible
+T_24_S_04_#829GQP0JL,24,4,Grupo乂Terna™,#829GQP0JL,Procrastinador.,V,csv_mayor_max,Ataques del día,4,3,3,revisar,el CSV pasa del máximo posible del día
+T_24_S_04_#829GQP0JL,24,4,Grupo乂Terna™,#829GQP0JL,Procrastinador.,S,csv_mayor_max,Ataques semana,12,11,11,revisar,el CSV pasa del máximo posible
+T_24_S_04_#UJY0PGPUV,24,4,Mini乂Ternas™,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,J,csv_mayor_max,Fame,300,200,200,aviso,el CSV pasa del máximo posible
+T_24_S_05_#20P2UP80UY,24,5,GrupoXTerna™3,#20P2UP80UY,ᴳ乂ᵀ ⚜️ SHAKA,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|12|16, medallas 500|1200|1500-2100|2400, barcos 0|0|0|0"
+T_24_S_05_#2PUYLPPRG,24,5,GrupoXTerna™3,#2PUYLPPRG,COSCU06,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|4|7|7, medallas 400|400|700|700, barcos 0|0|0|0"
+T_24_S_05_#8VU0Y9LJ0,24,5,GrupoXTerna™3,#8VU0Y9LJ0,Yisus Craiz,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|12|16, medallas 600|1100|1300-2000|2200, barcos 0|0|0|0"
+T_24_S_05_#900PCRQ2R,24,5,GrupoXTerna™3,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|8-12|12, medallas 600|1200|1200-1700|1700, barcos 0|0|0|0"
+T_24_S_05_#90QYJQRQ8,24,5,GrupoXTerna™3,#90QYJQRQ8,Diana,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|8-12|12, medallas 700|1300|1300-1900|1900, barcos 0|0|0|0"
+T_24_S_05_#J8V9PQJP9,24,5,GrupoXTerna™3,#J8V9PQJP9,ilmiatraxxp,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 0|1|1|1, medallas 0|100|100|100, barcos 0|0|0|0"
+T_24_S_05_#JGGLGVCGU,24,5,GrupoXTerna™3,#JGGLGVCGU,ᴳ乂ᵀ ⚜️ᴊᴏꜱʜᴜᴀᵖˣʳ,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|12|16, medallas 900|1700|2500|3200, barcos 0|0|0|0"
+T_24_S_05_#U8G029GUQ,24,5,GrupoXTerna™3,#U8G029GUQ,ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|4|4-8|8, medallas 600|600|600-1100|1100, barcos 0|0|0|0"
+T_24_S_05_#UJY0PGPUV,24,5,GrupoXTerna™3,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|8|8, medallas 700|1500|1500|1500, barcos 0|0|0|0"
+T_24_S_05_#V0JPP0UJR,24,5,GrupoXTerna™3,#V0JPP0UJR,fatima,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|12|16, medallas 800|1200-1700|2100|2800, barcos 0|0|0|0"
+T_24_S_05_#V0UJ0RPVP,24,5,GrupoXTerna™3,#V0UJ0RPVP,MassimoBabyOhh,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|12|16, medallas 500|1000|1300-1900|2200, barcos 0|0|0|0"
+T_24_S_05_#V9L9V9YV0,24,5,GrupoXTerna™3,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|4|4-8|8, medallas 400|400|400-800|800, barcos 0|0|0|0"
+T_24_S_05_#V9P20U8RC,24,5,GrupoXTerna™3,#V9P20U8RC,kayserleandro,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|12|16, medallas 600-900|1500|1500-2400|2400, barcos 0|0|0|0"
+T_24_S_05_#VLY0G9LU9,24,5,GrupoXTerna™3,#VLY0G9LU9,ᴳ乂ᵀ ⚜. josuexd.,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|12|16, medallas 600|1300|2100|2700, barcos 0|0|0|0"
+T_24_S_05_#VUVC9P8VL,24,5,GrupoXTerna™3,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|4|4-8|8, medallas 400|400|400-900|900, barcos 0|0|0|0"
+T_24_S_05_#LYVJU9UJJ,24,5,Mini乂Ternas™,#LYVJU9UJJ,fggij09,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 2|2|2-3|3, medallas 200|200|200-300|300, barcos 0|0|0|0"
+T_24_S_05_#VCCU98J0U,24,5,Mini乂Ternas™,#VCCU98J0U,Alexx123,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|10|10, medallas 200-700|1100-1600|1600|1600, barcos 0|0|0|0"
+T_24_S_05_#VJL99Q9LR,24,5,Mini乂Ternas™,#VJL99Q9LR,iRaftyCat,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 2|6|10|14, medallas 200|200-900|1000-1800|1900, barcos 0|0|0|0"
+T_24_S_05_#VRJYU8Q8P,24,5,Mini乂Ternas™,#VRJYU8Q8P,ᴳ乂ᵀ ⚜️ SHŰRÁ,,json_anomalo,json_anomalo,,,,estimado,"estimado con RoyaleAPI (log): ataques 4|8|12|16, medallas 900|1800|2200-2700|3100, barcos 0|0|0|0"
+T_25_S_01_#UYJCQQ028,25,1,GrupoXTerna™2,#UYJCQQ028,cristofer adt,V,csv_mayor_max,Ataques semana,8,7,7,revisar,el CSV pasa del máximo posible
+T_25_S_01_#UYJCQQ028,25,1,GrupoXTerna™2,#UYJCQQ028,cristofer adt,V,csv_mayor_max,Ataques del día,4,3,3,revisar,el CSV pasa del máximo posible del día
+T_25_S_01_#UYJCQQ028,25,1,GrupoXTerna™2,#UYJCQQ028,cristofer adt,S,csv_mayor_max,Ataques semana,12,11,11,revisar,el CSV pasa del máximo posible
+T_26_S_01_#UPC9P9JUC,26,1,GrupoXTerna™2,#UPC9P9JUC,Elduro69,S,csv_mayor_max,Fame,2100,1850,1850,revisar,el CSV pasa del máximo posible
+T_26_S_02_#JGGPP0G99,26,2,GrupoXTerna™2,#JGGPP0G99,Charly,S,csv_mayor_max,Fame,1500,1450,1450,revisar,el CSV pasa del máximo posible
+T_26_S_02_#8VU0Y9LJ0,26,2,GrupoXTerna™3,#8VU0Y9LJ0,Yisus Craiz,,json_anomalo,json_anomalo,,,,estimado,"captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; estimado con RoyaleAPI (log): ataques 4|8|12|16, medallas 600|1100|1800|2400, barcos 0|0|0|0"
+T_26_S_02_#V0UJ0RPVP,26,2,GrupoXTerna™3,#V0UJ0RPVP,ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ,,json_anomalo,json_anomalo,,,,estimado,"captura D anómala pero usada: decksUsedToday 0 con decksUsed 16 (fallo del JSON): se usa como acumulado final y los ataques del día salen por diferencia; estimado con RoyaleAPI (log): ataques 4|8|12|16, medallas 600|800-1500|1700|2300, barcos 0|0|0|0"
+T_26_S_02_#V9P20U8RC,26,2,GrupoXTerna™3,#V9P20U8RC,kayserleandro,,json_anomalo,json_anomalo,,,,estimado,"ataques: las capturas no caben juntas; fame: las capturas no caben juntas; estimado con RoyaleAPI (log, sin la captura D): ataques 4|4|8|12, medallas 700|700|1300|2100, barcos 0|0|0|0"
+T_26_S_02_#80PPY9R9G,26,2,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),J,csv_mayor_max,Ataques semana,4,2,2,revisar,el CSV pasa del máximo posible
+T_26_S_02_#80PPY9R9G,26,2,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),J,csv_mayor_max,Fame,500,200,200,revisar,el CSV pasa del máximo posible
+T_26_S_02_#80PPY9R9G,26,2,Grupo乂Terna™,#80PPY9R9G,ᴳ乂ᵀ ⚜️ Sunix :),J,csv_mayor_max,Ataques del día,4,2,2,revisar,el CSV pasa del máximo posible del día
+T_27_S_01_#UG8LQYPPQ,27,1,GrupoXTerna™2,#UG8LQYPPQ,Lui$29,V,csv_menor,Ataques semana,5,8,8,error,el CSV tiene menos que el piso del JSON
+T_27_S_01_#UG8LQYPPQ,27,1,GrupoXTerna™2,#UG8LQYPPQ,Lui$29,V,csv_menor,Fame,900,1500,1500,error,el CSV tiene menos que el piso del JSON
+T_27_S_01_#UG8LQYPPQ,27,1,GrupoXTerna™2,#UG8LQYPPQ,Lui$29,V,csv_menor,Ataques del día,1,4,4,error,el CSV tiene menos ataques del día que el piso del JSON
+T_27_S_01_#UG8LQYPPQ,27,1,GrupoXTerna™2,#UG8LQYPPQ,Lui$29,S,fila_faltante,fila del día,,A 8 / F 1500 / B 0,,error,el JSON trae actividad este día y el CSV no tiene la fila
+T_27_S_02_#L28JYY2J,27,2,GrupoXTerna™2,#L28JYY2J,Gamer,J,csv_menor,Ataques semana,0,4,4,error,el CSV tiene menos que el piso del JSON
+T_27_S_02_#L28JYY2J,27,2,GrupoXTerna™2,#L28JYY2J,Gamer,J,csv_menor,Fame,0,600,600,error,el CSV tiene menos que el piso del JSON
+T_27_S_02_#L28JYY2J,27,2,GrupoXTerna™2,#L28JYY2J,Gamer,J,csv_menor,Ataques del día,0,4,4,error,el CSV tiene menos ataques del día que el piso del JSON
+T_27_S_02_#2GG8PJ8GC,27,2,Grupo乂Terna™,#2GG8PJ8GC,ᴳ乂ᵀ ⚜️ Chistris,J,csv_menor,Ataques semana,0,4,4,error,el CSV tiene menos que el piso del JSON
+T_27_S_02_#2GG8PJ8GC,27,2,Grupo乂Terna™,#2GG8PJ8GC,ᴳ乂ᵀ ⚜️ Chistris,J,csv_menor,Fame,0,600,600,error,el CSV tiene menos que el piso del JSON
+T_27_S_02_#2GG8PJ8GC,27,2,Grupo乂Terna™,#2GG8PJ8GC,ᴳ乂ᵀ ⚜️ Chistris,J,csv_menor,Ataques del día,0,4,4,error,el CSV tiene menos ataques del día que el piso del JSON
