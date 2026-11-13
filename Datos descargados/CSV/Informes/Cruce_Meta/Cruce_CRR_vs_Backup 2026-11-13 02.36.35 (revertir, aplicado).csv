@@ -1,0 +1,2 @@
+ID,Temporada,Semana,Clan,Tag,Nombre,Día,Acción,AtaquesHoy ahora,AtaquesHoy anterior,AtaquesSemana ahora,AtaquesSemana anterior,Fame ahora,Fame anterior,Barcos ahora,Barcos anterior,Origen anterior,Motivo
+T_23_S_03_#VRVCV0QR8,23,3,Mini乂Ternas™,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,J,Revertir,3,2,3,2,600,200,0,0,Corregido - Solución estimada,"escribir el mínimo del JSON dejaría imposible o sin dato el día D (sus ataques no cuadran con la fame, los barcos o los ataques de la semana del CSV)"
