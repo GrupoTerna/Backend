@@ -21,6 +21,7 @@
  *   verificarCrrVsBackupAplicar()  -> lo mismo y además, con respaldo previo y verificación, CREA las filas de día que faltan y SUBE al piso
  *                                     del JSON los valores que estén por debajo. Nunca baja un valor ni toca uno que supere el máximo.
  *   verificarCrrVsBackupReiniciar() -> borra el avance de la corrida en curso (no el registro de JSON verificados).
+ *   verificarCrrVsBackupRevertirInforme() / verificarCrrVsBackupRevertirAplicar() -> §PF446: devuelven a su valor anterior las filas que «Aplicar» subió y que dejaron un día imposible.
  *   verificarCrrVsBackupOlvidarVerificados() -> vacía el registro de JSON verificados: la próxima corrida vuelve a leer todos los JSON.
  *   descartarFilasClanEquivocadoInforme()  -> (§PF339) SOLO INFORMA qué filas de VCRR_FILAS_DESCARTAR se quitarían de Backup_Guerra.csv.
  *   descartarFilasClanEquivocadoAplicar()  -> (§PF339) QUITA esas filas (clan equivocado, decisión de la usuaria), con respaldo previo y verificación. Es la única función del módulo que borra filas.
@@ -124,6 +125,8 @@ var VCRR_FILAS_DESCARTAR = [
     nota: 'Log: ™2 4 y ™3 0 ataques; el 4 del sábado es de ™2' }
 ];
 var VCRR_MAX_FILAS_DESCARTAR = 30;                     // tope de filas que una corrida puede quitar de Backup_Guerra.csv (si se pasa, no se quita nada)
+var VCRR_REVERTIR_MARCA = '2026-11-11 10.13.05';       // §PF446: marca de la corrida de «Aplicar» cuyo respaldo previo («Backup_Guerra ANTES de verificar CRR vs Backup <marca>.csv») usa la reversión
+var VCRR_MAX_FILAS_REVERTIR = 150;                       // §PF446: tope de filas que una reversión puede modificar (si se pasa, no se escribe nada; la corrida del 11-nov dejó 84)
 
 var VCRR_PASOS_NOMBRES_INFORME = [
   'RoyaleAPI: leer los JSON individuales (log y perfil cerrados) de cada jugador y guardar sus totales semanales → Cruce_CRR_RoyaleAPI.csv',
@@ -191,6 +194,21 @@ function descartarFilasClanEquivocadoInforme() { _vcrrDescartarFilas_(false); }
  * próxima sincronización de la hoja Guerra lo hace. Después de correrla, corre verificarCrrVsBackupAplicar() para que cree con el piso del JSON las filas correctas de los clanes que se conservan.
  */
 function descartarFilasClanEquivocadoAplicar() { _vcrrDescartarFilas_(true); }
+
+// ----- Revertir lo que «Aplicar» subió y dejó un día imposible (§PF446) -----
+
+/**
+ * Solo informa (no toca Backup_Guerra.csv): con el respaldo previo de la corrida de «Aplicar» que indica VCRR_REVERTIR_MARCA, lista las filas que «Aplicar» subió al piso del JSON y que dejaron
+ * «Imposible» un día que antes no lo era (la misma prueba que ahora hace «Aplicar» antes de escribir). Deja el detalle en «Cruce_CRR_vs_Backup <fecha> (revertir, informe).csv».
+ */
+function verificarCrrVsBackupRevertirInforme() { _vcrrRevertirSubidas_(false); }
+
+/**
+ * Devuelve a su valor anterior (ataques del día, ataques de la semana, fame, barcos y origen) las filas que lista verificarCrrVsBackupRevertirInforme(), tomándolos del respaldo previo de «Aplicar».
+ * No toca las demás filas: las que agregó runGuerra después de «Aplicar» se conservan. Respaldo previo («Backup_Guerra ANTES de revertir CRR vs Backup <fecha>.csv»), verificación al releer y nada
+ * se escribe si pasa de VCRR_MAX_FILAS_REVERTIR. Después de correrla, corre generarGuerraDesglose() para comprobar que los «Imposible» bajan.
+ */
+function verificarCrrVsBackupRevertirAplicar() { _vcrrRevertirSubidas_(true); }
 
 // =============================================================================
 // PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
@@ -1368,10 +1386,11 @@ function _vcrrIndiceGruposPorJugador_(grupos) {
 
 /**
  * _vcrrDiasEnOtroClan_(indice, x) — §PF446. Función pura. 4 booleanos (jueves a domingo): true si el jugador de la serie x tiene fila ese día en OTRO clan esa semana. Es el mismo dato que usa el desglose
- * (enOtroClan en _gdsValoresHojaDeClan_): un día así no es un hueco de este clan. indice sale de _vcrrIndiceGruposPorJugador_().
+ * (enOtroClan en _gdsValoresHojaDeClan_): un día así no es un hueco de este clan. indice sale de _vcrrIndiceGruposPorJugador_(). clavePropia (opcional) = la clave _excDiasClaveGrupo_ del grupo de la serie,
+ * cuando ya se tiene; sin ella se calcula con _vcrrClaveGrupoSerie_(x).
  */
-function _vcrrDiasEnOtroClan_(indice, x) {
-  var out = [false, false, false, false], propia = _vcrrClaveGrupoSerie_(x);
+function _vcrrDiasEnOtroClan_(indice, x, clavePropia) {
+  var out = [false, false, false, false], propia = clavePropia || _vcrrClaveGrupoSerie_(x);
   (indice[[String(x.temporada), String(x.semana), x.tag].join('|')] || []).forEach(function (g2) {
     if (_excDiasClaveGrupo_(g2) === propia) return;
     for (var d = 0; d < 4; d++) { if (g2.dias[d]) out[d] = true; }
@@ -1696,6 +1715,119 @@ function _vcrrVerificarDescarte_(filasAntes, filasDespues, plan, idsHoja) {
   var otra = _vcrrPlanDescartar_(filasDespues, aplicadas, idsHoja);
   if (otra.quitar.length) problemas.push('siguen ' + otra.quitar.length + ' fila(s) por quitar');
   return problemas;
+}
+
+// ----- Revertir lo que «Aplicar» subió y dejó un día imposible (§PF446): motor -----
+
+/**
+ * _vcrrPlanRevertir_(filasAntes, filasAhora) — §PF446. Función pura. filasAntes = Backup_Guerra.csv antes de «Aplicar» (el respaldo previo); filasAhora = el de ahora (sin encabezado, con GUERRA_TOTAL_COLS columnas).
+ * Toma como operaciones de «Aplicar» las filas de filasAhora con origen VCRR_ORIGEN_SUBIDA cuyos valores cambiaron respecto del respaldo (y las de origen VCRR_ORIGEN_CREADA que el respaldo no tiene),
+ * y con _vcrrDiasQueFallan_ saca las que dejan imposible un día que antes no lo era, repitiendo hasta que no quede ninguna. Devuelve { casos, avisos }: casos = [{ grupo, ops }] con las filas que se devuelven
+ * a su valor del respaldo (ops en el formato de _excDiasAplicarPlan(): fila, existe true, ant = lo de ahora, nuevo = lo del respaldo); avisos = [{ grupo, dia, motivo }] para lo que no se puede revertir aquí
+ * (una fila creada por «Aplicar»: esta función no borra filas).
+ */
+function _vcrrPlanRevertir_(filasAntes, filasAhora) {
+  var gAntes = _excDiasAgrupar(filasAntes), gAhora = _excDiasAgrupar(filasAhora), indiceAntes = _vcrrIndiceGruposPorJugador_(gAntes);
+  var valores = function (f) { return { hoy: _excDiasNum(f[GC.ATAQUES_HOY - 1]), sem: _excDiasNum(f[GC.ATAQUES_SEM - 1]), fame: _excDiasNum(f[GC.FAME - 1]), barcos: _excDiasNum(f[GC.BARCOS - 1]) }; };
+  var casos = [], avisos = [];
+  Object.keys(gAhora).forEach(function (k) {
+    var gh = gAhora[k], ga = gAntes[k] || { dias: {} }, ops = [];
+    for (var d = 0; d < 4; d++) {
+      var fh = gh.dias[d], fa = ga.dias[d];
+      if (!fh) continue;
+      var origen = String(fh[GC.ORIGEN - 1]);
+      if (fa && origen === VCRR_ORIGEN_SUBIDA) {
+        var vh = valores(fh), va = valores(fa);
+        if (vh.hoy !== va.hoy || vh.sem !== va.sem || vh.fame !== va.fame || vh.barcos !== va.barcos) ops.push({ dia: d, existe: true, fila: fh, filaAntes: fa, nuevo: vh });
+      } else if (!fa && origen === VCRR_ORIGEN_CREADA) {
+        ops.push({ dia: d, existe: false, fila: fh, filaAntes: null, nuevo: valores(fh) });
+      }
+    }
+    if (!ops.length) return;
+    var otro = _vcrrDiasEnOtroClan_(indiceAntes, { temporada: gh.temporada, semana: gh.semana, tag: gh.tag, clan: gh.clan }, k);
+    var devolver = [];
+    for (var vuelta = 0; vuelta < 8 && ops.length; vuelta++) {
+      var fallan = _vcrrDiasQueFallan_(ga, ops, otro), malos = {};
+      if (!fallan.length) break;
+      fallan.forEach(function (f) { malos[f.dia] = f.motivo; });
+      ops.forEach(function (o) { if (malos[o.dia] !== undefined) { o.motivo = malos[o.dia]; devolver.push(o); } });
+      ops = ops.filter(function (o) { return malos[o.dia] === undefined; });
+    }
+    var opsCaso = [];
+    devolver.forEach(function (o) {
+      if (!o.existe) { avisos.push({ grupo: gh, dia: o.dia, motivo: 'fila creada por «Aplicar» que deja imposible el día ' + VCRR_DIAS.charAt(o.dia) + ' del vecino; esta función no borra filas, revisar a mano' }); return; }
+      var an = valores(o.filaAntes);
+      opsCaso.push({ dia: o.dia, existe: true, fila: o.fila, sinCambio: false, ant: o.nuevo, nuevo: { hoy: an.hoy, sem: an.sem, fame: an.fame, barcos: an.barcos, origen: String(o.filaAntes[GC.ORIGEN - 1]) }, motivo: o.motivo });
+    });
+    if (opsCaso.length) casos.push({ grupo: gh, ops: opsCaso });
+  });
+  return { casos: casos, avisos: avisos };
+}
+
+/**
+ * Motor de verificarCrrVsBackupRevertirInforme() y verificarCrrVsBackupRevertirAplicar() (§PF446). aplicar = false solo informa. Con aplicar = true: respaldo previo, devuelve las filas a su valor
+ * del respaldo de «Aplicar» con _excDiasAplicarPlan(), relee Backup_Guerra.csv de Drive y verifica con _vcrrVerificarAplicado_; si la verificación falla lo dice con el nombre del respaldo para restaurar.
+ */
+function _vcrrRevertirSubidas_(aplicar) {
+  var nombreFn = aplicar ? 'verificarCrrVsBackupRevertirAplicar' : 'verificarCrrVsBackupRevertirInforme';
+  if (!_adquirirLockEjecucion(nombreFn)) return;
+  var lock = LockService.getScriptLock(), conLock = false;
+  try {
+    if (aplicar) {
+      if (!lock.tryLock(30000)) { Logger.log('[VCRR revertir] Hay otro proceso escribiendo; vuelve a correr ' + nombreFn + '() en un momento. No se tocó nada.'); return; }
+      conLock = true;
+    }
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var nombreAntes = 'Backup_Guerra ANTES de verificar CRR vs Backup ' + VCRR_REVERTIR_MARCA + '.csv';
+    var bk = _vcrrLeerBackupGuerra_();
+    if (!bk) { Logger.log('[VCRR revertir] No se encontró Backup_Guerra.csv o está vacío; no se toca nada.'); return; }
+    var textoAntes = _loadCSVFromDrive(nombreAntes);
+    var parsedAntes = textoAntes ? _parseCSV(textoAntes) : null;
+    if (!parsedAntes || parsedAntes.length < 2) { Logger.log('[VCRR revertir] No se encontró «' + nombreAntes + '» en Drive o está vacío; no se toca nada. Revisa VCRR_REVERTIR_MARCA.'); return; }
+    var filasAntes = parsedAntes.slice(1);
+    for (var a = 0; a < filasAntes.length; a++) { while (filasAntes[a].length < GUERRA_TOTAL_COLS) filasAntes[a].push(''); }
+    var plan = _vcrrPlanRevertir_(filasAntes, bk.filas);
+    var nOps = 0;
+    plan.casos.forEach(function (c) { nOps += c.ops.length; });
+    var detalle = [['Temporada', 'Semana', 'Clan', 'Tag', 'Nombre', 'Día', 'Acción', 'AtaquesHoy ahora', 'AtaquesHoy anterior', 'AtaquesSemana ahora', 'AtaquesSemana anterior', 'Fame ahora', 'Fame anterior', 'Barcos ahora', 'Barcos anterior', 'Origen anterior', 'Motivo']];
+    plan.casos.forEach(function (c) {
+      c.ops.forEach(function (op) {
+        detalle.push([c.grupo.temporada, c.grupo.semana, c.grupo.clan, c.grupo.tag, c.grupo.nombre, VCRR_DIAS.charAt(op.dia), aplicar ? 'Revertir' : 'Revertiría',
+          op.ant.hoy, op.nuevo.hoy, op.ant.sem, op.nuevo.sem, op.ant.fame, op.nuevo.fame, op.ant.barcos, op.nuevo.barcos, op.nuevo.origen, op.motivo]);
+      });
+    });
+    plan.avisos.forEach(function (v) { detalle.push([v.grupo.temporada, v.grupo.semana, v.grupo.clan, v.grupo.tag, v.grupo.nombre, VCRR_DIAS.charAt(v.dia), 'SIN REVERTIR', '', '', '', '', '', '', '', '', '', v.motivo]); });
+    var problemas = [];
+    if (aplicar && nOps > VCRR_MAX_FILAS_REVERTIR) {
+      Logger.log('[VCRR revertir] NO SE ESCRIBIÓ NADA: ' + nOps + ' fila(s) por revertir pasan el tope de ' + VCRR_MAX_FILAS_REVERTIR + ' (VCRR_MAX_FILAS_REVERTIR). Corre verificarCrrVsBackupRevertirInforme() y revisa el detalle.');
+      return;
+    }
+    if (aplicar && nOps > 0) {
+      var idxDe = new Map();
+      for (var q = 0; q < bk.filas.length; q++) idxDe.set(bk.filas[q], q);
+      plan.casos.forEach(function (c) { c.ops.forEach(function (op) { op.idxAntes = idxDe.get(op.fila); }); });
+      var copiaAntes = bk.filas.map(function (r) { return r.slice(); });
+      _saveCSVToDrive('Backup_Guerra ANTES de revertir CRR vs Backup ' + marca + '.csv', bk.texto);
+      _excDiasAplicarPlan(bk.filas, { casos: plan.casos });
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([bk.encabezado].concat(bk.filas)));
+      var despues = _loadCSVFromDrive('Backup_Guerra.csv');
+      var parsedDespues = despues ? _parseCSV(despues) : null;
+      if (!parsedDespues || parsedDespues.length < 2) problemas.push('No se pudo releer Backup_Guerra.csv');
+      else {
+        var filasDespues = parsedDespues.slice(1);
+        for (var b = 0; b < filasDespues.length; b++) { while (filasDespues[b].length < GUERRA_TOTAL_COLS) filasDespues[b].push(''); }
+        problemas = _vcrrVerificarAplicado_(copiaAntes, filasDespues, plan.casos, 0);
+      }
+    }
+    if (detalle.length > 1) _saveCSVToDrive('Cruce_CRR_vs_Backup ' + marca + ' (revertir, ' + (aplicar ? 'aplicado' : 'informe') + ').csv', _encodeCSVInforme(detalle));
+    Logger.log('[VCRR revertir] ' + (aplicar ? 'Revertidas' : 'Se revertirían') + ' ' + nOps + ' fila(s) de ' + plan.casos.length + ' serie(s); sin revertir: ' + plan.avisos.length + '. ' +
+      (problemas.length ? 'VERIFICACIÓN FALLÓ (' + problemas.length + '): ' + problemas.slice(0, 5).join('; ') + '. Restaurar con «Backup_Guerra ANTES de revertir CRR vs Backup ' + marca + '.csv».'
+        : (aplicar && nOps > 0 ? 'Verificación OK. Ahora corre generarGuerraDesglose() para comprobar que los «Imposible» bajan.' : '')));
+    plan.avisos.forEach(function (v) { Logger.log('[VCRR revertir] SIN REVERTIR T' + v.grupo.temporada + ' S' + v.grupo.semana + ' ' + v.grupo.nombre + ' ' + v.grupo.tag + ': ' + v.motivo); });
+  } finally {
+    if (conLock) lock.releaseLock();
+    _liberarLockEjecucion();
+  }
 }
 
 // ----- Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día) -----
