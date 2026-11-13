@@ -1,0 +1,35 @@
+{
+  "tag": "#UV99JQRUP",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "13/11/2026",
+  "registros": [
+    {
+      "temporadaInterna": 27,
+      "temporadaRoyaleAPI": 138,
+      "semana": 2,
+      "clan": "GrupoXTerna™2",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 27,
+      "temporadaRoyaleAPI": 138,
+      "semana": 1,
+      "clan": "GrupoXTerna™2",
+      "ataques": 1,
+      "fame": 75,
+      "barcos": 1,
+      "fuente": "log",
+      "cerrada": true,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    }
+  ]
+}
