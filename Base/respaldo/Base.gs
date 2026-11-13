@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 10/11/2026 23:47:31 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 13/11/2026 01:47:00 */
 
 
 
@@ -78811,14 +78811,14 @@ function _vcrrPaso3_(st, t0) {
   try {
     var bk = _vcrrLeerBackupGuerra_();
     if (!bk) { Logger.log('[VCRR] No se encontró Backup_Guerra.csv o está vacío; no se escribe nada.'); return true; }
-    var grupos = _excDiasAgrupar(bk.filas), restr = _vcrrLeerRestricciones_();
+    var grupos = _excDiasAgrupar(bk.filas), restr = _vcrrLeerRestricciones_(), indiceJugador = _vcrrIndiceGruposPorJugador_(grupos);   // §PF446: indiceJugador sirve para saber qué días tiene fila el jugador en otro clan
     var clanes = {};
     Object.keys(grupos).forEach(function (k) { clanes[_vcrrClanNorm_(grupos[k].clan)] = grupos[k].clan; });
     var casos = [], conflictos = [], nCrear = 0, nMod = 0;
     Object.keys(restr).forEach(function (k) {
       restr[k].forEach(function (x) {
         var g = grupos[_vcrrClaveGrupoSerie_(x)] || null;   // §PF445 punto 12: por el Tag del clan, como _excDiasAgrupar()
-        var plan = _vcrrPlanSerie_(x, g, clanes);
+        var plan = _vcrrPlanSerie_(x, g, clanes, _vcrrDiasEnOtroClan_(indiceJugador, x));
         plan.conflictos.forEach(function (c) { conflictos.push(c); });
         var ops = plan.ops.filter(function (op) { return !op.sinCambio; });
         if (!ops.length) return;
@@ -78878,13 +78878,104 @@ function _vcrrEsArrastre_(x, d, prev) {
 }
 
 /**
- * Función pura. Arma las operaciones de escritura de una serie: crea el día que falta (si el JSON de ese clan y día trae actividad) y sube al piso
- * los acumulados que estén por debajo; nunca baja un valor y no toca los que pasan del máximo. clanes = { clave normalizada: nombre del clan en el CSV }.
- * Devuelve { grupo, ops, conflictos }. Las ops sirven para _excDiasAplicarPlan() (55_Reparar_DiasConExceso.gs).
- * §PF336: si la serie está estimada solo con el perfil de RoyaleAPI, no devuelve ops: sus escrituras pasan a conflictos.
+ * _vcrrIndiceGruposPorJugador_(grupos) — §PF446. Función pura. Agrupa los grupos de _excDiasAgrupar() por jugador y semana: { 'temporada|semana|tag': [grupos de cada clan] }.
  */
-function _vcrrPlanSerie_(x, g, clanes) {
-  var grupo = g || { temporada: String(x.temporada), semana: String(x.semana), tag: x.tag, clan: clanes[_vcrrClanNorm_(x.clan)] || x.clan, clanTag: _vcrrTagDeClan_(clanes[_vcrrClanNorm_(x.clan)] || x.clan), nombre: x.nombre, dias: {} };   // §PF445 punto 12: clanTag para que la fila creada lleve el Clan_Tag y la verificación encuentre el grupo por su clave
+function _vcrrIndiceGruposPorJugador_(grupos) {
+  var idx = {};
+  Object.keys(grupos).forEach(function (k) {
+    var g = grupos[k], c = [g.temporada, g.semana, g.tag].join('|');
+    if (!idx[c]) idx[c] = [];
+    idx[c].push(g);
+  });
+  return idx;
+}
+
+/**
+ * _vcrrDiasEnOtroClan_(indice, x) — §PF446. Función pura. 4 booleanos (jueves a domingo): true si el jugador de la serie x tiene fila ese día en OTRO clan esa semana. Es el mismo dato que usa el desglose
+ * (enOtroClan en _gdsValoresHojaDeClan_): un día así no es un hueco de este clan. indice sale de _vcrrIndiceGruposPorJugador_().
+ */
+function _vcrrDiasEnOtroClan_(indice, x) {
+  var out = [false, false, false, false], propia = _vcrrClaveGrupoSerie_(x);
+  (indice[[String(x.temporada), String(x.semana), x.tag].join('|')] || []).forEach(function (g2) {
+    if (_excDiasClaveGrupo_(g2) === propia) return;
+    for (var d = 0; d < 4; d++) { if (g2.dias[d]) out[d] = true; }
+  });
+  return out;
+}
+
+/**
+ * _vcrrDiasImposibles_(dias, otro) — §PF446. Función pura. dias = arreglo de 4 con { hoy, sem, fame, barcos } (jueves a domingo; null si el día no tiene fila); otro = 4 booleanos de _vcrrDiasEnOtroClan_()
+ * (opcional). Devuelve 4 booleanos: true si el día queda «Imposible» con la misma regla del desglose (_gdsValoresHojaDeClan_, _gdsCombinacionesDelDia_ y _gdsVariosDiasCabe_, 18_CorreccionGuerra.gs):
+ * la base de cada día es la última fila anterior; los ataques del día son AtaquesHoy, o la diferencia de AtaquesSemana si AtaquesHoy es 0 y esa diferencia cabe en 4 ataques por día cubierto;
+ * la fame y los barcos son la diferencia de acumulados, nunca negativa. Una fila que cubre varios días (faltan las filas de en medio, y no por estar el jugador en otro clan) se evalúa como la suma de
+ * esos días. Un día sin ataques calculables (domingo) no se evalúa y da false.
+ */
+function _vcrrDiasImposibles_(dias, otro) {
+  var out = [false, false, false, false], ataques = [null, null, null, null], prev = null, enOtro = otro || [];
+  for (var d = 0; d < 4; d++) {
+    var r = dias[d];
+    if (!r) continue;
+    var sp = 1;
+    for (var q = (prev ? prev.o : -1) + 1; q < d; q++) { if (enOtro[q] !== true) sp++; }
+    var contados = 0;
+    for (var c = 0; c < d; c++) contados += (ataques[c] === null ? 0 : ataques[c]);
+    var semBase = prev ? prev.sem : 0;
+    var dif = semBase < contados ? null : r.sem - semBase;
+    var difValida = dif !== null && dif >= 0 && dif <= FAME_MAZOS_POR_DIA * sp;
+    var a;
+    if (sp > 1) a = (difValida && dif >= r.hoy) ? dif : null;
+    else if (r.hoy !== 0) a = r.hoy;
+    else if (difValida) a = dif;
+    else a = (d === 3) ? null : 0;
+    ataques[d] = a;
+    var fame = Math.max(0, r.fame - (prev ? prev.fame : 0)), barcos = Math.max(0, r.barcos - (prev ? prev.barcos : 0));
+    prev = { o: d, sem: r.sem, fame: r.fame, barcos: r.barcos };
+    if (a === null) continue;
+    if (sp > 1) { out[d] = _gdsVariosDiasCabe_(a, fame, barcos, d, sp) !== true; continue; }
+    var comb = _gdsCombinacionesDelDia_(a, fame, barcos, d === 3);
+    out[d] = !(comb && comb.length);   // null (dato no válido, como más barcos que ataques) o lista vacía = imposible
+  }
+  return out;
+}
+
+/**
+ * _vcrrDiasQueFallan_(g, ops, otro) — §PF446. Función pura. Compara los días «imposibles» de la serie como está en el CSV con los que quedarían al aplicar las ops. Si un día pasa de posible a imposible,
+ * devuelve los días con op que lo causan: el propio día y el último día anterior con fila, porque su acumulado es la base de la fame y los barcos de ese día. Cada elemento es { dia, motivo };
+ * la lista queda vacía si ninguna op deja un día imposible. Un día que ya era imposible en el CSV no cuenta: no lo causa «Aplicar».
+ */
+function _vcrrDiasQueFallan_(g, ops, otro) {
+  var lee = function (f) {
+    return f ? { hoy: _excDiasNum(f[GC.ATAQUES_HOY - 1]), sem: _excDiasNum(f[GC.ATAQUES_SEM - 1]), fame: _excDiasNum(f[GC.FAME - 1]), barcos: _excDiasNum(f[GC.BARCOS - 1]) } : null;
+  };
+  var antes = [], despues = [], conOp = {};
+  for (var d = 0; d < 4; d++) {
+    var r = lee(g && g.dias[d]);
+    antes.push(r);
+    despues.push(r ? { hoy: r.hoy, sem: r.sem, fame: r.fame, barcos: r.barcos } : null);
+  }
+  ops.forEach(function (op) {
+    conOp[op.dia] = true;
+    despues[op.dia] = { hoy: op.nuevo.hoy, sem: op.nuevo.sem, fame: op.nuevo.fame, barcos: op.nuevo.barcos };
+  });
+  var imAntes = _vcrrDiasImposibles_(antes, otro), imDespues = _vcrrDiasImposibles_(despues, otro);
+  for (var m = 0; m < 4; m++) {
+    if (!imDespues[m] || imAntes[m]) continue;
+    var base = -1;
+    for (var k = m - 1; k >= 0; k--) { if (despues[k]) { base = k; break; } }
+    var motivo = 'escribir el mínimo del JSON dejaría imposible el día ' + VCRR_DIAS.charAt(m) + ' (sus ataques no cuadran con la fame o los barcos del CSV)';
+    var salida = [];
+    if (conOp[m]) salida.push({ dia: m, motivo: motivo });
+    if (base >= 0 && conOp[base]) salida.push({ dia: base, motivo: motivo });
+    if (salida.length) return salida;
+  }
+  return [];
+}
+
+/**
+ * _vcrrOpsSerie_(x, g, grupo, clanes, bloq) — §PF446. Función pura. Es el recorrido de los cuatro días que antes estaba dentro de _vcrrPlanSerie_: crea el día que falta y sube al piso los acumulados
+ * que estén por debajo. bloq = { índice de día: motivo } son los días que no se escriben (quedan como conflicto y el día siguiente parte de lo que tiene el CSV). Devuelve { ops, conflictos }.
+ */
+function _vcrrOpsSerie_(x, g, grupo, clanes, bloq) {
   var ops = [], conflictos = [], prev = { a: 0, f: 0, b: 0 };
   var pideConflicto = function (d, motivo) { conflictos.push({ temporada: x.temporada, semana: x.semana, clan: grupo.clan, tag: x.tag, nombre: x.nombre, dia: VCRR_DIAS.charAt(d), motivo: motivo }); };
   var conocido = !!clanes[_vcrrClanNorm_(x.clan)];
@@ -78902,6 +78993,7 @@ function _vcrrPlanSerie_(x, g, clanes) {
       var sem = Math.max(A.lo[d], prev.a), fame = Math.max(F.lo[d], prev.f), barcos = Math.max(B.lo[d], prev.b);
       var hoy = sem - prev.a;
       if (sem > A.hi[d] || fame > F.hi[d] || barcos > B.hi[d] || hoy < A.il[d] || hoy > A.ih[d]) { pideConflicto(d, 'el mínimo no cabe con lo que ya tiene el CSV en los días vecinos'); continue; }
+      if (bloq[d]) { pideConflicto(d, bloq[d]); continue; }   // §PF446: día bloqueado por dejar un vecino imposible; prev no cambia
       ops.push({ dia: d, existe: false, sinCambio: false, ant: null, nuevo: { hoy: hoy, sem: sem, fame: fame, barcos: barcos, origen: VCRR_ORIGEN_CREADA } });
       prev = { a: sem, f: fame, b: barcos };
       continue;
@@ -78916,11 +79008,38 @@ function _vcrrPlanSerie_(x, g, clanes) {
       if (nHoy < A.il[d]) nHoy = A.il[d];
     }
     var cambio = nSem !== csv.sem || nFame !== csv.fame || nBarcos !== csv.barcos || nHoy !== csv.hoy;
+    if (cambio && bloq[d]) {   // §PF446: día bloqueado; se queda lo que tiene el CSV y el día siguiente parte de ahí
+      pideConflicto(d, bloq[d]);
+      nSem = csv.sem; nFame = csv.fame; nBarcos = csv.barcos; nHoy = csv.hoy; cambio = false;
+    }
     if (cambio) {
       ops.push({ dia: d, existe: true, fila: fila, sinCambio: false, ant: csv, nuevo: { hoy: nHoy, sem: nSem, fame: nFame, barcos: nBarcos, origen: VCRR_ORIGEN_SUBIDA } });
     }
     prev = { a: nSem, f: nFame, b: nBarcos };
   }
+  return { ops: ops, conflictos: conflictos };
+}
+
+/**
+ * Función pura. Arma las operaciones de escritura de una serie: crea el día que falta (si el JSON de ese clan y día trae actividad) y sube al piso
+ * los acumulados que estén por debajo; nunca baja un valor y no toca los que pasan del máximo. clanes = { clave normalizada: nombre del clan en el CSV }.
+ * Devuelve { grupo, ops, conflictos }. Las ops sirven para _excDiasAplicarPlan() (55_Reparar_DiasConExceso.gs). otro (opcional) = días con fila del jugador en otro clan (_vcrrDiasEnOtroClan_).
+ * §PF336: si la serie está estimada solo con el perfil de RoyaleAPI, no devuelve ops: sus escrituras pasan a conflictos.
+ * §PF446: una op que dejaría un día «Imposible» que antes no lo era (por ejemplo, subir la fame del jueves y dejar el viernes con 100 de fame y 4 ataques) no se escribe: pasa a conflictos.
+ */
+function _vcrrPlanSerie_(x, g, clanes, otro) {
+  var grupo = g || { temporada: String(x.temporada), semana: String(x.semana), tag: x.tag, clan: clanes[_vcrrClanNorm_(x.clan)] || x.clan, clanTag: _vcrrTagDeClan_(clanes[_vcrrClanNorm_(x.clan)] || x.clan), nombre: x.nombre, dias: {} };   // §PF445 punto 12: clanTag para que la fila creada lleve el Clan_Tag y la verificación encuentre el grupo por su clave
+  var pideConflicto = function (d, motivo) { conflictos.push({ temporada: x.temporada, semana: x.semana, clan: grupo.clan, tag: x.tag, nombre: x.nombre, dia: VCRR_DIAS.charAt(d), motivo: motivo }); };
+  // §PF446: se arma el plan y se comprueba con la misma regla del desglose que ninguna op deje un día «Imposible» que antes no lo era. Si lo deja, los días culpables se bloquean (pasan a
+  // conflictos, «SIN ESCRIBIR») y se vuelve a armar. Cada vuelta bloquea al menos un día con op, así que termina; el tope de 8 vueltas es solo una red de seguridad.
+  var bloq = {}, plan = _vcrrOpsSerie_(x, g, grupo, clanes, bloq);
+  for (var vuelta = 0; vuelta < 8; vuelta++) {
+    var fallan = _vcrrDiasQueFallan_(g, plan.ops, otro);
+    if (!fallan.length) break;
+    fallan.forEach(function (f) { bloq[f.dia] = f.motivo; });
+    plan = _vcrrOpsSerie_(x, g, grupo, clanes, bloq);
+  }
+  var ops = plan.ops, conflictos = plan.conflictos;
   // §PF336: una serie estimada solo con el PERFIL de RoyaleAPI (no con el log del clan) no se escribe: el perfil suma todos los clanes del jugador y puede incluir
   // ataques en un clan externo, así que su valor es una inferencia. Lo que habría escrito queda como conflicto («SIN ESCRIBIR») para revisarlo a mano.
   // Las estimadas con el log del clan y las confirmadas a mano se escriben como siempre.
