@@ -144,7 +144,7 @@ var GDS_CSV_NOMBRE = 'Guerra_Desglose.csv';
 var GDS_CAPTURAS_CSV_NOMBRE = 'Battlelog_Capturas.csv';
 // FORMATO ANCHO (10-nov-2026, pedido de la usuaria; [→ Contexto_Base_Web.md §PF442]): UNA fila por jugador, semana de guerra y clan Terna, con los cuatro días en bloques J, V, S y D como su tabla de 180 filas (§PF438).
 // Bloque principal, igual a la tabla: por día Duelo 250, Duelo 100, PvP 200, PvP 100, Barcos 125, Barcos 75 y Total (solo el domingo lleva además «Sin Medallas»), luego Total Ataques, Tipo de día, Barcos J…D y Total, Medallas J…D y Total.
-// Después, por día, lo que el desglose ya tenía y la tabla no: DiaGuerra, PeriodIndex, Origen, AtaquesAcum, BarcosAcum, FameAcum (los acumulados que trae la hoja Guerra), FuenteDesglose, Combinaciones, ConsistenciaValores, CoberturaLog y BattlelogArchivo, BattlelogDescargado y BattlelogDesde.
+// Después, por día, lo que el desglose ya tenía y la tabla no: DiaGuerra, PeriodIndex, Origen, AtaquesAcum, BarcosAcum, FameAcum (los acumulados de la semana que trae la hoja Guerra; AtaquesAcum = AtaquesSemana desde el 13-nov-2026, §PF448), FuenteDesglose, Combinaciones, ConsistenciaValores, CoberturaLog y BattlelogArchivo, BattlelogDescargado y BattlelogDesde.
 var GDS_DIAS = ['J', 'V', 'S', 'D'];
 var GDS_HEADERS = (function () {
   var h = ['N°', 'Temporada', 'Semana', 'ClanTag', 'Clan', 'Tag', 'Nombre'], i, d;
@@ -6102,7 +6102,7 @@ function _gdsConstruirFilas_(filas, opciones) {
           valores: des.valores, ataques: vh.ataques[o], barcos: fb.barcos, fame: fb.fame,
           fuente: des.fuente, combinaciones: des.combinaciones, consistencia: consistencia,
           diaGuerra: diaTexto, periodIndex: fila[GC.PERIOD_IDX - 1], origen: fila[GC.ORIGEN - 1],
-          ataquesAcum: fila[GC.ATAQUES_HOY - 1], barcosAcum: fila[GC.BARCOS - 1], fameAcum: fila[GC.FAME - 1],
+          ataquesAcum: fila[GC.ATAQUES_SEMANA - 1], barcosAcum: fila[GC.BARCOS - 1], fameAcum: fila[GC.FAME - 1],
           cobertura: cob
         });
         ultimo = fila;   // el último día con fila da el nombre del jugador y del clan
