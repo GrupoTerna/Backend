@@ -1845,6 +1845,11 @@ function borrarDuplicadasClanConTagGuerraInforme() { _borrarDuplicadasClanConTag
 
 function borrarDuplicadasClanConTagGuerraAplicar() { _borrarDuplicadasClanConTagGuerra_(true); }
 
+// Filas de Backup_Guerra.csv con la columna Clan vacia (PF449): informe primero; aplicar borra las que ya existen completas en otra fila y no aportan nada, completa el nombre del clan desde su Clan_Tag y el nombre del jugador desde sus otras filas, y guarda antes un respaldo. No adivina: lo que no se puede confirmar queda como esta. [→ Contexto_Base_Web.md §PF449]
+function repararClanVacioGuerraInforme() { _repararClanVacioGuerra_(false); }
+
+function repararClanVacioGuerraAplicar() { _repararClanVacioGuerra_(true); }
+
 /**
  * rellenarTemporada2Historico() [→ Contexto_Base_Web.md §17B159]
  */
@@ -4814,6 +4819,193 @@ function _borrarDuplicadasClanConTagGuerra_(aplicar) {
       (excede ? 'NO SE BORRO NADA: salen mas de ' + BORRAR_TOPE + ' candidatas, revisar el informe. ' : '') +
       (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que borrar.') +
       (aplicar ? '' : ' (No se escribio nada; correr borrarDuplicadasClanConTagGuerraAplicar() para aplicar.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * _clanVacioPlanGuerra_(filas, encabezado, nombresClan) [→ Contexto_Base_Web.md §PF449]
+ * Función pura (no toca Drive ni hojas). filas: filas de Backup_Guerra.csv ya rellenadas a GUERRA_TOTAL_COLS columnas, sin encabezado. encabezado: su primera fila (solo para nombrar columnas en el informe).
+ * nombresClan: { '#TAG': 'Nombre del clan' } (CFG.CLAN_NOMBRES_FALLBACK). Actúa solo sobre las filas con la columna Clan vacía y no adivina (criterio 10 del consolidado de clanes por Tag):
+ *  - «Borrar»: la fila es «Reconstruido», existe otra del mismo jugador y periodo (Tag, Temporada, Semana, PeriodIndex) que sí trae clan y cada columna con valor en la fila vacía es igual en esa otra (no se comparan N°, Clan, Clan_Tag, Nombre, Origen, la hora de Fecha ni las dos Merma);
+ *    si los dos traen el Tag del clan y no coinciden, no se borra. Si la otra fila difiere: «DISTINTA», y la fila no se toca para nada.
+ *  - «Clan»: la fila trae Clan_Tag (confirmado antes por otra fila del día o por el Historial) y ese Tag tiene nombre en nombresClan: se escribe el nombre del clan. Si la clave nueva (Tag + Clan + Temporada + Semana + PeriodIndex) ya existe: «DUPLICADA», no se toca.
+ *  - «Nombre»: el Nombre es igual al Tag del jugador (la reconstrucción no lo halló) y todas las otras filas del backup con nombre dan UN solo nombre para ese Tag. Con varios nombres («VARIOS NOMBRES») o ninguno, no se toca.
+ * Devuelve { borrar: { idx: N° de la fila completa }, clanCambios: [{ idx, nombre }], nombreCambios: [{ idx, nombre }], detalle: [[tipo, idx, texto, N° de la otra fila]], resumen: {...} }. No modifica filas.
+ */
+function _clanVacioPlanGuerra_(filas, encabezado, nombresClan) {
+  var celda = function (f, col) { return String(f[col - 1] === undefined || f[col - 1] === null ? '' : f[col - 1]).trim(); };
+  var claveDia = function (f) { return [celda(f, GC.TAG).toUpperCase(), celda(f, GC.TEMPORADA), celda(f, GC.SEMANA), celda(f, GC.PERIOD_IDX)].join('|'); };
+  var claveFila = function (f, clan) { return [celda(f, GC.TAG).toUpperCase(), clan, celda(f, GC.TEMPORADA), celda(f, GC.SEMANA), celda(f, GC.PERIOD_IDX)].join('|'); };
+  var omitir = {};
+  [GC.NUM, GC.CLAN, GC.CLAN_TAG, GC.NOMBRE, GC.ORIGEN, GC.FECHA, GC.MERMA_HOY, GC.MERMA_SEM].forEach(function (c) { omitir[c] = true; });
+  var tagDeNombre = {};
+  Object.keys(nombresClan || {}).forEach(function (t) { tagDeNombre[nombresClan[t]] = t.toUpperCase(); });
+
+  var porDia = {}, existentes = {}, nombresPorTag = {};
+  filas.forEach(function (f, idx) {
+    var clan = celda(f, GC.CLAN), tag = celda(f, GC.TAG).toUpperCase(), nom = celda(f, GC.NOMBRE);
+    if (nom && nom.toUpperCase() !== tag) (nombresPorTag[tag] || (nombresPorTag[tag] = {}))[nom] = true;
+    if (!clan) return;
+    existentes[claveFila(f, clan)] = true;
+    if (clan.charAt(0) === '#') return;
+    var kd = claveDia(f);
+    (porDia[kd] || (porDia[kd] = [])).push(idx);
+  });
+
+  var borrar = {}, clanCambios = [], nombreCambios = [], detalle = [], variosNombres = {};
+  var rs = { vacias: 0, borrar: 0, distinta: 0, noReconstruida: 0, clanCompletar: 0, clanSinNombre: 0, clanDuplicada: 0, nombreCompletar: 0, nombreVarios: 0, nombreSinFuente: 0, siguenSinClan: 0 };
+  var clanHecho = {};
+  filas.forEach(function (f, idx) {
+    if (celda(f, GC.CLAN)) return;
+    rs.vacias++;
+    var tag = celda(f, GC.TAG).toUpperCase();
+    var conflicto = false;
+
+    // 1) ¿Ya existe completa en otra fila y esta no aporta nada?
+    var hermanas = porDia[claveDia(f)] || [];
+    if (hermanas.length) {
+      if (celda(f, GC.ORIGEN) !== 'Reconstruido') {
+        rs.noReconstruida++; conflicto = true;
+        detalle.push(['NO RECONSTRUIDA (no se toca)', idx, 'hay otra fila con clan, pero solo se borran filas con Origen Reconstruido; esta dice ' + celda(f, GC.ORIGEN), filas[hermanas[0]][GC.NUM - 1]]);
+      } else {
+        var elegida = -1, sobrantes = [];
+        for (var h = 0; h < hermanas.length && elegida < 0; h++) {
+          var g = filas[hermanas[h]], dif = [];
+          for (var c = 1; c <= GUERRA_TOTAL_COLS; c++) {
+            if (omitir[c]) continue;
+            var va = celda(f, c);
+            if (va !== '' && va !== celda(g, c)) dif.push(encabezado[c - 1] || ('columna ' + c));
+          }
+          if (celda(f, GC.FECHA).slice(0, 10) !== celda(g, GC.FECHA).slice(0, 10)) dif.push('Fecha (dia)');
+          var tf = celda(f, GC.CLAN_TAG).toUpperCase(), tg = celda(g, GC.CLAN_TAG).toUpperCase() || tagDeNombre[celda(g, GC.CLAN)] || '';
+          if (tf && tg && tf !== tg) dif.push('clan (' + tf + ' contra ' + tg + ')');
+          if (!dif.length) elegida = hermanas[h]; else sobrantes = dif;
+        }
+        if (elegida >= 0) {
+          borrar[idx] = filas[elegida][GC.NUM - 1]; rs.borrar++;
+          detalle.push(['Borrar', idx, 'no aporta nada que la fila N° ' + filas[elegida][GC.NUM - 1] + ' (con clan) no tenga', filas[elegida][GC.NUM - 1]]);
+          return;
+        }
+        rs.distinta++; conflicto = true;
+        detalle.push(['DISTINTA (no se toca)', idx, 'difiere de la fila N° ' + filas[hermanas[0]][GC.NUM - 1] + ' (con clan) en: ' + sobrantes.join(', '), filas[hermanas[0]][GC.NUM - 1]]);
+      }
+    }
+    if (conflicto) return; // una fila con conflicto sin resolver no se toca para nada
+
+    // 2) Nombre del clan desde el Clan_Tag que ya trae.
+    var tagClan = celda(f, GC.CLAN_TAG).toUpperCase();
+    if (tagClan) {
+      var nombreClan = (nombresClan || {})[tagClan];
+      if (!nombreClan) {
+        rs.clanSinNombre++;
+        detalle.push(['SIN NOMBRE DE CLAN (no se toca)', idx, 'el Tag ' + tagClan + ' no esta en CFG.CLAN_NOMBRES_FALLBACK', '']);
+      } else if (existentes[claveFila(f, nombreClan)]) {
+        rs.clanDuplicada++; conflicto = true;
+        detalle.push(['DUPLICADA (no se toca)', idx, 'ya hay una fila del mismo jugador y periodo con el clan ' + nombreClan, '']);
+      } else {
+        existentes[claveFila(f, nombreClan)] = true;
+        clanCambios.push({ idx: idx, nombre: nombreClan }); clanHecho[idx] = true; rs.clanCompletar++;
+        detalle.push(['Clan', idx, 'Clan: vacio -> ' + nombreClan + ' (por su Clan_Tag ' + tagClan + ')', '']);
+      }
+    }
+    if (conflicto) return;
+
+    // 3) Nombre del jugador desde sus otras filas, solo si todas dicen lo mismo.
+    var nom = celda(f, GC.NOMBRE);
+    if (nom === '' || nom.toUpperCase() === tag) {
+      var ns = Object.keys(nombresPorTag[tag] || {});
+      if (ns.length === 1) { nombreCambios.push({ idx: idx, nombre: ns[0] }); rs.nombreCompletar++; }
+      else if (ns.length > 1) { rs.nombreVarios++; if (!variosNombres[tag]) variosNombres[tag] = { idx: idx, filas: 0, nombres: ns }; variosNombres[tag].filas++; }
+      else rs.nombreSinFuente++;
+    }
+  });
+  Object.keys(variosNombres).forEach(function (t) {
+    var v = variosNombres[t];
+    detalle.push(['VARIOS NOMBRES (no se toca)', v.idx, v.filas + ' fila(s); nombres distintos en el backup: ' + v.nombres.join(' | '), '']);
+  });
+  filas.forEach(function (f, idx) { if (!celda(f, GC.CLAN) && !borrar[idx] && !clanHecho[idx]) rs.siguenSinClan++; });
+  return { borrar: borrar, clanCambios: clanCambios, nombreCambios: nombreCambios, detalle: detalle, resumen: rs };
+}
+
+/**
+ * _repararClanVacioGuerra_(aplicar) [→ Contexto_Base_Web.md §PF449]
+ * Envoltorio de _clanVacioPlanGuerra_() con el patrón de §PF355: candado de script, orden de columnas exigido, informe en Drive, respaldo ANTES del CSV completo y topes.
+ * Solo toca Backup_Guerra.csv (no la hoja Guerra). Con aplicar = true borra las filas «Borrar» y escribe las columnas Clan y Nombre de las filas «Clan» y «Nombre» del plan; no cambia ninguna otra celda.
+ * Topes: BORRAR_TOPE borrados y CAMBIOS_TOPE celdas escritas por corrida; si el plan los supera, no se escribe nada. Es idempotente: una segunda corrida ya no encuentra nada de lo aplicado.
+ * Informe: Reparacion_ClanVacio_Guerra <fecha> (informe|aplicado).csv. Respaldo: Backup_Guerra ANTES de reparar clan vacio <fecha>.csv.
+ */
+function _repararClanVacioGuerra_(aplicar) {
+  var BORRAR_TOPE = 50, CAMBIOS_TOPE = 5000;
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[ClanVacio] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var t0 = Date.now();
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (!csvText) { Logger.log('[ClanVacio] Backup_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length < 2) { Logger.log('[ClanVacio] Backup_Guerra.csv no tiene filas de datos; no se hace nada.'); return; }
+    var encabezado = parsed[0], filas = parsed.slice(1);
+    if (String(encabezado[GC.CLAN - 1] || '').trim() !== 'Clan' || String(encabezado[GC.TAG - 1] || '').trim() !== 'Tag' || String(encabezado[GC.NOMBRE - 1] || '').trim() !== 'Nombre' || String(encabezado[GC.CLAN_TAG - 1] || '').trim() !== 'Clan_Tag') {
+      Logger.log('[ClanVacio] El encabezado de Backup_Guerra.csv no tiene el orden actual de columnas (Clan en la ' + GC.CLAN + ', Tag en la ' + GC.TAG + ', Nombre en la ' + GC.NOMBRE + ', Clan_Tag en la ' + GC.CLAN_TAG + '); no se toca nada.');
+      return;
+    }
+    for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
+
+    var plan = _clanVacioPlanGuerra_(filas, encabezado, CFG.CLAN_NOMBRES_FALLBACK || {});
+    var rs = plan.resumen;
+    var nBorrar = Object.keys(plan.borrar).length, nCambios = plan.clanCambios.length + plan.nombreCambios.length;
+
+    var cab = ['Tipo', 'N°', 'Temporada', 'Semana', 'Tag', 'Nombre', 'PeriodIndex', 'Clan_Tag', 'N° de la otra fila', 'Detalle'];
+    var informe = [cab];
+    [['Resumen: filas con Clan vacio', rs.vacias], ['Resumen: a borrar (ya existen completas y no aportan nada)', rs.borrar], ['Resumen: DISTINTAS de su fila completa (no se tocan)', rs.distinta],
+      ['Resumen: no reconstruidas con fila completa (no se tocan)', rs.noReconstruida], ['Resumen: nombre del clan a completar desde su Clan_Tag', rs.clanCompletar],
+      ['Resumen: Clan_Tag sin nombre de clan en CFG.CLAN_NOMBRES_FALLBACK (no se tocan)', rs.clanSinNombre], ['Resumen: nombre del clan que repetiria una fila (no se tocan)', rs.clanDuplicada],
+      ['Resumen: nombre del jugador a completar', rs.nombreCompletar], ['Resumen: jugadores con varios nombres en el backup (no se tocan)', rs.nombreVarios],
+      ['Resumen: nombre del jugador sin otra fila que lo diga', rs.nombreSinFuente], ['Resumen: filas que siguen sin clan despues de aplicar (no se adivina)', rs.siguenSinClan]].forEach(function (x) {
+      informe.push([x[0], '', '', '', '', '', '', '', '', String(x[1])]);
+    });
+    var orden = { 'Borrar': 0, 'Clan': 1 };
+    var detalle = plan.detalle.slice().sort(function (x, y) {
+      var ox = orden[x[0]] === undefined ? 2 : orden[x[0]], oy = orden[y[0]] === undefined ? 2 : orden[y[0]];
+      return ox !== oy ? ox - oy : String(x[0]).localeCompare(String(y[0]));
+    });
+    detalle.forEach(function (d) {
+      var f = filas[d[1]];
+      informe.push([d[0], f[GC.NUM - 1], f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.PERIOD_IDX - 1], f[GC.CLAN_TAG - 1], d[3], d[2]]);
+    });
+    // Los nombres de jugador se listan por jugador (una linea por Tag), no por fila.
+    var porJugador = {};
+    plan.nombreCambios.forEach(function (c) {
+      var t = String(filas[c.idx][GC.TAG - 1] || '').trim().toUpperCase();
+      if (!porJugador[t]) porJugador[t] = { nombre: c.nombre, filas: 0, idx: c.idx };
+      porJugador[t].filas++;
+    });
+    Object.keys(porJugador).sort().forEach(function (t) {
+      var v = porJugador[t], f = filas[v.idx];
+      informe.push(['Nombre (por jugador)', '', '', '', f[GC.TAG - 1], f[GC.NOMBRE - 1], '', '', '', v.filas + ' fila(s): Nombre -> ' + v.nombre]);
+    });
+    var nombreInforme = 'Reparacion_ClanVacio_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
+
+    var excede = nBorrar > BORRAR_TOPE || nCambios > CAMBIOS_TOPE;
+    var hayQueEscribir = nBorrar > 0 || nCambios > 0;
+    if (aplicar && hayQueEscribir && !excede) {
+      // Respaldo previo del CSV completo, ANTES de escribir nada.
+      _saveCSVToDrive('Backup_Guerra ANTES de reparar clan vacio ' + marca + '.csv', csvText);
+      plan.clanCambios.forEach(function (c) { filas[c.idx][GC.CLAN - 1] = c.nombre; });
+      plan.nombreCambios.forEach(function (c) { filas[c.idx][GC.NOMBRE - 1] = c.nombre; });
+      var quedan = filas.filter(function (f, idx) { return !plan.borrar[idx]; });
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(quedan)));
+    }
+
+    Logger.log('[ClanVacio] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Filas: ' + filas.length + '. Con Clan vacio: ' + rs.vacias + '. A borrar: ' + nBorrar +
+      '. Distintas (no se tocan): ' + (rs.distinta + rs.noReconstruida) + '. Nombre de clan a completar: ' + rs.clanCompletar + ' (sin nombre de clan: ' + rs.clanSinNombre + ', repetirian fila: ' + rs.clanDuplicada + ')' +
+      '. Nombre de jugador a completar: ' + rs.nombreCompletar + ' (varios nombres: ' + rs.nombreVarios + ', sin otra fila: ' + rs.nombreSinFuente + '). Siguen sin clan: ' + rs.siguenSinClan + '. ' +
+      (excede ? 'NO SE ESCRIBIO NADA: el plan supera el tope (' + BORRAR_TOPE + ' borrados o ' + CAMBIOS_TOPE + ' celdas), revisar el informe. ' : (aplicar && hayQueEscribir ? '(Aplicado.) ' : '')) +
+      'Detalle en Drive: ' + nombreInforme + '.' + (aplicar ? '' : ' (No se escribio nada; correr repararClanVacioGuerraAplicar() para aplicar.)'));
   } finally {
     lock.releaseLock();
   }
