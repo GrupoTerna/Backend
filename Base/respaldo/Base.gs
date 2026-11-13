@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 13/11/2026 01:56:44 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 13/11/2026 02:34:30 */
 
 
 
@@ -78927,7 +78927,7 @@ function _vcrrDiasEnOtroClan_(indice, x, clavePropia) {
  * (opcional). Devuelve 4 booleanos: true si el día queda «Imposible» con la misma regla del desglose (_gdsValoresHojaDeClan_, _gdsCombinacionesDelDia_ y _gdsVariosDiasCabe_, 18_CorreccionGuerra.gs):
  * la base de cada día es la última fila anterior; los ataques del día son AtaquesHoy, o la diferencia de AtaquesSemana si AtaquesHoy es 0 y esa diferencia cabe en 4 ataques por día cubierto;
  * la fame y los barcos son la diferencia de acumulados, nunca negativa. Una fila que cubre varios días (faltan las filas de en medio, y no por estar el jugador en otro clan) se evalúa como la suma de
- * esos días. Un día sin ataques calculables (domingo) no se evalúa y da false.
+ * esos días. Un día sin ataques calculables (la diferencia de AtaquesSemana no es válida) da true: el desglose lo deja «Sin dato». Un día sin fila da false.
  */
 function _vcrrDiasImposibles_(dias, otro) {
   var out = [false, false, false, false], ataques = [null, null, null, null], prev = null, enOtro = otro || [];
@@ -78949,7 +78949,7 @@ function _vcrrDiasImposibles_(dias, otro) {
     ataques[d] = a;
     var fame = Math.max(0, r.fame - (prev ? prev.fame : 0)), barcos = Math.max(0, r.barcos - (prev ? prev.barcos : 0));
     prev = { o: d, sem: r.sem, fame: r.fame, barcos: r.barcos };
-    if (a === null) continue;
+    if (a === null) { out[d] = true; continue; }   // el desglose lo deja «Sin dato»: solo importa el paso de false a true (_vcrrDiasQueFallan_), así que un día que ya estaba así en el CSV no se bloquea
     if (sp > 1) { out[d] = _gdsVariosDiasCabe_(a, fame, barcos, d, sp) !== true; continue; }
     var comb = _gdsCombinacionesDelDia_(a, fame, barcos, d === 3);
     out[d] = !(comb && comb.length);   // null (dato no válido, como más barcos que ataques) o lista vacía = imposible
@@ -78958,8 +78958,8 @@ function _vcrrDiasImposibles_(dias, otro) {
 }
 
 /**
- * _vcrrDiasQueFallan_(g, ops, otro) — §PF446. Función pura. Compara los días «imposibles» de la serie como está en el CSV con los que quedarían al aplicar las ops. Si un día pasa de posible a imposible,
- * devuelve los días con op que lo causan: el propio día y el último día anterior con fila, porque su acumulado es la base de la fame y los barcos de ese día. Cada elemento es { dia, motivo };
+ * _vcrrDiasQueFallan_(g, ops, otro) — §PF446. Función pura. Compara los días «imposibles» o «sin dato» de la serie como está en el CSV con los que quedarían al aplicar las ops. Si un día pasa de posible a imposible o sin dato,
+ * devuelve los días con op que lo causan: el propio día y el último día anterior con fila, porque su acumulado es la base de la fame y los barcos de ese día; si ninguno de los dos tiene op, los días anteriores con op (la suma de ataques de la semana). Cada elemento es { dia, motivo };
  * la lista queda vacía si ninguna op deja un día imposible. Un día que ya era imposible en el CSV no cuenta: no lo causa «Aplicar».
  */
 function _vcrrDiasQueFallan_(g, ops, otro) {
@@ -78981,10 +78981,11 @@ function _vcrrDiasQueFallan_(g, ops, otro) {
     if (!imDespues[m] || imAntes[m]) continue;
     var base = -1;
     for (var k = m - 1; k >= 0; k--) { if (despues[k]) { base = k; break; } }
-    var motivo = 'escribir el mínimo del JSON dejaría imposible el día ' + VCRR_DIAS.charAt(m) + ' (sus ataques no cuadran con la fame o los barcos del CSV)';
+    var motivo = 'escribir el mínimo del JSON dejaría imposible o sin dato el día ' + VCRR_DIAS.charAt(m) + ' (sus ataques no cuadran con la fame, los barcos o los ataques de la semana del CSV)';
     var salida = [];
     if (conOp[m]) salida.push({ dia: m, motivo: motivo });
     if (base >= 0 && conOp[base]) salida.push({ dia: base, motivo: motivo });
+    if (!salida.length) { for (var e = 0; e < m; e++) { if (conOp[e]) salida.push({ dia: e, motivo: motivo }); } }   // sin culpable directo: los ataques de la semana de un día anterior (el domingo se calcula con ellos)
     if (salida.length) return salida;
   }
   return [];
@@ -79279,7 +79280,7 @@ function _vcrrPlanRevertir_(filasAntes, filasAhora) {
     }
     var opsCaso = [];
     devolver.forEach(function (o) {
-      if (!o.existe) { avisos.push({ grupo: gh, dia: o.dia, motivo: 'fila creada por «Aplicar» que deja imposible el día ' + VCRR_DIAS.charAt(o.dia) + ' del vecino; esta función no borra filas, revisar a mano' }); return; }
+      if (!o.existe) { avisos.push({ grupo: gh, dia: o.dia, motivo: 'fila creada por «Aplicar» que deja imposible o sin dato un día de la serie; esta función no borra filas, revisar a mano' }); return; }
       var an = valores(o.filaAntes);
       opsCaso.push({ dia: o.dia, existe: true, fila: o.fila, sinCambio: false, ant: o.nuevo, nuevo: { hoy: an.hoy, sem: an.sem, fame: an.fame, barcos: an.barcos, origen: String(o.filaAntes[GC.ORIGEN - 1]) }, motivo: o.motivo });
     });
