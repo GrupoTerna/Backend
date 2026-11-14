@@ -111,8 +111,8 @@ function generarTodosMensajes() {
     var semNum = ctx.sectionIndex + 1;
     // 14-nov-2026 (pedido de la usuaria): cupos de cada clan para el resumen del inicio; si no se pueden calcular, los mensajes salen sin esa parte. [→ Contexto_Base_Web.md §PF455]
     var cuposPorClan = _resumenCuposGuerraPorClan_(ctx);
-    // 14-nov-2026 (pedido de la usuaria): hasta las 12:00 AM (Lima) del día de guerra se dice cuánto falta; pasada la medianoche (el mensaje puede generarse de madrugada, antes de que cambie el día de guerra) se avisa que la ventana ya cerró. [→ Contexto_Base_Web.md §PF456]
-    var ventana = _estadoVentanaGuerra_(now, ctx.diaLetra);
+    // 14-nov-2026 (pedido de la usuaria): hasta las 12:00 AM (Lima) del día de guerra la línea final recuerda ese plazo; pasada la medianoche (el mensaje puede generarse de madrugada, antes de que cambie el día de guerra) avisa que ya pasó la hora permitida pero aún se puede atacar. No se dice cuánto falta: la API no lo informa. [→ Contexto_Base_Web.md §PF456]
+    var pasoMedianoche = _pasoMedianocheDiaGuerra_(now, ctx.diaLetra);
 
     // --- Fila por clan (Subcategoría = Particular) ---
     for (var ci2 = 0; ci2 < clanesPend.length; ci2++) {
@@ -131,14 +131,14 @@ function generarTodosMensajes() {
       msjClan += '==============================\n';
       // 14-nov-2026 (pedido de la usuaria): resumen de cupos al inicio y, debajo, los pendientes agrupados en Reemplazables (4 ataques pendientes) y Reservadas (1 a 3). Sigue siendo un mensaje por clan. [→ Contexto_Base_Web.md §PF455]
       msjClan += _textoResumenCuposGuerra_(cuposPorClan[clanName]);
-      msjClan += _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, cuposPorClan[clanName], ventana.cerrada);
+      msjClan += _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, cuposPorClan[clanName]);
       // NUEVO (19-sep-2026, punto 7): si el clan ya cruzó la meta de la [→ Contexto_Base_Web.md §30B015]
-      if (ventana.cerrada) { // 14-nov-2026 (§PF456): pasada la medianoche ya no hay plazo que recordar, gane o no el clan la meta
-        msjClan += '⌛ Ya pasó la hora límite de las 12:00 AM: la ventana de ataque de hoy ya cerró.\n';
-      } else if (_clanCruzoMetaPorTag(clanesPend[ci2].clanTag)) { // PF407 (tanda 3): se pregunta por el Tag; el texto del mensaje sigue mostrando el nombre
+      if (_clanCruzoMetaPorTag(clanesPend[ci2].clanTag)) { // PF407 (tanda 3): se pregunta por el Tag; el texto del mensaje sigue mostrando el nombre
         msjClan += '🏆 ¡Este clan ya cruzó la meta de la semana! Atacar hoy es opcional.\n';
+      } else if (pasoMedianoche) { // 14-nov-2026 (§PF456): ya pasó la medianoche de Lima, pero el día de guerra aún no cambia
+        msjClan += _textoPasoMedianocheGuerra_() + '\n';
       } else {
-        msjClan += '⏳ Tienen hasta las 12:00 AM para completar sus ataques' + _textoFaltaParaCierreGuerra_(ventana) + '.\n';
+        msjClan += '⏳ Tienen hasta las 12:00 AM para completar sus ataques.\n';
       }
       msjClan += '🕒 Generado: ' + horaGeneracionMsj;
       bloques.push({ categoria: 'Mensaje de Guerra', subcategoria: 'Particular', clan: clanName, contenido: msjClan });
@@ -171,17 +171,17 @@ function generarTodosMensajes() {
       }
       // 14-nov-2026: mismo resumen y mismos dos grupos que en el mensaje de cada clan. [→ Contexto_Base_Web.md §PF455]
       msjGral += _textoResumenCuposGuerra_(cuposPorClan[cn]);
-      msjGral += _textoGruposPendientesGuerra_(ml, celularPorTag, prestamoPorTag, cuposPorClan[cn], ventana.cerrada);
+      msjGral += _textoGruposPendientesGuerra_(ml, celularPorTag, prestamoPorTag, cuposPorClan[cn]);
     }
     // Línea final: si NINGÚN clan listado cruzó la meta, queda exactamente [→ Contexto_Base_Web.md §30B016]
-    if (ventana.cerrada) { // 14-nov-2026 (§PF456)
-      msjGral += '⌛ Ya pasó la hora límite de las 12:00 AM: la ventana de ataque de hoy ya cerró.\n';
-    } else if (clanesCruzaronMeta === 0) {
-      msjGral += '⏳ Tienen hasta las 12:00 AM para completar sus ataques' + _textoFaltaParaCierreGuerra_(ventana) + '.\nDespués del cierre, se aplicarán expulsiones sin excepción.\n';
-    } else if (clanesCruzaronMeta === clanesPend.length) {
+    if (clanesCruzaronMeta === clanesPend.length) {
       msjGral += '🏆 Todos los clanes de este mensaje ya cruzaron la meta: atacar hoy es opcional.\n';
+    } else if (pasoMedianoche) { // 14-nov-2026 (§PF456): pasada la medianoche no se afirma plazo ni expulsiones: el cambio de día de guerra (4-5 a. m.) no tiene hora exacta
+      msjGral += _textoPasoMedianocheGuerra_() + '\n';
+    } else if (clanesCruzaronMeta === 0) {
+      msjGral += '⏳ Tienen hasta las 12:00 AM para completar sus ataques.\nDespués del cierre, se aplicarán expulsiones sin excepción.\n';
     } else {
-      msjGral += '⏳ Los clanes sin 🏆 tienen hasta las 12:00 AM para completar sus ataques' + _textoFaltaParaCierreGuerra_(ventana) + '.\nDespués del cierre, se aplicarán expulsiones sin excepción (salvo en los clanes que ya cruzaron la meta).\n';
+      msjGral += '⏳ Los clanes sin 🏆 tienen hasta las 12:00 AM para completar sus ataques.\nDespués del cierre, se aplicarán expulsiones sin excepción (salvo en los clanes que ya cruzaron la meta).\n';
     }
     msjGral += '🕒 Generado: ' + horaGeneracionMsj;
     bloques.push({ categoria: 'Mensaje de Guerra', subcategoria: 'Chat General', clan: CLAN_CHAT_GENERAL, contenido: msjGral });
@@ -573,49 +573,34 @@ function _sufijoPrestamo(nombrePrestamo) {
 }
 
 /**
- * _estadoVentanaGuerra_(ahora, diaLetra) [→ Contexto_Base_Web.md §PF456]
- * 14-nov-2026 (pedido de la usuaria): estado del plazo de las 12:00 AM (medianoche de Lima) del día de guerra del mensaje. Devuelve { cerrada, minutosRestantes }.
- * El mensaje puede generarse de madrugada, antes de que cambie el día de guerra (hacia las 4:45 a. m., §PF435), así que NO se decide solo por la hora: se compara la letra del día de guerra
- * del contexto (`ctx.diaLetra`) con el día de la semana de Lima. Mismo día = el plazo corre (`minutosRestantes` hasta las 24:00); el día siguiente = ya pasó la medianoche (`cerrada: true`);
- * cualquier otro caso (letra desconocida o contexto desactualizado) = sin dato: ni cerrada ni tiempo, y el mensaje conserva la línea de siempre.
+ * _pasoMedianocheDiaGuerra_(ahora, diaLetra) [→ Contexto_Base_Web.md §PF456]
+ * 14-nov-2026 (pedido de la usuaria): true si ya pasó la medianoche (12:00 AM de Lima) del día de guerra del mensaje. NO significa que la guerra haya cerrado: el día de guerra cambia entre las 4:00 y las 5:00 AM de Lima
+ * y la API no informa cuánto falta, así que no se calcula ningún tiempo restante (se quitó el «faltan X h»).
+ * El mensaje puede generarse de madrugada, antes de que cambie el día de guerra (hacia las 4:45 a. m., §PF435), así que NO se decide solo por la hora: se compara la letra del día de guerra del contexto (`ctx.diaLetra`)
+ * con el día de la semana de Lima. Mismo día = aún no pasó; el día siguiente = ya pasó la medianoche; cualquier otro caso (letra desconocida o contexto desactualizado) = false, y el mensaje conserva la línea de siempre.
+ * Nombre propio a propósito: `_estadoVentanaGuerra_(ahora)` ya existe en `00_Main.gs` (ventana de protección del run de guerra) y una función global repetida pisa a la otra en Apps Script.
  */
-function _estadoVentanaGuerra_(ahora, diaLetra) {
-  var sinDato = { cerrada: false, minutosRestantes: null };
+function _pasoMedianocheDiaGuerra_(ahora, diaLetra) {
   try {
     var d = ahora instanceof Date ? ahora : new Date();
     var letras = CFG.DIA_LETRAS; // ['L','M','X','J','V','S','D'], lunes primero
     var iGuerra = letras.indexOf(String(diaLetra || ''));
     var iHoy = Number(Utilities.formatDate(d, 'America/Lima', 'u')) - 1; // 'u': 1 = lunes ... 7 = domingo
-    if (iGuerra < 0 || !(iHoy >= 0 && iHoy <= 6)) return sinDato;
-    if (iHoy === iGuerra) {
-      var h = Number(Utilities.formatDate(d, 'America/Lima', 'H'));
-      var m = Number(Utilities.formatDate(d, 'America/Lima', 'm'));
-      return { cerrada: false, minutosRestantes: 24 * 60 - (h * 60 + m) };
-    }
-    if (iHoy === (iGuerra + 1) % 7) return { cerrada: true, minutosRestantes: 0 };
-    return sinDato;
+    if (iGuerra < 0 || !(iHoy >= 0 && iHoy <= 6)) return false;
+    return iHoy === (iGuerra + 1) % 7;
   } catch (e) {
-    Logger.log('[Mensajes] No se pudo calcular la ventana de ataque: ' + e.message);
-    return sinDato;
+    Logger.log('[Mensajes] No se pudo calcular si pasó la medianoche del día de guerra: ' + e.message);
+    return false;
   }
 }
 
 /**
- * _textoFaltaParaCierreGuerra_(ventana) [→ Contexto_Base_Web.md §PF456]
- * 14-nov-2026: « (al generarse: faltan 5 h 20 min)» para pegar tras «hasta las 12:00 AM». Dice «al generarse» porque el mensaje se copia y se envía más tarde (la hora de generación va al final).
- * Sin dato del tiempo devuelve ''.
+ * _textoPasoMedianocheGuerra_() [→ Contexto_Base_Web.md §PF456]
+ * 14-nov-2026: línea final del Mensaje de Guerra cuando ya pasó la medianoche de Lima: la hora permitida (12:00 AM) pasó, pero aún se puede atacar porque el día de guerra cambia entre las 4:00 y las 5:00 AM.
+ * No dice cuánto falta (la API no lo informa).
  */
-function _textoFaltaParaCierreGuerra_(ventana) {
-  var min = ventana ? ventana.minutosRestantes : null;
-  if (min === null || min === undefined || !isFinite(min)) return '';
-  var t;
-  if (min <= 1) t = 'falta menos de 1 min';
-  else if (min < 60) t = 'faltan ' + min + ' min';
-  else {
-    var h = Math.floor(min / 60), r = min % 60;
-    t = 'faltan ' + h + ' h' + (r ? ' ' + r + ' min' : '');
-  }
-  return ' (al generarse: ' + t + ')';
+function _textoPasoMedianocheGuerra_() {
+  return '⌛ Ya pasó la hora permitida (12:00 AM, hora peruana), pero aún se puede atacar: el día de guerra cambia entre las 4:00 y las 5:00 AM.';
 }
 
 /**
@@ -638,14 +623,14 @@ function _textoResumenCuposGuerra_(cupos) {
 }
 
 /**
- * _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, cupos, cerrada) [→ Contexto_Base_Web.md §PF455]
+ * _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, cupos) [→ Contexto_Base_Web.md §PF455]
  * 14-nov-2026 (pedido de la usuaria): los pendientes de un clan en dos grupos. «Reemplazables» = los que tienen los 4 ataques pendientes (no atacaron hoy, no usan cupo); «Reservadas» = los que tienen de 1 a 3
  * pendientes (ya atacaron hoy y usan cupo). Dentro de cada grupo se conserva el orden que traen `miembros` (Faltantes desc. -> Rango -> Nombre), el icono de cada línea (🛑, ⚠, 🔹) y los sufijos (ω) y de préstamo.
  * Un grupo sin cuentas no lleva encabezado. Lo usan el mensaje de cada clan (Particular) y la sección de cada clan del Chat General.
  * §PF456: bajo cada encabezado va una frase que explica qué significa el grupo. La de Reemplazables cambia según los cupos extra del clan (`cupos.extras`: con extras, «pueden ser reemplazados por cuentas
- * extra»; sin extras, nadie puede cubrirlos y «necesitamos que ataquen ellos»; sin datos de cupos, la frase general). Con `cerrada` (ya pasó la medianoche) las frases pasan a pasado y dejan de pedir ataques.
+ * extra»; sin extras, nadie puede cubrirlos y «necesitamos que ataquen ellos»; sin datos de cupos, la frase general). Las frases son las mismas pasada la medianoche: el día de guerra aún no cambia y se puede atacar (§PF456).
  */
-function _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, cupos, cerrada) {
+function _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, cupos) {
   var reemplazables = [];
   var reservadas = [];
   miembros.forEach(function(p) {
@@ -662,18 +647,13 @@ function _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, 
     return s;
   }
   var fraseReemp, fraseReserv;
-  if (cerrada) {
-    fraseReemp  = 'No atacaron y no usaron cupo.';
-    fraseReserv = 'Usaron cupo y no completaron sus ataques.';
+  fraseReserv = 'Ya usan cupo: completen sus ataques.';
+  if (cupos && cupos.extras > 0) {
+    fraseReemp = 'Aún no usan cupo: si no atacan, pueden ser reemplazados por cuentas extra (hay ' + cupos.extras + ' cupo' + (cupos.extras === 1 ? '' : 's') + ' extra).';
+  } else if (cupos) {
+    fraseReemp = 'Aún no usan cupo y no quedan cupos extra para cubrirlos: necesitamos que ataquen ellos.';
   } else {
-    fraseReserv = 'Ya usan cupo: completen sus ataques.';
-    if (cupos && cupos.extras > 0) {
-      fraseReemp = 'Aún no usan cupo: si no atacan, pueden ser reemplazados por cuentas extra (hay ' + cupos.extras + ' cupo' + (cupos.extras === 1 ? '' : 's') + ' extra).';
-    } else if (cupos) {
-      fraseReemp = 'Aún no usan cupo y no quedan cupos extra para cubrirlos: necesitamos que ataquen ellos.';
-    } else {
-      fraseReemp = 'Aún no usan cupo: si no atacan, pueden ser reemplazados.';
-    }
+    fraseReemp = 'Aún no usan cupo: si no atacan, pueden ser reemplazados.';
   }
   var t = '';
   if (reemplazables.length > 0) {
