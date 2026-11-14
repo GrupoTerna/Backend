@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 08:48:41 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 11:05:51 */
 
 
 
@@ -78236,7 +78236,7 @@ var VCRR_CORRECCIONES_LISTA = [
 // Orden de uso: (1) subirBaseDesdeGithub(); (2) crearFilasPorListaInforme() y revisar el detalle; (3) crearFilasPorListaAplicar(); (4) generarGuerraDesglose() para comprobar que los «Imposible» bajan.
 var VCRR_ORIGEN_CREAR_LISTA = 'Reconstruido - lista (RoyaleAPI y JSON)';
 var VCRR_MAX_FILAS_CREAR = 30;                          // tope de filas que una corrida puede crear o modificar (si se pasa, no se escribe nada)
-var VCRR_CREAR_TANDAS = [5];                            // tandas activas de VCRR_FILAS_CREAR (la 3 se aplicó el 14-nov-2026, §PF452; la 4, §PF454)
+var VCRR_CREAR_TANDAS = [6];                            // tandas activas de VCRR_FILAS_CREAR (la 3 se aplicó el 14-nov-2026, §PF452; la 4, §PF454; la 5, §PF465)
 var VCRR_FILAS_CREAR = [
   // --- Tanda 3: #UJY0PGPUV en T24 S1 en ™2. Falta el viernes: sin él, el sábado (7 ataques y 1200 de fame acumulados) parte de base 0 y el desglose lo lee como un solo día. Con el viernes 3 / 3 / 600 (acumulado exacto del JSON) el reparto es sábado 4 / 600 y domingo 4 / 500 ---
   { tanda: 3, temporada: 24, semana: 1, tag: '#UJY0PGPUV', clanKey: 'grupoxterna™2', nombre: 'кυякү', dia: 'V', actual: null, nuevo: [3, 3, 600, 0],
@@ -78272,7 +78272,36 @@ var VCRR_FILAS_CREAR = [
     nota: '§PF453 B1: el JSON exacto da 8 y 1450 acumulados el sábado y RoyaleAPI 8 / 1450, así que el domingo no tuvo ataques; solo AtaquesHoy del sábado (8 → 4, el viernes ya tiene 4)' },
   // --- Tanda 5: #2RJVYQ92P T23 S4 (§PF464 punto 3): solo AtaquesHoy del domingo. #YG8U8Q2PC T23 S3 (B2) NO entra: el domingo tendría 8 ataques (máximo 4 por día) y repartir viernes y sábado sería inventar ---
   { tanda: 5, temporada: 23, semana: 4, tag: '#2RJVYQ92P', clanKey: 'grupo乂terna™', nombre: '<LU|$_∆ΠG€L>©∆', dia: 'D', actual: [2, 12, 1900, 0], nuevo: [4, 12, 1900, 0],
-    nota: '§PF464: el JSON exacto da 8 y 1200 acumulados el sábado y RoyaleAPI 12 / 1900, así que el domingo trae 4 ataques; la fila ya tenía semana y fame correctas y solo AtaquesHoy quedó en 2' }
+    nota: '§PF464: el JSON exacto da 8 y 1200 acumulados el sábado y RoyaleAPI 12 / 1900, así que el domingo trae 4 ataques; la fila ya tenía semana y fame correctas y solo AtaquesHoy quedó en 2' },
+  // --- Tanda 6: los 7 «Contradicción battlelog» de T24 S5 en Mini (§PF466). El battlelog (cobertura completa) pone todos los ataques el domingo 6-sep entre las 23:57 y la 01:20 del 7-sep (Lima), es decir antes del cambio de día de las 5:00; el backup los traía en el sábado como «Solución estimada». Se mueven del sábado al domingo; RoyaleAPI («log») ya coincide con el total semanal ---
+  { tanda: 6, temporada: 24, semana: 5, tag: '#2098PGRCPC', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ ムＮＤＲＥ', dia: 'S', actual: [4, 4, 600, 0], nuevo: [0, 0, 0, 0],
+    nota: '§PF466: el battlelog pone los 4 ataques el domingo (6-sep 23:57 a 7-sep 01:20, Lima), no el sábado; RoyaleAPI 4 / 600' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#2098PGRCPC', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ ムＮＤＲＥ', dia: 'D', actual: [0, 4, 600, 0], nuevo: [4, 4, 600, 0],
+    nota: '§PF466: domingo con los 4 ataques y 600 de fame que trae el battlelog (RoyaleAPI 4 / 600)' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#20LUCQG0LJ', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Cali', dia: 'S', actual: [1, 1, 200, 0], nuevo: [0, 0, 0, 0],
+    nota: '§PF466: el battlelog pone los 1 ataques el domingo (6-sep 23:57 a 7-sep 01:20, Lima), no el sábado; RoyaleAPI 1 / 200' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#20LUCQG0LJ', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Cali', dia: 'D', actual: [0, 1, 200, 0], nuevo: [1, 1, 200, 0],
+    nota: '§PF466: domingo con los 1 ataques y 200 de fame que trae el battlelog (RoyaleAPI 1 / 200)' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#20P80C9229', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Ramirez☻', dia: 'S', actual: [2, 2, 300, 0], nuevo: [0, 0, 0, 0],
+    nota: '§PF466: el battlelog pone los 2 ataques el domingo (6-sep 23:57 a 7-sep 01:20, Lima), no el sábado; RoyaleAPI 2 / 300' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#20P80C9229', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Ramirez☻', dia: 'D', actual: [0, 2, 300, 0], nuevo: [2, 2, 300, 0],
+    nota: '§PF466: domingo con los 2 ataques y 300 de fame que trae el battlelog (RoyaleAPI 2 / 300)' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#URRG2QG20', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Calito', dia: 'S', actual: [1, 1, 100, 0], nuevo: [0, 0, 0, 0],
+    nota: '§PF466: el battlelog pone los 1 ataques el domingo (6-sep 23:57 a 7-sep 01:20, Lima), no el sábado; RoyaleAPI 1 / 100' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#URRG2QG20', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Calito', dia: 'D', actual: [0, 1, 100, 0], nuevo: [1, 1, 100, 0],
+    nota: '§PF466: domingo con los 1 ataques y 100 de fame que trae el battlelog (RoyaleAPI 1 / 100)' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#V8LPC909C', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ', dia: 'S', actual: [4, 4, 600, 0], nuevo: [0, 0, 0, 0],
+    nota: '§PF466: el battlelog pone los 4 ataques el domingo (6-sep 23:57 a 7-sep 01:20, Lima), no el sábado; RoyaleAPI 4 / 600' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#V8LPC909C', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ', dia: 'D', actual: [0, 4, 600, 0], nuevo: [4, 4, 600, 0],
+    nota: '§PF466: domingo con los 4 ataques y 600 de fame que trae el battlelog (RoyaleAPI 4 / 600)' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#VJQLY8JV8', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ ＰムＰＩ', dia: 'S', actual: [1, 1, 100, 0], nuevo: [0, 0, 0, 0],
+    nota: '§PF466: el battlelog pone los 1 ataques el domingo (6-sep 23:57 a 7-sep 01:20, Lima), no el sábado; RoyaleAPI 1 / 100' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#VJQLY8JV8', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ ＰムＰＩ', dia: 'D', actual: [0, 1, 100, 0], nuevo: [1, 1, 100, 0],
+    nota: '§PF466: domingo con los 1 ataques y 100 de fame que trae el battlelog (RoyaleAPI 1 / 100)' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#VRVCV0QR8', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Carlinho', dia: 'S', actual: [4, 4, 800, 0], nuevo: [0, 0, 0, 0],
+    nota: '§PF466: el battlelog pone los 4 ataques el domingo (6-sep 23:57 a 7-sep 01:20, Lima), no el sábado; RoyaleAPI 4 / 800' },
+  { tanda: 6, temporada: 24, semana: 5, tag: '#VRVCV0QR8', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Carlinho', dia: 'D', actual: [0, 4, 800, 0], nuevo: [4, 4, 800, 0],
+    nota: '§PF466: domingo con los 4 ataques y 800 de fame que trae el battlelog (RoyaleAPI 4 / 800)' }
 ];
 
 var VCRR_PASOS_NOMBRES_INFORME = [
