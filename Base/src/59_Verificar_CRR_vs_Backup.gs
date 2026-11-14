@@ -22,6 +22,7 @@
  *                                     del JSON los valores que estén por debajo. Nunca baja un valor ni toca uno que supere el máximo.
  *   verificarCrrVsBackupReiniciar() -> borra el avance de la corrida en curso (no el registro de JSON verificados).
  *   verificarCrrVsBackupRevertirInforme() / verificarCrrVsBackupRevertirAplicar() -> §PF446: devuelven a su valor anterior las filas que «Aplicar» subió y que dejaron un día imposible.
+ *   corregirFilasPorListaInforme() / corregirFilasPorListaAplicar() -> (§PF450) SOLO INFORMA / CORRIGE las filas de VCRR_CORRECCIONES_LISTA (valores que RoyaleAPI y el JSON exacto contradicen). Es la única función del módulo que BAJA valores.
  *   verificarCrrVsBackupOlvidarVerificados() -> vacía el registro de JSON verificados: la próxima corrida vuelve a leer todos los JSON.
  *   descartarFilasClanEquivocadoInforme()  -> (§PF339) SOLO INFORMA qué filas de VCRR_FILAS_DESCARTAR se quitarían de Backup_Guerra.csv.
  *   descartarFilasClanEquivocadoAplicar()  -> (§PF339) QUITA esas filas (clan equivocado, decisión de la usuaria), con respaldo previo y verificación. Es la única función del módulo que borra filas.
@@ -39,6 +40,8 @@
 //  Parte 1 — Funciones que se corren a mano
 //    - Verificar CurrentRiverRace contra Backup_Guerra.csv: informe, aplicar, reinicio y olvidar verificados (cada principal seguida de su continuación)
 //    - Descartar filas de un clan equivocado en Backup_Guerra.csv: informe y aplicar (§PF339; se corren ANTES de verificarCrrVsBackupAplicar)
+//    - Revertir lo que «Aplicar» subió y dejó un día imposible: informe y aplicar (§PF446)
+//    - Corregir filas por lista con valores que RoyaleAPI y el JSON contradicen: informe y aplicar (§PF450)
 //  Parte 2 — Funciones que no se corren a mano
 //    - Verificar CRR: motor por tandas (estado, presupuesto y continuación)
 //    - Verificar CRR, paso 1: totales cerrados de RoyaleAPI por jugador (§PF320)
@@ -48,6 +51,7 @@
 //    - Verificar CRR, paso 3: comparar contra el CSV y registrar hallazgos
 //    - Verificar CRR, paso 4: escribir en el CSV (solo Aplicar)
 //    - Descartar filas de un clan equivocado (motor, plan, hoja Guerra y verificación)
+//    - Corregir filas por lista (motor, plan y verificación; §PF450)
 //    - Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas.
 
@@ -127,6 +131,34 @@ var VCRR_FILAS_DESCARTAR = [
 var VCRR_MAX_FILAS_DESCARTAR = 30;                     // tope de filas que una corrida puede quitar de Backup_Guerra.csv (si se pasa, no se quita nada)
 var VCRR_REVERTIR_MARCA = '2026-11-11 10.13.05';       // §PF446: marca de la corrida de «Aplicar» cuyo respaldo previo («Backup_Guerra ANTES de verificar CRR vs Backup <marca>.csv») usa la reversión
 var VCRR_MAX_FILAS_REVERTIR = 150;                       // §PF446: tope de filas que una reversión puede modificar (si se pasa, no se escribe nada; la corrida del 11-nov dejó 84)
+// §PF450 (14-nov-2026): correcciones por lista. A diferencia de «Aplicar» (que solo sube al piso del JSON), estas filas tienen un valor MAYOR que el de dos fuentes independientes (RoyaleAPI y el JSON exacto de CurrentRiverRace,
+// min = max) y se BAJAN al de esas fuentes. Decisión de la usuaria («ok», 14-nov-2026) sobre la propuesta por tandas de §PF447 punto 7. Cada entrada: tanda, temporada, semana, tag, clanKey (como en VCRR_FILAS_DESCARTAR),
+// nombre (solo para leer la lista), dia (J, V, S o D), actual [AtaquesHoy, AtaquesSemana, Fame, Barcos] que debe tener la fila (si cambió desde la decisión NO se toca), nuevo [AtaquesHoy, AtaquesSemana, Fame, Barcos] y nota.
+// Solo se procesan las tandas de VCRR_CORREGIR_TANDAS: se agrega la siguiente tanda a esa lista cuando la usuaria la apruebe tras ver el informe. Una fila que la hoja Guerra todavía tenga NO se toca (la sincronización la devolvería a su valor viejo).
+// Orden de uso: (1) subirBaseDesdeGithub(); (2) corregirFilasPorListaInforme() y revisar el detalle; (3) corregirFilasPorListaAplicar(); (4) generarGuerraDesglose() para comprobar que los «Imposible» bajan.
+var VCRR_ORIGEN_LISTA = 'Corregido - lista (RoyaleAPI y JSON)';
+var VCRR_MAX_FILAS_CORREGIR = 30;                       // tope de filas que una corrida puede modificar (si se pasa, no se escribe nada)
+var VCRR_CORREGIR_TANDAS = [1];                         // tandas activas de VCRR_CORRECCIONES_LISTA
+var VCRR_CORRECCIONES_LISTA = [
+  // --- Tanda 1: el CSV supera a RoyaleAPI y al JSON exacto (§PF447 punto 5). A1: domingo de T22 S3 (el JSON da el domingo exacto: acumulado de ataques y fame con min = max) ---
+  { tanda: 1, temporada: 22, semana: 3, tag: '#228VUG2RU', clanKey: 'grupo乂terna™', nombre: 'Fazete', dia: 'D', actual: [4, 16, 3200, 0], nuevo: [4, 12, 1800, 0],
+    nota: 'RoyaleAPI 12 / 1800 y JSON exacto 12 / 1800; el sábado ya tiene 8 ataques, así que 16 no cabe con 4 del domingo' },
+  { tanda: 1, temporada: 22, semana: 3, tag: '#8YCLY8CRU', clanKey: 'grupoxterna™2', nombre: 'Carsyr', dia: 'D', actual: [4, 12, 2400, 0], nuevo: [4, 12, 1950, 0],
+    nota: 'RoyaleAPI 12 / 1950 y JSON exacto 12 / 1950' },
+  { tanda: 1, temporada: 22, semana: 3, tag: '#92YRUUV9P', clanKey: 'grupo乂terna™', nombre: 'iJonahjk', dia: 'D', actual: [4, 16, 3000, 0], nuevo: [4, 16, 2400, 0],
+    nota: 'RoyaleAPI 16 / 2400 y JSON exacto 16 / 2400' },
+  { tanda: 1, temporada: 22, semana: 3, tag: '#9G0RQR2GV', clanKey: 'grupoxterna™2', nombre: 'frank -.-', dia: 'D', actual: [4, 12, 2300, 0], nuevo: [4, 12, 2000, 0],
+    nota: 'RoyaleAPI 12 / 2000 y JSON exacto 12 / 2000' },
+  { tanda: 1, temporada: 22, semana: 3, tag: '#CUQG9CJUG', clanKey: 'grupo乂terna™', nombre: 'Marzz', dia: 'D', actual: [4, 16, 3400, 0], nuevo: [4, 16, 2450, 0],
+    nota: 'RoyaleAPI 16 / 2450 y JSON exacto 16 / 2450' },
+  { tanda: 1, temporada: 22, semana: 3, tag: '#UJUGRYY9C', clanKey: 'grupo乂terna™', nombre: 'ADM', dia: 'D', actual: [4, 16, 3200, 0], nuevo: [4, 16, 2700, 0],
+    nota: 'RoyaleAPI 16 / 2700 y JSON exacto 16 / 2700' },
+  { tanda: 1, temporada: 22, semana: 3, tag: '#YGL2QV8LG', clanKey: 'grupo乂terna™', nombre: 'T3RR1BL3!', dia: 'D', actual: [4, 16, 2650, 0], nuevo: [4, 16, 2350, 0],
+    nota: 'RoyaleAPI 16 / 2350 y JSON exacto 16 / 2350' },
+  // --- Tanda 1: viernes de T24 S2 en ™3 (RoyaleAPI «log» ™3 4 / 600 y JSON exacto 600; la fila trae 700 con 0 ataques ese día) ---
+  { tanda: 1, temporada: 24, semana: 2, tag: '#JCUPQ88J', clanKey: 'grupoxterna™3', nombre: 'LEGEND', dia: 'V', actual: [0, 4, 700, 0], nuevo: [0, 4, 600, 0],
+    nota: 'RoyaleAPI («log») ™3 4 / 600 y JSON exacto de ™3 600 el jueves y el viernes; el jueves ya tenía 600' }
+];
 
 var VCRR_PASOS_NOMBRES_INFORME = [
   'RoyaleAPI: leer los JSON individuales (log y perfil cerrados) de cada jugador y guardar sus totales semanales → Cruce_CRR_RoyaleAPI.csv',
@@ -209,6 +241,21 @@ function verificarCrrVsBackupRevertirInforme() { _vcrrRevertirSubidas_(false); }
  * se escribe si pasa de VCRR_MAX_FILAS_REVERTIR. Después de correrla, corre generarGuerraDesglose() para comprobar que los «Imposible» bajan.
  */
 function verificarCrrVsBackupRevertirAplicar() { _vcrrRevertirSubidas_(true); }
+
+// ----- Corregir filas por lista con valores que RoyaleAPI y el JSON contradicen (§PF450) -----
+
+/**
+ * Solo informa (no toca Backup_Guerra.csv): lista qué filas de VCRR_CORRECCIONES_LISTA (solo las tandas de VCRR_CORREGIR_TANDAS) corregiría corregirFilasPorListaAplicar(), con el valor actual y el nuevo,
+ * y cuáles no se tocarían y por qué (ya corregida, ausente, cambió desde la decisión, hay más de una fila o la hoja Guerra todavía la tiene). Deja el detalle en «Cruce_CRR_vs_Backup <fecha> (correcciones por lista, informe).csv».
+ */
+function corregirFilasPorListaInforme() { _vcrrCorregirLista_(false); }
+
+/**
+ * Corrige en Backup_Guerra.csv las filas de VCRR_CORRECCIONES_LISTA (tandas de VCRR_CORREGIR_TANDAS): les pone los valores [AtaquesHoy, AtaquesSemana, Fame, Barcos] de la lista y el origen VCRR_ORIGEN_LISTA.
+ * Es la única función del módulo que BAJA valores («Aplicar» solo los sube). Respaldo previo («Backup_Guerra ANTES de corregir por lista <fecha>.csv»), verificación al releer y nada se escribe si algo no cuadra
+ * o si pasa de VCRR_MAX_FILAS_CORREGIR. Después de correrla, corre generarGuerraDesglose() para comprobar que los «Imposible» bajan.
+ */
+function corregirFilasPorListaAplicar() { _vcrrCorregirLista_(true); }
 
 // =============================================================================
 // PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
@@ -1829,6 +1876,143 @@ function _vcrrRevertirSubidas_(aplicar) {
     if (conLock) lock.releaseLock();
     _liberarLockEjecucion();
   }
+}
+
+// ----- Corregir filas por lista (§PF450): motor, plan y verificación -----
+
+/**
+ * Motor de corregirFilasPorListaInforme() y corregirFilasPorListaAplicar() (§PF450). aplicar = false solo informa. Con aplicar = true: respaldo previo, pone en cada fila del plan los valores nuevos y el origen
+ * VCRR_ORIGEN_LISTA, relee Backup_Guerra.csv de Drive y verifica con _vcrrVerificarCorreccion_; si la verificación falla lo dice con el nombre del respaldo para restaurar. No crea ni borra filas.
+ */
+function _vcrrCorregirLista_(aplicar) {
+  var nombreFn = aplicar ? 'corregirFilasPorListaAplicar' : 'corregirFilasPorListaInforme';
+  if (!_adquirirLockEjecucion(nombreFn)) return;
+  var lock = LockService.getScriptLock(), conLock = false;
+  try {
+    if (aplicar) {
+      if (!lock.tryLock(30000)) { Logger.log('[VCRR corregir] Hay otro proceso escribiendo; vuelve a correr ' + nombreFn + '() en un momento. No se tocó nada.'); return; }
+      conLock = true;
+    }
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var bk = _vcrrLeerBackupGuerra_();
+    if (!bk) { Logger.log('[VCRR corregir] No se encontró Backup_Guerra.csv o está vacío; no se toca nada.'); return; }
+    var idsHoja = _vcrrIdsHojaGuerra_();
+    if (idsHoja === null) {
+      if (aplicar) { Logger.log('[VCRR corregir] No se pudo leer la hoja Guerra: no se corrige nada, porque la sincronización devolvería al CSV el valor viejo de las filas que la hoja tenga. Vuelve a intentarlo.'); return; }
+      Logger.log('[VCRR corregir] OJO: no se pudo leer la hoja Guerra; este informe no avisa si la hoja todavía tiene alguna de las filas.');
+      idsHoja = {};
+    }
+    var lista = VCRR_CORRECCIONES_LISTA.filter(function (e) { return VCRR_CORREGIR_TANDAS.indexOf(e.tanda) >= 0; });
+    var plan = _vcrrPlanCorregir_(bk.filas, lista, idsHoja);
+    var nCorregir = plan.corregir.length;
+    var sinCorregir = plan.avisos.filter(function (a) { return a.tipo === 'conflicto'; }).length;
+    var yaHechas = plan.avisos.length - sinCorregir;
+    var detalle = [['Tanda', 'Temporada', 'Semana', 'Clan', 'Tag', 'Nombre', 'Día', 'Acción', 'AtaquesHoy ahora', 'AtaquesHoy nuevo', 'AtaquesSemana ahora', 'AtaquesSemana nuevo', 'Fame ahora', 'Fame nuevo', 'Barcos ahora', 'Barcos nuevo', 'Origen ahora', 'Nota']];
+    plan.corregir.forEach(function (c) {
+      var r = c.fila, e = c.entrada;
+      detalle.push([e.tanda, r[GC.TEMPORADA - 1], r[GC.SEMANA - 1], r[GC.CLAN - 1], e.tag, e.nombre, e.dia, aplicar ? 'Corregir' : 'Corregiría',
+        r[GC.ATAQUES_HOY - 1], e.nuevo[0], r[GC.ATAQUES_SEM - 1], e.nuevo[1], r[GC.FAME - 1], e.nuevo[2], r[GC.BARCOS - 1], e.nuevo[3], r[GC.ORIGEN - 1], e.nota || '']);
+    });
+    plan.avisos.forEach(function (a) {
+      var e = a.entrada;
+      detalle.push([e.tanda, e.temporada, e.semana, e.clanKey, e.tag, e.nombre, e.dia, (a.tipo === 'conflicto' ? 'SIN TOCAR: ' : 'Nada que corregir: ') + a.motivo, '', '', '', '', '', '', '', '', '', e.nota || '']);
+    });
+    var problemas = [];
+    if (aplicar && nCorregir > VCRR_MAX_FILAS_CORREGIR) {
+      Logger.log('[VCRR corregir] NO SE ESCRIBIÓ NADA: ' + nCorregir + ' fila(s) por corregir pasan el tope de ' + VCRR_MAX_FILAS_CORREGIR + ' (VCRR_MAX_FILAS_CORREGIR). Revisa VCRR_CORRECCIONES_LISTA.');
+      return;
+    }
+    if (aplicar && nCorregir > 0) {
+      var copiaAntes = bk.filas.map(function (r) { return r.slice(); });
+      _saveCSVToDrive('Backup_Guerra ANTES de corregir por lista ' + marca + '.csv', bk.texto);
+      plan.corregir.forEach(function (c) {
+        var f = bk.filas[c.idx], n = c.entrada.nuevo;
+        f[GC.ATAQUES_HOY - 1] = String(n[0]);
+        f[GC.ATAQUES_SEM - 1] = String(n[1]);
+        f[GC.FAME - 1] = String(n[2]);
+        f[GC.BARCOS - 1] = String(n[3]);
+        f[GC.ORIGEN - 1] = VCRR_ORIGEN_LISTA;
+      });
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([bk.encabezado].concat(bk.filas)));
+      var despues = _loadCSVFromDrive('Backup_Guerra.csv');
+      var parsedDespues = despues ? _parseCSV(despues) : null;
+      if (!parsedDespues || parsedDespues.length < 2) problemas.push('No se pudo releer Backup_Guerra.csv');
+      else {
+        var filasDespues = parsedDespues.slice(1);
+        for (var b = 0; b < filasDespues.length; b++) { while (filasDespues[b].length < GUERRA_TOTAL_COLS) filasDespues[b].push(''); }
+        problemas = _vcrrVerificarCorreccion_(copiaAntes, filasDespues, plan);
+      }
+    }
+    if (detalle.length > 1) _saveCSVToDrive('Cruce_CRR_vs_Backup ' + marca + ' (correcciones por lista, ' + (aplicar ? 'aplicado' : 'informe') + ').csv', _encodeCSVInforme(detalle));
+    Logger.log('[VCRR corregir] ' + (aplicar ? 'Corregidas' : 'Se corregirían') + ' ' + nCorregir + ' fila(s) de ' + lista.length + ' entrada(s) (tandas ' + VCRR_CORREGIR_TANDAS.join(', ') + '); ya corregidas o ausentes: ' + yaHechas + '; sin tocar por conflicto: ' + sinCorregir + '. ' +
+      (problemas.length ? 'VERIFICACIÓN FALLÓ (' + problemas.length + '): ' + problemas.slice(0, 5).join('; ') + '. Restaurar con «Backup_Guerra ANTES de corregir por lista ' + marca + '.csv».'
+        : (aplicar && nCorregir > 0 ? 'Verificación OK. Ahora corre generarGuerraDesglose() para comprobar que los «Imposible» bajan.' : '')));
+    plan.avisos.forEach(function (a) {
+      if (a.tipo === 'conflicto') Logger.log('[VCRR corregir] SIN TOCAR T' + a.entrada.temporada + ' S' + a.entrada.semana + ' ' + a.entrada.nombre + ' ' + a.entrada.tag + ' (' + a.entrada.dia + '): ' + a.motivo);
+    });
+  } finally {
+    if (conLock) lock.releaseLock();
+    _liberarLockEjecucion();
+  }
+}
+
+/**
+ * Función pura. De las filas de Backup_Guerra.csv y la lista de correcciones arma qué filas se corrigen: { corregir: [{ idx, fila, dia, entrada }], avisos: [{ tipo, entrada, motivo }] }.
+ * Cada entrada pide UNA fila (temporada, semana, tag, clan y día de la guerra). No se toca si: (1) hay más de una fila (conflicto), (2) sus valores [AtaquesHoy, AtaquesSemana, Fame, Barcos] no son los de «actual»
+ * (conflicto: cambió desde la decisión; si ya son los de «nuevo» queda un aviso 'hecha'), o (3) la hoja Guerra todavía la tiene (idsHoja = { id de _idFilaGuerraCSV: true }; conflicto: en _syncGuerraCSV la hoja manda
+ * sobre el CSV y devolvería la fila a su valor viejo). Una entrada sin fila deja un aviso 'ausente'. Solo mira filas de la etapa Guerra.
+ */
+function _vcrrPlanCorregir_(filas, lista, idsHoja) {
+  var corregir = [], avisos = [];
+  var vals = function (f) { return [_excDiasNum(f[GC.ATAQUES_HOY - 1]), _excDiasNum(f[GC.ATAQUES_SEM - 1]), _excDiasNum(f[GC.FAME - 1]), _excDiasNum(f[GC.BARCOS - 1])]; };
+  var igual = function (a, b) { return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3]; };
+  (lista || []).forEach(function (e) {
+    var halladas = [];
+    for (var i = 0; i < filas.length; i++) {
+      var r = filas[i];
+      if (String(r[GC.ETAPA - 1]) !== 'Guerra') continue;
+      if (Number(r[GC.TEMPORADA - 1]) !== Number(e.temporada) || Number(r[GC.SEMANA - 1]) !== Number(e.semana)) continue;
+      if (String(r[GC.TAG - 1]).trim().toUpperCase() !== String(e.tag).toUpperCase()) continue;
+      if (_vcrrClanNorm_(r[GC.CLAN - 1]) !== e.clanKey) continue;
+      var off = (_excDiasNum(r[GC.PERIOD_IDX - 1]) % 7) - 3;
+      if (off < 0 || off > 3 || VCRR_DIAS.charAt(off) !== e.dia) continue;
+      halladas.push({ idx: i, fila: r, dia: off, entrada: e });
+    }
+    if (!halladas.length) { avisos.push({ tipo: 'ausente', entrada: e, motivo: 'no hay fila de ese clan el día ' + e.dia }); return; }
+    if (halladas.length > 1) { avisos.push({ tipo: 'conflicto', entrada: e, motivo: 'hay ' + halladas.length + ' filas del día ' + e.dia + ' y se esperaba una' }); return; }
+    var h = halladas[0], v = vals(h.fila);
+    if (igual(v, e.nuevo)) { avisos.push({ tipo: 'hecha', entrada: e, motivo: 'la fila ya tiene los valores nuevos (' + v.join('/') + ')' }); return; }
+    if (!igual(v, e.actual)) { avisos.push({ tipo: 'conflicto', entrada: e, motivo: 'la fila tiene ' + v.join('/') + ' y se esperaba ' + e.actual.join('/') + ' (cambió desde la decisión)' }); return; }
+    if (idsHoja && idsHoja[_idFilaGuerraCSV(h.fila)]) { avisos.push({ tipo: 'conflicto', entrada: e, motivo: 'la hoja Guerra todavía tiene la fila: en la próxima sincronización su valor viejo volvería al CSV' }); return; }
+    corregir.push(h);
+  });
+  return { corregir: corregir, avisos: avisos };
+}
+
+/**
+ * Verifica, sobre las filas releídas de Drive, que: (1) hay las mismas filas que antes; (2) toda fila fuera del plan es idéntica y está en el mismo orden; (3) cada fila corregida cambió SOLO AtaquesHoy, AtaquesSemana,
+ * Fame, Barcos y Origen, y quedó con los valores nuevos. Devuelve la lista de problemas (vacía = todo bien).
+ */
+function _vcrrVerificarCorreccion_(filasAntes, filasDespues, plan) {
+  var problemas = [];
+  if (filasDespues.length !== filasAntes.length) problemas.push('número de filas ' + filasDespues.length + ' en vez de ' + filasAntes.length);
+  var tocada = {};
+  plan.corregir.forEach(function (c) { tocada[c.idx] = c; });
+  var columnasLibres = [GC.ATAQUES_HOY, GC.ATAQUES_SEM, GC.FAME, GC.BARCOS, GC.ORIGEN];
+  for (var i = 0; i < filasAntes.length && i < filasDespues.length; i++) {
+    var a = filasAntes[i], d = filasDespues[i];
+    if (!tocada[i]) {
+      if (a.join('\u0001') !== d.slice(0, a.length).join('\u0001')) { problemas.push('cambió una fila no planeada (línea ' + (i + 2) + ')'); if (problemas.length > 10) break; }
+      continue;
+    }
+    var n = tocada[i].entrada.nuevo, etq = 'T' + tocada[i].entrada.temporada + ' S' + tocada[i].entrada.semana + ' ' + tocada[i].entrada.tag + ' (' + tocada[i].entrada.dia + '): ';
+    for (var k = 0; k < a.length; k++) {
+      if (columnasLibres.indexOf(k + 1) >= 0) continue;
+      if (String(a[k]) !== String(d[k])) { problemas.push(etq + 'cambió la columna ' + (k + 1) + ', que no debía tocarse'); break; }
+    }
+    if (_excDiasNum(d[GC.ATAQUES_HOY - 1]) !== n[0] || _excDiasNum(d[GC.ATAQUES_SEM - 1]) !== n[1] || _excDiasNum(d[GC.FAME - 1]) !== n[2] || _excDiasNum(d[GC.BARCOS - 1]) !== n[3] || String(d[GC.ORIGEN - 1]) !== VCRR_ORIGEN_LISTA) problemas.push(etq + 'no quedó con los valores nuevos');
+  }
+  return problemas;
 }
 
 // ----- Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día) -----
