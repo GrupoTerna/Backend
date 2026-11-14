@@ -141,7 +141,10 @@ var VCRR_FILAS_DESCARTAR = [
   { temporada: 22, semana: 3, tag: '#V9P20U8RC', clanKey: 'grupoxterna™2', nombre: 'kayserleandro', dias: 'D', valores: [0, 12, 1600], conserva: 'Mini乂Ternas™',
     nota: '§PF447 A2: RoyaleAPI solo trae Mini; con la de Mini suman 24 ataques' },
   { temporada: 22, semana: 3, tag: '#L28JYY2J', clanKey: 'grupo乂terna™', nombre: 'Gamer', dias: 'D', valores: [4, 16, 2400], conserva: 'GrupoXTerna™2',
-    nota: '§PF447 A2: RoyaleAPI solo trae ™2; esta fila de Terna y la serie de ™2 suman 28 ataques' }
+    nota: '§PF447 A2: RoyaleAPI solo trae ™2; esta fila de Terna y la serie de ™2 suman 28 ataques' },
+  // --- §PF468 punto 13 (14-nov-2026; la usuaria dijo «decide tú»): #LYVJU9UJJ T23 S2. La fila de Mini trae 5 ataques en un solo día (máximo 4), el JSON de Mini da entre 0 y 4 acumulados el sábado y RoyaleAPI da 5 / 600 en ™2, donde no hay fila ---
+  { temporada: 23, semana: 2, tag: '#LYVJU9UJJ', clanKey: 'mini乂ternas™', nombre: 'fggij09', dias: 'S', valores: [5, 5, 600], conserva: 'GrupoXTerna™2',
+    nota: '§PF468 punto 13: RoyaleAPI da 5 / 600 en ™2 y ninguna fuente respalda esta fila en Mini; no se crea nada en ™2 porque no se sabe el día (5 ataques no caben en uno)' }
 ];
 var VCRR_MAX_FILAS_DESCARTAR = 30;                     // tope de filas que una corrida puede quitar de Backup_Guerra.csv (si se pasa, no se quita nada)
 var VCRR_REVERTIR_MARCA = '2026-11-11 10.13.05';       // §PF446: marca de la corrida de «Aplicar» cuyo respaldo previo («Backup_Guerra ANTES de verificar CRR vs Backup <marca>.csv») usa la reversión
@@ -193,7 +196,7 @@ var VCRR_CORRECCIONES_LISTA = [
 // Orden de uso: (1) subirBaseDesdeGithub(); (2) crearFilasPorListaInforme() y revisar el detalle; (3) crearFilasPorListaAplicar(); (4) generarGuerraDesglose() para comprobar que los «Imposible» bajan.
 var VCRR_ORIGEN_CREAR_LISTA = 'Reconstruido - lista (RoyaleAPI y JSON)';
 var VCRR_MAX_FILAS_CREAR = 30;                          // tope de filas que una corrida puede crear o modificar (si se pasa, no se escribe nada)
-var VCRR_CREAR_TANDAS = [7];                            // tandas activas de VCRR_FILAS_CREAR (la 3 se aplicó el 14-nov-2026, §PF452; la 4, §PF454; la 5, §PF465; la 6, §PF466)
+var VCRR_CREAR_TANDAS = [8];                            // tandas activas de VCRR_FILAS_CREAR (la 3 se aplicó el 14-nov-2026, §PF452; la 4, §PF454; la 5, §PF465; la 6, §PF466; la 7, §PF467)
 var VCRR_FILAS_CREAR = [
   // --- Tanda 3: #UJY0PGPUV en T24 S1 en ™2. Falta el viernes: sin él, el sábado (7 ataques y 1200 de fame acumulados) parte de base 0 y el desglose lo lee como un solo día. Con el viernes 3 / 3 / 600 (acumulado exacto del JSON) el reparto es sábado 4 / 600 y domingo 4 / 500 ---
   { tanda: 3, temporada: 24, semana: 1, tag: '#UJY0PGPUV', clanKey: 'grupoxterna™2', nombre: 'кυякү', dia: 'V', actual: null, nuevo: [3, 3, 600, 0],
@@ -263,7 +266,20 @@ var VCRR_FILAS_CREAR = [
   { tanda: 7, temporada: 24, semana: 5, tag: '#P8Y0CQ9VR', clanKey: 'grupo乂terna™', nombre: 'ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ', dia: 'S', actual: [4, 4, 400, 0], nuevo: [4, 4, 500, 0],
     nota: '§PF467: el battlelog da 500 de fame el sábado (el backup, una estimación, 400); sábado y domingo suman lo mismo que RoyaleAPI (1000)' },
   { tanda: 7, temporada: 24, semana: 5, tag: '#UYU0PGUYJ', clanKey: 'grupo乂terna™', nombre: 'ᴳ乂ᵀ ⚜️ ＲＡＭＩ', dia: 'S', actual: [4, 4, 550, 0], nuevo: [4, 4, 650, 0],
-    nota: '§PF467: el battlelog da 650 de fame el sábado (el backup, una estimación, 550); sábado y domingo suman lo mismo que RoyaleAPI (1250)' }
+    nota: '§PF467: el battlelog da 650 de fame el sábado (el backup, una estimación, 550); sábado y domingo suman lo mismo que RoyaleAPI (1250)' },
+  // --- Tanda 8 (§PF468 punto 13; 14-nov-2026; la usuaria dijo «decide tú»): casos «Imposible» reabiertos. Los ATAQUES por día son exactos (JSON y RoyaleAPI); la FAME por día es una ESTIMACIÓN: un valor dentro del rango que permiten el JSON y la tabla de fame (_fameTablaDia_), el del medio. Los totales semanales no cambian (salvo el viernes de #LRR2RGCCV, que sube dentro del rango del JSON) ---
+  { tanda: 8, temporada: 23, semana: 2, tag: '#CUU92GQQG', clanKey: 'grupoxterna™2', nombre: 'Larry god', dia: 'V', actual: [0, 4, 700, 0], nuevo: [4, 8, 1300, 0],
+    nota: 'ESTIMADO, A CONFIRMAR: el JSON exacto da 8 ataques acumulados el viernes (RoyaleAPI 11 / 1800, sábado 3 y domingo 0); la fame del viernes cabe de 1100 a 1500 acumulados, se pone 1300 (viernes 600, sábado 500)' },
+  { tanda: 8, temporada: 23, semana: 2, tag: '#CUU92GQQG', clanKey: 'grupoxterna™2', nombre: 'Larry god', dia: 'S', actual: [7, 11, 1800, 0], nuevo: [3, 11, 1800, 0],
+    nota: 'ESTIMADO, A CONFIRMAR: con 4 ataques el viernes, el sábado trae 3 (11 acumulados); el total 11 / 1800 es el de RoyaleAPI' },
+  { tanda: 8, temporada: 23, semana: 2, tag: '#LRR2RGCCV', clanKey: 'grupoxterna™2', nombre: 'gabriel18', dia: 'V', actual: [4, 7, 1300, 0], nuevo: [4, 7, 1500, 0],
+    nota: 'ESTIMADO, A CONFIRMAR: el 1300 era el piso del JSON (rango 1300 a 1600); con la tabla de fame solo cuadra el reparto de sábado y domingo si el viernes sube; se pone 1500, la mediana de las 10 combinaciones posibles con sábado 4 y domingo 3' },
+  { tanda: 8, temporada: 23, semana: 2, tag: '#LRR2RGCCV', clanKey: 'grupoxterna™2', nombre: 'gabriel18', dia: 'S', actual: [11, 14, 2900, 0], nuevo: [4, 11, 2300, 0],
+    nota: 'ESTIMADO, A CONFIRMAR: la fila de sábado trae el total de la semana (RoyaleAPI 14 / 2900); sábado 4 y domingo 3 (10 combinaciones posibles contra 3 con sábado 3 y domingo 4); fame acumulada 2300, dentro del rango del JSON (2200 a 2500)' },
+  { tanda: 8, temporada: 23, semana: 2, tag: '#LRR2RGCCV', clanKey: 'grupoxterna™2', nombre: 'gabriel18', dia: 'D', actual: null, nuevo: [3, 14, 2900, 0],
+    nota: 'ESTIMADO, A CONFIRMAR: domingo con los 3 ataques que faltan para el total de RoyaleAPI (14 / 2900)' },
+  { tanda: 8, temporada: 26, semana: 4, tag: '#RR8CRJPUV', clanKey: 'grupo乂terna™', nombre: 'ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ', dia: 'J', actual: null, nuevo: [4, 4, 650, 0],
+    nota: 'ESTIMADO, A CONFIRMAR: falta la fila del jueves de Terna; el JSON da 4 ataques el jueves y 400 a 900 de fame; RoyaleAPI Terna 12 / 1700. Se pone 650, con lo que el viernes queda en 650 (1300 acumulados)' }
 ];
 
 var VCRR_PASOS_NOMBRES_INFORME = [
