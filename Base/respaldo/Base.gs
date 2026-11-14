@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 03:51:43 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 04:05:58 */
 
 
 
@@ -2669,7 +2669,7 @@ var CFG = {
 
   // Orden de categorías EXCLUSIVO para la generación de mensajes diarios [→ Contexto_Base_Web.md §01B025]
   MENSAJES_ORDEN_CATEGORIAS: [
-  'Defensas de barcos','Día de guerra','Mensaje de Guerra',
+  'Defensas de barcos','Día de guerra','Mensaje de Guerra','Guerra fuera del clan', // 14-nov-2026 (§PF462): el mensaje de cuentas fuera del clan va justo después del Mensaje de Guerra
   'Etiqueta de miembro','Celular','Mazos','iPhone',
 ],
 
@@ -2912,6 +2912,7 @@ var CFG = {
   // Colores pastel de fondo para la hoja Mensajes, según columna "Tipo". [→ Contexto_Base_Web.md §01B063]
   MENSAJES_TIPO_BG: {
     'Mensaje de Guerra':    '#ffcdd2', // rosado pastel
+    'Guerra fuera del clan': '#f8bbd0', // rosa pastel más fuerte (14-nov-2026, §PF462)
     'Defensas de barcos':   '#bbdefb', // azul pastel
     'Celular':              '#fff9c4', // amarillo pastel
     'Etiqueta de miembro':  '#e1bee7', // lila pastel
@@ -52801,6 +52802,9 @@ var MENSAJES_TOTAL_COLS = 16; // 15 -> 16 con Clan_Tag
 // Nombre del clan "Chat General" para mensajes generales (todas las subcategorías generales)
 var CLAN_CHAT_GENERAL = 'ᴳ乂ᵀ ⚜️ Familia Terna';
 
+// 14-nov-2026 (pedido de la usuaria, §PF462): categoría del mensaje de las cuentas «fuera del clan» con ataques hoy (pendientes y completos). Va después de «Mensaje de Guerra» en CFG.MENSAJES_ORDEN_CATEGORIAS.
+var CATEGORIA_GUERRA_FUERA_CLAN = 'Guerra fuera del clan';
+
 // Categorías que no deben verse al copiar/enviar el chat (se ocultan [→ Contexto_Base_Web.md §30B002]
 var CATEGORIAS_OCULTAS_MENSAJES = [];
 
@@ -52876,6 +52880,9 @@ function generarTodosMensajes() {
 
   // 1. DEFENSAS DE BARCOS: ELIMINADA (11/08/2026, pedido del usuario). [→ Contexto_Base_Web.md §30B013]
 
+  // 14-nov-2026 (pedido de la usuaria, §PF462): los cupos por clan se calculan una sola vez y los usan el Mensaje de Guerra y el mensaje de cuentas fuera del clan. Fuera de un día de guerra no se calculan.
+  var cuposPorClan = ctx.esDiaGuerra ? _resumenCuposGuerraPorClan_(ctx) : {};
+
   // 2. MENSAJE DE GUERRA (solo días de guerra)
   if (ctx.esDiaGuerra && pendientes.length > 0) {
     var clanesPend = _agruparPorClanOrdenado(pendientes, clanOrden);
@@ -52883,7 +52890,7 @@ function generarTodosMensajes() {
     var nombreDia  = nombresDia[ctx.diaLetra] || '';
     var semNum = ctx.sectionIndex + 1;
     // 14-nov-2026 (pedido de la usuaria): cupos de cada clan para el resumen del inicio; si no se pueden calcular, los mensajes salen sin esa parte. [→ Contexto_Base_Web.md §PF455]
-    var cuposPorClan = _resumenCuposGuerraPorClan_(ctx);
+    // §PF462: los cupos se calculan antes del `if` (fuera de él, arriba) porque el mensaje de «fuera del clan» también los usa y debe salir aunque no haya pendientes.
     // 14-nov-2026 (pedido de la usuaria): hasta las 12:00 AM (Lima) del día de guerra la línea final recuerda ese plazo; pasada la medianoche (el mensaje puede generarse de madrugada, antes de que cambie el día de guerra) avisa que ya pasó la hora permitida y que hay más urgencia en completar los ataques. No se dice cuánto falta: la API no lo informa. [→ Contexto_Base_Web.md §PF457]
     var nivelUrgencia = _nivelUrgenciaGuerra_(now, ctx.diaLetra); // §PF460: 0 normal, 1 desde las 8 PM, 2 desde las 10 PM, 3 ya pasó la medianoche
     var pasoMedianoche = (nivelUrgencia === 3);
@@ -52953,6 +52960,43 @@ function generarTodosMensajes() {
     }
     msjGral += '🕒 Generado: ' + horaGeneracionMsj;
     bloques.push({ categoria: 'Mensaje de Guerra', subcategoria: 'Chat General', clan: CLAN_CHAT_GENERAL, contenido: msjGral });
+  }
+
+  // 2b. GUERRA FUERA DEL CLAN (solo días de guerra; 14-nov-2026, pedido de la usuaria, §PF462): cuentas que atacaron hoy en un clan en el que ya no figuran como activas (usan cupo del clan), separadas en
+  // «con ataques pendientes» y «con ataques completos». Un mensaje por clan que tenga alguna (Particular) y uno para el Chat General con todos los clanes. Categoría propia: la web y el bot dejan una sola opción por clan
+  // en «Mensaje de Guerra» (_obtenerOpcionesClanCategoria()), así que un segundo mensaje del mismo clan en esa categoría se perdería. Si no hay ninguna cuenta fuera del clan, no se genera nada.
+  if (ctx.esDiaGuerra) {
+    var fueraTodas = [];
+    for (var nomClanF in cuposPorClan) {
+      (cuposPorClan[nomClanF].fuera || []).forEach(function(cF) {
+        fueraTodas.push({ clan: nomClanF, tag: cF.tag, nombre: cF.nombre, ataquesHoy: cF.ataquesHoy, tieneWsp: cF.tieneWsp, motivo: cF.motivo, clanActual: cF.clanActual });
+      });
+    }
+    if (fueraTodas.length > 0) {
+      var clanesFuera = _agruparPorClanOrdenado(fueraTodas, clanOrden);
+      var nombreDiaF = ({ L:'LUNES', M:'MARTES', X:'MIÉRCOLES', J:'JUEVES', V:'VIERNES', S:'SÁBADO', D:'DOMINGO' })[ctx.diaLetra] || '';
+      var cabeceraF = _negritaWsp_('⚔ GUERRA ' + nombreDiaF + ' — SEMANA ' + (ctx.sectionIndex + 1) + ' ⚔') + '\n';
+      var leyendaF = _textoLeyendaFueraClanGuerra_(fueraTodas);
+      for (var cf = 0; cf < clanesFuera.length; cf++) {
+        var msjFuera = cabeceraF + '==============================\n';
+        msjFuera += _negritaWsp_('👻 ' + clanesFuera[cf].clan + ' · fuera del clan (' + clanesFuera[cf].lista.length + ')') + '\n';
+        msjFuera += '==============================\n';
+        msjFuera += 'Atacaron hoy en este clan, pero ya no figuran como activas de él: usan cupo del clan.\n';
+        msjFuera += _textoGruposFueraClanGuerra_(clanesFuera[cf].lista) + '\n'; // línea en blanco antes de la leyenda y de la hora, como en el Mensaje de Guerra
+        msjFuera += _textoLeyendaFueraClanGuerra_(clanesFuera[cf].lista);
+        msjFuera += '🕒 Generado: ' + horaGeneracionMsj;
+        bloques.push({ categoria: CATEGORIA_GUERRA_FUERA_CLAN, subcategoria: 'Particular', clan: clanesFuera[cf].clan, contenido: msjFuera });
+      }
+      var msjFueraGral = cabeceraF + _negritaWsp_('👻 ' + fueraTodas.length + ' ' + (fueraTodas.length === 1 ? 'cuenta atacó' : 'cuentas atacaron') + ' hoy fuera de su clan.') + '\n';
+      for (var cg = 0; cg < clanesFuera.length; cg++) {
+        msjFueraGral += '==============================\n';
+        msjFueraGral += _negritaWsp_('👻 ' + clanesFuera[cg].clan + ' (' + clanesFuera[cg].lista.length + ')') + '\n';
+        msjFueraGral += '==============================\n';
+        msjFueraGral += _textoGruposFueraClanGuerra_(clanesFuera[cg].lista);
+      }
+      msjFueraGral += '\n' + leyendaF + '🕒 Generado: ' + horaGeneracionMsj;
+      bloques.push({ categoria: CATEGORIA_GUERRA_FUERA_CLAN, subcategoria: 'Chat General', clan: CLAN_CHAT_GENERAL, contenido: msjFueraGral });
+    }
   }
 
   // 3. CELULAR (activos sin celular)
@@ -53271,6 +53315,7 @@ function _obtenerPrestamoPorTag(ss) {
  * de guerra.html (_getParticipacionHoyGuerra(), 17_GuerraSheet.gs; §PF344, §PF400): reservadas = cuentas con al menos un ataque hoy en el clan (las que ya no son activas del clan traen
  * `inactiva: true`); libres = tope de 50 - reservadas; reemplazables = cuentas activas del clan sin ataques hoy, que son parte de los libres (no se suman); extras = libres - reemplazables, sin bajar de 0.
  * Devuelve { nombreClan: { reservadas, activas, inactivas, completas, completasActivas, completasFuera, pendientes, pendientesActivas, pendientesFuera, libres, reemplazables, extras } }. Un fallo no rompe los mensajes: devuelve {} y salen sin el resumen.
+ * §PF462 (14-nov-2026, pedido de la usuaria): cada clan trae además `fuera`: la lista de sus cuentas fuera del clan ({ tag, nombre, ataquesHoy, tieneWsp, motivo, clanActual }) para el mensaje «Guerra fuera del clan».
  * §PF458 (14-nov-2026, pedido de la usuaria): cada reservada se cuenta además como «completa» (ya hizo sus 4 ataques de hoy en el clan: `ataquesHoy` >= 4) o «pendiente» (1 a 3 ataques hechos, le faltan), y cada una de las dos se parte en activas y fuera del clan.
  */
 function _resumenCuposGuerraPorClan_(ctx) {
@@ -53291,7 +53336,18 @@ function _resumenCuposGuerraPorClan_(ctx) {
       }
       var libres = Math.max(0, PG.CUENTAS_MAX_CLAN_DIA - reservadas.length);
       var reemplazables = (clanes[i].disponibles || []).length;
+      // §PF462: las cuentas fuera del clan (con nombre, ataques de hoy, motivo y si tienen celular; nunca el número) para el mensaje «Guerra fuera del clan».
+      var fueraLista = [];
+      for (var jf = 0; jf < reservadas.length; jf++) {
+        if (reservadas[jf].inactiva !== true) continue;
+        fueraLista.push({
+          tag: String(reservadas[jf].tag || ''), nombre: String(reservadas[jf].nombre || ''),
+          ataquesHoy: Number(reservadas[jf].ataquesHoy) || 0, tieneWsp: reservadas[jf].tieneWsp === true,
+          motivo: String(reservadas[jf].motivo || ''), clanActual: String(reservadas[jf].clanActual || '')
+        });
+      }
       mapa[clanes[i].clan] = {
+        fuera: fueraLista,
         reservadas: reservadas.length,
         activas: reservadas.length - inactivas,
         inactivas: inactivas,
@@ -53424,14 +53480,14 @@ function _textoLeyendaMarcasGuerra_(lista, celularPorTag, prestamoPorTag) {
 
 /**
  * _textoLineaClanChatGeneral_(lista) [→ Contexto_Base_Web.md §PF461]
- * 14-nov-2026 (pedido de la usuaria): la única línea de resumen de un clan en el Chat General, p. ej. «🛑 2 reemplazables · ⚠ 1 reservada con ataques pendientes». Reemplazables = los de `faltantes === 4`;
+ * 14-nov-2026 (pedido de la usuaria): la única línea de resumen de un clan en el Chat General, p. ej. «🔄 2 reemplazables · ⚠ 1 reservada con ataques pendientes». Reemplazables = los de `faltantes === 4`;
  * reservadas = el resto (1 a 3 pendientes), las mismas definiciones de `_textoGruposPendientesGuerra_()`. Una parte con 0 no se escribe. Devuelve la línea con su salto de línea, o '' si la lista está vacía.
  */
 function _textoLineaClanChatGeneral_(lista) {
   var reemp = 0, reserv = 0;
   (lista || []).forEach(function(p) { if (Number(p.faltantes) === 4) reemp++; else reserv++; });
   var partes = [];
-  if (reemp > 0) partes.push('🛑 ' + reemp + ' ' + (reemp === 1 ? 'reemplazable' : 'reemplazables'));
+  if (reemp > 0) partes.push('🔄 ' + reemp + ' ' + (reemp === 1 ? 'reemplazable' : 'reemplazables'));
   if (reserv > 0) partes.push('⚠ ' + reserv + ' ' + (reserv === 1 ? 'reservada' : 'reservadas') + ' con ataques pendientes');
   return partes.length ? partes.join(' · ') + '\n' : '';
 }
@@ -53513,13 +53569,69 @@ function _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, 
   }
   var t = '';
   if (reemplazables.length > 0) {
-    t += _negritaWsp_('🛑 REEMPLAZABLES · 4 ataques pendientes (' + reemplazables.length + ')') + '\n↳ ' + fraseReemp + '\n' + lineas(reemplazables);
+    t += _negritaWsp_('🔄 REEMPLAZABLES · 4 ataques pendientes (' + reemplazables.length + ')') + '\n↳ ' + fraseReemp + '\n' + lineas(reemplazables);
   }
   if (reservadas.length > 0) {
     if (t) t += '\n';
     t += _negritaWsp_('⚠ RESERVADAS ACTIVAS CON ATAQUES PENDIENTES (' + reservadas.length + ')') + '\n↳ ' + fraseReserv + '\n' + lineas(reservadas);
   }
   return t;
+}
+
+/**
+ * _textoGruposFueraClanGuerra_(lista) [→ Contexto_Base_Web.md §PF462]
+ * 14-nov-2026 (pedido de la usuaria): las cuentas fuera del clan de un clan en dos grupos: «con ataques pendientes» (1 a 3 ataques hechos hoy; entre paréntesis, los que les faltan, igual que en el Mensaje de Guerra)
+ * y «con ataques completos» (4 o más). Pendientes: faltantes desc. -> nombre; completos: por nombre. Cada línea lleva (ω) si la cuenta tiene celular registrado y, al final, el motivo por el que ya no figura en el clan
+ * (`_textoMotivoFueraClanGuerra_()`). Un grupo vacío no lleva encabezado. `lista` = [{ nombre, ataquesHoy, tieneWsp, motivo, clanActual }].
+ */
+function _textoGruposFueraClanGuerra_(lista) {
+  var pend = [], comp = [];
+  (lista || []).forEach(function(p) { if (Number(p.ataquesHoy) >= 4) comp.push(p); else pend.push(p); });
+  function porNombre(a, b) { return String(a.nombre).localeCompare(String(b.nombre)); }
+  pend.sort(function(a, b) {
+    var fa = 4 - Number(a.ataquesHoy), fb = 4 - Number(b.ataquesHoy);
+    if (fb !== fa) return fb - fa;
+    return porNombre(a, b);
+  });
+  comp.sort(porNombre);
+  var t = '';
+  if (pend.length > 0) {
+    t += _negritaWsp_('⏳ CON ATAQUES PENDIENTES (' + pend.length + ')') + '\n↳ Ya usan cupo y les faltan ataques.\n';
+    pend.forEach(function(p) {
+      var falta = 4 - Number(p.ataquesHoy);
+      t += (falta >= 2 ? '⚠' : '🔹') + ' ' + p.nombre + ' (' + falta + ')' + (p.tieneWsp ? ' (ω)' : '') + _textoMotivoFueraClanGuerra_(p) + '\n';
+    });
+  }
+  if (comp.length > 0) {
+    if (t) t += '\n';
+    t += _negritaWsp_('✅ CON ATAQUES COMPLETOS (' + comp.length + ')') + '\n↳ Ya hicieron sus 4 ataques de hoy.\n';
+    comp.forEach(function(p) {
+      t += '✅ ' + p.nombre + (p.tieneWsp ? ' (ω)' : '') + _textoMotivoFueraClanGuerra_(p) + '\n';
+    });
+  }
+  return t;
+}
+
+/**
+ * _textoMotivoFueraClanGuerra_(p) [→ Contexto_Base_Web.md §PF462]
+ * 14-nov-2026: sufijo con el motivo por el que la cuenta ya no figura como activa del clan (`motivo` de _getParticipacionHoyGuerra(), §PF344): 'inactiva' -> « — inactiva»; 'otroClan' -> « — ahora en <clan>»;
+ * 'sinDirectorio' -> « — sin registro»; cualquier otro valor -> ''.
+ */
+function _textoMotivoFueraClanGuerra_(p) {
+  var m = String((p && p.motivo) || '');
+  if (m === 'inactiva') return ' — inactiva';
+  if (m === 'otroClan') return ' — ahora en ' + (String(p.clanActual || '').trim() || 'otro clan');
+  if (m === 'sinDirectorio') return ' — sin registro';
+  return '';
+}
+
+/**
+ * _textoLeyendaFueraClanGuerra_(lista) [→ Contexto_Base_Web.md §PF462]
+ * 14-nov-2026: leyenda de «(ω)» para el mensaje «Guerra fuera del clan»; solo si alguna cuenta de `lista` tiene celular registrado. Devuelve '' o la línea con su salto de línea.
+ */
+function _textoLeyendaFueraClanGuerra_(lista) {
+  var hay = (lista || []).some(function(p) { return p.tieneWsp === true; });
+  return hay ? '📌 (ω) = tiene celular registrado: se le puede etiquetar.\n' : '';
 }
 
 /**
@@ -66976,7 +67088,7 @@ var TIEMPOS_PROP_MENSAJES = 'TIEMPOS_MENSAJES';
 
 // Categorias de la hoja Mensajes que reconstruye generarTodosMensajes() (el resto sale de plantillas de Drive y su
 // "hora de elaboracion" no aplica). El frontend las usa para decidir si muestra la hora junto al contenido.
-var TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS = ['Mensaje de Guerra', 'Celular', 'Etiqueta de miembro'];
+var TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS = ['Mensaje de Guerra', 'Guerra fuera del clan', 'Celular', 'Etiqueta de miembro']; // 14-nov-2026 (§PF462): se agregó «Guerra fuera del clan»
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
@@ -68424,7 +68536,7 @@ function _categoriasDisponibles(esAdmin, telefono) {
 
   var filtradasPorPeriodo = todas.filter(function(c) {
     if (ctx.esDiaGuerra && c === 'Defensas de barcos') return false;
-    if (!ctx.esDiaGuerra && (c === 'Día de guerra' || c === 'Mensaje de Guerra')) return false;
+    if (!ctx.esDiaGuerra && (c === 'Día de guerra' || c === 'Mensaje de Guerra' || c === 'Guerra fuera del clan')) return false; // 14-nov-2026 (§PF462): la categoría nueva también es solo de días de guerra
     return true;
   });
 
