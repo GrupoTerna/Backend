@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 00:58:45 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 01:25:43 */
 
 
 
@@ -77842,7 +77842,20 @@ var VCRR_FILAS_DESCARTAR = [
   { temporada: 25, semana: 1, tag: '#U8G029GUQ', clanKey: 'grupoxterna™3', nombre: 'Reyper', dias: 'S', valores: [4, 4, 700], conserva: 'GrupoXTerna™2',
     nota: 'Log: ™2 7 y ™3 4 ataques; ™3 llegó a 4 el viernes, así que el 4 del sábado es de ™2' },
   { temporada: 25, semana: 1, tag: '#VUVC9P8VL', clanKey: 'grupoxterna™3', nombre: 'Percape', dias: 'S', valores: [4, 4, 600], conserva: 'GrupoXTerna™2',
-    nota: 'Log: ™2 4 y ™3 0 ataques; el 4 del sábado es de ™2' }
+    nota: 'Log: ™2 4 y ™3 0 ataques; el 4 del sábado es de ™2' },
+  // --- §PF450, tanda 2 (A2 de §PF447): domingo de T22 S3, fila suelta «Original» en un segundo clan. RoyaleAPI trae solo el clan de la serie completa (jueves a domingo) y ningún total coincide con la fila suelta; sumando los dos clanes pasan del máximo semanal de 16 ---
+  { temporada: 22, semana: 3, tag: '#8VU0Y9LJ0', clanKey: 'grupoxterna™2', nombre: 'Yisus Craiz', dias: 'D', valores: [4, 16, 2400], conserva: 'Grupo乂Terna™',
+    nota: '§PF447 A2: RoyaleAPI Terna 16 / 2700; esta fila de ™2 dice 16 / 2400 y con la de Terna suman 32 ataques' },
+  { temporada: 22, semana: 3, tag: '#QR8JGLC9Q', clanKey: 'grupoxterna™2', nombre: 'Bloodshot', dias: 'D', valores: [4, 16, 3050], conserva: 'Grupo乂Terna™',
+    nota: '§PF447 A2: RoyaleAPI solo trae Terna; con la de Terna suman 32 ataques' },
+  { temporada: 22, semana: 3, tag: '#JGGLGVCGU', clanKey: 'grupoxterna™2', nombre: 'Joshua', dias: 'D', valores: [0, 8, 1250], conserva: 'Grupo乂Terna™',
+    nota: '§PF447 A2: RoyaleAPI solo trae Terna; con la de Terna suman 20 ataques' },
+  { temporada: 22, semana: 3, tag: '#20P2UP80UY', clanKey: 'grupoxterna™2', nombre: 'FƆŔ', dias: 'D', valores: [0, 12, 1500], conserva: 'GrupoXTerna™3',
+    nota: '§PF447 A2: RoyaleAPI solo trae ™3; con la de ™3 suman 28 ataques' },
+  { temporada: 22, semana: 3, tag: '#V9P20U8RC', clanKey: 'grupoxterna™2', nombre: 'kayserleandro', dias: 'D', valores: [0, 12, 1600], conserva: 'Mini乂Ternas™',
+    nota: '§PF447 A2: RoyaleAPI solo trae Mini; con la de Mini suman 24 ataques' },
+  { temporada: 22, semana: 3, tag: '#L28JYY2J', clanKey: 'grupo乂terna™', nombre: 'Gamer', dias: 'D', valores: [4, 16, 2400], conserva: 'GrupoXTerna™2',
+    nota: '§PF447 A2: RoyaleAPI solo trae ™2; esta fila de Terna y la serie de ™2 suman 28 ataques' }
 ];
 var VCRR_MAX_FILAS_DESCARTAR = 30;                     // tope de filas que una corrida puede quitar de Backup_Guerra.csv (si se pasa, no se quita nada)
 var VCRR_REVERTIR_MARCA = '2026-11-11 10.13.05';       // §PF446: marca de la corrida de «Aplicar» cuyo respaldo previo («Backup_Guerra ANTES de verificar CRR vs Backup <marca>.csv») usa la reversión
@@ -77854,7 +77867,7 @@ var VCRR_MAX_FILAS_REVERTIR = 150;                       // §PF446: tope de fil
 // Orden de uso: (1) subirBaseDesdeGithub(); (2) corregirFilasPorListaInforme() y revisar el detalle; (3) corregirFilasPorListaAplicar(); (4) generarGuerraDesglose() para comprobar que los «Imposible» bajan.
 var VCRR_ORIGEN_LISTA = 'Corregido - lista (RoyaleAPI y JSON)';
 var VCRR_MAX_FILAS_CORREGIR = 30;                       // tope de filas que una corrida puede modificar (si se pasa, no se escribe nada)
-var VCRR_CORREGIR_TANDAS = [1];                         // tandas activas de VCRR_CORRECCIONES_LISTA
+var VCRR_CORREGIR_TANDAS = [2];                         // tandas activas de VCRR_CORRECCIONES_LISTA (la 1 ya se aplicó el 14-nov-2026, §PF450 punto 7)
 var VCRR_CORRECCIONES_LISTA = [
   // --- Tanda 1: el CSV supera a RoyaleAPI y al JSON exacto (§PF447 punto 5). A1: domingo de T22 S3 (el JSON da el domingo exacto: acumulado de ataques y fame con min = max) ---
   { tanda: 1, temporada: 22, semana: 3, tag: '#228VUG2RU', clanKey: 'grupo乂terna™', nombre: 'Fazete', dia: 'D', actual: [4, 16, 3200, 0], nuevo: [4, 12, 1800, 0],
@@ -77873,7 +77886,16 @@ var VCRR_CORRECCIONES_LISTA = [
     nota: 'RoyaleAPI 16 / 2350 y JSON exacto 16 / 2350' },
   // --- Tanda 1: viernes de T24 S2 en ™3 (RoyaleAPI «log» ™3 4 / 600 y JSON exacto 600; la fila trae 700 con 0 ataques ese día) ---
   { tanda: 1, temporada: 24, semana: 2, tag: '#JCUPQ88J', clanKey: 'grupoxterna™3', nombre: 'LEGEND', dia: 'V', actual: [0, 4, 700, 0], nuevo: [0, 4, 600, 0],
-    nota: 'RoyaleAPI («log») ™3 4 / 600 y JSON exacto de ™3 600 el jueves y el viernes; el jueves ya tenía 600' }
+    nota: 'RoyaleAPI («log») ™3 4 / 600 y JSON exacto de ™3 600 el jueves y el viernes; el jueves ya tenía 600' },
+  // --- Tanda 2: #UJY0PGPUV en T24 S1 (§PF447 punto 5, caso C). ™3 NO se toca: el JSON de ™3 trae 4 ataques y 400 de fame desde el jueves, y 11 (™2) + 4 (™3) = 15 no pasa de 16. Solo sobra la fila de Mini (el JSON de Mini dice 0 ataques de jueves a sábado) ---
+  { tanda: 2, temporada: 24, semana: 1, tag: '#UJY0PGPUV', clanKey: 'mini乂ternas™', nombre: 'кυякү', dia: 'J', actual: [0, 4, 0, 0], nuevo: [0, 0, 0, 0],
+    nota: 'JSON exacto de Mini: 0 ataques y 0 de fame de jueves a sábado; la fila traía AtaquesSemana 4 con fame 0 (la suma con ™2 y ™3 daría 19)' },
+  { tanda: 2, temporada: 24, semana: 1, tag: '#UJY0PGPUV', clanKey: 'grupoxterna™2', nombre: 'кυякү', dia: 'S', actual: [0, 7, 0, 0], nuevo: [0, 7, 1200, 0],
+    nota: 'AGREGADA POR CLAUDE, A CONFIRMAR: JSON exacto de ™2 el sábado 7 / 1200; con 0 de fame el domingo (1700) tendría 1700 en un solo día, que no cabe con 4 ataques' },
+  { tanda: 2, temporada: 24, semana: 1, tag: '#UJY0PGPUV', clanKey: 'grupoxterna™2', nombre: 'кυякү', dia: 'D', actual: [0, 0, 0, 0], nuevo: [4, 11, 1700, 0],
+    nota: 'RoyaleAPI ™2 11 / 1700 (perfil); el JSON de ™2 da el domingo entre 7 y 11 ataques y entre 1200 y 2100 de fame, así que cabe; el sábado ya tiene 7' },
+  // --- Tanda 2: #RR8CRJPUV T26 S4 NO se carga: falta la fila del jueves de Terna (el JSON da 4 ataques y entre 400 y 900 de fame) y esta función no crea filas ---
+  // --- Tanda 2: A2 (6) y la fila de Mini no entran aquí: A2 va en VCRR_FILAS_DESCARTAR (descartarFilasClanEquivocado…) ---
 ];
 
 var VCRR_PASOS_NOMBRES_INFORME = [
