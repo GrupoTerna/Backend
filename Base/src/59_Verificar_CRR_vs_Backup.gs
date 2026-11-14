@@ -193,13 +193,40 @@ var VCRR_CORRECCIONES_LISTA = [
 // Orden de uso: (1) subirBaseDesdeGithub(); (2) crearFilasPorListaInforme() y revisar el detalle; (3) crearFilasPorListaAplicar(); (4) generarGuerraDesglose() para comprobar que los «Imposible» bajan.
 var VCRR_ORIGEN_CREAR_LISTA = 'Reconstruido - lista (RoyaleAPI y JSON)';
 var VCRR_MAX_FILAS_CREAR = 30;                          // tope de filas que una corrida puede crear o modificar (si se pasa, no se escribe nada)
-var VCRR_CREAR_TANDAS = [3];                            // tandas activas de VCRR_FILAS_CREAR
+var VCRR_CREAR_TANDAS = [4];                            // tandas activas de VCRR_FILAS_CREAR (la 3 ya se aplicó el 14-nov-2026, §PF452)
 var VCRR_FILAS_CREAR = [
   // --- Tanda 3: #UJY0PGPUV en T24 S1 en ™2. Falta el viernes: sin él, el sábado (7 ataques y 1200 de fame acumulados) parte de base 0 y el desglose lo lee como un solo día. Con el viernes 3 / 3 / 600 (acumulado exacto del JSON) el reparto es sábado 4 / 600 y domingo 4 / 500 ---
   { tanda: 3, temporada: 24, semana: 1, tag: '#UJY0PGPUV', clanKey: 'grupoxterna™2', nombre: 'кυякү', dia: 'V', actual: null, nuevo: [3, 3, 600, 0],
     nota: 'AGREGADA POR CLAUDE, A CONFIRMAR: ™2 no tiene fila de jueves ni de viernes; el JSON exacto de ™2 da 3 ataques y 600 de fame acumulados el viernes' },
   { tanda: 3, temporada: 24, semana: 1, tag: '#UJY0PGPUV', clanKey: 'grupoxterna™2', nombre: 'кυякү', dia: 'S', actual: [0, 7, 1200, 0], nuevo: [4, 7, 1200, 0],
-    nota: 'AGREGADA POR CLAUDE, A CONFIRMAR: con el viernes en 3, el sábado sube de 3 a 7 acumulados, así que su AtaquesHoy es 4 (cambiar solo este valor, sin crear el viernes, no alcanza)' }
+    nota: 'AGREGADA POR CLAUDE, A CONFIRMAR: con el viernes en 3, el sábado sube de 3 a 7 acumulados, así que su AtaquesHoy es 4 (cambiar solo este valor, sin crear el viernes, no alcanza)' },
+  // --- Tanda 4: B1 de §PF447 contrastado en §PF453 (14-nov-2026). Seis casos: el sábado trae el total de la semana (fila corrida del domingo); se baja el sábado al acumulado exacto del JSON y se crea el domingo con el total de RoyaleAPI. Más G2Q9UYY89 T23 S2: solo AtaquesHoy del sábado. NO entran #CUU92GQQG T23 S2 (falta la fame del viernes), #LRR2RGCCV T23 S2 (sábado de 3 o 4 ataques, sin dato) ni #LYVJU9UJJ T23 S2 (clan dudoso) ---
+  { tanda: 4, temporada: 23, semana: 1, tag: '#88RV0L8V2', clanKey: 'grupo乂terna™', nombre: 'May', dia: 'S', actual: [8, 12, 1700, 0], nuevo: [4, 8, 1200, 0],
+    nota: '§PF453 B1: la fila de sábado trae el total de la semana (RoyaleAPI 12 / 1700). Sábado: acumulado exacto del JSON.' },
+  { tanda: 4, temporada: 23, semana: 1, tag: '#88RV0L8V2', clanKey: 'grupo乂terna™', nombre: 'May', dia: 'D', actual: null, nuevo: [4, 12, 1700, 0],
+    nota: '§PF453 B1: la fila de sábado trae el total de la semana (RoyaleAPI 12 / 1700). Domingo: total de RoyaleAPI (perfil), dentro del rango del JSON del domingo.' },
+  { tanda: 4, temporada: 23, semana: 1, tag: '#CUU92GQQG', clanKey: 'grupoxterna™2', nombre: 'Larry god', dia: 'S', actual: [6, 14, 2400, 0], nuevo: [2, 10, 1600, 0],
+    nota: '§PF453 B1: la fila de sábado trae el total de la semana (RoyaleAPI 14 / 2400). Sábado: acumulado exacto del JSON.' },
+  { tanda: 4, temporada: 23, semana: 1, tag: '#CUU92GQQG', clanKey: 'grupoxterna™2', nombre: 'Larry god', dia: 'D', actual: null, nuevo: [4, 14, 2400, 0],
+    nota: '§PF453 B1: la fila de sábado trae el total de la semana (RoyaleAPI 14 / 2400). Domingo: total de RoyaleAPI (perfil), dentro del rango del JSON del domingo.' },
+  { tanda: 4, temporada: 23, semana: 1, tag: '#LJJVQGJ', clanKey: 'grupoxterna™2', nombre: 'Dade', dia: 'S', actual: [6, 14, 2500, 0], nuevo: [2, 10, 1950, 0],
+    nota: '§PF453 B1: la fila de sábado trae el total de la semana (RoyaleAPI 14 / 2500). Sábado: acumulado exacto del JSON.' },
+  { tanda: 4, temporada: 23, semana: 1, tag: '#LJJVQGJ', clanKey: 'grupoxterna™2', nombre: 'Dade', dia: 'D', actual: null, nuevo: [4, 14, 2500, 0],
+    nota: '§PF453 B1: la fila de sábado trae el total de la semana (RoyaleAPI 14 / 2500). Domingo: total de RoyaleAPI (perfil), dentro del rango del JSON del domingo.' },
+  { tanda: 4, temporada: 23, semana: 1, tag: '#V929CC8CC', clanKey: 'grupoxterna™3', nombre: 'esteban', dia: 'S', actual: [4, 15, 2250, 0], nuevo: [4, 11, 1700, 0],
+    nota: '§PF453 B1: «Aplicar» subió el sábado al total (RoyaleAPI 15 / 2250). Sábado: acumulado exacto del JSON.' },
+  { tanda: 4, temporada: 23, semana: 1, tag: '#V929CC8CC', clanKey: 'grupoxterna™3', nombre: 'esteban', dia: 'D', actual: null, nuevo: [4, 15, 2250, 0],
+    nota: '§PF453 B1: «Aplicar» subió el sábado al total (RoyaleAPI 15 / 2250). Domingo: total de RoyaleAPI (perfil), dentro del rango del JSON del domingo.' },
+  { tanda: 4, temporada: 23, semana: 1, tag: '#YG8U8Q2PC', clanKey: 'grupoxterna™2', nombre: 'skap', dia: 'S', actual: [4, 16, 2500, 0], nuevo: [4, 12, 1900, 0],
+    nota: '§PF453 B1: «Aplicar» subió el sábado al total (RoyaleAPI 16 / 2500). Sábado: acumulado exacto del JSON.' },
+  { tanda: 4, temporada: 23, semana: 1, tag: '#YG8U8Q2PC', clanKey: 'grupoxterna™2', nombre: 'skap', dia: 'D', actual: null, nuevo: [4, 16, 2500, 0],
+    nota: '§PF453 B1: «Aplicar» subió el sábado al total (RoyaleAPI 16 / 2500). Domingo: total de RoyaleAPI (perfil), dentro del rango del JSON del domingo.' },
+  { tanda: 4, temporada: 23, semana: 2, tag: '#88RV0L8V2', clanKey: 'grupo乂terna™', nombre: 'May', dia: 'S', actual: [8, 12, 1950, 0], nuevo: [4, 8, 1150, 0],
+    nota: '§PF453 B1: la fila de sábado trae el total de la semana (RoyaleAPI 12 / 1950). Sábado: acumulado exacto del JSON.' },
+  { tanda: 4, temporada: 23, semana: 2, tag: '#88RV0L8V2', clanKey: 'grupo乂terna™', nombre: 'May', dia: 'D', actual: null, nuevo: [4, 12, 1950, 0],
+    nota: '§PF453 B1: la fila de sábado trae el total de la semana (RoyaleAPI 12 / 1950). Domingo: total de RoyaleAPI (perfil), dentro del rango del JSON del domingo.' },
+  { tanda: 4, temporada: 23, semana: 2, tag: '#G2Q9UYY89', clanKey: 'grupo乂terna™', nombre: 'G2Q9UYY89', dia: 'S', actual: [8, 8, 1450, 0], nuevo: [4, 8, 1450, 0],
+    nota: '§PF453 B1: el JSON exacto da 8 y 1450 acumulados el sábado y RoyaleAPI 8 / 1450, así que el domingo no tuvo ataques; solo AtaquesHoy del sábado (8 → 4, el viernes ya tiene 4)' }
 ];
 
 var VCRR_PASOS_NOMBRES_INFORME = [
