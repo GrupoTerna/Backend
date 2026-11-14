@@ -152,29 +152,20 @@ function generarTodosMensajes() {
     // NUEVO (19-sep-2026, punto 7): cuenta cuántos de los clanes listados ya
     // cruzaron la meta, para decidir la línea final (ver más abajo).
     var clanesCruzaronMeta = 0;
-    var leyendaGral = _textoLeyendaMarcasGuerra_(pendientes, celularPorTag, prestamoPorTag); // §PF460: una sola vez, en el resumen del primer clan
+    // 14-nov-2026 (pedido de la usuaria, §PF461): el Chat General se acorta a una línea de resumen por clan; los nombres, el resumen de cupos y la leyenda quedan solo en el mensaje de cada clan.
+    msjGral += 'El detalle con nombres está en el mensaje de cada clan.\n';
     for (var ci3 = 0; ci3 < clanesPend.length; ci3++) {
       var cn = clanesPend[ci3].clan;
       var ml = clanesPend[ci3].lista;
-      // NUEVO (pedido usuario): mismo criterio de orden que el bloque por
-      // clan de arriba -- Faltantes desc. -> Rango -> Nombre alfabético.
-      ml.sort(function(a, b) {
-        if (b.faltantes !== a.faltantes) return b.faltantes - a.faltantes;
-        var rA = _ordenRango(a.rango), rB = _ordenRango(b.rango);
-        if (rA !== rB) return rA - rB;
-        return a.nombre.localeCompare(b.nombre);
-      });
       var cnCruzoMeta = _clanCruzoMetaPorTag(clanesPend[ci3].clanTag); // PF407 (tanda 3)
       if (cnCruzoMeta) clanesCruzaronMeta++;
       msjGral += '==============================\n';
       msjGral += _negritaWsp_('🔥 ' + cn + ' (' + ml.length + ' pendientes)') + '\n';
       msjGral += '==============================\n';
+      msjGral += _textoLineaClanChatGeneral_(ml);
       if (cnCruzoMeta) {
         msjGral += '🏆 ¡Ya cruzó la meta de la semana! Atacar hoy es opcional.\n';
       }
-      // 14-nov-2026: mismo resumen y mismos dos grupos que en el mensaje de cada clan. [→ Contexto_Base_Web.md §PF455]
-      msjGral += _textoResumenCuposGuerra_(cuposPorClan[cn], ci3 === 0 ? leyendaGral : '');
-      msjGral += _textoGruposPendientesGuerra_(ml, celularPorTag, prestamoPorTag, cuposPorClan[cn]);
     }
     // Línea final: si NINGÚN clan listado cruzó la meta, queda exactamente [→ Contexto_Base_Web.md §30B016]
     msjGral += '\n'; // §PF460: línea en blanco antes de la línea final
@@ -656,6 +647,20 @@ function _textoLeyendaMarcasGuerra_(lista, celularPorTag, prestamoPorTag) {
   if (hayWsp) t += '📌 (ω) = tiene celular registrado: se le puede etiquetar.\n';
   if (hayPrest) t += '📌 Letra entre paréntesis = cuenta prestada (inicial del préstamo).\n';
   return t;
+}
+
+/**
+ * _textoLineaClanChatGeneral_(lista) [→ Contexto_Base_Web.md §PF461]
+ * 14-nov-2026 (pedido de la usuaria): la única línea de resumen de un clan en el Chat General, p. ej. «🛑 2 reemplazables · ⚠ 1 reservada con ataques pendientes». Reemplazables = los de `faltantes === 4`;
+ * reservadas = el resto (1 a 3 pendientes), las mismas definiciones de `_textoGruposPendientesGuerra_()`. Una parte con 0 no se escribe. Devuelve la línea con su salto de línea, o '' si la lista está vacía.
+ */
+function _textoLineaClanChatGeneral_(lista) {
+  var reemp = 0, reserv = 0;
+  (lista || []).forEach(function(p) { if (Number(p.faltantes) === 4) reemp++; else reserv++; });
+  var partes = [];
+  if (reemp > 0) partes.push('🛑 ' + reemp + ' ' + (reemp === 1 ? 'reemplazable' : 'reemplazables'));
+  if (reserv > 0) partes.push('⚠ ' + reserv + ' ' + (reserv === 1 ? 'reservada' : 'reservadas') + ' con ataques pendientes');
+  return partes.length ? partes.join(' · ') + '\n' : '';
 }
 
 /**
