@@ -502,7 +502,8 @@ function _obtenerPrestamoPorTag(ss) {
  * 14-nov-2026 (pedido de la usuaria): cupos de cada clan para el resumen del inicio del Mensaje de Guerra. Usa los mismos datos y las mismas definiciones que «Participación de Hoy»
  * de guerra.html (_getParticipacionHoyGuerra(), 17_GuerraSheet.gs; §PF344, §PF400): reservadas = cuentas con al menos un ataque hoy en el clan (las que ya no son activas del clan traen
  * `inactiva: true`); libres = tope de 50 - reservadas; reemplazables = cuentas activas del clan sin ataques hoy, que son parte de los libres (no se suman); extras = libres - reemplazables, sin bajar de 0.
- * Devuelve { nombreClan: { reservadas, activas, inactivas, libres, reemplazables, extras } }. Un fallo no rompe los mensajes: devuelve {} y salen sin el resumen.
+ * Devuelve { nombreClan: { reservadas, activas, inactivas, completas, completasActivas, completasFuera, pendientes, pendientesActivas, pendientesFuera, libres, reemplazables, extras } }. Un fallo no rompe los mensajes: devuelve {} y salen sin el resumen.
+ * §PF458 (14-nov-2026, pedido de la usuaria): cada reservada se cuenta además como «completa» (ya hizo sus 4 ataques de hoy en el clan: `ataquesHoy` >= 4) o «pendiente» (1 a 3 ataques hechos, le faltan), y cada una de las dos se parte en activas y fuera del clan.
  */
 function _resumenCuposGuerraPorClan_(ctx) {
   var mapa = {};
@@ -512,8 +513,13 @@ function _resumenCuposGuerraPorClan_(ctx) {
     for (var i = 0; i < clanes.length; i++) {
       var reservadas = clanes[i].reservadas || [];
       var inactivas = 0;
+      var cAct = 0, cFuera = 0, pAct = 0, pFuera = 0; // §PF458: completas / pendientes, activas / fuera del clan
       for (var j = 0; j < reservadas.length; j++) {
-        if (reservadas[j].inactiva === true) inactivas++;
+        var fuera = reservadas[j].inactiva === true;
+        var completa = Number(reservadas[j].ataquesHoy) >= 4;
+        if (fuera) inactivas++;
+        if (completa) { if (fuera) cFuera++; else cAct++; }
+        else { if (fuera) pFuera++; else pAct++; }
       }
       var libres = Math.max(0, PG.CUENTAS_MAX_CLAN_DIA - reservadas.length);
       var reemplazables = (clanes[i].disponibles || []).length;
@@ -521,6 +527,8 @@ function _resumenCuposGuerraPorClan_(ctx) {
         reservadas: reservadas.length,
         activas: reservadas.length - inactivas,
         inactivas: inactivas,
+        completas: cAct + cFuera, completasActivas: cAct, completasFuera: cFuera,
+        pendientes: pAct + pFuera, pendientesActivas: pAct, pendientesFuera: pFuera,
         libres: libres,
         reemplazables: reemplazables,
         extras: Math.max(0, libres - reemplazables)
@@ -600,21 +608,23 @@ function _pasoMedianocheDiaGuerra_(ahora, diaLetra) {
  * A pedido de la usuaria NO menciona el cambio de día de guerra (4-5 a. m.) ni cuánto falta (la API no lo informa).
  */
 function _textoPasoMedianocheGuerra_() {
-  return '🚨 Ya pasó la hora permitida (12:00 AM, hora peruana): ¡completen sus ataques cuanto antes, es urgente!';
+  return '🚨 Ya pasó la hora permitida (12:00 AM): ¡completen sus ataques cuanto antes, es urgente!';
 }
 
 /**
  * _textoResumenCuposGuerra_(cupos) [→ Contexto_Base_Web.md §PF455]
- * 14-nov-2026 (pedido de la usuaria): las dos líneas de resumen del inicio del Mensaje de Guerra de un clan, p. ej. «43 reservadas (40 activas y 3 fuera del clan)» y
- * «07 cupos libres (2 reemplazables y 5 extras)», más una línea separadora. Los dos números de cabecera llevan dos dígitos. Sin datos del clan devuelve '' y el mensaje sale sin resumen.
+ * 14-nov-2026 (pedido de la usuaria): el resumen del inicio del Mensaje de Guerra de un clan: «43 reservadas» con dos líneas debajo («✅ 30 con ataques completos (28 activas y 2 fuera del clan)» y
+ * «⏳ 13 con ataques pendientes (12 activas y 1 fuera del clan)», §PF458) y «07 cupos libres (2 reemplazables y 5 extras)», más una línea separadora. Los dos números de cabecera llevan dos dígitos. Sin datos del clan devuelve '' y el mensaje sale sin resumen.
  * §PF456: «fuera del clan» reemplaza a «inactivas» (es la palabra de la web; esas cuentas son las que ya no figuran como activas del clan: inactivas, pasadas a otro clan o sin registro en el Directorio).
  */
 function _textoResumenCuposGuerra_(cupos) {
   if (!cupos) return '';
   function pl(n, singular, plural) { return Number(n) === 1 ? singular : plural; }
-  var t = '🔒 ' + _pad2_(cupos.reservadas) + ' ' + pl(cupos.reservadas, 'reservada', 'reservadas') +
-          ' (' + cupos.activas + ' ' + pl(cupos.activas, 'activa', 'activas') +
-          ' y ' + cupos.inactivas + ' fuera del clan)\n';
+  // §PF458: las reservadas se desglosan en ataques completos y ataques pendientes, y cada uno en activas y fuera del clan.
+  function partes(act, fuera) { return '(' + act + ' ' + pl(act, 'activa', 'activas') + ' y ' + fuera + ' fuera del clan)'; }
+  var t = '🔒 ' + _pad2_(cupos.reservadas) + ' ' + pl(cupos.reservadas, 'reservada', 'reservadas') + '\n';
+  t += '   ✅ ' + cupos.completas + ' con ataques completos ' + partes(cupos.completasActivas, cupos.completasFuera) + '\n';
+  t += '   ⏳ ' + cupos.pendientes + ' con ataques pendientes ' + partes(cupos.pendientesActivas, cupos.pendientesFuera) + '\n';
   t += '➕ ' + _pad2_(cupos.libres) + ' ' + pl(cupos.libres, 'cupo libre', 'cupos libres') +
        ' (' + cupos.reemplazables + ' ' + pl(cupos.reemplazables, 'reemplazable', 'reemplazables') +
        ' y ' + cupos.extras + ' ' + pl(cupos.extras, 'extra', 'extras') + ')\n';
