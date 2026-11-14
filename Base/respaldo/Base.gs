@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 01:25:43 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 02:17:50 */
 
 
 
@@ -77758,6 +77758,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
 //    - Descartar filas de un clan equivocado en Backup_Guerra.csv: informe y aplicar (§PF339; se corren ANTES de verificarCrrVsBackupAplicar)
 //    - Revertir lo que «Aplicar» subió y dejó un día imposible: informe y aplicar (§PF446)
 //    - Corregir filas por lista con valores que RoyaleAPI y el JSON contradicen: informe y aplicar (§PF450)
+//    - Crear filas por lista (días que faltan en Backup_Guerra.csv) y ajustar lo que las rodea: informe y aplicar (§PF450)
 //  Parte 2 — Funciones que no se corren a mano
 //    - Verificar CRR: motor por tandas (estado, presupuesto y continuación)
 //    - Verificar CRR, paso 1: totales cerrados de RoyaleAPI por jugador (§PF320)
@@ -77768,6 +77769,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
 //    - Verificar CRR, paso 4: escribir en el CSV (solo Aplicar)
 //    - Descartar filas de un clan equivocado (motor, plan, hoja Guerra y verificación)
 //    - Corregir filas por lista (motor, plan y verificación; §PF450)
+//    - Crear filas por lista (motor, plan y verificación; §PF450)
 //    - Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas.
 
@@ -77898,6 +77900,24 @@ var VCRR_CORRECCIONES_LISTA = [
   // --- Tanda 2: A2 (6) y la fila de Mini no entran aquí: A2 va en VCRR_FILAS_DESCARTAR (descartarFilasClanEquivocado…) ---
 ];
 
+// §PF450 (14-nov-2026): crear filas por lista. «Corregir por lista» no crea ni borra filas y «Aplicar» solo crea un día cuando el JSON exige actividad propia ese día; aquí se crean las que la usuaria decide con la evidencia
+// (RoyaleAPI y el JSON exacto de CurrentRiverRace). Cada entrada: tanda, temporada, semana, tag, clanKey (como en VCRR_FILAS_DESCARTAR), nombre (solo para leer la lista), dia (J, V, S o D), actual (null = la fila
+// NO existe y se crea; [AtaquesHoy, AtaquesSemana, Fame, Barcos] = la fila existe, debe tener esos valores y se modifica; si cambió desde la decisión NO se toca), nuevo [AtaquesHoy, AtaquesSemana, Fame, Barcos] y nota.
+// Opcionales: clan y clanTag (nombre y Tag del clan, solo si el jugador no tiene ninguna fila de ese clan esa semana y hay que crear la serie).
+// Las entradas de la misma tanda, temporada, semana, jugador y clan forman UN caso y se escriben juntas o no se escribe ninguna (si una no se puede, el caso queda sin tocar). Una fila que la hoja Guerra
+// todavía tenga NO se toca ni se crea (la sincronización la devolvería a su valor viejo). Las filas nuevas salen igual que las de «Aplicar» (_excDiasAplicarPlan): al final del CSV y con el N° vacío.
+// Orden de uso: (1) subirBaseDesdeGithub(); (2) crearFilasPorListaInforme() y revisar el detalle; (3) crearFilasPorListaAplicar(); (4) generarGuerraDesglose() para comprobar que los «Imposible» bajan.
+var VCRR_ORIGEN_CREAR_LISTA = 'Reconstruido - lista (RoyaleAPI y JSON)';
+var VCRR_MAX_FILAS_CREAR = 30;                          // tope de filas que una corrida puede crear o modificar (si se pasa, no se escribe nada)
+var VCRR_CREAR_TANDAS = [3];                            // tandas activas de VCRR_FILAS_CREAR
+var VCRR_FILAS_CREAR = [
+  // --- Tanda 3: #UJY0PGPUV en T24 S1 en ™2. Falta el viernes: sin él, el sábado (7 ataques y 1200 de fame acumulados) parte de base 0 y el desglose lo lee como un solo día. Con el viernes 3 / 3 / 600 (acumulado exacto del JSON) el reparto es sábado 4 / 600 y domingo 4 / 500 ---
+  { tanda: 3, temporada: 24, semana: 1, tag: '#UJY0PGPUV', clanKey: 'grupoxterna™2', nombre: 'кυякү', dia: 'V', actual: null, nuevo: [3, 3, 600, 0],
+    nota: 'AGREGADA POR CLAUDE, A CONFIRMAR: ™2 no tiene fila de jueves ni de viernes; el JSON exacto de ™2 da 3 ataques y 600 de fame acumulados el viernes' },
+  { tanda: 3, temporada: 24, semana: 1, tag: '#UJY0PGPUV', clanKey: 'grupoxterna™2', nombre: 'кυякү', dia: 'S', actual: [0, 7, 1200, 0], nuevo: [4, 7, 1200, 0],
+    nota: 'AGREGADA POR CLAUDE, A CONFIRMAR: con el viernes en 3, el sábado sube de 3 a 7 acumulados, así que su AtaquesHoy es 4 (cambiar solo este valor, sin crear el viernes, no alcanza)' }
+];
+
 var VCRR_PASOS_NOMBRES_INFORME = [
   'RoyaleAPI: leer los JSON individuales (log y perfil cerrados) de cada jugador y guardar sus totales semanales → Cruce_CRR_RoyaleAPI.csv',
   'CurrentRiverRace: leer los JSON de cada semana y clan y calcular los rangos de ataques, fame y barcos por día → Cruce_CRR_Restricciones.csv',
@@ -77994,6 +78014,22 @@ function corregirFilasPorListaInforme() { _vcrrCorregirLista_(false); }
  * o si pasa de VCRR_MAX_FILAS_CORREGIR. Después de correrla, corre generarGuerraDesglose() para comprobar que los «Imposible» bajan.
  */
 function corregirFilasPorListaAplicar() { _vcrrCorregirLista_(true); }
+
+// ----- Crear filas por lista (§PF450) -----
+
+/**
+ * Solo informa (no toca Backup_Guerra.csv): lista qué filas de VCRR_FILAS_CREAR (solo las tandas de VCRR_CREAR_TANDAS) crearía o modificaría crearFilasPorListaAplicar(), y cuáles casos no se tocarían y por qué
+ * (ya hecha, cambió desde la decisión, la fila ya existe con otros valores, falta la serie, el reparto quedaría fuera de la tabla de fame o sumaría más de 4 ataques por día o 16 por semana entre clanes, o la hoja
+ * Guerra todavía tiene la fila). Deja el detalle en «Cruce_CRR_vs_Backup <fecha> (crear filas por lista, informe).csv».
+ */
+function crearFilasPorListaInforme() { _vcrrCrearLista_(false); }
+
+/**
+ * Crea en Backup_Guerra.csv las filas de VCRR_FILAS_CREAR (tandas de VCRR_CREAR_TANDAS) con origen VCRR_ORIGEN_CREAR_LISTA y corrige las que acompañan a cada caso (origen VCRR_ORIGEN_LISTA). Respaldo previo
+ * («Backup_Guerra ANTES de crear filas por lista <fecha>.csv»), verificación al releer y nada se escribe si algo no cuadra o si pasa de VCRR_MAX_FILAS_CREAR. Después de correrla, corre generarGuerraDesglose()
+ * para comprobar que los «Imposible» bajan.
+ */
+function crearFilasPorListaAplicar() { _vcrrCrearLista_(true); }
 
 // =============================================================================
 // PARTE 2 — FUNCIONES QUE NO SE CORREN A MANO
@@ -79751,6 +79787,199 @@ function _vcrrVerificarCorreccion_(filasAntes, filasDespues, plan) {
     if (_excDiasNum(d[GC.ATAQUES_HOY - 1]) !== n[0] || _excDiasNum(d[GC.ATAQUES_SEM - 1]) !== n[1] || _excDiasNum(d[GC.FAME - 1]) !== n[2] || _excDiasNum(d[GC.BARCOS - 1]) !== n[3] || String(d[GC.ORIGEN - 1]) !== VCRR_ORIGEN_LISTA) problemas.push(etq + 'no quedó con los valores nuevos');
   }
   return problemas;
+}
+
+// ----- Crear filas por lista (§PF450): motor, plan y verificación -----
+
+/**
+ * Motor de crearFilasPorListaInforme() y crearFilasPorListaAplicar() (§PF450). aplicar = false solo informa. Con aplicar = true: respaldo previo, crea y modifica las filas del plan con _excDiasAplicarPlan()
+ * (el mismo que usa «Aplicar»), relee Backup_Guerra.csv de Drive y verifica con _vcrrVerificarAplicado_(); si la verificación falla lo dice con el nombre del respaldo para restaurar. No borra filas.
+ */
+function _vcrrCrearLista_(aplicar) {
+  var nombreFn = aplicar ? 'crearFilasPorListaAplicar' : 'crearFilasPorListaInforme';
+  if (!_adquirirLockEjecucion(nombreFn)) return;
+  var lock = LockService.getScriptLock(), conLock = false;
+  try {
+    if (aplicar) {
+      if (!lock.tryLock(30000)) { Logger.log('[VCRR crear] Hay otro proceso escribiendo; vuelve a correr ' + nombreFn + '() en un momento. No se tocó nada.'); return; }
+      conLock = true;
+    }
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var bk = _vcrrLeerBackupGuerra_();
+    if (!bk) { Logger.log('[VCRR crear] No se encontró Backup_Guerra.csv o está vacío; no se toca nada.'); return; }
+    var idsHoja = _vcrrIdsHojaGuerra_();
+    if (idsHoja === null) {
+      if (aplicar) { Logger.log('[VCRR crear] No se pudo leer la hoja Guerra: no se crea nada, porque la sincronización devolvería al CSV el valor viejo de las filas que la hoja tenga. Vuelve a intentarlo.'); return; }
+      Logger.log('[VCRR crear] OJO: no se pudo leer la hoja Guerra; este informe no avisa si la hoja todavía tiene alguna de las filas.');
+      idsHoja = {};
+    }
+    var lista = VCRR_FILAS_CREAR.filter(function (e) { return VCRR_CREAR_TANDAS.indexOf(e.tanda) >= 0; });
+    var plan = _vcrrPlanCrear_(bk.filas, lista, idsHoja);
+    var nCrear = 0, nMod = 0;
+    plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.existe) nMod++; else nCrear++; }); });
+    var sinTocar = plan.avisos.filter(function (a) { return a.tipo === 'conflicto'; }).length;
+    var yaHechas = plan.avisos.length - sinTocar;
+    var detalle = [['Tanda', 'Temporada', 'Semana', 'Clan', 'Tag', 'Nombre', 'Día', 'Acción', 'AtaquesHoy ahora', 'AtaquesHoy nuevo', 'AtaquesSemana ahora', 'AtaquesSemana nuevo', 'Fame ahora', 'Fame nuevo', 'Barcos ahora', 'Barcos nuevo', 'Origen ahora', 'Origen nuevo', 'Nota']];
+    plan.casos.forEach(function (c) {
+      c.ops.forEach(function (op) {
+        var an = op.ant, e = op.entrada;
+        detalle.push([e.tanda, c.grupo.temporada, c.grupo.semana, c.grupo.clan, e.tag, e.nombre, e.dia, (op.existe ? (aplicar ? 'Modificar' : 'Modificaría') : (aplicar ? 'Crear' : 'Crearía')),
+          an ? an.hoy : '', op.nuevo.hoy, an ? an.sem : '', op.nuevo.sem, an ? an.fame : '', op.nuevo.fame, an ? an.barcos : '', op.nuevo.barcos, an ? an.origen : '', op.nuevo.origen, e.nota || '']);
+      });
+    });
+    plan.avisos.forEach(function (a) {
+      var e = a.entrada;
+      detalle.push([e.tanda, e.temporada, e.semana, e.clanKey, e.tag, e.nombre, e.dia, (a.tipo === 'conflicto' ? 'SIN TOCAR: ' : 'Nada que hacer: ') + a.motivo, '', '', '', '', '', '', '', '', '', '', e.nota || '']);
+    });
+    var problemas = [];
+    if (aplicar && nCrear + nMod > VCRR_MAX_FILAS_CREAR) {
+      Logger.log('[VCRR crear] NO SE ESCRIBIÓ NADA: ' + (nCrear + nMod) + ' fila(s) por crear o modificar pasan el tope de ' + VCRR_MAX_FILAS_CREAR + ' (VCRR_MAX_FILAS_CREAR). Revisa VCRR_FILAS_CREAR.');
+      return;
+    }
+    var res = { creadas: 0, modificadas: 0 };
+    if (aplicar && nCrear + nMod > 0) {
+      var idxDe = new Map();
+      for (var q = 0; q < bk.filas.length; q++) idxDe.set(bk.filas[q], q);
+      plan.casos.forEach(function (c) { c.ops.forEach(function (op) { if (op.existe) op.idxAntes = idxDe.get(op.fila); }); });
+      var copiaAntes = bk.filas.map(function (r) { return r.slice(); });
+      _saveCSVToDrive('Backup_Guerra ANTES de crear filas por lista ' + marca + '.csv', bk.texto);
+      res = _excDiasAplicarPlan(bk.filas, { casos: plan.casos });
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([bk.encabezado].concat(bk.filas)));
+      var despues = _loadCSVFromDrive('Backup_Guerra.csv');
+      var parsedDespues = despues ? _parseCSV(despues) : null;
+      if (!parsedDespues || parsedDespues.length < 2) problemas.push('No se pudo releer Backup_Guerra.csv');
+      else {
+        var filasDespues = parsedDespues.slice(1);
+        for (var b = 0; b < filasDespues.length; b++) { while (filasDespues[b].length < GUERRA_TOTAL_COLS) filasDespues[b].push(''); }
+        problemas = _vcrrVerificarAplicado_(copiaAntes, filasDespues, plan.casos, res.creadas);
+      }
+    }
+    if (detalle.length > 1) _saveCSVToDrive('Cruce_CRR_vs_Backup ' + marca + ' (crear filas por lista, ' + (aplicar ? 'aplicado' : 'informe') + ').csv', _encodeCSVInforme(detalle));
+    Logger.log('[VCRR crear] ' + (aplicar ? 'Creadas ' + res.creadas + ' y modificadas ' + res.modificadas : 'Se crearían ' + nCrear + ' y se modificarían ' + nMod) + ' fila(s) de ' + lista.length + ' entrada(s) (tandas ' + VCRR_CREAR_TANDAS.join(', ') + '); ya hechas: ' + yaHechas + '; sin tocar: ' + sinTocar + '. ' +
+      (problemas.length ? 'VERIFICACIÓN FALLÓ (' + problemas.length + '): ' + problemas.slice(0, 5).join('; ') + '. Restaurar con «Backup_Guerra ANTES de crear filas por lista ' + marca + '.csv».'
+        : (aplicar && nCrear + nMod > 0 ? 'Verificación OK. Ahora corre generarGuerraDesglose() para comprobar que los «Imposible» bajan.' : '')));
+    plan.avisos.forEach(function (a) {
+      if (a.tipo === 'conflicto') Logger.log('[VCRR crear] SIN TOCAR T' + a.entrada.temporada + ' S' + a.entrada.semana + ' ' + a.entrada.nombre + ' ' + a.entrada.tag + ' (' + a.entrada.dia + '): ' + a.motivo);
+    });
+  } finally {
+    if (conLock) lock.releaseLock();
+    _liberarLockEjecucion();
+  }
+}
+
+/**
+ * Función pura. De las filas de Backup_Guerra.csv y la lista de VCRR_FILAS_CREAR arma qué se escribe: { casos: [{ grupo, ops }], avisos: [{ tipo, entrada, motivo }] }. Las ops tienen el formato de
+ * _excDiasAplicarPlan() (55_Reparar_DiasConExceso.gs) más `entrada` (la entrada de la lista). Entradas con la misma tanda, temporada, semana, tag y clanKey forman un caso: si alguna entrada no se puede
+ * escribir, ninguna del caso se escribe (todas quedan como 'conflicto'); las ya hechas (la fila ya tiene los valores nuevos) quedan como aviso 'hecha' y no se repiten.
+ * Para crear (actual = null): no debe haber fila de ese día y clan, y la hoja Guerra no debe tener ya ese id. Para modificar: hay UNA fila, con los valores de «actual», y la hoja Guerra no la tiene.
+ * Además el caso, ya escrito, tiene que cumplir lo mismo que comprueba el reparto: cada día con AtaquesSemana que sube lo que dice AtaquesHoy, máximo 4 ataques por día, fame y barcos del día dentro de la tabla de
+ * _fameTablaDia_(), y entre todos los clanes del jugador máximo 4 ataques por día y 16 por semana.
+ */
+function _vcrrPlanCrear_(filas, lista, idsHoja) {
+  var casos = [], avisos = [], porCaso = {}, orden = [];
+  var vals = function (f) { return [_excDiasNum(f[GC.ATAQUES_HOY - 1]), _excDiasNum(f[GC.ATAQUES_SEM - 1]), _excDiasNum(f[GC.FAME - 1]), _excDiasNum(f[GC.BARCOS - 1])]; };
+  var igual = function (a, b) { return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3]; };
+  var grupos = _excDiasAgrupar(filas);
+  (lista || []).forEach(function (e) {
+    var k = [e.tanda, e.temporada, e.semana, String(e.tag).toUpperCase(), e.clanKey].join('|');
+    if (!porCaso[k]) { porCaso[k] = []; orden.push(k); }
+    porCaso[k].push(e);
+  });
+  orden.forEach(function (k) {
+    var es = porCaso[k], e0 = es[0], motivoCaso = null;
+    var rechazar = function (motivo) { es.forEach(function (e) { avisos.push({ tipo: 'conflicto', entrada: e, motivo: motivo }); }); };
+    // Serie del jugador en ese clan y semana: la que ya existe o, si la entrada trae clan, una sintética.
+    var g = null;
+    Object.keys(grupos).forEach(function (gk) {
+      var x = grupos[gk];
+      if (!g && x.temporada === String(e0.temporada) && x.semana === String(e0.semana) && String(x.tag).toUpperCase() === String(e0.tag).toUpperCase() && _vcrrClanNorm_(x.clan) === e0.clanKey) g = x;
+    });
+    if (!g) {
+      if (!e0.clan) { rechazar('el jugador no tiene ninguna fila de ese clan esa semana y la entrada no trae el nombre del clan (clan) para crear la serie'); return; }
+      g = { temporada: String(e0.temporada), semana: String(e0.semana), tag: e0.tag, clan: e0.clan, clanTag: e0.clanTag || _vcrrTagDeClan_(e0.clan), nombre: e0.nombre, dias: {} };
+    }
+    var ops = [], nuevosPorDia = {}, hechas = [];
+    for (var i = 0; i < es.length && !motivoCaso; i++) {
+      var e = es[i], off = VCRR_DIAS.indexOf(e.dia);
+      if (off < 0) { motivoCaso = 'día «' + e.dia + '» desconocido (debe ser J, V, S o D)'; break; }
+      var halladas = [];
+      for (var j = 0; j < filas.length; j++) {
+        var r = filas[j];
+        if (String(r[GC.ETAPA - 1]) !== 'Guerra') continue;
+        if (Number(r[GC.TEMPORADA - 1]) !== Number(e.temporada) || Number(r[GC.SEMANA - 1]) !== Number(e.semana)) continue;
+        if (String(r[GC.TAG - 1]).trim().toUpperCase() !== String(e.tag).toUpperCase()) continue;
+        if (_vcrrClanNorm_(r[GC.CLAN - 1]) !== e.clanKey) continue;
+        if ((_excDiasNum(r[GC.PERIOD_IDX - 1]) % 7) - 3 !== off) continue;
+        halladas.push(r);
+      }
+      var nuevo = e.nuevo;
+      if (halladas.length > 1) { motivoCaso = 'hay ' + halladas.length + ' filas del día ' + e.dia + ' y se esperaba ' + (e.actual ? 'una' : 'ninguna'); break; }
+      if (!e.actual) {
+        if (halladas.length === 1) {
+          var vh = vals(halladas[0]);
+          if (igual(vh, nuevo)) { hechas.push(e); continue; }
+          motivoCaso = 'el día ' + e.dia + ' ya tiene una fila con ' + vh.join('/') + ' y la entrada pide crearla con ' + nuevo.join('/');
+          break;
+        }
+        var pIdx = (Number(e.semana) - 1) * 7 + 3 + off, tmp = new Array(GUERRA_TOTAL_COLS).fill('');
+        tmp[GC.TAG - 1] = g.tag; tmp[GC.CLAN - 1] = g.clan; tmp[GC.TEMPORADA - 1] = String(e.temporada); tmp[GC.SEMANA - 1] = String(e.semana); tmp[GC.PERIOD_IDX - 1] = String(pIdx);
+        if (idsHoja && idsHoja[_idFilaGuerraCSV(tmp)]) { motivoCaso = 'la hoja Guerra ya tiene la fila del día ' + e.dia + ': en la próxima sincronización mandaría sobre el CSV'; break; }
+        ops.push({ dia: off, existe: false, fila: null, sinCambio: false, ant: null, antDia: null, entrada: e,
+          nuevo: { hoy: nuevo[0], sem: nuevo[1], fame: nuevo[2], barcos: nuevo[3], origen: VCRR_ORIGEN_CREAR_LISTA } });
+      } else {
+        if (!halladas.length) { motivoCaso = 'no hay fila del día ' + e.dia + ' y se esperaba una con ' + e.actual.join('/'); break; }
+        var v = vals(halladas[0]);
+        if (igual(v, nuevo)) { hechas.push(e); continue; }
+        if (!igual(v, e.actual)) { motivoCaso = 'la fila del día ' + e.dia + ' tiene ' + v.join('/') + ' y se esperaba ' + e.actual.join('/') + ' (cambió desde la decisión)'; break; }
+        if (idsHoja && idsHoja[_idFilaGuerraCSV(halladas[0])]) { motivoCaso = 'la hoja Guerra todavía tiene la fila del día ' + e.dia + ': en la próxima sincronización su valor viejo volvería al CSV'; break; }
+        ops.push({ dia: off, existe: true, fila: halladas[0], sinCambio: false, entrada: e,
+          ant: { hoy: v[0], sem: v[1], fame: v[2], barcos: v[3], origen: String(halladas[0][GC.ORIGEN - 1] || '') }, antDia: null,
+          nuevo: { hoy: nuevo[0], sem: nuevo[1], fame: nuevo[2], barcos: nuevo[3], origen: VCRR_ORIGEN_LISTA } });
+      }
+    }
+    if (!motivoCaso && ops.length) motivoCaso = _vcrrCrearDiasInvalidos_(g, ops, grupos);
+    if (motivoCaso) { rechazar(motivoCaso); return; }
+    hechas.forEach(function (e) { avisos.push({ tipo: 'hecha', entrada: e, motivo: 'la fila del día ' + e.dia + ' ya tiene los valores nuevos (' + e.nuevo.join('/') + ')' }); });
+    if (ops.length) casos.push({ grupo: g, ops: ops });
+  });
+  return { casos: casos, avisos: avisos };
+}
+
+/**
+ * Función pura. Con las filas que ya tiene el grupo g (días de g.dias) y las ops del caso aplicadas encima, comprueba que la serie quede coherente. Devuelve el motivo del primer problema o null si todo cuadra:
+ * cada día con AtaquesSemana que sube lo que dice AtaquesHoy, sin pasar de 4 ataques; fame y barcos que no bajan y el fame del día dentro de _fameTablaDia_(ataques, barcos del día); y, sumando los demás clanes
+ * del jugador esa semana (grupos de _excDiasAgrupar()), máximo 4 ataques por día y 16 por semana (mismo criterio de _excDiasPlanificar()).
+ */
+function _vcrrCrearDiasInvalidos_(g, ops, grupos) {
+  var dias = {};
+  Object.keys(g.dias).forEach(function (o) {
+    var f = g.dias[o];
+    dias[o] = [_excDiasNum(f[GC.ATAQUES_HOY - 1]), _excDiasNum(f[GC.ATAQUES_SEM - 1]), _excDiasNum(f[GC.FAME - 1]), _excDiasNum(f[GC.BARCOS - 1])];
+  });
+  ops.forEach(function (op) { dias[op.dia] = [op.nuevo.hoy, op.nuevo.sem, op.nuevo.fame, op.nuevo.barcos]; });
+  var pa = 0, pf = 0, pb = 0, motivo = null;
+  Object.keys(dias).map(Number).sort(function (a, b) { return a - b; }).forEach(function (o) {
+    if (motivo) return;
+    var d = dias[o], n = d[0], a = d[1], fm = d[2], b = d[3], L = VCRR_DIAS.charAt(o);
+    if (n > 4) { motivo = 'el día ' + L + ' quedaría con ' + n + ' ataques (máximo 4)'; return; }
+    if (a - pa !== n) { motivo = 'el día ' + L + ' quedaría con AtaquesSemana ' + a + ' (el día anterior tiene ' + pa + ') y AtaquesHoy ' + n + ': no suben lo mismo'; return; }
+    if (b < pb || fm < pf) { motivo = 'el día ' + L + ' quedaría con fame o barcos acumulados menores que los del día anterior'; return; }
+    if (_fameTablaDia_(n, b - pb).indexOf(fm - pf) < 0) { motivo = 'el día ' + L + ' quedaría con ' + n + ' ataques, ' + (b - pb) + ' barcos y ' + (fm - pf) + ' de fame, que no están en la tabla'; return; }
+    pa = a; pf = fm; pb = b;
+  });
+  if (motivo) return motivo;
+  var otros = Object.keys(grupos).map(function (k) { return grupos[k]; }).filter(function (o) { return o.temporada === g.temporada && o.semana === g.semana && o.tag === g.tag && !_excDiasMismoClan_(o, g); });
+  Object.keys(dias).map(Number).forEach(function (o) {
+    if (motivo) return;
+    var suma = dias[o][0];
+    otros.forEach(function (x) { if (x.dias[o]) suma += _excDiasNum(x.dias[o][GC.ATAQUES_HOY - 1]); });
+    if (suma > 4) motivo = 'el día ' + VCRR_DIAS.charAt(o) + ' quedaría con ' + suma + ' ataques sumando clanes';
+  });
+  if (motivo) return motivo;
+  var finales = Object.keys(dias).map(Number).sort(function (a, b) { return a - b; });
+  var semana = dias[finales[finales.length - 1]][1];
+  otros.forEach(function (x) { semana += _excDiasFinalDe(x.dias).a; });
+  return semana > 16 ? 'la semana quedaría con ' + semana + ' ataques sumando clanes (máximo 16)' : null;
 }
 
 // ----- Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día) -----
