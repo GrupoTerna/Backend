@@ -1,0 +1,2 @@
+ID,Tanda,Temporada,Semana,Clan,Tag,Nombre,Día,Acción,AtaquesHoy ahora,AtaquesHoy nuevo,AtaquesSemana ahora,AtaquesSemana nuevo,Fame ahora,Fame nuevo,Barcos ahora,Barcos nuevo,Origen ahora,Origen nuevo,Nota
+T_23_S_04_#2RJVYQ92P,5,23,4,Grupo乂Terna™,#2RJVYQ92P,<LU|$_∆ΠG€L>©∆,D,Modificar,2,4,12,12,1900,1900,0,0,Corregido,Corregido - lista (RoyaleAPI y JSON),"§PF464: el JSON exacto da 8 y 1200 acumulados el sábado y RoyaleAPI 12 / 1900, así que el domingo trae 4 ataques; la fila ya tenía semana y fame correctas y solo AtaquesHoy quedó en 2"
