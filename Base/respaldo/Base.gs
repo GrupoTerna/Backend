@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 12:28:24 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 13:38:10 */
 
 
 
@@ -78304,7 +78304,10 @@ var VCRR_FILAS_DESCARTAR = [
     nota: '§PF447 A2: RoyaleAPI solo trae ™2; esta fila de Terna y la serie de ™2 suman 28 ataques' },
   // --- §PF468 punto 13 (14-nov-2026; la usuaria dijo «decide tú»): #LYVJU9UJJ T23 S2. La fila de Mini trae 5 ataques en un solo día (máximo 4), el JSON de Mini da entre 0 y 4 acumulados el sábado y RoyaleAPI da 5 / 600 en ™2, donde no hay fila ---
   { temporada: 23, semana: 2, tag: '#LYVJU9UJJ', clanKey: 'mini乂ternas™', nombre: 'fggij09', dias: 'S', valores: [5, 5, 600], conserva: 'GrupoXTerna™2',
-    nota: '§PF468 punto 13: RoyaleAPI da 5 / 600 en ™2 y ninguna fuente respalda esta fila en Mini; no se crea nada en ™2 porque no se sabe el día (5 ataques no caben en uno)' }
+    nota: '§PF468 punto 13: RoyaleAPI da 5 / 600 en ™2 y ninguna fuente respalda esta fila en Mini; no se crea nada en ™2 porque no se sabe el día (5 ataques no caben en uno)' },
+  // --- §PF468 punto 14 (14-nov-2026; la usuaria dijo «hazlo»): NO es un clan equivocado sino una fila duplicada. #U9G0GCRLC T25 S3 (jueves a domingo) tiene dos juegos de filas «Reconstruido» en cero: este, con el Clan vacío y el Nombre igual al tag, y otro con «Grupo乂Terna™» y origen «Reconstruido - Solución única». El generador identifica el clan por Clan_Tag, los ve como repetidos y avisa. clanKey '' empareja las filas con el Clan vacío ---
+  { temporada: 25, semana: 3, tag: '#U9G0GCRLC', clanKey: '', nombre: '(sin nombre: el Nombre del CSV es el tag)', dias: 'JVSD', valores: [0, 0, 0], conserva: 'Grupo乂Terna™',
+    nota: '§PF468 punto 14: duplicado en ceros de las filas de Grupo乂Terna™ (origen «Reconstruido - Solución única»); se quita el juego con el Clan vacío y se conserva el que tiene el clan escrito' }
 ];
 var VCRR_MAX_FILAS_DESCARTAR = 30;                     // tope de filas que una corrida puede quitar de Backup_Guerra.csv (si se pasa, no se quita nada)
 var VCRR_REVERTIR_MARCA = '2026-11-11 10.13.05';       // §PF446: marca de la corrida de «Aplicar» cuyo respaldo previo («Backup_Guerra ANTES de verificar CRR vs Backup <marca>.csv») usa la reversión
