@@ -206,7 +206,7 @@ var CFG = {
 
   // Orden de categorías EXCLUSIVO para la generación de mensajes diarios [→ Contexto_Base_Web.md §01B025]
   MENSAJES_ORDEN_CATEGORIAS: [
-  'Defensas de barcos','Día de guerra','Mensaje de Guerra',
+  'Defensas de barcos','Día de guerra','Mensaje de Guerra','Guerra fuera del clan', // 14-nov-2026 (§PF462): el mensaje de cuentas fuera del clan va justo después del Mensaje de Guerra
   'Etiqueta de miembro','Celular','Mazos','iPhone',
 ],
 
@@ -449,6 +449,7 @@ var CFG = {
   // Colores pastel de fondo para la hoja Mensajes, según columna "Tipo". [→ Contexto_Base_Web.md §01B063]
   MENSAJES_TIPO_BG: {
     'Mensaje de Guerra':    '#ffcdd2', // rosado pastel
+    'Guerra fuera del clan': '#f8bbd0', // rosa pastel más fuerte (14-nov-2026, §PF462)
     'Defensas de barcos':   '#bbdefb', // azul pastel
     'Celular':              '#fff9c4', // amarillo pastel
     'Etiqueta de miembro':  '#e1bee7', // lila pastel

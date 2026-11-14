@@ -731,7 +731,7 @@ function _categoriasDisponibles(esAdmin, telefono) {
 
   var filtradasPorPeriodo = todas.filter(function(c) {
     if (ctx.esDiaGuerra && c === 'Defensas de barcos') return false;
-    if (!ctx.esDiaGuerra && (c === 'Día de guerra' || c === 'Mensaje de Guerra')) return false;
+    if (!ctx.esDiaGuerra && (c === 'Día de guerra' || c === 'Mensaje de Guerra' || c === 'Guerra fuera del clan')) return false; // 14-nov-2026 (§PF462): la categoría nueva también es solo de días de guerra
     return true;
   });
 
