@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 04:12:51 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 08:48:41 */
 
 
 
@@ -78236,7 +78236,7 @@ var VCRR_CORRECCIONES_LISTA = [
 // Orden de uso: (1) subirBaseDesdeGithub(); (2) crearFilasPorListaInforme() y revisar el detalle; (3) crearFilasPorListaAplicar(); (4) generarGuerraDesglose() para comprobar que los «Imposible» bajan.
 var VCRR_ORIGEN_CREAR_LISTA = 'Reconstruido - lista (RoyaleAPI y JSON)';
 var VCRR_MAX_FILAS_CREAR = 30;                          // tope de filas que una corrida puede crear o modificar (si se pasa, no se escribe nada)
-var VCRR_CREAR_TANDAS = [4];                            // tandas activas de VCRR_FILAS_CREAR (la 3 ya se aplicó el 14-nov-2026, §PF452)
+var VCRR_CREAR_TANDAS = [5];                            // tandas activas de VCRR_FILAS_CREAR (la 3 se aplicó el 14-nov-2026, §PF452; la 4, §PF454)
 var VCRR_FILAS_CREAR = [
   // --- Tanda 3: #UJY0PGPUV en T24 S1 en ™2. Falta el viernes: sin él, el sábado (7 ataques y 1200 de fame acumulados) parte de base 0 y el desglose lo lee como un solo día. Con el viernes 3 / 3 / 600 (acumulado exacto del JSON) el reparto es sábado 4 / 600 y domingo 4 / 500 ---
   { tanda: 3, temporada: 24, semana: 1, tag: '#UJY0PGPUV', clanKey: 'grupoxterna™2', nombre: 'кυякү', dia: 'V', actual: null, nuevo: [3, 3, 600, 0],
@@ -78269,7 +78269,10 @@ var VCRR_FILAS_CREAR = [
   { tanda: 4, temporada: 23, semana: 2, tag: '#88RV0L8V2', clanKey: 'grupo乂terna™', nombre: 'May', dia: 'D', actual: null, nuevo: [4, 12, 1950, 0],
     nota: '§PF453 B1: la fila de sábado trae el total de la semana (RoyaleAPI 12 / 1950). Domingo: total de RoyaleAPI (perfil), dentro del rango del JSON del domingo.' },
   { tanda: 4, temporada: 23, semana: 2, tag: '#G2Q9UYY89', clanKey: 'grupo乂terna™', nombre: 'G2Q9UYY89', dia: 'S', actual: [8, 8, 1450, 0], nuevo: [4, 8, 1450, 0],
-    nota: '§PF453 B1: el JSON exacto da 8 y 1450 acumulados el sábado y RoyaleAPI 8 / 1450, así que el domingo no tuvo ataques; solo AtaquesHoy del sábado (8 → 4, el viernes ya tiene 4)' }
+    nota: '§PF453 B1: el JSON exacto da 8 y 1450 acumulados el sábado y RoyaleAPI 8 / 1450, así que el domingo no tuvo ataques; solo AtaquesHoy del sábado (8 → 4, el viernes ya tiene 4)' },
+  // --- Tanda 5: #2RJVYQ92P T23 S4 (§PF464 punto 3): solo AtaquesHoy del domingo. #YG8U8Q2PC T23 S3 (B2) NO entra: el domingo tendría 8 ataques (máximo 4 por día) y repartir viernes y sábado sería inventar ---
+  { tanda: 5, temporada: 23, semana: 4, tag: '#2RJVYQ92P', clanKey: 'grupo乂terna™', nombre: '<LU|$_∆ΠG€L>©∆', dia: 'D', actual: [2, 12, 1900, 0], nuevo: [4, 12, 1900, 0],
+    nota: '§PF464: el JSON exacto da 8 y 1200 acumulados el sábado y RoyaleAPI 12 / 1900, así que el domingo trae 4 ataques; la fila ya tenía semana y fame correctas y solo AtaquesHoy quedó en 2' }
 ];
 
 var VCRR_PASOS_NOMBRES_INFORME = [
