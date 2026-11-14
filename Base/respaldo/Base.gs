@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 11:35:12 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 12:13:16 */
 
 
 
@@ -1973,16 +1973,18 @@ function _liberarLockSiNoEsRunGuerra_() {
   } catch (e) { /* propiedad corrupta: se deja como esta */ }
 }
 
-// _reenumeracionEnCurso_(): PF260 (25-oct-2026); true si hay una reenumeración de temporadas sin terminar (REENUM_PASO guardado). Mientras sea true NO debe correr nada que lea o escriba numeración propia: una corrida a medias mezclaría la numeración vieja y la nueva.
+// _reenumeracionEnCurso_(): PF260 (25-oct-2026); true si hay una reenumeración de temporadas sin terminar. Mientras sea true NO debe correr nada que lea o escriba numeración propia: una corrida a medias mezclaría la numeración vieja y la nueva.
+// 14-nov-2026 (segunda guarda): ya no depende solo de REENUM_PASO. La bandera REENUM_BLOQUEO ('1') se pone al iniciar o reanudar la reenumeración y solo se borra cuando termina completa (_continuarRunReenumerarTemporadas()), así que runGuerra, runUpdate y el resto siguen bloqueados aunque REENUM_PASO se pierda o el paso falle.
 function _reenumeracionEnCurso_() {
-  return PropertiesService.getScriptProperties().getProperty('REENUM_PASO') !== null;
+  var props = PropertiesService.getScriptProperties();
+  return props.getProperty('REENUM_PASO') !== null || props.getProperty('REENUM_BLOQUEO') === '1';
 }
 
 // _bloquearSiReenumerando_(nombreFn): PF260; devuelve true (y lo anota en el log) si hay reenumeración en curso; el llamador debe salir sin hacer nada. No toma ni libera ningún lock.
 function _bloquearSiReenumerando_(nombreFn) {
   if (!_reenumeracionEnCurso_()) return false;
   Logger.log('[Reenumeración] ' + nombreFn + '(): NO se ejecuta, hay una reenumeración de temporadas en curso (REENUM_PASO = ' +
-    PropertiesService.getScriptProperties().getProperty('REENUM_PASO') + '). Se retoma sola cuando termine.');
+    PropertiesService.getScriptProperties().getProperty('REENUM_PASO') + ', REENUM_BLOQUEO = ' + PropertiesService.getScriptProperties().getProperty('REENUM_BLOQUEO') + '). Se retoma sola cuando termine.');
   return true;
 }
 
@@ -70345,6 +70347,7 @@ function reanudarReenumerarTemporadas() {
     Logger.log('[Reenumeración] No hay nada que reanudar (faltan REENUM_DELTA_MESES, REENUM_NUEVA_REF o REENUM_OFFSET_VIEJO). No se hizo nada.');
     return;
   }
+  props.setProperty('REENUM_BLOQUEO', '1'); // 14-nov-2026: si la corrida empezó antes de existir la bandera, se pone al reanudar
   var guardado = props.getProperty('REENUM_PASO');
   if (guardado === null) {
     props.setProperty('REENUM_PASO', String(PASO_DONDE_SEGUIR));
@@ -70357,8 +70360,8 @@ function reanudarReenumerarTemporadas() {
 // liberarLockEjecucionManual(): PF258; libera a mano el lock de ejecución (EJECUCION_EN_CURSO) que dejó tomado una función que falló antes de liberarlo. Si hay una reenumeración a medias (REENUM_PASO) NO toca nada.
 function liberarLockEjecucionManual() {
   var props = PropertiesService.getScriptProperties();
-  if (props.getProperty('REENUM_PASO') !== null) {
-    Logger.log('[Lock] Hay una reenumeración a medias (REENUM_PASO = ' + props.getProperty('REENUM_PASO') + '). No se libera nada: se continúa con _continuarRunReenumerarTemporadas() o se revisa primero qué pasos llegaron a escribirse.');
+  if (_reenumeracionEnCurso_()) { // 14-nov-2026: también la bandera REENUM_BLOQUEO
+    Logger.log('[Lock] Hay una reenumeración a medias (REENUM_PASO = ' + props.getProperty('REENUM_PASO') + ', REENUM_BLOQUEO = ' + props.getProperty('REENUM_BLOQUEO') + '). No se libera nada: se continúa con _continuarRunReenumerarTemporadas() o se revisa primero qué pasos llegaron a escribirse.');
     return;
   }
   var raw = props.getProperty('EJECUCION_EN_CURSO');
@@ -70882,8 +70885,8 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
   }
   nuevaFechaRefStr = textoFecha;
   var pasoPendiente = PropertiesService.getScriptProperties().getProperty('REENUM_PASO');
-  if (pasoPendiente !== null) {
-    Logger.log('[Reenumeración] NO se inició: hay una reenumeración sin terminar (REENUM_PASO = ' + pasoPendiente + '). Empezar de nuevo sumaría el delta otra vez en los pasos ya hechos. Usa reanudarReenumerarTemporadas().');
+  if (_reenumeracionEnCurso_()) { // 14-nov-2026: también la bandera REENUM_BLOQUEO, por si REENUM_PASO se perdió
+    Logger.log('[Reenumeración] NO se inició: hay una reenumeración sin terminar (REENUM_PASO = ' + pasoPendiente + ', REENUM_BLOQUEO = ' + PropertiesService.getScriptProperties().getProperty('REENUM_BLOQUEO') + '). Empezar de nuevo sumaría el delta otra vez en los pasos ya hechos. Usa reanudarReenumerarTemporadas().');
     return;
   }
   if (!_adquirirLockEjecucion('runReenumerarTemporadas')) return;
@@ -70906,6 +70909,7 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
   props.setProperty('REENUM_NUEVA_REF', nuevaFechaRefStr);
   props.setProperty('REENUM_OFFSET_VIEJO', String(_getTemporadaOffsetRoyaleApi()));
   props.setProperty('REENUM_PASO', '0');
+  props.setProperty('REENUM_BLOQUEO', '1'); // 14-nov-2026: segunda guarda, independiente de REENUM_PASO; solo se borra al terminar completa
   props.setProperty('REENUM_RUN_ID', String(Date.now())); // PF257: marca de esta corrida dentro de los JSON de HistorialGuerra (evita sumar dos veces)
   props.deleteProperty('REENUM_HG_IDX');
   props.deleteProperty('REENUM_INF_IDX'); // PF258: índice del paso de informes
@@ -70930,6 +70934,7 @@ function _continuarRunReenumerarTemporadas() {
       PropertiesService.getScriptProperties().deleteProperty('REENUM_DELTA_MESES');
       PropertiesService.getScriptProperties().deleteProperty('REENUM_NUEVA_REF');
       PropertiesService.getScriptProperties().deleteProperty('REENUM_OFFSET_VIEJO');
+      PropertiesService.getScriptProperties().deleteProperty('REENUM_BLOQUEO'); // 14-nov-2026: recién aquí se levanta la segunda guarda
       _liberarLockEjecucion();
       Logger.log('[Reenumeración] FIN — completa.');
     }
