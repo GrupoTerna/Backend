@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 11:05:51 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 11:18:13 */
 
 
 
@@ -78236,7 +78236,7 @@ var VCRR_CORRECCIONES_LISTA = [
 // Orden de uso: (1) subirBaseDesdeGithub(); (2) crearFilasPorListaInforme() y revisar el detalle; (3) crearFilasPorListaAplicar(); (4) generarGuerraDesglose() para comprobar que los «Imposible» bajan.
 var VCRR_ORIGEN_CREAR_LISTA = 'Reconstruido - lista (RoyaleAPI y JSON)';
 var VCRR_MAX_FILAS_CREAR = 30;                          // tope de filas que una corrida puede crear o modificar (si se pasa, no se escribe nada)
-var VCRR_CREAR_TANDAS = [6];                            // tandas activas de VCRR_FILAS_CREAR (la 3 se aplicó el 14-nov-2026, §PF452; la 4, §PF454; la 5, §PF465)
+var VCRR_CREAR_TANDAS = [7];                            // tandas activas de VCRR_FILAS_CREAR (la 3 se aplicó el 14-nov-2026, §PF452; la 4, §PF454; la 5, §PF465; la 6, §PF466)
 var VCRR_FILAS_CREAR = [
   // --- Tanda 3: #UJY0PGPUV en T24 S1 en ™2. Falta el viernes: sin él, el sábado (7 ataques y 1200 de fame acumulados) parte de base 0 y el desglose lo lee como un solo día. Con el viernes 3 / 3 / 600 (acumulado exacto del JSON) el reparto es sábado 4 / 600 y domingo 4 / 500 ---
   { tanda: 3, temporada: 24, semana: 1, tag: '#UJY0PGPUV', clanKey: 'grupoxterna™2', nombre: 'кυякү', dia: 'V', actual: null, nuevo: [3, 3, 600, 0],
@@ -78301,7 +78301,12 @@ var VCRR_FILAS_CREAR = [
   { tanda: 6, temporada: 24, semana: 5, tag: '#VRVCV0QR8', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Carlinho', dia: 'S', actual: [4, 4, 800, 0], nuevo: [0, 0, 0, 0],
     nota: '§PF466: el battlelog pone los 4 ataques el domingo (6-sep 23:57 a 7-sep 01:20, Lima), no el sábado; RoyaleAPI 4 / 800' },
   { tanda: 6, temporada: 24, semana: 5, tag: '#VRVCV0QR8', clanKey: 'mini乂ternas™', nombre: 'ᴳ乂ᵀ ⚜️ Carlinho', dia: 'D', actual: [0, 4, 800, 0], nuevo: [4, 4, 800, 0],
-    nota: '§PF466: domingo con los 4 ataques y 800 de fame que trae el battlelog (RoyaleAPI 4 / 800)' }
+    nota: '§PF466: domingo con los 4 ataques y 800 de fame que trae el battlelog (RoyaleAPI 4 / 800)' },
+  // --- Tanda 7: T24 S5 en Grupo乂Terna™ (§PF467). La suma de sábado y domingo ya coincide con RoyaleAPI («log»); el battlelog (cobertura completa) reparte la fame distinto y el sábado del backup es una «Solución estimada». Se sube la fame acumulada del sábado; el domingo (acumulado 1000 y 1250) no cambia ---
+  { tanda: 7, temporada: 24, semana: 5, tag: '#P8Y0CQ9VR', clanKey: 'grupo乂terna™', nombre: 'ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ', dia: 'S', actual: [4, 4, 400, 0], nuevo: [4, 4, 500, 0],
+    nota: '§PF467: el battlelog da 500 de fame el sábado (el backup, una estimación, 400); sábado y domingo suman lo mismo que RoyaleAPI (1000)' },
+  { tanda: 7, temporada: 24, semana: 5, tag: '#UYU0PGUYJ', clanKey: 'grupo乂terna™', nombre: 'ᴳ乂ᵀ ⚜️ ＲＡＭＩ', dia: 'S', actual: [4, 4, 550, 0], nuevo: [4, 4, 650, 0],
+    nota: '§PF467: el battlelog da 650 de fame el sábado (el backup, una estimación, 550); sábado y domingo suman lo mismo que RoyaleAPI (1250)' }
 ];
 
 var VCRR_PASOS_NOMBRES_INFORME = [
@@ -80366,6 +80371,125 @@ function _vcrrCrearDiasInvalidos_(g, ops, grupos) {
   var semana = dias[finales[finales.length - 1]][1];
   otros.forEach(function (x) { semana += _excDiasFinalDe(x.dias).a; });
   return semana > 16 ? 'la semana quedaría con ' + semana + ' ataques sumando clanes (máximo 16)' : null;
+}
+
+// ----- Corregir DiaGuerra de T22 en Backup_Guerra.csv (§PF467) -----
+// 4 375 filas de T22 (las más antiguas, N° 1 a 18 917) traen DiaGuerra con la fecha real MÁS 126 días (18 semanas: lo que suman las temporadas 22 a 25), por ejemplo 05/11/2026 en lugar de 02/07/2026.
+// Fecha y AtaquesSemana están bien. El desglose usa DiaGuerra para ubicar el battlelog, así que esas semanas se comparaban con batallas de otra semana. Aquí solo se toca la columna DiaGuerra, y solo si:
+// la temporada es 22, DiaGuerra es dd/mm/aaaa de octubre o noviembre, y al restarle 126 días queda en el mismo día de Fecha o un día antes. Las que no cumplen (51 filas con la Fecha también en octubre o noviembre)
+// no se tocan y salen en el informe. La hoja Guerra no se toca: una fila que la hoja todavía tenga se omite (la sincronización la devolvería a su valor viejo). El id de la fila (_idFilaGuerraCSV) no usa DiaGuerra.
+var VCRR_T22_DESPLAZAMIENTO_DIAS = 126;
+var VCRR_MAX_FILAS_DIAGUERRA = 5000;                    // tope de filas que una corrida puede cambiar (si se pasa, no se escribe nada)
+
+/** Informe de corregirDiaGuerraT22Aplicar(): no escribe en Backup_Guerra.csv; deja «Cruce_CRR_vs_Backup <fecha> (DiaGuerra T22, informe).csv» con cada fila que cambiaría o se omitiría. */
+function corregirDiaGuerraT22Informe() { _vcrrCorregirDiaGuerraT22_(false); }
+
+/** Corrige la columna DiaGuerra de las filas de T22 del §PF467. Respaldo previo «Backup_Guerra ANTES de corregir DiaGuerra T22 <fecha>.csv», releída de Drive y verificada (solo cambió DiaGuerra de las filas planeadas). */
+function corregirDiaGuerraT22Aplicar() { _vcrrCorregirDiaGuerraT22_(true); }
+
+/** dd/mm/aaaa (con hora o sin ella) -> milisegundos UTC de ese día; null si no tiene esa forma. */
+function _vcrrFechaDMA_(texto) {
+  var m = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(String(texto === null || texto === undefined ? '' : texto).trim());
+  return m ? Date.UTC(Number(m[3]), Number(m[2]) - 1, Number(m[1])) : null;
+}
+
+/** Milisegundos UTC de un día -> «dd/mm/aaaa». */
+function _vcrrTextoDMA_(ms) {
+  var d = new Date(ms);
+  var dos = function (n) { return (n < 10 ? '0' : '') + n; };
+  return dos(d.getUTCDate()) + '/' + dos(d.getUTCMonth() + 1) + '/' + d.getUTCFullYear();
+}
+
+/**
+ * Función pura. De las filas de Backup_Guerra.csv arma { cambios: [{ idx, antes, despues }], omitidas: [{ idx, motivo }] } según las reglas de arriba. idsHoja = ids de la hoja Guerra ({} si no se leyó).
+ */
+function _vcrrPlanDiaGuerraT22_(filas, idsHoja) {
+  var DIA = 86400000, cambios = [], omitidas = [];
+  for (var i = 0; i < filas.length; i++) {
+    var f = filas[i];
+    if (Number(f[GC.TEMPORADA - 1]) !== 22) continue;
+    var texto = String(f[GC.DIA_GUERRA - 1] === null || f[GC.DIA_GUERRA - 1] === undefined ? '' : f[GC.DIA_GUERRA - 1]).trim();
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) continue;
+    var dg = _vcrrFechaDMA_(texto);
+    var mes = new Date(dg).getUTCMonth() + 1;
+    if (mes !== 10 && mes !== 11) continue;
+    var nuevoMs = dg - VCRR_T22_DESPLAZAMIENTO_DIAS * DIA;
+    var fecha = _vcrrFechaDMA_(f[GC.FECHA - 1]);
+    var dif = fecha === null ? null : Math.round((nuevoMs - fecha) / DIA);
+    if (dif !== 0 && dif !== -1) { omitidas.push({ idx: i, motivo: 'la Fecha (' + String(f[GC.FECHA - 1]).slice(0, 10) + ') no es la de DiaGuerra menos ' + VCRR_T22_DESPLAZAMIENTO_DIAS + ' días (' + _vcrrTextoDMA_(nuevoMs) + ')' }); continue; }
+    var id = _idFilaGuerraCSV(f);
+    if (idsHoja && id && idsHoja[id]) { omitidas.push({ idx: i, motivo: 'la hoja Guerra todavía tiene la fila' }); continue; }
+    cambios.push({ idx: i, antes: texto, despues: _vcrrTextoDMA_(nuevoMs) });
+  }
+  return { cambios: cambios, omitidas: omitidas };
+}
+
+/** Motor de corregirDiaGuerraT22Informe() y corregirDiaGuerraT22Aplicar(). aplicar = false solo informa. No crea ni borra filas ni toca otra columna que DiaGuerra. */
+function _vcrrCorregirDiaGuerraT22_(aplicar) {
+  var nombreFn = aplicar ? 'corregirDiaGuerraT22Aplicar' : 'corregirDiaGuerraT22Informe';
+  if (!_adquirirLockEjecucion(nombreFn)) return;
+  var lock = LockService.getScriptLock(), conLock = false;
+  try {
+    if (aplicar) {
+      if (!lock.tryLock(30000)) { Logger.log('[VCRR DiaGuerra T22] Hay otro proceso escribiendo; vuelve a correr ' + nombreFn + '() en un momento. No se tocó nada.'); return; }
+      conLock = true;
+    }
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var bk = _vcrrLeerBackupGuerra_();
+    if (!bk) { Logger.log('[VCRR DiaGuerra T22] No se encontró Backup_Guerra.csv o está vacío; no se toca nada.'); return; }
+    var idsHoja = _vcrrIdsHojaGuerra_();
+    if (idsHoja === null) {
+      if (aplicar) { Logger.log('[VCRR DiaGuerra T22] No se pudo leer la hoja Guerra: no se cambia nada, porque la sincronización devolvería al CSV el valor viejo de las filas que la hoja tenga. Vuelve a intentarlo.'); return; }
+      Logger.log('[VCRR DiaGuerra T22] OJO: no se pudo leer la hoja Guerra; este informe no avisa si la hoja todavía tiene alguna de las filas.');
+      idsHoja = {};
+    }
+    var plan = _vcrrPlanDiaGuerraT22_(bk.filas, idsHoja);
+    var detalle = [['Línea de Backup_Guerra.csv', 'Tag', 'Clan', 'Semana', 'Día', 'Fecha', 'DiaGuerra ahora', 'DiaGuerra nuevo', 'Acción']];
+    var fila = function (idx) { return bk.filas[idx]; };
+    plan.cambios.forEach(function (c) { var f = fila(c.idx); detalle.push([c.idx + 2, f[GC.TAG - 1], f[GC.CLAN - 1], f[GC.SEMANA - 1], f[GC.DIA - 1], String(f[GC.FECHA - 1]).slice(0, 10), c.antes, c.despues, aplicar ? 'Corregir' : 'Corregiría']); });
+    plan.omitidas.forEach(function (o) { var f = fila(o.idx); detalle.push([o.idx + 2, f[GC.TAG - 1], f[GC.CLAN - 1], f[GC.SEMANA - 1], f[GC.DIA - 1], String(f[GC.FECHA - 1]).slice(0, 10), String(f[GC.DIA_GUERRA - 1]), '', 'SIN TOCAR: ' + o.motivo]); });
+    var problemas = [];
+    if (aplicar && plan.cambios.length > VCRR_MAX_FILAS_DIAGUERRA) {
+      Logger.log('[VCRR DiaGuerra T22] NO SE ESCRIBIÓ NADA: ' + plan.cambios.length + ' fila(s) pasan el tope de ' + VCRR_MAX_FILAS_DIAGUERRA + ' (VCRR_MAX_FILAS_DIAGUERRA). Revisa la regla.');
+      return;
+    }
+    if (aplicar && plan.cambios.length > 0) {
+      var copiaAntes = bk.filas.map(function (r) { return r.slice(); });
+      _saveCSVToDrive('Backup_Guerra ANTES de corregir DiaGuerra T22 ' + marca + '.csv', bk.texto);
+      plan.cambios.forEach(function (c) { bk.filas[c.idx][GC.DIA_GUERRA - 1] = c.despues; });
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([bk.encabezado].concat(bk.filas)));
+      var despues = _loadCSVFromDrive('Backup_Guerra.csv');
+      var parsed = despues ? _parseCSV(despues) : null;
+      if (!parsed || parsed.length < 2) problemas.push('No se pudo releer Backup_Guerra.csv');
+      else {
+        var filasDespues = parsed.slice(1);
+        for (var b = 0; b < filasDespues.length; b++) { while (filasDespues[b].length < GUERRA_TOTAL_COLS) filasDespues[b].push(''); }
+        problemas = _vcrrVerificarDiaGuerraT22_(copiaAntes, filasDespues, plan.cambios);
+      }
+    }
+    if (detalle.length > 1) _saveCSVToDrive('Cruce_CRR_vs_Backup ' + marca + ' (DiaGuerra T22, ' + (aplicar ? 'aplicado' : 'informe') + ').csv', _encodeCSVInforme(detalle));
+    Logger.log('[VCRR DiaGuerra T22] ' + (aplicar ? 'Corregidas ' : 'Se corregirían ') + plan.cambios.length + ' fila(s); sin tocar: ' + plan.omitidas.length + '. ' +
+      (problemas.length ? 'VERIFICACIÓN FALLÓ (' + problemas.length + '): ' + problemas.slice(0, 5).join('; ') + '. Restaurar con «Backup_Guerra ANTES de corregir DiaGuerra T22 ' + marca + '.csv».'
+        : (aplicar && plan.cambios.length > 0 ? 'Verificación OK. Ahora corre generarGuerraDesglose().' : '')));
+  } finally {
+    if (conLock) lock.releaseLock();
+    _liberarLockEjecucion();
+  }
+}
+
+/** Función pura. Compara las filas de antes y las releídas de Drive: mismo número de filas, las planeadas solo cambiaron DiaGuerra (al valor nuevo) y todas las demás son idénticas. Devuelve los problemas (vacía = todo bien). */
+function _vcrrVerificarDiaGuerraT22_(filasAntes, filasDespues, cambios) {
+  var problemas = [], plan = {};
+  cambios.forEach(function (c) { plan[c.idx] = c; });
+  if (filasAntes.length !== filasDespues.length) problemas.push('número de filas ' + filasDespues.length + ' en vez de ' + filasAntes.length);
+  for (var i = 0; i < filasAntes.length && i < filasDespues.length && problemas.length < 10; i++) {
+    var a = filasAntes[i], d = filasDespues[i];
+    for (var k = 0; k < a.length; k++) {
+      var esperado = (plan[i] && k === GC.DIA_GUERRA - 1) ? plan[i].despues : String(a[k]);
+      if (String(d[k]) !== esperado) { problemas.push('línea ' + (i + 2) + ': la columna ' + (k + 1) + ' quedó «' + String(d[k]).slice(0, 30) + '» y debía ser «' + esperado.slice(0, 30) + '»'); break; }
+    }
+  }
+  return problemas;
 }
 
 // ----- Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día) -----
