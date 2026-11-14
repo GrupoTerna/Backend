@@ -1845,7 +1845,7 @@ function borrarDuplicadasClanConTagGuerraInforme() { _borrarDuplicadasClanConTag
 
 function borrarDuplicadasClanConTagGuerraAplicar() { _borrarDuplicadasClanConTagGuerra_(true); }
 
-// Borra, de Backup_Guerra.csv, las filas con la Temporada mal puesta que ya tienen su fila real en la temporada correcta (PF450: 51 filas de T22 S3 domingo 25-oct-2026 con Temporada_2 137, que es la T26): informe primero; aplicar borra solo las que no aportan nada y guarda antes un respaldo. [→ Contexto_Base_Web.md §PF450]
+// Borra, de Backup_Guerra.csv, las filas con la Temporada mal puesta que ya tienen su fila real en la temporada correcta (PF450: 51 filas de T22 S3 domingo 25-oct-2026 con Temporada_2 137, que es la T26): informe primero; aplicar borra solo las que no aportan nada y guarda antes un respaldo. [→ Contexto_Base_Web.md §PF468]
 function borrarFilasTemporadaMalEtiquetadaGuerraInforme() { _borrarFilasTemporadaMalEtiquetadaGuerra_(false); }
 
 function borrarFilasTemporadaMalEtiquetadaGuerraAplicar() { _borrarFilasTemporadaMalEtiquetadaGuerra_(true); }
@@ -4830,7 +4830,7 @@ function _borrarDuplicadasClanConTagGuerra_(aplicar) {
 }
 
 /**
- * _temporadaMalEtiquetadaPlanGuerra_(filas, encabezado) [→ Contexto_Base_Web.md §PF450]
+ * _temporadaMalEtiquetadaPlanGuerra_(filas, encabezado) [→ Contexto_Base_Web.md §PF468]
  * Función pura (no toca Drive ni hojas). filas: filas de Backup_Guerra.csv ya rellenadas a GUERRA_TOTAL_COLS columnas, sin encabezado. encabezado: su primera fila (solo para nombrar columnas en el informe).
  * Detecta las filas cuya Temporada_2 no es la de su Temporada: cada Temporada tiene como Temporada_2 «normal» la más frecuente entre sus filas con ese dato, y una fila con otra Temporada_2 que a la vez es la normal de OTRA Temporada
  * (T22 con 137, que es la normal de T26) está mal etiquetada. Una fila así se borra SOLO si: es del mismo clan y jugador que otra fila de esa otra Temporada con la misma Semana, el mismo PeriodIndex, el mismo día y la misma Temporada_2;
@@ -4886,7 +4886,7 @@ function _temporadaMalEtiquetadaPlanGuerra_(filas, encabezado) {
 }
 
 /**
- * _borrarFilasTemporadaMalEtiquetadaGuerra_(aplicar) [→ Contexto_Base_Web.md §PF450]
+ * _borrarFilasTemporadaMalEtiquetadaGuerra_(aplicar) [→ Contexto_Base_Web.md §PF468]
  * Lee Backup_Guerra.csv, planifica con _temporadaMalEtiquetadaPlanGuerra_() y, si aplicar es true y el plan no pasa del tope, borra las filas «Borrar» y guarda antes un respaldo.
  * Tope: BORRAR_TOPE filas por corrida; si salen más, no se borra nada. Solo Backup_Guerra.csv, no la hoja. Informe: Reparacion_BorrarTemporadaMalEtiquetada_Guerra <fecha>.csv.
  */
