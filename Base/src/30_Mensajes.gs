@@ -706,7 +706,7 @@ function _textoLeyendaMarcasGuerra_(lista, celularPorTag, prestamoPorTag) {
 
 /**
  * _textoLineaClanChatGeneral_(lista) [→ Contexto_Base_Web.md §PF461]
- * 14-nov-2026 (pedido de la usuaria): la única línea de resumen de un clan en el Chat General, p. ej. «🔄 2 reemplazables · ⚠ 1 reservada con ataques pendientes». Reemplazables = los de `faltantes === 4`;
+ * 14-nov-2026 (pedido de la usuaria): la única línea de resumen de un clan en el Chat General, p. ej. «🔄 2 reemplazables · 🔒 1 reservada con ataques pendientes». Reemplazables = los de `faltantes === 4`;
  * reservadas = el resto (1 a 3 pendientes), las mismas definiciones de `_textoGruposPendientesGuerra_()`. Una parte con 0 no se escribe. Devuelve la línea con su salto de línea, o '' si la lista está vacía.
  */
 function _textoLineaClanChatGeneral_(lista) {
@@ -714,7 +714,7 @@ function _textoLineaClanChatGeneral_(lista) {
   (lista || []).forEach(function(p) { if (Number(p.faltantes) === 4) reemp++; else reserv++; });
   var partes = [];
   if (reemp > 0) partes.push('🔄 ' + reemp + ' ' + (reemp === 1 ? 'reemplazable' : 'reemplazables'));
-  if (reserv > 0) partes.push('⚠ ' + reserv + ' ' + (reserv === 1 ? 'reservada' : 'reservadas') + ' con ataques pendientes');
+  if (reserv > 0) partes.push('🔒 ' + reserv + ' ' + (reserv === 1 ? 'reservada' : 'reservadas') + ' con ataques pendientes');
   return partes.length ? partes.join(' · ') + '\n' : '';
 }
 
@@ -799,7 +799,7 @@ function _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, 
   }
   if (reservadas.length > 0) {
     if (t) t += '\n';
-    t += _negritaWsp_('⚠ RESERVADAS ACTIVAS CON ATAQUES PENDIENTES (' + reservadas.length + ')') + '\n↳ ' + fraseReserv + '\n' + lineas(reservadas);
+    t += _negritaWsp_('🔒 RESERVADAS ACTIVAS CON ATAQUES PENDIENTES (' + reservadas.length + ')') + '\n↳ ' + fraseReserv + '\n' + lineas(reservadas);
   }
   return t;
 }
