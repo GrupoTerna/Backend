@@ -1930,16 +1930,18 @@ function _liberarLockSiNoEsRunGuerra_() {
   } catch (e) { /* propiedad corrupta: se deja como esta */ }
 }
 
-// _reenumeracionEnCurso_(): PF260 (25-oct-2026); true si hay una reenumeración de temporadas sin terminar (REENUM_PASO guardado). Mientras sea true NO debe correr nada que lea o escriba numeración propia: una corrida a medias mezclaría la numeración vieja y la nueva.
+// _reenumeracionEnCurso_(): PF260 (25-oct-2026); true si hay una reenumeración de temporadas sin terminar. Mientras sea true NO debe correr nada que lea o escriba numeración propia: una corrida a medias mezclaría la numeración vieja y la nueva.
+// 14-nov-2026 (segunda guarda): ya no depende solo de REENUM_PASO. La bandera REENUM_BLOQUEO ('1') se pone al iniciar o reanudar la reenumeración y solo se borra cuando termina completa (_continuarRunReenumerarTemporadas()), así que runGuerra, runUpdate y el resto siguen bloqueados aunque REENUM_PASO se pierda o el paso falle.
 function _reenumeracionEnCurso_() {
-  return PropertiesService.getScriptProperties().getProperty('REENUM_PASO') !== null;
+  var props = PropertiesService.getScriptProperties();
+  return props.getProperty('REENUM_PASO') !== null || props.getProperty('REENUM_BLOQUEO') === '1';
 }
 
 // _bloquearSiReenumerando_(nombreFn): PF260; devuelve true (y lo anota en el log) si hay reenumeración en curso; el llamador debe salir sin hacer nada. No toma ni libera ningún lock.
 function _bloquearSiReenumerando_(nombreFn) {
   if (!_reenumeracionEnCurso_()) return false;
   Logger.log('[Reenumeración] ' + nombreFn + '(): NO se ejecuta, hay una reenumeración de temporadas en curso (REENUM_PASO = ' +
-    PropertiesService.getScriptProperties().getProperty('REENUM_PASO') + '). Se retoma sola cuando termine.');
+    PropertiesService.getScriptProperties().getProperty('REENUM_PASO') + ', REENUM_BLOQUEO = ' + PropertiesService.getScriptProperties().getProperty('REENUM_BLOQUEO') + '). Se retoma sola cuando termine.');
   return true;
 }
 
