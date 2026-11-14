@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 02:45:47 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 03:10:57 */
 
 
 
@@ -52882,6 +52882,8 @@ function generarTodosMensajes() {
     var nombresDia = { L:'LUNES', M:'MARTES', X:'MIÉRCOLES', J:'JUEVES', V:'VIERNES', S:'SÁBADO', D:'DOMINGO' };
     var nombreDia  = nombresDia[ctx.diaLetra] || '';
     var semNum = ctx.sectionIndex + 1;
+    // 14-nov-2026 (pedido de la usuaria): cupos de cada clan para el resumen del inicio; si no se pueden calcular, los mensajes salen sin esa parte. [→ Contexto_Base_Web.md §PF455]
+    var cuposPorClan = _resumenCuposGuerraPorClan_(ctx);
 
     // --- Fila por clan (Subcategoría = Particular) ---
     for (var ci2 = 0; ci2 < clanesPend.length; ci2++) {
@@ -52898,12 +52900,9 @@ function generarTodosMensajes() {
       msjClan += '==============================\n';
       msjClan += '🔥 ' + clanName + ' (' + miembros.length + ' pendientes)\n';
       msjClan += '==============================\n';
-      miembros.forEach(function(p) {
-        var icono = p.faltantes === 4 ? '🛑' : (p.faltantes >= 2 ? '⚠' : '🔹');
-        var wsp   = celularPorTag[p.tag] ? ' (ω)' : '';
-        var prest = _sufijoPrestamo(prestamoPorTag[p.tag]);
-        msjClan += icono + ' ' + p.nombre + ' (' + p.faltantes + ')' + wsp + prest + '\n';
-      });
+      // 14-nov-2026 (pedido de la usuaria): resumen de cupos al inicio y, debajo, los pendientes agrupados en Reemplazables (4 ataques pendientes) y Reservadas (1 a 3). Sigue siendo un mensaje por clan. [→ Contexto_Base_Web.md §PF455]
+      msjClan += _textoResumenCuposGuerra_(cuposPorClan[clanName]);
+      msjClan += _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag);
       // NUEVO (19-sep-2026, punto 7): si el clan ya cruzó la meta de la [→ Contexto_Base_Web.md §30B015]
       if (_clanCruzoMetaPorTag(clanesPend[ci2].clanTag)) { // PF407 (tanda 3): se pregunta por el Tag; el texto del mensaje sigue mostrando el nombre
         msjClan += '🏆 ¡Este clan ya cruzó la meta de la semana! Atacar hoy es opcional.\n';
@@ -52939,12 +52938,9 @@ function generarTodosMensajes() {
       if (cnCruzoMeta) {
         msjGral += '🏆 ¡Ya cruzó la meta de la semana! Atacar hoy es opcional.\n';
       }
-      ml.forEach(function(p) {
-        var icono = p.faltantes === 4 ? '🛑' : (p.faltantes >= 2 ? '⚠' : '🔹');
-        var wsp   = celularPorTag[p.tag] ? ' (ω)' : '';
-        var prest = _sufijoPrestamo(prestamoPorTag[p.tag]);
-        msjGral += icono + ' ' + p.nombre + ' (' + p.faltantes + ')' + wsp + prest + '\n';
-      });
+      // 14-nov-2026: mismo resumen y mismos dos grupos que en el mensaje de cada clan. [→ Contexto_Base_Web.md §PF455]
+      msjGral += _textoResumenCuposGuerra_(cuposPorClan[cn]);
+      msjGral += _textoGruposPendientesGuerra_(ml, celularPorTag, prestamoPorTag);
     }
     // Línea final: si NINGÚN clan listado cruzó la meta, queda exactamente [→ Contexto_Base_Web.md §30B016]
     if (clanesCruzaronMeta === 0) {
@@ -53268,6 +53264,42 @@ function _obtenerPrestamoPorTag(ss) {
   return mapa;
 }
 
+/**
+ * _resumenCuposGuerraPorClan_(ctx) [→ Contexto_Base_Web.md §PF455]
+ * 14-nov-2026 (pedido de la usuaria): cupos de cada clan para el resumen del inicio del Mensaje de Guerra. Usa los mismos datos y las mismas definiciones que «Participación de Hoy»
+ * de guerra.html (_getParticipacionHoyGuerra(), 17_GuerraSheet.gs; §PF344, §PF400): reservadas = cuentas con al menos un ataque hoy en el clan (las que ya no son activas del clan traen
+ * `inactiva: true`); libres = tope de 50 - reservadas; reemplazables = cuentas activas del clan sin ataques hoy, que son parte de los libres (no se suman); extras = libres - reemplazables, sin bajar de 0.
+ * Devuelve { nombreClan: { reservadas, activas, inactivas, libres, reemplazables, extras } }. Un fallo no rompe los mensajes: devuelve {} y salen sin el resumen.
+ */
+function _resumenCuposGuerraPorClan_(ctx) {
+  var mapa = {};
+  try {
+    var part = _getParticipacionHoyGuerra(ctx);
+    var clanes = (part && part.clanes) || [];
+    for (var i = 0; i < clanes.length; i++) {
+      var reservadas = clanes[i].reservadas || [];
+      var inactivas = 0;
+      for (var j = 0; j < reservadas.length; j++) {
+        if (reservadas[j].inactiva === true) inactivas++;
+      }
+      var libres = Math.max(0, PG.CUENTAS_MAX_CLAN_DIA - reservadas.length);
+      var reemplazables = (clanes[i].disponibles || []).length;
+      mapa[clanes[i].clan] = {
+        reservadas: reservadas.length,
+        activas: reservadas.length - inactivas,
+        inactivas: inactivas,
+        libres: libres,
+        reemplazables: reemplazables,
+        extras: Math.max(0, libres - reemplazables)
+      };
+    }
+  } catch (e) {
+    Logger.log('[Mensajes] No se pudo calcular el resumen de cupos de guerra: ' + e.message);
+    return {};
+  }
+  return mapa;
+}
+
 // --- Tema: agrupar y ordenar por clan ---
 
 /**
@@ -53305,6 +53337,57 @@ function _sufijoPrestamo(nombrePrestamo) {
   var n = String(nombrePrestamo || '').trim();
   if (!n) return '';
   return ' (' + n.charAt(0).toUpperCase() + ')';
+}
+
+/**
+ * _textoResumenCuposGuerra_(cupos) [→ Contexto_Base_Web.md §PF455]
+ * 14-nov-2026 (pedido de la usuaria): las dos líneas de resumen del inicio del Mensaje de Guerra de un clan, p. ej. «43 reservadas (40 activas y 3 inactivas)» y
+ * «07 cupos libres (2 reemplazables y 5 extras)», más una línea separadora. Los dos números de cabecera van con dos dígitos. Sin datos del clan devuelve '' y el mensaje sale sin resumen.
+ */
+function _textoResumenCuposGuerra_(cupos) {
+  if (!cupos) return '';
+  function pl(n, singular, plural) { return Number(n) === 1 ? singular : plural; }
+  var t = '🔒 ' + _pad2_(cupos.reservadas) + ' ' + pl(cupos.reservadas, 'reservada', 'reservadas') +
+          ' (' + cupos.activas + ' ' + pl(cupos.activas, 'activa', 'activas') +
+          ' y ' + cupos.inactivas + ' ' + pl(cupos.inactivas, 'inactiva', 'inactivas') + ')\n';
+  t += '➕ ' + _pad2_(cupos.libres) + ' ' + pl(cupos.libres, 'cupo libre', 'cupos libres') +
+       ' (' + cupos.reemplazables + ' ' + pl(cupos.reemplazables, 'reemplazable', 'reemplazables') +
+       ' y ' + cupos.extras + ' ' + pl(cupos.extras, 'extra', 'extras') + ')\n';
+  t += '==============================\n';
+  return t;
+}
+
+/**
+ * _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag) [→ Contexto_Base_Web.md §PF455]
+ * 14-nov-2026 (pedido de la usuaria): los pendientes de un clan en dos grupos. «Reemplazables» = los que tienen los 4 ataques pendientes (no atacaron hoy, no usan cupo); «Reservadas» = los que tienen de 1 a 3
+ * pendientes (ya atacaron hoy y usan cupo). Dentro de cada grupo se conserva el orden que traen `miembros` (Faltantes desc. -> Rango -> Nombre), el icono de cada línea (🛑, ⚠, 🔹) y los sufijos (ω) y de préstamo.
+ * Un grupo sin cuentas no lleva encabezado. Lo usan el mensaje de cada clan (Particular) y la sección de cada clan del Chat General.
+ */
+function _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag) {
+  var reemplazables = [];
+  var reservadas = [];
+  miembros.forEach(function(p) {
+    if (Number(p.faltantes) === 4) reemplazables.push(p); else reservadas.push(p);
+  });
+  function lineas(lista) {
+    var s = '';
+    lista.forEach(function(p) {
+      var icono = p.faltantes === 4 ? '🛑' : (p.faltantes >= 2 ? '⚠' : '🔹');
+      var wsp   = celularPorTag[p.tag] ? ' (ω)' : '';
+      var prest = _sufijoPrestamo(prestamoPorTag[p.tag]);
+      s += icono + ' ' + p.nombre + ' (' + p.faltantes + ')' + wsp + prest + '\n';
+    });
+    return s;
+  }
+  var t = '';
+  if (reemplazables.length > 0) {
+    t += '🛑 REEMPLAZABLES · 4 ataques pendientes (' + reemplazables.length + ')\n' + lineas(reemplazables);
+  }
+  if (reservadas.length > 0) {
+    if (t) t += '\n';
+    t += '⚠ RESERVADAS · 1 a 3 ataques pendientes (' + reservadas.length + ')\n' + lineas(reservadas);
+  }
+  return t;
 }
 
 /**
