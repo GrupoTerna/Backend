@@ -1845,6 +1845,11 @@ function borrarDuplicadasClanConTagGuerraInforme() { _borrarDuplicadasClanConTag
 
 function borrarDuplicadasClanConTagGuerraAplicar() { _borrarDuplicadasClanConTagGuerra_(true); }
 
+// Borra, de Backup_Guerra.csv, las filas con la Temporada mal puesta que ya tienen su fila real en la temporada correcta (PF450: 51 filas de T22 S3 domingo 25-oct-2026 con Temporada_2 137, que es la T26): informe primero; aplicar borra solo las que no aportan nada y guarda antes un respaldo. [→ Contexto_Base_Web.md §PF450]
+function borrarFilasTemporadaMalEtiquetadaGuerraInforme() { _borrarFilasTemporadaMalEtiquetadaGuerra_(false); }
+
+function borrarFilasTemporadaMalEtiquetadaGuerraAplicar() { _borrarFilasTemporadaMalEtiquetadaGuerra_(true); }
+
 // Filas de Backup_Guerra.csv con la columna Clan vacia (PF449): informe primero; aplicar borra las que ya existen completas en otra fila y no aportan nada, completa el nombre del clan desde su Clan_Tag y el nombre del jugador desde sus otras filas, y guarda antes un respaldo. No adivina: lo que no se puede confirmar queda como esta. [→ Contexto_Base_Web.md §PF449]
 function repararClanVacioGuerraInforme() { _repararClanVacioGuerra_(false); }
 
@@ -4819,6 +4824,113 @@ function _borrarDuplicadasClanConTagGuerra_(aplicar) {
       (excede ? 'NO SE BORRO NADA: salen mas de ' + BORRAR_TOPE + ' candidatas, revisar el informe. ' : '') +
       (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que borrar.') +
       (aplicar ? '' : ' (No se escribio nada; correr borrarDuplicadasClanConTagGuerraAplicar() para aplicar.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * _temporadaMalEtiquetadaPlanGuerra_(filas, encabezado) [→ Contexto_Base_Web.md §PF450]
+ * Función pura (no toca Drive ni hojas). filas: filas de Backup_Guerra.csv ya rellenadas a GUERRA_TOTAL_COLS columnas, sin encabezado. encabezado: su primera fila (solo para nombrar columnas en el informe).
+ * Detecta las filas cuya Temporada_2 no es la de su Temporada: cada Temporada tiene como Temporada_2 «normal» la más frecuente entre sus filas con ese dato, y una fila con otra Temporada_2 que a la vez es la normal de OTRA Temporada
+ * (T22 con 137, que es la normal de T26) está mal etiquetada. Una fila así se borra SOLO si: es del mismo clan y jugador que otra fila de esa otra Temporada con la misma Semana, el mismo PeriodIndex, el mismo día y la misma Temporada_2;
+ * y no aporta nada que esa fila real no tenga: Ataques, barcos y fame no pueden ser MAYORES que los de la real (la real puede traer más, porque se corrigió después, y entonces la mal etiquetada era una lectura anterior), y el nombre, la Etapa y el Clan_Tag, si los trae, son iguales.
+ * No se comparan N°, Temporada, Origen, la hora de Fecha, las dos Merma, Ranking, Copas ni las dos Donaciones: cambian de una lectura a otra del mismo día. Cualquier otra se informa y no se toca. No se reetiqueta ninguna: la fila real ya existe y reetiquetar duplicaría al jugador.
+ * Devuelve { borrar: { idx: N° de la fila real }, detalle: [[tipo, idx, texto, N° de la fila real]], resumen: { mal, borrar, sinReal, distinta, sinOtraTemporada } }. No modifica filas.
+ */
+function _temporadaMalEtiquetadaPlanGuerra_(filas, encabezado) {
+  var celda = function (f, col) { return String(f[col - 1] === undefined || f[col - 1] === null ? '' : f[col - 1]).trim(); };
+  var num = function (f, col) { var v = parseFloat(celda(f, col)); return isNaN(v) ? 0 : v; };
+  var frec = {}; // Temporada -> { Temporada_2: cuántas filas }
+  filas.forEach(function (f) {
+    var t = celda(f, GC.TEMPORADA), t2 = celda(f, GC.TEMPORADA_2);
+    if (!t || !t2) return;
+    (frec[t] || (frec[t] = {}))[t2] = (frec[t][t2] || 0) + 1;
+  });
+  var normal = {}, temporadaDeNormal = {}; // Temporada -> su Temporada_2 más frecuente; Temporada_2 -> Temporada a la que pertenece
+  Object.keys(frec).forEach(function (t) {
+    var mejor = '', cuenta = -1;
+    Object.keys(frec[t]).forEach(function (t2) { if (frec[t][t2] > cuenta) { cuenta = frec[t][t2]; mejor = t2; } });
+    normal[t] = mejor; temporadaDeNormal[mejor] = t;
+  });
+  var claveDia = function (f, t) { return [celda(f, GC.TAG).toUpperCase(), celda(f, GC.CLAN), t, celda(f, GC.SEMANA), celda(f, GC.PERIOD_IDX), celda(f, GC.TEMPORADA_2)].join('|'); };
+  var reales = {};
+  filas.forEach(function (f, idx) {
+    var t = celda(f, GC.TEMPORADA), t2 = celda(f, GC.TEMPORADA_2);
+    if (!t || !t2 || normal[t] !== t2) return; // solo las filas con la Temporada_2 normal de su temporada pueden ser la fila real
+    (reales[claveDia(f, t)] || (reales[claveDia(f, t)] = [])).push(idx);
+  });
+
+  var borrar = {}, detalle = [], rs = { mal: 0, borrar: 0, sinReal: 0, distinta: 0, sinOtraTemporada: 0 };
+  filas.forEach(function (f, idx) {
+    var t = celda(f, GC.TEMPORADA), t2 = celda(f, GC.TEMPORADA_2);
+    if (!t || !t2 || !normal[t] || normal[t] === t2) return;
+    rs.mal++;
+    var tReal = temporadaDeNormal[t2];
+    if (!tReal || tReal === t) { rs.sinOtraTemporada++; detalle.push(['SIN OTRA TEMPORADA (no se toca)', idx, 'la Temporada_2 ' + t2 + ' no es la normal de ninguna otra Temporada', '']); return; }
+    var hermanas = reales[claveDia(f, tReal)] || [];
+    if (!hermanas.length) { rs.sinReal++; detalle.push(['SIN FILA REAL (no se toca)', idx, 'no hay fila de la Temporada ' + tReal + ' con el mismo jugador, clan, semana y periodo; esta no se borra porque seria el unico dato del dia', '']); return; }
+    var elegida = -1, sobrantes = [];
+    for (var h = 0; h < hermanas.length && elegida < 0; h++) {
+      var g = filas[hermanas[h]], dif = [];
+      [GC.ATAQUES_HOY, GC.ATAQUES_SEM, GC.BARCOS, GC.FAME].forEach(function (c) { if (num(f, c) > num(g, c)) dif.push(encabezado[c - 1] || ('columna ' + c)); });
+      [GC.NOMBRE, GC.ETAPA, GC.CLAN_TAG, GC.DIA, GC.DIA_GUERRA].forEach(function (c) { var va = celda(f, c); if (va !== '' && va !== celda(g, c)) dif.push(encabezado[c - 1] || ('columna ' + c)); });
+      if (celda(f, GC.FECHA).slice(0, 10) !== celda(g, GC.FECHA).slice(0, 10)) dif.push('Fecha (dia)');
+      if (!dif.length) elegida = hermanas[h]; else sobrantes = dif;
+    }
+    if (elegida < 0) { rs.distinta++; detalle.push(['DISTINTA (no se toca)', idx, 'trae valores que la fila real N° ' + filas[hermanas[0]][GC.NUM - 1] + ' no tiene: ' + sobrantes.join(', '), filas[hermanas[0]][GC.NUM - 1]]); return; }
+    borrar[idx] = filas[elegida][GC.NUM - 1]; rs.borrar++;
+    detalle.push(['Borrar', idx, 'Temporada ' + t + ' con Temporada_2 ' + t2 + ' (la normal de T' + tReal + '); no aporta nada que la fila real N° ' + filas[elegida][GC.NUM - 1] + ' de T' + tReal + ' no tenga', filas[elegida][GC.NUM - 1]]);
+  });
+  return { borrar: borrar, detalle: detalle, resumen: rs };
+}
+
+/**
+ * _borrarFilasTemporadaMalEtiquetadaGuerra_(aplicar) [→ Contexto_Base_Web.md §PF450]
+ * Lee Backup_Guerra.csv, planifica con _temporadaMalEtiquetadaPlanGuerra_() y, si aplicar es true y el plan no pasa del tope, borra las filas «Borrar» y guarda antes un respaldo.
+ * Tope: BORRAR_TOPE filas por corrida; si salen más, no se borra nada. Solo Backup_Guerra.csv, no la hoja. Informe: Reparacion_BorrarTemporadaMalEtiquetada_Guerra <fecha>.csv.
+ */
+function _borrarFilasTemporadaMalEtiquetadaGuerra_(aplicar) {
+  var BORRAR_TOPE = 60;
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[BorrarTempMal] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var t0 = Date.now();
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (!csvText) { Logger.log('[BorrarTempMal] Backup_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length < 2) { Logger.log('[BorrarTempMal] Backup_Guerra.csv no tiene filas de datos; no se hace nada.'); return; }
+    var encabezado = parsed[0], filas = parsed.slice(1);
+    if (String(encabezado[GC.TEMPORADA - 1] || '').trim() !== 'Temporada' || String(encabezado[GC.TEMPORADA_2 - 1] || '').trim() !== 'Temporada_2' || String(encabezado[GC.TAG - 1] || '').trim() !== 'Tag') {
+      Logger.log('[BorrarTempMal] El encabezado de Backup_Guerra.csv no tiene el orden actual de columnas (Temporada en la ' + GC.TEMPORADA + ', Temporada_2 en la ' + GC.TEMPORADA_2 + ', Tag en la ' + GC.TAG + '); no se toca nada.');
+      return;
+    }
+    for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
+
+    var plan = _temporadaMalEtiquetadaPlanGuerra_(filas, encabezado);
+    var informe = [['Tipo', 'N°', 'Temporada', 'Temporada_2', 'Semana', 'Día', 'Tag', 'Nombre', 'Clan', 'N° de la fila real', 'Detalle']];
+    plan.detalle.forEach(function (d) {
+      var f = filas[d[1]];
+      informe.push([d[0], f[GC.NUM - 1], f[GC.TEMPORADA - 1], f[GC.TEMPORADA_2 - 1], f[GC.SEMANA - 1], f[GC.DIA - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.CLAN - 1], d[3], d[2]]);
+    });
+    var nombreInforme = 'Reparacion_BorrarTemporadaMalEtiquetada_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    if (informe.length > 1) _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
+
+    var nBorrar = plan.resumen.borrar, excede = nBorrar > BORRAR_TOPE;
+    if (aplicar && nBorrar && !excede) {
+      _saveCSVToDrive('Backup_Guerra ANTES de borrar temporada mal etiquetada ' + marca + '.csv', csvText);
+      var quedan = filas.filter(function (f, idx) { return !plan.borrar[idx]; });
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(quedan)));
+    }
+
+    var rs = plan.resumen;
+    Logger.log('[BorrarTempMal] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). ' +
+      'Filas con la Temporada_2 de otra temporada: ' + rs.mal + '. A borrar: ' + nBorrar + (aplicar && nBorrar && !excede ? ' (borradas)' : '') + '. ' +
+      'No se tocan: ' + (rs.sinReal + rs.distinta + rs.sinOtraTemporada) + ' (sin fila real: ' + rs.sinReal + '; distintas: ' + rs.distinta + '; sin otra temporada: ' + rs.sinOtraTemporada + '). ' +
+      (excede ? 'NO SE BORRO NADA: salen mas de ' + BORRAR_TOPE + ' candidatas, revisar el informe. ' : '') +
+      (informe.length > 1 ? 'Detalle en Drive: ' + nombreInforme + '.' : 'No hay nada que borrar.') +
+      (aplicar ? '' : ' (No se escribio nada; correr borrarFilasTemporadaMalEtiquetadaGuerraAplicar() para aplicar.)'));
   } finally {
     lock.releaseLock();
   }
