@@ -10,7 +10,7 @@ description: >-
 
 # Skill: `md` — código del clan en GitHub: lectura, corrección y consolidados de fases
 
-**Versión de esta skill: 10-nov-2026, rev. 8.** Cada cambio de `SKILL.md` sube el número de revisión (el workflow `skill-ci.yml` lo exige). Al empezar la tanda, después de clonar, Claude compara esta línea con la de `Claude/SKILL.md` del repo; si difieren, avisa a la usuaria que hay que reinstalar la skill desde ese archivo y toma el repo como referencia.
+**Versión de esta skill: 14-nov-2026, rev. 9.** Cada cambio de `SKILL.md` sube el número de revisión (el workflow `skill-ci.yml` lo exige). Al empezar la tanda, después de clonar, Claude compara esta línea con la de `Claude/SKILL.md` del repo; si difieren, avisa a la usuaria que hay que reinstalar la skill desde ese archivo y toma el repo como referencia.
 
 ## Idioma
 
@@ -206,8 +206,8 @@ Antes del commit se busca la secuencia de tres comillas inversas con ``grep -n -
 3. **Leer el archivo real** y las funciones relacionadas, sin apoyarse en la memoria ni en código pegado en el chat.
 4. **Analizar la solicitud** con las instrucciones actuales, los errores y los logs, y buscar primero lo ya escrito en el contexto (sección 9).
 5. **Editar** en el clon solo los archivos necesarios (secciones 3 a 6; 0.9 para ubicar código nuevo).
-6. **Verificar:** sintaxis (`node --check` sobre una copia `.js` para los `.gs`), integridad del archivo, funciones conservadas, ausencia de duplicados, coherencia con los demás archivos, nombre exacto, ausencia de restos de formato (sección 6) e idioma (`verificar_idioma.py`; ver «Idioma»).
-7. **Subir** a `main` apenas termina el cambio, en un commit pequeño (0.2).
+6. **Verificar:** sintaxis (`node --check` sobre una copia `.js` para los `.gs`), integridad del archivo, funciones conservadas, ausencia de duplicados, coherencia con los demás archivos, nombre exacto, ausencia de restos de formato (sección 6) e idioma (`verificar_idioma.py`; ver «Idioma»). **Antes de cada subida de un `.gs` se corre el validador del repo, el mismo que usa GitHub Actions: `node .github/scripts/validar_proyecto_gs.js Base` (o `Contactos_Secundario`; para el Generador, el script de `generador-ci.yml`), que revisa sintaxis, `appsscript.json`, secretos y, sobre todo, funciones con el mismo nombre en distintos archivos.** En Apps Script todas las funciones globales de un proyecto comparten un solo espacio de nombres y la última en cargarse pisa a las demás sin avisar (el 14-nov-2026 una función nueva se llamó igual que `_estadoVentanaGuerra_` de `00_Main.gs` y desactivó la protección de la ventana de guerra; el workflow falló, pero ya estaba subido). Al crear una función nueva se busca antes su nombre con `grep -rn --include=*.gs -E "function +nombre\b" Base/src Generador/src`.
+7. **Subir** a `main` apenas termina el cambio, en un commit pequeño (0.2). **Después del push se comprueba que el workflow de GitHub Actions de ese commit termine en `success`** (`gh run list -R GrupoTerna/backend -L 3 --json conclusion,headSha,displayTitle`; tarda menos de un minuto); si falla, se corrige de inmediato y se avisa a la usuaria, porque lo subido a `main` es lo que ella trae a Apps Script.
 8. **Cerrar la tanda** según 0.2 (contexto, lista de archivos y recordatorios de 0.3).
 
 ---
