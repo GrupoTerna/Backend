@@ -850,7 +850,7 @@ function _githubSubirArchivosDeDrive_(nombres, carpetaDestino, mensaje) {
       problemas.push(nombre + ' → posible secreto: ' + rev.bloqueos.join(', '));
       return;
     }
-    if (/\+\d[\d\s-]{7,}\d|\b\d{9,}\b/.test(contenido)) {
+    if (/\+\d[\d\s-]{7,}\d|\b\d{9,}\b/.test(_datosGhQuitarNombresPermitidos_(contenido))) {   // §PF451: nombres de clan permitidos (12_Datos_Drive_GitHub.gs)
       problemas.push(nombre + ' → posible número de teléfono (9 o más dígitos seguidos); revisa el archivo antes de subirlo a un repo público');
       return;
     }

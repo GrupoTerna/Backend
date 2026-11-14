@@ -108,6 +108,12 @@ var DATOS_GH_FUENTES_ = [
 // (módulo 59): ID, Temporada, Semana, Clan, Tag, Nombre, Capturas, Estado, Métricas utilizables y Notas son las columnas 0 a 9 (se revisan 10); desde la 10 son rangos.
 var DATOS_GH_EXCEPCION_TELEFONOS_ = { 'Cruce_CRR_Restricciones.csv': 10 };
 
+// §PF451 (14-nov-2026, pedido de la usuaria): nombres de clan reales que parecen un celular (9 o más cifras seguidas) y no lo son; los nombres de clan son públicos.
+// Solo cuenta el nombre COMPLETO y exacto: una cifra pegada antes («2987660457 xd») o una letra pegada después («987660457 xdd») ya no coincide. Cualquier otro número de la
+// misma línea sigue revisándose, así que un celular que llegara por un error de índice de columnas se seguiría detectando. Se usa en _datosGhBuscarTelefonos_ y en la subida
+// puntual de 08_GitHub.gs. Para agregar otro nombre: una línea más en esta lista, con el texto completo y exacto.
+var DATOS_GH_NOMBRES_PERMITIDOS_ = ['987660457 xd'];       // clan «987660457 xd» (#L22JLJYL), RoyaleAPI
+
 var DATOS_GH_PREFIJO_ESTADO_   = 'DATOS_GH_';
 var DATOS_GH_HANDLER_AUTO_     = 'subirDatosDriveAGithubAuto';
 var DATOS_GH_HANDLER_SEGUIR_   = 'subirDatosDriveAGithubContinuar';
@@ -348,6 +354,20 @@ function _datosGhListarCandidatos_() {
 }
 
 /**
+ * _datosGhQuitarNombresPermitidos_(texto): §PF451. Cambia por un espacio cada aparición exacta de los nombres de DATOS_GH_NOMBRES_PERMITIDOS_ (sin cifra pegada antes ni letra,
+ * cifra o guion bajo pegados después), para que el detector de teléfonos no los tome por un celular. No quita ni agrega saltos de línea, así que el número de línea de los avisos no cambia.
+ * Función pura.
+ */
+function _datosGhQuitarNombresPermitidos_(texto) {
+  var t = String(texto);
+  DATOS_GH_NOMBRES_PERMITIDOS_.forEach(function(nombre) {
+    var esc = String(nombre).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    t = t.replace(new RegExp('(^|[^\\d])' + esc + '(?![\\w])', 'g'), '$1 ');
+  });
+  return t;
+}
+
+/**
  * Devuelve una lista de textos tipo «línea 12 (teléfono con +)». Nunca incluye el valor.
  * Reglas (probadas contra 99 CSV del repo sin falsos positivos):
  *   A) «+» seguido de 8 o más cifras (con espacios, guiones o paréntesis);
@@ -356,7 +376,7 @@ function _datosGhListarCandidatos_() {
  *      o 10 cifras que empiezan con 15 a 19).
  */
 function _datosGhBuscarTelefonos_(texto) {
-  var lineas = String(texto).split('\n');
+  var lineas = _datosGhQuitarNombresPermitidos_(texto).split('\n');   // §PF451: sin los nombres de clan permitidos
   var hallazgos = [];
   var reA = /\+\d[\d ()-]{7,}\d/;
   var reB = /(^|[^\d-])\d{3}[ -]\d{3}[ -]\d{3,4}(?![\d-])/;
