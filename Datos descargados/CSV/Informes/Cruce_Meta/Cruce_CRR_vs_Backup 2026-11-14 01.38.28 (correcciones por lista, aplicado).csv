@@ -1,0 +1,4 @@
+ID,Tanda,Temporada,Semana,Clan,Tag,Nombre,Día,Acción,AtaquesHoy ahora,AtaquesHoy nuevo,AtaquesSemana ahora,AtaquesSemana nuevo,Fame ahora,Fame nuevo,Barcos ahora,Barcos nuevo,Origen ahora,Nota
+T_24_S_01_#UJY0PGPUV,2,24,1,Mini乂Ternas™,#UJY0PGPUV,кυякү,J,Corregir,0,0,4,0,0,0,0,0,,JSON exacto de Mini: 0 ataques y 0 de fame de jueves a sábado; la fila traía AtaquesSemana 4 con fame 0 (la suma con ™2 y ™3 daría 19)
+T_24_S_01_#UJY0PGPUV,2,24,1,GrupoXTerna™2,#UJY0PGPUV,кυякү,S,Corregir,0,0,7,7,0,1200,0,0,,"AGREGADA POR CLAUDE, A CONFIRMAR: JSON exacto de ™2 el sábado 7 / 1200; con 0 de fame el domingo (1700) tendría 1700 en un solo día, que no cabe con 4 ataques"
+T_24_S_01_#UJY0PGPUV,2,24,1,GrupoXTerna™2,#UJY0PGPUV,кυякү,D,Corregir,0,4,0,11,0,1700,0,0,,"RoyaleAPI ™2 11 / 1700 (perfil); el JSON de ™2 da el domingo entre 7 y 11 ataques y entre 1200 y 2100 de fame, así que cabe; el sábado ya tiene 7"
