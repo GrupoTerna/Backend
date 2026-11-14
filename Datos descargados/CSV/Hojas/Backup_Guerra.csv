@@ -7023,7 +7023,7 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 7022,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,4,8,0,4,0,1200,,48,0,1,Corregido - Solución única,#GYCU9YRG
 7023,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#LLUURU990,SK｜Wirtz,0,4,4,8,0,500,,2,130,86,,#GYCU9YRG
 7024,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,4,8,0,4,0,900,,47,0,0,Corregido - Solución estimada,#GYCU9YRG
-7025,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,0,7,4,4,0,1200,,49,0,40,Corregido - lista (RoyaleAPI y JSON),#GYCU9YRG
+7025,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,4,7,4,4,0,1200,,49,0,40,Corregido - lista (RoyaleAPI y JSON),#GYCU9YRG
 7026,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#22C090RVJ,反覆分Mc-->WiLL,4,9,0,3,0,1200,,1,304,801,Corregido - Solución única,#GYCU9YRG
 7027,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#QR8JGLC9Q,ᴳ乂ᵀ⚜️Bloodshot,4,8,0,4,0,1250,,42,150,398,,#GYCU9YRG
 7028,08/08/2026 00:00:00,08/08/2026,Guerra,24,,1,S,5,GrupoXTerna™2,#RGCL8LGJC,Alex♡Dmr,4,10,0,2,0,1400,,37,0,0,,#GYCU9YRG
@@ -40608,3 +40608,4 @@ N°,Fecha,DiaGuerra,Etapa,Temporada,Temporada_2,Semana,Día,PeriodIndex,Clan,Tag
 40607,13/11/2026 04:44:02,13/11/2026,Guerra,27,138,2,V,11,GrupoXTerna™2,#VCJG2G0Q0,kimato_12,0,0,4,4,0,0,11302,34,0,0,Original,#GYCU9YRG
 40608,13/11/2026 04:44:02,13/11/2026,Guerra,27,138,2,V,11,GrupoXTerna™2,#CLQ2889J8,jimmy,4,4,0,0,4,350,10354,33,40,72,Original,#GYCU9YRG
 40609,13/11/2026 04:54:03,13/11/2026,Guerra,27,138,2,V,11,Grupo乂Terna™,#CR829JLPV,SegBer,4,4,0,0,0,500,14000,3,0,0,Original,#GCRG8L00
+,07/08/2026 00:00:00,07/08/2026,Guerra,24,135,1,V,4,GrupoXTerna™2,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,3,3,,,0,600,,,,,Reconstruido - lista (RoyaleAPI y JSON),#GYCU9YRG
