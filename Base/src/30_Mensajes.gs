@@ -125,9 +125,9 @@ function generarTodosMensajes() {
         if (rA !== rB) return rA - rB;
         return a.nombre.localeCompare(b.nombre);
       });
-      var msjClan = '⚔ GUERRA ' + nombreDia + ' — SEMANA ' + semNum + ' ⚔\n';
+      var msjClan = _negritaWsp_('⚔ GUERRA ' + nombreDia + ' — SEMANA ' + semNum + ' ⚔') + '\n';
       msjClan += '==============================\n';
-      msjClan += '🔥 ' + clanName + ' (' + miembros.length + ' pendientes)\n';
+      msjClan += _negritaWsp_('🔥 ' + clanName + ' (' + miembros.length + ' pendientes)') + '\n';
       msjClan += '==============================\n';
       // 14-nov-2026 (pedido de la usuaria): resumen de cupos al inicio y, debajo, los pendientes agrupados en Reemplazables (4 ataques pendientes) y Reservadas (1 a 3). Sigue siendo un mensaje por clan. [→ Contexto_Base_Web.md §PF455]
       msjClan += _textoResumenCuposGuerra_(cuposPorClan[clanName]);
@@ -145,8 +145,8 @@ function generarTodosMensajes() {
     }
 
     // --- Fila general (Subcategoría = Chat General) ---
-    var msjGral = '⚔ GUERRA ' + nombreDia + ' — SEMANA ' + semNum + ' ⚔\n';
-    msjGral += '⚠ ' + pendientes.length + ' jugadores aún no completan sus ataques.\n';
+    var msjGral = _negritaWsp_('⚔ GUERRA ' + nombreDia + ' — SEMANA ' + semNum + ' ⚔') + '\n';
+    msjGral += _negritaWsp_('⚠ ' + pendientes.length + ' jugadores aún no completan sus ataques.') + '\n';
     // NUEVO (19-sep-2026, punto 7): cuenta cuántos de los clanes listados ya
     // cruzaron la meta, para decidir la línea final (ver más abajo).
     var clanesCruzaronMeta = 0;
@@ -164,7 +164,7 @@ function generarTodosMensajes() {
       var cnCruzoMeta = _clanCruzoMetaPorTag(clanesPend[ci3].clanTag); // PF407 (tanda 3)
       if (cnCruzoMeta) clanesCruzaronMeta++;
       msjGral += '==============================\n';
-      msjGral += '🔥 ' + cn + ' (' + ml.length + ' pendientes)\n';
+      msjGral += _negritaWsp_('🔥 ' + cn + ' (' + ml.length + ' pendientes)') + '\n';
       msjGral += '==============================\n';
       if (cnCruzoMeta) {
         msjGral += '🏆 ¡Ya cruzó la meta de la semana! Atacar hoy es opcional.\n';
@@ -603,6 +603,16 @@ function _pasoMedianocheDiaGuerra_(ahora, diaLetra) {
 }
 
 /**
+ * _negritaWsp_(texto) [→ Contexto_Base_Web.md §PF459]
+ * 14-nov-2026 (pedido de la usuaria): envuelve una línea en asteriscos para que salga en negrita al pegarla en WhatsApp (`*texto*`). Se quitan los asteriscos que ya trajera el texto (p. ej. en el nombre de un clan)
+ * y los espacios de los bordes, porque WhatsApp no aplica la negrita si hay un espacio pegado a un asterisco. Texto vacío = ''. En la web los asteriscos se ven tal cual: la web no interpreta el texto del mensaje.
+ */
+function _negritaWsp_(texto) {
+  var t = String(texto === undefined || texto === null ? '' : texto).replace(/\*/g, '').trim();
+  return t ? '*' + t + '*' : '';
+}
+
+/**
  * _textoPasoMedianocheGuerra_() [→ Contexto_Base_Web.md §PF457]
  * 14-nov-2026: línea final del Mensaje de Guerra cuando ya pasó la medianoche de Lima: avisa que pasó la hora permitida (12:00 AM) y que hay más urgencia en completar los ataques cuanto antes.
  * A pedido de la usuaria NO menciona el cambio de día de guerra (4-5 a. m.) ni cuánto falta (la API no lo informa).
@@ -622,20 +632,20 @@ function _textoResumenCuposGuerra_(cupos) {
   function pl(n, singular, plural) { return Number(n) === 1 ? singular : plural; }
   // §PF458: las reservadas se desglosan en ataques completos y ataques pendientes, y cada uno en activas y fuera del clan.
   function partes(act, fuera) { return '(' + act + ' ' + pl(act, 'activa', 'activas') + ' y ' + fuera + ' fuera del clan)'; }
-  var t = '🔒 ' + _pad2_(cupos.reservadas) + ' ' + pl(cupos.reservadas, 'reservada', 'reservadas') + '\n';
+  var t = _negritaWsp_('🔒 ' + _pad2_(cupos.reservadas) + ' ' + pl(cupos.reservadas, 'reservada', 'reservadas')) + '\n';
   t += '   ✅ ' + cupos.completas + ' con ataques completos ' + partes(cupos.completasActivas, cupos.completasFuera) + '\n';
   t += '   ⏳ ' + cupos.pendientes + ' con ataques pendientes ' + partes(cupos.pendientesActivas, cupos.pendientesFuera) + '\n';
-  t += '➕ ' + _pad2_(cupos.libres) + ' ' + pl(cupos.libres, 'cupo libre', 'cupos libres') +
+  t += _negritaWsp_('➕ ' + _pad2_(cupos.libres) + ' ' + pl(cupos.libres, 'cupo libre', 'cupos libres') +
        ' (' + cupos.reemplazables + ' ' + pl(cupos.reemplazables, 'reemplazable', 'reemplazables') +
-       ' y ' + cupos.extras + ' ' + pl(cupos.extras, 'extra', 'extras') + ')\n';
+       ' y ' + cupos.extras + ' ' + pl(cupos.extras, 'extra', 'extras') + ')') + '\n';
   t += '==============================\n';
   return t;
 }
 
 /**
  * _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, cupos) [→ Contexto_Base_Web.md §PF455]
- * 14-nov-2026 (pedido de la usuaria): los pendientes de un clan en dos grupos. «Reemplazables» = los que tienen los 4 ataques pendientes (no atacaron hoy, no usan cupo); «Reservadas» = los que tienen de 1 a 3
- * pendientes (ya atacaron hoy y usan cupo). Dentro de cada grupo se conserva el orden que traen `miembros` (Faltantes desc. -> Rango -> Nombre), el icono de cada línea (🛑, ⚠, 🔹) y los sufijos (ω) y de préstamo.
+ * 14-nov-2026 (pedido de la usuaria): los pendientes de un clan en dos grupos. «Reemplazables» = los que tienen los 4 ataques pendientes (no atacaron hoy, no usan cupo); «Reservadas activas con ataques pendientes» (§PF459; antes «Reservadas») = los que tienen de 1 a 3
+ * pendientes (ya atacaron hoy y usan cupo). Los encabezados salen en negrita de WhatsApp (`_negritaWsp_()`). Dentro de cada grupo se conserva el orden que traen `miembros` (Faltantes desc. -> Rango -> Nombre), el icono de cada línea (🛑, ⚠, 🔹) y los sufijos (ω) y de préstamo.
  * Un grupo sin cuentas no lleva encabezado. Lo usan el mensaje de cada clan (Particular) y la sección de cada clan del Chat General.
  * §PF456: bajo cada encabezado va una frase que explica qué significa el grupo. La de Reemplazables cambia según los cupos extra del clan (`cupos.extras`: con extras, «pueden ser reemplazados por cuentas
  * extra»; sin extras, nadie puede cubrirlos y «necesitamos que ataquen ellos»; sin datos de cupos, la frase general). Las frases son las mismas pasada la medianoche: el día de guerra aún no cambia y se puede atacar (§PF456).
@@ -657,7 +667,7 @@ function _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, 
     return s;
   }
   var fraseReemp, fraseReserv;
-  fraseReserv = 'Ya usan cupo: completen sus ataques.';
+  fraseReserv = 'Ya usan cupo (les faltan de 1 a 3 ataques): completen sus ataques.';
   if (cupos && cupos.extras > 0) {
     fraseReemp = 'Aún no usan cupo: si no atacan, pueden ser reemplazados por cuentas extra (hay ' + cupos.extras + ' cupo' + (cupos.extras === 1 ? '' : 's') + ' extra).';
   } else if (cupos) {
@@ -667,11 +677,11 @@ function _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, 
   }
   var t = '';
   if (reemplazables.length > 0) {
-    t += '🛑 REEMPLAZABLES · 4 ataques pendientes (' + reemplazables.length + ')\n↳ ' + fraseReemp + '\n' + lineas(reemplazables);
+    t += _negritaWsp_('🛑 REEMPLAZABLES · 4 ataques pendientes (' + reemplazables.length + ')') + '\n↳ ' + fraseReemp + '\n' + lineas(reemplazables);
   }
   if (reservadas.length > 0) {
     if (t) t += '\n';
-    t += '⚠ RESERVADAS · 1 a 3 ataques pendientes (' + reservadas.length + ')\n↳ ' + fraseReserv + '\n' + lineas(reservadas);
+    t += _negritaWsp_('⚠ RESERVADAS ACTIVAS CON ATAQUES PENDIENTES (' + reservadas.length + ')') + '\n↳ ' + fraseReserv + '\n' + lineas(reservadas);
   }
   return t;
 }
