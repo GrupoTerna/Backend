@@ -111,7 +111,7 @@ function generarTodosMensajes() {
     var semNum = ctx.sectionIndex + 1;
     // 14-nov-2026 (pedido de la usuaria): cupos de cada clan para el resumen del inicio; si no se pueden calcular, los mensajes salen sin esa parte. [→ Contexto_Base_Web.md §PF455]
     var cuposPorClan = _resumenCuposGuerraPorClan_(ctx);
-    // 14-nov-2026 (pedido de la usuaria): hasta las 12:00 AM (Lima) del día de guerra la línea final recuerda ese plazo; pasada la medianoche (el mensaje puede generarse de madrugada, antes de que cambie el día de guerra) avisa que ya pasó la hora permitida pero aún se puede atacar. No se dice cuánto falta: la API no lo informa. [→ Contexto_Base_Web.md §PF456]
+    // 14-nov-2026 (pedido de la usuaria): hasta las 12:00 AM (Lima) del día de guerra la línea final recuerda ese plazo; pasada la medianoche (el mensaje puede generarse de madrugada, antes de que cambie el día de guerra) avisa que ya pasó la hora permitida y que hay más urgencia en completar los ataques. No se dice cuánto falta: la API no lo informa. [→ Contexto_Base_Web.md §PF457]
     var pasoMedianoche = _pasoMedianocheDiaGuerra_(now, ctx.diaLetra);
 
     // --- Fila por clan (Subcategoría = Particular) ---
@@ -135,7 +135,7 @@ function generarTodosMensajes() {
       // NUEVO (19-sep-2026, punto 7): si el clan ya cruzó la meta de la [→ Contexto_Base_Web.md §30B015]
       if (_clanCruzoMetaPorTag(clanesPend[ci2].clanTag)) { // PF407 (tanda 3): se pregunta por el Tag; el texto del mensaje sigue mostrando el nombre
         msjClan += '🏆 ¡Este clan ya cruzó la meta de la semana! Atacar hoy es opcional.\n';
-      } else if (pasoMedianoche) { // 14-nov-2026 (§PF456): ya pasó la medianoche de Lima, pero el día de guerra aún no cambia
+      } else if (pasoMedianoche) { // 14-nov-2026 (§PF457): ya pasó la medianoche de Lima, pero el día de guerra aún no cambia
         msjClan += _textoPasoMedianocheGuerra_() + '\n';
       } else {
         msjClan += '⏳ Tienen hasta las 12:00 AM para completar sus ataques.\n';
@@ -176,7 +176,7 @@ function generarTodosMensajes() {
     // Línea final: si NINGÚN clan listado cruzó la meta, queda exactamente [→ Contexto_Base_Web.md §30B016]
     if (clanesCruzaronMeta === clanesPend.length) {
       msjGral += '🏆 Todos los clanes de este mensaje ya cruzaron la meta: atacar hoy es opcional.\n';
-    } else if (pasoMedianoche) { // 14-nov-2026 (§PF456): pasada la medianoche no se afirma plazo ni expulsiones: el cambio de día de guerra (4-5 a. m.) no tiene hora exacta
+    } else if (pasoMedianoche) { // 14-nov-2026 (§PF457): pasada la medianoche no se afirma plazo ni expulsiones: no hay hora exacta de cierre
       msjGral += _textoPasoMedianocheGuerra_() + '\n';
     } else if (clanesCruzaronMeta === 0) {
       msjGral += '⏳ Tienen hasta las 12:00 AM para completar sus ataques.\nDespués del cierre, se aplicarán expulsiones sin excepción.\n';
@@ -573,8 +573,8 @@ function _sufijoPrestamo(nombrePrestamo) {
 }
 
 /**
- * _pasoMedianocheDiaGuerra_(ahora, diaLetra) [→ Contexto_Base_Web.md §PF456]
- * 14-nov-2026 (pedido de la usuaria): true si ya pasó la medianoche (12:00 AM de Lima) del día de guerra del mensaje. NO significa que la guerra haya cerrado: el día de guerra cambia entre las 4:00 y las 5:00 AM de Lima
+ * _pasoMedianocheDiaGuerra_(ahora, diaLetra) [→ Contexto_Base_Web.md §PF457]
+ * 14-nov-2026 (pedido de la usuaria): true si ya pasó la medianoche (12:00 AM de Lima) del día de guerra del mensaje. NO significa que la guerra haya cerrado: el día de guerra cambia de madrugada (§PF435)
  * y la API no informa cuánto falta, así que no se calcula ningún tiempo restante (se quitó el «faltan X h»).
  * El mensaje puede generarse de madrugada, antes de que cambie el día de guerra (hacia las 4:45 a. m., §PF435), así que NO se decide solo por la hora: se compara la letra del día de guerra del contexto (`ctx.diaLetra`)
  * con el día de la semana de Lima. Mismo día = aún no pasó; el día siguiente = ya pasó la medianoche; cualquier otro caso (letra desconocida o contexto desactualizado) = false, y el mensaje conserva la línea de siempre.
@@ -595,12 +595,12 @@ function _pasoMedianocheDiaGuerra_(ahora, diaLetra) {
 }
 
 /**
- * _textoPasoMedianocheGuerra_() [→ Contexto_Base_Web.md §PF456]
- * 14-nov-2026: línea final del Mensaje de Guerra cuando ya pasó la medianoche de Lima: la hora permitida (12:00 AM) pasó, pero aún se puede atacar porque el día de guerra cambia entre las 4:00 y las 5:00 AM.
- * No dice cuánto falta (la API no lo informa).
+ * _textoPasoMedianocheGuerra_() [→ Contexto_Base_Web.md §PF457]
+ * 14-nov-2026: línea final del Mensaje de Guerra cuando ya pasó la medianoche de Lima: avisa que pasó la hora permitida (12:00 AM) y que hay más urgencia en completar los ataques cuanto antes.
+ * A pedido de la usuaria NO menciona el cambio de día de guerra (4-5 a. m.) ni cuánto falta (la API no lo informa).
  */
 function _textoPasoMedianocheGuerra_() {
-  return '⌛ Ya pasó la hora permitida (12:00 AM, hora peruana), pero aún se puede atacar: el día de guerra cambia entre las 4:00 y las 5:00 AM.';
+  return '🚨 Ya pasó la hora permitida (12:00 AM, hora peruana): ¡completen sus ataques cuanto antes, es urgente!';
 }
 
 /**
