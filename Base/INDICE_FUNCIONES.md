@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 2954 nombres en 60 archivos .gs.
+Código real: `Base/src/`. Total: 2955 nombres en 60 archivos .gs.
 
 ## Por archivo
 
@@ -35,7 +35,7 @@ Código real: `Base/src/`. Total: 2954 nombres en 60 archivos .gs.
 - **27_Torneos_Sorteos_Requisitos.gs** (23 funciones): sincronizarRequisitosYPremiosTorneo, sincronizarRequisitosSorteo, _resumirRequisitosBloque, _clanTagNorm_, _clanTagDeFilaORespaldo_, _getMinTPorTagClan, _reescribirRequisitosTexto, _buscarIndiceHijo, _insertarBulletRequisito, _ordenarSemanasSorteoDoc, _insertarFilaRequisito, _etiquetaSemanaSorteoDoc, _insertarBloquePorClan, _fmtMilesComa, _REQ_DOC_TEXTO_ATAQUES_VALOR, _REQ_DOC_TEXTO_TORNEOS_VALOR, _REQ_DOC_TEXTO_BARCOS, _escribirPremiosEnDoc, _insertarLineaPuestoPremio, _formatearValorPremioParaDoc, _insertarBulletPremiosGanadores, _copiarPremiosFechaAGanadoresTorneo, _copiarLineaConFormato
 - **28_Torneos_Docs.gs** (52 funciones): reconstruirDocsTorneosSorteoFaltantes, actualizarDocParticipantesCalificados, actualizarDocParticipantesCalificadosTorneo, actualizarDocGanadoresTorneo, actualizarDocGanadoresSorteo, _actualizarUnDocParticipantesCalificados, _fechaSorteoPorId_, _actualizarFechaDocSorteo, _actualizarFechaDocTorneo, _getFechaMasRecienteTLista, _formatFechaHoraDocEs, _getTemporadaMostrarExtra, _getAtaquesSemanaActualPorTag, _getAtaquesYExentosSemanaActualPorTag, _cumpleAtaquesSemanaActual, _ataquesMinTorneoPorTagClan, _cumpleAtaquesTorneoClan, _getTrofeosYAtaquesSemanalesPorTag, _totalesSemanaDesdeAcumulados, _ataquesCumplenRequisito, _fameCumpleRequisito, _barcosCumplenRequisito, _getTrofeosGuerraAcumuladosPorTagParaTemporada, _contarTorneosPorTagEnTemporada, _contarTorneosPorTagEnSemanas, _reemplazarListaParticipantes, _insertarParrafoEspaciador, _insertarLineaSinCalificados_, _insertarLineaParticipante, _parseRequisitosParticipantes, _escribirDocGanadores, _fusionarGanadoresActaSorteo_, _ganadoresAlInicioDePaginaDoc_, _normalizarHoraActa_, _lineasResumenSorteoDoc_, _estiloArialDoc_, _anchoTextoArialDoc_, _formatearTablaGanadoresSorteoDoc_, _escribirGanadoresSorteoEnDoc_, _escribirDocGanadoresSorteo, _tablaDeGrupoDoc, _rdocParrafoRuns, _rdocParrafoTexto, _rdocBloqueClanValor, _rdocBloqueRequisitosSorteo, _rdocBloqueRequisitosTorneo, _rdocBloqueRedesSocialesYPie, _rdocTablaConEncabezadoNegrita, _construirContenidoDocParticipantesCalificadosSorteo, _construirContenidoDocParticipantesCalificadosTorneo, _construirContenidoDocGanadoresSorteo, _construirContenidoDocGanadoresTorneo
 - **29_Docs_NoCalificados.gs** (28 funciones): actualizarDocsNoCalificadosYCambioRango, actualizarDocNoCalificadosTorneo, actualizarDocNoCalificadosSorteo, _evaluarCalificacionSorteo_, actualizarDocCambioRango, actualizarDocsCalificadosYNoCalificadosCambioRango, _cargarParCambioRango_, _requisitosCambioRango_, _resumenCorridaCambioRango_, _evaluarCambioRango_, _repartirEvaluadosCambioRango_, _filasEvaluadosCambioRango_, _conteoVeredictosTexto_, _ncVeredictoCambioRango, _ncFmtNum, _ncNombreRol, _ncTextoRequisito, _ncTextoRequisitoVsReal, _ncEscribirDocumento, _ncFechaHoraPeru, _ncTablaEstiloOscuro, _ncBordesBlancosEncabezado_, _construirContenidoDocNoCalificadosTorneo, _construirContenidoDocNoCalificadosSorteo, _construirContenidoDocCambioRango, _construirContenidoDocCalificadosCambioRango, _construirContenidoDocNoCalificadosCambioRango, _ncContenidoBasePlaceholder
-- **30_Mensajes.gs** (25 funciones): _asegurarColumnaClanTagMensajes_, generarTodosMensajes, _obtenerDatosPendientes, _obtenerDatosSinCelular, _obtenerDatosSinEtiqueta, _obtenerCelularPorTag, _obtenerPrestamoPorTag, _resumenCuposGuerraPorClan_, _agruparPorClanOrdenado, _ordenRango, _sufijoPrestamo, _estadoVentanaGuerra_, _textoFaltaParaCierreGuerra_, _textoResumenCuposGuerra_, _textoGruposPendientesGuerra_, _clanCruzoMetaPorTag, _getOrdenMensajesCategoria, _getPlantillasParaMensajes, _agregarCategoriaAExtra, _colCategoriaExtra_, _aplicarFormatoCondicionalMensajes, _getNombresClanesOrdenados, _getDatosClanHoja, _formatearInfoClan, _fmt
+- **30_Mensajes.gs** (26 funciones): _asegurarColumnaClanTagMensajes_, generarTodosMensajes, _obtenerDatosPendientes, _obtenerDatosSinCelular, _obtenerDatosSinEtiqueta, _obtenerCelularPorTag, _obtenerPrestamoPorTag, _resumenCuposGuerraPorClan_, _agruparPorClanOrdenado, _ordenRango, _sufijoPrestamo, _pasoMedianocheDiaGuerra_, _negritaWsp_, _textoPasoMedianocheGuerra_, _textoResumenCuposGuerra_, _textoGruposPendientesGuerra_, _clanCruzoMetaPorTag, _getOrdenMensajesCategoria, _getPlantillasParaMensajes, _agregarCategoriaAExtra, _colCategoriaExtra_, _aplicarFormatoCondicionalMensajes, _getNombresClanesOrdenados, _getDatosClanHoja, _formatearInfoClan, _fmt
 - **31_Cards_Mazos.gs** (50 funciones): updateCardsSheet, updateCards2Sheet, probarCostosSubirNivel, _esCartaTorreDatos, _mapaDiferenciaNivelPorRareza, _esCartaTorre, _invalidarCacheDiferenciaNivelPorRareza, _diferenciaNivelRareza, _nivelUnificadoMaxDeCartas, _nivelUnificadoDeCarta, _avisarRarezasSinDiferencia, _leerCardsCSV, _guardarCardsCSV, _leerCards2CSV, _guardarCards2CSV, _getTodosLosCardIdsDesdeCSV, _mergearCards2CSV, _actualizarCards2SoloAdmins, _rarezaParaFila, _filasCards2DeTorre, _getTagsParaPartialMode, _getCardsFromCache, _mezclarCartasEnMapa, _refrescarCardsRows, _getTagsConPlayerCache, generarUrlMazo, generarUrlMazo2, _cardNameToSlug, _construirCardInfoMap, _construirCards2PorTag, _construirListasMazoDesdeMapas, _ensamblarUrlMazo, _generarUrlMazoDesdeMapas, _generarUrlMazo2DesdeMapas, _construirCards2DeTag, _nivelPromedioCartas, _generarUrlMazo3DesdeMapas, generarMazo3, generarMazoPerfil, _leerCards3CSV, _construirCostosPorRareza, _nivelRarezaDesdeNivelApp, _costoSubirNivel, _construirCartaRarezaMap, _calcularCostosSubirDesdeMapas, costosSubirNivelJugador, _nivelesFaltantesEnCards3, _avisarNivelesFaltantesCards3, _avisarDiferenciasNivelCards, _avisarRevisionNivelesCards
 - **32_Insignias.gs** (18 funciones): updateInsigniasSheet, updateInsignias2Sheet, _leerInsigniasCSV, _getInsigniasDesdeCache, _construirMapaNombresCatalogo, _resolverNombreInsignia, _traducirNombreInsignia, _extraerNombreCartaDeInsigniaMastery, _buscarTraduccionCartaPorNombre, _getMapaCartasEs, _normalizarClaveInsignia, _ordenarFilasCatalogoInsignias, _guardarInsigniasCSV, _leerInsignias2CSV, _getNombresInsigniasConocidas, _armarFilasInsignias2ParaTags, _guardarInsignias2CSV, _actualizarInsignias2SoloAdmins
 - **33_CaminoLeyendas.gs** (13 funciones): updateCaminoLeyendasSheet, _leerCaminoLeyendasCSV, _clCelda, _armarFilaCaminoLeyendas, _armarFilasCaminoLeyendasParaTags, _guardarCaminoLeyendasCSV, _actualizarCaminoLeyendasSoloAdmins, _clCsvMemo, _clNumero, _clTemporada, _clLiga, _webCaminoLeyendasCsv, _webAplicarCaminoLeyendasCsv
@@ -68,7 +68,7 @@ Código real: `Base/src/`. Total: 2954 nombres en 60 archivos .gs.
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
-- `_estadoVentanaGuerra_`: 00_Main.gs:1909, 30_Mensajes.gs:582
+Ninguno.
 
 ## Orden alfabético
 
@@ -131,7 +131,7 @@ Código real: `Base/src/`. Total: 2954 nombres en 60 archivos .gs.
 | `_agregarTablasRequisitosRangoADoc_` | función | 25_Doc_AscensosDescensos.gs | 179 |  |
 | `_agruparCambiosAplicadosPorClan_` | función | 25_Doc_AscensosDescensos.gs | 90 |  |
 | `_agruparColumnasContiguas` | función | 04_Formato_Comun.gs | 1190 | Contexto_Base_Web.md §04B070 |
-| `_agruparPorClanOrdenado` | función | 30_Mensajes.gs | 541 | Contexto_Base_Web.md §30B033 |
+| `_agruparPorClanOrdenado` | función | 30_Mensajes.gs | 549 | Contexto_Base_Web.md §30B033 |
 | `_ajustarSemanaDeUnClan_` | función | 18_CorreccionGuerra.gs | 4703 | Contexto_Base_Web.md §18B031 |
 | `_alertasClanesActualizar_` | función | 15_DeteccionInfiltrados.gs | 1492 | Contexto_Base_Web.md §PF375 |
 | `_alertasClanesCargar_` | función | 15_DeteccionInfiltrados.gs | 1469 | Contexto_Base_Web.md §PF375 |
@@ -762,7 +762,6 @@ Código real: `Base/src/`. Total: 2954 nombres en 60 archivos .gs.
 | `_esRespuestaVacia` | función | 44_BotWhatsApp.gs | 1049 |  |
 | `_esSiNoOVacio` | función | 13_Inactivos_Vetados.gs | 403 | Contexto_Base_Web.md §13B018 |
 | `_estadoVentanaGuerra_` | función | 00_Main.gs | 1909 | Contexto_Base_Web.md §B133 |
-| `_estadoVentanaGuerra_` | función | 30_Mensajes.gs | 582 | Contexto_Base_Web.md §PF456 |
 | `_estiloArialDoc_` | función | 28_Torneos_Docs.gs | 1413 |  |
 | `_estimarPuestosColiseoRR_` | función | 17_GuerraSheet.gs | 2438 | Contexto_Base_Web.md §17B014 |
 | `_estimarPuestosDomingoRR_` | función | 17_GuerraSheet.gs | 2382 | Contexto_Base_Web.md §17B013 |
@@ -1285,6 +1284,7 @@ Código real: `Base/src/`. Total: 2954 nombres en 60 archivos .gs.
 | `_ncTextoRequisito` | función | 29_Docs_NoCalificados.gs | 843 | Contexto_Base_Web.md §29B023 |
 | `_ncTextoRequisitoVsReal` | función | 29_Docs_NoCalificados.gs | 853 | Contexto_Base_Web.md §29B024 |
 | `_ncVeredictoCambioRango` | función | 29_Docs_NoCalificados.gs | 730 | Contexto_Base_Web.md §29B018 |
+| `_negritaWsp_` | función | 30_Mensajes.gs | 610 | Contexto_Base_Web.md §PF459 |
 | `_nivelesFaltantesEnCards3` | función | 31_Cards_Mazos.gs | 1363 | Contexto_Base_Web.md §31B059 |
 | `_nivelPromedioCartas` | función | 31_Cards_Mazos.gs | 1101 | Contexto_Base_Web.md §PF051 |
 | `_nivelRarezaDesdeNivelApp` | función | 31_Cards_Mazos.gs | 1255 | Contexto_Base_Web.md §31B054 |
@@ -1370,7 +1370,7 @@ Código real: `Base/src/`. Total: 2954 nombres en 60 archivos .gs.
 | `_ordenarTListaPorFecha` | función | 26_Torneos_Core.gs | 5139 | Contexto_Base_Web.md §26B172 |
 | `_ordenarYColorearSAsistencia_` | función | 26_Torneos_Core.gs | 5200 |  |
 | `_ordenarYFormatearListasYAsistencias_` | función | 26_Torneos_Core.gs | 5179 |  |
-| `_ordenRango` | función | 30_Mensajes.gs | 561 | Contexto_Base_Web.md §30B008 |
+| `_ordenRango` | función | 30_Mensajes.gs | 569 | Contexto_Base_Web.md §30B008 |
 | `_ORDINALES_PUESTO_PREMIO` | global | 27_Torneos_Sorteos_Requisitos.gs | 38 | Contexto_Base_Web.md §27B020 |
 | `_origenGuerraEs_` | función | 17_GuerraSheet.gs | 2080 |  |
 | `_pad2_` | función | 09_API_ClashRoyale.gs | 3086 |  |
@@ -1382,6 +1382,7 @@ Código real: `Base/src/`. Total: 2954 nombres en 60 archivos .gs.
 | `_parseSemanasSorteo` | función | 26_Torneos_Core.gs | 3969 | Contexto_Base_Web.md §26B221 |
 | `_parseSpanishDate` | función | 05_Backup_CSV.gs | 1331 |  |
 | `_parseStringDate` | función | 11_DirectorioSheet.gs | 1365 |  |
+| `_pasoMedianocheDiaGuerra_` | función | 30_Mensajes.gs | 591 | Contexto_Base_Web.md §PF457 |
 | `_PE_CSV_MEMO` | global | 35_ProgresoEventos.gs | 23 |  |
 | `_peCelda` | función | 35_ProgresoEventos.gs | 86 |  |
 | `_peCsvMemo` | función | 35_ProgresoEventos.gs | 158 |  |
@@ -1585,7 +1586,7 @@ Código real: `Base/src/`. Total: 2954 nombres en 60 archivos .gs.
 | `_restaurarNuevosDesdeCsvDebug` | función | 14_Nuevos_RoyaleAPI.gs | 584 | Contexto_Base_Web.md §14B111 |
 | `_restaurarNuevosSiNoExiste` | función | 14_Nuevos_RoyaleAPI.gs | 245 | Contexto_Base_Web.md §14B027 |
 | `_resumenCorridaCambioRango_` | función | 29_Docs_NoCalificados.gs | 511 |  |
-| `_resumenCuposGuerraPorClan_` | función | 30_Mensajes.gs | 507 | Contexto_Base_Web.md §PF455 |
+| `_resumenCuposGuerraPorClan_` | función | 30_Mensajes.gs | 508 | Contexto_Base_Web.md §PF455 |
 | `_resumenHojaParaReparto_` | función | 18_CorreccionGuerra.gs | 4438 | Contexto_Base_Web.md §18B018 |
 | `_resumenMiembrosClan_` | función | 15_DeteccionInfiltrados.gs | 159 | Contexto_Base_Web.md §PF391 |
 | `_resumirRequisitosBloque` | función | 27_Torneos_Sorteos_Requisitos.gs | 182 | Contexto_Base_Web.md §27B011 |
@@ -1692,7 +1693,7 @@ Código real: `Base/src/`. Total: 2954 nombres en 60 archivos .gs.
 | `_soloClanesApi_` | función | 09_API_ClashRoyale.gs | 2048 |  |
 | `_SUBCARPETAS_CLAN_POR_ENDPOINT_CLANS_` | global | 09_API_ClashRoyale.gs | 114 | Contexto_Base_Web.md §09B015 |
 | `_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_` | global | 09_API_ClashRoyale.gs | 123 | Contexto_Base_Web.md §09B016 |
-| `_sufijoPrestamo` | función | 30_Mensajes.gs | 569 | Contexto_Base_Web.md §30B036 |
+| `_sufijoPrestamo` | función | 30_Mensajes.gs | 577 | Contexto_Base_Web.md §30B036 |
 | `_sumaOVacio` | función | 22_ControlCalendario.gs | 799 |  |
 | `_sumaPuntosColiseoPrevios_` | función | 17_GuerraSheet.gs | 2471 | Contexto_Base_Web.md §17B015 |
 | `_sumarEntreClanesSemanaControl_` | función | 22_ControlCalendario.gs | 1363 | Contexto_Base_Web.md §22B069 |
@@ -1716,9 +1717,9 @@ Código real: `Base/src/`. Total: 2954 nombres en 60 archivos .gs.
 | `_temporadaSupercellDeRoyaleApi_` | función | 15_DeteccionInfiltrados.gs | 345 | Contexto_Base_Web.md §PF368 |
 | `_testTamanioGuerraEnVivoUna_` | función | 38_Web_Endpoints.gs | 3253 |  |
 | `_textoCambioAplicado_` | función | 25_Doc_AscensosDescensos.gs | 120 |  |
-| `_textoFaltaParaCierreGuerra_` | función | 30_Mensajes.gs | 608 | Contexto_Base_Web.md §PF456 |
-| `_textoGruposPendientesGuerra_` | función | 30_Mensajes.gs | 648 | Contexto_Base_Web.md §PF455 |
-| `_textoResumenCuposGuerra_` | función | 30_Mensajes.gs | 627 | Contexto_Base_Web.md §PF455 |
+| `_textoGruposPendientesGuerra_` | función | 30_Mensajes.gs | 653 | Contexto_Base_Web.md §PF455 |
+| `_textoPasoMedianocheGuerra_` | función | 30_Mensajes.gs | 620 | Contexto_Base_Web.md §PF457 |
+| `_textoResumenCuposGuerra_` | función | 30_Mensajes.gs | 630 | Contexto_Base_Web.md §PF455 |
 | `_textoSemanasPendientesCR` | función | 26_Torneos_Core.gs | 3454 | Contexto_Base_Web.md §26B054 |
 | `_textoVariacionTemporadas_` | función | 47_Migraciones.gs | 875 |  |
 | `_tickTorneoEnVivo` | función | 26_Torneos_Core.gs | 934 | Contexto_Base_Web.md §26B134 |
