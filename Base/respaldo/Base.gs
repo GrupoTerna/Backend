@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 05:57:13 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 07:00:49 */
 
 
 
@@ -36306,10 +36306,12 @@ var CRC = {
   IMPLEMENTADO: 16, // Sí / No / vacío, independiente de ESTADO
   // DIAGUERRA (agregada 15-nov-2026, §PF470/§PF471): día de guerra de la detección, 0=Jueves..3=Domingo, tomado del periodIndex.
   // Vacío en las filas anteriores. Evita deducir el día desde la hora del timestamp, que de 00:00 a 05:00 (Lima) da el día calendario y no el de guerra.
-  DIAGUERRA: 17
+  DIAGUERRA: 17,
+  // CLANTAG (agregada 15-nov-2026, §PF474): Tag del CLAN al que corresponde la fila (p. ej. #GCRG8L00). Vacío = comparación por el total del tag (filas anteriores o script sin clanTag).
+  CLANTAG: 18
 };
 
-var CRC_TOTAL_COLS = 17;
+var CRC_TOTAL_COLS = 18;
 
 var CRC_ENCABEZADOS = [
   'N°', 'Temporada', 'Semana', 'Tag',
@@ -36317,7 +36319,7 @@ var CRC_ENCABEZADOS = [
   'PuntajeHoy_Detectado', 'PuntajeHoy_Actual',
   'BarcosHoy_Detectado', 'BarcosHoy_Actual',
   'FameSemana_Detectado', 'BarcosSemana_Detectado',
-  'FechaDeteccion', 'FechaDeteccion_TS', 'Estado', 'Implementado', 'DiaGuerra'
+  'FechaDeteccion', 'FechaDeteccion_TS', 'Estado', 'Implementado', 'DiaGuerra', 'Clan_Tag'
 ];
 
 var CORRECCIONES_RIVERRACE_PENDIENTES_CSV = 'Correcciones_RiverRace_Pendientes.csv';
@@ -36365,7 +36367,17 @@ function aprobarCorreccionesRiverRacePendientes() {
   var dataG = shGuerra.getRange(2, 1, lastRowG - 1, GUERRA_TOTAL_COLS).getValues();
 
   // Por cada (Temporada, Semana, Tag), TODAS las filas ya registradas esa [→ Contexto_Base_Web.md §19B007]
+  // §PF474 (15-nov-2026): el mismo índice se arma también por clan (clave + '|' + Tag del clan), para aplicar una fila pendiente «de un clan» solo sobre las filas de ese clan.
   var offsetsPorClave = {};
+  var offsetsPorClaveClan = {};
+  var mapaNombreATagAprob = _mapaNombreClanATagTerna();
+  var registrarOffset = function (indice, clave, offDia, pIdx, r) {
+    if (!indice[clave]) indice[clave] = {};
+    var idxPrevio = indice[clave][offDia];
+    if (idxPrevio === undefined || pIdx > (Number(dataG[idxPrevio][GC.PERIOD_IDX - 1]) || 0)) {
+      indice[clave][offDia] = r;
+    }
+  };
   for (var r = 0; r < dataG.length; r++) {
     var fila = dataG[r];
     var claveG = String(fila[GC.TEMPORADA - 1]).trim() + '|' + String(fila[GC.SEMANA - 1]).trim() +
@@ -36373,11 +36385,9 @@ function aprobarCorreccionesRiverRacePendientes() {
     var pIdx = Number(fila[GC.PERIOD_IDX - 1]) || 0;
     var offDia = (pIdx % 7) - 3;
     if (offDia < 0 || offDia > 3) continue;
-    if (!offsetsPorClave[claveG]) offsetsPorClave[claveG] = {};
-    var idxPrevio = offsetsPorClave[claveG][offDia];
-    if (idxPrevio === undefined || pIdx > (Number(dataG[idxPrevio][GC.PERIOD_IDX - 1]) || 0)) {
-      offsetsPorClave[claveG][offDia] = r;
-    }
+    registrarOffset(offsetsPorClave, claveG, offDia, pIdx, r);
+    var clanTagFilaG = _clanTagFilaGuerraRiverRace_(fila, mapaNombreATagAprob);
+    if (clanTagFilaG) registrarOffset(offsetsPorClaveClan, claveG + '|' + clanTagFilaG, offDia, pIdx, r);
   }
 
   var aprobadas = 0, implementadas = 0, fallidas = 0, huboEscritura = false;
@@ -36390,7 +36400,10 @@ function aprobarCorreccionesRiverRacePendientes() {
     var semana    = String(f[CRC.SEMANA - 1]).trim();
     var tag       = String(f[CRC.TAG - 1]).trim();
     var clave = temporada + '|' + semana + '|' + tag;
-    var offsetsClave = offsetsPorClave[clave];
+    // §PF474: con Clan_Tag en la fila pendiente, solo cuentan las filas de Guerra de ese clan; sin él (filas anteriores), el comportamiento de siempre.
+    var clanTagPend = _tagClanRiverRace_(f[CRC.CLANTAG - 1]);
+    if (clanTagPend) clave += '|' + clanTagPend;
+    var offsetsClave = clanTagPend ? offsetsPorClaveClan[clave] : offsetsPorClave[clave];
 
     var ok = false;
     if (offsetsClave) {
@@ -36550,8 +36563,7 @@ function limpiarRiverRacePendientesDuplicados() {
   for (var i = 0; i < filas.length; i++) {
     var f = filas[i];
     if (String(f[CRC.ESTADO - 1]).trim() !== 'Pendiente') continue;
-    var clave = String(f[CRC.TEMPORADA - 1]).trim() + '|' + String(f[CRC.SEMANA - 1]).trim() + '|' +
-      String(f[CRC.TAG - 1]).trim() + '|' + _offDiaFilaPendienteRiverRace_(f);
+    var clave = _clavePendienteRiverRace_(f);
     var ts = Number(f[CRC.FECHADETECCION_TS - 1]) || 0;
     if (ganadora[clave] === undefined || ts >= (Number(filas[ganadora[clave]][CRC.FECHADETECCION_TS - 1]) || 0)) ganadora[clave] = i;
   }
@@ -36560,8 +36572,7 @@ function limpiarRiverRacePendientesDuplicados() {
   for (var j = 0; j < filas.length; j++) {
     var g = filas[j];
     if (String(g[CRC.ESTADO - 1]).trim() !== 'Pendiente') { conservadas.push(g); continue; }
-    var claveG = String(g[CRC.TEMPORADA - 1]).trim() + '|' + String(g[CRC.SEMANA - 1]).trim() + '|' +
-      String(g[CRC.TAG - 1]).trim() + '|' + _offDiaFilaPendienteRiverRace_(g);
+    var claveG = _clavePendienteRiverRace_(g);
     if (ganadora[claveG] !== j) {
       repetidas++;
       Logger.log('[RiverRace] Se quita la fila N° ' + g[CRC.NUM - 1] + ' (' + claveG + '): repetida, queda la más reciente.');
@@ -36630,6 +36641,8 @@ function _procesarVerificacionRiverRace(participantesPayload) {
   var sIdx = semana - 1;
 
   var guerraData = _getDatosGuerraDesdeHojaParaControl(ctx); // 22_ControlCalendario.gs
+  // §PF474 (15-nov-2026): lo mismo que guerraData pero separado por clan (por Tag), para comparar cada clan contra lo que Guerra tiene de ESE clan.
+  var guerraPorClan = _getGuerraPorClanParaRiverRace_(ctx, sIdx);
 
   var mapa = _cargarPendientesRiverRace();
   var ahora = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT-5', 'yyyy-MM-dd HH:mm:ss');
@@ -36637,8 +36650,8 @@ function _procesarVerificacionRiverRace(participantesPayload) {
 
   var procesados = 0, discrepancias = 0, omitidos = 0, yaResueltas = 0;
 
-  // §PF473 (15-nov-2026): un jugador puede salir en dos clanes Terna la misma semana (cambió de clan). Hoja Guerra guarda por tag la SUMA de sus clanes
-  // (_procesarFilasGuerraParaControl() suma entre clanes), así que aquí también se suma: cada clan aporta su valor y ninguno pisa ni excluye al otro.
+  // §PF473 (15-nov-2026): un jugador puede salir en dos clanes Terna la misma semana (cambió de clan). Cada clan aporta su valor y ninguno pisa ni excluye al otro.
+  // §PF474 (15-nov-2026): el clan se identifica por su Tag (q.clanTag, que manda Tampermonkey desde v3.27); sin Tag (script viejo) se usa el nombre y ese jugador se compara por el total, como en §PF473.
   // Una fila repetida del mismo tag y el mismo clan (lectura duplicada) sí reemplaza a la anterior en vez de sumarse.
   var porTag = {}, ordenTags = [], tagsEnVariosClanes = 0;
   for (var j = 0; j < participantesPayload.length; j++) {
@@ -36648,81 +36661,217 @@ function _procesarVerificacionRiverRace(participantesPayload) {
     var dQ = Number(q.decksHoy), fQ = Number(q.fameSemana), bQ = Number(q.barcosSemana);
     if (isNaN(dQ) || isNaN(fQ) || isNaN(bQ)) { omitidos++; continue; }
     var clanQ = String(q.clan || '').trim();
-    if (!porTag[tagQ]) { porTag[tagQ] = { clanes: {}, nClanes: 0 }; ordenTags.push(tagQ); }
-    if (!porTag[tagQ].clanes.hasOwnProperty(clanQ)) {
+    var clanTagQ = _tagClanRiverRace_(q.clanTag);
+    var claveClanQ = clanTagQ || clanQ;
+    if (!porTag[tagQ]) { porTag[tagQ] = { clanes: {}, nClanes: 0, sinClanTag: false }; ordenTags.push(tagQ); }
+    if (!clanTagQ) porTag[tagQ].sinClanTag = true;
+    if (!porTag[tagQ].clanes.hasOwnProperty(claveClanQ)) {
       porTag[tagQ].nClanes++;
       if (porTag[tagQ].nClanes === 2) tagsEnVariosClanes++;
     }
-    porTag[tagQ].clanes[clanQ] = { decks: dQ, fame: fQ, barcos: bQ };
+    porTag[tagQ].clanes[claveClanQ] = { decks: dQ, fame: fQ, barcos: bQ, clanTag: clanTagQ };
     procesados++;
   }
 
+  var tagsPorClan = 0, tagsPorTotal = 0, discrepanciasPorClan = 0, supersedidas = 0;
+
   for (var i = 0; i < ordenTags.length; i++) {
     var tag = ordenTags[i];
-    var decksHoy = 0, fameSemana = 0, barcosSemana = 0;
-    for (var cl in porTag[tag].clanes) {
-      if (!porTag[tag].clanes.hasOwnProperty(cl)) continue;
-      decksHoy += porTag[tag].clanes[cl].decks;
-      fameSemana += porTag[tag].clanes[cl].fame;
-      barcosSemana += porTag[tag].clanes[cl].barcos;
-    }
+    var infoTag = porTag[tag];
+    var gClan = guerraPorClan[tag];
 
-    var diasTag = (guerraData[tag] && guerraData[tag][sIdx]) || {};
-
-    // suma(... ya en Guerra): días de guerra ANTERIORES a hoy (offDia < offDiaHoy) [→ Contexto_Base_Web.md §19B015]
-    var sumaPuntajeAnteriores = 0, sumaBarcosAnteriores = 0;
-    for (var d = 0; d < offDiaHoy; d++) {
-      var diaPrevio = diasTag['dia_' + d];
-      if (diaPrevio) {
-        sumaPuntajeAnteriores += diaPrevio.puntaje;
-        sumaBarcosAnteriores += diaPrevio.barcos;
+    // Cada elemento de `comparaciones` es una comparación independiente: una por clan (modo por clan) o una sola con el total del tag (respaldo).
+    // El modo por clan exige que TODAS las filas del jugador esa semana en Guerra tengan un clan identificable por Tag; si no, se compara por el total.
+    var comparaciones = [];
+    if (!infoTag.sinClanTag && !(gClan && gClan.sinClan)) {
+      tagsPorClan++;
+      for (var cl in infoTag.clanes) {
+        if (!infoTag.clanes.hasOwnProperty(cl)) continue;
+        var cq = infoTag.clanes[cl];
+        comparaciones.push({ clanTag: cq.clanTag, decks: cq.decks, fame: cq.fame, barcos: cq.barcos, dias: (gClan && gClan.clanes[cq.clanTag]) || {} });
       }
+    } else {
+      tagsPorTotal++;
+      var decksTot = 0, fameTot = 0, barcosTot = 0;
+      for (var cl2 in infoTag.clanes) {
+        if (!infoTag.clanes.hasOwnProperty(cl2)) continue;
+        decksTot += infoTag.clanes[cl2].decks;
+        fameTot += infoTag.clanes[cl2].fame;
+        barcosTot += infoTag.clanes[cl2].barcos;
+      }
+      comparaciones.push({ clanTag: '', decks: decksTot, fame: fameTot, barcos: barcosTot, dias: (guerraData[tag] && guerraData[tag][sIdx]) || {} });
     }
 
-    var ataquesHoy = decksHoy;
-    var puntajeHoy = Math.min(Math.max(fameSemana - sumaPuntajeAnteriores, 0), 900);
-    var barcosHoy = Math.max(barcosSemana - sumaBarcosAnteriores, 0);
+    for (var k = 0; k < comparaciones.length; k++) {
+      var cmp = comparaciones[k];
+      var decksHoy = cmp.decks, fameSemana = cmp.fame, barcosSemana = cmp.barcos;
+      var diasCmp = cmp.dias;
 
-    var diaHoyActual = diasTag['dia_' + offDiaHoy];
-    var actual = diaHoyActual
-      ? { ataques: diaHoyActual.ataques, puntaje: diaHoyActual.puntaje, barcos: diaHoyActual.barcos }
-      : { ataques: 0, puntaje: 0, barcos: 0 }; // sin fila todavía hoy en Guerra para este tag
+      // suma(... ya en Guerra): días de guerra ANTERIORES a hoy (offDia < offDiaHoy) [→ Contexto_Base_Web.md §19B015]
+      var sumaPuntajeAnteriores = 0, sumaBarcosAnteriores = 0;
+      for (var d = 0; d < offDiaHoy; d++) {
+        var diaPrevio = diasCmp['dia_' + d];
+        if (diaPrevio) {
+          sumaPuntajeAnteriores += diaPrevio.puntaje;
+          sumaBarcosAnteriores += diaPrevio.barcos;
+        }
+      }
 
-    if (ataquesHoy === actual.ataques && puntajeHoy === actual.puntaje && barcosHoy === actual.barcos) {
-      continue; // sin discrepancia -> no se genera ninguna fila (mismo criterio que el resto del diseño)
+      var ataquesHoy = decksHoy;
+      var puntajeHoy = Math.min(Math.max(fameSemana - sumaPuntajeAnteriores, 0), 900);
+      var barcosHoy = Math.max(barcosSemana - sumaBarcosAnteriores, 0);
+
+      var diaHoyActual = diasCmp['dia_' + offDiaHoy];
+      var actual = diaHoyActual
+        ? { ataques: diaHoyActual.ataques, puntaje: diaHoyActual.puntaje, barcos: diaHoyActual.barcos }
+        : { ataques: 0, puntaje: 0, barcos: 0 }; // sin fila todavía hoy en Guerra para este tag (y clan, en el modo por clan)
+
+      if (ataquesHoy === actual.ataques && puntajeHoy === actual.puntaje && barcosHoy === actual.barcos) {
+        continue; // sin discrepancia -> no se genera ninguna fila (mismo criterio que el resto del diseño)
+      }
+
+      // RESUELTO (22-ago-2026, pedido del usuario): la clave de dedup del CSV [→ Contexto_Base_Web.md §19B016]
+      // §PF474: en el modo por clan la clave lleva además el Tag del clan; así un jugador en dos clanes puede tener una fila pendiente por clan.
+      var claveTotal = temporada + '|' + semana + '|' + tag + '|' + offDiaHoy;
+      var clave = cmp.clanTag ? claveTotal + '|' + cmp.clanTag : claveTotal;
+      var existente = mapa[clave];
+
+      // Se conserva esta salvaguarda por si el mismo día se vuelve a correr [→ Contexto_Base_Web.md §19B017]
+      if (existente && existente.estado !== 'Pendiente') {
+        yaResueltas++;
+        Logger.log('[RiverRace] Discrepancia detectada para ' + clave + ' pero ya existe una fila ' +
+          existente.estado + ' con esa clave -- no se sobreescribe (ver nota de diseño en el código). ' +
+          'Revisar manualmente si es un problema nuevo.');
+        continue;
+      }
+
+      discrepancias++;
+      if (cmp.clanTag) {
+        discrepanciasPorClan++;
+        // Una fila Pendiente del mismo tag y día calculada por el total (sin clan) queda reemplazada por las de cada clan: aplicar las dos pisaría los valores por clan.
+        if (mapa[claveTotal] && mapa[claveTotal].estado === 'Pendiente') {
+          delete mapa[claveTotal];
+          supersedidas++;
+          Logger.log('[RiverRace] ' + claveTotal + ': la fila Pendiente por total queda reemplazada por las filas por clan.');
+        }
+      }
+      mapa[clave] = {
+        temporada: temporada, semana: semana, tag: tag, clanTag: cmp.clanTag,
+        ataquesHoyDetectado: ataquesHoy, ataquesHoyActual: actual.ataques,
+        puntajeHoyDetectado: puntajeHoy, puntajeHoyActual: actual.puntaje,
+        barcosHoyDetectado: barcosHoy, barcosHoyActual: actual.barcos,
+        fameSemanaDetectado: fameSemana, barcosSemanaDetectado: barcosSemana,
+        fechaDeteccion: ahora, fechaDeteccionTs: ahoraTs, estado: 'Pendiente', implementado: '', diaGuerra: offDiaHoy
+      };
     }
-
-    // RESUELTO (22-ago-2026, pedido del usuario): la clave de dedup del CSV [→ Contexto_Base_Web.md §19B016]
-    var clave = temporada + '|' + semana + '|' + tag + '|' + offDiaHoy;
-    var existente = mapa[clave];
-
-    // Se conserva esta salvaguarda por si el mismo día se vuelve a correr [→ Contexto_Base_Web.md §19B017]
-    if (existente && existente.estado !== 'Pendiente') {
-      yaResueltas++;
-      Logger.log('[RiverRace] Discrepancia detectada para ' + clave + ' pero ya existe una fila ' +
-        existente.estado + ' con esa clave -- no se sobreescribe (ver nota de diseño en el código). ' +
-        'Revisar manualmente si es un problema nuevo.');
-      continue;
-    }
-
-    discrepancias++;
-    mapa[clave] = {
-      temporada: temporada, semana: semana, tag: tag,
-      ataquesHoyDetectado: ataquesHoy, ataquesHoyActual: actual.ataques,
-      puntajeHoyDetectado: puntajeHoy, puntajeHoyActual: actual.puntaje,
-      barcosHoyDetectado: barcosHoy, barcosHoyActual: actual.barcos,
-      fameSemanaDetectado: fameSemana, barcosSemanaDetectado: barcosSemana,
-      fechaDeteccion: ahora, fechaDeteccionTs: ahoraTs, estado: 'Pendiente', implementado: '', diaGuerra: offDiaHoy
-    };
   }
 
   _guardarPendientesRiverRace(mapa);
 
   Logger.log('[RiverRace] Verificación semana en curso — Temporada ' + temporada + ', Semana ' + semana +
-    ': ' + procesados + ' procesado(s), ' + discrepancias + ' discrepancia(s) nueva(s), ' +
-    yaResueltas + ' con fila ya resuelta (no sobreescrita), ' + omitidos + ' omitido(s), ' + tagsEnVariosClanes + ' tag(s) en más de un clan (valores sumados).');
+    ': ' + procesados + ' procesado(s), ' + discrepancias + ' discrepancia(s) nueva(s) (' + discrepanciasPorClan + ' por clan), ' +
+    yaResueltas + ' con fila ya resuelta (no sobreescrita), ' + omitidos + ' omitido(s), ' + tagsEnVariosClanes + ' tag(s) en más de un clan; ' +
+    tagsPorClan + ' tag(s) comparado(s) por clan y ' + tagsPorTotal + ' por el total (sin Tag de clan en el envío o en alguna fila de Guerra).');
 
-  return { ok: true, procesados: procesados, discrepancias: discrepancias, yaResueltas: yaResueltas, omitidos: omitidos, tagsEnVariosClanes: tagsEnVariosClanes };
+  return { ok: true, procesados: procesados, discrepancias: discrepancias, yaResueltas: yaResueltas, omitidos: omitidos, tagsEnVariosClanes: tagsEnVariosClanes,
+    tagsPorClan: tagsPorClan, tagsPorTotal: tagsPorTotal, discrepanciasPorClan: discrepanciasPorClan, supersedidas: supersedidas };
+}
+
+/**
+ * _tagClanRiverRace_(t) (§PF474): Tag de clan normalizado ('#' + mayúsculas), o '' si viene vacío. Acepta con o sin '#'.
+ */
+function _tagClanRiverRace_(t) {
+  var s = String(t === undefined || t === null ? '' : t).trim().toUpperCase().replace(/^#+/, '');
+  return s ? '#' + s : '';
+}
+
+/**
+ * _clanTagFilaGuerraRiverRace_(fila, mapaNombreATag) (§PF474): Tag del clan de una fila de la hoja Guerra. Primero Clan_Tag; si está vacío, la columna Clan
+ * (filas anteriores a §PF419 guardaban ahí el Tag; las demás, el nombre, que se resuelve con _mapaNombreClanATagTerna()). '' si no se puede identificar.
+ */
+function _clanTagFilaGuerraRiverRace_(fila, mapaNombreATag) {
+  var tg = _tagClanRiverRace_(fila[GC.CLAN_TAG - 1]);
+  if (tg) return tg;
+  var crudo = String(fila[GC.CLAN - 1] || '').trim();
+  if (!crudo) return '';
+  if (/^#[0-9A-Za-z]+$/.test(crudo)) return _tagClanRiverRace_(crudo);
+  var viaNombre = mapaNombreATag && mapaNombreATag[crudo.toLowerCase()];
+  return viaNombre ? _tagClanRiverRace_(viaNombre) : '';
+}
+
+/**
+ * _getGuerraPorClanParaRiverRace_(ctx, sIdx) (§PF474): lo que la hoja Guerra tiene de la semana en curso, por jugador y por clan (Tag), día de guerra a día de guerra.
+ * Devuelve { '#TAG': { sinClan: bool, clanes: { '#CLAN': { dia_0: {ataques, puntaje, barcos}, ... } } } } con el mismo cálculo por día que
+ * _procesarFilasGuerraParaControl() + _sumarEntreClanesSemanaControl_() (22_ControlCalendario.gs), pero sin sumar entre clanes: puntaje = fame de hoy menos la de ayer
+ * del mismo clan (tope 900) y barcos = acumulado de hoy menos el de ayer del mismo clan. sinClan = true si alguna fila del jugador esa semana no tiene clan identificable.
+ */
+function _getGuerraPorClanParaRiverRace_(ctx, sIdx) {
+  var res = {};
+  var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+  if (!sh || sh.getLastRow() < 2) return res;
+  var data = (_GUERRA_MEMO_ACTIVO && _GUERRA_HOJA_MEMO)
+    ? _GUERRA_HOJA_MEMO
+    : sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+  var mapaNombreATag = _mapaNombreClanATagTerna();
+  var crudo = {}; // tag -> Tag de clan -> periodIndex -> { fameUlt, barcos, ataques }
+
+  for (var i = 0; i < data.length; i++) {
+    var fila = data[i];
+    if (String(ctx.temporada) !== String(fila[GC.TEMPORADA - 1] || '')) continue;
+    if (Number(fila[GC.SEMANA - 1] || 1) - 1 !== sIdx) continue;
+    var pIdx = Number(fila[GC.PERIOD_IDX - 1] || 0);
+    var tag = String(fila[GC.TAG - 1] || '').trim();
+    if (!tag || !esDiaGuerraIdx(pIdx)) continue;
+
+    if (!res[tag]) res[tag] = { sinClan: false, clanes: {} };
+    var clanTag = _clanTagFilaGuerraRiverRace_(fila, mapaNombreATag);
+    if (!clanTag) { res[tag].sinClan = true; continue; }
+
+    if (!crudo[tag]) crudo[tag] = {};
+    if (!crudo[tag][clanTag]) crudo[tag][clanTag] = {};
+    var fame = Number(fila[GC.FAME - 1]) || 0;
+    var barcos = Number(fila[GC.BARCOS - 1]) || 0;
+    var ataques = Number(fila[GC.ATAQUES_HOY - 1]) || 0;
+    var e = crudo[tag][clanTag][pIdx];
+    if (!e) {
+      crudo[tag][clanTag][pIdx] = { fameUlt: fame, barcos: barcos, ataques: ataques };
+    } else {
+      e.fameUlt = fame;
+      if (barcos > e.barcos) e.barcos = barcos;
+      if (ataques > e.ataques) e.ataques = ataques;
+    }
+  }
+
+  for (var tg in crudo) {
+    for (var ct in crudo[tg]) {
+      var porP = crudo[tg][ct];
+      var dias = {};
+      for (var d = 0; d < 4; d++) {
+        var pHoy = sIdx * 7 + 3 + d;
+        var hoy = porP[pHoy];
+        if (!hoy) continue;
+        var ayer = porP[pHoy - 1];
+        dias['dia_' + d] = {
+          ataques: hoy.ataques,
+          puntaje: Math.min(Math.max(hoy.fameUlt - (ayer ? ayer.fameUlt : 0), 0), 900),
+          barcos: Math.max(hoy.barcos - (ayer ? ayer.barcos : 0), 0)
+        };
+      }
+      res[tg].clanes[ct] = dias;
+    }
+  }
+  return res;
+}
+
+/**
+ * _clavePendienteRiverRace_(f) (§PF474): clave de una fila de Correcciones_RiverRace_Pendientes.csv: temporada|semana|tag|día, y |Tag del clan si la fila lo trae.
+ * Es la misma clave que arma _procesarVerificacionRiverRace() al detectar.
+ */
+function _clavePendienteRiverRace_(f) {
+  var base = String(f[CRC.TEMPORADA - 1] || '').trim() + '|' + String(f[CRC.SEMANA - 1] || '').trim() + '|' +
+    String(f[CRC.TAG - 1] || '').trim() + '|' + _offDiaFilaPendienteRiverRace_(f);
+  var ct = _tagClanRiverRace_(f[CRC.CLANTAG - 1]);
+  return ct ? base + '|' + ct : base;
 }
 
 // PERSISTENCIA — Correcciones_RiverRace_Pendientes.csv [→ Contexto_Base_Web.md §19B018]
@@ -36745,10 +36894,9 @@ function _cargarPendientesRiverRace() {
 
     // Mismo criterio de clave que _procesarVerificacionRiverRace() [→ Contexto_Base_Web.md §19B019]
     var fechaDeteccionTsFila = Number(f[CRC.FECHADETECCION_TS - 1]) || 0;
-    var offDiaFila = _offDiaFilaPendienteRiverRace_(f); // §PF471: DiaGuerra si está; si no, el día calendario (-1 de 00:00 a 05:00)
-    var clave = temporada + '|' + semana + '|' + tag + '|' + offDiaFila;
+    var clave = _clavePendienteRiverRace_(f); // §PF471: el día sale de DiaGuerra si está (si no, el día calendario; -1 de 00:00 a 05:00). §PF474: lleva |Tag del clan si la fila lo trae.
     mapa[clave] = {
-      temporada: temporada, semana: semana, tag: tag,
+      temporada: temporada, semana: semana, tag: tag, clanTag: _tagClanRiverRace_(f[CRC.CLANTAG - 1]),
       ataquesHoyDetectado:   Number(f[CRC.ATAQUESHOY_DETECTADO - 1])   || 0,
       ataquesHoyActual:      Number(f[CRC.ATAQUESHOY_ACTUAL - 1])      || 0,
       puntajeHoyDetectado:   Number(f[CRC.PUNTAJEHOY_DETECTADO - 1])   || 0,
@@ -36777,7 +36925,12 @@ function _guardarPendientesRiverRace(mapa) {
     if (temporadaA !== temporadaB) return temporadaA - temporadaB;
     var semanaA = Number(pa[1]), semanaB = Number(pb[1]);
     if (semanaA !== semanaB) return semanaA - semanaB;
-    return String(pa[2]).localeCompare(String(pb[2]));
+    var porTagCmp = String(pa[2]).localeCompare(String(pb[2]));
+    if (porTagCmp !== 0) return porTagCmp;
+    // §PF474: dentro del mismo jugador, por día de guerra y luego por clan (un jugador en dos clanes puede tener dos filas el mismo día).
+    var diaA = Number(pa[3]), diaB = Number(pb[3]);
+    if (diaA !== diaB) return diaA - diaB;
+    return String(pa[4] || '').localeCompare(String(pb[4] || ''));
   });
 
   var filas = [];
@@ -36791,7 +36944,8 @@ function _guardarPendientesRiverRace(mapa) {
       v.barcosHoyDetectado, v.barcosHoyActual,
       v.fameSemanaDetectado, v.barcosSemanaDetectado,
       v.fechaDeteccion, v.fechaDeteccionTs || 0, v.estado, v.implementado,
-      (v.diaGuerra === undefined ? '' : v.diaGuerra)
+      (v.diaGuerra === undefined ? '' : v.diaGuerra),
+      v.clanTag || '' // §PF474: Clan_Tag; vacío = comparado por el total del tag
     ]);
   }
   var salida = [CRC_ENCABEZADOS].concat(filas);
