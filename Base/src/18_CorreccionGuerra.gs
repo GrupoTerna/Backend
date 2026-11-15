@@ -805,6 +805,10 @@ function generarGuerraDesglose() {
   if (!res.filas.length) { Logger.log(etiqueta + ' No salió ninguna fila (' + c.filasLeidas + ' leídas de Backup_Guerra.csv, ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag); no se escribe ' + GDS_CSV_NOMBRE + '.'); return; }
   for (i = 0; i < res.filas.length; i++) res.filas[i][0] = i + 1;
   _saveCSVToDrive(GDS_CSV_NOMBRE, _encodeCSV([GDS_HEADERS].concat(res.filas)));
+  // §PF480: los días donde el battlelog contradice la hoja van a Revision_Guerra.csv (Tipo «Contradicción», Estado «Pendiente»). Si falla, el desglose ya quedó escrito y solo se avisa.
+  var revReg = { nuevas: 0, actualizadas: 0, sinCambio: 0 };
+  try { revReg = _registrarRevisionGuerra_(c.revisiones); } catch (eRev) { Logger.log(etiqueta + ' AVISO: no se pudo anotar en ' + REVISION_GUERRA_CSV + ' (' + eRev.message + ').'); }
+  Logger.log(etiqueta + ' ' + REVISION_GUERRA_CSV + ': ' + c.revisiones.length + ' día(s) donde el battlelog contradice la hoja Guerra (más mazos, o otra fame u otros barcos): ' + revReg.nuevas + ' nueva(s), ' + revReg.actualizadas + ' actualizada(s), ' + revReg.sinCambio + ' sin cambio. Nada se corrigió solo.');
 
   function resumenDe(mapa) { return Object.keys(mapa).sort().map(function (k) { return k + ' ' + mapa[k]; }).join(', '); }
   Logger.log(etiqueta + ' ' + GDS_CSV_NOMBRE + ' escrito: ' + c.filasSalida + ' fila(s) (jugador, semana y clan; ' + c.diasSalida + ' día(s) con datos) de ' + c.semanasJugador + ' semana(s) de jugador (' + c.filasLeidas + ' filas leídas de Backup_Guerra.csv; ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag, ' + c.fueraDeSemana + ' fuera de la semana de guerra).');
@@ -6032,7 +6036,8 @@ function _gdsConstruirFilas_(filas, opciones) {
   var restrPorSemana = opciones.restriccionesPorSemana || {};
   var cuenta = {
     filasLeidas: filas.length, repetidas: [], noGuerra: 0, sinClanTag: 0, clanAjeno: 0, fueraDeSemana: 0, filasSalida: 0,
-    semanasJugador: 0, diasSalida: 0, variosDias: 0, contradichosJson: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {}
+    semanasJugador: 0, diasSalida: 0, variosDias: 0, contradichosJson: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {},
+    revisiones: []   // §PF480: días donde el battlelog contradice la hoja Guerra, en el formato de _registrarRevisionGuerra_ (las anota generarGuerraDesglose)
   };
 
   // Una sola pasada: (temporada, semana, jugador) -> clan -> día -> fila con mayor PeriodIndex.
@@ -6120,6 +6125,21 @@ function _gdsConstruirFilas_(filas, opciones) {
           ? _gdsDesgloseVariosDias_({ ataques: vh.ataques[o], fame: fb.fame, barcos: fb.barcos }, o, vh.span[o])
           : _gdsDesgloseDelDia_({ ataques: vh.ataques[o], fame: fb.fame, barcos: fb.barcos }, bucket, !!pendientes[clanTagK], o === BLG_DIAS_GUERRA - 1);
         var consistencia = des.consistencia;
+        // §PF480 (§PF437 punto 7 a y d): si el battlelog trae MÁS mazos que los ataques de la hoja, o su desglose exacto da otra fame u otros barcos, el día se anota para revisión (nada se corrige solo).
+        if (bucket && bucket.batallas > 0 && !variosDias) {
+          var motivoRev = '', detalleRev = '';
+          var etiquetaRev = ' (día ' + GDS_DIAS[o] + ', clan ' + clanTagK + ')';
+          if (des.fuente === 'Contradicción battlelog') {
+            motivoRev = 'Battlelog con más mazos que la hoja Guerra' + etiquetaRev;
+            detalleRev = 'El battlelog trae al menos ' + bucket.mazosMin + ' mazo(s) ese día y la hoja Guerra tiene ' + vh.ataques[o] + ' ataque(s) (clan ' + clanTagK + ', día ' + GDS_DIAS[o] + ').';
+          } else if (/distint/.test(des.consistencia)) {
+            var fameLogRev = 250 * bucket.duelo250 + 100 * bucket.duelo100 + 200 * bucket.pvp200 + 100 * bucket.pvp100 + 125 * bucket.barco125 + 75 * bucket.barco75;
+            motivoRev = 'Battlelog con otra fame o barcos que la hoja Guerra' + etiquetaRev;
+            detalleRev = 'Con los ' + vh.ataques[o] + ' mazo(s) del battlelog la fame del día sería ' + fameLogRev + ' y los barcos ' + (bucket.barco125 + bucket.barco75) +
+              '; la hoja Guerra tiene fame ' + (fb.fame === null ? 'sin dato' : fb.fame) + ' y barcos ' + (fb.barcos === null ? 'sin dato' : fb.barcos) + ' (clan ' + clanTagK + ', día ' + GDS_DIAS[o] + ').';
+          }
+          if (motivoRev) cuenta.revisiones.push({ temporada: gr.temporada, semana: gr.semana, tag: gr.tag, nombre: fila[GC.NOMBRE - 1], tipo: CGW_CONTRADICCION_TIPO, motivo: motivoRev, detalle: detalleRev, estado: CGW_CONTRADICCION_ESTADO });
+        }
         if (seriesSemana) {
           if (!serieJson) serieJson = _gdsSerieJsonDelJugador_(seriesSemana, gr.tag, fila[GC.CLAN - 1]);
           var marca = _gdsMarcaBackupVsJson_(serieJson, o, _blgNumero_(fila[GC.FAME - 1]));
