@@ -4323,6 +4323,8 @@ function _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organiz
     var resultadoCorreccion = _corregirLinkTorneoYaRegistrado(ss, idYaLinkeadoEncontrado, link);
     if (!resultadoCorreccion.ok) return resultadoCorreccion;
     procesarTListaNuevasFilas(ss);
+    // 15-nov-2026 (37B234): igual que al registrar, se rehace el Doc de Participantes calificados (torneo); si falla, no se pierde la corrección.
+    try { actualizarDocParticipantesCalificadosTorneo(); } catch (eDocPc) { Logger.log('[Torneos] No se pudo actualizar el Doc de Participantes calificados: ' + eDocPc.message); }
     regenerarTControlSheet(ss);
     // 02-oct-2026: corregido:true avisa al llamador que se corrigió una fila
     // ya registrada (no se creó ninguna nueva) -- ver docblock de arriba.

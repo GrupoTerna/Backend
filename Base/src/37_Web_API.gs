@@ -4533,6 +4533,8 @@ function _webAdminTorneoModificar(token, id, fecha, hora, tagTorneoPrincipal, se
       if (!resultadoCorreccion.ok) return resultadoCorreccion;
       if (!resultadoCorreccion.sinLinkPrevio) {
         procesarTListaNuevasFilas(ssMod);
+        // 15-nov-2026 (37B234): el link corregido puede cambiar el torneo; se rehace el Doc de Participantes calificados (torneo) como al registrar. Si falla, no se pierde la corrección.
+        try { actualizarDocParticipantesCalificadosTorneo(); } catch (eDocPc) { Logger.log('[TorneoModificar] No se pudo actualizar el Doc de Participantes calificados: ' + eDocPc.message); }
         regenerarTControlSheet(ssMod);
         return { ok: true, id: idTrim, corregido: true };
       }
