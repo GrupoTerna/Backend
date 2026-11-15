@@ -18,6 +18,8 @@
  *  - Reparto dentro de la misma semana, jugador y clan (jueves a domingo).
  *  - Se parte de los ACUMULADOS (AtaquesSemana, Fame, Barcos) de cada fila, no de AtaquesHoy (que no es confiable).
  *  - Si falta el jueves y la primera fila es la del viernes, los ataques del jueves son AtaquesSemana - AtaquesHoy del viernes.
+ *    La misma fórmula se encadena a los demás días que faltan (§PF160, criterios 2 y 9): en un tramo de k días, los ataques de los k-1
+ *    primeros suman AtaquesSemana (del tramo) - AtaquesHoy de su última fila (ver _excDiasSumasPrevias()).
  *  - Si un tramo no cabe en sus días, se prueban coberturas que absorben filas vecinas con delta cero (filas viejas)
  *    o que se extienden hasta el domingo; se elige la de menos días extra y, si hay varias, se unen sus soluciones.
  *  - Se escribe solo si los ataques por día coinciden en todas las soluciones; entre varias ternas válidas (barcos y fame del día)
@@ -419,11 +421,18 @@ function _excDiasResumir(res) {
 function _excDiasResolver(dias) {
   var segs = _excDiasSegmentos(dias);
   var nj = _excDiasFaltanteJueves(segs);
+  var pre = _excDiasSumasPrevias(segs);   // §PF160 punto 5: la fórmula AtaquesSemana - AtaquesHoy encadenada a viernes, sábado y domingo
   var out = [], notas = [], i = 0;
   while (i < segs.length) {
     var s = segs[i];
     var fijo = (i === 0 && nj !== null && s.dias[0] === 0) ? nj : null;
-    var sols = _excDiasSoluciones(s.dias.length, s.A, s.B, s.F, fijo);
+    var suma = (fijo === null) ? pre[i] : null;
+    var sols = _excDiasSoluciones(s.dias.length, s.A, s.B, s.F, fijo, suma);
+    if (suma !== null && !sols.length) {
+      // La fórmula no cuadra con la tabla de fame en este tramo (AtaquesHoy de la fila no es confiable): se reparte sin ella, como antes, y se avisa.
+      sols = _excDiasSoluciones(s.dias.length, s.A, s.B, s.F, null, null);
+      if (sols.length) notas.push('formula_no_cuadra');
+    }
     if (sols.length) {
       out.push({ dias: s.dias.slice(), sols: sols, zero: _excDiasEsCero(s) });
       i++;
@@ -510,9 +519,31 @@ function _excDiasFaltanteJueves(segs) {
   return null;
 }
 
-/** Todas las (n, b, f) por día para k días con sumas exactas A, B y F. fijoN0: ataques del primer día fijados (o null). */
-function _excDiasSoluciones(k, A, B, F, fijoN0) {
+/**
+ * _excDiasSumasPrevias(segs) [→ Contexto_Base_Web.md §PF160, criterios 2 y 9; punto 5 de «Lo que falta»]
+ * Encadena la fórmula del jueves a los demás días. AtaquesSemana - AtaquesHoy de una fila son los ataques acumulados al INICIO de su día
+ * (los dos campos son de la misma captura). Por eso, en un tramo de k >= 2 días (la fila es la del último día), los ataques de los k-1
+ * primeros días suman AtaquesSemana(tramo) - AtaquesHoy(fila) y el último día lleva justo AtaquesHoy: con la primera fila el sábado,
+ * jueves + viernes; con la primera fila el domingo, jueves + viernes + sábado; con un hueco entre dos filas, los días del hueco.
+ * Devuelve un arreglo paralelo a segs con esa suma, o null si el tramo no la admite (un solo día, AtaquesHoy fuera de 0 a 4 o resta que
+ * no cabe en 4 ataques por día). Los tramos del caso del jueves (primera fila el viernes) los cubre _excDiasFaltanteJueves(), que se conserva.
+ */
+function _excDiasSumasPrevias(segs) {
+  return segs.map(function (s) {
+    var k = s.dias.length;
+    if (k < 2 || s.hoy < 0 || s.hoy > 4) return null;
+    var x = s.A - s.hoy;
+    return (x >= 0 && x <= 4 * (k - 1)) ? x : null;
+  });
+}
+
+/**
+ * Todas las (n, b, f) por día para k días con sumas exactas A, B y F. fijoN0: ataques del primer día fijados (o null).
+ * sumaPrev (opcional, §PF160 punto 5): suma exacta de los ataques de los k-1 primeros días (o null/omitido: sin esa restricción).
+ */
+function _excDiasSoluciones(k, A, B, F, fijoN0, sumaPrev) {
   var opts = _excDiasOpciones();
+  var fijaSuma = (sumaPrev !== undefined && sumaPrev !== null);
   var sols = [];
   function dfs(i, a, b, f, acc) {
     if (sols.length > EXC_DIAS_CAP) return;
@@ -520,6 +551,7 @@ function _excDiasSoluciones(k, A, B, F, fijoN0) {
       if (a === A && b === B && f === F) sols.push(acc.slice());
       return;
     }
+    if (fijaSuma && i === k - 1 && a !== sumaPrev) return;   // antes del último día ya deben llevarse los ataques de los días previos
     var resto = k - i - 1;
     for (var j = 0; j < opts.length; j++) {
       var o = opts[j];
@@ -527,6 +559,7 @@ function _excDiasSoluciones(k, A, B, F, fijoN0) {
       var na = a + o[0], nb = b + o[1], nf = f + o[2];
       if (na > A || nb > B || nf > F) continue;
       if (na + 4 * resto < A) continue;
+      if (fijaSuma && i < k - 1 && na > sumaPrev) continue;
       acc.push(o); dfs(i + 1, na, nb, nf, acc); acc.pop();
     }
   }
