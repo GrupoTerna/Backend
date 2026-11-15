@@ -190,8 +190,9 @@ function _ghPublicarArchivos_(token, repo, rama, archivos, mensaje) {
         if (!_conteoArchivosDisponible_()) break;
         var tAntes = Date.now();
         try {
-          var rc = _ghFetch_(token, 'get', '/repos/' + repo + '/contents/' + encodeURI(archivos[ia].path) + '?ref=' + encodeURIComponent(rama));
-          if (rc.code === 200 && rc.body && rc.body.content) antesGh[archivos[ia].path] = Utilities.newBlob(Utilities.base64Decode(String(rc.body.content).replace(/\s/g, ''))).getDataAsString('UTF-8');
+          // El tipo raw devuelve el texto del archivo y sirve también sobre 1 MB (con el JSON por defecto, guerra.json, de unos 2,3 MB, salía «antes sin contar») [→ Contexto_Base_Web.md §PF435]
+          var rc = _ghFetch_(token, 'get', '/repos/' + repo + '/contents/' + encodeURI(archivos[ia].path) + '?ref=' + encodeURIComponent(rama), null, 'application/vnd.github.raw+json');
+          if (rc.code === 200) antesGh[archivos[ia].path] = rc.text;
           else if (rc.code === 404) antesGh[archivos[ia].path] = null;
         } catch (eAntes) { /* sin conteo previo de este archivo */ }
         _conteoArchivosMs_ += Date.now() - tAntes;
@@ -237,13 +238,13 @@ function _ghPublicarArchivos_(token, repo, rama, archivos, mensaje) {
   }
 }
 
-function _ghFetch_(token, metodo, ruta, cuerpo) {
+function _ghFetch_(token, metodo, ruta, cuerpo, aceptar) {
   var opt = {
     method: metodo,
     muteHttpExceptions: true,
     headers: {
       Authorization: 'Bearer ' + token,
-      Accept: 'application/vnd.github+json',
+      Accept: aceptar || 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
       'User-Agent': 'terna-apps-script'
     }
@@ -252,6 +253,6 @@ function _ghFetch_(token, metodo, ruta, cuerpo) {
   var resp = UrlFetchApp.fetch('https://api.github.com' + ruta, opt);
   var texto = resp.getContentText();
   var obj = null;
-  try { obj = JSON.parse(texto); } catch (e) { /* respuesta no JSON */ }
+  if (!aceptar) { try { obj = JSON.parse(texto); } catch (e) { /* respuesta no JSON */ } } // con `aceptar` (p. ej. raw) la respuesta es el texto del archivo: no se parsea
   return { code: resp.getResponseCode(), body: obj, text: texto };
 }
