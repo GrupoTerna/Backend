@@ -24,3 +24,4 @@ Fecha,Estado,Resultado,Error
 2026-11-15 05:59:55,OK,"{""ok"":true,""procesados"":258,""discrepancias"":8,""yaResueltas"":0,""omitidos"":0,""tagsEnVariosClanes"":12}",
 2026-11-15 06:01:53,OK,"{""ok"":true,""procesados"":258,""discrepancias"":9,""yaResueltas"":0,""omitidos"":0,""tagsEnVariosClanes"":12}",
 2026-11-15 07:13:24,OK,"{""ok"":true,""procesados"":260,""discrepancias"":8,""yaResueltas"":0,""omitidos"":0,""tagsEnVariosClanes"":12,""tagsPorClan"":248,""tagsPorTotal"":0,""discrepanciasPorClan"":8,""supersedidas"":7}",
+2026-11-15 07:18:35,OK,"{""ok"":true,""procesados"":260,""discrepancias"":9,""yaResueltas"":0,""omitidos"":0,""tagsEnVariosClanes"":12,""tagsPorClan"":248,""tagsPorTotal"":0,""discrepanciasPorClan"":9,""supersedidas"":0}",
