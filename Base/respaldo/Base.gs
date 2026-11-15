@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 05:21:17 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 05:50:05 */
 
 
 
@@ -36637,15 +36637,35 @@ function _procesarVerificacionRiverRace(participantesPayload) {
 
   var procesados = 0, discrepancias = 0, omitidos = 0, yaResueltas = 0;
 
-  for (var i = 0; i < participantesPayload.length; i++) {
-    var p = participantesPayload[i] || {};
-    var tag = String(p.tag || '').trim().toUpperCase();
-    if (!tag) { omitidos++; continue; }
+  // §PF473 (15-nov-2026): un jugador puede salir en dos clanes Terna la misma semana (cambió de clan). Hoja Guerra guarda por tag la SUMA de sus clanes
+  // (_procesarFilasGuerraParaControl() suma entre clanes), así que aquí también se suma: cada clan aporta su valor y ninguno pisa ni excluye al otro.
+  // Una fila repetida del mismo tag y el mismo clan (lectura duplicada) sí reemplaza a la anterior en vez de sumarse.
+  var porTag = {}, ordenTags = [], tagsEnVariosClanes = 0;
+  for (var j = 0; j < participantesPayload.length; j++) {
+    var q = participantesPayload[j] || {};
+    var tagQ = String(q.tag || '').trim().toUpperCase();
+    if (!tagQ) { omitidos++; continue; }
+    var dQ = Number(q.decksHoy), fQ = Number(q.fameSemana), bQ = Number(q.barcosSemana);
+    if (isNaN(dQ) || isNaN(fQ) || isNaN(bQ)) { omitidos++; continue; }
+    var clanQ = String(q.clan || '').trim();
+    if (!porTag[tagQ]) { porTag[tagQ] = { clanes: {}, nClanes: 0 }; ordenTags.push(tagQ); }
+    if (!porTag[tagQ].clanes.hasOwnProperty(clanQ)) {
+      porTag[tagQ].nClanes++;
+      if (porTag[tagQ].nClanes === 2) tagsEnVariosClanes++;
+    }
+    porTag[tagQ].clanes[clanQ] = { decks: dQ, fame: fQ, barcos: bQ };
+    procesados++;
+  }
 
-    var decksHoy = Number(p.decksHoy);
-    var fameSemana = Number(p.fameSemana);
-    var barcosSemana = Number(p.barcosSemana);
-    if (isNaN(decksHoy) || isNaN(fameSemana) || isNaN(barcosSemana)) { omitidos++; continue; }
+  for (var i = 0; i < ordenTags.length; i++) {
+    var tag = ordenTags[i];
+    var decksHoy = 0, fameSemana = 0, barcosSemana = 0;
+    for (var cl in porTag[tag].clanes) {
+      if (!porTag[tag].clanes.hasOwnProperty(cl)) continue;
+      decksHoy += porTag[tag].clanes[cl].decks;
+      fameSemana += porTag[tag].clanes[cl].fame;
+      barcosSemana += porTag[tag].clanes[cl].barcos;
+    }
 
     var diasTag = (guerraData[tag] && guerraData[tag][sIdx]) || {};
 
@@ -36702,9 +36722,9 @@ function _procesarVerificacionRiverRace(participantesPayload) {
 
   Logger.log('[RiverRace] Verificación semana en curso — Temporada ' + temporada + ', Semana ' + semana +
     ': ' + procesados + ' procesado(s), ' + discrepancias + ' discrepancia(s) nueva(s), ' +
-    yaResueltas + ' con fila ya resuelta (no sobreescrita), ' + omitidos + ' omitido(s).');
+    yaResueltas + ' con fila ya resuelta (no sobreescrita), ' + omitidos + ' omitido(s), ' + tagsEnVariosClanes + ' tag(s) en más de un clan (valores sumados).');
 
-  return { ok: true, procesados: procesados, discrepancias: discrepancias, yaResueltas: yaResueltas, omitidos: omitidos };
+  return { ok: true, procesados: procesados, discrepancias: discrepancias, yaResueltas: yaResueltas, omitidos: omitidos, tagsEnVariosClanes: tagsEnVariosClanes };
 }
 
 // PERSISTENCIA — Correcciones_RiverRace_Pendientes.csv [→ Contexto_Base_Web.md §19B018]

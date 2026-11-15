@@ -392,7 +392,7 @@ Ninguno.
 | `_cargarOverlayCorreccionesGuerra` | función | 18_CorreccionGuerra.gs | 2114 | Contexto_Base_Web.md §18B096 |
 | `_cargarOverlayCorreccionesGuerraPorClan` | función | 18_CorreccionGuerra.gs | 2107 | Contexto_Base_Web.md §18B093 |
 | `_cargarParCambioRango_` | función | 29_Docs_NoCalificados.gs | 433 |  |
-| `_cargarPendientesRiverRace` | función | 19_CorreccionRiverRace.gs | 429 |  |
+| `_cargarPendientesRiverRace` | función | 19_CorreccionRiverRace.gs | 449 |  |
 | `_cargarPlayerDesideDrive` | función | 09_API_ClashRoyale.gs | 3711 | Contexto_Base_Web.md §09B166 |
 | `_cargarPlayerDesideDriveRapido_` | función | 09_API_ClashRoyale.gs | 3637 |  |
 | `_cargarPlayerDesideDriveScan_` | función | 09_API_ClashRoyale.gs | 3718 |  |
@@ -715,7 +715,7 @@ Ninguno.
 | `_diaClaveOrden_` | función | 26_Torneos_Core.gs | 5054 | Contexto_Base_Web.md §PF286 |
 | `_diagGuerraVivo_` | función | 38_Web_Endpoints.gs | 3235 |  |
 | `_diagnosticoGuerraDia` | función | 49_Diagnostico_Domingo.gs | 32 |  |
-| `_diaGuerraGuardadoRiverRace_` | función | 19_CorreccionRiverRace.gs | 519 |  |
+| `_diaGuerraGuardadoRiverRace_` | función | 19_CorreccionRiverRace.gs | 539 |  |
 | `_diaLimaDe_` | función | 17_GuerraSheet.gs | 3965 |  |
 | `_diarioDesdeAcumuladoGuerra_` | función | 37_Web_API.gs | 2795 | Contexto_Base_Web.md §37B262C |
 | `_DIAS_ES` | global | 01_Config_Global.gs | 652 | Contexto_Base_Web.md §01B111 |
@@ -736,7 +736,7 @@ Ninguno.
 | `_ensamblarUrlMazo` | función | 31_Cards_Mazos.gs | 1027 | Contexto_Base_Web.md §31B048 |
 | `_entradaRevisionCsvGrupal_` | función | 20_HistorialGuerraJugador.gs | 1047 |  |
 | `_entradaRevisionJsonGrupal_` | función | 20_HistorialGuerraJugador.gs | 1060 |  |
-| `_enVentanaCambioDiaGuerra_` | función | 19_CorreccionRiverRace.gs | 543 |  |
+| `_enVentanaCambioDiaGuerra_` | función | 19_CorreccionRiverRace.gs | 563 |  |
 | `_enviarMensajeBotones` | función | 44_BotWhatsApp.gs | 183 |  |
 | `_enviarMensajeLista` | función | 44_BotWhatsApp.gs | 200 |  |
 | `_enviarMensajeWhatsApp` | función | 44_BotWhatsApp.gs | 173 |  |
@@ -1043,7 +1043,7 @@ Ninguno.
 | `_guardarModoCSVSiHayNuevos` | función | 26_Torneos_Core.gs | 1807 | Contexto_Base_Web.md §26B247 |
 | `_guardarOverlayCorreccionesGuerra` | función | 18_CorreccionGuerra.gs | 2262 | Contexto_Base_Web.md §18B097 |
 | `_guardarPasoDeCadena_` | función | 00_Main.gs | 2372 |  |
-| `_guardarPendientesRiverRace` | función | 19_CorreccionRiverRace.gs | 472 | Contexto_Base_Web.md §19B020 |
+| `_guardarPendientesRiverRace` | función | 19_CorreccionRiverRace.gs | 492 | Contexto_Base_Web.md §19B020 |
 | `_guardarPerfilWebCSV` | función | 36_PerfilWeb.gs | 113 |  |
 | `_guardarPlayerEnDrive` | función | 09_API_ClashRoyale.gs | 3664 | Contexto_Base_Web.md §09B163 |
 | `_guardarProgresoBattlelogChests` | función | 09_API_ClashRoyale.gs | 1435 | Contexto_Base_Web.md §09B074 |
@@ -1354,8 +1354,8 @@ Ninguno.
 | `_obtenerTagsEnHojaNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1685 | Contexto_Base_Web.md §14B091 |
 | `_ocultarColumnaJugador` | función | 04_Formato_Comun.gs | 591 | Contexto_Base_Web.md §04B011 |
 | `_ocultarFilasTagsOcultos` | función | 01_Config_Global.gs | 1188 | Contexto_Base_Web.md §01B146 |
-| `_offDiaDesdeTimestamp` | función | 19_CorreccionRiverRace.gs | 508 | Contexto_Base_Web.md §19B023 |
-| `_offDiaFilaPendienteRiverRace_` | función | 19_CorreccionRiverRace.gs | 530 |  |
+| `_offDiaDesdeTimestamp` | función | 19_CorreccionRiverRace.gs | 528 | Contexto_Base_Web.md §19B023 |
+| `_offDiaFilaPendienteRiverRace_` | función | 19_CorreccionRiverRace.gs | 550 |  |
 | `_olvidarVetadoConfirmado` | función | 13_Inactivos_Vetados.gs | 737 | Contexto_Base_Web.md §13B033 |
 | `_opcionesDesdeCategorias` | función | 44_BotWhatsApp.gs | 251 |  |
 | `_opcionesDesdeClanContenido` | función | 44_BotWhatsApp.gs | 257 |  |
