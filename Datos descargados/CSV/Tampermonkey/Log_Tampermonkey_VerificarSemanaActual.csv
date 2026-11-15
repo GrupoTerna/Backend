@@ -14,3 +14,5 @@ Fecha,Estado,Resultado,Error
 2026-11-09 03:39:46,OK,"{""ok"":true,""procesados"":184,""discrepancias"":2,""yaResueltas"":0,""omitidos"":0}",
 2026-11-15 04:43:08,OK,"{""ok"":true,""procesados"":257,""discrepancias"":42,""yaResueltas"":0,""omitidos"":0}",
 2026-11-15 04:43:30,OK,"{""ok"":true,""procesados"":257,""discrepancias"":42,""yaResueltas"":0,""omitidos"":0}",
+2026-11-15 05:05:12,OK,"{""ok"":true,""procesados"":257,""discrepancias"":6,""yaResueltas"":0,""omitidos"":0}",
+2026-11-15 05:06:58,OK,"{""ok"":true,""procesados"":257,""discrepancias"":6,""yaResueltas"":0,""omitidos"":0}",
