@@ -2783,6 +2783,32 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   return resultado;
 }
 
+// §PF472 (15-nov-2026): clanes Terna sin guerra abierta, para que Tampermonkey («Verificar semana en curso») los omita en vez de esperar una tabla que no existe.
+/**
+ * _clanesTernaSinGuerraAbierta_() [→ Contexto_Base_Web.md §PF472]
+ * Lee el checkpoint de clanes de Drive (sin llamar a la API ni cargar CACHE_CLAN_DATA, para no cambiar lo que calcula _getCtx() en esta ejecución) y devuelve
+ * { tags: [...], edadMin: n } con los clanes Terna cuyo /currentriverrace de Supercell dio HTTP 404 (RIVERRACE_ESTADO_SIN_GUERRA, §PF379): no participan en guerra
+ * esta temporada. Un clan sin ese estado explícito NO entra (falla de la API o dato ausente = error, no «sin guerra»). Si el checkpoint falta o tiene más de
+ * 2 horas, devuelve tags vacío: Tampermonkey no omite nada y todo sigue como antes. Nunca lanza error.
+ */
+function _clanesTernaSinGuerraAbierta_() {
+  var vacio = { tags: [], edadMin: null };
+  try {
+    var cp = _leerProgresoClanesConEdad_();
+    if (!cp || !cp.clanes) return vacio;
+    if (!(cp.edadMs <= 2 * 60 * 60 * 1000)) return vacio;
+    var tags = [];
+    for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
+      var cd = cp.clanes[CFG.TERNA_TAGS[i]];
+      if (cd && cd.info && !cd.riverrace && cd.riverraceEstado === RIVERRACE_ESTADO_SIN_GUERRA) tags.push(CFG.TERNA_TAGS[i]);
+    }
+    return { tags: tags, edadMin: Math.round(cp.edadMs / 60000) };
+  } catch (eSG) {
+    Logger.log('[CorreccionGuerra][Lista] AVISO: no se pudo leer qué clanes están sin guerra (' + (eSG.message || eSG) + '); la lista sale sin ese dato.');
+    return vacio;
+  }
+}
+
 // LISTA DE JUGADORES A CORREGIR (para el userscript) [→ Contexto_Base_Web.md §18B105]
 /**
  * _obtenerListaCorreccionGuerra() [→ Contexto_Base_Web.md §18B106]
@@ -2837,6 +2863,7 @@ function _obtenerListaCorreccionGuerra(opciones) {
     semanaRiverRaceActual = ctxActual.sectionIndex + 1;
   }
 
+  var clanesSinGuerraInfo = _clanesTernaSinGuerraAbierta_(); // §PF472
   var coberturaPorTag = soloClanes ? {} : _construirCoberturaPorTag();
   var mapaOverlayLista = soloClanes ? null : _cargarOverlayCorreccionesGuerraPorClan(); // §PF246: una sola lectura del CSV para las dos listas de abajo
   var cuentasVariosClanes = soloClanes ? [] : _cuentasConVariosClanesEnOverlay_(mapaOverlayLista); // §PF164: para forzar su perfil desde Tampermonkey (v3.2)
@@ -2857,6 +2884,9 @@ function _obtenerListaCorreccionGuerra(opciones) {
     semanaActual: semanaRiverRaceActual,
     clanesTerna: _getNombresClanesTernaOrdenados(),
     clanTagsTerna: CFG.TERNA_TAGS,
+    // §PF472: tags de los clanes Terna con HTTP 404 en /currentriverrace (no participan en guerra esta temporada) y edad en minutos del dato; vacío si no se pudo leer.
+    clanesSinGuerra: clanesSinGuerraInfo.tags,
+    clanesSinGuerraEdadMin: clanesSinGuerraInfo.edadMin,
     jugadores: jugadores,
     // FASE 10 (Consolidado_Cambios_Pendientes_Guerra.md, punto 3.1, pregunta [→ Contexto_Base_Web.md §18B110]
     coberturaPorTag: coberturaPorTag,
