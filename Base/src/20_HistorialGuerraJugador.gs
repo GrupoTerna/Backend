@@ -437,8 +437,16 @@ function _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanActual, reg
       if (!soloExternos && archivoExistente.getName() !== filename) archivoExistente.setName(filename);
       _setContentConConteo_(archivoExistente, contenido);
     } else {
-      var nuevoArchivo = _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
-      indice[String(tag).trim()] = nuevoArchivo;
+      // 15-nov-2026 (PF275): antes de crear se busca por nombre exacto en la carpeta. Si otra ejecución simultánea ya creó este archivo en el mismo minuto (el índice de arriba se armó antes y no lo ve), se reutiliza en vez de escribir un segundo con el mismo nombre.
+      var yaCreado = folder.getFilesByName(filename);
+      if (yaCreado.hasNext()) {
+        var archivoYaCreado = yaCreado.next();
+        _setContentConConteo_(archivoYaCreado, contenido);
+        indice[String(tag).trim()] = archivoYaCreado;
+      } else {
+        var nuevoArchivo = _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
+        indice[String(tag).trim()] = nuevoArchivo;
+      }
     }
   } catch (e) {
     Logger.log('[HistorialGuerra] Error guardando ' + tag + ': ' + e.message);
