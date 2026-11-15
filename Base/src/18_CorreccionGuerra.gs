@@ -815,6 +815,7 @@ function generarGuerraDesglose() {
   function resumenDe(mapa) { return Object.keys(mapa).sort().map(function (k) { return k + ' ' + mapa[k]; }).join(', '); }
   Logger.log(etiqueta + ' ' + GDS_CSV_NOMBRE + ' escrito: ' + c.filasSalida + ' fila(s) (jugador, semana y clan; ' + c.diasSalida + ' día(s) con datos) de ' + c.semanasJugador + ' semana(s) de jugador (' + c.filasLeidas + ' filas leídas de Backup_Guerra.csv; ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag, ' + c.fueraDeSemana + ' fuera de la semana de guerra).');
   Logger.log(etiqueta + ' Fuente del desglose (por día): ' + resumenDe(c.porFuente) + '.');
+  Logger.log(etiqueta + ' Días comprobados («' + GDS_COMPROBADA_BATTLELOG + '»): ' + c.comprobadas + ' de ' + c.diasSalida + ' día(s) con datos.');   // §PF437 F3
   Logger.log(etiqueta + ' Cobertura de la mejor captura (por día): ' + resumenDe(c.porCobertura) + '. La cobertura es por tiempo y no prueba que el día esté completo (el log pierde batallas, §18B049).');
   if (restriccionesOk) Logger.log(etiqueta + ' «' + GDS_MARCA_BACKUP_CONTRADICHO + '» (fame acumulada del backup fuera del rango de los JSON): ' + c.contradichosJson + ' día(s), anotados en ConsistenciaValores. Solo se marca: FuenteDesglose no cambia.');
   else Logger.log(etiqueta + ' AVISO: Cruce_CRR_Restricciones.csv no existe o está vacío (corre verificarCrrVsBackupInforme() en este proyecto): no se marcó «' + GDS_MARCA_BACKUP_CONTRADICHO + '».');
@@ -6116,7 +6117,7 @@ function _gdsConstruirFilas_(filas, opciones) {
   var restrPorSemana = opciones.restriccionesPorSemana || {};
   var cuenta = {
     filasLeidas: filas.length, repetidas: [], noGuerra: 0, sinClanTag: 0, clanAjeno: 0, fueraDeSemana: 0, filasSalida: 0,
-    semanasJugador: 0, diasSalida: 0, variosDias: 0, contradichosJson: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {},
+    semanasJugador: 0, diasSalida: 0, variosDias: 0, comprobadas: 0, contradichosJson: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {},
     revisiones: []   // §PF480: días donde el battlelog contradice la hoja Guerra, en el formato de _registrarRevisionGuerra_ (las anota generarGuerraDesglose)
   };
 
@@ -6246,6 +6247,8 @@ function _gdsConstruirFilas_(filas, opciones) {
         fila: _gdsFilaSemana_({ temporada: gr.temporada, semana: gr.semana, clanTag: clanTagK, clan: ultimo[GC.CLAN - 1], tag: gr.tag, nombre: ultimo[GC.NOMBRE - 1] }, diasClan)
       });
       cuenta.filasSalida++;
+      var filaSal = salida[salida.length - 1].fila;   // §PF437 F3: días comprobados (las 4 últimas columnas, «J Comprobada» a «D Comprobada»)
+      for (var dc = filaSal.length - GDS_DIAS.length; dc < filaSal.length; dc++) if (filaSal[dc]) cuenta.comprobadas++;
     });
   }
   salida.sort(function (p, q) {

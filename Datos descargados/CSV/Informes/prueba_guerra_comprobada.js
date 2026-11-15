@@ -64,6 +64,7 @@ if (fs.existsSync(hojas)) {
     if (v !== esperado) incoherentes++;
   }
   t('datos reales: la columna sigue a FuenteDesglose y ConsistenciaValores en todos los días', incoherentes === 0);
+  t('datos reales: cuenta.comprobadas coincide con las celdas llenas (' + comp + ')', r.cuenta.comprobadas === comp);
   t('datos reales: todas las filas tienen 104 columnas', r.filas.every(f => f.length === 104));
   console.log('filas: ' + r.filas.length + ' | días (4 por fila): ' + n + ' | comprobados «' + B + '»: ' + comp);
   // ida y vuelta por CSV y por el índice de F4
