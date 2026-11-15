@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 13:38:10 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 05:01:54 */
 
 
 
@@ -36273,10 +36273,13 @@ var CRC = {
   // FECHADETECCION_TS (agregada 22-ago-2026): mismo instante que [→ Contexto_Base_Web.md §19B003]
   FECHADETECCION_TS: 14,
   ESTADO: 15,       // Pendiente / Aprobado / Descartado
-  IMPLEMENTADO: 16  // Sí / No / vacío, independiente de ESTADO
+  IMPLEMENTADO: 16, // Sí / No / vacío, independiente de ESTADO
+  // DIAGUERRA (agregada 15-nov-2026, §PF470/§PF471): día de guerra de la detección, 0=Jueves..3=Domingo, tomado del periodIndex.
+  // Vacío en las filas anteriores. Evita deducir el día desde la hora del timestamp, que de 00:00 a 05:00 (Lima) da el día calendario y no el de guerra.
+  DIAGUERRA: 17
 };
 
-var CRC_TOTAL_COLS = 16;
+var CRC_TOTAL_COLS = 17;
 
 var CRC_ENCABEZADOS = [
   'N°', 'Temporada', 'Semana', 'Tag',
@@ -36284,7 +36287,7 @@ var CRC_ENCABEZADOS = [
   'PuntajeHoy_Detectado', 'PuntajeHoy_Actual',
   'BarcosHoy_Detectado', 'BarcosHoy_Actual',
   'FameSemana_Detectado', 'BarcosSemana_Detectado',
-  'FechaDeteccion', 'FechaDeteccion_TS', 'Estado', 'Implementado'
+  'FechaDeteccion', 'FechaDeteccion_TS', 'Estado', 'Implementado', 'DiaGuerra'
 ];
 
 var CORRECCIONES_RIVERRACE_PENDIENTES_CSV = 'Correcciones_RiverRace_Pendientes.csv';
@@ -36362,12 +36365,12 @@ function aprobarCorreccionesRiverRacePendientes() {
     var ok = false;
     if (offsetsClave) {
       // Día real de la detección (Jueves..Domingo), calculado desde [→ Contexto_Base_Web.md §19B008]
-      var offDiaDeteccion = _offDiaDesdeTimestamp(Number(f[CRC.FECHADETECCION_TS - 1]) || 0);
+      var offDiaDeteccion = _offDiaFilaPendienteRiverRace_(f); // §PF471: usa DiaGuerra si está; sin él, el día calendario (y -1 de 00:00 a 05:00)
       var rowDeteccion = (offDiaDeteccion >= 0) ? offsetsClave[offDiaDeteccion] : undefined;
 
       if (rowDeteccion === undefined) {
         Logger.log('[RiverRace] ' + clave + ': no se pudo ubicar con certeza el día de guerra de la detección ' +
-          '(FECHADETECCION_TS ' + (offDiaDeteccion === -1 ? 'ausente/inválido' : 'apunta a un día sin fila en Guerra todavía') +
+          '(FECHADETECCION_TS ' + (offDiaDeteccion === -1 ? 'ausente, inválido o detectado de 00:00 a 05:00 sin DiaGuerra' : 'apunta a un día sin fila en Guerra todavía') +
           ') -- no se adivina, la fila queda sin implementar para revisión manual.');
       } else {
         try {
@@ -36419,6 +36422,7 @@ function aprobarCorreccionesRiverRacePendientes() {
 
   // Reescribe el CSV completo (nunca se purga aquí -- ver
   // limpiarCorreccionesRiverRacePendientesAplicadas() para eso).
+  for (var pa = 0; pa < filas.length; pa++) { while (filas[pa].length < CRC_TOTAL_COLS) filas[pa].push(''); } // filas viejas de 16 columnas
   var salidaCsv = [CRC_ENCABEZADOS].concat(filas);
   _saveCSVToDrive(CORRECCIONES_RIVERRACE_PENDIENTES_CSV, _encodeCSV(salidaCsv));
 
@@ -36482,11 +36486,74 @@ function limpiarCorreccionesRiverRacePendientesAplicadas() {
     conservadas[i][CRC.NUM - 1] = i + 1;
   }
 
+  for (var pl = 0; pl < conservadas.length; pl++) { while (conservadas[pl].length < CRC_TOTAL_COLS) conservadas[pl].push(''); }
   var salida = [CRC_ENCABEZADOS].concat(conservadas);
   _saveCSVToDrive(CORRECCIONES_RIVERRACE_PENDIENTES_CSV, _encodeCSV(salida));
 
   Logger.log('[RiverRace] Limpieza manual: ' + borradas + ' fila(s) borrada(s) (Aprobado + Implementado=Sí). ' +
     'Quedan ' + conservadas.length + ' fila(s) en el CSV.');
+}
+
+/**
+ * limpiarRiverRacePendientesDuplicados() (15-nov-2026, §PF471): quita de Correcciones_RiverRace_Pendientes.csv las filas «Pendiente»
+ * repetidas y las de día ambiguo. Nunca toca filas Aprobado ni Descartado y no escribe en Guerra.
+ *  1) Repetidas: misma clave temporada|semana|tag|día (el día sale de DiaGuerra y, sin él, de _offDiaFilaPendienteRiverRace_()); queda la más reciente.
+ *  2) Ambiguas: sin DiaGuerra, detectadas de 00:00 a 05:00 (Lima) en jueves a domingo. Antes de §PF471 la aprobación las habría puesto en el día calendario
+ *     y no en el de guerra. Son detecciones que no se aplicaron; la próxima verificación (fuera de 04:00 a 05:00) las vuelve a generar con DiaGuerra.
+ * Cada fila quitada se anota en el registro con su N° y el motivo.
+ */
+function limpiarRiverRacePendientesDuplicados() {
+  var csvText = _loadCSVFromDrive(CORRECCIONES_RIVERRACE_PENDIENTES_CSV);
+  if (!csvText) {
+    Logger.log('[RiverRace] Nada que limpiar -- ' + CORRECCIONES_RIVERRACE_PENDIENTES_CSV + ' no existe todavía.');
+    return;
+  }
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length < 2) {
+    Logger.log('[RiverRace] Nada que limpiar -- ' + CORRECCIONES_RIVERRACE_PENDIENTES_CSV + ' está vacío.');
+    return;
+  }
+  var filas = parsed.slice(1);
+
+  // Primero se busca, por clave, la fila Pendiente más reciente.
+  var ganadora = {};
+  for (var i = 0; i < filas.length; i++) {
+    var f = filas[i];
+    if (String(f[CRC.ESTADO - 1]).trim() !== 'Pendiente') continue;
+    var clave = String(f[CRC.TEMPORADA - 1]).trim() + '|' + String(f[CRC.SEMANA - 1]).trim() + '|' +
+      String(f[CRC.TAG - 1]).trim() + '|' + _offDiaFilaPendienteRiverRace_(f);
+    var ts = Number(f[CRC.FECHADETECCION_TS - 1]) || 0;
+    if (ganadora[clave] === undefined || ts >= (Number(filas[ganadora[clave]][CRC.FECHADETECCION_TS - 1]) || 0)) ganadora[clave] = i;
+  }
+
+  var conservadas = [], repetidas = 0, ambiguas = 0;
+  for (var j = 0; j < filas.length; j++) {
+    var g = filas[j];
+    if (String(g[CRC.ESTADO - 1]).trim() !== 'Pendiente') { conservadas.push(g); continue; }
+    var claveG = String(g[CRC.TEMPORADA - 1]).trim() + '|' + String(g[CRC.SEMANA - 1]).trim() + '|' +
+      String(g[CRC.TAG - 1]).trim() + '|' + _offDiaFilaPendienteRiverRace_(g);
+    if (ganadora[claveG] !== j) {
+      repetidas++;
+      Logger.log('[RiverRace] Se quita la fila N° ' + g[CRC.NUM - 1] + ' (' + claveG + '): repetida, queda la más reciente.');
+      continue;
+    }
+    var tsG = Number(g[CRC.FECHADETECCION_TS - 1]) || 0;
+    if (_diaGuerraGuardadoRiverRace_(g) === '' && _offDiaFilaPendienteRiverRace_(g) === -1 && _offDiaDesdeTimestamp(tsG) >= 0) {
+      ambiguas++;
+      Logger.log('[RiverRace] Se quita la fila N° ' + g[CRC.NUM - 1] + ' (' + claveG + '): día de guerra ambiguo (detectada de 00:00 a 05:00 sin DiaGuerra).');
+      continue;
+    }
+    conservadas.push(g);
+  }
+
+  for (var k = 0; k < conservadas.length; k++) {
+    conservadas[k][CRC.NUM - 1] = k + 1;
+    while (conservadas[k].length < CRC_TOTAL_COLS) conservadas[k].push('');
+  }
+  _saveCSVToDrive(CORRECCIONES_RIVERRACE_PENDIENTES_CSV, _encodeCSV([CRC_ENCABEZADOS].concat(conservadas)));
+
+  Logger.log('[RiverRace] Limpieza de pendientes: ' + repetidas + ' repetida(s) y ' + ambiguas + ' de día ambiguo quitadas. Quedan ' +
+    conservadas.length + ' fila(s). Si quitaste ambiguas, vuelve a correr «Verificar Semana en Curso» fuera de 04:00 a 05:00 (Lima).');
 }
 
 // =============================================================================
@@ -36522,6 +36589,10 @@ function _procesarVerificacionRiverRace(participantesPayload) {
   var offDiaHoy = (ctx.periodIndex % 7) - 3; // 0=Jueves..3=Domingo
   if (offDiaHoy < 0 || offDiaHoy > 3) {
     return { ok: false, error: 'Hoy no es día de guerra — nada que verificar.', procesados: 0, discrepancias: 0 };
+  }
+  // §PF471 (15-nov-2026): de 04:00 a 05:00 (Lima) cada clan cambia de día de guerra y RoyaleAPI puede ir un día por delante de la caché del backend; compararlos ahí genera discrepancias falsas.
+  if (_enVentanaCambioDiaGuerra_()) {
+    return { ok: false, error: 'Es la ventana de cambio de día de guerra (04:00 a 05:00, hora de Lima): los clanes cambian en momentos distintos y la comparación saldría con discrepancias falsas. Vuelve a correrlo después de las 05:00.', procesados: 0, discrepancias: 0 };
   }
 
   var temporada = ctx.temporada;
@@ -36593,7 +36664,7 @@ function _procesarVerificacionRiverRace(participantesPayload) {
       puntajeHoyDetectado: puntajeHoy, puntajeHoyActual: actual.puntaje,
       barcosHoyDetectado: barcosHoy, barcosHoyActual: actual.barcos,
       fameSemanaDetectado: fameSemana, barcosSemanaDetectado: barcosSemana,
-      fechaDeteccion: ahora, fechaDeteccionTs: ahoraTs, estado: 'Pendiente', implementado: ''
+      fechaDeteccion: ahora, fechaDeteccionTs: ahoraTs, estado: 'Pendiente', implementado: '', diaGuerra: offDiaHoy
     };
   }
 
@@ -36626,7 +36697,7 @@ function _cargarPendientesRiverRace() {
 
     // Mismo criterio de clave que _procesarVerificacionRiverRace() [→ Contexto_Base_Web.md §19B019]
     var fechaDeteccionTsFila = Number(f[CRC.FECHADETECCION_TS - 1]) || 0;
-    var offDiaFila = _offDiaDesdeTimestamp(fechaDeteccionTsFila);
+    var offDiaFila = _offDiaFilaPendienteRiverRace_(f); // §PF471: DiaGuerra si está; si no, el día calendario (-1 de 00:00 a 05:00)
     var clave = temporada + '|' + semana + '|' + tag + '|' + offDiaFila;
     mapa[clave] = {
       temporada: temporada, semana: semana, tag: tag,
@@ -36641,7 +36712,8 @@ function _cargarPendientesRiverRace() {
       fechaDeteccion:   String(f[CRC.FECHADETECCION - 1] || ''),
       fechaDeteccionTs: fechaDeteccionTsFila,
       estado:           String(f[CRC.ESTADO - 1] || 'Pendiente'),
-      implementado:   String(f[CRC.IMPLEMENTADO - 1] || '')
+      implementado:   String(f[CRC.IMPLEMENTADO - 1] || ''),
+      diaGuerra:      _diaGuerraGuardadoRiverRace_(f)
     };
   }
   return mapa;
@@ -36670,7 +36742,8 @@ function _guardarPendientesRiverRace(mapa) {
       v.puntajeHoyDetectado, v.puntajeHoyActual,
       v.barcosHoyDetectado, v.barcosHoyActual,
       v.fameSemanaDetectado, v.barcosSemanaDetectado,
-      v.fechaDeteccion, v.fechaDeteccionTs || 0, v.estado, v.implementado
+      v.fechaDeteccion, v.fechaDeteccionTs || 0, v.estado, v.implementado,
+      (v.diaGuerra === undefined ? '' : v.diaGuerra)
     ]);
   }
   var salida = [CRC_ENCABEZADOS].concat(filas);
@@ -36691,6 +36764,38 @@ function _offDiaDesdeTimestamp(ts) {
   var isoDow = Number(Utilities.formatDate(new Date(ts), tz, 'u')); // 1=Lunes..7=Domingo
   var MAPA_ISO_A_OFFDIA = { 4: 0, 5: 1, 6: 2, 7: 3 }; // Jueves..Domingo -> 0..3
   return MAPA_ISO_A_OFFDIA.hasOwnProperty(isoDow) ? MAPA_ISO_A_OFFDIA[isoDow] : -1;
+}
+
+/**
+ * _diaGuerraGuardadoRiverRace_(f) (§PF471): día de guerra (0=Jueves..3=Domingo) guardado en la columna DiaGuerra de una fila, o '' si no lo tiene (filas anteriores al 15-nov-2026).
+ */
+function _diaGuerraGuardadoRiverRace_(f) {
+  var v = f[CRC.DIAGUERRA - 1];
+  if (v === undefined || v === null || String(v).trim() === '') return '';
+  var n = Number(v);
+  return (n >= 0 && n <= 3 && n === Math.floor(n)) ? n : '';
+}
+
+/**
+ * _offDiaFilaPendienteRiverRace_(f) (§PF471): día de guerra de una fila de Correcciones_RiverRace_Pendientes.csv.
+ * Con DiaGuerra, ese. Sin él (filas viejas), el día calendario del timestamp; pero de 00:00 a 05:00 (Lima) el día calendario no es el de guerra, así que devuelve -1 (no se adivina).
+ */
+function _offDiaFilaPendienteRiverRace_(f) {
+  var guardado = _diaGuerraGuardadoRiverRace_(f);
+  if (guardado !== '') return guardado;
+  var ts = Number(f[CRC.FECHADETECCION_TS - 1]) || 0;
+  if (!ts) return -1;
+  var horaLima = Number(Utilities.formatDate(new Date(ts), 'America/Lima', 'H'));
+  if (horaLima < 5) return -1;
+  return _offDiaDesdeTimestamp(ts);
+}
+
+/**
+ * _enVentanaCambioDiaGuerra_() (§PF471): true si ahora es la ventana en que cada clan cambia de día de guerra (BLG_VENTANA_CAMBIO_UTC, 18_CorreccionGuerra.gs: 09:00 a 10:00 UTC = 04:00 a 05:00 Lima).
+ */
+function _enVentanaCambioDiaGuerra_() {
+  var h = new Date().getUTCHours();
+  return h >= BLG_VENTANA_CAMBIO_UTC.desde && h < BLG_VENTANA_CAMBIO_UTC.hasta;
 }
 
 
