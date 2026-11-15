@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 07:50:11 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 11:50:24 */
 
 
 
@@ -29394,8 +29394,10 @@ var GDS_HEADERS = (function () {
     h.push(d + ' DiaGuerra', d + ' PeriodIndex', d + ' Origen', d + ' AtaquesAcum', d + ' BarcosAcum', d + ' FameAcum',
       d + ' FuenteDesglose', d + ' Combinaciones', d + ' ConsistenciaValores', d + ' CoberturaLog', d + ' BattlelogArchivo', d + ' BattlelogDescargado', d + ' BattlelogDesde');
   }
+  for (i = 0; i < GDS_DIAS.length; i++) h.push(GDS_DIAS[i] + ' Comprobada');   // §PF437 F3 (15-nov-2026): al final, para no mover ninguna columna anterior
   return h;
 })();
+var GDS_COMPROBADA_BATTLELOG = 'Valores + Battlelog';   // §PF437 F3: único estado que se calcula hoy; «Valores» (punto 5 a) pide el total semanal de RoyaleAPI y no se implementó, ver §PF437 punto 11
 var GDS_CAMPOS_VALOR = ['duelo250', 'duelo100', 'pvp200', 'pvp100', 'barco125', 'barco75', 'sinFame'];   // en el orden de las columnas DueloGanadas … SinFame
 var GDS_CAPTURAS_HEADERS = ['Tag', 'Archivo', 'Descargado', 'EntradaMasAntigua', 'EntradaMasNueva', 'Entradas'];
 var GDS_MAX_COMBINACIONES_TEXTO = 6;                // combinaciones que se escriben en la celda «Combinaciones» (el resto se cuenta)
@@ -30037,6 +30039,10 @@ function generarGuerraDesglose() {
   if (!res.filas.length) { Logger.log(etiqueta + ' No salió ninguna fila (' + c.filasLeidas + ' leídas de Backup_Guerra.csv, ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag); no se escribe ' + GDS_CSV_NOMBRE + '.'); return; }
   for (i = 0; i < res.filas.length; i++) res.filas[i][0] = i + 1;
   _saveCSVToDrive(GDS_CSV_NOMBRE, _encodeCSV([GDS_HEADERS].concat(res.filas)));
+  // §PF480: los días donde el battlelog contradice la hoja van a Revision_Guerra.csv (Tipo «Contradicción», Estado «Pendiente»). Si falla, el desglose ya quedó escrito y solo se avisa.
+  var revReg = { nuevas: 0, actualizadas: 0, sinCambio: 0 };
+  try { revReg = _registrarRevisionGuerra_(c.revisiones); } catch (eRev) { Logger.log(etiqueta + ' AVISO: no se pudo anotar en ' + REVISION_GUERRA_CSV + ' (' + eRev.message + ').'); }
+  Logger.log(etiqueta + ' ' + REVISION_GUERRA_CSV + ': ' + c.revisiones.length + ' día(s) donde el battlelog contradice la hoja Guerra (más mazos, o otra fame u otros barcos): ' + revReg.nuevas + ' nueva(s), ' + revReg.actualizadas + ' actualizada(s), ' + revReg.sinCambio + ' sin cambio. Nada se corrigió solo.');
 
   function resumenDe(mapa) { return Object.keys(mapa).sort().map(function (k) { return k + ' ' + mapa[k]; }).join(', '); }
   Logger.log(etiqueta + ' ' + GDS_CSV_NOMBRE + ' escrito: ' + c.filasSalida + ' fila(s) (jugador, semana y clan; ' + c.diasSalida + ' día(s) con datos) de ' + c.semanasJugador + ' semana(s) de jugador (' + c.filasLeidas + ' filas leídas de Backup_Guerra.csv; ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag, ' + c.fueraDeSemana + ' fuera de la semana de guerra).');
@@ -31743,6 +31749,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var memoPosible = {}; // §PF313: memoria de _cgwSemanaEsPosible_() para no repetir cálculos en un lote grande
   var indiceAtaqueTerna = _cgwIndiceAtaqueTerna_(mapa, correcciones, _getTemporadaOffsetRoyaleApi()); // §PF343
   var cacheJsonTerna = {}, contradiccionesExternasIgnoradas = 0; // §PF343
+  var indiceComprobadas = _gdsLeerIndiceComprobadas_(), avisadasComprobadas = {}, nAvisosComprobadas = 0; // §PF437 F4: solo avisa, no protege
   var aceptadasClanTerminado = [], aceptadasClanTerminadoTotal = 0; // §PF357: filas que solo cuadran suponiendo ataques sin fame por clan terminado (sin verificar)
   var aceptadasClanTerminadoVerificadas = 0, cacheCierreCrr = { leidas: {}, n: 0 }; // §PF357: cuántas se verificaron con los currentriverrace de Drive
   for (var i = 0; i < correcciones.length; i++) {
@@ -31768,6 +31775,14 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     var clanTag = _normalizarClanTagCorreccion(c.clanTag);
     var clave = temporadaPropia + '|' + semana + '|' + clanTag + '|' + tag;
     var existente = mapa[clave];
+    if (!avisadasComprobadas[clave]) {   // §PF437 F4: la corrección reemplaza el total de la semana, así que alcanza a los cuatro días
+      avisadasComprobadas[clave] = true;
+      var tocadasCompr = _gdsDiasComprobadosTocados_(indiceComprobadas, temporadaPropia, semana, tag, clanTag, 0, 3);
+      if (tocadasCompr.length) {
+        nAvisosComprobadas++;
+        if (nAvisosComprobadas <= 20) Logger.log('[Corrección guerra] AVISO: ' + clave + ' toca ' + tocadasCompr.length + ' día(s) comprobado(s) en ' + GDS_CSV_NOMBRE + ' (' + tocadasCompr.map(function (x) { return x.dia + ' ' + x.estado; }).join(', ') + '). Se aplica igual; vuelve a correr generarGuerraDesglose() para recalcular.');
+      }
+    }
 
     // barcos es opcional: si no viene en el payload (o viene vacío/NaN),
     // se preserva el que ya hubiera guardado para esta clave.
@@ -35241,7 +35256,76 @@ function _gdsFilaSemana_(cab, dias) {
     fila.push(v(d.diaGuerra), v(d.periodIndex), v(d.origen), v(d.ataquesAcum), v(d.barcosAcum), v(d.fameAcum),
       d.fuente, d.combinaciones, d.consistencia, d.cobertura.estado, d.cobertura.archivo, _gdsFechaLima_(d.cobertura.descargaMs), _gdsFechaLima_(d.cobertura.inicioMs));
   }
+  for (i = 0; i < GDS_DIAS.length; i++) fila.push(dias[i] ? _gdsComprobadaDia_(dias[i].fuente, dias[i].consistencia) : '');   // §PF437 F3
   return fila;
+}
+
+/**
+ * _gdsComprobadaDia_(fuente, consistencia) — §PF437 F3 (15-nov-2026). Función pura. Estado de comprobación de UN día de Guerra_Desglose.csv: «Valores + Battlelog» solo si el desglose salió del
+ * battlelog (FuenteDesglose = «Battlelog»: desglose exacto y mazos iguales a los ataques de la hoja, criterio 6 d de §PF437) y ConsistenciaValores es exactamente «Coincide» (la fame y los barcos
+ * del log coinciden con los de la hoja). Cualquier otra cosa, incluida «Coincide; Backup contradicho por JSON», da '' (sin comprobar). No se deriva de Origen (§PF437 punto 6 a).
+ * No existe un estado «Valores»: pide el total semanal de RoyaleAPI, que este archivo no lee (§PF437 punto 11).
+ */
+function _gdsComprobadaDia_(fuente, consistencia) {
+  return (fuente === 'Battlelog' && consistencia === 'Coincide') ? GDS_COMPROBADA_BATTLELOG : '';
+}
+
+/**
+ * _gdsIndiceComprobadas_(parsed) — §PF437 F4. Función pura. A partir de Guerra_Desglose.csv ya leído con _parseCSV (encabezado + filas) arma { 'temporada|semana|TAG|CLANTAG': [J, V, S, D] }
+ * con el estado de «J Comprobada» … «D Comprobada» de cada fila. Un CSV viejo sin esas columnas, o vacío, da {}.
+ */
+function _gdsIndiceComprobadas_(parsed) {
+  var indice = {};
+  if (!Array.isArray(parsed) || parsed.length < 2) return indice;
+  var cab = parsed[0], col = {}, i, r;
+  for (i = 0; i < cab.length; i++) col[String(cab[i]).trim()] = i;
+  var iT = col['Temporada'], iS = col['Semana'], iC = col['ClanTag'], iG = col['Tag'];
+  if (iT === undefined || iS === undefined || iC === undefined || iG === undefined) return indice;
+  var cols = GDS_DIAS.map(function (d) { return col[d + ' Comprobada']; });
+  if (cols.some(function (c) { return c === undefined; })) return indice;
+  for (r = 1; r < parsed.length; r++) {
+    var f = parsed[r];
+    if (!Array.isArray(f)) continue;
+    var dias = cols.map(function (c) { return String(f[c] === undefined ? '' : f[c]).trim(); });
+    if (!dias.some(function (x) { return x; })) continue;
+    indice[Number(f[iT]) + '|' + Number(f[iS]) + '|' + _blgNormalizarTag_(f[iG]) + '|' + _blgNormalizarTag_(f[iC])] = dias;
+  }
+  return indice;
+}
+
+/**
+ * _gdsDiasComprobadosTocados_(indice, temporada, semana, tag, clanTag, offDesde, offHasta) — §PF437 F4. Función pura. Días (letras J, V, S, D) comprobados que una corrección tocaría: los de offDesde a
+ * offHasta (0 = jueves … 3 = domingo) de ese jugador en ese clan; con clanTag vacío se miran todos los clanes del jugador esa semana. Devuelve [{ dia, clanTag, estado }]; [] si no hay ninguno.
+ */
+function _gdsDiasComprobadosTocados_(indice, temporada, semana, tag, clanTag, offDesde, offHasta) {
+  var res = [];
+  if (!indice) return res;
+  var pref = Number(temporada) + '|' + Number(semana) + '|' + _blgNormalizarTag_(tag) + '|';
+  var ct = _blgNormalizarTag_(clanTag);
+  Object.keys(indice).forEach(function (k) {
+    if (k.indexOf(pref) !== 0) return;
+    var clanK = k.substr(pref.length);
+    if (ct && clanK !== ct) return;
+    for (var o = Math.max(0, offDesde); o <= Math.min(3, offHasta); o++) {
+      if (indice[k][o]) res.push({ dia: GDS_DIAS[o], clanTag: clanK, estado: indice[k][o] });
+    }
+  });
+  return res;
+}
+
+/**
+ * _gdsLeerIndiceComprobadas_() — §PF437 F4. Lee Guerra_Desglose.csv de Drive (solo lectura, sin API) y devuelve su _gdsIndiceComprobadas_; {} si no existe o falla. Nunca lanza.
+ * El archivo es una instantánea (lo reescribe generarGuerraDesglose()), puede ir por detrás de la hoja Guerra: por eso las correcciones solo AVISAN y no se protege nada (§PF437 punto 7 a).
+ */
+function _gdsLeerIndiceComprobadas_() {
+  try {
+    var txt = _loadCSVFromDrive(GDS_CSV_NOMBRE);
+    if (!txt || !String(txt).trim()) return {};
+    return _gdsIndiceComprobadas_(_parseCSV(txt));
+  } catch (e) {
+    Logger.log('[Guerra Desglose] AVISO: no se pudo leer ' + GDS_CSV_NOMBRE + ' para avisar de filas comprobadas (' + e.message + ').');
+    return {};
+  }
 }
 
 /**
@@ -35264,7 +35348,8 @@ function _gdsConstruirFilas_(filas, opciones) {
   var restrPorSemana = opciones.restriccionesPorSemana || {};
   var cuenta = {
     filasLeidas: filas.length, repetidas: [], noGuerra: 0, sinClanTag: 0, clanAjeno: 0, fueraDeSemana: 0, filasSalida: 0,
-    semanasJugador: 0, diasSalida: 0, variosDias: 0, contradichosJson: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {}
+    semanasJugador: 0, diasSalida: 0, variosDias: 0, contradichosJson: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {},
+    revisiones: []   // §PF480: días donde el battlelog contradice la hoja Guerra, en el formato de _registrarRevisionGuerra_ (las anota generarGuerraDesglose)
   };
 
   // Una sola pasada: (temporada, semana, jugador) -> clan -> día -> fila con mayor PeriodIndex.
@@ -35352,6 +35437,21 @@ function _gdsConstruirFilas_(filas, opciones) {
           ? _gdsDesgloseVariosDias_({ ataques: vh.ataques[o], fame: fb.fame, barcos: fb.barcos }, o, vh.span[o])
           : _gdsDesgloseDelDia_({ ataques: vh.ataques[o], fame: fb.fame, barcos: fb.barcos }, bucket, !!pendientes[clanTagK], o === BLG_DIAS_GUERRA - 1);
         var consistencia = des.consistencia;
+        // §PF480 (§PF437 punto 7 a y d): si el battlelog trae MÁS mazos que los ataques de la hoja, o su desglose exacto da otra fame u otros barcos, el día se anota para revisión (nada se corrige solo).
+        if (bucket && bucket.batallas > 0 && !variosDias) {
+          var motivoRev = '', detalleRev = '';
+          var etiquetaRev = ' (día ' + GDS_DIAS[o] + ', clan ' + clanTagK + ')';
+          if (des.fuente === 'Contradicción battlelog') {
+            motivoRev = 'Battlelog con más mazos que la hoja Guerra' + etiquetaRev;
+            detalleRev = 'El battlelog trae al menos ' + bucket.mazosMin + ' mazo(s) ese día y la hoja Guerra tiene ' + vh.ataques[o] + ' ataque(s) (clan ' + clanTagK + ', día ' + GDS_DIAS[o] + ').';
+          } else if (/distint/.test(des.consistencia)) {
+            var fameLogRev = 250 * bucket.duelo250 + 100 * bucket.duelo100 + 200 * bucket.pvp200 + 100 * bucket.pvp100 + 125 * bucket.barco125 + 75 * bucket.barco75;
+            motivoRev = 'Battlelog con otra fame o barcos que la hoja Guerra' + etiquetaRev;
+            detalleRev = 'Con los ' + vh.ataques[o] + ' mazo(s) del battlelog la fame del día sería ' + fameLogRev + ' y los barcos ' + (bucket.barco125 + bucket.barco75) +
+              '; la hoja Guerra tiene fame ' + (fb.fame === null ? 'sin dato' : fb.fame) + ' y barcos ' + (fb.barcos === null ? 'sin dato' : fb.barcos) + ' (clan ' + clanTagK + ', día ' + GDS_DIAS[o] + ').';
+          }
+          if (motivoRev) cuenta.revisiones.push({ temporada: gr.temporada, semana: gr.semana, tag: gr.tag, nombre: fila[GC.NOMBRE - 1], tipo: CGW_CONTRADICCION_TIPO, motivo: motivoRev, detalle: detalleRev, estado: CGW_CONTRADICCION_ESTADO });
+        }
         if (seriesSemana) {
           if (!serieJson) serieJson = _gdsSerieJsonDelJugador_(seriesSemana, gr.tag, fila[GC.CLAN - 1]);
           var marca = _gdsMarcaBackupVsJson_(serieJson, o, _blgNumero_(fila[GC.FAME - 1]));
@@ -36391,6 +36491,7 @@ function aprobarCorreccionesRiverRacePendientes() {
   }
 
   var aprobadas = 0, implementadas = 0, fallidas = 0, huboEscritura = false;
+  var indiceComprobadas = (typeof _gdsLeerIndiceComprobadas_ === 'function') ? _gdsLeerIndiceComprobadas_() : {};   // §PF437 F4: solo avisa, no protege
 
   for (var i = 0; i < filas.length; i++) {
     var f = filas[i];
@@ -36422,6 +36523,10 @@ function aprobarCorreccionesRiverRacePendientes() {
           for (var offK in offsetsClave) {
             if (Number(offK) <= offDiaDeteccion) offsetsClaveHastaDeteccion[offK] = offsetsClave[offK];
           }
+
+          // §PF437 F4: aviso si la corrección toca un día ya comprobado (Ataques: el día de la detección; Fame y Barcos: de jueves a ese día).
+          var tocadasCompr = _gdsDiasComprobadosTocados_(indiceComprobadas, temporada, semana, tag, clanTagPend, 0, offDiaDeteccion);
+          if (tocadasCompr.length) Logger.log('[RiverRace] AVISO: ' + clave + ' toca ' + tocadasCompr.length + ' día(s) comprobado(s) en ' + GDS_CSV_NOMBRE + ' (' + tocadasCompr.map(function (x) { return x.dia + ' ' + x.estado; }).join(', ') + '). Se aplica igual; vuelve a correr generarGuerraDesglose() para recalcular.');
 
           // Ataques: reemplazo directo en la fila del día exacto de la detección.
           dataG[rowDeteccion][GC.ATAQUES_HOY - 1] = Number(f[CRC.ATAQUESHOY_DETECTADO - 1]) || 0;
