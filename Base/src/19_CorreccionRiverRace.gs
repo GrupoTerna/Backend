@@ -108,6 +108,7 @@ function aprobarCorreccionesRiverRacePendientes() {
   }
 
   var aprobadas = 0, implementadas = 0, fallidas = 0, huboEscritura = false;
+  var indiceComprobadas = (typeof _gdsLeerIndiceComprobadas_ === 'function') ? _gdsLeerIndiceComprobadas_() : {};   // §PF437 F4: solo avisa, no protege
 
   for (var i = 0; i < filas.length; i++) {
     var f = filas[i];
@@ -139,6 +140,10 @@ function aprobarCorreccionesRiverRacePendientes() {
           for (var offK in offsetsClave) {
             if (Number(offK) <= offDiaDeteccion) offsetsClaveHastaDeteccion[offK] = offsetsClave[offK];
           }
+
+          // §PF437 F4: aviso si la corrección toca un día ya comprobado (Ataques: el día de la detección; Fame y Barcos: de jueves a ese día).
+          var tocadasCompr = _gdsDiasComprobadosTocados_(indiceComprobadas, temporada, semana, tag, clanTagPend, 0, offDiaDeteccion);
+          if (tocadasCompr.length) Logger.log('[RiverRace] AVISO: ' + clave + ' toca ' + tocadasCompr.length + ' día(s) comprobado(s) en ' + GDS_CSV_NOMBRE + ' (' + tocadasCompr.map(function (x) { return x.dia + ' ' + x.estado; }).join(', ') + '). Se aplica igual; vuelve a correr generarGuerraDesglose() para recalcular.');
 
           // Ataques: reemplazo directo en la fila del día exacto de la detección.
           dataG[rowDeteccion][GC.ATAQUES_HOY - 1] = Number(f[CRC.ATAQUESHOY_DETECTADO - 1]) || 0;

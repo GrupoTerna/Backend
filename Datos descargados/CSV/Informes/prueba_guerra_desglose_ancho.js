@@ -10,7 +10,7 @@ function t(n, c) { c ? ok++ : (fail++, console.log('FALLA', n)); }
 const H = ctx.GDS_HEADERS, col = {}; H.forEach((h, i) => col[h] = i);
 
 // --- forma de la cabecera
-t('100 columnas', H.length === 100);
+t('104 columnas (100 + 4 Comprobada al final, §PF437 F3)', H.length === 104 && H.slice(100).join() === 'J Comprobada,V Comprobada,S Comprobada,D Comprobada');
 t('sin duplicados en la cabecera', new Set(H).size === H.length);
 t('solo el domingo lleva Sin Medallas', H.filter(h => /Sin Medallas/.test(h)).join() === 'D Sin Medallas');
 t('N° es la primera columna', H[0] === 'N°');
