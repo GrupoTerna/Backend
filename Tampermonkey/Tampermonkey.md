@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Familia Terna - Corrección de Guerra + Miembros Nuevos + Verificar Semana (RoyaleAPI)
 // @namespace    familia-terna-correccion-guerra
-// @version      3.27
+// @version      3.28
 // @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041] v3.2 (pedido usuaria, formato ancho de Correcciones_Guerra.csv, §PF164): cada fila del Perfil sale marcada con fuente:'perfil' (el backend guarda así de dónde salió la columna RoyaleAPI: «perfil» o «desconocido»), y al iniciar la Corrección de Guerra se puede FORZAR la lectura del perfil de ciertos jugadores (las cuentas con varios clanes o los tags que se escriban): se visita su perfil aunque Log/Analytics ya los cubrieran y se reenvían TODAS sus semanas, aunque ya estén guardadas, para llenar de verdad la columna RoyaleAPI. v3.4 (pedido usuaria, 24-oct-2026, §PF234): cuarto botón «Corrección de jugadores elegidos»: escribes los tags y lee la semana en curso (River Race), el Log, Analytics y el perfil, pero guarda y envía SOLO a esos jugadores; al final lista las diferencias entre fuentes. Antes, forzar perfiles solo cambiaba la fase de Perfiles y el Log y Analytics enviaban a toda la comunidad. v3.5 (pedido usuaria, 25-oct-2026, §PF236): cuando se visita un perfil se envían TODAS sus filas (ya no se descartan las semanas cubiertas por Log/Analytics ni las ya guardadas) y el backend decide qué conserva: una fila igual a la guardada no se reescribe. v3.6 (pedido usuaria, 25-oct-2026, §PF237): el panel muestra «REVISAR PERFIL» cuando el backend reemplaza un valor del perfil ya guardado por otro distinto (antes/ahora), y el perfil ya no envía la semana en curso. v3.8 (pedido usuaria, 25-oct-2026, §PF243): el botón de miembros nuevos manda TODO lo que lee de cada perfil visitado (las semanas del perfil de todos los candidatos, no solo de los que cuentan como nuevos) y el backend decide qué guarda en la hoja «Nuevos» y qué en Correcciones_Guerra.csv; el panel muestra cuántas filas del perfil se aplicaron, cuántas estaban sin cambios y los avisos «REVISAR PERFIL». v3.15 (pedido usuaria, 30-oct-2026, §PF303): los cuatro botones del panel se ordenan de arriba abajo: Verificar Semana en Curso, miembros nuevos, jugadores elegidos y Corrección de Guerra completa. v3.20 (pedido usuaria, 2-nov-2026, §PF341): el perfil que visitan «Miembros nuevos» y «Corrección de jugadores elegidos» también se envía a los JSON individuales (Histórico de Guerra), incluso el de quien ya no está en los clanes Terna (solo en su JSON individual); «Miembros nuevos» ahora pide también el token del Histórico de Guerra. v3.21: el histórico de Guerra (JSON individual) manda el tag del clan en todas las filas, también las del Log, Analytics y River Race. v3.22: el nombre del clan de las filas del perfil sale limpio (sin la fecha pegada) también en las de clanes Terna. v3.24 (pedido usuaria, 4-nov-2026, §PF363): el botón «Corrección de Guerra» ya no abre el cuadro de perfiles a forzar (VARIOS o tags): trabaja con todos los jugadores; elegir perfiles es cosa de «Corrección de jugadores elegidos». v3.23 (pedido usuaria, 4-nov-2026, §PF362): al leer el Log de cada clan, los botones «Corrección de Guerra» y «Corrección de jugadores elegidos» también leen la tabla resumen de arriba (puesto, barcos, cambio de trofeos y trofeos finales de cada semana de cada temporada) y la envían al backend, que la guarda en Trofeos_Guerra_RoyaleAPI.csv y la compara con Guerra_Logs. v3.27 (§PF474): «Verificar Semana en Curso» manda el Tag de cada clan (clanTag) junto con el nombre en cada jugador, para que el backend compare cada clan contra lo que Guerra tiene de ESE clan y deje la diferencia con el clan al que corresponde.
 // @author       Familia Terna
 // @match        https://royaleapi.com/*
@@ -644,6 +644,8 @@
       riverraceIndiceClan: 0,
       riverraceTotalClanesOk: 0,
       riverraceTotalClanesError: 0,
+      riverraceTotalClanesSinGuerra: 0, // v3.28 (§PF475): clanes omitidos por no tener guerra abierta (no es error)
+      clanesSinGuerra: [], // v3.28 (§PF475): lo completa _aplicarClanesSinGuerra() con lo que manda el backend
       temporadaRoyaleApiActual: temporadaRoyaleApiActual || null,
       semanaActual: semanaActual || null,
 
@@ -2616,9 +2618,38 @@
     setTimeout(function () { irAlSiguienteClanRiverRace(estado); }, PAUSA_ENTRE_CLANES_MS);
   }
 
+  /**
+   * _aplicarClanesSinGuerra(estado, data) (v3.28, §PF475)
+   * Guarda en el estado los clanes que el backend dice que no tienen guerra abierta (`clanesSinGuerra`, mismo dato que ya usa
+   * «Verificar semana en curso», §PF472). Sin el campo (backend anterior) queda vacío y todo funciona como antes.
+   */
+  function _aplicarClanesSinGuerra(estado, data) {
+    estado.clanesSinGuerra = data && Array.isArray(data.clanesSinGuerra) ? data.clanesSinGuerra.slice() : [];
+    estado.riverraceTotalClanesSinGuerra = 0;
+    if (estado.clanesSinGuerra.length) {
+      log(estado, 'ℹ ' + estado.clanesSinGuerra.length + ' clan(es) sin guerra abierta según el backend (dato de hace ' +
+        (data.clanesSinGuerraEdadMin === null || data.clanesSinGuerraEdadMin === undefined ? '?' : data.clanesSinGuerraEdadMin) +
+        ' min): se omiten en River Race, que es solo de la semana en curso. El Log y las demás fuentes los siguen leyendo.');
+    }
+  }
+
+  // v3.28 (§PF475): cuántos clanes de la fase por clan se omitieron por no tener guerra abierta (solo 'riverrace' y 'race').
+  function _clanesOmitidosFase(estado, fase) {
+    return fase === 'riverrace' ? (estado.riverraceTotalClanesSinGuerra || 0)
+      : fase === 'race' ? (estado.raceTotalClanesSinGuerra || 0) : 0;
+  }
+
   function irAlSiguienteClanRiverRace(estado) {
     if (estado.estado !== 'corriendo') { pintarPanel(); return; }
     if (_pausaPendiente(estado, guardarEstado, log)) return;
+    // v3.28 (§PF475): los clanes sin guerra abierta se saltan aquí, sin cargar su página ni esperar la tabla (12 s cada uno).
+    while (estado.clanTagsTerna[estado.riverraceIndiceClan] && (estado.clanesSinGuerra || []).indexOf(estado.clanTagsTerna[estado.riverraceIndiceClan]) !== -1) {
+      log(estado, '[River Race] Clan ' + (estado.riverraceIndiceClan + 1) + '/' + estado.clanTagsTerna.length + ': ' + estado.clanTagsTerna[estado.riverraceIndiceClan] +
+        ' — sin guerra abierta (no participa esta temporada). Se omite; no es un error.');
+      estado.riverraceTotalClanesSinGuerra = (estado.riverraceTotalClanesSinGuerra || 0) + 1;
+      estado.riverraceIndiceClan++;
+      guardarEstado(estado);
+    }
     var siguienteTag = estado.clanTagsTerna[estado.riverraceIndiceClan];
     if (!siguienteTag) { avanzarAFaseLogPrincipal(estado); return; }
     _esperarHistorialEnVuelo(estado, function () { location.href = construirUrlRiverRace(siguienteTag); });
@@ -2636,6 +2667,7 @@
     estado.fase = 'log';
     estado.logIndiceClan = 0;
     log(estado, '[River Race] Fase terminada: ' + estado.riverraceTotalClanesOk + ' clan(es) OK, ' +
+      (estado.riverraceTotalClanesSinGuerra || 0) + ' sin guerra abierta (omitido(s), no es error) y ' +
       estado.riverraceTotalClanesError + ' con error. Sigue el Log (' +
       estado.clanTagsTerna.length + ' clan(es)); Analytics solo si algún Log falla.');
     _flushHistorialSiHaceFalta(estado, true);
@@ -3619,6 +3651,8 @@
       '</div>' +
       (esFasePorClan
         ? '<div>' + indiceActual + ' / ' + total + ' clan(es) (' + pct + '%)</div>' +
+          // v3.28 (§PF475): los clanes sin guerra abierta avanzan el contador, pero no se leyeron; se dice aparte para que 4 / 4 no parezca que se leyeron los 4.
+          (_clanesOmitidosFase(estado, faseActual) ? '<div>' + _clanesOmitidosFase(estado, faseActual) + ' de ellos sin guerra abierta (omitido(s), no es error)</div>' : '') +
           (actual ? '<div>Actual: ' + actual + '</div>' : '') +
           '<div>Jugadores cubiertos hasta ahora: ' + (estado[tagsEncontradosCampo] || []).length + '</div>'
         : '<div>' + indiceActual + ' / ' + total + ' ' + itemsLabel + ' (' + pct + '%)</div>' +
@@ -3812,6 +3846,7 @@
           // Elegir perfiles es cosa de la «Corrección de jugadores elegidos» (iniciarProcesoSolo).
           var estado = estadoInicial(data.jugadores, data.clanesTerna, data.clanTagsTerna, data.coberturaPorTag, modoBackfill,
             data.temporadaRoyaleApiActual, data.semanaActual, []);
+          _aplicarClanesSinGuerra(estado, data); // v3.28 (§PF475)
           estado.sinPerfilEnCsv = Array.isArray(data.sinPerfilEnCsv) ? data.sinPerfilEnCsv : []; // v3.10 (§PF246); sin el campo (backend anterior) no se visita a nadie de más
           estado.regresadosSinPerfil = Array.isArray(data.regresadosSinPerfil) ? data.regresadosSinPerfil : []; // v3.17 (§PF314, PF253 opción B); sin el campo no se visita a nadie de más
           guardarEstado(estado);
@@ -3892,6 +3927,7 @@
           // modoBackfill=false: el perfil de los elegidos va FORZADO (se reenvían todas sus semanas), no hace falta el resto.
           var estado = estadoInicial(data.jugadores, data.clanesTerna, data.clanTagsTerna, data.coberturaPorTag, false,
             data.temporadaRoyaleApiActual, data.semanaActual, elegidos.tags, elegidos.tags);
+          _aplicarClanesSinGuerra(estado, data); // v3.28 (§PF475)
           guardarEstado(estado);
           log(estado, 'Jugadores elegidos: ' + elegidos.tags.length + ' (' + elegidos.tags.join(', ') + '). Solo se guarda y envía lo de ellos.');
           var fuera = elegidos.tags.filter(function (tg) { return !estado.jugadorPorTag[tg]; });
@@ -4008,6 +4044,8 @@
     var tagClanEsperadoRR = estadoActualCG.clanTagsTerna[estadoActualCG.riverraceIndiceClan];
     if (!tagClanEsperadoRR) {
       avanzarAFaseLogPrincipal(estadoActualCG);
+    } else if ((estadoActualCG.clanesSinGuerra || []).indexOf(tagClanEsperadoRR) !== -1) {
+      irAlSiguienteClanRiverRace(estadoActualCG); // v3.28 (§PF475): el clan esperado no tiene guerra abierta; se salta y sigue con el siguiente
     } else if (location.href.indexOf(String(tagClanEsperadoRR).replace('#', '')) === -1 ||
                location.href.indexOf('/war/race') === -1) {
       location.href = construirUrlRiverRace(tagClanEsperadoRR);
