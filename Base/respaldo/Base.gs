@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 07:00:49 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 07:50:11 */
 
 
 
@@ -36302,8 +36302,8 @@ var CRC = {
   FECHADETECCION: 13,
   // FECHADETECCION_TS (agregada 22-ago-2026): mismo instante que [→ Contexto_Base_Web.md §19B003]
   FECHADETECCION_TS: 14,
-  ESTADO: 15,       // Pendiente / Aprobado / Descartado
-  IMPLEMENTADO: 16, // Sí / No / vacío, independiente de ESTADO
+  ESTADO: 15,       // Pendiente / Aprobado / Descartado / Revisar (§PF477: «Revisar» = 0 ataques hoy y puntaje o barcos > 0; la aprobación solo aplica «Pendiente»)
+  IMPLEMENTADO: 16, // Sí / No / vacío, independiente de ESTADO. §PF477: «Resuelta» y «No vigente» (Descartado por el sistema), «Faltan días anteriores» (Revisar)
   // DIAGUERRA (agregada 15-nov-2026, §PF470/§PF471): día de guerra de la detección, 0=Jueves..3=Domingo, tomado del periodIndex.
   // Vacío en las filas anteriores. Evita deducir el día desde la hora del timestamp, que de 00:00 a 05:00 (Lima) da el día calendario y no el de guerra.
   DIAGUERRA: 17,
@@ -36605,6 +36605,8 @@ function limpiarRiverRacePendientesDuplicados() {
 
 /**
  * _procesarVerificacionRiverRace(participantesPayload) [→ Contexto_Base_Web.md §19B013]
+ * §PF477 (15-nov-2026): además de dejar las discrepancias, (1) cierra las filas Pendiente/Revisar que dejan de detectarse (solo de clanes leídos en el envío) y las de
+ * otras semanas, y (2) deja en Estado «Revisar» (no «Pendiente») las de «0 ataques hoy y puntaje o barcos > 0».
  */
 function _procesarVerificacionRiverRace(participantesPayload) {
   if (!participantesPayload || !participantesPayload.length) {
@@ -36654,6 +36656,7 @@ function _procesarVerificacionRiverRace(participantesPayload) {
   // §PF474 (15-nov-2026): el clan se identifica por su Tag (q.clanTag, que manda Tampermonkey desde v3.27); sin Tag (script viejo) se usa el nombre y ese jugador se compara por el total, como en §PF473.
   // Una fila repetida del mismo tag y el mismo clan (lectura duplicada) sí reemplaza a la anterior en vez de sumarse.
   var porTag = {}, ordenTags = [], tagsEnVariosClanes = 0;
+  var clanesLeidos = {}; // §PF477: Tags de los clanes que aportaron jugadores en este envío; solo de esos se cierran filas pendientes que dejan de detectarse.
   for (var j = 0; j < participantesPayload.length; j++) {
     var q = participantesPayload[j] || {};
     var tagQ = String(q.tag || '').trim().toUpperCase();
@@ -36663,6 +36666,7 @@ function _procesarVerificacionRiverRace(participantesPayload) {
     var clanQ = String(q.clan || '').trim();
     var clanTagQ = _tagClanRiverRace_(q.clanTag);
     var claveClanQ = clanTagQ || clanQ;
+    if (clanTagQ) clanesLeidos[clanTagQ] = true;
     if (!porTag[tagQ]) { porTag[tagQ] = { clanes: {}, nClanes: 0, sinClanTag: false }; ordenTags.push(tagQ); }
     if (!clanTagQ) porTag[tagQ].sinClanTag = true;
     if (!porTag[tagQ].clanes.hasOwnProperty(claveClanQ)) {
@@ -36674,6 +36678,7 @@ function _procesarVerificacionRiverRace(participantesPayload) {
   }
 
   var tagsPorClan = 0, tagsPorTotal = 0, discrepanciasPorClan = 0, supersedidas = 0;
+  var vigentes = {}, tagsConDiscrepancia = {}, aRevisar = 0; // §PF477: claves detectadas en esta corrida; tags con alguna discrepancia; filas «0 ataques y puntaje o barcos > 0» enviadas a «Revisar»
 
   for (var i = 0; i < ordenTags.length; i++) {
     var tag = ordenTags[i];
@@ -36735,9 +36740,15 @@ function _procesarVerificacionRiverRace(participantesPayload) {
       var claveTotal = temporada + '|' + semana + '|' + tag + '|' + offDiaHoy;
       var clave = cmp.clanTag ? claveTotal + '|' + cmp.clanTag : claveTotal;
       var existente = mapa[clave];
+      vigentes[clave] = true; // §PF477: la discrepancia sigue vigente aunque más abajo no se escriba una fila nueva
+      tagsConDiscrepancia[tag] = true;
 
       // Se conserva esta salvaguarda por si el mismo día se vuelve a correr [→ Contexto_Base_Web.md §19B017]
-      if (existente && existente.estado !== 'Pendiente') {
+      // §PF477: «Pendiente» y «Revisar» se actualizan con el valor nuevo; una fila «Descartado» cerrada solo por haber dejado de detectarse («Resuelta») también, porque la discrepancia volvió.
+      // Una fila Aprobado, o Descartado a mano, sigue sin sobrescribirse.
+      var seActualiza = existente && (existente.estado === 'Pendiente' || existente.estado === 'Revisar' ||
+        (existente.estado === 'Descartado' && existente.implementado === 'Resuelta'));
+      if (existente && !seActualiza) {
         yaResueltas++;
         Logger.log('[RiverRace] Discrepancia detectada para ' + clave + ' pero ya existe una fila ' +
           existente.estado + ' con esa clave -- no se sobreescribe (ver nota de diseño en el código). ' +
@@ -36749,32 +36760,75 @@ function _procesarVerificacionRiverRace(participantesPayload) {
       if (cmp.clanTag) {
         discrepanciasPorClan++;
         // Una fila Pendiente del mismo tag y día calculada por el total (sin clan) queda reemplazada por las de cada clan: aplicar las dos pisaría los valores por clan.
-        if (mapa[claveTotal] && mapa[claveTotal].estado === 'Pendiente') {
+        if (mapa[claveTotal] && (mapa[claveTotal].estado === 'Pendiente' || mapa[claveTotal].estado === 'Revisar')) {
           delete mapa[claveTotal];
           supersedidas++;
           Logger.log('[RiverRace] ' + claveTotal + ': la fila Pendiente por total queda reemplazada por las filas por clan.');
         }
       }
+      // §PF477: sin ataques hoy no puede haber fame ni barcos de hoy; esa diferencia es de días anteriores que Guerra no tiene en ese clan.
+      // Proponerla como corrección del día pondría la fame de la semana entera en el día equivocado: se deja aparte, con Estado «Revisar» (la aprobación solo aplica «Pendiente»).
+      var incompleta = (ataquesHoy === 0 && (puntajeHoy > 0 || barcosHoy > 0));
+      if (incompleta) aRevisar++;
       mapa[clave] = {
         temporada: temporada, semana: semana, tag: tag, clanTag: cmp.clanTag,
         ataquesHoyDetectado: ataquesHoy, ataquesHoyActual: actual.ataques,
         puntajeHoyDetectado: puntajeHoy, puntajeHoyActual: actual.puntaje,
         barcosHoyDetectado: barcosHoy, barcosHoyActual: actual.barcos,
         fameSemanaDetectado: fameSemana, barcosSemanaDetectado: barcosSemana,
-        fechaDeteccion: ahora, fechaDeteccionTs: ahoraTs, estado: 'Pendiente', implementado: '', diaGuerra: offDiaHoy
+        fechaDeteccion: ahora, fechaDeteccionTs: ahoraTs, estado: incompleta ? 'Revisar' : 'Pendiente', implementado: incompleta ? 'Faltan días anteriores' : '', diaGuerra: offDiaHoy
       };
     }
+  }
+
+  // §PF477 (15-nov-2026): cierre de filas que ya no corresponden. Nunca toca Aprobado ni Descartado a mano ni escribe en Guerra.
+  //  a) Pendiente o Revisar de otra temporada o semana: Descartado + «No vigente» (esta verificación solo mira la semana en curso).
+  //  b) Pendiente o Revisar de la semana y el día de hoy que esta corrida ya no detecta: Descartado + «Resuelta», pero SOLO si el clan de la fila se leyó
+  //     en este envío (clanesLeidos). Una fila sin Clan_Tag (calculada por el total) se cierra si su jugador vino en el envío, no tiene discrepancia
+  //     y, cuando se comparó por clan, todos los clanes que Guerra tiene de él esa semana se leyeron. Lo no leído se deja como estaba.
+  var cerradasResueltas = 0, cerradasNoVigentes = 0, sinLeer = 0;
+  for (var kCierre in mapa) {
+    if (!mapa.hasOwnProperty(kCierre)) continue;
+    var vCierre = mapa[kCierre];
+    if (vCierre.estado !== 'Pendiente' && vCierre.estado !== 'Revisar') continue;
+    if (String(vCierre.temporada) !== String(temporada) || String(vCierre.semana) !== String(semana)) {
+      vCierre.estado = 'Descartado'; vCierre.implementado = 'No vigente';
+      cerradasNoVigentes++;
+      Logger.log('[RiverRace] ' + kCierre + ': cerrada, es de otra temporada o semana (Descartado / No vigente).');
+      continue;
+    }
+    if (vigentes[kCierre]) continue;
+    var partesCierre = kCierre.split('|');
+    if (Number(partesCierre[3]) !== offDiaHoy) continue; // otro día de la misma semana: esta verificación no lo vuelve a calcular, se deja
+    var clanCierre = partesCierre[4] || '';
+    var cerrar;
+    if (clanCierre) {
+      cerrar = !!clanesLeidos[clanCierre];
+    } else {
+      var infoCierre = porTag[vCierre.tag], gCierre = guerraPorClan[vCierre.tag];
+      cerrar = !!infoCierre && !tagsConDiscrepancia[vCierre.tag];
+      if (cerrar && gCierre && !gCierre.sinClan && !infoCierre.sinClanTag) {
+        for (var cgCierre in gCierre.clanes) { if (gCierre.clanes.hasOwnProperty(cgCierre) && !clanesLeidos[cgCierre]) { cerrar = false; break; } }
+      }
+    }
+    if (!cerrar) { sinLeer++; continue; }
+    vCierre.estado = 'Descartado'; vCierre.implementado = 'Resuelta';
+    cerradasResueltas++;
+    Logger.log('[RiverRace] ' + kCierre + ': ya no se detecta, cerrada (Descartado / Resuelta).');
   }
 
   _guardarPendientesRiverRace(mapa);
 
   Logger.log('[RiverRace] Verificación semana en curso — Temporada ' + temporada + ', Semana ' + semana +
     ': ' + procesados + ' procesado(s), ' + discrepancias + ' discrepancia(s) nueva(s) (' + discrepanciasPorClan + ' por clan), ' +
+    aRevisar + ' de ellas en «Revisar» (0 ataques y puntaje o barcos > 0: faltan días anteriores en Guerra), ' +
+    cerradasResueltas + ' cerrada(s) por ya no detectarse, ' + cerradasNoVigentes + ' cerrada(s) por ser de otra semana, ' + sinLeer + ' del día sin cerrar (clan o jugador no leído). ' +
     yaResueltas + ' con fila ya resuelta (no sobreescrita), ' + omitidos + ' omitido(s), ' + tagsEnVariosClanes + ' tag(s) en más de un clan; ' +
     tagsPorClan + ' tag(s) comparado(s) por clan y ' + tagsPorTotal + ' por el total (sin Tag de clan en el envío o en alguna fila de Guerra).');
 
   return { ok: true, procesados: procesados, discrepancias: discrepancias, yaResueltas: yaResueltas, omitidos: omitidos, tagsEnVariosClanes: tagsEnVariosClanes,
-    tagsPorClan: tagsPorClan, tagsPorTotal: tagsPorTotal, discrepanciasPorClan: discrepanciasPorClan, supersedidas: supersedidas };
+    tagsPorClan: tagsPorClan, tagsPorTotal: tagsPorTotal, discrepanciasPorClan: discrepanciasPorClan, supersedidas: supersedidas,
+    aRevisar: aRevisar, cerradasResueltas: cerradasResueltas, cerradasNoVigentes: cerradasNoVigentes, sinLeer: sinLeer };
 }
 
 /**
