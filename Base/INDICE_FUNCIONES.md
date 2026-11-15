@@ -1021,7 +1021,7 @@ Ninguno.
 | `_getValoresDiariosPorSemana` | función | 38_Web_Endpoints.gs | 2636 | Contexto_Base_Web.md §38B165 |
 | `_getValoresDiariosSelectores` | función | 38_Web_Endpoints.gs | 2602 | Contexto_Base_Web.md §38B153 |
 | `_getVGuerra` | función | 09_API_ClashRoyale.gs | 2816 | Contexto_Base_Web.md §09B132 |
-| `_ghFetch_` | función | 50_Publicar_Guerra.gs | 240 |  |
+| `_ghFetch_` | función | 50_Publicar_Guerra.gs | 241 |  |
 | `_ghPublicarArchivo_` | función | 50_Publicar_Guerra.gs | 158 |  |
 | `_ghPublicarArchivos_` | función | 50_Publicar_Guerra.gs | 170 |  |
 | `_guardarArchivoProgresoVerificado_` | función | 05_Backup_CSV.gs | 1525 | Contexto_Base_Web.md §PF291 |
