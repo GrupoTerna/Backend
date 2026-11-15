@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 13:41:39 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 13:56:30 */
 
 
 
@@ -37603,8 +37603,16 @@ function _guardarRegistrosHistorialGuerraIndividual(tag, nombre, clanActual, reg
       if (!soloExternos && archivoExistente.getName() !== filename) archivoExistente.setName(filename);
       _setContentConConteo_(archivoExistente, contenido);
     } else {
-      var nuevoArchivo = _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
-      indice[String(tag).trim()] = nuevoArchivo;
+      // 15-nov-2026 (PF275): antes de crear se busca por nombre exacto en la carpeta. Si otra ejecución simultánea ya creó este archivo en el mismo minuto (el índice de arriba se armó antes y no lo ve), se reutiliza en vez de escribir un segundo con el mismo nombre.
+      var yaCreado = folder.getFilesByName(filename);
+      if (yaCreado.hasNext()) {
+        var archivoYaCreado = yaCreado.next();
+        _setContentConConteo_(archivoYaCreado, contenido);
+        indice[String(tag).trim()] = archivoYaCreado;
+      } else {
+        var nuevoArchivo = _createFileConConteo_(folder, filename, contenido, MimeType.PLAIN_TEXT);
+        indice[String(tag).trim()] = nuevoArchivo;
+      }
     }
   } catch (e) {
     Logger.log('[HistorialGuerra] Error guardando ' + tag + ': ' + e.message);
@@ -48367,6 +48375,8 @@ function _registrarTorneoDesdeBot(link, fecha, hora, tagTorneoPrincipal, organiz
     var resultadoCorreccion = _corregirLinkTorneoYaRegistrado(ss, idYaLinkeadoEncontrado, link);
     if (!resultadoCorreccion.ok) return resultadoCorreccion;
     procesarTListaNuevasFilas(ss);
+    // 15-nov-2026 (37B234): igual que al registrar, se rehace el Doc de Participantes calificados (torneo); si falla, no se pierde la corrección.
+    try { actualizarDocParticipantesCalificadosTorneo(); } catch (eDocPc) { Logger.log('[Torneos] No se pudo actualizar el Doc de Participantes calificados: ' + eDocPc.message); }
     regenerarTControlSheet(ss);
     // 02-oct-2026: corregido:true avisa al llamador que se corrigió una fila
     // ya registrada (no se creó ninguna nueva) -- ver docblock de arriba.
@@ -61959,6 +61969,8 @@ function _webAdminTorneoModificar(token, id, fecha, hora, tagTorneoPrincipal, se
       if (!resultadoCorreccion.ok) return resultadoCorreccion;
       if (!resultadoCorreccion.sinLinkPrevio) {
         procesarTListaNuevasFilas(ssMod);
+        // 15-nov-2026 (37B234): el link corregido puede cambiar el torneo; se rehace el Doc de Participantes calificados (torneo) como al registrar. Si falla, no se pierde la corrección.
+        try { actualizarDocParticipantesCalificadosTorneo(); } catch (eDocPc) { Logger.log('[TorneoModificar] No se pudo actualizar el Doc de Participantes calificados: ' + eDocPc.message); }
         regenerarTControlSheet(ssMod);
         return { ok: true, id: idTrim, corregido: true };
       }
