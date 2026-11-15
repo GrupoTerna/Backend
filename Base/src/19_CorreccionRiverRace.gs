@@ -405,8 +405,6 @@ function _procesarVerificacionRiverRace(participantesPayload) {
       ? { ataques: diaHoyActual.ataques, puntaje: diaHoyActual.puntaje, barcos: diaHoyActual.barcos }
       : { ataques: 0, puntaje: 0, barcos: 0 }; // sin fila todavía hoy en Guerra para este tag
 
-    procesados++;
-
     if (ataquesHoy === actual.ataques && puntajeHoy === actual.puntaje && barcosHoy === actual.barcos) {
       continue; // sin discrepancia -> no se genera ninguna fila (mismo criterio que el resto del diseño)
     }
