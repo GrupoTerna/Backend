@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 05:50:05 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 05:57:13 */
 
 
 
@@ -36687,8 +36687,6 @@ function _procesarVerificacionRiverRace(participantesPayload) {
     var actual = diaHoyActual
       ? { ataques: diaHoyActual.ataques, puntaje: diaHoyActual.puntaje, barcos: diaHoyActual.barcos }
       : { ataques: 0, puntaje: 0, barcos: 0 }; // sin fila todavía hoy en Guerra para este tag
-
-    procesados++;
 
     if (ataquesHoy === actual.ataques && puntajeHoy === actual.puntaje && barcosHoy === actual.barcos) {
       continue; // sin discrepancia -> no se genera ninguna fila (mismo criterio que el resto del diseño)
