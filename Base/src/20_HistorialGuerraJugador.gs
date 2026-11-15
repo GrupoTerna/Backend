@@ -365,15 +365,16 @@ function _aplicarHistorialGuerra(candidatosPayload) {
   catch (eJg) { Logger.log('[HistorialGuerra][JSON grupal] Error: ' + eJg.message); }
 
   // §PF397 (6-nov-2026): si el lote trajo filas de un clan externo, se suman al archivo del clan y a las alertas los jugadores que estuvieron en un clan sospechoso (rival, Conflictos o vetado), para que el ⚠️ salga sin esperar a la corrida semanal del índice. Va después de los demás locks y nunca hace fallar el guardado.
-  var alertasClanes = { ok: false, jugadoresNuevos: 0 };
+  var alertasClanes = { ok: false, motivo: 'sin-externos', jugadoresNuevos: 0 };
   if (tagsConExternas.length) {
     try { alertasClanes = _alertasClanesDesdeJugadoresNuevos_(tagsConExternas); }
-    catch (eAl) { Logger.log('[HistorialGuerra][AlertasClanes] Error: ' + eAl.message); }
+    catch (eAl) { alertasClanes = { ok: false, motivo: 'error', jugadoresNuevos: 0 }; Logger.log('[HistorialGuerra][AlertasClanes] Error: ' + eAl.message); }
   }
 
+  // alertasClanesMotivo (15-nov-2026): con alertasClanesOk = false dice por qué (sin-externos: el lote no trajo clanes externos y no corresponde correrlo; reenumerando, sin-lock o error: no se pudo actualizar). El 9-nov a las 05:56:41 salió false con 90 externos y el registro no traía el motivo [→ Contexto_Base_Web.md §PF470]
   return {
     ok: true, procesados: procesados, registrosGuardados: registrosGuardados, registrosExternos: registrosExternos, errores: errores,
-    alertasClanesOk: !!alertasClanes.ok, alertasClanesJugadoresNuevos: alertasClanes.jugadoresNuevos || 0,
+    alertasClanesOk: !!alertasClanes.ok, alertasClanesMotivo: alertasClanes.motivo || '', alertasClanesJugadoresNuevos: alertasClanes.jugadoresNuevos || 0,
     grupalGuardado: grupal.guardado, grupalCambios: grupal.cambios, grupalIgnorados: grupal.ignorados,
     grupalSinLock: !!grupal.sinLock,
     jsonGrupalGuardados: jsonGrupal.guardados, jsonGrupalCambios: jsonGrupal.cambios, jsonGrupalConflictos: jsonGrupal.conflictos, jsonGrupalSinLock: !!jsonGrupal.sinLock
