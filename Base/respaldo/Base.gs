@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 21:49:16 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 22:22:28 */
 
 
 
@@ -29490,6 +29490,11 @@ var COMPLETAR_DOMINGO_JSON_LETRA_DOMINGO = 'D';
 
 var COMPLETAR_DOMINGO_JSON_PRESUPUESTO_LECTURA_MS = 240000;
 
+// 15-nov-2026 (§PF492): la lectura de los JSON individuales de RoyaleAPI se reanuda entre corridas. El avance (token del iterador de Drive y lo ya leido) se guarda
+// en este archivo de DRIVE_FOLDER_ID_OTROS (nunca en la carpeta que se recorre) y se descarta si tiene mas de 6 horas o si es de otro conjunto de tags.
+var CDJ_LECTURA_PROGRESO_FILE = 'Cache_LecturaJsonRoyaleApi_Progreso.json';
+var CDJ_LECTURA_PROGRESO_MAX_EDAD_MS = 6 * 60 * 60 * 1000;
+
 var COMPLETAR_DOMINGO_JSON_ENCABEZADO_INFORME = ['Fuente', 'Tipo', 'Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'PeriodIndex domingo', 'Estado',
   'AtaquesHoy anterior', 'AtaquesHoy nuevo', 'AtaquesSemana anterior', 'AtaquesSemana nueva', 'Fame anterior', 'Fame nueva', 'Barcos anterior', 'Barcos nuevo',
   'JSON ataques', 'JSON fame', 'JSON barcos', 'JSON fuentes', 'Detalle', 'Origen anterior'];
@@ -36193,15 +36198,39 @@ function _cdjRepartirSerieMenos_(filas, ser, js) {
  * _cdjCargarRegistrosJsonDrive_(tagsSet, presupuestoMs) [→ Contexto_Base_Web.md §PF123]
  * Lee TODOS los JSON individuales de RoyaleAPI de esos tags (si un tag tiene mas de un archivo, junta los registros de todos). Se detiene si se pasa del presupuesto
  * de tiempo: en ese caso devuelve ok:false y no se debe escribir nada.
+ * REANUDABLE (§PF492, 15-nov-2026): al pasarse del presupuesto guarda el avance (token del iterador de Drive y lo ya leido) en CDJ_LECTURA_PROGRESO_FILE y devuelve
+ * avanceGuardado:true; la siguiente corrida con el mismo conjunto de tags sigue desde ahi en vez de empezar de cero. Al terminar de leer todo borra el avance y
+ * devuelve ok:true como siempre. Siempre lee al menos un archivo por corrida, para que una corrida lenta no se quede sin avanzar.
  */
 function _cdjCargarRegistrosJsonDrive_(tagsSet, presupuestoMs) {
   var t0 = Date.now();
   var carpeta = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL);
   var reTag = /-\s(#[0-9A-Z]+)\.json$/i;
-  var porTag = {}, archivos = 0, errores = 0;
-  var it = carpeta.getFiles();
+  var firma = _cdjFirmaTagsLectura_(tagsSet);
+  var porTag = {}, archivos = 0, errores = 0, it = null;
+  var previo = _cdjCargarProgresoLectura_(firma);
+  if (previo) {
+    try {
+      it = DriveApp.continueFileIterator(previo.token);
+      porTag = previo.porTag || {};
+      archivos = Number(previo.archivos) || 0;
+      errores = Number(previo.errores) || 0;
+      Logger.log('[LecturaJsonRoyaleApi] Se retoma la lectura guardada: ' + archivos + ' archivos ya leidos.');
+    } catch (eToken) {
+      Logger.log('[LecturaJsonRoyaleApi] El avance guardado ya no sirve (' + eToken.message + '); se empieza desde cero.');
+      it = null; porTag = {}; archivos = 0; errores = 0;
+    }
+  }
+  if (!it) it = carpeta.getFiles();
+  var visitados = 0;
   while (it.hasNext()) {
-    if (Date.now() - t0 > presupuestoMs) return { ok: false, porTag: porTag, archivos: archivos, errores: errores };
+    if (visitados > 0 && Date.now() - t0 > presupuestoMs) {
+      var guardado = _cdjGuardarProgresoLectura_(firma, it.getContinuationToken(), porTag, archivos, errores);
+      Logger.log('[LecturaJsonRoyaleApi] Se agoto el tiempo de esta corrida con ' + archivos + ' archivos leidos en total. ' +
+        (guardado ? 'El avance quedo guardado: vuelve a correr la misma funcion para continuar.' : 'No se pudo guardar el avance: la proxima corrida empieza desde cero.'));
+      return { ok: false, avanceGuardado: guardado, porTag: porTag, archivos: archivos, errores: errores };
+    }
+    visitados++;
     var f = it.next();
     var m = reTag.exec(f.getName());
     if (!m) continue;
@@ -36218,7 +36247,74 @@ function _cdjCargarRegistrosJsonDrive_(tagsSet, presupuestoMs) {
       Logger.log('[CompletarDomingoJson] No se pudo leer ' + f.getName() + ': ' + e.message);
     }
   }
+  _cdjBorrarProgresoLectura_();
   return { ok: true, porTag: porTag, archivos: archivos, errores: errores };
+}
+
+/**
+ * _cdjFirmaTagsLectura_(tagsSet) [→ Contexto_Base_Web.md §PF492]
+ * Huella corta del conjunto de tags que se lee (cantidad y MD5 de la lista ordenada): el avance guardado solo se reutiliza si la huella coincide.
+ */
+function _cdjFirmaTagsLectura_(tagsSet) {
+  var tags = Object.keys(tagsSet || {}).sort();
+  var h = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, tags.join(','), Utilities.Charset.UTF_8);
+  return tags.length + ':' + Utilities.base64Encode(h);
+}
+
+/**
+ * _cdjCargarProgresoLectura_(firma) [→ Contexto_Base_Web.md §PF492]
+ * Devuelve el avance guardado de la lectura de JSON ({ token, porTag, archivos, errores }) o null si no hay, esta vencido (mas de CDJ_LECTURA_PROGRESO_MAX_EDAD_MS)
+ * o es de otro conjunto de tags; en esos dos ultimos casos manda el archivo a la papelera. Si no se puede leer, devuelve null y se empieza desde cero.
+ */
+function _cdjCargarProgresoLectura_(firma) {
+  try {
+    var it = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS).getFilesByName(CDJ_LECTURA_PROGRESO_FILE);
+    if (!it.hasNext()) return null;
+    var file = it.next();
+    var p = JSON.parse(file.getBlob().getDataAsString('UTF-8'));
+    var motivo = '';
+    if (!p || !p._ts || !p.token) motivo = 'esta incompleto';
+    else if (Date.now() - Number(p._ts) > CDJ_LECTURA_PROGRESO_MAX_EDAD_MS) motivo = 'tiene mas de ' + Math.round(CDJ_LECTURA_PROGRESO_MAX_EDAD_MS / 3600000) + ' horas';
+    else if (p.firma !== firma) motivo = 'es de otro conjunto de tags';
+    if (motivo) {
+      Logger.log('[LecturaJsonRoyaleApi] Se descarta el avance guardado: ' + motivo + '.');
+      file.setTrashed(true);
+      return null;
+    }
+    return p;
+  } catch (e) {
+    Logger.log('[LecturaJsonRoyaleApi] No se pudo leer el avance guardado (se empieza desde cero): ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * _cdjGuardarProgresoLectura_(firma, token, porTag, archivos, errores) [→ Contexto_Base_Web.md §PF492]
+ * Guarda el avance de la lectura en CDJ_LECTURA_PROGRESO_FILE (DRIVE_FOLDER_ID_OTROS) con _guardarArchivoProgresoVerificado_. Devuelve true si quedo guardado.
+ */
+function _cdjGuardarProgresoLectura_(firma, token, porTag, archivos, errores) {
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    _guardarArchivoProgresoVerificado_(folder, CDJ_LECTURA_PROGRESO_FILE,
+      JSON.stringify({ _ts: Date.now(), firma: firma, token: token, archivos: archivos, errores: errores, porTag: porTag }));
+    return true;
+  } catch (e) {
+    Logger.log('[LecturaJsonRoyaleApi] Error guardando el avance: ' + e.message);
+    return false;
+  }
+}
+
+/**
+ * _cdjBorrarProgresoLectura_() [→ Contexto_Base_Web.md §PF492]
+ * Manda a la papelera el avance guardado, una vez que la lectura termino completa.
+ */
+function _cdjBorrarProgresoLectura_() {
+  try {
+    var it = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS).getFilesByName(CDJ_LECTURA_PROGRESO_FILE);
+    while (it.hasNext()) it.next().setTrashed(true);
+  } catch (e) {
+    Logger.log('[LecturaJsonRoyaleApi] Error borrando el avance guardado: ' + e.message);
+  }
 }
 
 /**
@@ -36260,7 +36356,8 @@ function _completarDomingoDesdeJsonRoyaleApi_(aplicar) {
     });
     var lectura = _cdjCargarRegistrosJsonDrive_(tagsSet, COMPLETAR_DOMINGO_JSON_PRESUPUESTO_LECTURA_MS);
     if (!lectura.ok) {
-      Logger.log('[CompletarDomingoJson] ABORT: se agoto el presupuesto de tiempo leyendo los JSON de RoyaleAPI (' + lectura.archivos + ' archivos leidos). No se escribio nada.');
+      Logger.log('[CompletarDomingoJson] ABORT: se agoto el presupuesto de tiempo leyendo los JSON de RoyaleAPI (' + lectura.archivos + ' archivos leidos en total). No se escribio nada.' +
+        (lectura.avanceGuardado ? ' El avance quedo guardado: vuelve a correr esta misma funcion para continuar la lectura.' : ''));
       return;
     }
     var indiceJson = _cdjIndexarRegistrosJson_(lectura.porTag);
@@ -36372,7 +36469,8 @@ function _repararSemanaDesdeJsonRoyaleApi_(aplicar) {
     });
     var lectura = _cdjCargarRegistrosJsonDrive_(tagsSet, COMPLETAR_DOMINGO_JSON_PRESUPUESTO_LECTURA_MS);
     if (!lectura.ok) {
-      Logger.log('[RepararSemanaJson] ABORT: se agoto el presupuesto de tiempo leyendo los JSON de RoyaleAPI (' + lectura.archivos + ' archivos leidos). No se escribio nada.');
+      Logger.log('[RepararSemanaJson] ABORT: se agoto el presupuesto de tiempo leyendo los JSON de RoyaleAPI (' + lectura.archivos + ' archivos leidos en total). No se escribio nada.' +
+        (lectura.avanceGuardado ? ' El avance quedo guardado: vuelve a correr esta misma funcion para continuar la lectura.' : ''));
       return;
     }
     var indiceJson = _cdjIndexarRegistrosJson_(lectura.porTag);
