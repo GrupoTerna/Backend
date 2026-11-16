@@ -6959,7 +6959,12 @@ function _cdjProcesarSemana_(filas, sem, indiceJson, topeA, topeM, letraDomingo,
           if (!v) return;
           tot.m += v.m; tot.a += v.a; tot.b += v.b;
         });
-        if (!malo && (_cdjEstadoDia_(tot.m, tot.a, tot.b) === 'no_existe' || tot.a > topeA)) {
+        // §PF494: el domingo con g ataques sin medallas (clan terminado) no esta en la tabla de dias posibles; se acepta solo si el reparto lo eligio en ese periodo.
+        var domGOk = false;
+        Object.keys(repMenos).forEach(function (sk2) {
+          if (series[sk2].tag === tag && repMenos[sk2].domingoSinMedallasPi === Number(pi) && tot.m === 0 && tot.a >= 1 && tot.a <= CGW_MAX_ATAQUES_SIN_FAME && tot.b <= tot.a) domGOk = true;
+        });
+        if (!malo && ((_cdjEstadoDia_(tot.m, tot.a, tot.b) === 'no_existe' && !domGOk) || tot.a > topeA)) {
           malo = 'la suma de los clanes del jugador el periodo ' + pi + ' (' + tot.m + ' medallas, ' + tot.a + ' ataques, ' + tot.b + ' barcos) no es un dia posible';
         }
       });
@@ -7051,7 +7056,10 @@ function _cdjRepartirSerieMenos_(filas, ser, js) {
     }
   }
   if (!cambios.length) return { ok: false, motivo: 'el reparto no cambia ninguna fila' };
-  return { ok: true, cambios: cambios, dias: dias };
+  // §PF494: si el reparto dejo el domingo con g ataques sin medallas (clan terminado, §PF493), se anota en que periodo para que el validador por dia lo acepte.
+  var domPi = null;
+  if (rep.domingoSinMedallas > 0) { for (var z = 0; z < info.length; z++) { if (info[z].letra === 'D') domPi = info[z].pi; } }
+  return { ok: true, cambios: cambios, dias: dias, domingoSinMedallasPi: domPi, domingoSinMedallas: rep.domingoSinMedallas || 0 };
 }
 
 /**
