@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 14:12:57 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 21:49:16 */
 
 
 
@@ -32601,6 +32601,10 @@ function _cgwResumenCorrGuerra_(props) {
  * manual; si la serie tiene un JSON descartado o una métrica incoherente, se avisa y se sigue con el reparto de siempre. El resultado trae crr: 'rangos', 'aplicado', 'conflicto' o 'sin datos'.
  * VARIOS CLANES (§PF302, 30-oct-2026): los rangos de un clan ya vienen sumados con lo que los JSON de los otros clanes del jugador muestran (topes de 16 ataques, 16 barcos y 3600 medallas
  * por semana entre todos los clanes). Si los JSON sumados ya rompen un tope, devuelve ok:false, crr:'conflicto' y conflictoTopes:true: no se escribe y va a revisión manual (criterio 11).
+ * FÓRMULA DE ATAQUES (§PF160 criterios 2 y 9; §PF488): el acumulado al inicio de un día es AtaquesSemana − AtaquesHoy de la fila de ese día, así que el acumulado de ataques
+ * al cierre de cada día es ese valor en la fila del día siguiente (_repartoAcumuladoPorFormula_). Se prueba primero con esa restricción (junto con los rangos o las cifras de
+ * CurrentRiverRace); si con ella ninguna combinación cuadra, se reparte como siempre y se avisa en el registro. valores.sinFormulaAtaques = true la apaga. El resultado trae
+ * formula: 'aplicada', 'sin solucion' o 'sin datos'.
  */
 function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   var offs = Object.keys(offsetsExistentes).map(Number).sort(function (a, b) { return a - b; });
@@ -32737,6 +32741,25 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   for (var v = 0; v < k; v++) catsLlenos.push(catalogo);
   var mejor = null;
   var estadoCrr = 'sin datos';
+  // Fórmula de ataques (§PF160 criterios 2 y 9): acumulado exacto al cierre de cada día con fila siguiente consecutiva. Se lee ANTES de escribir nada.
+  var acumF = (valores.sinFormulaAtaques === true) ? null : _repartoAcumuladoPorFormula_(filas, offsetsExistentes, offs, A);
+  var estadoFormula = acumF ? 'sin solucion' : 'sin datos';
+  function mezclarFormula(acum) {
+    var out = [];
+    for (var jf = 0; jf < k; jf++) {
+      var xf = (acum && acum[jf]) ? acum[jf] : null;
+      var yf = acumF[jf];
+      if (!yf) { out.push(xf); continue; }
+      var rf = { a: yf.a };
+      if (xf) {
+        if (xf.b) rf.b = xf.b;
+        if (xf.f) rf.f = xf.f;
+        if (xf.a) rf.a = [Math.max(xf.a[0], yf.a[0]), Math.min(xf.a[1], yf.a[1])];
+      }
+      out.push(rf);
+    }
+    return out;
+  }
   var rng = _repartoRangosCrr_(filas, offsetsExistentes, offs, valores);
   if (rng && rng.conflictoTopes) {
     // §PF302: los JSON de los clanes del jugador, sumados, ya rompen un tope semanal (criterio 11): no se escribe nada y va a revisión manual.
@@ -32752,7 +32775,11 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
                (dr.k === null || (s3.k >= dr.k[0] && s3.k <= dr.k[1]));
       }));
     }
-    mejor = resolverConAcumulado(catsRng, rng.acum);
+    if (acumF) {
+      mejor = resolverConAcumulado(catsRng, mezclarFormula(rng.acum));
+      if (mejor !== null) estadoFormula = 'aplicada';
+    }
+    if (mejor === null) mejor = resolverConAcumulado(catsRng, rng.acum);
     if (mejor !== null) {
       estadoCrr = 'rangos';
     } else {
@@ -32778,7 +32805,11 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
         return (rest.h === null || s2.h === rest.h) && (rest.k === null || s2.k === rest.k);
       }));
     }
-    mejor = resolver(catsCrr);
+    if (acumF) {
+      mejor = resolverConAcumulado(catsCrr, acumF);
+      if (mejor !== null) estadoFormula = 'aplicada';
+    }
+    if (mejor === null) mejor = resolver(catsCrr);
     if (mejor !== null) {
       estadoCrr = 'aplicado';
     } else {
@@ -32787,6 +32818,10 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
         ', fame ' + crr.dias.map(function (x) { return x.k === null ? '?' : x.k; }).join('|') + ' no cuadran con los totales (ataques=' + A + ', barcos=' + B +
         ', fame=' + F + '). Se reparte como siempre, sin usarlos.');
     }
+  }
+  if (mejor === null && acumF) {
+    mejor = resolverConAcumulado(catsLlenos, acumF);
+    if (mejor !== null) estadoFormula = 'aplicada';
   }
   if (mejor === null) mejor = resolver(catsLlenos);
   if (mejor === null) {
@@ -32807,7 +32842,46 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     fila2[GC.BARCOS - 1] = bn;
     fila2[GC.FAME - 1] = fn;
   }
-  return { ok: true, huboCambio: huboCambio, crr: estadoCrr };
+  if (estadoFormula === 'sin solucion') {
+    Logger.log('[Reparto conjunto] AVISO fórmula de ataques (AtaquesSemana − AtaquesHoy de la fila siguiente): ninguna combinación la cumple con los totales (ataques=' + A + ', barcos=' + B +
+      ', fame=' + F + '). Se repartió como siempre, sin usarla.');
+  }
+  return { ok: true, huboCambio: huboCambio, crr: estadoCrr, formula: estadoFormula };
+}
+
+/**
+ * _repartoAcumuladoPorFormula_(filas, offsetsExistentes, offs, A) [→ Contexto_Base_Web.md §PF160 criterios 2 y 9; §PF488]
+ * Ataques acumulados al cierre de cada día según la fórmula de la usuaria: el acumulado al INICIO de un día es AtaquesSemana − AtaquesHoy de una fila de ese día, así que el
+ * acumulado al cierre del día d es ese valor en la fila del día d+1. Solo se usa entre días consecutivos y si la serie arranca el jueves (offs[0] === 0): si falta una fila no se
+ * deduce nada de la que sigue (el acumulado de esa fila incluiría ataques de un día que no está). No depende de la hora de la captura (criterio 2), así que sirve aunque
+ * AtaquesHoy y AtaquesSemana del último día estén atrasados; si los valores son incoherentes (celdas vacías, no enteros, mayores que A o que bajan de un día al siguiente) no se usa nada.
+ * SOLO SE CONFÍA EN FILAS DE CAPTURA ORIGINAL (Origen vacío u «Original»; §PF488 punto 8, 15-nov-2026): en una fila «Corregido» o «Reconstruido» el AtaquesHoy lo escribió una
+ * corrección y el AtaquesSemana no siempre se movió con él (en las 10 series donde la fórmula cambiaba el reparto, la fila usada era así y el resultado contradecía la fame del día),
+ * de modo que AtaquesSemana − AtaquesHoy ya no es un acumulado real. Para ese día no se deduce nada.
+ * Devuelve un arreglo con una entrada por posición de offs ({ a: [v, v] } o null = sin dato), o null si no hay ningún dato. No escribe nada.
+ */
+function _repartoAcumuladoPorFormula_(filas, offsetsExistentes, offs, A) {
+  var k = offs.length;
+  if (k < 2 || offs[0] !== 0) return null;
+  function celda(fila, col) {
+    var t = String(fila[col - 1] === undefined || fila[col - 1] === null ? '' : fila[col - 1]).trim();
+    return t === '' ? NaN : Number(t);
+  }
+  var acum = [], hay = false, previo = 0;
+  for (var i = 0; i < k; i++) {
+    var v = null;
+    if (i < k - 1 && offs[i + 1] === offs[i] + 1) {
+      var sig = filas[offsetsExistentes[offs[i + 1]]];
+      var org = String(sig[GC.ORIGEN - 1] === undefined || sig[GC.ORIGEN - 1] === null ? '' : sig[GC.ORIGEN - 1]).trim().toLowerCase();
+      if (org === '' || org === 'original') {
+        var inicio = celda(sig, GC.ATAQUES_SEM) - celda(sig, GC.ATAQUES_HOY);
+        if (!isFinite(inicio) || inicio % 1 !== 0 || inicio < previo || inicio > A) return null;
+        v = inicio; previo = inicio; hay = true;
+      }
+    }
+    acum.push(v === null ? null : { a: [v, v] });
+  }
+  return hay ? acum : null;
 }
 
 /**
