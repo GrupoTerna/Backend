@@ -132,5 +132,17 @@ if (Fdisc !== null) {
 let f5 = [mk(0, 0, 0, 0), mk(1, 5, 0, 0), mk(2, 10, 0, 0), mk(1, 13, 0, 0)];
 r = M.rep(f5, { 0: 0, 1: 1, 2: 2, 3: 3 }, { ataquesSemana: 16, fame: 3600, barcos: 0 });
 t('N5 cuatro días: todos a 4 con fórmula', r.ok && r.formula === 'aplicada' && f5.every(f => f[11] === 4) && f5[3][12] === 16);
+// ---- N6: solo se confía en filas de captura original (Origen vacío u «Original»; §PF488 punto 8) ----
+const mkO = (h, s, f, b, o) => { const r = mk(h, s, f, b); r[19] = o; return r; };
+t('N6a fila siguiente Corregido: no se deduce nada', M.formula([mk(2, 2, 0, 0), mkO(1, 4, 0, 0, 'Corregido - CurrentRiverRace (mínimo)')], { 0: 0, 1: 1 }, [0, 1], 4) === null);
+t('N6b fila siguiente Reconstruido: no se deduce nada', M.formula([mk(2, 2, 0, 0), mkO(1, 4, 0, 0, 'Reconstruido')], { 0: 0, 1: 1 }, [0, 1], 4) === null);
+const gO = M.formula([mk(0, 0, 0, 0), mkO(1, 4, 0, 0, 'Original')], { 0: 0, 1: 1 }, [0, 1], 4);
+t('N6c fila siguiente Original: se usa', gO && gO[0].a[0] === 3);
+const gMix = M.formula([mk(0, 0, 0, 0), mkO(1, 4, 0, 0, 'Original'), mkO(1, 5, 0, 0, 'Corregido')], { 0: 0, 1: 1, 2: 2 }, [0, 1, 2], 5);
+t('N6d mezcla: el jueves se deduce y el viernes no', gMix && gMix[0].a[0] === 3 && gMix[1] === null && gMix[2] === null);
+// El caso real #LRQ8YJRCU (T22 S2): el domingo es Corregido con H=4 y S sin subir; la fórmula no debe mover los ataques del sábado al domingo.
+let fr = [mk(3, 3, 300, 0), mk(4, 7, 700, 0), mkO(4, 11, 1200, 0, 'Corregido - Solución única'), mkO(4, 11, 1200, 0, 'Corregido - CurrentRiverRace (mínimo)')];
+r = M.rep(fr, { 0: 0, 1: 1, 2: 2, 3: 3 }, { ataquesSemana: 11, fame: 1200, barcos: 0 });
+t('N6e T22 S2 #LRQ8YJRCU: el domingo no recibe los ataques del sábado', r.ok === false || (fr[2][11] >= 3 && fr[3][11] === 0) || r.formula !== 'aplicada');
 console.log('ok', ok, 'fallas', fail);
 process.exit(fail ? 1 : 0);

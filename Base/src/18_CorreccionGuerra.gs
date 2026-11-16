@@ -3623,6 +3623,9 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
  * acumulado al cierre del día d es ese valor en la fila del día d+1. Solo se usa entre días consecutivos y si la serie arranca el jueves (offs[0] === 0): si falta una fila no se
  * deduce nada de la que sigue (el acumulado de esa fila incluiría ataques de un día que no está). No depende de la hora de la captura (criterio 2), así que sirve aunque
  * AtaquesHoy y AtaquesSemana del último día estén atrasados; si los valores son incoherentes (celdas vacías, no enteros, mayores que A o que bajan de un día al siguiente) no se usa nada.
+ * SOLO SE CONFÍA EN FILAS DE CAPTURA ORIGINAL (Origen vacío u «Original»; §PF488 punto 8, 15-nov-2026): en una fila «Corregido» o «Reconstruido» el AtaquesHoy lo escribió una
+ * corrección y el AtaquesSemana no siempre se movió con él (en las 10 series donde la fórmula cambiaba el reparto, la fila usada era así y el resultado contradecía la fame del día),
+ * de modo que AtaquesSemana − AtaquesHoy ya no es un acumulado real. Para ese día no se deduce nada.
  * Devuelve un arreglo con una entrada por posición de offs ({ a: [v, v] } o null = sin dato), o null si no hay ningún dato. No escribe nada.
  */
 function _repartoAcumuladoPorFormula_(filas, offsetsExistentes, offs, A) {
@@ -3637,9 +3640,12 @@ function _repartoAcumuladoPorFormula_(filas, offsetsExistentes, offs, A) {
     var v = null;
     if (i < k - 1 && offs[i + 1] === offs[i] + 1) {
       var sig = filas[offsetsExistentes[offs[i + 1]]];
-      var inicio = celda(sig, GC.ATAQUES_SEM) - celda(sig, GC.ATAQUES_HOY);
-      if (!isFinite(inicio) || inicio % 1 !== 0 || inicio < previo || inicio > A) return null;
-      v = inicio; previo = inicio; hay = true;
+      var org = String(sig[GC.ORIGEN - 1] === undefined || sig[GC.ORIGEN - 1] === null ? '' : sig[GC.ORIGEN - 1]).trim().toLowerCase();
+      if (org === '' || org === 'original') {
+        var inicio = celda(sig, GC.ATAQUES_SEM) - celda(sig, GC.ATAQUES_HOY);
+        if (!isFinite(inicio) || inicio % 1 !== 0 || inicio < previo || inicio > A) return null;
+        v = inicio; previo = inicio; hay = true;
+      }
     }
     acum.push(v === null ? null : { a: [v, v] });
   }
