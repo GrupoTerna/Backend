@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 16/11/2026 03:21:04 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 16/11/2026 04:31:31 */
 
 
 
@@ -35636,7 +35636,7 @@ function _gdsConstruirFilas_(filas, opciones) {
           valores: des.valores, ataques: vh.ataques[o], barcos: fb.barcos, fame: fb.fame,
           fuente: des.fuente, combinaciones: des.combinaciones, consistencia: consistencia,
           diaGuerra: diaTexto, periodIndex: fila[GC.PERIOD_IDX - 1], origen: fila[GC.ORIGEN - 1],
-          ataquesAcum: fila[GC.ATAQUES_SEMANA - 1], barcosAcum: fila[GC.BARCOS - 1], fameAcum: fila[GC.FAME - 1],
+          ataquesAcum: fila[GC.ATAQUES_SEM - 1], barcosAcum: fila[GC.BARCOS - 1], fameAcum: fila[GC.FAME - 1],
           cobertura: cob
         });
         ultimo = fila;   // el último día con fila da el nombre del jugador y del clan
