@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 15/11/2026 23:01:53 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 16/11/2026 01:46:12 */
 
 
 
@@ -29470,6 +29470,7 @@ var CGW_FECHA_CORTE_PERFIL = '2026-09-29 00:00:00';
 
 // REPARTO CONJUNTO DE ATAQUES, BARCOS Y FAME DE UNA SEMANA [→ Contexto_Base_Web.md §PF122]
 var _FAME_CATALOGO_DIA_CACHE_ = null;
+var _FAME_ESTADOS_SIN_MEDALLAS_CACHE_ = null;   // §PF493: estados del domingo de un clan que ya cruzó la meta (g ataques sin medallas)
 
 // INFORME HOJA GUERRA vs CORRECCIONES (SOLO LECTURA) [→ Contexto_Base_Web.md §18B120]
 var HCC_MAX_LINEAS = 80;
@@ -30727,6 +30728,23 @@ function _fameCatalogoDia_() {
     }
   }
   _FAME_CATALOGO_DIA_CACHE_ = lista;
+  return lista;
+}
+
+/**
+ * _fameEstadosSinMedallasDomingo_() [→ Contexto_Base_Web.md §PF493]
+ * Estados de UN domingo de un clan que YA cruzó la meta (§PF357; g de §PF438): ese domingo no da fame, así que cuentan g ataques (1 a CGW_MAX_ATAQUES_SIN_FAME), todos con 0 de
+ * medallas, y de esos g pueden ser barcos de 0 a g (no se ha descartado atacar barcos con el clan ya terminado; es el mismo rango que usa _cgwRepartoClanTerminado_ para el domingo).
+ * Lista de { h: g, j, k: 0 } con la forma de _fameCatalogoDia_(). Ninguno está en el catálogo normal (todos sus estados con ataques tienen fame mayor que 0), así que no se repiten.
+ * Se calcula una sola vez por ejecución. Solo _repartirSemanaConjunto_ lo usa, y únicamente para el domingo de un clan verificado como terminado (_repartoClanCruzoDomingo_).
+ */
+function _fameEstadosSinMedallasDomingo_() {
+  if (_FAME_ESTADOS_SIN_MEDALLAS_CACHE_) return _FAME_ESTADOS_SIN_MEDALLAS_CACHE_;
+  var lista = [];
+  for (var g = 1; g <= CGW_MAX_ATAQUES_SIN_FAME && g <= FAME_MAZOS_POR_DIA; g++) {
+    for (var j = 0; j <= g; j++) lista.push({ h: g, j: j, k: 0 });
+  }
+  _FAME_ESTADOS_SIN_MEDALLAS_CACHE_ = lista;
   return lista;
 }
 
@@ -32610,6 +32628,9 @@ function _cgwResumenCorrGuerra_(props) {
  * al cierre de cada día es ese valor en la fila del día siguiente (_repartoAcumuladoPorFormula_). Se prueba primero con esa restricción (junto con los rangos o las cifras de
  * CurrentRiverRace); si con ella ninguna combinación cuadra, se reparte como siempre y se avisa en el registro. valores.sinFormulaAtaques = true la apaga. El resultado trae
  * formula: 'aplicada', 'sin solucion' o 'sin datos'.
+ * CLAN TERMINADO (§PF493, 15-nov-2026): si los currentriverrace de Drive prueban que el clan de la serie ya había cruzado la meta antes del domingo (_repartoClanCruzoDomingo_),
+ * el DOMINGO admite además los estados de _fameEstadosSinMedallasDomingo_() (g ataques de 1 a 4, sin medallas); jueves, viernes y sábado siguen con la tabla y reparten lo que resta
+ * (ataques − g). Sin esa prueba no cambia nada. valores.sinClanTerminado = true lo apaga. El resultado trae domingoSinMedallas: g (0 si el domingo quedó con un estado de la tabla).
  */
 function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   var offs = Object.keys(offsetsExistentes).map(Number).sort(function (a, b) { return a - b; });
@@ -32639,6 +32660,9 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   }
 
   var catalogo = _fameCatalogoDia_();
+  // Clan que ya cruzó la meta (§PF493): su domingo no da fame, así que además de la tabla admite g ataques sin medallas.
+  var catalogoDomingo = _repartoClanCruzoDomingo_(filas, offsetsExistentes, offs, valores) ? catalogo.concat(_fameEstadosSinMedallasDomingo_()) : catalogo;
+  function catalogoDeDia(d) { return offs[d] === 3 ? catalogoDomingo : catalogo; }
   function costo(dia, s) {
     var c = cur[dia];
     if (c.h === s.h && c.j === s.j && c.k === s.k) return 0;
@@ -32743,7 +32767,7 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
   }
 
   var catsLlenos = [];
-  for (var v = 0; v < k; v++) catsLlenos.push(catalogo);
+  for (var v = 0; v < k; v++) catsLlenos.push(catalogoDeDia(v));
   var mejor = null;
   var estadoCrr = 'sin datos';
   // Fórmula de ataques (§PF160 criterios 2 y 9): acumulado exacto al cierre de cada día con fila siguiente consecutiva. Se lee ANTES de escribir nada.
@@ -32774,7 +32798,7 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     var catsRng = [];
     for (var d0 = 0; d0 < k; d0++) {
       var dr = rng.dias[d0];
-      catsRng.push(catalogo.filter(function (s3) {
+      catsRng.push(catalogoDeDia(d0).filter(function (s3) {
         return (dr.h === null || (s3.h >= dr.h[0] && s3.h <= dr.h[1])) &&
                (dr.j === null || (s3.j >= dr.j[0] && s3.j <= dr.j[1])) &&
                (dr.k === null || (s3.k >= dr.k[0] && s3.k <= dr.k[1]));
@@ -32807,7 +32831,7 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     var catsCrr = [];
     for (var d = 0; d < k; d++) {
       var rest = crr.dias[d];
-      catsCrr.push(catalogo.filter(function (s2) {
+      catsCrr.push(catalogoDeDia(d).filter(function (s2) {
         return (rest.h === null || s2.h === rest.h) && (rest.k === null || s2.k === rest.k);
       }));
     }
@@ -32852,7 +32876,39 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
     Logger.log('[Reparto conjunto] AVISO fórmula de ataques (AtaquesSemana − AtaquesHoy de la fila siguiente): ninguna combinación la cumple con los totales (ataques=' + A + ', barcos=' + B +
       ', fame=' + F + '). Se repartió como siempre, sin usarla.');
   }
-  return { ok: true, huboCambio: huboCambio, crr: estadoCrr, formula: estadoFormula };
+  var gDomingo = 0;   // §PF493: ningún estado de la tabla tiene ataques con fame 0, así que k = 0 con h > 0 solo puede ser un domingo sin medallas
+  for (var zg = 0; zg < k; zg++) { if (offs[zg] === 3 && mejor.p[zg].h > 0 && mejor.p[zg].k === 0) gDomingo = mejor.p[zg].h; }
+  if (gDomingo > 0) {
+    Logger.log('[Reparto conjunto] Clan terminado (§PF493): el domingo queda con ' + gDomingo + ' ataque(s) sin medallas, porque los JSON prueban que el clan ya había cruzado la meta (ataques=' + A + ', barcos=' + B +
+      ', fame=' + F + ').');
+  }
+  return { ok: true, huboCambio: huboCambio, crr: estadoCrr, formula: estadoFormula, domingoSinMedallas: gDomingo };
+}
+
+/**
+ * _repartoClanCruzoDomingo_(filas, offsetsExistentes, offs, valores) [→ Contexto_Base_Web.md §PF493]
+ * true solo si la serie tiene la fila del domingo (offs incluye 3) y los currentriverrace de Drive prueban que el clan de la serie ya había cruzado la meta antes del domingo
+ * (_crrDomingoSinFame_, módulo 56; la misma lectura que ya hacen los rangos, así que no añade lecturas de Drive). La temporada, la semana y el clan salen de valores (temporada, semana,
+ * clanTag) o de la primera fila (Clan_Tag; si falta, el tag del clan Terna por su nombre, _rsTagDeClanNombre_). Sin captura que lo pruebe, sin clan, sin el módulo 56 o con un error de
+ * lectura devuelve false: no se relaja nada. valores.sinClanTerminado === true lo apaga. No escribe nada.
+ */
+function _repartoClanCruzoDomingo_(filas, offsetsExistentes, offs, valores) {
+  if (valores.sinClanTerminado === true || typeof _crrDomingoSinFame_ !== 'function') return false;
+  if (offs.indexOf(3) < 0) return false;
+  try {
+    var f0 = filas[offsetsExistentes[offs[0]]];
+    var num = function (v) { var t = String(v === undefined || v === null ? '' : v).trim(); return t === '' ? NaN : Number(t); };
+    var temp = num(valores.temporada !== undefined ? valores.temporada : f0[GC.TEMPORADA - 1]);
+    var sem = num(valores.semana !== undefined ? valores.semana : f0[GC.SEMANA - 1]);
+    if (!(temp > 0) || !(sem > 0)) return false;
+    var tagClan = _blgNormalizarTag_(valores.clanTag !== undefined ? valores.clanTag : f0[GC.CLAN_TAG - 1]);
+    if (!tagClan && typeof _rsTagDeClanNombre_ === 'function') tagClan = _blgNormalizarTag_(_rsTagDeClanNombre_(String(f0[GC.CLAN - 1] || '').trim()));
+    if (!tagClan) return false;
+    return _crrDomingoSinFame_(temp, sem, tagClan) === true;
+  } catch (e) {
+    Logger.log('[Reparto conjunto] No se pudo comprobar si el clan ya había cruzado la meta: ' + e.message + '. Se reparte sin esa regla.');
+    return false;
+  }
 }
 
 /**
