@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 16/11/2026 04:31:31 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 16/11/2026 05:02:56 */
 
 
 
@@ -30336,6 +30336,76 @@ function agregarIdCorreccionesGuerraCSV() {
     if (!n) { Logger.log('[CorreccionGuerra] ' + CORRECCIONES_GUERRA_CSV + ' no existe o está vacío: nada que hacer.'); return; }
     _guardarOverlayCorreccionesGuerra(mapa);
     Logger.log('[CorreccionGuerra] Columnas calculadas (ID y temporadas RoyaleAPI y Supercell) agregadas a ' + CORRECCIONES_GUERRA_CSV + ' (' + n + ' entradas reescritas sin cambiar datos).');
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * quitarPerfilSinClanRevisar() y quitarPerfilSinClan()  (§PF496 punto 13; se corren a mano desde el editor)
+ * Quitan de Correcciones_Guerra.csv la parte del perfil (columnas «RoyaleAPI», origen y clan) de las filas con origen «perfil» y «Clan RoyaleAPI» vacío,
+ * para que la corrección completa y la de jugadores elegidos las vuelvan a leer. Sin esa parte el backend no tiene fila de perfil que comparar y
+ * la entrante se guarda como nueva (con su clan). NO borra la fila entera: si el jugador-semana trae datos de un clan (Log o Analytics), esos se conservan;
+ * solo desaparece la fila cuando no le queda ninguna entrada. La versión «Revisar» solo cuenta y no escribe nada.
+ * Antes de escribir guarda una copia exacta del archivo (Correcciones_Guerra_antes_quitar_perfil_sin_clan_AAAAMMDD_HHmmss.csv) para poder devolverlo.
+ * Al final dice qué tags visita sola la corrección completa (tienen datos de clan y ya no tienen perfil, §PF246) y cuáles hay que pegar en
+ * «Corrección de jugadores elegidos» (solo tenían perfil, o tienen otras semanas con perfil).
+ * Usa el mismo candado que las correcciones. [→ Contexto_Base_Web.md §PF496]
+ */
+function quitarPerfilSinClanRevisar() { _quitarPerfilSinClan_(false); }
+function quitarPerfilSinClan() { _quitarPerfilSinClan_(true); }
+
+function _quitarPerfilSinClan_(aplicar) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[PerfilSinClan] Ocupado guardando otra corrección; intenta de nuevo en unos segundos.'); return; }
+  try {
+    var texto = _loadCSVFromDrive(CORRECCIONES_GUERRA_CSV);
+    if (!texto) { Logger.log('[PerfilSinClan] ' + CORRECCIONES_GUERRA_CSV + ' no existe o está vacío: nada que hacer.'); return; }
+    var mapa = _cgwLeerOverlayDeTexto_(texto);
+    var claves = Object.keys(mapa);
+
+    var gruposConClan = {}; // temporada|semana|tag con alguna entrada de clan
+    claves.forEach(function (k) {
+      var p = k.split('|'); // temporada | semana | clantag | tag
+      if (p[2] !== '') gruposConClan[p[0] + '|' + p[1] + '|' + p[3]] = true;
+    });
+
+    var quitar = [], conAtaques = 0, sinAtaques = 0, conDatosClan = 0, soloPerfil = 0, tagsQuitados = {};
+    claves.forEach(function (k) {
+      var p = k.split('|');
+      if (p[2] !== '') return;
+      var e = mapa[k];
+      if (e.origenPerfil !== CGW_ORIGEN_PERFIL || e.clanPerfil) return;
+      quitar.push(k);
+      tagsQuitados[p[3]] = true;
+      if (e.ataquesSemana > 0 || e.fame > 0) conAtaques++; else sinAtaques++;
+      if (gruposConClan[p[0] + '|' + p[1] + '|' + p[3]]) conDatosClan++; else soloPerfil++;
+    });
+
+    Logger.log('[PerfilSinClan] Filas de perfil sin «Clan RoyaleAPI»: ' + quitar.length + ' (' + conAtaques + ' con ataques o fame, ' + sinAtaques + ' con 0) de ' +
+      Object.keys(tagsQuitados).length + ' tag(s). De ellas, ' + conDatosClan + ' comparten fila con datos de clan (esos datos se conservan) y ' + soloPerfil + ' son solo perfil (la fila desaparece).');
+    if (!quitar.length) return;
+
+    quitar.forEach(function (k) { delete mapa[k]; });
+    var visitaCompleta = {};
+    _tagsSinPerfilEnOverlay_(mapa).forEach(function (t) { visitaCompleta[t] = true; });
+    var visitanSolos = [], paraElegidos = [];
+    Object.keys(tagsQuitados).sort().forEach(function (t) { (visitaCompleta[t] ? visitanSolos : paraElegidos).push(t); });
+    Logger.log('[PerfilSinClan] La corrección completa visita sola (si siguen activos en los clanes Terna): ' + visitanSolos.length + ' tag(s). Para «Corrección de jugadores elegidos» (pégalos separados por coma): ' + paraElegidos.length + ' tag(s).');
+    for (var i = 0; i < paraElegidos.length; i += 50) {
+      Logger.log('[PerfilSinClan] Elegidos ' + (i + 1) + ' a ' + Math.min(i + 50, paraElegidos.length) + ': ' + paraElegidos.slice(i, i + 50).join(', '));
+    }
+
+    if (!aplicar) {
+      Logger.log('[PerfilSinClan] SIMULACIÓN: no se escribió nada. Para aplicar corre quitarPerfilSinClan().');
+      return;
+    }
+    var sello = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT-5', 'yyyyMMdd_HHmmss');
+    var copia = 'Correcciones_Guerra_antes_quitar_perfil_sin_clan_' + sello + '.csv';
+    _saveCSVToDrive(copia, texto);
+    _guardarOverlayCorreccionesGuerra(mapa);
+    if (typeof _webUltimaGuerraPreviaInvalidar_ === 'function') _webUltimaGuerraPreviaInvalidar_();
+    Logger.log('[PerfilSinClan] LISTO: se quitó la parte de perfil de ' + quitar.length + ' fila(s). Copia previa en ' + copia + '. Ahora corre la Corrección de Guerra completa y después la de jugadores elegidos con la lista de arriba.');
   } finally {
     lock.releaseLock();
   }
