@@ -14,7 +14,7 @@ const code = consts +
   '\nvar _FAME_CATALOGO_DIA_CACHE_=null;\nvar GC={NUM:1,FECHA:2,TEMPORADA:3,SEMANA:4,DIA:5,PERIOD_IDX:6,DIA_GUERRA:7,ETAPA:8,CLAN:9,TAG:10,NOMBRE:11,ATAQUES_HOY:12,ATAQUES_SEM:13,FAME:14,BARCOS:15,ORIGEN:20};' +
   '\nvar LOGS=[];var Logger={log(m){LOGS.push(m);}};var STUB={rng:null};' +
   '\nfunction _repartoRangosCrr_(){return STUB.rng;}\nfunction _repartoRestriccionesCrr_(){return null;}\n' +
-  ['_fameDescomposicionesDia_', '_fameCatalogoDia_', '_repartirSemanaConjunto_', '_repartoAcumuladoPorFormula_'].map(extraer).join('\n') +
+  ['_fameDescomposicionesDia_', '_fameCatalogoDia_', '_repartirSemanaConjunto_', '_repartoAcumuladoPorFormula_', '_diagnosticoRangosPorDia_'].map(extraer).join('\n') +
   '\nreturn {rep:_repartirSemanaConjunto_,cat:_fameCatalogoDia_,formula:_repartoAcumuladoPorFormula_,STUB:STUB,LOGS:LOGS};';
 const M = new Function(code)();
 let ok = 0, fail = 0;

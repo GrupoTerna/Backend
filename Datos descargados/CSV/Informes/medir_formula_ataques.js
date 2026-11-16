@@ -14,7 +14,7 @@ const consts = src.match(/var FAME_[A-Z_]+ = [^;]+;|var FAME_DUELO_RESULTADOS = 
 const gcBloque = srcGS.match(/var GC = \{[\s\S]*?\n\};/)[0];
 const code = consts + '\nvar _FAME_CATALOGO_DIA_CACHE_=null;\n' + gcBloque +
   '\nvar Logger={log(){}};\nfunction _repartoRangosCrr_(){return null;}\nfunction _repartoRestriccionesCrr_(){return null;}\n' +
-  ['_fameDescomposicionesDia_', '_fameCatalogoDia_', '_repartirSemanaConjunto_', '_repartoAcumuladoPorFormula_'].map(extraer).join('\n') +
+  ['_fameDescomposicionesDia_', '_fameCatalogoDia_', '_repartirSemanaConjunto_', '_repartoAcumuladoPorFormula_', '_diagnosticoRangosPorDia_'].map(extraer).join('\n') +
   '\nreturn {rep:_repartirSemanaConjunto_,GC:GC};';
 const M = new Function(code)();
 const GC = M.GC;
