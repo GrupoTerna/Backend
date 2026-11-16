@@ -411,18 +411,18 @@ Ninguno.
 | `_catDispDeTelefono` | función | 44_BotWhatsApp.gs | 696 |  |
 | `_categoriasDisponibles` | función | 44_BotWhatsApp.gs | 728 | Contexto_Base_Web.md §44B030 |
 | `_CDJ_CACHE_DIA_POSIBLE` | global | 18_CorreccionGuerra.gs | 271 |  |
-| `_cdjBorrarProgresoLectura_` | función | 18_CorreccionGuerra.gs | 7171 | Contexto_Base_Web.md §PF492 |
-| `_cdjCargarProgresoLectura_` | función | 18_CorreccionGuerra.gs | 7129 | Contexto_Base_Web.md §PF492 |
-| `_cdjCargarRegistrosJsonDrive_` | función | 18_CorreccionGuerra.gs | 7065 | Contexto_Base_Web.md §PF123 |
+| `_cdjBorrarProgresoLectura_` | función | 18_CorreccionGuerra.gs | 7179 | Contexto_Base_Web.md §PF492 |
+| `_cdjCargarProgresoLectura_` | función | 18_CorreccionGuerra.gs | 7137 | Contexto_Base_Web.md §PF492 |
+| `_cdjCargarRegistrosJsonDrive_` | función | 18_CorreccionGuerra.gs | 7073 | Contexto_Base_Web.md §PF123 |
 | `_cdjEntero_` | función | 18_CorreccionGuerra.gs | 6677 | Contexto_Base_Web.md §PF123 |
 | `_cdjEstadoDia_` | función | 18_CorreccionGuerra.gs | 6696 | Contexto_Base_Web.md §PF123 |
-| `_cdjFirmaTagsLectura_` | función | 18_CorreccionGuerra.gs | 7118 | Contexto_Base_Web.md §PF492 |
-| `_cdjGuardarProgresoLectura_` | función | 18_CorreccionGuerra.gs | 7155 | Contexto_Base_Web.md §PF492 |
+| `_cdjFirmaTagsLectura_` | función | 18_CorreccionGuerra.gs | 7126 | Contexto_Base_Web.md §PF492 |
+| `_cdjGuardarProgresoLectura_` | función | 18_CorreccionGuerra.gs | 7163 | Contexto_Base_Web.md §PF492 |
 | `_cdjIndexarRegistrosJson_` | función | 18_CorreccionGuerra.gs | 6708 | Contexto_Base_Web.md §PF123 |
 | `_cdjJsonDeSerie_` | función | 18_CorreccionGuerra.gs | 6740 | Contexto_Base_Web.md §PF123 |
 | `_cdjNormalizarClan_` | función | 18_CorreccionGuerra.gs | 6688 | Contexto_Base_Web.md §PF123 |
 | `_cdjProcesarSemana_` | función | 18_CorreccionGuerra.gs | 6805 | Contexto_Base_Web.md §PF123 |
-| `_cdjRepartirSerieMenos_` | función | 18_CorreccionGuerra.gs | 7022 | Contexto_Base_Web.md §PF123 |
+| `_cdjRepartirSerieMenos_` | función | 18_CorreccionGuerra.gs | 7027 | Contexto_Base_Web.md §PF123 |
 | `_celdaVaciaGuerra_` | función | 17_GuerraSheet.gs | 6262 |  |
 | `_cerradosDesdeJsonGuerra_` | función | 17_GuerraSheet.gs | 3562 | Contexto_Base_Web.md §17B137 |
 | `_cerrarDomingoConCapturaLunes_` | función | 17_GuerraSheet.gs | 2864 | Contexto_Base_Web.md §PF430 |
@@ -544,7 +544,7 @@ Ninguno.
 | `_compararInactivosConCSV` | función | 05_Backup_CSV.gs | 2392 | Contexto_Base_Web.md §05B062 |
 | `_completarClanTagGuerra_` | función | 17_GuerraSheet.gs | 4558 | Contexto_Base_Web.md §PF423 |
 | `_completarClanTagInactivos_` | función | 17_GuerraSheet.gs | 4706 | Contexto_Base_Web.md §PF423 |
-| `_completarDomingoDesdeJsonRoyaleApi_` | función | 18_CorreccionGuerra.gs | 7185 | Contexto_Base_Web.md §PF123 |
+| `_completarDomingoDesdeJsonRoyaleApi_` | función | 18_CorreccionGuerra.gs | 7193 | Contexto_Base_Web.md §PF123 |
 | `_completarFechaGuerraSinFecha_` | función | 17_GuerraSheet.gs | 4092 |  |
 | `_completarTSDEnHoja_` | función | 24_Historial_Ascensos.gs | 395 | Contexto_Base_Web.md §PF267 |
 | `_conOpciones` | función | 44_BotWhatsApp.gs | 270 |  |
@@ -1573,7 +1573,7 @@ Ninguno.
 | `_repararDomingoT5S4_` | función | 49_Diagnostico_Domingo.gs | 101 |  |
 | `_repararFamaDomingoDesdeJSON_` | función | 17_GuerraSheet.gs | 5479 |  |
 | `_repararMergesFiltroHeader` | función | 04_Formato_Comun.gs | 774 | Contexto_Base_Web.md §04B014 |
-| `_repararSemanaDesdeJsonRoyaleApi_` | función | 18_CorreccionGuerra.gs | 7300 | Contexto_Base_Web.md §PF123 |
+| `_repararSemanaDesdeJsonRoyaleApi_` | función | 18_CorreccionGuerra.gs | 7308 | Contexto_Base_Web.md §PF123 |
 | `_repartirEvaluadosCambioRango_` | función | 29_Docs_NoCalificados.gs | 680 |  |
 | `_repartirSemanaConjunto_` | función | 18_CorreccionGuerra.gs | 3403 |  |
 | `_repartoAcumuladoPorFormula_` | función | 18_CorreccionGuerra.gs | 3693 | Contexto_Base_Web.md §PF160 criterios 2 y 9; §PF488 |
