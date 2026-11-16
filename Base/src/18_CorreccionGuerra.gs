@@ -3562,7 +3562,8 @@ function _repartirSemanaConjunto_(filas, offsetsExistentes, valores) {
       var detalleRng = rng.etiqueta + ': ataques ' + rango(ult && ult.a) + ', barcos ' + rango(ult && ult.b) + ', fame ' + rango(ult && ult.f) + ' al cierre del ultimo dia' +
         ' (totales a repartir: ataques=' + A + ', barcos=' + B + ', fame=' + F + ')';
       if (rng.estricto) {
-        return { ok: false, huboCambio: false, crr: 'conflicto', motivo: 'los totales no caben en lo que muestran los JSON de CurrentRiverRace (piso, merma y maximo semanal; ' + detalleRng + '); no se escribe y queda para revision manual' };
+        var detalleDias = _diagnosticoRangosPorDia_(rng, catsRng, offs, A, B, F);
+        return { ok: false, huboCambio: false, crr: 'conflicto', motivo: 'ninguna combinacion dia por dia cabe en lo que muestran los JSON de CurrentRiverRace (piso, merma y maximo semanal; ' + detalleRng + '; por dia: ' + detalleDias + '); no se escribe y queda para revision manual' };
       }
       Logger.log('[Reparto conjunto] AVISO rangos de CurrentRiverRace (la serie tiene un JSON descartado o una metrica incoherente) ' + detalleRng + '. Se reparte como siempre, sin usarlos.');
     }
@@ -3655,6 +3656,41 @@ function _repartoAcumuladoPorFormula_(filas, offsetsExistentes, offs, A) {
     acum.push(v === null ? null : { a: [v, v] });
   }
   return hay ? acum : null;
+}
+
+/**
+ * _diagnosticoRangosPorDia_(rng, catsRng, offs, A, B, F) [→ Contexto_Base_Web.md §PF488 punto 10]
+ * Solo texto, para el motivo del conflicto de rangos de CurrentRiverRace de _repartirSemanaConjunto_: dice el acumulado permitido al cierre de cada día y el primer
+ * día en que ninguna combinación de la tabla cabe en esos rangos (con A, B y F como tope). No escribe nada ni cambia qué series se resuelven.
+ */
+function _diagnosticoRangosPorDia_(rng, catsRng, offs, A, B, F) {
+  try {
+    var letras = ['J', 'V', 'S', 'D'];
+    function rg(c) { return !c ? '?' : (c[0] + '-' + (c[1] === Infinity ? 'sin tope' : c[1])); }
+    var partes = [], alcance = { '0,0,0': true }, primerFallo = '';
+    for (var d = 0; d < offs.length; d++) {
+      var x = rng.acum[d], etiq = letras[offs[d]] || ('d' + offs[d]);
+      partes.push(etiq + ' ataques ' + rg(x && x.a) + ', barcos ' + rg(x && x.b) + ', fame ' + rg(x && x.f));
+      if (primerFallo) continue;
+      var nuevo = {}, hay = false, claves = Object.keys(alcance);
+      for (var q = 0; q < claves.length; q++) {
+        var pr = claves[q].split(',');
+        for (var t = 0; t < catsRng[d].length; t++) {
+          var s = catsRng[d][t], na = Number(pr[0]) + s.h, nb = Number(pr[1]) + s.j, nf = Number(pr[2]) + s.k;
+          if (na > A || nb > B || nf > F) continue;
+          if (x && ((x.a && (na < x.a[0] || na > x.a[1])) || (x.b && (nb < x.b[0] || nb > x.b[1])) || (x.f && (nf < x.f[0] || nf > x.f[1])))) continue;
+          nuevo[na + ',' + nb + ',' + nf] = true; hay = true;
+        }
+      }
+      if (!hay) primerFallo = etiq;
+      alcance = nuevo;
+    }
+    var cola = primerFallo ? 'primer dia sin combinacion: ' + primerFallo :
+      (alcance[A + ',' + B + ',' + F] ? 'cada dia tiene combinacion y los totales son alcanzables (el conflicto viene de otra parte)' : 'cada dia tiene combinacion, pero ninguna suma exactamente los totales');
+    return partes.join('; ') + '; ' + cola;
+  } catch (e) {
+    return 'no se pudo calcular el detalle por dia (' + e.message + ')';
+  }
 }
 
 /**
