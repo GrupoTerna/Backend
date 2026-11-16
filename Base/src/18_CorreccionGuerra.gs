@@ -1110,7 +1110,7 @@ function agregarIdCorreccionesGuerraCSV() {
 }
 
 /**
- * quitarPerfilSinClanRevisar() y quitarPerfilSinClan()  (§PF497; se corren a mano desde el editor)
+ * quitarPerfilSinClanRevisar() y quitarPerfilSinClan()  (§PF496 punto 13; se corren a mano desde el editor)
  * Quitan de Correcciones_Guerra.csv la parte del perfil (columnas «RoyaleAPI», origen y clan) de las filas con origen «perfil» y «Clan RoyaleAPI» vacío,
  * para que la corrección completa y la de jugadores elegidos las vuelvan a leer. Sin esa parte el backend no tiene fila de perfil que comparar y
  * la entrante se guarda como nueva (con su clan). NO borra la fila entera: si el jugador-semana trae datos de un clan (Log o Analytics), esos se conservan;
@@ -1118,7 +1118,7 @@ function agregarIdCorreccionesGuerraCSV() {
  * Antes de escribir guarda una copia exacta del archivo (Correcciones_Guerra_antes_quitar_perfil_sin_clan_AAAAMMDD_HHmmss.csv) para poder devolverlo.
  * Al final dice qué tags visita sola la corrección completa (tienen datos de clan y ya no tienen perfil, §PF246) y cuáles hay que pegar en
  * «Corrección de jugadores elegidos» (solo tenían perfil, o tienen otras semanas con perfil).
- * Usa el mismo candado que las correcciones. [→ Contexto_Base_Web.md §PF497]
+ * Usa el mismo candado que las correcciones. [→ Contexto_Base_Web.md §PF496]
  */
 function quitarPerfilSinClanRevisar() { _quitarPerfilSinClan_(false); }
 function quitarPerfilSinClan() { _quitarPerfilSinClan_(true); }
