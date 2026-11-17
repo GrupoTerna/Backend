@@ -1,0 +1,100 @@
+{
+  "tag": "#VRJYL89RL",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "17/11/2026",
+  "registros": [
+    {
+      "temporadaInterna": 22,
+      "temporadaRoyaleAPI": 133,
+      "semana": 5,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "clanTag": "#GG99LCJY",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 22,
+      "temporadaRoyaleAPI": 133,
+      "semana": 4,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "clanTag": "#GG99LCJY",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 22,
+      "temporadaRoyaleAPI": 133,
+      "semana": 3,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "clanTag": "#GG99LCJY",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 22,
+      "temporadaRoyaleAPI": 133,
+      "semana": 2,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "clanTag": "#GG99LCJY",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 22,
+      "temporadaRoyaleAPI": 133,
+      "semana": 1,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "clanTag": "#GG99LCJY",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 21,
+      "temporadaRoyaleAPI": 132,
+      "semana": 4,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "clanTag": "#GG99LCJY",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 21,
+      "temporadaRoyaleAPI": 132,
+      "semana": 3,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "clanTag": "#GG99LCJY",
+      "comentario": ""
+    }
+  ]
+}
