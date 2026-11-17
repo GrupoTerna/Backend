@@ -4192,7 +4192,10 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
   var clanTagReconstruccion = _normalizarClanTagCorreccion(opciones.clanTag);
   var nombreDesdeTag = '';
   if (clanTagReconstruccion) { nombreDesdeTag = String(_resolverNombreClan(clanTagReconstruccion) || '').trim(); if (nombreDesdeTag.charAt(0) === '#') nombreDesdeTag = ''; }
-  var clanReconstruccion = String(opciones.clanNombre || nombreDesdeTag || datosJugador.clan || '').trim();
+  // 17-nov-2026 (§PF355 (2)): un clanNombre que empieza por # es un tag que _resolverNombreClan() devolvio por no conocer el clan (cache vacia y fuera del respaldo); se trata como vacio, igual que nombreDesdeTag.
+  var clanNombreOpciones = String(opciones.clanNombre || '').trim();
+  if (clanNombreOpciones.charAt(0) === '#') clanNombreOpciones = '';
+  var clanReconstruccion = String(clanNombreOpciones || nombreDesdeTag || datosJugador.clan || '').trim();
   if (!clanTagReconstruccion && clanReconstruccion) clanTagReconstruccion = String(_getClanTagByName(clanReconstruccion) || '').trim().toUpperCase();
   if (!clanReconstruccion) {
     opciones.sinClanReconstruccion = true;
