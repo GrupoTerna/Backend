@@ -1,0 +1,64 @@
+{
+  "tag": "#UJUC89CVJ",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "17/11/2026",
+  "registros": [
+    {
+      "temporadaInterna": 23,
+      "temporadaRoyaleAPI": 134,
+      "semana": 4,
+      "clan": "Mini乂Ternas™",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "clanTag": "#GG99LCJY",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 2,
+      "temporadaRoyaleAPI": 113,
+      "semana": 4,
+      "clan": "Royale fans",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#LYVLJ9RG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 2,
+      "temporadaRoyaleAPI": 113,
+      "semana": 3,
+      "clan": "Royale fans",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#LYVLJ9RG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 2,
+      "temporadaRoyaleAPI": 113,
+      "semana": 2,
+      "clan": "Royale fans",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#LYVLJ9RG",
+      "comentario": ""
+    }
+  ]
+}
