@@ -1,0 +1,37 @@
+{
+  "tag": "#JG0VLYGJU",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "17/11/2026",
+  "registros": [
+    {
+      "temporadaInterna": -17,
+      "temporadaRoyaleAPI": 94,
+      "semana": 4,
+      "clan": "matapollos",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#L9C0LQ0Q",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": -17,
+      "temporadaRoyaleAPI": 94,
+      "semana": 3,
+      "clan": "matapollos",
+      "ataques": 7,
+      "fame": 275,
+      "barcos": 3,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#L9C0LQ0Q",
+      "comentario": ""
+    }
+  ]
+}
