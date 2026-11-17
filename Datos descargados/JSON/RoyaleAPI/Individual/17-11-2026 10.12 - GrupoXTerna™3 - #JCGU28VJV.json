@@ -1,0 +1,64 @@
+{
+  "tag": "#JCGU28VJV",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "17/11/2026",
+  "registros": [
+    {
+      "temporadaInterna": 22,
+      "temporadaRoyaleAPI": 133,
+      "semana": 5,
+      "clan": "GrupoXTerna™3",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "clanTag": "#GQQPPJGR",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 22,
+      "temporadaRoyaleAPI": 133,
+      "semana": 4,
+      "clan": "Founders Beach",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#G89QQ2VJ",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 22,
+      "temporadaRoyaleAPI": 133,
+      "semana": 3,
+      "clan": "Founders Beach",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#G89QQ2VJ",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 22,
+      "temporadaRoyaleAPI": 133,
+      "semana": 2,
+      "clan": "Founders Beach",
+      "ataques": 3,
+      "fame": 300,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#G89QQ2VJ",
+      "comentario": ""
+    }
+  ]
+}
