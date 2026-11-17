@@ -5269,7 +5269,7 @@ function _crearLectorDiaJSONGuerra_(t0) {
     // El periodIndex REAL de una captura es el que trae su contenido (obj.periodIndex), no el del nombre: el nombre [→ Contexto_Base_Web.md §17B167]
     leer: function (clan, temporada, periodIdx, tag) {
       if (Date.now() - t0 > REPARAR_JSON_LIMITE_MS) { agotado = true; return { estado: 'tiempo' }; }
-      var claveClan = _normalizarNombreClan_(clan);
+      var claveClan = _claveCarpetaClan_(clan); // §PF502: Tag del clan (el nombre que llega se traduce como respaldo)
       var idx = indiceDeClan(claveClan);
       if (!idx) return { estado: 'sin_json' };
       var pedido = Number(periodIdx), candidatos = [pedido, pedido + 1, pedido - 1];

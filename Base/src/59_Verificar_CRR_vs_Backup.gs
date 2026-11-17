@@ -67,7 +67,7 @@ var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo 
 var VCRR_ARCHIVO_RAPI = 'Cruce_CRR_RoyaleAPI.csv';                // caché de los totales cerrados de RoyaleAPI (log y perfil) leídos de sus JSON individuales (§PF320)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
 var VCRR_VERSION_REGLAS = 9;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_, el cruce con RoyaleAPI (§PF320, 5), la lista VCRR_SERIES_CONFIRMADAS (§PF331, 6; §PF332, 7; §PF339, 9) o qué capturas se descartan (§PF333, 8): invalida el registro y se releen todos los JSON
-var VCRR_CLAN_VETADO_KEY = 'naranja x';                 // §PF335: clave (en minúsculas) del clan vetado (CFG.VETADO_TAG) en _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_; sus JSON viejos no se listan ni se leen mientras CFG.VETADO_API_ACTIVO sea false
+// §PF502 (tanda 9 de Clanes por Tag): la clave del clan vetado en _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_ ahora es su Tag, CFG.VETADO_TAG (antes 'naranja x'). Sus JSON viejos no se listan ni se leen mientras CFG.VETADO_API_ACTIVO sea false (§PF335).
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
@@ -503,7 +503,18 @@ function _vcrrLeerBackupGuerra_() {
   return { encabezado: parsed[0], filas: filas, texto: texto };
 }
 
-/** Normaliza el nombre de un clan para compararlo (minúsculas y sin espacios en los extremos); es la misma forma de las claves de _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_. */
+/**
+ * §PF502 (tanda 9 de Clanes por Tag): las claves de _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_ ahora son Tags, pero las tablas historicas de este archivo (VCRR_FILAS_DESCARTAR y las demas
+ * listas con `clanKey`) y los cruces con Backup_Guerra.csv siguen con el nombre normalizado en minusculas. Este puente devuelve ese nombre para la carpeta con clave Tag `tagClave`; es el mismo
+ * valor que tenia la clave antes del cambio, asi que nada de este archivo cambia de comportamiento. Migrar estas tablas a Tag queda aparte (§PF502, pendiente).
+ */
+function _vcrrClaveNombreDeCarpeta_(tagClave) {
+  var nombres = Object.keys(_TAG_CARPETA_POR_NOMBRE_RESPALDO_); // clan-por-nombre-ok: puente a las tablas historicas con clave por nombre
+  for (var i = 0; i < nombres.length; i++) { if (_TAG_CARPETA_POR_NOMBRE_RESPALDO_[nombres[i]] === tagClave) return nombres[i]; }
+  return String(tagClave === undefined || tagClave === null ? '' : tagClave).toLowerCase();
+}
+
+/** Normaliza el nombre de un clan para compararlo (minúsculas y sin espacios en los extremos); es la forma del `clanKey` de las tablas de este archivo (antes era la de las claves de _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_; desde §PF502 esas claves son Tags, ver _vcrrClaveNombreDeCarpeta_). */
 function _vcrrClanNorm_(clan) { return String(clan === null || clan === undefined ? '' : clan).trim().toLowerCase(); }
 
 // ----- Verificar CRR, paso 1: totales cerrados de RoyaleAPI por jugador (§PF320) -----
@@ -717,7 +728,7 @@ function _vcrrArchivosSemana_(temporada, semana) {
   var lista = [];
   var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(semana);
   Object.keys(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_).forEach(function (k) {
-    if (k === VCRR_CLAN_VETADO_KEY && !CFG.VETADO_API_ACTIVO) return;   // §PF335
+    if (k === CFG.VETADO_TAG && !CFG.VETADO_API_ACTIVO) return;   // §PF335 / §PF502: la clave es el Tag
     try {
       var cT = _crrSubcarpeta_(DriveApp.getFolderById(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_[k]), nT);
       var cS = cT ? _crrSubcarpeta_(cT, nS) : null;
@@ -726,7 +737,7 @@ function _vcrrArchivosSemana_(temporada, semana) {
       while (it.hasNext()) {
         var f = it.next(), nombre = f.getName(), p = _crrParsearNombre_(nombre);
         if (!p) continue;
-        lista.push({ file: f, nombre: nombre, clanKey: k, letra: p.letra, modificado: f.getLastUpdated().getTime(), tamano: f.getSize() });
+        lista.push({ file: f, nombre: nombre, clanKey: _vcrrClaveNombreDeCarpeta_(k), letra: p.letra, modificado: f.getLastUpdated().getTime(), tamano: f.getSize() });
       }
     } catch (eClan) {
       Logger.log('[VCRR] No se pudo listar la carpeta de ' + k + ' (' + nT + ' ' + nS + '): ' + eClan.message);
