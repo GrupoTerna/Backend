@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 3012 nombres en 60 archivos .gs.
+Código real: `Base/src/`. Total: 3024 nombres en 60 archivos .gs.
 
 ## Por archivo
 
@@ -15,7 +15,7 @@ Código real: `Base/src/`. Total: 3012 nombres en 60 archivos .gs.
 - **07_Battlelogs_Hoja.gs** (4 funciones): actualizarHojaBattlelogs, _blhDisenoColumnas_, _blhFilasParaHoja_, _blhHoraLima_
 - **08_Activadores.gs** (5 funciones): activarTodosLosActivadores, desactivarTodosLosActivadores, _retirarActivadoresAdministrados_, _crearActivador_, _describirActivador_
 - **09_API_ClashRoyale.gs** (124 funciones): resetGuardianPeriodIndex, guardarApiDump, limpiarDuplicadosCachePlayers, descargarCards, buscarClanesPorNombre, buscarClanesPorNombreYUbicacion, buscarClanesPorUbicacion, descargarClanMiembros, descargarGlobalTournaments, descargarLocations, descargarLocationPorId, descargarSeasons, descargarRankingClanesPorUbicacion, descargarRankingJugadoresPorUbicacion, descargarRankingClanesGuerraPorUbicacion, descargarRankingJugadoresCaminoLeyendasPorUbicacion, descargarRankingGlobalClanes, descargarRankingGlobalJugadores, descargarRankingGlobalGuerraClanes, descargarRankingGlobalJugadoresCaminoLeyendasPorTemporada, descargarRankingsSemanal, descargarBattlelogJugador, descargarUpcomingChestsJugador, _descargarBattlelogYCofresParaTodos, _guardarProgresoBattlelogChests, _cargarProgresoBattlelogChests, _borrarProgresoBattlelogChests, _extraerClanDeBattlelog, _buildBattlelogFilename, _registrarBattlelogEnCsv_, _actualizarBackupArenaConBattlelog, _actualizarBackupModoConBattlelog, _actualizarBackupCofresConChests, _leerCofresCSV, _guardarCofresCSV, _leerArenaCSV, _guardarArenaCSV, _resolverArenaDesdeCatalogo, _agregarCartasApiAMapa, _guardarJsonClanesConsultaTemporalEnDrive, _guardarJsonBusquedaNombreEnDrive, _rankingsFechaLima_, _rankingsSeasonIdActual_, _rankingsTagsFamilia_, _rankingsItemsDeArchivo_, _rankingsLeerIndice_, _rankingsGuardarIndice_, _rankingsDeClan_, _rankingsDeJugador_, _tagsClanesApi_, _soloClanesApi_, _fetchClanesBasico, _fetchClanesBasicoSinApi, _leerProgresoClanesConEdad_, _guardarProgresoClanes, _cargarProgresoClanes, _cargarProgresoClanesSinEdad, _invalidarProgresoClanes, _borrarProgresoClanes, _registrarPrimeraConsultaDesdeCaptura_, _guardarJsonClanesDesdeCaptura_, _jsonClanesDeEsteCheckpointYaEscritos_, _fetchAllClanData, _fetchPlayersData, _guardarProgresoPlayers, _cargarProgresoPlayers, _borrarProgresoPlayers, _getTagsAdmin, _getTagsConVGuerraVacia, _getTagsIngresosRecientes, _getBadgeLevel, _getBadgeProgress, _getVGuerra, _getNivel2, _apiGet, pingProxyRender, _getClanCache, _getPlayerCache, _setPlayerCache, _getCtx, _normalizarNombreClan_, _claveCarpetaClan_, _getCarpetaParaClan, _getSubcarpetaEndpoint_, _nombreCarpetaClanConTag_, _planRenombrarCarpetasClan_, renombrarCarpetasClanPorTagInforme, renombrarCarpetasClanPorTagAplicar, _renombrarCarpetasClanPorTag_, _pad2_, _getCarpetaSemana_, _buscarArchivoDelPeriodo_, _archivosConSubcarpetas_, _buildPrefijoTSP_, _normalizarPeriodIndex_, _buildCacheFilename, _buildCacheSuffix, _horaLimaNow, _horaLimaMensaje12h, _tsLimaLog_, _fmtDiaGuerraLog_, _temporadaDeClan_, _temporadaProbableClan_, _temporadasActivasGuerra_, _lineaPeriodoClan_, _ctxPorClanDesdeDatos_, _leerPrimeraConsultaRR_, _claveConsultaRR_, _registrarPrimeraConsultaRR_, _fechaPrimeraConsultaRR_, _guardarCacheEnDrive, _cargarCacheDesideDrive, _apiGetCached, _buildPlayerFilename, _getPlayersDriveIndexPorTag, _playersIndiceIdsGuardar_, _cargarPlayerDesideDriveRapido_, _guardarPlayerEnDrive, _cargarPlayerDesideDrive, _cargarPlayerDesideDriveScan_, _apiGetPlayerCached, _fetchAllClanDataCached, _fetchPlayersCached, _registrarLogScriptTerna
-- **10_ClanSheet.gs** (3 funciones): updateClanSheet, _aplicarFormatoCondicionalClan, _getMinGClanMaps
+- **10_ClanSheet.gs** (13 funciones): updateClanSheet, sincronizarNombreClanInforme, sincronizarNombreClanAplicar, _aplicarFormatoCondicionalClan, _getMinGClanMaps, _nombresVigentesClanes_, _decidirClanesConNombreNuevo_, _planNombreClanEnFilas_, _sincronizarHojaNombreClan_, _sincronizarCsvGuerraNombreClan_, _sincronizarCarpetasNombreClan_, _sincronizarNombreClanManual_, _sincronizarNombreClan_
 - **11_DirectorioSheet.gs** (36 funciones): updateDirectorioSheet, updateVistasDerivadas, sincronizarAdministradores, actualizarDropdownCatDisp, limpiarLinksAccidentalesDeNombres, _getCsvDirMap, _leerDirectorioExistente, _leerHojaComoMapaPorTag, _leerFilaHojaPorTag, _reconstruirFilaDCDesdeFisico, _leerDirectorioFisicoComoDC, _detectarMulticuentas, _construirFilasDirectorio, _calcularInicioRachaGuerraPorTag, _inicioRachaDesdeFilasGuerra_, _construirFila, _resolverFechaIngF2, _parseStringDate, _calcJugador, _calcAlerta, _escribirDirectorio, _aplicarDropdownsDirectorio, _limpiarValidacionesFilasVaciasDirectorio, _aplicarFormatoCondicionalDirectorio, _limpiarLinksAccidentalesEnHoja, _generarClaveAdmin, _aplicarDropdownsAdministradores, _aplicarCatDispMultiSelect, _aplicarFuncionesMultiSelect, _buscarFilaPorTag, sincronizarEdicionAdminCatDisp, _obtenerNomMultisDistintos, _guardarRegistroNuevoMiembro, _guardarRegistroNuevoMiembroImpl, moverComentarioFila, _aplicarBordesComentarios
 - **12_Players_Links.gs** (7 funciones): _proyectarPlayers, _escribirPlayers, _aplicarFormatoCondicionalPlayers, _proyectarLinksIdentidad, _escribirLinks, _leerLinksRichTextPorTag, _leerLinksComoMapaPorTagConUrls
 - **13_Inactivos_Vetados.gs** (25 funciones): _updateInactivos, _camposExtraInactivos, _proyectarInactivos, _aplicarDropdownsInactivos, _construirFilaInactiva, _esSiNoOVacio, _retirarDeInactivosPorReactivacion, _asegurarColumnaClanTagVetados_, _updateVetados, _aplicarDropdownsVetados, _aplicarDropdownAutorVetados, _obtenerNomMultisAdmins, _registrarVetadoConfirmado, _cargarVetadosConfirmados_, _guardarVetadosConfirmados_, _tagEstaVetadoConfirmado, _olvidarVetadoConfirmado, sincronizarRazonHaciaVetados, sincronizarRazonHaciaDirectorio, _upsertVetadoDesdeWeb, _webAgregarComentarioVeto, _updateMulticuentas, _leerInactivosParaReactivacion, _reconstruirExistingDesdeInactivos, _obtenerCuentasDeNomMulti
@@ -204,7 +204,7 @@ Ninguno.
 | `_aplicarFmtCondicionalGuerraLogs` | función | 17_GuerraSheet.gs | 3925 |  |
 | `_aplicarFormatoCondicionalAscensos` | función | 24_Historial_Ascensos.gs | 993 | Contexto_Base_Web.md §24B041 |
 | `_aplicarFormatoCondicionalAsistenciaPorId_` | función | 26_Torneos_Core.gs | 5224 | Contexto_Base_Web.md §26B132 |
-| `_aplicarFormatoCondicionalClan` | función | 10_ClanSheet.gs | 152 |  |
+| `_aplicarFormatoCondicionalClan` | función | 10_ClanSheet.gs | 178 |  |
 | `_aplicarFormatoCondicionalDirectorio` | función | 11_DirectorioSheet.gs | 1504 | Contexto_Base_Web.md §11B100 |
 | `_aplicarFormatoCondicionalIndice` | función | 03_Indice_Sheet.gs | 258 | Contexto_Base_Web.md §03B014 |
 | `_aplicarFormatoCondicionalMensajes` | función | 30_Mensajes.gs | 990 |  |
@@ -706,6 +706,7 @@ Ninguno.
 | `_dashTiempoMarca_` | función | 38_Web_Endpoints.gs | 2395 |  |
 | `_debeReemplazarRegistroHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 1520 | Contexto_Base_Web.md §20B025 |
 | `_decidirCierreFameBarcosDia_` | función | 17_GuerraSheet.gs | 3038 | Contexto_Base_Web.md §17B157 |
+| `_decidirClanesConNombreNuevo_` | función | 10_ClanSheet.gs | 264 | Contexto_Base_Web.md §PF503 |
 | `_decidirCorreccionConClanTag_` | función | 18_CorreccionGuerra.gs | 4589 | Contexto_Base_Web.md §18B016 |
 | `_decidirNuevosDeFilas_` | función | 14_Nuevos_RoyaleAPI.gs | 2001 |  |
 | `_decidirPropuestaCRRealizada_` | función | 24_Historial_Ascensos.gs | 1590 | Contexto_Base_Web.md §PF286 |
@@ -975,7 +976,7 @@ Ninguno.
 | `_getMapaCruceMetaGuerraLogs_` | función | 22_ControlCalendario.gs | 1002 | Contexto_Base_Web.md §22B052 |
 | `_getMapaDocsReconstruibles` | función | 01_Config_Global.gs | 813 | Contexto_Base_Web.md §01B121 |
 | `_getMesEfectivo` | función | 01_Config_Global.gs | 986 | Contexto_Base_Web.md §01B133 |
-| `_getMinGClanMaps` | función | 10_ClanSheet.gs | 177 | Contexto_Base_Web.md §10B009 |
+| `_getMinGClanMaps` | función | 10_ClanSheet.gs | 203 | Contexto_Base_Web.md §10B009 |
 | `_getMinGClanMapsDash_` | función | 38_Web_Endpoints.gs | 2484 |  |
 | `_getMinTClanMaps` | función | 26_Torneos_Core.gs | 4218 | Contexto_Base_Web.md §26B277 |
 | `_getMinTPorTagClan` | función | 27_Torneos_Sorteos_Requisitos.gs | 248 | Contexto_Base_Web.md §27B012 |
@@ -1318,6 +1319,7 @@ Ninguno.
 | `_nombreInformeExcluidoReenum_` | función | 47_Migraciones.gs | 1450 |  |
 | `_NOMBRES_CLAN_CHECKPOINT` | global | 38_Web_Endpoints.gs | 64 |  |
 | `_nombresOrganizadorTL_` | función | 26_Torneos_Core.gs | 1576 | Contexto_Base_Web.md §PF099 |
+| `_nombresVigentesClanes_` | función | 10_ClanSheet.gs | 244 | Contexto_Base_Web.md §PF503 |
 | `_normalizarClanTagContactos` | función | 38_Web_Endpoints.gs | 1908 | Contexto_Base_Web.md §38B100 |
 | `_normalizarClanTagCorreccion` | función | 18_CorreccionGuerra.gs | 1984 |  |
 | `_normalizarClaveInsignia` | función | 32_Insignias.gs | 295 | Contexto_Base_Web.md §32B009 |
@@ -1419,6 +1421,7 @@ Ninguno.
 | `_planificarMarcadoRealizadoCR_` | función | 24_Historial_Ascensos.gs | 1634 | Contexto_Base_Web.md §PF286 |
 | `_planificarSorteoDesdeBot` | función | 26_Torneos_Core.gs | 4803 | Contexto_Base_Web.md §26B312 |
 | `_planificarTorneoDesdeBot` | función | 26_Torneos_Core.gs | 4431 | Contexto_Base_Web.md §26B293 |
+| `_planNombreClanEnFilas_` | función | 10_ClanSheet.gs | 282 | Contexto_Base_Web.md §PF503 |
 | `_planRenombrarCarpetasClan_` | función | 09_API_ClashRoyale.gs | 3121 | Contexto_Base_Web.md §PF502 |
 | `_PLAYERS_DRIVE_INDEX_POR_TAG` | global | 09_API_ClashRoyale.gs | 155 | Contexto_Base_Web.md §09B018 |
 | `_playersCompletoEnEstaEjecucion` | global | 09_API_ClashRoyale.gs | 49 |  |
@@ -1716,6 +1719,11 @@ Ninguno.
 | `_setupTLista` | función | 02_Setup_Hojas.gs | 636 | Contexto_Base_Web.md §02B066 |
 | `_setupTResoluciones` | función | 02_Setup_Hojas.gs | 977 | Contexto_Base_Web.md §02B086 |
 | `_setupVetados` | función | 02_Setup_Hojas.gs | 545 |  |
+| `_sincronizarCarpetasNombreClan_` | función | 10_ClanSheet.gs | 350 | Contexto_Base_Web.md §PF503 |
+| `_sincronizarCsvGuerraNombreClan_` | función | 10_ClanSheet.gs | 326 | Contexto_Base_Web.md §PF503 |
+| `_sincronizarHojaNombreClan_` | función | 10_ClanSheet.gs | 302 | Contexto_Base_Web.md §PF503 |
+| `_sincronizarNombreClan_` | función | 10_ClanSheet.gs | 386 | Contexto_Base_Web.md §PF503 |
+| `_sincronizarNombreClanManual_` | función | 10_ClanSheet.gs | 370 |  |
 | `_sincronizarParticipantesSorteoSA` | función | 26_Torneos_Core.gs | 2076 |  |
 | `_snapshotColiseoDesdeJson_` | función | 17_GuerraSheet.gs | 3711 | Contexto_Base_Web.md §17B144 |
 | `_soloClanesApi_` | función | 09_API_ClashRoyale.gs | 2059 |  |
@@ -2222,7 +2230,7 @@ Ninguno.
 | `CATEGORIAS_OCULTAS_MENSAJES` | global | 30_Mensajes.gs | 35 | Contexto_Base_Web.md §30B002 |
 | `CATEGORIAS_PUBLICAS` | global | 44_BotWhatsApp.gs | 34 |  |
 | `CATEGORIAS_QUE_NECESITAN_CUENTA` | global | 44_BotWhatsApp.gs | 37 | Contexto_Base_Web.md §44B004 |
-| `CC` | global | 10_ClanSheet.gs | 13 | Contexto_Base_Web.md §10B002 |
+| `CC` | global | 10_ClanSheet.gs | 15 | Contexto_Base_Web.md §10B002 |
 | `CC2` | global | 23_Control2_GuerraSemanal.gs | 14 | Contexto_Base_Web.md §23B002 |
 | `CC2_TOTAL_FIJAS` | global | 23_Control2_GuerraSemanal.gs | 20 |  |
 | `CDJ_LECTURA_PROGRESO_FILE` | global | 18_CorreccionGuerra.gs | 264 |  |
@@ -2640,6 +2648,8 @@ Ninguno.
 | `NC_ENCABEZADO_TABLA_CAMBIO_RANGO` | global | 29_Docs_NoCalificados.gs | 42 |  |
 | `NC_TOTAL_FIJAS` | global | 14_Nuevos_RoyaleAPI.gs | 30 |  |
 | `NC_VEREDICTO` | global | 29_Docs_NoCalificados.gs | 46 |  |
+| `NOMBRE_CLAN_SYNC_PROP` | global | 10_ClanSheet.gs | 30 |  |
+| `NOMBRE_CLAN_SYNC_TOPE_FILAS` | global | 10_ClanSheet.gs | 28 | Contexto_Base_Web.md §PF503 |
 | `NOMBRE_CSV_DEBUG_NUEVOS` | global | 14_Nuevos_RoyaleAPI.gs | 72 | Contexto_Base_Web.md §14B006 |
 | `NOMBRE_DOC_CALIFICADOS_CAMBIO_RANGO` | global | 29_Docs_NoCalificados.gs | 28 |  |
 | `NOMBRE_DOC_CAMBIO_RANGO` | global | 29_Docs_NoCalificados.gs | 25 |  |
@@ -2883,6 +2893,8 @@ Ninguno.
 | `sincronizarAdministradores` | función | 11_DirectorioSheet.gs | 215 | Contexto_Base_Web.md §11B021 |
 | `SincronizarContactosNube` | función | 16_ContactsSync.gs | 20 |  |
 | `sincronizarEdicionAdminCatDisp` | función | 11_DirectorioSheet.gs | 1687 | Contexto_Base_Web.md §11B101 |
+| `sincronizarNombreClanAplicar` | función | 10_ClanSheet.gs | 167 |  |
+| `sincronizarNombreClanInforme` | función | 10_ClanSheet.gs | 165 | Contexto_Base_Web.md §PF503 |
 | `sincronizarRazonHaciaDirectorio` | función | 13_Inactivos_Vetados.gs | 788 |  |
 | `sincronizarRazonHaciaVetados` | función | 13_Inactivos_Vetados.gs | 751 |  |
 | `sincronizarRequisitosSorteo` | función | 27_Torneos_Sorteos_Requisitos.gs | 114 | Contexto_Base_Web.md §27B007 |
@@ -2975,7 +2987,7 @@ Ninguno.
 | `updateCaminoLeyendasSheet` | función | 33_CaminoLeyendas.gs | 37 | Contexto_Base_Web.md §33B004 |
 | `updateCards2Sheet` | función | 31_Cards_Mazos.gs | 111 |  |
 | `updateCardsSheet` | función | 31_Cards_Mazos.gs | 33 | Contexto_Base_Web.md §31B002 |
-| `updateClanSheet` | función | 10_ClanSheet.gs | 33 |  |
+| `updateClanSheet` | función | 10_ClanSheet.gs | 41 |  |
 | `updateControlSheet` | función | 22_ControlCalendario.gs | 152 |  |
 | `updateDirectorioSheet` | función | 11_DirectorioSheet.gs | 88 |  |
 | `updateExtraSheet` | función | 22_ControlCalendario.gs | 62 |  |
