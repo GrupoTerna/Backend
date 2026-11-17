@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 16/11/2026 05:02:56 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 17/11/2026 06:52:46 */
 
 
 
@@ -10422,22 +10422,33 @@ var CARPETAS_JSON_POR_ENDPOINT_ = {
   'clans':            'Clans'
 };
 
-// Claves normalizadas (ver _normalizarNombreClan_) -> ID de la subcarpeta de [→ Contexto_Base_Web.md §09B015]
+// §PF502 (17-nov-2026, tanda 9 de Clanes por Tag): las claves son el TAG del clan en mayusculas (antes, el nombre normalizado). El nombre queda solo en el comentario. [→ Contexto_Base_Web.md §09B015]
+// '#RYYCRGVG' es CFG.VETADO_TAG (NARANJA x); se escribe literal porque este archivo se carga antes que ningun codigo que lea CFG en una clave (la prueba de Node comprueba que coincide).
 var _SUBCARPETAS_CLAN_POR_ENDPOINT_CLANS_ = {
-  'grupo\u4e42terna\u2122':   '1MiiF08kqyTcVt7CyBroyDRjv8eARpgfo', // Nombre en Drive: "Grupo乂Terna™"
-  'grupoxterna\u21222':       '1D_GUUFTw9P6oSQXsaonxwXlmmp7sZA9M', // Nombre en Drive: "GrupoXTerna™2"
-  'grupoxterna\u21223':       '15FCgOyzp2Vd9JtJszWd-EsS_2kKVnlnp', // Nombre en Drive: "GrupoXTerna™3"
-  'mini\u4e42ternas\u2122':   '16MPII4hSHAATIPhrGDhuV6uT_Rd2YzHQ', // Nombre en Drive: "Mini乂Ternas™"
-  'naranja x':                '1Lhs379eEIpdXJ-2DyWkcYBbkXg4WngaN'  // Nombre en Drive: "NARANJA x"
+  '#GCRG8L00': '1MiiF08kqyTcVt7CyBroyDRjv8eARpgfo', // Grupo乂Terna™
+  '#GYCU9YRG': '1D_GUUFTw9P6oSQXsaonxwXlmmp7sZA9M', // GrupoXTerna™2
+  '#GQQPPJGR': '15FCgOyzp2Vd9JtJszWd-EsS_2kKVnlnp', // GrupoXTerna™3
+  '#GG99LCJY': '16MPII4hSHAATIPhrGDhuV6uT_Rd2YzHQ', // Mini乂Ternas™
+  '#RYYCRGVG': '1Lhs379eEIpdXJ-2DyWkcYBbkXg4WngaN'  // NARANJA x (clan vetado)
 };
 
-// Claves normalizadas (ver _normalizarNombreClan_) -> ID de la subcarpeta de [→ Contexto_Base_Web.md §09B016]
+// Igual que el mapa anterior, para la carpeta CurrentRiverRace de cada clan. Clave: Tag en mayusculas. [→ Contexto_Base_Web.md §09B016]
 var _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_ = {
-  'grupo\u4e42terna\u2122':   '18TF9ufSGw8YlEA9Hpu7fT8d0UmiPnkYB', // Nombre en Drive: "Grupo乂Terna™"
-  'grupoxterna\u21222':       '1X6dufNme2whAkjHarBCm1jdC6xI0_aQ6', // Nombre en Drive: "GrupoXTerna™2"
-  'grupoxterna\u21223':       '1BN8ercCNZeUZYib8jGoVCzkAx2OJ7LWB', // Nombre en Drive: "GrupoXTerna™3"
-  'mini\u4e42ternas\u2122':   '1gLW3F9cqNc58VYNvUKmAOT9TtUA6PMxQ', // Nombre en Drive: "Mini乂Ternas™"
-  'naranja x':                '1YHhptq93vyECa3KpcEnOEXjEcuz6XBvE'  // Nombre en Drive: "NARANJA x"
+  '#GCRG8L00': '18TF9ufSGw8YlEA9Hpu7fT8d0UmiPnkYB', // Grupo乂Terna™
+  '#GYCU9YRG': '1X6dufNme2whAkjHarBCm1jdC6xI0_aQ6', // GrupoXTerna™2
+  '#GQQPPJGR': '1BN8ercCNZeUZYib8jGoVCzkAx2OJ7LWB', // GrupoXTerna™3
+  '#GG99LCJY': '1gLW3F9cqNc58VYNvUKmAOT9TtUA6PMxQ', // Mini乂Ternas™
+  '#RYYCRGVG': '1YHhptq93vyECa3KpcEnOEXjEcuz6XBvE'  // NARANJA x (clan vetado)
+};
+
+// §PF502: RESPALDO por nombre para quien todavia no tiene el Tag del clan (nombre normalizado con _normalizarNombreClan_ -> Tag). Solo lo usa _claveCarpetaClan_(); quien tenga el Tag debe pasar el Tag.
+// Si Supercell cambia el nombre de un clan, la tanda 10 (_sincronizarNombreClan_) debe actualizar tambien esta tabla.
+var _TAG_CARPETA_POR_NOMBRE_RESPALDO_ = { // clan-por-nombre-ok: respaldo declarado (regla 2 del plan Clanes por Tag)
+  'grupo\u4e42terna\u2122': '#GCRG8L00',
+  'grupoxterna\u21222':     '#GYCU9YRG',
+  'grupoxterna\u21223':     '#GQQPPJGR',
+  'mini\u4e42ternas\u2122': '#GG99LCJY',
+  'naranja x':              '#RYYCRGVG'
 };
 
 // endpointKey (CACHE_ENDPOINTS[].key) -> { carpeta raíz de ese endpoint [→ Contexto_Base_Web.md §09B017]
@@ -13364,10 +13375,25 @@ function _normalizarNombreClan_(nombre) {
 }
 
 /**
- * _getCarpetaParaClan(clanName) [→ Contexto_Base_Web.md §09B144]
+ * _claveCarpetaClan_(tagONombre) [→ Contexto_Base_Web.md §PF502]
+ * Clave de _SUBCARPETAS_CLAN_POR_ENDPOINT_*: el Tag del clan en mayusculas. Recibe un Tag (con #) o, como respaldo, un nombre de clan: el nombre se traduce primero con
+ * _TAG_CARPETA_POR_NOMBRE_RESPALDO_ (sin leer hojas) y despues con _getClanTagByName(). '' si no se conoce el clan.
  */
-function _getCarpetaParaClan(clanName) {
-  return { clanName: clanName, clave: _normalizarNombreClan_(clanName) };
+function _claveCarpetaClan_(tagONombre) {
+  var s = String(tagONombre === undefined || tagONombre === null ? '' : tagONombre).trim();
+  if (!s) return '';
+  if (s.charAt(0) === '#') return s.toUpperCase();
+  var tag = _TAG_CARPETA_POR_NOMBRE_RESPALDO_[_normalizarNombreClan_(s)] || ''; // clan-por-nombre-ok: respaldo por nombre (regla 2 del plan Clanes por Tag)
+  if (!tag) { try { tag = String(_getClanTagByName(s) || '').trim().toUpperCase(); } catch (e) { tag = ''; } } // clan-por-nombre-ok: respaldo por nombre
+  return tag;
+}
+
+/**
+ * _getCarpetaParaClan(tagONombre) [→ Contexto_Base_Web.md §09B144]
+ * §PF502: acepta el Tag del clan o, como respaldo, su nombre. clave = Tag en mayusculas ('' si no se conoce); clanName = lo recibido, solo para los logs.
+ */
+function _getCarpetaParaClan(tagONombre) {
+  return { clanName: tagONombre, clave: _claveCarpetaClan_(tagONombre) };
 }
 
 /**
@@ -13377,21 +13403,90 @@ function _getSubcarpetaEndpoint_(carpetaClanInfo, endpointKey) {
   var mapaEndpoint = _ENDPOINT_ROOT_Y_SUBCARPETAS_CLAN_[endpointKey];
   if (!mapaEndpoint) return DriveApp.getFolderById(DRIVE_FOLDER_ID_JSON);
 
-  var clave     = (carpetaClanInfo && carpetaClanInfo.clave) || _normalizarNombreClan_(carpetaClanInfo);
-  var nombreLog = (carpetaClanInfo && carpetaClanInfo.clanName) || carpetaClanInfo;
-  var folderId  = mapaEndpoint.subcarpetasPorClan[clave];
+  var clave     = (carpetaClanInfo && carpetaClanInfo.clave !== undefined) ? carpetaClanInfo.clave : _claveCarpetaClan_(carpetaClanInfo);
+  var nombreLog = (carpetaClanInfo && carpetaClanInfo.clanName !== undefined) ? carpetaClanInfo.clanName : carpetaClanInfo;
+  var folderId  = clave ? mapaEndpoint.subcarpetasPorClan[clave] : '';
   if (folderId) {
     try { return DriveApp.getFolderById(folderId); } catch(e) { /* fallback abajo */ }
   }
 
-  // Log con los codepoints exactos del nombre recibido — ayuda a diagnosticar
-  // rápido si vuelve a haber un mismatch de codificación Unicode.
-  var codepoints = [];
-  for (var i = 0; i < clave.length; i++) codepoints.push(clave.codePointAt(i).toString(16));
-  Logger.log('[Cache] Clan "' + nombreLog + '" no mapeado a subcarpeta del endpoint "' + endpointKey +
-             '"; usando raiz de ese endpoint. Clave normalizada: "' + clave + '" | Codepoints: ' + codepoints.join(' '));
+  Logger.log('[Cache] Clan "' + nombreLog + '" (Tag: "' + clave + '") no mapeado a subcarpeta del endpoint "' + endpointKey + '"; usando raiz de ese endpoint.');
   try { return DriveApp.getFolderById(mapaEndpoint.folderIdRaiz); }
   catch(e2) { return DriveApp.getFolderById(DRIVE_FOLDER_ID_JSON); }
+}
+
+/**
+ * _nombreCarpetaClanConTag_(nombreActual, tag) [→ Contexto_Base_Web.md §PF502]
+ * Funcion pura. Nombre de carpeta de clan con la forma «Nombre - #TAG». Si el nombre actual ya termina en « - #TAG» se lo quita antes de agregar el Tag, asi que repetirlo no duplica nada.
+ */
+function _nombreCarpetaClanConTag_(nombreActual, tag) {
+  var base = String(nombreActual === undefined || nombreActual === null ? '' : nombreActual).replace(/\s+-\s+#[0-9A-Za-z]+\s*$/, '').trim();
+  var t = String(tag === undefined || tag === null ? '' : tag).trim().toUpperCase();
+  return base + ' - ' + t;
+}
+
+/**
+ * _planRenombrarCarpetasClan_(entradas) [→ Contexto_Base_Web.md §PF502]
+ * Funcion pura (no toca Drive). entradas: [{ endpoint, tag, id, nombreActual }] (nombreActual null = la carpeta no se pudo abrir).
+ * Devuelve [{ endpoint, tag, id, nombreActual, nombreNuevo, accion }] con accion 'renombrar', 'ya tiene el nombre' o 'no se pudo abrir'.
+ */
+function _planRenombrarCarpetasClan_(entradas) {
+  return (entradas || []).map(function (e) {
+    if (e.nombreActual === null || e.nombreActual === undefined) return { endpoint: e.endpoint, tag: e.tag, id: e.id, nombreActual: '', nombreNuevo: '', accion: 'no se pudo abrir' };
+    var nuevo = _nombreCarpetaClanConTag_(e.nombreActual, e.tag);
+    return { endpoint: e.endpoint, tag: e.tag, id: e.id, nombreActual: e.nombreActual, nombreNuevo: nuevo, accion: (nuevo === e.nombreActual) ? 'ya tiene el nombre' : 'renombrar' };
+  });
+}
+
+/**
+ * renombrarCarpetasClanPorTagInforme() / renombrarCarpetasClanPorTagAplicar() [→ Contexto_Base_Web.md §PF502]
+ * Tanda 9 de Clanes por Tag (17-nov-2026). Recorren los dos mapas _SUBCARPETAS_CLAN_POR_ENDPOINT_*, abren cada carpeta POR ID y la renombran a «Nombre - #TAG» (setName; el ID no cambia).
+ * Informe: no cambia nada y deja en Drive «Renombrar_Carpetas_Clan <fecha> (informe).csv». Aplicar: renombra y deja «... (aplicado).csv» con el nombre antiguo y el nuevo.
+ * El codigo busca las carpetas por ID, asi que el orden entre subir el codigo y renombrar no rompe nada; conviene renombrar despues de subir y despues de revisar el informe.
+ */
+function renombrarCarpetasClanPorTagInforme() { _renombrarCarpetasClanPorTag_(false); }
+
+function renombrarCarpetasClanPorTagAplicar() { _renombrarCarpetasClanPorTag_(true); }
+
+function _renombrarCarpetasClanPorTag_(aplicar) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[RenombrarCarpetasClan] Otra ejecucion esta usando el bloqueo del script; se cancela.'); return; }
+  try {
+    var mapas = [
+      { endpoint: 'clans',            mapa: _SUBCARPETAS_CLAN_POR_ENDPOINT_CLANS_ },
+      { endpoint: 'currentriverrace', mapa: _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_ }
+    ];
+    var entradas = [], carpetas = {};
+    mapas.forEach(function (m) {
+      Object.keys(m.mapa).forEach(function (tag) {
+        var id = m.mapa[tag], actual = null;
+        try { var f = DriveApp.getFolderById(id); carpetas[m.endpoint + '|' + tag] = f; actual = f.getName(); } catch (e) { actual = null; }
+        entradas.push({ endpoint: m.endpoint, tag: tag, id: id, nombreActual: actual });
+      });
+    });
+    var plan = _planRenombrarCarpetasClan_(entradas);
+    var marca = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH.mm');
+    var filas = [['Modo', 'Endpoint', 'Tag', 'ID de carpeta', 'Nombre antes', 'Nombre despues', 'Accion', 'Resultado']];
+    var hechas = 0, fallos = 0;
+    plan.forEach(function (x) {
+      var resultado = '';
+      if (x.accion === 'renombrar') {
+        if (aplicar) {
+          try { carpetas[x.endpoint + '|' + x.tag].setName(x.nombreNuevo); resultado = 'renombrada'; hechas++; }
+          catch (e) { resultado = 'ERROR: ' + e.message; fallos++; }
+        } else resultado = 'solo informar: no se cambio';
+      }
+      filas.push([aplicar ? 'aplicar' : 'informar', x.endpoint, x.tag, x.id, x.nombreActual, x.nombreNuevo, x.accion, resultado]);
+    });
+    var nombreInforme = 'Renombrar_Carpetas_Clan ' + marca + (aplicar ? ' (aplicado).csv' : ' (informe).csv');
+    _saveCSVToDrive(nombreInforme, _encodeCSV(filas));
+    Logger.log('[RenombrarCarpetasClan] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ': ' + plan.length + ' carpetas; por renombrar: ' +
+      plan.filter(function (x) { return x.accion === 'renombrar'; }).length + '; ya con el nombre: ' + plan.filter(function (x) { return x.accion === 'ya tiene el nombre'; }).length +
+      '; no se pudieron abrir: ' + plan.filter(function (x) { return x.accion === 'no se pudo abrir'; }).length + (aplicar ? '; renombradas: ' + hechas + '; con error: ' + fallos : '. (No se cambio nada.)') +
+      ' Detalle en Drive: ' + nombreInforme);
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /** Rellena con un cero a la izquierda si el número tiene un solo dígito (igual que en el Generador). */
@@ -13750,7 +13845,7 @@ function _guardarCacheEnDrive(clanTag, endpointKey, ctxOrPeriodIndex, datos) {
   var tagPrefijo = _buildPrefijoTSP_(ctx);
   try {
     // Guardar dentro de la subcarpeta del endpoint, dentro de la carpeta del clan.
-    var carpetaClan = _getCarpetaParaClan(clanName);
+    var carpetaClan = _getCarpetaParaClan(clanTag ? '#' + cleanTag(clanTag) : ''); // §PF502: por Tag con # (antes por nombre)
     var carpetaClanDrive = _getSubcarpetaEndpoint_(carpetaClan, endpointKey);
     // PF074 (14-oct-2026): se guarda en la carpeta de la temporada y la semana (se crea si no existe). [→ Contexto_Base_Web.md §PF074]
     var folder = _getCarpetaSemana_(carpetaClanDrive, ctx);
@@ -13817,7 +13912,7 @@ function _cargarCacheDesideDrive(clanTag, endpointKey, ctxOrPeriodIndex) {
     if (CACHE_CLAN_DATA && CACHE_CLAN_DATA[clanTag] && CACHE_CLAN_DATA[clanTag].info) {
       clanName = CACHE_CLAN_DATA[clanTag].info.name || '';
     }
-    var carpetaClan = _getCarpetaParaClan(clanName);
+    var carpetaClan = _getCarpetaParaClan(clanTag ? '#' + cleanTag(clanTag) : ''); // §PF502: por Tag con # (antes por nombre)
     var folder = _getSubcarpetaEndpoint_(carpetaClan, endpointKey);
 
     var tagPrefijo = _buildPrefijoTSP_(ctx);
@@ -27869,7 +27964,7 @@ function _crearLectorDiaJSONGuerra_(t0) {
     // El periodIndex REAL de una captura es el que trae su contenido (obj.periodIndex), no el del nombre: el nombre [→ Contexto_Base_Web.md §17B167]
     leer: function (clan, temporada, periodIdx, tag) {
       if (Date.now() - t0 > REPARAR_JSON_LIMITE_MS) { agotado = true; return { estado: 'tiempo' }; }
-      var claveClan = _normalizarNombreClan_(clan);
+      var claveClan = _claveCarpetaClan_(clan); // §PF502: Tag del clan (el nombre que llega se traduce como respaldo)
       var idx = indiceDeClan(claveClan);
       if (!idx) return { estado: 'sin_json' };
       var pedido = Number(periodIdx), candidatos = [pedido, pedido + 1, pedido - 1];
@@ -33424,7 +33519,10 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
   var clanTagReconstruccion = _normalizarClanTagCorreccion(opciones.clanTag);
   var nombreDesdeTag = '';
   if (clanTagReconstruccion) { nombreDesdeTag = String(_resolverNombreClan(clanTagReconstruccion) || '').trim(); if (nombreDesdeTag.charAt(0) === '#') nombreDesdeTag = ''; }
-  var clanReconstruccion = String(opciones.clanNombre || nombreDesdeTag || datosJugador.clan || '').trim();
+  // 17-nov-2026 (§PF355 (2)): un clanNombre que empieza por # es un tag que _resolverNombreClan() devolvio por no conocer el clan (cache vacia y fuera del respaldo); se trata como vacio, igual que nombreDesdeTag.
+  var clanNombreOpciones = String(opciones.clanNombre || '').trim();
+  if (clanNombreOpciones.charAt(0) === '#') clanNombreOpciones = '';
+  var clanReconstruccion = String(clanNombreOpciones || nombreDesdeTag || datosJugador.clan || '').trim();
   if (!clanTagReconstruccion && clanReconstruccion) clanTagReconstruccion = String(_getClanTagByName(clanReconstruccion) || '').trim().toUpperCase();
   if (!clanReconstruccion) {
     opciones.sinClanReconstruccion = true;
@@ -79085,7 +79183,7 @@ var VCRR_ARCHIVO_RESTRICCIONES = 'Cruce_CRR_Restricciones.csv';   // el prefijo 
 var VCRR_ARCHIVO_RAPI = 'Cruce_CRR_RoyaleAPI.csv';                // caché de los totales cerrados de RoyaleAPI (log y perfil) leídos de sus JSON individuales (§PF320)
 var VCRR_ARCHIVO_VERIFICADOS = 'Cruce_CRR_JSON_Verificados.csv';   // registro de los JSON ya verificados (mismo prefijo)
 var VCRR_VERSION_REGLAS = 9;                           // súbela cuando cambie el cálculo de _vcrrRestriccionesSerie_, el cruce con RoyaleAPI (§PF320, 5), la lista VCRR_SERIES_CONFIRMADAS (§PF331, 6; §PF332, 7; §PF339, 9) o qué capturas se descartan (§PF333, 8): invalida el registro y se releen todos los JSON
-var VCRR_CLAN_VETADO_KEY = 'naranja x';                 // §PF335: clave (en minúsculas) del clan vetado (CFG.VETADO_TAG) en _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_; sus JSON viejos no se listan ni se leen mientras CFG.VETADO_API_ACTIVO sea false
+// §PF502 (tanda 9 de Clanes por Tag): la clave del clan vetado en _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_ ahora es su Tag, CFG.VETADO_TAG (antes 'naranja x'). Sus JSON viejos no se listan ni se leen mientras CFG.VETADO_API_ACTIVO sea false (§PF335).
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
@@ -79521,7 +79619,18 @@ function _vcrrLeerBackupGuerra_() {
   return { encabezado: parsed[0], filas: filas, texto: texto };
 }
 
-/** Normaliza el nombre de un clan para compararlo (minúsculas y sin espacios en los extremos); es la misma forma de las claves de _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_. */
+/**
+ * §PF502 (tanda 9 de Clanes por Tag): las claves de _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_ ahora son Tags, pero las tablas historicas de este archivo (VCRR_FILAS_DESCARTAR y las demas
+ * listas con `clanKey`) y los cruces con Backup_Guerra.csv siguen con el nombre normalizado en minusculas. Este puente devuelve ese nombre para la carpeta con clave Tag `tagClave`; es el mismo
+ * valor que tenia la clave antes del cambio, asi que nada de este archivo cambia de comportamiento. Migrar estas tablas a Tag queda aparte (§PF502, pendiente).
+ */
+function _vcrrClaveNombreDeCarpeta_(tagClave) {
+  var nombres = Object.keys(_TAG_CARPETA_POR_NOMBRE_RESPALDO_); // clan-por-nombre-ok: puente a las tablas historicas con clave por nombre
+  for (var i = 0; i < nombres.length; i++) { if (_TAG_CARPETA_POR_NOMBRE_RESPALDO_[nombres[i]] === tagClave) return nombres[i]; }
+  return String(tagClave === undefined || tagClave === null ? '' : tagClave).toLowerCase();
+}
+
+/** Normaliza el nombre de un clan para compararlo (minúsculas y sin espacios en los extremos); es la forma del `clanKey` de las tablas de este archivo (antes era la de las claves de _SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_; desde §PF502 esas claves son Tags, ver _vcrrClaveNombreDeCarpeta_). */
 function _vcrrClanNorm_(clan) { return String(clan === null || clan === undefined ? '' : clan).trim().toLowerCase(); }
 
 // ----- Verificar CRR, paso 1: totales cerrados de RoyaleAPI por jugador (§PF320) -----
@@ -79735,7 +79844,7 @@ function _vcrrArchivosSemana_(temporada, semana) {
   var lista = [];
   var nT = 'T-' + _pad2_(temporada), nS = 'S-' + _pad2_(semana);
   Object.keys(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_).forEach(function (k) {
-    if (k === VCRR_CLAN_VETADO_KEY && !CFG.VETADO_API_ACTIVO) return;   // §PF335
+    if (k === CFG.VETADO_TAG && !CFG.VETADO_API_ACTIVO) return;   // §PF335 / §PF502: la clave es el Tag
     try {
       var cT = _crrSubcarpeta_(DriveApp.getFolderById(_SUBCARPETAS_CLAN_POR_ENDPOINT_CURRENTRIVERRACE_[k]), nT);
       var cS = cT ? _crrSubcarpeta_(cT, nS) : null;
@@ -79744,7 +79853,7 @@ function _vcrrArchivosSemana_(temporada, semana) {
       while (it.hasNext()) {
         var f = it.next(), nombre = f.getName(), p = _crrParsearNombre_(nombre);
         if (!p) continue;
-        lista.push({ file: f, nombre: nombre, clanKey: k, letra: p.letra, modificado: f.getLastUpdated().getTime(), tamano: f.getSize() });
+        lista.push({ file: f, nombre: nombre, clanKey: _vcrrClaveNombreDeCarpeta_(k), letra: p.letra, modificado: f.getLastUpdated().getTime(), tamano: f.getSize() });
       }
     } catch (eClan) {
       Logger.log('[VCRR] No se pudo listar la carpeta de ' + k + ' (' + nT + ' ' + nS + '): ' + eClan.message);
