@@ -1628,25 +1628,51 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
     var tagsC2   = shC2.getRange(4, CC2.TAG,  numFilasC2, 1).getValues();
     var clanesC2 = shC2.getRange(4, CC2.CLAN, numFilasC2, 1).getValues();
     var gridC2   = shC2.getRange(4, COL_INICIO_GRID2, numFilasC2, GRID_WIDTH2).getValues();
+    // 17-nov-2026 (tanda 13a): Control_2 tiene una fila por jugador Y por clan (columnas Clan_Tag y Estado al final). Aquí se junta todo en UNA lista por jugador: una entrada por semana,
+    // sumando entre clanes, con el clan de la fila «Activo»; con una sola fila por jugador sale exactamente lo de siempre. Hojas viejas sin esas columnas: una fila por jugador, como antes.
+    var clanTagsC2 = (shC2.getMaxColumns() >= CC2.CLAN_TAG) ? shC2.getRange(4, CC2.CLAN_TAG, numFilasC2, 1).getValues() : [];
+    var estadosC2  = (shC2.getMaxColumns() >= CC2.ESTADO)   ? shC2.getRange(4, CC2.ESTADO,   numFilasC2, 1).getValues() : [];
+    var semanasPorTagC2 = {}; // tag -> { sem (0..4): entrada de la semana }
     for (var c2 = 0; c2 < numFilasC2; c2++) {
       var tagC2 = cleanTag(tagsC2[c2][0]);
       if (!tagC2) continue;
       var clanC2 = String(clanesC2[c2][0] || '');
-      var semanas = [];
+      var clanTagC2 = String((clanTagsC2[c2] && clanTagsC2[c2][0]) || '').trim().toUpperCase() || _getClanTagByName(clanC2); // clan-por-nombre-ok: respaldo para filas de Control_2 aún sin Clan_Tag
+      var activoC2 = estadosC2.length ? String(estadosC2[c2][0] || '') === 'Activo' : true;
+      if (!semanasPorTagC2[tagC2]) semanasPorTagC2[tagC2] = {};
       for (var sem = 0; sem < 5; sem++) {
         var ataquesSem = gridC2[c2][OFF2.ATA + sem];
         if (ataquesSem === '' || ataquesSem === null) continue; // semana futura, en blanco
         // FIX (17-sep-2026, cierre de conexión pendiente — index.html, renderComparativaSemanal()/gráfica "Barcos por semana"): faltaba `barcos` aquí. OFF2.BAR (23_Control2_GuerraSemanal.gs) ya existe y trae exactamente este dato por… [→ Contexto_Base_Web.md §37B267]
-        semanas.push({
-          semana:  'Semana ' + (sem + 1),
-          clan:    clanC2,
-          clanTag: _getClanTagByName(clanC2), // PF405: Control_2 guarda solo el nombre
-          ataques: Number(ataquesSem) || 0,
-          puntaje: Number(gridC2[c2][OFF2.PUN + sem]) || 0,
-          barcos:  Number(gridC2[c2][OFF2.BAR + sem]) || 0
-        });
+        var entSemC2 = semanasPorTagC2[tagC2][sem];
+        if (!entSemC2) {
+          semanasPorTagC2[tagC2][sem] = {
+            semana:  'Semana ' + (sem + 1),
+            clan:    clanC2,
+            clanTag: clanTagC2, // PF405: antes salía del nombre; desde la tanda 13a sale de la columna Clan_Tag de la fila
+            ataques: Number(ataquesSem) || 0,
+            puntaje: Number(gridC2[c2][OFF2.PUN + sem]) || 0,
+            barcos:  Number(gridC2[c2][OFF2.BAR + sem]) || 0,
+            _activo: activoC2
+          };
+        } else {
+          // Otra fila del mismo jugador (otro clan) con datos esa misma semana: se suma, y el clan informado pasa a ser el de la fila Activo.
+          entSemC2.ataques += Number(ataquesSem) || 0;
+          entSemC2.puntaje += Number(gridC2[c2][OFF2.PUN + sem]) || 0;
+          entSemC2.barcos  += Number(gridC2[c2][OFF2.BAR + sem]) || 0;
+          if (activoC2 && !entSemC2._activo) { entSemC2.clan = clanC2; entSemC2.clanTag = clanTagC2; entSemC2._activo = true; }
+        }
       }
-      historialPorTag[tagC2] = semanas;
+    }
+    for (var tagLstC2 in semanasPorTagC2) {
+      var semanasLstC2 = [];
+      for (var semLstC2 = 0; semLstC2 < 5; semLstC2++) {
+        var entLstC2 = semanasPorTagC2[tagLstC2][semLstC2];
+        if (!entLstC2) continue;
+        delete entLstC2._activo; // campo interno: la respuesta lleva los mismos campos de siempre
+        semanasLstC2.push(entLstC2);
+      }
+      historialPorTag[tagLstC2] = semanasLstC2;
     }
   }
 

@@ -1241,9 +1241,11 @@ function _cruceMetaDesdeCacheApi_(buscado, pIdx) { // PF407: buscado es el Tag s
 }
 
 /**
- * _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) [→ Contexto_Base_Web.md §22B061]
+ * _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta, opciones) [→ Contexto_Base_Web.md §22B061]
+ * `opciones` (opcional, tanda 13a, 17-nov-2026): { sinSumaEntreClanes: true } no suma entre clanes aunque CONTROL_SUMA_ENTRE_CLANES sea true; lo usa
+ * _procesarFilasGuerraParaControlPorClan_(), que ya le pasa las filas de un solo clan. Sin `opciones` la función se comporta igual que antes.
  */
-function _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) {
+function _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta, opciones) {
   // 19-sep-2026 (pedido del usuario -- webGuerraEnVivo tardaba 28-39 s): dentro [→ Contexto_Base_Web.md §22B062]
   if (_GUERRA_MEMO_ACTIVO) aplicarCruceMeta = false;
   if (aplicarCruceMeta) { _CRUCE_META_LOGS_MEMO = null; _CRUCE_META_RES_MEMO = {}; } // datos frescos de Guerra_Logs en cada corrida
@@ -1349,7 +1351,7 @@ function _procesarFilasGuerraParaControl(data, ctx, aplicarCruceMeta) {
       }
 
       // NUEVO (3-oct-2026, 3.4): si esa semana el jugador tiene filas de 2 o mas clanes, se sobreescriben [→ Contexto_Base_Web.md §22B068]
-      if (CONTROL_SUMA_ENTRE_CLANES) _sumarEntreClanesSemanaControl_(map[tag][sIdx], porClan[tag] && porClan[tag][sIdx], Number(sIdx));
+      if (CONTROL_SUMA_ENTRE_CLANES && !(opciones && opciones.sinSumaEntreClanes)) _sumarEntreClanesSemanaControl_(map[tag][sIdx], porClan[tag] && porClan[tag][sIdx], Number(sIdx));
     }
   }
 
@@ -1393,6 +1395,89 @@ function _sumarEntreClanesSemanaControl_(semMap, info, sIdx) {
     dd.barcos      = barc;
   }
   return true;
+}
+
+/**
+ * _clanTagDeFilaGuerraControl_(fila, cacheNombre)
+ * Tanda 13a (17-nov-2026). Tag del clan de una fila de Guerra o de Backup_Guerra.csv, con '#' y en mayúsculas ('' si no se puede saber).
+ * Primero se usa GC.CLAN_TAG; si la fila es antigua y no lo trae, se traduce el nombre del clan con el resolvedor único
+ * (_getClanTagByName), una sola vez por nombre (`cacheNombre`). Una fila «Reconstruido» antigua puede traer un Tag en el campo del nombre (§PF355): se acepta tal cual.
+ */
+function _clanTagDeFilaGuerraControl_(fila, cacheNombre) {
+  var t = _normalizarClanTagCorreccion(fila[GC.CLAN_TAG - 1]);
+  if (t) return t;
+  var n = String(fila[GC.CLAN - 1] === undefined || fila[GC.CLAN - 1] === null ? '' : fila[GC.CLAN - 1]).trim();
+  if (!n) return '';
+  if (/^#[0-9A-Z]+$/i.test(n)) return _normalizarClanTagCorreccion(n);
+  if (!Object.prototype.hasOwnProperty.call(cacheNombre, n)) {
+    var r = '';
+    try { r = _normalizarClanTagCorreccion(_getClanTagByName(n)); } catch (e) { r = ''; } // clan-por-nombre-ok: respaldo solo para filas antiguas sin Clan_Tag
+    cacheNombre[n] = r;
+  }
+  return cacheNombre[n];
+}
+
+/**
+ * _getFilasGuerraTemporadaParaControl_(ctx, temporadaReal)
+ * Tanda 13a (17-nov-2026). Filas crudas de Guerra de la temporada de `ctx`, con las mismas fuentes que _getDatosGuerraParaControl(): la hoja Guerra si es la
+ * temporada real y tiene filas; si no (temporada histórica, hoja vacía o error de lectura), Backup_Guerra.csv. Devuelve [] si no hay nada. Solo lee.
+ */
+function _getFilasGuerraTemporadaParaControl_(ctx, temporadaReal) {
+  if (String(ctx.temporada) === String(temporadaReal)) {
+    try {
+      var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+      if (sh && sh.getLastRow() >= 2) {
+        if (_GUERRA_MEMO_ACTIVO && _GUERRA_HOJA_MEMO) return _GUERRA_HOJA_MEMO;
+        return sh.getRange(2, 1, sh.getLastRow() - 1, GUERRA_TOTAL_COLS).getValues();
+      }
+    } catch (eHoja) {
+      Logger.log('[Control] Guerra no se pudo leer por clan, se usa Backup_Guerra.csv: ' + eHoja);
+    }
+  }
+  try {
+    var csv = _leerGuerraCsvAgrupado_();
+    var clave = String(ctx.temporada);
+    return Object.prototype.hasOwnProperty.call(csv.porTemporada, clave) ? csv.porTemporada[clave] : [];
+  } catch (eCsv) {
+    Logger.log('[Control] Backup_Guerra.csv no se pudo leer por clan: ' + eCsv);
+    return [];
+  }
+}
+
+/**
+ * _procesarFilasGuerraParaControlPorClan_(data, ctx, clanActualPorTag)
+ * Tanda 13a (17-nov-2026; Consolidado_Clanes_por_Tag.md, tanda 13, P7). Lo mismo que _procesarFilasGuerraParaControl() pero SEPARADO POR CLAN y sin sumar entre clanes:
+ * devuelve { tag: { clanTag: { sIdx: { dia_0..dia_3 } } } }, con la misma forma de día que el mapa normal (ataques, puntaje, barcos...). Cada clan se calcula con
+ * las filas de ese clan solamente, llamando al procesador normal con { sinSumaEntreClanes: true } y sin cruce de meta (Control_2 no lo usa). Es ADITIVO: el mapa
+ * sumado de siempre no cambia y sigue siendo el que usan Control, Ascenso y la web.
+ * Una fila sin clan identificable (ni Clan_Tag ni nombre que se traduzca) se atribuye al clan actual del jugador (`clanActualPorTag`: tag del jugador -> Tag de su clan,
+ * del Directorio); si el jugador no está en ese mapa, la fila no entra. `data` y `ctx` son los del procesador normal.
+ */
+function _procesarFilasGuerraParaControlPorClan_(data, ctx, clanActualPorTag) {
+  clanActualPorTag = clanActualPorTag || {};
+  var cacheNombre = {};
+  var grupos = {}; // clanTag -> filas de ese clan
+  for (var i = 0; i < data.length; i++) {
+    var fila = data[i];
+    if (String(ctx.temporada) !== String(fila[GC.TEMPORADA - 1] || '')) continue;
+    var tagJug = String(fila[GC.TAG - 1] || '').trim();
+    if (!tagJug) continue;
+    var clanTag = _clanTagDeFilaGuerraControl_(fila, cacheNombre);
+    if (!clanTag) clanTag = clanActualPorTag[tagJug] || '';
+    if (!clanTag) continue;
+    if (!grupos[clanTag]) grupos[clanTag] = [];
+    grupos[clanTag].push(fila);
+  }
+  var resultado = {};
+  var clanes = Object.keys(grupos);
+  for (var c = 0; c < clanes.length; c++) {
+    var mapaClan = _procesarFilasGuerraParaControl(grupos[clanes[c]], ctx, false, { sinSumaEntreClanes: true });
+    for (var tag in mapaClan) {
+      if (!resultado[tag]) resultado[tag] = {};
+      resultado[tag][clanes[c]] = mapaClan[tag];
+    }
+  }
+  return resultado;
 }
 
 /**
