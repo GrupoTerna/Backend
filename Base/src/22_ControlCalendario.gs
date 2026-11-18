@@ -48,6 +48,135 @@ var _CRUCE_META_RES_MEMO  = {};     // { 'temp|TAG|pIdx': true/false } (PF407: l
 var _CRUCE_META_JSON_IDX  = {};     // { 'TAG': { t, fresco, ids: { 'T|S|P': idArchivoDrive } } } (PF144: ya no guarda DriveFile)
 var _CRUCE_META_JSON_RES  = {};     // { 'temp|TAG|pIdx': true/false/null } (PF407)
 
+// Tanda 13b-1 (17-nov-2026, Clanes por Tag): ancho y desplazamientos de la cuadrícula de Control (antes locales de updateControlSheet) y las dos columnas nuevas del final.
+var CONTROL_GRID_WIDTH_ = 105;
+var CONTROL_OFF_ = {
+  ATA: 0,   ATA_TOTAL: 25, ATA_PCT: 26,
+  PUN: 27,  PUN_PROM: 52, PUN_PCT: 53,
+  ACU: 54,
+  BAR: 79,  BAR_TOTAL: 104
+};
+var CONTROL_COL_CLAN_TAG = 122; // 16 fijas + 105 de cuadrícula = 121; el Tag del clan de la fila va AL FINAL, sin mover ninguna columna existente (criterio 6)
+var CONTROL_COL_ESTADO   = 123; // «Activo» o «Inactivo» (del Directorio), junto a Clan_Tag
+
+/**
+ * _calcularGridControl_(gd, ctx, numSemanasTemporada, minG)
+ * Tanda 13b-1 (17-nov-2026, Clanes por Tag). Cálculo de la cuadrícula de UNA fila de la hoja Control (105 columnas), sacado tal cual de updateControlSheet() para poder
+ * llamarlo una vez por jugador y clan. `gd` es el mapa del jugador { sIdx: { dia_0..dia_3 } } (sumado entre clanes si el jugador tiene una sola fila, o el de un clan si tiene varias);
+ * `minG` es el Min_G del clan de la fila (se usa en el % de puntaje). Devuelve el arreglo de CONTROL_GRID_WIDTH_ valores.
+ */
+function _calcularGridControl_(gd, ctx, numSemanasTemporada, minG) {
+  var GRID_WIDTH = CONTROL_GRID_WIDTH_;
+  var OFF = CONTROL_OFF_;
+  var gridFila = new Array(GRID_WIDTH).fill('');
+
+  for (var sem = 0; sem < 5; sem++) {
+    var semData = gd ? gd[sem] : null;
+
+    for (var d = 0; d < 4; d++) {
+      var cellPeriodIndex = (sem * 7) + 3 + d;
+      var diaYaOcurrio = (cellPeriodIndex <= ctx.periodIndex);
+      var baseAta = OFF.ATA + sem * 5 + d;
+      var basePun = OFF.PUN + sem * 5 + d;
+      var baseAcu = OFF.ACU + sem * 5 + d;
+      var baseBar = OFF.BAR + sem * 5 + d;
+
+      if (diaYaOcurrio) {
+        var dData = semData ? semData['dia_' + d] : null;
+        if (dData) {
+          gridFila[baseAta] = dData.ataques;
+          gridFila[basePun] = dData.puntaje;
+          gridFila[baseAcu] = dData.fameAcum;
+          gridFila[baseBar] = dData.barcos;
+        } else {
+          gridFila[baseAta] = '';
+          gridFila[basePun] = '';
+          gridFila[baseAcu] = '';
+          gridFila[baseBar] = '';
+        }
+      }
+    }
+
+    var inicioSemanaPeriodIndex = (sem * 7) + 3;
+    if (inicioSemanaPeriodIndex <= ctx.periodIndex) {
+      var tsxAta   = _sumaOVacio(gridFila, OFF.ATA+sem*5, 4);
+      var tsxPunt  = _sumaOVacio(gridFila, OFF.PUN+sem*5, 4);
+      var tsxAcum  = _maxOVacio(gridFila, OFF.ACU+sem*5, 4);
+      var tsxBarco = _sumaOVacio(gridFila, OFF.BAR+sem*5, 4);
+
+      // FIX (24-ago-2026, pedido usuario): antes se forzaba 0 en el total [→ Contexto_Base_Web.md §22B020]
+      gridFila[OFF.ATA+sem*5+4] = tsxAta;
+      gridFila[OFF.PUN+sem*5+4] = tsxPunt;
+      gridFila[OFF.ACU+sem*5+4] = tsxAcum;
+      gridFila[OFF.BAR+sem*5+4] = tsxBarco;
+    }
+  }
+
+  // Columnas agregadas de TEMPORADA (fuera del ciclo por semana, una sola [→ Contexto_Base_Web.md §22B021]
+  var ataqSemTotales = [];
+  for (var sA = 0; sA < Math.min(5, numSemanasTemporada); sA++) {
+    var vA = gridFila[OFF.ATA + sA*5 + 4];
+    if (vA !== '') ataqSemTotales.push(Number(vA) || 0);
+  }
+  if (ataqSemTotales.length > 0) {
+    var ataqTotalTemp = ataqSemTotales.reduce(function(a,b){ return a+b; }, 0);
+    gridFila[OFF.ATA_TOTAL] = ataqTotalTemp;
+    // FIX (24-ago-2026, pedido usuario): antes el divisor era SIEMPRE [→ Contexto_Base_Web.md §22B022]
+    var denomAtaques = 16 * ataqSemTotales.length;
+    gridFila[OFF.ATA_PCT] = denomAtaques > 0 ? (ataqTotalTemp / denomAtaques) : 0;
+  }
+
+  // Prom de Puntaje: promedio de los totales semanales de las semanas 1..N [→ Contexto_Base_Web.md §22B023]
+  var puntSemTotales = [];
+  for (var sP = 0; sP < Math.min(5, numSemanasTemporada); sP++) {
+    var vP = gridFila[OFF.PUN + sP*5 + 4];
+    if (vP !== '') puntSemTotales.push(Number(vP) || 0);
+  }
+  if (puntSemTotales.length > 0) {
+    var prom = puntSemTotales.reduce(function(a,b){ return a+b; }, 0) / puntSemTotales.length;
+    gridFila[OFF.PUN_PROM] = prom;
+    var pctPunt = minG > 0 ? (prom / minG) : 0;
+    gridFila[OFF.PUN_PCT] = (pctPunt >= 1) ? 1 : pctPunt; // fijo en 100% si se cumple o supera
+  }
+
+  var barcoSemTotales = [];
+  for (var sB = 0; sB < 5; sB++) {
+    var vB = gridFila[OFF.BAR + sB*5 + 4];
+    if (vB !== '') barcoSemTotales.push(Number(vB) || 0);
+  }
+  if (barcoSemTotales.length > 0) {
+    gridFila[OFF.BAR_TOTAL] = barcoSemTotales.reduce(function(a,b){ return a+b; }, 0);
+  }
+  return gridFila;
+}
+
+/**
+ * _asegurarColumnasClanTagEstadoControl_(sh)
+ * Tanda 13b-1 (17-nov-2026, Clanes por Tag). Garantiza (idempotente) las columnas Clan_Tag (CONTROL_COL_CLAN_TAG) y Estado (CONTROL_COL_ESTADO) al final de la hoja Control y su encabezado en la fila 3,
+ * sin tocar ninguna otra columna. Igual que _asegurarColumnaClanTagControl2_() de Control_2.
+ */
+function _asegurarColumnasClanTagEstadoControl_(sh) {
+  var cols = [[CONTROL_COL_CLAN_TAG, 'Clan_Tag'], [CONTROL_COL_ESTADO, 'Estado']];
+  if (sh.getMaxColumns() < CONTROL_COL_ESTADO) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), CONTROL_COL_ESTADO - sh.getMaxColumns());
+  }
+  for (var c = 0; c < cols.length; c++) {
+    var celda = sh.getRange(3, cols[c][0]);
+    if (String(celda.getValue()) === cols[c][1]) continue;
+    sh.getRange(1, cols[c][0], 2, 1).merge()
+      .setBackground(CFG.COLORES.HEADER_BG)
+      .setHorizontalAlignment('center')
+      .setVerticalAlignment('middle');
+    celda.setValue(cols[c][1])
+      .setBackground(CFG.COLORES.HEADER_BG)
+      .setFontColor(CFG.COLORES.HEADER_FG)
+      .setFontWeight('bold')
+      .setHorizontalAlignment('center');
+    sh.getRange(1, cols[c][0], 3, 1)
+      .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+  }
+}
+
 /**
  * CONTROL_SUMA_ENTRE_CLANES (3-oct-2026, parte 54, sub-tanda 3.4 de la Tanda 3, pregunta 42 y 56 del consolidado) [→ Contexto_Base_Web.md §22B060]
  */
@@ -225,13 +354,8 @@ function updateControlSheet(ctxOverride) {
   var COL_INICIO_GRID = 17;
 
   // Ancho total de la cuadrícula (105 columnas) y offsets (0-based, relativos [→ Contexto_Base_Web.md §22B016]
-  var GRID_WIDTH = 105;
-  var OFF = {
-    ATA: 0,   ATA_TOTAL: 25, ATA_PCT: 26,   // Ataques:  27 cols
-    PUN: 27,  PUN_PROM: 52, PUN_PCT: 53,    // Puntaje:  27 cols
-    ACU: 54,                                 // Acumulado:25 cols
-    BAR: 79,  BAR_TOTAL: 104                 // Barcos:   26 cols
-  };
+  var GRID_WIDTH = CONTROL_GRID_WIDTH_; // 13b-1: ahora son constantes globales (las usa también _calcularGridControl_)
+  var OFF = CONTROL_OFF_;
 
   // Número de semanas de la temporada actual (4 u 5) según el "mes efectivo" [→ Contexto_Base_Web.md §22B017]
   var numSemanasTemporada = lunesEnMes(ctx.mesEfectivoAnio, ctx.mesEfectivoMes) || 4;
@@ -241,12 +365,27 @@ function updateControlSheet(ctxOverride) {
   var minGPorTagClan = mapasMinG.byTag;
   var minGPorNombreClan = mapasMinG.byNombre;
 
+  // TANDA 13b-1 (17-nov-2026; Consolidado_Clanes_por_Tag.md, tanda 13, P7): una fila por jugador Y por clan con registros esa temporada, cada una con el clan de sus registros y las columnas
+  // Clan_Tag y Estado al final («Activo» solo en el clan donde el jugador está presente según el Directorio; «Inactivo» en los demás). Ascenso, Días inactivo y Alerta son del jugador y se
+  // repiten iguales en todas sus filas. Un jugador con registros en un solo clan sale con una sola fila y los mismos datos de siempre (el mapa sumado).
+  var clanActualPorTag = {}; // tag del jugador -> Tag de su clan actual (Directorio)
+  for (var ja = 0; ja < jugadores.length; ja++) {
+    clanActualPorTag[String(jugadores[ja][DC.TAG - 1] || '').trim()] = _normalizarClanTagCorreccion(jugadores[ja][DC.CLAN_TAG - 1]);
+  }
+  var guerraPorClan = _procesarFilasGuerraParaControlPorClan_(_getFilasGuerraTemporadaParaControl_(ctx, ctxReal.temporada), ctx, clanActualPorTag);
+  var nombresClanTerna = {}; // Tag del clan Terna -> nombre vigente (para el nombre de las filas «Inactivo»)
+  try { nombresClanTerna = _mapaNombresClanTerna_(CFG.TERNA_TAGS.slice()); } catch (eNomC) { nombresClanTerna = {}; }
+
   var fixedRows = [];
   var gridRows  = [];
+  var tagClanRows = [];
+  var estadoRows  = [];
+  var numFila = 0;
 
   for (var i = 0; i < jugadores.length; i++) {
     var jug    = jugadores[i];
     var tagJug = String(jug[DC.TAG - 1] || '').trim();
+    var clanTagActual = clanActualPorTag[tagJug];
 
     var ataqCacheHoy  = ataqCacheMap[tagJug] || 0;
     // La estructura real de guerraData[tag][sIdx] tiene sub-claves 'dia_0'..'dia_3' [→ Contexto_Base_Web.md §22B019]
@@ -256,89 +395,7 @@ function updateControlSheet(ctxOverride) {
     var ataqGuerraHoy = diaDataHoy ? (diaDataHoy.ataques || 0) : 0;
     var ataqHoy = Math.max(ataqCacheHoy, ataqGuerraHoy);
     var pendCol = (ctx.esDiaGuerra && ataqHoy < 4) ? 'Si' : '';
-
-    var gridFila = new Array(GRID_WIDTH).fill('');
     var gd = guerraData[tagJug];
-
-    for (var sem = 0; sem < 5; sem++) {
-      var semData = gd ? gd[sem] : null;
-
-      for (var d = 0; d < 4; d++) {
-        var cellPeriodIndex = (sem * 7) + 3 + d;
-        var diaYaOcurrio = (cellPeriodIndex <= ctx.periodIndex);
-        var baseAta = OFF.ATA + sem * 5 + d;
-        var basePun = OFF.PUN + sem * 5 + d;
-        var baseAcu = OFF.ACU + sem * 5 + d;
-        var baseBar = OFF.BAR + sem * 5 + d;
-
-        if (diaYaOcurrio) {
-          var dData = semData ? semData['dia_' + d] : null;
-          if (dData) {
-            gridFila[baseAta] = dData.ataques;
-            gridFila[basePun] = dData.puntaje;
-            gridFila[baseAcu] = dData.fameAcum;
-            gridFila[baseBar] = dData.barcos;
-          } else {
-            gridFila[baseAta] = '';
-            gridFila[basePun] = '';
-            gridFila[baseAcu] = '';
-            gridFila[baseBar] = '';
-          }
-        }
-      }
-
-      var inicioSemanaPeriodIndex = (sem * 7) + 3;
-      if (inicioSemanaPeriodIndex <= ctx.periodIndex) {
-        var tsxAta   = _sumaOVacio(gridFila, OFF.ATA+sem*5, 4);
-        var tsxPunt  = _sumaOVacio(gridFila, OFF.PUN+sem*5, 4);
-        var tsxAcum  = _maxOVacio(gridFila, OFF.ACU+sem*5, 4);
-        var tsxBarco = _sumaOVacio(gridFila, OFF.BAR+sem*5, 4);
-
-        // FIX (24-ago-2026, pedido usuario): antes se forzaba 0 en el total [→ Contexto_Base_Web.md §22B020]
-        gridFila[OFF.ATA+sem*5+4] = tsxAta;
-        gridFila[OFF.PUN+sem*5+4] = tsxPunt;
-        gridFila[OFF.ACU+sem*5+4] = tsxAcum;
-        gridFila[OFF.BAR+sem*5+4] = tsxBarco;
-      }
-    }
-
-    // Columnas agregadas de TEMPORADA (fuera del ciclo por semana, una sola [→ Contexto_Base_Web.md §22B021]
-    var ataqSemTotales = [];
-    for (var sA = 0; sA < Math.min(5, numSemanasTemporada); sA++) {
-      var vA = gridFila[OFF.ATA + sA*5 + 4];
-      if (vA !== '') ataqSemTotales.push(Number(vA) || 0);
-    }
-    if (ataqSemTotales.length > 0) {
-      var ataqTotalTemp = ataqSemTotales.reduce(function(a,b){ return a+b; }, 0);
-      gridFila[OFF.ATA_TOTAL] = ataqTotalTemp;
-      // FIX (24-ago-2026, pedido usuario): antes el divisor era SIEMPRE [→ Contexto_Base_Web.md §22B022]
-      var denomAtaques = 16 * ataqSemTotales.length;
-      gridFila[OFF.ATA_PCT] = denomAtaques > 0 ? (ataqTotalTemp / denomAtaques) : 0;
-    }
-
-    // Prom de Puntaje: promedio de los totales semanales de las semanas 1..N [→ Contexto_Base_Web.md §22B023]
-    var puntSemTotales = [];
-    for (var sP = 0; sP < Math.min(5, numSemanasTemporada); sP++) {
-      var vP = gridFila[OFF.PUN + sP*5 + 4];
-      if (vP !== '') puntSemTotales.push(Number(vP) || 0);
-    }
-    if (puntSemTotales.length > 0) {
-      var prom = puntSemTotales.reduce(function(a,b){ return a+b; }, 0) / puntSemTotales.length;
-      gridFila[OFF.PUN_PROM] = prom;
-      var tagClanJug = String(jug[DC.CLAN_TAG - 1] || '').trim().toUpperCase(); // 6-nov-2026 (tanda 7b-1)
-      var minGJugador = (tagClanJug && minGPorTagClan[tagClanJug] !== undefined ? minGPorTagClan[tagClanJug] : minGPorNombreClan[jug[DC.CLAN - 1]]) || CFG.MIN_G_DEFAULT;
-      var pctPunt = minGJugador > 0 ? (prom / minGJugador) : 0;
-      gridFila[OFF.PUN_PCT] = (pctPunt >= 1) ? 1 : pctPunt; // fijo en 100% si se cumple o supera
-    }
-
-    var barcoSemTotales = [];
-    for (var sB = 0; sB < 5; sB++) {
-      var vB = gridFila[OFF.BAR + sB*5 + 4];
-      if (vB !== '') barcoSemTotales.push(Number(vB) || 0);
-    }
-    if (barcoSemTotales.length > 0) {
-      gridFila[OFF.BAR_TOTAL] = barcoSemTotales.reduce(function(a,b){ return a+b; }, 0);
-    }
 
     // Columna fija "Ascenso" (17ª, después de "Ataques pendientes"): usa los [→ Contexto_Base_Web.md §22B024]
     var agregAsc = agregadosAscensoPorTag[tagJug] || {};
@@ -349,27 +406,51 @@ function updateControlSheet(ctxOverride) {
       agregAsc.barcoTotal
     );
 
-    // Columnas fijas (usando constantes DC, 0-based = DC.X - 1): [→ Contexto_Base_Web.md §22B025]
-    fixedRows.push([
-      i + 1,              // N°
-      tagJug,             // Tag
-      jug[DC.NOMBRE    - 1],  // Nombre
-      jug[DC.NOM_MULTI - 1],  // Nom_Multi
-      jug[DC.CLAN      - 1],  // Clan
-      jug[DC.RANGO     - 1],  // Rango
-      jug[DC.INICIALES - 1],  // Iniciales
-      jug[DC.CELULAR   - 1],  // Celular
-      jug[DC.NIVEL     - 1],  // Nivel
-      jug[DC.COPAS     - 1],  // Copas
-      jug[DC.V_GUERRA  - 1],  // V_Guerra
-      jug[DC.PERMISO   - 1],  // Permiso
-      jug[DC.INACTIVIDAD - 1], // Días inactivo
-      jug[DC.ALERTA    - 1],  // Alerta
-      pendCol,                // Ataques pendientes
-      ascensoVal              // Ascenso
-    ]);
+    // Clanes con fila: el clan actual (siempre) y los clanes Terna donde el jugador tiene registros esa temporada. Primero el clan actual (Activo) y después los demás, en el orden de CFG.TERNA_TAGS.
+    var porClanJug = guerraPorClan[tagJug] || {};
+    var clanesJug = {};
+    clanesJug[clanTagActual] = true;
+    for (var ctG in porClanJug) { if (CFG.TERNA_TAGS.indexOf(ctG) >= 0) clanesJug[ctG] = true; }
+    var clanesFila = Object.keys(clanesJug).sort(function (a, b) {
+      if (a === clanTagActual) return -1;
+      if (b === clanTagActual) return 1;
+      return CFG.TERNA_TAGS.indexOf(a) - CFG.TERNA_TAGS.indexOf(b);
+    });
+    var variasFilas = clanesFila.length > 1;
 
-    gridRows.push(gridFila);
+    for (var f = 0; f < clanesFila.length; f++) {
+      var clanTagFila = clanesFila[f];
+      var esActivo = (clanTagFila === clanTagActual);
+      var nombreClanFila = esActivo ? jug[DC.CLAN - 1] : (nombresClanTerna[clanTagFila] || clanTagFila);
+      var minGFila = (clanTagFila && minGPorTagClan[clanTagFila] !== undefined ? minGPorTagClan[clanTagFila] : minGPorNombreClan[nombreClanFila]) || CFG.MIN_G_DEFAULT;
+      // Con una sola fila: los datos sumados, exactamente como antes. Con varias: los datos de ESE clan.
+      var gdFila = variasFilas ? (porClanJug[clanTagFila] || null) : gd;
+      var gridFila = _calcularGridControl_(gdFila, ctx, numSemanasTemporada, minGFila);
+
+      numFila++;
+      // Columnas fijas (usando constantes DC, 0-based = DC.X - 1): [→ Contexto_Base_Web.md §22B025]
+      fixedRows.push([
+        numFila,            // N°
+        tagJug,             // Tag
+        jug[DC.NOMBRE    - 1],  // Nombre
+        jug[DC.NOM_MULTI - 1],  // Nom_Multi
+        nombreClanFila,         // Clan (el de los registros de la fila)
+        jug[DC.RANGO     - 1],  // Rango
+        jug[DC.INICIALES - 1],  // Iniciales
+        jug[DC.CELULAR   - 1],  // Celular
+        jug[DC.NIVEL     - 1],  // Nivel
+        jug[DC.COPAS     - 1],  // Copas
+        jug[DC.V_GUERRA  - 1],  // V_Guerra
+        jug[DC.PERMISO   - 1],  // Permiso
+        jug[DC.INACTIVIDAD - 1], // Días inactivo (del jugador, igual en todas sus filas)
+        jug[DC.ALERTA    - 1],  // Alerta (igual en todas sus filas)
+        esActivo ? pendCol : '', // Ataques pendientes: solo en la fila Activo
+        ascensoVal              // Ascenso (igual en todas sus filas)
+      ]);
+      gridRows.push(gridFila);
+      tagClanRows.push([clanTagFila]);
+      estadoRows.push([esActivo ? 'Activo' : 'Inactivo']);
+    }
   }
 
   if (fixedRows.length > 0) {
@@ -380,6 +461,13 @@ function updateControlSheet(ctxOverride) {
     try { sh.getRange(4, 11, fixedRows.length, 1).setNumberFormat('#,##0'); } catch(e) {}             // V_Guerra
     try { sh.getRange(4, 13, fixedRows.length, 1).setNumberFormat('#,##0'); } catch(e) {}             // Días inactivo
     try { sh.getRange(4, 8,  fixedRows.length, 1).setNumberFormat('### ### ### ###'); } catch(e) {}   // Celular
+  }
+
+  _asegurarColumnasClanTagEstadoControl_(sh); // 13b-1: crea (idempotente) Clan_Tag y Estado al final de una hoja ya existente
+  if (tagClanRows.length > 0) {
+    sh.getRange(4, CONTROL_COL_CLAN_TAG, tagClanRows.length, 1).setValues(tagClanRows);
+    sh.getRange(4, CONTROL_COL_ESTADO,   estadoRows.length, 1).setValues(estadoRows);
+    applyBorderCenter(sh.getRange(4, CONTROL_COL_CLAN_TAG, tagClanRows.length, 2));
   }
 
   if (gridRows.length > 0) {
@@ -399,7 +487,7 @@ function updateControlSheet(ctxOverride) {
   }
 
   // FIX (20-ago-2026, pedido usuario — "no se está aplicando bien el [→ Contexto_Base_Web.md §22B027]
-  var necesitaRebuildFormato = _controlNecesitaRebuildFormato(ctx, jugadores.length);
+  var necesitaRebuildFormato = _controlNecesitaRebuildFormato(ctx, fixedRows.length);
 
   if (necesitaRebuildFormato) {
     if (fixedRows.length > 0) {
@@ -414,8 +502,8 @@ function updateControlSheet(ctxOverride) {
       restaurarAnchosColumnasFijos(CFG.SHEETS.CONTROL);
     }
 
-    if (jugadores.length > 0) {
-      _aplicarFmtCondicionalControl(sh, jugadores.length);
+    if (fixedRows.length > 0) {
+      _aplicarFmtCondicionalControl(sh, fixedRows.length);
     }
 
     // No se debe ver más allá de la semana actual: si estamos en la semana 2, [→ Contexto_Base_Web.md §22B029]
@@ -439,7 +527,7 @@ function updateControlSheet(ctxOverride) {
       ' min para la próxima).');
   }
 
-  Logger.log('[Control] Actualizado. Jugadores: ' + jugadores.length);
+  Logger.log('[Control] Actualizado. Jugadores: ' + jugadores.length + ' · filas (una por jugador y clan): ' + fixedRows.length);
   return true;
 }
 

@@ -308,6 +308,7 @@ function _buildControlHeaders(sh) {
   }
 
   _pintarEncabezadosControl(sh);
+  _asegurarColumnasClanTagEstadoControl_(sh); // 13b-1 (17-nov-2026): Clan_Tag y Estado al final (122 y 123), también en una hoja nueva
 }
 
 /**
