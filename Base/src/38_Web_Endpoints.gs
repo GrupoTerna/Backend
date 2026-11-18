@@ -1043,6 +1043,19 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // §PF508: webAdminClanesExternos, lista de clanes externos, vetados y rivales con los jugadores nuestros que estuvieron ahí, para la tarjeta «Clanes externos» de admin.html (solo lee Drive; 15_DeteccionInfiltrados.gs); GET, sesión de admin. [→ Contexto_Base_Web.md §PF508]
+  if (e && e.parameter && e.parameter.accion === 'webAdminClanesExternos') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminClanesExternos(e.parameter.sessionToken)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errCExt) {
+      Logger.log('[Web] Error interno: ' + errCExt.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // FASE 6: webAdminBuscarInfiltrado, coincidencias de un Tag contra Directorio/Inactivos/Vetados, clanes rivales de la temporada y lista manual de conflicto (15_DeteccionInfiltrados.gs); GET, sesión de admin. [→ Contexto_Base_Web.md §38B064]
   if (e && e.parameter && e.parameter.accion === 'webAdminBuscarInfiltrado') {
     try {
