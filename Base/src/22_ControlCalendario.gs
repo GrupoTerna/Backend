@@ -177,6 +177,7 @@ function _asegurarColumnasClanTagEstadoControl_(sh) {
       .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
     sh.setColumnWidth(cols[c][0], cols[c][2]); // 13b-2: ancho propio (el de 45 px de la cuadrícula no deja ver «Inactivo» ni el Tag)
   }
+  _ampliarFiltroHastaColumna_(sh, CONTROL_COL_ESTADO); // 13b-3 (18-nov-2026): el filtro existente no incluía las dos columnas nuevas y al ordenar quedaban atrás
 }
 
 /**

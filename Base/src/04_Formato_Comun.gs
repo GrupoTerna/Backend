@@ -769,6 +769,32 @@ function _aplicarFiltroEnFilaHeader(sh, nombreHoja) {
 }
 
 /**
+ * _ampliarFiltroHastaColumna_(sh, ultimaCol)
+ * 18-nov-2026 (tanda 13b-3, Clanes por Tag). Si la hoja ya tiene filtro y este no llega hasta `ultimaCol`, lo recrea desde la misma fila y
+ * columna de inicio hasta `ultimaCol`. Hace falta porque `insertColumnsAfter()` no amplía un filtro existente: al agregar Clan_Tag y Estado al
+ * final de Control (122 y 123) y de Control_2 (34 y 35), ordenar por otra columna dejaba esas dos fuera y no se movían con su fila.
+ * Idempotente: sin filtro, o con filtro que ya llega, no hace nada. Devuelve true solo si lo recreó.
+ */
+function _ampliarFiltroHastaColumna_(sh, ultimaCol) {
+  try {
+    var filtro = sh.getFilter();
+    if (!filtro) return false;
+    var rango = filtro.getRange();
+    if (rango.getLastColumn() >= ultimaCol) return false;
+    var filaIni = rango.getRow();
+    var colIni = rango.getColumn();
+    var ultimaFila = Math.max(rango.getLastRow(), sh.getLastRow());
+    filtro.remove();
+    sh.getRange(filaIni, colIni, ultimaFila - filaIni + 1, ultimaCol - colIni + 1).createFilter();
+    Logger.log('[Filtros] ' + sh.getName() + ': filtro ampliado hasta la columna ' + ultimaCol + '.');
+    return true;
+  } catch (e) {
+    Logger.log('[Filtros] No se pudo ampliar el filtro de ' + sh.getName() + ' hasta la columna ' + ultimaCol + ': ' + e.message);
+    return false;
+  }
+}
+
+/**
  * _repararMergesFiltroHeader(sh, filaHeader) [→ Contexto_Base_Web.md §04B014]
  */
 function _repararMergesFiltroHeader(sh, filaHeader) {

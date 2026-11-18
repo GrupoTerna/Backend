@@ -566,6 +566,7 @@ function _asegurarColumnaEstadoControl2_(sh) {
   if (sh.getMaxColumns() < CC2.ESTADO) {
     sh.insertColumnsAfter(sh.getMaxColumns(), CC2.ESTADO - sh.getMaxColumns());
   }
+  _ampliarFiltroHastaColumna_(sh, CC2.ESTADO); // 13b-3 (18-nov-2026): mismo motivo que en Control; va antes del return para que corra aunque el encabezado ya exista
   var celda = sh.getRange(3, CC2.ESTADO);
   if (String(celda.getValue()) === 'Estado') return;
   sh.getRange(1, CC2.ESTADO, 2, 1).merge()
