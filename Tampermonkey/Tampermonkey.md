@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Familia Terna - Corrección de Guerra + Miembros Nuevos + Verificar Semana (RoyaleAPI)
 // @namespace    familia-terna-correccion-guerra
-// @version      3.33
-// @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041] v3.2 (pedido usuaria, formato ancho de Correcciones_Guerra.csv, §PF164): cada fila del Perfil sale marcada con fuente:'perfil' (el backend guarda así de dónde salió la columna RoyaleAPI: «perfil» o «desconocido»), y al iniciar la Corrección de Guerra se puede FORZAR la lectura del perfil de ciertos jugadores (las cuentas con varios clanes o los tags que se escriban): se visita su perfil aunque Log/Analytics ya los cubrieran y se reenvían TODAS sus semanas, aunque ya estén guardadas, para llenar de verdad la columna RoyaleAPI. v3.4 (pedido usuaria, 24-oct-2026, §PF234): cuarto botón «Corrección de jugadores elegidos»: escribes los tags y lee la semana en curso (River Race), el Log, Analytics y el perfil, pero guarda y envía SOLO a esos jugadores; al final lista las diferencias entre fuentes. Antes, forzar perfiles solo cambiaba la fase de Perfiles y el Log y Analytics enviaban a toda la comunidad. v3.5 (pedido usuaria, 25-oct-2026, §PF236): cuando se visita un perfil se envían TODAS sus filas (ya no se descartan las semanas cubiertas por Log/Analytics ni las ya guardadas) y el backend decide qué conserva: una fila igual a la guardada no se reescribe. v3.6 (pedido usuaria, 25-oct-2026, §PF237): el panel muestra «REVISAR PERFIL» cuando el backend reemplaza un valor del perfil ya guardado por otro distinto (antes/ahora), y el perfil ya no envía la semana en curso. v3.8 (pedido usuaria, 25-oct-2026, §PF243): el botón de miembros nuevos manda TODO lo que lee de cada perfil visitado (las semanas del perfil de todos los candidatos, no solo de los que cuentan como nuevos) y el backend decide qué guarda en la hoja «Nuevos» y qué en Correcciones_Guerra.csv; el panel muestra cuántas filas del perfil se aplicaron, cuántas estaban sin cambios y los avisos «REVISAR PERFIL». v3.15 (pedido usuaria, 30-oct-2026, §PF303): los cuatro botones del panel se ordenan de arriba abajo: Verificar Semana en Curso, miembros nuevos, jugadores elegidos y Corrección de Guerra completa. v3.20 (pedido usuaria, 2-nov-2026, §PF341): el perfil que visitan «Miembros nuevos» y «Corrección de jugadores elegidos» también se envía a los JSON individuales (Histórico de Guerra), incluso el de quien ya no está en los clanes Terna (solo en su JSON individual); «Miembros nuevos» ahora pide también el token del Histórico de Guerra. v3.21: el histórico de Guerra (JSON individual) manda el tag del clan en todas las filas, también las del Log, Analytics y River Race. v3.22: el nombre del clan de las filas del perfil sale limpio (sin la fecha pegada) también en las de clanes Terna. v3.24 (pedido usuaria, 4-nov-2026, §PF363): el botón «Corrección de Guerra» ya no abre el cuadro de perfiles a forzar (VARIOS o tags): trabaja con todos los jugadores; elegir perfiles es cosa de «Corrección de jugadores elegidos». v3.23 (pedido usuaria, 4-nov-2026, §PF362): al leer el Log de cada clan, los botones «Corrección de Guerra» y «Corrección de jugadores elegidos» también leen la tabla resumen de arriba (puesto, barcos, cambio de trofeos y trofeos finales de cada semana de cada temporada) y la envían al backend, que la guarda en Trofeos_Guerra_RoyaleAPI.csv y la compara con Guerra_Logs. v3.27 (§PF474): «Verificar Semana en Curso» manda el Tag de cada clan (clanTag) junto con el nombre en cada jugador, para que el backend compare cada clan contra lo que Guerra tiene de ESE clan y deje la diferencia con el clan al que corresponde.
+// @version      3.34
+// @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041] v3.2 (pedido usuaria, formato ancho de Correcciones_Guerra.csv, §PF164): cada fila del Perfil sale marcada con fuente:'perfil' (el backend guarda así de dónde salió la columna RoyaleAPI: «perfil» o «desconocido»), y al iniciar la Corrección de Guerra se puede FORZAR la lectura del perfil de ciertos jugadores (las cuentas con varios clanes o los tags que se escriban): se visita su perfil aunque Log/Analytics ya los cubrieran y se reenvían TODAS sus semanas, aunque ya estén guardadas, para llenar de verdad la columna RoyaleAPI. v3.4 (pedido usuaria, 24-oct-2026, §PF234): cuarto botón «Corrección de jugadores elegidos»: escribes los tags y lee la semana en curso (River Race), el Log, Analytics y el perfil, pero guarda y envía SOLO a esos jugadores; al final lista las diferencias entre fuentes. Antes, forzar perfiles solo cambiaba la fase de Perfiles y el Log y Analytics enviaban a toda la comunidad. v3.5 (pedido usuaria, 25-oct-2026, §PF236): cuando se visita un perfil se envían TODAS sus filas (ya no se descartan las semanas cubiertas por Log/Analytics ni las ya guardadas) y el backend decide qué conserva: una fila igual a la guardada no se reescribe. v3.6 (pedido usuaria, 25-oct-2026, §PF237): el panel muestra «REVISAR PERFIL» cuando el backend reemplaza un valor del perfil ya guardado por otro distinto (antes/ahora), y el perfil ya no envía la semana en curso. v3.8 (pedido usuaria, 25-oct-2026, §PF243): el botón de miembros nuevos manda TODO lo que lee de cada perfil visitado (las semanas del perfil de todos los candidatos, no solo de los que cuentan como nuevos) y el backend decide qué guarda en la hoja «Nuevos» y qué en Correcciones_Guerra.csv; el panel muestra cuántas filas del perfil se aplicaron, cuántas estaban sin cambios y los avisos «REVISAR PERFIL». v3.15 (pedido usuaria, 30-oct-2026, §PF303): los cuatro botones del panel se ordenan de arriba abajo: Verificar Semana en Curso, miembros nuevos, jugadores elegidos y Corrección de Guerra completa. v3.20 (pedido usuaria, 2-nov-2026, §PF341): el perfil que visitan «Miembros nuevos» y «Corrección de jugadores elegidos» también se envía a los JSON individuales (Histórico de Guerra), incluso el de quien ya no está en los clanes Terna (solo en su JSON individual); «Miembros nuevos» ahora pide también el token del Histórico de Guerra. v3.21: el histórico de Guerra (JSON individual) manda el tag del clan en todas las filas, también las del Log, Analytics y River Race. v3.22: el nombre del clan de las filas del perfil sale limpio (sin la fecha pegada) también en las de clanes Terna. v3.24 (pedido usuaria, 4-nov-2026, §PF363): el botón «Corrección de Guerra» ya no abre el cuadro de perfiles a forzar (VARIOS o tags): trabaja con todos los jugadores; elegir perfiles es cosa de «Corrección de jugadores elegidos». v3.23 (pedido usuaria, 4-nov-2026, §PF362): al leer el Log de cada clan, los botones «Corrección de Guerra» y «Corrección de jugadores elegidos» también leen la tabla resumen de arriba (puesto, barcos, cambio de trofeos y trofeos finales de cada semana de cada temporada) y la envían al backend, que la guarda en Trofeos_Guerra_RoyaleAPI.csv y la compara con Guerra_Logs. v3.27 (§PF474): «Verificar Semana en Curso» manda el Tag de cada clan (clanTag) junto con el nombre en cada jugador, para que el backend compare cada clan contra lo que Guerra tiene de ESE clan y deje la diferencia con el clan al que corresponde. v3.34 (§PF506): si al visitar un perfil RoyaleAPI responde con la página 404 «Player tag … not found» (cuenta baneada o tag sin ningún registro), el script lo detecta de inmediato, manda el tag al backend (Tags_Sin_Perfil en Drive) y pasa al siguiente jugador, en lugar de esperar el botón, reintentar tres veces y saltarlo sin dejar marca.
 // @author       Familia Terna
 // @match        https://royaleapi.com/*
 // @icon         https://royaleapi.com/favicon.ico
@@ -1188,6 +1188,59 @@
     if (soloIndividual && estado.historialAcumulado[jugador.tag]) estado.historialAcumulado[jugador.tag].soloIndividual = true;
   }
 
+  /**
+   * Tags sin perfil en RoyaleAPI (v3.34, §PF506): baneados o sin ningún registro. Se anotan en estado.tagsSinPerfilPendientes y se envían al backend (accion 'tagsSinPerfil',
+   * mismo token que el histórico), que los guarda en Drive (CSV/Tampermonkey/Tags_Sin_Perfil.csv y JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json) sin pisar lo confirmado a mano.
+   * El envío espera la respuesta antes de pasar al siguiente jugador (son muy pocos); si falla, el tag queda en la cola y se reenvía con el próximo tag sin perfil o al terminar
+   * (terminar()/terminarNuevos(), también al pulsar Reanudar). Reenviar es seguro: el backend no duplica ni cambia un tag que ya tiene los mismos datos.
+   */
+  function _asegurarTagsSinPerfilEnEstado(estado) {
+    if (!estado.tagsSinPerfilPendientes) estado.tagsSinPerfilPendientes = [];
+  }
+
+  function _hayTagsSinPerfilPendientes(estado) {
+    return !!(estado.tagsSinPerfilPendientes && estado.tagsSinPerfilPendientes.length);
+  }
+
+  function _enviarTagsSinPerfilPendientes(estado, continuar) {
+    _asegurarTagsSinPerfilEnEstado(estado);
+    var lote = estado.tagsSinPerfilPendientes.slice(0, 100); // el backend recibe hasta 100 por envío
+    if (!lote.length) { continuar(); return; }
+    _postBackend('tagsSinPerfil', 'historial', JSON.stringify({ tags: lote }),
+      'Respuesta inválida del backend al enviar tags sin perfil', 'Error de red enviando tags sin perfil: ',
+      function (err, resp) {
+        if (err || !resp || !resp.ok) {
+          _logSegunEstado(estado, '⚠ [TagsSinPerfil] ' + (err || (resp && resp.error) || 'respuesta inválida del backend') +
+            ' (' + lote.length + ' tag(s) quedan en cola: se reenvían con el próximo tag sin perfil o al terminar).');
+        } else {
+          var enviados = {};
+          lote.forEach(function (t) { enviados[t.tag] = true; });
+          estado.tagsSinPerfilPendientes = estado.tagsSinPerfilPendientes.filter(function (t) { return !enviados[t.tag]; });
+          _logSegunEstado(estado, '  ✔ [TagsSinPerfil] Backend actualizado: ' + (resp.nuevos || 0) + ' nuevo(s), ' + (resp.actualizados || 0) + ' actualizado(s), ' +
+            (resp.sinCambios || 0) + ' sin cambios (' + (resp.total || 0) + ' tag(s) en el archivo).');
+        }
+        _guardarSegunEstado(estado);
+        continuar();
+      });
+  }
+
+  /**
+   * _registrarTagSinPerfil(estado, hallazgo, continuar)  (v3.34, §PF506)
+   * hallazgo = lo que devuelve detectarPerfil404(). Lo deja en el registro del panel, lo anota en la cola y lo envía; después llama a continuar() (que avanza al siguiente jugador).
+   */
+  function _registrarTagSinPerfil(estado, hallazgo, continuar) {
+    _asegurarTagsSinPerfilEnEstado(estado);
+    var yaAnotado = estado.tagsSinPerfilPendientes.some(function (t) { return t.tag === hallazgo.tag; });
+    if (!yaAnotado) estado.tagsSinPerfilPendientes.push({ tag: hallazgo.tag, nombre: hallazgo.nombre, estado: hallazgo.estado });
+    _logSegunEstado(estado, '🚫 ' + hallazgo.tag + ': RoyaleAPI responde 404' +
+      (hallazgo.estado === 'Baneado'
+        ? ' y avisa que la cuenta puede estar baneada' + (hallazgo.nombre ? ' (último nombre: ' + hallazgo.nombre + ')' : '')
+        : ' y no tiene ningún registro de ese tag') +
+      '. Se registra en el backend y se pasa al siguiente.');
+    _guardarSegunEstado(estado);
+    _enviarTagsSinPerfilPendientes(estado, continuar);
+  }
+
   function _esperarHistorialEnVuelo(estado, continuar) {
     if (_historialLotesEnVuelo.length === 0) { continuar(); return; }
     var inicio = Date.now();
@@ -1533,6 +1586,31 @@
       var texto = (el.textContent || '').trim().toLowerCase();
       var pareceBotonCorrecto = texto.indexOf('load') >= 0 && texto.indexOf('clan wars 2') >= 0;
       if (pareceBotonCorrecto && el.offsetParent !== null) return el;
+    }
+    return null;
+  }
+
+  /**
+   * detectarPerfil404(tagEsperado)  (v3.34, §PF506)
+   * Cuando RoyaleAPI no tiene el perfil responde con la página «Player tag #TAG not found (404)» (div.ui.negative.message > div.header). Si la cuenta está baneada, debajo va
+   * un div.ui.info.message con el encabezado «Account may have been banned» y el último nombre conocido en p > strong; si el tag nunca tuvo registro, ese aviso no existe.
+   * Devuelve null si la página no es ese 404 o si el tag del mensaje no es el que se está visitando (no se confunde con otra página);
+   * si lo es, { es404: true, tag, estado: 'Baneado' | 'Sin registro', nombre }. Verificado con el HTML de #VJL00YJPG, #JV2CCCP28, #URVY9RG9U y #8YYG9VCGC (capturas de la usuaria, 18-nov-2026).
+   */
+  function detectarPerfil404(tagEsperado) {
+    var norm = function (t) { return String(t || '').replace('#', '').trim().toUpperCase(); };
+    var cabeceras = document.querySelectorAll('.ui.negative.message .header');
+    for (var i = 0; i < cabeceras.length; i++) {
+      var m = /Player tag\s+#?([0-9A-Za-z]+)\s+not found\s*\(404\)/i.exec(cabeceras[i].textContent || '');
+      if (!m || norm(m[1]) !== norm(tagEsperado)) continue;
+      var info = null;
+      var infos = document.querySelectorAll('.ui.info.message');
+      for (var k = 0; k < infos.length; k++) {
+        if (/may have been banned/i.test(infos[k].textContent || '')) { info = infos[k]; break; }
+      }
+      var strong = info ? info.querySelector('p strong') : null;
+      var nombre = strong ? String(strong.textContent || '').replace(/\s+/g, ' ').trim() : '';
+      return { es404: true, tag: '#' + norm(m[1]), estado: info ? 'Baneado' : 'Sin registro', nombre: nombre };
     }
     return null;
   }
@@ -2914,7 +2992,18 @@
 
     log(estado, 'Procesando ' + (estado.indice + 1) + '/' + estado.jugadores.length + ': ' + jugador.nombre + ' (' + jugador.tag + ')');
 
-    var boton = await esperar(buscarBotonClanWars2, CLOUDFLARE_WAIT_MS);
+    // v3.34 (§PF506): se espera el botón O la página 404 de RoyaleAPI (baneado o sin registro). Antes solo se esperaba el botón: ante el 404 se reintentaba tres veces y se saltaba al jugador sin dejar marca.
+    var espera = await esperar(function () { return buscarBotonClanWars2() || detectarPerfil404(jugador.tag); }, CLOUDFLARE_WAIT_MS);
+    if (espera && espera.es404) {
+      estado.intentosPaginaActual = 0;
+      _registrarTagSinPerfil(estado, espera, function () {
+        estado.indice++;
+        guardarEstado(estado);
+        setTimeout(function () { irAlSiguientePerfil(estado); }, PAUSA_ENTRE_JUGADORES_MS);
+      });
+      return;
+    }
+    var boton = espera;
     if (!boton) {
       log(estado, '⚠ No apareció el botón "Clan Wars 2 History" a tiempo. Reintentando esta página...');
       estado.intentosPaginaActual = (estado.intentosPaginaActual || 0) + 1;
@@ -3043,7 +3132,21 @@
     _esperarHistorialEnVuelo(estado, function () { location.href = siguiente.royaleApiUrl; });
   }
 
-  async function terminar(estado) {
+  async function terminar(estado, tspIntentado) {
+    // v3.34 (§PF506): los tags sin perfil que no se pudieron enviar se reintentan una vez antes de cerrar (Reanudar vuelve a pasar por aquí y lo reintenta).
+    if (!tspIntentado && _hayTagsSinPerfilPendientes(estado)) {
+      _enviarTagsSinPerfilPendientes(estado, function () {
+        if (_hayTagsSinPerfilPendientes(estado)) { // sigue sin poder enviarse: igual que con el histórico, queda en pausa y Reanudar lo reintenta
+          estado.estado = 'pausado';
+          log(estado, '⚠ Quedan ' + estado.tagsSinPerfilPendientes.length + ' tag(s) sin perfil sin confirmar en el backend. Corrige el problema (token/URL) y pulsa Reanudar para reenviarlos.');
+          guardarEstado(estado);
+          pintarPanel();
+          return;
+        }
+        terminar(estado, true);
+      });
+      return;
+    }
     _flushHistorialSiHaceFalta(estado, true);
     // FIX (21-sep-2026): antes se declaraba "terminado" sin esperar la respuesta
     // del histórico y, si el último envío de correcciones fallaba, ese lote se
@@ -3104,7 +3207,18 @@
 
     logNuevos(estado, 'Revisando ' + (estado.indice + 1) + '/' + estado.candidatos.length + ': ' + candidato.nombre + ' (' + candidato.tag + ')');
 
-    var boton = await esperar(buscarBotonClanWars2, CLOUDFLARE_WAIT_MS);
+    // v3.34 (§PF506): igual que procesarJugadorActual(): se espera el botón O la página 404 de RoyaleAPI.
+    var espera = await esperar(function () { return buscarBotonClanWars2() || detectarPerfil404(candidato.tag); }, CLOUDFLARE_WAIT_MS);
+    if (espera && espera.es404) {
+      estado.intentosPaginaActual = 0;
+      _registrarTagSinPerfil(estado, espera, function () {
+        estado.indice++;
+        guardarEstadoNuevos(estado);
+        setTimeout(function () { irAlSiguienteCandidato(estado); }, PAUSA_ENTRE_JUGADORES_MS);
+      });
+      return;
+    }
+    var boton = espera;
     if (!boton) {
       logNuevos(estado, '⚠ No apareció el botón "Clan Wars 2 History" a tiempo. Reintentando esta página...');
       estado.intentosPaginaActual = (estado.intentosPaginaActual || 0) + 1;
@@ -3288,7 +3402,21 @@
     _esperarHistorialEnVuelo(estado, function () { location.href = siguiente.royaleApiUrl; }); // v3.20 (§PF341): igual que irAlSiguientePerfil()
   }
 
-  async function terminarNuevos(estado) {
+  async function terminarNuevos(estado, tspIntentado) {
+    // v3.34 (§PF506): igual que terminar(): último reintento de los tags sin perfil que no se pudieron enviar.
+    if (!tspIntentado && _hayTagsSinPerfilPendientes(estado)) {
+      _enviarTagsSinPerfilPendientes(estado, function () {
+        if (_hayTagsSinPerfilPendientes(estado)) {
+          estado.estado = 'pausado';
+          logNuevos(estado, '⚠ Quedan ' + estado.tagsSinPerfilPendientes.length + ' tag(s) sin perfil sin confirmar en el backend. Corrige el problema (token/URL) y pulsa Reanudar para reenviarlos.');
+          guardarEstadoNuevos(estado);
+          pintarPanel();
+          return;
+        }
+        terminarNuevos(estado, true);
+      });
+      return;
+    }
     // v3.20 (§PF341): igual que terminar(): se manda lo que quede del histórico, se espera la respuesta y, si algo falla, el proceso queda 'pausado'
     // con lo pendiente conservado; al pulsar Reanudar se vuelve a llamar aquí y se reintenta.
     _asegurarHistorialEnEstado(estado);
