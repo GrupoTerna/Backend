@@ -1,0 +1,15 @@
+Fecha,Tag,Nombre anterior,Nombre nuevo,Guerra,Control,Control_2,Vetados,Mensajes,Alertas_HistorialGuerra,Backup_Guerra.csv,Carpetas renombradas,Estado
+2026-11-18 15.06,#GCRG8L00,Grupo乂Terna™,Grupo乂Terna™,0,0,0,0,0,0,0,0,solo informar
+2026-11-18 15.06,#GYCU9YRG,GrupoXTerna™2,GrupoXTerna™2,0,0,0,0,0,0,0,0,solo informar
+2026-11-18 15.06,#GQQPPJGR,GrupoXTerna™3,GrupoXTerna™3,0,0,0,0,0,0,0,0,solo informar
+2026-11-18 15.06,#GG99LCJY,Mini乂Ternas™,Mini乂Ternas™,0,0,0,0,0,0,0,0,solo informar
+
+Carpetas,Endpoint,Tag,Antes,Despues,Resultado
+,clans,#GCRG8L00,Grupo乂Terna™ - #GCRG8L00,Grupo乂Terna™ - #GCRG8L00,ya tiene el nombre
+,currentriverrace,#GCRG8L00,Grupo乂Terna™ - #GCRG8L00,Grupo乂Terna™ - #GCRG8L00,ya tiene el nombre
+,clans,#GYCU9YRG,GrupoXTerna™2 - #GYCU9YRG,GrupoXTerna™2 - #GYCU9YRG,ya tiene el nombre
+,currentriverrace,#GYCU9YRG,GrupoXTerna™2 - #GYCU9YRG,GrupoXTerna™2 - #GYCU9YRG,ya tiene el nombre
+,clans,#GQQPPJGR,GrupoXTerna™3 - #GQQPPJGR,GrupoXTerna™3 - #GQQPPJGR,ya tiene el nombre
+,currentriverrace,#GQQPPJGR,GrupoXTerna™3 - #GQQPPJGR,GrupoXTerna™3 - #GQQPPJGR,ya tiene el nombre
+,clans,#GG99LCJY,Mini乂Ternas™ - #GG99LCJY,Mini乂Ternas™ - #GG99LCJY,ya tiene el nombre
+,currentriverrace,#GG99LCJY,Mini乂Ternas™ - #GG99LCJY,Mini乂Ternas™ - #GG99LCJY,ya tiene el nombre
