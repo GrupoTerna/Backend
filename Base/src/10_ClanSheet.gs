@@ -157,7 +157,7 @@ function updateClanSheet() {
 
 /**
  * sincronizarNombreClanInforme() / sincronizarNombreClanAplicar() [→ Contexto_Base_Web.md §PF503]
- * Manuales. Comparan el nombre vigente de cada clan (hoja Clan, o Backup_Clan.csv si la hoja no esta) con el de las filas de Guerra, Control_2, Vetados, Mensajes, Alertas_HistorialGuerra y
+ * Manuales. Comparan el nombre vigente de cada clan (hoja Clan, o Backup_Clan.csv si la hoja no esta) con el de las filas de Guerra, Control, Control_2, Vetados, Mensajes, Alertas_HistorialGuerra y
  * Backup_Guerra.csv, y con el nombre de sus carpetas de Drive, SIEMPRE por Clan_Tag. Informe: no cambia nada y deja «Cambio_Nombre_Clan <fecha> (informe).csv» en Drive.
  * Aplicar: reescribe solo la columna Clan de las filas de esos clanes y renombra las carpetas. Es idempotente y sirve tambien para reparar si la sincronizacion automatica quedo a medias.
  * La sincronizacion automatica la llama updateClanSheet() solo cuando el nombre de un clan cambio respecto del ultimo ya sincronizado.
@@ -379,7 +379,7 @@ function _sincronizarNombreClanManual_(aplicar) {
  * Tanda 10 de Clanes por Tag. opciones: { aplicar (por defecto true), forzar (por defecto false) }.
  * Sin forzar (llamada de updateClanSheet): solo actua sobre los clanes cuyo nombre vigente difiere del ultimo ya sincronizado (propiedad NOMBRE_CLAN_SINCRONIZADO); la primera vez solo anota los nombres.
  * Forzado (las funciones manuales): revisa los cinco clanes aunque el nombre no haya cambiado, por si una corrida anterior quedo a medias.
- * Por Clan_Tag: Guerra, Control_2, Vetados, Mensajes, Alertas_HistorialGuerra y Backup_Guerra.csv, mas el nombre de las carpetas. Control y Nuevos no llevan Clan_Tag y se reconstruyen solos desde el Directorio.
+ * Por Clan_Tag: Guerra, Control, Control_2, Vetados, Mensajes, Alertas_HistorialGuerra y Backup_Guerra.csv, mas el nombre de las carpetas. Control (desde la tanda 13b-2) tambien va por Clan_Tag; Nuevos no lleva Clan_Tag y se reconstruye solo desde el Directorio.
  * Los clanes externos no se tocan. Idempotente; el tope NOMBRE_CLAN_SYNC_TOPE_FILAS limita las filas por corrida y deja el cambio pendiente. Un archivo «Cambio_Nombre_Clan <fecha>.csv» en Drive lleva una linea por clan.
  * DONDE SE ACTUALIZA A MANO: CFG.CLAN_NOMBRES_FALLBACK (01_Config_Global.gs), _TAG_CARPETA_POR_NOMBRE_RESPALDO_ y los comentarios de los dos mapas (09_API_ClashRoyale.gs). Esta funcion lo avisa en el registro; en memoria si los actualiza.
  */
@@ -403,7 +403,7 @@ function _sincronizarNombreClan_(opciones) {
   var marca = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH.mm');
   var ss = _getSs();
   var presupuesto = NOMBRE_CLAN_SYNC_TOPE_FILAS, truncado = false;
-  var etiquetas = ['Guerra', 'Control_2', 'Vetados', 'Mensajes', 'Alertas_HistorialGuerra', 'Backup_Guerra.csv'];
+  var etiquetas = ['Guerra', 'Control', 'Control_2', 'Vetados', 'Mensajes', 'Alertas_HistorialGuerra', 'Backup_Guerra.csv'];
   var conteo = {}, estados = {};
   tags.forEach(function (t) { conteo[t] = {}; });
   var acumular = function (etiqueta, r) {
@@ -414,6 +414,7 @@ function _sincronizarNombreClan_(opciones) {
   };
   var hojas = [
     { etiqueta: 'Guerra', nombre: CFG.SHEETS.GUERRA, colClan: GC.CLAN, colTag: GC.CLAN_TAG, fila: 2 },
+    { etiqueta: 'Control', nombre: CFG.SHEETS.CONTROL, colClan: CONTROL_COL_CLAN, colTag: CONTROL_COL_CLAN_TAG, fila: 4 },
     { etiqueta: 'Control_2', nombre: 'Control_2', colClan: CC2.CLAN, colTag: CC2.CLAN_TAG, fila: 4 },
     { etiqueta: 'Vetados', nombre: CFG.SHEETS.VETADOS, colClan: VC.CLAN, colTag: VC.CLAN_TAG, fila: 2 },
     { etiqueta: 'Mensajes', nombre: CFG.SHEETS.MENSAJES, colClan: MC.CLAN, colTag: MC.CLAN_TAG, fila: 2 },

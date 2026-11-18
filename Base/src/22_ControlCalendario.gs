@@ -56,6 +56,7 @@ var CONTROL_OFF_ = {
   ACU: 54,
   BAR: 79,  BAR_TOTAL: 104
 };
+var CONTROL_COL_CLAN = 5;        // columna fija «Clan» (nombre del clan de la fila; 13b-2: la usa la sincronización de nombre de clan)
 var CONTROL_COL_CLAN_TAG = 122; // 16 fijas + 105 de cuadrícula = 121; el Tag del clan de la fila va AL FINAL, sin mover ninguna columna existente (criterio 6)
 var CONTROL_COL_ESTADO   = 123; // «Activo» o «Inactivo» (del Directorio), junto a Clan_Tag
 
@@ -156,7 +157,7 @@ function _calcularGridControl_(gd, ctx, numSemanasTemporada, minG) {
  * sin tocar ninguna otra columna. Igual que _asegurarColumnaClanTagControl2_() de Control_2.
  */
 function _asegurarColumnasClanTagEstadoControl_(sh) {
-  var cols = [[CONTROL_COL_CLAN_TAG, 'Clan_Tag'], [CONTROL_COL_ESTADO, 'Estado']];
+  var cols = [[CONTROL_COL_CLAN_TAG, 'Clan_Tag', 100], [CONTROL_COL_ESTADO, 'Estado', 75]];
   if (sh.getMaxColumns() < CONTROL_COL_ESTADO) {
     sh.insertColumnsAfter(sh.getMaxColumns(), CONTROL_COL_ESTADO - sh.getMaxColumns());
   }
@@ -174,6 +175,7 @@ function _asegurarColumnasClanTagEstadoControl_(sh) {
       .setHorizontalAlignment('center');
     sh.getRange(1, cols[c][0], 3, 1)
       .setBorder(true, true, true, true, true, true, '#ffffff', SpreadsheetApp.BorderStyle.SOLID);
+    sh.setColumnWidth(cols[c][0], cols[c][2]); // 13b-2: ancho propio (el de 45 px de la cuadrícula no deja ver «Inactivo» ni el Tag)
   }
 }
 
@@ -500,6 +502,9 @@ function updateControlSheet(ctxOverride) {
       sh.setColumnWidths(COL_INICIO_GRID, lastColCtrl - COL_INICIO_GRID + 1, 45);
       // PF287 (30-oct-2026): los 45 px de arriba pisarían los anchos que la usuaria guarda con guardarAnchosColumnasFijos(); se reaplican los guardados (los de la cuadrícula siguen en 45).
       restaurarAnchosColumnasFijos(CFG.SHEETS.CONTROL);
+      // 13b-2 (17-nov-2026): el ancho de 45 px de arriba también alcanza a Clan_Tag y Estado (columnas 122 y 123, después de la cuadrícula); se les devuelve el suyo.
+      if (lastColCtrl >= CONTROL_COL_CLAN_TAG) sh.setColumnWidth(CONTROL_COL_CLAN_TAG, 100);
+      if (lastColCtrl >= CONTROL_COL_ESTADO)   sh.setColumnWidth(CONTROL_COL_ESTADO, 75);
     }
 
     if (fixedRows.length > 0) {
