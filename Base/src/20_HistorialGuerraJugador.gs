@@ -9,6 +9,7 @@
 //    - Revision_Guerra.csv: aplicar la decisión «Conservar» o «Reemplazar»
 //    - Diagnóstico de River Race
 //    - Limpieza de archivos repetidos de la carpeta Individual: atajos del editor
+//    - Tags sin perfil en RoyaleAPI (baneados o sin registro): registrar los ya conocidos
 //  Parte 2 — Funciones que no se corren a mano
 //    - Alertas del historial de guerra: ayuda
 //    - Guardar un registro (lo llaman la web y la resolución de alertas)
@@ -18,6 +19,7 @@
 //    - Comparar y reemplazar registros (lo usan el individual y el grupal)
 //    - Web: historial por jugador (lectura)
 //    - Limpieza de archivos repetidos de la carpeta Individual: función principal
+//    - Tags sin perfil en RoyaleAPI (baneados o sin registro): registro en CSV/Tampermonkey y JSON/RoyaleAPI/Sin_Perfil (al final del archivo)
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // (ORDEN DE EJECUCIÓN: 24 — Histórico de Guerra [→ Contexto_Base_Web.md §20B001]
@@ -60,6 +62,24 @@ var HISTORIAL_GUERRA_GRUPAL_ENCABEZADOS = [
 
 // CSV GRUPAL (desde el 1-nov-2026 en CSV/Tampermonkey, §PF321; antes carpeta DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL, Sección 6 del [→ Contexto_Base_Web.md §20B005]
 var HISTORIAL_GUERRA_GRUPAL_FILENAME = 'HistorialGuerra_Grupal.csv';
+
+// TAGS SIN PERFIL EN RoyaleAPI (18-nov-2026, pedido de la usuaria): tags que Tampermonkey intenta leer y RoyaleAPI no devuelve (baneados o sin ningún registro). [→ Contexto_Base_Web.md §PF497]
+// El CSV va en CSV/Tampermonkey y el JSON en JSON/RoyaleAPI/Sin_Perfil (carpeta propia, dentro de RoyaleAPI y fuera de Grupal e Individual). Los dos llevan los mismos tags.
+var TAGS_SIN_PERFIL_CSV_FILENAME  = 'Tags_Sin_Perfil.csv';
+var TAGS_SIN_PERFIL_JSON_FILENAME = 'Tags_Sin_Perfil.json';
+var TAGS_SIN_PERFIL_JSON_CARPETA  = 'Sin_Perfil';
+var TAGS_SIN_PERFIL_ENCABEZADOS = ['Tag', 'Nombre', 'Estado', 'RoyaleAPI', 'API_Supercell', 'Fuente', 'Primera_Vez', 'Ultima_Actualizacion', 'Notas'];
+// Los 4 tags confirmados el 18-nov-2026 (§PF497 punto 18): 3 baneados y 1 sin ningún registro. La API de Supercell, vía el proxy de Render, responde notFound en los 4.
+var TAGS_SIN_PERFIL_CONOCIDOS_ = [
+  { tag: '#8YYG9VCGC', nombre: 'jamr', estado: 'Baneado', royaleapi: 'Insignia Banned en la búsqueda y página 404', apiSupercell: 'notFound',
+    fuente: 'Confirmado a mano por la usuaria (18-nov-2026)', notas: 'Última fila en Backup_Guerra.csv: T22 S5, sin clan.' },
+  { tag: '#URVY9RG9U', nombre: 'Jxse.Pxnx', estado: 'Baneado', royaleapi: 'Insignia Banned en la búsqueda y página 404', apiSupercell: 'notFound',
+    fuente: 'Confirmado a mano por la usuaria (18-nov-2026)', notas: 'Última fila en Backup_Guerra.csv: T22 S5, sin clan.' },
+  { tag: '#JV2CCCP28', nombre: 'ᴳ乂ᵀ ⚜️ MASSIMO', estado: 'Baneado', royaleapi: 'Insignia Banned en la búsqueda y página 404', apiSupercell: 'notFound',
+    fuente: 'Confirmado a mano por la usuaria (18-nov-2026)', notas: 'Última fila en Backup_Guerra.csv: T24 S1.' },
+  { tag: '#VJL00YJPG', nombre: '', estado: 'Sin registro', royaleapi: '0 coincidencias como jugador y como clan', apiSupercell: 'notFound',
+    fuente: 'Confirmado a mano por la usuaria (18-nov-2026)', notas: 'No se sabe si fue borrado o si estuvo baneado; no se confirmó el baneo. Última fila en Backup_Guerra.csv: T23 S4.' }
+];
 
 // PUNTO 2 DE LA HOJA DE RUTA — endpoint que recibe los "registro" ya armados [→ Contexto_Base_Web.md §20B006]
 
@@ -253,6 +273,21 @@ function reconstruirJsonGrupalReiniciar() {
     if (info && String(info.fn) === 'reconstruirJsonGrupalDesdeIndividuales') _liberarLockEjecucion();
   } catch (e) { /* propiedad corrupta: se deja como está */ }
   Logger.log('[JSON grupal] Avance borrado. La próxima corrida empieza desde el primer JSON individual.');
+}
+
+// ----- Tags sin perfil en RoyaleAPI (baneados o sin registro): registrar los ya conocidos -----
+
+/**
+ * Registra en Drive los 4 tags sin perfil ya confirmados (3 baneados y 1 sin registro; §PF497 punto 18): CSV/Tampermonkey/Tags_Sin_Perfil.csv y
+ * JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json. Se puede correr las veces que haga falta: no duplica tags y solo escribe si algo cambió. Para registrar otros tags se llama a
+ * _registrarTagsSinPerfil_(items). [→ Contexto_Base_Web.md §PF497]
+ */
+function registrarTagsSinPerfilConocidos() {
+  var res = _registrarTagsSinPerfil_(TAGS_SIN_PERFIL_CONOCIDOS_);
+  _registrarLogScriptTerna('registrarTagsSinPerfilConocidos()',
+    (res.error ? 'Con error: ' + res.error + '. ' : '') + 'Nuevos: ' + res.nuevos + ', actualizados: ' + res.actualizados + ', sin cambios: ' + res.sinCambios +
+    ', inválidos: ' + res.invalidos + ', total en el archivo: ' + res.total + ' (CSV ' + (res.csvGuardado ? 'guardado' : 'sin cambios') + ', JSON ' + (res.jsonGuardado ? 'guardado' : 'sin cambios') + ')', []);
+  return res;
 }
 
 // =============================================================================
@@ -1782,5 +1817,147 @@ function limpiarDuplicadosHistorialGuerraIndividual(aplicar) {
   _registrarLogScriptTerna('limpiarDuplicadosHistorialGuerraIndividual(' + (aplicar ? 'true' : '') + ')',
     (aplicar ? 'Aplicado. ' : 'Simulacion. ') + 'Grupos repetidos: ' + res.gruposRepetidos + ', identicos: ' + res.identicos +
     ', distintos: ' + res.distintos + ', enviados a la papelera: ' + res.enviadosAPapelera + (res.incompleto ? ' (incompleto por tiempo)' : ''), []);
+  return res;
+}
+
+// ----- Tags sin perfil en RoyaleAPI (baneados o sin registro): registro en CSV/Tampermonkey y JSON/RoyaleAPI/Sin_Perfil -----
+
+/**
+ * _getTagsSinPerfilJsonFolder_() [→ Contexto_Base_Web.md §PF497]
+ * Carpeta JSON/RoyaleAPI/Sin_Perfil: se busca por nombre DENTRO de la carpeta RoyaleAPI (DRIVE_FOLDER_ID_ROYALEAPI) y se crea ahí si falta. Nunca va dentro de Grupal ni de Individual.
+ * Sin respaldo por nombre global: si no se encuentra la carpeta RoyaleAPI, el error se propaga y no se escribe en otro lugar.
+ */
+function _getTagsSinPerfilJsonFolder_() {
+  var raiz = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI);
+  var it = raiz.getFoldersByName(TAGS_SIN_PERFIL_JSON_CARPETA);
+  return it.hasNext() ? it.next() : raiz.createFolder(TAGS_SIN_PERFIL_JSON_CARPETA);
+}
+
+/** Tag normalizado a «#MAYÚSCULAS» o '' si no tiene forma de tag. */
+function _tspNormalizarTag_(valor) {
+  var t = String(valor === null || valor === undefined ? '' : valor).trim().toUpperCase().replace(/^#/, '');
+  return /^[0-9A-Z]{3,20}$/.test(t) ? '#' + t : '';
+}
+
+function _tspTexto_(v) { return String(v === null || v === undefined ? '' : v).trim(); }
+
+/** Fila del CSV (en el orden de TAGS_SIN_PERFIL_ENCABEZADOS) a registro. */
+function _tspFilaARegistro_(f) {
+  return { tag: _tspNormalizarTag_(f[0]), nombre: _tspTexto_(f[1]), estado: _tspTexto_(f[2]), royaleapi: _tspTexto_(f[3]), apiSupercell: _tspTexto_(f[4]),
+           fuente: _tspTexto_(f[5]), primeraVez: _tspTexto_(f[6]), ultimaActualizacion: _tspTexto_(f[7]), notas: _tspTexto_(f[8]) };
+}
+
+function _tspRegistroAFila_(r) {
+  return [r.tag, r.nombre, r.estado, r.royaleapi, r.apiSupercell, r.fuente, r.primeraVez, r.ultimaActualizacion, r.notas];
+}
+
+/**
+ * _registrarTagsSinPerfil_(items) [→ Contexto_Base_Web.md §PF497]
+ * items: [{ tag, nombre, estado, royaleapi, apiSupercell, fuente, notas }] (solo «tag» es obligatorio). Junta lo ya guardado (primero el CSV y, para lo que falte, el JSON), agrega los tags nuevos
+ * y completa los existentes con los campos que lleguen con valor; la clave es el tag y no se duplica. Escribe CSV/Tampermonkey/Tags_Sin_Perfil.csv y JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json
+ * con los mismos tags, y solo escribe cada archivo si algo cambió o si no existía. Toma el candado del script (30 s) para no pisar otra escritura.
+ * Devuelve { nuevos, actualizados, sinCambios, invalidos, total, csvGuardado, jsonGuardado } (más sinLock o error si falló).
+ */
+function _registrarTagsSinPerfil_(items) {
+  var res = { nuevos: 0, actualizados: 0, sinCambios: 0, invalidos: 0, total: 0, csvGuardado: false, jsonGuardado: false };
+  if (!items || !items.length) return res;
+
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    Logger.log('[TagsSinPerfil] No se pudo obtener el candado: no se registran ' + items.length + ' tag(s) para no pisar otra escritura en curso.');
+    res.sinLock = true;
+    return res;
+  }
+  try {
+    var carpetaCsv = _getCsvSubcarpeta_('Tampermonkey', true);
+    var carpetaJson = _getTagsSinPerfilJsonFolder_();
+    var mapa = {}, orden = [], i, r;
+
+    // Lo ya guardado: el CSV manda; el JSON aporta solo los tags que el CSV no tenga.
+    var archivoCsv = null, textoCsv = null;
+    var itCsv = carpetaCsv.getFilesByName(TAGS_SIN_PERFIL_CSV_FILENAME);
+    if (itCsv.hasNext()) {
+      archivoCsv = itCsv.next();
+      textoCsv = archivoCsv.getBlob().getDataAsString('UTF-8');
+      var filas = textoCsv ? _parseCSV(textoCsv) : [];
+      for (i = 1; i < filas.length; i++) { // fila 0 = encabezados
+        r = _tspFilaARegistro_(filas[i]);
+        if (r.tag && !mapa[r.tag]) { mapa[r.tag] = r; orden.push(r.tag); }
+      }
+    }
+    var archivoJson = null;
+    var itJson = carpetaJson.getFilesByName(TAGS_SIN_PERFIL_JSON_FILENAME);
+    if (itJson.hasNext()) {
+      archivoJson = itJson.next();
+      try {
+        var datos = JSON.parse(archivoJson.getBlob().getDataAsString('UTF-8'));
+        var lista = (datos && datos.tags) ? datos.tags : [];
+        for (i = 0; i < lista.length; i++) {
+          var tj = _tspNormalizarTag_(lista[i] && lista[i].tag);
+          if (tj && !mapa[tj]) {
+            mapa[tj] = { tag: tj, nombre: _tspTexto_(lista[i].nombre), estado: _tspTexto_(lista[i].estado), royaleapi: _tspTexto_(lista[i].royaleapi), apiSupercell: _tspTexto_(lista[i].apiSupercell),
+                         fuente: _tspTexto_(lista[i].fuente), primeraVez: _tspTexto_(lista[i].primeraVez), ultimaActualizacion: _tspTexto_(lista[i].ultimaActualizacion), notas: _tspTexto_(lista[i].notas) };
+            orden.push(tj);
+          }
+        }
+      } catch (eJson) {
+        Logger.log('[TagsSinPerfil] AVISO: no se pudo leer ' + TAGS_SIN_PERFIL_JSON_FILENAME + ' (' + (eJson.message || eJson) + '); se arma con lo que trae el CSV y los tags nuevos.');
+      }
+    }
+
+    // Los tags que llegan: nuevo, completar uno existente o sin cambios.
+    var ahora = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm');
+    var campos = ['nombre', 'estado', 'royaleapi', 'apiSupercell', 'fuente', 'notas'];
+    for (i = 0; i < items.length; i++) {
+      var it = items[i] || {};
+      var tag = _tspNormalizarTag_(it.tag);
+      if (!tag) { res.invalidos++; continue; }
+      var previo = mapa[tag];
+      if (!previo) {
+        mapa[tag] = { tag: tag, nombre: _tspTexto_(it.nombre), estado: _tspTexto_(it.estado) || 'Sin perfil', royaleapi: _tspTexto_(it.royaleapi), apiSupercell: _tspTexto_(it.apiSupercell),
+                      fuente: _tspTexto_(it.fuente), primeraVez: ahora, ultimaActualizacion: ahora, notas: _tspTexto_(it.notas) };
+        orden.push(tag);
+        res.nuevos++;
+        continue;
+      }
+      var nuevo = JSON.parse(JSON.stringify(previo)), cambio = false;
+      for (var c = 0; c < campos.length; c++) {
+        var v = _tspTexto_(it[campos[c]]);
+        if (v !== '' && v !== nuevo[campos[c]]) { nuevo[campos[c]] = v; cambio = true; }
+      }
+      if (cambio) { nuevo.ultimaActualizacion = ahora; mapa[tag] = nuevo; res.actualizados++; }
+      else res.sinCambios++;
+    }
+    res.total = orden.length;
+
+    // Escritura: cada archivo solo si algo cambió o si todavía no existía.
+    var hayCambios = (res.nuevos + res.actualizados) > 0;
+    var registros = orden.map(function (t) { return mapa[t]; });
+    if (hayCambios || !archivoCsv) {
+      var filasCsv = [TAGS_SIN_PERFIL_ENCABEZADOS.slice()].concat(registros.map(_tspRegistroAFila_));
+      var contenidoCsv = _encodeCSV(filasCsv);
+      if (archivoCsv) _setContentConConteo_(archivoCsv, contenidoCsv);
+      else _createFileConConteo_(carpetaCsv, TAGS_SIN_PERFIL_CSV_FILENAME, contenidoCsv, MimeType.CSV);
+      res.csvGuardado = true;
+    }
+    if (hayCambios || !archivoJson) {
+      var contenidoJson = JSON.stringify({
+        descripcion: 'Tags que Tampermonkey intenta leer y RoyaleAPI no devuelve (baneados o sin ningún registro). Los mismos tags están en CSV/Tampermonkey/' + TAGS_SIN_PERFIL_CSV_FILENAME + '.',
+        fechaUltimaActualizacion: ahora,
+        total: registros.length,
+        tags: registros
+      }, null, 2);
+      if (archivoJson) _setContentConConteo_(archivoJson, contenidoJson);
+      else _createFileConConteo_(carpetaJson, TAGS_SIN_PERFIL_JSON_FILENAME, contenidoJson, MimeType.PLAIN_TEXT);
+      res.jsonGuardado = true;
+    }
+    Logger.log('[TagsSinPerfil] Nuevos: ' + res.nuevos + ', actualizados: ' + res.actualizados + ', sin cambios: ' + res.sinCambios + ', inválidos: ' + res.invalidos +
+               '. Total en los archivos: ' + res.total + '. CSV ' + (res.csvGuardado ? 'guardado' : 'sin cambios') + ', JSON ' + (res.jsonGuardado ? 'guardado' : 'sin cambios') + '.');
+  } catch (e) {
+    res.error = e.message || String(e);
+    Logger.log('[TagsSinPerfil] Error: ' + res.error);
+  } finally {
+    lock.releaseLock();
+  }
   return res;
 }
