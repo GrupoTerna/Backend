@@ -1735,7 +1735,7 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
-  // Endpoint 'tagsSinPerfil' (Tampermonkey, fases que visitan perfiles; 18-nov-2026, §PF506): Tampermonkey vio la página 404 de RoyaleAPI («Player tag … not found») y manda los tags; se registran en CSV/Tampermonkey/Tags_Sin_Perfil.csv y JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json sin pisar lo confirmado a mano, ver _aplicarTagsSinPerfil_() en 20_HistorialGuerraJugador.gs. Usa HISTORIAL_GUERRA_TOKEN porque esas fases ya lo piden. [→ Contexto_Base_Web.md §PF506]
+  // Endpoint 'tagsSinPerfil' (Tampermonkey, fases que visitan perfiles; 18-nov-2026, §PF507): Tampermonkey vio la página 404 de RoyaleAPI («Player tag … not found») y manda los tags; se registran en CSV/Tampermonkey/Tags_Sin_Perfil.csv y JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json sin pisar lo confirmado a mano, ver _aplicarTagsSinPerfil_() en 20_HistorialGuerraJugador.gs. Usa HISTORIAL_GUERRA_TOKEN porque esas fases ya lo piden. [→ Contexto_Base_Web.md §PF507]
   if (e && e.parameter && e.parameter.accion === 'tagsSinPerfil') {
     if (e.parameter.token !== HISTORIAL_GUERRA_TOKEN) {
       return ContentService

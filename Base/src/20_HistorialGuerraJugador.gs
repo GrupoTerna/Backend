@@ -1857,7 +1857,7 @@ function _tspRegistroAFila_(r) {
  * items: [{ tag, nombre, estado, royaleapi, apiSupercell, fuente, notas }] (solo «tag» es obligatorio). Junta lo ya guardado (primero el CSV y, para lo que falte, el JSON), agrega los tags nuevos
  * y completa los existentes con los campos que lleguen con valor; la clave es el tag y no se duplica. Escribe CSV/Tampermonkey/Tags_Sin_Perfil.csv y JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json
  * con los mismos tags, y solo escribe cada archivo si algo cambió o si no existía. Toma el candado del script (30 s) para no pisar otra escritura.
- * opciones.soloCompletar (true cuando el dato lo manda Tampermonkey, §PF506): en un tag que ya existe solo se llenan los campos vacíos, para que una lectura automática no pise lo confirmado a mano;
+ * opciones.soloCompletar (true cuando el dato lo manda Tampermonkey, §PF507): en un tag que ya existe solo se llenan los campos vacíos, para que una lectura automática no pise lo confirmado a mano;
  * la única excepción es el estado genérico «Sin perfil», que sí se concreta a «Baneado» o «Sin registro». Sin esa opción, un campo con valor distinto reemplaza al anterior (uso manual).
  * Devuelve { nuevos, actualizados, sinCambios, invalidos, total, csvGuardado, jsonGuardado } (más sinLock o error si falló).
  */
@@ -1969,7 +1969,7 @@ function _registrarTagsSinPerfil_(items, opciones) {
 }
 
 /**
- * _aplicarTagsSinPerfil_(tags) [→ Contexto_Base_Web.md §PF506]
+ * _aplicarTagsSinPerfil_(tags) [→ Contexto_Base_Web.md §PF507]
  * Lo llama el endpoint doPost «tagsSinPerfil» (38_Web_Endpoints.gs). tags: [{ tag, nombre, estado }] con lo que Tampermonkey vio en la página 404 de RoyaleAPI («Player tag … not found (404)»);
  * estado es «Baneado» (la página trae «Account may have been banned») o «Sin registro» (404 sin ese aviso); cualquier otro valor se guarda como «Sin perfil».
  * El resto de las columnas las arma el backend (la fuente es siempre la misma, sin fecha, para que ver el mismo tag otra vez no cuente como cambio) y se registra con soloCompletar,
