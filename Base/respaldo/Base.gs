@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 17:02:35 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 17:36:53 */
 
 
 
@@ -38023,6 +38023,7 @@ var HISTORIAL_GUERRA_GRUPAL_FILENAME = 'HistorialGuerra_Grupal.csv';
 var TAGS_SIN_PERFIL_CSV_FILENAME  = 'Tags_Sin_Perfil.csv';
 var TAGS_SIN_PERFIL_JSON_FILENAME = 'Tags_Sin_Perfil.json';
 var TAGS_SIN_PERFIL_JSON_CARPETA  = 'Sin_Perfil';
+var TAGS_SIN_PERFIL_MAX_LOTE      = 100; // tags por envío de Tampermonkey (_aplicarTagsSinPerfil_); el resto se descarta y se avisa en «omitidos»
 var TAGS_SIN_PERFIL_ENCABEZADOS = ['Tag', 'Nombre', 'Estado', 'RoyaleAPI', 'API_Supercell', 'Fuente', 'Primera_Vez', 'Ultima_Actualizacion', 'Notas'];
 // Los 4 tags confirmados el 18-nov-2026 (§PF497 punto 18): 3 baneados y 1 sin ningún registro. La API de Supercell, vía el proxy de Render, responde notFound en los 4.
 var TAGS_SIN_PERFIL_CONOCIDOS_ = [
@@ -39807,13 +39808,16 @@ function _tspRegistroAFila_(r) {
 }
 
 /**
- * _registrarTagsSinPerfil_(items) [→ Contexto_Base_Web.md §PF497]
+ * _registrarTagsSinPerfil_(items, opciones) [→ Contexto_Base_Web.md §PF497]
  * items: [{ tag, nombre, estado, royaleapi, apiSupercell, fuente, notas }] (solo «tag» es obligatorio). Junta lo ya guardado (primero el CSV y, para lo que falte, el JSON), agrega los tags nuevos
  * y completa los existentes con los campos que lleguen con valor; la clave es el tag y no se duplica. Escribe CSV/Tampermonkey/Tags_Sin_Perfil.csv y JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json
  * con los mismos tags, y solo escribe cada archivo si algo cambió o si no existía. Toma el candado del script (30 s) para no pisar otra escritura.
+ * opciones.soloCompletar (true cuando el dato lo manda Tampermonkey, §PF507): en un tag que ya existe solo se llenan los campos vacíos, para que una lectura automática no pise lo confirmado a mano;
+ * la única excepción es el estado genérico «Sin perfil», que sí se concreta a «Baneado» o «Sin registro». Sin esa opción, un campo con valor distinto reemplaza al anterior (uso manual).
  * Devuelve { nuevos, actualizados, sinCambios, invalidos, total, csvGuardado, jsonGuardado } (más sinLock o error si falló).
  */
-function _registrarTagsSinPerfil_(items) {
+function _registrarTagsSinPerfil_(items, opciones) {
+  var soloCompletar = !!(opciones && opciones.soloCompletar);
   var res = { nuevos: 0, actualizados: 0, sinCambios: 0, invalidos: 0, total: 0, csvGuardado: false, jsonGuardado: false };
   if (!items || !items.length) return res;
 
@@ -39878,7 +39882,9 @@ function _registrarTagsSinPerfil_(items) {
       var nuevo = JSON.parse(JSON.stringify(previo)), cambio = false;
       for (var c = 0; c < campos.length; c++) {
         var v = _tspTexto_(it[campos[c]]);
-        if (v !== '' && v !== nuevo[campos[c]]) { nuevo[campos[c]] = v; cambio = true; }
+        if (v === '' || v === nuevo[campos[c]]) continue;
+        if (soloCompletar && nuevo[campos[c]] !== '' && !(campos[c] === 'estado' && nuevo.estado === 'Sin perfil')) continue; // lo que ya tiene valor no se pisa
+        nuevo[campos[c]] = v; cambio = true;
       }
       if (cambio) { nuevo.ultimaActualizacion = ahora; mapa[tag] = nuevo; res.actualizados++; }
       else res.sinCambios++;
@@ -39914,6 +39920,36 @@ function _registrarTagsSinPerfil_(items) {
   } finally {
     lock.releaseLock();
   }
+  return res;
+}
+
+/**
+ * _aplicarTagsSinPerfil_(tags) [→ Contexto_Base_Web.md §PF507]
+ * Lo llama el endpoint doPost «tagsSinPerfil» (38_Web_Endpoints.gs). tags: [{ tag, nombre, estado }] con lo que Tampermonkey vio en la página 404 de RoyaleAPI («Player tag … not found (404)»);
+ * estado es «Baneado» (la página trae «Account may have been banned») o «Sin registro» (404 sin ese aviso); cualquier otro valor se guarda como «Sin perfil».
+ * El resto de las columnas las arma el backend (la fuente es siempre la misma, sin fecha, para que ver el mismo tag otra vez no cuente como cambio) y se registra con soloCompletar,
+ * así que nunca pisa lo confirmado a mano. Tope de TAGS_SIN_PERFIL_MAX_LOTE tags por envío. Devuelve el resultado de _registrarTagsSinPerfil_ más ok, y omitidos si el lote era mayor.
+ */
+function _aplicarTagsSinPerfil_(tags) {
+  if (!Array.isArray(tags)) return { ok: false, error: 'El envío no trae una lista de tags.', code: 400 };
+  var lote = tags.slice(0, TAGS_SIN_PERFIL_MAX_LOTE);
+  var items = [];
+  for (var i = 0; i < lote.length; i++) {
+    var t = lote[i] || {};
+    var estado = _tspTexto_(t.estado);
+    if (estado !== 'Baneado' && estado !== 'Sin registro') estado = 'Sin perfil';
+    items.push({
+      tag: t.tag,
+      nombre: _tspTexto_(t.nombre).replace(/[\r\n\t]+/g, ' ').substring(0, 60),
+      estado: estado,
+      royaleapi: estado === 'Baneado' ? 'Página 404 con «Account may have been banned»' : (estado === 'Sin registro' ? 'Página 404 sin aviso de baneo' : 'Página 404'),
+      fuente: 'Tampermonkey (página 404 de RoyaleAPI)'
+    });
+  }
+  var res = _registrarTagsSinPerfil_(items, { soloCompletar: true });
+  if (res.sinLock) res.error = 'Hay otra escritura en curso; vuelve a intentarlo.';
+  res.ok = !res.error;
+  if (tags.length > lote.length) res.omitidos = tags.length - lote.length;
   return res;
 }
 
@@ -65998,6 +66034,27 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     } catch (errTL) {
       _logTampermonkeyADrive('TrofeosLogGuerra', null, errTL.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  // Endpoint 'tagsSinPerfil' (Tampermonkey, fases que visitan perfiles; 18-nov-2026, §PF507): Tampermonkey vio la página 404 de RoyaleAPI («Player tag … not found») y manda los tags; se registran en CSV/Tampermonkey/Tags_Sin_Perfil.csv y JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json sin pisar lo confirmado a mano, ver _aplicarTagsSinPerfil_() en 20_HistorialGuerraJugador.gs. Usa HISTORIAL_GUERRA_TOKEN porque esas fases ya lo piden. [→ Contexto_Base_Web.md §PF507]
+  if (e && e.parameter && e.parameter.accion === 'tagsSinPerfil') {
+    if (e.parameter.token !== HISTORIAL_GUERRA_TOKEN) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'No autorizado', code: 401 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    try {
+      var payloadTSP = JSON.parse(e.postData.contents);
+      var resultadoTSP = _aplicarTagsSinPerfil_(payloadTSP && payloadTSP.tags);
+      _logTampermonkeyADrive('TagsSinPerfil', resultadoTSP, resultadoTSP && resultadoTSP.error ? resultadoTSP.error : null);
+      return ContentService
+        .createTextOutput(JSON.stringify(resultadoTSP))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errTSP) {
+      _logTampermonkeyADrive('TagsSinPerfil', null, errTSP.toString());
       return ContentService
         .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
         .setMimeType(ContentService.MimeType.JSON);
