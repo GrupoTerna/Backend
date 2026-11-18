@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 17:36:53 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 18:23:20 */
 
 
 
@@ -21124,6 +21124,81 @@ function _webAdminBuscarClan(token, tag) {
     fechaConsulta: clanDelDia.fecha,
     origenDatos: clanDelDia.origen
   };
+}
+
+/**
+ * _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres) [→ Contexto_Base_Web.md §PF508]
+ * Función pura. Arma la lista de la tarjeta «Clanes externos» de admin.html: un elemento por clan externo con los jugadores nuestros que estuvieron ahí.
+ * `indice` es el índice anterior ({ clanes: { '#CLAN': { nombre, jugadores: [{ tag, semanas, primera, ultima }] } } }, Indice_Clanes_Externos.json); `sospechosos` sale de _alertasClanesSospechosos_() (clanes rivales y vetados de HOY, por Tag sin «#»);
+ * `alertas` es Alertas_Clanes_Sospechosos.json (los tipos que un clan ya tuvo no se quitan, §PF378); `nombres` es { 'TAG': 'Nombre' } de los jugadores (_hgNombresPorTag_()).
+ * Un clan rival o vetado de hoy sin ningún jugador nuestro en el índice también sale, con la lista vacía (la usuaria quiere ver todos los vetados y rivales).
+ * Devuelve [{ tag, nombre, tipos: ['rival'|'vetado'], hoy, jugadores: [{ tag, nombre, semanas, primera, ultima }] }]; primera y ultima son { temporada, semana, supercell } (supercell solo cuando temporada <= 0, igual que _clanesExternosDeJugador_()).
+ * Orden: clanes con más jugadores primero y, a igual cantidad, por nombre; los jugadores, del que estuvo más recientemente al más antiguo.
+ */
+function _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres) {
+  var clanesIdx = (indice && indice.clanes) || {};
+  var hoyMapa = sospechosos || {};
+  var guardados = (alertas && alertas.clanes) || {};
+  var nombresJ = nombres || {};
+  var claves = {}, k;
+  for (k in clanesIdx) claves[k] = true;
+  for (k in hoyMapa) claves['#' + cleanTag(k)] = true;
+  for (k in guardados) claves[k] = true;
+
+  var punto = function (p) {
+    if (!p) return null;
+    var t = Number(p.temporada);
+    return { temporada: p.temporada, semana: p.semana, supercell: (t <= 0 ? _temporadaSupercellDeRoyaleApi_(p.temporadaRoyaleApi) : '') };
+  };
+  var salida = [];
+  for (var clave in claves) {
+    var tagN = cleanTag(clave);
+    if (!tagN) continue;
+    var enIdx = clanesIdx[clave] || null;
+    var hoy = hoyMapa[tagN] || null;
+    var ya = guardados[clave] || null;
+    var tipos = [];
+    var fuentes = [(hoy && hoy.tipos) || [], (ya && ya.tipos) || []];
+    for (var f = 0; f < fuentes.length; f++) for (var q = 0; q < fuentes[f].length; q++) if (tipos.indexOf(fuentes[f][q]) < 0) tipos.push(fuentes[f][q]);
+    tipos.sort(function (a, b) { return a === b ? 0 : (a === 'rival' ? -1 : 1); });
+    var nombre = (hoy && hoy.nombre) || (ya && ya.nombre) || (enIdx && enIdx.nombre) || '';
+    var jugadores = [];
+    var lista = (enIdx && enIdx.jugadores) || [];
+    for (var i = 0; i < lista.length; i++) {
+      var tagJ = cleanTag(lista[i] && lista[i].tag);
+      if (!tagJ) continue;
+      jugadores.push({ tag: '#' + tagJ, nombre: String(nombresJ[tagJ] || ''), semanas: Number(lista[i].semanas) || 0, primera: punto(lista[i].primera), ultima: punto(lista[i].ultima) });
+    }
+    jugadores.sort(function (a, b) {
+      var ua = a.ultima || { temporada: -999, semana: 0 }, ub = b.ultima || { temporada: -999, semana: 0 };
+      if (ua.temporada !== ub.temporada) return ub.temporada - ua.temporada;
+      if (ua.semana !== ub.semana) return ub.semana - ua.semana;
+      return b.semanas - a.semanas;
+    });
+    salida.push({ tag: '#' + tagN, nombre: nombre, tipos: tipos, hoy: !!hoy, jugadores: jugadores });
+  }
+  salida.sort(function (a, b) {
+    if (a.jugadores.length !== b.jugadores.length) return b.jugadores.length - a.jugadores.length;
+    return String(a.nombre).localeCompare(String(b.nombre));
+  });
+  return salida;
+}
+
+/**
+ * _webAdminClanesExternos(token) [→ Contexto_Base_Web.md §PF508]
+ * Lista de clanes externos para la tarjeta «Clanes externos» de admin.html: todos los clanes donde algún jugador nuestro jugó guerra sin ser de la Familia, marcados como rival y/o vetado, con los jugadores nuestros que estuvieron ahí. Solo lee Drive (el índice, las alertas y los nombres); no llama a la API de Supercell.
+ * Fuente: Indice_Clanes_Externos.json (el respaldo que se reescribe al COMPLETAR una corrida del índice, §PF378). `actualizado` es la fecha de esa corrida: los jugadores que llegaron después no salen hasta la siguiente corrida completa.
+ * Respuesta: { ok, actualizado, indiceCompleto, total, clanes: [ver _clanesExternosListaArmar_()] } o { ok:false, error }.
+ */
+function _webAdminClanesExternos(token) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  var indice = _cargarIndiceClanes_();
+  if (!indice || !indice.clanes) return { ok: false, error: 'Aún no hay un índice de clanes externos. Corre generarIndiceClanesExternos() y espera a que termine (COMPLETO).' };
+  var sospechosos = _alertasClanesSospechosos_(_getRivalesYConflicto(true));
+  var alertas = _alertasClanesCargar_();
+  var nombres = _hgNombresPorTag_();
+  var clanes = _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres);
+  return { ok: true, actualizado: String(indice.actualizado || indice.generado || ''), indiceCompleto: indice.completo === true, total: clanes.length, clanes: clanes };
 }
 
 /**
@@ -65342,6 +65417,19 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     } catch (errClan) {
       Logger.log('[Web] Error interno: ' + errClan.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  // §PF508: webAdminClanesExternos, lista de clanes externos, vetados y rivales con los jugadores nuestros que estuvieron ahí, para la tarjeta «Clanes externos» de admin.html (solo lee Drive; 15_DeteccionInfiltrados.gs); GET, sesión de admin. [→ Contexto_Base_Web.md §PF508]
+  if (e && e.parameter && e.parameter.accion === 'webAdminClanesExternos') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(_webAdminClanesExternos(e.parameter.sessionToken)))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errCExt) {
+      Logger.log('[Web] Error interno: ' + errCExt.toString());
       return ContentService
         .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
         .setMimeType(ContentService.MimeType.JSON);
