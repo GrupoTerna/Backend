@@ -88,7 +88,7 @@
 | 10 | Backend: nombre actualizable (`_sincronizarNombreClan_`) | **Hecha en código** (17-nov-2026; §PF503), probada en Node con hojas, CSV y Drive simulados, **sin probar en Apps Script real** | `f256014` |
 | 11 | Guardia contra comparaciones nuevas por nombre y regla en la skill (**la usuaria debe reinstalar la skill**) | **Hecha** (17-nov-2026; §PF498 punto 7): el script `verificar_clanes_por_tag.py` está en `main` y la regla del criterio 8 y la mención en el paso 6 del flujo están en `Claude/SKILL.md` rev. 10 (commit `d42fa44`). **La usuaria debe reinstalar la skill** | `07764362` |
 | 12 | Cierre: pasar lo permanente al contexto y preguntar si se borra este consolidado | Pendiente | — |
-| 13 | Backend: `Control` y `Control_2` con una fila por jugador y clan de la temporada y columna `Estado` (agregada el 6-nov-2026; **P7 contestada**); se hace antes del cierre (12) | Pendiente | — |
+| 13 | Backend: `Control` y `Control_2` con una fila por jugador y clan de la temporada y columna `Estado` (agregada el 6-nov-2026; **P7 contestada**); se hace antes del cierre (12) | **13a hecha** (17-nov-2026; `Control_2`; §PF504), probada en Node, sin probar en Apps Script real. **13b (`Control`) pendiente** | `effbc9b9` |
 | — | Fuera de tanda: la reconstrucción no crea filas sin clan (§PF402) | **Hecha** (6-nov-2026), sin probar en Apps Script real | `d157731` |
 
 ## 3. Tandas
