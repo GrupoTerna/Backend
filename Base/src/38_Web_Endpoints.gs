@@ -1735,6 +1735,27 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // Endpoint 'tagsSinPerfil' (Tampermonkey, fases que visitan perfiles; 18-nov-2026, §PF506): Tampermonkey vio la página 404 de RoyaleAPI («Player tag … not found») y manda los tags; se registran en CSV/Tampermonkey/Tags_Sin_Perfil.csv y JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json sin pisar lo confirmado a mano, ver _aplicarTagsSinPerfil_() en 20_HistorialGuerraJugador.gs. Usa HISTORIAL_GUERRA_TOKEN porque esas fases ya lo piden. [→ Contexto_Base_Web.md §PF506]
+  if (e && e.parameter && e.parameter.accion === 'tagsSinPerfil') {
+    if (e.parameter.token !== HISTORIAL_GUERRA_TOKEN) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'No autorizado', code: 401 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    try {
+      var payloadTSP = JSON.parse(e.postData.contents);
+      var resultadoTSP = _aplicarTagsSinPerfil_(payloadTSP && payloadTSP.tags);
+      _logTampermonkeyADrive('TagsSinPerfil', resultadoTSP, resultadoTSP && resultadoTSP.error ? resultadoTSP.error : null);
+      return ContentService
+        .createTextOutput(JSON.stringify(resultadoTSP))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errTSP) {
+      _logTampermonkeyADrive('TagsSinPerfil', null, errTSP.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // Endpoint 'Verificar Semana en Curso' (fase race, Tampermonkey; ver 19_CorreccionRiverRace.gs): nunca escribe directo sobre Guerra/Control_2, solo deja discrepancias pendientes de aprobación manual (aprobarCorreccionesRiverRacePendientes()). [→ Contexto_Base_Web.md §38B099]
   if (e && e.parameter && e.parameter.accion === 'verificarSemanaActual') {
     if (e.parameter.token !== VERIFICAR_RIVERRACE_TOKEN) {
