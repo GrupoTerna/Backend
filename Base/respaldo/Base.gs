@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 19/11/2026 08:08:37 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 19/11/2026 17:03:57 */
 
 
 
@@ -20707,6 +20707,8 @@ var CLAN_DIA_PREFIJO_ARCHIVO = 'Busqueda_Clan - ';
 // Índice de clanes externos (§PF369): por cada clan donde algún jugador nuestro jugó guerra sin ser de la Familia, qué Tags de jugador estuvieron ahí. Se arma leyendo los JSON individuales de RoyaleAPI.
 var INDICE_CLANES_JSON = 'Indice_Clanes_Externos.json';
 var INDICE_CLANES_CSV = 'Indice_Clanes_Externos.csv';
+// Resumen liviano de clanes externos (§PF378, 19-nov-2026): nombre y jugadores [{ tag, semanas, primera, ultima }] por clan. Lo escribe la corrida del índice al COMPLETARSE y es la fuente de la tarjeta «Clanes externos» (§PF508); reemplaza a Indice_Clanes_Externos.json en esa tarjeta, que queda de respaldo hasta retirarlo.
+var RESUMEN_CLANES_JSON = 'Resumen_Clanes_Externos.json';
 var INDICE_CLANES_PRESUPUESTO_MS = 270000;
 // Ejecución programada del índice (§PF376): un activador semanal (08_Activadores.gs) llama a generarIndiceClanesExternosProgramado(); si el índice queda incompleto, se programa una continuación a INDICE_CLANES_CONT_ESPERA_MS, hasta INDICE_CLANES_CONT_MAX corridas seguidas.
 var INDICE_CLANES_HANDLER_CONT = '_continuarGenerarIndiceClanesExternos';
@@ -20751,6 +20753,23 @@ function generarIndiceClanesExternos() {
   _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT);
   PropertiesService.getScriptProperties().setProperty(INDICE_CLANES_CONT_PROP, '0');
   _indiceClanesCorrerProgramado_();
+}
+
+/**
+ * generarResumenClanesExternos() [→ Contexto_Base_Web.md §PF378]
+ * MANUAL (se corre desde el editor; proyecto Base, archivo 15_DeteccionInfiltrados.gs). Crea Resumen_Clanes_Externos.json a partir del índice completo ya guardado (Indice_Clanes_Externos.json), sin leer los 7 000 archivos de clan ni esperar a la corrida semanal. Sirve una sola vez, para que la tarjeta «Clanes externos» lea el resumen desde ya; después lo reescribe cada corrida del índice al completarse. No toca nada más.
+ * Devuelve true si guardó el resumen.
+ */
+function generarResumenClanesExternos() {
+  var indice = _cargarIndiceClanes_();
+  if (!indice || indice.completo !== true || !indice.clanes) {
+    Logger.log('[ResumenClanes] No hay un índice completo (' + INDICE_CLANES_JSON + '): corre generarIndiceClanesExternos() y espera a que termine (COMPLETO).');
+    return false;
+  }
+  var resumen = _resumenClanesArmar_(indice);
+  var ok = _resumenClanesGuardar_(resumen);
+  Logger.log('[ResumenClanes] ' + (ok ? 'Guardado' : 'NO se pudo guardar') + ' ' + RESUMEN_CLANES_JSON + ': ' + (resumen ? resumen.totalClanes : 0) + ' clanes, actualizado ' + (resumen ? resumen.actualizado : '—') + '.');
+  return ok;
 }
 
 // ----- Alertas de clanes sospechosos: actualizar (§PF375) -----
@@ -21130,6 +21149,21 @@ function _webAdminBuscarClan(token, tag) {
 }
 
 /**
+ * _clanesExternosSuperponer_(indice, fuente) [→ Contexto_Base_Web.md §PF378]
+ * Función pura. Pone sobre `indice.clanes` (EN SITIO) los clanes de `fuente.clanes` (la forma de _alertasClanesFuenteDeArchivos_(): { '#CLAN': { nombre, jugadores } } leída de los archivos de clan, que son históricos y solo suman). El clan de la fuente reemplaza al del índice; si no trae nombre se conserva el que había. Sirve para que la tarjeta «Clanes externos» muestre completos a los clanes rivales y vetados, que es donde el resumen puede ir por detrás de los archivos. Devuelve `indice`.
+ */
+function _clanesExternosSuperponer_(indice, fuente) {
+  if (!indice) return indice;
+  if (!indice.clanes) indice.clanes = {};
+  var porArchivo = (fuente && fuente.clanes) || {};
+  for (var clave in porArchivo) {
+    var previo = indice.clanes[clave] || null;
+    indice.clanes[clave] = { nombre: String(porArchivo[clave].nombre || (previo && previo.nombre) || ''), jugadores: porArchivo[clave].jugadores || [] };
+  }
+  return indice;
+}
+
+/**
  * _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres) [→ Contexto_Base_Web.md §PF508]
  * Función pura. Arma la lista de la tarjeta «Clanes externos» de admin.html: un elemento por clan externo con los jugadores nuestros que estuvieron ahí.
  * `indice` es el índice anterior ({ clanes: { '#CLAN': { nombre, jugadores: [{ tag, semanas, primera, ultima }] } } }, Indice_Clanes_Externos.json); `sospechosos` sale de _alertasClanesSospechosos_() (clanes rivales y vetados de HOY, por Tag sin «#»);
@@ -21209,16 +21243,28 @@ function _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, conte
 /**
  * _webAdminClanesExternos(token) [→ Contexto_Base_Web.md §PF508]
  * Lista de clanes externos para la tarjeta «Clanes externos» de admin.html: todos los clanes donde algún jugador nuestro jugó guerra sin ser de la Familia, marcados como rival y/o vetado, con los jugadores nuestros que estuvieron ahí. Solo lee Drive (el índice, las alertas y los nombres); no llama a la API de Supercell.
- * Fuente: Indice_Clanes_Externos.json (el respaldo que se reescribe al COMPLETAR una corrida del índice, §PF378). `actualizado` es la fecha de esa corrida: los jugadores que llegaron después no salen hasta la siguiente corrida completa.
+ * Fuente (§PF378, 19-nov-2026): Resumen_Clanes_Externos.json (se reescribe al COMPLETAR una corrida del índice; antes, Indice_Clanes_Externos.json, que queda de respaldo si el resumen aún no existe), con los clanes rivales y vetados leídos de sus archivos de clan. `actualizado` es la fecha de esa corrida: los jugadores que llegaron después no salen hasta la siguiente corrida completa.
  * Respuesta: { ok, actualizado, indiceCompleto, total, clanes: [ver _clanesExternosListaArmar_()] } o { ok:false, error }. §PF509: cada clan trae ternaNombre, activos e inactivos, y cada jugador `activo` (está hoy en el Directorio).
  */
 function _webAdminClanesExternos(token) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
-  var indice = _cargarIndiceClanes_();
+  // §PF378 (19-nov-2026): la fuente es el resumen liviano; si aún no existe (hasta correr generarResumenClanesExternos() o completar una corrida del índice) se usa el índice anterior.
+  var indice = _resumenClanesCargar_() || _cargarIndiceClanes_();
   if (!indice || !indice.clanes) return { ok: false, error: 'Aún no hay un índice de clanes externos. Corre generarIndiceClanesExternos() y espera a que termine (COMPLETO).' };
   var rivalesYConflicto = _getRivalesYConflicto(true);
   var sospechosos = _alertasClanesSospechosos_(rivalesYConflicto);
   var alertas = _alertasClanesCargar_();
+  // §PF378: los clanes rivales, vetados y ya alertados salen de sus archivos de clan (históricos); el resumen puede ir por detrás (por ejemplo, jugadores que llegaron después de la última corrida completa). Son pocos clanes (un archivo cada uno). Si un archivo no se puede leer, queda lo del resumen.
+  if (_clanesExternosListos_()) {
+    try {
+      var clavesSusp = {};
+      for (var tsp in sospechosos) clavesSusp['#' + cleanTag(tsp)] = true;
+      if (alertas && alertas.clanes) for (var kal in alertas.clanes) clavesSusp[kal] = true;
+      _clanesExternosSuperponer_(indice, _alertasClanesFuenteDeArchivos_(clavesSusp).fuente);
+    } catch (eSup) {
+      Logger.log('[ClanesExternos] No se pudieron leer los archivos de los clanes sospechosos: ' + eSup.message + '. Se usa solo el resumen.');
+    }
+  }
   var nombres = _hgNombresPorTag_();
   _completarNombresDeRespaldo_(nombres);
   // §PF509: clan nuestro al que cada rival enfrenta hoy, y Tags activos (los que hoy figuran en el Directorio).
@@ -21742,6 +21788,7 @@ function _generarIndiceClanesExternosUnaCorrida_() {
   var legado = _indiceClanesLegadoDe_(estado);
   _guardarIndiceClanes_(legado);
   _saveCSVToDrive(INDICE_CLANES_CSV, _encodeCSV(_indiceClanesAFilasCsv_(legado)));
+  _resumenClanesGuardar_(_resumenClanesArmar_(legado)); // §PF378 (19-nov-2026): fuente de la tarjeta «Clanes externos»
   res.firmas.ultimaCompleta = ahoraTxt;
   _clanesExternosFirmasGuardar_(res.firmas);
   _clanesExternosListoCache_ = ahoraTxt;
@@ -21894,6 +21941,59 @@ function _guardarIndiceClanes_(indice) {
     else _createFileConConteo_(folder, INDICE_CLANES_JSON, content, MimeType.PLAIN_TEXT);
   } catch (e) {
     Logger.log('[IndiceClanes] Error guardando ' + INDICE_CLANES_JSON + ': ' + e.message);
+  }
+}
+
+/**
+ * _resumenClanesArmar_(indice) [→ Contexto_Base_Web.md §PF378]
+ * Función pura. Del índice con la forma de siempre (clanes con nombre y jugadores) saca el resumen que lee la tarjeta «Clanes externos»: por clan solo `nombre` y [{ tag, semanas, primera, ultima }], sin `nombres`, `procesados` ni `ilegibles`. Devuelve null si `indice` no trae clanes.
+ */
+function _resumenClanesArmar_(indice) {
+  if (!indice || !indice.clanes || typeof indice.clanes !== 'object') return null;
+  var resumen = { version: 1, actualizado: String(indice.actualizado || indice.generado || ''), completo: true, totalClanes: 0, clanes: {} };
+  for (var tagC in indice.clanes) {
+    var c = indice.clanes[tagC] || {};
+    var lista = c.jugadores || [];
+    var jugadores = [];
+    for (var i = 0; i < lista.length; i++) {
+      var j = lista[i];
+      if (!j || !j.tag) continue;
+      jugadores.push({ tag: j.tag, semanas: j.semanas, primera: j.primera || null, ultima: j.ultima || null });
+    }
+    resumen.clanes[tagC] = { nombre: String(c.nombre || ''), jugadores: jugadores };
+  }
+  resumen.totalClanes = Object.keys(resumen.clanes).length;
+  return resumen;
+}
+
+/**
+ * _resumenClanesCargar_() / _resumenClanesGuardar_(resumen) [→ Contexto_Base_Web.md §PF378]
+ * Cargar lee Resumen_Clanes_Externos.json de la carpeta Otros; null si no existe, no se pudo leer o no trae `clanes`. Guardar lo escribe (crea o reemplaza) y devuelve true si lo logró; con `resumen` nulo no hace nada y devuelve false. Un fallo se anota en el registro y no corta la corrida del índice.
+ */
+function _resumenClanesCargar_() {
+  try {
+    var files = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS).getFilesByName(RESUMEN_CLANES_JSON);
+    if (files.hasNext()) {
+      var r = JSON.parse(files.next().getBlob().getDataAsString('UTF-8'));
+      if (r && r.clanes && typeof r.clanes === 'object') return r;
+    }
+  } catch (e) {
+    Logger.log('[ResumenClanes] Error leyendo ' + RESUMEN_CLANES_JSON + ': ' + e.message);
+  }
+  return null;
+}
+function _resumenClanesGuardar_(resumen) {
+  if (!resumen) return false;
+  try {
+    var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID_OTROS);
+    var files = folder.getFilesByName(RESUMEN_CLANES_JSON);
+    var content = JSON.stringify(resumen);
+    if (files.hasNext()) _setContentConConteo_(files.next(), content);
+    else _createFileConConteo_(folder, RESUMEN_CLANES_JSON, content, MimeType.PLAIN_TEXT);
+    return true;
+  } catch (e) {
+    Logger.log('[ResumenClanes] Error guardando ' + RESUMEN_CLANES_JSON + ': ' + e.message);
+    return false;
   }
 }
 
