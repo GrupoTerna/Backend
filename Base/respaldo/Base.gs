@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 22:56:26 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 19/11/2026 08:08:37 */
 
 
 
@@ -60307,7 +60307,7 @@ function _webIngresosRecientes(opciones) {
   copia.ingresos = ((completa && completa.ingresos) || []).map(function (ing) {
     var limpio = {};
     Object.keys(ing).forEach(function (k) {
-      if (k !== 'esRivalTemporada' && k !== 'clanRivalDetectado' && k !== 'esCuentaAdmin' && k !== 'tieneWsp') limpio[k] = ing[k];
+      if (k !== 'esRivalTemporada' && k !== 'clanRivalDetectado' && k !== 'clanesRivalesDetectados' && k !== 'esCuentaAdmin' && k !== 'tieneWsp') limpio[k] = ing[k];
     });
     return limpio;
   });
@@ -60660,7 +60660,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
   // FASE 7 (Parte A, punto 7 del documento — avisos de competencia en Ingresos recientes) — reusa _getRivalesYConflicto() (FASE 6, 15_DeteccionInfiltrados.gs) para marcar cuando un ingreso reciente estuvo antes en un clan rival de… [→ Contexto_Base_Web.md §37B264]
   var rivalesYConflictoIR = {};
   try {
-    rivalesYConflictoIR = _getRivalesYConflicto(); // 15_DeteccionInfiltrados.gs
+    rivalesYConflictoIR = _getRivalesYConflicto(true); // 15_DeteccionInfiltrados.gs; true = incluye también al clan vetado fijo (NARANJA x), §PF520
   } catch (eRivalesIR) {
     // Defensivo, mismo criterio que _getClanesRivalesTemporadaActual(): si currentriverrace no trae el campo esperado (cambio de API, proxy caído, etc.), esta fase simplemente no marca a nadie como rival en vez de romper toda la… [→ Contexto_Base_Web.md §37B265]
     Logger.log('[IngresosRecientes] _getRivalesYConflicto() falló, se omite el aviso de rival esta vez: ' + eRivalesIR.message);
@@ -60817,6 +60817,7 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
     var clanRivalDetectadoIR = null;
     var confirmacionRivalIR = '';
     var nombresYaRevisadosIR = {};
+    var detectadosIR = {}, listaDetectadosIR = []; // §PF520: TODOS los clanes rival/vetado en que estuvo (uno por Tag), no solo uno
     for (var hIR = 0; hIR < historialFila.length; hIR++) {
       var nombreHistNormIR = String(historialFila[hIR].clan || '').trim().toUpperCase();
       if (!nombreHistNormIR || nombreHistNormIR === clanActualNombreNormIR) continue;
@@ -60831,9 +60832,13 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
         for (var cIR = 0; cIR < candidatosRivalIR.length; cIR++) if (candidatosRivalIR[cIR].tag === confIR.tag) { elegidoIR = candidatosRivalIR[cIR]; break; }
       }
       esRivalTemporadaIR = true;
-      clanRivalDetectadoIR = elegidoIR.info;
-      confirmacionRivalIR = (confIR.estado === 'si') ? 'tag' : 'nombre';
-      if (confIR.estado === 'si') break; // una confirmada por Tag gana a una pendiente por nombre
+      if (!detectadosIR[elegidoIR.tag]) { // §PF520: el mismo clan en varias semanas se anota una sola vez
+        detectadosIR[elegidoIR.tag] = true;
+        listaDetectadosIR.push({ info: elegidoIR.info, confirmacion: (confIR.estado === 'si') ? 'tag' : 'nombre' });
+      }
+      // El principal (clanRivalDetectado, el campo de siempre) es el primero confirmado por Tag; si ninguno lo está, el primero hallado.
+      if (confIR.estado === 'si' && confirmacionRivalIR !== 'tag') { clanRivalDetectadoIR = elegidoIR.info; confirmacionRivalIR = 'tag'; }
+      else if (!clanRivalDetectadoIR) { clanRivalDetectadoIR = elegidoIR.info; confirmacionRivalIR = 'nombre'; }
     }
 
     lista.push({
@@ -60868,7 +60873,11 @@ function _construirIngresosRecientesUnificado(dataDirPrefetch, ctxPrefetch, data
         fuente:  clanRivalDetectadoIR.fuente || '',
         motivo:  clanRivalDetectadoIR.motivo || '',
         confirmacion: confirmacionRivalIR // §PF400: 'tag' (Tag confirmado en su JSON individual) o 'nombre' (solo coincide el nombre; sin dato de Tag)
-      } : null
+      } : null,
+      // §PF520: lista completa, la principal primero; así la web puede mostrar a la vez un clan vetado y uno rival. Mismo cuidado que clanRivalDetectado: solo con sesión de admin.
+      clanesRivalesDetectados: listaDetectadosIR.sort(function (x, y) { return (y.info === clanRivalDetectadoIR ? 1 : 0) - (x.info === clanRivalDetectadoIR ? 1 : 0); }).map(function (d) {
+        return { nombre: d.info.nombre || '', fuente: d.info.fuente || '', motivo: d.info.motivo || '', confirmacion: d.confirmacion };
+      })
     });
   }
 
