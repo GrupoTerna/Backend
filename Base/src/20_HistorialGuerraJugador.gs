@@ -1853,6 +1853,38 @@ function _tspRegistroAFila_(r) {
 }
 
 /**
+ * _leerTagsSinPerfilRegistrados_() [→ Contexto_Base_Web.md §PF516]
+ * Solo lectura (no toma el candado ni escribe). Devuelve { '#TAG': { tag, nombre, estado, ... } } con lo guardado en CSV/Tampermonkey/Tags_Sin_Perfil.csv y, para los tags que el CSV no tenga,
+ * en JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json: es la misma lista que arma _registrarTagsSinPerfil_() (el CSV manda). No crea la carpeta del JSON si falta. Un archivo que no se pueda leer se salta y queda en el registro.
+ */
+function _leerTagsSinPerfilRegistrados_() {
+  var mapa = {}, i, r;
+  try {
+    var carpetaCsv = _getCsvSubcarpeta_('Tampermonkey', false);
+    var itCsv = carpetaCsv ? carpetaCsv.getFilesByName(TAGS_SIN_PERFIL_CSV_FILENAME) : null;
+    if (itCsv && itCsv.hasNext()) {
+      var textoCsv = itCsv.next().getBlob().getDataAsString('UTF-8');
+      var filas = textoCsv ? _parseCSV(textoCsv) : [];
+      for (i = 1; i < filas.length; i++) { r = _tspFilaARegistro_(filas[i]); if (r.tag && !mapa[r.tag]) mapa[r.tag] = r; }
+    }
+  } catch (eCsv) { Logger.log('[TagsSinPerfil] No se pudo leer ' + TAGS_SIN_PERFIL_CSV_FILENAME + ': ' + (eCsv.message || eCsv)); }
+  try {
+    var raiz = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI);
+    var itCar = raiz.getFoldersByName(TAGS_SIN_PERFIL_JSON_CARPETA);
+    var itJson = itCar.hasNext() ? itCar.next().getFilesByName(TAGS_SIN_PERFIL_JSON_FILENAME) : null;
+    if (itJson && itJson.hasNext()) {
+      var datos = JSON.parse(itJson.next().getBlob().getDataAsString('UTF-8'));
+      var lista = (datos && datos.tags) ? datos.tags : [];
+      for (i = 0; i < lista.length; i++) {
+        var tj = _tspNormalizarTag_(lista[i] && lista[i].tag);
+        if (tj && !mapa[tj]) mapa[tj] = { tag: tj, nombre: _tspTexto_(lista[i].nombre), estado: _tspTexto_(lista[i].estado), royaleapi: _tspTexto_(lista[i].royaleapi), apiSupercell: _tspTexto_(lista[i].apiSupercell), fuente: _tspTexto_(lista[i].fuente), primeraVez: _tspTexto_(lista[i].primeraVez), ultimaActualizacion: _tspTexto_(lista[i].ultimaActualizacion), notas: _tspTexto_(lista[i].notas) };
+      }
+    }
+  } catch (eJson) { Logger.log('[TagsSinPerfil] No se pudo leer ' + TAGS_SIN_PERFIL_JSON_FILENAME + ': ' + (eJson.message || eJson)); }
+  return mapa;
+}
+
+/**
  * _registrarTagsSinPerfil_(items, opciones) [→ Contexto_Base_Web.md §PF497]
  * items: [{ tag, nombre, estado, royaleapi, apiSupercell, fuente, notas }] (solo «tag» es obligatorio). Junta lo ya guardado (primero el CSV y, para lo que falte, el JSON), agrega los tags nuevos
  * y completa los existentes con los campos que lleguen con valor; la clave es el tag y no se duplica. Escribe CSV/Tampermonkey/Tags_Sin_Perfil.csv y JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json
