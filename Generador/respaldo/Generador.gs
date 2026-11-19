@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 14/11/2026 02:05:57 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 19/11/2026 06:23:49 */
 
 
 
@@ -5613,6 +5613,8 @@ function _imgApiArchivoTipos_() {
 //   - Carpeta Seasons: Cache_Seasons.json (respuesta cruda de descargarSeasons(), ids de
 //     temporada de Supercell)  → Datos descargados/JSON/Endpoints/Seasons/
 //   - Backup_Guerra.csv, Backup_Guerra_Logs.csv y Guerra_Desglose.csv (desde el 10-nov-2026, §PF443; formato ancho de §PF442) → Datos descargados/CSV/Hojas/
+//     Más Backup_Historial_I-S.csv y Backup_Historial_A-D.csv (desde el 19-nov-2026, §PF518). Siguen sin copiarse Backup_Comentarios.csv, Backup_Directorio.csv y Backup_Inactivos.csv
+//     (§PF241, decisión del 25-oct-2026): el Directorio puede traer celulares y los otros son datos por jugador sin relación con la guerra.
 //   - Subcarpeta Jugador de la carpeta CSV de Drive: solo Battlelog_Capturas.csv (desde el 10-nov-2026, §PF443; lo escribe generarGuerraDesglose() de Base) → Datos descargados/CSV/Jugador/
 //   - Carpeta Grupal de RoyaleAPI (desde el 1-nov-2026, §PF321): los «Grupal - <clan>.json» → Datos descargados/JSON/RoyaleAPI/Grupal/
 //   - Carpeta Individual de RoyaleAPI (JSON por jugador; desde el 25-oct-2026, §PF276): todos los .json
@@ -5676,7 +5678,7 @@ var DATOS_GH_FUENTES_ = [
     nombres: ['Cache_Seasons.json'],
     destino: 'Datos descargados/JSON/Endpoints/Seasons/', maxBytes: 1 * 1024 * 1024 },
   { carpetaId: DATOS_GH_CARPETA_HOJAS_,
-    nombres: ['Backup_Guerra.csv', 'Backup_Guerra_Logs.csv', 'Guerra_Desglose.csv'],   // §PF443: Guerra_Desglose.csv (unos 3 MB) lo escribe generarGuerraDesglose() de Base en esta misma carpeta
+    nombres: ['Backup_Guerra.csv', 'Backup_Guerra_Logs.csv', 'Guerra_Desglose.csv', 'Backup_Historial_I-S.csv', 'Backup_Historial_A-D.csv'],   // §PF443: Guerra_Desglose.csv (unos 3 MB) lo escribe generarGuerraDesglose() de Base en esta misma carpeta; §PF518 (19-nov-2026, pedido de la usuaria): los dos Historial (Backup_Comentarios.csv, Backup_Directorio.csv y Backup_Inactivos.csv siguen fuera)
     destino: 'Datos descargados/CSV/Hojas/', maxBytes: 8 * 1024 * 1024 },
   { carpetaId: DATOS_GH_CARPETA_CSV_,   // §PF443: Battlelog_Capturas.csv (qué cubre cada captura de battlelog; unos 126 filas) está en la subcarpeta Jugador, que se busca por nombre
     subcarpeta: 'Jugador',
