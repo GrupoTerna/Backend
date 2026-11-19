@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 21:34:09 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 21:46:27 */
 
 
 
@@ -21237,7 +21237,7 @@ function _webAdminClanesExternos(token) {
 /**
  * _completarNombresDeRespaldo_(nombres) [→ Contexto_Base_Web.md §PF508]
  * 18-nov-2026 (pedido de la usuaria): HistorialGuerra_Grupal.csv solo trae nombre de los jugadores con perfil; los que pasaron por un clan rival o vetado y nunca estuvieron en el roster (729 de 902 Tags en el respaldo) salían con el Tag en la columna Jugador.
- * Completa EN SITIO el mapa `nombres` ({ '#TAG': 'Nombre' }) solo para los Tags que aún no tienen nombre, con este orden de prioridad: Directorio, Inactivos, Vetados y, por último, la hoja Guerra (el nombre que traía el jugador en su última fila de guerra; solo se leen sus columnas Tag y Nombre).
+ * Completa EN SITIO el mapa `nombres` ({ '#TAG': 'Nombre' }) solo para los Tags que aún no tienen nombre, con este orden de prioridad: Directorio, Inactivos, Vetados la hoja Guerra (el nombre que traía el jugador en su última fila de guerra; solo se leen sus columnas Tag y Nombre) y, por último, Historial_I/S e Historial_A/D (§PF514: quien salió del roster hace tiempo).
  * Nunca pisa un nombre que ya está. Una fuente que no se pueda leer se salta (queda en el registro) y las demás siguen. Solo lee hojas; no escribe nada.
  */
 function _completarNombresDeRespaldo_(nombres) {
@@ -21272,6 +21272,25 @@ function _completarNombresDeRespaldo_(nombres) {
       for (var tu in ultimo) poner(tu, ultimo[tu]);
     }
   } catch (eGuerra) { Logger.log('[ClanesExternos] No se pudo leer la hoja Guerra para completar nombres: ' + eGuerra.message); }
+  // 18-nov-2026 (§PF514): últimas fuentes, para quien salió del roster y ya no figura en las hojas de arriba: Historial_I/S (Tag en la columna 3, Nombre en la 4) e Historial_A/D (Tag en la 2, Nombre en la 3). La última fila gana (nombre más reciente); solo se leen esas dos columnas.
+  var historiales = [
+    { hoja: CFG.SHEETS.HISTORIAL, colTag: 3, colNombre: 4 },
+    { hoja: CFG.SHEETS.ASCENSOS, colTag: 2, colNombre: 3 }
+  ];
+  for (var h = 0; h < historiales.length; h++) {
+    try {
+      var shH = ss.getSheetByName(historiales[h].hoja);
+      if (!shH || shH.getLastRow() < 2) continue;
+      var cH = historiales[h], ancho = Math.abs(cH.colNombre - cH.colTag) + 1, primera = Math.min(cH.colTag, cH.colNombre);
+      var datosH = shH.getRange(2, primera, shH.getLastRow() - 1, ancho).getValues();
+      var ultimoH = {};
+      for (var rh = 0; rh < datosH.length; rh++) {
+        var tgH = cleanTag(datosH[rh][cH.colTag - primera]), nmH = String(datosH[rh][cH.colNombre - primera] || '').trim();
+        if (tgH && nmH && nmH.charAt(0) !== '#') ultimoH[tgH] = nmH;
+      }
+      for (var tuh in ultimoH) poner(tuh, ultimoH[tuh]);
+    } catch (eHist) { Logger.log('[ClanesExternos] No se pudo leer «' + historiales[h].hoja + '» para completar nombres: ' + eHist.message); }
+  }
   return nombres;
 }
 
