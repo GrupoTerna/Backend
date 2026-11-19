@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 19:07:36 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 20:44:14 */
 
 
 
@@ -21133,7 +21133,7 @@ function _webAdminBuscarClan(token, tag) {
  * _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres) [→ Contexto_Base_Web.md §PF508]
  * Función pura. Arma la lista de la tarjeta «Clanes externos» de admin.html: un elemento por clan externo con los jugadores nuestros que estuvieron ahí.
  * `indice` es el índice anterior ({ clanes: { '#CLAN': { nombre, jugadores: [{ tag, semanas, primera, ultima }] } } }, Indice_Clanes_Externos.json); `sospechosos` sale de _alertasClanesSospechosos_() (clanes rivales y vetados de HOY, por Tag sin «#»);
- * `alertas` es Alertas_Clanes_Sospechosos.json (los tipos que un clan ya tuvo no se quitan, §PF378); `nombres` es { 'TAG': 'Nombre' } de los jugadores (_hgNombresPorTag_()).
+ * `alertas` es Alertas_Clanes_Sospechosos.json (los tipos que un clan ya tuvo no se quitan, §PF378); `nombres` es { '#TAG': 'Nombre' } de los jugadores (_hgNombresPorTag_(): las claves traen «#», como el CSV; 18-nov-2026 se busca con «#» y sin él, antes solo sin «#» y todos salían sin nombre).
  * `contexto` (opcional, 18-nov-2026, §PF509): { activos: { 'TAG': true } con los Tags que HOY están en el Directorio, rivales: { 'TAG': { clanTernaTag, clanTernaNombre } } con el clan nuestro al que cada clan rival enfrenta esta temporada }. Sin él, nadie es activo y ningún rival trae clan nuestro.
  * Un clan rival o vetado de hoy sin ningún jugador nuestro en el índice también sale, con la lista vacía (la usuaria quiere ver todos los vetados y rivales).
  * Devuelve [{ tag, nombre, tipos: ['rival'|'vetado'], hoy, ternaTag, ternaNombre ('' si no es rival de esta temporada), activos, inactivos, jugadores: [{ tag, nombre, activo, semanas, primera, ultima }] }]; «activo» = el jugador está hoy en el Directorio (en alguno de nuestros clanes); «inactivo» = ya no está (Inactivos, Vetados o fuera del roster); primera y ultima son { temporada, semana, supercell } (supercell solo cuando temporada <= 0, igual que _clanesExternosDeJugador_()).
@@ -21173,7 +21173,7 @@ function _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, conte
     for (var i = 0; i < lista.length; i++) {
       var tagJ = cleanTag(lista[i] && lista[i].tag);
       if (!tagJ) continue;
-      jugadores.push({ tag: '#' + tagJ, nombre: String(nombresJ[tagJ] || ''), activo: activosMapa[tagJ] === true, semanas: Number(lista[i].semanas) || 0, primera: punto(lista[i].primera), ultima: punto(lista[i].ultima) });
+      jugadores.push({ tag: '#' + tagJ, nombre: String(nombresJ['#' + tagJ] || nombresJ[tagJ] || ''), activo: activosMapa[tagJ] === true, semanas: Number(lista[i].semanas) || 0, primera: punto(lista[i].primera), ultima: punto(lista[i].ultima) });
     }
     jugadores.sort(function (a, b) {
       var ua = a.ultima || { temporada: -999, semana: 0 }, ub = b.ultima || { temporada: -999, semana: 0 };
