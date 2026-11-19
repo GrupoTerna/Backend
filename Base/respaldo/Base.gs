@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 20:59:01 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 21:34:09 */
 
 
 
@@ -21209,6 +21209,7 @@ function _webAdminClanesExternos(token) {
   var sospechosos = _alertasClanesSospechosos_(rivalesYConflicto);
   var alertas = _alertasClanesCargar_();
   var nombres = _hgNombresPorTag_();
+  _completarNombresDeRespaldo_(nombres);
   // §PF509: clan nuestro al que cada rival enfrenta hoy, y Tags activos (los que hoy figuran en el Directorio).
   var rivalesInfo = {};
   for (var tr in rivalesYConflicto) {
@@ -21231,6 +21232,47 @@ function _webAdminClanesExternos(token) {
   }
   var clanes = _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, { activos: activos, rivales: rivalesInfo, clanesActuales: clanesActuales });
   return { ok: true, actualizado: String(indice.actualizado || indice.generado || ''), indiceCompleto: indice.completo === true, total: clanes.length, clanes: clanes };
+}
+
+/**
+ * _completarNombresDeRespaldo_(nombres) [→ Contexto_Base_Web.md §PF508]
+ * 18-nov-2026 (pedido de la usuaria): HistorialGuerra_Grupal.csv solo trae nombre de los jugadores con perfil; los que pasaron por un clan rival o vetado y nunca estuvieron en el roster (729 de 902 Tags en el respaldo) salían con el Tag en la columna Jugador.
+ * Completa EN SITIO el mapa `nombres` ({ '#TAG': 'Nombre' }) solo para los Tags que aún no tienen nombre, con este orden de prioridad: Directorio, Inactivos, Vetados y, por último, la hoja Guerra (el nombre que traía el jugador en su última fila de guerra; solo se leen sus columnas Tag y Nombre).
+ * Nunca pisa un nombre que ya está. Una fuente que no se pueda leer se salta (queda en el registro) y las demás siguen. Solo lee hojas; no escribe nada.
+ */
+function _completarNombresDeRespaldo_(nombres) {
+  var poner = function (tagCrudo, nombreCrudo) {
+    var t = cleanTag(tagCrudo), n = String(nombreCrudo || '').trim();
+    if (!t || !n || n.charAt(0) === '#') return;
+    if (nombres['#' + t] || nombres[t]) return;
+    nombres['#' + t] = n;
+  };
+  var ss;
+  try { ss = _getSs(); } catch (eSs) { Logger.log('[ClanesExternos] No se pudo abrir la hoja de cálculo para completar nombres: ' + eSs.message); return nombres; }
+  var roster = [
+    { hoja: CFG.SHEETS.DIRECTORIO, tag: IC.TAG, nombre: IC.NOMBRE, cols: DIR_SHEET_COLS },
+    { hoja: CFG.SHEETS.INACTIVOS, tag: IC.TAG, nombre: IC.NOMBRE, cols: INACTIVOS_TOTAL_COLS },
+    { hoja: CFG.SHEETS.VETADOS, tag: VC.TAG, nombre: VC.NOMBRE, cols: VETADOS_TOTAL_COLS }
+  ];
+  for (var i = 0; i < roster.length; i++) {
+    try {
+      var mapa = _leerHojaComoMapaPorTag(ss, roster[i].hoja, roster[i].tag - 1, roster[i].cols);
+      for (var k in mapa) poner(k, mapa[k][roster[i].nombre - 1]);
+    } catch (eHoja) { Logger.log('[ClanesExternos] No se pudo leer «' + roster[i].hoja + '» para completar nombres: ' + eHoja.message); }
+  }
+  try {
+    var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+    if (sh && sh.getLastRow() >= 2) {
+      var datos = sh.getRange(2, GC.TAG, sh.getLastRow() - 1, GC.NOMBRE - GC.TAG + 1).getValues();
+      var ultimo = {};
+      for (var r = 0; r < datos.length; r++) {
+        var tg = cleanTag(datos[r][0]), nm = String(datos[r][GC.NOMBRE - GC.TAG] || '').trim();
+        if (tg && nm && nm.charAt(0) !== '#') ultimo[tg] = nm; // la última fila gana: es el nombre más reciente
+      }
+      for (var tu in ultimo) poner(tu, ultimo[tu]);
+    }
+  } catch (eGuerra) { Logger.log('[ClanesExternos] No se pudo leer la hoja Guerra para completar nombres: ' + eGuerra.message); }
+  return nombres;
 }
 
 /**
