@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 18:55:41 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 19:07:36 */
 
 
 
@@ -20711,7 +20711,8 @@ var INDICE_CLANES_PRESUPUESTO_MS = 270000;
 // Ejecución programada del índice (§PF376): un activador semanal (08_Activadores.gs) llama a generarIndiceClanesExternosProgramado(); si el índice queda incompleto, se programa una continuación a INDICE_CLANES_CONT_ESPERA_MS, hasta INDICE_CLANES_CONT_MAX corridas seguidas.
 var INDICE_CLANES_HANDLER_CONT = '_continuarGenerarIndiceClanesExternos';
 var INDICE_CLANES_CONT_ESPERA_MS = 60000;
-var INDICE_CLANES_CONT_MAX = 12; // §PF378: era 8; la primera vez hay que crear un archivo por clan (más de 1 400), y eso se reparte en varias corridas
+var INDICE_CLANES_CONT_MAX = 60; // §PF510: era 12 (§PF378: era 8). La primera vez hay que crear un archivo por clan (el 18-nov-2026 eran 7 085) y eso se reparte en muchas corridas; con 12 no alcanzaba y quedaba incompleto hasta el martes siguiente.
+var INDICE_CLANES_SEGURIDAD_MS = 8 * 60 * 1000; // §PF510: antes de cada pasada se deja un activador de continuación a esta espera; si Apps Script mata la pasada por tiempo (no se puede atrapar), ese activador la retoma. Al terminar la pasada se reemplaza o se borra.
 var INDICE_CLANES_CONT_PROP = 'INDICE_CLANES_CONT_N';
 var _indiceClanesCache_ = undefined;
 
@@ -20722,6 +20723,8 @@ var INDICE_CLANES_PARCIAL_JSON = 'Indice_Clanes_Externos_Parcial.json';
 var INDICE_CLANES_FIRMAS_JSON = 'Indice_Clanes_Externos_Firmas.json';
 var INDICE_CLANES_PARCIAL_MAX_EDAD_MS = 3 * 24 * 60 * 60 * 1000;
 var CLANES_EXTERNOS_LISTAR_DESDE = 100;
+var CLANES_EXTERNOS_LISTAR_MAX_EXISTENTES = 1500; // §PF510: listar la carpeta cuesta tiempo en proporción a los archivos que YA tiene (con 7 000, varios minutos y sin tope); por encima de esto se busca cada archivo por nombre
+var CLANES_EXTERNOS_LISTAR_LIMITE_MS = 60000; // §PF510: tiempo máximo del listado; si se pasa, se abandona y se busca por nombre
 var CLANES_EXTERNOS_FALLOS_MAX = 5;
 var _clanesExternosCarpetaCache_ = undefined;
 var _clanesExternosListoCache_ = undefined; // §PF378: «dd/MM/yyyy HH:mm» de la última corrida completa del índice ('' = todavía ninguna); se lee una vez por ejecución
@@ -21494,48 +21497,55 @@ function _continuarGenerarIndiceClanesExternos() {
  */
 function _generarIndiceClanesExternosUnaCorrida_() {
   var inicio = Date.now();
-  var carpeta = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL);
-  var archivos = _getHistorialGuerraDriveIndexPorTag(carpeta);
-  var tags = Object.keys(archivos).sort();
-  if (!tags.length) throw new Error('No se encontró ningún JSON individual de RoyaleAPI en Drive: no se genera nada para no pisar el índice anterior.');
   var ahoraTxt = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm');
 
   // 1) Lectura de los JSON individuales (el avance va a Indice_Clanes_Externos_Parcial.json, nunca al índice completo).
   var estado = _indiceClanesCargarParcial_();
   var continuaba = !!estado;
-  if (!estado) {
-    estado = _indiceClanesVacio_();
-    estado.generado = ahoraTxt;
-    estado.iniciadoMs = inicio;
-  }
-
-  var hechosAhora = 0;
-  for (var i = 0; i < tags.length; i++) {
-    var tag = tags[i];
-    if (estado.procesados[tag]) continue;
-    if (Date.now() - inicio > INDICE_CLANES_PRESUPUESTO_MS) break;
-    var registros = null;
-    try {
-      var historial = JSON.parse(archivos[tag].getBlob().getDataAsString('UTF-8'));
-      registros = (historial && historial.registros) ? historial.registros : [];
-    } catch (eLeer) {
-      Logger.log('[IndiceClanes] No se pudo leer el JSON de ' + tag + ': ' + eLeer.message);
-      estado.ilegibles.push(tag);
-    }
-    if (registros) _indiceClanesAgregar_(estado, tag, registros);
-    estado.procesados[tag] = true;
-    hechosAhora++;
-  }
-
   var listos = 0;
-  for (var t = 0; t < tags.length; t++) if (estado.procesados[tags[t]]) listos++;
-  estado.actualizado = ahoraTxt;
-  estado.jugadoresLeidos = listos;
+  if (estado && estado.lecturaCompleta === true) {
+    // §PF510: la lectura ya terminó en una corrida anterior: no se vuelve a listar la carpeta de los JSON individuales (más de 1 000 archivos, tiempo perdido en cada continuación).
+    listos = Number(estado.jugadoresLeidos) || Object.keys(estado.procesados).length;
+    estado.actualizado = ahoraTxt;
+  } else {
+    var carpeta = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL);
+    var archivos = _getHistorialGuerraDriveIndexPorTag(carpeta);
+    var tags = Object.keys(archivos).sort();
+    if (!tags.length) throw new Error('No se encontró ningún JSON individual de RoyaleAPI en Drive: no se genera nada para no pisar el índice anterior.');
+    if (!estado) {
+      estado = _indiceClanesVacio_();
+      estado.generado = ahoraTxt;
+      estado.iniciadoMs = inicio;
+    }
 
-  if (listos < tags.length) {
-    _indiceClanesGuardarParcial_(estado);
-    Logger.log('[IndiceClanes] INCOMPLETO: ' + listos + ' de ' + tags.length + ' jugadores leídos (' + hechosAhora + ' en esta corrida' + (continuaba ? ', continuando el avance guardado' : '') + '). La siguiente corrida continúa donde se quedó (ver el registro de continuación); los archivos de clan y el índice anterior no se tocaron.');
-    return false;
+    var hechosAhora = 0;
+    for (var i = 0; i < tags.length; i++) {
+      var tag = tags[i];
+      if (estado.procesados[tag]) continue;
+      if (Date.now() - inicio > INDICE_CLANES_PRESUPUESTO_MS) break;
+      var registros = null;
+      try {
+        var historial = JSON.parse(archivos[tag].getBlob().getDataAsString('UTF-8'));
+        registros = (historial && historial.registros) ? historial.registros : [];
+      } catch (eLeer) {
+        Logger.log('[IndiceClanes] No se pudo leer el JSON de ' + tag + ': ' + eLeer.message);
+        estado.ilegibles.push(tag);
+      }
+      if (registros) _indiceClanesAgregar_(estado, tag, registros);
+      estado.procesados[tag] = true;
+      hechosAhora++;
+    }
+
+    for (var t = 0; t < tags.length; t++) if (estado.procesados[tags[t]]) listos++;
+    estado.actualizado = ahoraTxt;
+    estado.jugadoresLeidos = listos;
+
+    if (listos < tags.length) {
+      _indiceClanesGuardarParcial_(estado);
+      Logger.log('[IndiceClanes] INCOMPLETO: ' + listos + ' de ' + tags.length + ' jugadores leídos (' + hechosAhora + ' en esta corrida' + (continuaba ? ', continuando el avance guardado' : '') + '). La siguiente corrida continúa donde se quedó (ver el registro de continuación); los archivos de clan y el índice anterior no se tocaron.');
+      return false;
+    }
+    estado.lecturaCompleta = true; // §PF510: las continuaciones ya no vuelven a listar los JSON individuales
   }
 
   // 2) Fusión de cada clan con su archivo de Clanes_Externos (solo los clanes cuya firma cambió).
@@ -21569,20 +21579,30 @@ function _indiceClanesCorrerProgramado_() {
   var props = PropertiesService.getScriptProperties();
   var n = Number(props.getProperty(INDICE_CLANES_CONT_PROP)) || 0;
   var completo = false;
+  // §PF510: activador de seguridad. Si Apps Script mata la pasada por tiempo (ocurrió el 18-nov-2026 con 7 085 clanes), no hay catch que valga y la cadena se cortaba hasta el martes siguiente; este activador la retoma. Al terminar la pasada se reemplaza (incompleta) o se borra (completa o con error atrapado).
+  try {
+    _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT);
+    ScriptApp.newTrigger(INDICE_CLANES_HANDLER_CONT).timeBased().after(INDICE_CLANES_SEGURIDAD_MS).create();
+  } catch (eSeg) {
+    Logger.log('[IndiceClanes] No se pudo dejar el activador de seguridad: ' + eSeg.message);
+  }
   try {
     completo = _generarIndiceClanesExternosUnaCorrida_() === true;
   } catch (e) {
     Logger.log('[IndiceClanes] La corrida programada falló: ' + e.message + '. La próxima corrida semanal sigue donde quedó.');
     props.deleteProperty(INDICE_CLANES_CONT_PROP);
+    _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT);
     return;
   }
   if (completo) {
+    _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT);
     Logger.log('[IndiceClanes] Corrida programada: índice completo tras ' + (n + 1) + (n === 0 ? ' corrida.' : ' corridas.'));
     props.deleteProperty(INDICE_CLANES_CONT_PROP);
     return;
   }
   if (n + 1 >= INDICE_CLANES_CONT_MAX) {
     Logger.log('[IndiceClanes] Corrida programada: el índice sigue incompleto tras ' + INDICE_CLANES_CONT_MAX + ' corridas seguidas; la próxima corrida semanal sigue donde quedó.');
+    _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT);
     props.deleteProperty(INDICE_CLANES_CONT_PROP);
     return;
   }
@@ -21926,16 +21946,18 @@ function _clanesExternosCarpeta_(crear) {
 
 /**
  * _clanExternoNombreArchivo_(tagClan) / _clanesExternosListar_(carpeta) / _clanExternoBuscar_(carpeta, mapa, tagClan) [→ Contexto_Base_Web.md §PF378]
- * El archivo de un clan se llama «Clan - #TAG.json». Listar devuelve { '#TAG': archivo } con todos los archivos de la carpeta (si hubiera dos del mismo Tag, queda el primero); Buscar usa ese mapa si se lo dan y, si no, pide solo ese nombre a Drive (más barato cuando se necesitan pocos).
+ * El archivo de un clan se llama «Clan - #TAG.json». Listar devuelve { '#TAG': archivo } con todos los archivos de la carpeta (si hubiera dos del mismo Tag, queda el primero), o null si pasa de `limiteMs` (§PF510); Buscar usa ese mapa si se lo dan y, si no, pide solo ese nombre a Drive (más barato cuando se necesitan pocos).
  */
 function _clanExternoNombreArchivo_(tagClan) {
   return CLAN_EXTERNO_PREFIJO + tagClan + '.json';
 }
-function _clanesExternosListar_(carpeta) {
+function _clanesExternosListar_(carpeta, limiteMs) {
   var mapa = {};
   var re = /^Clan - (#[0-9A-Z]+)\.json$/i;
+  var inicioLista = Date.now();
   var it = carpeta.getFiles();
   while (it.hasNext()) {
+    if (limiteMs && Date.now() - inicioLista > limiteMs) return null; // §PF510: demasiado lento; quien llama busca por nombre
     var f = it.next();
     var m = re.exec(f.getName());
     if (!m) continue;
@@ -21968,7 +21990,9 @@ function _clanesExternosEscribirPendientes_(estado, inicio, ahoraTxt) {
   if (!pendientes.length) return res;
 
   var carpeta = _clanesExternosCarpeta_(true);
-  var mapa = pendientes.length > CLANES_EXTERNOS_LISTAR_DESDE ? _clanesExternosListar_(carpeta) : null;
+  // §PF510: listar la carpeta entera cuesta según los archivos que ya existen (≈ los clanes con firma), no según los pendientes: con 7 000 archivos tardaba minutos en cada corrida, sin tope, y dejaba tiempo para pocos clanes. Solo se lista si hay muchos pendientes y pocos archivos; si no, se busca cada uno por nombre.
+  var existentes = Object.keys(firmas.clanes).length;
+  var mapa = (pendientes.length > CLANES_EXTERNOS_LISTAR_DESDE && existentes <= CLANES_EXTERNOS_LISTAR_MAX_EXISTENTES) ? _clanesExternosListar_(carpeta, CLANES_EXTERNOS_LISTAR_LIMITE_MS) : null;
   var sinGuardar = 0;
   for (var i = 0; i < pendientes.length; i++) {
     if (Date.now() - inicio > INDICE_CLANES_PRESUPUESTO_MS) break;

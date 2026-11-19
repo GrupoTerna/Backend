@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 3054 nombres en 60 archivos .gs.
+Código real: `Base/src/`. Total: 3057 nombres en 60 archivos .gs.
 
 ## Por archivo
 
@@ -134,16 +134,16 @@ Ninguno.
 | `_agruparOverlayCorreccionesGuerra_` | función | 18_CorreccionGuerra.gs | 2280 |  |
 | `_agruparPorClanOrdenado` | función | 30_Mensajes.gs | 599 | Contexto_Base_Web.md §30B033 |
 | `_ajustarSemanaDeUnClan_` | función | 18_CorreccionGuerra.gs | 5058 | Contexto_Base_Web.md §18B031 |
-| `_alertasClanesActualizar_` | función | 15_DeteccionInfiltrados.gs | 1588 | Contexto_Base_Web.md §PF375 |
-| `_alertasClanesCargar_` | función | 15_DeteccionInfiltrados.gs | 1565 | Contexto_Base_Web.md §PF375 |
-| `_alertasClanesCruzar_` | función | 15_DeteccionInfiltrados.gs | 1515 | Contexto_Base_Web.md §PF375 |
-| `_alertasClanesDesdeCaptura_` | función | 15_DeteccionInfiltrados.gs | 1669 | Contexto_Base_Web.md §PF375 |
-| `_alertasClanesDesdeJugadoresNuevos_` | función | 15_DeteccionInfiltrados.gs | 1692 | Contexto_Base_Web.md §PF397 |
-| `_alertasClanesFuenteDeArchivos_` | función | 15_DeteccionInfiltrados.gs | 1622 | Contexto_Base_Web.md §PF378 |
-| `_alertasClanesGuardar_` | función | 15_DeteccionInfiltrados.gs | 1574 |  |
-| `_alertasClanesMarcarEnArchivos_` | función | 15_DeteccionInfiltrados.gs | 1639 | Contexto_Base_Web.md §PF378 |
-| `_alertasClanesResumen_` | función | 15_DeteccionInfiltrados.gs | 1803 | Contexto_Base_Web.md §PF375 |
-| `_alertasClanesSospechosos_` | función | 15_DeteccionInfiltrados.gs | 1461 | Contexto_Base_Web.md §PF375 |
+| `_alertasClanesActualizar_` | función | 15_DeteccionInfiltrados.gs | 1612 | Contexto_Base_Web.md §PF375 |
+| `_alertasClanesCargar_` | función | 15_DeteccionInfiltrados.gs | 1589 | Contexto_Base_Web.md §PF375 |
+| `_alertasClanesCruzar_` | función | 15_DeteccionInfiltrados.gs | 1539 | Contexto_Base_Web.md §PF375 |
+| `_alertasClanesDesdeCaptura_` | función | 15_DeteccionInfiltrados.gs | 1693 | Contexto_Base_Web.md §PF375 |
+| `_alertasClanesDesdeJugadoresNuevos_` | función | 15_DeteccionInfiltrados.gs | 1716 | Contexto_Base_Web.md §PF397 |
+| `_alertasClanesFuenteDeArchivos_` | función | 15_DeteccionInfiltrados.gs | 1646 | Contexto_Base_Web.md §PF378 |
+| `_alertasClanesGuardar_` | función | 15_DeteccionInfiltrados.gs | 1598 |  |
+| `_alertasClanesMarcarEnArchivos_` | función | 15_DeteccionInfiltrados.gs | 1663 | Contexto_Base_Web.md §PF378 |
+| `_alertasClanesResumen_` | función | 15_DeteccionInfiltrados.gs | 1827 | Contexto_Base_Web.md §PF375 |
+| `_alertasClanesSospechosos_` | función | 15_DeteccionInfiltrados.gs | 1485 | Contexto_Base_Web.md §PF375 |
 | `_algunValorBajoHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 1591 | Contexto_Base_Web.md §20B018 |
 | `_alimentarNuevosDesdeCorrecciones_` | función | 14_Nuevos_RoyaleAPI.gs | 2041 |  |
 | `_alinearAsistenciaConLista_` | función | 47_Migraciones.gs | 2299 |  |
@@ -351,21 +351,21 @@ Ninguno.
 | `_buscarBloquePorFechaNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1404 | Contexto_Base_Web.md §14B062 |
 | `_buscarCorreccionDomingo_` | función | 17_GuerraSheet.gs | 5595 | Contexto_Base_Web.md §PF047 |
 | `_buscarDatosJugadorParaReconstruccion` | función | 18_CorreccionGuerra.gs | 2624 | Contexto_Base_Web.md §18B077 |
-| `_buscarEnRosterTerna` | función | 15_DeteccionInfiltrados.gs | 741 | Contexto_Base_Web.md §15B007 |
+| `_buscarEnRosterTerna` | función | 15_DeteccionInfiltrados.gs | 744 | Contexto_Base_Web.md §15B007 |
 | `_buscarFechaMasAntiguaTernaEnBackupGuerra` | función | 47_Migraciones.gs | 899 | Contexto_Base_Web.md §47B024 |
 | `_buscarFechaMasAntiguaTernaEnCorreccionesGuerra` | función | 47_Migraciones.gs | 1014 |  |
 | `_buscarFechaMasAntiguaTernaEnNuevos` | función | 47_Migraciones.gs | 923 | Contexto_Base_Web.md §47B025 |
 | `_buscarFilaPorTag` | función | 11_DirectorioSheet.gs | 1674 | Contexto_Base_Web.md §11B099 |
 | `_buscarIndiceHijo` | función | 27_Torneos_Sorteos_Requisitos.gs | 351 | Contexto_Base_Web.md §27B013 |
 | `_buscarIndiceHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 1510 | Contexto_Base_Web.md §PF040 |
-| `_buscarInfiltrado` | función | 15_DeteccionInfiltrados.gs | 194 | Contexto_Base_Web.md §15B008 |
+| `_buscarInfiltrado` | función | 15_DeteccionInfiltrados.gs | 197 | Contexto_Base_Web.md §15B008 |
 | `_buscarInfoOrganizadorPorNomMulti` | función | 26_Torneos_Core.gs | 1455 | Contexto_Base_Web.md §26B188 |
 | `_buscarPasoDeCadenaPorMarca_` | función | 00_Main.gs | 2379 |  |
 | `_buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_` | función | 47_Migraciones.gs | 963 |  |
 | `_buscarTraduccionCartaPorNombre` | función | 32_Insignias.gs | 270 | Contexto_Base_Web.md §32B012 |
 | `_CACHE_IDS_PLANTILLAS_MEMORIA_` | global | 01_Config_Global.gs | 658 | Contexto_Base_Web.md §01B115 |
-| `_CACHE_RIVALES_` | global | 15_DeteccionInfiltrados.gs | 658 |  |
-| `_cacheClanesParaRivales_` | función | 15_DeteccionInfiltrados.gs | 659 |  |
+| `_CACHE_RIVALES_` | global | 15_DeteccionInfiltrados.gs | 661 |  |
+| `_cacheClanesParaRivales_` | función | 15_DeteccionInfiltrados.gs | 662 |  |
 | `_cacheDiferenciaNivelPorRareza` | global | 31_Cards_Mazos.gs | 21 | Contexto_Base_Web.md §31B014 |
 | `_cacheVetadosConfirmados_` | global | 13_Inactivos_Vetados.gs | 48 | Contexto_Base_Web.md §13B004 |
 | `_calcAlerta` | función | 11_DirectorioSheet.gs | 1416 |  |
@@ -395,7 +395,7 @@ Ninguno.
 | `_cargarExtraColsInactivos` | función | 05_Backup_CSV.gs | 2344 | Contexto_Base_Web.md §05B059 |
 | `_cargarFuenteGuerraParaTemporada` | función | 18_CorreccionGuerra.gs | 2530 | Contexto_Base_Web.md §18B070 |
 | `_cargarHistorialGuerraIndividual` | función | 20_HistorialGuerraJugador.gs | 497 | Contexto_Base_Web.md §20B023 |
-| `_cargarIndiceClanes_` | función | 15_DeteccionInfiltrados.gs | 995 | Contexto_Base_Web.md §PF369 |
+| `_cargarIndiceClanes_` | función | 15_DeteccionInfiltrados.gs | 1015 | Contexto_Base_Web.md §PF369 |
 | `_cargarOverlayCorreccionesGuerra` | función | 18_CorreccionGuerra.gs | 2271 | Contexto_Base_Web.md §18B096 |
 | `_cargarOverlayCorreccionesGuerraPorClan` | función | 18_CorreccionGuerra.gs | 2264 | Contexto_Base_Web.md §18B093 |
 | `_cargarParCambioRango_` | función | 29_Docs_NoCalificados.gs | 433 |  |
@@ -485,26 +485,26 @@ Ninguno.
 | `_CLANES_TERNA_ORDEN_DOC_RECONSTRUCCION` | global | 28_Torneos_Docs.gs | 47 | Contexto_Base_Web.md §28B006 |
 | `_clanesBasicoDesdeApiEnEstaEjecucion` | global | 09_API_ClashRoyale.gs | 84 |  |
 | `_clanesBasicoListoEnEstaEjecucion` | global | 09_API_ClashRoyale.gs | 47 | Contexto_Base_Web.md §09B004 |
-| `_clanesExternosCarpeta_` | función | 15_DeteccionInfiltrados.gs | 1242 | Contexto_Base_Web.md §PF378 |
-| `_clanesExternosCarpetaCache_` | global | 15_DeteccionInfiltrados.gs | 50 |  |
-| `_clanesExternosDeJugador_` | función | 15_DeteccionInfiltrados.gs | 295 | Contexto_Base_Web.md §PF367 |
-| `_clanesExternosEscribirPendientes_` | función | 15_DeteccionInfiltrados.gs | 1282 | Contexto_Base_Web.md §PF378 |
-| `_clanesExternosFirmasCargar_` | función | 15_DeteccionInfiltrados.gs | 1350 | Contexto_Base_Web.md §PF378 |
-| `_clanesExternosFirmasGuardar_` | función | 15_DeteccionInfiltrados.gs | 1365 |  |
-| `_clanesExternosListaArmar_` | función | 15_DeteccionInfiltrados.gs | 463 | Contexto_Base_Web.md §PF508 |
-| `_clanesExternosListar_` | función | 15_DeteccionInfiltrados.gs | 1258 |  |
-| `_clanesExternosListoCache_` | global | 15_DeteccionInfiltrados.gs | 51 |  |
-| `_clanesExternosListos_` | función | 15_DeteccionInfiltrados.gs | 1377 |  |
-| `_clanesExternosUltimaCompleta_` | función | 15_DeteccionInfiltrados.gs | 1373 | Contexto_Base_Web.md §PF378 |
+| `_clanesExternosCarpeta_` | función | 15_DeteccionInfiltrados.gs | 1262 | Contexto_Base_Web.md §PF378 |
+| `_clanesExternosCarpetaCache_` | global | 15_DeteccionInfiltrados.gs | 53 |  |
+| `_clanesExternosDeJugador_` | función | 15_DeteccionInfiltrados.gs | 298 | Contexto_Base_Web.md §PF367 |
+| `_clanesExternosEscribirPendientes_` | función | 15_DeteccionInfiltrados.gs | 1304 | Contexto_Base_Web.md §PF378 |
+| `_clanesExternosFirmasCargar_` | función | 15_DeteccionInfiltrados.gs | 1374 | Contexto_Base_Web.md §PF378 |
+| `_clanesExternosFirmasGuardar_` | función | 15_DeteccionInfiltrados.gs | 1389 |  |
+| `_clanesExternosListaArmar_` | función | 15_DeteccionInfiltrados.gs | 466 | Contexto_Base_Web.md §PF508 |
+| `_clanesExternosListar_` | función | 15_DeteccionInfiltrados.gs | 1278 |  |
+| `_clanesExternosListoCache_` | global | 15_DeteccionInfiltrados.gs | 54 |  |
+| `_clanesExternosListos_` | función | 15_DeteccionInfiltrados.gs | 1401 |  |
+| `_clanesExternosUltimaCompleta_` | función | 15_DeteccionInfiltrados.gs | 1397 | Contexto_Base_Web.md §PF378 |
 | `_clanesTernaSinGuerraAbierta_` | función | 18_CorreccionGuerra.gs | 2968 | Contexto_Base_Web.md §PF472 |
-| `_clanExternoBuscar_` | función | 15_DeteccionInfiltrados.gs | 1271 |  |
-| `_clanExternoFirma_` | función | 15_DeteccionInfiltrados.gs | 1157 | Contexto_Base_Web.md §PF378 |
-| `_clanExternoFusionar_` | función | 15_DeteccionInfiltrados.gs | 1181 | Contexto_Base_Web.md §PF378 |
-| `_clanExternoJugadoresDe_` | función | 15_DeteccionInfiltrados.gs | 1408 | Contexto_Base_Web.md §PF378 |
-| `_clanExternoLeer_` | función | 15_DeteccionInfiltrados.gs | 1385 | Contexto_Base_Web.md §PF378 |
-| `_clanExternoNombreArchivo_` | función | 15_DeteccionInfiltrados.gs | 1255 | Contexto_Base_Web.md §PF378 |
+| `_clanExternoBuscar_` | función | 15_DeteccionInfiltrados.gs | 1293 |  |
+| `_clanExternoFirma_` | función | 15_DeteccionInfiltrados.gs | 1177 | Contexto_Base_Web.md §PF378 |
+| `_clanExternoFusionar_` | función | 15_DeteccionInfiltrados.gs | 1201 | Contexto_Base_Web.md §PF378 |
+| `_clanExternoJugadoresDe_` | función | 15_DeteccionInfiltrados.gs | 1432 | Contexto_Base_Web.md §PF378 |
+| `_clanExternoLeer_` | función | 15_DeteccionInfiltrados.gs | 1409 | Contexto_Base_Web.md §PF378 |
+| `_clanExternoNombreArchivo_` | función | 15_DeteccionInfiltrados.gs | 1275 | Contexto_Base_Web.md §PF378 |
 | `_clanExternoReenumerarDoc_` | función | 47_Migraciones.gs | 1315 |  |
-| `_clanRivalConfirmadoPorTag_` | función | 15_DeteccionInfiltrados.gs | 1488 | Contexto_Base_Web.md §PF400 |
+| `_clanRivalConfirmadoPorTag_` | función | 15_DeteccionInfiltrados.gs | 1512 | Contexto_Base_Web.md §PF400 |
 | `_clanTagDeFilaGuerraControl_` | función | 22_ControlCalendario.gs | 1500 |  |
 | `_clanTagDeFilaORespaldo_` | función | 27_Torneos_Sorteos_Requisitos.gs | 237 |  |
 | `_clanTagDiaNum_` | función | 17_GuerraSheet.gs | 4485 | Contexto_Base_Web.md §PF423 |
@@ -526,7 +526,7 @@ Ninguno.
 | `_claveFilaGuerraLogs_` | función | 17_GuerraSheet.gs | 3554 | Contexto_Base_Web.md §17B136 |
 | `_clavePendienteRiverRace_` | función | 19_CorreccionRiverRace.gs | 646 |  |
 | `_clavesColumnasParaAnchos` | función | 04_Formato_Comun.gs | 1130 | Contexto_Base_Web.md §04B058 |
-| `_claveSemanaClan_` | función | 15_DeteccionInfiltrados.gs | 1096 | Contexto_Base_Web.md §PF378 |
+| `_claveSemanaClan_` | función | 15_DeteccionInfiltrados.gs | 1116 | Contexto_Base_Web.md §PF378 |
 | `_clCelda` | función | 33_CaminoLeyendas.gs | 97 |  |
 | `_clCsvMemo` | función | 33_CaminoLeyendas.gs | 175 |  |
 | `_clearBg` | función | 01_Config_Global.gs | 1297 |  |
@@ -535,7 +535,7 @@ Ninguno.
 | `_clNumero` | función | 33_CaminoLeyendas.gs | 180 |  |
 | `_clonarCtxParaTemporada` | función | 22_ControlCalendario.gs | 828 | Contexto_Base_Web.md §22B037 |
 | `_clTemporada` | función | 33_CaminoLeyendas.gs | 189 |  |
-| `_cmpSemanaClan_` | función | 15_DeteccionInfiltrados.gs | 1100 |  |
+| `_cmpSemanaClan_` | función | 15_DeteccionInfiltrados.gs | 1120 |  |
 | `_cnvCompararNuevosConGuerra_` | función | 18_CorreccionGuerra.gs | 3271 |  |
 | `_coberturaGuerraCacheGet_` | función | 18_CorreccionGuerra.gs | 4536 | Contexto_Base_Web.md §PF042 |
 | `_coberturaGuerraCachePut_` | función | 18_CorreccionGuerra.gs | 4547 |  |
@@ -602,7 +602,7 @@ Ninguno.
 | `_conteoArchivosMs_` | global | 05_Backup_CSV.gs | 63 |  |
 | `_conteoVeredictosTexto_` | función | 29_Docs_NoCalificados.gs | 718 |  |
 | `_continuarAplicarCorreccionGuerraATodas` | función | 18_CorreccionGuerra.gs | 1091 | Contexto_Base_Web.md §PF358 |
-| `_continuarGenerarIndiceClanesExternos` | función | 15_DeteccionInfiltrados.gs | 803 | Contexto_Base_Web.md §PF376 |
+| `_continuarGenerarIndiceClanesExternos` | función | 15_DeteccionInfiltrados.gs | 806 | Contexto_Base_Web.md §PF376 |
 | `_continuarReconstruirJsonGrupalDesdeIndividuales` | función | 20_HistorialGuerraJugador.gs | 265 |  |
 | `_continuarRunAll` | función | 00_Main.gs | 957 | Contexto_Base_Web.md §B099 |
 | `_continuarRunGuerra` | función | 00_Main.gs | 1388 | Contexto_Base_Web.md §PF143 |
@@ -765,7 +765,7 @@ Ninguno.
 | `_escapeHtmlDash` | función | 38_Web_Endpoints.gs | 2097 | Contexto_Base_Web.md §38B190 |
 | `_esCartaTorre` | función | 31_Cards_Mazos.gs | 328 | Contexto_Base_Web.md §31B018 |
 | `_esCartaTorreDatos` | función | 31_Cards_Mazos.gs | 291 | Contexto_Base_Web.md §31B016 |
-| `_esClanPropio_` | función | 15_DeteccionInfiltrados.gs | 553 | Contexto_Base_Web.md §PF368 |
+| `_esClanPropio_` | función | 15_DeteccionInfiltrados.gs | 556 | Contexto_Base_Web.md §PF368 |
 | `_escribirAnchosColumnasGuardados` | función | 04_Formato_Comun.gs | 1114 | Contexto_Base_Web.md §04B069 |
 | `_escribirDirectorio` | función | 11_DirectorioSheet.gs | 1427 |  |
 | `_escribirDocGanadores` | función | 28_Torneos_Docs.gs | 1216 | Contexto_Base_Web.md §28B090 |
@@ -825,7 +825,7 @@ Ninguno.
 | `_excDiasTextoPorDia` | función | 55_Reparar_DiasConExceso.gs | 711 |  |
 | `_excDiasVerificar` | función | 55_Reparar_DiasConExceso.gs | 778 |  |
 | `_existeParCRListaParaTemporada` | función | 26_Torneos_Core.gs | 2919 | Contexto_Base_Web.md §26B022 |
-| `_exMiembrosDesdeIndice_` | función | 15_DeteccionInfiltrados.gs | 1042 | Contexto_Base_Web.md §PF369 |
+| `_exMiembrosDesdeIndice_` | función | 15_DeteccionInfiltrados.gs | 1062 | Contexto_Base_Web.md §PF369 |
 | `_explicarAltasCR_` | función | 24_Historial_Ascensos.gs | 1474 | Contexto_Base_Web.md §PF286 |
 | `_explicarBajasCR_` | función | 24_Historial_Ascensos.gs | 1503 | Contexto_Base_Web.md §PF286 |
 | `_explicarExcepcionalesCR_` | función | 24_Historial_Ascensos.gs | 1416 | Contexto_Base_Web.md §PF286 |
@@ -916,7 +916,7 @@ Ninguno.
 | `_generarClaveAdmin` | función | 11_DirectorioSheet.gs | 1608 | Contexto_Base_Web.md §11B022 |
 | `_generarComentarioAscensoDefault` | función | 24_Historial_Ascensos.gs | 828 | Contexto_Base_Web.md §24B029 |
 | `_generarDashboardHtml` | función | 38_Web_Endpoints.gs | 1965 | Contexto_Base_Web.md §38B195 |
-| `_generarIndiceClanesExternosUnaCorrida_` | función | 15_DeteccionInfiltrados.gs | 819 | Contexto_Base_Web.md §PF369, §PF378, §PF398 |
+| `_generarIndiceClanesExternosUnaCorrida_` | función | 15_DeteccionInfiltrados.gs | 822 | Contexto_Base_Web.md §PF369, §PF378, §PF398 |
 | `_generarJsonContactos` | función | 38_Web_Endpoints.gs | 1880 | Contexto_Base_Web.md §38B102 |
 | `_generarParIdsCRLista` | función | 26_Torneos_Core.gs | 2847 | Contexto_Base_Web.md §26B016 |
 | `_generarUrlMazo2DesdeMapas` | función | 31_Cards_Mazos.gs | 1058 | Contexto_Base_Web.md §31B050 |
@@ -941,8 +941,8 @@ Ninguno.
 | `_getCelularesRespaldoManual_` | función | 01_Config_Global.gs | 1112 |  |
 | `_getClanCache` | función | 09_API_ClashRoyale.gs | 2940 | Contexto_Base_Web.md §09B138 |
 | `_getClanesAdminTexto` | función | 01_Config_Global.gs | 1117 | Contexto_Base_Web.md §01B141 |
-| `_getClanesConflictoManual` | función | 15_DeteccionInfiltrados.gs | 719 | Contexto_Base_Web.md §15B004 |
-| `_getClanesRivalesTemporadaActual` | función | 15_DeteccionInfiltrados.gs | 681 | Contexto_Base_Web.md §15B003 |
+| `_getClanesConflictoManual` | función | 15_DeteccionInfiltrados.gs | 722 | Contexto_Base_Web.md §15B004 |
+| `_getClanesRivalesTemporadaActual` | función | 15_DeteccionInfiltrados.gs | 684 | Contexto_Base_Web.md §15B003 |
 | `_getClanTagByName` | función | 38_Web_Endpoints.gs | 1954 | Contexto_Base_Web.md §38B194 |
 | `_getConfigMasRecienteCategoria` | función | 26_Torneos_Core.gs | 4038 | Contexto_Base_Web.md §26B220 |
 | `_getControlActivosGridPorTemporada` | función | 38_Web_Endpoints.gs | 2680 | Contexto_Base_Web.md §38B155 |
@@ -1014,7 +1014,7 @@ Ninguno.
 | `_getPropPrivadaJson_` | función | 01_Config_Global.gs | 1105 |  |
 | `_getRangoFechasSemana` | función | 38_Web_Endpoints.gs | 2591 | Contexto_Base_Web.md §38B149 |
 | `_getRequisitosCambioRangoBloqueCategoria` | función | 26_Torneos_Core.gs | 3219 | Contexto_Base_Web.md §26B033 |
-| `_getRivalesYConflicto` | función | 15_DeteccionInfiltrados.gs | 623 | Contexto_Base_Web.md §15B006 |
+| `_getRivalesYConflicto` | función | 15_DeteccionInfiltrados.gs | 626 | Contexto_Base_Web.md §15B006 |
 | `_getSemanasDeTemporada` | función | 25_Doc_AscensosDescensos.gs | 234 |  |
 | `_getSemanasTemporada` | función | 38_Web_Endpoints.gs | 2607 | Contexto_Base_Web.md §38B151 |
 | `_getSs` | función | 01_Config_Global.gs | 1410 |  |
@@ -1056,7 +1056,7 @@ Ninguno.
 | `_guardaReferenciaTemporadas_` | función | 47_Migraciones.gs | 2119 |  |
 | `_guardarExtraColsInactivosBatch` | función | 05_Backup_CSV.gs | 2487 | Contexto_Base_Web.md §05B088 |
 | `_guardarFuenteGuerra` | función | 18_CorreccionGuerra.gs | 2564 | Contexto_Base_Web.md §18B071 |
-| `_guardarIndiceClanes_` | función | 15_DeteccionInfiltrados.gs | 1009 | Contexto_Base_Web.md §PF369 |
+| `_guardarIndiceClanes_` | función | 15_DeteccionInfiltrados.gs | 1029 | Contexto_Base_Web.md §PF369 |
 | `_guardarIndiceContenido` | función | 43_Menu_Dinamico.gs | 213 | Contexto_Base_Web.md §43B012 |
 | `_guardarIndiceContenidoEnCache` | función | 43_Menu_Dinamico.gs | 230 |  |
 | `_guardarInsignias2CSV` | función | 32_Insignias.gs | 426 |  |
@@ -1130,16 +1130,16 @@ Ninguno.
 | `_importarNuevosYPerfiles_` | función | 14_Nuevos_RoyaleAPI.gs | 1805 | Contexto_Base_Web.md §PF243 |
 | `_indexarFilasJugadorSemanaPorClan_` | función | 18_CorreccionGuerra.gs | 4771 | Contexto_Base_Web.md §18B017 |
 | `_indexarPropuestasPendientesAscensos` | función | 24_Historial_Ascensos.gs | 1139 | Contexto_Base_Web.md §24B049 |
-| `_indiceClanesAFilasCsv_` | función | 15_DeteccionInfiltrados.gs | 966 | Contexto_Base_Web.md §PF369 |
-| `_indiceClanesAgregar_` | función | 15_DeteccionInfiltrados.gs | 932 | Contexto_Base_Web.md §PF369, §PF378 |
-| `_indiceClanesBorrarParcial_` | función | 15_DeteccionInfiltrados.gs | 1446 |  |
-| `_indiceClanesCache_` | global | 15_DeteccionInfiltrados.gs | 40 |  |
-| `_indiceClanesCargarParcial_` | función | 15_DeteccionInfiltrados.gs | 1423 | Contexto_Base_Web.md §PF378 |
-| `_indiceClanesCorrerProgramado_` | función | 15_DeteccionInfiltrados.gs | 892 | Contexto_Base_Web.md §PF376 |
-| `_indiceClanesGuardarParcial_` | función | 15_DeteccionInfiltrados.gs | 1443 |  |
-| `_indiceClanesJugadoresDe_` | función | 15_DeteccionInfiltrados.gs | 1026 | Contexto_Base_Web.md §PF369 |
-| `_indiceClanesLegadoDe_` | función | 15_DeteccionInfiltrados.gs | 1223 | Contexto_Base_Web.md §PF378 |
-| `_indiceClanesVacio_` | función | 15_DeteccionInfiltrados.gs | 924 | Contexto_Base_Web.md §PF369, §PF378 |
+| `_indiceClanesAFilasCsv_` | función | 15_DeteccionInfiltrados.gs | 986 | Contexto_Base_Web.md §PF369 |
+| `_indiceClanesAgregar_` | función | 15_DeteccionInfiltrados.gs | 952 | Contexto_Base_Web.md §PF369, §PF378 |
+| `_indiceClanesBorrarParcial_` | función | 15_DeteccionInfiltrados.gs | 1470 |  |
+| `_indiceClanesCache_` | global | 15_DeteccionInfiltrados.gs | 41 |  |
+| `_indiceClanesCargarParcial_` | función | 15_DeteccionInfiltrados.gs | 1447 | Contexto_Base_Web.md §PF378 |
+| `_indiceClanesCorrerProgramado_` | función | 15_DeteccionInfiltrados.gs | 902 | Contexto_Base_Web.md §PF376 |
+| `_indiceClanesGuardarParcial_` | función | 15_DeteccionInfiltrados.gs | 1467 |  |
+| `_indiceClanesJugadoresDe_` | función | 15_DeteccionInfiltrados.gs | 1046 | Contexto_Base_Web.md §PF369 |
+| `_indiceClanesLegadoDe_` | función | 15_DeteccionInfiltrados.gs | 1243 | Contexto_Base_Web.md §PF378 |
+| `_indiceClanesVacio_` | función | 15_DeteccionInfiltrados.gs | 944 | Contexto_Base_Web.md §PF369, §PF378 |
 | `_indiceTotalCols` | función | 03_Indice_Sheet.gs | 311 |  |
 | `_informeConIdSemana_` | función | 05_Backup_CSV.gs | 1140 | Contexto_Base_Web.md §PF242 |
 | `_iniciarRespuestaCategoria` | función | 44_BotWhatsApp.gs | 807 | Contexto_Base_Web.md §44B034 |
@@ -1365,7 +1365,7 @@ Ninguno.
 | `_numOrNull` | función | 20_HistorialGuerraJugador.gs | 305 | Contexto_Base_Web.md §20B038 |
 | `_obtenerArenaCompletaDesdeCatalogo` | función | 37_Web_API.gs | 3132 | Contexto_Base_Web.md §37B287 |
 | `_obtenerCelularPorTag` | función | 30_Mensajes.gs | 505 | Contexto_Base_Web.md §30B034 |
-| `_obtenerClanDelDia_` | función | 15_DeteccionInfiltrados.gs | 106 | Contexto_Base_Web.md §PF390 |
+| `_obtenerClanDelDia_` | función | 15_DeteccionInfiltrados.gs | 109 | Contexto_Base_Web.md §PF390 |
 | `_obtenerCuentasDeNomMulti` | función | 13_Inactivos_Vetados.gs | 1040 | Contexto_Base_Web.md §13B029 |
 | `_obtenerDatosPendientes` | función | 30_Mensajes.gs | 450 |  |
 | `_obtenerDatosSinCelular` | función | 30_Mensajes.gs | 467 |  |
@@ -1632,7 +1632,7 @@ Ninguno.
 | `_resumenCorridaCambioRango_` | función | 29_Docs_NoCalificados.gs | 511 |  |
 | `_resumenCuposGuerraPorClan_` | función | 30_Mensajes.gs | 547 | Contexto_Base_Web.md §PF455 |
 | `_resumenHojaParaReparto_` | función | 18_CorreccionGuerra.gs | 4793 | Contexto_Base_Web.md §18B018 |
-| `_resumenMiembrosClan_` | función | 15_DeteccionInfiltrados.gs | 159 | Contexto_Base_Web.md §PF391 |
+| `_resumenMiembrosClan_` | función | 15_DeteccionInfiltrados.gs | 162 | Contexto_Base_Web.md §PF391 |
 | `_resumirRequisitosBloque` | función | 27_Torneos_Sorteos_Requisitos.gs | 182 | Contexto_Base_Web.md §27B011 |
 | `_retirarActivadoresAdministrados_` | función | 08_Activadores.gs | 95 |  |
 | `_retirarDeInactivosPorReactivacion` | función | 13_Inactivos_Vetados.gs | 411 | Contexto_Base_Web.md §13B020 |
@@ -1652,7 +1652,7 @@ Ninguno.
 | `_rgTexto_` | función | 20_HistorialGuerraJugador.gs | 1290 |  |
 | `_rgValores_` | función | 20_HistorialGuerraJugador.gs | 1277 |  |
 | `_rolDeRangoCR_` | función | 24_Historial_Ascensos.gs | 1465 |  |
-| `_rosterPasoPorClanVetado_` | función | 15_DeteccionInfiltrados.gs | 359 | Contexto_Base_Web.md §PF368 |
+| `_rosterPasoPorClanVetado_` | función | 15_DeteccionInfiltrados.gs | 362 | Contexto_Base_Web.md §PF368 |
 | `_round1` | función | 26_Torneos_Core.gs | 3417 | Contexto_Base_Web.md §26B050 |
 | `_rsCatalogo` | función | 57_ReconstruirSemanaPorDias.gs | 696 |  |
 | `_rsCatalogo_` | global | 57_ReconstruirSemanaPorDias.gs | 111 |  |
@@ -1697,7 +1697,7 @@ Ninguno.
 | `_semanaColiseoCerrada_` | función | 17_GuerraSheet.gs | 3697 | Contexto_Base_Web.md §17B143 |
 | `_SEMANAS_TEMPORADA_MEMO` | global | 25_Doc_AscensosDescensos.gs | 43 | Contexto_Base_Web.md §PF091 |
 | `_semanasPendientesCR` | función | 26_Torneos_Core.gs | 3440 | Contexto_Base_Web.md §26B053 |
-| `_semanasResumen_` | función | 15_DeteccionInfiltrados.gs | 1112 | Contexto_Base_Web.md §PF378 |
+| `_semanasResumen_` | función | 15_DeteccionInfiltrados.gs | 1132 | Contexto_Base_Web.md §PF378 |
 | `_setContentConConteo_` | función | 05_Backup_CSV.gs | 1487 | Contexto_Base_Web.md §PF290 |
 | `_setDateCell` | función | 01_Config_Global.gs | 952 |  |
 | `_setEstadoUsuario` | función | 44_BotWhatsApp.gs | 438 |  |
@@ -1766,7 +1766,7 @@ Ninguno.
 | `_temporadaMalEtiquetadaPlanGuerra_` | función | 17_GuerraSheet.gs | 4841 | Contexto_Base_Web.md §PF468 |
 | `_temporadaProbableClan_` | función | 09_API_ClashRoyale.gs | 3352 |  |
 | `_temporadasActivasGuerra_` | función | 09_API_ClashRoyale.gs | 3360 | Contexto_Base_Web.md §09B154 |
-| `_temporadaSupercellDeRoyaleApi_` | función | 15_DeteccionInfiltrados.gs | 345 | Contexto_Base_Web.md §PF368 |
+| `_temporadaSupercellDeRoyaleApi_` | función | 15_DeteccionInfiltrados.gs | 348 | Contexto_Base_Web.md §PF368 |
 | `_testTamanioGuerraEnVivoUna_` | función | 38_Web_Endpoints.gs | 3287 |  |
 | `_textoCambioAplicado_` | función | 25_Doc_AscensosDescensos.gs | 120 |  |
 | `_textoGruposFueraClanGuerra_` | función | 30_Mensajes.gs | 813 | Contexto_Base_Web.md §PF462 |
@@ -1805,7 +1805,7 @@ Ninguno.
 | `_tspTexto_` | función | 20_HistorialGuerraJugador.gs | 1843 |  |
 | `_ULTIMO_DIAGNOSTICO_GUERRA_CSV` | global | 22_ControlCalendario.gs | 35 | Contexto_Base_Web.md §22B042 |
 | `_unirPartesEspanol` | función | 26_Torneos_Core.gs | 3363 | Contexto_Base_Web.md §26B048 |
-| `_unirSemanasClan_` | función | 15_DeteccionInfiltrados.gs | 1127 | Contexto_Base_Web.md §PF378 |
+| `_unirSemanasClan_` | función | 15_DeteccionInfiltrados.gs | 1147 | Contexto_Base_Web.md §PF378 |
 | `_updateHistorial` | función | 24_Historial_Ascensos.gs | 481 | Contexto_Base_Web.md §24B010 |
 | `_updateInactivos` | función | 13_Inactivos_Vetados.gs | 56 |  |
 | `_updateMulticuentas` | función | 13_Inactivos_Vetados.gs | 879 | Contexto_Base_Web.md §13B046 |
@@ -1940,14 +1940,14 @@ Ninguno.
 | `_webAdminActualizarRoster` | función | 41_Web_ActualizarRoster.gs | 70 | Contexto_Base_Web.md §41B003 |
 | `_webAdminAscensosEditables` | función | 24_Historial_Ascensos.gs | 1025 | Contexto_Base_Web.md §24B043 |
 | `_webAdminBarcosAnterior` | función | 37_Web_API.gs | 4405 | Contexto_Base_Web.md §PF105 |
-| `_webAdminBuscarClan` | función | 15_DeteccionInfiltrados.gs | 406 | Contexto_Base_Web.md §PF368 |
-| `_webAdminBuscarInfiltrado` | función | 15_DeteccionInfiltrados.gs | 186 | Contexto_Base_Web.md §15B009 |
+| `_webAdminBuscarClan` | función | 15_DeteccionInfiltrados.gs | 409 | Contexto_Base_Web.md §PF368 |
+| `_webAdminBuscarInfiltrado` | función | 15_DeteccionInfiltrados.gs | 189 | Contexto_Base_Web.md §15B009 |
 | `_webAdminBuscarMiembro` | función | 37_Web_API.gs | 3524 | Contexto_Base_Web.md §37B186 |
 | `_webAdminBuscarMiembroSugerencias` | función | 37_Web_API.gs | 3541 | Contexto_Base_Web.md §37B187 |
 | `_webAdminCategorias` | función | 37_Web_API.gs | 4152 |  |
-| `_webAdminClanesExternos` | función | 15_DeteccionInfiltrados.gs | 523 | Contexto_Base_Web.md §PF508 |
+| `_webAdminClanesExternos` | función | 15_DeteccionInfiltrados.gs | 526 | Contexto_Base_Web.md §PF508 |
 | `_webAdminClanesFamilia` | función | 37_Web_API.gs | 4347 | Contexto_Base_Web.md §37B226 |
-| `_webAdminClanesSospechososJugador` | función | 15_DeteccionInfiltrados.gs | 1840 | Contexto_Base_Web.md §PF375 |
+| `_webAdminClanesSospechososJugador` | función | 15_DeteccionInfiltrados.gs | 1864 | Contexto_Base_Web.md §PF375 |
 | `_webAdminContenido` | función | 37_Web_API.gs | 4189 | Contexto_Base_Web.md §37B214 |
 | `_webAdminContenidoDocHtml` | función | 37_Web_API.gs | 4234 | Contexto_Base_Web.md §37B217 |
 | `_webAdminCuentasDeNomMulti` | función | 37_Web_API.gs | 3746 | Contexto_Base_Web.md §37B203 |
@@ -1976,7 +1976,7 @@ Ninguno.
 | `_webAdminSorteoRegistrar` | función | 37_Web_API.gs | 4592 | Contexto_Base_Web.md §37B242 |
 | `_webAdminSorteoResolucionGuardar` | función | 37_Web_API.gs | 4914 | Contexto_Base_Web.md §37B324 |
 | `_webAdminSorteosHoy` | función | 37_Web_API.gs | 4585 | Contexto_Base_Web.md §37B241 |
-| `_webAdminTagsClanesSospechosos` | función | 15_DeteccionInfiltrados.gs | 1822 | Contexto_Base_Web.md §PF375 |
+| `_webAdminTagsClanesSospechosos` | función | 15_DeteccionInfiltrados.gs | 1846 | Contexto_Base_Web.md §PF375 |
 | `_webAdminTagsConWsp` | función | 37_Web_API.gs | 4041 | Contexto_Base_Web.md §PF172 |
 | `_webAdminTieneFuncion` | función | 37_Web_API.gs | 314 | Contexto_Base_Web.md §37B017 |
 | `_webAdminTorneoModificar` | función | 37_Web_API.gs | 4533 | Contexto_Base_Web.md §37B234, §37B235, §37B236, §37B237, §37B238, §37B239, §37B240 |
@@ -1987,7 +1987,7 @@ Ninguno.
 | `_webAdminUltimoRegistroTorneoOSorteo` | función | 37_Web_API.gs | 5012 | Contexto_Base_Web.md §37B332 |
 | `_webAdminVerificarTag` | función | 37_Web_API.gs | 3629 | Contexto_Base_Web.md §37B194 |
 | `_webAdminVetar` | función | 37_Web_API.gs | 3775 | Contexto_Base_Web.md §37B205 |
-| `_webAdminVetarClan` | función | 15_DeteccionInfiltrados.gs | 569 | Contexto_Base_Web.md §PF368 |
+| `_webAdminVetarClan` | función | 15_DeteccionInfiltrados.gs | 572 | Contexto_Base_Web.md §PF368 |
 | `_webAdminVigenteGuardar` | función | 37_Web_API.gs | 5080 | Contexto_Base_Web.md §37B331 |
 | `_webAdminVigenteListar` | función | 37_Web_API.gs | 5025 | Contexto_Base_Web.md §37B328 |
 | `_webAgregarComentarioVeto` | función | 13_Inactivos_Vetados.gs | 852 | Contexto_Base_Web.md §13B045 |
@@ -2115,7 +2115,7 @@ Ninguno.
 | `ACTIVADORES_CONFIG` | global | 08_Activadores.gs | 18 | Contexto_Base_Web.md §08B002 |
 | `ACTIVADORES_HANDLERS_LEGADOS_` | global | 08_Activadores.gs | 48 |  |
 | `activarTodosLosActivadores` | función | 08_Activadores.gs | 61 | Contexto_Base_Web.md §08B004 |
-| `actualizarAlertasClanesSospechosos` | función | 15_DeteccionInfiltrados.gs | 84 | Contexto_Base_Web.md §PF375 |
+| `actualizarAlertasClanesSospechosos` | función | 15_DeteccionInfiltrados.gs | 87 | Contexto_Base_Web.md §PF375 |
 | `actualizarControl2` | función | 23_Control2_GuerraSemanal.gs | 53 | Contexto_Base_Web.md §23B006 |
 | `actualizarDocCambioRango` | función | 29_Docs_NoCalificados.gs | 362 | Contexto_Base_Web.md §29B010 |
 | `actualizarDocGanadoresSorteo` | función | 28_Torneos_Docs.gs | 320 | Contexto_Base_Web.md §28B027 |
@@ -2139,10 +2139,10 @@ Ninguno.
 | `AHG` | global | 20_HistorialGuerraJugador.gs | 36 | Contexto_Base_Web.md §20B003 |
 | `AHG_ENCABEZADOS` | global | 20_HistorialGuerraJugador.gs | 48 |  |
 | `AHG_TOTAL_COLS` | global | 20_HistorialGuerraJugador.gs | 54 |  |
-| `ALERTAS_CLANES_CACHE_KEY` | global | 15_DeteccionInfiltrados.gs | 55 |  |
-| `ALERTAS_CLANES_CACHE_TTL_SEG` | global | 15_DeteccionInfiltrados.gs | 56 |  |
-| `ALERTAS_CLANES_FIRMA_PROP` | global | 15_DeteccionInfiltrados.gs | 57 |  |
-| `ALERTAS_CLANES_JSON` | global | 15_DeteccionInfiltrados.gs | 54 |  |
+| `ALERTAS_CLANES_CACHE_KEY` | global | 15_DeteccionInfiltrados.gs | 58 |  |
+| `ALERTAS_CLANES_CACHE_TTL_SEG` | global | 15_DeteccionInfiltrados.gs | 59 |  |
+| `ALERTAS_CLANES_FIRMA_PROP` | global | 15_DeteccionInfiltrados.gs | 60 |  |
+| `ALERTAS_CLANES_JSON` | global | 15_DeteccionInfiltrados.gs | 57 |  |
 | `alinearAsistenciasConListas` | función | 47_Migraciones.gs | 674 |  |
 | `alinearAsistenciasConListasRevisar` | función | 47_Migraciones.gs | 670 |  |
 | `alinearNumeracionGrupal` | función | 47_Migraciones.gs | 700 |  |
@@ -2284,10 +2284,12 @@ Ninguno.
 | `CGW_SUPERCELL_ANCLA_ROYALEAPI` | global | 18_CorreccionGuerra.gs | 226 |  |
 | `CLAN_CHAT_GENERAL` | global | 30_Mensajes.gs | 29 |  |
 | `CLAN_DIA_PREFIJO_ARCHIVO` | global | 15_DeteccionInfiltrados.gs | 29 |  |
-| `CLAN_EXTERNO_PREFIJO` | global | 15_DeteccionInfiltrados.gs | 44 |  |
-| `CLANES_EXTERNOS_CARPETA` | global | 15_DeteccionInfiltrados.gs | 43 |  |
-| `CLANES_EXTERNOS_FALLOS_MAX` | global | 15_DeteccionInfiltrados.gs | 49 |  |
-| `CLANES_EXTERNOS_LISTAR_DESDE` | global | 15_DeteccionInfiltrados.gs | 48 |  |
+| `CLAN_EXTERNO_PREFIJO` | global | 15_DeteccionInfiltrados.gs | 45 |  |
+| `CLANES_EXTERNOS_CARPETA` | global | 15_DeteccionInfiltrados.gs | 44 |  |
+| `CLANES_EXTERNOS_FALLOS_MAX` | global | 15_DeteccionInfiltrados.gs | 52 |  |
+| `CLANES_EXTERNOS_LISTAR_DESDE` | global | 15_DeteccionInfiltrados.gs | 49 |  |
+| `CLANES_EXTERNOS_LISTAR_LIMITE_MS` | global | 15_DeteccionInfiltrados.gs | 51 |  |
+| `CLANES_EXTERNOS_LISTAR_MAX_EXISTENTES` | global | 15_DeteccionInfiltrados.gs | 50 |  |
 | `CLANES_INFO_RESPALDO` | global | 09_API_ClashRoyale.gs | 86 |  |
 | `CLANES_PROGRESO_FILE` | global | 01_Config_Global.gs | 524 | Contexto_Base_Web.md §01B080 |
 | `CLANES_SIN_API_MAX_EDAD_MS` | global | 09_API_ClashRoyale.gs | 162 | Contexto_Base_Web.md §09B107 |
@@ -2417,10 +2419,10 @@ Ninguno.
 | `detectarTemporadaMasAntiguaConPresenciaTerna` | función | 47_Migraciones.gs | 132 | Contexto_Base_Web.md §47B023 |
 | `detenerActualizacionTorneoEnVivo` | función | 26_Torneos_Core.gs | 322 |  |
 | `detenerTorneoEnVivo` | función | 00_Main.gs | 1897 | Contexto_Base_Web.md §B129 |
-| `DIAG_ALERTA_TAG_DEFECTO` | global | 15_DeteccionInfiltrados.gs | 1882 | Contexto_Base_Web.md §PF399 |
+| `DIAG_ALERTA_TAG_DEFECTO` | global | 15_DeteccionInfiltrados.gs | 1906 | Contexto_Base_Web.md §PF399 |
 | `DIAG_GUERRA_VIVO_DASH_KEY` | global | 38_Web_Endpoints.gs | 56 |  |
 | `DIAG_GUERRA_VIVO_KEY` | global | 38_Web_Endpoints.gs | 54 | Contexto_Base_Web.md §38B114 |
-| `diagnosticarAlertaClanJugador` | función | 15_DeteccionInfiltrados.gs | 1883 |  |
+| `diagnosticarAlertaClanJugador` | función | 15_DeteccionInfiltrados.gs | 1907 |  |
 | `DIAGNOSTICO_duplicadosHoy` | función | 48_Herramientas_Debug.gs | 63 |  |
 | `DIAGNOSTICO_totalHoy` | función | 48_Herramientas_Debug.gs | 57 |  |
 | `diagnosticoInactivosVsCSV` | función | 05_Backup_CSV.gs | 347 | Contexto_Base_Web.md §05B033 |
@@ -2526,8 +2528,8 @@ Ninguno.
 | `generarBackupGuerraSemanalCSV` | función | 23_Control2_GuerraSemanal.gs | 263 | Contexto_Base_Web.md §23B017 |
 | `GenerarCalendario` | función | 22_ControlCalendario.gs | 699 |  |
 | `generarGuerraDesglose` | función | 18_CorreccionGuerra.gs | 754 | Contexto_Base_Web.md §PF437 |
-| `generarIndiceClanesExternos` | función | 15_DeteccionInfiltrados.gs | 71 | Contexto_Base_Web.md §PF369, §PF378, §PF398 |
-| `generarIndiceClanesExternosProgramado` | función | 15_DeteccionInfiltrados.gs | 794 | Contexto_Base_Web.md §PF376 |
+| `generarIndiceClanesExternos` | función | 15_DeteccionInfiltrados.gs | 74 | Contexto_Base_Web.md §PF369, §PF378, §PF398 |
+| `generarIndiceClanesExternosProgramado` | función | 15_DeteccionInfiltrados.gs | 797 | Contexto_Base_Web.md §PF376 |
 | `generarMazo3` | función | 31_Cards_Mazos.gs | 1149 | Contexto_Base_Web.md §PF051 |
 | `generarMazoPerfil` | función | 31_Cards_Mazos.gs | 1170 | Contexto_Base_Web.md §PF070 |
 | `generarTodosMensajes` | función | 30_Mensajes.gs | 80 |  |
@@ -2597,14 +2599,15 @@ Ninguno.
 | `INACTIVOS_TOTAL_COLS` | global | 02_Setup_Hojas.gs | 38 |  |
 | `INDICE_CLANES_CONT_ESPERA_MS` | global | 15_DeteccionInfiltrados.gs | 37 |  |
 | `INDICE_CLANES_CONT_MAX` | global | 15_DeteccionInfiltrados.gs | 38 |  |
-| `INDICE_CLANES_CONT_PROP` | global | 15_DeteccionInfiltrados.gs | 39 |  |
+| `INDICE_CLANES_CONT_PROP` | global | 15_DeteccionInfiltrados.gs | 40 |  |
 | `INDICE_CLANES_CSV` | global | 15_DeteccionInfiltrados.gs | 33 |  |
-| `INDICE_CLANES_FIRMAS_JSON` | global | 15_DeteccionInfiltrados.gs | 46 |  |
+| `INDICE_CLANES_FIRMAS_JSON` | global | 15_DeteccionInfiltrados.gs | 47 |  |
 | `INDICE_CLANES_HANDLER_CONT` | global | 15_DeteccionInfiltrados.gs | 36 |  |
 | `INDICE_CLANES_JSON` | global | 15_DeteccionInfiltrados.gs | 32 |  |
-| `INDICE_CLANES_PARCIAL_JSON` | global | 15_DeteccionInfiltrados.gs | 45 |  |
-| `INDICE_CLANES_PARCIAL_MAX_EDAD_MS` | global | 15_DeteccionInfiltrados.gs | 47 |  |
+| `INDICE_CLANES_PARCIAL_JSON` | global | 15_DeteccionInfiltrados.gs | 46 |  |
+| `INDICE_CLANES_PARCIAL_MAX_EDAD_MS` | global | 15_DeteccionInfiltrados.gs | 48 |  |
 | `INDICE_CLANES_PRESUPUESTO_MS` | global | 15_DeteccionInfiltrados.gs | 34 |  |
+| `INDICE_CLANES_SEGURIDAD_MS` | global | 15_DeteccionInfiltrados.gs | 39 |  |
 | `INDICE_CONTENIDO_CACHE_META` | global | 43_Menu_Dinamico.gs | 20 |  |
 | `INDICE_CONTENIDO_CACHE_TTL` | global | 43_Menu_Dinamico.gs | 22 |  |
 | `INDICE_CONTENIDO_CHUNK` | global | 43_Menu_Dinamico.gs | 24 |  |
@@ -2856,7 +2859,7 @@ Ninguno.
 | `restaurarAnchosColumnasFijos` | función | 04_Formato_Comun.gs | 475 | Contexto_Base_Web.md §04B055 |
 | `REVISION_GUERRA_CSV` | global | 18_CorreccionGuerra.gs | 70 |  |
 | `REVISION_GUERRA_ENCABEZADO` | global | 18_CorreccionGuerra.gs | 72 |  |
-| `RIVALES_CHECKPOINT_MAX_EDAD_MS` | global | 15_DeteccionInfiltrados.gs | 657 | Contexto_Base_Web.md §PF370 |
+| `RIVALES_CHECKPOINT_MAX_EDAD_MS` | global | 15_DeteccionInfiltrados.gs | 660 | Contexto_Base_Web.md §PF370 |
 | `RIVERRACE_ESTADO_SIN_GUERRA` | global | 09_API_ClashRoyale.gs | 41 |  |
 | `ROSTER_ESTATICO_ARCHIVO` | global | 51_Publicar_Roster.gs | 29 |  |
 | `ROSTER_ESTATICO_REPUBLICAR_MIN` | global | 51_Publicar_Roster.gs | 31 |  |
