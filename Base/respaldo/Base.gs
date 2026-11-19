@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 21:46:27 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 22:07:19 */
 
 
 
@@ -21136,7 +21136,7 @@ function _webAdminBuscarClan(token, tag) {
  * `alertas` es Alertas_Clanes_Sospechosos.json (los tipos que un clan ya tuvo no se quitan, §PF378); `nombres` es { '#TAG': 'Nombre' } de los jugadores (_hgNombresPorTag_(): las claves traen «#», como el CSV; 18-nov-2026 se busca con «#» y sin él, antes solo sin «#» y todos salían sin nombre).
  * `contexto` (opcional, 18-nov-2026, §PF509): { activos: { 'TAG': true } con los Tags que HOY están en el Directorio, clanesActuales: { 'TAG': { nombre, tag } } con el clan nuestro de su fila del Directorio (solo se usa para los activos; el inactivo sale con clanActual vacío), rivales: { 'TAG': { clanTernaTag, clanTernaNombre } } con el clan nuestro al que cada clan rival enfrenta esta temporada }. Sin él, nadie es activo y ningún rival trae clan nuestro.
  * Un clan rival o vetado de hoy sin ningún jugador nuestro en el índice también sale, con la lista vacía (la usuaria quiere ver todos los vetados y rivales).
- * Devuelve [{ tag, nombre, tipos: ['rival'|'vetado'], hoy, ternaTag, ternaNombre ('' si no es rival de esta temporada), activos, inactivos, jugadores: [{ tag, nombre, activo, semanas, primera, ultima }] }]; «activo» = el jugador está hoy en el Directorio (en alguno de nuestros clanes); «inactivo» = ya no está (Inactivos, Vetados o fuera del roster); primera y ultima son { temporada, semana, supercell } (supercell solo cuando temporada <= 0, igual que _clanesExternosDeJugador_()).
+ * Devuelve [{ tag, nombre, tipos: ['rival'|'vetado'], hoy, ternaTag, ternaNombre ('' si no es rival de esta temporada), activos, inactivos, jugadores: [{ tag, nombre, activo, semanas, primera, ultima }] }]; «activo» = el jugador está hoy en el Directorio (en alguno de nuestros clanes); «inactivo» = ya no está (Inactivos, Vetados o fuera del roster); primera y ultima son { temporada, semana, supercell } (supercell siempre que haya temporada de RoyaleAPI, desde el 18-nov-2026: la web muestra todas las temporadas con el id de Supercell «AAAA-MM», igual que _clanesExternosDeJugador_()).
  * Orden: clanes con más jugadores primero y, a igual cantidad, por nombre; los jugadores, del que estuvo más recientemente al más antiguo.
  */
 function _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, contexto) {
@@ -21154,8 +21154,7 @@ function _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, conte
 
   var punto = function (p) {
     if (!p) return null;
-    var t = Number(p.temporada);
-    return { temporada: p.temporada, semana: p.semana, supercell: (t <= 0 ? _temporadaSupercellDeRoyaleApi_(p.temporadaRoyaleApi) : '') };
+    return { temporada: p.temporada, semana: p.semana, supercell: _temporadaSupercellDeRoyaleApi_(p.temporadaRoyaleApi) };
   };
   var salida = [];
   for (var clave in claves) {
