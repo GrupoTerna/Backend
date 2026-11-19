@@ -461,7 +461,7 @@ function _webAdminBuscarClan(token, tag) {
  * `contexto` (opcional, 18-nov-2026, §PF509): { activos: { 'TAG': true } con los Tags que HOY están en el Directorio, clanesActuales: { 'TAG': { nombre, tag } } con el clan nuestro de su fila del Directorio (solo se usa para los activos), ultimosClanes: { 'TAG': { nombre, tag } } con el último clan conocido de cada jugador (se usa para los inactivos, §PF515; el jugador sale con clanUltimo: true) y nombresClan: { '#TAG': 'Nombre' } para completar el nombre cuando solo se conoce el Tag del clan, rivales: { 'TAG': { clanTernaTag, clanTernaNombre } } con el clan nuestro al que cada clan rival enfrenta esta temporada }. Sin él, nadie es activo y ningún rival trae clan nuestro.
  * Un clan rival o vetado de hoy sin ningún jugador nuestro en el índice también sale, con la lista vacía (la usuaria quiere ver todos los vetados y rivales).
  * Devuelve [{ tag, nombre, tipos: ['rival'|'vetado'], hoy, ternaTag, ternaNombre ('' si no es rival de esta temporada), activos, inactivos, jugadores: [{ tag, nombre, activo, semanas, primera, ultima }] }]; «activo» = el jugador está hoy en el Directorio (en alguno de nuestros clanes); «inactivo» = ya no está (Inactivos, Vetados o fuera del roster); primera y ultima son { temporada, semana, supercell } (supercell siempre que haya temporada de RoyaleAPI, desde el 18-nov-2026: la web muestra todas las temporadas con el id de Supercell «AAAA-MM», igual que _clanesExternosDeJugador_()).
- * Orden: clanes con más jugadores primero y, a igual cantidad, por nombre; los jugadores, por semanas (mayor a menor) y luego por nombre (§PF516). `contexto.sinPerfil` = { '#TAG': { nombre, estado } } de la lista «sin perfil»: cada jugador trae `sinPerfil` ('Baneado', 'Sin registro', 'Sin perfil' o '') y, si esa lista trae su nombre, ese nombre manda.
+ * Orden: clanes con más jugadores primero y, a igual cantidad, por nombre; los jugadores, activos primero, luego por semanas (mayor a menor) y luego por nombre (§PF516, §PF517). `contexto.sinPerfil` = { '#TAG': { nombre, estado } } de la lista «sin perfil»: cada jugador trae `sinPerfil` ('Baneado', 'Sin registro', 'Sin perfil' o '') y, si esa lista trae su nombre, ese nombre manda.
  */
 function _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, contexto) {
   var activosMapa = (contexto && contexto.activos) || {};
@@ -512,8 +512,9 @@ function _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, conte
       if (clanActTag && (!clanActNombre || clanActNombre.charAt(0) === '#')) clanActNombre = String(nombresClanMapa['#' + cleanTag(clanActTag)] || '');
       jugadores.push({ tag: '#' + tagJ, nombre: nombreJ, activo: esActivoJ, sinPerfil: spJ ? (String(spJ.estado || '') || 'Sin perfil') : '', clanActual: clanActNombre, clanActualTag: clanActTag, clanUltimo: !esActivoJ && !!(clanActNombre || clanActTag), semanas: Number(lista[i].semanas) || 0, primera: punto(lista[i].primera), ultima: punto(lista[i].ultima) });
     }
-    // §PF516: más semanas primero y, a igual cantidad, por nombre (A-Z; sin nombre, por Tag). Antes iba por la última semana en el clan.
+    // §PF516/§PF517: activos primero; luego más semanas primero y, a igual cantidad, por nombre (A-Z; sin nombre, por Tag). Antes iba por la última semana en el clan.
     jugadores.sort(function (a, b) {
+      if (a.activo !== b.activo) return a.activo ? -1 : 1;
       if (a.semanas !== b.semanas) return b.semanas - a.semanas;
       return String(a.nombre || a.tag).localeCompare(String(b.nombre || b.tag), 'es', { sensitivity: 'base' });
     });
