@@ -629,24 +629,27 @@ function _completarNombresDeRespaldo_(nombres) {
 /**
  * _ultimosClanesDeJugadores_() [→ Contexto_Base_Web.md §PF515]
  * 18-nov-2026 (pedido de la usuaria): la columna «Clan actual» de «Clanes externos» muestra, en los jugadores inactivos, el ÚLTIMO clan conocido. Solo lee hojas; no escribe ni llama a la API.
- * Devuelve { porJugador: { 'TAG': { nombre, tag } }, nombresClan: { '#TAG': 'Nombre' } }. Para cada Tag manda la primera fuente que traiga clan, en este orden: Inactivos (Clan y Clan_Tag), Vetados (Clan y Clan_Tag), Historial_I/S (la última fila del jugador), Historial_A/D (la última fila) y la hoja Guerra (la última fila del jugador).
+ * Devuelve { porJugador: { 'TAG': { nombre, tag } }, nombresClan: { '#TAG': 'Nombre' } }. **Solo cuenta un clan Terna** (CFG.TERNA_TAGS, comparado por Tag con _esClanPropio_()): un clan externo o vetado se descarta y se sigue con la fuente siguiente. Para cada Tag manda la primera fuente que traiga un clan Terna, en este orden: Inactivos (Clan y Clan_Tag), Vetados (Clan y Clan_Tag), Historial_I/S (la última fila del jugador), Historial_A/D (la última fila) y la hoja Guerra (la última fila del jugador).
  * Una fuente que no se pueda leer se salta (queda en el registro) y las demás siguen. `nombresClan` junta el nombre más reciente de cada clan por su Tag, para los casos en que una hoja guarda el Tag del clan pero no su nombre (el nombre que empieza con «#» no cuenta como nombre).
  */
 function _ultimosClanesDeJugadores_() {
   var porJugador = {}, nombresClan = {};
   var ss;
   try { ss = _getSs(); } catch (eSs) { Logger.log('[ClanesExternos] No se pudo abrir la hoja de cálculo para el último clan: ' + eSs.message); return { porJugador: porJugador, nombresClan: nombresClan }; }
+  var esTerna = function (tagClan) { var t = cleanTag(tagClan); return !!t && _esClanPropio_(t); };
   var anotarNombre = function (tagClan, nombreClan) {
     var tc = cleanTag(tagClan), nc = String(nombreClan || '').trim();
     if (tc && nc && nc.charAt(0) !== '#') nombresClan['#' + tc] = nc; // la última fila gana: es el nombre más reciente
   };
+  // Candidatos por jugador, en orden de prioridad de la fuente; la elección (y el filtro «solo clan Terna») se hace al final, cuando ya se conocen los nombres de todos los clanes.
+  var candidatos = {};
   var poner = function (tagJugador, nombreClan, tagClan) {
     var tj = cleanTag(tagJugador);
     var nc = String(nombreClan || '').trim(), tc = String(tagClan || '').trim();
     if (!tj || (!nc && !tc)) return;
+    if (tc && !esTerna(tc)) return; // §PF515: solo cuenta un clan de la Familia; uno externo o vetado se descarta
     anotarNombre(tc, nc);
-    if (porJugador[tj]) return; // ya lo trajo una fuente de mayor prioridad
-    porJugador[tj] = { nombre: nc, tag: tc };
+    (candidatos[tj] = candidatos[tj] || []).push({ nombre: nc, tag: tc });
   };
   // 1) y 2) Inactivos y Vetados: guardan el último clan que el jugador tuvo con nosotros.
   var roster = [
@@ -659,7 +662,7 @@ function _ultimosClanesDeJugadores_() {
       for (var k in mapa) poner(k, mapa[k][roster[i].clan - 1], mapa[k][roster[i].clanTag - 1]);
     } catch (eHoja) { Logger.log('[ClanesExternos] No se pudo leer «' + roster[i].hoja + '» para el último clan: ' + eHoja.message); }
   }
-  // 3) y 4) Historial_I/S (Tag 3, Clan 6, ClanTag 7) e Historial_A/D (Tag 2, Clan 9, ClanTag 10): la última fila de cada jugador es su último movimiento.
+  // 3) y 4) Historial_I/S (Tag 3, Clan 6, ClanTag 7) e Historial_A/D (Tag 2, Clan 9, ClanTag 10): la última fila de clan Terna de cada jugador.
   var historiales = [
     { hoja: CFG.SHEETS.HISTORIAL, colTag: 3, colClan: 6, colClanTag: 7 },
     { hoja: CFG.SHEETS.ASCENSOS, colTag: 2, colClan: 9, colClanTag: 10 }
@@ -677,13 +680,14 @@ function _ultimosClanesDeJugadores_() {
         var tgH = cleanTag(datosH[rh][cH.colTag - 1]);
         var ncH = String(datosH[rh][cH.colClan - 1] || '').trim();
         var tcH = cH.colClanTag <= maxCol ? String(datosH[rh][cH.colClanTag - 1] || '').trim() : '';
-        if (tgH && (ncH || tcH)) ultimoH[tgH] = { nombre: ncH, tag: tcH };
+        if (tcH && !esTerna(tcH)) continue;
         anotarNombre(tcH, ncH);
+        if (tgH && (ncH || tcH)) ultimoH[tgH] = { nombre: ncH, tag: tcH };
       }
       for (var tuh in ultimoH) poner(tuh, ultimoH[tuh].nombre, ultimoH[tuh].tag);
     } catch (eHist) { Logger.log('[ClanesExternos] No se pudo leer «' + historiales[h].hoja + '» para el último clan: ' + eHist.message); }
   }
-  // 5) Guerra: la última fila del jugador trae el clan nuestro en que jugó (columnas Clan y Tag contiguas; Clan_Tag aparte). Solo se leen esas columnas.
+  // 5) Guerra: la última fila de clan Terna del jugador (columnas Clan y Tag contiguas; Clan_Tag aparte). Solo se leen esas columnas.
   try {
     var shG = ss.getSheetByName(CFG.SHEETS.GUERRA);
     if (shG && shG.getLastRow() >= 2) {
@@ -694,12 +698,29 @@ function _ultimosClanesDeJugadores_() {
       for (var rg = 0; rg < clanTag.length; rg++) {
         var tgG = cleanTag(clanTag[rg][GC.TAG - GC.CLAN]);
         var ncG = String(clanTag[rg][0] || '').trim(), tcG = String(clanTagCol[rg][0] || '').trim();
-        if (tgG && (ncG || tcG)) ultimoG[tgG] = { nombre: ncG, tag: tcG };
+        if (tcG && !esTerna(tcG)) continue;
         anotarNombre(tcG, ncG);
+        if (tgG && (ncG || tcG)) ultimoG[tgG] = { nombre: ncG, tag: tcG };
       }
       for (var tug in ultimoG) poner(tug, ultimoG[tug].nombre, ultimoG[tug].tag);
     }
   } catch (eGuerra) { Logger.log('[ClanesExternos] No se pudo leer la hoja Guerra para el último clan: ' + eGuerra.message); }
+  // Elección final: la primera fuente cuyo clan sea Terna. Con Tag, ya se filtró arriba; sin Tag (fila antigua), el nombre debe ser el de uno de los clanes Terna conocidos por su Tag.
+  var ternaPorNombre = {};
+  for (var tn in nombresClan) if (esTerna(tn)) ternaPorNombre[nombresClan[tn].toLowerCase()] = tn;
+  for (var tj in candidatos) {
+    var lista = candidatos[tj];
+    for (var c = 0; c < lista.length; c++) {
+      var cand = lista[c];
+      if (!cand.tag) {
+        var tagPorNombre = ternaPorNombre[cand.nombre.toLowerCase()];
+        if (!tagPorNombre) continue; // clan sin Tag cuyo nombre no es de uno nuestro: se descarta
+        cand = { nombre: cand.nombre, tag: tagPorNombre };
+      }
+      porJugador[tj] = cand;
+      break;
+    }
+  }
   return { porJugador: porJugador, nombresClan: nombresClan };
 }
 
