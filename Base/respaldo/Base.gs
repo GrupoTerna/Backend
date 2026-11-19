@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 22:07:19 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 18/11/2026 22:56:26 */
 
 
 
@@ -21134,15 +21134,18 @@ function _webAdminBuscarClan(token, tag) {
  * Función pura. Arma la lista de la tarjeta «Clanes externos» de admin.html: un elemento por clan externo con los jugadores nuestros que estuvieron ahí.
  * `indice` es el índice anterior ({ clanes: { '#CLAN': { nombre, jugadores: [{ tag, semanas, primera, ultima }] } } }, Indice_Clanes_Externos.json); `sospechosos` sale de _alertasClanesSospechosos_() (clanes rivales y vetados de HOY, por Tag sin «#»);
  * `alertas` es Alertas_Clanes_Sospechosos.json (los tipos que un clan ya tuvo no se quitan, §PF378); `nombres` es { '#TAG': 'Nombre' } de los jugadores (_hgNombresPorTag_(): las claves traen «#», como el CSV; 18-nov-2026 se busca con «#» y sin él, antes solo sin «#» y todos salían sin nombre).
- * `contexto` (opcional, 18-nov-2026, §PF509): { activos: { 'TAG': true } con los Tags que HOY están en el Directorio, clanesActuales: { 'TAG': { nombre, tag } } con el clan nuestro de su fila del Directorio (solo se usa para los activos; el inactivo sale con clanActual vacío), rivales: { 'TAG': { clanTernaTag, clanTernaNombre } } con el clan nuestro al que cada clan rival enfrenta esta temporada }. Sin él, nadie es activo y ningún rival trae clan nuestro.
+ * `contexto` (opcional, 18-nov-2026, §PF509): { activos: { 'TAG': true } con los Tags que HOY están en el Directorio, clanesActuales: { 'TAG': { nombre, tag } } con el clan nuestro de su fila del Directorio (solo se usa para los activos), ultimosClanes: { 'TAG': { nombre, tag } } con el último clan conocido de cada jugador (se usa para los inactivos, §PF515; el jugador sale con clanUltimo: true) y nombresClan: { '#TAG': 'Nombre' } para completar el nombre cuando solo se conoce el Tag del clan, rivales: { 'TAG': { clanTernaTag, clanTernaNombre } } con el clan nuestro al que cada clan rival enfrenta esta temporada }. Sin él, nadie es activo y ningún rival trae clan nuestro.
  * Un clan rival o vetado de hoy sin ningún jugador nuestro en el índice también sale, con la lista vacía (la usuaria quiere ver todos los vetados y rivales).
  * Devuelve [{ tag, nombre, tipos: ['rival'|'vetado'], hoy, ternaTag, ternaNombre ('' si no es rival de esta temporada), activos, inactivos, jugadores: [{ tag, nombre, activo, semanas, primera, ultima }] }]; «activo» = el jugador está hoy en el Directorio (en alguno de nuestros clanes); «inactivo» = ya no está (Inactivos, Vetados o fuera del roster); primera y ultima son { temporada, semana, supercell } (supercell siempre que haya temporada de RoyaleAPI, desde el 18-nov-2026: la web muestra todas las temporadas con el id de Supercell «AAAA-MM», igual que _clanesExternosDeJugador_()).
- * Orden: clanes con más jugadores primero y, a igual cantidad, por nombre; los jugadores, del que estuvo más recientemente al más antiguo.
+ * Orden: clanes con más jugadores primero y, a igual cantidad, por nombre; los jugadores, activos primero, luego por semanas (mayor a menor) y luego por nombre (§PF516, §PF517). `contexto.sinPerfil` = { '#TAG': { nombre, estado } } de la lista «sin perfil»: cada jugador trae `sinPerfil` ('Baneado', 'Sin registro', 'Sin perfil' o '') y, si esa lista trae su nombre, ese nombre manda.
  */
 function _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, contexto) {
   var activosMapa = (contexto && contexto.activos) || {};
   var rivalesInfo = (contexto && contexto.rivales) || {};
   var clanesActualesMapa = (contexto && contexto.clanesActuales) || {};
+  var ultimosClanesMapa = (contexto && contexto.ultimosClanes) || {};
+  var nombresClanMapa = (contexto && contexto.nombresClan) || {};
+  var sinPerfilMapa = (contexto && contexto.sinPerfil) || {};
   var clanesIdx = (indice && indice.clanes) || {};
   var hoyMapa = sospechosos || {};
   var guardados = (alertas && alertas.clanes) || {};
@@ -21173,14 +21176,23 @@ function _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, conte
     for (var i = 0; i < lista.length; i++) {
       var tagJ = cleanTag(lista[i] && lista[i].tag);
       if (!tagJ) continue;
-      var clanAct = (activosMapa[tagJ] === true && clanesActualesMapa[tagJ]) || null;
-      jugadores.push({ tag: '#' + tagJ, nombre: String(nombresJ['#' + tagJ] || nombresJ[tagJ] || ''), activo: activosMapa[tagJ] === true, clanActual: clanAct ? clanAct.nombre : '', clanActualTag: clanAct ? clanAct.tag : '', semanas: Number(lista[i].semanas) || 0, primera: punto(lista[i].primera), ultima: punto(lista[i].ultima) });
+      var esActivoJ = activosMapa[tagJ] === true;
+      // §PF516: un tag de la lista «sin perfil» (RoyaleAPI da 404 o Supercell notFound): el estado sale tal cual está en el CSV/JSON; «Baneado» lleva emoji en la web. Su nombre es el último que RoyaleAPI conoció (columna Nombre de esa lista) y manda sobre el de las hojas, que puede ser más viejo.
+      var spJ = sinPerfilMapa['#' + tagJ] || null;
+      var nombreJ = String(nombresJ['#' + tagJ] || nombresJ[tagJ] || '');
+      if (spJ && spJ.nombre && String(spJ.nombre).charAt(0) !== '#') nombreJ = String(spJ.nombre);
+      // §PF515: el activo trae el clan de su fila del Directorio; el inactivo, el último clan conocido (clanUltimo: true). Si solo se conoce el Tag del clan, el nombre se busca en nombresClan.
+      var clanAct = (esActivoJ ? clanesActualesMapa[tagJ] : ultimosClanesMapa[tagJ]) || null;
+      var clanActNombre = clanAct ? String(clanAct.nombre || '').trim() : '';
+      var clanActTag = clanAct ? String(clanAct.tag || '').trim() : '';
+      if (clanActTag && (!clanActNombre || clanActNombre.charAt(0) === '#')) clanActNombre = String(nombresClanMapa['#' + cleanTag(clanActTag)] || '');
+      jugadores.push({ tag: '#' + tagJ, nombre: nombreJ, activo: esActivoJ, sinPerfil: spJ ? (String(spJ.estado || '') || 'Sin perfil') : '', clanActual: clanActNombre, clanActualTag: clanActTag, clanUltimo: !esActivoJ && !!(clanActNombre || clanActTag), semanas: Number(lista[i].semanas) || 0, primera: punto(lista[i].primera), ultima: punto(lista[i].ultima) });
     }
+    // §PF516/§PF517: activos primero; luego más semanas primero y, a igual cantidad, por nombre (A-Z; sin nombre, por Tag). Antes iba por la última semana en el clan.
     jugadores.sort(function (a, b) {
-      var ua = a.ultima || { temporada: -999, semana: 0 }, ub = b.ultima || { temporada: -999, semana: 0 };
-      if (ua.temporada !== ub.temporada) return ub.temporada - ua.temporada;
-      if (ua.semana !== ub.semana) return ub.semana - ua.semana;
-      return b.semanas - a.semanas;
+      if (a.activo !== b.activo) return a.activo ? -1 : 1;
+      if (a.semanas !== b.semanas) return b.semanas - a.semanas;
+      return String(a.nombre || a.tag).localeCompare(String(b.nombre || b.tag), 'es', { sensitivity: 'base' });
     });
     var nActivos = 0;
     for (var ja = 0; ja < jugadores.length; ja++) if (jugadores[ja].activo) nActivos++;
@@ -21229,7 +21241,11 @@ function _webAdminClanesExternos(token) {
     Logger.log('[ClanesExternos] No se pudo leer el Directorio para marcar activos: ' + eDir.message);
     return { ok: false, error: 'No se pudo leer el Directorio para distinguir activos de inactivos. Inténtalo de nuevo.' };
   }
-  var clanes = _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, { activos: activos, rivales: rivalesInfo, clanesActuales: clanesActuales });
+  // 18-nov-2026 (§PF515): el inactivo muestra su ÚLTIMO clan conocido en «Clan actual» (antes salía vacío y la columna decía «—»).
+  var ultimos = _ultimosClanesDeJugadores_();
+  // 18-nov-2026 (§PF516): la lista «sin perfil» (Tags_Sin_Perfil.csv/.json) marca a los baneados y da su último nombre de RoyaleAPI.
+  var sinPerfil = _leerTagsSinPerfilRegistrados_();
+  var clanes = _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, { activos: activos, rivales: rivalesInfo, clanesActuales: clanesActuales, ultimosClanes: ultimos.porJugador, nombresClan: ultimos.nombresClan, sinPerfil: sinPerfil });
   return { ok: true, actualizado: String(indice.actualizado || indice.generado || ''), indiceCompleto: indice.completo === true, total: clanes.length, clanes: clanes };
 }
 
@@ -21291,6 +21307,104 @@ function _completarNombresDeRespaldo_(nombres) {
     } catch (eHist) { Logger.log('[ClanesExternos] No se pudo leer «' + historiales[h].hoja + '» para completar nombres: ' + eHist.message); }
   }
   return nombres;
+}
+
+/**
+ * _ultimosClanesDeJugadores_() [→ Contexto_Base_Web.md §PF515]
+ * 18-nov-2026 (pedido de la usuaria): la columna «Clan actual» de «Clanes externos» muestra, en los jugadores inactivos, el ÚLTIMO clan conocido. Solo lee hojas; no escribe ni llama a la API.
+ * Devuelve { porJugador: { 'TAG': { nombre, tag } }, nombresClan: { '#TAG': 'Nombre' } }. **Solo cuenta un clan Terna** (CFG.TERNA_TAGS, comparado por Tag con _esClanPropio_()): un clan externo o vetado se descarta y se sigue con la fuente siguiente. Para cada Tag manda la primera fuente que traiga un clan Terna, en este orden: Inactivos (Clan y Clan_Tag), Vetados (Clan y Clan_Tag), Historial_I/S (la última fila del jugador), Historial_A/D (la última fila) y la hoja Guerra (la última fila del jugador).
+ * Una fuente que no se pueda leer se salta (queda en el registro) y las demás siguen. `nombresClan` junta el nombre más reciente de cada clan por su Tag, para los casos en que una hoja guarda el Tag del clan pero no su nombre (el nombre que empieza con «#» no cuenta como nombre).
+ */
+function _ultimosClanesDeJugadores_() {
+  var porJugador = {}, nombresClan = {};
+  var ss;
+  try { ss = _getSs(); } catch (eSs) { Logger.log('[ClanesExternos] No se pudo abrir la hoja de cálculo para el último clan: ' + eSs.message); return { porJugador: porJugador, nombresClan: nombresClan }; }
+  var esTerna = function (tagClan) { var t = cleanTag(tagClan); return !!t && _esClanPropio_(t); };
+  var anotarNombre = function (tagClan, nombreClan) {
+    var tc = cleanTag(tagClan), nc = String(nombreClan || '').trim();
+    if (tc && nc && nc.charAt(0) !== '#') nombresClan['#' + tc] = nc; // la última fila gana: es el nombre más reciente
+  };
+  // Candidatos por jugador, en orden de prioridad de la fuente; la elección (y el filtro «solo clan Terna») se hace al final, cuando ya se conocen los nombres de todos los clanes.
+  var candidatos = {};
+  var poner = function (tagJugador, nombreClan, tagClan) {
+    var tj = cleanTag(tagJugador);
+    var nc = String(nombreClan || '').trim(), tc = String(tagClan || '').trim();
+    if (!tj || (!nc && !tc)) return;
+    if (tc && !esTerna(tc)) return; // §PF515: solo cuenta un clan de la Familia; uno externo o vetado se descarta
+    anotarNombre(tc, nc);
+    (candidatos[tj] = candidatos[tj] || []).push({ nombre: nc, tag: tc });
+  };
+  // 1) y 2) Inactivos y Vetados: guardan el último clan que el jugador tuvo con nosotros.
+  var roster = [
+    { hoja: CFG.SHEETS.INACTIVOS, tag: IC.TAG, clan: IC.CLAN, clanTag: IC.CLAN_TAG, cols: INACTIVOS_TOTAL_COLS },
+    { hoja: CFG.SHEETS.VETADOS, tag: VC.TAG, clan: VC.CLAN, clanTag: VC.CLAN_TAG, cols: VETADOS_TOTAL_COLS }
+  ];
+  for (var i = 0; i < roster.length; i++) {
+    try {
+      var mapa = _leerHojaComoMapaPorTag(ss, roster[i].hoja, roster[i].tag - 1, roster[i].cols);
+      for (var k in mapa) poner(k, mapa[k][roster[i].clan - 1], mapa[k][roster[i].clanTag - 1]);
+    } catch (eHoja) { Logger.log('[ClanesExternos] No se pudo leer «' + roster[i].hoja + '» para el último clan: ' + eHoja.message); }
+  }
+  // 3) y 4) Historial_I/S (Tag 3, Clan 6, ClanTag 7) e Historial_A/D (Tag 2, Clan 9, ClanTag 10): la última fila de clan Terna de cada jugador.
+  var historiales = [
+    { hoja: CFG.SHEETS.HISTORIAL, colTag: 3, colClan: 6, colClanTag: 7 },
+    { hoja: CFG.SHEETS.ASCENSOS, colTag: 2, colClan: 9, colClanTag: 10 }
+  ];
+  for (var h = 0; h < historiales.length; h++) {
+    try {
+      var cH = historiales[h];
+      var shH = ss.getSheetByName(cH.hoja);
+      if (!shH || shH.getLastRow() < 2) continue;
+      var maxCol = Math.min(shH.getMaxColumns(), Math.max(cH.colTag, cH.colClan, cH.colClanTag));
+      if (maxCol < cH.colClan) continue;
+      var datosH = shH.getRange(2, 1, shH.getLastRow() - 1, maxCol).getValues();
+      var ultimoH = {};
+      for (var rh = 0; rh < datosH.length; rh++) {
+        var tgH = cleanTag(datosH[rh][cH.colTag - 1]);
+        var ncH = String(datosH[rh][cH.colClan - 1] || '').trim();
+        var tcH = cH.colClanTag <= maxCol ? String(datosH[rh][cH.colClanTag - 1] || '').trim() : '';
+        if (tcH && !esTerna(tcH)) continue;
+        anotarNombre(tcH, ncH);
+        if (tgH && (ncH || tcH)) ultimoH[tgH] = { nombre: ncH, tag: tcH };
+      }
+      for (var tuh in ultimoH) poner(tuh, ultimoH[tuh].nombre, ultimoH[tuh].tag);
+    } catch (eHist) { Logger.log('[ClanesExternos] No se pudo leer «' + historiales[h].hoja + '» para el último clan: ' + eHist.message); }
+  }
+  // 5) Guerra: la última fila de clan Terna del jugador (columnas Clan y Tag contiguas; Clan_Tag aparte). Solo se leen esas columnas.
+  try {
+    var shG = ss.getSheetByName(CFG.SHEETS.GUERRA);
+    if (shG && shG.getLastRow() >= 2) {
+      var nG = shG.getLastRow() - 1;
+      var clanTag = shG.getRange(2, GC.CLAN, nG, GC.TAG - GC.CLAN + 1).getValues();
+      var clanTagCol = shG.getRange(2, GC.CLAN_TAG, nG, 1).getValues();
+      var ultimoG = {};
+      for (var rg = 0; rg < clanTag.length; rg++) {
+        var tgG = cleanTag(clanTag[rg][GC.TAG - GC.CLAN]);
+        var ncG = String(clanTag[rg][0] || '').trim(), tcG = String(clanTagCol[rg][0] || '').trim();
+        if (tcG && !esTerna(tcG)) continue;
+        anotarNombre(tcG, ncG);
+        if (tgG && (ncG || tcG)) ultimoG[tgG] = { nombre: ncG, tag: tcG };
+      }
+      for (var tug in ultimoG) poner(tug, ultimoG[tug].nombre, ultimoG[tug].tag);
+    }
+  } catch (eGuerra) { Logger.log('[ClanesExternos] No se pudo leer la hoja Guerra para el último clan: ' + eGuerra.message); }
+  // Elección final: la primera fuente cuyo clan sea Terna. Con Tag, ya se filtró arriba; sin Tag (fila antigua), el nombre debe ser el de uno de los clanes Terna conocidos por su Tag.
+  var ternaPorNombre = {};
+  for (var tn in nombresClan) if (esTerna(tn)) ternaPorNombre[nombresClan[tn].toLowerCase()] = tn;
+  for (var tj in candidatos) {
+    var lista = candidatos[tj];
+    for (var c = 0; c < lista.length; c++) {
+      var cand = lista[c];
+      if (!cand.tag) {
+        var tagPorNombre = ternaPorNombre[cand.nombre.toLowerCase()];
+        if (!tagPorNombre) continue; // clan sin Tag cuyo nombre no es de uno nuestro: se descarta
+        cand = { nombre: cand.nombre, tag: tagPorNombre };
+      }
+      porJugador[tj] = cand;
+      break;
+    }
+  }
+  return { porJugador: porJugador, nombresClan: nombresClan };
 }
 
 /**
@@ -39993,6 +40107,38 @@ function _tspFilaARegistro_(f) {
 
 function _tspRegistroAFila_(r) {
   return [r.tag, r.nombre, r.estado, r.royaleapi, r.apiSupercell, r.fuente, r.primeraVez, r.ultimaActualizacion, r.notas];
+}
+
+/**
+ * _leerTagsSinPerfilRegistrados_() [→ Contexto_Base_Web.md §PF516]
+ * Solo lectura (no toma el candado ni escribe). Devuelve { '#TAG': { tag, nombre, estado, ... } } con lo guardado en CSV/Tampermonkey/Tags_Sin_Perfil.csv y, para los tags que el CSV no tenga,
+ * en JSON/RoyaleAPI/Sin_Perfil/Tags_Sin_Perfil.json: es la misma lista que arma _registrarTagsSinPerfil_() (el CSV manda). No crea la carpeta del JSON si falta. Un archivo que no se pueda leer se salta y queda en el registro.
+ */
+function _leerTagsSinPerfilRegistrados_() {
+  var mapa = {}, i, r;
+  try {
+    var carpetaCsv = _getCsvSubcarpeta_('Tampermonkey', false);
+    var itCsv = carpetaCsv ? carpetaCsv.getFilesByName(TAGS_SIN_PERFIL_CSV_FILENAME) : null;
+    if (itCsv && itCsv.hasNext()) {
+      var textoCsv = itCsv.next().getBlob().getDataAsString('UTF-8');
+      var filas = textoCsv ? _parseCSV(textoCsv) : [];
+      for (i = 1; i < filas.length; i++) { r = _tspFilaARegistro_(filas[i]); if (r.tag && !mapa[r.tag]) mapa[r.tag] = r; }
+    }
+  } catch (eCsv) { Logger.log('[TagsSinPerfil] No se pudo leer ' + TAGS_SIN_PERFIL_CSV_FILENAME + ': ' + (eCsv.message || eCsv)); }
+  try {
+    var raiz = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI);
+    var itCar = raiz.getFoldersByName(TAGS_SIN_PERFIL_JSON_CARPETA);
+    var itJson = itCar.hasNext() ? itCar.next().getFilesByName(TAGS_SIN_PERFIL_JSON_FILENAME) : null;
+    if (itJson && itJson.hasNext()) {
+      var datos = JSON.parse(itJson.next().getBlob().getDataAsString('UTF-8'));
+      var lista = (datos && datos.tags) ? datos.tags : [];
+      for (i = 0; i < lista.length; i++) {
+        var tj = _tspNormalizarTag_(lista[i] && lista[i].tag);
+        if (tj && !mapa[tj]) mapa[tj] = { tag: tj, nombre: _tspTexto_(lista[i].nombre), estado: _tspTexto_(lista[i].estado), royaleapi: _tspTexto_(lista[i].royaleapi), apiSupercell: _tspTexto_(lista[i].apiSupercell), fuente: _tspTexto_(lista[i].fuente), primeraVez: _tspTexto_(lista[i].primeraVez), ultimaActualizacion: _tspTexto_(lista[i].ultimaActualizacion), notas: _tspTexto_(lista[i].notas) };
+      }
+    }
+  } catch (eJson) { Logger.log('[TagsSinPerfil] No se pudo leer ' + TAGS_SIN_PERFIL_JSON_FILENAME + ': ' + (eJson.message || eJson)); }
+  return mapa;
 }
 
 /**
