@@ -458,7 +458,7 @@ function _webAdminBuscarClan(token, tag) {
  * Función pura. Arma la lista de la tarjeta «Clanes externos» de admin.html: un elemento por clan externo con los jugadores nuestros que estuvieron ahí.
  * `indice` es el índice anterior ({ clanes: { '#CLAN': { nombre, jugadores: [{ tag, semanas, primera, ultima }] } } }, Indice_Clanes_Externos.json); `sospechosos` sale de _alertasClanesSospechosos_() (clanes rivales y vetados de HOY, por Tag sin «#»);
  * `alertas` es Alertas_Clanes_Sospechosos.json (los tipos que un clan ya tuvo no se quitan, §PF378); `nombres` es { '#TAG': 'Nombre' } de los jugadores (_hgNombresPorTag_(): las claves traen «#», como el CSV; 18-nov-2026 se busca con «#» y sin él, antes solo sin «#» y todos salían sin nombre).
- * `contexto` (opcional, 18-nov-2026, §PF509): { activos: { 'TAG': true } con los Tags que HOY están en el Directorio, rivales: { 'TAG': { clanTernaTag, clanTernaNombre } } con el clan nuestro al que cada clan rival enfrenta esta temporada }. Sin él, nadie es activo y ningún rival trae clan nuestro.
+ * `contexto` (opcional, 18-nov-2026, §PF509): { activos: { 'TAG': true } con los Tags que HOY están en el Directorio, clanesActuales: { 'TAG': { nombre, tag } } con el clan nuestro de su fila del Directorio (solo se usa para los activos; el inactivo sale con clanActual vacío), rivales: { 'TAG': { clanTernaTag, clanTernaNombre } } con el clan nuestro al que cada clan rival enfrenta esta temporada }. Sin él, nadie es activo y ningún rival trae clan nuestro.
  * Un clan rival o vetado de hoy sin ningún jugador nuestro en el índice también sale, con la lista vacía (la usuaria quiere ver todos los vetados y rivales).
  * Devuelve [{ tag, nombre, tipos: ['rival'|'vetado'], hoy, ternaTag, ternaNombre ('' si no es rival de esta temporada), activos, inactivos, jugadores: [{ tag, nombre, activo, semanas, primera, ultima }] }]; «activo» = el jugador está hoy en el Directorio (en alguno de nuestros clanes); «inactivo» = ya no está (Inactivos, Vetados o fuera del roster); primera y ultima son { temporada, semana, supercell } (supercell solo cuando temporada <= 0, igual que _clanesExternosDeJugador_()).
  * Orden: clanes con más jugadores primero y, a igual cantidad, por nombre; los jugadores, del que estuvo más recientemente al más antiguo.
@@ -466,6 +466,7 @@ function _webAdminBuscarClan(token, tag) {
 function _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, contexto) {
   var activosMapa = (contexto && contexto.activos) || {};
   var rivalesInfo = (contexto && contexto.rivales) || {};
+  var clanesActualesMapa = (contexto && contexto.clanesActuales) || {};
   var clanesIdx = (indice && indice.clanes) || {};
   var hoyMapa = sospechosos || {};
   var guardados = (alertas && alertas.clanes) || {};
@@ -497,7 +498,8 @@ function _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, conte
     for (var i = 0; i < lista.length; i++) {
       var tagJ = cleanTag(lista[i] && lista[i].tag);
       if (!tagJ) continue;
-      jugadores.push({ tag: '#' + tagJ, nombre: String(nombresJ['#' + tagJ] || nombresJ[tagJ] || ''), activo: activosMapa[tagJ] === true, semanas: Number(lista[i].semanas) || 0, primera: punto(lista[i].primera), ultima: punto(lista[i].ultima) });
+      var clanAct = (activosMapa[tagJ] === true && clanesActualesMapa[tagJ]) || null;
+      jugadores.push({ tag: '#' + tagJ, nombre: String(nombresJ['#' + tagJ] || nombresJ[tagJ] || ''), activo: activosMapa[tagJ] === true, clanActual: clanAct ? clanAct.nombre : '', clanActualTag: clanAct ? clanAct.tag : '', semanas: Number(lista[i].semanas) || 0, primera: punto(lista[i].primera), ultima: punto(lista[i].ultima) });
     }
     jugadores.sort(function (a, b) {
       var ua = a.ultima || { temporada: -999, semana: 0 }, ub = b.ultima || { temporada: -999, semana: 0 };
@@ -537,15 +539,21 @@ function _webAdminClanesExternos(token) {
     var rr = rivalesYConflicto[tr];
     if (rr && rr.clanTernaTag) rivalesInfo[cleanTag(tr)] = { clanTernaTag: rr.clanTernaTag, clanTernaNombre: rr.clanTernaNombre || '' };
   }
-  var activos = {};
+  var activos = {}, clanesActuales = {};
   try {
     var mapaDir = _leerHojaComoMapaPorTag(_getSs(), CFG.SHEETS.DIRECTORIO, IC.TAG - 1, DIR_SHEET_COLS);
-    for (var kd in mapaDir) { var td = cleanTag(kd); if (td) activos[td] = true; }
+    for (var kd in mapaDir) {
+      var td = cleanTag(kd);
+      if (!td) continue;
+      activos[td] = true;
+      // 18-nov-2026: clan actual = el clan nuestro de su fila del Directorio (mismas columnas que Inactivos, índices de IC).
+      clanesActuales[td] = { nombre: String(mapaDir[kd][IC.CLAN - 1] || '').trim(), tag: String(mapaDir[kd][IC.CLAN_TAG - 1] || '').trim() };
+    }
   } catch (eDir) {
     Logger.log('[ClanesExternos] No se pudo leer el Directorio para marcar activos: ' + eDir.message);
     return { ok: false, error: 'No se pudo leer el Directorio para distinguir activos de inactivos. Inténtalo de nuevo.' };
   }
-  var clanes = _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, { activos: activos, rivales: rivalesInfo });
+  var clanes = _clanesExternosListaArmar_(indice, sospechosos, alertas, nombres, { activos: activos, rivales: rivalesInfo, clanesActuales: clanesActuales });
   return { ok: true, actualizado: String(indice.actualizado || indice.generado || ''), indiceCompleto: indice.completo === true, total: clanes.length, clanes: clanes };
 }
 
