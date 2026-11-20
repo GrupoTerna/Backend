@@ -600,7 +600,7 @@ function _resumenCuposGuerraPorClan_(ctx) {
  * 20-nov-2026 (pedido de la usuaria): el puesto de cada clan Terna entre los clanes de SU carrera, ordenados por las medallas del DÍA (no por el acumulado de la semana: ese es el `puesto` del pronóstico).
  * Devuelve un mapa por Tag normalizado (mayúsculas, con #) con { puesto, total, medallas, diferencia, lider, segundo, empatadoCon }:
  *   - `puesto` = 1 + clanes con MÁS medallas hoy (con empate comparten puesto); `total` = clanes de la carrera.
- *   - Si no vamos primeros: `lider` = el clan con más medallas y `diferencia` = lo que nos falta para igualarlo.
+ *   - Si no vamos primeros: `lider` = el clan con más medallas y `diferencia` = lo que nos falta para igualarlo; `escalones` = un registro por cada puesto por encima del nuestro, del más cercano al 1.º ({ puesto, medallas, nombres, diferencia }; los clanes empatados en esas medallas van juntos en `nombres`). (20-nov-2026, pedido de la usuaria: cuánto falta para alcanzar a cada puesto hasta llegar al primero.)
  *   - Si vamos primeros: `segundo` = el mejor de los demás y `diferencia` = las medallas que le faltan para alcanzarnos; si otro clan tiene las mismas medallas, `empatadoCon` es ese clan y no hay diferencia.
  * La fama de hoy sale de `calcularPronosticoGuerra()` (propios y rivales, mismo cálculo que guerra.html). NUNCA se inventa: si a algún clan de la carrera le falta la fama de hoy (p. ej. un rival sin foto del día), o si nadie ha sumado medallas todavía, esa carrera queda fuera del mapa y el mensaje sale sin esa parte. Ante cualquier error devuelve {}.
  */
@@ -642,10 +642,23 @@ function _puestoMedallasDiaPorClan_(ctx) {
       for (var k = 1; k < otros.length; k++) if (otros[k].medallas > mejorOtro.medallas) mejorOtro = otros[k];
       if (yo.medallas <= 0 && mejorOtro.medallas <= 0) continue; // nadie ha sumado medallas hoy: no hay puesto que informar
       var masQueYo = otros.filter(function(x) { return x.medallas > yo.medallas; }).length;
-      var reg = { puesto: masQueYo + 1, total: lista.length, medallas: yo.medallas, diferencia: 0, lider: null, segundo: null, empatadoCon: null };
+      var reg = { puesto: masQueYo + 1, total: lista.length, medallas: yo.medallas, diferencia: 0, lider: null, segundo: null, empatadoCon: null, escalones: [] };
       if (masQueYo > 0) {
         reg.lider = mejorOtro;
         reg.diferencia = mejorOtro.medallas - yo.medallas;
+        // Un escalón por cada cifra distinta de medallas por encima de la nuestra (de menor a mayor = del puesto más cercano al 1.º).
+        var niveles = [];
+        otros.forEach(function(x) { if (x.medallas > yo.medallas && niveles.indexOf(x.medallas) < 0) niveles.push(x.medallas); });
+        niveles.sort(function(a, b) { return a - b; });
+        for (var n = 0; n < niveles.length; n++) {
+          var nivel = niveles[n];
+          reg.escalones.push({
+            puesto: lista.filter(function(x) { return x.medallas > nivel; }).length + 1,
+            medallas: nivel,
+            nombres: otros.filter(function(x) { return x.medallas === nivel; }).map(function(x) { return x.nombre; }),
+            diferencia: nivel - yo.medallas
+          });
+        }
       } else if (mejorOtro.medallas === yo.medallas) {
         reg.empatadoCon = mejorOtro;
       } else {
@@ -833,12 +846,13 @@ function _textoResumenCuposGuerra_(cupos, leyenda) {
 /**
  * _textoPuestoMedallasDia_(p) [→ Contexto_Base_Web.md §PF532]
  * 20-nov-2026 (pedido de la usuaria): las líneas del puesto en medallas del día para el Mensaje de Guerra (Particular y Chat General). `p` es el registro de `_puestoMedallasDiaPorClan_()` para ese clan; sin registro devuelve '' y el mensaje sale sin esta parte.
- * Primero la línea en negrita con las medallas de hoy y el puesto; debajo, una línea con la diferencia: si NO vamos primeros, cuántas nos faltan para alcanzar al 1.º; si vamos primeros, con cuántas medallas más nos alcanzaría el 2.º; si empatamos en el 1.º, con quién. Los asteriscos de los nombres se quitan para no romper la negrita de WhatsApp. Termina en salto de línea.
+ * Primero la línea en negrita con las medallas de hoy y el puesto; debajo, la diferencia: si vamos 2.º, una línea con lo que nos falta para alcanzar al 1.º; si vamos 3.º o más abajo, una lista con lo que nos falta para alcanzar a CADA puesto por encima, del más cercano al 1.º (20-nov-2026, pedido de la usuaria); si vamos primeros, con cuántas medallas más nos alcanzaría el 2.º; si empatamos en el 1.º, con quién. Los asteriscos de los nombres se quitan para no romper la negrita de WhatsApp. Termina en salto de línea.
  */
 function _textoPuestoMedallasDia_(p) {
   if (!p) return '';
   function nom(x) { return String((x && x.nombre) || '').replace(/\*/g, '').trim(); }
   function medallas(n) { return _fmt(n) + ' ' + (Number(n) === 1 ? 'medalla' : 'medallas'); }
+  function nombres(lista) { var n = (lista || []).map(function(x) { return String(x || '').replace(/\*/g, '').trim(); }); return n.length > 1 ? n.slice(0, -1).join(', ') + ' y ' + n[n.length - 1] : (n[0] || ''); }
   var t;
   if (p.puesto === 1 && p.empatadoCon) {
     t = _negritaWsp_('🥇 Medallas de hoy: ' + _fmt(p.medallas) + ' (empatamos en el 1.º puesto con ' + nom(p.empatadoCon) + ')') + '\n';
@@ -847,7 +861,15 @@ function _textoPuestoMedallasDia_(p) {
     t += '   ' + nom(p.segundo) + ' (' + _fmt(p.segundo.medallas) + ') nos alcanzaría con ' + medallas(p.diferencia) + ' más.\n';
   } else {
     t = _negritaWsp_('🏅 Medallas de hoy: ' + _fmt(p.medallas) + ' (vamos en el ' + p.puesto + '.º puesto de ' + p.total + ')') + '\n';
-    t += '   ' + (Number(p.diferencia) === 1 ? 'Nos falta ' : 'Nos faltan ') + medallas(p.diferencia) + ' para alcanzar al 1.º, ' + nom(p.lider) + ' (' + _fmt(p.lider.medallas) + ').\n';
+    var esc = p.escalones || [];
+    if (esc.length > 1) {
+      t += '   Nos faltan:\n';
+      for (var i = 0; i < esc.length; i++) {
+        t += '   • ' + medallas(esc[i].diferencia) + ' para el ' + esc[i].puesto + '.º, ' + nombres(esc[i].nombres) + ' (' + _fmt(esc[i].medallas) + ')\n';
+      }
+    } else {
+      t += '   ' + (Number(p.diferencia) === 1 ? 'Nos falta ' : 'Nos faltan ') + medallas(p.diferencia) + ' para alcanzar al 1.º, ' + nom(p.lider) + ' (' + _fmt(p.lider.medallas) + ').\n';
+    }
   }
   return t;
 }
