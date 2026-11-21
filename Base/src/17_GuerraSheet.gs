@@ -38,7 +38,7 @@
 // por posición debe pasar por GC (nunca un número suelto) y por GUERRA_TOTAL_COLS. [→ Contexto_Base_Web.md §PF304]
 // 7-nov-2026 (tanda 7 del plan Clanes por Tag): 24 columnas. Clan_Tag va al FINAL (no junto a Clan) para no mover ningún índice de una hoja que ya existe;
 // las hojas y archivos NUEVOS ponen el Tag al lado del nombre (regla de la usuaria). GC.TAG sigue siendo el Tag del JUGADOR. [→ Contexto_Base_Web.md §PF401]
-// 21-nov-2026 (§PF437 F3, pedido de la usuaria): 25 columnas. Comprobada va al FINAL (después de Clan_Tag) para no mover ningún índice. Vacía = sin comprobar; «Valores + Battlelog» la escribe
+// 20-nov-2026 (§PF437 F3, pedido de la usuaria): 25 columnas. Comprobada va al FINAL (después de Clan_Tag) para no mover ningún índice. Vacía = sin comprobar; «Valores + Battlelog» la escribe
 // generarGuerraDesglose() (18_CorreccionGuerra.gs) solo si el día salió comprobado y los valores de la hoja coinciden con los de Backup_Guerra.csv con que se comprobó; updateGuerraSheet() la vacía si cambia AtaquesHoy, AtaquesSemana, Fame o Barcos.
 var GC = {
   NUM:          1,
@@ -65,7 +65,7 @@ var GC = {
   DON_D:        22,
   ORIGEN:       23,
   CLAN_TAG:     24,  // 7-nov-2026: Tag del CLAN de la fila (p. ej. #GCRG8L00); es la clave de identidad del clan, la columna Clan es solo el nombre.
-  COMPROBADA:   25   // 21-nov-2026 (§PF437 F3): vacía (sin comprobar) o «Valores + Battlelog» (GUERRA_COMPROBADA_BATTLELOG)
+  COMPROBADA:   25   // 20-nov-2026 (§PF437 F3): vacía (sin comprobar) o «Valores + Battlelog» (GUERRA_COMPROBADA_BATTLELOG)
 };
 
 var GUERRA_TOTAL_COLS = 25;
@@ -87,7 +87,7 @@ var GUERRA_HEADERS = ['N°','Fecha','DiaGuerra','Etapa','Temporada','Temporada_2
                        'Barcos','Fame','Copas','Ranking',
                        'Donaciones_r','Donaciones_d','Origen','Clan_Tag','Comprobada'];
 
-// Encabezados de la hoja Guerra ANTES del 21-nov-2026 (24 columnas, sin Comprobada). Solo para migrar en memoria un Backup_Guerra.csv que aún no la trae
+// Encabezados de la hoja Guerra ANTES del 20-nov-2026 (24 columnas, sin Comprobada). Solo para migrar en memoria un Backup_Guerra.csv que aún no la trae
 // (_migrarTextoGuerraCsv_ en 05_Backup_CSV.gs); la migración se hace por NOMBRE de columna.
 var GUERRA_HEADERS_V24 = ['N°','Fecha','DiaGuerra','Etapa','Temporada','Temporada_2',
                           'Semana','Día','PeriodIndex','Clan','Tag','Nombre',
@@ -532,7 +532,7 @@ function updateGuerraSheet() {
         if (ataqSem !== ataqSemEx) { existing[GC.ATAQUES_SEM - 1] = ataqSem; huboCambiosExistentes = true; }
         if (fame    !== fameEx)    { existing[GC.FAME - 1]        = fame;    huboCambiosExistentes = true; }
         if (barcos  !== barcosEx)  { existing[GC.BARCOS - 1]      = barcos;  huboCambiosExistentes = true; }
-        // 21-nov-2026 (§PF437 F3): si cambió un valor de la fila, la marca «Comprobada» ya no vale (se comprobó con los valores anteriores). La vuelve a poner generarGuerraDesglose() si corresponde.
+        // 20-nov-2026 (§PF437 F3): si cambió un valor de la fila, la marca «Comprobada» ya no vale (se comprobó con los valores anteriores). La vuelve a poner generarGuerraDesglose() si corresponde.
         if ((ataqHoy !== ataqHoyEx || ataqSem !== ataqSemEx || fame !== fameEx || barcos !== barcosEx) && String(existing[GC.COMPROBADA - 1] || '').trim() !== '') existing[GC.COMPROBADA - 1] = '';
 
         // Donaciones, ranking y Nombre siempre se actualizan (son [→ Contexto_Base_Web.md §17B049]
@@ -582,7 +582,7 @@ function updateGuerraSheet() {
           donD,                 // Donaciones_d
           'Original',           // Origen (punto 1.5)
           clanTag,              // Clan_Tag (7-nov-2026, tanda 7): Tag del clan, p. ej. #GCRG8L00
-          ''                    // Comprobada (21-nov-2026, §PF437 F3): una fila nueva nace sin comprobar
+          ''                    // Comprobada (20-nov-2026, §PF437 F3): una fila nueva nace sin comprobar
         ]
       });
       existingIds[idGuerra] = true;
@@ -2239,11 +2239,11 @@ function _asegurarEstructuraGuerra_(sh) {
     sh.insertColumnsAfter(sh.getMaxColumns(), GUERRA_TOTAL_COLS - sh.getMaxColumns());
   }
   var difs = _guerraEncabezadosDiferencias_(sh);
-  // 7-nov-2026 (tanda 7, Clan_Tag) y 21-nov-2026 (Comprobada): si la ÚNICA diferencia es que a la hoja le falta el encabezado de la última columna, se escribe aquí.
+  // 7-nov-2026 (tanda 7, Clan_Tag) y 20-nov-2026 (Comprobada): si la ÚNICA diferencia es que a la hoja le falta el encabezado de la última columna, se escribe aquí.
   // Es una migración segura e idempotente: no mueve ni cambia ningún dato, y sin ella toda función de Guerra abortaría hasta que se corra _setupGuerra().
   if (difs.length === 1 && difs[0].indexOf('col ' + GUERRA_TOTAL_COLS + ': hoja «»') === 0) {
     sh.getRange(1, GUERRA_TOTAL_COLS).setValue(GUERRA_HEADERS[GUERRA_TOTAL_COLS - 1]);
-    Logger.log('[Guerra][ESTRUCTURA] Se agregó el encabezado «' + GUERRA_HEADERS[GUERRA_TOTAL_COLS - 1] + '» en la columna ' + GUERRA_TOTAL_COLS + ' de la hoja Guerra (columna nueva al final: Clan_Tag, 7-nov-2026; Comprobada, 21-nov-2026).');
+    Logger.log('[Guerra][ESTRUCTURA] Se agregó el encabezado «' + GUERRA_HEADERS[GUERRA_TOTAL_COLS - 1] + '» en la columna ' + GUERRA_TOTAL_COLS + ' de la hoja Guerra (columna nueva al final: Clan_Tag, 7-nov-2026; Comprobada, 20-nov-2026).');
     difs = _guerraEncabezadosDiferencias_(sh);
   }
   if (difs.length) {

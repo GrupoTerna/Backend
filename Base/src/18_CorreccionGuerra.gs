@@ -750,7 +750,7 @@ function informeBattlelogContraGuerra() {
  * generarGuerraDesglose() — §PF437 fase 2 (9-nov-2026). MANUAL (se corre desde el editor de Apps Script). Escribe Guerra_Desglose.csv: una fila por jugador, semana de guerra y clan Terna (etapa «Guerra»), con los días J, V, S y D en bloques (formato ancho, §PF442),
  * con los ataques por puntuación (duelo, PvP y barco, ganados y perdidos, y sin fame), la fuente del desglose, la consistencia (con el battlelog y, desde §PF445 d, con los rangos de los JSON) y la cobertura de la mejor captura. Lee Backup_Guerra.csv
  * y Backup_Battlelogs.csv y, para la cobertura, las capturas JSON a través de Battlelog_Capturas.csv (que solo abre los JSON nuevos). No corrige nada y NO pide nada a la API.
- * Desde el 21-nov-2026 (§PF437 F3) escribe además la columna «Comprobada» de la hoja Guerra (solo esa columna; _gdsEscribirComprobadasEnHoja_): «Valores + Battlelog» en las filas cuyo día salió comprobado y cuyos valores siguen
+ * Desde el 20-nov-2026 (§PF437 F3) escribe además la columna «Comprobada» de la hoja Guerra (solo esa columna; _gdsEscribirComprobadasEnHoja_): «Valores + Battlelog» en las filas cuyo día salió comprobado y cuyos valores siguen
  * iguales a los de Backup_Guerra.csv con que se comprobó; las marcas que ya no valen se quitan. Si esa escritura falla, el CSV de desglose ya quedó escrito y solo se avisa.
  * Si se acaba el tiempo de lectura de capturas (GDS_PRESUPUESTO_CAPTURAS_MS), escribe lo que tiene, avisa cuántas quedaron sin leer y se vuelve a correr hasta que diga 0. [→ Contexto_Base_Web.md §PF437]
  */
@@ -6375,7 +6375,7 @@ function _gdsComprobadaDia_(fuente, consistencia) {
 }
 
 /**
- * _gdsNumGuerra_(v) — §PF437 F3 (21-nov-2026). Función pura. Número de una celda de la hoja Guerra o de Backup_Guerra.csv (quita comas de miles); 0 si está vacía o no es un número.
+ * _gdsNumGuerra_(v) — §PF437 F3 (20-nov-2026). Función pura. Número de una celda de la hoja Guerra o de Backup_Guerra.csv (quita comas de miles); 0 si está vacía o no es un número.
  */
 function _gdsNumGuerra_(v) {
   var s = String(v === undefined || v === null ? '' : v).replace(/,/g, '').trim();
@@ -6404,7 +6404,7 @@ function _gdsFirmaValoresGuerra_(f) {
 }
 
 /**
- * _gdsPlanComprobadasGuerra_(marcas, filasHoja, tagPorNombre) — §PF437 F3 (21-nov-2026). Función pura (no lee ni escribe nada). Calcula el contenido de la columna «Comprobada» de la hoja Guerra.
+ * _gdsPlanComprobadasGuerra_(marcas, filasHoja, tagPorNombre) — §PF437 F3 (20-nov-2026). Función pura (no lee ni escribe nada). Calcula el contenido de la columna «Comprobada» de la hoja Guerra.
  * marcas = lista que devuelve _gdsConstruirFilas_ ({ clave, estado, firma } por cada día con fila en Backup_Guerra.csv); filasHoja = las filas de la hoja (sin el encabezado), de GUERRA_TOTAL_COLS columnas.
  * Una fila de la hoja queda con «Valores + Battlelog» solo si su clave tiene una marca con ese estado Y su firma de valores es igual a la de la marca; en cualquier otro caso queda vacía (una marca vieja
  * que ya no vale se quita). Un texto distinto en la celda (ni vacío ni «Valores + Battlelog») no se toca y se cuenta aparte. Devuelve { columna: [valor por fila], puestas, quitadas, igual, noCoinciden, ajenas }:
@@ -6439,7 +6439,7 @@ function _gdsPlanComprobadasGuerra_(marcas, filasHoja, tagPorNombre) {
 }
 
 /**
- * _gdsEscribirComprobadasEnHoja_(marcas, tagPorNombre) — §PF437 F3 (21-nov-2026). Escribe SOLO la columna «Comprobada» (GC.COMPROBADA) de la hoja Guerra con el plan de _gdsPlanComprobadasGuerra_. No toca ninguna otra columna,
+ * _gdsEscribirComprobadasEnHoja_(marcas, tagPorNombre) — §PF437 F3 (20-nov-2026). Escribe SOLO la columna «Comprobada» (GC.COMPROBADA) de la hoja Guerra con el plan de _gdsPlanComprobadasGuerra_. No toca ninguna otra columna,
  * no corrige valores y no pide nada a la API. La marca llega a Backup_Guerra.csv con el siguiente respaldo de la hoja (_syncGuerraCSV). Con candado; si la hoja cambió de tamaño mientras se calculaba, no escribe y avisa.
  * Devuelve true si la hoja quedó con la columna al día (o no había nada que cambiar); false si no se escribió.
  */

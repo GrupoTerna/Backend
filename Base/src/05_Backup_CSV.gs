@@ -1204,7 +1204,7 @@ function _loadCSVFromDrive(filename) {
 /**
  * _migrarTextoGuerraCsv_(texto) — 30-oct-2026 (orden nuevo de la hoja Guerra, §PF304); 7-nov-2026 (tanda 7): también acepta el encabezado de 23 columnas
  * (GUERRA_HEADERS_V23, sin Clan_Tag) y lo lleva al de 24 con Clan_Tag vacía, sin recalcular la merma (ya viene calculada).
- * 21-nov-2026 (§PF437 F3): también acepta el de 24 columnas (GUERRA_HEADERS_V24, sin Comprobada) y lo lleva al de 25 con Comprobada vacía.
+ * 20-nov-2026 (§PF437 F3): también acepta el de 24 columnas (GUERRA_HEADERS_V24, sin Comprobada) y lo lleva al de 25 con Comprobada vacía.
  * Backup_Guerra.csv se lee POR POSICIÓN (GC). Si el archivo todavía trae el orden viejo de 21 columnas (encabezado GUERRA_HEADERS_V21),
  * lo reordena en memoria al de 23 columnas, emparejando por NOMBRE de columna (no por posición), y calcula la merma de todas las filas
  * (_recalcularMermaGuerra_). Así todos los lectores del CSV ven el orden nuevo, y la primera escritura (_saveCSVToDrive) lo deja migrado en
@@ -1223,7 +1223,7 @@ function _migrarTextoGuerraCsv_(texto) {
     return true;
   };
   if (igualA(GUERRA_HEADERS)) return texto;
-  var esV24 = igualA(GUERRA_HEADERS_V24);   // 21-nov-2026 (§PF437 F3): el de 24 columnas (con Clan_Tag, sin Comprobada) pasa al de 25 con Comprobada vacía
+  var esV24 = igualA(GUERRA_HEADERS_V24);   // 20-nov-2026 (§PF437 F3): el de 24 columnas (con Clan_Tag, sin Comprobada) pasa al de 25 con Comprobada vacía
   var esV23 = !esV24 && igualA(GUERRA_HEADERS_V23);
   if (!esV24 && !esV23 && !igualA(GUERRA_HEADERS_V21)) {
     Logger.log('[Guerra][CSV] Backup_Guerra.csv tiene un encabezado que no es ni el de ' + GUERRA_TOTAL_COLS + ' columnas ni el de 24 ni el de 23 ni el viejo de 21 (' + encabezado.length + ' columnas: ' + encabezado.slice(0, 6).join(' | ') + ' ...). Se deja sin migrar.');
