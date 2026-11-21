@@ -197,6 +197,20 @@ var _CATALOGO_MODO_NUEVOS_PENDIENTES = []; // ID (string) agregados en esta ejec
  * Punto de entrada único del módulo.
  */
 function procesarTorneos() {
+  // PF541 punto 9 (20-nov-2026): los cinco documentos comparten la lectura de los datos de guerra (memo en 22_ControlCalendario.gs). Solo vive durante esta llamada: el finally la apaga
+  // aunque una fase corte con `return false` o lance un error, para que los pasos siguientes de la cadena lean la hoja Guerra fresca. [→ Contexto_Base_Web.md §PF541]
+  _guerraTorneosMemoIniciar_();
+  try {
+    return _procesarTorneosFases_();
+  } finally {
+    _guerraTorneosMemoTerminar_();
+  }
+}
+
+/**
+ * _procesarTorneosFases_() PF541 punto 9: el cuerpo de procesarTorneos() de siempre (9 fases reanudables, PF541), separado para poder envolverlo en la memo de datos de guerra.
+ */
+function _procesarTorneosFases_() {
   var ss = _getSs();
 
   // FIX (31/08/2026, pedido del usuario — sugerencia #4 de la lista de [→ Contexto_Base_Web.md §26B087]

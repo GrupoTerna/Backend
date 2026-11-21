@@ -42,6 +42,13 @@ var _GUERRA_MAPA_MEMO   = {};   // { '7': mapa de _procesarFilasGuerraParaContro
 // Guerra (getValues) leídas UNA vez durante la sesión del dashboard, en vez de una por cuadrícula.
 var _GUERRA_HOJA_MEMO   = null;
 
+// MEMO DE procesarTorneos() (PF541 punto 9, 20-nov-2026): dentro de procesarTorneos() (26_Torneos_Core.gs) los cinco documentos de torneo y sorteo piden los mismos datos de guerra
+// (4 a 6 s cada vez después de la primera). null = inactiva; objeto = { 'temporadaCtx|temporadaReal': { mapa, diag } }. A diferencia de _GUERRA_MEMO_ACTIVO NO apaga el cruce de meta
+// (los documentos necesitan los días opcionales). La activa y la apaga procesarTorneos() con try/finally, así que no sobrevive a esa llamada. [→ Contexto_Base_Web.md §PF541]
+var _GUERRA_TORNEOS_MEMO = null;
+var _GUERRA_TORNEOS_MEMO_CALCULADAS = 0;
+var _GUERRA_TORNEOS_MEMO_REUSADAS = 0;
+
 // CRUCE DE META POR DÍA (19-sep-2026, pedido del usuario): ¿el clan ya había [→ Contexto_Base_Web.md §22B051]
 var _CRUCE_META_LOGS_MEMO = null;   // { 'temp|clan': { periodIndex: {ini, fin} } }
 var _CRUCE_META_RES_MEMO  = {};     // { 'temp|TAG|pIdx': true/false } (PF407: la clave lleva el Tag)
@@ -950,14 +957,48 @@ function _leerGuerraCsvAgrupado_() {
   return res;
 }
 
+/** PF541 punto 9: empieza la memo de datos de guerra de procesarTorneos(). Siempre se cierra con _guerraTorneosMemoTerminar_() en un finally. */
+function _guerraTorneosMemoIniciar_() {
+  _GUERRA_TORNEOS_MEMO = {};
+  _GUERRA_TORNEOS_MEMO_CALCULADAS = 0;
+  _GUERRA_TORNEOS_MEMO_REUSADAS = 0;
+}
+
+/** PF541 punto 9: apaga la memo y deja en el registro cuántas lecturas se calcularon y cuántas se reutilizaron. */
+function _guerraTorneosMemoTerminar_() {
+  if (_GUERRA_TORNEOS_MEMO) {
+    Logger.log('[TorneosMed] memo de guerra de procesarTorneos(): ' + _GUERRA_TORNEOS_MEMO_CALCULADAS + ' lectura(s) calculada(s), ' + _GUERRA_TORNEOS_MEMO_REUSADAS + ' reutilizada(s).');
+  }
+  _GUERRA_TORNEOS_MEMO = null;
+  _GUERRA_TORNEOS_MEMO_CALCULADAS = 0;
+  _GUERRA_TORNEOS_MEMO_REUSADAS = 0;
+}
+
 /**
  * _getDatosGuerraParaControl(ctx, temporadaReal) [→ Contexto_Base_Web.md §22B045]
+ * PF541 punto 9 (20-nov-2026): con la memo de procesarTorneos() activa (_GUERRA_TORNEOS_MEMO), la misma pareja (temporada del ctx, temporada real) se calcula una sola vez y los demás
+ * documentos reciben el mismo mapa. El resultado solo depende de ctx.temporada y de temporadaReal; los llamadores de procesarTorneos() solo lo leen. Sin memo activa se comporta igual que antes.
  */
 function _getDatosGuerraParaControl(ctx, temporadaReal) {
   if (temporadaReal === undefined || temporadaReal === null) {
     temporadaReal = _getCtx().temporada;
   }
+  if (!_GUERRA_TORNEOS_MEMO) return _getDatosGuerraParaControlSinMemo_(ctx, temporadaReal);
 
+  var claveMemoT = String(ctx.temporada) + '|' + String(temporadaReal);
+  if (Object.prototype.hasOwnProperty.call(_GUERRA_TORNEOS_MEMO, claveMemoT)) {
+    _GUERRA_TORNEOS_MEMO_REUSADAS++;
+    _ULTIMO_DIAGNOSTICO_GUERRA_CSV = _GUERRA_TORNEOS_MEMO[claveMemoT].diag; // los lectores de ese diagnóstico ven lo mismo que si hubieran leído
+    return _GUERRA_TORNEOS_MEMO[claveMemoT].mapa;
+  }
+  var mapaCalculado = _getDatosGuerraParaControlSinMemo_(ctx, temporadaReal);
+  _GUERRA_TORNEOS_MEMO[claveMemoT] = { mapa: mapaCalculado, diag: _ULTIMO_DIAGNOSTICO_GUERRA_CSV };
+  _GUERRA_TORNEOS_MEMO_CALCULADAS++;
+  return mapaCalculado;
+}
+
+/** PF541 punto 9: la lógica de _getDatosGuerraParaControl() de siempre (hoja Guerra o Backup_Guerra.csv), sin la memo de procesarTorneos(). */
+function _getDatosGuerraParaControlSinMemo_(ctx, temporadaReal) {
   if (String(ctx.temporada) === String(temporadaReal)) {
     // PF073: si la hoja Guerra no se puede leer, cae a Backup_Guerra.csv (sin el marcado de días opcionales por cruce de meta, que solo existe en la ruta de la hoja). [→ Contexto_Base_Web.md §PF073]
     try {
