@@ -79,7 +79,11 @@ var PASOS_RUNGUERRA = [
     catch (eCierreNuevos) { Logger.log('[PASOS_RUNGUERRA] _cerrarSemanaActualNuevos() falló: ' + eCierreNuevos.message); }
   },
   function () { return _runGuerraPasoRespaldoCsv_(); },
-  function () { return _runGuerraPasoCalentarCache_(); },
+  // PF537 (21-nov-2026): el paso único «Caché y publicaciones» se partió en cuatro, para que el motor mire el reloj entre una publicación y la siguiente (antes empezaba con ~134 s de tanda gastados y no se podía interrumpir; PF536 punto 5).
+  function () { return _runGuerraPasoCalentarGuerra_(); },
+  function () { return _runGuerraPasoPublicar_('roster', 'roster.json', CFG.RUNGUERRA_PUBLICAR_MARGEN_MIN_MS, function () { _publicarRosterEstatico_(); }); },
+  function () { return _runGuerraPasoPublicar_('home', 'home.json', CFG.RUNGUERRA_PUBLICAR_MARGEN_MIN_MS, function () { _publicarHomeEstatico_(); }); },
+  function () { return _runGuerraPasoPublicar_('torneos', 'torneos.json', CFG.RUNGUERRA_PUBLICAR_MARGEN_MIN_MS, function () { _publicarTorneosEstatico_(); }); },
 ];
 
 var NOMBRES_PASOS_RUNGUERRA = [
@@ -90,7 +94,10 @@ var NOMBRES_PASOS_RUNGUERRA = [
   'Hoja Pendientes: actualizar → hoja Pendientes al día',
   'Nuevos: cerrar la semana actual → semana de Nuevos cerrada si correspondía',
   'Respaldo CSV de Guerra: guardar la hoja Guerra en Backup_Guerra.csv → respaldo al día',
-  'Caché y publicaciones: calentar la guerra en vivo y publicar guerra, roster, home y torneos → caché caliente y archivos publicados',
+  'Caché y guerra.json: calcular el Dashboard, calentar la guerra en vivo y publicar guerra.json → caché caliente y guerra.json publicado',
+  'roster.json: publicar el roster → roster.json publicado',
+  'home.json: publicar la portada → home.json publicado',
+  'torneos.json: publicar los torneos → torneos.json publicado',
 ];
 
 var PASOS_RUNALL = [
@@ -1440,7 +1447,7 @@ function _iniciarRunGuerraPorTandas_(props, claveHora) {
     props.setProperty('RUNGUERRA_MARCA_PREVIA', marcaPrevia === null ? '' : marcaPrevia);
     props.setProperty('RUNGUERRA_ULTIMA_HORA', claveHora);
     props.setProperty('RUNGUERRA_PASO', '0');
-    ['RUNGUERRA_REINTENTO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO', 'RUNGUERRA_CALENTAR_INTENTOS'].forEach(function(clave) { props.deleteProperty(clave); });
+    ['RUNGUERRA_REINTENTO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO', 'RUNGUERRA_CALENTAR_INTENTOS', 'RUNGUERRA_PUBLICAR_INTENTOS_guerra', 'RUNGUERRA_PUBLICAR_INTENTOS_roster', 'RUNGUERRA_PUBLICAR_INTENTOS_home', 'RUNGUERRA_PUBLICAR_INTENTOS_torneos'].forEach(function(clave) { props.deleteProperty(clave); });
     _borrarTriggersDeContinuacion('_continuarRunGuerraCadena');
   } catch (e) {
     _liberarLockEjecucion();
@@ -1498,7 +1505,7 @@ function _limpiarCadenaRunGuerra_(props, restaurarMarca) {
     if (previa) props.setProperty('RUNGUERRA_ULTIMA_HORA', previa);
     else props.deleteProperty('RUNGUERRA_ULTIMA_HORA');
   }
-  ['RUNGUERRA_MARCA_PREVIA', 'RUNGUERRA_CALENTAR_INTENTOS', 'RUNGUERRA_PASO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_REINTENTO', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO'].forEach(function(clave) { props.deleteProperty(clave); });
+  ['RUNGUERRA_MARCA_PREVIA', 'RUNGUERRA_CALENTAR_INTENTOS', 'RUNGUERRA_PUBLICAR_INTENTOS_guerra', 'RUNGUERRA_PUBLICAR_INTENTOS_roster', 'RUNGUERRA_PUBLICAR_INTENTOS_home', 'RUNGUERRA_PUBLICAR_INTENTOS_torneos', 'RUNGUERRA_PASO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_REINTENTO', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO'].forEach(function(clave) { props.deleteProperty(clave); });
 }
 
 /** _liberarLockSiEsDeRunGuerra_() - PF311 parte B. Libera el candado solo si lo tiene runGuerra o su cadena (no pisa el de otra ejecución). */
@@ -1548,49 +1555,65 @@ function _runGuerraPasoRespaldoCsv_() {
 }
 
 /**
- * _runGuerraPasoCalentarCache_() - PF311 parte B. Paso «Caché y publicaciones» de la cadena RUNGUERRA: calienta el caché de la guerra en vivo y publica guerra.json, roster.json, home.json y torneos.json
- * (lo que hacía _runGuerraColaHoraria_()). Exige tiempo según lo que tardó la última vez (GUERRA_CALENTADO_ULT_MS, con 30 % de holgura, como mínimo el margen fijo y como máximo lo que cabe en una tanda
- * nueva). Si no hay tiempo o quedaron publicaciones sin hacer, devuelve false y el motor lo repite en la tanda siguiente; tras 2 repeticiones se deja para la próxima hora, para no encadenar tandas sin fin.
+ * _runGuerraPasoCalentarGuerra_() - PF537 (21-nov-2026). Primer paso de lo que antes era «Caché y publicaciones» (PF311 parte B) en la cadena RUNGUERRA: calcula el Dashboard, calienta el caché de la guerra en vivo y publica guerra.json.
+ * Las otras tres publicaciones (roster.json, home.json, torneos.json) ya no van aquí: son pasos propios (_runGuerraPasoPublicar_()). Exige 1 m 30 s de margen como mínimo, o lo que tardó la última vez por 1,5, con tope de lo que cabe en una tanda nueva.
  */
-function _runGuerraPasoCalentarCache_() {
+function _runGuerraPasoCalentarGuerra_() {
+  return _runGuerraPasoPublicar_('guerra', 'Caché y guerra.json', CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, function () {
+    var limiteMs = Date.now() + _msRestantesDeEjecucion_() - 45000;
+    _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG, limiteMs, true);
+    return !CALENTAR_OMITIO_PUBLICACION_;
+  });
+}
+
+/**
+ * _runGuerraPasoPublicar_(clave, nombre, margenMinMs, trabajo) - PF537 (21-nov-2026). Ejecuta UNA publicación de la cadena RUNGUERRA como paso propio. Antes las cuatro iban juntas en un solo paso que empezaba con unos 134 s de tanda gastados y no se podía interrumpir:
+ * el 17-nov roster.json tardó 169 s, home.json 107 s y el Dashboard 189 s con el mismo código, y la ejecución se cortó a los 361 s (6 veces del 14 al 19-nov, PF536 punto 5). Con un paso por publicación, el motor mira el reloj entre una y otra y manda la siguiente a una tanda nueva.
+ * Antes de empezar exige tiempo según lo que tardó la última vez que terminó bien (propiedad RUNGUERRA_PUBLICAR_ULT_MS_<clave>) por 1,5, y como mínimo `margenMinMs`, con tope de lo que cabe en una tanda nueva. Si no hay tiempo, o `trabajo` devuelve false (incompleto), devuelve false y el motor lo repite en la tanda siguiente;
+ * tras 2 repeticiones se deja para la próxima hora, para no encadenar tandas sin fin. Un error de la publicación se anota y también se deja para la próxima hora, como antes. [→ Contexto_Base_Web.md §PF537]
+ */
+function _runGuerraPasoPublicar_(clave, nombre, margenMinMs, trabajo) {
   var props = PropertiesService.getScriptProperties();
-  var intentos = Number(props.getProperty('RUNGUERRA_CALENTAR_INTENTOS')) || 0;
-  var msUltimo = Number(props.getProperty('GUERRA_CALENTADO_ULT_MS')) || 0;
-  var msNecesarios = Math.min(Math.max(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, Math.round(msUltimo * 1.3)), CFG.PLATAFORMA_LIMITE_EJECUCION_MS - 60000);
+  var claveIntentos = 'RUNGUERRA_PUBLICAR_INTENTOS_' + clave;
+  var claveUlt = 'RUNGUERRA_PUBLICAR_ULT_MS_' + clave;
+  var intentos = Number(props.getProperty(claveIntentos)) || 0;
+  var msUltimo = Number(props.getProperty(claveUlt)) || 0;
+  var msNecesarios = Math.min(Math.max(margenMinMs, Math.round(msUltimo * 1.5)), CFG.PLATAFORMA_LIMITE_EJECUCION_MS - 60000);
   var quedaMs = _msRestantesDeEjecucion_();
   if (quedaMs < msNecesarios) {
     if (intentos >= 2) {
-      props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
-      Logger.log('[runGuerra] Caché y publicaciones: sin tiempo tras ' + (intentos + 1) + ' tandas. Se dejan para la próxima hora.');
+      props.deleteProperty(claveIntentos);
+      Logger.log('[runGuerra] ' + nombre + ': sin tiempo tras ' + (intentos + 1) + ' tandas. Se deja para la próxima hora.');
       return true;
     }
-    props.setProperty('RUNGUERRA_CALENTAR_INTENTOS', String(intentos + 1));
-    Logger.log('[runGuerra] Caché y publicaciones: quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan unos ' + Math.round(msNecesarios / 1000) + ' s. Se hace en la próxima tanda.');
-    _anotarProgresoPaso_('Caché y publicaciones: 0 de 1 calentamientos', 0);
+    props.setProperty(claveIntentos, String(intentos + 1));
+    Logger.log('[runGuerra] ' + nombre + ': quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan unos ' + Math.round(msNecesarios / 1000) + ' s (la última vez tardó ' + Math.round(msUltimo / 1000) + ' s). Se hace en la próxima tanda.');
+    _anotarProgresoPaso_(nombre + ': 0 de 1 publicaciones', 0);
     return false;
   }
-  var tCalentar = Date.now();
+  var t = Date.now();
+  var completo = true;
   try {
-    _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG, tCalentar + quedaMs - 45000);
-  } catch (eCalentar) {
-    Logger.log('[runGuerra] El calentamiento del caché falló: ' + eCalentar.message + '. Se reintenta en la próxima hora.');
-    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+    completo = trabajo() !== false;
+  } catch (eTrabajo) {
+    Logger.log('[runGuerra] ' + nombre + ': falló: ' + eTrabajo.message + '. Se reintenta en la próxima hora.');
+    props.deleteProperty(claveIntentos);
     return true;
   }
-  var msCalentar = Date.now() - tCalentar;
-  Logger.log('[runGuerra] Calentamiento del caché terminado en ' + Math.round(msCalentar / 1000) + ' s' + (CALENTAR_OMITIO_PUBLICACION_ ? ' (quedaron publicaciones sin hacer por falta de tiempo)' : '') + '.');
-  if (!CALENTAR_OMITIO_PUBLICACION_) {
-    try { props.setProperty('GUERRA_CALENTADO_ULT_MS', String(msCalentar)); } catch (eGuardaUlt) { /* solo una referencia */ }
-    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+  var ms = Date.now() - t;
+  Logger.log('[runGuerra] ' + nombre + ' terminado en ' + Math.round(ms / 1000) + ' s' + (completo ? '' : ' (quedó incompleto por falta de tiempo)') + '.');
+  if (completo) {
+    try { props.setProperty(claveUlt, String(ms)); } catch (eUlt) { /* solo una referencia */ }
+    props.deleteProperty(claveIntentos);
     return true;
   }
   if (intentos >= 2) {
-    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
-    Logger.log('[runGuerra] Quedaron publicaciones sin hacer tras ' + (intentos + 1) + ' tandas. Se dejan para la próxima hora.');
+    props.deleteProperty(claveIntentos);
+    Logger.log('[runGuerra] ' + nombre + ': quedó incompleto tras ' + (intentos + 1) + ' tandas. Se deja para la próxima hora.');
     return true;
   }
-  props.setProperty('RUNGUERRA_CALENTAR_INTENTOS', String(intentos + 1));
-  _anotarProgresoPaso_('Publicaciones del caché: incompletas, 0 de 1 calentamientos', 0);
+  props.setProperty(claveIntentos, String(intentos + 1));
+  _anotarProgresoPaso_(nombre + ': incompleto, 0 de 1 publicaciones', 0);
   return false;
 }
 

@@ -5564,7 +5564,8 @@ function _calentarHayTiempoParaPublicar_(limiteMs, nombre) {
   return false;
 }
 
-function _calentarCacheGuerraEnVivo_(ttlSeg, limiteMs) {
+// PF537 (21-nov-2026): `soloGuerra` en true calcula el Dashboard, calienta el caché y publica solo guerra.json; roster.json, home.json y torneos.json los publica cada uno su propio paso de la cadena RUNGUERRA (_runGuerraPasoPublicar_(), 00_Main.gs). Sin ese tercer argumento hace lo de siempre (cuatro publicaciones). [→ Contexto_Base_Web.md §PF537]
+function _calentarCacheGuerraEnVivo_(ttlSeg, limiteMs, soloGuerra) {
   var t0 = Date.now();
   CALENTAR_OMITIO_PUBLICACION_ = false;
   var ttl = Number(ttlSeg) || WEB_GUERRA_VIVO_TTL_SEG;
@@ -5576,6 +5577,10 @@ function _calentarCacheGuerraEnVivo_(ttlSeg, limiteMs) {
     _diagGuerraVivo_('[WebGuerraEnVivo] datos del dashboard calculados en ' + (Date.now() - t0) + 'ms');
     var ok = _webCacheGrandeGuardar_(WEB_GUERRA_VIVO_KEY, datos, ttl);
     if (_calentarHayTiempoParaPublicar_(limiteMs, 'guerra.json')) try { _publicarGuerraEstatico_(datos); } catch (ePub) { _diagGuerraVivo_('[GuerraEstatico] error inesperado (no afecta al bot): ' + ePub); } // NUEVO 08-oct-2026: copia pública en GitHub, ver 39_Publicar_Guerra.gs
+    if (soloGuerra === true) {
+      _diagGuerraVivo_('[WebGuerraEnVivo] caché CALENTADA por el bot (solo guerra.json) en ' + (Date.now() - t0) + 'ms, TTL ' + ttl + ' s' + (ok ? '' : ' (NO se pudo guardar)'));
+      return ok;
+    }
     if (_calentarHayTiempoParaPublicar_(limiteMs, 'roster.json')) try { _publicarRosterEstatico_(); } catch (eRos) { _diagGuerraVivo_('[RosterEstatico] error inesperado (no afecta al bot): ' + eRos); }
     if (_calentarHayTiempoParaPublicar_(limiteMs, 'home.json')) try { _publicarHomeEstatico_(); } catch (eHome) { _diagGuerraVivo_('[HomeEstatico] error inesperado (no afecta al bot): ' + eHome); }
     if (_calentarHayTiempoParaPublicar_(limiteMs, 'torneos.json')) try { _publicarTorneosEstatico_(); } catch (eTor) { _diagGuerraVivo_('[TorneosEstatico] error inesperado (no afecta al bot): ' + eTor); }
