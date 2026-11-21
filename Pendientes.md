@@ -193,25 +193,41 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 
 ## D. Vigilar o esperar un evento
 
-- [ ] `PF378` — Retirar `Indice_Clanes_Externos.json`, `.csv` y su código (`_cargarIndiceClanes_`, `_guardarIndiceClanes_`, `_indiceClanesLegadoDe_`, `_indiceClanesAFilasCsv_`, usados aún como respaldo en `15_DeteccionInfiltrados.gs`) solo cuando la tarjeta «Clanes externos» lleve varios días sin usar el respaldo. La tarjeta ya se comprobó en real el 18-nov (`§PF508` a `§PF510`).
-- [ ] `PF018` — Rendimiento de `guerra.html` (TBT de 1 817 ms con datos inventados): no se programa nada hasta medir con los jugadores reales de cada clan.
-- [ ] `PF242` — Contrastar `Temporada Supercell` de T6 en adelante con `Cache_Seasons.json` cuando Supercell agregue T6 (2026-10) a `/locations/global/seasons`.
-- [ ] `PF251` / `PF252` (c) — Separar `Correcciones_Guerra.csv` (15 MB) en activos e inactivos solo si `generarGuerraDesglose()` o `runGuerra` se cortan por tiempo (`§PF546`); mientras tanto no se migra.
-- [ ] `PF160` — Volver a medir las filas de `Correcciones_Guerra.csv` cuyo «clan + Externo» no iguala a RoyaleAPI con el mismo criterio de `§PF499` punto 11, cuando termine la corrección completa. Decidido: no se crean filas en la hoja (`§PF499` punto 12).
-- [ ] `PF441` — Las 2 filas «Revisar» de T27 S3 (`#8YCLY8CRU` y `#U8G029GUQ`, del jueves 19-nov) se cierran solas como «No vigente» al pasar la semana, como las 45 de T24 a T27 S1 (`§PF477` punto 8; `#U8G029GUQ` es cuenta de apoyo, punto 9).
-- [ ] `PF145` — `runGuerraRapidoProgramado` terminó «Completada» con 22 s de margen el 21-oct; vigilar si empieza a cortarse (12:47 → 182,4 s, sin continuación).
-- [ ] `PF198` — Probar un día de coliseo (la fama de hoy de los rivales con la foto como base). Rivales confirmados el 24-oct; el coliseo del 29-oct al 1-nov no consta como probado.
-- [ ] `PF275` — Origen de los archivos repetidos con el mismo nombre en la carpeta Individual: sin comprobar; la búsqueda por nombre exacto antes de crear (`§PF486` punto 6) debería evitarlos. Si aparecen repetidos nuevos, reabrir.
-- [ ] `PF277` — Corrida real del 26-oct correcta; falta ver el registro cuando haya contactos agregados, eliminados o fallidos.
-- [ ] `PF379` — Caso del juego sin confirmar: si entra el décimo miembro, se abre la guerra, nadie ataca y ese miembro se va, ¿se vuelve a bloquear? Anotarlo cuando ocurra.
-- [ ] `PF435` — `[TorneosEstatico] OMITIDO`: un solo caso en los registros del 14 al 20-nov (19-nov 3:07, cadena de 8 pasos anterior a `§PF537`, que partió el paso 8/8; `§PF540`). Vigilar si vuelve a aparecer.
-- [ ] `PF481` — El aviso «día(s) comprobado(s)» del registro se verá en la próxima corrección que alcance un día comprobado (`generarGuerraDesglose()` ya corrió con este código).
-- [ ] `PF488` — Fórmula de ataques: primera corrida real el 15-nov con 0 avisos; vigilar varias corridas más y cerrar cuando la usuaria confirme (`valores.sinFormulaAtaques = true` la apaga).
-- [ ] `PF507` — Ver un tag 404 **nuevo** en «jugadores elegidos» (el caso «nuevo(s)» no se ejercitó).
-- [ ] `PF073` — Ver en el registro del bot `[GuerraEstatico] sin cambios…` (el 9-nov se publicó todo; el mensaje no se vio).
-- [ ] `PF439` — Ver en un lunes con dato rezagado la rama de `§PF430`; completar la serie de `Capturas_Continuas` (falta el 10-nov).
+Cada fila termina con su **Revisión**. Solo tres tienen fecha (`PF441` y `PF439` el lunes 23-nov-2026, `PF378` el 2-dic-2026); las otras dependen de un evento y dicen cuál, para no inventar fechas. Las fechas son propuestas de Claude del 21-nov-2026 y se pueden mover.
 
----
+- [ ] `PF441` — Las 2 filas «Revisar» de T27 S3 (`#8YCLY8CRU` y `#U8G029GUQ`, del jueves 19-nov) se cierran solas como «No vigente» al pasar la semana, como las 45 de T24 a T27 S1 (`§PF477` punto 8; `#U8G029GUQ` es cuenta de apoyo, punto 9). **Revisión:** lunes 23-nov-2026 (la semana de T27 S3 cierra el domingo 22-nov).
+
+- [ ] `PF439` — Ver en un lunes con dato rezagado la rama de `§PF430`; completar la serie de `Capturas_Continuas` (falta el 10-nov). **Revisión:** lunes 23-nov-2026 si trae dato rezagado; si no, el primer lunes que lo traiga.
+
+- [ ] `PF378` — Retirar `Indice_Clanes_Externos.json`, `.csv` y su código (`_cargarIndiceClanes_`, `_guardarIndiceClanes_`, `_indiceClanesLegadoDe_`, `_indiceClanesAFilasCsv_`, usados aún como respaldo en `15_DeteccionInfiltrados.gs`) solo cuando la tarjeta «Clanes externos» lleve varios días sin usar el respaldo. La tarjeta ya se comprobó en real el 18-nov (`§PF508` a `§PF510`). **Revisión:** el 2-dic-2026, tras dos corridas del índice semanal (martes 24-nov y 1-dic a las 9:00, `08_Activadores.gs`): mirar en el registro que la tarjeta no usó el respaldo.
+
+- [ ] `PF018` — Rendimiento de `guerra.html` (TBT de 1 817 ms con datos inventados): no se programa nada hasta medir con los jugadores reales de cada clan. **Revisión:** sin fecha; cuando se pueda medir con los jugadores reales de cada clan.
+
+- [ ] `PF242` — Contrastar `Temporada Supercell` de T6 en adelante con `Cache_Seasons.json` cuando Supercell agregue T6 (2026-10) a `/locations/global/seasons`. **Revisión:** sin fecha; cuando `Cache_Seasons.json` se escriba de nuevo. El 21-nov-2026 Drive y el repo traen la misma copia del 25-oct (5096 bytes, última temporada 2026-09), así que 2026-10 aún no puede contrastarse.
+
+- [ ] `PF251` / `PF252` (c) — Separar `Correcciones_Guerra.csv` (15 MB) en activos e inactivos solo si `generarGuerraDesglose()` o `runGuerra` se cortan por tiempo (`§PF546`); mientras tanto no se migra. **Revisión:** sin fecha; solo si `generarGuerraDesglose()` o `runGuerra` se cortan por tiempo.
+
+- [ ] `PF160` — Volver a medir las filas de `Correcciones_Guerra.csv` cuyo «clan + Externo» no iguala a RoyaleAPI con el mismo criterio de `§PF499` punto 11, cuando termine la corrección completa. Decidido: no se crean filas en la hoja (`§PF499` punto 12). **Revisión:** sin fecha; cuando termine la corrección completa.
+
+- [ ] `PF145` — `runGuerraRapidoProgramado` terminó «Completada» con 22 s de margen el 21-oct; vigilar si empieza a cortarse (12:47 → 182,4 s, sin continuación). **Revisión:** sin fecha; cada vez que se lea el registro de `runGuerraRapidoProgramado`.
+
+- [ ] `PF198` — Probar un día de coliseo (la fama de hoy de los rivales con la foto como base). Rivales confirmados el 24-oct; el coliseo del 29-oct al 1-nov no consta como probado. **Revisión:** sin fecha; en el próximo día de coliseo.
+
+- [ ] `PF275` — Origen de los archivos repetidos con el mismo nombre en la carpeta Individual: sin comprobar; la búsqueda por nombre exacto antes de crear (`§PF486` punto 6) debería evitarlos. Si aparecen repetidos nuevos, reabrir. **Revisión:** sin fecha; si aparecen archivos repetidos nuevos en la carpeta Individual.
+
+- [ ] `PF277` — Corrida real del 26-oct correcta; falta ver el registro cuando haya contactos agregados, eliminados o fallidos. **Revisión:** sin fecha; cuando haya contactos agregados, eliminados o fallidos.
+
+- [ ] `PF379` — Caso del juego sin confirmar: si entra el décimo miembro, se abre la guerra, nadie ataca y ese miembro se va, ¿se vuelve a bloquear? Anotarlo cuando ocurra. **Revisión:** sin fecha; cuando se dé el caso en el juego.
+
+- [ ] `PF435` — `[TorneosEstatico] OMITIDO`: un solo caso en los registros del 14 al 20-nov (19-nov 3:07, cadena de 8 pasos anterior a `§PF537`, que partió el paso 8/8; `§PF540`). Vigilar si vuelve a aparecer. **Revisión:** sin fecha; si `[TorneosEstatico] OMITIDO` vuelve a salir en un registro posterior al 20-nov.
+
+- [ ] `PF481` — El aviso «día(s) comprobado(s)» del registro se verá en la próxima corrección que alcance un día comprobado (`generarGuerraDesglose()` ya corrió con este código). **Revisión:** sin fecha; en la próxima corrección que alcance un día comprobado.
+
+- [ ] `PF488` — Fórmula de ataques: primera corrida real el 15-nov con 0 avisos; vigilar varias corridas más y cerrar cuando la usuaria confirme (`valores.sinFormulaAtaques = true` la apaga). **Revisión:** sin fecha; tras varias corridas más sin avisos, y cierra cuando la usuaria lo confirme.
+
+- [ ] `PF507` — Ver un tag 404 **nuevo** en «jugadores elegidos» (el caso «nuevo(s)» no se ejercitó). **Revisión:** sin fecha; cuando aparezca un tag 404 nuevo en «jugadores elegidos».
+
+- [ ] `PF073` — Ver en el registro del bot `[GuerraEstatico] sin cambios…` (el 9-nov se publicó todo; el mensaje no se vio). **Revisión:** sin fecha; en la próxima publicación sin cambios de `[GuerraEstatico]`.
 
 ## E. Acciones de la usuaria
 
