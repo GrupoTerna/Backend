@@ -8,6 +8,7 @@
 //  Parte 1 — Funciones que se corren a mano
 //    - Crear y preparar todas las hojas
 //    - Reparar los bordes de S_Asistencia
+//    - Poner las notas de columna en los encabezados de las hojas
 //  Parte 2 — Funciones que no se corren a mano
 //    - Ayudas generales de las hojas (crear la hoja y su protección)
 //    - Hojas de clan, directorio y guerra (en el orden de setupAllSheets)
@@ -16,6 +17,7 @@
 //    - Torneos, sorteos y cambio de rango: listas, encabezados y filtros
 //    - Torneos y sorteos: asistencia, control y resoluciones
 //    - Hojas restantes (jugadores, enlaces, alertas, conflictos, grupo verificado)
+//    - Notas de columna: texto de cada nota y mecanismo que las escribe sin pisar las puestas a mano
 // Dentro de cada tema, en el orden en que se espera ejecutarlas. Al reordenar no se cambió el código de ninguna función.
 
 // Métricas del grid de Control: nombre, ancho TOTAL de columnas (25 de [→ Contexto_Base_Web.md §02B001]
@@ -57,6 +59,9 @@ var LC = {
 };
 
 var LINKS_TOTAL_COLS = 14;
+
+// Notas de columna (PF286, punto 17 b; 21-nov-2026, pedido de la usuaria): toda nota que escribe el sistema empieza con este prefijo. Una nota de encabezado SIN el prefijo se considera puesta a mano y nunca se reemplaza; ver _aplicarNotasColumnasHoja_().
+var NOTA_COLUMNA_PREFIJO_ = '[Sistema] ';
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
@@ -122,6 +127,26 @@ function repararBordesSAsistencia() {
   if (!sh) { Logger.log('[Setup] repararBordesSAsistencia: no existe la hoja ' + CFG.SHEETS.S_ASISTENCIA); return; }
   _bordesDatosSAsistencia_(sh);
   Logger.log('[Setup] Bordes de S_Asistencia corregidos (' + Math.max(0, sh.getLastRow() - 1) + ' filas, ' + SA_TOTAL_COLS + ' columnas).');
+}
+
+// ----- Poner las notas de columna en los encabezados de las hojas -----
+
+/**
+ * aplicarNotasColumnas() — proyecto Base, archivo 02_Setup_Hojas.gs. [→ Contexto_Base_Web.md §PF286]
+ * Escribe, en el encabezado de cada columna de las hojas que figuran en _definicionNotasColumnas_(), una nota que dice qué es la columna, quién la escribe y si se puede editar. Hoy cubre solo Historial_A/D.
+ * Es idempotente y no toca datos. Una nota que ya tenga el encabezado y NO empiece con «[Sistema] » se considera puesta a mano y se conserva; las del sistema se actualizan si cambió el texto. Si el encabezado de una columna no es el esperado, esa columna se omite y queda en el registro.
+ * También la llama setupAllSheets() (por _setupAscensosSheet), así que las notas vuelven solas si se recrea la hoja. Se puede correr aparte, sin ejecutar todo el setup.
+ */
+function aplicarNotasColumnas() {
+  var ss = _getSs();
+  var defs = _definicionNotasColumnas_();
+  Object.keys(defs).forEach(function (nombreHoja) {
+    var sh = ss.getSheetByName(nombreHoja);
+    if (!sh) { Logger.log('[Notas] No existe la hoja «' + nombreHoja + '»; se omite.'); return; }
+    var r = _aplicarNotasColumnasHoja_(sh, defs[nombreHoja]);
+    Logger.log('[Notas] ' + nombreHoja + ': ' + r.escritas + ' escrita(s), ' + r.iguales + ' ya estaban igual, ' +
+      r.conservadas + ' puesta(s) a mano conservada(s), ' + r.omitidas + ' omitida(s) por encabezado distinto.');
+  });
 }
 
 // =============================================================================
@@ -589,6 +614,8 @@ function _setupAscensosSheet(ss) {
   _completarTSDEnHoja_(sh, ASC.FECHA, ASC.TSD);
   // 28-oct-2026 (PF286): columna 24 con el id del par de CR_Lista que generó cada propuesta.
   _asegurarColumnaParCRAscensos_(sh);
+  // 21-nov-2026 (PF286, punto 17 b): notas de columna; no pisa las puestas a mano.
+  _aplicarNotasColumnasHoja_(sh, _definicionNotasColumnas_()[CFG.SHEETS.ASCENSOS]);
   Logger.log('[Setup] Ascensos OK (24 cols)');
 }
 
@@ -1133,4 +1160,106 @@ function _setupGrupoVerificado(ss) {
   sh.getRange(1, GV.TAG).setNote('Estar en esta hoja YA ES la confirmación (no hay columna Sí/No). Para "desverificar" a alguien, borrar su fila.');
   _protegerSoloAdvertencia(sh);
   Logger.log('[Setup] Grupo_Verificado OK');
+}
+
+// ----- Notas de columna: texto de cada nota y mecanismo que las escribe -----
+
+/**
+ * _definicionNotasColumnas_() [→ Contexto_Base_Web.md §PF286]
+ * Devuelve { nombre de hoja: [ { col, enc, texto } ] }. `col` sale de las constantes de columnas (ASC, etc.) para que la nota siga a su columna si se reordenan; `enc` es el encabezado que debe tener esa columna (si no coincide, la nota no se escribe); `texto` es lo que ve la usuaria, sin el prefijo.
+ * Es una función y no una variable porque ASC vive en 13_Inactivos_Vetados.gs, que Apps Script carga después de este archivo. Para agregar otra hoja, sumar una clave aquí y llamar a _aplicarNotasColumnasHoja_() desde su _setup…() (o correr aplicarNotasColumnas()).
+ * Cada afirmación del texto se contrastó con el código el 21-nov-2026 (24_Historial_Ascensos.gs, 37_Web_API.gs, 40_Web_Noticias.gs); si cambia cómo se escribe una columna, hay que cambiar también su nota.
+ */
+function _definicionNotasColumnas_() {
+  var copia = 'Se copia del Directorio al crear la fila. Puede quedar vacío si la cuenta no estaba en el Directorio.';
+  var defs = {};
+  defs[CFG.SHEETS.ASCENSOS] = [
+    { col: ASC.NUM, enc: 'N°',
+      texto: 'Número de fila. Lo reasigna el sistema cada vez que ordena la hoja (por clan y luego por fecha), así que cambia con el tiempo. No lo edites.' },
+    { col: ASC.TAG, enc: 'Tag',
+      texto: 'Tag de la cuenta, copiado del Directorio al crear la fila. Con la Fecha forma el identificador con que la web busca esta fila: no lo edites.' },
+    { col: ASC.NOMBRE, enc: 'Nombre',
+      texto: 'Nombre de la cuenta. Se copia del Directorio al crear la fila.' },
+    { col: ASC.NOM_MULTI, enc: 'Nom_Multi', texto: copia },
+    { col: ASC.INICIALES, enc: 'Iniciales', texto: copia },
+    { col: ASC.PERMISO, enc: 'Permiso', texto: copia },
+    { col: ASC.INACTIVIDAD, enc: 'Inactividad(d)',
+      texto: 'Días de inactividad que mostraba el Directorio al crear la fila. Puede quedar vacío si la cuenta no estaba en el Directorio.' },
+    { col: ASC.FECHA, enc: 'Fecha',
+      texto: 'Momento en que se registró el cambio o se creó la propuesta. Ordena las filas dentro de cada clan y de ella se calculan Temporada, Semana y Día. Con el Tag identifica la fila en la web: si la cambias a mano, esa fila deja de poder editarse desde la web. Edítala solo para corregir un error.' },
+    { col: ASC.CLAN, enc: 'Clan',
+      texto: 'Clan de la cuenta al crear la fila (en una propuesta, el que trae CR_Lista).' },
+    { col: ASC.CLAN_TAG, enc: 'ClanTag', texto: copia },
+    { col: ASC.LIDER, enc: 'Líder', texto: copia },
+    { col: ASC.AUTOR, enc: 'Autor',
+      texto: 'Quién generó la fila: el sistema escribe «Diana». Un admin con la función «Corregir autor» puede cambiarlo desde la web y entonces se agrega una línea de auditoría al Comentario. No lo edites a mano.' },
+    { col: ASC.RANGO, enc: 'Rango',
+      texto: 'Rango que tenía la cuenta antes del cambio. En una propuesta, el rango actual de la cuenta. La lista desplegable solo advierte: no bloquea otros valores.' },
+    { col: ASC.RANGO_2, enc: 'Rango_2',
+      texto: 'Rango que tiene la cuenta después del cambio, o al que se propone pasarla. Queda vacío en las expulsiones, en «Elegible Admin» y en «Ascenso de clan». La lista desplegable solo advierte: no bloquea otros valores.' },
+    { col: ASC.TIPO, enc: 'Tipo',
+      texto: 'Ascenso o Degradación en los cambios que el sistema detecta; en las propuestas de Cambio de rango también Expulsión, Elegible Admin y Ascenso de clan. Lo escribe el sistema; no lo edites.' },
+    { col: ASC.ESTADO, enc: 'Estado',
+      texto: 'Estado de la cuenta en el Directorio al crear la fila. Cuando una propuesta se marca como Realizado, el sistema lo actualiza con el estado de ese momento. La fila se pinta de otro color si es Inactivo.' },
+    { col: ASC.COMENTARIO, enc: 'Comentario',
+      texto: 'Texto libre. En un cambio detectado el sistema escribe «Ascenso de X a Y en el clan Z»; en una propuesta, el detalle de los requisitos. Al confirmar una propuesta o corregir el autor agrega una línea de auditoría entre corchetes. También se copia a la hoja Comentarios al crear la fila. Puedes editarlo.' },
+    { col: ASC.ESTADO_PROPUESTA, enc: 'Estado_Propuesta',
+      texto: 'Solo en las filas que vienen de una propuesta de Cambio de rango: Planificado (aún sin aplicar) o Realizado (el Directorio ya muestra el cambio). El sistema la marca Realizado al verificar; también puedes elegirla de la lista. Vacía en los cambios que el sistema detecta solo.' },
+    { col: ASC.TSD, enc: TSD_ENCABEZADOS[0],
+      texto: 'Número de temporada de la Fecha. Se calcula sola desde la Fecha; no la edites.' },
+    { col: ASC.TSD + 1, enc: TSD_ENCABEZADOS[1],
+      texto: 'Temporada según el calendario de RoyaleAPI, calculada desde la Fecha. No la edites.' },
+    { col: ASC.TSD + 2, enc: TSD_ENCABEZADOS[2],
+      texto: 'Temporada según el calendario de Supercell (año y mes, como 2026-05), calculada desde la Fecha. No la edites.' },
+    { col: ASC.TSD + 3, enc: TSD_ENCABEZADOS[3],
+      texto: 'Semana de guerra de la temporada en que cae la Fecha, calculada desde ella. No la edites.' },
+    { col: ASC.TSD + 4, enc: TSD_ENCABEZADOS[4],
+      texto: 'Día de la semana de la Fecha (de Domingo a Sábado), calculado desde ella. No lo edites.' },
+    { col: ASC.PAR_ID, enc: ASC_PAR_ENCABEZADO,
+      texto: 'Id del par de CR_Lista (el del Ascenso, «A_…») que generó la propuesta. Sirve para saber contra qué requisitos evaluarla y a qué corrida pertenece. Vacío en los cambios que el sistema detecta solo. No lo edites a mano.' }
+  ];
+  return defs;
+}
+
+/**
+ * _aplicarNotasColumnasHoja_(sh, notas) [→ Contexto_Base_Web.md §PF286]
+ * Escribe en la fila 1 de `sh` las notas de `notas` (ver _definicionNotasColumnas_()) con UNA lectura y, solo si algo cambió, UNA escritura de toda la fila de notas (por eso es barata dentro de setupAllSheets()).
+ * Reglas por columna: (1) si el encabezado no es el esperado (`enc`), se omite y se avisa en el registro, para no poner la nota en otra columna si alguien movió columnas; (2) si la celda no tiene nota o la nota empieza con NOTA_COLUMNA_PREFIJO_, se escribe/actualiza; (3) si tiene una nota sin ese prefijo, es de la usuaria y se conserva. Las columnas fuera de la lista no se tocan.
+ * Devuelve { escritas, iguales, conservadas, omitidas }.
+ */
+function _aplicarNotasColumnasHoja_(sh, notas) {
+  var res = { escritas: 0, iguales: 0, conservadas: 0, omitidas: 0 };
+  if (!sh || !notas || !notas.length) return res;
+
+  var ancho = 0;
+  notas.forEach(function (n) { if (n.col > ancho) ancho = n.col; });
+  ancho = Math.min(ancho, sh.getMaxColumns());
+  if (ancho < 1) return res;
+
+  var rango = sh.getRange(1, 1, 1, ancho);
+  var encabezados = rango.getValues()[0];
+  var actuales = rango.getNotes()[0];
+  var nuevas = actuales.slice();
+
+  notas.forEach(function (n) {
+    if (n.col > ancho) { res.omitidas++; return; }
+    var encReal = String(encabezados[n.col - 1] || '').trim();
+    if (encReal !== n.enc) {
+      res.omitidas++;
+      Logger.log('[Notas] ' + sh.getName() + ' col ' + n.col + ': el encabezado es «' + encReal + '» y se esperaba «' + n.enc + '»; no se escribe la nota.');
+      return;
+    }
+    var previa = String(actuales[n.col - 1] || '');
+    var nueva = NOTA_COLUMNA_PREFIJO_ + n.texto;
+    if (previa === nueva) { res.iguales++; return; }
+    if (previa === '' || previa.indexOf(NOTA_COLUMNA_PREFIJO_) === 0) {
+      nuevas[n.col - 1] = nueva;
+      res.escritas++;
+    } else {
+      res.conservadas++;
+    }
+  });
+
+  if (res.escritas > 0) rango.setNotes([nuevas]);
+  return res;
 }
