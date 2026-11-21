@@ -1050,10 +1050,15 @@ function _continuarGenerarIndiceClanesExternos() {
 function _generarIndiceClanesExternosUnaCorrida_() {
   var inicio = Date.now();
   var ahoraTxt = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm');
+  // §PF537 (21-nov-2026): tiempos por tramo. Las 4 pasadas cortadas a los 361 s del 17 y 18-nov no dejaron ninguna línea propia (§PF536 punto 6): sin esto no se sabe qué tramo se pasó del tiempo.
+  var seg = function () { return Math.round((Date.now() - inicio) / 1000); };
+  var marca = function (texto, desde) { Logger.log('[IndiceClanes]   ' + texto + ' en ' + Math.round((Date.now() - desde) / 1000) + ' s (la pasada lleva ' + seg() + ' s).'); };
 
   // 1) Lectura de los JSON individuales (el avance va a Indice_Clanes_Externos_Parcial.json, nunca al índice completo).
+  var tCarga = Date.now();
   var estado = _indiceClanesCargarParcial_();
   var continuaba = !!estado;
+  Logger.log('[IndiceClanes]   Avance guardado: ' + (estado ? (estado.lecturaCompleta === true ? 'la lectura de jugadores ya terminó' : Object.keys(estado.procesados).length + ' jugadores ya leídos') : 'no hay, se empieza de cero') + ' (cargado en ' + Math.round((Date.now() - tCarga) / 1000) + ' s).');
   var listos = 0;
   if (estado && estado.lecturaCompleta === true) {
     // §PF510: la lectura ya terminó en una corrida anterior: no se vuelve a listar la carpeta de los JSON individuales (más de 1 000 archivos, tiempo perdido en cada continuación).
@@ -1061,9 +1066,11 @@ function _generarIndiceClanesExternosUnaCorrida_() {
     estado.actualizado = ahoraTxt;
   } else {
     var carpeta = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL);
+    var tLista = Date.now();
     var archivos = _getHistorialGuerraDriveIndexPorTag(carpeta);
     var tags = Object.keys(archivos).sort();
     if (!tags.length) throw new Error('No se encontró ningún JSON individual de RoyaleAPI en Drive: no se genera nada para no pisar el índice anterior.');
+    marca('Carpeta de JSON individuales listada: ' + tags.length + ' jugadores', tLista);
     if (!estado) {
       estado = _indiceClanesVacio_();
       estado.generado = ahoraTxt;
@@ -1071,11 +1078,13 @@ function _generarIndiceClanesExternosUnaCorrida_() {
     }
 
     var hechosAhora = 0;
+    var tLectura = Date.now();
     for (var i = 0; i < tags.length; i++) {
       var tag = tags[i];
       if (estado.procesados[tag]) continue;
       if (Date.now() - inicio > INDICE_CLANES_PRESUPUESTO_MS) break;
       var registros = null;
+      var tLeer = Date.now();
       try {
         var historial = JSON.parse(archivos[tag].getBlob().getDataAsString('UTF-8'));
         registros = (historial && historial.registros) ? historial.registros : [];
@@ -1083,17 +1092,22 @@ function _generarIndiceClanesExternosUnaCorrida_() {
         Logger.log('[IndiceClanes] No se pudo leer el JSON de ' + tag + ': ' + eLeer.message);
         estado.ilegibles.push(tag);
       }
+      if (Date.now() - tLeer > 15000) Logger.log('[IndiceClanes]   La lectura del JSON de ' + tag + ' tardó ' + Math.round((Date.now() - tLeer) / 1000) + ' s.');
       if (registros) _indiceClanesAgregar_(estado, tag, registros);
       estado.procesados[tag] = true;
       hechosAhora++;
+      if (hechosAhora % 250 === 0) Logger.log('[IndiceClanes]   Lectura de jugadores: ' + hechosAhora + ' en esta pasada (la pasada lleva ' + seg() + ' s).');
     }
 
     for (var t = 0; t < tags.length; t++) if (estado.procesados[tags[t]]) listos++;
     estado.actualizado = ahoraTxt;
     estado.jugadoresLeidos = listos;
 
+    marca('Lectura de jugadores: ' + hechosAhora + ' leídos ahora, ' + listos + ' de ' + tags.length + ' en total', tLectura);
     if (listos < tags.length) {
+      var tGuardarLect = Date.now();
       _indiceClanesGuardarParcial_(estado);
+      marca('Avance de la lectura guardado', tGuardarLect);
       Logger.log('[IndiceClanes] INCOMPLETO: ' + listos + ' de ' + tags.length + ' jugadores leídos (' + hechosAhora + ' en esta corrida' + (continuaba ? ', continuando el avance guardado' : '') + '). La siguiente corrida continúa donde se quedó (ver el registro de continuación); los archivos de clan y el índice anterior no se tocaron.');
       return false;
     }
@@ -1101,25 +1115,35 @@ function _generarIndiceClanesExternosUnaCorrida_() {
   }
 
   // 2) Fusión de cada clan con su archivo de Clanes_Externos (solo los clanes cuya firma cambió).
+  var tFusion = Date.now();
   var res = _clanesExternosEscribirPendientes_(estado, inicio, ahoraTxt);
+  marca('Archivos de clan: ' + res.creados + ' creados, ' + res.actualizados + ' actualizados, ' + res.sinCambios + ' sin cambios, ' + res.pendientes + ' pendientes', tFusion);
   if (res.pendientes > 0) {
+    var tGuardarFus = Date.now();
     _indiceClanesGuardarParcial_(estado);
+    marca('Avance de los archivos de clan guardado', tGuardarFus);
     Logger.log('[IndiceClanes] INCOMPLETO: los ' + listos + ' jugadores ya están leídos; faltan ' + res.pendientes + ' de ' + res.total + ' archivos de clan (en esta corrida: ' + res.creados + ' creados, ' + res.actualizados + ' actualizados, ' + res.sinCambios + ' sin cambios' + (res.fallos ? ', ' + res.fallos + ' con error' : '') + '). La siguiente corrida continúa donde se quedó (ver el registro de continuación).');
     return false;
   }
 
   // 3) Todo fusionado: se reemplaza el respaldo (índice y CSV), se actualizan las alertas y se retira el avance.
+  var tCierre = Date.now();
   var legado = _indiceClanesLegadoDe_(estado);
   _guardarIndiceClanes_(legado);
+  marca('Cierre: índice completo guardado', tCierre); tCierre = Date.now();
   _saveCSVToDrive(INDICE_CLANES_CSV, _encodeCSV(_indiceClanesAFilasCsv_(legado)));
+  marca('Cierre: respaldo en CSV guardado', tCierre); tCierre = Date.now();
   _resumenClanesGuardar_(_resumenClanesArmar_(legado)); // §PF378 (19-nov-2026): fuente de la tarjeta «Clanes externos»
+  marca('Cierre: resumen de clanes guardado', tCierre); tCierre = Date.now();
   res.firmas.ultimaCompleta = ahoraTxt;
   _clanesExternosFirmasGuardar_(res.firmas);
   _clanesExternosListoCache_ = ahoraTxt;
   _indiceClanesBorrarParcial_();
+  marca('Cierre: firmas guardadas y avance retirado', tCierre); tCierre = Date.now();
   // §PF375: con el índice recién completo se actualizan las alertas de clanes sospechosos; si falla, el índice ya quedó guardado. §PF378: las alertas leen los archivos de clan que acaban de quedar completos (no el respaldo).
   try { _alertasClanesActualizar_('índice'); }
   catch (eAlertas) { Logger.log('[AlertasClanes] No se pudieron actualizar tras generar el índice: ' + eAlertas.message); }
+  marca('Cierre: alertas de clanes sospechosos actualizadas', tCierre);
   Logger.log('[IndiceClanes] COMPLETO: ' + listos + ' jugadores leídos, ' + legado.totalClanes + ' clanes externos' + (estado.ilegibles.length ? ', ' + estado.ilegibles.length + ' JSON ilegibles' : '') + '. Archivos de clan (' + CLANES_EXTERNOS_CARPETA + ' en Otros): ' + res.creados + ' creados, ' + res.actualizados + ' actualizados, ' + res.sinCambios + ' sin cambios' + (res.ilegiblesApartados ? ', ' + res.ilegiblesApartados + ' ilegibles apartados' : '') + '. Respaldo: ' + INDICE_CLANES_JSON + ' (Otros) y ' + INDICE_CLANES_CSV + '.');
   return true;
 }
@@ -1139,14 +1163,17 @@ function _indiceClanesCorrerProgramado_() {
   } catch (eSeg) {
     Logger.log('[IndiceClanes] No se pudo dejar el activador de seguridad: ' + eSeg.message);
   }
+  var tPasada = Date.now();
+  Logger.log('[IndiceClanes] Pasada ' + (n + 1) + ' de como máximo ' + INDICE_CLANES_CONT_MAX + ': empieza a las ' + Utilities.formatDate(new Date(), 'America/Lima', 'HH:mm:ss') + ' (hora de Lima).'); // §PF537: deja constancia aunque la plataforma corte la pasada
   try {
     completo = _generarIndiceClanesExternosUnaCorrida_() === true;
   } catch (e) {
-    Logger.log('[IndiceClanes] La corrida programada falló: ' + e.message + '. La próxima corrida semanal sigue donde quedó.');
+    Logger.log('[IndiceClanes] La corrida programada falló tras ' + Math.round((Date.now() - tPasada) / 1000) + ' s: ' + e.message + '. La próxima corrida semanal sigue donde quedó.');
     props.deleteProperty(INDICE_CLANES_CONT_PROP);
     _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT);
     return;
   }
+  Logger.log('[IndiceClanes] Pasada ' + (n + 1) + ' terminó en ' + Math.round((Date.now() - tPasada) / 1000) + ' s: ' + (completo ? 'índice completo.' : 'índice incompleto.'));
   if (completo) {
     _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT);
     Logger.log('[IndiceClanes] Corrida programada: índice completo tras ' + (n + 1) + (n === 0 ? ' corrida.' : ' corridas.'));
@@ -1600,6 +1627,8 @@ function _clanesExternosEscribirPendientes_(estado, inicio, ahoraTxt) {
   var existentes = Object.keys(firmas.clanes).length;
   var mapa = (pendientes.length > CLANES_EXTERNOS_LISTAR_DESDE && existentes <= CLANES_EXTERNOS_LISTAR_MAX_EXISTENTES) ? _clanesExternosListar_(carpeta, CLANES_EXTERNOS_LISTAR_LIMITE_MS) : null;
   var sinGuardar = 0;
+  var totalPendientes = pendientes.length;
+  Logger.log('[IndiceClanes]   Archivos de clan: ' + totalPendientes + ' por fusionar' + (mapa ? ', carpeta listada' : ', cada archivo se busca por nombre') + ' (la pasada lleva ' + Math.round((Date.now() - inicio) / 1000) + ' s).'); // §PF537
   for (var i = 0; i < pendientes.length; i++) {
     if (Date.now() - inicio > INDICE_CLANES_PRESUPUESTO_MS) break;
     if (res.fallos >= CLANES_EXTERNOS_FALLOS_MAX) break;
@@ -1639,7 +1668,10 @@ function _clanesExternosEscribirPendientes_(estado, inicio, ahoraTxt) {
       firmas.clanes[tag] = nuevas[tag];
       res.pendientes--;
       sinGuardar++;
-      if (sinGuardar >= 200) { _clanesExternosFirmasGuardar_(firmas); sinGuardar = 0; }
+      if (sinGuardar >= 200) {
+        _clanesExternosFirmasGuardar_(firmas); sinGuardar = 0;
+        Logger.log('[IndiceClanes]   Archivos de clan: ' + (totalPendientes - res.pendientes) + ' de ' + totalPendientes + ' hechos en esta pasada (la pasada lleva ' + Math.round((Date.now() - inicio) / 1000) + ' s).'); // §PF537
+      }
     } catch (eClan) {
       res.fallos++;
       Logger.log('[IndiceClanes] No se pudo guardar el archivo del clan ' + tag + ': ' + eClan.message);
