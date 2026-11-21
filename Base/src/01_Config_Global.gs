@@ -288,6 +288,8 @@ var CFG = {
   TANDA_RELLAMADAS_MAX: 5,                // tope de llamadas extra de un paso por tanda
   TANDA_RELLAMADA_MIN_MS: 60 * 1000,      // duración que se supone a una llamada extra aunque la anterior fuera más corta
   TANDA_RELLAMADA_RESERVA_MS: 30 * 1000,  // margen para el cierre de la tanda (revisión posterior de los CSV, programar la continuación)
+  TORNEOS_FASE_MIN_RESTANTE_MS: 150 * 1000,          // PF541: procesarTorneos() no empieza otra fase si a la ejecución le quedan menos de esto antes del corte (la fase más lenta medida fue 118 s, PF535, más 30 s de cierre)
+  TORNEOS_FASE_CURSOR_MAX_EDAD_MS: 30 * 60 * 1000,   // PF541: un cursor de fases (TORNEOS_FASE_CURSOR) más viejo que esto se descarta y procesarTorneos() empieza de cero
 
   // Presupuesto interno SOLO para el bucle de /players dentro de [→ Contexto_Base_Web.md §01B034]
   PLAYERS_FETCH_BUDGET_MS: 3 * 60 * 1000 + 30 * 1000,  // 3m30s
