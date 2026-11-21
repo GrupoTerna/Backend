@@ -26,9 +26,7 @@
 
 ### A1. Corrección de guerra: la espera por la comparación con los JSON terminó (`§PF548`)
 
-Decididos por Claude el 21-nov-2026 con los archivos y el código (reversibles). Queda esto:
-
-- [ ] `PF234` — Correr «Corrección de jugadores elegidos» (el botón ya existe) con los 28 tags de los 115 casos de «revisar a mano» (`§PF233`). Es acción tuya en Tampermonkey; ya no es decisión.
+Ninguno abierto: los decidió Claude el 21-nov-2026 con los archivos y el código (reversibles), y la última acción tuya, correr «Corrección de jugadores elegidos» con los 28 tags (`PF234`), se hizo ese mismo día (`§PF234`).
 
 ### A2. Corrección de guerra: casos y decisiones abiertas
 
